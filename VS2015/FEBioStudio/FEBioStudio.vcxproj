@@ -1,0 +1,454 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{38B0B6EB-5BBC-4A46-A1E4-CE598A6C52CE}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>FEBioStudio</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PreViewDir);$(PostViewDir);$(ZLIBDIR);$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)x64\Debug;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Debug;$(MMGLIB)\lib\Debug;$(PostViewDir)\VS2015\x64\Debug;$(PreViewDir)\VS2015\x64\Debug;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PreViewDir);$(PostViewDir);$(ZLIBDIR);$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)x64\Release;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Release;$(MMGLIB)\lib\Release;$(PostViewDir)\VS2015\x64\Release;$(PreViewDir)\VS2015\x64\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_FEBIO3;HAS_OCC;HAS_MMG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;geomlib.lib;previewio.lib;previewlib.lib;imagelib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Debug\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Debug\zlibstaticd.lib;postviewlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_FEBIO3;HAS_OCC;HAS_MMG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;geomlib.lib;previewio.lib;previewlib.lib;imagelib.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Release\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Release\zlibstatic.lib;postviewlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\FEBioStudio\BuildPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CColorButton.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ClassDescriptor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\Command.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CommandManager.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CommandPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ConchoidFitTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CreateP2PLinePane.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CreatePanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CreateSpringPane.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CurveEditor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CurvePicker.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DataFieldSelector.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddBC.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddBodyLoad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddChemicalReaction.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddContact.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddIC.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddMeshData.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddNodalLoad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddRigidConnector.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddRigidConstraint.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddStep.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddSurfaceLoad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgBatchConvert.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgCloneGrid.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgCloneObject.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgCloneRevolve.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgDetachSelection.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgEditOutput.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgEditProject.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgExportFEBio.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgFEBioOptimize.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgFormula.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgImportAbaqus.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgImportCOMSOL.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgImportSTL.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgLameConvertor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgLSDYNAExport.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgMergeObjects.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgModelInfo.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgNew.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgPurge.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgRAWImport.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgRun.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgSettings.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgSoluteTable.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgTransform.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgVTKExport.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DocTemplate.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\Document.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\EditPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\FEBioJob.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\FEBioStudio.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\FiberGeneratorTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\FileThread.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\FileViewer.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\FoamGeneratorTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GGrid.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GImageObject.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GLCamera.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GLCanvas.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GLControlBar.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GLCursor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GLHighLighter.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GLView.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GLViewRender.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GLViewTransform.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\glx.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GManipulator.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\Intersect.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\LogPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MainWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MaterialEditor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MaterialMapTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menu.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuPhysics.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuTools.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MeshButtonBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MeshInfoPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MeshInspector.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MeshPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MeshSelectionBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_BuildPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_CColorButton.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_CreateP2PlinePane.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_CreatePanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_CreateSpringPane.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_CurveEditor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_CurvePicker.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DataFieldSelector.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgAddChemicalReaction.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgAddMeshData.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneGrid.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneObject.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneRevolve.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgEditOutput.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgEditProject.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgExportFEBio.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgFEBioOptimize.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgFormula.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgLameConvertor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgModelInfo.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgRun.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgSettings.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgSoluteTable.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_EditPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_FileThread.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_FileViewer.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_GLControlBar.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_GLHighlighter.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_GLView.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_LogPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_MainWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_MaterialEditor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_MeshButtonBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_MeshInspector.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_MeshPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_MeshSelectionBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ModelPropsPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ModelSearch.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ModelTree.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ModelViewer.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ObjectPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PlotWidget.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PostPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PropertyListForm.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PropertyListView.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_SelectionBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_Tool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ToolBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ToolsPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ModelPropsPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ModelSearch.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ModelTree.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ModelViewer.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ObjectPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ObjectProps.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PlaneCutTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PlotWidget.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PostDoc.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PostPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PropertyList.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PropertyListForm.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PropertyListView.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\qrc_febiostudio.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ReadCurveTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ResourceEdit.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ScalarFieldTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\SelectionBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\Sketcher.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\SphereFitTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\stdafx.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\template.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\Tool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ToolBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\FEBioStudio\BuildPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\CColorButton.h" />
+    <ClInclude Include="..\..\FEBioStudio\CIntInput.h" />
+    <ClInclude Include="..\..\FEBioStudio\ClassDescriptor.h" />
+    <ClInclude Include="..\..\FEBioStudio\Command.h" />
+    <ClInclude Include="..\..\FEBioStudio\CommandManager.h" />
+    <ClInclude Include="..\..\FEBioStudio\CommandPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ConchoidFitTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\convert.h" />
+    <ClInclude Include="..\..\FEBioStudio\CreateP2PlinePane.h" />
+    <ClInclude Include="..\..\FEBioStudio\CreatePanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\CreateSpringPane.h" />
+    <ClInclude Include="..\..\FEBioStudio\CurveEditor.h" />
+    <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h" />
+    <ClInclude Include="..\..\FEBioStudio\CurvePicker.h" />
+    <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\DlgAddBC.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddBodyLoad.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddChemicalReaction.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddContact.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddIC.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddMeshData.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddNodalLoad.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddRigidConnector.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddRigidConstraint.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddStep.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgAddSurfaceLoad.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgBatchConvert.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgCloneGrid.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgCloneObject.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgCloneRevolve.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgDetachSelection.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgEditOutput.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgEditProject.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgExportFEBio.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgFEBioOptimize.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgFormula.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgImportAbaqus.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgImportCOMSOL.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgImportSTL.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgLameConvertor.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgLSDYNAExport.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgMergeObjects.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgModelInfo.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgNew.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgPurge.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgRAWImport.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgRun.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgSettings.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgSoluteTable.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgTransform.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgVTKExport.h" />
+    <ClInclude Include="..\..\FEBioStudio\DocTemplate.h" />
+    <ClInclude Include="..\..\FEBioStudio\Document.h" />
+    <ClInclude Include="..\..\FEBioStudio\EditPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\FEBioJob.h" />
+    <ClInclude Include="..\..\FEBioStudio\FEBioOpt.h" />
+    <ClInclude Include="..\..\FEBioStudio\FEBioStudio.h" />
+    <ClInclude Include="..\..\FEBioStudio\FiberGeneratorTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\FileThread.h" />
+    <ClInclude Include="..\..\FEBioStudio\FileViewer.h" />
+    <ClInclude Include="..\..\FEBioStudio\FoamGeneratorTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\GGrid.h" />
+    <ClInclude Include="..\..\FEBioStudio\GImageObject.h" />
+    <ClInclude Include="..\..\FEBioStudio\GLCamera.h" />
+    <ClInclude Include="..\..\FEBioStudio\GLCanvas.h" />
+    <ClInclude Include="..\..\FEBioStudio\GLControlBar.h" />
+    <ClInclude Include="..\..\FEBioStudio\GLCursor.h" />
+    <ClInclude Include="..\..\FEBioStudio\GLHighlighter.h" />
+    <ClInclude Include="..\..\FEBioStudio\GLView.h" />
+    <ClInclude Include="..\..\FEBioStudio\GLViewRender.h" />
+    <ClInclude Include="..\..\FEBioStudio\GLViewTransform.h" />
+    <ClInclude Include="..\..\FEBioStudio\glx.h" />
+    <ClInclude Include="..\..\FEBioStudio\GManipulator.h" />
+    <ClInclude Include="..\..\FEBioStudio\GTriad.h" />
+    <ClInclude Include="..\..\FEBioStudio\Intersect.h" />
+    <ClInclude Include="..\..\FEBioStudio\LogPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\MainWindow.h" />
+    <ClInclude Include="..\..\FEBioStudio\MaterialEditor.h" />
+    <ClInclude Include="..\..\FEBioStudio\MaterialMapTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\MeshButtonBox.h" />
+    <ClInclude Include="..\..\FEBioStudio\MeshInfoPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\MeshInspector.h" />
+    <ClInclude Include="..\..\FEBioStudio\MeshPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\MeshSelectionBox.h" />
+    <CustomBuild Include="..\..\FEBioStudio\ModelPropsPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\ModelSearch.h" />
+    <ClInclude Include="..\..\FEBioStudio\ModelTree.h" />
+    <ClInclude Include="..\..\FEBioStudio\ModelViewer.h" />
+    <ClInclude Include="..\..\FEBioStudio\ObjectPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ObjectProps.h" />
+    <ClInclude Include="..\..\FEBioStudio\PlaneCutTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\PlotWidget.h" />
+    <ClInclude Include="..\..\FEBioStudio\PostDoc.h" />
+    <CustomBuild Include="..\..\FEBioStudio\PostPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\PropertyList.h" />
+    <ClInclude Include="..\..\FEBioStudio\PropertyListForm.h" />
+    <ClInclude Include="..\..\FEBioStudio\PropertyListView.h" />
+    <ClInclude Include="..\..\FEBioStudio\ReadCurveTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\ResourceEdit.h" />
+    <ClInclude Include="..\..\FEBioStudio\ScalarFieldTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\SelectionBox.h" />
+    <ClInclude Include="..\..\FEBioStudio\Sketcher.h" />
+    <ClInclude Include="..\..\FEBioStudio\SphereFitTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\stdafx.h" />
+    <ClInclude Include="..\..\FEBioStudio\targetver.h" />
+    <ClInclude Include="..\..\FEBioStudio\Tool.h" />
+    <ClInclude Include="..\..\FEBioStudio\ToolBox.h" />
+    <ClInclude Include="..\..\FEBioStudio\ToolsPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_buildpanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_createpanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_curveeditor.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_datapanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_editpanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_logpanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_mainwindow.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_materialeditor.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_meshinspector.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_meshpanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_modelviewer.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_toolspanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\version.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

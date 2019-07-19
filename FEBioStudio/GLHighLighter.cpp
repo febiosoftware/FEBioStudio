@@ -1,0 +1,144 @@
+#include "stdafx.h"
+#include "GLHighlighter.h"
+#include "GLView.h"
+
+GLHighlighter GLHighlighter::m_This;
+
+GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
+{
+	m_activeColor = GLCOLOR(255, 255, 0);
+	m_pickColor   = GLCOLOR(0, 0, 255);
+}
+
+void GLHighlighter::AttachToView(CGLView* view)
+{
+	m_This.m_view = view;
+	if (view) view->repaint();
+}
+
+void GLHighlighter::SetActiveItem(GItem* item)
+{
+	if (item != m_This.m_activeItem)
+	{
+		m_This.m_activeItem = item;
+		if (m_This.m_view) m_This.m_view->repaint();
+		emit m_This.activeItemChanged();
+	}
+}
+
+void GLHighlighter::PickActiveItem()
+{
+	GItem* pick = m_This.m_activeItem;
+	
+	// make sure this item is not already picked
+	for (int i=0; i<(int)m_This.m_item.size(); ++i)
+		if (m_This.m_item[i] == pick) return;
+
+	m_This.m_activeItem = 0;
+	m_This.m_item.push_back(pick);
+	if (m_This.m_view) m_This.m_view->repaint();
+	emit m_This.itemPicked(pick);
+}
+
+void GLHighlighter::PickItem(GItem* item)
+{
+	if (item == 0) return;
+	
+	// make sure this item is not already picked
+	for (int i = 0; i<(int)m_This.m_item.size(); ++i)
+		if (m_This.m_item[i] == item) return;
+
+	m_This.m_activeItem = 0;
+	m_This.m_item.push_back(item);
+	emit m_This.itemPicked(item);
+}
+
+
+GItem* GLHighlighter::GetActiveItem()
+{ 
+	return m_This.m_activeItem; 
+}
+
+QString GLHighlighter::GetActiveItemName()
+{
+	if (m_This.m_activeItem) return QString::fromStdString(m_This.m_activeItem->GetName());
+	else return QString("");
+}
+
+void GLHighlighter::ClearHighlights()
+{
+	m_This.m_item.clear();
+	m_This.m_activeItem = nullptr;
+	if (m_This.m_view) m_This.m_view->repaint();
+}
+
+void GLHighlighter::setHighlightType(int type)
+{
+	// TODO: Implement this (for now, this only works with curves)
+}
+
+void GLHighlighter::setTracking(bool b)
+{
+	m_This.m_btrack = b;
+	if (m_This.m_view) m_This.m_view->repaint();
+}
+
+bool GLHighlighter::IsTracking()
+{
+	return m_This.m_btrack;
+}
+
+void drawEdge(CGLView* view, GEdge* edge, GLCOLOR c)
+{
+	GObject* po = dynamic_cast<GObject*>(edge->Object());
+	if (po == 0) return;
+
+	glColor3ub(c.r, c.g, c.b);
+
+	glPushMatrix();
+	view->SetModelView(po);
+
+	GLMesh& m = *po->GetRenderMesh();
+	view->GetViewRenderer().RenderGLEdges(&m, edge->GetLocalID());
+
+	if ((edge->m_node[0] != -1) && (edge->m_node[1] != -1))
+	{
+		glBegin(GL_POINTS);
+		{
+			vec3d r0 = po->Node(edge->m_node[0])->LocalPosition();
+			vec3d r1 = po->Node(edge->m_node[1])->LocalPosition();
+			glVertex3d(r0.x, r0.y, r0.z);
+			glVertex3d(r1.x, r1.y, r1.z);
+		}
+		glEnd();
+	}
+	glPopMatrix();
+}
+
+void GLHighlighter::draw()
+{
+	if (m_This.m_item.empty() && (m_This.m_activeItem == 0)) return;
+
+	CGLView* view = m_This.m_view;
+	if (view == 0) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+
+	glLineWidth(2.0f);
+
+    for (GItem* item : m_This.m_item)
+	{
+		GEdge* edge = dynamic_cast<GEdge*>(item);
+		if (edge) drawEdge(view, edge, m_This.m_pickColor);
+	}
+
+	if (m_This.m_activeItem)
+	{
+		GEdge* edge = dynamic_cast<GEdge*>(m_This.m_activeItem);
+		if (edge) drawEdge(view, edge, m_This.m_activeColor);
+	}
+
+	glPopAttrib();
+}

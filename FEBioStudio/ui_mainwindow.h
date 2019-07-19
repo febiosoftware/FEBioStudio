@@ -1,0 +1,702 @@
+#include "GLView.h"
+#include <QAction>
+#include <QMenuBar>
+#include <QMenu>
+#include <QDockWidget>
+#include <QDesktopWidget>
+#include <QStatusBar>
+#include <QToolBar>
+#include <QProgressBar>
+#include <QComboBox>
+#include <QBoxLayout>
+#include <QLineEdit>
+#include <QtCore/QDir>
+#include "FileViewer.h"
+#include "ModelViewer.h"
+#include "CurveEditor.h"
+#include "MeshInspector.h"
+#include "LogPanel.h"
+#include "BuildPanel.h"
+#include "GLControlBar.h"
+#include "Document.h"
+
+class QProcess;
+
+class Ui::CMainWindow
+{
+	enum
+	{
+		MAX_RECENT_FILES = 15		// max number of recent files
+	};
+
+public:
+	CGLView*	glview;
+	CGLControlBar* glc;
+
+	QMenu* menuFile;
+	QMenu* menuEdit;
+	QMenu* menuPhysics;
+	QMenu* menuTools;
+	QMenu* menuView;
+	QMenu* menuHelp;
+	QMenu* menuRecentFiles;
+	QMenu* menuRecentFEFiles;
+	QMenu* menuRecentGeomFiles;
+
+	QActionGroup* recentFilesActionGroup;
+	QActionGroup* recentFEFilesActionGroup;
+	QActionGroup* recentGeomFilesActionGroup;
+
+	::CFileViewer*	fileViewer;
+	::CModelViewer* modelViewer;
+	::CBuildPanel*  buildPanel;
+	::CLogPanel*	logPanel;
+	::CCurveEditor*	curveWnd;
+	::CMeshInspector* meshWnd;
+
+	QToolBar*	mainToolBar;
+	QStatusBar*	statusBar;
+	QProgressBar*	fileProgress;
+
+	QAction* actionSelectObjects;
+	QAction* actionSelectParts;
+	QAction* actionSelectSurfaces;
+	QAction* actionSelectCurves;
+	QAction* actionSelectNodes;
+	QAction* actionSelectDiscrete;
+
+	QAction* actionAddBC;
+	QAction* actionAddNodalLoad;
+	QAction* actionAddSurfLoad;
+	QAction* actionAddBodyLoad;
+	QAction* actionAddIC;
+	QAction* actionAddContact;
+	QAction* actionAddRigidConstraint;
+	QAction* actionAddRigidConnector;
+	QAction* actionAddStep;
+	QAction* actionAddMaterial;
+	QAction* actionSoluteTable;
+	QAction* actionSBMTable;
+	QAction* actionAddReaction;
+
+	QComboBox* coord;
+
+	QString currentPath;
+
+	QStringList	m_recentFiles;
+	QStringList	m_recentFEFiles;
+	QStringList	m_recentGeomFiles;
+
+	QAction* actionUndoViewChange;
+	QAction* actionRedoViewChange;
+	QAction* actionZoomSelect;
+	QAction* actionZoomExtents;
+	QAction* actionShowGrid;
+	QAction* actionShowMeshLines;
+	QAction* actionShowEdgeLines;
+	QAction* actionBackfaceCulling;
+	QAction* actionShowNormals;
+	QAction* actionOrtho;
+	QAction* actionFront;
+	QAction* actionBack;
+	QAction* actionRight;
+	QAction* actionLeft;
+	QAction* actionTop;
+	QAction* actionBottom;
+	QAction* actionOptions;
+	QAction* actionWireframe;
+	QAction* actionShowFibers;
+
+public:
+	QStringList		m_febio_path;
+	QStringList		m_febio_info;
+
+	QProcess*	m_process;
+	bool		m_bkillProcess;
+
+	int			m_theme;	// 0 = default, 1 = dark
+
+public:
+	void setupUi(::CMainWindow* wnd)
+	{
+#ifdef __APPLE__
+		m_febio_path.push_back("/usr/local/bin/febio2");
+		m_febio_info.push_back("FEBio 2");
+#else
+		m_febio_path.push_back("febio2");
+		m_febio_info.push_back("FEBio 2");
+#endif
+
+		m_process = 0;
+		m_bkillProcess = false;
+
+		m_theme = 0;
+
+		curveWnd = 0;
+		meshWnd = 0;
+
+		m_wnd = wnd;
+
+		// initialize current path
+		currentPath = QDir::currentPath();
+
+		// set the initial window size
+//        QRect screenSize = QDesktopWidget().availableGeometry(wnd);
+        //wnd->resize(QSize(screenSize.width() * 1.0f, screenSize.height() * 1.0f));
+//		wnd->resize(800, 600);
+
+		// create the central widget
+		QWidget* w = new QWidget;
+
+		// create the layout for the central widget
+		QVBoxLayout* l = new QVBoxLayout;
+		l->setMargin(0);
+
+		// create the GL view
+		glview = new CGLView(wnd); glview->setObjectName("glview");
+
+		// create the GL control bar
+		glc = new CGLControlBar(wnd);
+		glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
+
+		// add it all to the layout
+		l->addWidget(glview);
+		l->addWidget(glc);
+		w->setLayout(l);
+
+		// set the central widget
+		wnd->setCentralWidget(w);
+
+		// build the menu
+		buildMenu(wnd);
+
+		// build the dockable windows
+		// (must be done after menu is created)
+		buildDockWidgets(wnd);
+
+		// build status bar
+		statusBar = new QStatusBar(m_wnd);
+		m_wnd->setStatusBar(statusBar);
+
+		fileProgress = new QProgressBar;
+		fileProgress->setRange(0, 100);
+		fileProgress->setMaximumWidth(200);
+		fileProgress->setMaximumHeight(15);
+
+		QMetaObject::connectSlotsByName(wnd);
+	}
+
+	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false)
+	{
+		QAction* pa = new QAction(title, m_wnd);
+		pa->setObjectName(name);
+		if (iconFile.isEmpty() == false) pa->setIcon(QIcon(iconFile));
+		if (bcheckable) pa->setCheckable(true);
+		return pa;
+	}
+
+	// create actions and menu
+	void buildMenu(::CMainWindow* mainWindow)
+	{
+		// --- File menu ---
+		QAction* actionNew        = addAction("New ..."    , "actionNew"   , ":/icons/new.png" ); actionNew ->setShortcuts(QKeySequence::New );
+		QAction* actionOpen       = addAction("Open ..."   , "actionOpen"  , ":/icons/open.png"); actionOpen->setShortcuts(QKeySequence::Open);
+		QAction* actionSave       = addAction("Save"       , "actionSave"  , ":/icons/save.png"); actionSave->setShortcuts(QKeySequence::Save);
+		QAction* actionSaveAs     = addAction("Save as ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
+		QAction* actionInfo       = addAction("Model info ...", "actionInfo");
+		QAction* actionImportFE   = addAction("Import FE model ..." , "actionImportFEModel");
+		QAction* actionExportFE   = addAction("Export FE model ..." , "actionExportFEModel");
+		QAction* actionImportGeom = addAction("Import geometry ...", "actionImportGeometry");
+		QAction* actionExportGeom = addAction("Export geometry ...", "actionExportGeometry");
+		QAction* actionImportImg  = addAction("Import image ...", "actionImportImage");
+		QAction* actionConvertFeb    = addAction("FEBio files ...", "actionConvertFeb");
+		QAction* actionConvertGeo = addAction("Geometry files ...", "actionConvertGeo");
+		QAction* actionExit       = addAction("Exit"       , "actionExit"  );
+
+		// --- Edit menu ---
+		QAction* actionUndo              = addAction("Undo", "actionUndo", ":icons/undo.png"); actionUndo->setShortcuts(QKeySequence::Undo);
+		QAction* actionRedo              = addAction("Redo", "actionRedo", ":icons/redo.png"); actionRedo->setShortcuts(QKeySequence::Redo);
+		QAction* actionInvertSelection   = addAction("Invert selection"  , "actionInvertSelection"  );
+		QAction* actionClearSelection    = addAction("Clear selection"   , "actionClearSelection"   );
+		QAction* actionDeleteSelection   = addAction("Delete selection"  , "actionDeleteSelection"  ); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
+		QAction* actionNameSelection     = addAction("Name selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier + Qt::Key_G);
+		QAction* actionHideSelection     = addAction("Hide selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
+		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier + Qt::Key_H);
+		QAction* actionUnhideAll         = addAction("Unhide all"        , "actionUnhideAll"        );
+		QAction* actionToggleVisible     = addAction("Toggle visibility" , "actionToggleVisible"    , ":/icons/toggle_visible.png");
+		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
+		QAction* actionCollapseTransform = addAction("Collapse transform", "actionCollapseTransform");
+		QAction* actionClone             = addAction("Clone object ...", "actionClone"            , ":/icons/clone.png"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionCloneGrid         = addAction("Clone grid ..."    , "actionCloneGrid"        , ":/icons/clonegrid.png");
+		QAction* actionCloneRevolve      = addAction("Clone revolve ..." , "actionCloneRevolve"     , ":/icons/clonerevolve.png");
+		QAction* actionMerge             = addAction("Merge objects ..." , "actionMerge"            , ":/icons/merge.png");
+		QAction* actionDetach            = addAction("Detach Elements"   , "actionDetach"           , ":/icons/detach.png");
+		QAction* actionExtract           = addAction("Extract Faces"     , "actionExtract"          , ":/icons/extract.png");
+		QAction* actionPurge             = addAction("Purge ..."         , "actionPurge"            );
+		QAction* actionEditProject       = addAction("Edit Project Settings ...", "actionEditProject");
+
+		// --- Physics menu ---
+		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
+		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
+		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier + Qt::Key_L);
+		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
+		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier + Qt::Key_I);
+		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
+		actionAddRigidConstraint = addAction("Add Rigid Constraint ..."      , "actionAddRigidConstraint");
+		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
+		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
+		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", ":/icons/material.png"); actionAddMaterial->setShortcut(Qt::ControlModifier + Qt::Key_M);
+		actionSoluteTable        = addAction("Solute Table ..."              , "actionSoluteTable");
+		actionSBMTable           = addAction("Solid-bound Molecule Table ...", "actionSBMTable");
+		actionAddReaction        = addAction("Chemical Reaction Editor ..."  , "actionAddReaction");
+
+		// --- Tools menu ---
+		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", ":/icons/curves.png"); actionCurveEditor->setShortcut(Qt::Key_F4);
+		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", ":/icons/inspect.png");
+		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
+		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", ":/icons/febio.png"); actionFEBioRun->setShortcut(Qt::Key_F5);
+		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
+		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
+		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F6);
+
+		// --- View menu ---
+		actionUndoViewChange  = addAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_U);
+		actionRedoViewChange  = addAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_R);
+		actionZoomSelect      = addAction("Zoom to selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
+		actionZoomExtents     = addAction("Zoom to selection", "actionZoomExtents");
+		actionShowGrid        = addAction("Show Grid", "actionShowGrid"); actionShowGrid->setCheckable(true); actionShowGrid->setChecked(true); actionShowGrid->setShortcut(Qt::Key_G);
+		actionShowMeshLines   = addAction("Show Mesh Lines", "actionShowMeshLines", ":/icons/show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setShortcut(Qt::Key_M);
+		actionShowEdgeLines   = addAction("Show Edge Lines", "actionShowEdgeLines"); actionShowEdgeLines->setCheckable(true); actionShowEdgeLines->setShortcut(Qt::Key_Z);
+		actionBackfaceCulling = addAction("Backface culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true); actionBackfaceCulling->setShortcut(Qt::Key_C);
+		actionOrtho           = addAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
+		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
+		actionWireframe		  = addAction("Toggle wireframe", "actionWireframe"); actionWireframe->setCheckable(true); actionWireframe->setShortcut(Qt::Key_W);
+		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
+		QAction* actionSnap3D = addAction("3D cursor to selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
+		actionFront           = addAction("Front", "actionFront");
+		actionBack            = addAction("Back" , "actionBack");
+		actionRight           = addAction("Right", "actionRight");
+		actionLeft            = addAction("Left" , "actionLeft");
+		actionTop             = addAction("Top"  , "actionTop");
+		actionBottom          = addAction("Bottom", "actionBottom");
+
+		// --- Help menu ---
+		QAction* actionOnlineHelp = addAction("Online Help", "actionOnlineHelp");
+		QAction* actionAbout = addAction("About FEBio Studio", "actionAbout");
+
+		// other actions
+		actionSelectObjects  = addAction("Select Objects" , "actionSelectObjects" , ":icons/selectObject.png" , true);
+		actionSelectParts    = addAction("Select Parts"   , "actionSelectParts"   , ":icons/selectPart.png"   , true);
+		actionSelectSurfaces = addAction("Select Surfaces", "actionSelectSurfaces", ":icons/selectSurface.png", true);
+		actionSelectCurves   = addAction("Select Curves"  , "actionSelectCurves"  , ":icons/selectCurves.png", true );
+		actionSelectNodes    = addAction("Select Nodes"   , "actionSelectNodes"   , ":icons/selectNodes.png", true  );
+		actionSelectDiscrete = addAction("Select Discrete", "actionSelectDiscrete", ":icons/discrete.png", true);
+
+		QAction* actionSelect    = addAction("Select"   , "actionSelect"   , ":icons/select.png"   , true); actionSelect->setShortcut(Qt::Key_Q);
+		QAction* actionTranslate = addAction("Translate", "actionTranslate", ":icons/translate.png", true); actionTranslate->setShortcut(Qt::Key_T);
+		QAction* actionRotate    = addAction("Rotate"   , "actionRotate"   , ":icons/rotate.png"   , true); actionRotate->setShortcut(Qt::Key_R);
+		QAction* actionScale     = addAction("Scale"    , "actionScale"    , ":icons/scale.png"    , true); actionScale->setShortcut(Qt::Key_S);
+
+		QAction* selectRect   = addAction("Rectangle", "selectRect"  , ":icons/selectRect.png"  , true);
+		QAction* selectCircle = addAction("Circle"   , "selectCircle", ":icons/selectCircle.png", true);
+		QAction* selectFree   = addAction("Freehand" , "selectFree"  , ":icons/selectFree.png"  , true);
+
+		QActionGroup* pag = new QActionGroup(mainWindow);
+		pag->addAction(actionSelectObjects);
+		pag->addAction(actionSelectParts);
+		pag->addAction(actionSelectSurfaces);
+		pag->addAction(actionSelectCurves);
+		pag->addAction(actionSelectNodes);
+		pag->addAction(actionSelectDiscrete);
+		actionSelectObjects->setChecked(true);
+
+		pag = new QActionGroup(mainWindow);
+		pag->addAction(actionSelect);
+		pag->addAction(actionTranslate);
+		pag->addAction(actionRotate);
+		pag->addAction(actionScale);
+		actionSelect->setChecked(true);
+
+		pag = new QActionGroup(mainWindow);
+		pag->addAction(selectRect);
+		pag->addAction(selectCircle);
+		pag->addAction(selectFree);
+		selectRect->setChecked(true);
+
+		// Create the menu bar
+		QMenuBar* menuBar = m_wnd->menuBar();
+		menuFile   = new QMenu("File", menuBar);
+		menuEdit   = new QMenu("Edit", menuBar);
+		menuPhysics= new QMenu("Physics", menuBar);
+		menuTools  = new QMenu("Tools", menuBar);
+		menuView   = new QMenu("View", menuBar);
+		menuHelp   = new QMenu("Help", menuBar);
+
+		menuRecentFiles = new QMenu("Recent Files");
+		menuRecentFEFiles = new QMenu("Recent FE model Files");
+		menuRecentGeomFiles = new QMenu("Recent geometry Files");
+
+		recentFilesActionGroup = new QActionGroup(mainWindow);
+		recentFilesActionGroup->setObjectName("recentFiles");
+
+		recentFEFilesActionGroup = new QActionGroup(mainWindow);
+		recentFEFilesActionGroup->setObjectName("recentFEFiles");
+
+		recentGeomFilesActionGroup = new QActionGroup(mainWindow);
+		recentGeomFilesActionGroup->setObjectName("recentGeomFiles");
+
+		// build the menu
+		menuBar->addAction(menuFile->menuAction());
+		menuFile->addAction(actionNew);
+		menuFile->addAction(actionOpen);
+		menuFile->addAction(actionSave);
+		menuFile->addAction(actionSaveAs);
+		menuFile->addAction(menuRecentFiles->menuAction());
+		menuFile->addAction(actionInfo);
+		menuFile->addSeparator();
+		menuFile->addAction(actionImportFE);
+		menuFile->addAction(actionExportFE);
+		menuFile->addAction(menuRecentFEFiles->menuAction());
+		menuFile->addSeparator();
+		menuFile->addAction(actionImportGeom);
+		menuFile->addAction(actionExportGeom);
+		menuFile->addAction(menuRecentGeomFiles->menuAction());
+		menuFile->addSeparator();
+		menuFile->addAction(actionImportImg);
+
+		QMenu* ConvertMenu = new QMenu("Batch convert");
+		ConvertMenu->addAction(actionConvertFeb);
+		ConvertMenu->addAction(actionConvertGeo);
+
+		menuFile->addAction(ConvertMenu->menuAction());
+		menuFile->addSeparator();
+		menuFile->addAction(actionExit);
+
+		menuBar->addAction(menuEdit->menuAction());
+		menuEdit->addAction(actionUndo);
+		menuEdit->addAction(actionRedo);
+		menuEdit->addSeparator();
+		menuEdit->addAction(actionInvertSelection);
+		menuEdit->addAction(actionClearSelection);
+		menuEdit->addAction(actionDeleteSelection);
+		menuEdit->addAction(actionNameSelection);
+		menuEdit->addSeparator();
+		menuEdit->addAction(actionHideSelection);
+		menuEdit->addAction(actionHideUnselected);
+		menuEdit->addAction(actionUnhideAll);
+		menuEdit->addAction(actionToggleVisible);
+		menuEdit->addSeparator();
+		menuEdit->addAction(actionTransform);
+		menuEdit->addAction(actionCollapseTransform);
+		menuEdit->addSeparator();
+		menuEdit->addAction(actionClone);
+		menuEdit->addAction(actionMerge);
+		menuEdit->addSeparator();
+		menuEdit->addAction(actionPurge);
+		menuEdit->addSeparator();
+		menuEdit->addAction(actionEditProject);
+
+		menuBar->addAction(menuPhysics->menuAction());
+		menuPhysics->addAction(actionAddBC);
+		menuPhysics->addAction(actionAddNodalLoad);
+		menuPhysics->addAction(actionAddSurfLoad);
+		menuPhysics->addAction(actionAddBodyLoad);
+		menuPhysics->addAction(actionAddIC);
+		menuPhysics->addAction(actionAddContact);
+		menuPhysics->addAction(actionAddRigidConstraint);
+		menuPhysics->addAction(actionAddRigidConnector);
+		menuPhysics->addAction(actionAddMaterial);
+		menuPhysics->addAction(actionAddStep);
+		menuPhysics->addSeparator();
+		menuPhysics->addAction(actionSoluteTable);
+		menuPhysics->addAction(actionSBMTable);
+		menuPhysics->addAction(actionAddReaction);
+
+		menuBar->addAction(menuTools->menuAction());
+		menuTools->addAction(actionCurveEditor);
+		menuTools->addAction(actionMeshInspector);
+		menuTools->addAction(actionElasticityConvertor);
+
+		QMenu* FEBioMenu = new QMenu("FEBio");
+		FEBioMenu->addAction(actionFEBioRun);
+		FEBioMenu->addAction(actionFEBioStop);
+		FEBioMenu->addAction(actionFEBioOptimize);
+
+		menuTools->addAction(FEBioMenu->menuAction());
+		menuTools->addAction(actionOptions);
+
+		menuBar->addAction(menuView->menuAction());
+		menuView->addAction(actionUndoViewChange);
+		menuView->addAction(actionRedoViewChange);
+		menuView->addSeparator();
+		menuView->addAction(actionZoomSelect);
+		menuView->addAction(actionOrtho);
+		menuView->addAction(actionShowNormals);
+		menuView->addSeparator();
+		menuView->addAction(actionShowGrid);
+		menuView->addAction(actionShowMeshLines);
+		menuView->addAction(actionShowEdgeLines);
+		menuView->addAction(actionBackfaceCulling);
+		menuView->addAction(actionWireframe);
+		menuView->addAction(actionShowFibers);
+		menuView->addAction(actionSnap3D);
+		menuView->addSeparator();
+		menuView->addAction(actionFront);
+		menuView->addAction(actionBack);
+		menuView->addAction(actionRight);
+		menuView->addAction(actionLeft);
+		menuView->addAction(actionTop);
+		menuView->addAction(actionBottom);
+		menuView->addSeparator();
+
+		menuBar->addAction(menuHelp->menuAction());
+		menuHelp->addAction(actionOnlineHelp);
+		menuHelp->addSeparator();
+		menuHelp->addAction(actionAbout);
+
+		// Create the toolbar
+		QToolBar* mainToolBar = m_wnd->addToolBar("Main toolbar");
+		mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
+
+		coord = new QComboBox;
+		coord->setObjectName("selectCoord");
+		coord->addItem("Global");
+		coord->addItem("Local");
+
+		mainToolBar->addAction(actionNew );
+		mainToolBar->addAction(actionOpen);
+		mainToolBar->addAction(actionSave);
+		mainToolBar->addSeparator();
+		mainToolBar->addAction(actionUndo);
+		mainToolBar->addAction(actionRedo);
+		mainToolBar->addSeparator();
+		mainToolBar->addAction(actionSelect);
+		mainToolBar->addAction(actionTranslate);
+		mainToolBar->addAction(actionRotate);
+		mainToolBar->addAction(actionScale);
+		mainToolBar->addWidget(coord);
+		mainToolBar->addSeparator();
+		mainToolBar->addAction(actionSelectObjects);
+		mainToolBar->addAction(actionSelectParts   );
+		mainToolBar->addAction(actionSelectSurfaces);
+		mainToolBar->addAction(actionSelectCurves  );
+		mainToolBar->addAction(actionSelectNodes   );
+		mainToolBar->addAction(actionSelectDiscrete);
+		mainToolBar->addSeparator();
+		mainToolBar->addAction(selectRect);
+		mainToolBar->addAction(selectCircle);
+		mainToolBar->addAction(selectFree);
+		mainToolBar->addSeparator();
+		mainToolBar->addAction(actionAddMaterial);
+		mainToolBar->addAction(actionCurveEditor);
+		mainToolBar->addAction(actionMeshInspector);
+		mainToolBar->addAction(actionFEBioRun);
+		mainToolBar->addSeparator();
+		mainToolBar->addAction(actionShowMeshLines);
+		mainToolBar->addSeparator();
+		mainToolBar->addAction(actionMerge);
+		mainToolBar->addAction(actionDetach);
+		mainToolBar->addAction(actionExtract);
+		mainToolBar->addAction(actionClone);
+		mainToolBar->addAction(actionCloneGrid);
+		mainToolBar->addAction(actionCloneRevolve);
+	}
+
+	void SetSelectionMode(int nselect)
+	{
+		switch (nselect)
+		{
+		case SELECT_OBJECT  : actionSelectObjects->trigger(); break;
+		case SELECT_PART    : actionSelectParts->trigger(); break;
+		case SELECT_FACE    : actionSelectSurfaces->trigger(); break;
+		case SELECT_EDGE    : actionSelectCurves->trigger(); break;
+		case SELECT_NODE    : actionSelectNodes->trigger(); break;
+		case SELECT_DISCRETE: actionSelectDiscrete->trigger(); break;
+		default:
+			assert(false);
+		}
+	}
+
+	// build the dockable windows
+	// Note that this must be called after the menu is created.
+	void buildDockWidgets(::CMainWindow* wnd)
+	{
+		wnd->setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+
+		QDockWidget* dock1 = new QDockWidget("Files", m_wnd); dock1->setObjectName("dockFiles");
+		dock1->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+		fileViewer = new ::CFileViewer(m_wnd, dock1);
+		fileViewer->setObjectName(QStringLiteral("fileViewer"));
+		dock1->setWidget(fileViewer);
+		m_wnd->addDockWidget(Qt::LeftDockWidgetArea, dock1);
+		menuView->addAction(dock1->toggleViewAction());
+
+		QDockWidget* dock2 = new QDockWidget("Model", m_wnd); dock2->setObjectName("dockModel");
+		dock2->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+		modelViewer = new ::CModelViewer(m_wnd, dock2);
+		dock2->setWidget(modelViewer);
+		menuView->addAction(dock2->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock1, dock2);
+
+		QDockWidget* dock3 = new QDockWidget("Build", m_wnd); dock3->setObjectName("dockBuild");
+		dock3->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+		buildPanel = new ::CBuildPanel(m_wnd, dock3);
+		dock3->setWidget(buildPanel);
+		menuView->addAction(dock3->toggleViewAction());
+		m_wnd->addDockWidget(Qt::RightDockWidgetArea, dock3);
+//		m_wnd->tabifyDockWidget(dock2, dock3);
+
+ 		QDockWidget* dock4 = new QDockWidget("Output", m_wnd); dock4->setObjectName("dockLog");
+		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+		logPanel = new ::CLogPanel(dock4);
+		dock4->setWidget(logPanel);
+		menuView->addAction(dock4->toggleViewAction());
+		m_wnd->addDockWidget(Qt::BottomDockWidgetArea, dock4);
+
+		// make sure the file viewer is the visible tab
+		dock1->raise();
+	}
+
+	void showCurveEditor()
+	{
+		if (curveWnd == 0) curveWnd = new CCurveEditor(m_wnd);
+
+		curveWnd->Update();
+
+		curveWnd->show();
+		curveWnd->raise();
+		curveWnd->activateWindow();
+	}
+
+	void showMeshInspector()
+	{
+		if (meshWnd == 0) meshWnd = new ::CMeshInspector(m_wnd);
+
+		meshWnd->Update();
+
+		meshWnd->show();
+		meshWnd->raise();
+		meshWnd->activateWindow();
+	}
+
+	void setRecentFiles(QStringList& recentFiles)
+	{
+		setRecentFileList(m_recentFiles, recentFiles, menuRecentFiles, recentFilesActionGroup);
+	}
+
+	void setRecentFEFiles(QStringList& recentFiles)
+	{
+		setRecentFileList(m_recentFEFiles, recentFiles, menuRecentFEFiles, recentFEFilesActionGroup);
+	}
+
+	void setRecentGeomFiles(QStringList& recentFiles)
+	{
+		setRecentFileList(m_recentGeomFiles, recentFiles, menuRecentGeomFiles, recentGeomFilesActionGroup);
+	}
+
+	void addToRecentFiles(const QString& file)
+	{
+		addToRecentFilesList(m_recentFiles, file, menuRecentFiles, recentFilesActionGroup);
+	}
+
+	void addToRecentFEFiles(const QString& file)
+	{
+		addToRecentFilesList(m_recentFEFiles, file, menuRecentFEFiles, recentFEFilesActionGroup);
+	}
+
+	void addToRecentGeomFiles(const QString& file)
+	{
+		addToRecentFilesList(m_recentGeomFiles, file, menuRecentGeomFiles, recentGeomFilesActionGroup);
+	}
+
+	void showFileViewer()
+	{
+		fileViewer->parentWidget()->raise();
+	}
+
+	void showModelViewer()
+	{
+		modelViewer->parentWidget()->raise();
+	}
+
+	void showBuildPanel()
+	{
+		buildPanel->parentWidget()->raise();
+	}
+
+private:
+	void setRecentFileList(QStringList& dstList, const QStringList& fileList, QMenu* menu, QActionGroup* actionGroup)
+	{
+		dstList = fileList;
+
+		int N = dstList.count();
+		if (N > MAX_RECENT_FILES) N = MAX_RECENT_FILES;
+
+		for (int i = 0; i < N; ++i)
+		{
+			QString file = dstList.at(i);
+
+			QAction* pa = menu->addAction(file);
+
+			actionGroup->addAction(pa);
+		}
+	}
+
+	void addToRecentFilesList(QStringList& dstList, const QString& file, QMenu* menu, QActionGroup* actionGroup)
+	{
+		QString fileName = file;
+
+#ifdef WIN32
+		// on windows, make sure that allfile names use backslashes
+		fileName.replace('/', '\\');
+#endif
+
+		QList<QAction*> actionList = menu->actions();
+		if (actionList.isEmpty())
+		{
+			dstList.append(fileName);
+			QAction* action = menu->addAction(fileName);
+			actionGroup->addAction(action);
+		}
+		else
+		{
+			// we need the first action so that we can insert before it
+			QAction* firstAction = actionList.at(0);
+
+			// see if the file already exists or not
+			int n = dstList.indexOf(fileName);
+			if (n >= 0)
+			{
+				// if the file exists, we move it to the top
+				if (n != 0)
+				{
+					QAction* action = actionList.at(n);
+					menu->removeAction(action);
+					menu->insertAction(firstAction, action);
+
+					dstList.removeAt(n);
+					dstList.push_front(fileName);
+				}
+			}
+			else
+			{
+				int N = dstList.count();
+				if (N >= MAX_RECENT_FILES)
+				{
+					// remove the last one
+					dstList.removeLast();
+					menu->removeAction(actionList.last());
+				}
+
+				// add a new file item
+				dstList.push_front(fileName);
+				QAction* pa = new QAction(fileName);
+				menu->insertAction(firstAction, pa);
+				actionGroup->addAction(pa);
+			}
+		}
+	}
+
+private:
+	::CMainWindow*	m_wnd;
+};
