@@ -369,6 +369,23 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	int ntrans = pdoc->GetTransformMode();
 
+	int x = ev->x();
+	int y = ev->y();
+
+	// let the widget manager handle it first
+	GLWidget* pw = GLWidget::get_focus();
+	if (m_Widget->handle(x, y, CGLWidgetManager::PUSH) == 1)
+	{
+		repaint();
+		return;
+	}
+
+	if (pw && (GLWidget::get_focus() == 0))
+	{
+		// If we get here, the current widget selection was cleared
+		repaint();
+	}
+
 	// store the current point
 	m_x0 = m_x1 = ev->pos().x();
 	m_y0 = m_y1 = ev->pos().y();
@@ -459,6 +476,13 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	// get the mouse position
 	int x = ev->pos().x();
 	int y = ev->pos().y();
+
+	// let the widget manager handle it first
+	if (but1 && (m_Widget->handle(x, y, CGLWidgetManager::DRAG) == 1))
+	{
+		repaint();
+		return;
+	}
 
 	// if no buttons are pressed, then we update the pivot only
 	if ((but1 == false) && (but2 == false) && (but3 == false))
@@ -674,6 +698,16 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 {
+	int x = ev->x();
+	int y = ev->y();
+
+	// let the widget manager handle it first
+	if (m_Widget->handle(x, y, CGLWidgetManager::RELEASE) == 1)
+	{
+		ev->accept();
+		repaint();
+		return;
+	}
 	CDocument* pdoc = m_pWnd->GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
@@ -691,8 +725,6 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	m_bextrude = false;
 
-	int x = ev->pos().x();
-	int y = ev->pos().y();
 	AddRegionPoint(x, y);
 
 	if (m_pivot == PIVOT_NONE)
