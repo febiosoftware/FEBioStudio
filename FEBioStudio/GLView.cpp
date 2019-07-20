@@ -32,6 +32,8 @@
 #include "GImageObject.h"
 #include "PostDoc.h"
 
+quat4f to_quat4f(const quatd& q);
+
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
 	170, 170, 170, 170,
@@ -1051,6 +1053,12 @@ void CGLView::initializeGL()
 		glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 	}
 	else glDisable(GL_POINT_SMOOTH);
+
+	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150));
+	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
+	m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
+	m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
+	m_pframe->hide();
 }
 
 void CGLView::Reset()
@@ -1228,8 +1236,6 @@ void CGLView::paintGL()
 	}
 	glPopAttrib();
 */
-	// render the triad
-	RenderTriad();
 
 	// render the tooltip
 	if (m_btooltip) RenderTooltip(m_xp, m_yp);
@@ -1244,6 +1250,10 @@ void CGLView::paintGL()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	// render the triad
+	CGLCamera& cam = GetCamera();
+	m_ptriad->setOrientation(to_quat4f(cam.GetOrientation()));
 
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
@@ -1297,37 +1307,6 @@ void CGLView::Render3DCursor(const vec3d& r, double R)
 	glPopMatrix();
 
 	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderTriad()
-{
-	// set the viewport where we'll render the triad
-	glViewport(0, 0, 100*m_dpr, 100*m_dpr);
-	glClear(GL_DEPTH_BUFFER_BIT);
-
-	// setup ortho mode
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(-1.2f, 1.2f, -1.2f, 1.2f);
-
-	// orient the triad
-	m_triad.SetOrientation(m_Cam.GetOrientation());
-
-	// determine the color for the label
-	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
-	GLCOLOR col = view.m_col1;
-//	Fl_Color bg = fl_rgb_color(col.r, col.g, col.b);
-
-	// set the triad label color
-//	m_triad.SetTextColor(fl_contrast(FL_WHITE, bg));
-
-	// render the triad
-	m_triad.Render();
-
-	// restore the viewport
-	glViewport(m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3]);
 }
 
 //-----------------------------------------------------------------------------
@@ -2744,6 +2723,12 @@ vec3d CGLView::ViewToGrid(double fx, double fy)
 vec3d CGLView::WorldToPlane(vec3d r)
 {
 	return m_grid.m_q.Inverse()*(r - m_grid.m_o);
+}
+
+void CGLView::showSafeFrame(bool b)
+{
+	if (b) m_pframe->show();
+	else m_pframe->hide();
 }
 
 vec3d CGLView::GetViewDirection(double fx, double fy)

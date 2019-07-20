@@ -259,7 +259,6 @@ public:
 	void RenderNormals(GObject* po, double scale);
 	void RenderFeatureEdges();
 	void RenderModel();
-	void RenderTriad();
 	void RenderRubberBand();
 	void RenderPivot(bool bpick = false);
 	void RenderRigidJoints();
@@ -274,6 +273,8 @@ public:
 	void ScreenToView(int x, int y, double& fx, double& fy);
 	vec3d ScreenToGrid(int x, int y);
 	vec3d GetViewDirection(double fx, double fy);
+
+	void showSafeFrame(bool b);
 
 	vec3d ViewToWorld(double fx, double fy);
 	vec3d ViewToGrid(double fx, double fy);
@@ -388,7 +389,8 @@ protected:
 	GScalor			m_Stor;	//!< the scale manipulator
 
 	// triad
-	GTriad	m_triad;
+	GLTriad*		m_ptriad;
+	GLSafeFrame*	m_pframe;
 
 	CGLWidgetManager*	m_Widget;
 

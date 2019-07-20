@@ -37,6 +37,8 @@ public:
 	QMenu* menuEdit;
 	QMenu* menuPhysics;
 	QMenu* menuTools;
+	QMenu* menuPost;
+	QMenu* menuRecord;
 	QMenu* menuView;
 	QMenu* menuHelp;
 	QMenu* menuRecentFiles;
@@ -91,6 +93,7 @@ public:
 	QAction* actionRedoViewChange;
 	QAction* actionZoomSelect;
 	QAction* actionZoomExtents;
+	QAction* actionViewCapture;
 	QAction* actionShowGrid;
 	QAction* actionShowMeshLines;
 	QAction* actionShowEdgeLines;
@@ -259,11 +262,54 @@ public:
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F6);
 
+		// --- Post menu ---
+		QAction* actionPlaneCut = addAction("Plane cut", "actionPlaneCut", ":/icons/cut.png");
+		QAction* actionMirrorPlane = addAction("Mirror plane", "actionMirrorPlane", ":/icons/mirror.png");
+		QAction* actionVectorPlot = addAction("Vector plot", "actionVectorPlot", ":/icons/vectors.png");
+		QAction* actionTensorPlot = addAction("Tensor plot", "actionTensorPlot", ":/icons/tensor.png");
+		QAction* actionIsosurfacePlot = addAction("Isosurface plot", "actionIsosurfacePlot", ":/icons/isosurface.png");
+		QAction* actionSlicePlot = addAction("Slice plot", "actionSlicePlot", ":icons/sliceplot.png");
+		QAction* actionDisplacementMap = addAction("Displacement map", "actionDisplacementMap", ":/icons/distort.png");
+		QAction* actionStreamLinePlot = addAction("Stream lines plot", "actionStreamLinePlot", ":/icons/streamlines.png");
+		QAction* actionParticleFlowPlot = addAction("Particle flow plot", "actionParticleFlowPlot", ":/icons/particle.png");
+		QAction* actionImageSlicer = addAction("Image slicer", "actionImageSlicer", ":/icons/imageslice.png");
+		QAction* actionVolumeRender = addAction("Volume render", "actionVolumeRender", ":/icons/volrender.png");
+		QAction* actionMarchingCubes = addAction("Image isosurface", "actionMarchingCubes", ":/icons/marching_cubes.png");
+		QAction* actionGraph = addAction("New Graph ...", "actionGraph", ":/icons/chart.png"); actionGraph->setShortcut(Qt::Key_F3);
+		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
+		QAction* actionStats = addAction("Statistics  ...", "actionStats");
+		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", ":/icons/integrate.png");
+
+		actionPlaneCut->setWhatsThis("<font color=\"black\"><h3>Plane cut</h3>Add a plane cut plot to the model. A plane cut plot allows users to create a cross section of the mesh.</font>");
+		actionMirrorPlane->setWhatsThis("<font color=\"black\"><h3>Mirror plane</h3>Renders a mirrorred version of the model.</font>");
+		actionVectorPlot->setWhatsThis("<font color=\"black\"><h3>Vector plot</h3>Add a vector plot to the model. Vectors plots can show vector data in the model");
+		actionTensorPlot->setWhatsThis("<font color=\"black\"><h3>Tensor plot</h3>Add a tensor plot to the model. Tensor plots can show 2nd order tensor data in the model");
+		actionIsosurfacePlot->setWhatsThis("<font color=\"black\"><h3>Iso-surface plot</h3>Add an iso-surface plot to the model. An iso-surface plot shows surfaces that have the same value. You may need to make the model transparent in order to see the iso surfaces.");
+		actionSlicePlot->setWhatsThis("<font color=\"black\"><h3>Slice plot</h3>Add a slice plot. This plot adds several cross sections to the model. You may need to make the model transparent to see the slices.");
+		actionDisplacementMap->setWhatsThis("<font color=\"black\"><h3>Displacement map</h3>Adds a displacement map. A displacement map will deform the model as a function of time.");
+		actionGraph->setWhatsThis("<font color=\"black\">Create a new Graph window");
+		actionSummary->setWhatsThis("<font color=\"black\">Shows the Summary window.The Summary window shows the min, max, and average values of a user-selected data field");
+		actionStats->setWhatsThis("<font color=\"black\">Shows the Statistics window. This window shows the distribution of the current nodal values at the current time step");
+		actionIntegrate->setWhatsThis("<font color=\"black\">Shows a graph that plots the integral of the values of the current selection as a function of time. Note that for a surface select it calculates a surface integral and for an element section, it shows a volume integral. For a node selection, the nodal values are summed.");
+
+		// --- Record menu ---
+		QAction* actionRecordNew = addAction("New ...", "actionRecordNew");
+		QAction* actionRecordStart = addAction("Start", "actionRecordStart"); actionRecordStart->setShortcut(Qt::Key_F6);
+		QAction* actionRecordPause = addAction("Pause", "actionRecordPause"); actionRecordPause->setShortcut(Qt::Key_F7);
+		QAction* actionRecordStop = addAction("Stop", "actionRecordStop"); actionRecordStop->setShortcut(Qt::Key_F8);
+
+		actionRecordNew->setWhatsThis("<font color=\"black\">Click this to open a file dialog box and create a new animation file.");
+		actionRecordStart->setWhatsThis("<font color=\"black\">Click to start recording an animation. You must create an animation file first before you can start recording.");
+		actionRecordPause->setWhatsThis("<font color=\"black\">Click this pause the current recording");
+		actionRecordStop->setWhatsThis("<font color=\"black\">Click this to stop the recording. This will finalize and close the animation file as well.");
+
+
 		// --- View menu ---
 		actionUndoViewChange  = addAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_U);
 		actionRedoViewChange  = addAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_R);
 		actionZoomSelect      = addAction("Zoom to selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
 		actionZoomExtents     = addAction("Zoom to selection", "actionZoomExtents");
+		actionViewCapture     = addAction("Show capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
 		actionShowGrid        = addAction("Show Grid", "actionShowGrid"); actionShowGrid->setCheckable(true); actionShowGrid->setChecked(true); actionShowGrid->setShortcut(Qt::Key_G);
 		actionShowMeshLines   = addAction("Show Mesh Lines", "actionShowMeshLines", ":/icons/show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setShortcut(Qt::Key_M);
 		actionShowEdgeLines   = addAction("Show Edge Lines", "actionShowEdgeLines"); actionShowEdgeLines->setCheckable(true); actionShowEdgeLines->setShortcut(Qt::Key_Z);
@@ -329,6 +375,8 @@ public:
 		menuEdit   = new QMenu("Edit", menuBar);
 		menuPhysics= new QMenu("Physics", menuBar);
 		menuTools  = new QMenu("Tools", menuBar);
+		menuPost   = new QMenu("Post", menuBar);
+		menuRecord = new QMenu("Record", menuBar);
 		menuView   = new QMenu("View", menuBar);
 		menuHelp   = new QMenu("Help", menuBar);
 
@@ -425,6 +473,34 @@ public:
 		menuTools->addAction(FEBioMenu->menuAction());
 		menuTools->addAction(actionOptions);
 
+		menuBar->addAction(menuPost->menuAction());
+		menuPost->addAction(actionPlaneCut);
+		menuPost->addAction(actionMirrorPlane);
+		menuPost->addAction(actionVectorPlot);
+		menuPost->addAction(actionTensorPlot);
+		menuPost->addAction(actionIsosurfacePlot);
+		menuPost->addAction(actionSlicePlot);
+		menuPost->addAction(actionDisplacementMap);
+		menuPost->addAction(actionStreamLinePlot);
+		menuPost->addAction(actionParticleFlowPlot);
+		menuPost->addSeparator();
+		menuPost->addAction(actionImageSlicer);
+		menuPost->addAction(actionVolumeRender);
+		menuPost->addAction(actionMarchingCubes);
+		menuPost->addSeparator();
+		menuPost->addAction(actionGraph);
+		menuPost->addSeparator();
+		menuPost->addAction(actionSummary);
+		menuPost->addAction(actionStats);
+		menuPost->addAction(actionIntegrate);
+
+		menuBar->addAction(menuRecord->menuAction());
+		menuRecord->addAction(actionRecordNew);
+		menuRecord->addSeparator();
+		menuRecord->addAction(actionRecordStart);
+		menuRecord->addAction(actionRecordPause);
+		menuRecord->addAction(actionRecordStop);
+
 		menuBar->addAction(menuView->menuAction());
 		menuView->addAction(actionUndoViewChange);
 		menuView->addAction(actionRedoViewChange);
@@ -432,6 +508,7 @@ public:
 		menuView->addAction(actionZoomSelect);
 		menuView->addAction(actionOrtho);
 		menuView->addAction(actionShowNormals);
+		menuView->addAction(actionViewCapture);
 		menuView->addSeparator();
 		menuView->addAction(actionShowGrid);
 		menuView->addAction(actionShowMeshLines);

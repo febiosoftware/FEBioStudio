@@ -88,5 +88,19 @@
 		<file>icons/FEBioStudio.png</file>
 		<file>icons/FEBioStudio_large.png</file>
 		<file>icons/bottle.png</file>
-    </qresource>
+		<file>icons/cut.png</file>
+   		<file>icons/mirror.png</file>
+		<file>icons/vectors.png</file>
+		<file>icons/tensor.png</file>
+		<file>icons/isosurface.png</file>
+		<file>icons/sliceplot.png</file>
+		<file>icons/distort.png</file>
+		<file>icons/streamlines.png</file>
+		<file>icons/particle.png</file>
+		<file>icons/imageslice.png</file>
+		<file>icons/volrender.png</file>
+		<file>icons/marching_cubes.png</file>
+		<file>icons/chart.png</file>
+		<file>icons/integrate.png</file>
+	</qresource>
 </RCC>

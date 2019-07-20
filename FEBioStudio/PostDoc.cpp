@@ -84,12 +84,12 @@ bool CPostDoc::Load(const std::string& fileName)
 	return true;
 }
 
-inline vec3f to_vec3f(const vec3d& r)
+vec3f to_vec3f(const vec3d& r)
 {
 	return vec3f((float)r.x, (float)r.y, (float)r.z);
 }
 
-inline quat4f to_quat4f(const quatd& q)
+quat4f to_quat4f(const quatd& q)
 {
 	return quat4f((float)q.x, (float)q.y, (float) q.z, (float) q.w);
 }

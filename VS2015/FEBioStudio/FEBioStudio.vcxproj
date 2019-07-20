@@ -394,7 +394,11 @@
     <ClInclude Include="..\..\FEBioStudio\GTriad.h" />
     <ClInclude Include="..\..\FEBioStudio\Intersect.h" />
     <ClInclude Include="..\..\FEBioStudio\LogPanel.h" />
-    <ClInclude Include="..\..\FEBioStudio\MainWindow.h" />
+    <CustomBuild Include="..\..\FEBioStudio\MainWindow.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\MaterialEditor.h" />
     <ClInclude Include="..\..\FEBioStudio\MaterialMapTool.h" />
     <ClInclude Include="..\..\FEBioStudio\MeshButtonBox.h" />
@@ -444,7 +448,11 @@
     <ClInclude Include="..\..\FEBioStudio\ui_datapanel.h" />
     <ClInclude Include="..\..\FEBioStudio\ui_editpanel.h" />
     <ClInclude Include="..\..\FEBioStudio\ui_logpanel.h" />
-    <ClInclude Include="..\..\FEBioStudio\ui_mainwindow.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_mainwindow.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\ui_materialeditor.h" />
     <ClInclude Include="..\..\FEBioStudio\ui_meshinspector.h" />
     <ClInclude Include="..\..\FEBioStudio\ui_meshpanel.h" />

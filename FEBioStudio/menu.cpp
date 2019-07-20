@@ -1577,6 +1577,12 @@ void CMainWindow::on_actionZoomExtents_triggered()
 	ui->glview->ZoomExtents();
 }
 
+void CMainWindow::on_actionViewCapture_toggled(bool bchecked)
+{
+	ui->glview->showSafeFrame(bchecked);
+	RedrawGL();
+}
+
 void CMainWindow::on_actionOrtho_toggled(bool b)
 {
 	ui->glview->TogglePerspective(b);

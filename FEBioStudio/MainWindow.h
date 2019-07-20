@@ -213,6 +213,7 @@ public slots:
 	void on_actionRedoViewChange_triggered();
 	void on_actionZoomSelect_triggered();
 	void on_actionZoomExtents_triggered();
+	void on_actionViewCapture_toggled(bool bchecked);
 	void on_actionOrtho_toggled(bool b);
 	void on_actionShowGrid_toggled(bool b);
 	void on_actionShowMeshLines_toggled(bool b);
