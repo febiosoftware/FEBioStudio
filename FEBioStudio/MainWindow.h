@@ -209,6 +209,11 @@ public slots:
 	void on_actionFEBioOptimize_triggered();
 	void on_actionOptions_triggered();
 
+	void on_actionRecordNew_triggered();
+	void on_actionRecordStart_triggered();
+	void on_actionRecordPause_triggered();
+	void on_actionRecordStop_triggered();
+
 	void on_actionUndoViewChange_triggered();
 	void on_actionRedoViewChange_triggered();
 	void on_actionZoomSelect_triggered();

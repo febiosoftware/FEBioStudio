@@ -119,6 +119,8 @@ public:
 
 	int			m_theme;	// 0 = default, 1 = dark
 
+	QString	m_old_title;
+
 public:
 	void setupUi(::CMainWindow* wnd)
 	{
@@ -260,7 +262,7 @@ public:
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", ":/icons/febio.png"); actionFEBioRun->setShortcut(Qt::Key_F5);
 		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
-		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F6);
+		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
 		// --- Post menu ---
 		QAction* actionPlaneCut = addAction("Plane cut", "actionPlaneCut", ":/icons/cut.png");

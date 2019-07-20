@@ -74,16 +74,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PreViewDir);$(PostViewDir);$(ZLIBDIR);$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)x64\Debug;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Debug;$(MMGLIB)\lib\Debug;$(PostViewDir)\VS2015\x64\Debug;$(PreViewDir)\VS2015\x64\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PreViewDir);$(PostViewDir);$(ZLIBDIR);$(FFMPEGDIR)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)x64\Debug;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Debug;$(MMGLIB)\lib\Debug;$(PostViewDir)\VS2015\x64\Debug;$(PreViewDir)\VS2015\x64\Debug;$(FFMPEGDIR)\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PreViewDir);$(PostViewDir);$(ZLIBDIR);$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)x64\Release;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Release;$(MMGLIB)\lib\Release;$(PostViewDir)\VS2015\x64\Release;$(PreViewDir)\VS2015\x64\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PreViewDir);$(PostViewDir);$(ZLIBDIR);$(FFMPEGDIR)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)x64\Release;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Release;$(MMGLIB)\lib\Release;$(PostViewDir)\VS2015\x64\Release;$(PreViewDir)\VS2015\x64\Release;$(FFMPEGDIR)\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -103,13 +103,13 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_FEBIO3;HAS_OCC;HAS_MMG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_FEBIO3;HAS_OCC;HAS_MMG;FFMPEG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;geomlib.lib;previewio.lib;previewlib.lib;imagelib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Debug\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Debug\zlibstaticd.lib;postviewlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;geomlib.lib;previewio.lib;previewlib.lib;imagelib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Debug\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Debug\zlibstaticd.lib;postviewlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -136,7 +136,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_FEBIO3;HAS_OCC;HAS_MMG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_FEBIO3;HAS_OCC;HAS_MMG;FFMPEG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -144,7 +144,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;geomlib.lib;previewio.lib;previewlib.lib;imagelib.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Release\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Release\zlibstatic.lib;postviewlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;geomlib.lib;previewio.lib;previewlib.lib;imagelib.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Release\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Release\zlibstatic.lib;postviewlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>

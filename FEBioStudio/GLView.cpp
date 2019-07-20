@@ -327,6 +327,10 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	m_Widget = CGLWidgetManager::GetInstance();
 	m_Widget->AttachToView(this);
+
+	m_panim = 0;
+	m_nanim = ANIM_STOPPED;
+	m_video_fmt = GL_RGB;
 }
 
 CGLView::~CGLView()
@@ -1072,6 +1076,117 @@ void CGLView::Reset()
 }
 
 //-----------------------------------------------------------------------------
+QImage CGLView::CaptureScreen()
+{
+	if (m_pframe && m_pframe->visible())
+	{
+		QImage im = grabFramebuffer();
+
+		// crop based on the capture frame
+		return im.copy(m_dpr*m_pframe->x(), m_dpr*m_pframe->y(), m_dpr*m_pframe->w(), m_dpr*m_pframe->h());
+	}
+	else return grabFramebuffer();
+}
+
+
+bool CGLView::NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt)
+{
+	m_panim = panim;
+	SetVideoFormat(fmt);
+
+	// get the width/height of the animation
+	int cx = width();
+	int cy = height();
+	if (m_pframe && m_pframe->visible())
+	{
+		cx = m_dpr*m_pframe->w();
+		cy = m_dpr*m_pframe->h();
+	}
+
+	// get the frame rate
+	float fps = 0.f; //m_wnd->GetTimeController()->GetFPS();
+	if (fps == 0.f) fps = 10.f;
+
+	// create the animation
+	if (m_panim->Create(szfile, cx, cy, fps) == false)
+	{
+		delete m_panim;
+		m_panim = 0;
+		m_nanim = ANIM_STOPPED;
+	}
+	else
+	{
+		// lock the frame
+		m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
+
+		// set the animation mode to paused
+		m_nanim = ANIM_PAUSED;
+	}
+
+	return (m_panim != 0);
+}
+
+bool CGLView::HasRecording() const
+{
+	return (m_panim != 0);
+}
+
+ANIMATION_MODE CGLView::AnimationMode() const
+{
+	return m_nanim;
+}
+
+void CGLView::StartAnimation()
+{
+	if (m_panim)
+	{
+		// set the animation mode to recording
+		m_nanim = ANIM_RECORDING;
+
+		// lock the frame
+		m_pframe->SetState(GLSafeFrame::LOCKED);
+		repaint();
+	}
+}
+
+void CGLView::StopAnimation()
+{
+	if (m_panim)
+	{
+		// stop the animation
+		m_nanim = ANIM_STOPPED;
+
+		if (m_panim->Frames() == 0)
+		{
+			QMessageBox::warning(this, "PostView2", "This animation contains no frames. Only an empty video file was saved.");
+		}
+
+		// close the stream
+		m_panim->Close();
+
+		// delete the object
+		delete m_panim;
+		m_panim = 0;
+
+		// unlock the frame
+		m_pframe->SetState(GLSafeFrame::FREE);
+
+		repaint();
+	}
+}
+
+void CGLView::PauseAnimation()
+{
+	if (m_panim)
+	{
+		// pause the recording
+		m_nanim = ANIM_PAUSED;
+		m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
+		repaint();
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CGLView::repaintEvent()
 {
 	repaint();
@@ -1259,6 +1374,41 @@ void CGLView::paintGL()
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 	m_Widget->DrawWidgets(&painter);
 	painter.end();
+
+	if (m_nanim != ANIM_STOPPED)
+	{
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		int x = width() - 200;
+		int y = height() - 40;
+		glPopAttrib();
+	}
+
+	if ((m_nanim == ANIM_RECORDING) && (m_panim != 0))
+	{
+		glFlush();
+		QImage im = CaptureScreen();
+		if (m_panim->Write(im) == false)
+		{
+			StopAnimation();
+			QMessageBox::critical(this, "PostView2", "An error occurred while recording.");
+		}
+	}
+
+	if ((m_nanim == ANIM_PAUSED) && (m_panim != 0))
+	{
+		QPainter painter(this);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		QTextOption to;
+		QFont font = painter.font();
+		font.setPointSize(24);
+		painter.setFont(font);
+		painter.setPen(QPen(Qt::red));
+		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
+		painter.drawText(rect(), "Recording paused", to);
+		painter.end();
+	}
 
 	// if the camera is animating, we need to redraw
 	if (GetCamera().IsAnimating())

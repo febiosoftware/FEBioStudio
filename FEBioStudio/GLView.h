@@ -10,6 +10,7 @@
 #include "GLViewRender.h"
 #include <PreViewLib/FEExtrudeFaces.h>
 #include <GLWLib/GLWidgetManager.h>
+#include <PostViewLib/Animation.h>
 
 class CMainWindow;
 class CDocument;
@@ -19,6 +20,14 @@ class GCurveMeshObject;
 #define COORD_GLOBAL	0
 #define COORD_LOCAL		1
 #define COORD_SCREEN	2
+
+//-----------------------------------------------------------------------------
+// Animation modes
+enum ANIMATION_MODE {
+	ANIM_RECORDING,
+	ANIM_PAUSED,
+	ANIM_STOPPED
+};
 
 // preset views
 enum View_Mode {
@@ -316,6 +325,18 @@ private:
 	void TagBackfacingEdges(FEMeshBase& mesh);
 	void TagBackfacingElements(FEMesh& mesh);
 
+public:
+	QImage CaptureScreen();
+
+	bool NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt = GL_RGB);
+	void StartAnimation();
+	void StopAnimation();
+	void PauseAnimation();
+	void SetVideoFormat(GLenum fmt) { m_video_fmt = fmt; }
+
+	ANIMATION_MODE AnimationMode() const;
+	bool HasRecording() const;
+
 protected:
 	void PanView(vec3d r);
 
@@ -393,6 +414,12 @@ protected:
 	GLSafeFrame*	m_pframe;
 
 	CGLWidgetManager*	m_Widget;
+
+private:
+	GLenum	m_video_fmt;
+
+	ANIMATION_MODE	m_nanim;	// the animation mode
+	CAnimation*		m_panim;	// animation object
 
 private:
 	int	m_viewport[4];		//!< store viewport coordinates
