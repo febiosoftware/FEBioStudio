@@ -60,7 +60,7 @@ CModelDataSelector::~CModelDataSelector()
 
 void CModelDataSelector::Update(FEModel* pfem)
 {
-	// TODO: update the menu
+	if (pfem == nullptr) m_fem = nullptr;
 }
 
 void CModelDataSelector::BuildMenu(QMenu* menu)

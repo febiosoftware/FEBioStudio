@@ -22,12 +22,16 @@ void CModelViewer::Update()
 {
 	CDocument* doc = GetDocument();
 
+	FEObject* po = m_currentObject;
+
 	// rebuild the model tree
 	ui->tree->Build(doc);
 	if (ui->m_search->isVisible()) ui->m_search->Build(doc);
 
 	// update the props panel
 	ui->props->Update();
+
+	if (po) Select(po);
 }
 
 void CModelViewer::UpdateObject(FEObject* po)
@@ -48,6 +52,7 @@ void CModelViewer::UpdateObject(FEObject* po)
 
 void CModelViewer::Select(FEObject* po)
 {
+	if (po == nullptr) m_currentObject = nullptr;
 	ui->unCheckSearch();
 	ui->tree->Select(po);
 }
@@ -411,6 +416,7 @@ void CModelViewer::OnDeleteItem()
 	{
 		doc->DeleteObject(m_selection[i]);
 	}
+	Select(nullptr);
 	Update();
 	GetMainWindow()->RedrawGL();
 }

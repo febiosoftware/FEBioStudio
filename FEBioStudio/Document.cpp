@@ -1264,6 +1264,11 @@ void CDocument::DeleteObject(FEObject* po)
 		FEComponent* pc = map->GetParent();
 		pc->DeleteMap(map);
 	}
+	else if (dynamic_cast<CFEBioJob*>(po))
+	{
+		CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
+		DeleteFEBioJob(job);
+	}
 	else
 	{
 		assert(false);
@@ -1525,4 +1530,17 @@ CFEBioJob* CDocument::FindFEBioJob(const std::string& s)
 	}
 
 	return nullptr;
+}
+
+void CDocument::DeleteFEBioJob(CFEBioJob* job)
+{
+	for (int i = 0; i < FEBioJobs(); ++i)
+	{
+		CFEBioJob* job_i = m_JobList[i];
+		if (job == job_i)
+		{
+			m_JobList.erase(m_JobList.begin() + i);
+			delete job;
+		}
+	}
 }

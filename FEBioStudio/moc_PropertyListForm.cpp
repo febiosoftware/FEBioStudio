@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CPropertyListForm_t {
-    QByteArrayData data[4];
-    char stringdata0[45];
+    QByteArrayData data[5];
+    char stringdata0[58];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -34,11 +34,12 @@ static const qt_meta_stringdata_CPropertyListForm_t qt_meta_stringdata_CProperty
 QT_MOC_LITERAL(0, 0, 17), // "CPropertyListForm"
 QT_MOC_LITERAL(1, 18, 11), // "dataChanged"
 QT_MOC_LITERAL(2, 30, 0), // ""
-QT_MOC_LITERAL(3, 31, 13) // "onDataChanged"
+QT_MOC_LITERAL(3, 31, 12), // "itemModified"
+QT_MOC_LITERAL(4, 44, 13) // "onDataChanged"
 
     },
     "CPropertyListForm\0dataChanged\0\0"
-    "onDataChanged"
+    "itemModified\0onDataChanged"
 };
 #undef QT_MOC_LITERAL
 
@@ -56,13 +57,13 @@ static const uint qt_meta_data_CPropertyListForm[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   24,    2, 0x06 /* Public */,
+       1,    1,   24,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       3,    0,   25,    2, 0x08 /* Private */,
+       4,    0,   27,    2, 0x08 /* Private */,
 
  // signals: parameters
-    QMetaType::Void,
+    QMetaType::Void, QMetaType::Bool,    3,
 
  // slots: parameters
     QMetaType::Void,
@@ -76,21 +77,20 @@ void CPropertyListForm::qt_static_metacall(QObject *_o, QMetaObject::Call _c, in
         CPropertyListForm *_t = static_cast<CPropertyListForm *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->dataChanged(); break;
+        case 0: _t->dataChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
         case 1: _t->onDataChanged(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (CPropertyListForm::*)();
+            using _t = void (CPropertyListForm::*)(bool );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CPropertyListForm::dataChanged)) {
                 *result = 0;
                 return;
             }
         }
     }
-    Q_UNUSED(_a);
 }
 
 QT_INIT_METAOBJECT const QMetaObject CPropertyListForm::staticMetaObject = { {
@@ -134,9 +134,10 @@ int CPropertyListForm::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void CPropertyListForm::dataChanged()
+void CPropertyListForm::dataChanged(bool _t1)
 {
-    QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

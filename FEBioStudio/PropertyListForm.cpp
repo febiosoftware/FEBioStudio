@@ -430,14 +430,15 @@ void CPropertyListForm::onDataChanged()
 				}
 			}
 
-			if (m_list->IsModified())
+			bool itemModified = m_list->IsModified();
+			if (itemModified)
 			{
 				setPropertyList(m_list);
 				m_list->SetModified(false);
 			}
 
 			// send a signal that the data was changed
-			emit dataChanged();
+			emit dataChanged(itemModified);
 			return;
 		}
 	}

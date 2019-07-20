@@ -1170,10 +1170,10 @@ void CModelPropsPanel::on_props_dataChanged()
 	m_wnd->RedrawGL();
 }
 
-void CModelPropsPanel::on_form_dataChanged()
+void CModelPropsPanel::on_form_dataChanged(bool itemModified)
 {
 	m_wnd->RedrawGL();
-	emit dataChanged(false);
+	emit dataChanged(itemModified);
 }
 
 void CModelPropsPanel::on_post_dataChanged()

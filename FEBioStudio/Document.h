@@ -260,6 +260,8 @@ public:
 
 	void SetActiveJob(CFEBioJob* job);
 	CFEBioJob* GetActiveJob();
+
+	void DeleteFEBioJob(CFEBioJob* job);
 	
 	CFEBioJob* FindFEBioJob(const std::string& s);
 

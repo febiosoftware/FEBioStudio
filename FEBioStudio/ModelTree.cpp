@@ -215,6 +215,8 @@ public:
 
 			// try to open the file
 			m_job->OpenPlotFile(fileName);
+
+			SetModified(true);
 		}
 	}
 
