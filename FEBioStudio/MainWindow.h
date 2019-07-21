@@ -18,6 +18,10 @@ namespace Ui {
 	class CMainWindow;
 }
 
+namespace Post {
+	class CGLModel;
+}
+
 class CMainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -209,6 +213,25 @@ public slots:
 	void on_actionFEBioOptimize_triggered();
 	void on_actionOptions_triggered();
 
+	// Post menu actions
+	void on_actionPlaneCut_triggered();
+	void on_actionMirrorPlane_triggered();
+	void on_actionVectorPlot_triggered();
+	void on_actionTensorPlot_triggered();
+	void on_actionIsosurfacePlot_triggered();
+	void on_actionSlicePlot_triggered();
+	void on_actionDisplacementMap_triggered();
+	void on_actionStreamLinePlot_triggered();
+	void on_actionParticleFlowPlot_triggered();
+	void on_actionImageSlicer_triggered();
+	void on_actionVolumeRender_triggered();
+	void on_actionMarchingCubes_triggered();
+	void on_actionGraph_triggered();
+	void on_actionSummary_triggered();
+	void on_actionStats_triggered();
+	void on_actionIntegrate_triggered();
+
+	// Record menu actions
 	void on_actionRecordNew_triggered();
 	void on_actionRecordStart_triggered();
 	void on_actionRecordPause_triggered();
@@ -284,6 +307,8 @@ public slots:
 	CGLView* GetGLView();
 
 	void changeViewMode(View_Mode vm);
+
+	Post::CGLModel* GetCurrentModel();
 
 public:
 	QStringList GetRecentFileList();

@@ -34,6 +34,12 @@ void CModelViewer::Update()
 	if (po) Select(po);
 }
 
+// get the currently selected object
+FEObject* CModelViewer::GetCurrentObject()
+{
+	return m_currentObject;
+}
+
 void CModelViewer::UpdateObject(FEObject* po)
 {
 	ui->tree->UpdateObject(po);

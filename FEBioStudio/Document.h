@@ -28,9 +28,9 @@
 
 //-----------------------------------------------------------------------------
 // Selection Styles
-#define SELECT_BOX		1
-#define SELECT_CIRCLE	2
-#define SELECT_FREE		3
+#define REGION_SELECT_BOX		1
+#define REGION_SELECT_CIRCLE	2
+#define REGION_SELECT_FREE		3
 
 //-----------------------------------------------------------------------------
 // Sub-object item Modes

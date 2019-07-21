@@ -5,6 +5,7 @@ class CGLView;
 
 namespace Post {
 	class FEModel;
+	class CGLModel;
 }
 
 class CPostDoc
@@ -27,6 +28,8 @@ public:
 	void SetDataField(int n);
 
 	Post::FEModel* GetFEModel();
+
+	Post::CGLModel* GetGLModel();
 
 private:
 	Imp*	imp;

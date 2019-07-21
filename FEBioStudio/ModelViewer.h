@@ -21,6 +21,9 @@ public:
 	// update the model tree and props window
 	void Update() override;
 
+	// get the currently selected object
+	FEObject* GetCurrentObject();
+
 	// update an object
 	void UpdateObject(FEObject* po);
 

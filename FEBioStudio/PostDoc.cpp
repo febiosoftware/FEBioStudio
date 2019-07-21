@@ -45,6 +45,11 @@ Post::FEModel* CPostDoc::GetFEModel()
 	return imp->fem;
 }
 
+Post::CGLModel* CPostDoc::GetGLModel()
+{
+	return imp->glm;
+}
+
 void CPostDoc::SetActiveState(int n)
 {
 	assert(imp->glm);

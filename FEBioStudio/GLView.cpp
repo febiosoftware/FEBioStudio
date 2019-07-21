@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include "GImageObject.h"
 #include "PostDoc.h"
+#include <PostGL/GLPlaneCutPlot.h>
 
 quat4f to_quat4f(const quatd& q);
 
@@ -781,9 +782,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 					SelectRegion* preg = 0;
 					switch (nregion)
 					{
-					case SELECT_BOX   : preg = new BoxRegion   (m_x0, m_x1, m_y0, m_y1); break;
-					case SELECT_CIRCLE: preg = new CircleRegion(m_x0, m_x1, m_y0, m_y1); break;
-					case SELECT_FREE  : preg = new FreeRegion  (m_pl); break;
+					case REGION_SELECT_BOX: preg = new BoxRegion   (m_x0, m_x1, m_y0, m_y1); break;
+					case REGION_SELECT_CIRCLE: preg = new CircleRegion(m_x0, m_x1, m_y0, m_y1); break;
+					case REGION_SELECT_FREE: preg = new FreeRegion  (m_pl); break;
 					default:
 						assert(false);
 					}
@@ -1063,6 +1064,9 @@ void CGLView::initializeGL()
 	m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
 	m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 	m_pframe->hide();
+
+	// initialize clipping planes
+	Post::CGLPlaneCutPlot::InitClipPlanes();
 }
 
 void CGLView::Reset()
@@ -2235,8 +2239,8 @@ void CGLView::RenderRubberBand()
 
 	switch (nstyle)
 	{
-	case SELECT_BOX: glRecti(m_x0, m_y0, m_x1, m_y1); break;
-	case SELECT_CIRCLE:
+	case REGION_SELECT_BOX: glRecti(m_x0, m_y0, m_x1, m_y1); break;
+	case REGION_SELECT_CIRCLE:
 		{
 			double dx = (m_x1 - m_x0);
 			double dy = (m_y1 - m_y0);
@@ -2244,7 +2248,7 @@ void CGLView::RenderRubberBand()
 			GLX::drawCircle(vec3d(m_x0, m_y0, 0), R, 24);
 		}
 		break;
-	case SELECT_FREE:
+	case REGION_SELECT_FREE:
 		{
 			glBegin(GL_LINE_STRIP);
 			{

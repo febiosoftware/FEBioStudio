@@ -84,7 +84,7 @@ void CDocument::NewDocument()
 	m_vs.nselect = SELECT_OBJECT;
 	m_vs.ntrans = TRANSFORM_NONE;
 	m_vs.nitem = ITEM_MESH;
-	m_vs.nstyle = SELECT_BOX;
+	m_vs.nstyle = REGION_SELECT_BOX;
 
 	// default display properties
 	m_view.m_bgrid = true;

@@ -230,6 +230,8 @@
     <ClCompile Include="..\..\FEBioStudio\MaterialMapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menu.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuPhysics.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuPost.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuRecord.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuTools.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshButtonBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshInfoPanel.cpp" />

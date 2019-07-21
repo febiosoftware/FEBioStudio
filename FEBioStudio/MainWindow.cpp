@@ -819,21 +819,21 @@ void CMainWindow::on_actionSelectDiscrete_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectRect_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionStyle(SELECT_BOX);
+	if (b) m_doc->SetSelectionStyle(REGION_SELECT_BOX);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectCircle_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionStyle(SELECT_CIRCLE);
+	if (b) m_doc->SetSelectionStyle(REGION_SELECT_CIRCLE);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectFree_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionStyle(SELECT_FREE);
+	if (b) m_doc->SetSelectionStyle(REGION_SELECT_FREE);
 	Update();
 }
 
