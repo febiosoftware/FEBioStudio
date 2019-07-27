@@ -62,7 +62,8 @@ enum ModelTreeType
 	MT_MATERIAL,
 	MT_DATAMAP,
 	MT_JOBLIST,
-	MT_JOB
+	MT_JOB,
+	MT_POST_PLOT
 };
 
 struct CModelTreeItem

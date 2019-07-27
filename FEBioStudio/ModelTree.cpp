@@ -9,6 +9,9 @@
 #include <QDesktopServices>
 #include "ObjectProps.h"
 #include "ModelViewer.h"
+#include "PostDoc.h"
+#include <PostGL/GLModel.h>
+#include <PostViewLib/PropertyList.h>
 
 class CObjectValidator
 {
@@ -222,6 +225,49 @@ public:
 
 private:
 	CFEBioJob*	m_job;
+};
+
+class CPlotProps : public CPropertyList
+{
+public:
+	CPlotProps(Post::CGLPlot* plt) : m_plt(plt)
+	{
+		Post::CPropertyList* props = plt->propertyList();
+		if (props)
+		{
+			for (int i = 0; i < props->Properties(); ++i)
+			{
+				Post::CProperty& pi = props->Property(i);
+				switch (pi.type)
+				{
+				case Post::CProperty::Float : addProperty(pi.name, CProperty::Float); break;
+				case Post::CProperty::Bool  : addProperty(pi.name, CProperty::Bool); break;
+				case Post::CProperty::Int   : addProperty(pi.name, CProperty::Int); break;
+				case Post::CProperty::String: addProperty(pi.name, CProperty::String); break;
+				case Post::CProperty::Enum  : addProperty(pi.name, CProperty::Enum)->setEnumValues(pi.values); break;
+				default:
+					addProperty(pi.name, CProperty::String);
+				}
+			}
+		}
+	}
+
+	QVariant GetPropertyValue(int i) override
+	{
+		Post::CPropertyList* props = m_plt->propertyList();
+		if (props == nullptr) return QVariant();
+		return props->GetPropertyValue(i);
+	}
+
+	void SetPropertyValue(int i, const QVariant& v) override
+	{
+		Post::CPropertyList* props = m_plt->propertyList();
+		if (props == nullptr) return;
+		props->SetPropertyValue(i, v);
+	}
+
+private:
+	Post::CGLPlot*	m_plt;
 };
 
 //=============================================================================
@@ -591,7 +637,23 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 	for (int i=0; i<doc->FEBioJobs(); ++i)
 	{
 		CFEBioJob* job = doc->GetFEBioJob(i);
-		AddTreeItem(t1, QString::fromStdString(job->GetName()), MT_JOB, 0, job, new CFEBioJobProps(job), 0, SHOW_PROPERTY_FORM);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(job->GetName()), MT_JOB, 0, job, new CFEBioJobProps(job), 0, SHOW_PROPERTY_FORM);
+
+		CPostDoc* doc = job->GetPostDoc();
+		if (doc)
+		{
+			Post::CGLModel* glm = doc->GetGLModel();
+			if (glm)
+			{
+				int plots = glm->Plots();
+				for (int j = 0; j < plots; ++j)
+				{
+					Post::CGLPlot* plt = glm->Plot(j);
+					string name = plt->GetName();
+					AddTreeItem(t2, QString::fromStdString(name), MT_POST_PLOT, 0, 0, new CPlotProps(plt));
+				}
+			}
+		}
 	}
 }
 

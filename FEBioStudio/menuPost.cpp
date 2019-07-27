@@ -8,6 +8,7 @@
 #include <PostGL/GLStreamLinePlot.h>
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLSlicePLot.h>
+#include <PostGL/GLIsoSurfacePlot.h>
 #include <PostViewLib/ImageModel.h>
 #include <PostViewLib/ImageSlicer.h>
 #include <PostViewLib/VolRender.h>
@@ -34,93 +35,81 @@ void CMainWindow::on_actionPlaneCut_triggered()
 	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot(glm);
 	glm->AddPlot(pp);
 
-/*	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
+	ui->modelViewer->Update();
+//	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
-*/	RedrawGL();
+	RedrawGL();
 }
 
 void CMainWindow::on_actionMirrorPlane_triggered()
 {
-/*	CGLModel* glm = GetCurrentModel();
+	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	CGLMirrorPlane* pp = new CGLMirrorPlane(glm);
+	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane(glm);
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
+//	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 	RedrawGL();
-*/
 }
 
 void CMainWindow::on_actionVectorPlot_triggered()
 {
-/*	CGLModel* glm = GetCurrentModel();
+	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	CGLVectorPlot* pp = new CGLVectorPlot(glm);
+	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot(glm);
 	glm->AddPlot(pp);
-	doc->UpdateFEModel();
 
 	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
+//	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
-
 	RedrawGL();
-*/
 }
 
 void CMainWindow::on_actionTensorPlot_triggered()
 {
-/*	CGLModel* glm = GetCurrentModel();
+	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	GLTensorPlot* pp = new GLTensorPlot(glm);
+	Post::GLTensorPlot* pp = new Post::GLTensorPlot(glm);
 	glm->AddPlot(pp);
-	doc->UpdateFEModel();
 
 	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
+//	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
-
-	RedrawGL();
-*/
 }
 
 void CMainWindow::on_actionStreamLinePlot_triggered()
 {
-/*	CGLModel* glm = GetCurrentModel();
+	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	CGLStreamLinePlot* pp = new CGLStreamLinePlot(glm);
+	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot(glm);
 	glm->AddPlot(pp);
-	doc->UpdateFEModel();
 
 	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
+//	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 
 	RedrawGL();
-*/
 }
 
 void CMainWindow::on_actionParticleFlowPlot_triggered()
 {
-/*	CGLModel* glm = GetCurrentModel();
+	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	CGLParticleFlowPlot* pp = new CGLParticleFlowPlot(glm);
+	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot(glm);
 	glm->AddPlot(pp);
-	doc->UpdateFEModel();
 
 	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
+//	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 
 	RedrawGL();
-*/
 }
 
 void CMainWindow::on_actionImageSlicer_triggered()
@@ -185,38 +174,31 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 
 void CMainWindow::on_actionIsosurfacePlot_triggered()
 {
-/*	CDocument* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	if (doc->IsValid() == false) return;
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr) return;
 
-	CGLIsoSurfacePlot* pp = new CGLIsoSurfacePlot(doc->GetGLModel());
-	doc->AddPlot(pp);
-	doc->UpdateFEModel();
+	Post::CGLIsoSurfacePlot* pp = new Post::CGLIsoSurfacePlot(glm);
+	glm->AddPlot(pp);
 
-	ui->modelViewer->Update(true);
-	ui->modelViewer->selectObject(pp);
+	ui->modelViewer->Update();
+//	ui->modelViewer->selectObject(pp);
 	ui->modelViewer->parentWidget()->raise();
-
 	RedrawGL();
-*/
 }
 
 void CMainWindow::on_actionSlicePlot_triggered()
 {
-/*	CDocument* doc = GetDocument();
-	if (doc == nullptr) return;
-	if (doc->IsValid() == false) return;
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr) return;
 
-	CGLSlicePlot* pp = new CGLSlicePlot(doc->GetGLModel());
-	doc->AddPlot(pp);
-	doc->UpdateFEModel();
+	Post::CGLSlicePlot* pp = new Post::CGLSlicePlot(glm);
+	glm->AddPlot(pp);
 
-	ui->modelViewer->Update(true);
-	ui->modelViewer->selectObject(pp);
+	ui->modelViewer->Update();
+//	ui->modelViewer->selectObject(pp);
 	ui->modelViewer->parentWidget()->raise();
 
 	RedrawGL();
-*/
 }
 
 void CMainWindow::on_actionDisplacementMap_triggered()

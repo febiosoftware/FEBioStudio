@@ -1,5 +1,6 @@
 #pragma once
 #include "Tool.h"
+#include <MathLib/mat3d.h>
 
 class CPlaneCutTool : public CBasicTool
 {

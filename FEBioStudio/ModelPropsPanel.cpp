@@ -22,6 +22,7 @@
 #include "PostPanel.h"
 #include "CColorButton.h"
 #include "MeshInfoPanel.h"
+#include "convert.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -1147,19 +1148,19 @@ void CModelPropsPanel::on_object_colorChanged(const QColor& col)
 	GObject* po = dynamic_cast<GObject*>(m_currentObject);
 	if (po)
 	{
-		po->SetColor(toGLColor(col));
+		po->SetColor(toGLCOLOR(col));
 	}
 
 	GMaterial* mo = dynamic_cast<GMaterial*>(m_currentObject);
 	if (mo)
 	{
-		mo->AmbientDiffuse(toGLColor(col));
+		mo->AmbientDiffuse(toGLCOLOR(col));
 	}
 
 	GDiscreteObject* pd = dynamic_cast<GDiscreteObject*>(m_currentObject);
 	if (pd)
 	{
-		pd->SetColor(toGLColor(col));
+		pd->SetColor(toGLCOLOR(col));
 	}
 
 	m_wnd->RedrawGL();

@@ -51,7 +51,7 @@ void CObjectPanel::onColorChanged(QColor c)
 	GObject* po = doc->GetActiveObject();
 	if (po)
 	{
-		po->SetColor(toGLColor(c));
+		po->SetColor(toGLCOLOR(c));
 		m_wnd->RedrawGL();
 	}
 }

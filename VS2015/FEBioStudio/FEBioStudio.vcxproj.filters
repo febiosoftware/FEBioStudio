@@ -533,9 +533,6 @@
     <ClInclude Include="..\..\FEBioStudio\ConchoidFitTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\convert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\CreateP2PlinePane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -731,9 +728,6 @@
     <ClInclude Include="..\..\FEBioStudio\LogPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\MainWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\MaterialEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -857,7 +851,7 @@
     <ClInclude Include="..\..\FEBioStudio\Intersect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\PropertyListForm.h">
+    <ClInclude Include="..\..\FEBioStudio\convert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -869,6 +863,12 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\PostPanel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\MainWindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PropertyListForm.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
