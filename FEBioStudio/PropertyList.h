@@ -14,6 +14,10 @@ public:
 		String,
 		Enum,
 		Color,
+		Vec3,
+		DataScalar,
+		DataVec3,
+		DataMat3,
 		Resource,	// external resource (e.g. file)
 		Group,
 

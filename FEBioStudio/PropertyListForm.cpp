@@ -13,6 +13,7 @@
 #include <QFileDialog>
 #include <QGroupBox>
 #include "CurvePicker.h"
+#include "DataFieldSelector.h"
 
 //=================================================================================================
 
@@ -401,6 +402,24 @@ void CPropertyListForm::onDataChanged()
 					{
 						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
 						if (edit) m_list->SetPropertyValue(i, edit->text());
+					}
+					break;
+				case CProperty::DataScalar:
+					{
+						CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
+						if (pc) m_list->SetPropertyValue(i, pc->currentValue());
+					}
+					break;
+				case CProperty::DataVec3:
+					{
+						CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
+						if (pc) m_list->SetPropertyValue(i, pc->currentValue());
+					}
+					break;
+				case CProperty::DataMat3:
+					{
+						CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
+						if (pc) m_list->SetPropertyValue(i, pc->currentValue());
 					}
 					break;
 				case CProperty::Resource:

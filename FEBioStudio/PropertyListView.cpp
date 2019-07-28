@@ -14,6 +14,8 @@
 #include <QtCore/QStringListModel>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
+#include "DataFieldSelector.h"
+#include <PostViewLib/FEMeshData.h>
 
 //-----------------------------------------------------------------------------
 class CPropertyListModel : public QAbstractTableModel
@@ -79,6 +81,39 @@ public:
 						if (n == 0) return QVariant(QString("auto"));
 					}
 				}
+			}
+			if (prop.type == CProperty::DataScalar)
+			{
+				if (role == Qt::DisplayRole)
+				{
+					Post::FEModel& fem = *Post::FEModel::GetInstance();
+					std::string s = fem.GetDataManager()->getDataString(v.toInt(), Post::DATA_SCALAR);
+					if (s.empty()) s = "(please select)";
+					return QVariant(s.c_str());
+				}
+				else if (role == Qt::EditRole) return v;
+			}
+			if (prop.type == CProperty::DataVec3)
+			{
+				if (role == Qt::DisplayRole)
+				{
+					Post::FEModel& fem = *Post::FEModel::GetInstance();
+					std::string s = fem.GetDataManager()->getDataString(v.toInt(), Post::DATA_VECTOR);
+					if (s.empty()) s = "(please select)";
+					return QVariant(s.c_str());
+				}
+				else if (role == Qt::EditRole) return v;
+			}
+			if (prop.type == CProperty::DataMat3)
+			{
+				if (role == Qt::DisplayRole)
+				{
+					Post::FEModel& fem = *Post::FEModel::GetInstance();
+					std::string s = fem.GetDataManager()->getDataString(v.toInt(), Post::DATA_TENSOR2);
+					if (s.empty()) s = "(please select)";
+					return QVariant(s.c_str());
+				}
+				else if (role == Qt::EditRole) return v;
 			}
 			if (role == Qt::EditRole)
 			{
@@ -231,7 +266,37 @@ public:
 		else if (data.type() == QVariant::Int)
 		{
 			const CProperty& prop = model->getPropertyList().Property(index.row());
-			if (prop.type == CProperty::Int)
+			if (prop.type == CProperty::DataScalar)
+			{
+				CDataFieldSelector* pc = new CDataFieldSelector(parent);
+				Post::FEModel& fem = *Post::FEModel::GetInstance();
+				pc->BuildMenu(Post::FEModel::GetInstance(), Post::DATA_SCALAR);
+				int nfield = data.toInt();
+				pc->setCurrentValue(nfield);
+				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
+				return pc;
+			}
+			else if (prop.type == CProperty::DataVec3)
+			{
+				CDataFieldSelector* pc = new CDataFieldSelector(parent);
+				Post::FEModel& fem = *Post::FEModel::GetInstance();
+				pc->BuildMenu(Post::FEModel::GetInstance(), Post::DATA_VECTOR);
+				int nfield = data.toInt();
+				pc->setCurrentValue(nfield);
+				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
+				return pc;
+			}
+			else if (prop.type == CProperty::DataMat3)
+			{
+				CDataFieldSelector* pc = new CDataFieldSelector(parent);
+				Post::FEModel& fem = *Post::FEModel::GetInstance();
+				pc->BuildMenu(Post::FEModel::GetInstance(), Post::DATA_TENSOR2);
+				int nfield = data.toInt();
+				pc->setCurrentValue(nfield);
+				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
+				return pc;
+			}
+			else if (prop.type == CProperty::Int)
 			{
 				QSpinBox* pc = new QSpinBox(parent);
 				pc->setRange(prop.imin, prop.imax);
@@ -259,6 +324,12 @@ public:
 	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 	{
 		if (!index.isValid()) return;
+
+		CDataFieldSelector* sel = dynamic_cast<CDataFieldSelector*>(editor);
+		if (sel) {
+			int nfield = sel->currentValue();
+			model->setData(index, nfield, Qt::EditRole); return;
+		}
 
 		QComboBox* box = qobject_cast<QComboBox*>(editor);
 		if (box) { model->setData(index, box->currentIndex(), Qt::EditRole); return; }
