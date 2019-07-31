@@ -222,6 +222,7 @@
     <ClCompile Include="..\..\FEBioStudio\GLViewTransform.cpp" />
     <ClCompile Include="..\..\FEBioStudio\glx.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GManipulator.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Intersect.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LogPanel.cpp" />
@@ -267,6 +268,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_GLControlBar.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLHighlighter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLView.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_LogPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MainWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MaterialEditor.cpp" />
@@ -393,6 +395,11 @@
     <ClInclude Include="..\..\FEBioStudio\GLViewTransform.h" />
     <ClInclude Include="..\..\FEBioStudio\glx.h" />
     <ClInclude Include="..\..\FEBioStudio\GManipulator.h" />
+    <CustomBuild Include="..\..\FEBioStudio\GraphWindow.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\GTriad.h" />
     <ClInclude Include="..\..\FEBioStudio\Intersect.h" />
     <ClInclude Include="..\..\FEBioStudio\LogPanel.h" />

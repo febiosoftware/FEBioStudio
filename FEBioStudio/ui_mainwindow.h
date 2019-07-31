@@ -121,6 +121,8 @@ public:
 
 	QString	m_old_title;
 
+	QList<::CGraphWindow*>	graphList;
+
 public:
 	void setupUi(::CMainWindow* wnd)
 	{

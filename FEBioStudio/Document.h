@@ -108,6 +108,28 @@ struct VIEW_SETTINGS
 //-----------------------------------------------------------------------------
 class CMainWindow;
 class FEFileExport;
+class CDocument;
+
+//-----------------------------------------------------------------------------
+// Class that can be used to monitor changes to the document
+class CDocObserver
+{
+public:
+	CDocObserver(CDocument* doc);
+	virtual ~CDocObserver();
+
+	// bnewFlag is set when a new model was loaded
+	virtual void DocumentUpdate(bool bnewFlag) {}
+
+	// this function is called when the document is about to be deleted
+	virtual void DocumentDelete();
+
+	// get the document
+	CDocument* GetDocument() { return m_doc; }
+
+private:
+	CDocument*	m_doc;
+};
 
 //-----------------------------------------------------------------------------
 // Document class which stores all the data
@@ -265,6 +287,11 @@ public:
 	
 	CFEBioJob* FindFEBioJob(const std::string& s);
 
+public:
+	void AddObserver(CDocObserver* observer);
+	void RemoveObserver(CDocObserver* observer);
+	void UpdateObservers(bool bnew);
+
 protected:
 	// Modified flag
 	bool	m_bModified;	// is document modified since last saved ?
@@ -293,4 +320,6 @@ protected:
 
 	vector<CFEBioJob*>	m_JobList;
 	CFEBioJob*			m_activeJob;
+
+	std::vector<CDocObserver*>	m_Observers;
 };

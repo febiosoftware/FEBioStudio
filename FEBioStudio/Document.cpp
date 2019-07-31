@@ -21,6 +21,7 @@
 #include <ImageLib/ImageStack.h>
 #include "GImageObject.h"
 #include <XML/XMLWriter.h>
+#include "PostDoc.h"
 #include <sstream>
 
 extern const int COLORS = 16;
@@ -43,6 +44,23 @@ GLCOLOR col[COLORS] = {
 	GLCOLOR(120, 0, 240)
 };
 
+//=============================================================================
+CDocObserver::CDocObserver(CDocument* doc) : m_doc(doc)
+{
+	if (m_doc) m_doc->AddObserver(this);
+}
+
+CDocObserver::~CDocObserver()
+{
+	if (m_doc) m_doc->RemoveObserver(this);
+}
+
+void CDocObserver::DocumentDelete()
+{
+	m_doc = nullptr;
+	DocumentUpdate(true);
+}
+
 //-----------------------------------------------------------------------------
 // Construction/Destruction
 //-----------------------------------------------------------------------------
@@ -57,6 +75,12 @@ CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 //-----------------------------------------------------------------------------
 CDocument::~CDocument()
 {
+	// remove all observers
+	for (int i = 0; i < m_Observers.size(); ++i)
+		m_Observers[i]->DocumentDelete();
+
+	m_Observers.clear();
+
 	delete m_pCmd;
 }
 
@@ -304,6 +328,48 @@ void CDocument::ClearCommandStack()
 }
 
 //-----------------------------------------------------------------------------
+void CDocument::AddObserver(CDocObserver* observer)
+{
+	// no duplicates allowed
+	for (int i = 0; i<m_Observers.size(); ++i)
+	{
+		if (m_Observers[i] == observer)
+		{
+			assert(false);
+			return;
+		}
+	}
+
+	m_Observers.push_back(observer);
+}
+
+//-----------------------------------------------------------------------------
+void CDocument::RemoveObserver(CDocObserver* observer)
+{
+	for (int i = 0; i<m_Observers.size(); ++i)
+	{
+		if (m_Observers[i] == observer)
+		{
+			m_Observers.erase(m_Observers.begin() + i);
+			return;
+		}
+	}
+	assert(false);
+}
+
+//-----------------------------------------------------------------------------
+void CDocument::UpdateObservers(bool bnew)
+{
+	if (m_Observers.empty()) return;
+
+	for (int i = 0; i<m_Observers.size(); ++i)
+	{
+		CDocObserver* observer = m_Observers[i];
+		if (observer) observer->DocumentUpdate(bnew);
+	}
+}
+
+//-----------------------------------------------------------------------------
 // VIEW STATE
 //-----------------------------------------------------------------------------
 void CDocument::SetViewState(VIEW_STATE vs)
@@ -375,13 +441,29 @@ BOX CDocument::GetModelBox() { return m_Project.GetFEModel().GetModel().GetBound
 // return the active object
 GObject* CDocument::GetActiveObject()
 {
-	GObject* po = 0;
+	GObject* po = nullptr;
 //	if (m_vs.nselect == SELECT_OBJECT)
 	{
 		FEModel* ps = GetFEModel();
 		GObjectSelection sel(ps);
 		if (sel.Count() == 1) po = sel.Object(0);
 	}
+
+	// check the post objects
+	if (po == nullptr)
+	{
+		for (int i = 0; i < FEBioJobs(); ++i)
+		{
+			CFEBioJob* job = GetFEBioJob(i);
+			CPostDoc* pd = job->GetPostDoc();
+			if (pd)
+			{
+				CPostObject* pi = pd->GetPostObject();
+				if (pi->IsSelected()) po = pi;
+			}
+		}
+	}
+
 	return po;
 }
 

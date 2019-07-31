@@ -1851,6 +1851,24 @@ void CGLView::RenderSelectionBox()
 				glPopMatrix();
 			}
 		}
+
+		for (int i = 0; i < pdoc->FEBioJobs(); ++i)
+		{
+			CFEBioJob* job = pdoc->GetFEBioJob(i);
+			CPostDoc* pd = job->GetPostDoc();
+			if (pd)
+			{
+				CPostObject* po = pd->GetPostObject();
+				if (po && po->IsSelected())
+				{
+					glPushMatrix();
+					SetModelView(po);
+					glColor3ub(255, 255, 255);
+					m_renderer.RenderBox(po->GetLocalBox());
+					glPopMatrix();
+				}
+			}
+		}
 	}
 	else if (poa)
 	{
@@ -3074,6 +3092,43 @@ bool CGLView::SelectPivot(int x, int y)
 }
 
 //-----------------------------------------------------------------------------
+bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
+{
+	GLMesh* mesh = po->GetRenderMesh();
+	if (mesh == nullptr) return false;
+
+	Intersection qtmp;
+	double distance = 0.0, minDist = 1e34;
+	int NF = mesh->Faces();
+	bool intersect = false;
+	for (int j = 0; j<NF; ++j)
+	{
+		GMesh::FACE& face = mesh->Face(j);
+
+		if (po->Face(face.pid)->IsVisible())
+		{
+			vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(face.n[0]).r);
+			vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(face.n[1]).r);
+			vec3d r2 = po->Transform().LocalToGlobal(mesh->Node(face.n[2]).r);
+
+			Triangle tri = { r0, r1, r2 };
+			if (IntersectTriangle(ray, tri, qtmp))
+			{
+				double distance = ray.direction*(qtmp.point - ray.origin);
+				if ((distance >= 0.0) && (distance < minDist))
+				{
+					minDist = distance;
+					q = qtmp;
+					intersect = true;
+				}
+			}
+		}
+	}
+
+	return intersect;
+}
+
+//-----------------------------------------------------------------------------
 // Select Objects
 void CGLView::SelectObjects(int x, int y)
 {
@@ -3096,32 +3151,34 @@ void CGLView::SelectObjects(int x, int y)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		if (po->IsVisible())
+		if (po->IsVisible() && IntersectObject(po, ray, q))
 		{
-			GLMesh* mesh = po->GetRenderMesh();
-			if (mesh)
+			double distance = ray.direction*(q.point - ray.origin);
+			if ((closestObject == 0) || ((distance >= 0.0) && (distance < minDist)))
 			{
-				int NF = mesh->Faces();
-				for (int j = 0; j<NF; ++j)
+				closestObject = po;
+				minDist = distance;
+			}
+		}
+	}
+
+	// if no object was selected, see if we can select a post-object
+	if (closestObject == nullptr)
+	{
+		int jobs = pdoc->FEBioJobs();
+		for (int i = 0; i < jobs; ++i)
+		{
+			CFEBioJob* job = pdoc->GetFEBioJob(i);
+			CPostDoc* pd = job->GetPostDoc();
+			if (pd)
+			{
+				CPostObject* obj = pd->GetPostObject();
+				if (obj)
 				{
-					GMesh::FACE& face = mesh->Face(j);
-
-					if (po->Face(face.pid)->IsVisible())
+					if (obj->IsSelected()) obj->UnSelect();
+					if (IntersectObject(obj, ray, q))
 					{
-						vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(face.n[0]).r);
-						vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(face.n[1]).r);
-						vec3d r2 = po->Transform().LocalToGlobal(mesh->Node(face.n[2]).r);
-
-						Triangle tri = { r0, r1, r2 };
-						if (IntersectTriangle(ray, tri, q))
-						{
-							double distance = ray.direction*(q.point - ray.origin);
-							if ((closestObject == 0) || ((distance >= 0.0) && (distance < minDist)))
-							{
-								closestObject = po;
-								minDist = distance;
-							}
-						}
+						closestObject = obj;
 					}
 				}
 			}

@@ -654,6 +654,12 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 					AddTreeItem(t2, QString::fromStdString(cm->GetName()), MT_POST_PLOT, 0, 0, new CPostProps(cm));
 				}
 
+				Post::CGLDisplacementMap* dm = glm->GetDisplacementMap();
+				if (dm)
+				{
+					AddTreeItem(t2, QString::fromStdString(dm->GetName()), MT_POST_PLOT, 0, 0, new CPostProps(dm));
+				}
+
 				int plots = glm->Plots();
 				for (int j = 0; j < plots; ++j)
 				{

@@ -282,6 +282,8 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 
 	m_dataMarkSize = 5;
 
+	m_bautoRngUpdate = true;
+
 	// set default colors
 	m_bgCol = QColor(255, 255, 255);
 	m_gridCol = QColor(192, 192, 192);
@@ -403,6 +405,18 @@ void CPlotWidget::OnCopyToClipboard()
 			max_size = (di.size() > max_size ? di.size() : max_size);
 			equalSize = false;
 		}
+		else if (equalSize)
+		{
+			// see if x-coordinates match
+			for (int j = 0; j<max_size; ++j)
+			{
+				if (d.Point(j).x() != di.Point(j).x())
+				{
+					equalSize = false;
+					break;
+				}
+			}
+		}
 	}
 
 	// make sure there is data
@@ -472,7 +486,6 @@ void CPlotWidget::clearData()
 void CPlotWidget::clear()
 {
 	m_select = false;
-//	for each (CPlotData* var in m_data) delete var;
     for (CPlotData* var : m_data) delete var;
 	m_data.clear();
 	repaint();
@@ -486,6 +499,11 @@ void CPlotWidget::addPlotData(CPlotData* p)
 	p->setColor(CPalette::color(N));
 
 	m_data.push_back(p);
+
+	if (m_bautoRngUpdate)
+	{
+		fitToData(false);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -542,7 +560,26 @@ void CPlotWidget::fitHeightToData()
 }
 
 //-----------------------------------------------------------------------------
-void CPlotWidget::fitToData()
+inline bool ContainsRect(QRectF& r0, QRectF& r1)
+{
+	if ((r1.left() >= r0.left()) && (r1.right() <= r0.right()) &&
+		(r1.top() >= r0.top()) && (r1.bottom() <= r0.bottom())) return true;
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+inline QRectF UnitedRect(QRectF& r0, QRectF& r1)
+{
+	QRectF r(r0);
+	if (r1.left() < r.left()) r.setLeft(r1.left());
+	if (r1.right() > r.right()) r.setRight(r1.right());
+	if (r1.top() < r.top()) r.setTop(r1.top());
+	if (r1.bottom() > r.bottom()) r.setBottom(r1.bottom());
+	return r;
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::fitToData(bool downSize)
 {
 	if (m_data.empty()) return;
 
@@ -552,7 +589,16 @@ void CPlotWidget::fitToData()
 		QRectF ri = m_data[i]->boundRect();
 		r = rectUnion(r, ri);
 	}
-	setViewRect(r);
+
+	if (downSize == false)
+	{
+		// only update the rect if the new rect does not fit in the old rect
+		if (ContainsRect(m_viewRect, r) == false)
+		{
+			setViewRect(UnitedRect(m_viewRect, r));
+		}
+	}
+	else setViewRect(r);
 }
 
 //-----------------------------------------------------------------------------
@@ -704,27 +750,17 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 {
 	if (m_bviewLocked == false)
 	{
-		QRect rt = rect();
-		QPoint p = ev->pos();
-
-		double sx = 1;
-		double sy = 1;
-
-		const int D = 30;
-		if (p.y() > rt.height() - D) sy = 0.0;
-		else if (p.x() < D) sx = 0.0;
-
 		double W = m_viewRect.width();
 		double H = m_viewRect.height();
 		double dx = W*0.05;
 		double dy = H*0.05;
 		if (ev->delta() < 0)
 		{
-			m_viewRect.adjust(-sx*dx, -sy*dy, sx*dx, sy*dy);
+			m_viewRect.adjust(-dx, -dy, dx, dy);
 		}
 		else
 		{
-			m_viewRect.adjust(sx*dx, sy*dy, -sx*dx, -sy*dy);
+			m_viewRect.adjust(dx, dy, -dx, -dy);
 		}
 		m_xscale = findScale(m_viewRect.left(), m_viewRect.right());
 		m_yscale = findScale(m_viewRect.top(), m_viewRect.bottom());

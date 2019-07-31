@@ -8,21 +8,38 @@
 #include "GLView.h"
 #include "Document.h"
 
+void TIMESETTINGS::Defaults()
+{
+	m_mode = MODE_FORWARD;
+	m_fps = 10.0;
+	m_start = 1;
+	m_end = 0;	//	has to be set after loading a model
+	m_bloop = true;
+	m_bfix = false;
+	m_inc = 1;
+	m_dt = 0.01;
+}
+
 class CPostDoc::Imp 
 {
 public:
-	Imp() : fem(nullptr), glm(nullptr) {}
-	~Imp() { delete fem; delete glm; }
+	Imp() : fem(nullptr), glm(nullptr), m_postObj(nullptr) { m_timeSettings.Defaults(); }
+	~Imp() { delete fem; delete glm; delete m_postObj; }
 
 	void clear()
 	{
 		delete glm; glm = nullptr;
 		delete fem; fem = nullptr;
+		delete m_postObj; m_postObj = nullptr;
 	}
 
 public:
 	Post::CGLModel*	glm;
 	Post::FEModel*	fem;
+
+	CPostObject*	m_postObj;
+
+	TIMESETTINGS m_timeSettings;
 };
 
 CPostDoc::CPostDoc() : imp(new CPostDoc::Imp)
@@ -55,6 +72,17 @@ void CPostDoc::SetActiveState(int n)
 	assert(imp->glm);
 	imp->glm->setCurrentTimeIndex(n);
 	imp->glm->Update(false);
+	imp->m_postObj->UpdateMesh();
+}
+
+int CPostDoc::GetActiveState()
+{
+	return imp->glm->currentTimeIndex();
+}
+
+TIMESETTINGS& CPostDoc::GetTimeSettings()
+{
+	return imp->m_timeSettings;
 }
 
 void CPostDoc::SetDataField(int n)
@@ -85,6 +113,11 @@ bool CPostDoc::Load(const std::string& fileName)
 
 	// create new GLmodel
 	imp->glm = new Post::CGLModel(imp->fem);
+
+	imp->m_postObj = new CPostObject(imp->glm);
+
+	imp->m_timeSettings.m_start = 0;
+	imp->m_timeSettings.m_end = GetStates() - 1;
 
 	return true;
 }
@@ -126,4 +159,188 @@ void CPostDoc::Render(CGLView* view)
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+}
+
+CPostObject* CPostDoc::GetPostObject()
+{
+	return imp->m_postObj;
+}
+
+CPostObject::CPostObject(Post::CGLModel* glm) : GObject(CPostObject::POST_OBJECT)
+{
+	m_glm = glm;
+
+	GFace* face = new GFace(this);
+	face->m_nPID[0] = 0;
+	AddFace(face);
+	AddPart();
+	Update();
+
+	BuildMesh();
+}
+
+void CPostObject::BuildGMesh()
+{
+	Post::FEModel* fem = m_glm->GetFEModel();
+	if (fem == nullptr) return;
+
+	Post::FEMeshBase* mesh = fem->GetFEMesh(0);
+
+	int facets = 0;
+	int NF = mesh->Faces();
+	int NN = mesh->Nodes();
+	vector<int> tag(NN, -1);
+	for (int i = 0; i < NF; ++i)
+	{
+		const Post::FEFace& face = mesh->Face(i);
+		
+		if (face.Nodes() == 3) facets++;
+		else if (face.Nodes() == 4) facets += 2;
+		else assert(false);
+
+		for (int j = 0; j < face.Nodes(); ++j)
+		{
+			tag[face.node[j]] = 1;
+		}
+	}
+	int surfaceNodes = 0;
+	for (int i = 0; i < NN; ++i)
+	{
+		if (tag[i] > 0)
+		{
+			tag[i] = surfaceNodes++;
+		}
+	}
+
+	if (m_pGMesh) delete m_pGMesh;
+	m_pGMesh = new GLMesh;
+	m_pGMesh->Create(surfaceNodes, facets);
+
+	for (int i = 0; i < NN; ++i)
+	{
+		if (tag[i] >= 0)
+		{
+			Post::FENode& node = mesh->Node(i);
+			vec3d& r = m_pGMesh->Node(tag[i]).r;
+			r.x = node.m_rt.x;
+			r.y = node.m_rt.y;
+			r.z = node.m_rt.z;
+		}
+	}
+
+	facets = 0;
+	for (int i = 0; i < NF; ++i)
+	{
+		const Post::FEFace& face = mesh->Face(i);
+		if (face.Nodes() == 3)
+		{
+			GMesh::FACE& gf = m_pGMesh->Face(facets++);
+			gf.n[0] = tag[face.node[0]];
+			gf.n[1] = tag[face.node[1]];
+			gf.n[2] = tag[face.node[2]];
+		}
+		else if (face.Nodes() == 4)
+		{
+			GMesh::FACE& gf1 = m_pGMesh->Face(facets++);
+			gf1.n[0] = tag[face.node[0]];
+			gf1.n[1] = tag[face.node[1]];
+			gf1.n[2] = tag[face.node[2]];
+
+			GMesh::FACE& gf2 = m_pGMesh->Face(facets++);
+			gf2.n[0] = tag[face.node[2]];
+			gf2.n[1] = tag[face.node[3]];
+			gf2.n[2] = tag[face.node[0]];
+		}
+	}
+
+	m_pGMesh->Update();
+}
+
+// build the FEMesh
+FEMesh* CPostObject::BuildMesh()
+{
+	DeleteFEMesh();
+
+	Post::FEMeshBase* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
+
+	int NN = postMesh->Nodes();
+	int NE = postMesh->Elements();
+
+	FEMesh* mesh = new FEMesh;
+	mesh->SetGObject(this);
+
+	mesh->Create(NN, NE);
+
+	for (int i = 0; i < NN; ++i)
+	{
+		FENode& nd = mesh->Node(i);
+		Post::FENode& ns = postMesh->Node(i);
+
+		nd.r.x = ns.m_rt.x;
+		nd.r.y = ns.m_rt.y;
+		nd.r.z = ns.m_rt.z;
+	}
+
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& ed = mesh->Element(i);
+		Post::FEElement& es = postMesh->Element(i);
+
+		ed.m_gid = 0;
+
+		switch(es.Type())
+		{
+		case Post::FE_HEX8: ed.SetType(FE_HEX8); break;
+		};
+
+		for (int j = 0; j < es.Nodes(); ++j) ed.m_node[j] = es.m_node[j];
+	}
+
+	mesh->RebuildMesh();
+
+	ReplaceFEMesh(mesh);
+
+	return mesh;
+}
+
+// is called whenever the selection has changed
+void CPostObject::UpdateSelection()
+{
+	// map selection of nodes and elements
+	Post::FEMeshBase* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
+
+	FEMesh* mesh = GetFEMesh();
+	for (int i = 0; i < mesh->Nodes(); ++i)
+	{
+		if (mesh->Node(i).IsSelected()) postMesh->Node(i).Select();
+		else postMesh->Node(i).Unselect();
+	}
+
+	for (int i = 0; i < mesh->Elements(); ++i)
+	{
+		if (mesh->Element(i).IsSelected()) postMesh->Element(i).Select();
+		else postMesh->Element(i).Unselect();
+	}
+}
+
+void CPostObject::UpdateMesh()
+{
+	Post::FEMeshBase* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
+	FEMesh* mesh = GetFEMesh();
+
+	int NN = postMesh->Nodes();
+	for (int i = 0; i < NN; ++i)
+	{
+		FENode& nd = mesh->Node(i);
+		Post::FENode& ns = postMesh->Node(i);
+
+		nd.r.x = ns.m_rt.x;
+		nd.r.y = ns.m_rt.y;
+		nd.r.z = ns.m_rt.z;
+	}
+
+	mesh->UpdateNormals();
+	mesh->UpdateBox();
+
+	BuildGMesh();
 }

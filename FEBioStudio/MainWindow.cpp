@@ -20,6 +20,7 @@
 #include <QStyleFactory>
 #include "DlgImportAbaqus.h"
 #include "DlgAddMeshData.h"
+#include "GraphWindow.h"
 
 extern GLCOLOR col[];
 
@@ -1103,4 +1104,17 @@ void CMainWindow::GenerateMap(FEObject* po)
 		}
 		else UpdateModel(data);
 	}
+}
+
+// remove a graph from the list
+void CMainWindow::RemoveGraph(::CGraphWindow* graph)
+{
+	ui->graphList.removeOne(graph);
+}
+
+// Add a graph to the list of managed graph windows
+void CMainWindow::AddGraph(CGraphWindow* graph)
+{
+	graph->setWindowTitle(QString("FEBioStudio : Graph%1").arg(ui->graphList.size() + 1));
+	ui->graphList.push_back(graph);
 }

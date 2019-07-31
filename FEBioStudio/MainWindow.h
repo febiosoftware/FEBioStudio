@@ -13,6 +13,7 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class QMenu;
+class CGraphWindow;
 
 namespace Ui {
 	class CMainWindow;
@@ -145,6 +146,13 @@ public:
 
 	//! helper function for the modify menu handlers
 	void OnAddModifier(const char* sz);
+
+public:
+	// remove a graph from the list
+	void RemoveGraph(CGraphWindow* graph);
+
+	// Add a graph to the list of managed graph windows
+	void AddGraph(CGraphWindow* graph);
 
 private:
 	void writeSettings();

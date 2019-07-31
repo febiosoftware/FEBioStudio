@@ -501,6 +501,12 @@
     <ClCompile Include="..\..\FEBioStudio\menuPost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -869,6 +875,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\PropertyListForm.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\GraphWindow.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

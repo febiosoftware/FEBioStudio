@@ -15,6 +15,7 @@
 #include <PostGL/GLModel.h>
 #include <QMessageBox>
 #include "PostDoc.h"
+#include "GraphWindow.h"
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
@@ -229,14 +230,21 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 
 void CMainWindow::on_actionGraph_triggered()
 {
-/*	CGraphWindow* pg = new CModelGraphWindow(this);
+	CDocument* doc = GetDocument();
+	int jobs = doc->FEBioJobs();
+	if (jobs == 0) return;
+
+	CFEBioJob* job = doc->GetFEBioJob(0);
+	CPostDoc* postDoc = job->GetPostDoc();
+	if (postDoc == nullptr) return;
+
+	CGraphWindow* pg = new CModelGraphWindow(this, postDoc);
 	AddGraph(pg);
 
 	pg->show();
 	pg->raise();
 	pg->activateWindow();
 	pg->Update();
-*/
 }
 
 void CMainWindow::on_actionSummary_triggered()

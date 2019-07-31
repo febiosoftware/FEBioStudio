@@ -1841,6 +1841,9 @@ void CCmdSelectElements::Execute()
 		int n = m_pel[i];
 		if ((n>=0) && (n<NE)) m_pm->Element(n).Select();
 	}
+
+	GObject* po = m_pm->GetGObject();
+	if (po) po->UpdateSelection();
 }
 
 void CCmdSelectElements::UnExecute()
