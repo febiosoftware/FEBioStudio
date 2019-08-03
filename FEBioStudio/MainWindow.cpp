@@ -786,6 +786,32 @@ void CMainWindow::UpdateGLControlBar()
 }
 
 //-----------------------------------------------------------------------------
+//! Update the post tool bar
+void CMainWindow::UpdatePostToolbar()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
+
+	Post::FEModel* pfem = doc->GetFEModel();
+	ui->selectData->BuildMenu(pfem, Post::DATA_SCALAR);
+
+	Post::CGLModel* mdl = doc->GetGLModel();
+	if (mdl == 0) ui->postToolBar->setDisabled(true);
+	else
+	{
+		int ntime = mdl->currentTimeIndex() + 1;
+
+		Post::FEModel* fem = mdl->GetFEModel();
+		int states = fem->GetStates();
+		QString suff = QString("/%1").arg(states);
+		ui->pspin->setSuffix(suff);
+		ui->pspin->setRange(1, states);
+		ui->pspin->setValue(ntime);
+		ui->postToolBar->setEnabled(true);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::RedrawGL()
 {
 	ui->glview->repaint();
@@ -950,6 +976,7 @@ void CMainWindow::onTimer()
 			}
 		}
 		doc->SetActiveState(nstep);
+		ui->pspin->setValue(nstep+1);
 	}
 
 	RedrawGL();
@@ -967,6 +994,36 @@ void CMainWindow::onTimer()
 			QTimer::singleShot(msec_per_frame, this, SLOT(onTimer()));
 		}
 	}
+}
+
+void CMainWindow::on_selectData_currentValueChanged(int index)
+{
+//	if (index == -1)
+//		ui->actionColorMap->setDisabled(true);
+//	else
+	{
+//		if (ui->actionColorMap->isEnabled() == false)
+//			ui->actionColorMap->setEnabled(true);
+
+		int nfield = ui->selectData->currentValue();
+		CPostDoc* doc = GetActiveDocument();
+		if (doc == nullptr) return;
+		doc->SetDataField(nfield);
+
+		// turn on the colormap
+//		if (ui->actionColorMap->isChecked() == false)
+//		{
+//			ui->actionColorMap->toggle();
+//		}
+//		else doc->UpdateFEModel();
+
+//		ui->glview->UpdateWidgets(false);
+		RedrawGL();
+	}
+
+//	UpdateGraphs(false);
+
+//	if (ui->modelViewer->isVisible()) ui->modelViewer->Update(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -996,6 +1053,7 @@ void CMainWindow::on_actionFirst_triggered()
 	if (doc == nullptr) return;
 	TIMESETTINGS& time = doc->GetTimeSettings();
 	doc->SetActiveState(time.m_start);
+	ui->pspin->setValue(time.m_start+1);
 	RedrawGL();
 }
 
@@ -1009,6 +1067,7 @@ void CMainWindow::on_actionPrev_triggered()
 	nstep--;
 	if (nstep < time.m_start) nstep = time.m_start;
 	doc->SetActiveState(nstep);
+	ui->pspin->setValue(nstep+1);
 	RedrawGL();
 }
 
@@ -1022,6 +1081,7 @@ void CMainWindow::on_actionNext_triggered()
 	nstep++;
 	if (nstep > time.m_end) nstep = time.m_end;
 	doc->SetActiveState(nstep);
+	ui->pspin->setValue(nstep+1);
 	RedrawGL();
 }
 
@@ -1032,6 +1092,7 @@ void CMainWindow::on_actionLast_triggered()
 	if (doc == nullptr) return;
 	TIMESETTINGS& time = doc->GetTimeSettings();
 	doc->SetActiveState(time.m_end);
+	ui->pspin->setValue(time.m_end+1);
 	RedrawGL();
 }
 

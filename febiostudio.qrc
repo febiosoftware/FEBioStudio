@@ -108,5 +108,6 @@
 		<file>icons/next.png</file>
 		<file>icons/play.png</file>
 		<file>icons/prev.png</file>
+		<file>icons/properties.png</file>
 	</qresource>
 </RCC>

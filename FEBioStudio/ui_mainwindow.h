@@ -20,6 +20,7 @@
 #include "BuildPanel.h"
 #include "GLControlBar.h"
 #include "Document.h"
+#include "DataFieldSelector.h"
 
 class QProcess;
 
@@ -61,7 +62,9 @@ public:
 	QStatusBar*	statusBar;
 	QProgressBar*	fileProgress;
 
-	QToolBar* playToolBar;
+	CDataFieldSelector*	selectData;
+	QSpinBox*	pspin;
+	QToolBar* postToolBar;
 
 	QAction* actionSelectObjects;
 	QAction* actionSelectParts;
@@ -592,10 +595,10 @@ public:
 		mainToolBar->addAction(actionCloneRevolve);
 
 		// Play tool bar
-		playToolBar = new QToolBar(mainWindow);
-		playToolBar->setObjectName(QStringLiteral("playToolBar"));
-		playToolBar->setWindowTitle("Animate Toolbar");
-		mainWindow->addToolBar(Qt::TopToolBarArea, playToolBar);
+		postToolBar = new QToolBar(mainWindow);
+		postToolBar->setObjectName(QStringLiteral("postToolBar"));
+		postToolBar->setWindowTitle("Post Toolbar");
+		mainWindow->addToolBar(Qt::TopToolBarArea, postToolBar);
 
 		QAction* actionFirst = addAction("first", "actionFirst", ":/icons/back.png");
 		QAction* actionPrev = addAction("previous", "actionPrev", ":/icons/prev.png");
@@ -605,11 +608,18 @@ public:
 		QAction* actionLast = addAction("last", "actionLast", ":/icons/forward.png");
 		QAction* actionTime = addAction("Time settings", "actionTimeSettings", ":/icons/clock.png");
 
-		playToolBar->addAction(actionFirst);
-		playToolBar->addAction(actionPrev);
-		playToolBar->addAction(actionPlay);
-		playToolBar->addAction(actionNext);
-		playToolBar->addAction(actionLast);
+		selectData = new CDataFieldSelector;
+		selectData->setWhatsThis("<font color=\"black\">Use this to select the current data variable that will be used to display the color map on the mesh.");
+		selectData->setMinimumWidth(300);
+//		selectData->setFixedHeight(23);
+		selectData->setObjectName("selectData");
+		
+		postToolBar->addWidget(selectData);
+		postToolBar->addAction(actionFirst);
+		postToolBar->addAction(actionPrev);
+		postToolBar->addAction(actionPlay);
+		postToolBar->addAction(actionNext);
+		postToolBar->addAction(actionLast);
 
 		actionFirst->setWhatsThis("<font color=\"black\">Click this to go to the first time step in the model.");
 		actionPrev->setWhatsThis("<font color=\"black\">Click this to go to the previous time step in the model.");
@@ -618,14 +628,13 @@ public:
 		actionLast->setWhatsThis("<font color=\"black\">Click this to go to the last time step in the model.");
 		actionTime->setWhatsThis("<font color=\"black\">Click this to open the Time Info dialog box.");
 
-		QSpinBox* pspin;
-		playToolBar->addWidget(pspin = new QSpinBox);
+		postToolBar->addWidget(pspin = new QSpinBox);
 		pspin->setObjectName("selectTime");
 		pspin->setMinimumWidth(80);
 		pspin->setSuffix("/100");
-		playToolBar->addAction(actionTime);
+		postToolBar->addAction(actionTime);
 
-//		playToolBar->setDisabled(true);
+		postToolBar->setDisabled(true);
 	}
 
 	void SetSelectionMode(int nselect)

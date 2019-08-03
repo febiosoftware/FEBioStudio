@@ -19,7 +19,6 @@
 #include <PreViewLib/FEMultiMaterial.h>
 #include <QGridLayout>
 #include <QComboBox>
-#include "PostPanel.h"
 #include "CColorButton.h"
 #include "MeshInfoPanel.h"
 #include "convert.h"
@@ -152,7 +151,6 @@ class Ui::CModelPropsPanel
 		PROPS_PANEL,
 		SELECTION1_PANEL,
 		SELECTION2_PANEL,
-		POST_PANEL
 	};
 
 private:
@@ -166,7 +164,6 @@ private:
 	CObjectPropsPanel*	obj;
 	CBCObjectPropsPanel*	bcobj;
 	CMeshInfoPanel*	mesh;
-	::CPostPanel*	post;
 
 public:
 	void setupUi(QWidget* parent)
@@ -190,9 +187,6 @@ public:
 		sel2 = new ::CSelectionBox;
 		sel2->setObjectName("select2");
 
-		post = new ::CPostPanel;
-		post->setObjectName("post");
-
 		mesh = new CMeshInfoPanel;
 
 		// compose toolbox
@@ -203,7 +197,6 @@ public:
 		tool->addTool("Properties", propStack);
 		tool->addTool("Selection", sel1);
 		tool->addTool("Selection", sel2);
-		tool->addTool("Post", post);
 
 		// hide all panels initially
 //		tool->getToolItem(OBJECT_PANEL)->setVisible(false);
@@ -212,7 +205,6 @@ public:
 //		tool->getToolItem(PROPS_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION1_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION2_PANEL)->setVisible(false);
-		tool->getToolItem(POST_PANEL)->setVisible(false);
 
 		stack = new QStackedWidget;
 		QLabel* label = new QLabel("");
@@ -244,12 +236,6 @@ public:
 	void showPropsPanel(bool b) { tool->getToolItem(PROPS_PANEL)->setVisible(b); }
 	void showSelectionPanel1(bool b) { tool->getToolItem(SELECTION1_PANEL)->setVisible(b); }
 	void showSelectionPanel2(bool b) { tool->getToolItem(SELECTION2_PANEL)->setVisible(b); }
-	void showPostPanel(bool b) { tool->getToolItem(POST_PANEL)->setVisible(b); }
-
-	void setPostDoc(CPostDoc* pd)
-	{
-		post->SetPostDoc(pd);
-	}
 
 	void setSelection1Title(const QString& t) { tool->getToolItem(SELECTION1_PANEL)->setTitle(t); }
 	void setSelection2Title(const QString& t) { tool->getToolItem(SELECTION2_PANEL)->setTitle(t); }
@@ -360,8 +346,6 @@ void CModelPropsPanel::SetObjectProps(FEObject* po, CPropertyList* props, int fl
 
 		ui->showBCObjectInfo(false);
 
-		ui->showPostPanel(false);
-
 		if (dynamic_cast<GObject*>(m_currentObject))
 			ui->showMeshPanel(true);
 		else
@@ -456,13 +440,6 @@ void CModelPropsPanel::SetObjectProps(FEObject* po, CPropertyList* props, int fl
 			SetSelection(0, pi->GetMasterSurfaceList());
 			SetSelection(1, pi->GetSlaveSurfaceList());
 			return;
-		}
-
-		CFEBioJob* job = dynamic_cast<CFEBioJob*>(m_currentObject);
-		if (job && job->HasPostDoc())
-		{
-			ui->showPostPanel(true);
-			ui->setPostDoc(job->GetPostDoc());
 		}
 
 		ui->showSelectionPanel1(false);

@@ -101,6 +101,9 @@ public:
 	//! Update the GL control bar
 	void UpdateGLControlBar();
 
+	//! Update the post tool bar
+	void UpdatePostToolbar();
+
 	//! Update the model editor
 	void UpdateModel(FEObject* po = 0, bool bupdate = true);
 
@@ -290,6 +293,7 @@ public slots:
 	void on_selectCircle_toggled(bool b);
 	void on_selectFree_toggled(bool b);
 
+	void on_selectData_currentValueChanged(int i);
 	void on_actionPlay_toggled(bool bchecked);
 	void on_actionFirst_triggered();
 	void on_actionPrev_triggered();
