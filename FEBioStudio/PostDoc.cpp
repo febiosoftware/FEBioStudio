@@ -85,6 +85,34 @@ TIMESETTINGS& CPostDoc::GetTimeSettings()
 	return imp->m_timeSettings;
 }
 
+int CPostDoc::GetEvalField()
+{
+	if (imp->glm == nullptr) return -1;
+	Post::CGLColorMap* pc = imp->glm->GetColorMap();
+	if (pc == 0) return -1;
+
+	return pc->GetEvalField();
+}
+
+std::string CPostDoc::GetFieldString()
+{
+	if (IsValid())
+	{
+		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
+		return GetFEModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+	}
+	else return "";
+}
+
+void CPostDoc::UpdateAllStates()
+{
+	if (IsValid() == false) return;
+	int N = imp->fem->GetStates();
+	int ntime = GetActiveState();
+	for (int i = 0; i<N; ++i) SetActiveState(i);
+	SetActiveState(ntime);
+}
+
 void CPostDoc::SetDataField(int n)
 {
 	imp->glm->GetColorMap()->SetEvalField(n);
@@ -130,6 +158,11 @@ vec3f to_vec3f(const vec3d& r)
 quat4f to_quat4f(const quatd& q)
 {
 	return quat4f((float)q.x, (float)q.y, (float) q.z, (float) q.w);
+}
+
+bool CPostDoc::IsValid()
+{
+	return (imp->glm != nullptr);
 }
 
 void CPostDoc::Render(CGLView* view)

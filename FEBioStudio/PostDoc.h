@@ -43,6 +43,8 @@ public:
 
 	void Render(CGLView* view);
 
+	bool IsValid();
+
 public:
 	int GetStates();
 
@@ -59,6 +61,12 @@ public:
 	CPostObject* GetPostObject();
 
 	TIMESETTINGS& GetTimeSettings();
+
+	std::string GetFieldString();
+
+	void UpdateAllStates();
+
+	int GetEvalField();
 
 private:
 	Imp*	imp;

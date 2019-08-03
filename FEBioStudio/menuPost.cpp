@@ -16,6 +16,9 @@
 #include <QMessageBox>
 #include "PostDoc.h"
 #include "GraphWindow.h"
+#include "SummaryWindow.h"
+#include "StatsWindow.h"
+#include "IntegrateWindow.h"
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
@@ -249,7 +252,15 @@ void CMainWindow::on_actionGraph_triggered()
 
 void CMainWindow::on_actionSummary_triggered()
 {
-/*	CSummaryWindow* summaryWindow = new CSummaryWindow(this);
+	CDocument* doc = GetDocument();
+	int jobs = doc->FEBioJobs();
+	if (jobs == 0) return;
+
+	CFEBioJob* job = doc->GetFEBioJob(0);
+	CPostDoc* postDoc = job->GetPostDoc();
+	if (postDoc == nullptr) return;
+
+	CSummaryWindow* summaryWindow = new CSummaryWindow(this, postDoc);
 
 	summaryWindow->Update(true);
 	summaryWindow->show();
@@ -257,29 +268,42 @@ void CMainWindow::on_actionSummary_triggered()
 	summaryWindow->activateWindow();
 
 	AddGraph(summaryWindow);
-*/
 }
 
 void CMainWindow::on_actionStats_triggered()
 {
-/*	CStatsWindow* statsWindow = new CStatsWindow(this);
+	CDocument* doc = GetDocument();
+	int jobs = doc->FEBioJobs();
+	if (jobs == 0) return;
+
+	CFEBioJob* job = doc->GetFEBioJob(0);
+	CPostDoc* postDoc = job->GetPostDoc();
+	if (postDoc == nullptr) return;
+
+	CStatsWindow* statsWindow = new CStatsWindow(this, postDoc);
 	statsWindow->Update(true);
 	statsWindow->show();
 	statsWindow->raise();
 	statsWindow->activateWindow();
 
 	AddGraph(statsWindow);
-*/
 }
 
 void CMainWindow::on_actionIntegrate_triggered()
 {
-/*	CIntegrateWindow* integrateWindow = new CIntegrateWindow(this);
+	CDocument* doc = GetDocument();
+	int jobs = doc->FEBioJobs();
+	if (jobs == 0) return;
+
+	CFEBioJob* job = doc->GetFEBioJob(0);
+	CPostDoc* postDoc = job->GetPostDoc();
+	if (postDoc == nullptr) return;
+
+	CIntegrateWindow* integrateWindow = new CIntegrateWindow(this, postDoc);
 	integrateWindow->Update(true);
 	integrateWindow->show();
 	integrateWindow->raise();
 	integrateWindow->activateWindow();
 
 	AddGraph(integrateWindow);
-*/
 }

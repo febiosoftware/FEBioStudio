@@ -224,6 +224,7 @@
     <ClCompile Include="..\..\FEBioStudio\GManipulator.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Intersect.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LogPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MainWindow.cpp" />
@@ -269,6 +270,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_GLHighlighter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_LogPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MainWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MaterialEditor.cpp" />
@@ -287,6 +289,8 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SelectionBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_StatsWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_SummaryWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolsPanel.cpp" />
@@ -310,7 +314,9 @@
     <ClCompile Include="..\..\FEBioStudio\SelectionBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Sketcher.cpp" />
     <ClCompile Include="..\..\FEBioStudio\SphereFitTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\StatsWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\stdafx.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\SummaryWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\template.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolBox.cpp" />
@@ -401,6 +407,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\GTriad.h" />
+    <CustomBuild Include="..\..\FEBioStudio\IntegrateWindow.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\Intersect.h" />
     <ClInclude Include="..\..\FEBioStudio\LogPanel.h" />
     <CustomBuild Include="..\..\FEBioStudio\MainWindow.h">
@@ -446,7 +457,17 @@
     <ClInclude Include="..\..\FEBioStudio\SelectionBox.h" />
     <ClInclude Include="..\..\FEBioStudio\Sketcher.h" />
     <ClInclude Include="..\..\FEBioStudio\SphereFitTool.h" />
+    <CustomBuild Include="..\..\FEBioStudio\StatsWindow.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h" />
+    <CustomBuild Include="..\..\FEBioStudio\SummaryWindow.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\targetver.h" />
     <ClInclude Include="..\..\FEBioStudio\Tool.h" />
     <ClInclude Include="..\..\FEBioStudio\ToolBox.h" />
