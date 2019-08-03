@@ -85,6 +85,10 @@ public:
 	// build the FEMesh
 	FEMesh* BuildMesh() override;
 
+	FEMeshBase* GetEditableMesh() override;
+
+	FELineMesh* GetEditableLineMesh() override;
+
 	// is called whenever the selection has changed
 	void UpdateSelection() override;
 

@@ -188,6 +188,18 @@ void CPostDoc::Render(CGLView* view)
 	glLoadIdentity();
 	glcam.Transform();
 
+	// match the selection mode
+	int selectionMode = Post::SELECT_ELEMS;
+	switch (view->GetDocument()->GetItemMode())
+	{
+	case ITEM_MESH:
+	case ITEM_ELEM: selectionMode = Post::SELECT_ELEMS; break;
+	case ITEM_FACE: selectionMode = Post::SELECT_FACES; break;
+	case ITEM_EDGE: selectionMode = Post::SELECT_EDGES; break;
+	case ITEM_NODE: selectionMode = Post::SELECT_NODES; break;
+	}
+	imp->glm->SetSelectionMode(selectionMode);
+
 	imp->glm->Render(rc);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -210,6 +222,16 @@ CPostObject::CPostObject(Post::CGLModel* glm) : GObject(CPostObject::POST_OBJECT
 	Update();
 
 	BuildMesh();
+}
+
+FEMeshBase* CPostObject::GetEditableMesh()
+{
+	return GetFEMesh();
+}
+
+FELineMesh* CPostObject::GetEditableLineMesh()
+{
+	return GetFEMesh();
 }
 
 void CPostObject::BuildGMesh()
@@ -298,11 +320,13 @@ FEMesh* CPostObject::BuildMesh()
 
 	int NN = postMesh->Nodes();
 	int NE = postMesh->Elements();
+	int NF = postMesh->Faces();
+	int NC = postMesh->Edges();
 
 	FEMesh* mesh = new FEMesh;
 	mesh->SetGObject(this);
 
-	mesh->Create(NN, NE);
+	mesh->Create(NN, NE, NF, NC);
 
 	for (int i = 0; i < NN; ++i)
 	{
@@ -312,6 +336,42 @@ FEMesh* CPostObject::BuildMesh()
 		nd.r.x = ns.m_rt.x;
 		nd.r.y = ns.m_rt.y;
 		nd.r.z = ns.m_rt.z;
+	}
+
+	for (int i = 0; i < NF; ++i)
+	{
+		FEFace& fd = mesh->Face(i);
+		Post::FEFace& fs = postMesh->Face(i);
+
+		switch (fs.m_ntype)
+		{
+		case Post::FACE_QUAD4: fd.m_type = FE_FACE_QUAD4; break;
+		case Post::FACE_TRI3 : fd.m_type = FE_FACE_TRI3; break;
+		default:
+			assert(false);
+		}
+
+		fd.m_gid = fs.m_nsg;
+		fd.m_sid = fs.m_nsg;
+
+		for (int j = 0; j < fs.Nodes(); ++j)
+		{
+			fd.n[j] = fs.node[j];
+		}
+	}
+
+	for (int i = 0; i < NC; ++i)
+	{
+		FEEdge& ed = mesh->Edge(i);
+		Post::FEEdge& es = postMesh->Edge(i);
+
+		ed.m_gid = 0;
+		ed.m_type = FE_EDGE2;
+
+		for (int j = 0; j < es.Nodes(); ++j)
+		{
+			ed.n[j] = es.node[j];
+		}
 	}
 
 	for (int i = 0; i < NE; ++i)
@@ -329,7 +389,7 @@ FEMesh* CPostObject::BuildMesh()
 		for (int j = 0; j < es.Nodes(); ++j) ed.m_node[j] = es.m_node[j];
 	}
 
-	mesh->RebuildMesh();
+	mesh->Update();
 
 	ReplaceFEMesh(mesh);
 
@@ -349,11 +409,25 @@ void CPostObject::UpdateSelection()
 		else postMesh->Node(i).Unselect();
 	}
 
+	for (int i = 0; i < mesh->Edges(); ++i)
+	{
+		if (mesh->Edge(i).IsSelected()) postMesh->Edge(i).Select();
+		else postMesh->Edge(i).Unselect();
+	}
+
+	for (int i = 0; i < mesh->Faces(); ++i)
+	{
+		if (mesh->Face(i).IsSelected()) postMesh->Face(i).Select();
+		else postMesh->Face(i).Unselect();
+	}
+
 	for (int i = 0; i < mesh->Elements(); ++i)
 	{
 		if (mesh->Element(i).IsSelected()) postMesh->Element(i).Select();
 		else postMesh->Element(i).Unselect();
 	}
+
+	m_glm->UpdateSelectionLists();
 }
 
 void CPostObject::UpdateMesh()
