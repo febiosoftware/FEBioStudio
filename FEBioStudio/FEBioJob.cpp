@@ -15,7 +15,12 @@ CFEBioJob::CFEBioJob()
 
 	m_status = NONE;
 
-	m_post = nullptr;
+	m_postDoc = nullptr;
+}
+
+CFEBioJob::~CFEBioJob()
+{
+	delete m_postDoc;
 }
 
 CFEBioJob::CFEBioJob(const std::string& fileName, JOB_STATUS status)
@@ -52,23 +57,23 @@ std::string CFEBioJob::GetFileName()
 
 bool CFEBioJob::HasPostDoc()
 {
-	return (m_post != nullptr);
+	return (m_postDoc != nullptr);
 }
 
 CPostDoc* CFEBioJob::GetPostDoc()
 {
-	return m_post;
+	return m_postDoc;
 }
 
 bool CFEBioJob::OpenPlotFile(const std::string& fileName)
 {
-	if (m_post) delete m_post;
-	m_post = new CPostDoc;
+	if (m_postDoc) delete m_postDoc;
+	m_postDoc = new CPostDoc;
 
-	if (m_post->Load(fileName) == false)
+	if (m_postDoc->Load(fileName) == false)
 	{
-		delete m_post;
-		m_post = nullptr;
+		delete m_postDoc;
+		m_postDoc = nullptr;
 		return false;
 	}
 

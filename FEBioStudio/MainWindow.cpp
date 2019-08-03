@@ -21,6 +21,9 @@
 #include "DlgImportAbaqus.h"
 #include "DlgAddMeshData.h"
 #include "GraphWindow.h"
+#include "PostDoc.h"
+#include "DlgTimeSettings.h"
+#include <PostGL/GLModel.h>
 
 extern GLCOLOR col[];
 
@@ -105,6 +108,19 @@ int CMainWindow::currentTheme() const
 void CMainWindow::setCurrentTheme(int n)
 {
 	ui->m_theme = n;
+}
+
+//-----------------------------------------------------------------------------
+// get the current post doc
+CPostDoc* CMainWindow::GetActiveDocument()
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return nullptr;
+
+	if (doc->FEBioJobs() == 0) return nullptr;
+
+	CFEBioJob* job = doc->GetFEBioJob(0);
+	return job->GetPostDoc();
 }
 
 //-----------------------------------------------------------------------------
@@ -836,6 +852,216 @@ void CMainWindow::on_selectFree_toggled(bool b)
 {
 	if (b) m_doc->SetSelectionStyle(REGION_SELECT_FREE);
 	Update();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::onTimer()
+{
+	if (ui->m_isAnimating == false) return;
+
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+
+	int N = doc->GetFEModel()->GetStates();
+	int N0 = time.m_start;
+	int N1 = time.m_end;
+
+	int nstep = doc->GetActiveState();
+
+	if (time.m_bfix)
+	{
+/*		float f0 = doc->GetTimeValue(N0);
+		float f1 = doc->GetTimeValue(N1);
+
+		float ftime = doc->GetTimeValue();
+
+		if (time.m_mode == MODE_FORWARD)
+		{
+			ftime += time.m_dt;
+			if (ftime > f1)
+			{
+				if (time.m_bloop) ftime = f0;
+				else { ftime = f1; StopAnimation(); }
+			}
+		}
+		else if (time.m_mode == MODE_REVERSE)
+		{
+			ftime -= time.m_dt;
+			if (ftime < f0)
+			{
+				if (time.m_bloop) ftime = f1;
+				else { ftime = f0; StopAnimation(); }
+			}
+		}
+		else if (time.m_mode == MODE_CYLCE)
+		{
+			ftime += time.m_dt*time.m_inc;
+			if (ftime > f1)
+			{
+				time.m_inc = -1;
+				ftime = f1;
+				if (time.m_bloop == false) StopAnimation();
+			}
+			else if (ftime < f0)
+			{
+				time.m_inc = 1;
+				ftime = f0;
+				if (time.m_bloop == false) StopAnimation();
+			}
+		}
+
+		SetCurrentTimeValue(ftime);
+*/	}
+	else
+	{
+		if (time.m_mode == MODE_FORWARD)
+		{
+			nstep++;
+			if (nstep > N1)
+			{
+				if (time.m_bloop) nstep = N0;
+				else { nstep = N1; StopAnimation(); }
+			}
+		}
+		else if (time.m_mode == MODE_REVERSE)
+		{
+			nstep--;
+			if (nstep < N0)
+			{
+				if (time.m_bloop) nstep = N1;
+				else { nstep = N0; StopAnimation(); }
+			}
+		}
+		else if (time.m_mode == MODE_CYLCE)
+		{
+			nstep += time.m_inc;
+			if (nstep > N1)
+			{
+				time.m_inc = -1;
+				nstep = N1;
+				if (time.m_bloop == false) StopAnimation();
+			}
+			else if (nstep < N0)
+			{
+				time.m_inc = 1;
+				nstep = N0;
+				if (time.m_bloop == false) StopAnimation();
+			}
+		}
+		doc->SetActiveState(nstep);
+	}
+
+	RedrawGL();
+
+	// TODO: Should I start the event before or after the view is redrawn?
+	if (ui->m_isAnimating)
+	{
+		if (doc == nullptr) return;
+		if (doc->IsValid())
+		{
+			TIMESETTINGS& time = doc->GetTimeSettings();
+			double fps = time.m_fps;
+			if (fps < 1.0) fps = 1.0;
+			double msec_per_frame = 1000.0 / fps;
+			QTimer::singleShot(msec_per_frame, this, SLOT(onTimer()));
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionPlay_toggled(bool bchecked)
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc && doc->IsValid())
+	{
+		if (bchecked)
+		{
+			TIMESETTINGS& time = doc->GetTimeSettings();
+			double fps = time.m_fps;
+			if (fps < 1.0) fps = 1.0;
+			double msec_per_frame = 1000.0 / fps;
+
+			ui->m_isAnimating = true;
+			QTimer::singleShot(msec_per_frame, this, SLOT(onTimer()));
+		}
+		else ui->m_isAnimating = false;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionFirst_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+	doc->SetActiveState(time.m_start);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionPrev_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+	int nstep = doc->GetActiveState();
+	nstep--;
+	if (nstep < time.m_start) nstep = time.m_start;
+	doc->SetActiveState(nstep);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionNext_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+	int nstep = doc->GetActiveState();
+	nstep++;
+	if (nstep > time.m_end) nstep = time.m_end;
+	doc->SetActiveState(nstep);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionLast_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+	doc->SetActiveState(time.m_end);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionTimeSettings_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+
+	CDlgTimeSettings dlg(doc, this);
+	if (dlg.exec())
+	{
+		TIMESETTINGS& time = doc->GetTimeSettings();
+//		ui->timePanel->SetRange(time.m_start, time.m_end);
+
+		int ntime = doc->GetActiveState();
+		if ((ntime < time.m_start) || (ntime > time.m_end))
+		{
+			if (ntime < time.m_start) ntime = time.m_start;
+			if (ntime > time.m_end) ntime = time.m_end;
+		}
+		doc->SetActiveState(ntime);
+		RedrawGL();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::StopAnimation()
+{
+	ui->stopAnimation();
 }
 
 //-----------------------------------------------------------------------------

@@ -10,6 +10,7 @@
 #include <QComboBox>
 #include <QBoxLayout>
 #include <QLineEdit>
+#include <QSpinBox>
 #include <QtCore/QDir>
 #include "FileViewer.h"
 #include "ModelViewer.h"
@@ -59,6 +60,8 @@ public:
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
 	QProgressBar*	fileProgress;
+
+	QToolBar* playToolBar;
 
 	QAction* actionSelectObjects;
 	QAction* actionSelectParts;
@@ -110,6 +113,8 @@ public:
 	QAction* actionWireframe;
 	QAction* actionShowFibers;
 
+	QAction* actionPlay;
+
 public:
 	QStringList		m_febio_path;
 	QStringList		m_febio_info;
@@ -120,6 +125,8 @@ public:
 	int			m_theme;	// 0 = default, 1 = dark
 
 	QString	m_old_title;
+
+	bool	m_isAnimating;
 
 	QList<::CGraphWindow*>	graphList;
 
@@ -138,6 +145,8 @@ public:
 		m_bkillProcess = false;
 
 		m_theme = 0;
+
+		m_isAnimating = false;
 
 		curveWnd = 0;
 		meshWnd = 0;
@@ -581,6 +590,42 @@ public:
 		mainToolBar->addAction(actionClone);
 		mainToolBar->addAction(actionCloneGrid);
 		mainToolBar->addAction(actionCloneRevolve);
+
+		// Play tool bar
+		playToolBar = new QToolBar(mainWindow);
+		playToolBar->setObjectName(QStringLiteral("playToolBar"));
+		playToolBar->setWindowTitle("Animate Toolbar");
+		mainWindow->addToolBar(Qt::TopToolBarArea, playToolBar);
+
+		QAction* actionFirst = addAction("first", "actionFirst", ":/icons/back.png");
+		QAction* actionPrev = addAction("previous", "actionPrev", ":/icons/prev.png");
+		actionPlay = addAction("Play", "actionPlay", ":/icons/play.png"); actionPlay->setShortcut(Qt::Key_Space);
+		actionPlay->setCheckable(true);
+		QAction* actionNext = addAction("next", "actionNext", ":/icons/next.png");
+		QAction* actionLast = addAction("last", "actionLast", ":/icons/forward.png");
+		QAction* actionTime = addAction("Time settings", "actionTimeSettings", ":/icons/clock.png");
+
+		playToolBar->addAction(actionFirst);
+		playToolBar->addAction(actionPrev);
+		playToolBar->addAction(actionPlay);
+		playToolBar->addAction(actionNext);
+		playToolBar->addAction(actionLast);
+
+		actionFirst->setWhatsThis("<font color=\"black\">Click this to go to the first time step in the model.");
+		actionPrev->setWhatsThis("<font color=\"black\">Click this to go to the previous time step in the model.");
+		actionPlay->setWhatsThis("<font color=\"black\">Click this to toggle the animation on or off");
+		actionNext->setWhatsThis("<font color=\"black\">Click this to go to the next time step");
+		actionLast->setWhatsThis("<font color=\"black\">Click this to go to the last time step in the model.");
+		actionTime->setWhatsThis("<font color=\"black\">Click this to open the Time Info dialog box.");
+
+		QSpinBox* pspin;
+		playToolBar->addWidget(pspin = new QSpinBox);
+		pspin->setObjectName("selectTime");
+		pspin->setMinimumWidth(80);
+		pspin->setSuffix("/100");
+		playToolBar->addAction(actionTime);
+
+//		playToolBar->setDisabled(true);
 	}
 
 	void SetSelectionMode(int nselect)
@@ -703,6 +748,12 @@ public:
 	void showBuildPanel()
 	{
 		buildPanel->parentWidget()->raise();
+	}
+
+	void stopAnimation()
+	{
+		m_isAnimating = false;
+		actionPlay->setChecked(false);
 	}
 
 private:

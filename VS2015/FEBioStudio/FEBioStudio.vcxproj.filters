@@ -525,6 +525,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_IntegrateWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\DlgTimeSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -876,6 +879,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\convert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\DlgTimeSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

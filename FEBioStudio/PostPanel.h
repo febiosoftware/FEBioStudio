@@ -17,7 +17,6 @@ public:
 	void SetPostDoc(CPostDoc* pd);
 
 private slots:
-	void on_slider_changed(int n);
 	void on_data_changed(int n);
 
 signals:

@@ -13,7 +13,6 @@ public:
 	CPostDoc*	m_pd;
 
 public:
-	QSlider*			m_slider;
 	CDataFieldSelector*	m_data;
 
 public:
@@ -22,7 +21,6 @@ public:
 		m_pd = nullptr;
 
 		QFormLayout* form = new QFormLayout;
-		form->addRow("State:", m_slider = new QSlider);
 		form->addRow("Data:", m_data = new CDataFieldSelector);
 		form->setLabelAlignment(Qt::AlignRight);
 
@@ -30,10 +28,6 @@ public:
 		l->addLayout(form);
 		w->setLayout(l);
 
-		m_slider->setOrientation(Qt::Horizontal);
-		m_slider->setDisabled(true);
-
-		QObject::connect(m_slider, SIGNAL(valueChanged(int)), w, SLOT(on_slider_changed(int)));
 		QObject::connect(m_data, SIGNAL(currentValueChanged(int)), w, SLOT(on_data_changed(int)));
 	}
 };
@@ -50,29 +44,8 @@ void CPostPanel::SetPostDoc(CPostDoc* pd)
 		ui->m_pd = pd;
 		if (pd)
 		{
-			ui->m_slider->setEnabled(true);
-
-			int N = pd->GetStates();
-			ui->m_slider->setRange(0, N - 1);
-			ui->m_slider->setPageStep(1);
-			ui->m_slider->setValue(0);
-
 			ui->m_data->BuildMenu(pd->GetFEModel(), Post::Data_Tensor_Type::DATA_SCALAR);
 		}
-		else ui->m_slider->setDisabled(true);
-	}
-}
-
-void CPostPanel::on_slider_changed(int n)
-{
-	if (ui->m_pd)
-	{
-		if ((n >= 0) && (n < ui->m_pd->GetStates()))
-		{
-			ui->m_pd->SetActiveState(n);
-		}
-
-		emit dataChanged();
 	}
 }
 

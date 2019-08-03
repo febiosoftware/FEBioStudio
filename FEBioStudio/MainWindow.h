@@ -14,6 +14,7 @@ class CCreatePanel;
 class CBuildPanel;
 class QMenu;
 class CGraphWindow;
+class CPostDoc;
 
 namespace Ui {
 	class CMainWindow;
@@ -85,6 +86,9 @@ public:
 
 	// set the current theme
 	void setCurrentTheme(int n);
+
+	// get the current post doc
+	CPostDoc* GetActiveDocument();
 
 	// --- WINDOW UPDATE ---
 
@@ -286,11 +290,22 @@ public slots:
 	void on_selectCircle_toggled(bool b);
 	void on_selectFree_toggled(bool b);
 
+	void on_actionPlay_toggled(bool bchecked);
+	void on_actionFirst_triggered();
+	void on_actionPrev_triggered();
+	void on_actionNext_triggered();
+	void on_actionLast_triggered();
+	void on_actionTimeSettings_triggered();
+
 	void closeEvent(QCloseEvent* ev);
 	void keyPressEvent(QKeyEvent* ev);
 
 	void finishedReadingFile(bool success, const QString& errorString);
 	void checkFileProgress();
+
+	void StopAnimation();
+
+	void onTimer();
 
 	void on_glview_pointPicked(const vec3d& r);
 	void on_glview_selectionChanged();

@@ -102,5 +102,11 @@
 		<file>icons/marching_cubes.png</file>
 		<file>icons/chart.png</file>
 		<file>icons/integrate.png</file>
+		<file>icons/back.png</file>
+		<file>icons/clock.png</file>
+		<file>icons/forward.png</file>
+		<file>icons/next.png</file>
+		<file>icons/play.png</file>
+		<file>icons/prev.png</file>
 	</qresource>
 </RCC>

@@ -18,6 +18,7 @@ public:
 
 public:
 	CFEBioJob();
+	~CFEBioJob();
 	CFEBioJob(const std::string& fileName, JOB_STATUS status);
 
 	void SetStatus(JOB_STATUS status);
@@ -36,7 +37,7 @@ private:
 	std::string		m_fileName;	// the .feb file name
 	int				m_status;	// return status
 
-	CPostDoc*	m_post;
+	CPostDoc*	m_postDoc;
 
 	static int	m_count;
 };

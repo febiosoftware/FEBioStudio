@@ -199,6 +199,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgRun.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSoluteTable.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgTimeSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTransform.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgVTKExport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DocTemplate.cpp" />
@@ -377,6 +378,7 @@
     <ClInclude Include="..\..\FEBioStudio\DlgRun.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgSoluteTable.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgTimeSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgTransform.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgVTKExport.h" />
     <ClInclude Include="..\..\FEBioStudio\DocTemplate.h" />
