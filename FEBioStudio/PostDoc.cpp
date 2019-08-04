@@ -113,6 +113,14 @@ void CPostDoc::UpdateAllStates()
 	SetActiveState(ntime);
 }
 
+void CPostDoc::UpdateFEModel(bool breset)
+{
+	if (!IsValid()) return;
+
+	// update the model
+	if (imp->glm) imp->glm->Update(breset);
+}
+
 void CPostDoc::SetDataField(int n)
 {
 	imp->glm->GetColorMap()->SetEvalField(n);

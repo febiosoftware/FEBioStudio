@@ -169,6 +169,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgAddBodyLoad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddContact.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddEquation.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddIC.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddMeshData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddNodalLoad.cpp" />
@@ -250,6 +251,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_CurvePicker.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DataFieldSelector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddChemicalReaction.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgAddEquation.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddMeshData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneGrid.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneObject.cpp" />
@@ -285,6 +287,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_ModelViewer.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ObjectPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PlotWidget.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PostPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListForm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
@@ -303,6 +306,7 @@
     <ClCompile Include="..\..\FEBioStudio\PlaneCutTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PlotWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostDoc.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PostPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyList.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListForm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListView.cpp" />
@@ -346,6 +350,11 @@
     <ClInclude Include="..\..\FEBioStudio\DlgAddBodyLoad.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgAddChemicalReaction.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgAddContact.h" />
+    <CustomBuild Include="..\..\FEBioStudio\DlgAddEquation.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgAddIC.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgAddMeshData.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgAddNodalLoad.h" />
@@ -443,6 +452,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </ClInclude>
+    <CustomBuild Include="..\..\FEBioStudio\PostPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\PropertyList.h" />
     <CustomBuild Include="..\..\FEBioStudio\PropertyListForm.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

@@ -220,6 +220,7 @@ public:
 			// try to open the file
 			m_job->OpenPlotFile(fileName);
 
+			m_wnd->UpdatePostPanel();
 			m_wnd->UpdatePostToolbar();
 
 			SetModified(true);

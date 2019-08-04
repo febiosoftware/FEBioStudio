@@ -21,6 +21,7 @@
 #include "GLControlBar.h"
 #include "Document.h"
 #include "DataFieldSelector.h"
+#include "PostPanel.h"
 
 class QProcess;
 
@@ -57,6 +58,7 @@ public:
 	::CLogPanel*	logPanel;
 	::CCurveEditor*	curveWnd;
 	::CMeshInspector* meshWnd;
+	::CPostPanel*	postPanel;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -687,6 +689,13 @@ public:
 		dock4->setWidget(logPanel);
 		menuView->addAction(dock4->toggleViewAction());
 		m_wnd->addDockWidget(Qt::BottomDockWidgetArea, dock4);
+
+		QDockWidget* dock5 = new QDockWidget("Post", m_wnd); dock5->setObjectName("dockPost");
+		dock5->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+		postPanel = new ::CPostPanel(m_wnd, dock5);
+		dock5->setWidget(postPanel);
+		menuView->addAction(dock5->toggleViewAction());
+		m_wnd->addDockWidget(Qt::BottomDockWidgetArea, dock5);
 
 		// make sure the file viewer is the visible tab
 		dock1->raise();

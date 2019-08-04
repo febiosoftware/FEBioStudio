@@ -1154,11 +1154,6 @@ void CModelPropsPanel::on_form_dataChanged(bool itemModified)
 	emit dataChanged(itemModified);
 }
 
-void CModelPropsPanel::on_post_dataChanged()
-{
-	m_wnd->RedrawGL();
-}
-
 void CModelPropsPanel::on_bcobject_stepChanged(int n)
 {
 	if (m_isUpdating) return;

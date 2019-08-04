@@ -812,6 +812,13 @@ void CMainWindow::UpdatePostToolbar()
 }
 
 //-----------------------------------------------------------------------------
+//! Update the post panel
+void CMainWindow::UpdatePostPanel()
+{
+	ui->postPanel->Update(true);
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::RedrawGL()
 {
 	ui->glview->repaint();

@@ -522,6 +522,18 @@
     <ClCompile Include="..\..\FEBioStudio\DlgTimeSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\PostPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_PostPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\DlgAddEquation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgAddEquation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -902,6 +914,12 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\IntegrateWindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PostPanel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgAddEquation.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

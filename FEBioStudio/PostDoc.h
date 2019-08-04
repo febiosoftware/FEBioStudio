@@ -7,6 +7,7 @@ class CGLView;
 namespace Post {
 	class FEModel;
 	class CGLModel;
+	class FEDataField;
 }
 
 class CPostObject;
@@ -65,6 +66,8 @@ public:
 	std::string GetFieldString();
 
 	void UpdateAllStates();
+
+	void UpdateFEModel(bool breset);
 
 	int GetEvalField();
 

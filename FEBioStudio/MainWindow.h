@@ -104,6 +104,9 @@ public:
 	//! Update the post tool bar
 	void UpdatePostToolbar();
 
+	//! Update the post panel
+	void UpdatePostPanel();
+
 	//! Update the model editor
 	void UpdateModel(FEObject* po = 0, bool bupdate = true);
 

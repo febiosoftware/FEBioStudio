@@ -109,7 +109,6 @@ private slots:
 	void on_props_dataChanged();
 	void on_form_dataChanged(bool itemModified);
 	void on_bcobject_stepChanged(int n);
-	void on_post_dataChanged();
 
 private:
 	void SetSelection(int n, FEItemListBuilder* it);
