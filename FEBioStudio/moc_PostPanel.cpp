@@ -22,7 +22,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CPostPanel_t {
     QByteArrayData data[13];
-    char stringdata0[263];
+    char stringdata0[262];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -36,22 +36,23 @@ QT_MOC_LITERAL(1, 11, 24), // "on_AddStandard_triggered"
 QT_MOC_LITERAL(2, 36, 0), // ""
 QT_MOC_LITERAL(3, 37, 24), // "on_AddFromFile_triggered"
 QT_MOC_LITERAL(4, 62, 24), // "on_AddEquation_triggered"
-QT_MOC_LITERAL(5, 87, 21), // "on_CopyButton_clicked"
-QT_MOC_LITERAL(6, 109, 23), // "on_DeleteButton_clicked"
-QT_MOC_LITERAL(7, 133, 23), // "on_FilterButton_clicked"
-QT_MOC_LITERAL(8, 157, 23), // "on_ExportButton_clicked"
-QT_MOC_LITERAL(9, 181, 19), // "on_dataList_clicked"
-QT_MOC_LITERAL(10, 201, 11), // "QModelIndex"
-QT_MOC_LITERAL(11, 213, 28), // "on_fieldName_editingFinished"
-QT_MOC_LITERAL(12, 242, 20) // "on_props_dataChanged"
+QT_MOC_LITERAL(5, 87, 22), // "on_AddFilter_triggered"
+QT_MOC_LITERAL(6, 110, 21), // "on_CopyButton_clicked"
+QT_MOC_LITERAL(7, 132, 23), // "on_DeleteButton_clicked"
+QT_MOC_LITERAL(8, 156, 23), // "on_ExportButton_clicked"
+QT_MOC_LITERAL(9, 180, 19), // "on_dataList_clicked"
+QT_MOC_LITERAL(10, 200, 11), // "QModelIndex"
+QT_MOC_LITERAL(11, 212, 28), // "on_fieldName_editingFinished"
+QT_MOC_LITERAL(12, 241, 20) // "on_props_dataChanged"
 
     },
     "CPostPanel\0on_AddStandard_triggered\0"
     "\0on_AddFromFile_triggered\0"
-    "on_AddEquation_triggered\0on_CopyButton_clicked\0"
-    "on_DeleteButton_clicked\0on_FilterButton_clicked\0"
-    "on_ExportButton_clicked\0on_dataList_clicked\0"
-    "QModelIndex\0on_fieldName_editingFinished\0"
+    "on_AddEquation_triggered\0"
+    "on_AddFilter_triggered\0on_CopyButton_clicked\0"
+    "on_DeleteButton_clicked\0on_ExportButton_clicked\0"
+    "on_dataList_clicked\0QModelIndex\0"
+    "on_fieldName_editingFinished\0"
     "on_props_dataChanged"
 };
 #undef QT_MOC_LITERAL
@@ -105,9 +106,9 @@ void CPostPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 0: _t->on_AddStandard_triggered(); break;
         case 1: _t->on_AddFromFile_triggered(); break;
         case 2: _t->on_AddEquation_triggered(); break;
-        case 3: _t->on_CopyButton_clicked(); break;
-        case 4: _t->on_DeleteButton_clicked(); break;
-        case 5: _t->on_FilterButton_clicked(); break;
+        case 3: _t->on_AddFilter_triggered(); break;
+        case 4: _t->on_CopyButton_clicked(); break;
+        case 5: _t->on_DeleteButton_clicked(); break;
         case 6: _t->on_ExportButton_clicked(); break;
         case 7: _t->on_dataList_clicked((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
         case 8: _t->on_fieldName_editingFinished(); break;

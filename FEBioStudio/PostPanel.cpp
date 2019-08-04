@@ -259,6 +259,7 @@ public:
 		QAction* addActionStd  = new QAction("Standard ..." , parent); addActionStd ->setObjectName("AddStandard");
 		QAction* addActionFile = new QAction("From file ...", parent); addActionFile->setObjectName("AddFromFile");
 		QAction* addEquation   = new QAction("Equation ..." , parent); addEquation  ->setObjectName("AddEquation");
+		QAction* addFilter     = new QAction("Filter ..."   , parent); addFilter    ->setObjectName("AddFilter");
 
 		QPushButton* pbAdd = new QPushButton(); //pbAdd->setFixedSize(BW, BH);
 		pbAdd->setText("Add");
@@ -267,11 +268,11 @@ public:
 		menu->addAction(addActionStd);
 		menu->addAction(addActionFile);
 		menu->addAction(addEquation);
+		menu->addAction(addFilter);
 		pbAdd->setMenu(menu);
 
 		QPushButton* pbCpy = new QPushButton("Copy"     ); pbCpy->setObjectName("CopyButton"  ); //pbCpy->setFixedSize(BW, BH); 
 		QPushButton* pbDel = new QPushButton("Delete"   ); pbDel->setObjectName("DeleteButton"); //pbDel->setFixedSize(BW, BH); 
-		QPushButton* pbFlt = new QPushButton("Filter..."); pbFlt->setObjectName("FilterButton"); //pbFlt->setFixedSize(BW, BH); 
 		QPushButton* pbExp = new QPushButton("Export..."); pbExp->setObjectName("ExportButton"); //pbExp->setFixedSize(BW, BH); 
 
 		QHBoxLayout* ph = new QHBoxLayout;
@@ -279,7 +280,6 @@ public:
 		ph->addWidget(pbAdd);
 		ph->addWidget(pbCpy);
 		ph->addWidget(pbDel);
-		ph->addWidget(pbFlt);
 		ph->addWidget(pbExp);
 		ph->addStretch();
 
@@ -766,7 +766,7 @@ void CPostPanel::on_DeleteButton_clicked()
 	}
 }
 
-void CPostPanel::on_FilterButton_clicked()
+void CPostPanel::on_AddFilter_triggered()
 {
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
