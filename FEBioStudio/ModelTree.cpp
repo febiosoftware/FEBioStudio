@@ -188,7 +188,8 @@ public:
 	{
 		addProperty("File:", CProperty::String)->setFlags(CProperty::Visible);
 		addProperty("Status:", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
-		addProperty("", CProperty::Action)->info = QString("Open plot file");
+		addProperty("Results:", CProperty::Action)->info = QString("Open in FEBio Studio");
+		addProperty("", CProperty::Action)->info = QString("Open in PostView");
 	}
 
 	QVariant GetPropertyValue(int i) override
@@ -224,6 +225,23 @@ public:
 			m_wnd->UpdatePostToolbar();
 
 			SetModified(true);
+		}
+		else if (i == 3)
+		{
+			std::string fileName = m_job->GetFileName();
+			size_t pos = fileName.rfind(".");
+			if (pos != std::string::npos)
+			{
+				// remove extension
+				fileName.erase(pos + 1);
+			}
+
+			// add the xplt extension
+			fileName = "file:///" + fileName;
+			fileName += "xplt";
+
+			// try to open the file
+			QDesktopServices::openUrl(QUrl(QString::fromStdString(fileName)));
 		}
 	}
 
