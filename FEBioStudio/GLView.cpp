@@ -320,6 +320,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	setMouseTracking(true);
 
+	m_szsubtitle[0] = 0;
+
 	// attach the highlighter to this view
 	GLHighlighter::AttachToView(this);
 
@@ -1059,6 +1061,16 @@ void CGLView::initializeGL()
 	}
 	else glDisable(GL_POINT_SMOOTH);
 
+	int Y = 0;
+	m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""));
+	m_ptitle->set_font_size(30);
+	m_ptitle->fit_to_size();
+	Y += m_ptitle->h();
+
+	m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""));
+	m_psubtitle->set_font_size(15);
+	m_psubtitle->fit_to_size();
+
 	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150));
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
 	m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
@@ -1077,6 +1089,47 @@ void CGLView::Reset()
 	m_Cam.Update(true);
 	GLHighlighter::ClearHighlights();
 	repaint();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::UpdateWidgets(bool bposition)
+{
+	CDocument* pdoc = GetDocument();
+	CPostDoc* postDoc = nullptr;
+	for (int i = 0; i < pdoc->FEBioJobs(); ++i)
+	{
+		CFEBioJob* job = pdoc->GetFEBioJob(i);
+
+		CPostDoc* post = job->GetPostDoc();
+		if (post)
+		{
+			postDoc = post;
+		}
+	}
+
+	if (postDoc)
+	{
+		const string& title = postDoc->GetTitle();
+		m_ptitle->copy_label(title.c_str());
+
+		int Y = 0;
+		if (bposition)
+			m_ptitle->resize(0, 0, m_ptitle->w(), m_ptitle->h());
+
+		m_ptitle->fit_to_size();
+		Y = m_ptitle->y() + m_ptitle->h();
+
+		if (bposition)
+			m_psubtitle->resize(0, Y, m_psubtitle->w(), m_psubtitle->h());
+
+		m_psubtitle->fit_to_size();
+
+		// set a min width for the subtitle otherwise the time values may get cropped
+		if (m_psubtitle->w() < 150)
+			m_psubtitle->resize(m_psubtitle->x(), m_psubtitle->y(), 150, m_psubtitle->h());
+
+		repaint();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1369,6 +1422,26 @@ void CGLView::paintGL()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	// render the title
+	CPostDoc* postDoc = nullptr;
+	if (pdoc->FEBioJobs() > 0) postDoc = pdoc->GetFEBioJob(0)->GetPostDoc();
+	if (postDoc && postDoc->IsValid())// && view.m_bTitle)
+	{
+		string title = postDoc->GetTitle();
+		m_ptitle->copy_label(title.c_str());
+
+		sprintf(m_szsubtitle, "%s\nTime = %.4g", postDoc->GetFieldString().c_str(), postDoc->GetTimeValue());
+		m_psubtitle->set_label(m_szsubtitle);
+
+		m_ptitle->show();
+		m_psubtitle->show();
+	}
+	else
+	{
+		m_ptitle->hide();
+		m_psubtitle->hide();
+	}
 
 	// render the triad
 	CGLCamera& cam = GetCamera();

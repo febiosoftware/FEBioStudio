@@ -337,6 +337,8 @@ public:
 	ANIMATION_MODE AnimationMode() const;
 	bool HasRecording() const;
 
+	void UpdateWidgets(bool bposition = true);
+
 protected:
 	void PanView(vec3d r);
 
@@ -410,8 +412,11 @@ protected:
 	GScalor			m_Stor;	//!< the scale manipulator
 
 	// triad
+	GLBox*			m_ptitle;
+	GLBox*			m_psubtitle;
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
+	char			m_szsubtitle[256];
 
 	CGLWidgetManager*	m_Widget;
 

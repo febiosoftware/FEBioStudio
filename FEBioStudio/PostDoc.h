@@ -65,11 +65,15 @@ public:
 
 	std::string GetFieldString();
 
+	float GetTimeValue();
+
 	void UpdateAllStates();
 
 	void UpdateFEModel(bool breset);
 
 	int GetEvalField();
+
+	std::string GetTitle();
 
 private:
 	Imp*	imp;

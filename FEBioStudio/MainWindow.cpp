@@ -1024,7 +1024,7 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 //		}
 //		else doc->UpdateFEModel();
 
-//		ui->glview->UpdateWidgets(false);
+		ui->glview->UpdateWidgets(false);
 		RedrawGL();
 	}
 

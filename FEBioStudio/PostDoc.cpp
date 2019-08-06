@@ -94,6 +94,11 @@ int CPostDoc::GetEvalField()
 	return pc->GetEvalField();
 }
 
+std::string CPostDoc::GetTitle()
+{
+	return "title";
+}
+
 std::string CPostDoc::GetFieldString()
 {
 	if (IsValid())
@@ -102,6 +107,12 @@ std::string CPostDoc::GetFieldString()
 		return GetFEModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
 	}
 	else return "";
+}
+
+float CPostDoc::GetTimeValue()
+{
+	if (imp->glm) return imp->glm->currentTime();
+	else return 0.f;
 }
 
 void CPostDoc::UpdateAllStates()
