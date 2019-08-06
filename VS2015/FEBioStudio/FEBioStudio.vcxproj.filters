@@ -806,9 +806,6 @@
     <ClInclude Include="..\..\FEBioStudio\PropertyList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\PropertyListView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\ReadCurveTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -920,6 +917,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\DlgAddEquation.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PropertyListView.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

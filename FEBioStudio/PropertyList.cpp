@@ -14,6 +14,7 @@ CProperty& CProperty::operator = (const CProperty& p)
 	fstep = p.fstep;
 	bauto = p.bauto;
 	pdata = p.pdata;
+	param = p.param;
 	return *this;
 }
 

@@ -44,11 +44,13 @@ CObjectProps::CObjectProps(FEObject* po, FEModel* fem)
 
 void CObjectProps::AddParameter(Param& p)
 {
+	CProperty* prop = nullptr;
 	switch (p.GetParamType())
 	{
-	case Param_FLOAT: addProperty(p.GetLongName(), CProperty::Float); break;
-	case Param_VEC3D: addProperty(p.GetLongName(), CProperty::String); break;
-	case Param_STRING: addProperty(p.GetLongName(), CProperty::String); break;
+	case Param_FLOAT: prop = addProperty(p.GetLongName(), CProperty::Float); break;
+	case Param_VEC3D: prop = addProperty(p.GetLongName(), CProperty::String); break;
+	case Param_STRING: prop = addProperty(p.GetLongName(), CProperty::String); break;
+	case Param_MATH  : prop = addProperty(p.GetLongName(), CProperty::MathString); break;
 	case Param_BOOL:
 	{
 		const char* ch = p.GetEnumNames();
@@ -58,10 +60,11 @@ void CObjectProps::AddParameter(Param& p)
 			ops << QString(ch);
 			ch = ch + strlen(ch) + 1;
 			ops << QString(ch);
-			addProperty(p.GetLongName(), CProperty::Enum)->setEnumValues(ops);
+			prop = addProperty(p.GetLongName(), CProperty::Enum);
+			prop->setEnumValues(ops);
 			break;
 		}
-		else addProperty(p.GetLongName(), CProperty::Bool);
+		else prop = addProperty(p.GetLongName(), CProperty::Bool);
 	}
 	break;
 	case Param_CHOICE:
@@ -71,16 +74,20 @@ void CObjectProps::AddParameter(Param& p)
 		if (ch)
 		{
 			QStringList ops = toStringList(m_fem, ch);
-			addProperty(p.GetLongName(), CProperty::Enum)->setEnumValues(ops);
+			prop = addProperty(p.GetLongName(), CProperty::Enum);
+			prop->setEnumValues(ops);
 			break;
 		}
-		else addProperty(p.GetLongName(), CProperty::Int);
+		else prop = addProperty(p.GetLongName(), CProperty::Int);
 	}
 	break;
 	default:
-		addProperty(p.GetLongName(), CProperty::String)->setFlags(CProperty::Visible);
+		prop = addProperty(p.GetLongName(), CProperty::String);
+		prop->setFlags(CProperty::Visible);
 		break;
 	}
+	if (prop && p.IsVariable()) prop->flags |= CProperty::Variable;
+	if (prop) prop->param = &p;
 
 	m_params.push_back(&p);
 }
@@ -121,6 +128,7 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 	case Param_INT: return p.GetIntValue(); break;
 	case Param_FLOAT: return p.GetFloatValue(); break;
 	case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
+	case Param_MATH  : return QString::fromStdString(p.GetMathString()); break;
 	case Param_BOOL:
 	{
 		if (p.GetEnumNames()) return (p.GetBoolValue() ? 1 : 0);
@@ -155,6 +163,7 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	case Param_INT: p.SetIntValue(v.toInt()); break;
 	case Param_FLOAT: p.SetFloatValue(v.toDouble()); break;
 	case Param_STRING: p.SetStringValue(v.toString().toStdString()); break;
+	case Param_MATH  : p.SetMathString(v.toString().toStdString()); break;
 	case Param_BOOL:
 	{
 		if (p.GetEnumNames()) p.SetBoolValue(v.toInt() != 0);

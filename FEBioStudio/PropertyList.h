@@ -1,6 +1,8 @@
 #pragma once
 #include <QtCore/QVariant>
-#include <PostViewLib/convert.h>
+#include "convert.h"
+
+class Param;
 
 //-----------------------------------------------------------------------------
 class CProperty
@@ -14,12 +16,14 @@ public:
 		String,
 		Enum,
 		Color,
-		Vec3,
+		Resource,	// external resource (e.g. file)
+		Group,
+		MathString,
+
+		// from PostView
 		DataScalar,
 		DataVec3,
 		DataMat3,
-		Resource,	// external resource (e.g. file)
-		Group,
 
 		// types for selecting mesh items
 		Curve,
@@ -32,7 +36,8 @@ public:
 	enum Flags
 	{
 		Editable = 1,		// property can be edited
-		Visible = 2			// property is visible (in a property editor)
+		Visible  = 2,		// property is visible (in a property editor)
+		Variable = 4		// property's type can change
 	};
 
 public:
@@ -48,8 +53,10 @@ public:
 	QString			info;		// description of the property
 	QStringList		values;		// set possible values for Enum properties (if not set, Enum is treated as Int)
 
+	Param*		param;
+
 public:
-	CProperty(){}
+	CProperty() { param = nullptr; }
 	CProperty(const CProperty& p) { *this = p; }
 	CProperty& operator = (const CProperty& p);
 

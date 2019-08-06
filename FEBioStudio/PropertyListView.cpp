@@ -14,8 +14,68 @@
 #include <QtCore/QStringListModel>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
+#include <PreViewLib/ParamBlock.h>
 #include "DataFieldSelector.h"
 #include <PostViewLib/FEMeshData.h>
+
+//-----------------------------------------------------------------------------
+CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent)
+{
+	addItem("<constant>");
+	addItem("<math>");
+//	addItem("<map>");
+	setEditable(true);
+	setInsertPolicy(QComboBox::NoInsert);
+
+	m_prop = nullptr;
+
+	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
+}
+
+void CEditVariableProperty::setProperty(CProperty* p, QVariant data)
+{
+	m_prop = p;
+	if (p == nullptr) return;
+
+	blockSignals(true);
+	if (p->type == CProperty::Float)
+	{
+		setCurrentIndex(0);
+		setEditText(QString("%1").arg(data.toDouble()));
+	}
+	else if (p->type == CProperty::MathString)
+	{
+		setCurrentIndex(1);
+		setEditText(data.toString());
+	}
+	else if (p->type == CProperty::String)
+	{
+		setCurrentIndex(2);
+		setEditText(data.toString());
+	}
+	else
+	{
+		assert(false);
+	}
+	blockSignals(false);
+}
+
+void CEditVariableProperty::onCurrentIndexChanged(int index)
+{
+	if (index == 0) m_prop->type = CProperty::Float;
+	else m_prop->type = CProperty::MathString;
+
+	if (m_prop->param)
+	{
+		Param* p = m_prop->param;
+		if (index == 0) p->SetParamType(Param_FLOAT);
+		if (index == 1) p->SetParamType(Param_MATH);
+	}
+
+	setEditText("0");
+
+	emit typeChanged();
+}
 
 //-----------------------------------------------------------------------------
 class CPropertyListModel : public QAbstractTableModel
@@ -224,7 +284,25 @@ public:
 		const CPropertyListModel* model = dynamic_cast<const CPropertyListModel*>(index.model());
 		if ((model == 0)||(index.column()==0)) return QStyledItemDelegate::createEditor(parent, option, index);
 
-		QVariant data = index.data(Qt::EditRole);		
+		int nrow = index.row();
+		CPropertyList* propList = m_view->GetPropertyList();
+		CProperty* prop = nullptr;
+		if (propList)
+		{
+			if ((nrow >= 0) && (nrow < propList->Properties()))
+			{
+				prop = &propList->Property(nrow);
+			}
+		}
+
+		QVariant data = index.data(Qt::EditRole);
+		if (prop && (prop->flags & CProperty::Variable))
+		{
+			CEditVariableProperty* box = new CEditVariableProperty(parent);
+			box->setProperty(prop, data);
+			return box;
+		}
+
 		if (data.type() == QVariant::Bool)
 		{
 			QComboBox* box = new QComboBox(parent);
@@ -331,8 +409,10 @@ public:
 			model->setData(index, nfield, Qt::EditRole); return;
 		}
 
+		CEditVariableProperty* edit = dynamic_cast<CEditVariableProperty*>(editor);
+
 		QComboBox* box = qobject_cast<QComboBox*>(editor);
-		if (box) { model->setData(index, box->currentIndex(), Qt::EditRole); return; }
+		if (box && (edit == nullptr)) { model->setData(index, box->currentIndex(), Qt::EditRole); return; }
 
 		CColorButton* col = qobject_cast<CColorButton*>(editor);
 		if (col) { model->setData(index, col->color(), Qt::EditRole); return; }
@@ -390,6 +470,11 @@ public:
 CPropertyListView::CPropertyListView(QWidget* parent) : QWidget(parent), ui(new Ui::CPropertyListView)
 {
 	ui->setupUi(this);
+}
+
+CPropertyList* CPropertyListView::GetPropertyList()
+{
+	return ui->m_list;
 }
 
 //-----------------------------------------------------------------------------
