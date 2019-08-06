@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "container:FEBioStudio/FEBioStudio.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/Abaqus/Abaqus.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/Ansys/Ansys.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/Comsol/Comsol.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/FEBio/FEBio.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "absolute:/Users/gerard/Documents/Programs/fem/FEBio/mygit/PreView2/Xcode/FEBio/../FEMLib/FEMLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/GeomLib/GeomLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/ImageLib/ImageLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/LSDYNA/LSDYNA.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "absolute:/Users/gerard/Documents/Programs/fem/FEBio/mygit/PreView2/Xcode/LSDYNA/../MathLib/MathLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/MeshLib/MeshLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/PreViewIO/PreViewIO.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/PreViewLib/PreViewLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PreView2/Xcode/XML/XML.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PostView2/Xcode/GLWLib/GLWLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PostView2/Xcode/PostGL/PostGL.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PostView2/Xcode/PostViewLib/PostViewLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../PostView2/Xcode/XPLTLib/XPLTLib.xcodeproj">
+   </FileRef>
+</Workspace>
