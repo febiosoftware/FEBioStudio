@@ -2,8 +2,8 @@
 
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
-#define VERSION			2
-#define SUBVERSION		2
+#define VERSION			1
+#define SUBVERSION		1
 #define SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
