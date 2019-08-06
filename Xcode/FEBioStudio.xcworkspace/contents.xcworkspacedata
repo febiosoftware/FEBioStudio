@@ -17,7 +17,7 @@
       location = "group:../../PreView2/Xcode/FEBio/FEBio.xcodeproj">
    </FileRef>
    <FileRef
-      location = "absolute:/Users/gerard/Documents/Programs/fem/FEBio/mygit/PreView2/Xcode/FEBio/../FEMLib/FEMLib.xcodeproj">
+      location = "group:../../PreView2/Xcode/FEMLib/FEMLib.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:../../PreView2/Xcode/GeomLib/GeomLib.xcodeproj">
@@ -29,7 +29,7 @@
       location = "group:../../PreView2/Xcode/LSDYNA/LSDYNA.xcodeproj">
    </FileRef>
    <FileRef
-      location = "absolute:/Users/gerard/Documents/Programs/fem/FEBio/mygit/PreView2/Xcode/LSDYNA/../MathLib/MathLib.xcodeproj">
+      location = "group:../../PreView2/Xcode/MathLib/MathLib.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:../../PreView2/Xcode/MeshLib/MeshLib.xcodeproj">
