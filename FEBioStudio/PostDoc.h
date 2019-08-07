@@ -99,7 +99,7 @@ public:
 	// is called whenever the selection has changed
 	void UpdateSelection() override;
 
-	void UpdateMesh();
+	void UpdateMesh() override;
 
 private:
 	Post::CGLModel* m_glm;

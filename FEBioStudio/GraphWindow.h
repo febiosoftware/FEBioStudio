@@ -74,9 +74,9 @@ class RegressionUi : public CPlotTool
 public:
 	RegressionUi(CGraphWidget* graph, QWidget* parent = 0);
 
-	void draw(QPainter& p);
+	void draw(QPainter& p) override;
 
-	void Update();
+	void Update() override;
 
 	void hideEvent(QHideEvent* ev) override;
 

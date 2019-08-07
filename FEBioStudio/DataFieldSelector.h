@@ -49,7 +49,7 @@ public:
 
 public:
 	// inherited from FEModelDependant
-	void Update(Post::FEModel* pfem);
+	void Update(Post::FEModel* pfem) override;
 
 private:
 	Post::FEModel*			m_fem;
