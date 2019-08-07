@@ -570,7 +570,11 @@ CPostDoc* CPostPanel::GetActiveDocument()
 {
 	CDocument* doc = GetMainWindow()->GetDocument();
 	if (doc->FEBioJobs() == 0) return nullptr;
-	return doc->GetFEBioJob(0)->GetPostDoc();
+
+	int activeDoc = GetMainWindow()->GetActiveView() - 1;
+	if (activeDoc >= 0) 
+		return doc->GetFEBioJob(activeDoc)->GetPostDoc();
+	else return nullptr;
 }
 
 void CPostPanel::Update(bool breset)

@@ -1632,7 +1632,7 @@ void CMainWindow::on_actionShowFibers_toggled(bool b)
 
 void CMainWindow::changeViewMode(View_Mode vm)
 {
-	ui->glview->SetView(vm);
+	ui->glview->SetViewMode(vm);
 
 	// switch to ortho view if we're not in it
 	bool bortho = ui->glview->OrhographicProjection();

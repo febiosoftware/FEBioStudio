@@ -178,6 +178,7 @@ public:
 
 		// create the GL control bar
 		glc = new CGLControlBar(wnd);
+		glc->setObjectName("glbar");
 		glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
 
 		// add it all to the layout
@@ -596,7 +597,7 @@ public:
 		mainToolBar->addAction(actionCloneGrid);
 		mainToolBar->addAction(actionCloneRevolve);
 
-		// Play tool bar
+		// Post tool bar
 		postToolBar = new QToolBar(mainWindow);
 		postToolBar->setObjectName(QStringLiteral("postToolBar"));
 		postToolBar->setWindowTitle("Post Toolbar");
@@ -616,13 +617,6 @@ public:
 //		selectData->setFixedHeight(23);
 		selectData->setObjectName("selectData");
 		
-		postToolBar->addWidget(selectData);
-		postToolBar->addAction(actionFirst);
-		postToolBar->addAction(actionPrev);
-		postToolBar->addAction(actionPlay);
-		postToolBar->addAction(actionNext);
-		postToolBar->addAction(actionLast);
-
 		actionFirst->setWhatsThis("<font color=\"black\">Click this to go to the first time step in the model.");
 		actionPrev->setWhatsThis("<font color=\"black\">Click this to go to the previous time step in the model.");
 		actionPlay->setWhatsThis("<font color=\"black\">Click this to toggle the animation on or off");
@@ -630,7 +624,14 @@ public:
 		actionLast->setWhatsThis("<font color=\"black\">Click this to go to the last time step in the model.");
 		actionTime->setWhatsThis("<font color=\"black\">Click this to open the Time Info dialog box.");
 
+		postToolBar->addAction(actionFirst);
+		postToolBar->addAction(actionPrev);
+		postToolBar->addAction(actionPlay);
+		postToolBar->addAction(actionNext);
+		postToolBar->addAction(actionLast);
 		postToolBar->addWidget(pspin = new QSpinBox);
+		postToolBar->addWidget(selectData);
+
 		pspin->setObjectName("selectTime");
 		pspin->setMinimumWidth(80);
 		pspin->setSuffix("/100");

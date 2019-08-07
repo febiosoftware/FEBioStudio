@@ -237,8 +237,7 @@ void CMainWindow::on_actionGraph_triggered()
 	int jobs = doc->FEBioJobs();
 	if (jobs == 0) return;
 
-	CFEBioJob* job = doc->GetFEBioJob(0);
-	CPostDoc* postDoc = job->GetPostDoc();
+	CPostDoc* postDoc = GetActiveDocument();
 	if (postDoc == nullptr) return;
 
 	CGraphWindow* pg = new CModelGraphWindow(this, postDoc);
@@ -256,8 +255,7 @@ void CMainWindow::on_actionSummary_triggered()
 	int jobs = doc->FEBioJobs();
 	if (jobs == 0) return;
 
-	CFEBioJob* job = doc->GetFEBioJob(0);
-	CPostDoc* postDoc = job->GetPostDoc();
+	CPostDoc* postDoc = GetActiveDocument();
 	if (postDoc == nullptr) return;
 
 	CSummaryWindow* summaryWindow = new CSummaryWindow(this, postDoc);
@@ -276,8 +274,7 @@ void CMainWindow::on_actionStats_triggered()
 	int jobs = doc->FEBioJobs();
 	if (jobs == 0) return;
 
-	CFEBioJob* job = doc->GetFEBioJob(0);
-	CPostDoc* postDoc = job->GetPostDoc();
+	CPostDoc* postDoc = GetActiveDocument();
 	if (postDoc == nullptr) return;
 
 	CStatsWindow* statsWindow = new CStatsWindow(this, postDoc);
@@ -295,8 +292,7 @@ void CMainWindow::on_actionIntegrate_triggered()
 	int jobs = doc->FEBioJobs();
 	if (jobs == 0) return;
 
-	CFEBioJob* job = doc->GetFEBioJob(0);
-	CPostDoc* postDoc = job->GetPostDoc();
+	CPostDoc* postDoc = GetActiveDocument();
 	if (postDoc == nullptr) return;
 
 	CIntegrateWindow* integrateWindow = new CIntegrateWindow(this, postDoc);

@@ -175,7 +175,7 @@ public:
 
 	vec3d PickPoint(int x, int y, bool* success = 0);
 
-	void SetView(View_Mode n);
+	void SetViewMode(View_Mode n);
 	View_Mode GetViewMode() { return m_nview; }
 
 	void TogglePerspective(bool b);
@@ -278,6 +278,8 @@ public:
 	void RenderLocalMaterialAxes();
 	void Render3DCursor(const vec3d& r, double R);
 	void RenderSelectionBox();
+	void RenderDefaultView();
+	void RenderPostView(int n);
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
 	vec3d ScreenToGrid(int x, int y);

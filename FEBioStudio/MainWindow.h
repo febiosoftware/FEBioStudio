@@ -104,6 +104,9 @@ public:
 	//! Update the post tool bar
 	void UpdatePostToolbar();
 
+	//! set the post doc that will be rendered in the GL view
+	void SetActivePostDoc(CPostDoc* postDoc);
+
 	//! Update the post panel
 	void UpdatePostPanel();
 
@@ -304,6 +307,8 @@ public slots:
 	void on_actionLast_triggered();
 	void on_actionTimeSettings_triggered();
 
+	void on_glbar_currentViewChanged(int n);
+
 	void closeEvent(QCloseEvent* ev);
 	void keyPressEvent(QKeyEvent* ev);
 
@@ -345,6 +350,12 @@ public:
 
 private:
 	void ReadNextFileInQueue();
+
+public:
+	int Views();
+	void SetActiveView(int n);
+	void AddView(const std::string& viewName, bool makeActive = true);
+	int GetActiveView();
 
 private:
 	Ui::CMainWindow*	ui;

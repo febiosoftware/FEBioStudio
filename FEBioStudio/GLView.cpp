@@ -540,7 +540,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 				repaint();
 			}
-			else SetView(VIEW_USER);
+			else SetViewMode(VIEW_USER);
 		}
 		else if ((but2 || (but3 && balt)) && !m_bsel)
 		{
@@ -1265,6 +1265,165 @@ void CGLView::paintGL()
 	// render the backgound
 	RenderBackground();
 
+	// get the active view
+	int activeView = m_pWnd->GetActiveView();
+
+	if (activeView == 0) RenderDefaultView();
+	else RenderPostView(activeView - 1);
+
+	// render the grid
+	if (view.m_bgrid) m_grid.Render();
+
+	// render the 3D cursor
+	if (activeView == 0)
+	{
+		// render the highlights
+		GLHighlighter::draw();
+
+		if (m_bpick && (nitem == ITEM_MESH))
+		{
+			Render3DCursor(pdoc->Get3DCursor(), 10.0);
+		}
+
+		// render the pivot
+		RenderPivot();
+	}
+
+	// render the view's name
+/*	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, width(), 0, height());
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+
+		gl_color(fl_rgb_color(196, 196, 196));
+		gl_font(FL_HELVETICA_BOLD, 16);
+		int xt = 10;
+		int yt = height() - 20;
+		switch (m_nview)
+		{
+		case VIEW_FRONT: gl_draw("FRONT", xt, yt); break;
+		case VIEW_BACK: gl_draw("BACK", xt, yt); break;
+		case VIEW_TOP: gl_draw("TOP", xt, yt); break;
+		case VIEW_BOTTOM: gl_draw("BOTTOM", xt, yt); break;
+		case VIEW_LEFT: gl_draw("LEFT", xt, yt); break;
+		case VIEW_RIGHT: gl_draw("RIGHT", xt, yt); break;
+		case VIEW_USER: gl_draw("USER", xt, yt); break;
+		}
+
+	}
+	glPopAttrib();
+*/
+
+	// render the tooltip
+	if (m_btooltip) RenderTooltip(m_xp, m_yp);
+
+	// render selection
+	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
+
+	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, width(), height(), 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// render the title
+	if (activeView > 0)
+	{
+		CPostDoc* postDoc = nullptr;
+		if (pdoc->FEBioJobs() > 0) postDoc = pdoc->GetFEBioJob(activeView - 1)->GetPostDoc();
+		if (postDoc && postDoc->IsValid())// && view.m_bTitle)
+		{
+			string title = postDoc->GetTitle();
+			m_ptitle->copy_label(title.c_str());
+
+			sprintf(m_szsubtitle, "%s\nTime = %.4g", postDoc->GetFieldString().c_str(), postDoc->GetTimeValue());
+			m_psubtitle->set_label(m_szsubtitle);
+
+			m_ptitle->show();
+			m_psubtitle->show();
+		}
+		else
+		{
+			m_ptitle->hide();
+			m_psubtitle->hide();
+		}
+	}
+	else
+	{
+		m_ptitle->hide();
+		m_psubtitle->hide();
+	}
+
+	// update the triad
+	CGLCamera& cam = GetCamera();
+	m_ptriad->setOrientation(to_quat4f(cam.GetOrientation()));
+
+	// render the GL widgets
+	QPainter painter(this);
+	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
+	if (activeView == 0) m_ptriad->draw(&painter);
+	else m_Widget->DrawWidgets(&painter);
+
+	painter.end();
+
+	if (m_nanim != ANIM_STOPPED)
+	{
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		int x = width() - 200;
+		int y = height() - 40;
+		glPopAttrib();
+	}
+
+	if ((m_nanim == ANIM_RECORDING) && (m_panim != 0))
+	{
+		glFlush();
+		QImage im = CaptureScreen();
+		if (m_panim->Write(im) == false)
+		{
+			StopAnimation();
+			QMessageBox::critical(this, "PostView2", "An error occurred while recording.");
+		}
+	}
+
+	if ((m_nanim == ANIM_PAUSED) && (m_panim != 0))
+	{
+		QPainter painter(this);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		QTextOption to;
+		QFont font = painter.font();
+		font.setPointSize(24);
+		painter.setFont(font);
+		painter.setPen(QPen(Qt::red));
+		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
+		painter.drawText(rect(), "Recording paused", to);
+		painter.end();
+	}
+
+	// if the camera is animating, we need to redraw
+	if (GetCamera().IsAnimating())
+	{
+		GetCamera().Update();
+		QTimer::singleShot(50, this, SLOT(repaintEvent()));
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::RenderDefaultView()
+{
+	CDocument* pdoc = GetDocument();
+	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	int nitem = pdoc->GetItemMode();
+
 	// render the model
 	if (pdoc->IsValid())
 	{
@@ -1319,16 +1478,17 @@ void CGLView::paintGL()
 	}
 
 	// render the command window gizmo's
-/*	CCommandPanel* pcw = m_pWnd->GetCommandWindow()->GetActivePanel();
+	/*	CCommandPanel* pcw = m_pWnd->GetCommandWindow()->GetActivePanel();
 	if (pcw)
 	{
-		GLCanvas glc(this);
-		pcw->Render(&glc);
+	GLCanvas glc(this);
+	pcw->Render(&glc);
 	}
-*/
+	*/
 	// render the selected parts
 	if (pdoc->IsValid())
 	{
+		GModel& model = *pdoc->GetGModel();
 		int nsel = pdoc->GetSelectionMode();
 		if (nitem == ITEM_MESH)
 		{
@@ -1348,150 +1508,17 @@ void CGLView::paintGL()
 			}
 		}
 	}
+}
 
-	// render open plot file
-	if (pdoc->IsValid())
+//-----------------------------------------------------------------------------
+void CGLView::RenderPostView(int n)
+{
+	CDocument* pdoc = GetDocument();
+	CFEBioJob* job = pdoc->GetFEBioJob(n);
+	CPostDoc* post = job->GetPostDoc();
+	if (post)
 	{
-		for (int i = 0; i < pdoc->FEBioJobs(); ++i)
-		{
-			CFEBioJob* job = pdoc->GetFEBioJob(i);
-
-			CPostDoc* post = job->GetPostDoc();
-			if (post)
-			{
-				post->Render(this);
-			}
-		}
-	}
-
-	// render the grid
-	if (view.m_bgrid) m_grid.Render();
-
-	// render the highlights
-	GLHighlighter::draw();
-
-	// render the 3D cursor
-	if (m_bpick && (nitem == ITEM_MESH)) 
-	{
-		Render3DCursor(pdoc->Get3DCursor(), 10.0);
-	}
-
-	// render the pivot
-	RenderPivot();
-
-	// render the view's name
-/*	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), 0, height());
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glPushAttrib(GL_ENABLE_BIT);
-	{
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-
-		gl_color(fl_rgb_color(196, 196, 196));
-		gl_font(FL_HELVETICA_BOLD, 16);
-		int xt = 10;
-		int yt = height() - 20;
-		switch (m_nview)
-		{
-		case VIEW_FRONT: gl_draw("FRONT", xt, yt); break;
-		case VIEW_BACK: gl_draw("BACK", xt, yt); break;
-		case VIEW_TOP: gl_draw("TOP", xt, yt); break;
-		case VIEW_BOTTOM: gl_draw("BOTTOM", xt, yt); break;
-		case VIEW_LEFT: gl_draw("LEFT", xt, yt); break;
-		case VIEW_RIGHT: gl_draw("RIGHT", xt, yt); break;
-		case VIEW_USER: gl_draw("USER", xt, yt); break;
-		}
-
-	}
-	glPopAttrib();
-*/
-
-	// render the tooltip
-	if (m_btooltip) RenderTooltip(m_xp, m_yp);
-
-	// render selection
-	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
-
-	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// render the title
-	CPostDoc* postDoc = nullptr;
-	if (pdoc->FEBioJobs() > 0) postDoc = pdoc->GetFEBioJob(0)->GetPostDoc();
-	if (postDoc && postDoc->IsValid())// && view.m_bTitle)
-	{
-		string title = postDoc->GetTitle();
-		m_ptitle->copy_label(title.c_str());
-
-		sprintf(m_szsubtitle, "%s\nTime = %.4g", postDoc->GetFieldString().c_str(), postDoc->GetTimeValue());
-		m_psubtitle->set_label(m_szsubtitle);
-
-		m_ptitle->show();
-		m_psubtitle->show();
-	}
-	else
-	{
-		m_ptitle->hide();
-		m_psubtitle->hide();
-	}
-
-	// render the triad
-	CGLCamera& cam = GetCamera();
-	m_ptriad->setOrientation(to_quat4f(cam.GetOrientation()));
-
-	QPainter painter(this);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-	m_Widget->DrawWidgets(&painter);
-	painter.end();
-
-	if (m_nanim != ANIM_STOPPED)
-	{
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		int x = width() - 200;
-		int y = height() - 40;
-		glPopAttrib();
-	}
-
-	if ((m_nanim == ANIM_RECORDING) && (m_panim != 0))
-	{
-		glFlush();
-		QImage im = CaptureScreen();
-		if (m_panim->Write(im) == false)
-		{
-			StopAnimation();
-			QMessageBox::critical(this, "PostView2", "An error occurred while recording.");
-		}
-	}
-
-	if ((m_nanim == ANIM_PAUSED) && (m_panim != 0))
-	{
-		QPainter painter(this);
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-		QTextOption to;
-		QFont font = painter.font();
-		font.setPointSize(24);
-		painter.setFont(font);
-		painter.setPen(QPen(Qt::red));
-		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
-		painter.drawText(rect(), "Recording paused", to);
-		painter.end();
-	}
-
-	// if the camera is animating, we need to redraw
-	if (GetCamera().IsAnimating())
-	{
-		GetCamera().Update();
-		QTimer::singleShot(50, this, SLOT(repaintEvent()));
+		post->Render(this);
 	}
 }
 
@@ -2990,7 +3017,7 @@ vec3d CGLView::GetViewDirection(double fx, double fy)
 	return n;
 }
 
-void CGLView::SetView(View_Mode n)
+void CGLView::SetViewMode(View_Mode n)
 {
 	quatd q;
 

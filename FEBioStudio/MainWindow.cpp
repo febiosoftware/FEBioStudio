@@ -119,8 +119,13 @@ CPostDoc* CMainWindow::GetActiveDocument()
 
 	if (doc->FEBioJobs() == 0) return nullptr;
 
-	CFEBioJob* job = doc->GetFEBioJob(0);
-	return job->GetPostDoc();
+	int activeDoc = GetActiveView() - 1;
+	if (activeDoc >= 0)
+	{
+		CFEBioJob* job = doc->GetFEBioJob(activeDoc);
+		return job->GetPostDoc();
+	}
+	else return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -790,7 +795,11 @@ void CMainWindow::UpdateGLControlBar()
 void CMainWindow::UpdatePostToolbar()
 {
 	CPostDoc* doc = GetActiveDocument();
-	if ((doc == nullptr) || (doc->IsValid() == false)) return;
+	if ((doc == nullptr) || (doc->IsValid() == false))
+	{
+		ui->postToolBar->setDisabled(true);
+		return;
+	}
 
 	Post::FEModel* pfem = doc->GetFEModel();
 	ui->selectData->BuildMenu(pfem, Post::DATA_SCALAR);
@@ -809,6 +818,66 @@ void CMainWindow::UpdatePostToolbar()
 		ui->pspin->setValue(ntime);
 		ui->postToolBar->setEnabled(true);
 	}
+}
+
+//-----------------------------------------------------------------------------
+//! set the post doc that will be rendered in the GL view
+void CMainWindow::SetActivePostDoc(CPostDoc* postDoc)
+{
+	if (postDoc == nullptr) 
+		SetActiveView(0);
+	else
+	{
+		int views = Views();
+		CDocument* doc = GetDocument();
+		for (int i = 0; i < doc->FEBioJobs(); ++i)
+		{
+			CFEBioJob* job = doc->GetFEBioJob(i);
+			if (job->GetPostDoc() == postDoc)
+			{
+				int activeView = i + 1;
+				if (activeView >= views)
+					AddView(job->GetName());
+				else
+					SetActiveView(activeView);
+
+				break;
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------
+int CMainWindow::Views()
+{
+	return ui->glc->views();
+}
+
+//-----------------------------------------------------------------
+void CMainWindow::SetActiveView(int n)
+{
+	ui->glc->setActiveView(n);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------
+void CMainWindow::AddView(const std::string& viewName, bool makeActive)
+{
+	ui->glc->addView(viewName, makeActive);
+}
+
+//-----------------------------------------------------------------------------
+int CMainWindow::GetActiveView()
+{
+	return ui->glc->getActiveView();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_glbar_currentViewChanged(int n)
+{
+	UpdatePostPanel();
+	UpdatePostToolbar();
+	RedrawGL();
 }
 
 //-----------------------------------------------------------------------------

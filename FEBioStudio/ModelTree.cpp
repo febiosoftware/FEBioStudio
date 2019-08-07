@@ -12,6 +12,7 @@
 #include "PostDoc.h"
 #include <PostGL/GLModel.h>
 #include <PostViewLib/PropertyList.h>
+#include <QMessageBox>
 #include "MainWindow.h"
 
 class CObjectValidator
@@ -219,10 +220,15 @@ public:
 			fileName += "xplt";
 
 			// try to open the file
-			m_job->OpenPlotFile(fileName);
+			if (m_job->OpenPlotFile(fileName) == false)
+			{
+				QMessageBox::critical(m_wnd, "FEBio Studio", "Failed to open the plot file.");
+				return;
+			}
 
 			m_wnd->UpdatePostPanel();
 			m_wnd->UpdatePostToolbar();
+			m_wnd->SetActivePostDoc(m_job->GetPostDoc());
 
 			SetModified(true);
 		}
