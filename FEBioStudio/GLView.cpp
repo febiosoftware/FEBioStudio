@@ -348,28 +348,7 @@ CDocument* CGLView::GetDocument()
 void CGLView::resizeGL(int w, int h)
 {
 	QOpenGLWidget::resizeGL(w, h);
-
-	// resize widgets
-	for (int i = 0; i<m_Widget->Widgets(); ++i)
-	{
-		GLWidget* pw = (*m_Widget)[i];
-
-		int x0 = pw->x();
-		if (x0 < 0) x0 = 0;
-
-		int y0 = pw->y();
-		if (y0 < 0) y0 = 0;
-
-		int x1 = x0 + pw->w();
-		if (x1 >= w) { x1 = w - 1; x0 = x1 - pw->w(); }
-		if (x0 < 0) x0 = 0;
-
-		int y1 = y0 + pw->h();
-		if (y1 >= h) { y1 = h - 1; y0 = y1 - pw->h(); }
-		if (y0 < 0) y0 = 0;
-
-		pw->resize(x0, y0, x1 - x0, y1 - y0);
-	}
+	m_Widget->CheckWidgetBounds();
 }
 
 void CGLView::mousePressEvent(QMouseEvent* ev)
@@ -1289,36 +1268,6 @@ void CGLView::paintGL()
 		RenderPivot();
 	}
 
-	// render the view's name
-/*	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0, width(), 0, height());
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glPushAttrib(GL_ENABLE_BIT);
-	{
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-
-		gl_color(fl_rgb_color(196, 196, 196));
-		gl_font(FL_HELVETICA_BOLD, 16);
-		int xt = 10;
-		int yt = height() - 20;
-		switch (m_nview)
-		{
-		case VIEW_FRONT: gl_draw("FRONT", xt, yt); break;
-		case VIEW_BACK: gl_draw("BACK", xt, yt); break;
-		case VIEW_TOP: gl_draw("TOP", xt, yt); break;
-		case VIEW_BOTTOM: gl_draw("BOTTOM", xt, yt); break;
-		case VIEW_LEFT: gl_draw("LEFT", xt, yt); break;
-		case VIEW_RIGHT: gl_draw("RIGHT", xt, yt); break;
-		case VIEW_USER: gl_draw("USER", xt, yt); break;
-		}
-
-	}
-	glPopAttrib();
-*/
-
 	// render the tooltip
 	if (m_btooltip) RenderTooltip(m_xp, m_yp);
 
@@ -1365,12 +1314,17 @@ void CGLView::paintGL()
 	CGLCamera& cam = GetCamera();
 	m_ptriad->setOrientation(to_quat4f(cam.GetOrientation()));
 
+	// We must turn off culling before we use the QPainter, otherwise
+	// drawing using QPainter doesn't work correctly.
+	glDisable(GL_CULL_FACE);
+
 	// render the GL widgets
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
 	if (activeView == 0) m_ptriad->draw(&painter);
-	else m_Widget->DrawWidgets(&painter);
+	else
+		m_Widget->DrawWidgets(&painter);
 
 	painter.end();
 
