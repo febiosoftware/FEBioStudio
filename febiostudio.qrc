@@ -109,5 +109,14 @@
 		<file>icons/play.png</file>
 		<file>icons/prev.png</file>
 		<file>icons/properties.png</file>
+		<file>icons/colormap.png</file>
+		<file>icons/font_bold.png</file>
+		<file>icons/font_bold_neg.png</file>
+		<file>icons/font_dec.png</file>
+		<file>icons/font_dec_neg.png</file>
+		<file>icons/font_inc.png</file>
+		<file>icons/font_inc_neg.png</file>
+		<file>icons/font_italic.png</file>
+		<file>icons/font_italic_neg.png</file>
 	</qresource>
 </RCC>

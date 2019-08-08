@@ -22,7 +22,7 @@ void CModelViewer::Update()
 {
 	CDocument* doc = GetDocument();
 
-	FEObject* po = m_currentObject;
+//	FEObject* po = m_currentObject;
 
 	// rebuild the model tree
 	ui->tree->Build(doc);
@@ -31,7 +31,7 @@ void CModelViewer::Update()
 	// update the props panel
 	ui->props->Update();
 
-	if (po) Select(po);
+//	if (po) Select(po);
 }
 
 // get the currently selected object

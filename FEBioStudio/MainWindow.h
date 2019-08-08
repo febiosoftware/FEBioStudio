@@ -299,6 +299,7 @@ public slots:
 	void on_selectCircle_toggled(bool b);
 	void on_selectFree_toggled(bool b);
 
+	// Post toolbar
 	void on_selectData_currentValueChanged(int i);
 	void on_actionPlay_toggled(bool bchecked);
 	void on_actionFirst_triggered();
@@ -306,6 +307,14 @@ public slots:
 	void on_actionNext_triggered();
 	void on_actionLast_triggered();
 	void on_actionTimeSettings_triggered();
+	void on_actionColorMap_toggled(bool bchecked);
+
+	// Font toolbar
+	void on_fontStyle_currentFontChanged(const QFont& font);
+	void on_fontSize_valueChanged(int i);
+	void on_fontBold_toggled(bool checked);
+	void on_fontItalic_toggled(bool bchecked);
+	void on_actionProperties_triggered();
 
 	void on_glbar_currentViewChanged(int n);
 
@@ -344,6 +353,10 @@ public slots:
 	void changeViewMode(View_Mode vm);
 
 	Post::CGLModel* GetCurrentModel();
+
+	// update the font toolbar
+	// (e.g. when a GL widget gets selected)s
+	void UpdateFontToolbar();
 
 public:
 	QStringList GetRecentFileList();

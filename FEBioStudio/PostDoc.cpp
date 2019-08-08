@@ -4,6 +4,7 @@
 #include <PostViewLib/FEModel.h>
 #include <PostViewLib/GLContext.h>
 #include <PostViewLib/GLCamera.h>
+#include <PostViewLib/Palette.h>
 #include <PostGL/GLModel.h>
 #include "GLView.h"
 #include "Document.h"
@@ -96,7 +97,15 @@ int CPostDoc::GetEvalField()
 
 std::string CPostDoc::GetTitle()
 {
-	return "title";
+	if (imp->fem) return imp->fem->GetTitle();
+	else return "";
+}
+
+void CPostDoc::ActivateColormap(bool bchecked)
+{
+	Post::CGLModel* po = imp->glm;
+	po->GetColorMap()->Activate(bchecked);
+	UpdateFEModel();
 }
 
 std::string CPostDoc::GetFieldString()
@@ -135,13 +144,23 @@ void CPostDoc::UpdateFEModel(bool breset)
 void CPostDoc::SetDataField(int n)
 {
 	imp->glm->GetColorMap()->SetEvalField(n);
-	imp->glm->GetColorMap()->Activate(true);
 	imp->glm->Update(false);
 }
 
 bool CPostDoc::Load(const std::string& fileName)
 {
 	const char* szfile = fileName.c_str();
+
+	// extract the file title
+	const char* sztitle = 0;
+	const char* ch2 = strrchr(szfile, '/');
+	if (ch2 == 0)
+	{
+		ch2 = strrchr(szfile, '\\');
+		if (ch2 == 0) ch2 = szfile; else ++ch2;
+	}
+	else ++ch2;
+	sztitle = ch2;
 
 	// clear the post doc
 	imp->clear();
@@ -157,6 +176,13 @@ bool CPostDoc::Load(const std::string& fileName)
 		imp->fem = nullptr;
 		return false;
 	}
+
+	// set the file name as title
+	imp->fem->SetTitle(sztitle);
+
+	// assign material attributes
+	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	ApplyPalette(pal);
 
 	// create new GLmodel
 	imp->glm = new Post::CGLModel(imp->fem);
@@ -182,6 +208,24 @@ quat4f to_quat4f(const quatd& q)
 bool CPostDoc::IsValid()
 {
 	return (imp->glm != nullptr);
+}
+
+void CPostDoc::ApplyPalette(const Post::CPalette& pal)
+{
+	int NCOL = pal.Colors();
+	int nmat = imp->fem->Materials();
+	for (int i = 0; i<nmat; i++)
+	{
+		GLColor c = pal.Color(i % NCOL);
+
+		Post::FEMaterial& m = *imp->fem->GetMaterial(i);
+		m.diffuse = c;
+		m.ambient = c;
+		m.specular = GLColor(128, 128, 128);
+		m.emission = GLColor(0, 0, 0);
+		m.shininess = 0.5f;
+		m.transparency = 1.f;
+	}
 }
 
 void CPostDoc::Render(CGLView* view)
@@ -230,17 +274,17 @@ CPostObject* CPostDoc::GetPostObject()
 	return imp->m_postObj;
 }
 
-CPostObject::CPostObject(Post::CGLModel* glm) : GObject(CPostObject::POST_OBJECT)
+CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FEMesh*)nullptr)
 {
+	// store the model
 	m_glm = glm;
 
-	GFace* face = new GFace(this);
-	face->m_nPID[0] = 0;
-	AddFace(face);
-	AddPart();
-	Update();
-
+	// build the FE mesh
 	BuildMesh();
+
+	// Set the FE mesh and update
+	SetFEMesh(GetFEMesh());
+	Update(true);
 }
 
 FEMeshBase* CPostObject::GetEditableMesh()
@@ -251,83 +295,6 @@ FEMeshBase* CPostObject::GetEditableMesh()
 FELineMesh* CPostObject::GetEditableLineMesh()
 {
 	return GetFEMesh();
-}
-
-void CPostObject::BuildGMesh()
-{
-	Post::FEModel* fem = m_glm->GetFEModel();
-	if (fem == nullptr) return;
-
-	Post::FEMeshBase* mesh = fem->GetFEMesh(0);
-
-	int facets = 0;
-	int NF = mesh->Faces();
-	int NN = mesh->Nodes();
-	vector<int> tag(NN, -1);
-	for (int i = 0; i < NF; ++i)
-	{
-		const Post::FEFace& face = mesh->Face(i);
-		
-		if (face.Nodes() == 3) facets++;
-		else if (face.Nodes() == 4) facets += 2;
-		else assert(false);
-
-		for (int j = 0; j < face.Nodes(); ++j)
-		{
-			tag[face.node[j]] = 1;
-		}
-	}
-	int surfaceNodes = 0;
-	for (int i = 0; i < NN; ++i)
-	{
-		if (tag[i] > 0)
-		{
-			tag[i] = surfaceNodes++;
-		}
-	}
-
-	if (m_pGMesh) delete m_pGMesh;
-	m_pGMesh = new GLMesh;
-	m_pGMesh->Create(surfaceNodes, facets);
-
-	for (int i = 0; i < NN; ++i)
-	{
-		if (tag[i] >= 0)
-		{
-			Post::FENode& node = mesh->Node(i);
-			vec3d& r = m_pGMesh->Node(tag[i]).r;
-			r.x = node.m_rt.x;
-			r.y = node.m_rt.y;
-			r.z = node.m_rt.z;
-		}
-	}
-
-	facets = 0;
-	for (int i = 0; i < NF; ++i)
-	{
-		const Post::FEFace& face = mesh->Face(i);
-		if (face.Nodes() == 3)
-		{
-			GMesh::FACE& gf = m_pGMesh->Face(facets++);
-			gf.n[0] = tag[face.node[0]];
-			gf.n[1] = tag[face.node[1]];
-			gf.n[2] = tag[face.node[2]];
-		}
-		else if (face.Nodes() == 4)
-		{
-			GMesh::FACE& gf1 = m_pGMesh->Face(facets++);
-			gf1.n[0] = tag[face.node[0]];
-			gf1.n[1] = tag[face.node[1]];
-			gf1.n[2] = tag[face.node[2]];
-
-			GMesh::FACE& gf2 = m_pGMesh->Face(facets++);
-			gf2.n[0] = tag[face.node[2]];
-			gf2.n[1] = tag[face.node[3]];
-			gf2.n[2] = tag[face.node[0]];
-		}
-	}
-
-	m_pGMesh->Update();
 }
 
 // build the FEMesh
@@ -398,7 +365,7 @@ FEMesh* CPostObject::BuildMesh()
 		FEElement& ed = mesh->Element(i);
 		Post::FEElement& es = postMesh->Element(i);
 
-		ed.m_gid = 0;
+		ed.m_gid = es.m_MatID;
 
 		switch(es.Type())
 		{
@@ -408,6 +375,9 @@ FEMesh* CPostObject::BuildMesh()
 		for (int j = 0; j < es.Nodes(); ++j) ed.m_node[j] = es.m_node[j];
 	}
 
+	mesh->UpdateElementNeighbors();
+	mesh->UpdateFaceElementTable();
+	mesh->AutoPartitionSurface();
 	mesh->Update();
 
 	ReplaceFEMesh(mesh);

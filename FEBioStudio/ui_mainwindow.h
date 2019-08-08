@@ -22,6 +22,7 @@
 #include "Document.h"
 #include "DataFieldSelector.h"
 #include "PostPanel.h"
+#include <QFontComboBox>
 
 class QProcess;
 
@@ -67,6 +68,12 @@ public:
 	CDataFieldSelector*	selectData;
 	QSpinBox*	pspin;
 	QToolBar* postToolBar;
+
+	QToolBar* pFontToolBar;
+	QFontComboBox*	pFontStyle;
+	QSpinBox*		pFontSize;
+	QAction*		actionFontBold;
+	QAction*		actionFontItalic;
 
 	QAction* actionSelectObjects;
 	QAction* actionSelectParts;
@@ -118,6 +125,7 @@ public:
 	QAction* actionWireframe;
 	QAction* actionShowFibers;
 
+	QAction* actionColorMap;
 	QAction* actionPlay;
 
 public:
@@ -624,20 +632,40 @@ public:
 		actionLast->setWhatsThis("<font color=\"black\">Click this to go to the last time step in the model.");
 		actionTime->setWhatsThis("<font color=\"black\">Click this to open the Time Info dialog box.");
 
+		actionColorMap = addAction("Toggle colormap", "actionColorMap", ":/icons/colormap.png");
+		actionColorMap->setCheckable(true);
+		actionColorMap->setWhatsThis("<font color=\"black\">Click this to turn on the color map on the model.");
+
 		postToolBar->addAction(actionFirst);
 		postToolBar->addAction(actionPrev);
 		postToolBar->addAction(actionPlay);
 		postToolBar->addAction(actionNext);
 		postToolBar->addAction(actionLast);
 		postToolBar->addWidget(pspin = new QSpinBox);
-		postToolBar->addWidget(selectData);
-
 		pspin->setObjectName("selectTime");
 		pspin->setMinimumWidth(80);
 		pspin->setSuffix("/100");
 		postToolBar->addAction(actionTime);
+		postToolBar->addWidget(selectData);
+		postToolBar->addAction(actionColorMap);
 
 		postToolBar->setDisabled(true);
+
+		// Font tool bar
+		pFontToolBar = new QToolBar(mainWindow);
+		pFontToolBar->setObjectName("FontToolBar");
+		pFontToolBar->setWindowTitle("Font Toolbar");
+		mainWindow->addToolBarBreak();
+		mainWindow->addToolBar(Qt::TopToolBarArea, pFontToolBar);
+
+		QAction* actionProperties = addAction("Properties ...", "actionProperties", ":/icons/properties.png");
+
+		pFontToolBar->addWidget(pFontStyle = new QFontComboBox); pFontStyle->setObjectName("fontStyle");
+		pFontToolBar->addWidget(pFontSize = new QSpinBox); pFontSize->setObjectName("fontSize");
+		pFontToolBar->addAction(actionFontBold = addAction("Bold", "fontBold", ":/icons/font_bold.png")); actionFontBold->setCheckable(true);
+		pFontToolBar->addAction(actionFontItalic = addAction("Italic", "fontItalic", ":/icons/font_italic.png")); actionFontItalic->setCheckable(true);
+		pFontToolBar->addAction(actionProperties);
+		pFontToolBar->setEnabled(false);
 	}
 
 	void SetSelectionMode(int nselect)

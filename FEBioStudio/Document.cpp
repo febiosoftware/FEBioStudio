@@ -21,6 +21,7 @@
 #include <ImageLib/ImageStack.h>
 #include "GImageObject.h"
 #include <XML/XMLWriter.h>
+#include <PostViewLib/Palette.h>
 #include "PostDoc.h"
 #include <sstream>
 
@@ -69,6 +70,21 @@ CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 	m_pCmd = new CCommandManager(this);
 	m_psel = nullptr;
 	m_activeJob = nullptr;
+
+	// update the Post palette to match PreView's
+	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
+	
+	Post::CPalette pal("preview");
+	for (int i = 0; i < COLORS; ++i)
+	{
+		GLCOLOR c = col[i];
+		GLColor glc(c.r, c.g, c.b);
+		pal.AddColor(glc);
+	}
+
+	PM.AddPalette(pal);
+	PM.SetCurrentIndex(PM.Palettes() - 1);
+
 	NewDocument();
 }
 

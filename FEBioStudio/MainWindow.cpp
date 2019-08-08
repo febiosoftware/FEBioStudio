@@ -24,6 +24,7 @@
 #include "PostDoc.h"
 #include "DlgTimeSettings.h"
 #include <PostGL/GLModel.h>
+#include "DlgWidgetProps.h"
 
 extern GLCOLOR col[];
 
@@ -78,6 +79,10 @@ CMainWindow::CMainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::CMai
 		v.m_nbgstyle = BG_COLOR1;
 
 		GLWidget::set_base_color(GLColor(255, 255, 255));
+
+		// adjust some toolbar buttons
+		ui->actionFontBold->setIcon(QIcon(":/icons/font_bold_neg.png"));
+		ui->actionFontItalic->setIcon(QIcon(":/icons/font_italic_neg.png"));
 	}
 
 	// make sure the file viewer is visible
@@ -857,6 +862,7 @@ int CMainWindow::Views()
 void CMainWindow::SetActiveView(int n)
 {
 	ui->glc->setActiveView(n);
+	ui->glview->UpdateWidgets(false);
 	RedrawGL();
 }
 
@@ -864,6 +870,7 @@ void CMainWindow::SetActiveView(int n)
 void CMainWindow::AddView(const std::string& viewName, bool makeActive)
 {
 	ui->glc->addView(viewName, makeActive);
+	ui->glview->UpdateWidgets(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1087,11 +1094,10 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 		doc->SetDataField(nfield);
 
 		// turn on the colormap
-//		if (ui->actionColorMap->isChecked() == false)
-//		{
-//			ui->actionColorMap->toggle();
-//		}
-//		else doc->UpdateFEModel();
+		if (ui->actionColorMap->isChecked() == false)
+		{
+			ui->actionColorMap->toggle();
+		}
 
 		ui->glview->UpdateWidgets(false);
 		RedrawGL();
@@ -1193,6 +1199,15 @@ void CMainWindow::on_actionTimeSettings_triggered()
 		doc->SetActiveState(ntime);
 		RedrawGL();
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionColorMap_toggled(bool bchecked)
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	doc->ActivateColormap(bchecked);
+	RedrawGL();
 }
 
 //-----------------------------------------------------------------------------
@@ -1480,4 +1495,107 @@ void CMainWindow::AddGraph(CGraphWindow* graph)
 {
 	graph->setWindowTitle(QString("FEBioStudio : Graph%1").arg(ui->graphList.size() + 1));
 	ui->graphList.push_back(graph);
+}
+
+void CMainWindow::on_fontStyle_currentFontChanged(const QFont& font)
+{
+	GLWidget* pw = GLWidget::get_focus();
+	if (pw)
+	{
+		QFont old_font = pw->get_font();
+		std::string s = font.family().toStdString();
+		QFont new_font(font.family(), old_font.pointSize());
+		new_font.setBold(old_font.bold());
+		new_font.setItalic(old_font.italic());
+		pw->set_font(new_font);
+		RedrawGL();
+	}
+}
+
+void CMainWindow::on_fontSize_valueChanged(int i)
+{
+	GLWidget* pw = GLWidget::get_focus();
+	if (pw)
+	{
+		QFont font = pw->get_font();
+		font.setPointSize(i);
+		pw->set_font(font);
+		RedrawGL();
+	}
+}
+
+void CMainWindow::on_fontBold_toggled(bool checked)
+{
+	GLWidget* pw = GLWidget::get_focus();
+	if (pw)
+	{
+		QFont font = pw->get_font();
+		font.setBold(checked);
+		pw->set_font(font);
+		RedrawGL();
+	}
+}
+
+void CMainWindow::on_fontItalic_toggled(bool bchecked)
+{
+	GLWidget* pw = GLWidget::get_focus();
+	if (pw)
+	{
+		QFont font = pw->get_font();
+		font.setItalic(bchecked);
+		pw->set_font(font);
+		RedrawGL();
+	}
+}
+
+void CMainWindow::on_actionProperties_triggered()
+{
+	// get the selected widget
+	GLWidget* pglw = GLWidget::get_focus();
+	if (pglw == 0) return;
+
+	// edit the properties
+	if (dynamic_cast<GLBox*>(pglw))
+	{
+		CDlgBoxProps dlg(pglw, this);
+		dlg.exec();
+	}
+	else if (dynamic_cast<GLLegendBar*>(pglw))
+	{
+		CDlgLegendProps dlg(pglw, this);
+		dlg.exec();
+	}
+	else if (dynamic_cast<GLTriad*>(pglw))
+	{
+		CDlgTriadProps dlg(pglw, this);
+		dlg.exec();
+	}
+	else if (dynamic_cast<GLSafeFrame*>(pglw))
+	{
+		CDlgCaptureFrameProps dlg(pglw, this);
+		dlg.exec();
+	}
+	else
+	{
+		QMessageBox::information(this, "Properties", "No properties available");
+	}
+
+	UpdateFontToolbar();
+
+	RedrawGL();
+}
+
+void CMainWindow::UpdateFontToolbar()
+{
+	GLWidget* pw = GLWidget::get_focus();
+	if (pw)
+	{
+		QFont font = pw->get_font();
+		ui->pFontStyle->setCurrentFont(font);
+		ui->pFontSize->setValue(font.pointSize());
+		ui->actionFontBold->setChecked(font.bold());
+		ui->actionFontItalic->setChecked(font.italic());
+		ui->pFontToolBar->setEnabled(true);
+	}
+	else ui->pFontToolBar->setDisabled(true);
 }

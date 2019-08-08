@@ -364,6 +364,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	GLWidget* pw = GLWidget::get_focus();
 	if (m_Widget->handle(x, y, CGLWidgetManager::PUSH) == 1)
 	{
+		m_pWnd->UpdateFontToolbar();
 		repaint();
 		return;
 	}
@@ -371,6 +372,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	if (pw && (GLWidget::get_focus() == 0))
 	{
 		// If we get here, the current widget selection was cleared
+		m_pWnd->UpdateFontToolbar();
 		repaint();
 	}
 
@@ -469,6 +471,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	if (but1 && (m_Widget->handle(x, y, CGLWidgetManager::DRAG) == 1))
 	{
 		repaint();
+		m_pWnd->UpdateFontToolbar();
 		return;
 	}
 
@@ -684,6 +687,14 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	ev->accept();
 }
 
+void CGLView::mouseDoubleClickEvent(QMouseEvent* ev)
+{
+	if (ev->button() == Qt::LeftButton)
+	{
+		m_pWnd->on_actionProperties_triggered();
+	}
+}
+
 void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 {
 	int x = ev->x();
@@ -693,6 +704,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	if (m_Widget->handle(x, y, CGLWidgetManager::RELEASE) == 1)
 	{
 		ev->accept();
+		m_pWnd->UpdateFontToolbar();
 		repaint();
 		return;
 	}
@@ -1011,7 +1023,7 @@ void CGLView::initializeGL()
 
 	// enable color tracking for diffuse color of materials
 	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
 	// set the texture parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1090,6 +1102,7 @@ void CGLView::UpdateWidgets(bool bposition)
 	{
 		const string& title = postDoc->GetTitle();
 		m_ptitle->copy_label(title.c_str());
+		m_ptitle->fit_to_size();
 
 		int Y = 0;
 		if (bposition)

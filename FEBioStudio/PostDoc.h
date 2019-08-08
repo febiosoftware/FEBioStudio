@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <GeomLib/GObject.h>
+#include <GeomLib/GMeshObject.h>
 
 class CGLView;
 
@@ -8,6 +9,7 @@ namespace Post {
 	class FEModel;
 	class CGLModel;
 	class FEDataField;
+	class CPalette;
 }
 
 class CPostObject;
@@ -69,25 +71,25 @@ public:
 
 	void UpdateAllStates();
 
-	void UpdateFEModel(bool breset);
+	void UpdateFEModel(bool breset = false);
 
 	int GetEvalField();
 
 	std::string GetTitle();
 
+	void ActivateColormap(bool bchecked);
+
+private:
+	void ApplyPalette(const Post::CPalette& pal);
+
 private:
 	Imp*	imp;
 };
 
-class CPostObject : public GObject
+class CPostObject : public GMeshObject
 {
-	// make sure this number does not coincide with any in PreViewLib/enum.h
-	enum { POST_OBJECT = 100 };
-
 public:
 	CPostObject(Post::CGLModel* glm);
-
-	void BuildGMesh() override;
 
 	// build the FEMesh
 	FEMesh* BuildMesh() override;
