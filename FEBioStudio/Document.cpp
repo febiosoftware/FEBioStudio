@@ -876,6 +876,25 @@ bool CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz,
 }
 
 //-----------------------------------------------------------------------------
+// load a plot file
+bool CDocument::LoadPlotFile(const std::string& fileName)
+{
+	// create a dummy job
+	CFEBioJob* job = new CFEBioJob;
+	job->SetPlotFileName(fileName);
+	if (job->OpenPlotFile() == false)
+	{
+		delete job;
+		return false;
+	}
+	else
+	{
+		AddFEbioJob(job);
+		return true;
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool CDocument::Convert(const std::string& inFileName, const std::string& outFileName, FEFileImport* reader, FEFileExport* writer)
 {
 	// dummy project so we don't override this one

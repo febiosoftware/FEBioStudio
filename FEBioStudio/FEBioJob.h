@@ -25,9 +25,12 @@ public:
 	int GetStatus();
 
 	void SetFileName(const std::string& fileName);
-	std::string GetFileName();
+	std::string GetFileName() const;
 
-	bool OpenPlotFile(const std::string& fileName);
+	void SetPlotFileName(const std::string& plotFile);
+	std::string GetPlotFileName() const;
+
+	bool OpenPlotFile();
 
 	bool HasPostDoc();
 
@@ -35,6 +38,7 @@ public:
 
 private:
 	std::string		m_fileName;	// the .feb file name
+	std::string		m_plotFile;	// the .xplt file name
 	int				m_status;	// return status
 
 	CPostDoc*	m_postDoc;

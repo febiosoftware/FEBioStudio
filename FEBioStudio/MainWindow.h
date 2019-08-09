@@ -90,6 +90,9 @@ public:
 	// get the current post doc
 	CPostDoc* GetActiveDocument();
 
+	//! Open a plot file
+	void OpenPlotFile(const QString& fileName);
+
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.
@@ -268,6 +271,7 @@ public slots:
 	void on_actionShowMeshLines_toggled(bool b);
 	void on_actionShowEdgeLines_toggled(bool b);
 	void on_actionBackfaceCulling_toggled(bool b);
+	void on_actionViewSmooth_toggled(bool bchecked);
 	void on_actionShowNormals_toggled(bool b);
 	void on_actionShowFibers_toggled(bool b);
 	void on_actionFront_triggered();

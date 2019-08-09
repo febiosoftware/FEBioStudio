@@ -3199,16 +3199,15 @@ bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 // Select Objects
 void CGLView::SelectObjects(int x, int y)
 {
+	makeCurrent();
+
 	// get the document
 	CDocument* pdoc = GetDocument();
 
 	FEModel* ps = pdoc->GetFEModel();
 	GModel& model = ps->GetModel();
 
-	if (model.Objects() == 0) return;
-
 	// convert the point to a ray
-	makeCurrent();
 	GLViewTransform transform(this);
 	Ray ray = transform.PointToRay(x, y);
 

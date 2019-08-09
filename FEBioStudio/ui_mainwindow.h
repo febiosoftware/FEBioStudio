@@ -113,6 +113,7 @@ public:
 	QAction* actionShowMeshLines;
 	QAction* actionShowEdgeLines;
 	QAction* actionBackfaceCulling;
+	QAction* actionViewSmooth;
 	QAction* actionShowNormals;
 	QAction* actionOrtho;
 	QAction* actionFront;
@@ -340,7 +341,8 @@ public:
 		actionShowGrid        = addAction("Show Grid", "actionShowGrid"); actionShowGrid->setCheckable(true); actionShowGrid->setChecked(true); actionShowGrid->setShortcut(Qt::Key_G);
 		actionShowMeshLines   = addAction("Show Mesh Lines", "actionShowMeshLines", ":/icons/show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setShortcut(Qt::Key_M);
 		actionShowEdgeLines   = addAction("Show Edge Lines", "actionShowEdgeLines"); actionShowEdgeLines->setCheckable(true); actionShowEdgeLines->setShortcut(Qt::Key_Z);
-		actionBackfaceCulling = addAction("Backface culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true); actionBackfaceCulling->setShortcut(Qt::Key_C);
+		actionBackfaceCulling = addAction("Backface culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true);
+		actionViewSmooth      = addAction("Color smoothing", "actionViewSmooth"); actionViewSmooth->setShortcut(Qt::Key_C); actionViewSmooth->setCheckable(true);
 		actionOrtho           = addAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
 		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
 		actionWireframe		  = addAction("Toggle wireframe", "actionWireframe"); actionWireframe->setCheckable(true); actionWireframe->setShortcut(Qt::Key_W);
@@ -541,6 +543,7 @@ public:
 		menuView->addAction(actionShowMeshLines);
 		menuView->addAction(actionShowEdgeLines);
 		menuView->addAction(actionBackfaceCulling);
+		menuView->addAction(actionViewSmooth);
 		menuView->addAction(actionWireframe);
 		menuView->addAction(actionShowFibers);
 		menuView->addAction(actionSnap3D);

@@ -33,6 +33,18 @@ CFEBioJob::CFEBioJob(const std::string& fileName, JOB_STATUS status)
 	m_fileName = fileName;
 
 	m_status = status;
+
+	// set default plot file name
+	m_plotFile = fileName;
+	size_t pos = m_plotFile.rfind(".");
+	if (pos != std::string::npos)
+	{
+		// remove extension
+		m_plotFile.erase(pos + 1);
+	}
+
+	// add the xplt extension
+	m_plotFile += "xplt";
 }
 
 void CFEBioJob::SetStatus(JOB_STATUS status)
@@ -50,9 +62,19 @@ void CFEBioJob::SetFileName(const std::string& fileName)
 	m_fileName = fileName;
 }
 
-std::string CFEBioJob::GetFileName()
+std::string CFEBioJob::GetFileName() const
 {
 	return m_fileName;
+}
+
+void CFEBioJob::SetPlotFileName(const std::string& plotFile)
+{
+	m_plotFile = plotFile;
+}
+
+std::string CFEBioJob::GetPlotFileName() const
+{
+	return m_plotFile;
 }
 
 bool CFEBioJob::HasPostDoc()
@@ -65,12 +87,12 @@ CPostDoc* CFEBioJob::GetPostDoc()
 	return m_postDoc;
 }
 
-bool CFEBioJob::OpenPlotFile(const std::string& fileName)
+bool CFEBioJob::OpenPlotFile()
 {
 	if (m_postDoc) delete m_postDoc;
 	m_postDoc = new CPostDoc;
 
-	if (m_postDoc->Load(fileName) == false)
+	if (m_postDoc->Load(m_plotFile) == false)
 	{
 		delete m_postDoc;
 		m_postDoc = nullptr;

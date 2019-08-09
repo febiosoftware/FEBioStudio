@@ -221,6 +221,28 @@ void CMainWindow::OpenDocument(const QString& fileName)
 }
 
 //-----------------------------------------------------------------------------
+//! Open a plot file
+void CMainWindow::OpenPlotFile(const QString& fileName)
+{
+	CDocument* doc = GetDocument();
+	std::string sfile = fileName.toStdString();
+	if (doc->LoadPlotFile(sfile) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed loading plot file.");
+	}
+	else
+	{
+		UpdateModel();
+		UpdatePostPanel();
+		UpdatePostToolbar();
+
+		CFEBioJob* job = doc->GetFEBioJob(doc->FEBioJobs() - 1);
+		ui->modelViewer->Select(job);
+		SetActivePostDoc(job->GetPostDoc());
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::OpenFEModel(const QString& fileName)
 {
 	m_fileQueue.clear();

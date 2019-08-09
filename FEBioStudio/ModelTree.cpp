@@ -187,9 +187,10 @@ class CFEBioJobProps : public CPropertyList
 public:
 	CFEBioJobProps(CMainWindow* wnd, CFEBioJob* job) : m_wnd(wnd), m_job(job)
 	{
-		addProperty("File:", CProperty::String)->setFlags(CProperty::Visible);
+		addProperty("FEBio File:", CProperty::String)->setFlags(CProperty::Visible);
 		addProperty("Status:", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
-		addProperty("Results:", CProperty::Action)->info = QString("Open in FEBio Studio");
+		addProperty("Plot File:" , CProperty::String)->setFlags(CProperty::Visible);
+		addProperty("", CProperty::Action)->info = QString("Open in FEBio Studio");
 		addProperty("", CProperty::Action)->info = QString("Open in PostView");
 	}
 
@@ -197,8 +198,20 @@ public:
 	{
 		switch (i)
 		{
-		case 0: return QString::fromStdString(m_job->GetFileName()); break;
+		case 0: 
+		{
+			QString s = QString::fromStdString(m_job->GetFileName());
+			if (s.isEmpty()) return "(none)";
+			else return s;
+		}
+		break;
 		case 1: return m_job->GetStatus(); break;
+		case 2:
+		{
+			QString s = QString::fromStdString(m_job->GetPlotFileName());
+			if (s.isEmpty()) return "(none)";
+			else return s;
+		}
 		}
 
 		return QVariant();
@@ -206,21 +219,10 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-		if (i == 2)
+		if (i == 3)
 		{
-			std::string fileName = m_job->GetFileName();
-			size_t pos = fileName.rfind(".");
-			if (pos != std::string::npos)
-			{
-				// remove extension
-				fileName.erase(pos + 1);
-			}
-
-			// add the xplt extension
-			fileName += "xplt";
-
 			// try to open the file
-			if (m_job->OpenPlotFile(fileName) == false)
+			if (m_job->OpenPlotFile() == false)
 			{
 				QMessageBox::critical(m_wnd, "FEBio Studio", "Failed to open the plot file.");
 				return;
@@ -232,22 +234,13 @@ public:
 
 			SetModified(true);
 		}
-		else if (i == 3)
+		else if (i == 4)
 		{
-			std::string fileName = m_job->GetFileName();
-			size_t pos = fileName.rfind(".");
-			if (pos != std::string::npos)
-			{
-				// remove extension
-				fileName.erase(pos + 1);
-			}
-
-			// add the xplt extension
-			fileName = "file:///" + fileName;
-			fileName += "xplt";
+			std::string plotFile = m_job->GetPlotFileName();
+			plotFile = "file:///" + plotFile;
 
 			// try to open the file
-			QDesktopServices::openUrl(QUrl(QString::fromStdString(fileName)));
+			QDesktopServices::openUrl(QUrl(QString::fromStdString(plotFile)));
 		}
 	}
 

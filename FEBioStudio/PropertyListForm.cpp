@@ -12,6 +12,7 @@
 #include "ResourceEdit.h"
 #include <QFileDialog>
 #include <QGroupBox>
+#include <QLabel>
 #include "CurvePicker.h"
 #include "DataFieldSelector.h"
 
@@ -162,12 +163,20 @@ QWidget* CPropertyListForm::createPropertyEditor(const CProperty& pi, QVariant v
 		{
 			if (pi.values.isEmpty() == false)
 			{
-				QComboBox* pc = new QComboBox;
-				pc->setMinimumWidth(100);
-				pc->addItems(pi.values);
-				pc->setCurrentIndex(v.toInt());
-				connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
-				return pc;
+				if (pi.isEditable())
+				{
+					QComboBox* pc = new QComboBox;
+					pc->setMinimumWidth(100);
+					pc->addItems(pi.values);
+					pc->setCurrentIndex(v.toInt());
+					connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
+					return pc;
+				}
+				else
+				{
+					QLabel* l = new QLabel(pi.values.at(v.toInt()));
+					return l;
+				}
 			}
 			else
 			{

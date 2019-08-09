@@ -66,6 +66,9 @@
 #include "DlgPurge.h"
 #include "DlgBatchConvert.h"
 #include "version.h"
+#include "PostDoc.h"
+#include <PostGL/GLColorMap.h>
+#include <PostGL/GLModel.h>
 
 void CMainWindow::on_actionNew_triggered()
 {
@@ -131,6 +134,7 @@ void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
 	filters << "PreView files (*.prv)";
+	filters << "FEBio plot files (*.xplt)";
 
 	QFileDialog dlg(this, "Open");
 	dlg.setFileMode(QFileDialog::ExistingFile);
@@ -147,9 +151,22 @@ void CMainWindow::on_actionOpen_triggered()
 		QStringList files = dlg.selectedFiles();
 		QString fileName = files.first();
 
-		// read the file
-		std::string sfile = fileName.toStdString();
-		OpenDocument(sfile.c_str());
+		QString ext = QFileInfo(fileName).suffix();
+		if (ext.compare("prv", Qt::CaseInsensitive) == 0)
+		{
+			// read the file
+			OpenDocument(fileName);
+		}
+		else if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
+		{
+			// load the plot file
+			OpenPlotFile(fileName);
+		}
+		else
+		{
+			assert(false);
+			QMessageBox::critical(this, "FEBio Studio", "Does not compute!");
+		}
 	}
 }
 
@@ -1616,6 +1633,23 @@ void CMainWindow::on_actionBackfaceCulling_toggled(bool b)
 	Update(this);
 }
 
+void CMainWindow::on_actionViewSmooth_toggled(bool bchecked)
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+
+	Post::CGLModel* po = doc->GetGLModel();
+	if (po)
+	{
+		Post::CGLColorMap* pcm = po->GetColorMap();
+		if (pcm)
+		{
+			pcm->SetColorSmooth(bchecked);
+			RedrawGL();
+		}
+	}
+}
+
 void CMainWindow::on_actionShowNormals_toggled(bool b)
 {
 	VIEW_SETTINGS& view = m_doc->GetViewSettings();
@@ -1693,7 +1727,7 @@ void CMainWindow::on_actionOnlineHelp_triggered()
 
 void CMainWindow::on_actionAbout_triggered()
 {
-	QString txt = QString("<h1>FEBio Studio</h1><p>Version %1.%2.%3</p><p>Musculoskeletal Research Laboratories, University of Utah</p><p> Copyright (c) 2005 - 2019, All rights reserved</p>").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	QString txt = QString("<h1>FEBio Studio</h1><p>Version %1.%2.%3 (beta)</p><p>Musculoskeletal Research Laboratories, University of Utah</p><p> Copyright (c) 2005 - 2019, All rights reserved</p>").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
 
 	QMessageBox about(this);
 	about.setWindowTitle("About FEBio Studio");
