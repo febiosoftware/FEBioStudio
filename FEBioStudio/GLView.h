@@ -54,6 +54,16 @@ enum Snap_Mode
 	SNAP_GRID
 };
 
+//-----------------------------------------------------------------------------
+// tag structure
+struct GLTAG
+{
+	char	sztag[32];	// name of tag
+	float	wx, wy;		// window coordinates for tag
+	vec3f	r;			// world coordinates of tag
+	bool	bvis;		// is the tag visible or not
+	int		ntag;		// tag value
+};
 
 //-----------------------------------------------------------------------------
 class SelectRegion
@@ -122,6 +132,8 @@ public:
 	CGLCamera& GetCamera() { return m_Cam; }
 
 	CDocument* GetDocument();
+
+	GObject* GetActiveObject();
 
 	void Reset();
 
@@ -281,6 +293,7 @@ public:
 	void RenderSelectionBox();
 	void RenderDefaultView();
 	void RenderPostView(int n);
+	void RenderTags();
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
 	vec3d ScreenToGrid(int x, int y);

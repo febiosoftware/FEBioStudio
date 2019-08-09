@@ -32,6 +32,7 @@
 #include "GImageObject.h"
 #include "PostDoc.h"
 #include <PostGL/GLPlaneCutPlot.h>
+#include <PostGL/GLModel.h>
 
 quat4f to_quat4f(const quatd& q);
 
@@ -153,6 +154,93 @@ bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 
 	return false;
 }
+
+class WorldToScreen
+{
+public:
+	// NOTE: make sure to call makeCurrent before calling the constructor!!
+	WorldToScreen(CGLView* view) : m_PM(4, 4), q(4, 0.0), c(4, 0.0)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+
+		// get the projection mode
+		bool ortho = view->OrhographicProjection();
+
+		// set up the projection Matrix
+		double fov = view->GetFOV();
+		double ar = view->GetAspectRatio();
+		double fnear = view->GetNearPlane();
+		double ffar = view->GetFarPlane();
+		if (ortho)
+		{
+			double z = view->GetCamera().TargetDistance();
+			double dx = z*tan(0.5*fov*PI / 180.0)*ar;
+			double dy = z*tan(0.5*fov*PI / 180.0);
+			glOrtho(-dx, dx, -dy, dy, fnear, ffar);
+		}
+		else
+		{
+			gluPerspective(fov, ar, fnear, ffar);
+		}
+
+		view->GetCamera().Transform();
+
+		double p[16], m[16];
+		glGetDoublev(GL_PROJECTION_MATRIX, p);
+		glGetDoublev(GL_MODELVIEW_MATRIX, m);
+
+		int vp[4];
+		glGetIntegerv(GL_VIEWPORT, vp);
+
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		// calculate projection Matrix
+		Matrix P(4, 4);
+		for (int i = 0; i<4; ++i)
+			for (int j = 0; j<4; ++j) P(i, j) = p[j * 4 + i];
+
+		// calculate modelview Matrix
+		Matrix M(4, 4);
+		for (int i = 0; i<4; ++i)
+			for (int j = 0; j<4; ++j) M(i, j) = m[j * 4 + i];
+
+		// multiply them together
+		m_PM = P*M;
+
+		// store the viewport
+		view->GetViewport(m_vp);
+	}
+
+	vec3f Apply(const vec3f& r)
+	{
+		// get the homogeneous coordinates
+		q[0] = r.x; q[1] = r.y; q[2] = r.z; q[3] = 1.0;
+
+		// calculcate clip coordinates
+		m_PM.mult(q, c);
+
+		// calculate device coordinates
+		vec3f d;
+		d.x = c[0] / c[3];
+		d.y = c[1] / c[3];
+		d.z = c[2] / c[3];
+
+		int W = m_vp[2];
+		int H = m_vp[3];
+		float xd = W*((d.x + 1.f)*0.5f);
+		float yd = H - H*((d.y + 1.f)*0.5f);
+
+		return vec3f(xd, yd, d.z);
+	}
+
+private:
+	Matrix m_PM;
+	int	m_vp[4];
+	vector<double>	c, q;
+};
 
 //=============================================================================
 bool SelectRegion::LineIntersects(int x0, int y0, int x1, int y1) const
@@ -1085,18 +1173,7 @@ void CGLView::Reset()
 //-----------------------------------------------------------------------------
 void CGLView::UpdateWidgets(bool bposition)
 {
-	CDocument* pdoc = GetDocument();
-	CPostDoc* postDoc = nullptr;
-	for (int i = 0; i < pdoc->FEBioJobs(); ++i)
-	{
-		CFEBioJob* job = pdoc->GetFEBioJob(i);
-
-		CPostDoc* post = job->GetPostDoc();
-		if (post)
-		{
-			postDoc = post;
-		}
-	}
+	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
 
 	if (postDoc)
 	{
@@ -1486,6 +1563,10 @@ void CGLView::RenderPostView(int n)
 	if (post)
 	{
 		post->Render(this);
+
+		// render the tags
+		VIEW_SETTINGS& view = pdoc->GetViewSettings();
+		if (view.m_bTags) RenderTags();
 	}
 }
 
@@ -1916,24 +1997,6 @@ void CGLView::RenderSelectionBox()
 					m_renderer.RenderBox(po->GetLocalBox());
 				}
 				glPopMatrix();
-			}
-		}
-
-		for (int i = 0; i < pdoc->FEBioJobs(); ++i)
-		{
-			CFEBioJob* job = pdoc->GetFEBioJob(i);
-			CPostDoc* pd = job->GetPostDoc();
-			if (pd)
-			{
-				CPostObject* po = pd->GetPostObject();
-				if (po && po->IsSelected())
-				{
-					glPushMatrix();
-					SetModelView(po);
-					glColor3ub(255, 255, 255);
-					m_renderer.RenderBox(po->GetLocalBox());
-					glPopMatrix();
-				}
 			}
 		}
 	}
@@ -3228,29 +3291,6 @@ void CGLView::SelectObjects(int x, int y)
 		}
 	}
 
-	// if no object was selected, see if we can select a post-object
-	if (closestObject == nullptr)
-	{
-		int jobs = pdoc->FEBioJobs();
-		for (int i = 0; i < jobs; ++i)
-		{
-			CFEBioJob* job = pdoc->GetFEBioJob(i);
-			CPostDoc* pd = job->GetPostDoc();
-			if (pd)
-			{
-				CPostObject* obj = pd->GetPostObject();
-				if (obj)
-				{
-					if (obj->IsSelected()) obj->UnSelect();
-					if (IntersectObject(obj, ray, q))
-					{
-						closestObject = obj;
-					}
-				}
-			}
-		}
-	}
-
 	// parse the selection buffer
 	CCommand* pcmd = 0;
 	string objName;
@@ -3772,8 +3812,16 @@ void CGLView::SelectDiscrete(int x, int y)
 	// execute command
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
-//-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
+GObject* CGLView::GetActiveObject()
+{
+	int activeView = m_pWnd->GetActiveView();
+	if (activeView == 0) return GetDocument()->GetActiveObject();
+	return m_pWnd->GetActiveDocument()->GetPostObject();
+}
+
+//-----------------------------------------------------------------------------
 void CGLView::SelectFEElements(int x, int y)
 {
 	// get the document
@@ -3781,7 +3829,7 @@ void CGLView::SelectFEElements(int x, int y)
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// Get the mesh
-	GObject* po = pdoc->GetActiveObject();
+	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
 	FEMesh* pm = po->GetFEMesh();
@@ -3914,7 +3962,7 @@ void CGLView::SelectFEFaces(int x, int y)
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// Get the mesh
-	GObject* po = pdoc->GetActiveObject();
+	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
 	FEMeshBase* pm = po->GetFEMesh();
@@ -4027,7 +4075,7 @@ void CGLView::SelectFEEdges(int x, int y)
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// Get the mesh
-	GObject* po = pdoc->GetActiveObject();
+	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
 	FELineMesh* pm = po->GetEditableLineMesh();
@@ -4586,7 +4634,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
-	GObject* po = pdoc->GetActiveObject();
+	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
 	FEMeshBase* pm = po->GetEditableMesh();
@@ -4721,7 +4769,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
-	GObject* po = pdoc->GetActiveObject();
+	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
 	FEMesh* pm = po->GetFEMesh();
@@ -4887,7 +4935,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
-	GObject* po = pdoc->GetActiveObject();
+	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
 	FEMeshBase* pm = po->GetEditableMesh();
@@ -4953,7 +5001,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
-	GObject* po = pdoc->GetActiveObject();
+	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
 	FEMeshBase* pm = po->GetEditableMesh();
@@ -5008,7 +5056,7 @@ void CGLView::SelectFENodes(int x, int y)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
-	GObject* po = pdoc->GetActiveObject();
+	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
 	FEMeshBase* pm = po->GetEditableMesh();
@@ -7577,4 +7625,208 @@ void CGLView::ZoomExtents(bool banimate)
 	if (banimate == false) cam.Update(true);
 
 	repaint();
+}
+
+//-----------------------------------------------------------------------------
+//! Render the tags on the selected items.
+void CGLView::RenderTags()
+{
+	CDocument* doc = GetDocument();
+	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+	if (pdoc == nullptr) return;
+	
+	Post::CGLModel* model = pdoc->GetGLModel();
+	Post::FEModel* fem = pdoc->GetFEModel();
+	if (fem == nullptr) return;
+	BOUNDINGBOX box = fem->GetBoundingBox();
+
+	VIEW_SETTINGS& view = doc->GetViewSettings();
+
+	double radius = box.Radius();
+	vec3f rc = box.Center();
+
+	m_fnear = 0.01*radius;
+	m_ffar = 100 * radius;
+
+	// get the mesh
+	Post::FEMeshBase& mesh = *model->GetActiveMesh();
+
+	// create the tag array.
+	// We add a tag for each selected item
+	GLTAG tag;
+	vector<GLTAG> vtag;
+
+	// clear the node tags
+	int NN = mesh.Nodes();
+	for (int i = 0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
+
+	int mode = doc->GetItemMode();
+
+	// process elements
+	if (mode == ITEM_ELEM)
+	{
+		const vector<Post::FEElement*> selectedElements = pdoc->GetGLModel()->GetElementSelection();
+		for (int i = 0; i<(int)selectedElements.size(); i++)
+		{
+			Post::FEElement& el = *selectedElements[i]; assert(el.IsSelected());
+
+			tag.r = mesh.ElementCenter(el);
+			tag.bvis = false;
+			tag.ntag = 0;
+			sprintf(tag.sztag, "E%d", el.GetID());
+			vtag.push_back(tag);
+
+			int ne = el.Nodes();
+			for (int j = 0; j<ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 1;
+		}
+	}
+
+	// process faces
+	if (mode == ITEM_FACE)
+	{
+		const vector<Post::FEFace*> selectedFaces = pdoc->GetGLModel()->GetFaceSelection();
+		for (int i = 0; i<(int)selectedFaces.size(); ++i)
+		{
+			Post::FEFace& f = *selectedFaces[i]; assert(f.IsSelected());
+
+			tag.r = mesh.FaceCenter(f);
+			tag.bvis = false;
+			tag.ntag = 0;
+			sprintf(tag.sztag, "F%d", f.GetID());
+			vtag.push_back(tag);
+
+			int nf = f.Nodes();
+			for (int j = 0; j<nf; ++j) mesh.Node(f.node[j]).m_ntag = 1;
+		}
+	}
+
+	// process edges
+	if (mode == ITEM_EDGE)
+	{
+		const vector<Post::FEEdge*> selectedEdges = pdoc->GetGLModel()->GetEdgeSelection();
+		for (int i = 0; i<(int)selectedEdges.size(); i++)
+		{
+			Post::FEEdge& edge = *selectedEdges[i]; assert(edge.IsSelected());
+
+			tag.r = mesh.EdgeCenter(edge);
+			tag.bvis = false;
+			tag.ntag = 0;
+			sprintf(tag.sztag, "L%d", edge.GetID());
+			vtag.push_back(tag);
+
+			int ne = edge.Nodes();
+			for (int j = 0; j<ne; ++j) mesh.Node(edge.node[j]).m_ntag = 1;
+		}
+	}
+
+	// process nodes
+	if (mode == ITEM_NODE)
+	{
+		for (int i = 0; i<NN; i++)
+		{
+			Post::FENode& node = mesh.Node(i);
+			if (node.IsSelected())
+			{
+				tag.r = node.m_rt;
+				tag.bvis = false;
+				tag.ntag = (node.m_bext ? 0 : 1);
+				sprintf(tag.sztag, "N%d", node.GetID());
+				vtag.push_back(tag);
+			}
+		}
+	}
+
+	// add additional nodes
+	if (view.m_ntagInfo == 1)
+	{
+		for (int i = 0; i<NN; i++)
+		{
+			Post::FENode& node = mesh.Node(i);
+			if (node.m_ntag == 1)
+			{
+				tag.r = node.m_rt;
+				tag.bvis = false;
+				tag.ntag = (node.m_bext ? 0 : 1);
+				sprintf(tag.sztag, "N%d", node.GetID());
+				vtag.push_back(tag);
+			}
+		}
+	}
+
+	// if we don't have any tags, just return
+	if (vtag.empty()) return;
+
+	// limit the number of tags to render
+	const int MAX_TAGS = 100;
+	int nsel = (int)vtag.size();
+	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
+
+								 // find out where the tags are on the screen
+	WorldToScreen transform(this);
+	for (int i = 0; i<nsel; i++)
+	{
+		vec3f p = transform.Apply(vtag[i].r);
+		vtag[i].wx = p.x;
+		vtag[i].wy = m_viewport[3] - p.y;
+		vtag[i].bvis = true;
+	}
+
+	// render the tags
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0, m_viewport[2], 0, m_viewport[3]);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+
+	for (int i = 0; i<nsel; i++)
+		if (vtag[i].bvis)
+		{
+			glBegin(GL_POINTS);
+			{
+				glColor3ub(0, 0, 0);
+				glVertex2f(vtag[i].wx, vtag[i].wy);
+				if (vtag[i].ntag == 0) glColor3ub(255, 255, 0);
+				else glColor3ub(255, 0, 0);
+				glVertex2f(vtag[i].wx - 1, vtag[i].wy + 1);
+			}
+			glEnd();
+		}
+
+	QPainter painter(this);
+	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+	painter.setFont(QFont("Helvetica", 10));
+	for (int i = 0; i<nsel; ++i)
+		if (vtag[i].bvis)
+		{
+			int x = vtag[i].wx / m_dpr;
+			int y = height() - vtag[i].wy / m_dpr;
+			painter.setPen(Qt::black);
+
+			painter.drawText(x + 3, y - 2, vtag[i].sztag);
+
+			if (vtag[i].ntag == 0) painter.setPen(Qt::yellow);
+			else painter.setPen(Qt::red);
+
+			painter.drawText(x + 2, y - 3, vtag[i].sztag);
+		}
+
+	painter.end();
+
+	glPopAttrib();
+
+	// QPainter messes this up so reset it
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 }

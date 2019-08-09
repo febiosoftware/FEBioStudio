@@ -233,10 +233,6 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 
 void CMainWindow::on_actionGraph_triggered()
 {
-	CDocument* doc = GetDocument();
-	int jobs = doc->FEBioJobs();
-	if (jobs == 0) return;
-
 	CPostDoc* postDoc = GetActiveDocument();
 	if (postDoc == nullptr) return;
 
@@ -251,10 +247,6 @@ void CMainWindow::on_actionGraph_triggered()
 
 void CMainWindow::on_actionSummary_triggered()
 {
-	CDocument* doc = GetDocument();
-	int jobs = doc->FEBioJobs();
-	if (jobs == 0) return;
-
 	CPostDoc* postDoc = GetActiveDocument();
 	if (postDoc == nullptr) return;
 
@@ -270,10 +262,6 @@ void CMainWindow::on_actionSummary_triggered()
 
 void CMainWindow::on_actionStats_triggered()
 {
-	CDocument* doc = GetDocument();
-	int jobs = doc->FEBioJobs();
-	if (jobs == 0) return;
-
 	CPostDoc* postDoc = GetActiveDocument();
 	if (postDoc == nullptr) return;
 
@@ -288,10 +276,6 @@ void CMainWindow::on_actionStats_triggered()
 
 void CMainWindow::on_actionIntegrate_triggered()
 {
-	CDocument* doc = GetDocument();
-	int jobs = doc->FEBioJobs();
-	if (jobs == 0) return;
-
 	CPostDoc* postDoc = GetActiveDocument();
 	if (postDoc == nullptr) return;
 

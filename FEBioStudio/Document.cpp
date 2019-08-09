@@ -160,6 +160,9 @@ void CDocument::NewDocument()
 
 	m_view.m_pos3d = vec3d(0, 0, 0);
 
+	m_view.m_bTags = true;
+	m_view.m_ntagInfo = 0;
+
 	//	m_view.m_col1 = GLCOLOR(164,164,255);
 	//	m_view.m_col2 = GLCOLOR(96,96,164);
 
@@ -458,26 +461,12 @@ BOX CDocument::GetModelBox() { return m_Project.GetFEModel().GetModel().GetBound
 GObject* CDocument::GetActiveObject()
 {
 	GObject* po = nullptr;
-//	if (m_vs.nselect == SELECT_OBJECT)
+
+	//	if (m_vs.nselect == SELECT_OBJECT)
 	{
 		FEModel* ps = GetFEModel();
 		GObjectSelection sel(ps);
 		if (sel.Count() == 1) po = sel.Object(0);
-	}
-
-	// check the post objects
-	if (po == nullptr)
-	{
-		for (int i = 0; i < FEBioJobs(); ++i)
-		{
-			CFEBioJob* job = GetFEBioJob(i);
-			CPostDoc* pd = job->GetPostDoc();
-			if (pd)
-			{
-				CPostObject* pi = pd->GetPostObject();
-				if (pi->IsSelected()) po = pi;
-			}
-		}
 	}
 
 	return po;

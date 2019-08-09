@@ -199,7 +199,9 @@ void CGLControlBar::Update()
 
 	CDocument* pdoc = ui->m_wnd->GetDocument();
 
-	GSurfaceMeshObject* ps = dynamic_cast<GSurfaceMeshObject*>(pdoc->GetActiveObject());
+	GObject* po = view->GetActiveObject();
+
+	GSurfaceMeshObject* ps = dynamic_cast<GSurfaceMeshObject*>(po);
 	if (ps)
 	{
 		ui->showEditButtons(true, false);
@@ -223,7 +225,7 @@ void CGLControlBar::Update()
 		return;
 	}
 
-	GCurveMeshObject* pc = dynamic_cast<GCurveMeshObject*>(pdoc->GetActiveObject());
+	GCurveMeshObject* pc = dynamic_cast<GCurveMeshObject*>(po);
 	if (pc)
 	{
 		ui->showEditButtons(true, false, false);
@@ -247,7 +249,6 @@ void CGLControlBar::Update()
 		return;
 	}
 
-	GObject* po = pdoc->GetActiveObject();
 	if (po && po->GetFEMesh())
 	{
 		ui->showEditButtons(true);
