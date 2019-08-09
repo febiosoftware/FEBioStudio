@@ -1722,7 +1722,27 @@ void CMainWindow::on_actionSnap3D_triggered()
 
 void CMainWindow::on_actionOnlineHelp_triggered()
 {
-	QDesktopServices::openUrl(QUrl("https://help.febio.org/PreView/PreView_2_1/index.html"));
+	QDesktopServices::openUrl(QUrl("https://febio.org/support/"));
+}
+
+void CMainWindow::on_actionFEBioURL_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://febio.org/"));
+}
+
+void CMainWindow::on_actionFEBioForum_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://forums.febio.org/"));
+}
+
+void CMainWindow::on_actionFEBioResources_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://febio.org/teaching-hub/"));
+}
+
+void CMainWindow::on_actionFEBioPubs_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://febio.org/publications/"));
 }
 
 void CMainWindow::on_actionAbout_triggered()

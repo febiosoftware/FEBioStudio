@@ -356,9 +356,13 @@ public:
 		actionBottom          = addAction("Bottom", "actionBottom");
 
 		// --- Help menu ---
-		QAction* actionOnlineHelp = addAction("Online Help", "actionOnlineHelp");
+		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
+		QAction* actionOnlineHelp = addAction("Online Manuals", "actionOnlineHelp");
+		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
+		QAction* actionFEBioResources = addAction("Learning Resources", "actionFEBioResources");
+		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
 		QAction* actionAbout = addAction("About FEBio Studio", "actionAbout");
-
+	
 		// other actions
 		actionSelectObjects  = addAction("Select Objects" , "actionSelectObjects" , ":icons/selectObject.png" , true);
 		actionSelectParts    = addAction("Select Parts"   , "actionSelectParts"   , ":icons/selectPart.png"   , true);
@@ -557,7 +561,11 @@ public:
 		menuView->addSeparator();
 
 		menuBar->addAction(menuHelp->menuAction());
+		menuHelp->addAction(actionFEBioURL);
 		menuHelp->addAction(actionOnlineHelp);
+		menuHelp->addAction(actionFEBioForum);
+		menuHelp->addAction(actionFEBioResources);
+		menuHelp->addAction(actionFEBioPubs);
 		menuHelp->addSeparator();
 		menuHelp->addAction(actionAbout);
 

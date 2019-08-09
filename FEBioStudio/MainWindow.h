@@ -284,6 +284,10 @@ public slots:
 	void on_actionSnap3D_triggered();
 
 	void on_actionOnlineHelp_triggered();
+	void on_actionFEBioURL_triggered();
+	void on_actionFEBioForum_triggered();
+	void on_actionFEBioResources_triggered();
+	void on_actionFEBioPubs_triggered();
 	void on_actionAbout_triggered();
 
 	void on_actionSelect_toggled(bool b);
