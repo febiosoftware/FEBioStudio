@@ -343,6 +343,7 @@
     <ClInclude Include="..\..\FEBioStudio\CurveEditor.h" />
     <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h" />
     <ClInclude Include="..\..\FEBioStudio\CurvePicker.h" />
+    <ClInclude Include="resource.h" />
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
@@ -521,6 +522,14 @@
     <ClInclude Include="..\..\FEBioStudio\ui_modelviewer.h" />
     <ClInclude Include="..\..\FEBioStudio\ui_toolspanel.h" />
     <ClInclude Include="..\..\FEBioStudio\version.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FEBioStudio.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\icons\febiostudio.ico" />
+    <Image Include="..\..\icons\FEBioStudio.png" />
+    <Image Include="icon1.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

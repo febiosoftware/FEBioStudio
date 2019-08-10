@@ -297,6 +297,13 @@ FELineMesh* CPostObject::GetEditableLineMesh()
 	return GetFEMesh();
 }
 
+BOX CPostObject::GetBoundingBox()
+{
+	FEMesh* mesh = GetFEMesh();
+	if (mesh) return mesh->GetBoundingBox();
+	else return BOX();
+}
+
 // build the FEMesh
 FEMesh* CPostObject::BuildMesh()
 {
@@ -332,7 +339,12 @@ FEMesh* CPostObject::BuildMesh()
 		switch (fs.m_ntype)
 		{
 		case Post::FACE_QUAD4: fd.m_type = FE_FACE_QUAD4; break;
+		case Post::FACE_QUAD8: fd.m_type = FE_FACE_QUAD8; break;
+		case Post::FACE_QUAD9: fd.m_type = FE_FACE_QUAD9; break;
 		case Post::FACE_TRI3 : fd.m_type = FE_FACE_TRI3; break;
+		case Post::FACE_TRI6 : fd.m_type = FE_FACE_TRI6; break;
+		case Post::FACE_TRI7 : fd.m_type = FE_FACE_TRI7; break;
+		case Post::FACE_TRI10: fd.m_type = FE_FACE_TRI10; break;
 		default:
 			assert(false);
 		}
@@ -352,7 +364,15 @@ FEMesh* CPostObject::BuildMesh()
 		Post::FEEdge& es = postMesh->Edge(i);
 
 		ed.m_gid = 0;
-		ed.m_type = FE_EDGE2;
+
+		switch (es.Type())
+		{
+		case Post::EDGE_LINE2: ed.m_type = FE_EDGE2; break;
+		case Post::EDGE_LINE3: ed.m_type = FE_EDGE3; break;
+		case Post::EDGE_LINE4: ed.m_type = FE_EDGE4; break;
+		default:
+			assert(false);
+		}
 
 		for (int j = 0; j < es.Nodes(); ++j)
 		{
@@ -369,7 +389,26 @@ FEMesh* CPostObject::BuildMesh()
 
 		switch(es.Type())
 		{
-		case Post::FE_HEX8: ed.SetType(FE_HEX8); break;
+//		case FE_LINE2: break;
+//		case FE_LINE3: break;
+		case Post::FE_TRI3   : ed.SetType(FE_TRI3   ); break;
+		case Post::FE_TRI6   : ed.SetType(FE_TRI6   ); break;
+		case Post::FE_QUAD4  : ed.SetType(FE_QUAD4  ); break;
+		case Post::FE_QUAD8  : ed.SetType(FE_QUAD8  ); break;
+		case Post::FE_QUAD9  : ed.SetType(FE_QUAD9  ); break;
+		case Post::FE_TET4   : ed.SetType(FE_TET4   ); break;
+		case Post::FE_TET10  : ed.SetType(FE_TET10  ); break;
+		case Post::FE_TET15  : ed.SetType(FE_TET15  ); break;
+		case Post::FE_TET20  : ed.SetType(FE_TET20  ); break;
+		case Post::FE_PENTA6 : ed.SetType(FE_PENTA6 ); break;
+		case Post::FE_PENTA15: ed.SetType(FE_PENTA15); break;
+		case Post::FE_HEX8   : ed.SetType(FE_HEX8   ); break;
+		case Post::FE_HEX20  : ed.SetType(FE_HEX20  ); break;
+		case Post::FE_HEX27  : ed.SetType(FE_HEX27  ); break;
+		case Post::FE_PYRA5  : ed.SetType(FE_PYRA5  ); break;
+		case Post::FE_TET5   : ed.SetType(FE_TET5   ); break;
+		default:
+			assert(false);
 		};
 
 		for (int j = 0; j < es.Nodes(); ++j) ed.m_node[j] = es.m_node[j];

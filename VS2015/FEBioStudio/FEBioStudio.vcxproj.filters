@@ -887,6 +887,9 @@
     <ClInclude Include="..\..\FEBioStudio\PostDoc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
@@ -931,5 +934,21 @@
     <CustomBuild Include="..\..\FEBioStudio\DlgWidgetProps.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FEBioStudio.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\icons\FEBioStudio.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\icons\febiostudio.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

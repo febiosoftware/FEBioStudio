@@ -103,6 +103,8 @@ public:
 
 	void UpdateMesh() override;
 
+	BOX GetBoundingBox();
+
 private:
 	Post::CGLModel* m_glm;
 };

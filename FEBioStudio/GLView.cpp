@@ -1660,9 +1660,20 @@ void CGLView::SetupProjection()
 	if (height() == 0) m_ar = 1; m_ar = (GLfloat)width() / (GLfloat)height();
 
 	GLdouble f = 0.2*m_Cam.TargetDistance();
-
+	
 	CDocument* doc = GetDocument();
-	BOX box = doc->GetModelBox();
+
+	BOX box;
+	if (m_pWnd->GetActiveView() == 0)
+	{
+		box = doc->GetModelBox();
+	}
+	else
+	{
+		CPostDoc* pd = m_pWnd->GetActiveDocument();
+		if (pd) box = pd->GetPostObject()->GetBoundingBox();
+	}
+
 	double R = box.Radius();
 	VIEW_SETTINGS& vs = doc->GetViewSettings();
 
@@ -7564,27 +7575,31 @@ void CGLView::RenderMeshLines(GObject* po)
 // selected object is too close.
 void CGLView::ZoomSelection(bool forceZoom)
 {
-	// get the current selection
-	FESelection* ps = GetDocument()->GetCurrentSelection();
-
-	// zoom out on current selection
-	if (ps && ps->Size() != 0)
+	if (m_pWnd->GetActiveView() == 0)
 	{
-		// get the selection's bounding box
-		BOX box = ps->GetBoundingBox();
+		// get the current selection
+		FESelection* ps = GetDocument()->GetCurrentSelection();
 
-		double f = box.GetMaxExtent();
-		if (f == 0) f = 1;
-
-		CGLCamera& cam = GetCamera();
-
-		double g = cam.FinalTargetDistance();
-		if ((forceZoom == true) || (g < 2.0*f))
+		// zoom out on current selection
+		if (ps && ps->Size() != 0)
 		{
-			cam.SetTarget(box.Center());
-			cam.SetTargetDistance(2.0*f);
-			repaint();
+			// get the selection's bounding box
+			BOX box = ps->GetBoundingBox();
+
+			double f = box.GetMaxExtent();
+			if (f == 0) f = 1;
+
+			CGLCamera& cam = GetCamera();
+
+			double g = cam.FinalTargetDistance();
+			if ((forceZoom == true) || (g < 2.0*f))
+			{
+				cam.SetTarget(box.Center());
+				cam.SetTargetDistance(2.0*f);
+				repaint();
+			}
 		}
+		else ZoomExtents();
 	}
 	else ZoomExtents();
 }
@@ -7609,10 +7624,23 @@ void CGLView::ZoomToObject(GObject *po)
 //-----------------------------------------------------------------
 void CGLView::ZoomExtents(bool banimate)
 {
-	CDocument* doc = GetDocument();
-	if (doc == 0) return;
+	BOX box;
+	if (m_pWnd->GetActiveView() == 0)
+	{
+		CDocument* doc = GetDocument();
+		if (doc == 0) return;
+		box = GetDocument()->GetModelBox();
+	}
+	else
+	{
+		CPostDoc* doc = m_pWnd->GetActiveDocument();
+		if (doc == nullptr) return;
 
-	BOX box = GetDocument()->GetModelBox();
+		CPostObject* po = doc->GetPostObject();
+		if (po == nullptr) return;
+
+		box = po->GetBoundingBox();
+	}
 
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;

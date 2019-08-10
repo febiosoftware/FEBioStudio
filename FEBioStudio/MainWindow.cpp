@@ -892,6 +892,7 @@ void CMainWindow::SetActiveView(int n)
 void CMainWindow::AddView(const std::string& viewName, bool makeActive)
 {
 	ui->glc->addView(viewName, makeActive);
+	ui->glview->ZoomExtents(false);
 	ui->glview->UpdateWidgets(false);
 }
 
