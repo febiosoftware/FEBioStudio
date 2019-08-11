@@ -294,6 +294,7 @@ public:
 	void RenderDefaultView();
 	void RenderPostView(int n);
 	void RenderTags();
+	void RenderImageData();
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
 	vec3d ScreenToGrid(int x, int y);

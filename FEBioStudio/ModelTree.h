@@ -63,7 +63,9 @@ enum ModelTreeType
 	MT_DATAMAP,
 	MT_JOBLIST,
 	MT_JOB,
-	MT_POST_PLOT
+	MT_POST_PLOT,
+	MT_3DIMAGE,
+	MT_3DIMAGE_RENDER
 };
 
 struct CModelTreeItem
@@ -129,6 +131,7 @@ protected:
 	void UpdateDiscrete  (QTreeWidgetItem* t1, FEModel& fem);
 	void UpdateOutput    (QTreeWidgetItem* t1, FEProject& prj);
 	void UpdateJobs      (QTreeWidgetItem* t1, CDocument* doc);
+	void UpdateImages    (QTreeWidgetItem* t1, CDocument* doc);
 
 	void AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FEModel& fem, bool topLevel);
 	void AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FEModel& fem);

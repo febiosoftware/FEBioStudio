@@ -12,6 +12,7 @@
 #include <PostViewLib/ImageModel.h>
 #include <PostViewLib/ImageSlicer.h>
 #include <PostViewLib/VolRender.h>
+#include <PostViewLib/MarchingCubes.h>
 #include <PostGL/GLModel.h>
 #include <QMessageBox>
 #include "PostDoc.h"
@@ -19,6 +20,7 @@
 #include "SummaryWindow.h"
 #include "StatsWindow.h"
 #include "IntegrateWindow.h"
+#include "GImageObject.h"
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
@@ -118,62 +120,56 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 
 void CMainWindow::on_actionImageSlicer_triggered()
 {
-/*	CGLObject* po = ui->modelViewer->GetCurrentObject();
-	CImageModel* img = dynamic_cast<CImageModel*>(po);
-	if (img == nullptr)
+	GImageObject* imgObj = dynamic_cast<GImageObject*>(ui->modelViewer->GetCurrentObject());
+	if (imgObj == nullptr)
 	{
-		QMessageBox::critical(this, "PostView", "Please select an image data set first.");
+		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
+		return;
 	}
-	else
-	{
-		CImageSlicer* slicer = new CImageSlicer(img);
-		slicer->Create();
-		img->AddImageRenderer(slicer);
-		ui->modelViewer->Update(true);
-		ui->modelViewer->selectObject(slicer);
-		RedrawGL();
-	}
-*/
+
+	Post::CImageModel* img = imgObj->GetImageModel();
+	Post::CImageSlicer* slicer = new Post::CImageSlicer(img);
+	slicer->Create();
+	img->AddImageRenderer(slicer);
+	ui->modelViewer->Update();
+//	ui->modelViewer->selectObject(slicer);
+	RedrawGL();
 }
 
 void CMainWindow::on_actionVolumeRender_triggered()
 {
-/*	CGLObject* po = ui->modelViewer->selectedObject();
-	CImageModel* img = dynamic_cast<CImageModel*>(po);
-	if (img == nullptr)
+	GImageObject* imgObj = dynamic_cast<GImageObject*>(ui->modelViewer->GetCurrentObject());
+	if (imgObj == nullptr)
 	{
-		QMessageBox::critical(this, "PostView", "Please select an image data set first.");
+		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
+		return;
 	}
-	else
-	{
-		CVolRender* vr = new CVolRender(img);
-		vr->Create();
-		img->AddImageRenderer(vr);
-		ui->modelViewer->Update(true);
-		ui->modelViewer->selectObject(vr);
-		RedrawGL();
-	}
-*/
+
+	Post::CImageModel* img = imgObj->GetImageModel();
+	Post::CVolRender* vr = new Post::CVolRender(img);
+	vr->Create();
+	img->AddImageRenderer(vr);
+	ui->modelViewer->Update();
+//	ui->modelViewer->selectObject(vr);
+	RedrawGL();
 }
 
 void CMainWindow::on_actionMarchingCubes_triggered()
 {
-/*	CGLObject* po = ui->modelViewer->selectedObject();
-	CImageModel* img = dynamic_cast<CImageModel*>(po);
-	if (img == nullptr)
+	GImageObject* imgObj = dynamic_cast<GImageObject*>(ui->modelViewer->GetCurrentObject());
+	if (imgObj == nullptr)
 	{
-		QMessageBox::critical(this, "PostView", "Please select an image data set first.");
+		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
+		return;
 	}
-	else
-	{
-		CMarchingCubes* mc = new CMarchingCubes(img);
-		mc->Create();
-		img->AddImageRenderer(mc);
-		ui->modelViewer->Update(true);
-		ui->modelViewer->selectObject(mc);
-		RedrawGL();
-	}
-*/
+
+	Post::CImageModel* img = imgObj->GetImageModel();
+	Post::CMarchingCubes* mc = new Post::CMarchingCubes(img);
+	mc->Create();
+	img->AddImageRenderer(mc);
+	ui->modelViewer->Update();
+//	ui->modelViewer->selectObject(mc);
+	RedrawGL();
 }
 
 void CMainWindow::on_actionIsosurfacePlot_triggered()

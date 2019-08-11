@@ -112,6 +112,7 @@ struct VIEW_SETTINGS
 class CMainWindow;
 class FEFileExport;
 class CDocument;
+class GImageObject;
 
 //-----------------------------------------------------------------------------
 // Class that can be used to monitor changes to the document
@@ -294,6 +295,13 @@ public:
 	CFEBioJob* FindFEBioJob(const std::string& s);
 
 public:
+	int ImageObjects() const;
+	void AddImageObject(GImageObject* img);
+	GImageObject* GetImageObject(int i);
+	void DeleteAllImageObjects();
+	void DeleteImageObject(GImageObject* img);
+
+public:
 	void AddObserver(CDocObserver* observer);
 	void RemoveObserver(CDocObserver* observer);
 	void UpdateObservers(bool bnew);
@@ -326,6 +334,8 @@ protected:
 
 	vector<CFEBioJob*>	m_JobList;
 	CFEBioJob*			m_activeJob;
+
+	vector<GImageObject*>	m_img;
 
 	std::vector<CDocObserver*>	m_Observers;
 };

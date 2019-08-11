@@ -1340,6 +1340,9 @@ void CGLView::paintGL()
 	if (activeView == 0) RenderDefaultView();
 	else RenderPostView(activeView - 1);
 
+	// render the image data
+	RenderImageData();
+
 	// render the grid
 	if (view.m_bgrid) m_grid.Render();
 
@@ -2164,6 +2167,55 @@ void CGLView::RenderBackground()
 	glMatrixMode(GL_MODELVIEW);
 }
 
+//-----------------------------------------------------------------------------
+void RenderBox(const BOX& box)
+{
+	// push attributes
+	glPushAttrib(GL_ENABLE_BIT);
+
+	// set attributes
+	glEnable(GL_LINE_SMOOTH);
+	glDisable(GL_LIGHTING);
+
+	glBegin(GL_LINES);
+	{
+		glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
+		glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
+		glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
+		glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
+
+		glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
+		glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
+		glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
+		glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
+
+		glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
+		glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
+		glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
+		glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
+	}
+	glEnd();
+
+	// restore attributes
+	glPopAttrib();
+}
+
+void CGLView::RenderImageData()
+{
+	CDocument* doc = GetDocument();
+	if (doc->IsValid() == false) return;
+
+	for (int i = 0; i < doc->ImageObjects(); ++i)
+	{
+		GImageObject* img = doc->GetImageObject(i);
+		BOX box = img->GetBox();
+//		GLCOLOR c = img->GetColor();
+		GLCOLOR c(255, 128, 128);
+		glColor3ub(c.r, c.g, c.b);
+		RenderBox(box);
+		img->Render(this);
+	}
+}
 
 void CGLView::RenderMaterialFibers()
 {
@@ -5938,14 +5990,6 @@ void CGLView::RenderSelectedParts(GObject* po)
 void CGLView::RenderObject(GObject* po)
 {
 	if (!po->IsVisible()) return;
-
-	// image objects render themselves
-	GImageObject* imageObject = dynamic_cast<GImageObject*>(po);
-	if (imageObject)
-	{
-		imageObject->Render();
-		return;
-	}
 
 	// get the GLMesh
 	FEModel& fem = *GetDocument()->GetFEModel();

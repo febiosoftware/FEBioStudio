@@ -521,6 +521,7 @@ std::string CDocument::GetTypeString(FEObject* po)
 	else if (dynamic_cast<GObject*>(po)) return "Object";
 	else if (dynamic_cast<FEDataMap*>(po)) return "Data map";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
+	else if (dynamic_cast<GImageObject*>(po)) return "3D Image";
 	else
 	{
 		assert(false);
@@ -851,15 +852,28 @@ bool CDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 // import image data
 bool CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
 {
-	ImageStack* im = new ImageStack;
-	im->Create(nx, ny, nz);
-	if (im->LoadFromFile(fileName.c_str(), 8) == false) { delete im; return false; }
-
 	GImageObject* po = new GImageObject;
-	po->SetImageStack(im);
-	po->SetBox(box);
+	if (po->LoadImageData(fileName, nx, ny, nz, box) == false)
+	{
+		delete po;
+		return false;
+	}
 
-	DoCommand(new CCmdAddAndSelectObject(po));
+	// use the file name to make the object's name
+	size_t c1 = fileName.rfind('\\');
+	if (c1 == fileName.npos) c1 = fileName.rfind('/');
+	if (c1 == fileName.npos) c1 = -1;
+	c1++;
+
+	size_t c2 = fileName.rfind('.');
+	if (c2 == fileName.npos) c2 = fileName.size();
+	else if (c2 < c1) c2 = fileName.size();
+	
+	string name = fileName.substr(c1, c2 - c1);
+	po->SetName(name);
+
+	// add it to the project
+	AddImageObject(po);
 
 	return true;
 }
@@ -1375,6 +1389,11 @@ void CDocument::DeleteObject(FEObject* po)
 		CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
 		DeleteFEBioJob(job);
 	}
+	else if (dynamic_cast<GImageObject*>(po))
+	{
+		GImageObject* imgObj = dynamic_cast<GImageObject*>(po);
+		DeleteImageObject(imgObj);
+	}
 	else
 	{
 		assert(false);
@@ -1649,4 +1668,44 @@ void CDocument::DeleteFEBioJob(CFEBioJob* job)
 			delete job;
 		}
 	}
+}
+
+int CDocument::ImageObjects() const
+{
+	return (int)m_img.size();
+}
+
+void CDocument::AddImageObject(GImageObject* img)
+{
+	assert(img);
+	m_img.push_back(img);
+}
+
+GImageObject* CDocument::GetImageObject(int i)
+{
+	return m_img[i];
+}
+
+void CDocument::DeleteAllImageObjects()
+{
+	for (int i = 0; i < ImageObjects(); ++i)
+	{
+		delete GetImageObject(i);
+	}
+	m_img.clear();
+}
+
+void CDocument::DeleteImageObject(GImageObject* img)
+{
+	for (int i = 0; i < ImageObjects(); ++i)
+	{
+		GImageObject* img_i = GetImageObject(i);
+		if (img_i == img)
+		{
+			m_img.erase(m_img.begin() + i);
+			delete img_i;
+			return;
+		}
+	}
+	assert(false);
 }

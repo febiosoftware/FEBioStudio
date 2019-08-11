@@ -12,8 +12,11 @@
 #include "PostDoc.h"
 #include <PostGL/GLModel.h>
 #include <PostViewLib/PropertyList.h>
+#include <PostViewLib/ImageModel.h>
+#include <PostViewLib/GLImageRenderer.h>
 #include <QMessageBox>
 #include "MainWindow.h"
+#include "GImageObject.h"
 
 class CObjectValidator
 {
@@ -270,6 +273,7 @@ public:
 				case Post::CProperty::DataScalar: addProperty(pi.name, CProperty::DataScalar); break;
 				case Post::CProperty::DataVec3: addProperty(pi.name, CProperty::DataVec3); break;
 				case Post::CProperty::DataMat3: addProperty(pi.name, CProperty::DataMat3); break;
+				case Post::CProperty::Color: addProperty(pi.name, CProperty::Color); break;
 				default:
 					addProperty(pi.name, CProperty::String);
 				}
@@ -654,6 +658,20 @@ void CModelTree::Build(CDocument* doc)
 
 		UpdateJobs(t1, doc);
 	}
+
+	// add the image stacks
+	if (doc->ImageObjects())
+	{
+		QTreeWidgetItem* t1 = new QTreeWidgetItem(this);
+		t1->setText(0, "3D Images");
+		t1->setExpanded(true);
+		t1->setData(0, Qt::UserRole, (int)m_data.size());
+
+		CModelTreeItem it = { 0, 0 };
+		m_data.push_back(it);
+
+		UpdateImages(t1, doc);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -689,6 +707,26 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 					string name = plt->GetName();
 					AddTreeItem(t2, QString::fromStdString(name), MT_POST_PLOT, 0, 0, new CPostProps(plt));
 				}
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CModelTree::UpdateImages(QTreeWidgetItem* t1, CDocument* doc)
+{
+	for (int i = 0; i < doc->ImageObjects(); ++i)
+	{
+		GImageObject* img = doc->GetImageObject(i);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CObjectProps(img), 0);
+
+		Post::CImageModel* imgModel = img->GetImageModel();
+		if (imgModel)
+		{
+			for (int j = 0; j < imgModel->ImageRenderers(); ++j)
+			{
+				Post::CGLImageRenderer* imgRender = imgModel->GetImageRenderer(j);
+				AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, 0, new CPostProps(imgRender), 0);
 			}
 		}
 	}
