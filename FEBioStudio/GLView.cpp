@@ -1568,6 +1568,8 @@ void CGLView::RenderPostView(int n)
 		VIEW_SETTINGS& view = pdoc->GetViewSettings();
 		if (view.m_bTags) RenderTags();
 	}
+
+	Post::CGLPlaneCutPlot::DisableClipPlanes();
 }
 
 //-----------------------------------------------------------------------------
