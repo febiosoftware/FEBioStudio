@@ -1,0 +1,30 @@
+DESTDIR = .
+TEMPLATE = app
+TARGET = FEBioStudio
+CONFIG += debug c++11
+CONFIG += qt opengl qtwidgets qtcharts warn_off
+DEFINES += LINUX HAS_NETGEN HAS_OCC TETLIBRARY
+INCLUDEPATH += ../../PreView2
+INCLUDEPATH += ../../PostView2
+QT += widgets opengl gui charts
+QMAKE_LFLAGS_RELEASE += -static-libstdc++ -static-libgcc
+#QMAKE_LFLAGS_RPATH = 
+#QMAKE_LFLAGS += '-Wl,-rpath,\'\$$ORIGIN/../lib/\',-z,origin'
+
+LIBS += -L/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib
+LIBS += -L/usr/lib64 -lGLU -lGL -lz
+LIBS += -L/home/sci/mherron/Resources/tetgen1.5.0/lib -ltet64
+LIBS += -L/opt/netgen/lib 
+LIBS += -L/usr/local/lib 
+LIBS += -L../../PreView2/build/lib
+LIBS += -L../../PostView2/build/lib
+LIBS += -Wl,--start-group 
+LIBS += -lnglib -lcsg -linterface -lmesh -locc
+LIBS += -lTKernel -lTKGeomBase -lTKTopAlgo -lTKPrim -lTKMesh -lTKMath -lTKBRep -lTKSTL -lTKFillet -lTKBO -lTKIGES -lTKSTEP -lTKSTEPBase -lTKXSBase -lTKG3d -lTKLCAF
+LIBS += -labaqus -lansys -lgeomlib -lmathlib -lxml -lpreviewio -lfebio -lcomsol -llsdyna -lpreviewlib -lfemlib -lmeshlib -limagelib
+LIBS += -lglwlib -lpostgl -lxpltlib -lPostView2Lib
+LIBS += -Wl,--end-group
+RESOURCES = ../febiostudio.qrc
+
+SOURCES += *.cpp
+HEADERS += *.h
