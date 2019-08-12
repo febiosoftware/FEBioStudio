@@ -51,7 +51,7 @@ void darkStyle()
 }
 
 //-----------------------------------------------------------------------------
-CMainWindow::CMainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
+CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_doc = 0;
 
@@ -64,7 +64,10 @@ CMainWindow::CMainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::CMai
 	m_doc = new CDocument(this);
 
 	// read the settings
-	readSettings();
+	if (reset == false)
+	{
+		readSettings();
+	}
 
 	// activate dark style
 	if (ui->m_theme == 1) 
@@ -707,11 +710,11 @@ void CMainWindow::writeSettings()
 	settings.setValue("febioInfo", ui->m_febio_info);
 
 	QStringList folders = ui->fileViewer->FolderList();
-	if (folders.isEmpty() == false) settings.setValue("folders", folders);
+	settings.setValue("folders", folders);
 
-	if (ui->m_recentFiles.isEmpty() == false) settings.setValue("recentFiles", ui->m_recentFiles);
-	if (ui->m_recentFEFiles.isEmpty() == false) settings.setValue("recentFEFiles", ui->m_recentFEFiles);
-	if (ui->m_recentGeomFiles.isEmpty() == false) settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
+	settings.setValue("recentFiles", ui->m_recentFiles);
+	settings.setValue("recentFEFiles", ui->m_recentFEFiles);
+	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
 
 	settings.endGroup();
 }

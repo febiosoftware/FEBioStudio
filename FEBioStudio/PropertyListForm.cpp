@@ -15,6 +15,7 @@
 #include <QLabel>
 #include "CurvePicker.h"
 #include "DataFieldSelector.h"
+#include "PropertyListView.h"
 
 //=================================================================================================
 
@@ -73,7 +74,7 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 	int nprops = pl->Properties();
 	for (int i=0; i<nprops; ++i)
 	{
-		const CProperty& pi = pl->Property(i);
+		CProperty& pi = pl->Property(i);
 		QVariant v = pl->GetPropertyValue(i);
 		QWidget* pw = 0;
 		QString label = pi.name;
@@ -130,8 +131,16 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 
 //-----------------------------------------------------------------------------
 // create an editor for a property and set the initial value
-QWidget* CPropertyListForm::createPropertyEditor(const CProperty& pi, QVariant v)
+QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 {
+	if (pi.flags & CProperty::Variable)
+	{
+		CEditVariableProperty* box = new CEditVariableProperty();
+		box->setProperty(&pi, v);
+		connect(box, SIGNAL(editTextChanged(const QString&)), this, SLOT(onDataChanged()));
+		return box;
+	}
+
 	switch (pi.type)
 	{
 	case CProperty::Int:
@@ -453,6 +462,12 @@ void CPropertyListForm::onDataChanged()
 					{
 						QPushButton* b = qobject_cast<QPushButton*>(pw);
 						if (b) m_list->SetPropertyValue(i, true);
+					}
+					break;
+				case CProperty::MathString:
+					{
+						CEditVariableProperty* e = qobject_cast<CEditVariableProperty*>(pw);
+						if (e) m_list->SetPropertyValue(i, e->currentText());
 					}
 					break;
 				}

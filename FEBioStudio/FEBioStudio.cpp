@@ -63,12 +63,25 @@ int main(int argc, char* argv[])
 	glewInit();
 #endif
 
+	// see if the reset flag was defined
+	// the reset flag can be used to restore the UI, i.e.
+	// when reset is true, the CMainWindow class will not read the settings.
+	bool breset = false;
+	for (int i = 0; i < argc; ++i)
+	{
+		if (strcmp(argv[i], "-reset") == 0)
+		{
+			breset = true;
+			break;
+		}
+	}
+
 	// create the main window
-	CMainWindow wnd;
+	CMainWindow wnd(breset);
 	//	wnd.setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 	wnd.show();
 
-	if (argc == 2)
+	if ((argc == 2) && (breset == false))
 	{
 		wnd.OpenDocument(argv[1]);
 	}

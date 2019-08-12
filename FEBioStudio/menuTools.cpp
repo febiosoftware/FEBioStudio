@@ -8,6 +8,7 @@
 #include <FEBio/FEBioExport25.h>
 #include "DlgFEBioOptimize.h"
 #include <QFileDialog>
+#include <QApplication>
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
@@ -113,6 +114,12 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 		lastPathIndex = dlg.GetFEBioPath();
         QString program = ui->m_febio_path.at(lastPathIndex);
+
+		// replace $(FEBioStudioDir)
+		if (program.contains("$(FEBioStudioDir)"))
+		{
+			program.replace("$(FEBioStudioDir)", QApplication::applicationDirPath());
+		}
 
 		// get the command line
 		QString cmd = dlg.CommandLine();

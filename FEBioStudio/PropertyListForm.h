@@ -30,7 +30,7 @@ private:
 	void clear();
 
 	// create an editor for a property
-	QWidget* createPropertyEditor(const CProperty& p, QVariant v);
+	QWidget* createPropertyEditor(CProperty& p, QVariant v);
 
 private slots:
 	// catch-all slot for when a widget gets changed

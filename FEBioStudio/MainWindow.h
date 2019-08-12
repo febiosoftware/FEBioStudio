@@ -29,7 +29,7 @@ class CMainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit CMainWindow(QWidget* parent = 0);
+	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
 	~CMainWindow();
 
 public:

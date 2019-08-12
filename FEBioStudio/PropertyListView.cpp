@@ -26,6 +26,7 @@ CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent
 //	addItem("<map>");
 	setEditable(true);
 	setInsertPolicy(QComboBox::NoInsert);
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	m_prop = nullptr;
 

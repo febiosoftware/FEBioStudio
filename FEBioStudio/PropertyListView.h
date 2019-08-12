@@ -22,7 +22,7 @@ class CEditVariableProperty : public QComboBox
 	Q_OBJECT
 
 public:
-	CEditVariableProperty(QWidget* parent);
+	CEditVariableProperty(QWidget* parent = nullptr);
 
 	void setProperty(CProperty* p, QVariant data);
 

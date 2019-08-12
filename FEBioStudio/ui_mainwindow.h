@@ -151,8 +151,8 @@ public:
 		m_febio_path.push_back("/usr/local/bin/febio2");
 		m_febio_info.push_back("FEBio 2");
 #else
-		m_febio_path.push_back("febio2");
-		m_febio_info.push_back("FEBio 2");
+		m_febio_path.push_back("$(FEBioStudioDir)/febio2.exe");
+		m_febio_info.push_back("FEBio 2.9");
 #endif
 
 		m_process = 0;
@@ -735,7 +735,7 @@ public:
 		postPanel = new ::CPostPanel(m_wnd, dock5);
 		dock5->setWidget(postPanel);
 		menuView->addAction(dock5->toggleViewAction());
-		m_wnd->addDockWidget(Qt::BottomDockWidgetArea, dock5);
+		m_wnd->tabifyDockWidget(dock1, dock5);
 
 		// make sure the file viewer is the visible tab
 		dock1->raise();
