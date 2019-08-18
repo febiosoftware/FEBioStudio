@@ -81,7 +81,7 @@ public:
 	CGLColorMap* GetColorMap() { return m_pcol; }
 	FEModel* GetFEModel() { return m_ps; }
 
-	void Update(bool breset);
+	bool Update(bool breset) override;
 	void UpdateDisplacements(int nstate, bool breset = false);
 
 	bool AddDisplacementMap(const char* szvectorField = 0);

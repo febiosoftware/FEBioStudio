@@ -1,25 +1,25 @@
-#include "Object.h"
+#include "FSObject.h"
 
-CObject::CObject(void)
+FSObject::FSObject(void)
 {
 
 }
 
-CObject::~CObject(void)
+FSObject::~FSObject(void)
 {
 }
 
-void CObject::SetName(const std::string& name)
+void FSObject::SetName(const std::string& name)
 {
 	m_name = name;
 }
 
-const std::string& CObject::GetName() const
+const std::string& FSObject::GetName() const
 {
 	return m_name;
 }
 
-void CObject::Save(OArchive& ar)
+void FSObject::Save(OArchive& ar)
 {
 	// save the name if there is one
 	if (m_name.empty() == false)
@@ -35,11 +35,11 @@ void CObject::Save(OArchive& ar)
 
 }
 
-void CObject::Load(IArchive& ar)
+void FSObject::Load(IArchive& ar)
 {
-	TRACE("CObject::Load");
+	TRACE("FSObject::Load");
 
-	if (ar.Version() < 0x0001000C) CObject::Load(ar);
+	if (ar.Version() < 0x0001000C) FSObject::Load(ar);
 	else
 	{
 		while (IO_OK == ar.OpenChunk())

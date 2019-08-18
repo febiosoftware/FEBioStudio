@@ -5,11 +5,11 @@
 //-----------------------------------------------------------------------------
 // Base class for most classes used by FEBio Studio
 // 
-class CObject : public ParamContainer
+class FSObject : public ParamContainer
 {
 public:
-	CObject(void);
-	virtual ~CObject(void);
+	FSObject(void);
+	virtual ~FSObject(void);
 
 	void SetName(const std::string& name);
 	const std::string& GetName() const;

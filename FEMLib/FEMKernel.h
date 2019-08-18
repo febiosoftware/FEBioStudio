@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 using namespace std;
 
 class FEModel;
@@ -11,7 +11,7 @@ public:
 	FEClassFactory(int module, int superID, int classID, const char* sztype);
 	~FEClassFactory();
 
-	virtual CObject* Create(FEModel* fem) = 0;
+	virtual FSObject* Create(FEModel* fem) = 0;
 
 	int GetModule() const { return m_Module; }
 	int GetSuperID() const { return m_SuperID; }
@@ -30,7 +30,7 @@ template <class T> class FEClassFactory_T : public FEClassFactory
 {
 public:
 	FEClassFactory_T(int module, int superID, int classID, const char* sztype) : FEClassFactory(module, superID, classID, sztype){}
-	CObject* Create(FEModel* fem) { return new T(fem); }
+	FSObject* Create(FEModel* fem) { return new T(fem); }
 };
 
 class FEMKernel
@@ -38,7 +38,7 @@ class FEMKernel
 public:
 	static FEMKernel* Instance();
 
-	CObject* Create(FEModel* fem, int superID, int classID);
+	FSObject* Create(FEModel* fem, int superID, int classID);
 
 	void RegisterClass(FEClassFactory* fac);
 

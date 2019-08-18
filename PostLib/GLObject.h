@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <FSCore/FSObject.h>
 
 namespace Post {
 
@@ -11,7 +12,7 @@ class CPropertyList;
 // This class is the base class for anything that affects what's get rendered
 // to the 3D view. 
 //
-class CGLObject
+class CGLObject : public FSObject
 {
 public:
 	CGLObject(CGLModel* mdl = 0);
@@ -20,10 +21,6 @@ public:
 	// update contents
 	virtual void Update(int ntime, float dt, bool breset) {}
 	virtual void Update() {}
-
-	// get the name
-	const std::string& GetName() const;
-	void SetName(const std::string& szname);
 
 	// (de-)activate
 	virtual void Activate(bool bact) { m_bactive = bact; }
@@ -35,7 +32,6 @@ public:
 	virtual CPropertyList* propertyList() { return 0; }
 
 protected:
-	std::string		m_name;
 	bool			m_bactive;
 	CGLModel*		m_pModel;
 };

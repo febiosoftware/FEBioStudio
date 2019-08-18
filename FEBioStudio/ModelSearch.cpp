@@ -95,7 +95,7 @@ void CModelSearch::contextMenuEvent(QContextMenuEvent* ev)
 		if (ntype == 0) return;
 
 		// only show the context menu if all objects are the same
-		vector<CObject*> objList;
+		vector<FSObject*> objList;
 		QList<QListWidgetItem*>::iterator it = sel.begin();
 		while (it != sel.end())
 		{
@@ -115,7 +115,7 @@ void CModelSearch::contextMenuEvent(QContextMenuEvent* ev)
 	}
 }
 
-void CModelSearch::GetSelection(std::vector<CObject*>& objList)
+void CModelSearch::GetSelection(std::vector<FSObject*>& objList)
 {
 	// get the selection
 	QList<QListWidgetItem*> sel = m_list->selectedItems();
@@ -148,7 +148,7 @@ void CModelSearch::UpdateList()
 	for (int i=0; i<N; ++i)
 	{
 		CModelTreeItem& item = m_tree->GetItem(i);
-		CObject* o = item.obj;
+		FSObject* o = item.obj;
 		if (item.obj &&
 			((item.flag & CModelTree::OBJECT_NOT_EDITABLE) == 0) &&
 			((item.flag & CModelTree::DUPLICATE_ITEM) == 0))

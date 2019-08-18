@@ -17,7 +17,7 @@ class CCreateSpringPane : public CCreatePane
 public:
 	CCreateSpringPane(CCreatePanel* parent);
 
-	CObject* Create();
+	FSObject* Create();
 
 	void showEvent(QShowEvent* ev);
 

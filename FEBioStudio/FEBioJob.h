@@ -1,11 +1,11 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 
 class CPostDoc;
 
 
 //-----------------------------------------------------------------------------
-class CFEBioJob : public CObject
+class CFEBioJob : public FSObject
 {
 public:
 	enum JOB_STATUS {

@@ -344,7 +344,7 @@ void GObject::ReplaceSurfaceMesh(FESurfaceMesh* pm)
 bool GObject::Update(bool b)
 {
 	BuildGMesh();
-	return CObject::Update(b);
+	return FSObject::Update(b);
 }
 
 //-----------------------------------------------------------------------------

@@ -330,7 +330,7 @@ void CModelPropsPanel::Update()
 	m_isUpdating = false;
 }
 
-void CModelPropsPanel::SetObjectProps(CObject* po, CPropertyList* props, int flags)
+void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)
 {
 	if ((po == 0) && (props == 0))
 	{

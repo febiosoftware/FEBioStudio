@@ -4,14 +4,14 @@
 #include <MeshTools/ParamBlock.h>
 
 class CDlgAddMeshDataUI;
-class CObject;
+class FSObject;
 
 class CDlgAddMeshData : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgAddMeshData(CObject* po, QWidget* parent);
+	CDlgAddMeshData(FSObject* po, QWidget* parent);
 
 public slots:
 	void onCustom();

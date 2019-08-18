@@ -1,12 +1,12 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 
 class FESurfaceMesh;
 class FEGroup;
 
 //-------------------------------------------------------------------
 // Class for modifying surface meshes
-class FESurfaceModifier : public CObject
+class FESurfaceModifier : public FSObject
 {
 public:
 	FESurfaceModifier(const std::string& name = "");

@@ -19,7 +19,7 @@ GSketch& GSketcher::GetCurrentSketch()
 }
 
 //-----------------------------------------------------------------------------
-CObject* GSketcher::FinalizeSketch()
+FSObject* GSketcher::FinalizeSketch()
 {
 	// create a new PLC object
 	GPLCObject* po = new GPLCObject();

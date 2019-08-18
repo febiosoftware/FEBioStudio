@@ -3,7 +3,7 @@
 #include <vector>
 
 class QTreeWidgetItem;
-class CObject;
+class FSObject;
 class FEItemListBuilder;
 struct CModelTreeItem;
 
@@ -22,16 +22,16 @@ public:
 	void Update() override;
 
 	// get the currently selected object
-	CObject* GetCurrentObject();
+	FSObject* GetCurrentObject();
 
 	// update an object
-	void UpdateObject(CObject* po);
+	void UpdateObject(FSObject* po);
 
 	// select an object
-	void Select(CObject* po);
+	void Select(FSObject* po);
 
 	// select a list of objects
-	void SelectObjects(const std::vector<CObject*>& objList);
+	void SelectObjects(const std::vector<FSObject*>& objList);
 
 	// select an item list
 	void SelectItemList(FEItemListBuilder *pitem, bool badd = false);
@@ -46,8 +46,8 @@ public:
 	void ClearSelection();
 
 	// set the current selection
-	void SetSelection(CObject* sel);
-	void SetSelection(std::vector<CObject*>& sel);
+	void SetSelection(FSObject* sel);
+	void SetSelection(std::vector<FSObject*>& sel);
 
 	// get selected items
 	void UpdateSelection();
@@ -123,6 +123,6 @@ private slots:
 
 private:
 	Ui::CModelViewer*		ui;
-	CObject*				m_currentObject;	// object whose properties are displayed
-	std::vector<CObject*>	m_selection;		// list of selected items
+	FSObject*				m_currentObject;	// object whose properties are displayed
+	std::vector<FSObject*>	m_selection;		// list of selected items
 };

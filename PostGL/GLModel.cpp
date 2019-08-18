@@ -168,7 +168,7 @@ FEState* CGLModel::currentState()
 
 //-----------------------------------------------------------------------------
 // Update the model data
-void CGLModel::Update(bool breset)
+bool CGLModel::Update(bool breset)
 {
 	// get the time inc value
 	float dt = m_fTime - GetTimeValue(m_nTime);
@@ -189,6 +189,8 @@ void CGLModel::Update(bool breset)
 	GPlotList::iterator it = m_pPlot.begin();
 	for (int i = 0; i<(int)m_pPlot.size(); ++i, ++it)
 		if ((*it)->IsActive()) (*it)->Update(currentTimeIndex(), 0.0, breset);
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------

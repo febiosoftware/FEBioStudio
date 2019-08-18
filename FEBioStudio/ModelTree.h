@@ -7,7 +7,7 @@ class CDocument;
 class CPropertyList;
 class FEModel;
 class FEStep;
-class CObject;
+class FSObject;
 class CObjectProps;
 class FEMaterial;
 class FEReactionMaterial;
@@ -70,7 +70,7 @@ enum ModelTreeType
 
 struct CModelTreeItem
 {
-	CObject*			obj;	// the object
+	FSObject*			obj;	// the object
 	CPropertyList*		props;	// the property list
 	CObjectValidator*	val;	// the validator
 	int					flag;	// 0 = list view, 1 = form view
@@ -98,24 +98,24 @@ public:
 
 	void ShowItem(QTreeWidgetItem* item);
 
-	void Select(CObject* po);
-	void Select(const std::vector<CObject*>& objList);
+	void Select(FSObject* po);
+	void Select(const std::vector<FSObject*>& objList);
 
-	void UpdateObject(CObject* po);
+	void UpdateObject(FSObject* po);
 
 	void contextMenuEvent(QContextMenuEvent* ev) override;
 
 	int Items() const { return m_data.size(); }
 	CModelTreeItem& GetItem(int n) { return m_data[n]; }
 
-	QTreeWidgetItem* FindItem(CObject* o);
+	QTreeWidgetItem* FindItem(FSObject* o);
 
-	bool GetSelection(std::vector<CObject*>& sel);
+	bool GetSelection(std::vector<FSObject*>& sel);
 
 protected:
 	void ClearData();
 
-	QTreeWidgetItem* AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype = 0, int ncount = 0, CObject* po = 0, CPropertyList* props = 0, CObjectValidator* val = 0, int flags = 0);
+	QTreeWidgetItem* AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype = 0, int ncount = 0, FSObject* po = 0, CPropertyList* props = 0, CObjectValidator* val = 0, int flags = 0);
 
 	void UpdateModelData (QTreeWidgetItem* t1, FEModel& fem);
 	void UpdateObjects   (QTreeWidgetItem* t1, FEModel& fem);

@@ -1,5 +1,5 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 #include "FEItemListBuilder.h"
 
 class FENode;

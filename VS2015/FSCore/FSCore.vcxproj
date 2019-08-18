@@ -132,10 +132,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\FSCore\Object.h" />
+    <ClCompile Include="..\..\FSCore\FSObject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\FSCore\Object.cpp" />
+    <ClInclude Include="..\..\FSCore\FSObject.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

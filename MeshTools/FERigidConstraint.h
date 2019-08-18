@@ -12,7 +12,7 @@ class FEModel;
 #define FE_RIGID_INIT_ANG_VELOCITY	5
 
 // old rigid constraint class, retained for backward compatibility
-class FERigidConstraintOld : public CObject
+class FERigidConstraintOld : public FSObject
 {
 	enum { MATID, NAME, CONSTRAINT, BC, VAL, LC };
 

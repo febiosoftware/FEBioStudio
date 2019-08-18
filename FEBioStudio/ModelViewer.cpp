@@ -22,7 +22,7 @@ void CModelViewer::Update()
 {
 	CDocument* doc = GetDocument();
 
-//	CObject* po = m_currentObject;
+//	FSObject* po = m_currentObject;
 
 	// rebuild the model tree
 	ui->tree->Build(doc);
@@ -35,12 +35,12 @@ void CModelViewer::Update()
 }
 
 // get the currently selected object
-CObject* CModelViewer::GetCurrentObject()
+FSObject* CModelViewer::GetCurrentObject()
 {
 	return m_currentObject;
 }
 
-void CModelViewer::UpdateObject(CObject* po)
+void CModelViewer::UpdateObject(FSObject* po)
 {
 	ui->tree->UpdateObject(po);
 
@@ -56,7 +56,7 @@ void CModelViewer::UpdateObject(CObject* po)
 	}
 }
 
-void CModelViewer::Select(CObject* po)
+void CModelViewer::Select(FSObject* po)
 {
 	if (po == nullptr) m_currentObject = nullptr;
 	ui->unCheckSearch();
@@ -64,7 +64,7 @@ void CModelViewer::Select(CObject* po)
 }
 
 // select a list of objects
-void CModelViewer::SelectObjects(const std::vector<CObject*>& objList)
+void CModelViewer::SelectObjects(const std::vector<FSObject*>& objList)
 {
 	ui->unCheckSearch();
 	ui->tree->Select(objList);
@@ -89,7 +89,7 @@ void CModelViewer::SetCurrentItem(int item)
 	{
 		CModelTreeItem& it = ui->tree->m_data[item];
 		CPropertyList* props = it.props;
-		CObject* po = it.obj;
+		FSObject* po = it.obj;
 		if (it.flag & CModelTree::OBJECT_NOT_EDITABLE)
 			ui->props->SetObjectProps(0, 0, 0);
 		else
@@ -122,7 +122,7 @@ void CModelViewer::on_syncButton_clicked()
 	{
         int N = sel->Size();
             
-        vector<CObject*> objList;
+        vector<FSObject*> objList;
         GObjectSelection* os = dynamic_cast<GObjectSelection*>(sel);
         if (os)
         {
@@ -227,7 +227,7 @@ void CModelViewer::on_selectButton_clicked()
 {
 	// make sure we have an object
 	if (m_currentObject == 0) return;
-	CObject* po = m_currentObject;
+	FSObject* po = m_currentObject;
 
 	CDocument* pdoc = GetDocument();
 
@@ -1010,19 +1010,19 @@ void CModelViewer::OnRemoveAllSelections()
 	Update();
 }
 
-// clear current CObject selection
+// clear current FSObject selection
 void CModelViewer::ClearSelection()
 {
 	m_selection.clear();
 }
 
-// set the current CObject selection
-void CModelViewer::SetSelection(std::vector<CObject*>& sel)
+// set the current FSObject selection
+void CModelViewer::SetSelection(std::vector<FSObject*>& sel)
 {
 	m_selection = sel;
 }
 
-void CModelViewer::SetSelection(CObject* sel)
+void CModelViewer::SetSelection(FSObject* sel)
 {
 	m_selection.clear();
 	m_selection.push_back(sel);
@@ -1222,7 +1222,7 @@ void CModelViewer::OnExportMaterials()
 	{
 		for (int i=0; i<(int)m_selection.size(); ++i)
 		{
-			CObject* po = m_selection[i];
+			FSObject* po = m_selection[i];
 			GMaterial* m = dynamic_cast<GMaterial*>(po);
 			if (m) matList.push_back(m);
 		}
@@ -1259,7 +1259,7 @@ void CModelViewer::OnSwapMasterSlave()
 
 void CModelViewer::OnGenerateMap()
 {
-	CObject* po = m_currentObject;
+	FSObject* po = m_currentObject;
 	if (po)
 	{
 		if (dynamic_cast<GMaterial*>(m_currentObject))

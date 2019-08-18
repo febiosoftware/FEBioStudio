@@ -473,7 +473,7 @@ GObject* CDocument::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
-std::string CDocument::GetTypeString(CObject* po)
+std::string CDocument::GetTypeString(FSObject* po)
 {
 	if (po == 0) return "(null)";
 
@@ -1227,7 +1227,7 @@ void CDocument::HideUnselected()
 	}
 }
 
-void CDocument::DeleteObject(CObject* po)
+void CDocument::DeleteObject(FSObject* po)
 {
 	FEModel& fem = *GetFEModel();
 
@@ -1533,7 +1533,7 @@ bool CDocument::ImportMaterials(const std::string& fileName)
 	return true;
 }
 
-FEDataMap* CDocument::CreateDataMap(CObject* po, std::string& mapName, std::string& paramName, Param_Type type)
+FEDataMap* CDocument::CreateDataMap(FSObject* po, std::string& mapName, std::string& paramName, Param_Type type)
 {
 	FEModel& fem = *GetFEModel();
 	FEComponent* pc = dynamic_cast<FEComponent*>(po);

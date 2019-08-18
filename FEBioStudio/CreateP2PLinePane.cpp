@@ -192,7 +192,7 @@ bool CCreateP2PLinePane::Undo()
 	else return false;
 }
 
-CObject* CCreateP2PLinePane::Create()
+FSObject* CCreateP2PLinePane::Create()
 {
 	// make sure we have a temp object
 	if (m_tmp == 0) return 0;
@@ -206,7 +206,7 @@ CObject* CCreateP2PLinePane::Create()
 
 	static int n = 1;
 
-	CObject* newObject = 0;
+	FSObject* newObject = 0;
 	if (IsCurveCapped() && (cm->Type() == FECurveMesh::CLOSED_CURVE))
 	{
 		// create new object

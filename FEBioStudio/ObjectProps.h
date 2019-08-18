@@ -4,7 +4,7 @@
 using namespace std;
 
 class FEModel;
-class CObject;
+class FSObject;
 class GObject;
 class GMaterial;
 class FEFixedDOF;
@@ -22,18 +22,18 @@ class FEDataMap;
 class CObjectProps : public CPropertyList
 {
 public:
-	CObjectProps(CObject* po, FEModel* fem = 0);
+	CObjectProps(FSObject* po, FEModel* fem = 0);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
-	virtual CObject* GetFEObject() { return m_po; }
+	virtual FSObject* GetFEObject() { return m_po; }
 
 	int Params() const { return (int) m_params.size(); }
 
 protected:
-	void BuildParamList(CObject* po);
+	void BuildParamList(FSObject* po);
 
 	void AddParameter(Param& p);
 	QVariant GetPropertyValue(Param& p);
@@ -41,7 +41,7 @@ protected:
 
 protected:
 	FEModel*		m_fem;
-	CObject*		m_po;
+	FSObject*		m_po;
 	vector<Param*>	m_params;
 };
 

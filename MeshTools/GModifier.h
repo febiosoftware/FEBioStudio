@@ -2,7 +2,7 @@
 #include "ParamBlock.h"
 #include "Serializable.h"
 #include <MeshLib/box.h>
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 #include <list>
 using namespace std;
 
@@ -13,7 +13,7 @@ class GMesh;
 class FEModel;
 
 //-----------------------------------------------------------------------------
-class GModifier : public CObject
+class GModifier : public FSObject
 {
 public:
 	GModifier(void);

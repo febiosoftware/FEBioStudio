@@ -1,5 +1,5 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 #include <MeshLib/box.h>
 
 namespace Post {
@@ -9,7 +9,7 @@ namespace Post {
 
 class CGLView;
 
-class GImageObject : public CObject
+class GImageObject : public FSObject
 {
 public:
 	GImageObject();

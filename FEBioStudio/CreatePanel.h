@@ -5,7 +5,7 @@
 
 class QLineEdit;
 class QCheckBox;
-class CObject;
+class FSObject;
 class GObject;
 class GObject2D;
 class ClassDescriptor;
@@ -85,7 +85,7 @@ public:
 	CCreatePane(CCreatePanel* parent) : QWidget(parent), m_parent(parent) {}
 	virtual ~CCreatePane(){}
 
-	virtual CObject* Create() = 0;
+	virtual FSObject* Create() = 0;
 
 	// TODO: I think QT's show and hide events are better suited than the activate/deactive
 
@@ -124,7 +124,7 @@ class CDefaultCreatePane : public CCreatePane
 public:
 	CDefaultCreatePane(CCreatePanel* parent, ClassDescriptor* pcd);
 
-	CObject* Create() override;
+	FSObject* Create() override;
 
 	void Activate() override;
 
@@ -169,7 +169,7 @@ public:
 	void Activate() override;
 	void Deactivate() override;
 
-	CObject* Create() override;
+	FSObject* Create() override;
 
 	void setInput(FESelection* sel) override;
 
@@ -200,7 +200,7 @@ public:
 	void Activate();
 	void Deactivate();
 
-	CObject* Create();
+	FSObject* Create();
 
 protected:
 	QLineEdit*	m_distance;

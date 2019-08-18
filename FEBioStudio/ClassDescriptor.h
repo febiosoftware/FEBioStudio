@@ -3,7 +3,7 @@
 
 //-----------------------------------------------------------------------------
 // forward declarations
-class CObject;
+class FSObject;
 
 //-----------------------------------------------------------------------------
 typedef enum {
@@ -26,9 +26,9 @@ public:
 	ClassDescriptor(Class_Type ntype, const char* szname, const char* szres, unsigned int flag = 0);
 	virtual ~ClassDescriptor();
 
-	virtual CObject* Create() = 0;
+	virtual FSObject* Create() = 0;
 
-	virtual bool IsType(CObject* po) = 0;
+	virtual bool IsType(FSObject* po) = 0;
 
 public:
 	const char* GetName() const { return m_szname; }
@@ -54,9 +54,9 @@ template <class theClass> class ClassDescriptor_T : public ClassDescriptor
 {
 public:
 	ClassDescriptor_T(Class_Type ntype, const char* szname,  const char* szres, unsigned int flag) : ClassDescriptor(ntype, szname, szres, flag){}
-	CObject* Create() { m_ncount++; return new theClass(); }
+	FSObject* Create() { m_ncount++; return new theClass(); }
 
-	bool IsType(CObject* po) { return (dynamic_cast<theClass*>(po) != 0); }
+	bool IsType(FSObject* po) { return (dynamic_cast<theClass*>(po) != 0); }
 };
 
 //-----------------------------------------------------------------------------

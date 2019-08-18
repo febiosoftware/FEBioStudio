@@ -1,5 +1,5 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 #include <MeshLib/FECoreMesh.h>
 #include "FEComponent.h"
 

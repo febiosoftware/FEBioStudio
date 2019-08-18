@@ -452,7 +452,7 @@ void CCreateSpringPane::on_node2_selButtonClicked()
 	m_parent->GetMainWindow()->RedrawGL();
 }
 
-CObject* CCreateSpringPane::Create()
+FSObject* CCreateSpringPane::Create()
 {
 	CDocument* doc = m_parent->GetDocument();
 	GModel& geom = doc->GetFEModel()->GetModel();

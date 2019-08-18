@@ -1,9 +1,9 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 
 //-----------------------------------------------------------------------------
 // Base class for components of an FE model
-class FEBase : public CObject
+class FEBase : public FSObject
 {
 public:
 	FEBase() {}

@@ -1,5 +1,5 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 #include "MathLib/math3d.h"
 #include "MathParser.h"
 #include <string>
@@ -7,7 +7,7 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 // This class defines a data variable over the volume of a domain.
-class FEDataVariable : public CObject
+class FEDataVariable : public FSObject
 {
 public:
 	FEDataVariable(void);

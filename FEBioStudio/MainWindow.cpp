@@ -5,7 +5,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
 #include <QMessageBox>
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 #include <MeshTools/PRVArchive.h>
 #include <MeshIO/FileReader.h>
 #include <QtCore/QTimer>
@@ -777,14 +777,14 @@ void CMainWindow::UpdateToolbar()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::OpenInCurveEditor(CObject* po)
+void CMainWindow::OpenInCurveEditor(FSObject* po)
 {
 //	OnToolsCurveEditor(0, 0);
 //	m_pCurveEdit->Select(po);
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::ShowInModelViewer(CObject* po)
+void CMainWindow::ShowInModelViewer(FSObject* po)
 {
 	ui->modelViewer->Select(po);
 	ui->modelViewer->UpdateObject(po);
@@ -800,7 +800,7 @@ void CMainWindow::SetSelectionMode(int nselect)
 //-----------------------------------------------------------------------------
 //! Updates the model editor and selects object po.
 //! \param po pointer to object that will be selected in the model editor
-void CMainWindow::UpdateModel(CObject* po, bool bupdate)
+void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 {
 	if (ui->modelViewer)
 	{
@@ -1495,7 +1495,7 @@ void CMainWindow::DeleteAllSteps()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::GenerateMap(CObject* po)
+void CMainWindow::GenerateMap(FSObject* po)
 {
 	CDlgAddMeshData dlg(po, this);
 	if (dlg.exec())
@@ -1505,7 +1505,7 @@ void CMainWindow::GenerateMap(CObject* po)
 		Param_Type paramType = dlg.GetParamType();
 
 		CDocument* doc = GetDocument();
-		CObject* data = doc->CreateDataMap(po, mapName, paramName, paramType);
+		FSObject* data = doc->CreateDataMap(po, mapName, paramName, paramType);
 		if (data == 0)
 		{
 			QMessageBox::critical(this, "PreView2", "It pains me to inform you that your command could not be executed.");

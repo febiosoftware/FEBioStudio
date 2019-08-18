@@ -113,7 +113,7 @@ void CCreatePanel::Apply()
 void CCreatePanel::on_create_clicked()
 {
 	CCreatePane* pane = ui->currentPage(); assert(pane);
-	CObject* po = pane->Create();
+	FSObject* po = pane->Create();
 
 	if (po)
 	{

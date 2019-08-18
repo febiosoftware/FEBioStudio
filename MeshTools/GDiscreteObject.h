@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 #include <GeomLib/GItem.h>
 
 #define FE_DISCRETE_OBJECT		0
@@ -12,7 +12,7 @@
 #define FE_DISCRETE_ELEMENT		6
 #define FE_DEFORMABLE_SPRING	7
 
-class GDiscreteObject : public CObject
+class GDiscreteObject : public FSObject
 {
 public:
 	GDiscreteObject(int ntype);

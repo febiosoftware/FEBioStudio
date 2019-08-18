@@ -1,9 +1,9 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 
 //-----------------------------------------------------------------------------
 // base class for model classes
-class FECoreModel : public CObject
+class FECoreModel : public FSObject
 {
 public:
 	FECoreModel(){}

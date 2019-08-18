@@ -1,6 +1,6 @@
 #pragma once
 
-class CObject;
+class FSObject;
 
 //-----------------------------------------------------------------------------
 //! general purpose FEBio error
@@ -15,8 +15,8 @@ class InvalidMaterialReference {};
 class InvalidItemListBuilder
 {
 public:
-	InvalidItemListBuilder(CObject* po) : m_po(po) {}
-	CObject*	m_po;
+	InvalidItemListBuilder(FSObject* po) : m_po(po) {}
+	FSObject*	m_po;
 };
 
 //-----------------------------------------------------------------------------

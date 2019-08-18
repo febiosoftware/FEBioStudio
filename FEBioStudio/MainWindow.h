@@ -5,7 +5,7 @@
 #include <QtCore/QProcess>
 #include "GLView.h"
 
-class CObject;
+class FSObject;
 class CDocument;
 class CFileThread;
 class FileReader;
@@ -49,10 +49,10 @@ public:
 	void ImportFiles(const QStringList& fileNames);
 
 	// open the object in the curve editor
-	void OpenInCurveEditor(CObject* po);
+	void OpenInCurveEditor(FSObject* po);
 
 	// open the object in the model viewer
-	void ShowInModelViewer(CObject* po);
+	void ShowInModelViewer(FSObject* po);
 
 	// add to the log 
 	void AddLogEntry(const QString& txt);
@@ -114,7 +114,7 @@ public:
 	void UpdatePostPanel();
 
 	//! Update the model editor
-	void UpdateModel(CObject* po = 0, bool bupdate = true);
+	void UpdateModel(FSObject* po = 0, bool bupdate = true);
 
 	//! Update the entire UI
 	void UpdateUI();
@@ -143,7 +143,7 @@ public:
 	void UpdatePhysicsUi();
 
 	// Generate a map
-	void GenerateMap(CObject* po);
+	void GenerateMap(FSObject* po);
 
 public:
 	void AddBC          (int nstep);

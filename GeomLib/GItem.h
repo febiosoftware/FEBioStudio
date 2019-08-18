@@ -1,5 +1,5 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 
 //-----------------------------------------------------------------------------
 // State values for GItem state
@@ -48,7 +48,7 @@ class GBaseObject;
 //  - m_gid: the global ID number identifying the item number in the model (one-based)
 //  - m_lid: the local ID number which is the index in the object's item list (zero-based)
 //
-class GItem : public CObject
+class GItem : public FSObject
 {
 public:
 	// Constructor. Takes parent object as parameter

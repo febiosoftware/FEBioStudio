@@ -1,5 +1,5 @@
 #pragma once
-#include <FSCore/Object.h>
+#include <FSCore/FSObject.h>
 #include <vector>
 using namespace std;
 
@@ -28,7 +28,7 @@ class FEInitialCondition;
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
 //-----------------------------------------------------------------------------
-class FEStep : public CObject
+class FEStep : public FSObject
 {
 public:
 	FEStep(FEModel* ps, int ntype);

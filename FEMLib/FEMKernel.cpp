@@ -22,7 +22,7 @@ FEMKernel* FEMKernel::Instance()
 	return m_This;
 }
 
-CObject* FEMKernel::Create(FEModel* fem, int superID, int classID)
+FSObject* FEMKernel::Create(FEModel* fem, int superID, int classID)
 {
 	for (size_t i=0; i<m_Class.size(); ++i)
 	{
