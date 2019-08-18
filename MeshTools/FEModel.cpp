@@ -216,7 +216,7 @@ void FEModel::AddSolute(const std::string& name, int z, double M, double d)
 	FEDOFVariable& var = Variable(FE_VAR_CONCENTRATION);
 
 	char sz[12] = {0};
-	sprintf(sz, "c%d", m_Sol.size());
+	sprintf(sz, "c%d", (int)m_Sol.size());
 	var.AddDOF(name, sz);
 }
 

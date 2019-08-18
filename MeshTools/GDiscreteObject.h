@@ -38,13 +38,13 @@ public:
 	void Hide() { m_state = 0; }
 
 	// get/set object color
-	GLCOLOR GetColor() const;
-	void SetColor(const GLCOLOR& c);
+	GLColor GetColor() const;
+	void SetColor(const GLColor& c);
 
 protected:
 	int		m_ntype;
 	int		m_state;
-	GLCOLOR	m_col;
+	GLColor	m_col;
 };
 
 //-----------------------------------------------------------------------------

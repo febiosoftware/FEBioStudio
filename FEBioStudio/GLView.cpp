@@ -1625,9 +1625,9 @@ void CGLView::SetMatProps(GMaterial* pm)
 		GMaterial& m = *pm;
 		GLfloat f = 1.f / 255.f;
 		//			GLfloat dif[4] = {m.m_diffuse.r*f, m.m_diffuse.g*f, m.m_diffuse.b*f, 1.f}; 
-		GLCOLOR a = pm->Ambient();
-		GLCOLOR s = pm->Specular();
-		GLCOLOR e = pm->Emission();
+		GLColor a = pm->Ambient();
+		GLColor s = pm->Specular();
+		GLColor e = pm->Emission();
 		GLfloat amb[4] = { a.r*f, a.g*f, a.b*f, 1.f };
 		GLfloat spc[4] = { s.r*f, s.g*f, s.b*f, 1.f };
 		GLfloat emi[4] = { e.r*f, e.g*f, e.b*f, 1.f };
@@ -1836,7 +1836,7 @@ void CGLView::RenderNormals(GObject* po, double scale)
 				float g = (float) fabs(fn.y);
 				float b = (float) fabs(fn.z);
 	
-				GLX::drawLine_(p, q, GLCOLOR::White(), GLCOLOR::FromRGBf(r, g, b));
+				GLX::drawLine_(p, q, GLColor::White(), GLColor::FromRGBf(r, g, b));
 			}
 		}
 	}
@@ -2058,7 +2058,7 @@ void CGLView::RenderDiscrete()
 	{
 		GDiscreteObject* po = model.DiscreteObject(i);
 
-		GLCOLOR c = po->GetColor();
+		GLColor c = po->GetColor();
 
 		if (bsel && po->IsSelected()) glColor3ub(255, 255, 0);
 		else glColor3ub(c.r, c.g, c.b);
@@ -2128,7 +2128,7 @@ void CGLView::RenderBackground()
 
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
-	GLCOLOR c[4];
+	GLColor c[4];
 
 	switch (view.m_nbgstyle)
 	{
@@ -2209,8 +2209,8 @@ void CGLView::RenderImageData()
 	{
 		GImageObject* img = doc->GetImageObject(i);
 		BOX box = img->GetBox();
-//		GLCOLOR c = img->GetColor();
-		GLCOLOR c(255, 128, 128);
+//		GLColor c = img->GetColor();
+		GLColor c(255, 128, 128);
 		glColor3ub(c.r, c.g, c.b);
 		RenderBox(box);
 		img->Render(this);
@@ -2960,7 +2960,7 @@ void CGLView::RenderRigidBodies()
 		FERigidMaterial* pb = dynamic_cast<FERigidMaterial*> (pm->GetMaterialProperties());
 		if (pb)
 		{
-			GLCOLOR c = pm->Diffuse();
+			GLColor c = pm->Diffuse();
 
 			glColor3ub(c.r, c.g, c.b);
 
@@ -5732,7 +5732,7 @@ void CGLView::RenderSurfaces(GObject* po)
 				{
 					GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
 					SetMatProps(pmat);
-					GLCOLOR c = po->GetColor();
+					GLColor c = po->GetColor();
 					if (pmat) c = pmat->Diffuse();
 					glColor3ub(c.r, c.g, c.b);
 					pgmat = pg;
@@ -5938,7 +5938,7 @@ void CGLView::RenderParts(GObject* po)
 			{
 				GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
 				SetMatProps(pmat);
-				GLCOLOR c = po->GetColor();
+				GLColor c = po->GetColor();
 				if (pmat) c = pmat->Diffuse();
 				glColor3ub(c.r, c.g, c.b);
 				pgmat = pg;
@@ -6028,7 +6028,7 @@ void CGLView::RenderObject(GObject* po)
 				{
 					GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
 					SetMatProps(pmat);
-					GLCOLOR c = po->GetColor();
+					GLColor c = po->GetColor();
 					if (pmat) c = pmat->Diffuse();
 					glColor3ub(c.r, c.g, c.b);
 					pgmat = pg;
@@ -6426,8 +6426,8 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
-	GLCOLOR col = pm->GetGObject()->GetColor();
-	GLCOLOR dif = col;
+	GLColor col = pm->GetGObject()->GetColor();
+	GLColor dif = col;
 	SetMatProps(0);
 	glColor3ub(dif.r, dif.g, dif.b);
 	int nmatid = -1;
@@ -6463,7 +6463,7 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 						if (pm->GetElementDataTag(face.m_elem[0]) > 0)
 							dif = map.map(pm->GetElementValue(face.m_elem[0]));
 						else
-							dif = GLCOLOR(212, 212, 212);
+							dif = GLColor(212, 212, 212);
 					}
 					else dif = (pmat ? pmat->Diffuse() : col);
 					glColor3ub(dif.r, dif.g, dif.b);
@@ -6549,7 +6549,7 @@ void CGLView::RenderFESurfaceMeshFaces(GObject* po)
 	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
 	FEModel& fem = *GetDocument()->GetFEModel();
 
-	GLCOLOR col = po->GetColor();
+	GLColor col = po->GetColor();
 	SetMatProps(0);
 	glColor3ub(col.r, col.g, col.b);
 
@@ -6736,9 +6736,9 @@ void CGLView::RenderFEElements(GObject* po)
 	if (pm == 0) return;
 
 	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
-	GLCOLOR dif;
+	GLColor dif;
 
-	GLCOLOR col = po->GetColor();
+	GLColor col = po->GetColor();
 
 	int i;
 
@@ -6778,7 +6778,7 @@ void CGLView::RenderFEElements(GObject* po)
 						if (pm->GetElementDataTag(i) > 0)
 							dif = map.map(pm->GetElementValue(i));
 						else
-							dif = GLCOLOR(212, 212, 212);
+							dif = GLColor(212, 212, 212);
 					}
 					else dif = (pmat != 0 ? pmat->Diffuse() : col);
 
@@ -7256,7 +7256,7 @@ void CGLView::RenderMeshLines(FEMeshBase* pm)
 //	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
-	GLCOLOR c = vs.m_mcol;
+	GLColor c = vs.m_mcol;
 	glColor3ub(c.r, c.g, c.b);
 	glLineWidth(vs.m_line_size);
 
@@ -7367,7 +7367,7 @@ void CGLView::RenderMeshLines(GObject* po)
 //	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
-	GLCOLOR c = vs.m_mcol;
+	GLColor c = vs.m_mcol;
 	glColor3ub(c.r, c.g, c.b);
 	glLineWidth(vs.m_line_size);
 

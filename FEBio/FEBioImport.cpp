@@ -16,7 +16,7 @@
 #include <vector>
 using namespace std;
 
-extern GLCOLOR col[];
+extern GLColor col[];
 
 //-----------------------------------------------------------------------------
 FEBioImport::FEBioImport()

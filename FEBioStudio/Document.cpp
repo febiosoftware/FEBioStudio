@@ -26,23 +26,23 @@
 #include <sstream>
 
 extern const int COLORS = 16;
-GLCOLOR col[COLORS] = {
-	GLCOLOR(240, 164, 96),
-	GLCOLOR(240, 240, 0),
-	GLCOLOR(240, 0, 240),
-	GLCOLOR(0, 240, 240),
-	GLCOLOR(240, 180, 0),
-	GLCOLOR(240, 0, 180),
-	GLCOLOR(180, 240, 0),
-	GLCOLOR(0, 240, 180),
-	GLCOLOR(180, 0, 240),
-	GLCOLOR(0, 180, 240),
-	GLCOLOR(0, 180, 0),
-	GLCOLOR(0, 0, 180),
-	GLCOLOR(180, 180, 0),
-	GLCOLOR(0, 180, 180),
-	GLCOLOR(180, 0, 180),
-	GLCOLOR(120, 0, 240)
+GLColor col[COLORS] = {
+	GLColor(240, 164, 96),
+	GLColor(240, 240, 0),
+	GLColor(240, 0, 240),
+	GLColor(0, 240, 240),
+	GLColor(240, 180, 0),
+	GLColor(240, 0, 180),
+	GLColor(180, 240, 0),
+	GLColor(0, 240, 180),
+	GLColor(180, 0, 240),
+	GLColor(0, 180, 240),
+	GLColor(0, 180, 0),
+	GLColor(0, 0, 180),
+	GLColor(180, 180, 0),
+	GLColor(0, 180, 180),
+	GLColor(180, 0, 180),
+	GLColor(120, 0, 240)
 };
 
 //=============================================================================
@@ -77,7 +77,7 @@ CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 	Post::CPalette pal("preview");
 	for (int i = 0; i < COLORS; ++i)
 	{
-		GLCOLOR c = col[i];
+		GLColor c = col[i];
 		GLColor glc(c.r, c.g, c.b);
 		pal.AddColor(glc);
 	}
@@ -163,26 +163,26 @@ void CDocument::NewDocument()
 	m_view.m_bTags = true;
 	m_view.m_ntagInfo = 0;
 
-	//	m_view.m_col1 = GLCOLOR(164,164,255);
-	//	m_view.m_col2 = GLCOLOR(96,96,164);
+	//	m_view.m_col1 = GLColor(164,164,255);
+	//	m_view.m_col2 = GLColor(96,96,164);
 
 	int ntheme = GetMainWindow()->currentTheme();
 	if (ntheme == 0)
 	{
-		m_view.m_col1 = GLCOLOR(255, 255, 255);
-		m_view.m_col2 = GLCOLOR(128, 128, 255);
+		m_view.m_col1 = GLColor(255, 255, 255);
+		m_view.m_col2 = GLColor(128, 128, 255);
 		m_view.m_nbgstyle = BG_HORIZONTAL;
 	}
 	else
 	{
-		m_view.m_col1 = GLCOLOR(83, 83, 83);
-		m_view.m_col2 = GLCOLOR(0, 0, 0);
+		m_view.m_col1 = GLColor(83, 83, 83);
+		m_view.m_col2 = GLColor(0, 0, 0);
 		m_view.m_nbgstyle = BG_COLOR1;
 	}
 
-	//	m_view.m_mcol = GLCOLOR(128, 128, 128);
-	m_view.m_mcol = GLCOLOR(0, 0, 128);
-	m_view.m_fgcol = GLCOLOR(0, 0, 0);
+	//	m_view.m_mcol = GLColor(128, 128, 128);
+	m_view.m_mcol = GLColor(0, 0, 128);
+	m_view.m_fgcol = GLColor(0, 0, 0);
 	m_view.m_node_size = 7.f;
 	m_view.m_line_size = 1.0f;
 	m_view.m_bline_smooth = true;

@@ -20,7 +20,7 @@ void GLX::rotate(const quatd& q)
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawLine(double x0, double y0, double x1, double y1, double a0, double a1, GLCOLOR c, int n)
+void GLX::drawLine(double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n)
 {
 	double x, y;
 	double f, g;
@@ -101,7 +101,7 @@ void GLX::drawLine(const vec3d& a, const vec3d& b)
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawLine(const vec3d& a, const vec3d& b, const GLCOLOR& colA, const GLCOLOR& colB)
+void GLX::drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
 {
 	glBegin(GL_LINES);
 	{
@@ -112,7 +112,7 @@ void GLX::drawLine(const vec3d& a, const vec3d& b, const GLCOLOR& colA, const GL
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawLine_(const vec3d& a, const vec3d& b, const GLCOLOR& colA, const GLCOLOR& colB)
+void GLX::drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
 {
 	glColor3ub(colA.r, colA.g, colA.b); glVertex3d(a.x, a.y, a.z);
 	glColor3ub(colB.r, colB.g, colB.b); glVertex3d(b.x, b.y, b.z);
@@ -171,7 +171,7 @@ void GLX::drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N)
         GLX::drawLine(a, b);
 }
 
-void GLX::drawQuad(vec3d r[4], vec3d n[4], GLCOLOR c)
+void GLX::drawQuad(vec3d r[4], vec3d n[4], GLColor c)
 {
 	glColor4ub(c.r, c.g, c.b, c.a);
 
@@ -192,7 +192,7 @@ void GLX::drawQuad(vec3d r[4], vec3d n[4], GLCOLOR c)
 	glEnd();
 }
 
-void GLX::drawQuad(vec3d r[4], vec3d& n, GLCOLOR& c)
+void GLX::drawQuad(vec3d r[4], vec3d& n, GLColor& c)
 {
 	glColor4ub(c.r, c.g, c.b, c.a);
 	glNormal3d(n.x, n.y, n.z);
@@ -207,7 +207,7 @@ void GLX::drawQuad(vec3d r[4], vec3d& n, GLCOLOR& c)
 	glEnd();
 }
 
-void GLX::drawTriangle(vec3d r[3], vec3d n[3], GLCOLOR c)
+void GLX::drawTriangle(vec3d r[3], vec3d n[3], GLColor c)
 {
 	glColor4ub(c.r, c.g, c.b, c.a);
 
@@ -225,7 +225,7 @@ void GLX::drawTriangle(vec3d r[3], vec3d n[3], GLCOLOR c)
 	glEnd();
 }
 
-void GLX::drawTriangle(vec3d r[3], vec3d& n, GLCOLOR& c)
+void GLX::drawTriangle(vec3d r[3], vec3d& n, GLColor& c)
 {
 	glColor4ub(c.r, c.g, c.b, c.a);
 	glNormal3d(n.x, n.y, n.z);

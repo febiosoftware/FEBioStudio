@@ -6,7 +6,7 @@
 
 int GMaterial::m_nref = 1;
 
-extern GLCOLOR col[];
+extern GLColor col[];
 
 GMaterial::GMaterial(FEMaterial* pm)
 {
@@ -18,10 +18,10 @@ GMaterial::GMaterial(FEMaterial* pm)
 	m_nID = m_nref++;
 
 	// give a default color
-	m_diffuse = GLCOLOR(255,255,255);
-	m_ambient = GLCOLOR(128,128,128);
-	m_specular = GLCOLOR(0,0,0);
-	m_emission = GLCOLOR(0,0,0);
+	m_diffuse = GLColor(255,255,255);
+	m_ambient = GLColor(128,128,128);
+	m_specular = GLColor(0,0,0);
+	m_emission = GLColor(0,0,0);
 	m_shininess = 1.f;
 
 	// set default rendering style

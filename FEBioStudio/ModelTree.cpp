@@ -538,7 +538,7 @@ void CModelTree::Select(const std::vector<FEObject*>& objList)
 	clearSelection();
 	m_view->SetCurrentItem(-1);
 
-	int N = objList.size();
+	int N = (int)objList.size();
 	if (N == 0) return;
 
 	QTreeWidgetItemIterator it(this);

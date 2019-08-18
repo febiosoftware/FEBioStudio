@@ -667,7 +667,7 @@ void GMeshObject::Load(IArchive& ar)
 			{
 				vec3d pos, scl;
 				quatd rot;
-				GLCOLOR col;
+				GLColor col;
 				while (IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();

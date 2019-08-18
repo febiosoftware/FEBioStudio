@@ -1,6 +1,6 @@
 #pragma once
 #include <QtCore/QVariant>
-#include "convert.h"
+#include <PostLib/convert.h>
 
 class Param;
 

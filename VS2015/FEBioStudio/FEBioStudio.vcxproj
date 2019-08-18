@@ -337,7 +337,6 @@
     <ClInclude Include="..\..\FEBioStudio\CommandManager.h" />
     <ClInclude Include="..\..\FEBioStudio\CommandPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\ConchoidFitTool.h" />
-    <ClInclude Include="..\..\FEBioStudio\convert.h" />
     <ClInclude Include="..\..\FEBioStudio\CreateP2PlinePane.h" />
     <ClInclude Include="..\..\FEBioStudio\CreatePanel.h" />
     <ClInclude Include="..\..\FEBioStudio\CreateSpringPane.h" />

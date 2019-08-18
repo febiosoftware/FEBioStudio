@@ -19,7 +19,7 @@ GObject::GObject(int ntype)
 	// set the state as visible
 	m_state = GEO_VISIBLE;
 
-	m_col = GLCOLOR(200, 200, 200);
+	m_col = GLColor(200, 200, 200);
 }
 
 //-----------------------------------------------------------------------------
@@ -1867,7 +1867,7 @@ void GObject::Load(IArchive& ar)
 		{
 			vec3d pos, scl;
 			quatd rot;
-			GLCOLOR col;
+			GLColor col;
 			while (IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();

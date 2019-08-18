@@ -8,7 +8,7 @@
 #include <QDialogButtonBox>
 #include "PropertyList.h"
 #include "PropertyListView.h"
-#include "convert.h"
+#include <PostLib/convert.h>
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList
@@ -203,12 +203,12 @@ void CDlgSettings::apply()
 
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
-	view.m_col1 = toGLCOLOR(ui->m_bg->m_bg1);
-	view.m_col2 = toGLCOLOR(ui->m_bg->m_bg2);
-	view.m_fgcol = toGLCOLOR(ui->m_bg->m_fg);
+	view.m_col1 = toGLColor(ui->m_bg->m_bg1);
+	view.m_col2 = toGLColor(ui->m_bg->m_bg2);
+	view.m_fgcol = toGLColor(ui->m_bg->m_fg);
 	view.m_nbgstyle = ui->m_bg->m_nstyle;
 
-	view.m_mcol = toGLCOLOR(ui->m_display->m_meshColor);
+	view.m_mcol = toGLColor(ui->m_display->m_meshColor);
 	view.m_node_size = (float) ui->m_display->m_nodeSize;
 	view.m_line_size = (float) ui->m_display->m_lineSize;
 	view.m_bnorm = ui->m_display->m_bnormal;

@@ -88,9 +88,9 @@ struct VIEW_SETTINGS
 	double	m_fiber_scale;	//!< scale factor for rendering fibers
 	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
 
-	GLCOLOR	m_col1, m_col2;		//!< background colors
-	GLCOLOR	m_fgcol;			//!< foreground color
-	GLCOLOR	m_mcol;				//!< mesh line color
+	GLColor	m_col1, m_col2;		//!< background colors
+	GLColor	m_fgcol;			//!< foreground color
+	GLColor	m_mcol;				//!< mesh line color
 	int		m_nbgstyle;			//!< back ground style
 	float	m_node_size;		//!< size of nodes when displayed
 	float	m_line_size;		//!< line size

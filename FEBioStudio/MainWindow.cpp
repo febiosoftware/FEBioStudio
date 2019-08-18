@@ -26,7 +26,7 @@
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
 
-extern GLCOLOR col[];
+extern GLColor col[];
 
 // create a dark style theme (work in progress)
 void darkStyle()
@@ -78,7 +78,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		//       Since the bg colors are already set, I need to do this here. Make sure
 		//       the values set here coincide with the values from CDocument::NewDocument
 		VIEW_SETTINGS& v = m_doc->GetViewSettings();
-		v.m_col1 = GLCOLOR(83, 83, 83);
+		v.m_col1 = GLColor(83, 83, 83);
 		v.m_nbgstyle = BG_COLOR1;
 
 		GLWidget::set_base_color(GLColor(255, 255, 255));

@@ -878,9 +878,6 @@
     <ClInclude Include="..\..\FEBioStudio\Intersect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\convert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\DlgTimeSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>

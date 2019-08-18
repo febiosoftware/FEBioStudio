@@ -1,15 +1,5 @@
-// ColorMap.h: interface for the CColorMap class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_COLORMAP_H__5CE5C222_17D8_4BD3_8CDB_D4FF17C64525__INCLUDED_)
-#define AFX_COLORMAP_H__5CE5C222_17D8_4BD3_8CDB_D4FF17C64525__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#include <MathLib/math3d.h>
+#include <PostLib/color.h>
 
 typedef unsigned char byte;
 
@@ -52,7 +42,7 @@ public:
 	int Type() { return m_ntype; }
 	void SetType(int ntype);
 
-	GLCOLOR map(float fval);
+	GLColor map(float fval);
 
 	void SetRange(float min, float max) { m_min = min; m_max = max; }
 	void GetRange(float& min, float& max) { min = m_min; max = m_max; }
@@ -60,7 +50,7 @@ public:
 //	void Create1DTexture(CGLTexture1D& tex, int ndivs);
 
 protected:
-	GLCOLOR	m_col[MAX_MAP_COLORS];
+	GLColor	m_col[MAX_MAP_COLORS];
 	int		m_pos[MAX_MAP_COLORS];
 
 	int		m_ntype;
@@ -68,5 +58,3 @@ protected:
 	float	m_min;
 	float	m_max;
 };
-
-#endif // !defined(AFX_COLORMAP_H__5CE5C222_17D8_4BD3_8CDB_D4FF17C64525__INCLUDED_)

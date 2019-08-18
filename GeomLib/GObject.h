@@ -59,8 +59,8 @@ public:
 	int GetType() { return m_ntype; }
 
 	// get/set object color
-	GLCOLOR GetColor() { return m_col; }
-	void SetColor(const GLCOLOR& c) { m_col = c; }
+	GLColor GetColor() { return m_col; }
+	void SetColor(const GLColor& c) { m_col = c; }
 
 	// collapse the transformation
 	void CollapseTransform();
@@ -218,7 +218,7 @@ public:
 
 private:
 	int	m_ntype;	//!< object type identifier
-	GLCOLOR	m_col;	//!< color of object
+	GLColor	m_col;	//!< color of object
 
 protected:
 	FEMesh*		m_pmesh;	//!< the mesh that this object manages

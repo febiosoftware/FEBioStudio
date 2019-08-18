@@ -63,17 +63,17 @@ void GGrid::Render()
 	double s = m_scale = (double) pow(10, l-1);
 
 	// determine the colors for the major axis
-	GLCOLOR cx, cy;
+	GLColor cx, cy;
 	View_Mode view = m_pview->GetViewMode();
 	switch (view)
 	{
 	case VIEW_USER:
 	case VIEW_TOP: 
-	case VIEW_BOTTOM: cx = GLCOLOR(200, 0, 0); cy = GLCOLOR(0, 200, 0); break;
+	case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
 	case VIEW_RIGHT: 
-	case VIEW_LEFT:  cx = GLCOLOR(0, 200, 0); cy = GLCOLOR(0, 0, 255); break;
+	case VIEW_LEFT:  cx = GLColor(0, 200, 0); cy = GLColor(0, 0, 255); break;
 	case VIEW_FRONT:
-	case VIEW_BACK:  cx = GLCOLOR(200, 0, 0); cy = GLCOLOR(0, 0, 255); break;
+	case VIEW_BACK:  cx = GLColor(200, 0, 0); cy = GLColor(0, 0, 255); break;
 	}
 
 	// get the camera position
@@ -94,7 +94,7 @@ void GGrid::Render()
 	GLX::drawLine((-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, 2 * n + 1);
 
 	// grid lines color
-	GLCOLOR c1(0,0,0);
+	GLColor c1(0,0,0);
 
 	// render the x-lines
 	double f, g, a;

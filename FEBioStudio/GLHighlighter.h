@@ -57,10 +57,10 @@ public:
 	static bool IsTracking();
 
 	// set the color for active item
-	static void SetActiveColor(GLCOLOR c);
+	static void SetActiveColor(GLColor c);
 
 	// set the color for the picked items
-	static void SetPickColor(GLCOLOR c);
+	static void SetPickColor(GLColor c);
 
 private:
 	// constructor
@@ -78,8 +78,8 @@ private:
 	GItem*			m_activeItem;		// pointer to the active item (or zero)
 	vector<GItem*>	m_item;				// list of hightlighted items (except active item)
 	bool			m_btrack;			// set active item via mouse tracking
-	GLCOLOR			m_activeColor;		// color of active item
-	GLCOLOR			m_pickColor;		// color of picked items
+	GLColor			m_activeColor;		// color of active item
+	GLColor			m_pickColor;		// color of picked items
 
 	// the one-and-only highlighter
 	static GLHighlighter m_This;

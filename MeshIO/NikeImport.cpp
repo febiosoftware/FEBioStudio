@@ -12,7 +12,7 @@
 #define ABS(x) ((x)>=0?(x):(-(x)))
 
 extern const int COLORS;
-extern GLCOLOR col[];
+extern GLColor col[];
 
 // error constants
 enum NIKE_ERR {

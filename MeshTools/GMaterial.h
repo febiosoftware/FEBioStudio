@@ -1,5 +1,6 @@
 #pragma once
 #include "FEObject.h"
+#include <PostLib/color.h>
 
 //-----------------------------------------------------------------------------
 class FEModel;
@@ -36,16 +37,16 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	GLCOLOR Ambient() { return m_ambient; }
-	GLCOLOR Diffuse() { return m_diffuse; }
-	GLCOLOR Emission() { return m_emission; }
-	GLCOLOR Specular() { return m_specular; }
+	GLColor Ambient() { return m_ambient; }
+	GLColor Diffuse() { return m_diffuse; }
+	GLColor Emission() { return m_emission; }
+	GLColor Specular() { return m_specular; }
 
-	void Ambient(GLCOLOR c) { m_ambient = c; }
-	void Diffuse(GLCOLOR c) { m_diffuse = c; }
-	void Emission(GLCOLOR c) { m_emission = c; }
-	void Specular(GLCOLOR c) { m_specular = c; }
-	void AmbientDiffuse(GLCOLOR c) { m_ambient = m_diffuse = c; }
+	void Ambient(GLColor c) { m_ambient = c; }
+	void Diffuse(GLColor c) { m_diffuse = c; }
+	void Emission(GLColor c) { m_emission = c; }
+	void Specular(GLColor c) { m_specular = c; }
+	void AmbientDiffuse(GLColor c) { m_ambient = m_diffuse = c; }
 
 public:
 	// appearance
@@ -55,10 +56,10 @@ public:
 	int		m_ntag;	// used for I/O
 
 protected:
-	GLCOLOR		m_diffuse;	// diffuse color of material
-	GLCOLOR		m_ambient;	// ambient color of material
-	GLCOLOR		m_specular;	// specular color of material
-	GLCOLOR		m_emission;	// emission color of material
+	GLColor		m_diffuse;	// diffuse color of material
+	GLColor		m_ambient;	// ambient color of material
+	GLColor		m_specular;	// specular color of material
+	GLColor		m_emission;	// emission color of material
 
 protected:
 	int			m_nID;	//!< unique material ID

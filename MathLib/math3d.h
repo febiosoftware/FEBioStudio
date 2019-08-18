@@ -485,31 +485,3 @@ inline quatd operator * (const double a, const quatd& q)
 {
 	return q*a;
 }
-
-typedef unsigned char uchar;
-
-class GLCOLOR
-{
-public:
-	uchar	a, b, g, r;
-
-public:
-	GLCOLOR() : a(255), b(0), g(0), r(0){}
-	GLCOLOR(uchar ur, uchar ug, uchar ub, uchar ua = 255)
-	{
-		r = ur;	g = ug;	b = ub;	a = ua;
-	}
-
-	GLCOLOR operator * (double f)
-	{
-		return GLCOLOR((uchar) (r*f), (uchar) (g*f), (uchar) (b*f));
-	}
-
-	GLCOLOR operator + (GLCOLOR& c)
-	{
-		return GLCOLOR(r+c.r, g+c.g, b+c.b);
-	}
-
-	static GLCOLOR White() { return GLCOLOR(255, 255, 255); }
-	static GLCOLOR FromRGBf(float r, float g, float b) { return GLCOLOR((uchar) (r*255.f), (uchar) (g*255.f), (uchar) (b*255.f)); }
-};

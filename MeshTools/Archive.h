@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <MathLib/math3d.h>
+#include <PostLib/color.h>
 #include "CallTracer.h"
 #include <stack>
 #include <list>
@@ -114,7 +115,7 @@ public:
 
 	IOResult read(vec3d& r) { read(r.x); read(r.y); read(r.z); return IO_OK; }
 	IOResult read(quatd& q) { read(q.x); read(q.y); read(q.z); read(q.w); return IO_OK; }
-	IOResult read(GLCOLOR& c) { int nr = (int) fread(&c, sizeof(GLCOLOR), 1, m_fp); if (nr != 1) return IO_ERROR; return IO_OK; }
+	IOResult read(GLColor& c) { int nr = (int) fread(&c, sizeof(GLColor), 1, m_fp); if (nr != 1) return IO_ERROR; return IO_OK; }
 
 	IOResult read(char* sz)
 	{

@@ -30,7 +30,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		if (AFM(*pm,ring, tri_list, node_list) == false) return 0;
 		// see how many new faces we have
 		int new_faces = (int) tri_list.size();
-		int new_nodes = node_list.size();
+		int new_nodes = (int) node_list.size();
 		// create a copy of the original mesh
 		FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
 

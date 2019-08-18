@@ -14,7 +14,6 @@
 typedef unsigned short word;
 typedef unsigned int dword;
 
-
 ////////////////////////////////////////////////////////////////////////
 // CImage - Implements a gray scale image
 

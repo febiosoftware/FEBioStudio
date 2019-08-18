@@ -2,7 +2,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/FEMultiMaterial.h>
 
-extern GLCOLOR col[];
+extern GLColor col[];
 
 //-----------------------------------------------------------------------------
 bool FENASTRANimport::Load(FEProject& prj, const char* szfile)

@@ -6,15 +6,15 @@ GDiscreteObject::GDiscreteObject(int ntype)
 {
 	m_ntype = ntype;
 	m_state = 0;
-	m_col = GLCOLOR(0, 255, 0);
+	m_col = GLColor(0, 255, 0);
 }
 
 GDiscreteObject::~GDiscreteObject(void)
 {
 }
 
-GLCOLOR GDiscreteObject::GetColor() const { return m_col; }
-void GDiscreteObject::SetColor(const GLCOLOR& c) { m_col = c; }
+GLColor GDiscreteObject::GetColor() const { return m_col; }
+void GDiscreteObject::SetColor(const GLColor& c) { m_col = c; }
 
 //-----------------------------------------------------------------------------
 
@@ -342,7 +342,7 @@ void GLinearSpringSet::Load(IArchive& ar)
 	TRACE("GSpringSet::Load");
 
 	char sz[256] = {0};
-	GLCOLOR col = GetColor();
+	GLColor col = GetColor();
 	while (IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -394,7 +394,7 @@ void GNonlinearSpringSet::Load(IArchive& ar)
 	TRACE("GNonlinearSpringSet::Load");
 
 	char sz[256] = {0};
-	GLCOLOR col = GetColor();
+	GLColor col = GetColor();
 	while (IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();

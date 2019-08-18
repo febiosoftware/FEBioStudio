@@ -6,8 +6,8 @@ GLHighlighter GLHighlighter::m_This;
 
 GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
 {
-	m_activeColor = GLCOLOR(255, 255, 0);
-	m_pickColor   = GLCOLOR(0, 0, 255);
+	m_activeColor = GLColor(255, 255, 0);
+	m_pickColor   = GLColor(0, 0, 255);
 }
 
 void GLHighlighter::AttachToView(CGLView* view)
@@ -88,7 +88,7 @@ bool GLHighlighter::IsTracking()
 	return m_This.m_btrack;
 }
 
-void drawEdge(CGLView* view, GEdge* edge, GLCOLOR c)
+void drawEdge(CGLView* view, GEdge* edge, GLColor c)
 {
 	GObject* po = dynamic_cast<GObject*>(edge->Object());
 	if (po == 0) return;

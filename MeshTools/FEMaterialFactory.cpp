@@ -143,7 +143,7 @@ void FEMaterialFactory::AddCategory(const std::string& name, int module, int cat
 int FEMaterialFactory::Categories()
 {
 	FEMaterialFactory* pmf = GetInstance();
-	return pmf->m_Cat.size();
+	return (int)pmf->m_Cat.size();
 }
 
 FEMatCategory& FEMaterialFactory::GetCategory(int i)

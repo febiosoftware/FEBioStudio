@@ -27,7 +27,7 @@ void GTranslator::Render(int npivot, bool bactive)
 
 	GLUquadricObj* pobj = gluNewQuadric();
 
-	GLCOLOR g(128, 128, 128);
+	GLColor g(128, 128, 128);
 
 	// X-axis
 	glPushMatrix();
@@ -410,7 +410,7 @@ void GScalor::Render(int npivot, bool bactive)
 
 	GLUquadricObj* pobj = gluNewQuadric();
 
-	GLCOLOR g(128, 128, 128);
+	GLColor g(128, 128, 128);
 
 	// X-axis
 	glPushMatrix();
