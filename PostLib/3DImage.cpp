@@ -64,19 +64,19 @@ bool C3DImage::LoadFromFile(const char* szfile, int nbits)
 	FILE* fp = fopen(szfile, "rb");
 	if (fp == 0) return false;
 
-	int nsize = m_cx*m_cy*m_cz;
+	size_t nsize = m_cx*m_cy*m_cz;
 	if (nbits == 16)
 	{
 		word* m_ptmp = new word[nsize];
-		int nread = fread(m_ptmp, sizeof(word), nsize, fp);
-		for(int i=0; i<nsize; i++)
+		size_t nread = fread(m_ptmp, sizeof(word), nsize, fp);
+		for(size_t i=0; i<nsize; i++)
 			m_pb[i] = m_ptmp[i] >> 8;
 		delete [] m_ptmp;
 		if (nsize != nread) return false;
 	}
 	else
 	{
-		int nread = fread(m_pb, 1, nsize, fp);
+		size_t nread = fread(m_pb, 1, nsize, fp);
 		if (nsize != nread) return false;
 	}
 

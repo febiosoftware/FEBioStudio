@@ -22,7 +22,7 @@
 #include <MeshLib/FECurveMesh.h>
 #include "GLViewTransform.h"
 #include "glx.h"
-#include <MeshTools/ColorMap.h>
+#include <PostLib/ColorMap.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshTools/FEMultiMaterial.h>
@@ -6433,7 +6433,7 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 	int nmatid = -1;
 
 	double vmin, vmax;
-	CColorMap map;
+	Post::CColorMap map;
 	if (view.m_bcontour) { pm->GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
@@ -6749,7 +6749,7 @@ void CGLView::RenderFEElements(GObject* po)
 	int glmode = 0;
 
 	double vmin, vmax;
-	CColorMap map;
+	Post::CColorMap map;
 	if (view.m_bcontour) { pm->GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces

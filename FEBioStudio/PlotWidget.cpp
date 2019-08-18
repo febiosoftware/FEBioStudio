@@ -76,7 +76,7 @@ void CDlgPlotWidgetProps::accept()
 
 //=============================================================================
 
-class CPalette
+class ColorList
 {
 public:
 	enum { Colors = 16 };
@@ -106,13 +106,13 @@ public:
 	}
 
 private:
-	CPalette() {}
-	CPalette(const CPalette&) {}
+	ColorList() {}
+	ColorList(const ColorList&) {}
 
 private:
 	static vector<QColor>	m_col;
 };
-vector<QColor> CPalette::m_col;
+vector<QColor> ColorList::m_col;
 
 //-----------------------------------------------------------------------------
 double findScale(double fmin, double fmax)
@@ -258,7 +258,7 @@ void CPlotData::sort()
 //-----------------------------------------------------------------------------
 CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 {
-	CPalette::init();
+	ColorList::init();
 
 	m_select = false;
 	m_bzoomRect = false;
@@ -496,7 +496,7 @@ void CPlotWidget::addPlotData(CPlotData* p)
 {
 	int N = (int)m_data.size();
 
-	p->setColor(CPalette::color(N));
+	p->setColor(ColorList::color(N));
 
 	m_data.push_back(p);
 

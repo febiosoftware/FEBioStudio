@@ -138,7 +138,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\MeshTools\BivariatePolynomialSpline.cpp" />
     <ClCompile Include="..\..\MeshTools\BivariateSpline.cpp" />
-    <ClCompile Include="..\..\MeshTools\ColorMap.cpp" />
     <ClCompile Include="..\..\MeshTools\ConchoidFit.cpp" />
     <ClCompile Include="..\..\MeshTools\FEAdvancingFrontMesher2D.cpp" />
     <ClCompile Include="..\..\MeshTools\FEAutoPartition.cpp" />
@@ -266,7 +265,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h" />
     <ClInclude Include="..\..\MeshTools\BivariateSpline.h" />
-    <ClInclude Include="..\..\MeshTools\ColorMap.h" />
     <ClInclude Include="..\..\MeshTools\ConchoidFit.h" />
     <ClInclude Include="..\..\MeshTools\FEAdvancingFrontMesher2D.h" />
     <ClInclude Include="..\..\MeshTools\FEAutoPartition.h" />

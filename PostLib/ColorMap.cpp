@@ -23,6 +23,8 @@ CColorMap::CColorMap()
 {
 	m_ncol = 0;
 	jet(); // default color map
+	m_min = 0.f;
+	m_max = 1.f;
 }
 
 CColorMap::CColorMap(const CColorMap& m)
@@ -50,14 +52,23 @@ void CColorMap::operator = (const CColorMap& m)
 	}
 }
 
+void CColorMap::SetRange(float fmin, float fmax)
+{
+	m_min = fmin;
+	m_max = fmax;
+	if (m_min == m_max) m_max += 1.f;
+}
+
 GLColor CColorMap::map(float fval) const
 {
+	float w = (fval - m_min) / (m_max - m_min);
+
 	int n = m_ncol - 1;
-	if (fval <= m_pos[0]) return m_col[0];
-	if (fval >= m_pos[n]) return m_col[n];
+	if (w <= m_pos[0]) return m_col[0];
+	if (w >= m_pos[n]) return m_col[n];
 
 	int l = 0;
-	while (m_pos[l] < fval) ++l;
+	while (m_pos[l] < w) ++l;
 
 	float dp = m_pos[l] - m_pos[l-1];
 	if (dp != 0.f) dp = 1.f/dp; else dp = 1.f;
@@ -66,10 +77,10 @@ GLColor CColorMap::map(float fval) const
 	GLColor c2 = m_col[l-1];
 
 	GLColor col;
-	col.r = byte(((fval - m_pos[l-1])*c1.r + (m_pos[l]-fval)*c2.r) * dp);
-	col.g = byte(((fval - m_pos[l-1])*c1.g + (m_pos[l]-fval)*c2.g) * dp);
-	col.b = byte(((fval - m_pos[l-1])*c1.b + (m_pos[l]-fval)*c2.b) * dp);
-	col.a = byte(((fval - m_pos[l-1])*c1.a + (m_pos[l]-fval)*c2.a) * dp);
+	col.r = byte(((w - m_pos[l-1])*c1.r + (m_pos[l]-w)*c2.r) * dp);
+	col.g = byte(((w - m_pos[l-1])*c1.g + (m_pos[l]-w)*c2.g) * dp);
+	col.b = byte(((w - m_pos[l-1])*c1.b + (m_pos[l]-w)*c2.b) * dp);
+	col.a = byte(((w - m_pos[l-1])*c1.a + (m_pos[l]-w)*c2.a) * dp);
 
 	return col;
 }

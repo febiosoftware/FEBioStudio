@@ -25,9 +25,6 @@
     <ClCompile Include="..\..\MeshTools\BivariateSpline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\ColorMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\ConchoidFit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -403,9 +400,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\BivariateSpline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\ColorMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\ConchoidFit.h">

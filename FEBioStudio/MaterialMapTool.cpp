@@ -2,7 +2,7 @@
 #include "MaterialMapTool.h"
 #include <LSDYNA/FELSDYNAimport.h>
 #include "Document.h"
-#include <MeshTools/ColorMap.h>
+#include <PostLib/ColorMap.h>
 #include <MeshTools/FEMultiMaterial.h>
 
 CMaterialMapTool::CMaterialMapTool() : CBasicTool("Material Map", HAS_APPLY_BUTTON)
@@ -95,7 +95,7 @@ bool CMaterialMapTool::OnApply()
 			po->Update();
 
 			// create the materials
-			CColorMap col;
+			Post::CColorMap col;
 			col.jet();
 			for (int i = 0; i<m_nmat; ++i)
 			{

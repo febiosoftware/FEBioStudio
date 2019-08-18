@@ -193,7 +193,7 @@ void GDiscreteElementSet::AddElement(int n0, int n1)
 
 	// set default name
 	char szbuf[32] = {0};
-	sprintf(szbuf, "spring%d", m_elem.size()+1);
+	sprintf(szbuf, "spring%d", (int)m_elem.size()+1);
 	el->SetName(szbuf);
 
 	// add it to the pile

@@ -1,13 +1,11 @@
 #pragma once
-#include "GLTexture1D.h"
 #include <FSCore/color.h>
+#include "GLTexture1D.h"
 #include <vector>
 #include <string>
 using namespace std;
 
 namespace Post {
-
-class CGLTexture1D;
 
 class CColorMap  
 {
@@ -47,10 +45,13 @@ public:
 
 	void Invert();
 
+	void SetRange(float fmin, float fmax);
+
 protected:
 	int		m_ncol;
 	GLColor	m_col[MAX_MAP_COLORS];
 	float	m_pos[MAX_MAP_COLORS];
+	float	m_min, m_max;	// range of color map
 };
 
 //-----------------------------------------------------------------------------
