@@ -1,7 +1,7 @@
 #pragma once
 
-#include "FEObject.h"
-#include "MeshLib/FEMesh.h"
+#include <FSCore/Object.h>
+#include <MeshLib/FEMesh.h>
 
 struct MeshingProgress
 {
@@ -20,7 +20,7 @@ struct MeshingProgress
 // element mesh.
 //
 
-class FEMesher : public FEObject
+class FEMesher : public CObject
 {
 	enum {PARAMS};
 

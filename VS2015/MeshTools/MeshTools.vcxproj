@@ -188,7 +188,6 @@
     <ClCompile Include="..\..\MeshTools\FEMultiMaterial.cpp" />
     <ClCompile Include="..\..\MeshTools\FENNQuery.cpp" />
     <ClCompile Include="..\..\MeshTools\FENodeData.cpp" />
-    <ClCompile Include="..\..\MeshTools\FEObject.cpp" />
     <ClCompile Include="..\..\MeshTools\FEPlaneCut.cpp" />
     <ClCompile Include="..\..\MeshTools\FEProject.cpp" />
     <ClCompile Include="..\..\MeshTools\FEQuad4ToQuad8.cpp" />
@@ -321,7 +320,6 @@
     <ClInclude Include="..\..\MeshTools\FEMultiMaterial.h" />
     <ClInclude Include="..\..\MeshTools\FENNQuery.h" />
     <ClInclude Include="..\..\MeshTools\FENodeData.h" />
-    <ClInclude Include="..\..\MeshTools\FEObject.h" />
     <ClInclude Include="..\..\MeshTools\FEProject.h" />
     <ClInclude Include="..\..\MeshTools\FEQuartDogBone.h" />
     <ClInclude Include="..\..\MeshTools\FERefineSurface.h" />
@@ -383,10 +381,6 @@
     <ClInclude Include="..\..\MeshTools\SpringGenerator.h" />
     <ClInclude Include="..\..\MeshTools\stdafx.h" />
     <ClInclude Include="..\..\MeshTools\SurfaceDistance.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\MeshTools\FECore.vcproj" />
-    <None Include="..\..\MeshTools\previewlib.pro" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

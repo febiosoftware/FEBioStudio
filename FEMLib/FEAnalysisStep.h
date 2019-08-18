@@ -1,6 +1,5 @@
 #pragma once
-
-#include "MeshTools/FEObject.h"
+#include <FSCore/Object.h>
 #include <vector>
 using namespace std;
 
@@ -29,7 +28,7 @@ class FEInitialCondition;
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
 //-----------------------------------------------------------------------------
-class FEStep : public FEObject
+class FEStep : public CObject
 {
 public:
 	FEStep(FEModel* ps, int ntype);

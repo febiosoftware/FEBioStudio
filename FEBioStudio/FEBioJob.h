@@ -1,11 +1,11 @@
 #pragma once
-#include <MeshTools/FEObject.h>
+#include <FSCore/Object.h>
 
 class CPostDoc;
 
 
 //-----------------------------------------------------------------------------
-class CFEBioJob : public FEObject
+class CFEBioJob : public CObject
 {
 public:
 	enum JOB_STATUS {

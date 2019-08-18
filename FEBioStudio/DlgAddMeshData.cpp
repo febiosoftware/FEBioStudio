@@ -4,7 +4,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
-#include <MeshTools/FEObject.h>
+#include <FSCore/Object.h>
 #include <QCheckBox>
 
 class CDlgAddMeshDataUI
@@ -55,7 +55,7 @@ public:
 	}
 };
 
-CDlgAddMeshData::CDlgAddMeshData(FEObject* po, QWidget* pw) : QDialog(pw), ui(new CDlgAddMeshDataUI)
+CDlgAddMeshData::CDlgAddMeshData(CObject* po, QWidget* pw) : QDialog(pw), ui(new CDlgAddMeshDataUI)
 {
 	setMinimumWidth(300);
 

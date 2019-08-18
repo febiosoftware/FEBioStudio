@@ -175,9 +175,6 @@
     <ClCompile Include="..\..\MeshTools\FENodeData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\FEObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\FEPlaneCut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -570,9 +567,6 @@
     <ClInclude Include="..\..\MeshTools\FENodeData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FEObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MeshTools\FEProject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -756,9 +750,5 @@
     <ClInclude Include="..\..\MeshTools\SurfaceDistance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\MeshTools\FECore.vcproj" />
-    <None Include="..\..\MeshTools\previewlib.pro" />
   </ItemGroup>
 </Project>

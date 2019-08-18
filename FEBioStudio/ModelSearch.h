@@ -4,7 +4,7 @@
 using namespace std;
 
 class CDocument;
-class FEObject;
+class CObject;
 class QListWidget;
 class QListWidgetItem;
 class QLineEdit;
@@ -23,7 +23,7 @@ public:
 
 	void contextMenuEvent(QContextMenuEvent* ev) override;
 
-	void GetSelection(std::vector<FEObject*>& sel);
+	void GetSelection(std::vector<CObject*>& sel);
 
 private:
 	void UpdateList();

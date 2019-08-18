@@ -1,15 +1,5 @@
-// FEGroup.h: interface for the FEGroup class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEGROUP_H__A3D50F66_FD36_45C0_B131_632AE264E214__INCLUDED_)
-#define AFX_FEGROUP_H__A3D50F66_FD36_45C0_B131_632AE264E214__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#include "FEObject.h"
+#include <FSCore/Object.h>
 #include "FEItemListBuilder.h"
 
 class FENode;
@@ -126,5 +116,3 @@ public:
 
 	FENodeList* BuildNodeList();
 };
-
-#endif // !defined(AFX_FEGROUP_H__A3D50F66_FD36_45C0_B131_632AE264E214__INCLUDED_)

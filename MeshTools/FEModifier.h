@@ -13,7 +13,7 @@
 
 //-----------------------------------------------------------------------------
 
-class FEModifier : public FEObject 
+class FEModifier : public CObject 
 {
 public:
 	FEModifier(const char* sz) { SetName(sz); }

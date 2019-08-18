@@ -1,17 +1,17 @@
 #pragma once
 #include <QDialog>
 #include <vector>
-#include <MeshTools/FEObject.h>
+#include <MeshTools/ParamBlock.h>
 
 class CDlgAddMeshDataUI;
-class FEObject;
+class CObject;
 
 class CDlgAddMeshData : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgAddMeshData(FEObject* po, QWidget* parent);
+	CDlgAddMeshData(CObject* po, QWidget* parent);
 
 public slots:
 	void onCustom();

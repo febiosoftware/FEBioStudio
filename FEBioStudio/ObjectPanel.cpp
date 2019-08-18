@@ -8,7 +8,7 @@
 #include <QMenu>
 #include "CColorButton.h"
 #include <GeomLib/GObject.h>
-#include "convert.h"
+#include <PostLib/convert.h>
 #include "MainWindow.h"
 #include "Document.h"
 
@@ -51,7 +51,7 @@ void CObjectPanel::onColorChanged(QColor c)
 	GObject* po = doc->GetActiveObject();
 	if (po)
 	{
-		po->SetColor(toGLCOLOR(c));
+		po->SetColor(toGLColor(c));
 		m_wnd->RedrawGL();
 	}
 }

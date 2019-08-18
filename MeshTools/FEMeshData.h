@@ -1,11 +1,11 @@
 #pragma once
-#include "FEObject.h"
+#include <FSCore/Object.h>
 #include <string>
 using namespace std;
 
 class FEMesh;
 
-// TODO: Should I inherit this from FEObject?
+// TODO: Should I inherit this from CObject?
 class FEMeshData
 {
 public:

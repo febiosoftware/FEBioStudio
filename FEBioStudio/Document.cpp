@@ -473,7 +473,7 @@ GObject* CDocument::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
-std::string CDocument::GetTypeString(FEObject* po)
+std::string CDocument::GetTypeString(CObject* po)
 {
 	if (po == 0) return "(null)";
 
@@ -1227,7 +1227,7 @@ void CDocument::HideUnselected()
 	}
 }
 
-void CDocument::DeleteObject(FEObject* po)
+void CDocument::DeleteObject(CObject* po)
 {
 	FEModel& fem = *GetFEModel();
 
@@ -1454,7 +1454,7 @@ bool CDocument::ExportMaterials(const std::string& fileName, const vector<GMater
 	ar.WriteChunk(PVM_VERSION, version);
 
 	// write materials
-	int mats = matList.size();
+	int mats = (int) matList.size();
 	for (int i = 0; i<mats; ++i)
 	{
 		GMaterial* pmat = matList[i];
@@ -1533,7 +1533,7 @@ bool CDocument::ImportMaterials(const std::string& fileName)
 	return true;
 }
 
-FEDataMap* CDocument::CreateDataMap(FEObject* po, std::string& mapName, std::string& paramName, Param_Type type)
+FEDataMap* CDocument::CreateDataMap(CObject* po, std::string& mapName, std::string& paramName, Param_Type type)
 {
 	FEModel& fem = *GetFEModel();
 	FEComponent* pc = dynamic_cast<FEComponent*>(po);

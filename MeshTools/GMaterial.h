@@ -1,5 +1,5 @@
 #pragma once
-#include "FEObject.h"
+#include <FSCore/Object.h>
 #include <PostLib/color.h>
 
 //-----------------------------------------------------------------------------
@@ -10,7 +10,7 @@ class FEMaterial;
 // This class defines a material. It stores the material properties (as a 
 // FEMaterial class), the material name and other attributes, mostly used for rendering
 //
-class GMaterial : public FEObject
+class GMaterial : public CObject
 {
 public:
 	GMaterial(FEMaterial* pm = 0);

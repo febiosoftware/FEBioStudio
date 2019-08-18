@@ -1,7 +1,7 @@
 #pragma once
 #include "FEItemList.h"
-#include "FEObject.h"
-#include "FEMLib/FECoreModel.h"
+#include <FSCore/Object.h>
+#include <FEMLib/FECoreModel.h>
 #include <list>
 
 //-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ enum DOMAIN_TYPE
 // Currently this is the GItem class for geometry objects and FEGroup class for
 // FE meshes. Each derived class must be able to define how to build FEItem lists.
 //
-class FEItemListBuilder : public FEObject
+class FEItemListBuilder : public CObject
 {
 public:
 	enum {ID, NAME, MESHID, SIZE, ITEM};

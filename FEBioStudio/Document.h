@@ -245,11 +245,11 @@ public:
 	int GetItemMode() { return m_vs.nitem; }
 	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(); }
 
-	static std::string GetTypeString(FEObject* po);
+	static std::string GetTypeString(CObject* po);
 
 	CMainWindow* GetMainWindow() { return m_wnd; }
 
-	void DeleteObject(FEObject* po);
+	void DeleteObject(CObject* po);
 
 	bool ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList);
 	bool ImportMaterials(const std::string& fileName);
@@ -273,7 +273,7 @@ public:
 	void HideUnselected();
 
 public:
-	FEDataMap* CreateDataMap(FEObject* po, std::string& mapName, std::string& paramName, Param_Type type);
+	FEDataMap* CreateDataMap(CObject* po, std::string& mapName, std::string& paramName, Param_Type type);
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }

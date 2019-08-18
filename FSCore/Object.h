@@ -1,15 +1,15 @@
 #pragma once
-#include "ParamBlock.h"
+#include <MeshTools/ParamBlock.h>
 #include <string>
 
 //-----------------------------------------------------------------------------
-// Base class for most classes used by PreView
+// Base class for most classes used by FEBio Studio
 // 
-class FEObject : public ParamContainer
+class CObject : public ParamContainer
 {
 public:
-	FEObject(void);
-	virtual ~FEObject(void);
+	CObject(void);
+	virtual ~CObject(void);
 
 	void SetName(const std::string& name);
 	const std::string& GetName() const;
@@ -23,3 +23,4 @@ public:
 private:
 	std::string		m_name;
 };
+

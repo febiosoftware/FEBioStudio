@@ -167,7 +167,7 @@ void CDefaultCreatePane::Activate()
 	if (m_po == 0) CreateObject();
 }
 
-FEObject* CDefaultCreatePane::Create()
+CObject* CDefaultCreatePane::Create()
 {
 	static int n = 1;
 
@@ -269,7 +269,7 @@ void CCreateLoftSurface::itemPicked(GItem* pick)
 	}
 }
 
-FEObject* CCreateLoftSurface::Create()
+CObject* CCreateLoftSurface::Create()
 {
 	if (m_edge.size() < 2) return 0;
 
@@ -344,7 +344,7 @@ void CCreateExtrude::Deactivate()
 {
 }
 
-FEObject* CCreateExtrude::Create()
+CObject* CCreateExtrude::Create()
 {
 	static int n = 1;
 

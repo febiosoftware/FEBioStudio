@@ -1,6 +1,6 @@
 #pragma once
 #include <MathLib/math3d.h>
-#include "FEObject.h"
+#include <FSCore/Object.h>
 #include <vector>
 using namespace std;
 
@@ -59,8 +59,8 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class GCircle  : public FEObject {};
-class GP2PLine : public FEObject {};
-class G3PArc   : public FEObject {};
-class GExtrude : public FEObject {};
-class GRevolve : public FEObject {};
+class GCircle  : public CObject {};
+class GP2PLine : public CObject {};
+class G3PArc   : public CObject {};
+class GExtrude : public CObject {};
+class GRevolve : public CObject {};

@@ -1,6 +1,6 @@
 #pragma once
-#include "MeshTools/FEObject.h"
-#include "MeshLib/FECoreMesh.h"
+#include <FSCore/Object.h>
+#include <MeshLib/FECoreMesh.h>
 #include "FEComponent.h"
 
 // material axes generators

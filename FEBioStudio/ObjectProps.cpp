@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ObjectProps.h"
-#include <MeshTools/FEObject.h>
+#include <FSCore/Object.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEAnalysisStep.h>
@@ -35,7 +35,7 @@ QStringList toStringList(FEModel* fem, const char* ch)
 }
 
 //=======================================================================================
-CObjectProps::CObjectProps(FEObject* po, FEModel* fem)
+CObjectProps::CObjectProps(CObject* po, FEModel* fem)
 {
 	m_po = 0;
 	m_fem = fem;
@@ -92,7 +92,7 @@ void CObjectProps::AddParameter(Param& p)
 	m_params.push_back(&p);
 }
 
-void CObjectProps::BuildParamList(FEObject* po)
+void CObjectProps::BuildParamList(CObject* po)
 {
 	m_po = po;
 	int NP = po->Parameters();

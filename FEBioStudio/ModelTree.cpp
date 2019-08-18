@@ -324,7 +324,7 @@ CModelTreeItem* CModelTree::GetCurrentData()
 	}
 }
 
-QTreeWidgetItem* CModelTree::FindItem(FEObject* o)
+QTreeWidgetItem* CModelTree::FindItem(CObject* o)
 {
 	QTreeWidgetItemIterator it(this);
 	while (*it)
@@ -344,7 +344,7 @@ QTreeWidgetItem* CModelTree::FindItem(FEObject* o)
 	return 0;
 }
 
-bool CModelTree::GetSelection(std::vector<FEObject*>& objList)
+bool CModelTree::GetSelection(std::vector<CObject*>& objList)
 {
 	objList.clear();
 
@@ -420,7 +420,7 @@ void CModelTree::contextMenuEvent(QContextMenuEvent* ev)
 		if (ntype == 0) return;
 
 		// only show the context menu if all objects are the same type
-		vector<FEObject*> objList;
+		vector<CObject*> objList;
 		QList<QTreeWidgetItem*>::iterator it = sel.begin();
 		while (it != sel.end())
 		{
@@ -440,7 +440,7 @@ void CModelTree::contextMenuEvent(QContextMenuEvent* ev)
 	}
 }
 
-QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype, int ncount, FEObject* po, CPropertyList* props, CObjectValidator* val, int flags)
+QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype, int ncount, CObject* po, CPropertyList* props, CObjectValidator* val, int flags)
 {
 	QTreeWidgetItem* t2 = new QTreeWidgetItem(parent);
 
@@ -473,7 +473,7 @@ void CModelTree::ClearData()
 	m_data.clear();
 }
 
-void CModelTree::UpdateObject(FEObject* po)
+void CModelTree::UpdateObject(CObject* po)
 {
 	QTreeWidgetItemIterator it(this);
 	while (*it)
@@ -512,7 +512,7 @@ void CModelTree::ShowItem(QTreeWidgetItem* item)
 	}
 }
 
-void CModelTree::Select(FEObject* po)
+void CModelTree::Select(CObject* po)
 {
 	if (po == 0) { clearSelection(); return; }
 
@@ -533,7 +533,7 @@ void CModelTree::Select(FEObject* po)
 	assert(false);
 }
 
-void CModelTree::Select(const std::vector<FEObject*>& objList)
+void CModelTree::Select(const std::vector<CObject*>& objList)
 {
 	clearSelection();
 	m_view->SetCurrentItem(-1);

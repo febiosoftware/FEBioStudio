@@ -20,7 +20,7 @@ public:
 
 	bool Undo() override;
 
-	FEObject* Create() override;
+	CObject* Create() override;
 
 	// set the input event for this pane
 	void setInput(const vec3d& r) override;

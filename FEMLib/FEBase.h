@@ -1,9 +1,9 @@
 #pragma once
-#include "MeshTools/FEObject.h"
+#include <FSCore/Object.h>
 
 //-----------------------------------------------------------------------------
 // Base class for components of an FE model
-class FEBase : public FEObject
+class FEBase : public CObject
 {
 public:
 	FEBase() {}

@@ -1,10 +1,10 @@
 #pragma once
-#include "FEObject.h"
+#include <FSCore/Object.h>
 
 // This class is used for both solutes and sbms. 
 // This was done to simplify the dialog box for editing solutes/sbms.
 // Perhaps a flag cam be added to identify this molecule as a solute or sbm but I have not found a need for this.
-class FESoluteData : public FEObject
+class FESoluteData : public CObject
 {
 	enum { Z, MM, DENS};
 

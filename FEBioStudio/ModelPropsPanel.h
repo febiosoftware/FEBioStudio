@@ -4,7 +4,7 @@
 using namespace std;
 
 class CMainWindow;
-class FEObject;
+class CObject;
 class FEItemListBuilder;
 class GMaterial;
 class CPropertyList;
@@ -86,9 +86,9 @@ class CModelPropsPanel : public QWidget
 public:
 	CModelPropsPanel(CMainWindow* wnd, QWidget* parent = 0);
 
-	void SetObjectProps(FEObject* po, CPropertyList* props, int flags);
+	void SetObjectProps(CObject* po, CPropertyList* props, int flags);
 
-	FEObject* GetCurrentObject() { return m_currentObject; }
+	CObject* GetCurrentObject() { return m_currentObject; }
 
 	void Update();
 
@@ -127,6 +127,6 @@ signals:
 private:
 	Ui::CModelPropsPanel* ui;
 	CMainWindow*		m_wnd;
-	FEObject*			m_currentObject;
+	CObject*			m_currentObject;
 	bool				m_isUpdating;
 };

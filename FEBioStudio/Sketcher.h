@@ -1,6 +1,6 @@
 #pragma once
 #include <MeshTools/GSketch.h>
-#include <MeshTools/FEObject.h>
+#include <FSCore/Object.h>
 
 //-----------------------------------------------------------------------------
 //! Helper class for creating sketches. This singleton manages the sketch that
@@ -12,7 +12,7 @@ public:
 
 public:
 	GSketch& GetCurrentSketch();
-	FEObject* FinalizeSketch();
+	CObject* FinalizeSketch();
 
 private:
 	GSketcher(){}
