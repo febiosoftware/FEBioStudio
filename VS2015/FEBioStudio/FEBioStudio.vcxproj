@@ -83,7 +83,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PostViewDir);$(ZLIBDIR);$(FFMPEGDIR)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)x64\Release;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Release;$(MMGLIB)\lib\Release;$(PostViewDir)\VS2015\x64\Release;$(FFMPEGDIR)\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)x64\Release;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Release;$(MMGLIB)\lib\Release;$(FFMPEGDIR)\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -144,7 +144,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;postlib.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Release\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Release\zlibstatic.lib;postviewlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;postlib.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Release\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Release\zlibstatic.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>

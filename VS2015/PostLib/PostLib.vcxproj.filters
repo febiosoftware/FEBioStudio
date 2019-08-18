@@ -234,9 +234,6 @@
     <ClCompile Include="..\..\PostLib\PropertyList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\PostLib\SphereFit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\PostLib\tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -507,9 +504,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\pyra5.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\SphereFit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\stdafx.h">
