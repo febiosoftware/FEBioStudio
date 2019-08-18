@@ -1,14 +1,4 @@
-// FECylinder.h: interface for the FECylinder class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FECYLINDER_H__FB7BD06E_2F3B_4D44_BBA2_6773BFABEB2F__INCLUDED_)
-#define AFX_FECYLINDER_H__FB7BD06E_2F3B_4D44_BBA2_6773BFABEB2F__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMultiBlockMesh.h"
 
 class GCylinder;
@@ -87,5 +77,3 @@ protected:
 	int		m_ctype;
 	bool	m_bz, m_br;
 };
-
-#endif // !defined(AFX_FECYLINDER_H__FB7BD06E_2F3B_4D44_BBA2_6773BFABEB2F__INCLUDED_)

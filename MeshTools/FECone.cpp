@@ -236,7 +236,7 @@ FEMesh* FECone::BuildMesh()
 	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// project the nodes onto a cylinder
-	double d, d0, d1, w, x, y, z, t, R;
+	double d0, d1, z, t, R;
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
 		// get the nodal coordinate in the template

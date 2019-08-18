@@ -1,14 +1,4 @@
-// FEShellDisc.h: interface for the FEShellDisc class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FESHELLDISC_H__6D5169AF_267B_4A5D_ADEB_E829F601CDD6__INCLUDED_)
-#define AFX_FESHELLDISC_H__6D5169AF_267B_4A5D_ADEB_E829F601CDD6__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMesher.h"
 
 class GDisc;
@@ -36,5 +26,3 @@ protected:
 	double	m_r, m_t;
 	int		m_nd, m_nr;
 };
-
-#endif // !defined(AFX_FESHELLDISC_H__6D5169AF_267B_4A5D_ADEB_E829F601CDD6__INCLUDED_)

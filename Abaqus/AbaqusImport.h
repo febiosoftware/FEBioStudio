@@ -1,14 +1,4 @@
-// FEAbaqusImport.h: interface for the FEAbaqusImport class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEABAQUSIMPORT_H__7EC7CA78_BD57_411C_A3C0_DB61ADC945B1__INCLUDED_)
-#define AFX_FEABAQUSIMPORT_H__7EC7CA78_BD57_411C_A3C0_DB61ADC945B1__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include <MeshIO/FileReader.h>
 #include <MeshTools/FEProject.h>
 #include "AbaqusModel.h"
@@ -116,5 +106,3 @@ private:
 
 	int	m_nline;	// current line number
 };
-
-#endif // !defined(AFX_FEABAQUSIMPORT_H__7EC7CA78_BD57_411C_A3C0_DB61ADC945B1__INCLUDED_)

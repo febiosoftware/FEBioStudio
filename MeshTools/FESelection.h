@@ -1,14 +1,4 @@
-// FESelection.h: interface for the FESelection class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FESELECTION_H__F0315B0D_8DCE_4FD7_80C1_F62A41186314__INCLUDED_)
-#define AFX_FESELECTION_H__F0315B0D_8DCE_4FD7_80C1_F62A41186314__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEGroup.h"
 #include "FEModel.h"
 #include "GDiscreteObject.h"
@@ -477,5 +467,3 @@ protected:
 	FELineMesh*	m_pMesh;
 	FEModel*	m_ps;
 };
-
-#endif // !defined(AFX_FESELECTION_H__F0315B0D_8DCE_4FD7_80C1_F62A41186314__INCLUDED_)

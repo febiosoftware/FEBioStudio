@@ -1,14 +1,4 @@
-// FEInterface.h: interface for the FEInterface class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEINTERFACE_H__6AB8ECA7_5F31_42D3_889F_371842A52B22__INCLUDED_)
-#define AFX_FEINTERFACE_H__6AB8ECA7_5F31_42D3_889F_371842A52B22__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMLib/FEStepComponent.h"
 #include "MeshTools/FEItemListBuilder.h"
 #include "MeshTools/GMaterial.h"
@@ -420,5 +410,3 @@ public:
 public:
 	vector<LinearConstraint>	m_set;
 };
-
-#endif // !defined(AFX_FEINTERFACE_H__6AB8ECA7_5F31_42D3_889F_371842A52B22__INCLUDED_)

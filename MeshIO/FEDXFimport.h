@@ -1,14 +1,4 @@
-// FEDXFimport.h: interface for the FEDXFimport class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEDXFIMPORT_H__332EACF7_70ED_40CA_96B0_029877E761FE__INCLUDED_)
-#define AFX_FEDXFIMPORT_H__332EACF7_70ED_40CA_96B0_029877E761FE__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
@@ -64,5 +54,3 @@ protected:
 	list<FACE3D>	m_Face;
 	FEModel*		m_pfem;
 };
-
-#endif // !defined(AFX_FEDXFIMPORT_H__332EACF7_70ED_40CA_96B0_029877E761FE__INCLUDED_)

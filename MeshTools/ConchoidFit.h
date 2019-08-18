@@ -1,14 +1,4 @@
-// onchoidFit.h: interface for the ConchoidFit class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_ONCHOIDFIT_H__A9DEDB59_A992_47E5_A444_32D8FAFB4441__INCLUDED_)
-#define AFX_ONCHOIDFIT_H__A9DEDB59_A992_47E5_A444_32D8FAFB4441__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include <MathLib/math3d.h>
 #include <vector>
 using namespace std;
@@ -47,5 +37,3 @@ public:
 
 	vector<vec3d> m_y;
 };
-
-#endif // !defined(AFX_ONCHOIDFIT_H__A9DEDB59_A992_47E5_A444_32D8FAFB4441__INCLUDED_)

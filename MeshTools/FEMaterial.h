@@ -1,14 +1,4 @@
-// FEMaterial.h: interface for the FEMaterial class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEMATERIAL_H__E080BCDE_AA4A_4005_B549_D9EAEB56B680__INCLUDED_)
-#define AFX_FEMATERIAL_H__E080BCDE_AA4A_4005_B549_D9EAEB56B680__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "LoadCurve.h"
 #include "FEMLib/FECoreMaterial.h"
 #include "FEMaterialFactory.h"
@@ -1757,5 +1747,3 @@ public:
 	FEStarlingSupply();
 	DECLARE_REGISTERED(FEStarlingSupply);
 };
-
-#endif // !defined(AFX_FEMATERIAL_H__E080BCDE_AA4A_4005_B549_D9EAEB56B680__INCLUDED_)

@@ -1,14 +1,4 @@
-// FETorus.h: interface for the FETorus class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FETORUS_H__C9A00B89_4CA3_4190_AB43_A4261079F556__INCLUDED_)
-#define AFX_FETORUS_H__C9A00B89_4CA3_4190_AB43_A4261079F556__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMesher.h"
 
 class GTorus;
@@ -40,5 +30,3 @@ protected:
 	GTorus* m_pobj;
 	int	m_nd, m_ns;
 };
-
-#endif // !defined(AFX_FETORUS_H__C9A00B89_4CA3_4190_AB43_A4261079F556__INCLUDED_)

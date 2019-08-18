@@ -1,14 +1,4 @@
-// FEModifier.h: interface for the FEModifier class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEMODIFIER_H__E7061DA8_DD6C_44A4_8B5E_84A108952D35__INCLUDED_)
-#define AFX_FEMODIFIER_H__E7061DA8_DD6C_44A4_8B5E_84A108952D35__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
@@ -405,5 +395,3 @@ public:
 	FEDetachElements();
 	FEMesh* Apply(FEMesh* pm);
 };
-
-#endif // !defined(AFX_FEMODIFIER_H__E7061DA8_DD6C_44A4_8B5E_84A108952D35__INCLUDED_)

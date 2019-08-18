@@ -1,14 +1,4 @@
-// FEBox.h: interface for the FEBox class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEBOX_H__49F6C266_8500_4F86_8853_B966632137DE__INCLUDED_)
-#define AFX_FEBOX_H__49F6C266_8500_4F86_8853_B966632137DE__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMultiBlockMesh.h"
 
 class GBox;
@@ -79,5 +69,3 @@ protected:
 	double	m_gx, m_gy, m_gz, m_gr;
 	bool	m_bx, m_by, m_bz, m_br;
 };
-
-#endif // !defined(AFX_FEBOX_H__49F6C266_8500_4F86_8853_B966632137DE__INCLUDED_)

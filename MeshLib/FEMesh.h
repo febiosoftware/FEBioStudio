@@ -1,14 +1,4 @@
-// FEMesh.h: interface for the FEMesh class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEMESH_H__CB7EC714_E3FD_46A4_A397_FEFB23429520__INCLUDED_)
-#define AFX_FEMESH_H__CB7EC714_E3FD_46A4_A397_FEFB23429520__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "MeshLib/FECoreMesh.h"
 #include "MeshTools/FEGroup.h"
 #include "MeshTools/FENodeData.h"
@@ -274,5 +264,3 @@ double bias(double b, double x);
 double gain(double g, double x);
 
 FEMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh);
-
-#endif // !defined(AFX_FEMESH_H__CB7EC714_E3FD_46A4_A397_FEFB23429520__INCLUDED_)

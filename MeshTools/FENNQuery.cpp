@@ -37,7 +37,7 @@ void FENNQuery::Init()
 
 	int i;
 	vec3d r0, r;
-	int N = m_ps->size();
+	int N = (int) m_ps->size();
 
 	// pick a random point as pivot
 	r0 = m_q1 = (*m_ps)[0];

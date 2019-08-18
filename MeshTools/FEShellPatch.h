@@ -1,14 +1,4 @@
-// FEShellPatch.h: interface for the FEShellPatch class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FESHELLPATCH_H__70AA0BE1_5F71_402B_82AB_BEE83BE46DBA__INCLUDED_)
-#define AFX_FESHELLPATCH_H__70AA0BE1_5F71_402B_82AB_BEE83BE46DBA__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMesher.h"
 
 class GPatch;
@@ -35,5 +25,3 @@ protected:
 	double	m_t;
 	int		m_nx, m_ny;
 };
-
-#endif // !defined(AFX_FESHELLPATCH_H__70AA0BE1_5F71_402B_82AB_BEE83BE46DBA__INCLUDED_)

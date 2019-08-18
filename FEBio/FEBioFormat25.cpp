@@ -1913,13 +1913,13 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 				{
 					int nsol = bc - 9;
 					pic = new FEInitConcentration(&fem, pg, nsol, val, m_pBCStep->GetID());
-					sprintf(szname, "InitConcentration%02", CountICs<FEInitConcentration>(fem)+1);
+					sprintf(szname, "InitConcentration%02d", CountICs<FEInitConcentration>(fem)+1);
 				}
                 else if ((bc >= 16) && (bc <= 21))
                 {
                     int nsol = bc - 16;
                     pic = new FEInitShellConcentration(&fem, pg, nsol, val, m_pBCStep->GetID());
-					sprintf(szname, "InitShellConcentration%02", CountICs<FEInitShellConcentration>(fem)+1);
+					sprintf(szname, "InitShellConcentration%02d", CountICs<FEInitShellConcentration>(fem)+1);
                 }
 			}
 

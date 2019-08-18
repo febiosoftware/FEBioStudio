@@ -1,14 +1,4 @@
-// FEFEBioExport.h: interface for the FEFEBioExport class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEFEBIOEXPORT_H__C146612D_D017_4A86_BBED_1855D7098AC9__INCLUDED_)
-#define AFX_FEFEBIOEXPORT_H__C146612D_D017_4A86_BBED_1855D7098AC9__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include <MeshTools/FEMultiMaterial.h>
 #include "FEBioExport.h"
 
@@ -137,5 +127,3 @@ protected:
 	int	m_nrc;		// number of rigid constraints
 	int	m_ntotelem;	// total element counter
 };
-
-#endif // !defined(AFX_FEFEBIOEXPORT_H__C146612D_D017_4A86_BBED_1855D7098AC9__INCLUDED_)

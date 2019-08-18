@@ -1,14 +1,4 @@
-// CommandManager.h: interface for the CCommandManager class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_COMMANDMANAGER_H__218076E8_1947_4B1F_8A05_BA00B43A1FC6__INCLUDED_)
-#define AFX_COMMANDMANAGER_H__218076E8_1947_4B1F_8A05_BA00B43A1FC6__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "Command.h"
 #include <stack>
 
@@ -63,5 +53,3 @@ public:
 protected:
 	CDocument* m_pDoc; // pointer to the current document
 };
-
-#endif // !defined(AFX_COMMANDMANAGER_H__218076E8_1947_4B1F_8A05_BA00B43A1FC6__INCLUDED_)

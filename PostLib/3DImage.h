@@ -1,14 +1,4 @@
-// 3DImage.h: interface for the C3DImage class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_3DIMAGE_H__E14C7DF6_A4B0_462B_B529_B78ABB82A3A1__INCLUDED_)
-#define AFX_3DIMAGE_H__E14C7DF6_A4B0_462B_B529_B78ABB82A3A1__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "Image.h"
 #include "GLObject.h"
 #include "bbox.h"
@@ -85,5 +75,3 @@ private:
 //-----------------------------------------------------------------------------
 // helper functions
 int closest_pow2(int n);
-
-#endif // !defined(AFX_3DIMAGE_H__E14C7DF6_A4B0_462B_B529_B78ABB82A3A1__INCLUDED_)

@@ -1843,7 +1843,6 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 		int surfs = (int)part.m_Surf.size();
 		if (surfs)
 		{
-			int nf, n;
 			list<AbaqusModel::SURFACE>::iterator si = part.m_Surf.begin();
 			for (i=0; i<surfs; ++i, ++si)
 			{

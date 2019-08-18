@@ -1,14 +1,4 @@
-// FELSDYNAimport.h: interface for the FELSDYNAimport class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FELSDYNAIMPORT_H__50F241DD_FFA6_42F8_9BD0_7ED2DFB2C68F__INCLUDED_)
-#define AFX_FELSDYNAIMPORT_H__50F241DD_FFA6_42F8_9BD0_7ED2DFB2C68F__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "MeshIO/FileReader.h"
 #include "MeshTools/FEProject.h"
 #include "LSDYNAModel.h"
@@ -81,5 +71,3 @@ protected:
 	FEModel*	m_pfem;
 	FEProject*	m_pprj;
 };
-
-#endif // !defined(AFX_FELSDYNAIMPORT_H__50F241DD_FFA6_42F8_9BD0_7ED2DFB2C68F__INCLUDED_)

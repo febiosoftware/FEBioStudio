@@ -400,7 +400,7 @@ FEEdgeFaceList::FEEdgeFaceList(const FEMesh& mesh)
 	{
 		const FEFace& face = mesh.Face(i);
 
-		int ne = FEL[i].size();
+		int ne = (int) FEL[i].size();
 		for (int j=0; j<ne; ++j)
 		{
 			int iedge = FEL[i][j];
@@ -427,7 +427,7 @@ FEEdgeFaceList::FEEdgeFaceList(const FESurfaceMesh& mesh)
 	{
 		const FEFace& face = mesh.Face(i);
 
-		int ne = FEL[i].size();
+		int ne = (int) FEL[i].size();
 		for (int j = 0; j<ne; ++j)
 		{
 			int iedge = FEL[i][j];

@@ -1,14 +1,4 @@
-// Image.h: interface for the CImage class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_IMAGE_H__71581AFE_09FC_4016_8F60_46A02C1FEBA8__INCLUDED_)
-#define AFX_IMAGE_H__71581AFE_09FC_4016_8F60_46A02C1FEBA8__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "ColorMap.h"
 
 typedef unsigned short word;
@@ -115,5 +105,3 @@ protected:
 	int		m_cx;
 	int		m_cy;
 };
-
-#endif // !defined(AFX_IMAGE_H__71581AFE_09FC_4016_8F60_46A02C1FEBA8__INCLUDED_)

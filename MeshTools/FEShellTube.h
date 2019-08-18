@@ -1,14 +1,4 @@
-// FEShellTube.h: interface for the FEShellTube class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FESHELLTUBE_H__6B56FDB4_2521_40C6_BEE9_5103CF279544__INCLUDED_)
-#define AFX_FESHELLTUBE_H__6B56FDB4_2521_40C6_BEE9_5103CF279544__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMesher.h"
 
 class GThinTube;
@@ -35,6 +25,3 @@ protected:
 	double	m_t;
 	int		m_nd, m_nz;
 };
-
-
-#endif // !defined(AFX_FESHELLTUBE_H__6B56FDB4_2521_40C6_BEE9_5103CF279544__INCLUDED_)

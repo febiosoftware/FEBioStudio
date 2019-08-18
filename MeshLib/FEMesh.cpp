@@ -3331,7 +3331,7 @@ void FEMesh::BuildEdges()
 	DeleteEdges();
 
 	// allocate edges
-	int nedges = edgeSet.size();
+	int nedges = (int) edgeSet.size();
 	if (nedges == 0) return;
 	Create(0, 0, 0, nedges);
 

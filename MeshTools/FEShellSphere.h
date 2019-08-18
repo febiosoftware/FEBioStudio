@@ -1,14 +1,4 @@
-// FEShellSphere.h: interface for the FEShellSphere class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FESHELLSPHERE_H__4A43CF8F_96D0_44D3_ABD7_FFD0F003EBFA__INCLUDED_)
-#define AFX_FESHELLSPHERE_H__4A43CF8F_96D0_44D3_ABD7_FFD0F003EBFA__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMesher.h"
 
 class GSphere;
@@ -52,5 +42,3 @@ protected:
 	double	m_t;
 	int		m_nd;
 };
-
-#endif // !defined(AFX_FESHELLSPHERE_H__4A43CF8F_96D0_44D3_ABD7_FFD0F003EBFA__INCLUDED_)

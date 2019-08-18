@@ -1,14 +1,4 @@
-// XMLReader.h: interface for the XMLReader class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_XMLREADER_H__667494D8_4C95_4342_BC31_6C1C097A4C81__INCLUDED_)
-#define AFX_XMLREADER_H__667494D8_4C95_4342_BC31_6C1C097A4C81__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -240,5 +230,3 @@ protected:
 };
 
 inline void XMLTag::operator ++ () { m_preader->NextTag(*this); }
-
-#endif // !defined(AFX_XMLREADER_H__667494D8_4C95_4342_BC31_6C1C097A4C81__INCLUDED_)

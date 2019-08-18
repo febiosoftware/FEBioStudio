@@ -84,8 +84,6 @@ bool LSDYNAModel::BuildModel(FEModel& fem)
 
 bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 {
-	int i, n;
-
 	int nodes = (int)m_node.size();
 	int shells = (int)m_shell.size();
 	int solids = (int)m_solid.size();
@@ -103,7 +101,7 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 	vector<NODE>::iterator in = m_node.begin();
 	FENode* pn = pm->NodePtr();
 	int imin = 0, imax = 0;
-	for (i = 0; i<nodes; ++i, ++pn, ++in)
+	for (int i = 0; i<nodes; ++i, ++pn, ++in)
 	{
 		in->n = i;
 		pn->r.x = in->x;
@@ -119,7 +117,7 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 	int nsize = imax - imin + 1;
 	vector<int> NLT(nsize, -1);
 	in = m_node.begin();
-	for (i = 0; i<nodes; ++i, ++in) NLT[in->id - imin] = i;
+	for (int i = 0; i<nodes; ++i, ++in) NLT[in->id - imin] = i;
 
 	// get pointer to elements
 	FEElement* pe = pm->ElementPtr();
@@ -127,7 +125,7 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 	// create solids
 	if (solids > 0)
 	{
-		for (i = 0; i<solids; ++i, ++pe)
+		for (int i = 0; i<solids; ++i, ++pe)
 		{
 			ELEMENT_SOLID& ih = m_solid[i];
 			ih.tag = i;
@@ -165,7 +163,7 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 	// create shells
 	if (shells > 0)
 	{
-		for (i = 0; i<shells; ++i, ++pe)
+		for (int i = 0; i<shells; ++i, ++pe)
 		{
 			ELEMENT_SHELL& is = m_shell[i];
 			is.tag = solids + i;
@@ -452,7 +450,7 @@ bool LSDYNAModel::BuildMaterials(FEModel& fem)
 		fem.AddMaterial(pgm);
 
 		// see if there is a part that has this material
-		int nparts = m_part.size();
+		int nparts = (int)m_part.size();
 		for (int j = 0; j<nparts; ++j)
 		{
 			PART& p = m_part[j];

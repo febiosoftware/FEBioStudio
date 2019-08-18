@@ -1,14 +1,4 @@
-// MathParser.h: interface for the CMathParser class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_MATHPARSER_H__20979FC0_89B2_42C8_B21A_1BD7999D8E6A__INCLUDED_)
-#define AFX_MATHPARSER_H__20979FC0_89B2_42C8_B21A_1BD7999D8E6A__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include <string>
 #include <map>
 
@@ -55,5 +45,3 @@ protected:
 
 	int		m_nerrs;
 };
-
-#endif // !defined(AFX_MATHPARSER_H__20979FC0_89B2_42C8_B21A_1BD7999D8E6A__INCLUDED_)

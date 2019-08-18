@@ -1,14 +1,4 @@
-// FETube.h: interface for the FETube class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FETUBE_H__674BF610_F798_4B7C_954C_D6EBDD51C419__INCLUDED_)
-#define AFX_FETUBE_H__674BF610_F798_4B7C_954C_D6EBDD51C419__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMesher.h"
 
 class GTube;
@@ -71,6 +61,3 @@ protected:
 	double	m_gz, m_gr;
 	bool	m_bz, m_br; // double rezoning
 };
-
-
-#endif // !defined(AFX_FETUBE_H__674BF610_F798_4B7C_954C_D6EBDD51C419__INCLUDED_)
