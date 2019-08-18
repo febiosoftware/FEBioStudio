@@ -79,7 +79,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		//       the values set here coincide with the values from CDocument::NewDocument
 		VIEW_SETTINGS& v = m_doc->GetViewSettings();
 		v.m_col1 = GLColor(83, 83, 83);
-		v.m_nbgstyle = BG_COLOR1;
+		v.m_col2 = GLColor(128, 128, 128);
+		v.m_nbgstyle = BG_HORIZONTAL;
 
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 

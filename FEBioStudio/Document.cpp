@@ -176,8 +176,8 @@ void CDocument::NewDocument()
 	else
 	{
 		m_view.m_col1 = GLColor(83, 83, 83);
-		m_view.m_col2 = GLColor(0, 0, 0);
-		m_view.m_nbgstyle = BG_COLOR1;
+		m_view.m_col2 = GLColor(128, 128, 128);
+		m_view.m_nbgstyle = BG_HORIZONTAL;
 	}
 
 	//	m_view.m_mcol = GLColor(128, 128, 128);
