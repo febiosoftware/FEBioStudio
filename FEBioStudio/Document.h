@@ -3,7 +3,7 @@
 #include <MeshTools/FEProject.h>
 #include <MeshTools/LoadCurve.h>
 #include <MeshTools/FESelection.h>
-#include <MeshTools/Serializable.h>
+#include <FSCore/Serializable.h>
 #include <MeshIO/FileReader.h>
 #include <FEMLib/FEDataMap.h>
 #include "CommandManager.h"

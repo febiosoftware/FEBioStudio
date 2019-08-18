@@ -1,19 +1,9 @@
-// FEModel.h: interface for the FEModel class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEMODEL_H__8CCBD4A4_79CC_44DB_9DE9_8ED16E0EEAA8__INCLUDED_)
-#define AFX_FEMODEL_H__8CCBD4A4_79CC_44DB_9DE9_8ED16E0EEAA8__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "MeshLib/FEMesh.h"
 #include "FEMLib/FEInterface.h"
 #include "FEMLib/FEConnector.h"
 #include "LoadCurve.h"
-#include "Serializable.h"
+#include <FSCore/Serializable.h>
 #include "FEMLib/FECoreModel.h"
 #include "GModel.h"
 #include "FEMLib/FEBoundaryCondition.h"
@@ -315,5 +305,3 @@ std::string defaultInterfaceName(FEModel* fem, FEInterface* pi);
 std::string defaultConnectorName(FEModel* fem, FEConnector* pc);
 std::string defaultConstraintName(FEModel* fem, FERigidConstraint* pc);
 std::string defaultStepName(FEModel* fem, FEAnalysisStep* ps);
-
-#endif // !defined(AFX_FEMODEL_H__8CCBD4A4_79CC_44DB_9DE9_8ED16E0EEAA8__INCLUDED_)

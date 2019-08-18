@@ -1,6 +1,6 @@
 #pragma once
 #include "GObject.h"
-#include <MeshTools/ParamBlock.h>
+#include <FSCore/ParamBlock.h>
 
 class FEMesh;
 

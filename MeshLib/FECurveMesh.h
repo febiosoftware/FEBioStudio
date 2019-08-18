@@ -4,7 +4,7 @@
 #include "FEElement.h"
 #include "FELineMesh.h"
 #include "box.h"
-#include <MeshTools/Serializable.h>
+#include <FSCore/Serializable.h>
 
 // A class that represents a mesh for a curve
 // This mesh only consists of nodes and edges

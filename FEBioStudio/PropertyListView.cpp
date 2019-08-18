@@ -14,7 +14,7 @@
 #include <QtCore/QStringListModel>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
-#include <MeshTools/ParamBlock.h>
+#include <FSCore/ParamBlock.h>
 #include "DataFieldSelector.h"
 #include <PostLib/FEMeshData.h>
 

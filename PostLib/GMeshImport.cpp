@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "GMeshImport.h"
-#include "color.h"
+#include <FSCore/color.h>
 #include "FEModel.h"
 #include "FEMesh.h"
 using namespace Post;

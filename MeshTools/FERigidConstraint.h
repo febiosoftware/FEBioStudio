@@ -1,6 +1,6 @@
 #pragma once
 #include <FEMLib/FEStepComponent.h>
-#include "Archive.h"
+#include <FSCore/Archive.h>
 #include "LoadCurve.h"
 
 class FEModel;

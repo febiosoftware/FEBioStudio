@@ -19,16 +19,10 @@
     <Text Include="..\..\MeshTools\ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\MeshTools\Archive.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\BivariatePolynomialSpline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MeshTools\BivariateSpline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MeshTools\CallTracer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MeshTools\ColorMap.cpp">
@@ -379,9 +373,6 @@
     <ClCompile Include="..\..\MeshTools\NetGenMesher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\ParamBlock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\Plane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -397,9 +388,6 @@
     <ClCompile Include="..\..\MeshTools\Quadric.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\Serializable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\SphereFit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -411,25 +399,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\MeshTools\Archive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\BivariateSpline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\MeshTools\CallTracer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MeshTools\ColorMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\ConchoidFit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FEAdvancingFrontMesher2D.h">
@@ -717,9 +696,6 @@
     <ClInclude Include="..\..\MeshTools\NetGenMesher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\MeshTools\ParamBlock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MeshTools\Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -733,9 +709,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\Quadric.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\Serializable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\SphereFit.h">

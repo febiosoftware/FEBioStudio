@@ -1,6 +1,6 @@
 #pragma once
 #include <FSCore/FSObject.h>
-#include <PostLib/color.h>
+#include <FSCore/color.h>
 
 //-----------------------------------------------------------------------------
 class FEModel;

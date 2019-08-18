@@ -1,7 +1,6 @@
 #pragma once
-
 #include "Serializable.h"
-#include "LoadCurve.h"
+#include <MeshTools/LoadCurve.h>
 #include <vector>
 #include <string.h>
 using namespace std;

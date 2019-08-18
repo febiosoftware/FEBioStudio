@@ -1,5 +1,5 @@
 #pragma once
-#include "color.h"
+#include <FSCore/color.h>
 #include <string.h>
 
 // rendering modes

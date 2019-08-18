@@ -1,16 +1,6 @@
-// FEMaterialLibrary.h: interface for the FEMaterialLibrary class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_FEMATERIALLIBRARY_H__2C8D0AEF_B83D_47E5_9871_9D682879EF59__INCLUDED_)
-#define AFX_FEMATERIALLIBRARY_H__2C8D0AEF_B83D_47E5_9871_9D682879EF59__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include "FEMaterial.h"
-#include "Archive.h"
+#include <FSCore/Archive.h>
 
 class FEMaterialLibrary  
 {
@@ -43,5 +33,3 @@ protected:
 protected:
 	std::vector<MATENTRY>	m_mat;
 };
-
-#endif // !defined(AFX_FEMATERIALLIBRARY_H__2C8D0AEF_B83D_47E5_9871_9D682879EF59__INCLUDED_)

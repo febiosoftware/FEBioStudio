@@ -2,7 +2,7 @@
 #include "GLImageRenderer.h"
 #include <vector>
 #include "math3d.h"
-#include "color.h"
+#include <FSCore/color.h>
 
 namespace Post {
 

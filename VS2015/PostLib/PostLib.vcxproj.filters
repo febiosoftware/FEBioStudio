@@ -275,9 +275,6 @@
     <ClInclude Include="..\..\PostLib\bbox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\PostLib\color.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\PostLib\ColorMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>

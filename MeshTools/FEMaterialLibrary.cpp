@@ -1,10 +1,6 @@
-// FEMaterialLibrary.cpp: implementation of the FEMaterialLibrary class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "FEMaterialLibrary.h"
-#include "Archive.h"
+#include <FSCore/Archive.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

@@ -1,5 +1,5 @@
 #pragma once
-#include <PostLib/color.h>
+#include <FSCore/color.h>
 #include <MathLib/mat3d.h>
 #include <qopengl.h>
 #ifdef __APPLE__

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "GDiscreteObject.h"
-#include "Archive.h"
+#include <FSCore/Archive.h>
 
 GDiscreteObject::GDiscreteObject(int ntype)
 {

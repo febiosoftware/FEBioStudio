@@ -242,8 +242,8 @@ void FECurveMesh::UpdateEdgeIDs()
 				if (m_Edge[i].m_gid == -1)
 				{
 					m_Edge[i].m_gid = gid;
-					s.push(i);
-					i0 = i + 1;
+					s.push((int)i);
+					i0 = (int)i + 1;
 					break;
 				}
 			}

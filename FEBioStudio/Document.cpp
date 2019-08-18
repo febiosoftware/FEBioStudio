@@ -6,7 +6,7 @@
 #include "Document.h"
 #include "glx.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/enum.h>
+#include <FSCore/enum.h>
 #include "version.h"
 #include "MainWindow.h"
 #include <GeomLib/GPrimitive.h>

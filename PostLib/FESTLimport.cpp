@@ -2,7 +2,7 @@
 #include "FESTLimport.h"
 #include "FEModel.h"
 #include <ctype.h>
-#include "color.h"
+#include <FSCore/color.h>
 
 using namespace Post;
 

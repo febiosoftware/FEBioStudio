@@ -1,7 +1,7 @@
 #pragma once
 #include <QDialog>
 #include <vector>
-#include <MeshTools/ParamBlock.h>
+#include <FSCore/ParamBlock.h>
 
 class CDlgAddMeshDataUI;
 class FSObject;

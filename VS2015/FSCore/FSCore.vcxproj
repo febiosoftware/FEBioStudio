@@ -86,8 +86,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -132,10 +131,24 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\FSCore\Archive.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\FSCore\CallTracer.cpp" />
     <ClCompile Include="..\..\FSCore\FSObject.cpp" />
+    <ClCompile Include="..\..\FSCore\ParamBlock.cpp" />
+    <ClCompile Include="..\..\FSCore\Serializable.cpp" />
+    <ClCompile Include="..\..\FSCore\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\FSCore\Archive.h" />
+    <ClInclude Include="..\..\FSCore\CallTracer.h" />
+    <ClInclude Include="..\..\FSCore\color.h" />
     <ClInclude Include="..\..\FSCore\FSObject.h" />
+    <ClInclude Include="..\..\FSCore\ParamBlock.h" />
+    <ClInclude Include="..\..\FSCore\Serializable.h" />
+    <ClInclude Include="..\..\FSCore\stdafx.h" />
+    <ClInclude Include="..\..\FSCore\enum.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

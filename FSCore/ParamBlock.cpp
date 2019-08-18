@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "ParamBlock.h"
+#include <assert.h>
 
 //-----------------------------------------------------------------------------
 //! parameter constructor. Set all default values.
@@ -46,7 +48,7 @@ Param* Param::CopyEnumNames(const char* sz)
 	m_bcopy = false;
 	if (sz)
 	{
-		int l = strlen(sz);
+		int l = (int) strlen(sz);
 		m_szenum = new char[l+1];
 		strncpy(m_szenum, sz, l);
 		m_szenum[l] = 0;

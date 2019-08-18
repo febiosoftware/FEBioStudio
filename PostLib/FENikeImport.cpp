@@ -2,7 +2,7 @@
 #include "FENikeImport.h"
 #include <stdlib.h>
 #include "FEModel.h"
-#include "color.h"
+#include <FSCore/color.h>
 
 using namespace Post;
 

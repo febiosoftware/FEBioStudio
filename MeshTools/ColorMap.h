@@ -1,7 +1,5 @@
 #pragma once
-#include <PostLib/color.h>
-
-typedef unsigned char byte;
+#include <FSCore/color.h>
 
 #define MAX_MAP_COLORS	5
 

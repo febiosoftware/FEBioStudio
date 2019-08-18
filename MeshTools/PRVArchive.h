@@ -1,6 +1,6 @@
 #pragma once
 #include <MeshIO/FileReader.h>
-#include "Archive.h"
+#include <FSCore/Archive.h>
 
 //-----------------------------------------------------------------------------
 class FEModel;

@@ -222,7 +222,6 @@
     <ClInclude Include="..\..\PostLib\Archive.h" />
     <ClInclude Include="..\..\PostLib\AVIAnimation.h" />
     <ClInclude Include="..\..\PostLib\bbox.h" />
-    <ClInclude Include="..\..\PostLib\color.h" />
     <ClInclude Include="..\..\PostLib\ColorMap.h" />
     <ClInclude Include="..\..\PostLib\constants.h" />
     <ClInclude Include="..\..\PostLib\convert.h" />

@@ -1,7 +1,6 @@
 #pragma once
-
 #include "GeomLib/GObject.h"
-#include "Serializable.h"
+#include <FSCore/Serializable.h>
 #include "GGroup.h"
 #include "GDiscreteObject.h"
 

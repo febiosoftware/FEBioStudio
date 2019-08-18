@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "PRVObjectImport.h"
-#include <MeshTools/Serializable.h>
+#include <FSCore/Serializable.h>
 #include "PRVObjectFormat.h"
 #include <MeshTools/FEProject.h>
 

@@ -1,11 +1,5 @@
-#if !defined(AFX_LOADCURVE_H__7D90C3FA_0B6C_49B7_B6B6_7CC43AADA75C__INCLUDED_)
-#define AFX_LOADCURVE_H__7D90C3FA_0B6C_49B7_B6B6_7CC43AADA75C__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#include "Serializable.h"
+#include <FSCore/Serializable.h>
 #include <vector>
 using namespace std;
 
@@ -114,5 +108,3 @@ protected:
 
 	vector<LOADPOINT>	m_Pt;	// array of points
 };
-
-#endif // !defined(AFX_LOADCURVE_H__7D90C3FA_0B6C_49B7_B6B6_7CC43AADA75C__INCLUDED_)

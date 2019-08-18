@@ -1,6 +1,6 @@
 #pragma once
-#include "ParamBlock.h"
-#include "Serializable.h"
+#include <FSCore/ParamBlock.h>
+#include <FSCore/Serializable.h>
 #include <MeshLib/box.h>
 #include <FSCore/FSObject.h>
 #include <list>

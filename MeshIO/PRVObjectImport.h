@@ -1,6 +1,6 @@
 #pragma once
 #include "FileReader.h"
-#include <MeshTools/Archive.h>
+#include <FSCore/Archive.h>
 
 //-------------------------------------------------------------------
 class GObject;

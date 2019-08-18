@@ -1,6 +1,6 @@
 #include "FESurfaceMesh.h"
 #include "TriMesh.h"
-#include <MeshTools/Serializable.h>
+#include <FSCore/Serializable.h>
 #include <GeomLib/GObject.h>
 #include "FEFaceEdgeList.h"
 #include "FENodeEdgeList.h"

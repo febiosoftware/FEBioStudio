@@ -1,20 +1,10 @@
-// Command.h: interface for the CCommand class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_COMMAND_H__2BC46903_F735_4CC5_853A_9C97D1026AD4__INCLUDED_)
-#define AFX_COMMAND_H__2BC46903_F735_4CC5_853A_9C97D1026AD4__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 #include <MeshTools/FEModifier.h>
 #include <FEMLib/FEInterface.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEConnector.h>
-#include <MeshTools/ParamBlock.h>
+#include <FSCore/ParamBlock.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FERigidConstraint.h>
@@ -1665,6 +1655,3 @@ protected:
 	list<int>	m_lnew;
 	vector<int>	m_tmp;
 };
-
-
-#endif // !defined(AFX_COMMAND_H__2BC46903_F735_4CC5_853A_9C97D1026AD4__INCLUDED_)
