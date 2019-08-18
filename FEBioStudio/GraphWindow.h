@@ -1,6 +1,6 @@
 #pragma once
 #include <QMainWindow>
-#include <PostViewLib/MathParser.h>
+#include <PostLib/MathParser.h>
 #include "PlotWidget.h"
 #include "Document.h"
 

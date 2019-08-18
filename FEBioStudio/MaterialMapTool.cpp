@@ -2,8 +2,8 @@
 #include "MaterialMapTool.h"
 #include <LSDYNA/FELSDYNAimport.h>
 #include "Document.h"
-#include <PreViewLib/ColorMap.h>
-#include <PreViewLib/FEMultiMaterial.h>
+#include <MeshTools/ColorMap.h>
+#include <MeshTools/FEMultiMaterial.h>
 
 CMaterialMapTool::CMaterialMapTool() : CBasicTool("Material Map", HAS_APPLY_BUTTON)
 {

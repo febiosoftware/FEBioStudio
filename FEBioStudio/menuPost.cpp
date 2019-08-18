@@ -9,10 +9,10 @@
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
-#include <PostViewLib/ImageModel.h>
-#include <PostViewLib/ImageSlicer.h>
-#include <PostViewLib/VolRender.h>
-#include <PostViewLib/MarchingCubes.h>
+#include <PostLib/ImageModel.h>
+#include <PostLib/ImageSlicer.h>
+#include <PostLib/VolRender.h>
+#include <PostLib/MarchingCubes.h>
 #include <PostGL/GLModel.h>
 #include <QMessageBox>
 #include "PostDoc.h"

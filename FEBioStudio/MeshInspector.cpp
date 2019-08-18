@@ -2,7 +2,7 @@
 #include "ui_meshinspector.h"
 #include "MainWindow.h"
 #include "Document.h"
-#include <PreViewLib/FEMeshValuator.h>
+#include <MeshTools/FEMeshValuator.h>
 
 CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CMeshInspector)
 {

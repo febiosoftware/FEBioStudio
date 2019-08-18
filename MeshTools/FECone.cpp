@@ -1,0 +1,489 @@
+// FECone.cpp: implementation of the FECone class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "FECone.h"
+#include <GeomLib/GPrimitive.h>
+
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+FECone::FECone(GCone* po)
+{
+	m_pobj = po;
+
+	m_Rb = 0.5;
+	m_nd = m_ns = 4;
+	m_nz = 6;
+
+	m_gz = 1;
+	m_gr = 1;
+
+	m_bz = true;
+	m_br = false;
+
+	AddDoubleParam(m_Rb, "r", "Ratio");
+	AddIntParam(m_nd, "nd", "Divisions");
+	AddIntParam(m_ns, "ns", "Segments" );
+	AddIntParam(m_nz, "nz", "Stacks"   );
+
+	AddDoubleParam(m_gz, "gz", "Z-bias");
+	AddDoubleParam(m_gr, "gr", "R-bias");
+
+	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
+	AddBoolParam(m_br, "br", "R-mirrored bias");
+}
+
+extern double gain2(double x, double r, double n);
+
+FEMesh* FECone::BuildMesh()
+{
+	assert(m_pobj);
+
+	// get the object parameters
+	ParamBlock& param = m_pobj->GetParamBlock();
+	double R0 = param.GetFloatValue(GCone::R0);
+	double R1 = param.GetFloatValue(GCone::R1);
+	double h = param.GetFloatValue(GCone::H);
+
+	// get mesh parameters
+	m_Rb = GetFloatValue(RB);
+	m_nd = GetIntValue(NDIV);
+	m_ns = GetIntValue(NSEG);
+	m_nz = GetIntValue(NSTACK);
+
+	m_gz = GetFloatValue(GZ);
+	m_gr = GetFloatValue(GR);
+
+	m_bz = GetBoolValue(GZ2);
+	m_br = GetBoolValue(GR2);
+
+	// check parameters
+	if (m_nd < 1) m_nd = 1;
+	if (m_ns < 1) m_ns = 1;
+	if (m_nz < 1) m_nz = 1;
+
+	if (m_nz == 1) m_bz = false;
+	if (m_ns == 1) m_br = false;
+
+	double fz = m_gz;
+	double fr = m_gr;
+
+	if (m_Rb < 0) m_Rb = 0;
+	if (m_Rb > 1) m_Rb = 1;
+
+	double d00 = m_Rb*R0 / sqrt(2.0);	// bottom inside
+	double d01 = R0 / sqrt(2.0);		// bottom outside
+	double d10 = m_Rb*R1 / sqrt(2.0);	// top inside
+	double d11 = R1 / sqrt(2.0);		// top outside
+
+	// create the MB nodes
+	m_MBNode.resize(34);
+	m_MBNode[0].m_r = vec3d(-1, -1, 0);
+	m_MBNode[1].m_r = vec3d(0, -1, 0);
+	m_MBNode[2].m_r = vec3d(1, -1, 0);
+	m_MBNode[3].m_r = vec3d(-1, 0, 0);
+	m_MBNode[4].m_r = vec3d(0, 0, 0);
+	m_MBNode[5].m_r = vec3d(1, 0, 0);
+	m_MBNode[6].m_r = vec3d(-1, 1, 0);
+	m_MBNode[7].m_r = vec3d(0, 1, 0);
+	m_MBNode[8].m_r = vec3d(1, 1, 0);
+
+	m_MBNode[9].m_r = vec3d(-1, -1, h);
+	m_MBNode[10].m_r = vec3d(0, -1, h);
+	m_MBNode[11].m_r = vec3d(1, -1, h);
+	m_MBNode[12].m_r = vec3d(-1, 0, h);
+	m_MBNode[13].m_r = vec3d(0, 0, h);
+	m_MBNode[14].m_r = vec3d(1, 0, h);
+	m_MBNode[15].m_r = vec3d(-1, 1, h);
+	m_MBNode[16].m_r = vec3d(0, 1, h);
+	m_MBNode[17].m_r = vec3d(1, 1, h);
+
+	m_MBNode[18].m_r = vec3d(-2, -2, 0);
+	m_MBNode[19].m_r = vec3d(0, -2, 0);
+	m_MBNode[20].m_r = vec3d(2, -2, 0);
+	m_MBNode[21].m_r = vec3d(2, 0, 0);
+	m_MBNode[22].m_r = vec3d(2, 2, 0);
+	m_MBNode[23].m_r = vec3d(0, 2, 0);
+	m_MBNode[24].m_r = vec3d(-2, 2, 0);
+	m_MBNode[25].m_r = vec3d(-2, 0, 0);
+
+	m_MBNode[26].m_r = vec3d(-2, -2, h);
+	m_MBNode[27].m_r = vec3d(0, -2, h);
+	m_MBNode[28].m_r = vec3d(2, -2, h);
+	m_MBNode[29].m_r = vec3d(2, 0, h);
+	m_MBNode[30].m_r = vec3d(2, 2, h);
+	m_MBNode[31].m_r = vec3d(0, 2, h);
+	m_MBNode[32].m_r = vec3d(-2, 2, h);
+	m_MBNode[33].m_r = vec3d(-2, 0, h);
+
+	// create the MB blocks
+	m_MBlock.resize(12);
+	MBBlock& b1 = m_MBlock[0];
+	b1.SetID(0);
+	b1.SetNodes(0, 1, 4, 3, 9, 10, 13, 12);
+	b1.SetSizes(m_nd, m_nd, m_nz);
+	b1.SetZoning(1, 1, fz, false, false, m_bz);
+
+	MBBlock& b2 = m_MBlock[1];
+	b2.SetID(0);
+	b2.SetNodes(1, 2, 5, 4, 10, 11, 14, 13);
+	b2.SetSizes(m_nd, m_nd, m_nz);
+	b2.SetZoning(1, 1, fz, false, false, m_bz);
+
+	MBBlock& b3 = m_MBlock[2];
+	b3.SetID(0);
+	b3.SetNodes(3, 4, 7, 6, 12, 13, 16, 15);
+	b3.SetSizes(m_nd, m_nd, m_nz);
+	b3.SetZoning(1, 1, fz, false, false, m_bz);
+
+	MBBlock& b4 = m_MBlock[3];
+	b4.SetID(0);
+	b4.SetNodes(4, 5, 8, 7, 13, 14, 17, 16);
+	b4.SetSizes(m_nd, m_nd, m_nz);
+	b4.SetZoning(1, 1, fz, false, false, m_bz);
+
+	MBBlock& b5 = m_MBlock[4];
+	b5.SetID(0);
+	b5.SetNodes(0, 18, 19, 1, 9, 26, 27, 10);
+	b5.SetSizes(m_ns, m_nd, m_nz);
+	b5.SetZoning(fr, 1, fz, false, false, m_bz);
+
+	MBBlock& b6 = m_MBlock[5];
+	b6.SetID(0);
+	b6.SetNodes(1, 19, 20, 2, 10, 27, 28, 11);
+	b6.SetSizes(m_ns, m_nd, m_nz);
+	b6.SetZoning(fr, 1, fz, false, false, m_bz);
+
+	MBBlock& b7 = m_MBlock[6];
+	b7.SetID(0);
+	b7.SetNodes(2, 20, 21, 5, 11, 28, 29, 14);
+	b7.SetSizes(m_ns, m_nd, m_nz);
+	b7.SetZoning(fr, 1, fz, false, false, m_bz);
+
+	MBBlock& b8 = m_MBlock[7];
+	b8.SetID(0);
+	b8.SetNodes(5, 21, 22, 8, 14, 29, 30, 17);
+	b8.SetSizes(m_ns, m_nd, m_nz);
+	b8.SetZoning(fr, 1, fz, false, false, m_bz);
+
+	MBBlock& b9 = m_MBlock[8];
+	b9.SetID(0);
+	b9.SetNodes(8, 22, 23, 7, 17, 30, 31, 16);
+	b9.SetSizes(m_ns, m_nd, m_nz);
+	b9.SetZoning(fr, 1, fz, false, false, m_bz);
+
+	MBBlock& b10 = m_MBlock[9];
+	b10.SetID(0);
+	b10.SetNodes(7, 23, 24, 6, 16, 31, 32, 15);
+	b10.SetSizes(m_ns, m_nd, m_nz);
+	b10.SetZoning(fr, 1, fz, false, false, m_bz);
+
+	MBBlock& b11 = m_MBlock[10];
+	b11.SetID(0);
+	b11.SetNodes(6, 24, 25, 3, 15, 32, 33, 12);
+	b11.SetSizes(m_ns, m_nd, m_nz);
+	b11.SetZoning(fr, 1, fz, false, false, m_bz);
+
+	MBBlock& b12 = m_MBlock[11];
+	b12.SetID(0);
+	b12.SetNodes(3, 25, 18, 0, 12, 33, 26, 9);
+	b12.SetSizes(m_ns, m_nd, m_nz);
+	b12.SetZoning(fr, 1, fz, false, false, m_bz);
+
+	// update the MB data
+	UpdateMB();
+
+	// assign face ID's
+	SetBlockFaceID(b1, -1, -1, -1, -1, 4, 5);
+	SetBlockFaceID(b2, -1, -1, -1, -1, 4, 5);
+	SetBlockFaceID(b3, -1, -1, -1, -1, 4, 5);
+	SetBlockFaceID(b4, -1, -1, -1, -1, 4, 5);
+	SetBlockFaceID(b5, -1, 2, -1, -1, 4, 5);
+	SetBlockFaceID(b6, -1, 3, -1, -1, 4, 5);
+	SetBlockFaceID(b7, -1, 3, -1, -1, 4, 5);
+	SetBlockFaceID(b8, -1, 0, -1, -1, 4, 5);
+	SetBlockFaceID(b9, -1, 0, -1, -1, 4, 5);
+	SetBlockFaceID(b10, -1, 1, -1, -1, 4, 5);
+	SetBlockFaceID(b11, -1, 1, -1, -1, 4, 5);
+	SetBlockFaceID(b12, -1, 2, -1, -1, 4, 5);
+
+	MBFace& F1 = GetBlockFace(7, 1); SetFaceEdgeID(F1, 0, -1, 4, 8);
+	MBFace& F2 = GetBlockFace(8, 1); SetFaceEdgeID(F2, 0, 9, 4, -1);
+	MBFace& F3 = GetBlockFace(9, 1); SetFaceEdgeID(F3, 1, -1, 5, 9);
+	MBFace& F4 = GetBlockFace(10, 1); SetFaceEdgeID(F4, 1, 10, 5, -1);
+	MBFace& F5 = GetBlockFace(11, 1); SetFaceEdgeID(F5, 2, -1, 6, 10);
+	MBFace& F6 = GetBlockFace(4, 1); SetFaceEdgeID(F6, 2, 11, 6, -1);
+	MBFace& F7 = GetBlockFace(5, 1); SetFaceEdgeID(F7, 3, -1, 7, 11);
+	MBFace& F8 = GetBlockFace(6, 1); SetFaceEdgeID(F8, 3, 8, 7, -1);
+
+	m_MBNode[21].SetID(0);
+	m_MBNode[23].SetID(1);
+	m_MBNode[25].SetID(2);
+	m_MBNode[19].SetID(3);
+	m_MBNode[29].SetID(4);
+	m_MBNode[31].SetID(5);
+	m_MBNode[33].SetID(6);
+	m_MBNode[27].SetID(7);
+
+	// create the MB
+	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+
+	// project the nodes onto a cylinder
+	double d, d0, d1, w, x, y, z, t, R;
+	for (int i = 0; i<pm->Nodes(); ++i)
+	{
+		// get the nodal coordinate in the template
+		vec3d& rn = pm->Node(i).r;
+		double x = rn.x;
+		double y = rn.y;
+
+		// get the max-distance 
+		double D = max(fabs(x), fabs(y));
+
+		z = rn.z;
+		t = z / h;
+		d0 = d00*(1 - t) + d10*t;
+		d1 = d01*(1 - t) + d11*t;
+		R = R0*(1 - t) + R1*t;
+
+		if (D <= 1)
+		{
+			rn.x *= d0;
+			rn.y *= d0;
+		}
+		else
+		{
+			// "normalize" the coordinates
+			// with respect to the max distance
+			double r = x / D;
+			double s = y / D;
+
+			vec3d r0;
+			if (fabs(x) >= fabs(y))
+			{
+				double u = x / fabs(x);
+				r0.x = u*R*cos(PI*0.25*s);
+				r0.y = R*sin(PI*0.25*s);
+			}
+			else
+			{
+				double u = y / fabs(y);
+				r0.y = u*R*cos(PI*0.25*r);
+				r0.x = R*sin(PI*0.25*r);
+			}
+
+			vec3d r1(r*d0, s*d0, 0);
+			double a = D - 1;
+
+			if (m_br)
+			{
+				if (a <= 0.5)
+					a = 0.5*gain2(2 * a, m_gr, m_ns);
+				else
+					a = 1 - 0.5*gain2(2 - 2 * a, m_gr, m_ns);
+			}
+			else a = gain2(a, m_gr, m_ns);
+
+			rn.x = r0.x*a + r1.x*(1 - a);
+			rn.y = r0.y*a + r1.y*(1 - a);
+		}
+	}
+
+	// update the mesh
+	pm->Update();
+
+	// the Multi-block mesher will assign a different smoothing ID
+	// to each face, but we don't want that here. 
+	// For now, we autosmooth the mesh although we should think of a 
+	// better way
+	pm->AutoSmooth(60);
+
+	return pm;
+}
+
+/*
+void FECone::Create()
+{
+	int i, j, k, l;
+	vec3d q;
+
+	// get parameters
+	double R0 = m_Param.GetFloatValue(RIN);
+	double R1 = m_Param.GetFloatValue(ROUT);
+	double Rb = m_Param.GetFloatValue(RB);
+	double h = m_Param.GetFloatValue(H);
+	int ndiv = m_Param.GetIntValue(NDIV);
+	int nseg = m_Param.GetIntValue(NSEG);
+	int nstack = m_Param.GetIntValue(NSTACK);
+
+	// check parameters
+	if (ndiv   < 1) ndiv   = 1;
+	if (nseg   < 1) nseg   = 1;
+	if (nstack < 1) nstack = 1;
+
+	double da = 3*PI/4;
+
+	double ratio = Rb / R0;
+	
+	// size of inner box
+	double d, R;
+
+	int n1 = (ndiv+1)*(ndiv+1);
+	int nt[4] = {ndiv, 0, ndiv*(ndiv+1), (ndiv+1)*(ndiv+1)-1};
+	int ns[4] = {-1, (ndiv+1), 1, -(ndiv+1)};
+
+	// create storage
+	int nodes = (nstack+1)*((ndiv+1)*(ndiv+1)+4*nseg*ndiv);
+	int elems = nstack*(ndiv*ndiv + 4*nseg*ndiv);
+
+	if ((m_ndiv != ndiv) || (m_nseg != nseg) || (m_nstack != nstack))
+	{
+		FEMesh::Create(nodes, elems);
+		m_ndiv = ndiv;
+		m_nseg = nseg;
+		m_nstack = nstack;
+		for (i=0; i<elems; ++i) Element(i).m_pmat = 0;
+	}
+
+	int n2 = (ndiv+1)*(ndiv+1)+4*nseg*ndiv;
+
+	// --- A. Create the nodes ---
+	FENode* pn = NodePtr();
+	double x, y, z;
+	for (l=0; l<=nstack; l++)
+	{
+		R = R0 + l*(R1 - R0)/nstack;
+		d = ratio*R/(double) sqrt(2.0);
+		// create the inner box
+		for (i=0; i<=ndiv; i++)
+			for (j=0; j<=ndiv; j++, pn++)
+			{
+				x = -d + 2.f*d*i/ndiv;
+				y = -d + 2.f*d*j/ndiv;
+				z = l*h/nstack;
+
+				pn->r = vec3d(x,y,z);
+			}
+
+		// create the outer nodes
+		z = 0;
+		q.z = 0;
+		for (k=0; k<4; k++)
+			for (i=0; i<ndiv; i++)
+				for (j=0; j<nseg; j++, pn++)
+				{
+					switch (k)
+					{
+					case 0:
+						x = -d;
+						y = d - 2.f*d*i/ndiv;
+						break;
+					case 1:
+						x = -d + 2.f*d*i/ndiv;
+						y = -d;
+						break;
+					case 2:
+						x = d;
+						y = -d + 2.f*d*i/ndiv;
+						break;
+					case 3:
+						x = d - 2.f*d*i/ndiv;
+						y = d;
+						break;
+					}
+					q.x = R*(double)cos((k*ndiv + i)*PI/(2.0*ndiv) + da);
+					q.y = R*(double)sin((k*ndiv + i)*PI/(2.0*ndiv) + da);
+					
+					z = l*h/nstack;
+
+					x = x + (j+1)*(q.x - x)/nseg;
+					y = y + (j+1)*(q.y - y)/nseg;
+
+					pn->r = vec3d(x,y,z);
+				}
+	}
+
+	// --- B. Create the elements ---
+	// create the inner box elements
+	FEElement* ph = ElementPtr();
+	for (l=0; l<nstack; l++)
+	{
+		for (i=0; i<ndiv; i++)
+			for (j=0; j<ndiv; j++, ph++)
+			{
+				ph->m_ntype = FE_HEX8;
+				ph->m_gid = 0;
+
+				ph->m_node[0] = l*n2+i*(ndiv+1) + j;
+				ph->m_node[1] = l*n2+(i+1)*(ndiv+1) + j;
+				ph->m_node[2] = l*n2+(i+1)*(ndiv+1) + j+1;
+				ph->m_node[3] = l*n2+i*(ndiv+1) + j+1;
+
+				ph->m_node[4] = ph->m_node[0] + n2;
+				ph->m_node[5] = ph->m_node[1] + n2;
+				ph->m_node[6] = ph->m_node[2] + n2;
+				ph->m_node[7] = ph->m_node[3] + n2;
+
+			}
+
+		// create the outer shells
+		for (k=0; k<4; k++)
+			for (i=0; i<ndiv; i++)
+				for (j=0; j<nseg; j++, ph++)
+				{
+					ph->m_ntype = FE_HEX8;
+					ph->m_gid = k + 1;
+
+					if (j==0)
+					{
+						if (i != ndiv-1)
+						{
+							ph->m_node[0] = l*n2 + nt[k] + i*ns[k];
+							ph->m_node[1] = l*n2 + n1+(k*ndiv+i)*nseg;
+							ph->m_node[2] = l*n2 + n1+(k*ndiv+i+1)*nseg;
+							ph->m_node[3] = l*n2 + nt[k] + (i+1)*ns[k];
+						}
+						else
+						{
+							ph->m_node[0] = l*n2 + nt[k] + i*ns[k];
+							ph->m_node[1] = l*n2 + n1+(k*ndiv+i)*nseg;
+							ph->m_node[2] = l*n2 + n1+(((k+1)%4)*ndiv)*nseg;
+							ph->m_node[3] = l*n2 + nt[(k+1)%4];
+						}
+					}
+					else
+					{
+						if (i != ndiv-1)
+						{
+							ph->m_node[0] = l*n2 + n1+(k*ndiv+i)*nseg+j-1;
+							ph->m_node[1] = l*n2 + n1+(k*ndiv+i)*nseg+j;
+							ph->m_node[2] = l*n2 + n1+(k*ndiv+i+1)*nseg+j;
+							ph->m_node[3] = l*n2 + n1+(k*ndiv+i+1)*nseg+j-1;
+						}
+						else
+						{
+							ph->m_node[0] = l*n2 + n1+(k*ndiv+i)*nseg+j-1;
+							ph->m_node[1] = l*n2 + n1+(k*ndiv+i)*nseg+j;
+							ph->m_node[2] = l*n2 + n1+(((k+1)%4)*ndiv)*nseg+j;
+							ph->m_node[3] = l*n2 + n1+(((k+1)%4)*ndiv)*nseg+j-1;
+						}
+					}
+
+
+					ph->m_node[4] = ph->m_node[0] + n2;
+					ph->m_node[5] = ph->m_node[1] + n2;
+					ph->m_node[6] = ph->m_node[2] + n2;
+					ph->m_node[7] = ph->m_node[3] + n2;
+				}
+	}
+
+	Update();
+}
+*/

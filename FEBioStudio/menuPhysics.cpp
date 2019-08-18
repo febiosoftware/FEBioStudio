@@ -13,7 +13,7 @@
 #include "DlgAddRigidConstraint.h"
 #include "DlgAddRigidConnector.h"
 #include "MaterialEditor.h"
-#include <PreViewLib/FEModel.h>
+#include <MeshTools/FEModel.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>

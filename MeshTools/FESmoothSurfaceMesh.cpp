@@ -1,0 +1,188 @@
+#include "stdafx.h"
+#include "FESmoothSurfaceMesh.h"
+#include <MeshLib/FEMesh.h>
+#include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/MeshTools.h>
+
+FESmoothSurfaceMesh::FESmoothSurfaceMesh() : FESurfaceModifier("Smooth")
+{
+	AddIntParam(1, "iterations");
+	AddDoubleParam(0.0, "lambda");
+	AddBoolParam(false, "preserve shape");
+	AddBoolParam(false, "preserve edges");
+}
+
+FESurfaceMesh* FESmoothSurfaceMesh::Apply(FESurfaceMesh* pm)
+{
+	// create a copy of the mesh
+	FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+
+	// apply smoothing
+	bool bshape = GetBoolValue(2);
+	bool bedge = GetBoolValue(3);
+	ShapeSmoothMesh(*newMesh, *pm, bshape, bedge);
+
+	// all done
+	return newMesh;
+}
+
+void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMesh& backMesh, bool preserveShape, bool preserveEdges)
+{
+	int niter = GetIntValue(0);
+	double w = GetFloatValue(1);
+	int N = mesh.Nodes();
+
+	vector<int> faceIDs(N, -1);
+
+	// smooth node positions
+	for (int n = 0; n<niter; ++n)
+	{
+		// clear tags
+		// first = count of how often a node was visited
+		// second = ID (edge or face) that the nodes should be back-projected to
+		vector<pair<int, int> > tag(N, pair<int, int>(0, -1));
+
+		// storage for new node positions
+		vector<vec3d> newPos(N, vec3d(0, 0, 0));
+
+		// tag all immovable nodes
+		if (preserveShape || preserveEdges)
+		{
+			for (int i = 0; i<N; ++i)
+				if (mesh.Node(i).m_gid >= 0)
+				{
+					newPos[i] = mesh.Node(i).r;
+					tag[i].first = -1;
+					tag[i].second = mesh.Node(i).m_gid;
+				}
+		}
+
+		if (preserveEdges)
+		{
+			// lock all edges nodes
+			for (int i = 0; i<mesh.Edges(); ++i)
+			{
+				FEEdge& edge = mesh.Edge(i);
+				if (edge.m_gid >= 0)
+				{
+					int ne = edge.Nodes();
+					for (int j=0; j<ne; ++j) 
+					{
+						tag[edge.n[j]].first = -1;
+					}
+				}
+			}
+
+			for (int i=0; i<N; ++i)
+			{
+				if (tag[i].first == -1)
+				{
+					newPos[i] = mesh.Node(i).r;
+				}
+			}
+		}
+
+		// process edge nodes
+		if ((preserveEdges == false) && (preserveShape == true))
+		{
+			for (int i = 0; i<mesh.Edges(); ++i)
+			{
+				FEEdge& edge = mesh.Edge(i);
+				if (edge.m_gid >= 0)
+				{
+					int ne = edge.Nodes();
+					for (int j = 0; j<ne; ++j)
+					{
+						vec3d& rj = mesh.Node(edge.n[j]).r;
+						for (int k = 0; k<ne; ++k)
+						{
+							int nk = edge.n[k];
+							if (tag[nk].first != -1)
+							{
+								newPos[nk] += rj;
+								tag[nk].first++;
+
+								assert((tag[nk].second == -1) || (tag[nk].second == edge.m_gid));
+								tag[nk].second = edge.m_gid;
+							}
+						}
+					}
+				}
+			}
+			for (int i = 0; i<N; ++i)
+			{
+				if (tag[i].first > 0)
+				{
+					newPos[i] /= (double)tag[i].first;
+
+					// project the node back to the edge
+					newPos[i] = projectToEdge(backMesh, newPos[i], tag[i].second);
+
+					tag[i].first = -1;
+				}
+			}
+		}
+
+		// process face nodes
+		for (int i = 0; i<mesh.Faces(); ++i)
+		{
+			FEFace& face = mesh.Face(i);
+			int nf = face.Nodes();
+			for (int j = 0; j<nf; ++j)
+			{
+				vec3d& rj = mesh.Node(face.n[j]).r;
+				for (int k = 0; k<nf; ++k)
+				{
+					int nk = face.n[k];
+					if (tag[nk].first != -1)
+					{
+						newPos[nk] += rj;
+						tag[nk].first++;
+
+#ifdef _DEBUG
+						if (preserveShape)
+						{
+							assert((tag[nk].second == -1) || (tag[nk].second == face.m_gid));
+						}
+#endif
+						tag[nk].second = face.m_gid;
+					}
+				}
+			}
+		}
+		for (int i = 0; i<N; ++i)
+		{
+			if (tag[i].first > 0)
+			{
+				newPos[i] /= (double)tag[i].first;
+
+				if (preserveShape)
+				{
+					// project the node back to the surface
+					assert(tag[i].second >= 0);
+
+					if (faceIDs[i] != -1)
+					{
+						newPos[i] = projectToPatch(backMesh, newPos[i], tag[i].second, faceIDs[i], 2);
+					}
+					else
+						newPos[i] = projectToSurface(backMesh, newPos[i], tag[i].second, &faceIDs[i]);
+				}
+
+				tag[i].first = -1;
+			}
+		}
+
+		// assign new node positions
+		for (int i = 0; i<N; ++i)
+		{
+			FENode& ni = mesh.Node(i);
+			if (tag[i].first == -1)
+			{
+				vec3d& vi = newPos[i];
+				ni.r = ni.r*w + vi*(1.0 - w);
+			}
+		}
+	}
+}

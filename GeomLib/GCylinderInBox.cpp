@@ -1,0 +1,122 @@
+#include "GPrimitive.h"
+#include <MeshTools/FECylinderInBox.h>
+
+//-----------------------------------------------------------------------------
+GCylinderInBox::GCylinderInBox() : GPrimitive(GCYLINDER_IN_BOX)
+{
+	m_W = m_H = m_D = 1.0;
+	m_R = 0.25;
+
+	AddDoubleParam(m_W, "w", "width" );
+	AddDoubleParam(m_H, "h", "height");
+	AddDoubleParam(m_D, "d", "depth" );
+	AddDoubleParam(m_R, "R", "radius");
+	
+	m_pMesher = new FECylinderInBox(this);
+
+	Create();
+}
+
+//-----------------------------------------------------------------------------
+bool GCylinderInBox::Update(bool b)
+{
+	m_W = GetFloatValue(WIDTH);
+	m_H = GetFloatValue(HEIGHT);
+	m_D = GetFloatValue(DEPTH);
+	m_R = GetFloatValue(RADIUS);
+
+	double w = m_W*0.5;
+	double h = m_H*0.5;
+	double d = m_D;
+	double r = m_R*1.0/sqrt(2.0);
+
+	double x[18] = {-w,  w,  w, -w, -w,  w, w, -w, -r,  r,  r, -r, -r,  r, r, -r, 0, 0};
+	double y[18] = {-h, -h,  h,  h, -h, -h, h,  h, -r, -r,  r,  r, -r, -r, r,  r, 0, 0};
+	double z[18] = { 0,  0,  0,  0,  d,  d, d,  d,  0,  0,  0,  0,  d,  d, d,  d, 0, d};
+
+	for (int i=0; i<18; ++i)
+	{
+		GNode& n = *m_Node[i];
+		n.LocalPosition() = vec3d(x[i], y[i], z[i]);
+	}
+
+	BuildGMesh();
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Define the Box geometry.
+void GCylinderInBox::Create()
+{
+	int i;
+
+	// 1. build the nodes
+	//-------------------
+	assert(m_Node.empty());
+	for (i=0; i<16; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);
+	AddNode(vec3d(0,0,0), NODE_SHAPE, true);
+	AddNode(vec3d(0,0,0), NODE_SHAPE, true);
+
+	// 2. build the edges
+	//-------------------
+	int ET[32][2] = {
+		{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7},
+		{8,9},{9,10},{10,11},{11,8},{12,13},{13,14},{14,15},{15,12},{8,12},{9,13},{10,14},{11,15},
+		{0,8},{1,9},{2,10},{3,11},
+		{4,12},{5,13},{6,14},{7,15}
+	};
+	assert(m_Edge.empty());
+	for (i= 0; i<12; ++i) AddLine       (ET[i][0], ET[i][1]);
+	for (i=12; i<16; ++i) AddCircularArc(16, ET[i][0], ET[i][1]);
+	for (i=16; i<20; ++i) AddCircularArc(17, ET[i][0], ET[i][1]);
+	for (i=20; i<32; ++i) AddLine	    (ET[i][0], ET[i][1]);
+
+	// 3. build the parts
+	//-------------------
+	assert(m_Part.empty());
+	AddPart();
+
+	// 4. build the faces
+	//-------------------
+	int FET[16][4] = {
+		{ 0,  9,  4,  8}, { 1, 10,  5,  9}, { 2, 11,  6, 10}, { 3,  8,  7, 11},
+		{12, 20, 16, 21}, {13, 21, 17, 22}, {14, 22, 18, 23}, {15, 23, 19, 20},
+		{ 0, 25, 12, 24}, { 1, 26, 13, 25}, { 2, 27, 14, 26}, { 3, 24, 15, 27},
+		{ 4, 29, 16, 28}, { 5, 30, 17, 29}, { 6, 31, 18, 30}, { 7, 28, 19, 31}
+	};
+
+	assert(m_Face.empty());
+	vector<int> edge;
+	edge.resize(4);
+	for (i=0; i<4; ++i)
+	{
+		edge[0] = FET[i][0];
+		edge[1] = FET[i][1];
+		edge[2] = FET[i][2];
+		edge[3] = FET[i][3];
+		AddFacet(edge, FACE_QUAD);
+	}
+
+	edge.resize(4);
+	for (i=4; i<8; ++i)
+	{
+		edge[0] = FET[i][0];
+		edge[1] = FET[i][1];
+		edge[2] = FET[i][2];
+		edge[3] = FET[i][3];
+		AddFacet(edge, FACE_EXTRUDE);
+	}
+
+	edge.resize(4);
+	for (i=8; i<16; ++i)
+	{
+		edge[0] = FET[i][0];
+		edge[1] = FET[i][1];
+		edge[2] = FET[i][2];
+		edge[3] = FET[i][3];
+		AddFacet(edge, FACE_POLYGON);
+	}
+
+	Update();
+}

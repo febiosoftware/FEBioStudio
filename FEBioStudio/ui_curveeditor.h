@@ -3,7 +3,7 @@
 #include <QTreeWidget>
 #include <QBoxLayout>
 #include "PlotWidget.h"
-#include <PreViewLib/LoadCurve.h>
+#include <MeshTools/LoadCurve.h>
 #include <QHeaderView>
 #include <QComboBox>
 #include <QToolBar>

@@ -9,7 +9,7 @@
 #include "Document.h"
 #include "MainWindow.h"
 #include "SelectionBox.h"
-#include <PreViewLib/SpringGenerator.h>
+#include <MeshTools/SpringGenerator.h>
 #include <sstream>
 #include <QGroupBox>
 #include <GeomLib/GCurveMeshObject.h>

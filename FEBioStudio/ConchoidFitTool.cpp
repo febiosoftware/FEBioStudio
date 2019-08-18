@@ -7,7 +7,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include "Document.h"
-#include <PreViewLib/ConchoidFit.h>
+#include <MeshTools/ConchoidFit.h>
 
 // constructor
 CConchoidFitTool::CConchoidFitTool() : CBasicTool("Conchoid Fit", HAS_APPLY_BUTTON)

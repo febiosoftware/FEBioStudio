@@ -7,9 +7,9 @@
 #include <QListWidget>
 #include <QFormLayout>
 #include <QMessageBox>
-#include <PreViewLib/FEModel.h>
-#include <PreViewLib/FEProject.h>
-#include <PreViewLib/FEMultiMaterial.h>
+#include <MeshTools/FEModel.h>
+#include <MeshTools/FEProject.h>
+#include <MeshTools/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
 
 class Ui::CDlgAddRigidConnector

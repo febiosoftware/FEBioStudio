@@ -9,8 +9,8 @@
 #include "PropertyList.h"
 #include "ObjectPanel.h"
 #include "MeshButtonBox.h"
-#include <PreViewLib/FEModifier.h>
-#include <PreViewLib/FECurveIntersect.h>
+#include <MeshTools/FEModifier.h>
+#include <MeshTools/FECurveIntersect.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include "MainWindow.h"
 #include "Document.h"

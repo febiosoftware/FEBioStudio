@@ -1,7 +1,7 @@
 #pragma once
 #include "PropertyList.h"
-#include <PreViewLib/GModel.h>
-#include <PreViewLib/FECurveIntersect.h>
+#include <MeshTools/GModel.h>
+#include <MeshTools/FECurveIntersect.h>
 
 class CCurveIntersectProps : public CDataPropertyList
 {

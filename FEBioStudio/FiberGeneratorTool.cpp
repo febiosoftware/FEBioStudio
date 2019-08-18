@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FiberGeneratorTool.h"
 #include "Document.h"
-#include <PreViewLib/GradientMap.h>
+#include <MeshTools/GradientMap.h>
 
 CFiberGeneratorTool::CFiberGeneratorTool() : CBasicTool("Fiber generator", HAS_APPLY_BUTTON)
 {

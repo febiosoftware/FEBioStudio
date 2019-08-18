@@ -14,9 +14,9 @@
 #include <QtCore/QStringListModel>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
-#include <PreViewLib/ParamBlock.h>
+#include <MeshTools/ParamBlock.h>
 #include "DataFieldSelector.h"
-#include <PostViewLib/FEMeshData.h>
+#include <PostLib/FEMeshData.h>
 
 //-----------------------------------------------------------------------------
 CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent)

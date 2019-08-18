@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "DlgEditProject.h"
-#include <PreViewLib/FEProject.h>
+#include <MeshTools/FEProject.h>
 #include <QListWidget>
 #include <QBoxLayout>
 #include <QDialogButtonBox>

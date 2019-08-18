@@ -1,8 +1,8 @@
 #pragma once
 #include <QPushButton>
 #include <QMenu>
-#include <PostViewLib/FEMeshData.h>
-#include <PostViewLib/FEModel.h>
+#include <PostLib/FEMeshData.h>
+#include <PostLib/FEModel.h>
 
 // Abstract class for creating the menu of the CDataSelectorButton.
 class CDataSelector

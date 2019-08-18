@@ -22,10 +22,10 @@
 #include <MeshLib/FECurveMesh.h>
 #include "GLViewTransform.h"
 #include "glx.h"
-#include <PreViewLib/ColorMap.h>
+#include <MeshTools/ColorMap.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <MeshLib/FENodeFaceList.h>
-#include <PreViewLib/FEMultiMaterial.h>
+#include <MeshTools/FEMultiMaterial.h>
 #include <QAction>
 #include <QMenu>
 #include <QMessageBox>

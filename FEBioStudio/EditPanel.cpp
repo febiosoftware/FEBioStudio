@@ -5,13 +5,13 @@
 #include "ObjectProps.h"
 #include "GLHighlighter.h"
 #include "CurveIntersectProps.h"
-#include <PreViewLib/FECurveIntersect.h>
-#include <PreViewLib/FESmoothSurfaceMesh.h>
-#include <PreViewLib/FEEdgeCollapse.h>
-#include <PreViewLib/FEFixMesh.h>
-#include <PreViewLib/FECVDDecimationModifier.h>
-#include <PreViewLib/FEEdgeFlip.h>
-#include <PreViewLib/FERefineSurface.h>
+#include <MeshTools/FECurveIntersect.h>
+#include <MeshTools/FESmoothSurfaceMesh.h>
+#include <MeshTools/FEEdgeCollapse.h>
+#include <MeshTools/FEFixMesh.h>
+#include <MeshTools/FECVDDecimationModifier.h>
+#include <MeshTools/FEEdgeFlip.h>
+#include <MeshTools/FERefineSurface.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <QMessageBox>
 

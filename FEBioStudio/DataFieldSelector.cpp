@@ -1,6 +1,6 @@
 #include "DataFieldSelector.h"
-#include <PostViewLib/FEModel.h>
-#include <PostViewLib/constants.h>
+#include <PostLib/FEModel.h>
+#include <PostLib/constants.h>
 #include <QPainter>
 using namespace Post;
 

@@ -133,6 +133,8 @@ public:
 	QStringList		m_febio_path;
 	QStringList		m_febio_info;
 
+	QString		m_defaultProjectFolder;
+
 	QProcess*	m_process;
 	bool		m_bkillProcess;
 
@@ -153,6 +155,10 @@ public:
 #else
 		m_febio_path.push_back("$(FEBioStudioDir)/febio2.exe");
 		m_febio_info.push_back("FEBio 2.9");
+#endif
+
+#ifdef WIN32
+		m_defaultProjectFolder = "C:/Documents";
 #endif
 
 		m_process = 0;

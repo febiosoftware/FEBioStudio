@@ -10,7 +10,7 @@
 #endif // _MSC_VER > 1000
 
 #include <MathLib/math3d.h>
-#include <PreViewLib/Interpolator.h>
+#include <MeshTools/Interpolator.h>
 
 //=============================================================================
 // This class implements a camera that can be used to navigate a 3D world.

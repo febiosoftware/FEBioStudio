@@ -1,7 +1,7 @@
 #pragma once
 #include "PropertyList.h"
 #include "Tool.h"
-#include <PreViewLib/FoamMesh.h>
+#include <MeshTools/FoamMesh.h>
 
 class GMeshObject;
 

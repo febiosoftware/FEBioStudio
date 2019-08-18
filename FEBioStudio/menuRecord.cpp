@@ -3,9 +3,9 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include <PostViewLib/ImgAnimation.h>
-#include <PostViewLib/AVIAnimation.h>
-#include <PostViewLib/MPEGAnimation.h>
+#include <PostLib/ImgAnimation.h>
+#include <PostLib/AVIAnimation.h>
+#include <PostLib/MPEGAnimation.h>
 
 void CMainWindow::on_actionRecordNew_triggered()
 {

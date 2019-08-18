@@ -1,0 +1,183 @@
+#include "FEMeshImport.h"
+#include <GeomLib/GMeshObject.h>
+
+FEMeshImport::FEMeshImport()
+{
+	m_bread_surface = false;
+}
+
+FEMeshImport::~FEMeshImport(void)
+{
+}
+
+void FEMeshImport::ReadSurface(bool b)
+{
+	m_bread_surface = b;
+}
+
+bool FEMeshImport::Load(FEProject& prj, const char* szfile)
+{
+	if (Open(szfile, "rt") == false) return false;
+	char szline[256] = {0};
+
+	while (fgets(szline, 255, m_fp))
+	{
+		if (strncmp(szline, "Vertices"  ,  8) == 0) ReadNodes(m_fp);
+		if (strncmp(szline, "Hexahedra" ,  9) == 0) ReadHex  (m_fp);
+		if (strncmp(szline, "Tetrahedra", 10) == 0) ReadTet  (m_fp);
+		if (strncmp(szline, "Triangles" ,  9) == 0) ReadTri  (m_fp);
+	}
+
+	Close();
+
+	BuildMesh(prj);
+
+	return true;
+}
+
+void FEMeshImport::ReadNodes(FILE* fp)
+{
+	char szline[256] = {0};
+	fgets(szline, 255, fp);
+	int nodes;
+	sscanf(szline, "%d", &nodes);
+	m_Node.resize(nodes);
+	for (int i=0; i<nodes; ++i)
+	{
+		NODE& n = m_Node[i];
+		fgets(szline, 255, fp);
+		sscanf(szline, "%g %g %g", &n.x, &n.y, &n.z);
+	}
+}
+
+void FEMeshImport::ReadHex(FILE* fp)
+{
+	char szline[256] = {0};
+	fgets(szline, 255, fp);
+	int elems;
+	sscanf(szline, "%d", &elems);
+	ELEM e;
+	e.ntype = 0;
+	for (int i=0; i<elems; ++i)
+	{
+		fgets(szline, 255, fp);
+		sscanf(szline, "%d%d%d%d%d%d%d%d%d", &e.n[0], &e.n[1], &e.n[2], &e.n[3], &e.n[4], &e.n[5], &e.n[6], &e.n[7], &e.npid);
+		m_Elem.push_back(e);
+	}
+}
+
+void FEMeshImport::ReadTet(FILE* fp)
+{
+	char szline[256] = {0};
+	fgets(szline, 255, fp);
+	int elems;
+	sscanf(szline, "%d", &elems);
+	ELEM e;
+	e.ntype = 1;
+	for (int i=0; i<elems; ++i)
+	{
+		fgets(szline, 255, fp);
+		sscanf(szline, "%d%d%d%d%d", &e.n[0], &e.n[1], &e.n[2], &e.n[3], &e.npid);
+		m_Elem.push_back(e);
+	}
+}
+
+void FEMeshImport::ReadTri(FILE* fp)
+{
+	char szline[256] = {0};
+	fgets(szline, 255, fp);
+	int elems;
+	sscanf(szline, "%d", &elems);
+	ELEM e;
+	e.ntype = 2;
+	for (int i=0; i<elems; ++i)
+	{
+		fgets(szline, 255, fp);
+		sscanf(szline, "%d%d%d%d", &e.n[0], &e.n[1], &e.n[2], &e.npid);
+		if (m_bread_surface) m_Elem.push_back(e);
+	}
+}
+
+void FEMeshImport::BuildMesh(FEProject& prj)
+{
+	FEModel& fem = prj.GetFEModel();
+
+	int i;
+	int nodes = m_Node.size();
+	int elems = m_Elem.size();
+
+	// create a new mesh
+	FEMesh* pm = new FEMesh();
+	pm->Create(nodes, elems);
+
+	// create the nodes
+	for (i=0; i<nodes; ++i)
+	{
+		NODE& N = m_Node[i];
+		FENode& n = pm->Node(i);
+		n.r = vec3d(N.x, N.y, N.z);
+	}
+
+	// create elements 
+	for (i=0; i<elems; ++i)
+	{
+		ELEM& E = m_Elem[i];
+		FEElement& e = pm->Element(i);
+		for (int j=0; j<8; ++j) e.m_node[j] = E.n[j] - 1;
+		switch(E.ntype)
+		{
+		case 0: e.SetType(FE_HEX8); break;
+		case 1: e.SetType(FE_TET4); break;
+		case 2: e.SetType(FE_TRI3); break;
+		}
+	}
+
+	// see how many parts there are
+	int nmin = m_Elem[0].npid, nmax = nmin;
+	for (i=0; i<elems; ++i)
+	{
+		ELEM& E = m_Elem[i];
+		if (E.npid < nmin) nmin = E.npid;
+		if (E.npid > nmax) nmax = E.npid;
+	}
+	int nparts = nmax - nmin+1;
+
+	for (int i=0; i<elems; ++i)
+	{
+		ELEM& E = m_Elem[i];
+		FEElement& el = pm->Element(i);
+		el.m_gid = E.npid - nmin;
+	}
+
+	pm->RebuildMesh();
+
+	GMeshObject* po = new GMeshObject(pm);
+	if (nparts > 1)
+	{
+		vector<FEPart*> P(nparts);
+		char sz[256] = {0};
+		for (i=0; i<nparts; ++i)
+		{
+			P[i] = new FEPart(po);
+			sprintf(sz, "Part%02d", i+1);
+			P[i]->SetName(sz);
+		}
+
+		for (i=0; i<elems; ++i) 
+		{
+			int n = m_Elem[i].npid - nmin;
+			P[n]->add(i);
+		}
+
+		for (i=0; i<nparts; ++i)
+		{
+			if (P[i]->size()) po->AddFEPart(P[i]);
+			else delete P[i];
+		}
+	}
+
+	char szname[256];
+	FileTitle(szname);
+	po->SetName(szname);
+	fem.GetModel().AddObject(po);
+}

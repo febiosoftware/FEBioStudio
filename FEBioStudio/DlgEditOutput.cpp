@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "DlgEditOutput.h"
-#include <PreViewLib/FEProject.h>
-#include <PreViewLib/FEMultiMaterial.h>
+#include <MeshTools/FEProject.h>
+#include <MeshTools/FEMultiMaterial.h>
 #include <QBoxLayout>
 #include <QDialogButtonBox>
 #include <QListWidget>

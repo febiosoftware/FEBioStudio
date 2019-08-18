@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "PostDoc.h"
 #include <XPLTLib/xpltFileReader.h>
-#include <PostViewLib/FEModel.h>
-#include <PostViewLib/GLContext.h>
-#include <PostViewLib/GLCamera.h>
-#include <PostViewLib/Palette.h>
+#include <PostLib/FEModel.h>
+#include <PostLib/GLContext.h>
+#include <PostLib/GLCamera.h>
+#include <PostLib/Palette.h>
 #include <PostGL/GLModel.h>
 #include "GLView.h"
 #include "Document.h"

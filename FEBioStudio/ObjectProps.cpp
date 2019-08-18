@@ -1,14 +1,14 @@
 #include "stdafx.h"
 #include "ObjectProps.h"
-#include <PreViewLib/FEObject.h>
+#include <MeshTools/FEObject.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEAnalysisStep.h>
-#include <PreViewLib/FEModel.h>
-#include <PreViewLib/FERigidConstraint.h>
-#include <PreViewLib/GMaterial.h>
-#include <PreViewLib/FEProject.h>
-#include <PreViewLib/FEMultiMaterial.h>
+#include <MeshTools/FEModel.h>
+#include <MeshTools/FERigidConstraint.h>
+#include <MeshTools/GMaterial.h>
+#include <MeshTools/FEProject.h>
+#include <MeshTools/FEMultiMaterial.h>
 #include <FEMLib/FEDataMap.h>
 
 QStringList toStringList(FEModel* fem, const char* ch)

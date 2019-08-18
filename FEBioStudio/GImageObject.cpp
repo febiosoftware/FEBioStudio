@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "GImageObject.h"
 #include <qopengl.h>
-#include <PostViewLib/ImageModel.h>
-#include <PostViewLib/3DImage.h>
+#include <PostLib/ImageModel.h>
+#include <PostLib/3DImage.h>
 #include "GLView.h"
-#include <PostViewLib/GLCamera.h>
-#include <PostViewLib/GLContext.h>
-#include <PostViewLib/ImageModel.h>
-#include <PostViewLib/GLImageRenderer.h>
+#include <PostLib/GLCamera.h>
+#include <PostLib/GLContext.h>
+#include <PostLib/ImageModel.h>
+#include <PostLib/GLImageRenderer.h>
 #include "Document.h"
 
 GImageObject::GImageObject()

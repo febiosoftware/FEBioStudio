@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "Document.h"
 #include <GeomLib/GPrimitive.h>
-#include "PreViewLib/FEBox.h"
+#include "MeshTools/FEBox.h"
 #include "DocTemplate.h"
-#include <PreViewLib/PRVArchive.h>
+#include <MeshTools/PRVArchive.h>
 
 //-----------------------------------------------------------------------------
 bool CDocument::LoadTemplate(int n)

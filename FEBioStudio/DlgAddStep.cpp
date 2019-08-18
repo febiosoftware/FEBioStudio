@@ -8,10 +8,10 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <PreViewLib/FEModel.h>
+#include <MeshTools/FEModel.h>
 #include "CIntInput.h"
 #include <FEMLib/FEMKernel.h>
-#include <PreViewLib/FEProject.h>
+#include <MeshTools/FEProject.h>
 
 class Ui::CDlgAddStep
 {

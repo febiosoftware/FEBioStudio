@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ScalarFieldTool.h"
 #include "Document.h"
-#include <PreViewLib/LaplaceSolver.h>
+#include <MeshTools/LaplaceSolver.h>
 
 CScalarFieldTool::CScalarFieldTool() : CBasicTool("Scalar Field", HAS_APPLY_BUTTON)
 {

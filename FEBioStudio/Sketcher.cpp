@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Sketcher.h"
-#include <PreViewLib/GPLCObject.h>
+#include <MeshTools/GPLCObject.h>
 
 //-----------------------------------------------------------------------------
 GSketcher* GSketcher::m_pThis = 0;

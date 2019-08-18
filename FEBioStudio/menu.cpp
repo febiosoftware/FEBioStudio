@@ -10,41 +10,41 @@
 #include <FEBio/FEBioExport2.h>
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>
-#include <PreViewIO/FENIKEExport.h>
-#include <PreViewIO/FEBYUExport.h>
-#include <PreViewIO/FEHypersurfaceExport.h>
+#include <MeshIO/FENIKEExport.h>
+#include <MeshIO/FEBYUExport.h>
+#include <MeshIO/FEHypersurfaceExport.h>
 #include <LSDYNA/FELSDYNAexport.h>
-#include <PreViewIO/FEMeshExport.h>
-#include <PreViewIO/FESTLExport.h>
-#include <PreViewIO/FEViewpointExport.h>
-#include <PreViewIO/FETetGenExport.h>
-#include <PreViewIO/FEVTKExport.h>
-#include <PreViewIO/FEPLYExport.h>
+#include <MeshIO/FEMeshExport.h>
+#include <MeshIO/FESTLExport.h>
+#include <MeshIO/FEViewpointExport.h>
+#include <MeshIO/FETetGenExport.h>
+#include <MeshIO/FEVTKExport.h>
+#include <MeshIO/FEPLYExport.h>
 #include <GeomLib/GPrimitive.h>
 #include <FEBio/FEBioImport.h>
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
-#include <PreViewIO/FEBinarySTLimport.h>
-#include <PreViewIO/FEBYUimport.h>
+#include <MeshIO/FEBinarySTLimport.h>
+#include <MeshIO/FEBYUimport.h>
 #include <Comsol/COMSOLImport.h>
-#include <PreViewIO/FEDXFimport.h>
-#include <PreViewIO/FEGMshImport.h>
-#include <PreViewIO/FEHMASCIIimport.h>
-#include <PreViewIO/FEHyperSurfImport.h>
-#include <PreViewIO/FEIDEASimport.h>
-#include <PreViewIO/FEIGESFileImport.h>
+#include <MeshIO/FEDXFimport.h>
+#include <MeshIO/FEGMshImport.h>
+#include <MeshIO/FEHMASCIIimport.h>
+#include <MeshIO/FEHyperSurfImport.h>
+#include <MeshIO/FEIDEASimport.h>
+#include <MeshIO/FEIGESFileImport.h>
 #include <LSDYNA/FELSDYNAimport.h>
-#include <PreViewIO/FEMeshImport.h>
-#include <PreViewIO/FENASTRANimport.h>
-#include <PreViewIO/FEPLYImport.h>
-#include <PreViewIO/FERAWImport.h>
-#include <PreViewIO/FESTLimport.h>
-#include <PreViewIO/FETetGenImport.h>
-#include <PreViewIO/FEVTKImport.h>
-#include <PreViewIO/NikeImport.h>
-#include <PreViewIO/PRVObjectImport.h>
-#include <PreViewIO/PRVObjectExport.h>
-#include <PreViewIO/BREPImport.h>
+#include <MeshIO/FEMeshImport.h>
+#include <MeshIO/FENASTRANimport.h>
+#include <MeshIO/FEPLYImport.h>
+#include <MeshIO/FERAWImport.h>
+#include <MeshIO/FESTLimport.h>
+#include <MeshIO/FETetGenImport.h>
+#include <MeshIO/FEVTKImport.h>
+#include <MeshIO/NikeImport.h>
+#include <MeshIO/PRVObjectImport.h>
+#include <MeshIO/PRVObjectExport.h>
+#include <MeshIO/BREPImport.h>
 #include "DlgImportAbaqus.h"
 #include "DlgRAWImport.h"
 #include "DlgImportCOMSOL.h"
@@ -69,6 +69,7 @@
 #include "PostDoc.h"
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
+#include <QtCore/QTextStream>
 
 void CMainWindow::on_actionNew_triggered()
 {
@@ -87,19 +88,83 @@ void CMainWindow::on_actionNew_triggered()
 	// ask the user for a new project template
 	bool btemplate = false;
 	CDlgNew dlg(this);
-	if (dlg.exec())
+
+	if (ui->m_defaultProjectFolder.isEmpty() == false)
 	{
-		ui->glview->Reset();
+		dlg.setProjectFolder(ui->m_defaultProjectFolder);
+	}
 
-		if (dlg.createNew())
+	bool folderAccepted = false;
+	while (folderAccepted == false)
+	{
+		folderAccepted = true;
+		if (dlg.exec())
 		{
-			int nchoice = dlg.getTemplate();
-			btemplate = m_doc->LoadTemplate(nchoice);
-			if (btemplate == false)
+			if (dlg.createNew())
 			{
-				QMessageBox::critical(this, "Load Template", "Failed loading project template");
-			}
+				// get the project name and folder
+				QString projectName = dlg.getProjectName();
+				QString projectFolder = dlg.getProjectFolder();
 
+				QDir dir(projectFolder);
+
+				// try to create a new folder
+				if (dir.mkdir(projectName) == false)
+				{
+					QMessageBox::critical(this, "FEBio Studio", QString("The folder\n%1\nalready exists. Please choose a different project name or folder.").arg(projectFolder));
+					folderAccepted = false;
+				}
+				else
+				{
+					ui->m_defaultProjectFolder = projectFolder;
+
+					// cd into this directory
+					dir.cd(projectName);
+
+					// setup model file name and path
+					QString modelFileName = projectName + ".prv";
+					QString modelFilePath = dir.absoluteFilePath(modelFileName);
+
+					// load the template
+					int nchoice = dlg.getTemplate();
+					btemplate = m_doc->LoadTemplate(nchoice);
+					if (btemplate == false)
+					{
+						QMessageBox::critical(this, "Load Template", "Failed loading project template");
+					}
+
+					// reset all UI elements
+					UpdatePhysicsUi();
+					Reset();
+					UpdateTitle();
+					UpdateModel();
+					Update();
+					ClearLog();
+
+					// save empty model file
+					if (GetDocument()->SaveDocument(modelFilePath.toStdString()) == false)
+					{
+						QMessageBox::critical(this, "FEBio Studio", "Failed saving model file.");
+					}
+					else
+					{
+						UpdateTitle();
+						ui->addToRecentFiles(modelFilePath);
+					}
+				}
+			}
+			else
+			{
+				QString fileName = dlg.getRecentFileName();
+
+				// read the file
+				std::string sfile = fileName.toStdString();
+				OpenDocument(sfile.c_str());
+			}
+		}
+		else
+		{
+			m_doc->NewDocument();
 			UpdatePhysicsUi();
 			Reset();
 			UpdateTitle();
@@ -107,26 +172,9 @@ void CMainWindow::on_actionNew_triggered()
 			Update();
 			ClearLog();
 		}
-		else
-		{
-			QString fileName = dlg.getRecentFileName();
-			
-			// read the file
-			std::string sfile = fileName.toStdString();
-			OpenDocument(sfile.c_str());
-		}
-	}
-	else
-	{
-		m_doc->NewDocument();
-		UpdatePhysicsUi();
-		Reset();
-		UpdateTitle();
-		UpdateModel();
-		Update();
-		ClearLog();
 	}
 
+	ui->glview->Reset();
 	if (ui->modelViewer && btemplate) ui->modelViewer->Show();
 }
 

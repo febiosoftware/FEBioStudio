@@ -1,0 +1,481 @@
+// FESelection.h: interface for the FESelection class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#if !defined(AFX_FESELECTION_H__F0315B0D_8DCE_4FD7_80C1_F62A41186314__INCLUDED_)
+#define AFX_FESELECTION_H__F0315B0D_8DCE_4FD7_80C1_F62A41186314__INCLUDED_
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+#include "FEGroup.h"
+#include "FEModel.h"
+#include "GDiscreteObject.h"
+#include <vector>
+using namespace std;
+
+// selection type
+enum SelectionType
+{
+	SELECT_OBJECTS,
+	SELECT_PARTS,
+	SELECT_SURFACES,
+	SELECT_CURVES,
+	SELECT_NODES,
+	SELECT_DISCRETE_OBJECT,
+	SELECT_FE_ELEMENTS,
+	SELECT_FE_FACES,
+	SELECT_FE_EDGES,
+	SELECT_FE_NODES
+};
+
+//-----------------------------------------------------------------------------
+// CLASS FESelection
+// Base class for selections
+//
+class FESelection  
+{
+public:
+	FESelection(int ntype);
+	virtual ~FESelection();
+
+	int Type() const { return m_ntype; }
+
+	BOX GetBoundingBox() { return m_box; }
+	vec3d GetPivot() { return m_box.Center(); };
+	int Size();
+
+	virtual void Invert() = 0;
+
+	virtual void Translate(vec3d dr) = 0;
+	virtual void Rotate(quatd q, vec3d c) = 0;
+	virtual void Scale(double s, vec3d dr, vec3d c) = 0;
+
+	virtual quatd GetOrientation() = 0;
+	virtual vec3d GetScale() { return vec3d(1,1,1); }
+
+	virtual int Next() { return -1; }
+	virtual int Prev() { return -1; }
+
+	virtual FEItemListBuilder* CreateItemList() = 0;
+
+	virtual string GetName() { return "current selection"; }
+
+protected:
+	virtual void Update() = 0;
+	virtual int Count() = 0;
+
+protected:
+	BOX		m_box;
+	int		m_nsize;
+	int		m_ntype;
+};
+
+inline int FESelection::Size()
+{
+	if (m_nsize == -1) m_nsize = Count();
+	return m_nsize;
+}
+
+//-----------------------------------------------------------------------------
+
+class GObjectSelection : public FESelection
+{
+public:
+	GObjectSelection(FEModel* ps) : FESelection(SELECT_OBJECTS) { m_pfem = ps; Update(); }
+	int Count() override;
+	virtual void Invert() override;
+	virtual void Update() override;
+	virtual void Translate(vec3d dr) override;
+	virtual void Rotate(quatd q, vec3d c) override;
+	virtual void Scale(double s, vec3d dr, vec3d c) override;
+
+	virtual quatd GetOrientation() override;
+	virtual vec3d GetPivot();
+	virtual vec3d GetScale() override;
+
+	int Next() override;
+	int Prev() override;
+
+	FEItemListBuilder* CreateItemList() override { return 0; }
+
+	GObject* Object(int i);
+
+	string GetName() override;
+
+protected:
+	FEModel*	m_pfem;
+	vector<int>	m_item;
+};
+
+//-----------------------------------------------------------------------------
+
+class GPartSelection : public FESelection
+{
+public:
+	class Iterator
+	{
+	public:
+		Iterator(GPartSelection* ps);
+
+		Iterator& operator ++ ();
+
+		GPart* operator -> () { return m_pg; }
+		GPart& operator * () { return *m_pg; }
+
+		operator GPart* () { return m_pg; }
+
+	protected:
+		FEModel*	m_ps;
+		GPart*		m_pg;
+		int			m_npart;
+	};
+
+	int Next();
+	int Prev();
+
+public:
+	GPartSelection(FEModel* ps) : FESelection(SELECT_PARTS) { m_ps = ps; Update(); }
+	int Count();
+	void Invert();
+	void Update();
+	void Translate(vec3d dr) {}
+	void Rotate(quatd q, vec3d c) {}
+	void Scale(double s, vec3d dr, vec3d c) {}
+	quatd GetOrientation ();
+
+	FEModel* GetFEModel() { return m_ps; }
+
+	FEItemListBuilder* CreateItemList();
+
+protected:
+	FEModel*	m_ps;
+};
+
+//-----------------------------------------------------------------------------
+
+class GFaceSelection : public FESelection
+{
+public:
+	class Iterator
+	{
+	public:
+		Iterator(GFaceSelection* ps);
+
+		Iterator& operator ++ ();
+
+		GFace* operator -> () { return m_pf; }
+		GFace& operator * () { return *m_pf; }
+
+		operator GFace* () { return m_pf; }
+
+	protected:
+		FEModel*	m_ps;
+		GFace*	m_pf;
+		int			m_nsurf;
+	};
+
+	int Next();
+	int Prev();
+
+	FEItemListBuilder* CreateItemList();
+
+public:
+	GFaceSelection(FEModel* ps) : FESelection(SELECT_SURFACES) { m_ps = ps; Update(); }
+	int Count();
+	void Invert();
+	void Update();
+	void Translate(vec3d dr) {}
+	void Rotate(quatd q, vec3d c) {}
+	void Scale(double s, vec3d dr, vec3d c) {}
+	quatd GetOrientation () { return quatd(0,0,0); }
+
+	FEModel* GetFEModel() { return m_ps; }
+
+protected:
+	FEModel*	m_ps;
+};
+
+//-----------------------------------------------------------------------------
+
+class GEdgeSelection : public FESelection
+{
+public:
+	class Iterator
+	{
+	public:
+		Iterator(GEdgeSelection* ps);
+
+		Iterator& operator ++ ();
+
+		GEdge* operator -> () { return m_pe; }
+		GEdge& operator * () { return *m_pe; }
+
+		operator GEdge* () { return m_pe; }
+
+	protected:
+		FEModel*	m_ps;
+		GEdge*		m_pe;
+		int			m_nedge;
+	};
+
+	int Next();
+	int Prev();
+
+public:
+	GEdgeSelection(FEModel* ps) : FESelection(SELECT_CURVES) { m_ps = ps; Update(); }
+	int Count();
+	void Invert();
+	void Update();
+	void Translate(vec3d dr) {}
+	void Rotate(quatd q, vec3d c) {}
+	void Scale(double s, vec3d dr, vec3d c) {}
+	quatd GetOrientation () { return quatd(0,0,0); }
+
+	FEModel* GetFEModel() { return m_ps; }
+
+	FEItemListBuilder* CreateItemList();
+
+protected:
+	FEModel*	m_ps;
+};
+
+//-----------------------------------------------------------------------------
+
+class GNodeSelection : public FESelection
+{
+public:
+	class Iterator
+	{
+	public:
+		Iterator(GNodeSelection* ps);
+
+		Iterator& operator ++ ();
+
+		GNode* operator -> () { return m_pn; }
+		GNode& operator * () { return *m_pn; }
+
+		operator GNode* () { return m_pn; }
+
+	protected:
+		FEModel*	m_ps;
+		GNode*		m_pn;
+		int			m_node;
+	};
+
+	int Next();
+	int Prev();
+
+public:
+	GNodeSelection(FEModel* ps) : FESelection(SELECT_NODES) { m_ps = ps; Update(); }
+	int Count();
+	void Invert();
+	void Update();
+	void Translate(vec3d dr);
+	void Rotate(quatd q, vec3d c) {}
+	void Scale(double s, vec3d dr, vec3d c) {}
+	quatd GetOrientation () { return quatd(0,0,0); }
+
+	FEModel* GetFEModel() { return m_ps; }
+
+	FEItemListBuilder* CreateItemList();
+
+protected:
+	FEModel*	m_ps;
+};
+
+//-----------------------------------------------------------------------------
+
+class GDiscreteSelection : public FESelection
+{
+public:
+	class Iterator
+	{
+	public:
+		Iterator(GDiscreteSelection* ps);
+
+		Iterator& operator ++ ();
+
+		GDiscreteObject* operator -> () { return m_pn; }
+		GDiscreteObject& operator * () { return *m_pn; }
+
+		operator GDiscreteObject* () { return m_pn; }
+
+	protected:
+		FEModel*			m_ps;
+		GDiscreteObject*	m_pn;
+		int					m_item;
+	};
+
+	int Next();
+	int Prev();
+
+public:
+	GDiscreteSelection(FEModel* ps) : FESelection(SELECT_DISCRETE_OBJECT) { m_ps = ps; Update(); }
+	int Count();
+	void Invert();
+	void Update();
+
+	void Translate(vec3d dr) {}
+	void Rotate(quatd q, vec3d c) {}
+	void Scale(double s, vec3d dr, vec3d c) {}
+	quatd GetOrientation() { return quatd(0, 0, 0); }
+
+	FEModel* GetFEModel() { return m_ps; }
+
+	FEItemListBuilder* CreateItemList() { return 0; }
+
+protected:
+	FEModel*	m_ps;
+};
+
+//-----------------------------------------------------------------------------
+
+class FEElementSelection : public FESelection
+{
+public:
+	FEElementSelection(FEModel* ps, FEMesh* pm) : FESelection(SELECT_FE_ELEMENTS) { m_ps = ps; m_pMesh = pm; Update(); }
+	int Count();
+	virtual void Invert();
+	virtual void Update();
+	virtual void Translate(vec3d dr);
+	virtual void Rotate(quatd q, vec3d c);
+	virtual void Scale(double s, vec3d dr, vec3d c);
+	virtual quatd GetOrientation();
+
+	FEMesh* GetMesh() { return m_pMesh; }
+
+	FEItemListBuilder* CreateItemList();
+
+	FEElement* Element(int i);
+
+protected:
+	FEMesh*		m_pMesh;
+	FEModel*	m_ps;
+	vector<int>	m_item;
+};
+
+//-----------------------------------------------------------------------------
+
+class FEFaceSelection : public FESelection
+{
+public:
+	class Iterator
+	{
+	public:
+		Iterator(FEMeshBase* pm);
+
+		operator FEFace*() { return m_pface; }
+		FEFace* operator -> () { return m_pface; }
+
+		void operator ++ (); 
+
+	protected:
+		FEMeshBase*	m_pm;
+		FEFace*		m_pface;
+		int			m_n;
+	};
+
+public:
+	FEFaceSelection(FEModel* ps, FEMeshBase* pm) : FESelection(SELECT_FE_FACES) { m_ps = ps; m_pMesh = pm; Update(); }
+	int Count();
+	virtual void Invert();
+	virtual void Update();
+	virtual void Translate(vec3d dr);
+	virtual void Rotate(quatd q, vec3d c);
+	virtual void Scale(double s, vec3d dr, vec3d c);
+	virtual quatd GetOrientation();
+
+	FEMeshBase* GetMesh() { return m_pMesh; }
+
+	FEItemListBuilder* CreateItemList();
+
+	Iterator begin();
+
+protected:
+	FEMeshBase*		m_pMesh;
+	FEModel*		m_ps;
+};
+
+//-----------------------------------------------------------------------------
+
+class FEEdgeSelection : public FESelection
+{
+public:
+	class Iterator
+	{
+	public:
+		Iterator(FELineMesh* pm);
+
+		operator FEEdge*() { return m_pedge; }
+		FEEdge* operator -> () { return m_pedge; }
+
+		void operator ++ (); 
+
+	protected:
+		FELineMesh*	m_pm;
+		FEEdge*		m_pedge;
+		int			m_n;
+	};
+
+public:
+	FEEdgeSelection(FEModel* ps, FELineMesh* pm) : FESelection(SELECT_FE_EDGES) { m_ps = ps; m_pMesh = pm; Update(); }
+	int Count();
+	virtual void Invert();
+	virtual void Update();
+	virtual void Translate(vec3d dr);
+	virtual void Rotate(quatd q, vec3d c);
+	virtual void Scale(double s, vec3d dr, vec3d c);
+	virtual quatd GetOrientation();
+
+	FELineMesh* GetMesh() { return m_pMesh; }
+
+	FEItemListBuilder* CreateItemList();
+
+protected:
+	FELineMesh*		m_pMesh;
+	FEModel*		m_ps;
+};
+
+//-----------------------------------------------------------------------------
+
+class FENodeSelection : public FESelection
+{
+public:
+	class Iterator
+	{
+	public:
+		Iterator(FELineMesh* pm);
+
+		operator FENode*() { return m_pnode; }
+		FENode* operator -> () { return m_pnode; }
+
+		void operator ++ (); 
+
+	protected:
+		FELineMesh*	m_pm;
+		FENode*		m_pnode;
+		int			m_n;
+	};
+
+public:
+	FENodeSelection(FEModel* ps, FELineMesh* pm) : FESelection(SELECT_FE_NODES) { m_ps = ps; m_pMesh = pm; Update(); }
+	int Count();
+	virtual void Invert();
+	virtual void Update();
+	virtual void Translate(vec3d dr);
+	virtual void Rotate(quatd q, vec3d c);
+	virtual void Scale(double s, vec3d dr, vec3d c);
+	virtual quatd GetOrientation();
+
+	FELineMesh* GetMesh() { return m_pMesh; }
+
+	FEItemListBuilder* CreateItemList();
+
+protected:
+	FELineMesh*	m_pMesh;
+	FEModel*	m_ps;
+};
+
+#endif // !defined(AFX_FESELECTION_H__F0315B0D_8DCE_4FD7_80C1_F62A41186314__INCLUDED_)

@@ -6,7 +6,7 @@
 #include <QLabel>
 #include <QContextMenuEvent>
 #include "Document.h"
-#include <PreViewLib/FEModel.h>
+#include <MeshTools/FEModel.h>
 #include "ModelViewer.h"
 #include "ModelTree.h"
 

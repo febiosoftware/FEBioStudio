@@ -5,9 +5,9 @@
 #include <QMessageBox>
 #include <QPainter>
 #include "DlgFormula.h"
-#include <PreViewLib/MathParser.h>
+#include <MeshTools/MathParser.h>
 #include <FEMLib/FESurfaceLoad.h>
-#include <PreViewLib/FEMultiMaterial.h>
+#include <MeshTools/FEMultiMaterial.h>
 
 CCmdAddPoint::CCmdAddPoint(FELoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
 {

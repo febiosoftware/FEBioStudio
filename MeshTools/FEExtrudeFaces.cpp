@@ -1,0 +1,396 @@
+#include "stdafx.h"
+#include "FEExtrudeFaces.h"
+
+FEExtrudeFaces::FEExtrudeFaces() : FEModifier("Extrude faces")
+{
+	AddDoubleParam(1.0, "D", "Distance");
+	AddIntParam(1, "N", "Segments");
+	AddBoolParam(false, "L", "Use local normal");
+}
+
+void FEExtrudeFaces::SetExtrusionDistance(double D)
+{
+	SetFloatValue(0, D);
+}
+
+FEMesh* FEExtrudeFaces::Apply(FEGroup* pg)
+{
+	if (pg->Type() != FE_SURFACE)
+	{
+		FEModifier::SetError("Invalid selection");
+		return 0;
+	}
+
+	if (pg->size() == 0)
+	{
+		FEModifier::SetError("Empty selection");
+		return 0;
+	}
+
+	vector<int> faceList;
+	for (list<int>::iterator it = pg->begin(); it != pg->end(); ++it)
+	{
+		faceList.push_back(*it);
+	}
+
+	FEMesh* pm = pg->GetMesh();
+	FEMesh* pnm = new FEMesh(*pm);
+	Extrude(pnm, faceList);
+
+	return pnm;
+}
+
+FEMesh* FEExtrudeFaces::Apply(FEMesh* pm) 
+{
+	vector<int> faceList;
+	for (int i=0; i<pm->Faces(); ++i)
+	{
+		if (pm->Face(i).IsSelected()) faceList.push_back(i);
+	}	
+
+	FEMesh* pnm = new FEMesh(*pm);
+	Extrude(pnm, faceList);
+
+	return pnm;
+}
+
+void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
+{
+	// let's mark the nodes that need to be copied
+	pm->TagAllNodes(-1);
+	for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
+
+	bool linear = true;
+	int ne1 = 0;
+	for (int i=0; i < (int)faceList.size(); ++i)
+	{
+		FEFace& face = pm->Face(faceList[i]);
+		int n = face.Nodes();
+
+		// extrusion is only allowed on tris and quads!
+		if ((n != 4) && (n != 3) && (n != 9) && (n != 8) && (n != 6)) return;
+
+		if ((n == 9) || (n == 8) || (n == 6)) linear = false;
+
+		for (int j = 0; j<n; ++j) pm->Node(face.n[j]).m_ntag = 1;
+		++ne1;
+	}
+
+	// make sure there was something selected
+	if (ne1 == 0) return;
+
+	// count the nodes
+	int n0 = pm->Nodes();
+	int nn = 0;
+	for (int i = 0; i<n0; ++i)
+		if (pm->Node(i).m_ntag > 0)
+		{
+			pm->Node(i).m_ntag = nn;
+			++nn;
+		}
+
+	double dist = GetFloatValue(0);
+	int nseg = GetIntValue(1);
+	bool bloc = GetBoolValue(2);
+
+
+	// allocate room for new nodes
+	if (linear) pm->Create(n0 + nseg*nn, 0);
+	else pm->Create(n0 + nseg*nn * 2, 0);   // nn/2 wasteful nodes
+
+	// we use the nodal position to store the extrusion direction
+	vector<vec3d> ed; ed.assign(nn, vec3d(0, 0, 0));
+
+	// find the extrusion directions
+	for (int i=0; i <(int)faceList.size(); ++i)
+	{
+		FEFace& face = pm->Face(faceList[i]);
+		int n = face.Nodes();
+		for (int j = 0; j<n; ++j)
+		{
+			int n1 = pm->Node(face.n[j]).m_ntag;
+			ed[n1] += face.m_nn[j];
+		}
+	}
+
+	if (!bloc)
+	{
+		// calculate average normal
+		vec3d n(0, 0, 0);
+		for (int i = 0; i<nn; ++i) n += ed[i];
+		for (int i = 0; i<nn; ++i) ed[i] = n;
+	}
+
+	// make sure all directional vectors are normalized
+	for (int i = 0; i<nn; ++i) ed[i].Normalize();
+
+	// extrude the nodes
+	for (int l = 1; l <= nseg; ++l)
+	{
+		double D = l*dist / nseg;
+		for (int i = 0; i<n0; ++i)
+		{
+			FENode& node = pm->Node(i);
+			if (node.m_ntag >= 0)
+			{
+				FENode& node2 = pm->Node(n0 + (l - 1)*nn + node.m_ntag);
+				node2.r = node.r + ed[node.m_ntag] * D;
+				node2.m_ntag = node.m_ntag;
+			}
+		}
+	}
+	// add mid-layer nodes for quadratic elements
+	if (!linear) {
+		for (int l = 1; l <= nseg; ++l)
+		{
+			double D = (l - 1)*dist / nseg + (dist / 2) / nseg;
+			for (int i = 0; i<n0; ++i)
+			{
+				FENode& node = pm->Node(i);
+				if (node.m_ntag >= 0)
+				{
+					FENode& node2 = pm->Node(n0 + nseg*nn + (l - 1)*nn + node.m_ntag);
+					node2.r = node.r + ed[node.m_ntag] * D;
+					node2.m_ntag = node.m_ntag;
+				}
+			}
+		}
+	}
+
+	// get the largest element group number
+	int nid = 0;
+	for (int i = 0; i<pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		if (el.m_gid > nid) nid = el.m_gid;
+	}
+	nid++;
+
+	// create new elements
+	int ne0 = pm->Elements();
+	pm->Create(0, ne0 + nseg*ne1);
+
+	int n = ne0;
+	for (int l = 1; l <= nseg; ++l)
+	{
+		for (int i = 0; i <(int)faceList.size(); ++i)
+		{
+			FEFace& face = pm->Face(faceList[i]);
+
+			FEElement& el = pm->Element(n);
+
+			if (face.Nodes() == 3)
+			{
+				el.SetType(FE_PENTA6);
+				el.m_gid = nid;
+
+				el.m_node[0] = face.n[0];
+				el.m_node[1] = face.n[1];
+				el.m_node[2] = face.n[2];
+
+				el.m_node[3] = n0 + (l - 1)*nn + pm->Node(face.n[0]).m_ntag;
+				el.m_node[4] = n0 + (l - 1)*nn + pm->Node(face.n[1]).m_ntag;
+				el.m_node[5] = n0 + (l - 1)*nn + pm->Node(face.n[2]).m_ntag;
+
+				// move the face
+				face.n[0] = el.m_node[3];
+				face.n[1] = el.m_node[4];
+				face.n[2] = el.m_node[5];
+				face.m_elem[0] = n;
+				face.m_elem[1] = -1;
+
+				++n;
+			}
+			else if (face.Nodes() == 4)
+			{
+				el.SetType(FE_HEX8);
+				el.m_gid = nid;
+
+				el.m_node[0] = face.n[0];
+				el.m_node[1] = face.n[1];
+				el.m_node[2] = face.n[2];
+				el.m_node[3] = face.n[3];
+
+				el.m_node[4] = n0 + (l - 1)*nn + pm->Node(face.n[0]).m_ntag;
+				el.m_node[5] = n0 + (l - 1)*nn + pm->Node(face.n[1]).m_ntag;
+				el.m_node[6] = n0 + (l - 1)*nn + pm->Node(face.n[2]).m_ntag;
+				el.m_node[7] = n0 + (l - 1)*nn + pm->Node(face.n[3]).m_ntag;
+
+				// move the face
+				face.n[0] = el.m_node[4];
+				face.n[1] = el.m_node[5];
+				face.n[2] = el.m_node[6];
+				face.n[3] = el.m_node[7];
+				face.m_elem[0] = n;
+				face.m_elem[1] = -1;
+
+				++n;
+			}
+			else if (face.Nodes() == 6) {
+				el.SetType(FE_PENTA15);
+				el.m_gid = nid;
+
+				el.m_node[0] = face.n[0];
+				el.m_node[1] = face.n[1];
+				el.m_node[2] = face.n[2];
+
+				el.m_node[3] = n0 + (l - 1)*nn + pm->Node(face.n[0]).m_ntag;
+				el.m_node[4] = n0 + (l - 1)*nn + pm->Node(face.n[1]).m_ntag;
+				el.m_node[5] = n0 + (l - 1)*nn + pm->Node(face.n[2]).m_ntag;
+
+				el.m_node[6] = face.n[3];
+				el.m_node[7] = face.n[4];
+				el.m_node[8] = face.n[5];
+
+				el.m_node[9] = n0 + (l - 1)*nn + pm->Node(face.n[3]).m_ntag;
+				el.m_node[10] = n0 + (l - 1)*nn + pm->Node(face.n[4]).m_ntag;
+				el.m_node[11] = n0 + (l - 1)*nn + pm->Node(face.n[5]).m_ntag;
+
+				el.m_node[12] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[0]).m_ntag;
+				el.m_node[13] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[1]).m_ntag;
+				el.m_node[14] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[2]).m_ntag;
+
+				// move the face
+				face.n[0] = el.m_node[3];
+				face.n[1] = el.m_node[4];
+				face.n[2] = el.m_node[5];
+				face.n[3] = el.m_node[9];
+				face.n[4] = el.m_node[10];
+				face.n[5] = el.m_node[11];
+				face.m_elem[0] = n;
+				face.m_elem[1] = -1;
+                
+                ++n;
+			}
+			else if (face.Nodes() == 8) {
+				el.SetType(FE_HEX20);
+				el.m_gid = nid;
+
+				el.m_node[0] = face.n[0];
+				el.m_node[1] = face.n[1];
+				el.m_node[2] = face.n[2];
+				el.m_node[3] = face.n[3];
+
+				el.m_node[4] = n0 + (l - 1)*nn + pm->Node(face.n[0]).m_ntag;
+				el.m_node[5] = n0 + (l - 1)*nn + pm->Node(face.n[1]).m_ntag;
+				el.m_node[6] = n0 + (l - 1)*nn + pm->Node(face.n[2]).m_ntag;
+				el.m_node[7] = n0 + (l - 1)*nn + pm->Node(face.n[3]).m_ntag;
+
+				el.m_node[8] = face.n[4];
+				el.m_node[9] = face.n[5];
+				el.m_node[10] = face.n[6];
+				el.m_node[11] = face.n[7];
+
+				el.m_node[12] = n0 + (l - 1)*nn + pm->Node(face.n[4]).m_ntag;
+				el.m_node[13] = n0 + (l - 1)*nn + pm->Node(face.n[5]).m_ntag;
+				el.m_node[14] = n0 + (l - 1)*nn + pm->Node(face.n[6]).m_ntag;
+				el.m_node[15] = n0 + (l - 1)*nn + pm->Node(face.n[7]).m_ntag;
+
+				el.m_node[16] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[0]).m_ntag;
+				el.m_node[17] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[1]).m_ntag;
+				el.m_node[18] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[2]).m_ntag;
+				el.m_node[19] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[3]).m_ntag;
+
+				// move the face
+				face.n[0] = el.m_node[4];
+				face.n[1] = el.m_node[5];
+				face.n[2] = el.m_node[6];
+				face.n[3] = el.m_node[7];
+				face.n[4] = el.m_node[12];
+				face.n[5] = el.m_node[13];
+				face.n[6] = el.m_node[14];
+				face.n[7] = el.m_node[15];
+				face.m_elem[0] = n;
+				face.m_elem[1] = -1;
+                
+                ++n;
+			}
+			else if (face.Nodes() == 9) {
+				el.SetType(FE_HEX27);
+				el.m_gid = nid;
+
+				el.m_node[0] = face.n[0];
+				el.m_node[1] = face.n[1];
+				el.m_node[2] = face.n[2];
+				el.m_node[3] = face.n[3];
+
+				el.m_node[4] = n0 + (l - 1)*nn + pm->Node(face.n[0]).m_ntag;
+				el.m_node[5] = n0 + (l - 1)*nn + pm->Node(face.n[1]).m_ntag;
+				el.m_node[6] = n0 + (l - 1)*nn + pm->Node(face.n[2]).m_ntag;
+				el.m_node[7] = n0 + (l - 1)*nn + pm->Node(face.n[3]).m_ntag;
+
+				el.m_node[8] = face.n[4];
+				el.m_node[9] = face.n[5];
+				el.m_node[10] = face.n[6];
+				el.m_node[11] = face.n[7];
+
+				el.m_node[12] = n0 + (l - 1)*nn + pm->Node(face.n[4]).m_ntag;
+				el.m_node[13] = n0 + (l - 1)*nn + pm->Node(face.n[5]).m_ntag;
+				el.m_node[14] = n0 + (l - 1)*nn + pm->Node(face.n[6]).m_ntag;
+				el.m_node[15] = n0 + (l - 1)*nn + pm->Node(face.n[7]).m_ntag;
+
+				el.m_node[16] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[0]).m_ntag;
+				el.m_node[17] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[1]).m_ntag;
+				el.m_node[18] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[2]).m_ntag;
+				el.m_node[19] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[3]).m_ntag;
+
+				el.m_node[20] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[4]).m_ntag;
+				el.m_node[21] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[5]).m_ntag;
+				el.m_node[22] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[6]).m_ntag;
+				el.m_node[23] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[7]).m_ntag;
+
+				el.m_node[24] = face.n[8];
+				el.m_node[25] = n0 + (l - 1)*nn + pm->Node(face.n[8]).m_ntag;
+				el.m_node[26] = n0 + nseg*nn + (l - 1)*nn + pm->Node(face.n[8]).m_ntag;
+
+				// move the face
+				face.n[0] = el.m_node[4];
+				face.n[1] = el.m_node[5];
+				face.n[2] = el.m_node[6];
+				face.n[3] = el.m_node[7];
+				face.n[4] = el.m_node[12];
+				face.n[5] = el.m_node[13];
+				face.n[6] = el.m_node[14];
+				face.n[7] = el.m_node[15];
+				face.n[8] = el.m_node[25];
+				face.m_elem[0] = n;
+				face.m_elem[1] = -1;
+                
+                ++n;
+			}
+		}
+	}
+
+	// rebuild the object
+	pm->RebuildMesh();
+
+	// reselect the new faces
+	pm->ClearFaceSelection();
+	for (int i=0; i<n0; ++i)
+	{
+		FENode& node = pm->Node(i);
+		if (node.m_ntag >= 0)
+		{
+			FENode& nj = pm->Node(n0 + (nseg - 1)*nn + node.m_ntag);
+			nj.m_ntag = -2;
+		}
+	}
+	for (int i=0; i<pm->Faces(); ++i)
+	{
+		FEFace& face = pm->Face(i);
+		int nf = face.Nodes();
+		bool bsel = true;
+		for (int j=0; j<nf; ++j)
+		{
+			if (pm->Node(face.n[j]).m_ntag != -2)
+			{
+				bsel = false;
+				break;
+			}
+		}
+		if (bsel) face.Select();
+	}
+
+	// delete extraneous nodes (if any)
+	pm->RemoveIsolatedNodes();
+}

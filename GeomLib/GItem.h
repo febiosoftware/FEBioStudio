@@ -1,0 +1,228 @@
+#pragma once
+#include "MeshTools/FEObject.h"
+
+//-----------------------------------------------------------------------------
+// State values for GItem state
+enum {
+	GEO_VISIBLE = 1, 
+	GEO_SELECTED = 2 
+};
+
+//-----------------------------------------------------------------------------
+// Node types
+#define NODE_UNKNOWN	0
+#define NODE_VERTEX		1		// vertex defines a node that is part of the geometry
+#define NODE_SHAPE		2		// a shape node is only used to define the geometry but is not considered part of it.
+
+//-----------------------------------------------------------------------------
+// Edge types
+#define EDGE_UNKNOWN		0
+#define EDGE_LINE			1		// straight line between two nodes
+#define EDGE_3P_CIRC_ARC	2		// 3-point circular arc. 
+#define EDGE_YARC			3		// circular arc defined by two points and the y-axis
+#define EDGE_ZARC			4		// circular arc defined by two points and the z-axis
+#define EDGE_3P_ARC			5		// coordinate alligned elliptical arc section defined by three points
+#define EDGE_MESH			6		// edge is determined by a mesh (used by GCurveMeshObject)
+
+//-----------------------------------------------------------------------------
+// Face types
+#define FACE_UNKNOWN		0	
+#define FACE_POLYGON		1		// polygonal area; edges don't have to be linear
+#define FACE_EXTRUDE		2		// face is extruded
+#define FACE_QUAD			3		// face is bilinear quadrialter
+#define FACE_REVOLVE		4		// face created by revolving an edge
+#define FACE_REVOLVE_WEDGE	5		// 3-point face create by revolving edge that has one node on the axis
+
+//-----------------------------------------------------------------------------
+// Part types
+#define PART_UNKNOWN	0
+#define PART_COMPLEX	1		// general domain definition; surfaces can be of any type
+
+//-----------------------------------------------------------------------------
+// forward declarations
+class GBaseObject;
+
+//-----------------------------------------------------------------------------
+// Base class for items of geometry objects.
+// GItem's have two ID's: 
+//  - m_gid: the global ID number identifying the item number in the model (one-based)
+//  - m_lid: the local ID number which is the index in the object's item list (zero-based)
+//
+class GItem : public FEObject
+{
+public:
+	// Constructor. Takes parent object as parameter
+	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE; m_gid = 0; m_lid = -1; m_po = po; }
+	virtual ~GItem() { m_po = 0; }
+
+	// get/set global ID
+	int GetID() const { return m_gid; }
+	virtual void SetID(int nid) = 0;
+
+	// get/set local ID
+	void SetLocalID(int n) { m_lid = n; }
+	int GetLocalID() { return m_lid; }
+
+	// get the parent object
+	GBaseObject* Object() { return m_po; }
+	const GBaseObject* Object() const { return m_po; }
+
+	// check visibility state (only used by GBaseObject's)
+	bool IsVisible () const { return ((m_state & GEO_VISIBLE ) != 0); }
+	void ShowItem() { m_state = m_state | GEO_VISIBLE;  }
+	void HideItem() { m_state = 0; }
+
+	// check selection state
+	bool IsSelected() const { return ((m_state & GEO_SELECTED) != 0); }
+	void Select  () { m_state = m_state | GEO_SELECTED; }
+	void UnSelect() { m_state = m_state & ~GEO_SELECTED; }
+
+	// get/set state
+	unsigned int GetState() const { return m_state; }
+	void SetState(unsigned int state) { m_state = state; }
+
+public:
+	int		m_ntag;	// multi-purpose tag
+
+protected:
+	unsigned int	m_state;	// state variable
+	int				m_gid;		// global ID (one-based)
+	int				m_lid;		// local ID (zero-based)
+
+	GBaseObject*	m_po;	// pointer to object this item belongs to
+};
+
+
+//-----------------------------------------------------------------------------
+// Intermediate base class defining a counter for each derived item class that
+// can be used to determine a unique global ID number
+template <class T> class GItem_T : public GItem
+{
+public:
+	GItem_T(GBaseObject* po = 0) : GItem(po){}
+	void SetID(int nid) { m_gid = nid; if (nid > m_ncount) m_ncount = nid; }
+	static int CreateUniqueID() { return ++m_ncount; }
+	static void ResetCounter() { m_ncount = 0; }
+
+	static void IncreaseCounter() { m_ncount++; }
+	static void DecreaseCounter() { m_ncount--; }
+	
+private:
+	static int	m_ncount;
+};
+
+//-----------------------------------------------------------------------------
+// Defines a part of the object
+class GPart : public GItem_T<GPart>
+{
+public:
+	GPart() : GItem_T<GPart>(0) { m_matid = -1; }
+	GPart(GBaseObject* po) : GItem_T<GPart>(po) { m_matid = -1; }
+
+	GPart(const GPart& p);
+	void operator = (const GPart& p);
+
+public:
+	int GetMaterialID() const { return m_matid; }
+	void SetMaterialID(int mid) { m_matid = mid; }
+
+protected:
+	int		m_matid;
+};
+
+//-----------------------------------------------------------------------------
+// Defines a face of the object
+class GFace : public GItem_T<GFace>
+{
+public:
+	struct EDGE
+	{
+		int		nid;	// local ID of edge
+		int		nwn;	// winding (+1 or -1)
+	};
+
+public:
+	GFace() : GItem_T<GFace>(0) { m_nPID[0] = m_nPID[1] = -1;  m_ntype = FACE_UNKNOWN; }
+	GFace(GBaseObject* po) : GItem_T<GFace>(po) { m_nPID[0] = m_nPID[1] = -1; m_ntype = FACE_UNKNOWN; }
+
+	GFace(const GFace& f);
+	void operator = (const GFace& f);
+
+	bool IsExternal() { return (m_nPID[1] == -1); }
+
+
+	int Nodes() { return (int) m_node.size(); }
+	int Edges() { return (int) m_edge.size(); }
+
+	bool HasEdge(int i);
+
+public:
+	int				m_ntype;	// face type
+	int				m_nPID[2];	// part ID's
+	vector<int>		m_node;		// node ID's
+	vector<EDGE>	m_edge;		// edges defining face
+};
+
+//-----------------------------------------------------------------------------
+// Defines the edge of the object
+class GEdge : public GItem_T<GEdge>
+{
+public:
+	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = 0; m_ntype = EDGE_UNKNOWN; }
+	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = 0; m_ntype = EDGE_UNKNOWN; }
+
+	GEdge(const GEdge& e);
+	void operator = (const GEdge& e);
+
+	bool operator == (const GEdge& e);
+
+public:
+	double Length();
+
+	vec2d Tangent(double l);
+
+	vec3d Point(double l);
+
+	bool HasNode(int n) { return ((m_node[0]==n)||(m_node[1]==n)); }
+
+	int Type() const { return m_ntype; }
+
+public:
+	int		m_node[2];	// indices of GNodes
+	int		m_cnode;	// center node for arcs
+	int		m_ntype;	// type identifier
+};
+
+//-----------------------------------------------------------------------------
+//! Defines the nodes of the object. A node is defined by its position in space.
+//! There are two types of nodes: nodes that define the end-points of edges, and
+//! those that do not. The latter types of nodes are only used to define the 
+//! geometry, but should not be considered actually part of the object. The m_ntype
+//! identifier defines the node type. Also note that only vertices should have
+//! global ID's. All nodes should have local ID's though.
+class GNode : public GItem_T<GNode>
+{
+public:
+	GNode() : GItem_T<GNode>(0) { m_ntype = NODE_UNKNOWN; }
+	GNode(GBaseObject* po) : GItem_T<GNode>(po) { m_ntype = NODE_UNKNOWN; }
+
+	GNode(const GNode& n);
+	void operator = (const GNode& n);
+
+	// get the edge type
+	int Type() const { return m_ntype; }
+
+	// set the type
+	void SetType(int ntype) { m_ntype = ntype; }
+
+	// get the local position of this node
+	vec3d& LocalPosition() { return m_r; }
+	const vec3d& LocalPosition() const { return m_r; }
+
+	// get the global position of the node
+	vec3d Position() const;
+
+private:
+	vec3d		m_r;		// node position (in local coordinates)
+	int			m_ntype;	// node type
+};

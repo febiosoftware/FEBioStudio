@@ -8,9 +8,9 @@
 #include "GGrid.h"
 #include "Intersect.h"
 #include "GLViewRender.h"
-#include <PreViewLib/FEExtrudeFaces.h>
+#include <MeshTools/FEExtrudeFaces.h>
 #include <GLWLib/GLWidgetManager.h>
-#include <PostViewLib/Animation.h>
+#include <PostLib/Animation.h>
 
 class CMainWindow;
 class CDocument;

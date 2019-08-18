@@ -9,7 +9,7 @@
 #include <GeomLib/GCurveMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include "GLHighlighter.h"
-#include <PreViewLib/GObject2D.h>
+#include <MeshTools/GObject2D.h>
 
 //=============================================================================
 CCreateP2PLinePane::CCreateP2PLinePane(CCreatePanel* parent) : CCreatePane(parent)

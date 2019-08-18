@@ -8,8 +8,8 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <PreViewLib/FEModel.h>
-#include <PreViewLib/FEProject.h>
+#include <MeshTools/FEModel.h>
+#include <MeshTools/FEProject.h>
 #include <FEMLib/FEMKernel.h>
 
 class Ui::CDlgAddBC

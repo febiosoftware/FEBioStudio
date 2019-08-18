@@ -2,7 +2,7 @@
 #include <MathLib/math3d.h>
 #include <MeshLib/FEMeshBase.h>
 #include <MeshLib/FEMesh.h>
-#include <PreViewLib/GLMesh.h>
+#include <MeshTools/GLMesh.h>
 
 // tools for finding intersections
 struct Ray

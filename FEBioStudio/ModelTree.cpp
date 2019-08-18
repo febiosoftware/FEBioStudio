@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "ModelTree.h"
 #include "Document.h"
-#include <PreViewLib/FEModel.h>
-#include <PreViewLib/FEMultiMaterial.h>
+#include <MeshTools/FEModel.h>
+#include <MeshTools/FEMultiMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <QTreeWidgetItemIterator>
 #include <QContextMenuEvent>
@@ -11,9 +11,9 @@
 #include "ModelViewer.h"
 #include "PostDoc.h"
 #include <PostGL/GLModel.h>
-#include <PostViewLib/PropertyList.h>
-#include <PostViewLib/ImageModel.h>
-#include <PostViewLib/GLImageRenderer.h>
+#include <PostLib/PropertyList.h>
+#include <PostLib/ImageModel.h>
+#include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
 #include "MainWindow.h"
 #include "GImageObject.h"

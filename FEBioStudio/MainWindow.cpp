@@ -5,9 +5,9 @@
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
 #include <QMessageBox>
-#include <PreViewLib/FEObject.h>
-#include <PreViewLib/PRVArchive.h>
-#include <PreViewIO/FileReader.h>
+#include <MeshTools/FEObject.h>
+#include <MeshTools/PRVArchive.h>
+#include <MeshIO/FileReader.h>
 #include <QtCore/QTimer>
 #include <QFileDialog>
 #include <FEBio/FEBioImport.h>
@@ -15,7 +15,7 @@
 #include "CreatePanel.h"
 #include "FileThread.h"
 #include "GLHighlighter.h"
-#include <PreViewIO/NikeImport.h>
+#include <MeshIO/NikeImport.h>
 #include <Abaqus/AbaqusImport.h>
 #include <QStyleFactory>
 #include "DlgImportAbaqus.h"
@@ -706,6 +706,8 @@ void CMainWindow::writeSettings()
 	settings.beginGroup("FolderSettings");
 	settings.setValue("currentPath", ui->currentPath);
 
+	settings.setValue("defaultProjectFolder", ui->m_defaultProjectFolder);
+
 	settings.setValue("febioPaths", ui->m_febio_path);
 	settings.setValue("febioInfo", ui->m_febio_info);
 
@@ -733,6 +735,8 @@ void CMainWindow::readSettings()
 
 	ui->m_febio_path = settings.value("febioPaths", ui->m_febio_path).toStringList();
 	ui->m_febio_info = settings.value("febioInfo", ui->m_febio_info).toStringList();
+
+	ui->m_defaultProjectFolder = settings.value("defaultProjectFolder", ui->m_defaultProjectFolder).toString();
 
 	QStringList folders = settings.value("folders").toStringList();
 	if (folders.isEmpty() == false)

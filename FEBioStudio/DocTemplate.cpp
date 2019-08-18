@@ -2,7 +2,7 @@
 #include "DocTemplate.h"
 #include <QtCore/QDir>
 #include <XML/XMLReader.h>
-#include <PreViewLib/FEProject.h>
+#include <MeshTools/FEProject.h>
 
 vector<DocTemplate> TemplateManager::m_doc;
 string TemplateManager::m_path = "$(PREVIEW_PATH)\\templates\\";

@@ -9,18 +9,18 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <PreViewLib/FEModifier.h>
+#include <MeshTools/FEModifier.h>
 #include <FEMLib/FEInterface.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEConnector.h>
-#include <PreViewLib/ParamBlock.h>
-#include <PreViewLib/GGroup.h>
-#include <PreViewLib/GDiscreteObject.h>
-#include <PreViewLib/FERigidConstraint.h>
+#include <MeshTools/ParamBlock.h>
+#include <MeshTools/GGroup.h>
+#include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
-#include <PreViewLib/GModifiedObject.h>
-#include <PreViewLib/FESurfaceModifier.h>
+#include <MeshTools/GModifiedObject.h>
+#include <MeshTools/FESurfaceModifier.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include "GLCamera.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <QDialog>
-#include <PreViewLib/LoadCurve.h>
+#include <MeshTools/LoadCurve.h>
 
 class QLineEdit;
 

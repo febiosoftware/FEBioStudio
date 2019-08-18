@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ui_materialeditor.h"
 #include <QComboBox>
-#include <PreViewLib/FEMaterialFactory.h>
+#include <MeshTools/FEMaterialFactory.h>
 #include <assert.h>
 
 void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly)

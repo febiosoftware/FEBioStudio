@@ -1,0 +1,424 @@
+// FEInterface.h: interface for the FEInterface class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#if !defined(AFX_FEINTERFACE_H__6AB8ECA7_5F31_42D3_889F_371842A52B22__INCLUDED_)
+#define AFX_FEINTERFACE_H__6AB8ECA7_5F31_42D3_889F_371842A52B22__INCLUDED_
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+#include "FEMLib/FEStepComponent.h"
+#include "MeshTools/FEItemListBuilder.h"
+#include "MeshTools/GMaterial.h"
+#include <list>
+using namespace std;
+
+//-----------------------------------------------------------------------------
+// Base class for contact interfaces
+class FEInterface : public FEStepComponent
+{
+public:
+	FEInterface(int ntype, FEModel* ps, int nstep);
+	virtual ~FEInterface();
+
+	int Type() { return m_ntype; }
+
+protected:
+	void SaveList(FEItemListBuilder* pitem, OArchive& ar);
+	FEItemListBuilder* LoadList(IArchive& ar);
+
+protected:
+	FEModel* m_ps;
+	int		m_ntype;
+};
+
+//-----------------------------------------------------------------------------
+//! This class is the base class for interfaces that only require one
+//! surface definition (e.g. rigid interface, rigid wall interface)
+class FESoloInterface : public FEInterface
+{
+public:
+	FESoloInterface(int ntype, FEModel* ps, int nstep);
+	~FESoloInterface();
+
+	FEItemListBuilder* GetItemList() { return m_pItem; }
+	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
+
+protected:
+	FEItemListBuilder*	m_pItem;	// list of items that define interface
+};
+
+//-----------------------------------------------------------------------------
+//! This class is the base class for interfaces that require two surfaces
+//!
+class FEPairedInterface : public FEInterface
+{
+public:
+	FEPairedInterface(int ntype, FEModel* ps, int nstep);
+	~FEPairedInterface();
+
+	void SetMaster(FEItemListBuilder* pg) { m_pMaster = pg; }
+	void SetSlave (FEItemListBuilder* pg) { m_pSlave  = pg; }
+
+	FEItemListBuilder*	GetMasterSurfaceList() { return m_pMaster; }
+	FEItemListBuilder*	GetSlaveSurfaceList () { return m_pSlave;  }
+
+	void SwapMasterSlave();
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+public:
+	FEItemListBuilder*	m_pSlave;	// slave items
+	FEItemListBuilder*	m_pMaster;	// master items
+};
+
+//-----------------------------------------------------------------------------
+//  This class implements the rigid node and facets interface
+//
+class FERigidInterface : public FESoloInterface
+{
+public:
+	FERigidInterface(FEModel* ps, int nstep = 0);
+	FERigidInterface(FEModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep = 0);
+	
+	GMaterial* GetRigidBody() { return m_pmat; }
+	void SetRigidBody(GMaterial* pm) { m_pmat = pm; }
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+protected:
+	GMaterial*	m_pmat;				// pointer to rigid material
+};
+
+//-----------------------------------------------------------------------------
+//  This class implements the rigid wall interface
+//
+class FERigidWallInterface : public FESoloInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, PA, PB, PC, PD, OFFSET };
+
+public:
+	FERigidWallInterface(FEModel* ps, int nstep = 0);
+	~FERigidWallInterface(){}
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+	FELoadCurve* GetLoadCurve() { return GetParamLC(OFFSET); }
+
+	void GetPlaneEquation(double a[4]);
+};
+
+//-----------------------------------------------------------------------------
+//  This class implements the rigid sphere contact interface
+//
+class FERigidSphereInterface : public FESoloInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, RADIUS, CENTER, UX, UY, UZ};
+
+public:
+	FERigidSphereInterface(FEModel* ps, int nstep = 0);
+	~FERigidSphereInterface(){}
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+	FELoadCurve* GetLoadCurve(int i);
+
+	double Radius();
+	vec3d Center();
+};
+
+//-----------------------------------------------------------------------------
+// This class implements a volume constraint
+class FEVolumeConstraint : public FESoloInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY };
+
+public:
+	FEVolumeConstraint(FEModel* ps, int nstep = 0);
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+// This class implements a symmetry plane constraint
+class FESymmetryPlane : public FESoloInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
+
+public:
+	FESymmetryPlane(FEModel* ps, int nstep = 0);
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+// This class implements a normal fluid flow constraint
+class FENormalFlowSurface : public FESoloInterface
+{
+public:
+    enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, RHS };
+    
+public:
+    FENormalFlowSurface(FEModel* ps, int nstep = 0);
+    
+    void Save(OArchive& ar);
+    void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+//  This class implements the sliding contact interface
+// NOTE: This class is now obsolete. It was deprecated since it does not map nicely to an FEBio contact interface
+//       It was replaced by the FESlidingWithGapsInterface and FEFacetOnFacetInterface.
+class FESlidingInterface : public FEPairedInterface
+{
+public:
+	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, NTYPE, MINAUG, MAXAUG, GAPTOL, SEGUP };
+
+public:
+	FESlidingInterface(FEModel* ps, int nstep = 0);
+	~FESlidingInterface() {}
+};
+
+//-----------------------------------------------------------------------------
+class FESlidingWithGapsInterface : public FEPairedInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, MINAUG, MAXAUG, GAPTOL, SEGUP };
+
+public:
+	FESlidingWithGapsInterface(FEModel* ps, int nstep = 0);
+	~FESlidingWithGapsInterface() {}
+};
+
+//-----------------------------------------------------------------------------
+class FEFacetOnFacetInterface : public FEPairedInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, MINAUG, MAXAUG, GAPTOL, SEGUP };
+
+public:
+	FEFacetOnFacetInterface(FEModel* ps, int nstep = 0);
+	~FEFacetOnFacetInterface() {}
+};
+
+//-----------------------------------------------------------------------------
+//  This class implements the tied contact interface
+//
+class FETiedInterface : public FEPairedInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
+public:
+	FETiedInterface(FEModel* ps, int nstep = 0);
+	~FETiedInterface(){}
+};
+
+//-----------------------------------------------------------------------------
+//  This class implements the facet-on-facet tied contact interface
+//
+class FEF2FTiedInterface : public FEPairedInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
+public:
+	FEF2FTiedInterface(FEModel* ps, int nstep = 0);
+	~FEF2FTiedInterface(){}
+};
+
+//-----------------------------------------------------------------------------
+//  This class implements the sticky contact interface
+//
+class FEStickyInterface : public FEPairedInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
+public:
+	FEStickyInterface(FEModel* ps, int nstep = 0);
+	~FEStickyInterface(){}
+};
+
+//-----------------------------------------------------------------------------
+// This class implements a periodic boundary constraint
+class FEPeriodicBoundary : public FEPairedInterface
+{
+public:
+	enum { LAUGON, ALTOL, PENALTY, TWOPASS };
+
+public:
+	FEPeriodicBoundary(FEModel* ps, int nstep = 0);
+	~FEPeriodicBoundary(){}
+};
+
+//-----------------------------------------------------------------------------
+// Biphasic-solid contact
+class FEPoroContact : public FEPairedInterface
+{
+public:
+	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, SEARCHRAD };
+
+public:
+	FEPoroContact(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FEPoroSoluteContact : public FEPairedInterface
+{
+public:
+	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, CONCPEN, AMBPRESS, AMBCONC, SEARCHRAD };
+
+public:
+	FEPoroSoluteContact(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FEMultiphasicContact : public FEPairedInterface
+{
+public:
+	enum {LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, PRESSPEN, SYMMETRIC, CONCPEN, AMBPRESS, AMBCONC, SEARCHRAD };
+    
+public:
+	FEMultiphasicContact(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FETensionCompressionInterface : public FEPairedInterface
+{
+public:
+	enum {LAUGON, ALTOL, GAPTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, SYMMETRIC, SEARCHRAD, NSEGUP, BTENSION, BFLIPMASTER, BFLIPSLAVE};
+
+public:
+	FETensionCompressionInterface(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FETiedBiphasicInterface : public FEPairedInterface
+{
+public:
+	enum {LAUGON, ALTOL, GAPTOL, PTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD};
+
+public:
+	FETiedBiphasicInterface(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FETiedMultiphasicInterface : public FEPairedInterface
+{
+public:
+	enum { LAUGON, ALTOL, GAPTOL, PTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD };
+
+public:
+	FETiedMultiphasicInterface(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FETiedElasticInterface : public FEPairedInterface
+{
+public:
+	enum { LAUGON, ALTOL, GAPTOL, PTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, PRS_PENALTY, SYMMETRIC, SEARCHRAD };
+
+public:
+	FETiedElasticInterface(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FEGapHeatFluxInterface : public FEPairedInterface
+{
+public:
+	FEGapHeatFluxInterface(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+//  This class implements a rigid joint
+//
+class FERigidJoint : public FEInterface
+{
+public:
+	enum {TOL, PENALTY, RJ};
+
+public:
+	FERigidJoint(FEModel* ps, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+public:
+	GMaterial*	m_pbodyA;	// rigid body a
+	GMaterial*	m_pbodyB;	// rigid body b
+};
+
+//-----------------------------------------------------------------------------
+// This class implements a spring-tied interface, that is, an interface
+// where the nodes of one surface are connected with springs to the other
+// surface.
+class FESpringTiedInterface : public FEPairedInterface
+{
+public:
+	enum { ECONST };
+
+public:
+	FESpringTiedInterface(FEModel* ps, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
+	double SpringConstant() const;
+
+	void BuildSpringList(vector<pair<int, int> >& L);
+};
+
+//-----------------------------------------------------------------------------
+// This class implements a linear constraint
+// TODO: Figure out a way to integrate this
+class FELinearConstraintSet
+{
+public:
+	// a linear constraint defined via LCDOFs
+	class LinearConstraint
+	{
+	public:
+		// linear constraint dof
+		class DOF
+		{
+		public:
+			DOF() { node = -1; bc = 0; s = 0.0; }
+
+		public:
+			int		node;
+			int		bc;
+			double	s;
+		};
+
+	public:
+		LinearConstraint(){}
+		LinearConstraint(const LinearConstraint& LC) { m_dof = LC.m_dof; }
+		LinearConstraint& operator = (const LinearConstraint& LC) { m_dof = LC.m_dof; return (*this); }
+
+	public:
+		vector<DOF>	m_dof;
+	};
+
+public:
+	FELinearConstraintSet();
+	FELinearConstraintSet(const FELinearConstraintSet& lcs);
+	FELinearConstraintSet& operator = (const FELinearConstraintSet& lcs);
+
+public:
+	double	m_atol;
+	double	m_penalty;
+	int		m_nmaxaug;
+
+public:
+	vector<LinearConstraint>	m_set;
+};
+
+#endif // !defined(AFX_FEINTERFACE_H__6AB8ECA7_5F31_42D3_889F_371842A52B22__INCLUDED_)

@@ -6,6 +6,11 @@
 #include <QLabel>
 #include <QStackedWidget>
 #include <QTabWidget>
+#include <QLineEdit>
+#include <QFormLayout>
+#include <QToolButton>
+#include <QFileDialog>
+#include <QMessageBox>
 #include "DocTemplate.h"
 #include "MainWindow.h"
 
@@ -16,6 +21,8 @@ public:
 	QListWidget*	list;
 	QTabWidget*		tab;
 	QListWidget*	recentFilesList;
+	QLineEdit*		projectFolder;
+	QLineEdit*		projectName;
 
 public:
 	void setup(::CMainWindow* wnd, QDialog* dlg)
@@ -47,7 +54,29 @@ public:
 		h->addWidget(list);
 		h->addWidget(s);
 
-		newProject->setLayout(h);
+		projectFolder = new QLineEdit;
+
+		QToolButton* tb = new QToolButton;
+		tb->setIcon(QIcon(":/icons/open.png"));
+		tb->setToolTip(QString("Select the project folder."));
+
+		QHBoxLayout* selectFolder = new QHBoxLayout;
+		selectFolder->addWidget(projectFolder);
+		selectFolder->addWidget(tb);
+		selectFolder->setMargin(0);
+		selectFolder->setSpacing(1);
+
+		QFormLayout* f = new QFormLayout;
+		f->addRow("Project name:"  , projectName   = new QLineEdit);
+		f->addRow("Project folder:", selectFolder);
+
+		projectName->setText("MyProject");
+
+		QVBoxLayout* v = new QVBoxLayout;
+		v->addLayout(h);
+		v->addLayout(f);
+
+		newProject->setLayout(v);
 
 		tab->addTab(newProject, "New Project");
 
@@ -64,11 +93,15 @@ public:
 
 		dlg->setLayout(mainLayout);
 
+		// Make the project name the focus
+		projectName->setFocus();
+
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(list, SIGNAL(currentRowChanged(int)), s, SLOT(setCurrentIndex(int)));
 		QObject::connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), dlg, SLOT(accept()));
 		QObject::connect(recentFilesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), dlg, SLOT(accept()));
+		QObject::connect(tb, SIGNAL(clicked()), dlg, SLOT(onProjectFolder()));
 	}
 };
 
@@ -81,6 +114,19 @@ CDlgNew::CDlgNew(CMainWindow* parent ) : QDialog(parent), ui(new Ui::CDlgNew)
 void CDlgNew::accept()
 {
 	ui->m_nchoice = ui->list->currentIndex().row();
+
+	if (ui->projectName->text().isEmpty())
+	{
+		QMessageBox::critical(this, "FEBio Studio", "You must enter a project name.");
+		return;
+	}
+
+	if (ui->projectFolder->text().isEmpty())
+	{
+		QMessageBox::critical(this, "FEBio Studio", "You must select a valid project folder.");
+		return;
+	}
+
 	QDialog::accept();
 }
 
@@ -94,9 +140,42 @@ bool CDlgNew::createNew()
 	return (ui->tab->currentIndex() == 0);
 }
 
+QString CDlgNew::getProjectName()
+{
+	return ui->projectName->text();
+}
+
+QString CDlgNew::getProjectFolder()
+{
+	return ui->projectFolder->text();
+}
+
+void CDlgNew::setProjectFolder(const QString& projectFolder)
+{
+	ui->projectFolder->setText(projectFolder);
+}
+
 QString CDlgNew::getRecentFileName()
 {
 	QListWidgetItem* item = ui->recentFilesList->currentItem();
 	if (item) return item->text();
 	else return QString();
+}
+
+void CDlgNew::onProjectFolder()
+{
+	QFileDialog dlg(this, "Project Folder");
+	dlg.setFileMode(QFileDialog::Directory);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QString path = ui->projectFolder->text();
+	if (path.isEmpty() == false) dlg.setDirectory(path);
+	if (dlg.exec())
+	{
+		// get the file name
+		QStringList files = dlg.selectedFiles();
+		QString path = files.first();
+
+		ui->projectFolder->setText(path);
+	}
 }

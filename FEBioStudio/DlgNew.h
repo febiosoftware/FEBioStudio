@@ -9,6 +9,8 @@ class CMainWindow;
 
 class CDlgNew : public QDialog
 {
+	Q_OBJECT
+
 public:
 	CDlgNew(CMainWindow* parent);
 
@@ -19,6 +21,15 @@ public:
 	bool createNew();
 
 	QString getRecentFileName();
+
+	QString getProjectName();
+
+	QString getProjectFolder();
+
+	void setProjectFolder(const QString& projectFolder);
+
+public slots:
+	void onProjectFolder();
 
 public:
 	Ui::CDlgNew*	ui;

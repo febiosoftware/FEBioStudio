@@ -1,0 +1,916 @@
+#include "MeshTools.h"
+
+// calculate the closest-fitting circle of a triangle
+// This assumes a are in fact 2D vectors
+void fitCircle(const vec3d a[3], vec3d& o, double& R)
+{
+	// setup linear system
+	double A[2][2];
+	A[0][0] = 2.0*(a[0].x - a[1].x); A[0][1] = 2.0*(a[0].y - a[1].y);
+	A[1][0] = 2.0*(a[0].x - a[2].x); A[1][1] = 2.0*(a[0].y - a[2].y);
+
+	double b[2];
+	b[0] = a[0].x*a[0].x - a[1].x*a[1].x + a[0].y*a[0].y - a[1].y*a[1].y;
+	b[1] = a[0].x*a[0].x - a[2].x*a[2].x + a[0].y*a[0].y - a[2].y*a[2].y;
+
+	// solve linear system
+	double D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+	o.x = (A[1][1] * b[0] - A[0][1] * b[1]) / D;
+	o.y = (-A[1][0] * b[0] + A[0][0] * b[1]) / D;
+
+	// calculate radius
+	R = sqrt((a[0].x - o.x)*(a[0].x - o.x) + (a[0].y - o.y)*(a[0].y - o.y));
+}
+
+double area_triangle(vec3d r[3])
+{
+	vec3d e1 = r[1] - r[0];
+	vec3d e2 = r[2] - r[0];
+
+	return (e1 ^ e2).Length()*0.5;
+}
+
+double area_triangle(const vec3d& a, const vec3d& b, const vec3d& c)
+{
+	vec3d e1 = b - a;
+	vec3d e2 = c - a;
+
+	return (e1 ^ e2).Length()*0.5;
+}
+
+//-----------------------------------------------------------------------------
+// This function calculates the intersection of a ray with a triangle
+// and returns true if the ray intersects the triangle.
+//
+bool IntersectTri(vec3d* y, vec3d r, vec3d n, vec3d& q, double& g)
+{
+	vec3d e[2], E[2];
+	double G[2][2], Gi[2][2], D;
+
+	// create base vectors on triangle
+	e[0] = y[1] - y[0];
+	e[1] = y[2] - y[0];
+
+	// create triangle normal
+	vec3d m = e[0] ^ e[1]; m.Normalize();
+
+	double eps = 0.01;
+
+	double d = n*m;
+	if (d != 0)
+	{
+		// distance from r to plane of triangle
+		g = m*(y[0] - r) / d;
+
+		// intersection point with plane of triangle
+		q = r + n*g;
+
+		// next, we decompose q into its components
+		// in the triangle basis
+		// we need to create the dual basis
+		// first, we calculate the metric tensor
+		G[0][0] = e[0] * e[0]; G[0][1] = e[0] * e[1];
+		G[1][0] = e[1] * e[0]; G[1][1] = e[1] * e[1];
+
+		// and its inverse
+		D = G[0][0] * G[1][1] - G[0][1] * G[1][0];
+		Gi[0][0] = 1 / D*G[1][1]; Gi[0][1] = -1 / D*G[0][1];
+		Gi[1][0] = -1 / D*G[1][0]; Gi[1][1] = 1 / D*G[0][0];
+
+		// build dual basis
+		E[0] = e[0] * Gi[0][0] + e[1] * Gi[0][1];
+		E[1] = e[0] * Gi[1][0] + e[1] * Gi[1][1];
+
+		// get the components
+		double rp = E[0] * (q - y[0]);
+		double sp = E[1] * (q - y[0]);
+
+		// see if the intersection point is inside the triangle
+		if ((rp >= -eps) && (sp >= -eps) && (rp + sp <= 1 + eps)) return true;
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+//! This function calculates the intersection of a ray with a quad
+//! and returns true if the ray intersected.
+//!
+bool IntersectQuad(vec3d* y, vec3d r, vec3d n, vec3d& q, double& g)
+{
+	// first we're going to see if the ray intersects the two subtriangles
+	vec3d x1[3], x2[3];
+	x1[0] = y[0]; x2[0] = y[2];
+	x1[1] = y[1]; x2[1] = y[3];
+	x1[2] = y[3]; x2[2] = y[1];
+
+	bool b = false;
+	double rp, sp;
+
+	double eps = 0.01;
+
+	if (IntersectTri(x1, r, n, q, g))
+	{
+		// we've intersected the first triangle
+		b = true;
+		rp = 0;
+		sp = 0;
+	}
+	else if (IntersectTri(x2, r, n, q, g))
+	{
+		// we've intersected the second triangle
+		b = true;
+		rp = 0;
+		sp = 0;
+	}
+
+	// if one of the triangels was intersected,
+	// we calculate a more accurate projection
+	if (b)
+	{
+		mat3d A;
+		vec3d dx;
+		vec3d F, F1, F2, F3;
+		double H[4], H1[4], H2[4];
+
+		double l1 = rp;
+		double l2 = sp;
+		double l3 = g;
+
+		int nn = 0;
+		int maxn = 5;
+		do
+		{
+			// shape functions of quad
+			H[0] = 0.25*(1 - l1)*(1 - l2);
+			H[1] = 0.25*(1 + l1)*(1 - l2);
+			H[2] = 0.25*(1 + l1)*(1 + l2);
+			H[3] = 0.25*(1 - l1)*(1 + l2);
+			q = y[0] * H[0] + y[1] * H[1] + y[2] * H[2] + y[3] * H[3];
+
+			// shape function derivatives
+			H1[0] = -0.25*(1 - l2); H2[0] = -0.25*(1 - l1);
+			H1[1] = 0.25*(1 - l2); H2[1] = -0.25*(1 + l1);
+			H1[2] = 0.25*(1 + l2); H2[2] = 0.25*(1 + l1);
+			H1[3] = -0.25*(1 + l2); H2[3] = 0.25*(1 - l1);
+
+			// calculate residual
+			F = r + n*l3 - q;
+
+			// residual derivatives
+			F1 = -y[0] * H1[0] - y[1] * H1[1] - y[2] * H1[2] - y[3] * H1[3];
+			F2 = -y[0] * H2[0] - y[1] * H2[1] - y[2] * H2[2] - y[3] * H2[3];
+			F3 = n;
+
+			// set up the tangent matrix
+			A[0][0] = F1.x; A[0][1] = F2.x; A[0][2] = F3.x;
+			A[1][0] = F1.y; A[1][1] = F2.y; A[1][2] = F3.y;
+			A[2][0] = F1.z; A[2][1] = F2.z; A[2][2] = F3.z;
+
+			// calculate solution increment
+			mat3d Ai;
+			Ai = A.inverse();
+			dx = -(Ai*F);
+
+			// update solution
+			l1 += dx.x;
+			l2 += dx.y;
+			l3 += dx.z;
+
+			++nn;
+		} while ((dx.Length() > 1e-7) && (nn < maxn));
+
+		// store results
+		rp = l1;
+		sp = l2;
+		g = l3;
+
+		// see if the point is inside the quad
+		if ((rp >= -1 - eps) && (rp <= 1 + eps) &&
+			(sp >= -1 - eps) && (sp <= 1 + eps)) return true;
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Project a point to the mesh
+//
+vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t)
+{
+	// tag all surface nodes
+	mesh.TagAllNodes(0);
+
+	// loop over all faces to identify the nodes that are facing r
+	for (int i = 0; i<mesh.Faces(); ++i)
+	{
+		// only pick faces that are facing r
+		FEFace& f = mesh.Face(i);
+		if (t*f.m_fn < 0)
+		{
+			int n = f.Nodes();
+			for (int j = 0; j<n; ++j) mesh.Node(f.n[j]).m_ntag = 1;
+		}
+	}
+
+	// find the closest tagged nodes
+	double L, Lmin = 1e99;
+	vec3d p = r, q;
+	for (int i = 0; i<mesh.Nodes(); ++i)
+	{
+		FENode& node = mesh.Node(i);
+		if (node.m_ntag)
+		{
+			q = r + t*((node.r - r)*t);
+			L = fabs((node.r - q).Length());
+			if (L < Lmin)
+			{
+				p = node.r;
+				Lmin = L;
+			}
+		}
+	}
+
+	return p;
+}
+
+//-----------------------------------------------------------------------------
+// Project a point to the surface of a FE mesh
+//
+vec3d ProjectToFace(FEMesh& mesh, vec3d p, FEFace &f, double &r, double &s, bool bedge)
+{
+	double R[2], u[2], D;
+
+	vec3d q(0, 0, 0), y[4];
+
+	double gr[4] = { -1, +1, +1, -1 };
+	double gs[4] = { -1, -1, +1, +1 };
+	double H[4], Hr[4], Hs[4], Hrs[4];
+	double normu;
+
+	int i, j;
+	int NMAX = 10, n = 0;
+
+	// number of face nodes
+	int nf = f.Nodes();
+
+	// get the elements nodal positions
+	for (i = 0; i<nf; ++i) y[i] = mesh.Node(f.n[i]).r;
+
+	// loop until converged
+	do
+	{
+		if (nf == 4)
+		{
+			// do quadrilaterals
+			for (i = 0; i<4; ++i)
+			{
+				H[i] = 0.25*(1 + gr[i] * r)*(1 + gs[i] * s);
+
+				Hr[i] = 0.25*gr[i] * (1 + gs[i] * s);
+				Hs[i] = 0.25*gs[i] * (1 + gr[i] * r);
+
+				Hrs[i] = 0.25*gr[i] * gs[i];
+			}
+		}
+		else
+		{
+			// do triangles
+			H[0] = 1 - r - s;
+			H[1] = r;
+			H[2] = s;
+			Hr[0] = -1; Hs[0] = -1;
+			Hr[1] = 1; Hs[1] = 0;
+			Hr[2] = 0; Hs[2] = 1;
+			Hrs[0] = Hrs[1] = Hrs[2] = 0;
+		}
+
+		// set up the system of equations
+		q = vec3d(0, 0, 0);
+		R[0] = R[1] = 0;
+		double A[2][2] = { 0 };
+		for (i = 0; i<nf; ++i)
+		{
+			R[0] -= (p*y[i])*Hr[i];
+			R[1] -= (p*y[i])*Hs[i];
+
+			A[0][1] += (p*y[i])*Hrs[i];
+			A[1][0] += (p*y[i])*Hrs[i];
+
+			for (j = 0; j<nf; ++j)
+			{
+				R[0] -= -H[j] * Hr[i] * (y[i] * y[j]);
+				R[1] -= -H[j] * Hs[i] * (y[i] * y[j]);
+
+				A[0][0] += -(y[i] * y[j])*(Hr[i] * Hr[j]);
+				A[1][1] += -(y[i] * y[j])*(Hs[i] * Hs[j]);
+
+				A[0][1] += -(y[i] * y[j])*(Hs[j] * Hr[i] + H[i] * Hrs[j]);
+				A[1][0] += -(y[i] * y[j])*(Hr[j] * Hs[i] + H[i] * Hrs[j]);
+			}
+
+			q += y[i] * H[i];
+		}
+
+		// determinant of A
+		D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+
+		// solve for u = A^(-1)*R
+		u[0] = (A[1][1] * R[0] - A[0][1] * R[1]) / D;
+		u[1] = (A[0][0] * R[1] - A[1][0] * R[0]) / D;
+
+		normu = sqrt(u[0] * u[0] + u[1] * u[1]);
+
+		r += u[0];
+		s += u[1];
+
+		++n;
+	} while ((normu > 1e-7) && (n < NMAX));
+
+	if (bedge)
+	{
+		if (nf == 4)
+		{
+			if (r < -1) q = ProjectToEdge(y[0], y[3], p, s);
+			else if (r >  1) q = ProjectToEdge(y[1], y[2], p, s);
+			else if (s < -1) q = ProjectToEdge(y[0], y[1], p, s);
+			else if (s >  1) q = ProjectToEdge(y[3], y[2], p, s);
+		}
+		else
+		{
+			if (r < 0) q = ProjectToEdge(y[0], y[2], p, s);
+			else if (s < 0) q = ProjectToEdge(y[0], y[1], p, s);
+			else if (r + s>1) q = ProjectToEdge(y[1], y[2], p, s);
+		}
+	}
+
+	return q;
+}
+
+//-----------------------------------------------------------------------------
+// Project a node to an edge
+vec3d ProjectToEdge(vec3d e1, vec3d e2, vec3d p, double& r)
+{
+	vec3d t = e2 - e1;
+	r = (p - e1)*t / (t*t);
+	if (r < 0) r = 0;
+	if (r > 1) r = 1;
+	return e1 + t*r;
+}
+
+
+//-----------------------------------------------------------------------------
+bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap)
+{
+	int NF = mesh.Faces();
+	vec3d r, rmin;
+	double g, gmin = 1e99;
+	bool b = false;
+	int imin = -1;
+	for (int i = 0; i<NF; ++i)
+	{
+		FEFace& f = mesh.Face(i);
+		if (FindIntersection(mesh, f, x, n, r, g))
+		{
+			if ((g > 0.0) && (g < gmin))
+			{
+				gmin = g;
+				rmin = r;
+				b = true;
+				imin = i;
+			}
+		}
+	}
+
+	if (b) 
+	{
+		q = rmin;
+
+		if (snap && (imin != -1))
+		{
+			FEFace& face = mesh.Face(imin);
+			int nf = face.Nodes();
+			double Dmin = 0.0;
+			rmin = q;
+			for (int i=0; i<nf; ++i)
+			{
+				vec3d ri = mesh.Node(face.n[i]).r;
+				double D = (ri - q).SqrLength();
+				if ((i==0) || (D < Dmin))
+				{
+					rmin = ri;
+					Dmin = D;
+				}
+			}
+			q = rmin;
+		}
+	}
+
+	return b;
+}
+
+//-----------------------------------------------------------------------------
+// Find the intersection.
+//
+bool FindIntersection(FEMeshBase& mesh, FEFace &f, const vec3d& x, const vec3d& n, vec3d& q, double& g)
+{
+	int N = f.Nodes();
+
+	vec3d y[FEFace::MAX_NODES];
+	for (int i = 0; i<N; ++i) y[i] = mesh.Node(f.n[i]).r;
+
+	// call the correct intersection function
+	if (N == 3) return IntersectTri(y, x, n, q, g);
+	else if (N == 4) return IntersectQuad(y, x, n, q, g);
+
+	// if we get here, the ray did not intersect the element
+	return false;
+}
+
+#include <set>
+using namespace std;
+
+bool projectToLine(const vec3d& p, const vec3d& r0, const vec3d& r1, vec3d& q)
+{
+	vec3d t = r1 - r0;
+	double tt = t*t;
+	if (tt != 0.0)
+	{
+		double l = (t*(p - r0)) / tt;
+		q = r0 + t*l;
+		return ((l >= 0) && (l <= 1.0));
+	}
+	else return false;
+}
+
+bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const vec3d& r2, vec3d& q)
+{
+	vec3d e1 = r1 - r0;
+	vec3d e2 = r2 - r0;
+
+	vec3d N = e1 ^ e2;
+	double NN = N*N;
+	if (NN != 0.0)
+	{
+		double l = -((p - r0)*N) / NN;
+		q = p + N*l;
+
+		double G[2][2];
+		G[0][0] = e1 * e1; G[0][1] = e1 * e2;
+		G[1][0] = e2 * e1; G[1][1] = e2 * e2;
+
+		// and its inverse
+		double D = G[0][0] * G[1][1] - G[0][1] * G[1][0];
+		double Gi[2][2];
+		Gi[0][0] = 1 / D*G[1][1]; Gi[0][1] = -1 / D*G[0][1];
+		Gi[1][0] = -1 / D*G[1][0]; Gi[1][1] = 1 / D*G[0][0];
+
+		// build dual basis
+		vec3d E1 = e1 * Gi[0][0] + e2 * Gi[0][1];
+		vec3d E2 = e1 * Gi[1][0] + e2 * Gi[1][1];
+
+		// get the components
+		double rp = E1 * (q - r0);
+		double sp = E2 * (q - r0);
+
+		return ((rp >= 0) && (sp >= 0) && (rp + sp <= 1.0));
+
+		//		vec3d s = q - r0;
+		//		return ((N*(e1 ^ s) >= 0) && (N*(e2 ^ s) <= 0));
+	}
+	else return false;
+}
+
+
+//-----------------------------------------------------------------------------
+// Project a point to the surface of a FE mesh
+//
+bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q)
+{
+	double R[2], u[2], D;
+
+	double gr[4] = { -1, +1, +1, -1 };
+	double gs[4] = { -1, -1, +1, +1 };
+	double H[4], Hr[4], Hs[4], Hrs[4];
+	double normu;
+
+	int i, j;
+	int NMAX = 10, n = 0;
+
+	// loop until converged
+	double r = 0.0, s = 0.0;
+	do
+	{
+		// do quadrilaterals
+		for (i = 0; i<4; ++i)
+		{
+			H[i] = 0.25*(1 + gr[i] * r)*(1 + gs[i] * s);
+
+			Hr[i] = 0.25*gr[i] * (1 + gs[i] * s);
+			Hs[i] = 0.25*gs[i] * (1 + gr[i] * r);
+
+			Hrs[i] = 0.25*gr[i] * gs[i];
+		}
+
+		// set up the system of equations
+		q = vec3d(0, 0, 0);
+		R[0] = R[1] = 0;
+		double A[2][2] = { 0 };
+		for (i = 0; i<4; ++i)
+		{
+			R[0] -= (p*y[i])*Hr[i];
+			R[1] -= (p*y[i])*Hs[i];
+
+			A[0][1] += (p*y[i])*Hrs[i];
+			A[1][0] += (p*y[i])*Hrs[i];
+
+			for (j = 0; j<4; ++j)
+			{
+				R[0] -= -H[j] * Hr[i] * (y[i] * y[j]);
+				R[1] -= -H[j] * Hs[i] * (y[i] * y[j]);
+
+				A[0][0] += -(y[i] * y[j])*(Hr[i] * Hr[j]);
+				A[1][1] += -(y[i] * y[j])*(Hs[i] * Hs[j]);
+
+				A[0][1] += -(y[i] * y[j])*(Hs[j] * Hr[i] + H[i] * Hrs[j]);
+				A[1][0] += -(y[i] * y[j])*(Hr[j] * Hs[i] + H[i] * Hrs[j]);
+			}
+
+			q += y[i] * H[i];
+		}
+
+		// determinant of A
+		D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+
+		// solve for u = A^(-1)*R
+		u[0] = (A[1][1] * R[0] - A[0][1] * R[1]) / D;
+		u[1] = (A[0][0] * R[1] - A[1][0] * R[0]) / D;
+
+		normu = sqrt(u[0] * u[0] + u[1] * u[1]);
+
+		r += u[0];
+		s += u[1];
+
+		++n;
+	}
+	while ((normu > 1e-7) && (n < NMAX));
+
+	const double eps = 0.001;
+	return ((r > -1.0 - eps) && (r < 1.0 + eps) && (s > -1.0 - eps) && (s < 1.0 + eps));
+}
+
+vec3d projectToEdge(const FEMeshBase& m, const vec3d& p, int gid)
+{
+	double Dmin = 1e99;
+	vec3d rmin = p;
+	for (int i = 0; i<m.Edges(); ++i)
+	{
+		const FEEdge& edge = m.Edge(i);
+		if (edge.m_gid == gid)
+		{
+			// calculate distance to edge nodes
+			int ne = edge.Nodes();
+			for (int j = 0; j<ne; ++j)
+			{
+				vec3d rj = m.Node(edge.n[j]).r;
+				double dj = (p - rj).SqrLength();
+				if (dj < Dmin)
+				{
+					rmin = rj;
+					Dmin = dj;
+				}
+			}
+
+			// try to project it on the edge
+			vec3d q(0, 0, 0);
+			if (projectToLine(p, m.Node(edge.n[0]).r, m.Node(edge.n[1]).r, q))
+			{
+				double dj = (p - q).SqrLength();
+				if (dj < Dmin)
+				{
+					rmin = q;
+					Dmin = dj;
+				}
+			}
+		}
+	}
+
+	return rmin;
+}
+
+vec3d projectToSurface(const FEMeshBase& m, const vec3d& p, int gid, int* faceID)
+{
+	double Dmin = 1e99;
+	vec3d rmin = p;
+	vec3d r[4];
+	if (faceID) *faceID = -1;
+	for (int i = 0; i<m.Faces(); ++i)
+	{
+		const FEFace& face = m.Face(i);
+		if ((face.m_gid == gid) || (gid == -1))
+		{
+			int nf = face.Nodes();
+			for (int j = 0; j<nf; ++j) r[j] = m.Node(face.n[j]).r;
+
+			// calculate distance to face nodes
+			for (int j = 0; j<nf; ++j)
+			{
+				double dj = (p - r[j]).SqrLength();
+				if (dj < Dmin)
+				{
+					rmin = r[j];
+					Dmin = dj;
+				}
+			}
+
+			// try to project it on the face
+			vec3d q(0, 0, 0);
+			bool bproject = false;
+			if (nf == 3) bproject = projectToTriangle(p, r[0], r[1], r[2], q);
+			else if (nf == 4) bproject = projectToQuad(p, r, q);
+
+			if (bproject)
+			{
+				double dj = (p - q).SqrLength();
+				if (dj < Dmin)
+				{
+					rmin = q;
+					Dmin = dj;
+					if (faceID) *faceID = i;
+				}
+			}
+		}
+	}
+
+	return rmin;
+}
+
+vec3d projectToPatch(const FEMeshBase& m, const vec3d& p, int gid, int faceID, int l)
+{
+	double Dmin = 1e99;
+	vec3d rmin = p;
+	vec3d r[3];
+
+	set<int> patch;
+	patch.insert(faceID);
+	for (int i = 0; i<l; ++i)
+	{
+		set<int> tmp;
+		for (set<int>::iterator it = patch.begin(); it != patch.end(); ++it)
+		{
+			const FEFace& face = m.Face(*it);
+			int ne = face.Edges();
+			for (int j = 0; j<ne; ++j)
+			{
+				if (face.m_nbr[j] >= 0)
+					tmp.insert(face.m_nbr[j]);
+			}
+		}
+
+		for (set<int>::iterator it = tmp.begin(); it != tmp.end(); ++it)
+		{
+			patch.insert(*it);
+		}
+	}
+
+	for (set<int>::iterator it = patch.begin(); it != patch.end(); ++it)
+	{
+		const FEFace& face = m.Face(*it);
+		if (face.m_gid == gid)
+		{
+			assert(face.Type() == FE_FACE_TRI3);
+			int nf = face.Nodes();
+			for (int j = 0; j<nf; ++j) r[j] = m.Node(face.n[j]).r;
+
+			// calculate distance to face nodes
+			for (int j = 0; j<nf; ++j)
+			{
+				double dj = (p - r[j]).SqrLength();
+				if (dj < Dmin)
+				{
+					rmin = r[j];
+					Dmin = dj;
+				}
+			}
+
+			// try to project it on the face
+			vec3d q(0, 0, 0);
+			if (projectToTriangle(p, r[0], r[1], r[2], q))
+			{
+				double dj = (p - q).SqrLength();
+				if (dj < Dmin)
+				{
+					rmin = q;
+					Dmin = dj;
+				}
+			}
+		}
+	}
+
+	return rmin;
+}
+
+
+//-----------------------------------------------------------------------------
+// See if two edges intersect in plane (n0, N)
+// returns:
+// 0 = no intersection
+// 1 = intersects at node n0
+// 2 = intersects at node n1
+// 3 = proper intersection
+// 4 = edges coincide at points
+// 5 = edges are identical
+int edgeIntersect(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d& r3, vec3d N, vec3d& q, double& L, const double eps)
+{
+	// see if the edges are identical
+	if ((r0 == r2) && (r1 == r3)) return 5;
+	if ((r0 == r3) && (r1 == r2)) return 5;
+
+	// see if any nodes coincides
+	if ((r0 == r2) || (r0 == r3)) return 4;
+	if ((r1 == r2) || (r1 == r3)) return 4;
+
+	double tol = eps;
+
+	//		vec3d T = N^(r1 - r0);
+	//		N = (r1 - r0) ^ T;
+
+	// project all points onto the plane defined by (c0;N)
+	vec3d a = r1 - N*((r1 - r0)*N);
+	vec3d b = r2 - N*((r2 - r0)*N);
+	vec3d c = r3 - N*((r3 - r0)*N);
+
+	vec3d t = a - r0;
+	vec3d r = c - b;
+	vec3d p = b - r0;
+
+	// Rotate the vectors into this plane
+	quatd Q(N, vec3d(0, 0, 1)), Qi = Q.Inverse();
+	Q.RotateVector(t);
+	Q.RotateVector(r);
+	Q.RotateVector(p);
+
+	double A[2][2], B[2];
+	A[0][0] = t.x; A[0][1] = -r.x; B[0] = p.x;
+	A[1][0] = t.y; A[1][1] = -r.y; B[1] = p.y;
+
+	// calculate inverse
+	double D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+	if (D != 0.0)
+	{
+		double Ai[2][2];
+		Ai[0][0] = A[1][1] / D; Ai[0][1] = -A[0][1] / D;
+		Ai[1][0] = -A[1][0] / D; Ai[1][1] = A[0][0] / D;
+
+		double lm = Ai[0][0] * B[0] + Ai[0][1] * B[1];
+		double mu = Ai[1][0] * B[0] + Ai[1][1] * B[1];
+
+		if ((mu >= 0) && (mu <= 1))
+		{
+			if ((lm >= 0) && (lm <= tol))
+			{
+				q = r0;
+				return 1;
+			}
+
+			if ((lm <= 1.0) && (lm >= 1.0 - tol))
+			{
+				q = r1;
+				return 2;
+			}
+
+			if ((lm > tol) && (lm < 1 - tol))
+			{
+				// it's a proper intersection
+				q = r0 + (r1 - r0)*lm;
+
+				// calculate the 
+				vec3d s = r2 + (r3 - r2)*mu;
+				L = (s - q).Length();
+
+				return 3;
+			}
+		}
+	}
+
+	return 0;
+}
+
+// same as above, except the normal is defined by the cross product of the two edges
+int edgeIntersect(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d& r3, vec3d& q, double& L, const double eps)
+{
+	// see if the edges are identical
+	if ((r0 == r2) && (r1 == r3)) return 5;
+	if ((r0 == r3) && (r1 == r2)) return 5;
+
+	// see if any nodes coincides
+	if ((r0 == r2) || (r0 == r3)) return 4;
+	if ((r1 == r2) || (r1 == r3)) return 4;
+
+	double tol = eps;
+
+	// calculate the normal
+	vec3d N = (r1 - r0) ^ (r3 - r2);
+	N.Normalize();
+	if (N.SqrLength() == 0.0) return 0;
+
+	// project all points onto the plane defined by (c0;N)
+	vec3d a = r1 - N*((r1 - r0)*N);
+	vec3d b = r2 - N*((r2 - r0)*N);
+	vec3d c = r3 - N*((r3 - r0)*N);
+
+	vec3d t = a - r0;
+	vec3d r = c - b;
+	vec3d p = b - r0;
+
+	// Rotate the vectors into this plane
+	quatd Q(N, vec3d(0, 0, 1)), Qi = Q.Inverse();
+	Q.RotateVector(t);
+	Q.RotateVector(r);
+	Q.RotateVector(p);
+
+	double A[2][2], B[2];
+	A[0][0] = t.x; A[0][1] = -r.x; B[0] = p.x;
+	A[1][0] = t.y; A[1][1] = -r.y; B[1] = p.y;
+
+	// calculate inverse
+	double D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+	if (D != 0.0)
+	{
+		double Ai[2][2];
+		Ai[0][0] = A[1][1] / D; Ai[0][1] = -A[0][1] / D;
+		Ai[1][0] = -A[1][0] / D; Ai[1][1] = A[0][0] / D;
+
+		double lm = Ai[0][0] * B[0] + Ai[0][1] * B[1];
+		double mu = Ai[1][0] * B[0] + Ai[1][1] * B[1];
+
+		if ((mu >= 0) && (mu <= 1))
+		{
+			if ((lm >= 0) && (lm <= tol))
+			{
+				q = r0;
+				return 1;
+			}
+
+			if ((lm <= 1.0) && (lm >= 1.0 - tol))
+			{
+				q = r1;
+				return 2;
+			}
+
+			if ((lm > tol) && (lm < 1 - tol))
+			{
+				// it's a proper intersection
+				q = r0 + (r1 - r0)*lm;
+
+				// calculate the 
+				vec3d s = r2 + (r3 - r2)*mu;
+				L = (s - q).Length();
+
+				return 3;
+			}
+		}
+	}
+
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+// this calculates the ratio of the shortest diagonal to the longest edge
+double TriangleQuality(vec3d r[3])
+{
+	// get the edge lengths
+	double l01 = (r[0] - r[1])*(r[0] - r[1]);
+	double l12 = (r[1] - r[2])*(r[1] - r[2]);
+	double l20 = (r[2] - r[0])*(r[2] - r[0]);
+
+	// get the max edge length
+	double lmax = l01;
+	if (l12 > lmax) lmax = l12;
+	if (l20 > lmax) lmax = l20;
+
+	// calculate the diagonals
+	double D[3];
+	for (int i = 0; i<3; ++i)
+	{
+		int a = i;
+		int b = (i + 1) % 3;
+		int c = (i + 2) % 3;
+		vec3d ab = r[b] - r[a];
+		vec3d ac = r[c] - r[a];
+		double l = (ac*ab) / (ab*ab);
+		vec3d p = r[a] + ab*l;
+		vec3d pc = r[c] - p;
+		D[i] = pc*pc;
+	}
+
+	// get the smallest diagonal
+	double dmin = D[0];
+	if (D[1] < dmin) dmin = D[1];
+	if (D[2] < dmin) dmin = D[2];
+
+	// the quality is the ratio of shortest diagonal to longest edge
+	double Q2 = dmin / lmax;
+
+	return sqrt(Q2);
+}

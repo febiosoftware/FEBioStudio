@@ -11,7 +11,7 @@
 #include <QCheckBox>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <PostViewLib/constants.h>
+#include <PostLib/constants.h>
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>

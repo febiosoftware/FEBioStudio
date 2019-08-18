@@ -8,10 +8,10 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <PreViewLib/FEModel.h>
-#include <PreViewLib/FEProject.h>
-#include <PreViewLib/FERigidConstraint.h>
-#include <PreViewLib/FEMultiMaterial.h>
+#include <MeshTools/FEModel.h>
+#include <MeshTools/FEProject.h>
+#include <MeshTools/FERigidConstraint.h>
+#include <MeshTools/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
 
 class Ui::CDlgAddRigidConstraint

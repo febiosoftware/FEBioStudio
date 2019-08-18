@@ -1,0 +1,76 @@
+#include "GPrimitive.h"
+#include <MeshTools/FEShellDisc.h>
+
+//-----------------------------------------------------------------------------
+// constructor
+GDisc::GDisc() : GPrimitive(GDISC)
+{
+	// define parameters
+	AddDoubleParam(1.0, "R", "radius");
+
+	// assign default mesher
+	m_pMesher = new FEShellDisc(this);
+
+	// build the object
+	Create();
+}
+
+//-----------------------------------------------------------------------------
+// create the disc object
+void GDisc::Create()
+{
+	int i;
+
+	// 1. build the nodes
+	//-------------------
+	assert(m_Node.empty());
+	for (i=0; i<5; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);
+
+	// 2. build the edges
+	//-------------------
+	int ET[8][2] = {
+		{0,1},{1,2},{2,3},{3,0},
+		{0,4},{1,4},{2,4},{3,4}
+	};
+	assert(m_Edge.empty());
+	for (i=0; i<4; ++i) AddCircularArc(4, ET[i][0], ET[i][1]);
+	for (i=4; i<8; ++i) AddLine(ET[i][0], ET[i][1]);
+
+	// 3. build the parts
+	//-------------------
+	assert(m_Part.empty());
+	AddPart();
+
+	// 4. build the faces
+	//------------------
+	int FE[4][3] = {{0,5,4}, {1,6,5}, {2,7,6}, {3,4,7}};
+	assert(m_Face.empty());
+	vector<int> edge;
+	for (i=0; i<4; ++i)
+	{
+		edge.resize(3);
+		edge[0] = FE[i][0];
+		edge[1] = FE[i][1];
+		edge[2] = FE[i][2];
+		AddFacet(edge, FACE_POLYGON);
+	}
+
+	Update();
+}
+
+//-----------------------------------------------------------------------------
+// update the GDisc object
+bool GDisc::Update(bool b)
+{
+	double R = GetFloatValue(RADIUS);
+	if (R <= 0) R = 1e-5;
+
+	m_Node[0]->LocalPosition() = vec3d( R, 0, 0);
+	m_Node[1]->LocalPosition() = vec3d( 0, R, 0);
+	m_Node[2]->LocalPosition() = vec3d(-R, 0, 0);
+	m_Node[3]->LocalPosition() = vec3d( 0,-R, 0);
+	m_Node[4]->LocalPosition() = vec3d( 0, 0, 0);
+
+	BuildGMesh();
+	return true;
+}

@@ -7,7 +7,7 @@
 #include "MainWindow.h"
 #include "FEBioStudio.h"
 #include <stdio.h>
-#include <PostViewLib/PostView.h>
+#include <PostLib/PostView.h>
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>

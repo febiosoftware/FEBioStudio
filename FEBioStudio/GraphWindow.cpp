@@ -15,7 +15,7 @@
 #include <QRadioButton>
 #include "MainWindow.h"
 #include "Document.h"
-#include <PostViewLib/FEModel.h>
+#include <PostLib/FEModel.h>
 #include <QToolBox>
 #include <QLineEdit>
 #include <PostGL/GLDataMap.h>
@@ -23,9 +23,9 @@
 #include "version.h"
 #include <QValidator>
 #include <QComboBox>
-#include <PostViewLib/LinearRegression.h>
+#include <PostLib/LinearRegression.h>
 #include "CColorButton.h"
-#include <PostViewLib/convert.h>
+#include <PostLib/convert.h>
 #include "PostDoc.h"
 
 OptionsUi::OptionsUi(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent)

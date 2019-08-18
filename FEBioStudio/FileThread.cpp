@@ -2,7 +2,7 @@
 #include "FileThread.h"
 #include "MainWindow.h"
 #include "Document.h"
-#include <PreViewLib/PRVArchive.h>
+#include <MeshTools/PRVArchive.h>
 
 CFileThread::CFileThread(CMainWindow* wnd, FileReader* file, bool bclear, const QString& fileName) : m_wnd(wnd), m_fileReader(file), m_fileName(fileName)
 {

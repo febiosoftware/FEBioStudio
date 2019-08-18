@@ -4,7 +4,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
-#include <PreViewLib/FEObject.h>
+#include <MeshTools/FEObject.h>
 #include <QCheckBox>
 
 class CDlgAddMeshDataUI

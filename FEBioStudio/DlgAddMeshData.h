@@ -1,7 +1,7 @@
 #pragma once
 #include <QDialog>
 #include <vector>
-#include <PreViewLib/FEObject.h>
+#include <MeshTools/FEObject.h>
 
 class CDlgAddMeshDataUI;
 class FEObject;

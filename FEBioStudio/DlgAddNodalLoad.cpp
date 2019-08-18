@@ -8,7 +8,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <PreViewLib/FEModel.h>
+#include <MeshTools/FEModel.h>
 #include "CIntInput.h"
 
 class Ui::CDlgAddNodalLoad

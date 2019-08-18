@@ -7,7 +7,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include "Document.h"
-#include <PreViewLib/SphereFit.h>
+#include <MeshTools/SphereFit.h>
 
 // constructor
 CSphereFitTool::CSphereFitTool() : CBasicTool("Sphere Fit", HAS_APPLY_BUTTON)
