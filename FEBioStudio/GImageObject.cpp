@@ -99,7 +99,7 @@ Post::CImageModel* GImageObject::GetImageModel()
 
 // in PostDoc.cpp
 extern vec3f to_vec3f(const vec3d& r);
-extern quat4f to_quat4f(const quatd& q);
+extern quatd to_quat4f(const quatd& q);
 
 // render the image data
 void GImageObject::Render(CGLView* view)

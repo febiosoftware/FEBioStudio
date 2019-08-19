@@ -132,9 +132,9 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\MathLib\colsol.cpp" />
     <ClCompile Include="..\..\MathLib\DenseMatrix.cpp" />
     <ClCompile Include="..\..\MathLib\eig3.cpp" />
+    <ClCompile Include="..\..\MathLib\linsolver.cpp" />
     <ClCompile Include="..\..\MathLib\LUSolver.cpp" />
     <ClCompile Include="..\..\MathLib\mat3d.cpp" />
     <ClCompile Include="..\..\MathLib\math3d.cpp" />
@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\MathLib\DenseMatrix.h" />
     <ClInclude Include="..\..\MathLib\eig3.h" />
+    <ClInclude Include="..\..\MathLib\linsolver.h" />
     <ClInclude Include="..\..\MathLib\LUSolver.h" />
     <ClInclude Include="..\..\MathLib\mat3d.h" />
     <ClInclude Include="..\..\MathLib\mat3d.hpp" />

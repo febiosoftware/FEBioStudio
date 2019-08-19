@@ -198,9 +198,7 @@
     <ClCompile Include="..\..\PostLib\Interpolator.cpp" />
     <ClCompile Include="..\..\PostLib\Intersect.cpp" />
     <ClCompile Include="..\..\PostLib\LinearRegression.cpp" />
-    <ClCompile Include="..\..\PostLib\lusolver.cpp" />
     <ClCompile Include="..\..\PostLib\MarchingCubes.cpp" />
-    <ClCompile Include="..\..\PostLib\math3d.cpp" />
     <ClCompile Include="..\..\PostLib\MPEGAnimation.cpp" />
     <ClCompile Include="..\..\PostLib\Palette.cpp" />
     <ClCompile Include="..\..\PostLib\PltArchive.cpp" />
@@ -286,9 +284,7 @@
     <ClInclude Include="..\..\PostLib\Interpolator.h" />
     <ClInclude Include="..\..\PostLib\Intersect.h" />
     <ClInclude Include="..\..\PostLib\LinearRegression.h" />
-    <ClInclude Include="..\..\PostLib\lusolver.h" />
     <ClInclude Include="..\..\PostLib\MarchingCubes.h" />
-    <ClInclude Include="..\..\PostLib\math3d.h" />
     <ClInclude Include="..\..\PostLib\MPEGAnimation.h" />
     <ClInclude Include="..\..\PostLib\Palette.h" />
     <ClInclude Include="..\..\PostLib\penta15.h" />

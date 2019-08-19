@@ -1,4 +1,5 @@
-#include "math.h"
+#include "linsolver.h"
+#include <math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // LINEAR SOLVER : colsol
@@ -29,23 +30,23 @@ void colsol_factor(int N, double* values, int* pointers)
 	// -A- factorize the matrix 
 
 	// repeat over all columns
-	for (j=1; j<N; ++j)
+	for (j = 1; j<N; ++j)
 	{
 		// find the first non-zero row in column j
-		mj = j+1 - pointers[j+1] + pointers[j];
+		mj = j + 1 - pointers[j + 1] + pointers[j];
 
-		pj = pointers[j]+j;
+		pj = pointers[j] + j;
 
 		// loop over all rows in column j
-		for (i=mj+1; i<j; ++i)
+		for (i = mj + 1; i<j; ++i)
 		{
 			// find the first non-zero row in column i
-			mi = i+1 - pointers[i+1] + pointers[i];
+			mi = i + 1 - pointers[i + 1] + pointers[i];
 
 			// determine max of mi and mj
 			mm = (mi > mj ? mi : mj);
 
-			pi = pointers[i]+i;
+			pi = pointers[i] + i;
 
 			double& kij = values[pj - i];
 
@@ -56,36 +57,36 @@ void colsol_factor(int N, double* values, int* pointers)
 			// on compilers that do a poor optimization this trick can
 			// double the speed of this algorithm.
 
-//			for (r=mm; r<i; ++r) kij -= values[pi - r]*values[pj - r];
+			//			for (r=mm; r<i; ++r) kij -= values[pi - r]*values[pj - r];
 
-//-------------->
-			for (r=mm; r<i-7; r+=8) 
+			//-------------->
+			for (r = mm; r<i - 7; r += 8)
 			{
-				kij -= values[pi - r  ]*values[pj - r  ] +
-				       values[pi - r-1]*values[pj - r-1] +
-				       values[pi - r-2]*values[pj - r-2] +
-				       values[pi - r-3]*values[pj - r-3] +
-				       values[pi - r-4]*values[pj - r-4] +
-				       values[pi - r-5]*values[pj - r-5] +
-				       values[pi - r-6]*values[pj - r-6] +
-				       values[pi - r-7]*values[pj - r-7];
+				kij -= values[pi - r] * values[pj - r] +
+					values[pi - r - 1] * values[pj - r - 1] +
+					values[pi - r - 2] * values[pj - r - 2] +
+					values[pi - r - 3] * values[pj - r - 3] +
+					values[pi - r - 4] * values[pj - r - 4] +
+					values[pi - r - 5] * values[pj - r - 5] +
+					values[pi - r - 6] * values[pj - r - 6] +
+					values[pi - r - 7] * values[pj - r - 7];
 			}
 
-			for (r=0; r<(i-mm)%8; ++r)
-					kij -= values[pi - (i-1)+r]*values[pj - (i-1)+r];
-//-------------->
+			for (r = 0; r<(i - mm) % 8; ++r)
+				kij -= values[pi - (i - 1) + r] * values[pj - (i - 1) + r];
+			//-------------->
 
 		}
 
 		// determine l[i][j]
-		for (i=mj; i<j; ++i) values[pj - i] /= values[ pointers[i] ];
+		for (i = mj; i<j; ++i) values[pj - i] /= values[pointers[i]];
 
 		// calculate d[j][j] value
-		double& kjj = values[ pointers[j] ];
-		for (r=mj; r<j; ++r) 
+		double& kjj = values[pointers[j]];
+		for (r = mj; r<j; ++r)
 		{
 			krj = values[pj - r];
-			kjj -= krj*krj*values[ pointers[r] ];
+			kjj -= krj*krj*values[pointers[r]];
 		}
 	}
 }
@@ -99,48 +100,46 @@ void colsol_solve(int N, double* values, int* pointers, double* R)
 	// -B- back substitution
 
 	// calculate V = L^(-T)*R vector
-	for (i=1; i<N; ++i)
+	for (i = 1; i<N; ++i)
 	{
-		mi = i+1 - pointers[i+1] + pointers[i];
-		for (r=mi; r<i; ++r)
-			R[i] -= values[ pointers[i] + i - r]*R[r];
+		mi = i + 1 - pointers[i + 1] + pointers[i];
+		for (r = mi; r<i; ++r)
+			R[i] -= values[pointers[i] + i - r] * R[r];
 	}
 
 	// calculate Vbar = D^(-1)*V
-	for (i=0; i<N; ++i) R[i] /= values[ pointers[i] ];
+	for (i = 0; i<N; ++i) R[i] /= values[pointers[i]];
 
 	// calculate the solution
-	for (i=N-1; i>0; --i)
+	for (i = N - 1; i>0; --i)
 	{
-		mi = i+1 - pointers[i+1] + pointers[i];
+		mi = i + 1 - pointers[i + 1] + pointers[i];
 
 		const double ri = R[i];
 		const int pi = pointers[i] + i;
 
 		// the following line was replaced
 		// by the code segment between the arrows
-//		for (r=mi; r<i; ++r) R[r] -= values[ pointers[i] + i - r]*R[i];
+		//		for (r=mi; r<i; ++r) R[r] -= values[ pointers[i] + i - r]*R[i];
 
-//--------->
-		for (r=mi; r<i-7; r += 8) 
+		//--------->
+		for (r = mi; r<i - 7; r += 8)
 		{
-			R[r  ] -= values[ pi - r  ]*ri;
-			R[r+1] -= values[ pi - r-1]*ri;
-			R[r+2] -= values[ pi - r-2]*ri;
-			R[r+3] -= values[ pi - r-3]*ri;
-			R[r+4] -= values[ pi - r-4]*ri;
-			R[r+5] -= values[ pi - r-5]*ri;
-			R[r+6] -= values[ pi - r-6]*ri;
-			R[r+7] -= values[ pi - r-7]*ri;
+			R[r] -= values[pi - r] * ri;
+			R[r + 1] -= values[pi - r - 1] * ri;
+			R[r + 2] -= values[pi - r - 2] * ri;
+			R[r + 3] -= values[pi - r - 3] * ri;
+			R[r + 4] -= values[pi - r - 4] * ri;
+			R[r + 5] -= values[pi - r - 5] * ri;
+			R[r + 6] -= values[pi - r - 6] * ri;
+			R[r + 7] -= values[pi - r - 7] * ri;
 		}
 
-		for (r=0; r<(i-mi)%8; ++r)
-			R[(i-1)- r] -= values[ pi - (i-1) + r  ]*ri;
-//--------->
+		for (r = 0; r<(i - mi) % 8; ++r)
+			R[(i - 1) - r] -= values[pi - (i - 1) + r] * ri;
+		//--------->
 	}
 }
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // This LU solver is grabbed from Numerical Recipes in C.
 // To solve a system of equations first call ludcmp to calculate
@@ -157,7 +156,7 @@ void colsol_solve(int N, double* values, int* pointers, double* R)
 // lubksb(a,n,indx, b)
 //
 // The lubksb can be called as many times as there are rhs vectors for 
-// this system that you wish to call. For a specific matrix ludcmp only
+// this system that you wish to call. For a specific Matrix ludcmp only
 // has to be called once.
 //
 
@@ -171,31 +170,31 @@ void ludcmp(double**a, int n, int* indx)
 
 	vv = new double[n];
 
-	for (i=0; i<n; ++i)
+	for (i = 0; i<n; ++i)
 	{
 		big = 0;
-		for (j=0; j<n; ++j)
+		for (j = 0; j<n; ++j)
 			if ((temp = fabs(a[i][j])) > big) big = temp;
 
 		vv[i] = 1.0 / big;
 	}
 
-	for (j=0; j<n; ++j)
+	for (j = 0; j<n; ++j)
 	{
-		for (i=0; i<j; ++i)
+		for (i = 0; i<j; ++i)
 		{
 			sum = a[i][j];
-			for (k=0; k<i; ++k) sum -= a[i][k]*a[k][j];
+			for (k = 0; k<i; ++k) sum -= a[i][k] * a[k][j];
 			a[i][j] = sum;
 		}
 		big = 0;
 		imax = j;
-		for (i=j; i<n; ++i)
+		for (i = j; i<n; ++i)
 		{
 			sum = a[i][j];
-			for (k=0; k<j; ++k) sum -= a[i][k]*a[k][j];
+			for (k = 0; k<j; ++k) sum -= a[i][k] * a[k][j];
 			a[i][j] = sum;
-			if ((dum=vv[i]*fabs(sum)) >= big)
+			if ((dum = vv[i] * fabs(sum)) >= big)
 			{
 				big = dum;
 				imax = i;
@@ -203,7 +202,7 @@ void ludcmp(double**a, int n, int* indx)
 		}
 		if (j != imax)
 		{
-			for (k=0; k<n; ++k)
+			for (k = 0; k<n; ++k)
 			{
 				dum = a[imax][k];
 				a[imax][k] = a[j][k];
@@ -212,42 +211,42 @@ void ludcmp(double**a, int n, int* indx)
 			vv[imax] = vv[j];
 		}
 		indx[j] = imax;
-		if (a[j][j] == 0.0) 
+		if (a[j][j] == 0.0)
 		{
 			a[j][j] = TINY;
 		}
-		if (j!=n-1)
+		if (j != n - 1)
 		{
-			dum = 1.0/(a[j][j]);
-			for (i=j+1;i<n; ++i) a[i][j] *= dum;
+			dum = 1.0 / (a[j][j]);
+			for (i = j + 1; i<n; ++i) a[i][j] *= dum;
 		}
 	}
 
 	// clean up
-	delete [] vv;
+	delete[] vv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void lubksb(double**a, int n, int *indx, double b[])
 {
-	int i, ii=0, ip, j;
+	int i, ii = 0, ip, j;
 	double sum;
 
-	for (i=0; i<n; ++i)
+	for (i = 0; i<n; ++i)
 	{
 		ip = indx[i];
 		sum = b[ip];
 		b[ip] = b[i];
 		if (ii != 0)
-			for (j=ii-1; j<i; ++j) sum -= a[i][j]*b[j];
-		else if (sum != 0.0) ii=i+1;
+			for (j = ii - 1; j<i; ++j) sum -= a[i][j] * b[j];
+		else if (sum != 0.0) ii = i + 1;
 		b[i] = sum;
 	}
-	for (i=n-1; i>=0; --i)
+	for (i = n - 1; i >= 0; --i)
 	{
 		sum = b[i];
-		for (j=i+1;j<n;++j) sum -= a[i][j]*b[j];
-		b[i] = sum/a[i][i];
+		for (j = i + 1; j<n; ++j) sum -= a[i][j] * b[j];
+		b[i] = sum / a[i][i];
 	}
 }

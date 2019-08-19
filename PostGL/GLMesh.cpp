@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "GLMesh.h"
+#include <MathLib/math3d.h>
 #include <stack>
 #include <cstring>
 using namespace std;
@@ -618,21 +619,22 @@ void CGLMesh::Project(vec3f norm, float rot)
 
 	// rotate to plane and the range
 	vec3f n0(0, 0, 1);
-	quat4f q(norm, n0);
+	quatd q(norm, n0);
 	q.Inverse();
-	quat4f qz(-rot, vec3f(0,0,1));
+	quatd qz(-rot, vec3f(0,0,1));
 	q = qz*q;
 	pn = Node(0);
 	float xmin = 0.f, xmax = 1.f, ymin = 0.f, ymax = 1.f;
 	xmin = xmax = pn->m_pos.x; ymin = ymax = pn->m_pos.y;
 	for (i=0; i<nodes; i++, pn++)
 	{
-		q.RotateVector(pn->m_pos);
+		vec3d p = pn->m_pos;
+		q.RotateVector(p);
 
-		if (pn->m_pos.x < xmin) xmin = pn->m_pos.x;
-		if (pn->m_pos.x > xmax) xmax = pn->m_pos.x;
-		if (pn->m_pos.y < ymin) ymin = pn->m_pos.y;
-		if (pn->m_pos.y > ymax) ymax = pn->m_pos.y;
+		if (p.x < xmin) xmin = p.x;
+		if (p.x > xmax) xmax = p.x;
+		if (p.y < ymin) ymin = p.y;
+		if (p.y > ymax) ymax = p.y;
 	}
 	if (xmin == xmax) xmax++;
 	if (ymin == ymax) ymax++;

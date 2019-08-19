@@ -1,5 +1,5 @@
 #pragma once
-#include "math3d.h"
+#include <MathLib/math3d.h>
 #include "Intersect.h"
 #include <set>
 using namespace std;

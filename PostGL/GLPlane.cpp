@@ -73,12 +73,12 @@ void CGLPlane::Render(CGLContext& rc)
 	glPushMatrix();
 	glTranslatef(m_rc.x, m_rc.y, m_rc.z);
 
-	quat4f q(vec3f(0,0,1), m_e[2]);
+	quatd q(vec3f(0,0,1), m_e[2]);
 	double w = q.GetAngle();
 	if (w != 0)
 	{
-		vec3f r = q.GetVector();
-		glRotatef((float)(w*RAD2DEG), r.x, r.y, r.z);
+		vec3d r = q.GetVector();
+		glRotated((w*RAD2DEG), r.x, r.y, r.z);
 	}
 
 	glColor4ub(255, 0, 0, 128);

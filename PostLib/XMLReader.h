@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "math3d.h"
+#include <MathLib/math3d.h>
 #include "ColorMap.h"
 
 namespace Post {

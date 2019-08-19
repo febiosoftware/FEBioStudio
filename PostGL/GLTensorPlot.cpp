@@ -530,12 +530,12 @@ void GLTensorPlot::RenderArrows(GLTensorPlot::TENSOR& t, float scale, GLUquadric
 		float r1 = L*0.15;
 
 		vec3f v = t.r[i];
-		quat4f q = quat4f(vec3f(0,0,1), v);
+		quatd q = quatd(vec3f(0,0,1), v);
 		float w = q.GetAngle();
 		if (fabs(w) > 1e-6)
 		{
-			vec3f p = q.GetVector();
-			if (p.Length() > 1e-6) glRotatef(w * 180 / PI, p.x, p.y, p.z);
+			vec3d p = q.GetVector();
+			if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
 		}
 
 		glColor3ub(c[i].r, c[i].g, c[i].b);
@@ -561,11 +561,11 @@ void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricO
 		float L = (m_bnormalize ? scale : scale*t.l[i]);
 
 		vec3f v = t.r[i];
-		quat4f q = quat4f(vec3f(0, 0, 1), v);
+		quatd q = quatd(vec3f(0, 0, 1), v);
 		float w = q.GetAngle();
 		if (fabs(w) > 1e-6)
 		{
-			vec3f p = q.GetVector();
+			vec3d p = q.GetVector();
 			if (p.Length() > 1e-6) glRotatef(w * 180 / PI, p.x, p.y, p.z);
 		}
 

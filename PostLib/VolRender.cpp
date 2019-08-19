@@ -436,8 +436,8 @@ void CVolRender::Render(CGLContext& rc)
 //	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	
-	vec3f r(0,0,1);
-	quat4f q = rc.m_q;
+	vec3d r(0,0,1);
+	quatd q = rc.m_q;
 	q.Inverse().RotateVector(r);
 
 	double x = fabs(r.x);

@@ -11,8 +11,8 @@
 #endif
 
 #include <QPainter>
-#include "PostLib/ColorMap.h"
-#include "PostLib/math3d.h"
+#include <PostLib/ColorMap.h>
+#include <MathLib/math3d.h>
 
 class CGLView;
 class CGLWidgetManager;
@@ -206,10 +206,10 @@ public:
 	void show_coord_labels(bool bshow) { m_bcoord_labels = bshow; }
 	bool show_coord_labels() { return m_bcoord_labels; }
 
-	void setOrientation(const quat4f& q) { m_rot = q; }
+	void setOrientation(const quatd& q) { m_rot = q; }
 
 protected:
-	quat4f	m_rot;
+	quatd	m_rot;
 	bool	m_bcoord_labels;
 };
 

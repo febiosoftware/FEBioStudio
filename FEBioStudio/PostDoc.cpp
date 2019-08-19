@@ -200,9 +200,9 @@ vec3f to_vec3f(const vec3d& r)
 	return vec3f((float)r.x, (float)r.y, (float)r.z);
 }
 
-quat4f to_quat4f(const quatd& q)
+quatd to_quat4f(const quatd& q)
 {
-	return quat4f((float)q.x, (float)q.y, (float) q.z, (float) q.w);
+	return quatd((float)q.x, (float)q.y, (float) q.z, (float) q.w);
 }
 
 bool CPostDoc::IsValid()

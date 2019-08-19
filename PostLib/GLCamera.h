@@ -1,5 +1,5 @@
 #pragma once
-#include "math3d.h"
+#include <MathLib/math3d.h>
 #include "Interpolator.h"
 #include "GLObject.h"
 
@@ -14,9 +14,9 @@ public:
 	GLCameraTransform& operator = (const GLCameraTransform& key);
 
 public:
-	vec3f	pos;	// position
-	vec3f	trg;	// target
-	quat4f	rot;	// rotation
+	vec3d	pos;	// position
+	vec3d	trg;	// target
+	quatd	rot;	// rotation
 };
 
 //-----------------------------------------------------------------------------
@@ -45,61 +45,61 @@ public:
 	void LineDrawMode(bool b) { m_bdecal = b; }
 
 public:
-	void SetCameraSpeed(float f);
-	float GetCameraSpeed() { return m_speed; }
+	void SetCameraSpeed(double f);
+	double GetCameraSpeed() { return m_speed; }
 
-	void SetCameraBias(float f);
-	float GetCameraBias() { return m_bias; }
+	void SetCameraBias(double f);
+	double GetCameraBias() { return m_bias; }
 
 	// --- camera movements ---
 public:
 	// pan the camera (rotate around camera center)
-	void Pan(quat4f& q);
+	void Pan(const quatd& q);
 
 	// dolly the camera (move camera + target forward/backward)
-	void Dolly(float f);
+	void Dolly(double f);
 
 	// truck the camera (move camera in plane)
-	void Truck(vec3f& r);
+	void Truck(const vec3d& r);
 
 	// orbit camera (rotate around target)
-	void Orbit(quat4f& q);
+	void Orbit(const quatd& q);
 
 	// zoom camera (move camera toward/away from target)
-	void Zoom(float f);
+	void Zoom(double f);
 
 public:
 	// sets the distance to the target
-	void SetTargetDistance(float z) { vec3f r = m_trg.Target(); r.z = z; m_trg.Target(r); }
+	void SetTargetDistance(double z) { vec3d r = m_trg.Target(); r.z = z; m_trg.Target(r); }
 
 	// gets the distance to the target
-	float GetTargetDistance() { return m_trg.Value().z; }
+	double GetTargetDistance() { return m_trg.Value().z; }
 
 	// gets the distance to the target
-	float GetFinalTargetDistance() { return m_trg.Target().z; }
+	double GetFinalTargetDistance() { return m_trg.Target().z; }
 
 	// set the target + distance
-	void SetTarget(const vec3f& r);
+	void SetTarget(const vec3d& r);
 
 	// set the target in local coordinates
-	void SetLocalTarget(const vec3f& r);
+	void SetLocalTarget(const vec3d& r);
 
 	// set the orientation of the camera
-	void SetOrientation(quat4f q) { m_rot.Target(q); }
+	void SetOrientation(const quatd& q) { m_rot.Target(q); }
 
 	// get the camera orientation
-	quat4f GetOrientation() { return m_rot.Value(); }
+	quatd GetOrientation() { return m_rot.Value(); }
 
 	// get the target position
-	vec3f GetPosition() { return m_pos.Value(); }
+	vec3d GetPosition() { return m_pos.Value(); }
 
-	vec3f GetFinalPosition() const {return m_pos.Target(); } 
+	vec3d GetFinalPosition() const {return m_pos.Target(); } 
 
-	vec3f Target() const { return m_trg.Value(); }
-	vec3f FinalTarget() const {return m_trg.Target(); } 
+	vec3d Target() const { return m_trg.Value(); }
+	vec3d FinalTarget() const {return m_trg.Target(); } 
 
 	// set the view direction
-	void SetViewDirection(const vec3f& r);
+	void SetViewDirection(const vec3d& r);
 
 	// set the camera transformation
 	void SetTransform(GLCameraTransform& t);
@@ -116,7 +116,7 @@ public:
 	bool				m_bdecal;	//!< decal mode flag
 
 private:
-	float	m_speed;
-	float	m_bias;
+	double	m_speed;
+	double	m_bias;
 };
 }

@@ -304,13 +304,13 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	glPushMatrix();
 
 	glTranslatef(r.x, r.y, r.z);
-	quat4f q(vec3f(0,0,1), v);
+	quatd q(vec3d(0,0,1), v);
 	float w = q.GetAngle();
 	if (fabs(w) > 1e-6)
 	{
-		vec3f p = q.GetVector();
-		if (p.Length() > 1e-6) glRotatef(w * 180 / PI, p.x, p.y, p.z);
-		else glRotatef(w * 180 / PI, 1, 0, 0);
+		vec3d p = q.GetVector();
+		if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
+		else glRotated(w * 180 / PI, 1, 0, 0);
 	}
 
 	switch (m_nglyph)

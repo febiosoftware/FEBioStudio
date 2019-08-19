@@ -105,7 +105,7 @@ public:
 
 	void contextMenuEvent(QContextMenuEvent* ev) override;
 
-	int Items() const { return m_data.size(); }
+	int Items() const { return (int) m_data.size(); }
 	CModelTreeItem& GetItem(int n) { return m_data[n]; }
 
 	QTreeWidgetItem* FindItem(FSObject* o);

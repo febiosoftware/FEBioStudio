@@ -713,7 +713,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 	FEMeshBase* pm = GetActiveMesh();
 
 	// get the camera's orientation
-	quat4f q = rc.m_cam->GetOrientation();
+	quatd q = rc.m_cam->GetOrientation();
 
 	// make sure a part with this material exists
 	if (m >= pm->Parts()) return;
@@ -770,7 +770,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 			{
 				for (int j=0; j<face.Nodes(); ++j)
 				{
-					vec3f r = face.m_nn[j];
+					vec3d r = face.m_nn[j];
 					q.RotateVector(r);
 					double z = 1-fabs(r.z);
 					a[j] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
@@ -778,7 +778,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 			}
 			else
 			{
-				vec3f r = face.m_fn;
+				vec3d r = face.m_fn;
 				q.RotateVector(r);
 				double z = 1-fabs(r.z);
 				a[0] = a[1] = a[2] = a[3] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
@@ -818,7 +818,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 			{
 				for (int j=0; j<face.Nodes(); ++j)
 				{
-					vec3f r = face.m_nn[j];
+					vec3d r = face.m_nn[j];
 					q.RotateVector(r);
 					double z = 1-fabs(r.z);
 					a[j] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
@@ -826,7 +826,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 			}
 			else
 			{
-				vec3f r = face.m_fn;
+				vec3d r = face.m_fn;
 				q.RotateVector(r);
 				double z = 1-fabs(r.z);
 				a[0] = a[1] = a[2] = a[3] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
@@ -1105,7 +1105,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 
 	glColor3ub(96,96,96);
 
-	quat4f q = rc.m_cam->GetOrientation();
+	quatd q = rc.m_cam->GetOrientation();
 
 	double eps = cos(GetSmoothingAngleRadians());
 
@@ -1136,8 +1136,8 @@ void CGLModel::RenderGhost(CGLContext &rc)
 					}
 					else
 					{
-						vec3f n1 = f.m_fn;
-						vec3f n2 = f2.m_fn;
+						vec3d n1 = f.m_fn;
+						vec3d n2 = f2.m_fn;
 						q.RotateVector(n1);
 						q.RotateVector(n2);
 						if (n1.z*n2.z <= 0) 
@@ -1287,7 +1287,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 	GLColor c = m_line_col;
 	glColor3ub(c.r,c.g,c.b);
 
-	quat4f q = rc.m_cam->GetOrientation();
+	quatd q = rc.m_cam->GetOrientation();
 
 	int ndivs = GetSubDivisions();
 
@@ -1447,13 +1447,13 @@ void CGLModel::RenderMeshLines(FEModel* ps, int nmat)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLModel::RenderShadows(FEModel* ps, vec3f n, float inf)
+void CGLModel::RenderShadows(FEModel* ps, const vec3d& lp, float inf)
 {
 	FEMeshBase* pm = GetActiveMesh();
 
 	// find all silhouette edges
-	vec3f fn, fn2;
-	n.Normalize();
+	vec3d fn, fn2;
+	vec3d n(lp); n.Normalize();
 	int m;
 	bool bvalid;
 	for (int i=0; i<pm->Faces(); i++)
@@ -1494,7 +1494,7 @@ void CGLModel::RenderShadows(FEModel* ps, vec3f n, float inf)
 					// we got one!
 					if ((pf2 == 0) || (fn2*n < 0))
 					{
-						vec3f a, b, c, d;
+						vec3d a, b, c, d;
 						a = pm->Node(f.node[j]).m_rt;
 						b = pm->Node(f.node[(j+1)%m]).m_rt;
 	
@@ -1503,14 +1503,14 @@ void CGLModel::RenderShadows(FEModel* ps, vec3f n, float inf)
 
 						glBegin(GL_QUADS);
 						{
-							vec3f n = (c-a)^(d-a);
+							vec3d n = (c-a)^(d-a);
 							n.Normalize();
 
-							glNormal3f(n.x, n.y, n.z);
-							glVertex3f(a.x, a.y, a.z);
-							glVertex3f(c.x, c.y, c.z);
-							glVertex3f(d.x, d.y, d.z);
-							glVertex3f(b.x, b.y, b.z);
+							glNormal3d(n.x, n.y, n.z);
+							glVertex3d(a.x, a.y, a.z);
+							glVertex3d(c.x, c.y, c.z);
+							glVertex3d(d.x, d.y, d.z);
+							glVertex3d(b.x, b.y, b.z);
 						}
 						glEnd();
 					}
@@ -1523,7 +1523,7 @@ void CGLModel::RenderShadows(FEModel* ps, vec3f n, float inf)
 				vec3f r3 = pm->Node(f.node[2]).m_rt;
 				vec3f r4 = pm->Node(f.node[3]).m_rt;
 	
-				glNormal3f(-fn.x, -fn.y, -fn.z);
+				glNormal3d(-fn.x, -fn.y, -fn.z);
 
 				switch (f.m_ntype)
 				{
@@ -1581,7 +1581,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 	glGetBooleanv(GL_CULL_FACE, &bcull);
 	if (bcull)
 	{
-		quat4f q = rc.m_cam->GetOrientation();
+		quatd q = rc.m_cam->GetOrientation();
 		vec3f f;
 		int NF = pm->Faces();
 		for (int i = 0; i<NF; ++i)
@@ -1590,7 +1590,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 			int n = face.Nodes();
 			for (int j = 0; j<n; ++j)
 			{
-				vec3f f = face.m_nn[j];
+				vec3d f = face.m_nn[j];
 				q.RotateVector(f);
 				if (f.z < 0) pm->Node(face.node[j]).m_ntag = 0;
 			}

@@ -687,7 +687,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 
 GLTriad::GLTriad(int x, int y, int w, int h) : GLWidget(x, y, w, h)
 {
-	m_rot = quat4f(0.f, vec3f(1.f,0.f,0.f));
+	m_rot = quatd(0.f, vec3d(1.f,0.f,0.f));
 	m_bcoord_labels = true;
 }
 
@@ -746,8 +746,8 @@ void GLTriad::draw(QPainter* painter)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
 
-	quat4f q = m_rot;
-	vec3f r = q.GetVector();
+	quatd q = m_rot;
+	vec3d r = q.GetVector();
 	float a = 180*q.GetAngle()/PI;
 
 	if ((a > 0) && (r.Length() > 0))
@@ -805,9 +805,9 @@ void GLTriad::draw(QPainter* painter)
 	if (m_bcoord_labels)
 	{
 		float a = 0.8f;
-		vec3f ex(a, 0.f, 0.f);
-		vec3f ey(0.f, a, 0.f);
-		vec3f ez(0.f, 0.f, a);
+		vec3d ex(a, 0.f, 0.f);
+		vec3d ey(0.f, a, 0.f);
+		vec3d ez(0.f, 0.f, a);
 		q.RotateVector(ex);
 		q.RotateVector(ey);
 		q.RotateVector(ez);

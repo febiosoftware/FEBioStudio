@@ -169,7 +169,7 @@ public:
 	void RenderThickQuad(FEFace& face, FEMeshBase* pm);
 	void RenderThickTri(FEFace& face, FEMeshBase* pm);
 	void RenderThickShellOutline(FEFace& face, FEMeshBase* pm);
-	void RenderShadows(FEModel* ps, vec3f lp, float inf);
+	void RenderShadows(FEModel* ps, const vec3d& lp, float inf);
 
 	void AddDecoration(GDecoration* pd);
 	void RemoveDecoration(GDecoration* pd);

@@ -226,11 +226,11 @@ void CGLLinePlot::Render3DLines(FEState& s)
 			{
 				glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
 
-				quat4f q(vec3f(0, 0, 1), n);
-				vec3f r = q.GetVector();
+				quatd q(vec3f(0, 0, 1), n);
+				vec3d r = q.GetVector();
 				double angle = 180 * q.GetAngle() / PI;
 				if ((angle != 0.0) && (r.Length() > 0))
-					glRotatef((float)angle, (float)r.x, (float)r.y, (float)r.z);
+					glRotated(angle, r.x, r.y, r.z);
 
 				// render cylinder
 				glxCylinder(L, m_line);
@@ -262,11 +262,11 @@ void CGLLinePlot::Render3DLines(FEState& s)
 			{
 				glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
 
-				quat4f q(vec3f(0, 0, 1), n);
-				vec3f r = q.GetVector();
+				quatd q(vec3f(0, 0, 1), n);
+				vec3d r = q.GetVector();
 				double angle = 180 * q.GetAngle() / PI;
 				if ((angle != 0.0) && (r.Length() > 0))
-					glRotatef((float)angle, (float)r.x, (float)r.y, (float)r.z);
+					glRotated(angle, r.x, r.y, r.z);
 
 				float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
 				float f1 = (l.m_val[1] - vmin) / (vmax - vmin);

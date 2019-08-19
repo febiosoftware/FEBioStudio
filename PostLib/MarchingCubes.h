@@ -1,7 +1,7 @@
 #pragma once
 #include "GLImageRenderer.h"
 #include <vector>
-#include "math3d.h"
+#include <MathLib/math3d.h>
 #include <FSCore/color.h>
 
 namespace Post {

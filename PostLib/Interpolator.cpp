@@ -75,7 +75,7 @@ VecInterpolator::VecInterpolator()
 }
 
 //-----------------------------------------------------------------------------
-void VecInterpolator::Target(vec3f v)
+void VecInterpolator::Target(const vec3d& v)
 {
 	m_v1 = v;
 	m_v0 = m_vt;
@@ -124,7 +124,7 @@ QuatInterpolator::QuatInterpolator()
 	m_da = 0;
 }
 //-----------------------------------------------------------------------------
-void QuatInterpolator::Target(quat4f q)
+void QuatInterpolator::Target(quatd q)
 {
 	m_q1 = q;
 	m_q0 = m_qt;
@@ -150,7 +150,7 @@ bool QuatInterpolator::Next()
 		{
 			double g = Interpolator::m_smooth;
 			double f = gain(g, m_at);
-			m_qt = quat4f::slerp(m_q0, m_q1, f);
+			m_qt = quatd::slerp(m_q0, m_q1, f);
 		}
 	}
 	return m_banim;

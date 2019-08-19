@@ -1,5 +1,5 @@
 #pragma once
-#include "math3d.h"
+#include <MathLib/math3d.h>
 
 // extract components of tensor types
 float component(const vec3f& v, int n);

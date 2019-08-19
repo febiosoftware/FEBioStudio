@@ -5,7 +5,7 @@
 #include <list>
 #include <vector>
 #include <zlib.h>
-#include "math3d.h"
+#include <MathLib/math3d.h>
 
 #ifdef WIN32
 typedef __int64 off_type;

@@ -1,6 +1,6 @@
 #pragma once
 #include "FEModel.h"
-#include "math3d.h"
+#include <MathLib/math3d.h>
 #include "FEMeshData_T.h"
 
 namespace Post {

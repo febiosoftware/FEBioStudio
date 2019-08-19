@@ -835,11 +835,11 @@ void CGLPlaneCutPlot::RenderPlane()
 
 	glTranslatef(pc.x, pc.y, pc.z);
 
-	quat4f q = quat4f(vec3f(0,0,1), norm);
+	quatd q = quatd(vec3f(0,0,1), norm);
 	float w = q.GetAngle();
 	if (w != 0)
 	{
-		vec3f v = q.GetVector();
+		vec3d v = q.GetVector();
 		glRotatef(w*180/PI, v.x, v.y, v.z);
 	}
 

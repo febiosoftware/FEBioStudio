@@ -34,7 +34,7 @@
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
 
-quat4f to_quat4f(const quatd& q);
+quatd to_quat4f(const quatd& q);
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,

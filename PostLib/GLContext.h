@@ -1,5 +1,5 @@
 #pragma once
-#include "math3d.h"
+#include <MathLib/math3d.h>
 
 namespace Post {
 
@@ -14,7 +14,7 @@ public:
 public:
 	CGLCamera*	m_cam;
 	int			m_x, m_y;
-	quat4f		m_q;
+	quatd		m_q;
 
 	bool		m_showMesh;
 	bool		m_showOutline;

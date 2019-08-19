@@ -1,7 +1,7 @@
 #pragma once
 #include "FEItem.h"
 #include "FEEdge.h"
-#include "math3d.h"
+#include <MathLib/math3d.h>
 #include <assert.h>
 
 namespace Post {

@@ -110,12 +110,12 @@ void CGLMirrorPlane::RenderPlane()
 	glTranslatef(rc.x, rc.y, rc.z);
 	glTranslatef(-0.5f*m_offset*m_norm.x, -0.5f*m_offset*m_norm.y, -0.5f*m_offset*m_norm.z);
 
-	quat4f q = quat4f(vec3f(0, 0, 1), m_norm);
+	quatd q = quatd(vec3d(0, 0, 1), m_norm);
 	float w = q.GetAngle();
 	if (w != 0)
 	{
-		vec3f v = q.GetVector();
-		glRotatef(w * 180 / PI, v.x, v.y, v.z);
+		vec3d v = q.GetVector();
+		glRotated(w * 180 / PI, v.x, v.y, v.z);
 	}
 
 	float R = box.Radius();
