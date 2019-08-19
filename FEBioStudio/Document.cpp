@@ -1676,6 +1676,7 @@ void CDocument::DeleteFEBioJob(CFEBioJob* job)
 		CFEBioJob* job_i = m_JobList[i];
 		if (job == job_i)
 		{
+			GetMainWindow()->DeleteView(i + 1);
 			m_JobList.erase(m_JobList.begin() + i);
 			delete job;
 		}

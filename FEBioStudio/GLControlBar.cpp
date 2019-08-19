@@ -24,7 +24,6 @@ public:
 
 	QWidget* edit;
 
-	QComboBox*		src;
 	QToolButton*	but[4];
 	QToolButton*	selConnect;
 	QDoubleSpinBox*	maxAngle;
@@ -36,9 +35,6 @@ public:
 	{
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setMargin(0);
-
-		src = new QComboBox;
-		src->addItem("Model");
 
 		QToolButton* b  = addButton(QIcon(":/icons/pivot.png"), "Lock pivot");
 		QToolButton* b1 = addButton(QIcon(":/icons/snaptogrid.png"), "Snap to grid"); b1->setChecked(true);
@@ -93,7 +89,6 @@ public:
 		edit->setLayout(hl);
 
 		// assemble tools
-		h->addWidget(src);
 		h->addWidget(b);
 
 		h->addWidget(x = new QLineEdit); x->setMaximumWidth(100); x->setValidator(new QDoubleValidator); x->setReadOnly(true);
@@ -128,7 +123,6 @@ public:
 		QObject::connect(selPath, SIGNAL(clicked(bool)), bar, SLOT(onSelectClosestPath(bool)));
 		QObject::connect(maxAngle, SIGNAL(valueChanged(double)), bar, SLOT(onMaxAngleChanged(double)));
 		QObject::connect(cull, SIGNAL(clicked(bool)), bar, SLOT(onSelectBackfacing(bool)));
-		QObject::connect(src, SIGNAL(currentIndexChanged(int)), bar, SLOT(onCurrentViewChanged(int)));
 	}
 
 	QToolButton* addButton(const QIcon& icon, const QString& toolTip, bool isCheckable = true)
@@ -377,33 +371,4 @@ void CGLControlBar::onSelectBackfacing(bool b)
 	CDocument* pdoc = ui->m_wnd->GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	view.m_bcullSel = !b;
-}
-
-int CGLControlBar::views()
-{
-	return ui->src->count();
-}
-
-int CGLControlBar::getActiveView()
-{
-	return ui->src->currentIndex();
-}
-
-void CGLControlBar::setActiveView(int n)
-{
-	ui->src->setCurrentIndex(n);
-}
-
-void CGLControlBar::addView(const std::string& name, bool makeActive)
-{
-	ui->src->addItem(QString::fromStdString(name));
-	if (makeActive)
-	{
-		setActiveView(views() - 1);
-	}
-}
-
-void CGLControlBar::onCurrentViewChanged(int n)
-{
-	emit currentViewChanged(n);
 }

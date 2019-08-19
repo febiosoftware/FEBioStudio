@@ -885,13 +885,13 @@ void CMainWindow::SetActivePostDoc(CPostDoc* postDoc)
 //-----------------------------------------------------------------
 int CMainWindow::Views()
 {
-	return ui->glc->views();
+	return ui->tab->views();
 }
 
 //-----------------------------------------------------------------
 void CMainWindow::SetActiveView(int n)
 {
-	ui->glc->setActiveView(n);
+	ui->tab->setActiveView(n);
 	ui->glview->UpdateWidgets(false);
 	RedrawGL();
 }
@@ -899,7 +899,7 @@ void CMainWindow::SetActiveView(int n)
 //-----------------------------------------------------------------
 void CMainWindow::AddView(const std::string& viewName, bool makeActive)
 {
-	ui->glc->addView(viewName, makeActive);
+	ui->tab->addView(viewName, makeActive);
 	ui->glview->ZoomExtents(false);
 	ui->glview->UpdateWidgets(false);
 }
@@ -907,15 +907,35 @@ void CMainWindow::AddView(const std::string& viewName, bool makeActive)
 //-----------------------------------------------------------------------------
 int CMainWindow::GetActiveView()
 {
-	return ui->glc->getActiveView();
+	return ui->tab->getActiveView();
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_glbar_currentViewChanged(int n)
+void CMainWindow::on_tab_currentChanged(int n)
 {
 	UpdatePostPanel();
 	UpdatePostToolbar();
 	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_tab_tabCloseRequested(int n)
+{
+	if (n == 0) return;
+
+	CDocument* doc = GetDocument();
+	CFEBioJob* job = doc->GetFEBioJob(n - 1);
+	if (job)
+	{
+		doc->DeleteFEBioJob(job);
+		UpdateModel();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::DeleteView(int n)
+{
+	ui->tab->removeTab(n);
 }
 
 //-----------------------------------------------------------------------------

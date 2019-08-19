@@ -23,6 +23,7 @@
 #include "DataFieldSelector.h"
 #include "PostPanel.h"
 #include <QFontComboBox>
+#include "MainTabBar.h"
 
 class QProcess;
 
@@ -34,6 +35,7 @@ class Ui::CMainWindow
 	};
 
 public:
+	CMainTabBar*	tab;
 	CGLView*	glview;
 	CGLControlBar* glc;
 
@@ -181,6 +183,10 @@ public:
         //wnd->resize(QSize(screenSize.width() * 1.0f, screenSize.height() * 1.0f));
 //		wnd->resize(800, 600);
 
+		tab = new CMainTabBar(wnd);
+		tab->setObjectName("tab");
+		tab->addView("Model");
+
 		// create the central widget
 		QWidget* w = new QWidget;
 
@@ -197,6 +203,7 @@ public:
 		glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
 
 		// add it all to the layout
+		l->addWidget(tab);
 		l->addWidget(glview);
 		l->addWidget(glc);
 		w->setLayout(l);

@@ -324,7 +324,10 @@ public slots:
 	void on_fontItalic_toggled(bool bchecked);
 	void on_actionProperties_triggered();
 
-	void on_glbar_currentViewChanged(int n);
+	void on_tab_currentChanged(int n);
+	void on_tab_tabCloseRequested(int n);
+
+	void DeleteView(int n);
 
 	void closeEvent(QCloseEvent* ev);
 	void keyPressEvent(QKeyEvent* ev);

@@ -232,6 +232,7 @@
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Intersect.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LogPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MainTabBar.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MainWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MaterialEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MaterialMapTool.cpp" />
@@ -280,6 +281,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_LogPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_MainTabBar.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MainWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MaterialEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MeshButtonBox.cpp" />
@@ -347,6 +349,11 @@
     <ClInclude Include="..\..\FEBioStudio\CurvePicker.h" />
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />
+    <CustomBuild Include="..\..\FEBioStudio\MainTabBar.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="resource.h" />
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

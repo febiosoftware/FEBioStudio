@@ -13,11 +13,6 @@ public:
 
 	void Update();
 
-	int views();
-	int getActiveView();
-	void setActiveView(int n);
-	void addView(const std::string& name, bool makeActive = true);
-
 private slots:
 	void onPivotChanged();
 	void onPivotClicked(bool b);
@@ -33,10 +28,6 @@ private slots:
 	void onShowAll(bool b);
 	void onZoomSelectClicked(bool b);
 	void onZoomAllClicked(bool b);
-	void onCurrentViewChanged(int n);
-
-signals:
-	void currentViewChanged(int n);
 
 private:
 	CGLControlBar_UI*	ui;
