@@ -106,7 +106,7 @@ private slots:
 	void on_object_nameChanged(const QString&);
 	void on_bcobject_nameChanged(const QString&);
 	void on_object_colorChanged(const QColor& col);
-	void on_props_dataChanged();
+	void on_props_dataChanged(int n);
 	void on_form_dataChanged(bool itemModified);
 	void on_bcobject_stepChanged(int n);
 

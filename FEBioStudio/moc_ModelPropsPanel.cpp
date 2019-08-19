@@ -340,10 +340,10 @@ QT_MOC_LITERAL(19, 359, 23), // "on_bcobject_nameChanged"
 QT_MOC_LITERAL(20, 383, 22), // "on_object_colorChanged"
 QT_MOC_LITERAL(21, 406, 3), // "col"
 QT_MOC_LITERAL(22, 410, 20), // "on_props_dataChanged"
-QT_MOC_LITERAL(23, 431, 19), // "on_form_dataChanged"
-QT_MOC_LITERAL(24, 451, 12), // "itemModified"
-QT_MOC_LITERAL(25, 464, 23), // "on_bcobject_stepChanged"
-QT_MOC_LITERAL(26, 488, 1) // "n"
+QT_MOC_LITERAL(23, 431, 1), // "n"
+QT_MOC_LITERAL(24, 433, 19), // "on_form_dataChanged"
+QT_MOC_LITERAL(25, 453, 12), // "itemModified"
+QT_MOC_LITERAL(26, 466, 23) // "on_bcobject_stepChanged"
 
     },
     "CModelPropsPanel\0nameChanged\0\0txt\0"
@@ -359,9 +359,9 @@ QT_MOC_LITERAL(26, 488, 1) // "n"
     "on_select1_nameChanged\0t\0"
     "on_select2_nameChanged\0on_object_nameChanged\0"
     "on_bcobject_nameChanged\0on_object_colorChanged\0"
-    "col\0on_props_dataChanged\0on_form_dataChanged\0"
-    "itemModified\0on_bcobject_stepChanged\0"
-    "n"
+    "col\0on_props_dataChanged\0n\0"
+    "on_form_dataChanged\0itemModified\0"
+    "on_bcobject_stepChanged"
 };
 #undef QT_MOC_LITERAL
 
@@ -397,9 +397,9 @@ static const uint qt_meta_data_CModelPropsPanel[] = {
       18,    1,  130,    2, 0x08 /* Private */,
       19,    1,  133,    2, 0x08 /* Private */,
       20,    1,  136,    2, 0x08 /* Private */,
-      22,    0,  139,    2, 0x08 /* Private */,
-      23,    1,  140,    2, 0x08 /* Private */,
-      25,    1,  143,    2, 0x08 /* Private */,
+      22,    1,  139,    2, 0x08 /* Private */,
+      24,    1,  142,    2, 0x08 /* Private */,
+      26,    1,  145,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QString,    3,
@@ -420,9 +420,9 @@ static const uint qt_meta_data_CModelPropsPanel[] = {
     QMetaType::Void, QMetaType::QString,    2,
     QMetaType::Void, QMetaType::QString,    2,
     QMetaType::Void, QMetaType::QColor,   21,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,   24,
-    QMetaType::Void, QMetaType::Int,   26,
+    QMetaType::Void, QMetaType::Int,   23,
+    QMetaType::Void, QMetaType::Bool,   25,
+    QMetaType::Void, QMetaType::Int,   23,
 
        0        // eod
 };
@@ -449,7 +449,7 @@ void CModelPropsPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int
         case 13: _t->on_object_nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         case 14: _t->on_bcobject_nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         case 15: _t->on_object_colorChanged((*reinterpret_cast< const QColor(*)>(_a[1]))); break;
-        case 16: _t->on_props_dataChanged(); break;
+        case 16: _t->on_props_dataChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 17: _t->on_form_dataChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
         case 18: _t->on_bcobject_stepChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;

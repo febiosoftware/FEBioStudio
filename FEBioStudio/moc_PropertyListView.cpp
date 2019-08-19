@@ -178,14 +178,14 @@ static const uint qt_meta_data_CPropertyListView[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   29,    2, 0x06 /* Public */,
+       1,    1,   29,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       3,    1,   30,    2, 0x08 /* Private */,
-       6,    0,   33,    2, 0x08 /* Private */,
+       3,    1,   32,    2, 0x08 /* Private */,
+       6,    0,   35,    2, 0x08 /* Private */,
 
  // signals: parameters
-    QMetaType::Void,
+    QMetaType::Void, QMetaType::Int,    2,
 
  // slots: parameters
     QMetaType::Void, 0x80000000 | 4,    5,
@@ -200,7 +200,7 @@ void CPropertyListView::qt_static_metacall(QObject *_o, QMetaObject::Call _c, in
         CPropertyListView *_t = static_cast<CPropertyListView *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->dataChanged(); break;
+        case 0: _t->dataChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 1: _t->on_modelProps_clicked((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
         case 2: _t->onDataChanged(); break;
         default: ;
@@ -208,7 +208,7 @@ void CPropertyListView::qt_static_metacall(QObject *_o, QMetaObject::Call _c, in
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (CPropertyListView::*)();
+            using _t = void (CPropertyListView::*)(int );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CPropertyListView::dataChanged)) {
                 *result = 0;
                 return;
@@ -258,9 +258,10 @@ int CPropertyListView::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void CPropertyListView::dataChanged()
+void CPropertyListView::dataChanged(int _t1)
 {
-    QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

@@ -1143,7 +1143,7 @@ void CModelPropsPanel::on_object_colorChanged(const QColor& col)
 	m_wnd->RedrawGL();
 }
 
-void CModelPropsPanel::on_props_dataChanged()
+void CModelPropsPanel::on_props_dataChanged(int n)
 {
 	m_wnd->RedrawGL();
 }

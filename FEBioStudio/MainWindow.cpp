@@ -942,7 +942,7 @@ void CMainWindow::DeleteView(int n)
 //! Update the post panel
 void CMainWindow::UpdatePostPanel()
 {
-	ui->postPanel->Update(true);
+	ui->postPanel->Update();
 }
 
 //-----------------------------------------------------------------------------

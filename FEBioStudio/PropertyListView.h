@@ -56,7 +56,7 @@ public:
 	CPropertyList* GetPropertyList();
 
 signals:
-	void dataChanged();
+	void dataChanged(int);
 
 private slots:
 	void on_modelProps_clicked(const QModelIndex& index);

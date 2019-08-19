@@ -571,6 +571,6 @@ void CPropertyListView::onDataChanged()
 			ui->m_list->SetModified(false);
 		}
 
-		emit dataChanged();
+		emit dataChanged(index.row());
 	}
 }
