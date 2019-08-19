@@ -710,9 +710,6 @@
     <ClInclude Include="..\..\FEBioStudio\DlgRun.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\DlgSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\DlgSoluteTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -968,6 +965,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\MaterialPanel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgSettings.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

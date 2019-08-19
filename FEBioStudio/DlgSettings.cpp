@@ -5,10 +5,14 @@
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QTabWidget>
+#include <QLabel>
 #include <QDialogButtonBox>
+#include <QInputDialog>
+#include <QMessageBox>
 #include "PropertyList.h"
 #include "PropertyListView.h"
 #include <PostLib/convert.h>
+#include <PostLib/Palette.h>
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList
@@ -98,6 +102,297 @@ public:
 	int		m_theme;
 };
 
+
+//=================================================================================================
+ColorGradient::ColorGradient(QWidget* parent) : QWidget(parent)
+{
+	m_map.jet();
+}
+
+QSize ColorGradient::sizeHint() const
+{
+	return QSize(20, 20);
+}
+
+void ColorGradient::setColorMap(const Post::CColorMap& m)
+{
+	m_map = m;
+	repaint();
+}
+
+void ColorGradient::paintEvent(QPaintEvent* ev)
+{
+	QRect rt = rect();
+	QPainter p(this);
+
+	int r = 3;
+	int x0 = rt.left();
+	int x1 = rt.right();
+	int y0 = rt.top();
+	int y1 = y0 + 2 * r;
+	int y2 = rt.bottom();
+	int w = rt.width();
+
+	p.fillRect(x0, y0, w, y1 - y0, Qt::white);
+
+	int ncol = m_map.Colors();
+	for (int i = 0; i<ncol; ++i)
+	{
+		float x = m_map.GetColorPos(i);
+		int xi = x0 + (int)(w*x) - r;
+		p.setPen(Qt::gray);
+		p.setBrush(Qt::gray);
+		p.drawEllipse(xi, y0, 2 * r, 2 * r);
+	}
+
+	for (int i = 0; i<rt.width(); ++i)
+	{
+		float w = (float)i / rt.width();
+		GLColor c = m_map.map(w);
+		p.setPen(QColor(c.r, c.g, c.b));
+		p.drawLine(x0 + i, y1, x0 + i, y2);
+	}
+}
+
+//=================================================================================================
+//-----------------------------------------------------------------------------
+class CPaletteWidget : public QWidget
+{
+public:
+	QComboBox*	pal;
+
+public:
+	CPaletteWidget(QWidget* parent = 0) : QWidget(parent)
+	{
+		QLabel* label = new QLabel("Current palette:");
+		label->setFixedWidth(100);
+		label->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+		pal = new QComboBox; label->setBuddy(label);
+
+		QHBoxLayout* h0 = new QHBoxLayout;
+		h0->addWidget(label);
+		h0->addWidget(pal);
+
+		QPushButton* load = new QPushButton("Load Palette ..."); load->setObjectName("load");
+		QPushButton* save = new QPushButton("Save Palette ..."); save->setObjectName("save");
+		QPushButton* create = new QPushButton("Create palette from materials ..."); create->setObjectName("create");
+		QPushButton* apply = new QPushButton("Apply palette to materials ..."); apply->setObjectName("apply");
+
+		QVBoxLayout* buttons = new QVBoxLayout;
+		buttons->addWidget(load);
+		buttons->addWidget(save);
+		buttons->addWidget(create);
+		buttons->addWidget(apply);
+
+		QHBoxLayout* h1 = new QHBoxLayout;
+		h1->addStretch();
+		h1->addLayout(buttons);
+
+		QVBoxLayout* pl = new QVBoxLayout;
+		pl->addLayout(h0);
+		pl->addLayout(h1);
+		pl->addStretch();
+
+		setLayout(pl);
+	}
+};
+
+//-----------------------------------------------------------------------------
+CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
+{
+	QHBoxLayout* h = new QHBoxLayout;
+	QComboBox* l = m_maps = new QComboBox;
+	l->setMinimumWidth(120);
+	l->setCurrentIndex(0);
+
+	QPushButton* newButton = new QPushButton("New ...");
+	QPushButton* delButton = new QPushButton("Delete");
+	QPushButton* editButton = new QPushButton("Edit ...");
+	h->addWidget(new QLabel("Select color map:"));
+	h->addWidget(l);
+	h->addWidget(newButton);
+	h->addWidget(delButton);
+	h->addWidget(editButton);
+	h->addStretch();
+
+	QVBoxLayout* v = new QVBoxLayout;
+	v->addLayout(h);
+
+	h = new QHBoxLayout;
+
+	m_spin = new QSpinBox;
+	m_spin->setRange(2, 9);
+	m_spin->setMaximumWidth(75);
+	m_spin->setMinimumWidth(50);
+
+	h->addWidget(new QLabel("Number of colors:"));
+	h->addWidget(m_spin);
+	h->addStretch();
+	v->addLayout(h);
+
+	m_grid = new QGridLayout;
+
+	v->addLayout(m_grid);
+
+	QPushButton* invertButton = new QPushButton("Invert");
+	h = new QHBoxLayout();
+	h->addStretch();
+	h->addWidget(invertButton);
+	v->addLayout(h);
+	v->addStretch();
+
+	h = new QHBoxLayout();
+	h->addWidget(m_grad = new ColorGradient);
+	v->addLayout(h);
+
+	setLayout(v);
+
+	QObject::connect(l, SIGNAL(currentIndexChanged(int)), this, SLOT(currentMapChanged(int)));
+	QObject::connect(m_spin, SIGNAL(valueChanged(int)), this, SLOT(onSpinValueChanged(int)));
+	QObject::connect(newButton, SIGNAL(clicked()), this, SLOT(onNew()));
+	QObject::connect(delButton, SIGNAL(clicked()), this, SLOT(onDelete()));
+	QObject::connect(editButton, SIGNAL(clicked()), this, SLOT(onEdit()));
+	QObject::connect(invertButton, SIGNAL(clicked()), this, SLOT(onInvert()));
+
+	updateMaps();
+	m_currentMap = 0;
+	currentMapChanged(0);
+}
+
+void CColormapWidget::updateMaps()
+{
+	m_maps->clear();
+	for (int i = 0; i < Post::ColorMapManager::ColorMaps(); ++i)
+	{
+		string name = Post::ColorMapManager::GetColorMapName(i);
+		m_maps->addItem(QString(name.c_str()));
+	}
+}
+
+void CColormapWidget::onNew()
+{
+	int n = Post::ColorMapManager::UserColorMaps() + 1;
+	QString name = QString("user%1").arg(n);
+	bool bok = true;
+	QString newName = QInputDialog::getText(this, "New color map", "name:", QLineEdit::Normal, name, &bok);
+	if (bok && (newName.isEmpty() == false))
+	{
+		Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
+		string sname = newName.toStdString();
+		Post::ColorMapManager::AddColormap(sname, map);
+
+		updateMaps();
+		m_maps->setCurrentIndex(Post::ColorMapManager::ColorMaps() - 1);
+	}
+}
+
+void CColormapWidget::onDelete()
+{
+	if (Post::ColorMapManager::RemoveColormap(m_currentMap) == false)
+	{
+		QMessageBox::critical(this, "Delete Colormap", "Cannot delete default color maps.");
+	}
+	else
+	{
+		m_maps->removeItem(m_currentMap);
+	}
+}
+
+void CColormapWidget::onEdit()
+{
+	string sname = Post::ColorMapManager::GetColorMapName(m_currentMap);
+	QString name = QString::fromStdString(sname);
+	bool bok = true;
+	QString newName = QInputDialog::getText(this, "Edit color map", "name:", QLineEdit::Normal, name, &bok);
+	if (bok && (newName.isEmpty() == false))
+	{
+		Post::ColorMapManager::SetColorMapName(m_currentMap, newName.toStdString());
+		m_maps->setItemText(m_currentMap, newName);
+	}
+}
+
+void CColormapWidget::onInvert()
+{
+	Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
+	map.Invert();
+	updateColorMap(map);
+}
+
+void CColormapWidget::updateColorMap(const Post::CColorMap& map)
+{
+	clearGrid();
+
+	m_spin->setValue(map.Colors());
+
+	QLineEdit* l;
+	CColorButton* b;
+	for (int i = 0; i<map.Colors(); ++i)
+	{
+		QColor c = toQColor(map.GetColor(i));
+		float f = map.GetColorPos(i);
+
+		m_grid->addWidget(new QLabel(QString("Color %1").arg(i + 1)), i, 0, Qt::AlignRight);
+		m_grid->addWidget(l = new QLineEdit, i, 1); l->setValidator(new QDoubleValidator); l->setText(QString::number(f)); l->setMaximumWidth(100);
+		m_grid->addWidget(b = new CColorButton, i, 2); b->setColor(c);
+
+		QObject::connect(l, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+		QObject::connect(b, SIGNAL(colorChanged(QColor)), this, SLOT(onDataChanged()));
+	}
+
+	m_grad->setColorMap(map);
+}
+
+void CColormapWidget::clearGrid()
+{
+	while (m_grid->count())
+	{
+		QLayoutItem* item = m_grid->takeAt(0);
+		delete item->widget();
+		delete item;
+	}
+}
+
+void CColormapWidget::currentMapChanged(int n)
+{
+	if (n != -1)
+	{
+		m_currentMap = n;
+		updateColorMap(Post::ColorMapManager::GetColorMap(n));
+	}
+}
+
+void CColormapWidget::onDataChanged()
+{
+	Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
+	for (int i = 0; i<map.Colors(); ++i)
+	{
+		QLineEdit* pos = dynamic_cast<QLineEdit*>(m_grid->itemAtPosition(i, 1)->widget()); assert(pos);
+		if (pos)
+		{
+			float f = pos->text().toFloat();
+			map.SetColorPos(i, f);
+		}
+
+		CColorButton* col = dynamic_cast<CColorButton*>(m_grid->itemAtPosition(i, 2)->widget()); assert(col);
+		if (col)
+		{
+			QColor c = col->color();
+			map.SetColor(i, toGLColor(c));
+		}
+	}
+	m_grad->setColorMap(map);
+}
+
+void CColormapWidget::onSpinValueChanged(int n)
+{
+	Post::CColorMap& map = Post::ColorMapManager::GetColorMap(m_currentMap);
+	if (map.Colors() != n)
+	{
+		map.SetColors(n);
+		updateColorMap(map);
+	}
+}
+
 //-----------------------------------------------------------------------------
 class Ui::CDlgSettings
 {
@@ -107,6 +402,8 @@ public:
 	CPhysicsProps*		m_physics;
 	CUIProps*			m_ui;
 	QDialogButtonBox*	buttonBox;
+	CPaletteWidget*		m_pal;
+	CColormapWidget*	m_map;
 
 	::CPropertyListView*	panel[4];
 
@@ -117,6 +414,8 @@ public:
 		m_display = new CDisplayProps;
 		m_physics = new CPhysicsProps;
 		m_ui = new CUIProps;
+		m_pal = new CPaletteWidget;
+		m_map = new CColormapWidget;
 	}
 
 	void setupUi(::CDlgSettings* pwnd)
@@ -134,6 +433,8 @@ public:
 		pt->addTab(panel[1], "Display");
 		pt->addTab(panel[2], "Physics");
 		pt->addTab(panel[3], "UI");
+		pt->addTab(m_pal, "Palette");
+		pt->addTab(m_map, "Colormap");
 		pg->addWidget(pt);
 
 		buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply);
@@ -178,7 +479,23 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings)
 	ui->m_ui->m_theme = pwnd->currentTheme();
 
 	ui->setupUi(this);
-	resize(400, 300);
+
+	// fill the palette list
+	UpdatePalettes();
+}
+
+void CDlgSettings::UpdatePalettes()
+{
+	ui->m_pal->pal->clear();
+
+	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
+	int pals = PM.Palettes();
+	for (int i = 0; i<pals; ++i)
+	{
+		ui->m_pal->pal->addItem(QString::fromStdString(PM.Palette(i).Name()));
+	}
+
+	ui->m_pal->pal->setCurrentIndex(PM.CurrentIndex());
 }
 
 void CDlgSettings::showEvent(QShowEvent* ev)
