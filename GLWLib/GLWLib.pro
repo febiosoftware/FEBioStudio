@@ -1,0 +1,9 @@
+TEMPLATE = lib
+CONFIG += debug qt qwidgets opengl staticlib warn_off
+DESTDIR = ../build/lib
+TARGET = glwlib
+SOURCES += GLWidget.cpp
+SOURCES += GLWidgetManager.cpp
+INCLUDEPATH += ../
+QT += widgets
+#INCLUDEPATH += /usr/include/qt5/QtWidgets

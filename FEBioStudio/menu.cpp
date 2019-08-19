@@ -13,7 +13,7 @@
 #include <MeshIO/FENIKEExport.h>
 #include <MeshIO/FEBYUExport.h>
 #include <MeshIO/FEHypersurfaceExport.h>
-#include <LSDYNA/FELSDYNAexport.h>
+#include <LSDyna/FELSDYNAexport.h>
 #include <MeshIO/FEMeshExport.h>
 #include <MeshIO/FESTLExport.h>
 #include <MeshIO/FEViewpointExport.h>
@@ -33,7 +33,7 @@
 #include <MeshIO/FEHyperSurfImport.h>
 #include <MeshIO/FEIDEASimport.h>
 #include <MeshIO/FEIGESFileImport.h>
-#include <LSDYNA/FELSDYNAimport.h>
+#include <LSDyna/FELSDYNAimport.h>
 #include <MeshIO/FEMeshImport.h>
 #include <MeshIO/FENASTRANimport.h>
 #include <MeshIO/FEPLYImport.h>

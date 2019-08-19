@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "MaterialMapTool.h"
-#include <LSDYNA/FELSDYNAimport.h>
+#include <LSDyna/FELSDYNAimport.h>
 #include "Document.h"
 #include <PostLib/ColorMap.h>
 #include <MeshTools/FEMultiMaterial.h>
