@@ -32,6 +32,3 @@ protected:
 	FSObject*			m_po;
 	std::vector<Param*>	m_params;
 };
-
-QString Vec3dToString(const vec3d& r);
-vec3d StringToVec3d(const QString& s);

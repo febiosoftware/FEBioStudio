@@ -26,21 +26,19 @@ CVolRender::CVolRender(CImageModel* img) : CGLImageRenderer(img)
 	ss << "VolumeRender" << n++;
 	SetName(ss.str());
 
-/*
-	addProperty("alpha scale", CProperty::Float)->setFloatRange(0.0, 1.0);
-	addProperty("min intensity", CProperty::Int)->setIntRange(0, 255);
-	addProperty("max intensity", CProperty::Int)->setIntRange(0, 255);
-	addProperty("min alpha", CProperty::Int)->setIntRange(0, 255);
-	addProperty("max alpha", CProperty::Int)->setIntRange(0, 255);
-	addProperty("Amin", CProperty::Int)->setIntRange(0, 255);
-	addProperty("Amax", CProperty::Int)->setIntRange(0, 255);
-	addProperty("Color map", CProperty::Enum)->setEnumValues(cols);
-	addProperty("Lighting effect", CProperty::Bool);
-	addProperty("Lighting strength", CProperty::Float);
-	addProperty("Ambient color", CProperty::Color);
-	addProperty("Specular color", CProperty::Color);
-	//		addProperty("Light direction", CProperty::DataVec3);
-*/
+	AddDoubleParam(0, "alpha scale")->SetFloatRange(0.0, 1.0);
+	AddIntParam(0, "min intensity")->SetIntRange(0, 255);
+	AddIntParam(0, "max intensity")->SetIntRange(0, 255);
+	AddIntParam(0, "min alpha")->SetIntRange(0, 255);
+	AddIntParam(0, "max alpha")->SetIntRange(0, 255);
+	AddIntParam(0, "Amin")->SetIntRange(0, 255);
+	AddIntParam(0, "Amax")->SetIntRange(0, 255);
+	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "Lighting effect");
+	AddDoubleParam(0, "Lighting strength");
+	AddColorParam(GLColor::White(), "Ambient color");
+	AddColorParam(GLColor::White(), "Specular color");
+	AddVecParam(vec3d(1, 1, 1), "Light direction");
 
 	m_pImx = m_pImy = m_pImz = 0;
 	m_sliceX = m_sliceY = m_sliceZ = 0;
@@ -48,11 +46,13 @@ CVolRender::CVolRender(CImageModel* img) : CGLImageRenderer(img)
 
 	m_blight = false;
 	m_bcalc_lighting = true;
-	m_light = vec3f(-1.f, -1.f, -1.f);
+	m_light = vec3d(-1., -1., -1.);
 
 	m_spc = GLColor(255, 255, 255);
 
 	m_texID = 0;
+
+	UpdateData(false);
 
 	Reset();
 }
@@ -60,6 +60,53 @@ CVolRender::CVolRender(CImageModel* img) : CGLImageRenderer(img)
 CVolRender::~CVolRender()
 {
 	Clear();
+}
+
+void CVolRender::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_alpha = GetFloatValue(ALPHA_SCALE);
+		m_I0 = GetIntValue(MIN_INTENSITY);
+		m_I1 = GetIntValue(MAX_INTENSITY);
+		m_A0 = GetIntValue(MIN_ALPHA);
+		m_A1 = GetIntValue(MAX_ALPHA);
+		m_Amin = GetIntValue(AMIN);
+		m_Amax = GetIntValue(AMAX);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		m_blight = GetBoolValue(LIGHTING);
+		m_shadeStrength = GetFloatValue(LIGHTING_STRENGTH);
+		m_amb = GetColorValue(AMBIENT);
+		m_spc = GetColorValue(SPECULAR);
+		m_light = GetVecValue(LIGHT_POS);
+	}
+	else
+	{
+		SetFloatValue(ALPHA_SCALE, m_alpha);
+		SetIntValue(MIN_INTENSITY, m_I0);
+		SetIntValue(MAX_INTENSITY, m_I1);
+		SetIntValue(MIN_ALPHA, m_A0);
+		SetIntValue(MAX_ALPHA, m_A1);
+		SetIntValue(AMIN, m_Amin);
+		SetIntValue(AMAX, m_Amax);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetBoolValue(LIGHTING, m_blight);
+		SetFloatValue(LIGHTING_STRENGTH, m_shadeStrength);
+		SetColorValue(AMBIENT, m_amb);
+		SetColorValue(SPECULAR, m_spc);
+		SetVecValue(LIGHT_POS, m_light);
+	}
+}
+
+vec3d CVolRender::GetLightPosition()
+{ 
+	return m_light; 
+}
+
+void CVolRender::SetLightPosition(const vec3d& r) 
+{ 
+	m_light = r; 
+	m_bcalc_lighting = true; 
 }
 
 void CVolRender::Reset()
@@ -177,7 +224,7 @@ void CVolRender::CalcAttenuation()
 {
 	m_att.Create(m_nx, m_ny, m_nz);
 
-	vec3f l = m_light; l.Normalize();
+	vec3d l = m_light; l.Normalize();
 
 	BOUNDINGBOX& b = GetImageModel()->GetBoundingBox();
 
@@ -189,7 +236,7 @@ void CVolRender::CalcAttenuation()
 		for (int j = 0; j < m_ny; ++j)
 			for (int i = 0; i < m_nx; ++i)
 			{
-				vec3f f = map.Value(i, j, k); f.Normalize();
+				vec3d f = map.Value(i, j, k); f.Normalize();
 				float a = f*l;
 				if (a < 0.f) a = 0.f;
 				m_att.value(i, j, k) = (byte)(255.f*a);
@@ -201,6 +248,8 @@ void CVolRender::CalcAttenuation()
 //! Update texture images for volume rendering
 void CVolRender::Update()
 {
+	UpdateData();
+
 	// calculate attenuation factors
 	if (m_bcalc_lighting)
 	{

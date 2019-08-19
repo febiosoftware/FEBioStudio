@@ -39,6 +39,8 @@ protected:
 
 class CMarchingCubes : public CGLImageRenderer
 {
+	enum { ISO_VALUE, SMOOTH, COLOR, CLOSE_SURFACE, INVERT_SPACE, CLIP };
+
 public:
 	CMarchingCubes(CImageModel* img);
 	virtual ~CMarchingCubes();
@@ -63,6 +65,8 @@ public:
 	void Render(CGLContext& rc) override;
 
 	void Update() override;
+
+	void UpdateData(bool bsave = true) override;
 
 private:
 	void AddSurfaceTris(byte val[4], vec3f r[4], const vec3f& faceNormal);

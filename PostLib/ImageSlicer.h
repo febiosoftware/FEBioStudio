@@ -9,6 +9,8 @@ class CImageModel;
 
 class CImageSlicer : public CGLImageRenderer
 {
+	enum { ORIENTATION, OFFSET, COLOR_MAP };
+
 public:
 	CImageSlicer(CImageModel* img);
 	~CImageSlicer();
@@ -27,6 +29,8 @@ public:
 
 	int GetColorMap() const { return m_Col.GetColorMap(); }
 	void SetColorMap(int n) { m_Col.SetColorMap(n); }
+
+	void UpdateData(bool bsave = true) override;
 
 private:
 	void BuildLUT();

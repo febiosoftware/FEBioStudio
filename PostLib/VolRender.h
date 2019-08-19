@@ -10,6 +10,8 @@ class CImageModel;
 
 class CVolRender : public CGLImageRenderer
 {
+	enum { ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, MIN_ALPHA, MAX_ALPHA, AMIN, AMAX, COLOR_MAP, LIGHTING, LIGHTING_STRENGTH, AMBIENT, SPECULAR, LIGHT_POS };
+
 public:
 	CVolRender(CImageModel* img);
 	virtual ~CVolRender();
@@ -24,11 +26,13 @@ public:
 
 	void Reset();
 
-	vec3f GetLightPosition() { return m_light; }
-	void SetLightPosition(vec3f r) { m_light = r; m_bcalc_lighting = true; }
+	vec3d GetLightPosition();
+	void SetLightPosition(const vec3d& r);
 
 	int GetColorMap() const { return m_Col.GetColorMap(); }
 	void SetColorMap(int n) { m_Col.SetColorMap(n); }
+
+	void UpdateData(bool bsave = true) override;
 
 protected:
 	void RenderX(int inc);
@@ -75,7 +79,7 @@ protected:
 	double m_ax, m_ay, m_az;	//!< alpha scale factors
 
 	bool	m_bcalc_lighting;	//!< calculate shading?
-	vec3f	m_light;	// light direction
+	vec3d	m_light;	// light direction
 
 	int	m_LUT[256], m_LUTC[4][256];
 };

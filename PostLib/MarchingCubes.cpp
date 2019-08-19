@@ -57,25 +57,49 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 	stringstream ss;
 	ss << "ImageIsosurface" << n++;
 	SetName(ss.str());
-/*
-	addProperty("isosurface value", CProperty::Float)->setFloatRange(0.0, 1.0);
-	addProperty("smooth surface", CProperty::Bool);
-	addProperty("surface color", CProperty::Color);
-	addProperty("close surface", CProperty::Bool);
-	addProperty("invert space", CProperty::Bool);
-	addProperty("allow clipping", CProperty::Bool);
-*/
+
+	AddDoubleParam(0, "isosurface value")->SetFloatRange(0.0, 1.0);
+	AddBoolParam(true, "smooth surface");
+	AddColorParam(GLColor::White(), "surface color");
+	AddBoolParam(true, "close surface");
+	AddBoolParam(true, "invert space");
+	AddBoolParam(true, "allow clipping");
+
 	m_val = 0.5f;
 	m_oldVal = -1.f;
 	m_bsmooth = true;
 	m_bcloseSurface = true;
 	m_binvertSpace = false;
 	m_col = GLColor(200, 185, 185);
+
+	UpdateData(false);
 }
 
 CMarchingCubes::~CMarchingCubes()
 {
 
+}
+
+void CMarchingCubes::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_val = GetFloatValue(ISO_VALUE);
+		m_bsmooth = GetBoolValue(SMOOTH);
+		m_col = GetColorValue(COLOR);
+		m_bcloseSurface = GetBoolValue(CLOSE_SURFACE);
+		m_binvertSpace = GetBoolValue(INVERT_SPACE);
+		AllowClipping(GetBoolValue(CLIP));
+	}
+	else
+	{
+		SetFloatValue(ISO_VALUE, m_val);
+		SetBoolValue(SMOOTH, m_bsmooth);
+		SetColorValue(COLOR, m_col);
+		SetBoolValue(CLOSE_SURFACE, m_bcloseSurface);
+		SetBoolValue(INVERT_SPACE, m_binvertSpace);
+		SetBoolValue(CLIP, AllowClipping());
+	}
 }
 
 void CMarchingCubes::SetSmooth(bool b)
@@ -99,12 +123,14 @@ void CMarchingCubes::SetCloseSurface(bool b)
 
 void CMarchingCubes::Update()
 {
+	UpdateData();
 	if (m_oldVal == m_val) return;
 	Create();
 }
 
 void CMarchingCubes::Create()
 {
+	UpdateData();
 	m_oldVal = m_val;
 
 	m_mesh.Clear();

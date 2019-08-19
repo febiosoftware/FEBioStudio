@@ -1,5 +1,19 @@
 #include "PropertyList.h"
 
+vec3d StringToVec3d(const QString& s)
+{
+	string st = s.toStdString();
+	const char* sz = st.c_str();
+	vec3d r;
+	sscanf(sz, "%lg,%lg,%lg", &r.x, &r.y, &r.z);
+	return r;
+}
+
+QString Vec3dToString(const vec3d& r)
+{
+	return QString("%1,%2,%3").arg(r.x).arg(r.y).arg(r.z);
+}
+
 CProperty& CProperty::operator = (const CProperty& p)
 {
 	type = p.type;
@@ -66,6 +80,11 @@ CProperty* CDataPropertyList::addDoubleProperty(double* pd, const QString& name)
 	return addProperty(name, CProperty::Float)->setData(pd);
 }
 
+CProperty* CDataPropertyList::addVec3Property(vec3d* pd, const QString& name)
+{
+	return addProperty(name, CProperty::Vec3)->setData(pd);
+}
+
 CProperty* CDataPropertyList::addColorProperty(QColor* pd, const QString& name)
 {
 	return addProperty(name, CProperty::Color)->setData(pd);
@@ -105,6 +124,7 @@ QVariant CDataPropertyList::GetPropertyValue(int i)
 	case CProperty::Curve : { QString v = *((QString*)(p.pdata)); return v; } break;
 	case CProperty::CurveList: { QStringList v = *((QStringList*)(p.pdata)); return v; } break;
 	case CProperty::Resource: { QString v = *((QString*)(p.pdata)); return v; } break;
+	case CProperty::Vec3: { vec3d v = *((vec3d*)(p.pdata)); return Vec3dToString(v); } break;
 	}
 
 	return QVariant();
@@ -124,5 +144,6 @@ void CDataPropertyList::SetPropertyValue(int i, const QVariant& v)
 	case CProperty::Curve: { QString& d = *((QString*)p.pdata); d = v.value<QString>(); } break;
 	case CProperty::CurveList: { QStringList& d = *((QStringList*)p.pdata); d = v.value<QStringList>(); } break;
 	case CProperty::Resource: { QString& d = *((QString*)p.pdata); d = v.value<QString>(); } break;
+	case CProperty::Vec3: { vec3d& d = *((vec3d*)p.pdata); d = StringToVec3d(v.value<QString>()); } break;
 	}
 }

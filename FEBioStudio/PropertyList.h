@@ -1,6 +1,7 @@
 #pragma once
 #include <QtCore/QVariant>
 #include <PostLib/convert.h>
+#include <MathLib/math3d.h>
 
 class Param;
 
@@ -20,6 +21,7 @@ public:
 		Group,
 		MathString,
 		ColorMap,
+		Vec3,
 
 		// from PostView
 		DataScalar,
@@ -132,7 +134,11 @@ public:
 	CProperty* addCurveProperty    (QString* pd, const QString& name);
 	CProperty* addCurveListProperty(QStringList* pd, const QString& name);
 	CProperty* addResourceProperty (QString* pd, const QString& name);
+	CProperty* addVec3Property     (vec3d* pd, const QString& name);
 
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 };
+
+QString Vec3dToString(const vec3d& r);
+vec3d StringToVec3d(const QString& s);

@@ -24,7 +24,7 @@ void CObjectProps::AddParameter(Param& p)
 		}
 	}
 	break;
-	case Param_VEC3D: prop = addProperty(p.GetLongName(), CProperty::String); break;
+	case Param_VEC3D: prop = addProperty(p.GetLongName(), CProperty::Vec3); break;
 	case Param_STRING: prop = addProperty(p.GetLongName(), CProperty::String); break;
 	case Param_MATH  : prop = addProperty(p.GetLongName(), CProperty::MathString); break;
 	case Param_COLOR : prop = addProperty(p.GetLongName(), CProperty::Color); break;
@@ -121,20 +121,6 @@ void CObjectProps::BuildParamList(FSObject* po)
 			AddParameter(p);
 		}
 	}
-}
-
-vec3d StringToVec3d(const QString& s)
-{
-	string st = s.toStdString();
-	const char* sz = st.c_str();
-	vec3d r;
-	sscanf(sz, "%lg,%lg,%lg", &r.x, &r.y, &r.z);
-	return r;
-}
-
-QString Vec3dToString(const vec3d& r)
-{
-	return QString("%1,%2,%3").arg(r.x).arg(r.y).arg(r.z);
 }
 
 QVariant CObjectProps::GetPropertyValue(Param& p)

@@ -23,12 +23,9 @@ CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
 	ss << "ImageSlicer" << n++;
 	SetName(ss.str());
 
-/*	QStringList ops;
-	ops << "X" << "Y" << "Z";
-	addProperty("Image orientation", CProperty::Enum)->setEnumValues(ops);
-	addProperty("Image offset", CProperty::Float)->setFloatRange(0.0, 1.0);
-	addProperty("Color map", CProperty::Enum)->setEnumValues(cols);
-*/
+	AddIntParam(0, "Image orientation")->SetEnumNames("X\0Y\0Z\0");
+	AddDoubleParam(0, "Image offset")->SetFloatRange(0.0, 1.0);
+	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
 
 	m_Col.SetColorMap(ColorMapManager::GRAY);
 
@@ -36,10 +33,28 @@ CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
 	m_off = 0.5;
 	m_texID = 0;
 	m_reloadTexture = true;
+
+	UpdateData(false);
 }
 
 CImageSlicer::~CImageSlicer()
 {
+}
+
+void CImageSlicer::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_op = GetIntValue(ORIENTATION);
+		m_off = GetFloatValue(OFFSET);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+	}
+	else
+	{
+		SetIntValue(ORIENTATION, m_op);
+		SetFloatValue(OFFSET, m_off);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+	}
 }
 
 void CImageSlicer::Create()
@@ -66,6 +81,8 @@ void CImageSlicer::Create()
 
 void CImageSlicer::Update()
 {
+	UpdateData();
+
 	// get the 2D image
 	CImage im2d;
 	switch (m_op)
