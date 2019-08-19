@@ -53,8 +53,8 @@ CGLModel::CGLModel(FEModel* ps)
 	m_pdis = 0;
 	if (ndisp != -1)
 	{
-		m_pdis = new CGLDisplacementMap(this);
 		ps->SetDisplacementField(BUILD_FIELD(1, ndisp, 0));
+		m_pdis = new CGLDisplacementMap(this);
 	}
 
 	// add a default color map

@@ -17,6 +17,8 @@
 #include <FSCore/ParamBlock.h>
 #include "DataFieldSelector.h"
 #include <PostLib/FEMeshData.h>
+#include <PostLib/ColorMap.h>
+#include "DragBox.h"
 
 //-----------------------------------------------------------------------------
 CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent)
@@ -142,6 +144,16 @@ public:
 						if (n == 0) return QVariant(QString("auto"));
 					}
 				}
+			}
+			if (prop.type == CProperty::ColorMap)
+			{
+				if (role == Qt::DisplayRole)
+				{
+					int n = v.toInt();
+					std::string mapName = Post::ColorMapManager::GetColorMapName(n);
+					return QString::fromStdString(mapName);
+				}
+				else if (role == Qt::EditRole) return v;
 			}
 			if (prop.type == CProperty::DataScalar)
 			{
@@ -333,19 +345,39 @@ public:
 		}
 		else if ((data.type() == QVariant::Double)||(data.type() == QMetaType::Float))
 		{
-			QLineEdit* pc = new QLineEdit(parent);
+			QWidget* pw = 0;
 			const CProperty& prop = model->getPropertyList().Property(index.row());
-			pc->setValidator(new QDoubleValidator);
-//			pc->setRange(prop.fmin, prop.fmax);
-			pc->setText(QString::number(data.value<double>()));
-//			pc->setAccelerated(true);
-			m_view->connect(pc, SIGNAL(editingFinished()), m_view, SLOT(onDataChanged()));
-			return pc;
+			if (prop.brange)
+			{
+				CDragBox* pc = new CDragBox(parent);
+				pc->SetSingleStep(prop.fstep);
+				pc->setRange(prop.fmin, prop.fmax);
+				pc->textFromValue(data.value<double>());
+				pc->setAccelerated(true);
+				m_view->connect(pc, SIGNAL(valueChanged(double)), m_view, SLOT(onDataChanged()));
+				pw = pc;
+			}
+			else
+			{
+				QDoubleValidator* val = new QDoubleValidator;
+				val->setDecimals(6);
+				QLineEdit* pe = new QLineEdit(parent); pe->setValidator(val);
+				m_view->connect(pe, SIGNAL(textEdited(const QString&)), m_view, SLOT(onDataChanged()));
+				pw = pe;
+			}
+			return pw;
 		}
 		else if (data.type() == QVariant::Int)
 		{
 			const CProperty& prop = model->getPropertyList().Property(index.row());
-			if (prop.type == CProperty::DataScalar)
+			if (prop.type == CProperty::ColorMap)
+			{
+				CColorMapSelector* pc = new CColorMapSelector(parent);
+				pc->setCurrentIndex(data.toInt());
+				m_view->connect(pc, SIGNAL(currentIndexChanged(int)), m_view, SLOT(onDataChanged()));
+				return pc;
+			}
+			else if (prop.type == CProperty::DataScalar)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
 				Post::FEModel& fem = *Post::FEModel::GetInstance();

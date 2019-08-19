@@ -1,66 +1,7 @@
 #include "stdafx.h"
 #include "GLParticleFlowPlot.h"
-#include "PostLib/PropertyList.h"
 #include "GLModel.h"
 using namespace Post;
-
-class CGLParticleFlowPlotProps : public CPropertyList
-{
-public:
-	CGLParticleFlowPlotProps(CGLParticleFlowPlot* v) : m_plt(v)
-	{
-		QStringList cols;
-
-		for (int i = 0; i<ColorMapManager::ColorMaps(); ++i)
-		{
-			string name = ColorMapManager::GetColorMapName(i);
-			cols << name.c_str();
-		}
-
-		addProperty("Data field", CProperty::DataVec3);
-		addProperty("Color map", CProperty::Enum)->setEnumValues(cols);
-		addProperty("Allow clipping", CProperty::Bool);
-		addProperty("Seed step", CProperty::Int);
-		addProperty("Velocity threshold", CProperty::Float);
-		addProperty("Seeding density", CProperty::Float)->setFloatRange(0.0, 1.0).setFloatStep(0.01);
-		addProperty("Step size", CProperty::Float);
-		addProperty("Show path lines", CProperty::Bool);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_plt->GetVectorType(); break;
-		case 1: return m_plt->GetColorMap()->GetColorMap();
-		case 2: return m_plt->AllowClipping(); break;
-		case 3: return m_plt->SeedTime() + 1; break;
-		case 4: return m_plt->Threshold(); break;
-		case 5: return m_plt->Density(); break;
-		case 6: return m_plt->StepSize(); break;
-		case 7: return m_plt->ShowPath(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_plt->SetVectorType(v.toInt()); break;
-		case 1: m_plt->GetColorMap()->SetColorMap(v.toInt()); m_plt->UpdateParticleColors(); break;
-		case 2: m_plt->AllowClipping(v.toBool()); break;
-		case 3: m_plt->SetSeedTime(v.toInt() - 1); break;
-		case 4: m_plt->SetThreshold(v.toFloat()); break;
-		case 5: m_plt->SetDensity(v.toFloat()); break;
-		case 6: m_plt->SetStepSize(v.toFloat()); break;
-		case 7: m_plt->ShowPath(v.toBool()); break;
-		}
-	}
-
-private:
-	CGLParticleFlowPlot*	m_plt;
-};
 
 CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*mdl->GetActiveMesh())
 {
@@ -68,6 +9,15 @@ CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*
 	char szname[128] = { 0 };
 	sprintf(szname, "ParticleFlow.%02d", n++);
 	SetName(szname);
+
+	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "Allow clipping");
+	AddIntParam(0, "Seed step");
+	AddDoubleParam(0, "Velocity threshold");
+	AddDoubleParam(0, "Seeding density")->SetFloatRange(0.0, 1.0, 0.01);
+	AddDoubleParam(0, "Step size");
+	AddBoolParam(false, "Show path lines");
 
 	m_nvec = -1;
 	m_showPath = false;
@@ -77,11 +27,34 @@ CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*
 	m_maxtime = -1;
 	m_seedTime = 1;
 	m_dt = 0.01f;
+
+	UpdateData(false);
 }
 
-CPropertyList* CGLParticleFlowPlot::propertyList()
+void CGLParticleFlowPlot::UpdateData(bool bsave)
 {
-	return new CGLParticleFlowPlotProps(this);
+	if (bsave)
+	{
+		m_nvec = GetIntValue(DATA_FIELD);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		AllowClipping(GetBoolValue(CLIP));
+		m_seedTime = GetIntValue(SEED_STEP);
+		m_vtol = GetFloatValue(THRESHOLD);
+		m_density = GetFloatValue(DENSITY);
+		m_dt = GetFloatValue(STEP_SIZE);
+		m_showPath = GetBoolValue(PATH_LINES);
+	}
+	else
+	{
+		SetIntValue(DATA_FIELD, m_nvec);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetBoolValue(CLIP, AllowClipping());
+		SetIntValue(SEED_STEP, m_seedTime);
+		SetFloatValue(THRESHOLD, m_vtol);
+		SetFloatValue(DENSITY, m_density);
+		SetFloatValue(STEP_SIZE, m_dt);
+		SetBoolValue(PATH_LINES, m_showPath);
+	}
 }
 
 void CGLParticleFlowPlot::SetVectorType(int ntype)

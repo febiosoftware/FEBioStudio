@@ -8,6 +8,8 @@ namespace Post {
 // This datamap maps vector data to nodal displacements
 class CGLDisplacementMap : public CGLDataMap
 {
+	enum { DATA_FIELD, SCALE };
+
 public:
 	CGLDisplacementMap(CGLModel* po);
 
@@ -19,10 +21,14 @@ public:
 	float GetScale() { return m_scl; }
 	void SetScale(float f) { m_scl = f; }
 
-	CPropertyList* propertyList();
+public:
+	void UpdateData(bool bsave = true) override;
+
+	void UpdateNodes();
 
 public:
 	float				m_scl;		//!< displacement scale factor
+	std::vector<vec3f>	m_du;		//!< nodal displacements
 	std::vector<int>	m_ntag;
 };
 }

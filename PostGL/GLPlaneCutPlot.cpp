@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "GLPlaneCutPlot.h"
 #include "PostLib/GLContext.h"
-#include "PostLib/PropertyList.h"
 #include "PostLib/GLContext.h"
 #include "GLModel.h"
 using namespace Post;
@@ -15,59 +14,6 @@ const int HEX_NT[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 const int PEN_NT[8] = {0, 1, 2, 2, 3, 4, 5, 5};
 const int TET_NT[8] = {0, 1, 2, 2, 3, 3, 3, 3};
 const int PYR_NT[8] = {0, 1, 2, 3, 4, 4, 4, 4};
-
-class CPlaneCutProps : public CPropertyList
-{
-public:
-	CPlaneCutProps(CGLPlaneCutPlot* pc) : m_planeCut(pc)
-	{
-		addProperty("Show plane", CProperty::Bool);
-		addProperty("Cut hidden", CProperty::Bool);
-		addProperty("Show Mesh" , CProperty::Bool);
-		addProperty("Transparency", CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("X-normal"  , CProperty::Float)->setFloatRange(-1.0, 1.0);
-		addProperty("Y-normal"  , CProperty::Float)->setFloatRange(-1.0, 1.0);
-		addProperty("Z-normal"  , CProperty::Float)->setFloatRange(-1.0, 1.0);
-		addProperty("offset"    , CProperty::Float)->setFloatStep(0.01);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_planeCut->m_bshowplane; break;
-		case 1: return m_planeCut->m_bcut_hidden; break;
-		case 2: return m_planeCut->m_bshow_mesh; break;
-		case 3: return m_planeCut->m_transparency; break;
-		case 4: return m_planeCut->GetPlaneNormal().x; break;
-		case 5: return m_planeCut->GetPlaneNormal().y; break;
-		case 6: return m_planeCut->GetPlaneNormal().z; break;
-		case 7: return m_planeCut->GetPlaneOffset(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		double a[4];
-		m_planeCut->GetPlaneEqn(a);
-		switch (i)
-		{
-		case 0: m_planeCut->m_bshowplane = v.toBool(); break;
-		case 1: m_planeCut->m_bcut_hidden = v.toBool(); break;
-		case 2: m_planeCut->m_bshow_mesh = v.toBool(); break;
-		case 3: m_planeCut->m_transparency = v.toFloat(); break;
-		case 4: a[0] = v.toDouble(); m_planeCut->SetPlaneEqn(a); break;
-		case 5: a[1] = v.toDouble(); m_planeCut->SetPlaneEqn(a); break;
-		case 6: a[2] = v.toDouble(); m_planeCut->SetPlaneEqn(a); break;
-		case 7: a[3] = v.toDouble(); m_planeCut->SetPlaneEqn(a); break;
-		}
-	}
-
-private:
-	CGLPlaneCutPlot* m_planeCut;
-};
-
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -84,6 +30,15 @@ CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
 	sprintf(szname, "Planecut.%02d", n++);
 	SetName(szname);
 
+	AddBoolParam(true, "Show plane");
+	AddBoolParam(true, "Cut hidden");
+	AddBoolParam(true, "Show Mesh" );
+	AddDoubleParam(0, "Transparency")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0, "X-normal")->SetFloatRange(-1.0, 1.0);
+	AddDoubleParam(0, "Y-normal")->SetFloatRange(-1.0, 1.0);
+	AddDoubleParam(0, "Z-normal")->SetFloatRange(-1.0, 1.0);
+	AddDoubleParam(0, "offset")->SetFloatRange(-1.0, 1.0, 0.01);
+
 	m_eq[0] = 1;
 	m_eq[1] = 0;
 	m_eq[2] = 0;
@@ -97,6 +52,8 @@ CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
 
 	m_nclip = GetFreePlane();
 	if (m_nclip >= 0) m_pcp[m_nclip] = this;
+
+	UpdateData(false);
 }
 
 CGLPlaneCutPlot::~CGLPlaneCutPlot()
@@ -104,9 +61,32 @@ CGLPlaneCutPlot::~CGLPlaneCutPlot()
 	ReleasePlane();
 }
 
-CPropertyList* CGLPlaneCutPlot::propertyList()
+void CGLPlaneCutPlot::UpdateData(bool bsave)
 {
-	return new CPlaneCutProps(this);
+	if (bsave)
+	{
+		m_bshowplane  = GetBoolValue(SHOW_PLANE);
+		m_bcut_hidden = GetBoolValue(CUT_HIDDEN);
+		m_bshow_mesh  = GetBoolValue(SHOW_MESH);
+		m_transparency = GetFloatValue(TRANSPARENCY);
+		m_eq[0] = GetFloatValue(NORMAL_X);
+		m_eq[1] = GetFloatValue(NORMAL_Y);
+		m_eq[2] = GetFloatValue(NORMAL_Z);
+		m_eq[3] = GetFloatValue(OFFSET);
+
+		UpdateSlice();
+	}
+	else
+	{
+		SetBoolValue(SHOW_PLANE, m_bshowplane);
+		SetBoolValue(CUT_HIDDEN, m_bcut_hidden);
+		SetBoolValue(SHOW_MESH, m_bshow_mesh);
+		SetFloatValue(TRANSPARENCY, m_transparency);
+		SetFloatValue(NORMAL_X, m_eq[0]);
+		SetFloatValue(NORMAL_Y, m_eq[1]);
+		SetFloatValue(NORMAL_Z, m_eq[2]);
+		SetFloatValue(OFFSET  , m_eq[3]);
+	}
 }
 
 void CGLPlaneCutPlot::DisableClipPlanes()

@@ -206,9 +206,11 @@
     <ClCompile Include="..\..\FEBioStudio\DlgWidgetProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DocTemplate.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Document.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DragBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\EditPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioJob.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioStudio.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\FEObjectProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FiberGeneratorTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FileThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FileViewer.cpp" />
@@ -343,6 +345,8 @@
     <ClInclude Include="..\..\FEBioStudio\CurveEditor.h" />
     <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h" />
     <ClInclude Include="..\..\FEBioStudio\CurvePicker.h" />
+    <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
+    <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />
     <ClInclude Include="resource.h" />
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

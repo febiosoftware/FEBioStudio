@@ -5,6 +5,8 @@ namespace Post {
 
 class CGLParticleFlowPlot : public CGLPlot
 {
+	enum { DATA_FIELD, COLOR_MAP, CLIP, SEED_STEP, THRESHOLD, DENSITY, STEP_SIZE, PATH_LINES };
+
 	class FlowParticle
 	{
 	public:
@@ -47,7 +49,7 @@ public:
 
 	void Render(CGLContext& rc);
 
-	CPropertyList* propertyList();
+	void UpdateData(bool bsave = true) override;
 
 public:
 	int GetVectorType() { return m_nvec; }

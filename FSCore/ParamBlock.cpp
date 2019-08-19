@@ -18,6 +18,8 @@ Param::Param()
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -58,6 +60,27 @@ Param* Param::CopyEnumNames(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
+void Param::SetFloatRange(double fmin, double fmax, double fstep)
+{
+	assert(m_ntype == Param_FLOAT);
+	m_floatRange = true;
+	m_fmin = fmin;
+	m_fmax = fmax;
+
+	if (fstep == 0.0) fstep = (fmax - fmin) / 100.0;
+	m_fstep = fstep;
+}
+//-----------------------------------------------------------------------------
+void Param::SetIntRange(int imin, int imax, int istep)
+{
+	assert(m_ntype == Param_INT);
+	m_floatRange = true;
+	m_fmin = imin;
+	m_fmax = imax;
+	m_fstep = istep;
+}
+
+//-----------------------------------------------------------------------------
 void Param::clear()
 {
 	if (m_pd)
@@ -71,6 +94,7 @@ void Param::clear()
 		case Param_VEC3D : delete ((vec3d*) m_pd); break;
 		case Param_STRING: delete ((std::string*) m_pd); break;
 		case Param_MATH  : delete ((std::string*) m_pd); break;
+		case Param_COLOR : delete ((GLColor*)m_pd); break;
 		default:
 			assert(false);
 		}
@@ -90,6 +114,7 @@ void Param::SetParamType(Param_Type t)
 	case Param_VEC3D : m_pd = new vec3d; break;
 	case Param_STRING: m_pd = new std::string; break;
 	case Param_MATH  : m_pd = new std::string; break;
+	case Param_COLOR : m_pd = new GLColor; break;
 	default:
 		assert(false);
 	}
@@ -123,6 +148,10 @@ Param::Param(const Param& p)
 	m_bcopy = false;
 	m_offset = p.m_offset;
 	m_isVariable = p.m_isVariable;
+	m_floatRange = p.m_floatRange;
+	m_fmin = p.m_fmin;
+	m_fmax = p.m_fmax;
+	m_fstep = p.m_fstep;
 	switch (m_ntype)
 	{
 	case Param_INT   : { int*    pi = new int   ; m_pd = pi; *pi = *((int*   )p.m_pd); } break;
@@ -132,6 +161,7 @@ Param::Param(const Param& p)
 	case Param_VEC3D : { vec3d*	 pv = new vec3d ; m_pd = pv; *pv = *((vec3d* )p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
+	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
@@ -163,6 +193,7 @@ Param& Param::operator = (const Param& p)
 	case Param_VEC3D : { vec3d*	 pv = new vec3d ; m_pd = pv; *pv = *((vec3d* )p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
+	case Param_COLOR : { GLColor* pc = new GLColor; m_pd = pc; *pc = *((GLColor*)p.m_pd); } break;
 	default:
 		assert(false);
 	}
@@ -192,6 +223,8 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -212,6 +245,8 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -232,6 +267,8 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -252,6 +289,8 @@ Param::Param(double d, Param_Unit nunit, const char* szb, const char* szn)
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -272,6 +311,8 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -292,6 +333,29 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+}
+
+//-----------------------------------------------------------------------------
+Param::Param(GLColor c, const char* szb, const char* szn)
+{
+	GLColor* pc = new GLColor(c);
+	m_pd = pc;
+	m_ntype = Param_COLOR;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_nunit = Param_NOUNIT;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_plc = 0;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 Param::Param(const std::string& val, const char* szb, const char* szn)
@@ -311,6 +375,8 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -331,6 +397,8 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
     
 //-----------------------------------------------------------------------------
@@ -351,6 +419,8 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
     
 //-----------------------------------------------------------------------------
@@ -370,6 +440,8 @@ Param::Param(double d, const char* szi, int idx, Param_Unit nunit, const char* s
 	m_bcopy = false;
 	m_offset = 0;
 	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
 }
 
 //=============================================================================
@@ -429,6 +501,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_VEC3D : { vec3d  v = p.GetVecValue  (); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STRING: { std::string s = p.GetStringValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_MATH  : { std::string s = p.GetMathString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
+	case Param_COLOR : { GLColor c = p.GetColorValue(); ar.WriteChunk(CID_PARAM_VALUE, c); } break;
 	default:
 		assert(false);
 	}
@@ -485,6 +558,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_CHOICE: p.SetParamType(Param_CHOICE); break;
 			case Param_STRING: p.SetParamType(Param_STRING); break;
 			case Param_MATH  : p.SetParamType(Param_MATH); break;
+			case Param_COLOR : p.SetParamType(Param_COLOR); break;
 			case Param_CURVE_OBSOLETE: p.SetParamType(Param_FLOAT); break;
 			}
 			break;
@@ -498,6 +572,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_VEC3D : { vec3d  v; ar.read(v); p.SetVecValue   (v); } break;
 			case Param_STRING: { std::string s; ar.read(s); p.SetStringValue(s); } break;
 			case Param_MATH  : { std::string s; ar.read(s); p.SetMathString(s); } break;
+			case Param_COLOR : { GLColor c; ar.read(c); p.SetColorValue(c); break; }
 			case Param_CURVE_OBSOLETE:
 				{
 					// This is obsolete but remains for backward compatibility.

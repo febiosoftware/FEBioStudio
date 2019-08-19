@@ -1,80 +1,9 @@
 #include "stdafx.h"
 #include "GLTensorPlot.h"
-#include "PostLib/PropertyList.h"
 #include "PostLib/constants.h"
 #include "GLModel.h"
 #include <stdlib.h>
 using namespace Post;
-
-class CTensorPlotProps : public CPropertyList
-{
-public:
-	CTensorPlotProps(GLTensorPlot* v) : m_tensor(v)
-	{
-		QStringList cols;
-
-		for (int i = 0; i<ColorMapManager::ColorMaps(); ++i)
-		{
-			string name = ColorMapManager::GetColorMapName(i);
-			cols << name.c_str();
-		}
-
-		addProperty("Data field"    , CProperty::DataMat3);
-		addProperty("Calculate"		, CProperty::Enum)->setEnumValues(QStringList() << "Eigenvectors" << "Columns" << "Rows");
-		addProperty("Color map"     , CProperty::Enum)->setEnumValues(cols);
-		addProperty("Allow clipping", CProperty::Bool);
-		addProperty("Show hidden"   , CProperty::Bool);
-		addProperty("Scale"         , CProperty::Float);
-		addProperty("Density"       , CProperty::Float)->setFloatRange(0.0, 1.0).setFloatStep(0.0001);
-		addProperty("Glyph"         , CProperty::Enum)->setEnumValues(QStringList() << "Arrow" << "Line"<< "Sphere" << "Box");
-		addProperty("Glyph Color"   , CProperty::Enum)->setEnumValues(QStringList() << "Solid" << "Norm");
-		addProperty("Solid Color"   , CProperty::Color);
-		addProperty("Auto-scale"    , CProperty::Bool);
-		addProperty("Normalize"     , CProperty::Bool);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_tensor->GetTensorField(); break;
-		case 1: return m_tensor->GetVectorMethod(); break;
-		case 2: return m_tensor->GetColorMap()->GetColorMap();
-		case 3: return m_tensor->AllowClipping(); break;
-		case 4: return m_tensor->ShowHidden(); break;
-		case 5: return m_tensor->GetScaleFactor(); break;
-		case 6: return m_tensor->GetDensity(); break;
-		case 7: return m_tensor->GetGlyphType(); break;
-		case 8: return m_tensor->GetColorType(); break;
-		case 9: return toQColor(m_tensor->GetGlyphColor()); break;
-		case 10: return m_tensor->GetAutoScale(); break;
-		case 11: return m_tensor->GetNormalize(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_tensor->SetTensorField(v.toInt()); break;
-		case 1: m_tensor->SetVectorMethod(v.toInt()); break;
-		case 2: m_tensor->GetColorMap()->SetColorMap(v.toInt()); break;
-		case 3: m_tensor->AllowClipping(v.toBool()); break;
-		case 4: m_tensor->ShowHidden(v.toBool()); break;
-		case 5: m_tensor->SetScaleFactor(v.toFloat()); break;
-		case 6: m_tensor->SetDensity(v.toFloat()); break;
-		case 7: m_tensor->SetGlyphType(v.toInt()); break;
-		case 8: m_tensor->SetColorType(v.toInt()); break;
-		case 9: m_tensor->SetGlyphColor(toGLColor(v.value<QColor>())); break;
-		case 10: m_tensor->SetAutoScale(v.toBool()); break;
-		case 11: m_tensor->SetNormalize(v.toBool()); break;
-		}
-	}
-
-private:
-	GLTensorPlot*	m_tensor;
-};
 
 GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 {
@@ -82,6 +11,19 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 	char szname[128] = { 0 };
 	sprintf(szname, "TensorPlot.%02d", n++);
 	SetName(szname);
+
+	AddIntParam(0, "Data field")->SetEnumNames("@data_mat3");
+	AddIntParam(0, "Calculate")->SetEnumNames("Eigenvectors\0Columns\0Rows\0");
+	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "Allow clipping");
+	AddBoolParam(true, "Show hidden"   );
+	AddDoubleParam(0.0, "Scale");
+	AddDoubleParam(0.0, "Density")->SetFloatRange(0.0, 1.0, 0.0001);
+	AddIntParam(0, "Glyph")->SetEnumNames("Arrow\0Line\0Sphere\0Box\0");
+	AddIntParam(0, "Glyph Color")->SetEnumNames("Solid\0Norm\0");
+	AddColorParam(GLColor::White(), "Solid Color");
+	AddBoolParam(true, "Auto-scale");
+	AddBoolParam(true, "Normalize" );
 
 	m_scale = 1;
 	m_dens = 1;
@@ -105,15 +47,46 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 	m_seed = rand();
 
 	m_nmethod = VEC_EIGEN;
+
+	UpdateData(false);
 }
 
 GLTensorPlot::~GLTensorPlot()
 {
 }
 
-CPropertyList* GLTensorPlot::propertyList()
+void GLTensorPlot::UpdateData(bool bsave)
 {
-	return new CTensorPlotProps(this);
+	if (bsave)
+	{
+		m_ntensor = GetIntValue(DATA_FIELD);
+		m_nmethod = GetIntValue(METHOD);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		AllowClipping(GetBoolValue(CLIP));
+		m_bshowHidden = GetBoolValue(SHOW_HIDDEN);
+		m_scale = GetFloatValue(SCALE);
+		m_dens = GetFloatValue(DENSITY);
+		m_nglyph = GetIntValue(GLYPH);
+		m_ncol = GetIntValue(GLYPH_COLOR);
+		m_gcl = GetColorValue(SOLID_COLOR);
+		m_bautoscale = GetBoolValue(AUTO_SCALE);
+		m_bnormalize = GetBoolValue(NORMALIZE);
+	}
+	else
+	{
+		SetIntValue(DATA_FIELD, m_ntensor);
+		SetIntValue(METHOD, m_nmethod);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetBoolValue(CLIP, AllowClipping());
+		SetBoolValue(SHOW_HIDDEN, m_bshowHidden);
+		SetFloatValue(SCALE, m_scale);
+		SetFloatValue(DENSITY, m_dens);
+		SetIntValue(GLYPH, m_nglyph);
+		SetIntValue(GLYPH_COLOR, m_ncol);
+		SetColorValue(SOLID_COLOR, m_gcl);
+		SetBoolValue(AUTO_SCALE, m_bautoscale);
+		SetBoolValue(NORMALIZE, m_bnormalize);
+	}
 }
 
 void GLTensorPlot::SetTensorField(int nfield)

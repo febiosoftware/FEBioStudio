@@ -2,79 +2,11 @@
 #include "GLIsoSurfacePlot.h"
 #include "GLWLib/GLWidgetManager.h"
 #include "PostLib/constants.h"
-#include "PostLib/PropertyList.h"
 #include "GLModel.h"
 using namespace Post;
 
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
-
-
-class CIsoSurfaceProps : public CPropertyList
-{
-public:
-	CIsoSurfaceProps(CGLIsoSurfacePlot* p) : m_iso(p)
-	{
-		QStringList cols;
-
-		for (int i = 0; i<ColorMapManager::ColorMaps(); ++i)
-		{
-			string name = ColorMapManager::GetColorMapName(i);
-			cols << name.c_str();
-		}
-
-		addProperty("Data field", CProperty::DataScalar);
-		addProperty("Color map", CProperty::Enum)->setEnumValues(cols);
-		addProperty("Allow clipping", CProperty::Bool);
-		addProperty("Slice hidden"  , CProperty::Bool);
-		addProperty("Slices"        , CProperty::Int );
-		addProperty("Show Legend"   , CProperty::Bool);
-		addProperty("Smooth"        , CProperty::Bool);
-		addProperty("Range Type"    , CProperty::Enum)->setEnumValues(QStringList() << "Dynamic" << "Static" << "User");
-		addProperty("User Range Min", CProperty::Float);
-		addProperty("User Range Max", CProperty::Float);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_iso->GetEvalField(); break;
-		case 1: return m_iso->GetColorMap()->GetColorMap();
-		case 2: return m_iso->AllowClipping(); break;
-		case 3: return m_iso->CutHidden(); break;
-		case 4: return m_iso->GetSlices(); break;
-		case 5: return m_iso->ShowLegend(); break;
-		case 6: return m_iso->RenderSmooth(); break;
-		case 7: return m_iso->GetRangeType(); break;
-		case 8: return m_iso->GetUserRangeMin(); break;
-		case 9: return m_iso->GetUserRangeMax(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_iso->SetEvalField(v.toInt()); break;
-		case 1: m_iso->GetColorMap()->SetColorMap(v.toInt()); break;
-		case 2: m_iso->AllowClipping(v.toBool()); break;
-		case 3: m_iso->CutHidden(v.toBool()); break;
-		case 4: m_iso->SetSlices(v.toInt()); break;
-		case 5: m_iso->ShowLegend(v.toBool()); break;
-		case 6: m_iso->RenderSmooth(v.toBool()); break;
-		case 7: m_iso->SetRangeType(v.toInt()); break;
-		case 8: m_iso->SetUserRangeMin(v.toFloat()); break;
-		case 9: m_iso->SetUserRangeMax(v.toFloat()); break;
-		}
-
-		m_iso->Update();
-	}
-
-private:
-	CGLIsoSurfacePlot*	m_iso;
-};
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -86,6 +18,17 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot(CGLModel* po) : CGLPlot(po)
 	char szname[128] = { 0 };
 	sprintf(szname, "Isosurface.%02d", n++);
 	SetName(szname);
+
+	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
+	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "Allow clipping");
+	AddBoolParam(true, "Slice hidden");
+	AddIntParam(1, "Slices");
+	AddBoolParam(true, "Show Legend");
+	AddBoolParam(true, "Smooth");
+	AddIntParam(0, "Range Type")->SetEnumNames("Dynamic\0Static\0User\0");
+	AddDoubleParam(1.0, "User Range Max");
+	AddDoubleParam(0.0, "User Range Min");
 
 	m_nslices = 5;
 	m_bsmooth = true;
@@ -107,17 +50,14 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot(CGLModel* po) : CGLPlot(po)
 	m_pbar->copy_label(szname);
 	m_pbar->ShowTitle(true);
 	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+
+	UpdateData(false);
 }
 
 CGLIsoSurfacePlot::~CGLIsoSurfacePlot()
 {
 	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
 	delete m_pbar;	
-}
-
-CPropertyList* CGLIsoSurfacePlot::propertyList()
-{
-	return new CIsoSurfaceProps(this);
 }
 
 int CGLIsoSurfacePlot::GetSlices() 
@@ -131,7 +71,17 @@ void CGLIsoSurfacePlot::SetSlices(int nslices)
 	m_Col.SetDivisions(nslices); 
 }
 
-///////////////////////////////////////////////////////////////////////////////
+void CGLIsoSurfacePlot::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_nfield = GetIntValue(DATA_FIELD);
+	}
+	else
+	{
+		SetIntValue(DATA_FIELD, m_nfield);
+	}
+}
 
 void CGLIsoSurfacePlot::Render(CGLContext& rc)
 {

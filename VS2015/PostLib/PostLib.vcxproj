@@ -203,7 +203,6 @@
     <ClCompile Include="..\..\PostLib\Palette.cpp" />
     <ClCompile Include="..\..\PostLib\PltArchive.cpp" />
     <ClCompile Include="..\..\PostLib\PostView.cpp" />
-    <ClCompile Include="..\..\PostLib\PropertyList.cpp" />
     <ClCompile Include="..\..\PostLib\tools.cpp" />
     <ClCompile Include="..\..\PostLib\U3DFile.cpp" />
     <ClCompile Include="..\..\PostLib\ValArray.cpp" />
@@ -291,7 +290,6 @@
     <ClInclude Include="..\..\PostLib\penta6.h" />
     <ClInclude Include="..\..\PostLib\PltArchive.h" />
     <ClInclude Include="..\..\PostLib\PostView.h" />
-    <ClInclude Include="..\..\PostLib\PropertyList.h" />
     <ClInclude Include="..\..\PostLib\pyra5.h" />
     <ClInclude Include="..\..\PostLib\stdafx.h" />
     <ClInclude Include="..\..\PostLib\tet10.h" />

@@ -13,7 +13,6 @@
 #include "MarchingCubes.h"
 #include "ImageModel.h"
 #include "3DImage.h"
-#include "PropertyList.h"
 #include <sstream>
 #include <assert.h>
 using namespace std;
@@ -23,53 +22,6 @@ extern int LUT[256][15];
 extern int ET_HEX[12][2];
 extern int LUT2D_tri[16][9];
 extern int ET2D[4][2];
-
-
-//-----------------------------------------------------------------------------
-class CGLMarchingCubesProps : public CPropertyList
-{
-public:
-	CGLMarchingCubesProps(CMarchingCubes* mc) : m_mc(mc)
-	{
-		addProperty("isosurface value", CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("smooth surface", CProperty::Bool);
-		addProperty("surface color", CProperty::Color);
-		addProperty("close surface", CProperty::Bool);
-		addProperty("invert space", CProperty::Bool);
-		addProperty("allow clipping", CProperty::Bool);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_mc->GetIsoValue(); break;
-		case 1: return m_mc->GetSmooth(); break;
-		case 2: return toQColor(m_mc->GetColor()); break;
-		case 3: return m_mc->GetCloseSurface(); break;
-		case 4: return m_mc->GetInvertSpace(); break;
-		case 5: return m_mc->AllowClipping(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& val)
-	{
-		switch (i)
-		{
-		case 0: m_mc->SetIsoValue(val.toFloat()); break;
-		case 1: m_mc->SetSmooth(val.toBool()); break;
-		case 2: m_mc->SetColor(toGLColor(val.value<QColor>())); break;
-		case 3: m_mc->SetCloseSurface(val.toBool()); break;
-		case 4: m_mc->SetInvertSpace(val.toBool()); break;
-		case 5: m_mc->AllowClipping(val.toBool()); break;
-		}
-	}
-
-private:
-	CMarchingCubes*	m_mc;
-};
-
 
 TriMesh::TriMesh()
 {
@@ -105,18 +57,20 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 	stringstream ss;
 	ss << "ImageIsosurface" << n++;
 	SetName(ss.str());
-
+/*
+	addProperty("isosurface value", CProperty::Float)->setFloatRange(0.0, 1.0);
+	addProperty("smooth surface", CProperty::Bool);
+	addProperty("surface color", CProperty::Color);
+	addProperty("close surface", CProperty::Bool);
+	addProperty("invert space", CProperty::Bool);
+	addProperty("allow clipping", CProperty::Bool);
+*/
 	m_val = 0.5f;
 	m_oldVal = -1.f;
 	m_bsmooth = true;
 	m_bcloseSurface = true;
 	m_binvertSpace = false;
 	m_col = GLColor(200, 185, 185);
-}
-
-CPropertyList* CMarchingCubes::propertyList()
-{
-	return new CGLMarchingCubesProps(this);
 }
 
 CMarchingCubes::~CMarchingCubes()

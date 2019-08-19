@@ -19,6 +19,7 @@ public:
 		Resource,	// external resource (e.g. file)
 		Group,
 		MathString,
+		ColorMap,
 
 		// from PostView
 		DataScalar,
@@ -48,6 +49,7 @@ public:
 	double	fstep;				// step for floats
 	double	bauto;
 	void*	pdata;				// data pointer
+	bool	brange;
 
 	QString			name;		// the name of the property
 	QString			info;		// description of the property
@@ -56,12 +58,12 @@ public:
 	Param*		param;
 
 public:
-	CProperty() { param = nullptr; }
+	CProperty() { param = nullptr; brange = false; }
 	CProperty(const CProperty& p) { *this = p; }
 	CProperty& operator = (const CProperty& p);
 
-	CProperty& setIntRange(int Min, int Max) { imin = Min; imax = Max; return *this; }
-	CProperty& setFloatRange(double Min, double Max) { fmin = Min; fmax = Max; return *this; }
+	CProperty& setIntRange(int Min, int Max) { brange = true;  imin = Min; imax = Max; return *this; }
+	CProperty& setFloatRange(double Min, double Max) { brange = true;  fmin = Min; fmax = Max; return *this; }
 	CProperty& setFloatStep(double fStep) { fstep = fStep; return *this; }
 	CProperty& setEnumValues(QStringList& val) { values = val; return *this; }
 	CProperty& setAutoValue(bool b) { bauto = b; return *this; }

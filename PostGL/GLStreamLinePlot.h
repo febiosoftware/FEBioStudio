@@ -6,6 +6,8 @@ namespace Post {
 
 class CGLStreamLinePlot : public CGLPlot
 {
+	enum { DATA_FIELD, COLOR_MAP, CLIP, STEP_SIZE, DENSITY, THRESHOLD, RANGE, DIVS, USER_MAX, USER_MIN };
+
 public:
 	enum RANGE_TYPE {
 		RNG_DYNAMIC,
@@ -50,8 +52,6 @@ public:
 	void Update();
 	void Update(int ntime, float dt, bool breset);
 
-	CPropertyList* propertyList();
-
 	void UpdateStreamLines();
 
 	void ColorStreamLines();
@@ -79,6 +79,8 @@ public:
 
 	void SetUserRangeMax(double rangeMax) { m_userMax = rangeMax; }
 	double GetUserRangeMax() const { return m_userMax; }
+
+	void UpdateData(bool bsave = true) override;
 
 protected:
 

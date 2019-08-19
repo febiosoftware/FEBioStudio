@@ -42,7 +42,7 @@ void CMainWindow::on_actionPlaneCut_triggered()
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-//	ui->modelViewer->Select(pp);
+	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 	RedrawGL();
 }
@@ -56,7 +56,7 @@ void CMainWindow::on_actionMirrorPlane_triggered()
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-//	ui->modelViewer->Select(pp);
+	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 	RedrawGL();
 }
@@ -70,7 +70,7 @@ void CMainWindow::on_actionVectorPlot_triggered()
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-//	ui->modelViewer->Select(pp);
+	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 	RedrawGL();
 }
@@ -84,8 +84,9 @@ void CMainWindow::on_actionTensorPlot_triggered()
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-//	ui->modelViewer->Select(pp);
+	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
+	RedrawGL();
 }
 
 void CMainWindow::on_actionStreamLinePlot_triggered()
@@ -97,7 +98,7 @@ void CMainWindow::on_actionStreamLinePlot_triggered()
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-//	ui->modelViewer->Select(pp);
+	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 
 	RedrawGL();
@@ -112,7 +113,7 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-//	ui->modelViewer->Select(pp);
+	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 
 	RedrawGL();
@@ -132,7 +133,7 @@ void CMainWindow::on_actionImageSlicer_triggered()
 	slicer->Create();
 	img->AddImageRenderer(slicer);
 	ui->modelViewer->Update();
-//	ui->modelViewer->selectObject(slicer);
+	ui->modelViewer->Select(slicer);
 	RedrawGL();
 }
 
@@ -150,7 +151,7 @@ void CMainWindow::on_actionVolumeRender_triggered()
 	vr->Create();
 	img->AddImageRenderer(vr);
 	ui->modelViewer->Update();
-//	ui->modelViewer->selectObject(vr);
+	ui->modelViewer->Select(vr);
 	RedrawGL();
 }
 
@@ -168,7 +169,7 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 	mc->Create();
 	img->AddImageRenderer(mc);
 	ui->modelViewer->Update();
-//	ui->modelViewer->selectObject(mc);
+	ui->modelViewer->Select(mc);
 	RedrawGL();
 }
 
@@ -181,7 +182,7 @@ void CMainWindow::on_actionIsosurfacePlot_triggered()
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-//	ui->modelViewer->selectObject(pp);
+	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 	RedrawGL();
 }
@@ -195,7 +196,7 @@ void CMainWindow::on_actionSlicePlot_triggered()
 	glm->AddPlot(pp);
 
 	ui->modelViewer->Update();
-//	ui->modelViewer->selectObject(pp);
+	ui->modelViewer->Select(pp);
 	ui->modelViewer->parentWidget()->raise();
 
 	RedrawGL();

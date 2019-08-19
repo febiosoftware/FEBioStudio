@@ -12,6 +12,8 @@ class CGLModel;
 
 class CGLColorMap : public CGLDataMap
 {
+	enum { DATA_FIELD, DATA_SMOOTH, COLOR_MAP, NODAL_VALS, RANGE_TYPE, RANGE_DIVS, SHOW_LEGEND, LEGEND_ORIENT, USER_MAX, USER_MIN };
+
 public:
 	enum Range_Type {
 		RANGE_DYNA	= 0,
@@ -57,10 +59,10 @@ public:
 
 	void Activate(bool b) { CGLObject::Activate(b); ShowLegend(b); }
 
-	CPropertyList* propertyList();
-
 private:
 	void UpdateState(int ntime, bool breset);
+
+	void UpdateData(bool bsave = true) override;
 
 protected:
 	int		m_nfield;

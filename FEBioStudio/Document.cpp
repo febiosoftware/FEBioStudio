@@ -22,6 +22,10 @@
 #include "GImageObject.h"
 #include <XML/XMLWriter.h>
 #include <PostLib/Palette.h>
+#include <PostGL/GLPlot.h>
+#include <PostGL/GLDisplacementMap.h>
+#include <PostGL/GLColorMap.h>
+#include <PostGL/GLModel.h>
 #include "PostDoc.h"
 #include <sstream>
 
@@ -522,6 +526,9 @@ std::string CDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<FEDataMap*>(po)) return "Data map";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
 	else if (dynamic_cast<GImageObject*>(po)) return "3D Image";
+	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
+	else if (dynamic_cast<Post::CGLDisplacementMap*>(po)) return "Displacement map";
+	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";
 	else
 	{
 		assert(false);
@@ -1393,6 +1400,11 @@ void CDocument::DeleteObject(FSObject* po)
 	{
 		GImageObject* imgObj = dynamic_cast<GImageObject*>(po);
 		DeleteImageObject(imgObj);
+	}
+	else if (dynamic_cast<Post::CGLPlot*>(po))
+	{
+		Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(po);
+		plot->GetModel()->DeletePlot(plot);
 	}
 	else
 	{

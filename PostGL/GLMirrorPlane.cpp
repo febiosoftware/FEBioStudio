@@ -1,46 +1,7 @@
 #include "stdafx.h"
 #include "GLMirrorPlane.h"
-#include "PostLib/PropertyList.h"
 #include "GLModel.h"
 using namespace Post;
-
-class CMirrorPlaneProps : public CPropertyList
-{
-public:
-	CMirrorPlaneProps(CGLMirrorPlane* mp) : m_mirrorPlane(mp)
-	{
-		addProperty("Mirror Plane", CProperty::Enum)->setEnumValues(QStringList() << "X" << "Y" << "Z");
-		addProperty("Show plane", CProperty::Bool);
-		addProperty("Transparency", CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("Offset", CProperty::Float);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_mirrorPlane->m_plane; break;
-		case 1: return m_mirrorPlane->m_showPlane; break;
-		case 2: return m_mirrorPlane->m_transparency; break;
-		case 3: return m_mirrorPlane->m_offset; break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_mirrorPlane->m_plane = v.toInt(); break;
-		case 1: m_mirrorPlane->m_showPlane = v.toBool(); break;
-		case 2: m_mirrorPlane->m_transparency = v.toFloat(); break;
-		case 3: m_mirrorPlane->m_offset = v.toFloat(); break;
-		}
-	}
-
-private:
-	CGLMirrorPlane* m_mirrorPlane;
-};
 
 CGLMirrorPlane::CGLMirrorPlane(CGLModel* fem) : CGLPlot(fem)
 {
@@ -49,15 +10,35 @@ CGLMirrorPlane::CGLMirrorPlane(CGLModel* fem) : CGLPlot(fem)
 	sprintf(szname, "MirrorPlane.%02d", n++);
 	SetName(szname);
 
+	AddIntParam(0, "Mirror Plane")->SetEnumNames("X\0Y\0Z\0");
+	AddBoolParam(true, "Show plane");
+	AddDoubleParam(0.25, "Transparency")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.f, "Offset");
+
 	m_plane = 0;
 	m_showPlane = true;
 	m_transparency = 0.25f;
 	m_offset = 0.f;
+
+	UpdateData(false);
 }
 
-CPropertyList* CGLMirrorPlane::propertyList()
+void CGLMirrorPlane::UpdateData(bool bsave)
 {
-	return new CMirrorPlaneProps(this);
+	if (bsave)
+	{
+		m_plane = GetIntValue(PLANE);
+		m_showPlane = GetBoolValue(SHOW_PLANE);
+		m_transparency = GetFloatValue(TRANSPARENCY);
+		m_offset = GetFloatValue(OFFSET);
+	}
+	else
+	{ 
+		SetIntValue(PLANE, m_plane);
+		SetBoolValue(SHOW_PLANE, m_showPlane);
+		SetFloatValue(TRANSPARENCY, m_transparency);
+		SetFloatValue(OFFSET, m_offset);
+	}
 }
 
 void CGLMirrorPlane::Render(CGLContext& rc)

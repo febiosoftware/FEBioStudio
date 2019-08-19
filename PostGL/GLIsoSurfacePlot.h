@@ -7,6 +7,8 @@ namespace Post {
 
 class CGLIsoSurfacePlot : public CGLPlot  
 {
+	enum { DATA_FIELD, COLOR_MAP, CLIP, HIDDEN, SLICES, LEGEND, SMOOTH, RANGE_TYPE, USER_MAX, USER_MIN };
+
 public:
 	enum RANGE_TYPE {
 		RNG_DYNAMIC,
@@ -39,8 +41,6 @@ public:
 	bool CutHidden() { return m_bcut_hidden; }
 	void CutHidden(bool b) { m_bcut_hidden = b; }
 
-	CPropertyList* propertyList();
-
 	void UpdateTexture() { m_Col.UpdateTexture(); }
 
 	void SetRangeType(int n) { m_rangeType = n; }
@@ -53,6 +53,8 @@ public:
 	double GetUserRangeMax() const { return m_userMax; }
 
 	void Update();
+
+	void UpdateData(bool bsave = true);
 
 protected:
 	void RenderSlice(float ref, GLColor col);

@@ -55,3 +55,15 @@ void FSObject::Load(IArchive& ar)
 		}
 	}
 }
+
+// update the object's data
+bool FSObject::Update(bool b)
+{
+	return true;
+}
+
+// update parameters
+void FSObject::UpdateData(bool bsave)
+{
+
+}

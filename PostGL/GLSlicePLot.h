@@ -7,6 +7,8 @@ namespace Post {
 
 class CGLSlicePlot : public CGLPlot  
 {
+	enum { DATA_FIELD, COLOR_MAP, CLIP, SHOW_LEGEND, SLICES, SLICE_OFFSET, RANGE, RANGE_MAX, RANGE_MIN, NORMAL_X, NORMAL_Y, NORMAL_Z };
+
 public:
 	CGLSlicePlot(CGLModel* po);
 	virtual ~CGLSlicePlot();
@@ -42,9 +44,9 @@ public:
 	float GetSliceOffset() const { return m_offset; }
 	void SetSliceOffset(float f);
 
-	CPropertyList* propertyList();
-
 	void UpdateTexture() { m_Col.UpdateTexture(); }
+
+	void UpdateData(bool bsave = true) override;
 
 protected:
 	void RenderSlice(float ref);

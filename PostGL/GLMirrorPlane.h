@@ -5,13 +5,15 @@ namespace Post {
 
 class CGLMirrorPlane : public CGLPlot
 {
+	enum { PLANE, SHOW_PLANE, TRANSPARENCY, OFFSET };
+
 public:
 	CGLMirrorPlane(CGLModel* fem);
 
-	CPropertyList* propertyList() override;
-
 	// render the object to the 3D view
 	void Render(CGLContext& rc) override;
+
+	void UpdateData(bool bsave = true) override;
 
 private:
 	void RenderPlane();

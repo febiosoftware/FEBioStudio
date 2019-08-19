@@ -428,6 +428,12 @@ void CPropertyListForm::onDataChanged()
 						if (pc) m_list->SetPropertyValue(i, pc->currentValue());
 					}
 					break;
+				case CProperty::ColorMap:
+					{
+						CColorMapSelector* pc = dynamic_cast<CColorMapSelector*>(pw);
+						if (pc) m_list->SetPropertyValue(i, pc->currentIndex());
+					}
+					break;
 				case CProperty::DataVec3:
 					{
 						CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);

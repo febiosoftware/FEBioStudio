@@ -10,6 +10,8 @@ namespace Post {
 
 class GLTensorPlot : public CGLPlot
 {
+	enum { DATA_FIELD, METHOD, COLOR_MAP, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE };
+
 public:
 	enum Glyph_Type {
 		Glyph_Arrow,
@@ -44,9 +46,9 @@ public:
 
 	CColorTexture* GetColorMap();
 
-	CPropertyList* propertyList();
-
 	void Update(int ntime, float dt, bool breset);
+
+	void UpdateData(bool bsave = true) override;
 
 public:
 	int GetTensorField() { return m_ntensor; }

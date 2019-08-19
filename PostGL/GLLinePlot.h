@@ -7,6 +7,8 @@ namespace Post {
 // Line rendering of imported line data
 class CGLLinePlot : public CGLPlot
 {
+	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH };
+
 public:
 	CGLLinePlot(CGLModel* po);
 	virtual ~CGLLinePlot();
@@ -28,12 +30,12 @@ public:
 	int GetDataField() { return m_nfield; }
 	void SetDataField(int n);
 
-	CPropertyList* propertyList();
-
 	CColorTexture* GetColorMap() { return &m_Col; }
 	void UpdateTexture() { m_Col.UpdateTexture(); }
 
 	void Update(int ntime, float dt, bool breset);
+
+	void UpdateData(bool bsave = true) override;
 
 protected:
 	void RenderLines(FEState& s);
@@ -57,6 +59,8 @@ class CGLPointPlot : public CGLPlot
 {
 	enum {MAX_SETTINGS = 4};
 
+	enum { POINT_SIZE, COLOR, RENDER_MODE };
+
 	struct SETTINGS
 	{
 		float		size;		//!< point size
@@ -68,8 +72,6 @@ class CGLPointPlot : public CGLPlot
 public:
 	CGLPointPlot(CGLModel* po);
 	virtual ~CGLPointPlot();
-
-	CPropertyList* propertyList();
 
 	void Render(CGLContext& rc);
 
@@ -84,6 +86,8 @@ public:
 
 	int GetVisible(int n = 0) { return m_set[n].nvisible; }
 	void SetVisible(int nvis, int n = 0) { m_set[n].nvisible = nvis; }
+
+	void UpdateData(bool bsave = true) override;
 
 private:
 	SETTINGS	m_set[MAX_SETTINGS];

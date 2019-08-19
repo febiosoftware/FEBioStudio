@@ -13,56 +13,8 @@
 #include "ImageModel.h"
 #include <assert.h>
 #include <sstream>
-#include "PropertyList.h"
 using namespace Post;
 
-
-//-----------------------------------------------------------------------------
-class CGLImageSlicerProps : public CPropertyList
-{
-public:
-	CGLImageSlicerProps(CImageSlicer* is) : m_is(is)
-	{
-		QStringList cols;
-
-		for (int i = 0; i<ColorMapManager::ColorMaps(); ++i)
-		{
-			string name = ColorMapManager::GetColorMapName(i);
-			cols << name.c_str();
-		}
-
-		QStringList ops;
-		ops << "X" << "Y" << "Z";
-		addProperty("Image orientation", CProperty::Enum)->setEnumValues(ops);
-		addProperty("Image offset", CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("Color map", CProperty::Enum)->setEnumValues(cols);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case  0: return m_is->GetOrientation(); break;
-		case  1: return m_is->GetOffset(); break;
-		case  2: return m_is->GetColorMap(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& val)
-	{
-		switch (i)
-		{
-		case  0: m_is->SetOrientation(val.toInt()); break;
-		case  1: m_is->SetOffset(val.toDouble()); break;
-		case  2: m_is->SetColorMap(val.value<int>()); break;
-		}
-		m_is->Update();
-	}
-
-private:
-	CImageSlicer*	m_is;
-};
 
 CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
 {
@@ -70,6 +22,13 @@ CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
 	stringstream ss;
 	ss << "ImageSlicer" << n++;
 	SetName(ss.str());
+
+/*	QStringList ops;
+	ops << "X" << "Y" << "Z";
+	addProperty("Image orientation", CProperty::Enum)->setEnumValues(ops);
+	addProperty("Image offset", CProperty::Float)->setFloatRange(0.0, 1.0);
+	addProperty("Color map", CProperty::Enum)->setEnumValues(cols);
+*/
 
 	m_Col.SetColorMap(ColorMapManager::GRAY);
 
@@ -81,11 +40,6 @@ CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
 
 CImageSlicer::~CImageSlicer()
 {
-}
-
-CPropertyList* CImageSlicer::propertyList()
-{
-	return new CGLImageSlicerProps(this);
 }
 
 void CImageSlicer::Create()

@@ -2,76 +2,8 @@
 #include "GLVectorPlot.h"
 #include "PostLib/ColorMap.h"
 #include "PostLib/constants.h"
-#include "PostLib/PropertyList.h"
 #include <PostGL/GLModel.h>
 using namespace Post;
-
-class CVectorPlotProps : public CPropertyList
-{
-public:
-	CVectorPlotProps(CGLVectorPlot* v) : m_vec(v)
-	{
-		QStringList cols;
-
-		for (int i = 0; i<ColorMapManager::ColorMaps(); ++i)
-		{
-			string name = ColorMapManager::GetColorMapName(i);
-			cols << name.c_str();
-		}
-
-		addProperty("Data field"    , CProperty::DataVec3);
-		addProperty("Color map"     , CProperty::Enum)->setEnumValues(cols);
-		addProperty("Allow clipping", CProperty::Bool);
-		addProperty("Show hidden"   , CProperty::Bool );
-		addProperty("Density"       , CProperty::Float)->setFloatRange(0.0, 1.0).setFloatStep(0.0001);
-		addProperty("Glyph"         , CProperty::Enum )->setEnumValues(QStringList() << "Arrow" << "Cone" << "Cylinder" << "Sphere" << "Box" << "Line");
-		addProperty("Glyph Color"   , CProperty::Enum )->setEnumValues(QStringList() << "Solid" << "Length" << "Orientation");
-		addProperty("Solid Color"   , CProperty::Color);
-		addProperty("Normalize"     , CProperty::Bool );
-		addProperty("Auto-scale"    , CProperty::Bool );
-		addProperty("Scale"         , CProperty::Float);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_vec->GetVectorType(); break;
-		case 1: return m_vec->GetColorMap()->GetColorMap();
-		case 2: return m_vec->AllowClipping(); break;
-		case 3: return m_vec->ShowHidden(); break;
-		case 4: return m_vec->GetDensity(); break;
-		case 5: return m_vec->GetGlyphType(); break;
-		case 6: return m_vec->GetColorType(); break;
-		case 7: return toQColor(m_vec->GetGlyphColor()); break;
-		case 8: return m_vec->NormalizeVectors(); break;
-		case 9: return m_vec->GetAutoScale(); break;
-		case 10: return m_vec->GetScaleFactor(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_vec->SetVectorType(v.toInt()); break;
-		case 1: m_vec->GetColorMap()->SetColorMap(v.toInt()); break;
-		case 2: m_vec->AllowClipping(v.toBool()); break;
-		case 3: m_vec->ShowHidden(v.toBool()); break;
-		case 4: m_vec->SetDensity(v.toFloat()); break;
-		case 5: m_vec->SetGlyphType(v.toInt()); break;
-		case 6: m_vec->SetColorType(v.toInt()); break;
-		case 7: m_vec->SetGlyphColor(toGLColor(v.value<QColor>())); break;
-		case 8: m_vec->NormalizeVectors(v.toBool()); break;
-		case 9: m_vec->SetAutoScale(v.toBool()); break;
-		case 10: m_vec->SetScaleFactor(v.toFloat()); break;
-		}
-	}
-
-private:
-	CGLVectorPlot*	m_vec;
-};
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -83,6 +15,18 @@ CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLPlot(po)
 	char szname[128] = {0};
 	sprintf(szname, "VectorPlot.%02d", n++);
 	SetName(szname);
+
+	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "Allow clipping");
+	AddBoolParam(true, "Show hidden"   );
+	AddDoubleParam(0., "Density")->SetFloatRange(0.0, 1.0, 0.0001);
+	AddIntParam(0, "Glyph"         )->SetEnumNames("Arrow\0Cone\0Cylinder\0Sphere\0Box\0Line\0");
+	AddIntParam(0, "Glyph Color"   )->SetEnumNames("Solid\0Length\0Orientation\0");
+	AddColorParam(GLColor::White(), "Solid Color");
+	AddBoolParam(true, "Normalize" );
+	AddBoolParam(true, "Auto-scale");
+	AddDoubleParam(0., "Scale"     );
 
 	m_scale = 1;
 	m_dens = 1;
@@ -104,6 +48,8 @@ CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLPlot(po)
 	m_bshowHidden = true;
 
 	m_seed = rand();
+
+	UpdateData(false);
 }
 
 CGLVectorPlot::~CGLVectorPlot()
@@ -111,9 +57,36 @@ CGLVectorPlot::~CGLVectorPlot()
 
 }
 
-CPropertyList* CGLVectorPlot::propertyList()
+void CGLVectorPlot::UpdateData(bool bsave)
 {
-	return new CVectorPlotProps(this);
+	if (bsave)
+	{
+		m_nvec = GetIntValue(DATA_FIELD);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		AllowClipping(GetBoolValue(CLIP));
+		m_bshowHidden = GetBoolValue(SHOW_HIDDEN);
+		m_dens = GetFloatValue(DENSITY);
+		m_nglyph = GetIntValue(GLYPH);
+		m_ncol = GetIntValue(GLYPH_COLOR);
+		m_gcl = GetColorValue(SOLID_COLOR);
+		m_bnorm = GetBoolValue(NORMALIZE);
+		m_bautoscale = GetBoolValue(AUTO_SCALE);
+		m_scale = GetFloatValue(SCALE);
+	}
+	else
+	{
+		SetIntValue(DATA_FIELD, m_nvec);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetBoolValue(CLIP, AllowClipping());
+		SetBoolValue(SHOW_HIDDEN, m_bshowHidden);
+		SetFloatValue(DENSITY, m_dens);
+		SetIntValue(GLYPH, m_nglyph);
+		SetIntValue(GLYPH_COLOR, m_ncol);
+		SetColorValue(SOLID_COLOR, m_gcl);
+		SetBoolValue(NORMALIZE, m_bnorm);
+		SetBoolValue(AUTO_SCALE, m_bautoscale);
+		SetFloatValue(SCALE, m_scale);
+	}
 }
 
 static double frand() { return (double) rand() / (double) RAND_MAX; }

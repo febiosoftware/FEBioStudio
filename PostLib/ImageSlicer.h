@@ -28,8 +28,6 @@ public:
 	int GetColorMap() const { return m_Col.GetColorMap(); }
 	void SetColorMap(int n) { m_Col.SetColorMap(n); }
 
-	CPropertyList* propertyList() override;
-
 private:
 	void BuildLUT();
 

@@ -18,7 +18,10 @@ public:
 	void Load(IArchive& ar);
 
 	// update the object's data
-	virtual bool Update(bool b = true) { return true; }
+	virtual bool Update(bool b = true);
+
+	// update parameters
+	virtual void UpdateData(bool bsave = true);
 
 private:
 	std::string		m_name;

@@ -7,6 +7,8 @@ namespace Post {
 
 class CGLVectorPlot : public CGLPlot 
 {
+	enum { DATA_FIELD, COLOR_MAP, CLIP, SHOW_HIDDEN, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, NORMALIZE, AUTO_SCALE, SCALE };
+
 public:
 	// glyph types	
 	enum Glyph_Type {
@@ -62,9 +64,9 @@ public:
 
 	void Update(int ntime, float dt, bool breset);
 
-	CPropertyList* propertyList();
-
 	void UpdateTexture() { m_Col.UpdateTexture(); }
+
+	void UpdateData(bool bsave = true) override;
 
 private:
 	// render a vector n at position r

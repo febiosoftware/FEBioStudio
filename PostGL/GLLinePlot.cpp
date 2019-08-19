@@ -1,60 +1,7 @@
 #include "stdafx.h"
 #include "GLLinePlot.h"
-#include "PostLib/PropertyList.h"
 #include <PostGL/GLModel.h>
 using namespace Post;
-
-class CLineProps : public CPropertyList
-{
-public:
-	CLineProps(CGLLinePlot* p) : m_line(p)
-	{
-		QStringList cols;
-
-		for (int i = 0; i<ColorMapManager::ColorMaps(); ++i)
-		{
-			string name = ColorMapManager::GetColorMapName(i);
-			cols << name.c_str();
-		}
-
-		addProperty("line width" , CProperty::Float);
-		addProperty("Color mode" , CProperty::Enum)->setEnumValues(QStringList() << "Solid" << "Line Data" << "Model Data");
-		addProperty("Data field", CProperty::DataScalar);
-		addProperty("Solid color", CProperty::Color);
-		addProperty("Color map"  , CProperty::Enum)->setEnumValues(cols);
-		addProperty("render mode", CProperty::Enum )->setEnumValues(QStringList() << "lines" << "3D lines");
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_line->GetLineWidth(); break;
-		case 1: return m_line->GetColorMode(); break;
-		case 2: return m_line->GetDataField(); break;
-		case 3: return toQColor(m_line->GetSolidColor()); break;
-		case 4: return m_line->GetColorMap()->GetColorMap();
-		case 5: return m_line->GetRenderMode(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_line->SetLineWidth(v.toFloat()); break;
-		case 1: m_line->SetColorMode(v.toInt()); break;
-		case 2: m_line->SetDataField(v.toInt()); break;
-		case 3: m_line->SetSolidColor(toGLColor(v.value<QColor>())); break;
-		case 4: m_line->GetColorMap()->SetColorMap(v.toInt()); break;
-		case 5: m_line->SetRenderMode(v.toInt()); break;
-		}
-	}
-
-private:
-	CGLLinePlot* m_line;
-};
 
 //-----------------------------------------------------------------------------
 CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
@@ -64,6 +11,13 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 	sprintf(szname, "Line.%02d", n++);
 	SetName(szname);
 
+	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
+	AddIntParam(0, "Color mode")->SetEnumNames("Solid\0Line Data\0Model Data\0");
+	AddColorParam(GLColor(255, 0, 0), "Solid color");
+	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddIntParam(0, "render mode")->SetEnumNames("lines\03D lines\0");
+	AddDoubleParam(1.0, "line width");
+
 	m_line = 4.f;
 	m_nmode = 0;
 	m_ncolor = 0;
@@ -72,6 +26,8 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 
 	m_rng.x = 0.f;
 	m_rng.y = 1.f;
+
+	UpdateData(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -79,9 +35,25 @@ CGLLinePlot::~CGLLinePlot()
 {
 }
 
-CPropertyList* CGLLinePlot::propertyList()
+void CGLLinePlot::UpdateData(bool bsave)
 {
-	return new CLineProps(this);
+	if (bsave)
+	{
+		m_nfield = GetIntValue(DATA_FIELD);
+		m_ncolor = GetIntValue(COLOR_MODE);
+		m_col = GetColorValue(SOLID_COLOR);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		m_nmode = GetIntValue(RENDER_MODE);
+		m_line = GetFloatValue(LINE_WIDTH);
+	}
+	else
+	{
+		SetIntValue(DATA_FIELD, m_nfield);
+		SetIntValue(COLOR_MODE, m_ncolor);
+		SetColorValue(SOLID_COLOR, m_col);
+		SetIntValue(RENDER_MODE, m_nmode);
+		SetFloatValue(LINE_WIDTH, m_line);
+	}
 }
 
 void CGLLinePlot::SetColorMode(int m) 
@@ -341,41 +313,6 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 
 //=============================================================================
 
-class CPointProps : public CPropertyList
-{
-public:
-	CPointProps(CGLPointPlot* p) : m_pt(p)
-	{
-		addProperty("point size" , CProperty::Float);
-		addProperty("color"      , CProperty::Color);
-		addProperty("render mode", CProperty::Enum )->setEnumValues(QStringList() << "points");
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_pt->GetPointSize(); break;
-		case 1: return toQColor(m_pt->GetPointColor()); break;
-		case 3: return m_pt->GetRenderMode(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_pt->SetPointSize(v.toFloat()); break;
-		case 1: m_pt->SetPointColor(toGLColor(v.value<QColor>())); break;
-		case 2: m_pt->SetRenderMode(v.toInt()); break;
-		}
-	}
-
-private:
-	CGLPointPlot* m_pt;
-};
-
 //-----------------------------------------------------------------------------
 CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
 {
@@ -384,6 +321,10 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
 	sprintf(szname, "Points.%02d", n++);
 	SetName(szname);
 
+	AddDoubleParam(8.0, "point size");
+	AddColorParam(GLColor::White(), "color");
+	AddIntParam(0, "render mode")->SetEnumNames("points\0");
+
 	for (int i=0; i<MAX_SETTINGS; ++i)
 	{
 		m_set[i].size = 8.f;
@@ -391,6 +332,8 @@ CGLPointPlot::CGLPointPlot(CGLModel* po) : CGLPlot(po)
 		m_set[i].col = GLColor(0, 0, 255);
 		m_set[i].nvisible = 1;
 	}
+
+	UpdateData(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -398,9 +341,17 @@ CGLPointPlot::~CGLPointPlot()
 {
 }
 
-CPropertyList* CGLPointPlot::propertyList()
+//-----------------------------------------------------------------------------
+void CGLPointPlot::UpdateData(bool bsave)
 {
-	return new CPointProps(this);
+	if (bsave)
+	{
+
+	}
+	else
+	{
+
+	}
 }
 
 //-----------------------------------------------------------------------------

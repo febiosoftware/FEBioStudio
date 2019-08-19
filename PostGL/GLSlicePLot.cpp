@@ -2,86 +2,11 @@
 #include "GLSlicePLot.h"
 #include "GLWLib/GLWidgetManager.h"
 #include "PostLib/constants.h"
-#include "PostLib/PropertyList.h"
 #include "GLModel.h"
 using namespace Post;
 
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
-
-class CSliceProps : public CPropertyList
-{
-public:
-	CSliceProps(CGLSlicePlot* p) : m_slice(p)
-	{
-		QStringList cols;
-
-		for (int i = 0; i<ColorMapManager::ColorMaps(); ++i)
-		{
-			string name = ColorMapManager::GetColorMapName(i);
-			cols << name.c_str();
-		}
-
-		addProperty("Data field"    , CProperty::DataScalar);
-		addProperty("Color map"     , CProperty::Enum)->setEnumValues(cols);
-		addProperty("Allow clipping", CProperty::Bool);
-		addProperty("Show legend"   , CProperty::Bool);
-		addProperty("Slices"        , CProperty::Int);
-		addProperty("Slice offset"  , CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("Range"         , CProperty::Enum)->setEnumValues(QStringList() << "dynamic" << "user");
-		addProperty("Range max"     , CProperty::Float);
-		addProperty("Range min"     , CProperty::Float);
-		addProperty("X-normal"      , CProperty::Float);
-		addProperty("Y-normal"      , CProperty::Float);
-		addProperty("Z-normal"      , CProperty::Float);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_slice->GetEvalField(); break;
-		case 1: return m_slice->GetColorMap()->GetColorMap();
-		case 2: return m_slice->AllowClipping(); break;
-		case 3: return m_slice->ShowLegend(); break;
-		case 4: return m_slice->GetSlices(); break;
-		case 5: return m_slice->GetSliceOffset(); break;
-		case 6: return m_slice->GetRangeType(); break;
-		case 7: return m_slice->GetUserRangeMax(); break;
-		case 8: return m_slice->GetUserRangeMin(); break;
-		case 9: return m_slice->GetPlaneNormal().x; break;
-		case 10: return m_slice->GetPlaneNormal().y; break;
-		case 11: return m_slice->GetPlaneNormal().z; break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		vec3f n = m_slice->GetPlaneNormal();
-		vec3f plane;
-		switch (i)
-		{
-		case 0: m_slice->SetEvalField(v.toInt()); break;
-		case 1: m_slice->GetColorMap()->SetColorMap(v.toInt()); break;
-		case 2: m_slice->AllowClipping(v.toBool()); break;
-		case 3: m_slice->ShowLegend(v.toBool()); break;
-		case 4: m_slice->SetSlices(v.toInt()); break;
-		case 5: m_slice->SetSliceOffset(v.toFloat()); break;
-		case 6: m_slice->SetRangeType(v.toInt()); break;
-		case 7: m_slice->SetUserRangeMax(v.toFloat()); break;
-		case 8: m_slice->SetUserRangeMin(v.toFloat()); break;
-		case 9: plane = vec3f(v.toFloat(), n.y, n.z);
-			m_slice->SetPlaneNormal(plane); break;
-		case 10: plane = vec3f(n.x, v.toFloat(), n.z);
-			m_slice->SetPlaneNormal(plane); break;
-		case 11: plane = vec3f(n.x, n.y, v.toFloat());
-			m_slice->SetPlaneNormal(plane); break;
-		}
-	}
-private:
-	CGLSlicePlot*	m_slice;
-};
 
 CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLPlot(po)
 {
@@ -91,6 +16,19 @@ CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLPlot(po)
 	SetName(szname);
 
 	m_norm = vec3f(1,0,0);
+
+	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
+	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "Allow clipping");
+	AddBoolParam(true, "Show legend"   );
+	AddIntParam(0, "Slices");
+	AddDoubleParam(0, "Slice offset")->SetFloatRange(0.0, 1.0);
+	AddIntParam(0, "Range")->SetEnumNames("dynamic\0user\0");
+	AddDoubleParam(0, "Range max");
+	AddDoubleParam(0, "Range min");
+	AddDoubleParam(0, "X-normal" );
+	AddDoubleParam(0, "Y-normal" );
+	AddDoubleParam(0, "Z-normal" );
 
 	m_nslices = 10;
 	m_nfield = 0;
@@ -107,6 +45,8 @@ CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLPlot(po)
 	m_pbar->align(GLW_ALIGN_LEFT| GLW_ALIGN_VCENTER);
 	m_pbar->copy_label(szname);
 	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+
+	UpdateData(false);
 }
 
 CGLSlicePlot::~CGLSlicePlot()
@@ -115,14 +55,41 @@ CGLSlicePlot::~CGLSlicePlot()
 	delete m_pbar;	
 }
 
-CPropertyList* CGLSlicePlot::propertyList()
-{
-	return new CSliceProps(this);
-}
-
 int CGLSlicePlot::GetSlices() { return m_nslices; }
 void CGLSlicePlot::SetSlices(int nslices) { m_nslices = nslices; m_Col.SetDivisions(nslices); }
 
+void CGLSlicePlot::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_nfield = GetIntValue(DATA_FIELD);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		AllowClipping(GetBoolValue(CLIP));
+		// TODO: show legend
+		m_nslices = GetIntValue(SLICES);
+		m_offset = GetFloatValue(SLICE_OFFSET);
+		m_nrange = GetIntValue(RANGE);
+		m_fmax = GetFloatValue(RANGE_MAX);
+		m_fmin = GetFloatValue(RANGE_MIN);
+		m_norm.x = GetFloatValue(NORMAL_X);
+		m_norm.y = GetFloatValue(NORMAL_Y);
+		m_norm.z = GetFloatValue(NORMAL_Z);
+	}
+	else
+	{
+		SetIntValue(DATA_FIELD, m_nfield);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetBoolValue(CLIP, AllowClipping());
+		SetIntValue(SLICES, m_nslices);
+		SetFloatValue(SLICE_OFFSET, m_offset);
+		SetIntValue(RANGE, m_nrange);
+		SetFloatValue(RANGE_MAX, m_fmax);
+		SetFloatValue(RANGE_MIN, m_fmin);
+		SetFloatValue(NORMAL_X, m_norm.x);
+		SetFloatValue(NORMAL_Y, m_norm.y);
+		SetFloatValue(NORMAL_Z, m_norm.z);
+	}
+}
 
 void CGLSlicePlot::SetSliceOffset(float f) 
 { 

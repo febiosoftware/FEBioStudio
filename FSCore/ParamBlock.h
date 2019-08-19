@@ -1,5 +1,6 @@
 #pragma once
 #include "Serializable.h"
+#include "color.h"
 #include <MeshTools/LoadCurve.h>
 #include <vector>
 #include <string.h>
@@ -14,6 +15,7 @@ enum Param_Type {
 	Param_VEC3D,
 	Param_STRING,
 	Param_MATH,
+	Param_COLOR,
 	Param_CHOICE = 0x0020		// like INT but imported/exported as one-based numbers
 };
 
@@ -81,6 +83,7 @@ public:
 	explicit Param(int n, const char* szi, int idx, const char* szb, const char* szn = 0);
 	explicit Param(double d, const char* szi, int idx, const char* szb, const char* szn = 0);
 	explicit Param(double d, const char* szi, int idx, Param_Unit nunit = Param_NOUNIT, const char* szb = 0, const char* szn = 0);
+	explicit Param(GLColor c, const char* szb, const char* szn = 0);
 	Param(const std::string& val, const char* szb, const char* szn = 0);
 
 	void SetParamType(Param_Type t);
@@ -112,6 +115,7 @@ public:
 	void SetVecValue   (const vec3d& v) {assert(m_ntype == Param_VEC3D ); val<vec3d>() = v; }
 	void SetStringValue(const std::string& v) {assert(m_ntype == Param_STRING); val<std::string>() = v; }
 	void SetMathString (const std::string& v) { assert(m_ntype == Param_MATH); val<std::string>() = v; }
+	void SetColorValue(const GLColor& c) { assert(m_ntype == Param_COLOR); val<GLColor>() = c; }
 
 	double GetFloatValue () const {assert(m_ntype == Param_FLOAT ); return val<double>(); }
 	int    GetIntValue   () const {assert((m_ntype == Param_INT)||(m_ntype == Param_CHOICE)); return val<int>  (); }
@@ -119,6 +123,7 @@ public:
 	vec3d  GetVecValue   () const {assert(m_ntype == Param_VEC3D ); return val<vec3d>(); }
 	std::string GetStringValue() const { assert(m_ntype == Param_STRING); return val<std::string>(); }
 	std::string GetMathString() const { assert(m_ntype == Param_MATH); return val<std::string>(); }
+	GLColor GetColorValue() const { assert(m_ntype == Param_COLOR); return val<GLColor>(); }
 
 	Param_Unit GetUnit() const { return m_nunit; }
 
@@ -134,6 +139,19 @@ public:
 	void MakeVariable(bool b) { m_isVariable = b; }
 	bool IsVariable() const { return m_isVariable; }
 
+	bool UseRange() const { return m_floatRange; }
+
+	double GetFloatMax() const { return m_fmax; }
+	double GetFloatMin() const { return m_fmin; }
+	double GetFloatStep() const { return m_fstep; }
+
+	int GetIntMax() const { return (int) m_fmax; }
+	int GetIntMin() const { return (int) m_fmin; }
+	int GetIntStep() const { return (int) m_fstep; }
+
+	void SetFloatRange(double fmin, double fmax, double fstep = 0.0);
+	void SetIntRange(int imin, int imax, int istep = 1);
+
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
@@ -143,6 +161,9 @@ protected:
 	void*			m_pd;		// pointer to actual value
 	FELoadCurve*	m_plc;		// load curve for parameter
 	int				m_offset;	// offset for output (choice parameters only)
+
+	bool		m_floatRange;
+	double		m_fmin, m_fmax, m_fstep;
 
 	const char*	m_szbrev;	// short name of parameter
 	const char*	m_szname;	// long name of parameter
@@ -250,6 +271,15 @@ public:
 		return LastParam();
 	}
     
+	Param* AddColorParam(GLColor c, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param p(c, szb, szn);
+		p.m_nID = ns;
+		m_Param.push_back(p);
+		return LastParam();
+	}
+
 	const Param& operator [] (int n) const { return m_Param[n]; }
 	Param& operator [] (int n)	{ return m_Param[n]; }
 	int Size() { return (int)m_Param.size(); }
@@ -303,6 +333,7 @@ public:
 	double      GetFloatValue (int n) const { return m_Param[n].GetFloatValue(); }
 	bool        GetBoolValue  (int n) const { return m_Param[n].GetBoolValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }
+	GLColor     GetColorValue (int n) const { return m_Param[n].GetColorValue(); }
 	
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
     const char* GetIndexName(int n) { return m_Param[n].GetIndexName(); }
@@ -345,6 +376,7 @@ public:
 	Param* AddIndxIntParam(int n, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxIntParam(n, szi, idx, szb, szn); }
 	Param* AddIndxDoubleParam(double d, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxDoubleParam(d, szi, idx, szb, szn); }
 	Param* AddStringParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddStringParam(s, szb, szn); }
+	Param* AddColorParam(GLColor c, const char* szb = 0, const char* szn = 0) { return m_Param.AddColorParam(c, szb, szn); }
 
 	// get a parameter from its name
 	Param* GetParam(const char* sz) { return m_Param.Find(sz); }
@@ -369,12 +401,14 @@ public:
 	FELoadCurve* GetParamLC(int n) { return m_Param[n].GetLoadCurve(); }
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }
+	GLColor GetColorValue(int n) const { return m_Param[n].GetColorValue(); }
 
 	void SetIntValue   (int n, int    v) { m_Param[n].SetIntValue   (v); }
 	void SetFloatValue (int n, double v) { m_Param[n].SetFloatValue (v); }
 	void SetBoolValue  (int n, bool   v) { m_Param[n].SetBoolValue  (v); }
 	void SetVecValue   (int n, const vec3d& v) { m_Param[n].SetVecValue(v); }
 	void SetStringValue(int n, const std::string& s) { m_Param[n].SetStringValue(s); }
+	void SetColorValue (int n, const GLColor& c) { m_Param[n].SetColorValue(c); }
 	void Clear() { m_Param.clear(); }
 
 public:

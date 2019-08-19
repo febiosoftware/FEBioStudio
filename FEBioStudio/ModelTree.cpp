@@ -8,10 +8,10 @@
 #include <QContextMenuEvent>
 #include <QDesktopServices>
 #include "ObjectProps.h"
+#include "FEObjectProps.h"
 #include "ModelViewer.h"
 #include "PostDoc.h"
 #include <PostGL/GLModel.h>
-#include <PostLib/PropertyList.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
@@ -250,53 +250,6 @@ public:
 private:
 	CMainWindow*	m_wnd;
 	CFEBioJob*		m_job;
-};
-
-class CPostProps : public CPropertyList
-{
-public:
-	CPostProps(Post::CGLObject* obj) : m_obj(obj)
-	{
-		Post::CPropertyList* props = m_obj->propertyList();
-		if (props)
-		{
-			for (int i = 0; i < props->Properties(); ++i)
-			{
-				Post::CProperty& pi = props->Property(i);
-				switch (pi.type)
-				{
-				case Post::CProperty::Float : addProperty(pi.name, CProperty::Float); break;
-				case Post::CProperty::Bool  : addProperty(pi.name, CProperty::Bool); break;
-				case Post::CProperty::Int   : addProperty(pi.name, CProperty::Int); break;
-				case Post::CProperty::String: addProperty(pi.name, CProperty::String); break;
-				case Post::CProperty::Enum  : addProperty(pi.name, CProperty::Enum)->setEnumValues(pi.values); break;
-				case Post::CProperty::DataScalar: addProperty(pi.name, CProperty::DataScalar); break;
-				case Post::CProperty::DataVec3: addProperty(pi.name, CProperty::DataVec3); break;
-				case Post::CProperty::DataMat3: addProperty(pi.name, CProperty::DataMat3); break;
-				case Post::CProperty::Color: addProperty(pi.name, CProperty::Color); break;
-				default:
-					addProperty(pi.name, CProperty::String);
-				}
-			}
-		}
-	}
-
-	QVariant GetPropertyValue(int i) override
-	{
-		Post::CPropertyList* props = m_obj->propertyList();
-		if (props == nullptr) return QVariant();
-		return props->GetPropertyValue(i);
-	}
-
-	void SetPropertyValue(int i, const QVariant& v) override
-	{
-		Post::CPropertyList* props = m_obj->propertyList();
-		if (props == nullptr) return;
-		props->SetPropertyValue(i, v);
-	}
-
-private:
-	Post::CGLObject*	m_obj;
 };
 
 //=============================================================================
@@ -691,13 +644,13 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 				Post::CGLColorMap* cm = glm->GetColorMap();
 				if (cm)
 				{
-					AddTreeItem(t2, QString::fromStdString(cm->GetName()), MT_POST_PLOT, 0, 0, new CPostProps(cm));
+					AddTreeItem(t2, QString::fromStdString(cm->GetName()), MT_POST_PLOT, 0, cm, new CObjectProps(cm));
 				}
 
 				Post::CGLDisplacementMap* dm = glm->GetDisplacementMap();
 				if (dm)
 				{
-					AddTreeItem(t2, QString::fromStdString(dm->GetName()), MT_POST_PLOT, 0, 0, new CPostProps(dm));
+					AddTreeItem(t2, QString::fromStdString(dm->GetName()), MT_POST_PLOT, 0, dm, new CObjectProps(dm));
 				}
 
 				int plots = glm->Plots();
@@ -705,7 +658,7 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 				{
 					Post::CGLPlot* plt = glm->Plot(j);
 					string name = plt->GetName();
-					AddTreeItem(t2, QString::fromStdString(name), MT_POST_PLOT, 0, 0, new CPostProps(plt));
+					AddTreeItem(t2, QString::fromStdString(name), MT_POST_PLOT, 0, plt, new CObjectProps(plt));
 				}
 			}
 		}
@@ -726,7 +679,7 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CDocument* doc)
 			for (int j = 0; j < imgModel->ImageRenderers(); ++j)
 			{
 				Post::CGLImageRenderer* imgRender = imgModel->GetImageRenderer(j);
-				AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, 0, new CPostProps(imgRender), 0);
+				AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, 0, new CObjectProps(imgRender), 0);
 			}
 		}
 	}
@@ -965,7 +918,7 @@ void CModelTree::UpdateBC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				CPropertyList* pl = 0;
 
 				if      (dynamic_cast<FEFixedDOF*     >(pbc)) pl = new CFixedDOFProps     (dynamic_cast<FEFixedDOF*     >(pbc));
-				else pl = new CObjectProps(pbc, &fem);
+				else pl = new FEObjectProps(pbc, &fem);
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep == 0) flags |= DUPLICATE_ITEM;
@@ -990,7 +943,7 @@ void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep == 0) flags |= DUPLICATE_ITEM;
-				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pfc->GetName()), MT_LOAD, 0, pfc, new CObjectProps(pfc, &fem), new CBCValidator(pfc), flags);
+				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pfc->GetName()), MT_LOAD, 0, pfc, new FEObjectProps(pfc, &fem), new CBCValidator(pfc), flags);
 
 				AddDataMaps(t2, pfc);
 			}
@@ -1012,7 +965,7 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 			{
 				FEInitialCondition* pic = ps->IC(j);
 				assert(pic->GetStep() == i);
-				CPropertyList* pl = new CObjectProps(pic, &fem);
+				CPropertyList* pl = new FEObjectProps(pic, &fem);
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep == 0) flags |= DUPLICATE_ITEM;
@@ -1237,7 +1190,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 	if (topLevel)
 		t2 = AddTreeItem(item, name, MT_MATERIAL, 0, gmat, new CMaterialProps(fem, gmat), new CMaterialValidator(&fem, gmat));
 	else
-		t2 = AddTreeItem(item, name, 0, 0, pmat, new CObjectProps(pmat, &fem));
+		t2 = AddTreeItem(item, name, 0, 0, pmat, new FEObjectProps(pmat, &fem));
 
 	// fill the child items
 	if (pmat)

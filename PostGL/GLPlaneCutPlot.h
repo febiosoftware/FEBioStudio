@@ -6,6 +6,8 @@ namespace Post {
 
 class CGLPlaneCutPlot : public CGLPlot  
 {
+	enum { SHOW_PLANE, CUT_HIDDEN, SHOW_MESH, TRANSPARENCY, NORMAL_X, NORMAL_Y, NORMAL_Z, OFFSET };
+
 	class GLSlice
 	{
 	public:
@@ -76,9 +78,9 @@ public:
 
 	void Activate(bool bact);
 
-	CPropertyList* propertyList();
-
 	void Update(int ntime, float dt, bool breset);
+
+	void UpdateData(bool bsave = true) override;
 
 protected:
 	void RenderSlice();

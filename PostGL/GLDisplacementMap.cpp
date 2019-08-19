@@ -1,60 +1,42 @@
 #include "stdafx.h"
 #include "GLDisplacementMap.h"
 #include "GLModel.h"
-#include "PostLib/PropertyList.h"
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-class CGLDisplacementMapProps : public CPropertyList
-{
-public:
-	CGLDisplacementMapProps(CGLDisplacementMap* map) : m_map(map)
-	{
-		addProperty("Data field", CProperty::DataVec3);
-		addProperty("Scale factor", CProperty::Float);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		if (m_map)
-		{
-			if (i == 0)
-			{
-				FEModel* pfem = m_map->GetModel()->GetFEModel();
-				return pfem->GetDisplacementField();
-			}
-			if (i == 1) return m_map->m_scl;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		if (i == 0)
-		{
-			FEModel* pfem = m_map->GetModel()->GetFEModel();
-			pfem->SetDisplacementField(v.toInt());
-		}
-		if (i == 1) m_map->m_scl = v.toFloat();
-	}
-
-private:
-	CGLDisplacementMap*	m_map;
-};
-
-//-----------------------------------------------------------------------------
-
 CGLDisplacementMap::CGLDisplacementMap(CGLModel* po) : CGLDataMap(po)
 {
+	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
+	AddDoubleParam(1.0, "Scale factor");
+
 	char szname[128] = { 0 };
 	sprintf(szname, "Displacement Map");
 	SetName(szname);
 
 	m_scl = 1.f;
+	UpdateData(false);
 }
 
 //-----------------------------------------------------------------------------
+void CGLDisplacementMap::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		FEModel* pfem = GetModel()->GetFEModel();
+		if (pfem) pfem->SetDisplacementField(GetIntValue(DATA_FIELD));
+		m_scl = (float)GetFloatValue(SCALE);
 
+		UpdateNodes();
+	}
+	else
+	{
+		FEModel* pfem = GetModel()->GetFEModel();
+		if (pfem) SetIntValue(DATA_FIELD, pfem->GetDisplacementField());
+		SetFloatValue(SCALE, m_scl);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CGLDisplacementMap::Activate(bool b)
 {
 	CGLObject::Activate(b);
@@ -69,15 +51,11 @@ void CGLDisplacementMap::Activate(bool b)
 }
 
 //-----------------------------------------------------------------------------
-CPropertyList* CGLDisplacementMap::propertyList()
-{
-	return new CGLDisplacementMapProps(this);
-}
-
-//-----------------------------------------------------------------------------
 
 void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 {
+	UpdateData();
+
 	CGLModel* po = GetModel();
 	FEMeshBase* pm = po->GetActiveMesh();
 	FEModel* pfem = po->GetFEModel();
@@ -91,6 +69,8 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 	int n1 = (ntime + 1 >= N ? ntime : ntime + 1);
 	if (dt == 0.f) n1 = n0;
 
+	m_du.resize(pm->Nodes());
+
 	if (n0 == n1)
 	{
 		// update the states
@@ -102,9 +82,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 		{
 			FENode& node = pm->Node(i);
 			vec3f du = s1.m_NODE[i].m_rt - node.m_r0;
-
-			// the scaled displacement is stored on the mesh
-			node.m_rt = node.m_r0 + du*m_scl;
+			m_du[i] = du;
 		}
 	}
 	else
@@ -132,18 +110,14 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 
 			// evaluate current displacement
 			vec3f du = d2*w + d1*(1.f - w);
-
-			// the scaled displacement is stored on the mesh
-			node.m_rt = node.m_r0 + du*m_scl;
+			m_du[i] = du;
 		}
 	}
 
-	// update the normals
-	pm->UpdateNormals(po->RenderSmooth());
+	UpdateNodes();
 }
 
 //-----------------------------------------------------------------------------
-
 void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 {
 	CGLModel* po = GetModel();
@@ -174,4 +148,23 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 			s.m_NODE[i].m_rt = node.m_r0 + dr;
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CGLDisplacementMap::UpdateNodes()
+{
+	CGLModel* po = GetModel();
+	FEMeshBase* pm = po->GetActiveMesh();
+
+	if (m_du.empty()) return;
+	assert(m_du.size() == pm->Nodes());
+
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		FENode& node = pm->Node(i);
+		node.m_rt = node.m_r0 + m_du[i] * m_scl;
+	}
+
+	// update the normals
+	pm->UpdateNormals(po->RenderSmooth());
 }

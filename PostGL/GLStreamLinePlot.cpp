@@ -1,75 +1,8 @@
 #include "stdafx.h"
 #include "GLStreamLinePlot.h"
-#include "PostLib/PropertyList.h"
 #include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 using namespace Post;
-
-class CStreamLinePlotProps : public CPropertyList
-{
-public:
-	CStreamLinePlotProps(CGLStreamLinePlot* v) : m_plt(v)
-	{
-		QStringList cols;
-
-		for (int i = 0; i<ColorMapManager::ColorMaps(); ++i)
-		{
-			string name = ColorMapManager::GetColorMapName(i);
-			cols << name.c_str();
-		}
-
-		addProperty("Data field"    , CProperty::DataVec3);
-		addProperty("Color map"     , CProperty::Enum)->setEnumValues(cols);
-		addProperty("Allow clipping", CProperty::Bool);
-		addProperty("Step size"     , CProperty::Float);
-		addProperty("Density"       , CProperty::Float)->setFloatRange(0.0, 1.0).setFloatStep(0.01);
-		addProperty("Velocity threshold", CProperty::Float);
-		addProperty("Range Type", CProperty::Enum)->setEnumValues(QStringList() << "Dynamic" << "Static" << "User");
-		addProperty("Range divisions", CProperty::Int)->setIntRange(1, 100);
-		addProperty("User Range Min", CProperty::Float);
-		addProperty("User Range Max", CProperty::Float);
-	}
-
-	QVariant GetPropertyValue(int i)
-	{
-		switch (i)
-		{
-		case 0: return m_plt->GetVectorType(); break;
-		case 1: return m_plt->GetColorMap()->GetColorMap();
-		case 2: return m_plt->AllowClipping(); break;
-		case 3: return m_plt->StepSize(); break;
-		case 4: return m_plt->Density(); break;
-		case 5: return m_plt->Threshold(); break;
-		case 6: return m_plt->GetRangeType(); break;
-		case 7: return m_plt->GetColorMap()->GetDivisions(); break;
-		case 8: return m_plt->GetUserRangeMin(); break;
-		case 9: return m_plt->GetUserRangeMax(); break;
-		}
-		return QVariant();
-	}
-
-	void SetPropertyValue(int i, const QVariant& v)
-	{
-		switch (i)
-		{
-		case 0: m_plt->SetVectorType(v.toInt()); break;
-		case 1: m_plt->GetColorMap()->SetColorMap(v.toInt()); m_plt->ColorStreamLines(); break;
-		case 2: m_plt->AllowClipping(v.toBool()); break;
-		case 3: m_plt->SetStepSize(v.toFloat()); m_plt->UpdateStreamLines(); break; 
-		case 4: m_plt->SetDensity(v.toFloat()); m_plt->UpdateStreamLines(); break;
-		case 5: m_plt->SetThreshold(v.toFloat()); break;
-		case 6: m_plt->SetRangeType(v.toInt()); break;
-		case 7: m_plt->GetColorMap()->SetDivisions(v.toInt()); break;
-		case 8: m_plt->SetUserRangeMin(v.toFloat()); break;
-		case 9: m_plt->SetUserRangeMax(v.toFloat()); break;
-		}
-
-		m_plt->Update();
-	}
-
-private:
-	CGLStreamLinePlot*	m_plt;
-};
 
 //=================================================================================================
 
@@ -79,6 +12,17 @@ CGLStreamLinePlot::CGLStreamLinePlot(CGLModel* fem) : CGLPlot(fem), m_find(*fem-
 	char szname[128] = { 0 };
 	sprintf(szname, "StreamLines.%02d", n++);
 	SetName(szname);
+
+	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "Color map" )->SetEnumNames("@color_map");
+	AddBoolParam(true, "Allow clipping");
+	AddDoubleParam(0, "Step size");
+	AddDoubleParam(0, "Density")->SetFloatRange(0.0, 1.0, 0.01);
+	AddDoubleParam(0, "Velocity threshold");
+	AddIntParam(0, "Range Type")->SetEnumNames("Dynamic\0Static\0User\0");
+	AddIntParam(0, "Range divisions")->SetIntRange(1, 100);
+	AddDoubleParam(0., "User Range Max");
+	AddDoubleParam(0., "User Range Min");
 
 	m_density = 1.f;
 	m_vtol = 1e-5f;
@@ -103,6 +47,8 @@ CGLStreamLinePlot::CGLStreamLinePlot(CGLModel* fem) : CGLPlot(fem), m_find(*fem-
 	m_pbar->copy_label(szname);
 	m_pbar->ShowTitle(true);
 	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+
+	UpdateData(false);
 }
 
 CGLStreamLinePlot::~CGLStreamLinePlot()
@@ -111,14 +57,39 @@ CGLStreamLinePlot::~CGLStreamLinePlot()
 	delete m_pbar;
 }
 
-CPropertyList* CGLStreamLinePlot::propertyList()
-{
-	return new CStreamLinePlotProps(this);
-}
-
 void CGLStreamLinePlot::Update()
 {
 	Update(m_lastTime, m_lastdt, true);
+}
+
+void CGLStreamLinePlot::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_nvec = GetIntValue(DATA_FIELD);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		AllowClipping(GetBoolValue(CLIP));
+		m_inc = GetFloatValue(STEP_SIZE);
+		m_density = GetFloatValue(DENSITY);
+		m_vtol = GetFloatValue(THRESHOLD);
+		m_rangeType = GetIntValue(RANGE);
+		m_Col.SetDivisions(GetIntValue(DIVS));
+		m_userMax = GetFloatValue(USER_MAX);
+		m_userMin = GetFloatValue(USER_MIN);
+	}
+	else
+	{
+		SetIntValue(DATA_FIELD, m_nvec);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetBoolValue(CLIP, AllowClipping());
+		SetFloatValue(STEP_SIZE, m_inc);
+		SetFloatValue(DENSITY, m_density);
+		SetFloatValue(THRESHOLD, m_vtol);
+		SetIntValue(RANGE, m_rangeType);
+		SetIntValue(DIVS, m_Col.GetDivisions());
+		SetFloatValue(USER_MAX, m_userMax);
+		SetFloatValue(USER_MIN, m_userMin);
+	}
 }
 
 void CGLStreamLinePlot::SetVectorType(int ntype)
