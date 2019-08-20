@@ -578,9 +578,8 @@ std::string CDocument::GetDocFolder()
 	if (n == string::npos)
 	{
 		n = m_filePath.rfind('/');
-		if (n == string::npos) n = 0; else n++;
+		if (n == string::npos) n = 0;
 	}
-	else n++;
 
 	std::string folder = m_filePath.substr(0, n);
 
@@ -829,7 +828,7 @@ void CDocument::Load(IArchive& ar)
 		}
 		else if (nid == CID_FEBIOJOB)
 		{
-			CFEBioJob* job = new CFEBioJob;
+			CFEBioJob* job = new CFEBioJob(this);
 			AddFEbioJob(job, false);
 			job->Load(ar);
 		}
@@ -907,7 +906,7 @@ bool CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz,
 bool CDocument::LoadPlotFile(const std::string& fileName)
 {
 	// create a dummy job
-	CFEBioJob* job = new CFEBioJob;
+	CFEBioJob* job = new CFEBioJob(this);
 	job->SetPlotFileName(fileName);
 	if (job->OpenPlotFile() == false)
 	{
@@ -1680,7 +1679,7 @@ CFEBioJob* CDocument::FindFEBioJob(const std::string& s)
 	for (int i = 0; i < FEBioJobs(); ++i)
 	{
 		CFEBioJob* job = m_JobList[i];
-		if (job->GetFileName() == s) return job;
+		if (job->GetName() == s) return job;
 	}
 
 	return nullptr;

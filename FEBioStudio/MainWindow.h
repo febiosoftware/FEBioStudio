@@ -15,6 +15,7 @@ class CBuildPanel;
 class QMenu;
 class CGraphWindow;
 class CPostDoc;
+class CFEBioJob;
 
 namespace Ui {
 	class CMainWindow;
@@ -371,6 +372,8 @@ public slots:
 	// update the font toolbar
 	// (e.g. when a GL widget gets selected)s
 	void UpdateFontToolbar();
+
+	void RunFEBioJob(CFEBioJob* job, int febioVersion, QString cmd);
 
 public:
 	QStringList GetRecentFileList();

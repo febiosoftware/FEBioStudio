@@ -43,7 +43,7 @@ class Ui::CDlgRun
 {
 public:
 	QLineEdit*	cwd;
-	QLineEdit*	fileName;
+	QLineEdit*	jobName;
 	QComboBox*	febio;
 	QCheckBox*	debug;
 	
@@ -58,7 +58,7 @@ public:
 public:
 	void setup(QDialog* dlg)
 	{
-		fileName = new QLineEdit;
+		jobName = new QLineEdit;
 		febio = new QComboBox;
 		
 		cwd = new QLineEdit;
@@ -74,7 +74,7 @@ public:
 		form->setLabelAlignment(Qt::AlignRight);
 		form->addRow("FEBio version:", febio);
 		form->addRow("Working directory:", cwdLayout);
-		form->addRow("Filename:", fileName);
+		form->addRow("Job name:", jobName);
 		form->addRow("Debug mode:", debug = new QCheckBox(""));
 
 		editCmd = new QCheckBox("override command");
@@ -141,9 +141,9 @@ void CDlgRun::SetWorkingDirectory(const QString& wd)
 	ui->cwd->setText(wd);
 }
 
-void CDlgRun::SetFileName(const QString& fn)
+void CDlgRun::SetJobName(const QString& fn)
 {
-	ui->fileName->setText(fn);
+	ui->jobName->setText(fn);
 }
 
 void CDlgRun::SetFEBioPath(QStringList& path, QStringList& info, int ndefault)
@@ -163,9 +163,9 @@ QString CDlgRun::GetWorkingDirectory()
 	return ui->cwd->text();
 }
 
-QString CDlgRun::GetFileName()
+QString CDlgRun::GetJobName()
 {
-	return ui->fileName->text();
+	return ui->jobName->text();
 }
 
 int CDlgRun::GetFEBioPath()
@@ -181,7 +181,7 @@ QString CDlgRun::CommandLine()
 CDlgRun::CDlgRun(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgRun)
 {
 	ui->setup(this);
-	ui->fileName->setFocus();
+	ui->jobName->setFocus();
 	setWindowTitle("Run FEBio");
 	resize(500, 300);
 }

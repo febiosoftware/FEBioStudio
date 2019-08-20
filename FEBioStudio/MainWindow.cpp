@@ -25,6 +25,8 @@
 #include "DlgTimeSettings.h"
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
+#include <FEBio/FEBioExport25.h>
+#include "FEBioJob.h"
 
 extern GLColor col[];
 
@@ -1688,4 +1690,80 @@ void CMainWindow::UpdateFontToolbar()
 		ui->pFontToolBar->setEnabled(true);
 	}
 	else ui->pFontToolBar->setDisabled(true);
+}
+
+void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, QString cmd)
+{
+	CDocument* doc = GetDocument();
+
+	// get the project folder
+	string projectFolder = doc->GetDocFolder();
+
+	// get the FEBio job file path
+	QString filePath = QString::fromStdString(job->GetFileName());
+
+	// do string substitution
+	filePath.replace("$(ProjectFolder)", QString::fromStdString(projectFolder));
+
+	// try to save the file first
+	AddLogEntry(QString("Saving to %1 ...").arg(filePath));
+
+	string sfilePath = filePath.toStdString();
+	
+	FEBioExport25 feb;
+	if (feb.Export(doc->GetProject(), sfilePath.c_str()) == false)
+	{
+		QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
+		AddLogEntry("FAILED\n");
+		return;
+	}
+	else AddLogEntry("SUCCESS!\n");
+
+	// clear output for next job
+	ClearOutput();
+
+	// extract the working directory and file title from the file path
+	size_t n = sfilePath.rfind('/');
+	if (n == string::npos) n = sfilePath.rfind('\\');
+
+	string cwd, fileName;
+	if (n != string::npos)
+	{
+		cwd = sfilePath.substr(0, n);
+		fileName = sfilePath.substr(n + 1, string::npos);
+	}
+	else fileName = sfilePath;
+
+	// create new process
+	ui->m_process = new QProcess(this);
+	ui->m_process->setProcessChannelMode(QProcess::MergedChannels);
+	if (cwd.empty() == false) ui->m_process->setWorkingDirectory(QString::fromStdString(cwd));
+
+	QString program = ui->m_febio_path.at(febioVersion);
+
+	// replace $(FEBioStudioDir)
+	if (program.contains("$(FEBioStudioDir)"))
+	{
+		program.replace("$(FEBioStudioDir)", QApplication::applicationDirPath());
+	}
+
+	// extract the arguments
+	QStringList args = cmd.split(" ", QString::SkipEmptyParts);
+
+	args.replaceInStrings("$(Filename)", QString::fromStdString(fileName));
+
+	// get ready 
+	AddLogEntry(QString("Starting FEBio: %1\n").arg(args.join(" ")));
+	QObject::connect(ui->m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onRunFinished(int, QProcess::ExitStatus)));
+	QObject::connect(ui->m_process, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+	QObject::connect(ui->m_process, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(onErrorOccurred(QProcess::ProcessError)));
+
+	// don't forget to reset the kill flag
+	ui->m_bkillProcess = false;
+
+	// go!
+	ui->m_process->start(program, args);
+
+	// show the output window
+	ui->logPanel->ShowOutput();
 }

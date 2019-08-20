@@ -16,11 +16,11 @@ public:
 	void Init();
 
 	void SetWorkingDirectory(const QString& wd);
-	void SetFileName(const QString& fn);
+	void SetJobName(const QString& fn);
 	void SetFEBioPath(QStringList& path, QStringList& info, int ndefault = 0);
 
 	QString GetWorkingDirectory();
-	QString GetFileName();
+	QString GetJobName();
 	int GetFEBioPath();
 
 	QString CommandLine();

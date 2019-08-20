@@ -28,125 +28,74 @@ void CMainWindow::on_actionElasticityConvertor_triggered()
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {
+	// First, check that a job is not running yet
 	if (ui->m_process && (ui->m_process->state()!=QProcess::NotRunning))
 	{
 		QMessageBox::information(this, "PreView2", "An FEBio job is already running.\nYou must wait till the job is finished or stop it.");
 		return;
 	}
 
+	// get the document
 	CDocument* doc = GetDocument();
+
+	// keep a job counter
+	static int job_count = 1;
+
+	// get the project folder and name
+	QString projectName = QString::fromStdString(doc->GetDocFileBase());
 	QString projectFolder = QString::fromStdString(doc->GetDocFolder());
 
-	QString fileBase = QString::fromStdString(doc->GetDocFileBase());
-	QString file = fileBase;
-	file += ".feb";
+	// create a name for this job
+	QString jobName = projectName;
+	jobName += QString("_job%1").arg(job_count);
 
-	static QString lastPath, lastFile;
-	QString path;
-	if (projectFolder.isEmpty()) path = lastPath;
-	else path = "$(ProjectFolder)";
+	// By default, the job path will be the project folder
+	// unless the project folder is not defined, in which case we'll reuse the last path
+	static QString lastPath;
+	QString jobPath;
+	if (projectFolder.isEmpty()) jobPath = lastPath;
+	else jobPath = "$(ProjectFolder)";
 
-	if (fileBase.isEmpty() && (lastFile.isEmpty() == false)) file = lastFile;
+	// this keeps track of the FEBio selection that was used last
+	static int lastFEBioIndex = 0;
 
-	static int lastPathIndex = 0;
-
+	// setup the run dialog
 	CDlgRun dlg(this);
-	dlg.SetWorkingDirectory(path);
-	dlg.SetFileName(file);
-	dlg.SetFEBioPath(ui->m_febio_path, ui->m_febio_info, lastPathIndex);
-
+	dlg.SetWorkingDirectory(jobPath);
+	dlg.SetJobName(jobName);
+	dlg.SetFEBioPath(ui->m_febio_path, ui->m_febio_info, lastFEBioIndex);
 	dlg.Init();
 	if (dlg.exec())
 	{
-		QString dir = dlg.GetWorkingDirectory();
-		QString file = dlg.GetFileName();
+		// get the working directory and job name
+		jobPath = dlg.GetWorkingDirectory();
+		jobName = dlg.GetJobName();
 
-		dir.replace("$(ProjectFolder)", projectFolder);
-
-		lastPath = dir;
-		lastFile = file;
-
-		if(!(dir.endsWith("/") | dir.endsWith("\\")))
-		{
-			#ifdef WIN32
-				dir += "\\";
-			#else
-				dir += "/";
-			#endif
-		}
-		
-		QString path = dir + file;
-
-		std::string sfile = path.toStdString();
-
-		// try to save the file first
-		AddLogEntry(QString("Saving to %1 ...").arg(path));
-		FEBioExport25 feb;
-		if (feb.Export(doc->GetProject(), sfile.c_str()) == false)
-		{
-			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
-			AddLogEntry("FAILED\n");
-			return;
-		}
-		else AddLogEntry("SUCCESS!\n");
+		// store the last path
+		lastPath = jobPath;
 
 		// see if a job with this name already exists
-		CFEBioJob* job = doc->FindFEBioJob(sfile);
+		CFEBioJob* job = doc->FindFEBioJob(jobName.toStdString());
 
-		// create a new new job
+		// if not, create a new job
 		if (job == nullptr)
 		{
-			job = new CFEBioJob(sfile, CFEBioJob::RUNNING);
+			// create a new new job
+			job = new CFEBioJob(doc, jobName.toStdString(), jobPath.toStdString());
 			doc->AddFEbioJob(job);
-		}
-		else
-		{
-			job->SetStatus(CFEBioJob::RUNNING);
-			doc->SetActiveJob(job);
+
+			// show it in the model viewer
+			UpdateModel(job);
 		}
 
-		// show it in the model viewer
-		UpdateModel(job);
+		// get the selected FEBio version
+		lastFEBioIndex = dlg.GetFEBioPath();
 
-		// clear output for next job
-		ClearOutput();
+		// run the job
+		RunFEBioJob(job, lastFEBioIndex, dlg.CommandLine());
 
-		// create new process
-		ui->m_process = new QProcess(this);
-		ui->m_process->setProcessChannelMode(QProcess::MergedChannels);
-		ui->m_process->setWorkingDirectory(dir);
-
-		lastPathIndex = dlg.GetFEBioPath();
-        QString program = ui->m_febio_path.at(lastPathIndex);
-
-		// replace $(FEBioStudioDir)
-		if (program.contains("$(FEBioStudioDir)"))
-		{
-			program.replace("$(FEBioStudioDir)", QApplication::applicationDirPath());
-		}
-
-		// get the command line
-		QString cmd = dlg.CommandLine();
-
-		// extract the arguments
-		QStringList args = cmd.split(" ", QString::SkipEmptyParts);
-		
-		args.replaceInStrings("$(Filename)", dlg.GetFileName());
-		
-		// get ready 
-		AddLogEntry(QString("Starting FEBio: %1\n").arg(args.join(" ")));
-		QObject::connect(ui->m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onRunFinished(int, QProcess::ExitStatus)));
-		QObject::connect(ui->m_process, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-		QObject::connect(ui->m_process, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(onErrorOccurred(QProcess::ProcessError)));
-
-		// don't forget to reset the kill flag
-		ui->m_bkillProcess = false;
-
-		// go!
-		ui->m_process->start(program, args);
-
-		// show the output window
-		ui->logPanel->ShowOutput();
+		// increase job counter
+		job_count++;
 	}
 }
 

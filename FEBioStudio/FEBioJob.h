@@ -2,7 +2,7 @@
 #include <FSCore/FSObject.h>
 
 class CPostDoc;
-
+class CDocument;
 
 //-----------------------------------------------------------------------------
 class CFEBioJob : public FSObject
@@ -17,9 +17,9 @@ public:
 	};
 
 public:
-	CFEBioJob();
+	CFEBioJob(CDocument* doc);
 	~CFEBioJob();
-	CFEBioJob(const std::string& fileName, JOB_STATUS status);
+	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory);
 
 	void SetStatus(JOB_STATUS status);
 	int GetStatus();
@@ -44,6 +44,7 @@ private:
 	std::string		m_plotFile;	// the .xplt file name
 	int				m_status;	// return status
 
+	CDocument*	m_doc;
 	CPostDoc*	m_postDoc;
 
 	static int	m_count;

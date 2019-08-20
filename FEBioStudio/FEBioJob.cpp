@@ -1,12 +1,14 @@
 #include "stdafx.h"
 #include "FEBioJob.h"
 #include "PostDoc.h"
+#include "Document.h"
 #include <sstream>
+#include <QtCore/QString>
 
 //-----------------------------------------------------------------------------
 int CFEBioJob::m_count = 0;
 
-CFEBioJob::CFEBioJob()
+CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 {
 	m_count++;
 	std::stringstream ss;
@@ -23,19 +25,29 @@ CFEBioJob::~CFEBioJob()
 	delete m_postDoc;
 }
 
-CFEBioJob::CFEBioJob(const std::string& fileName, JOB_STATUS status)
+CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory) : m_doc(doc)
 {
-	m_count++;
-	std::stringstream ss;
-	ss << "job" << m_count;
-	SetName(ss.str());
+	// set the job's name
+	SetName(jobName);
 
-	m_fileName = fileName;
+	string dir = workingDirectory;
+	char ch = dir.back();
+	if (!((ch == '/') || (ch == '\\')))
+	{
+#ifdef WIN32
+		dir += "\\";
+#else
+		dir += "/";
+#endif
+	}
 
-	m_status = status;
+	// build the feb file name
+	m_fileName = dir + jobName + ".feb";
+
+	m_status = NONE;
 
 	// set default plot file name
-	m_plotFile = fileName;
+	m_plotFile = m_fileName;
 	size_t pos = m_plotFile.rfind(".");
 	if (pos != std::string::npos)
 	{
@@ -92,7 +104,14 @@ bool CFEBioJob::OpenPlotFile()
 	if (m_postDoc) delete m_postDoc;
 	m_postDoc = new CPostDoc;
 
-	if (m_postDoc->LoadPlotfile(m_plotFile) == false)
+	QString plotFile = QString::fromStdString(m_plotFile);
+
+	QString projectFolder = QString::fromStdString(m_doc->GetDocFolder());
+	plotFile.replace("$(ProjectFolder)", projectFolder);
+
+	string splotfile = plotFile.toStdString();
+
+	if (m_postDoc->LoadPlotfile(splotfile) == false)
 	{
 		delete m_postDoc;
 		m_postDoc = nullptr;
