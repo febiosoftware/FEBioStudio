@@ -302,6 +302,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SelectionBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_StatePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_StatsWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SummaryWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_Tool.cpp" />
@@ -328,6 +329,7 @@
     <ClCompile Include="..\..\FEBioStudio\SelectionBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Sketcher.cpp" />
     <ClCompile Include="..\..\FEBioStudio\SphereFitTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\StatePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\StatsWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\stdafx.cpp" />
     <ClCompile Include="..\..\FEBioStudio\SummaryWindow.cpp" />
@@ -364,6 +366,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\MaterialPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\StatePanel.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>

@@ -654,7 +654,34 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 
 void CMainWindow::keyPressEvent(QKeyEvent* ev)
 {
-	if (ev->key() == Qt::Key_Escape)
+	if ((ev->key() == Qt::Key_Backtab) || (ev->key() == Qt::Key_Tab))
+	{
+		if (ev->modifiers() & Qt::ControlModifier)
+		{
+			ev->accept();
+
+			int docs = ui->tab->count();
+			if (docs > 1)
+			{
+				// activate the next document
+				int i = ui->tab->currentIndex();
+
+				// activate next or prev one 
+				if (ev->key() == Qt::Key_Backtab)
+				{
+					i--;
+					if (i < 0) i = docs - 1;
+				}
+				else
+				{
+					++i;
+					if (i >= docs) i = 0;
+				}
+				ui->tab->setCurrentIndex(i);
+			}
+		}
+	}
+	else if (ev->key() == Qt::Key_Escape)
 	{
 		// give the build panels a chance to react first
 		if (ui->buildPanel->OnEscapeEvent()) return;
@@ -686,6 +713,11 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	else if ((ev->key() == Qt::Key_3) && (ev->modifiers() && Qt::CTRL))
 	{
 		ui->showBuildPanel();
+		ev->accept();
+	}
+	else if ((ev->key() == Qt::Key_4) && (ev->modifiers() && Qt::CTRL))
+	{
+		ui->showPostPanel();
 		ev->accept();
 	}
 }
@@ -1109,11 +1141,8 @@ void CMainWindow::onTimer()
 				if (time.m_bloop == false) StopAnimation();
 			}
 		}
-		doc->SetActiveState(nstep);
 		ui->pspin->setValue(nstep+1);
 	}
-
-	RedrawGL();
 
 	// TODO: Should I start the event before or after the view is redrawn?
 	if (ui->m_isAnimating)
@@ -1185,9 +1214,7 @@ void CMainWindow::on_actionFirst_triggered()
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
 	TIMESETTINGS& time = doc->GetTimeSettings();
-	doc->SetActiveState(time.m_start);
 	ui->pspin->setValue(time.m_start+1);
-	RedrawGL();
 }
 
 //-----------------------------------------------------------------------------
@@ -1199,9 +1226,7 @@ void CMainWindow::on_actionPrev_triggered()
 	int nstep = doc->GetActiveState();
 	nstep--;
 	if (nstep < time.m_start) nstep = time.m_start;
-	doc->SetActiveState(nstep);
 	ui->pspin->setValue(nstep+1);
-	RedrawGL();
 }
 
 //-----------------------------------------------------------------------------
@@ -1213,9 +1238,7 @@ void CMainWindow::on_actionNext_triggered()
 	int nstep = doc->GetActiveState();
 	nstep++;
 	if (nstep > time.m_end) nstep = time.m_end;
-	doc->SetActiveState(nstep);
 	ui->pspin->setValue(nstep+1);
-	RedrawGL();
 }
 
 //-----------------------------------------------------------------------------
@@ -1224,9 +1247,7 @@ void CMainWindow::on_actionLast_triggered()
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
 	TIMESETTINGS& time = doc->GetTimeSettings();
-	doc->SetActiveState(time.m_end);
 	ui->pspin->setValue(time.m_end+1);
-	RedrawGL();
 }
 
 //-----------------------------------------------------------------------------
@@ -1247,9 +1268,27 @@ void CMainWindow::on_actionTimeSettings_triggered()
 			if (ntime < time.m_start) ntime = time.m_start;
 			if (ntime > time.m_end) ntime = time.m_end;
 		}
-		doc->SetActiveState(ntime);
+
+		ui->pspin->setValue(ntime + 1);
 		RedrawGL();
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_selectTime_valueChanged(int n)
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	doc->SetActiveState(n - 1);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::SetCurrentState(int n)
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	ui->pspin->setValue(n + 1);
 }
 
 //-----------------------------------------------------------------------------

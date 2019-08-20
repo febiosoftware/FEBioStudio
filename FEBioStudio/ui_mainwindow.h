@@ -821,6 +821,11 @@ public:
 		buildPanel->parentWidget()->raise();
 	}
 
+	void showPostPanel()
+	{
+		postPanel->parentWidget()->raise();
+	}
+
 	void stopAnimation()
 	{
 		m_isAnimating = false;

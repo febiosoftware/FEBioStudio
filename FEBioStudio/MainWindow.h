@@ -316,6 +316,7 @@ public slots:
 	void on_actionLast_triggered();
 	void on_actionTimeSettings_triggered();
 	void on_actionColorMap_toggled(bool bchecked);
+	void on_selectTime_valueChanged(int n);
 
 	// Font toolbar
 	void on_fontStyle_currentFontChanged(const QFont& font);
@@ -328,6 +329,8 @@ public slots:
 	void on_tab_tabCloseRequested(int n);
 
 	void DeleteView(int n);
+
+	void SetCurrentState(int n);
 
 	void closeEvent(QCloseEvent* ev);
 	void keyPressEvent(QKeyEvent* ev);

@@ -2,6 +2,7 @@
 #include "PostPanel.h"
 #include "PostDataPanel.h"
 #include "MaterialPanel.h"
+#include "StatePanel.h"
 #include <QTabWidget>
 #include <QBoxLayout>
 
@@ -10,6 +11,7 @@ class Ui::CPostPanel
 public:
 	::CPostDataPanel*	data;
 	::CMaterialPanel*	mat;
+	::CStatePanel*		state;
 
 	QTabWidget*	tab;
 
@@ -20,6 +22,7 @@ public:
 
 		tab->addTab(mat = new ::CMaterialPanel(wnd, parent), "Material");
 		tab->addTab(data = new ::CPostDataPanel(wnd, parent), "Data");
+		tab->addTab(state = new ::CStatePanel(wnd, parent), "State");
 
 		QHBoxLayout* l = new QHBoxLayout;
 		l->setMargin(0);
