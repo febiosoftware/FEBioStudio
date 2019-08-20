@@ -1534,6 +1534,12 @@ void CMainWindow::DeleteAllSteps()
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::ClearRecentProjectsList()
+{
+	ui->m_recentFiles.clear();
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::GenerateMap(FSObject* po)
 {
 	CDlgAddMeshData dlg(po, this);
@@ -1714,7 +1720,12 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, QString cmd)
 	// create new process
 	ui->m_process = new QProcess(this);
 	ui->m_process->setProcessChannelMode(QProcess::MergedChannels);
-	if (cwd.empty() == false) ui->m_process->setWorkingDirectory(QString::fromStdString(cwd));
+	if (cwd.empty() == false)
+	{
+		QString wd = QString::fromStdString(cwd);
+		AddLogEntry(QString("Setting current working directory to: %1\n").arg(wd));
+		ui->m_process->setWorkingDirectory(wd);
+	}
 
 	QString program = ui->m_febio_path.at(febioVersion);
 

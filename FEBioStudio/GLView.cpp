@@ -1380,7 +1380,7 @@ void CGLView::paintGL()
 	{
 		if (postDoc && postDoc->IsValid())// && view.m_bTitle)
 		{
-			string title = postDoc->GetTitle();
+			string title = postDoc->GetName();
 			m_ptitle->copy_label(title.c_str());
 
 			sprintf(m_szsubtitle, "%s\nTime = %.4g", postDoc->GetFieldString().c_str(), postDoc->GetTimeValue());

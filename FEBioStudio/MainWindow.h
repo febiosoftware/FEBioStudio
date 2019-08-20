@@ -144,6 +144,9 @@ public:
 	void GenerateMap(FSObject* po);
 
 public:
+	void ClearRecentProjectsList();
+
+public:
 	void AddBC          (int nstep);
 	void AddBoundaryLoad(int nstep);
 	void AddBodyLoad    (int nstep);

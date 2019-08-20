@@ -5,12 +5,14 @@ namespace Ui {
 	class CDlgRun;
 }
 
+class CMainWindow;
+
 class CDlgRun : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgRun(QWidget* parent);
+	CDlgRun(CMainWindow* parent);
 
 	// Call this before exec!
 	void Init();
@@ -24,6 +26,8 @@ public:
 	int GetFEBioPath();
 
 	QString CommandLine();
+
+	void accept() override;
 
 protected slots:
 	void updateDefaultCommand();

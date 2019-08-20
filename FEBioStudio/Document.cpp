@@ -225,6 +225,9 @@ void CDocument::Clear()
 	// Clear the command history
 	m_pCmd->Clear();
 
+	// clear all the jobs
+	DeleteAllFEBioJobs();
+
 	// reset selection
 	if (m_psel) delete m_psel;
 	m_psel = 0;
@@ -1703,6 +1706,11 @@ void CDocument::DeleteFEBioJob(CFEBioJob* job)
 			delete job;
 		}
 	}
+}
+
+void CDocument::DeleteAllFEBioJobs()
+{
+	while (FEBioJobs()) DeleteFEBioJob(GetFEBioJob(0));
 }
 
 int CDocument::ImageObjects() const

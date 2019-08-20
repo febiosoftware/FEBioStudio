@@ -291,6 +291,7 @@ public:
 	CFEBioJob* GetActiveJob();
 
 	void DeleteFEBioJob(CFEBioJob* job);
+	void DeleteAllFEBioJobs();
 	
 	CFEBioJob* FindFEBioJob(const std::string& s);
 

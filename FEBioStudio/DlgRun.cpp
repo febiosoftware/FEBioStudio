@@ -11,6 +11,8 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include "MainWindow.h"
+#include "Document.h"
 
 class CDlgEditPath : public QDialog
 {
@@ -42,6 +44,8 @@ public:
 class Ui::CDlgRun
 {
 public:
+	::CMainWindow*	m_wnd;
+
 	QLineEdit*	cwd;
 	QLineEdit*	jobName;
 	QComboBox*	febio;
@@ -131,14 +135,18 @@ void CDlgRun::on_setCWDBtn_Clicked()
 		// get the file name
 		QStringList files = dlg.selectedFiles();
 		QString fileName = files.first();
-		
+
 		SetWorkingDirectory(fileName);
 	}
 }
 
 void CDlgRun::SetWorkingDirectory(const QString& wd)
 {
-	ui->cwd->setText(wd);
+	QString workingDir(wd);
+#ifdef WIN32
+	workingDir.replace("/", "\\");
+#endif
+	ui->cwd->setText(workingDir);
 }
 
 void CDlgRun::SetJobName(const QString& fn)
@@ -178,8 +186,9 @@ QString CDlgRun::CommandLine()
 	return ui->cmd->text();
 }
 
-CDlgRun::CDlgRun(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgRun)
+CDlgRun::CDlgRun(CMainWindow* parent) : QDialog(parent), ui(new Ui::CDlgRun)
 {
+	ui->m_wnd = parent;
 	ui->setup(this);
 	ui->jobName->setFocus();
 	setWindowTitle("Run FEBio");
@@ -262,4 +271,35 @@ void CDlgRun::onPathChanged(int n)
 	}
 
 	ui->m_last_index = ui->febio->currentIndex();
+}
+
+void CDlgRun::accept()
+{
+	// see if the path is valid
+	QString path = ui->cwd->text();
+	if (path.isEmpty())
+	{
+		QMessageBox::critical(this, "FEBio Studio", "You must enter a valid working directory.");
+		return;
+	}
+
+	CDocument* doc = ui->m_wnd->GetDocument();
+	std::string projectFolder = doc->GetDocFolder();
+	path.replace("$(ProjectFolder)", QString::fromStdString(projectFolder));
+
+	QDir dir(path);
+	if (path.isEmpty() || (dir.exists() == false))
+	{
+		QMessageBox::critical(this, "FEBio Studio", "You must enter a valid working directory.");
+		return;
+	}
+
+	// see if the job name is defined
+	if (ui->jobName->text().isEmpty())
+	{
+		QMessageBox::critical(this, "FEBio Studio", "You must enter valid job name.");
+		return;
+	}
+
+	QDialog::accept();
 }

@@ -160,7 +160,7 @@ public:
 #endif
 
 #ifdef WIN32
-		m_defaultProjectFolder = "C:/Documents";
+		m_defaultProjectFolder = "C:\\Documents";
 #endif
 
 		m_process = 0;
@@ -855,7 +855,7 @@ private:
 		QString fileName = file;
 
 #ifdef WIN32
-		// on windows, make sure that allfile names use backslashes
+		// on windows, make sure that all filenames use backslashes
 		fileName.replace('/', '\\');
 #endif
 

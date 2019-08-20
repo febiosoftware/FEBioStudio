@@ -10,7 +10,9 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include "PropertyList.h"
+#include "PropertyListForm.h"
 #include "PropertyListView.h"
+#include "CColorButton.h"
 #include <PostLib/convert.h>
 #include <PostLib/Palette.h>
 
@@ -89,14 +91,29 @@ public:
 class CUIProps : public CDataPropertyList
 {
 public:
-	CUIProps()
+	CUIProps(QDialog* parent, CMainWindow* wnd) : m_dlg(parent), m_wnd(wnd)
 	{
 		addBoolProperty(&m_apply, "Emulate apply action");
 		addBoolProperty(&m_bcmd , "Clear undo stack on save");
 		addEnumProperty(&m_theme, "Theme")->setEnumValues(QStringList() << "Default" << "Dark");
+		addProperty("Recent projects list", CProperty::Action)->info = QString("Clear");
+	}
+
+	void SetPropertyValue(int i, const QVariant& v) override
+	{
+		if (i == 3)
+		{
+			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear the recent project list.\nThis can not be undone!"))
+			{
+				m_wnd->ClearRecentProjectsList();
+			}
+		}
+		else CDataPropertyList::SetPropertyValue(i, v);
 	}
 
 public:
+	QDialog*	m_dlg;
+	CMainWindow* m_wnd;
 	bool	m_apply;
 	bool	m_bcmd;
 	int		m_theme;
@@ -405,15 +422,18 @@ public:
 	CPaletteWidget*		m_pal;
 	CColormapWidget*	m_map;
 
-	::CPropertyListView*	panel[4];
+	::CPropertyListView*	bg_panel;
+	::CPropertyListView*	di_panel;
+	::CPropertyListView*	ph_panel;
+	::CPropertyListForm*	ui_panel;
 
 public:
-	CDlgSettings()
+	CDlgSettings(QDialog* parent, ::CMainWindow* wnd)
 	{
 		m_bg = new CBackgroundProps;
 		m_display = new CDisplayProps;
 		m_physics = new CPhysicsProps;
-		m_ui = new CUIProps;
+		m_ui = new CUIProps(parent, wnd);
 		m_pal = new CPaletteWidget;
 		m_map = new CColormapWidget;
 	}
@@ -424,15 +444,15 @@ public:
 
 		QTabWidget* pt = new QTabWidget;
 
-		panel[0] = new ::CPropertyListView;
-		panel[1] = new ::CPropertyListView;
-		panel[2] = new ::CPropertyListView;
-		panel[3] = new ::CPropertyListView;
+		bg_panel = new ::CPropertyListView;
+		di_panel = new ::CPropertyListView;
+		ph_panel = new ::CPropertyListView;
+		ui_panel = new ::CPropertyListForm;
 
-		pt->addTab(panel[0], "Background");
-		pt->addTab(panel[1], "Display");
-		pt->addTab(panel[2], "Physics");
-		pt->addTab(panel[3], "UI");
+		pt->addTab(bg_panel, "Background");
+		pt->addTab(di_panel, "Display");
+		pt->addTab(ph_panel, "Physics");
+		pt->addTab(ui_panel, "UI");
 		pt->addTab(m_pal, "Palette");
 		pt->addTab(m_map, "Colormap");
 		pg->addWidget(pt);
@@ -448,7 +468,7 @@ public:
 };
 
 
-CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings)
+CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pwnd))
 {
 	m_pwnd = pwnd;
 
@@ -500,17 +520,19 @@ void CDlgSettings::UpdatePalettes()
 
 void CDlgSettings::showEvent(QShowEvent* ev)
 {
-	ui->panel[0]->Update(ui->m_bg);
-	ui->panel[1]->Update(ui->m_display);
-	ui->panel[2]->Update(ui->m_physics);
-	ui->panel[3]->Update(ui->m_ui);
+	ui->bg_panel->Update(ui->m_bg);
+	ui->di_panel->Update(ui->m_display);
+	ui->ph_panel->Update(ui->m_physics);
+	ui->ui_panel->setPropertyList(ui->m_ui);
 }
 
 void CDlgSettings::onTabChanged(int n)
 {
-	if ((n >= 0) && (n < 4))
+	switch (n)
 	{
-		ui->panel[n]->FitGeometry();
+	case 0: ui->bg_panel->FitGeometry(); break;
+	case 1: ui->di_panel->FitGeometry(); break;
+	case 2: ui->ph_panel->FitGeometry(); break;
 	}
 }
 

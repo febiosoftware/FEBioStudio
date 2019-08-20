@@ -17,6 +17,8 @@
 class Ui::CDlgNew
 {
 public:
+	::CMainWindow*	m_wnd;
+
 	int	m_nchoice;
 	QListWidget*	list;
 	QTabWidget*		tab;
@@ -27,6 +29,8 @@ public:
 public:
 	void setup(::CMainWindow* wnd, QDialog* dlg)
 	{
+		m_wnd = wnd;
+
 		m_nchoice = 0;
 
 		tab = new QTabWidget;
@@ -152,7 +156,11 @@ QString CDlgNew::getProjectFolder()
 
 void CDlgNew::setProjectFolder(const QString& projectFolder)
 {
-	ui->projectFolder->setText(projectFolder);
+	QString dir(projectFolder);
+#ifdef WIN32
+	dir.replace("/", "\\");
+#endif
+	ui->projectFolder->setText(dir);
 }
 
 QString CDlgNew::getRecentFileName()
@@ -176,6 +184,6 @@ void CDlgNew::onProjectFolder()
 		QStringList files = dlg.selectedFiles();
 		QString path = files.first();
 
-		ui->projectFolder->setText(path);
+		setProjectFolder(path);
 	}
 }

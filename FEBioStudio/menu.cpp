@@ -181,7 +181,7 @@ void CMainWindow::on_actionNew_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "FEBio Studio Projects (*.fsp)";
+	filters << "FEBio Studio Projects (*.fsprj)";
 	filters << "PreView files (*.prv)";
 	filters << "FEBio plot files (*.xplt)";
 
