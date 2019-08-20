@@ -34,7 +34,7 @@ struct TIMESETTINGS
 	void Defaults();
 };
 
-class CPostDoc
+class CPostDoc : public FSObject
 {
 	class Imp;
 
@@ -42,7 +42,7 @@ public:
 	CPostDoc();
 	~CPostDoc();
 
-	bool Load(const std::string& fileName);
+	bool LoadPlotfile(const std::string& fileName);
 
 	void Render(CGLView* view);
 

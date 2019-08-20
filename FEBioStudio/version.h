@@ -7,8 +7,8 @@
 #define SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
-// FILE VERSION
-#define SAVE_VERSION	0x00020002
+// PRV FILE VERSION
+#define SAVE_VERSION	0x00030000
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D

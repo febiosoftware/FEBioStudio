@@ -92,7 +92,7 @@ bool CFEBioJob::OpenPlotFile()
 	if (m_postDoc) delete m_postDoc;
 	m_postDoc = new CPostDoc;
 
-	if (m_postDoc->Load(m_plotFile) == false)
+	if (m_postDoc->LoadPlotfile(m_plotFile) == false)
 	{
 		delete m_postDoc;
 		m_postDoc = nullptr;
@@ -100,4 +100,26 @@ bool CFEBioJob::OpenPlotFile()
 	}
 
 	return true;
+}
+
+void CFEBioJob::Save(OArchive& ar)
+{
+	// TODO: get relative file name
+	ar.WriteChunk(CID_FEBIOJOB_FILENAME, m_fileName);
+	ar.WriteChunk(CID_FEBIOJOB_PLOTFILE, m_plotFile);
+}
+
+void CFEBioJob::Load(IArchive& ar)
+{
+	// TODO: get relative file name
+	while (ar.OpenChunk() == IO_OK)
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIOJOB_FILENAME: ar.read(m_fileName); break;
+		case CID_FEBIOJOB_PLOTFILE: ar.read(m_plotFile); break;
+		}
+		ar.CloseChunk();
+	}
 }

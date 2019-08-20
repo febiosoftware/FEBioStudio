@@ -147,7 +147,7 @@ void CPostDoc::SetDataField(int n)
 	imp->glm->Update(false);
 }
 
-bool CPostDoc::Load(const std::string& fileName)
+bool CPostDoc::LoadPlotfile(const std::string& fileName)
 {
 	const char* szfile = fileName.c_str();
 

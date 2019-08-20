@@ -425,6 +425,12 @@
 #define CID_RC_RIGIDBODY_A			0x000E5009
 #define CID_RC_RIGIDBODY_B			0x000E5010
 
+// --- FEBio Jobs
+#define CID_FEBIOJOB				0x000F0000
+#define CID_FEBIOJOB_FILENAME		0x000F0001
+#define CID_FEBIOJOB_PLOTFILE		0x000F0002
+#define CID_FEBIOJOB_POSTDOC		0x000F0003
+
 //--------------------------------------------------------
 // Mesh type
 #define FE_MESH					0x0000

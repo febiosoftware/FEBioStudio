@@ -36,6 +36,9 @@ public:
 
 	CPostDoc* GetPostDoc();
 
+	void Load(IArchive& ar) override;
+	void Save(OArchive& ar) override;
+
 private:
 	std::string		m_fileName;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name

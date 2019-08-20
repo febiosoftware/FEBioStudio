@@ -122,7 +122,7 @@ void CMainWindow::on_actionNew_triggered()
 					dir.cd(projectName);
 
 					// setup model file name and path
-					QString modelFileName = projectName + ".prv";
+					QString modelFileName = projectName + ".fsprj";
 					QString modelFilePath = dir.absoluteFilePath(modelFileName);
 
 					// load the template
@@ -181,6 +181,7 @@ void CMainWindow::on_actionNew_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
+	filters << "FEBio Studio Projects (*.fsp)";
 	filters << "PreView files (*.prv)";
 	filters << "FEBio plot files (*.xplt)";
 
@@ -200,7 +201,12 @@ void CMainWindow::on_actionOpen_triggered()
 		QString fileName = files.first();
 
 		QString ext = QFileInfo(fileName).suffix();
-		if (ext.compare("prv", Qt::CaseInsensitive) == 0)
+		if (ext.compare("fsprj", Qt::CaseInsensitive) == 0)
+		{
+			// read the file
+			OpenDocument(fileName);
+		}
+		else if (ext.compare("prv", Qt::CaseInsensitive) == 0)
 		{
 			// read the file
 			OpenDocument(fileName);
@@ -234,13 +240,13 @@ void CMainWindow::on_actionSave_triggered()
 
 void CMainWindow::on_actionSaveAs_triggered()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, "Save", ui->currentPath, "PreView files (*.prv)");
+	QString fileName = QFileDialog::getSaveFileName(this, "Save", ui->currentPath, "FEBio Studio Project (*.fsprj)");
 	if (fileName.isEmpty() == false)
 	{
 		// make sure the file has an extension
 		std::string sfile = fileName.toStdString();
 		std::size_t found = sfile.rfind(".");
-		if (found == std::string::npos) sfile.append(".prv");
+		if (found == std::string::npos) sfile.append(".fsprj");
 
 		if (m_doc->SaveDocument(sfile.c_str()))
 		{

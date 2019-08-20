@@ -716,6 +716,17 @@ void CDocument::Save(OArchive& ar)
 		m_Project.Save(ar);
 	}
 	ar.EndChunk();
+
+	// save the job lists
+	for (int i = 0; i < FEBioJobs(); ++i)
+	{
+		CFEBioJob* job = GetFEBioJob(i);
+		ar.BeginChunk(CID_FEBIOJOB);
+		{
+			job->Save(ar);
+		}
+		ar.EndChunk();
+	}	
 }
 
 //-----------------------------------------------------------------------------
@@ -815,6 +826,12 @@ void CDocument::Load(IArchive& ar)
 		else if (nid == CID_PROJECT)
 		{
 			m_Project.Load(ar);
+		}
+		else if (nid == CID_FEBIOJOB)
+		{
+			CFEBioJob* job = new CFEBioJob;
+			AddFEbioJob(job, false);
+			job->Load(ar);
 		}
 		ar.CloseChunk();
 	}

@@ -35,14 +35,16 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	}
 
 	CDocument* doc = GetDocument();
-	QString path = QString::fromStdString(doc->GetDocFolder());
+	QString projectFolder = QString::fromStdString(doc->GetDocFolder());
 
 	QString fileBase = QString::fromStdString(doc->GetDocFileBase());
 	QString file = fileBase;
 	file += ".feb";
 
 	static QString lastPath, lastFile;
-	if (path.isEmpty()) path = lastPath;
+	QString path;
+	if (projectFolder.isEmpty()) path = lastPath;
+	else path = "$(ProjectFolder)";
 
 	if (fileBase.isEmpty() && (lastFile.isEmpty() == false)) file = lastFile;
 
@@ -58,6 +60,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	{
 		QString dir = dlg.GetWorkingDirectory();
 		QString file = dlg.GetFileName();
+
+		dir.replace("$(ProjectFolder)", projectFolder);
 
 		lastPath = dir;
 		lastFile = file;
