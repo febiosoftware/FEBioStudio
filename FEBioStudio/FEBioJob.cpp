@@ -57,6 +57,8 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 
 	// add the xplt extension
 	m_plotFile += "xplt";
+
+	m_postDoc = nullptr;
 }
 
 void CFEBioJob::SetStatus(JOB_STATUS status)
