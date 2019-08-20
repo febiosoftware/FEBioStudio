@@ -1692,7 +1692,13 @@ void CDocument::DeleteFEBioJob(CFEBioJob* job)
 		CFEBioJob* job_i = m_JobList[i];
 		if (job == job_i)
 		{
-			GetMainWindow()->DeleteView(i + 1);
+			// see if it's post doc is open
+			CPostDoc* postDoc = job->GetPostDoc();
+			if (postDoc)
+			{
+				int nview = GetMainWindow()->FindView(postDoc);
+				if (nview >= 1) GetMainWindow()->CloseView(nview);
+			}
 			m_JobList.erase(m_JobList.begin() + i);
 			delete job;
 		}

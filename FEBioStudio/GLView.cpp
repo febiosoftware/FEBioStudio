@@ -1177,7 +1177,7 @@ void CGLView::UpdateWidgets(bool bposition)
 
 	if (postDoc)
 	{
-		const string& title = postDoc->GetTitle();
+		const string& title = postDoc->GetName();
 		m_ptitle->copy_label(title.c_str());
 		m_ptitle->fit_to_size();
 
@@ -1335,10 +1335,10 @@ void CGLView::paintGL()
 	RenderBackground();
 
 	// get the active view
-	int activeView = m_pWnd->GetActiveView();
+	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
 
-	if (activeView == 0) RenderDefaultView();
-	else RenderPostView(activeView - 1);
+	if (postDoc == nullptr) RenderDefaultView();
+	else RenderPostView(postDoc);
 
 	// render the image data
 	RenderImageData();
@@ -1347,7 +1347,7 @@ void CGLView::paintGL()
 	if (view.m_bgrid) m_grid.Render();
 
 	// render the 3D cursor
-	if (activeView == 0)
+	if (postDoc == nullptr)
 	{
 		// render the highlights
 		GLHighlighter::draw();
@@ -1376,10 +1376,8 @@ void CGLView::paintGL()
 	glLoadIdentity();
 
 	// render the title
-	if (activeView > 0)
+	if (postDoc)
 	{
-		CPostDoc* postDoc = nullptr;
-		if (pdoc->FEBioJobs() > 0) postDoc = pdoc->GetFEBioJob(activeView - 1)->GetPostDoc();
 		if (postDoc && postDoc->IsValid())// && view.m_bTitle)
 		{
 			string title = postDoc->GetTitle();
@@ -1415,7 +1413,7 @@ void CGLView::paintGL()
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-	if (activeView == 0) m_ptriad->draw(&painter);
+	if (postDoc == nullptr) m_ptriad->draw(&painter);
 	else
 		m_Widget->DrawWidgets(&painter);
 
@@ -1558,17 +1556,15 @@ void CGLView::RenderDefaultView()
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::RenderPostView(int n)
+void CGLView::RenderPostView(CPostDoc* postDoc)
 {
-	CDocument* pdoc = GetDocument();
-	CFEBioJob* job = pdoc->GetFEBioJob(n);
-	CPostDoc* post = job->GetPostDoc();
-	if (post)
+	if (postDoc)
 	{
-		post->Render(this);
+		postDoc->Render(this);
 
 		// render the tags
-		VIEW_SETTINGS& view = pdoc->GetViewSettings();
+		CDocument* doc = GetDocument();
+		VIEW_SETTINGS& view = doc->GetViewSettings();
 		if (view.m_bTags) RenderTags();
 	}
 
@@ -1669,14 +1665,14 @@ void CGLView::SetupProjection()
 	CDocument* doc = GetDocument();
 
 	BOX box;
-	if (m_pWnd->GetActiveView() == 0)
+	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	if (postDoc == nullptr)
 	{
 		box = doc->GetModelBox();
 	}
 	else
 	{
-		CPostDoc* pd = m_pWnd->GetActiveDocument();
-		if (pd) box = pd->GetPostObject()->GetBoundingBox();
+		box = postDoc->GetPostObject()->GetBoundingBox();
 	}
 
 	double R = box.Radius();
@@ -3881,9 +3877,9 @@ void CGLView::SelectDiscrete(int x, int y)
 //-----------------------------------------------------------------------------
 GObject* CGLView::GetActiveObject()
 {
-	int activeView = m_pWnd->GetActiveView();
-	if (activeView == 0) return GetDocument()->GetActiveObject();
-	return m_pWnd->GetActiveDocument()->GetPostObject();
+	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	if (postDoc == nullptr) return GetDocument()->GetActiveObject();
+	return postDoc->GetPostObject();
 }
 
 //-----------------------------------------------------------------------------
@@ -7621,7 +7617,7 @@ void CGLView::RenderMeshLines(GObject* po)
 // selected object is too close.
 void CGLView::ZoomSelection(bool forceZoom)
 {
-	if (m_pWnd->GetActiveView() == 0)
+	if (m_pWnd->GetActiveDocument() == nullptr)
 	{
 		// get the current selection
 		FESelection* ps = GetDocument()->GetCurrentSelection();
@@ -7671,7 +7667,7 @@ void CGLView::ZoomToObject(GObject *po)
 void CGLView::ZoomExtents(bool banimate)
 {
 	BOX box;
-	if (m_pWnd->GetActiveView() == 0)
+	if (m_pWnd->GetActiveDocument() == nullptr)
 	{
 		CDocument* doc = GetDocument();
 		if (doc == 0) return;

@@ -429,7 +429,6 @@
 #define CID_FEBIOJOB				0x000F0000
 #define CID_FEBIOJOB_FILENAME		0x000F0001
 #define CID_FEBIOJOB_PLOTFILE		0x000F0002
-#define CID_FEBIOJOB_POSTDOC		0x000F0003
 
 //--------------------------------------------------------
 // Mesh type

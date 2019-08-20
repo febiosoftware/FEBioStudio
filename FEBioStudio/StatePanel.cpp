@@ -166,11 +166,7 @@ CPostDoc* CStatePanel::GetActiveDocument()
 {
 	CDocument* doc = GetMainWindow()->GetDocument();
 	if (doc->FEBioJobs() == 0) return nullptr;
-
-	int activeDoc = GetMainWindow()->GetActiveView() - 1;
-	if (activeDoc >= 0)
-		return doc->GetFEBioJob(activeDoc)->GetPostDoc();
-	else return nullptr;
+	return GetMainWindow()->GetActiveDocument();
 }
 
 void CStatePanel::Update()

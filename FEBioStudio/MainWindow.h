@@ -88,9 +88,6 @@ public:
 	// set the current theme
 	void setCurrentTheme(int n);
 
-	// get the current post doc
-	CPostDoc* GetActiveDocument();
-
 	//! Open a plot file
 	void OpenPlotFile(const QString& fileName);
 
@@ -329,7 +326,7 @@ public slots:
 	void on_tab_currentChanged(int n);
 	void on_tab_tabCloseRequested(int n);
 
-	void DeleteView(int n);
+	void CloseView(int n);
 
 	void SetCurrentState(int n);
 
@@ -384,8 +381,9 @@ private:
 public:
 	int Views();
 	void SetActiveView(int n);
-	void AddView(const std::string& viewName, bool makeActive = true);
-	int GetActiveView();
+	void AddView(const std::string& viewName, CPostDoc* doc = nullptr, bool makeActive = true);
+	CPostDoc* GetActiveDocument();
+	int FindView(CPostDoc* postDoc);
 
 private:
 	Ui::CMainWindow*	ui;

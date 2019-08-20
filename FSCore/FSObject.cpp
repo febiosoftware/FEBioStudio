@@ -39,20 +39,15 @@ void FSObject::Save(OArchive& ar)
 void FSObject::Load(IArchive& ar)
 {
 	TRACE("FSObject::Load");
-
-	if (ar.Version() < 0x0001000C) FSObject::Load(ar);
-	else
+	while (IO_OK == ar.OpenChunk())
 	{
-		while (IO_OK == ar.OpenChunk())
+		int nid = ar.GetChunkID();
+		switch (nid)
 		{
-			int nid = ar.GetChunkID();
-			switch (nid)
-			{
-			case CID_FEOBJ_NAME: { char sz[256] = { 0 }; ar.read(sz); SetName(sz); } break;
-			case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
-			}
-			ar.CloseChunk();
+		case CID_FEOBJ_NAME: { char sz[256] = { 0 }; ar.read(sz); SetName(sz); } break;
+		case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
 		}
+		ar.CloseChunk();
 	}
 }
 

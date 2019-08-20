@@ -15,6 +15,7 @@
 class CMainWindow;
 class CDocument;
 class GCurveMeshObject;
+class CPostDoc;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -292,7 +293,7 @@ public:
 	void Render3DCursor(const vec3d& r, double R);
 	void RenderSelectionBox();
 	void RenderDefaultView();
-	void RenderPostView(int n);
+	void RenderPostView(CPostDoc* postDoc);
 	void RenderTags();
 	void RenderImageData();
 

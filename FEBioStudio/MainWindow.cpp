@@ -122,24 +122,6 @@ void CMainWindow::setCurrentTheme(int n)
 }
 
 //-----------------------------------------------------------------------------
-// get the current post doc
-CPostDoc* CMainWindow::GetActiveDocument()
-{
-	CDocument* doc = GetDocument();
-	if (doc == nullptr) return nullptr;
-
-	if (doc->FEBioJobs() == 0) return nullptr;
-
-	int activeDoc = GetActiveView() - 1;
-	if (activeDoc >= 0)
-	{
-		CFEBioJob* job = doc->GetFEBioJob(activeDoc);
-		return job->GetPostDoc();
-	}
-	else return nullptr;
-}
-
-//-----------------------------------------------------------------------------
 void CMainWindow::UpdateTitle()
 {
 	// get the file name
@@ -897,21 +879,14 @@ void CMainWindow::SetActivePostDoc(CPostDoc* postDoc)
 		SetActiveView(0);
 	else
 	{
-		int views = Views();
-		CDocument* doc = GetDocument();
-		for (int i = 0; i < doc->FEBioJobs(); ++i)
+		int view = ui->tab->findView(postDoc);
+		if (view == -1)
 		{
-			CFEBioJob* job = doc->GetFEBioJob(i);
-			if (job->GetPostDoc() == postDoc)
-			{
-				int activeView = i + 1;
-				if (activeView >= views)
-					AddView(job->GetName());
-				else
-					SetActiveView(activeView);
-
-				break;
-			}
+			AddView(postDoc->GetName(), postDoc);
+		}
+		else
+		{
+			SetActiveView(view);
 		}
 	}
 }
@@ -931,17 +906,23 @@ void CMainWindow::SetActiveView(int n)
 }
 
 //-----------------------------------------------------------------
-void CMainWindow::AddView(const std::string& viewName, bool makeActive)
+CPostDoc* CMainWindow::GetActiveDocument()
 {
-	ui->tab->addView(viewName, makeActive);
-	ui->glview->ZoomExtents(false);
-	ui->glview->UpdateWidgets(false);
+	return ui->tab->getActiveDoc();
 }
 
-//-----------------------------------------------------------------------------
-int CMainWindow::GetActiveView()
+//-----------------------------------------------------------------
+int CMainWindow::FindView(CPostDoc* postDoc)
 {
-	return ui->tab->getActiveView();
+	return ui->tab->findView(postDoc);
+}
+
+//-----------------------------------------------------------------
+void CMainWindow::AddView(const std::string& viewName, CPostDoc* doc, bool makeActive)
+{
+	ui->tab->addView(viewName, doc, makeActive);
+	ui->glview->ZoomExtents(false);
+	ui->glview->UpdateWidgets(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -955,21 +936,17 @@ void CMainWindow::on_tab_currentChanged(int n)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_tabCloseRequested(int n)
 {
+	// Don't close the first view, which is the model view
 	if (n == 0) return;
 
-	CDocument* doc = GetDocument();
-	CFEBioJob* job = doc->GetFEBioJob(n - 1);
-	if (job)
-	{
-		doc->DeleteFEBioJob(job);
-		UpdateModel();
-	}
+	// Okay, remove the view
+	CloseView(n);
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::DeleteView(int n)
+void CMainWindow::CloseView(int n)
 {
-	ui->tab->removeTab(n);
+	ui->tab->closeView(n);
 }
 
 //-----------------------------------------------------------------------------

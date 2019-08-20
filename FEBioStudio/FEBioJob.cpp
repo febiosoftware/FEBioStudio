@@ -104,6 +104,8 @@ bool CFEBioJob::OpenPlotFile()
 	if (m_postDoc) delete m_postDoc;
 	m_postDoc = new CPostDoc;
 
+	m_postDoc->SetName(GetName());
+
 	QString plotFile = QString::fromStdString(m_plotFile);
 
 	QString projectFolder = QString::fromStdString(m_doc->GetDocFolder());
@@ -123,7 +125,7 @@ bool CFEBioJob::OpenPlotFile()
 
 void CFEBioJob::Save(OArchive& ar)
 {
-	// TODO: get relative file name
+	ar.WriteChunk(CID_FEOBJ_NAME, GetName());
 	ar.WriteChunk(CID_FEBIOJOB_FILENAME, m_fileName);
 	ar.WriteChunk(CID_FEBIOJOB_PLOTFILE, m_plotFile);
 }
@@ -136,6 +138,7 @@ void CFEBioJob::Load(IArchive& ar)
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
+		case CID_FEOBJ_NAME: { string name; ar.read(name); SetName(name); } break;
 		case CID_FEBIOJOB_FILENAME: ar.read(m_fileName); break;
 		case CID_FEBIOJOB_PLOTFILE: ar.read(m_plotFile); break;
 		}

@@ -38,16 +38,13 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	// get the document
 	CDocument* doc = GetDocument();
 
-	// keep a job counter
-	static int job_count = 1;
-
 	// get the project folder and name
 	QString projectName = QString::fromStdString(doc->GetDocFileBase());
 	QString projectFolder = QString::fromStdString(doc->GetDocFolder());
 
 	// create a name for this job
 	QString jobName = projectName;
-	jobName += QString("_job%1").arg(job_count);
+	jobName += QString("_job");
 
 	// By default, the job path will be the project folder
 	// unless the project folder is not defined, in which case we'll reuse the last path
@@ -93,9 +90,6 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 		// run the job
 		RunFEBioJob(job, lastFEBioIndex, dlg.CommandLine());
-
-		// increase job counter
-		job_count++;
 	}
 }
 
