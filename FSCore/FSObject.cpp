@@ -20,13 +20,26 @@ const std::string& FSObject::GetName() const
 	return m_name;
 }
 
+void FSObject::SetInfo(const std::string& info)
+{
+	m_info = info;
+}
+
+const std::string& FSObject::GetInfo() const
+{
+	return m_info;
+}
+
 void FSObject::Save(OArchive& ar)
 {
 	// save the name if there is one
 	if (m_name.empty() == false)
 	{
-		const char* szname = m_name.c_str();
-		ar.WriteChunk(CID_FEOBJ_NAME, szname);
+		ar.WriteChunk(CID_FEOBJ_NAME, m_name);
+	}
+	if (m_info.empty() == false)
+	{
+		ar.WriteChunk(CID_FEOBJ_INFO, m_info);
 	}
 	ar.BeginChunk(CID_FEOBJ_PARAMS);
 	{
@@ -44,7 +57,8 @@ void FSObject::Load(IArchive& ar)
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_FEOBJ_NAME: { char sz[256] = { 0 }; ar.read(sz); SetName(sz); } break;
+		case CID_FEOBJ_NAME: ar.read(m_name); break;
+		case CID_FEOBJ_INFO: ar.read(m_info); break;
 		case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
 		}
 		ar.CloseChunk();

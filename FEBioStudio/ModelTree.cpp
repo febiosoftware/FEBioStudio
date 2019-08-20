@@ -7,6 +7,7 @@
 #include <QTreeWidgetItemIterator>
 #include <QContextMenuEvent>
 #include <QDesktopServices>
+#include <QHeaderView>
 #include "ObjectProps.h"
 #include "FEObjectProps.h"
 #include "ModelViewer.h"
@@ -258,6 +259,10 @@ CModelTree::CModelTree(CModelViewer* view, QWidget* parent) : QTreeWidget(parent
 {
 //	setAlternatingRowColors(true);
 	setSelectionMode(QAbstractItemView::ExtendedSelection);
+	setColumnCount(1);
+//	QHeaderView* head = header();
+//	head->setStretchLastSection(true);
+	setHeaderHidden(true);
 }
 
 CModelTreeItem* CModelTree::GetCurrentData()
@@ -395,7 +400,7 @@ void CModelTree::contextMenuEvent(QContextMenuEvent* ev)
 
 QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype, int ncount, FSObject* po, CPropertyList* props, CObjectValidator* val, int flags)
 {
-	QTreeWidgetItem* t2 = new QTreeWidgetItem(parent);
+	QTreeWidgetItem* t2 = (parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(this));
 
 	QString txt;
 	if (ncount == 0) txt = name;
@@ -407,6 +412,20 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 		t2->setIcon(0, QIcon(":/icons/warning.png"));
 		t2->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 		if (parent) parent->setExpanded(true);
+	}
+	else
+	{
+		if (po && (po->GetInfo().empty() == false))
+		{
+			std::string s = po->GetInfo();
+			if (s.size() > 40)
+			{
+				s.erase(s.begin() + 37, s.end());
+				s.append("...");
+			}
+			t2->setIcon(0, QIcon(":/icons/info.png"));
+			t2->setToolTip(0, QString::fromStdString(s));
+		}
 	}
 
 	t2->setData(0, Qt::UserRole, (int)m_data.size());
@@ -426,6 +445,42 @@ void CModelTree::ClearData()
 	m_data.clear();
 }
 
+void CModelTree::UpdateItem(QTreeWidgetItem* item)
+{
+	if (item == nullptr) return;
+
+	QVariant data = item->data(0, Qt::UserRole);
+	int n = data.toInt();
+	CObjectValidator* val = m_data[n].val;
+	if (val)
+	{
+		if (val->IsValid() == false)
+		{
+			item->setIcon(0, QIcon(":/icons/warning.png"));
+			item->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
+			return;
+		}
+	}
+
+	FSObject* po = m_data[n].obj;
+	if (po && (po->GetInfo().empty() == false))
+	{
+		std::string s = po->GetInfo();
+		if (s.size() > 40)
+		{
+			s.erase(s.begin() + 37, s.end());
+			s.append("...");
+		}
+		item->setIcon(0, QIcon(":/icons/info.png"));
+		item->setToolTip(0, QString::fromStdString(s));
+	}
+	else
+	{
+		item->setIcon(0, QIcon());
+		item->setToolTip(0, QString());
+	}
+}
+
 void CModelTree::UpdateObject(FSObject* po)
 {
 	QTreeWidgetItemIterator it(this);
@@ -435,20 +490,7 @@ void CModelTree::UpdateObject(FSObject* po)
 		int n = data.toInt();
 		if (m_data[n].obj == po)
 		{
-			CObjectValidator* val = m_data[n].val;
-			if (val)
-			{
-				if (val->IsValid() == false)
-				{
-					(*it)->setIcon(0, QIcon(":/icons/warning.png"));
-					(*it)->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
-				}
-				else
-				{
-					(*it)->setIcon(0, QIcon());
-					(*it)->setToolTip(0, QString());
-				}
-			}
+			UpdateItem(*it);
 			return;
 		}
 		++it;
@@ -525,13 +567,8 @@ void CModelTree::Build(CDocument* doc)
 	FEModel& fem = *doc->GetFEModel();
 	GModel& mdl = fem.GetModel();
 
-	QTreeWidgetItem* t1 = new QTreeWidgetItem(this);
-	t1->setText(0, "Model");
+	QTreeWidgetItem* t1 = AddTreeItem(nullptr, "Model", 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
 	t1->setExpanded(true);
-	t1->setData(0, Qt::UserRole, (int)m_data.size());
-
-	CModelTreeItem it = {0, 0};
-	m_data.push_back(it);
 
 	// add data variables
 	QTreeWidgetItem* t2 = AddTreeItem(t1, "Model Data", 0, 0, 0, new CObjectProps(&fem));
@@ -625,6 +662,8 @@ void CModelTree::Build(CDocument* doc)
 
 		UpdateImages(t1, doc);
 	}
+
+//	resizeColumnToContents(0);
 }
 
 //-----------------------------------------------------------------------------

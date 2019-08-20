@@ -229,6 +229,7 @@
     <ClCompile Include="..\..\FEBioStudio\GManipulator.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Intersect.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LogPanel.cpp" />
@@ -280,6 +281,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_GLHighlighter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_LogPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MainTabBar.cpp" />
@@ -371,6 +373,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\StatePanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\InfoPanel.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
@@ -498,7 +505,11 @@
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\ModelSearch.h" />
     <ClInclude Include="..\..\FEBioStudio\ModelTree.h" />
-    <ClInclude Include="..\..\FEBioStudio\ModelViewer.h" />
+    <CustomBuild Include="..\..\FEBioStudio\ModelViewer.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\ObjectPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\ObjectProps.h" />
     <ClInclude Include="..\..\FEBioStudio\PlaneCutTool.h" />

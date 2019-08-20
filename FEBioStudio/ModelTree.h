@@ -102,6 +102,7 @@ public:
 	void Select(const std::vector<FSObject*>& objList);
 
 	void UpdateObject(FSObject* po);
+	void UpdateItem(QTreeWidgetItem* item);
 
 	void contextMenuEvent(QContextMenuEvent* ev) override;
 

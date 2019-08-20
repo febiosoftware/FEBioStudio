@@ -55,8 +55,6 @@ public:
 		// model tree
 		tree = new CModelTree(wnd);
 		tree->setObjectName("modelTree");
-		tree->setColumnCount(1);
-		tree->setHeaderHidden(true);
 
 		// search widget
 		m_search = new CModelSearch(wnd, tree);

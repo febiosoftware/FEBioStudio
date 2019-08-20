@@ -121,6 +121,9 @@ private slots:
 	void OnDeleteAllConnectors();
 	void OnDeleteAllSteps();
 
+signals:
+	void currentObjectChanged(FSObject* po);
+
 private:
 	Ui::CModelViewer*		ui;
 	FSObject*				m_currentObject;	// object whose properties are displayed

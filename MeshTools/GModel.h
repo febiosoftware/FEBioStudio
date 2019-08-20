@@ -18,7 +18,7 @@ class GObjectSelection;
 // The GModel class manages all GObjects and GGroups that are created by
 // the user.
 //
-class GModel : public CSerializable
+class GModel : public FSObject
 {
 public:
 	//! default constructor

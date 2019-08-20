@@ -128,6 +128,7 @@ bool CFEBioJob::OpenPlotFile()
 void CFEBioJob::Save(OArchive& ar)
 {
 	ar.WriteChunk(CID_FEOBJ_NAME, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 	ar.WriteChunk(CID_FEBIOJOB_FILENAME, m_fileName);
 	ar.WriteChunk(CID_FEBIOJOB_PLOTFILE, m_plotFile);
 }
@@ -141,6 +142,7 @@ void CFEBioJob::Load(IArchive& ar)
 		switch (nid)
 		{
 		case CID_FEOBJ_NAME: { string name; ar.read(name); SetName(name); } break;
+		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case CID_FEBIOJOB_FILENAME: ar.read(m_fileName); break;
 		case CID_FEBIOJOB_PLOTFILE: ar.read(m_plotFile); break;
 		}

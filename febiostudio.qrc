@@ -120,5 +120,6 @@
 		<file>icons/font_italic_neg.png</file>
 		<file>icons/eye.png</file>
 		<file>icons/check.png</file>
+		<file>icons/info.png</file>
 	</qresource>
 </RCC>

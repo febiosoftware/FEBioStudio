@@ -10,6 +10,7 @@
 //-----------------------------------------------------------------------------
 GModel::GModel(FEModel* ps)
 {
+	SetName("Model");
 	m_ps = ps;
 }
 
@@ -811,7 +812,7 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 //-----------------------------------------------------------------------------
 void GModel::Save(OArchive &ar)
 {
-	int i;
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 
 	// save the objects
 	ar.BeginChunk(CID_OBJ_GOBJECTS);
@@ -830,7 +831,7 @@ void GModel::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the parts
-	for (i=0; i<(int) m_GPart.size(); ++i)
+	for (int i=0; i<(int) m_GPart.size(); ++i)
 	{
 		ar.BeginChunk(CID_OBJ_GPARTGROUP);
 		{
@@ -840,7 +841,7 @@ void GModel::Save(OArchive &ar)
 	}
 
 	// save the surfaces
-	for (i=0; i<(int) m_GFace.size(); ++i)
+	for (int i=0; i<(int) m_GFace.size(); ++i)
 	{
 		ar.BeginChunk(CID_OBJ_GFACEGROUP);
 		{
@@ -850,7 +851,7 @@ void GModel::Save(OArchive &ar)
 	}
 
 	// save the edges
-	for (i=0; i<(int) m_GEdge.size(); ++i)
+	for (int i=0; i<(int) m_GEdge.size(); ++i)
 	{
 		ar.BeginChunk(CID_OBJ_GEDGEGROUP);
 		{
@@ -860,7 +861,7 @@ void GModel::Save(OArchive &ar)
 	}
 
 	// save the nodes
-	for (i=0; i<(int) m_GNode.size(); ++i)
+	for (int i=0; i<(int) m_GNode.size(); ++i)
 	{
 		ar.BeginChunk(CID_OBJ_GNODEGROUP);
 		{
@@ -874,7 +875,7 @@ void GModel::Save(OArchive &ar)
 	{
 		ar.BeginChunk(CID_DISCRETE_OBJECT);
 		{
-			for (i=0; i<(int) m_Discrete.size(); ++i)
+			for (int i=0; i<(int) m_Discrete.size(); ++i)
 			{
 				int ntype = m_Discrete[i]->GetType();
 				ar.BeginChunk(ntype);
@@ -943,6 +944,13 @@ void GModel::Load(IArchive &ar)
 
 		switch (nid)
 		{
+		case CID_FEOBJ_INFO:
+			{
+				string info;
+				ar.read(info);
+				SetInfo(info);
+			}
+		break;
 		case CID_OBJ_GOBJECTS:
 			{
 				while (IO_OK == ar.OpenChunk())

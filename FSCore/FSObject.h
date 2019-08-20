@@ -14,6 +14,9 @@ public:
 	void SetName(const std::string& name);
 	const std::string& GetName() const;
 
+	void SetInfo(const std::string& info);
+	const std::string& GetInfo() const;
+
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
@@ -25,5 +28,6 @@ public:
 
 private:
 	std::string		m_name;
+	std::string		m_info;
 };
 

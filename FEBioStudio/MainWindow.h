@@ -329,6 +329,8 @@ public slots:
 	void on_tab_currentChanged(int n);
 	void on_tab_tabCloseRequested(int n);
 
+	void on_modelViewer_currentObjectChanged(FSObject* po);
+
 	void CloseView(int n);
 
 	void SetCurrentState(int n);

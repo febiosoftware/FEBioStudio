@@ -1755,3 +1755,8 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, QString cmd)
 	// show the output window
 	ui->logPanel->ShowOutput();
 }
+
+void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
+{
+	ui->infoPanel->SetObject(po);
+}

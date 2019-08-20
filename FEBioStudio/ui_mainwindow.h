@@ -22,6 +22,7 @@
 #include "Document.h"
 #include "DataFieldSelector.h"
 #include "PostPanel.h"
+#include "InfoPanel.h"
 #include <QFontComboBox>
 #include "MainTabBar.h"
 
@@ -62,6 +63,7 @@ public:
 	::CCurveEditor*	curveWnd;
 	::CMeshInspector* meshWnd;
 	::CPostPanel*	postPanel;
+	::CInfoPanel*	infoPanel;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -724,6 +726,7 @@ public:
 		QDockWidget* dock2 = new QDockWidget("Model", m_wnd); dock2->setObjectName("dockModel");
 		dock2->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 		modelViewer = new ::CModelViewer(m_wnd, dock2);
+		modelViewer->setObjectName("modelViewer");
 		dock2->setWidget(modelViewer);
 		menuView->addAction(dock2->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock1, dock2);
@@ -749,6 +752,12 @@ public:
 		dock5->setWidget(postPanel);
 		menuView->addAction(dock5->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock1, dock5);
+
+		QDockWidget* dock6 = new QDockWidget("Notes", m_wnd); dock6->setObjectName("dockInfo");
+		infoPanel = new ::CInfoPanel(dock6);
+		dock6->setWidget(infoPanel);
+		menuView->addAction(dock6->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock4, dock6);
 
 		// make sure the file viewer is the visible tab
 		dock1->raise();

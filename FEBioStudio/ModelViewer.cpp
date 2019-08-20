@@ -81,6 +81,13 @@ void CModelViewer::on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTr
 	{
 		ui->props->SetObjectProps(0, 0, 0);
 	}
+
+	FSObject* po = GetCurrentObject();
+	if (current)
+	{
+		ui->tree->UpdateItem(current);
+	}
+	emit currentObjectChanged(po);
 }
 
 void CModelViewer::SetCurrentItem(int item)

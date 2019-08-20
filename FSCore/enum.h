@@ -284,6 +284,7 @@
 // --- FE Objects ---
 #define CID_FEOBJ_NAME				0x000B0001	// --> new from version 1.13
 #define CID_FEOBJ_PARAMS			0x000B0002	// --> new from version 1.13
+#define CID_FEOBJ_INFO				0x000B0003	// --> new in version 3.0
 
 // --- parameters ---
 #define CID_PARAM					0x000C0000
