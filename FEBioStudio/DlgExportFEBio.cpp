@@ -16,6 +16,7 @@ public:
 	QCheckBox*  part;
 	QCheckBox*	sel;
 	QCheckBox*	comp;
+	QCheckBox*	notes;
 	QCheckBox* pc[15];
 
 public:
@@ -43,10 +44,14 @@ public:
 
 		comp = new QCheckBox("Use plotfile compression");
 
+		notes = new QCheckBox("Write notes (version 2.5 and up)");
+		notes->setChecked(true);
+
 		QVBoxLayout* topLayout = new QVBoxLayout;
 		topLayout->addLayout(formatLayout);
 		topLayout->addWidget(sel);
 		topLayout->addWidget(part);
+		topLayout->addWidget(notes);
 		topLayout->addWidget(comp);
 
 		// extension widget
@@ -131,6 +136,7 @@ void CDlgExportFEBio::accept()
 	m_bexportParts = ui->part->isChecked();
 	m_compress = ui->comp->isChecked();
 	m_bexportSelections = ui->sel->isChecked();
+	m_writeNotes = ui->notes->isChecked();
 
 	for (int i=0; i<MAX_SECTIONS; ++i) m_nsection[i] = ui->pc[i]->isChecked();
 

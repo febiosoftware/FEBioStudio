@@ -106,6 +106,15 @@ void FEBioExport::Clear()
 }
 
 //-----------------------------------------------------------------------------
+void FEBioExport::WriteNote(FSObject* po)
+{
+	if (po)
+	{
+		m_xml.add_comment(po->GetInfo());
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool FEBioExport::PrepareExport(FEProject& prj)
 {
 	Clear();

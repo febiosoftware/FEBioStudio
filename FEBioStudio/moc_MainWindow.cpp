@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[197];
-    char stringdata0[4618];
+    QByteArrayData data[199];
+    char stringdata0[4646];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -227,7 +227,9 @@ QT_MOC_LITERAL(192, 4574, 11), // "RunFEBioJob"
 QT_MOC_LITERAL(193, 4586, 10), // "CFEBioJob*"
 QT_MOC_LITERAL(194, 4597, 3), // "job"
 QT_MOC_LITERAL(195, 4601, 12), // "febioVersion"
-QT_MOC_LITERAL(196, 4614, 3) // "cmd"
+QT_MOC_LITERAL(196, 4614, 16), // "febioFileVersion"
+QT_MOC_LITERAL(197, 4631, 10), // "writeNotes"
+QT_MOC_LITERAL(198, 4642, 3) // "cmd"
 
     },
     "CMainWindow\0on_actionNew_triggered\0\0"
@@ -372,7 +374,7 @@ QT_MOC_LITERAL(196, 4614, 3) // "cmd"
     "changeViewMode\0View_Mode\0vm\0GetCurrentModel\0"
     "Post::CGLModel*\0UpdateFontToolbar\0"
     "RunFEBioJob\0CFEBioJob*\0job\0febioVersion\0"
-    "cmd"
+    "febioFileVersion\0writeNotes\0cmd"
 };
 #undef QT_MOC_LITERAL
 
@@ -552,7 +554,7 @@ static const uint qt_meta_data_CMainWindow[] = {
      186,    1, 1086,    2, 0x0a /* Public */,
      189,    0, 1089,    2, 0x0a /* Public */,
      191,    0, 1090,    2, 0x0a /* Public */,
-     192,    3, 1091,    2, 0x0a /* Public */,
+     192,    5, 1091,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -717,7 +719,7 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void, 0x80000000 | 187,  188,
     0x80000000 | 190,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 193, QMetaType::Int, QMetaType::QString,  194,  195,  196,
+    QMetaType::Void, 0x80000000 | 193, QMetaType::Int, QMetaType::Int, QMetaType::Bool, QMetaType::QString,  194,  195,  196,  197,  198,
 
        0        // eod
 };
@@ -892,7 +894,7 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 160: { Post::CGLModel* _r = _t->GetCurrentModel();
             if (_a[0]) *reinterpret_cast< Post::CGLModel**>(_a[0]) = std::move(_r); }  break;
         case 161: _t->UpdateFontToolbar(); break;
-        case 162: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3]))); break;
+        case 162: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3])),(*reinterpret_cast< bool(*)>(_a[4])),(*reinterpret_cast< QString(*)>(_a[5]))); break;
         default: ;
         }
     }

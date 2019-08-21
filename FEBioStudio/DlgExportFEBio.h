@@ -23,6 +23,7 @@ public:
 	bool	m_bexportParts;
 	bool	m_bexportSelections;
 	bool	m_compress;
+	bool	m_writeNotes;
 
 private slots:
 	void OnAllClicked();

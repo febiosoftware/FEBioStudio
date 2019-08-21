@@ -103,6 +103,8 @@ public: // set export attributes
 
 	void SetExportPartsFlag(bool b) { m_exportParts = b; }
 
+	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
+
 protected:
 	bool PrepareExport(FEProject& prj);
 	void BuildNodeSetList(FEProject& prj);
@@ -249,4 +251,5 @@ protected:
 	int m_ntotnodes;	// total node counter
 	bool	m_bdata;	// write MeshData section flag
 	bool	m_exportParts;	// write geometry using parts
+	bool	m_writeNotes;	// write notes as comments
 };

@@ -24,6 +24,8 @@ public:
 	QString GetWorkingDirectory();
 	QString GetJobName();
 	int GetFEBioPath();
+	int GetFEBioFileVersion();
+	bool WriteNodes();
 
 	QString CommandLine();
 

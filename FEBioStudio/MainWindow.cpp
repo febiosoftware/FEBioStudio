@@ -26,6 +26,7 @@
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
 #include <FEBio/FEBioExport25.h>
+#include <FEBio/FEBioExport3.h>
 #include "FEBioJob.h"
 #include <PostLib/ColorMap.h>
 
@@ -1684,7 +1685,7 @@ void CMainWindow::UpdateFontToolbar()
 	else ui->pFontToolBar->setDisabled(true);
 }
 
-void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, QString cmd)
+void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVersion, bool writeNotes, QString cmd)
 {
 	CDocument* doc = GetDocument();
 
@@ -1701,15 +1702,36 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, QString cmd)
 	AddLogEntry(QString("Saving to %1 ...").arg(filePath));
 
 	string sfilePath = filePath.toStdString();
-	
-	FEBioExport25 feb;
-	if (feb.Export(doc->GetProject(), sfilePath.c_str()) == false)
+
+	if (febioFileVersion == 0)
 	{
-		QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
+		FEBioExport25 feb;
+		if (feb.Export(doc->GetProject(), sfilePath.c_str()) == false)
+		{
+			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
+			AddLogEntry("FAILED\n");
+			return;
+		}
+		else AddLogEntry("SUCCESS!\n");
+	}
+	else if (febioFileVersion == 1)
+	{
+		FEBioExport3 feb;
+		if (feb.Export(doc->GetProject(), sfilePath.c_str()) == false)
+		{
+			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
+			AddLogEntry("FAILED\n");
+			return;
+		}
+		else AddLogEntry("SUCCESS!\n");
+	}
+	else
+	{
+		assert(false);
+		QMessageBox::critical(this, "Run FEBio", "Don't know what file version to save.");
 		AddLogEntry("FAILED\n");
 		return;
 	}
-	else AddLogEntry("SUCCESS!\n");
 
 	// clear output for next job
 	ClearOutput();

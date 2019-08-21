@@ -355,3 +355,16 @@ void XMLWriter::close_branch()
 	}
 }
 
+void XMLWriter::add_comment(const std::string& s, bool singleLine)
+{
+	if (s.empty()) return;
+
+	if (singleLine)
+	{
+		fprintf(m_fp, "<!-- %s -->\n", s.c_str());
+	}
+	else
+	{
+		fprintf(m_fp, "<!--\n%s\n-->\n", s.c_str());
+	}
+}

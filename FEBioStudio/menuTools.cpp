@@ -56,6 +56,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	// this keeps track of the FEBio selection that was used last
 	static int lastFEBioIndex = 0;
 
+	static int lastFEBioFileVersion = 0;
+
 	// setup the run dialog
 	CDlgRun dlg(this);
 	dlg.SetWorkingDirectory(jobPath);
@@ -88,8 +90,11 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		// get the selected FEBio version
 		lastFEBioIndex = dlg.GetFEBioPath();
 
+		// get the selected FEBio file vesion
+		lastFEBioFileVersion = dlg.GetFEBioFileVersion();
+
 		// run the job
-		RunFEBioJob(job, lastFEBioIndex, dlg.CommandLine());
+		RunFEBioJob(job, lastFEBioIndex, lastFEBioFileVersion, dlg.WriteNodes(), dlg.CommandLine());
 	}
 }
 

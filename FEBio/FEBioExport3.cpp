@@ -3,6 +3,7 @@
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEDataMap.h>
+#include <FEBioStudio/version.h>
 #include <memory>
 #include <sstream>
 using namespace std;
@@ -22,6 +23,7 @@ FEBioExport3::FEBioExport3()
 {
 	m_exportParts = false;
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
+	m_writeNotes = true;
 }
 
 FEBioExport3::~FEBioExport3()
@@ -542,6 +544,7 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 	// get the project and model
 	m_pprj = &prj;
 	FEModel& fem = prj.GetFEModel();
+	GModel& mdl = fem.GetModel();
 	m_pfem = &fem;
 
 	// prepare for export
@@ -554,6 +557,15 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 
 		// open the file
 		if (!m_xml.open(szfile)) return errf("Failed opening file %s", szfile);
+
+		stringstream ss;
+		ss << "This file was created with FEBio Studio version " << VERSION << "." << SUBVERSION << "." << SUBSUBVERSION;
+		m_xml.add_comment(ss.str(), true);
+
+		if (m_writeNotes)
+		{
+			WriteNote(&mdl);
+		}
 
 		// set modified formats
 		XMLElement::intFormat = "%d";
@@ -1204,6 +1216,9 @@ void FEBioExport3::WriteMaterialSection()
 	for (int i = 0; i<s.Materials(); ++i)
 	{
 		GMaterial* pgm = s.GetMaterial(i);
+
+		if (m_writeNotes) WriteNote(pgm);
+
 		const string& name = pgm->GetName();
 
 		el.name("material");
@@ -2848,6 +2863,8 @@ void FEBioExport3::WriteContactSection(FEStep& s)
 		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*> (s.Interface(i));
 		if (pi && pi->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pi);
+
 			int ntype = pi->Type();
 			switch (ntype)
 			{
@@ -3124,6 +3141,8 @@ void FEBioExport3::WriteRigidJoint(FEStep& s)
 		FERigidJoint* pj = dynamic_cast<FERigidJoint*> (s.Interface(i));
 		if (pj && pj->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pj);
+
 			XMLElement ec("constraint");
 			ec.add_attribute("type", "rigid joint");
 			const char* sz = pj->GetName().c_str();
@@ -3156,6 +3175,8 @@ void FEBioExport3::WriteContactWall(FEStep& s)
 		FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*> (s.Interface(i));
 		if (pw && pw->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pw);
+
 			XMLElement ec("contact");
 			ec.add_attribute("type", "rigid_wall");
 			const char* sz = pw->GetName().c_str();
@@ -3198,6 +3219,8 @@ void FEBioExport3::WriteContactSphere(FEStep& s)
 		FERigidSphereInterface* pw = dynamic_cast<FERigidSphereInterface*> (s.Interface(i));
 		if (pw && pw->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pw);
+
 			XMLElement ec("contact");
 			ec.add_attribute("type", "rigid sphere");
 			const char* sz = pw->GetName().c_str();
@@ -3270,6 +3293,8 @@ void FEBioExport3::WriteBCRigid(FEStep& s)
 		FERigidInterface* pr = dynamic_cast<FERigidInterface*> (s.Interface(i));
 		if (pr && pr->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pr);
+
 			GMaterial* pm = pr->GetRigidBody();
 			if (pm == 0) throw RigidContactException();
 			int rb = pm->m_ntag;
@@ -3338,6 +3363,8 @@ void FEBioExport3::WriteVolumeConstraint(FEStep& s)
 		FEVolumeConstraint* pw = dynamic_cast<FEVolumeConstraint*> (s.Interface(i));
 		if (pw && pw->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pw);
+
 			XMLElement ec("constraint");
 			ec.add_attribute("type", "volume");
 			const char* sz = pw->GetName().c_str();
@@ -3360,6 +3387,8 @@ void FEBioExport3::WriteSymmetryPlane(FEStep& s)
 		FESymmetryPlane* pw = dynamic_cast<FESymmetryPlane*> (s.Interface(i));
 		if (pw && pw->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pw);
+
 			XMLElement ec("constraint");
 			ec.add_attribute("type", "symmetry plane");
 			const char* sz = pw->GetName().c_str();
@@ -3383,6 +3412,8 @@ void FEBioExport3::WriteNormalFlow(FEStep& s)
 		FENormalFlowSurface* pw = dynamic_cast<FENormalFlowSurface*> (s.Interface(i));
 		if (pw && pw->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pw);
+
 			XMLElement ec("constraint");
 			ec.add_attribute("type", "normal fluid flow");
 			const char* sz = pw->GetName().c_str();
@@ -3409,6 +3440,8 @@ void FEBioExport3::WriteBCFixed(FEStep &s)
 		FEFixedDOF* pbc = dynamic_cast<FEFixedDOF*>(s.BC(i));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			// get the item list
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3463,6 +3496,8 @@ void FEBioExport3::WriteBCPrescribed(FEStep &s)
 		FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(s.BC(i));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			FEDOFVariable& var = fem.Variable(pbc->GetVarID());
 			const char* szbc = var.GetDOF(pbc->GetDOF()).symbol();
 
@@ -3497,6 +3532,8 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3529,6 +3566,8 @@ void FEBioExport3::WriteLoadPressure(FEStep& s)
 		FEPressureLoad* pbc = dynamic_cast<FEPressureLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			// create the surface list
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3558,6 +3597,8 @@ void FEBioExport3::WriteFluidFlux(FEStep& s)
 		FEFluidFlux* pbc = dynamic_cast<FEFluidFlux*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			// create the surface list
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3586,6 +3627,8 @@ void FEBioExport3::WriteBPNormalTraction(FEStep& s)
 		FEBPNormalTraction* pbc = dynamic_cast<FEBPNormalTraction*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3612,6 +3655,8 @@ void FEBioExport3::WriteHeatFlux(FEStep& s)
 		FEHeatFlux* pbc = dynamic_cast<FEHeatFlux*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3637,6 +3682,8 @@ void FEBioExport3::WriteConvectiveHeatFlux(FEStep& s)
 		FEConvectiveHeatFlux* pbc = dynamic_cast<FEConvectiveHeatFlux*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3662,6 +3709,8 @@ void FEBioExport3::WriteSoluteFlux(FEStep& s)
 		FESoluteFlux* pbc = dynamic_cast<FESoluteFlux*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbc);
+
 			// get the item list builder
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
@@ -3687,6 +3736,8 @@ void FEBioExport3::WriteConcentrationFlux(FEStep& s)
 		FEConcentrationFlux* pcf = dynamic_cast<FEConcentrationFlux*>(s.Load(j));
 		if (pcf && pcf->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pcf);
+
 			// get the item list builder
 			FEItemListBuilder* pitem = pcf->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pcf);
@@ -3714,6 +3765,8 @@ void FEBioExport3::WriteLoadTraction(FEStep& s)
 		FESurfaceTraction* ptc = dynamic_cast<FESurfaceTraction*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3739,6 +3792,8 @@ void FEBioExport3::WriteFluidTraction(FEStep& s)
 		FEFluidTraction* ptc = dynamic_cast<FEFluidTraction*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3764,6 +3819,8 @@ void FEBioExport3::WriteFluidVelocity(FEStep& s)
 		FEFluidVelocity* ptc = dynamic_cast<FEFluidVelocity*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3797,6 +3854,8 @@ void FEBioExport3::WriteFluidNormalVelocity(FEStep& s)
 		FEFluidNormalVelocity* ptc = dynamic_cast<FEFluidNormalVelocity*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3837,6 +3896,8 @@ void FEBioExport3::WriteFluidRotationalVelocity(FEStep& s)
 		FEFluidRotationalVelocity* ptc = dynamic_cast<FEFluidRotationalVelocity*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3877,6 +3938,8 @@ void FEBioExport3::WriteFluidFlowResistance(FEStep& s)
 		FEFluidFlowResistance* ptc = dynamic_cast<FEFluidFlowResistance*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3916,6 +3979,8 @@ void FEBioExport3::WriteFluidBackflowStabilization(FEStep& s)
 		FEFluidBackflowStabilization* ptc = dynamic_cast<FEFluidBackflowStabilization*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3947,6 +4012,8 @@ void FEBioExport3::WriteFluidTangentialStabilization(FEStep& s)
 		FEFluidTangentialStabilization* ptc = dynamic_cast<FEFluidTangentialStabilization*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3978,6 +4045,8 @@ void FEBioExport3::WriteFSITraction(FEStep& s)
 		FEFSITraction* ptc = dynamic_cast<FEFSITraction*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
+			if (m_writeNotes) WriteNote(ptc);
+
 			FEItemListBuilder* pitem = ptc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -4004,6 +4073,8 @@ void FEBioExport3::WriteInitialSection()
 		FEInitialCondition* pi = s.IC(j);
 		if (pi && pi->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pi);
+
 			FEItemListBuilder* pitem = pi->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pi);
 
@@ -4183,6 +4254,8 @@ void FEBioExport3::WriteBodyLoads(FEStep& s)
 		FEBodyLoad* pbl = dynamic_cast<FEBodyLoad*>(s.Load(i));
 		if (pbl && pbl->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pbl);
+
 			GPartList* pg = dynamic_cast<GPartList*>(pbl->GetItemList());
 
 			vector<GPart*> partList;
@@ -4545,6 +4618,8 @@ void FEBioExport3::WriteStepSection()
 	{
 		FEAnalysisStep& s = dynamic_cast<FEAnalysisStep&>(*m_pfem->GetStep(i));
 
+		if (m_writeNotes) WriteNote(&s);
+
 		XMLElement e;
 		e.name("step");
 		e.add_attribute("id", i);
@@ -4686,6 +4761,8 @@ void FEBioExport3::WriteConnectors(FEStep& s)
 		FEConnector* pj = s.Connector(i);
 		if (pj && pj->IsActive())
 		{
+			if (m_writeNotes) WriteNote(pj);
+
 			XMLElement ec("constraint");
 			if (dynamic_cast<FERigidSphericalJoint*  >(pj)) ec.add_attribute("type", "rigid spherical joint");
 			else if (dynamic_cast<FERigidRevoluteJoint*   >(pj)) ec.add_attribute("type", "rigid revolute joint");

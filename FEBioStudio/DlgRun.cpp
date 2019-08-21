@@ -48,8 +48,11 @@ public:
 
 	QLineEdit*	cwd;
 	QLineEdit*	jobName;
-	QComboBox*	febio;
+	QComboBox*	febioVersion;
 	QCheckBox*	debug;
+	QCheckBox*	writeNotes;
+
+	QComboBox*	febioFile;
 	
 	QCheckBox* editCmd;
 	QLineEdit*	cmd;
@@ -63,7 +66,7 @@ public:
 	void setup(QDialog* dlg)
 	{
 		jobName = new QLineEdit;
-		febio = new QComboBox;
+		febioVersion = new QComboBox;
 		
 		cwd = new QLineEdit;
 		QAction* setCWD = new QAction;
@@ -73,13 +76,23 @@ public:
 		QBoxLayout* cwdLayout = new QBoxLayout(QBoxLayout::LeftToRight);
 		cwdLayout->addWidget(cwd);
 		cwdLayout->addWidget(setCWDBtn);
+
+		febioFile = new QComboBox;
+		febioFile->addItem("FEBio 2.5 format");
+#ifdef _DEBUG
+		febioFile->addItem("FEBio 3.0 format");
+#endif
 		
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
-		form->addRow("FEBio version:", febio);
+		form->addRow("FEBio version:", febioVersion);
 		form->addRow("Working directory:", cwdLayout);
 		form->addRow("Job name:", jobName);
+		form->addRow("FEBio file format:", febioFile);
+		form->addRow("Write notes:", writeNotes = new QCheckBox);
 		form->addRow("Debug mode:", debug = new QCheckBox(""));
+
+		writeNotes->setChecked(true);
 
 		editCmd = new QCheckBox("override command");
 		cmd = new QLineEdit; cmd->setEnabled(false);
@@ -104,7 +117,7 @@ public:
 		QObject::connect(setCWDBtn, SIGNAL(clicked()), dlg, SLOT(on_setCWDBtn_Clicked()));
 		QObject::connect(run, SIGNAL(clicked()), dlg, SLOT(accept()));
 		QObject::connect(cnl, SIGNAL(clicked()), dlg, SLOT(reject()));
-		QObject::connect(febio, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onPathChanged(int)));
+		QObject::connect(febioVersion, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onPathChanged(int)));
 
 		QObject::connect(debug, SIGNAL(toggled(bool)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(editCmd, SIGNAL(toggled(bool)), cmd, SLOT(setEnabled(bool)));
@@ -161,8 +174,8 @@ void CDlgRun::SetFEBioPath(QStringList& path, QStringList& info, int ndefault)
 
 //	assert(path.count() == info.count());
 
-	ui->febio->addItems(info);
-	ui->febio->setCurrentIndex(ndefault);
+	ui->febioVersion->addItems(info);
+	ui->febioVersion->setCurrentIndex(ndefault);
 	ui->m_last_index = ndefault;
 }
 
@@ -178,7 +191,17 @@ QString CDlgRun::GetJobName()
 
 int CDlgRun::GetFEBioPath()
 {
-	return ui->febio->currentIndex();
+	return ui->febioVersion->currentIndex();
+}
+
+int CDlgRun::GetFEBioFileVersion()
+{
+	return ui->febioFile->currentIndex();
+}
+
+bool CDlgRun::WriteNodes()
+{
+	return ui->writeNotes->isChecked();
 }
 
 QString CDlgRun::CommandLine()
@@ -198,15 +221,15 @@ CDlgRun::CDlgRun(CMainWindow* parent) : QDialog(parent), ui(new Ui::CDlgRun)
 // Call this before exec!
 void CDlgRun::Init()
 {
-	ui->febio->addItem("<Edit...>");
-	ui->febio->addItem("<New...>");
-	ui->febio->insertSeparator(ui->febio->count() - 2);
+	ui->febioVersion->addItem("<Edit...>");
+	ui->febioVersion->addItem("<New...>");
+	ui->febioVersion->insertSeparator(ui->febioVersion->count() - 2);
 }
 
 void CDlgRun::onPathChanged(int n)
 {
 	if (n == -1) return;
-	int N = ui->febio->count();
+	int N = ui->febioVersion->count();
 	if ((N>3) && (n == N - 1))
 	{
 		// add new path
@@ -217,7 +240,7 @@ void CDlgRun::onPathChanged(int n)
 			if (path.isEmpty())
 			{
 				QMessageBox::critical(this, "PreView2", "Cannot add empty path.");
-				ui->febio->setCurrentIndex(ui->m_last_index);
+				ui->febioVersion->setCurrentIndex(ui->m_last_index);
 			}
 			else
 			{
@@ -227,14 +250,14 @@ void CDlgRun::onPathChanged(int n)
 				ui->m_pathList->append(path);
 				ui->m_infoList->append(info);
 
-				ui->febio->blockSignals(true);
-				ui->febio->insertItem(N - 3, info);
-				ui->febio->blockSignals(false);
-				ui->febio->setCurrentIndex(N - 3);
+				ui->febioVersion->blockSignals(true);
+				ui->febioVersion->insertItem(N - 3, info);
+				ui->febioVersion->blockSignals(false);
+				ui->febioVersion->setCurrentIndex(N - 3);
 			}
 		}
 		else
-			ui->febio->setCurrentIndex(ui->m_last_index);
+			ui->febioVersion->setCurrentIndex(ui->m_last_index);
 	}
 	else if ((N > 3) && (n == N - 2))
 	{
@@ -257,20 +280,20 @@ void CDlgRun::onPathChanged(int n)
 				ui->m_pathList->replace(ui->m_last_index, path);
 				ui->m_infoList->replace(ui->m_last_index, info);
 
-				ui->febio->setItemText(ui->m_last_index, info);
+				ui->febioVersion->setItemText(ui->m_last_index, info);
 			}
 
-			ui->febio->setCurrentIndex(ui->m_last_index);
+			ui->febioVersion->setCurrentIndex(ui->m_last_index);
 		}
 		else
-			ui->febio->setCurrentIndex(ui->m_last_index);
+			ui->febioVersion->setCurrentIndex(ui->m_last_index);
 	}
 	else if (n < N - 3)
 	{
-		ui->febio->setToolTip(ui->m_pathList->at(n));
+		ui->febioVersion->setToolTip(ui->m_pathList->at(n));
 	}
 
-	ui->m_last_index = ui->febio->currentIndex();
+	ui->m_last_index = ui->febioVersion->currentIndex();
 }
 
 void CDlgRun::accept()

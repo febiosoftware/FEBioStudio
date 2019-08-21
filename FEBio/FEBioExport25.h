@@ -101,6 +101,8 @@ public: // set export attributes
 
 	void SetExportPartsFlag(bool b) { m_exportParts = b; }
 
+	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
+
 protected:
 	bool PrepareExport(FEProject& prj);
 	void BuildNodeSetList(FEProject& prj);
@@ -217,6 +219,7 @@ protected:
 	FEProject*		m_pprj;
 
 	bool	m_useReactionMaterial2;
+	bool	m_writeNotes;
 
 protected:
 	const char* GetSurfaceName(FEItemListBuilder* pl);

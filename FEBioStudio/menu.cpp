@@ -469,6 +469,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					writer.SetExportPartsFlag(dlg.m_bexportParts);
 					writer.SetPlotfileCompressionFlag(dlg.m_compress);
 					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
+					writer.SetWriteNotesFlag(dlg.m_writeNotes);
 					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
 					if (!writer.Export(fem, szfile))
 						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
@@ -480,6 +481,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					writer.SetExportPartsFlag(dlg.m_bexportParts);
 					writer.SetPlotfileCompressionFlag(dlg.m_compress);
 					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
+					writer.SetWriteNotesFlag(dlg.m_writeNotes);
 					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
 					if (!writer.Export(fem, szfile))
 						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));

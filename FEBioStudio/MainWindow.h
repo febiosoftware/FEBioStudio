@@ -375,7 +375,7 @@ public slots:
 	// (e.g. when a GL widget gets selected)s
 	void UpdateFontToolbar();
 
-	void RunFEBioJob(CFEBioJob* job, int febioVersion, QString cmd);
+	void RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVersion, bool writeNotes, QString cmd);
 
 public:
 	QStringList GetRecentFileList();

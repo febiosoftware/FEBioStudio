@@ -40,6 +40,8 @@ protected:
 
 	virtual bool PrepareExport(FEProject& prj);
 
+	void WriteNote(FSObject* po);
+
 private:
 	void AddLoadCurve(FELoadCurve* plc);
 	void AddLoadCurves(ParamContainer& PC);

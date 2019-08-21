@@ -99,6 +99,8 @@ public:
 
 	void close_branch();
 
+	void add_comment(const std::string& s, bool singleLine = false);
+
 public:
 	static void SetFloatFormat(XMLFloatFormat fmt);
 	static XMLFloatFormat GetFloatFormat();
