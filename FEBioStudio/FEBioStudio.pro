@@ -2,13 +2,13 @@ DESTDIR = .
 TEMPLATE = app
 TARGET = FEBioStudio
 DESTDIR = ../build/bin
-CONFIG += debug c++11
+CONFIG += release c++11
 CONFIG += qt opengl qtwidgets qtcharts warn_off
 DEFINES += LINUX HAS_NETGEN HAS_OCC TETLIBRARY
 INCLUDEPATH += ../
 QT += widgets opengl gui charts
-QMAKE_LFLAGS_RELEASE += -static-libstdc++ -static-libgcc
-QMAKE_LFLAGS_RPATH = 
+#QMAKE_LFLAGS += -static-libstdc++ -static-libgcc
+#QMAKE_LFLAGS_RPATH = 
 QMAKE_LFLAGS += '-Wl,-rpath,\'\$$ORIGIN/../lib/\',-z,origin'
 
 LIBS += -L/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib

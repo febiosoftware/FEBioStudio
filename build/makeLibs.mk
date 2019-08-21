@@ -1,4 +1,4 @@
-CCFLAGS = -g -I../ -O3 -std=c++11
+CCFLAGS = -I../ -O3 -std=c++11
 CCFLAGS += -I../
 CCFLAGS += -I/opt/netgen/include
 CCFLAGS += -I/opt/netgen/include/include

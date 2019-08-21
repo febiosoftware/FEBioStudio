@@ -153,12 +153,12 @@ public:
 public:
 	void setupUi(::CMainWindow* wnd)
 	{
-#ifdef __APPLE__
-		m_febio_path.push_back("/usr/local/bin/febio2");
-		m_febio_info.push_back("FEBio 2");
-#else
+#ifdef WIN32
 		m_febio_path.push_back("$(FEBioStudioDir)/febio2.exe");
 		m_febio_info.push_back("FEBio 2.9");
+#else
+		m_febio_path.push_back("$(FEBioStudioDir)/febio2");
+		m_febio_info.push_back("FEBio 2.9"); 		
 #endif
 
 #ifdef WIN32

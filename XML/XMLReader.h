@@ -6,6 +6,10 @@
 #include <MathLib/math3d.h>
 #include <FSCore/color.h>
 
+#ifndef WIN32
+	#include <string>
+#endif
+
 class XMLAtt
 {
 public:
