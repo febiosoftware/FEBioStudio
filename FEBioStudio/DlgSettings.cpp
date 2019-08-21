@@ -242,9 +242,12 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 	m_spin->setMaximumWidth(75);
 	m_spin->setMinimumWidth(50);
 
+	m_default = new QCheckBox("Set as default");
+
 	h->addWidget(new QLabel("Number of colors:"));
 	h->addWidget(m_spin);
 	h->addStretch();
+	v->addWidget(m_default);
 	v->addLayout(h);
 
 	m_grid = new QGridLayout;
@@ -270,6 +273,7 @@ CColormapWidget::CColormapWidget(QWidget* parent) : QWidget(parent)
 	QObject::connect(delButton, SIGNAL(clicked()), this, SLOT(onDelete()));
 	QObject::connect(editButton, SIGNAL(clicked()), this, SLOT(onEdit()));
 	QObject::connect(invertButton, SIGNAL(clicked()), this, SLOT(onInvert()));
+	QObject::connect(m_default, SIGNAL(stateChanged(int)), this, SLOT(onSetDefault(int)));
 
 	updateMaps();
 	m_currentMap = 0;
@@ -284,6 +288,13 @@ void CColormapWidget::updateMaps()
 		string name = Post::ColorMapManager::GetColorMapName(i);
 		m_maps->addItem(QString(name.c_str()));
 	}
+}
+
+void CColormapWidget::onSetDefault(int nstate)
+{
+	int n = m_maps->currentIndex();
+	Post::ColorMapManager::SetDefaultMap(n);
+	m_default->setDisabled(true);
 }
 
 void CColormapWidget::onNew()
@@ -375,7 +386,20 @@ void CColormapWidget::currentMapChanged(int n)
 	{
 		m_currentMap = n;
 		updateColorMap(Post::ColorMapManager::GetColorMap(n));
+
+		int defaultMap = Post::ColorMapManager::GetDefaultMap();
+		if (n == defaultMap)
+		{
+			m_default->setChecked(true);
+			m_default->setDisabled(true);
+		}
+		else
+		{
+			m_default->setChecked(false);
+			m_default->setEnabled(true);
+		}
 	}
+	else m_default->setDisabled(true);
 }
 
 void CColormapWidget::onDataChanged()

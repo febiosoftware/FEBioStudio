@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CColormapWidget_t {
-    QByteArrayData data[10];
-    char stringdata0[101];
+    QByteArrayData data[12];
+    char stringdata0[121];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -40,12 +40,15 @@ QT_MOC_LITERAL(5, 51, 18), // "onSpinValueChanged"
 QT_MOC_LITERAL(6, 70, 5), // "onNew"
 QT_MOC_LITERAL(7, 76, 8), // "onDelete"
 QT_MOC_LITERAL(8, 85, 6), // "onEdit"
-QT_MOC_LITERAL(9, 92, 8) // "onInvert"
+QT_MOC_LITERAL(9, 92, 8), // "onInvert"
+QT_MOC_LITERAL(10, 101, 12), // "onSetDefault"
+QT_MOC_LITERAL(11, 114, 6) // "nstate"
 
     },
     "CColormapWidget\0currentMapChanged\0\0n\0"
     "onDataChanged\0onSpinValueChanged\0onNew\0"
-    "onDelete\0onEdit\0onInvert"
+    "onDelete\0onEdit\0onInvert\0onSetDefault\0"
+    "nstate"
 };
 #undef QT_MOC_LITERAL
 
@@ -55,7 +58,7 @@ static const uint qt_meta_data_CColormapWidget[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+       8,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -63,13 +66,14 @@ static const uint qt_meta_data_CColormapWidget[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   49,    2, 0x09 /* Protected */,
-       4,    0,   52,    2, 0x09 /* Protected */,
-       5,    1,   53,    2, 0x09 /* Protected */,
-       6,    0,   56,    2, 0x09 /* Protected */,
-       7,    0,   57,    2, 0x09 /* Protected */,
-       8,    0,   58,    2, 0x09 /* Protected */,
-       9,    0,   59,    2, 0x09 /* Protected */,
+       1,    1,   54,    2, 0x09 /* Protected */,
+       4,    0,   57,    2, 0x09 /* Protected */,
+       5,    1,   58,    2, 0x09 /* Protected */,
+       6,    0,   61,    2, 0x09 /* Protected */,
+       7,    0,   62,    2, 0x09 /* Protected */,
+       8,    0,   63,    2, 0x09 /* Protected */,
+       9,    0,   64,    2, 0x09 /* Protected */,
+      10,    1,   65,    2, 0x09 /* Protected */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int,    3,
@@ -79,6 +83,7 @@ static const uint qt_meta_data_CColormapWidget[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void, QMetaType::Int,   11,
 
        0        // eod
 };
@@ -96,6 +101,7 @@ void CColormapWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         case 4: _t->onDelete(); break;
         case 5: _t->onEdit(); break;
         case 6: _t->onInvert(); break;
+        case 7: _t->onSetDefault((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -130,13 +136,13 @@ int CColormapWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 8;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
+        if (_id < 8)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 7;
+        _id -= 8;
     }
     return _id;
 }

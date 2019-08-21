@@ -22,7 +22,7 @@ using namespace Post;
 CColorMap::CColorMap()
 {
 	m_ncol = 0;
-	jet(); // default color map
+	jet();
 	m_min = 0.f;
 	m_max = 1.f;
 }
@@ -361,6 +361,21 @@ private:
 
 //=============================================================================
 vector<class ColorMapTemplate>	ColorMapManager::m_map;
+int ColorMapManager::m_defaultMap = ColorMapManager::JET;
+
+// set the default color map
+void ColorMapManager::SetDefaultMap(int map)
+{
+	if ((map >= 0) && (map < ColorMaps()))
+	{
+		m_defaultMap = map;
+	}
+}
+
+int ColorMapManager::GetDefaultMap()
+{ 
+	return m_defaultMap; 
+}
 
 int ColorMapManager::ColorMaps()
 {

@@ -27,6 +27,7 @@
 #include "DlgWidgetProps.h"
 #include <FEBio/FEBioExport25.h>
 #include "FEBioJob.h"
+#include <PostLib/ColorMap.h>
 
 extern GLColor col[];
 
@@ -720,6 +721,10 @@ void CMainWindow::writeSettings()
 	settings.setValue("theme", ui->m_theme);
 	settings.endGroup();
 
+	settings.beginGroup("PostSettings");
+	settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
+	settings.endGroup();
+
 	settings.beginGroup("FolderSettings");
 	settings.setValue("currentPath", ui->currentPath);
 
@@ -745,6 +750,10 @@ void CMainWindow::readSettings()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 	ui->m_theme = settings.value("theme", 0).toInt();
+	settings.endGroup();
+
+	settings.beginGroup("PostSettings");
+	Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
 	settings.endGroup();
 
 	settings.beginGroup("FolderSettings");

@@ -133,7 +133,10 @@ public:
 	static bool RemoveColormap(int n);
 
 	// the default color map
-	static int GetDefaultMap() { return JET; }
+	static int GetDefaultMap();
+
+	// set the default color map
+	static void SetDefaultMap(int map);
 
 private:
 	// this is a singleton so don't try to instantiate this
@@ -142,5 +145,6 @@ private:
 
 private:
 	static vector<class ColorMapTemplate>	m_map;
+	static int m_defaultMap;
 };
 }

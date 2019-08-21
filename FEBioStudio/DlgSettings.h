@@ -3,6 +3,7 @@
 #include <QSpinBox>
 #include <QGridLayout>
 #include <QComboBox>
+#include <QCheckBox>
 #include <PostLib/ColorMap.h>
 
 class CMainWindow;
@@ -38,7 +39,7 @@ public:
 
 	void clearGrid();
 
-	protected slots:
+protected slots:
 	void currentMapChanged(int n);
 	void onDataChanged();
 	void onSpinValueChanged(int n);
@@ -46,6 +47,7 @@ public:
 	void onDelete();
 	void onEdit();
 	void onInvert();
+	void onSetDefault(int nstate);
 
 private:
 	void updateMaps();
@@ -55,6 +57,7 @@ private:
 	QSpinBox*		m_spin;
 	QComboBox*		m_maps;
 	ColorGradient*	m_grad;
+	QCheckBox*		m_default;
 	int				m_currentMap;
 };
 
