@@ -161,7 +161,7 @@ public:
 	bool ImportGeometry(FEFileImport* preader, const char* szfile);
 
 	// import image data
-	bool ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
+	GImageObject* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
 	// load a plot file
 	bool LoadPlotFile(const std::string& fileName);

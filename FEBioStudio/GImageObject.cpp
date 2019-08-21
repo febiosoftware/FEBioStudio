@@ -44,12 +44,14 @@ bool GImageObject::LoadImageData(const std::string& fileName, int nx, int ny, in
 	}
 
 	// not sure why, but I need to flip the stack
-	im3d->FlipZ();
+//	im3d->FlipZ();
 
 	if (m_im) delete m_im;
 	BOUNDINGBOX bbox(box.x0, box.y0, box.z0, box.x1, box.y1, box.z1);
 	m_im = new Post::CImageModel(nullptr);
 	m_im->Set3DImage(im3d, bbox);
+
+	SetBox(box);
 
 	Update();
 

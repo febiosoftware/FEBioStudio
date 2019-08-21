@@ -813,6 +813,7 @@ void CMainWindow::OpenInCurveEditor(FSObject* po)
 //-----------------------------------------------------------------------------
 void CMainWindow::ShowInModelViewer(FSObject* po)
 {
+	ui->modelViewer->parentWidget()->raise();
 	ui->modelViewer->Select(po);
 	ui->modelViewer->UpdateObject(po);
 }
@@ -970,6 +971,13 @@ void CMainWindow::UpdatePostPanel()
 void CMainWindow::RedrawGL()
 {
 	ui->glview->repaint();
+}
+
+//-----------------------------------------------------------------------------
+//! Zoom to an FSObject
+void CMainWindow::ZoomTo(const BOX& box)
+{
+	ui->glview->ZoomTo(box);
 }
 
 //-----------------------------------------------------------------------------

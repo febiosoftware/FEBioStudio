@@ -27,6 +27,7 @@
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
+#include <PostLib/ImageModel.h>
 #include "PostDoc.h"
 #include <sstream>
 
@@ -880,13 +881,13 @@ bool CDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 
 //-----------------------------------------------------------------------------
 // import image data
-bool CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
+GImageObject* CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
 {
 	GImageObject* po = new GImageObject;
 	if (po->LoadImageData(fileName, nx, ny, nz, box) == false)
 	{
 		delete po;
-		return false;
+		return nullptr;
 	}
 
 	// use the file name to make the object's name
@@ -905,7 +906,7 @@ bool CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz,
 	// add it to the project
 	AddImageObject(po);
 
-	return true;
+	return po;
 }
 
 //-----------------------------------------------------------------------------
@@ -1428,6 +1429,11 @@ void CDocument::DeleteObject(FSObject* po)
 	{
 		Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(po);
 		plot->GetModel()->DeletePlot(plot);
+	}
+	else if (dynamic_cast<Post::CGLImageRenderer*>(po))
+	{
+		Post::CGLImageRenderer* imr = dynamic_cast<Post::CGLImageRenderer*>(po);
+		imr->GetImageModel()->RemoveRenderer(imr);
 	}
 	else
 	{

@@ -7664,6 +7664,21 @@ void CGLView::ZoomToObject(GObject *po)
 }
 
 //-----------------------------------------------------------------
+//! zoom in on a box
+void CGLView::ZoomTo(const BOX& box)
+{
+	double f = box.GetMaxExtent();
+	if (f == 0) f = 1;
+
+	CGLCamera& cam = GetCamera();
+
+	cam.SetTarget(box.Center());
+	cam.SetTargetDistance(2.0*f);
+
+	repaint();
+}
+
+//-----------------------------------------------------------------
 void CGLView::ZoomExtents(bool banimate)
 {
 	BOX box;

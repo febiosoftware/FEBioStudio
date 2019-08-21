@@ -226,6 +226,9 @@ public:
 	//! Zoom out on current selection
 	void ZoomSelection(bool forceZoom = true);
 
+	//! zoom in on a box
+	void ZoomTo(const BOX& box);
+
 	//! Zoom in on an object
 	void ZoomToObject(GObject* po);
 
