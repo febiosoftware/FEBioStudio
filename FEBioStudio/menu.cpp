@@ -94,10 +94,10 @@ void CMainWindow::on_actionNew_triggered()
 		dlg.setProjectFolder(ui->m_defaultProjectFolder);
 	}
 
-	bool folderAccepted = false;
-	while (folderAccepted == false)
+	bool projectAccepted = false;
+	while (projectAccepted == false)
 	{
-		folderAccepted = true;
+		projectAccepted = true;
 		if (dlg.exec())
 		{
 			if (dlg.createNew())
@@ -108,48 +108,65 @@ void CMainWindow::on_actionNew_triggered()
 
 				QDir dir(projectFolder);
 
-				// try to create a new folder
-				if (dir.mkdir(projectName) == false)
+				// see if we should create a project folder
+				if (dlg.createProjectFolder())
 				{
-					QMessageBox::critical(this, "FEBio Studio", QString("The folder\n%1\nalready exists. Please choose a different project name or folder.").arg(projectFolder));
-					folderAccepted = false;
+					// try to create a new folder
+					if (dir.mkdir(projectName) == false)
+					{
+						QMessageBox::critical(this, "FEBio Studio", QString("The folder \"%1\" already exists in the selected project folder.\nPlease choose a different project name or folder.").arg(projectName));
+						projectAccepted = false;
+					}
+					else
+					{
+						// cd into this directory
+						dir.cd(projectName);
+					}
 				}
-				else
+
+				if (projectAccepted)
 				{
 					ui->m_defaultProjectFolder = projectFolder;
-
-					// cd into this directory
-					dir.cd(projectName);
 
 					// setup model file name and path
 					QString modelFileName = projectName + ".fsprj";
 					QString modelFilePath = dir.absoluteFilePath(modelFileName);
 
-					// load the template
-					int nchoice = dlg.getTemplate();
-					btemplate = m_doc->LoadTemplate(nchoice);
-					if (btemplate == false)
+					// see if this file already exists
+					QFile file(modelFilePath);
+					if (file.exists())
 					{
-						QMessageBox::critical(this, "Load Template", "Failed loading project template");
-					}
-
-					// reset all UI elements
-					UpdatePhysicsUi();
-					Reset();
-					UpdateTitle();
-					UpdateModel();
-					Update();
-					ClearLog();
-
-					// save empty model file
-					if (GetDocument()->SaveDocument(modelFilePath.toStdString()) == false)
-					{
-						QMessageBox::critical(this, "FEBio Studio", "Failed saving model file.");
+						QMessageBox::critical(this, "FEBio Studio", QString("The file \"%1\" already exists in the selected project folder.\nPlease choose a different project name or folder").arg(modelFileName));
+						projectAccepted = false;
 					}
 					else
 					{
+						// load the template
+						int nchoice = dlg.getTemplate();
+						btemplate = m_doc->LoadTemplate(nchoice);
+						if (btemplate == false)
+						{
+							QMessageBox::critical(this, "Load Template", "Failed loading project template");
+						}
+
+						// reset all UI elements
+						UpdatePhysicsUi();
+						Reset();
 						UpdateTitle();
-						ui->addToRecentFiles(modelFilePath);
+						UpdateModel();
+						Update();
+						ClearLog();
+
+						// save empty model file
+						if (GetDocument()->SaveDocument(modelFilePath.toStdString()) == false)
+						{
+							QMessageBox::critical(this, "FEBio Studio", "Failed saving model file.");
+						}
+						else
+						{
+							UpdateTitle();
+							ui->addToRecentFiles(modelFilePath);
+						}
 					}
 				}
 			}
@@ -1801,7 +1818,7 @@ void CMainWindow::on_actionFEBioPubs_triggered()
 
 void CMainWindow::on_actionAbout_triggered()
 {
-	QString txt = QString("<h1>FEBio Studio</h1><p>Version %1.%2.%3 (beta)</p><p>Musculoskeletal Research Laboratories, University of Utah</p><p> Copyright (c) 2005 - 2019, All rights reserved</p>").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	QString txt = QString("<h1>FEBio Studio</h1><p>Version %1.%2.%3 (beta)</p><p>Musculoskeletal Research Laboratories, University of Utah</p><p> Copyright (c) 2019, All rights reserved</p>").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
 
 	QMessageBox about(this);
 	about.setWindowTitle("About FEBio Studio");

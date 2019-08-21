@@ -28,6 +28,8 @@ public:
 
 	void setProjectFolder(const QString& projectFolder);
 
+	bool createProjectFolder();
+
 public slots:
 	void onProjectFolder();
 

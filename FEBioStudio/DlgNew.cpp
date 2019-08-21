@@ -11,6 +11,7 @@
 #include <QToolButton>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QCheckBox>
 #include "DocTemplate.h"
 #include "MainWindow.h"
 
@@ -25,6 +26,7 @@ public:
 	QListWidget*	recentFilesList;
 	QLineEdit*		projectFolder;
 	QLineEdit*		projectName;
+	QCheckBox*		createFolder;
 
 public:
 	void setup(::CMainWindow* wnd, QDialog* dlg)
@@ -79,6 +81,10 @@ public:
 		QVBoxLayout* v = new QVBoxLayout;
 		v->addLayout(h);
 		v->addLayout(f);
+
+		createFolder = new QCheckBox("Create project folder");
+		v->addWidget(createFolder);
+		createFolder->setChecked(true);
 
 		newProject->setLayout(v);
 
@@ -186,4 +192,9 @@ void CDlgNew::onProjectFolder()
 
 		setProjectFolder(path);
 	}
+}
+
+bool CDlgNew::createProjectFolder()
+{
+	return ui->createFolder->isChecked();
 }
