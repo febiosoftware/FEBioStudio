@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Palette.h"
-#include "XMLWriter.h"
-#include "XMLReader.h"
+#include <XML/XMLWriter.h>
+#include <XML/XMLReader.h>
 using namespace Post;
 
 CPalette::CPalette(const string& name) : m_name(name)

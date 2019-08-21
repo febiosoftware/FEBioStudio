@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEFEBioExport.h"
-#include "XMLWriter.h"
+#include <XML/XMLWriter.h>
 using namespace Post;
 
 const char* elementTypeStr(int ntype)

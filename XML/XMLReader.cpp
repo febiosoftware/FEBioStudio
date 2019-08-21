@@ -102,6 +102,11 @@ void XMLTag::value(vec3d& v)
 	sscanf(m_szval, "%lg,%lg,%lg", &v.x, &v.y, &v.z);
 }
 
+void XMLTag::value(vec3f& v)
+{
+	sscanf(m_szval, "%g,%g,%g", &v.x, &v.y, &v.z);
+}
+
 //-----------------------------------------------------------------------------
 void XMLTag::value(vector<int>& l)
 {

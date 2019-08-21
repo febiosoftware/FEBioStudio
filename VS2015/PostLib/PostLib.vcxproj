@@ -208,8 +208,6 @@
     <ClCompile Include="..\..\PostLib\ValArray.cpp" />
     <ClCompile Include="..\..\PostLib\VolRender.cpp" />
     <ClCompile Include="..\..\PostLib\VRMLExporter.cpp" />
-    <ClCompile Include="..\..\PostLib\XMLReader.cpp" />
-    <ClCompile Include="..\..\PostLib\XMLWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\PostLib\3DImage.h" />
@@ -301,8 +299,6 @@
     <ClInclude Include="..\..\PostLib\ValArray.h" />
     <ClInclude Include="..\..\PostLib\VolRender.h" />
     <ClInclude Include="..\..\PostLib\VRMLExporter.h" />
-    <ClInclude Include="..\..\PostLib\XMLReader.h" />
-    <ClInclude Include="..\..\PostLib\XMLWriter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

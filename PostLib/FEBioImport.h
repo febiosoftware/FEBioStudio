@@ -1,6 +1,6 @@
 #pragma once
 #include "FEFileReader.h"
-#include "XMLReader.h"
+#include <XML/XMLReader.h>
 
 namespace Post {
 
