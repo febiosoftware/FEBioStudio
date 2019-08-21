@@ -7723,12 +7723,12 @@ void CGLView::RenderTags()
 	Post::CGLModel* model = pdoc->GetGLModel();
 	Post::FEModel* fem = pdoc->GetFEModel();
 	if (fem == nullptr) return;
-	BOUNDINGBOX box = fem->GetBoundingBox();
+	BOX box = fem->GetBoundingBox();
 
 	VIEW_SETTINGS& view = doc->GetViewSettings();
 
 	double radius = box.Radius();
-	vec3f rc = box.Center();
+	vec3d rc = box.Center();
 
 	m_fnear = 0.01*radius;
 	m_ffar = 100 * radius;

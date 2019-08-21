@@ -1,6 +1,6 @@
 #pragma once
 #include <FSCore/FSObject.h>
-#include <MeshLib/box.h>
+#include <FSCore/box.h>
 
 namespace Post {
 	class CImageModel;

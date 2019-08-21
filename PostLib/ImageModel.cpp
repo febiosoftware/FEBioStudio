@@ -8,7 +8,7 @@ using namespace Post;
 CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
 {
 	m_pImg = 0;
-	m_box = BOUNDINGBOX(0.f, 0.f, 0.f, 1.f, 1.f, 1.f);
+	m_box = BOX(0., 0., 0., 1., 1., 1.);
 	m_showBox = true;
 }
 
@@ -34,7 +34,7 @@ void CImageModel::SetFileName(const std::string& fileName)
 	m_file = fileName;
 }
 
-void CImageModel::Set3DImage(C3DImage* img, BOUNDINGBOX b)
+void CImageModel::Set3DImage(C3DImage* img, BOX b)
 {
 	assert(m_pImg == nullptr);
 	m_pImg = img;

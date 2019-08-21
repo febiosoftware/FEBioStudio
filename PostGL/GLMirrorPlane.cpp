@@ -75,10 +75,10 @@ void CGLMirrorPlane::RenderPlane()
 {
 	CGLModel* mdl = GetModel();
 
-	BOUNDINGBOX box = mdl->GetFEModel()->GetBoundingBox();
+	BOX box = mdl->GetFEModel()->GetBoundingBox();
 
 	// plane center
-	vec3f rc = box.Center();
+	vec3d rc = box.Center();
 	switch (m_plane)
 	{
 	case 0: rc.x = 0.f; break;

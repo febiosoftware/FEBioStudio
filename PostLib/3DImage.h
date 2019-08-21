@@ -1,7 +1,7 @@
 #pragma once
 #include "Image.h"
 #include "GLObject.h"
-#include "bbox.h"
+#include <FSCore/box.h>
 
 namespace Post {
 
@@ -60,7 +60,7 @@ protected:
 class C3DGradientMap
 {
 public:
-	C3DGradientMap(C3DImage& im, BOUNDINGBOX box);
+	C3DGradientMap(C3DImage& im, BOX box);
 	~C3DGradientMap();
 
 	// get a vector value
@@ -68,7 +68,7 @@ public:
 
 private:
 	C3DImage&	m_im;
-	BOUNDINGBOX	m_box;
+	BOX	m_box;
 };
 }
 

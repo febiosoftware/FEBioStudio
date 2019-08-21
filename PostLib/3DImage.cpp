@@ -370,7 +370,7 @@ void C3DImage::FlipZ()
 // C3DGradientMap
 //=============================================================================
 
-C3DGradientMap::C3DGradientMap(C3DImage& im, BOUNDINGBOX box) : m_im(im), m_box(box)
+C3DGradientMap::C3DGradientMap(C3DImage& im, BOX box) : m_im(im), m_box(box)
 {
 
 }

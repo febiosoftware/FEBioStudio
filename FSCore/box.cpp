@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "box.h"
 
 //-----------------------------------------------------------------------------
@@ -115,7 +116,7 @@ BOX& BOX::operator += (const BOX& b)
 }
 
 //-----------------------------------------------------------------------------
-bool BOX::IsInside(const vec3d& r)
+bool BOX::IsInside(const vec3d& r) const
 {
 	if ((r.x >= x0) && (r.x <= x1) && 
 		(r.y >= y0) && (r.y <= y1) && 
@@ -142,4 +143,35 @@ void BOX::Inflate(double dx, double dy, double dz)
 	x0 -= dx; x1 += dx;
 	y0 -= dy; y1 += dy;
 	z0 -= dz; z1 += dz;
+}
+
+//-----------------------------------------------------------------------------
+void BOX::InflateTo(double fx, double fy, double fz)
+{
+	double xc = x0 + x1;
+	double yc = y0 + y1;
+	double zc = z0 + z1;
+	x0 = (xc - fx)*0.5; x1 = (xc + fx)*0.5;
+	y0 = (yc - fy)*0.5; y1 = (yc + fy)*0.5;
+	z0 = (zc - fz)*0.5; z1 = (zc + fz)*0.5;
+}
+
+//-----------------------------------------------------------------------------
+void BOX::Inflate(double f)
+{
+	x0 -= f; x1 += f;
+	y0 -= f; y1 += f;
+	z0 -= f; z1 += f;
+}
+
+//-----------------------------------------------------------------------------
+vec3d BOX::r0() const
+{
+	return vec3d(x0, y0, z0);
+}
+
+//-----------------------------------------------------------------------------
+vec3d BOX::r1() const
+{
+	return vec3d(x1, y1, z1);
 }

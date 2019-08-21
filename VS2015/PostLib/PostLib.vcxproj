@@ -139,7 +139,6 @@
     <ClCompile Include="..\..\PostLib\Animation.cpp" />
     <ClCompile Include="..\..\PostLib\Archive.cpp" />
     <ClCompile Include="..\..\PostLib\AVIAnimation.cpp" />
-    <ClCompile Include="..\..\PostLib\bbox.cpp" />
     <ClCompile Include="..\..\PostLib\ColorMap.cpp" />
     <ClCompile Include="..\..\PostLib\DataFilter.cpp" />
     <ClCompile Include="..\..\PostLib\DataMap.cpp" />
@@ -214,7 +213,6 @@
     <ClInclude Include="..\..\PostLib\Animation.h" />
     <ClInclude Include="..\..\PostLib\Archive.h" />
     <ClInclude Include="..\..\PostLib\AVIAnimation.h" />
-    <ClInclude Include="..\..\PostLib\bbox.h" />
     <ClInclude Include="..\..\PostLib\ColorMap.h" />
     <ClInclude Include="..\..\PostLib\constants.h" />
     <ClInclude Include="..\..\PostLib\convert.h" />

@@ -137,6 +137,7 @@
     <ClCompile Include="..\..\FSCore\Archive.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\FSCore\box.cpp" />
     <ClCompile Include="..\..\FSCore\CallTracer.cpp" />
     <ClCompile Include="..\..\FSCore\FSObject.cpp" />
     <ClCompile Include="..\..\FSCore\ParamBlock.cpp" />
@@ -145,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FSCore\Archive.h" />
+    <ClInclude Include="..\..\FSCore\box.h" />
     <ClInclude Include="..\..\FSCore\CallTracer.h" />
     <ClInclude Include="..\..\FSCore\color.h" />
     <ClInclude Include="..\..\FSCore\FSObject.h" />

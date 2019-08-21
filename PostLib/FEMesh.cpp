@@ -1675,45 +1675,45 @@ void FEMeshBase::SetElementTags(int ntag)
 
 //=================================================================================================
 
-FEFindElement::BOX::BOX()
+FEFindElement::OCTREE_BOX::OCTREE_BOX()
 {
 	m_elem = -1;
 	m_level = -1;
 }
 
-FEFindElement::BOX::~BOX()
+FEFindElement::OCTREE_BOX::~OCTREE_BOX()
 {
 	for (size_t i=0; i<m_child.size(); ++i) delete m_child[i];
 	m_child.clear();
 }
 
-void FEFindElement::BOX::split(int levels)
+void FEFindElement::OCTREE_BOX::split(int levels)
 {
 	m_level = levels;
 	if (m_level == 0) return;
 
-	float x0 = m_box.x0, x1 = m_box.x1;
-	float y0 = m_box.y0, y1 = m_box.y1;
-	float z0 = m_box.z0, z1 = m_box.z1;
+	double x0 = m_box.x0, x1 = m_box.x1;
+	double y0 = m_box.y0, y1 = m_box.y1;
+	double z0 = m_box.z0, z1 = m_box.z1;
 
-	float dx = x1 - x0;
-	float dy = y1 - y0;
-	float dz = z1 - z0;
+	double dx = x1 - x0;
+	double dy = y1 - y0;
+	double dz = z1 - z0;
 
 	m_child.clear();
 	for (int i=0; i<2; i++)
 		for (int j = 0; j<2; j++)
 			for (int k = 0; k <2; k++)
 			{
-				float xa = x0 + i*dx*0.5f, xb = x0 + (i + 1)*dx*0.5f;
-				float ya = y0 + j*dy*0.5f, yb = y0 + (j + 1)*dy*0.5f;
-				float za = z0 + k*dz*0.5f, zb = z0 + (k + 1)*dz*0.5f;
+				double xa = x0 + i*dx*0.5, xb = x0 + (i + 1)*dx*0.5;
+				double ya = y0 + j*dy*0.5, yb = y0 + (j + 1)*dy*0.5;
+				double za = z0 + k*dz*0.5, zb = z0 + (k + 1)*dz*0.5;
 
-				BOUNDINGBOX b(xa, ya, za, xb, yb, zb);
-				float R = b.GetMaxExtent();
-				b.Inflate(R*0.0001f);
+				BOX b(xa, ya, za, xb, yb, zb);
+				double R = b.GetMaxExtent();
+				b.Inflate(R*0.0001);
 
-				BOX* box = new BOX;
+				OCTREE_BOX* box = new OCTREE_BOX;
 				box->m_box = b;
 
 				m_child.push_back(box);
@@ -1725,13 +1725,13 @@ void FEFindElement::BOX::split(int levels)
 	}
 }
 
-void FEFindElement::BOX::Add(BOUNDINGBOX& b, int nelem)
+void FEFindElement::OCTREE_BOX::Add(BOX& b, int nelem)
 {
 	if (m_level == 0)
 	{
 		if (m_box.Intersects(b))
 		{
-			BOX* box = new BOX;
+			OCTREE_BOX* box = new OCTREE_BOX;
 			box->m_box = b;
 			box->m_elem = nelem;
 			box->m_level = -1;
@@ -1749,7 +1749,7 @@ void FEFindElement::BOX::Add(BOUNDINGBOX& b, int nelem)
 }
 
 
-FEFindElement::BOX* FEFindElement::BOX::Find(const vec3f& r)
+FEFindElement::OCTREE_BOX* FEFindElement::OCTREE_BOX::Find(const vec3f& r)
 {
 	if (m_level == 0)
 	{
@@ -1760,8 +1760,8 @@ FEFindElement::BOX* FEFindElement::BOX::Find(const vec3f& r)
 	// try to find the child
 	for (size_t i = 0; i<m_child.size(); ++i)
 	{
-		BOX* c = m_child[i];
-		BOX* ret = c->Find(r);
+		OCTREE_BOX* c = m_child[i];
+		OCTREE_BOX* ret = c->Find(r);
 		if (ret) return ret;
 	}
 
@@ -1769,13 +1769,13 @@ FEFindElement::BOX* FEFindElement::BOX::Find(const vec3f& r)
 }
 
 
-FEFindElement::BOX* FEFindElement::FindBox(const vec3f& r)
+FEFindElement::OCTREE_BOX* FEFindElement::FindBox(const vec3f& r)
 {
 	// make sure it's in the master box
 	if (m_bound.IsInside(r) == false) return 0;
 
 	// try to find the child
-	BOX* b = &m_bound;
+	OCTREE_BOX* b = &m_bound;
 	do
 	{
 		if (b->m_level == 0)
@@ -1787,7 +1787,7 @@ FEFindElement::BOX* FEFindElement::FindBox(const vec3f& r)
 		bool bfound = false;
 		for (size_t i = 0; i<b->m_child.size(); ++i)
 		{
-			BOX* c = b->m_child[i];
+			OCTREE_BOX* c = b->m_child[i];
 			if (c->IsInside(r))
 			{
 				b = c;
@@ -1819,14 +1819,14 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 	if ((NN == 0) || (NE == 0)) return;
 
 	vec3f r = m_mesh.Node(0).m_r0;
-	BOUNDINGBOX box(r, r);
+	BOX box(r, r);
 	for (int i = 1; i<m_mesh.Nodes(); ++i)
 	{
 		r = m_mesh.Node(i).m_r0;
 		box += r;
 	}
-	float R = box.GetMaxExtent();
-	box.Inflate(R*0.001f);
+	double R = box.GetMaxExtent();
+	box.Inflate(R*0.001);
 
 	// split this box recursively
 	m_bound.m_box = box;
@@ -1856,14 +1856,14 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 			// do a quick bounding box test
 			vec3f r0 = m_mesh.Node(e.m_node[0]).m_r0;
 			vec3f r1 = r0;
-			BOUNDINGBOX box(r0, r1);
+			BOX box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
 				vec3f& rj = m_mesh.Node(e.m_node[j]).m_r0;
 				box += rj;
 			}
-			float R = box.GetMaxExtent();
-			box.Inflate(R*0.001f);
+			double R = box.GetMaxExtent();
+			box.Inflate(R*0.001);
 
 			// add it to the octree
 			m_bound.Add(box, i);
@@ -1881,14 +1881,14 @@ void FEFindElement::InitCurrentFrame(vector<bool>& flags)
 	if ((NN == 0) || (NE == 0)) return;
 
 	vec3f r = m_mesh.Node(0).m_rt;
-	BOUNDINGBOX box(r, r);
+	BOX box(r, r);
 	for (int i = 1; i<m_mesh.Nodes(); ++i)
 	{
 		r = m_mesh.Node(i).m_rt;
 		box += r;
 	}
-	float R = box.GetMaxExtent();
-	box.Inflate(R*0.001f);
+	double R = box.GetMaxExtent();
+	box.Inflate(R*0.001);
 
 	// split this box recursively
 	m_bound.m_box = box;
@@ -1918,14 +1918,14 @@ void FEFindElement::InitCurrentFrame(vector<bool>& flags)
 			// do a quick bounding box test
 			vec3f r0 = m_mesh.Node(e.m_node[0]).m_rt;
 			vec3f r1 = r0;
-			BOUNDINGBOX box(r0, r1);
+			BOX box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
 				vec3f& rj = m_mesh.Node(e.m_node[j]).m_rt;
 				box += rj;
 			}
-			float R = box.GetMaxExtent();
-			box.Inflate(R*0.001f);
+			double R = box.GetMaxExtent();
+			box.Inflate(R*0.001);
 
 			// add it to the octree
 			m_bound.Add(box, i);
@@ -1953,14 +1953,14 @@ bool FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]
 	assert(m_nframe == 0);
 
 	vec3f y[FEGenericElement::MAX_NODES];
-	BOX* b = FindBox(x);
+	OCTREE_BOX* b = FindBox(x);
 	if (b == 0) return false;
 	assert(b->m_level == 0);
 
 	int NE = (int)b->m_child.size();
 	for (int i = 0; i<NE; ++i)
 	{
-		BOX* c = b->m_child[i];
+		OCTREE_BOX* c = b->m_child[i];
 		assert(c->m_level == -1);
 
 		int nid = c->m_elem; assert(nid >= 0);
@@ -1985,14 +1985,14 @@ bool FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double r[3])
 	assert(m_nframe == 1);
 
 	vec3f y[FEGenericElement::MAX_NODES];
-	BOX* b = FindBox(x);
+	OCTREE_BOX* b = FindBox(x);
 	if (b == 0) return false;
 	assert(b->m_level == 0);
 
 	int NE = (int)b->m_child.size();
 	for (int i = 0; i<NE; ++i)
 	{
-		BOX* c = b->m_child[i];
+		OCTREE_BOX* c = b->m_child[i];
 		assert(c->m_level == -1);
 
 		int nid = c->m_elem; assert(nid >= 0);

@@ -109,8 +109,8 @@ void CGLSlicePlot::Render(CGLContext& rc)
 	glEnable(GL_TEXTURE_1D);
 	glDisable(GL_LIGHTING);
 	tex.MakeCurrent();
-	float fmin, fmax;
-	vec3f n = m_norm;
+	double fmin, fmax;
+	vec3d n = m_norm;
 	n.Normalize();
 	m_box.Range(n, fmin, fmax);
 	float Df = fabs(fmax - fmin);

@@ -14,15 +14,15 @@ class CGLPlaneCutPlot : public CGLPlot
 		struct FACE
 		{
 			int		mat;
-			vec3f	norm;
-			vec3f	r[3];
+			vec3d	norm;
+			vec3d	r[3];
 			float	tex[3];
 			bool	bactive;
 		};
 
 		struct EDGE
 		{
-			vec3f r[2];
+			vec3d r[2];
 		};
 
 	public:
@@ -48,7 +48,7 @@ public:
 	CGLPlaneCutPlot(CGLModel* po);
 	virtual ~CGLPlaneCutPlot();
 
-	void SetBoundingBox(BOUNDINGBOX box) { m_box = box; }
+	void SetBoundingBox(BOX box) { m_box = box; }
 
 	void SetRotation(float rot) { m_rot = rot; }
 	float GetRotation() { return m_rot; }
@@ -64,7 +64,7 @@ public:
 	void SetPlaneEqn(GLdouble a[4]);
 
 	void GetNormalizedEquations(double a[4]);
-	vec3f GetPlaneNormal();
+	vec3d GetPlaneNormal();
 	float GetPlaneOffset();
 	float GetPlaneReference() const { return m_ref; }
 
@@ -86,7 +86,7 @@ protected:
 	void RenderSlice();
 	void RenderMesh();
 	void RenderOutline();
-	vec3f WorldToPlane(vec3f r);
+	vec3d WorldToPlane(const vec3d& r);
 
 	void ReleasePlane();
 	static int GetFreePlane();
@@ -95,7 +95,7 @@ protected:
 public:
 	static int ClipPlanes();
 	static CGLPlaneCutPlot* GetClipPlane(int i);
-	static bool IsInsideClipRegion(const vec3f& r);
+	static bool IsInsideClipRegion(const vec3d& r);
 
 public:
 	bool	m_bshowplane;	// show the plane or not
@@ -106,13 +106,13 @@ public:
 protected:
 	GLdouble	m_eq[4];	// plane equation
 
-	float		m_ref;	// reference = m_pos + m_off
-	float		m_rot;	// rotation around z-axis
-	BOUNDINGBOX	m_box;	// bounding box to cut
+	float	m_ref;	// reference = m_pos + m_off
+	float	m_rot;	// rotation around z-axis
+	BOX		m_box;	// bounding box to cut
 
 	struct EDGE
 	{
-		vec3f	m_r[2];	// position of nodes
+		vec3d	m_r[2];	// position of nodes
 		int		m_n[2];	// node numbers
 		int		m_ntag;
 	};

@@ -4,7 +4,7 @@
 #include "FEMaterial.h"
 #include "FEState.h"
 #include "FEDataManager.h"
-#include "bbox.h"
+#include <FSCore/box.h>
 #include <vector>
 using namespace std;
 
@@ -117,7 +117,7 @@ public:
 
 public:
 	//! get the bounding box
-	BOUNDINGBOX GetBoundingBox() { return m_bbox; }
+	BOX GetBoundingBox() { return m_bbox; }
 
 	//! Update the bounding box
 	void UpdateBoundingBox();
@@ -196,7 +196,7 @@ protected:
 
 	// --- M E S H ---
 	vector<FEMeshBase*>		m_mesh;		// the list of meshes
-	BOUNDINGBOX		m_bbox;				// bounding box of mesh
+	BOX						m_bbox;		// bounding box of mesh
 
 	// --- M A T E R I A L S ---
 	vector<FEMaterial>	m_Mat;		// array of materials

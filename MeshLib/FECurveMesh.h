@@ -3,7 +3,7 @@
 #include "FENode.h"
 #include "FEElement.h"
 #include "FELineMesh.h"
-#include "box.h"
+#include <FSCore/box.h>
 #include <FSCore/Serializable.h>
 
 // A class that represents a mesh for a curve

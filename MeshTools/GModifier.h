@@ -1,7 +1,7 @@
 #pragma once
 #include <FSCore/ParamBlock.h>
 #include <FSCore/Serializable.h>
-#include <MeshLib/box.h>
+#include <FSCore/box.h>
 #include <FSCore/FSObject.h>
 #include <list>
 using namespace std;

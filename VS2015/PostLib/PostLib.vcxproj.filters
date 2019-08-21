@@ -30,9 +30,6 @@
     <ClCompile Include="..\..\PostLib\AVIAnimation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\PostLib\bbox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\PostLib\ColorMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -249,9 +246,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\AVIAnimation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\bbox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\ColorMap.h">

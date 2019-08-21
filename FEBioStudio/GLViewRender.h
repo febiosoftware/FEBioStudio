@@ -1,5 +1,5 @@
 #pragma once
-#include <MeshLib/box.h>
+#include <FSCore/box.h>
 #include <MeshLib/FEMesh.h>
 
 class CGLView;

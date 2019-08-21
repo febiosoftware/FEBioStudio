@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <set>
-#include "box.h"
+#include <FSCore/box.h>
 #include "FENode.h"
 #include "FEEdge.h"
 #include "FEFace.h"

@@ -324,7 +324,7 @@ void CGLParticleFlowPlot::AdvanceParticles(int n0, int n1)
 	// get the mesh
 	FEMeshBase& mesh = *mdl->GetActiveMesh();
 
-	BOUNDINGBOX box = m_find.BoundingBox();
+	BOX box = m_find.BoundingBox();
 	float R = box.GetMaxExtent();
 	float dt = m_dt;
 	if (dt <= 0.f) return;

@@ -84,6 +84,33 @@ const float G8t[8][8] = {
 
 //-----------------------------------------------------------------------------
 // Calculate integral over face
+double FEMeshBase::IntegrateQuad(vec3d* r, float* v)
+{
+	double I = 0.f;
+	for (int i = 0; i<4; ++i)
+	{
+		// evaluate jacobian at integration point
+		vec3d a1, a2;
+		for (int j = 0; j<4; ++j)
+		{
+			a1 += r[j] * G4r[i][j];
+			a2 += r[j] * G4s[i][j];
+		}
+		vec3d n = a1^a2;
+		double J = n.Length();
+
+		// evaluate function at integration point
+		double vi = 0.f;
+		for (int j = 0; j<4; ++j) vi += H4[i][j] * v[j];
+
+		// sum up (integration weight = 1)
+		I += J*vi;
+	}
+
+	return I;
+}
+//-----------------------------------------------------------------------------
+// Calculate integral over face
 float FEMeshBase::IntegrateQuad(vec3f* r, float* v)
 {
 	int i, j;

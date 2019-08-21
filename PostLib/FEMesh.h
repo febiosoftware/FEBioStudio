@@ -5,7 +5,7 @@
 #include "FEGroup.h"
 #include "FENodeElemList.h"
 #include "FENodeFaceList.h"
-#include "bbox.h"
+#include <FSCore/box.h>
 #include <utility>
 #include <vector>
 using namespace std;
@@ -151,6 +151,7 @@ public:
 	float PyramidVolume(const FEElement& el);
 
 	// --- I N T E G R A T E ---
+	double IntegrateQuad(vec3d* r, float* v);
 	float IntegrateQuad(vec3f* r, float* v);
 	float IntegrateHex (vec3f* r, float* v);
 
@@ -250,25 +251,25 @@ bool ProjectInsideElement(FEMeshBase& m, FEElement& el, const vec3f& p, double r
 class FEFindElement
 {
 public:
-	class BOX
+	class OCTREE_BOX
 	{
 	public:
-		BOUNDINGBOX		m_box;
-		vector<BOX*>	m_child;
-		int				m_elem;
-		int				m_level;
+		BOX					m_box;
+		vector<OCTREE_BOX*>	m_child;
+		int					m_elem;
+		int					m_level;
 
 	public:
-		BOX();
-		~BOX();
+		OCTREE_BOX();
+		~OCTREE_BOX();
 
 		void split(int levels);
 
-		BOX* Find(const vec3f& r);
+		OCTREE_BOX* Find(const vec3f& r);
 
 		bool IsInside(const vec3f& r) const { return m_box.IsInside(r); }
 
-		void Add(BOUNDINGBOX& b, int nelem);
+		void Add(BOX& b, int nelem);
 	};
 
 public:
@@ -279,7 +280,7 @@ public:
 
 	bool FindElement(const vec3f& x, int& nelem, double r[3]);
 
-	BOUNDINGBOX BoundingBox() const { return m_bound.m_box; }
+	BOX BoundingBox() const { return m_bound.m_box; }
 
 private:
 	void InitReferenceFrame(vector<bool>& flags);
@@ -289,10 +290,10 @@ private:
 	bool FindInCurrentFrame(const vec3f& x, int& nelem, double r[3]);
 
 private:
-	BOX* FindBox(const vec3f& r);
+	OCTREE_BOX* FindBox(const vec3f& r);
 
 private:
-	BOX			m_bound;
+	OCTREE_BOX	m_bound;
 	FEMeshBase&	m_mesh;
 	int			m_nframe;	// = 0 reference, 1 = current
 };

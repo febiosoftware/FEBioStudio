@@ -9,6 +9,7 @@
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include "Document.h"
+#include <FSCore/box.h>
 
 GImageObject::GImageObject()
 {
@@ -47,9 +48,8 @@ bool GImageObject::LoadImageData(const std::string& fileName, int nx, int ny, in
 //	im3d->FlipZ();
 
 	if (m_im) delete m_im;
-	BOUNDINGBOX bbox(box.x0, box.y0, box.z0, box.x1, box.y1, box.z1);
 	m_im = new Post::CImageModel(nullptr);
-	m_im->Set3DImage(im3d, bbox);
+	m_im->Set3DImage(im3d, box);
 
 	SetBox(box);
 
@@ -69,8 +69,7 @@ void GImageObject::SetBox(BOX box)
 
 	if (m_im)
 	{
-		BOUNDINGBOX bbox(box.x0, box.y0, box.z0, box.x1, box.y1, box.z1);
-		m_im->SetBoundingBox(bbox);
+		m_im->SetBoundingBox(box);
 		Update();
 	}
 }

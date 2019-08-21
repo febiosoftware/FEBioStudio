@@ -282,7 +282,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 	// get the mesh
 	FEMeshBase& mesh = *mdl->GetActiveMesh();
 
-	BOUNDINGBOX box = m_find.BoundingBox();
+	BOX box = m_find.BoundingBox();
 	float R = box.GetMaxExtent();
 	float maxStep = m_inc*R;
 

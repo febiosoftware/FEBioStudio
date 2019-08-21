@@ -216,7 +216,7 @@ void CVolRender::Create()
 	}
 
 	// calculate alpha scale factors
-/*	BOUNDINGBOX b = img.GetBoundingBox();
+/*	BOX b = img.GetBoundingBox();
 	float fx = b.Width() / m_nx;
 	float fy = b.Height() / m_ny;
 	float fz = b.Depth() / m_nz;
@@ -240,7 +240,7 @@ void CVolRender::CalcAttenuation()
 
 	vec3d l = m_light; l.Normalize();
 
-	BOUNDINGBOX& b = GetImageModel()->GetBoundingBox();
+	const BOX& b = GetImageModel()->GetBoundingBox();
 
 	C3DGradientMap map(m_im3d, b);
 
@@ -470,7 +470,7 @@ void CVolRender::RenderX(int inc)
 	double e0 = 0.0;
 	double e1 = 1.0 - e0;
 
-	BOUNDINGBOX& box = GetImageModel()->GetBoundingBox();
+	const BOX& box = GetImageModel()->GetBoundingBox();
 
 	for (int i=n0; i != n1; i += inc)
 	{
@@ -507,7 +507,7 @@ void CVolRender::RenderY(int inc)
 	double e0 = 0.0;
 	double e1 = 1.0 - e0;
 
-	BOUNDINGBOX& box = GetImageModel()->GetBoundingBox();
+	const BOX& box = GetImageModel()->GetBoundingBox();
 
 	for (int i=n0; i != n1; i += inc)
 	{
@@ -544,7 +544,7 @@ void CVolRender::RenderZ(int inc)
 	double e0 = 0.0;
 	double e1 = 1.0 - e0;
 
-	BOUNDINGBOX& box = GetImageModel()->GetBoundingBox();
+	const BOX& box = GetImageModel()->GetBoundingBox();
 
 	for (int i=n0; i != n1; i += inc)
 	{

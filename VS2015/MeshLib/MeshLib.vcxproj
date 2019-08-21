@@ -135,7 +135,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\MeshLib\box.cpp" />
     <ClCompile Include="..\..\MeshLib\FECoreMesh.cpp" />
     <ClCompile Include="..\..\MeshLib\FECurveMesh.cpp" />
     <ClCompile Include="..\..\MeshLib\FEEdge.cpp" />
@@ -161,7 +160,6 @@
     <ClCompile Include="..\..\MeshLib\TriMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\MeshLib\box.h" />
     <ClInclude Include="..\..\MeshLib\FECoreMesh.h" />
     <ClInclude Include="..\..\MeshLib\FECurveMesh.h" />
     <ClInclude Include="..\..\MeshLib\FEEdge.h" />

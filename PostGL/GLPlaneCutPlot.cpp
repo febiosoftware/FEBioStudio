@@ -137,11 +137,11 @@ void CGLPlaneCutPlot::GetNormalizedEquations(double a[4])
 
 //-----------------------------------------------------------------------------
 // Return the plane normal
-vec3f CGLPlaneCutPlot::GetPlaneNormal()
+vec3d CGLPlaneCutPlot::GetPlaneNormal()
 {
 	double a[4];
 	GetNormalizedEquations(a);
-	return vec3f((float) a[0], (float) a[1], (float) a[2]);
+	return vec3d((float) a[0], (float) a[1], (float) a[2]);
 }
 
 float CGLPlaneCutPlot::GetPlaneOffset()
@@ -254,11 +254,11 @@ void CGLPlaneCutPlot::RenderSlice()
 				GLSlice::FACE& face = m_slice.Face(i);
 				if ((face.mat == n) && (face.bactive))
 				{
-					vec3f& norm = face.norm;
+					vec3d& norm = face.norm;
 					glNormal3f(norm.x,norm.y,norm.z);
 
 					// render the face
-					vec3f* r = face.r;
+					vec3d* r = face.r;
 					float* tex = face.tex;
 					glBegin(GL_TRIANGLES);
 					{
@@ -277,11 +277,11 @@ void CGLPlaneCutPlot::RenderSlice()
 				GLSlice::FACE& face = m_slice.Face(i);
 				if ((face.mat == n) && (!face.bactive))
 				{
-					vec3f& norm = face.norm;
+					vec3d& norm = face.norm;
 					glNormal3f(norm.x, norm.y, norm.z);
 
 					// render the face
-					vec3f* r = face.r;
+					vec3d* r = face.r;
 					float* tex = face.tex;
 					glBegin(GL_TRIANGLES);
 					{
@@ -327,15 +327,15 @@ void CGLPlaneCutPlot::RenderMesh()
 	const int* nt;
 
 	float ev[8];
-	vec3f ex[8];
+	vec3d ex[8];
 
-	vec3f r[3];
+	vec3d r[3];
 	float w1, w2, w;
 	int n1, n2, m1, m2;
 	bool badd;
 
 	// calculate plane normal
-	vec3f norm = GetPlaneNormal();
+	vec3d norm = GetPlaneNormal();
 
 	// repeat over all elements
 	for (i=0; i<pm->Elements(); ++i)
@@ -435,8 +435,8 @@ void CGLPlaneCutPlot::RenderMesh()
 				for (k=0; k<ne; ++k)
 					if (edge[k].m_ntag == 0)
 					{
-						vec3f& r0 = edge[k].m_r[0];
-						vec3f& r1 = edge[k].m_r[1];
+						vec3d& r0 = edge[k].m_r[0];
+						vec3d& r1 = edge[k].m_r[1];
 						glVertex3f(r0.x, r0.y, r0.z);
 						glVertex3f(r1.x, r1.y, r1.z);
 					}
@@ -476,7 +476,7 @@ void CGLPlaneCutPlot::RenderOutline()
 	glColor3ub(0,0,0);
 
 	// calculate plane normal
-	vec3f norm = GetPlaneNormal();
+	vec3d norm = GetPlaneNormal();
 
 	// repeat over all elements
 	for (int i=0; i<m_slice.Edges(); ++i)
@@ -487,8 +487,8 @@ void CGLPlaneCutPlot::RenderOutline()
 		// loop over faces
 		glBegin(GL_LINES);
 		{
-			vec3f& r0 = edge.r[0];
-			vec3f& r1 = edge.r[1];
+			vec3d& r0 = edge.r[0];
+			vec3d& r1 = edge.r[1];
 			glVertex3f(r0.x, r0.y, r0.z);
 			glVertex3f(r1.x, r1.y, r1.z);
 		}
@@ -503,7 +503,7 @@ void CGLPlaneCutPlot::RenderOutline()
 void CGLPlaneCutPlot::UpdateSlice()
 {
 	float ev[8];
-	vec3f ex[8];
+	vec3d ex[8];
 	int	nf[8];
 	EDGE edge[15];
 	int en[8];
@@ -514,14 +514,14 @@ void CGLPlaneCutPlot::UpdateSlice()
 	GetNormalizedEquations(a);
 
 	// set the plane normal
-	vec3f norm((float) a[0], (float) a[1], (float) a[2]);
+	vec3d norm((float) a[0], (float) a[1], (float) a[2]);
 
 	CGLModel* mdl = GetModel();
 
 	// calculate the plane offset
 	m_box = mdl->GetFEModel()->GetBoundingBox();
 	float s = m_box.Radius();
-	vec3f r = m_box.Center();
+	vec3d r = m_box.Center();
 
 	m_ref = (float) a[3]*s + r*norm;
 	a[3] = -m_ref;
@@ -598,7 +598,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 								if (*pf == -1) break;
 
 								// calculate nodal positions
-								vec3f r[3];
+								vec3d r[3];
 								float tex[3], w1, w2, w;
 								for (int k=0; k<3; k++)
 								{
@@ -700,17 +700,17 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	FEMeshBase* pm = mdl->GetActiveMesh();
 
 	float ev[8];
-	vec3f ex[8];
+	vec3d ex[8];
 	int   en[8];
 
-	vec3f r[4];
+	vec3d r[4];
 	float v[4];
 
 	// Integral
 	float sum = 0.f;
 
 	// calculate plane normal
-	vec3f norm = GetPlaneNormal();
+	vec3d norm = GetPlaneNormal();
 
 	// repeat over all elements
 	for (int i=0; i<pm->Elements(); ++i)
@@ -795,27 +795,27 @@ void CGLPlaneCutPlot::RenderPlane()
 {
 	GLdouble a[4];
 	GetNormalizedEquations(a);
-	vec3f norm((float) a[0], (float) a[1], (float) a[2]);
+	vec3d norm((float) a[0], (float) a[1], (float) a[2]);
 
 	CGLModel* mdl = GetModel();
 
 	m_box = mdl->GetFEModel()->GetBoundingBox();
-	vec3f rc = m_box.Center();
+	vec3d rc = m_box.Center();
 
 	// calculate reference value
-	vec3f p0 = norm*(-m_ref);
+	vec3d p0 = norm*(-m_ref);
 
 	float N = norm*norm;
 	if (N==0) N=1;
 
 	float lam = (N*m_ref - rc*norm)/N;
-	vec3f pc = rc + norm*lam;
+	vec3d pc = rc + norm*lam;
 
 	glPushMatrix();
 
 	glTranslatef(pc.x, pc.y, pc.z);
 
-	quatd q = quatd(vec3f(0,0,1), norm);
+	quatd q = quatd(vec3d(0,0,1), norm);
 	float w = q.GetAngle();
 	if (w != 0)
 	{
@@ -924,7 +924,7 @@ CGLPlaneCutPlot* CGLPlaneCutPlot::GetClipPlane(int i)
 	return m_pcp[i];
 }
 
-bool CGLPlaneCutPlot::IsInsideClipRegion(const vec3f& r)
+bool CGLPlaneCutPlot::IsInsideClipRegion(const vec3d& r)
 {
 	int N = CGLPlaneCutPlot::ClipPlanes();
 	for (int i = 0; i<N; ++i)

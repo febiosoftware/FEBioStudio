@@ -1347,7 +1347,7 @@ void CGLModel::RenderNormals(CGLContext& rc)
 	FEModel* ps = m_ps;
 	FEMeshBase* pm = GetActiveMesh();
 
-	BOUNDINGBOX box = ps->GetBoundingBox();
+	BOX box = ps->GetBoundingBox();
 
 	float scale = 0.05f*box.Radius();
 

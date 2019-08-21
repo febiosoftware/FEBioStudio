@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "bbox.h"
+#include <FSCore/box.h>
 #include "GLObject.h"
 
 namespace Post {
@@ -18,7 +18,7 @@ public:
 	void SetFileName(const std::string& fileName);
 	std::string GetFileName() { return m_file; }
 
-	void Set3DImage(C3DImage* img, BOUNDINGBOX b);
+	void Set3DImage(C3DImage* img, BOX b);
 
 	C3DImage* Get3DImage() { return m_pImg; }
 
@@ -28,9 +28,9 @@ public:
 
 	void AddImageRenderer(CGLImageRenderer* render);
 
-	BOUNDINGBOX& GetBoundingBox() { return m_box; }
+	const BOX& GetBoundingBox() const { return m_box; }
 
-	void SetBoundingBox(BOUNDINGBOX b) { m_box = b; }
+	void SetBoundingBox(BOX b) { m_box = b; }
 
 	bool ShowBox() const;
 
@@ -38,7 +38,7 @@ public:
 
 private:
 	std::string		m_file;						//!< file name of image data
-	BOUNDINGBOX		m_box;						//!< physical dimensions of image
+	BOX				m_box;						//!< physical dimensions of image
 	C3DImage*		m_pImg;						//!< 3D image
 	bool			m_showBox;					//!< show box in Graphics View
 	std::vector<CGLImageRenderer*>	m_render;	//!< image renderers

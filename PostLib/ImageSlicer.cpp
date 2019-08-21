@@ -168,7 +168,7 @@ void CImageSlicer::Render(CGLContext& rc)
 		m_reloadTexture = false;
 	}
 
-	BOUNDINGBOX box = GetImageModel()->GetBoundingBox();
+	BOX box = GetImageModel()->GetBoundingBox();
 
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);

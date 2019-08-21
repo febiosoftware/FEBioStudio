@@ -1,7 +1,7 @@
 #pragma once
 
 #include "3DImage.h"
-#include "bbox.h"
+#include <FSCore/box.h>
 #include "GLImageRenderer.h"
 
 namespace Post {
@@ -56,8 +56,8 @@ public:
 	int		m_I0, m_I1;			// intensity range
 	int		m_A0, m_A1;			// transparency range
 	int		m_Amin, m_Amax;		// clamp transparency levels
-	float	m_alpha;			// alpha scale factor
-	float	m_shadeStrength;
+	double	m_alpha;			// alpha scale factor
+	double	m_shadeStrength;
 	bool	m_blight;			// use lighting
 
 protected:

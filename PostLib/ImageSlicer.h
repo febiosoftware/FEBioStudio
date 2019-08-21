@@ -1,6 +1,6 @@
 #pragma once
 #include "3DImage.h"
-#include "bbox.h"
+#include <FSCore/box.h>
 #include "GLImageRenderer.h"
 
 namespace Post {

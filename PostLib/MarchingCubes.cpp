@@ -139,7 +139,7 @@ void CMarchingCubes::Create()
 
 	CImageModel& im = *GetImageModel();
 	C3DImage& im3d = *im.Get3DImage();
-	BOUNDINGBOX b = im.GetBoundingBox();
+	BOX b = im.GetBoundingBox();
 
 	int NX = im3d.Width();
 	int NY = im3d.Height();
