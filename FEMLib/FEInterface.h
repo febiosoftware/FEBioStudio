@@ -36,6 +36,9 @@ public:
 	FEItemListBuilder* GetItemList() { return m_pItem; }
 	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
 
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
 protected:
 	FEItemListBuilder*	m_pItem;	// list of items that define interface
 };
@@ -96,9 +99,6 @@ public:
 	FERigidWallInterface(FEModel* ps, int nstep = 0);
 	~FERigidWallInterface(){}
 
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
-
 	FELoadCurve* GetLoadCurve() { return GetParamLC(OFFSET); }
 
 	void GetPlaneEquation(double a[4]);
@@ -116,9 +116,6 @@ public:
 	FERigidSphereInterface(FEModel* ps, int nstep = 0);
 	~FERigidSphereInterface(){}
 
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
-
 	FELoadCurve* GetLoadCurve(int i);
 
 	double Radius();
@@ -134,9 +131,6 @@ public:
 
 public:
 	FEVolumeConstraint(FEModel* ps, int nstep = 0);
-
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
 };
 
 //-----------------------------------------------------------------------------
@@ -148,9 +142,6 @@ public:
 
 public:
 	FESymmetryPlane(FEModel* ps, int nstep = 0);
-
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
 };
 
 //-----------------------------------------------------------------------------
@@ -162,9 +153,6 @@ public:
     
 public:
     FENormalFlowSurface(FEModel* ps, int nstep = 0);
-    
-    void Save(OArchive& ar);
-    void Load(IArchive& ar);
 };
 
 //-----------------------------------------------------------------------------
@@ -358,8 +346,6 @@ public:
 
 public:
 	FESpringTiedInterface(FEModel* ps, int nstep = 0);
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
 
 	double SpringConstant() const;
 

@@ -101,6 +101,7 @@ void FEPairedInterface::SwapMasterSlave()
 void FEPairedInterface::Save(OArchive& ar)
 {
 	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
 	ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
 	ar.BeginChunk(CID_INTERFACE_PARAMS);
@@ -133,12 +134,8 @@ void FEPairedInterface::Load(IArchive &ar)
 	{
 		switch (ar.GetChunkID())
 		{
-		case CID_INTERFACE_NAME:
-		{
-			char sz[256] = { 0 };
-			ar.read(sz); SetName(sz);
-		}
-		break;
+		case CID_INTERFACE_NAME: { string name; ar.read(name); SetName(name); };
+		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
@@ -181,6 +178,49 @@ FESoloInterface::~FESoloInterface()
 {
 	delete m_pItem;
 }
+
+//-----------------------------------------------------------------------------
+void FESoloInterface::Save(OArchive& ar)
+{
+	ar.WriteChunk(CID_INTERFACE_NAME  , GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO      , GetInfo());
+	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
+	ar.WriteChunk(CID_INTERFACE_STEP  , m_nstepID);
+	ar.BeginChunk(CID_INTERFACE_PARAMS);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+	if (m_pItem)
+	{
+		ar.BeginChunk(CID_INTERFACE_LIST1);
+		FEInterface::SaveList(m_pItem, ar);
+		ar.EndChunk();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FESoloInterface::Load(IArchive &ar)
+{
+	TRACE("FESoloInterface::Load");
+
+	while (IO_OK == ar.OpenChunk())
+	{
+		switch (ar.GetChunkID())
+		{
+		case CID_INTERFACE_NAME  : { string s; ar.read(s); SetName(s); } break;
+		case CID_FEOBJ_INFO      : { string s; ar.read(s); SetInfo(s); } break;
+		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
+		case CID_INTERFACE_STEP  : ar.read(m_nstepID); break;
+		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
+		case CID_INTERFACE_LIST1 : m_pItem = FEInterface::LoadList(ar); break;
+		default:
+			throw ReadError("unknown CID in FESoloInterface::Load");
+		}
+		ar.CloseChunk();
+	}
+}
+
 
 //=============================================================================
 // FERigidInterface
@@ -292,61 +332,6 @@ void FERigidWallInterface::GetPlaneEquation(double a[4])
 	a[3] = GetParam(PD).GetFloatValue();
 }
 
-//-----------------------------------------------------------------------------
-void FERigidWallInterface::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
-	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
-	ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
-	ar.BeginChunk(CID_INTERFACE_PARAMS);
-	{
-		ParamContainer::Save(ar);
-	}
-	ar.EndChunk();
-	if (m_pItem) 
-	{ 
-		ar.BeginChunk(CID_INTERFACE_LIST1);
-		FEInterface::SaveList(m_pItem, ar);
-		ar.EndChunk();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FERigidWallInterface::Load(IArchive &ar)
-{
-	TRACE("FERigidWallInterface::Load");
-
-	while (IO_OK == ar.OpenChunk())
-	{
-		switch (ar.GetChunkID())
-		{
-		case CID_INTERFACE_NAME:
-			{
-				char sz[256] = {0};
-				ar.read(sz); SetName(sz);
-			}
-			break;
-		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
-		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
-		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_LIST1: m_pItem = FEInterface::LoadList(ar); break;
-		case CID_RW_SLAVE: // obsolete in 1.8
-			{
-				int nid; ar.read(nid);
-				GModel& mdl = m_ps->GetModel();
-				m_pItem = mdl.FindNamedSelection(nid);
-				assert(m_pItem);
-			}
-			break;
-		default:
-			throw ReadError("unknown CID in FERigidWallInterface::Load");
-		}
-
-		ar.CloseChunk();
-	}
-}
-
-
 //=============================================================================
 // FERigidSphereInterface
 //-----------------------------------------------------------------------------
@@ -390,52 +375,6 @@ vec3d FERigidSphereInterface::Center()
 	return GetVecValue(CENTER);
 }
 
-//-----------------------------------------------------------------------------
-void FERigidSphereInterface::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
-	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
-	ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
-	ar.BeginChunk(CID_INTERFACE_PARAMS);
-	{
-		ParamContainer::Save(ar);
-	}
-	ar.EndChunk();
-	if (m_pItem)
-	{
-		ar.BeginChunk(CID_INTERFACE_LIST1);
-		FEInterface::SaveList(m_pItem, ar);
-		ar.EndChunk();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FERigidSphereInterface::Load(IArchive &ar)
-{
-	TRACE("FERigidSphereInterface::Load");
-
-	while (IO_OK == ar.OpenChunk())
-	{
-		switch (ar.GetChunkID())
-		{
-		case CID_INTERFACE_NAME:
-			{
-				char sz[256] = { 0 };
-				ar.read(sz); SetName(sz);
-			}
-			break;
-		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
-		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
-		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_LIST1 : m_pItem = FEInterface::LoadList(ar); break;
-		default:
-			throw ReadError("unknown CID in FERigidSphereInterface::Load");
-		}
-
-		ar.CloseChunk();
-	}
-}
-
 //=============================================================================
 // FEVolumeConstraint
 //-----------------------------------------------------------------------------
@@ -447,52 +386,6 @@ FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FESoloInterface
 	AddBoolParam  (false, "laugon" , "augmented lagrangian"  );
 	AddDoubleParam(0.2  , "augtol" , "augmentation tolerance");
 	AddDoubleParam(1    , "penalty", "penalty factor"        );
-}
-
-//-----------------------------------------------------------------------------
-void FEVolumeConstraint::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
-	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
-	ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
-	ar.BeginChunk(CID_INTERFACE_PARAMS);
-	{
-		ParamContainer::Save(ar);
-	}
-	ar.EndChunk();
-	if (m_pItem) 
-	{ 
-		ar.BeginChunk(CID_INTERFACE_LIST1);
-		FEInterface::SaveList(m_pItem, ar);
-		ar.EndChunk();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FEVolumeConstraint::Load(IArchive &ar)
-{
-	TRACE("FEVolumeConstraint::Load");
-
-	while (IO_OK == ar.OpenChunk())
-	{
-		switch (ar.GetChunkID())
-		{
-		case CID_INTERFACE_NAME:
-			{
-				char sz[256] = {0};
-				ar.read(sz); SetName(sz);
-			}
-			break;
-		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
-		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
-		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_LIST1: m_pItem = FEInterface::LoadList(ar); break;
-		default:
-			throw ReadError("unknown CID in FEVolumeConstraint::Load");
-		}
-
-		ar.CloseChunk();
-	}
 }
 
 //=============================================================================
@@ -510,52 +403,6 @@ FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESoloInterface(FE_SY
 	AddDoubleParam(0, "maxaug", "max. augmentations");
 }
 
-//-----------------------------------------------------------------------------
-void FESymmetryPlane::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
-	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
-	ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
-	ar.BeginChunk(CID_INTERFACE_PARAMS);
-	{
-		ParamContainer::Save(ar);
-	}
-	ar.EndChunk();
-	if (m_pItem)
-	{
-		ar.BeginChunk(CID_INTERFACE_LIST1);
-		FEInterface::SaveList(m_pItem, ar);
-		ar.EndChunk();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FESymmetryPlane::Load(IArchive &ar)
-{
-	TRACE("FESymmetryPlane::Load");
-
-	while (IO_OK == ar.OpenChunk())
-	{
-		switch (ar.GetChunkID())
-		{
-		case CID_INTERFACE_NAME:
-		{
-			char sz[256] = { 0 };
-			ar.read(sz); SetName(sz);
-		}
-		break;
-		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
-		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
-		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_LIST1: m_pItem = FEInterface::LoadList(ar); break;
-		default:
-			throw ReadError("unknown CID in FESymmetryPlane::Load");
-		}
-
-		ar.CloseChunk();
-	}
-}
-
 //=============================================================================
 // FENormalFlowSurface
 //-----------------------------------------------------------------------------
@@ -570,52 +417,6 @@ FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESoloInterfa
     AddDoubleParam(0, "minaug", "min. augmentations");
     AddDoubleParam(0, "maxaug", "max. augmentations");
 	AddDoubleParam(0, "rhs", "rhs");
-}
-
-//-----------------------------------------------------------------------------
-void FENormalFlowSurface::Save(OArchive& ar)
-{
-    ar.WriteChunk(CID_INTERFACE_NAME, GetName());
-    ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
-    ar.BeginChunk(CID_INTERFACE_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    if (m_pItem)
-    {
-        ar.BeginChunk(CID_INTERFACE_LIST1);
-        FEInterface::SaveList(m_pItem, ar);
-        ar.EndChunk();
-    }
-}
-
-//-----------------------------------------------------------------------------
-void FENormalFlowSurface::Load(IArchive &ar)
-{
-    TRACE("FENormalFlowSurface::Load");
-    
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_INTERFACE_NAME:
-            {
-                char sz[256] = { 0 };
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
-            case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
-            case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-            case CID_INTERFACE_LIST1: m_pItem = FEInterface::LoadList(ar); break;
-            default:
-                throw ReadError("unknown CID in FENormalFlowSurface::Load");
-        }
-        
-        ar.CloseChunk();
-    }
 }
 
 //=============================================================================
@@ -1026,56 +827,6 @@ FESpringTiedInterface::FESpringTiedInterface(FEModel* ps, int nstep) : FEPairedI
 double FESpringTiedInterface::SpringConstant() const
 {
 	return GetFloatValue(ECONST);
-}
-
-void FESpringTiedInterface::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
-	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
-	ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
-	ar.BeginChunk(CID_INTERFACE_PARAMS);
-	{
-		ParamContainer::Save(ar);
-	}
-	ar.EndChunk();
-	if (m_pMaster)
-	{
-		ar.BeginChunk(CID_INTERFACE_LIST0);
-		FEInterface::SaveList(m_pMaster, ar);
-		ar.EndChunk();
-	}
-	if (m_pSlave ) 
-	{ 
-		ar.BeginChunk(CID_INTERFACE_LIST1); 
-		FEInterface::SaveList(m_pSlave, ar);
-		ar.EndChunk();
-	}
-}
-
-void FESpringTiedInterface::Load(IArchive& ar)
-{
-	TRACE("FESpringTiedInterface::Load");
-	while (IO_OK == ar.OpenChunk())
-	{
-		switch (ar.GetChunkID())
-		{
-		case CID_INTERFACE_NAME:
-			{
-				char sz[256] = {0};
-				ar.read(sz); SetName(sz);
-			}
-			break;
-		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
-		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
-		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_LIST0: m_pMaster = FEInterface::LoadList(ar); break;
-		case CID_INTERFACE_LIST1: m_pSlave  = FEInterface::LoadList(ar); break;
-		default:
-			throw ReadError("unknown CID in FESpringTiedInterface::Load");
-		}
-
-		ar.CloseChunk();
-	}
 }
 
 void FESpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)

@@ -34,6 +34,7 @@ void FEBoundaryCondition::Save(OArchive &ar)
 {
 	// write the name
 	ar.WriteChunk(NAME, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 
 	// write the step
 	ar.WriteChunk(STEP, m_nstepID);
@@ -71,7 +72,8 @@ void FEBoundaryCondition::Load(IArchive &ar)
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case NAME: { char sz[256]; ar.read(sz); SetName(sz); } break;
+		case NAME: { string name; ar.read(name); SetName(name); } break;
+		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case STEP: ar.read(m_nstepID); break;
 		case PARAMS:
 			ParamContainer::Load(ar);

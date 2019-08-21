@@ -86,6 +86,45 @@ FEItemListBuilder* FEConnector::LoadList(IArchive& ar)
     return pitem;
 }
 
+//-----------------------------------------------------------------------------
+void FEConnector::Save(OArchive& ar)
+{
+    ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
+    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
+    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
+    ar.BeginChunk(CID_CONNECTOR_PARAMS);
+    {
+        ParamContainer::Save(ar);
+    }
+    ar.EndChunk();
+    
+    ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
+	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
+}
+
+//-----------------------------------------------------------------------------
+void FEConnector::Load(IArchive& ar)
+{
+    TRACE("FEConnector::Load");
+    while (IO_OK == ar.OpenChunk())
+    {
+        switch (ar.GetChunkID())
+        {
+            case CID_CONNECTOR_NAME: { string name; ar.read(name); SetName(name); } break;
+			case CID_FEOBJ_INFO    : { string info; ar.read(info); SetInfo(info); } break;
+            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
+            case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
+            case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
+			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
+            case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
+            default:
+                throw ReadError("unknown CID in FEConnector::Load");
+        }
+        ar.CloseChunk();
+    }
+}
+
 //=============================================================================
 // FERigidSphericalJoint
 //-----------------------------------------------------------------------------
@@ -117,48 +156,6 @@ void FERigidSphericalJoint::SetPosition(const vec3d& r)
 	SetVecValue(J_ORIG, r);
 }
 
-//-----------------------------------------------------------------------------
-void FERigidSphericalJoint::Save(OArchive& ar)
-{
-    ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-    ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidSphericalJoint::Load(IArchive& ar)
-{
-    TRACE("FERigidSphericalJoint::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-            case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-            case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-            case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-            default:
-                throw ReadError("unknown CID in FERigidSphericalJoint::Load");
-        }
-        ar.CloseChunk();
-    }
-}
-
 //=============================================================================
 // FERigidRevoluteJoint
 //-----------------------------------------------------------------------------
@@ -188,48 +185,6 @@ void FERigidRevoluteJoint::SetPosition(const vec3d& r)
 	SetVecValue(J_ORIG, r);
 }
 
-//-----------------------------------------------------------------------------
-void FERigidRevoluteJoint::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-	ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidRevoluteJoint::Load(IArchive& ar)
-{
-    TRACE("FERigidRevoluteJoint::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-			case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-			case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-			case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-			default:
-                throw ReadError("unknown CID in FERigidRevoluteJoint::Load");
-        }
-        ar.CloseChunk();
-    }
-}
-
 //=============================================================================
 // FERigidPrismaticJoint
 //-----------------------------------------------------------------------------
@@ -257,48 +212,6 @@ FERigidPrismaticJoint::FERigidPrismaticJoint(FEModel* ps, int nstep) : FEConnect
 void FERigidPrismaticJoint::SetPosition(const vec3d& r)
 {
 	SetVecValue(J_ORIG, r);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidPrismaticJoint::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-	ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidPrismaticJoint::Load(IArchive& ar)
-{
-    TRACE("FERigidPrismaticJoint::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-			case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-			case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-			case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-			default:
-                throw ReadError("unknown CID in FFERigidPrismaticJointERigidJoint::Load");
-        }
-        ar.CloseChunk();
-    }
 }
 
 //=============================================================================
@@ -333,48 +246,6 @@ void FERigidCylindricalJoint::SetPosition(const vec3d& r)
 	SetVecValue(J_ORIG, r);
 }
 
-//-----------------------------------------------------------------------------
-void FERigidCylindricalJoint::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-	ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidCylindricalJoint::Load(IArchive& ar)
-{
-    TRACE("FERigidCylindricalJoint::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-			case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-			case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-			case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-			default:
-                throw ReadError("unknown CID in FERigidCylindricalJoint::Load");
-        }
-        ar.CloseChunk();
-    }
-}
-
 //=============================================================================
 // FERigidPlanarJoint
 //-----------------------------------------------------------------------------
@@ -407,48 +278,6 @@ void FERigidPlanarJoint::SetPosition(const vec3d& r)
 	SetVecValue(J_ORIG, r);
 }
 
-//-----------------------------------------------------------------------------
-void FERigidPlanarJoint::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-	ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidPlanarJoint::Load(IArchive& ar)
-{
-    TRACE("FERigidPlanarJoint::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-			case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-			case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-			case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-			default:
-                throw ReadError("unknown CID in FERigidPlanarJoint::Load");
-        }
-        ar.CloseChunk();
-    }
-}
-
 //=============================================================================
 // FERigidLock
 //-----------------------------------------------------------------------------
@@ -475,48 +304,6 @@ void FERigidLock::SetPosition(const vec3d& r)
     SetVecValue(J_ORIG, r);
 }
 
-//-----------------------------------------------------------------------------
-void FERigidLock::Save(OArchive& ar)
-{
-    ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-    ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-    ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidLock::Load(IArchive& ar)
-{
-    TRACE("FERigidLock::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-            case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-            case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-            case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-            case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-            default:
-                throw ReadError("unknown CID in FERigidLock::Load");
-        }
-        ar.CloseChunk();
-    }
-}
-
 //=============================================================================
 // FERigidSpring
 //-----------------------------------------------------------------------------
@@ -528,48 +315,6 @@ FERigidSpring::FERigidSpring(FEModel* ps, int nstep) : FEConnector(FE_RC_SPRING,
     AddDoubleParam(0           , "k", "stiffness");
     AddVecParam   (vec3d(0,0,0), "insertion_a" , "insertion point a");
     AddVecParam   (vec3d(0,0,0), "insertion_b" , "insertion point b");
-}
-
-//-----------------------------------------------------------------------------
-void FERigidSpring::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-	ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidSpring::Load(IArchive& ar)
-{
-    TRACE("FERigidSpring::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-			case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-			case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-			case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-			default:
-                throw ReadError("unknown CID in FERigidSpring::Load");
-        }
-        ar.CloseChunk();
-    }
 }
 
 //=============================================================================
@@ -585,48 +330,6 @@ FERigidDamper::FERigidDamper(FEModel* ps, int nstep) : FEConnector(FE_RC_DAMPER,
     AddVecParam   (vec3d(0,0,0), "insertion_b" , "insertion point b");
 }
 
-//-----------------------------------------------------------------------------
-void FERigidDamper::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-	ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidDamper::Load(IArchive& ar)
-{
-    TRACE("FERigidDamper::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-			case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-			case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-			case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-			default:
-                throw ReadError("unknown CID in FERigidDamper::Load");
-        }
-        ar.CloseChunk();
-    }
-}
-
 //=============================================================================
 // FERigidAngularDamper
 //-----------------------------------------------------------------------------
@@ -636,48 +339,6 @@ FERigidAngularDamper::FERigidAngularDamper(FEModel* ps, int nstep) : FEConnector
     SetTypeString("rigid angular damper");
     
     AddDoubleParam(0.0 , "c", "damping");
-}
-
-//-----------------------------------------------------------------------------
-void FERigidAngularDamper::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-	ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidAngularDamper::Load(IArchive& ar)
-{
-    TRACE("FERigidAngularDamper::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-			case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-			case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-			case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-			default:
-                throw ReadError("unknown CID in FERigidAngularDamper::Load");
-        }
-        ar.CloseChunk();
-    }
 }
 
 //=============================================================================
@@ -691,46 +352,4 @@ FERigidContractileForce::FERigidContractileForce(FEModel* ps, int nstep) : FECon
     AddDoubleParam(0           , "f0", "force");
     AddVecParam   (vec3d(0,0,0), "insertion_a" , "insertion point a");
     AddVecParam   (vec3d(0,0,0), "insertion_b" , "insertion point b");
-}
-
-//-----------------------------------------------------------------------------
-void FERigidContractileForce::Save(OArchive& ar)
-{
-	ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
-    ar.WriteChunk(CID_CONNECTOR_ACTIVE, m_bActive);
-    ar.WriteChunk(CID_CONNECTOR_STEP, GetStep());
-    ar.BeginChunk(CID_CONNECTOR_PARAMS);
-    {
-        ParamContainer::Save(ar);
-    }
-    ar.EndChunk();
-    
-	ar.WriteChunk(CID_RC_RIGIDBODY_A, m_rbA);
-	ar.WriteChunk(CID_RC_RIGIDBODY_B, m_rbB);
-}
-
-//-----------------------------------------------------------------------------
-void FERigidContractileForce::Load(IArchive& ar)
-{
-    TRACE("FERigidContractileForce::Load");
-    while (IO_OK == ar.OpenChunk())
-    {
-        switch (ar.GetChunkID())
-        {
-            case CID_CONNECTOR_NAME:
-            {
-                char sz[256] = {0};
-                ar.read(sz); SetName(sz);
-            }
-                break;
-            case CID_CONNECTOR_ACTIVE: ar.read(m_bActive); break;
-			case CID_CONNECTOR_STEP: { int nstep; ar.read(nstep); SetStep(nstep); } break;
-			case CID_CONNECTOR_PARAMS: ParamContainer::Load(ar); break;
-			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
-			case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
-			default:
-                throw ReadError("unknown CID in FERigidContractileForce::Load");
-        }
-        ar.CloseChunk();
-    }
 }

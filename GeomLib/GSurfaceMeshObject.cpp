@@ -439,6 +439,7 @@ void GSurfaceMeshObject::Save(OArchive& ar)
 {
 	// save the name
 	ar.WriteChunk(CID_OBJ_NAME, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 
 	// save the transform stuff
 	ar.BeginChunk(CID_OBJ_HEADER);
@@ -590,9 +591,17 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 			// object name
 		case CID_OBJ_NAME:
 		{
-			char sz[256];
-			ar.read(sz);
-			SetName(sz);
+			string name;
+			ar.read(name);
+			SetName(name);
+		}
+		break;
+		// object info
+		case CID_FEOBJ_INFO:
+		{
+			string info;
+			ar.read(info);
+			SetInfo(info);
 		}
 		break;
 		// header

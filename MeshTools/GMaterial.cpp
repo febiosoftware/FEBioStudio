@@ -77,6 +77,7 @@ void GMaterial::Save(OArchive &ar)
 {
 	ar.WriteChunk(CID_MAT_ID, m_nID);
 	ar.WriteChunk(CID_MAT_NAME, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 	ar.WriteChunk(CID_MAT_DIFFUSE, m_diffuse);
 	ar.WriteChunk(CID_MAT_AMBIENT, m_ambient);
 	ar.WriteChunk(CID_MAT_SPECULAR, m_specular);
@@ -103,7 +104,8 @@ void GMaterial::Load(IArchive &ar)
 		switch (nid)
 		{
 		case CID_MAT_ID: { int mid; ar.read(mid); SetID(mid); } break;
-		case CID_MAT_NAME: { char tmp[256] = {0}; ar.read(tmp); SetName(tmp); break; }
+		case CID_MAT_NAME: { string name; ar.read(name); SetName(name); break; }
+		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case CID_MAT_DIFFUSE: ar.read(m_diffuse); break;
 		case CID_MAT_AMBIENT: ar.read(m_ambient); break;
 		case CID_MAT_SPECULAR: ar.read(m_specular); break;

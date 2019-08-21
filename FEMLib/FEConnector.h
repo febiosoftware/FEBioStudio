@@ -17,6 +17,9 @@ public:
 
 	virtual void SetPosition(const vec3d& r);
 
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
 protected:
 	void SaveList(FEItemListBuilder* pitem, OArchive& ar);
 	FEItemListBuilder* LoadList(IArchive& ar);
@@ -41,8 +44,6 @@ public:
     
 public:
     FERigidSphericalJoint(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -57,8 +58,6 @@ public:
     
 public:
     FERigidRevoluteJoint(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -73,8 +72,6 @@ public:
     
 public:
     FERigidPrismaticJoint(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -89,8 +86,6 @@ public:
     
 public:
     FERigidCylindricalJoint(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -105,8 +100,6 @@ public:
     
 public:
     FERigidPlanarJoint(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 	void SetPosition(const vec3d& r) override;
 };
 
@@ -121,8 +114,6 @@ public:
     
 public:
     FERigidLock(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
     void SetPosition(const vec3d& r) override;
 };
 
@@ -136,8 +127,6 @@ public:
     
 public:
     FERigidSpring(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -150,8 +139,6 @@ public:
     
 public:
     FERigidDamper(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -164,8 +151,6 @@ public:
     
 public:
     FERigidAngularDamper(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -178,6 +163,4 @@ public:
     
 public:
     FERigidContractileForce(FEModel* ps, int nstep = 0);
-    void Save(OArchive& ar) override;
-    void Load(IArchive& ar) override;
 };

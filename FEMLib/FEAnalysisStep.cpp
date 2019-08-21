@@ -283,6 +283,7 @@ void FEStep::Save(OArchive &ar)
 {
 	// write the name
 	ar.WriteChunk(CID_STEP_NAME, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 
 	// write the step
 	ar.WriteChunk(CID_STEP_ID, m_nID);
@@ -419,6 +420,7 @@ void FEStep::Load(IArchive &ar)
 		switch (nid)
 		{
 		case CID_STEP_NAME      : { string name; ar.read(name); SetName(name); } break;
+		case CID_FEOBJ_INFO     : { string info; ar.read(info); SetInfo(info); } break;
 		case CID_STEP_ID        : { int nid; ar.read(nid); SetID(nid); } break;
 		case CID_BC_SECTION: // boundary conditions
 			{

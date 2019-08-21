@@ -321,6 +321,7 @@ void GLinearSpringSet::SetSpringConstant(double E)
 void GLinearSpringSet::Save(OArchive& ar)
 {
 	ar.WriteChunk(0, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 	if (m_elem.size() > 0)
 	{
 		ar.BeginChunk(1);
@@ -341,17 +342,18 @@ void GLinearSpringSet::Load(IArchive& ar)
 {
 	TRACE("GSpringSet::Load");
 
-	char sz[256] = {0};
+	string s;
 	GLColor col = GetColor();
 	while (IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case 0: ar.read(sz); SetName(sz); break;
+		case 0: ar.read(s); SetName(s); break;
 		case 1: GDiscreteElementSet::Load(ar); break;
 		case 2: ParamContainer::Load(ar); break;
 		case 3: ar.read(col); break;
+		case CID_FEOBJ_INFO: ar.read(s); SetInfo(s); break;
 		}
 		ar.CloseChunk();
 	}
@@ -373,6 +375,7 @@ GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteElementSet(FE_NONLINEAR_SP
 void GNonlinearSpringSet::Save(OArchive& ar)
 {
 	ar.WriteChunk(0, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 	if (m_elem.size() > 0)
 	{
 		ar.BeginChunk(1);
@@ -393,17 +396,18 @@ void GNonlinearSpringSet::Load(IArchive& ar)
 {
 	TRACE("GNonlinearSpringSet::Load");
 
-	char sz[256] = {0};
+	string s;
 	GLColor col = GetColor();
 	while (IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case 0: ar.read(sz); SetName(sz); break;
+		case 0: ar.read(s); SetName(s); break;
 		case 1: GDiscreteElementSet::Load(ar); break;
 		case 2: ParamContainer::Load(ar); break;
-		case 3: ar.read(col);
+		case 3: ar.read(col); break;
+		case CID_FEOBJ_INFO: ar.read(s); SetInfo(s); break;
 		}
 		ar.CloseChunk();
 	}
