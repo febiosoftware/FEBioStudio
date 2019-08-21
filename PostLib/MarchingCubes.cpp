@@ -90,6 +90,8 @@ void CMarchingCubes::UpdateData(bool bsave)
 		m_bcloseSurface = GetBoolValue(CLOSE_SURFACE);
 		m_binvertSpace = GetBoolValue(INVERT_SPACE);
 		AllowClipping(GetBoolValue(CLIP));
+
+		Create();
 	}
 	else
 	{

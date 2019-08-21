@@ -46,6 +46,7 @@ protected:
 	void DepthCueY(CRGBAImage& im, int n);
 	void DepthCueZ(CRGBAImage& im, int n);
 
+	void UpdateVolRender();
 	void UpdateRGBImages();
 
 public:

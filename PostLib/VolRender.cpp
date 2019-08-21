@@ -12,6 +12,7 @@
 #include "VolRender.h"
 #include "GLContext.h"
 #include "ImageModel.h"
+#include "ColorMap.h"
 #include <sstream>
 using namespace Post;
 
@@ -52,6 +53,17 @@ CVolRender::CVolRender(CImageModel* img) : CGLImageRenderer(img)
 
 	m_texID = 0;
 
+	m_alpha = 0.2;
+	m_I0 = 0;
+	m_I1 = 255;
+	m_A0 = 0;
+	m_A1 = 255;
+	m_Amin = 0;
+	m_Amax = 255;
+
+	// use default grayscale color map
+	m_Col.SetColorMap(ColorMapManager::GRAY);
+
 	UpdateData(false);
 
 	Reset();
@@ -79,6 +91,8 @@ void CVolRender::UpdateData(bool bsave)
 		m_amb = GetColorValue(AMBIENT);
 		m_spc = GetColorValue(SPECULAR);
 		m_light = GetVecValue(LIGHT_POS);
+
+		UpdateVolRender();
 	}
 	else
 	{
@@ -249,7 +263,11 @@ void CVolRender::CalcAttenuation()
 void CVolRender::Update()
 {
 	UpdateData();
+	UpdateVolRender();
+}
 
+void CVolRender::UpdateVolRender()
+{
 	// calculate attenuation factors
 	if (m_bcalc_lighting)
 	{
