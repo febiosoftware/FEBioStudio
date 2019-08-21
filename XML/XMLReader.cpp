@@ -107,6 +107,11 @@ void XMLTag::value(vec3f& v)
 	sscanf(m_szval, "%g,%g,%g", &v.x, &v.y, &v.z);
 }
 
+void XMLTag::value(GLColor& c)
+{
+	sscanf(m_szval, "%c,%c,%c", &c.r, &c.g, &c.b);
+}
+
 //-----------------------------------------------------------------------------
 void XMLTag::value(vector<int>& l)
 {
@@ -366,6 +371,11 @@ inline bool isvalid(char c)
 	return (isalnum(c) || (c=='_') || (c=='.'));
 }
 
+const std::string& XMLReader::GetLastComment()
+{
+	return m_comment;
+}
+
 void XMLReader::ReadTag(XMLTag& tag)
 {
 	// find the start token
@@ -381,21 +391,37 @@ void XMLReader::ReadTag(XMLTag& tag)
 			ch = GetChar(); if (ch != '-') throw XMLSyntaxError();
 			ch = GetChar(); if (ch != '-') throw XMLSyntaxError();
 
+			m_comment.clear();
+
 			// find the end of the comment
 			do
 			{
-				ch = GetChar();
+				ch = GetNextChar();
 				if (ch == '-')
 				{
-					ch = GetChar();
+					ch = GetNextChar();
 					if (ch == '-')
 					{
-						ch = GetChar();
+						ch = GetNextChar();
 						if (ch == '>') break;
 					}
 				}
+				m_comment += ch;
 			}
 			while (1);
+
+			// remove the first and last end-of-line character
+			while ((m_comment.empty() == false) && (m_comment[0] == '\n'))
+			{
+				m_comment.erase(m_comment.begin());
+			}
+
+			while ((m_comment.empty() == false) && (m_comment.back() == '\n'))
+			{
+				m_comment.erase(m_comment.begin() + m_comment.size() - 1);
+			}
+
+			int a = 0;
 		}
 		else if (ch == '?')
 		{
@@ -413,6 +439,7 @@ void XMLReader::ReadTag(XMLTag& tag)
 	if (ch == '/') 
 	{
 		tag.m_bend = true;
+		m_comment.clear();
 		ch = GetChar();
 	}
 

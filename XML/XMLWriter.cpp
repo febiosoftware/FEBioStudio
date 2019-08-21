@@ -263,6 +263,11 @@ void XMLWriter::add_leaf(const char* szn, const char* szv)
 	fprintf(m_fp, ">%s</%s>\n", szv, szn);
 }
 
+void XMLWriter::add_leaf(const char* szn, const std::string& s)
+{
+	add_leaf(szn, s.c_str());
+}
+
 void XMLWriter::add_leaf(const char* szn, double* pg, int n)
 {
 	char szformat[256] = {0};

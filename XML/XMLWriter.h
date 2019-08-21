@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <MathLib/math3d.h>
+#include <FSCore/color.h>
 #include <vector>
 #include <string>
 
@@ -86,6 +87,7 @@ public:
 	void add_leaf  (XMLElement& el, bool bclear = true);
 
 	void add_leaf(const char* szn, const char* szv);
+	void add_leaf(const char* szn, const std::string& s);
 
 	void add_leaf(const char* szn, int    n){ char szv[256]; sprintf(szv, "%d" , n); add_leaf(szn, szv); }
 	void add_leaf(const char* szn, bool   b){ char szv[256]; sprintf(szv, "%d" , b); add_leaf(szn, szv); }
@@ -95,6 +97,7 @@ public:
 	void add_leaf(const char* szn, double* pg, int n);
 	void add_leaf(const char* szn, const vec3d& r){ char szv[256]; sprintf(szv, "%g,%g,%g", r.x, r.y, r.z); add_leaf(szn, szv); }
 	void add_leaf(const char* szn, const quatd& q){ char szv[256]; sprintf(szv, "%g,%g,%g,%g", q.x, q.y, q.z, q.w); add_leaf(szn, szv); }
+	void add_leaf(const char* szn, const GLColor& c) { char szv[256]; sprintf(szv, "%d,%d,%d", c.r, c.g, c.b); }
 	void add_leaf(XMLElement& el, const std::vector<int>& A);
 
 	void close_branch();

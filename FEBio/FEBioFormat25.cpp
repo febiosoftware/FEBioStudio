@@ -1140,6 +1140,8 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 {
 	FEBioModel& febio = GetFEBioModel();
 
+	std::string comment = tag.comment();
+
 	// find the surface
 	XMLAtt& surf = tag.Attribute("surface");
 	FESurface* psurf = febio.BuildFESurface(surf.cvalue());
@@ -1169,6 +1171,9 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	{
 		// assign the surface
 		psl->SetItemList(psurf);
+
+		// set the comment
+		psl->SetInfo(comment);
 
 		// add to the step
 		pstep->AddLoad(psl);

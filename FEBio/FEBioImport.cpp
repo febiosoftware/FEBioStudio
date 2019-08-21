@@ -98,6 +98,7 @@ bool FEBioImport::Load(FEProject& prj, const char* szfile)
 
 	m_pprj = &prj;
 	FEModel& fem = prj.GetFEModel();
+	GModel& mdl = fem.GetModel();
 
 	// create a new FEBioModel
 	m_febio = new FEBioModel(fem);
@@ -108,6 +109,8 @@ bool FEBioImport::Load(FEProject& prj, const char* szfile)
 		// Find the root element
 		XMLTag tag;
 		if (xml.FindTag("febio_spec", tag) == false) return errf("This is not a valid FEBio input file");
+
+		mdl.SetInfo(xml.GetLastComment());
 
 		// check the version number of the file (This also allocates the format)
 		if (ParseVersion(tag) == false) return errf("Invalid version for febio_spec");

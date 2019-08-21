@@ -450,6 +450,9 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 		if (pan) strcpy(szname, pan->cvalue());
 		else sprintf(szname, "Material%02d", febio.Materials() + 1);
 
+		// get the comment
+		std::string comment = tag.comment();
+
 		// allocate a new material
 		FEMaterial* pmat = 0;
 
@@ -464,6 +467,7 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 		// if pmat is set we need to add the material to the list
 		GMaterial* gmat = new GMaterial(pmat);
 		gmat->SetName(szname);
+		gmat->SetInfo(comment);
 		febio.AddMaterial(gmat);
 		fem.AddMaterial(gmat);
 

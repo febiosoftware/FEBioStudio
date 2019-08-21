@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <MathLib/math3d.h>
+#include <FSCore/color.h>
 
 class XMLAtt
 {
@@ -104,8 +105,11 @@ public:
 	void value(vec3f& v);
 	void value(bool& b) { b = (atoi(m_szval) == 1); }
 	void value(vector<int>& l);
+	void value(GLColor& c);
 
 	const char* szvalue() { return m_szval; }
+
+	const std::string& comment();
 };
 
 template <> inline int XMLTag::AttributeValue<int>(const char* szatt, int def_val)
@@ -208,12 +212,28 @@ public:
 
 	void SkipTag(XMLTag& tag);
 
+	const std::string& GetLastComment();
+
 protected:
 	char GetChar() 
 	{
 		char ch;
 		while ((ch=fgetc(m_fp))=='\n') ++m_nline;
 		if (feof(m_fp)) throw UnexpectedEOF();
+		return ch;
+	}
+
+	// only used for processing comments
+	char GetNextChar()
+	{
+		char ch;
+		do
+		{
+			ch = fgetc(m_fp);
+			if (feof(m_fp)) throw UnexpectedEOF();
+			if (ch == '\n') ++m_nline;
+		} 
+		while (ch == '\r');
 		return ch;
 	}
 
@@ -227,7 +247,11 @@ protected:
 
 	int		m_nline;	// current line (used only as temp storage)
 
+	string	m_comment;	// last comment that was read
+
 	friend class XMLTag;
 };
 
 inline void XMLTag::operator ++ () { m_preader->NextTag(*this); }
+
+inline const std::string& XMLTag::comment() { return m_preader->GetLastComment(); }
