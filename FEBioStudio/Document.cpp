@@ -26,6 +26,7 @@
 #include <PostGL/GLDisplacementMap.h>
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
+#include <PostLib/GLImageRenderer.h>
 #include "PostDoc.h"
 #include <sstream>
 
@@ -534,6 +535,7 @@ std::string CDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";
 	else if (dynamic_cast<Post::CGLModel*>(po)) return "post model";
 	else if (dynamic_cast<GModel*>(po)) return "model";
+	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
 	else
 	{
 		assert(false);

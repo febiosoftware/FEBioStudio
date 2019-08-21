@@ -308,7 +308,7 @@ void CDlgRun::accept()
 
 	CDocument* doc = ui->m_wnd->GetDocument();
 	std::string projectFolder = doc->GetDocFolder();
-	path.replace("$(ProjectFolder)", QString::fromStdString(projectFolder));
+	path.replace("$(ProjectDir)", QString::fromStdString(projectFolder));
 
 	QDir dir(path);
 	if (path.isEmpty() || (dir.exists() == false))

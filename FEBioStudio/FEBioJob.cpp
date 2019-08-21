@@ -111,7 +111,7 @@ bool CFEBioJob::OpenPlotFile()
 	QString plotFile = QString::fromStdString(m_plotFile);
 
 	QString projectFolder = QString::fromStdString(m_doc->GetDocFolder());
-	plotFile.replace("$(ProjectFolder)", projectFolder);
+	plotFile.replace("$(ProjectDir)", projectFolder);
 
 	string splotfile = plotFile.toStdString();
 

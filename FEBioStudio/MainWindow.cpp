@@ -1696,7 +1696,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 	QString filePath = QString::fromStdString(job->GetFileName());
 
 	// do string substitution
-	filePath.replace("$(ProjectFolder)", QString::fromStdString(projectFolder));
+	filePath.replace("$(ProjectDir)", QString::fromStdString(projectFolder));
 
 	// try to save the file first
 	AddLogEntry(QString("Saving to %1 ...").arg(filePath));
