@@ -459,7 +459,7 @@ FSObject* CCreateSpringPane::Create()
 
 	if (ui->m_list->count() == 0)
 	{
-		QMessageBox::critical(this, "PreView2", "You must create and select a discrete set first.");
+		QMessageBox::critical(this, "FEBio Studio", "You must create and select a discrete set first.");
 		return 0;
 	}
 
@@ -487,7 +487,7 @@ FSObject* CCreateSpringPane::Create()
 			GMeshObject* po = dynamic_cast<GMeshObject*>(ui->m_mesh[0]->GetGObject());
 			if (po == 0) 
 			{
-				QMessageBox::critical(this, "PreView2", "Unable to generate springs.");
+				QMessageBox::critical(this, "FEBio Studio", "Unable to generate springs.");
 				return 0;
 			}
 
@@ -512,7 +512,7 @@ FSObject* CCreateSpringPane::Create()
 			GMeshObject* po = dynamic_cast<GMeshObject*>(ui->m_mesh[1]->GetGObject());
 			if (po == 0)
 			{
-				QMessageBox::critical(this, "PreView2", "Unable to generate springs.");
+				QMessageBox::critical(this, "FEBio Studio", "Unable to generate springs.");
 				return 0;
 			}
 
@@ -530,7 +530,7 @@ FSObject* CCreateSpringPane::Create()
 		bool ret = gen.generate(po, node1, node2);
 		if (ret == false)
 		{
-			QMessageBox::critical(this, "PreView2", "Was not able to generate all the springs.");
+			QMessageBox::critical(this, "FEBio Studio", "Was not able to generate all the springs.");
 			return 0;
 		}
 
@@ -541,7 +541,7 @@ FSObject* CCreateSpringPane::Create()
 	}
 	else
 	{
-		QMessageBox::critical(this, "PreView2", "Hmmm, something went wrong ...");
+		QMessageBox::critical(this, "FEBio Studio", "Hmmm, something went wrong ...");
 		return 0;
 	}
 

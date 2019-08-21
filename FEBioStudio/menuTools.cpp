@@ -31,7 +31,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	// First, check that a job is not running yet
 	if (ui->m_process && (ui->m_process->state()!=QProcess::NotRunning))
 	{
-		QMessageBox::information(this, "PreView2", "An FEBio job is already running.\nYou must wait till the job is finished or stop it.");
+		QMessageBox::information(this, "FEBio Studio", "An FEBio job is already running.\nYou must wait till the job is finished or stop it.");
 		return;
 	}
 
@@ -113,7 +113,7 @@ void CMainWindow::on_actionFEBioStop_triggered()
 			ShowInModelViewer(job);
 		}
 	}
-	else QMessageBox::information(this, "PreView2", "No FEBio job is running.");
+	else QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
 }
 
 void CMainWindow::on_actionFEBioOptimize_triggered()

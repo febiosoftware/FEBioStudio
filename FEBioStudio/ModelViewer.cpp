@@ -250,7 +250,7 @@ void CModelViewer::on_selectButton_clicked()
 		if (dynamic_cast<FEBodyForce*>(pbc) == 0)
 		{
 			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) QMessageBox::critical(this, "PreView2", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
+			if (pitem == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
 			else SelectItemList(pitem);
 		}
 	}
@@ -291,7 +291,7 @@ void CModelViewer::on_selectButton_clicked()
 	{
 		FESoloInterface* pci = dynamic_cast<FESoloInterface*>(po);
 		FEItemListBuilder* pl = pci->GetItemList();
-		if (pl == 0) QMessageBox::critical(this, "PreView2", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
+		if (pl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
 		else SelectItemList(pl);
 	}
 	else if (dynamic_cast<FEPairedInterface*>(po))
@@ -300,10 +300,10 @@ void CModelViewer::on_selectButton_clicked()
 		FEItemListBuilder* pml = pci->GetMasterSurfaceList();
 		FEItemListBuilder* psl = pci->GetSlaveSurfaceList();
 
-		if (pml == 0) QMessageBox::critical(this, "PreView2", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
+		if (pml == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
 		else SelectItemList(pml);
 
-		if (psl == 0) QMessageBox::critical(this, "PreView2", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
+		if (psl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
 		else SelectItemList(psl, true);
 	}
 

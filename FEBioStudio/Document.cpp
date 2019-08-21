@@ -1405,7 +1405,7 @@ void CDocument::DeleteObject(FSObject* po)
 		{
 			pp->RemoveMaterial(pm);
 		}
-		else QMessageBox::warning(m_wnd, "PreView2", "Cannot delete this material property.");
+		else QMessageBox::warning(m_wnd, "FEBio Studio", "Cannot delete this material property.");
 	}
 	else if (dynamic_cast<FEDataMap*>(po))
 	{

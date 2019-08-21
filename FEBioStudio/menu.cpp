@@ -580,7 +580,7 @@ void CMainWindow::on_actionImportImage_triggered()
 			CDocument* doc = GetDocument();
 			if (doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box) == false)
 			{
-				QMessageBox::critical(this, "PreView2", "Failed importing image data.");
+				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
 			}
 			else
 			{
@@ -1106,7 +1106,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			}
 			else
 			{
-				QMessageBox::information(this, "PreView2", "Cannot delete this selection.");
+				QMessageBox::information(this, "FEBio Studio", "Cannot delete this selection.");
 			}
 		}
 		else
@@ -1123,7 +1123,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			GPrimitive* pp = dynamic_cast<GPrimitive*>(po);
 			if (pp)
 			{
-				QMessageBox::information(this, "PreView2", "Cannot delete mesh selections of a primitive object.");
+				QMessageBox::information(this, "FEBio Studio", "Cannot delete mesh selections of a primitive object.");
 			}
 		}
 	}

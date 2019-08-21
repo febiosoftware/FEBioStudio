@@ -239,7 +239,7 @@ void CDlgRun::onPathChanged(int n)
 			QString path = dlg.path->text();
 			if (path.isEmpty())
 			{
-				QMessageBox::critical(this, "PreView2", "Cannot add empty path.");
+				QMessageBox::critical(this, "FEBio Studio", "Cannot add empty path.");
 				ui->febioVersion->setCurrentIndex(ui->m_last_index);
 			}
 			else
@@ -270,7 +270,7 @@ void CDlgRun::onPathChanged(int n)
 			QString path = dlg.path->text();
 			if (path.isEmpty())
 			{
-				QMessageBox::critical(this, "PreView2", "Cannot set empty path");
+				QMessageBox::critical(this, "FEBio Studio", "Cannot set empty path");
 			}
 			else
 			{

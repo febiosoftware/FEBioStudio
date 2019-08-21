@@ -1442,7 +1442,7 @@ void CMainWindow::onImportMaterials()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllMaterials()
 {
-	if (QMessageBox::question(this, "PreView2", "Are you sure you want to delete all materials?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all materials?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
@@ -1455,7 +1455,7 @@ void CMainWindow::DeleteAllMaterials()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllBC()
 {
-	if (QMessageBox::question(this, "PreView2", "Are you sure you want to delete all boundary conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all boundary conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
@@ -1468,7 +1468,7 @@ void CMainWindow::DeleteAllBC()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllLoads()
 {
-	if (QMessageBox::question(this, "PreView2", "Are you sure you want to delete all loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
@@ -1481,7 +1481,7 @@ void CMainWindow::DeleteAllLoads()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllIC()
 {
-	if (QMessageBox::question(this, "PreView2", "Are you sure you want to delete all initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
@@ -1494,7 +1494,7 @@ void CMainWindow::DeleteAllIC()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllContact()
 {
-	if (QMessageBox::question(this, "PreView2", "Are you sure you want to delete all contact interfaces?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all contact interfaces?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
@@ -1507,7 +1507,7 @@ void CMainWindow::DeleteAllContact()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllConstraints()
 {
-	if (QMessageBox::question(this, "PreView2", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
@@ -1520,7 +1520,7 @@ void CMainWindow::DeleteAllConstraints()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllConnectors()
 {
-	if (QMessageBox::question(this, "PreView2", "Are you sure you want to delete all rigid connectors?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid connectors?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
@@ -1533,7 +1533,7 @@ void CMainWindow::DeleteAllConnectors()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllSteps()
 {
-	if (QMessageBox::question(this, "PreView2", "Are you sure you want to delete all steps?\nThis will also delete all boundary conditions, etc., associated with the steps.\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all steps?\nThis will also delete all boundary conditions, etc., associated with the steps.\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
@@ -1563,7 +1563,7 @@ void CMainWindow::GenerateMap(FSObject* po)
 		FSObject* data = doc->CreateDataMap(po, mapName, paramName, paramType);
 		if (data == 0)
 		{
-			QMessageBox::critical(this, "PreView2", "It pains me to inform you that your command could not be executed.");
+			QMessageBox::critical(this, "FEBio Studio", "It pains me to inform you that your command could not be executed.");
 		}
 		else UpdateModel(data);
 	}
