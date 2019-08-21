@@ -18,6 +18,8 @@ public:
 
 public slots:
 	void on_edit_textChanged();
+	void on_infoSave_clicked(bool b);
+	void on_infoClear_clicked(bool b);
 
 private:
 	Ui::CInfoPanel*	ui;

@@ -3,6 +3,9 @@
 #include <QBoxLayout>
 #include <QPlainTextEdit>
 #include <QLabel>
+#include <QToolButton>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <FSCore/FSObject.h>
 
 class Ui::CInfoPanel
@@ -15,12 +18,19 @@ public:
 public:
 	void setup(QWidget* w)
 	{
+		QToolButton* b1 = new QToolButton; b1->setIcon(QIcon(":/icons/save.png")); b1->setAutoRaise(true); b1->setObjectName("infoSave"); b1->setToolTip("<font color=\"black\">Save Text");
+		QToolButton* b2 = new QToolButton; b2->setIcon(QIcon(":/icons/clear.png")); b2->setAutoRaise(true); b2->setObjectName("infoClear"); b2->setToolTip("<font color=\"black\">Clear Text");
+
 		name = new QLabel;
 		name->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 		QHBoxLayout* h = new QHBoxLayout;
-		h->addWidget(new QLabel("name:"));
+		h->addWidget(b1);
+		h->addWidget(b2);
+		h->addWidget(new QLabel("name:  "));
 		h->addWidget(name);
 		h->addStretch();
+		h->setMargin(0);
+		h->setSpacing(0);
 
 		edit = new QPlainTextEdit;
 		edit->setDisabled(true);
@@ -68,4 +78,38 @@ void CInfoPanel::on_edit_textChanged()
 		std::string s = txt.toStdString();
 		ui->po->SetInfo(s);
 	}
+}
+
+void CInfoPanel::on_infoSave_clicked(bool b)
+{
+	QString txt = ui->edit->toPlainText();
+
+	QString fileName = QFileDialog::getSaveFileName(this, "Save", "", "Text Files (*.txt)");
+	if (fileName.isEmpty() == false)
+	{
+		// convert to const char*
+		std::string sfile = fileName.toStdString();
+		const char* szfile = sfile.c_str();
+
+		// open the file
+		FILE* fp = fopen(szfile, "wb");
+		if (fp == 0)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed saving log");
+			return;
+		}
+
+		// convert data to string
+		std::string s = txt.toStdString();
+		size_t len = s.length();
+		size_t nwritten = fwrite(s.c_str(), sizeof(char), len, fp);
+
+		// close the file
+		fclose(fp);
+	}
+}
+
+void CInfoPanel::on_infoClear_clicked(bool b)
+{
+	ui->edit->clear();
 }
