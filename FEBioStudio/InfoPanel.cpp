@@ -7,10 +7,13 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <FSCore/FSObject.h>
+#include "MainWindow.h"
+#include "Document.h"
 
 class Ui::CInfoPanel
 {
 public:
+	::CMainWindow*	m_wnd;
 	FSObject*	po;
 	QLabel*		name;
 	QPlainTextEdit*	edit;
@@ -26,7 +29,7 @@ public:
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(b1);
 		h->addWidget(b2);
-		h->addWidget(new QLabel("name:  "));
+		h->addWidget(new QLabel("Item:  "));
 		h->addWidget(name);
 		h->addStretch();
 		h->setMargin(0);
@@ -42,14 +45,17 @@ public:
 		v->addWidget(edit);
 		w->setLayout(v);
 		v->setMargin(0);
+		v->setSpacing(0);
 
 		QMetaObject::connectSlotsByName(w);
 	}
 };
 
-CInfoPanel::CInfoPanel(QWidget* parent) : QWidget(parent), ui(new Ui::CInfoPanel)
+CInfoPanel::CInfoPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new Ui::CInfoPanel)
 {
+	ui->m_wnd = wnd;
 	ui->setup(this);
+	SetObject(0);
 }
 
 void CInfoPanel::SetObject(FSObject* po)
@@ -59,13 +65,18 @@ void CInfoPanel::SetObject(FSObject* po)
 		ui->po = po;
 		ui->edit->clear();
 		ui->edit->setDisabled(true);
-		ui->name->setText("(no item selected)");
+		ui->name->setText("(select an item in the model tree to add notes)");
 	}
 	else
 	{
 		if (ui->edit->isEnabled() == false) ui->edit->setEnabled(true);
 		ui->po = po;
-		ui->name->setText(QString::fromStdString(po->GetName()));
+
+		QString s = QString::fromStdString(po->GetName());
+//		std::string type = ui->m_wnd->GetDocument()->GetTypeString(po);
+//		s += QString(" (%1)").arg(QString::fromStdString(type));
+
+		ui->name->setText(s);
 		ui->edit->setPlainText(QString::fromStdString(po->GetInfo()));
 	}
 }

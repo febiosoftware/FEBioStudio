@@ -754,7 +754,7 @@ public:
 		m_wnd->tabifyDockWidget(dock1, dock5);
 
 		QDockWidget* dock6 = new QDockWidget("Notes", m_wnd); dock6->setObjectName("dockInfo");
-		infoPanel = new ::CInfoPanel(dock6);
+		infoPanel = new ::CInfoPanel(wnd, dock6);
 		dock6->setWidget(infoPanel);
 		menuView->addAction(dock6->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock6);

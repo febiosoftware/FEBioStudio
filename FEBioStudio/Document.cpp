@@ -498,7 +498,7 @@ std::string CDocument::GetTypeString(FSObject* po)
 			std::stringstream ss;
 			const char* sztype = MF.TypeStr(mat);
 			if (sztype == 0) sztype = "";
-			ss << "Material" << " (" << sztype << ")";
+			ss << "Material" << " [" << sztype << "]";
 			return ss.str();
 		}
 	}
@@ -532,6 +532,8 @@ std::string CDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po)) return "Displacement map";
 	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";
+	else if (dynamic_cast<Post::CGLModel*>(po)) return "post model";
+	else if (dynamic_cast<GModel*>(po)) return "model";
 	else
 	{
 		assert(false);

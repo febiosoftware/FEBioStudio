@@ -6,13 +6,14 @@ namespace Ui {
 }
 
 class FSObject;
+class CMainWindow;
 
 class CInfoPanel : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CInfoPanel(QWidget* parent = nullptr);
+	CInfoPanel(CMainWindow* wnd, QWidget* parent = nullptr);
 
 	void SetObject(FSObject* po);
 
