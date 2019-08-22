@@ -71,6 +71,8 @@ public:
 private:
 	void AddSurfaceTris(byte val[4], vec3f r[4], const vec3f& faceNormal);
 
+	void CreateSurface();
+
 private:
 	float	m_val, m_oldVal;		// iso-surface value
 	bool	m_bsmooth;

@@ -91,7 +91,7 @@ void CMarchingCubes::UpdateData(bool bsave)
 		m_binvertSpace = GetBoolValue(INVERT_SPACE);
 		AllowClipping(GetBoolValue(CLIP));
 
-		Create();
+		CreateSurface();
 	}
 	else
 	{
@@ -133,6 +133,11 @@ void CMarchingCubes::Update()
 void CMarchingCubes::Create()
 {
 	UpdateData();
+	CreateSurface();
+}
+
+void CMarchingCubes::CreateSurface()
+{
 	m_oldVal = m_val;
 
 	m_mesh.Clear();
