@@ -4,6 +4,8 @@
 #include <MeshTools/FERigidConstraint.h>
 #include <MeshLib/MeshMetrics.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <GeomLib/GObject.h>
+#include <MeshTools/GDiscreteObject.h>
 #include <memory>
 using namespace std;
 

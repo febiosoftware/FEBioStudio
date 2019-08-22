@@ -186,9 +186,11 @@ bool CGLModel::Update(bool breset)
 	GetFEModel()->UpdateDependants();
 
 	// update the plot list
-	GPlotList::iterator it = m_pPlot.begin();
-	for (int i = 0; i<(int)m_pPlot.size(); ++i, ++it)
-		if ((*it)->IsActive()) (*it)->Update(currentTimeIndex(), 0.0, breset);
+	for (int i = 0; i < (int)m_pPlot.Size(); ++i)
+	{
+		CGLPlot* pi = m_pPlot[i];
+		if (pi->IsActive()) pi->Update(currentTimeIndex(), 0.0, breset);
+	}
 
 	return true;
 }
@@ -394,17 +396,15 @@ void CGLModel::Render(CGLContext& rc)
 void CGLModel::RenderPlots(CGLContext& rc)
 {
 	GPlotList& PL = m_pPlot;
-	GPlotList::iterator it = PL.begin();
-	for (int i = 0; i<(int)PL.size(); ++i, ++it)
+	for (int i = 0; i<(int)PL.Size(); ++i)
 	{
-		CGLPlot* pl = *it;
+		CGLPlot* pl = m_pPlot[i];
 
 		if (pl->AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
 		else CGLPlaneCutPlot::DisableClipPlanes();
 
-		if ((*it)->IsActive()) (*it)->Render(rc);
+		if (pl->IsActive()) pl->Render(rc);
 	}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -3661,39 +3661,21 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 
 void CGLModel::AddPlot(CGLPlot* pplot)
 {
-	m_pPlot.push_back(pplot);
+	m_pPlot.Add(pplot);
 	pplot->Update(currentTime(), 0.f, true);
-}
-
-void CGLModel::DeletePlot(Post::CGLPlot* plot)
-{
-	GPlotList::iterator it = m_pPlot.begin();
-	for (int i = 0; i<(int)m_pPlot.size(); ++i, ++it)
-	{
-		CGLPlot* pp = (*it);
-		if (pp == plot)
-		{
-			delete pp;
-			m_pPlot.erase(it);
-			break;
-		}
-	}
 }
 
 void CGLModel::ClearPlots()
 {
-	GPlotList::iterator it = m_pPlot.begin();
-	for (int i = 0; i<(int)m_pPlot.size(); ++i, ++it) delete (*it);
-	m_pPlot.clear();
+	m_pPlot.Clear();
 }
 
 void CGLModel::UpdateColorMaps()
 {
-	int N = (int)m_pPlot.size();
-	GPlotList::iterator it = m_pPlot.begin();
-	for (int i = 0; i<N; ++i, ++it)
+	int N = (int)m_pPlot.Size();
+	for (int i = 0; i<N; ++i)
 	{
-		CGLPlot* p = *it;
+		CGLPlot* p = m_pPlot[i];
 		p->UpdateTexture();
 	}
 }

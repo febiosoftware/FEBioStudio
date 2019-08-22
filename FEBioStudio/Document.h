@@ -9,6 +9,8 @@
 #include "CommandManager.h"
 #include "FEBioOpt.h"
 #include "FEBioJob.h"
+#include <PostLib/ImageModel.h>
+#include <FSCore/FSObjectList.h>
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -137,6 +139,9 @@ public:
 private:
 	CDocument*	m_doc;
 };
+
+//-----------------------------------------------------------------------------
+typedef FSObjectList<CFEBioJob> CFEBioJobList;
 
 //-----------------------------------------------------------------------------
 // Document class which stores all the data
@@ -292,9 +297,6 @@ public:
 
 	void SetActiveJob(CFEBioJob* job);
 	CFEBioJob* GetActiveJob();
-
-	void DeleteFEBioJob(CFEBioJob* job);
-	void DeleteAllFEBioJobs();
 	
 	CFEBioJob* FindFEBioJob(const std::string& s);
 
@@ -303,7 +305,6 @@ public:
 	void AddImageModel(Post::CImageModel* img);
 	Post::CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
-	void DeleteImageModel(Post::CImageModel* img);
 
 public:
 	void AddObserver(CDocObserver* observer);
@@ -336,10 +337,10 @@ protected:
 
 	std::string		m_info;
 
-	vector<CFEBioJob*>	m_JobList;
+	CFEBioJobList		m_JobList;
 	CFEBioJob*			m_activeJob;
 
-	vector<Post::CImageModel*>	m_img;
+	FSObjectList<Post::CImageModel>	m_img;
 
 	std::vector<CDocObserver*>	m_Observers;
 };

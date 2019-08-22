@@ -2,10 +2,11 @@
 #include <MeshTools/FETetGenMesher.h>
 #include <MeshTools/FEModifier.h>
 #include <MeshLib/FECurveMesh.h>
+#include <MeshTools/GLMesh.h>
 
 GSurfaceMeshObject::GSurfaceMeshObject(FESurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
 {
-	m_pMesher = new FETetGenMesher(this);
+	SetFEMesher(new FETetGenMesher(this));
 	if (m_surfmesh)
 	{
 		m_surfmesh->SetGObject(this);
@@ -15,7 +16,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(FESurfaceMesh* pm) : GObject(GSURFACEMESH
 
 GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJECT)
 {
-	m_pMesher = new FETetGenMesher(this);
+	SetFEMesher(new FETetGenMesher(this));
 
 	// copy to old object's ID
 	SetID(po->GetID());
@@ -182,7 +183,7 @@ FEMesh* GSurfaceMeshObject::BuildMesh()
 	FETetGenMesher* mesher = static_cast<FETetGenMesher*>(GetMesher());
 
 	// keep a pointer to the old mesh
-	FEMesh* pold = m_pmesh;
+	FEMesh* pold = GetFEMesh();
 
 	// create a new mesh
 	FEMesh* pmesh = mesher->CreateMesh(m_surfmesh);
@@ -335,8 +336,7 @@ void GSurfaceMeshObject::UpdateSurfaces()
 void GSurfaceMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	if (m_pGMesh == 0) delete m_pGMesh;
-	m_pGMesh = new GLMesh();
+	GLMesh* gmesh = new GLMesh();
 
 	// we'll extract the data from the FE mesh
 	FESurfaceMesh* pm = m_surfmesh;
@@ -345,7 +345,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);
-		m_pGMesh->AddNode(node.r, node.m_gid);
+		gmesh->AddNode(node.r, node.m_gid);
 	}
 
 	// create edges
@@ -353,17 +353,18 @@ void GSurfaceMeshObject::BuildGMesh()
 	{
 		FEEdge& es = pm->Edge(i);
 		if (es.m_gid >= 0)
-			m_pGMesh->AddEdge(es.n, es.Nodes(), es.m_gid);
+			gmesh->AddEdge(es.n, es.Nodes(), es.m_gid);
 	}
 
 	// create face data
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& fs = pm->Face(i);
-		m_pGMesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid);
+		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid);
 	}
 
-	m_pGMesh->Update();
+	gmesh->Update();
+	SetRenderMesh(gmesh);
 }
 
 FESurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh()
@@ -557,11 +558,11 @@ void GSurfaceMeshObject::Save(OArchive& ar)
 	}
 
 	// save the mesh
-	if (m_pmesh)
+	if (GetFEMesh())
 	{
 		ar.BeginChunk(CID_MESH);
 		{
-			m_pmesh->Save(ar);
+			GetFEMesh()->Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -799,9 +800,9 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 		break;
 		// the mesh object
 		case CID_MESH:
-			if (m_pmesh) delete m_pmesh;
+			if (GetFEMesh()) delete GetFEMesh();
 			SetFEMesh(new FEMesh);
-			m_pmesh->Load(ar);
+			GetFEMesh()->Load(ar);
 			break;
 		case CID_SURFACE_MESH:
 			if (m_surfmesh) delete m_surfmesh;

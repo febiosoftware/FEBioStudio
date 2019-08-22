@@ -3,6 +3,8 @@
 #include <FSCore/Serializable.h>
 #include "PRVObjectFormat.h"
 #include <MeshTools/FEProject.h>
+#include <GeomLib/GObject.h>
+#include <MeshTools/GDiscreteObject.h>
 
 //-----------------------------------------------------------------------------
 PRVObjectImport::PRVObjectImport()

@@ -1,4 +1,5 @@
 #include "FEMeshExport.h"
+#include <GeomLib/GObject.h>
 #include <memory>
 using namespace std;
 

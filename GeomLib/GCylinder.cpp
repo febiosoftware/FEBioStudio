@@ -11,7 +11,7 @@ GCylinder::GCylinder() : GPrimitive(GCYLINDER)
 	AddDoubleParam(m_R, "R", "radius");
 	AddDoubleParam(m_h, "h", "height");
 
-	m_pMesher = new FECylinder(this);
+	SetFEMesher(new FECylinder(this));
 
 	Create();
 }
@@ -119,7 +119,7 @@ GCylinder2::GCylinder2() : GPrimitive(GCYLINDER2)
 	AddDoubleParam(m_Ry, "Ry", "Y-radius");
 	AddDoubleParam(m_h , "h" , "Height"  );
 
-	m_pMesher = new FECylinder2(this);
+	SetFEMesher(new FECylinder2(this));
 
 	Create();
 }

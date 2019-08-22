@@ -10,6 +10,7 @@
 #include <GeomLib/GMultiBox.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/FEMesher.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -3855,4 +3856,35 @@ void CCmdRemoveFromItemListBuilder::UnExecute()
 	m_pold->clear();
 	int n = (int) m_tmp.size();
 	for (int i=0; i<n; ++i) m_pold->add(m_tmp[i]);
+}
+
+//-----------------------------------------------------------------------------
+// CCmdDeleteFSObject
+//-----------------------------------------------------------------------------
+
+CCmdDeleteFSObject::CCmdDeleteFSObject(FSObject* po) : CCommand( string("Delete ") + po->GetName())
+{
+	assert(po->GetParent());
+	m_obj = po;
+	m_parent = po->GetParent();
+	m_delObject = false;
+}
+
+CCmdDeleteFSObject::~CCmdDeleteFSObject()
+{
+	if (m_delObject) delete m_obj;
+}
+
+void CCmdDeleteFSObject::Execute()
+{
+	m_insertPos = m_parent->RemoveChild(m_obj);
+	m_obj->SetParent(nullptr);
+	m_delObject = true;
+}
+
+void CCmdDeleteFSObject::UnExecute()
+{
+	m_parent->InsertChild(m_insertPos, m_obj);
+	assert(m_obj->GetParent() == m_parent);
+	m_delObject = false;
 }

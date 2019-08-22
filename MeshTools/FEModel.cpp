@@ -8,6 +8,7 @@
 #include "FEMultiMaterial.h"
 #include "FEUserMaterial.h"
 #include <FEMLib/FESurfaceLoad.h>
+#include <GeomLib/GObject.h>
 #include <vector>
 #include <sstream>
 #include <algorithm>
@@ -193,10 +194,9 @@ FEModel::~FEModel()
 //-----------------------------------------------------------------------------
 void FEModel::ClearSolutes()
 {
-	if (m_Sol.empty() == false)
+	if (m_Sol.IsEmpty() == false)
 	{
-		for (int i=0; i<(int)m_Sol.size(); ++i) delete m_Sol[i];
-		m_Sol.clear(); 
+		m_Sol.Clear(); 
 		FEDOFVariable& var = Variable(FE_VAR_CONCENTRATION);
 		var.Clear();
 	}
@@ -210,13 +210,13 @@ void FEModel::AddSolute(const std::string& name, int z, double M, double d)
 	s->SetChargeNumber(z);
 	s->SetMolarMass(M);
 	s->SetDensity(d);
-	m_Sol.push_back(s);
+	m_Sol.Add(s);
 
 	// Also add a degree of freedom for this
 	FEDOFVariable& var = Variable(FE_VAR_CONCENTRATION);
 
 	char sz[12] = {0};
-	sprintf(sz, "c%d", (int)m_Sol.size());
+	sprintf(sz, "c%d", (int)m_Sol.Size());
 	var.AddDOF(name, sz);
 }
 
@@ -276,7 +276,7 @@ void FEModel::GetDOFNames(FEDOFVariable& var, char* szbuf)
 void FEModel::GetSoluteNames(char* szbuf)
 {
 	char* ch = szbuf;
-	for (int i=0; i<(int)m_Sol.size(); ++i)
+	for (int i=0; i<(int)m_Sol.Size(); ++i)
 	{
 		const char* szi = m_Sol[i]->GetName().c_str();
 		strcat(ch, szi);
@@ -289,7 +289,7 @@ void FEModel::GetSoluteNames(char* szbuf)
 void FEModel::GetSBMNames(char* szbuf)
 {
 	char* ch = szbuf;
-	for (int i = 0; i<(int)m_SBM.size(); ++i)
+	for (int i = 0; i<(int)m_SBM.Size(); ++i)
 	{
 		const char* szi = m_SBM[i]->GetName().c_str();
 		strcat(ch, szi);
@@ -302,7 +302,7 @@ void FEModel::GetSBMNames(char* szbuf)
 int FEModel::FindSolute(const char* sz)
 {
 	string sol(sz);
-	for (int i=0; i<m_Sol.size(); ++i)
+	for (int i=0; i<m_Sol.Size(); ++i)
 	{
 		if (m_Sol[i]->GetName() == sol) return i;
 	}
@@ -310,10 +310,21 @@ int FEModel::FindSolute(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
+FESoluteData& FEModel::GetSoluteData(int i)
+{ 
+	return *m_Sol[i]; 
+}
+
+//-----------------------------------------------------------------------------
+int FEModel::Solutes()
+{ 
+	return (int)m_Sol.Size(); 
+}
+
+//-----------------------------------------------------------------------------
 void FEModel::RemoveSolute(int n)
 {
 	delete m_Sol[n];
-	m_Sol.erase(m_Sol.begin() + n);
 
 	// Also remove degree of freedom for this
 	FEDOFVariable& var = Variable(FE_VAR_CONCENTRATION);
@@ -332,11 +343,23 @@ void FEModel::RemoveSolute(int n)
 int FEModel::FindSBM(const char* sz)
 {
 	string sbm(sz);
-	for (int i = 0; i<m_SBM.size(); ++i)
+	for (int i = 0; i<m_SBM.Size(); ++i)
 	{
 		if (m_SBM[i]->GetName() == sbm) return i;
 	}
 	return -1;
+}
+
+//-----------------------------------------------------------------------------
+FESoluteData& FEModel::GetSBMData(int i)
+{ 
+	return *m_SBM[i]; 
+}
+
+//-----------------------------------------------------------------------------
+int FEModel::SBMs()
+{ 
+	return (int)m_SBM.Size(); 
 }
 
 //-----------------------------------------------------------------------------
@@ -347,28 +370,26 @@ void FEModel::AddSBM(const std::string& name, int z, double M, double d)
 	s->SetChargeNumber(z);
 	s->SetMolarMass(M);
 	s->SetDensity(d);
-	m_SBM.push_back(s);
+	m_SBM.Add(s);
 }
 
 //-----------------------------------------------------------------------------
 void FEModel::ClearSBMs()
 {
-	for (int i=0; i<m_SBM.size(); ++i) delete m_SBM[i];
-	m_SBM.clear();
+	m_SBM.Clear();
 }
 
 //-----------------------------------------------------------------------------
 void FEModel::RemoveSBM(int n)
 {
 	delete m_SBM[n];
-	m_SBM.erase(m_SBM.begin() + n);
 }
 
 //-----------------------------------------------------------------------------
 int FEModel::Reactions()
 {
     int n = 0;
-	for (int i=0; i<(int) m_pMat.size(); ++i)
+	for (int i=0; i<(int) m_pMat.Size(); ++i)
     {
         FEMaterial* pmat = m_pMat[i]->GetMaterialProperties();
         FEMultiphasicMaterial* pmp = dynamic_cast<FEMultiphasicMaterial*>(pmat);
@@ -381,7 +402,7 @@ int FEModel::Reactions()
 FEReactionMaterial* FEModel::GetReaction(int id)
 {
     int n = -1;
-	for (int i=0; i<(int) m_pMat.size(); ++i)
+	for (int i=0; i<(int) m_pMat.Size(); ++i)
     {
         FEMaterial* pmat = m_pMat[i]->GetMaterialProperties();
         FEMultiphasicMaterial* pmp = dynamic_cast<FEMultiphasicMaterial*>(pmat);
@@ -400,24 +421,23 @@ FEReactionMaterial* FEModel::GetReaction(int id)
 //-----------------------------------------------------------------------------
 void FEModel::ReplaceMaterial(GMaterial *pold, GMaterial *pnew)
 {
-	int i, j;
-
 	// find the old material
-	for (i=0; i<(int) m_pMat.size(); ++i)
+	for (int i=0; i<(int) m_pMat.Size(); ++i)
 	{
 		if (m_pMat[i] == pold)
 		{
-			m_pMat[i] = pnew;
+			size_t n = m_pMat.Remove(pold);
+			m_pMat.Insert(n, pnew);
 			delete pold;
 			break;
 		}
 	}
 
 	// replace all occurences of this material
-	for (i=0; i<m_pModel->Objects(); ++i)
+	for (int i=0; i<m_pModel->Objects(); ++i)
 	{
 		GObject* po = m_pModel->Object(i);
-		for (j=0; j<po->Parts(); ++j)
+		for (int j=0; j<po->Parts(); ++j)
 		{
 			GPart* pp = po->Part(j);
 			GMaterial* pmat = GetMaterialFromID(pp->GetMaterialID());
@@ -448,7 +468,30 @@ bool FEModel::CanDeleteMaterial(GMaterial* pmat)
 }
 
 //-----------------------------------------------------------------------------
+GMaterial* FEModel::GetMaterial(int n)
+{
+	return (n<0 || n >= (int)m_pMat.Size() ? 0 : m_pMat[n]);
+}
 
+//-----------------------------------------------------------------------------
+void FEModel::AddMaterial(GMaterial* pmat)
+{
+	m_pMat.Add(pmat); pmat->SetModel(this);
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::InsertMaterial(int n, GMaterial* pm)
+{ 
+	m_pMat.Insert(n, pm); 
+}
+
+//-----------------------------------------------------------------------------
+int FEModel::Materials()
+{ 
+	return (int)m_pMat.Size(); 
+}
+
+//-----------------------------------------------------------------------------
 int FEModel::DeleteMaterial(GMaterial* pmat)
 {
 	// first, we see if this material being used by a mesh
@@ -463,14 +506,7 @@ int FEModel::DeleteMaterial(GMaterial* pmat)
 		}
 	}
 
-	int n = 0;
-	for (vector<GMaterial*>::iterator i= m_pMat.begin(); i != m_pMat.end(); ++i, ++n)
-	{
-		if (*i == pmat) { m_pMat.erase(i); return n; }
-	}
-	assert(false);
-
-	return -1;
+	return m_pMat.Remove(pmat);
 }
 
 //-----------------------------------------------------------------------------
@@ -505,19 +541,16 @@ GMaterial* FEModel::FindMaterial(const char* szname)
 void FEModel::Clear()
 {
 	// clear all data variables
-	for (int i=0; i<DataVariables(); ++i) delete DataVariable(i);
-	m_Var.clear();
+	m_Var.Clear();
 
 	// remove all meshes
 	m_pModel->Clear();
 
 	// remove all materials
-	for (int i = 0; i<Materials(); ++i) delete GetMaterial(i);
-	m_pMat.clear();
+	m_pMat.Clear();
 
 	// remove all steps
-	for (int i = 0; i<Steps(); ++i) delete GetStep(i);
-	m_pStep.clear();
+	m_pStep.Clear();
 
 	// clear all solutes and SBMS
 	ClearSolutes();
@@ -531,7 +564,7 @@ void FEModel::New()
 	Clear();
 
 	// define the initial step
-	m_pStep.push_back(new FEInitialStep(this));
+	m_pStep.Add(new FEInitialStep(this));
 }
 
 //-----------------------------------------------------------------------------
@@ -559,7 +592,7 @@ void FEModel::Save(OArchive& ar)
 	}
 
 	// save solute data
-	if (m_Sol.empty() == false)
+	if (m_Sol.IsEmpty() == false)
 	{
 		ar.BeginChunk(CID_FEM_SOLUTE_DATA);
 		{
@@ -581,7 +614,7 @@ void FEModel::Save(OArchive& ar)
 	}
 
 	// save solid-bound molecule data
-	if (m_SBM.empty() == false)
+	if (m_SBM.IsEmpty() == false)
 	{
 		ar.BeginChunk(CID_FEM_SBM_DATA);
 		{
@@ -716,7 +749,7 @@ void FEModel::LoadData(IArchive& ar)
 void FEModel::LoadSoluteData(IArchive& ar)
 {
 	int n = 0;
-	m_Sol.clear();
+	m_Sol.Clear();
 	while (IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
@@ -746,7 +779,7 @@ void FEModel::LoadSoluteData(IArchive& ar)
 void FEModel::LoadSBMData(IArchive& ar)
 {
 	int n = 0;
-	m_SBM.clear();
+	m_SBM.Clear();
 	while (IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
@@ -855,9 +888,33 @@ void FEModel::LoadMaterials(IArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
+int FEModel::Steps()
+{ 
+	return (int)m_pStep.Size(); 
+}
+
+//-----------------------------------------------------------------------------
+FEStep* FEModel::GetStep(int i)
+{ 
+	return m_pStep[i]; 
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::AddStep(FEStep* ps)
+{ 
+	m_pStep.Add(ps); 
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::InsertStep(int n, FEStep* ps)
+{ 
+	m_pStep.Insert(n, ps); 
+}
+
+//-----------------------------------------------------------------------------
 FEStep* FEModel::FindStep(int nid)
 {
-	for (int i=0; i<(int) m_pStep.size(); ++i)
+	for (int i=0; i<(int) m_pStep.Size(); ++i)
 	{
 		if (m_pStep[i]->GetID() == nid) return m_pStep[i];
 	}
@@ -869,17 +926,7 @@ FEStep* FEModel::FindStep(int nid)
 
 int FEModel::DeleteStep(FEStep* ps)
 {
-	int n = 0;
-	for (vector<FEStep*>::iterator i=m_pStep.begin(); i != m_pStep.end(); ++i, ++n)
-	{
-		if (*i == ps)
-		{
-			m_pStep.erase(i);
-			return n;
-		}
-	}
-	assert(false);
-	return -1;
+	return m_pStep.Remove(ps);
 }
 
 //-----------------------------------------------------------------------------
@@ -893,8 +940,7 @@ void FEModel::DeleteAllMaterials()
 	}
 
 	// delete all materials
-	for (int i = 0; i<Materials(); ++i) delete GetMaterial(i);
-	m_pMat.clear();
+	m_pMat.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -965,7 +1011,6 @@ void FEModel::DeleteAllSteps()
 	for (int i = 1; i<N; ++i) 
 	{
 		delete GetStep(1);
-		m_pStep.erase(m_pStep.begin() + 1);
 	}
 }
 
@@ -981,14 +1026,13 @@ void FEModel::Purge(int ops)
 		m_pModel->ClearDiscrete();
 
 		// remove all steps
-		for (int i=0; i<Steps(); ++i) delete GetStep(i);
-		m_pStep.clear();
+		m_pStep.Clear();
 
 		// remove all materials
 		DeleteAllMaterials();
 
 		// add an initial step
-		m_pStep.push_back(new FEInitialStep(this));
+		m_pStep.Add(new FEInitialStep(this));
 	}
 	else
 	{
@@ -1042,9 +1086,27 @@ void FEModel::ClearSelections()
 }
 
 //-----------------------------------------------------------------------------
+int FEModel::DataVariables()
+{ 
+	return (int)m_Var.Size(); 
+}
+
+//-----------------------------------------------------------------------------
+FEDataVariable* FEModel::DataVariable(int i)
+{ 
+	return m_Var[i]; 
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::AddDataVariable(FEDataVariable* pv)
+{ 
+	m_Var.Add(pv); 
+}
+
+//-----------------------------------------------------------------------------
 FEDataVariable* FEModel::FindDataVariable(int nid)
 {
-	for (int i=0; i<(int)m_Var.size(); ++i)
+	for (int i=0; i<(int)m_Var.Size(); ++i)
 	{
 		FEDataVariable* pv = m_Var[i];
 		if (pv->GetID() == nid) return pv;
@@ -1239,22 +1301,19 @@ bool FEModel::FindGroupParent(FEGroup* pg)
 //-----------------------------------------------------------------------------
 int FEModel::DataMaps() const
 {
-	return (int)m_Map.size();
+	return (int)m_Map.Size();
 }
 
 //-----------------------------------------------------------------------------
 void FEModel::AddDataMap(FEDataMap* map)
 {
-	m_Map.push_back(map);
+	m_Map.Add(map);
 }
 
 //-----------------------------------------------------------------------------
-bool FEModel::RemoveMap(FEDataMap* map)
+int FEModel::RemoveMap(FEDataMap* map)
 {
-	auto it = find(m_Map.begin(), m_Map.end(), map);
-	if (it == m_Map.end()) return false;
-	m_Map.erase(it);
-	return true;
+	return m_Map.Remove(map);
 }
 
 //-----------------------------------------------------------------------------

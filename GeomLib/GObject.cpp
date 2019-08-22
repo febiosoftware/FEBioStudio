@@ -3,83 +3,139 @@
 #include "geom.h"
 #include <MeshTools/FEGroup.h>
 #include <MeshLib/FECurveMesh.h>
+#include <FSCore/FSObjectList.h>
+#include <MeshLib/FEMesh.h>
+#include <MeshTools/FEMesher.h>
+#include <MeshTools/GLMesh.h>
+
+class GObject::Imp
+{
+public:
+	Imp()
+	{
+		m_pmesh   = nullptr;
+		m_pMesher = nullptr;
+		m_pGMesh  = nullptr;
+
+		m_col = GLColor(200, 200, 200);
+	}
+
+	~Imp()
+	{
+		delete m_pmesh;	m_pmesh = nullptr;
+		delete m_pMesher; m_pMesher = nullptr;
+		delete m_pGMesh; m_pGMesh = nullptr;
+	}
+
+public:
+	int	m_ntype;	//!< object type identifier
+	GLColor	m_col;	//!< color of object
+
+	FEMesh*		m_pmesh;	//!< the mesh that this object manages
+	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
+	GLMesh*		m_pGMesh;	//!< the mesh for rendering
+
+	FSObjectList<FEPart>		m_pFEPart;
+	FSObjectList<FESurface>		m_pFESurf;
+	FSObjectList<FEEdgeSet>		m_pFEESet;
+	FSObjectList<FENodeSet>		m_pFENSet;
+};
 
 //=============================================================================
 // GObject
 //=============================================================================
 // GObject constructor.
-GObject::GObject(int ntype)
+GObject::GObject(int ntype): imp(new GObject::Imp)
 {
 	m_gid = CreateUniqueID();
-	m_pmesh = 0;
-	m_pMesher = 0;
-	m_ntype = ntype;
-	m_pGMesh = 0;
+	imp->m_ntype = ntype;
 
 	// set the state as visible
 	m_state = GEO_VISIBLE;
-
-	m_col = GLColor(200, 200, 200);
 }
 
 //-----------------------------------------------------------------------------
 GObject::~GObject(void)
 {
-	delete m_pmesh;	m_pmesh = 0;
-	delete m_pMesher; m_pMesher = 0;
-	delete m_pGMesh; m_pGMesh = 0;
+	delete imp;
 }
 
 //-----------------------------------------------------------------------------
 void GObject::Copy(GObject* po)
 {
-	if (m_pmesh) DeleteFEMesh();
+	if (imp->m_pmesh) DeleteFEMesh();
 	GBaseObject::Copy(po);
 }
 
 //-----------------------------------------------------------------------------
+// return type of Object
+int GObject::GetType() const { return imp->m_ntype; }
+
+//-----------------------------------------------------------------------------
+// get/set object color
+GLColor GObject::GetColor() const { return imp->m_col; }
+
+//-----------------------------------------------------------------------------
+void GObject::SetColor(const GLColor& c) { imp->m_col = c; }
+
+//-----------------------------------------------------------------------------
+// retrieve the mesher
+FEMesher* GObject::GetMesher() { return imp->m_pMesher; }
+
+//-----------------------------------------------------------------------------
+// retrieve the FE mesh
+FEMesh* GObject::GetFEMesh() { return imp->m_pmesh; }
+
+//-----------------------------------------------------------------------------
+const FEMesh* GObject::GetFEMesh() const { return imp->m_pmesh; }
+
+//-----------------------------------------------------------------------------
+// delete the mesh
+void GObject::DeleteFEMesh() { delete imp->m_pmesh; imp->m_pmesh = 0; }
+
+//-----------------------------------------------------------------------------
 void GObject::SetFEMesher(FEMesher *pmesher)
 {
-	if (m_pMesher) delete m_pMesher;
-	m_pMesher = pmesher;
+	if (imp->m_pMesher) delete imp->m_pMesher;
+	imp->m_pMesher = pmesher;
 }
 
 //-----------------------------------------------------------------------------
 void GObject::SetFEMesh(FEMesh* pm)
 {
-	m_pmesh = pm; if (pm) pm->SetGObject(this); 
+	imp->m_pmesh = pm; if (pm) pm->SetGObject(this);
+}
+
+//-----------------------------------------------------------------------------
+// set the render mesh
+void GObject::SetRenderMesh(GLMesh* mesh)
+{
+	delete imp->m_pGMesh;
+	imp->m_pGMesh = mesh;
 }
 
 //-----------------------------------------------------------------------------
 void GObject::ClearFEParts()
 {
-	int n = (int)m_pFEPart.size();
-	for (int i = 0; i<n; ++i) delete m_pFEPart[i];
-	m_pFEPart.clear();
+	imp->m_pFEPart.Clear();
 }
 
 //-----------------------------------------------------------------------------
 void GObject::ClearFESurfaces()
 {
-	int n = (int)m_pFESurf.size();
-	for (int i = 0; i<n; ++i) delete m_pFESurf[i];
-	m_pFESurf.clear();
+	imp->m_pFESurf.Clear();
 }
 
 //-----------------------------------------------------------------------------
 void GObject::ClearFEEdgeSets()
 {
-	int n = (int)m_pFEESet.size();
-	for (int i = 0; i<n; ++i) delete m_pFEESet[i];
-	m_pFEESet.clear();
+	imp->m_pFEESet.Clear();
 }
 
 //-----------------------------------------------------------------------------
 void GObject::ClearFENodeSets()
 {
-	int n = (int)m_pFENSet.size();
-	for (int i = 0; i<n; ++i) delete m_pFENSet[i];
-	m_pFENSet.clear();
+	imp->m_pFENSet.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -94,27 +150,27 @@ void GObject::ClearFEGroups()
 //-----------------------------------------------------------------------------
 // Remove groups that are empty.
 
-template <class T> void clearVector(std::vector<T*>& v)
+template <class T> void clearVector(FSObjectList<T>& v)
 {
-	if (v.empty()) return;
+	if (v.IsEmpty()) return;
 
-	typename std::vector<T*>::iterator it = v.begin();
-	while (it != v.end())
+	for (size_t i=0; i<v.Size(); )
 	{
-		if ((*it)->size() == 0)
+		T* o = v[i];
+		if (o->size() == 0)
 		{
-			it = v.erase(it);
+			v.Remove(o);
 		}
-		else it++;
+		else i++;
 	}
 }
 
 void GObject::RemoveEmptyFEGroups()
 {
-	clearVector(m_pFEPart);
-	clearVector(m_pFESurf);
-	clearVector(m_pFEESet);
-	clearVector(m_pFENSet);
+	clearVector(imp->m_pFEPart);
+	clearVector(imp->m_pFESurf);
+	clearVector(imp->m_pFEESet);
+	clearVector(imp->m_pFENSet);
 }
 
 //-----------------------------------------------------------------------------
@@ -123,9 +179,9 @@ void GObject::RemoveEmptyFEGroups()
 FESurface* GObject::FindFESurface(const string& name)
 {
 	// loop over all surfaces
-	for (size_t i = 0; i<m_pFESurf.size(); ++i)
+	for (size_t i = 0; i<imp->m_pFESurf.Size(); ++i)
 	{
-		FESurface* psi = m_pFESurf[i];
+		FESurface* psi = imp->m_pFESurf[i];
 		if (psi->GetName() == name) return psi;
 	}
 
@@ -139,9 +195,9 @@ FESurface* GObject::FindFESurface(const string& name)
 FENodeSet* GObject::FindFENodeSet(const string& name)
 {
 	// loop over all surfaces
-	for (size_t i = 0; i<m_pFENSet.size(); ++i)
+	for (size_t i = 0; i<imp->m_pFENSet.Size(); ++i)
 	{
-		FENodeSet* psi = m_pFENSet[i];
+		FENodeSet* psi = imp->m_pFENSet[i];
 		if (psi->GetName() == name) return psi;
 	}
 
@@ -154,97 +210,94 @@ FENodeSet* GObject::FindFENodeSet(const string& name)
 FEGroup* GObject::FindFEGroup(int nid)
 {
 	for (int i = 0; i<FEParts(); ++i)
-	if (m_pFEPart[i]->GetID() == nid) return m_pFEPart[i];
+	if (imp->m_pFEPart[i]->GetID() == nid) return imp->m_pFEPart[i];
 
 	for (int i = 0; i<FESurfaces(); ++i)
-	if (m_pFESurf[i]->GetID() == nid) return m_pFESurf[i];
+	if (imp->m_pFESurf[i]->GetID() == nid) return imp->m_pFESurf[i];
 
 	for (int i = 0; i<FEEdgeSets(); ++i)
-	if (m_pFEESet[i]->GetID() == nid) return m_pFEESet[i];
+	if (imp->m_pFEESet[i]->GetID() == nid) return imp->m_pFEESet[i];
 
 	for (int i = 0; i<FENodeSets(); ++i)
-	if (m_pFENSet[i]->GetID() == nid) return m_pFENSet[i];
-
+	if (imp->m_pFENSet[i]->GetID() == nid) return imp->m_pFENSet[i];
 
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
+int GObject::FEParts() const { return (int) imp->m_pFEPart.Size(); }
+
+//-----------------------------------------------------------------------------
+int GObject::FESurfaces() const { return (int)imp->m_pFESurf.Size(); }
+
+//-----------------------------------------------------------------------------
+int GObject::FEEdgeSets() const { return (int)imp->m_pFEESet.Size(); }
+
+//-----------------------------------------------------------------------------
+int GObject::FENodeSets() const { return (int)imp->m_pFENSet.Size(); }
+
+//-----------------------------------------------------------------------------
+void GObject::AddFEPart(FEPart*    pg) { imp->m_pFEPart.Add(pg); }
+
+//-----------------------------------------------------------------------------
+void GObject::AddFESurface(FESurface* pg) { imp->m_pFESurf.Add(pg); }
+
+//-----------------------------------------------------------------------------
+void GObject::AddFEEdgeSet(FEEdgeSet* pg) { imp->m_pFEESet.Add(pg); }
+
+//-----------------------------------------------------------------------------
+void GObject::AddFENodeSet(FENodeSet* pg) { imp->m_pFENSet.Add(pg); }
+
+//-----------------------------------------------------------------------------
+FEPart* GObject::GetFEPart(int n) { return (n >= 0 && n<(int) imp->m_pFEPart.Size() ? imp->m_pFEPart[n] : 0); }
+
+//-----------------------------------------------------------------------------
+FESurface* GObject::GetFESurface(int n) { return (n >= 0 && n<(int)imp->m_pFESurf.Size() ? imp->m_pFESurf[n] : 0); }
+
+//-----------------------------------------------------------------------------
+FEEdgeSet* GObject::GetFEEdgeSet(int n) { return (n >= 0 && n<(int)imp->m_pFEESet.Size() ? imp->m_pFEESet[n] : 0); }
+
+//-----------------------------------------------------------------------------
+FENodeSet* GObject::GetFENodeSet(int n) { return (n >= 0 && n<(int)imp->m_pFENSet.Size() ? imp->m_pFENSet[n] : 0); }
+
+//-----------------------------------------------------------------------------
 // Remove a named part from the mesh
 int GObject::RemoveFEPart(FEPart* pg)
 {
-	int n = 0;
-	for (vector<FEPart*>::iterator i = m_pFEPart.begin(); i != m_pFEPart.end(); ++i, ++n)
-	{
-		if (*i == pg)
-		{
-			m_pFEPart.erase(i);
-			return n;
-		}
-	}
-	return -1;
+	return imp->m_pFEPart.Remove(pg);
 }
 
 //-----------------------------------------------------------------------------
 // Remove a named surface from the mesh
 int GObject::RemoveFESurface(FESurface* pg)
 {
-	int n = 0;
-	for (vector<FESurface*>::iterator i = m_pFESurf.begin(); i != m_pFESurf.end(); ++i, ++n)
-	{
-		if (*i == pg)
-		{
-			m_pFESurf.erase(i);
-			return n;
-		}
-	}
-	return -1;
+	return imp->m_pFESurf.Remove(pg);
 }
 
 //-----------------------------------------------------------------------------
 int GObject::RemoveFEEdgeSet(FEEdgeSet* pg)
 {
-	int n = 0;
-	for (vector<FEEdgeSet*>::iterator i = m_pFEESet.begin(); i != m_pFEESet.end(); ++i, ++n)
-	{
-		if (*i == pg)
-		{
-			m_pFEESet.erase(i);
-			return n;
-		}
-	}
-	return -1;
+	return imp->m_pFEESet.Remove(pg);
 }
-
 
 //-----------------------------------------------------------------------------
 // Remove a named nodeset from the mesh
 int GObject::RemoveFENodeSet(FENodeSet* pg)
 {
-	int n = 0;
-	for (vector<FENodeSet*>::iterator i = m_pFENSet.begin(); i != m_pFENSet.end(); ++i, ++n)
-	{
-		if (*i == pg)
-		{
-			m_pFENSet.erase(i);
-			return n;
-		}
-	}
-	return -1;
+	return imp->m_pFENSet.Remove(pg);
 }
 
 //-----------------------------------------------------------------------------
-/*
-void GObject::Render(GLCanvas* pc)
-{
-	if (m_pGMesh)
-	{
-		pc->SetDefaultMaterial();
-		glColor3ub(m_col.r, m_col.g, m_col.b);
-		m_pGMesh->Render();
-	}
-}
-*/
+void GObject::InsertFEPart(int n, FEPart* pg) { imp->m_pFEPart.Insert(n, pg); }
+
+//-----------------------------------------------------------------------------
+void GObject::InsertFESurface(int n, FESurface* pg) { imp->m_pFESurf.Insert(n, pg); }
+
+//-----------------------------------------------------------------------------
+void GObject::InsertFEEdgeSet(int n, FEEdgeSet* pg) { imp->m_pFEESet.Insert(n, pg); }
+
+//-----------------------------------------------------------------------------
+void GObject::InsertFENodeSet(int n, FENodeSet* pg) { imp->m_pFENSet.Insert(n, pg); }
 
 //-----------------------------------------------------------------------------
 void GObject::CollapseTransform()
@@ -258,9 +311,9 @@ void GObject::CollapseTransform()
 	GTransform& transform = Transform();
 
 	// collapse the mesh' nodes
-	if (m_pmesh)
+	if (imp->m_pmesh)
 	{
-		FEMesh& m = *m_pmesh;
+		FEMesh& m = *imp->m_pmesh;
 		for (int i = 0; i<m.Nodes(); ++i)
 		{
 			FENode& node = m.Node(i);
@@ -271,7 +324,7 @@ void GObject::CollapseTransform()
 	// reset the transform info
 	Transform().Reset();
 
-	if (m_pmesh) m_pmesh->Update();
+	if (imp->m_pmesh) imp->m_pmesh->Update();
 	Update();
 }
 
@@ -327,7 +380,7 @@ void GObject::UpdateGNodes()
 // it is assumed that another class will take care of that.
 void GObject::ReplaceFEMesh(FEMesh* pm, bool bup, bool bdel)
 {
-	if (bdel) delete m_pmesh;
+	if (bdel) delete imp->m_pmesh;
 	SetFEMesh(pm);
 	Update(bup);
 }
@@ -354,18 +407,18 @@ bool GObject::Update(bool b)
 //		the old mesh.
 FEMesh* GObject::BuildMesh()
 {
-	if (m_pMesher)
+	if (imp->m_pMesher)
 	{
 		// keep a pointer to the old mesh since some mesher use the old
 		// mesh to create a new mesh
-		FEMesh* pold = m_pmesh;
-		SetFEMesh(m_pMesher->BuildMesh());
+		FEMesh* pold = imp->m_pmesh;
+		SetFEMesh(imp->m_pMesher->BuildMesh());
 
 		// now it is safe to delete the old mesh
 		if (pold) delete pold;
 
 		Update();
-		return m_pmesh;
+		return imp->m_pmesh;
 	}
 	else return 0;
 }
@@ -386,7 +439,7 @@ FENode* GObject::GetFENode(int gid)
 //-----------------------------------------------------------------------------
 BOX GObject::GetLocalBox() const
 {
-	if (m_pGMesh) return m_pGMesh->GetBoundingBox();
+	if (imp->m_pGMesh) return imp->m_pGMesh->GetBoundingBox();
 
 	BOX b;
 	int N = Nodes();
@@ -433,15 +486,15 @@ bool GObject::IsFaceVisible(const GFace* pf) const
 // get the render mesh
 GLMesh*	GObject::GetRenderMesh()
 { 
-	return m_pGMesh;
+	return imp->m_pGMesh;
 }
 
 //-----------------------------------------------------------------------------
 void GObject::BuildGMesh()
 {
 	// delete the old mesh
-	delete m_pGMesh;
-	m_pGMesh = nullptr;
+	delete imp->m_pGMesh;
+	imp->m_pGMesh = nullptr;
 
 	// create a new mesh
 	GLMesh* gmesh = new GLMesh;
@@ -498,7 +551,7 @@ void GObject::BuildGMesh()
 	}
 
 	// assign new mesh
-	m_pGMesh = gmesh;
+	imp->m_pGMesh = gmesh;
 }
 
 //-----------------------------------------------------------------------------
@@ -1832,11 +1885,11 @@ void GObject::Save(OArchive &ar)
 	}
 
 	// save the mesh
-	if (m_pmesh)
+	if (imp->m_pmesh)
 	{
 		ar.BeginChunk(CID_MESH);
 		{
-			m_pmesh->Save(ar);
+			imp->m_pmesh->Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -2061,9 +2114,9 @@ void GObject::Load(IArchive& ar)
 		break;
 		// the mesh object
 		case CID_MESH:
-			if (m_pmesh) delete m_pmesh;
+			if (imp->m_pmesh) delete imp->m_pmesh;
 			SetFEMesh(new FEMesh);
-			m_pmesh->Load(ar);
+			imp->m_pmesh->Load(ar);
 			break;
 		}
 		ar.CloseChunk();

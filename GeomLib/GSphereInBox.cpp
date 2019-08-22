@@ -1,5 +1,6 @@
 #include "GPrimitive.h"
 #include <MeshTools/FESphereInBox.h>
+#include <MeshTools/GLMesh.h>
 
 //-----------------------------------------------------------------------------
 GSphereInBox::GSphereInBox() : GPrimitive(GSPHERE_IN_BOX)
@@ -9,7 +10,7 @@ GSphereInBox::GSphereInBox() : GPrimitive(GSPHERE_IN_BOX)
 	AddDoubleParam(1.0, "d", "depth"); // depth
 	AddDoubleParam(0.25, "R", "radius"); // radius (of cavity)
 	
-	m_pMesher = new FESphereInBox(this);
+	SetFEMesher(new FESphereInBox(this));
 
 	Create();
 }

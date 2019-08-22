@@ -13,7 +13,7 @@ GBox::GBox() : GPrimitive(GBOX)
 	AddDoubleParam(m_h, "h", "Height");
 	AddDoubleParam(m_d, "d", "Depth" );
 	
-	m_pMesher = new FEBox(this);
+	SetFEMesher(new FEBox(this));
 
 	Create();
 }

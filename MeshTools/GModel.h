@@ -1,18 +1,25 @@
 #pragma once
-#include "GeomLib/GObject.h"
-#include <FSCore/Serializable.h>
-#include "GGroup.h"
-#include "GDiscreteObject.h"
-
+#include <FSCore/FSObject.h>
+#include <FSCore/box.h>
 #include <vector>
 using namespace std;
 
+class GObject;
 class FEModel;
+class FENodeSet;
+class FESurface;
+class GPart;
+class GFace;
+class GEdge;
+class GNode;
 class GPartList;
 class GFaceList;
 class GEdgeList;
 class GNodeList;
 class GObjectSelection;
+class FEItemListBuilder;
+class GDiscreteObject;
+class GDiscreteElementSet;
 
 //-----------------------------------------------------------------------------
 // The GModel class manages all GObjects and GGroups that are created by
@@ -20,6 +27,8 @@ class GObjectSelection;
 //
 class GModel : public FSObject
 {
+	class Imp;
+
 public:
 	//! default constructor
 	GModel(FEModel*);
@@ -46,10 +55,10 @@ public:
 	void Load(IArchive& ar);
 
 	// return number of objects
-	int Objects() const { return (int)m_Obj.size(); }
+	int Objects() const;
 
 	// return an object
-	GObject* Object(int n) { return ((n>=0) && (n<(int) m_Obj.size())? m_Obj[n] : 0); }
+	GObject* Object(int n);
 
 	// find an object from its ID
 	GObject* FindObject(int id);
@@ -142,34 +151,34 @@ public:
 	void AddPartList(GPartList* pg);
 	void InsertPartList(int n, GPartList* pg);
 	int RemovePartList(GPartList* pg);
-	int PartLists() const { return (int)m_GPart.size(); }
-	GPartList* PartList(int n) { return m_GPart[n]; }
+	int PartLists() const;
+	GPartList* PartList(int n);
 
 	// --- GFaceList ---
 	void AddFaceList(GFaceList* pg);
 	void InsertFaceList(int n, GFaceList* pg);
 	int RemoveFaceList(GFaceList* pg);
-	int FaceLists() const { return (int)m_GFace.size(); }
-	GFaceList* FaceList(int n) { return m_GFace[n]; }
+	int FaceLists() const;
+	GFaceList* FaceList(int n);
 
 	// --- GEdgeList ---
 	void AddEdgeList(GEdgeList* pg);
 	void InsertEdgeList(int n, GEdgeList* pg);
 	int RemoveEdgeList(GEdgeList* pg);
-	int EdgeLists() const { return (int)m_GEdge.size(); }
-	GEdgeList* EdgeList(int n) { return m_GEdge[n]; }
+	int EdgeLists() const;
+	GEdgeList* EdgeList(int n);
 
 	// --- GNodeList ---
 	void AddNodeList(GNodeList* pg);
 	void InsertNodeList(int n, GNodeList* pg);
 	int RemoveNodeList(GNodeList* pg);
-	int NodeLists() const { return (int)m_GNode.size(); }
-	GNodeList* NodeList(int n) { return m_GNode[n]; }
+	int NodeLists() const;
+	GNodeList* NodeList(int n);
 
 	// --- Discrete Objects ---
-	int DiscreteObjects() { return (int)m_Discrete.size(); }
+	int DiscreteObjects();
 	GDiscreteObject* DiscreteObject(int n);
-	void AddDiscreteObject(GDiscreteObject* po) { m_Discrete.push_back(po); }
+	void AddDiscreteObject(GDiscreteObject* po);
 	int RemoveDiscreteObject(GDiscreteObject* po);
 	void InsertDiscreteObject(GDiscreteObject* po, int n);
 	int FindDiscreteObjectIndex(GDiscreteObject* po);
@@ -215,17 +224,8 @@ public:
 
 	void DeletePart(GPart* pg);
 
-protected:
-	vector<GObject*>	m_Obj;	//!< list of objects
-	FEModel*			m_ps;	//!< pointer to model
-	BOX					m_box;	//!< bounding box
-
-	vector<GPartList*>	m_GPart;	//!< list of GPartGroup
-	vector<GFaceList*>	m_GFace;	//!< list of GFaceGroup
-	vector<GEdgeList*>	m_GEdge;	//!< list of GEdgeGroup
-	vector<GNodeList*>	m_GNode;	//!< list of GNodeGroup
-
-	vector<GDiscreteObject*>	m_Discrete;	//!< list of discrete objects
+private:
+	Imp*	imp;
 };
 
 // helper function for generating objects from a type
@@ -235,62 +235,18 @@ GObject* BuildObject(int ntype);
 class GNodeIterator
 {
 public:
-	GNodeIterator(GModel& m) : m_mdl(m)
-	{
-		reset();
-	}
+	GNodeIterator(GModel& m);
 
-	void operator ++ ()
-	{
-		if (m_node != -1)
-		{
-			m_node++;
-			if (m_node >= m_mdl.Object(m_obj)->Nodes())
-			{
-				m_obj++;
-				m_node = 0;
+	void operator ++ ();
 
-				if (m_obj >= m_mdl.Objects())
-				{
-					m_node = -1;
-					m_obj = -1;
-				}
-			}
-		}
-	}
+	GNode* operator -> ();
 
-	GNode* operator -> ()
-	{
-		if (m_node >= 0)
-		{
-			return m_mdl.Object(m_obj)->Node(m_node);
-		}
-		else
-			return 0;		
-	}
-
-	operator GNode* ()
-	{
-		if (m_node >= 0)
-		{
-			return m_mdl.Object(m_obj)->Node(m_node);
-		}
-		else
-			return 0;
-	}
+	operator GNode* ();
 
 
-	bool isValid() const { return (m_node >= 0); }
+	bool isValid() const;
 
-	void reset()
-	{
-		if (m_mdl.Objects() > 0)
-		{
-			m_node = 0;
-			m_obj = 0;
-		}
-		else m_node = m_obj = -1;
-	}
+	void reset();
 
 private:
 	GModel&	m_mdl;

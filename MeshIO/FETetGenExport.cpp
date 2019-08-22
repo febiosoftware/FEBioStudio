@@ -1,4 +1,5 @@
 #include "FETetGenExport.h"
+#include <GeomLib/GObject.h>
 
 FETetGenExport::FETetGenExport()
 {

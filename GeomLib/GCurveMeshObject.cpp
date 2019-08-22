@@ -277,11 +277,11 @@ void GCurveMeshObject::Save(OArchive& ar)
 	}
 
 	// save the mesh
-	if (m_pmesh)
+	if (GetFEMesh())
 	{
 		ar.BeginChunk(CID_MESH);
 		{
-			m_pmesh->Save(ar);
+			GetFEMesh()->Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -478,9 +478,9 @@ void GCurveMeshObject::Load(IArchive& ar)
 		break;
 		// the mesh object
 		case CID_MESH:
-			if (m_pmesh) delete m_pmesh;
+			if (GetFEMesh()) delete GetFEMesh();
 			SetFEMesh(new FEMesh);
-			m_pmesh->Load(ar);
+			GetFEMesh()->Load(ar);
 			break;
 		case CID_CURVE_MESH:
 			if (m_curve) delete m_curve;

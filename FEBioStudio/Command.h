@@ -1655,3 +1655,20 @@ protected:
 	list<int>	m_lnew;
 	vector<int>	m_tmp;
 };
+
+//-----------------------------------------------------------------------------
+class CCmdDeleteFSObject : public CCommand
+{
+public:
+	CCmdDeleteFSObject(FSObject* po);
+	~CCmdDeleteFSObject();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSObject*	m_obj;
+	FSObject*	m_parent;
+	bool		m_delObject;
+	size_t		m_insertPos;
+};

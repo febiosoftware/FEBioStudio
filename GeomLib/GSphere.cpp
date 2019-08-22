@@ -1,5 +1,6 @@
 #include "GPrimitive.h"
 #include <MeshTools/FESphere.h>
+#include <MeshTools/GLMesh.h>
 
 //=============================================================================
 // GSphere
@@ -11,7 +12,7 @@ GSphere::GSphere() : GPrimitive(GSPHERE)
 
 	AddDoubleParam(m_R, "R", "radius");	// radius
 
-	m_pMesher = new FESphere(this);
+	SetFEMesher(new FESphere(this));
 
 	Create();
 }
@@ -36,8 +37,7 @@ bool GSphere::Update(bool b)
 //-----------------------------------------------------------------------------
 void GSphere::Create()
 {
-	assert(m_pGMesh == 0);
-	m_pGMesh = new GLMesh();
+	SetRenderMesh(new GLMesh());
 
 	// create the nodes
 	assert(m_Node.empty());
@@ -105,7 +105,7 @@ void GSphere::BuildGMesh()
 	int NF = 2*ND + (NZ-2)*(2*ND);
 	int NE = ND + 4*NZ;
 
-	GMesh& m = *m_pGMesh;
+	GMesh& m = *GetRenderMesh();
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 

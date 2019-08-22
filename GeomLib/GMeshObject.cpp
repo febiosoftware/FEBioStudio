@@ -1,5 +1,7 @@
 #include "GMeshObject.h"
 #include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FEMesh.h>
+#include <MeshTools/GLMesh.h>
 #include <list>
 #include <stack>
 using namespace std;
@@ -140,7 +142,7 @@ bool GMeshObject::Update(bool b)
 void GMeshObject::UpdateParts()
 {
 	// get the mesh
-	FEMesh& m = *m_pmesh;
+	FEMesh& m = *GetFEMesh();
 
 	// count how many parts there are
 	int nparts = 0;
@@ -165,7 +167,7 @@ void GMeshObject::UpdateParts()
 void GMeshObject::UpdateSurfaces()
 {
 	// get the mesh
-	FEMesh& m = *m_pmesh;
+	FEMesh& m = *GetFEMesh();
 	int NF = m.Faces();
 
 	// find the number of surfaces we have
@@ -233,7 +235,7 @@ void GMeshObject::UpdateSurfaces()
 void GMeshObject::UpdateEdges()
 {
 	// get the mesh
-	FEMesh& m = *m_pmesh;
+	FEMesh& m = *GetFEMesh();
 	int NE = m.Edges();
 
 	int ng = -1;
@@ -306,7 +308,7 @@ void GMeshObject::UpdateEdges()
 void GMeshObject::UpdateNodes()
 {
 	// get the mesh
-	FEMesh& m = *m_pmesh;
+	FEMesh& m = *GetFEMesh();
 
 	// first, we need to figure out which nodes are no longer being used
 	int NN = Nodes();
@@ -372,7 +374,7 @@ void GMeshObject::UpdateNodes()
 int GMeshObject::MakeGNode(int n)
 {
 	// get the mesh
-	FEMesh& m = *m_pmesh;
+	FEMesh& m = *GetFEMesh();
 	FENode& fen = m.Node(n);
 
 	if (fen.m_gid == -1)
@@ -399,7 +401,7 @@ int GMeshObject::MakeGNode(int n)
 
 void GMeshObject::AddNode(vec3d r)
 {
-	FEMesh& m = *m_pmesh;
+	FEMesh& m = *GetFEMesh();
 	FENode n;
 	n.m_bext = true;
 	n.m_gid = (int)m_Node.size();
@@ -427,15 +429,14 @@ void GMeshObject::AddNode(vec3d r)
 FEMesh* GMeshObject::BuildMesh()
 {
 	// the mesh is already built so we don't have to rebuilt it
-	return m_pmesh;
+	return GetFEMesh();
 }
 
 //-----------------------------------------------------------------------------
 void GMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	if (m_pGMesh == 0) delete m_pGMesh;
-	m_pGMesh = new GLMesh();
+	GLMesh* gmesh = new GLMesh();
 
 	// we'll extract the data from the FE mesh
 	FEMesh* pm = GetFEMesh();
@@ -468,7 +469,7 @@ void GMeshObject::BuildGMesh()
 	for (int i=0; i<NN; ++i)
 	{
 		FENode& node = pm->Node(i);
-		if (node.m_ntag == 1) node.m_ntag = m_pGMesh->AddNode(node.r, node.m_gid);
+		if (node.m_ntag == 1) node.m_ntag = gmesh->AddNode(node.r, node.m_gid);
 	}
 
 	// create edges
@@ -480,7 +481,7 @@ void GMeshObject::BuildGMesh()
 		n[1] = pm->Node(es.n[1]).m_ntag; assert(n[1] >= 0);
 		if (es.n[2] != -1) { n[2] = pm->Node(es.n[2]).m_ntag; assert(n[2] >= 0); }
 		if (es.n[3] != -1) { n[3] = pm->Node(es.n[3]).m_ntag; assert(n[3] >= 0); }
-		m_pGMesh->AddEdge(n, es.Nodes(), es.m_gid);
+		gmesh->AddEdge(n, es.Nodes(), es.m_gid);
 	}
 
 	// create face data
@@ -489,10 +490,11 @@ void GMeshObject::BuildGMesh()
 		FEFace& fs = pm->Face(i);
 		int nf = fs.Nodes();
 		for (int j=0; j<nf; ++j) n[j] = pm->Node(fs.n[j]).m_ntag;
-		m_pGMesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());
+		gmesh->AddFace(n, nf, fs.m_gid, fs.m_sid, fs.IsExternal());
 	}
 
-	m_pGMesh->Update();
+	gmesh->Update();
+	SetRenderMesh(gmesh);
 }
 
 //-----------------------------------------------------------------------------
@@ -500,7 +502,7 @@ void GMeshObject::BuildGMesh()
 GObject* GMeshObject::Clone()
 {
 	// create a copy of our mesh
-	FEMesh* pm = new FEMesh(*m_pmesh);
+	FEMesh* pm = new FEMesh(*GetFEMesh());
 
 	// create a new GMeshObject from this mesh
 	GMeshObject* po = new GMeshObject(pm);
@@ -514,6 +516,12 @@ GObject* GMeshObject::Clone()
 	//return the object
 	return po;
 }
+
+//-----------------------------------------------------------------------------
+FEMeshBase* GMeshObject::GetEditableMesh() { return GetFEMesh(); }
+
+//-----------------------------------------------------------------------------
+FELineMesh* GMeshObject::GetEditableLineMesh() { return GetFEMesh(); }
 
 //-----------------------------------------------------------------------------
 // Save data to file
@@ -632,11 +640,11 @@ void GMeshObject::Save(OArchive &ar)
 	}
 
 	// save the mesh
-	if (m_pmesh)
+	if (GetFEMesh())
 	{
 		ar.BeginChunk(CID_MESH);
 		{
-			m_pmesh->Save(ar);
+			GetFEMesh()->Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -858,9 +866,9 @@ void GMeshObject::Load(IArchive& ar)
 			break;
 		// the mesh object
 		case CID_MESH:
-			if (m_pmesh) delete m_pmesh;
+			if (GetFEMesh()) delete GetFEMesh();
 			SetFEMesh(new FEMesh);
-			m_pmesh->Load(ar);
+			GetFEMesh()->Load(ar);
 			break;
 		}
 		ar.CloseChunk();
@@ -943,16 +951,16 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 	FEMesh* pm = po->GetFEMesh();
 	if (bweld)
 	{
-		m_pmesh->AttachAndWeld(*pm, tol);
+		GetFEMesh()->AttachAndWeld(*pm, tol);
 		Update(false);
 	}
 	else
 	{
-		m_pmesh->Attach(*pm);
+		GetFEMesh()->Attach(*pm);
 	}
 
-	m_pmesh->UpdateBox();
-	m_pmesh->UpdateNormals();
+	GetFEMesh()->UpdateBox();
+	GetFEMesh()->UpdateNormals();
 
 	BuildGMesh();
 }

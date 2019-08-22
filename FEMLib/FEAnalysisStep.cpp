@@ -5,6 +5,8 @@
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMKernel.h>
+#include <FEMLib/FEInterface.h>
+#include <FSCore/FSObjectList.h>
 
 int FEStep::m_ncount = 0;
 
@@ -12,7 +14,33 @@ int FEStep::m_ncount = 0;
 // FEStep
 //-----------------------------------------------------------------------------
 
-FEStep::FEStep(FEModel* ps, int ntype) : m_ntype(ntype), m_pfem(ps)
+class FEStep::Imp
+{
+public:
+	// boundary conditions
+	FSObjectList<FEBoundaryCondition>	m_BC;
+
+	// loads
+	FSObjectList<FEBoundaryCondition>	m_FC;
+
+	// initial condition
+	FSObjectList<FEInitialCondition>		m_IC;
+
+	// contact interfaces
+	FSObjectList<FEInterface>	m_Int;
+
+	// rigid constraints	
+	FSObjectList<FERigidConstraint>	m_RC;
+
+	// linear constraints
+	FSObjectList<FELinearConstraintSet>	m_LC;
+
+	// rigid connectors (nonlinear constraints)
+	FSObjectList<FEConnector>	m_CN;
+};
+
+
+FEStep::FEStep(FEModel* ps, int ntype) : m_ntype(ntype), m_pfem(ps), imp(new FEStep::Imp)
 {
 	m_nID = ++m_ncount;
 	m_sztype = "(undefined)";
@@ -21,13 +49,7 @@ FEStep::FEStep(FEModel* ps, int ntype) : m_ntype(ntype), m_pfem(ps)
 //-----------------------------------------------------------------------------
 FEStep::~FEStep()
 {
-	RemoveAllBCs();
-	RemoveAllLoads();
-	RemoveAllICs();
-	RemoveAllInterfaces();
-	RemoveAllConstraints();
-	RemoveAllLinearConstraints();
-	RemoveAllConnectors();
+	delete imp;
 }
 
 //-----------------------------------------------------------------------------
@@ -52,151 +74,145 @@ void FEStep::SetID(int nid)
 }
 
 //-----------------------------------------------------------------------------
+int FEStep::BCs() { return (int) imp->m_BC.Size(); }
+
+//-----------------------------------------------------------------------------
+FEBoundaryCondition* FEStep::BC(int i) { return imp->m_BC[i]; }
+
+//-----------------------------------------------------------------------------
 void FEStep::AddBC(FEBoundaryCondition* pbc)
 { 
-	m_BC.push_back(pbc); 
+	imp->m_BC.Add(pbc);
 	pbc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::InsertBC(int n, FEBoundaryCondition* pbc)
 { 
-	m_BC.insert(m_BC.begin() + n, pbc); 
+	imp->m_BC.Insert(n, pbc);
 	pbc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 int FEStep::RemoveBC(FEBoundaryCondition* pbc)
 {
-	for (int i=0; i<(int) m_BC.size(); ++i) 
-	{
-		if (m_BC[i] == pbc)
-		{
-			m_BC.erase(m_BC.begin()+i);
-			return i;
-		}
-	}
-	return -1;
+	return (int)imp->m_BC.Remove(pbc);
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::RemoveAllBCs()
 {
-	for (int i=0; i<m_BC.size(); ++i) delete m_BC[i];
-	m_BC.clear();
+	imp->m_BC.Clear();
 }
+
+//-----------------------------------------------------------------------------
+int FEStep::Loads() { return (int)imp->m_FC.Size(); }
+
+//-----------------------------------------------------------------------------
+FEBoundaryCondition* FEStep::Load(int i) { return imp->m_FC[i]; }
 
 //-----------------------------------------------------------------------------
 void FEStep::AddLoad(FEBoundaryCondition* pfc)
 { 
-	m_FC.push_back(pfc); 
+	imp->m_FC.Add(pfc);
 	pfc->SetStep(GetID()); 
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::InsertLoad(int n, FEBoundaryCondition* pfc)
 { 
-	m_FC.insert(m_FC.begin() + n, pfc); 
+	imp->m_FC.Insert(n, pfc);
 	pfc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 int FEStep::RemoveLoad(FEBoundaryCondition* pfc)
 {
-	for (int i=0; i<(int) m_FC.size(); ++i) 
-	{
-		if (m_FC[i] == pfc)
-		{
-			m_FC.erase(m_FC.begin()+i);
-			return i;
-		}
-	}
-	return -1;
+	return imp->m_FC.Remove(pfc);
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::RemoveAllLoads()
 {
-	for (int i = 0; i<m_FC.size(); ++i) delete m_FC[i];
-	m_FC.clear();
+	imp->m_FC.Clear();
 }
+
+//-----------------------------------------------------------------------------
+int FEStep::ICs() { return (int)imp->m_IC.Size(); }
+
+//-----------------------------------------------------------------------------
+FEInitialCondition* FEStep::IC(int i) { return imp->m_IC[i]; }
 
 //-----------------------------------------------------------------------------
 void FEStep::AddIC(FEInitialCondition* pic)
 {
-	m_IC.push_back(pic); 
+	imp->m_IC.Add(pic);
 	pic->SetStep(GetID());
 }
 
 void FEStep::InsertIC(int n, FEInitialCondition* pic)
 { 
-	m_IC.insert(m_IC.begin() + n, pic); 
+	imp->m_IC.Insert(n, pic);
 	pic->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 int FEStep::RemoveIC(FEInitialCondition* pic)
 {
-	for (int i = 0; i<(int)m_IC.size(); ++i)
-	{
-		if (m_IC[i] == pic)
-		{
-			m_IC.erase(m_IC.begin() + i);
-			return i;
-		}
-	}
-	return -1;
+	return imp->m_IC.Remove(pic);
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::RemoveAllICs()
 {
-	for (int i = 0; i<m_IC.size(); ++i) delete m_IC[i];
-	m_IC.clear();
+	imp->m_IC.Clear();
 }
+
+//-----------------------------------------------------------------------------
+int FEStep::Interfaces() { return (int)imp->m_Int.Size(); }
+
+//-----------------------------------------------------------------------------
+FEInterface* FEStep::Interface(int i) { return imp->m_Int[i]; }
 
 //-----------------------------------------------------------------------------
 void FEStep::AddInterface(FEInterface* pi)
 { 
-	m_Int.push_back(pi); 
+	imp->m_Int.Add(pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::InsertInterface(int n, FEInterface* pi)
 { 
-	m_Int.insert(m_Int.begin() + n, pi); 
+	imp->m_Int.Insert(n, pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 int FEStep::RemoveInterface(FEInterface* pi)
 {
-	for (int i=0; i<(int) m_Int.size(); ++i) 
-	{
-		if (m_Int[i] == pi)
-		{
-			m_Int.erase(m_Int.begin()+i);
-			return i;
-		}
-	}
-	return -1;
+	return imp->m_Int.Remove(pi);
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::RemoveAllInterfaces()
 {
-	for (int i = 0; i<m_Int.size(); ++i) delete m_Int[i];
-	m_Int.clear();
+	imp->m_Int.Clear();
 }
+
+//-----------------------------------------------------------------------------
+int FEStep::RCs() { return (int)imp->m_RC.Size(); }
+
+//-----------------------------------------------------------------------------
+FERigidConstraint* FEStep::RC(int i) { return imp->m_RC[i]; }
 
 //-----------------------------------------------------------------------------
 int FEStep::RCs(int ntype)
 {
 	int nc = 0;
-	for (int i = 0; i<(int)m_RC.size(); ++i)
+	for (int i = 0; i<(int)imp->m_RC.Size(); ++i)
 	{
-		if (m_RC[i]->Type() == ntype) nc++;
+		if (imp->m_RC[i]->Type() == ntype) nc++;
 	}
 	return nc;
 }
@@ -204,78 +220,77 @@ int FEStep::RCs(int ntype)
 //-----------------------------------------------------------------------------
 void FEStep::AddRC(FERigidConstraint* prc)
 { 
-	m_RC.push_back(prc); 
+	imp->m_RC.Add(prc);
 	prc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::InsertRC(int n, FERigidConstraint* prc)
 { 
-	m_RC.insert(m_RC.begin() + n, prc); 
+	imp->m_RC.Insert(n, prc);
 	prc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 int FEStep::RemoveRC(FERigidConstraint* prc)
 {
-	for (int i=0; i<(int) m_RC.size(); ++i) 
-	{
-		if (m_RC[i] == prc)
-		{
-			m_RC.erase(m_RC.begin()+i);
-			return i;
-		}
-	}
-	return -1;
+	return imp->m_RC.Remove(prc);
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::RemoveAllConstraints()
 {
-	for (int i = 0; i<m_RC.size(); ++i) delete m_RC[i];
-	m_RC.clear();
+	imp->m_RC.Clear();
+}
+
+//-----------------------------------------------------------------------------
+int FEStep::LinearConstraints() { return (int)imp->m_LC.Size(); }
+
+//-----------------------------------------------------------------------------
+FELinearConstraintSet* FEStep::LinearConstraint(int i) { return imp->m_LC[i]; }
+
+//-----------------------------------------------------------------------------
+void FEStep::AddLinearConstraint(FELinearConstraintSet* plc)
+{ 
+	imp->m_LC.Add(plc);
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::RemoveAllLinearConstraints()
 {
-	for (int i = 0; i<m_LC.size(); ++i) delete m_LC[i];
-	m_LC.clear();
+	imp->m_LC.Clear();
 }
+
+//-----------------------------------------------------------------------------
+int FEStep::Connectors() { return (int)imp->m_CN.Size(); }
+
+//-----------------------------------------------------------------------------
+FEConnector* FEStep::Connector(int i) { return imp->m_CN[i]; }
 
 //-----------------------------------------------------------------------------
 void FEStep::AddConnector(FEConnector* pi)
 {
-	m_CN.push_back(pi); 
+	imp->m_CN.Add(pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::InsertConnector(int n, FEConnector* pi)
 { 
-	m_CN.insert(m_CN.begin() + n, pi); 
+	imp->m_CN.Insert(n, pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
 int FEStep::RemoveConnector(FEConnector* pi)
 {
-    for (int i=0; i<(int) m_CN.size(); ++i)
-    {
-        if (m_CN[i] == pi)
-        {
-            m_CN.erase(m_CN.begin()+i);
-            return i;
-        }
-    }
-    return -1;
+	return imp->m_CN.Remove(pi);
 }
 
 //-----------------------------------------------------------------------------
 void FEStep::RemoveAllConnectors()
 {
-	for (int i = 0; i<m_CN.size(); ++i) delete m_CN[i];
-	m_CN.clear();
+	imp->m_CN.Clear();
 }
 
 //-----------------------------------------------------------------------------

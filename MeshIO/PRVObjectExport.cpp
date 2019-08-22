@@ -2,6 +2,8 @@
 #include "PRVObjectExport.h"
 #include <FSCore/Archive.h>
 #include "PRVObjectFormat.h"
+#include <GeomLib/GObject.h>
+#include <MeshTools/GDiscreteObject.h>
 
 PRVObjectExport::PRVObjectExport()
 {

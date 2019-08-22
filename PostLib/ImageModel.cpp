@@ -24,9 +24,6 @@ CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
 
 CImageModel::~CImageModel()
 {
-	if (m_pImg) { delete m_pImg; m_pImg = 0; }
-	for (int i = 0; i < (int)m_render.size(); ++i) delete m_render[i];
-	m_render.clear();
 }
 
 void CImageModel::UpdateData(bool bsave)
@@ -40,7 +37,7 @@ void CImageModel::UpdateData(bool bsave)
 		m_box.x1 = GetFloatValue(4);
 		m_box.y1 = GetFloatValue(5);
 		m_box.z1 = GetFloatValue(6);
-		for (int i = 0; i < (int)m_render.size(); ++i) m_render[i]->Update();
+		for (int i = 0; i < (int)m_render.Size(); ++i) m_render[i]->Update();
 	}
 	else
 	{
@@ -110,22 +107,13 @@ void CImageModel::SetFileName(const std::string& fileName)
 	m_file = fileName;
 }
 
-bool CImageModel::RemoveRenderer(CGLImageRenderer* render)
+size_t CImageModel::RemoveRenderer(CGLImageRenderer* render)
 {
-	for (int i = 0; i < (int)m_render.size(); ++i)
-	{
-		if (m_render[i] == render)
-		{
-			delete render;
-			m_render.erase(m_render.begin() + i);
-			return true;
-		}
-	}
-	return false;
+	return m_render.Remove(render);
 }
 
 void CImageModel::AddImageRenderer(CGLImageRenderer* render)
 {
 	assert(render);
-	m_render.push_back(render);
+	m_render.Add(render);
 }

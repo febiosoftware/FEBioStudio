@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GModifiedObject.h"
 #include "FEModel.h"
+#include <MeshTools/GLMesh.h>
 
 //-----------------------------------------------------------------------------
 GModifiedObject::GModifiedObject(GObject* po) : GObject(GMODIFIED_OBJECT)
@@ -92,15 +93,16 @@ void GModifiedObject::DeleteModifier(GModifier* pmod)
 //-----------------------------------------------------------------------------
 FEMesh* GModifiedObject::BuildMesh()
 {
-	delete m_pmesh;
-	m_pmesh = 0;
+	delete GetFEMesh();
+	SetFEMesh(nullptr);
 
 	// ask the ref object to build a mesh
+	FEMesh* newMesh = nullptr;
 	FEMesh* pm = m_po->BuildMesh();
 	if (pm)
 	{
-		m_pmesh = new FEMesh(*pm);
-		m_pmesh->SetGObject(this);
+		newMesh = new FEMesh(*pm);
+		newMesh->SetGObject(this);
 	}
 	
 	// apply modifiers to FEMesh
@@ -113,28 +115,29 @@ FEMesh* GModifiedObject::BuildMesh()
 	}
 
 	// Make sure the normals and the bounding box are up to date.
-	if (m_pmesh)
+	if (newMesh)
 	{
-		m_pmesh->UpdateNormals();
-		m_pmesh->UpdateBox();
+		newMesh->UpdateNormals();
+		newMesh->UpdateBox();
 	}
-	return m_pmesh;
+	return newMesh;
 }
 
 //-----------------------------------------------------------------------------
 void GModifiedObject::BuildGMesh()
 {
-	delete m_pGMesh;
+	delete GetRenderMesh();
 	m_po->BuildGMesh();
 	GLMesh* pm = m_po->GetRenderMesh();
-	m_pGMesh = new GLMesh(*pm);
+	GLMesh* gmesh = new GLMesh(*pm);
 	int N = m_pStack->Size();
 	for (int i=0; i<N; ++i)
 	{
 		m_pStack->Modifier(i)->BuildGMesh(this);
-		m_pGMesh->UpdateBoundingBox();
+		gmesh->UpdateBoundingBox();
 	}
-	m_pGMesh->UpdateNormals();
+	gmesh->UpdateNormals();
+	SetRenderMesh(gmesh);
 }
 
 //-----------------------------------------------------------------------------
@@ -500,8 +503,8 @@ void GModifiedObject::Load(IArchive &ar)
 //-----------------------------------------------------------------------------
 FEMesher* GModifiedObject::GetMesher()
 {
-	if (m_pMesher == 0) return m_po->GetMesher();
-	return m_pMesher;
+	if (GetMesher() == 0) return m_po->GetMesher();
+	return GetMesher();
 }
 
 //-----------------------------------------------------------------------------

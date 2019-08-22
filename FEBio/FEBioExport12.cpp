@@ -4,8 +4,13 @@
 
 #include "FEBioExport12.h"
 #include <MeshTools/FERigidConstraint.h>
+#include <MeshTools/GModel.h>
+#include <MeshTools/GDiscreteObject.h>
+#include <GeomLib/GObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <MeshLib/FEMesh.h>
+#include <MeshTools/GGroup.h>
 #include <memory>
 using namespace std;
 

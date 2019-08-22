@@ -4,6 +4,7 @@
 #include <MeshTools/FEGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
+#include <MeshTools/GDiscreteObject.h>
 #include <assert.h>
 
 FEBioFormat25::FEBioFormat25(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)

@@ -8,7 +8,7 @@
 class FSObject : public ParamContainer
 {
 public:
-	FSObject(void);
+	FSObject(FSObject* parent = nullptr);
 	virtual ~FSObject(void);
 
 	void SetName(const std::string& name);
@@ -26,8 +26,16 @@ public:
 	// update parameters
 	virtual void UpdateData(bool bsave = true);
 
+public:
+	void SetParent(FSObject* parent);
+	FSObject* GetParent();
+	const FSObject* GetParent() const;
+	virtual size_t RemoveChild(FSObject* po);
+	virtual void InsertChild(size_t pos, FSObject* po);
+
 private:
 	std::string		m_name;
 	std::string		m_info;
+	FSObject*		m_parent;
 };
 

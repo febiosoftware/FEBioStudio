@@ -1,5 +1,6 @@
 #include "GOCCObject.h"
 #include <MeshTools/NetGenMesher.h>
+#include <MeshTools/GLMesh.h>
 
 #ifdef HAS_OCC
 #include <gp_Pnt.hxx>
@@ -43,7 +44,7 @@ public:
 GOCCObject::GOCCObject(int type) : GObject(type)
 {
 	m_occ = new OCC_Data;
-	m_pMesher = new NetGenMesher(this);
+	SetFEMesher(new NetGenMesher(this));
 }
 
 void GOCCObject::SetShape(TopoDS_Shape& shape, bool bupdate)
@@ -67,6 +68,9 @@ TopoDS_Shape& GOCCObject::GetShape()
 	return *dummy;
 #endif
 }
+
+FEMeshBase* GOCCObject::GetEditableMesh() { return GetFEMesh(); }
+FELineMesh* GOCCObject::GetEditableLineMesh() { return GetFEMesh(); }
 
 void GOCCObject::BuildGObject()
 {
@@ -151,8 +155,8 @@ void GOCCObject::BuildGMesh()
 	}
 
 	// create a new GMesh object
-	m_pGMesh = new GLMesh;
-	m_pGMesh->Create(aNbNodes, aNbTriangles, aNbEdges);
+	GLMesh* gmesh = new GLMesh;
+	gmesh->Create(aNbNodes, aNbTriangles, aNbEdges);
 
 	Standard_Integer aNodeOffset = 0;
 	Standard_Integer aTriangleOffet = 0;
@@ -172,7 +176,7 @@ void GOCCObject::BuildGMesh()
 		gp_Trsf aTrsf = aLoc.Transformation();
 		for (Standard_Integer aNodeIter = aNodes.Lower(); aNodeIter <= aNodes.Upper(); ++aNodeIter)
 		{
-			GMesh::NODE& node = m_pGMesh->Node(aNodeIter + aNodeOffset - 1);
+			GMesh::NODE& node = gmesh->Node(aNodeIter + aNodeOffset - 1);
 			gp_Pnt aPnt = aNodes(aNodeIter);
 			aPnt.Transform(aTrsf);
 			node.r = vec3d(aPnt.X(), aPnt.Y(), aPnt.Z());
@@ -194,7 +198,7 @@ void GOCCObject::BuildGMesh()
 				anId[2] = aTmpIdx;
 			}
 
-			GMesh::FACE& face = m_pGMesh->Face(aTriIter + aTriangleOffet - 1);
+			GMesh::FACE& face = gmesh->Face(aTriIter + aTriangleOffet - 1);
 			face.n[0] = anId[0] + aNodeOffset-1;
 			face.n[1] = anId[1] + aNodeOffset-1;
 			face.n[2] = anId[2] + aNodeOffset-1;
@@ -220,7 +224,7 @@ void GOCCObject::BuildGMesh()
 					int inode0 = nodeList.Value(j);
 					int inode1 = nodeList.Value(j + 1);
 
-					GMesh::EDGE& edge = m_pGMesh->Edge(edges);
+					GMesh::EDGE& edge = gmesh->Edge(edges);
 					edge.n[0] = inode0 - 1 + aNodeOffset;
 					edge.n[1] = inode1 - 1 + aNodeOffset;
 					edge.pid = edgeID++;
@@ -233,8 +237,9 @@ void GOCCObject::BuildGMesh()
 	}
 
 	// update the GMesh
-	m_pGMesh->Update();
-	m_pGMesh->UpdateNormals();
+	gmesh->Update();
+	gmesh->UpdateNormals();
+	SetRenderMesh(gmesh);
 
 #endif // HAS_OCC
 }

@@ -1,4 +1,5 @@
 #include "FESTLExport.h"
+#include <GeomLib/GObject.h>
 
 FESTLExport::FESTLExport(void)
 {

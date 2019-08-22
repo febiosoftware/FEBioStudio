@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshTools/GLMesh.h>
 #include "FEHollowSphere.h"
 
 //=============================================================================
@@ -14,7 +15,7 @@ GHollowSphere::GHollowSphere() : GPrimitive(GHOLLOW_SPHERE)
 	AddDoubleParam(m_Ri, "Ri", "Inner radius");
 	AddDoubleParam(m_Ro, "Ro", "Outer radius");
 
-	m_pMesher = new FEHollowSphere(this);
+	SetFEMesher(new FEHollowSphere(this));
 
 	Create();
 }
@@ -47,8 +48,7 @@ bool GHollowSphere::Update(bool b)
 //-----------------------------------------------------------------------------
 void GHollowSphere::Create()
 {
-	assert(m_pGMesh == 0);
-	m_pGMesh = new GLMesh();
+	SetRenderMesh(new GLMesh());
 
 	assert(m_Node.empty());
 	for (int i=0; i<12; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);
@@ -130,7 +130,7 @@ void GHollowSphere::BuildGMesh()
 	int NF = 2*(2*ND + (NZ-2)*(2*ND));
 	int NE = 2*(ND + 4*NZ);
 
-	GMesh& m = *m_pGMesh;
+	GMesh& m = *GetRenderMesh();
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 

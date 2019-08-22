@@ -6,7 +6,7 @@
 //! Constructor
 GMultiBox::GMultiBox() : GObject(GMULTI_BLOCK)
 {
-	m_pMesher = new FEMultiBlockMesh;
+	SetFEMesher(new FEMultiBlockMesh);
 }
 
 //-----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ GMultiBox::GMultiBox(GObject *po) : GObject(GMULTI_BLOCK)
 	assert(pb);
 
 	// define the mesher
-	m_pMesher = new FEMultiBlockMesh;
+	SetFEMesher(new FEMultiBlockMesh);
 
 	// copy to old object's ID
 	SetID(po->GetID());

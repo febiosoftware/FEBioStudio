@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <FSCore/box.h>
+#include <FSCore/FSObjectList.h>
+#include <PostLib/GLImageRenderer.h>
 #include "GLObject.h"
 
 namespace Post {
@@ -22,9 +24,9 @@ public:
 
 	C3DImage* Get3DImage() { return m_pImg; }
 
-	int ImageRenderers() const { return (int)m_render.size(); }
+	int ImageRenderers() const { return (int)m_render.Size(); }
 	CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }
-	bool RemoveRenderer(CGLImageRenderer* render);
+	size_t RemoveRenderer(CGLImageRenderer* render);
 
 	void AddImageRenderer(CGLImageRenderer* render);
 
@@ -45,6 +47,6 @@ private:
 	BOX				m_box;						//!< physical dimensions of image
 	C3DImage*		m_pImg;						//!< 3D image
 	bool			m_showBox;					//!< show box in Graphics View
-	std::vector<CGLImageRenderer*>	m_render;	//!< image renderers
+	FSObjectList<CGLImageRenderer>	m_render;	//!< image renderers
 };
 }

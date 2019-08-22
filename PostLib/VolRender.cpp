@@ -251,9 +251,9 @@ void CVolRender::CalcAttenuation()
 			for (int i = 0; i < m_nx; ++i)
 			{
 				vec3d f = map.Value(i, j, k); f.Normalize();
-				float a = f*l;
-				if (a < 0.f) a = 0.f;
-				m_att.value(i, j, k) = (byte)(255.f*a);
+				double a = f*l;
+				if (a < 0.0) a = 0.0;
+				m_att.value(i, j, k) = (byte)(255.0*a);
 			}
 	}
 }
@@ -359,12 +359,12 @@ void CVolRender::DepthCueX(CRGBAImage& im, int n)
 	for (int j=0; j<ny; ++j)
 		for (int i=0; i<nx; ++i, p += 4)
 		{
-			float a = m_att.value(n, i, j) / 255.f;
-			float w = m_shadeStrength*a + (1.f - m_shadeStrength);
-			float s = m_shadeStrength*a*a;
-			p[0] = (byte) (((p[0]*(1.f - s) + s*m_spc.r)*w + m_amb.r*(1.f - w)));
-			p[1] = (byte) (((p[1]*(1.f - s) + s*m_spc.g)*w + m_amb.g*(1.f - w)));
-			p[2] = (byte) (((p[2]*(1.f - s) + s*m_spc.r)*w + m_amb.b*(1.f - w)));
+			double a = m_att.value(n, i, j) / 255.0;
+			double w = m_shadeStrength*a + (1.0 - m_shadeStrength);
+			double s = m_shadeStrength*a*a;
+			p[0] = (byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
+			p[1] = (byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
+			p[2] = (byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
 		}
 }
 
@@ -380,12 +380,12 @@ void CVolRender::DepthCueY(CRGBAImage& im, int n)
 	for (int j=0; j<ny; ++j)
 		for (int i=0; i<nx; ++i, p += 4)
 		{
-			float a = m_att.value(i, n, j) / 255.f;
-			float w = m_shadeStrength*a + (1.f - m_shadeStrength);
-			float s = m_shadeStrength*a*a;
-			p[0] = (byte) (((p[0]*(1.f - s) + s*m_spc.r)*w + m_amb.r*(1.f - w)));
-			p[1] = (byte) (((p[1]*(1.f - s) + s*m_spc.g)*w + m_amb.g*(1.f - w)));
-			p[2] = (byte) (((p[2]*(1.f - s) + s*m_spc.r)*w + m_amb.b*(1.f - w)));
+			double a = m_att.value(i, n, j) / 255.0;
+			double w = m_shadeStrength*a + (1.0 - m_shadeStrength);
+			double s = m_shadeStrength*a*a;
+			p[0] = (byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
+			p[1] = (byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
+			p[2] = (byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
 		}
 }
 
@@ -401,12 +401,12 @@ void CVolRender::DepthCueZ(CRGBAImage& im, int n)
 	for (int j=0; j<ny; ++j)
 		for (int i=0; i<nx; ++i, p += 4)
 		{
-			float a = m_att.value(i, j, n) / 255.f;
-			float w = m_shadeStrength*a + (1.f - m_shadeStrength);
-			float s = m_shadeStrength*a*a;
-			p[0] = (byte) (((p[0]*(1.f - s) + s*m_spc.r)*w + m_amb.r*(1.f - w)));
-			p[1] = (byte) (((p[1]*(1.f - s) + s*m_spc.g)*w + m_amb.g*(1.f - w)));
-			p[2] = (byte) (((p[2]*(1.f - s) + s*m_spc.r)*w + m_amb.b*(1.f - w)));
+			double a = m_att.value(i, j, n) / 255.0;
+			double w = m_shadeStrength*a + (1.0 - m_shadeStrength);
+			double s = m_shadeStrength*a*a;
+			p[0] = (byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
+			p[1] = (byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
+			p[2] = (byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
 		}
 }
 

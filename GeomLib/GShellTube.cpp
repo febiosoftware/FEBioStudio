@@ -13,7 +13,7 @@ GThinTube::GThinTube() : GPrimitive(GSHELL_TUBE)
 	AddDoubleParam(m_R, "R", "radius");	// radius
 	AddDoubleParam(m_h, "h", "height");	// height
 
-	m_pMesher = new FEShellTube(this);
+	SetFEMesher(new FEShellTube(this));
 
 	Create();
 }

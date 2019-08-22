@@ -234,6 +234,9 @@
     <ClCompile Include="..\..\PostLib\VRMLExporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\PostLib\GLImageRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\PostLib\3DImage.h">

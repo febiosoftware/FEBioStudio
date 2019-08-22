@@ -1,4 +1,5 @@
 #include "FEVTKExport.h"
+#include <GeomLib/GObject.h>
 
 FEVTKExport::FEVTKExport(void)
 {

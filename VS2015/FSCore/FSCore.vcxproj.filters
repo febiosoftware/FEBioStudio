@@ -68,5 +68,8 @@
     <ClInclude Include="..\..\FSCore\box.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\FSCore\FSObjectList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -13,7 +13,7 @@ GRing::GRing() : GPrimitive(GRING)
 	AddDoubleParam(m_Ri, "Ri", "Inner radius");
 	AddDoubleParam(m_Ro, "Ro", "Outer radius");
 
-	m_pMesher = new FEShellRing(this);
+	SetFEMesher(new FEShellRing(this));
 
 	Create();
 }

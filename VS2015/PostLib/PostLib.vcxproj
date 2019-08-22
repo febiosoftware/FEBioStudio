@@ -185,6 +185,7 @@
     <ClCompile Include="..\..\PostLib\GDecoration.cpp" />
     <ClCompile Include="..\..\PostLib\GLCamera.cpp" />
     <ClCompile Include="..\..\PostLib\GLContext.cpp" />
+    <ClCompile Include="..\..\PostLib\GLImageRenderer.cpp" />
     <ClCompile Include="..\..\PostLib\GLObject.cpp" />
     <ClCompile Include="..\..\PostLib\GLTexture1D.cpp" />
     <ClCompile Include="..\..\PostLib\GMeshImport.cpp" />

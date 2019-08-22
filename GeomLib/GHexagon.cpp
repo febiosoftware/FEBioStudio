@@ -6,7 +6,7 @@ GHexagon::GHexagon() : GPrimitive(GHEXAGON)
 	AddDoubleParam(1.0, "R", "Radius");
 	AddDoubleParam(1.0, "H", "Height");
 
-	m_pMesher = new FETetGenMesher(this);
+	SetFEMesher(new FETetGenMesher(this));
 
 	Create();
 }

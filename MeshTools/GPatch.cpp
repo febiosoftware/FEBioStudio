@@ -14,7 +14,7 @@ GPatch::GPatch() : GPrimitive(GPATCH)
 	AddDoubleParam(m_w, "w", "Width" );
 	AddDoubleParam(m_h, "h", "Height");
 	
-	m_pMesher = new FEShellPatch(this);
+	SetFEMesher(new FEShellPatch(this));
 
 	Create();
 }

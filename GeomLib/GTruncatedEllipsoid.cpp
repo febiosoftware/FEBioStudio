@@ -1,9 +1,10 @@
 #include "GPrimitive.h"
 #include <MeshTools/FETruncatedEllipsoid.h>
+#include <MeshTools/GLMesh.h>
 
 GTruncatedEllipsoid::GTruncatedEllipsoid() : GPrimitive(GTRUNC_ELLIPSOID)
 {
-	m_pMesher = new FETruncatedEllipsoid(this);
+	SetFEMesher(new FETruncatedEllipsoid(this));
 	m_Ra = m_Rb = m_Rc = 1.0;
 	m_wt = 0.1;
 	m_vend = 0.0;
@@ -47,8 +48,7 @@ bool GTruncatedEllipsoid::Update(bool b)
 
 void GTruncatedEllipsoid::Create()
 {
-	assert(m_pGMesh == 0);
-	m_pGMesh = new GLMesh();
+	SetRenderMesh(new GLMesh());
 
 	assert(m_Node.empty());
 	for (int i=0; i<10; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);
@@ -123,7 +123,7 @@ void GTruncatedEllipsoid::BuildGMesh()
 	int NF = 2*(NS+NS*2*(NZ-1)) + 2*NS;
 	int NE = 8*NZ+2*NS+4;
 
-	GMesh& m = *m_pGMesh;
+	GMesh& m = *GetRenderMesh();
 	bool bempty = m.IsEmpty();
 	m.Create(NN, NF, NE);
 

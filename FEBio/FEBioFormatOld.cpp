@@ -3,6 +3,7 @@
 #include <MeshTools/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
+#include <MeshTools/GDiscreteObject.h>
 
 FEBioFormatOld::FEBioFormatOld(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {

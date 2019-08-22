@@ -1,4 +1,5 @@
 #include "FEBYUExport.h"
+#include <GeomLib/GObject.h>
 
 FEBYUExport::FEBYUExport(void)
 {

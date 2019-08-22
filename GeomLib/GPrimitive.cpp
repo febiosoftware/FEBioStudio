@@ -6,8 +6,11 @@
 // GPrimitive
 //=============================================================================
 
-//-----------------------------------------------------------------------------
+// get the editable mesh
+FEMeshBase* GPrimitive::GetEditableMesh() { return GetFEMesh(); }
+FELineMesh* GPrimitive::GetEditableLineMesh() { return GetFEMesh(); }
 
+//-----------------------------------------------------------------------------
 bool GPrimitive::Update(bool b)
 {
 	// I don't think we ever come here anymore
@@ -128,15 +131,15 @@ void GPrimitive::Save(OArchive &ar)
 	}
 
 	// save the mesher object
-	if (m_pMesher)
+	if (GetMesher())
 	{
 		ar.BeginChunk(CID_OBJ_FEMESHER);
 		{
 			int ntype = 0;
-			if (dynamic_cast<FETetGenMesher*>(m_pMesher)) ntype = 1;
+			if (dynamic_cast<FETetGenMesher*>(GetMesher())) ntype = 1;
 			ar.BeginChunk(ntype);
 			{
-				m_pMesher->Save(ar);
+				GetMesher()->Save(ar);
 			}
 			ar.EndChunk();
 		}
@@ -144,11 +147,11 @@ void GPrimitive::Save(OArchive &ar)
 	}
 
 	// save the mesh
-	if (m_pmesh)
+	if (GetFEMesh())
 	{
 		ar.BeginChunk(CID_MESH);
 		{
-			m_pmesh->Save(ar);
+			GetFEMesh()->Save(ar);
 		}
 		ar.EndChunk();
 	}
@@ -326,8 +329,8 @@ void GPrimitive::Load(IArchive& ar)
 		// mesher object (obsolete way)
 		case CID_OBJ_DEFAULT_MESHER:
 			if (ar.Version() > 0x00010005) throw ReadError("error parsing CID_OBJ_DEFAULT_MESHER (GPrimitive::Load)");
-			assert(m_pMesher);
-			m_pMesher->Load(ar);
+			assert(GetMesher());
+			GetMesher()->Load(ar);
 			break;
 		// mesher object (new way)
 		case CID_OBJ_FEMESHER:
@@ -344,7 +347,7 @@ void GPrimitive::Load(IArchive& ar)
 					default:
 						throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
 					}
-					m_pMesher->Load(ar);
+					GetMesher()->Load(ar);
 				}
 				ar.CloseChunk();
 				if (ar.OpenChunk() != IO_END) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
@@ -352,9 +355,13 @@ void GPrimitive::Load(IArchive& ar)
 			break;
 		// the mesh object
 		case CID_MESH:
-			if (m_pmesh) delete m_pmesh;
-			SetFEMesh(new FEMesh);
-			m_pmesh->Load(ar);
+			{
+				FEMesh* mesh = GetFEMesh();
+				if (mesh) delete mesh;
+				SetFEMesh(new FEMesh);
+				mesh = GetFEMesh();
+				mesh->Load(ar);
+			}
 			break;
 		}
 		ar.CloseChunk();
@@ -395,7 +402,7 @@ GObject* GPrimitive::Clone()
 
 void GGregoryPatch::UpdateMesh()
 {
-	FEGregoryPatch& m = dynamic_cast<FEGregoryPatch&>(*m_pmesh);
+	FEGregoryPatch& m = dynamic_cast<FEGregoryPatch&>(*GetFEMesh());
 
 	// reposition the nodes
 	for (int i=0; i<Nodes(); ++i)

@@ -6,6 +6,9 @@
 #include <MeshTools/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/GGroup.h>
+#include <GeomLib/GObject.h>
 #include <memory>
 using namespace std;
 

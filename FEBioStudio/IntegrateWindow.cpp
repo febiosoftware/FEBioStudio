@@ -95,10 +95,9 @@ void CIntegrateWindow::UpdateSourceOptions()
 
 	// add all plane cuts to the source options
 	Post::GPlotList& plt = pdoc->GetGLModel()->GetPlotList();
-	Post::GPlotList::iterator it;
-	for (it = plt.begin(); it != plt.end(); ++it)
+	for (int i =0; i < plt.Size(); ++i)
 	{
-		Post::CGLPlaneCutPlot* pp = dynamic_cast<Post::CGLPlaneCutPlot*>(*it);
+		Post::CGLPlaneCutPlot* pp = dynamic_cast<Post::CGLPlaneCutPlot*>(plt[i]);
 		if (pp) 
 		{
 			string name = pp->GetName();

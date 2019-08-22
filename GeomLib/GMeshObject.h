@@ -47,8 +47,8 @@ public:
 	// cloning
 	GObject* Clone() override;
 
-	FEMeshBase* GetEditableMesh() override { return GetFEMesh(); }
-	FELineMesh* GetEditableLineMesh() override { return GetFEMesh(); }
+	FEMeshBase* GetEditableMesh() override;
+	FELineMesh* GetEditableLineMesh() override;
 
 	// detach an element selection
 	GMeshObject* DetachSelection();

@@ -7,6 +7,8 @@
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEBioStudio/version.h>
+#include <MeshTools/GGroup.h>
+#include <GeomLib/GObject.h>
 #include <memory>
 #include <sstream>
 using namespace std;

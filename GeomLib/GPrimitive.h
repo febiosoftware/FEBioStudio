@@ -18,8 +18,8 @@ public:
 	GPrimitive(int ntype) : GObject(ntype) {}
 
 	// get the editable mesh
-	FEMeshBase* GetEditableMesh() override { return GetFEMesh(); }
-	FELineMesh* GetEditableLineMesh() override { return GetFEMesh(); }
+	FEMeshBase* GetEditableMesh() override;
+	FELineMesh* GetEditableLineMesh() override;
 
 	// update the object's data
 	bool Update(bool b = true) override;

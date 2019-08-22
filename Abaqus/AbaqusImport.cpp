@@ -8,6 +8,7 @@
 #include <vector>
 #include <MeshTools/FEMultiMaterial.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <MeshTools/GDiscreteObject.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------

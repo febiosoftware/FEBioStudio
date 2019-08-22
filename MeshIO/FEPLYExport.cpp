@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FEPLYExport.h"
+#include <GeomLib/GObject.h>
 
 FEPLYExport::FEPLYExport(void)
 {

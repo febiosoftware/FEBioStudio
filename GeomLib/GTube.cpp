@@ -15,7 +15,7 @@ GTube::GTube() : GPrimitive(GTUBE)
 	AddDoubleParam(m_Ro, "Ro", "outer radius");	// outer radius
 	AddDoubleParam(m_h, "h", "height");	// height
 
-	m_pMesher = new FETube(this);
+	SetFEMesher(new FETube(this));
 
 	Create();
 }
@@ -136,7 +136,7 @@ GTube2::GTube2() : GPrimitive(GTUBE2)
 	AddDoubleParam(m_Roy, "Roy", "outer y-radius");	// outer y-radius
 	AddDoubleParam(m_h, "h", "height");	// height
 
-	m_pMesher = new FETube2(this);
+	SetFEMesher(new FETube2(this));
 
 	Create();
 }

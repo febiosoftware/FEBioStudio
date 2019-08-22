@@ -12,7 +12,7 @@ GSlice::GSlice() : GPrimitive(GSLICE)
 	AddDoubleParam(m_H, "h", "height");
 	AddDoubleParam(m_w, "w", "angle" );
 
-	m_pMesher = new FESlice(this);
+	SetFEMesher(new FESlice(this));
 
 	Create();
 }

@@ -355,7 +355,7 @@ public:
 //-----------------------------------------------------------------------------
 // This class implements a linear constraint
 // TODO: Figure out a way to integrate this
-class FELinearConstraintSet
+class FELinearConstraintSet : public FSObject
 {
 public:
 	// a linear constraint defined via LCDOFs

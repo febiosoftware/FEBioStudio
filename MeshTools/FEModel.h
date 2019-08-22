@@ -13,6 +13,7 @@
 #include "FESoluteData.h"
 #include "FEMLib/FEDOF.h"
 #include "FEMLib/FEInitialCondition.h"
+#include <FSCore/FSObjectList.h>
 
 //-----------------------------------------------------------------------------
 // For convenience, we define the following variable IDs
@@ -68,10 +69,10 @@ public:
 	// --- material functions ---
 
 	// return the material
-	GMaterial* GetMaterial(int n) { return (n<0||n>=(int) m_pMat.size()?0:m_pMat[n]); }
+	GMaterial* GetMaterial(int n);
 
 	// add a material to the model
-	void AddMaterial(GMaterial* pmat) { m_pMat.push_back(pmat); pmat->SetModel(this); } 
+	void AddMaterial(GMaterial* pmat);
 
 	// replace a material in the model
 	void ReplaceMaterial(GMaterial* pold, GMaterial* pnew);
@@ -79,10 +80,10 @@ public:
 	// delete a material from the model
 	bool CanDeleteMaterial(GMaterial* pm);
 	int DeleteMaterial(GMaterial* pm);
-	void InsertMaterial(int n, GMaterial* pm) {m_pMat.insert(m_pMat.begin()+n, pm);}
+	void InsertMaterial(int n, GMaterial* pm);
 
 	// return materials
-	int Materials() { return (int)m_pMat.size(); }
+	int Materials();
 
 	// find a material from its ID
 	GMaterial* GetMaterialFromID(int id);
@@ -99,13 +100,13 @@ public:
 	void Save(OArchive& ar);
 
 	// --- Analysis steps ---
-	int Steps() { return (int)m_pStep.size(); }
-	FEStep* GetStep(int i) { return m_pStep[i]; }
+	int Steps();
+	FEStep* GetStep(int i);
 	FEStep* FindStep(int nid);
 
-	void AddStep(FEStep* ps) { m_pStep.push_back(ps); }
+	void AddStep(FEStep* ps);
 	int DeleteStep(FEStep* ps);
-	void InsertStep(int n, FEStep* ps) {m_pStep.insert(m_pStep.begin()+n, ps);}
+	void InsertStep(int n, FEStep* ps);
 
 	void AssignBCToStep(FEBoundaryCondition* pbc, FEStep* ps);
 	void AssignLoadToStep(FEBoundaryCondition* pbc, FEStep* ps);
@@ -117,16 +118,16 @@ public:
 	void AssignComponentToStep(FEStepComponent* pc, FEStep* ps);
 
 	// --- data variables ---
-	int DataVariables() { return (int) m_Var.size(); }
-	FEDataVariable* DataVariable(int i) { return m_Var[i]; }
+	int DataVariables();
+	FEDataVariable* DataVariable(int i);
 	FEDataVariable* FindDataVariable(int nid);
-	void AddDataVariable(FEDataVariable* pv) { m_Var.push_back(pv); }
+	void AddDataVariable(FEDataVariable* pv);
 	// Update model data
 	void UpdateData();
 
 	// --- miscellaneous ---
-	FESoluteData& GetSoluteData(int i) { return *m_Sol[i]; }
-	int Solutes() { return (int) m_Sol.size(); }
+	FESoluteData& GetSoluteData(int i);
+	int Solutes();
 	int FindSolute(const char* sz);
 	void AddSolute(const std::string& name, int z, double M, double d);
 	void RemoveSolute(int n);
@@ -138,8 +139,8 @@ public:
 	void GetDOFNames(FEDOFVariable& var, char* szbuf);
 	void GetVariableNames(const char* szvar, char* szbuf);
 
-	FESoluteData& GetSBMData(int i) { return *m_SBM[i]; }
-	int SBMs() { return (int) m_SBM.size(); }
+	FESoluteData& GetSBMData(int i);
+	int SBMs();
 	int FindSBM(const char* sz);
 	void AddSBM(const std::string& name, int z, double M, double d);
 	void RemoveSBM(int n);
@@ -154,7 +155,7 @@ public:
 public:
 	int DataMaps() const;
 	void AddDataMap(FEDataMap* map);
-	bool RemoveMap(FEDataMap* map);
+	int RemoveMap(FEDataMap* map);
 	FEDataMap* GetDataMap(int i);
 
 public:
@@ -183,13 +184,13 @@ protected:
 protected:
 	GModel*					m_pModel;	//!< Model geometry
 	vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
-	vector<GMaterial*>		m_pMat;		//!< Material list
-	vector<FEStep*>			m_pStep;	//!< Analysis data
-	vector<FEDataVariable*>	m_Var;		//!< data variables
-	vector<FESoluteData*>	m_Sol;		//!< solute data variables
-	vector<FESoluteData*>	m_SBM;		//!< solid-bound molecule data variables
 
-	vector<FEDataMap*>		m_Map;		//!< data maps
+	FSObjectList<GMaterial>			m_pMat;		//!< Material list
+	FSObjectList<FEStep>			m_pStep;	//!< Analysis data
+	FSObjectList<FEDataVariable>	m_Var;		//!< data variables
+	FSObjectList<FESoluteData>		m_Sol;		//!< solute data variables
+	FSObjectList<FESoluteData>		m_SBM;		//!< solid-bound molecule data variables
+	FSObjectList<FEDataMap>			m_Map;		//!< data maps
 };
 
 //-----------------------------------------------------------------------------

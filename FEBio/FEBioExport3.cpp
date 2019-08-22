@@ -3,6 +3,8 @@
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEDataMap.h>
+#include <GeomLib/GObject.h>
+#include <MeshTools/GGroup.h>
 #include <FEBioStudio/version.h>
 #include <memory>
 #include <sstream>

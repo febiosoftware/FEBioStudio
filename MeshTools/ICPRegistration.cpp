@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ICPRegistration.h"
 #include <GeomLib/GObject.h>
+#include <MeshLib/FEMesh.h>
 
 GICPRegistration::GICPRegistration()
 {

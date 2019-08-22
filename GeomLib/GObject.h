@@ -1,9 +1,6 @@
 #pragma once
-#include "GItem.h"
 #include "GBaseObject.h"
-#include "MeshTools/FEMesher.h"
-#include "MeshTools/GLMesh.h"
-#include "MeshTools/GMaterial.h"
+#include <FSCore/box.h>
 #include <vector>
 using namespace std;
 
@@ -12,10 +9,18 @@ using namespace std;
 class FEModel;
 class FEPart;
 class FESurface;
+class FEEdgeSet;
 class FENodeSet;
-
 class FECurveMesh;
 class FESurfaceMesh;
+class FEMesher;
+class FEMesh;
+class FEMeshBase;
+class FELineMesh;
+class FENode;
+class FEGroup;
+class GLMesh;
+class GObject;
 
 //-----------------------------------------------------------------------------
 // some exceptions that may be thrown in case of throuble
@@ -37,6 +42,8 @@ protected:
 //
 class GObject : public GBaseObject
 {
+	class Imp;
+
 public:
 	// --- C R E A T I O N ---
 
@@ -56,11 +63,11 @@ public:
 	virtual void Copy(GObject* po);
 
 	// return type of Object
-	int GetType() { return m_ntype; }
+	int GetType() const;
 
 	// get/set object color
-	GLColor GetColor() { return m_col; }
-	void SetColor(const GLColor& c) { m_col = c; }
+	GLColor GetColor() const;
+	void SetColor(const GLColor& c);
 
 	// collapse the transformation
 	void CollapseTransform();
@@ -75,11 +82,11 @@ public:
 	void SetFEMesher(FEMesher* pmesher);
 
 	// retrieve the mesher
-	virtual FEMesher* GetMesher() { return m_pMesher; }
+	virtual FEMesher* GetMesher();
 
 	// retrieve the FE mesh
-	FEMesh* GetFEMesh() { return m_pmesh; }
-	const FEMesh* GetFEMesh() const { return m_pmesh; }
+	FEMesh* GetFEMesh();
+	const FEMesh* GetFEMesh() const;
 
 	// get the editable mesh
 	virtual FEMeshBase* GetEditableMesh() { return 0; }
@@ -100,7 +107,7 @@ public:
 	virtual FEMesh* BuildMesh();
 
 	// delete the mesh
-	void DeleteFEMesh() { delete m_pmesh; m_pmesh = 0; }
+	void DeleteFEMesh();
 
 	// update data
 	bool Update(bool b =  true);
@@ -174,32 +181,35 @@ protected:
 	// set the FE mesh
 	void SetFEMesh(FEMesh* pm);
 
+	// set the render mesh
+	void SetRenderMesh(GLMesh* mesh);
+
 public:
 	// --- G R O U P S ---
-	int FEParts()    const { return (int)m_pFEPart.size(); }
-	int FESurfaces() const { return (int)m_pFESurf.size(); }
-	int FEEdgeSets() const { return (int)m_pFEESet.size(); }
-	int FENodeSets() const { return (int)m_pFENSet.size(); }
+	int FEParts()    const;
+	int FESurfaces() const;
+	int FEEdgeSets() const;
+	int FENodeSets() const;
 
-	void AddFEPart(FEPart*    pg) { m_pFEPart.push_back(pg); }
-	void AddFESurface(FESurface* pg) { m_pFESurf.push_back(pg); }
-	void AddFEEdgeSet(FEEdgeSet* pg) { m_pFEESet.push_back(pg); }
-	void AddFENodeSet(FENodeSet* pg) { m_pFENSet.push_back(pg); }
+	void AddFEPart   (FEPart*    pg);
+	void AddFESurface(FESurface* pg);
+	void AddFEEdgeSet(FEEdgeSet* pg);
+	void AddFENodeSet(FENodeSet* pg);
 
-	FEPart*    GetFEPart(int n) { return (n >= 0 && n<(int)m_pFEPart.size() ? m_pFEPart[n] : 0); }
-	FESurface* GetFESurface(int n) { return (n >= 0 && n<(int)m_pFESurf.size() ? m_pFESurf[n] : 0); }
-	FEEdgeSet* GetFEEdgeSet(int n) { return (n >= 0 && n<(int)m_pFEESet.size() ? m_pFEESet[n] : 0); }
-	FENodeSet* GetFENodeSet(int n) { return (n >= 0 && n<(int)m_pFENSet.size() ? m_pFENSet[n] : 0); }
+	FEPart*    GetFEPart   (int n);
+	FESurface* GetFESurface(int n);
+	FEEdgeSet* GetFEEdgeSet(int n);
+	FENodeSet* GetFENodeSet(int n);
 
 	int RemoveFEPart(FEPart* pg);
 	int RemoveFESurface(FESurface* pg);
 	int RemoveFEEdgeSet(FEEdgeSet* pg);
 	int RemoveFENodeSet(FENodeSet* pg);
 
-	void InsertFEPart(int n, FEPart* pg)    { m_pFEPart.insert(m_pFEPart.begin() + n, pg); }
-	void InsertFESurface(int n, FESurface* pg) { m_pFESurf.insert(m_pFESurf.begin() + n, pg); }
-	void InsertFEEdgeSet(int n, FEEdgeSet* pg) { m_pFEESet.insert(m_pFEESet.begin() + n, pg); }
-	void InsertFENodeSet(int n, FENodeSet* pg) { m_pFENSet.insert(m_pFENSet.begin() + n, pg); }
+	void InsertFEPart   (int n, FEPart*    pg);
+	void InsertFESurface(int n, FESurface* pg);
+	void InsertFEEdgeSet(int n, FEEdgeSet* pg);
+	void InsertFENodeSet(int n, FENodeSet* pg);
 
 	FEGroup* FindFEGroup(int nid);
 
@@ -217,19 +227,5 @@ public:
 	GNode* FindNodeFromTag(int ntag);
 
 private:
-	int	m_ntype;	//!< object type identifier
-	GLColor	m_col;	//!< color of object
-
-protected:
-	FEMesh*		m_pmesh;	//!< the mesh that this object manages
-	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
-	GLMesh*		m_pGMesh;	//!< the mesh for rendering
-
-	// --- Group Data ---
-	//{
-	std::vector<FEPart*>	m_pFEPart;
-	std::vector<FESurface*>	m_pFESurf;
-	std::vector<FEEdgeSet*>	m_pFEESet;
-	std::vector<FENodeSet*>	m_pFENSet;
-	//}
+	Imp*	imp;
 };

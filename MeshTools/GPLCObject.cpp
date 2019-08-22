@@ -8,14 +8,14 @@
 //-----------------------------------------------------------------------------
 GPLCObject::GPLCObject() : GObject(GPLC_OBJECT)
 {
-	m_pMesher = new FETetGenMesher(this);
+	SetFEMesher(new FETetGenMesher(this));
 }
 
 //-----------------------------------------------------------------------------
 FEMesh* GPLCObject::BuildMesh()
 {
-	SetFEMesh(m_pMesher->BuildMesh());
-	return m_pmesh;
+	SetFEMesh(GetMesher()->BuildMesh());
+	return GetFEMesh();
 }
 
 inline double Measure(vec2d& a, vec2d& b)

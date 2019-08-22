@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "FSObject.h"
 
-FSObject::FSObject(void)
+FSObject::FSObject(FSObject* parent) : m_parent(parent)
 {
 
 }
 
 FSObject::~FSObject(void)
 {
+	if (m_parent) m_parent->RemoveChild(this);
 }
 
 void FSObject::SetName(const std::string& name)
@@ -28,6 +29,32 @@ void FSObject::SetInfo(const std::string& info)
 const std::string& FSObject::GetInfo() const
 {
 	return m_info;
+}
+
+FSObject* FSObject::GetParent()
+{
+	return m_parent;
+}
+
+const FSObject* FSObject::GetParent() const
+{
+	return m_parent;
+}
+
+void FSObject::SetParent(FSObject* parent)
+{
+	m_parent = parent;
+}
+
+size_t FSObject::RemoveChild(FSObject* po)
+{
+	assert(false);
+	return -1;
+}
+
+void FSObject::InsertChild(size_t pos, FSObject* po)
+{
+	assert(false);
 }
 
 void FSObject::Save(OArchive& ar)

@@ -9,7 +9,7 @@ GDisc::GDisc() : GPrimitive(GDISC)
 	AddDoubleParam(1.0, "R", "radius");
 
 	// assign default mesher
-	m_pMesher = new FEShellDisc(this);
+	SetFEMesher(new FEShellDisc(this));
 
 	// build the object
 	Create();

@@ -4,5 +4,5 @@
 
 GObject2D::GObject2D() : GObject(GOBJECT2D)
 {
-	m_pMesher = new FEAdvancingFrontMesher2D(this);
+	SetFEMesher(new FEAdvancingFrontMesher2D(this));
 }

@@ -11,6 +11,7 @@
 #include <MeshTools/FEExtrudeFaces.h>
 #include <MeshTools/FECreateShells.h>
 #include <MeshTools/FERevolveFaces.h>
+#include <MeshTools/FEMesher.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include "ui_meshpanel.h"

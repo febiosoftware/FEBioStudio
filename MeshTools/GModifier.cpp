@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
-
+#include <MeshLib/FEMesh.h>
+#include <MeshTools/GLMesh.h>
 
 //-----------------------------------------------------------------------------
 GModifier::GModifier(void)

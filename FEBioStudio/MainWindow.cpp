@@ -127,11 +127,16 @@ void CMainWindow::setCurrentTheme(int n)
 void CMainWindow::UpdateTitle()
 {
 	// get the file name
-	std::string fileName = m_doc->GetDocFileName();
-	if (fileName.empty()) fileName = "Untitled";
+	if (m_doc)
+	{
+		std::string wndTitle = m_doc->GetDocFileName();
+		if (wndTitle.empty()) wndTitle = "Untitled";
 
-	std::string wndTitle = fileName + " - FEBio Studio";
-	setWindowTitle(QString::fromStdString(wndTitle));
+		if (m_doc->IsModified()) wndTitle += "*";
+
+		wndTitle += " - FEBio Studio";
+		setWindowTitle(QString::fromStdString(wndTitle));
+	}
 }
 
 //-----------------------------------------------------------------------------

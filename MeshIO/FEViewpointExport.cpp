@@ -1,4 +1,5 @@
 #include "FEViewpointExport.h"
+#include <GeomLib/GObject.h>
 
 FEViewpointExport::FEViewpointExport(void)
 {

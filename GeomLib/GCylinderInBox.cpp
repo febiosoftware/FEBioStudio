@@ -12,7 +12,7 @@ GCylinderInBox::GCylinderInBox() : GPrimitive(GCYLINDER_IN_BOX)
 	AddDoubleParam(m_D, "d", "depth" );
 	AddDoubleParam(m_R, "R", "radius");
 	
-	m_pMesher = new FECylinderInBox(this);
+	SetFEMesher(new FECylinderInBox(this));
 
 	Create();
 }

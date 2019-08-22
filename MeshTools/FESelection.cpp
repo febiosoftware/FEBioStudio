@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "FESelection.h"
 #include "GGroup.h"
+#include "GLMesh.h"
+#include <GeomLib/GObject.h>
 
 //////////////////////////////////////////////////////////////////////
 // FESelection

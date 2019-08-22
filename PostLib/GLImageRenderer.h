@@ -8,9 +8,9 @@ class CImageModel;
 class CGLImageRenderer : public CGLVisual
 {
 public:
-	CGLImageRenderer(CImageModel* img = nullptr) : m_img(img) {}
+	CGLImageRenderer(CImageModel* img = nullptr);
 
-	CImageModel* GetImageModel() { return m_img; }
+	CImageModel* GetImageModel();
 
 private:
 	CImageModel*	m_img;

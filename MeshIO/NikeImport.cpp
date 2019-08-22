@@ -6,6 +6,7 @@
 #include <MeshTools/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/FEMaterial.h>
+#include <MeshTools/GDiscreteObject.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <string.h>
 

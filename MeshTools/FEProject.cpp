@@ -4,6 +4,8 @@
 #include <FEMLib/FESurfaceLoad.h>
 #include <MeshTools/FERigidConstraint.h>
 #include <MeshTools/FEMultiMaterial.h>
+#include <MeshTools/GGroup.h>
+#include <GeomLib/GObject.h>
 #include <string>
 using namespace std;
 

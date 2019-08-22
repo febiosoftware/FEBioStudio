@@ -1,4 +1,5 @@
 #include "FELSDYNAexport.h"
+#include <GeomLib/GObject.h>
 #include <memory>
 
 //-----------------------------------------------------------------------------

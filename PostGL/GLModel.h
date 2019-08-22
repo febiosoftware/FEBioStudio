@@ -5,12 +5,13 @@
 #include "PostLib/FEModel.h"
 #include "PostLib/GDecoration.h"
 #include "GLPlot.h"
+#include <FSCore/FSObjectList.h>
 #include <vector>
 
 namespace Post {
 
 //-----------------------------------------------------------------------------
-typedef std::vector<Post::CGLPlot*>	GPlotList;
+typedef FSObjectList<Post::CGLPlot>	GPlotList;
 
 //-----------------------------------------------------------------------------
 // view conventions
@@ -336,10 +337,9 @@ public:
 	// edits plots
 	void AddPlot(Post::CGLPlot* pplot);
 	GPlotList& GetPlotList() { return m_pPlot; }
-	void DeletePlot(Post::CGLPlot* plot);
 	void ClearPlots();
 
-	int Plots() { return (int)m_pPlot.size(); }
+	int Plots() { return (int)m_pPlot.Size(); }
 	CGLPlot* Plot(int i) { return m_pPlot[i]; }
 
 	void UpdateColorMaps();

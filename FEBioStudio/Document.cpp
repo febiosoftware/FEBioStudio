@@ -197,8 +197,7 @@ void CDocument::NewDocument()
 	m_psel = 0;
 
 	// clear job list
-	for (int i = 0; i < m_JobList.size(); ++i) delete m_JobList[i];
-	m_JobList.clear();
+	m_JobList.Clear();
 	m_activeJob = nullptr;
 }
 
@@ -223,7 +222,7 @@ void CDocument::Clear()
 	m_pCmd->Clear();
 
 	// clear all the jobs
-	DeleteAllFEBioJobs();
+	m_JobList.Clear();
 
 	// reset selection
 	if (m_psel) delete m_psel;
@@ -1257,140 +1256,17 @@ void CDocument::DeleteObject(FSObject* po)
 {
 	FEModel& fem = *GetFEModel();
 
-	// Notice the order of the if-statements. This is important due to order of the inheritance structure. 
-	// TODO: redefine base classes so this is no longer an issue.
-	if (dynamic_cast<FEInitialCondition*>(po))
-	{
-		FEInitialCondition* pi = dynamic_cast<FEInitialCondition*>(po);
-		FEStep* pstep = fem.GetStep(pi->GetStep());
-		pstep->RemoveIC(pi);
-	}
-	else if (dynamic_cast<FEPrescribedDOF*>(po))
-	{
-		FEPrescribedDOF* pb = dynamic_cast<FEPrescribedDOF*>(po);
-		FEStep* pstep = fem.GetStep(pb->GetStep());
-		pstep->RemoveBC(pb);
-	}
-	else if (dynamic_cast<FEFixedDOF*>(po))
-	{
-		FEFixedDOF* pb = dynamic_cast<FEFixedDOF*>(po);
-		FEStep* pstep = fem.GetStep(pb->GetStep());
-		pstep->RemoveBC(pb);
-	}
-	else if (dynamic_cast<FEPrescribedBC*>(po))
-	{
-		FEPrescribedBC* pb = dynamic_cast<FEPrescribedBC*>(po);
-		FEStep* pstep = fem.GetStep(pb->GetStep());
-		pstep->RemoveLoad(pb);
-	}
-	else if (dynamic_cast<FEInterface*>(po))
-	{
-		FEInterface* pi = dynamic_cast<FEInterface*>(po);
-		FEStep* pstep = fem.GetStep(pi->GetStep());
-		pstep->RemoveInterface(pi);
-	}
-	else if (dynamic_cast<GMaterial*>(po))
-	{
-		GMaterial* pm = dynamic_cast<GMaterial*>(po);
-		if (fem.CanDeleteMaterial(pm) ||
-			(QMessageBox::question(m_wnd, "Delete Material", "This material is being used. Area you sure you want to delete it?") == QMessageBox::Yes))
-		{
-			fem.DeleteMaterial(pm);
-		}
-	}
-	else if (dynamic_cast<FERigidConstraint*>(po))
-	{
-		FERigidConstraint* rc = dynamic_cast<FERigidConstraint*>(po);
-		FEStep* pstep = fem.FindStep(rc->GetStep()); assert(pstep);
-		if (pstep) pstep->RemoveRC(rc);
-	}
-	else if (dynamic_cast<FEConnector*>(po))
-	{
-		FEConnector* rc = dynamic_cast<FEConnector*>(po);
-		FEStep* pstep = fem.FindStep(rc->GetStep()); assert(pstep);
-		if (pstep) pstep->RemoveConnector(rc);
-	}
-	else if (dynamic_cast<FEStep*>(po))
+	if (dynamic_cast<FEStep*>(po))
 	{
 		if (dynamic_cast<FEInitialStep*>(po))
 		{
 			QMessageBox::warning(m_wnd, "Delete step", "Cannot delete the initial step.");
+			return;
 		}
 		else
 		{
-			FEStep* pstep = dynamic_cast<FEStep*>(po);
-			fem.DeleteStep(pstep);
+			DoCommand(new CCmdDeleteFSObject(po));
 		}
-	}
-	else if (dynamic_cast<GObject*>(po))
-	{
-		GObject* obj = dynamic_cast<GObject*>(po);
-		GModel& m = fem.GetModel();
-		m.RemoveObject(obj);
-	}
-	else if (dynamic_cast<GDiscreteObject*>(po))
-	{
-		GDiscreteObject* pd = dynamic_cast<GDiscreteObject*>(po);
-		GModel& m = fem.GetModel();
-		m.RemoveDiscreteObject(pd);
-	}
-	else if (dynamic_cast<FEPart*>(po))
-	{
-		FEPart* pg = dynamic_cast<FEPart*>(po);
-		GObject* obj = pg->GetGObject(); assert(obj);
-		if (obj) obj->RemoveFEPart(pg);
-	}
-	else if (dynamic_cast<FESurface*>(po))
-	{
-		FESurface* pg = dynamic_cast<FESurface*>(po);
-		GObject* obj = pg->GetGObject(); assert(obj);
-		if (obj) obj->RemoveFESurface(pg);
-	}
-	else if (dynamic_cast<FEEdgeSet*>(po))
-	{
-		FEEdgeSet* pg = dynamic_cast<FEEdgeSet*>(po);
-		GObject* obj = pg->GetGObject(); assert(obj);
-		if (obj) obj->RemoveFEEdgeSet(pg);
-	}
-	else if (dynamic_cast<FENodeSet*>(po))
-	{
-		FENodeSet* pg = dynamic_cast<FENodeSet*>(po);
-		GObject* obj = pg->GetGObject(); assert(obj);
-		if (obj) obj->RemoveFENodeSet(pg);
-	}
-	else if (dynamic_cast<GPart*>(po))
-	{
-		GPart* pg = dynamic_cast<GPart*>(po);
-		GetGModel()->DeletePart(pg);
-
-		// This cannot be undone (yet) so clear the undo stack
-		ClearCommandStack();
-	}
-	else if (dynamic_cast<GNodeList*>(po))
-	{
-		GNodeList* pg = dynamic_cast<GNodeList*>(po);
-		GetGModel()->RemoveNodeList(pg);
-	}
-	else if (dynamic_cast<GEdgeList*>(po))
-	{
-		GEdgeList* pg = dynamic_cast<GEdgeList*>(po);
-		GetGModel()->RemoveEdgeList(pg);
-	}
-	else if (dynamic_cast<GFaceList*>(po))
-	{
-		GFaceList* pg = dynamic_cast<GFaceList*>(po);
-		GetGModel()->RemoveFaceList(pg);
-	}
-	else if (dynamic_cast<GPartList*>(po))
-	{
-		GPartList* pg = dynamic_cast<GPartList*>(po);
-		GetGModel()->RemovePartList(pg);
-	}
-	else if (dynamic_cast<FEBodyLoad*>(po))
-	{
-		FEBodyLoad* pbl = dynamic_cast<FEBodyLoad*>(po);
-		FEStep* pstep = fem.GetStep(pbl->GetStep());
-		pstep->RemoveLoad(pbl);
 	}
 	else if (dynamic_cast<FEMaterial*>(po))
 	{
@@ -1401,39 +1277,22 @@ void CDocument::DeleteObject(FSObject* po)
 		{
 			pp->RemoveMaterial(pm);
 		}
-		else QMessageBox::warning(m_wnd, "FEBio Studio", "Cannot delete this material property.");
+		else
+		{
+			QMessageBox::warning(m_wnd, "FEBio Studio", "Cannot delete this material property.");
+			return;
+		}
 	}
-	else if (dynamic_cast<FEDataMap*>(po))
+	else if (po->GetParent())
 	{
-		FEDataMap* map = dynamic_cast<FEDataMap*>(po);
-		fem.RemoveMap(map);
-		FEComponent* pc = map->GetParent();
-		pc->DeleteMap(map);
-	}
-	else if (dynamic_cast<CFEBioJob*>(po))
-	{
-		CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
-		DeleteFEBioJob(job);
-	}
-	else if (dynamic_cast<Post::CImageModel*>(po))
-	{
-		Post::CImageModel* imgObj = dynamic_cast<Post::CImageModel*>(po);
-		DeleteImageModel(imgObj);
-	}
-	else if (dynamic_cast<Post::CGLPlot*>(po))
-	{
-		Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(po);
-		plot->GetModel()->DeletePlot(plot);
-	}
-	else if (dynamic_cast<Post::CGLImageRenderer*>(po))
-	{
-		Post::CGLImageRenderer* imr = dynamic_cast<Post::CGLImageRenderer*>(po);
-		imr->GetImageModel()->RemoveRenderer(imr);
+		DoCommand(new CCmdDeleteFSObject(po));
 	}
 	else
 	{
 		assert(false);
 	}
+
+	SetModifiedFlag(true);
 }
 
 // helper function for applying a modifier
@@ -1658,13 +1517,14 @@ bool CDocument::GenerateFEBioOptimizationFile(const std::string& fileName, FEBio
 
 int CDocument::FEBioJobs() const
 {
-	return (int)m_JobList.size();
+	return (int) m_JobList.Size();
 }
 
 void CDocument::AddFEbioJob(CFEBioJob* job, bool makeActive)
 {
-	m_JobList.push_back(job);
+	m_JobList.Add(job);
 	if (makeActive) SetActiveJob(job);
+	SetModifiedFlag();
 }
 
 CFEBioJob* CDocument::GetFEBioJob(int i)
@@ -1693,40 +1553,16 @@ CFEBioJob* CDocument::FindFEBioJob(const std::string& s)
 	return nullptr;
 }
 
-void CDocument::DeleteFEBioJob(CFEBioJob* job)
-{
-	for (int i = 0; i < FEBioJobs(); ++i)
-	{
-		CFEBioJob* job_i = m_JobList[i];
-		if (job == job_i)
-		{
-			// see if it's post doc is open
-			CPostDoc* postDoc = job->GetPostDoc();
-			if (postDoc)
-			{
-				int nview = GetMainWindow()->FindView(postDoc);
-				if (nview >= 1) GetMainWindow()->CloseView(nview);
-			}
-			m_JobList.erase(m_JobList.begin() + i);
-			delete job;
-		}
-	}
-}
-
-void CDocument::DeleteAllFEBioJobs()
-{
-	while (FEBioJobs()) DeleteFEBioJob(GetFEBioJob(0));
-}
-
 int CDocument::ImageModels() const
 {
-	return (int)m_img.size();
+	return (int)m_img.Size();
 }
 
 void CDocument::AddImageModel(Post::CImageModel* img)
 {
 	assert(img);
-	m_img.push_back(img);
+	m_img.Add(img);
+	SetModifiedFlag();
 }
 
 Post::CImageModel* CDocument::GetImageModel(int i)
@@ -1736,24 +1572,5 @@ Post::CImageModel* CDocument::GetImageModel(int i)
 
 void CDocument::DeleteAllImageModels()
 {
-	for (int i = 0; i < ImageModels(); ++i)
-	{
-		delete GetImageModel(i);
-	}
-	m_img.clear();
-}
-
-void CDocument::DeleteImageModel(Post::CImageModel* img)
-{
-	for (int i = 0; i < ImageModels(); ++i)
-	{
-		Post::CImageModel* img_i = GetImageModel(i);
-		if (img_i == img)
-		{
-			m_img.erase(m_img.begin() + i);
-			delete img_i;
-			return;
-		}
-	}
-	assert(false);
+	m_img.Clear();
 }

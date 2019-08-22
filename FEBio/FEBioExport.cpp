@@ -2,6 +2,8 @@
 #include "FEBioExport.h"
 #include <MeshTools/FERigidConstraint.h>
 #include <MeshTools/FEMultiMaterial.h>
+#include <GeomLib/GObject.h>
+#include <MeshTools/GDiscreteObject.h>
 
 FEBioExport::FEBioExport()
 {

@@ -30,6 +30,8 @@ class FEInitialCondition;
 //-----------------------------------------------------------------------------
 class FEStep : public FSObject
 {
+	class Imp;
+
 public:
 	FEStep(FEModel* ps, int ntype);
 	virtual ~FEStep();
@@ -56,55 +58,55 @@ public:
 	void Save(OArchive& ar);
 
 	// boundary conditions
-	int BCs() { return (int)m_BC.size(); }
-	FEBoundaryCondition* BC(int i) { return m_BC[i]; }
+	int BCs();
+	FEBoundaryCondition* BC(int i);
 	void AddBC(FEBoundaryCondition* pbc);
 	void InsertBC(int n, FEBoundaryCondition* pbc);
 	int RemoveBC(FEBoundaryCondition* pbc);
 	void RemoveAllBCs();
 
 	// loads
-	int Loads() { return (int)m_FC.size(); }
-	FEBoundaryCondition* Load(int i) { return m_FC[i]; }
+	int Loads();
+	FEBoundaryCondition* Load(int i);
 	void AddLoad(FEBoundaryCondition* pfc);
 	void InsertLoad(int n, FEBoundaryCondition* pfc);
 	int RemoveLoad(FEBoundaryCondition* pfc);
 	void RemoveAllLoads();
 
 	// initial conditions
-	int ICs() { return (int) m_IC.size(); }
-	FEInitialCondition* IC(int i) { return m_IC[i]; }
+	int ICs();
+	FEInitialCondition* IC(int i);
 	void AddIC(FEInitialCondition* pic);
 	void InsertIC(int n, FEInitialCondition* pic);
 	int RemoveIC(FEInitialCondition* pic);
 	void RemoveAllICs();
 
 	// contact interfaces
-	int Interfaces() { return (int)m_Int.size(); }
-	FEInterface* Interface(int i) { return m_Int[i]; }
+	int Interfaces();
+	FEInterface* Interface(int i);
 	void AddInterface(FEInterface* pi);
 	void InsertInterface(int n, FEInterface* pi);
 	int RemoveInterface(FEInterface* pi);
 	void RemoveAllInterfaces();
 
 	// rigid constraints
-	int RCs() { return (int)m_RC.size(); }
+	int RCs();
 	int RCs(int ntype);
-	FERigidConstraint* RC(int i) { return m_RC[i]; }
+	FERigidConstraint* RC(int i);
 	void AddRC(FERigidConstraint* prc);
 	void InsertRC(int n, FERigidConstraint* prc);
 	int RemoveRC(FERigidConstraint* prc);
 	void RemoveAllConstraints();
 
 	// linear constraints
-	int LinearConstraints() { return (int) m_LC.size(); }
-	FELinearConstraintSet* LinearConstraint(int i) { return m_LC[i]; }
-	void AddLinearConstraint(FELinearConstraintSet* plc) { m_LC.push_back(plc); }
+	int LinearConstraints();
+	FELinearConstraintSet* LinearConstraint(int i);
+	void AddLinearConstraint(FELinearConstraintSet* plc);
 	void RemoveAllLinearConstraints();
 
     // rigid connectors (nonlinear constraints)
-	int Connectors() { return (int)m_CN.size(); }
-    FEConnector* Connector(int i) { return m_CN[i]; }
+	int Connectors();
+	FEConnector* Connector(int i);
     void AddConnector(FEConnector* pi);
     void InsertConnector(int n, FEConnector* pi);
     int RemoveConnector(FEConnector* pi);
@@ -117,28 +119,8 @@ public:
 protected:
 	FEModel*	m_pfem;	// pointer to FEModel class
 
-	// boundary conditions
-	vector<FEBoundaryCondition*>	m_BC;
-
-	// loads
-	vector<FEBoundaryCondition*>	m_FC;
-
-	// initial condition
-	vector<FEInitialCondition*>		m_IC;
-
-	// contact interfaces
-	vector<FEInterface*>	m_Int;
-
-	// rigid constraints	
-	vector<FERigidConstraint*>	m_RC;
-
-	// linear constraints
-	vector<FELinearConstraintSet*>	m_LC;
-
-    // rigid connectors (nonlinear constraints)
-    vector<FEConnector*>	m_CN;
-    
 private:
+	Imp*		imp;			// implementation class
 	int			m_ntype;		// type of step
 	const char*	m_sztype;		// type string (set by c'tor of derived classes)
 	int			m_nID;			// ID of step

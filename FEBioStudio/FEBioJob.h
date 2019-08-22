@@ -49,4 +49,3 @@ private:
 
 	static int	m_count;
 };
-

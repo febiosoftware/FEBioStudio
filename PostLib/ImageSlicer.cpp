@@ -48,6 +48,7 @@ void CImageSlicer::UpdateData(bool bsave)
 		m_op = GetIntValue(ORIENTATION);
 		m_off = GetFloatValue(OFFSET);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		UpdateSlice();
 	}
 	else
 	{
@@ -82,7 +83,11 @@ void CImageSlicer::Create()
 void CImageSlicer::Update()
 {
 	UpdateData();
+	UpdateSlice();
+}
 
+void CImageSlicer::UpdateSlice()
+{
 	// get the 2D image
 	CImage im2d;
 	switch (m_op)

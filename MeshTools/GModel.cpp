@@ -6,57 +6,144 @@
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GOCCObject.h>
 #include "GModifiedObject.h"
+#include <FSCore/FSObjectList.h>
+#include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/FEItemListBuilder.h>
+#include <MeshTools/GGroup.h>
+#include <MeshLib/FEMesh.h>
+#include <FEMLib/FEAnalysisStep.h>
+
+GNodeIterator::GNodeIterator(GModel& m) : m_mdl(m)
+{
+	reset();
+}
+
+void GNodeIterator::operator ++ ()
+{
+	if (m_node != -1)
+	{
+		m_node++;
+		if (m_node >= m_mdl.Object(m_obj)->Nodes())
+		{
+			m_obj++;
+			m_node = 0;
+
+			if (m_obj >= m_mdl.Objects())
+			{
+				m_node = -1;
+				m_obj = -1;
+			}
+		}
+	}
+}
+
+GNode* GNodeIterator::operator -> ()
+{
+	if (m_node >= 0)
+	{
+		return m_mdl.Object(m_obj)->Node(m_node);
+	}
+	else
+		return 0;
+}
+
+GNodeIterator::operator GNode* ()
+{
+	if (m_node >= 0)
+	{
+		return m_mdl.Object(m_obj)->Node(m_node);
+	}
+	else
+		return 0;
+}
+
+
+bool GNodeIterator::isValid() const { return (m_node >= 0); }
+
+void GNodeIterator::reset()
+{
+	if (m_mdl.Objects() > 0)
+	{
+		m_node = 0;
+		m_obj = 0;
+	}
+	else m_node = m_obj = -1;
+}
+
+//=================================================================================================
+
+class GModel::Imp
+{
+public:
+	Imp()
+	{
+		m_ps = nullptr;
+	}
+
+	~Imp()
+	{
+
+	}
+
+public:
+	FEModel*			m_ps;	//!< pointer to model
+	BOX					m_box;	//!< bounding box
+
+	FSObjectList<GObject>	m_Obj;	//!< list of objects
+
+	FSObjectList<GPartList>	m_GPart;	//!< list of GPartGroup
+	FSObjectList<GFaceList>	m_GFace;	//!< list of GFaceGroup
+	FSObjectList<GEdgeList>	m_GEdge;	//!< list of GEdgeGroup
+	FSObjectList<GNodeList>	m_GNode;	//!< list of GNodeGroup
+
+	FSObjectList<GDiscreteObject>	m_Discrete;	//!< list of discrete objects
+};
 
 //-----------------------------------------------------------------------------
-GModel::GModel(FEModel* ps)
+GModel::GModel(FEModel* ps): imp(new GModel::Imp)
 {
 	SetName("Model");
-	m_ps = ps;
+	imp->m_ps = ps;
 }
 
 //-----------------------------------------------------------------------------
 GModel::~GModel(void)
 {
 	Clear();
+	delete imp;
 }
 
 //-----------------------------------------------------------------------------
 void GModel::Clear()
 {
-	int i;
-
 	// cleanup all objects
-	for (i=0; i<(int) m_Obj.size(); ++i) delete m_Obj[i];
-	m_Obj.clear();
+	imp->m_Obj.Clear();
 
 	// cleanup all groups
-	for (i=0; i<(int) m_GPart.size(); ++i) delete m_GPart[i]; m_GPart.clear();
-	for (i=0; i<(int) m_GFace.size(); ++i) delete m_GFace[i]; m_GFace.clear();
-	for (i=0; i<(int) m_GEdge.size(); ++i) delete m_GEdge[i]; m_GEdge.clear();
-	for (i=0; i<(int) m_GNode.size(); ++i) delete m_GNode[i]; m_GNode.clear();
+	imp->m_GPart.Clear();
+	imp->m_GFace.Clear();
+	imp->m_GEdge.Clear();
+	imp->m_GNode.Clear();
 
 	// cleanup discrete objects
-	for (i=0; i<(int) m_Discrete.size(); ++i) delete m_Discrete[i]; m_Discrete.clear();
+	imp->m_Discrete.Clear();
 }
 
 //-----------------------------------------------------------------------------
 void GModel::ClearGroups()
 {
-	int i;
-
 	// cleanup all groups
-	for (i=0; i<(int) m_GPart.size(); ++i) delete m_GPart[i]; m_GPart.clear();
-	for (i=0; i<(int) m_GFace.size(); ++i) delete m_GFace[i]; m_GFace.clear();
-	for (i=0; i<(int) m_GEdge.size(); ++i) delete m_GEdge[i]; m_GEdge.clear();
-	for (i=0; i<(int) m_GNode.size(); ++i) delete m_GNode[i]; m_GNode.clear();
-
+	imp->m_GPart.Clear();
+	imp->m_GFace.Clear();
+	imp->m_GEdge.Clear();
+	imp->m_GNode.Clear();
 }
 
 //-----------------------------------------------------------------------------
 void GModel::ClearDiscrete()
 {
 	// cleanup discrete objects
-	for (int i = 0; i<(int)m_Discrete.size(); ++i) delete m_Discrete[i]; m_Discrete.clear();
+	imp->m_Discrete.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -75,23 +162,15 @@ void GModel::Reset()
 //-----------------------------------------------------------------------------
 int GModel::RemoveObject(GObject* po)
 {
-	int i;
-
-	// find where this object is located
-	vector<GObject*>::iterator io = m_Obj.begin();
-	for (i=0; i<Objects(); ++i, ++io) if ((*io) == po) break;
-
-	assert(io != m_Obj.end());
-	
 	// remove the mesh from the list
-	if (io != m_Obj.end()) m_Obj.erase(io);
+	size_t n = imp->m_Obj.Remove(po);
 
 	// update the bounding box
 	UpdateBoundingBox();
 
 	// note that we don't delete the actual object here.
 	// we let the function that called this function deal with that
-	return i;
+	return (int)n;
 }
 
 //-----------------------------------------------------------------------------
@@ -100,27 +179,30 @@ void GModel::InsertObject(GObject* po, int n)
 {
 	assert( (n>=0) && (n<=Objects()) );
 
-	vector<GObject*>::iterator it = m_Obj.begin();
-	for (int i=0; i<n; ++i, ++it) if (i == n) break;
-
 	// insert the mesh to the list
-	m_Obj.insert(it, po);
+	imp->m_Obj.Insert(n, po);
 
 	// update bounding box
 	UpdateBoundingBox();
 }
 
 //-----------------------------------------------------------------------------
+int GModel::DiscreteObjects() { return (int) imp->m_Discrete.Size(); }
+
+//-----------------------------------------------------------------------------
+void GModel::AddDiscreteObject(GDiscreteObject* po) { imp->m_Discrete.Add(po); }
+
+//-----------------------------------------------------------------------------
 GDiscreteObject* GModel::DiscreteObject(int n)
 { 
-	if (n < m_Discrete.size())
-		return m_Discrete[n]; 
+	if (n < imp->m_Discrete.Size())
+		return imp->m_Discrete[n];
 	else
 	{
-		int nid = n - (int)m_Discrete.size();
-		for (int i=0; i<(int) m_Discrete.size(); ++i)
+		int nid = n - (int)imp->m_Discrete.Size();
+		for (int i=0; i<(int)imp->m_Discrete.Size(); ++i)
 		{
-			GDiscreteElementSet* ps = dynamic_cast<GDiscreteElementSet*>(m_Discrete[i]);
+			GDiscreteElementSet* ps = dynamic_cast<GDiscreteElementSet*>(imp->m_Discrete[i]);
 			if (ps)
 			{
 				int index = ps->FindElement(nid);
@@ -139,14 +221,13 @@ GDiscreteObject* GModel::DiscreteObject(int n)
 int GModel::RemoveDiscreteObject(GDiscreteObject* po)
 {
 	// find where this object is located
-	vector<GDiscreteObject*>::iterator io = m_Discrete.begin();
-	for (int i=0; i<DiscreteObjects(); ++i, ++io) 
+	for (int i=0; i<DiscreteObjects(); ++i) 
 	{
-		GDiscreteObject* pdi = (*io);
+		GDiscreteObject* pdi = imp->m_Discrete[i];
 		if (pdi == po)
 		{
 			// remove the mesh from the list
-			m_Discrete.erase(io);
+			imp->m_Discrete.Remove(pdi);
 			return i;
 		}
 		else if (dynamic_cast<GDiscreteElementSet*>(pdi))
@@ -176,11 +257,8 @@ void GModel::InsertDiscreteObject(GDiscreteObject* po, int n)
 {
 	assert( (n>=0) && (n<=DiscreteObjects()) );
 
-	vector<GDiscreteObject*>::iterator it = m_Discrete.begin();
-	for (int i=0; i<n; ++i, ++it) if (i == n) break;
-
 	// insert the mesh to the list
-	m_Discrete.insert(it, po);
+	imp->m_Discrete.Insert(n, po);
 }
 
 //-----------------------------------------------------------------------------
@@ -210,7 +288,20 @@ GDiscreteObject* GModel::FindDiscreteObject(const std::string& name)
 }
 
 //-----------------------------------------------------------------------------
+// return number of objects
+int GModel::Objects() const
+{ 
+	return (int)imp->m_Obj.Size();
+}
 
+//-----------------------------------------------------------------------------
+// return an object
+GObject* GModel::Object(int n)
+{ 
+	return ((n >= 0) && (n<(int)imp->m_Obj.Size()) ? imp->m_Obj[n] : 0);
+}
+
+//-----------------------------------------------------------------------------
 GObject* GModel::FindObject(int id)
 {
 	int N = Objects();
@@ -230,7 +321,7 @@ GObject* GModel::FindObject(const string& name)
 	int N = Objects();
 	for (int i=0; i<N; ++i) 
 	{
-		GObject* po = m_Obj[i];
+		GObject* po = imp->m_Obj[i];
 		if (name == po->GetName()) return po;
 	}
 
@@ -244,7 +335,7 @@ int GModel::FindObjectIndex(GObject* po)
 	int N = Objects();
 	for (int i=0; i<N; ++i)
 	{
-		if (m_Obj[i] == po) return i;
+		if (imp->m_Obj[i] == po) return i;
 	}
 
 	return -1;
@@ -254,7 +345,7 @@ int GModel::FindObjectIndex(GObject* po)
 
 void GModel::ReplaceObject(int n, GObject* po)
 {
-	assert((n>=0) && (n<(int) m_Obj.size()));
+	assert((n>=0) && (n<(int)imp->m_Obj.Size()));
 	RemoveObject(Object(n));
 	InsertObject(po, n);
 }
@@ -270,7 +361,7 @@ void GModel::ReplaceObject(GObject* po, GObject* pn)
 //-----------------------------------------------------------------------------
 void GModel::AddObject(GObject* po)
 { 
-	m_Obj.push_back(po); 
+	imp->m_Obj.Add(po);
 	UpdateBoundingBox();
 }
 
@@ -444,9 +535,9 @@ GNode* GModel::FindNode(int nid)
 int GModel::FENodes()
 {
 	int nodes = 0;
-	for (int i=0; i<(int) m_Obj.size(); ++i) 
+	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = m_Obj[i]->GetFEMesh();
+		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		if (pm) nodes += pm->Nodes();
 	}
 	return nodes;
@@ -457,9 +548,9 @@ int GModel::FENodes()
 int GModel::FEFaces()
 {
 	int faces = 0;
-	for (int i=0; i<(int) m_Obj.size(); ++i) 
+	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = m_Obj[i]->GetFEMesh();
+		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		if (pm) faces += pm->Faces();
 	}
 	return faces;
@@ -470,9 +561,9 @@ int GModel::FEFaces()
 int GModel::Elements()
 {
 	int elems = 0;
-	for (int i=0; i<(int) m_Obj.size(); ++i)
+	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = m_Obj[i]->GetFEMesh();
+		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		if (pm) elems += pm->Elements();
 	}
 	return elems;
@@ -483,9 +574,9 @@ int GModel::Elements()
 int GModel::SolidElements()
 {
 	int elems = 0;
-	for (int i=0; i<(int) m_Obj.size(); ++i)
+	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = m_Obj[i]->GetFEMesh();
+		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		for (int j=0; j<pm->Elements(); ++j)
 		{
 			FEElement& el = pm->Element(j);
@@ -500,9 +591,9 @@ int GModel::SolidElements()
 int GModel::ShellElements()
 {
 	int elems = 0;
-	for (int i=0; i<(int) m_Obj.size(); ++i)
+	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		FEMesh* pm = m_Obj[i]->GetFEMesh();
+		FEMesh* pm = imp->m_Obj[i]->GetFEMesh();
 		for (int j=0; j<pm->Elements(); ++j)
 		{
 			FEElement& el = pm->Element(j);
@@ -521,9 +612,9 @@ int GModel::ShellElements()
 FENodeSet* GModel::GetNodesetFromID(int id)
 {
 	int i, j;
-	for (i=0; i<(int) m_Obj.size(); ++i)
+	for (i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		GObject* po = m_Obj[i];
+		GObject* po = imp->m_Obj[i];
 		for (j=0; j<po->FENodeSets(); ++j)
 		{
 			FENodeSet* pn = po->GetFENodeSet(j);
@@ -539,9 +630,9 @@ FENodeSet* GModel::GetNodesetFromID(int id)
 FESurface* GModel::GetSurfaceFromID(int id)
 {
 	int i, j;
-	for (i=0; i<(int) m_Obj.size(); ++i)
+	for (i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		GObject* po = m_Obj[i];
+		GObject* po = imp->m_Obj[i];
 		for (j=0; j<po->FESurfaces(); ++j)
 		{
 			FESurface* ps = po->GetFESurface(j);
@@ -556,20 +647,20 @@ FESurface* GModel::GetSurfaceFromID(int id)
 
 BOX GModel::GetBoundingBox()
 {
-	return m_box;
+	return imp->m_box;
 }
 
 //-----------------------------------------------------------------------------
 void GModel::UpdateBoundingBox()
 {
-	if (m_Obj.size() == 0) 
+	if (imp->m_Obj.Size() == 0)
 	{
-		m_box = BOX(-1, -1, -1, 1, 1, 1);
+		imp->m_box = BOX(-1, -1, -1, 1, 1, 1);
 	}
 	else
 	{
-		m_box = m_Obj[0]->GetGlobalBox();
-		for (int i = 1; i<(int)m_Obj.size(); ++i) m_box += m_Obj[i]->GetGlobalBox();
+		imp->m_box = imp->m_Obj[0]->GetGlobalBox();
+		for (int i = 1; i<(int)imp->m_Obj.Size(); ++i) imp->m_box += imp->m_Obj[i]->GetGlobalBox();
 	}
 }
 
@@ -585,7 +676,7 @@ int GModel::CountNamedSelections() const
 
 	for (int i=0; i<Objects(); ++i)
 	{
-		const GObject* obj = m_Obj[i];
+		const GObject* obj = imp->m_Obj[i];
 		nsel += obj->FENodeSets();
 		nsel += obj->FESurfaces();
 		nsel += obj->FEEdgeSets();
@@ -817,9 +908,9 @@ void GModel::Save(OArchive &ar)
 	// save the objects
 	ar.BeginChunk(CID_OBJ_GOBJECTS);
 	{
-		for (int i=0; i<(int) m_Obj.size(); ++i)
+		for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 		{
-			GObject* po = m_Obj[i];
+			GObject* po = imp->m_Obj[i];
 			int ntype = po->GetType();
 			ar.BeginChunk(ntype);
 			{
@@ -831,56 +922,56 @@ void GModel::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the parts
-	for (int i=0; i<(int) m_GPart.size(); ++i)
+	for (int i=0; i<(int)imp->m_GPart.Size(); ++i)
 	{
 		ar.BeginChunk(CID_OBJ_GPARTGROUP);
 		{
-			m_GPart[i]->Save(ar);
+			imp->m_GPart[i]->Save(ar);
 		}
 		ar.EndChunk();
 	}
 
 	// save the surfaces
-	for (int i=0; i<(int) m_GFace.size(); ++i)
+	for (int i=0; i<(int)imp->m_GFace.Size(); ++i)
 	{
 		ar.BeginChunk(CID_OBJ_GFACEGROUP);
 		{
-			m_GFace[i]->Save(ar);
+			imp->m_GFace[i]->Save(ar);
 		}
 		ar.EndChunk();
 	}
 
 	// save the edges
-	for (int i=0; i<(int) m_GEdge.size(); ++i)
+	for (int i=0; i<(int)imp->m_GEdge.Size(); ++i)
 	{
 		ar.BeginChunk(CID_OBJ_GEDGEGROUP);
 		{
-			m_GEdge[i]->Save(ar);
+			imp->m_GEdge[i]->Save(ar);
 		}
 		ar.EndChunk();
 	}
 
 	// save the nodes
-	for (int i=0; i<(int) m_GNode.size(); ++i)
+	for (int i=0; i<(int)imp->m_GNode.Size(); ++i)
 	{
 		ar.BeginChunk(CID_OBJ_GNODEGROUP);
 		{
-			m_GNode[i]->Save(ar);
+			imp->m_GNode[i]->Save(ar);
 		}
 		ar.EndChunk();
 	}
 
 	// save the discrete objects
-	if (m_Discrete.size() > 0)
+	if (imp->m_Discrete.Size() > 0)
 	{
 		ar.BeginChunk(CID_DISCRETE_OBJECT);
 		{
-			for (int i=0; i<(int) m_Discrete.size(); ++i)
+			for (int i=0; i<(int)imp->m_Discrete.Size(); ++i)
 			{
-				int ntype = m_Discrete[i]->GetType();
+				int ntype = imp->m_Discrete[i]->GetType();
 				ar.BeginChunk(ntype);
 				{
-					m_Discrete[i]->Save(ar);
+					imp->m_Discrete[i]->Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -973,28 +1064,28 @@ void GModel::Load(IArchive &ar)
 			break;
 		case CID_OBJ_GPARTGROUP:
 			{
-				GPartList* pg = new GPartList(m_ps);
+				GPartList* pg = new GPartList(imp->m_ps);
 				pg->Load(ar);
 				AddPartList(pg);
 			}
 			break;
 		case CID_OBJ_GFACEGROUP:
 			{
-				GFaceList* pg = new GFaceList(m_ps);
+				GFaceList* pg = new GFaceList(imp->m_ps);
 				pg->Load(ar);
 				AddFaceList(pg);
 			}
 			break;
 		case CID_OBJ_GEDGEGROUP:
 			{
-				GEdgeList* pg = new GEdgeList(m_ps);
+				GEdgeList* pg = new GEdgeList(imp->m_ps);
 				pg->Load(ar);
 				AddEdgeList(pg);
 			}
 			break;
 		case CID_OBJ_GNODEGROUP:
 			{
-				GNodeList* pg = new GNodeList(m_ps);
+				GNodeList* pg = new GNodeList(imp->m_ps);
 				pg->Load(ar);
 				AddNodeList(pg);
 			}
@@ -1039,110 +1130,117 @@ void GModel::Load(IArchive &ar)
 
 void GModel::AddPartList(GPartList *pg)
 {
-	m_GPart.push_back(pg);
+	imp->m_GPart.Add(pg);
 }
 
 //-----------------------------------------------------------------------------
 
 void GModel::InsertPartList(int n, GPartList* pg)
 {
-	vector<GPartList*>::iterator it = m_GPart.begin();
-	for (int i=0; i<n; ++i) ++it;
-	m_GPart.insert(it, pg);
+	imp->m_GPart.Insert(n, pg);
 }
+
+//-----------------------------------------------------------------------------
+int GModel::PartLists() const { return (int)imp->m_GPart.Size(); }
+
+//-----------------------------------------------------------------------------
+GPartList* GModel::PartList(int n) { return imp->m_GPart[n]; }
 
 //-----------------------------------------------------------------------------
 
 int GModel::RemovePartList(GPartList *pg)
 {
-	vector<GPartList*>::iterator it = m_GPart.begin();
-	for (int i=0; i<(int) m_GPart.size(); ++i, ++it) if ((*it) == pg) { m_GPart.erase(it); return i; }
-	return -1;
+	return imp->m_GPart.Remove(pg);
 }
 
 //-----------------------------------------------------------------------------
 
 void GModel::AddFaceList(GFaceList *pg)
 {
-	m_GFace.push_back(pg);
+	imp->m_GFace.Add(pg);
 }
 
 //-----------------------------------------------------------------------------
 
 void GModel::InsertFaceList(int n, GFaceList* pg)
 {
-	vector<GFaceList*>::iterator it = m_GFace.begin();
-	for (int i=0; i<n; ++i) ++it;
-	m_GFace.insert(it, pg);
+	imp->m_GFace.Insert(n, pg);
 }
 
 //-----------------------------------------------------------------------------
 
 int GModel::RemoveFaceList(GFaceList *pg)
 {
-	vector<GFaceList*>::iterator it = m_GFace.begin();
-	for (int i=0; i<(int) m_GFace.size(); ++i, ++it) if ((*it) == pg) { m_GFace.erase(it); return i; }
-	return -1;
+	return imp->m_GFace.Remove(pg);
 }
+
+//-----------------------------------------------------------------------------
+int GModel::FaceLists() const { return (int) imp->m_GFace.Size(); }
+
+//-----------------------------------------------------------------------------
+GFaceList* GModel::FaceList(int n) { return imp->m_GFace[n]; }
 
 //-----------------------------------------------------------------------------
 
 void GModel::AddEdgeList(GEdgeList *pg)
 {
-	m_GEdge.push_back(pg);
+	imp->m_GEdge.Add(pg);
+}
+
+//-----------------------------------------------------------------------------
+void GModel::InsertEdgeList(int n, GEdgeList* pg)
+{
+	imp->m_GEdge.Insert(n, pg);
 }
 
 
 //-----------------------------------------------------------------------------
+int GModel::EdgeLists() const { return (int) imp->m_GEdge.Size(); }
 
-void GModel::InsertEdgeList(int n, GEdgeList* pg)
-{
-	vector<GEdgeList*>::iterator it = m_GEdge.begin();
-	for (int i=0; i<n; ++i) ++it;
-	m_GEdge.insert(it, pg);
-}
+//-----------------------------------------------------------------------------
+GEdgeList* GModel::EdgeList(int n) { return imp->m_GEdge[n]; }
 
 //-----------------------------------------------------------------------------
 
 int GModel::RemoveEdgeList(GEdgeList *pg)
 {
-	vector<GEdgeList*>::iterator it = m_GEdge.begin();
-	for (int i=0; i<(int) m_GEdge.size(); ++i, ++it) if ((*it) == pg) { m_GEdge.erase(it); return i; }
-	return -1;
+	return imp->m_GEdge.Remove(pg);
 }
 
 //-----------------------------------------------------------------------------
 
 void GModel::AddNodeList(GNodeList *pg)
 {
-	m_GNode.push_back(pg);
+	imp->m_GNode.Add(pg);
 }
 
 //-----------------------------------------------------------------------------
 
 void GModel::InsertNodeList(int n, GNodeList* pg)
 {
-	vector<GNodeList*>::iterator it = m_GNode.begin();
-	for (int i=0; i<n; ++i) ++it;
-	m_GNode.insert(it, pg);
+	imp->m_GNode.Insert(n, pg);
 }
 
 //-----------------------------------------------------------------------------
 
 int GModel::RemoveNodeList(GNodeList *pg)
 {
-	vector<GNodeList*>::iterator it = m_GNode.begin();
-	for (int i=0; i<(int) m_GNode.size(); ++i, ++it) if ((*it) == pg) { m_GNode.erase(it); return i; }
-	return -1;
+	return imp->m_GNode.Remove(pg);
 }
+
+//-----------------------------------------------------------------------------
+int GModel::NodeLists() const { return (int) imp->m_GNode.Size(); }
+
+//-----------------------------------------------------------------------------
+GNodeList* GModel::NodeList(int n) { return imp->m_GNode[n]; }
 
 //-----------------------------------------------------------------------------
 void GModel::RemoveNamedSelections()
 {
 	// remove all FE selections
-	for (int i=0; i<(int)m_Obj.size(); ++i)
+	for (int i=0; i<(int)imp->m_Obj.Size(); ++i)
 	{
-		GObject& obj = *m_Obj[i];
+		GObject& obj = *imp->m_Obj[i];
 		obj.ClearFEGroups();
 	}
 
@@ -1152,31 +1250,29 @@ void GModel::RemoveNamedSelections()
 
 //-----------------------------------------------------------------------------
 
-template <class T> void clearList(vector<T*>& l)
+template <class T> void clearList(FSObjectList<T>& l)
 {
-	if (l.empty()) return;
-
-	typename vector<T*>::iterator it = l.begin();
-	while (it != l.end())
+	if (l.IsEmpty()) return;
+	for (int i=0; i<l.Size();)
 	{
-		if ((*it)->size() == 0)
+		if (l[i]->size() == 0)
 		{
-			it = l.erase(it);
+			l.Remove(l[i]);
 		}
-		else ++it;
+		else ++i;
 	}
 }
 
 void GModel::RemoveEmptySelections()
 {
-	clearList(m_GPart);
-	clearList(m_GFace);
-	clearList(m_GEdge);
-	clearList(m_GNode);
+	clearList(imp->m_GPart);
+	clearList(imp->m_GFace);
+	clearList(imp->m_GEdge);
+	clearList(imp->m_GNode);
 
 	for (int i=0; i<Objects(); ++i)
 	{
-		GObject* po = m_Obj[i];
+		GObject* po = Object(i);
 		po->RemoveEmptyFEGroups();
 	}
 }

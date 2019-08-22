@@ -1,5 +1,6 @@
 #include "GPrimitive.h"
 #include <MeshTools/FECone.h>
+#include <MeshTools/GLMesh.h>
 
 //=============================================================================
 // GCone
@@ -15,7 +16,7 @@ GCone::GCone() : GPrimitive(GCONE)
 	AddDoubleParam(m_R1, "R1", "Top radius");
 	AddDoubleParam(m_h , "h" , "Height");
 
-	m_pMesher = new FECone(this);
+	SetFEMesher(new FECone(this));
 
 	Create();
 }
@@ -23,8 +24,8 @@ GCone::GCone() : GPrimitive(GCONE)
 //-----------------------------------------------------------------------------
 void GCone::Create()
 {
-	assert(m_pGMesh == 0);
-	m_pGMesh = new GLMesh();
+	GLMesh* gmesh = new GLMesh();
+	SetRenderMesh(gmesh);
 
 	// build the nodes
 	assert(m_Node.empty());
@@ -107,7 +108,7 @@ void GCone::BuildGMesh()
 	int NH = 4*a;
 	int NR = 12;
 
-	GMesh& m = *m_pGMesh;
+	GMesh& m = *GetRenderMesh();
 	int NN0 = m.Nodes();
 	int NF0 = m.Faces();
 	int NE0 = m.Edges();

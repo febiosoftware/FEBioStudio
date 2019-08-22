@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEBioModel.h"
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/GDiscreteObject.h>
 #include <string.h>
 
 //=============================================================================
