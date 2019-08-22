@@ -73,8 +73,7 @@ bool CReadCurveTool::OnApply()
 			po->SetName(sz);
 
 			CDocument* doc = GetDocument();
-			doc->DoCommand(new CCmdAddAndSelectObject(po));
-			doc->GetMainWindow()->Update(0, true);
+			doc->AddObject(po);
 		}
 	}
 

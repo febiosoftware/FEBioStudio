@@ -16,6 +16,7 @@ class CMainWindow;
 class CDocument;
 class GCurveMeshObject;
 class CPostDoc;
+class GMaterial;
 
 // coordinate system modes
 #define COORD_GLOBAL	0

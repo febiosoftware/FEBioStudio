@@ -33,6 +33,8 @@
 #include "Document.h"
 #include "GLHighlighter.h"
 #include "GLCursor.h"
+#include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/GModifier.h>
 #include <sstream>
 using namespace std;
 

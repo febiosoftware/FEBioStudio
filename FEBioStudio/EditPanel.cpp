@@ -13,7 +13,9 @@
 #include <MeshTools/FEEdgeFlip.h>
 #include <MeshTools/FERefineSurface.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GMeshObject.h>
 #include <QMessageBox>
+#include "Command.h"
 
 REGISTER_PREVIEW_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
 REGISTER_PREVIEW_CLASS(FESurfacePartitionSelection, CLASS_SURFACE_MODIFIER, "Partition"    , 0xFF);

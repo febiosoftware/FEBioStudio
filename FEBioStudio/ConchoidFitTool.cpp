@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include "Document.h"
 #include <MeshTools/ConchoidFit.h>
+#include <GeomLib/GObject.h>
 
 // constructor
 CConchoidFitTool::CConchoidFitTool() : CBasicTool("Conchoid Fit", HAS_APPLY_BUTTON)

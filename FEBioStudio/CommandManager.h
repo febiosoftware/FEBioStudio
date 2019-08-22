@@ -1,7 +1,7 @@
 #pragma once
-#include "Command.h"
 #include <stack>
 
+class CCommand;
 class CDocument;
 
 typedef std::stack<CCommand*> CCmdStack;
@@ -25,8 +25,8 @@ public:
 
 	void Clear();
 
-	const char* GetUndoCmdName() { return (m_Undo.size() ? m_Undo.top()->GetName() : 0); }
-	const char* GetRedoCmdName() { return (m_Redo.size() ? m_Redo.top()->GetName() : 0); }
+	const char* GetUndoCmdName();
+	const char* GetRedoCmdName();
 
 protected:
 	CCmdStack	m_Undo;	// the undo stack

@@ -24,6 +24,7 @@
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
 #include "PostDoc.h"
+#include "Command.h"
 #include <sstream>
 
 extern const int COLORS = 16;
@@ -1426,6 +1427,12 @@ bool CDocument::ImportMaterials(const std::string& fileName)
 	}
 
 	return true;
+}
+
+void CDocument::AddObject(GObject* po)
+{
+	DoCommand(new CCmdAddAndSelectObject(po));
+	GetMainWindow()->Update(0, true);
 }
 
 FEDataMap* CDocument::CreateDataMap(FSObject* po, std::string& mapName, std::string& paramName, Param_Type type)

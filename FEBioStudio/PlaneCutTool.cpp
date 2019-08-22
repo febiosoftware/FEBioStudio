@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "PlaneCutTool.h"
 #include "Document.h"
+#include <GeomLib/GMeshObject.h>
+#include <MeshTools/FEModifier.h>
 
 CPlaneCutTool::CPlaneCutTool() : CBasicTool("Plane cut", HAS_APPLY_BUTTON)
 {

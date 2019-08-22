@@ -1,7 +1,3 @@
-// Command.cpp: implementation of the CCommand class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "Command.h"
 #include "Document.h"
@@ -11,12 +7,6 @@
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/FEMesher.h>
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-//#define new DEBUG_NEW
-#endif
 
 CDocument* CCommand::m_pDoc = 0;
 
@@ -101,36 +91,6 @@ void CCmdAddInterface::UnExecute()
 }
 
 //////////////////////////////////////////////////////////////////////
-// CCmdDeleteInterface
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteInterface::Execute()
-{
-	// get the model
-	FEModel* ps = m_pDoc->GetFEModel();
-
-	// remove the interface from the step
-	FEStep* pstep = ps->FindStep(m_pint->GetStep());
-	assert(pstep);
-	m_npos = pstep->RemoveInterface(m_pint);
-
-	m_bdel = true;
-}
-
-void CCmdDeleteInterface::UnExecute()
-{
-	// get the model
-	FEModel* ps = m_pDoc->GetFEModel();
-
-	// add the interface from the step
-	FEStep* pstep = ps->FindStep(m_pint->GetStep());
-	assert(pstep);
-	pstep->InsertInterface(m_npos, m_pint);
-	
-	m_bdel = false;
-}
-
-//////////////////////////////////////////////////////////////////////
 // CCmdAddConnector
 //////////////////////////////////////////////////////////////////////
 
@@ -146,36 +106,6 @@ void CCmdAddConnector::UnExecute()
     // remove the connector from the step
     m_ps->RemoveConnector(m_pint);
     m_bdel = true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteConnector
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteConnector::Execute()
-{
-    // get the model
-    FEModel* ps = m_pDoc->GetFEModel();
-    
-    // remove the connector from the step
-    FEStep* pstep = ps->FindStep(m_pint->GetStep());
-    assert(pstep);
-    m_npos = pstep->RemoveConnector(m_pint);
-    
-    m_bdel = true;
-}
-
-void CCmdDeleteConnector::UnExecute()
-{
-    // get the model
-    FEModel* ps = m_pDoc->GetFEModel();
-    
-    // add the interface from the step
-    FEStep* pstep = ps->FindStep(m_pint->GetStep());
-    assert(pstep);
-    pstep->InsertConnector(m_npos, m_pint);
-    
-    m_bdel = false;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -268,27 +198,6 @@ void CCmdAddGPartGroup::UnExecute()
 	m_bdel = true;
 }
 
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteGPartGroup
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteGPartGroup::Execute()
-{
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-	m_npos = m.RemovePartList(m_pg);
-	assert(m_npos >= 0);
-	m_bdel = true;
-}
-
-void CCmdDeleteGPartGroup::UnExecute()
-{
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-	m.InsertPartList(m_npos, m_pg);
-	m_bdel = false;
-}
-
-
 //////////////////////////////////////////////////////////////////////
 // CCmdAddGFaceGroup
 //////////////////////////////////////////////////////////////////////
@@ -305,25 +214,6 @@ void CCmdAddGFaceGroup::UnExecute()
 	GModel& m = m_pDoc->GetFEModel()->GetModel();
 	m.RemoveFaceList(m_pg);
 	m_bdel = true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteGFaceGroup
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteGFaceGroup::Execute()
-{
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-	m_npos = m.RemoveFaceList(m_pg);
-	assert(m_npos >= 0);
-	m_bdel = true;
-}
-
-void CCmdDeleteGFaceGroup::UnExecute()
-{
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-	m.InsertFaceList(m_npos, m_pg);
-	m_bdel = false;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -344,26 +234,6 @@ void CCmdAddGEdgeGroup::UnExecute()
 	m_bdel = true;
 }
 
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteGEdgeList
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteGEdgeList::Execute()
-{
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-	m_npos = m.RemoveEdgeList(m_pg);
-	assert(m_npos >= 0);
-	m_bdel = true;
-}
-
-void CCmdDeleteGEdgeList::UnExecute()
-{
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-	m.InsertEdgeList(m_npos, m_pg);
-	m_bdel = false;
-}
-
 //////////////////////////////////////////////////////////////////////
 // CCmdAddGNodeGroup
 //////////////////////////////////////////////////////////////////////
@@ -381,26 +251,6 @@ void CCmdAddGNodeGroup::UnExecute()
 	m.RemoveNodeList(m_pg);
 	m_bdel = true;
 }
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteGNodeList
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteGNodeList::Execute()
-{
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-	m_npos = m.RemoveNodeList(m_pg);
-	assert(m_npos >= 0);
-	m_bdel = true;
-}
-
-void CCmdDeleteGNodeList::UnExecute()
-{
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-	m.InsertNodeList(m_npos, m_pg);
-	m_bdel = false;
-}
-
 
 //////////////////////////////////////////////////////////////////////
 // CCmdAddBC
@@ -472,34 +322,6 @@ void CCmdAddRC::UnExecute()
 }
 
 //////////////////////////////////////////////////////////////////////
-// CCmdDeleteObject
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteObject::Execute()
-{
-	// get the model
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-
-	// remove the mesh to the model
-	m_npos = m.RemoveObject(m_pobj);
-
-	m_pDoc->SetItemMode(ITEM_MESH);
-
-	m_bdel = true;
-}
-
-void CCmdDeleteObject::UnExecute()
-{
-	// get the model
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-
-	// remove the mesh from the model
-	m.InsertObject(m_pobj, m_npos);
-
-	m_bdel = false;
-}
-
-//////////////////////////////////////////////////////////////////////
 // CCmdDeleteDiscreteObject
 //////////////////////////////////////////////////////////////////////
 
@@ -524,137 +346,6 @@ void CCmdDeleteDiscreteObject::UnExecute()
 	// remove the mesh from the model
 	m.InsertDiscreteObject(m_pobj, m_npos);
 
-	m_bdel = false;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeletePart
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeletePart::Execute()
-{
-	// get the model
-	GObject* po = m_pg->GetGObject();
-
-	// remove the group from the model
-	m_npos = po->RemoveFEPart(m_pg);
-
-	m_bdel = true;
-}
-
-void CCmdDeletePart::UnExecute()
-{
-	// get the model
-	GObject* po = m_pg->GetGObject();
-
-	// remove the mesh from the model
-	po->InsertFEPart(m_npos, m_pg);
-
-	m_bdel = false;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteSurface
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteSurface::Execute()
-{
-	// get the model
-	GObject* po = m_pg->GetGObject();
-
-	// remove the group from the model
-	m_npos = po->RemoveFESurface(m_pg);
-
-	m_bdel = true;
-}
-
-void CCmdDeleteSurface::UnExecute()
-{
-	// get the model
-	GObject* po = m_pg->GetGObject();
-
-	// remove the mesh from the model
-	po->InsertFESurface(m_npos, m_pg);
-
-	m_bdel = false;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteNodeSet
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteNodeSet::Execute()
-{
-	// get the model
-	GObject* po = m_pg->GetGObject();
-
-	// remove the group to the model
-	m_npos = po->RemoveFENodeSet(m_pg);
-
-	m_bdel = true;
-}
-
-void CCmdDeleteNodeSet::UnExecute()
-{
-	// get the model
-	GObject* po = m_pg->GetGObject();
-
-	// remove the mesh from the model
-	po->InsertFENodeSet(m_npos, m_pg);
-
-	m_bdel = false;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteBC
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteBC::Execute()
-{
-	// remove the group to the model
-	m_npos = m_ps->RemoveBC(m_pbc);
-	m_bdel = true;
-}
-
-void CCmdDeleteBC::UnExecute()
-{
-	// remove the mesh from the model
-	m_ps->InsertBC(m_npos, m_pbc);
-	m_bdel = false;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteRC
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteRC::Execute()
-{
-	m_npos = m_ps->RemoveRC(m_prc);
-	m_bdel = true;
-}
-
-void CCmdDeleteRC::UnExecute()
-{
-	// remove the mesh from the model
-	m_ps->InsertRC(m_npos, m_prc);
-	m_bdel = false;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CCmdDeleteLoad
-//////////////////////////////////////////////////////////////////////
-
-void CCmdDeleteLoad::Execute()
-{
-	// remove the group to the model
-	m_npos = m_ps->RemoveLoad(m_pfc);
-	m_bdel = true;
-}
-
-void CCmdDeleteLoad::UnExecute()
-{
-	// remove the mesh from the model
-	m_ps->InsertLoad(m_npos, m_pfc);
 	m_bdel = false;
 }
 
@@ -3653,37 +3344,6 @@ void CCmdAddStep::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdDeleteStep
-//-----------------------------------------------------------------------------
-
-CCmdDeleteStep::CCmdDeleteStep(FEStep* pstep) : CCommand("Delete step")
-{
-	m_pstep = pstep;
-	m_bdel = false;
-	m_npos = -1;
-}
-
-CCmdDeleteStep::~CCmdDeleteStep()
-{
-	if (m_bdel) delete m_pstep;
-}
-
-void CCmdDeleteStep::Execute()
-{
-	FEModel* ps = m_pDoc->GetFEModel();
-	m_npos = ps->DeleteStep(m_pstep);
-	m_bdel = true;
-}
-
-void CCmdDeleteStep::UnExecute()
-{
-	FEModel* ps = m_pDoc->GetFEModel();
-	assert(m_npos >= 0);
-	ps->InsertStep(m_npos, m_pstep);
-	m_bdel = false;
-}
-
-//-----------------------------------------------------------------------------
 // CCmdAddMaterial
 //-----------------------------------------------------------------------------
 
@@ -3712,38 +3372,6 @@ void CCmdAddMaterial::UnExecute()
 	assert(N>0);
 	m_pm = ps->GetMaterial(N-1);
 	ps->DeleteMaterial(m_pm);
-}
-
-
-//-----------------------------------------------------------------------------
-// CCmdDeleteMaterial
-//-----------------------------------------------------------------------------
-
-CCmdDeleteMaterial::CCmdDeleteMaterial(GMaterial* pm) : CCommand("Delete material")
-{
-	m_pm = pm;
-	m_bdel = false;
-	m_npos = -1;
-}
-
-CCmdDeleteMaterial::~CCmdDeleteMaterial()
-{
-	if (m_bdel) delete m_pm;
-}
-
-void CCmdDeleteMaterial::Execute()
-{
-	FEModel* ps = m_pDoc->GetFEModel();
-	m_npos = ps->DeleteMaterial(m_pm);
-	m_bdel = true;
-}
-
-void CCmdDeleteMaterial::UnExecute()
-{
-	FEModel* ps = m_pDoc->GetFEModel();
-	assert(m_npos >= 0);
-	ps->InsertMaterial(m_npos, m_pm);
-	m_bdel = false;
 }
 
 //-----------------------------------------------------------------------------

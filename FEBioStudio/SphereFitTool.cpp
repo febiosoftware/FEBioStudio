@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include "Document.h"
 #include <MeshTools/SphereFit.h>
+#include <GeomLib/GObject.h>
 
 // constructor
 CSphereFitTool::CSphereFitTool() : CBasicTool("Sphere Fit", HAS_APPLY_BUTTON)

@@ -17,6 +17,8 @@
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <MeshTools/FERigidConstraint.h>
+#include "Command.h"
 #include <QMessageBox>
 #include <sstream>
 

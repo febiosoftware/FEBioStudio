@@ -2,6 +2,7 @@
 #include "ScalarFieldTool.h"
 #include "Document.h"
 #include <MeshTools/LaplaceSolver.h>
+#include <GeomLib/GObject.h>
 
 CScalarFieldTool::CScalarFieldTool() : CBasicTool("Scalar Field", HAS_APPLY_BUTTON)
 {

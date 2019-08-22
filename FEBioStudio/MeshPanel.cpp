@@ -26,6 +26,7 @@
 #include <QProgressBar>
 #include <sstream>
 #include <QtCore/QTimer>
+#include "Command.h"
 
 MeshingThread::MeshingThread(GObject* po)
 {

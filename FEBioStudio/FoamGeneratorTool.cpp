@@ -38,7 +38,7 @@ bool CFoamGeneratorTool::OnApply()
 		}
 
 		// if this is the last selected object, delete it so we can replace it
-		if (pa && (pa == m_pfo)) doc->DoCommand(new CCmdDeleteObject(pa));
+		if (pa && (pa == m_pfo)) doc->DeleteObject(pa);
 
 		// Create a new GMeshObject
 		GMeshObject* po = new GMeshObject(pm);
@@ -46,7 +46,7 @@ bool CFoamGeneratorTool::OnApply()
 		m_pfo = po;
 
 		// add the new object to the model
-		doc->DoCommand(new CCmdAddAndSelectObject(po));
+		doc->AddObject(po);
 	}
 	else 
 	{

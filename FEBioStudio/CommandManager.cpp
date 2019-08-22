@@ -1,16 +1,7 @@
-// CommandManager.cpp: implementation of the CCommandManager class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "CommandManager.h"
+#include "Command.h"
 #include "Document.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
 
 std::string CBasicCmdManager::m_err;
 
@@ -109,6 +100,9 @@ void CBasicCmdManager::Clear()
 	N = (int)m_Redo.size();
 	for (int i = 0; i<N; i++) { delete m_Redo.top(); m_Redo.pop(); }
 }
+
+const char* CBasicCmdManager::GetUndoCmdName() { return (m_Undo.size() ? m_Undo.top()->GetName() : 0); }
+const char* CBasicCmdManager::GetRedoCmdName() { return (m_Redo.size() ? m_Redo.top()->GetName() : 0); }
 
 //////////////////////////////////////////////////////////////////////
 // CCommandManager

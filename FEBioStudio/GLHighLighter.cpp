@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GLHighlighter.h"
 #include "GLView.h"
+#include <GeomLib/GObject.h>
 
 GLHighlighter GLHighlighter::m_This;
 

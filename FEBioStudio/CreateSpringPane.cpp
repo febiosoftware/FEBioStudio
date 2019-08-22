@@ -13,8 +13,10 @@
 #include <sstream>
 #include <QGroupBox>
 #include <GeomLib/GCurveMeshObject.h>
+#include <GeomLib/GMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include "GLHighlighter.h"
+#include "Command.h"
 using namespace std;
 
 class Ui::CCreateSpringPane

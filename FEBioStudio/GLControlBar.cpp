@@ -12,6 +12,7 @@
 #include <QDoubleSpinBox>
 #include <QComboBox>
 #include <GeomLib/GCurveMeshObject.h>
+#include <GeomLib/GSurfaceMeshObject.h>
 
 class CGLControlBar_UI
 {

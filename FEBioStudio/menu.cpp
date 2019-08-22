@@ -1105,7 +1105,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 				{
 					GObject* po = model.Object(i);
 					if (po->IsSelected())
-						pcmd->AddCommand(new CCmdDeleteObject(po));
+						pcmd->AddCommand(new CCmdDeleteFSObject(po));
 				}
 				m_doc->DoCommand(pcmd);
 			}
@@ -1559,7 +1559,7 @@ void CMainWindow::on_actionMerge_triggered()
 	{
 		// remove the old object
 		GObject* po = sel->Object(i);
-		pcmd->AddCommand(new CCmdDeleteObject(po));
+		pcmd->AddCommand(new CCmdDeleteFSObject(po));
 	}
 	// add the new object
 	pcmd->AddCommand(new CCmdAddAndSelectObject(newObject));

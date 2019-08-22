@@ -2,6 +2,7 @@
 #include "FiberGeneratorTool.h"
 #include "Document.h"
 #include <MeshTools/GradientMap.h>
+#include <GeomLib/GObject.h>
 
 CFiberGeneratorTool::CFiberGeneratorTool() : CBasicTool("Fiber generator", HAS_APPLY_BUTTON)
 {

@@ -3,6 +3,7 @@
 #include "MainWindow.h"
 #include "Document.h"
 #include <MeshTools/PRVArchive.h>
+#include <GeomLib/GObject.h>
 
 CFileThread::CFileThread(CMainWindow* wnd, FileReader* file, bool bclear, const QString& fileName) : m_wnd(wnd), m_fileReader(file), m_fileName(fileName)
 {

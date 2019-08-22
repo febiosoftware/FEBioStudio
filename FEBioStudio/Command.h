@@ -13,22 +13,12 @@
 #include <MeshTools/FESurfaceModifier.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include "GLCamera.h"
+#include "ViewSettings.h"
 
 class CDocument;
 class CCommandManager;
 class CGLView;
 class FEAnalysisStep;
-
-//-----------------------------------------------------------------------------
-// view state
-// This stores the variables that define the state of the UI 
-struct VIEW_STATE
-{
-	int		nselect;	// selection mode
-	int		nstyle;		// selection style
-	int		ntrans;		// transform mode
-	int		nitem;		// modify mode
-};
 
 //----------------------------------------------------------------
 class CCommand;
@@ -158,25 +148,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-
-
-class CCmdDeleteInterface : public CCommand
-{
-public:
-	CCmdDeleteInterface(FEInterface* pi) : CCommand("Delete interface") { m_pint = pi; m_bdel = false; }
-	~CCmdDeleteInterface() { if (m_bdel) delete m_pint; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FEInterface*	m_pint;
-	bool			m_bdel;
-	int				m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
 class CCmdAddConnector : public CCommand
 {
 public:
@@ -193,25 +164,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-
-
-class CCmdDeleteConnector : public CCommand
-{
-public:
-    CCmdDeleteConnector(FEConnector* pi) : CCommand("Delete connector") { m_pint = pi; m_bdel = false; }
-    ~CCmdDeleteConnector() { if (m_bdel) delete m_pint; }
-    
-    void Execute();
-    void UnExecute();
-    
-protected:
-    FEConnector*	m_pint;
-    bool			m_bdel;
-    int				m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
 class CCmdAddPart : public CCommand
 {
 public:
@@ -294,26 +246,7 @@ protected:
 	bool			m_bdel;
 };
 
-
 //-----------------------------------------------------------------------------
-
-class CCmdDeleteGPartGroup : public CCommand
-{
-public:
-	CCmdDeleteGPartGroup(GPartList* pf) : CCommand("Remove part list") { m_pg = pf; m_bdel = false; m_npos = -1; }
-	~CCmdDeleteGPartGroup() { if (m_bdel) delete m_pg; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GPartList*		m_pg;
-	bool			m_bdel;
-	int				m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
 class CCmdAddGFaceGroup : public CCommand
 {
 public:
@@ -329,24 +262,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-
-class CCmdDeleteGFaceGroup : public CCommand
-{
-public:
-	CCmdDeleteGFaceGroup(GFaceList* pf) : CCommand("Remove Surface") { m_pg = pf; m_bdel = false; m_npos = -1; }
-	~CCmdDeleteGFaceGroup() { if (m_bdel) delete m_pg; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GFaceList*		m_pg;
-	bool			m_bdel;
-	int				m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
 class CCmdAddGEdgeGroup : public CCommand
 {
 public:
@@ -361,26 +276,7 @@ protected:
 	bool			m_bdel;
 };
 
-
 //-----------------------------------------------------------------------------
-
-class CCmdDeleteGEdgeList : public CCommand
-{
-public:
-	CCmdDeleteGEdgeList(GEdgeList* pg) : CCommand("Remove edge list") { m_pg = pg; m_bdel = false; m_npos = -1; }
-	~CCmdDeleteGEdgeList() { if (m_bdel) delete m_pg; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GEdgeList*		m_pg;
-	bool			m_bdel;
-	int				m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
 class CCmdAddGNodeGroup : public CCommand
 {
 public:
@@ -393,24 +289,6 @@ public:
 protected:
 	GNodeList*		m_pg;
 	bool			m_bdel;
-};
-
-
-//-----------------------------------------------------------------------------
-
-class CCmdDeleteGNodeList : public CCommand
-{
-public:
-	CCmdDeleteGNodeList(GNodeList* pg) : CCommand("Remove node list") { m_pg = pg; m_bdel = false; m_npos = -1; }
-	~CCmdDeleteGNodeList() { if (m_bdel) delete m_pg; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GNodeList*		m_pg;
-	bool			m_bdel;
-	int				m_npos;
 };
 
 //-----------------------------------------------------------------------------
@@ -477,26 +355,7 @@ protected:
 	bool				m_bdel;
 };
 
-
-//-----------------------------------------------------------------------------
-
-class CCmdDeleteObject : public CCommand
-{
-public:
-	CCmdDeleteObject(GObject* po) : CCommand("Remove object") { m_pobj = po; m_bdel = false; }
-	~CCmdDeleteObject() { if (m_bdel) delete m_pobj; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GObject*	m_pobj;
-	bool	m_bdel;
-	int		m_npos;
-};
-
 //----------------------------------------------------------------
-
 class CCmdDeleteDiscreteObject : public CCommand
 {
 public:
@@ -512,114 +371,8 @@ protected:
 	int		m_npos;
 };
 
-//-----------------------------------------------------------------------------
-
-class CCmdDeletePart : public CCommand
-{
-public:
-	CCmdDeletePart(FEPart* pg) : CCommand("Delete Part") { m_pg = pg; m_bdel = false; }
-	~CCmdDeletePart() { if (m_bdel) delete m_pg; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FEPart*	m_pg;
-	bool	m_bdel;
-	int		m_npos;
-};
 
 //-----------------------------------------------------------------------------
-
-class CCmdDeleteSurface : public CCommand
-{
-public:
-	CCmdDeleteSurface(FESurface* pg) : CCommand("Delete Surface") { m_pg = pg; m_bdel = false; }
-	~CCmdDeleteSurface() { if (m_bdel) delete m_pg; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FESurface*	m_pg;
-	bool	m_bdel;
-	int		m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
-class CCmdDeleteNodeSet : public CCommand
-{
-public:
-	CCmdDeleteNodeSet(FENodeSet* pg) : CCommand("Delete Nodeset") { m_pg = pg; m_bdel = false; }
-	~CCmdDeleteNodeSet() { if (m_bdel) delete m_pg; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FENodeSet*	m_pg;
-	bool	m_bdel;
-	int		m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
-class CCmdDeleteBC : public CCommand
-{
-public:
-	CCmdDeleteBC(FEStep* ps, FEBoundaryCondition* pbc) : CCommand("Delete Boundary Condition") { m_ps = ps; m_pbc = pbc; m_bdel = false; }
-	~CCmdDeleteBC() { if (m_bdel) delete m_pbc; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FEStep*		m_ps;
-	FEBoundaryCondition*	m_pbc;
-	bool	m_bdel;
-	int		m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
-class CCmdDeleteRC : public CCommand
-{
-public:
-	CCmdDeleteRC(FEStep* ps, FERigidConstraint* prc) : CCommand("Delete Rigid Constraint") { m_ps = ps; m_prc = prc; m_bdel = false; }
-	~CCmdDeleteRC() { if (m_bdel) delete m_prc; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FEStep*				m_ps;	
-	FERigidConstraint*	m_prc;
-	bool				m_bdel;
-	int					m_npos;
-};
-
-//-----------------------------------------------------------------------------
-
-class CCmdDeleteLoad : public CCommand
-{
-public:
-	CCmdDeleteLoad(FEStep* ps, FEBoundaryCondition* pfc) : CCommand("Delete Load") { m_ps = ps; m_pfc = pfc; m_bdel = false; }
-	~CCmdDeleteLoad() { if (m_bdel) delete m_pfc; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FEStep*		m_ps;
-	FEBoundaryCondition*	m_pfc;
-	bool	m_bdel;
-	int		m_npos;
-};
-
-
-//-----------------------------------------------------------------------------
-
 class CCmdTranslateSelection : public CCommand
 {
 public:
@@ -1551,22 +1304,6 @@ protected:
 };
 
 //----------------------------------------------------------------
-class CCmdDeleteStep : public CCommand
-{
-public:
-	CCmdDeleteStep(FEStep* ps);
-	~CCmdDeleteStep();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FEStep*	m_pstep;
-	bool	m_bdel;
-	int		m_npos;
-};
-
-//----------------------------------------------------------------
 class CCmdAddMaterial : public CCommand
 {
 public:
@@ -1578,22 +1315,6 @@ public:
 
 protected:
 	GMaterial* m_pm;
-};
-
-//----------------------------------------------------------------
-class CCmdDeleteMaterial : public CCommand
-{
-public:
-	CCmdDeleteMaterial(GMaterial* pm);
-	~CCmdDeleteMaterial();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GMaterial*	m_pm;
-	bool		m_bdel;
-	int			m_npos;
 };
 
 //-----------------------------------------------------------------------------

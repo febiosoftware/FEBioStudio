@@ -1,6 +1,7 @@
 #pragma once
 #include <QMainWindow>
 #include "CommandManager.h"
+#include "Command.h"
 #include "PlotWidget.h"
 
 class CMainWindow;

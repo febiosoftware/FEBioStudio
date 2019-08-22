@@ -22,6 +22,8 @@
 #include "CColorButton.h"
 #include "MeshInfoPanel.h"
 #include <PostLib/convert.h>
+#include <MeshTools/GGroup.h>
+#include "Command.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)

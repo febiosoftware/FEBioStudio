@@ -16,6 +16,8 @@
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
+#include <MeshTools/FERigidConstraint.h>
+#include <MeshTools/GGroup.h>
 #include "MainWindow.h"
 
 class CObjectValidator
