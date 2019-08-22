@@ -216,7 +216,6 @@
     <ClCompile Include="..\..\FEBioStudio\FileViewer.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FoamGeneratorTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GGrid.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\GImageObject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GLCamera.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GLCanvas.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GLControlBar.cpp" />
@@ -454,7 +453,6 @@
     <ClInclude Include="..\..\FEBioStudio\FileViewer.h" />
     <ClInclude Include="..\..\FEBioStudio\FoamGeneratorTool.h" />
     <ClInclude Include="..\..\FEBioStudio\GGrid.h" />
-    <ClInclude Include="..\..\FEBioStudio\GImageObject.h" />
     <ClInclude Include="..\..\FEBioStudio\GLCamera.h" />
     <ClInclude Include="..\..\FEBioStudio\GLCanvas.h" />
     <CustomBuild Include="..\..\FEBioStudio\GLControlBar.h">

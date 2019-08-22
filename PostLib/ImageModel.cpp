@@ -19,6 +19,28 @@ CImageModel::~CImageModel()
 	m_render.clear();
 }
 
+bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box)
+{
+	C3DImage* im = new C3DImage;
+	if (im->Create(nx, ny, nz) == false)
+	{
+		delete im;
+		return false;
+	}
+
+	if (im->LoadFromFile(fileName.c_str(), 8) == false)
+	{
+		delete im;
+		return false;
+	}
+
+	delete m_pImg;
+	m_pImg = im;
+
+	m_file = fileName;
+	return true;
+}
+
 bool CImageModel::ShowBox() const
 {
 	return m_showBox;
@@ -29,16 +51,28 @@ void CImageModel::ShowBox(bool b)
 	m_showBox = b;
 }
 
+void CImageModel::Render(Post::CGLContext& rc)
+{
+	// render the volume image data if present
+	if (IsActive())
+	{
+		for (int j = 0; j < ImageRenderers(); ++j)
+		{
+			Post::CGLImageRenderer* pir = GetImageRenderer(j);
+			if (pir && pir->IsActive())
+			{
+//				if (pir->AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
+//				else CGLPlaneCutPlot::DisableClipPlanes();
+				pir->Render(rc);
+			}
+		}
+	}
+}
+
+
 void CImageModel::SetFileName(const std::string& fileName)
 {
 	m_file = fileName;
-}
-
-void CImageModel::Set3DImage(C3DImage* img, BOX b)
-{
-	assert(m_pImg == nullptr);
-	m_pImg = img;
-	m_box = b;
 }
 
 bool CImageModel::RemoveRenderer(CGLImageRenderer* render)

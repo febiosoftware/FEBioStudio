@@ -23,18 +23,18 @@
 #include "GLViewTransform.h"
 #include "glx.h"
 #include <PostLib/ColorMap.h>
+#include <PostLib/GLCamera.h>
+#include <PostLib/GLContext.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshTools/FEMultiMaterial.h>
 #include <QAction>
 #include <QMenu>
 #include <QMessageBox>
-#include "GImageObject.h"
+#include <PostLib/ImageModel.h>
 #include "PostDoc.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
-
-quatd to_quat4f(const quatd& q);
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -1403,7 +1403,7 @@ void CGLView::paintGL()
 
 	// update the triad
 	CGLCamera& cam = GetCamera();
-	m_ptriad->setOrientation(to_quat4f(cam.GetOrientation()));
+	m_ptriad->setOrientation(cam.GetOrientation());
 
 	// We must turn off culling before we use the QPainter, otherwise
 	// drawing using QPainter doesn't work correctly.
@@ -2201,16 +2201,41 @@ void CGLView::RenderImageData()
 	CDocument* doc = GetDocument();
 	if (doc->IsValid() == false) return;
 
-	for (int i = 0; i < doc->ImageObjects(); ++i)
+	CGLCamera cam = GetCamera();
+
+	// convert PreView camera to PostView camera
+	Post::CGLCamera glcam;
+	glcam.SetTarget(to_vec3f(cam.Position()));
+	glcam.SetLocalTarget(to_vec3f(cam.Target()));
+	glcam.SetOrientation(cam.GetOrientation());
+	glcam.UpdatePosition(true);
+
+	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+
+	Post::CGLContext rc;
+	rc.m_cam = &glcam;
+	rc.m_showOutline = vs.m_bfeat;
+	rc.m_showMesh = vs.m_bmesh;
+	rc.m_q = glcam.GetOrientation();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glcam.Transform();
+
+	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
-		GImageObject* img = doc->GetImageObject(i);
-		BOX box = img->GetBox();
+		Post::CImageModel* img = doc->GetImageModel(i);
+		BOX box = img->GetBoundingBox();
 //		GLColor c = img->GetColor();
 		GLColor c(255, 128, 128);
 		glColor3ub(c.r, c.g, c.b);
 		RenderBox(box);
-		img->Render(this);
+		img->Render(rc);
 	}
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 }
 
 void CGLView::RenderMaterialFibers()

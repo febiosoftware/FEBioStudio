@@ -18,7 +18,7 @@ public:
 	void SetFileName(const std::string& fileName);
 	std::string GetFileName() { return m_file; }
 
-	void Set3DImage(C3DImage* img, BOX b);
+	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
 
 	C3DImage* Get3DImage() { return m_pImg; }
 
@@ -35,6 +35,8 @@ public:
 	bool ShowBox() const;
 
 	void ShowBox(bool b);
+
+	void Render(Post::CGLContext& rc);
 
 private:
 	std::string		m_file;						//!< file name of image data

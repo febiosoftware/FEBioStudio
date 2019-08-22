@@ -1092,3 +1092,6 @@ public:
 public:
 	float d[NNZ];	// stored in column major order
 };
+
+inline vec3f to_vec3f(const vec3d& r) { return vec3f((float)r.x, (float)r.y, (float)r.z); }
+

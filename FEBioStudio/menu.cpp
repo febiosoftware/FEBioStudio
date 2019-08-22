@@ -70,7 +70,7 @@
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
 #include <QtCore/QTextStream>
-#include "GImageObject.h"
+#include <PostLib/ImageModel.h>
 
 void CMainWindow::on_actionNew_triggered()
 {
@@ -580,7 +580,7 @@ void CMainWindow::on_actionImportImage_triggered()
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 			CDocument* doc = GetDocument();
 
-			GImageObject* po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+			Post::CImageModel* po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
 			if (po == nullptr)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
@@ -588,7 +588,7 @@ void CMainWindow::on_actionImportImage_triggered()
 			else
 			{
 				Update(0, true);
-				ZoomTo(po->GetBox());
+				ZoomTo(po->GetBoundingBox());
 				ShowInModelViewer(po);
 			}
 		}

@@ -195,16 +195,6 @@ bool CPostDoc::LoadPlotfile(const std::string& fileName)
 	return true;
 }
 
-vec3f to_vec3f(const vec3d& r)
-{
-	return vec3f((float)r.x, (float)r.y, (float)r.z);
-}
-
-quatd to_quat4f(const quatd& q)
-{
-	return quatd((float)q.x, (float)q.y, (float) q.z, (float) q.w);
-}
-
 bool CPostDoc::IsValid()
 {
 	return (imp->glm != nullptr);
@@ -236,7 +226,7 @@ void CPostDoc::Render(CGLView* view)
 	Post::CGLCamera glcam;
 	glcam.SetTarget(to_vec3f(cam.Position()));
 	glcam.SetLocalTarget(to_vec3f(cam.Target()));
-	glcam.SetOrientation(to_quat4f(cam.GetOrientation()));
+	glcam.SetOrientation(cam.GetOrientation());
 	glcam.UpdatePosition(true);
 
 	VIEW_SETTINGS& vs = view->GetDocument()->GetViewSettings();

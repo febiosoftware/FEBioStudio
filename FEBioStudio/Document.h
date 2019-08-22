@@ -112,7 +112,10 @@ struct VIEW_SETTINGS
 class CMainWindow;
 class FEFileExport;
 class CDocument;
-class GImageObject;
+
+namespace Post {
+	class CImageModel;
+}
 
 //-----------------------------------------------------------------------------
 // Class that can be used to monitor changes to the document
@@ -161,7 +164,7 @@ public:
 	bool ImportGeometry(FEFileImport* preader, const char* szfile);
 
 	// import image data
-	GImageObject* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
+	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
 	// load a plot file
 	bool LoadPlotFile(const std::string& fileName);
@@ -296,11 +299,11 @@ public:
 	CFEBioJob* FindFEBioJob(const std::string& s);
 
 public:
-	int ImageObjects() const;
-	void AddImageObject(GImageObject* img);
-	GImageObject* GetImageObject(int i);
-	void DeleteAllImageObjects();
-	void DeleteImageObject(GImageObject* img);
+	int ImageModels() const;
+	void AddImageModel(Post::CImageModel* img);
+	Post::CImageModel* GetImageModel(int i);
+	void DeleteAllImageModels();
+	void DeleteImageModel(Post::CImageModel* img);
 
 public:
 	void AddObserver(CDocObserver* observer);
@@ -336,7 +339,7 @@ protected:
 	vector<CFEBioJob*>	m_JobList;
 	CFEBioJob*			m_activeJob;
 
-	vector<GImageObject*>	m_img;
+	vector<Post::CImageModel*>	m_img;
 
 	std::vector<CDocObserver*>	m_Observers;
 };

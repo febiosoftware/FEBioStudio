@@ -20,7 +20,6 @@
 #include "SummaryWindow.h"
 #include "StatsWindow.h"
 #include "IntegrateWindow.h"
-#include "GImageObject.h"
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
@@ -121,14 +120,13 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 
 void CMainWindow::on_actionImageSlicer_triggered()
 {
-	GImageObject* imgObj = dynamic_cast<GImageObject*>(ui->modelViewer->GetCurrentObject());
-	if (imgObj == nullptr)
+	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	if (img == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
 		return;
 	}
 
-	Post::CImageModel* img = imgObj->GetImageModel();
 	Post::CImageSlicer* slicer = new Post::CImageSlicer(img);
 	slicer->Create();
 	img->AddImageRenderer(slicer);
@@ -139,14 +137,13 @@ void CMainWindow::on_actionImageSlicer_triggered()
 
 void CMainWindow::on_actionVolumeRender_triggered()
 {
-	GImageObject* imgObj = dynamic_cast<GImageObject*>(ui->modelViewer->GetCurrentObject());
-	if (imgObj == nullptr)
+	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	if (img == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
 		return;
 	}
 
-	Post::CImageModel* img = imgObj->GetImageModel();
 	Post::CVolRender* vr = new Post::CVolRender(img);
 	vr->Create();
 	img->AddImageRenderer(vr);
@@ -157,14 +154,13 @@ void CMainWindow::on_actionVolumeRender_triggered()
 
 void CMainWindow::on_actionMarchingCubes_triggered()
 {
-	GImageObject* imgObj = dynamic_cast<GImageObject*>(ui->modelViewer->GetCurrentObject());
-	if (imgObj == nullptr)
+	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	if (img == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
 		return;
 	}
 
-	Post::CImageModel* img = imgObj->GetImageModel();
 	Post::CMarchingCubes* mc = new Post::CMarchingCubes(img);
 	mc->Create();
 	img->AddImageRenderer(mc);

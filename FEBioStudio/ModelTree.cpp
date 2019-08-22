@@ -17,7 +17,6 @@
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
 #include "MainWindow.h"
-#include "GImageObject.h"
 
 class CObjectValidator
 {
@@ -650,7 +649,7 @@ void CModelTree::Build(CDocument* doc)
 	}
 
 	// add the image stacks
-	if (doc->ImageObjects())
+	if (doc->ImageModels())
 	{
 		QTreeWidgetItem* t1 = new QTreeWidgetItem(this);
 		t1->setText(0, "3D Images");
@@ -707,19 +706,14 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 //-----------------------------------------------------------------------------
 void CModelTree::UpdateImages(QTreeWidgetItem* t1, CDocument* doc)
 {
-	for (int i = 0; i < doc->ImageObjects(); ++i)
+	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
-		GImageObject* img = doc->GetImageObject(i);
+		Post::CImageModel* img = doc->GetImageModel(i);
 		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CObjectProps(img), 0);
-
-		Post::CImageModel* imgModel = img->GetImageModel();
-		if (imgModel)
+		for (int j = 0; j < img->ImageRenderers(); ++j)
 		{
-			for (int j = 0; j < imgModel->ImageRenderers(); ++j)
-			{
-				Post::CGLImageRenderer* imgRender = imgModel->GetImageRenderer(j);
-				AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, imgRender, new CObjectProps(imgRender), 0);
-			}
+			Post::CGLImageRenderer* imgRender = img->GetImageRenderer(j);
+			AddTreeItem(t2, QString::fromStdString(imgRender->GetName()), MT_3DIMAGE_RENDER, 0, imgRender, new CObjectProps(imgRender), 0);
 		}
 	}
 }

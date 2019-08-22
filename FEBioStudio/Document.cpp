@@ -1,7 +1,3 @@
-// Document.cpp: implementation of the CDocument class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "Document.h"
 #include "glx.h"
@@ -19,7 +15,6 @@
 #include <QMessageBox>
 #include <FEMLib/FEStepComponent.h>
 #include <ImageLib/ImageStack.h>
-#include "GImageObject.h"
 #include <XML/XMLWriter.h>
 #include <PostLib/Palette.h>
 #include <PostGL/GLPlot.h>
@@ -530,7 +525,7 @@ std::string CDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GObject*>(po)) return "Object";
 	else if (dynamic_cast<FEDataMap*>(po)) return "Data map";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
-	else if (dynamic_cast<GImageObject*>(po)) return "3D Image";
+	else if (dynamic_cast<Post::CImageModel*>(po)) return "3D Image";
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po)) return "Displacement map";
 	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";
@@ -881,9 +876,9 @@ bool CDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 
 //-----------------------------------------------------------------------------
 // import image data
-GImageObject* CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
+Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
 {
-	GImageObject* po = new GImageObject;
+	Post::CImageModel* po = new Post::CImageModel(nullptr);
 	if (po->LoadImageData(fileName, nx, ny, nz, box) == false)
 	{
 		delete po;
@@ -904,7 +899,7 @@ GImageObject* CDocument::ImportImage(const std::string& fileName, int nx, int ny
 	po->SetName(name);
 
 	// add it to the project
-	AddImageObject(po);
+	AddImageModel(po);
 
 	return po;
 }
@@ -1420,10 +1415,10 @@ void CDocument::DeleteObject(FSObject* po)
 		CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
 		DeleteFEBioJob(job);
 	}
-	else if (dynamic_cast<GImageObject*>(po))
+	else if (dynamic_cast<Post::CImageModel*>(po))
 	{
-		GImageObject* imgObj = dynamic_cast<GImageObject*>(po);
-		DeleteImageObject(imgObj);
+		Post::CImageModel* imgObj = dynamic_cast<Post::CImageModel*>(po);
+		DeleteImageModel(imgObj);
 	}
 	else if (dynamic_cast<Post::CGLPlot*>(po))
 	{
@@ -1723,36 +1718,36 @@ void CDocument::DeleteAllFEBioJobs()
 	while (FEBioJobs()) DeleteFEBioJob(GetFEBioJob(0));
 }
 
-int CDocument::ImageObjects() const
+int CDocument::ImageModels() const
 {
 	return (int)m_img.size();
 }
 
-void CDocument::AddImageObject(GImageObject* img)
+void CDocument::AddImageModel(Post::CImageModel* img)
 {
 	assert(img);
 	m_img.push_back(img);
 }
 
-GImageObject* CDocument::GetImageObject(int i)
+Post::CImageModel* CDocument::GetImageModel(int i)
 {
 	return m_img[i];
 }
 
-void CDocument::DeleteAllImageObjects()
+void CDocument::DeleteAllImageModels()
 {
-	for (int i = 0; i < ImageObjects(); ++i)
+	for (int i = 0; i < ImageModels(); ++i)
 	{
-		delete GetImageObject(i);
+		delete GetImageModel(i);
 	}
 	m_img.clear();
 }
 
-void CDocument::DeleteImageObject(GImageObject* img)
+void CDocument::DeleteImageModel(Post::CImageModel* img)
 {
-	for (int i = 0; i < ImageObjects(); ++i)
+	for (int i = 0; i < ImageModels(); ++i)
 	{
-		GImageObject* img_i = GetImageObject(i);
+		Post::CImageModel* img_i = GetImageModel(i);
 		if (img_i == img)
 		{
 			m_img.erase(m_img.begin() + i);
