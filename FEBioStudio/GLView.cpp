@@ -1340,11 +1340,11 @@ void CGLView::paintGL()
 	if (postDoc == nullptr) RenderDefaultView();
 	else RenderPostView(postDoc);
 
-	// render the image data
-	RenderImageData();
-
 	// render the grid
 	if (view.m_bgrid) m_grid.Render();
+
+	// render the image data
+	RenderImageData();
 
 	// render the 3D cursor
 	if (postDoc == nullptr)
@@ -2230,7 +2230,7 @@ void CGLView::RenderImageData()
 //		GLColor c = img->GetColor();
 		GLColor c(255, 128, 128);
 		glColor3ub(c.r, c.g, c.b);
-		RenderBox(box);
+		if (img->ShowBox()) RenderBox(box);
 		img->Render(rc);
 	}
 

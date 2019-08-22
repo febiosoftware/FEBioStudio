@@ -38,6 +38,8 @@ public:
 
 	void Render(Post::CGLContext& rc);
 
+	void UpdateData(bool bsave = true) override;
+
 private:
 	std::string		m_file;						//!< file name of image data
 	BOX				m_box;						//!< physical dimensions of image
