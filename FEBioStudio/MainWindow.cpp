@@ -29,6 +29,7 @@
 #include <FEBio/FEBioExport3.h>
 #include "FEBioJob.h"
 #include <PostLib/ColorMap.h>
+#include <FSCore/FSDir.h>
 
 extern GLColor col[];
 
@@ -1710,24 +1711,19 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 {
 	CDocument* doc = GetDocument();
 
-	// get the project folder
-	string projectFolder = doc->GetDocFolder();
-
 	// get the FEBio job file path
-	QString filePath = QString::fromStdString(job->GetFileName());
+	string filePath = job->GetFileName();
 
 	// do string substitution
-	filePath.replace("$(ProjectDir)", QString::fromStdString(projectFolder));
+	filePath = FSDir::toAbsolutePath(filePath);
 
 	// try to save the file first
-	AddLogEntry(QString("Saving to %1 ...").arg(filePath));
-
-	string sfilePath = filePath.toStdString();
+	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(filePath)));
 
 	if (febioFileVersion == 0)
 	{
 		FEBioExport25 feb;
-		if (feb.Export(doc->GetProject(), sfilePath.c_str()) == false)
+		if (feb.Export(doc->GetProject(), filePath.c_str()) == false)
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 			AddLogEntry("FAILED\n");
@@ -1738,7 +1734,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 	else if (febioFileVersion == 1)
 	{
 		FEBioExport3 feb;
-		if (feb.Export(doc->GetProject(), sfilePath.c_str()) == false)
+		if (feb.Export(doc->GetProject(), filePath.c_str()) == false)
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 			AddLogEntry("FAILED\n");
@@ -1758,16 +1754,16 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 	ClearOutput();
 
 	// extract the working directory and file title from the file path
-	size_t n = sfilePath.rfind('/');
-	if (n == string::npos) n = sfilePath.rfind('\\');
+	size_t n = filePath.rfind('/');
+	if (n == string::npos) n = filePath.rfind('\\');
 
 	string cwd, fileName;
 	if (n != string::npos)
 	{
-		cwd = sfilePath.substr(0, n);
-		fileName = sfilePath.substr(n + 1, string::npos);
+		cwd = filePath.substr(0, n);
+		fileName = filePath.substr(n + 1, string::npos);
 	}
-	else fileName = sfilePath;
+	else fileName = filePath;
 
 	// create new process
 	ui->m_process = new QProcess(this);
@@ -1781,11 +1777,10 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 
 	QString program = ui->m_febio_path.at(febioVersion);
 
-	// replace $(FEBioStudioDir)
-	if (program.contains("$(FEBioStudioDir)"))
-	{
-		program.replace("$(FEBioStudioDir)", QApplication::applicationDirPath());
-	}
+	// do string substitution
+	string sprogram = program.toStdString();
+	sprogram = FSDir::toAbsolutePath(sprogram);
+	program = QString::fromStdString(sprogram);
 
 	// extract the arguments
 	QStringList args = cmd.split(" ", QString::SkipEmptyParts);

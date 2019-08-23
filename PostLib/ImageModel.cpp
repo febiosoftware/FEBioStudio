@@ -2,6 +2,7 @@
 #include "ImageModel.h"
 #include "3DImage.h"
 #include "GLImageRenderer.h"
+#include <FSCore/FSDir.h>
 #include <assert.h>
 using namespace Post;
 
@@ -18,6 +19,10 @@ CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
 	m_pImg = 0;
 	m_box = BOX(0., 0., 0., 1., 1., 1.);
 	m_showBox = true;
+
+	m_imageSize[0] = 0;
+	m_imageSize[1] = 0;
+	m_imageSize[2] = 0;
 
 	UpdateData(false);
 }
@@ -60,7 +65,10 @@ bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int
 		return false;
 	}
 
-	if (im->LoadFromFile(fileName.c_str(), 8) == false)
+	// do string-substitution
+	string abspath = FSDir::toAbsolutePath(fileName);
+
+	if (im->LoadFromFile(abspath.c_str(), 8) == false)
 	{
 		delete im;
 		return false;
@@ -68,6 +76,13 @@ bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int
 
 	delete m_pImg;
 	m_pImg = im;
+
+	m_imageSize[0] = nx;
+	m_imageSize[1] = ny;
+	m_imageSize[2] = nz;
+
+	m_box = box;
+	UpdateData(false);
 
 	m_file = fileName;
 	return true;
@@ -116,4 +131,41 @@ void CImageModel::AddImageRenderer(CGLImageRenderer* render)
 {
 	assert(render);
 	m_render.Add(render);
+}
+
+void CImageModel::Save(OArchive& ar)
+{
+	ar.BeginChunk(0);
+	{
+		FSObject::Save(ar);
+	}
+	ar.EndChunk();
+	ar.WriteChunk(1, m_file);
+	ar.WriteChunk(2, m_imageSize, 3);
+}
+
+void CImageModel::Load(IArchive& ar)
+{
+	while (ar.OpenChunk() == IO_OK)
+	{
+		int nid = ar.GetChunkID();
+
+		switch (nid)
+		{
+		case 0:
+			FSObject::Load(ar);
+			break;
+		case 1:
+			ar.read(m_file);
+			break;
+		case 2: 
+			ar.read(m_imageSize, 3);
+			break;
+		}
+		ar.CloseChunk();
+	}
+
+	// let's try to load the file
+	UpdateData();
+	LoadImageData(m_file, m_imageSize[0], m_imageSize[1], m_imageSize[2], GetBoundingBox());
 }

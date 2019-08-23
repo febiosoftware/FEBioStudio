@@ -263,6 +263,10 @@ public:
 	void UpdateObservers(bool bnew);
 
 protected:
+	void SaveResources(OArchive& ar);
+	void LoadResources(IArchive& ar);
+
+protected:
 	// Modified flag
 	bool	m_bModified;	// is document modified since last saved ?
 	bool	m_bValid;		// is the current document in a valid state for rendering

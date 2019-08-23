@@ -29,8 +29,8 @@ void CFileThread::run()
 		{
 			try
 			{
-				doc.Load(ar.GetArchive());
 				doc.SetDocFilePath(sfile);
+				doc.Load(ar.GetArchive());
 				emit resultReady(true, "");
 			}
 			catch (InvalidVersion)

@@ -431,6 +431,10 @@
 #define CID_FEBIOJOB_FILENAME		0x000F0001
 #define CID_FEBIOJOB_PLOTFILE		0x000F0002
 
+// --- Resources
+#define CID_RESOURCE_SECTION		0x00100000
+#define CID_RESOURCE_IMAGEMODEL		0x00101000
+
 //--------------------------------------------------------
 // Mesh type
 #define FE_MESH					0x0000

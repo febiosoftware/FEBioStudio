@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "FEBioJob.h"
 #include "PostDoc.h"
-#include "Document.h"
 #include <sstream>
 #include <QtCore/QString>
+#include <FSCore/FSDir.h>
 
 //-----------------------------------------------------------------------------
 int CFEBioJob::m_count = 0;
@@ -110,12 +110,7 @@ size_t CFEBioJob::RemoveChild(FSObject* po)
 
 bool CFEBioJob::OpenPlotFile()
 {
-	QString plotFile = QString::fromStdString(m_plotFile);
-
-	QString projectFolder = QString::fromStdString(m_doc->GetDocFolder());
-	plotFile.replace("$(ProjectDir)", projectFolder);
-
-	string splotfile = plotFile.toStdString();
+	string plotFile = FSDir::toAbsolutePath(m_plotFile);
 
 	if (m_postDoc == nullptr)
 	{
@@ -124,7 +119,7 @@ bool CFEBioJob::OpenPlotFile()
 		m_postDoc->SetName(GetName());
 	}
 
-	if (m_postDoc->LoadPlotfile(splotfile) == false)
+	if (m_postDoc->LoadPlotfile(plotFile) == false)
 	{
 		return false;
 	}

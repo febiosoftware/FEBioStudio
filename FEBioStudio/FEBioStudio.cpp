@@ -8,6 +8,7 @@
 #include "FEBioStudio.h"
 #include <stdio.h>
 #include <PostLib/PostView.h>
+#include <FSCore/FSDir.h>
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>
@@ -57,6 +58,8 @@ int main(int argc, char* argv[])
 	app.setApplicationDisplayName("FEBio Studio");
 	app.setWindowIcon(QIcon(":/icons/FEBioStudio.png"));
 
+	string appdir = QApplication::applicationDirPath().toStdString();
+	FSDir::setMacro("FEBioStudioDir", appdir);
 
 	// initialize glew
 #ifdef WIN32

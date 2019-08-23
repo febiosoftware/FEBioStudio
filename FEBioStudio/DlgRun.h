@@ -5,14 +5,12 @@ namespace Ui {
 	class CDlgRun;
 }
 
-class CMainWindow;
-
 class CDlgRun : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgRun(CMainWindow* parent);
+	CDlgRun(QWidget* parent);
 
 	// Call this before exec!
 	void Init();

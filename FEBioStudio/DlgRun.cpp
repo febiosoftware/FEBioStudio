@@ -11,8 +11,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QMessageBox>
-#include "MainWindow.h"
-#include "Document.h"
+#include <FSCore/FSDir.h>
 
 class CDlgEditPath : public QDialog
 {
@@ -44,8 +43,6 @@ public:
 class Ui::CDlgRun
 {
 public:
-	::CMainWindow*	m_wnd;
-
 	QLineEdit*	cwd;
 	QLineEdit*	jobName;
 	QComboBox*	febioVersion;
@@ -209,9 +206,8 @@ QString CDlgRun::CommandLine()
 	return ui->cmd->text();
 }
 
-CDlgRun::CDlgRun(CMainWindow* parent) : QDialog(parent), ui(new Ui::CDlgRun)
+CDlgRun::CDlgRun(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgRun)
 {
-	ui->m_wnd = parent;
 	ui->setup(this);
 	ui->jobName->setFocus();
 	setWindowTitle("Run FEBio");
@@ -306,12 +302,14 @@ void CDlgRun::accept()
 		return;
 	}
 
-	CDocument* doc = ui->m_wnd->GetDocument();
-	std::string projectFolder = doc->GetDocFolder();
-	path.replace("$(ProjectDir)", QString::fromStdString(projectFolder));
+	// convert to an absolute path
+	std::string spath = path.toStdString();
+	FSDir dir(spath);
+	spath = dir.toAbsolutePath();
 
-	QDir dir(path);
-	if (path.isEmpty() || (dir.exists() == false))
+	// check if it exists
+	QDir qdir(QString::fromStdString(spath));
+	if (path.isEmpty() || (qdir.exists() == false))
 	{
 		QMessageBox::critical(this, "FEBio Studio", "You must enter a valid working directory.");
 		return;

@@ -42,8 +42,12 @@ public:
 
 	void UpdateData(bool bsave = true) override;
 
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
 private:
 	std::string		m_file;						//!< file name of image data
+	int				m_imageSize[3];				//!< image resolution
 	BOX				m_box;						//!< physical dimensions of image
 	C3DImage*		m_pImg;						//!< 3D image
 	bool			m_showBox;					//!< show box in Graphics View

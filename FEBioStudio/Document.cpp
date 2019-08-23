@@ -23,6 +23,7 @@
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
+#include <FSCore/FSDir.h>
 #include "PostDoc.h"
 #include "Command.h"
 #include <sstream>
@@ -550,6 +551,8 @@ std::string CDocument::GetDocFilePath()
 void CDocument::SetDocFilePath(const std::string& filePath)
 { 
 	m_filePath = filePath; 
+	string projectDir = GetDocFolder();
+	FSDir::setMacro("ProjectDir", projectDir);
 }
 
 //-----------------------------------------------------------------------------
@@ -712,6 +715,16 @@ void CDocument::Save(OArchive& ar)
 	}
 	ar.EndChunk(); // CID_VIEW_SETTINGS
 
+	// save resources
+	if (ImageModels() > 0)
+	{
+		ar.BeginChunk(CID_RESOURCE_SECTION);
+		{
+			SaveResources(ar);
+		}
+		ar.EndChunk();
+	}
+
 	// save the project
 	ar.BeginChunk(CID_PROJECT);
 	{
@@ -732,8 +745,6 @@ void CDocument::Save(OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-
-
 void CDocument::Load(IArchive& ar)
 {
 	CCallStack::ClearStack();
@@ -825,6 +836,10 @@ void CDocument::Load(IArchive& ar)
 				if (nret != IO_OK) throw ReadError("Error occurred when parsing CID_VIEW_SETTINGS (CDocument::Load)");
 			}
 		}
+		else if (nid == CID_RESOURCE_SECTION)
+		{
+			LoadResources(ar);
+		}
 		else if (nid == CID_PROJECT)
 		{
 			m_Project.Load(ar);
@@ -841,8 +856,41 @@ void CDocument::Load(IArchive& ar)
 	m_bValid = true;
 }
 
-//-----------------------------------------------------------------------------
+void CDocument::SaveResources(OArchive& ar)
+{
+	for (int i = 0; i < ImageModels(); ++i)
+	{
+		Post::CImageModel& img = *GetImageModel(i);
+		ar.BeginChunk(CID_RESOURCE_IMAGEMODEL);
+		{
+			img.Save(ar);
+		}
+		ar.EndChunk();
+	}
+}
 
+void CDocument::LoadResources(IArchive& ar)
+{
+	while (ar.OpenChunk() == IO_OK)
+	{
+		int nid = ar.GetChunkID();
+
+		switch (nid)
+		{
+		case CID_RESOURCE_IMAGEMODEL:
+		{
+			Post::CImageModel* img = new Post::CImageModel(nullptr);
+			AddImageModel(img);
+			img->Load(ar);
+		}
+		break;
+		}
+
+		ar.CloseChunk();
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool CDocument::ImportModel(FEFileImport* preader, const char* szfile)
 {
 	ClearCommandStack();
@@ -878,8 +926,11 @@ bool CDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 // import image data
 Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
 {
+	// we pass the relative path to the image model
+	string relFile = FSDir::toRelativePath(fileName);
+
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
-	if (po->LoadImageData(fileName, nx, ny, nz, box) == false)
+	if (po->LoadImageData(relFile, nx, ny, nz, box) == false)
 	{
 		delete po;
 		return nullptr;
