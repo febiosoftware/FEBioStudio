@@ -335,6 +335,7 @@ public slots:
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
 	void CloseView(int n);
+	void CloseView(CPostDoc* postDoc);
 
 	void SetCurrentState(int n);
 

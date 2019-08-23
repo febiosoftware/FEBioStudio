@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MainTabBar.h"
 #include "MainWindow.h"
+#include "PostDoc.h"
 
 CMainTabBar::CMainTabBar(CMainWindow* wnd, QWidget* parent) : QTabBar(parent)
 {
@@ -54,6 +55,7 @@ void CMainTabBar::closeView(int n)
 {
 	assert(n != 0);
 	assert(count() > 1);
+	delete m_docs[n];
 	m_docs.erase(m_docs.begin() + n);
 	removeTab(n);
 }

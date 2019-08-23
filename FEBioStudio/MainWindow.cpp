@@ -963,6 +963,14 @@ void CMainWindow::on_tab_tabCloseRequested(int n)
 void CMainWindow::CloseView(int n)
 {
 	ui->tab->closeView(n);
+	Update(0, true);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::CloseView(CPostDoc* postDoc)
+{
+	int n = FindView(postDoc);
+	if (n >= 0) CloseView(n);
 }
 
 //-----------------------------------------------------------------------------

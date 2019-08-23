@@ -3389,7 +3389,9 @@ void CGLView::SelectObjects(int x, int y)
 	}
 	else if ((m_bctrl == false) && (m_bshift == false)) 
 	{
-		pcmd = new CCmdSelectObject(0, false);
+		// this clears the selection, but we only do this when there is an object currently selected
+		FESelection* sel = pdoc->GetCurrentSelection();
+		if (sel && sel->Size()) pcmd = new CCmdSelectObject(0, false);
 		objName = "<Empty>";
 	}
 
@@ -4037,7 +4039,12 @@ void CGLView::SelectFEElements(int x, int y)
 				pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
 		}
 	}
-	else if (!m_bshift) pcmd = new CCmdSelectElements(pm, 0, 0, false);
+	else if (!m_bshift)
+	{
+		FESelection* sel = pdoc->GetCurrentSelection();
+		if (sel && sel->Size())
+			pcmd = new CCmdSelectElements(pm, 0, 0, false);
+	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }

@@ -1286,6 +1286,14 @@ void CDocument::DeleteObject(FSObject* po)
 	}
 	else if (po->GetParent())
 	{
+		if (dynamic_cast<CFEBioJob*>(po))
+		{
+			CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
+			if (job->GetPostDoc())
+			{
+				m_wnd->CloseView(job->GetPostDoc());
+			}
+		}
 		DoCommand(new CCmdDeleteFSObject(po));
 	}
 	else

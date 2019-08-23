@@ -101,10 +101,18 @@ CPostDoc* CFEBioJob::GetPostDoc()
 	return m_postDoc;
 }
 
+size_t CFEBioJob::RemoveChild(FSObject* po)
+{
+	assert(m_postDoc == po);
+	m_postDoc = nullptr;
+	return 0;
+}
+
 bool CFEBioJob::OpenPlotFile()
 {
 	if (m_postDoc) delete m_postDoc;
 	m_postDoc = new CPostDoc;
+	m_postDoc->SetParent(this);
 
 	m_postDoc->SetName(GetName());
 

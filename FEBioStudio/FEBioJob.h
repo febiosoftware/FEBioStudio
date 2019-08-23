@@ -39,6 +39,9 @@ public:
 	void Load(IArchive& ar) override;
 	void Save(OArchive& ar) override;
 
+protected:
+	size_t RemoveChild(FSObject* po) override;
+
 private:
 	std::string		m_fileName;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name
