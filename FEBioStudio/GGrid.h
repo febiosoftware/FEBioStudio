@@ -1,6 +1,5 @@
 #pragma once
 #include <MathLib/math3d.h>
-#include "glx.h"
 
 class CGLView;
 

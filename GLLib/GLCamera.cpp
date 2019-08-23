@@ -1,16 +1,16 @@
-// GLCamera.cpp: implementation of the CGLCamera class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "GLCamera.h"
-#include "glx.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
+#ifdef WIN32
+#include <Windows.h>
+#include <GL/gl.h>
 #endif
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#endif
+#ifdef LINUX
+#include <GL/gl.h>
+#endif
+#include "glx.h"
 
 //=============================================================================
 CGLCamera::CGLCamera()

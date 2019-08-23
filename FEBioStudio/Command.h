@@ -12,7 +12,7 @@
 #include <MeshTools/GModifiedObject.h>
 #include <MeshTools/FESurfaceModifier.h>
 #include <GeomLib/GSurfaceMeshObject.h>
-#include "GLCamera.h"
+#include <GLLib/GLCamera.h>
 #include "ViewSettings.h"
 
 class CDocument;

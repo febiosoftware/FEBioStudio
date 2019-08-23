@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GLViewRender.h"
 #include "GLView.h"
-#include "glx.h"
+#include <GLLib/glx.h>
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FEHex20.h>
 

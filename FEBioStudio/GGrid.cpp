@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GGrid.h"
 #include "GLView.h"
+#include <GLLib/glx.h>
 
 GGrid::GGrid() : m_o(0,0,0), m_q(0, vec3d(0,0,1))
 {

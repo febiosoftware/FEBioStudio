@@ -1,7 +1,7 @@
 #pragma once
 #include <QOpenGLWidget>
 #include <QNativeGestureEvent>
-#include "GLCamera.h"
+#include <GLLib/GLCamera.h>
 #include "CommandManager.h"
 #include "GManipulator.h"
 #include "GTriad.h"

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "GManipulator.h"
-#include "glx.h"
+#include <GLLib/glx.h>
 #include "GLView.h"
 #include "GLViewTransform.h"
 

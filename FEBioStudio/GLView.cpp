@@ -21,7 +21,7 @@
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FECurveMesh.h>
 #include "GLViewTransform.h"
-#include "glx.h"
+#include <GLLib/glx.h>
 #include <PostLib/ColorMap.h>
 #include <PostLib/GLCamera.h>
 #include <PostLib/GLContext.h>

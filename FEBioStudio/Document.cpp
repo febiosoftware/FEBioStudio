@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Document.h"
-#include "glx.h"
+#include <GLLib/glx.h>
 #include <GeomLib/GMeshObject.h>
 #include <FSCore/enum.h>
 #include "version.h"

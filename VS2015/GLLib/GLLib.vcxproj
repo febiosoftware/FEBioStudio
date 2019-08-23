@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{EAF46B6D-323A-4E5A-B096-FE8AA45D1313}</ProjectGuid>
+    <ProjectGuid>{BE0C3265-1E37-4284-8A2A-760805521A53}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>FEMLib</RootNamespace>
+    <RootNamespace>GLLib</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -70,10 +70,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)..;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..;$(QT512DIR)\include;$(QT512DIR)\include\QtWidgets;$(QT512DIR)\include\QtGui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)..;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..;$(QT512DIR)\include;$(QT512DIR)\include\QtWidgets;$(QT512DIR)\include\QtGui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -135,33 +135,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\FEMLib\FEAnalysisStep.cpp" />
-    <ClCompile Include="..\..\FEMLib\FEBoundaryCondition.cpp" />
-    <ClCompile Include="..\..\FEMLib\FEComponent.cpp" />
-    <ClCompile Include="..\..\FEMLib\FEConnector.cpp" />
-    <ClCompile Include="..\..\FEMLib\FECoreMaterial.cpp" />
-    <ClCompile Include="..\..\FEMLib\FEDataMap.cpp" />
-    <ClCompile Include="..\..\FEMLib\FEDOF.cpp" />
-    <ClCompile Include="..\..\FEMLib\FEInitialCondition.cpp" />
-    <ClCompile Include="..\..\FEMLib\FEInterface.cpp" />
-    <ClCompile Include="..\..\FEMLib\FEMKernel.cpp" />
-    <ClCompile Include="..\..\FEMLib\FESurfaceLoad.cpp" />
+    <ClCompile Include="..\..\GLLib\GLCamera.cpp" />
+    <ClCompile Include="..\..\GLLib\glx.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\FEMLib\FEAnalysisStep.h" />
-    <ClInclude Include="..\..\FEMLib\FEBase.h" />
-    <ClInclude Include="..\..\FEMLib\FEBoundaryCondition.h" />
-    <ClInclude Include="..\..\FEMLib\FEComponent.h" />
-    <ClInclude Include="..\..\FEMLib\FEConnector.h" />
-    <ClInclude Include="..\..\FEMLib\FECoreMaterial.h" />
-    <ClInclude Include="..\..\FEMLib\FECoreModel.h" />
-    <ClInclude Include="..\..\FEMLib\FEDataMap.h" />
-    <ClInclude Include="..\..\FEMLib\FEDOF.h" />
-    <ClInclude Include="..\..\FEMLib\FEInitialCondition.h" />
-    <ClInclude Include="..\..\FEMLib\FEInterface.h" />
-    <ClInclude Include="..\..\FEMLib\FEMKernel.h" />
-    <ClInclude Include="..\..\FEMLib\FEStepComponent.h" />
-    <ClInclude Include="..\..\FEMLib\FESurfaceLoad.h" />
+    <ClInclude Include="..\..\GLLib\GLCamera.h" />
+    <ClInclude Include="..\..\GLLib\glx.h" />
+    <ClInclude Include="..\..\GLLib\stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GLCanvas.h"
 #include "GLView.h"
-#include "GLCamera.h"
+#include <GLLib/glx.h>
 
 GLCanvas::GLCanvas(CGLView* pglview)
 {
