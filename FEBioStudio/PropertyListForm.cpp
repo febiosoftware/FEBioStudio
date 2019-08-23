@@ -408,6 +408,13 @@ void CPropertyListForm::onDataChanged()
 //						if (spin) m_list->SetPropertyValue(i, spin->value());
 						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
 						if (edit) m_list->SetPropertyValue(i, edit->text().toDouble());
+
+						CEditVariableProperty* var = qobject_cast<CEditVariableProperty*>(pw);
+						if (var)
+						{
+							QString s = var->currentText();
+							m_list->SetPropertyValue(i, s.toDouble());
+						}
 					}
 					break;
 				case CProperty::Enum:
