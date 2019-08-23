@@ -47,6 +47,7 @@ enum Param_State {
 
 	Param_EDITABLE  = 1,	// Parameter will be shown and edited in standard GUI components
 	Param_READWRITE = 2,	// Parameter will be imported/exported from FEBio files
+	Param_VISIBLE   = 4,	// Parameter will be displayed in model tree
 
 	Param_ALLFLAGS  = 0xF
 };
@@ -132,6 +133,7 @@ public:
 
 	bool IsEditable () const { return (m_nstate & Param_EDITABLE) != 0; }
 	bool IsReadWrite() const { return (m_nstate & Param_READWRITE) != 0; }
+	bool IsVisible  () const { return (m_nstate & Param_VISIBLE) != 0; }
 
 	int GetOffset() const { return m_offset; }
 	Param* SetOffset(int n) { m_offset = n; return this; }

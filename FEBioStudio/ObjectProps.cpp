@@ -92,7 +92,8 @@ void CObjectProps::AddParameter(Param& p)
 		prop->setFlags(CProperty::Visible);
 		break;
 	}
-	if (prop && p.IsVariable()) prop->flags |= CProperty::Variable;
+	if (prop && (p.IsVisible() && (p.IsEditable() == false))) prop->flags = CProperty::Visible;
+	if (prop && p.IsVariable() && (p.IsEditable())) prop->flags |= CProperty::Variable;
 	if (prop) prop->param = &p;
 
 	m_params.push_back(&p);
@@ -116,7 +117,7 @@ void CObjectProps::BuildParamList(FSObject* po)
 	for (int i = 0; i<NP; ++i)
 	{
 		Param& p = po->GetParam(i);
-		if (p.IsEditable())
+		if (p.IsEditable() || p.IsVisible())
 		{
 			AddParameter(p);
 		}
