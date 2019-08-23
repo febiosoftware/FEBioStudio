@@ -247,7 +247,6 @@
     <ClCompile Include="..\..\MeshTools\GWrapModifier.cpp" />
     <ClCompile Include="..\..\MeshTools\hex2tet.cpp" />
     <ClCompile Include="..\..\MeshTools\ICPRegistration.cpp" />
-    <ClCompile Include="..\..\MeshTools\Interpolator.cpp" />
     <ClCompile Include="..\..\MeshTools\LaplaceSolver.cpp" />
     <ClCompile Include="..\..\MeshTools\LoadCurve.cpp" />
     <ClCompile Include="..\..\MeshTools\lut.cpp" />
@@ -356,7 +355,6 @@
     <ClInclude Include="..\..\MeshTools\GradientMap.h" />
     <ClInclude Include="..\..\MeshTools\GSketch.h" />
     <ClInclude Include="..\..\MeshTools\ICPRegistration.h" />
-    <ClInclude Include="..\..\MeshTools\Interpolator.h" />
     <ClInclude Include="..\..\MeshTools\LaplaceSolver.h" />
     <ClInclude Include="..\..\MeshTools\LoadCurve.h" />
     <ClInclude Include="..\..\MeshTools\MathParser.h" />

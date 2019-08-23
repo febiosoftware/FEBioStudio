@@ -195,7 +195,6 @@
     <ClCompile Include="..\..\PostLib\ImageSlicer.cpp" />
     <ClCompile Include="..\..\PostLib\ImgAnimation.cpp" />
     <ClCompile Include="..\..\PostLib\integrate.cpp" />
-    <ClCompile Include="..\..\PostLib\Interpolator.cpp" />
     <ClCompile Include="..\..\PostLib\Intersect.cpp" />
     <ClCompile Include="..\..\PostLib\LinearRegression.cpp" />
     <ClCompile Include="..\..\PostLib\MarchingCubes.cpp" />
@@ -277,7 +276,6 @@
     <ClInclude Include="..\..\PostLib\ImageModel.h" />
     <ClInclude Include="..\..\PostLib\ImageSlicer.h" />
     <ClInclude Include="..\..\PostLib\ImgAnimation.h" />
-    <ClInclude Include="..\..\PostLib\Interpolator.h" />
     <ClInclude Include="..\..\PostLib\Intersect.h" />
     <ClInclude Include="..\..\PostLib\LinearRegression.h" />
     <ClInclude Include="..\..\PostLib\MarchingCubes.h" />

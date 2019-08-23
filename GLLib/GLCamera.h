@@ -1,6 +1,6 @@
 #pragma once
 #include <MathLib/math3d.h>
-#include <MeshTools/Interpolator.h>
+#include <MathLib/Interpolator.h>
 
 //=============================================================================
 // This class implements a camera that can be used to navigate a 3D world.

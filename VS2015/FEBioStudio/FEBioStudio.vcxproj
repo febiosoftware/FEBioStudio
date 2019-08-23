@@ -467,7 +467,6 @@
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\GLViewRender.h" />
     <ClInclude Include="..\..\FEBioStudio\GLViewTransform.h" />
-    <ClInclude Include="..\..\FEBioStudio\glx.h" />
     <ClInclude Include="..\..\FEBioStudio\GManipulator.h" />
     <CustomBuild Include="..\..\FEBioStudio\GraphWindow.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

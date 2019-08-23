@@ -1,7 +1,5 @@
 #pragma once
-#include <MathLib/math3d.h>
-
-namespace Post {
+#include "math3d.h"
 
 //=============================================================================
 //! This class implements an interpolator that interpolates between two values.
@@ -10,7 +8,7 @@ class Interpolator
 public:
 	Interpolator();
 
-	bool Next();
+	bool Update();
 
 	void Target(double g);
 
@@ -40,9 +38,9 @@ class VecInterpolator
 public:
 	VecInterpolator();
 
-	bool Next();
+	bool Update();
 
-	void Target(const vec3d& q);
+	void Target(vec3d q);
 
 	vec3d Value() const { return m_vt; }
 
@@ -67,7 +65,7 @@ class QuatInterpolator
 public:
 	QuatInterpolator();
 
-	bool Next();
+	bool Update();
 
 	void Target(quatd q);
 
@@ -85,4 +83,3 @@ public:
 	double	m_da;	// update value
 	bool	m_banim;
 };
-}

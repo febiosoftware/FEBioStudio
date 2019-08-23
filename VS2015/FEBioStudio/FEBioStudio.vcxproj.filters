@@ -767,9 +767,6 @@
     <ClInclude Include="..\..\FEBioStudio\GLViewTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\glx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\GManipulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>

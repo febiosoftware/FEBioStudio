@@ -1,6 +1,6 @@
 #pragma once
 #include <MathLib/math3d.h>
-#include "Interpolator.h"
+#include <MathLib/Interpolator.h>
 #include "GLObject.h"
 
 namespace Post {

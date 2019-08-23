@@ -134,6 +134,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\MathLib\DenseMatrix.cpp" />
     <ClCompile Include="..\..\MathLib\eig3.cpp" />
+    <ClCompile Include="..\..\MathLib\Interpolator.cpp" />
     <ClCompile Include="..\..\MathLib\linsolver.cpp" />
     <ClCompile Include="..\..\MathLib\LUSolver.cpp" />
     <ClCompile Include="..\..\MathLib\mat3d.cpp" />
@@ -143,12 +144,14 @@
   <ItemGroup>
     <ClInclude Include="..\..\MathLib\DenseMatrix.h" />
     <ClInclude Include="..\..\MathLib\eig3.h" />
+    <ClInclude Include="..\..\MathLib\Interpolator.h" />
     <ClInclude Include="..\..\MathLib\linsolver.h" />
     <ClInclude Include="..\..\MathLib\LUSolver.h" />
     <ClInclude Include="..\..\MathLib\mat3d.h" />
     <ClInclude Include="..\..\MathLib\mat3d.hpp" />
     <ClInclude Include="..\..\MathLib\math3d.h" />
     <ClInclude Include="..\..\MathLib\powell.h" />
+    <ClInclude Include="..\..\MathLib\stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

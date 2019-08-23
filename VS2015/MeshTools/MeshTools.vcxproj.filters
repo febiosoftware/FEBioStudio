@@ -352,9 +352,6 @@
     <ClCompile Include="..\..\MeshTools\ICPRegistration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\Interpolator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\LaplaceSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -673,9 +670,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\ICPRegistration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\Interpolator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\LaplaceSolver.h">

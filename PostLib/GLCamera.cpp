@@ -115,9 +115,9 @@ void CGLCamera::UpdatePosition(bool bhit)
 {
 	if (bhit == false)
 	{
-		m_pos.Next();
-		m_trg.Next();
-		m_rot.Next();
+		m_pos.Update();
+		m_trg.Update();
+		m_rot.Update();
 	}
 	else
 	{
