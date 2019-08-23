@@ -45,6 +45,7 @@ public:
 	QMenu* menuPhysics;
 	QMenu* menuTools;
 	QMenu* menuPost;
+	QMenu* menuFEBio;
 	QMenu* menuRecord;
 	QMenu* menuView;
 	QMenu* menuHelp;
@@ -422,9 +423,10 @@ public:
 		menuFile   = new QMenu("File", menuBar);
 		menuEdit   = new QMenu("Edit", menuBar);
 		menuPhysics= new QMenu("Physics", menuBar);
-		menuTools  = new QMenu("Tools", menuBar);
+		menuFEBio  = new QMenu("FEBio", menuBar);
 		menuPost   = new QMenu("Post", menuBar);
 		menuRecord = new QMenu("Record", menuBar);
+		menuTools  = new QMenu("Tools", menuBar);
 		menuView   = new QMenu("View", menuBar);
 		menuHelp   = new QMenu("Help", menuBar);
 
@@ -441,7 +443,7 @@ public:
 		recentGeomFilesActionGroup = new QActionGroup(mainWindow);
 		recentGeomFilesActionGroup->setObjectName("recentGeomFiles");
 
-		// build the menu
+		// File menu
 		menuBar->addAction(menuFile->menuAction());
 		menuFile->addAction(actionNew);
 		menuFile->addAction(actionOpen);
@@ -468,6 +470,7 @@ public:
 		menuFile->addSeparator();
 		menuFile->addAction(actionExit);
 
+		// Edit menu
 		menuBar->addAction(menuEdit->menuAction());
 		menuEdit->addAction(actionUndo);
 		menuEdit->addAction(actionRedo);
@@ -492,6 +495,7 @@ public:
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionEditProject);
 
+		// Physics menu
 		menuBar->addAction(menuPhysics->menuAction());
 		menuPhysics->addAction(actionAddBC);
 		menuPhysics->addAction(actionAddNodalLoad);
@@ -508,19 +512,13 @@ public:
 		menuPhysics->addAction(actionSBMTable);
 		menuPhysics->addAction(actionAddReaction);
 
-		menuBar->addAction(menuTools->menuAction());
-		menuTools->addAction(actionCurveEditor);
-		menuTools->addAction(actionMeshInspector);
-		menuTools->addAction(actionElasticityConvertor);
+		// FEBio menu
+		menuBar->addAction(menuFEBio->menuAction());
+		menuFEBio->addAction(actionFEBioRun);
+		menuFEBio->addAction(actionFEBioStop);
+		menuFEBio->addAction(actionFEBioOptimize);
 
-		QMenu* FEBioMenu = new QMenu("FEBio");
-		FEBioMenu->addAction(actionFEBioRun);
-		FEBioMenu->addAction(actionFEBioStop);
-		FEBioMenu->addAction(actionFEBioOptimize);
-
-		menuTools->addAction(FEBioMenu->menuAction());
-		menuTools->addAction(actionOptions);
-
+		// Post menu
 		menuBar->addAction(menuPost->menuAction());
 		menuPost->addAction(actionPlaneCut);
 		menuPost->addAction(actionMirrorPlane);
@@ -542,6 +540,7 @@ public:
 		menuPost->addAction(actionStats);
 		menuPost->addAction(actionIntegrate);
 
+		// Record menu
 		menuBar->addAction(menuRecord->menuAction());
 		menuRecord->addAction(actionRecordNew);
 		menuRecord->addSeparator();
@@ -549,6 +548,14 @@ public:
 		menuRecord->addAction(actionRecordPause);
 		menuRecord->addAction(actionRecordStop);
 
+		// Tools menu
+		menuBar->addAction(menuTools->menuAction());
+		menuTools->addAction(actionCurveEditor);
+		menuTools->addAction(actionMeshInspector);
+		menuTools->addAction(actionElasticityConvertor);
+		menuTools->addAction(actionOptions);
+
+		// View menu
 		menuBar->addAction(menuView->menuAction());
 		menuView->addAction(actionUndoViewChange);
 		menuView->addAction(actionRedoViewChange);
@@ -575,6 +582,7 @@ public:
 		menuView->addAction(actionBottom);
 		menuView->addSeparator();
 
+		// Help menu
 		menuBar->addAction(menuHelp->menuAction());
 		menuHelp->addAction(actionFEBioURL);
 		menuHelp->addAction(actionOnlineHelp);
