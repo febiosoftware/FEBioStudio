@@ -712,7 +712,10 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CDocument* doc)
 	{
 		Post::CImageModel* img = doc->GetImageModel(i);
 		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CObjectProps(img), 0);
-		t2->setToolTip(0, QString::fromStdString(img->GetFileName()));
+
+		Post::CImageSource* src = img->GetImageSource();
+		AddTreeItem(t2, QString::fromStdString(src->GetName()), MT_3DIMAGE, 0, src, new CObjectProps(src), 0);
+
 		for (int j = 0; j < img->ImageRenderers(); ++j)
 		{
 			Post::CGLImageRenderer* imgRender = img->GetImageRenderer(j);

@@ -159,7 +159,10 @@ void CVolRender::Clear()
 void CVolRender::Create()
 {
 	CImageModel& img = *GetImageModel();
-	C3DImage& im3d = *img.Get3DImage();
+	CImageSource* src = img.GetImageSource();
+	if (src == nullptr) return;
+
+	C3DImage& im3d = *src->Get3DImage();
 
 	// get the original image dimensions
 	int w = im3d.Width();

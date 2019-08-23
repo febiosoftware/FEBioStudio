@@ -143,7 +143,10 @@ void CMarchingCubes::CreateSurface()
 	m_mesh.Clear();
 
 	CImageModel& im = *GetImageModel();
-	C3DImage& im3d = *im.Get3DImage();
+	CImageSource* src = im.GetImageSource();
+	if (src == nullptr) return;
+	C3DImage& im3d = *src->Get3DImage();
+
 	BOX b = im.GetBoundingBox();
 
 	int NX = im3d.Width();

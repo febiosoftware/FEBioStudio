@@ -526,13 +526,14 @@ std::string CDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GObject*>(po)) return "Object";
 	else if (dynamic_cast<FEDataMap*>(po)) return "Data map";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
-	else if (dynamic_cast<Post::CImageModel*>(po)) return "3D Image";
+	else if (dynamic_cast<Post::CImageModel*>(po)) return "3D Image volume";
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po)) return "Displacement map";
 	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";
 	else if (dynamic_cast<Post::CGLModel*>(po)) return "post model";
 	else if (dynamic_cast<GModel*>(po)) return "model";
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
+	else if (dynamic_cast<Post::CImageSource*>(po)) return "3D Image source";
 	else
 	{
 		assert(false);
@@ -550,7 +551,7 @@ std::string CDocument::GetDocFilePath()
 //-----------------------------------------------------------------------------
 void CDocument::SetDocFilePath(const std::string& filePath)
 { 
-	m_filePath = filePath; 
+	m_filePath = FSDir::filePath(filePath);
 	string projectDir = GetDocFolder();
 	FSDir::setMacro("ProjectDir", projectDir);
 }
@@ -560,49 +561,21 @@ void CDocument::SetDocFilePath(const std::string& filePath)
 std::string CDocument::GetDocFileName()
 {
 	if (m_filePath.empty()) return m_filePath;
-
-	std::string fileName;
-	size_t n = m_filePath.rfind('\\');
-	if (n == string::npos)
-	{
-		n = m_filePath.rfind('/');
-		if (n == string::npos) n = 0; else n++;
-	}
-	else n++;
-
-	fileName = m_filePath.substr(n);
-	
-	return fileName;
+	return FSDir::fileName(m_filePath);
 }
 
 //-----------------------------------------------------------------------------
 std::string CDocument::GetDocFolder()
 {
 	if (m_filePath.empty()) return m_filePath;
-
-	size_t n = m_filePath.rfind('\\');
-	if (n == string::npos)
-	{
-		n = m_filePath.rfind('/');
-		if (n == string::npos) n = 0;
-	}
-
-	std::string folder = m_filePath.substr(0, n);
-
-	return folder;
+	return FSDir::fileDir(m_filePath);
 }
 
 //-----------------------------------------------------------------------------
 // get the base of the file name
 std::string CDocument::GetDocFileBase()
 {
-	std::string file = GetDocFileName();
-	size_t n = file.rfind('.');
-	if (n == string::npos) return file;
-
-	std::string base = file.substr(0, n);
-
-	return base;
+	return FSDir::fileBase(m_filePath);
 }
 
 //-----------------------------------------------------------------------------
@@ -926,6 +899,8 @@ bool CDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 // import image data
 Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
 {
+	static int n = 1;
+
 	// we pass the relative path to the image model
 	string relFile = FSDir::toRelativePath(fileName);
 
@@ -936,18 +911,9 @@ Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, i
 		return nullptr;
 	}
 
-	// use the file name to make the object's name
-	size_t c1 = fileName.rfind('\\');
-	if (c1 == fileName.npos) c1 = fileName.rfind('/');
-	if (c1 == fileName.npos) c1 = -1;
-	c1++;
-
-	size_t c2 = fileName.rfind('.');
-	if (c2 == fileName.npos) c2 = fileName.size();
-	else if (c2 < c1) c2 = fileName.size();
-	
-	string name = fileName.substr(c1, c2 - c1);
-	po->SetName(name);
+	stringstream ss;
+	ss << "ImageModel" << n++;
+	po->SetName(ss.str());
 
 	// add it to the project
 	AddImageModel(po);

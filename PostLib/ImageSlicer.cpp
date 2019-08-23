@@ -60,7 +60,10 @@ void CImageSlicer::UpdateData(bool bsave)
 
 void CImageSlicer::Create()
 {
-	C3DImage& im3d = *GetImageModel()->Get3DImage();
+	CImageSource* src = GetImageModel()->GetImageSource();
+	if (src == nullptr) return;
+
+	C3DImage& im3d = *src->Get3DImage();
 
 	// get the original image dimensions
 	int w = im3d.Width();

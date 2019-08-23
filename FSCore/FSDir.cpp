@@ -78,3 +78,87 @@ std::string FSDir::toRelativePath(const std::string& path)
 
 	return s;
 }
+
+// return just the base of the file (no dir, no ext)
+std::string FSDir::fileBase(const std::string& path)
+{
+	string s(path);
+#ifdef WIN32
+	windowsify(s);
+#endif
+
+	// strip the file path off
+	size_t n1 = s.rfind('\\');
+	size_t n2 = s.rfind('/');
+
+	size_t n = string::npos;
+	if      ((n1 == string::npos) && (n2 != string::npos)) n = n2;
+	else if ((n1 != string::npos) && (n2 == string::npos)) n = n1;
+	else if ((n1 != string::npos) && (n2 != string::npos)) n = (n1 > n2 ? n1 : n2);
+	if (n != string::npos)
+	{
+		s.erase(0, n + 1);
+	}
+
+	// strip the extension
+	n = s.rfind('.');
+	if (n != string::npos)
+	{
+		s.erase(n, string::npos);
+	}
+
+	return s;
+}
+
+std::string FSDir::fileName(const std::string& path)
+{
+	string s(path);
+#ifdef WIN32
+	windowsify(s);
+#endif
+
+	size_t n1 = s.rfind('\\');
+	size_t n2 = s.rfind('/');
+
+	size_t n = string::npos;
+	if ((n1 == string::npos) && (n2 != string::npos)) n = n2;
+	else if ((n1 != string::npos) && (n2 == string::npos)) n = n1;
+	else if ((n1 != string::npos) && (n2 != string::npos)) n = (n1 > n2 ? n1 : n2);
+
+	if (n != string::npos)
+	{
+		return s.substr(n + 1);
+	}
+	else return s;
+}
+
+std::string FSDir::fileDir(const std::string& path)
+{
+	string s(path);
+#ifdef WIN32
+	windowsify(s);
+#endif
+
+	size_t n1 = s.rfind('\\');
+	size_t n2 = s.rfind('/');
+
+	size_t n = string::npos;
+	if ((n1 == string::npos) && (n2 != string::npos)) n = n2;
+	else if ((n1 != string::npos) && (n2 == string::npos)) n = n1;
+	else if ((n1 != string::npos) && (n2 != string::npos)) n = (n1 > n2 ? n1 : n2);
+	if (n != string::npos)
+	{
+		s.erase(n);
+	}
+	return s;
+}
+
+std::string FSDir::filePath(const std::string& path)
+{
+	string s(path);
+#ifdef WIN32
+	windowsify(s);
+#endif
+
+	return s;
+}
