@@ -110,12 +110,6 @@ size_t CFEBioJob::RemoveChild(FSObject* po)
 
 bool CFEBioJob::OpenPlotFile()
 {
-	if (m_postDoc) delete m_postDoc;
-	m_postDoc = new CPostDoc;
-	m_postDoc->SetParent(this);
-
-	m_postDoc->SetName(GetName());
-
 	QString plotFile = QString::fromStdString(m_plotFile);
 
 	QString projectFolder = QString::fromStdString(m_doc->GetDocFolder());
@@ -123,10 +117,15 @@ bool CFEBioJob::OpenPlotFile()
 
 	string splotfile = plotFile.toStdString();
 
+	if (m_postDoc == nullptr)
+	{
+		m_postDoc = new CPostDoc;
+		m_postDoc->SetParent(this);
+		m_postDoc->SetName(GetName());
+	}
+
 	if (m_postDoc->LoadPlotfile(splotfile) == false)
 	{
-		delete m_postDoc;
-		m_postDoc = nullptr;
 		return false;
 	}
 

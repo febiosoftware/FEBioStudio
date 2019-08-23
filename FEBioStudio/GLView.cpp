@@ -1176,7 +1176,7 @@ void CGLView::UpdateWidgets(bool bposition)
 {
 	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
 
-	if (postDoc)
+	if (postDoc && postDoc->IsValid())
 	{
 		const string& title = postDoc->GetName();
 		m_ptitle->copy_label(title.c_str());
@@ -1559,7 +1559,7 @@ void CGLView::RenderDefaultView()
 //-----------------------------------------------------------------------------
 void CGLView::RenderPostView(CPostDoc* postDoc)
 {
-	if (postDoc)
+	if (postDoc && postDoc->IsValid())
 	{
 		postDoc->Render(this);
 
@@ -1671,7 +1671,7 @@ void CGLView::SetupProjection()
 	{
 		box = doc->GetModelBox();
 	}
-	else
+	else if (postDoc->IsValid())
 	{
 		box = postDoc->GetPostObject()->GetBoundingBox();
 	}
