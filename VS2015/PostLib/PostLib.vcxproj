@@ -229,7 +229,6 @@
     <ClInclude Include="..\..\PostLib\FEFileExport.h" />
     <ClInclude Include="..\..\PostLib\FEFileReader.h" />
     <ClInclude Include="..\..\PostLib\FEGroup.h" />
-    <ClInclude Include="..\..\PostLib\FEItem.h" />
     <ClInclude Include="..\..\PostLib\FELSDYNAExport.h" />
     <ClInclude Include="..\..\PostLib\FELSDYNAimport.h" />
     <ClInclude Include="..\..\PostLib\FELSDYNAPlot.h" />

@@ -1,5 +1,5 @@
 #pragma once
-#include "FEItem.h"
+#include <MeshLib/FEItem.h>
 #include "FEEdge.h"
 #include <MathLib/math3d.h>
 #include <MeshLib/FEFace.h>

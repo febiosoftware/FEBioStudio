@@ -39,12 +39,12 @@ int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);
-		if (node.m_ntag == 1) node.Select(); else node.UnSelect();
+		if (node.m_ntag == 1) node.Select(); else node.Unselect();
 	}
 
 	// select all faces that attach to a node that is tagged
 	int NF = pm->Faces();
-	for (int i=0; i<NF; ++i) pm->Face(i).UnSelect();
+	for (int i=0; i<NF; ++i) pm->Face(i).Unselect();
 
 	FEFaceList::Iterator pi;
 	for (pi = pfs->First(); pi != pfs->End(); ++pi)

@@ -224,7 +224,7 @@ bool FEASCIIExport::Save(FEModel* pfem, int n0, int n1, const char* szfile)
 				for (int i = 0; i<NE; ++i)
 				{
 					float& d = ps->m_ELEM[i].m_val;
-					int id = m.Element(i).m_nId;
+					int id = m.Element(i).m_nid;
 					print_format(m_szfmt, id, d, fp);
 				}
 			}

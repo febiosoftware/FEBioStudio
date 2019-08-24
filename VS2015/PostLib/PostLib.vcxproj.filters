@@ -296,9 +296,6 @@
     <ClInclude Include="..\..\PostLib\FEGroup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\PostLib\FEItem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\PostLib\FELSDYNAExport.h">
       <Filter>Header Files</Filter>
     </ClInclude>

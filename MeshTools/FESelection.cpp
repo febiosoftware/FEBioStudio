@@ -943,7 +943,7 @@ void FEElementSelection::Invert()
 	for (int i=0; i<N; ++i, ++pe)
 		if (pe->IsVisible())
 		{
-			if (pe->IsSelected()) pe->UnSelect(); 
+			if (pe->IsSelected()) pe->Unselect(); 
 			else pe->Select();
 		}
 }
@@ -1181,7 +1181,7 @@ void FEFaceSelection::Invert()
 	for (int i=0; i<N; ++i, ++pf)
 		if (pf->IsVisible())
 		{
-			if (pf->IsSelected()) pf->UnSelect(); 
+			if (pf->IsSelected()) pf->Unselect(); 
 			else pf->Select();
 		}
 }
@@ -1421,7 +1421,7 @@ void FEEdgeSelection::Invert()
 	for (int i=0; i<N; ++i, ++pe)
 		if (pe->IsVisible())
 		{
-			if (pe->IsSelected()) pe->UnSelect(); 
+			if (pe->IsSelected()) pe->Unselect(); 
 			else pe->Select();
 		}
 }
@@ -1651,7 +1651,7 @@ void FENodeSelection::Invert()
 	for (int i=0; i<N; ++i, ++pn)
 		if (pn->IsVisible())
 		{
-			if (pn->IsSelected()) pn->UnSelect(); 
+			if (pn->IsSelected()) pn->Unselect(); 
 			else pn->Select();
 		}
 }

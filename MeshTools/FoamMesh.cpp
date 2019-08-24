@@ -87,16 +87,16 @@ void FoamGen::SelectFace(int i, FEMesh* pm)
 		for (int n=m_nface[1]; n<m_nface[7]; ++n)
 		{
 			FEElement& f = pm->Element(n);
-			pm->Node(f.m_node[0]).UnSelect();
-			pm->Node(f.m_node[1]).UnSelect();
-			pm->Node(f.m_node[2]).UnSelect();
+			pm->Node(f.m_node[0]).Unselect();
+			pm->Node(f.m_node[1]).Unselect();
+			pm->Node(f.m_node[2]).Unselect();
 		}
 	}
 	else
 	{
 		// unselect all nodes
 		int N = pm->Nodes();
-		for (j=0; j<N; ++j) pm->Node(j).UnSelect();
+		for (j=0; j<N; ++j) pm->Node(j).Unselect();
 
 		// select the face
 		for (int n=m_nface[i]; n<m_nface[i+1]; ++n)

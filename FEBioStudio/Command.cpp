@@ -1524,7 +1524,7 @@ void CCmdSelectElements::Execute()
 	m_pDoc->SetItemMode(ITEM_ELEM);
 	if (!m_badd)
 	{
-		for (i=0; i<m_pm->Elements(); ++i) m_pm->Element(i).UnSelect();
+		for (i=0; i<m_pm->Elements(); ++i) m_pm->Element(i).Unselect();
 	}
 
 	int NE = m_pm->Elements();
@@ -1547,7 +1547,7 @@ void CCmdSelectElements::UnExecute()
 		if (m_ptag[i])
 			el.Select();
 		else
-			el.UnSelect();
+			el.Unselect();
 	}
 
 	GObject* po = m_pm->GetGObject();
@@ -1601,7 +1601,7 @@ void CCmdUnselectElements::Execute()
 	int i;
 	m_pDoc->SetItemMode(ITEM_ELEM);
 	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
-	for (i=0; i<m_N; ++i) pm->Element(m_pel[i]).UnSelect();
+	for (i=0; i<m_N; ++i) pm->Element(m_pel[i]).Unselect();
 
 	GObject* po = pm->GetGObject();
 	if (po) po->UpdateSelection();
@@ -1617,7 +1617,7 @@ void CCmdUnselectElements::UnExecute()
 		if (m_ptag[i])
 			el.Select();
 		else
-			el.UnSelect();
+			el.Unselect();
 	}
 
 	GObject* po = pm->GetGObject();
@@ -1685,7 +1685,7 @@ void CCmdSelectFaces::Execute()
 	m_pDoc->SetItemMode(ITEM_FACE);
 	if (!m_badd)
 	{
-		for (i=0; i<m_pm->Faces(); ++i) m_pm->Face(i).UnSelect();
+		for (i=0; i<m_pm->Faces(); ++i) m_pm->Face(i).Unselect();
 	}
 
 	int NF = m_pm->Faces();
@@ -1708,7 +1708,7 @@ void CCmdSelectFaces::UnExecute()
 		if (m_ptag[i])
 			face.Select();
 		else
-			face.UnSelect();
+			face.Unselect();
 	}
 	GObject* po = m_pm->GetGObject();
 	if (po) po->UpdateSelection();
@@ -1754,7 +1754,7 @@ CCmdUnselectFaces::CCmdUnselectFaces(FEMeshBase* pm, const vector<int>& face) : 
 void CCmdUnselectFaces::Execute()
 {
 	m_pDoc->SetItemMode(ITEM_FACE);
-	for (int i=0; i<m_N; ++i) m_pm->Face(m_pface[i]).UnSelect();
+	for (int i=0; i<m_N; ++i) m_pm->Face(m_pface[i]).Unselect();
 	GObject* po = m_pm->GetGObject();
 	if (po) po->UpdateSelection();
 }
@@ -1768,7 +1768,7 @@ void CCmdUnselectFaces::UnExecute()
 		if (m_ptag[i])
 			face.Select();
 		else
-			face.UnSelect();
+			face.Unselect();
 	}
 	GObject* po = m_pm->GetGObject();
 	if (po) po->UpdateSelection();
@@ -1832,7 +1832,7 @@ void CCmdSelectFEEdges::Execute()
 	m_pDoc->SetItemMode(ITEM_EDGE);
 	if (!m_badd)
 	{
-		for (int i=0; i<m_pm->Edges(); ++i) m_pm->Edge(i).UnSelect();
+		for (int i=0; i<m_pm->Edges(); ++i) m_pm->Edge(i).Unselect();
 	}
 
 	int NE = m_pm->Edges();
@@ -1854,7 +1854,7 @@ void CCmdSelectFEEdges::UnExecute()
 		if (m_ptag[i])
 			edge.Select();
 		else
-			edge.UnSelect();
+			edge.Unselect();
 	}
 	GObject* po = m_pm->GetGObject();
 	if (po) po->UpdateSelection();
@@ -1904,7 +1904,7 @@ CCmdUnselectFEEdges::CCmdUnselectFEEdges(FELineMesh* pm, const vector<int>& edge
 void CCmdUnselectFEEdges::Execute()
 {
 	m_pDoc->SetItemMode(ITEM_EDGE);
-	for (int i=0; i<m_N; ++i) m_pm->Edge(m_pedge[i]).UnSelect();
+	for (int i=0; i<m_N; ++i) m_pm->Edge(m_pedge[i]).Unselect();
 	GObject* po = m_pm->GetGObject();
 	if (po) po->UpdateSelection();
 }
@@ -1918,7 +1918,7 @@ void CCmdUnselectFEEdges::UnExecute()
 		if (m_ptag[i])
 			edge.Select();
 		else
-			edge.UnSelect();
+			edge.Unselect();
 	}
 	GObject* po = m_pm->GetGObject();
 	if (po) po->UpdateSelection();
@@ -1985,7 +1985,7 @@ void CCmdSelectFENodes::Execute()
 	m_pDoc->SetItemMode(ITEM_NODE);
 	if (!m_badd)
 	{
-		for (i=0; i<m_pm->Nodes(); ++i) m_pm->Node(i).UnSelect();
+		for (i=0; i<m_pm->Nodes(); ++i) m_pm->Node(i).Unselect();
 	}
 
 	int NN = m_pm->Nodes();
@@ -2007,7 +2007,7 @@ void CCmdSelectFENodes::UnExecute()
 		if (m_ptag[i])
 			node.Select();
 		else
-			node.UnSelect();
+			node.Unselect();
 	}
 	GObject* po = m_pm->GetGObject();
 	if (po) po->UpdateSelection();
@@ -2060,7 +2060,7 @@ void CCmdUnselectNodes::Execute()
 	int i;
 	m_pDoc->SetItemMode(ITEM_NODE);
 	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
-	for (i=0; i<m_N; ++i) pm->Node(m_pn[i]).UnSelect();
+	for (i=0; i<m_N; ++i) pm->Node(m_pn[i]).Unselect();
 	GObject* po = pm->GetGObject();
 	if (po) po->UpdateSelection();
 }
@@ -2075,7 +2075,7 @@ void CCmdUnselectNodes::UnExecute()
 		if (m_ptag[i])
 			node.Select();
 		else
-			node.UnSelect();
+			node.Unselect();
 	}
 	GObject* po = pm->GetGObject();
 	if (po) po->UpdateSelection();

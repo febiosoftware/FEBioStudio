@@ -37,7 +37,7 @@ void FESelectElementsFromFaces::SelectElementsFromFaces(FEMesh* pm)
         FEFace& face = pm->Face(i);
         if (face.IsSelected()) {
             fdata.push_back(face);
-            face.UnSelect();
+            face.Unselect();
         }
     }
     

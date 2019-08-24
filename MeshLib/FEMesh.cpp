@@ -2865,7 +2865,7 @@ void FEMesh::ClearFaceSelection()
 {
 	for (int i=0; i<Faces(); ++i)
 	{
-		Face(i).UnSelect();
+		Face(i).Unselect();
 	}
 }
 
