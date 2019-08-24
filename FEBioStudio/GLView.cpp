@@ -23,7 +23,7 @@
 #include "GLViewTransform.h"
 #include <GLLib/glx.h>
 #include <PostLib/ColorMap.h>
-#include <PostLib/GLCamera.h>
+#include <GLLib/GLCamera.h>
 #include <PostLib/GLContext.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <MeshLib/FENodeFaceList.h>
@@ -176,7 +176,7 @@ public:
 		double ffar = view->GetFarPlane();
 		if (ortho)
 		{
-			double z = view->GetCamera().TargetDistance();
+			double z = view->GetCamera().GetTargetDistance();
 			double dx = z*tan(0.5*fov*PI / 180.0)*ar;
 			double dy = z*tan(0.5*fov*PI / 180.0);
 			glOrtho(-dx, dx, -dy, dy, fnear, ffar);
@@ -624,7 +624,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			if (bshift)
 			{
 				double D = (double) m_y1 - y;
-				double s = D*m_Cam.FinalTargetDistance()*1e-5;
+				double s = D*m_Cam.GetFinalTargetDistance()*1e-5;
 				pcam->Dolly(s);
 			}
 			else if (bctrl)
@@ -664,7 +664,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				m_bextrude = false;
 			}
 
-			double f = 0.0012f*(double)m_Cam.FinalTargetDistance();
+			double f = 0.0012f*(double)m_Cam.GetFinalTargetDistance();
 
 			vec3d dr = vec3d(f*(x - m_x1), f*(m_y1 - y), 0);
 
@@ -1661,7 +1661,7 @@ void CGLView::SetupProjection()
 
 	if (height() == 0) m_ar = 1; m_ar = (GLfloat)width() / (GLfloat)height();
 
-	GLdouble f = 0.2*m_Cam.TargetDistance();
+	GLdouble f = 0.2*m_Cam.GetTargetDistance();
 	
 	CDocument* doc = GetDocument();
 
@@ -2202,27 +2202,20 @@ void CGLView::RenderImageData()
 	CDocument* doc = GetDocument();
 	if (doc->IsValid() == false) return;
 
-	CGLCamera cam = GetCamera();
-
-	// convert PreView camera to PostView camera
-	Post::CGLCamera glcam;
-	glcam.SetTarget(to_vec3f(cam.Position()));
-	glcam.SetLocalTarget(to_vec3f(cam.Target()));
-	glcam.SetOrientation(cam.GetOrientation());
-	glcam.UpdatePosition(true);
+	CGLCamera& cam = GetCamera();
 
 	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
 
 	Post::CGLContext rc;
-	rc.m_cam = &glcam;
+	rc.m_cam = &cam;
 	rc.m_showOutline = vs.m_bfeat;
 	rc.m_showMesh = vs.m_bmesh;
-	rc.m_q = glcam.GetOrientation();
+	rc.m_q = cam.GetOrientation();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	glcam.Transform();
+	cam.Transform();
 
 	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
@@ -2417,7 +2410,7 @@ void CGLView::RenderPivot(bool bpick)
 	// determine the scale of the manipulator
 	// we make it depend on the target distanceso that the 
 	// manipulator will look about the same size regardless the zoom
-	double d = 0.1*m_Cam.TargetDistance();
+	double d = 0.1*m_Cam.GetTargetDistance();
 
 	// push the modelview matrix
 	glPushMatrix();
@@ -2595,7 +2588,7 @@ void CGLView::RenderRigidJoints()
 
 	FEModel* ps = pdoc->GetFEModel();
 
-	double scale = 0.05*(double)m_Cam.TargetDistance();
+	double scale = 0.05*(double)m_Cam.GetTargetDistance();
 	double R = 0.5*scale;
 
 	glDisable(GL_LIGHTING);
@@ -2649,7 +2642,7 @@ void CGLView::RenderRigidConnectors()
 
 	FEModel* ps = pdoc->GetFEModel();
 
-	double scale = 0.05*(double)m_Cam.TargetDistance();
+	double scale = 0.05*(double)m_Cam.GetTargetDistance();
 	double R = 0.5*scale;
 
 	glDisable(GL_LIGHTING);
@@ -2966,7 +2959,7 @@ void CGLView::RenderRigidBodies()
 
 	FEModel* ps = pdoc->GetFEModel();
 
-	double scale = 0.03*(double)m_Cam.TargetDistance();
+	double scale = 0.03*(double)m_Cam.GetTargetDistance();
 	double R = 0.5*scale;
 
 	quatd qi = m_Cam.GetOrientation().Inverse();
@@ -3278,7 +3271,7 @@ void CGLView::AddRegionPoint(int x, int y)
 //-----------------------------------------------------------------------------
 void CGLView::PanView(vec3d r)
 {
-	double f = 0.001f*(double)m_Cam.FinalTargetDistance();
+	double f = 0.001f*(double)m_Cam.GetFinalTargetDistance();
 	r.x *= f;
 	r.y *= f;
 
@@ -7666,7 +7659,7 @@ void CGLView::ZoomSelection(bool forceZoom)
 
 			CGLCamera& cam = GetCamera();
 
-			double g = cam.FinalTargetDistance();
+			double g = cam.GetFinalTargetDistance();
 			if ((forceZoom == true) || (g < 2.0*f))
 			{
 				cam.SetTarget(box.Center());

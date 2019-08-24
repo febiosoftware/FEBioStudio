@@ -183,7 +183,6 @@
     <ClCompile Include="..\..\PostLib\FEVTKExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEVTKImport.cpp" />
     <ClCompile Include="..\..\PostLib\GDecoration.cpp" />
-    <ClCompile Include="..\..\PostLib\GLCamera.cpp" />
     <ClCompile Include="..\..\PostLib\GLContext.cpp" />
     <ClCompile Include="..\..\PostLib\GLImageRenderer.cpp" />
     <ClCompile Include="..\..\PostLib\GLObject.cpp" />
@@ -262,7 +261,6 @@
     <ClInclude Include="..\..\PostLib\FEVTKExport.h" />
     <ClInclude Include="..\..\PostLib\FEVTKImport.h" />
     <ClInclude Include="..\..\PostLib\GDecoration.h" />
-    <ClInclude Include="..\..\PostLib\GLCamera.h" />
     <ClInclude Include="..\..\PostLib\GLContext.h" />
     <ClInclude Include="..\..\PostLib\GLImageRenderer.h" />
     <ClInclude Include="..\..\PostLib\GLObject.h" />

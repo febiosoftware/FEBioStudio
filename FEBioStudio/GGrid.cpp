@@ -59,7 +59,7 @@ void GGrid::Render()
 	GLX::rotate(m_q);
 
 	// determine the scale
-	double scale = 1.f*(double) cam.TargetDistance();
+	double scale = 1.f*(double) cam.GetTargetDistance();
 	double l = (double)((int) log10(scale));
 	double s = m_scale = (double) pow(10, l-1);
 

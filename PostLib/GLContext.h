@@ -1,9 +1,9 @@
 #pragma once
 #include <MathLib/math3d.h>
 
-namespace Post {
-
 class CGLCamera;
+
+namespace Post {
 
 class CGLContext
 {

@@ -4,7 +4,7 @@
 #include "PostLib/FEDataManager.h"
 #include "PostLib/GLContext.h"
 #include "PostLib/constants.h"
-#include "PostLib/GLCamera.h"
+#include <GLLib/GLCamera.h>
 #include "PostLib/FENodeEdgeList.h"
 #include "GLWLib/GLWidgetManager.h"
 #include <stack>

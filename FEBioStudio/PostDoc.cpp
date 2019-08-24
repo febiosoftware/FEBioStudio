@@ -3,7 +3,7 @@
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEModel.h>
 #include <PostLib/GLContext.h>
-#include <PostLib/GLCamera.h>
+#include <GLLib/GLCamera.h>
 #include <PostLib/Palette.h>
 #include <PostGL/GLModel.h>
 #include "GLView.h"
@@ -223,11 +223,11 @@ void CPostDoc::Render(CGLView* view)
 	CGLCamera cam = view->GetCamera();
 
 	// convert PreView camera to PostView camera
-	Post::CGLCamera glcam;
-	glcam.SetTarget(to_vec3f(cam.Position()));
+	CGLCamera glcam;
+	glcam.SetTarget(to_vec3f(cam.GetPosition()));
 	glcam.SetLocalTarget(to_vec3f(cam.Target()));
 	glcam.SetOrientation(cam.GetOrientation());
-	glcam.UpdatePosition(true);
+	glcam.Update(true);
 
 	VIEW_SETTINGS& vs = view->GetDocument()->GetViewSettings();
 

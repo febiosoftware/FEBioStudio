@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GLObject.h"
-#include "GLCamera.h"
+#include <GLLib/GLCamera.h>
 
 namespace Post {
 //-----------------------------------------------------------------------------
@@ -12,20 +12,20 @@ public:
 	CGView();
 	~CGView();
 
-	Post::CGLCamera& GetCamera() { return m_cam; }
+	CGLCamera& GetCamera() { return m_cam; }
 
 	void Reset();
 
 	int CameraKeys() { return (int) m_key.size(); }
 
-	Post::GLCameraTransform& GetKey(int i) { return *m_key[i]; }
-	Post::GLCameraTransform& GetCurrentKey() { return *m_key[m_nkey]; }
-	void SetCurrentKey(Post::GLCameraTransform* pkey);
+	GLCameraTransform& GetKey(int i) { return *m_key[i]; }
+	GLCameraTransform& GetCurrentKey() { return *m_key[m_nkey]; }
+	void SetCurrentKey(GLCameraTransform* pkey);
 	void SetCurrentKey(int i);
 
-	void AddCameraKey(Post::GLCameraTransform& t);
+	void AddCameraKey(GLCameraTransform& t);
 
-	void DeleteKey(Post::GLCameraTransform* pt);
+	void DeleteKey(GLCameraTransform* pt);
 
 	void DeleteAllKeys();
 
@@ -33,9 +33,9 @@ public:
 	void NextKey();
 
 protected:
-	Post::CGLCamera m_cam;	//!< current camera
+	CGLCamera m_cam;	//!< current camera
 
-	vector<Post::GLCameraTransform*>	m_key;	//!< stored camera transformations
+	vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
 	int							m_nkey;	//!< current key
 };
 }

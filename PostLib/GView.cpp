@@ -17,7 +17,7 @@ void CGView::Reset()
 {
 	m_cam.SetTargetDistance(5.f);
 	m_cam.GetOrientation() = quatd(-1, vec3d(1,0,0));
-	m_cam.UpdatePosition(true);
+	m_cam.Update(true);
 	DeleteAllKeys();
 }
 
