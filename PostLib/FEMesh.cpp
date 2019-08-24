@@ -217,7 +217,7 @@ void FEMeshBase::FindNeighbours()
 			edge = e.GetEdge(j);
 
 			// find the neighbour element
-			vector<NodeElemRef>& nel = m_NEL.ElemList(edge.node[0]);
+			vector<NodeElemRef>& nel = m_NEL.ElemList(edge.n[0]);
 			bfound = false;
 			for (int k=0; k < (int) nel.size(); k++)
 			{

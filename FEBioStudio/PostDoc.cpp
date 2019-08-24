@@ -340,14 +340,14 @@ FEMesh* CPostObject::BuildMesh()
 	for (int i = 0; i < NC; ++i)
 	{
 		FEEdge& ed = mesh->Edge(i);
-		Post::FEEdge& es = postMesh->Edge(i);
+		FEEdge& es = postMesh->Edge(i);
 
 		ed.m_gid = 0;
 		ed.m_type = es.Type();
 
 		for (int j = 0; j < es.Nodes(); ++j)
 		{
-			ed.n[j] = es.node[j];
+			ed.n[j] = es.n[j];
 		}
 	}
 

@@ -296,26 +296,26 @@ void Post::FEElement::GetFace(int i, Post::FEFace& f) const
 
 //-----------------------------------------------------------------------------
 // Return an edge of the element
-Post::FEEdge Post::FEElement::GetEdge(int i) const
+FEEdge Post::FEElement::GetEdge(int i) const
 {
-	Post::FEEdge e;
+	FEEdge e;
 	switch(Type())
 	{
 	case FE_QUAD4:
 	case FE_TRI3:
-		e.node[0] = m_node[ET_QUAD[i][0]];
-		e.node[1] = m_node[ET_QUAD[i][1]];
+		e.n[0] = m_node[ET_QUAD[i][0]];
+		e.n[1] = m_node[ET_QUAD[i][1]];
 		break;
     case FE_TRI6:
-        e.node[0] = m_node[ET_TRI6[i][0]];
-        e.node[1] = m_node[ET_TRI6[i][1]];
-        e.node[2] = m_node[ET_TRI6[i][2]];
+        e.n[0] = m_node[ET_TRI6[i][0]];
+        e.n[1] = m_node[ET_TRI6[i][1]];
+        e.n[2] = m_node[ET_TRI6[i][2]];
         break;
     case FE_QUAD8:
     case FE_QUAD9:
-        e.node[0] = m_node[ET_QUAD8[i][0]];
-        e.node[1] = m_node[ET_QUAD8[i][1]];
-        e.node[2] = m_node[ET_QUAD8[i][2]];
+        e.n[0] = m_node[ET_QUAD8[i][0]];
+        e.n[1] = m_node[ET_QUAD8[i][1]];
+        e.n[2] = m_node[ET_QUAD8[i][2]];
         break;
 	};
 	return e;

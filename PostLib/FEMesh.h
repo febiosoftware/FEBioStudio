@@ -136,7 +136,7 @@ public:
 
 	vec3f EdgeCenter(FEEdge& e)
 	{
-		return (m_Node[e.node[0]].m_rt + m_Node[e.node[1]].m_rt)*0.5f;
+		return (m_Node[e.n[0]].m_rt + m_Node[e.n[1]].m_rt)*0.5f;
 	}
 
 	// face area

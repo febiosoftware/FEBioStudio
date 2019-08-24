@@ -45,8 +45,8 @@ void FENodeEdgeList::Build(FEMeshBase* pm)
 	for (int i=0; i<NE; ++i)
 	{
 		FEEdge& edge = pm->Edge(i);
-		int n0 = edge.node[0];
-		int n1 = edge.node[1];
+		int n0 = edge.n[0];
+		int n1 = edge.n[1];
 
 		m_index[n0]++;
 		m_index[n1]++;
@@ -69,8 +69,8 @@ void FENodeEdgeList::Build(FEMeshBase* pm)
 	for (int i = 0; i<NE; ++i)
 	{
 		FEEdge& edge = pm->Edge(i);
-		int n0 = edge.node[0];
-		int n1 = edge.node[1];
+		int n0 = edge.n[0];
+		int n1 = edge.n[1];
 
 		m_edge[ m_index[n0] + tmp[n0] ] = i; tmp[n0]++;
 		m_edge[ m_index[n1] + tmp[n1] ] = i; tmp[n1]++;

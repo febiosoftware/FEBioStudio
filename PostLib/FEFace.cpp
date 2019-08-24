@@ -11,23 +11,23 @@ Post::FEFace::FEFace()
 
 //-----------------------------------------------------------------------------
 //! return the edge
-Post::FEEdge Post::FEFace::Edge(int i)
+FEEdge Post::FEFace::Edge(int i)
 {
-	Post::FEEdge e;
+	FEEdge e;
 	assert(i<Edges());
 	switch (m_ntype)
 	{
 	case FE_FACE_TRI3:
 	{
 		const int L[3][2] = { { 0, 1 }, { 1, 2 }, { 2, 0 } };
-		e.node[0] = node[L[i][0]]; e.node[1] = node[L[i][1]];
+		e.n[0] = node[L[i][0]]; e.n[1] = node[L[i][1]];
 		e.m_type = FE_EDGE2;
 	}
 	break;
 	case FE_FACE_QUAD4:
 	{
 		const int L[4][2] = { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 } };
-		e.node[0] = node[L[i][0]]; e.node[1] = node[L[i][1]];
+		e.n[0] = node[L[i][0]]; e.n[1] = node[L[i][1]];
 		e.m_type = FE_EDGE2;
 	}
 	break;
@@ -35,7 +35,7 @@ Post::FEEdge Post::FEFace::Edge(int i)
 	case FE_FACE_TRI7:
 	{
 		const int L[3][3] = { { 0, 1, 3 }, { 1, 2, 4 }, { 2, 0, 5 } };
-		e.node[0] = node[L[i][0]]; e.node[1] = node[L[i][1]]; e.node[2] = node[L[i][2]];
+		e.n[0] = node[L[i][0]]; e.n[1] = node[L[i][1]]; e.n[2] = node[L[i][2]];
 		e.m_type = FE_EDGE3;
 	}
 	break;
@@ -43,7 +43,7 @@ Post::FEEdge Post::FEFace::Edge(int i)
 	case FE_FACE_QUAD9:
 	{
 		const int L[4][3] = { { 0, 1, 4 }, { 1, 2, 5 }, { 2, 3, 6 }, { 3, 0, 7 } };
-		e.node[0] = node[L[i][0]]; e.node[1] = node[L[i][1]]; e.node[2] = node[L[i][2]];
+		e.n[0] = node[L[i][0]]; e.n[1] = node[L[i][1]]; e.n[2] = node[L[i][2]];
 		e.m_type = FE_EDGE3;
 	}
 	break;
@@ -51,10 +51,10 @@ Post::FEEdge Post::FEFace::Edge(int i)
 	{
 		const int L[3][4] = { { 0, 1, 3, 4 }, { 1, 2, 5, 6 }, { 2, 0, 8, 7 } };
 		e.m_type = FE_EDGE4;
-		e.node[0] = node[L[i][0]];
-		e.node[1] = node[L[i][1]];
-		e.node[2] = node[L[i][2]];
-		e.node[3] = node[L[i][3]];
+		e.n[0] = node[L[i][0]];
+		e.n[1] = node[L[i][1]];
+		e.n[2] = node[L[i][2]];
+		e.n[3] = node[L[i][3]];
 	}
 	break;
 	default:

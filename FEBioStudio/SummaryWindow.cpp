@@ -179,7 +179,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalEdgeRange(Post::FEModel& fem, int nsta
 	int NE = mesh.Edges();
 	for (int i=0; i<NE; i++)
 	{
-		Post::FEEdge& edge = mesh.Edge(i);
+		FEEdge& edge = mesh.Edge(i);
 		if ((bsel == false) || (edge.IsSelected()))
 		{
 			float val = state.m_EDGE[i].m_val;

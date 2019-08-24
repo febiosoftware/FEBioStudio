@@ -1092,9 +1092,9 @@ void CGLModel::RenderFace2Outline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 		for (int i = 0; i<NE; ++i)
 		{
 			FEEdge e = face.Edge(i);
-			a[0] = pm->Node(e.node[0]).m_rt;
-			a[1] = pm->Node(e.node[1]).m_rt;
-			a[2] = pm->Node(e.node[2]).m_rt;
+			a[0] = pm->Node(e.n[0]).m_rt;
+			a[1] = pm->Node(e.n[1]).m_rt;
+			a[2] = pm->Node(e.n[2]).m_rt;
 			const int M = 2 * ndivs;
 			for (int n = 0; n<M; ++n)
 			{
@@ -1117,10 +1117,10 @@ void CGLModel::RenderFace3Outline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 		for (int i = 0; i<NE; ++i)
 		{
 			FEEdge e = face.Edge(i);
-			a[0] = pm->Node(e.node[0]).m_rt;
-			a[1] = pm->Node(e.node[1]).m_rt;
-			a[2] = pm->Node(e.node[2]).m_rt;
-			a[3] = pm->Node(e.node[3]).m_rt;
+			a[0] = pm->Node(e.n[0]).m_rt;
+			a[1] = pm->Node(e.n[1]).m_rt;
+			a[2] = pm->Node(e.n[2]).m_rt;
+			a[3] = pm->Node(e.n[3]).m_rt;
 			const int M = 2 * ndivs;
 			for (int n = 0; n<M; ++n)
 			{

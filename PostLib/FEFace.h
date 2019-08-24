@@ -1,6 +1,6 @@
 #pragma once
 #include <MeshLib/FEItem.h>
-#include "FEEdge.h"
+#include <MeshLib/FEEdge.h>
 #include <MathLib/math3d.h>
 #include <MeshLib/FEFace.h>
 #include <assert.h>

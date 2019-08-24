@@ -1,5 +1,6 @@
 #pragma once
 #include "FEItem.h"
+#include <MathLib/math3d.h>
 
 //-----------------------------------------------------------------------------
 // Edge types
@@ -9,7 +10,7 @@ enum FEEdgeType
 	FE_EDGE2,
 	FE_EDGE3,
 	FE_EDGE4,
-	FE_EDGE_INVALID = 0x1000
+	FE_EDGE_INVALID
 };
 
 //-----------------------------------------------------------------------------
@@ -60,10 +61,19 @@ public:
 	//! set the type
 	void SetType(FEEdgeType type);
 
+	// evaluate shape function at iso-parameteric point (r,s)
+	void shape(double* H, double r);
+
+	// evaluate a vector expression at iso-points (r,s)
+	double eval(double* d, double r);
+
+	// evaluate a vector expression at iso-points (r,s)
+	vec3f eval(vec3f* v, double r);
+
 public:
-	int	m_type;			//!< edge type
-	int n[MAX_NODES];	//!< edge nodes
-	int	m_elem;			//!< the element to which this edge belongs (used only by beams)
-	int	m_nbr[2];		//!< the two adjacent edges (only defined for edges with gid >= 0, and if there are more edges incident to a node, the neighbour is set to -1)
-	int	m_face[2];		//!< the two faces adjacent to this edge (TODO: I think I should delete this since I cannot assume that each edge is shared by only one or two faces)
+	int	m_type;				//!< edge type
+	int n[MAX_NODES];		//!< edge nodes
+	int	m_elem;				//!< the element to which this edge belongs (used only by beams)
+	int	m_nbr[2];			//!< the two adjacent edges (only defined for edges with gid >= 0, and if there are more edges incident to a node, the neighbour is set to -1)
+	int	m_face[2];			//!< the two faces adjacent to this edge (TODO: I think I should delete this since I cannot assume that each edge is shared by only one or two faces)
 };

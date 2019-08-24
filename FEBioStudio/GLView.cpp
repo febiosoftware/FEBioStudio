@@ -7814,10 +7814,10 @@ void CGLView::RenderTags()
 	// process edges
 	if (mode == ITEM_EDGE)
 	{
-		const vector<Post::FEEdge*> selectedEdges = pdoc->GetGLModel()->GetEdgeSelection();
+		const vector<FEEdge*> selectedEdges = pdoc->GetGLModel()->GetEdgeSelection();
 		for (int i = 0; i<(int)selectedEdges.size(); i++)
 		{
-			Post::FEEdge& edge = *selectedEdges[i]; assert(edge.IsSelected());
+			FEEdge& edge = *selectedEdges[i]; assert(edge.IsSelected());
 
 			tag.r = mesh.EdgeCenter(edge);
 			tag.bvis = false;
@@ -7826,7 +7826,7 @@ void CGLView::RenderTags()
 			vtag.push_back(tag);
 
 			int ne = edge.Nodes();
-			for (int j = 0; j<ne; ++j) mesh.Node(edge.node[j]).m_ntag = 1;
+			for (int j = 0; j<ne; ++j) mesh.Node(edge.n[j]).m_ntag = 1;
 		}
 	}
 

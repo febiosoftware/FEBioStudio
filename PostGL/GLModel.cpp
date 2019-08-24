@@ -2418,15 +2418,15 @@ void CGLModel::RenderEdges(FEModel* ps, CGLContext& rc)
 				switch (edge.Type())
 				{
 				case FE_EDGE2:
-					r[0] = mesh.Node(edge.node[0]).m_rt;
-					r[1] = mesh.Node(edge.node[1]).m_rt;
+					r[0] = mesh.Node(edge.n[0]).m_rt;
+					r[1] = mesh.Node(edge.n[1]).m_rt;
 					glVertex3d(r[0].x, r[0].y, r[0].z);
 					glVertex3d(r[1].x, r[1].y, r[1].z);
 					break;
 				case FE_EDGE3:
-					r[0] = mesh.Node(edge.node[0]).m_rt;
-					r[1] = mesh.Node(edge.node[1]).m_rt;
-					r[2] = mesh.Node(edge.node[2]).m_rt;
+					r[0] = mesh.Node(edge.n[0]).m_rt;
+					r[1] = mesh.Node(edge.n[1]).m_rt;
+					r[2] = mesh.Node(edge.n[2]).m_rt;
 					glVertex3d(r[0].x, r[0].y, r[0].z);
 					glVertex3d(r[1].x, r[1].y, r[1].z);
 					glVertex3d(r[1].x, r[1].y, r[1].z);
@@ -2453,15 +2453,15 @@ void CGLModel::RenderEdges(FEModel* ps, CGLContext& rc)
 					switch (edge.Type())
 					{
 					case FE_EDGE2:
-						r[0] = mesh.Node(edge.node[0]).m_rt;
-						r[1] = mesh.Node(edge.node[1]).m_rt;
+						r[0] = mesh.Node(edge.n[0]).m_rt;
+						r[1] = mesh.Node(edge.n[1]).m_rt;
 						glVertex3d(r[0].x, r[0].y, r[0].z);
 						glVertex3d(r[1].x, r[1].y, r[1].z);
 						break;
 					case FE_EDGE3:
-						r[0] = mesh.Node(edge.node[0]).m_rt;
-						r[1] = mesh.Node(edge.node[1]).m_rt;
-						r[2] = mesh.Node(edge.node[2]).m_rt;
+						r[0] = mesh.Node(edge.n[0]).m_rt;
+						r[1] = mesh.Node(edge.n[1]).m_rt;
+						r[2] = mesh.Node(edge.n[2]).m_rt;
 						glVertex3d(r[0].x, r[0].y, r[0].z);
 						glVertex3d(r[1].x, r[1].y, r[1].z);
 						glVertex3d(r[1].x, r[1].y, r[1].z);
@@ -2701,8 +2701,8 @@ void CGLModel::HideMaterial(int nmat)
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		if ((mesh.Node(edge.node[0]).IsInvisible()) &&
-			(mesh.Node(edge.node[1]).IsInvisible())) edge.Show(false);
+		if ((mesh.Node(edge.n[0]).IsInvisible()) &&
+			(mesh.Node(edge.n[1]).IsInvisible())) edge.Show(false);
 	}
 
 	// selected items are unselected when hidden so
@@ -2752,8 +2752,8 @@ void CGLModel::ShowMaterial(int nmat)
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		if ((mesh.Node(edge.node[0]).IsInvisible() == false) &&
-			(mesh.Node(edge.node[1]).IsInvisible()) == false) edge.Show(true);
+		if ((mesh.Node(edge.n[0]).IsInvisible() == false) &&
+			(mesh.Node(edge.n[1]).IsInvisible()) == false) edge.Show(true);
 	}
 
 	UpdateSelectionLists();
@@ -2865,7 +2865,7 @@ void CGLModel::SelectConnectedVolumeElements(Post::FEElement &el)
 
 //-----------------------------------------------------------------------------
 // Select faces that are connected
-void CGLModel::SelectConnectedEdges(Post::FEEdge& e)
+void CGLModel::SelectConnectedEdges(FEEdge& e)
 {
 	FEMeshBase& mesh = *GetActiveMesh();
 
@@ -2888,12 +2888,12 @@ void CGLModel::SelectConnectedEdges(Post::FEEdge& e)
 		pe->m_ntag = 1;
 
 		// get the edge vector
-		vec3f n = mesh.Node(pe->node[1]).m_rt - mesh.Node(pe->node[0]).m_rt; n.Normalize();
+		vec3f n = mesh.Node(pe->n[1]).m_rt - mesh.Node(pe->n[0]).m_rt; n.Normalize();
 
 		// find the neighbor edges whose vector is closely aligned to the edge vector n
 		for (int i=0; i<2; ++i)
 		{
-			int m = pe->node[i];
+			int m = pe->n[i];
 			int ne = NEL.Valence(m);
 			int* EL = NEL.EdgeList(m);
 			for (int j=0; j<ne; ++j)
@@ -2902,7 +2902,7 @@ void CGLModel::SelectConnectedEdges(Post::FEEdge& e)
 
 				if (ej.IsVisible() && (&ej != pe) && (ej.m_ntag == 0))
 				{
-					vec3f nj = mesh.Node(ej.node[1]).m_rt - mesh.Node(ej.node[0]).m_rt; nj.Normalize();
+					vec3f nj = mesh.Node(ej.n[1]).m_rt - mesh.Node(ej.n[0]).m_rt; nj.Normalize();
 					if (n*nj > 0.866) Stack.push(&ej);
 				}
 			}
@@ -3113,8 +3113,8 @@ void CGLModel::HideSelectedElements()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.node[0]);
-		FENode& node1 = mesh.Node(edge.node[1]);
+		FENode& node0 = mesh.Node(edge.n[0]);
+		FENode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3162,8 +3162,8 @@ void CGLModel::HideUnselectedElements()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.node[0]);
-		FENode& node1 = mesh.Node(edge.node[1]);
+		FENode& node0 = mesh.Node(edge.n[0]);
+		FENode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3213,8 +3213,8 @@ void CGLModel::HideSelectedFaces()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.node[0]);
-		FENode& node1 = mesh.Node(edge.node[1]);
+		FENode& node0 = mesh.Node(edge.n[0]);
+		FENode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3238,8 +3238,8 @@ void CGLModel::HideSelectedEdges()
 		if (edge.IsSelected()) 
 		{
 			edge.Hide();
-			mesh.Node(edge.node[0]).m_ntag = 1;
-			mesh.Node(edge.node[1]).m_ntag = 1;
+			mesh.Node(edge.n[0]).m_ntag = 1;
+			mesh.Node(edge.n[1]).m_ntag = 1;
 		}
 	}
 
@@ -3253,8 +3253,8 @@ void CGLModel::HideSelectedEdges()
 		for (int j=0; j<ne; ++j)
 		{
 			edge = face.Edge(j);
-			if ((mesh.Node(edge.node[0]).m_ntag == 1)&&
-				(mesh.Node(edge.node[1]).m_ntag == 1)) 
+			if ((mesh.Node(edge.n[0]).m_ntag == 1)&&
+				(mesh.Node(edge.n[1]).m_ntag == 1)) 
 			{
 				// hide the face
 				face.Hide();
@@ -3292,8 +3292,8 @@ void CGLModel::HideSelectedEdges()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.node[0]);
-		FENode& node1 = mesh.Node(edge.node[1]);
+		FENode& node0 = mesh.Node(edge.n[0]);
+		FENode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3351,8 +3351,8 @@ void CGLModel::HideSelectedNodes()
 	for (int i=0; i<NL; ++i)
 	{
 		FEEdge& edge = mesh.Edge(i);
-		FENode& node0 = mesh.Node(edge.node[0]);
-		FENode& node1 = mesh.Node(edge.node[1]);
+		FENode& node0 = mesh.Node(edge.n[0]);
+		FENode& node1 = mesh.Node(edge.n[1]);
 		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
 	}
 
@@ -3620,7 +3620,7 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 					e.Unselect();
 					int ne = e.Nodes();
 					for (int j = 0; j<ne; ++j)
-						mesh.Node(e.node[j]).Select();
+						mesh.Node(e.n[j]).Select();
 				}
 			}
 		}

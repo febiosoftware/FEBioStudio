@@ -1168,7 +1168,7 @@ void CModelGraphWindow::addSelectedEdges()
 	int NL = mesh.Edges();
 	for (int i = 0; i<NL; i++)
 	{
-		Post::FEEdge& edge = mesh.Edge(i);
+		FEEdge& edge = mesh.Edge(i);
 		if (edge.IsSelected())
 		{
 			// evaluate x-field
