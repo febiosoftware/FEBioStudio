@@ -36,9 +36,6 @@
     <ClCompile Include="..\..\MeshLib\FEFaceEdgeList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshLib\FEHex20.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshLib\FELineMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -107,9 +104,6 @@
     <ClInclude Include="..\..\MeshLib\FEFaceEdgeList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\MeshLib\FEHex20.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MeshLib\FEItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -165,6 +159,39 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshLib\TriMesh2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\hex8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\hex20.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\hex27.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\pyra5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\tet4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\tet10.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\tet15.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\tet20.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\penta6.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\penta15.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\quad8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

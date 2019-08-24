@@ -260,9 +260,6 @@
     <ClInclude Include="..\..\PostLib\GLObject.h" />
     <ClInclude Include="..\..\PostLib\GMeshImport.h" />
     <ClInclude Include="..\..\PostLib\GView.h" />
-    <ClInclude Include="..\..\PostLib\hex20.h" />
-    <ClInclude Include="..\..\PostLib\hex27.h" />
-    <ClInclude Include="..\..\PostLib\hex8.h" />
     <ClInclude Include="..\..\PostLib\ImageModel.h" />
     <ClInclude Include="..\..\PostLib\ImageSlicer.h" />
     <ClInclude Include="..\..\PostLib\ImgAnimation.h" />
@@ -271,16 +268,9 @@
     <ClInclude Include="..\..\PostLib\MarchingCubes.h" />
     <ClInclude Include="..\..\PostLib\MPEGAnimation.h" />
     <ClInclude Include="..\..\PostLib\Palette.h" />
-    <ClInclude Include="..\..\PostLib\penta15.h" />
-    <ClInclude Include="..\..\PostLib\penta6.h" />
     <ClInclude Include="..\..\PostLib\PltArchive.h" />
     <ClInclude Include="..\..\PostLib\PostView.h" />
-    <ClInclude Include="..\..\PostLib\pyra5.h" />
     <ClInclude Include="..\..\PostLib\stdafx.h" />
-    <ClInclude Include="..\..\PostLib\tet10.h" />
-    <ClInclude Include="..\..\PostLib\tet15.h" />
-    <ClInclude Include="..\..\PostLib\tet20.h" />
-    <ClInclude Include="..\..\PostLib\tet4.h" />
     <ClInclude Include="..\..\PostLib\tools.h" />
     <ClInclude Include="..\..\PostLib\U3DFile.h" />
     <ClInclude Include="..\..\PostLib\ValArray.h" />

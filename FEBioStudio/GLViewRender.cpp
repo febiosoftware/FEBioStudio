@@ -3,7 +3,7 @@
 #include "GLView.h"
 #include <GLLib/glx.h>
 #include <MeshLib/MeshMetrics.h>
-#include <MeshLib/FEHex20.h>
+#include <MeshLib/quad8.h>
 
 //-----------------------------------------------------------------------------
 GLViewRender::GLViewRender(CGLView* view) : m_view(view)
@@ -290,7 +290,7 @@ void GLViewRender::RenderHEX20(FEElement *pe, FEMesh *pm, bool bsel)
 			r[5] = pm->Node(e.m_node[FTHEX20[i][5]]).r;
 			r[6] = pm->Node(e.m_node[FTHEX20[i][6]]).r;
 			r[7] = pm->Node(e.m_node[FTHEX20[i][7]]).r;
-			r[8] = FEQuad8::eval(r, 0.0, 0.0);
+			r[8] = QUAD8::eval(r, 0.0, 0.0);
 
 			FEElement* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)

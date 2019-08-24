@@ -2,7 +2,7 @@
 #include "GMesh.h"
 #include <stack>
 #include <algorithm>
-#include <MeshLib/FEHex20.h>
+#include <MeshLib/quad8.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -129,7 +129,7 @@ void GMesh::AddFace(int* n, int nodes, int groupID, int smoothID, bool bext)
 			// we add a central node to make the improve the rendering a bit
 			vec3d x[8];
 			for (int i = 0; i < 8; ++i) x[i] = Node(n[i]).r;
-			vec3d r = FEQuad8::eval(x, 0.0, 0.0);
+			vec3d r = QUAD8::eval(x, 0.0, 0.0);
 			int n9 = AddNode(r);
 
 			AddFace(n[0], n[4], n[7], groupID, smoothID, bext);

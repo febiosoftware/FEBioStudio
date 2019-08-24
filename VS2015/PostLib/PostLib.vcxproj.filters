@@ -389,15 +389,6 @@
     <ClInclude Include="..\..\PostLib\GView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\PostLib\hex8.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\hex20.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\hex27.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\PostLib\ImageModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -422,34 +413,13 @@
     <ClInclude Include="..\..\PostLib\Palette.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\PostLib\penta6.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\penta15.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\PostLib\PltArchive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\PostView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\PostLib\pyra5.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\PostLib\stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\tet4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\tet10.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\tet15.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\tet20.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\tools.h">
