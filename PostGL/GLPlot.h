@@ -1,7 +1,7 @@
 #pragma once
 #include "PostLib/FEModel.h"
 #include "PostLib/ColorMap.h"
-#include "PostLib/GLTexture1D.h"
+#include <GLLib/GLTexture1D.h>
 #include "PostLib/GLObject.h"
 #include "PostLib/DataMap.h"
 

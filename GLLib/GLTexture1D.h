@@ -1,7 +1,5 @@
 #pragma once
 
-namespace Post {
-
 class GLTexture1D
 {
 public:
@@ -24,4 +22,3 @@ protected:
 	unsigned char m_pb[3 * 1024];
 	bool	m_bupdate;
 };
-}

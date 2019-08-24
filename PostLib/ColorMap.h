@@ -1,6 +1,6 @@
 #pragma once
 #include <FSCore/color.h>
-#include "GLTexture1D.h"
+#include <GLLib/GLTexture1D.h>
 #include <vector>
 #include <string>
 using namespace std;

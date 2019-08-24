@@ -10,7 +10,6 @@
 #include <GL/gl.h>
 #endif
 #include "GLTexture1D.h"
-using namespace Post;
 
 GLTexture1D::GLTexture1D()
 {
