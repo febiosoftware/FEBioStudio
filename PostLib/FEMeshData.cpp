@@ -89,7 +89,7 @@ Mat3d deform_grad(FEModel& fem, int n, double r, double s, double t, int nstate,
 	FEMeshBase& m = *state.GetFEMesh();
 
 	// get the element
-	FEElement& el = m.Element(n);
+	Post::FEElement& el = m.Element(n);
 	int N = el.Nodes();
 
 	// we can only define this for solid elements

@@ -394,7 +394,7 @@ bool FEBioPlotExport::WritePart(FEPart& part)
 	case FE_QUAD9  : ne =  9; dtype = PLT_ELEM_QUAD9; break;
 	case FE_TRI3   : ne =  3; dtype = PLT_ELEM_TRI; break;
 	case FE_TRI6   : ne =  6; dtype = PLT_ELEM_TRI6; break;
-	case FE_LINE2  : ne =  2; dtype = PLT_ELEM_TRUSS; break;
+	case FE_BEAM2  : ne =  2; dtype = PLT_ELEM_TRUSS; break;
 	case FE_PYRA5  : ne =  5; dtype = PLT_ELEM_PYRA5; break;
 	default:
 		assert(false);

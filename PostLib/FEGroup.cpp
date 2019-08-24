@@ -38,13 +38,13 @@ void FEDomain::SetMatID(int matid)
 }
 
 //-----------------------------------------------------------------------------
-FEFace& FEDomain::Face(int n)
+Post::FEFace& FEDomain::Face(int n)
 { 
 	return m_pm->Face(m_Face[n]); 
 }
 
 //-----------------------------------------------------------------------------
-FEElement& FEDomain::Element(int n)
+Post::FEElement& FEDomain::Element(int n)
 {
 	return m_pm->Element(m_Elem[n]); 
 }

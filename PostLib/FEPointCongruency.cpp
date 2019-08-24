@@ -66,7 +66,7 @@ FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEModel* pfem, 
 }
 
 //-----------------------------------------------------------------------------
-float FEPointCongruency::face_curvature(FEFace& face, double rs[2], vec3f& sn, int m)
+float FEPointCongruency::face_curvature(Post::FEFace& face, double rs[2], vec3f& sn, int m)
 {
 	int nf = face.Nodes();
 	double K[4] = {0};
@@ -161,7 +161,7 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 }
 
 //-----------------------------------------------------------------------------
-bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, double rs[2])
+bool FEPointCongruency::IntersectTri3(const Ray& ray, Post::FEFace& face, vec3f& q, double rs[2])
 {
 	const double tol = 0.01;
 
@@ -184,7 +184,7 @@ bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, do
 }
 
 //-----------------------------------------------------------------------------
-bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, double rs[2])
+bool FEPointCongruency::IntersectQuad4(const Ray& ray, Post::FEFace& face, vec3f& q, double rs[2])
 {
 	const double tol = 0.01;
 	FEFace tri1,tri2;

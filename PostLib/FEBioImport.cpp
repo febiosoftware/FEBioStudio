@@ -198,7 +198,7 @@ void FEBioImport::ParseGeometrySection(FEModel &fem, XMLTag &tag)
 			int nsel = 0;
 			for (i=0; i<elems; ++i)
 			{
-				FEElemType etype;
+				FEElementType etype;
 				FEGenericElement& el = static_cast<FEGenericElement&>(m_pm->Element(i));
 				if      (tag == "hex8"   ) { etype = FE_HEX8;    ++nbel; }
 				else if (tag == "hex20"  ) { etype = FE_HEX20;   ++nbel; }
@@ -266,7 +266,7 @@ void FEBioImport::ParseGeometrySection2(FEModel &fem, XMLTag &tag)
 		{
 			// get the element type
 			const char* sztype = tag.AttributeValue("type");
-			FEElemType etype;
+			FEElementType etype;
 			if      (strcmp(sztype, "hex8"   ) == 0) etype = FE_HEX8;
 			else if (strcmp(sztype, "tet4"   ) == 0) etype = FE_TET4;
 			else if (strcmp(sztype, "penta6" ) == 0) etype = FE_PENTA6;

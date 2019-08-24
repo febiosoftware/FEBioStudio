@@ -279,7 +279,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 
 		ReadData(n, sizeof(int), 6);
 
-		el.SetType(FE_LINE2);
+		el.SetType(FE_BEAM2);
 		assert(n[5] > 0);
 
 		el.m_MatID = n[5]-1;

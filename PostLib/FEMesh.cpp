@@ -801,7 +801,7 @@ double triangle_area(const vec3f& r0, const vec3f& r1, const vec3f& r2)
 }
 
 //-----------------------------------------------------------------------------
-double FEMeshBase::FaceArea(FEFace &f)
+double FEMeshBase::FaceArea(Post::FEFace &f)
 {
 	const int N = f.Nodes();
 	vector<vec3f> nodes(N);
@@ -937,7 +937,7 @@ float FEMeshBase::ElementVolume(int iel)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a hex element
-float FEMeshBase::HexVolume(const FEElement& el)
+float FEMeshBase::HexVolume(const Post::FEElement& el)
 {
 	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
 
@@ -1052,7 +1052,7 @@ float FEMeshBase::HexVolume(const FEElement& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pentahedral element
-float FEMeshBase::PentaVolume(const FEElement& el)
+float FEMeshBase::PentaVolume(const Post::FEElement& el)
 {
 	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
 
@@ -1165,7 +1165,7 @@ float FEMeshBase::PentaVolume(const FEElement& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pyramid element
-float FEMeshBase::PyramidVolume(const FEElement& el)
+float FEMeshBase::PyramidVolume(const Post::FEElement& el)
 {
 	assert(el.Type() == FE_PYRA5);
 
@@ -1269,7 +1269,7 @@ float FEMeshBase::PyramidVolume(const FEElement& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a tetrahedral element
-float FEMeshBase::TetVolume(const FEElement& el)
+float FEMeshBase::TetVolume(const Post::FEElement& el)
 {
 	assert((el.Type() == FE_TET4) || (el.Type() == FE_TET10)
            || (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
@@ -1372,7 +1372,7 @@ float FEMeshBase::TetVolume(const FEElement& el)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodePosition(const FEFace& f, vec3f* r) const
+void FEMeshBase::FaceNodePosition(const Post::FEFace& f, vec3f* r) const
 {
 	switch (f.m_ntype)
 	{
@@ -1400,7 +1400,7 @@ void FEMeshBase::FaceNodePosition(const FEFace& f, vec3f* r) const
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
+void FEMeshBase::FaceNodeNormals(Post::FEFace& f, vec3f* n)
 {
 	switch (f.m_ntype)
 	{
@@ -1428,7 +1428,7 @@ void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
+void FEMeshBase::FaceNodeTexCoords(Post::FEFace& f, float* t, bool bnode)
 {
 	if (bnode)
 	{
@@ -1441,7 +1441,7 @@ void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
 }
 
 //-----------------------------------------------------------------------------
-bool IsInsideElement(FEElement& el, double r[3], const double tol)
+bool IsInsideElement(Post::FEElement& el, double r[3], const double tol)
 {
 	switch (el.Type())
 	{
@@ -1462,7 +1462,7 @@ bool IsInsideElement(FEElement& el, double r[3], const double tol)
 }
 
 //-----------------------------------------------------------------------------
-void project_inside_element(FEElement& el, const vec3f& p, double r[3], vec3f* x)
+void project_inside_element(Post::FEElement& el, const vec3f& p, double r[3], vec3f* x)
 {
 	const double tol = 0.0001;
 	const int nmax = 10;

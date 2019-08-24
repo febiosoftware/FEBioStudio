@@ -1172,7 +1172,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderFaceEdge(FEFace& f, int j, FEMeshBase* pm, int ndivs)
+void CGLModel::RenderFaceEdge(Post::FEFace& f, int j, FEMeshBase* pm, int ndivs)
 {
 	int n = f.Edges();
 	int a = f.node[j];
@@ -1393,7 +1393,7 @@ void CGLModel::RenderNormals(CGLContext& rc)
 
 //-----------------------------------------------------------------------------
 // Render a textured face.
-void CGLModel::RenderTexFace(FEFace& face, FEMeshBase* pm)
+void CGLModel::RenderTexFace(Post::FEFace& face, FEMeshBase* pm)
 {
 	switch (face.m_ntype)
 	{
@@ -1678,7 +1678,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderFace(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
 	if (m_bShell2Hex)
 	{
@@ -1727,7 +1727,7 @@ void CGLModel::RenderFace(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderFace(FEFace& face, FEMeshBase* pm, GLColor c[4], int ndivs, bool bnode)
+void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int ndivs, bool bnode)
 {
 	if (m_bShell2Hex)
 	{
@@ -1827,7 +1827,7 @@ void CGLModel::RenderFace(FEFace& face, FEMeshBase* pm, GLColor c[4], int ndivs,
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderElementOutline(FEElement& el, FEMeshBase* pm)
+void CGLModel::RenderElementOutline(Post::FEElement& el, FEMeshBase* pm)
 {
 	glBegin(GL_LINES);
 	{
@@ -1951,7 +1951,7 @@ void CGLModel::RenderElementOutline(FEElement& el, FEMeshBase* pm)
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderFaceOutline(FEFace& face, FEMeshBase* pm, int ndivs)
+void CGLModel::RenderFaceOutline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 {
 	if (m_bShell2Hex)
 	{
@@ -1985,7 +1985,7 @@ void CGLModel::RenderFaceOutline(FEFace& face, FEMeshBase* pm, int ndivs)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void CGLModel::RenderThickShell(FEFace &face, FEMeshBase* pm)
+void CGLModel::RenderThickShell(Post::FEFace &face, FEMeshBase* pm)
 {
 	switch(face.m_ntype)
 	{
@@ -2002,7 +2002,7 @@ void CGLModel::RenderThickShell(FEFace &face, FEMeshBase* pm)
 	}
 }
 
-void CGLModel::RenderThickQuad(FEFace &face, FEMeshBase* pm)
+void CGLModel::RenderThickQuad(Post::FEFace &face, FEMeshBase* pm)
 {
 	FEElement& el = pm->Element(face.m_elem[0]);
 	FEState* ps = m_ps->GetState(0);
@@ -2155,7 +2155,7 @@ void CGLModel::RenderThickQuad(FEFace &face, FEMeshBase* pm)
 	}
 }
 
-void CGLModel::RenderThickTri(FEFace &face, FEMeshBase* pm)
+void CGLModel::RenderThickTri(Post::FEFace &face, FEMeshBase* pm)
 {
 	FEElement& el = pm->Element(face.m_elem[0]);
 	FEState* ps = m_ps->GetState(0);
@@ -2298,7 +2298,7 @@ void CGLModel::RenderThickTri(FEFace &face, FEMeshBase* pm)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLModel::RenderThickShellOutline(FEFace &face, FEMeshBase* pm)
+void CGLModel::RenderThickShellOutline(Post::FEFace &face, FEMeshBase* pm)
 {
 	FEElement& el = pm->Element(face.m_elem[0]);
 	FEState* ps = m_ps->GetState(0);
@@ -2798,7 +2798,7 @@ void CGLModel::UpdateMeshState()
 
 //-----------------------------------------------------------------------------
 // Select elements that are connected through the surface
-void CGLModel::SelectConnectedSurfaceElements(FEElement &el)
+void CGLModel::SelectConnectedSurfaceElements(Post::FEElement &el)
 {
 	if (!el.IsVisible()) return;
 
@@ -2837,7 +2837,7 @@ void CGLModel::SelectConnectedSurfaceElements(FEElement &el)
 
 //-----------------------------------------------------------------------------
 // Select elements that are connected through the volume
-void CGLModel::SelectConnectedVolumeElements(FEElement &el)
+void CGLModel::SelectConnectedVolumeElements(Post::FEElement &el)
 {
 	if (!el.IsVisible()) return;
 
@@ -2865,7 +2865,7 @@ void CGLModel::SelectConnectedVolumeElements(FEElement &el)
 
 //-----------------------------------------------------------------------------
 // Select faces that are connected
-void CGLModel::SelectConnectedEdges(FEEdge& e)
+void CGLModel::SelectConnectedEdges(Post::FEEdge& e)
 {
 	FEMeshBase& mesh = *GetActiveMesh();
 
@@ -2921,7 +2921,7 @@ void CGLModel::SelectConnectedEdges(FEEdge& e)
 
 //-----------------------------------------------------------------------------
 // Select faces that are connected
-void CGLModel::SelectConnectedFaces(FEFace &f, double angleTol)
+void CGLModel::SelectConnectedFaces(Post::FEFace &f, double angleTol)
 {
 	FEMeshBase& mesh = *GetActiveMesh();
 
@@ -3491,7 +3491,7 @@ void CGLModel::UpdateEdge()
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
 		FEElement& el = mesh.Element(i);
-		if ((el.Type() == FE_LINE2)||(el.Type() == FE_LINE3))
+		if ((el.Type() == FE_BEAM2)||(el.Type() == FE_BEAM3))
 		{
 			GLEdge::EDGE edge;
 			edge.n0 = el.m_node[0];

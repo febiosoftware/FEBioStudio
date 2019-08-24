@@ -213,7 +213,7 @@ vec3f FEDistanceMap::project(FEDistanceMap::Surface& surf, vec3f& r, int ntime)
 }
 
 //-----------------------------------------------------------------------------
-bool FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& q)
+bool FEDistanceMap::ProjectToFacet(Post::FEFace& f, vec3f& x, int ntime, vec3f& q)
 {
 	// get the mesh to which this surface belongs
 	FEMeshBase& mesh = *m_pfem->GetFEMesh(0);

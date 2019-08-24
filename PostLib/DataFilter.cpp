@@ -391,7 +391,7 @@ bool DataSmoothStep(FEModel& fem, int nfield, double theta)
 				int NE = mesh.Elements();
 				for (int i=0; i<NE; ++i)
 				{
-					FEElement& el = mesh.Element(i);
+					Post::FEElement& el = mesh.Element(i);
 					int ne = el.Nodes();
 					for (int j=0; j<ne; ++j)
 					{
@@ -423,7 +423,7 @@ bool DataSmoothStep(FEModel& fem, int nfield, double theta)
 				int NE = mesh.Elements();
 				for (int i = 0; i<NE; ++i)
 				{
-					FEElement& el = mesh.Element(i);
+					Post::FEElement& el = mesh.Element(i);
 					int ne = el.Nodes();
 					for (int j = 0; j<ne; ++j)
 					{
@@ -465,11 +465,11 @@ bool DataSmoothStep(FEModel& fem, int nfield, double theta)
 				// evaluate the average value of the neighbors
 				for (int i=0; i<NE; ++i)
 				{
-					FEElement& el = mesh.Element(i);
+					Post::FEElement& el = mesh.Element(i);
 					int nf = el.Faces();
 					for (int j=0; j<nf; ++j)
 					{
-						FEElement* pj = el.m_pElem[j];
+						Post::FEElement* pj = el.m_pElem[j];
 						if (pj && (data.active(pj->m_ntag)))
 						{
 							float f;
@@ -899,7 +899,7 @@ void extractElemDataComponentITEM_ARRAY_VEC3F(FEMeshData& dst, FEMeshData& src, 
 	vector<int> l;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		Post::FEElement& el = mesh.Element(i);
 		int ne = el.Nodes();
 		if (vec.active(i))
 		{
@@ -936,7 +936,7 @@ template <typename T> void extractElemDataComponentNODE_T(FEMeshData& dst, FEMes
 	vector<int> l;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		Post::FEElement& el = mesh.Element(i);
 		int ne = el.Nodes();
 		if (vec.active(i))
 		{
@@ -967,7 +967,7 @@ void extractElemDataComponentNODE_ARRAY(FEMeshData& dst, FEMeshData& src, int nc
 	vector<int> l;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		Post::FEElement& el = mesh.Element(i);
 		int ne = el.Nodes();
 		if (vec.active(i))
 		{

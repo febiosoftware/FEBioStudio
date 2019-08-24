@@ -224,7 +224,7 @@ double CIntegrateWindow::IntegrateElems(Post::FEMeshBase& mesh, Post::FEState* p
 			for (int j=0; j<nn; ++j) r[j] = ps->m_NODE[e.m_node[j]].m_rt;
 			switch (e.Type())
 			{
-			case Post::FE_PENTA6:
+			case FE_PENTA6:
 				v[7] = v[5]; r[7] = r[5];
 				v[6] = v[5]; r[6] = r[5];
 				v[5] = v[4]; r[5] = r[4];
@@ -234,8 +234,8 @@ double CIntegrateWindow::IntegrateElems(Post::FEMeshBase& mesh, Post::FEState* p
 				v[1] = v[1]; r[1] = r[1];
 				v[0] = v[0]; r[0] = r[0];
 				break;
-			case Post::FE_TET4:
-			case Post::FE_TET5:
+			case FE_TET4:
+			case FE_TET5:
 				v[7] = v[3]; r[7] = r[3];
 				v[6] = v[3]; r[6] = r[3];
 				v[5] = v[3]; r[5] = r[3];

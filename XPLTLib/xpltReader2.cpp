@@ -1015,7 +1015,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 			for (int j=0; j<D.ne; ++j)
 			{
 				ELEM& E = D.elem[j];
-				FEElement& el = pmesh->Element(E.index);
+				Post::FEElement& el = pmesh->Element(E.index);
 				el.m_MatID = D.mid - 1;
 				el.SetID(E.eid);
 				for (int k=0; k<4; ++k) el.m_node[k] = E.node[k];
@@ -1035,7 +1035,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 			for (int j=0; j<D.ne; ++j)
 			{
 				ELEM& E = D.elem[j];
-				FEElement& el = pmesh->Element(E.index);
+				Post::FEElement& el = pmesh->Element(E.index);
 				el.m_MatID = D.mid - 1;
 				el.SetID(E.eid);
 				for (int k=0; k<8; ++k) el.m_node[k] = E.node[k];
@@ -1061,7 +1061,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 					el.m_MatID = D.mid - 1;
 					el.SetID(E.eid);
 
-					FEElemType etype;
+					FEElementType etype;
 					switch (D.etype)
 					{
 					case PLT_ELEM_HEX8 : etype = FE_HEX8  ; break;
@@ -1069,7 +1069,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 					case PLT_ELEM_TET4 : etype = FE_TET4  ; break;
 					case PLT_ELEM_QUAD : etype = FE_QUAD4 ; break;
 					case PLT_ELEM_TRI  : etype = FE_TRI3  ; break;
-					case PLT_ELEM_TRUSS: etype = FE_LINE2 ; break;
+					case PLT_ELEM_TRUSS: etype = FE_BEAM2 ; break;
 					case PLT_ELEM_PYRA5: etype = FE_PYRA5 ; break;
 					default:
 						assert(false);
@@ -1098,7 +1098,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 					el.m_MatID = D.mid - 1;
 					el.SetID(E.eid);
 
-					FEElemType etype;
+					FEElementType etype;
 					switch (D.etype)
 					{
 					case PLT_ELEM_HEX8   : etype = FE_HEX8  ; break;
@@ -1108,7 +1108,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 					case PLT_ELEM_TET5   : etype = FE_TET5  ; break;
 					case PLT_ELEM_QUAD   : etype = FE_QUAD4 ; break;
 					case PLT_ELEM_TRI    : etype = FE_TRI3  ; break;
-					case PLT_ELEM_TRUSS  : etype = FE_LINE2 ; break;
+					case PLT_ELEM_TRUSS  : etype = FE_BEAM2 ; break;
 					case PLT_ELEM_HEX20  : etype = FE_HEX20 ; break;
 					case PLT_ELEM_HEX27  : etype = FE_HEX27 ; break;
 					case PLT_ELEM_TET10  : etype = FE_TET10 ; break;
@@ -1142,7 +1142,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		Post::FEElement& el = pmesh->Element(i);
 		FEMaterial* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
@@ -1150,7 +1150,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 	for (int i=0; i<NN; ++i) pmesh->Node(i).Disable();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pmesh->Element(i);
+		Post::FEElement& el = pmesh->Element(i);
 		if (el.IsEnabled())
 		{
 			int n = el.Nodes();
@@ -1891,7 +1891,7 @@ bool XpltReader2::ReadFaceData_MULT(FEMeshBase& m, XpltReader2::Surface &s, FEMe
 		FACE& f = s.face[i];
 		if (f.nid >= 0)
 		{
-			FEFace& fm = m.Face(f.nid);
+			Post::FEFace& fm = m.Face(f.nid);
 			for (int j=0; j<f.nn; ++j) tag[f.node[j]] = j;
 			for (int j=0; j<f.nn; ++j) l[i][j] = tag[fm.node[j]];
 		}
@@ -2086,10 +2086,10 @@ bool XpltReader2::ReadFaceData_NODE(FEMeshBase& m, XpltReader2::Surface &s, FEMe
 	for (int i = 0; i<s.nfaces; ++i) fn[i] = s.face[i].nn;
 
 	// create the local node index list
-	vector<int> l; l.resize(s.nfaces*FEFace::MAX_NODES);
+	vector<int> l; l.resize(s.nfaces*Post::FEFace::MAX_NODES);
 	for (int i = 0; i<s.nfaces; ++i)
 	{
-		FEFace& f = m.Face(s.face[i].nid);
+		Post::FEFace& f = m.Face(s.face[i].nid);
 		int nn = f.Nodes();
 		for (int j = 0; j<nn; ++j)
 		{

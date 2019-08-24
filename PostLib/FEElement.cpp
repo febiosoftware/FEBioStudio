@@ -10,78 +10,7 @@
 #include <MeshLib/tet20.h>
 #include <MeshLib/hex20.h>
 #include <MeshLib/hex27.h>
-using namespace Post;
-
-//-----------------------------------------------------------------------------
-// Face lookup tables
-int FT_HEX[6][4] = {
-	{0, 1, 5, 4},
-	{1, 2, 6, 5},
-	{3, 0, 4, 7},
-	{1, 0, 3, 2},
-	{4, 5, 6, 7},
-	{2, 3, 7, 6}};
-
-int FT_PENTA[5][4] = {
-	{0, 1, 4, 3},
-	{1, 2, 5, 4},
-	{2, 0, 3, 5},
-	{2, 1, 0, 0},
-	{3, 4, 5, 5}};
-
-int FT_PYRA[5][4] = {
-	{ 0, 1, 4, -1 },
-	{ 1, 2, 4, -1 },
-	{ 2, 3, 4, -1 },
-	{ 3, 0, 4, -1 },
-	{ 3, 2, 1, 0 }};
-
-int FT_TET[4][4] = {
-	{2, 1, 0, 0},
-	{0, 1, 3, 3},
-	{1, 2, 3, 3},
-	{2, 0, 3, 3}};
-
-int FT_HEX20[6][8] = {
-	{0, 1, 5, 4,  8, 17, 12, 16},
-	{1, 2, 6, 5,  9, 18, 13, 17},
-	{2, 3, 7, 6, 10, 19, 14, 18},
-	{3, 0, 4, 7, 11, 16, 15, 19},
-	{3, 2, 1, 0, 10,  9,  8, 11},
-	{4, 5, 6, 7, 12, 13, 14, 15}};
-
-int FT_HEX27[6][9] = {
-	{0, 1, 5, 4,  8, 17, 12, 16, 20},
-	{1, 2, 6, 5,  9, 18, 13, 17, 21},
-	{2, 3, 7, 6, 10, 19, 14, 18, 22},
-	{3, 0, 4, 7, 11, 16, 15, 19, 23},
-	{3, 2, 1, 0, 10,  9,  8, 11, 24},
-	{4, 5, 6, 7, 12, 13, 14, 15, 25}};
-
-int FT_TET10[4][6] = {
-	{0, 1, 3, 4, 8, 7},
-	{1, 2, 3, 5, 9, 8},
-	{2, 0, 3, 6, 7, 9},
-	{2, 1, 0, 5, 4, 6}};
-
-int FT_TET15[4][7] = {
-	{0, 1, 3, 4, 8, 7, 11},
-	{1, 2, 3, 5, 9, 8, 12},
-	{2, 0, 3, 6, 7, 9, 13},
-	{2, 1, 0, 5, 4, 6, 10}};
-
-int FT_TET20[4][10] = {
-	{ 0, 1, 3, 4, 5, 12, 13, 10, 11, 16 },
-	{ 1, 2, 3, 6, 7, 14, 15, 12, 13, 17 },
-	{ 2, 0, 3, 9, 8, 10, 11, 14, 15, 18 },
-	{ 2, 1, 0, 7, 6,  5,  4,  9,  8, 19 }};
-	
-int FT_PENTA15[5][8] = {
-    {0, 1, 4, 3, 6, 13,  9, 12},
-    {1, 2, 5, 4, 7, 14, 10, 13},
-    {2, 0, 3, 5, 8, 12, 11, 14},
-    {2, 1, 0, 7, 6,  8, -1, -1},
-    {3, 4, 5, 9, 10, 11, -1, -1}};
+#include <MeshLib/MeshMetrics.h>
 
 const int ET_QUAD[4][2] = {
 	{ 0, 1},
@@ -109,40 +38,43 @@ const int ET_TRI6[3][3] = {
 // FEElementLibrary
 //=============================================================================
 
-vector<ElemTraits> FEElementLibrary::m_lib;
+vector<Post::ElemTraits> Post::FEElementLibrary::m_lib;
 
-void FEElementLibrary::addElement(int ntype, int nshape, int nclass, int nodes, int faces, int edges)
+void Post::FEElementLibrary::addElement(int ntype, int nshape, int nclass, int nodes, int faces, int edges)
 {
-	ElemTraits t = {ntype, nshape, nclass, nodes, faces, edges};
+	Post::ElemTraits t = {ntype, nshape, nclass, nodes, faces, edges};
 	m_lib.push_back(t);
 }
 
-void FEElementLibrary::InitLibrary()
+void Post::FEElementLibrary::InitLibrary()
 {
 	m_lib.clear();
 
 	// NOTE: When adding new elements make sure to set the faces to zero for shells, and the edges to zero for solids.
-	addElement(FE_LINE2  , ELEM_LINE , ELEM_BEAM ,  2, 0, 0);
-	addElement(FE_LINE3  , ELEM_LINE , ELEM_BEAM ,  3, 0, 0);
-	addElement(FE_TRI3   , ELEM_TRI  , ELEM_SHELL,  3, 0, 3);
-	addElement(FE_TRI6   , ELEM_TRI  , ELEM_SHELL,  6, 0, 3);
-	addElement(FE_QUAD4  , ELEM_QUAD , ELEM_SHELL,  4, 0, 4);
-	addElement(FE_QUAD8  , ELEM_QUAD , ELEM_SHELL,  8, 0, 4);
-	addElement(FE_QUAD9  , ELEM_QUAD , ELEM_SHELL,  9, 0, 4);
-	addElement(FE_TET4   , ELEM_TET  , ELEM_SOLID,  4, 4, 0);
-	addElement(FE_TET10  , ELEM_TET  , ELEM_SOLID, 10, 4, 0);
-	addElement(FE_TET15  , ELEM_TET  , ELEM_SOLID, 15, 4, 0);
-	addElement(FE_TET20  , ELEM_TET  , ELEM_SOLID, 20, 4, 0);
-	addElement(FE_PENTA6 , ELEM_PENTA, ELEM_SOLID,  6, 5, 0);
-	addElement(FE_PENTA15, ELEM_PENTA, ELEM_SOLID, 15, 5, 0);
-	addElement(FE_HEX8   , ELEM_HEX  , ELEM_SOLID,  8, 6, 0);
-	addElement(FE_HEX20  , ELEM_HEX  , ELEM_SOLID, 20, 6, 0);
-	addElement(FE_HEX27  , ELEM_HEX  , ELEM_SOLID, 27, 6, 0);
-	addElement(FE_PYRA5  , ELEM_PYRA , ELEM_SOLID,  5, 5, 0);
-	addElement(FE_TET5   , ELEM_TET  , ELEM_SOLID,  5, 4, 0);
+	addElement(FE_INVALID_ELEMENT_TYPE, 0, 0, 0, 0, 0);
+	addElement(FE_HEX8   , Post::ELEM_HEX  , Post::ELEM_SOLID,  8, 6, 0);
+	addElement(FE_TET4   , Post::ELEM_TET  , Post::ELEM_SOLID,  4, 4, 0);
+	addElement(FE_PENTA6 , Post::ELEM_PENTA, Post::ELEM_SOLID,  6, 5, 0);
+	addElement(FE_QUAD4  , Post::ELEM_QUAD , Post::ELEM_SHELL,  4, 0, 4);
+	addElement(FE_TRI3   , Post::ELEM_TRI  , Post::ELEM_SHELL,  3, 0, 3);
+	addElement(FE_BEAM2  , Post::ELEM_LINE , Post::ELEM_BEAM ,  2, 0, 0);
+	addElement(FE_HEX20  , Post::ELEM_HEX  , Post::ELEM_SOLID, 20, 6, 0);
+	addElement(FE_QUAD8  , Post::ELEM_QUAD , Post::ELEM_SHELL,  8, 0, 4);
+	addElement(FE_BEAM3  , Post::ELEM_LINE , Post::ELEM_BEAM ,  3, 0, 0);
+	addElement(FE_TET10  , Post::ELEM_TET  , Post::ELEM_SOLID, 10, 4, 0);
+	addElement(FE_TRI6   , Post::ELEM_TRI  , Post::ELEM_SHELL,  6, 0, 3);
+	addElement(FE_TET15  , Post::ELEM_TET  , Post::ELEM_SOLID, 15, 4, 0);
+	addElement(FE_HEX27  , Post::ELEM_HEX  , Post::ELEM_SOLID, 27, 6, 0);
+	addElement(FE_TRI7   , Post::ELEM_TRI  , Post::ELEM_SHELL,  7, 0, 3);
+	addElement(FE_QUAD9  , Post::ELEM_QUAD , Post::ELEM_SHELL,  9, 0, 4);
+	addElement(FE_PENTA15, Post::ELEM_PENTA, Post::ELEM_SOLID, 15, 5, 0);
+	addElement(FE_PYRA5  , Post::ELEM_PYRA , Post::ELEM_SOLID,  5, 5, 0);
+	addElement(FE_TET20  , Post::ELEM_TET  , Post::ELEM_SOLID, 20, 4, 0);
+	addElement(FE_TRI10  , Post::ELEM_TRI  , Post::ELEM_SHELL, 10, 0, 3);
+	addElement(FE_TET5   , Post::ELEM_TET  , Post::ELEM_SOLID,  5, 4, 0);
 }
 
-const ElemTraits* FEElementLibrary::GetTraits(FEElemType type)
+const Post::ElemTraits* Post::FEElementLibrary::GetTraits(FEElementType type)
 {
 	int ntype = (int) type;
 	if ((ntype >= 0) && (ntype < m_lib.size()))
@@ -157,20 +89,20 @@ const ElemTraits* FEElementLibrary::GetTraits(FEElemType type)
 }
 
 //=============================================================================
-FEGenericElement::FEGenericElement()
+Post::FEGenericElement::FEGenericElement()
 {
 	m_node = _node;
 	for (int i=0; i<MAX_NODES; ++i) m_node[i] = -1; 
 }
 
-FEGenericElement::FEGenericElement(const FEGenericElement& e) : FEElement(e)
+Post::FEGenericElement::FEGenericElement(const Post::FEGenericElement& e) : FEElement(e)
 {
 	m_traits = e.m_traits;
 	m_node = _node;
 	for (int i=0; i<MAX_NODES; ++i) m_node[i] = e.m_node[i]; 
 }
 
-void FEGenericElement::operator = (const FEGenericElement& e)
+void Post::FEGenericElement::operator = (const Post::FEGenericElement& e)
 {
 	m_traits = e.m_traits;
 	FEElement::operator = (e);
@@ -179,20 +111,20 @@ void FEGenericElement::operator = (const FEGenericElement& e)
 }
 
 //=============================================================================
-FELinearElement::FELinearElement()
+Post::FELinearElement::FELinearElement()
 {
 	m_node = _node;
 	for (int i=0; i<MAX_NODES; ++i) m_node[i] = -1; 
 }
 
-FELinearElement::FELinearElement(const FELinearElement& e) : FEElement(e)
+Post::FELinearElement::FELinearElement(const Post::FELinearElement& e) : Post::FEElement(e)
 {
 	m_traits = e.m_traits;
 	m_node = _node;
 	for (int i=0; i<MAX_NODES; ++i) m_node[i] = e.m_node[i]; 
 }
 
-void FELinearElement::operator = (const FELinearElement& e)
+void Post::FELinearElement::operator = (const Post::FELinearElement& e)
 {
 	m_traits = e.m_traits;
 	FEElement::operator = (e);
@@ -203,7 +135,7 @@ void FELinearElement::operator = (const FELinearElement& e)
 //=============================================================================
 // FEElement
 //-----------------------------------------------------------------------------
-FEElement::FEElement()
+Post::FEElement::FEElement()
 {
 	m_pElem[0] = 0; 
 	m_pElem[1] = 0; 
@@ -217,14 +149,14 @@ FEElement::FEElement()
 }
 
 //-----------------------------------------------------------------------------
-void FEElement::SetType(FEElemType type)
+void Post::FEElement::SetType(FEElementType type)
 {
-	m_traits = FEElementLibrary::GetTraits(type);
+	m_traits = Post::FEElementLibrary::GetTraits(type);
 	assert(m_traits);
 }
 
 //-----------------------------------------------------------------------------
-bool FEElement::HasNode(int node) const
+bool Post::FEElement::HasNode(int node) const
 { 
 	bool ret = false;
 	const int n = Nodes();
@@ -234,140 +166,139 @@ bool FEElement::HasNode(int node) const
 
 //-----------------------------------------------------------------------------
 // Return a face of the element
-FEFace FEElement::GetFace(int i) const
+Post::FEFace Post::FEElement::GetFace(int i) const
 {
-	FEFace f;
+	Post::FEFace f;
 	GetFace(i, f);
 	return f;
 }
 
 //-----------------------------------------------------------------------------
 // Return a face of the element
-void FEElement::GetFace(int i, FEFace& f) const
+void Post::FEElement::GetFace(int i, Post::FEFace& f) const
 {
 	switch (Type())
 	{
 	case FE_HEX8:
-		f.m_ntype = FACE_QUAD4;
-		f.node[0] = m_node[FT_HEX[i][0]];
-		f.node[1] = m_node[FT_HEX[i][1]];
-		f.node[2] = m_node[FT_HEX[i][2]];
-		f.node[3] = m_node[FT_HEX[i][3]];
+		f.m_ntype = Post::FACE_QUAD4;
+		f.node[0] = m_node[FTHEX8[i][0]];
+		f.node[1] = m_node[FTHEX8[i][1]];
+		f.node[2] = m_node[FTHEX8[i][2]];
+		f.node[3] = m_node[FTHEX8[i][3]];
 		break;
 	case FE_PENTA6:
 		{
-			const int ft[5] = {FACE_QUAD4, FACE_QUAD4, FACE_QUAD4, FACE_TRI3, FACE_TRI3};
+			const int ft[5] = { Post::FACE_QUAD4, Post::FACE_QUAD4, Post::FACE_QUAD4, Post::FACE_TRI3, Post::FACE_TRI3};
 			f.m_ntype = ft[i];
-			f.node[0] = m_node[FT_PENTA[i][0]];
-			f.node[1] = m_node[FT_PENTA[i][1]];
-			f.node[2] = m_node[FT_PENTA[i][2]];
-			f.node[3] = m_node[FT_PENTA[i][3]];
+			f.node[0] = m_node[FTPENTA[i][0]];
+			f.node[1] = m_node[FTPENTA[i][1]];
+			f.node[2] = m_node[FTPENTA[i][2]];
+			f.node[3] = m_node[FTPENTA[i][3]];
 		}
 		break;
 
 	case FE_TET4:
 	case FE_TET5:
-		f.m_ntype = FACE_TRI3;
-		f.node[0] = m_node[FT_TET[i][0]];
-		f.node[1] = m_node[FT_TET[i][1]];
-		f.node[2] = m_node[FT_TET[i][2]];
-		f.node[3] = m_node[FT_TET[i][3]];
+		f.m_ntype = Post::FACE_TRI3;
+		f.node[0] = m_node[FTTET[i][0]];
+		f.node[1] = m_node[FTTET[i][1]];
+		f.node[2] = m_node[FTTET[i][2]];
+		f.node[3] = m_node[FTTET[i][3]];
 		break;
 
 	case FE_HEX20:
-		f.m_ntype = FACE_QUAD8;
-		f.node[0] = m_node[FT_HEX20[i][0]];
-		f.node[1] = m_node[FT_HEX20[i][1]];
-		f.node[2] = m_node[FT_HEX20[i][2]];
-		f.node[3] = m_node[FT_HEX20[i][3]];
-		f.node[4] = m_node[FT_HEX20[i][4]];
-		f.node[5] = m_node[FT_HEX20[i][5]];
-		f.node[6] = m_node[FT_HEX20[i][6]];
-		f.node[7] = m_node[FT_HEX20[i][7]];
+		f.m_ntype = Post::FACE_QUAD8;
+		f.node[0] = m_node[FTHEX20[i][0]];
+		f.node[1] = m_node[FTHEX20[i][1]];
+		f.node[2] = m_node[FTHEX20[i][2]];
+		f.node[3] = m_node[FTHEX20[i][3]];
+		f.node[4] = m_node[FTHEX20[i][4]];
+		f.node[5] = m_node[FTHEX20[i][5]];
+		f.node[6] = m_node[FTHEX20[i][6]];
+		f.node[7] = m_node[FTHEX20[i][7]];
 		break;
 
 	case FE_HEX27:
-		f.m_ntype = FACE_QUAD9;
-		f.node[0] = m_node[FT_HEX27[i][0]];
-		f.node[1] = m_node[FT_HEX27[i][1]];
-		f.node[2] = m_node[FT_HEX27[i][2]];
-		f.node[3] = m_node[FT_HEX27[i][3]];
-		f.node[4] = m_node[FT_HEX27[i][4]];
-		f.node[5] = m_node[FT_HEX27[i][5]];
-		f.node[6] = m_node[FT_HEX27[i][6]];
-		f.node[7] = m_node[FT_HEX27[i][7]];
-		f.node[8] = m_node[FT_HEX27[i][8]];
+		f.m_ntype = Post::FACE_QUAD9;
+		f.node[0] = m_node[FTHEX27[i][0]];
+		f.node[1] = m_node[FTHEX27[i][1]];
+		f.node[2] = m_node[FTHEX27[i][2]];
+		f.node[3] = m_node[FTHEX27[i][3]];
+		f.node[4] = m_node[FTHEX27[i][4]];
+		f.node[5] = m_node[FTHEX27[i][5]];
+		f.node[6] = m_node[FTHEX27[i][6]];
+		f.node[7] = m_node[FTHEX27[i][7]];
+		f.node[8] = m_node[FTHEX27[i][8]];
 		break;
 
 	case FE_TET10:
-		f.m_ntype = FACE_TRI6;
-		f.node[0] = m_node[FT_TET10[i][0]];
-		f.node[1] = m_node[FT_TET10[i][1]];
-		f.node[2] = m_node[FT_TET10[i][2]];
-		f.node[3] = m_node[FT_TET10[i][3]];
-		f.node[4] = m_node[FT_TET10[i][4]];
-		f.node[5] = m_node[FT_TET10[i][5]];
+		f.m_ntype = Post::FACE_TRI6;
+		f.node[0] = m_node[FTTET10[i][0]];
+		f.node[1] = m_node[FTTET10[i][1]];
+		f.node[2] = m_node[FTTET10[i][2]];
+		f.node[3] = m_node[FTTET10[i][3]];
+		f.node[4] = m_node[FTTET10[i][4]];
+		f.node[5] = m_node[FTTET10[i][5]];
 		break;
 
 	case FE_TET15:
-		f.m_ntype = FACE_TRI7;
-		f.node[0] = m_node[FT_TET15[i][0]];
-		f.node[1] = m_node[FT_TET15[i][1]];
-		f.node[2] = m_node[FT_TET15[i][2]];
-		f.node[3] = m_node[FT_TET15[i][3]];
-		f.node[4] = m_node[FT_TET15[i][4]];
-		f.node[5] = m_node[FT_TET15[i][5]];
-		f.node[6] = m_node[FT_TET15[i][6]];
+		f.m_ntype = Post::FACE_TRI7;
+		f.node[0] = m_node[FTTET15[i][0]];
+		f.node[1] = m_node[FTTET15[i][1]];
+		f.node[2] = m_node[FTTET15[i][2]];
+		f.node[3] = m_node[FTTET15[i][3]];
+		f.node[4] = m_node[FTTET15[i][4]];
+		f.node[5] = m_node[FTTET15[i][5]];
+		f.node[6] = m_node[FTTET15[i][6]];
 		break;
 
 	case FE_TET20:
-		f.m_ntype = FACE_TRI10;
-		f.node[0] = m_node[FT_TET20[i][0]];
-		f.node[1] = m_node[FT_TET20[i][1]];
-		f.node[2] = m_node[FT_TET20[i][2]];
-		f.node[3] = m_node[FT_TET20[i][3]];
-		f.node[4] = m_node[FT_TET20[i][4]];
-		f.node[5] = m_node[FT_TET20[i][5]];
-		f.node[6] = m_node[FT_TET20[i][6]];
-		f.node[7] = m_node[FT_TET20[i][7]];
-		f.node[8] = m_node[FT_TET20[i][8]];
-		f.node[9] = m_node[FT_TET20[i][9]];
+		f.m_ntype = Post::FACE_TRI10;
+		f.node[0] = m_node[FTTET20[i][0]];
+		f.node[1] = m_node[FTTET20[i][1]];
+		f.node[2] = m_node[FTTET20[i][2]];
+		f.node[3] = m_node[FTTET20[i][3]];
+		f.node[4] = m_node[FTTET20[i][4]];
+		f.node[5] = m_node[FTTET20[i][5]];
+		f.node[6] = m_node[FTTET20[i][6]];
+		f.node[7] = m_node[FTTET20[i][7]];
+		f.node[8] = m_node[FTTET20[i][8]];
+		f.node[9] = m_node[FTTET20[i][9]];
 		break;
 
 	case FE_PYRA5:
 		{
-			const int ft[5] = { FACE_TRI3, FACE_TRI3, FACE_TRI3, FACE_TRI3, FACE_QUAD4 };
+			const int ft[5] = { Post::FACE_TRI3, Post::FACE_TRI3, Post::FACE_TRI3, Post::FACE_TRI3, Post::FACE_QUAD4 };
 			f.m_ntype = ft[i];
-			f.node[0] = m_node[FT_PYRA[i][0]];
-			f.node[1] = m_node[FT_PYRA[i][1]];
-			f.node[2] = m_node[FT_PYRA[i][2]];
-			f.node[3] = m_node[FT_PYRA[i][3]];
+			f.node[0] = m_node[FTPYRA5[i][0]];
+			f.node[1] = m_node[FTPYRA5[i][1]];
+			f.node[2] = m_node[FTPYRA5[i][2]];
+			f.node[3] = m_node[FTPYRA5[i][3]];
 		}
 		break;
     
     case FE_PENTA15:
         {
-            const int ft[5] = {FACE_QUAD8, FACE_QUAD8, FACE_QUAD8, FACE_TRI6, FACE_TRI6};
+            const int ft[5] = { Post::FACE_QUAD8, Post::FACE_QUAD8, Post::FACE_QUAD8, Post::FACE_TRI6, Post::FACE_TRI6};
             f.m_ntype = ft[i];
-            f.node[0] = m_node[FT_PENTA15[i][0]];
-            f.node[1] = m_node[FT_PENTA15[i][1]];
-            f.node[2] = m_node[FT_PENTA15[i][2]];
-            f.node[3] = m_node[FT_PENTA15[i][3]];
-            f.node[4] = m_node[FT_PENTA15[i][4]];
-            f.node[5] = m_node[FT_PENTA15[i][5]];
-            f.node[6] = m_node[FT_PENTA15[i][6]];
-            f.node[7] = m_node[FT_PENTA15[i][7]];
+            f.node[0] = m_node[FTPENTA15[i][0]];
+            f.node[1] = m_node[FTPENTA15[i][1]];
+            f.node[2] = m_node[FTPENTA15[i][2]];
+            f.node[3] = m_node[FTPENTA15[i][3]];
+            f.node[4] = m_node[FTPENTA15[i][4]];
+            f.node[5] = m_node[FTPENTA15[i][5]];
+            f.node[6] = m_node[FTPENTA15[i][6]];
+            f.node[7] = m_node[FTPENTA15[i][7]];
         }
-            break;
-            
+		break;
     };
 }
 
 //-----------------------------------------------------------------------------
 // Return an edge of the element
-FEEdge FEElement::GetEdge(int i) const
+Post::FEEdge Post::FEElement::GetEdge(int i) const
 {
-	FEEdge e;
+	Post::FEEdge e;
 	switch(Type())
 	{
 	case FE_QUAD4:
@@ -392,7 +323,7 @@ FEEdge FEElement::GetEdge(int i) const
 
 //-----------------------------------------------------------------------------
 // An element is exterior if it has at least one null neighbor or an invisible neighbor
-bool FEElement::IsExterior() const
+bool Post::FEElement::IsExterior() const
 {
 	// make sure the element is visible
 	if (IsVisible() == false) return false;
@@ -415,13 +346,13 @@ bool FEElement::IsExterior() const
 
 //-----------------------------------------------------------------------------
 // Check comparison between two elements
-bool FEElement::operator != (FEElement& e)
+bool Post::FEElement::operator != (Post::FEElement& e)
 {
 	if (Type() != e.Type()) return true;
 	assert(Shape() == e.Shape());
 	switch (Shape())
 	{
-	case ELEM_HEX:
+	case Post::ELEM_HEX:
 		if ((m_node[0] != e.m_node[0]) ||
 			(m_node[1] != e.m_node[1]) ||
 			(m_node[2] != e.m_node[2]) ||
@@ -431,7 +362,7 @@ bool FEElement::operator != (FEElement& e)
 			(m_node[6] != e.m_node[6]) ||
 			(m_node[7] != e.m_node[7])) return true;
 		break;
-	case ELEM_PENTA:
+	case Post::ELEM_PENTA:
             if ((m_node[0] != e.m_node[0]) ||
 			(m_node[1] != e.m_node[1]) ||
 			(m_node[2] != e.m_node[2]) ||
@@ -439,21 +370,21 @@ bool FEElement::operator != (FEElement& e)
 			(m_node[4] != e.m_node[4]) ||
 			(m_node[5] != e.m_node[5])) return true;
 		break;
-	case ELEM_PYRA:
+	case Post::ELEM_PYRA:
 		if ((m_node[0] != e.m_node[0]) ||
 			(m_node[1] != e.m_node[1]) ||
 			(m_node[2] != e.m_node[2]) ||
 			(m_node[3] != e.m_node[3]) ||
 			(m_node[4] != e.m_node[4])) return true;
 		break;
-	case ELEM_TET:
-	case ELEM_QUAD:
+	case Post::ELEM_TET:
+	case Post::ELEM_QUAD:
 		if ((m_node[0] != e.m_node[0]) ||
 			(m_node[1] != e.m_node[1]) ||
 			(m_node[2] != e.m_node[2]) ||
 			(m_node[3] != e.m_node[3])) return true;
 		break;
-	case ELEM_TRI:
+	case Post::ELEM_TRI:
 		if ((m_node[0] != e.m_node[0]) ||
 			(m_node[1] != e.m_node[1]) ||
 			(m_node[2] != e.m_node[2])) return true;
@@ -465,7 +396,7 @@ bool FEElement::operator != (FEElement& e)
 
 //-----------------------------------------------------------------------------
 //! Calculate the shape function values at the point (r,s,t)
-void FEElement::shape(double *H, double r, double s, double t)
+void Post::FEElement::shape(double *H, double r, double s, double t)
 {
 	switch (Type())
 	{
@@ -486,9 +417,9 @@ void FEElement::shape(double *H, double r, double s, double t)
 }
 
 //-----------------------------------------------------------------------------
-double FEElement::eval(double* d, double r, double s, double t)
+double Post::FEElement::eval(double* d, double r, double s, double t)
 {
-	double H[FEGenericElement::MAX_NODES];
+	double H[Post::FEGenericElement::MAX_NODES];
 	shape(H, r, s, t);
 	double a = 0.0;
 	for (int i=0; i<Nodes(); ++i) a += H[i]*d[i];
@@ -496,9 +427,9 @@ double FEElement::eval(double* d, double r, double s, double t)
 }
 
 //-----------------------------------------------------------------------------
-float FEElement::eval(float* d, double r, double s, double t)
+float Post::FEElement::eval(float* d, double r, double s, double t)
 {
-	double H[FEGenericElement::MAX_NODES];
+	double H[Post::FEGenericElement::MAX_NODES];
 	shape(H, r, s, t);
 	double a = 0.0;
 	for (int i = 0; i<Nodes(); ++i) a += H[i] * d[i];
@@ -506,9 +437,9 @@ float FEElement::eval(float* d, double r, double s, double t)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEElement::eval(vec3f* d, double r, double s, double t)
+vec3f Post::FEElement::eval(vec3f* d, double r, double s, double t)
 {
-	double H[FEGenericElement::MAX_NODES];
+	double H[Post::FEGenericElement::MAX_NODES];
 	shape(H, r, s, t);
 	vec3f a(0,0,0);
 	for (int i=0; i<Nodes(); ++i) a += d[i]*((float)H[i]);
@@ -516,7 +447,7 @@ vec3f FEElement::eval(vec3f* d, double r, double s, double t)
 }
 
 //-----------------------------------------------------------------------------
-void FEElement::shape_deriv(double* Hr, double* Hs, double* Ht, double r, double s, double t)
+void Post::FEElement::shape_deriv(double* Hr, double* Hs, double* Ht, double r, double s, double t)
 {
 	switch (Type())
 	{
@@ -537,7 +468,7 @@ void FEElement::shape_deriv(double* Hr, double* Hs, double* Ht, double r, double
 }
 
 //-----------------------------------------------------------------------------
-void FEElement::iso_coord(int n, double q[3])
+void Post::FEElement::iso_coord(int n, double q[3])
 {
     // for n=-1 return isoparametric coordinates of element center
     

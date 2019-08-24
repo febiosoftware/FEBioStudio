@@ -1,16 +1,8 @@
 #include "FEModel.h"
 #include "constants.h"
 #include "FEMeshData_T.h"
+#include <MeshLib/MeshMetrics.h>
 using namespace Post;
-extern int FT_HEX[6][4];
-extern int FT_TET[4][4];
-extern int FT_PENTA[5][4];
-extern int FT_PENTA15[5][8];
-extern int FT_HEX20[6][8];
-extern int FT_HEX27[6][9];
-extern int FT_TET10[4][6];
-extern int FT_TET15[4][7];
-extern int FT_TET20[4][10];
 
 //-----------------------------------------------------------------------------
 // extract a component from a vector
@@ -440,7 +432,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 			case FE_TET4:
 			case FE_TET5:
 			{
-					const int* fn = FT_TET[f.m_elem[1]];
+					const int* fn = FTTET[f.m_elem[1]];
 					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
 					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
 					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -449,7 +441,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				break;
 			case FE_PENTA6:
 				{
-					const int* fn = FT_PENTA[f.m_elem[1]];
+					const int* fn = FTPENTA[f.m_elem[1]];
                     switch (f.m_ntype) {
                         case FACE_TRI3:
                             fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
@@ -471,7 +463,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				break;
             case FE_PENTA15:
                 {
-                    const int* fn = FT_PENTA[f.m_elem[1]];
+                    const int* fn = FTPENTA[f.m_elem[1]];
                     switch (f.m_ntype) {
                         case FACE_TRI6:
                             fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
@@ -500,7 +492,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
                 break;
             case FE_HEX8:
                 {
-                    const int* fn = FT_HEX[f.m_elem[1]];
+                    const int* fn = FTHEX8[f.m_elem[1]];
 					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
 					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
 					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -510,7 +502,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				break;
 			case FE_TET10:
 				{
-					const int* fn = FT_TET10[f.m_elem[1]];
+					const int* fn = FTTET10[f.m_elem[1]];
 					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
 					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
 					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -522,7 +514,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				break;
 			case FE_TET15:
 				{
-					const int* fn = FT_TET15[f.m_elem[1]];
+					const int* fn = FTTET15[f.m_elem[1]];
 					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
 					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
 					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -535,7 +527,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				break;
 			case FE_TET20:
 				{
-					const int* fn = FT_TET20[f.m_elem[1]];
+					const int* fn = FTTET20[f.m_elem[1]];
 					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
 					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
 					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -551,7 +543,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				break;
 			case FE_HEX20:
 				{
-					const int* fn = FT_HEX20[f.m_elem[1]];
+					const int* fn = FTHEX20[f.m_elem[1]];
 					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
 					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
 					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -565,7 +557,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				break;
 			case FE_HEX27:
 				{
-					const int* fn = FT_HEX27[f.m_elem[1]];
+					const int* fn = FTHEX27[f.m_elem[1]];
 					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
 					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
 					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -1283,7 +1275,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 		case FE_TET4:
 		case FE_TET5:
 		{
-				const int* fn = FT_TET[f.m_elem[1]];
+				const int* fn = FTTET[f.m_elem[1]];
 				data[0] = edata[fn[0]];
 				data[1] = edata[fn[1]];
 				data[2] = edata[fn[2]];
@@ -1292,7 +1284,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
         case FE_PENTA6:
             {
-                const int* fn = FT_PENTA[f.m_elem[1]];
+                const int* fn = FTPENTA[f.m_elem[1]];
                 switch (f.m_ntype) {
                     case FACE_TRI3:
                         data[0] = edata[fn[0]];
@@ -1314,7 +1306,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
             break;
         case FE_PENTA15:
             {
-                const int* fn = FT_PENTA[f.m_elem[1]];
+                const int* fn = FTPENTA[f.m_elem[1]];
                 switch (f.m_ntype) {
                     case FACE_TRI6:
                         data[0] = edata[fn[0]];
@@ -1343,7 +1335,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
             break;
             case FE_HEX8:
             {
-                const int* fn = FT_HEX[f.m_elem[1]];
+                const int* fn = FTHEX8[f.m_elem[1]];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1353,7 +1345,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_TET10:
 			{
-				const int* fn = FT_TET10[f.m_elem[1]];
+				const int* fn = FTTET10[f.m_elem[1]];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1365,7 +1357,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_TET15:
 			{
-				const int* fn = FT_TET15[f.m_elem[1]];
+				const int* fn = FTTET15[f.m_elem[1]];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1378,7 +1370,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_TET20:
 			{
-				const int* fn = FT_TET20[f.m_elem[1]];
+				const int* fn = FTTET20[f.m_elem[1]];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1394,7 +1386,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_HEX20:
 			{
-				const int* fn = FT_HEX20[f.m_elem[1]];
+				const int* fn = FTHEX20[f.m_elem[1]];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1408,7 +1400,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_HEX27:
 			{
-				const int* fn = FT_HEX27[f.m_elem[1]];
+				const int* fn = FTHEX27[f.m_elem[1]];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];

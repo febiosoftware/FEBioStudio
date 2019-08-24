@@ -177,10 +177,10 @@ void FEVTKExport::WriteCells(FEState* ps)
             case FE_PENTA6 : vtk_type = VTK_WEDGE; break;
             case FE_QUAD4  : vtk_type = VTK_QUAD; break;
             case FE_TRI3   : vtk_type = VTK_TRIANGLE; break;
-            case FE_LINE2  : vtk_type = VTK_LINE; break;
+            case FE_BEAM2  : vtk_type = VTK_LINE; break;
             case FE_HEX20  : vtk_type = VTK_QUADRATIC_HEXAHEDRON; break;
             case FE_QUAD8  : vtk_type = VTK_QUADRATIC_QUAD; break;
-            case FE_LINE3  : vtk_type = VTK_QUADRATIC_EDGE; break;
+            case FE_BEAM3  : vtk_type = VTK_QUADRATIC_EDGE; break;
             case FE_TET10  : vtk_type = VTK_QUADRATIC_TETRA; break;
             case FE_TET15  : vtk_type = VTK_QUADRATIC_TETRA; break;
             case FE_PENTA15: vtk_type = VTK_QUADRATIC_WEDGE; break;
