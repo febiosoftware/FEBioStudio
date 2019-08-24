@@ -375,7 +375,7 @@ void FEMeshBase::BuildFaces()
 			if (e.Type() == FE_QUAD4) 
 			{
 				f.node[3] = e.m_node[3];
-				f.m_ntype = FACE_QUAD4;
+				f.m_ntype = FE_FACE_QUAD4;
 			}
             else if (e.Type() == FE_QUAD8)
             {
@@ -384,7 +384,7 @@ void FEMeshBase::BuildFaces()
                 f.node[5] = e.m_node[5];
                 f.node[6] = e.m_node[6];
                 f.node[7] = e.m_node[7];
-                f.m_ntype = FACE_QUAD8;
+                f.m_ntype = FE_FACE_QUAD8;
             }
             else if (e.Type() == FE_QUAD9)
             {
@@ -394,19 +394,19 @@ void FEMeshBase::BuildFaces()
                 f.node[6] = e.m_node[6];
                 f.node[7] = e.m_node[7];
                 f.node[8] = e.m_node[8];
-                f.m_ntype = FACE_QUAD9;
+                f.m_ntype = FE_FACE_QUAD9;
             }
 			else if (e.Type() == FE_TRI3)
 			{
 				f.node[3] = e.m_node[2];
-				f.m_ntype = FACE_TRI3;
+				f.m_ntype = FE_FACE_TRI3;
 			}
             else if (e.Type() == FE_TRI6)
             {
                 f.node[3] = e.m_node[3];
                 f.node[4] = e.m_node[4];
                 f.node[5] = e.m_node[5];
-                f.m_ntype = FACE_TRI6;
+                f.m_ntype = FE_FACE_TRI6;
             }
 
 			f.m_elem[0] = i;
@@ -1376,20 +1376,20 @@ void FEMeshBase::FaceNodePosition(const Post::FEFace& f, vec3f* r) const
 {
 	switch (f.m_ntype)
 	{
-	case FACE_TRI10:
+	case FE_FACE_TRI10:
 		r[9] = m_Node[f.node[9]].m_rt;
-	case FACE_QUAD9:
+	case FE_FACE_QUAD9:
 		r[8] = m_Node[f.node[8]].m_rt;
-	case FACE_QUAD8:
+	case FE_FACE_QUAD8:
 		r[7] = m_Node[f.node[7]].m_rt;
-	case FACE_TRI7:
+	case FE_FACE_TRI7:
 		r[6] = m_Node[f.node[6]].m_rt;
-	case FACE_TRI6:
+	case FE_FACE_TRI6:
 		r[5] = m_Node[f.node[5]].m_rt;
 		r[4] = m_Node[f.node[4]].m_rt;
-	case FACE_QUAD4:
+	case FE_FACE_QUAD4:
 		r[3] = m_Node[f.node[3]].m_rt;
-	case FACE_TRI3:
+	case FE_FACE_TRI3:
 		r[2] = m_Node[f.node[2]].m_rt;
 		r[1] = m_Node[f.node[1]].m_rt;
 		r[0] = m_Node[f.node[0]].m_rt;
@@ -1404,20 +1404,20 @@ void FEMeshBase::FaceNodeNormals(Post::FEFace& f, vec3f* n)
 {
 	switch (f.m_ntype)
 	{
-	case FACE_TRI10:
+	case FE_FACE_TRI10:
 		n[9] = f.m_nn[9];
-	case FACE_QUAD9:
+	case FE_FACE_QUAD9:
 		n[8] = f.m_nn[8];
-	case FACE_QUAD8:
+	case FE_FACE_QUAD8:
 		n[7] = f.m_nn[7];
-	case FACE_TRI7:
+	case FE_FACE_TRI7:
 		n[6] = f.m_nn[6];
-	case FACE_TRI6:
+	case FE_FACE_TRI6:
 		n[5] = f.m_nn[5];
 		n[4] = f.m_nn[4];
-	case FACE_QUAD4:
+	case FE_FACE_QUAD4:
 		n[3] = f.m_nn[3];
-	case FACE_TRI3:
+	case FE_FACE_TRI3:
 		n[2] = f.m_nn[2];
 		n[1] = f.m_nn[1];
 		n[0] = f.m_nn[0];

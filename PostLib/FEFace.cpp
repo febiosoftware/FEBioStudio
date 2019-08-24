@@ -1,57 +1,56 @@
 #include "stdafx.h"
 #include "FEFace.h"
-using namespace Post;
 
 //-----------------------------------------------------------------------------
-FEFace::FEFace()
+Post::FEFace::FEFace()
 {
 	m_nsg = 0;
-	m_ntype = -1;
+	m_ntype = FE_FACE_INVALID_TYPE;
 	for (int i = 0; i<MAX_NODES; ++i) node[i] = -1;
 }
 
 //-----------------------------------------------------------------------------
 //! return the edge
-FEEdge FEFace::Edge(int i)
+Post::FEEdge Post::FEFace::Edge(int i)
 {
-	FEEdge e;
+	Post::FEEdge e;
 	assert(i<Edges());
 	switch (m_ntype)
 	{
-	case FACE_TRI3:
+	case FE_FACE_TRI3:
 	{
 		const int L[3][2] = { { 0, 1 }, { 1, 2 }, { 2, 0 } };
 		e.node[0] = node[L[i][0]]; e.node[1] = node[L[i][1]];
-		e.m_type = EDGE_LINE2;
+		e.m_type = FE_EDGE2;
 	}
 	break;
-	case FACE_QUAD4:
+	case FE_FACE_QUAD4:
 	{
 		const int L[4][2] = { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 } };
 		e.node[0] = node[L[i][0]]; e.node[1] = node[L[i][1]];
-		e.m_type = EDGE_LINE2;
+		e.m_type = FE_EDGE2;
 	}
 	break;
-	case FACE_TRI6:
-	case FACE_TRI7:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
 	{
 		const int L[3][3] = { { 0, 1, 3 }, { 1, 2, 4 }, { 2, 0, 5 } };
 		e.node[0] = node[L[i][0]]; e.node[1] = node[L[i][1]]; e.node[2] = node[L[i][2]];
-		e.m_type = EDGE_LINE3;
+		e.m_type = FE_EDGE3;
 	}
 	break;
-	case FACE_QUAD8:
-	case FACE_QUAD9:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
 	{
 		const int L[4][3] = { { 0, 1, 4 }, { 1, 2, 5 }, { 2, 3, 6 }, { 3, 0, 7 } };
 		e.node[0] = node[L[i][0]]; e.node[1] = node[L[i][1]]; e.node[2] = node[L[i][2]];
-		e.m_type = EDGE_LINE3;
+		e.m_type = FE_EDGE3;
 	}
 	break;
-	case FACE_TRI10:
+	case FE_FACE_TRI10:
 	{
 		const int L[3][4] = { { 0, 1, 3, 4 }, { 1, 2, 5, 6 }, { 2, 0, 8, 7 } };
-		e.m_type = EDGE_LINE4;
+		e.m_type = FE_EDGE4;
 		e.node[0] = node[L[i][0]];
 		e.node[1] = node[L[i][1]];
 		e.node[2] = node[L[i][2]];
@@ -66,18 +65,18 @@ FEEdge FEFace::Edge(int i)
 
 //-----------------------------------------------------------------------------
 //! Evaluate the shape function values at the iso-parametric point (r,s)
-void FEFace::shape(double* H, double r, double s)
+void Post::FEFace::shape(double* H, double r, double s)
 {
 	switch (m_ntype)
 	{
-	case FACE_TRI3:
+	case FE_FACE_TRI3:
 	{
 		H[0] = 1.0 - r - s;
 		H[1] = r;
 		H[2] = s;
 	}
 	break;
-	case FACE_QUAD4:
+	case FE_FACE_QUAD4:
 	{
 		H[0] = 0.25*(1.0 - r)*(1.0 - s);
 		H[1] = 0.25*(1.0 + r)*(1.0 - s);
@@ -85,7 +84,7 @@ void FEFace::shape(double* H, double r, double s)
 		H[3] = 0.25*(1.0 - r)*(1.0 + s);
 	}
 	break;
-	case FACE_TRI6:
+	case FE_FACE_TRI6:
 	{
 		double r1 = 1.0 - r - s;
 		double r2 = r;
@@ -99,7 +98,7 @@ void FEFace::shape(double* H, double r, double s)
 		H[5] = 4.0*r3*r1;
 	}
 	break;
-	case FACE_TRI7:
+	case FE_FACE_TRI7:
 	{
 		double r1 = 1.0 - r - s;
 		double r2 = r;
@@ -114,7 +113,7 @@ void FEFace::shape(double* H, double r, double s)
 		H[5] = 4.0*r3*r1 - 4.0*H[6] / 9.0;
 	}
 	break;
-	case FACE_QUAD8:
+	case FE_FACE_QUAD8:
 	{
 		H[4] = 0.5*(1 - r*r)*(1 - s);
 		H[5] = 0.5*(1 - s*s)*(1 + r);
@@ -127,7 +126,7 @@ void FEFace::shape(double* H, double r, double s)
 		H[3] = 0.25*(1 - r)*(1 + s) - 0.5*(H[6] + H[7]);
 	}
 	break;
-	case FACE_QUAD9:
+	case FE_FACE_QUAD9:
 	{
 		double R[3] = { 0.5*r*(r - 1.0), 0.5*r*(r + 1.0), 1.0 - r*r };
 		double S[3] = { 0.5*s*(s - 1.0), 0.5*s*(s + 1.0), 1.0 - s*s };
@@ -148,9 +147,9 @@ void FEFace::shape(double* H, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-double FEFace::eval(double* d, double r, double s)
+double Post::FEFace::eval(double* d, double r, double s)
 {
-	double H[FEFace::MAX_NODES];
+	double H[Post::FEFace::MAX_NODES];
 	shape(H, r, s);
 	double a = 0.0;
 	for (int i = 0; i<Nodes(); ++i) a += H[i] * d[i];
@@ -158,9 +157,9 @@ double FEFace::eval(double* d, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEFace::eval(vec3f* d, double r, double s)
+vec3f Post::FEFace::eval(vec3f* d, double r, double s)
 {
-	double H[FEFace::MAX_NODES];
+	double H[Post::FEFace::MAX_NODES];
 	shape(H, r, s);
 	vec3f a(0, 0, 0);
 	for (int i = 0; i<Nodes(); ++i) a += d[i] * ((float)H[i]);

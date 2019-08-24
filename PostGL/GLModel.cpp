@@ -625,7 +625,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 			for (int j=0; j<n; ++j) r[j] = pm->Node(f.node[j]).m_rt;
 			switch (f.m_ntype)
 			{
-			case FACE_TRI3:
+			case FE_FACE_TRI3:
 				glBegin(GL_LINE_LOOP);
 				{
 					glVertex3f(r[0].x, r[0].y, r[0].z);
@@ -634,7 +634,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 				}
 				glEnd();
 				break;
-			case FACE_QUAD4:
+			case FE_FACE_QUAD4:
 				glBegin(GL_LINE_LOOP);
 				{
 					glVertex3f(r[0].x, r[0].y, r[0].z);
@@ -644,19 +644,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 				}
 				glEnd();
 				break;
-			case FACE_TRI6:
-				glBegin(GL_LINE_LOOP);
-				{
-					glVertex3f(r[0].x, r[0].y, r[0].z);
-					glVertex3f(r[3].x, r[3].y, r[3].z);
-					glVertex3f(r[1].x, r[1].y, r[1].z);
-					glVertex3f(r[4].x, r[4].y, r[4].z);
-					glVertex3f(r[2].x, r[2].y, r[2].z);
-					glVertex3f(r[5].x, r[5].y, r[5].z);
-				}
-				glEnd();
-				break;
-			case FACE_TRI7:
+			case FE_FACE_TRI6:
 				glBegin(GL_LINE_LOOP);
 				{
 					glVertex3f(r[0].x, r[0].y, r[0].z);
@@ -668,7 +656,19 @@ void CGLModel::RenderSelection(CGLContext &rc)
 				}
 				glEnd();
 				break;
-			case FACE_QUAD8:
+			case FE_FACE_TRI7:
+				glBegin(GL_LINE_LOOP);
+				{
+					glVertex3f(r[0].x, r[0].y, r[0].z);
+					glVertex3f(r[3].x, r[3].y, r[3].z);
+					glVertex3f(r[1].x, r[1].y, r[1].z);
+					glVertex3f(r[4].x, r[4].y, r[4].z);
+					glVertex3f(r[2].x, r[2].y, r[2].z);
+					glVertex3f(r[5].x, r[5].y, r[5].z);
+				}
+				glEnd();
+				break;
+			case FE_FACE_QUAD8:
 				glBegin(GL_LINE_LOOP);
 				{
 					glVertex3f(r[0].x, r[0].y, r[0].z);
@@ -682,7 +682,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 				}
 				glEnd();
 				break;
-			case FACE_QUAD9:
+			case FE_FACE_QUAD9:
 				glBegin(GL_LINE_LOOP);
 				{
 					glVertex3f(r[0].x, r[0].y, r[0].z);
@@ -1181,8 +1181,8 @@ void CGLModel::RenderFaceEdge(Post::FEFace& f, int j, FEMeshBase* pm, int ndivs)
 
 	switch (f.m_ntype)
 	{
-	case FACE_TRI3:
-	case FACE_QUAD4:
+	case FE_FACE_TRI3:
+	case FE_FACE_QUAD4:
 		{
 			vec3f r1 = pm->Node(a).m_rt;
 			vec3f r2 = pm->Node(b).m_rt;
@@ -1195,8 +1195,8 @@ void CGLModel::RenderFaceEdge(Post::FEFace& f, int j, FEMeshBase* pm, int ndivs)
 			glEnd();
 		}
 		break;
-	case FACE_QUAD8:
-	case FACE_QUAD9:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
 		{
 			vec3f r1 = pm->Node(a).m_rt;
 			vec3f r2 = pm->Node(b).m_rt;
@@ -1227,8 +1227,8 @@ void CGLModel::RenderFaceEdge(Post::FEFace& f, int j, FEMeshBase* pm, int ndivs)
 			glEnd();						
 		}
 		break;
-	case FACE_TRI6:
-	case FACE_TRI7:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
 		{
 			vec3f r1 = pm->Node(a).m_rt;
 			vec3f r2 = pm->Node(b).m_rt;
@@ -1259,7 +1259,7 @@ void CGLModel::RenderFaceEdge(Post::FEFace& f, int j, FEMeshBase* pm, int ndivs)
 			glEnd();
 		}
 		break;
-	case FACE_TRI10:
+	case FE_FACE_TRI10:
 		{
 			// implement this
 		}
@@ -1397,12 +1397,12 @@ void CGLModel::RenderTexFace(Post::FEFace& face, FEMeshBase* pm)
 {
 	switch (face.m_ntype)
 	{
-	case FACE_QUAD4: RenderTexQUAD4(face, pm); break;
-	case FACE_QUAD8:
-	case FACE_QUAD9: RenderTexQUAD8(face, pm); break;
-	case FACE_TRI3 : RenderTexTRI3(face, pm); break;
-	case FACE_TRI6 : RenderTexTRI6(face, pm); break;
-	case FACE_TRI7 : RenderTexTRI7(face, pm); break;
+	case FE_FACE_QUAD4: RenderTexQUAD4(face, pm); break;
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9: RenderTexQUAD8(face, pm); break;
+	case FE_FACE_TRI3 : RenderTexTRI3(face, pm); break;
+	case FE_FACE_TRI6 : RenderTexTRI6(face, pm); break;
+	case FE_FACE_TRI7 : RenderTexTRI7(face, pm); break;
 	default:
 		assert(false);
 	}
@@ -1527,9 +1527,9 @@ void CGLModel::RenderShadows(FEModel* ps, const vec3d& lp, float inf)
 
 				switch (f.m_ntype)
 				{
-				case FACE_QUAD4:
-				case FACE_QUAD8:
-				case FACE_QUAD9:
+				case FE_FACE_QUAD4:
+				case FE_FACE_QUAD8:
+				case FE_FACE_QUAD9:
 					glBegin(GL_QUADS);
 					{
 						glVertex3f(r4.x, r4.y, r4.z);
@@ -1539,9 +1539,9 @@ void CGLModel::RenderShadows(FEModel* ps, const vec3d& lp, float inf)
 					}
 					glEnd();
 					break;
-				case FACE_TRI3:
-				case FACE_TRI6:
-				case FACE_TRI7:
+				case FE_FACE_TRI3:
+				case FE_FACE_TRI6:
+				case FE_FACE_TRI7:
 					glBegin(GL_TRIANGLES);
 					{
 						glVertex3f(r3.x, r3.y, r3.z);
@@ -1693,30 +1693,30 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bn
 	// Render the facet
 	switch (face.m_ntype)
 	{
-	case FACE_QUAD4:
+	case FE_FACE_QUAD4:
 		if (ndivs == 1) RenderQUAD4(face, m_bsmooth, bnode);
 		else RenderSmoothQUAD4(face, pm, ndivs, bnode);
 		break;
-	case FACE_QUAD8:
+	case FE_FACE_QUAD8:
 		if (ndivs == 1) RenderQUAD8(face, m_bsmooth, bnode);
 		else RenderSmoothQUAD8(face, pm, ndivs, bnode);
 		break;
-	case FACE_QUAD9:
+	case FE_FACE_QUAD9:
 		if (ndivs == 1) RenderQUAD9(face, m_bsmooth, bnode);
 		else RenderSmoothQUAD9(face, pm, ndivs, bnode);
 		break;
-	case FACE_TRI3:
+	case FE_FACE_TRI3:
 		RenderTRI3(face, m_bsmooth, bnode);
 		break;
-	case FACE_TRI6:
+	case FE_FACE_TRI6:
 		if (ndivs == 1) RenderTRI6(face, m_bsmooth, bnode);
 		else RenderSmoothTRI6(face, pm, ndivs, bnode);
 		break;
-	case FACE_TRI7:
+	case FE_FACE_TRI7:
 		if (ndivs == 1) RenderTRI7(face, m_bsmooth, bnode);
 		else RenderSmoothTRI7(face, pm, ndivs, bnode);
 		break;
-	case FACE_TRI10:
+	case FE_FACE_TRI10:
 		if (ndivs == 1) RenderTRI10(face, m_bsmooth, bnode);
 		else RenderSmoothTRI10(face, pm, ndivs, bnode);
 		break;
@@ -1758,9 +1758,9 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int 
 	{
 		switch (face.m_ntype)
 		{
-		case FACE_QUAD4:
-		case FACE_QUAD8:
-		case FACE_QUAD9:
+		case FE_FACE_QUAD4:
+		case FE_FACE_QUAD8:
+		case FE_FACE_QUAD9:
 			if (ndivs <= 1)
 			{
 				glBegin(GL_QUADS);
@@ -1774,9 +1774,9 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int 
 			}
 			else RenderSmoothQUAD4(face, pm, ndivs, bnode);
 			break;
-		case FACE_TRI3:
-		case FACE_TRI6:
-		case FACE_TRI7:
+		case FE_FACE_TRI3:
+		case FE_FACE_TRI6:
+		case FE_FACE_TRI7:
 			glBegin(GL_TRIANGLES);
 			{
 				glNormal3f(n1.x, n1.y, n1.z); glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
@@ -1795,9 +1795,9 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int 
 
 		switch (face.m_ntype)
 		{
-		case FACE_QUAD4:
-		case FACE_QUAD8:
-		case FACE_QUAD9:
+		case FE_FACE_QUAD4:
+		case FE_FACE_QUAD8:
+		case FE_FACE_QUAD9:
 			glBegin(GL_QUADS);
 			{
 				glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
@@ -1807,9 +1807,9 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int 
 			}
 			glEnd();
 			break;
-		case FACE_TRI3:
-		case FACE_TRI6:
-		case FACE_TRI7:
+		case FE_FACE_TRI3:
+		case FE_FACE_TRI6:
+		case FE_FACE_TRI7:
 			glBegin(GL_TRIANGLES);
 			{
 				glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
@@ -1970,13 +1970,13 @@ void CGLModel::RenderFaceOutline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 	// render the edges of the fae
 	switch (face.m_ntype)
 	{
-	case FACE_TRI3 :
-	case FACE_QUAD4: RenderFace1Outline(face, pm); break;
-	case FACE_TRI6:
-	case FACE_TRI7:
-	case FACE_QUAD8:
-	case FACE_QUAD9: RenderFace2Outline(face, pm, ndivs); break;
-	case FACE_TRI10: RenderFace3Outline(face, pm, ndivs); break;
+	case FE_FACE_TRI3 :
+	case FE_FACE_QUAD4: RenderFace1Outline(face, pm); break;
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9: RenderFace2Outline(face, pm, ndivs); break;
+	case FE_FACE_TRI10: RenderFace3Outline(face, pm, ndivs); break;
 	default:
 		assert(false);
 	}
@@ -1989,14 +1989,14 @@ void CGLModel::RenderThickShell(Post::FEFace &face, FEMeshBase* pm)
 {
 	switch(face.m_ntype)
 	{
-	case FACE_QUAD4:
-	case FACE_QUAD8:
-	case FACE_QUAD9:
+	case FE_FACE_QUAD4:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
 		RenderThickQuad(face, pm);
 		break;
-	case FACE_TRI3:
-	case FACE_TRI6:
-	case FACE_TRI7:
+	case FE_FACE_TRI3:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
 		RenderThickTri(face, pm);
 		break;
 	}
@@ -2345,9 +2345,9 @@ void CGLModel::RenderThickShellOutline(Post::FEFace &face, FEMeshBase* pm)
 
 	switch (face.m_ntype)
 	{
-	case FACE_QUAD4:
-	case FACE_QUAD8:
-	case FACE_QUAD9:
+	case FE_FACE_QUAD4:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
 		glBegin(GL_LINES);
 		{
 			glVertex3f(r1a.x, r1a.y, r1a.z); glVertex3f(r2a.x, r2a.y, r2a.z);
@@ -2367,9 +2367,9 @@ void CGLModel::RenderThickShellOutline(Post::FEFace &face, FEMeshBase* pm)
 		}
 		glEnd();
 		break;
-	case FACE_TRI3:
-	case FACE_TRI6:
-	case FACE_TRI7:
+	case FE_FACE_TRI3:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
 		glBegin(GL_LINES);
 		{
 			glVertex3f(r1a.x, r1a.y, r1a.z); glVertex3f(r2a.x, r2a.y, r2a.z);
@@ -2417,13 +2417,13 @@ void CGLModel::RenderEdges(FEModel* ps, CGLContext& rc)
 			{
 				switch (edge.Type())
 				{
-				case EDGE_LINE2:
+				case FE_EDGE2:
 					r[0] = mesh.Node(edge.node[0]).m_rt;
 					r[1] = mesh.Node(edge.node[1]).m_rt;
 					glVertex3d(r[0].x, r[0].y, r[0].z);
 					glVertex3d(r[1].x, r[1].y, r[1].z);
 					break;
-				case EDGE_LINE3:
+				case FE_EDGE3:
 					r[0] = mesh.Node(edge.node[0]).m_rt;
 					r[1] = mesh.Node(edge.node[1]).m_rt;
 					r[2] = mesh.Node(edge.node[2]).m_rt;
@@ -2452,13 +2452,13 @@ void CGLModel::RenderEdges(FEModel* ps, CGLContext& rc)
 				{
 					switch (edge.Type())
 					{
-					case EDGE_LINE2:
+					case FE_EDGE2:
 						r[0] = mesh.Node(edge.node[0]).m_rt;
 						r[1] = mesh.Node(edge.node[1]).m_rt;
 						glVertex3d(r[0].x, r[0].y, r[0].z);
 						glVertex3d(r[1].x, r[1].y, r[1].z);
 						break;
-					case EDGE_LINE3:
+					case FE_EDGE3:
 						r[0] = mesh.Node(edge.node[0]).m_rt;
 						r[1] = mesh.Node(edge.node[1]).m_rt;
 						r[2] = mesh.Node(edge.node[2]).m_rt;

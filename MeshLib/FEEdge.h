@@ -9,7 +9,7 @@ enum FEEdgeType
 	FE_EDGE2,
 	FE_EDGE3,
 	FE_EDGE4,
-	FE_EDGE_INVALID
+	FE_EDGE_INVALID = 0x1000
 };
 
 //-----------------------------------------------------------------------------

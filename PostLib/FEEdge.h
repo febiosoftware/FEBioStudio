@@ -1,16 +1,9 @@
 #pragma once
 #include "FEItem.h"
 #include <MathLib/math3d.h>
+#include <MeshLib/FEEdge.h>
 
 namespace Post {
-
-//-----------------------------------------------------------------------------
-// Different edge types
-enum FEEdgeType {
-	EDGE_LINE2,
-	EDGE_LINE3,
-	EDGE_LINE4
-};
 
 //-----------------------------------------------------------------------------
 // Class describing an edge of the mesh. The edges identify the smooth boundaries

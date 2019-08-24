@@ -2,21 +2,10 @@
 #include "FEItem.h"
 #include "FEEdge.h"
 #include <MathLib/math3d.h>
+#include <MeshLib/FEFace.h>
 #include <assert.h>
 
 namespace Post {
-
-//-----------------------------------------------------------------------------
-// Different face types (do not change the order)
-enum FEFaceType {
-	FACE_TRI3,
-	FACE_QUAD4,
-	FACE_QUAD8,
-	FACE_TRI6,
-	FACE_TRI7,
-	FACE_QUAD9,
-	FACE_TRI10
-};
 
 //-----------------------------------------------------------------------------
 // Class that describes an exterior face of the mesh
@@ -48,17 +37,17 @@ public:
 		if (m_ntype != face.m_ntype) return false;
 		switch (m_ntype)
 		{
-		case FACE_TRI3:
-		case FACE_TRI6:
-		case FACE_TRI7:
-		case FACE_TRI10:
+		case FE_FACE_TRI3:
+		case FE_FACE_TRI6:
+		case FE_FACE_TRI7:
+		case FE_FACE_TRI10:
 			if ((pn[0] != node[0]) && (pn[0] != node[1]) && (pn[0] != node[2])) return false;
 			if ((pn[1] != node[0]) && (pn[1] != node[1]) && (pn[1] != node[2])) return false;
 			if ((pn[2] != node[0]) && (pn[2] != node[1]) && (pn[2] != node[2])) return false;
 			break;
-		case FACE_QUAD4:
-		case FACE_QUAD8:
-		case FACE_QUAD9:
+		case FE_FACE_QUAD4:
+		case FE_FACE_QUAD8:
+		case FE_FACE_QUAD9:
 			if ((pn[0] != node[0]) && (pn[0] != node[1]) && (pn[0] != node[2]) && (pn[0] != node[3])) return false;
 			if ((pn[1] != node[0]) && (pn[1] != node[1]) && (pn[1] != node[2]) && (pn[1] != node[3])) return false;
 			if ((pn[2] != node[0]) && (pn[2] != node[1]) && (pn[2] != node[2]) && (pn[2] != node[3])) return false;
@@ -72,17 +61,17 @@ public:
 	{
 		switch (m_ntype)
 		{
-		case FACE_TRI3:
-		case FACE_TRI6:
-		case FACE_TRI7:
-		case FACE_TRI10:
+		case FE_FACE_TRI3:
+		case FE_FACE_TRI6:
+		case FE_FACE_TRI7:
+		case FE_FACE_TRI10:
 			if (((node[0] == n1) && (node[1] == n2)) || ((node[1] == n1) && (node[0] == n2))) return true;
 			if (((node[1] == n1) && (node[2] == n2)) || ((node[2] == n1) && (node[1] == n2))) return true;
 			if (((node[2] == n1) && (node[0] == n2)) || ((node[0] == n1) && (node[2] == n2))) return true;
 			break;
-		case FACE_QUAD4:
-		case FACE_QUAD8:
-		case FACE_QUAD9:
+		case FE_FACE_QUAD4:
+		case FE_FACE_QUAD8:
+		case FE_FACE_QUAD9:
 			if (((node[0] == n1) && (node[1] == n2)) || ((node[1] == n1) && (node[0] == n2))) return true;
 			if (((node[1] == n1) && (node[2] == n2)) || ((node[2] == n1) && (node[1] == n2))) return true;
 			if (((node[2] == n1) && (node[3] == n2)) || ((node[3] == n1) && (node[2] == n2))) return true;
@@ -101,14 +90,14 @@ public:
 
 	int Nodes() const
 	{
-		const int n[7] = { 3, 4, 8, 6, 7, 9, 10 };
+		const int n[8] = { -1, 3, 4, 6, 7, 8, 9, 10 };
 		assert((m_ntype >= 0) && (m_ntype <= 6));
 		return n[m_ntype];
 	}
 
 	int Edges() const
 	{
-		const int n[7] = { 3, 4, 4, 3, 3, 4, 3 };
+		const int n[8] = { -1, 3, 4, 3, 3, 4, 4, 3 };
 		assert((m_ntype >= 0) && (m_ntype <= 6));
 		return n[m_ntype];
 	}

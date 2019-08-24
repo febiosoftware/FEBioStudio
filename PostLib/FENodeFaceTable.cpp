@@ -40,13 +40,13 @@ int FENodeFaceTable::FindFace(int inode, int n[10], int m)
 	for (int i=0; i<m; ++i) ft.node[i] = n[i];
 	switch (m)
 	{
-	case 3: ft.m_ntype = FACE_TRI3 ; break;
-	case 4: ft.m_ntype = FACE_QUAD4; break;
-	case 6: ft.m_ntype = FACE_TRI6 ; break;
-	case 7: ft.m_ntype = FACE_TRI7 ; break;
-	case 8: ft.m_ntype = FACE_QUAD8; break;
-	case 9: ft.m_ntype = FACE_QUAD9; break;
-	case 10: ft.m_ntype = FACE_TRI10; break;
+	case 3: ft.m_ntype  = FE_FACE_TRI3 ; break;
+	case 4: ft.m_ntype  = FE_FACE_QUAD4; break;
+	case 6: ft.m_ntype  = FE_FACE_TRI6 ; break;
+	case 7: ft.m_ntype  = FE_FACE_TRI7 ; break;
+	case 8: ft.m_ntype  = FE_FACE_QUAD8; break;
+	case 9: ft.m_ntype  = FE_FACE_QUAD9; break;
+	case 10: ft.m_ntype = FE_FACE_TRI10; break;
 	default:
 		assert(false);
 	};

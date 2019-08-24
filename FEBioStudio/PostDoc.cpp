@@ -326,18 +326,7 @@ FEMesh* CPostObject::BuildMesh()
 		FEFace& fd = mesh->Face(i);
 		Post::FEFace& fs = postMesh->Face(i);
 
-		switch (fs.m_ntype)
-		{
-		case Post::FACE_QUAD4: fd.m_type = FE_FACE_QUAD4; break;
-		case Post::FACE_QUAD8: fd.m_type = FE_FACE_QUAD8; break;
-		case Post::FACE_QUAD9: fd.m_type = FE_FACE_QUAD9; break;
-		case Post::FACE_TRI3 : fd.m_type = FE_FACE_TRI3; break;
-		case Post::FACE_TRI6 : fd.m_type = FE_FACE_TRI6; break;
-		case Post::FACE_TRI7 : fd.m_type = FE_FACE_TRI7; break;
-		case Post::FACE_TRI10: fd.m_type = FE_FACE_TRI10; break;
-		default:
-			assert(false);
-		}
+		fd.m_type = fs.m_ntype;
 
 		fd.m_gid = fs.m_nsg;
 		fd.m_sid = fs.m_nsg;
@@ -354,15 +343,7 @@ FEMesh* CPostObject::BuildMesh()
 		Post::FEEdge& es = postMesh->Edge(i);
 
 		ed.m_gid = 0;
-
-		switch (es.Type())
-		{
-		case Post::EDGE_LINE2: ed.m_type = FE_EDGE2; break;
-		case Post::EDGE_LINE3: ed.m_type = FE_EDGE3; break;
-		case Post::EDGE_LINE4: ed.m_type = FE_EDGE4; break;
-		default:
-			assert(false);
-		}
+		ed.m_type = es.Type();
 
 		for (int j = 0; j < es.Nodes(); ++j)
 		{
@@ -376,30 +357,7 @@ FEMesh* CPostObject::BuildMesh()
 		Post::FEElement& es = postMesh->Element(i);
 
 		ed.m_gid = es.m_MatID;
-
-		switch(es.Type())
-		{
-//		case FE_LINE2: break;
-//		case FE_LINE3: break;
-		case FE_TRI3   : ed.SetType(FE_TRI3   ); break;
-		case FE_TRI6   : ed.SetType(FE_TRI6   ); break;
-		case FE_QUAD4  : ed.SetType(FE_QUAD4  ); break;
-		case FE_QUAD8  : ed.SetType(FE_QUAD8  ); break;
-		case FE_QUAD9  : ed.SetType(FE_QUAD9  ); break;
-		case FE_TET4   : ed.SetType(FE_TET4   ); break;
-		case FE_TET10  : ed.SetType(FE_TET10  ); break;
-		case FE_TET15  : ed.SetType(FE_TET15  ); break;
-		case FE_TET20  : ed.SetType(FE_TET20  ); break;
-		case FE_PENTA6 : ed.SetType(FE_PENTA6 ); break;
-		case FE_PENTA15: ed.SetType(FE_PENTA15); break;
-		case FE_HEX8   : ed.SetType(FE_HEX8   ); break;
-		case FE_HEX20  : ed.SetType(FE_HEX20  ); break;
-		case FE_HEX27  : ed.SetType(FE_HEX27  ); break;
-		case FE_PYRA5  : ed.SetType(FE_PYRA5  ); break;
-		case FE_TET5   : ed.SetType(FE_TET5   ); break;
-		default:
-			assert(false);
-		};
+		ed.SetType(es.Type());
 
 		for (int j = 0; j < es.Nodes(); ++j) ed.m_node[j] = es.m_node[j];
 	}

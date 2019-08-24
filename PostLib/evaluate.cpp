@@ -443,13 +443,13 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				{
 					const int* fn = FTPENTA[f.m_elem[1]];
                     switch (f.m_ntype) {
-                        case FACE_TRI3:
+                        case FE_FACE_TRI3:
                             fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
                             fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
                             fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
                             d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
                             break;
-                        case FACE_QUAD4:
+                        case FE_FACE_QUAD4:
                             fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
                             fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
                             fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -465,7 +465,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
                 {
                     const int* fn = FTPENTA[f.m_elem[1]];
                     switch (f.m_ntype) {
-                        case FACE_TRI6:
+                        case FE_FACE_TRI6:
                             fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
                             fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
                             fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -474,7 +474,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
                             fd.value(i, 5) = elemData.value(f.m_elem[0], fn[5]);
                             d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5)) / 6.f;
                             break;
-                        case FACE_QUAD8:
+                        case FE_FACE_QUAD8:
                             fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
                             fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
                             fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
@@ -1286,13 +1286,13 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
             {
                 const int* fn = FTPENTA[f.m_elem[1]];
                 switch (f.m_ntype) {
-                    case FACE_TRI3:
+                    case FE_FACE_TRI3:
                         data[0] = edata[fn[0]];
                         data[1] = edata[fn[1]];
                         data[2] = edata[fn[2]];
                         val = (data[0] + data[1] + data[2]) / 3.f;
                         break;
-                    case FACE_QUAD4:
+                    case FE_FACE_QUAD4:
                         data[0] = edata[fn[0]];
                         data[1] = edata[fn[1]];
                         data[2] = edata[fn[2]];
@@ -1308,7 +1308,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
             {
                 const int* fn = FTPENTA[f.m_elem[1]];
                 switch (f.m_ntype) {
-                    case FACE_TRI6:
+                    case FE_FACE_TRI6:
                         data[0] = edata[fn[0]];
                         data[1] = edata[fn[1]];
                         data[2] = edata[fn[2]];
@@ -1317,7 +1317,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
                         data[5] = edata[fn[5]];
                         val = (data[0] + data[1] + data[2] + data[3] + data[4] + data[5]) / 6.f;
                         break;
-                    case FACE_QUAD8:
+                    case FE_FACE_QUAD8:
                         data[0] = edata[fn[0]];
                         data[1] = edata[fn[1]];
                         data[2] = edata[fn[2]];

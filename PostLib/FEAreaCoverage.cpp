@@ -237,10 +237,10 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	bool bfound = false;
 	switch (face.m_ntype)
 	{
-	case FACE_TRI3:
-	case FACE_TRI6:
-	case FACE_TRI7:
-	case FACE_TRI10:
+	case FE_FACE_TRI3:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
+	case FE_FACE_TRI10:
 	{
 		for (int i = 0; i<3; ++i)
 		{
@@ -251,9 +251,9 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 		bfound = IntersectTriangle(ray, tri, q, false);
 	}
 	break;
-	case FACE_QUAD4:
-	case FACE_QUAD8:
-	case FACE_QUAD9:
+	case FE_FACE_QUAD4:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
 	{
 		for (int i = 0; i<4; ++i)
 		{

@@ -6,7 +6,7 @@ using namespace Post;
 // Render a 4-noded quad
 void CGLModel::RenderQUAD4(Post::FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FACE_QUAD4);
+	assert(f.m_ntype == FE_FACE_QUAD4);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -36,7 +36,7 @@ void CGLModel::RenderQUAD4(Post::FEFace& f, bool bsmooth, bool bnode)
 // Render a 8-noded quad
 void CGLModel::RenderQUAD8(Post::FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FACE_QUAD8);
+	assert(f.m_ntype == FE_FACE_QUAD8);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -84,7 +84,7 @@ void CGLModel::RenderQUAD8(Post::FEFace& f, bool bsmooth, bool bnode)
 // Render a 9-noded quad
 void CGLModel::RenderQUAD9(Post::FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FACE_QUAD9);
+	assert(f.m_ntype == FE_FACE_QUAD9);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -144,7 +144,7 @@ void CGLModel::RenderQUAD9(Post::FEFace& f, bool bsmooth, bool bnode)
 // Render a 3-noded tri
 void CGLModel::RenderTRI3(Post::FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FACE_TRI3);
+	assert(f.m_ntype == FE_FACE_TRI3);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -172,7 +172,7 @@ void CGLModel::RenderTRI3(Post::FEFace& f, bool bsmooth, bool bnode)
 // Render a 6-noded tri
 void CGLModel::RenderTRI6(Post::FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FACE_TRI6);
+	assert(f.m_ntype == FE_FACE_TRI6);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -212,7 +212,7 @@ void CGLModel::RenderTRI6(Post::FEFace& f, bool bsmooth, bool bnode)
 // Render a 7-noded tri
 void CGLModel::RenderTRI7(Post::FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FACE_TRI7);
+	assert(f.m_ntype == FE_FACE_TRI7);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -268,7 +268,7 @@ inline void glxVertex(const vec3f& n, const vec3f& r, float t)
 // Render a 10-noded tri
 void CGLModel::RenderTRI10(Post::FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FACE_TRI10);
+	assert(f.m_ntype == FE_FACE_TRI10);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -364,7 +364,7 @@ void CGLModel::RenderSmoothQUAD4(vec3f r[4], vec3f n[4], float q[4], int ndivs)
 // Render a sub-divided 8-noded quadrilateral
 void CGLModel::RenderSmoothQUAD8(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FACE_QUAD8);
+	assert(face.m_ntype == FE_FACE_QUAD8);
 
 	vec3f r[8];
 	r[0] = pm->Node(face.node[0]).m_rt;
@@ -448,7 +448,7 @@ void CGLModel::RenderSmoothQUAD8(vec3f r[8], vec3f n[8], float q[8], int ndivs)
 // Render a sub-divided 9-noded quadrilateral
 void CGLModel::RenderSmoothQUAD9(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FACE_QUAD9);
+	assert(face.m_ntype == FE_FACE_QUAD9);
 
 	vec3f r[9];
 	r[0] = pm->Node(face.node[0]).m_rt;
@@ -543,7 +543,7 @@ void CGLModel::RenderSmoothQUAD9(vec3f r[9], vec3f n[9], float q[9], int ndivs)
 // Render a sub-divided 6-noded triangle
 void CGLModel::RenderSmoothTRI6(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FACE_TRI6);
+	assert(face.m_ntype == FE_FACE_TRI6);
 
 	vec3f r[6];
 	r[0] = pm->Node(face.node[0]).m_rt;
@@ -649,7 +649,7 @@ void CGLModel::RenderSmoothTRI6(vec3f x[6], vec3f n[6], float q[6], int ndivs)
 // Render a sub-divided 7-noded triangle
 void CGLModel::RenderSmoothTRI7(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FACE_TRI7);
+	assert(face.m_ntype == FE_FACE_TRI7);
 
 	vec3f r[7];
 	r[0] = pm->Node(face.node[0]).m_rt;
@@ -759,7 +759,7 @@ void CGLModel::RenderSmoothTRI7(vec3f x[7], vec3f n[7], float q[7], int ndivs)
 // Render a sub-divided 10-noded triangle
 void CGLModel::RenderSmoothTRI10(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FACE_TRI10);
+	assert(face.m_ntype == FE_FACE_TRI10);
 
 	vec3f r[10];
 	r[0] = pm->Node(face.node[0]).m_rt;

@@ -140,8 +140,8 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 			bool b = false;
 			switch (face.m_ntype)
 			{
-			case FACE_TRI3 : b = IntersectTri3 (ray, face, q, rsi); break;
-			case FACE_QUAD4: b = IntersectQuad4(ray, face, q, rsi); break;
+			case FE_FACE_TRI3 : b = IntersectTri3 (ray, face, q, rsi); break;
+			case FE_FACE_QUAD4: b = IntersectQuad4(ray, face, q, rsi); break;
 			}
 
 			if (b)

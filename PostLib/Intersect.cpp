@@ -149,18 +149,18 @@ bool Post::FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FE
 	bool bfound = false;
 	switch (face.m_ntype)
 	{
-	case FACE_TRI3:
-	case FACE_TRI6:
-	case FACE_TRI7:
-	case FACE_TRI10:
+	case FE_FACE_TRI3:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
+	case FE_FACE_TRI10:
 	{
 		Triangle tri = { rn[0], rn[1], rn[2] };
 		bfound = IntersectTriangle(ray, tri, q);
 	}
 	break;
-	case FACE_QUAD4:
-	case FACE_QUAD8:
-	case FACE_QUAD9:
+	case FE_FACE_QUAD4:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
 	{
 		Quad quad = { rn[0], rn[1], rn[2], rn[3] };
 		bfound = FastIntersectQuad(ray, quad, q);
