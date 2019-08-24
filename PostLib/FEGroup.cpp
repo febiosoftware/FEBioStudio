@@ -38,7 +38,7 @@ void FEDomain::SetMatID(int matid)
 }
 
 //-----------------------------------------------------------------------------
-Post::FEFace& FEDomain::Face(int n)
+FEFace& FEDomain::Face(int n)
 { 
 	return m_pm->Face(m_Face[n]); 
 }
@@ -103,7 +103,7 @@ void FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 		nnf += nf;
 		for (int j=0; j<nf; ++j)
 		{
-			if (mesh.Node(face.node[j]).m_ntag == -1) mesh.Node(face.node[j]).m_ntag = n++;
+			if (mesh.Node(face.n[j]).m_ntag == -1) mesh.Node(face.n[j]).m_ntag = n++;
 		}
 	}
 
@@ -118,7 +118,7 @@ void FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 		int nf = face.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
-			int lid = mesh.Node(face.node[j]).m_ntag; assert(lid >= 0);
+			int lid = mesh.Node(face.n[j]).m_ntag; assert(lid >= 0);
 			lnode[nnf + j] = lid;
 		}
 		nnf += nf;

@@ -810,9 +810,9 @@ vec3f FEModel::NodePosition(const vec3f& r, int ntime)
 //-----------------------------------------------------------------------------
 vec3f FEModel::FaceNormal(FEFace& f, int ntime)
 {
-	vec3f r0 = NodePosition(f.node[0], ntime);
-	vec3f r1 = NodePosition(f.node[1], ntime);
-	vec3f r2 = NodePosition(f.node[2], ntime);
+	vec3f r0 = NodePosition(f.n[0], ntime);
+	vec3f r1 = NodePosition(f.n[1], ntime);
+	vec3f r2 = NodePosition(f.n[2], ntime);
 	vec3f fn = (r1 - r0)^(r2 - r0);
 	fn.Normalize();
 	return fn;

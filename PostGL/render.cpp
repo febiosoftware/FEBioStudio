@@ -4,9 +4,9 @@ using namespace Post;
 
 //-----------------------------------------------------------------------------
 // Render a 4-noded quad
-void CGLModel::RenderQUAD4(Post::FEFace& f, bool bsmooth, bool bnode)
+void CGLModel::RenderQUAD4(FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FE_FACE_QUAD4);
+	assert(f.m_type == FE_FACE_QUAD4);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -34,9 +34,9 @@ void CGLModel::RenderQUAD4(Post::FEFace& f, bool bsmooth, bool bnode)
 
 //-----------------------------------------------------------------------------
 // Render a 8-noded quad
-void CGLModel::RenderQUAD8(Post::FEFace& f, bool bsmooth, bool bnode)
+void CGLModel::RenderQUAD8(FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FE_FACE_QUAD8);
+	assert(f.m_type == FE_FACE_QUAD8);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -82,9 +82,9 @@ void CGLModel::RenderQUAD8(Post::FEFace& f, bool bsmooth, bool bnode)
 
 //-----------------------------------------------------------------------------
 // Render a 9-noded quad
-void CGLModel::RenderQUAD9(Post::FEFace& f, bool bsmooth, bool bnode)
+void CGLModel::RenderQUAD9(FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FE_FACE_QUAD9);
+	assert(f.m_type == FE_FACE_QUAD9);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -142,9 +142,9 @@ void CGLModel::RenderQUAD9(Post::FEFace& f, bool bsmooth, bool bnode)
 
 //-----------------------------------------------------------------------------
 // Render a 3-noded tri
-void CGLModel::RenderTRI3(Post::FEFace& f, bool bsmooth, bool bnode)
+void CGLModel::RenderTRI3(FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FE_FACE_TRI3);
+	assert(f.m_type == FE_FACE_TRI3);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -170,9 +170,9 @@ void CGLModel::RenderTRI3(Post::FEFace& f, bool bsmooth, bool bnode)
 
 //-----------------------------------------------------------------------------
 // Render a 6-noded tri
-void CGLModel::RenderTRI6(Post::FEFace& f, bool bsmooth, bool bnode)
+void CGLModel::RenderTRI6(FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FE_FACE_TRI6);
+	assert(f.m_type == FE_FACE_TRI6);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -210,9 +210,9 @@ void CGLModel::RenderTRI6(Post::FEFace& f, bool bsmooth, bool bnode)
 
 //-----------------------------------------------------------------------------
 // Render a 7-noded tri
-void CGLModel::RenderTRI7(Post::FEFace& f, bool bsmooth, bool bnode)
+void CGLModel::RenderTRI7(FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FE_FACE_TRI7);
+	assert(f.m_type == FE_FACE_TRI7);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -266,9 +266,9 @@ inline void glxVertex(const vec3f& n, const vec3f& r, float t)
 
 //-----------------------------------------------------------------------------
 // Render a 10-noded tri
-void CGLModel::RenderTRI10(Post::FEFace& f, bool bsmooth, bool bnode)
+void CGLModel::RenderTRI10(FEFace& f, bool bsmooth, bool bnode)
 {
-	assert(f.m_ntype == FE_FACE_TRI10);
+	assert(f.m_type == FE_FACE_TRI10);
 
 	// get the mesh
 	FEMeshBase* pm = GetActiveMesh();
@@ -300,13 +300,13 @@ void CGLModel::RenderTRI10(Post::FEFace& f, bool bsmooth, bool bnode)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 4-noded quadrilateral
-void CGLModel::RenderSmoothQUAD4(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderSmoothQUAD4(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
 	vec3f r[4] = {
-		pm->Node(face.node[0]).m_rt,
-		pm->Node(face.node[1]).m_rt,
-		pm->Node(face.node[2]).m_rt,
-		pm->Node(face.node[3]).m_rt
+		pm->Node(face.n[0]).m_rt,
+		pm->Node(face.n[1]).m_rt,
+		pm->Node(face.n[2]).m_rt,
+		pm->Node(face.n[3]).m_rt
 	};
 
 	vec3f n[4] = {face.m_nn[0], face.m_nn[1], face.m_nn[2], face.m_nn[3]};
@@ -362,19 +362,19 @@ void CGLModel::RenderSmoothQUAD4(vec3f r[4], vec3f n[4], float q[4], int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 8-noded quadrilateral
-void CGLModel::RenderSmoothQUAD8(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderSmoothQUAD8(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FE_FACE_QUAD8);
+	assert(face.m_type == FE_FACE_QUAD8);
 
 	vec3f r[8];
-	r[0] = pm->Node(face.node[0]).m_rt;
-	r[1] = pm->Node(face.node[1]).m_rt;
-	r[2] = pm->Node(face.node[2]).m_rt;
-	r[3] = pm->Node(face.node[3]).m_rt;
-	r[4] = pm->Node(face.node[4]).m_rt;
-	r[5] = pm->Node(face.node[5]).m_rt;
-	r[6] = pm->Node(face.node[6]).m_rt;
-	r[7] = pm->Node(face.node[7]).m_rt;
+	r[0] = pm->Node(face.n[0]).m_rt;
+	r[1] = pm->Node(face.n[1]).m_rt;
+	r[2] = pm->Node(face.n[2]).m_rt;
+	r[3] = pm->Node(face.n[3]).m_rt;
+	r[4] = pm->Node(face.n[4]).m_rt;
+	r[5] = pm->Node(face.n[5]).m_rt;
+	r[6] = pm->Node(face.n[6]).m_rt;
+	r[7] = pm->Node(face.n[7]).m_rt;
 
 	vec3f n[8];
 	n[0] = face.m_nn[0];
@@ -446,20 +446,20 @@ void CGLModel::RenderSmoothQUAD8(vec3f r[8], vec3f n[8], float q[8], int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 9-noded quadrilateral
-void CGLModel::RenderSmoothQUAD9(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderSmoothQUAD9(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FE_FACE_QUAD9);
+	assert(face.m_type == FE_FACE_QUAD9);
 
 	vec3f r[9];
-	r[0] = pm->Node(face.node[0]).m_rt;
-	r[1] = pm->Node(face.node[1]).m_rt;
-	r[2] = pm->Node(face.node[2]).m_rt;
-	r[3] = pm->Node(face.node[3]).m_rt;
-	r[4] = pm->Node(face.node[4]).m_rt;
-	r[5] = pm->Node(face.node[5]).m_rt;
-	r[6] = pm->Node(face.node[6]).m_rt;
-	r[7] = pm->Node(face.node[7]).m_rt;
-	r[8] = pm->Node(face.node[8]).m_rt;
+	r[0] = pm->Node(face.n[0]).m_rt;
+	r[1] = pm->Node(face.n[1]).m_rt;
+	r[2] = pm->Node(face.n[2]).m_rt;
+	r[3] = pm->Node(face.n[3]).m_rt;
+	r[4] = pm->Node(face.n[4]).m_rt;
+	r[5] = pm->Node(face.n[5]).m_rt;
+	r[6] = pm->Node(face.n[6]).m_rt;
+	r[7] = pm->Node(face.n[7]).m_rt;
+	r[8] = pm->Node(face.n[8]).m_rt;
 
 	vec3f n[9];
 	n[0] = face.m_nn[0];
@@ -541,17 +541,17 @@ void CGLModel::RenderSmoothQUAD9(vec3f r[9], vec3f n[9], float q[9], int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 6-noded triangle
-void CGLModel::RenderSmoothTRI6(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderSmoothTRI6(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FE_FACE_TRI6);
+	assert(face.m_type == FE_FACE_TRI6);
 
 	vec3f r[6];
-	r[0] = pm->Node(face.node[0]).m_rt;
-	r[1] = pm->Node(face.node[1]).m_rt;
-	r[2] = pm->Node(face.node[2]).m_rt;
-	r[3] = pm->Node(face.node[3]).m_rt;
-	r[4] = pm->Node(face.node[4]).m_rt;
-	r[5] = pm->Node(face.node[5]).m_rt;
+	r[0] = pm->Node(face.n[0]).m_rt;
+	r[1] = pm->Node(face.n[1]).m_rt;
+	r[2] = pm->Node(face.n[2]).m_rt;
+	r[3] = pm->Node(face.n[3]).m_rt;
+	r[4] = pm->Node(face.n[4]).m_rt;
+	r[5] = pm->Node(face.n[5]).m_rt;
 
 	vec3f n[6];
 	n[0] = face.m_nn[0];
@@ -647,18 +647,18 @@ void CGLModel::RenderSmoothTRI6(vec3f x[6], vec3f n[6], float q[6], int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 7-noded triangle
-void CGLModel::RenderSmoothTRI7(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderSmoothTRI7(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FE_FACE_TRI7);
+	assert(face.m_type == FE_FACE_TRI7);
 
 	vec3f r[7];
-	r[0] = pm->Node(face.node[0]).m_rt;
-	r[1] = pm->Node(face.node[1]).m_rt;
-	r[2] = pm->Node(face.node[2]).m_rt;
-	r[3] = pm->Node(face.node[3]).m_rt;
-	r[4] = pm->Node(face.node[4]).m_rt;
-	r[5] = pm->Node(face.node[5]).m_rt;
-	r[6] = pm->Node(face.node[6]).m_rt;
+	r[0] = pm->Node(face.n[0]).m_rt;
+	r[1] = pm->Node(face.n[1]).m_rt;
+	r[2] = pm->Node(face.n[2]).m_rt;
+	r[3] = pm->Node(face.n[3]).m_rt;
+	r[4] = pm->Node(face.n[4]).m_rt;
+	r[5] = pm->Node(face.n[5]).m_rt;
+	r[6] = pm->Node(face.n[6]).m_rt;
 
 	vec3f n[7];
 	n[0] = face.m_nn[0];
@@ -757,21 +757,21 @@ void CGLModel::RenderSmoothTRI7(vec3f x[7], vec3f n[7], float q[7], int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 10-noded triangle
-void CGLModel::RenderSmoothTRI10(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderSmoothTRI10(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
-	assert(face.m_ntype == FE_FACE_TRI10);
+	assert(face.m_type == FE_FACE_TRI10);
 
 	vec3f r[10];
-	r[0] = pm->Node(face.node[0]).m_rt;
-	r[1] = pm->Node(face.node[1]).m_rt;
-	r[2] = pm->Node(face.node[2]).m_rt;
-	r[3] = pm->Node(face.node[3]).m_rt;
-	r[4] = pm->Node(face.node[4]).m_rt;
-	r[5] = pm->Node(face.node[5]).m_rt;
-	r[6] = pm->Node(face.node[6]).m_rt;
-	r[7] = pm->Node(face.node[7]).m_rt;
-	r[8] = pm->Node(face.node[8]).m_rt;
-	r[9] = pm->Node(face.node[9]).m_rt;
+	r[0] = pm->Node(face.n[0]).m_rt;
+	r[1] = pm->Node(face.n[1]).m_rt;
+	r[2] = pm->Node(face.n[2]).m_rt;
+	r[3] = pm->Node(face.n[3]).m_rt;
+	r[4] = pm->Node(face.n[4]).m_rt;
+	r[5] = pm->Node(face.n[5]).m_rt;
+	r[6] = pm->Node(face.n[6]).m_rt;
+	r[7] = pm->Node(face.n[7]).m_rt;
+	r[8] = pm->Node(face.n[8]).m_rt;
+	r[9] = pm->Node(face.n[9]).m_rt;
 
 	vec3f n[10];
 	n[0] = face.m_nn[0];
@@ -876,23 +876,23 @@ void CGLModel::RenderSmoothTRI10(vec3f x[10], vec3f n[10], float q[10], int ndiv
 	glEnd();
 }
 
-void CGLModel::RenderTexQUAD4(Post::FEFace& face, FEMeshBase* pm)
+void CGLModel::RenderTexQUAD4(FEFace& face, FEMeshBase* pm)
 {
 	glBegin(GL_QUADS);
 	{
-		vec3f r1 = pm->Node(face.node[0]).m_rt;
-		vec3f r2 = pm->Node(face.node[1]).m_rt;
-		vec3f r3 = pm->Node(face.node[2]).m_rt;
-		vec3f r4 = pm->Node(face.node[3]).m_rt;
+		vec3f r1 = pm->Node(face.n[0]).m_rt;
+		vec3f r2 = pm->Node(face.n[1]).m_rt;
+		vec3f r3 = pm->Node(face.n[2]).m_rt;
+		vec3f r4 = pm->Node(face.n[3]).m_rt;
 
 		vec3f nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
 		glNormal3f(nf.x, nf.y, nf.z);
 
-		float t1 = pm->Node(face.node[0]).m_tex;
-		float t2 = pm->Node(face.node[1]).m_tex;
-		float t3 = pm->Node(face.node[2]).m_tex;
-		float t4 = pm->Node(face.node[3]).m_tex;
+		float t1 = pm->Node(face.n[0]).m_tex;
+		float t2 = pm->Node(face.n[1]).m_tex;
+		float t3 = pm->Node(face.n[2]).m_tex;
+		float t4 = pm->Node(face.n[3]).m_tex;
 
 		glTexCoord1f(t1); glVertex3f(r1.x, r1.y, r1.z);
 		glTexCoord1f(t2); glVertex3f(r2.x, r2.y, r2.z);
@@ -902,31 +902,31 @@ void CGLModel::RenderTexQUAD4(Post::FEFace& face, FEMeshBase* pm)
 	glEnd();
 }
 
-void CGLModel::RenderTexQUAD8(Post::FEFace& face, FEMeshBase* pm)
+void CGLModel::RenderTexQUAD8(FEFace& face, FEMeshBase* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		vec3f r1 = pm->Node(face.node[0]).m_rt;
-		vec3f r2 = pm->Node(face.node[1]).m_rt;
-		vec3f r3 = pm->Node(face.node[2]).m_rt;
-		vec3f r4 = pm->Node(face.node[3]).m_rt;
-		vec3f r5 = pm->Node(face.node[4]).m_rt;
-		vec3f r6 = pm->Node(face.node[5]).m_rt;
-		vec3f r7 = pm->Node(face.node[6]).m_rt;
-		vec3f r8 = pm->Node(face.node[7]).m_rt;
+		vec3f r1 = pm->Node(face.n[0]).m_rt;
+		vec3f r2 = pm->Node(face.n[1]).m_rt;
+		vec3f r3 = pm->Node(face.n[2]).m_rt;
+		vec3f r4 = pm->Node(face.n[3]).m_rt;
+		vec3f r5 = pm->Node(face.n[4]).m_rt;
+		vec3f r6 = pm->Node(face.n[5]).m_rt;
+		vec3f r7 = pm->Node(face.n[6]).m_rt;
+		vec3f r8 = pm->Node(face.n[7]).m_rt;
 
 		vec3f nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
 		glNormal3f(nf.x, nf.y, nf.z);
 
-		float t1 = pm->Node(face.node[0]).m_tex;
-		float t2 = pm->Node(face.node[1]).m_tex;
-		float t3 = pm->Node(face.node[2]).m_tex;
-		float t4 = pm->Node(face.node[3]).m_tex;
-		float t5 = pm->Node(face.node[4]).m_tex;
-		float t6 = pm->Node(face.node[5]).m_tex;
-		float t7 = pm->Node(face.node[6]).m_tex;
-		float t8 = pm->Node(face.node[7]).m_tex;
+		float t1 = pm->Node(face.n[0]).m_tex;
+		float t2 = pm->Node(face.n[1]).m_tex;
+		float t3 = pm->Node(face.n[2]).m_tex;
+		float t4 = pm->Node(face.n[3]).m_tex;
+		float t5 = pm->Node(face.n[4]).m_tex;
+		float t6 = pm->Node(face.n[5]).m_tex;
+		float t7 = pm->Node(face.n[6]).m_tex;
+		float t8 = pm->Node(face.n[7]).m_tex;
 
 		glTexCoord1f(t8); glVertex3f(r8.x, r8.y, r8.z);
 		glTexCoord1f(t1); glVertex3f(r1.x, r1.y, r1.z);
@@ -955,21 +955,21 @@ void CGLModel::RenderTexQUAD8(Post::FEFace& face, FEMeshBase* pm)
 	glEnd();
 }
 
-void CGLModel::RenderTexTRI3(Post::FEFace& face, FEMeshBase* pm)
+void CGLModel::RenderTexTRI3(FEFace& face, FEMeshBase* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		vec3f r1 = pm->Node(face.node[0]).m_rt;
-		vec3f r2 = pm->Node(face.node[1]).m_rt;
-		vec3f r3 = pm->Node(face.node[2]).m_rt;
+		vec3f r1 = pm->Node(face.n[0]).m_rt;
+		vec3f r2 = pm->Node(face.n[1]).m_rt;
+		vec3f r3 = pm->Node(face.n[2]).m_rt;
 
 		vec3f nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
 		glNormal3f(nf.x, nf.y, nf.z);
 
-		float t1 = pm->Node(face.node[0]).m_tex;
-		float t2 = pm->Node(face.node[1]).m_tex;
-		float t3 = pm->Node(face.node[2]).m_tex;
+		float t1 = pm->Node(face.n[0]).m_tex;
+		float t2 = pm->Node(face.n[1]).m_tex;
+		float t3 = pm->Node(face.n[2]).m_tex;
 
 		glTexCoord1f(t1); glVertex3f(r1.x, r1.y, r1.z);
 		glTexCoord1f(t2); glVertex3f(r2.x, r2.y, r2.z);
@@ -978,27 +978,27 @@ void CGLModel::RenderTexTRI3(Post::FEFace& face, FEMeshBase* pm)
 	glEnd();
 }
 
-void CGLModel::RenderTexTRI6(Post::FEFace& face, FEMeshBase* pm)
+void CGLModel::RenderTexTRI6(FEFace& face, FEMeshBase* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		vec3f r1 = pm->Node(face.node[0]).m_rt;
-		vec3f r2 = pm->Node(face.node[1]).m_rt;
-		vec3f r3 = pm->Node(face.node[2]).m_rt;
-		vec3f r4 = pm->Node(face.node[3]).m_rt;
-		vec3f r5 = pm->Node(face.node[4]).m_rt;
-		vec3f r6 = pm->Node(face.node[5]).m_rt;
+		vec3f r1 = pm->Node(face.n[0]).m_rt;
+		vec3f r2 = pm->Node(face.n[1]).m_rt;
+		vec3f r3 = pm->Node(face.n[2]).m_rt;
+		vec3f r4 = pm->Node(face.n[3]).m_rt;
+		vec3f r5 = pm->Node(face.n[4]).m_rt;
+		vec3f r6 = pm->Node(face.n[5]).m_rt;
 
 		vec3f nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
 		glNormal3f(nf.x, nf.y, nf.z);
 
-		float t1 = pm->Node(face.node[0]).m_tex;
-		float t2 = pm->Node(face.node[1]).m_tex;
-		float t3 = pm->Node(face.node[2]).m_tex;
-		float t4 = pm->Node(face.node[3]).m_tex;
-		float t5 = pm->Node(face.node[4]).m_tex;
-		float t6 = pm->Node(face.node[5]).m_tex;
+		float t1 = pm->Node(face.n[0]).m_tex;
+		float t2 = pm->Node(face.n[1]).m_tex;
+		float t3 = pm->Node(face.n[2]).m_tex;
+		float t4 = pm->Node(face.n[3]).m_tex;
+		float t5 = pm->Node(face.n[4]).m_tex;
+		float t6 = pm->Node(face.n[5]).m_tex;
 
 		glTexCoord1f(t1); glVertex3f(r1.x, r1.y, r1.z);
 		glTexCoord1f(t4); glVertex3f(r4.x, r4.y, r4.z);
@@ -1019,29 +1019,29 @@ void CGLModel::RenderTexTRI6(Post::FEFace& face, FEMeshBase* pm)
 	glEnd();
 }
 
-void CGLModel::RenderTexTRI7(Post::FEFace& face, FEMeshBase* pm)
+void CGLModel::RenderTexTRI7(FEFace& face, FEMeshBase* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		vec3f r1 = pm->Node(face.node[0]).m_rt;
-		vec3f r2 = pm->Node(face.node[1]).m_rt;
-		vec3f r3 = pm->Node(face.node[2]).m_rt;
-		vec3f r4 = pm->Node(face.node[3]).m_rt;
-		vec3f r5 = pm->Node(face.node[4]).m_rt;
-		vec3f r6 = pm->Node(face.node[5]).m_rt;
-		vec3f r7 = pm->Node(face.node[6]).m_rt;
+		vec3f r1 = pm->Node(face.n[0]).m_rt;
+		vec3f r2 = pm->Node(face.n[1]).m_rt;
+		vec3f r3 = pm->Node(face.n[2]).m_rt;
+		vec3f r4 = pm->Node(face.n[3]).m_rt;
+		vec3f r5 = pm->Node(face.n[4]).m_rt;
+		vec3f r6 = pm->Node(face.n[5]).m_rt;
+		vec3f r7 = pm->Node(face.n[6]).m_rt;
 
 		vec3f nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
 		glNormal3f(nf.x, nf.y, nf.z);
 
-		float t1 = pm->Node(face.node[0]).m_tex;
-		float t2 = pm->Node(face.node[1]).m_tex;
-		float t3 = pm->Node(face.node[2]).m_tex;
-		float t4 = pm->Node(face.node[3]).m_tex;
-		float t5 = pm->Node(face.node[4]).m_tex;
-		float t6 = pm->Node(face.node[5]).m_tex;
-		float t7 = pm->Node(face.node[6]).m_tex;
+		float t1 = pm->Node(face.n[0]).m_tex;
+		float t2 = pm->Node(face.n[1]).m_tex;
+		float t3 = pm->Node(face.n[2]).m_tex;
+		float t4 = pm->Node(face.n[3]).m_tex;
+		float t5 = pm->Node(face.n[4]).m_tex;
+		float t6 = pm->Node(face.n[5]).m_tex;
+		float t7 = pm->Node(face.n[6]).m_tex;
 
 		glTexCoord1f(t1); glVertex3f(r1.x, r1.y, r1.z);
 		glTexCoord1f(t4); glVertex3f(r4.x, r4.y, r4.z);
@@ -1070,20 +1070,20 @@ void CGLModel::RenderTexTRI7(Post::FEFace& face, FEMeshBase* pm)
 	glEnd();
 }
 
-void CGLModel::RenderFace1Outline(Post::FEFace& face, FEMeshBase* pm)
+void CGLModel::RenderFace1Outline(FEFace& face, FEMeshBase* pm)
 {
 	glBegin(GL_LINE_LOOP);
 	{
 		int N = face.Nodes();
 		for (int i = 0; i < N; ++i)
 		{
-			vec3f r = pm->Node(face.node[i]).m_rt; glVertex3f(r.x, r.y, r.z);
+			vec3f r = pm->Node(face.n[i]).m_rt; glVertex3f(r.x, r.y, r.z);
 		}
 	}
 	glEnd();
 }
 
-void CGLModel::RenderFace2Outline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
+void CGLModel::RenderFace2Outline(FEFace& face, FEMeshBase* pm, int ndivs)
 {
 	vec3f a[3];
 	glBegin(GL_LINE_LOOP);
@@ -1091,7 +1091,7 @@ void CGLModel::RenderFace2Outline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 		int NE = face.Edges();
 		for (int i = 0; i<NE; ++i)
 		{
-			FEEdge e = face.Edge(i);
+			FEEdge e = face.GetEdge(i);
 			a[0] = pm->Node(e.n[0]).m_rt;
 			a[1] = pm->Node(e.n[1]).m_rt;
 			a[2] = pm->Node(e.n[2]).m_rt;
@@ -1108,7 +1108,7 @@ void CGLModel::RenderFace2Outline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 
 }
 
-void CGLModel::RenderFace3Outline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
+void CGLModel::RenderFace3Outline(FEFace& face, FEMeshBase* pm, int ndivs)
 {
 	vec3f a[4];
 	glBegin(GL_LINE_LOOP);
@@ -1116,7 +1116,7 @@ void CGLModel::RenderFace3Outline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 		int NE = face.Edges();
 		for (int i = 0; i<NE; ++i)
 		{
-			FEEdge e = face.Edge(i);
+			FEEdge e = face.GetEdge(i);
 			a[0] = pm->Node(e.n[0]).m_rt;
 			a[1] = pm->Node(e.n[1]).m_rt;
 			a[2] = pm->Node(e.n[2]).m_rt;

@@ -182,7 +182,7 @@ void FEMeshBase::FindNeighbours()
 				e.GetFace(j, face);
 
 				// find the neighbour element
-				vector<NodeElemRef>& nel = m_NEL.ElemList(face.node[0]);
+				vector<NodeElemRef>& nel = m_NEL.ElemList(face.n[0]);
 				bfound = false;
 				for (int k=0; k < (int) nel.size(); k++)
 				{
@@ -311,7 +311,7 @@ void FEMeshBase::BuildEdges()
 			FEFace* pfj = (fi.m_nbr[j] == -1 ? 0 : &Face(fi.m_nbr[j]));
 			if ((pfj == 0) || (pfj->m_ntag > fi.m_ntag))
 			{
-				FEEdge e = fi.Edge(j);
+				FEEdge e = fi.GetEdge(j);
 				e.SetID(nid++);
 				m_Edge.push_back(e);
 			}
@@ -369,44 +369,44 @@ void FEMeshBase::BuildFaces()
 		if (e.Edges()>0)
 		{
 			FEFace& f = m_Face[NF++];
-			f.node[0] = e.m_node[0];
-			f.node[1] = e.m_node[1];
-			f.node[2] = e.m_node[2];
+			f.n[0] = e.m_node[0];
+			f.n[1] = e.m_node[1];
+			f.n[2] = e.m_node[2];
 			if (e.Type() == FE_QUAD4) 
 			{
-				f.node[3] = e.m_node[3];
-				f.m_ntype = FE_FACE_QUAD4;
+				f.n[3] = e.m_node[3];
+				f.m_type = FE_FACE_QUAD4;
 			}
             else if (e.Type() == FE_QUAD8)
             {
-                f.node[3] = e.m_node[3];
-                f.node[4] = e.m_node[4];
-                f.node[5] = e.m_node[5];
-                f.node[6] = e.m_node[6];
-                f.node[7] = e.m_node[7];
-                f.m_ntype = FE_FACE_QUAD8;
+                f.n[3] = e.m_node[3];
+                f.n[4] = e.m_node[4];
+                f.n[5] = e.m_node[5];
+                f.n[6] = e.m_node[6];
+                f.n[7] = e.m_node[7];
+                f.m_type = FE_FACE_QUAD8;
             }
             else if (e.Type() == FE_QUAD9)
             {
-                f.node[3] = e.m_node[3];
-                f.node[4] = e.m_node[4];
-                f.node[5] = e.m_node[5];
-                f.node[6] = e.m_node[6];
-                f.node[7] = e.m_node[7];
-                f.node[8] = e.m_node[8];
-                f.m_ntype = FE_FACE_QUAD9;
+                f.n[3] = e.m_node[3];
+                f.n[4] = e.m_node[4];
+                f.n[5] = e.m_node[5];
+                f.n[6] = e.m_node[6];
+                f.n[7] = e.m_node[7];
+                f.n[8] = e.m_node[8];
+                f.m_type = FE_FACE_QUAD9;
             }
 			else if (e.Type() == FE_TRI3)
 			{
-				f.node[3] = e.m_node[2];
-				f.m_ntype = FE_FACE_TRI3;
+				f.n[3] = e.m_node[2];
+				f.m_type = FE_FACE_TRI3;
 			}
             else if (e.Type() == FE_TRI6)
             {
-                f.node[3] = e.m_node[3];
-                f.node[4] = e.m_node[4];
-                f.node[5] = e.m_node[5];
-                f.m_ntype = FE_FACE_TRI6;
+                f.n[3] = e.m_node[3];
+                f.n[4] = e.m_node[4];
+                f.n[5] = e.m_node[5];
+                f.m_type = FE_FACE_TRI6;
             }
 
 			f.m_elem[0] = i;
@@ -432,7 +432,7 @@ void FEMeshBase::FindFaceNeighbors()
 	{
 		FEFace& f = m_Face[i];
 		int n = f.Nodes();
-		for (int j=0; j<n; ++j) pnv[ f.node[j] ]++;
+		for (int j=0; j<n; ++j) pnv[ f.n[j] ]++;
 	}
 
 	// figure out which face is attached to which node
@@ -451,7 +451,7 @@ void FEMeshBase::FindFaceNeighbors()
 		int n = f.Nodes();
 		for (int j=0; j<n; ++j)
 		{
-			int nj = f.node[j];
+			int nj = f.n[j];
 			ppnf[nj][pnv[nj]] = i;
 			pnv[nj]++;
 		}
@@ -479,8 +479,8 @@ void FEMeshBase::FindFaceNeighbors()
 		for (int j=0; j<n; ++j)
 		{
 			jp1 = (j+1)%n;
-			n1 = f.node[j];
-			n2 = f.node[jp1];
+			n1 = f.n[j];
+			n2 = f.n[jp1];
 			nval = pnv[n1];
 
 			for (int k=0; k<nval; ++k)
@@ -552,7 +552,7 @@ void FEMeshBase::UpdateNodes()
 	{
 		FEFace& f = m_Face[i];
 		int nf = f.Nodes();
-		for (j=0; j<nf; ++j) m_Node[f.node[j]].m_bext = true;
+		for (j=0; j<nf; ++j) m_Node[f.n[j]].m_bext = true;
 	}
 }
 
@@ -567,13 +567,13 @@ void FEMeshBase::AutoSmooth(double angleRadians)
 		FEFace& f = m_Face[i];
 
 		// calculate the face normals
-		vec3f& r0 = Node(f.node[0]).m_r0;
-		vec3f& r1 = Node(f.node[1]).m_r0;
-		vec3f& r2 = Node(f.node[2]).m_r0;
+		vec3f& r0 = Node(f.n[0]).m_r0;
+		vec3f& r1 = Node(f.n[1]).m_r0;
+		vec3f& r2 = Node(f.n[2]).m_r0;
 
 		f.m_fn = (r1 - r0)^(r2 - r0);
 		f.m_fn.Normalize();
-		f.m_nsg = 0;
+		f.m_sid = 0;
 	}
 
 	// smoothing threshold
@@ -611,7 +611,7 @@ void FEMeshBase::AutoSmooth(double angleRadians)
 					FEFace& f = *F[i];
 					assert(f.m_ntag == nsg);
 					int nf = f.Nodes();
-					for (int k=0; k<nf; ++k) f.m_nn[k] = pnorm[ f.node[k] ];
+					for (int k=0; k<nf; ++k) f.m_nn[k] = pnorm[ f.n[k] ];
 				}
 
 				// clear normals
@@ -619,7 +619,7 @@ void FEMeshBase::AutoSmooth(double angleRadians)
 				{
 					FEFace& f = *F[i];
 					int nf = f.Nodes();
-					for (int k=0; k<nf; ++k) pnorm[ f.node[k] ] = vec3f(0,0,0);
+					for (int k=0; k<nf; ++k) pnorm[ f.n[k] ] = vec3f(0,0,0);
 				}
 			}
 
@@ -638,7 +638,7 @@ void FEMeshBase::AutoSmooth(double angleRadians)
 
 			// mark as processed
 			pf->m_ntag = nsg;
-			pf->m_nsg = nsg;
+			pf->m_sid = nsg;
 			F[NF++] = pf;
 
 			int nf = pf->Nodes();
@@ -647,7 +647,7 @@ void FEMeshBase::AutoSmooth(double angleRadians)
 			if ((nf==4)||(nf==8)||(nf==9)) n = 4;
 
 			// add face normal to node normal
-			for (int i=0; i<nf; ++i) pnorm[pf->node[i]] += pf->m_fn;
+			for (int i=0; i<nf; ++i) pnorm[pf->n[i]] += pf->m_fn;
 
 			// push unprocessed neighbours
 			for (int i=0; i<n; ++i)
@@ -688,9 +688,9 @@ void FEMeshBase::UpdateNormals(bool bsmooth)
 	{
 		FEFace& face = Face(i);
 
-		vec3f& r1 = Node(face.node[0]).m_rt;
-		vec3f& r2 = Node(face.node[1]).m_rt;
-		vec3f& r3 = Node(face.node[2]).m_rt;
+		vec3f& r1 = Node(face.n[0]).m_rt;
+		vec3f& r2 = Node(face.n[1]).m_rt;
+		vec3f& r3 = Node(face.n[2]).m_rt;
 
 		face.m_fn = (r2-r1)^(r3-r1);
 		face.m_fn.Normalize();
@@ -741,7 +741,7 @@ void FEMeshBase::UpdateNormals(bool bsmooth)
 					// add face normal to node normal
 					for (int j=0; j<fn; ++j)
 					{
-						int nj = pf->node[j];
+						int nj = pf->n[j];
 						nt[nj] += pf->m_fn;
 						if (ntag[nj] != 1)
 						{
@@ -757,7 +757,7 @@ void FEMeshBase::UpdateNormals(bool bsmooth)
 						if (pf->m_nbr[j] >= 0)
 						{
 							pf2 = &m_Face[pf->m_nbr[j]];
-							if ((pf2->m_ntag == -1) && (pf2->m_nsg == pf->m_nsg))
+							if ((pf2->m_ntag == -1) && (pf2->m_sid == pf->m_sid))
 							{
 								pf2->m_ntag = nsg;
 								stack[ns++] = pf2;
@@ -781,7 +781,7 @@ void FEMeshBase::UpdateNormals(bool bsmooth)
 					FEFace& f = *faceList[j];
 					assert(f.m_ntag == nsg);
 					int nf = f.Nodes();
-					for (int k=0; k<nf; ++k) f.m_nn[k] = nt[ f.node[k] ];
+					for (int k=0; k<nf; ++k) f.m_nn[k] = nt[ f.n[k] ];
 				}
 
 				// clear normals for next group
@@ -801,13 +801,13 @@ double triangle_area(const vec3f& r0, const vec3f& r1, const vec3f& r2)
 }
 
 //-----------------------------------------------------------------------------
-double FEMeshBase::FaceArea(Post::FEFace &f)
+double FEMeshBase::FaceArea(FEFace &f)
 {
 	const int N = f.Nodes();
 	vector<vec3f> nodes(N);
 	for (int i = 0; i < N; ++i)
 	{
-		nodes[i] = m_Node[f.node[i]].m_rt;
+		nodes[i] = m_Node[f.n[i]].m_rt;
 	}
 	return FaceArea(nodes, N);
 }
@@ -1372,27 +1372,27 @@ float FEMeshBase::TetVolume(const Post::FEElement& el)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodePosition(const Post::FEFace& f, vec3f* r) const
+void FEMeshBase::FaceNodePosition(const FEFace& f, vec3f* r) const
 {
-	switch (f.m_ntype)
+	switch (f.m_type)
 	{
 	case FE_FACE_TRI10:
-		r[9] = m_Node[f.node[9]].m_rt;
+		r[9] = m_Node[f.n[9]].m_rt;
 	case FE_FACE_QUAD9:
-		r[8] = m_Node[f.node[8]].m_rt;
+		r[8] = m_Node[f.n[8]].m_rt;
 	case FE_FACE_QUAD8:
-		r[7] = m_Node[f.node[7]].m_rt;
+		r[7] = m_Node[f.n[7]].m_rt;
 	case FE_FACE_TRI7:
-		r[6] = m_Node[f.node[6]].m_rt;
+		r[6] = m_Node[f.n[6]].m_rt;
 	case FE_FACE_TRI6:
-		r[5] = m_Node[f.node[5]].m_rt;
-		r[4] = m_Node[f.node[4]].m_rt;
+		r[5] = m_Node[f.n[5]].m_rt;
+		r[4] = m_Node[f.n[4]].m_rt;
 	case FE_FACE_QUAD4:
-		r[3] = m_Node[f.node[3]].m_rt;
+		r[3] = m_Node[f.n[3]].m_rt;
 	case FE_FACE_TRI3:
-		r[2] = m_Node[f.node[2]].m_rt;
-		r[1] = m_Node[f.node[1]].m_rt;
-		r[0] = m_Node[f.node[0]].m_rt;
+		r[2] = m_Node[f.n[2]].m_rt;
+		r[1] = m_Node[f.n[1]].m_rt;
+		r[0] = m_Node[f.n[0]].m_rt;
 		break;
 	default:
 		assert(false);
@@ -1400,9 +1400,9 @@ void FEMeshBase::FaceNodePosition(const Post::FEFace& f, vec3f* r) const
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeNormals(Post::FEFace& f, vec3f* n)
+void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
 {
-	switch (f.m_ntype)
+	switch (f.m_type)
 	{
 	case FE_FACE_TRI10:
 		n[9] = f.m_nn[9];
@@ -1428,11 +1428,11 @@ void FEMeshBase::FaceNodeNormals(Post::FEFace& f, vec3f* n)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeTexCoords(Post::FEFace& f, float* t, bool bnode)
+void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
 {
 	if (bnode)
 	{
-		for (int i=0; i<f.Nodes(); ++i) t[i] = m_Node[f.node[i]].m_tex;
+		for (int i=0; i<f.Nodes(); ++i) t[i] = m_Node[f.n[i]].m_tex;
 	}
 	else
 	{

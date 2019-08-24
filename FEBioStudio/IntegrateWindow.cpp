@@ -184,17 +184,17 @@ double CIntegrateWindow::IntegrateFaces(Post::FEMeshBase& mesh, Post::FEState* p
 	vec3f r[4];
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
-		Post::FEFace& f = mesh.Face(i);
+		FEFace& f = mesh.Face(i);
 		if (f.IsSelected() && f.IsActive())
 		{
 			int nn = f.Nodes();
 
 			// get the nodal values
-			for (int j=0; j<nn; ++j) v[j] = ps->m_NODE[f.node[j]].m_val;
+			for (int j=0; j<nn; ++j) v[j] = ps->m_NODE[f.n[j]].m_val;
 			if (nn==3) v[3] = v[2];
 
 			// get the nodal coordinates
-			for (int j=0; j<nn; ++j) r[j] = ps->m_NODE[f.node[j]].m_rt;
+			for (int j=0; j<nn; ++j) r[j] = ps->m_NODE[f.n[j]].m_rt;
 			if (nn==3) r[3] = r[2];
 
 			// add to integral

@@ -1210,7 +1210,7 @@ void CModelGraphWindow::addSelectedFaces()
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		Post::FEFace& f = mesh.Face(i);
+		FEFace& f = mesh.Face(i);
 		if (f.IsSelected())
 		{
 			// evaluate x-field

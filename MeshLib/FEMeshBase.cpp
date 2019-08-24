@@ -220,7 +220,7 @@ void FEMeshBase::AutoSmooth(double w)
 		vec3d& r1 = Node(pf->n[1]).r;
 		vec3d& r2 = Node(pf->n[2]).r;
 
-		pf->m_fn = (r1 - r0) ^ (r2 - r0);
+		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
 		pf->m_fn.Normalize();
 	}
 
@@ -285,7 +285,7 @@ void FEMeshBase::UpdateNormals()
 		vec3d& r1 = Node(pf->n[1]).r;
 		vec3d& r2 = Node(pf->n[2]).r;
 
-		pf->m_fn = (r1 - r0) ^ (r2 - r0);
+		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
 		pf->m_fn.Normalize();
 
 		int nf = pf->Nodes();
@@ -350,7 +350,7 @@ void FEMeshBase::UpdateNormals()
 				pf = F[j];
 				assert(pf->m_ntag == nsg);
 				int nf = pf->Nodes();
-				for (int k = 0; k<nf; ++k) pf->m_nn[k] = norm[pf->n[k]];
+				for (int k = 0; k<nf; ++k) pf->m_nn[k] = to_vec3f(norm[pf->n[k]]);
 			}
 
 			// clear normals

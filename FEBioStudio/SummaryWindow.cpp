@@ -251,7 +251,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalFaceRange(Post::FEModel& fem, int nsta
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; i++)
 	{
-		Post::FEFace& f = mesh.Face(i);
+		FEFace& f = mesh.Face(i);
 
 		if ((bsel == false) || (f.IsSelected()))
 		{

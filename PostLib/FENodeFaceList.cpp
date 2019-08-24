@@ -15,6 +15,6 @@ void FENodeFaceList::Build(FEMeshBase* pm)
 	{
 		FEFace& f = pm->Face(i);
 		int n = f.Nodes();
-		for (int j=0; j<n; ++j) m_NFL[f.node[j]].push_back(pair<int,short>(i, j));
+		for (int j=0; j<n; ++j) m_NFL[f.n[j]].push_back(pair<int,short>(i, j));
 	}
 }

@@ -130,7 +130,7 @@ public:
 	{
 		vec3f r;
 		int N = f.Nodes();
-		for (int i=0; i<N; i++) r += m_Node[f.node[i]].m_rt;
+		for (int i=0; i<N; i++) r += m_Node[f.n[i]].m_rt;
 		return r/(float)N;
 	}
 

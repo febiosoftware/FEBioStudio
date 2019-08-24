@@ -22,7 +22,7 @@ void FEAreaCoverage::Surface::Create(FEMeshBase& mesh)
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
-			FENode& node = mesh.Node(f.node[j]);
+			FENode& node = mesh.Node(f.n[j]);
 			if (node.m_ntag == -1) node.m_ntag = nn++;
 		}
 	}
@@ -43,16 +43,16 @@ void FEAreaCoverage::Surface::Create(FEMeshBase& mesh)
 		FEFace& f = mesh.Face(m_face[i]);
 		if (f.Nodes() == 4)
 		{
-			m_lnode[4 * i] = mesh.Node(f.node[0]).m_ntag; assert(m_lnode[4 * i] >= 0);
-			m_lnode[4 * i + 1] = mesh.Node(f.node[1]).m_ntag; assert(m_lnode[4 * i + 1] >= 0);
-			m_lnode[4 * i + 2] = mesh.Node(f.node[2]).m_ntag; assert(m_lnode[4 * i + 2] >= 0);
-			m_lnode[4 * i + 3] = mesh.Node(f.node[3]).m_ntag; assert(m_lnode[4 * i + 3] >= 0);
+			m_lnode[4 * i] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4 * i] >= 0);
+			m_lnode[4 * i + 1] = mesh.Node(f.n[1]).m_ntag; assert(m_lnode[4 * i + 1] >= 0);
+			m_lnode[4 * i + 2] = mesh.Node(f.n[2]).m_ntag; assert(m_lnode[4 * i + 2] >= 0);
+			m_lnode[4 * i + 3] = mesh.Node(f.n[3]).m_ntag; assert(m_lnode[4 * i + 3] >= 0);
 		}
 		else if (f.Nodes() == 3)
 		{
-			m_lnode[4 * i] = mesh.Node(f.node[0]).m_ntag; assert(m_lnode[4 * i] >= 0);
-			m_lnode[4 * i + 1] = mesh.Node(f.node[1]).m_ntag; assert(m_lnode[4 * i + 1] >= 0);
-			m_lnode[4 * i + 2] = mesh.Node(f.node[2]).m_ntag; assert(m_lnode[4 * i + 2] >= 0);
+			m_lnode[4 * i] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4 * i] >= 0);
+			m_lnode[4 * i + 1] = mesh.Node(f.n[1]).m_ntag; assert(m_lnode[4 * i + 1] >= 0);
+			m_lnode[4 * i + 2] = mesh.Node(f.n[2]).m_ntag; assert(m_lnode[4 * i + 2] >= 0);
 			m_lnode[4 * i + 3] = m_lnode[4 * i + 2];
 		}
 		else assert(false);
@@ -235,7 +235,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	FEFace& face = mesh.Face(surf.m_face[nface]);
 
 	bool bfound = false;
-	switch (face.m_ntype)
+	switch (face.m_type)
 	{
 	case FE_FACE_TRI3:
 	case FE_FACE_TRI6:

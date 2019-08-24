@@ -113,7 +113,7 @@ void VRMLExporter::write_mesh()
 		n = face.Nodes();
 		for (j=0; j<n; ++j) 
 		{
-			mesh.Node(face.node[j]).m_ntag = 1;
+			mesh.Node(face.n[j]).m_ntag = 1;
 		}
 	}
 	n = 0;
@@ -134,7 +134,7 @@ void VRMLExporter::write_mesh()
 	{
 		FEFace& face = mesh.Face(i);
 		n = face.Nodes();
-		fn = face.node;
+		fn = face.n;
 		int nf[4];
 		nf[0] = mesh.Node(fn[0]).m_ntag;
 		nf[1] = mesh.Node(fn[1]).m_ntag;

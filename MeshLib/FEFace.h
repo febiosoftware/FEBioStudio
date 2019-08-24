@@ -98,14 +98,29 @@ public:
 	int FindEdge(const FEEdge& edge);
 
 public:
+	// evaluate shape function at iso-parameteric point (r,s)
+	void shape(double* H, double r, double s);
+
+	// evaluate a vector expression at iso-points (r,s)
+	double eval(double* d, double r, double s);
+
+	// evaluate a vector expression at iso-points (r,s)
+	vec3f eval(vec3f* v, double r, double s);
+
+public:
 	int	m_type;			//!< face type
 	int	n[MAX_NODES];	//!< nodal ID's
 
 	int		m_nbr[4];	//!< neighbour faces
 
-	vec3d	m_fn;				//!< face normal
-	vec3d	m_nn[MAX_NODES];	//!< node normals
+	vec3f	m_fn;				//!< face normal
+	vec3f	m_nn[MAX_NODES];	//!< node normals
 	int		m_sid;				//!< smoothing ID
+	int		m_mat;				// material id (TODO: only used in post. Can be removed?)
+
+	// TODO: move texture coordinates elsewhere
+	float	m_tex[MAX_NODES];	// nodal 1D-texture coordinates
+	float	m_texe;				// element texture coordinate
 
 	int	m_elem[2];	//!< the elements to which this face belongs
 	int	m_edge[4];	//!< the edges (interior faces don't have edges!)

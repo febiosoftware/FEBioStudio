@@ -40,7 +40,7 @@ bool FELSDYNAExport::ExportSurface(FEModel &fem, int ntime, const char *szfile)
 	{
 		FEFace& f = mesh.Face(i);
 		n = f.Nodes();
-		for (j=0; j<n; ++j) mesh.Node(f.node[j]).m_ntag = 1;
+		for (j=0; j<n; ++j) mesh.Node(f.n[j]).m_ntag = 1;
 	}
 
 	// count nr of nodes
@@ -70,16 +70,16 @@ bool FELSDYNAExport::ExportSurface(FEModel &fem, int ntime, const char *szfile)
 	{
 		FEFace& f = mesh.Face(i);
 		int n[4];
-		n[0] = mesh.Node(f.node[0]).m_ntag;
-		n[1] = mesh.Node(f.node[1]).m_ntag;
-		n[2] = mesh.Node(f.node[2]).m_ntag;
-		n[3] = mesh.Node(f.node[3]).m_ntag;
+		n[0] = mesh.Node(f.n[0]).m_ntag;
+		n[1] = mesh.Node(f.n[1]).m_ntag;
+		n[2] = mesh.Node(f.n[2]).m_ntag;
+		n[3] = mesh.Node(f.n[3]).m_ntag;
 
 		float v[4];
-		v[0] = ps->m_NODE[f.node[0]].m_val;
-		v[1] = ps->m_NODE[f.node[1]].m_val;
-		v[2] = ps->m_NODE[f.node[2]].m_val;
-		v[3] = ps->m_NODE[f.node[3]].m_val;
+		v[0] = ps->m_NODE[f.n[0]].m_val;
+		v[1] = ps->m_NODE[f.n[1]].m_val;
+		v[2] = ps->m_NODE[f.n[2]].m_val;
+		v[3] = ps->m_NODE[f.n[3]].m_val;
 		fprintf(fp, "%8d%8d%8d%8d%8d%8d\n", i+1, f.m_mat+1, n[0], n[1], n[2], n[3]);
 		fprintf(fp, "%16.7e%16.7e%16.7e%16.7e\n", v[0], v[1], v[2], v[3]);
 	}
@@ -109,10 +109,10 @@ bool FELSDYNAExport::ExportSelectedSurface(FEModel &fem, int ntime, const char *
 		if (f.IsSelected())
 		{
 			int n = f.Nodes();
-			m.Node(f.node[0]).m_ntag = 1;
-			m.Node(f.node[1]).m_ntag = 1;
-			m.Node(f.node[2]).m_ntag = 1;
-			if (n==4) m.Node(f.node[3]).m_ntag = 1;
+			m.Node(f.n[0]).m_ntag = 1;
+			m.Node(f.n[1]).m_ntag = 1;
+			m.Node(f.n[2]).m_ntag = 1;
+			if (n==4) m.Node(f.n[3]).m_ntag = 1;
 		}
 	}
 
@@ -136,10 +136,10 @@ bool FELSDYNAExport::ExportSelectedSurface(FEModel &fem, int ntime, const char *
 		if (f.IsSelected())
 		{
 			int n[4], nf = f.Nodes();
-			n[0] = m.Node(f.node[0]).m_ntag;
-			n[1] = m.Node(f.node[1]).m_ntag;
-			n[2] = m.Node(f.node[2]).m_ntag;
-			if (nf == 4) n[3] = m.Node(f.node[3]).m_ntag; else n[3] = n[2];
+			n[0] = m.Node(f.n[0]).m_ntag;
+			n[1] = m.Node(f.n[1]).m_ntag;
+			n[2] = m.Node(f.n[2]).m_ntag;
+			if (nf == 4) n[3] = m.Node(f.n[3]).m_ntag; else n[3] = n[2];
 
 			fprintf(fp, "%8d%8d%8d%8d%8d%8d\n", l, 1, n[0], n[1], n[2], n[3]);
 			l++;

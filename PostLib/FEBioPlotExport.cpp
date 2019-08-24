@@ -457,7 +457,7 @@ bool FEBioPlotExport::WriteSurfaceSection(FEMeshBase& mesh)
 					int nf = f.Nodes();
 					n[0] = i+1;
 					n[1] = nf;
-					for (int i=0; i<nf; ++i) n[i+2] = f.node[i];
+					for (int i=0; i<nf; ++i) n[i+2] = f.n[i];
 					m_ar.WriteChunk(PLT_FACE, n, PLT_MAX_FACET_NODES+2);
 				}
 			}

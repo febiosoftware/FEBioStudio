@@ -4007,7 +4007,7 @@ void CGLView::SelectFEElements(int x, int y)
 					if (pe2->m_ntag >= 0 && pe2->IsVisible())
 					{
 						assert(pe2->m_face[0] >= 0);
-						if ((view.m_bmax == false) || (pm->Face(pe2->m_face[0]).m_fn*t >= tr))
+						if ((view.m_bmax == false) || (pm->Face(pe2->m_face[0]).m_fn*to_vec3f(t) >= tr))
 						{
 							if ((bpart == false) || (pe2->m_gid == gid))
 							{
@@ -4129,7 +4129,7 @@ void CGLView::SelectFEFaces(int x, int y)
 					bool bpush = true;
 					if (pf2->m_ntag < 0) bpush = false;
 					else if (pf2->IsVisible() == false) bpush = false;
-					else if (view.m_bmax && (pf2->m_fn*Nf < wtol)) bpush = false;
+					else if (view.m_bmax && (pf2->m_fn*to_vec3f(Nf) < wtol)) bpush = false;
 					else if (bpart && ((pf2->m_gid != gid) || ((m0 == 1) && (m1 == 1) && pm->IsCreaseEdge(n0, n1)))) bpush = false;
 
 					if (bpush)
@@ -5339,7 +5339,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 				if (pf->m_nbr[i] >= 0)
 				{
 					FEFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
-					if (pf2->m_ntag >= 0 && pf2->IsVisible() && (pf2->m_gid == pf->m_gid) && ((pf2->m_fn*t >= tr) || (bangle == false)))
+					if (pf2->m_ntag >= 0 && pf2->IsVisible() && (pf2->m_gid == pf->m_gid) && ((pf2->m_fn*to_vec3f(t) >= tr) || (bangle == false)))
 					{
 						pf2->m_ntag = -1;
 						stack.push(pf2);
@@ -6159,7 +6159,7 @@ void CGLView::RenderFENodes(GObject* po)
 				int n = face.Nodes();
 				for (int j = 0; j<n; ++j)
 				{
-					vec3d& nn = face.m_nn[j];
+					vec3d nn = face.m_nn[j];
 					f = q*nn;
 					if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
 				}
@@ -6216,7 +6216,7 @@ void CGLView::RenderFENodes(GObject* po)
 					int n = face.Nodes();
 					for (int j = 0; j<n; ++j)
 					{
-						vec3d& nn = face.m_nn[j];
+						vec3d nn = face.m_nn[j];
 						f = q*nn;
 						if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
 					}
@@ -7795,10 +7795,10 @@ void CGLView::RenderTags()
 	// process faces
 	if (mode == ITEM_FACE)
 	{
-		const vector<Post::FEFace*> selectedFaces = pdoc->GetGLModel()->GetFaceSelection();
+		const vector<FEFace*> selectedFaces = pdoc->GetGLModel()->GetFaceSelection();
 		for (int i = 0; i<(int)selectedFaces.size(); ++i)
 		{
-			Post::FEFace& f = *selectedFaces[i]; assert(f.IsSelected());
+			FEFace& f = *selectedFaces[i]; assert(f.IsSelected());
 
 			tag.r = mesh.FaceCenter(f);
 			tag.bvis = false;
@@ -7807,7 +7807,7 @@ void CGLView::RenderTags()
 			vtag.push_back(tag);
 
 			int nf = f.Nodes();
-			for (int j = 0; j<nf; ++j) mesh.Node(f.node[j]).m_ntag = 1;
+			for (int j = 0; j<nf; ++j) mesh.Node(f.n[j]).m_ntag = 1;
 		}
 	}
 

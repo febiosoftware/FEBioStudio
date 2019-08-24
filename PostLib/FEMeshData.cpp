@@ -1085,7 +1085,7 @@ void FECurvature::level(int n, int l, set<int>& nl1)
 					if (f.m_ntag == 0)
 					{
 						int ne = f.Nodes();
-						for (int j=0; j<ne; ++j) if (f.node[j] != *it) nl2.push_back(f.node[j]);
+						for (int j=0; j<ne; ++j) if (f.n[j] != *it) nl2.push_back(f.n[j]);
 						f.m_ntag = 1;
 					}
 				}
@@ -1115,7 +1115,7 @@ void FECurvature::eval_curvature(int n, float* f, int m)
 	FEFace& face = pmesh->Face(n);
 	for (int i=0; i<face.Nodes(); ++i)
 	{
-		int in = face.node[i];
+		int in = face.n[i];
 		f[i] = nodal_curvature(in, m);
 	}
 }
@@ -1419,7 +1419,7 @@ void FEPrincCurvatureVector::level(int n, int l, set<int>& nl1)
 					if (f.m_ntag == 0)
 					{
 						int ne = f.Nodes();
-						for (int j=0; j<ne; ++j) if (f.node[j] != *it) nl2.push_back(f.node[j]);
+						for (int j=0; j<ne; ++j) if (f.n[j] != *it) nl2.push_back(f.n[j]);
 						f.m_ntag = 1;
 					}
 				}
@@ -1449,7 +1449,7 @@ void FEPrincCurvatureVector::eval(int n, vec3f* fv, int m)
 	FEFace& face = pmesh->Face(n);
 	for (int i=0; i<face.Nodes(); ++i)
 	{
-		int in = face.node[i];
+		int in = face.n[i];
 		fv[i] = nodal_curvature(in, m);
 	}
 }
@@ -1677,7 +1677,7 @@ void FECongruency::eval(int n, float* f)
 	int ntime = m_state->GetID();
 	for (int i = 0; i<face.Nodes(); ++i)
 	{
-		int in = face.node[i];
+		int in = face.n[i];
 		f[i] = (float) map.Congruency(pfem, in, ntime).Ke;
 	}
 }

@@ -417,7 +417,7 @@ void CGLParticleFlowPlot::SeedParticles()
 		// evaluate the average velocity at this face
 		int nf = f.Nodes();
 		vec3f vf(0.f, 0.f, 0.f);
-		for (int j = 0; j<nf; ++j) vf += val[f.node[j]];
+		for (int j = 0; j<nf; ++j) vf += val[f.n[j]];
 		vf /= nf;
 
 		// generate random number
@@ -430,7 +430,7 @@ void CGLParticleFlowPlot::SeedParticles()
 			// calculate the face center, this will be the seed
 			// NOTE: We are using reference coordinates, therefore we assume that the mesh is not deforming!!
 			vec3f cf(0.f, 0.f, 0.f);
-			for (int j = 0; j<nf; ++j) cf += mesh.Node(f.node[j]).m_r0;
+			for (int j = 0; j<nf; ++j) cf += mesh.Node(f.n[j]).m_r0;
 			cf /= nf;
 
 			// create a particle here

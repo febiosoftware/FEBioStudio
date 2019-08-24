@@ -4,10 +4,11 @@
 #include <set>
 using namespace std;
 
+class FEFace;
+
 namespace Post {
 
 class FEModel;
-class FEFace;
 
 //-----------------------------------------------------------------------------
 class FEPointCongruency

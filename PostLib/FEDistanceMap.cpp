@@ -18,7 +18,7 @@ void FEDistanceMap::Surface::BuildNodeList(FEMeshBase& mesh)
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
-			FENode& node = mesh.Node(f.node[j]);
+			FENode& node = mesh.Node(f.n[j]);
 			if (node.m_ntag == -1) node.m_ntag = nn++;
 		}
 	}
@@ -38,16 +38,16 @@ void FEDistanceMap::Surface::BuildNodeList(FEMeshBase& mesh)
 		FEFace& f = mesh.Face(m_face[i]);
 		if (f.Nodes() == 4)
 		{
-			m_lnode[4*i  ] = mesh.Node(f.node[0]).m_ntag; assert(m_lnode[4*i  ] >= 0);
-			m_lnode[4*i+1] = mesh.Node(f.node[1]).m_ntag; assert(m_lnode[4*i+1] >= 0);
-			m_lnode[4*i+2] = mesh.Node(f.node[2]).m_ntag; assert(m_lnode[4*i+2] >= 0);
-			m_lnode[4*i+3] = mesh.Node(f.node[3]).m_ntag; assert(m_lnode[4*i+3] >= 0);
+			m_lnode[4*i  ] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4*i  ] >= 0);
+			m_lnode[4*i+1] = mesh.Node(f.n[1]).m_ntag; assert(m_lnode[4*i+1] >= 0);
+			m_lnode[4*i+2] = mesh.Node(f.n[2]).m_ntag; assert(m_lnode[4*i+2] >= 0);
+			m_lnode[4*i+3] = mesh.Node(f.n[3]).m_ntag; assert(m_lnode[4*i+3] >= 0);
 		}
 		else if (f.Nodes() == 3)
 		{
-			m_lnode[4*i  ] = mesh.Node(f.node[0]).m_ntag; assert(m_lnode[4*i  ] >= 0);
-			m_lnode[4*i+1] = mesh.Node(f.node[1]).m_ntag; assert(m_lnode[4*i+1] >= 0);
-			m_lnode[4*i+2] = mesh.Node(f.node[2]).m_ntag; assert(m_lnode[4*i+2] >= 0);
+			m_lnode[4*i  ] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4*i  ] >= 0);
+			m_lnode[4*i+1] = mesh.Node(f.n[1]).m_ntag; assert(m_lnode[4*i+1] >= 0);
+			m_lnode[4*i+2] = mesh.Node(f.n[2]).m_ntag; assert(m_lnode[4*i+2] >= 0);
 			m_lnode[4*i+3] = m_lnode[4*i+2];
 		}
 		else assert(false);
@@ -213,7 +213,7 @@ vec3f FEDistanceMap::project(FEDistanceMap::Surface& surf, vec3f& r, int ntime)
 }
 
 //-----------------------------------------------------------------------------
-bool FEDistanceMap::ProjectToFacet(Post::FEFace& f, vec3f& x, int ntime, vec3f& q)
+bool FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& q)
 {
 	// get the mesh to which this surface belongs
 	FEMeshBase& mesh = *m_pfem->GetFEMesh(0);
@@ -223,7 +223,7 @@ bool FEDistanceMap::ProjectToFacet(Post::FEFace& f, vec3f& x, int ntime, vec3f& 
 	
 	// get the elements nodal positions
 	vec3f y[4];
-	for (int i=0; i<ne; ++i) y[i] = m_pfem->NodePosition(f.node[i], ntime);
+	for (int i=0; i<ne; ++i) y[i] = m_pfem->NodePosition(f.n[i], ntime);
 	
 	// calculate normal projection of x onto element
 	switch (ne)

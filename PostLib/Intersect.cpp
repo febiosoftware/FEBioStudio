@@ -147,7 +147,7 @@ bool Post::FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FE
 	mesh.FaceNodePosition(face, rn);
 
 	bool bfound = false;
-	switch (face.m_ntype)
+	switch (face.m_type)
 	{
 	case FE_FACE_TRI3:
 	case FE_FACE_TRI6:

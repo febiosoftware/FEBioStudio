@@ -622,8 +622,8 @@ void CGLModel::RenderSelection(CGLContext &rc)
 			if (f.IsSelected() == false) continue;
 
 			int n = f.Nodes();
-			for (int j=0; j<n; ++j) r[j] = pm->Node(f.node[j]).m_rt;
-			switch (f.m_ntype)
+			for (int j=0; j<n; ++j) r[j] = pm->Node(f.n[j]).m_rt;
+			switch (f.m_type)
 			{
 			case FE_FACE_TRI3:
 				glBegin(GL_LINE_LOOP);
@@ -1149,8 +1149,8 @@ void CGLModel::RenderGhost(CGLContext &rc)
 
 				if (bdraw)
 				{
-					a = f.node[j];
-					b = f.node[(j+1)%n];
+					a = f.n[j];
+					b = f.n[(j+1)%n];
 
 					if (a > b) { a ^= b; b ^= a; a ^= b; }
 
@@ -1172,14 +1172,14 @@ void CGLModel::RenderGhost(CGLContext &rc)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderFaceEdge(Post::FEFace& f, int j, FEMeshBase* pm, int ndivs)
+void CGLModel::RenderFaceEdge(FEFace& f, int j, FEMeshBase* pm, int ndivs)
 {
 	int n = f.Edges();
-	int a = f.node[j];
-	int b = f.node[(j+1) % n];
+	int a = f.n[j];
+	int b = f.n[(j+1) % n];
 	if (a > b) { a ^= b; b ^= a; a ^= b; }
 
-	switch (f.m_ntype)
+	switch (f.m_type)
 	{
 	case FE_FACE_TRI3:
 	case FE_FACE_QUAD4:
@@ -1200,7 +1200,7 @@ void CGLModel::RenderFaceEdge(Post::FEFace& f, int j, FEMeshBase* pm, int ndivs)
 		{
 			vec3f r1 = pm->Node(a).m_rt;
 			vec3f r2 = pm->Node(b).m_rt;
-			vec3f r3 = pm->Node(f.node[j+4]).m_rt;
+			vec3f r3 = pm->Node(f.n[j+4]).m_rt;
 
 			glBegin(GL_LINES);
 			{
@@ -1232,7 +1232,7 @@ void CGLModel::RenderFaceEdge(Post::FEFace& f, int j, FEMeshBase* pm, int ndivs)
 		{
 			vec3f r1 = pm->Node(a).m_rt;
 			vec3f r2 = pm->Node(b).m_rt;
-			vec3f r3 = pm->Node(f.node[j+3]).m_rt;
+			vec3f r3 = pm->Node(f.n[j+3]).m_rt;
 
 			glBegin(GL_LINES);
 			{
@@ -1313,7 +1313,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 					{
 						bdraw = true;
 					}
-					else if (f.m_nsg != f2.m_nsg)
+					else if (f.m_sid != f2.m_sid)
 					{
 						bdraw = true;
 					}
@@ -1370,7 +1370,7 @@ void CGLModel::RenderNormals(CGLContext& rc)
 				vec3f r1(0,0,0);
 
 				int n = face.Nodes();
-				for (int j = 0; j<n; ++j) r1 += pm->Node(face.node[j]).m_rt;
+				for (int j = 0; j<n; ++j) r1 += pm->Node(face.n[j]).m_rt;
 				r1 /= (float) n;
 
 				GLfloat r = (GLfloat)fabs(face.m_fn.x);
@@ -1393,9 +1393,9 @@ void CGLModel::RenderNormals(CGLContext& rc)
 
 //-----------------------------------------------------------------------------
 // Render a textured face.
-void CGLModel::RenderTexFace(Post::FEFace& face, FEMeshBase* pm)
+void CGLModel::RenderTexFace(FEFace& face, FEMeshBase* pm)
 {
-	switch (face.m_ntype)
+	switch (face.m_type)
 	{
 	case FE_FACE_QUAD4: RenderTexQUAD4(face, pm); break;
 	case FE_FACE_QUAD8:
@@ -1462,9 +1462,9 @@ void CGLModel::RenderShadows(FEModel* ps, const vec3d& lp, float inf)
 
 		m = f.Edges();
 		bvalid = true;
-		if (f.node[0] == f.node[1]) bvalid = false;
-		else if (f.node[0] == f.node[2]) bvalid = false;
-		else if (f.node[1] == f.node[2]) bvalid = false;
+		if      (f.n[0] == f.n[1]) bvalid = false;
+		else if (f.n[0] == f.n[2]) bvalid = false;
+		else if (f.n[1] == f.n[2]) bvalid = false;
 
 		FEElement& el = pm->Element(f.m_elem[0]);
 		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
@@ -1495,8 +1495,8 @@ void CGLModel::RenderShadows(FEModel* ps, const vec3d& lp, float inf)
 					if ((pf2 == 0) || (fn2*n < 0))
 					{
 						vec3d a, b, c, d;
-						a = pm->Node(f.node[j]).m_rt;
-						b = pm->Node(f.node[(j+1)%m]).m_rt;
+						a = pm->Node(f.n[j]).m_rt;
+						b = pm->Node(f.n[(j+1)%m]).m_rt;
 	
 						c = a - n*inf;
 						d = b - n*inf;
@@ -1518,14 +1518,14 @@ void CGLModel::RenderShadows(FEModel* ps, const vec3d& lp, float inf)
 			}
 			else 
 			{
-				vec3f r1 = pm->Node(f.node[0]).m_rt;
-				vec3f r2 = pm->Node(f.node[1]).m_rt;
-				vec3f r3 = pm->Node(f.node[2]).m_rt;
-				vec3f r4 = pm->Node(f.node[3]).m_rt;
+				vec3f r1 = pm->Node(f.n[0]).m_rt;
+				vec3f r2 = pm->Node(f.n[1]).m_rt;
+				vec3f r3 = pm->Node(f.n[2]).m_rt;
+				vec3f r4 = pm->Node(f.n[3]).m_rt;
 	
 				glNormal3d(-fn.x, -fn.y, -fn.z);
 
-				switch (f.m_ntype)
+				switch (f.m_type)
 				{
 				case FE_FACE_QUAD4:
 				case FE_FACE_QUAD8:
@@ -1592,7 +1592,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 			{
 				vec3d f = face.m_nn[j];
 				q.RotateVector(f);
-				if (f.z < 0) pm->Node(face.node[j]).m_ntag = 0;
+				if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
 			}
 		}
 	}
@@ -1678,7 +1678,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderFace(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode)
 {
 	if (m_bShell2Hex)
 	{
@@ -1691,7 +1691,7 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bn
 	}
 
 	// Render the facet
-	switch (face.m_ntype)
+	switch (face.m_type)
 	{
 	case FE_FACE_QUAD4:
 		if (ndivs == 1) RenderQUAD4(face, m_bsmooth, bnode);
@@ -1727,7 +1727,7 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, int ndivs, bool bn
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int ndivs, bool bnode)
+void CGLModel::RenderFace(FEFace& face, FEMeshBase* pm, GLColor c[4], int ndivs, bool bnode)
 {
 	if (m_bShell2Hex)
 	{
@@ -1739,10 +1739,10 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int 
 		}
 	}
 
-	vec3f& r1 = pm->Node(face.node[0]).m_rt;
-	vec3f& r2 = pm->Node(face.node[1]).m_rt;
-	vec3f& r3 = pm->Node(face.node[2]).m_rt;
-	vec3f& r4 = pm->Node(face.node[3]).m_rt;
+	vec3f& r1 = pm->Node(face.n[0]).m_rt;
+	vec3f& r2 = pm->Node(face.n[1]).m_rt;
+	vec3f& r3 = pm->Node(face.n[2]).m_rt;
+	vec3f& r4 = pm->Node(face.n[3]).m_rt;
 
 	vec3f& n1 = face.m_nn[0];
 	vec3f& n2 = face.m_nn[1];
@@ -1756,7 +1756,7 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int 
 
 	if (m_bsmooth)
 	{
-		switch (face.m_ntype)
+		switch (face.m_type)
 		{
 		case FE_FACE_QUAD4:
 		case FE_FACE_QUAD8:
@@ -1793,7 +1793,7 @@ void CGLModel::RenderFace(Post::FEFace& face, FEMeshBase* pm, GLColor c[4], int 
 	{
 		glNormal3f(fn.x, fn.y, fn.z);
 
-		switch (face.m_ntype)
+		switch (face.m_type)
 		{
 		case FE_FACE_QUAD4:
 		case FE_FACE_QUAD8:
@@ -1951,7 +1951,7 @@ void CGLModel::RenderElementOutline(Post::FEElement& el, FEMeshBase* pm)
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderFaceOutline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
+void CGLModel::RenderFaceOutline(FEFace& face, FEMeshBase* pm, int ndivs)
 {
 	if (m_bShell2Hex)
 	{
@@ -1968,7 +1968,7 @@ void CGLModel::RenderFaceOutline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 	glDisable(GL_TEXTURE_1D);
 
 	// render the edges of the fae
-	switch (face.m_ntype)
+	switch (face.m_type)
 	{
 	case FE_FACE_TRI3 :
 	case FE_FACE_QUAD4: RenderFace1Outline(face, pm); break;
@@ -1985,9 +1985,9 @@ void CGLModel::RenderFaceOutline(Post::FEFace& face, FEMeshBase* pm, int ndivs)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void CGLModel::RenderThickShell(Post::FEFace &face, FEMeshBase* pm)
+void CGLModel::RenderThickShell(FEFace &face, FEMeshBase* pm)
 {
-	switch(face.m_ntype)
+	switch(face.m_type)
 	{
 	case FE_FACE_QUAD4:
 	case FE_FACE_QUAD8:
@@ -2002,16 +2002,16 @@ void CGLModel::RenderThickShell(Post::FEFace &face, FEMeshBase* pm)
 	}
 }
 
-void CGLModel::RenderThickQuad(Post::FEFace &face, FEMeshBase* pm)
+void CGLModel::RenderThickQuad(FEFace &face, FEMeshBase* pm)
 {
 	FEElement& el = pm->Element(face.m_elem[0]);
 	FEState* ps = m_ps->GetState(0);
 	float* h = ps->m_ELEM[face.m_elem[0]].m_h;
 
-	vec3f r1 = pm->Node(face.node[0]).m_rt;
-	vec3f r2 = pm->Node(face.node[1]).m_rt;
-	vec3f r3 = pm->Node(face.node[2]).m_rt;
-	vec3f r4 = pm->Node(face.node[3]).m_rt;
+	vec3f r1 = pm->Node(face.n[0]).m_rt;
+	vec3f r2 = pm->Node(face.n[1]).m_rt;
+	vec3f r3 = pm->Node(face.n[2]).m_rt;
+	vec3f r4 = pm->Node(face.n[3]).m_rt;
 
 	vec3f n1 = face.m_nn[0];
 	vec3f n2 = face.m_nn[1];
@@ -2155,15 +2155,15 @@ void CGLModel::RenderThickQuad(Post::FEFace &face, FEMeshBase* pm)
 	}
 }
 
-void CGLModel::RenderThickTri(Post::FEFace &face, FEMeshBase* pm)
+void CGLModel::RenderThickTri(FEFace &face, FEMeshBase* pm)
 {
 	FEElement& el = pm->Element(face.m_elem[0]);
 	FEState* ps = m_ps->GetState(0);
 	float* h = ps->m_ELEM[face.m_elem[0]].m_h;
 
-	vec3f r1 = pm->Node(face.node[0]).m_rt;
-	vec3f r2 = pm->Node(face.node[1]).m_rt;
-	vec3f r3 = pm->Node(face.node[2]).m_rt;
+	vec3f r1 = pm->Node(face.n[0]).m_rt;
+	vec3f r2 = pm->Node(face.n[1]).m_rt;
+	vec3f r3 = pm->Node(face.n[2]).m_rt;
 
 	//h[0] = (h[0] + h[1] + h[2])/3;
 	//h[1] = h[0];
@@ -2203,9 +2203,9 @@ void CGLModel::RenderThickTri(Post::FEFace &face, FEMeshBase* pm)
 //	float t1 = face.m_tex[0];
 //	float t2 = face.m_tex[1];
 //	float t3 = face.m_tex[2];
-	float t1 = pm->Node(face.node[0]).m_tex;
-	float t2 = pm->Node(face.node[1]).m_tex;
-	float t3 = pm->Node(face.node[2]).m_tex;
+	float t1 = pm->Node(face.n[0]).m_tex;
+	float t2 = pm->Node(face.n[1]).m_tex;
+	float t3 = pm->Node(face.n[2]).m_tex;
 
 	if (m_bsmooth)
 	{
@@ -2298,16 +2298,16 @@ void CGLModel::RenderThickTri(Post::FEFace &face, FEMeshBase* pm)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLModel::RenderThickShellOutline(Post::FEFace &face, FEMeshBase* pm)
+void CGLModel::RenderThickShellOutline(FEFace &face, FEMeshBase* pm)
 {
 	FEElement& el = pm->Element(face.m_elem[0]);
 	FEState* ps = m_ps->GetState(0);
 	float* h = ps->m_ELEM[face.m_elem[0]].m_h;
 
-	vec3f r1 = pm->Node(face.node[0]).m_rt;
-	vec3f r2 = pm->Node(face.node[1]).m_rt;
-	vec3f r3 = pm->Node(face.node[2]).m_rt;
-	vec3f r4 = pm->Node(face.node[3]).m_rt;
+	vec3f r1 = pm->Node(face.n[0]).m_rt;
+	vec3f r2 = pm->Node(face.n[1]).m_rt;
+	vec3f r3 = pm->Node(face.n[2]).m_rt;
+	vec3f r4 = pm->Node(face.n[3]).m_rt;
 
 	vec3f n1 = face.m_nn[0];
 	vec3f n2 = face.m_nn[1];
@@ -2343,7 +2343,7 @@ void CGLModel::RenderThickShellOutline(Post::FEFace &face, FEMeshBase* pm)
 	glGetBooleanv(GL_TEXTURE_1D, &btex);
 	glDisable(GL_TEXTURE_1D);
 
-	switch (face.m_ntype)
+	switch (face.m_type)
 	{
 	case FE_FACE_QUAD4:
 	case FE_FACE_QUAD8:
@@ -2921,7 +2921,7 @@ void CGLModel::SelectConnectedEdges(FEEdge& e)
 
 //-----------------------------------------------------------------------------
 // Select faces that are connected
-void CGLModel::SelectConnectedFaces(Post::FEFace &f, double angleTol)
+void CGLModel::SelectConnectedFaces(FEFace &f, double angleTol)
 {
 	FEMeshBase& mesh = *GetActiveMesh();
 
@@ -2944,7 +2944,7 @@ void CGLModel::SelectConnectedFaces(Post::FEFace &f, double angleTol)
 			for (int j=0; j<pf->Edges(); ++j)
 			{
 				FEFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
-				if (pf2 && (pf2->m_ntag == 0) && (pf2->m_nsg == pf->m_nsg) && (pf2->m_mat == pf->m_mat) && (f.m_fn*pf2->m_fn > tol))
+				if (pf2 && (pf2->m_ntag == 0) && (pf2->m_sid == pf->m_sid) && (pf2->m_mat == pf->m_mat) && (f.m_fn*pf2->m_fn > tol))
 				{
 					pf2->m_ntag = 1;
 					S.push(pf2);
@@ -2991,7 +2991,7 @@ void CGLModel::SelectConnectedSurfaceNodes(int n)
 			for (int j=0; j<pf->Edges(); ++j)
 			{
 				FEFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
-				if (pf2 && (pf2->m_ntag == 0) && (pf2->m_nsg == pf->m_nsg)) 
+				if (pf2 && (pf2->m_ntag == 0) && (pf2->m_sid == pf->m_sid)) 
 				{
 					pf2->m_ntag = 1;
 					S.push(pf2);
@@ -3007,7 +3007,7 @@ void CGLModel::SelectConnectedSurfaceNodes(int n)
 		if (f.m_ntag == 1)
 		{
 			int nf = f.Nodes();
-			for (int j=0; j<nf; ++j) mesh.Node(f.node[j]).Select();
+			for (int j=0; j<nf; ++j) mesh.Node(f.n[j]).Select();
 		}
 	}
 
@@ -3252,7 +3252,7 @@ void CGLModel::HideSelectedEdges()
 		int ne = face.Edges();
 		for (int j=0; j<ne; ++j)
 		{
-			edge = face.Edge(j);
+			edge = face.GetEdge(j);
 			if ((mesh.Node(edge.n[0]).m_ntag == 1)&&
 				(mesh.Node(edge.n[1]).m_ntag == 1)) 
 			{
@@ -3553,13 +3553,13 @@ void CGLModel::UpdateInternalSurfaces(bool eval)
 							face.m_elem[1] = pen->m_lid;
 
 							// calculate the face normals
-							vec3f& r0 = mesh.Node(face.node[0]).m_r0;
-							vec3f& r1 = mesh.Node(face.node[1]).m_r0;
-							vec3f& r2 = mesh.Node(face.node[2]).m_r0;
+							vec3f& r0 = mesh.Node(face.n[0]).m_r0;
+							vec3f& r1 = mesh.Node(face.n[1]).m_r0;
+							vec3f& r2 = mesh.Node(face.n[2]).m_r0;
 
 							face.m_fn = (r1 - r0) ^ (r2 - r0);
 							face.m_fn.Normalize();
-							face.m_nsg = 0;
+							face.m_sid = 0;
 
 							m_innerSurface[m]->add(face);
 						}
@@ -3635,7 +3635,7 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 					f.Unselect();
 					int nf = f.Nodes();
 					for (int j = 0; j<nf; ++j)
-						mesh.Node(f.node[j]).Select();
+						mesh.Node(f.n[j]).Select();
 				}
 			}
 		}

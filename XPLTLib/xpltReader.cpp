@@ -1856,9 +1856,9 @@ bool XpltReader::ReadFaceData_MULT(FEMeshBase& m, XpltReader::Surface &s, FEMesh
 		FACE& f = s.face[i];
 		if (f.nid >= 0)
 		{
-			Post::FEFace& fm = m.Face(f.nid);
+			FEFace& fm = m.Face(f.nid);
 			for (int j=0; j<f.nn; ++j) tag[f.node[j]] = j;
-			for (int j=0; j<f.nn; ++j) l[i][j] = tag[fm.node[j]];
+			for (int j=0; j<f.nn; ++j) l[i][j] = tag[fm.n[j]];
 		}
 	}
 
@@ -2054,14 +2054,14 @@ bool XpltReader::ReadFaceData_NODE(FEMeshBase& m, XpltReader::Surface &s, FEMesh
 	for (int i=0; i<s.nf; ++i) fn[i] = s.face[i].nn;
 
 	// create the local node index list
-	vector<int> l; l.reserve(s.nf*Post::FEFace::MAX_NODES);
+	vector<int> l; l.reserve(s.nf*FEFace::MAX_NODES);
 	for (int i=0; i<s.nf; ++i)
 	{
-		Post::FEFace& f = m.Face(s.face[i].nid);
+		FEFace& f = m.Face(s.face[i].nid);
 		int nn = f.Nodes();
 		for (int j=0; j<nn; ++j) 
 		{ 
-			int n = m.Node(f.node[j]).m_ntag; assert(n >= 0);
+			int n = m.Node(f.n[j]).m_ntag; assert(n >= 0);
 			l.push_back(n);
 		}
 	}

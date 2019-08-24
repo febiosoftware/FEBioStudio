@@ -166,129 +166,129 @@ bool Post::FEElement::HasNode(int node) const
 
 //-----------------------------------------------------------------------------
 // Return a face of the element
-Post::FEFace Post::FEElement::GetFace(int i) const
+FEFace Post::FEElement::GetFace(int i) const
 {
-	Post::FEFace f;
+	FEFace f;
 	GetFace(i, f);
 	return f;
 }
 
 //-----------------------------------------------------------------------------
 // Return a face of the element
-void Post::FEElement::GetFace(int i, Post::FEFace& f) const
+void Post::FEElement::GetFace(int i, FEFace& f) const
 {
 	switch (Type())
 	{
 	case FE_HEX8:
-		f.m_ntype = FE_FACE_QUAD4;
-		f.node[0] = m_node[FTHEX8[i][0]];
-		f.node[1] = m_node[FTHEX8[i][1]];
-		f.node[2] = m_node[FTHEX8[i][2]];
-		f.node[3] = m_node[FTHEX8[i][3]];
+		f.m_type = FE_FACE_QUAD4;
+		f.n[0] = m_node[FTHEX8[i][0]];
+		f.n[1] = m_node[FTHEX8[i][1]];
+		f.n[2] = m_node[FTHEX8[i][2]];
+		f.n[3] = m_node[FTHEX8[i][3]];
 		break;
 	case FE_PENTA6:
 		{
 			const int ft[5] = { FE_FACE_QUAD4, FE_FACE_QUAD4, FE_FACE_QUAD4, FE_FACE_TRI3, FE_FACE_TRI3};
-			f.m_ntype = ft[i];
-			f.node[0] = m_node[FTPENTA[i][0]];
-			f.node[1] = m_node[FTPENTA[i][1]];
-			f.node[2] = m_node[FTPENTA[i][2]];
-			f.node[3] = m_node[FTPENTA[i][3]];
+			f.m_type = ft[i];
+			f.n[0] = m_node[FTPENTA[i][0]];
+			f.n[1] = m_node[FTPENTA[i][1]];
+			f.n[2] = m_node[FTPENTA[i][2]];
+			f.n[3] = m_node[FTPENTA[i][3]];
 		}
 		break;
 
 	case FE_TET4:
 	case FE_TET5:
-		f.m_ntype = FE_FACE_TRI3;
-		f.node[0] = m_node[FTTET[i][0]];
-		f.node[1] = m_node[FTTET[i][1]];
-		f.node[2] = m_node[FTTET[i][2]];
-		f.node[3] = m_node[FTTET[i][3]];
+		f.m_type = FE_FACE_TRI3;
+		f.n[0] = m_node[FTTET[i][0]];
+		f.n[1] = m_node[FTTET[i][1]];
+		f.n[2] = m_node[FTTET[i][2]];
+		f.n[3] = m_node[FTTET[i][3]];
 		break;
 
 	case FE_HEX20:
-		f.m_ntype = FE_FACE_QUAD8;
-		f.node[0] = m_node[FTHEX20[i][0]];
-		f.node[1] = m_node[FTHEX20[i][1]];
-		f.node[2] = m_node[FTHEX20[i][2]];
-		f.node[3] = m_node[FTHEX20[i][3]];
-		f.node[4] = m_node[FTHEX20[i][4]];
-		f.node[5] = m_node[FTHEX20[i][5]];
-		f.node[6] = m_node[FTHEX20[i][6]];
-		f.node[7] = m_node[FTHEX20[i][7]];
+		f.m_type = FE_FACE_QUAD8;
+		f.n[0] = m_node[FTHEX20[i][0]];
+		f.n[1] = m_node[FTHEX20[i][1]];
+		f.n[2] = m_node[FTHEX20[i][2]];
+		f.n[3] = m_node[FTHEX20[i][3]];
+		f.n[4] = m_node[FTHEX20[i][4]];
+		f.n[5] = m_node[FTHEX20[i][5]];
+		f.n[6] = m_node[FTHEX20[i][6]];
+		f.n[7] = m_node[FTHEX20[i][7]];
 		break;
 
 	case FE_HEX27:
-		f.m_ntype = FE_FACE_QUAD9;
-		f.node[0] = m_node[FTHEX27[i][0]];
-		f.node[1] = m_node[FTHEX27[i][1]];
-		f.node[2] = m_node[FTHEX27[i][2]];
-		f.node[3] = m_node[FTHEX27[i][3]];
-		f.node[4] = m_node[FTHEX27[i][4]];
-		f.node[5] = m_node[FTHEX27[i][5]];
-		f.node[6] = m_node[FTHEX27[i][6]];
-		f.node[7] = m_node[FTHEX27[i][7]];
-		f.node[8] = m_node[FTHEX27[i][8]];
+		f.m_type = FE_FACE_QUAD9;
+		f.n[0] = m_node[FTHEX27[i][0]];
+		f.n[1] = m_node[FTHEX27[i][1]];
+		f.n[2] = m_node[FTHEX27[i][2]];
+		f.n[3] = m_node[FTHEX27[i][3]];
+		f.n[4] = m_node[FTHEX27[i][4]];
+		f.n[5] = m_node[FTHEX27[i][5]];
+		f.n[6] = m_node[FTHEX27[i][6]];
+		f.n[7] = m_node[FTHEX27[i][7]];
+		f.n[8] = m_node[FTHEX27[i][8]];
 		break;
 
 	case FE_TET10:
-		f.m_ntype = FE_FACE_TRI6;
-		f.node[0] = m_node[FTTET10[i][0]];
-		f.node[1] = m_node[FTTET10[i][1]];
-		f.node[2] = m_node[FTTET10[i][2]];
-		f.node[3] = m_node[FTTET10[i][3]];
-		f.node[4] = m_node[FTTET10[i][4]];
-		f.node[5] = m_node[FTTET10[i][5]];
+		f.m_type = FE_FACE_TRI6;
+		f.n[0] = m_node[FTTET10[i][0]];
+		f.n[1] = m_node[FTTET10[i][1]];
+		f.n[2] = m_node[FTTET10[i][2]];
+		f.n[3] = m_node[FTTET10[i][3]];
+		f.n[4] = m_node[FTTET10[i][4]];
+		f.n[5] = m_node[FTTET10[i][5]];
 		break;
 
 	case FE_TET15:
-		f.m_ntype = FE_FACE_TRI7;
-		f.node[0] = m_node[FTTET15[i][0]];
-		f.node[1] = m_node[FTTET15[i][1]];
-		f.node[2] = m_node[FTTET15[i][2]];
-		f.node[3] = m_node[FTTET15[i][3]];
-		f.node[4] = m_node[FTTET15[i][4]];
-		f.node[5] = m_node[FTTET15[i][5]];
-		f.node[6] = m_node[FTTET15[i][6]];
+		f.m_type = FE_FACE_TRI7;
+		f.n[0] = m_node[FTTET15[i][0]];
+		f.n[1] = m_node[FTTET15[i][1]];
+		f.n[2] = m_node[FTTET15[i][2]];
+		f.n[3] = m_node[FTTET15[i][3]];
+		f.n[4] = m_node[FTTET15[i][4]];
+		f.n[5] = m_node[FTTET15[i][5]];
+		f.n[6] = m_node[FTTET15[i][6]];
 		break;
 
 	case FE_TET20:
-		f.m_ntype = FE_FACE_TRI10;
-		f.node[0] = m_node[FTTET20[i][0]];
-		f.node[1] = m_node[FTTET20[i][1]];
-		f.node[2] = m_node[FTTET20[i][2]];
-		f.node[3] = m_node[FTTET20[i][3]];
-		f.node[4] = m_node[FTTET20[i][4]];
-		f.node[5] = m_node[FTTET20[i][5]];
-		f.node[6] = m_node[FTTET20[i][6]];
-		f.node[7] = m_node[FTTET20[i][7]];
-		f.node[8] = m_node[FTTET20[i][8]];
-		f.node[9] = m_node[FTTET20[i][9]];
+		f.m_type = FE_FACE_TRI10;
+		f.n[0] = m_node[FTTET20[i][0]];
+		f.n[1] = m_node[FTTET20[i][1]];
+		f.n[2] = m_node[FTTET20[i][2]];
+		f.n[3] = m_node[FTTET20[i][3]];
+		f.n[4] = m_node[FTTET20[i][4]];
+		f.n[5] = m_node[FTTET20[i][5]];
+		f.n[6] = m_node[FTTET20[i][6]];
+		f.n[7] = m_node[FTTET20[i][7]];
+		f.n[8] = m_node[FTTET20[i][8]];
+		f.n[9] = m_node[FTTET20[i][9]];
 		break;
 
 	case FE_PYRA5:
 		{
 			const int ft[5] = { FE_FACE_TRI3, FE_FACE_TRI3, FE_FACE_TRI3, FE_FACE_TRI3, FE_FACE_QUAD4 };
-			f.m_ntype = ft[i];
-			f.node[0] = m_node[FTPYRA5[i][0]];
-			f.node[1] = m_node[FTPYRA5[i][1]];
-			f.node[2] = m_node[FTPYRA5[i][2]];
-			f.node[3] = m_node[FTPYRA5[i][3]];
+			f.m_type = ft[i];
+			f.n[0] = m_node[FTPYRA5[i][0]];
+			f.n[1] = m_node[FTPYRA5[i][1]];
+			f.n[2] = m_node[FTPYRA5[i][2]];
+			f.n[3] = m_node[FTPYRA5[i][3]];
 		}
 		break;
     
     case FE_PENTA15:
         {
             const int ft[5] = { FE_FACE_QUAD8, FE_FACE_QUAD8, FE_FACE_QUAD8, FE_FACE_TRI6, FE_FACE_TRI6};
-            f.m_ntype = ft[i];
-            f.node[0] = m_node[FTPENTA15[i][0]];
-            f.node[1] = m_node[FTPENTA15[i][1]];
-            f.node[2] = m_node[FTPENTA15[i][2]];
-            f.node[3] = m_node[FTPENTA15[i][3]];
-            f.node[4] = m_node[FTPENTA15[i][4]];
-            f.node[5] = m_node[FTPENTA15[i][5]];
-            f.node[6] = m_node[FTPENTA15[i][6]];
-            f.node[7] = m_node[FTPENTA15[i][7]];
+            f.m_type = ft[i];
+            f.n[0] = m_node[FTPENTA15[i][0]];
+            f.n[1] = m_node[FTPENTA15[i][1]];
+            f.n[2] = m_node[FTPENTA15[i][2]];
+            f.n[3] = m_node[FTPENTA15[i][3]];
+            f.n[4] = m_node[FTPENTA15[i][4]];
+            f.n[5] = m_node[FTPENTA15[i][5]];
+            f.n[6] = m_node[FTPENTA15[i][6]];
+            f.n[7] = m_node[FTPENTA15[i][7]];
         }
 		break;
     };

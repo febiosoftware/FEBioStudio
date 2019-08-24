@@ -211,7 +211,7 @@ void FEModel::EvalNodeField(int ntime, int nfield)
 		if (f.IsEnabled())
 		{
 			d.m_ntag = 1;
-			for (j=0; j<f.Nodes(); ++j) { float val = state.m_NODE[f.node[j]].m_val; faceData.value(i, j) = val; d.m_val += val; }
+			for (j=0; j<f.Nodes(); ++j) { float val = state.m_NODE[f.n[j]].m_val; faceData.value(i, j) = val; d.m_val += val; }
 			d.m_val /= (float) f.Nodes();
 		}
 	}
@@ -285,8 +285,8 @@ void FEModel::EvalFaceField(int ntime, int nfield)
 				for (int j = 0; j<face.Nodes(); ++j)
 				{
 					avg += tmp[j];
-					state.m_NODE[face.node[j]].m_val = tmp[j];
-					state.m_NODE[face.node[j]].m_ntag = 1;
+					state.m_NODE[face.n[j]].m_val = tmp[j];
+					state.m_NODE[face.n[j]].m_ntag = 1;
 				}
 
 				state.m_FACE[i].m_val = avg / face.Nodes();
@@ -442,7 +442,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 			case FE_PENTA6:
 				{
 					const int* fn = FTPENTA[f.m_elem[1]];
-                    switch (f.m_ntype) {
+                    switch (f.m_type) {
                         case FE_FACE_TRI3:
                             fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
                             fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
@@ -464,7 +464,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
             case FE_PENTA15:
                 {
                     const int* fn = FTPENTA[f.m_elem[1]];
-                    switch (f.m_ntype) {
+                    switch (f.m_type) {
                         case FE_FACE_TRI6:
                             fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
                             fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
@@ -1257,7 +1257,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 		NODEDATA n;
 		for (int i=0; i<N; ++i) 
 		{ 
-			EvaluateNode(f.node[i], ntime, nfield, n); 
+			EvaluateNode(f.n[i], ntime, nfield, n); 
 			data[i] = n.m_val;
 			val += data[i]; 
 		}
@@ -1285,7 +1285,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
         case FE_PENTA6:
             {
                 const int* fn = FTPENTA[f.m_elem[1]];
-                switch (f.m_ntype) {
+                switch (f.m_type) {
                     case FE_FACE_TRI3:
                         data[0] = edata[fn[0]];
                         data[1] = edata[fn[1]];
@@ -1307,7 +1307,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
         case FE_PENTA15:
             {
                 const int* fn = FTPENTA[f.m_elem[1]];
-                switch (f.m_ntype) {
+                switch (f.m_type) {
                     case FE_FACE_TRI6:
                         data[0] = edata[fn[0]];
                         data[1] = edata[fn[1]];
@@ -2169,7 +2169,7 @@ bool FEModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 	{
 		FEFace& f = mesh->Face(n);
 		// take the average of the nodal values
-		for (int i=0; i<f.Nodes(); ++i) r += EvaluateNodeVector(f.node[i], ntime, nvec);
+		for (int i=0; i<f.Nodes(); ++i) r += EvaluateNodeVector(f.n[i], ntime, nvec);
 		r /= f.Nodes();
 		return true;
 	}
@@ -2399,7 +2399,7 @@ mat3f FEModel::EvaluateFaceTensor(int n, int ntime, int nten, int ntype)
 	{
 		FEFace& f = mesh->Face(n);
 		// take the average of the nodal values
-		for (int i = 0; i<f.Nodes(); ++i) m += EvaluateNodeTensor(f.node[i], ntime, nten, ntype);
+		for (int i = 0; i<f.Nodes(); ++i) m += EvaluateNodeTensor(f.n[i], ntime, nten, ntype);
 		m /= (float) f.Nodes();
 	}
 	else if (IS_ELEM_FIELD(nten))

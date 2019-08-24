@@ -48,5 +48,5 @@ bool IntersectQuad(const Ray& ray, const Quad& quad, Intersection& q);
 bool FastIntersectQuad(const Ray& ray, const Quad& quad, Intersection& q);
 
 //-----------------------------------------------------------------------------
-bool FindFaceIntersection(const Ray& ray, const Post::FEMeshBase& mesh, const Post::FEFace& face, Intersection& q);
+bool FindFaceIntersection(const Ray& ray, const Post::FEMeshBase& mesh, const FEFace& face, Intersection& q);
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <MathLib/math3d.h>
 #include <MeshLib/FEItem.h>
-#include "FEFace.h"
+#include <MeshLib/FEFace.h>
 #include <assert.h>
 #include <MeshLib/FEElement.h>
 

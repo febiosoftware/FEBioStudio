@@ -324,16 +324,16 @@ FEMesh* CPostObject::BuildMesh()
 	for (int i = 0; i < NF; ++i)
 	{
 		FEFace& fd = mesh->Face(i);
-		Post::FEFace& fs = postMesh->Face(i);
+		FEFace& fs = postMesh->Face(i);
 
-		fd.m_type = fs.m_ntype;
+		fd.m_type = fs.m_type;
 
-		fd.m_gid = fs.m_nsg;
-		fd.m_sid = fs.m_nsg;
+		fd.m_gid = fs.m_sid;
+		fd.m_sid = fs.m_sid;
 
 		for (int j = 0; j < fs.Nodes(); ++j)
 		{
-			fd.n[j] = fs.node[j];
+			fd.n[j] = fs.n[j];
 		}
 	}
 

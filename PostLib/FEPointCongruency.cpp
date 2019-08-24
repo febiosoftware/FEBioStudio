@@ -66,13 +66,13 @@ FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEModel* pfem, 
 }
 
 //-----------------------------------------------------------------------------
-float FEPointCongruency::face_curvature(Post::FEFace& face, double rs[2], vec3f& sn, int m)
+float FEPointCongruency::face_curvature(FEFace& face, double rs[2], vec3f& sn, int m)
 {
 	int nf = face.Nodes();
 	double K[4] = {0};
 	for (int i=0; i<nf; ++i)
 	{
-		K[i] = nodal_curvature(face.node[i], sn, m);
+		K[i] = nodal_curvature(face.n[i], sn, m);
 	}
 
 	double r = rs[0];
@@ -113,7 +113,7 @@ bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec
 		int nf = face.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
-			if (face.node[j] == nid) sn += face.m_nn[j];
+			if (face.n[j] == nid) sn += face.m_nn[j];
 		}
 	}
 	sn.Normalize();
@@ -138,7 +138,7 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 		if (face.HasNode(nid) == false)
 		{
 			bool b = false;
-			switch (face.m_ntype)
+			switch (face.m_type)
 			{
 			case FE_FACE_TRI3 : b = IntersectTri3 (ray, face, q, rsi); break;
 			case FE_FACE_QUAD4: b = IntersectQuad4(ray, face, q, rsi); break;
@@ -161,15 +161,15 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 }
 
 //-----------------------------------------------------------------------------
-bool FEPointCongruency::IntersectTri3(const Ray& ray, Post::FEFace& face, vec3f& q, double rs[2])
+bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, double rs[2])
 {
 	const double tol = 0.01;
 
 	FEMeshBase* pm = m_pfem->GetFEMesh(0);
 
-	vec3f n1 = m_pfem->NodePosition(face.node[0], m_nstate);
-	vec3f n2 = m_pfem->NodePosition(face.node[1], m_nstate);
-	vec3f n3 = m_pfem->NodePosition(face.node[2], m_nstate);
+	vec3f n1 = m_pfem->NodePosition(face.n[0], m_nstate);
+	vec3f n2 = m_pfem->NodePosition(face.n[1], m_nstate);
+	vec3f n3 = m_pfem->NodePosition(face.n[2], m_nstate);
 
 	Triangle tri = {n1, n2, n3};
 
@@ -184,14 +184,14 @@ bool FEPointCongruency::IntersectTri3(const Ray& ray, Post::FEFace& face, vec3f&
 }
 
 //-----------------------------------------------------------------------------
-bool FEPointCongruency::IntersectQuad4(const Ray& ray, Post::FEFace& face, vec3f& q, double rs[2])
+bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, double rs[2])
 {
 	const double tol = 0.01;
 	FEFace tri1,tri2;
-	tri1.node[0] = face.node[0]; tri1.node[1] = face.node[1]; tri1.node[2] = face.node[2];
+	tri1.n[0] = face.n[0]; tri1.n[1] = face.n[1]; tri1.n[2] = face.n[2];
 	tri1.m_nn[0] = face.m_nn[0]; tri1.m_nn[1] = face.m_nn[1]; tri1.m_nn[2] = face.m_nn[2];
 
-	tri2.node[0] = face.node[2]; tri2.node[1] = face.node[3]; tri2.node[2] = face.node[0];
+	tri2.n[0] = face.n[2]; tri2.n[1] = face.n[3]; tri2.n[2] = face.n[0];
 	tri2.m_nn[0] = face.m_nn[2]; tri2.m_nn[1] = face.m_nn[3]; tri2.m_nn[2] = face.m_nn[0];
 
 	if (IntersectTri3(ray, tri1, q, rs) ||
@@ -199,10 +199,10 @@ bool FEPointCongruency::IntersectQuad4(const Ray& ray, Post::FEFace& face, vec3f
 	{
 		FEMeshBase* pm = m_pfem->GetFEMesh(0);
 		vec3f y[4];
-		y[0] = m_pfem->NodePosition(face.node[0], m_nstate);
-		y[1] = m_pfem->NodePosition(face.node[1], m_nstate);
-		y[2] = m_pfem->NodePosition(face.node[2], m_nstate);
-		y[3] = m_pfem->NodePosition(face.node[3], m_nstate);
+		y[0] = m_pfem->NodePosition(face.n[0], m_nstate);
+		y[1] = m_pfem->NodePosition(face.n[1], m_nstate);
+		y[2] = m_pfem->NodePosition(face.n[2], m_nstate);
+		y[3] = m_pfem->NodePosition(face.n[3], m_nstate);
 
 		Quad quad = {y[0], y[1], y[2], y[3]};
 		Intersection intersect;
@@ -494,7 +494,7 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 				if (f.m_ntag == 0)
 				{
 					int ne = f.Nodes();
-					for (int j=0; j<ne; ++j) if (f.node[j] != *it) nl2.push_back(f.node[j]);
+					for (int j=0; j<ne; ++j) if (f.n[j] != *it) nl2.push_back(f.n[j]);
 					f.m_ntag = 1;
 				}
 			}
