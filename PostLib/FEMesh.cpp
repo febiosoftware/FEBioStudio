@@ -100,11 +100,34 @@ void FEMeshBase::Create(int nodes, int elems)
 		// set default element ID's
 		for (int i=0; i<elems; i++) 
 		{
-			FEElement& el = Element(i);
+			FEElement_& el = Element(i);
 			el.SetID(i+1); 
 			el.m_lid = i;	
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+//! Is an element exterior or not
+bool FEMeshBase::IsExterior(FEElement_* pe) const
+{
+	// make sure the element is visible
+	if (pe->IsVisible() == false) return false;
+
+	// get number of faces
+	int NF = pe->Faces();
+
+	// a shell has 0 faces and is always exterior
+	if (NF == 0) return true;
+
+	// solid elements
+	for (int i = 0; i<NF; ++i)
+	{
+		const FEElement_* ei = ElementPtr(pe->m_nbr[i]);
+		if ((ei == 0) || (ei->IsVisible() == false)) return true;
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -156,28 +179,28 @@ void FEMeshBase::FindNeighbours()
 	// reset all neighbors
 	for (int i=0; i<Elements(); i++)
 	{
-		FEElement& e = Element(i);
+		FEElement_& e = Element(i);
 
 		// solid elements
-		for (int  j=0; j<e.Faces(); j++) e.m_pElem[j] = 0;
+		for (int  j=0; j<e.Faces(); j++) e.m_nbr[j] = 0;
 
 		// shells
-		for (int j=0; j<e.Edges(); ++j) e.m_pElem[j] = 0;
+		for (int j=0; j<e.Edges(); ++j) e.m_nbr[j] = 0;
 	}
 
 	// set up the element's neighbour pointers
 	FEFace face, f2;
 	FEEdge edge;
-	FEElement* pne;
+	FEElement_* pne;
 	bool bfound;
 	for (int i=0; i<Elements(); i++)
 	{
-		FEElement& e = Element(i);
+		FEElement_& e = Element(i);
 
 		// first, do the solid elements
 		for (int j=0; j<e.Faces(); j++)
 		{
-			if (e.m_pElem[j] == 0)
+			if (e.m_nbr[j] == 0)
 			{
 				e.GetFace(j, face);
 
@@ -194,8 +217,8 @@ void FEMeshBase::FindNeighbours()
 							pne->GetFace(l, f2);
 							if (face == f2)
 							{
-								e.m_pElem[j] = pne;
-								pne->m_pElem[l] = &e;
+								e.m_nbr[j] = nel[k].first;
+								pne->m_nbr[l] = i;
 								bfound = true;
 								break;
 							}
@@ -213,7 +236,7 @@ void FEMeshBase::FindNeighbours()
 		// next, do the shell elements
 		for (int j=0; j<e.Edges(); ++j)
 		{
-			e.m_pElem[j] = 0;
+			e.m_nbr[j] = 0;
 			edge = e.GetEdge(j);
 
 			// find the neighbour element
@@ -233,7 +256,7 @@ void FEMeshBase::FindNeighbours()
 
 					if (bfound)
 					{
-						e.m_pElem[j] = pne;
+						e.m_nbr[j] = nel[k].first;
 						break;
 					}
 				}
@@ -260,7 +283,7 @@ void FEMeshBase::UpdateDomains()
 
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = Element(i);
+		FEElement_& el = Element(i);
 		elemSize[el.m_MatID]++;
 	}
 
@@ -281,7 +304,7 @@ void FEMeshBase::UpdateDomains()
 
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = Element(i);
+		FEElement_& el = Element(i);
 		m_Dom[el.m_MatID]->AddElement(i);
 	}
 
@@ -332,12 +355,12 @@ void FEMeshBase::BuildFaces()
 	int NE = Elements();
 	for (i=0; i<NE; ++i)
 	{
-		FEElement& e = Element(i);
+		FEElement_& e = Element(i);
 
 		// solid elements
 		int nf = e.Faces();
 		for (j=0; j<nf; ++j)
-			if (e.m_pElem[j] == 0) ++NF;
+			if (e.m_nbr[j] == 0) ++NF;
 
 		// shell elements
 		if (e.Edges()) ++NF;
@@ -350,12 +373,12 @@ void FEMeshBase::BuildFaces()
 	NF = 0;
 	for (i=0; i<NE; ++i)
 	{
-		FEElement& e = Element(i);
+		FEElement_& e = Element(i);
 		
 		// solid elements
 		int nf = e.Faces();
 		for (j=0; j<nf; ++j)
-			if (e.m_pElem[j] == 0)
+			if (e.m_nbr[j] == 0)
 			{
 				FEFace& f = m_Face[NF++];
 				e.GetFace(j, f);
@@ -917,7 +940,7 @@ double FEMeshBase::FaceArea(const vector<vec3f>& r, int faceType)
 // Calculate the volume of an element
 float FEMeshBase::ElementVolume(int iel)
 {
-	FEElement& el = Element(iel);
+	FEElement_& el = Element(iel);
 	switch (el.Type())
 	{
 	case FE_HEX8   : return HexVolume(el); break;
@@ -937,7 +960,7 @@ float FEMeshBase::ElementVolume(int iel)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a hex element
-float FEMeshBase::HexVolume(const Post::FEElement& el)
+float FEMeshBase::HexVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
 
@@ -1052,7 +1075,7 @@ float FEMeshBase::HexVolume(const Post::FEElement& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pentahedral element
-float FEMeshBase::PentaVolume(const Post::FEElement& el)
+float FEMeshBase::PentaVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
 
@@ -1165,7 +1188,7 @@ float FEMeshBase::PentaVolume(const Post::FEElement& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pyramid element
-float FEMeshBase::PyramidVolume(const Post::FEElement& el)
+float FEMeshBase::PyramidVolume(const FEElement_& el)
 {
 	assert(el.Type() == FE_PYRA5);
 
@@ -1269,7 +1292,7 @@ float FEMeshBase::PyramidVolume(const Post::FEElement& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a tetrahedral element
-float FEMeshBase::TetVolume(const Post::FEElement& el)
+float FEMeshBase::TetVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_TET4) || (el.Type() == FE_TET10)
            || (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
@@ -1441,7 +1464,7 @@ void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
 }
 
 //-----------------------------------------------------------------------------
-bool IsInsideElement(Post::FEElement& el, double r[3], const double tol)
+bool IsInsideElement(FEElement_& el, double r[3], const double tol)
 {
 	switch (el.Type())
 	{
@@ -1462,7 +1485,7 @@ bool IsInsideElement(Post::FEElement& el, double r[3], const double tol)
 }
 
 //-----------------------------------------------------------------------------
-void project_inside_element(Post::FEElement& el, const vec3f& p, double r[3], vec3f* x)
+void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* x)
 {
 	const double tol = 0.0001;
 	const int nmax = 10;
@@ -1512,7 +1535,7 @@ void project_inside_element(Post::FEElement& el, const vec3f& p, double r[3], ve
 }
 
 //-----------------------------------------------------------------------------
-bool Post::ProjectInsideReferenceElement(FEMeshBase& m, FEElement& el, const vec3f& p, double r[3])
+bool Post::ProjectInsideReferenceElement(FEMeshBase& m, FEElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
@@ -1525,7 +1548,7 @@ bool Post::ProjectInsideReferenceElement(FEMeshBase& m, FEElement& el, const vec
 }
 
 //-----------------------------------------------------------------------------
-bool Post::ProjectInsideElement(FEMeshBase& m, FEElement& el, const vec3f& p, double r[3])
+bool Post::ProjectInsideElement(FEMeshBase& m, FEElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
@@ -1544,7 +1567,7 @@ bool Post::FindElementRef(FEMeshBase& m, const vec3f& p, int& nelem, double r[3]
 	int NE = m.Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& e = m.Element(i);
+		FEElement_& e = m.Element(i);
 		int ne = e.Nodes();
 		nelem = i;
 
@@ -1597,7 +1620,7 @@ bool Post::FindElementInReferenceFrame(FEMeshBase& m, const vec3f& p, int& nelem
 	int NE = m.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& e = m.Element(i);
+		FEElement_& e = m.Element(i);
 		int ne = e.Nodes();
 		nelem = i;
 
@@ -1840,7 +1863,7 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 	int cflags = flags.size();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& e = m_mesh.Element(i);
+		FEElement_& e = m_mesh.Element(i);
 
 		bool badd = true;
 		if (flags.empty() == false)
@@ -1902,7 +1925,7 @@ void FEFindElement::InitCurrentFrame(vector<bool>& flags)
 	int cflags = flags.size();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& e = m_mesh.Element(i);
+		FEElement_& e = m_mesh.Element(i);
 
 		bool badd = true;
 		if (flags.empty() == false)
@@ -1965,7 +1988,7 @@ bool FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]
 
 		int nid = c->m_elem; assert(nid >= 0);
 
-		FEElement& e = m_mesh.Element(nid);
+		FEElement_& e = m_mesh.Element(nid);
 		nelem = nid;
 
 		// do a quick bounding box test
@@ -1997,7 +2020,7 @@ bool FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double r[3])
 
 		int nid = c->m_elem; assert(nid >= 0);
 
-		FEElement& e = m_mesh.Element(nid);
+		FEElement_& e = m_mesh.Element(nid);
 		nelem = nid;
 
 		// do a quick bounding box test

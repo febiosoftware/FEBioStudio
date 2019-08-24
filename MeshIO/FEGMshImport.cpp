@@ -292,7 +292,7 @@ bool FEGMshImport::ReadElements()
 
 			el.m_gid = e.gid;
 			el.SetType(e.ntype);
-			switch (el.GetType())
+			switch (el.Type())
 			{
 			case FE_TET4:
 				el.m_node[0] = e.node[0];
@@ -379,7 +379,7 @@ bool FEGMshImport::ReadElements()
 
 			el.m_gid = e.gid;
 			el.SetType(e.ntype);
-			switch (el.GetType())
+			switch (el.Type())
 			{
 			case FE_TRI3:
 				el.m_node[0] = e.node[0];

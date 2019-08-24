@@ -574,7 +574,7 @@ bool FENikeProject::BuildElements(FEProject &prj)
 
 			GMaterial* pmat = fem.GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
 			nmat = (pmat? pmat->m_ntag : -1);
-			switch (el.GetType())
+			switch (el.Type())
 			{
 			case FE_HEX8:
 			case FE_PENTA6:
@@ -615,7 +615,7 @@ bool FENikeProject::BuildElements(FEProject &prj)
 			FEElement& el = pm->Element(j);
 			GMaterial* pmat = fem.GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
 			nmat = (pmat? pmat->m_ntag : -1);
-			switch (el.GetType())
+			switch (el.Type())
 			{
 			case FE_TET4:
 				{

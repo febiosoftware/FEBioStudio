@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FENode.h"
-#include "FEElement.h"
+#include <MeshLib/FEElement.h>
 #include "FEGroup.h"
 #include "FENodeElemList.h"
 #include "FENodeFaceList.h"
@@ -72,8 +72,15 @@ public:
 	const FEFace& Face(int i) const { return m_Face[i]; }
 
 	//! return an element
-	virtual FEElement& Element(int i) = 0;
-	virtual const FEElement& Element(int i) const = 0;
+	virtual FEElement_& Element(int i) = 0;
+	virtual const FEElement_& Element(int i) const = 0;
+
+	//! return pointer to element
+	FEElement_* ElementPtr(int n = 0) { return ((n >= 0) && (n<Elements()) ? &Element(n) : 0); }
+	const FEElement_* ElementPtr(int n = 0) const { return ((n >= 0) && (n<Elements()) ? &Element(n) : 0); }
+
+	//! Is an element exterior or not
+	bool IsExterior(FEElement_* pe) const;
 
 	//! return domains
 	int Domains() const { return (int) m_Dom.size(); }
@@ -118,7 +125,7 @@ public:
 
 	// --- E V A L U A T E ---
 
-	vec3f ElementCenter(FEElement& el)
+	vec3f ElementCenter(FEElement_& el)
 	{
 		vec3f r;
 		int N = el.Nodes();
@@ -145,10 +152,10 @@ public:
 
 	// element volume
 	float ElementVolume(int iel);
-	float HexVolume    (const FEElement& el);
-	float PentaVolume  (const FEElement& el);
-	float TetVolume    (const FEElement& el);
-	float PyramidVolume(const FEElement& el);
+	float HexVolume    (const FEElement_& el);
+	float PentaVolume  (const FEElement_& el);
+	float TetVolume    (const FEElement_& el);
+	float PyramidVolume(const FEElement_& el);
 
 	// --- I N T E G R A T E ---
 	double IntegrateQuad(vec3d* r, float* v);
@@ -214,8 +221,8 @@ public:
 	int Elements() const { return (int) m_Elem.size(); }
 
 	//! return an element
-	FEElement& Element(int i) { return m_Elem[i]; }
-	const FEElement& Element(int i) const { return m_Elem[i]; }
+	FEElement_& Element(int i) { return m_Elem[i]; }
+	const FEElement_& Element(int i) const { return m_Elem[i]; }
 
 	void ClearElements() { m_Elem.clear(); }
 
@@ -242,11 +249,11 @@ bool FindElementInReferenceFrame(FEMeshBase& m, const vec3f& x, int& nelem, doub
 
 // project the point p in the reference frame of element el. This returns the iso-parametric coordinates in r.
 // The return value is true or false depending if the point is actually inside the element
-bool ProjectInsideReferenceElement(FEMeshBase& m, FEElement& el, const vec3f& p, double r[3]);
+bool ProjectInsideReferenceElement(FEMeshBase& m, FEElement_& el, const vec3f& p, double r[3]);
 
 // project the point p in the current frame of element el. This returns the iso-parametric coordinates in r.
 // The return value is true or false depending if the point is actually inside the element
-bool ProjectInsideElement(FEMeshBase& m, FEElement& el, const vec3f& p, double r[3]);
+bool ProjectInsideElement(FEMeshBase& m, FEElement_& el, const vec3f& p, double r[3]);
 
 class FEFindElement
 {

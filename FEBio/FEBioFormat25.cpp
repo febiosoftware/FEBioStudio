@@ -153,7 +153,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 
 	// get the required type attribute
 	const char* sztype = tag.AttributeValue("type");
-	int ntype = -1;
+	FEElementType ntype = FE_INVALID_ELEMENT_TYPE;
 	if      (strcmp(sztype, "hex8"  ) == 0) ntype = FE_HEX8;
 	else if (strcmp(sztype, "hex20" ) == 0) ntype = FE_HEX20;
 	else if (strcmp(sztype, "hex27" ) == 0) ntype = FE_HEX27;

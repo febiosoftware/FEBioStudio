@@ -45,7 +45,7 @@ bool FEPLYExport::Export(FEProject& prj, const char* szfile)
 			for (int j = 0; j < NE; ++j)
 			{
 				FEElement& el = mesh->Element(j);
-				if ((el.GetType() == FE_TRI3) || (el.GetType() == FE_QUAD4))
+				if ((el.Type() == FE_TRI3) || (el.Type() == FE_QUAD4))
 				{
 					PLY_FACE f;
 					f.nodes = el.Nodes();

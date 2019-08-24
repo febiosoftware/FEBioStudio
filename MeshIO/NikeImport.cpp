@@ -195,9 +195,9 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	// get the model
 	FEModel& fem = *m_fem;
 
-	int nodes = nike.m_Node.size();
-	int nhel  = nike.m_Brick.size();
-	int nsel  = nike.m_Shell.size();
+	int nodes = (int)nike.m_Node.size();
+	int nhel  = (int)nike.m_Brick.size();
+	int nsel  = (int)nike.m_Shell.size();
 
 	if ((nodes == 0) || (nhel + nsel == 0)) return;
 
@@ -307,7 +307,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 	FEStep& s = *fem.GetStep(0);
 
 	int i;
-	int N = nike.m_Node.size();
+	int N = (int)nike.m_Node.size();
 	vector<int> BC; BC.resize(N);
 	vector<int> RBC; RBC.resize(N);
 	for (i=0; i<N; ++i) 
@@ -434,7 +434,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 
 	// build the rigid constraints
 	// We need to add rigid constraints for each rigid material. 
-	int NMAT = nike.m_Mat.size();
+	int NMAT = (int)nike.m_Mat.size();
 	int nrc = 1;
 	for (int i=0; i<NMAT; ++i)
 	{
@@ -499,7 +499,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 	FEStep& step = *fem.GetStep(0);
 
 	// assign materials to elements
-	m_nmat = nike.m_Mat.size();
+	m_nmat = (int)nike.m_Mat.size();
 	for (i=0; i<m_nmat; ++i)
 	{
 		FENikeProject::MATERIAL& m = nike.m_Mat[i];
@@ -805,7 +805,7 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 //-----------------------------------------------------------------------------
 void FENIKEImport::build_loadcurves(FENikeProject &nike)
 {
-	int nlc = nike.m_LC.size();
+	int nlc = (int)nike.m_LC.size();
 	m_LC.resize(nlc);
 	list<FELoadCurve>::iterator plc = nike.m_LC.begin();
 	for (int i=0; i<nlc; ++i, ++plc) 
@@ -929,7 +929,7 @@ bool FENIKEImport::ReadMaterialDeck(FENikeProject& prj)
 		// -------- material card 2 --------
 		if (read_line(m_fp, szline, MAX_LINE, false) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
 		// remove trailing whitepsace
-		l = strlen(szline);
+		l = (int)strlen(szline);
 		while ((l>0) && isspace(szline[l-1])) --l;
 		szline[l] = 0;
 		//remove leading whitespace

@@ -305,7 +305,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FEElement_& el = mesh.Element(i);
 		FEMaterial* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
@@ -313,7 +313,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 	for (i=0; i<mesh.Nodes(); ++i) mesh.Node(i).Disable();
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FEElement_& el = mesh.Element(i);
 		if (el.IsEnabled())
 		{
 			int n = el.Nodes();
@@ -329,7 +329,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 	{
 		FEFace& f = mesh.Face(i);
         assert(f.m_elem[0] >= 0);
-		FEElement& el = mesh.Element(f.m_elem[0]);
+		FEElement_& el = mesh.Element(f.m_elem[0]);
 	}
 
 	fem.UpdateBoundingBox();
@@ -602,7 +602,7 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 	// corresponds to the nr in the plot file
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FEElement_& el = mesh.Element(i);
 		if (el.IsSolid())
 		{
 			N = el.Nodes();
@@ -639,7 +639,7 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 	// write beam connectivity data
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FEElement_& el = mesh.Element(i);
 		if (el.IsBeam())
 		{
 			N = el.Nodes();
@@ -654,7 +654,7 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 	// write shell connectivity data
 	for (i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FEElement_& el = mesh.Element(i);
 		if (el.IsShell())
 		{
 			N = el.Nodes();
@@ -758,7 +758,7 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 		float data[FEGenericElement::MAX_NODES] = {0.f}, val;
 		for (i=0; i<mesh.Elements(); ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FEElement_& el = mesh.Element(i);
 			if (el.IsSolid())
 			{
 				if (bflag[0])
@@ -786,7 +786,7 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 		s[0] = s[1] = s[2] = s[3] = s[4] = s[5];
 		for (i=0; i<mesh.Elements(); ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FEElement_& el = mesh.Element(i);
 			if (el.IsBeam())
 			{
 				fwrite(s, sizeof(float), 6, fp);
@@ -796,7 +796,7 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 		// write shell element data
 		for (i=0; i<mesh.Elements(); ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FEElement_& el = mesh.Element(i);
 			if (el.IsShell())
 			{
 				if (bflag[0])

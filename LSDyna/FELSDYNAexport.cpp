@@ -117,7 +117,7 @@ bool FELSDYNAexport::write_ELEMENT_SOLID()
 
 				int npart = m_npart + el.m_gid;
 
-				switch (el.GetType())
+				switch (el.Type())
 				{
 				case FE_HEX8:
 					fprintf(m_fp, "%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d\n", n, npart, nn[0], nn[1], nn[2], nn[3], nn[4], nn[5], nn[6], nn[7]);
@@ -161,7 +161,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL()
 
 				for (int k=0; k<el.Nodes(); ++k) nn[k] = m.Node(el.m_node[k]).m_ntag;
 
-				switch (el.GetType())
+				switch (el.Type())
 				{
 				case FE_TRI3:
 					fprintf(m_fp, "%8d%8d%8d%8d%8d%8d\n", n, m_npart, nn[0], nn[1], nn[2], nn[2]);
@@ -204,7 +204,7 @@ bool FELSDYNAexport::write_ELEMENT_SHELL_THICKNESS()
 				for (int k=0; k<el.Nodes(); ++k) nn[k] = m.Node(el.m_node[k]).m_ntag;
 				double* h = el.m_h;
 
-				switch (el.GetType())
+				switch (el.Type())
 				{
 				case FE_TRI3:
 					fprintf(m_fp, "%8d%8d%8d%8d%8d%8d\n", n, m_npart, nn[0], nn[1], nn[2], nn[2]);
@@ -255,7 +255,7 @@ bool FELSDYNAexport::write_SET_SHELL_LIST()
 				for (int k=0; k<N; ++k, ++pi)
 				{
 					FEElement* pe = pi->m_pi;
-					switch (pe->GetType())
+					switch (pe->Type())
 					{
 					case FE_TRI3 : ne[nc++] = pe->m_ntag; break;
 					case FE_QUAD4: ne[nc++] = pe->m_ntag; break;

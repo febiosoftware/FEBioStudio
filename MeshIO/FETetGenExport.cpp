@@ -51,7 +51,7 @@ bool FETetGenExport::Export(FEProject &prj, const char *szfile)
 		for (int j=0; j<NE; ++j, ++n)
 		{
 			FEElement& el = pm->Element(j);
-			assert(el.GetType() == FE_TET4);
+			assert(el.Type() == FE_TET4);
 			int m[4];
 			m[0] = pm->Node(el.m_node[0]).m_ntag;
 			m[1] = pm->Node(el.m_node[1]).m_ntag;

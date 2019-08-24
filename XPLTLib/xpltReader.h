@@ -1,6 +1,6 @@
 #pragma once
 #include "xpltFileReader.h"
-#include "PostLib/FEElement.h"
+#include <MeshLib/FEElement.h>
 
 namespace Post {
 class FEState;
@@ -165,7 +165,7 @@ public:
 	{
 		int		eid;
 		int		index;
-		int		node[Post::FEGenericElement::MAX_NODES];
+		int		node[FEGenericElement::MAX_NODES];
 	};
 
 	struct FACE

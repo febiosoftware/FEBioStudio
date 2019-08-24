@@ -46,7 +46,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 
 	for (i=0; i<mesh.Elements(); i++)
 	{
-		FEElement& e = mesh.Element(i);
+		FEElement_& e = mesh.Element(i);
 
 		if (e.IsSolid())
 		{

@@ -1519,7 +1519,7 @@ void FEBioExport2::WriteGeometryPart(GPart* pg)
 		if (el.m_ntag == 1)
 		{
 			assert(el.m_gid == pid);
-			int ntype = el.GetType();
+			int ntype = el.Type();
 			const char* sztype = 0;
 			switch (ntype)
 			{
@@ -1556,7 +1556,7 @@ void FEBioExport2::WriteGeometryPart(GPart* pg)
 				for (int j=i; j<NE; ++j)
 				{
 					FEElement_& ej = pm->ElementRef(j);
-					if ((ej.m_ntag == 1) && (ej.GetType() == ntype))
+					if ((ej.m_ntag == 1) && (ej.Type() == ntype))
 					{
 						int eid = m_ntotelem + ncount + 1;
 						xej.set_attribute(n1, eid);

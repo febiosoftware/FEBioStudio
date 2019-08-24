@@ -62,7 +62,7 @@ FESurfaceMesh* InsertCurves2::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList
 			if (nj == -1) 
 			{
 				pt.push_back(r);
-				nj = pt.size() - 1;
+				nj = (int)pt.size() - 1;
 			}
 
 			curve[n][i] = nj;
@@ -97,7 +97,7 @@ FESurfaceMesh* InsertCurves2::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList
 		for (int n = 0; n < curve.size(); ++n)
 		{
 			vector<int> cn = curve[n];
-			int N = cn.size();
+			int N = (int)cn.size();
 
 			for (int i = 0; i<N-1; ++i)
 			{

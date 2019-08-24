@@ -220,7 +220,7 @@ void FEModel::EvalNodeField(int ntime, int nfield)
 	ValArray& elemData = state.m_ElemData;
 	for (i=0; i<mesh->Elements(); ++i)
 	{
-		FEElement& e = mesh->Element(i);
+		FEElement_& e = mesh->Element(i);
 		ELEMDATA& d = state.m_ELEM[i];
 		d.m_val = 0.f;
 		d.m_state &= ~StatusFlags::ACTIVE;
@@ -345,7 +345,7 @@ void FEModel::EvalFaceField(int ntime, int nfield)
 	// Face data is not projected onto the elements
 	for (int i=0; i<mesh->Elements(); ++i) 
 	{
-		FEElement& el = mesh->Element(i);
+		FEElement_& el = mesh->Element(i);
 		el.Deactivate();
 		state.m_ELEM[i].m_val = 0.f;
 		state.m_ELEM[i].m_state &= ~StatusFlags::ACTIVE;
@@ -369,7 +369,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 	float val;
 	for (int i=0; i<mesh->Elements(); ++i)
 	{
-		FEElement& el = mesh->Element(i);
+		FEElement_& el = mesh->Element(i);
 		state.m_ELEM[i].m_val = 0.f;
 		state.m_ELEM[i].m_state &= ~StatusFlags::ACTIVE;
 		el.Deactivate();
@@ -779,7 +779,7 @@ void FEModel::EvaluateNode(const vec3f& p, int ntime, int nfield, NODEDATA& d)
 		d.m_ntag = 0; 
 		return;
 	}
-	FEElement& el = mesh.Element(elid);
+	FEElement_& el = mesh.Element(elid);
 
 	// evaluate the nodal values
 	float v[FEGenericElement::MAX_NODES] = { 0.f }, val = 0.f;
@@ -1447,7 +1447,7 @@ bool FEModel::EvaluateElement(int n, int ntime, int nfield, float* data, float& 
 	m_ntime = ntime;
 
 	// get the element
-	FEElement& el = mesh->Element(n);
+	FEElement_& el = mesh->Element(n);
 	int ne = el.Nodes();
 
 	// the return value
@@ -2034,7 +2034,7 @@ vec3f FEModel::EvaluateNodeVector(int n, int ntime, int nvec)
 			for (int i=0; i<(int) nel.size(); ++i)
 			{
 				int iel = nel[i].first;
-				FEElement& el = mesh->Element(iel);
+				FEElement_& el = mesh->Element(iel);
 				FEMaterial* mat = GetMaterial(el.m_MatID);
 				if (mat->benable)
 				{
@@ -2291,7 +2291,7 @@ vec3f FEModel::EvaluateElemVector(int n, int ntime, int nvec)
 	}
 	else if (IS_NODE_FIELD(nvec))
 	{
-		FEElement& el = mesh->Element(n);
+		FEElement_& el = mesh->Element(n);
 		// take the average of the nodal values
 		for (int i=0; i<el.Nodes(); ++i) r += EvaluateNodeVector(el.m_node[i], ntime, nvec);
 		r /= el.Nodes();
@@ -2501,7 +2501,7 @@ mat3f FEModel::EvaluateElemTensor(int n, int ntime, int nten, int ntype)
 	}
 	else if (IS_NODE_FIELD(nten))
 	{
-		FEElement& el = mesh->Element(n);
+		FEElement_& el = mesh->Element(n);
 		// take the average of the nodal values
 		for (int i = 0; i<el.Nodes(); ++i) m += EvaluateNodeTensor(el.m_node[i], ntime, nten, ntype);
 		m /= (float) el.Nodes();

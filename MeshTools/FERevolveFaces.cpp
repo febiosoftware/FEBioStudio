@@ -33,7 +33,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     for (int i=0; i<NE; ++i)
     {
         const FEElement_& el = pm->ElementRef(i);
-        if ((el.GetType() == FE_HEX20) || (el.GetType() == FE_PENTA15) || (el.GetType() == FE_QUAD8) || (el.GetType()==FE_TRI6))
+        if ((el.Type() == FE_HEX20) || (el.Type() == FE_PENTA15) || (el.Type() == FE_QUAD8) || (el.Type()==FE_TRI6))
         {
             isQuad = true;
             break;

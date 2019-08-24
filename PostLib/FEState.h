@@ -1,6 +1,6 @@
 #pragma once
 #include "FEMeshData.h"
-#include "FEElement.h"
+#include <MeshLib/FEElement.h>
 #include <vector>
 #include "ValArray.h"
 using namespace std;

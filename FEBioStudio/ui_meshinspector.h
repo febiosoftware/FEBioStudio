@@ -204,7 +204,7 @@ public:
 		for (int i = 0; i<NE; ++i)
 		{
 			FEElement& e = pm->Element(i);
-			switch (e.GetType())
+			switch (e.Type())
 			{
 			case FE_HEX8   : n[0]++; break;
 			case FE_TET4   : n[1]++; break;

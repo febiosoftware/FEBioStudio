@@ -1,5 +1,5 @@
 #pragma once
-#include "FEElement.h"
+#include <MeshLib/FEElement.h>
 #include <vector>
 using namespace std;
 
@@ -42,7 +42,7 @@ public:
 	FEFace& Face(int n);
 
 	int Elements() { return (int) m_Elem.size(); }
-	FEElement& Element(int n);
+	FEElement_& Element(int n);
 
 	void Reserve(int nelems, int nfaces);
 

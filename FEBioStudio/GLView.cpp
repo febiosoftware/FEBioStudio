@@ -6815,7 +6815,7 @@ void CGLView::RenderFEElements(GObject* po)
 					}
 				}
 
-				switch (el.GetType())
+				switch (el.Type())
 				{
 				case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, true); break;
 				case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, true); break;
@@ -6867,7 +6867,7 @@ void CGLView::RenderFEElements(GObject* po)
 			FEElement& el = *psel->Element(i);
 			if (el.IsVisible())
 			{
-				switch (el.GetType())
+				switch (el.Type())
 				{
 				case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, false); break;
 				case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, false); break;
@@ -6922,7 +6922,7 @@ void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
 
 		if (bok)
 		{
-			switch (e.GetType())
+			switch (e.Type())
 			{
 			case FE_HEX8:
 			{
@@ -7399,7 +7399,7 @@ void CGLView::RenderMeshLines(GObject* po)
 		const FEElement& e = pm->Element(i);
 		if (e.IsVisible() && (po->Part(e.m_gid)->IsVisible()))
 		{
-			switch (e.GetType())
+			switch (e.Type())
 			{
 			case FE_HEX8:
 			{
@@ -7776,10 +7776,10 @@ void CGLView::RenderTags()
 	// process elements
 	if (mode == ITEM_ELEM)
 	{
-		const vector<Post::FEElement*> selectedElements = pdoc->GetGLModel()->GetElementSelection();
+		const vector<FEElement_*> selectedElements = pdoc->GetGLModel()->GetElementSelection();
 		for (int i = 0; i<(int)selectedElements.size(); i++)
 		{
-			Post::FEElement& el = *selectedElements[i]; assert(el.IsSelected());
+			FEElement_& el = *selectedElements[i]; assert(el.IsSelected());
 
 			tag.r = mesh.ElementCenter(el);
 			tag.bvis = false;

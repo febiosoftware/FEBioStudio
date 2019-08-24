@@ -233,7 +233,7 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 
 			for (i=0; i<size; ++i)
 			{
-				FEElement& el = pm->Element(i);
+				FEElement_& el = pm->Element(i);
 				ch = fgets(szline, 255, m_fp);
 				if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 				nread = sscanf(szline, "%lg", &temp[0]);

@@ -155,6 +155,7 @@
     <ClCompile Include="..\..\MeshLib\LineMesh2D.cpp" />
     <ClCompile Include="..\..\MeshLib\MeshMetrics.cpp" />
     <ClCompile Include="..\..\MeshLib\MeshTools.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEElementLibrary.cpp" />
     <ClCompile Include="..\..\MeshLib\triangulate.cpp" />
     <ClCompile Include="..\..\MeshLib\TriMesh.cpp" />
   </ItemGroup>
@@ -163,6 +164,7 @@
     <ClInclude Include="..\..\MeshLib\FECurveMesh.h" />
     <ClInclude Include="..\..\MeshLib\FEEdge.h" />
     <ClInclude Include="..\..\MeshLib\FEElement.h" />
+    <ClInclude Include="..\..\MeshLib\FEElementLibrary.h" />
     <ClInclude Include="..\..\MeshLib\FEFace.h" />
     <ClInclude Include="..\..\MeshLib\FEFaceEdgeList.h" />
     <ClInclude Include="..\..\MeshLib\FEItem.h" />

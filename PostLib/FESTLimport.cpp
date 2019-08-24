@@ -139,7 +139,7 @@ void FESTLimport::build_mesh()
 	for (i=0; i<NF; ++i, ++is)
 	{
 		FACET& f = *is;
-		FEElement& e = pm->Element(i);
+		FEElement_& e = pm->Element(i);
 		e.m_node[0] = f.n[0];
 		e.m_node[1] = f.n[1];
 		e.m_node[2] = f.n[2];

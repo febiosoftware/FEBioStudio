@@ -711,7 +711,7 @@ bool FEDomain::AddElement(int iel)
             vlist[i] = vn;
     }
     
-    if (el.GetType() == FE_HEX8) {
+    if (el.Type() == FE_HEX8) {
         
         // check if this element has been added already
         if (FindBox(iel) != -1) return false;
@@ -720,7 +720,7 @@ bool FEDomain::AddElement(int iel)
         AddBox(vlist, iel);
         return true;
     }
-    else if (el.GetType() == FE_PENTA6) {
+    else if (el.Type() == FE_PENTA6) {
         
         // check if this element has been added already
         if (FindWedge(iel) != -1) return false;
@@ -729,7 +729,7 @@ bool FEDomain::AddElement(int iel)
         AddWedge(vlist, iel);
         return true;
     }
-    else if (el.GetType() == FE_TET4) {
+    else if (el.Type() == FE_TET4) {
         
         // check if this element has been added already
         if (FindTet(iel) != -1) return false;

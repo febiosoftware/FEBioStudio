@@ -228,7 +228,7 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 	{
 		const FEElement& el = mesh.Element(i);
 		vector<int>& EETi = EET[i];
-		if ((el.GetType() == FE_TET4)|| (el.GetType() == FE_TET5))
+		if ((el.Type() == FE_TET4)|| (el.Type() == FE_TET5))
 		{
 			EETi.resize(6);
 			for (int j = 0; j<6; ++j)
@@ -251,7 +251,7 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 				}
 			}
 		}
-		else if (el.GetType() == FE_HEX8)
+		else if (el.Type() == FE_HEX8)
 		{
 			EETi.resize(12);
 			for (int j = 0; j<12; ++j)

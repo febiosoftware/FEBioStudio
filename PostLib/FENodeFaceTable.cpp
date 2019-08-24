@@ -52,7 +52,7 @@ int FENodeFaceTable::FindFace(int inode, int n[10], int m)
 	};
 	
 	vector<int>& ni = m_NFT[inode];
-	int nf = ni.size();
+	int nf = (int)ni.size();
 	for (int i=0; i<nf; ++i)
 	{
 		FEFace& f = m_pm->Face(ni[i]);

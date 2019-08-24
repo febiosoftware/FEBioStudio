@@ -225,7 +225,7 @@ void GSurfaceMeshObject::UpdateNodes()
 	if (ng < (int) m_Node.size()) ResizeNodes(ng);
 	else if (ng >(int) m_Node.size())
 	{
-		for (int i=m_Node.size(); i<ng; ++i)
+		for (int i= (int)m_Node.size(); i<ng; ++i)
 		{
 			GNode* node = new GNode(this);
 			node->SetType(NODE_VERTEX);

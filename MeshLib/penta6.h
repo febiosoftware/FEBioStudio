@@ -25,7 +25,7 @@ namespace PENTA6
 	}
 
 	// iso-parametric coordinates of nodes (for n = -1 return center coordinates)
-	void iso_coord(int n, double q[3])
+	inline void iso_coord(int n, double q[3])
 	{
 		const double t = 1.0 / 3.0;
 		switch (n)

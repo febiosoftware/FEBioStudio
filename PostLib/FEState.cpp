@@ -28,7 +28,7 @@ FEState::FEState(float time, FEModel* fem, FEMeshBase* pmesh) : m_fem(fem), m_me
 	// allocate element data
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FEElement_& el = mesh.Element(i);
 		int ne = el.Nodes();
 		m_ElemData.append(ne);
 	}
@@ -119,7 +119,7 @@ FEState::FEState(float time, FEModel* pfem, FEState* pstate) : m_fem(pfem)
 	// allocate element data
 	for (int i=0; i<elems; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FEElement_& el = mesh.Element(i);
 		int ne = el.Nodes();
 		m_ElemData.append(ne);
 	}

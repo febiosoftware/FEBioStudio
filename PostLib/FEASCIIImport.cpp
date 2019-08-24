@@ -427,7 +427,7 @@ bool FEASCIIImport::BuildMesh(FEModel &fem)
 	// assign elements
 	for (int i=0; i<zone.m_ne; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FEElement_& e = pm->Element(i);
 		int* n = zone.m_Elem[i].node;
 		for (int j=0; j<e.Nodes(); ++j) e.m_node[j] = n[j]-1;
 	}

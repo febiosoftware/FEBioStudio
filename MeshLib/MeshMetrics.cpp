@@ -453,7 +453,7 @@ double SolidJacobian(const FEMesh& mesh, const FEElement& el)
 	for (int i = 0; i<n; ++i) r[i] = mesh.NodePosition(el.m_node[i]);
 
 	// calculate jacobian based on element type
-	switch (el.GetType())
+	switch (el.Type())
 	{
 	case FE_HEX8:
 	{
@@ -648,7 +648,7 @@ double ElementVolume(const FEMesh& mesh, const FEElement &e)
 	mesh.ElementNodeLocalPositions(e, r);
 
 	int n = e.Nodes();
-	switch (e.GetType())
+	switch (e.Type())
 	{
 	case FE_TET4:
 	case FE_TET5:
@@ -867,7 +867,7 @@ double TetQuality(const FEMesh& mesh, const FEElement& el)
 //! Calculates the smallest dihedral angle for a tet element
 double TetMinDihedralAngle(const FEMesh& mesh, const FEElement& el)
 {
-	if (el.GetType() != FE_TET4) return 0.0;
+	if (el.Type() != FE_TET4) return 0.0;
 
 	// get the nodal coordinates
 	vec3d r[4];
@@ -898,7 +898,7 @@ double TetMinDihedralAngle(const FEMesh& mesh, const FEElement& el)
 //! Calculates the largest dihedral angle for a tet element
 double TetMaxDihedralAngle(const FEMesh& mesh, const FEElement& el)
 {
-	if (el.GetType() != FE_TET4) return 0.0;
+	if (el.Type() != FE_TET4) return 0.0;
 
 	// get the nodal coordinates
 	vec3d r[4];
@@ -938,7 +938,7 @@ vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v)
 
 	// shape function derivatives at node
 	const double(*G)[3] = 0;
-	switch (el.GetType())
+	switch (el.Type())
 	{
 	case FE_HEX8: G = GHEX8[node]; break;
 	case FE_PENTA6: G = GWEDGE[node]; break;
@@ -991,7 +991,7 @@ vec3d ShapeGradient(const FEMesh& mesh, const FEElement& el, int na, int nb)
 
 	// shape function derivatives at node
 	const double(*G)[3] = 0;
-	switch (el.GetType())
+	switch (el.Type())
 	{
 	case FE_HEX8: G = GHEX8[nb]; break;
 	case FE_PENTA6: G = GWEDGE[nb]; break;

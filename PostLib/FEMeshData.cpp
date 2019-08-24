@@ -38,7 +38,7 @@ void Post::shape_grad(FEModel& fem, int elem, double q[3], int nstate, vec3f* G)
 	FEMeshBase& m = *state.GetFEMesh();
 
 	// get the element
-	FEElement& el = m.Element(elem);
+	FEElement_& el = m.Element(elem);
 	int N = el.Nodes();
 
 	// we can only define this for solid elements
@@ -89,7 +89,7 @@ Mat3d deform_grad(FEModel& fem, int n, double r, double s, double t, int nstate,
 	FEMeshBase& m = *state.GetFEMesh();
 
 	// get the element
-	Post::FEElement& el = m.Element(n);
+	FEElement_& el = m.Element(n);
 	int N = el.Nodes();
 
 	// we can only define this for solid elements
@@ -155,7 +155,7 @@ FEDeformationGradient::FEDeformationGradient(FEState* pm, FEDataField* pdf) : FE
 void FEDeformationGradient::eval(int n, Mat3d* pv)
 {
 	// get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
 
 	// if this is not a solid element, return 0
 	if (e.IsSolid() == false)
@@ -210,7 +210,7 @@ FEMeshData* FEStrainDataField::CreateData(FEState* pstate)
 void FEInfStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -247,7 +247,7 @@ void FEInfStrain::eval(int n, mat3fs* pv)
 void FERightCauchyGreen::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -286,7 +286,7 @@ void FERightCauchyGreen::eval(int n, mat3fs* pv)
 void FERightStretch::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -344,7 +344,7 @@ void FERightStretch::eval(int n, mat3fs* pv)
 void FELagrangeStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -383,7 +383,7 @@ void FELagrangeStrain::eval(int n, mat3fs* pv)
 void FEBiotStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -441,7 +441,7 @@ void FEBiotStrain::eval(int n, mat3fs* pv)
 void FERightHencky::eval(int n, mat3fs* pv)
 {
 	// get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -499,7 +499,7 @@ void FERightHencky::eval(int n, mat3fs* pv)
 void FELeftCauchyGreen::eval(int n, mat3fs* pv)
 {
     // get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -538,7 +538,7 @@ void FELeftCauchyGreen::eval(int n, mat3fs* pv)
 void FELeftStretch::eval(int n, mat3fs* pv)
 {
     // get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -596,7 +596,7 @@ void FELeftStretch::eval(int n, mat3fs* pv)
 void FELeftHencky::eval(int n, mat3fs* pv)
 {
     // get the element
-	FEElement& e = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& e = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -654,7 +654,7 @@ void FELeftHencky::eval(int n, mat3fs* pv)
 void FEAlmansi::eval(int n, mat3fs* pv)
 {
     // get the element
-	FEElement& el = GetFEState()->GetFEMesh()->Element(n);
+	FEElement_& el = GetFEState()->GetFEMesh()->Element(n);
     // get the iso-parameteric coordinates of the element center
     double q[3];
     el.iso_coord(-1, q);
@@ -719,7 +719,7 @@ void FEVolRatio::eval(int n, float* pv)
 	int i;
 
 	FEMeshBase& m = *GetFEMesh();
-	FEElement* pe = &m.Element(n);
+	FEElement_* pe = &m.Element(n);
 
 	int N = pe->Nodes();
 	if (pe->Type() == FE_HEX20) N = 8;
@@ -840,7 +840,7 @@ void FEElementVolume::eval(int n, float* pv)
 void FEAspectRatio::eval(int iel, float* pv)
 {
 	FEMeshBase& m = *GetFEState()->GetFEMesh();
-	FEElement& el = m.Element(iel);
+	FEElement_& el = m.Element(iel);
 	int nn = el.Nodes();
 	if (el.Type() == FE_HEX20) nn = 8;
 	if (el.Type() == FE_HEX27) nn = 8;
@@ -886,7 +886,7 @@ void FEMaxEdgeAngle::eval(int iel, float* pv)
 {
 	FEModel& fem = *GetFEModel();
 	FEMeshBase& m = *GetFEState()->GetFEMesh();
-	FEElement& el = m.Element(iel);
+	FEElement_& el = m.Element(iel);
 
 	if (el.Nodes() != 8) { *pv = 90.f; return; }
 
@@ -951,7 +951,7 @@ void FEMinEdgeAngle::eval(int iel, float* pv)
 {
 	FEModel& fem = *GetFEModel();
 	FEMeshBase& m = *GetFEState()->GetFEMesh();
-	FEElement& el = m.Element(iel);
+	FEElement_& el = m.Element(iel);
 	if (el.Nodes() != 8) { *pv = 90.f; return; }
 
 	int ntime = GetFEState()->GetID();
@@ -1703,7 +1703,7 @@ void FEVolStrain::eval(int n, float* pv)
 
 	int i;
 
-	FEElement* pe = &GetFEMesh()->Element(n);
+	FEElement_* pe = &GetFEMesh()->Element(n);
 
 	int N = pe->Nodes();
 	if (pe->Type() == FE_HEX20) N = 8;

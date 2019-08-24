@@ -84,7 +84,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			// set meshing parameters
 			FEFace face = fdata[it->second[0]];
 			FEElement_& el = pm->Element(iel);
-			if (el.GetType() == FE_HEX8) {
+			if (el.Type() == FE_HEX8) {
 				// get the box from this domain
 				int ibox = dom.Boxes() - 1;
 				FEDBox& box = dom.Box(ibox);
@@ -96,7 +96,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
-			else if (el.GetType() == FE_PENTA6) {
+			else if (el.Type() == FE_PENTA6) {
 				// get the wedge from this domain
 				int iwdg = dom.Wedges() - 1;
 				FEDWedge& wdg = dom.Wedge(iwdg);
@@ -108,7 +108,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
-			else if (el.GetType() == FE_TET4) {
+			else if (el.Type() == FE_TET4) {
 				// get the tet from this domain
 				int itet = dom.Tets() - 1;
 				FEDTet& tet = dom.Tet(itet);
@@ -134,7 +134,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			if (cn.size() != 2) return;
 			int iel = (int)it->first;
 			FEElement_& el = pm->Element(iel);
-			if (el.GetType() == FE_HEX8) {
+			if (el.Type() == FE_HEX8) {
 				// we have an external corner
 				// add element to domain
 				dom.AddElement(iel);
@@ -163,10 +163,10 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 				// tag the original element for deletion
 				delem[iel] = true;
 			}
-			else if (el.GetType() == FE_PENTA6) {
+			else if (el.Type() == FE_PENTA6) {
 				return;
 			}
-			else if (el.GetType() == FE_TET4) {
+			else if (el.Type() == FE_TET4) {
 				// we have a tet with two faces on the selected surface
 				// let's find the other two faces of that tet
 				FEFace opface[2];
@@ -183,7 +183,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 					int jel = -1;
 					for (int k = 0; k<pm->Elements(); ++k) {
 						FEElement_ oel = pm->Element(k);
-						if ((k != iel) && (oel.GetType() == FE_TET4))
+						if ((k != iel) && (oel.Type() == FE_TET4))
 							if (oel.FindFace(opface[i]) != -1) {
 								jel = k;
 								break;
@@ -217,7 +217,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 		// we have an internal corner
 		int iel = (int)ie->first;
 		FEElement_& el = pm->Element(iel);
-		if ((ie->second.size() == 2) && (el.GetType() == FE_HEX8)) {
+		if ((ie->second.size() == 2) && (el.Type() == FE_HEX8)) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the box we just added to this domain
@@ -243,7 +243,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
-		else if ((ie->second.size() == 2) && (el.GetType() == FE_PENTA6)) {
+		else if ((ie->second.size() == 2) && (el.Type() == FE_PENTA6)) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the wedge we just added to this domain
@@ -256,7 +256,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
-		else if ((ie->second.size() == 1) && (el.GetType() == FE_PENTA6)) {
+		else if ((ie->second.size() == 1) && (el.Type() == FE_PENTA6)) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the wedge we just added to this domain
@@ -279,7 +279,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			delem[iel] = true;
 			return;
 		}
-		else if ((ie->second.size() == 1) && (el.GetType() == FE_TET4)) {
+		else if ((ie->second.size() == 1) && (el.Type() == FE_TET4)) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the tet we just added to this domain
@@ -292,7 +292,7 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 			// tag the original element for deletion
 			delem[iel] = true;
 		}
-		else if ((ie->second.size() == 2) && (el.GetType() == FE_TET4)) {
+		else if ((ie->second.size() == 2) && (el.Type() == FE_TET4)) {
 			// add element to domain
 			dom.AddElement(iel);
 			// get the tet we just added to this domain

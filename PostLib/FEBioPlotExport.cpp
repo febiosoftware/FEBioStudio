@@ -373,7 +373,7 @@ bool FEBioPlotExport::WritePart(FEPart& part)
 
 	// figure out element type
 	FEMeshBase& mesh = *part.GetMesh();
-	FEElement& e0 = mesh.Element(part.m_Elem[0]);
+	FEElement_& e0 = mesh.Element(part.m_Elem[0]);
 	int matid = e0.m_MatID + 1;
 
 	int ne = 0;
@@ -417,7 +417,7 @@ bool FEBioPlotExport::WritePart(FEPart& part)
 	{
 		for (int i=0; i<NE; ++i)
 		{
-			FEElement& el = mesh.Element(part.m_Elem[i]);
+			FEElement_& el = mesh.Element(part.m_Elem[i]);
 			n[0] = el.GetID();
 			for (int j=0; j<ne; ++j) n[j+1] = el.m_node[j];
 			m_ar.WriteChunk(PLT_ELEMENT, n, ne+1);

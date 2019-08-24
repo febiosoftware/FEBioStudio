@@ -317,7 +317,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		pm->SetElementTags(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement& e = pm->Element(i);
+			FEElement_& e = pm->Element(i);
 			FEMaterial* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{
@@ -330,7 +330,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 			// make sure no vector is drawn for hidden elements
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
-				FEElement& elem = pm->Element(i);
+				FEElement_& elem = pm->Element(i);
 				if (elem.IsVisible() == false) elem.m_ntag = 0;
 			}
 		}
@@ -366,7 +366,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement& elem = pm->Element(i);
+			FEElement_& elem = pm->Element(i);
 			if ((frand() <= m_dens) && elem.m_ntag)
 			{
 				vec3f r = pm->ElementCenter(elem);
@@ -391,7 +391,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		pm->SetNodeTags(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			FEElement& e = pm->Element(i);
+			FEElement_& e = pm->Element(i);
 			FEMaterial* mat = ps->GetMaterial(e.m_MatID);
 			if (mat->benable && (m_bshowHidden || mat->visible()))
 			{

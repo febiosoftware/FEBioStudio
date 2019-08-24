@@ -214,7 +214,7 @@ FEMesh* FEMesh::DetachSelectedMesh()
 		if (pe->IsSelected())
 		{
 			FEElement& el = pm->Element(n);
-			el.SetType(pe->GetType());
+			el.SetType(pe->Type());
 			
 			for (j=0; j<pe->Nodes(); ++j)
 			{
@@ -1226,7 +1226,7 @@ void FEMesh::UpdateElementNeighbors()
 		{
 			if (pe->m_nbr[j] == -1)
 			{
-				pe->GetFace(f1, j);
+				pe->GetFace(j, f1);
 
 				// find the neighbour element
 				int inode = f1.n[0];
@@ -1242,7 +1242,7 @@ void FEMesh::UpdateElementNeighbors()
 						int l;
 						for (l = 0; l<nbrf; l++)
 						{
-							pne->GetFace(f2, l);
+							pne->GetFace(l, f2);
 							if (f1 == f2)
 							{
 								bfound = true;
@@ -1402,7 +1402,7 @@ void FEMesh::UpdateFaceElementTable()
 			{
 				if (pej->m_face[k] == -1)
 				{
-					pej->GetFace(f2, k);
+					pej->GetFace(k, f2);
 					if (f2 == face)
 					{
 //						assert(m<2);
@@ -2135,7 +2135,7 @@ void FEMesh::Save(OArchive &ar)
 		{
 			ar.BeginChunk(CID_MESH_ELEMENT);
 			{
-				int ntype = pe->GetType();
+				int ntype = pe->Type();
 				ar.WriteChunk(CID_MESH_ELEMENT_TYPE    , ntype);
 				ar.WriteChunk(CID_MESH_ELEMENT_GID     , pe->m_gid);
 				ar.WriteChunk(CID_MESH_ELEMENT_NODES   , pe->m_node, pe->Nodes());
@@ -2881,7 +2881,7 @@ void FEMesh::InvertTaggedElements(int ntag)
 		{
 			int n = e.Nodes(), m;
 
-			switch (e.GetType())
+			switch (e.Type())
 			{
 			case FE_QUAD4:
 			case FE_TRI3:
@@ -3242,7 +3242,7 @@ void FEMesh::BuildFaces()
 			FEElement* pen = (nbid == -1 ? 0 : ElementPtr(nbid));
 			if (pen == 0)
 			{
-				el.GetFace(*pf, j);
+				el.GetFace(j, *pf);
 				++pf; ++nf;
 			}
 			else if (el.m_gid < pen->m_gid)

@@ -159,7 +159,7 @@ void FEVTKExport::WriteCells(FEState* ps)
     fprintf(m_fp, "CELLS %d %d\n", NE, nsize);
     for (int j=0; j<m.Elements(); ++j)
     {
-        FEElement& el = m.Element(j);
+		FEElement_& el = m.Element(j);
         fprintf(m_fp, "%d ", el.Nodes());
         for (int k=0; k<el.Nodes(); ++k) fprintf(m_fp, "%d ", el.m_node[k]);
         fprintf(m_fp, "\n");
@@ -169,7 +169,7 @@ void FEVTKExport::WriteCells(FEState* ps)
     fprintf(m_fp, "\nCELL_TYPES %d\n", NE);
 	for (int j = 0; j<m.Elements(); ++j)
     {
-        FEElement& el = m.Element(j);
+		FEElement_& el = m.Element(j);
         int vtk_type;
         switch (el.Type()) {
             case FE_HEX8   : vtk_type = VTK_HEXAHEDRON; break;
@@ -477,7 +477,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 		float v[FEGenericElement::MAX_NODES];
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FEElement_& el = mesh.Element(i);
 			if (data.active(i))
 			{
 				data.eval(i, v);
@@ -492,7 +492,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 		vec3f v[FEGenericElement::MAX_NODES];
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FEElement_& el = mesh.Element(i);
 			if (data.active(i))
 			{
 				data.eval(i, v);
@@ -509,7 +509,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 		mat3fs v[FEGenericElement::MAX_NODES];
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FEElement_& el = mesh.Element(i);
 			if (data.active(i))
 			{
 				data.eval(i, v);
@@ -526,7 +526,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 		mat3fd v[FEGenericElement::MAX_NODES];
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FEElement_& el = mesh.Element(i);
 			if (data.active(i))
 			{
 				data.eval(i, v);

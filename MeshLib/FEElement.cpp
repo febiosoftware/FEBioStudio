@@ -1,41 +1,119 @@
 #include "FEElement.h"
+#include "FEElementLibrary.h"
+#include <MeshLib/tet4.h>
+#include <MeshLib/penta6.h>
+#include <MeshLib/penta15.h>
+#include <MeshLib/hex8.h>
+#include <MeshLib/pyra5.h>
+#include <MeshLib/tet10.h>
+#include <MeshLib/tet15.h>
+#include <MeshLib/tet20.h>
+#include <MeshLib/hex20.h>
+#include <MeshLib/hex27.h>
 
 //=============================================================================
 // FEElement_
 //-----------------------------------------------------------------------------
 FEElement_::FEElement_()
 {
-	m_ntype = FE_INVALID_ELEMENT_TYPE;	// unknown type
+	m_traits = nullptr;
 
 	m_node = 0;
 	m_nbr = 0;
 	m_face = 0;
 	m_h = 0;
 
-	m_nodes = 0;
-	m_nfaces = 0;
-	m_nedges = 0;
-
 	m_gid = 0;	// all elements need to be assigned to a partition
+
+	m_lid = 0;
+	m_MatID = 0;
+	m_tex = 0.0f;
 
 	m_Q.unit(); m_Qactive = false;
 	m_a0 = 0;
 }
 
 //-----------------------------------------------------------------------------
+// Set the element type. This also sets some other type related data
+void FEElement_::SetType(int ntype)
+{
+	m_traits = FEElementLibrary::GetTraits(ntype);
+	assert(m_traits);
+}
+
+//-----------------------------------------------------------------------------
+// Check comparison between two elements
+bool FEElement_::operator != (FEElement_& e)
+{
+	if (Type() != e.Type()) return true;
+	assert(Shape() == e.Shape());
+	switch (Shape())
+	{
+	case ELEM_HEX:
+		if ((m_node[0] != e.m_node[0]) ||
+			(m_node[1] != e.m_node[1]) ||
+			(m_node[2] != e.m_node[2]) ||
+			(m_node[3] != e.m_node[3]) ||
+			(m_node[4] != e.m_node[4]) ||
+			(m_node[5] != e.m_node[5]) ||
+			(m_node[6] != e.m_node[6]) ||
+			(m_node[7] != e.m_node[7])) return true;
+		break;
+	case ELEM_PENTA:
+		if ((m_node[0] != e.m_node[0]) ||
+			(m_node[1] != e.m_node[1]) ||
+			(m_node[2] != e.m_node[2]) ||
+			(m_node[3] != e.m_node[3]) ||
+			(m_node[4] != e.m_node[4]) ||
+			(m_node[5] != e.m_node[5])) return true;
+		break;
+	case ELEM_PYRA:
+		if ((m_node[0] != e.m_node[0]) ||
+			(m_node[1] != e.m_node[1]) ||
+			(m_node[2] != e.m_node[2]) ||
+			(m_node[3] != e.m_node[3]) ||
+			(m_node[4] != e.m_node[4])) return true;
+		break;
+	case ELEM_TET:
+	case ELEM_QUAD:
+		if ((m_node[0] != e.m_node[0]) ||
+			(m_node[1] != e.m_node[1]) ||
+			(m_node[2] != e.m_node[2]) ||
+			(m_node[3] != e.m_node[3])) return true;
+		break;
+	case ELEM_TRI:
+		if ((m_node[0] != e.m_node[0]) ||
+			(m_node[1] != e.m_node[1]) ||
+			(m_node[2] != e.m_node[2])) return true;
+		break;
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool FEElement_::HasNode(int node) const
+{
+	bool ret = false;
+	const int n = Nodes();
+	for (int i = 0; i<n; i++) ret |= !(m_node[i] ^ node);
+	return ret;
+}
+
+//-----------------------------------------------------------------------------
 FEFace FEElement_::GetFace(int i) const
 {
 	FEFace face;
-	GetFace(face, i);
+	GetFace(i, face);
 	return face;
 }
 
 //-----------------------------------------------------------------------------
-void FEElement_::GetFace(FEFace& f, int i) const
+void FEElement_::GetFace(int i, FEFace& f) const
 {
 	int* m = m_node;
 	int* n = f.n;
-	switch (m_ntype)
+	switch (Type())
 	{
 	case FE_HEX8:
 		f.SetType(FE_FACE_QUAD4);
@@ -152,7 +230,7 @@ FEEdge FEElement_::GetEdge(int i)
 {
 	FEEdge e;
 
-	switch (m_ntype)
+	switch (Type())
 	{
 	case FE_QUAD4:
 		e.SetType(FE_EDGE2);
@@ -203,7 +281,7 @@ FEEdge FEElement_::GetEdge(int i)
 //-----------------------------------------------------------------------------
 void FEElement_::GetShellFace(FEFace& f) const
 {
-	switch (m_ntype)
+	switch (Type())
 	{
 	case FE_QUAD4: f.SetType(FE_FACE_QUAD4); f.n[0] = m_node[0]; f.n[1] = m_node[1]; f.n[2] = m_node[2]; f.n[3] = m_node[3]; break;
 	case FE_TRI3 : f.SetType(FE_FACE_TRI3 ); f.n[0] = m_node[0]; f.n[1] = m_node[1]; f.n[2] = m_node[2]; f.n[3] = m_node[2]; break;
@@ -271,10 +349,10 @@ int FEElement_::FindFace(const FEFace& f)
 // is an acceptable limitation.
 bool FEElement_::is_equal(FEElement_& e)
 {
-	if (m_ntype != e.m_ntype) return false;
+	if (Type() != e.Type()) return false;
 	int* n = m_node;
 	int* m = e.m_node; 
-	switch (m_ntype)
+	switch (Type())
 	{
 	case FE_BEAM2:
 	case FE_TRI3:
@@ -450,10 +528,7 @@ void FEElement_::copy(const FEElement_& el)
 	SetFEState(el.GetFEState());
 
 	m_gid = el.m_gid;
-	m_ntype = el.m_ntype;
-	m_nodes = el.m_nodes;
-	m_nfaces = el.m_nfaces;
-	m_nedges = el.m_nedges;
+	m_traits = el.m_traits;
 	m_nid = el.m_nid;
 
 	m_fiber = el.m_fiber;
@@ -462,9 +537,105 @@ void FEElement_::copy(const FEElement_& el)
 	m_a0 = el.m_a0;
 //	m_edata = el.m_edata;
 
-	for (int i=0; i<m_nodes; ++i) m_node[i] = el.m_node[i];
+	for (int i=0; i<Nodes(); ++i) m_node[i] = el.m_node[i];
 }
 
+//-----------------------------------------------------------------------------
+//! Calculate the shape function values at the point (r,s,t)
+void FEElement_::shape(double *H, double r, double s, double t)
+{
+	switch (Type())
+	{
+	case FE_TET4   : TET4   ::shape(H, r, s, t); break;
+	case FE_TET5   : TET5   ::shape(H, r, s, t); break;
+	case FE_HEX8   : HEX8   ::shape(H, r, s, t); break;
+	case FE_PENTA6 : PENTA6 ::shape(H, r, s, t); break;
+	case FE_PYRA5  : PYRA5  ::shape(H, r, s, t); break;
+	case FE_TET10  : TET10  ::shape(H, r, s, t); break;
+	case FE_TET15  : TET15  ::shape(H, r, s, t); break;
+	case FE_TET20  : TET20  ::shape(H, r, s, t); break;
+	case FE_HEX20  : HEX20  ::shape(H, r, s, t); break;
+	case FE_HEX27  : HEX27  ::shape(H, r, s, t); break;
+	case FE_PENTA15: PENTA15::shape(H, r, s, t); break;
+	default:
+		assert(false);
+	}
+}
+
+//-----------------------------------------------------------------------------
+double FEElement_::eval(double* d, double r, double s, double t)
+{
+	double H[FEElement::MAX_NODES];
+	shape(H, r, s, t);
+	double a = 0.0;
+	for (int i=0; i<Nodes(); ++i) a += H[i]*d[i];
+	return a;
+}
+
+//-----------------------------------------------------------------------------
+float FEElement_::eval(float* d, double r, double s, double t)
+{
+	double H[FEElement::MAX_NODES];
+	shape(H, r, s, t);
+	double a = 0.0;
+	for (int i = 0; i<Nodes(); ++i) a += H[i] * d[i];
+	return (float) a;
+}
+
+//-----------------------------------------------------------------------------
+vec3f FEElement_::eval(vec3f* d, double r, double s, double t)
+{
+	double H[FEElement::MAX_NODES];
+	shape(H, r, s, t);
+	vec3f a(0,0,0);
+	for (int i=0; i<Nodes(); ++i) a += d[i]*((float)H[i]);
+	return a;
+}
+
+//-----------------------------------------------------------------------------
+void FEElement_::shape_deriv(double* Hr, double* Hs, double* Ht, double r, double s, double t)
+{
+	switch (Type())
+	{
+	case FE_TET4   : TET4   ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_TET5   : TET5   ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_HEX8   : HEX8   ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_PENTA6 : PENTA6 ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_PYRA5  : PYRA5  ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_TET10  : TET10  ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_TET15  : TET15  ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_TET20  : TET20  ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_HEX20  : HEX20  ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_HEX27  : HEX27  ::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+	case FE_PENTA15: PENTA15::shape_deriv(Hr, Hs, Ht, r, s, t); break;
+    default:
+		assert(false);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void FEElement_::iso_coord(int n, double q[3])
+{
+    // for n=-1 return isoparametric coordinates of element center
+    
+	assert((n>=-1)&&(n<Nodes()));
+	switch (Type())
+	{
+	case FE_TET4   : TET4   ::iso_coord(n, q); break;
+	case FE_TET5   : TET5   ::iso_coord(n, q); break;
+	case FE_HEX8   : HEX8   ::iso_coord(n, q); break;
+	case FE_PENTA6 : PENTA6 ::iso_coord(n, q); break;
+	case FE_PYRA5  : PYRA5  ::iso_coord(n, q); break;
+	case FE_TET10  : TET10  ::iso_coord(n, q); break;
+	case FE_TET15  : TET15  ::iso_coord(n, q); break;
+	case FE_TET20  : TET20  ::iso_coord(n, q); break;
+	case FE_HEX20  : HEX20  ::iso_coord(n, q); break;
+	case FE_HEX27  : HEX27  ::iso_coord(n, q); break;
+	case FE_PENTA15: PENTA15::iso_coord(n, q); break;
+	default:
+		assert(false);
+    }
+}
 
 //=============================================================================
 // FEElement
@@ -507,23 +678,70 @@ FEElement& FEElement::operator = (const FEElement& el)
 	return *this;
 }
 
-//-----------------------------------------------------------------------------
-// Set the element type. This also sets some other type related data
-void FEElement::SetType(int ntype)
-{ 
-	// set the type
-	m_ntype = ntype; 
-	assert(m_ntype != FE_INVALID_ELEMENT_TYPE);
+const int ET_QUAD[4][2] = {
+	{ 0, 1 },
+	{ 1, 2 },
+	{ 2, 3 },
+	{ 3, 0 } };
 
-	// set the number of nodes
-	const int N[] = {0, 8,4,6,4,3,2,20,8,3,10,6,15,27,7,9,15,5,20,10, 5};
-	m_nodes = N[m_ntype];
+const int ET_QUAD8[4][3] = {
+	{ 0, 1, 4 },
+	{ 1, 2, 5 },
+	{ 2, 3, 6 },
+	{ 3, 0, 7 } };
 
-	// set the number of faces (shells have no faces)
-	const int F[] = {0, 6,4,5,0,0,0,6,0,0,4,0,4,6,0,0,5,5,4,0, 4};
-	m_nfaces = F[m_ntype];
+const int ET_TRI[3][2] = {
+	{ 0, 1 },
+	{ 1, 2 },
+	{ 2, 3 } };
 
-	// set the number of edges (solids have no edges)
-	const int E[] = {0, 0,0,0,4,3,1,0,4,1,0,3,0,0,3,4,0,0,0,3, 0};
-	m_nedges = E[m_ntype];
+const int ET_TRI6[3][3] = {
+	{ 0, 1, 3 },
+	{ 1, 2, 4 },
+	{ 2, 0, 5 } };
+
+//=============================================================================
+FEGenericElement::FEGenericElement()
+{
+	m_node = _node;
+	m_nbr = _nbr;
+	for (int i = 0; i<MAX_NODES; ++i) m_node[i] = -1;
+}
+
+FEGenericElement::FEGenericElement(const FEGenericElement& e) : FEElement_(e)
+{
+	m_traits = e.m_traits;
+	m_node = _node;
+	m_nbr = _nbr;
+	for (int i = 0; i<MAX_NODES; ++i) m_node[i] = e.m_node[i];
+}
+
+void FEGenericElement::operator = (const FEGenericElement& e)
+{
+	m_traits = e.m_traits;
+	FEElement_::operator = (e);
+	for (int i = 0; i<MAX_NODES; ++i) m_node[i] = e.m_node[i];
+}
+
+//=============================================================================
+FELinearElement::FELinearElement()
+{
+	m_node = _node;
+	m_node = _nbr;
+	for (int i = 0; i<MAX_NODES; ++i) m_node[i] = -1;
+}
+
+FELinearElement::FELinearElement(const FELinearElement& e) : FEElement_(e)
+{
+	m_traits = e.m_traits;
+	m_node = _node;
+	m_node = _nbr;
+	for (int i = 0; i<MAX_NODES; ++i) m_node[i] = e.m_node[i];
+}
+
+void FELinearElement::operator = (const FELinearElement& e)
+{
+	m_traits = e.m_traits;
+	FEElement_::operator = (e);
+	for (int i = 0; i<MAX_NODES; ++i) m_node[i] = e.m_node[i];
 }

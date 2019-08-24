@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <PostLib/PostView.h>
 #include <FSCore/FSDir.h>
+#include <MeshLib/FEElementLibrary.h>
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>
@@ -45,7 +46,8 @@ public:
 // starting point of application
 int main(int argc, char* argv[])
 {
-	// Initialize the PostView libraries
+	// Initialize the libraries
+	FEElementLibrary::InitLibrary();
 	Post::Initialize();
 
 #ifndef __APPLE__

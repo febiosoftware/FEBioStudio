@@ -68,7 +68,7 @@ void CMeshInspector::UpdateData(int ndata)
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
-		if ((etype == -1) || (el.GetType() == etype))
+		if ((etype == -1) || (el.Type() == etype))
 		{
 			int nerr;
 			v[NC] = eval.EvaluateElement(i, ndata, &nerr);
@@ -150,7 +150,7 @@ void CMeshInspector::on_select_clicked()
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& e = pm->Element(i);
-		if ((etype == -1) || (e.GetType() == etype))
+		if ((etype == -1) || (e.Type() == etype))
 		{
 			if (pm->GetElementDataTag(i) > 0)
 			{

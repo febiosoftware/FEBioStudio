@@ -354,7 +354,7 @@ FEMesh* CPostObject::BuildMesh()
 	for (int i = 0; i < NE; ++i)
 	{
 		FEElement& ed = mesh->Element(i);
-		Post::FEElement& es = postMesh->Element(i);
+		FEElement_& es = postMesh->Element(i);
 
 		ed.m_gid = es.m_MatID;
 		ed.SetType(es.Type());

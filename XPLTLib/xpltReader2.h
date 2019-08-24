@@ -1,6 +1,6 @@
 #pragma once
 #include "xpltFileReader.h"
-#include "PostLib/FEElement.h"
+#include <MeshLib/FEElement.h>
 
 namespace Post {
 	class FEState;

@@ -34,6 +34,39 @@ enum FEElementType {
 };
 
 //-----------------------------------------------------------------------------
+// Element shapes
+enum FEElemShape {
+	ELEM_LINE,
+	ELEM_TRI,
+	ELEM_QUAD,
+	ELEM_TET,
+	ELEM_PENTA,
+	ELEM_HEX,
+	ELEM_PYRA
+};
+
+//-----------------------------------------------------------------------------
+// Element class
+enum FEElemClass
+{
+	ELEM_BEAM,
+	ELEM_SHELL,
+	ELEM_SOLID
+};
+
+//-----------------------------------------------------------------------------
+// Element traits
+struct FEElemTraits
+{
+	int	ntype;	// type of element
+	int	nshape;	// shape of element
+	int	nclass; // element class
+	int	nodes;	// number of nodes
+	int	faces;	// number of faces (only for solid elements)
+	int	edges;	// number of edges (only for shell elements)
+};
+
+//-----------------------------------------------------------------------------
 // The FEElement_ class defines the data interface to the element data. 
 // Specialized element classes are then defined by deriving from this base class.
 // A note on shells:
@@ -47,27 +80,36 @@ public:
 	//! constructor
 	FEElement_();
 
+public:
+	//! Set the element type
+	void SetType(int ntype);
+
+	int Type () const { return m_traits->ntype; }
+	int Shape() const { return m_traits->nshape; }
+	int Class() const { return m_traits->nclass; }
+
+	bool IsSolid() const { return (m_traits->nclass == ELEM_SOLID); }
+	bool IsShell() const { return (m_traits->nclass == ELEM_SHELL); }
+	bool IsBeam () const { return (m_traits->nclass == ELEM_BEAM ); }
+
+	int Nodes() const { return m_traits->nodes; }
+	int Faces() const { return m_traits->faces; }
+	int Edges() const { return m_traits->edges; }
+
+public:
 	// comparison operator
 	bool is_equal(FEElement_& e);
 
-	//! return the element type
-	int GetType() const { return m_ntype; }
+	bool operator != (FEElement_& el);
+
+	bool HasNode(int node) const;
 
 	//! Is the element of this type
-	bool IsType(int ntype) const { return m_ntype == ntype; }
-
-	//! number of nodes
-	int Nodes() const { return m_nodes; }
-
-	//! Number of faces (shells have no faces)
-	int Faces() const { return m_nfaces; }
-
-	//! Number of edges (solids have no edges)
-	int Edges() const { return m_nedges; }
+	bool IsType(int ntype) const { return (Type() == ntype); }
 
 	//! Get the face i (only solids have faces)
 	FEFace GetFace(int i) const;
-	void GetFace(FEFace& face, int i) const;
+	void GetFace(int i, FEFace& face) const;
 
 	//! Get the edge
 	FEEdge GetEdge(int i);
@@ -81,6 +123,25 @@ public:
 	// Find the face. Returns local index in face array
 	int FindFace(const FEFace& f);
 
+public:
+	// evaluate shape function at iso-parameteric point (r,s,t)
+	void shape(double* H, double r, double s, double t);
+
+	// evaluate a vector expression at iso-points (r,s)
+	double eval(double* d, double r, double s, double t);
+
+	// evaluate a vector expression at iso-points (r,s)
+	float eval(float* d, double r, double s, double t);
+
+	// evaluate a vector expression at iso-points (r,s)
+	vec3f eval(vec3f* v, double r, double s, double t);
+
+	// shape function derivatives
+	void shape_deriv(double* Hr, double* Hs, double* Ht, double r, double s, double t);
+
+	// get iso-param coordinates of the nodes
+	void iso_coord(int n, double q[3]);
+
 public: // for shells
 
 	//! Get the face of a shell
@@ -91,17 +152,16 @@ protected:
 	void copy(const FEElement_& el);
 
 public:
-	// Check the element class
-	bool IsSolid() const { return (m_ntype == FE_HEX8) || (m_ntype == FE_HEX20) || (m_ntype == FE_HEX27) || (m_ntype == FE_PENTA6) || (m_ntype == FE_TET4) || (m_ntype == FE_TET10) || (m_ntype == FE_TET15) || (m_ntype == FE_TET20) || (m_ntype == FE_PYRA5) || (m_ntype == FE_PENTA15) || (m_ntype == FE_TET5); }
-	bool IsShell() const { return (m_ntype == FE_TRI3) || (m_ntype == FE_QUAD4) || (m_ntype == FE_QUAD8) || (m_ntype == FE_QUAD9) || (m_ntype == FE_TRI6) || (m_ntype == FE_TRI7); }
-	bool IsBeam () const { return (m_ntype == FE_BEAM2); }
-
-public:
 	int*		m_node;		//!< pointer to node data
 	int*		m_nbr;		//!< neighbour elements
 	int*		m_face;		//!< faces (-1 for interior faces)
 	double* 	m_h;		//!< element thickness (only used by shells)
-	
+
+public:
+	int			m_lid;		// local ID (zero-based index into element array)
+	int			m_MatID;	// material id
+	float		m_tex;		// element texture coordinate
+
 public:
 	vec3d	m_fiber;	//!< fiber orientation \todo maybe I can add an element attribute section
 	mat3d	m_Q;		//!< local material orientation
@@ -109,10 +169,7 @@ public:
 	double	m_a0;		//!< cross-sectional area (only used by truss elements)
 	
 protected:
-	int		m_ntype; 	//!< type of element
-	int		m_nodes;	//!< nr of nodes
-	int		m_nfaces;	//!< nr of faces	( 0 for shells)
-	int		m_nedges;	//!< nr of edges	( 0 for solids)
+	const FEElemTraits* m_traits;	// element traits
 };
 
 //-----------------------------------------------------------------------------
@@ -133,12 +190,118 @@ public:
 	//! assignment operator
 	FEElement& operator = (const FEElement& el);
 
-	//! Set the element type
-	void SetType(int ntype);
-
 private:
 	int		_node[MAX_NODES];	//!< nodal id's
 	int		_nbr[6];			//!< neighbour elements
 	int		_face[6];			//!< faces (-1 for interior faces)
 	double 	_h[9];				//!< element thickness (only used by shells)
+};
+
+//=============================================================================
+// Element traits classes
+template <int Type> class FEElementTraits {};
+// Each of these classes defines:
+// Nodes: number of nodes
+// Faces: number of faces. Only solid elements define faces
+// Edges: number of edges. Only surface elements define edges
+
+template <> class FEElementTraits<FE_BEAM2  > { public: enum { Nodes = 2 }; enum { Faces = 0 }; enum { Edges = 0 }; static FEElementType Type() { return FE_BEAM2; } };
+template <> class FEElementTraits<FE_BEAM3  > { public: enum { Nodes = 3 }; enum { Faces = 0 }; enum { Edges = 0 }; static FEElementType Type() { return FE_BEAM3; } };
+template <> class FEElementTraits<FE_TRI3   > { public: enum { Nodes = 3 }; enum { Faces = 0 }; enum { Edges = 3 }; static FEElementType Type() { return FE_TRI3; } };
+template <> class FEElementTraits<FE_TRI6   > { public: enum { Nodes = 6 }; enum { Faces = 0 }; enum { Edges = 3 }; static FEElementType Type() { return FE_TRI6; } };
+template <> class FEElementTraits<FE_QUAD4  > { public: enum { Nodes = 4 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD4; } };
+template <> class FEElementTraits<FE_QUAD8  > { public: enum { Nodes = 8 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD8; } };
+template <> class FEElementTraits<FE_QUAD9  > { public: enum { Nodes = 9 }; enum { Faces = 0 }; enum { Edges = 4 }; static FEElementType Type() { return FE_QUAD9; } };
+template <> class FEElementTraits<FE_TET4   > { public: enum { Nodes = 4 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET4; } };
+template <> class FEElementTraits<FE_TET10  > { public: enum { Nodes = 10 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET10; } };
+template <> class FEElementTraits<FE_TET15  > { public: enum { Nodes = 15 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET15; } };
+template <> class FEElementTraits<FE_TET20  > { public: enum { Nodes = 20 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET20; } };
+template <> class FEElementTraits<FE_PENTA6 > { public: enum { Nodes = 6 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PENTA6; } };
+template <> class FEElementTraits<FE_PENTA15> { public: enum { Nodes = 15 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PENTA15; } };
+template <> class FEElementTraits<FE_HEX8   > { public: enum { Nodes = 8 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX8; } };
+template <> class FEElementTraits<FE_HEX20  > { public: enum { Nodes = 20 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX20; } };
+template <> class FEElementTraits<FE_HEX27  > { public: enum { Nodes = 27 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX27; } };
+template <> class FEElementTraits<FE_PYRA5  > { public: enum { Nodes = 5 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA5; } };
+template <> class FEElementTraits<FE_TET5   > { public: enum { Nodes = 5 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET5; } };
+
+template <class T> class FEElementBase : public FEElement_
+{
+public:
+	FEElementBase()
+	{
+		SetType(T::Type());
+		m_node = _node;
+		m_nbr = _nbr;
+		for (int i = 0; i<T::Nodes; ++i) m_node[i] = -1;
+	}
+
+	FEElementBase(const FEElementBase& el) : FEElement_(el)
+	{
+		m_node = _node;
+		for (int i = 0; i<T::Nodes; ++i) m_node[i] = el.m_node[i];
+		m_nbr = _nbr;
+	}
+
+	void operator = (const FEElementBase& el)
+	{
+		FEElement_::operator = (el);
+		for (int i = 0; i<T::Nodes; ++i) m_node[i] = el.m_node[i];
+	}
+
+public:
+	int	_node[T::Nodes];
+	int _nbr[6];
+};
+
+typedef FEElementBase< FEElementTraits<FE_BEAM2  > > FELine2;
+typedef FEElementBase< FEElementTraits<FE_BEAM3  > > FELine3;
+typedef FEElementBase< FEElementTraits<FE_TRI3   > > FETri3;
+typedef FEElementBase< FEElementTraits<FE_TRI6   > > FETri6;
+typedef FEElementBase< FEElementTraits<FE_QUAD4  > > FEQuad4;
+typedef FEElementBase< FEElementTraits<FE_QUAD8  > > FEQuad8;
+typedef FEElementBase< FEElementTraits<FE_QUAD9  > > FEQuad9;
+typedef FEElementBase< FEElementTraits<FE_TET4   > > FETet4;
+typedef FEElementBase< FEElementTraits<FE_TET10  > > FETet10;
+typedef FEElementBase< FEElementTraits<FE_TET15  > > FETet15;
+typedef FEElementBase< FEElementTraits<FE_TET20  > > FETet20;
+typedef FEElementBase< FEElementTraits<FE_PENTA6 > > FEPenta6;
+typedef FEElementBase< FEElementTraits<FE_PENTA15> > FEPenta15;
+typedef FEElementBase< FEElementTraits<FE_HEX8   > > FEHex8;
+typedef FEElementBase< FEElementTraits<FE_HEX20  > > FEHex20;
+typedef FEElementBase< FEElementTraits<FE_HEX27  > > FEHex27;
+typedef FEElementBase< FEElementTraits<FE_PYRA5  > > FEPyra5;
+typedef FEElementBase< FEElementTraits<FE_TET5   > > FETet5;
+
+//-----------------------------------------------------------------------------
+// Generice element class that can represent any of the supported element classes
+class FEGenericElement : public FEElement_
+{
+public:
+	enum { MAX_NODES = 27 };
+
+public:
+	FEGenericElement();
+	FEGenericElement(const FEGenericElement& e);
+	void operator = (const FEGenericElement& e);
+
+public:
+	int	_node[MAX_NODES];	// array of nodes ID
+	int	_nbr[6];
+};
+
+//-----------------------------------------------------------------------------
+// This element class can represent any of the linear elements.
+class FELinearElement : public FEElement_
+{
+public:
+	enum { MAX_NODES = 8 };
+
+public:
+	FELinearElement();
+	FELinearElement(const FELinearElement& e);
+	void operator = (const FELinearElement& e);
+
+public:
+	int	_node[MAX_NODES];	// array of nodes ID
+	int	_nbr[6];
 };

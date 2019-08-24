@@ -1374,7 +1374,7 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh, co
 		// first, cut-off the ears of the node list
 		if (contour.size() > 3)
 		{
-			int N = nodeList.size();
+			int N = (int)nodeList.size();
 			int m = 0;
 			double Lmin = 1e99;
 			for (int i=0; i<N; ++i)
@@ -1473,7 +1473,7 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh, co
 		}
 
 		// triangulate the hole
-		int N = nodeList.size();
+		int N = (int)nodeList.size();
 		for (int i=0; i<N; ++i)
 		{
 			TriMesh::FACE face;

@@ -26,7 +26,7 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
     for (int i=0; i<NT; ++i)
     {
         FEElement& el = pm->Element(i);
-        switch (el.GetType()) {
+        switch (el.Type()) {
             case FE_HEX8:
                 for (int j=0; j<12; ++j)
                 {
@@ -137,7 +137,7 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
     {
         vector<int>& ee = EE[i];
         FEElement& e = pm->Element(i);
-        switch (e.GetType()) {
+        switch (e.Type()) {
             case FE_HEX8:
                 for (int j=0; j<12; ++j)
                 {
@@ -351,7 +351,7 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
         
         e1.m_gid = e0.m_gid;
         
-        switch (e0.GetType()) {
+        switch (e0.Type()) {
             case FE_HEX8:
             {
                 e1.SetType(FE_HEX20);
@@ -790,7 +790,7 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
     {
         FEElement& el = pm->Element(i);
         int neln = 0;
-        switch (el.GetType()) {
+        switch (el.Type()) {
             case FE_HEX20: neln = 8; break;
             case FE_PENTA15: neln = 6; break;
             case FE_TET10: neln = 4; break;
@@ -836,7 +836,7 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
         
         e1.m_gid = e0.m_gid;
         
-        switch (e0.GetType()) {
+        switch (e0.Type()) {
             case FE_HEX20: e1.SetType(FE_HEX8); break;
             case FE_PENTA15: e1.SetType(FE_PENTA6); break;
             case FE_TET10: e1.SetType(FE_TET4); break;

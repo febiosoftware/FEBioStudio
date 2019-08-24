@@ -9,7 +9,7 @@ using namespace Post;
 void FEAreaCoverage::Surface::Create(FEMeshBase& mesh)
 {
 	// this assumes that the m_face member has initialized
-	int NF = m_face.size();
+	int NF = (int)m_face.size();
 	m_fnorm.resize(NF, vec3f(0.f, 0.f, 0.f));
 
 	// tag all nodes that belong to this surface

@@ -340,7 +340,7 @@ void CGLPlaneCutPlot::RenderMesh()
 	for (i=0; i<pm->Elements(); ++i)
 	{
 		// render only when visible
-		FEElement& el = pm->Element(i);
+		FEElement_& el = pm->Element(i);
 		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
 		if ((el.m_ntag > 0) && (pmat->bmesh) && (pmat->bvisible || m_bcut_hidden) && (pmat->bclip))
 		{
@@ -547,7 +547,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 				for (int i=0; i<dom.Elements(); ++i)
 				{
 					// render only when visible
-					FEElement& el = dom.Element(i);
+					FEElement_& el = dom.Element(i);
 					if (el.IsVisible() || m_bcut_hidden)
 					{
 						if (el.IsSolid())
@@ -715,7 +715,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	for (int i=0; i<pm->Elements(); ++i)
 	{
 		// consider only solid elements that are visible
-		FEElement& el = pm->Element(i);
+		FEElement_& el = pm->Element(i);
 		FEMaterial* pmat = pfem->GetMaterial(el.m_MatID);
 		if (el.IsSolid() && el.IsVisible() && pmat->bvisible)
 		{

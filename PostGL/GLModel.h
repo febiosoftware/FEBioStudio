@@ -179,7 +179,7 @@ protected:
 	void RenderFace(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderFace(FEFace& face, FEMeshBase* pm, GLColor c[4], int ndivs, bool bnode);
 	void RenderTexFace(FEFace& el, FEMeshBase* pm);
-	void RenderElementOutline(FEElement& el, FEMeshBase* pm);
+	void RenderElementOutline(FEElement_& el, FEMeshBase* pm);
 	void RenderFaceOutline(FEFace& face, FEMeshBase* pm, int ndivs);
 	void RenderSolidPart(FEModel* ps, CGLContext& rc, int mat);
 	void RenderSolidMaterial(FEModel* ps, int m);
@@ -244,7 +244,7 @@ public: // Selection
 	const vector<FENode*>&		GetNodeSelection   () const { return m_nodeSelection; }
 	const vector<FEEdge*>&		GetEdgeSelection   () const { return m_edgeSelection; }
 	const vector<FEFace*>&		GetFaceSelection   () const { return m_faceSelection; }
-	const vector<FEElement*>&	GetElementSelection() const { return m_elemSelection; }
+	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
 	void UpdateSelectionLists(int mode = -1);
 	void ClearSelectionLists();
 
@@ -260,10 +260,10 @@ public: // Selection
 	void ClearSelection();
 
 	//! select connected elements (connected via surface)
-	void SelectConnectedSurfaceElements(FEElement& el);
+	void SelectConnectedSurfaceElements(FEElement_& el);
 
 	//! select connected elements (connected via volume)
-	void SelectConnectedVolumeElements(FEElement& el);
+	void SelectConnectedVolumeElements(FEElement_& el);
 
 	//! select connected faces
 	void SelectConnectedFaces(FEFace& f, double angleTol);
@@ -384,7 +384,7 @@ protected:
 	vector<FENode*>		m_nodeSelection;
 	vector<FEEdge*>		m_edgeSelection;
 	vector<FEFace*>		m_faceSelection;
-	vector<FEElement*>	m_elemSelection;
+	vector<FEElement_*>	m_elemSelection;
 
 	GPlotList			m_pPlot;	// list of plots
 

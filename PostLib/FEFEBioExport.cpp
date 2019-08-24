@@ -76,7 +76,7 @@ bool FEFEBioExport::Save(FEModel& fem, const char* szfile)
 					// find the first element of this part
 					for (int i = i0; i<NE; ++i, ++i0)
 					{
-						FEElement& elm = pm->Element(i);
+						FEElement_& elm = pm->Element(i);
 						if ((elm.m_ntag == 0) && 
 							(elm.m_MatID == m)) break;
 					}
@@ -89,7 +89,7 @@ bool FEFEBioExport::Save(FEModel& fem, const char* szfile)
 					part.add_attribute("name", sz);
 
 					// get the element type
-					FEElement& el0 = pm->Element(i0);
+					FEElement_& el0 = pm->Element(i0);
 					const char* szeltype = elementTypeStr(el0.Type());
 					if (szeltype == 0) return false;
 
@@ -103,7 +103,7 @@ bool FEFEBioExport::Save(FEModel& fem, const char* szfile)
 						int n1 = el.add_attribute("id", "");
 						for (int i=i0; i<pm->Elements(); ++i)
 						{
-							FEElement& elm = pm->Element(i);
+							FEElement_& elm = pm->Element(i);
 							if ((elm.m_MatID == m) && (elm.Type() == el0.Type()))
 							{
 								for (int j=0; j<elm.Nodes(); ++j) n[j] = elm.m_node[j]+1;

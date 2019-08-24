@@ -20,7 +20,7 @@ bool FECoreMesh::IsType(int ntype) const
 	for (int i=0; i<NE; ++i)
 	{
 		const FEElement_& el = ElementRef(i);
-		if (el.GetType() != ntype) return false;
+		if (el.Type() != ntype) return false;
 	}
 	return true;
 }

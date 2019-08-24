@@ -36,7 +36,7 @@ bool FEVTKExport::Export(FEProject& prj, const char* szfile)
 			//check element type
 			if (j==0)
 			{
-				int elType = el.GetType();
+				int elType = el.Type();
 				switch(elType)
 				{
 				case FE_TRI3:
@@ -123,7 +123,7 @@ bool FEVTKExport::Export(FEProject& prj, const char* szfile)
 					fprintf(fp, "%s %d %d\n" ,"CELLS", m.Elements(), m.Elements() * (el.Nodes()+1));
 			}
 
-			switch (el.GetType())
+			switch (el.Type())
 			{
 			case FE_TRI3:
 				fprintf(fp, "%d %d %d %d\n", el.Nodes(), nn[0], nn[1], nn[2]);

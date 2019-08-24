@@ -155,7 +155,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 	{
 		// render only if the element is visible and
 		// its material is enabled
-		FEElement& el = pm->Element(i);
+		FEElement_& el = pm->Element(i);
 		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
 		if (pmat->benable && (el.IsVisible() || m_bcut_hidden) && el.IsSolid())
 		{

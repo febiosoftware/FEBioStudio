@@ -151,7 +151,6 @@
     <ClCompile Include="..\..\PostLib\FEDataField.cpp" />
     <ClCompile Include="..\..\PostLib\FEDataManager.cpp" />
     <ClCompile Include="..\..\PostLib\FEDistanceMap.cpp" />
-    <ClCompile Include="..\..\PostLib\FEElement.cpp" />
     <ClCompile Include="..\..\PostLib\FEFEBioExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEFileExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEFileReader.cpp" />
@@ -220,7 +219,6 @@
     <ClInclude Include="..\..\PostLib\FEDataField.h" />
     <ClInclude Include="..\..\PostLib\FEDataManager.h" />
     <ClInclude Include="..\..\PostLib\FEDistanceMap.h" />
-    <ClInclude Include="..\..\PostLib\FEElement.h" />
     <ClInclude Include="..\..\PostLib\FEFEBioExport.h" />
     <ClInclude Include="..\..\PostLib\FEFileExport.h" />
     <ClInclude Include="..\..\PostLib\FEFileReader.h" />

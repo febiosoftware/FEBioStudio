@@ -214,7 +214,7 @@ double CIntegrateWindow::IntegrateElems(Post::FEMeshBase& mesh, Post::FEState* p
 	vec3f r[8];
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
-		Post::FEElement& e = mesh.Element(i);
+		FEElement_& e = mesh.Element(i);
 		if (e.IsSelected() && (e.IsSolid()) && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
 		{
 			int nn = e.Nodes();

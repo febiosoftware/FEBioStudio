@@ -1278,7 +1278,7 @@ void FEBioExport12::WriteGeometryElements()
 				N = e.Nodes();
 				for (int k = 0; k<N; ++k) nn[k] = pm->Node(e.m_node[k]).m_nid;
 
-				switch (e.GetType())
+				switch (e.Type())
 				{
 				case FE_HEX8:
 				{
@@ -1373,7 +1373,7 @@ void FEBioExport12::WriteGeometryElements()
 				N = e.Nodes();
 				for (int k = 0; k<N; ++k) nn[k] = pm->Node(e.m_node[k]).m_nid;
 
-				switch (e.GetType())
+				switch (e.Type())
 				{
 				case FE_QUAD4:
 				{

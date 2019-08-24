@@ -1255,7 +1255,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 0:
 		for (int i = 0; i < NE; i++)
 		{
-			Post::FEElement& e = mesh.Element(i);
+			FEElement_& e = mesh.Element(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -1274,7 +1274,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 1:
 		for (int i = 0; i < NE; i++)
 		{
-			Post::FEElement& e = mesh.Element(i);
+			FEElement_& e = mesh.Element(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -1293,7 +1293,7 @@ void CModelGraphWindow::addSelectedElems()
 	case 2:
 		for (int i = 0; i < NE; i++)
 		{
-			Post::FEElement& e = mesh.Element(i);
+			FEElement_& e = mesh.Element(i);
 			if (e.IsSelected())
 			{
 				// evaluate x-field
@@ -1314,7 +1314,7 @@ void CModelGraphWindow::addSelectedElems()
 		vector<int> sel;
 		for (int i = 0; i < NE; i++)
 		{
-			Post::FEElement& e = mesh.Element(i);
+			FEElement_& e = mesh.Element(i);
 			if (e.IsSelected()) sel.push_back(i);
 		}
 
@@ -1331,7 +1331,7 @@ void CModelGraphWindow::addSelectedElems()
 
 			for (int i = 0; i < (int)sel.size(); i++)
 			{
-				Post::FEElement& e = mesh.Element(sel[i]);
+				FEElement_& e = mesh.Element(sel[i]);
 				if (e.IsSelected())
 				{
 					// evaluate x-field
@@ -1445,7 +1445,7 @@ void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, 
 	if (nmax <    nmin) nmax = nmin;
 	int nn = nmax - nmin + 1;
 
-	float data[Post::FEGenericElement::MAX_NODES] = { 0.f }, val;
+	float data[FEGenericElement::MAX_NODES] = { 0.f }, val;
 	for (int n = 0; n<nn; n++)
 	{
 		fem.EvaluateElement(nelem, n + nmin, nfield, data, val);

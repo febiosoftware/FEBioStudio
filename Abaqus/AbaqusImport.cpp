@@ -1572,7 +1572,7 @@ bool AbaqusImport::build_physics()
 	{
 		AbaqusModel::DSLOAD& p = *sl;
 
-		int ns = p.m_surf.size();
+		int ns = (int)p.m_surf.size();
 		for (int i=0; i<ns; ++i, ++n)
 		{
 			FESurface* surface = build_surface(p.m_surf[i].surf);
@@ -1675,7 +1675,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			list<AbaqusModel::ELEMENT_SET>::iterator esi = part.FindElementSet(ss.szelset);
 			if (esi != part.m_ElSet.end())
 			{
-				int n = esi->elem.size();
+				int n = (int)esi->elem.size();
 				vector<int>::iterator pe = esi->elem.begin();
 				for (j = 0; j<n; ++j, ++pe)
 				{

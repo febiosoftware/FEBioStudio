@@ -553,7 +553,7 @@ void CMainWindow::ReportSelection()
 			FEElement* el = es->Element(0);
 			AddLogEntry("1 element selected:\n");
 
-			switch (el->GetType())
+			switch (el->Type())
 			{
 			case FE_HEX8   : AddLogEntry("  Type = HEX8"   ); break;
 			case FE_TET4   : AddLogEntry("  Type = TET4"   ); break;

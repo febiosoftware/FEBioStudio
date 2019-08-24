@@ -91,7 +91,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 		FEElement& el = pnew->Element(i);
 		if (el.IsSelected())
 		{
-			if (el.GetType() == FE_QUAD4)
+			if (el.Type() == FE_QUAD4)
 			{
 				el.SetType(FE_HEX8);
 				el.m_node[4] = tag[el.m_node[0]];
@@ -99,7 +99,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 				el.m_node[6] = tag[el.m_node[2]];
 				el.m_node[7] = tag[el.m_node[3]];
 			}
-			else if (el.GetType() == FE_TRI3)
+			else if (el.Type() == FE_TRI3)
 			{
 				el.SetType(FE_PENTA6);
 				el.m_node[3] = tag[el.m_node[0]];

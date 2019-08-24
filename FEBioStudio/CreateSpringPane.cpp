@@ -266,8 +266,8 @@ bool CCreateSpringPane::updateTempObject()
 	if (ret)
 	{
 		FECurveMesh* cm = ui->m_curves->GetCurveMesh();
-		int n1 = node1.size();
-		int n2 = node2.size();
+		int n1 = (int)node1.size();
+		int n2 = (int)node2.size();
 		for (int i=0; i<node1.size(); ++i) cm->AddNode(node1[i], false);
 		for (int i=0; i<node2.size(); ++i) cm->AddNode(node2[i], false);
 		for (auto s : springs)

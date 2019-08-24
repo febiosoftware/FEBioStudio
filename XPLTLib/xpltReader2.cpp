@@ -1015,7 +1015,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 			for (int j=0; j<D.ne; ++j)
 			{
 				ELEM& E = D.elem[j];
-				Post::FEElement& el = pmesh->Element(E.index);
+				FEElement_& el = pmesh->Element(E.index);
 				el.m_MatID = D.mid - 1;
 				el.SetID(E.eid);
 				for (int k=0; k<4; ++k) el.m_node[k] = E.node[k];
@@ -1035,7 +1035,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 			for (int j=0; j<D.ne; ++j)
 			{
 				ELEM& E = D.elem[j];
-				Post::FEElement& el = pmesh->Element(E.index);
+				FEElement_& el = pmesh->Element(E.index);
 				el.m_MatID = D.mid - 1;
 				el.SetID(E.eid);
 				for (int k=0; k<8; ++k) el.m_node[k] = E.node[k];
@@ -1142,7 +1142,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (int i=0; i<NE; ++i)
 	{
-		Post::FEElement& el = pmesh->Element(i);
+		FEElement_& el = pmesh->Element(i);
 		FEMaterial* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
@@ -1150,7 +1150,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 	for (int i=0; i<NN; ++i) pmesh->Node(i).Disable();
 	for (int i=0; i<NE; ++i)
 	{
-		Post::FEElement& el = pmesh->Element(i);
+		FEElement_& el = pmesh->Element(i);
 		if (el.IsEnabled())
 		{
 			int n = el.Nodes();

@@ -136,7 +136,7 @@ bool FEASCIIExport::Save(FEModel* pfem, int n0, int n1, const char* szfile)
 		int i, n[FEGenericElement::MAX_NODES];
 		for (i = 0; i<NE; ++i)
 		{
-			FEElement& e = m.Element(i);
+			FEElement_& e = m.Element(i);
 			int ne = e.Nodes();
 			for (int j = 0; j<ne; ++j) n[j] = e.m_node[j] + 1;
 

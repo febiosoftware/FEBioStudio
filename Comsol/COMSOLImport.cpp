@@ -353,7 +353,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
 		list<ELEMENT_SET>::iterator pes = m_ElSet.begin();
 		for (i=0; i<elsets; ++i, ++pes)
 		{
-			int n = pes->elem.size();
+			int n = (int)pes->elem.size();
 			list<Telem_itr>::iterator pe = pes->elem.begin();
 			for (j=0; j<n; ++j, ++pe)
 			{
@@ -380,13 +380,13 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
 	// read element sets
 	if (m_domainstosets)
 	{
-		int elsets = m_ElSet.size();
+		int elsets = (int)m_ElSet.size();
 		if (elsets)
 		{
 			list<ELEMENT_SET>::iterator pes = m_ElSet.begin();
 			for (i=0; i<elsets; ++i, ++pes)
 			{
-				int n = pes->elem.size(); // how many elements are in the element set? -> n
+				int n = (int)pes->elem.size(); // how many elements are in the element set? -> n
 				FEPart* pg = new FEPart(po);
 				pg->SetName(pes->szname);
 				list<Telem_itr>::iterator pe = pes->elem.begin();
@@ -414,7 +414,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
 
 list<COMSOLimport::ELEMENT_SET>::iterator COMSOLimport::FindElementSet(const char* szname)
 {
-	int n = m_ElSet.size();
+	int n = (int)m_ElSet.size();
 	Telset_itr pe = m_ElSet.begin();
 	for (int i=0; i<n; ++i, ++pe) if (strcmp(pe->szname, szname) == 0) return pe;
 	return m_ElSet.end();

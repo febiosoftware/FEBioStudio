@@ -84,6 +84,9 @@
     <ClCompile Include="..\..\MeshLib\TriMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshLib\FEElementLibrary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshLib\FECoreMesh.h">
@@ -192,6 +195,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshLib\quad8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\FEElementLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

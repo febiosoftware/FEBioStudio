@@ -128,7 +128,7 @@ void FEStep::InsertLoad(int n, FEBoundaryCondition* pfc)
 //-----------------------------------------------------------------------------
 int FEStep::RemoveLoad(FEBoundaryCondition* pfc)
 {
-	return imp->m_FC.Remove(pfc);
+	return (int)imp->m_FC.Remove(pfc);
 }
 
 //-----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ void FEStep::InsertIC(int n, FEInitialCondition* pic)
 //-----------------------------------------------------------------------------
 int FEStep::RemoveIC(FEInitialCondition* pic)
 {
-	return imp->m_IC.Remove(pic);
+	return (int)imp->m_IC.Remove(pic);
 }
 
 //-----------------------------------------------------------------------------
@@ -191,7 +191,7 @@ void FEStep::InsertInterface(int n, FEInterface* pi)
 //-----------------------------------------------------------------------------
 int FEStep::RemoveInterface(FEInterface* pi)
 {
-	return imp->m_Int.Remove(pi);
+	return (int)imp->m_Int.Remove(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -234,7 +234,7 @@ void FEStep::InsertRC(int n, FERigidConstraint* prc)
 //-----------------------------------------------------------------------------
 int FEStep::RemoveRC(FERigidConstraint* prc)
 {
-	return imp->m_RC.Remove(prc);
+	return (int)imp->m_RC.Remove(prc);
 }
 
 //-----------------------------------------------------------------------------
@@ -284,7 +284,7 @@ void FEStep::InsertConnector(int n, FEConnector* pi)
 //-----------------------------------------------------------------------------
 int FEStep::RemoveConnector(FEConnector* pi)
 {
-	return imp->m_CN.Remove(pi);
+	return (int)imp->m_CN.Remove(pi);
 }
 
 //-----------------------------------------------------------------------------
