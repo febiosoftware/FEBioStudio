@@ -2,7 +2,7 @@
 #include "GLModel.h"
 #include "GLPlaneCutPlot.h"
 #include "PostLib/FEDataManager.h"
-#include "PostLib/GLContext.h"
+#include <GLLib/GLContext.h>
 #include "PostLib/constants.h"
 #include <GLLib/GLCamera.h>
 #include "PostLib/FENodeEdgeList.h"

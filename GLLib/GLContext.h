@@ -3,8 +3,6 @@
 
 class CGLCamera;
 
-namespace Post {
-
 class CGLContext
 {
 public:
@@ -21,4 +19,3 @@ public:
 	bool		m_bext;
 	float		m_springThick;
 };
-}

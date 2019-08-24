@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "GLPlaneCutPlot.h"
-#include "PostLib/GLContext.h"
-#include "PostLib/GLContext.h"
+#include <GLLib/GLContext.h>
 #include "GLModel.h"
 using namespace Post;
 

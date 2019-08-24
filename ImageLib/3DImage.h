@@ -3,20 +3,20 @@
 
 //-----------------------------------------------------------------------------
 // A class for representing 3D image stacks
-class ImageStack
+class C3DImage
 {
 public:
-	ImageStack();
-	virtual ~ImageStack();
+	C3DImage();
+	virtual ~C3DImage();
 	void CleanUp();
 
 	bool Create(int nx, int ny, int nz);
 
 	bool LoadFromFile(const char* szfile, int nbits);
 
-	void BitBlt(Image& im, int nslice);
-	void StretchBlt(Image& im, int nslice);
-	void StretchBlt(ImageStack& im);
+	void BitBlt(CImage& im, int nslice);
+	void StretchBlt(CImage& im, int nslice);
+	void StretchBlt(C3DImage& im);
 
 	int Width () { return m_cx; }
 	int Height() { return m_cy; }
@@ -28,13 +28,13 @@ public:
 
 	void Histogram(int* pdf);
 
-	void GetSliceX(Image& im, int n);
-	void GetSliceY(Image& im, int n);
-	void GetSliceZ(Image& im, int n);
+	void GetSliceX(CImage& im, int n);
+	void GetSliceY(CImage& im, int n);
+	void GetSliceZ(CImage& im, int n);
 
-	void GetSampledSliceX(Image& im, double f);
-	void GetSampledSliceY(Image& im, double f);
-	void GetSampledSliceZ(Image& im, double f);
+	void GetSampledSliceX(CImage& im, double f);
+	void GetSampledSliceY(CImage& im, double f);
+	void GetSampledSliceZ(CImage& im, double f);
 
 	void Invert();
 
@@ -42,9 +42,15 @@ public:
 
 	void Zero();
 
+	void FlipZ();
+
 protected:
 	byte*	m_pb;	// image data
 	int		m_cx;
 	int		m_cy;
 	int		m_cz;
 };
+
+//-----------------------------------------------------------------------------
+// helper functions
+int closest_pow2(int n);

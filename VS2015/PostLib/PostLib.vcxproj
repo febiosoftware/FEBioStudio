@@ -135,7 +135,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\PostLib\3DImage.cpp" />
     <ClCompile Include="..\..\PostLib\Animation.cpp" />
     <ClCompile Include="..\..\PostLib\Archive.cpp" />
     <ClCompile Include="..\..\PostLib\AVIAnimation.cpp" />
@@ -183,13 +182,11 @@
     <ClCompile Include="..\..\PostLib\FEVTKExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEVTKImport.cpp" />
     <ClCompile Include="..\..\PostLib\GDecoration.cpp" />
-    <ClCompile Include="..\..\PostLib\GLContext.cpp" />
     <ClCompile Include="..\..\PostLib\GLImageRenderer.cpp" />
     <ClCompile Include="..\..\PostLib\GLObject.cpp" />
     <ClCompile Include="..\..\PostLib\GLTexture1D.cpp" />
     <ClCompile Include="..\..\PostLib\GMeshImport.cpp" />
     <ClCompile Include="..\..\PostLib\GView.cpp" />
-    <ClCompile Include="..\..\PostLib\Image.cpp" />
     <ClCompile Include="..\..\PostLib\ImageModel.cpp" />
     <ClCompile Include="..\..\PostLib\ImageSlicer.cpp" />
     <ClCompile Include="..\..\PostLib\ImgAnimation.cpp" />
@@ -208,7 +205,6 @@
     <ClCompile Include="..\..\PostLib\VRMLExporter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\PostLib\3DImage.h" />
     <ClInclude Include="..\..\PostLib\Animation.h" />
     <ClInclude Include="..\..\PostLib\Archive.h" />
     <ClInclude Include="..\..\PostLib\AVIAnimation.h" />
@@ -261,7 +257,6 @@
     <ClInclude Include="..\..\PostLib\FEVTKExport.h" />
     <ClInclude Include="..\..\PostLib\FEVTKImport.h" />
     <ClInclude Include="..\..\PostLib\GDecoration.h" />
-    <ClInclude Include="..\..\PostLib\GLContext.h" />
     <ClInclude Include="..\..\PostLib\GLImageRenderer.h" />
     <ClInclude Include="..\..\PostLib\GLObject.h" />
     <ClInclude Include="..\..\PostLib\GLTexture1D.h" />
@@ -270,7 +265,6 @@
     <ClInclude Include="..\..\PostLib\hex20.h" />
     <ClInclude Include="..\..\PostLib\hex27.h" />
     <ClInclude Include="..\..\PostLib\hex8.h" />
-    <ClInclude Include="..\..\PostLib\Image.h" />
     <ClInclude Include="..\..\PostLib\ImageModel.h" />
     <ClInclude Include="..\..\PostLib\ImageSlicer.h" />
     <ClInclude Include="..\..\PostLib\ImgAnimation.h" />

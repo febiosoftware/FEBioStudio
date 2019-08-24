@@ -2,9 +2,11 @@
 #include <string>
 #include <FSCore/FSObject.h>
 
-namespace Post {
 
 class CGLContext;
+
+namespace Post {
+
 class CGLModel;
 
 //-----------------------------------------------------------------------------

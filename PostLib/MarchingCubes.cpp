@@ -12,7 +12,8 @@
 #endif
 #include "MarchingCubes.h"
 #include "ImageModel.h"
-#include "3DImage.h"
+#include <ImageLib/3DImage.h>
+#include <ImageLib/3DGradientMap.h>
 #include <sstream>
 #include <assert.h>
 using namespace std;

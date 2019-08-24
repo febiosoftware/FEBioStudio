@@ -14,7 +14,6 @@
 #include <MeshIO/PRVObjectFormat.h>
 #include <QMessageBox>
 #include <FEMLib/FEStepComponent.h>
-#include <ImageLib/ImageStack.h>
 #include <XML/XMLWriter.h>
 #include <PostLib/Palette.h>
 #include <PostGL/GLPlot.h>

@@ -1,7 +1,9 @@
 #pragma once
-#include "3DImage.h"
+#include <ImageLib/3DImage.h>
 #include <FSCore/box.h>
 #include "GLImageRenderer.h"
+#include <ImageLib/RGBAImage.h>
+#include "ColorMap.h"
 
 namespace Post {
 

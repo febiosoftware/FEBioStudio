@@ -24,7 +24,7 @@
 #include <GLLib/glx.h>
 #include <PostLib/ColorMap.h>
 #include <GLLib/GLCamera.h>
-#include <PostLib/GLContext.h>
+#include <GLLib/GLContext.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshTools/FEMultiMaterial.h>
@@ -2206,7 +2206,7 @@ void CGLView::RenderImageData()
 
 	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
 
-	Post::CGLContext rc;
+	CGLContext rc;
 	rc.m_cam = &cam;
 	rc.m_showOutline = vs.m_bfeat;
 	rc.m_showMesh = vs.m_bmesh;

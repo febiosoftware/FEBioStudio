@@ -10,9 +10,10 @@
 #include <GL/gl.h>
 #endif
 #include "VolRender.h"
-#include "GLContext.h"
+#include <GLLib/GLContext.h>
 #include "ImageModel.h"
 #include "ColorMap.h"
+#include <ImageLib/3DGradientMap.h>
 #include <sstream>
 using namespace Post;
 

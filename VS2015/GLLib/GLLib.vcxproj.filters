@@ -24,6 +24,9 @@
     <ClCompile Include="..\..\GLLib\glx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\GLLib\GLContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\GLLib\GLCamera.h">
@@ -33,6 +36,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\GLLib\glx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GLLib\GLContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

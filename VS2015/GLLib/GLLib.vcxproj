@@ -136,10 +136,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\GLLib\GLCamera.cpp" />
+    <ClCompile Include="..\..\GLLib\GLContext.cpp" />
     <ClCompile Include="..\..\GLLib\glx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\GLLib\GLCamera.h" />
+    <ClInclude Include="..\..\GLLib\GLContext.h" />
     <ClInclude Include="..\..\GLLib\glx.h" />
     <ClInclude Include="..\..\GLLib\stdafx.h" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ImageModel.h"
-#include "3DImage.h"
+#include <ImageLib/3DImage.h>
 #include "GLImageRenderer.h"
 #include <FSCore/FSDir.h>
 #include <assert.h>
@@ -156,7 +156,7 @@ void CImageModel::ShowBox(bool b)
 	m_showBox = b;
 }
 
-void CImageModel::Render(Post::CGLContext& rc)
+void CImageModel::Render(CGLContext& rc)
 {
 	// render the volume image data if present
 	if (IsActive())

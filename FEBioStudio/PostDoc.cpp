@@ -2,7 +2,7 @@
 #include "PostDoc.h"
 #include <XPLTLib/xpltFileReader.h>
 #include <PostLib/FEModel.h>
-#include <PostLib/GLContext.h>
+#include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 #include <PostLib/Palette.h>
 #include <PostGL/GLModel.h>
@@ -231,7 +231,7 @@ void CPostDoc::Render(CGLView* view)
 
 	VIEW_SETTINGS& vs = view->GetDocument()->GetViewSettings();
 
-	Post::CGLContext rc;
+	CGLContext rc;
 	rc.m_cam = &glcam;
 	rc.m_showOutline = vs.m_bfeat;
 	rc.m_showMesh = vs.m_bmesh;

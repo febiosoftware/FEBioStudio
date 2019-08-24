@@ -6,9 +6,10 @@
 #include <PostLib/GLImageRenderer.h>
 #include "GLObject.h"
 
+class C3DImage;
+
 namespace Post {
 
-class C3DImage;
 class CGLImageRenderer;
 
 class CImageSource : public FSObject
@@ -57,7 +58,7 @@ public:
 
 	void ShowBox(bool b);
 
-	void Render(Post::CGLContext& rc);
+	void Render(CGLContext& rc);
 
 	void UpdateData(bool bsave = true) override;
 
