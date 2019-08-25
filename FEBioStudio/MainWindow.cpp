@@ -15,7 +15,7 @@
 #include "CreatePanel.h"
 #include "FileThread.h"
 #include "GLHighlighter.h"
-#include <MeshIO/NikeImport.h>
+#include <Nike3D/NikeImport.h>
 #include <Abaqus/AbaqusImport.h>
 #include <QStyleFactory>
 #include "DlgImportAbaqus.h"

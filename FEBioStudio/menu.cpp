@@ -10,7 +10,7 @@
 #include <FEBio/FEBioExport2.h>
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>
-#include <MeshIO/FENIKEExport.h>
+#include <Nike3D/FENIKEExport.h>
 #include <MeshIO/FEBYUExport.h>
 #include <MeshIO/FEHypersurfaceExport.h>
 #include <LSDyna/FELSDYNAexport.h>
@@ -41,7 +41,7 @@
 #include <MeshIO/FESTLimport.h>
 #include <MeshIO/FETetGenImport.h>
 #include <MeshIO/FEVTKImport.h>
-#include <MeshIO/NikeImport.h>
+#include <Nike3D/NikeImport.h>
 #include <MeshIO/PRVObjectImport.h>
 #include <MeshIO/PRVObjectExport.h>
 #include <MeshIO/BREPImport.h>

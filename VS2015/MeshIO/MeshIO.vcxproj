@@ -157,8 +157,6 @@
     <ClCompile Include="..\..\MeshIO\FEMeshExport.cpp" />
     <ClCompile Include="..\..\MeshIO\FEMeshImport.cpp" />
     <ClCompile Include="..\..\MeshIO\FENASTRANimport.cpp" />
-    <ClCompile Include="..\..\MeshIO\FENIKEExport.cpp" />
-    <ClCompile Include="..\..\MeshIO\FENikeProject.cpp" />
     <ClCompile Include="..\..\MeshIO\FEPLYExport.cpp" />
     <ClCompile Include="..\..\MeshIO\FEPLYImport.cpp" />
     <ClCompile Include="..\..\MeshIO\FERAWImport.cpp" />
@@ -170,7 +168,6 @@
     <ClCompile Include="..\..\MeshIO\FEVTKExport.cpp" />
     <ClCompile Include="..\..\MeshIO\FEVTKImport.cpp" />
     <ClCompile Include="..\..\MeshIO\FileReader.cpp" />
-    <ClCompile Include="..\..\MeshIO\NikeImport.cpp" />
     <ClCompile Include="..\..\MeshIO\PRVObjectExport.cpp" />
     <ClCompile Include="..\..\MeshIO\PRVObjectImport.cpp" />
   </ItemGroup>
@@ -189,8 +186,6 @@
     <ClInclude Include="..\..\MeshIO\FEMeshExport.h" />
     <ClInclude Include="..\..\MeshIO\FEMeshImport.h" />
     <ClInclude Include="..\..\MeshIO\FENASTRANimport.h" />
-    <ClInclude Include="..\..\MeshIO\FENIKEExport.h" />
-    <ClInclude Include="..\..\MeshIO\FENikeProject.h" />
     <ClInclude Include="..\..\MeshIO\FEPLYExport.h" />
     <ClInclude Include="..\..\MeshIO\FEPLYImport.h" />
     <ClInclude Include="..\..\MeshIO\FERAWImport.h" />
@@ -202,7 +197,6 @@
     <ClInclude Include="..\..\MeshIO\FEVTKExport.h" />
     <ClInclude Include="..\..\MeshIO\FEVTKImport.h" />
     <ClInclude Include="..\..\MeshIO\FileReader.h" />
-    <ClInclude Include="..\..\MeshIO\NikeImport.h" />
     <ClInclude Include="..\..\MeshIO\PRVObjectExport.h" />
     <ClInclude Include="..\..\MeshIO\PRVObjectFormat.h" />
     <ClInclude Include="..\..\MeshIO\PRVObjectImport.h" />

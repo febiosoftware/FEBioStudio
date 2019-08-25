@@ -60,12 +60,6 @@
     <ClCompile Include="..\..\MeshIO\FENASTRANimport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshIO\FENIKEExport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MeshIO\FENikeProject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshIO\FEPLYExport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -97,9 +91,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MeshIO\FileReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MeshIO\NikeImport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MeshIO\PRVObjectExport.cpp">
@@ -152,12 +143,6 @@
     <ClInclude Include="..\..\MeshIO\FENASTRANimport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\MeshIO\FENIKEExport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshIO\FENikeProject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MeshIO\FEPLYExport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -189,9 +174,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshIO\FileReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshIO\NikeImport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshIO\PRVObjectExport.h">

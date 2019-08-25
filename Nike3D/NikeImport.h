@@ -1,6 +1,5 @@
 #pragma once
-
-#include "FileReader.h"
+#include <MeshIO/FileReader.h>
 #include "FENikeProject.h"
 
 //-----------------------------------------------------------------------------
