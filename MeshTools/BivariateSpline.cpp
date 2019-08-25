@@ -1,10 +1,3 @@
-//
-//  BivariateSpline.cpp
-//
-//  Created by Gerard Ateshian on 9/18/14.
-//
-//
-
 #include "BivariateSpline.h"
 
 //--------------------------------------------------------------------------------------

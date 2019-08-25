@@ -1,15 +1,15 @@
 #include "FEElement.h"
 #include "FEElementLibrary.h"
-#include <MeshLib/tet4.h>
-#include <MeshLib/penta6.h>
-#include <MeshLib/penta15.h>
-#include <MeshLib/hex8.h>
-#include <MeshLib/pyra5.h>
-#include <MeshLib/tet10.h>
-#include <MeshLib/tet15.h>
-#include <MeshLib/tet20.h>
-#include <MeshLib/hex20.h>
-#include <MeshLib/hex27.h>
+#include "tet4.h"
+#include "penta6.h"
+#include "penta15.h"
+#include "hex8.h"
+#include "pyra5.h"
+#include "tet10.h"
+#include "tet15.h"
+#include "tet20.h"
+#include "hex20.h"
+#include "hex27.h"
 
 //=============================================================================
 // FEElement_

@@ -1,14 +1,4 @@
-//
-//  Quadric.hpp
-//  MeshTools
-//
-//  Created by Gerard Ateshian on 5/2/18.
-//  Copyright © 2018 febio.org. All rights reserved.
-//
-
-#ifndef Quadric_hpp
-#define Quadric_hpp
-
+#pragma once
 #include "PointCloud3d.h"
 
 class Quadric
@@ -44,5 +34,3 @@ public:
     double          m_c[10];    // quadric surface coefficients
     PointCloud3d*   m_pc;       // pointer to point cloud
 };
-
-#endif /* Quadric_hpp */

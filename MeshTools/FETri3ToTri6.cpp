@@ -1,13 +1,4 @@
-//
-//  FETri3ToTri6.cpp
-//  MeshTools
-//
-//  Created by Gerard Ateshian on 2/28/16.
-//  Copyright © 2016 febio.org. All rights reserved.
-//
-
 #include <stdio.h>
-
 #include "stdafx.h"
 #include "FEModifier.h"
 

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <MathLib/math3d.h>
-#include <FSCore/color.h>
+#include "color.h"
 #include "CallTracer.h"
 #include <stack>
 #include <list>

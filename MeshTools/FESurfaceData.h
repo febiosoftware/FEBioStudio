@@ -1,6 +1,6 @@
 #pragma once
 #include "FEMeshData.h"
-#include "MeshTools/FEGroup.h"
+#include "FEGroup.h"
 #include <vector>
 
 class FESurfaceData : public FEMeshData

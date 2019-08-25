@@ -1,14 +1,4 @@
-//
-//  Plane.h
-//  libspg
-//
-//  Created by Gerard Ateshian on 2/26/15.
-//
-//
-
-#ifndef __libspg__Plane__
-#define __libspg__Plane__
-
+#pragma once
 #include "MathLib/mat3d.h"
 #include "MathLib/math3d.h"
 
@@ -45,4 +35,3 @@ public:
     vec3d   p_evec[3];  // eigenvectors of plane (optional)
 
 };
-#endif /* defined(__libspg__Plane__) */

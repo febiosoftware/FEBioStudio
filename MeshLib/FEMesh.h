@@ -1,5 +1,5 @@
 #pragma once
-#include "MeshLib/FECoreMesh.h"
+#include "FECoreMesh.h"
 #include "MeshTools/FEGroup.h"
 #include "MeshTools/FENodeData.h"
 #include "MeshTools/FESurfaceData.h"

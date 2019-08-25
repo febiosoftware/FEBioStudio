@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QPainter>
 #include "DlgFormula.h"
-#include <MeshTools/MathParser.h>
+#include <MathLib/MathParser.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <MeshTools/FEMultiMaterial.h>
 

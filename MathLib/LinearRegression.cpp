@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "LinearRegression.h"
-#include <MathLib/math3d.h>
+#include "math3d.h"
 #include <assert.h>
 
 bool LinearRegression(const vector<pair<double, double> >& data, pair<double, double>& res)

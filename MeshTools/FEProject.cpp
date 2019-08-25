@@ -2,9 +2,9 @@
 #include "FEProject.h"
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
-#include <MeshTools/FERigidConstraint.h>
-#include <MeshTools/FEMultiMaterial.h>
-#include <MeshTools/GGroup.h>
+#include "FERigidConstraint.h"
+#include "FEMultiMaterial.h"
+#include "GGroup.h"
 #include <GeomLib/GObject.h>
 #include <string>
 using namespace std;

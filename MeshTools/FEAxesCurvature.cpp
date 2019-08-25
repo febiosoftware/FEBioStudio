@@ -1,11 +1,3 @@
-//
-//  FEAxesCurvature.cpp
-//  MeshTools
-//
-//  Created by Jay Shim on 4/19/18.
-//  Copyright © 2018 febio.org. All rights reserved.
-//
-
 #include "FEAxesCurvature.h"
 #include "stdafx.h"
 #include "FEDomain.h"

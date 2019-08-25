@@ -1,6 +1,4 @@
-#ifndef __PostView__CMPEGAnimation__
-#define __PostView__CMPEGAnimation__
-
+#pragma once
 #include <PostLib/Animation.h>
 
 #ifdef FFMPEG
@@ -42,5 +40,3 @@ private:
     bool Rgb24ToYuv420p(QImage &im);
 };
 #endif
-
-#endif /* defined(__PostView__CMPEGAnimation__) */

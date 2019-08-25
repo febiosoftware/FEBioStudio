@@ -94,10 +94,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FFMPEG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -124,12 +128,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FFMPEG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -188,7 +196,6 @@
     <ClCompile Include="..\..\PostLib\ImgAnimation.cpp" />
     <ClCompile Include="..\..\PostLib\integrate.cpp" />
     <ClCompile Include="..\..\PostLib\Intersect.cpp" />
-    <ClCompile Include="..\..\PostLib\LinearRegression.cpp" />
     <ClCompile Include="..\..\PostLib\MarchingCubes.cpp" />
     <ClCompile Include="..\..\PostLib\MPEGAnimation.cpp" />
     <ClCompile Include="..\..\PostLib\Palette.cpp" />
@@ -206,7 +213,6 @@
     <ClInclude Include="..\..\PostLib\AVIAnimation.h" />
     <ClInclude Include="..\..\PostLib\ColorMap.h" />
     <ClInclude Include="..\..\PostLib\constants.h" />
-    <ClInclude Include="..\..\PostLib\convert.h" />
     <ClInclude Include="..\..\PostLib\DataFilter.h" />
     <ClInclude Include="..\..\PostLib\DataMap.h" />
     <ClInclude Include="..\..\PostLib\evaluate.h" />
@@ -257,7 +263,6 @@
     <ClInclude Include="..\..\PostLib\ImageSlicer.h" />
     <ClInclude Include="..\..\PostLib\ImgAnimation.h" />
     <ClInclude Include="..\..\PostLib\Intersect.h" />
-    <ClInclude Include="..\..\PostLib\LinearRegression.h" />
     <ClInclude Include="..\..\PostLib\MarchingCubes.h" />
     <ClInclude Include="..\..\PostLib\MPEGAnimation.h" />
     <ClInclude Include="..\..\PostLib\Palette.h" />

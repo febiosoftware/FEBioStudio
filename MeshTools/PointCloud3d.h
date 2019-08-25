@@ -1,14 +1,4 @@
-//
-//  PointCloud3d.h
-//  libspg
-//
-//  Created by Gerard Ateshian on 9/9/14.
-//
-//
-
-#ifndef __libspg__PointCloud3d__
-#define __libspg__PointCloud3d__
-
+#pragma once
 #include <vector>
 #include <MathLib/math3d.h>
 #include "Plane.h"
@@ -81,5 +71,3 @@ public:
     vec2d           m_umin;     // parametric bounding box min
     vec2d           m_umax;     // parametric bounding box max
 };
-
-#endif /* defined(__libspg__PointCloud3d__) */

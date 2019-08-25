@@ -1,7 +1,6 @@
 #pragma once
-
+#include "FEStepComponent.h"
 #include "MeshTools/FEGroup.h"
-#include "FEMLib/FEStepComponent.h"
 #include "MeshTools/FEItemListBuilder.h"
 #include <list>
 using namespace std;

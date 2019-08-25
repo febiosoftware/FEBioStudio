@@ -1,14 +1,6 @@
-//
-//  FECreateShells.cpp
-//  MeshTools
-//
-//  Created by Martin Xiberras on 5/31/18.
-
-
 #include "stdafx.h"
 #include "FECreateShells.h"
 #include <GeomLib/GMeshObject.h>
-
 
 FECreateShells::FECreateShells() : FEModifier("Create Shells")
 {

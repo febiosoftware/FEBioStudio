@@ -32,5 +32,8 @@
     <ClInclude Include="..\..\GLWLib\GLWidgetManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\GLWLib\convert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

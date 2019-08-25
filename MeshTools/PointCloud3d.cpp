@@ -1,11 +1,3 @@
-//
-//  PointCloud3d.cpp
-//  libspg
-//
-//  Created by Gerard Ateshian on 9/9/14.
-//
-//
-
 #include "PointCloud3d.h"
 #include <math.h>
 #include <stdio.h>

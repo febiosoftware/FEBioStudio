@@ -1,14 +1,4 @@
-//
-//  FESelectElementsFromFaces.hpp
-//  MeshTools
-//
-//  Created by Gerard Ateshian on 6/29/18.
-//  Copyright © 2018 febio.org. All rights reserved.
-//
-
-#ifndef FESelectElementsFromFaces_hpp
-#define FESelectElementsFromFaces_hpp
-
+#pragma once
 #include "FEModifier.h"
 
 //-----------------------------------------------------------------------------
@@ -23,5 +13,3 @@ public:
 protected:
     void SelectElementsFromFaces(FEMesh* pm);
 };
-
-#endif /* FESelectElementsFromFaces_hpp */

@@ -2,10 +2,10 @@
 #include <MeshTools/FEModel.h>
 #include <MeshTools/FERigidConstraint.h>
 #include <MeshTools/FEProject.h>
-#include <FEMLib/FEInitialCondition.h>
-#include <FEMLib/FESurfaceLoad.h>
-#include <FEMLib/FEMKernel.h>
-#include <FEMLib/FEInterface.h>
+#include "FEInitialCondition.h"
+#include "FESurfaceLoad.h"
+#include "FEMKernel.h"
+#include "FEInterface.h"
 #include <FSCore/FSObjectList.h>
 
 int FEStep::m_ncount = 0;

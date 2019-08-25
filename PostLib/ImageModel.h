@@ -3,7 +3,7 @@
 #include <string>
 #include <FSCore/box.h>
 #include <FSCore/FSObjectList.h>
-#include <PostLib/GLImageRenderer.h>
+#include "GLImageRenderer.h"
 #include "GLObject.h"
 
 class C3DImage;

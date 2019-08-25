@@ -1,5 +1,5 @@
 #pragma once
-#include <PostLib/Animation.h>
+#include "Animation.h"
 #ifdef WIN32
 #include <vfw.h>
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <FSCore/FSObject.h>
-#include "MathLib/math3d.h"
-#include "MathParser.h"
+#include <MathLib/math3d.h>
+#include <MathLib/MathParser.h>
 #include <string>
 using namespace std;
 

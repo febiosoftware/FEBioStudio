@@ -1,10 +1,3 @@
-//
-//  BivariatePolynomialSpline.cpp
-//
-//  Created by Gerard Ateshian on 9/10/14.
-//
-//
-
 #include "BivariatePolynomialSpline.h"
 #include "MathLib/LUSolver.h"
 #include <stdio.h>

@@ -21,7 +21,7 @@
 #include <QComboBox>
 #include "CColorButton.h"
 #include "MeshInfoPanel.h"
-#include <PostLib/convert.h>
+#include <GLWLib/convert.h>
 #include <MeshTools/GGroup.h>
 #include "Command.h"
 

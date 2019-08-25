@@ -1,11 +1,3 @@
-//
-//  Quadric.cpp
-//  MeshTools
-//
-//  Created by Gerard Ateshian on 5/2/18.
-//  Copyright © 2018 febio.org. All rights reserved.
-//
-
 #include "Quadric.h"
 #include "MathLib/math3d.h"
 #include <math.h>

@@ -1,11 +1,3 @@
-//
-//  Plane.cpp
-//  libspg
-//
-//  Created by Gerard Ateshian on 2/26/15.
-//
-//
-
 #include "Plane.h"
 
 void Plane::EigenPlane()

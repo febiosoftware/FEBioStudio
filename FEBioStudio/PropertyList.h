@@ -1,6 +1,6 @@
 #pragma once
 #include <QtCore/QVariant>
-#include <PostLib/convert.h>
+#include <GLWLib/convert.h>
 #include <MathLib/math3d.h>
 
 class Param;

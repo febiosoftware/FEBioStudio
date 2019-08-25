@@ -1,11 +1,3 @@
-//
-//  FESelectElementsFromFaces.cpp
-//  MeshTools
-//
-//  Created by Gerard Ateshian on 6/29/18.
-//  Copyright © 2018 febio.org. All rights reserved.
-//
-
 #include "stdafx.h"
 #include "FESelectElementsFromFaces.h"
 #include "FEDomain.h"

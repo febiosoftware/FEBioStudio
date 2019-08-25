@@ -1,11 +1,11 @@
 #include "FEMesh.h"
 #include <GeomLib/GObject.h>
-#include <MeshLib/triangulate.h>
+#include "triangulate.h"
 #include "FESurfaceMesh.h"
 #include "MeshMetrics.h"
-#include <MeshLib/FENodeElementList.h>
-#include <MeshLib/FENodeFaceList.h>
-#include <MeshLib/FENodeEdgeList.h>
+#include "FENodeElementList.h"
+#include "FENodeFaceList.h"
+#include "FENodeEdgeList.h"
 #include <algorithm>
 #include <unordered_set>
 

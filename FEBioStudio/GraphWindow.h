@@ -1,6 +1,6 @@
 #pragma once
 #include <QMainWindow>
-#include <MeshTools/MathParser.h>
+#include <MathLib/MathParser.h>
 #include "PlotWidget.h"
 #include "Document.h"
 

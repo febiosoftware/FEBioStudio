@@ -1,13 +1,4 @@
-//
-//  BivariateSpline.h
-//
-//  Created by Gerard Ateshian on 9/18/14.
-//
-//
-
-#ifndef __libspg__BivariateSpline__
-#define __libspg__BivariateSpline__
-
+#pragma once
 #include "PointCloud3d.h"
 
 class BivariateSpline
@@ -40,6 +31,3 @@ public:
 public:
     PointCloud3d*               m_pc;   // pointer to point cloud
 };
-
-
-#endif /* defined(__libspg__BivariateSpline__) */

@@ -1,5 +1,5 @@
 #pragma once
-#include "FEMLib/FEStepComponent.h"
+#include "FEStepComponent.h"
 #include "MeshTools/FEItemListBuilder.h"
 #include "MeshTools/GMaterial.h"
 #include <list>

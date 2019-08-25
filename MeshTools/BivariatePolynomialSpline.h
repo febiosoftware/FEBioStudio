@@ -1,13 +1,4 @@
-//
-//  BivariatePolynomialSpline.h
-//
-//  Created by Gerard Ateshian on 9/10/14.
-//
-//
-
-#ifndef __libspg__BivariatePolynomialSpline__
-#define __libspg__BivariatePolynomialSpline__
-
+#pragma once
 #include "BivariateSpline.h"
 #include "PointCloud3d.h"
 
@@ -31,5 +22,3 @@ public:
     vector< vector<double> >    m_c;    // spline coefficients
     int                         m_n;    // spline degree
 };
-
-#endif /* defined(__libspg__BivariatePolynomialSpline__) */

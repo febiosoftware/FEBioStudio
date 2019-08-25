@@ -8,7 +8,7 @@
 #include <QMenu>
 #include "CColorButton.h"
 #include <GeomLib/GObject.h>
-#include <PostLib/convert.h>
+#include <GLWLib/convert.h>
 #include "MainWindow.h"
 #include "Document.h"
 

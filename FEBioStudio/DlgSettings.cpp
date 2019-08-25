@@ -13,7 +13,7 @@
 #include "PropertyListForm.h"
 #include "PropertyListView.h"
 #include "CColorButton.h"
-#include <PostLib/convert.h>
+#include <GLWLib/convert.h>
 #include <PostLib/Palette.h>
 
 //-----------------------------------------------------------------------------

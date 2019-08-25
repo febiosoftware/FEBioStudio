@@ -7,7 +7,7 @@
 #include <QGridLayout>
 #include <QValidator>
 #include <QMessageBox>
-#include <MeshTools/MathParser.h>
+#include <MathLib/MathParser.h>
 
 CDlgFormula::CDlgFormula(QWidget* parent) : QDialog(parent)
 {

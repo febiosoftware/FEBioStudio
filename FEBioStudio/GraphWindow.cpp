@@ -23,9 +23,9 @@
 #include "version.h"
 #include <QValidator>
 #include <QComboBox>
-#include <PostLib/LinearRegression.h>
+#include <MathLib/LinearRegression.h>
 #include "CColorButton.h"
-#include <PostLib/convert.h>
+#include <GLWLib/convert.h>
 #include "PostDoc.h"
 
 OptionsUi::OptionsUi(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent)

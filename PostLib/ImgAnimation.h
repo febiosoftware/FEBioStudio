@@ -1,5 +1,5 @@
 #pragma once
-#include <PostLib/Animation.h>
+#include "Animation.h"
 #include <QImage>
 
 class CImgAnimation : public CAnimation
