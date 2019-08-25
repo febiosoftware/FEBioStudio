@@ -232,6 +232,8 @@ public:
 		SetType(T::Type());
 		m_node = _node;
 		m_nbr = _nbr;
+		m_face = _face;
+		m_h = _h;
 		for (int i = 0; i<T::Nodes; ++i) m_node[i] = -1;
 	}
 
@@ -249,8 +251,10 @@ public:
 	}
 
 public:
-	int	_node[T::Nodes];
-	int _nbr[6];
+	int		_node[T::Nodes];
+	int		_nbr[6];
+	int		_face[6];			//!< faces (-1 for interior faces)
+	double 	_h[9];				//!< element thickness (only used by shells)
 };
 
 typedef FEElementBase< FEElementTraits<FE_BEAM2  > > FELine2;
@@ -273,23 +277,6 @@ typedef FEElementBase< FEElementTraits<FE_PYRA5  > > FEPyra5;
 typedef FEElementBase< FEElementTraits<FE_TET5   > > FETet5;
 
 //-----------------------------------------------------------------------------
-// Generice element class that can represent any of the supported element classes
-class FEGenericElement : public FEElement_
-{
-public:
-	enum { MAX_NODES = 27 };
-
-public:
-	FEGenericElement();
-	FEGenericElement(const FEGenericElement& e);
-	void operator = (const FEGenericElement& e);
-
-public:
-	int	_node[MAX_NODES];	// array of nodes ID
-	int	_nbr[6];
-};
-
-//-----------------------------------------------------------------------------
 // This element class can represent any of the linear elements.
 class FELinearElement : public FEElement_
 {
@@ -302,6 +289,8 @@ public:
 	void operator = (const FELinearElement& e);
 
 public:
-	int	_node[MAX_NODES];	// array of nodes ID
-	int	_nbr[6];
+	int		_node[MAX_NODES];	// array of nodes ID
+	int		_nbr[6];
+	int		_face[6];			//!< faces (-1 for interior faces)
+	double 	_h[9];				//!< element thickness (only used by shells)
 };

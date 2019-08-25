@@ -412,7 +412,7 @@ bool FEBioPlotExport::WritePart(FEPart& part)
 	m_ar.EndChunk();
 
 	// write the element list
-	int n[FEGenericElement::MAX_NODES + 1];
+	int n[FEElement::MAX_NODES + 1];
 	m_ar.BeginChunk(PLT_DOM_ELEM_LIST);
 	{
 		for (int i=0; i<NE; ++i)
@@ -799,7 +799,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
-				float v[FEGenericElement::MAX_NODES] = {0.f};
+				float v[FEElement::MAX_NODES] = {0.f};
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -815,7 +815,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
-				vec3f v[FEGenericElement::MAX_NODES] = {vec3f(0.f,0.f,0.f)};
+				vec3f v[FEElement::MAX_NODES] = {vec3f(0.f,0.f,0.f)};
 				if (data.active(eid))
 				{
 					data.eval(eid, v);
@@ -828,7 +828,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 		{
 			FEElementData<mat3fs, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fs, DATA_COMP>&>(meshData);
 			val.assign(NE*ne*6, 0.f);
-			mat3fs v[FEGenericElement::MAX_NODES];
+			mat3fs v[FEElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -844,7 +844,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 		{
 			FEElementData<mat3fd, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fd, DATA_COMP>&>(meshData);
 			val.assign(NE*ne*3, 0.f);
-			mat3fd v[FEGenericElement::MAX_NODES];
+			mat3fd v[FEElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -869,7 +869,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 			FEElementData<float, DATA_NODE>& data = dynamic_cast<FEElementData<float, DATA_NODE>&>(meshData);
 			val.assign(NN, 0.f);
 
-			float v[FEGenericElement::MAX_NODES];
+			float v[FEElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -886,7 +886,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 			FEElementData<vec3f, DATA_NODE>& data = dynamic_cast<FEElementData<vec3f, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
 
-			vec3f v[FEGenericElement::MAX_NODES];
+			vec3f v[FEElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -903,7 +903,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 			FEElementData<mat3fs, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fs, DATA_NODE>&>(meshData);
 			val.assign(NN*6, 0.f);
 
-			mat3fs v[FEGenericElement::MAX_NODES];
+			mat3fs v[FEElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -920,7 +920,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 			FEElementData<mat3fd, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fd, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
 
-			mat3fd v[FEGenericElement::MAX_NODES];
+			mat3fd v[FEElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
 			{
 				int eid = part.m_Elem[i];
@@ -1107,7 +1107,7 @@ bool FEBioPlotExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData
 			FEFaceData<float, DATA_NODE>& data = dynamic_cast<FEFaceData<float, DATA_NODE>&>(meshData);
 			val.assign(NN, 0.f);
 
-			float v[FEGenericElement::MAX_NODES];
+			float v[FEElement::MAX_NODES];
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
@@ -1127,7 +1127,7 @@ bool FEBioPlotExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData
 			FEFaceData<vec3f, DATA_NODE>& data = dynamic_cast<FEFaceData<vec3f, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
 
-			vec3f v[FEGenericElement::MAX_NODES];
+			vec3f v[FEElement::MAX_NODES];
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
@@ -1147,7 +1147,7 @@ bool FEBioPlotExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData
 			FEElementData<mat3fs, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fs, DATA_NODE>&>(meshData);
 			val.assign(NN*6, 0.f);
 
-			mat3fs v[FEGenericElement::MAX_NODES];
+			mat3fs v[FEElement::MAX_NODES];
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{
@@ -1167,7 +1167,7 @@ bool FEBioPlotExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData
 			FEElementData<mat3fd, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fd, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
 
-			mat3fd v[FEGenericElement::MAX_NODES];
+			mat3fd v[FEElement::MAX_NODES];
 			int nnf = 0;
 			for (int i=0; i<NF; ++i)
 			{

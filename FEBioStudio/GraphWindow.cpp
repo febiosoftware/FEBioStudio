@@ -1445,7 +1445,7 @@ void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, 
 	if (nmax <    nmin) nmax = nmin;
 	int nn = nmax - nmin + 1;
 
-	float data[FEGenericElement::MAX_NODES] = { 0.f }, val;
+	float data[FEElement::MAX_NODES] = { 0.f }, val;
 	for (int n = 0; n<nn; n++)
 	{
 		fem.EvaluateElement(nelem, n + nmin, nfield, data, val);

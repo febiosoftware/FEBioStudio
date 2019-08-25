@@ -159,7 +159,7 @@ bool GMeshImport::BuildMesh(FEModel& fem)
 	// create elements
 	for (i=0; i<elems; ++i)
 	{
-		FEGenericElement& el = static_cast<FEGenericElement&>(pm->Element(i));
+		FEElement& el = static_cast<FEElement&>(pm->Element(i));
 		ELEM& E = m_Elem[i];
 
 		el.m_MatID = 0;

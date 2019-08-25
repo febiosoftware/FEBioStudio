@@ -739,7 +739,7 @@ bool Post::DataGradient(FEModel& fem, int vecField, int sclField)
 					vector<int> tag(NN, 0);
 					FEElemData_T<float, DATA_NODE>* ps = dynamic_cast<FEElemData_T<float, DATA_NODE>*>(&s);
 
-					float ed[FEGenericElement::MAX_NODES] = {0.f};
+					float ed[FEElement::MAX_NODES] = {0.f};
 					for (int i=0; i<mesh->Elements(); ++i)
 					{
 						FEElement_& el = mesh->Element(i);
@@ -783,7 +783,7 @@ bool Post::DataGradient(FEModel& fem, int vecField, int sclField)
 					vector<int> tag(NN, 0);
 					FEElemData_T<float, DATA_COMP>* ps = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&s);
 
-					float ed[FEGenericElement::MAX_NODES] = { 0.f };
+					float ed[FEElement::MAX_NODES] = { 0.f };
 					for (int i = 0; i<mesh->Elements(); ++i)
 					{
 						FEElement_& el = mesh->Element(i);
@@ -805,8 +805,8 @@ bool Post::DataGradient(FEModel& fem, int vecField, int sclField)
 
 		// now, calculate the gradient for each element
 		vector<vec3f> G(NN, vec3f(0.f, 0.f, 0.f));
-		vec3f eg[FEGenericElement::MAX_NODES];
-		float ed[FEGenericElement::MAX_NODES];
+		vec3f eg[FEElement::MAX_NODES];
+		float ed[FEElement::MAX_NODES];
 		vector<int> tag(NN, 0);
 		for (int i=0; i<mesh->Elements(); ++i)
 		{
@@ -930,7 +930,7 @@ template <typename T> void extractElemDataComponentNODE_T(FEMeshData& dst, FEMes
 	FEElementData<float, DATA_NODE>& scl = dynamic_cast<FEElementData<float, DATA_NODE>&>(dst);
 
 	int NE = mesh.Elements();
-	T val[FEGenericElement::MAX_NODES];
+	T val[FEElement::MAX_NODES];
 	vector<float> data;
 	vector<int> elem(1);
 	vector<int> l;
@@ -961,7 +961,7 @@ void extractElemDataComponentNODE_ARRAY(FEMeshData& dst, FEMeshData& src, int nc
 	FEElementData<float, DATA_NODE>& scl = dynamic_cast<FEElementData<float, DATA_NODE>&>(dst);
 
 	int NE = mesh.Elements();
-	float val[FEGenericElement::MAX_NODES];
+	float val[FEElement::MAX_NODES];
 	vector<float> data;
 	vector<int> elem(1);
 	vector<int> l;

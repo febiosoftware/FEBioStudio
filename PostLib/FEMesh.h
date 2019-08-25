@@ -237,7 +237,7 @@ typedef FEMesh_<FETri3> FETriMesh;
 typedef FEMesh_<FEQuad4> FEQuadMesh;
 typedef FEMesh_<FETet4> FEMeshTet4;
 typedef FEMesh_<FEHex8> FEMeshHex8;
-typedef FEMesh_<FEGenericElement> FEMesh;
+typedef FEMesh_<FEElement> FEMesh;
 typedef FEMesh_<FELinearElement> FELinearMesh;
 
 // find the element and the iso-parametric coordinates of a point inside the mesh

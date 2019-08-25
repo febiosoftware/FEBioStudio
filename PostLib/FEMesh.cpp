@@ -1493,7 +1493,7 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 	int ne = el.Nodes();
 	double dr[3], R[3];
 	Mat3d K;
-	double u2, N[FEGenericElement::MAX_NODES], G[3][FEGenericElement::MAX_NODES];
+	double u2, N[FEElement::MAX_NODES], G[3][FEElement::MAX_NODES];
 	int n = 0;
 	do
 	{
@@ -1539,7 +1539,7 @@ bool Post::ProjectInsideReferenceElement(FEMeshBase& m, FEElement_& el, const ve
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
-	vec3f x[FEGenericElement::MAX_NODES];
+	vec3f x[FEElement::MAX_NODES];
 	for (int i = 0; i<ne; ++i) x[i] = m.Node(el.m_node[i]).m_r0;
 
 	project_inside_element(el, p, r, x);
@@ -1552,7 +1552,7 @@ bool Post::ProjectInsideElement(FEMeshBase& m, FEElement_& el, const vec3f& p, d
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
-	vec3f x[FEGenericElement::MAX_NODES];
+	vec3f x[FEElement::MAX_NODES];
 	for (int i = 0; i<ne; ++i) x[i] = m.Node(el.m_node[i]).m_rt;
 
 	project_inside_element(el, p, r, x);
@@ -1563,7 +1563,7 @@ bool Post::ProjectInsideElement(FEMeshBase& m, FEElement_& el, const vec3f& p, d
 //-----------------------------------------------------------------------------
 bool Post::FindElementRef(FEMeshBase& m, const vec3f& p, int& nelem, double r[3])
 {
-	vec3f y[FEGenericElement::MAX_NODES];
+	vec3f y[FEElement::MAX_NODES];
 	int NE = m.Elements();
 	for (int i=0; i<NE; ++i)
 	{
@@ -1616,7 +1616,7 @@ bool Post::FindElementRef(FEMeshBase& m, const vec3f& p, int& nelem, double r[3]
 //-----------------------------------------------------------------------------
 bool Post::FindElementInReferenceFrame(FEMeshBase& m, const vec3f& p, int& nelem, double r[3])
 {
-	vec3f y[FEGenericElement::MAX_NODES];
+	vec3f y[FEElement::MAX_NODES];
 	int NE = m.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
@@ -1975,7 +1975,7 @@ bool FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]
 {
 	assert(m_nframe == 0);
 
-	vec3f y[FEGenericElement::MAX_NODES];
+	vec3f y[FEElement::MAX_NODES];
 	OCTREE_BOX* b = FindBox(x);
 	if (b == 0) return false;
 	assert(b->m_level == 0);
@@ -2007,7 +2007,7 @@ bool FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double r[3])
 {
 	assert(m_nframe == 1);
 
-	vec3f y[FEGenericElement::MAX_NODES];
+	vec3f y[FEElement::MAX_NODES];
 	OCTREE_BOX* b = FindBox(x);
 	if (b == 0) return false;
 	assert(b->m_level == 0);

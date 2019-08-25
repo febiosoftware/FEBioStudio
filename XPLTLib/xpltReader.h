@@ -165,7 +165,7 @@ public:
 	{
 		int		eid;
 		int		index;
-		int		node[FEGenericElement::MAX_NODES];
+		int		node[FEElement::MAX_NODES];
 	};
 
 	struct FACE

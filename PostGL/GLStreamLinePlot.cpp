@@ -240,7 +240,7 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
 {
 	vec3f v(0.f, 0.f, 0.f);
-	vec3f ve[FEGenericElement::MAX_NODES];
+	vec3f ve[FEElement::MAX_NODES];
 	FEMeshBase& mesh = *GetModel()->GetActiveMesh();
 	int nelem;
 	double q[3];
@@ -329,7 +329,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 
 			vec3f vc = vf;
 
-			vec3f v[FEGenericElement::MAX_NODES];
+			vec3f v[FEElement::MAX_NODES];
 			bool ok;
 			do
 			{

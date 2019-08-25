@@ -220,7 +220,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 	int nmat = fem.Materials();
 	for (i=0; i<m_hdr.nel8; i++)
 	{
-		FEGenericElement& el = static_cast<FEGenericElement&>(mesh.Element(ne++));
+		FEElement& el = static_cast<FEElement&>(mesh.Element(ne++));
 
 		nread = ReadData(n, sizeof(int), 9);
 		if (nread != 9)
@@ -275,7 +275,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 	// read beam elements
 	for (i=0; i<m_hdr.nel2; ++i)
 	{
-		FEGenericElement& el = static_cast<FEGenericElement&>(mesh.Element(ne++));
+		FEElement& el = static_cast<FEElement&>(mesh.Element(ne++));
 
 		ReadData(n, sizeof(int), 6);
 
@@ -290,7 +290,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 	// read shells
 	for (i=0; i<m_hdr.nel4; ++i)
 	{
-		FEGenericElement& el = static_cast<FEGenericElement&>(mesh.Element(ne++));
+		FEElement& el = static_cast<FEElement&>(mesh.Element(ne++));
 
 		ReadData(n, sizeof(int), 5);
 
@@ -755,7 +755,7 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 
 		// write solid element data
 		float s[32] = {0};
-		float data[FEGenericElement::MAX_NODES] = {0.f}, val;
+		float data[FEElement::MAX_NODES] = {0.f}, val;
 		for (i=0; i<mesh.Elements(); ++i)
 		{
 			FEElement_& el = mesh.Element(i);

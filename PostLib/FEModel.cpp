@@ -514,7 +514,7 @@ template <typename T> void cached_copy_elem_data_COMP(FEMeshData& dst, FEMeshDat
 	FEElemData_T<T, DATA_COMP>& s = dynamic_cast<FEElemData_T<T, DATA_COMP>&>(src);
 
 	int NE = mesh.Elements();
-	T f[FEGenericElement::MAX_NODES];
+	T f[FEElement::MAX_NODES];
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement_& el = mesh.Element(i);
@@ -533,7 +533,7 @@ template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshDat
 	FEElemData_T<T, DATA_NODE>& s = dynamic_cast<FEElemData_T<T, DATA_NODE>&>(src);
 
 	int NE = mesh.Elements();
-	T f[FEGenericElement::MAX_NODES];
+	T f[FEElement::MAX_NODES];
 	vector<T> vf;
 	vector<int> elem(1);
 	vector<int> index;
@@ -790,7 +790,7 @@ vec3f FEModel::NodePosition(const vec3f& r, int ntime)
 	int iel = -1; double iso[3] = {0};
 	if (FindElementInReferenceFrame(*mesh, r, iel, iso))
 	{
-		vec3f x[FEGenericElement::MAX_NODES];
+		vec3f x[FEElement::MAX_NODES];
 		GetElementCoords(iel, ntime, x);
 
 		// evaluate 
