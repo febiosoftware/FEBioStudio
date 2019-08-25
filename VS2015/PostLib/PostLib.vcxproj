@@ -144,7 +144,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\PostLib\Animation.cpp" />
-    <ClCompile Include="..\..\PostLib\Archive.cpp" />
     <ClCompile Include="..\..\PostLib\AVIAnimation.cpp" />
     <ClCompile Include="..\..\PostLib\ColorMap.cpp" />
     <ClCompile Include="..\..\PostLib\DataFilter.cpp" />
@@ -154,7 +153,6 @@
     <ClCompile Include="..\..\PostLib\FEAsciiExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEASCIIImport.cpp" />
     <ClCompile Include="..\..\PostLib\FEBioImport.cpp" />
-    <ClCompile Include="..\..\PostLib\FEBioPlotExport.cpp" />
     <ClCompile Include="..\..\PostLib\FECurvatureMap.cpp" />
     <ClCompile Include="..\..\PostLib\FEDataField.cpp" />
     <ClCompile Include="..\..\PostLib\FEDataManager.cpp" />
@@ -199,7 +197,6 @@
     <ClCompile Include="..\..\PostLib\MarchingCubes.cpp" />
     <ClCompile Include="..\..\PostLib\MPEGAnimation.cpp" />
     <ClCompile Include="..\..\PostLib\Palette.cpp" />
-    <ClCompile Include="..\..\PostLib\PltArchive.cpp" />
     <ClCompile Include="..\..\PostLib\PostView.cpp" />
     <ClCompile Include="..\..\PostLib\tools.cpp" />
     <ClCompile Include="..\..\PostLib\U3DFile.cpp" />
@@ -209,7 +206,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\PostLib\Animation.h" />
-    <ClInclude Include="..\..\PostLib\Archive.h" />
     <ClInclude Include="..\..\PostLib\AVIAnimation.h" />
     <ClInclude Include="..\..\PostLib\ColorMap.h" />
     <ClInclude Include="..\..\PostLib\constants.h" />
@@ -220,7 +216,6 @@
     <ClInclude Include="..\..\PostLib\FEAsciiExport.h" />
     <ClInclude Include="..\..\PostLib\FEASCIIImport.h" />
     <ClInclude Include="..\..\PostLib\FEBioImport.h" />
-    <ClInclude Include="..\..\PostLib\FEBioPlotExport.h" />
     <ClInclude Include="..\..\PostLib\FECurvatureMap.h" />
     <ClInclude Include="..\..\PostLib\FEDataField.h" />
     <ClInclude Include="..\..\PostLib\FEDataManager.h" />
@@ -266,7 +261,6 @@
     <ClInclude Include="..\..\PostLib\MarchingCubes.h" />
     <ClInclude Include="..\..\PostLib\MPEGAnimation.h" />
     <ClInclude Include="..\..\PostLib\Palette.h" />
-    <ClInclude Include="..\..\PostLib\PltArchive.h" />
     <ClInclude Include="..\..\PostLib\PostView.h" />
     <ClInclude Include="..\..\PostLib\stdafx.h" />
     <ClInclude Include="..\..\PostLib\tools.h" />

@@ -259,7 +259,7 @@ void GOCCObject::Save(OArchive& ar)
 
 void GOCCObject::Load(IArchive& ar)
 {
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

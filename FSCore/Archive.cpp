@@ -1,5 +1,209 @@
 #include "stdafx.h"
 #include "Archive.h"
+#include "zlib.h"
+static z_stream strm;
+
+//=============================================================================
+IOMemBuffer::IOMemBuffer()
+{
+	m_pbuf = 0;
+	m_nsize = 0;
+	m_nalloc = 0;
+}
+
+IOMemBuffer::~IOMemBuffer()
+{
+	delete[] m_pbuf;
+	m_nsize = 0;
+	m_nalloc = 0;
+}
+
+void IOMemBuffer::append(void* pd, int n)
+{
+	// make sure we need to do anything
+	if ((n <= 0) || (pd == 0)) return;
+
+	if (m_pbuf == 0)
+	{
+		m_pbuf = new char[n];
+		m_nalloc = n;
+	}
+	else if (m_nsize + n > m_nalloc)
+	{
+		m_nalloc = 4 * ((3 * m_nalloc / 2) / 4);
+		if (m_nalloc < 4) m_nalloc = 4;
+		if (m_nalloc < m_nsize + n) m_nalloc = m_nsize + n;
+		char* ptmp = new char[m_nalloc];
+		if (m_nsize > 0) memcpy(ptmp, m_pbuf, m_nsize);
+		delete[] m_pbuf;
+		m_pbuf = ptmp;
+	}
+
+	// copy the data
+	memcpy(m_pbuf + m_nsize, pd, n);
+
+	// increase size
+	m_nsize += n;
+}
+
+//=============================================================================
+// IOFileStream
+//=============================================================================
+IOFileStream::IOFileStream(FILE* fp)
+{
+	m_bufsize = 262144;	// = 256K
+	m_current = 0;
+	m_buf = new unsigned char[m_bufsize];
+	m_pout = new unsigned char[m_bufsize];
+	m_ncompress = 0;
+	m_fp = fp;
+}
+
+IOFileStream::~IOFileStream()
+{
+	Close();
+	delete[] m_buf;
+	delete[] m_pout;
+	m_buf = 0;
+	m_pout = 0;
+}
+
+bool IOFileStream::Open(const char* szfile)
+{
+	m_fp = fopen(szfile, "rb");
+	if (m_fp == 0) return false;
+	return true;
+}
+
+bool IOFileStream::Append(const char* szfile)
+{
+	m_fp = fopen(szfile, "a+b");
+	return (m_fp != 0);
+}
+
+bool IOFileStream::Create(const char* szfile)
+{
+	m_fp = fopen(szfile, "wb");
+	return (m_fp != 0);
+}
+
+void IOFileStream::Close()
+{
+	if (m_fp)
+	{
+		Flush();
+		fclose(m_fp);
+	}
+	m_fp = 0;
+}
+
+void IOFileStream::BeginStreaming()
+{
+	if (m_ncompress)
+	{
+		strm.zalloc = Z_NULL;
+		strm.zfree = Z_NULL;
+		strm.opaque = Z_NULL;
+		deflateInit(&strm, -1);
+	}
+}
+
+void IOFileStream::EndStreaming()
+{
+	Flush();
+	if (m_ncompress)
+	{
+		strm.avail_in = 0;
+		strm.next_in = 0;
+
+		// run deflate() on input until output buffer not full, finish
+		// compression if all of source has been read in
+		do {
+			strm.avail_out = m_bufsize;
+			strm.next_out = m_pout;
+			int ret = deflate(&strm, Z_FINISH);    // no bad return value
+			assert(ret != Z_STREAM_ERROR);  // state not clobbered
+			int have = m_bufsize - strm.avail_out;
+			fwrite(m_pout, 1, have, m_fp);
+		} while (strm.avail_out == 0);
+		assert(strm.avail_in == 0);     // all input will be used
+
+										// all done
+		deflateEnd(&strm);
+
+		fflush(m_fp);
+	}
+}
+
+void IOFileStream::Write(void* pd, size_t Size, size_t Count)
+{
+	unsigned char* pdata = (unsigned char*)pd;
+	size_t nsize = Size*Count;
+	while (nsize > 0)
+	{
+		if (m_current + nsize < m_bufsize)
+		{
+			memcpy(m_buf + m_current, pdata, nsize);
+			m_current += nsize;
+			nsize = 0;
+		}
+		else
+		{
+			int nblock = m_bufsize - m_current;
+			if (nblock>0) { memcpy(m_buf + m_current, pdata, nblock); m_current += nblock; }
+			Flush();
+			pdata += nblock;
+			nsize -= nblock;
+		}
+	}
+}
+
+void IOFileStream::Flush()
+{
+	if (m_ncompress)
+	{
+		strm.avail_in = m_current;
+		strm.next_in = m_buf;
+
+		// run deflate() on input until output buffer not full, finish
+		// compression if all of source has been read in
+		do {
+			strm.avail_out = m_bufsize;
+			strm.next_out = m_pout;
+			int ret = deflate(&strm, Z_NO_FLUSH);    // no bad return value
+			assert(ret != Z_STREAM_ERROR);  // state not clobbered
+			int have = m_bufsize - strm.avail_out;
+			fwrite(m_pout, 1, have, m_fp);
+		} while (strm.avail_out == 0);
+		assert(strm.avail_in == 0);     // all input will be used
+	}
+	else
+	{
+		if (m_fp) fwrite(m_buf, m_current, 1, m_fp);
+	}
+
+	// flush the file
+	if (m_fp) fflush(m_fp);
+
+	// reset current data pointer
+	m_current = 0;
+}
+
+size_t IOFileStream::read(void* pd, size_t Size, size_t Count)
+{
+	return fread(pd, Size, Count, m_fp);
+}
+
+long IOFileStream::tell()
+{
+	return ftell(m_fp);
+}
+
+void IOFileStream::seek(long noff, int norigin)
+{
+	fseek(m_fp, noff, norigin);
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // IArchive
@@ -160,7 +364,6 @@ unsigned int IArchive::GetChunkID()
 
 OArchive::OArchive()
 {
-	m_fp = 0;
 	m_pRoot = 0;
 	m_pChunk = 0;
 }
@@ -172,12 +375,11 @@ OArchive::~OArchive()
 
 void OArchive::Close()
 {
-	if (m_fp)
+	if (m_fp.IsValid())
 	{
-		m_pRoot->Write(m_fp);
-		fclose(m_fp);
+		m_pRoot->Write(&m_fp);
+		m_fp.Close();
 	}
-	m_fp = 0;
 
 	delete m_pRoot;
 	m_pRoot = 0;
@@ -187,11 +389,10 @@ void OArchive::Close()
 bool OArchive::Create(const char* szfile, unsigned int signature)
 {
 	// attempt to create the file
-	m_fp = fopen(szfile, "wb");
-	if (m_fp == 0) return false;
+	if (m_fp.Create(szfile) == false) return false;
 
 	// write the master tag 
-	fwrite(&signature, sizeof(int), 1, m_fp);
+	m_fp.Write(&signature, sizeof(int), 1);
 
 	assert(m_pRoot == 0);
 	m_pRoot = new OBranch(0);

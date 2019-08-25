@@ -164,7 +164,7 @@ void GPrimitive::Load(IArchive& ar)
 
 	int nparts = -1, nfaces = -1, nedges = -1, nnodes = -1;
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -191,7 +191,7 @@ void GPrimitive::Load(IArchive& ar)
 				vec3d pos, scl;
 				quatd rot;
 				GLColor col;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					int oid;
@@ -228,12 +228,12 @@ void GPrimitive::Load(IArchive& ar)
 			{
 				assert(nparts == m_Part.size());
 				int n = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_SECTION (GPrimitive::Load)");
 
 					GPart& p = *m_Part[n];
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid, mid;
 						switch (ar.GetChunkID())
@@ -254,12 +254,12 @@ void GPrimitive::Load(IArchive& ar)
 			{
 				assert(nfaces == m_Face.size());
 				int n = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_SECTION (GPrimitive::Load)");
 
 					GFace& f = *m_Face[n];
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid;
 						switch (ar.GetChunkID())
@@ -279,12 +279,12 @@ void GPrimitive::Load(IArchive& ar)
 			{
 				assert(nedges == m_Edge.size());
 				int n = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_SECTION (GPrimitive::Load)");
 
 					GEdge& e = *m_Edge[n];
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid;
 						switch (ar.GetChunkID())
@@ -304,12 +304,12 @@ void GPrimitive::Load(IArchive& ar)
 			{
 				assert(nnodes == m_Node.size());
 				int m = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_SECTION (GPrimitive::Load)");
 
 					GNode& n = *m_Node[m];
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid;
 						switch (ar.GetChunkID())
@@ -335,7 +335,7 @@ void GPrimitive::Load(IArchive& ar)
 		// mesher object (new way)
 		case CID_OBJ_FEMESHER:
 			{
-				if (ar.OpenChunk() != IO_OK) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
+				if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
 				else
 				{
 					int ntype = ar.GetChunkID();
@@ -350,7 +350,7 @@ void GPrimitive::Load(IArchive& ar)
 					GetMesher()->Load(ar);
 				}
 				ar.CloseChunk();
-				if (ar.OpenChunk() != IO_END) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
+				if (ar.OpenChunk() != IArchive::IO_END) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
 			}
 			break;
 		// the mesh object

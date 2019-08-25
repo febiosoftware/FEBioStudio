@@ -74,7 +74,7 @@ void FEElementData::Save(OArchive& ar)
 void FEElementData::Load(IArchive& ar)
 {
 	const int NE = GetMesh()->Elements();
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		if (nid == CID_MESH_DATA_NAME)

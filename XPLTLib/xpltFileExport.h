@@ -1,5 +1,5 @@
 #pragma once
-#include "PltArchive.h"
+#include "xpltArchive.h"
 
 namespace Post {
 //-----------------------------------------------------------------------------
@@ -13,7 +13,7 @@ class FEMeshData;
 
 //-----------------------------------------------------------------------------
 // Class for writing FEBio XPLT files.
-class FEBioPlotExport
+class xpltFileExport
 {
 protected:
 	// file version
@@ -117,7 +117,7 @@ protected:
 	enum { STR_SIZE = 64 };
 
 public:
-	FEBioPlotExport();
+	xpltFileExport();
 
 	// Save the model to file. 
 	bool Save(FEModel& fem, const char* szfile);
@@ -154,7 +154,7 @@ protected:
 	bool error(const char* sz);
 
 private:
-	PltArchive	m_ar;
+	xpltArchive	m_ar;
 	int			m_nodeData;
 	int			m_elemData;
 	int			m_faceData;

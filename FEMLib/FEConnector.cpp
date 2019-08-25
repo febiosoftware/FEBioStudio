@@ -54,7 +54,7 @@ FEItemListBuilder* FEConnector::LoadList(IArchive& ar)
 {
     FEItemListBuilder* pitem = 0;
     
-    if (ar.OpenChunk() != IO_OK) throw ReadError("error in FEConnector::LoadList");
+    if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FEConnector::LoadList");
     unsigned int ntype = ar.GetChunkID();
     switch (ntype)
     {
@@ -75,7 +75,7 @@ FEItemListBuilder* FEConnector::LoadList(IArchive& ar)
     ar.CloseChunk();
     
     int nret = ar.OpenChunk();
-    if (nret != IO_END) throw ReadError("error in FEInterface::LoadList");
+    if (nret != IArchive::IO_END) throw ReadError("error in FEInterface::LoadList");
     
     // set the parent mesh for FEGroup's
     FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
@@ -108,7 +108,7 @@ void FEConnector::Save(OArchive& ar)
 void FEConnector::Load(IArchive& ar)
 {
     TRACE("FEConnector::Load");
-    while (IO_OK == ar.OpenChunk())
+    while (IArchive::IO_OK == ar.OpenChunk())
     {
         switch (ar.GetChunkID())
         {

@@ -419,7 +419,7 @@ void FEMaterial::Load(IArchive &ar)
 	TRACE("FEMaterial::Load");
 
 	char szname[256];
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -429,7 +429,7 @@ void FEMaterial::Load(IArchive &ar)
         case CID_MAT_PROPERTY:
 			{
 				FEMaterialProperty* prop = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = (int) ar.GetChunkID();
 					if (nid == CID_MAT_PROPERTY_NAME) 
@@ -442,7 +442,7 @@ void FEMaterial::Load(IArchive &ar)
 					else if (nid == CID_MAT_PROPERTY_MAT)
 					{
 						int n = 0;
-						while (IO_OK == ar.OpenChunk())
+						while (IArchive::IO_OK == ar.OpenChunk())
 						{
 							int nid = ar.GetChunkID();
 

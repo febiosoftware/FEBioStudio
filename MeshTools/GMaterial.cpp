@@ -98,7 +98,7 @@ void GMaterial::Load(IArchive &ar)
 	TRACE("GMaterial::Load");
 
 	assert(m_pm);
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

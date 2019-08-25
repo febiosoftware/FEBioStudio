@@ -35,7 +35,7 @@ void FEMesher::Load(IArchive& ar)
 {
 	TRACE("FEMesher::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		if (nid == PARAMS) ParamContainer::Load(ar);

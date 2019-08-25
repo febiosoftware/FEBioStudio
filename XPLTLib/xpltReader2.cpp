@@ -1,13 +1,13 @@
 #include "xpltReader2.h"
-#include "PostLib/FENodeFaceTable.h"
-#include "PostLib/FEDataManager.h"
-#include "PostLib/FEMeshData_T.h"
-#include "PostLib/FEState.h"
-#include "PostLib/FEMesh.h"
-#include "PostLib/FEMeshData_T.h"
+#include <PostLib/FENodeFaceTable.h>
+#include <PostLib/FEDataManager.h>
+#include <PostLib/FEMeshData_T.h>
+#include <PostLib/FEState.h>
+#include <PostLib/FEMesh.h>
+#include <PostLib/FEMeshData_T.h>
 using namespace Post;
 
-template <class Type> void ReadFaceData_REGION(IArchive& ar, FEMeshBase& m, XpltReader2::Surface &s, FEMeshData &data)
+template <class Type> void ReadFaceData_REGION(xpltArchive& ar, FEMeshBase& m, XpltReader2::Surface &s, FEMeshData &data)
 {
 	int NF = s.nfaces;
 	vector<int> face(NF);
@@ -19,7 +19,7 @@ template <class Type> void ReadFaceData_REGION(IArchive& ar, FEMeshBase& m, Xplt
 	df.add(face, a);
 }
 
-template <class Type> void ReadElemData_REGION(IArchive& ar, XpltReader2::Domain& dom, FEMeshData& s, int ntype)
+template <class Type> void ReadElemData_REGION(xpltArchive& ar, XpltReader2::Domain& dom, FEMeshData& s, int ntype)
 {
 	int NE = dom.ne;
 	vector<int> elem(NE);
@@ -126,14 +126,14 @@ bool XpltReader2::Load(FEModel& fem)
 
 	// Clear the end-flag of the root section
 	m_ar.CloseChunk();
-	if (m_ar.OpenChunk() != IO_END) return false;
+	if (m_ar.OpenChunk() != xpltArchive::IO_END) return false;
 
 	// At this point we'll assume we can read the mesh in, so clear the model
 	// clear the state data
 	fem.ClearStates();
 
 	// read the first Mesh section
-	if (m_ar.OpenChunk() == IO_OK)
+	if (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		if (m_ar.GetChunkID() != PLT_MESH) return errf("Error while reading mesh section");
 		if (ReadMesh(fem) == false) return false;
@@ -142,7 +142,7 @@ bool XpltReader2::Load(FEModel& fem)
 	else return errf("Error while reading mesh section");
 
 	// Clear the end-flag of the mesh section
-	if (m_ar.OpenChunk() != IO_END) return false;
+	if (m_ar.OpenChunk() != xpltArchive::IO_END) return false;
 
 	// read the state sections (these could be compressed)
 	const xpltFileReader::HEADER& hdr = m_xplt->GetHeader();
@@ -152,7 +152,7 @@ bool XpltReader2::Load(FEModel& fem)
 	try{
 		while (true)
 		{
-			if (m_ar.OpenChunk() != IO_OK) break;
+			if (m_ar.OpenChunk() != xpltArchive::IO_OK) break;
 
 			if (m_ar.GetChunkID() == PLT_STATE)
 			{
@@ -182,7 +182,7 @@ bool XpltReader2::Load(FEModel& fem)
 			m_ar.CloseChunk();
 		
 			// clear end-flag
-			if (m_ar.OpenChunk() != IO_END)
+			if (m_ar.OpenChunk() != xpltArchive::IO_END)
 			{
 
 				break;
@@ -205,7 +205,7 @@ bool XpltReader2::Load(FEModel& fem)
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadRootSection(FEModel& fem)
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		switch (nid)
@@ -223,7 +223,7 @@ bool XpltReader2::ReadRootSection(FEModel& fem)
 bool XpltReader2::ReadDictItem(DICT_ITEM& it)
 {
 	char szname[64] = {0};
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		switch(nid)
@@ -257,7 +257,7 @@ bool XpltReader2::ReadDictItem(DICT_ITEM& it)
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadDictionary(FEModel& fem)
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		switch (nid)
@@ -511,7 +511,7 @@ bool XpltReader2::ReadDictionary(FEModel& fem)
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadGlobalDicItems()
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		if (nid == PLT_DIC_ITEM)
@@ -533,7 +533,7 @@ bool XpltReader2::ReadGlobalDicItems()
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadMaterialDicItems()
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		if (nid == PLT_DIC_ITEM)
@@ -555,7 +555,7 @@ bool XpltReader2::ReadMaterialDicItems()
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadNodeDicItems()
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		if (nid == PLT_DIC_ITEM)
@@ -578,7 +578,7 @@ bool XpltReader2::ReadNodeDicItems()
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadElemDicItems()
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		if (nid == PLT_DIC_ITEM)
@@ -605,7 +605,7 @@ bool XpltReader2::ReadElemDicItems()
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadFaceDicItems()
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		if (nid == PLT_DIC_ITEM)
@@ -627,14 +627,14 @@ bool XpltReader2::ReadFaceDicItems()
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadPartsSection(FEModel& fem)
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		if (nid == PLT_PART)
 		{
 			MATERIAL m;
 			char sz[DI_NAME_SIZE] = {0};
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				switch (m_ar.GetChunkID())
 				{
@@ -679,7 +679,7 @@ bool XpltReader2::ReadMesh(FEModel &fem)
 	m_xmesh.Clear();
 
 	// read the mesh in
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		switch (m_ar.GetChunkID())
 		{
@@ -707,13 +707,13 @@ bool XpltReader2::ReadNodeSection(FEModel &fem)
 	int nodes = 0;
 	int dim = 0;
 	char szname[DI_NAME_SIZE] = {0};
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		switch(m_ar.GetChunkID())
 		{
 		case PLT_NODE_HEADER:
 			{
-				while (m_ar.OpenChunk() == IO_OK)
+				while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 				{
 					int nid = m_ar.GetChunkID();
 					if      (nid == PLT_NODE_SIZE) m_ar.read(nodes); 
@@ -754,18 +754,18 @@ bool XpltReader2::ReadNodeSection(FEModel &fem)
 bool XpltReader2::ReadDomainSection(FEModel &fem)
 {
 	int nd = 0, index = 0;
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		if (m_ar.GetChunkID() == PLT_DOMAIN)
 		{
 			Domain D;
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				int nid = m_ar.GetChunkID();
 				if (nid == PLT_DOMAIN_HDR)
 				{
 					// read the domain header
-					while (m_ar.OpenChunk() == IO_OK)
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						switch (m_ar.GetChunkID())
 						{
@@ -811,7 +811,7 @@ bool XpltReader2::ReadDomainSection(FEModel &fem)
 					}
 					assert((ne > 0)&&(ne <= FEElement::MAX_NODES));
 					int n[FEElement::MAX_NODES + 1];
-					while (m_ar.OpenChunk() == IO_OK)
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						if (m_ar.GetChunkID() == PLT_ELEMENT)
 						{
@@ -855,18 +855,18 @@ bool XpltReader2::ReadDomainSection(FEModel &fem)
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadSurfaceSection(FEModel &fem)
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		if (m_ar.GetChunkID() == PLT_SURFACE)
 		{
 			Surface S;
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				int nid = m_ar.GetChunkID();
 				if (nid == PLT_SURFACE_HDR)
 				{
 					// read the surface header
-					while (m_ar.OpenChunk() == IO_OK)
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						switch(m_ar.GetChunkID())
 						{
@@ -886,7 +886,7 @@ bool XpltReader2::ReadSurfaceSection(FEModel &fem)
 					assert(S.nfaces > 0);
 					S.face.reserve(S.nfaces);
 					int n[12];
-					while (m_ar.OpenChunk() == IO_OK)
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						if (m_ar.GetChunkID() == PLT_FACE)
 						{
@@ -923,18 +923,18 @@ bool XpltReader2::ReadSurfaceSection(FEModel &fem)
 //-----------------------------------------------------------------------------
 bool XpltReader2::ReadNodeSetSection(FEModel& fem)
 {
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		if (m_ar.GetChunkID() == PLT_NODESET)
 		{
 			NodeSet S;
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				int nid = m_ar.GetChunkID();
 				if (nid == PLT_NODESET_HDR)
 				{
 					// read the nodeset header
-					while (m_ar.OpenChunk() == IO_OK)
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						switch(m_ar.GetChunkID())
 						{
@@ -1241,12 +1241,12 @@ bool XpltReader2::ReadStateSection(FEModel& fem)
 		return errf("Error allocating memory for state data");
 	}
 
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		if (nid == PLT_STATE_HEADER)
 		{
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				if (m_ar.GetChunkID() == PLT_STATE_HDR_TIME) m_ar.read(ps->m_time);
 				m_ar.CloseChunk();
@@ -1254,7 +1254,7 @@ bool XpltReader2::ReadStateSection(FEModel& fem)
 		}
 		else if (nid == PLT_STATE_DATA)
 		{
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				switch (m_ar.GetChunkID())
 				{
@@ -1271,7 +1271,7 @@ bool XpltReader2::ReadStateSection(FEModel& fem)
 		}
 		else if (nid == PLT_MESH_STATE)
 		{
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				if (m_ar.GetChunkID() == PLT_ELEMENT_STATE)
 				{
@@ -1335,12 +1335,12 @@ bool XpltReader2::ReadNodeData(FEModel& fem, FEState* pstate)
 {
 	FEDataManager& dm = *fem.GetDataManager();
 	FEMeshBase& mesh = *GetCurrentMesh();
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		if (m_ar.GetChunkID() == PLT_STATE_VARIABLE)
 		{
 			int nv = -1;
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				int nid = m_ar.GetChunkID();
 				if (nid == PLT_STATE_VAR_ID) m_ar.read(nv);
@@ -1354,7 +1354,7 @@ bool XpltReader2::ReadNodeData(FEModel& fem, FEState* pstate)
 					int nfield = dm.FindDataField(it.szname);
 					int ndata = 0;
 					int NN = mesh.Nodes();
-					while (m_ar.OpenChunk() == IO_OK)
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						int ns = m_ar.GetChunkID();
 						assert(ns == 0);
@@ -1435,12 +1435,12 @@ bool XpltReader2::ReadElemData(FEModel &fem, FEState* pstate)
 {
 	FEMeshBase& mesh = *GetCurrentMesh();
 	FEDataManager& dm = *fem.GetDataManager();
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		if (m_ar.GetChunkID() == PLT_STATE_VARIABLE)
 		{
 			int nv = -1;
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				int nid = m_ar.GetChunkID();
 				if (nid == PLT_STATE_VAR_ID) m_ar.read(nv);
@@ -1450,7 +1450,7 @@ bool XpltReader2::ReadElemData(FEModel &fem, FEState* pstate)
 					assert((nv>=0)&&(nv<(int)m_dic.m_Elem.size()));
 					if ((nv < 0) || (nv >= (int) m_dic.m_Elem.size())) return errf("Failed reading all state data");
 					DICT_ITEM it = m_dic.m_Elem[nv];
-					while (m_ar.OpenChunk() == IO_OK)
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						int nd = m_ar.GetChunkID() - 1;
 						assert((nd >= 0)&&(nd < m_xmesh.domains()));
@@ -1812,12 +1812,12 @@ bool XpltReader2::ReadFaceData(FEModel& fem, FEState* pstate)
 {
 	FEMeshBase& mesh = *GetCurrentMesh();
 	FEDataManager& dm = *fem.GetDataManager();
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		if (m_ar.GetChunkID() == PLT_STATE_VARIABLE)
 		{
 			int nv = -1;
-			while (m_ar.OpenChunk() == IO_OK)
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				int nid = m_ar.GetChunkID();
 				if (nid == PLT_STATE_VAR_ID) m_ar.read(nv);
@@ -1827,7 +1827,7 @@ bool XpltReader2::ReadFaceData(FEModel& fem, FEState* pstate)
 					assert((nv>=0)&&(nv<(int)m_dic.m_Face.size()));
 					if ((nv < 0) || (nv >= (int)m_dic.m_Face.size())) return errf("Failed reading all state data");
 					DICT_ITEM it = m_dic.m_Face[nv];
-					while (m_ar.OpenChunk() == IO_OK)
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						int ns = m_ar.GetChunkID() - 1;
 						assert((ns >= 0)&&(ns < m_xmesh.surfaces()));

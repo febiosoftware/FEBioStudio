@@ -79,7 +79,7 @@ void FSObject::Save(OArchive& ar)
 void FSObject::Load(IArchive& ar)
 {
 	TRACE("FSObject::Load");
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

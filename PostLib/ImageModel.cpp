@@ -206,7 +206,7 @@ void CImageModel::Save(OArchive& ar)
 void CImageModel::Load(IArchive& ar)
 {
 	delete m_img; m_img = nullptr;
-	while (ar.OpenChunk() == IO_OK)
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 

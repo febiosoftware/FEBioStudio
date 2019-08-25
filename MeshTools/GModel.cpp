@@ -1029,7 +1029,7 @@ void GModel::Load(IArchive &ar)
 {
 	TRACE("GModel::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 
@@ -1044,7 +1044,7 @@ void GModel::Load(IArchive &ar)
 		break;
 		case CID_OBJ_GOBJECTS:
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int ntype = ar.GetChunkID();
 
@@ -1092,7 +1092,7 @@ void GModel::Load(IArchive &ar)
 			break;
 		case CID_DISCRETE_OBJECT:
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int ntype = ar.GetChunkID();
 

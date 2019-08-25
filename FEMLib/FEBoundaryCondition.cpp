@@ -67,7 +67,7 @@ void FEBoundaryCondition::Load(IArchive &ar)
 {
 	TRACE("FEBoundaryCondition::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

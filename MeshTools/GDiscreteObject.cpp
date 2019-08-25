@@ -47,7 +47,7 @@ void GLinearSpring::Load(IArchive& ar)
 	char sz[256] = {0};
 	double E;
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 
@@ -106,7 +106,7 @@ void GGeneralSpring::Load(IArchive& ar)
 
 	char sz[256] = {0};
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 
@@ -288,13 +288,13 @@ void GDiscreteElementSet::Load(IArchive& ar)
 {
 	TRACE("GSpringSet::Load");
 	
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		if (nid == 0)
 		{
 			int n0, n1;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
 				if      (nid == 0) ar.read(n0);
@@ -344,7 +344,7 @@ void GLinearSpringSet::Load(IArchive& ar)
 
 	string s;
 	GLColor col = GetColor();
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -398,7 +398,7 @@ void GNonlinearSpringSet::Load(IArchive& ar)
 
 	string s;
 	GLColor col = GetColor();
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

@@ -138,7 +138,7 @@ void CFEBioJob::Save(OArchive& ar)
 void CFEBioJob::Load(IArchive& ar)
 {
 	// TODO: get relative file name
-	while (ar.OpenChunk() == IO_OK)
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

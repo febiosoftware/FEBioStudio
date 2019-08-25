@@ -42,7 +42,7 @@ void FEItemListBuilder::Load(IArchive &ar)
 	m_Item.clear();
 
 	int N, n;
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

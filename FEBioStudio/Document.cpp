@@ -725,15 +725,15 @@ void CDocument::Load(IArchive& ar)
 
 	m_bValid = false;
 
-	IOResult nret = IO_OK;
-	while (ar.OpenChunk() == IO_OK)
+	IArchive::IOResult nret = IArchive::IO_OK;
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 
 		if (nid == CID_VERSION)
 		{
 			nret = ar.read(version);
-			if (nret != IO_OK) throw ReadError("Error occurred when parsing CID_VERSION (CDocument::Load)");
+			if (nret != IArchive::IO_OK) throw ReadError("Error occurred when parsing CID_VERSION (CDocument::Load)");
 			if (version < MIN_PRV_VERSION)
 			{
 				throw InvalidVersion();
@@ -753,7 +753,7 @@ void CDocument::Load(IArchive& ar)
 		}
 		else if (nid == CID_MODELINFO)
 		{
-			while (ar.OpenChunk() == IO_OK)
+			while (ar.OpenChunk() == IArchive::IO_OK)
 			{
 				int nid = ar.GetChunkID();
 				if (nid == CID_MODELINFO_COMMENT)
@@ -765,7 +765,7 @@ void CDocument::Load(IArchive& ar)
 		}
 		else if (nid == CID_VIEW_SETTINGS)
 		{
-			while (ar.OpenChunk() == IO_OK)
+			while (ar.OpenChunk() == IArchive::IO_OK)
 			{
 				int nid = ar.GetChunkID();
 				switch (nid)
@@ -805,7 +805,7 @@ void CDocument::Load(IArchive& ar)
                 case CID_VIEW_MULTIVIEW_CONV  : nret = ar.read(m_view.m_nconv); break;
 				}
 				ar.CloseChunk();
-				if (nret != IO_OK) throw ReadError("Error occurred when parsing CID_VIEW_SETTINGS (CDocument::Load)");
+				if (nret != IArchive::IO_OK) throw ReadError("Error occurred when parsing CID_VIEW_SETTINGS (CDocument::Load)");
 			}
 		}
 		else if (nid == CID_RESOURCE_SECTION)
@@ -843,7 +843,7 @@ void CDocument::SaveResources(OArchive& ar)
 
 void CDocument::LoadResources(IArchive& ar)
 {
-	while (ar.OpenChunk() == IO_OK)
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 
@@ -1402,8 +1402,8 @@ bool CDocument::ImportMaterials(const std::string& fileName)
 	if (ar.Open(fileName.c_str(), 0x0050564D) == false) return false;
 
 	FEModel& fem = *GetFEModel();
-	IOResult nret = IO_OK;
-	while (ar.OpenChunk() == IO_OK)
+	IArchive::IOResult nret = IArchive::IO_OK;
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 
@@ -1411,7 +1411,7 @@ bool CDocument::ImportMaterials(const std::string& fileName)
 		{
 			unsigned int version = 0;
 			nret = ar.read(version);
-			if (nret != IO_OK) return false;
+			if (nret != IArchive::IO_OK) return false;
 
 			if (version != PVM_VERSION_NUMBER) return false;
 
@@ -1420,7 +1420,7 @@ bool CDocument::ImportMaterials(const std::string& fileName)
 		else if (nid == PVM_MATERIAL)
 		{
 			GMaterial* gmat = 0;
-			while (ar.OpenChunk() == IO_OK)
+			while (ar.OpenChunk() == IArchive::IO_OK)
 			{
 				int nid = ar.GetChunkID();
 

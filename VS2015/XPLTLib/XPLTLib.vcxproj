@@ -143,12 +143,16 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\XPLTLib\xpltFileExport.h" />
+    <ClInclude Include="..\..\XPLTLib\xpltArchive.h" />
     <ClInclude Include="..\..\XPLTLib\stdafx.h" />
     <ClInclude Include="..\..\XPLTLib\xpltFileReader.h" />
     <ClInclude Include="..\..\XPLTLib\xpltReader.h" />
     <ClInclude Include="..\..\XPLTLib\xpltReader2.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\XPLTLib\xpltFileExport.cpp" />
+    <ClCompile Include="..\..\XPLTLib\xpltArchive.cpp" />
     <ClCompile Include="..\..\XPLTLib\xpltFileReader.cpp" />
     <ClCompile Include="..\..\XPLTLib\xpltReader.cpp" />
     <ClCompile Include="..\..\XPLTLib\xpltReader2.cpp" />

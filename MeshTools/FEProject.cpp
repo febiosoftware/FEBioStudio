@@ -38,14 +38,14 @@ void CLogDataSettings::Save(OArchive& ar)
 
 void CLogDataSettings::Load(IArchive& ar)
 {
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		if (ar.GetChunkID() == CID_PRJ_LOGDATA_ITEM)
 		{
 			string tmp;
 			int ntype;
 			int mid = -1, gid = -1;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				switch (ar.GetChunkID())
 				{
@@ -162,7 +162,7 @@ void FEProject::Load(IArchive &ar)
 {
 	TRACE("FEProject::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

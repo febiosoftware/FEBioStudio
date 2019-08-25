@@ -2,7 +2,7 @@
 #include "xpltFileReader.h"
 #include "xpltReader.h"
 #include "xpltReader2.h"
-#include "PostLib/FEModel.h"
+#include <PostLib/FEModel.h>
 
 xpltParser::xpltParser(xpltFileReader* xplt) : m_xplt(xplt), m_ar(xplt->GetArchive())
 {
@@ -40,16 +40,17 @@ bool xpltFileReader::Load(FEModel& fem, const char* szfile)
 	if (Open(szfile, "rb") == false) return errf("Failed opening file.");
 
 	// attach the file to the archive
-	if (m_ar.Open(m_fp) == false) return errf("This is not a valid XPLT file.");
+	IOFileStream fs(m_fp);
+	if (m_ar.Open(&fs) == false) return errf("This is not a valid XPLT file.");
 
 	// open the root chunk (no compression for this sectio)
 	m_ar.SetCompression(0);
-	if (m_ar.OpenChunk() != IO_OK) return errf("Error opening root section");
+	if (m_ar.OpenChunk() != xpltArchive::IO_OK) return errf("Error opening root section");
 	{
 		if (m_ar.GetChunkID() != PLT_ROOT) return errf("Error opening root section");
 
 		// read header section
-		if (m_ar.OpenChunk() != IO_OK) return errf("Error opening header section");
+		if (m_ar.OpenChunk() != xpltArchive::IO_OK) return errf("Error opening header section");
 		{
 			if (m_ar.GetChunkID() != PLT_HEADER) return errf("Error opening header section");
 			if (ReadHeader() == false) return false;
@@ -102,7 +103,7 @@ bool xpltFileReader::ReadHeader()
 	m_hdr.ncompression = 0;	// default for version < 0.3
 	m_hdr.author[0] = 0;
 	m_hdr.software[0] = 0;
-	while (m_ar.OpenChunk() == IO_OK)
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
 		switch (nid)

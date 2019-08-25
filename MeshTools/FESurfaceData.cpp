@@ -66,7 +66,7 @@ void FESurfaceData::Save(OArchive& ar)
 
 void FESurfaceData::Load(IArchive& ar)
 {
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		if (nid == CID_MESH_DATA_NAME)

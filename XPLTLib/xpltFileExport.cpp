@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "FEBioPlotExport.h"
-#include "FEModel.h"
-#include "FEMeshData_T.h"
+#include "xpltFileExport.h"
+#include <PostLib/FEModel.h>
+#include <PostLib/FEMeshData_T.h>
 using namespace Post;
 
 //=============================================================================
@@ -26,22 +26,22 @@ public:
 };
 
 //=============================================================================
-// FEBioPlotExport
+// xpltFileExport
 //=============================================================================
 
-FEBioPlotExport::FEBioPlotExport()
+xpltFileExport::xpltFileExport()
 {
 	m_szerr[0] = 0;
 	m_ncompress = 0;
 }
 
-bool FEBioPlotExport::error(const char* sz)
+bool xpltFileExport::error(const char* sz)
 {
 	strcpy(m_szerr, sz);
 	return false;
 }
 
-bool FEBioPlotExport::Save(FEModel& fem, const char* szfile)
+bool xpltFileExport::Save(FEModel& fem, const char* szfile)
 {
 	m_szerr[0] = 0;
 
@@ -77,7 +77,7 @@ bool FEBioPlotExport::Save(FEModel& fem, const char* szfile)
 
 //----------------------------------------------------------------------------
 // Write the root section of the file
-bool FEBioPlotExport::WriteRoot(FEModel& fem)
+bool xpltFileExport::WriteRoot(FEModel& fem)
 {
 	m_ar.BeginChunk(PLT_ROOT);
 	{
@@ -115,7 +115,7 @@ bool FEBioPlotExport::WriteRoot(FEModel& fem)
 }
 
 //----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteHeader(FEModel& fem)
+bool xpltFileExport::WriteHeader(FEModel& fem)
 {
 	// setup the header
 	unsigned int nversion = PLT_VERSION;
@@ -137,7 +137,7 @@ bool FEBioPlotExport::WriteHeader(FEModel& fem)
 }
 
 //----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteDictionary(FEModel& fem)
+bool xpltFileExport::WriteDictionary(FEModel& fem)
 {
 	// get the data manager
 	FEDataManager& DM = *fem.GetDataManager();
@@ -221,7 +221,7 @@ bool FEBioPlotExport::WriteDictionary(FEModel& fem)
 }
 
 //----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteDataField(FEDataField& data)
+bool xpltFileExport::WriteDataField(FEDataField& data)
 {
 	// get the data type
 	unsigned int ntype = 0;
@@ -266,7 +266,7 @@ bool FEBioPlotExport::WriteDataField(FEDataField& data)
 }
 
 //----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteMaterials(FEModel& fem)
+bool xpltFileExport::WriteMaterials(FEModel& fem)
 {
 	int NMAT = fem.Materials();
 	for (int i=0; i<NMAT; ++i)
@@ -293,7 +293,7 @@ bool FEBioPlotExport::WriteMaterials(FEModel& fem)
 }
 
 //----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteGeometry(FEModel& fem)
+bool xpltFileExport::WriteGeometry(FEModel& fem)
 {
 	// get the mesh
 	FEMeshBase& m = *fem.GetFEMesh(0);
@@ -326,7 +326,7 @@ bool FEBioPlotExport::WriteGeometry(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteNodeSection(FEMeshBase& m)
+bool xpltFileExport::WriteNodeSection(FEMeshBase& m)
 {
 	// write the reference coordinates
 	int NN = m.Nodes();
@@ -345,7 +345,7 @@ bool FEBioPlotExport::WriteNodeSection(FEMeshBase& m)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::WritePartSection(FEMeshBase& mesh)
+bool xpltFileExport::WritePartSection(FEMeshBase& mesh)
 {
 	// make sure there are parts
 	int NP = mesh.Parts();
@@ -365,7 +365,7 @@ bool FEBioPlotExport::WritePartSection(FEMeshBase& mesh)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::WritePart(FEPart& part)
+bool xpltFileExport::WritePart(FEPart& part)
 {
 	// number of elements
 	int NE = part.Size();
@@ -429,7 +429,7 @@ bool FEBioPlotExport::WritePart(FEPart& part)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteSurfaceSection(FEMeshBase& mesh)
+bool xpltFileExport::WriteSurfaceSection(FEMeshBase& mesh)
 {
 	int NS = mesh.Surfaces();
 	for (int n=0; n<NS; ++n)
@@ -470,7 +470,7 @@ bool FEBioPlotExport::WriteSurfaceSection(FEMeshBase& mesh)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteState(FEModel& fem, FEState& state)
+bool xpltFileExport::WriteState(FEModel& fem, FEState& state)
 {
 	m_ar.BeginChunk(PLT_STATE);
 	{
@@ -522,7 +522,7 @@ bool FEBioPlotExport::WriteState(FEModel& fem, FEState& state)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteNodeData(FEModel& fem, FEState& state)
+bool xpltFileExport::WriteNodeData(FEModel& fem, FEState& state)
 {
 	FEDataManager& DM = *fem.GetDataManager();
 	FEDataFieldPtr pd = DM.FirstDataField();
@@ -560,7 +560,7 @@ bool FEBioPlotExport::WriteNodeData(FEModel& fem, FEState& state)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteElemData(FEModel& fem, FEState& state)
+bool xpltFileExport::WriteElemData(FEModel& fem, FEState& state)
 {
 	FEDataManager& DM = *fem.GetDataManager();
 	FEDataFieldPtr pd = DM.FirstDataField();
@@ -601,7 +601,7 @@ bool FEBioPlotExport::WriteElemData(FEModel& fem, FEState& state)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::WriteFaceData(FEModel& fem, FEState& state)
+bool xpltFileExport::WriteFaceData(FEModel& fem, FEState& state)
 {
 	FEDataManager& DM = *fem.GetDataManager();
 	FEDataFieldPtr pd = DM.FirstDataField();
@@ -668,7 +668,7 @@ inline void write_data(vector<float>& val, int index, const mat3fd& v)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::FillNodeDataArray(vector<float>& val, FEMeshData& meshData)
+bool xpltFileExport::FillNodeDataArray(vector<float>& val, FEMeshData& meshData)
 {
 	FEModel& fem = *meshData.GetFEModel();
 	FEMeshBase& mesh = *fem.GetFEMesh(0);
@@ -706,7 +706,7 @@ bool FEBioPlotExport::FillNodeDataArray(vector<float>& val, FEMeshData& meshData
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData, FEPart& part)
+bool xpltFileExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData, FEPart& part)
 {
 	FEModel& fem = *meshData.GetFEModel();
 	FEMeshBase& mesh = *fem.GetFEMesh(0);
@@ -944,7 +944,7 @@ bool FEBioPlotExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioPlotExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData, FESurface& surf)
+bool xpltFileExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData, FESurface& surf)
 {
 	FEModel& fem = *meshData.GetFEModel();
 	FEMeshBase& mesh = *fem.GetFEMesh(0);

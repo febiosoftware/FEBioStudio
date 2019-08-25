@@ -1628,7 +1628,7 @@ void FESurfaceMesh::Load(IArchive& ar)
 
 	// read the header
 	int nodes, faces, edges;
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -1645,7 +1645,7 @@ void FESurfaceMesh::Load(IArchive& ar)
 	Create(nodes, edges, faces);
 
 	// read the rest of the mesh data
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -1654,13 +1654,13 @@ void FESurfaceMesh::Load(IArchive& ar)
 		{
 			int n = 0;
 			FENode* pn = NodePtr();
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
 				if (nid == CID_MESH_NODE)
 				{
 					assert(n < nodes);
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid = ar.GetChunkID();
 						switch (nid)
@@ -1681,12 +1681,12 @@ void FESurfaceMesh::Load(IArchive& ar)
 		{
 			int n = 0;
 			FEFace* pf = FacePtr();
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
 				if (nid != CID_MESH_FACE) throw ReadError("error parsing CID_MESH_FACE_SECTION");
 
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					int ntype;
@@ -1730,13 +1730,13 @@ void FESurfaceMesh::Load(IArchive& ar)
 		{
 			int n = 0;
 			FEEdge* pe = EdgePtr();
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
 				if (nid != CID_MESH_EDGE) throw ReadError("error parsing CID_MESH_EDGE_SECTION");
 
 				int ntype;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					switch (nid)

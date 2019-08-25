@@ -295,7 +295,7 @@ void FELoadCurve::Load(IArchive& ar)
 
 	m_Pt.clear();
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -319,7 +319,7 @@ void FELoadCurve::Load(IArchive& ar)
 			{
 				assert(n >= 0);
 				LOADPOINT& p = m_Pt[n];
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					switch (nid)

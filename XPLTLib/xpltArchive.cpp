@@ -1,82 +1,27 @@
-#include "Archive.h"
+#include "xpltArchive.h"
 #include <assert.h>
-using namespace Post;
+#include <FSCore/Archive.h>
 
 #ifdef WIN32
-    #define ftell64(a)     _ftelli64(a)
-    #define fseek64(a,b,c) _fseeki64(a,b,c)
+#define ftell64(a)     _ftelli64(a)
+#define fseek64(a,b,c) _fseeki64(a,b,c)
 #endif
 
 #ifdef LINUX // same for Linux and Mac OS X
-    #define ftell64(a)     ftello(a)
-    #define fseek64(a,b,c) fseeko(a,b,c)
+#define ftell64(a)     ftello(a)
+#define fseek64(a,b,c) fseeko(a,b,c)
 #endif
 
 #ifdef __APPLE__ // same for Linux and Mac OS X
-    #define ftell64(a)     ftello(a)
-    #define fseek64(a,b,c) fseeko(a,b,c)
+#define ftell64(a)     ftello(a)
+#define fseek64(a,b,c) fseeko(a,b,c)
 #endif
 
-//-----------------------------------------------------------------------------
-void Post::mread(void* pdest, size_t Size, size_t Cnt, void** psrc)
-{
-	size_t nsize = Size*Cnt;
-	memcpy(pdest, *psrc, nsize);
-
-	char*& pc = (char*&) (*psrc);
-	pc += nsize;
-}
-
-//=============================================================================
-MemBuffer::MemBuffer()
-{
-	m_pbuf = 0;
-	m_nsize = 0;
-	m_nalloc = 0;
-}
-
-MemBuffer::~MemBuffer()
-{
-	delete [] m_pbuf;
-	m_nsize = 0;
-	m_nalloc = 0;
-}
-
-
-void MemBuffer::append(void* pd, int n)
-{
-	// make sure we need to do anything
-	if ((n <= 0)||(pd==0)) return;
-
-	if (m_pbuf == 0)
-	{
-		m_pbuf = new char[n];
-		m_nalloc = n;
-	}
-	else if (m_nsize + n > m_nalloc)
-	{
-		m_nalloc = 4*((3*m_nalloc/2)/4);
-		if (m_nalloc < 4) m_nalloc = 4;
-		if (m_nalloc < m_nsize + n) m_nalloc = m_nsize + n;
-		char* ptmp = new char[m_nalloc];
-		if (m_nsize > 0) memcpy(ptmp, m_pbuf, m_nsize);
-		delete [] m_pbuf;
-		m_pbuf = ptmp;
-	}
-
-	// copy the data
-	memcpy(m_pbuf + m_nsize, pd, n);
-
-	// increase size
-	m_nsize += n;
-}
-
-
 //////////////////////////////////////////////////////////////////////
-// IArchive
+// xpltArchive
 //////////////////////////////////////////////////////////////////////
 
-IArchive::IArchive()
+xpltArchive::xpltArchive()
 {
 	m_fp = 0;
 	m_bend = true;
@@ -86,28 +31,37 @@ IArchive::IArchive()
 	m_pdata = 0;
 	m_bufsize = 0;
 	m_ncompress = 0;
+	m_pRoot = 0;
+	m_pChunk = 0;
+	m_bSaving = true;
 }
 
-IArchive::~IArchive()
+xpltArchive::~xpltArchive()
 {
 	Close();
 }
 
-void IArchive::Close()
+void xpltArchive::Close()
 {
-	// clear the stack
-	while (m_Chunk.empty() == false)
+	if (m_bSaving)
 	{
-		// pop the last chunk
-		CHUNK* pc = m_Chunk.top(); m_Chunk.pop();
-		delete pc;
+		if (m_pRoot) Flush();
+	}
+	else {
+		// clear the stack
+		while (m_Chunk.empty() == false)
+		{
+			// pop the last chunk
+			CHUNK* pc = m_Chunk.top(); m_Chunk.pop();
+			delete pc;
+		}
 	}
 
 	// close the file pointer
 	m_fp = 0;
 
 	// delete the buffer
-	if (m_buf) delete [] m_buf;
+	if (m_buf) delete[] m_buf;
 	m_buf = 0;
 	m_pdata = 0;
 	m_bufsize = 0;
@@ -117,14 +71,75 @@ void IArchive::Close()
 	m_bswap = false;
 }
 
-bool IArchive::Open(FILE* fp)
+
+void xpltArchive::Flush()
+{
+	if (m_fp && m_pRoot)
+	{
+		m_fp->BeginStreaming();
+		m_pRoot->Write(m_fp);
+		m_fp->EndStreaming();
+	}
+	delete m_pRoot;
+	m_pRoot = 0;
+	m_pChunk = 0;
+}
+
+
+bool xpltArchive::Create(const char* szfile)
+{
+	// attempt to create the file
+	assert(m_fp == 0);
+	m_fp = new IOFileStream();
+	if (m_fp->Create(szfile) == false) return false;
+
+	// write the master tag 
+	unsigned int ntag = 0x00464542;
+	m_fp->Write(&ntag, sizeof(int), 1);
+
+	m_bSaving = true;
+
+	return true;
+}
+
+void xpltArchive::BeginChunk(unsigned int id)
+{
+	if (m_pRoot == 0)
+	{
+		m_pRoot = new OBranch(id);
+		m_pChunk = m_pRoot;
+	}
+	else
+	{
+		// create a new branch
+		OBranch* pbranch = new OBranch(id);
+
+		// attach it to the current branch
+		m_pChunk->AddChild(pbranch);
+
+		// move the current branch pointer
+		m_pChunk = pbranch;
+	}
+}
+
+void xpltArchive::EndChunk()
+{
+	if (m_pChunk != m_pRoot)
+		m_pChunk = m_pChunk->GetParent();
+	else
+	{
+		Flush();
+	}
+}
+
+bool xpltArchive::Open(IOFileStream* fp)
 {
 	// store a copy of the file pointer
 	m_fp = fp;
 
 	// read the master tag
 	unsigned int ntag;
-	if (fread(&ntag, sizeof(int), 1, m_fp) != 1) 
+	if (m_fp->read(&ntag, sizeof(int), 1) != 1)
 	{
 		Close();
 		return false;
@@ -132,7 +147,7 @@ bool IArchive::Open(FILE* fp)
 
 	// see if the file needs to be byteswapped
 	if (ntag == 0x00464542) m_bswap = false;
-	else 
+	else
 	{
 		bswap(ntag);
 		if (ntag == 0x00464542) m_bswap = true;
@@ -148,39 +163,39 @@ bool IArchive::Open(FILE* fp)
 	m_bend = false;
 
 	// initialize decompression stream
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.avail_in = 0;
-    strm.next_in = Z_NULL;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
 	strm.avail_out = 0;
 
 	return true;
 }
 
-int IArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
+int xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 {
 	const int CHUNK = 16384;
 	nsize = -1;
 
 	int ret;
-    unsigned have;
-    static unsigned char in[CHUNK];
-    static unsigned char out[CHUNK];
+	unsigned have;
+	static unsigned char in[CHUNK];
+	static unsigned char out[CHUNK];
 
-    /* allocate inflate state */
-    ret = inflateInit(&strm);
-    if (ret != Z_OK) return ret;
+	/* allocate inflate state */
+	ret = inflateInit(&strm);
+	if (ret != Z_OK) return ret;
 
 	// the uncompressed buffer
-	MemBuffer buf;
+	IOMemBuffer buf;
 
-    /* decompress until deflate stream ends or end of file */
-    do {
+	/* decompress until deflate stream ends or end of file */
+	do {
 		if (strm.avail_in == 0)
 		{
-			strm.avail_in = fread(in, 1, CHUNK, m_fp);
-			if (ferror(m_fp)) {
+			strm.avail_in = m_fp->read(in, 1, CHUNK);
+			if (ferror(m_fp->FilePtr())) {
 				(void)inflateEnd(&strm);
 				return Z_ERRNO;
 			}
@@ -188,28 +203,28 @@ int IArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 			strm.next_in = in;
 		}
 
-        /* run inflate() on input until output buffer not full */
-        do {
-            strm.avail_out = CHUNK;
-            strm.next_out = out;
-            ret = inflate(&strm, Z_NO_FLUSH);
-            assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-            switch (ret) {
-            case Z_NEED_DICT:
-                ret = Z_DATA_ERROR;     /* and fall through */
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR:
-                (void)inflateEnd(&strm);
-                return ret;
-            }
-            have = CHUNK - strm.avail_out;
+		/* run inflate() on input until output buffer not full */
+		do {
+			strm.avail_out = CHUNK;
+			strm.next_out = out;
+			ret = inflate(&strm, Z_NO_FLUSH);
+			assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+			switch (ret) {
+			case Z_NEED_DICT:
+				ret = Z_DATA_ERROR;     /* and fall through */
+			case Z_DATA_ERROR:
+			case Z_MEM_ERROR:
+				(void)inflateEnd(&strm);
+				return ret;
+			}
+			have = CHUNK - strm.avail_out;
 
-            buf.append(out, have);
+			buf.append(out, have);
 
-        } while (strm.avail_out == 0);
+		} while (strm.avail_out == 0);
 
-        /* done when inflate() says it's done */
-    } while (ret != Z_STREAM_END);
+		/* done when inflate() says it's done */
+	} while (ret != Z_STREAM_END);
 
 	char* pbuf = buf.data();
 	if (pbuf)
@@ -217,18 +232,29 @@ int IArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 		memcpy(&nid, pbuf, sizeof(int)); pbuf += sizeof(int); if (m_bswap) bswap(nid);
 		memcpy(&nsize, pbuf, sizeof(int)); pbuf += sizeof(int); if (m_bswap) bswap(nsize);
 
-		m_bufsize = buf.size() - 2*sizeof(int);
+		m_bufsize = buf.size() - 2 * sizeof(int);
 		m_buf = new char[m_bufsize];
 		memcpy(m_buf, pbuf, m_bufsize);
 		m_pdata = m_buf;
 	}
 
-    /* clean up and return */
-    (void)inflateEnd(&strm);
-    return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+	/* clean up and return */
+	(void)inflateEnd(&strm);
+	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
-int IArchive::OpenChunk()
+
+bool xpltArchive::Append(const char* szfile)
+{
+	// reopen the plot file for appending
+	assert(m_fp == 0);
+	m_fp = new IOFileStream();
+	if (m_fp->Append(szfile) == false) return false;
+	m_bSaving = true;
+	return true;
+}
+
+int xpltArchive::OpenChunk()
 {
 	// see if the end flag was set
 	// in that case we first need to clear the flag
@@ -245,12 +271,12 @@ int IArchive::OpenChunk()
 		if (m_ncompress == 0)
 		{
 			// see if we have reached the end of the file
-			if (feof(m_fp) || ferror(m_fp)) return IO_ERROR;
+			if (feof(m_fp->FilePtr()) || ferror(m_fp->FilePtr())) return IO_ERROR;
 
 			// get the master chunk id and size
-			int nret = fread(&id, sizeof(unsigned int), 1, m_fp); if (nret != 1) return IO_ERROR;
+			int nret = m_fp->read(&id, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
 			if (m_bswap) bswap(id);
-			nret = fread(&nsize, sizeof(unsigned int), 1, m_fp); if (nret != 1) return IO_ERROR;
+			nret = m_fp->read(&nsize, sizeof(unsigned int), 1); if (nret != 1) return IO_ERROR;
 			if (m_bswap) bswap(nsize);
 
 			if (nsize == 0)
@@ -265,7 +291,7 @@ int IArchive::OpenChunk()
 				m_buf = new char[m_bufsize];
 
 				// read the buffer from file
-				int nread = fread(m_buf, sizeof(char), nsize, m_fp);
+				int nread = m_fp->read(m_buf, sizeof(char), nsize);
 				if (nread != nsize) return IO_ERROR;
 
 				// set the data pointer
@@ -309,7 +335,7 @@ int IArchive::OpenChunk()
 	return IO_OK;
 }
 
-void IArchive::CloseChunk()
+void xpltArchive::CloseChunk()
 {
 	// pop the last chunk
 	CHUNK* pc = m_Chunk.top(); m_Chunk.pop();
@@ -319,7 +345,7 @@ void IArchive::CloseChunk()
 
 	// skip any remaining part in the chunk
 	// I wonder if this can really happen
-	if (noff != 0) m_pdata = (char*) m_pdata + noff;
+	if (noff != 0) m_pdata = (char*)m_pdata + noff;
 
 	// delete this chunk
 	delete pc;
@@ -331,7 +357,7 @@ void IArchive::CloseChunk()
 		m_bend = true;
 
 		// delete the buffer
-		delete [] m_buf;
+		delete[] m_buf;
 		m_buf = 0;
 		m_pdata = 0;
 		m_bufsize = 0;
@@ -344,7 +370,7 @@ void IArchive::CloseChunk()
 	}
 }
 
-unsigned int IArchive::GetChunkID()
+unsigned int xpltArchive::GetChunkID()
 {
 	CHUNK* pc = m_Chunk.top();
 	assert(pc);

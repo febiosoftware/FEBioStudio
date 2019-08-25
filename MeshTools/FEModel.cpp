@@ -697,7 +697,7 @@ void FEModel::Load(IArchive& ar)
 	Clear();
 
 	// read the model data
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -719,7 +719,7 @@ void FEModel::LoadData(IArchive& ar)
 {
 	TRACE("FEModel::LoadData");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
 		if (ntype == CID_FEM_CONSTANT)
@@ -727,7 +727,7 @@ void FEModel::LoadData(IArchive& ar)
 			char sz[256] = {0};
 			double val;
 
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int ntype = ar.GetChunkID();
 				if      (ntype == CID_FEM_CONST_NAME ) ar.read(sz);
@@ -750,7 +750,7 @@ void FEModel::LoadSoluteData(IArchive& ar)
 {
 	int n = 0;
 	m_Sol.Clear();
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
 		if (ntype == CID_FEM_SOLUTE)
@@ -758,7 +758,7 @@ void FEModel::LoadSoluteData(IArchive& ar)
 			if (n > 1) throw ReadError("error parsing CID_FEM_SOLUTE (FEModel::LoadSoluteData)");
 			std::string name;
 			int z; double M, d;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int ntype = ar.GetChunkID();
 				if      (ntype == CID_FEM_SOLUTE_NAME      ) ar.read(name);
@@ -780,7 +780,7 @@ void FEModel::LoadSBMData(IArchive& ar)
 {
 	int n = 0;
 	m_SBM.Clear();
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
 		if (ntype == CID_FEM_SBM)
@@ -788,7 +788,7 @@ void FEModel::LoadSBMData(IArchive& ar)
 			if (n > 1) throw ReadError("error parsing CID_FEM_SBM (FEModel::LoadSBMData)");
 			std::string name;
 			int z; double M, d;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int ntype = ar.GetChunkID();
 				if      (ntype == CID_FEM_SBM_NAME      ) ar.read(name);
@@ -808,7 +808,7 @@ void FEModel::LoadSBMData(IArchive& ar)
 // reads the steps from the input file
 void FEModel::LoadSteps(IArchive& ar)
 {
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
 		FEStep* ps = 0;
@@ -843,7 +843,7 @@ void FEModel::LoadSteps(IArchive& ar)
 // reads materials from archive
 void FEModel::LoadMaterials(IArchive& ar)
 {
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int ntype = ar.GetChunkID();
 

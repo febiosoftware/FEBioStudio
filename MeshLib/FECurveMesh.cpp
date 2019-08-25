@@ -760,7 +760,7 @@ void FECurveMesh::Load(IArchive& ar)
 
 	// read the header
 	int nodes, edges;
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -776,7 +776,7 @@ void FECurveMesh::Load(IArchive& ar)
 	Create(nodes, edges);
 
 	// read the rest of the mesh data
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -785,13 +785,13 @@ void FECurveMesh::Load(IArchive& ar)
 		{
 			int n = 0;
 			FENode* pn = NodePtr();
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
 				if (nid == CID_MESH_NODE)
 				{
 					assert(n < nodes);
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid = ar.GetChunkID();
 						switch (nid)
@@ -812,13 +812,13 @@ void FECurveMesh::Load(IArchive& ar)
 		{
 			int n = 0;
 			FEEdge* pe = EdgePtr();
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
 				if (nid != CID_MESH_EDGE) throw ReadError("error parsing CID_MESH_EDGE_SECTION");
 
 				int ntype;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					switch (nid)

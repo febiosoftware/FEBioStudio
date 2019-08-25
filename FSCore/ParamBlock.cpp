@@ -524,7 +524,7 @@ void ParamContainer::Load(IArchive &ar)
 {
 	TRACE("ParamContainer::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		if (nid == CID_PARAM)
@@ -541,7 +541,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 	int npid;
 	Param p;
 	int ntype = -1;
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)

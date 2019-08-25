@@ -63,7 +63,7 @@ void FEUserMaterial::Load(IArchive &ar)
 {
 	TRACE("FEUserMaterial::Load");
 
-	while (ar.OpenChunk() == IO_OK)
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -71,7 +71,7 @@ void FEUserMaterial::Load(IArchive &ar)
 		case SZTYPE: ar.read(m_sztype); break;
 		case PARAMDATA:
 			{
-				while (ar.OpenChunk() == IO_OK)
+				while (ar.OpenChunk() == IArchive::IO_OK)
 				{
 					int nid = ar.GetChunkID();
 					char szname[256];

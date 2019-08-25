@@ -43,7 +43,7 @@ void FERigidConstraintOld::Load(IArchive &ar)
 
 	char sz[256] = {0};
 	int n = 0;
-	while (ar.OpenChunk() == IO_OK)
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		unsigned int nid = ar.GetChunkID();
 		switch (nid)
@@ -52,7 +52,7 @@ void FERigidConstraintOld::Load(IArchive &ar)
 		case MATID: ar.read(m_mid); break;
 		case CONSTRAINT:
 			{
-				while (ar.OpenChunk() == IO_OK)
+				while (ar.OpenChunk() == IArchive::IO_OK)
 				{
 					unsigned int nid = ar.GetChunkID();
 					switch (nid)
@@ -100,7 +100,7 @@ void FERigidConstraint::Load(IArchive &ar)
 
 	char sz[256] = {0};
 	int n = 0;
-	while (ar.OpenChunk() == IO_OK)
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		unsigned int nid = ar.GetChunkID();
 		switch (nid)

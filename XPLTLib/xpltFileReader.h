@@ -1,6 +1,6 @@
 #pragma once
 #include "PostLib/FEFileReader.h"
-#include "PostLib/PltArchive.h"
+#include "xpltArchive.h"
 
 enum XPLT_READ_STATE_FLAG { 
 	XPLT_READ_ALL_STATES, 
@@ -31,7 +31,7 @@ public:
 
 protected:
 	xpltFileReader*		m_xplt;
-	Post::IArchive&		m_ar;
+	xpltArchive&		m_ar;
 	vector<int>			m_wrng;	// warning list
 };
 
@@ -77,7 +77,7 @@ public:
 	vector<int> GetReadStates() const { return m_state_list; }
 
 public:
-	Post::IArchive& GetArchive() { return m_ar; }
+	xpltArchive& GetArchive() { return m_ar; }
 
 	const HEADER& GetHeader() const { return m_hdr; }
 
@@ -86,7 +86,7 @@ protected:
 
 private:
 	xpltParser*		m_xplt;
-	Post::IArchive	m_ar;
+	xpltArchive		m_ar;
 	HEADER			m_hdr;
 
 	// Options

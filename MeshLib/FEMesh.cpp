@@ -2386,7 +2386,7 @@ void FEMesh::Load(IArchive& ar)
 	// the first chunk must be the header
 	ar.OpenChunk();
 	assert(ar.GetChunkID() == CID_MESH_HEADER);
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch(nid)
@@ -2411,7 +2411,7 @@ void FEMesh::Load(IArchive& ar)
 	vector<double> h(FEElement::MAX_NODES);
 
 	// read the rest of the mesh data
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch(nid)
@@ -2420,13 +2420,13 @@ void FEMesh::Load(IArchive& ar)
 			{
 				int n = 0;
 				FENode* pn = NodePtr();
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					if (nid == CID_MESH_NODE)
 					{
 						assert(n < nodes);
-						while (IO_OK == ar.OpenChunk())
+						while (IArchive::IO_OK == ar.OpenChunk())
 						{
 							int nid = ar.GetChunkID();
 							switch (nid)
@@ -2447,13 +2447,13 @@ void FEMesh::Load(IArchive& ar)
 			{
 				int n = 0;
 				FEElement* pe = ElementPtr();
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					if (nid == CID_MESH_ELEMENT)
 					{
 						assert(n < elems);
-						while (IO_OK == ar.OpenChunk())
+						while (IArchive::IO_OK == ar.OpenChunk())
 						{
 							int nid = ar.GetChunkID();
 							switch (nid)
@@ -2491,12 +2491,12 @@ void FEMesh::Load(IArchive& ar)
 			{
 				int n = 0;
 				FEFace* pf = FacePtr();
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					if (nid != CID_MESH_FACE) throw ReadError("error parsing CID_MESH_FACE_SECTION (FEMesh::Load)");
 
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid = ar.GetChunkID();
 						int ntype;
@@ -2556,13 +2556,13 @@ void FEMesh::Load(IArchive& ar)
 			{
 				int n = 0;
 				FEEdge* pe = EdgePtr();
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					if (nid != CID_MESH_EDGE) throw ReadError("error parsing CID_MESH_EDGE_SECTION (FEMesh::Load)");
 
 					int ntype;
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid = ar.GetChunkID();
 						switch (nid)
@@ -2619,7 +2619,7 @@ void FEMesh::Load(IArchive& ar)
 			{
 				// TODO: move to GObject serialization
 				FEPart* pg = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
 					assert(ar.GetChunkID() == CID_MESH_PART);
@@ -2635,7 +2635,7 @@ void FEMesh::Load(IArchive& ar)
 			{
 				// TODO: move to GObject serialization
 				FESurface* pg = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
 					assert(ar.GetChunkID() == CID_MESH_SURFACE);
@@ -2651,7 +2651,7 @@ void FEMesh::Load(IArchive& ar)
 			{
 				// TODO: move to GObject serialization
 				FENodeSet* pg = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
 					assert(ar.GetChunkID() == CID_MESH_NODESET);
@@ -2665,7 +2665,7 @@ void FEMesh::Load(IArchive& ar)
 			break;
 		case CID_MESH_DATA_SECTION:
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					switch (nid)

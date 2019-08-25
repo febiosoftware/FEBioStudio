@@ -37,8 +37,8 @@ bool PRVObjectImport::LoadObjects(IArchive& ar, FEProject& prj)
 {
 	GModel& model = prj.GetFEModel().GetModel();
 	m_objList.clear();
-	IOResult nret = IO_OK;
-	while (ar.OpenChunk() == IO_OK)
+	IArchive::IOResult nret = IArchive::IO_OK;
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 
@@ -46,7 +46,7 @@ bool PRVObjectImport::LoadObjects(IArchive& ar, FEProject& prj)
 		{
 			unsigned int version = 0;
 			nret = ar.read(version);
-			if (nret != IO_OK) return errf("Error reading version number");
+			if (nret != IArchive::IO_OK) return errf("Error reading version number");
 
 			if (version != PVO_VERSION_NUMBER) return false;
 
@@ -77,14 +77,14 @@ bool PRVObjectImport::LoadObjects(IArchive& ar, FEProject& prj)
 GObject* PRVObjectImport::LoadObject(IArchive& ar, FEProject& prj)
 {
 	GObject* po = 0;
-	while (ar.OpenChunk() == IO_OK)
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 
 		if (nid == PVO_OBJECT_TYPE)
 		{
 			int ntype = -1;
-			if (ar.read(ntype) != IO_OK) return 0;
+			if (ar.read(ntype) != IArchive::IO_OK) return 0;
 			po = BuildObject(ntype);
 			if (po == 0) return 0;
 		}
@@ -111,14 +111,14 @@ GObject* PRVObjectImport::LoadObject(IArchive& ar, FEProject& prj)
 GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& prj)
 {
 	GDiscreteObject* po = 0;
-	while (ar.OpenChunk() == IO_OK)
+	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
 
 		if (nid == PVO_OBJECT_TYPE)
 		{
 			int ntype = -1;
-			if (ar.read(ntype) != IO_OK) return 0;
+			if (ar.read(ntype) != IArchive::IO_OK) return 0;
 
 			switch (ntype)
 			{

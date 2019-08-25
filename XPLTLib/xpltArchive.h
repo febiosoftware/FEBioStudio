@@ -6,6 +6,8 @@
 #include <vector>
 #include <zlib.h>
 #include <MathLib/math3d.h>
+#include <FSCore/memtool.h>
+#include <FSCore/Archive.h>
 
 #ifdef WIN32
 typedef __int64 off_type;
@@ -21,77 +23,9 @@ typedef off_t off_type;
 
 using namespace std;
 
-namespace Post {
-
-void inline bswap(short& s)
-{
-	unsigned char* c = (unsigned char*)(&s);
-	c[0] ^= c[1]; c[1] ^= c[0]; c[0] ^= c[1];
-}
-
-void inline bswap(int& n)
-{
-	unsigned char* c = (unsigned char*)(&n);
-	c[0] ^= c[3]; c[3] ^= c[0]; c[0] ^= c[3];
-	c[1] ^= c[2]; c[2] ^= c[1]; c[1] ^= c[2];
-}
-
-void inline bswap(unsigned int& n)
-{
-	unsigned char* c = (unsigned char*)(&n);
-	c[0] ^= c[3]; c[3] ^= c[0]; c[0] ^= c[3];
-	c[1] ^= c[2]; c[2] ^= c[1]; c[1] ^= c[2];
-}
-
-void inline bswap(float& f)
-{
-	unsigned char* c = (unsigned char*)(&f);
-	c[0] ^= c[3]; c[3] ^= c[0]; c[0] ^= c[3];
-	c[1] ^= c[2]; c[2] ^= c[1]; c[1] ^= c[2];
-}
-
-void inline bswap(double& g)
-{
-	unsigned char* c = (unsigned char*)(&g);
-	c[0] ^= c[7]; c[7] ^= c[0]; c[0] ^= c[7];
-	c[1] ^= c[6]; c[6] ^= c[1]; c[1] ^= c[6];
-	c[2] ^= c[5]; c[5] ^= c[2]; c[2] ^= c[5];
-	c[3] ^= c[4]; c[4] ^= c[3]; c[3] ^= c[4];
-}
-
-template <typename T> void bswapv(T* pd, int n)
-{
-	for (int i=0; i<n; ++i) bswap(pd[i]);
-}
-
-enum IOResult { IO_ERROR, IO_OK, IO_END };
-
-//-----------------------------------------------------------------------------
-// helper function for reading from a memory buffer
-void mread(void* pdest, size_t Size, size_t Cnt, void** psrc);
-
-//-----------------------------------------------------------------------------
-class MemBuffer
-{
-public:
-	MemBuffer();
-	~MemBuffer();
-
-	void append(void* pd, int n);
-
-	char* data() { return m_pbuf; }
-
-	int size() { return m_nsize; }
-
-private:
-	char*	m_pbuf;		// buffer
-	int		m_nsize;	// size of buffer
-	int		m_nalloc;	// actual amount of allocated data
-};
-
 //-----------------------------------------------------------------------------
 // Input archive
-class IArchive  
+class xpltArchive  
 {
 	struct CHUNK
 	{
@@ -101,17 +35,65 @@ class IArchive
 	};
 
 public:
+	enum IOResult { IO_ERROR, IO_OK, IO_END };
+
+public:
 	//! class constructor
-	IArchive();
+	xpltArchive();
 
 	//! destructor
-	virtual ~IArchive();
+	virtual ~xpltArchive();
+
+public:
+	// --- Writing ---
+
+	// Open for writing
+	bool Create(const char* szfile);
+
+	// begin a chunk
+	void BeginChunk(unsigned int id);
+
+	// end a chunck
+	void EndChunk();
+
+	template <typename T> void WriteChunk(unsigned int nid, T& o)
+	{
+		m_pChunk->AddChild(new OLeaf<T>(nid, o));
+	}
+
+	void WriteChunk(unsigned int nid, const char* sz)
+	{
+		m_pChunk->AddChild(new OLeaf<const char*>(nid, sz));
+	}
+
+	template <typename T> void WriteChunk(unsigned int nid, T* po, int n)
+	{
+		m_pChunk->AddChild(new OLeaf<T*>(nid, po, n));
+	}
+
+	template <typename T> void WriteChunk(unsigned int nid, vector<T>& a)
+	{
+		m_pChunk->AddChild(new OLeaf<vector<T> >(nid, a));
+	}
+
+	// (overridden from Archive)
+	virtual void WriteData(int nid, std::vector<float>& data)
+	{
+		WriteChunk(nid, data);
+	}
+
+public: // reading 
 
 	// Close the archive
 	void Close();
 
+	void Flush();
+
 	// Open for reading
-	bool Open(FILE* fp);
+	bool Open(IOFileStream* fp);
+
+	// open for appending
+	bool Append(const char* szfile);
 
 	// Open a chunk
 	int OpenChunk();
@@ -176,18 +158,23 @@ public:
 	int DecompressChunk(unsigned int& nid, unsigned int& nsize);
 
 protected:
-	FILE*	m_fp;			// the file pointer
+	IOFileStream*	m_fp;		// the file pointer
 	bool	m_bswap;		// swap data when reading
 	bool	m_bend;			// chunk end flag
 	int		m_ncompress;	// compression flag
+	bool	m_bSaving;		// read or write mode?
 
 	unsigned int	m_nversion;	// stores the version nr of the file being loaded
 
+	// read data
 	stack<CHUNK*>	m_Chunk;
 
     z_stream		strm;
 	char*			m_buf;		// data buffer
 	void*			m_pdata;	// data pointer
 	unsigned int	m_bufsize;	// size of data buffer
+
+	// write data
+	OBranch*	m_pRoot;	// chunk tree root
+	OBranch*	m_pChunk;	// current chunk
 };
-}

@@ -355,14 +355,14 @@ void CPlotDataSettings::Load(IArchive& ar)
 {
 	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		if (ar.GetChunkID() == CID_PRJ_OUTPUT_VAR)
 		{
 			string tmp;
 			int n = 0, m = 0, id, module = -1;
 			vector<int> dom;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				switch (ar.GetChunkID())
 				{

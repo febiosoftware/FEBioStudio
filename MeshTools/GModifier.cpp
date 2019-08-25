@@ -117,7 +117,7 @@ void GModifierStack::Load(IArchive &ar)
 {
 	TRACE("GModifierStack::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -129,7 +129,7 @@ void GModifierStack::Load(IArchive &ar)
 			break;
 		case CID_MODIFIERS:
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					GModifier* pm = 0;

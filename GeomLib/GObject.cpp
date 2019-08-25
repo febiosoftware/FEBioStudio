@@ -1903,7 +1903,7 @@ void GObject::Load(IArchive& ar)
 
 	int nparts = -1, nfaces = -1, nedges = -1, nnodes = -1;
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -1930,7 +1930,7 @@ void GObject::Load(IArchive& ar)
 			vec3d pos, scl;
 			quatd rot;
 			GLColor col;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
 				int oid;
@@ -1967,12 +1967,12 @@ void GObject::Load(IArchive& ar)
 			assert(nparts > 0);
 			m_Part.reserve(nparts);
 			int n = 0;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_SECTION (GMeshObject::Load)");
 
 				GPart* p = new GPart(this);
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid, mid;
 					switch (ar.GetChunkID())
@@ -2004,12 +2004,12 @@ void GObject::Load(IArchive& ar)
 			assert(nfaces > 0);
 			m_Face.reserve(nfaces);
 			int n = 0;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_SECTION (GMeshObject::Load)");
 
 				GFace* f = new GFace(this);
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid;
 					switch (ar.GetChunkID())
@@ -2042,12 +2042,12 @@ void GObject::Load(IArchive& ar)
 			m_Edge.clear();
 			if (nedges > 0) m_Edge.reserve(nedges);
 			int n = 0;
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_SECTION (GMeshObject::Load)");
 
 				GEdge* e = new GEdge(this);
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid;
 					switch (ar.GetChunkID())
@@ -2080,12 +2080,12 @@ void GObject::Load(IArchive& ar)
 			{
 				m_Node.reserve(nnodes);
 				int m = 0;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_SECTION (GMeshObject::Load)");
 
 					GNode* n = new GNode(this);
-					while (IO_OK == ar.OpenChunk())
+					while (IArchive::IO_OK == ar.OpenChunk())
 					{
 						int nid;
 						switch (ar.GetChunkID())

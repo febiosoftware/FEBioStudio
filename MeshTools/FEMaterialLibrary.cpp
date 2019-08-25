@@ -41,7 +41,7 @@ bool FEMaterialLibrary::Load(IArchive& ar)
 	nid = ar.GetChunkID();
 	if (nid == CID_MATERIAL_SECTION)
 	{
-		while (IO_OK == ar.OpenChunk())
+		while (IArchive::IO_OK == ar.OpenChunk())
 		{
 			int ntype = ar.GetChunkID();
 
@@ -51,7 +51,7 @@ bool FEMaterialLibrary::Load(IArchive& ar)
 
 			char szname[256] = {0};
 
-			while (IO_OK == ar.OpenChunk())
+			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
 				switch (nid)

@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\FSCore\FSDir.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FSCore\memtool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FSCore\FSObject.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FSCore\FSDir.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FSCore\memtool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -429,7 +429,7 @@ void FEStep::Load(IArchive &ar)
 {
 	TRACE("FEStep::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -439,7 +439,7 @@ void FEStep::Load(IArchive &ar)
 		case CID_STEP_ID        : { int nid; ar.read(nid); SetID(nid); } break;
 		case CID_BC_SECTION: // boundary conditions
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int ntype = ar.GetChunkID();
 
@@ -537,7 +537,7 @@ void FEStep::Load(IArchive &ar)
 			break;
 		case CID_FC_SECTION: // loads
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int ntype = ar.GetChunkID();
 
@@ -573,7 +573,7 @@ void FEStep::Load(IArchive &ar)
 			break;
 		case CID_IC_SECTION: // initial conditions
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int ntype = ar.GetChunkID();
 
@@ -603,7 +603,7 @@ void FEStep::Load(IArchive &ar)
 			break;
 		case CID_INTERFACE_SECTION: // interfaces
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int ntype = ar.GetChunkID();
 
@@ -632,7 +632,7 @@ void FEStep::Load(IArchive &ar)
 			break;
 		case CID_RC_SECTION: // rigid constraints
 			{
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int ntype = ar.GetChunkID();
 
@@ -675,7 +675,7 @@ void FEStep::Load(IArchive &ar)
 			break;
         case CID_CONNECTOR_SECTION: // connectors
             {
-                while (IO_OK == ar.OpenChunk())
+                while (IArchive::IO_OK == ar.OpenChunk())
                 {
                     int ntype = ar.GetChunkID();
                     
@@ -738,7 +738,7 @@ void FEInitialStep::Load(IArchive &ar)
 {
 	TRACE("FEInitialStep::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -880,7 +880,7 @@ void FEAnalysisStep::Load(IArchive &ar)
 {
 	TRACE("FEAnalysisStep::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -893,7 +893,7 @@ void FEAnalysisStep::Load(IArchive &ar)
 		case CID_STEP_SETTINGS:
 			{
 				STEP_SETTINGS& o = m_ops;
-				while (IO_OK == ar.OpenChunk())
+				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					switch (nid)

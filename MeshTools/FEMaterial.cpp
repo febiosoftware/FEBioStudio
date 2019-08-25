@@ -246,7 +246,7 @@ void FEFiberMaterial::Load(IArchive& ar)
 {
 	TRACE("FEFiberMaterial::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -455,7 +455,7 @@ void FETransverselyIsotropic::Load(IArchive &ar)
 {
 	TRACE("FETransverselyIsotropic::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
@@ -760,7 +760,7 @@ void FERigidMaterial::Load(IArchive &ar)
 {
 	TRACE("FERigidMaterial::Load");
 
-	while (IO_OK == ar.OpenChunk())
+	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
