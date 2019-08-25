@@ -1,10 +1,13 @@
 #pragma once
 #include <MathLib/math3d.h>
 #include <MathLib/Interpolator.h>
+#include <PostLib/GLObject.h>
 #include <string>
 
 //-----------------------------------------------------------------------------
-class GLCameraTransform
+// TODO: We need to inherit this from CGLObject because it is used in the modeltree
+// in PostView. Fix this.
+class GLCameraTransform : public Post::CGLObject
 {
 public:
 	GLCameraTransform() {}
@@ -12,7 +15,6 @@ public:
 	GLCameraTransform& operator = (const GLCameraTransform& key);
 
 public:
-	std::string	name;
 	vec3d		pos;	// position
 	vec3d		trg;	// target
 	quatd		rot;	// rotation

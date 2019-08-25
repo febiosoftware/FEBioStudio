@@ -18,7 +18,7 @@ GLCameraTransform::GLCameraTransform(const GLCameraTransform& key)
 	pos = key.pos;
 	trg = key.trg;
 	rot = key.rot;
-	name = key.name;
+	SetName(key.GetName());
 }
 
 GLCameraTransform& GLCameraTransform::operator = (const GLCameraTransform& key)
@@ -26,7 +26,7 @@ GLCameraTransform& GLCameraTransform::operator = (const GLCameraTransform& key)
 	pos = key.pos;
 	trg = key.trg;
 	rot = key.rot;
-	name = key.name;
+	SetName(key.GetName());
 	return *this;
 }
 
