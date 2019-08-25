@@ -24,11 +24,86 @@ double gain(double g, double x)
 }
 
 //-----------------------------------------------------------------------------
+Mesh_Data::Mesh_Data()
+{
+	m_min = m_max = 0.0;
+}
+
+//-----------------------------------------------------------------------------
+Mesh_Data::Mesh_Data(const Mesh_Data& d)
+{
+	m_data = d.m_data;
+	m_min = d.m_min;
+	m_max = d.m_max;
+}
+
+//-----------------------------------------------------------------------------
+void Mesh_Data::operator = (const Mesh_Data& d)
+{
+	m_data = d.m_data;
+	m_min = d.m_min;
+	m_max = d.m_max;
+}
+
+//-----------------------------------------------------------------------------
+void Mesh_Data::Clear()
+{
+	m_data.clear();
+}
+
+//-----------------------------------------------------------------------------
+void Mesh_Data::Resize(size_t size)
+{
+	m_data.resize(size);
+}
+
+//-----------------------------------------------------------------------------
+void Mesh_Data::Init(double data, int idata)
+{
+	DATA d = { data, idata };
+	m_data.assign(m_data.size(), d);
+}
+
+//-----------------------------------------------------------------------------
+void Mesh_Data::UpdateValueRange()
+{
+	m_min = m_max = 0;
+
+	// find the first active value
+	int N = (int)m_data.size();
+	int i = 0;
+	for (i = 0; i<N; ++i)
+	{
+		if (m_data[i].tag != 0)
+		{
+			m_min = m_max = m_data[i].val;
+			break;
+		}
+	}
+
+	// update range
+	for (; i<N; ++i)
+	{
+		if (m_data[i].tag != 0)
+		{
+			if (m_data[i].val > m_max) m_max = m_data[i].val;
+			if (m_data[i].val < m_min) m_min = m_data[i].val;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void Mesh_Data::GetValueRange(double& vmin, double& vmax) const
+{
+	vmin = m_min;
+	vmax = m_max;
+}
+
+//-----------------------------------------------------------------------------
 // default constructor
 FEMesh::FEMesh()
 {
 	m_pobj = 0;
-	m_min = m_max = 0.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -53,9 +128,6 @@ FEMesh::FEMesh(FEMesh& m)
 
 	// copy element data
 	m_data = m.m_data;
-	m_idata = m.m_idata;
-	m_min = m.m_min;
-	m_max = m.m_max;
 	m_nodeData = m.m_nodeData;
 	m_surfData = m.m_surfData;
 	m_elemData = m.m_elemData;
@@ -83,8 +155,7 @@ void FEMesh::Clear()
 	m_Elem.clear();
 	m_Node.clear();
 
-	m_data.clear();
-	m_idata.clear();
+	m_data.Clear();
 
 	m_nodeData.clear();
 	m_surfData.clear();
@@ -105,8 +176,8 @@ void FEMesh::Create(int nodes, int elems, int faces, int edges)
 	// allocate storage for element data
 	if (elems > 0) 
 	{
-		m_data.assign(elems, 0.0);
-		m_idata.assign(elems, 1);
+		m_data.Resize(elems);
+		m_data.Init(0.0, 1);
 	}
 
 	// see if we need to clear the maps
@@ -249,8 +320,7 @@ FEMesh* FEMesh::DetachSelectedMesh()
 		}
 	}
 	m_Elem.resize(n);
-	m_data.resize(n);
-	m_idata.resize(n);
+	m_data.Resize(n);
 
 	// tag nodes which will be kept
 	pn = NodePtr();
@@ -996,15 +1066,13 @@ void FEMesh::RemoveElements(int ntag)
 			{
 				e2 = e1;
 				m_data[n] = m_data[i];
-				m_idata[n] = m_idata[i];
 			}
 			n++;
 		}
 	}
 
 	m_Elem.resize(n);
-	m_data.resize(n);
-	m_idata.resize(n);
+	m_data.Resize(n);
 }
 
 //-----------------------------------------------------------------------------
@@ -1711,8 +1779,7 @@ void FEMesh::Attach(FEMesh& fem)
 		++ng;
 
 		m_Elem.resize(elems);
-		m_data.resize(elems);
-		m_idata.resize(elems);
+		m_data.Resize(elems);
 		for (i=0; i<ne1; ++i) 
 		{
 			FEElement& e0 = m_Elem[ne0 + i];
@@ -2643,43 +2710,6 @@ void FEMesh::Load(IArchive& ar)
 	Update();
 }
 
-
-//-----------------------------------------------------------------------------
-void FEMesh::UpdateValueRange()
-{
-	m_min = m_max = 0;
-
-	// find the first active value
-	int N = (int) m_data.size();
-	int i=0;
-	for (i=0; i<N; ++i)
-	{
-		if (m_idata[i] != 0)
-		{
-			m_min = m_max = m_data[i];
-			break;
-		}
-	}
-
-	// update range
-	for (; i<N; ++i)
-	{
-		if (m_idata[i] != 0)
-		{
-			if (m_data[i] > m_max) m_max = m_data[i];
-			if (m_data[i] < m_min) m_min = m_data[i];
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::GetValueRange(double& vmin, double& vmax) const
-{
-	vmin = m_min;
-	vmax = m_max;
-}
-
-
 //-----------------------------------------------------------------------------
 // Partition the selected faces
 //
@@ -2789,7 +2819,6 @@ void FEMesh::ShallowCopy(FEMesh* pm)
 	m_Elem = pm->m_Elem;
 
 	m_data = pm->m_data;
-	m_idata = pm->m_idata;
 
 	m_box = pm->m_box;
 }

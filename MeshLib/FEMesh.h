@@ -10,13 +10,57 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-class FEMesh;
 class FESurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // Forward declaration of GObject class. The GObject class will own and manage
 // the FEMesh. 
 class GObject;
+
+//-----------------------------------------------------------------------------
+class Mesh_Data
+{
+	struct DATA
+	{
+		double	val;
+		int		tag;
+	};
+
+public:
+	Mesh_Data();
+	Mesh_Data(const Mesh_Data& d);
+	void operator = (const Mesh_Data& d);
+
+	void Clear();
+
+	void Resize(size_t size);
+
+	void Init(double data, int idata);
+
+	DATA& operator[](size_t n) { return m_data[n]; }
+
+	// get the current element value
+	double GetElementValue(int n) const { return m_data[n].val; }
+
+	// get the data tag
+	int GetElementDataTag(int n) const { return m_data[n].tag; }
+
+	// set the element value
+	void SetElementValue(int n, double v) { m_data[n].val = v; }
+
+	// set the data tag
+	void SetElementDataTag(int n, int tag) { m_data[n].tag = tag; }
+
+	// update the range of values
+	void UpdateValueRange();
+
+	// get the value range
+	void GetValueRange(double& vmin, double& vmax) const;
+
+public:
+	std::vector<DATA>		m_data;		//!< element values
+	double	m_min, m_max;				//!< value range of element data
+};
 
 //-----------------------------------------------------------------------------
 // This class describes a finite element mesh. Every FEMesh must be owned by a
@@ -74,26 +118,6 @@ public:
 public: // --- S E R I A L I Z A T I O N ---
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-public: // --- E V A L U A T I O N ---
-
-	// get the current element value
-	double GetElementValue(int n) const { return m_data[n]; }
-
-	// get the data tag
-	int GetElementDataTag(int n) const { return m_idata[n]; }
-
-	// set the element value
-	void SetElementValue(int n, double v) { m_data[n] = v; }
-
-	// set the data tag
-	void SetElementDataTag(int n, int tag) { m_idata[n] = tag; }
-
-	// update the range of values
-	void UpdateValueRange();
-
-	// get the value range
-	void GetValueRange(double& vmin, double& vmax) const;
 
 public:
 	// --- U P D A T E ---
@@ -224,6 +248,8 @@ public:
 	FEMeshData* GetMeshData(int i);
 	void RemoveMeshData(int i);
 
+	Mesh_Data& GetMeshData() { return m_data; }
+
 public:
 	void BuildSurfaceNodeNodeTable(vector< set<int> >& NNT);
 
@@ -249,10 +275,8 @@ protected:
 	// elements
 	std::vector<FEElement>	m_Elem;	//!< FE elements
 
-	// element data (maybe create class for this)
-	std::vector<double>		m_data;		//!< element values
-	std::vector<int>		m_idata;	//!< used as tags to see if elements have valid data
-	double	m_min, m_max;				//!< value range of element data
+	// mesh data (used for data evaluation)
+	Mesh_Data	m_data;
 
 	// data fields
 	vector<FENodeData>		m_nodeData;

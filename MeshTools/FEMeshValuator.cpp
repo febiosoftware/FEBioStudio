@@ -16,20 +16,21 @@ void FEMeshValuator::Evaluate(int nfield)
 	// evaluate mesh
 	int n = 0;
 	int NE = m_mesh.Elements();
+	Mesh_Data& data = m_mesh.GetMeshData();
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = m_mesh.Element(i);
 		if (el.IsVisible()) 
 		{
 			double val = EvaluateElement(i, nfield);
-			m_mesh.SetElementValue(i, val);
-			m_mesh.SetElementDataTag(i, 1);
+			data.SetElementValue(i, val);
+			data.SetElementDataTag(i, 1);
 		}
-		else m_mesh.SetElementDataTag(i, 0);
+		else data.SetElementDataTag(i, 0);
 	}
 
 	// update stats
-	m_mesh.UpdateValueRange();
+	data.UpdateValueRange();
 }
 
 //-----------------------------------------------------------------------------

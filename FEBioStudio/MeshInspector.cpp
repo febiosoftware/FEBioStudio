@@ -65,6 +65,7 @@ void CMeshInspector::UpdateData(int ndata)
 	int NC = 0;
 	vector<double> v(NE);
 	double vmax = -1e99, vmin = 1e99, vavg = 0;
+	Mesh_Data& data = pm->GetMeshData();
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
@@ -72,9 +73,9 @@ void CMeshInspector::UpdateData(int ndata)
 		{
 			int nerr;
 			v[NC] = eval.EvaluateElement(i, ndata, &nerr);
-			if (nerr) pm->SetElementDataTag(i, 0);
-			else pm->SetElementDataTag(i, 1);
-			pm->SetElementValue(i, v[NC]);
+			if (nerr) data.SetElementDataTag(i, 0);
+			else data.SetElementDataTag(i, 1);
+			data.SetElementValue(i, v[NC]);
 			if (nerr == 0)
 			{
 				if (v[NC] < vmin) vmin = v[NC];
@@ -85,11 +86,11 @@ void CMeshInspector::UpdateData(int ndata)
 		}
 		else
 		{
-			pm->SetElementValue(i, 0.0);
-			pm->SetElementDataTag(i, 0);
+			data.SetElementValue(i, 0.0);
+			data.SetElementDataTag(i, 0);
 		}
 	}
-	pm->UpdateValueRange();
+	data.UpdateValueRange();
 
 	if (NC > 0) vavg /= (double)NC;
 	ui->stats->setRange(vmin, vmax, vavg);
@@ -112,13 +113,13 @@ void CMeshInspector::UpdateData(int ndata)
 		if (bin[n] > ymax) ymax = bin[n];
 	}
 
-	CPlotData* data = new CBarChartData;
+	CPlotData* pltData = new CBarChartData;
 	for (int i=0; i<M; ++i)
 	{
 		double v = vmin + i*(vmax - vmin)/(NC-1);
-		data->addPoint(v, bin[i]);
+		pltData->addPoint(v, bin[i]);
 	}
-	ui->plot->addPlotData(data);
+	ui->plot->addPlotData(pltData);
 	ui->plot->OnZoomToFit();
 }
 
@@ -147,14 +148,15 @@ void CMeshInspector::on_select_clicked()
 
 	int NE = pm->Elements();
 	vector<int> elem; elem.reserve(NE);
+	Mesh_Data& data = pm->GetMeshData();
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& e = pm->Element(i);
 		if ((etype == -1) || (e.Type() == etype))
 		{
-			if (pm->GetElementDataTag(i) > 0)
+			if (data.GetElementDataTag(i) > 0)
 			{
-				double v = pm->GetElementValue(i);
+				double v = data.GetElementValue(i);
 				if ((v + eps >= smin) && (v - eps <= smax)) elem.push_back(i);
 			}
 		}

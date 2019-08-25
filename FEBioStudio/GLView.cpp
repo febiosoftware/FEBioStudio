@@ -6456,7 +6456,8 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 
 	double vmin, vmax;
 	Post::CColorMap map;
-	if (view.m_bcontour) { pm->GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+	Mesh_Data& data = pm->GetMeshData();
+	if (view.m_bcontour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
 	for (int i = 0; i<pm->Faces(); i++)
@@ -6482,8 +6483,8 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 					SetMatProps(pmat);
 					if (view.m_bcontour)
 					{
-						if (pm->GetElementDataTag(face.m_elem[0]) > 0)
-							dif = map.map(pm->GetElementValue(face.m_elem[0]));
+						if (data.GetElementDataTag(face.m_elem[0]) > 0)
+							dif = map.map(data.GetElementValue(face.m_elem[0]));
 						else
 							dif = GLColor(212, 212, 212);
 					}
@@ -6772,7 +6773,8 @@ void CGLView::RenderFEElements(GObject* po)
 
 	double vmin, vmax;
 	Post::CColorMap map;
-	if (view.m_bcontour) { pm->GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+	Mesh_Data& data = pm->GetMeshData();
+	if (view.m_bcontour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
 	int NE = pm->Elements();
@@ -6797,8 +6799,8 @@ void CGLView::RenderFEElements(GObject* po)
 
 					if (view.m_bcontour)
 					{
-						if (pm->GetElementDataTag(i) > 0)
-							dif = map.map(pm->GetElementValue(i));
+						if (data.GetElementDataTag(i) > 0)
+							dif = map.map(data.GetElementValue(i));
 						else
 							dif = GLColor(212, 212, 212);
 					}
