@@ -704,9 +704,9 @@ const int ET_TRI6[3][3] = {
 FELinearElement::FELinearElement()
 {
 	m_node = _node;
-	m_node = _nbr;
+	m_nbr  = _nbr;
 	m_face = _face;
-	m_h = _h;
+	m_h    = _h;
 	for (int i = 0; i<MAX_NODES; ++i) m_node[i] = -1;
 }
 
@@ -714,9 +714,9 @@ FELinearElement::FELinearElement(const FELinearElement& e) : FEElement_(e)
 {
 	m_traits = e.m_traits;
 	m_node = _node;
-	m_node = _nbr;
+	m_nbr  = _nbr;
 	m_face = _face;
-	m_h = _h;
+	m_h    = _h;
 	for (int i = 0; i<MAX_NODES; ++i) m_node[i] = e.m_node[i];
 }
 
