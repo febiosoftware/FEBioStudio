@@ -355,6 +355,12 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("brep", Qt::CaseInsensitive) == 0) return new BREPImport();
 	if (ext.compare("step", Qt::CaseInsensitive) == 0) return new STEPImport;
 	if (ext.compare("iges", Qt::CaseInsensitive) == 0) return new IGESImport;
+	if (ext.compare("feb", Qt::CaseInsensitive) == 0)
+	{
+		FEBioImport* febio = new FEBioImport;
+		febio->SetGeometryOnlyFlag(true);
+		return febio;
+	}
 
 	return 0;
 }
@@ -510,6 +516,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 	QStringList filters;
 	filters << "All files (*)";
 	filters << "PreView Object File (*.pvo)";
+	filters << "FEBio (*.feb)";
 	filters << "ABAQUS (*.inp)";
 	filters << "ANSYS (*.cdb)";
 	filters << "LSDYNA Keyword (*.k)";

@@ -31,22 +31,30 @@ FEBioModel::Part* FEBioFormat25::DefaultPart()
 
 bool FEBioFormat25::ParseSection(XMLTag& tag)
 {
-	if      (tag == "Module"     ) ParseModuleSection    (tag);
-	else if (tag == "Control"    ) ParseControlSection   (tag);
-	else if (tag == "Material"   ) ParseMaterialSection  (tag);
-	else if (tag == "Geometry"   ) ParseGeometrySection  (tag);
-	else if (tag == "MeshData"   ) ParseMeshDataSection  (tag);
-	else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
-	else if (tag == "Constraints") ParseConstraintSection(tag);
-	else if (tag == "Loads"      ) ParseLoadsSection     (tag);
-	else if (tag == "Contact"    ) ParseContactSection   (tag);
-	else if (tag == "Discrete"   ) ParseDiscreteSection  (tag);
-	else if (tag == "Initial"    ) ParseInitialSection   (tag);
-	else if (tag == "Globals"    ) ParseGlobalsSection   (tag);
-	else if (tag == "LoadData"   ) ParseLoadDataSection  (tag);
-	else if (tag == "Output"     ) ParseOutputSection    (tag);
-	else if (tag == "Step"       ) ParseStepSection      (tag);
-	else return false;
+	if (m_geomOnly)
+	{
+		if (tag == "Geometry") ParseGeometrySection(tag);
+		else tag.m_preader->SkipTag(tag);
+	}
+	else
+	{
+		if      (tag == "Module"     ) ParseModuleSection    (tag);
+		else if (tag == "Control"    ) ParseControlSection   (tag);
+		else if (tag == "Material"   ) ParseMaterialSection  (tag);
+		else if (tag == "Geometry"   ) ParseGeometrySection  (tag);
+		else if (tag == "MeshData"   ) ParseMeshDataSection  (tag);
+		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
+		else if (tag == "Constraints") ParseConstraintSection(tag);
+		else if (tag == "Loads"      ) ParseLoadsSection     (tag);
+		else if (tag == "Contact"    ) ParseContactSection   (tag);
+		else if (tag == "Discrete"   ) ParseDiscreteSection  (tag);
+		else if (tag == "Initial"    ) ParseInitialSection   (tag);
+		else if (tag == "Globals"    ) ParseGlobalsSection   (tag);
+		else if (tag == "LoadData"   ) ParseLoadDataSection  (tag);
+		else if (tag == "Output"     ) ParseOutputSection    (tag);
+		else if (tag == "Step"       ) ParseStepSection      (tag);
+		else return false;
+	}
 	
 	return true;
 }

@@ -20,6 +20,8 @@ public:
 	// override this function for processing the top-level sections
 	virtual bool ParseSection(XMLTag& tag) = 0;
 
+	void SetGeometryOnlyFlag(bool b);
+
 protected:
 	FEBioImport* FileReader() { return m_fileReader; }
 
@@ -67,6 +69,7 @@ private:
 	FEBioImport*	m_fileReader;
 
 protected: // TODO: Move to FEBioModel?
+	bool		m_geomOnly;	// read only geometry section
 	int			m_nAnalysis;	// analysis type
 	FEStep*		m_pstep;		// current analysis step
 	FEStep*		m_pBCStep;		// step to which BCs are assigned

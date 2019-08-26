@@ -24,6 +24,7 @@ FEBioImport::FEBioImport()
 	m_pprj = 0;
 	m_szlog = 0;
 	m_febio = 0;
+	m_geomOnly = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -31,6 +32,12 @@ FEBioImport::~FEBioImport()
 {
 	ClearLog();
 	delete m_febio;
+}
+
+//-----------------------------------------------------------------------------
+void FEBioImport::SetGeometryOnlyFlag(bool b)
+{
+	m_geomOnly = b;
 }
 
 //-----------------------------------------------------------------------------
@@ -264,6 +271,8 @@ bool FEBioImport::ParseVersion(XMLTag& tag)
 	default:
 		return false;
 	}
+
+	m_fmt->SetGeometryOnlyFlag(m_geomOnly);
 
 	return true;
 }

@@ -58,11 +58,18 @@ FEBioFormat::FEBioFormat(FEBioImport* fileReader, FEBioModel& febio) : m_febio(f
 	m_pstep = 0;
 	m_pBCStep = febio.GetFEModel().GetStep(0);
 
+	m_geomOnly = false;
+
 	m_nAnalysis = -1;
 }
 
 FEBioFormat::~FEBioFormat()
 {
+}
+
+void FEBioFormat::SetGeometryOnlyFlag(bool b)
+{
+	m_geomOnly = b;
 }
 
 void FEBioFormat::ParseUnknownTag(XMLTag& tag)

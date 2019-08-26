@@ -22,6 +22,8 @@ public:
 
 	void AddLogEntry(const char* sz, ...);
 
+	void SetGeometryOnlyFlag(bool b);
+
 protected:
 	bool UpdateFEModel(FEModel& fem);
 
@@ -42,6 +44,7 @@ protected:
 
 protected:
 	char*	m_szlog;	//!< log used for reporting warnings
+	bool	m_geomOnly;
 
 	friend class FEBioFormat;
 };

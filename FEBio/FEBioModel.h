@@ -385,7 +385,7 @@ public:
 public:
 	void AddMaterial(GMaterial* pmat) { m_mat.push_back(pmat); }
 	int Materials() const { return (int) m_mat.size(); }
-	GMaterial* GetMaterial(int i) { if (i<0) return 0; else return m_mat[i]; }
+	GMaterial* GetMaterial(int i) { if ((i<0) || (i>=(int)m_mat.size())) return 0; else return m_mat[i]; }
 
 public:
 	void AddPlotVariable(const PlotVariable& s) { m_plot.push_back(s); }
