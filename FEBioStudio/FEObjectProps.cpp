@@ -4,10 +4,10 @@
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <MeshTools/FEModel.h>
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/GMaterial.h>
 #include <MeshTools/FEProject.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEDataMap.h>
 
 //=======================================================================================

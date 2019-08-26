@@ -121,15 +121,6 @@
     <ClCompile Include="..\..\MeshTools\FELoftMesher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\FEMaterial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MeshTools\FEMaterialFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MeshTools\FEMaterialLibrary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\FEMeshData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -157,9 +148,6 @@
     <ClCompile Include="..\..\MeshTools\FEMultiBlockMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\FEMultiMaterial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\FENNQuery.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -182,9 +170,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MeshTools\FERevolveFaces.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MeshTools\FERigidConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MeshTools\FESelectElementsFromFaces.cpp">
@@ -284,9 +269,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MeshTools\FETube.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\MeshTools\FEUserMaterial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\MeshTools\FEWeldModifier.cpp">
@@ -489,15 +471,6 @@
     <ClInclude Include="..\..\MeshTools\FELoftMesher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FEMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FEMaterialFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FEMaterialLibrary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MeshTools\FEMeshData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -525,9 +498,6 @@
     <ClInclude Include="..\..\MeshTools\FEMultiBlockMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FEMultiMaterial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\MeshTools\FENNQuery.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -544,9 +514,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FERevolveFaces.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FERigidConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FESelectElementsFromFaces.h">
@@ -619,9 +586,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FETube.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FEUserMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FEWeldModifier.h">

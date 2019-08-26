@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "NikeImport.h"
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/FEMaterial.h>
+#include <FEMLib/FEMaterial.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <string.h>

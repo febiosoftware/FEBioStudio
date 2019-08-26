@@ -7,7 +7,7 @@
 #include <FSCore/ParamBlock.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModifiedObject.h>
 #include <MeshTools/FESurfaceModifier.h>

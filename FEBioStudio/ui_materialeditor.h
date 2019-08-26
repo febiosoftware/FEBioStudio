@@ -7,7 +7,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include "Document.h"
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 
 class MaterialEditorItem : public QTreeWidgetItem
 {

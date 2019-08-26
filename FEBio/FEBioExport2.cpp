@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "FEBioExport2.h"
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <MeshTools/GDiscreteObject.h>

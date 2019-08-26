@@ -2,8 +2,8 @@
 #include "FEProject.h"
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
-#include "FERigidConstraint.h"
-#include "FEMultiMaterial.h"
+#include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include "GGroup.h"
 #include <GeomLib/GObject.h>
 #include <string>

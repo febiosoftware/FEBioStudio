@@ -2,7 +2,7 @@
 #include "ModelTree.h"
 #include "Document.h"
 #include <MeshTools/FEModel.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <QTreeWidgetItemIterator>
 #include <QContextMenuEvent>
@@ -16,7 +16,7 @@
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"
 

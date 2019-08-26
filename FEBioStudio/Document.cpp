@@ -9,8 +9,8 @@
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/FEFileExport.h>
-#include <MeshTools/FEUserMaterial.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEUserMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <MeshIO/PRVObjectFormat.h>
 #include <QMessageBox>
 #include <FEMLib/FEStepComponent.h>

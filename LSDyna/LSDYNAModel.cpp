@@ -1,7 +1,7 @@
 #include "LSDYNAModel.h"
 #include "MeshTools/FEModel.h"
 #include "GeomLib/GMeshObject.h"
-#include "MeshTools/FEMultiMaterial.h"
+#include "FEMLib/FEMultiMaterial.h"
 
 LSDYNAModel::LSDYNAModel()
 {

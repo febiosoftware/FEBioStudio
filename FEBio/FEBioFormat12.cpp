@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEBioFormat12.h"
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <MeshTools/GDiscreteObject.h>

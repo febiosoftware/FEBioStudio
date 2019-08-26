@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FEBioExport.h"
-#include <MeshTools/FERigidConstraint.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 

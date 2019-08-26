@@ -7,7 +7,7 @@
 #include "DlgFormula.h"
 #include <MathLib/MathParser.h>
 #include <FEMLib/FESurfaceLoad.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 
 CCmdAddPoint::CCmdAddPoint(FELoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
 {

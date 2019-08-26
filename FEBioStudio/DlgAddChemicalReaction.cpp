@@ -14,7 +14,7 @@
 #include <QBoxLayout>
 #include <sstream>
 #include <QMessageBox>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 
 //=================================================================================================
 QSelectBox::QSelectBox(QWidget* parent) : QWidget(parent)

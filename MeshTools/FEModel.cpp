@@ -4,9 +4,9 @@
 
 #include "stdafx.h"
 #include "FEModel.h"
-#include "FERigidConstraint.h"
-#include "FEMultiMaterial.h"
-#include "FEUserMaterial.h"
+#include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <GeomLib/GObject.h>
 #include <vector>

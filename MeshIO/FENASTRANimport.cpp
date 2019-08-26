@@ -1,6 +1,6 @@
 #include "FENASTRANimport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 
 extern GLColor col[];
 

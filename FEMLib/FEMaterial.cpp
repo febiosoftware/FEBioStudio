@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 #include "FEMaterial.h"
-#include "FEProject.h"
+#include <MeshTools/FEProject.h>
 
 //////////////////////////////////////////////////////////////////////
 // FEIsotropicElastic  - isotropic elasticity

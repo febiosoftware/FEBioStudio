@@ -152,8 +152,14 @@
     <ClCompile Include="..\..\FEMLib\FEDOF.cpp" />
     <ClCompile Include="..\..\FEMLib\FEInitialCondition.cpp" />
     <ClCompile Include="..\..\FEMLib\FEInterface.cpp" />
+    <ClCompile Include="..\..\FEMLib\FEMaterial.cpp" />
+    <ClCompile Include="..\..\FEMLib\FEMaterialFactory.cpp" />
+    <ClCompile Include="..\..\FEMLib\FEMaterialLibrary.cpp" />
     <ClCompile Include="..\..\FEMLib\FEMKernel.cpp" />
+    <ClCompile Include="..\..\FEMLib\FEMultiMaterial.cpp" />
+    <ClCompile Include="..\..\FEMLib\FERigidConstraint.cpp" />
     <ClCompile Include="..\..\FEMLib\FESurfaceLoad.cpp" />
+    <ClCompile Include="..\..\FEMLib\FEUserMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEMLib\FEAnalysisStep.h" />
@@ -167,9 +173,16 @@
     <ClInclude Include="..\..\FEMLib\FEDOF.h" />
     <ClInclude Include="..\..\FEMLib\FEInitialCondition.h" />
     <ClInclude Include="..\..\FEMLib\FEInterface.h" />
+    <ClInclude Include="..\..\FEMLib\FEMaterial.h" />
+    <ClInclude Include="..\..\FEMLib\FEMaterialFactory.h" />
+    <ClInclude Include="..\..\FEMLib\FEMaterialLibrary.h" />
     <ClInclude Include="..\..\FEMLib\FEMKernel.h" />
+    <ClInclude Include="..\..\FEMLib\FEMultiMaterial.h" />
+    <ClInclude Include="..\..\FEMLib\FERigidConstraint.h" />
     <ClInclude Include="..\..\FEMLib\FEStepComponent.h" />
     <ClInclude Include="..\..\FEMLib\FESurfaceLoad.h" />
+    <ClInclude Include="..\..\FEMLib\FEUserMaterial.h" />
+    <ClInclude Include="..\..\FEMLib\stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

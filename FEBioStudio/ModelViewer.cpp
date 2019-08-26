@@ -8,7 +8,7 @@
 #include <QMenu>
 #include "DlgEditOutput.h"
 #include "MaterialEditor.h"
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <GeomLib/GObject.h>

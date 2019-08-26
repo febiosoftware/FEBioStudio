@@ -1,7 +1,7 @@
 #pragma once
 
 #include <MeshTools/GMaterial.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <MeshTools/FEProject.h>
 #include <MeshIO/FileReader.h>
 #include <XML/XMLReader.h>

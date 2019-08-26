@@ -1,6 +1,6 @@
 #include "FEAnalysisStep.h"
 #include <MeshTools/FEModel.h>
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/FEProject.h>
 #include "FEInitialCondition.h"
 #include "FESurfaceLoad.h"

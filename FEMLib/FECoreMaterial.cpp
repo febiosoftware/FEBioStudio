@@ -1,6 +1,6 @@
 #include "FECoreMaterial.h"
-#include <MeshTools/FEMaterialFactory.h>
-#include <MeshTools/FEMaterial.h>
+#include "FEMaterialFactory.h"
+#include "FEMaterial.h"
 
 //=============================================================================
 // FEMaterialProperty

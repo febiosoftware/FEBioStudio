@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FEMultiMaterial.h"
 #include "FEMaterialFactory.h"
-#include "FEProject.h"
+#include <MeshTools/FEProject.h>
 #include <sstream>
 
 //=============================================================================

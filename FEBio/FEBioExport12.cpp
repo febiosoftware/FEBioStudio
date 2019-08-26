@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "FEBioExport12.h"
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <GeomLib/GObject.h>

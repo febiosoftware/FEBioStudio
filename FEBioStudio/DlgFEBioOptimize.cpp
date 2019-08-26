@@ -12,7 +12,7 @@
 #include <QDialogButtonBox>
 #include <QTreeWidget>
 #include <QMessageBox>
-#include <MeshTools/FEMaterial.h>
+#include <FEMLib/FEMaterial.h>
 #include "Document.h"
 #include "DlgFormula.h"
 #include <QClipboard>

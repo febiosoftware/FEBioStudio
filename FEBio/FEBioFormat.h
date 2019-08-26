@@ -2,7 +2,7 @@
 #include <XML/XMLReader.h>
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FESurfaceLoad.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include "FEBioModel.h"
 
 //-----------------------------------------------------------------------------

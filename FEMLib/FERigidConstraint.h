@@ -1,7 +1,7 @@
 #pragma once
 #include <FEMLib/FEStepComponent.h>
 #include <FSCore/Archive.h>
-#include "LoadCurve.h"
+#include <MeshTools/LoadCurve.h>
 
 class FEModel;
 

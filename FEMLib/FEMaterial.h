@@ -1,6 +1,6 @@
 #pragma once
-#include "LoadCurve.h"
-#include "FEMLib/FECoreMaterial.h"
+#include <MeshTools/LoadCurve.h>
+#include "FECoreMaterial.h"
 #include "FEMaterialFactory.h"
 
 // --- Material Classes ---

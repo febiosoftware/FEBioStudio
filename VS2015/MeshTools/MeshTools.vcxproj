@@ -178,9 +178,6 @@
     <ClCompile Include="..\..\MeshTools\FEItemListBuilder.cpp" />
     <ClCompile Include="..\..\MeshTools\FELinearToQuadratic.cpp" />
     <ClCompile Include="..\..\MeshTools\FELoftMesher.cpp" />
-    <ClCompile Include="..\..\MeshTools\FEMaterial.cpp" />
-    <ClCompile Include="..\..\MeshTools\FEMaterialFactory.cpp" />
-    <ClCompile Include="..\..\MeshTools\FEMaterialLibrary.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMeshData.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMesher.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMeshSmoothingModifier.cpp" />
@@ -190,7 +187,6 @@
     <ClCompile Include="..\..\MeshTools\FEModifier.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMortarProjection.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMultiBlockMesh.cpp" />
-    <ClCompile Include="..\..\MeshTools\FEMultiMaterial.cpp" />
     <ClCompile Include="..\..\MeshTools\FENNQuery.cpp" />
     <ClCompile Include="..\..\MeshTools\FENodeData.cpp" />
     <ClCompile Include="..\..\MeshTools\FEPlaneCut.cpp" />
@@ -199,7 +195,6 @@
     <ClCompile Include="..\..\MeshTools\FEQuartDogBone.cpp" />
     <ClCompile Include="..\..\MeshTools\FERefineSurface.cpp" />
     <ClCompile Include="..\..\MeshTools\FERevolveFaces.cpp" />
-    <ClCompile Include="..\..\MeshTools\FERigidConstraint.cpp" />
     <ClCompile Include="..\..\MeshTools\FESelectElementsFromFaces.cpp" />
     <ClCompile Include="..\..\MeshTools\FESelection.cpp" />
     <ClCompile Include="..\..\MeshTools\FEShellDisc.cpp" />
@@ -233,7 +228,6 @@
     <ClCompile Include="..\..\MeshTools\FETri3ToTri6.cpp" />
     <ClCompile Include="..\..\MeshTools\FETruncatedEllipsoid.cpp" />
     <ClCompile Include="..\..\MeshTools\FETube.cpp" />
-    <ClCompile Include="..\..\MeshTools\FEUserMaterial.cpp" />
     <ClCompile Include="..\..\MeshTools\FEWeldModifier.cpp" />
     <ClCompile Include="..\..\MeshTools\FoamMesh.cpp" />
     <ClCompile Include="..\..\MeshTools\GDiscreteObject.cpp" />
@@ -302,9 +296,6 @@
     <ClInclude Include="..\..\MeshTools\FEItemListBuilder.h" />
     <ClInclude Include="..\..\MeshTools\FELinearToQuadratic.h" />
     <ClInclude Include="..\..\MeshTools\FELoftMesher.h" />
-    <ClInclude Include="..\..\MeshTools\FEMaterial.h" />
-    <ClInclude Include="..\..\MeshTools\FEMaterialFactory.h" />
-    <ClInclude Include="..\..\MeshTools\FEMaterialLibrary.h" />
     <ClInclude Include="..\..\MeshTools\FEMeshData.h" />
     <ClInclude Include="..\..\MeshTools\FEMesher.h" />
     <ClInclude Include="..\..\MeshTools\FEMeshSmoothingModifier.h" />
@@ -314,14 +305,12 @@
     <ClInclude Include="..\..\MeshTools\FEModifier.h" />
     <ClInclude Include="..\..\MeshTools\FEMortarProjection.h" />
     <ClInclude Include="..\..\MeshTools\FEMultiBlockMesh.h" />
-    <ClInclude Include="..\..\MeshTools\FEMultiMaterial.h" />
     <ClInclude Include="..\..\MeshTools\FENNQuery.h" />
     <ClInclude Include="..\..\MeshTools\FENodeData.h" />
     <ClInclude Include="..\..\MeshTools\FEProject.h" />
     <ClInclude Include="..\..\MeshTools\FEQuartDogBone.h" />
     <ClInclude Include="..\..\MeshTools\FERefineSurface.h" />
     <ClInclude Include="..\..\MeshTools\FERevolveFaces.h" />
-    <ClInclude Include="..\..\MeshTools\FERigidConstraint.h" />
     <ClInclude Include="..\..\MeshTools\FESelectElementsFromFaces.h" />
     <ClInclude Include="..\..\MeshTools\FESelection.h" />
     <ClInclude Include="..\..\MeshTools\FEShellDisc.h" />
@@ -346,7 +335,6 @@
     <ClInclude Include="..\..\MeshTools\FETorus.h" />
     <ClInclude Include="..\..\MeshTools\FETruncatedEllipsoid.h" />
     <ClInclude Include="..\..\MeshTools\FETube.h" />
-    <ClInclude Include="..\..\MeshTools\FEUserMaterial.h" />
     <ClInclude Include="..\..\MeshTools\FEWeldModifier.h" />
     <ClInclude Include="..\..\MeshTools\FoamMesh.h" />
     <ClInclude Include="..\..\MeshTools\GDiscreteObject.h" />

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "FEBioImport.h"
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include "FEBioFormatOld.h"
 #include "FEBioFormat12.h"
 #include "FEBioFormat2.h"

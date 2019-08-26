@@ -1,5 +1,5 @@
 #pragma once
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include "FEBioExport.h"
 
 //-----------------------------------------------------------------------------

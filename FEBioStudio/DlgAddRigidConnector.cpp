@@ -9,7 +9,7 @@
 #include <QMessageBox>
 #include <MeshTools/FEModel.h>
 #include <MeshTools/FEProject.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
 
 class Ui::CDlgAddRigidConnector

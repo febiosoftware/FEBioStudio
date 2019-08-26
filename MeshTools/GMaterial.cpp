@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GMaterial.h"
-#include "FEUserMaterial.h"
-#include "FEMaterial.h"
+#include <FEMLib/FEUserMaterial.h>
+#include <FEMLib/FEMaterial.h>
 #include <sstream>
 
 int GMaterial::m_nref = 1;

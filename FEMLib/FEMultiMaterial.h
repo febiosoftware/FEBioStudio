@@ -1,5 +1,5 @@
 #pragma once
-#include "FEMaterial.h"
+#include <FEMLib/FEMaterial.h>
 #include <vector>
 using namespace std;
 

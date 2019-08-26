@@ -1,7 +1,7 @@
 #include "FENikeProject.h"
 #include <MeshTools/FEProject.h>
-#include <MeshTools/FEMultiMaterial.h>
-#include <MeshTools/FERigidConstraint.h>
+#include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FERigidConstraint.h>
 #include <MeshLib/MeshMetrics.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <GeomLib/GObject.h>

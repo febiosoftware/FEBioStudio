@@ -27,7 +27,7 @@
 #include <GLLib/GLContext.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <MeshLib/FENodeFaceList.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <QAction>
 #include <QMenu>
 #include <QMessageBox>

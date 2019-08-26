@@ -10,8 +10,8 @@
 #include <QMessageBox>
 #include <MeshTools/FEModel.h>
 #include <MeshTools/FEProject.h>
-#include <MeshTools/FERigidConstraint.h>
-#include <MeshTools/FEMultiMaterial.h>
+#include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
 
 class Ui::CDlgAddRigidConstraint
