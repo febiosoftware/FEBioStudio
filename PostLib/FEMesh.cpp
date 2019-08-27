@@ -182,10 +182,10 @@ void FEMeshBase::FindNeighbours()
 		FEElement_& e = Element(i);
 
 		// solid elements
-		for (int  j=0; j<e.Faces(); j++) e.m_nbr[j] = 0;
+		for (int  j=0; j<e.Faces(); j++) e.m_nbr[j] = -1;
 
 		// shells
-		for (int j=0; j<e.Edges(); ++j) e.m_nbr[j] = 0;
+		for (int j=0; j<e.Edges(); ++j) e.m_nbr[j] = -1;
 	}
 
 	// set up the element's neighbour pointers
@@ -200,7 +200,7 @@ void FEMeshBase::FindNeighbours()
 		// first, do the solid elements
 		for (int j=0; j<e.Faces(); j++)
 		{
-			if (e.m_nbr[j] == 0)
+			if (e.m_nbr[j] == -1)
 			{
 				e.GetFace(j, face);
 
@@ -236,7 +236,7 @@ void FEMeshBase::FindNeighbours()
 		// next, do the shell elements
 		for (int j=0; j<e.Edges(); ++j)
 		{
-			e.m_nbr[j] = 0;
+			e.m_nbr[j] = -1;
 			edge = e.GetEdge(j);
 
 			// find the neighbour element
@@ -360,7 +360,7 @@ void FEMeshBase::BuildFaces()
 		// solid elements
 		int nf = e.Faces();
 		for (j=0; j<nf; ++j)
-			if (e.m_nbr[j] == 0) ++NF;
+			if (e.m_nbr[j] < 0) ++NF;
 
 		// shell elements
 		if (e.Edges()) ++NF;
@@ -378,7 +378,7 @@ void FEMeshBase::BuildFaces()
 		// solid elements
 		int nf = e.Faces();
 		for (j=0; j<nf; ++j)
-			if (e.m_nbr[j] == 0)
+			if (e.m_nbr[j] < 0)
 			{
 				FEFace& f = m_Face[NF++];
 				e.GetFace(j, f);

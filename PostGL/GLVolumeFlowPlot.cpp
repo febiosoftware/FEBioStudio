@@ -9,9 +9,14 @@ extern int ET_HEX[12][2];
 
 GLVolumeFlowPlot::GLVolumeFlowPlot(CGLModel* mdl) : CGLPlot(mdl)
 {
+	static int n = 1;
+	char szname[128] = { 0 };
+	sprintf(szname, "VolumeFlow%d", n++);
+	SetName(szname);
+
 	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddDoubleParam(0.2, "Alpha");
+	AddDoubleParam(0.2, "Opacity scale");
 
 	m_alpha = 0.2f;
 	m_nfield = 0;

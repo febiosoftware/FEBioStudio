@@ -121,5 +121,6 @@
 		<file>icons/eye.png</file>
 		<file>icons/check.png</file>
 		<file>icons/info.png</file>
+		<file>icons/flow.png</file>
 	</qresource>
 </RCC>
