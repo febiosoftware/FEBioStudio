@@ -1,5 +1,6 @@
 #pragma once
 #include <stack>
+#include <string>
 
 class CCommand;
 class CDocument;

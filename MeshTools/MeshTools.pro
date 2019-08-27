@@ -1,7 +1,7 @@
 TEMPLATE = lib
 TARGET = meshtools
 DESTDIR = ../build/lib
-CONFIG += release c++14 staticlib warn_off 
+CONFIG += debug c++14 staticlib warn_off 
 DEFINES += LINUX HAS_NETGEN HAS_OCC
 INCLUDEPATH += ../
 INCLUDEPATH += /opt/netgen/include

@@ -19,6 +19,7 @@
 #include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"
+#include <FSCore/FSDir.h>
 
 class CObjectValidator
 {
@@ -242,6 +243,11 @@ public:
 		else if (i == 4)
 		{
 			std::string plotFile = m_job->GetPlotFileName();
+
+			// do string replacement
+			FSDir dir(plotFile);
+			plotFile = dir.toAbsolutePath();
+
 			plotFile = "file:///" + plotFile;
 
 			// try to open the file

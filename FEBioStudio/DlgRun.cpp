@@ -308,12 +308,19 @@ void CDlgRun::accept()
 	spath = dir.toAbsolutePath();
 
 	// check if it exists
-	QDir qdir(QString::fromStdString(spath));
-	if (path.isEmpty() || (qdir.exists() == false))
-	{
-		QMessageBox::critical(this, "FEBio Studio", "You must enter a valid working directory.");
-		return;
-	}
+		QDir qdir(QString::fromStdString(spath));
+		if (path.isEmpty() || (qdir.exists() == false))
+		{
+			QMessageBox::StandardButton reply;
+			reply = QMessageBox::question(this, "FEBio Studio", "The directory you specified does not exist. Create it?",
+					QMessageBox::Yes|QMessageBox::No);
+
+			if(!(reply == QMessageBox::Yes))
+			{
+				return;
+			}
+
+		}
 
 	// see if the job name is defined
 	if (ui->jobName->text().isEmpty())

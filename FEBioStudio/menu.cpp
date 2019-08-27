@@ -72,6 +72,10 @@
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 
+#ifdef HAS_QUAZIP
+#include "ZipFiles.h"
+#endif
+
 void CMainWindow::on_actionNew_triggered()
 {
 	// check to see if the document is modified or not
@@ -132,6 +136,8 @@ void CMainWindow::on_actionNew_triggered()
 					// setup model file name and path
 					QString modelFileName = projectName + ".fsprj";
 					QString modelFilePath = dir.absoluteFilePath(modelFileName);
+//					QString modelJobsDir = modelFilePath +"/jobs";
+//					QString modelResourcesDir = modelFilePath +"/resources";
 
 					// see if this file already exists
 					QFile file(modelFilePath);
@@ -256,9 +262,74 @@ void CMainWindow::on_actionSave_triggered()
 	}
 }
 
+
+#ifdef HAS_QUAZIP
+void CMainWindow::on_actionImportProject_triggered()
+{
+	QStringList filters;
+	filters << "FBS Project Archives (*.prj)";
+
+	QFileDialog dlg(this, "Open");
+	dlg.setFileMode(QFileDialog::ExistingFile);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	dlg.setDirectory(ui->currentPath);
+	dlg.setNameFilters(filters);
+	if (dlg.exec())
+	{
+		// store the current path
+		QDir dir = dlg.directory();
+		SetCurrentFolder(dir.absolutePath());
+
+		// get the file name
+		QStringList files = dlg.selectedFiles();
+		QString fileName = files.first();
+		QFileInfo fileInfo(fileName);
+
+		// get the parent directory's name
+		QString parentDirName = fileInfo.path();
+
+		// create folder in which to unzip
+		QDir parentDir(parentDirName);
+		parentDir.mkdir(fileInfo.completeBaseName());
+		QString destDir = parentDirName + "/" + fileInfo.completeBaseName();
+
+		// extract files
+		QStringList extractedFiles = JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
+
+		// open first .fsprj file
+		for(QString str : extractedFiles)
+		{
+			if(QFileInfo(str).suffix().compare("fsprj", Qt::CaseInsensitive) == 0)
+			{
+				OpenDocument(str);
+				break;
+			}
+		}
+
+	}
+}
+
+void CMainWindow::on_actionExportProject_triggered()
+{
+	QString fileName = QFileDialog::getSaveFileName(this, "Export", ui->currentPath, "FEBio Studio Project (*.zip)");
+		if (fileName.isEmpty() == false)
+		{
+			// make sure the file has an extension
+			std::string sfile = fileName.toStdString();
+			std::size_t found = sfile.rfind(".");
+			if (found == std::string::npos) sfile.append(".prj");
+
+			std::string pathName = m_doc->GetDocFolder();
+
+			archive(QString::fromStdString(sfile), QDir(QString::fromStdString(pathName)));
+
+		}
+}
+#endif
+
 void CMainWindow::on_actionSaveAs_triggered()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, "Save", ui->currentPath, "FEBio Studio Project (*.fsprj)");
+	QString fileName = QFileDialog::getSaveFileName(this, "Export", ui->currentPath, "FEBio Studio Project (*.fsprj)");
 	if (fileName.isEmpty() == false)
 	{
 		// make sure the file has an extension
@@ -581,11 +652,39 @@ void CMainWindow::on_actionImportImage_triggered()
 		QString fileName = files.at(0);
 		std::string sfile = fileName.toStdString();
 
+		// create 'resources' subdirectory
+		CDocument* doc = GetDocument();
+		std::string sPath = doc->GetDocFolder();
+
+		if (!sPath.empty())
+		{
+			QString projectPath = QString::fromStdString(sPath);
+			QDir projectDir(projectPath);
+			projectDir.mkdir("resources");
+			QString resourceDir = projectPath + "/resources/";
+
+
+			// store path for linked file
+			QString linkName = resourceDir + QFileInfo(fileName).fileName();
+
+			// add .lnk extension to link when on windows
+#ifdef WIN32
+			linkName += ".lnk";
+#endif
+
+
+			// create link in resources directory
+			QFile originalFile(fileName);
+			originalFile.link(linkName);
+
+			// store path to newly created link
+			sfile = linkName.toStdString();
+		}
+
 		CDlgRAWImport dlg(this);
 		if (dlg.exec())
 		{
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
-			CDocument* doc = GetDocument();
 
 			Post::CImageModel* po = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
 			if (po == nullptr)

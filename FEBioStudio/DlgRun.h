@@ -24,6 +24,7 @@ public:
 	int GetFEBioPath();
 	int GetFEBioFileVersion();
 	bool WriteNodes();
+	bool UseSubDir();
 
 	QString CommandLine();
 

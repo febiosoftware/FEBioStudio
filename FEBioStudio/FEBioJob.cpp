@@ -3,6 +3,7 @@
 #include "PostDoc.h"
 #include <sstream>
 #include <QtCore/QString>
+#include <QFileInfo>
 #include <FSCore/FSDir.h>
 
 //-----------------------------------------------------------------------------
@@ -58,6 +59,22 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	// add the xplt extension
 	m_plotFile += "xplt";
 
+	m_postDoc = nullptr;
+}
+
+void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
+{
+	QString dirName = QString::fromStdString(dir);
+
+	// update feb file name
+	QString febName = QFileInfo(QString::fromStdString(m_fileName)).fileName();
+	m_fileName = (dirName + "/" + febName).toStdString();
+
+	// update xplt file name
+	QString xpltName = QFileInfo(QString::fromStdString(m_plotFile)).fileName();
+	m_plotFile = (dirName + "/" + xpltName).toStdString();
+
+// TODO: Fix possible memory leak here.
 	m_postDoc = nullptr;
 }
 

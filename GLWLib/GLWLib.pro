@@ -1,5 +1,5 @@
 TEMPLATE = lib
-CONFIG += release qt qwidgets opengl staticlib warn_off
+CONFIG += debug qt qwidgets opengl staticlib warn_off
 DESTDIR = ../build/lib
 TARGET = glwlib
 SOURCES += GLWidget.cpp

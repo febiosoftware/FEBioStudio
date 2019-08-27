@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "RGBAImage.h"
+
+#ifdef WIN32
 #include <memory>
+#else
+#include <memory.h>
+#endif
 
 CRGBAImage::CRGBAImage()
 {

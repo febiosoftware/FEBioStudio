@@ -1,10 +1,15 @@
 QMAKE = /home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/qmake
 
-LIBS = Ansys Abaqus Comsol FEBio FEMLib FSCore GeomLib ImageLib LSDyna MathLib MeshIO MeshLib XML XPLTLib
+LIBS = Ansys Abaqus Comsol FEBio FEMLib FSCore GeomLib ImageLib LSDyna MathLib MeshIO MeshLib Nike3D XML XPLTLib
 
-FEBioStudio: $(LIBS) MeshTools GLWLib PostGL PostLib
+FEBioStudio: $(LIBS) MeshTools GLLib GLWLib PostGL PostLib
 	cd ../FEBioStudio; $(QMAKE) FEBioStudio.pro;
+#	$(MAKE) FEBIOStudioQMake
 	$(MAKE) -C ../FEBioStudio/;
+
+#FEBIOStudioQMake: FEBioStudio.pro
+#	cd ../FEBioStudio; rm moc*; $(MAKE) distclean
+#	cd ../FEBioStudio; $(QMAKE) FEBioStudio.pro;
 
 $(LIBS):
 	cd ../$@;	$(MAKE) -f ../build/makeLibs.mk
@@ -12,6 +17,10 @@ $(LIBS):
 MeshTools:
 	cd ../MeshTools; $(QMAKE) MeshTools.pro;
 	$(MAKE) -C ../MeshTools/;
+
+GLLib:
+	cd ../GLLib; $(QMAKE) GLLib.pro;
+	$(MAKE) -C ../GLLib/;
 	
 GLWLib:
 	cd ../GLWLib; $(QMAKE) GLWLib.pro;
@@ -30,6 +39,9 @@ FEBioStudioClean:
 
 MeshToolsClean:
 	cd ../MeshTools; rm moc*; $(MAKE) distclean
+
+GLLibClean:
+	cd ../GLLib; rm moc*; $(MAKE) distclean
 	
 GLWLibClean:
 	cd ../GLWLib; rm moc*; $(MAKE) distclean
@@ -46,6 +58,7 @@ clean: MocClean
 	done
 
 	cd ../MeshTools/; $(MAKE) distclean
+	cd ../GLLib/; $(MAKE) distclean
 	cd ../GLWLib/; $(MAKE) distclean
 	cd ../PostGL/; $(MAKE) distclean
 	cd ../PostLib/; $(MAKE) distclean

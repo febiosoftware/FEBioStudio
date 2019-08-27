@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 
 // functions for swapping data (used by some binary file import/export classes)
 void inline bswap(short& s)

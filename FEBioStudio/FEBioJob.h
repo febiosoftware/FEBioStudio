@@ -30,6 +30,8 @@ public:
 	void SetPlotFileName(const std::string& plotFile);
 	std::string GetPlotFileName() const;
 
+	void UpdateWorkingDirectory(const std::string& dir);
+
 	bool OpenPlotFile();
 
 	bool HasPostDoc();

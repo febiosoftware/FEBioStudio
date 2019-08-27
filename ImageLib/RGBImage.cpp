@@ -1,7 +1,12 @@
 #include "stdafx.h"
 #include "RGBImage.h"
 #include <stdio.h>
+
+#ifdef WIN32
 #include <memory>
+#else
+#include <memory.h>
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // CRGBImage

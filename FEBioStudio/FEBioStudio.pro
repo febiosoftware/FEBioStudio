@@ -2,10 +2,11 @@ DESTDIR = .
 TEMPLATE = app
 TARGET = FEBioStudio
 DESTDIR = ../build/bin
-CONFIG += release c++11
+CONFIG += debug c++11
 CONFIG += qt opengl qtwidgets qtcharts warn_off
-DEFINES += LINUX HAS_NETGEN HAS_OCC TETLIBRARY
+DEFINES += LINUX HAS_NETGEN HAS_OCC TETLIBRARY HAS_QUAZIP
 INCLUDEPATH += ../
+INCLUDEPATH += /usr/local/include/
 QT += widgets opengl gui charts
 #QMAKE_LFLAGS += -static-libstdc++ -static-libgcc
 #QMAKE_LFLAGS_RPATH = 
@@ -24,11 +25,14 @@ LIBS += -lnglib -lcsg -linterface -lmesh -locc
 #OpenCascade Libs
 LIBS += -lTKernel -lTKGeomBase -lTKTopAlgo -lTKPrim -lTKMesh -lTKMath -lTKBRep -lTKSTL -lTKFillet -lTKBO -lTKIGES -lTKSTEP -lTKSTEPBase -lTKXSBase -lTKG3d -lTKLCAF -lTKVCAF
 
+#QuaZip Lib
+LIBS += -lquazip5
+
 #PreView Libs
-LIBS += -labaqus -lansys -lgeomlib -lmathlib -lxml -lmeshio -lfebio -lcomsol -llsdyna -lmeshtools -lfemlib -lmeshlib -limagelib -lfscore
+LIBS += -labaqus -lansys -lgeomlib -lmathlib -lxml -lmeshio -lfebio -lcomsol -llsdyna -lmeshtools -lfemlib -lmeshlib -lnike3d -limagelib -lfscore
 
 #PostView Libs
-LIBS += -lglwlib -lpostgl -lxpltlib -lpostlib
+LIBS += -lgllib -lglwlib -lpostgl -lxpltlib -lpostlib
 
 LIBS += -Wl,--end-group
 

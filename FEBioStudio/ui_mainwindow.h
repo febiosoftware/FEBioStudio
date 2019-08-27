@@ -255,6 +255,10 @@ public:
 		QAction* actionExportFE   = addAction("Export FE model ..." , "actionExportFEModel");
 		QAction* actionImportGeom = addAction("Import geometry ...", "actionImportGeometry");
 		QAction* actionExportGeom = addAction("Export geometry ...", "actionExportGeometry");
+#ifdef HAS_QUAZIP
+		QAction* actionImportProject = addAction("Import project ...", "actionImportProject");
+		QAction* actionExportProject = addAction("Export project ...", "actionExportProject");
+#endif
 		QAction* actionImportImg  = addAction("Import image ...", "actionImportImage");
 		QAction* actionConvertFeb    = addAction("FEBio files ...", "actionConvertFeb");
 		QAction* actionConvertGeo = addAction("Geometry files ...", "actionConvertGeo");
@@ -453,6 +457,11 @@ public:
 		menuFile->addAction(actionSaveAs);
 		menuFile->addAction(menuRecentFiles->menuAction());
 		menuFile->addAction(actionInfo);
+#ifdef HAS_QUAZIP
+		menuFile->addSeparator();
+		menuFile->addAction(actionImportProject);
+		menuFile->addAction(actionExportProject);
+#endif
 		menuFile->addSeparator();
 		menuFile->addAction(actionImportFE);
 		menuFile->addAction(actionExportFE);

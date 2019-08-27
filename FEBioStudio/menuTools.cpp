@@ -9,6 +9,7 @@
 #include "DlgFEBioOptimize.h"
 #include <QFileDialog>
 #include <QApplication>
+#include <FSCore/FSDir.h>
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
@@ -51,7 +52,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	static QString lastPath;
 	QString jobPath;
 	if (projectFolder.isEmpty()) jobPath = lastPath;
-	else jobPath = "$(ProjectDir)";
+	else jobPath = "$(ProjectDir)/jobs";
 
 	// this keeps track of the FEBio selection that was used last
 	static int lastFEBioIndex = 0;
@@ -73,6 +74,16 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		// store the last path
 		lastPath = jobPath;
 
+		// do string replacement
+		FSDir dir(jobPath.toStdString());
+		QString realPath = QString::fromStdString((dir.toAbsolutePath()));
+
+		// create job directory if it doesn't exist.
+		if(!QFile(realPath).exists()){
+			QDir(realPath).mkpath(realPath);
+
+		}
+
 		// see if a job with this name already exists
 		CFEBioJob* job = doc->FindFEBioJob(jobName.toStdString());
 
@@ -85,6 +96,10 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 			// show it in the model viewer
 			UpdateModel(job);
+		}
+		else
+		{
+			job->UpdateWorkingDirectory(jobPath.toStdString());
 		}
 
 		// get the selected FEBio version

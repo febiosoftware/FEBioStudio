@@ -2,7 +2,12 @@
 #include "3DImage.h"
 #include <stdio.h>
 #include <math.h>
+
+#ifdef WIN32
 #include <memory>
+#else
+#include <memory.h>
+#endif
 
 //-----------------------------------------------------------------------------
 // find the power of 2 that is closest to n
