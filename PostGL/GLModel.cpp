@@ -320,6 +320,11 @@ void CGLModel::RemoveDisplacementMap()
 //-----------------------------------------------------------------------------
 void CGLModel::Render(CGLContext& rc)
 {
+	if (rc.m_showOutline)
+	{
+		RenderOutline(rc);
+	}
+
 	// first we render all the plots
 	RenderPlots(rc);
 
@@ -366,11 +371,6 @@ void CGLModel::Render(CGLContext& rc)
 
 	// render the ghost
 	if (m_bghost) RenderGhost(rc);
-
-	if (rc.m_showOutline)
-	{
-		RenderOutline(rc);
-	}
 
 	// render the edges
 	if (mode == SELECT_EDGES)

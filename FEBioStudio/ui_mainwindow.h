@@ -316,6 +316,7 @@ public:
 		QAction* actionDisplacementMap = addAction("Displacement map", "actionDisplacementMap", ":/icons/distort.png");
 		QAction* actionStreamLinePlot = addAction("Stream lines plot", "actionStreamLinePlot", ":/icons/streamlines.png");
 		QAction* actionParticleFlowPlot = addAction("Particle flow plot", "actionParticleFlowPlot", ":/icons/particle.png");
+		QAction* actionVolumeFlowPlot = addAction("Volume flow plot", "actionVolumeFlowPlot", ":/icons/particle.png");
 		QAction* actionImageSlicer = addAction("Image slicer", "actionImageSlicer", ":/icons/imageslice.png");
 		QAction* actionVolumeRender = addAction("Volume render", "actionVolumeRender", ":/icons/volrender.png");
 		QAction* actionMarchingCubes = addAction("Image isosurface", "actionMarchingCubes", ":/icons/marching_cubes.png");
@@ -330,6 +331,7 @@ public:
 		actionTensorPlot->setWhatsThis("<font color=\"black\"><h3>Tensor plot</h3>Add a tensor plot to the model. Tensor plots can show 2nd order tensor data in the model");
 		actionIsosurfacePlot->setWhatsThis("<font color=\"black\"><h3>Iso-surface plot</h3>Add an iso-surface plot to the model. An iso-surface plot shows surfaces that have the same value. You may need to make the model transparent in order to see the iso surfaces.");
 		actionSlicePlot->setWhatsThis("<font color=\"black\"><h3>Slice plot</h3>Add a slice plot. This plot adds several cross sections to the model. You may need to make the model transparent to see the slices.");
+		actionVolumeFlowPlot->setWhatsThis("<font color=\"black\"><h3>Volume flow plot</h3>Add a volume flow plot.");
 		actionDisplacementMap->setWhatsThis("<font color=\"black\"><h3>Displacement map</h3>Adds a displacement map. A displacement map will deform the model as a function of time.");
 		actionGraph->setWhatsThis("<font color=\"black\">Create a new Graph window");
 		actionSummary->setWhatsThis("<font color=\"black\">Shows the Summary window.The Summary window shows the min, max, and average values of a user-selected data field");
@@ -529,6 +531,7 @@ public:
 		menuPost->addAction(actionDisplacementMap);
 		menuPost->addAction(actionStreamLinePlot);
 		menuPost->addAction(actionParticleFlowPlot);
+		menuPost->addAction(actionVolumeFlowPlot);
 		menuPost->addSeparator();
 		menuPost->addAction(actionImageSlicer);
 		menuPost->addAction(actionVolumeRender);

@@ -13,6 +13,7 @@
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/VolRender.h>
 #include <PostLib/MarchingCubes.h>
+#include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <QMessageBox>
 #include "PostDoc.h"
@@ -117,6 +118,22 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 
 	RedrawGL();
 }
+
+void CMainWindow::on_actionVolumeFlowPlot_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr) return;
+
+	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot(glm);
+	glm->AddPlot(pp);
+
+	ui->modelViewer->Update();
+	ui->modelViewer->Select(pp);
+	ui->modelViewer->parentWidget()->raise();
+
+	RedrawGL();
+}
+
 
 void CMainWindow::on_actionImageSlicer_triggered()
 {

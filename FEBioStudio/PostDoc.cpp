@@ -220,26 +220,20 @@ void CPostDoc::ApplyPalette(const Post::CPalette& pal)
 
 void CPostDoc::Render(CGLView* view)
 {
-	CGLCamera cam = view->GetCamera();
-
-	// convert PreView camera to PostView camera
-	CGLCamera glcam;
-	glcam.SetTarget(to_vec3f(cam.GetPosition()));
-	glcam.SetLocalTarget(to_vec3f(cam.Target()));
-	glcam.SetOrientation(cam.GetOrientation());
-	glcam.Update(true);
+	CGLCamera& cam = view->GetCamera();
 
 	VIEW_SETTINGS& vs = view->GetDocument()->GetViewSettings();
 
 	CGLContext rc;
-	rc.m_cam = &glcam;
+	rc.m_cam = &cam;
 	rc.m_showOutline = vs.m_bfeat;
 	rc.m_showMesh = vs.m_bmesh;
+	rc.m_q = cam.GetOrientation();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	glcam.Transform();
+	cam.Transform();
 
 	// match the selection mode
 	int selectionMode = Post::SELECT_ELEMS;

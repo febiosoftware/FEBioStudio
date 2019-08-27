@@ -21,14 +21,14 @@ public:
 	vec3f GetPlaneNormal() { return m_norm; }
 	void SetPlaneNormal(vec3f& n) { m_norm = n; }
 
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 
 	int GetEvalField() { return m_nfield; }
 	void SetEvalField(int n);
 
 	CColorTexture* GetColorMap() { return &m_Col; }
 
-	void Update(int ntime, float dt, bool breset);
+	void Update(int ntime, float dt, bool breset) override;
 
 	bool ShowLegend() { return m_pbar->visible(); }
 	void ShowLegend(bool b) { if (b) m_pbar->show(); else m_pbar->hide(); }
