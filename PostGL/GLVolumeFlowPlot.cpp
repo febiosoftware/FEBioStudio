@@ -74,26 +74,32 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 	m_slice_Y.resize(ny);
 	m_slice_Z.resize(nz);
 
-	// build the slices
-	for (int i = 0; i < nx; ++i)
+	// build the 
+#pragma omp parallel default(shared)
 	{
-		float x = box.x0 + ((float)i)*(box.x1 - box.x0) / (nx - 1.f);
-		Slice& slice = m_slice_X[i];
-		CreateSlice(slice, vec3f(1, 0, 0), x);
-	}
+#pragma omp for
+		for (int i = 0; i < nx; ++i)
+		{
+			float x = box.x0 + ((float)i)*(box.x1 - box.x0) / (nx - 1.f);
+			Slice& slice = m_slice_X[i];
+			CreateSlice(slice, vec3f(1, 0, 0), x);
+		}
 
-	for (int i = 0; i < ny; ++i)
-	{
-		float y = box.y0 + ((float)i)*(box.y1 - box.y0) / (ny - 1.f);
-		Slice& slice = m_slice_Y[i];
-		CreateSlice(slice, vec3f(0, 1, 0), y);
-	}
+#pragma omp for
+		for (int i = 0; i < ny; ++i)
+		{
+			float y = box.y0 + ((float)i)*(box.y1 - box.y0) / (ny - 1.f);
+			Slice& slice = m_slice_Y[i];
+			CreateSlice(slice, vec3f(0, 1, 0), y);
+		}
 
-	for (int i = 0; i < nz; ++i)
-	{
-		float z = box.z0 + ((float)i)*(box.z1 - box.z0) / (nz - 1.f);
-		Slice& slice = m_slice_Z[i];
-		CreateSlice(slice, vec3f(0, 0, 1), z);
+#pragma omp for
+		for (int i = 0; i < nz; ++i)
+		{
+			float z = box.z0 + ((float)i)*(box.z1 - box.z0) / (nz - 1.f);
+			Slice& slice = m_slice_Z[i];
+			CreateSlice(slice, vec3f(0, 0, 1), z);
+		}
 	}
 }
 
