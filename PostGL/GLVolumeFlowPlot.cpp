@@ -34,6 +34,7 @@ void GLVolumeFlowPlot::UpdateData(bool bsave)
 		m_nfield = GetIntValue(0);
 		m_Col.SetColorMap(GetIntValue(1));
 		m_alpha = GetFloatValue(2);
+		Update(GetModel()->currentTimeIndex(), 0.f, true);
 	}
 	else
 	{
@@ -124,7 +125,7 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 	}
 	m_box = b;
 
-//	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
+	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
 
 	if (m_map.States() != pfem->GetStates())
 	{
@@ -135,7 +136,7 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 	if (m_nfield == 0) return;
 
 	// see if we need to update this state
-//	if (breset || (m_map.GetTag(ntime) != m_nfield))
+	if (breset || (m_map.GetTag(ntime) != m_nfield))
 	{
 		m_map.SetTag(ntime, m_nfield);
 		vector<float>& val = m_map.State(ntime);
@@ -176,9 +177,6 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 	m_val = m_map.State(ntime);
 
 	// update range
-	vec2f r = m_rng[ntime];
-	//	m_Col.SetRange(r.x, r.y, false);
-
 	m_crng = m_rng[ntime];
 }
 

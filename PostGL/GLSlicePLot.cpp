@@ -320,8 +320,5 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 	m_val = m_map.State(ntime);
 
 	// update range
-	vec2f r = m_rng[ntime];
-//	m_Col.SetRange(r.x, r.y, false);
-
 	m_crng = m_rng[ntime];
 }
