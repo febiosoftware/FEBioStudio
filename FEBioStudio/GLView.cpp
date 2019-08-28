@@ -4034,9 +4034,7 @@ void CGLView::SelectFEElements(int x, int y)
 	}
 	else if (!m_bshift)
 	{
-		FESelection* sel = pdoc->GetCurrentSelection();
-		if (sel && sel->Size())
-			pcmd = new CCmdSelectElements(pm, 0, 0, false);
+		pcmd = new CCmdSelectElements(pm, 0, 0, false);
 	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
