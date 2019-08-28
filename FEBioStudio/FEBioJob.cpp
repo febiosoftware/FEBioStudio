@@ -3,7 +3,7 @@
 #include "PostDoc.h"
 #include <sstream>
 #include <QtCore/QString>
-#include <QFileInfo>
+#include <QtCore/QFileInfo>
 #include <FSCore/FSDir.h>
 
 //-----------------------------------------------------------------------------
