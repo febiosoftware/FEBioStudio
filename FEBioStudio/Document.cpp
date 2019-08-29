@@ -1626,16 +1626,24 @@ std::vector<std::string> CDocument::CheckModel()
 		}
 	}
 
-	// is a material assigned to all parts ?
-	for (int i = 0; i < mdl.Objects(); ++i)
+	// are there any materials
+	if (fem.Materials() == 0)
 	{
-		GObject* po = mdl.Object(i);
-		for (int j = 0; j < po->Parts(); ++j)
+		errorList.push_back("There are no materials defined in this model.");
+	}
+	else 
+	{
+		// is a material assigned to all parts ?
+		for (int i = 0; i < mdl.Objects(); ++i)
 		{
-			GPart* pj = po->Part(j);
-			if (pj->GetMaterialID() == -1)
+			GObject* po = mdl.Object(i);
+			for (int j = 0; j < po->Parts(); ++j)
 			{
-				errorList.push_back("Part \"" + pj->GetName() + "\" of object \"" + po->GetName() + "\" does not have a material assigned.");
+				GPart* pj = po->Part(j);
+				if (pj->GetMaterialID() == -1)
+				{
+					errorList.push_back("Part \"" + pj->GetName() + "\" of object \"" + po->GetName() + "\" does not have a material assigned.");
+				}
 			}
 		}
 	}
