@@ -251,6 +251,9 @@ public:
 	
 	CFEBioJob* FindFEBioJob(const std::string& s);
 
+	// checks the model for issues and returns the warnings as a string array
+	std::vector<std::string>	CheckModel();
+
 public:
 	int ImageModels() const;
 	void AddImageModel(Post::CImageModel* img);

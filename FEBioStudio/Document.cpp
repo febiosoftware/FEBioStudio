@@ -1605,3 +1605,46 @@ void CDocument::DeleteAllImageModels()
 {
 	m_img.Clear();
 }
+
+std::vector<std::string> CDocument::CheckModel()
+{
+	vector<std::string> errorList;
+
+	GModel& mdl = *GetGModel();
+	FEModel& fem = *GetFEModel();
+
+	// are there any objects?
+	if (mdl.Objects() == 0) errorList.push_back("This model does not contain any geometry.");
+
+	// are all geometries meshed?
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		if (po->GetFEMesh() == nullptr)
+		{
+			errorList.push_back("The object \"" + po->GetName() + "\" is not meshed.");
+		}
+	}
+
+	// is a material assigned to all parts ?
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pj = po->Part(j);
+			if (pj->GetMaterialID() == -1)
+			{
+				errorList.push_back("Part \"" + pj->GetName() + "\" of object \"" + po->GetName() + "\" does not have a material assigned.");
+			}
+		}
+	}
+
+	// Are there any analysis steps? 
+	if (fem.Steps() <= 1)
+	{
+		errorList.push_back("There are no analysis steps defined.");
+	}
+
+	return errorList;
+}

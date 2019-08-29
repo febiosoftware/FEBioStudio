@@ -1717,6 +1717,23 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 	// do string substitution
 	filePath = FSDir::toAbsolutePath(filePath);
 
+	// check the model first for issues
+	vector<string> warnings = doc->CheckModel();
+
+	if (warnings.empty() == false)
+	{
+		if (QMessageBox::question(this, "FEBio Studio", "There are issues with this model that may prevent it from runnnig correctly in FEBio. Do you want to continue (select no to see the warnings)?") == QMessageBox::No)
+		{
+			QString s;
+			for (int i = 0; i < warnings.size(); ++i)
+			{
+				s += QString::fromStdString(warnings[i]) + "\n";
+			}
+			QMessageBox::information(this, "FEBio Studio", "Warnings:\n" + s);
+			return;
+		}
+	}
+
 	// try to save the file first
 	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(filePath)));
 
