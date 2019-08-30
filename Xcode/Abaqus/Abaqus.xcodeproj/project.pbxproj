@@ -1,0 +1,292 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D53292DA1E4A8159002798B3 /* AbaqusImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D53292D81E4A8159002798B3 /* AbaqusImport.cpp */; };
+		D53292DB1E4A8159002798B3 /* AbaqusImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D53292D91E4A8159002798B3 /* AbaqusImport.h */; };
+		D5453DA5213F5A8E006CBCB8 /* AbaqusModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5453DA3213F5A8E006CBCB8 /* AbaqusModel.cpp */; };
+		D5453DA6213F5A8E006CBCB8 /* AbaqusModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D5453DA4213F5A8E006CBCB8 /* AbaqusModel.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D53292C91E4A8142002798B3 /* libAbaqus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAbaqus.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D53292D81E4A8159002798B3 /* AbaqusImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbaqusImport.cpp; sourceTree = "<group>"; };
+		D53292D91E4A8159002798B3 /* AbaqusImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbaqusImport.h; sourceTree = "<group>"; };
+		D5453DA3213F5A8E006CBCB8 /* AbaqusModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbaqusModel.cpp; sourceTree = "<group>"; };
+		D5453DA4213F5A8E006CBCB8 /* AbaqusModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbaqusModel.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D53292C61E4A8142002798B3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D53292C01E4A8142002798B3 = {
+			isa = PBXGroup;
+			children = (
+				D53292D71E4A8159002798B3 /* Abaqus */,
+				D53292CA1E4A8142002798B3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D53292CA1E4A8142002798B3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D53292C91E4A8142002798B3 /* libAbaqus.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D53292D71E4A8159002798B3 /* Abaqus */ = {
+			isa = PBXGroup;
+			children = (
+				D53292D81E4A8159002798B3 /* AbaqusImport.cpp */,
+				D53292D91E4A8159002798B3 /* AbaqusImport.h */,
+				D5453DA3213F5A8E006CBCB8 /* AbaqusModel.cpp */,
+				D5453DA4213F5A8E006CBCB8 /* AbaqusModel.h */,
+			);
+			name = Abaqus;
+			path = ../../Abaqus;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D53292C71E4A8142002798B3 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D53292DB1E4A8159002798B3 /* AbaqusImport.h in Headers */,
+				D5453DA6213F5A8E006CBCB8 /* AbaqusModel.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D53292C81E4A8142002798B3 /* Abaqus */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D53292D41E4A8142002798B3 /* Build configuration list for PBXNativeTarget "Abaqus" */;
+			buildPhases = (
+				D53292C51E4A8142002798B3 /* Sources */,
+				D53292C61E4A8142002798B3 /* Frameworks */,
+				D53292C71E4A8142002798B3 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Abaqus;
+			productName = Abaqus;
+			productReference = D53292C91E4A8142002798B3 /* libAbaqus.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D53292C11E4A8142002798B3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1030;
+				ORGANIZATIONNAME = febio.org;
+				TargetAttributes = {
+					D53292C81E4A8142002798B3 = {
+						CreatedOnToolsVersion = 8.2.1;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = D53292C41E4A8142002798B3 /* Build configuration list for PBXProject "Abaqus" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D53292C01E4A8142002798B3;
+			productRefGroup = D53292CA1E4A8142002798B3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D53292C81E4A8142002798B3 /* Abaqus */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D53292C51E4A8142002798B3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5453DA5213F5A8E006CBCB8 /* AbaqusModel.cpp in Sources */,
+				D53292DA1E4A8159002798B3 /* AbaqusImport.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D53292D21E4A8142002798B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+			};
+			name = Debug;
+		};
+		D53292D31E4A8142002798B3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+			};
+			name = Release;
+		};
+		D53292D51E4A8142002798B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D53292D61E4A8142002798B3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D53292C41E4A8142002798B3 /* Build configuration list for PBXProject "Abaqus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D53292D21E4A8142002798B3 /* Debug */,
+				D53292D31E4A8142002798B3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D53292D41E4A8142002798B3 /* Build configuration list for PBXNativeTarget "Abaqus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D53292D51E4A8142002798B3 /* Debug */,
+				D53292D61E4A8142002798B3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D53292C11E4A8142002798B3 /* Project object */;
+}

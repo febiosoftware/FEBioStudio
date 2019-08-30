@@ -1,0 +1,25 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "b505bdfe-9d5c-0410-8600-697d5fc8e487",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "984BBF17-20DD-48C8-8784-7316FFF3D28B",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : "MRLProjects\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "GeomLib",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "PreView2\/Xcode\/GeomLib\/GeomLib.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/gforge.sci.utah.edu\/svn\/MRLProjects",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "b505bdfe-9d5c-0410-8600-697d5fc8e487"
+    }
+  ]
+}

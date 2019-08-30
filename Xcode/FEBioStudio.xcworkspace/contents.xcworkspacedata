@@ -5,54 +5,63 @@
       location = "container:FEBioStudio/FEBioStudio.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/Abaqus/Abaqus.xcodeproj">
+      location = "group:Abaqus/Abaqus.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/Ansys/Ansys.xcodeproj">
+      location = "group:Ansys/Ansys.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/Comsol/Comsol.xcodeproj">
+      location = "group:Comsol/Comsol.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/FEBio/FEBio.xcodeproj">
+      location = "group:FEBio/FEBio.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/FEMLib/FEMLib.xcodeproj">
+      location = "group:FEBio/../FEMLib/FEMLib.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/GeomLib/GeomLib.xcodeproj">
+      location = "group:FSCore/FSCore.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/ImageLib/ImageLib.xcodeproj">
+      location = "group:GeomLib/GeomLib.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/LSDYNA/LSDYNA.xcodeproj">
+      location = "group:GLLib/GLLib.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/MathLib/MathLib.xcodeproj">
+      location = "group:GLWLib/GLWLib.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/MeshLib/MeshLib.xcodeproj">
+      location = "group:ImageLib/ImageLib.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/PreViewIO/PreViewIO.xcodeproj">
+      location = "group:LSDyna/LSDyna.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/PreViewLib/PreViewLib.xcodeproj">
+      location = "group:MathLib/MathLib.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PreView2/Xcode/XML/XML.xcodeproj">
+      location = "group:MeshIO/MeshIO.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PostView2/Xcode/GLWLib/GLWLib.xcodeproj">
+      location = "group:MeshLib/MeshLib.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PostView2/Xcode/PostGL/PostGL.xcodeproj">
+      location = "group:MeshTools/MeshTools.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PostView2/Xcode/PostViewLib/PostViewLib.xcodeproj">
+      location = "group:Nike3D/Nike3D.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../../PostView2/Xcode/XPLTLib/XPLTLib.xcodeproj">
+      location = "group:PostGL/PostGL.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:PostLib/PostLib.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:XML/XML.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:XPLTLib/XPLTLib.xcodeproj">
    </FileRef>
 </Workspace>

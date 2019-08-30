@@ -1,0 +1,25 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "b505bdfe-9d5c-0410-8600-697d5fc8e487",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "C535203C-2F04-42BA-8964-94890BA3F8EB",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : "MRLProjects\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Abaqus",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "PreView2\/Xcode\/Abaqus\/Abaqus.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/gforge.sci.utah.edu\/svn\/MRLProjects",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "b505bdfe-9d5c-0410-8600-697d5fc8e487"
+    }
+  ]
+}

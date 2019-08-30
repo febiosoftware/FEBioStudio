@@ -1,0 +1,24 @@
+{
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : {
+      "DVTSourceControlWorkingCopyRepositoryBranchesLocationKey" : "branches"
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "C8744C20-4451-4FD1-94C7-03E36CC06C95",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "b505bdfe-9d5c-0410-8600-697d5fc8e487" : "..\/.."
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "GLWLib",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "GLWLib.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/gforge.sci.utah.edu\/svn\/MRLProjects",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "b505bdfe-9d5c-0410-8600-697d5fc8e487"
+    }
+  ]
+}

@@ -1,0 +1,506 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D5ED26D823197D9500C16BF7 /* FEViewpointExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26A023197D9500C16BF7 /* FEViewpointExport.h */; };
+		D5ED26D923197D9500C16BF7 /* FESTLimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26A123197D9500C16BF7 /* FESTLimport.cpp */; };
+		D5ED26DA23197D9500C16BF7 /* BREPImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26A223197D9500C16BF7 /* BREPImport.cpp */; };
+		D5ED26DB23197D9500C16BF7 /* FENASTRANimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26A323197D9500C16BF7 /* FENASTRANimport.cpp */; };
+		D5ED26DC23197D9500C16BF7 /* FEVTKExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26A423197D9500C16BF7 /* FEVTKExport.h */; };
+		D5ED26DD23197D9500C16BF7 /* FETetGenExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26A523197D9500C16BF7 /* FETetGenExport.h */; };
+		D5ED26DE23197D9500C16BF7 /* FEPLYImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26A623197D9500C16BF7 /* FEPLYImport.h */; };
+		D5ED26DF23197D9500C16BF7 /* FEIDEASimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26A723197D9500C16BF7 /* FEIDEASimport.cpp */; };
+		D5ED26E023197D9600C16BF7 /* FEMeshImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26A823197D9500C16BF7 /* FEMeshImport.cpp */; };
+		D5ED26E123197D9600C16BF7 /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26A923197D9500C16BF7 /* stdafx.h */; };
+		D5ED26E223197D9600C16BF7 /* PRVObjectImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26AA23197D9500C16BF7 /* PRVObjectImport.h */; };
+		D5ED26E323197D9600C16BF7 /* FEVTKExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26AB23197D9500C16BF7 /* FEVTKExport.cpp */; };
+		D5ED26E423197D9600C16BF7 /* PRVObjectFormat.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26AC23197D9500C16BF7 /* PRVObjectFormat.h */; };
+		D5ED26E523197D9600C16BF7 /* FEDXFimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26AD23197D9500C16BF7 /* FEDXFimport.h */; };
+		D5ED26E623197D9600C16BF7 /* FEMeshImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26AE23197D9500C16BF7 /* FEMeshImport.h */; };
+		D5ED26E723197D9600C16BF7 /* FEHMASCIIimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26AF23197D9500C16BF7 /* FEHMASCIIimport.h */; };
+		D5ED26E823197D9600C16BF7 /* FEHyperSurfImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26B023197D9500C16BF7 /* FEHyperSurfImport.cpp */; };
+		D5ED26E923197D9600C16BF7 /* FEBYUExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26B123197D9500C16BF7 /* FEBYUExport.h */; };
+		D5ED26EA23197D9600C16BF7 /* FEVTKImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26B223197D9500C16BF7 /* FEVTKImport.cpp */; };
+		D5ED26EB23197D9600C16BF7 /* FEDXFimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26B323197D9500C16BF7 /* FEDXFimport.cpp */; };
+		D5ED26EC23197D9600C16BF7 /* FERAWImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26B423197D9500C16BF7 /* FERAWImport.h */; };
+		D5ED26ED23197D9600C16BF7 /* FEMeshExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26B523197D9500C16BF7 /* FEMeshExport.cpp */; };
+		D5ED26EE23197D9600C16BF7 /* FESTLExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26B623197D9500C16BF7 /* FESTLExport.h */; };
+		D5ED26EF23197D9600C16BF7 /* FESTLExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26B723197D9500C16BF7 /* FESTLExport.cpp */; };
+		D5ED26F023197D9600C16BF7 /* FESTLimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26B823197D9500C16BF7 /* FESTLimport.h */; };
+		D5ED26F123197D9600C16BF7 /* FEViewpointExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26B923197D9500C16BF7 /* FEViewpointExport.cpp */; };
+		D5ED26F223197D9600C16BF7 /* FileReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26BA23197D9500C16BF7 /* FileReader.cpp */; };
+		D5ED26F323197D9600C16BF7 /* FEHyperSurfImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26BB23197D9500C16BF7 /* FEHyperSurfImport.h */; };
+		D5ED26F423197D9600C16BF7 /* FETetGenExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26BC23197D9500C16BF7 /* FETetGenExport.cpp */; };
+		D5ED26F523197D9600C16BF7 /* FEHypersurfaceExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26BD23197D9500C16BF7 /* FEHypersurfaceExport.h */; };
+		D5ED26F623197D9600C16BF7 /* FEHMASCIIimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26BE23197D9500C16BF7 /* FEHMASCIIimport.cpp */; };
+		D5ED26F723197D9600C16BF7 /* FEMeshExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26BF23197D9500C16BF7 /* FEMeshExport.h */; };
+		D5ED26F823197D9600C16BF7 /* FEIGESFileImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C023197D9500C16BF7 /* FEIGESFileImport.cpp */; };
+		D5ED26F923197D9600C16BF7 /* FEBYUimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C123197D9500C16BF7 /* FEBYUimport.cpp */; };
+		D5ED26FA23197D9600C16BF7 /* FEPLYImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C223197D9500C16BF7 /* FEPLYImport.cpp */; };
+		D5ED26FB23197D9600C16BF7 /* FERAWImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C323197D9500C16BF7 /* FERAWImport.cpp */; };
+		D5ED26FC23197D9600C16BF7 /* PRVObjectImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C423197D9500C16BF7 /* PRVObjectImport.cpp */; };
+		D5ED26FD23197D9600C16BF7 /* FEBinarySTLimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C523197D9500C16BF7 /* FEBinarySTLimport.cpp */; };
+		D5ED26FE23197D9600C16BF7 /* FENASTRANimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26C623197D9500C16BF7 /* FENASTRANimport.h */; };
+		D5ED26FF23197D9600C16BF7 /* FEIDEASimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26C723197D9500C16BF7 /* FEIDEASimport.h */; };
+		D5ED270023197D9600C16BF7 /* FEBYUimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26C823197D9500C16BF7 /* FEBYUimport.h */; };
+		D5ED270123197D9600C16BF7 /* PRVObjectExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C923197D9500C16BF7 /* PRVObjectExport.cpp */; };
+		D5ED270223197D9600C16BF7 /* PRVObjectExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26CA23197D9500C16BF7 /* PRVObjectExport.h */; };
+		D5ED270323197D9600C16BF7 /* FEGMshImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26CB23197D9500C16BF7 /* FEGMshImport.cpp */; };
+		D5ED270423197D9600C16BF7 /* FEHypersurfaceExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26CC23197D9500C16BF7 /* FEHypersurfaceExport.cpp */; };
+		D5ED270523197D9600C16BF7 /* FEBYUExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26CD23197D9500C16BF7 /* FEBYUExport.cpp */; };
+		D5ED270623197D9600C16BF7 /* FEPLYExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26CE23197D9500C16BF7 /* FEPLYExport.cpp */; };
+		D5ED270723197D9600C16BF7 /* FEGMshImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26CF23197D9500C16BF7 /* FEGMshImport.h */; };
+		D5ED270823197D9600C16BF7 /* FileReader.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D023197D9500C16BF7 /* FileReader.h */; };
+		D5ED270923197D9600C16BF7 /* FETetGenImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26D123197D9500C16BF7 /* FETetGenImport.cpp */; };
+		D5ED270A23197D9600C16BF7 /* BREPImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D223197D9500C16BF7 /* BREPImport.h */; };
+		D5ED270B23197D9600C16BF7 /* FEIGESFileImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D323197D9500C16BF7 /* FEIGESFileImport.h */; };
+		D5ED270C23197D9600C16BF7 /* FEVTKImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D423197D9500C16BF7 /* FEVTKImport.h */; };
+		D5ED270D23197D9600C16BF7 /* FEBinarySTLimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D523197D9500C16BF7 /* FEBinarySTLimport.h */; };
+		D5ED270E23197D9600C16BF7 /* FEPLYExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D623197D9500C16BF7 /* FEPLYExport.h */; };
+		D5ED270F23197D9600C16BF7 /* FETetGenImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D723197D9500C16BF7 /* FETetGenImport.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D5ED269123197D8200C16BF7 /* libMeshIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5ED26A023197D9500C16BF7 /* FEViewpointExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEViewpointExport.h; sourceTree = "<group>"; };
+		D5ED26A123197D9500C16BF7 /* FESTLimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESTLimport.cpp; sourceTree = "<group>"; };
+		D5ED26A223197D9500C16BF7 /* BREPImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BREPImport.cpp; sourceTree = "<group>"; };
+		D5ED26A323197D9500C16BF7 /* FENASTRANimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENASTRANimport.cpp; sourceTree = "<group>"; };
+		D5ED26A423197D9500C16BF7 /* FEVTKExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEVTKExport.h; sourceTree = "<group>"; };
+		D5ED26A523197D9500C16BF7 /* FETetGenExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETetGenExport.h; sourceTree = "<group>"; };
+		D5ED26A623197D9500C16BF7 /* FEPLYImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEPLYImport.h; sourceTree = "<group>"; };
+		D5ED26A723197D9500C16BF7 /* FEIDEASimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEIDEASimport.cpp; sourceTree = "<group>"; };
+		D5ED26A823197D9500C16BF7 /* FEMeshImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshImport.cpp; sourceTree = "<group>"; };
+		D5ED26A923197D9500C16BF7 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		D5ED26AA23197D9500C16BF7 /* PRVObjectImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRVObjectImport.h; sourceTree = "<group>"; };
+		D5ED26AB23197D9500C16BF7 /* FEVTKExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEVTKExport.cpp; sourceTree = "<group>"; };
+		D5ED26AC23197D9500C16BF7 /* PRVObjectFormat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRVObjectFormat.h; sourceTree = "<group>"; };
+		D5ED26AD23197D9500C16BF7 /* FEDXFimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEDXFimport.h; sourceTree = "<group>"; };
+		D5ED26AE23197D9500C16BF7 /* FEMeshImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshImport.h; sourceTree = "<group>"; };
+		D5ED26AF23197D9500C16BF7 /* FEHMASCIIimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEHMASCIIimport.h; sourceTree = "<group>"; };
+		D5ED26B023197D9500C16BF7 /* FEHyperSurfImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEHyperSurfImport.cpp; sourceTree = "<group>"; };
+		D5ED26B123197D9500C16BF7 /* FEBYUExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBYUExport.h; sourceTree = "<group>"; };
+		D5ED26B223197D9500C16BF7 /* FEVTKImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEVTKImport.cpp; sourceTree = "<group>"; };
+		D5ED26B323197D9500C16BF7 /* FEDXFimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEDXFimport.cpp; sourceTree = "<group>"; };
+		D5ED26B423197D9500C16BF7 /* FERAWImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FERAWImport.h; sourceTree = "<group>"; };
+		D5ED26B523197D9500C16BF7 /* FEMeshExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshExport.cpp; sourceTree = "<group>"; };
+		D5ED26B623197D9500C16BF7 /* FESTLExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESTLExport.h; sourceTree = "<group>"; };
+		D5ED26B723197D9500C16BF7 /* FESTLExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESTLExport.cpp; sourceTree = "<group>"; };
+		D5ED26B823197D9500C16BF7 /* FESTLimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESTLimport.h; sourceTree = "<group>"; };
+		D5ED26B923197D9500C16BF7 /* FEViewpointExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEViewpointExport.cpp; sourceTree = "<group>"; };
+		D5ED26BA23197D9500C16BF7 /* FileReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileReader.cpp; sourceTree = "<group>"; };
+		D5ED26BB23197D9500C16BF7 /* FEHyperSurfImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEHyperSurfImport.h; sourceTree = "<group>"; };
+		D5ED26BC23197D9500C16BF7 /* FETetGenExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETetGenExport.cpp; sourceTree = "<group>"; };
+		D5ED26BD23197D9500C16BF7 /* FEHypersurfaceExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEHypersurfaceExport.h; sourceTree = "<group>"; };
+		D5ED26BE23197D9500C16BF7 /* FEHMASCIIimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEHMASCIIimport.cpp; sourceTree = "<group>"; };
+		D5ED26BF23197D9500C16BF7 /* FEMeshExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshExport.h; sourceTree = "<group>"; };
+		D5ED26C023197D9500C16BF7 /* FEIGESFileImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEIGESFileImport.cpp; sourceTree = "<group>"; };
+		D5ED26C123197D9500C16BF7 /* FEBYUimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBYUimport.cpp; sourceTree = "<group>"; };
+		D5ED26C223197D9500C16BF7 /* FEPLYImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEPLYImport.cpp; sourceTree = "<group>"; };
+		D5ED26C323197D9500C16BF7 /* FERAWImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERAWImport.cpp; sourceTree = "<group>"; };
+		D5ED26C423197D9500C16BF7 /* PRVObjectImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PRVObjectImport.cpp; sourceTree = "<group>"; };
+		D5ED26C523197D9500C16BF7 /* FEBinarySTLimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBinarySTLimport.cpp; sourceTree = "<group>"; };
+		D5ED26C623197D9500C16BF7 /* FENASTRANimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENASTRANimport.h; sourceTree = "<group>"; };
+		D5ED26C723197D9500C16BF7 /* FEIDEASimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEIDEASimport.h; sourceTree = "<group>"; };
+		D5ED26C823197D9500C16BF7 /* FEBYUimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBYUimport.h; sourceTree = "<group>"; };
+		D5ED26C923197D9500C16BF7 /* PRVObjectExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PRVObjectExport.cpp; sourceTree = "<group>"; };
+		D5ED26CA23197D9500C16BF7 /* PRVObjectExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRVObjectExport.h; sourceTree = "<group>"; };
+		D5ED26CB23197D9500C16BF7 /* FEGMshImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEGMshImport.cpp; sourceTree = "<group>"; };
+		D5ED26CC23197D9500C16BF7 /* FEHypersurfaceExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEHypersurfaceExport.cpp; sourceTree = "<group>"; };
+		D5ED26CD23197D9500C16BF7 /* FEBYUExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBYUExport.cpp; sourceTree = "<group>"; };
+		D5ED26CE23197D9500C16BF7 /* FEPLYExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEPLYExport.cpp; sourceTree = "<group>"; };
+		D5ED26CF23197D9500C16BF7 /* FEGMshImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEGMshImport.h; sourceTree = "<group>"; };
+		D5ED26D023197D9500C16BF7 /* FileReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileReader.h; sourceTree = "<group>"; };
+		D5ED26D123197D9500C16BF7 /* FETetGenImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETetGenImport.cpp; sourceTree = "<group>"; };
+		D5ED26D223197D9500C16BF7 /* BREPImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREPImport.h; sourceTree = "<group>"; };
+		D5ED26D323197D9500C16BF7 /* FEIGESFileImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEIGESFileImport.h; sourceTree = "<group>"; };
+		D5ED26D423197D9500C16BF7 /* FEVTKImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEVTKImport.h; sourceTree = "<group>"; };
+		D5ED26D523197D9500C16BF7 /* FEBinarySTLimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBinarySTLimport.h; sourceTree = "<group>"; };
+		D5ED26D623197D9500C16BF7 /* FEPLYExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEPLYExport.h; sourceTree = "<group>"; };
+		D5ED26D723197D9500C16BF7 /* FETetGenImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETetGenImport.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D5ED268E23197D8200C16BF7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D5ED268823197D8200C16BF7 = {
+			isa = PBXGroup;
+			children = (
+				D5ED269F23197D9500C16BF7 /* MeshIO */,
+				D5ED269223197D8200C16BF7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D5ED269223197D8200C16BF7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D5ED269123197D8200C16BF7 /* libMeshIO.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D5ED269F23197D9500C16BF7 /* MeshIO */ = {
+			isa = PBXGroup;
+			children = (
+				D5ED26A023197D9500C16BF7 /* FEViewpointExport.h */,
+				D5ED26A123197D9500C16BF7 /* FESTLimport.cpp */,
+				D5ED26A223197D9500C16BF7 /* BREPImport.cpp */,
+				D5ED26A323197D9500C16BF7 /* FENASTRANimport.cpp */,
+				D5ED26A423197D9500C16BF7 /* FEVTKExport.h */,
+				D5ED26A523197D9500C16BF7 /* FETetGenExport.h */,
+				D5ED26A623197D9500C16BF7 /* FEPLYImport.h */,
+				D5ED26A723197D9500C16BF7 /* FEIDEASimport.cpp */,
+				D5ED26A823197D9500C16BF7 /* FEMeshImport.cpp */,
+				D5ED26A923197D9500C16BF7 /* stdafx.h */,
+				D5ED26AA23197D9500C16BF7 /* PRVObjectImport.h */,
+				D5ED26AB23197D9500C16BF7 /* FEVTKExport.cpp */,
+				D5ED26AC23197D9500C16BF7 /* PRVObjectFormat.h */,
+				D5ED26AD23197D9500C16BF7 /* FEDXFimport.h */,
+				D5ED26AE23197D9500C16BF7 /* FEMeshImport.h */,
+				D5ED26AF23197D9500C16BF7 /* FEHMASCIIimport.h */,
+				D5ED26B023197D9500C16BF7 /* FEHyperSurfImport.cpp */,
+				D5ED26B123197D9500C16BF7 /* FEBYUExport.h */,
+				D5ED26B223197D9500C16BF7 /* FEVTKImport.cpp */,
+				D5ED26B323197D9500C16BF7 /* FEDXFimport.cpp */,
+				D5ED26B423197D9500C16BF7 /* FERAWImport.h */,
+				D5ED26B523197D9500C16BF7 /* FEMeshExport.cpp */,
+				D5ED26B623197D9500C16BF7 /* FESTLExport.h */,
+				D5ED26B723197D9500C16BF7 /* FESTLExport.cpp */,
+				D5ED26B823197D9500C16BF7 /* FESTLimport.h */,
+				D5ED26B923197D9500C16BF7 /* FEViewpointExport.cpp */,
+				D5ED26BA23197D9500C16BF7 /* FileReader.cpp */,
+				D5ED26BB23197D9500C16BF7 /* FEHyperSurfImport.h */,
+				D5ED26BC23197D9500C16BF7 /* FETetGenExport.cpp */,
+				D5ED26BD23197D9500C16BF7 /* FEHypersurfaceExport.h */,
+				D5ED26BE23197D9500C16BF7 /* FEHMASCIIimport.cpp */,
+				D5ED26BF23197D9500C16BF7 /* FEMeshExport.h */,
+				D5ED26C023197D9500C16BF7 /* FEIGESFileImport.cpp */,
+				D5ED26C123197D9500C16BF7 /* FEBYUimport.cpp */,
+				D5ED26C223197D9500C16BF7 /* FEPLYImport.cpp */,
+				D5ED26C323197D9500C16BF7 /* FERAWImport.cpp */,
+				D5ED26C423197D9500C16BF7 /* PRVObjectImport.cpp */,
+				D5ED26C523197D9500C16BF7 /* FEBinarySTLimport.cpp */,
+				D5ED26C623197D9500C16BF7 /* FENASTRANimport.h */,
+				D5ED26C723197D9500C16BF7 /* FEIDEASimport.h */,
+				D5ED26C823197D9500C16BF7 /* FEBYUimport.h */,
+				D5ED26C923197D9500C16BF7 /* PRVObjectExport.cpp */,
+				D5ED26CA23197D9500C16BF7 /* PRVObjectExport.h */,
+				D5ED26CB23197D9500C16BF7 /* FEGMshImport.cpp */,
+				D5ED26CC23197D9500C16BF7 /* FEHypersurfaceExport.cpp */,
+				D5ED26CD23197D9500C16BF7 /* FEBYUExport.cpp */,
+				D5ED26CE23197D9500C16BF7 /* FEPLYExport.cpp */,
+				D5ED26CF23197D9500C16BF7 /* FEGMshImport.h */,
+				D5ED26D023197D9500C16BF7 /* FileReader.h */,
+				D5ED26D123197D9500C16BF7 /* FETetGenImport.cpp */,
+				D5ED26D223197D9500C16BF7 /* BREPImport.h */,
+				D5ED26D323197D9500C16BF7 /* FEIGESFileImport.h */,
+				D5ED26D423197D9500C16BF7 /* FEVTKImport.h */,
+				D5ED26D523197D9500C16BF7 /* FEBinarySTLimport.h */,
+				D5ED26D623197D9500C16BF7 /* FEPLYExport.h */,
+				D5ED26D723197D9500C16BF7 /* FETetGenImport.h */,
+			);
+			name = MeshIO;
+			path = ../../MeshIO;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D5ED268F23197D8200C16BF7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5ED26D823197D9500C16BF7 /* FEViewpointExport.h in Headers */,
+				D5ED270723197D9600C16BF7 /* FEGMshImport.h in Headers */,
+				D5ED26DD23197D9500C16BF7 /* FETetGenExport.h in Headers */,
+				D5ED26F723197D9600C16BF7 /* FEMeshExport.h in Headers */,
+				D5ED26F323197D9600C16BF7 /* FEHyperSurfImport.h in Headers */,
+				D5ED26E623197D9600C16BF7 /* FEMeshImport.h in Headers */,
+				D5ED26E123197D9600C16BF7 /* stdafx.h in Headers */,
+				D5ED26F023197D9600C16BF7 /* FESTLimport.h in Headers */,
+				D5ED270D23197D9600C16BF7 /* FEBinarySTLimport.h in Headers */,
+				D5ED270823197D9600C16BF7 /* FileReader.h in Headers */,
+				D5ED26E523197D9600C16BF7 /* FEDXFimport.h in Headers */,
+				D5ED26E723197D9600C16BF7 /* FEHMASCIIimport.h in Headers */,
+				D5ED270223197D9600C16BF7 /* PRVObjectExport.h in Headers */,
+				D5ED270023197D9600C16BF7 /* FEBYUimport.h in Headers */,
+				D5ED26EE23197D9600C16BF7 /* FESTLExport.h in Headers */,
+				D5ED270A23197D9600C16BF7 /* BREPImport.h in Headers */,
+				D5ED26FF23197D9600C16BF7 /* FEIDEASimport.h in Headers */,
+				D5ED26E223197D9600C16BF7 /* PRVObjectImport.h in Headers */,
+				D5ED270B23197D9600C16BF7 /* FEIGESFileImport.h in Headers */,
+				D5ED26F523197D9600C16BF7 /* FEHypersurfaceExport.h in Headers */,
+				D5ED26DE23197D9500C16BF7 /* FEPLYImport.h in Headers */,
+				D5ED270E23197D9600C16BF7 /* FEPLYExport.h in Headers */,
+				D5ED26DC23197D9500C16BF7 /* FEVTKExport.h in Headers */,
+				D5ED26FE23197D9600C16BF7 /* FENASTRANimport.h in Headers */,
+				D5ED270F23197D9600C16BF7 /* FETetGenImport.h in Headers */,
+				D5ED26E423197D9600C16BF7 /* PRVObjectFormat.h in Headers */,
+				D5ED26E923197D9600C16BF7 /* FEBYUExport.h in Headers */,
+				D5ED270C23197D9600C16BF7 /* FEVTKImport.h in Headers */,
+				D5ED26EC23197D9600C16BF7 /* FERAWImport.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D5ED269023197D8200C16BF7 /* MeshIO */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5ED269C23197D8200C16BF7 /* Build configuration list for PBXNativeTarget "MeshIO" */;
+			buildPhases = (
+				D5ED268D23197D8200C16BF7 /* Sources */,
+				D5ED268E23197D8200C16BF7 /* Frameworks */,
+				D5ED268F23197D8200C16BF7 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MeshIO;
+			productName = MeshIO;
+			productReference = D5ED269123197D8200C16BF7 /* libMeshIO.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D5ED268923197D8200C16BF7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0940;
+				ORGANIZATIONNAME = febio.org;
+				TargetAttributes = {
+					D5ED269023197D8200C16BF7 = {
+						CreatedOnToolsVersion = 9.4.1;
+					};
+				};
+			};
+			buildConfigurationList = D5ED268C23197D8200C16BF7 /* Build configuration list for PBXProject "MeshIO" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D5ED268823197D8200C16BF7;
+			productRefGroup = D5ED269223197D8200C16BF7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D5ED269023197D8200C16BF7 /* MeshIO */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D5ED268D23197D8200C16BF7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5ED26FB23197D9600C16BF7 /* FERAWImport.cpp in Sources */,
+				D5ED270123197D9600C16BF7 /* PRVObjectExport.cpp in Sources */,
+				D5ED270623197D9600C16BF7 /* FEPLYExport.cpp in Sources */,
+				D5ED26F123197D9600C16BF7 /* FEViewpointExport.cpp in Sources */,
+				D5ED270923197D9600C16BF7 /* FETetGenImport.cpp in Sources */,
+				D5ED26D923197D9500C16BF7 /* FESTLimport.cpp in Sources */,
+				D5ED26E023197D9600C16BF7 /* FEMeshImport.cpp in Sources */,
+				D5ED26F823197D9600C16BF7 /* FEIGESFileImport.cpp in Sources */,
+				D5ED26EF23197D9600C16BF7 /* FESTLExport.cpp in Sources */,
+				D5ED26F623197D9600C16BF7 /* FEHMASCIIimport.cpp in Sources */,
+				D5ED26E823197D9600C16BF7 /* FEHyperSurfImport.cpp in Sources */,
+				D5ED26EA23197D9600C16BF7 /* FEVTKImport.cpp in Sources */,
+				D5ED26DB23197D9500C16BF7 /* FENASTRANimport.cpp in Sources */,
+				D5ED26FC23197D9600C16BF7 /* PRVObjectImport.cpp in Sources */,
+				D5ED26ED23197D9600C16BF7 /* FEMeshExport.cpp in Sources */,
+				D5ED26DF23197D9500C16BF7 /* FEIDEASimport.cpp in Sources */,
+				D5ED26F423197D9600C16BF7 /* FETetGenExport.cpp in Sources */,
+				D5ED270523197D9600C16BF7 /* FEBYUExport.cpp in Sources */,
+				D5ED270423197D9600C16BF7 /* FEHypersurfaceExport.cpp in Sources */,
+				D5ED26F923197D9600C16BF7 /* FEBYUimport.cpp in Sources */,
+				D5ED26E323197D9600C16BF7 /* FEVTKExport.cpp in Sources */,
+				D5ED26FD23197D9600C16BF7 /* FEBinarySTLimport.cpp in Sources */,
+				D5ED270323197D9600C16BF7 /* FEGMshImport.cpp in Sources */,
+				D5ED26DA23197D9500C16BF7 /* BREPImport.cpp in Sources */,
+				D5ED26FA23197D9600C16BF7 /* FEPLYImport.cpp in Sources */,
+				D5ED26F223197D9600C16BF7 /* FileReader.cpp in Sources */,
+				D5ED26EB23197D9600C16BF7 /* FEDXFimport.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D5ED269A23197D8200C16BF7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+			};
+			name = Debug;
+		};
+		D5ED269B23197D8200C16BF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+			};
+			name = Release;
+		};
+		D5ED269D23197D8200C16BF7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		D5ED269E23197D8200C16BF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5ED268C23197D8200C16BF7 /* Build configuration list for PBXProject "MeshIO" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5ED269A23197D8200C16BF7 /* Debug */,
+				D5ED269B23197D8200C16BF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5ED269C23197D8200C16BF7 /* Build configuration list for PBXNativeTarget "MeshIO" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5ED269D23197D8200C16BF7 /* Debug */,
+				D5ED269E23197D8200C16BF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D5ED268923197D8200C16BF7 /* Project object */;
+}

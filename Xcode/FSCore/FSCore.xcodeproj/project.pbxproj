@@ -1,0 +1,368 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D5ED262523197ADA00C16BF7 /* box.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261023197ADA00C16BF7 /* box.h */; };
+		D5ED262623197ADA00C16BF7 /* Archive.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261123197ADA00C16BF7 /* Archive.h */; };
+		D5ED262723197ADA00C16BF7 /* FSObjectList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261223197ADA00C16BF7 /* FSObjectList.h */; };
+		D5ED262823197ADA00C16BF7 /* CallTracer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED261323197ADA00C16BF7 /* CallTracer.cpp */; };
+		D5ED262923197ADA00C16BF7 /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261423197ADA00C16BF7 /* stdafx.h */; };
+		D5ED262A23197ADA00C16BF7 /* FSObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261523197ADA00C16BF7 /* FSObject.h */; };
+		D5ED262B23197ADA00C16BF7 /* memtool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED261623197ADA00C16BF7 /* memtool.cpp */; };
+		D5ED262C23197ADA00C16BF7 /* box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED261723197ADA00C16BF7 /* box.cpp */; };
+		D5ED262D23197ADA00C16BF7 /* enum.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261823197ADA00C16BF7 /* enum.h */; };
+		D5ED262E23197ADA00C16BF7 /* ParamBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED261923197ADA00C16BF7 /* ParamBlock.cpp */; };
+		D5ED262F23197ADA00C16BF7 /* memtool.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261A23197ADA00C16BF7 /* memtool.h */; };
+		D5ED263023197ADA00C16BF7 /* color.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261B23197ADA00C16BF7 /* color.h */; };
+		D5ED263123197ADA00C16BF7 /* Serializable.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261C23197ADA00C16BF7 /* Serializable.h */; };
+		D5ED263223197ADA00C16BF7 /* FSDir.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED261D23197ADA00C16BF7 /* FSDir.cpp */; };
+		D5ED263323197ADA00C16BF7 /* CallTracer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261E23197ADA00C16BF7 /* CallTracer.h */; };
+		D5ED263423197ADA00C16BF7 /* ParamBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261F23197ADA00C16BF7 /* ParamBlock.h */; };
+		D5ED263523197ADA00C16BF7 /* Serializable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED262023197ADA00C16BF7 /* Serializable.cpp */; };
+		D5ED263623197ADA00C16BF7 /* FSDir.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED262123197ADA00C16BF7 /* FSDir.h */; };
+		D5ED263723197ADA00C16BF7 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED262223197ADA00C16BF7 /* stdafx.cpp */; };
+		D5ED263823197ADA00C16BF7 /* FSObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED262323197ADA00C16BF7 /* FSObject.cpp */; };
+		D5ED263923197ADA00C16BF7 /* Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED262423197ADA00C16BF7 /* Archive.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D5ED260123197AC300C16BF7 /* libFSCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFSCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5ED261023197ADA00C16BF7 /* box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = box.h; sourceTree = "<group>"; };
+		D5ED261123197ADA00C16BF7 /* Archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Archive.h; sourceTree = "<group>"; };
+		D5ED261223197ADA00C16BF7 /* FSObjectList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSObjectList.h; sourceTree = "<group>"; };
+		D5ED261323197ADA00C16BF7 /* CallTracer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CallTracer.cpp; sourceTree = "<group>"; };
+		D5ED261423197ADA00C16BF7 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		D5ED261523197ADA00C16BF7 /* FSObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSObject.h; sourceTree = "<group>"; };
+		D5ED261623197ADA00C16BF7 /* memtool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = memtool.cpp; sourceTree = "<group>"; };
+		D5ED261723197ADA00C16BF7 /* box.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = box.cpp; sourceTree = "<group>"; };
+		D5ED261823197ADA00C16BF7 /* enum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = enum.h; sourceTree = "<group>"; };
+		D5ED261923197ADA00C16BF7 /* ParamBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParamBlock.cpp; sourceTree = "<group>"; };
+		D5ED261A23197ADA00C16BF7 /* memtool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memtool.h; sourceTree = "<group>"; };
+		D5ED261B23197ADA00C16BF7 /* color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = color.h; sourceTree = "<group>"; };
+		D5ED261C23197ADA00C16BF7 /* Serializable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Serializable.h; sourceTree = "<group>"; };
+		D5ED261D23197ADA00C16BF7 /* FSDir.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FSDir.cpp; sourceTree = "<group>"; };
+		D5ED261E23197ADA00C16BF7 /* CallTracer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CallTracer.h; sourceTree = "<group>"; };
+		D5ED261F23197ADA00C16BF7 /* ParamBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParamBlock.h; sourceTree = "<group>"; };
+		D5ED262023197ADA00C16BF7 /* Serializable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Serializable.cpp; sourceTree = "<group>"; };
+		D5ED262123197ADA00C16BF7 /* FSDir.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSDir.h; sourceTree = "<group>"; };
+		D5ED262223197ADA00C16BF7 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
+		D5ED262323197ADA00C16BF7 /* FSObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FSObject.cpp; sourceTree = "<group>"; };
+		D5ED262423197ADA00C16BF7 /* Archive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Archive.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D5ED25FE23197AC300C16BF7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D5ED25F823197AC300C16BF7 = {
+			isa = PBXGroup;
+			children = (
+				D5ED260F23197ADA00C16BF7 /* FSCore */,
+				D5ED260223197AC300C16BF7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D5ED260223197AC300C16BF7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D5ED260123197AC300C16BF7 /* libFSCore.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D5ED260F23197ADA00C16BF7 /* FSCore */ = {
+			isa = PBXGroup;
+			children = (
+				D5ED261023197ADA00C16BF7 /* box.h */,
+				D5ED261123197ADA00C16BF7 /* Archive.h */,
+				D5ED261223197ADA00C16BF7 /* FSObjectList.h */,
+				D5ED261323197ADA00C16BF7 /* CallTracer.cpp */,
+				D5ED261423197ADA00C16BF7 /* stdafx.h */,
+				D5ED261523197ADA00C16BF7 /* FSObject.h */,
+				D5ED261623197ADA00C16BF7 /* memtool.cpp */,
+				D5ED261723197ADA00C16BF7 /* box.cpp */,
+				D5ED261823197ADA00C16BF7 /* enum.h */,
+				D5ED261923197ADA00C16BF7 /* ParamBlock.cpp */,
+				D5ED261A23197ADA00C16BF7 /* memtool.h */,
+				D5ED261B23197ADA00C16BF7 /* color.h */,
+				D5ED261C23197ADA00C16BF7 /* Serializable.h */,
+				D5ED261D23197ADA00C16BF7 /* FSDir.cpp */,
+				D5ED261E23197ADA00C16BF7 /* CallTracer.h */,
+				D5ED261F23197ADA00C16BF7 /* ParamBlock.h */,
+				D5ED262023197ADA00C16BF7 /* Serializable.cpp */,
+				D5ED262123197ADA00C16BF7 /* FSDir.h */,
+				D5ED262223197ADA00C16BF7 /* stdafx.cpp */,
+				D5ED262323197ADA00C16BF7 /* FSObject.cpp */,
+				D5ED262423197ADA00C16BF7 /* Archive.cpp */,
+			);
+			name = FSCore;
+			path = ../../FSCore;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D5ED25FF23197AC300C16BF7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5ED262923197ADA00C16BF7 /* stdafx.h in Headers */,
+				D5ED263423197ADA00C16BF7 /* ParamBlock.h in Headers */,
+				D5ED262F23197ADA00C16BF7 /* memtool.h in Headers */,
+				D5ED262D23197ADA00C16BF7 /* enum.h in Headers */,
+				D5ED263323197ADA00C16BF7 /* CallTracer.h in Headers */,
+				D5ED263123197ADA00C16BF7 /* Serializable.h in Headers */,
+				D5ED262523197ADA00C16BF7 /* box.h in Headers */,
+				D5ED263023197ADA00C16BF7 /* color.h in Headers */,
+				D5ED262A23197ADA00C16BF7 /* FSObject.h in Headers */,
+				D5ED263623197ADA00C16BF7 /* FSDir.h in Headers */,
+				D5ED262623197ADA00C16BF7 /* Archive.h in Headers */,
+				D5ED262723197ADA00C16BF7 /* FSObjectList.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D5ED260023197AC300C16BF7 /* FSCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5ED260C23197AC300C16BF7 /* Build configuration list for PBXNativeTarget "FSCore" */;
+			buildPhases = (
+				D5ED25FD23197AC300C16BF7 /* Sources */,
+				D5ED25FE23197AC300C16BF7 /* Frameworks */,
+				D5ED25FF23197AC300C16BF7 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FSCore;
+			productName = FSCore;
+			productReference = D5ED260123197AC300C16BF7 /* libFSCore.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D5ED25F923197AC300C16BF7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0940;
+				ORGANIZATIONNAME = FEBio;
+				TargetAttributes = {
+					D5ED260023197AC300C16BF7 = {
+						CreatedOnToolsVersion = 9.4.1;
+					};
+				};
+			};
+			buildConfigurationList = D5ED25FC23197AC300C16BF7 /* Build configuration list for PBXProject "FSCore" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D5ED25F823197AC300C16BF7;
+			productRefGroup = D5ED260223197AC300C16BF7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D5ED260023197AC300C16BF7 /* FSCore */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D5ED25FD23197AC300C16BF7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5ED263523197ADA00C16BF7 /* Serializable.cpp in Sources */,
+				D5ED262C23197ADA00C16BF7 /* box.cpp in Sources */,
+				D5ED263923197ADA00C16BF7 /* Archive.cpp in Sources */,
+				D5ED262823197ADA00C16BF7 /* CallTracer.cpp in Sources */,
+				D5ED262B23197ADA00C16BF7 /* memtool.cpp in Sources */,
+				D5ED263223197ADA00C16BF7 /* FSDir.cpp in Sources */,
+				D5ED263823197ADA00C16BF7 /* FSObject.cpp in Sources */,
+				D5ED263723197ADA00C16BF7 /* stdafx.cpp in Sources */,
+				D5ED262E23197ADA00C16BF7 /* ParamBlock.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D5ED260A23197AC300C16BF7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		D5ED260B23197AC300C16BF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		D5ED260D23197AC300C16BF7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		D5ED260E23197AC300C16BF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5ED25FC23197AC300C16BF7 /* Build configuration list for PBXProject "FSCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5ED260A23197AC300C16BF7 /* Debug */,
+				D5ED260B23197AC300C16BF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5ED260C23197AC300C16BF7 /* Build configuration list for PBXNativeTarget "FSCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5ED260D23197AC300C16BF7 /* Debug */,
+				D5ED260E23197AC300C16BF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D5ED25F923197AC300C16BF7 /* Project object */;
+}

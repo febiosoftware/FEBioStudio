@@ -1,0 +1,518 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D5215EE81F018C3300838680 /* FEMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215EDC1F018C3300838680 /* FEMesh.cpp */; };
+		D5215EE91F018C3300838680 /* FEMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215EDD1F018C3300838680 /* FEMesh.h */; };
+		D5215EEA1F018C3300838680 /* LineMesh2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215EDE1F018C3300838680 /* LineMesh2D.cpp */; };
+		D5215EEB1F018C3300838680 /* LineMesh2D.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215EDF1F018C3300838680 /* LineMesh2D.h */; };
+		D5215EEC1F018C3300838680 /* MeshItem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215EE01F018C3300838680 /* MeshItem2D.h */; };
+		D5215EED1F018C3300838680 /* MeshMetrics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215EE11F018C3300838680 /* MeshMetrics.cpp */; };
+		D5215EEE1F018C3300838680 /* MeshMetrics.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215EE21F018C3300838680 /* MeshMetrics.h */; };
+		D5215EEF1F018C3300838680 /* MeshTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215EE31F018C3300838680 /* MeshTools.cpp */; };
+		D5215EF01F018C3300838680 /* MeshTools.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215EE41F018C3300838680 /* MeshTools.h */; };
+		D5215EF11F018C3300838680 /* triangulate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215EE51F018C3300838680 /* triangulate.cpp */; };
+		D5215EF21F018C3300838680 /* triangulate.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215EE61F018C3300838680 /* triangulate.h */; };
+		D5215EF31F018C3300838680 /* TriMesh2D.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215EE71F018C3300838680 /* TriMesh2D.h */; };
+		D53293AB1E4A8454002798B3 /* FECoreMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D53293981E4A8454002798B3 /* FECoreMesh.cpp */; };
+		D53293AC1E4A8454002798B3 /* FECoreMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D53293991E4A8454002798B3 /* FECoreMesh.h */; };
+		D53293AD1E4A8454002798B3 /* FECurveMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D532939A1E4A8454002798B3 /* FECurveMesh.cpp */; };
+		D53293AE1E4A8454002798B3 /* FECurveMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D532939B1E4A8454002798B3 /* FECurveMesh.h */; };
+		D53293AF1E4A8454002798B3 /* FEEdge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D532939C1E4A8454002798B3 /* FEEdge.cpp */; };
+		D53293B01E4A8454002798B3 /* FEEdge.h in Headers */ = {isa = PBXBuildFile; fileRef = D532939D1E4A8454002798B3 /* FEEdge.h */; };
+		D53293B11E4A8454002798B3 /* FEElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D532939E1E4A8454002798B3 /* FEElement.cpp */; };
+		D53293B21E4A8454002798B3 /* FEElement.h in Headers */ = {isa = PBXBuildFile; fileRef = D532939F1E4A8454002798B3 /* FEElement.h */; };
+		D53293B31E4A8454002798B3 /* FEFace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D53293A01E4A8454002798B3 /* FEFace.cpp */; };
+		D53293B41E4A8454002798B3 /* FEFace.h in Headers */ = {isa = PBXBuildFile; fileRef = D53293A11E4A8454002798B3 /* FEFace.h */; };
+		D53293B51E4A8454002798B3 /* FEItem.h in Headers */ = {isa = PBXBuildFile; fileRef = D53293A21E4A8454002798B3 /* FEItem.h */; };
+		D53293B61E4A8454002798B3 /* FENode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D53293A31E4A8454002798B3 /* FENode.cpp */; };
+		D53293B71E4A8454002798B3 /* FENode.h in Headers */ = {isa = PBXBuildFile; fileRef = D53293A41E4A8454002798B3 /* FENode.h */; };
+		D53293B81E4A8454002798B3 /* FESurfaceMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D53293A51E4A8454002798B3 /* FESurfaceMesh.cpp */; };
+		D53293B91E4A8454002798B3 /* FESurfaceMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D53293A61E4A8454002798B3 /* FESurfaceMesh.h */; };
+		D53293BA1E4A8454002798B3 /* TriMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D53293A71E4A8454002798B3 /* TriMesh.cpp */; };
+		D53293BB1E4A8454002798B3 /* TriMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D53293A81E4A8454002798B3 /* TriMesh.h */; };
+		D54DD6311F8D46B70083D517 /* FEMeshBase.h in Headers */ = {isa = PBXBuildFile; fileRef = D54DD62D1F8D46B70083D517 /* FEMeshBase.h */; };
+		D54DD6321F8D46B70083D517 /* FEMeshBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54DD62E1F8D46B70083D517 /* FEMeshBase.cpp */; };
+		D570C91D204A301400E2A1B9 /* FELineMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D570C91B204A301400E2A1B9 /* FELineMesh.cpp */; };
+		D570C91E204A301400E2A1B9 /* FELineMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D570C91C204A301400E2A1B9 /* FELineMesh.h */; };
+		D5A49E441FD74D4F0083510E /* insertCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = D5A49E401FD74D4E0083510E /* insertCurve.h */; };
+		D5A49E451FD74D4F0083510E /* insertCurve2.h in Headers */ = {isa = PBXBuildFile; fileRef = D5A49E411FD74D4E0083510E /* insertCurve2.h */; };
+		D5A49E461FD74D4F0083510E /* insertCurve2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A49E421FD74D4F0083510E /* insertCurve2.cpp */; };
+		D5A49E471FD74D4F0083510E /* insertCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A49E431FD74D4F0083510E /* insertCurve.cpp */; };
+		D5B42D661FA1004600C56FCE /* FENodeEdgeList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5B42D5E1FA1004500C56FCE /* FENodeEdgeList.h */; };
+		D5B42D671FA1004600C56FCE /* FENodeEdgeList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B42D5F1FA1004500C56FCE /* FENodeEdgeList.cpp */; };
+		D5B42D681FA1004600C56FCE /* FENodeElementList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5B42D601FA1004500C56FCE /* FENodeElementList.h */; };
+		D5B42D691FA1004600C56FCE /* FENodeFaceList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5B42D611FA1004500C56FCE /* FENodeFaceList.h */; };
+		D5B42D6A1FA1004600C56FCE /* FENodeElementList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B42D621FA1004600C56FCE /* FENodeElementList.cpp */; };
+		D5B42D6B1FA1004600C56FCE /* FENodeNodeList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B42D631FA1004600C56FCE /* FENodeNodeList.cpp */; };
+		D5B42D6C1FA1004600C56FCE /* FENodeNodeList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5B42D641FA1004600C56FCE /* FENodeNodeList.h */; };
+		D5B42D6D1FA1004600C56FCE /* FENodeFaceList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B42D651FA1004600C56FCE /* FENodeFaceList.cpp */; };
+		D5B42D701FA1017100C56FCE /* FEFaceEdgeList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B42D6E1FA1017100C56FCE /* FEFaceEdgeList.cpp */; };
+		D5B42D711FA1017100C56FCE /* FEFaceEdgeList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5B42D6F1FA1017100C56FCE /* FEFaceEdgeList.h */; };
+		D5ED25E323197A1F00C16BF7 /* penta15.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D623197A1D00C16BF7 /* penta15.h */; };
+		D5ED25E423197A1F00C16BF7 /* tet10.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D723197A1D00C16BF7 /* tet10.h */; };
+		D5ED25E523197A1F00C16BF7 /* penta6.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D823197A1D00C16BF7 /* penta6.h */; };
+		D5ED25E623197A1F00C16BF7 /* pyra5.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D923197A1D00C16BF7 /* pyra5.h */; };
+		D5ED25E723197A1F00C16BF7 /* tet4.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25DA23197A1E00C16BF7 /* tet4.h */; };
+		D5ED25E823197A1F00C16BF7 /* tet20.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25DB23197A1E00C16BF7 /* tet20.h */; };
+		D5ED25E923197A1F00C16BF7 /* tet15.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25DC23197A1E00C16BF7 /* tet15.h */; };
+		D5ED25EA23197A1F00C16BF7 /* FEElementLibrary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED25DD23197A1E00C16BF7 /* FEElementLibrary.cpp */; };
+		D5ED25EB23197A1F00C16BF7 /* hex8.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25DE23197A1E00C16BF7 /* hex8.h */; };
+		D5ED25EC23197A1F00C16BF7 /* hex27.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25DF23197A1E00C16BF7 /* hex27.h */; };
+		D5ED25ED23197A1F00C16BF7 /* quad8.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25E023197A1E00C16BF7 /* quad8.h */; };
+		D5ED25EE23197A1F00C16BF7 /* hex20.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25E123197A1E00C16BF7 /* hex20.h */; };
+		D5ED25EF23197A1F00C16BF7 /* FEElementLibrary.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25E223197A1E00C16BF7 /* FEElementLibrary.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D5215EDC1F018C3300838680 /* FEMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMesh.cpp; sourceTree = "<group>"; };
+		D5215EDD1F018C3300838680 /* FEMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMesh.h; sourceTree = "<group>"; };
+		D5215EDE1F018C3300838680 /* LineMesh2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LineMesh2D.cpp; sourceTree = "<group>"; };
+		D5215EDF1F018C3300838680 /* LineMesh2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineMesh2D.h; sourceTree = "<group>"; };
+		D5215EE01F018C3300838680 /* MeshItem2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshItem2D.h; sourceTree = "<group>"; };
+		D5215EE11F018C3300838680 /* MeshMetrics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshMetrics.cpp; sourceTree = "<group>"; };
+		D5215EE21F018C3300838680 /* MeshMetrics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshMetrics.h; sourceTree = "<group>"; };
+		D5215EE31F018C3300838680 /* MeshTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshTools.cpp; sourceTree = "<group>"; };
+		D5215EE41F018C3300838680 /* MeshTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshTools.h; sourceTree = "<group>"; };
+		D5215EE51F018C3300838680 /* triangulate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = triangulate.cpp; sourceTree = "<group>"; };
+		D5215EE61F018C3300838680 /* triangulate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triangulate.h; sourceTree = "<group>"; };
+		D5215EE71F018C3300838680 /* TriMesh2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TriMesh2D.h; sourceTree = "<group>"; };
+		D53293871E4A8446002798B3 /* libMeshLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D53293981E4A8454002798B3 /* FECoreMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECoreMesh.cpp; sourceTree = "<group>"; };
+		D53293991E4A8454002798B3 /* FECoreMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECoreMesh.h; sourceTree = "<group>"; };
+		D532939A1E4A8454002798B3 /* FECurveMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECurveMesh.cpp; sourceTree = "<group>"; };
+		D532939B1E4A8454002798B3 /* FECurveMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECurveMesh.h; sourceTree = "<group>"; };
+		D532939C1E4A8454002798B3 /* FEEdge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEEdge.cpp; sourceTree = "<group>"; };
+		D532939D1E4A8454002798B3 /* FEEdge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEEdge.h; sourceTree = "<group>"; };
+		D532939E1E4A8454002798B3 /* FEElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEElement.cpp; sourceTree = "<group>"; };
+		D532939F1E4A8454002798B3 /* FEElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEElement.h; sourceTree = "<group>"; };
+		D53293A01E4A8454002798B3 /* FEFace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFace.cpp; sourceTree = "<group>"; };
+		D53293A11E4A8454002798B3 /* FEFace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFace.h; sourceTree = "<group>"; };
+		D53293A21E4A8454002798B3 /* FEItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEItem.h; sourceTree = "<group>"; };
+		D53293A31E4A8454002798B3 /* FENode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENode.cpp; sourceTree = "<group>"; };
+		D53293A41E4A8454002798B3 /* FENode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENode.h; sourceTree = "<group>"; };
+		D53293A51E4A8454002798B3 /* FESurfaceMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESurfaceMesh.cpp; sourceTree = "<group>"; };
+		D53293A61E4A8454002798B3 /* FESurfaceMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESurfaceMesh.h; sourceTree = "<group>"; };
+		D53293A71E4A8454002798B3 /* TriMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TriMesh.cpp; sourceTree = "<group>"; };
+		D53293A81E4A8454002798B3 /* TriMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TriMesh.h; sourceTree = "<group>"; };
+		D54DD62D1F8D46B70083D517 /* FEMeshBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshBase.h; sourceTree = "<group>"; };
+		D54DD62E1F8D46B70083D517 /* FEMeshBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshBase.cpp; sourceTree = "<group>"; };
+		D570C91B204A301400E2A1B9 /* FELineMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FELineMesh.cpp; sourceTree = "<group>"; };
+		D570C91C204A301400E2A1B9 /* FELineMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FELineMesh.h; sourceTree = "<group>"; };
+		D5A49E401FD74D4E0083510E /* insertCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = insertCurve.h; sourceTree = "<group>"; };
+		D5A49E411FD74D4E0083510E /* insertCurve2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = insertCurve2.h; sourceTree = "<group>"; };
+		D5A49E421FD74D4F0083510E /* insertCurve2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = insertCurve2.cpp; sourceTree = "<group>"; };
+		D5A49E431FD74D4F0083510E /* insertCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = insertCurve.cpp; sourceTree = "<group>"; };
+		D5B42D5E1FA1004500C56FCE /* FENodeEdgeList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeEdgeList.h; sourceTree = "<group>"; };
+		D5B42D5F1FA1004500C56FCE /* FENodeEdgeList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeEdgeList.cpp; sourceTree = "<group>"; };
+		D5B42D601FA1004500C56FCE /* FENodeElementList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeElementList.h; sourceTree = "<group>"; };
+		D5B42D611FA1004500C56FCE /* FENodeFaceList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeFaceList.h; sourceTree = "<group>"; };
+		D5B42D621FA1004600C56FCE /* FENodeElementList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeElementList.cpp; sourceTree = "<group>"; };
+		D5B42D631FA1004600C56FCE /* FENodeNodeList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeNodeList.cpp; sourceTree = "<group>"; };
+		D5B42D641FA1004600C56FCE /* FENodeNodeList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeNodeList.h; sourceTree = "<group>"; };
+		D5B42D651FA1004600C56FCE /* FENodeFaceList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeFaceList.cpp; sourceTree = "<group>"; };
+		D5B42D6E1FA1017100C56FCE /* FEFaceEdgeList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFaceEdgeList.cpp; sourceTree = "<group>"; };
+		D5B42D6F1FA1017100C56FCE /* FEFaceEdgeList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFaceEdgeList.h; sourceTree = "<group>"; };
+		D5ED25D623197A1D00C16BF7 /* penta15.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = penta15.h; sourceTree = "<group>"; };
+		D5ED25D723197A1D00C16BF7 /* tet10.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tet10.h; sourceTree = "<group>"; };
+		D5ED25D823197A1D00C16BF7 /* penta6.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = penta6.h; sourceTree = "<group>"; };
+		D5ED25D923197A1D00C16BF7 /* pyra5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pyra5.h; sourceTree = "<group>"; };
+		D5ED25DA23197A1E00C16BF7 /* tet4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tet4.h; sourceTree = "<group>"; };
+		D5ED25DB23197A1E00C16BF7 /* tet20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tet20.h; sourceTree = "<group>"; };
+		D5ED25DC23197A1E00C16BF7 /* tet15.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tet15.h; sourceTree = "<group>"; };
+		D5ED25DD23197A1E00C16BF7 /* FEElementLibrary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEElementLibrary.cpp; sourceTree = "<group>"; };
+		D5ED25DE23197A1E00C16BF7 /* hex8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hex8.h; sourceTree = "<group>"; };
+		D5ED25DF23197A1E00C16BF7 /* hex27.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hex27.h; sourceTree = "<group>"; };
+		D5ED25E023197A1E00C16BF7 /* quad8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = quad8.h; sourceTree = "<group>"; };
+		D5ED25E123197A1E00C16BF7 /* hex20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hex20.h; sourceTree = "<group>"; };
+		D5ED25E223197A1E00C16BF7 /* FEElementLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEElementLibrary.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D53293841E4A8446002798B3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D532937E1E4A8446002798B3 = {
+			isa = PBXGroup;
+			children = (
+				D53293951E4A8454002798B3 /* MeshLib */,
+				D53293881E4A8446002798B3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D53293881E4A8446002798B3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D53293871E4A8446002798B3 /* libMeshLib.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D53293951E4A8454002798B3 /* MeshLib */ = {
+			isa = PBXGroup;
+			children = (
+				D53293981E4A8454002798B3 /* FECoreMesh.cpp */,
+				D53293991E4A8454002798B3 /* FECoreMesh.h */,
+				D532939A1E4A8454002798B3 /* FECurveMesh.cpp */,
+				D532939B1E4A8454002798B3 /* FECurveMesh.h */,
+				D532939C1E4A8454002798B3 /* FEEdge.cpp */,
+				D532939D1E4A8454002798B3 /* FEEdge.h */,
+				D532939E1E4A8454002798B3 /* FEElement.cpp */,
+				D532939F1E4A8454002798B3 /* FEElement.h */,
+				D5ED25DD23197A1E00C16BF7 /* FEElementLibrary.cpp */,
+				D5ED25E223197A1E00C16BF7 /* FEElementLibrary.h */,
+				D53293A01E4A8454002798B3 /* FEFace.cpp */,
+				D53293A11E4A8454002798B3 /* FEFace.h */,
+				D5B42D6E1FA1017100C56FCE /* FEFaceEdgeList.cpp */,
+				D5B42D6F1FA1017100C56FCE /* FEFaceEdgeList.h */,
+				D53293A21E4A8454002798B3 /* FEItem.h */,
+				D570C91B204A301400E2A1B9 /* FELineMesh.cpp */,
+				D570C91C204A301400E2A1B9 /* FELineMesh.h */,
+				D5215EDC1F018C3300838680 /* FEMesh.cpp */,
+				D5215EDD1F018C3300838680 /* FEMesh.h */,
+				D54DD62E1F8D46B70083D517 /* FEMeshBase.cpp */,
+				D54DD62D1F8D46B70083D517 /* FEMeshBase.h */,
+				D53293A31E4A8454002798B3 /* FENode.cpp */,
+				D53293A41E4A8454002798B3 /* FENode.h */,
+				D5B42D5F1FA1004500C56FCE /* FENodeEdgeList.cpp */,
+				D5B42D5E1FA1004500C56FCE /* FENodeEdgeList.h */,
+				D5B42D621FA1004600C56FCE /* FENodeElementList.cpp */,
+				D5B42D601FA1004500C56FCE /* FENodeElementList.h */,
+				D5B42D651FA1004600C56FCE /* FENodeFaceList.cpp */,
+				D5B42D611FA1004500C56FCE /* FENodeFaceList.h */,
+				D5B42D631FA1004600C56FCE /* FENodeNodeList.cpp */,
+				D5B42D641FA1004600C56FCE /* FENodeNodeList.h */,
+				D53293A51E4A8454002798B3 /* FESurfaceMesh.cpp */,
+				D53293A61E4A8454002798B3 /* FESurfaceMesh.h */,
+				D5ED25DE23197A1E00C16BF7 /* hex8.h */,
+				D5ED25E123197A1E00C16BF7 /* hex20.h */,
+				D5ED25DF23197A1E00C16BF7 /* hex27.h */,
+				D5A49E431FD74D4F0083510E /* insertCurve.cpp */,
+				D5A49E401FD74D4E0083510E /* insertCurve.h */,
+				D5A49E421FD74D4F0083510E /* insertCurve2.cpp */,
+				D5A49E411FD74D4E0083510E /* insertCurve2.h */,
+				D5215EDE1F018C3300838680 /* LineMesh2D.cpp */,
+				D5215EDF1F018C3300838680 /* LineMesh2D.h */,
+				D5215EE01F018C3300838680 /* MeshItem2D.h */,
+				D5215EE11F018C3300838680 /* MeshMetrics.cpp */,
+				D5215EE21F018C3300838680 /* MeshMetrics.h */,
+				D5215EE31F018C3300838680 /* MeshTools.cpp */,
+				D5215EE41F018C3300838680 /* MeshTools.h */,
+				D5ED25D823197A1D00C16BF7 /* penta6.h */,
+				D5ED25D623197A1D00C16BF7 /* penta15.h */,
+				D5ED25D923197A1D00C16BF7 /* pyra5.h */,
+				D5ED25E023197A1E00C16BF7 /* quad8.h */,
+				D5ED25DA23197A1E00C16BF7 /* tet4.h */,
+				D5ED25D723197A1D00C16BF7 /* tet10.h */,
+				D5ED25DC23197A1E00C16BF7 /* tet15.h */,
+				D5ED25DB23197A1E00C16BF7 /* tet20.h */,
+				D5215EE51F018C3300838680 /* triangulate.cpp */,
+				D5215EE61F018C3300838680 /* triangulate.h */,
+				D53293A71E4A8454002798B3 /* TriMesh.cpp */,
+				D53293A81E4A8454002798B3 /* TriMesh.h */,
+				D5215EE71F018C3300838680 /* TriMesh2D.h */,
+			);
+			name = MeshLib;
+			path = ../../MeshLib;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D53293851E4A8446002798B3 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D53293B51E4A8454002798B3 /* FEItem.h in Headers */,
+				D53293AE1E4A8454002798B3 /* FECurveMesh.h in Headers */,
+				D5ED25ED23197A1F00C16BF7 /* quad8.h in Headers */,
+				D5215EF21F018C3300838680 /* triangulate.h in Headers */,
+				D5B42D661FA1004600C56FCE /* FENodeEdgeList.h in Headers */,
+				D5215EEC1F018C3300838680 /* MeshItem2D.h in Headers */,
+				D53293B91E4A8454002798B3 /* FESurfaceMesh.h in Headers */,
+				D5ED25E423197A1F00C16BF7 /* tet10.h in Headers */,
+				D5215EE91F018C3300838680 /* FEMesh.h in Headers */,
+				D5215EF01F018C3300838680 /* MeshTools.h in Headers */,
+				D5B42D711FA1017100C56FCE /* FEFaceEdgeList.h in Headers */,
+				D5A49E451FD74D4F0083510E /* insertCurve2.h in Headers */,
+				D5A49E441FD74D4F0083510E /* insertCurve.h in Headers */,
+				D53293B41E4A8454002798B3 /* FEFace.h in Headers */,
+				D5215EF31F018C3300838680 /* TriMesh2D.h in Headers */,
+				D5ED25E323197A1F00C16BF7 /* penta15.h in Headers */,
+				D5ED25E723197A1F00C16BF7 /* tet4.h in Headers */,
+				D5ED25E923197A1F00C16BF7 /* tet15.h in Headers */,
+				D5ED25EC23197A1F00C16BF7 /* hex27.h in Headers */,
+				D5ED25E623197A1F00C16BF7 /* pyra5.h in Headers */,
+				D53293BB1E4A8454002798B3 /* TriMesh.h in Headers */,
+				D5ED25E523197A1F00C16BF7 /* penta6.h in Headers */,
+				D5B42D691FA1004600C56FCE /* FENodeFaceList.h in Headers */,
+				D5ED25EB23197A1F00C16BF7 /* hex8.h in Headers */,
+				D5ED25EE23197A1F00C16BF7 /* hex20.h in Headers */,
+				D54DD6311F8D46B70083D517 /* FEMeshBase.h in Headers */,
+				D53293B01E4A8454002798B3 /* FEEdge.h in Headers */,
+				D53293AC1E4A8454002798B3 /* FECoreMesh.h in Headers */,
+				D5B42D6C1FA1004600C56FCE /* FENodeNodeList.h in Headers */,
+				D570C91E204A301400E2A1B9 /* FELineMesh.h in Headers */,
+				D5215EEB1F018C3300838680 /* LineMesh2D.h in Headers */,
+				D5ED25E823197A1F00C16BF7 /* tet20.h in Headers */,
+				D5215EEE1F018C3300838680 /* MeshMetrics.h in Headers */,
+				D5ED25EF23197A1F00C16BF7 /* FEElementLibrary.h in Headers */,
+				D53293B21E4A8454002798B3 /* FEElement.h in Headers */,
+				D53293B71E4A8454002798B3 /* FENode.h in Headers */,
+				D5B42D681FA1004600C56FCE /* FENodeElementList.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D53293861E4A8446002798B3 /* MeshLib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D53293921E4A8446002798B3 /* Build configuration list for PBXNativeTarget "MeshLib" */;
+			buildPhases = (
+				D53293831E4A8446002798B3 /* Sources */,
+				D53293841E4A8446002798B3 /* Frameworks */,
+				D53293851E4A8446002798B3 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MeshLib;
+			productName = MeshLib;
+			productReference = D53293871E4A8446002798B3 /* libMeshLib.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D532937F1E4A8446002798B3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1030;
+				ORGANIZATIONNAME = febio.org;
+				TargetAttributes = {
+					D53293861E4A8446002798B3 = {
+						CreatedOnToolsVersion = 8.2.1;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = D53293821E4A8446002798B3 /* Build configuration list for PBXProject "MeshLib" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D532937E1E4A8446002798B3;
+			productRefGroup = D53293881E4A8446002798B3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D53293861E4A8446002798B3 /* MeshLib */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D53293831E4A8446002798B3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5B42D701FA1017100C56FCE /* FEFaceEdgeList.cpp in Sources */,
+				D53293B61E4A8454002798B3 /* FENode.cpp in Sources */,
+				D5B42D6A1FA1004600C56FCE /* FENodeElementList.cpp in Sources */,
+				D5A49E461FD74D4F0083510E /* insertCurve2.cpp in Sources */,
+				D5215EE81F018C3300838680 /* FEMesh.cpp in Sources */,
+				D5A49E471FD74D4F0083510E /* insertCurve.cpp in Sources */,
+				D5B42D6D1FA1004600C56FCE /* FENodeFaceList.cpp in Sources */,
+				D5ED25EA23197A1F00C16BF7 /* FEElementLibrary.cpp in Sources */,
+				D5215EEA1F018C3300838680 /* LineMesh2D.cpp in Sources */,
+				D570C91D204A301400E2A1B9 /* FELineMesh.cpp in Sources */,
+				D5215EEF1F018C3300838680 /* MeshTools.cpp in Sources */,
+				D53293BA1E4A8454002798B3 /* TriMesh.cpp in Sources */,
+				D53293AB1E4A8454002798B3 /* FECoreMesh.cpp in Sources */,
+				D53293B31E4A8454002798B3 /* FEFace.cpp in Sources */,
+				D53293B81E4A8454002798B3 /* FESurfaceMesh.cpp in Sources */,
+				D53293AD1E4A8454002798B3 /* FECurveMesh.cpp in Sources */,
+				D5215EED1F018C3300838680 /* MeshMetrics.cpp in Sources */,
+				D5215EF11F018C3300838680 /* triangulate.cpp in Sources */,
+				D5B42D6B1FA1004600C56FCE /* FENodeNodeList.cpp in Sources */,
+				D54DD6321F8D46B70083D517 /* FEMeshBase.cpp in Sources */,
+				D5B42D671FA1004600C56FCE /* FENodeEdgeList.cpp in Sources */,
+				D53293B11E4A8454002798B3 /* FEElement.cpp in Sources */,
+				D53293AF1E4A8454002798B3 /* FEEdge.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D53293901E4A8446002798B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		D53293911E4A8446002798B3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		D53293931E4A8446002798B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D53293941E4A8446002798B3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D53293821E4A8446002798B3 /* Build configuration list for PBXProject "MeshLib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D53293901E4A8446002798B3 /* Debug */,
+				D53293911E4A8446002798B3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D53293921E4A8446002798B3 /* Build configuration list for PBXNativeTarget "MeshLib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D53293931E4A8446002798B3 /* Debug */,
+				D53293941E4A8446002798B3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D532937F1E4A8446002798B3 /* Project object */;
+}

@@ -1,0 +1,1154 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */; };
+		D5ED280523197DE400C16BF7 /* ConchoidFit.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272923197DE200C16BF7 /* ConchoidFit.h */; };
+		D5ED280623197DE400C16BF7 /* FECurveIntersect2D.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272A23197DE200C16BF7 /* FECurveIntersect2D.h */; };
+		D5ED280723197DE400C16BF7 /* PlotDataSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272B23197DE200C16BF7 /* PlotDataSettings.h */; };
+		D5ED280823197DE400C16BF7 /* FETet15ToTet4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED272C23197DE200C16BF7 /* FETet15ToTet4.cpp */; };
+		D5ED280923197DE400C16BF7 /* GWrapModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED272D23197DE200C16BF7 /* GWrapModifier.cpp */; };
+		D5ED280A23197DE400C16BF7 /* GModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272E23197DE200C16BF7 /* GModifier.h */; };
+		D5ED280B23197DE400C16BF7 /* ICPRegistration.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272F23197DE200C16BF7 /* ICPRegistration.h */; };
+		D5ED280C23197DE400C16BF7 /* FEProject.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED273123197DE200C16BF7 /* FEProject.h */; };
+		D5ED280D23197DE400C16BF7 /* GGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED273323197DE300C16BF7 /* GGroup.h */; };
+		D5ED280E23197DE400C16BF7 /* FESmoothMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273423197DE300C16BF7 /* FESmoothMesh.cpp */; };
+		D5ED280F23197DE400C16BF7 /* FEAutoPartition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273523197DE300C16BF7 /* FEAutoPartition.cpp */; };
+		D5ED281023197DE400C16BF7 /* FECylinder.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED273623197DE300C16BF7 /* FECylinder.h */; };
+		D5ED281123197DE400C16BF7 /* FESoluteData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273723197DE300C16BF7 /* FESoluteData.cpp */; };
+		D5ED281223197DE400C16BF7 /* FESurfaceData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273823197DE300C16BF7 /* FESurfaceData.cpp */; };
+		D5ED281323197DE400C16BF7 /* FEHex8ToHex20.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273923197DE300C16BF7 /* FEHex8ToHex20.cpp */; };
+		D5ED281423197DE400C16BF7 /* FESphereInBox.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED273A23197DE300C16BF7 /* FESphereInBox.h */; };
+		D5ED281523197DE400C16BF7 /* FECVDDecimationModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273B23197DE300C16BF7 /* FECVDDecimationModifier.cpp */; };
+		D5ED281623197DE400C16BF7 /* GGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273C23197DE300C16BF7 /* GGroup.cpp */; };
+		D5ED281723197DE400C16BF7 /* FEProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273D23197DE300C16BF7 /* FEProject.cpp */; };
+		D5ED281823197DE400C16BF7 /* FETri3ToTri6.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED273E23197DE300C16BF7 /* FETri3ToTri6.cpp */; };
+		D5ED281923197DE400C16BF7 /* FEEdgeFlip.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED273F23197DE300C16BF7 /* FEEdgeFlip.h */; };
+		D5ED281A23197DE400C16BF7 /* PRVArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274023197DE300C16BF7 /* PRVArchive.cpp */; };
+		D5ED281B23197DE400C16BF7 /* FETetgenModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274123197DE300C16BF7 /* FETetgenModifier.cpp */; };
+		D5ED281C23197DE400C16BF7 /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED274223197DE300C16BF7 /* stdafx.h */; };
+		D5ED281D23197DE400C16BF7 /* GModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED274323197DE300C16BF7 /* GModel.h */; };
+		D5ED281E23197DE400C16BF7 /* FETetSplitModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274423197DE300C16BF7 /* FETetSplitModifier.cpp */; };
+		D5ED281F23197DE400C16BF7 /* GPLCObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274523197DE300C16BF7 /* GPLCObject.cpp */; };
+		D5ED282023197DE400C16BF7 /* FECylinderInBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274623197DE300C16BF7 /* FECylinderInBox.cpp */; };
+		D5ED282123197DE400C16BF7 /* FEShellPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED274723197DE300C16BF7 /* FEShellPatch.h */; };
+		D5ED282223197DE400C16BF7 /* GPLCObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED274823197DE300C16BF7 /* GPLCObject.h */; };
+		D5ED282323197DE400C16BF7 /* NetGenMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274923197DE300C16BF7 /* NetGenMesher.cpp */; };
+		D5ED282423197DE400C16BF7 /* FEBoundaryLayerMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274A23197DE300C16BF7 /* FEBoundaryLayerMesher.cpp */; };
+		D5ED282523197DE400C16BF7 /* FENodeData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274B23197DE300C16BF7 /* FENodeData.cpp */; };
+		D5ED282623197DE400C16BF7 /* FEElementData.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED274C23197DE300C16BF7 /* FEElementData.h */; };
+		D5ED282723197DE400C16BF7 /* FELoftMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED274D23197DE300C16BF7 /* FELoftMesher.h */; };
+		D5ED282823197DE400C16BF7 /* GHollowSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274E23197DE300C16BF7 /* GHollowSphere.cpp */; };
+		D5ED282923197DE400C16BF7 /* FEDiscardMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED274F23197DE300C16BF7 /* FEDiscardMesh.cpp */; };
+		D5ED282A23197DE400C16BF7 /* FECurveIntersect.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275023197DE300C16BF7 /* FECurveIntersect.h */; };
+		D5ED282B23197DE400C16BF7 /* FECylinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED275123197DE300C16BF7 /* FECylinder.cpp */; };
+		D5ED282C23197DE400C16BF7 /* FEShellTube.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275223197DE300C16BF7 /* FEShellTube.h */; };
+		D5ED282D23197DE400C16BF7 /* FETetGenMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED275323197DE300C16BF7 /* FETetGenMesher.cpp */; };
+		D5ED282E23197DE400C16BF7 /* FETube.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275423197DE300C16BF7 /* FETube.h */; };
+		D5ED282F23197DE400C16BF7 /* FEShellToSolid.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275523197DE300C16BF7 /* FEShellToSolid.h */; };
+		D5ED283023197DE400C16BF7 /* FESurfaceModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275623197DE300C16BF7 /* FESurfaceModifier.h */; };
+		D5ED283123197DE400C16BF7 /* FEGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED275723197DE300C16BF7 /* FEGroup.cpp */; };
+		D5ED283223197DE400C16BF7 /* FETet4ToTet20.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED275823197DE300C16BF7 /* FETet4ToTet20.cpp */; };
+		D5ED283323197DE400C16BF7 /* FEWeldModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275923197DE300C16BF7 /* FEWeldModifier.h */; };
+		D5ED283423197DE400C16BF7 /* FEAxesCurvature.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED275A23197DE300C16BF7 /* FEAxesCurvature.cpp */; };
+		D5ED283523197DE400C16BF7 /* FEGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275B23197DE300C16BF7 /* FEGroup.h */; };
+		D5ED283623197DE400C16BF7 /* FELinearToQuadratic.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275C23197DE300C16BF7 /* FELinearToQuadratic.h */; };
+		D5ED283723197DE400C16BF7 /* FECurveMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275D23197DE300C16BF7 /* FECurveMesher.h */; };
+		D5ED283823197DE400C16BF7 /* FECone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED275E23197DE300C16BF7 /* FECone.cpp */; };
+		D5ED283923197DE400C16BF7 /* FEMortarProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED275F23197DE300C16BF7 /* FEMortarProjection.h */; };
+		D5ED283A23197DE400C16BF7 /* GModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276023197DE300C16BF7 /* GModifier.cpp */; };
+		D5ED283B23197DE400C16BF7 /* FERefineSurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276123197DE300C16BF7 /* FERefineSurface.cpp */; };
+		D5ED283C23197DE400C16BF7 /* FEEdgeFlip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276223197DE300C16BF7 /* FEEdgeFlip.cpp */; };
+		D5ED283D23197DE400C16BF7 /* PointCloud3d.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED276323197DE300C16BF7 /* PointCloud3d.h */; };
+		D5ED283E23197DE400C16BF7 /* SpringGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED276423197DE300C16BF7 /* SpringGenerator.h */; };
+		D5ED283F23197DE400C16BF7 /* GMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276523197DE300C16BF7 /* GMesh.cpp */; };
+		D5ED284023197DE400C16BF7 /* FETorus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276623197DE300C16BF7 /* FETorus.cpp */; };
+		D5ED284123197DE400C16BF7 /* FETet4ToTet5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276723197DE300C16BF7 /* FETet4ToTet5.cpp */; };
+		D5ED284223197DE400C16BF7 /* FESmoothSurfaceMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED276823197DE300C16BF7 /* FESmoothSurfaceMesh.h */; };
+		D5ED284323197DE400C16BF7 /* FESurfaceData.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED276923197DE300C16BF7 /* FESurfaceData.h */; };
+		D5ED284423197DE400C16BF7 /* GModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276A23197DE300C16BF7 /* GModel.cpp */; };
+		D5ED284523197DE400C16BF7 /* FEMortarProjection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276B23197DE300C16BF7 /* FEMortarProjection.cpp */; };
+		D5ED284623197DE400C16BF7 /* GExtrudeModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276C23197DE300C16BF7 /* GExtrudeModifier.cpp */; };
+		D5ED284723197DE400C16BF7 /* FERefineSurface.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED276D23197DE300C16BF7 /* FERefineSurface.h */; };
+		D5ED284823197DE400C16BF7 /* FEShellDisc.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED276E23197DE300C16BF7 /* FEShellDisc.h */; };
+		D5ED284923197DE400C16BF7 /* FEFillHole.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED276F23197DE300C16BF7 /* FEFillHole.cpp */; };
+		D5ED284A23197DE400C16BF7 /* GModifiedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277023197DE300C16BF7 /* GModifiedObject.h */; };
+		D5ED284B23197DE400C16BF7 /* Plane.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277123197DE300C16BF7 /* Plane.h */; };
+		D5ED284C23197DE400C16BF7 /* FEMeshData.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277223197DE300C16BF7 /* FEMeshData.h */; };
+		D5ED284D23197DE400C16BF7 /* FEAdvancingFrontMesher2D.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277323197DE300C16BF7 /* FEAdvancingFrontMesher2D.h */; };
+		D5ED284E23197DE400C16BF7 /* FEModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277423197DE300C16BF7 /* FEModel.h */; };
+		D5ED284F23197DE400C16BF7 /* FECurveIntersect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED277523197DE300C16BF7 /* FECurveIntersect.cpp */; };
+		D5ED285023197DE400C16BF7 /* FETetGenMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277623197DE300C16BF7 /* FETetGenMesher.h */; };
+		D5ED285123197DE400C16BF7 /* FEShellPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED277723197DE300C16BF7 /* FEShellPatch.cpp */; };
+		D5ED285223197DE400C16BF7 /* FESoluteData.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277823197DE300C16BF7 /* FESoluteData.h */; };
+		D5ED285323197DE400C16BF7 /* GradientMap.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277923197DE300C16BF7 /* GradientMap.h */; };
+		D5ED285423197DE400C16BF7 /* FEItemListBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277A23197DE300C16BF7 /* FEItemListBuilder.h */; };
+		D5ED285523197DE400C16BF7 /* FEModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED277B23197DE300C16BF7 /* FEModifier.cpp */; };
+		D5ED285623197DE400C16BF7 /* Quadric.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED277C23197DE300C16BF7 /* Quadric.cpp */; };
+		D5ED285723197DE400C16BF7 /* FENNQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED277D23197DE300C16BF7 /* FENNQuery.cpp */; };
+		D5ED285823197DE400C16BF7 /* FEElementData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED277E23197DE300C16BF7 /* FEElementData.cpp */; };
+		D5ED285923197DE400C16BF7 /* FoamMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED277F23197DE300C16BF7 /* FoamMesh.h */; };
+		D5ED285A23197DE400C16BF7 /* FEModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED278023197DE300C16BF7 /* FEModel.cpp */; };
+		D5ED285B23197DE400C16BF7 /* FEMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED278123197DE300C16BF7 /* FEMesher.cpp */; };
+		D5ED285C23197DE400C16BF7 /* FESurfaceModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED278223197DE300C16BF7 /* FESurfaceModifier.cpp */; };
+		D5ED285D23197DE400C16BF7 /* FEDataVariable.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED278323197DE300C16BF7 /* FEDataVariable.h */; };
+		D5ED285E23197DE400C16BF7 /* hex2tet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED278423197DE300C16BF7 /* hex2tet.cpp */; };
+		D5ED285F23197DE400C16BF7 /* FEShellRing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED278523197DE300C16BF7 /* FEShellRing.cpp */; };
+		D5ED286023197DE400C16BF7 /* SurfaceDistance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED278623197DE300C16BF7 /* SurfaceDistance.cpp */; };
+		D5ED286123197DE400C16BF7 /* FESurfaceIntersect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED278723197DE300C16BF7 /* FESurfaceIntersect.cpp */; };
+		D5ED286223197DE400C16BF7 /* BivariatePolynomialSpline.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED278823197DE300C16BF7 /* BivariatePolynomialSpline.h */; };
+		D5ED286323197DE400C16BF7 /* FESlice.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED278923197DE300C16BF7 /* FESlice.h */; };
+		D5ED286423197DE400C16BF7 /* FEShellSphere.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED278A23197DE300C16BF7 /* FEShellSphere.h */; };
+		D5ED286523197DE400C16BF7 /* FECreateShells.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED278B23197DE300C16BF7 /* FECreateShells.cpp */; };
+		D5ED286623197DE400C16BF7 /* FEFillHole.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED278C23197DE300C16BF7 /* FEFillHole.h */; };
+		D5ED286723197DE400C16BF7 /* FECone.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED278D23197DE300C16BF7 /* FECone.h */; };
+		D5ED286823197DE400C16BF7 /* GMaterial.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED278E23197DE300C16BF7 /* GMaterial.h */; };
+		D5ED286923197DE400C16BF7 /* FEEdgeCollapse.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED278F23197DE300C16BF7 /* FEEdgeCollapse.h */; };
+		D5ED286A23197DE400C16BF7 /* FESphere.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED279023197DE300C16BF7 /* FESphere.h */; };
+		D5ED286B23197DE400C16BF7 /* FEMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED279123197DE300C16BF7 /* FEMesher.h */; };
+		D5ED286C23197DE400C16BF7 /* FESmoothSurfaceMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279223197DE300C16BF7 /* FESmoothSurfaceMesh.cpp */; };
+		D5ED286D23197DE400C16BF7 /* FESphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279323197DE300C16BF7 /* FESphere.cpp */; };
+		D5ED286E23197DE400C16BF7 /* GDiscreteObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED279423197DE300C16BF7 /* GDiscreteObject.h */; };
+		D5ED286F23197DE400C16BF7 /* FECurveIntersect2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279523197DE300C16BF7 /* FECurveIntersect2D.cpp */; };
+		D5ED287023197DE400C16BF7 /* FEShellSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279623197DE300C16BF7 /* FEShellSphere.cpp */; };
+		D5ED287123197DE400C16BF7 /* FENodeData.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED279723197DE300C16BF7 /* FENodeData.h */; };
+		D5ED287223197DE400C16BF7 /* LaplaceSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279823197DE300C16BF7 /* LaplaceSolver.cpp */; };
+		D5ED287323197DE400C16BF7 /* FEDomain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279923197DE300C16BF7 /* FEDomain.cpp */; };
+		D5ED287423197DE400C16BF7 /* FESlice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279A23197DE300C16BF7 /* FESlice.cpp */; };
+		D5ED287523197DE400C16BF7 /* FESelection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279B23197DE300C16BF7 /* FESelection.cpp */; };
+		D5ED287623197DE400C16BF7 /* FETorus.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED279C23197DE300C16BF7 /* FETorus.h */; };
+		D5ED287723197DE400C16BF7 /* NetGenMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED279D23197DE300C16BF7 /* NetGenMesher.h */; };
+		D5ED287823197DE400C16BF7 /* ConchoidFit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279E23197DE300C16BF7 /* ConchoidFit.cpp */; };
+		D5ED287923197DE400C16BF7 /* FEModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED279F23197DE300C16BF7 /* FEModifier.h */; };
+		D5ED287A23197DE400C16BF7 /* FEAdvancingFrontMesher2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A023197DE300C16BF7 /* FEAdvancingFrontMesher2D.cpp */; };
+		D5ED287B23197DE400C16BF7 /* FESelectElementsFromFaces.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A123197DE300C16BF7 /* FESelectElementsFromFaces.h */; };
+		D5ED287C23197DE400C16BF7 /* FESelection.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A223197DE300C16BF7 /* FESelection.h */; };
+		D5ED287D23197DE400C16BF7 /* FEDomain.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A323197DE300C16BF7 /* FEDomain.h */; };
+		D5ED287E23197DE400C16BF7 /* FEQuartDogBone.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A423197DE300C16BF7 /* FEQuartDogBone.h */; };
+		D5ED287F23197DE400C16BF7 /* ICPRegistration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A523197DE300C16BF7 /* ICPRegistration.cpp */; };
+		D5ED288023197DE400C16BF7 /* FEFileExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A623197DE300C16BF7 /* FEFileExport.cpp */; };
+		D5ED288123197DE400C16BF7 /* FEShellTorus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A723197DE300C16BF7 /* FEShellTorus.cpp */; };
+		D5ED288223197DE400C16BF7 /* FESelectElementsFromFaces.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A823197DE300C16BF7 /* FESelectElementsFromFaces.cpp */; };
+		D5ED288323197DE400C16BF7 /* FEMMGRemesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A923197DE300C16BF7 /* FEMMGRemesh.h */; };
+		D5ED288423197DE400C16BF7 /* FEBox.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27AA23197DE300C16BF7 /* FEBox.h */; };
+		D5ED288523197DE400C16BF7 /* FEShellTube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27AB23197DE300C16BF7 /* FEShellTube.cpp */; };
+		D5ED288623197DE400C16BF7 /* FELinearToQuadratic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27AC23197DE300C16BF7 /* FELinearToQuadratic.cpp */; };
+		D5ED288723197DE400C16BF7 /* FESphereInBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27AD23197DE300C16BF7 /* FESphereInBox.cpp */; };
+		D5ED288823197DE400C16BF7 /* FoamMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27AE23197DE300C16BF7 /* FoamMesh.cpp */; };
+		D5ED288923197DE400C16BF7 /* FEShellRing.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27AF23197DE300C16BF7 /* FEShellRing.h */; };
+		D5ED288A23197DE400C16BF7 /* BivariatePolynomialSpline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27B023197DE300C16BF7 /* BivariatePolynomialSpline.cpp */; };
+		D5ED288B23197DE400C16BF7 /* FEHollowSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27B123197DE300C16BF7 /* FEHollowSphere.cpp */; };
+		D5ED288C23197DE400C16BF7 /* FEDataVariable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27B223197DE300C16BF7 /* FEDataVariable.cpp */; };
+		D5ED288D23197DE400C16BF7 /* GPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27B323197DE300C16BF7 /* GPatch.cpp */; };
+		D5ED288E23197DE400C16BF7 /* FESplitModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27B423197DE300C16BF7 /* FESplitModifier.h */; };
+		D5ED288F23197DE400C16BF7 /* LaplaceSolver.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27B523197DE300C16BF7 /* LaplaceSolver.h */; };
+		D5ED289023197DE400C16BF7 /* FETube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27B623197DE300C16BF7 /* FETube.cpp */; };
+		D5ED289123197DE400C16BF7 /* FEHexSplitModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27B723197DE300C16BF7 /* FEHexSplitModifier.cpp */; };
+		D5ED289223197DE400C16BF7 /* FEMeshValuator.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27B823197DE300C16BF7 /* FEMeshValuator.h */; };
+		D5ED289323197DE400C16BF7 /* PointCloud3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27B923197DE300C16BF7 /* PointCloud3d.cpp */; };
+		D5ED289423197DE400C16BF7 /* FEMeshSmoothingModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27BA23197DE300C16BF7 /* FEMeshSmoothingModifier.h */; };
+		D5ED289523197DE400C16BF7 /* GSketch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27BC23197DE400C16BF7 /* GSketch.cpp */; };
+		D5ED289623197DE400C16BF7 /* FEDiscardMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27BD23197DE400C16BF7 /* FEDiscardMesh.h */; };
+		D5ED289723197DE400C16BF7 /* FEQuartDogBone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27BE23197DE400C16BF7 /* FEQuartDogBone.cpp */; };
+		D5ED289823197DE400C16BF7 /* PlotDataSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27BF23197DE400C16BF7 /* PlotDataSettings.cpp */; };
+		D5ED289923197DE400C16BF7 /* SphereFit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27C023197DE400C16BF7 /* SphereFit.cpp */; };
+		D5ED289A23197DE400C16BF7 /* FEShellToSolid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27C123197DE400C16BF7 /* FEShellToSolid.cpp */; };
+		D5ED289B23197DE400C16BF7 /* FEEdgeCollapse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27C223197DE400C16BF7 /* FEEdgeCollapse.cpp */; };
+		D5ED289C23197DE400C16BF7 /* FEMeshSmoothingModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27C323197DE400C16BF7 /* FEMeshSmoothingModifier.cpp */; };
+		D5ED289D23197DE400C16BF7 /* FECylinderInBox.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27C423197DE400C16BF7 /* FECylinderInBox.h */; };
+		D5ED289E23197DE400C16BF7 /* GDiscreteObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27C523197DE400C16BF7 /* GDiscreteObject.cpp */; };
+		D5ED289F23197DE400C16BF7 /* Quadric.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27C723197DE400C16BF7 /* Quadric.h */; };
+		D5ED28A023197DE400C16BF7 /* FERevolveFaces.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27C823197DE400C16BF7 /* FERevolveFaces.h */; };
+		D5ED28A123197DE400C16BF7 /* SphereFit.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27C923197DE400C16BF7 /* SphereFit.h */; };
+		D5ED28A223197DE400C16BF7 /* SpringGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27CA23197DE400C16BF7 /* SpringGenerator.cpp */; };
+		D5ED28A323197DE400C16BF7 /* FEFixMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27CB23197DE400C16BF7 /* FEFixMesh.h */; };
+		D5ED28A423197DE400C16BF7 /* FEQuad4ToQuad8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27CC23197DE400C16BF7 /* FEQuad4ToQuad8.cpp */; };
+		D5ED28A523197DE400C16BF7 /* FETruncatedEllipsoid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27CD23197DE400C16BF7 /* FETruncatedEllipsoid.cpp */; };
+		D5ED28A623197DE400C16BF7 /* FENNQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27CE23197DE400C16BF7 /* FENNQuery.h */; };
+		D5ED28A723197DE400C16BF7 /* FESplitModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27CF23197DE400C16BF7 /* FESplitModifier.cpp */; };
+		D5ED28A823197DE400C16BF7 /* FEItemListBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27D023197DE400C16BF7 /* FEItemListBuilder.cpp */; };
+		D5ED28A923197DE400C16BF7 /* FESolidArc.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27D123197DE400C16BF7 /* FESolidArc.h */; };
+		D5ED28AA23197DE400C16BF7 /* FECVDDecimationModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27D223197DE400C16BF7 /* FECVDDecimationModifier.h */; };
+		D5ED28AB23197DE400C16BF7 /* FEExtrudeFaces.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27D323197DE400C16BF7 /* FEExtrudeFaces.cpp */; };
+		D5ED28AC23197DE400C16BF7 /* FETetGenModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27D423197DE400C16BF7 /* FETetGenModifier.h */; };
+		D5ED28AD23197DE400C16BF7 /* lut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27D523197DE400C16BF7 /* lut.cpp */; };
+		D5ED28AE23197DE400C16BF7 /* FETet4ToTet10.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27D623197DE400C16BF7 /* FETet4ToTet10.cpp */; };
+		D5ED28AF23197DE400C16BF7 /* FEAutoPartition.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27D723197DE400C16BF7 /* FEAutoPartition.h */; };
+		D5ED28B023197DE400C16BF7 /* FESolidArc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27D823197DE400C16BF7 /* FESolidArc.cpp */; };
+		D5ED28B123197DE400C16BF7 /* GLMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27D923197DE400C16BF7 /* GLMesh.cpp */; };
+		D5ED28B223197DE400C16BF7 /* FESurfaceIntersect.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27DA23197DE400C16BF7 /* FESurfaceIntersect.h */; };
+		D5ED28B323197DE400C16BF7 /* FEBoundaryLayerMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27DB23197DE400C16BF7 /* FEBoundaryLayerMesher.h */; };
+		D5ED28B423197DE400C16BF7 /* GMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27DC23197DE400C16BF7 /* GMaterial.cpp */; };
+		D5ED28B523197DE400C16BF7 /* FEHollowSphere.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27DD23197DE400C16BF7 /* FEHollowSphere.h */; };
+		D5ED28B623197DE400C16BF7 /* FEAxesCurvature.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27DE23197DE400C16BF7 /* FEAxesCurvature.h */; };
+		D5ED28B723197DE400C16BF7 /* GradientMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27DF23197DE400C16BF7 /* GradientMap.cpp */; };
+		D5ED28B823197DE400C16BF7 /* FEMultiBlockMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27E023197DE400C16BF7 /* FEMultiBlockMesh.h */; };
+		D5ED28B923197DE400C16BF7 /* BivariateSpline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E123197DE400C16BF7 /* BivariateSpline.cpp */; };
+		D5ED28BA23197DE400C16BF7 /* LoadCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E223197DE400C16BF7 /* LoadCurve.cpp */; };
+		D5ED28BB23197DE400C16BF7 /* FEFileExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27E323197DE400C16BF7 /* FEFileExport.h */; };
+		D5ED28BC23197DE400C16BF7 /* GModifiedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E423197DE400C16BF7 /* GModifiedObject.cpp */; };
+		D5ED28BD23197DE400C16BF7 /* FETruncatedEllipsoid.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27E523197DE400C16BF7 /* FETruncatedEllipsoid.h */; };
+		D5ED28BE23197DE400C16BF7 /* FEGregoryPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E623197DE400C16BF7 /* FEGregoryPatch.cpp */; };
+		D5ED28BF23197DE400C16BF7 /* FEShellTorus.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27E723197DE400C16BF7 /* FEShellTorus.h */; };
+		D5ED28C023197DE400C16BF7 /* FEWeldModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E823197DE400C16BF7 /* FEWeldModifier.cpp */; };
+		D5ED28C123197DE400C16BF7 /* FECurveMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E923197DE400C16BF7 /* FECurveMesher.cpp */; };
+		D5ED28C223197DE400C16BF7 /* FETet10ToTet4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27EA23197DE400C16BF7 /* FETet10ToTet4.cpp */; };
+		D5ED28C323197DE400C16BF7 /* PRVArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27EB23197DE400C16BF7 /* PRVArchive.h */; };
+		D5ED28C423197DE400C16BF7 /* SurfaceDistance.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27EC23197DE400C16BF7 /* SurfaceDistance.h */; };
+		D5ED28C523197DE400C16BF7 /* FEFixMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27ED23197DE400C16BF7 /* FEFixMesh.cpp */; };
+		D5ED28C623197DE400C16BF7 /* FEItemList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27EE23197DE400C16BF7 /* FEItemList.h */; };
+		D5ED28C723197DE400C16BF7 /* GObject2D.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27EF23197DE400C16BF7 /* GObject2D.h */; };
+		D5ED28C823197DE400C16BF7 /* Plane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27F023197DE400C16BF7 /* Plane.cpp */; };
+		D5ED28C923197DE400C16BF7 /* FELoftMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27F123197DE400C16BF7 /* FELoftMesher.cpp */; };
+		D5ED28CA23197DE400C16BF7 /* GMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27F223197DE400C16BF7 /* GMesh.h */; };
+		D5ED28CB23197DE400C16BF7 /* FEPlaneCut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27F323197DE400C16BF7 /* FEPlaneCut.cpp */; };
+		D5ED28CC23197DE400C16BF7 /* FEBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27F423197DE400C16BF7 /* FEBox.cpp */; };
+		D5ED28CD23197DE400C16BF7 /* FEMultiBlockMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27F523197DE400C16BF7 /* FEMultiBlockMesh.cpp */; };
+		D5ED28CE23197DE400C16BF7 /* FEMMGRemesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27F623197DE400C16BF7 /* FEMMGRemesh.cpp */; };
+		D5ED28CF23197DE400C16BF7 /* GObject2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27F723197DE400C16BF7 /* GObject2D.cpp */; };
+		D5ED28D023197DE400C16BF7 /* FECreateShells.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27F823197DE400C16BF7 /* FECreateShells.h */; };
+		D5ED28D123197DE400C16BF7 /* FEMeshValuator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27F923197DE400C16BF7 /* FEMeshValuator.cpp */; };
+		D5ED28D223197DE400C16BF7 /* GLMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27FA23197DE400C16BF7 /* GLMesh.h */; };
+		D5ED28D323197DE400C16BF7 /* FEExtrudeFaces.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27FB23197DE400C16BF7 /* FEExtrudeFaces.h */; };
+		D5ED28D423197DE400C16BF7 /* GSketch.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27FC23197DE400C16BF7 /* GSketch.h */; };
+		D5ED28D523197DE400C16BF7 /* FEGregoryPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27FD23197DE400C16BF7 /* FEGregoryPatch.h */; };
+		D5ED28D623197DE400C16BF7 /* BivariateSpline.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27FE23197DE400C16BF7 /* BivariateSpline.h */; };
+		D5ED28D723197DE400C16BF7 /* FERevolveFaces.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27FF23197DE400C16BF7 /* FERevolveFaces.cpp */; };
+		D5ED28D823197DE400C16BF7 /* LoadCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED280023197DE400C16BF7 /* LoadCurve.h */; };
+		D5ED28D923197DE400C16BF7 /* FEMeshData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED280123197DE400C16BF7 /* FEMeshData.cpp */; };
+		D5ED28DA23197DE400C16BF7 /* GRevolveModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED280223197DE400C16BF7 /* GRevolveModifier.cpp */; };
+		D5ED28DB23197DE400C16BF7 /* FETet4ToTet15.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED280323197DE400C16BF7 /* FETet4ToTet15.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D5ED271923197DD200C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellDisc.cpp; sourceTree = "<group>"; };
+		D5ED272923197DE200C16BF7 /* ConchoidFit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConchoidFit.h; sourceTree = "<group>"; };
+		D5ED272A23197DE200C16BF7 /* FECurveIntersect2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECurveIntersect2D.h; sourceTree = "<group>"; };
+		D5ED272B23197DE200C16BF7 /* PlotDataSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlotDataSettings.h; sourceTree = "<group>"; };
+		D5ED272C23197DE200C16BF7 /* FETet15ToTet4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet15ToTet4.cpp; sourceTree = "<group>"; };
+		D5ED272D23197DE200C16BF7 /* GWrapModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GWrapModifier.cpp; sourceTree = "<group>"; };
+		D5ED272E23197DE200C16BF7 /* GModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GModifier.h; sourceTree = "<group>"; };
+		D5ED272F23197DE200C16BF7 /* ICPRegistration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICPRegistration.h; sourceTree = "<group>"; };
+		D5ED273023197DE200C16BF7 /* FECore.vcproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = FECore.vcproj; sourceTree = "<group>"; };
+		D5ED273123197DE200C16BF7 /* FEProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEProject.h; sourceTree = "<group>"; };
+		D5ED273223197DE300C16BF7 /* MeshTools.pro */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MeshTools.pro; sourceTree = "<group>"; };
+		D5ED273323197DE300C16BF7 /* GGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GGroup.h; sourceTree = "<group>"; };
+		D5ED273423197DE300C16BF7 /* FESmoothMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESmoothMesh.cpp; sourceTree = "<group>"; };
+		D5ED273523197DE300C16BF7 /* FEAutoPartition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEAutoPartition.cpp; sourceTree = "<group>"; };
+		D5ED273623197DE300C16BF7 /* FECylinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECylinder.h; sourceTree = "<group>"; };
+		D5ED273723197DE300C16BF7 /* FESoluteData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESoluteData.cpp; sourceTree = "<group>"; };
+		D5ED273823197DE300C16BF7 /* FESurfaceData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESurfaceData.cpp; sourceTree = "<group>"; };
+		D5ED273923197DE300C16BF7 /* FEHex8ToHex20.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEHex8ToHex20.cpp; sourceTree = "<group>"; };
+		D5ED273A23197DE300C16BF7 /* FESphereInBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESphereInBox.h; sourceTree = "<group>"; };
+		D5ED273B23197DE300C16BF7 /* FECVDDecimationModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECVDDecimationModifier.cpp; sourceTree = "<group>"; };
+		D5ED273C23197DE300C16BF7 /* GGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GGroup.cpp; sourceTree = "<group>"; };
+		D5ED273D23197DE300C16BF7 /* FEProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEProject.cpp; sourceTree = "<group>"; };
+		D5ED273E23197DE300C16BF7 /* FETri3ToTri6.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETri3ToTri6.cpp; sourceTree = "<group>"; };
+		D5ED273F23197DE300C16BF7 /* FEEdgeFlip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEEdgeFlip.h; sourceTree = "<group>"; };
+		D5ED274023197DE300C16BF7 /* PRVArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PRVArchive.cpp; sourceTree = "<group>"; };
+		D5ED274123197DE300C16BF7 /* FETetgenModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETetgenModifier.cpp; sourceTree = "<group>"; };
+		D5ED274223197DE300C16BF7 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		D5ED274323197DE300C16BF7 /* GModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GModel.h; sourceTree = "<group>"; };
+		D5ED274423197DE300C16BF7 /* FETetSplitModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETetSplitModifier.cpp; sourceTree = "<group>"; };
+		D5ED274523197DE300C16BF7 /* GPLCObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GPLCObject.cpp; sourceTree = "<group>"; };
+		D5ED274623197DE300C16BF7 /* FECylinderInBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECylinderInBox.cpp; sourceTree = "<group>"; };
+		D5ED274723197DE300C16BF7 /* FEShellPatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellPatch.h; sourceTree = "<group>"; };
+		D5ED274823197DE300C16BF7 /* GPLCObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPLCObject.h; sourceTree = "<group>"; };
+		D5ED274923197DE300C16BF7 /* NetGenMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetGenMesher.cpp; sourceTree = "<group>"; };
+		D5ED274A23197DE300C16BF7 /* FEBoundaryLayerMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBoundaryLayerMesher.cpp; sourceTree = "<group>"; };
+		D5ED274B23197DE300C16BF7 /* FENodeData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeData.cpp; sourceTree = "<group>"; };
+		D5ED274C23197DE300C16BF7 /* FEElementData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEElementData.h; sourceTree = "<group>"; };
+		D5ED274D23197DE300C16BF7 /* FELoftMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FELoftMesher.h; sourceTree = "<group>"; };
+		D5ED274E23197DE300C16BF7 /* GHollowSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GHollowSphere.cpp; sourceTree = "<group>"; };
+		D5ED274F23197DE300C16BF7 /* FEDiscardMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEDiscardMesh.cpp; sourceTree = "<group>"; };
+		D5ED275023197DE300C16BF7 /* FECurveIntersect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECurveIntersect.h; sourceTree = "<group>"; };
+		D5ED275123197DE300C16BF7 /* FECylinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECylinder.cpp; sourceTree = "<group>"; };
+		D5ED275223197DE300C16BF7 /* FEShellTube.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellTube.h; sourceTree = "<group>"; };
+		D5ED275323197DE300C16BF7 /* FETetGenMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETetGenMesher.cpp; sourceTree = "<group>"; };
+		D5ED275423197DE300C16BF7 /* FETube.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETube.h; sourceTree = "<group>"; };
+		D5ED275523197DE300C16BF7 /* FEShellToSolid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellToSolid.h; sourceTree = "<group>"; };
+		D5ED275623197DE300C16BF7 /* FESurfaceModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESurfaceModifier.h; sourceTree = "<group>"; };
+		D5ED275723197DE300C16BF7 /* FEGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEGroup.cpp; sourceTree = "<group>"; };
+		D5ED275823197DE300C16BF7 /* FETet4ToTet20.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToTet20.cpp; sourceTree = "<group>"; };
+		D5ED275923197DE300C16BF7 /* FEWeldModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEWeldModifier.h; sourceTree = "<group>"; };
+		D5ED275A23197DE300C16BF7 /* FEAxesCurvature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEAxesCurvature.cpp; sourceTree = "<group>"; };
+		D5ED275B23197DE300C16BF7 /* FEGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEGroup.h; sourceTree = "<group>"; };
+		D5ED275C23197DE300C16BF7 /* FELinearToQuadratic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FELinearToQuadratic.h; sourceTree = "<group>"; };
+		D5ED275D23197DE300C16BF7 /* FECurveMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECurveMesher.h; sourceTree = "<group>"; };
+		D5ED275E23197DE300C16BF7 /* FECone.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECone.cpp; sourceTree = "<group>"; };
+		D5ED275F23197DE300C16BF7 /* FEMortarProjection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMortarProjection.h; sourceTree = "<group>"; };
+		D5ED276023197DE300C16BF7 /* GModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GModifier.cpp; sourceTree = "<group>"; };
+		D5ED276123197DE300C16BF7 /* FERefineSurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERefineSurface.cpp; sourceTree = "<group>"; };
+		D5ED276223197DE300C16BF7 /* FEEdgeFlip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEEdgeFlip.cpp; sourceTree = "<group>"; };
+		D5ED276323197DE300C16BF7 /* PointCloud3d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointCloud3d.h; sourceTree = "<group>"; };
+		D5ED276423197DE300C16BF7 /* SpringGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpringGenerator.h; sourceTree = "<group>"; };
+		D5ED276523197DE300C16BF7 /* GMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GMesh.cpp; sourceTree = "<group>"; };
+		D5ED276623197DE300C16BF7 /* FETorus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETorus.cpp; sourceTree = "<group>"; };
+		D5ED276723197DE300C16BF7 /* FETet4ToTet5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToTet5.cpp; sourceTree = "<group>"; };
+		D5ED276823197DE300C16BF7 /* FESmoothSurfaceMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESmoothSurfaceMesh.h; sourceTree = "<group>"; };
+		D5ED276923197DE300C16BF7 /* FESurfaceData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESurfaceData.h; sourceTree = "<group>"; };
+		D5ED276A23197DE300C16BF7 /* GModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GModel.cpp; sourceTree = "<group>"; };
+		D5ED276B23197DE300C16BF7 /* FEMortarProjection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMortarProjection.cpp; sourceTree = "<group>"; };
+		D5ED276C23197DE300C16BF7 /* GExtrudeModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GExtrudeModifier.cpp; sourceTree = "<group>"; };
+		D5ED276D23197DE300C16BF7 /* FERefineSurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FERefineSurface.h; sourceTree = "<group>"; };
+		D5ED276E23197DE300C16BF7 /* FEShellDisc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellDisc.h; sourceTree = "<group>"; };
+		D5ED276F23197DE300C16BF7 /* FEFillHole.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFillHole.cpp; sourceTree = "<group>"; };
+		D5ED277023197DE300C16BF7 /* GModifiedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GModifiedObject.h; sourceTree = "<group>"; };
+		D5ED277123197DE300C16BF7 /* Plane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Plane.h; sourceTree = "<group>"; };
+		D5ED277223197DE300C16BF7 /* FEMeshData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshData.h; sourceTree = "<group>"; };
+		D5ED277323197DE300C16BF7 /* FEAdvancingFrontMesher2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEAdvancingFrontMesher2D.h; sourceTree = "<group>"; };
+		D5ED277423197DE300C16BF7 /* FEModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEModel.h; sourceTree = "<group>"; };
+		D5ED277523197DE300C16BF7 /* FECurveIntersect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECurveIntersect.cpp; sourceTree = "<group>"; };
+		D5ED277623197DE300C16BF7 /* FETetGenMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETetGenMesher.h; sourceTree = "<group>"; };
+		D5ED277723197DE300C16BF7 /* FEShellPatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellPatch.cpp; sourceTree = "<group>"; };
+		D5ED277823197DE300C16BF7 /* FESoluteData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESoluteData.h; sourceTree = "<group>"; };
+		D5ED277923197DE300C16BF7 /* GradientMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GradientMap.h; sourceTree = "<group>"; };
+		D5ED277A23197DE300C16BF7 /* FEItemListBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEItemListBuilder.h; sourceTree = "<group>"; };
+		D5ED277B23197DE300C16BF7 /* FEModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEModifier.cpp; sourceTree = "<group>"; };
+		D5ED277C23197DE300C16BF7 /* Quadric.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quadric.cpp; sourceTree = "<group>"; };
+		D5ED277D23197DE300C16BF7 /* FENNQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENNQuery.cpp; sourceTree = "<group>"; };
+		D5ED277E23197DE300C16BF7 /* FEElementData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEElementData.cpp; sourceTree = "<group>"; };
+		D5ED277F23197DE300C16BF7 /* FoamMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoamMesh.h; sourceTree = "<group>"; };
+		D5ED278023197DE300C16BF7 /* FEModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEModel.cpp; sourceTree = "<group>"; };
+		D5ED278123197DE300C16BF7 /* FEMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMesher.cpp; sourceTree = "<group>"; };
+		D5ED278223197DE300C16BF7 /* FESurfaceModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESurfaceModifier.cpp; sourceTree = "<group>"; };
+		D5ED278323197DE300C16BF7 /* FEDataVariable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEDataVariable.h; sourceTree = "<group>"; };
+		D5ED278423197DE300C16BF7 /* hex2tet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hex2tet.cpp; sourceTree = "<group>"; };
+		D5ED278523197DE300C16BF7 /* FEShellRing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellRing.cpp; sourceTree = "<group>"; };
+		D5ED278623197DE300C16BF7 /* SurfaceDistance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SurfaceDistance.cpp; sourceTree = "<group>"; };
+		D5ED278723197DE300C16BF7 /* FESurfaceIntersect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESurfaceIntersect.cpp; sourceTree = "<group>"; };
+		D5ED278823197DE300C16BF7 /* BivariatePolynomialSpline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BivariatePolynomialSpline.h; sourceTree = "<group>"; };
+		D5ED278923197DE300C16BF7 /* FESlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESlice.h; sourceTree = "<group>"; };
+		D5ED278A23197DE300C16BF7 /* FEShellSphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellSphere.h; sourceTree = "<group>"; };
+		D5ED278B23197DE300C16BF7 /* FECreateShells.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECreateShells.cpp; sourceTree = "<group>"; };
+		D5ED278C23197DE300C16BF7 /* FEFillHole.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFillHole.h; sourceTree = "<group>"; };
+		D5ED278D23197DE300C16BF7 /* FECone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECone.h; sourceTree = "<group>"; };
+		D5ED278E23197DE300C16BF7 /* GMaterial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMaterial.h; sourceTree = "<group>"; };
+		D5ED278F23197DE300C16BF7 /* FEEdgeCollapse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEEdgeCollapse.h; sourceTree = "<group>"; };
+		D5ED279023197DE300C16BF7 /* FESphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESphere.h; sourceTree = "<group>"; };
+		D5ED279123197DE300C16BF7 /* FEMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMesher.h; sourceTree = "<group>"; };
+		D5ED279223197DE300C16BF7 /* FESmoothSurfaceMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESmoothSurfaceMesh.cpp; sourceTree = "<group>"; };
+		D5ED279323197DE300C16BF7 /* FESphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESphere.cpp; sourceTree = "<group>"; };
+		D5ED279423197DE300C16BF7 /* GDiscreteObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GDiscreteObject.h; sourceTree = "<group>"; };
+		D5ED279523197DE300C16BF7 /* FECurveIntersect2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECurveIntersect2D.cpp; sourceTree = "<group>"; };
+		D5ED279623197DE300C16BF7 /* FEShellSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellSphere.cpp; sourceTree = "<group>"; };
+		D5ED279723197DE300C16BF7 /* FENodeData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeData.h; sourceTree = "<group>"; };
+		D5ED279823197DE300C16BF7 /* LaplaceSolver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LaplaceSolver.cpp; sourceTree = "<group>"; };
+		D5ED279923197DE300C16BF7 /* FEDomain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEDomain.cpp; sourceTree = "<group>"; };
+		D5ED279A23197DE300C16BF7 /* FESlice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESlice.cpp; sourceTree = "<group>"; };
+		D5ED279B23197DE300C16BF7 /* FESelection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESelection.cpp; sourceTree = "<group>"; };
+		D5ED279C23197DE300C16BF7 /* FETorus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETorus.h; sourceTree = "<group>"; };
+		D5ED279D23197DE300C16BF7 /* NetGenMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetGenMesher.h; sourceTree = "<group>"; };
+		D5ED279E23197DE300C16BF7 /* ConchoidFit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConchoidFit.cpp; sourceTree = "<group>"; };
+		D5ED279F23197DE300C16BF7 /* FEModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEModifier.h; sourceTree = "<group>"; };
+		D5ED27A023197DE300C16BF7 /* FEAdvancingFrontMesher2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEAdvancingFrontMesher2D.cpp; sourceTree = "<group>"; };
+		D5ED27A123197DE300C16BF7 /* FESelectElementsFromFaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESelectElementsFromFaces.h; sourceTree = "<group>"; };
+		D5ED27A223197DE300C16BF7 /* FESelection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESelection.h; sourceTree = "<group>"; };
+		D5ED27A323197DE300C16BF7 /* FEDomain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEDomain.h; sourceTree = "<group>"; };
+		D5ED27A423197DE300C16BF7 /* FEQuartDogBone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEQuartDogBone.h; sourceTree = "<group>"; };
+		D5ED27A523197DE300C16BF7 /* ICPRegistration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ICPRegistration.cpp; sourceTree = "<group>"; };
+		D5ED27A623197DE300C16BF7 /* FEFileExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFileExport.cpp; sourceTree = "<group>"; };
+		D5ED27A723197DE300C16BF7 /* FEShellTorus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellTorus.cpp; sourceTree = "<group>"; };
+		D5ED27A823197DE300C16BF7 /* FESelectElementsFromFaces.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESelectElementsFromFaces.cpp; sourceTree = "<group>"; };
+		D5ED27A923197DE300C16BF7 /* FEMMGRemesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMMGRemesh.h; sourceTree = "<group>"; };
+		D5ED27AA23197DE300C16BF7 /* FEBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBox.h; sourceTree = "<group>"; };
+		D5ED27AB23197DE300C16BF7 /* FEShellTube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellTube.cpp; sourceTree = "<group>"; };
+		D5ED27AC23197DE300C16BF7 /* FELinearToQuadratic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FELinearToQuadratic.cpp; sourceTree = "<group>"; };
+		D5ED27AD23197DE300C16BF7 /* FESphereInBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESphereInBox.cpp; sourceTree = "<group>"; };
+		D5ED27AE23197DE300C16BF7 /* FoamMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FoamMesh.cpp; sourceTree = "<group>"; };
+		D5ED27AF23197DE300C16BF7 /* FEShellRing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellRing.h; sourceTree = "<group>"; };
+		D5ED27B023197DE300C16BF7 /* BivariatePolynomialSpline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BivariatePolynomialSpline.cpp; sourceTree = "<group>"; };
+		D5ED27B123197DE300C16BF7 /* FEHollowSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEHollowSphere.cpp; sourceTree = "<group>"; };
+		D5ED27B223197DE300C16BF7 /* FEDataVariable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEDataVariable.cpp; sourceTree = "<group>"; };
+		D5ED27B323197DE300C16BF7 /* GPatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GPatch.cpp; sourceTree = "<group>"; };
+		D5ED27B423197DE300C16BF7 /* FESplitModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESplitModifier.h; sourceTree = "<group>"; };
+		D5ED27B523197DE300C16BF7 /* LaplaceSolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaplaceSolver.h; sourceTree = "<group>"; };
+		D5ED27B623197DE300C16BF7 /* FETube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETube.cpp; sourceTree = "<group>"; };
+		D5ED27B723197DE300C16BF7 /* FEHexSplitModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEHexSplitModifier.cpp; sourceTree = "<group>"; };
+		D5ED27B823197DE300C16BF7 /* FEMeshValuator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshValuator.h; sourceTree = "<group>"; };
+		D5ED27B923197DE300C16BF7 /* PointCloud3d.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PointCloud3d.cpp; sourceTree = "<group>"; };
+		D5ED27BA23197DE300C16BF7 /* FEMeshSmoothingModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshSmoothingModifier.h; sourceTree = "<group>"; };
+		D5ED27BB23197DE400C16BF7 /* previewlib.pro */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = previewlib.pro; sourceTree = "<group>"; };
+		D5ED27BC23197DE400C16BF7 /* GSketch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSketch.cpp; sourceTree = "<group>"; };
+		D5ED27BD23197DE400C16BF7 /* FEDiscardMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEDiscardMesh.h; sourceTree = "<group>"; };
+		D5ED27BE23197DE400C16BF7 /* FEQuartDogBone.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEQuartDogBone.cpp; sourceTree = "<group>"; };
+		D5ED27BF23197DE400C16BF7 /* PlotDataSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlotDataSettings.cpp; sourceTree = "<group>"; };
+		D5ED27C023197DE400C16BF7 /* SphereFit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SphereFit.cpp; sourceTree = "<group>"; };
+		D5ED27C123197DE400C16BF7 /* FEShellToSolid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellToSolid.cpp; sourceTree = "<group>"; };
+		D5ED27C223197DE400C16BF7 /* FEEdgeCollapse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEEdgeCollapse.cpp; sourceTree = "<group>"; };
+		D5ED27C323197DE400C16BF7 /* FEMeshSmoothingModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshSmoothingModifier.cpp; sourceTree = "<group>"; };
+		D5ED27C423197DE400C16BF7 /* FECylinderInBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECylinderInBox.h; sourceTree = "<group>"; };
+		D5ED27C523197DE400C16BF7 /* GDiscreteObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GDiscreteObject.cpp; sourceTree = "<group>"; };
+		D5ED27C623197DE400C16BF7 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
+		D5ED27C723197DE400C16BF7 /* Quadric.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quadric.h; sourceTree = "<group>"; };
+		D5ED27C823197DE400C16BF7 /* FERevolveFaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FERevolveFaces.h; sourceTree = "<group>"; };
+		D5ED27C923197DE400C16BF7 /* SphereFit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SphereFit.h; sourceTree = "<group>"; };
+		D5ED27CA23197DE400C16BF7 /* SpringGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpringGenerator.cpp; sourceTree = "<group>"; };
+		D5ED27CB23197DE400C16BF7 /* FEFixMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFixMesh.h; sourceTree = "<group>"; };
+		D5ED27CC23197DE400C16BF7 /* FEQuad4ToQuad8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEQuad4ToQuad8.cpp; sourceTree = "<group>"; };
+		D5ED27CD23197DE400C16BF7 /* FETruncatedEllipsoid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETruncatedEllipsoid.cpp; sourceTree = "<group>"; };
+		D5ED27CE23197DE400C16BF7 /* FENNQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENNQuery.h; sourceTree = "<group>"; };
+		D5ED27CF23197DE400C16BF7 /* FESplitModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESplitModifier.cpp; sourceTree = "<group>"; };
+		D5ED27D023197DE400C16BF7 /* FEItemListBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEItemListBuilder.cpp; sourceTree = "<group>"; };
+		D5ED27D123197DE400C16BF7 /* FESolidArc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESolidArc.h; sourceTree = "<group>"; };
+		D5ED27D223197DE400C16BF7 /* FECVDDecimationModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECVDDecimationModifier.h; sourceTree = "<group>"; };
+		D5ED27D323197DE400C16BF7 /* FEExtrudeFaces.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEExtrudeFaces.cpp; sourceTree = "<group>"; };
+		D5ED27D423197DE400C16BF7 /* FETetGenModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETetGenModifier.h; sourceTree = "<group>"; };
+		D5ED27D523197DE400C16BF7 /* lut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lut.cpp; sourceTree = "<group>"; };
+		D5ED27D623197DE400C16BF7 /* FETet4ToTet10.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToTet10.cpp; sourceTree = "<group>"; };
+		D5ED27D723197DE400C16BF7 /* FEAutoPartition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEAutoPartition.h; sourceTree = "<group>"; };
+		D5ED27D823197DE400C16BF7 /* FESolidArc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESolidArc.cpp; sourceTree = "<group>"; };
+		D5ED27D923197DE400C16BF7 /* GLMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLMesh.cpp; sourceTree = "<group>"; };
+		D5ED27DA23197DE400C16BF7 /* FESurfaceIntersect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESurfaceIntersect.h; sourceTree = "<group>"; };
+		D5ED27DB23197DE400C16BF7 /* FEBoundaryLayerMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBoundaryLayerMesher.h; sourceTree = "<group>"; };
+		D5ED27DC23197DE400C16BF7 /* GMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GMaterial.cpp; sourceTree = "<group>"; };
+		D5ED27DD23197DE400C16BF7 /* FEHollowSphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEHollowSphere.h; sourceTree = "<group>"; };
+		D5ED27DE23197DE400C16BF7 /* FEAxesCurvature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEAxesCurvature.h; sourceTree = "<group>"; };
+		D5ED27DF23197DE400C16BF7 /* GradientMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GradientMap.cpp; sourceTree = "<group>"; };
+		D5ED27E023197DE400C16BF7 /* FEMultiBlockMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMultiBlockMesh.h; sourceTree = "<group>"; };
+		D5ED27E123197DE400C16BF7 /* BivariateSpline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BivariateSpline.cpp; sourceTree = "<group>"; };
+		D5ED27E223197DE400C16BF7 /* LoadCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LoadCurve.cpp; sourceTree = "<group>"; };
+		D5ED27E323197DE400C16BF7 /* FEFileExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFileExport.h; sourceTree = "<group>"; };
+		D5ED27E423197DE400C16BF7 /* GModifiedObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GModifiedObject.cpp; sourceTree = "<group>"; };
+		D5ED27E523197DE400C16BF7 /* FETruncatedEllipsoid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETruncatedEllipsoid.h; sourceTree = "<group>"; };
+		D5ED27E623197DE400C16BF7 /* FEGregoryPatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEGregoryPatch.cpp; sourceTree = "<group>"; };
+		D5ED27E723197DE400C16BF7 /* FEShellTorus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellTorus.h; sourceTree = "<group>"; };
+		D5ED27E823197DE400C16BF7 /* FEWeldModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEWeldModifier.cpp; sourceTree = "<group>"; };
+		D5ED27E923197DE400C16BF7 /* FECurveMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECurveMesher.cpp; sourceTree = "<group>"; };
+		D5ED27EA23197DE400C16BF7 /* FETet10ToTet4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet10ToTet4.cpp; sourceTree = "<group>"; };
+		D5ED27EB23197DE400C16BF7 /* PRVArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRVArchive.h; sourceTree = "<group>"; };
+		D5ED27EC23197DE400C16BF7 /* SurfaceDistance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SurfaceDistance.h; sourceTree = "<group>"; };
+		D5ED27ED23197DE400C16BF7 /* FEFixMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFixMesh.cpp; sourceTree = "<group>"; };
+		D5ED27EE23197DE400C16BF7 /* FEItemList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEItemList.h; sourceTree = "<group>"; };
+		D5ED27EF23197DE400C16BF7 /* GObject2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GObject2D.h; sourceTree = "<group>"; };
+		D5ED27F023197DE400C16BF7 /* Plane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Plane.cpp; sourceTree = "<group>"; };
+		D5ED27F123197DE400C16BF7 /* FELoftMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FELoftMesher.cpp; sourceTree = "<group>"; };
+		D5ED27F223197DE400C16BF7 /* GMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMesh.h; sourceTree = "<group>"; };
+		D5ED27F323197DE400C16BF7 /* FEPlaneCut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEPlaneCut.cpp; sourceTree = "<group>"; };
+		D5ED27F423197DE400C16BF7 /* FEBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBox.cpp; sourceTree = "<group>"; };
+		D5ED27F523197DE400C16BF7 /* FEMultiBlockMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMultiBlockMesh.cpp; sourceTree = "<group>"; };
+		D5ED27F623197DE400C16BF7 /* FEMMGRemesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMMGRemesh.cpp; sourceTree = "<group>"; };
+		D5ED27F723197DE400C16BF7 /* GObject2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GObject2D.cpp; sourceTree = "<group>"; };
+		D5ED27F823197DE400C16BF7 /* FECreateShells.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECreateShells.h; sourceTree = "<group>"; };
+		D5ED27F923197DE400C16BF7 /* FEMeshValuator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshValuator.cpp; sourceTree = "<group>"; };
+		D5ED27FA23197DE400C16BF7 /* GLMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLMesh.h; sourceTree = "<group>"; };
+		D5ED27FB23197DE400C16BF7 /* FEExtrudeFaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEExtrudeFaces.h; sourceTree = "<group>"; };
+		D5ED27FC23197DE400C16BF7 /* GSketch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSketch.h; sourceTree = "<group>"; };
+		D5ED27FD23197DE400C16BF7 /* FEGregoryPatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEGregoryPatch.h; sourceTree = "<group>"; };
+		D5ED27FE23197DE400C16BF7 /* BivariateSpline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BivariateSpline.h; sourceTree = "<group>"; };
+		D5ED27FF23197DE400C16BF7 /* FERevolveFaces.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERevolveFaces.cpp; sourceTree = "<group>"; };
+		D5ED280023197DE400C16BF7 /* LoadCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoadCurve.h; sourceTree = "<group>"; };
+		D5ED280123197DE400C16BF7 /* FEMeshData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshData.cpp; sourceTree = "<group>"; };
+		D5ED280223197DE400C16BF7 /* GRevolveModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRevolveModifier.cpp; sourceTree = "<group>"; };
+		D5ED280323197DE400C16BF7 /* FETet4ToTet15.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToTet15.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D5ED271623197DD200C16BF7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D5ED271023197DD200C16BF7 = {
+			isa = PBXGroup;
+			children = (
+				D5ED272723197DE200C16BF7 /* MeshTools */,
+				D5ED271A23197DD200C16BF7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D5ED271A23197DD200C16BF7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D5ED271923197DD200C16BF7 /* libMeshTools.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D5ED272723197DE200C16BF7 /* MeshTools */ = {
+			isa = PBXGroup;
+			children = (
+				D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */,
+				D5ED272923197DE200C16BF7 /* ConchoidFit.h */,
+				D5ED272A23197DE200C16BF7 /* FECurveIntersect2D.h */,
+				D5ED272B23197DE200C16BF7 /* PlotDataSettings.h */,
+				D5ED272C23197DE200C16BF7 /* FETet15ToTet4.cpp */,
+				D5ED272D23197DE200C16BF7 /* GWrapModifier.cpp */,
+				D5ED272E23197DE200C16BF7 /* GModifier.h */,
+				D5ED272F23197DE200C16BF7 /* ICPRegistration.h */,
+				D5ED273023197DE200C16BF7 /* FECore.vcproj */,
+				D5ED273123197DE200C16BF7 /* FEProject.h */,
+				D5ED273223197DE300C16BF7 /* MeshTools.pro */,
+				D5ED273323197DE300C16BF7 /* GGroup.h */,
+				D5ED273423197DE300C16BF7 /* FESmoothMesh.cpp */,
+				D5ED273523197DE300C16BF7 /* FEAutoPartition.cpp */,
+				D5ED273623197DE300C16BF7 /* FECylinder.h */,
+				D5ED273723197DE300C16BF7 /* FESoluteData.cpp */,
+				D5ED273823197DE300C16BF7 /* FESurfaceData.cpp */,
+				D5ED273923197DE300C16BF7 /* FEHex8ToHex20.cpp */,
+				D5ED273A23197DE300C16BF7 /* FESphereInBox.h */,
+				D5ED273B23197DE300C16BF7 /* FECVDDecimationModifier.cpp */,
+				D5ED273C23197DE300C16BF7 /* GGroup.cpp */,
+				D5ED273D23197DE300C16BF7 /* FEProject.cpp */,
+				D5ED273E23197DE300C16BF7 /* FETri3ToTri6.cpp */,
+				D5ED273F23197DE300C16BF7 /* FEEdgeFlip.h */,
+				D5ED274023197DE300C16BF7 /* PRVArchive.cpp */,
+				D5ED274123197DE300C16BF7 /* FETetgenModifier.cpp */,
+				D5ED274223197DE300C16BF7 /* stdafx.h */,
+				D5ED274323197DE300C16BF7 /* GModel.h */,
+				D5ED274423197DE300C16BF7 /* FETetSplitModifier.cpp */,
+				D5ED274523197DE300C16BF7 /* GPLCObject.cpp */,
+				D5ED274623197DE300C16BF7 /* FECylinderInBox.cpp */,
+				D5ED274723197DE300C16BF7 /* FEShellPatch.h */,
+				D5ED274823197DE300C16BF7 /* GPLCObject.h */,
+				D5ED274923197DE300C16BF7 /* NetGenMesher.cpp */,
+				D5ED274A23197DE300C16BF7 /* FEBoundaryLayerMesher.cpp */,
+				D5ED274B23197DE300C16BF7 /* FENodeData.cpp */,
+				D5ED274C23197DE300C16BF7 /* FEElementData.h */,
+				D5ED274D23197DE300C16BF7 /* FELoftMesher.h */,
+				D5ED274E23197DE300C16BF7 /* GHollowSphere.cpp */,
+				D5ED274F23197DE300C16BF7 /* FEDiscardMesh.cpp */,
+				D5ED275023197DE300C16BF7 /* FECurveIntersect.h */,
+				D5ED275123197DE300C16BF7 /* FECylinder.cpp */,
+				D5ED275223197DE300C16BF7 /* FEShellTube.h */,
+				D5ED275323197DE300C16BF7 /* FETetGenMesher.cpp */,
+				D5ED275423197DE300C16BF7 /* FETube.h */,
+				D5ED275523197DE300C16BF7 /* FEShellToSolid.h */,
+				D5ED275623197DE300C16BF7 /* FESurfaceModifier.h */,
+				D5ED275723197DE300C16BF7 /* FEGroup.cpp */,
+				D5ED275823197DE300C16BF7 /* FETet4ToTet20.cpp */,
+				D5ED275923197DE300C16BF7 /* FEWeldModifier.h */,
+				D5ED275A23197DE300C16BF7 /* FEAxesCurvature.cpp */,
+				D5ED275B23197DE300C16BF7 /* FEGroup.h */,
+				D5ED275C23197DE300C16BF7 /* FELinearToQuadratic.h */,
+				D5ED275D23197DE300C16BF7 /* FECurveMesher.h */,
+				D5ED275E23197DE300C16BF7 /* FECone.cpp */,
+				D5ED275F23197DE300C16BF7 /* FEMortarProjection.h */,
+				D5ED276023197DE300C16BF7 /* GModifier.cpp */,
+				D5ED276123197DE300C16BF7 /* FERefineSurface.cpp */,
+				D5ED276223197DE300C16BF7 /* FEEdgeFlip.cpp */,
+				D5ED276323197DE300C16BF7 /* PointCloud3d.h */,
+				D5ED276423197DE300C16BF7 /* SpringGenerator.h */,
+				D5ED276523197DE300C16BF7 /* GMesh.cpp */,
+				D5ED276623197DE300C16BF7 /* FETorus.cpp */,
+				D5ED276723197DE300C16BF7 /* FETet4ToTet5.cpp */,
+				D5ED276823197DE300C16BF7 /* FESmoothSurfaceMesh.h */,
+				D5ED276923197DE300C16BF7 /* FESurfaceData.h */,
+				D5ED276A23197DE300C16BF7 /* GModel.cpp */,
+				D5ED276B23197DE300C16BF7 /* FEMortarProjection.cpp */,
+				D5ED276C23197DE300C16BF7 /* GExtrudeModifier.cpp */,
+				D5ED276D23197DE300C16BF7 /* FERefineSurface.h */,
+				D5ED276E23197DE300C16BF7 /* FEShellDisc.h */,
+				D5ED276F23197DE300C16BF7 /* FEFillHole.cpp */,
+				D5ED277023197DE300C16BF7 /* GModifiedObject.h */,
+				D5ED277123197DE300C16BF7 /* Plane.h */,
+				D5ED277223197DE300C16BF7 /* FEMeshData.h */,
+				D5ED277323197DE300C16BF7 /* FEAdvancingFrontMesher2D.h */,
+				D5ED277423197DE300C16BF7 /* FEModel.h */,
+				D5ED277523197DE300C16BF7 /* FECurveIntersect.cpp */,
+				D5ED277623197DE300C16BF7 /* FETetGenMesher.h */,
+				D5ED277723197DE300C16BF7 /* FEShellPatch.cpp */,
+				D5ED277823197DE300C16BF7 /* FESoluteData.h */,
+				D5ED277923197DE300C16BF7 /* GradientMap.h */,
+				D5ED277A23197DE300C16BF7 /* FEItemListBuilder.h */,
+				D5ED277B23197DE300C16BF7 /* FEModifier.cpp */,
+				D5ED277C23197DE300C16BF7 /* Quadric.cpp */,
+				D5ED277D23197DE300C16BF7 /* FENNQuery.cpp */,
+				D5ED277E23197DE300C16BF7 /* FEElementData.cpp */,
+				D5ED277F23197DE300C16BF7 /* FoamMesh.h */,
+				D5ED278023197DE300C16BF7 /* FEModel.cpp */,
+				D5ED278123197DE300C16BF7 /* FEMesher.cpp */,
+				D5ED278223197DE300C16BF7 /* FESurfaceModifier.cpp */,
+				D5ED278323197DE300C16BF7 /* FEDataVariable.h */,
+				D5ED278423197DE300C16BF7 /* hex2tet.cpp */,
+				D5ED278523197DE300C16BF7 /* FEShellRing.cpp */,
+				D5ED278623197DE300C16BF7 /* SurfaceDistance.cpp */,
+				D5ED278723197DE300C16BF7 /* FESurfaceIntersect.cpp */,
+				D5ED278823197DE300C16BF7 /* BivariatePolynomialSpline.h */,
+				D5ED278923197DE300C16BF7 /* FESlice.h */,
+				D5ED278A23197DE300C16BF7 /* FEShellSphere.h */,
+				D5ED278B23197DE300C16BF7 /* FECreateShells.cpp */,
+				D5ED278C23197DE300C16BF7 /* FEFillHole.h */,
+				D5ED278D23197DE300C16BF7 /* FECone.h */,
+				D5ED278E23197DE300C16BF7 /* GMaterial.h */,
+				D5ED278F23197DE300C16BF7 /* FEEdgeCollapse.h */,
+				D5ED279023197DE300C16BF7 /* FESphere.h */,
+				D5ED279123197DE300C16BF7 /* FEMesher.h */,
+				D5ED279223197DE300C16BF7 /* FESmoothSurfaceMesh.cpp */,
+				D5ED279323197DE300C16BF7 /* FESphere.cpp */,
+				D5ED279423197DE300C16BF7 /* GDiscreteObject.h */,
+				D5ED279523197DE300C16BF7 /* FECurveIntersect2D.cpp */,
+				D5ED279623197DE300C16BF7 /* FEShellSphere.cpp */,
+				D5ED279723197DE300C16BF7 /* FENodeData.h */,
+				D5ED279823197DE300C16BF7 /* LaplaceSolver.cpp */,
+				D5ED279923197DE300C16BF7 /* FEDomain.cpp */,
+				D5ED279A23197DE300C16BF7 /* FESlice.cpp */,
+				D5ED279B23197DE300C16BF7 /* FESelection.cpp */,
+				D5ED279C23197DE300C16BF7 /* FETorus.h */,
+				D5ED279D23197DE300C16BF7 /* NetGenMesher.h */,
+				D5ED279E23197DE300C16BF7 /* ConchoidFit.cpp */,
+				D5ED279F23197DE300C16BF7 /* FEModifier.h */,
+				D5ED27A023197DE300C16BF7 /* FEAdvancingFrontMesher2D.cpp */,
+				D5ED27A123197DE300C16BF7 /* FESelectElementsFromFaces.h */,
+				D5ED27A223197DE300C16BF7 /* FESelection.h */,
+				D5ED27A323197DE300C16BF7 /* FEDomain.h */,
+				D5ED27A423197DE300C16BF7 /* FEQuartDogBone.h */,
+				D5ED27A523197DE300C16BF7 /* ICPRegistration.cpp */,
+				D5ED27A623197DE300C16BF7 /* FEFileExport.cpp */,
+				D5ED27A723197DE300C16BF7 /* FEShellTorus.cpp */,
+				D5ED27A823197DE300C16BF7 /* FESelectElementsFromFaces.cpp */,
+				D5ED27A923197DE300C16BF7 /* FEMMGRemesh.h */,
+				D5ED27AA23197DE300C16BF7 /* FEBox.h */,
+				D5ED27AB23197DE300C16BF7 /* FEShellTube.cpp */,
+				D5ED27AC23197DE300C16BF7 /* FELinearToQuadratic.cpp */,
+				D5ED27AD23197DE300C16BF7 /* FESphereInBox.cpp */,
+				D5ED27AE23197DE300C16BF7 /* FoamMesh.cpp */,
+				D5ED27AF23197DE300C16BF7 /* FEShellRing.h */,
+				D5ED27B023197DE300C16BF7 /* BivariatePolynomialSpline.cpp */,
+				D5ED27B123197DE300C16BF7 /* FEHollowSphere.cpp */,
+				D5ED27B223197DE300C16BF7 /* FEDataVariable.cpp */,
+				D5ED27B323197DE300C16BF7 /* GPatch.cpp */,
+				D5ED27B423197DE300C16BF7 /* FESplitModifier.h */,
+				D5ED27B523197DE300C16BF7 /* LaplaceSolver.h */,
+				D5ED27B623197DE300C16BF7 /* FETube.cpp */,
+				D5ED27B723197DE300C16BF7 /* FEHexSplitModifier.cpp */,
+				D5ED27B823197DE300C16BF7 /* FEMeshValuator.h */,
+				D5ED27B923197DE300C16BF7 /* PointCloud3d.cpp */,
+				D5ED27BA23197DE300C16BF7 /* FEMeshSmoothingModifier.h */,
+				D5ED27BB23197DE400C16BF7 /* previewlib.pro */,
+				D5ED27BC23197DE400C16BF7 /* GSketch.cpp */,
+				D5ED27BD23197DE400C16BF7 /* FEDiscardMesh.h */,
+				D5ED27BE23197DE400C16BF7 /* FEQuartDogBone.cpp */,
+				D5ED27BF23197DE400C16BF7 /* PlotDataSettings.cpp */,
+				D5ED27C023197DE400C16BF7 /* SphereFit.cpp */,
+				D5ED27C123197DE400C16BF7 /* FEShellToSolid.cpp */,
+				D5ED27C223197DE400C16BF7 /* FEEdgeCollapse.cpp */,
+				D5ED27C323197DE400C16BF7 /* FEMeshSmoothingModifier.cpp */,
+				D5ED27C423197DE400C16BF7 /* FECylinderInBox.h */,
+				D5ED27C523197DE400C16BF7 /* GDiscreteObject.cpp */,
+				D5ED27C623197DE400C16BF7 /* ReadMe.txt */,
+				D5ED27C723197DE400C16BF7 /* Quadric.h */,
+				D5ED27C823197DE400C16BF7 /* FERevolveFaces.h */,
+				D5ED27C923197DE400C16BF7 /* SphereFit.h */,
+				D5ED27CA23197DE400C16BF7 /* SpringGenerator.cpp */,
+				D5ED27CB23197DE400C16BF7 /* FEFixMesh.h */,
+				D5ED27CC23197DE400C16BF7 /* FEQuad4ToQuad8.cpp */,
+				D5ED27CD23197DE400C16BF7 /* FETruncatedEllipsoid.cpp */,
+				D5ED27CE23197DE400C16BF7 /* FENNQuery.h */,
+				D5ED27CF23197DE400C16BF7 /* FESplitModifier.cpp */,
+				D5ED27D023197DE400C16BF7 /* FEItemListBuilder.cpp */,
+				D5ED27D123197DE400C16BF7 /* FESolidArc.h */,
+				D5ED27D223197DE400C16BF7 /* FECVDDecimationModifier.h */,
+				D5ED27D323197DE400C16BF7 /* FEExtrudeFaces.cpp */,
+				D5ED27D423197DE400C16BF7 /* FETetGenModifier.h */,
+				D5ED27D523197DE400C16BF7 /* lut.cpp */,
+				D5ED27D623197DE400C16BF7 /* FETet4ToTet10.cpp */,
+				D5ED27D723197DE400C16BF7 /* FEAutoPartition.h */,
+				D5ED27D823197DE400C16BF7 /* FESolidArc.cpp */,
+				D5ED27D923197DE400C16BF7 /* GLMesh.cpp */,
+				D5ED27DA23197DE400C16BF7 /* FESurfaceIntersect.h */,
+				D5ED27DB23197DE400C16BF7 /* FEBoundaryLayerMesher.h */,
+				D5ED27DC23197DE400C16BF7 /* GMaterial.cpp */,
+				D5ED27DD23197DE400C16BF7 /* FEHollowSphere.h */,
+				D5ED27DE23197DE400C16BF7 /* FEAxesCurvature.h */,
+				D5ED27DF23197DE400C16BF7 /* GradientMap.cpp */,
+				D5ED27E023197DE400C16BF7 /* FEMultiBlockMesh.h */,
+				D5ED27E123197DE400C16BF7 /* BivariateSpline.cpp */,
+				D5ED27E223197DE400C16BF7 /* LoadCurve.cpp */,
+				D5ED27E323197DE400C16BF7 /* FEFileExport.h */,
+				D5ED27E423197DE400C16BF7 /* GModifiedObject.cpp */,
+				D5ED27E523197DE400C16BF7 /* FETruncatedEllipsoid.h */,
+				D5ED27E623197DE400C16BF7 /* FEGregoryPatch.cpp */,
+				D5ED27E723197DE400C16BF7 /* FEShellTorus.h */,
+				D5ED27E823197DE400C16BF7 /* FEWeldModifier.cpp */,
+				D5ED27E923197DE400C16BF7 /* FECurveMesher.cpp */,
+				D5ED27EA23197DE400C16BF7 /* FETet10ToTet4.cpp */,
+				D5ED27EB23197DE400C16BF7 /* PRVArchive.h */,
+				D5ED27EC23197DE400C16BF7 /* SurfaceDistance.h */,
+				D5ED27ED23197DE400C16BF7 /* FEFixMesh.cpp */,
+				D5ED27EE23197DE400C16BF7 /* FEItemList.h */,
+				D5ED27EF23197DE400C16BF7 /* GObject2D.h */,
+				D5ED27F023197DE400C16BF7 /* Plane.cpp */,
+				D5ED27F123197DE400C16BF7 /* FELoftMesher.cpp */,
+				D5ED27F223197DE400C16BF7 /* GMesh.h */,
+				D5ED27F323197DE400C16BF7 /* FEPlaneCut.cpp */,
+				D5ED27F423197DE400C16BF7 /* FEBox.cpp */,
+				D5ED27F523197DE400C16BF7 /* FEMultiBlockMesh.cpp */,
+				D5ED27F623197DE400C16BF7 /* FEMMGRemesh.cpp */,
+				D5ED27F723197DE400C16BF7 /* GObject2D.cpp */,
+				D5ED27F823197DE400C16BF7 /* FECreateShells.h */,
+				D5ED27F923197DE400C16BF7 /* FEMeshValuator.cpp */,
+				D5ED27FA23197DE400C16BF7 /* GLMesh.h */,
+				D5ED27FB23197DE400C16BF7 /* FEExtrudeFaces.h */,
+				D5ED27FC23197DE400C16BF7 /* GSketch.h */,
+				D5ED27FD23197DE400C16BF7 /* FEGregoryPatch.h */,
+				D5ED27FE23197DE400C16BF7 /* BivariateSpline.h */,
+				D5ED27FF23197DE400C16BF7 /* FERevolveFaces.cpp */,
+				D5ED280023197DE400C16BF7 /* LoadCurve.h */,
+				D5ED280123197DE400C16BF7 /* FEMeshData.cpp */,
+				D5ED280223197DE400C16BF7 /* GRevolveModifier.cpp */,
+				D5ED280323197DE400C16BF7 /* FETet4ToTet15.cpp */,
+			);
+			name = MeshTools;
+			path = ../../MeshTools;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D5ED271723197DD200C16BF7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5ED282A23197DE400C16BF7 /* FECurveIntersect.h in Headers */,
+				D5ED286A23197DE400C16BF7 /* FESphere.h in Headers */,
+				D5ED285D23197DE400C16BF7 /* FEDataVariable.h in Headers */,
+				D5ED284C23197DE400C16BF7 /* FEMeshData.h in Headers */,
+				D5ED28B623197DE400C16BF7 /* FEAxesCurvature.h in Headers */,
+				D5ED28CA23197DE400C16BF7 /* GMesh.h in Headers */,
+				D5ED285423197DE400C16BF7 /* FEItemListBuilder.h in Headers */,
+				D5ED28C723197DE400C16BF7 /* GObject2D.h in Headers */,
+				D5ED28D423197DE400C16BF7 /* GSketch.h in Headers */,
+				D5ED283923197DE400C16BF7 /* FEMortarProjection.h in Headers */,
+				D5ED28A323197DE400C16BF7 /* FEFixMesh.h in Headers */,
+				D5ED28AA23197DE400C16BF7 /* FECVDDecimationModifier.h in Headers */,
+				D5ED284E23197DE400C16BF7 /* FEModel.h in Headers */,
+				D5ED28BB23197DE400C16BF7 /* FEFileExport.h in Headers */,
+				D5ED28A123197DE400C16BF7 /* SphereFit.h in Headers */,
+				D5ED289223197DE400C16BF7 /* FEMeshValuator.h in Headers */,
+				D5ED28A923197DE400C16BF7 /* FESolidArc.h in Headers */,
+				D5ED280523197DE400C16BF7 /* ConchoidFit.h in Headers */,
+				D5ED284323197DE400C16BF7 /* FESurfaceData.h in Headers */,
+				D5ED286323197DE400C16BF7 /* FESlice.h in Headers */,
+				D5ED284D23197DE400C16BF7 /* FEAdvancingFrontMesher2D.h in Headers */,
+				D5ED288E23197DE400C16BF7 /* FESplitModifier.h in Headers */,
+				D5ED283023197DE400C16BF7 /* FESurfaceModifier.h in Headers */,
+				D5ED283D23197DE400C16BF7 /* PointCloud3d.h in Headers */,
+				D5ED287B23197DE400C16BF7 /* FESelectElementsFromFaces.h in Headers */,
+				D5ED28C423197DE400C16BF7 /* SurfaceDistance.h in Headers */,
+				D5ED282623197DE400C16BF7 /* FEElementData.h in Headers */,
+				D5ED281423197DE400C16BF7 /* FESphereInBox.h in Headers */,
+				D5ED280623197DE400C16BF7 /* FECurveIntersect2D.h in Headers */,
+				D5ED28C623197DE400C16BF7 /* FEItemList.h in Headers */,
+				D5ED284823197DE400C16BF7 /* FEShellDisc.h in Headers */,
+				D5ED283323197DE400C16BF7 /* FEWeldModifier.h in Headers */,
+				D5ED287C23197DE400C16BF7 /* FESelection.h in Headers */,
+				D5ED28D323197DE400C16BF7 /* FEExtrudeFaces.h in Headers */,
+				D5ED28C323197DE400C16BF7 /* PRVArchive.h in Headers */,
+				D5ED28D023197DE400C16BF7 /* FECreateShells.h in Headers */,
+				D5ED280B23197DE400C16BF7 /* ICPRegistration.h in Headers */,
+				D5ED28B523197DE400C16BF7 /* FEHollowSphere.h in Headers */,
+				D5ED289F23197DE400C16BF7 /* Quadric.h in Headers */,
+				D5ED286B23197DE400C16BF7 /* FEMesher.h in Headers */,
+				D5ED286823197DE400C16BF7 /* GMaterial.h in Headers */,
+				D5ED285323197DE400C16BF7 /* GradientMap.h in Headers */,
+				D5ED280D23197DE400C16BF7 /* GGroup.h in Headers */,
+				D5ED282223197DE400C16BF7 /* GPLCObject.h in Headers */,
+				D5ED289D23197DE400C16BF7 /* FECylinderInBox.h in Headers */,
+				D5ED283623197DE400C16BF7 /* FELinearToQuadratic.h in Headers */,
+				D5ED28BF23197DE400C16BF7 /* FEShellTorus.h in Headers */,
+				D5ED288F23197DE400C16BF7 /* LaplaceSolver.h in Headers */,
+				D5ED28D823197DE400C16BF7 /* LoadCurve.h in Headers */,
+				D5ED282C23197DE400C16BF7 /* FEShellTube.h in Headers */,
+				D5ED286423197DE400C16BF7 /* FEShellSphere.h in Headers */,
+				D5ED283523197DE400C16BF7 /* FEGroup.h in Headers */,
+				D5ED285923197DE400C16BF7 /* FoamMesh.h in Headers */,
+				D5ED281923197DE400C16BF7 /* FEEdgeFlip.h in Headers */,
+				D5ED284223197DE400C16BF7 /* FESmoothSurfaceMesh.h in Headers */,
+				D5ED285023197DE400C16BF7 /* FETetGenMesher.h in Headers */,
+				D5ED286223197DE400C16BF7 /* BivariatePolynomialSpline.h in Headers */,
+				D5ED288323197DE400C16BF7 /* FEMMGRemesh.h in Headers */,
+				D5ED285223197DE400C16BF7 /* FESoluteData.h in Headers */,
+				D5ED289623197DE400C16BF7 /* FEDiscardMesh.h in Headers */,
+				D5ED282723197DE400C16BF7 /* FELoftMesher.h in Headers */,
+				D5ED28D223197DE400C16BF7 /* GLMesh.h in Headers */,
+				D5ED287E23197DE400C16BF7 /* FEQuartDogBone.h in Headers */,
+				D5ED286E23197DE400C16BF7 /* GDiscreteObject.h in Headers */,
+				D5ED28A023197DE400C16BF7 /* FERevolveFaces.h in Headers */,
+				D5ED28B323197DE400C16BF7 /* FEBoundaryLayerMesher.h in Headers */,
+				D5ED281D23197DE400C16BF7 /* GModel.h in Headers */,
+				D5ED28BD23197DE400C16BF7 /* FETruncatedEllipsoid.h in Headers */,
+				D5ED28AF23197DE400C16BF7 /* FEAutoPartition.h in Headers */,
+				D5ED280723197DE400C16BF7 /* PlotDataSettings.h in Headers */,
+				D5ED28A623197DE400C16BF7 /* FENNQuery.h in Headers */,
+				D5ED282E23197DE400C16BF7 /* FETube.h in Headers */,
+				D5ED286623197DE400C16BF7 /* FEFillHole.h in Headers */,
+				D5ED287623197DE400C16BF7 /* FETorus.h in Headers */,
+				D5ED28D623197DE400C16BF7 /* BivariateSpline.h in Headers */,
+				D5ED286923197DE400C16BF7 /* FEEdgeCollapse.h in Headers */,
+				D5ED284B23197DE400C16BF7 /* Plane.h in Headers */,
+				D5ED289423197DE400C16BF7 /* FEMeshSmoothingModifier.h in Headers */,
+				D5ED282123197DE400C16BF7 /* FEShellPatch.h in Headers */,
+				D5ED284A23197DE400C16BF7 /* GModifiedObject.h in Headers */,
+				D5ED28B823197DE400C16BF7 /* FEMultiBlockMesh.h in Headers */,
+				D5ED287D23197DE400C16BF7 /* FEDomain.h in Headers */,
+				D5ED283E23197DE400C16BF7 /* SpringGenerator.h in Headers */,
+				D5ED284723197DE400C16BF7 /* FERefineSurface.h in Headers */,
+				D5ED28D523197DE400C16BF7 /* FEGregoryPatch.h in Headers */,
+				D5ED280A23197DE400C16BF7 /* GModifier.h in Headers */,
+				D5ED281C23197DE400C16BF7 /* stdafx.h in Headers */,
+				D5ED288923197DE400C16BF7 /* FEShellRing.h in Headers */,
+				D5ED287723197DE400C16BF7 /* NetGenMesher.h in Headers */,
+				D5ED280C23197DE400C16BF7 /* FEProject.h in Headers */,
+				D5ED283723197DE400C16BF7 /* FECurveMesher.h in Headers */,
+				D5ED281023197DE400C16BF7 /* FECylinder.h in Headers */,
+				D5ED286723197DE400C16BF7 /* FECone.h in Headers */,
+				D5ED282F23197DE400C16BF7 /* FEShellToSolid.h in Headers */,
+				D5ED288423197DE400C16BF7 /* FEBox.h in Headers */,
+				D5ED287123197DE400C16BF7 /* FENodeData.h in Headers */,
+				D5ED287923197DE400C16BF7 /* FEModifier.h in Headers */,
+				D5ED28AC23197DE400C16BF7 /* FETetGenModifier.h in Headers */,
+				D5ED28B223197DE400C16BF7 /* FESurfaceIntersect.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D5ED271823197DD200C16BF7 /* MeshTools */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5ED272423197DD200C16BF7 /* Build configuration list for PBXNativeTarget "MeshTools" */;
+			buildPhases = (
+				D5ED271523197DD200C16BF7 /* Sources */,
+				D5ED271623197DD200C16BF7 /* Frameworks */,
+				D5ED271723197DD200C16BF7 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MeshTools;
+			productName = MeshTools;
+			productReference = D5ED271923197DD200C16BF7 /* libMeshTools.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D5ED271123197DD200C16BF7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0940;
+				ORGANIZATIONNAME = febio.org;
+				TargetAttributes = {
+					D5ED271823197DD200C16BF7 = {
+						CreatedOnToolsVersion = 9.4.1;
+					};
+				};
+			};
+			buildConfigurationList = D5ED271423197DD200C16BF7 /* Build configuration list for PBXProject "MeshTools" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D5ED271023197DD200C16BF7;
+			productRefGroup = D5ED271A23197DD200C16BF7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D5ED271823197DD200C16BF7 /* MeshTools */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D5ED271523197DD200C16BF7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5ED287223197DE400C16BF7 /* LaplaceSolver.cpp in Sources */,
+				D5ED285E23197DE400C16BF7 /* hex2tet.cpp in Sources */,
+				D5ED282023197DE400C16BF7 /* FECylinderInBox.cpp in Sources */,
+				D5ED285823197DE400C16BF7 /* FEElementData.cpp in Sources */,
+				D5ED289E23197DE400C16BF7 /* GDiscreteObject.cpp in Sources */,
+				D5ED28C023197DE400C16BF7 /* FEWeldModifier.cpp in Sources */,
+				D5ED283C23197DE400C16BF7 /* FEEdgeFlip.cpp in Sources */,
+				D5ED282D23197DE400C16BF7 /* FETetGenMesher.cpp in Sources */,
+				D5ED280823197DE400C16BF7 /* FETet15ToTet4.cpp in Sources */,
+				D5ED286123197DE400C16BF7 /* FESurfaceIntersect.cpp in Sources */,
+				D5ED288A23197DE400C16BF7 /* BivariatePolynomialSpline.cpp in Sources */,
+				D5ED288223197DE400C16BF7 /* FESelectElementsFromFaces.cpp in Sources */,
+				D5ED28BE23197DE400C16BF7 /* FEGregoryPatch.cpp in Sources */,
+				D5ED289123197DE400C16BF7 /* FEHexSplitModifier.cpp in Sources */,
+				D5ED28B723197DE400C16BF7 /* GradientMap.cpp in Sources */,
+				D5ED289523197DE400C16BF7 /* GSketch.cpp in Sources */,
+				D5ED286C23197DE400C16BF7 /* FESmoothSurfaceMesh.cpp in Sources */,
+				D5ED281E23197DE400C16BF7 /* FETetSplitModifier.cpp in Sources */,
+				D5ED28C523197DE400C16BF7 /* FEFixMesh.cpp in Sources */,
+				D5ED281623197DE400C16BF7 /* GGroup.cpp in Sources */,
+				D5ED280923197DE400C16BF7 /* GWrapModifier.cpp in Sources */,
+				D5ED28C923197DE400C16BF7 /* FELoftMesher.cpp in Sources */,
+				D5ED285523197DE400C16BF7 /* FEModifier.cpp in Sources */,
+				D5ED283123197DE400C16BF7 /* FEGroup.cpp in Sources */,
+				D5ED288823197DE400C16BF7 /* FoamMesh.cpp in Sources */,
+				D5ED28C223197DE400C16BF7 /* FETet10ToTet4.cpp in Sources */,
+				D5ED28CB23197DE400C16BF7 /* FEPlaneCut.cpp in Sources */,
+				D5ED288023197DE400C16BF7 /* FEFileExport.cpp in Sources */,
+				D5ED28B923197DE400C16BF7 /* BivariateSpline.cpp in Sources */,
+				D5ED28B023197DE400C16BF7 /* FESolidArc.cpp in Sources */,
+				D5ED283B23197DE400C16BF7 /* FERefineSurface.cpp in Sources */,
+				D5ED28A423197DE400C16BF7 /* FEQuad4ToQuad8.cpp in Sources */,
+				D5ED289323197DE400C16BF7 /* PointCloud3d.cpp in Sources */,
+				D5ED281123197DE400C16BF7 /* FESoluteData.cpp in Sources */,
+				D5ED281B23197DE400C16BF7 /* FETetgenModifier.cpp in Sources */,
+				D5ED280F23197DE400C16BF7 /* FEAutoPartition.cpp in Sources */,
+				D5ED284523197DE400C16BF7 /* FEMortarProjection.cpp in Sources */,
+				D5ED283A23197DE400C16BF7 /* GModifier.cpp in Sources */,
+				D5ED281323197DE400C16BF7 /* FEHex8ToHex20.cpp in Sources */,
+				D5ED287823197DE400C16BF7 /* ConchoidFit.cpp in Sources */,
+				D5ED284923197DE400C16BF7 /* FEFillHole.cpp in Sources */,
+				D5ED284123197DE400C16BF7 /* FETet4ToTet5.cpp in Sources */,
+				D5ED28AB23197DE400C16BF7 /* FEExtrudeFaces.cpp in Sources */,
+				D5ED287423197DE400C16BF7 /* FESlice.cpp in Sources */,
+				D5ED284623197DE400C16BF7 /* GExtrudeModifier.cpp in Sources */,
+				D5ED285B23197DE400C16BF7 /* FEMesher.cpp in Sources */,
+				D5ED286F23197DE400C16BF7 /* FECurveIntersect2D.cpp in Sources */,
+				D5ED28DB23197DE400C16BF7 /* FETet4ToTet15.cpp in Sources */,
+				D5ED287F23197DE400C16BF7 /* ICPRegistration.cpp in Sources */,
+				D5ED284F23197DE400C16BF7 /* FECurveIntersect.cpp in Sources */,
+				D5ED285F23197DE400C16BF7 /* FEShellRing.cpp in Sources */,
+				D5ED28DA23197DE400C16BF7 /* GRevolveModifier.cpp in Sources */,
+				D5ED289A23197DE400C16BF7 /* FEShellToSolid.cpp in Sources */,
+				D5ED28A723197DE400C16BF7 /* FESplitModifier.cpp in Sources */,
+				D5ED288C23197DE400C16BF7 /* FEDataVariable.cpp in Sources */,
+				D5ED283F23197DE400C16BF7 /* GMesh.cpp in Sources */,
+				D5ED28C823197DE400C16BF7 /* Plane.cpp in Sources */,
+				D5ED28D923197DE400C16BF7 /* FEMeshData.cpp in Sources */,
+				D5ED281823197DE400C16BF7 /* FETri3ToTri6.cpp in Sources */,
+				D5ED282B23197DE400C16BF7 /* FECylinder.cpp in Sources */,
+				D5ED285723197DE400C16BF7 /* FENNQuery.cpp in Sources */,
+				D5ED288523197DE400C16BF7 /* FEShellTube.cpp in Sources */,
+				D5ED287523197DE400C16BF7 /* FESelection.cpp in Sources */,
+				D5ED28D123197DE400C16BF7 /* FEMeshValuator.cpp in Sources */,
+				D5ED285A23197DE400C16BF7 /* FEModel.cpp in Sources */,
+				D5ED284423197DE400C16BF7 /* GModel.cpp in Sources */,
+				D5ED282323197DE400C16BF7 /* NetGenMesher.cpp in Sources */,
+				D5ED284023197DE400C16BF7 /* FETorus.cpp in Sources */,
+				D5ED281523197DE400C16BF7 /* FECVDDecimationModifier.cpp in Sources */,
+				D5ED28CD23197DE400C16BF7 /* FEMultiBlockMesh.cpp in Sources */,
+				D5ED282923197DE400C16BF7 /* FEDiscardMesh.cpp in Sources */,
+				D5ED28AE23197DE400C16BF7 /* FETet4ToTet10.cpp in Sources */,
+				D5ED283223197DE400C16BF7 /* FETet4ToTet20.cpp in Sources */,
+				D5ED28CE23197DE400C16BF7 /* FEMMGRemesh.cpp in Sources */,
+				D5ED285123197DE400C16BF7 /* FEShellPatch.cpp in Sources */,
+				D5ED282823197DE400C16BF7 /* GHollowSphere.cpp in Sources */,
+				D5ED285C23197DE400C16BF7 /* FESurfaceModifier.cpp in Sources */,
+				D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */,
+				D5ED28A523197DE400C16BF7 /* FETruncatedEllipsoid.cpp in Sources */,
+				D5ED283823197DE400C16BF7 /* FECone.cpp in Sources */,
+				D5ED287323197DE400C16BF7 /* FEDomain.cpp in Sources */,
+				D5ED28C123197DE400C16BF7 /* FECurveMesher.cpp in Sources */,
+				D5ED281A23197DE400C16BF7 /* PRVArchive.cpp in Sources */,
+				D5ED28B123197DE400C16BF7 /* GLMesh.cpp in Sources */,
+				D5ED289023197DE400C16BF7 /* FETube.cpp in Sources */,
+				D5ED288123197DE400C16BF7 /* FEShellTorus.cpp in Sources */,
+				D5ED289723197DE400C16BF7 /* FEQuartDogBone.cpp in Sources */,
+				D5ED287023197DE400C16BF7 /* FEShellSphere.cpp in Sources */,
+				D5ED288D23197DE400C16BF7 /* GPatch.cpp in Sources */,
+				D5ED28BC23197DE400C16BF7 /* GModifiedObject.cpp in Sources */,
+				D5ED281F23197DE400C16BF7 /* GPLCObject.cpp in Sources */,
+				D5ED289B23197DE400C16BF7 /* FEEdgeCollapse.cpp in Sources */,
+				D5ED288B23197DE400C16BF7 /* FEHollowSphere.cpp in Sources */,
+				D5ED285623197DE400C16BF7 /* Quadric.cpp in Sources */,
+				D5ED28D723197DE400C16BF7 /* FERevolveFaces.cpp in Sources */,
+				D5ED289923197DE400C16BF7 /* SphereFit.cpp in Sources */,
+				D5ED286D23197DE400C16BF7 /* FESphere.cpp in Sources */,
+				D5ED28A823197DE400C16BF7 /* FEItemListBuilder.cpp in Sources */,
+				D5ED281223197DE400C16BF7 /* FESurfaceData.cpp in Sources */,
+				D5ED282423197DE400C16BF7 /* FEBoundaryLayerMesher.cpp in Sources */,
+				D5ED281723197DE400C16BF7 /* FEProject.cpp in Sources */,
+				D5ED288723197DE400C16BF7 /* FESphereInBox.cpp in Sources */,
+				D5ED28B423197DE400C16BF7 /* GMaterial.cpp in Sources */,
+				D5ED28CF23197DE400C16BF7 /* GObject2D.cpp in Sources */,
+				D5ED287A23197DE400C16BF7 /* FEAdvancingFrontMesher2D.cpp in Sources */,
+				D5ED286023197DE400C16BF7 /* SurfaceDistance.cpp in Sources */,
+				D5ED28CC23197DE400C16BF7 /* FEBox.cpp in Sources */,
+				D5ED288623197DE400C16BF7 /* FELinearToQuadratic.cpp in Sources */,
+				D5ED282523197DE400C16BF7 /* FENodeData.cpp in Sources */,
+				D5ED28AD23197DE400C16BF7 /* lut.cpp in Sources */,
+				D5ED286523197DE400C16BF7 /* FECreateShells.cpp in Sources */,
+				D5ED280E23197DE400C16BF7 /* FESmoothMesh.cpp in Sources */,
+				D5ED28A223197DE400C16BF7 /* SpringGenerator.cpp in Sources */,
+				D5ED28BA23197DE400C16BF7 /* LoadCurve.cpp in Sources */,
+				D5ED283423197DE400C16BF7 /* FEAxesCurvature.cpp in Sources */,
+				D5ED289823197DE400C16BF7 /* PlotDataSettings.cpp in Sources */,
+				D5ED289C23197DE400C16BF7 /* FEMeshSmoothingModifier.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D5ED272223197DD200C16BF7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D5ED272323197DD200C16BF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D5ED272523197DD200C16BF7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		D5ED272623197DD200C16BF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5ED271423197DD200C16BF7 /* Build configuration list for PBXProject "MeshTools" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5ED272223197DD200C16BF7 /* Debug */,
+				D5ED272323197DD200C16BF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5ED272423197DD200C16BF7 /* Build configuration list for PBXNativeTarget "MeshTools" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5ED272523197DD200C16BF7 /* Debug */,
+				D5ED272623197DD200C16BF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D5ED271123197DD200C16BF7 /* Project object */;
+}

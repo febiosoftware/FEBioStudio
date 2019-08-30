@@ -1,0 +1,460 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D50F18B821E0E90200DD595F /* GOCCObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50F18B621E0E90200DD595F /* GOCCObject.cpp */; };
+		D50F18B921E0E90200DD595F /* GOCCObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D50F18B721E0E90200DD595F /* GOCCObject.h */; };
+		D5215F491F01907100838680 /* GBaseObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F261F01907100838680 /* GBaseObject.cpp */; };
+		D5215F4A1F01907100838680 /* GBaseObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F271F01907100838680 /* GBaseObject.h */; };
+		D5215F4B1F01907100838680 /* GBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F281F01907100838680 /* GBox.cpp */; };
+		D5215F4C1F01907100838680 /* GCone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F291F01907100838680 /* GCone.cpp */; };
+		D5215F4D1F01907100838680 /* GCylinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F2A1F01907100838680 /* GCylinder.cpp */; };
+		D5215F4E1F01907100838680 /* GCylinderInBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F2B1F01907100838680 /* GCylinderInBox.cpp */; };
+		D5215F4F1F01907100838680 /* GDisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F2C1F01907100838680 /* GDisc.cpp */; };
+		D5215F501F01907100838680 /* geom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F2D1F01907100838680 /* geom.cpp */; };
+		D5215F511F01907100838680 /* geom.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F2E1F01907100838680 /* geom.h */; };
+		D5215F521F01907100838680 /* geomlib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F2F1F01907100838680 /* geomlib.cpp */; };
+		D5215F531F01907100838680 /* geomlib.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F301F01907100838680 /* geomlib.h */; };
+		D5215F541F01907100838680 /* GHexagon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F311F01907100838680 /* GHexagon.cpp */; };
+		D5215F551F01907100838680 /* GItem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F321F01907100838680 /* GItem.cpp */; };
+		D5215F561F01907100838680 /* GItem.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F331F01907100838680 /* GItem.h */; };
+		D5215F571F01907100838680 /* GMeshObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F341F01907100838680 /* GMeshObject.cpp */; };
+		D5215F581F01907100838680 /* GMeshObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F351F01907100838680 /* GMeshObject.h */; };
+		D5215F591F01907100838680 /* GMultiBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F361F01907100838680 /* GMultiBox.cpp */; };
+		D5215F5A1F01907100838680 /* GMultiBox.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F371F01907100838680 /* GMultiBox.h */; };
+		D5215F5B1F01907100838680 /* GObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F381F01907100838680 /* GObject.cpp */; };
+		D5215F5C1F01907100838680 /* GObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F391F01907100838680 /* GObject.h */; };
+		D5215F5D1F01907100838680 /* GPrimitive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F3A1F01907100838680 /* GPrimitive.cpp */; };
+		D5215F5E1F01907100838680 /* GPrimitive.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F3B1F01907100838680 /* GPrimitive.h */; };
+		D5215F5F1F01907100838680 /* GQuartDogBone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F3C1F01907100838680 /* GQuartDogBone.cpp */; };
+		D5215F601F01907100838680 /* GRing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F3D1F01907100838680 /* GRing.cpp */; };
+		D5215F611F01907100838680 /* GShellSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F3E1F01907100838680 /* GShellSphere.cpp */; };
+		D5215F621F01907100838680 /* GShellTorus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F3F1F01907100838680 /* GShellTorus.cpp */; };
+		D5215F631F01907100838680 /* GShellTube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F401F01907100838680 /* GShellTube.cpp */; };
+		D5215F641F01907100838680 /* GSlice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F411F01907100838680 /* GSlice.cpp */; };
+		D5215F651F01907100838680 /* GSolidArc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F421F01907100838680 /* GSolidArc.cpp */; };
+		D5215F661F01907100838680 /* GSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F431F01907100838680 /* GSphere.cpp */; };
+		D5215F671F01907100838680 /* GSphereInBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F441F01907100838680 /* GSphereInBox.cpp */; };
+		D5215F681F01907100838680 /* GTorus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F451F01907100838680 /* GTorus.cpp */; };
+		D5215F691F01907100838680 /* GTransform.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F461F01907100838680 /* GTransform.h */; };
+		D5215F6A1F01907100838680 /* GTruncatedEllipsoid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F471F01907100838680 /* GTruncatedEllipsoid.cpp */; };
+		D5215F6B1F01907100838680 /* GTube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F481F01907100838680 /* GTube.cpp */; };
+		D56584061F05BC3300594E72 /* GCurveMeshObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56584021F05BC3300594E72 /* GCurveMeshObject.cpp */; };
+		D56584071F05BC3300594E72 /* GCurveMeshObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D56584031F05BC3300594E72 /* GCurveMeshObject.h */; };
+		D56584081F05BC3300594E72 /* GSurfaceMeshObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56584041F05BC3300594E72 /* GSurfaceMeshObject.cpp */; };
+		D56584091F05BC3300594E72 /* GSurfaceMeshObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D56584051F05BC3300594E72 /* GSurfaceMeshObject.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D50F18B621E0E90200DD595F /* GOCCObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GOCCObject.cpp; sourceTree = "<group>"; };
+		D50F18B721E0E90200DD595F /* GOCCObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GOCCObject.h; sourceTree = "<group>"; };
+		D5215F171F01905000838680 /* libGeomLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libGeomLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5215F261F01907100838680 /* GBaseObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GBaseObject.cpp; sourceTree = "<group>"; };
+		D5215F271F01907100838680 /* GBaseObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBaseObject.h; sourceTree = "<group>"; };
+		D5215F281F01907100838680 /* GBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GBox.cpp; sourceTree = "<group>"; };
+		D5215F291F01907100838680 /* GCone.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GCone.cpp; sourceTree = "<group>"; };
+		D5215F2A1F01907100838680 /* GCylinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GCylinder.cpp; sourceTree = "<group>"; };
+		D5215F2B1F01907100838680 /* GCylinderInBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GCylinderInBox.cpp; sourceTree = "<group>"; };
+		D5215F2C1F01907100838680 /* GDisc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GDisc.cpp; sourceTree = "<group>"; };
+		D5215F2D1F01907100838680 /* geom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geom.cpp; sourceTree = "<group>"; };
+		D5215F2E1F01907100838680 /* geom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geom.h; sourceTree = "<group>"; };
+		D5215F2F1F01907100838680 /* geomlib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geomlib.cpp; sourceTree = "<group>"; };
+		D5215F301F01907100838680 /* geomlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geomlib.h; sourceTree = "<group>"; };
+		D5215F311F01907100838680 /* GHexagon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GHexagon.cpp; sourceTree = "<group>"; };
+		D5215F321F01907100838680 /* GItem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GItem.cpp; sourceTree = "<group>"; };
+		D5215F331F01907100838680 /* GItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GItem.h; sourceTree = "<group>"; };
+		D5215F341F01907100838680 /* GMeshObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GMeshObject.cpp; sourceTree = "<group>"; };
+		D5215F351F01907100838680 /* GMeshObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMeshObject.h; sourceTree = "<group>"; };
+		D5215F361F01907100838680 /* GMultiBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GMultiBox.cpp; sourceTree = "<group>"; };
+		D5215F371F01907100838680 /* GMultiBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMultiBox.h; sourceTree = "<group>"; };
+		D5215F381F01907100838680 /* GObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GObject.cpp; sourceTree = "<group>"; };
+		D5215F391F01907100838680 /* GObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GObject.h; sourceTree = "<group>"; };
+		D5215F3A1F01907100838680 /* GPrimitive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GPrimitive.cpp; sourceTree = "<group>"; };
+		D5215F3B1F01907100838680 /* GPrimitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPrimitive.h; sourceTree = "<group>"; };
+		D5215F3C1F01907100838680 /* GQuartDogBone.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GQuartDogBone.cpp; sourceTree = "<group>"; };
+		D5215F3D1F01907100838680 /* GRing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRing.cpp; sourceTree = "<group>"; };
+		D5215F3E1F01907100838680 /* GShellSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GShellSphere.cpp; sourceTree = "<group>"; };
+		D5215F3F1F01907100838680 /* GShellTorus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GShellTorus.cpp; sourceTree = "<group>"; };
+		D5215F401F01907100838680 /* GShellTube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GShellTube.cpp; sourceTree = "<group>"; };
+		D5215F411F01907100838680 /* GSlice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSlice.cpp; sourceTree = "<group>"; };
+		D5215F421F01907100838680 /* GSolidArc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSolidArc.cpp; sourceTree = "<group>"; };
+		D5215F431F01907100838680 /* GSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSphere.cpp; sourceTree = "<group>"; };
+		D5215F441F01907100838680 /* GSphereInBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSphereInBox.cpp; sourceTree = "<group>"; };
+		D5215F451F01907100838680 /* GTorus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GTorus.cpp; sourceTree = "<group>"; };
+		D5215F461F01907100838680 /* GTransform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTransform.h; sourceTree = "<group>"; };
+		D5215F471F01907100838680 /* GTruncatedEllipsoid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GTruncatedEllipsoid.cpp; sourceTree = "<group>"; };
+		D5215F481F01907100838680 /* GTube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GTube.cpp; sourceTree = "<group>"; };
+		D56584021F05BC3300594E72 /* GCurveMeshObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GCurveMeshObject.cpp; sourceTree = "<group>"; };
+		D56584031F05BC3300594E72 /* GCurveMeshObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCurveMeshObject.h; sourceTree = "<group>"; };
+		D56584041F05BC3300594E72 /* GSurfaceMeshObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSurfaceMeshObject.cpp; sourceTree = "<group>"; };
+		D56584051F05BC3300594E72 /* GSurfaceMeshObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSurfaceMeshObject.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D5215F141F01905000838680 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D5215F0E1F01905000838680 = {
+			isa = PBXGroup;
+			children = (
+				D5215F251F01907100838680 /* GeomLib */,
+				D5215F181F01905000838680 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D5215F181F01905000838680 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D5215F171F01905000838680 /* libGeomLib.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D5215F251F01907100838680 /* GeomLib */ = {
+			isa = PBXGroup;
+			children = (
+				D5215F261F01907100838680 /* GBaseObject.cpp */,
+				D5215F271F01907100838680 /* GBaseObject.h */,
+				D5215F281F01907100838680 /* GBox.cpp */,
+				D5215F291F01907100838680 /* GCone.cpp */,
+				D56584021F05BC3300594E72 /* GCurveMeshObject.cpp */,
+				D56584031F05BC3300594E72 /* GCurveMeshObject.h */,
+				D5215F2A1F01907100838680 /* GCylinder.cpp */,
+				D5215F2B1F01907100838680 /* GCylinderInBox.cpp */,
+				D5215F2C1F01907100838680 /* GDisc.cpp */,
+				D5215F2D1F01907100838680 /* geom.cpp */,
+				D5215F2E1F01907100838680 /* geom.h */,
+				D5215F2F1F01907100838680 /* geomlib.cpp */,
+				D5215F301F01907100838680 /* geomlib.h */,
+				D5215F311F01907100838680 /* GHexagon.cpp */,
+				D5215F321F01907100838680 /* GItem.cpp */,
+				D5215F331F01907100838680 /* GItem.h */,
+				D5215F341F01907100838680 /* GMeshObject.cpp */,
+				D5215F351F01907100838680 /* GMeshObject.h */,
+				D5215F361F01907100838680 /* GMultiBox.cpp */,
+				D5215F371F01907100838680 /* GMultiBox.h */,
+				D5215F381F01907100838680 /* GObject.cpp */,
+				D5215F391F01907100838680 /* GObject.h */,
+				D50F18B621E0E90200DD595F /* GOCCObject.cpp */,
+				D50F18B721E0E90200DD595F /* GOCCObject.h */,
+				D5215F3A1F01907100838680 /* GPrimitive.cpp */,
+				D5215F3B1F01907100838680 /* GPrimitive.h */,
+				D5215F3C1F01907100838680 /* GQuartDogBone.cpp */,
+				D5215F3D1F01907100838680 /* GRing.cpp */,
+				D5215F3E1F01907100838680 /* GShellSphere.cpp */,
+				D5215F3F1F01907100838680 /* GShellTorus.cpp */,
+				D5215F401F01907100838680 /* GShellTube.cpp */,
+				D5215F411F01907100838680 /* GSlice.cpp */,
+				D5215F421F01907100838680 /* GSolidArc.cpp */,
+				D5215F431F01907100838680 /* GSphere.cpp */,
+				D5215F441F01907100838680 /* GSphereInBox.cpp */,
+				D56584041F05BC3300594E72 /* GSurfaceMeshObject.cpp */,
+				D56584051F05BC3300594E72 /* GSurfaceMeshObject.h */,
+				D5215F451F01907100838680 /* GTorus.cpp */,
+				D5215F461F01907100838680 /* GTransform.h */,
+				D5215F471F01907100838680 /* GTruncatedEllipsoid.cpp */,
+				D5215F481F01907100838680 /* GTube.cpp */,
+			);
+			name = GeomLib;
+			path = ../../GeomLib;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D5215F151F01905000838680 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5215F581F01907100838680 /* GMeshObject.h in Headers */,
+				D50F18B921E0E90200DD595F /* GOCCObject.h in Headers */,
+				D5215F511F01907100838680 /* geom.h in Headers */,
+				D56584091F05BC3300594E72 /* GSurfaceMeshObject.h in Headers */,
+				D5215F5E1F01907100838680 /* GPrimitive.h in Headers */,
+				D5215F531F01907100838680 /* geomlib.h in Headers */,
+				D5215F5C1F01907100838680 /* GObject.h in Headers */,
+				D5215F4A1F01907100838680 /* GBaseObject.h in Headers */,
+				D5215F5A1F01907100838680 /* GMultiBox.h in Headers */,
+				D5215F691F01907100838680 /* GTransform.h in Headers */,
+				D56584071F05BC3300594E72 /* GCurveMeshObject.h in Headers */,
+				D5215F561F01907100838680 /* GItem.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D5215F161F01905000838680 /* GeomLib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5215F221F01905000838680 /* Build configuration list for PBXNativeTarget "GeomLib" */;
+			buildPhases = (
+				D5215F131F01905000838680 /* Sources */,
+				D5215F141F01905000838680 /* Frameworks */,
+				D5215F151F01905000838680 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GeomLib;
+			productName = GeomLib;
+			productReference = D5215F171F01905000838680 /* libGeomLib.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D5215F0F1F01905000838680 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1030;
+				ORGANIZATIONNAME = febio.org;
+				TargetAttributes = {
+					D5215F161F01905000838680 = {
+						CreatedOnToolsVersion = 8.3.3;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = D5215F121F01905000838680 /* Build configuration list for PBXProject "GeomLib" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D5215F0E1F01905000838680;
+			productRefGroup = D5215F181F01905000838680 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D5215F161F01905000838680 /* GeomLib */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D5215F131F01905000838680 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5215F541F01907100838680 /* GHexagon.cpp in Sources */,
+				D5215F601F01907100838680 /* GRing.cpp in Sources */,
+				D5215F5F1F01907100838680 /* GQuartDogBone.cpp in Sources */,
+				D5215F611F01907100838680 /* GShellSphere.cpp in Sources */,
+				D5215F4F1F01907100838680 /* GDisc.cpp in Sources */,
+				D5215F6B1F01907100838680 /* GTube.cpp in Sources */,
+				D5215F4E1F01907100838680 /* GCylinderInBox.cpp in Sources */,
+				D5215F661F01907100838680 /* GSphere.cpp in Sources */,
+				D5215F681F01907100838680 /* GTorus.cpp in Sources */,
+				D5215F571F01907100838680 /* GMeshObject.cpp in Sources */,
+				D5215F4C1F01907100838680 /* GCone.cpp in Sources */,
+				D5215F521F01907100838680 /* geomlib.cpp in Sources */,
+				D5215F491F01907100838680 /* GBaseObject.cpp in Sources */,
+				D50F18B821E0E90200DD595F /* GOCCObject.cpp in Sources */,
+				D5215F641F01907100838680 /* GSlice.cpp in Sources */,
+				D5215F631F01907100838680 /* GShellTube.cpp in Sources */,
+				D5215F6A1F01907100838680 /* GTruncatedEllipsoid.cpp in Sources */,
+				D5215F551F01907100838680 /* GItem.cpp in Sources */,
+				D5215F4B1F01907100838680 /* GBox.cpp in Sources */,
+				D56584061F05BC3300594E72 /* GCurveMeshObject.cpp in Sources */,
+				D5215F5B1F01907100838680 /* GObject.cpp in Sources */,
+				D5215F651F01907100838680 /* GSolidArc.cpp in Sources */,
+				D5215F591F01907100838680 /* GMultiBox.cpp in Sources */,
+				D5215F621F01907100838680 /* GShellTorus.cpp in Sources */,
+				D5215F5D1F01907100838680 /* GPrimitive.cpp in Sources */,
+				D5215F501F01907100838680 /* geom.cpp in Sources */,
+				D5215F4D1F01907100838680 /* GCylinder.cpp in Sources */,
+				D5215F671F01907100838680 /* GSphereInBox.cpp in Sources */,
+				D56584081F05BC3300594E72 /* GSurfaceMeshObject.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D5215F201F01905000838680 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+			};
+			name = Debug;
+		};
+		D5215F211F01905000838680 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+			};
+			name = Release;
+		};
+		D5215F231F01905000838680 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/usr/local/opt/opencascade/include/opencascade,
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DHAS_OCC",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D5215F241F01905000838680 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/usr/local/opt/opencascade/include/opencascade,
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DHAS_OCC",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5215F121F01905000838680 /* Build configuration list for PBXProject "GeomLib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5215F201F01905000838680 /* Debug */,
+				D5215F211F01905000838680 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5215F221F01905000838680 /* Build configuration list for PBXNativeTarget "GeomLib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5215F231F01905000838680 /* Debug */,
+				D5215F241F01905000838680 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D5215F0F1F01905000838680 /* Project object */;
+}

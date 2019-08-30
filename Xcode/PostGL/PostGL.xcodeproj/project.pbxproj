@@ -1,0 +1,443 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D55247CA22E6388B00935C9C /* GLMirrorPlane.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247A822E6388B00935C9C /* GLMirrorPlane.h */; };
+		D55247CB22E6388B00935C9C /* GLLinePlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247A922E6388B00935C9C /* GLLinePlot.cpp */; };
+		D55247CC22E6388B00935C9C /* render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247AA22E6388B00935C9C /* render.cpp */; };
+		D55247CD22E6388B00935C9C /* GLColorMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247AB22E6388B00935C9C /* GLColorMap.cpp */; };
+		D55247CE22E6388B00935C9C /* GLVectorPlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247AC22E6388B00935C9C /* GLVectorPlot.cpp */; };
+		D55247CF22E6388B00935C9C /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247AD22E6388B00935C9C /* stdafx.h */; };
+		D55247D022E6388B00935C9C /* GLPlaneCutPlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247AE22E6388B00935C9C /* GLPlaneCutPlot.cpp */; };
+		D55247D122E6388B00935C9C /* GLDisplacementMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247AF22E6388B00935C9C /* GLDisplacementMap.cpp */; };
+		D55247D222E6388B00935C9C /* GLStreamLinePlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247B022E6388B00935C9C /* GLStreamLinePlot.cpp */; };
+		D55247D322E6388B00935C9C /* GLTensorPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247B122E6388B00935C9C /* GLTensorPlot.h */; };
+		D55247D422E6388B00935C9C /* GLDataMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247B222E6388B00935C9C /* GLDataMap.cpp */; };
+		D55247D522E6388B00935C9C /* GLIsoSurfacePlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247B322E6388B00935C9C /* GLIsoSurfacePlot.cpp */; };
+		D55247D622E6388B00935C9C /* GLStreamLinePlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247B422E6388B00935C9C /* GLStreamLinePlot.h */; };
+		D55247D722E6388B00935C9C /* GLDataMap.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247B522E6388B00935C9C /* GLDataMap.h */; };
+		D55247D822E6388B00935C9C /* GLPlane.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247B622E6388B00935C9C /* GLPlane.h */; };
+		D55247D922E6388B00935C9C /* GLParticleFlowPlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247B722E6388B00935C9C /* GLParticleFlowPlot.cpp */; };
+		D55247DA22E6388B00935C9C /* GLTensorPlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247B822E6388B00935C9C /* GLTensorPlot.cpp */; };
+		D55247DB22E6388B00935C9C /* GLColorMap.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247B922E6388B00935C9C /* GLColorMap.h */; };
+		D55247DC22E6388B00935C9C /* GLSlicePLot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247BA22E6388B00935C9C /* GLSlicePLot.cpp */; };
+		D55247DD22E6388B00935C9C /* GLModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247BB22E6388B00935C9C /* GLModel.cpp */; };
+		D55247DE22E6388B00935C9C /* GLLinePlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247BC22E6388B00935C9C /* GLLinePlot.h */; };
+		D55247DF22E6388B00935C9C /* GLPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247BD22E6388B00935C9C /* GLPlot.h */; };
+		D55247E022E6388B00935C9C /* GLModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247BE22E6388B00935C9C /* GLModel.h */; };
+		D55247E122E6388B00935C9C /* GLSlicePLot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247BF22E6388B00935C9C /* GLSlicePLot.h */; };
+		D55247E222E6388B00935C9C /* GLPlaneCutPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C022E6388B00935C9C /* GLPlaneCutPlot.h */; };
+		D55247E322E6388B00935C9C /* GLPlane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247C122E6388B00935C9C /* GLPlane.cpp */; };
+		D55247E422E6388B00935C9C /* GLPlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247C222E6388B00935C9C /* GLPlot.cpp */; };
+		D55247E522E6388B00935C9C /* GLMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247C322E6388B00935C9C /* GLMesh.cpp */; };
+		D55247E622E6388B00935C9C /* GLIsoSurfacePlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C422E6388B00935C9C /* GLIsoSurfacePlot.h */; };
+		D55247E722E6388B00935C9C /* GLMirrorPlane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247C522E6388B00935C9C /* GLMirrorPlane.cpp */; };
+		D55247E822E6388B00935C9C /* GLDisplacementMap.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C622E6388B00935C9C /* GLDisplacementMap.h */; };
+		D55247E922E6388B00935C9C /* GLMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C722E6388B00935C9C /* GLMesh.h */; };
+		D55247EA22E6388B00935C9C /* GLVectorPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C822E6388B00935C9C /* GLVectorPlot.h */; };
+		D55247EB22E6388B00935C9C /* GLParticleFlowPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C922E6388B00935C9C /* GLParticleFlowPlot.h */; };
+		D5ED2A1C23198D0600C16BF7 /* GLVolumeFlowPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED2A1A23198D0600C16BF7 /* GLVolumeFlowPlot.h */; };
+		D5ED2A1D23198D0600C16BF7 /* GLVolumeFlowPlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2A1B23198D0600C16BF7 /* GLVolumeFlowPlot.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D552479922E6387900935C9C /* libPostGL.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPostGL.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D55247A822E6388B00935C9C /* GLMirrorPlane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLMirrorPlane.h; sourceTree = "<group>"; };
+		D55247A922E6388B00935C9C /* GLLinePlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLLinePlot.cpp; sourceTree = "<group>"; };
+		D55247AA22E6388B00935C9C /* render.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = render.cpp; sourceTree = "<group>"; };
+		D55247AB22E6388B00935C9C /* GLColorMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLColorMap.cpp; sourceTree = "<group>"; };
+		D55247AC22E6388B00935C9C /* GLVectorPlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLVectorPlot.cpp; sourceTree = "<group>"; };
+		D55247AD22E6388B00935C9C /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		D55247AE22E6388B00935C9C /* GLPlaneCutPlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLPlaneCutPlot.cpp; sourceTree = "<group>"; };
+		D55247AF22E6388B00935C9C /* GLDisplacementMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLDisplacementMap.cpp; sourceTree = "<group>"; };
+		D55247B022E6388B00935C9C /* GLStreamLinePlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLStreamLinePlot.cpp; sourceTree = "<group>"; };
+		D55247B122E6388B00935C9C /* GLTensorPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLTensorPlot.h; sourceTree = "<group>"; };
+		D55247B222E6388B00935C9C /* GLDataMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLDataMap.cpp; sourceTree = "<group>"; };
+		D55247B322E6388B00935C9C /* GLIsoSurfacePlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLIsoSurfacePlot.cpp; sourceTree = "<group>"; };
+		D55247B422E6388B00935C9C /* GLStreamLinePlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLStreamLinePlot.h; sourceTree = "<group>"; };
+		D55247B522E6388B00935C9C /* GLDataMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLDataMap.h; sourceTree = "<group>"; };
+		D55247B622E6388B00935C9C /* GLPlane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLPlane.h; sourceTree = "<group>"; };
+		D55247B722E6388B00935C9C /* GLParticleFlowPlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLParticleFlowPlot.cpp; sourceTree = "<group>"; };
+		D55247B822E6388B00935C9C /* GLTensorPlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLTensorPlot.cpp; sourceTree = "<group>"; };
+		D55247B922E6388B00935C9C /* GLColorMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLColorMap.h; sourceTree = "<group>"; };
+		D55247BA22E6388B00935C9C /* GLSlicePLot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLSlicePLot.cpp; sourceTree = "<group>"; };
+		D55247BB22E6388B00935C9C /* GLModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLModel.cpp; sourceTree = "<group>"; };
+		D55247BC22E6388B00935C9C /* GLLinePlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLLinePlot.h; sourceTree = "<group>"; };
+		D55247BD22E6388B00935C9C /* GLPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLPlot.h; sourceTree = "<group>"; };
+		D55247BE22E6388B00935C9C /* GLModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLModel.h; sourceTree = "<group>"; };
+		D55247BF22E6388B00935C9C /* GLSlicePLot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLSlicePLot.h; sourceTree = "<group>"; };
+		D55247C022E6388B00935C9C /* GLPlaneCutPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLPlaneCutPlot.h; sourceTree = "<group>"; };
+		D55247C122E6388B00935C9C /* GLPlane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLPlane.cpp; sourceTree = "<group>"; };
+		D55247C222E6388B00935C9C /* GLPlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLPlot.cpp; sourceTree = "<group>"; };
+		D55247C322E6388B00935C9C /* GLMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLMesh.cpp; sourceTree = "<group>"; };
+		D55247C422E6388B00935C9C /* GLIsoSurfacePlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLIsoSurfacePlot.h; sourceTree = "<group>"; };
+		D55247C522E6388B00935C9C /* GLMirrorPlane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLMirrorPlane.cpp; sourceTree = "<group>"; };
+		D55247C622E6388B00935C9C /* GLDisplacementMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLDisplacementMap.h; sourceTree = "<group>"; };
+		D55247C722E6388B00935C9C /* GLMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLMesh.h; sourceTree = "<group>"; };
+		D55247C822E6388B00935C9C /* GLVectorPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLVectorPlot.h; sourceTree = "<group>"; };
+		D55247C922E6388B00935C9C /* GLParticleFlowPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLParticleFlowPlot.h; sourceTree = "<group>"; };
+		D5ED2A1A23198D0600C16BF7 /* GLVolumeFlowPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLVolumeFlowPlot.h; sourceTree = "<group>"; };
+		D5ED2A1B23198D0600C16BF7 /* GLVolumeFlowPlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLVolumeFlowPlot.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D552479722E6387900935C9C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D552479022E6387900935C9C = {
+			isa = PBXGroup;
+			children = (
+				D55247A722E6388B00935C9C /* PostGL */,
+				D552479A22E6387900935C9C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D552479A22E6387900935C9C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D552479922E6387900935C9C /* libPostGL.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D55247A722E6388B00935C9C /* PostGL */ = {
+			isa = PBXGroup;
+			children = (
+				D55247AB22E6388B00935C9C /* GLColorMap.cpp */,
+				D55247B922E6388B00935C9C /* GLColorMap.h */,
+				D55247B222E6388B00935C9C /* GLDataMap.cpp */,
+				D55247B522E6388B00935C9C /* GLDataMap.h */,
+				D55247AF22E6388B00935C9C /* GLDisplacementMap.cpp */,
+				D55247C622E6388B00935C9C /* GLDisplacementMap.h */,
+				D55247B322E6388B00935C9C /* GLIsoSurfacePlot.cpp */,
+				D55247C422E6388B00935C9C /* GLIsoSurfacePlot.h */,
+				D55247A922E6388B00935C9C /* GLLinePlot.cpp */,
+				D55247BC22E6388B00935C9C /* GLLinePlot.h */,
+				D55247C322E6388B00935C9C /* GLMesh.cpp */,
+				D55247C722E6388B00935C9C /* GLMesh.h */,
+				D55247C522E6388B00935C9C /* GLMirrorPlane.cpp */,
+				D55247A822E6388B00935C9C /* GLMirrorPlane.h */,
+				D55247BB22E6388B00935C9C /* GLModel.cpp */,
+				D55247BE22E6388B00935C9C /* GLModel.h */,
+				D55247B722E6388B00935C9C /* GLParticleFlowPlot.cpp */,
+				D55247C922E6388B00935C9C /* GLParticleFlowPlot.h */,
+				D55247C122E6388B00935C9C /* GLPlane.cpp */,
+				D55247B622E6388B00935C9C /* GLPlane.h */,
+				D55247AE22E6388B00935C9C /* GLPlaneCutPlot.cpp */,
+				D55247C022E6388B00935C9C /* GLPlaneCutPlot.h */,
+				D55247C222E6388B00935C9C /* GLPlot.cpp */,
+				D55247BD22E6388B00935C9C /* GLPlot.h */,
+				D55247BA22E6388B00935C9C /* GLSlicePLot.cpp */,
+				D55247BF22E6388B00935C9C /* GLSlicePLot.h */,
+				D55247B022E6388B00935C9C /* GLStreamLinePlot.cpp */,
+				D55247B422E6388B00935C9C /* GLStreamLinePlot.h */,
+				D55247B822E6388B00935C9C /* GLTensorPlot.cpp */,
+				D55247B122E6388B00935C9C /* GLTensorPlot.h */,
+				D55247AC22E6388B00935C9C /* GLVectorPlot.cpp */,
+				D55247C822E6388B00935C9C /* GLVectorPlot.h */,
+				D5ED2A1B23198D0600C16BF7 /* GLVolumeFlowPlot.cpp */,
+				D5ED2A1A23198D0600C16BF7 /* GLVolumeFlowPlot.h */,
+				D55247AA22E6388B00935C9C /* render.cpp */,
+				D55247AD22E6388B00935C9C /* stdafx.h */,
+			);
+			name = PostGL;
+			path = ../../PostGL;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D552479522E6387900935C9C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D55247E222E6388B00935C9C /* GLPlaneCutPlot.h in Headers */,
+				D55247E622E6388B00935C9C /* GLIsoSurfacePlot.h in Headers */,
+				D55247D822E6388B00935C9C /* GLPlane.h in Headers */,
+				D55247E922E6388B00935C9C /* GLMesh.h in Headers */,
+				D55247EB22E6388B00935C9C /* GLParticleFlowPlot.h in Headers */,
+				D55247E822E6388B00935C9C /* GLDisplacementMap.h in Headers */,
+				D55247CF22E6388B00935C9C /* stdafx.h in Headers */,
+				D55247DF22E6388B00935C9C /* GLPlot.h in Headers */,
+				D55247CA22E6388B00935C9C /* GLMirrorPlane.h in Headers */,
+				D55247D622E6388B00935C9C /* GLStreamLinePlot.h in Headers */,
+				D5ED2A1C23198D0600C16BF7 /* GLVolumeFlowPlot.h in Headers */,
+				D55247EA22E6388B00935C9C /* GLVectorPlot.h in Headers */,
+				D55247E122E6388B00935C9C /* GLSlicePLot.h in Headers */,
+				D55247DE22E6388B00935C9C /* GLLinePlot.h in Headers */,
+				D55247DB22E6388B00935C9C /* GLColorMap.h in Headers */,
+				D55247E022E6388B00935C9C /* GLModel.h in Headers */,
+				D55247D322E6388B00935C9C /* GLTensorPlot.h in Headers */,
+				D55247D722E6388B00935C9C /* GLDataMap.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D552479822E6387900935C9C /* PostGL */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D55247A422E6387900935C9C /* Build configuration list for PBXNativeTarget "PostGL" */;
+			buildPhases = (
+				D552479522E6387900935C9C /* Headers */,
+				D552479622E6387900935C9C /* Sources */,
+				D552479722E6387900935C9C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PostGL;
+			productName = PostGL;
+			productReference = D552479922E6387900935C9C /* libPostGL.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D552479122E6387900935C9C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1020;
+				ORGANIZATIONNAME = febio.org;
+				TargetAttributes = {
+					D552479822E6387900935C9C = {
+						CreatedOnToolsVersion = 10.2.1;
+					};
+				};
+			};
+			buildConfigurationList = D552479422E6387900935C9C /* Build configuration list for PBXProject "PostGL" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D552479022E6387900935C9C;
+			productRefGroup = D552479A22E6387900935C9C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D552479822E6387900935C9C /* PostGL */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D552479622E6387900935C9C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D55247D022E6388B00935C9C /* GLPlaneCutPlot.cpp in Sources */,
+				D55247DA22E6388B00935C9C /* GLTensorPlot.cpp in Sources */,
+				D55247D422E6388B00935C9C /* GLDataMap.cpp in Sources */,
+				D55247CD22E6388B00935C9C /* GLColorMap.cpp in Sources */,
+				D55247D922E6388B00935C9C /* GLParticleFlowPlot.cpp in Sources */,
+				D55247D522E6388B00935C9C /* GLIsoSurfacePlot.cpp in Sources */,
+				D55247E422E6388B00935C9C /* GLPlot.cpp in Sources */,
+				D55247DC22E6388B00935C9C /* GLSlicePLot.cpp in Sources */,
+				D55247D222E6388B00935C9C /* GLStreamLinePlot.cpp in Sources */,
+				D55247D122E6388B00935C9C /* GLDisplacementMap.cpp in Sources */,
+				D55247CB22E6388B00935C9C /* GLLinePlot.cpp in Sources */,
+				D5ED2A1D23198D0600C16BF7 /* GLVolumeFlowPlot.cpp in Sources */,
+				D55247E522E6388B00935C9C /* GLMesh.cpp in Sources */,
+				D55247CE22E6388B00935C9C /* GLVectorPlot.cpp in Sources */,
+				D55247E722E6388B00935C9C /* GLMirrorPlane.cpp in Sources */,
+				D55247CC22E6388B00935C9C /* render.cpp in Sources */,
+				D55247DD22E6388B00935C9C /* GLModel.cpp in Sources */,
+				D55247E322E6388B00935C9C /* GLPlane.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D55247A222E6387900935C9C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D55247A322E6387900935C9C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D55247A522E6387900935C9C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = /usr/local/opt/qt/Frameworks;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/opt/qt/include/QtCore,
+					/usr/local/opt/qt/include/QtGui,
+					/usr/local/opt/qt/include/QtWidget,
+					"$(SRCROOT)/../..",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		D55247A622E6387900935C9C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = /usr/local/opt/qt/Frameworks;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/opt/qt/include/QtCore,
+					/usr/local/opt/qt/include/QtGui,
+					/usr/local/opt/qt/include/QtWidget,
+					"$(SRCROOT)/../..",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D552479422E6387900935C9C /* Build configuration list for PBXProject "PostGL" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D55247A222E6387900935C9C /* Debug */,
+				D55247A322E6387900935C9C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D55247A422E6387900935C9C /* Build configuration list for PBXNativeTarget "PostGL" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D55247A522E6387900935C9C /* Debug */,
+				D55247A622E6387900935C9C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D552479122E6387900935C9C /* Project object */;
+}
