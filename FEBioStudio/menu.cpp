@@ -113,19 +113,28 @@ void CMainWindow::on_actionNew_triggered()
 
 				QDir dir(projectFolder);
 
-				// see if we should create a project folder
-				if (dlg.createProjectFolder())
+				// make sure the project folder exists
+				if (dir.exists() == false)
 				{
-					// try to create a new folder
-					if (dir.mkdir(projectName) == false)
+					QMessageBox::critical(this, "FEBio Studio", QString("The folder \"%1\" does not exist.\nPlease choose a valid project folder.").arg(projectFolder));
+					projectAccepted = false;
+				}
+				else
+				{
+					// see if we should create a project folder
+					if (dlg.createProjectFolder())
 					{
-						QMessageBox::critical(this, "FEBio Studio", QString("The folder \"%1\" already exists in the selected project folder.\nPlease choose a different project name or folder.").arg(projectName));
-						projectAccepted = false;
-					}
-					else
-					{
-						// cd into this directory
-						dir.cd(projectName);
+						// try to create a new folder
+						if (dir.mkdir(projectName) == false)
+						{
+							QMessageBox::critical(this, "FEBio Studio", QString("The folder \"%1\" already exists in the selected project folder.\nPlease choose a different project name or folder.").arg(projectName));
+							projectAccepted = false;
+						}
+						else
+						{
+							// cd into this directory
+							dir.cd(projectName);
+						}
 					}
 				}
 
