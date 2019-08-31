@@ -25,6 +25,7 @@
 #include <FSCore/FSDir.h>
 #include "PostDoc.h"
 #include "Command.h"
+#include "modelcheck.h"
 #include <sstream>
 
 extern const int COLORS = 16;
@@ -1624,50 +1625,6 @@ void CDocument::DeleteAllImageModels()
 std::vector<std::string> CDocument::CheckModel()
 {
 	vector<std::string> errorList;
-
-	GModel& mdl = *GetGModel();
-	FEModel& fem = *GetFEModel();
-
-	// are there any objects?
-	if (mdl.Objects() == 0) errorList.push_back("This model does not contain any geometry.");
-
-	// are all geometries meshed?
-	for (int i = 0; i < mdl.Objects(); ++i)
-	{
-		GObject* po = mdl.Object(i);
-		if (po->GetFEMesh() == nullptr)
-		{
-			errorList.push_back("The object \"" + po->GetName() + "\" is not meshed.");
-		}
-	}
-
-	// are there any materials
-	if (fem.Materials() == 0)
-	{
-		errorList.push_back("There are no materials defined in this model.");
-	}
-	else 
-	{
-		// is a material assigned to all parts ?
-		for (int i = 0; i < mdl.Objects(); ++i)
-		{
-			GObject* po = mdl.Object(i);
-			for (int j = 0; j < po->Parts(); ++j)
-			{
-				GPart* pj = po->Part(j);
-				if (pj->GetMaterialID() == -1)
-				{
-					errorList.push_back("Part \"" + pj->GetName() + "\" of object \"" + po->GetName() + "\" does not have a material assigned.");
-				}
-			}
-		}
-	}
-
-	// Are there any analysis steps? 
-	if (fem.Steps() <= 1)
-	{
-		errorList.push_back("There are no analysis steps defined.");
-	}
-
+	checkAll(this, errorList);
 	return errorList;
 }

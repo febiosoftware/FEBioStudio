@@ -317,6 +317,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolsPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\modelcheck.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelPropsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelSearch.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelTree.cpp" />
@@ -390,6 +391,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\modelcheck.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\ZipFiles.h" />
     <ClInclude Include="resource.h" />

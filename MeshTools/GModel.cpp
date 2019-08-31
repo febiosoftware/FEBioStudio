@@ -1809,3 +1809,18 @@ GObject* GModel::DetachDiscreteSet(GDiscreteElementSet* set)
 
 	return po;
 }
+
+list<GPart*> GModel::FindPartsFromMaterial(int matId)
+{
+	list<GPart*> partList;
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		for (int j = 0; j < po->Parts(); ++j)
+		{
+			GPart* pg = po->Part(j);
+			if (pg->GetMaterialID() == matId) partList.push_back(pg);
+		}
+	}
+	return partList;
+}

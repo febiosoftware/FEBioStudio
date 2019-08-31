@@ -187,6 +187,8 @@ public:
 	void RemoveNamedSelections();
 	void RemoveEmptySelections();
 
+	list<GPart*> FindPartsFromMaterial(int matId);
+
 public:
 	// create a clone
 	GObject* CloneObject(GObject *po);
