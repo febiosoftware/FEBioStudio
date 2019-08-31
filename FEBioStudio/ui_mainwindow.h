@@ -24,6 +24,7 @@
 #include "PostPanel.h"
 #include "InfoPanel.h"
 #include <QFontComboBox>
+#include <QtCore/QStandardPaths>
 #include "MainTabBar.h"
 
 class QProcess;
@@ -163,7 +164,7 @@ public:
 #endif
 
 #ifdef WIN32
-		m_defaultProjectFolder = "C:\\Documents";
+		m_defaultProjectFolder = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #endif
 
 		m_process = 0;
