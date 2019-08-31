@@ -22,21 +22,23 @@
 #include "StatsWindow.h"
 #include "IntegrateWindow.h"
 
+QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
+
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
-	CFEBioJob* job = dynamic_cast<CFEBioJob*>(ui->modelViewer->GetCurrentObject());
-	if (job == nullptr) return nullptr;
-
-	CPostDoc* pd = job->GetPostDoc();
-	if (pd == nullptr) return nullptr;
-
-	return pd->GetGLModel();
+	CPostDoc* doc = ui->tab->getActiveDoc();
+	if (doc== nullptr) return nullptr;
+	return doc->GetGLModel();
 }
 
 void CMainWindow::on_actionPlaneCut_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
-	if (glm == nullptr) return;
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
 
 	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot(glm);
 	glm->AddPlot(pp);
@@ -50,7 +52,11 @@ void CMainWindow::on_actionPlaneCut_triggered()
 void CMainWindow::on_actionMirrorPlane_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
-	if (glm == nullptr) return;
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
 
 	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane(glm);
 	glm->AddPlot(pp);
@@ -64,7 +70,11 @@ void CMainWindow::on_actionMirrorPlane_triggered()
 void CMainWindow::on_actionVectorPlot_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
-	if (glm == nullptr) return;
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
 
 	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot(glm);
 	glm->AddPlot(pp);
@@ -78,7 +88,11 @@ void CMainWindow::on_actionVectorPlot_triggered()
 void CMainWindow::on_actionTensorPlot_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
-	if (glm == nullptr) return;
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
 
 	Post::GLTensorPlot* pp = new Post::GLTensorPlot(glm);
 	glm->AddPlot(pp);
@@ -92,7 +106,11 @@ void CMainWindow::on_actionTensorPlot_triggered()
 void CMainWindow::on_actionStreamLinePlot_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
-	if (glm == nullptr) return;
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
 
 	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot(glm);
 	glm->AddPlot(pp);
@@ -107,7 +125,11 @@ void CMainWindow::on_actionStreamLinePlot_triggered()
 void CMainWindow::on_actionParticleFlowPlot_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
-	if (glm == nullptr) return;
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
 
 	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot(glm);
 	glm->AddPlot(pp);
@@ -122,7 +144,11 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 void CMainWindow::on_actionVolumeFlowPlot_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
-	if (glm == nullptr) return;
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
 
 	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot(glm);
 	glm->AddPlot(pp);

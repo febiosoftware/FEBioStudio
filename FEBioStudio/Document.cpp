@@ -1308,6 +1308,13 @@ void CDocument::DeleteObject(FSObject* po)
 		// This cannot be undone (yet) so clear the undo stack
 		ClearCommandStack();
 	}
+	else if (dynamic_cast<Post::CGLPlot*>(po))
+	{
+		// We don't push plane cut plots on the undo stack because
+		// the plane cuts will remain active until the object is actually deleted. 
+		assert(po->GetParent());
+		delete po;
+	}
 	else if (po->GetParent())
 	{
 		if (dynamic_cast<CFEBioJob*>(po))
