@@ -1300,6 +1300,14 @@ void CDocument::DeleteObject(FSObject* po)
 			return;
 		}
 	}
+	else if (dynamic_cast<GPart*>(po))
+	{
+		GPart* pg = dynamic_cast<GPart*>(po);
+		GetGModel()->DeletePart(pg);
+
+		// This cannot be undone (yet) so clear the undo stack
+		ClearCommandStack();
+	}
 	else if (po->GetParent())
 	{
 		if (dynamic_cast<CFEBioJob*>(po))
