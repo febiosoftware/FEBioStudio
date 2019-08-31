@@ -187,6 +187,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgAddStep.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddSurfaceLoad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgBatchConvert.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgCheck.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgCloneGrid.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgCloneObject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgCloneRevolve.cpp" />
@@ -361,6 +362,7 @@
     <ClInclude Include="..\..\FEBioStudio\CurveEditor.h" />
     <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h" />
     <ClInclude Include="..\..\FEBioStudio\CurvePicker.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgCheck.h" />
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />
     <CustomBuild Include="..\..\FEBioStudio\MainTabBar.h">

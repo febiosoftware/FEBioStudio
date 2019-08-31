@@ -30,6 +30,7 @@
 #include "FEBioJob.h"
 #include <PostLib/ColorMap.h>
 #include <FSCore/FSDir.h>
+#include "DlgCheck.h"
 
 extern GLColor col[];
 
@@ -1722,17 +1723,15 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 
 	if (warnings.empty() == false)
 	{
-		QString s = "There are issues with this model that may prevent it from runnnig correctly in FEBio:\n\n";
-
-		const int MAX_ERRORS = 10;
-		int n = (warnings.size() <= MAX_ERRORS ? warnings.size() : MAX_ERRORS);
-		for (int i = 0; i < n; ++i)
+		QStringList errList;
+		for (int i = 0; i < warnings.size(); ++i)
 		{
-			s += QString::fromStdString(warnings[i]) + "\n";
+			errList << QString::fromStdString(warnings[i]);
 		}
-		if (warnings.size() > MAX_ERRORS) s += "...\n";
-		s += "\nDo you want to continue?";
-		if (QMessageBox::question(this, "FEBio Studio",  s) == QMessageBox::No)
+
+		CDlgCheck dlg(this);
+		dlg.SetWarnings(errList);
+		if (dlg.exec() == 0)
 		{
 			return;
 		}
