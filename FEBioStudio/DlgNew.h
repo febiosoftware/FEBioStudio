@@ -30,6 +30,8 @@ public:
 
 	bool createProjectFolder();
 
+	void showEvent(QShowEvent* ev);
+
 public slots:
 	void onProjectFolder();
 

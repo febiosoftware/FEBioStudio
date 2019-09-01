@@ -12,6 +12,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QCheckBox>
+#include <QApplication>
+#include <QDesktopWidget>
 #include "DocTemplate.h"
 #include "MainWindow.h"
 
@@ -119,6 +121,14 @@ CDlgNew::CDlgNew(CMainWindow* parent ) : QDialog(parent), ui(new Ui::CDlgNew)
 {
 	setWindowTitle("Project Manager");
 	ui->setup(parent, this);
+}
+
+void CDlgNew::showEvent(QShowEvent* ev)
+{
+	QRect screenGeometry = QApplication::desktop()->screenGeometry();
+	int x = (screenGeometry.width() - width()) / 2;
+	int y = (screenGeometry.height() - height()) / 2;
+	move(x, y);
 }
 
 void CDlgNew::accept()
