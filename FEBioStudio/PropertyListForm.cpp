@@ -500,6 +500,12 @@ void CPropertyListForm::onDataChanged()
 						if (e) m_list->SetPropertyValue(i, e->currentText());
 					}
 					break;
+				case CProperty::Vec3:
+					{
+						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+						if (edit) m_list->SetPropertyValue(i, edit->text());
+					}
+					break;
 				}
 			}
 
