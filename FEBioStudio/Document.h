@@ -12,6 +12,7 @@
 #include <PostLib/ImageModel.h>
 #include <FSCore/FSObjectList.h>
 #include "ViewSettings.h"
+#include "modelcheck.h"
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -252,7 +253,7 @@ public:
 	CFEBioJob* FindFEBioJob(const std::string& s);
 
 	// checks the model for issues and returns the warnings as a string array
-	std::vector<std::string>	CheckModel();
+	std::vector<MODEL_ERROR>	CheckModel();
 
 public:
 	int ImageModels() const;

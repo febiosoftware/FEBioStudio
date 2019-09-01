@@ -25,7 +25,6 @@
 #include <FSCore/FSDir.h>
 #include "PostDoc.h"
 #include "Command.h"
-#include "modelcheck.h"
 #include <sstream>
 
 extern const int COLORS = 16;
@@ -1622,9 +1621,9 @@ void CDocument::DeleteAllImageModels()
 	m_img.Clear();
 }
 
-std::vector<std::string> CDocument::CheckModel()
+std::vector<MODEL_ERROR> CDocument::CheckModel()
 {
-	vector<std::string> errorList;
-	checkAll(this, errorList);
+	vector<MODEL_ERROR> errorList;
+	checkModel(this, errorList);
 	return errorList;
 }

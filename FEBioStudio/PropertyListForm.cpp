@@ -260,6 +260,15 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			return b;
 		}
 		break;
+	case CProperty::Vec3:
+		{
+			QLineEdit* edit = new QLineEdit;
+			edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+			edit->setText(v.toString());
+			connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
+			return edit;
+		}
+		break;
 	default:
 		assert(false);
 	}

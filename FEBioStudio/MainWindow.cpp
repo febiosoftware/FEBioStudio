@@ -1719,18 +1719,12 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 	filePath = FSDir::toAbsolutePath(filePath);
 
 	// check the model first for issues
-	vector<string> warnings = doc->CheckModel();
+	vector<MODEL_ERROR> warnings = doc->CheckModel();
 
 	if (warnings.empty() == false)
 	{
-		QStringList errList;
-		for (int i = 0; i < warnings.size(); ++i)
-		{
-			errList << QString::fromStdString(warnings[i]);
-		}
-
 		CDlgCheck dlg(this);
-		dlg.SetWarnings(errList);
+		dlg.SetWarnings(warnings);
 		if (dlg.exec() == 0)
 		{
 			return;

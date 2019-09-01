@@ -3,4 +3,13 @@
 #include <vector>
 class CDocument;
 
-void checkAll(CDocument* doc, std::vector<std::string>& errorList);
+enum ERROR_TYPE
+{
+	CRITICAL,
+	WARNING
+};
+
+typedef std::pair<ERROR_TYPE, std::string> MODEL_ERROR;
+
+void checkModel(CDocument* doc, std::vector<MODEL_ERROR>& errorList);
+bool isWarning(int error_code);

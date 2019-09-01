@@ -36,8 +36,19 @@ CDlgCheck::CDlgCheck(QWidget* parent): QDialog(parent), ui(new Ui::CDlgCheck)
 	ui->setup(this);
 }
 
-void CDlgCheck::SetWarnings(const QStringList& errList)
+void CDlgCheck::SetWarnings(const std::vector<MODEL_ERROR>& errList)
 {
 	ui->errList->clear();
-	ui->errList->addItems(errList);
+
+	for (size_t i = 0; i < errList.size(); ++i)
+	{
+		QListWidgetItem* item = new QListWidgetItem;
+		item->setText(QString::fromStdString(errList[i].second));
+		if (errList[i].first == CRITICAL)
+			item->setIcon(QIcon(":/icons/error.png"));
+		else
+			item->setIcon(QIcon(":/icons/warning.png"));
+
+		ui->errList->addItem(item);
+	}
 }
