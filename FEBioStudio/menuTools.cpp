@@ -52,7 +52,11 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	static QString lastPath;
 	QString jobPath;
 	if (projectFolder.isEmpty()) jobPath = lastPath;
+#ifdef WIN32
+	else jobPath = "$(ProjectDir)\\jobs";
+#else
 	else jobPath = "$(ProjectDir)/jobs";
+#endif
 
 	// this keeps track of the FEBio selection that was used last
 	static int lastFEBioIndex = 0;

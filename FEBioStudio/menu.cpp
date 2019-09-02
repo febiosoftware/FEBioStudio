@@ -1943,7 +1943,7 @@ void CMainWindow::on_actionFEBioPubs_triggered()
 
 void CMainWindow::on_actionAbout_triggered()
 {
-	QString txt = QString("<h1>FEBio Studio</h1><p>Version %1.%2.%3 (beta)</p><p>Musculoskeletal Research Laboratories, University of Utah</p><p> Copyright (c) 2019, All rights reserved</p>").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	QString txt = QString("<h1>FEBio Studio</h1><p>Version %1.%2.%3</p><p>Musculoskeletal Research Laboratories, University of Utah</p><p> Copyright (c) 2019, All rights reserved</p>").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
 
 	QMessageBox about(this);
 	about.setWindowTitle("About FEBio Studio");

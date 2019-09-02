@@ -68,13 +68,22 @@ void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
 
 	// update feb file name
 	QString febName = QFileInfo(QString::fromStdString(m_fileName)).fileName();
+#ifdef WIN32
+	m_fileName = (dirName + "\\" + febName).toStdString();
+#else
 	m_fileName = (dirName + "/" + febName).toStdString();
+#endif
 
 	// update xplt file name
 	QString xpltName = QFileInfo(QString::fromStdString(m_plotFile)).fileName();
-	m_plotFile = (dirName + "/" + xpltName).toStdString();
 
-// TODO: Fix possible memory leak here.
+#ifdef WIN32
+	m_plotFile = (dirName + "\\" + xpltName).toStdString();
+#else
+	m_plotFile = (dirName + "/" + xpltName).toStdString();
+#endif
+	
+	// TODO: Fix possible memory leak here.
 	m_postDoc = nullptr;
 }
 

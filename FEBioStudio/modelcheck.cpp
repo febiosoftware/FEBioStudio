@@ -71,11 +71,6 @@ vector<ERROR_DATA> error = {
 	{ WARNING , "This model does not define any output variables.", check_012 }
 };
 
-bool isWarning(int error_code)
-{
-	return (error[error_code].errType == ERROR_TYPE::CRITICAL);
-}
-
 const char* errorString(int error_code)
 {
 	if (error_code >= error.size())
@@ -374,7 +369,14 @@ void check_011(CDocument* doc, std::vector<FSObject*>& objList)
 void check_012(CDocument* doc, std::vector<FSObject*>& objList)
 {
 	FEModel& fem = *doc->GetFEModel();
-	if (fem.DataVariables() == 0)
+	FEProject& prj = doc->GetProject();
+	CPlotDataSettings& plt = prj.GetPlotDataSettings();
+
+	// count the nr of active plot variables
+	int na = 0;
+	for (int i = 0; i<plt.PlotVariables(); ++i) if (plt.PlotVariable(i).isActive()) na++;
+
+	if (na == 0)
 	{
 		objList.push_back(&fem);
 	}
