@@ -432,9 +432,12 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 		else return 0;
 	}
 	if (ext.compare("ply", Qt::CaseInsensitive) == 0) return new FEPLYImport();
-	if (ext.compare("brep", Qt::CaseInsensitive) == 0) return new BREPImport();
-	if (ext.compare("step", Qt::CaseInsensitive) == 0) return new STEPImport;
-	if (ext.compare("iges", Qt::CaseInsensitive) == 0) return new IGESImport;
+	if ((ext.compare("brep", Qt::CaseInsensitive) == 0) ||
+        (ext.compare("brp", Qt::CaseInsensitive) == 0)) return new BREPImport();
+	if ((ext.compare("step", Qt::CaseInsensitive) == 0) ||
+        (ext.compare("stp", Qt::CaseInsensitive) == 0)) return new STEPImport;
+	if ((ext.compare("iges", Qt::CaseInsensitive) == 0) ||
+        (ext.compare("igs", Qt::CaseInsensitive) == 0)) return new IGESImport;
 	if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
 		FEBioImport* febio = new FEBioImport;
@@ -610,13 +613,13 @@ void CMainWindow::on_actionImportGeometry_triggered()
 	filters << "BYU (*.byu)";
 	filters << "Mesh (*.mesh)";
 	filters << "TetGen (*.ele)";
-	filters << "IGES (*.iges)";
+	filters << "IGES (*.iges, *.igs)";
 	filters << "VTK (*.vtk)";
 	filters << "RAW Image (*.raw)";
 	filters << "COMSOL Mesh (*.mphtxt)";
 	filters << "PLY (*.ply)";
-	filters << "BREP files (*.brep)";
-	filters << "STEP files (*.step)";
+	filters << "BREP files (*.brep, *.brp)";
+	filters << "STEP files (*.step, *.stp)";
 	
 	// get the project
 	FEProject& prj = m_doc->GetProject();

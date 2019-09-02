@@ -177,6 +177,8 @@ public:
 private:
 	void writeSettings();
 	void readSettings();
+    
+public:
 	FileReader* CreateFileReader(const QString& fileName);
 	void ReadFile(const QString& fileName, FileReader* fileReader, bool clearDoc);
 

@@ -27,11 +27,19 @@ public:
 		if (event->type() == QEvent::FileOpen) {
 			QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
 			QString fileName = openEvent->file();
-			QString ext = QFileInfo(fileName).suffix();
-			if (ext.compare("feb", Qt::CaseInsensitive) == 0)
-				m_pWnd->OpenFEModel(fileName);
-			else if (ext.compare("prv", Qt::CaseInsensitive) == 0)
-				m_pWnd->OpenDocument(fileName);
+            // create a file reader
+            FileReader* fileReader = m_pWnd->CreateFileReader(fileName);
+            // make sure we have one
+            if (fileReader)
+            {
+                m_pWnd->ReadFile(fileName, fileReader, false);
+            }
+            else {
+                QString ext = QFileInfo(fileName).suffix();
+                if ((ext.compare("prv", Qt::CaseInsensitive) == 0) ||
+                    (ext.compare("fsprj", Qt::CaseInsensitive) == 0))
+                    m_pWnd->OpenDocument(fileName);
+            }
 		}
 
 		return QApplication::event(event);
