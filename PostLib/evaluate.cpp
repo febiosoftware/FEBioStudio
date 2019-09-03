@@ -1450,6 +1450,9 @@ bool FEModel::EvaluateElement(int n, int ntime, int nfield, float* data, float& 
 	FEElement_& el = mesh->Element(n);
 	int ne = el.Nodes();
 
+	// make sure the element is not eroded
+	if (el.IsEroded()) return false;
+
 	// the return value
 	val = 0.f;
 	for (int i=0; i<ne; ++i) data[i] = 0.f;
