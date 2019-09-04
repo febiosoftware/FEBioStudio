@@ -90,6 +90,12 @@ public:
 
 	//! Open a plot file
 	void OpenPlotFile(const QString& fileName);
+    
+    //! Process drag event
+    void dragEnterEvent(QDragEnterEvent *e);
+    
+    //! Process drop event
+    void dropEvent(QDropEvent *e);
 
 	// --- WINDOW UPDATE ---
 

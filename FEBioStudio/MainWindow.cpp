@@ -5,6 +5,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
 #include <QMessageBox>
+#include <QMimeData>
 #include <FSCore/FSObject.h>
 #include <MeshTools/PRVArchive.h>
 #include <MeshIO/FileReader.h>
@@ -94,6 +95,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		ui->actionFontBold->setIcon(QIcon(":/icons/font_bold_neg.png"));
 		ui->actionFontItalic->setIcon(QIcon(":/icons/font_italic_neg.png"));
 	}
+    
+    // allow drop events
+    setAcceptDrops(true);
 
 	// make sure the file viewer is visible
 	ui->showFileViewer();
@@ -282,6 +286,34 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	ui->addToRecentFEFiles(fileName);
 }
 
+//-----------------------------------------------------------------------------
+void CMainWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->acceptProposedAction();
+    }
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::dropEvent(QDropEvent *e)
+{
+    foreach (const QUrl &url, e->mimeData()->urls()) {
+        QString fileName = url.toLocalFile();
+        // create a file reader
+        FileReader* fileReader = CreateFileReader(fileName);
+        // make sure we have one
+        if (fileReader)
+        {
+            ReadFile(fileName, fileReader, false);
+        }
+        else {
+            QString ext = QFileInfo(fileName).suffix();
+            if ((ext.compare("prv", Qt::CaseInsensitive) == 0) ||
+                (ext.compare("fsprj", Qt::CaseInsensitive) == 0))
+                OpenDocument(fileName);
+        }
+    }
+}
 //-----------------------------------------------------------------------------
 void CMainWindow::on_recentFiles_triggered(QAction* action)
 {
