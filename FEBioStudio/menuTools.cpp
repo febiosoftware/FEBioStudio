@@ -59,7 +59,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 #endif
 
 	// this keeps track of the FEBio selection that was used last
-	static int lastFEBioIndex = 0;
+	static int lastLaunchConfigIndex = 0;
 
 	static int lastFEBioFileVersion = 0;
 
@@ -67,7 +67,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	CDlgRun dlg(this);
 	dlg.SetWorkingDirectory(jobPath);
 	dlg.SetJobName(jobName);
-	dlg.SetFEBioPath(ui->m_febio_path, ui->m_febio_info, lastFEBioIndex);
+	dlg.SetLaunchConfig(ui->m_launch_configs, lastLaunchConfigIndex);
 	dlg.Init();
 	if (dlg.exec())
 	{
@@ -91,11 +91,14 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		// see if a job with this name already exists
 		CFEBioJob* job = doc->FindFEBioJob(jobName.toStdString());
 
+		// update with the selected launch configuration index
+		lastLaunchConfigIndex = dlg.GetLaunchConfig();
+
 		// if not, create a new job
 		if (job == nullptr)
 		{
 			// create a new new job
-			job = new CFEBioJob(doc, jobName.toStdString(), jobPath.toStdString());
+			job = new CFEBioJob(doc, jobName.toStdString(), jobPath.toStdString(), ui->m_launch_configs.at(lastLaunchConfigIndex));
 			doc->AddFEbioJob(job);
 
 			// show it in the model viewer
@@ -104,16 +107,13 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		else
 		{
 			job->UpdateWorkingDirectory(jobPath.toStdString());
+			job->UpdateLaunchConfig(ui->m_launch_configs.at(lastLaunchConfigIndex));
 		}
 
-		// get the selected FEBio version
-		lastFEBioIndex = dlg.GetFEBioPath();
-
-		// get the selected FEBio file vesion
+		// get the selected FEBio file version
 		lastFEBioFileVersion = dlg.GetFEBioFileVersion();
 
-		// run the job
-		RunFEBioJob(job, lastFEBioIndex, lastFEBioFileVersion, dlg.WriteNodes(), dlg.CommandLine());
+		RunFEBioJob(job, lastFEBioFileVersion, dlg.WriteNodes(), dlg.CommandLine());
 	}
 }
 

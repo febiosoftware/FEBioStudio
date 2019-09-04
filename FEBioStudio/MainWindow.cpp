@@ -33,6 +33,10 @@
 #include <FSCore/FSDir.h>
 #include "DlgCheck.h"
 
+#ifdef HAS_SSH
+#include "SSHHandler.h"
+#endif
+
 extern GLColor col[];
 
 // create a dark style theme (work in progress)
@@ -770,8 +774,31 @@ void CMainWindow::writeSettings()
 
 	settings.setValue("defaultProjectFolder", ui->m_defaultProjectFolder);
 
-	settings.setValue("febioPaths", ui->m_febio_path);
-	settings.setValue("febioInfo", ui->m_febio_info);
+	// Create and save a list of launch config names
+	QStringList launch_config_names;
+	for(CLaunchConfig conf : ui->m_launch_configs)
+	{
+		launch_config_names.append(QString::fromStdString(conf.name));
+	}
+	settings.setValue("launchConfigNames", launch_config_names);
+
+	// Save launch configs
+	for(int i = 0; i < launch_config_names.count(); i++)
+	{
+		QString configName = "launchConfigs/" + launch_config_names[i];
+
+		settings.setValue(configName + "/type", ui->m_launch_configs[i].type);
+		settings.setValue(configName + "/path", ui->m_launch_configs[i].path.c_str());
+		settings.setValue(configName + "/server", ui->m_launch_configs[i].server.c_str());
+		settings.setValue(configName + "/port", ui->m_launch_configs[i].port);
+		settings.setValue(configName + "/userName", ui->m_launch_configs[i].userName.c_str());
+		settings.setValue(configName + "/remoteDir", ui->m_launch_configs[i].remoteDir.c_str());
+		settings.setValue(configName + "/jobName", ui->m_launch_configs[i].jobName.c_str());
+		settings.setValue(configName + "/walltime", ui->m_launch_configs[i].walltime.c_str());
+		settings.setValue(configName + "/procNum", ui->m_launch_configs[i].procNum);
+		settings.setValue(configName + "/ram", ui->m_launch_configs[i].ram);
+	}
+
 
 	QStringList folders = ui->fileViewer->FolderList();
 	settings.setValue("folders", folders);
@@ -799,8 +826,34 @@ void CMainWindow::readSettings()
 	settings.beginGroup("FolderSettings");
 	ui->currentPath = settings.value("currentPath", QDir::homePath()).toString();
 
-	ui->m_febio_path = settings.value("febioPaths", ui->m_febio_path).toStringList();
-	ui->m_febio_info = settings.value("febioInfo", ui->m_febio_info).toStringList();
+	QStringList launch_config_names;
+	launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
+
+	// Overwrite the default if they have launch configurations saved.
+	if(launch_config_names.count() > 0)
+	{
+		ui->m_launch_configs.clear();
+	}
+
+	for(QString conf : launch_config_names)
+	{
+		QString configName = "launchConfigs/" + conf;
+
+		ui->m_launch_configs.push_back(CLaunchConfig());
+
+		ui->m_launch_configs.back().name = conf.toStdString();
+		ui->m_launch_configs.back().type = settings.value(configName + "/type").toInt();
+		ui->m_launch_configs.back().path = settings.value(configName + "/path").toString().toStdString();
+		ui->m_launch_configs.back().server = settings.value(configName + "/server").toString().toStdString();
+		ui->m_launch_configs.back().port = settings.value(configName + "/port").toInt();
+		ui->m_launch_configs.back().userName = settings.value(configName + "/userName").toString().toStdString();
+		ui->m_launch_configs.back().remoteDir = settings.value(configName + "/remoteDir").toString().toStdString();
+		ui->m_launch_configs.back().jobName = settings.value(configName + "/jobName").toString().toStdString();
+		ui->m_launch_configs.back().walltime = settings.value(configName + "/walltime").toString().toStdString();
+		ui->m_launch_configs.back().procNum = settings.value(configName + "/procNum").toInt();
+		ui->m_launch_configs.back().ram = settings.value(configName + "/ram").toInt();
+
+	}
 
 	ui->m_defaultProjectFolder = settings.value("defaultProjectFolder", ui->m_defaultProjectFolder).toString();
 
@@ -1740,7 +1793,7 @@ void CMainWindow::UpdateFontToolbar()
 	else ui->pFontToolBar->setDisabled(true);
 }
 
-void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVersion, bool writeNotes, QString cmd)
+void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNotes, QString cmd)
 {
 	CDocument* doc = GetDocument();
 
@@ -1811,42 +1864,51 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVer
 	}
 	else fileName = filePath;
 
-	// create new process
-	ui->m_process = new QProcess(this);
-	ui->m_process->setProcessChannelMode(QProcess::MergedChannels);
-	if (cwd.empty() == false)
+	if(job->GetLaunchConfig()->type == LOCAL)
 	{
-		QString wd = QString::fromStdString(cwd);
-		AddLogEntry(QString("Setting current working directory to: %1\n").arg(wd));
-		ui->m_process->setWorkingDirectory(wd);
+		// create new process
+		ui->m_process = new QProcess(this);
+		ui->m_process->setProcessChannelMode(QProcess::MergedChannels);
+		if (cwd.empty() == false)
+		{
+			QString wd = QString::fromStdString(cwd);
+			AddLogEntry(QString("Setting current working directory to: %1\n").arg(wd));
+			ui->m_process->setWorkingDirectory(wd);
+		}
+		QString program = QString::fromStdString(job->GetLaunchConfig()->path);
+
+		// do string substitution
+		string sprogram = program.toStdString();
+		sprogram = FSDir::toAbsolutePath(sprogram);
+		program = QString::fromStdString(sprogram);
+
+		// extract the arguments
+		QStringList args = cmd.split(" ", QString::SkipEmptyParts);
+
+		args.replaceInStrings("$(Filename)", QString::fromStdString(fileName));
+
+		// get ready
+		AddLogEntry(QString("Starting FEBio: %1\n").arg(args.join(" ")));
+		QObject::connect(ui->m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onRunFinished(int, QProcess::ExitStatus)));
+		QObject::connect(ui->m_process, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+		QObject::connect(ui->m_process, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(onErrorOccurred(QProcess::ProcessError)));
+
+		// don't forget to reset the kill flag
+		ui->m_bkillProcess = false;
+
+		// go!
+		ui->m_process->start(program, args);
+
+		// show the output window
+		ui->logPanel->ShowOutput();
+	}
+	else
+	{
+#ifdef HAS_SSH
+		job->GetSSHHandler()->StartRemoteJob();
+#endif
 	}
 
-	QString program = ui->m_febio_path.at(febioVersion);
-
-	// do string substitution
-	string sprogram = program.toStdString();
-	sprogram = FSDir::toAbsolutePath(sprogram);
-	program = QString::fromStdString(sprogram);
-
-	// extract the arguments
-	QStringList args = cmd.split(" ", QString::SkipEmptyParts);
-
-	args.replaceInStrings("$(Filename)", QString::fromStdString(fileName));
-
-	// get ready 
-	AddLogEntry(QString("Starting FEBio: %1\n").arg(args.join(" ")));
-	QObject::connect(ui->m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onRunFinished(int, QProcess::ExitStatus)));
-	QObject::connect(ui->m_process, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-	QObject::connect(ui->m_process, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(onErrorOccurred(QProcess::ProcessError)));
-
-	// don't forget to reset the kill flag
-	ui->m_bkillProcess = false;
-
-	// go!
-	ui->m_process->start(program, args);
-
-	// show the output window
-	ui->logPanel->ShowOutput();
 }
 
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)

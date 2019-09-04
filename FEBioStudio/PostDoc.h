@@ -2,6 +2,7 @@
 #include <string>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GMeshObject.h>
+#include <FSCore/FSObject.h>
 
 class CGLView;
 

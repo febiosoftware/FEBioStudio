@@ -1,5 +1,7 @@
 #pragma once
 #include <QDialog>
+#include <vector>
+#include "LaunchConfig.h"
 
 namespace Ui {
 	class CDlgRun;
@@ -17,11 +19,11 @@ public:
 
 	void SetWorkingDirectory(const QString& wd);
 	void SetJobName(const QString& fn);
-	void SetFEBioPath(QStringList& path, QStringList& info, int ndefault = 0);
+	void SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault = 0);
 
 	QString GetWorkingDirectory();
 	QString GetJobName();
-	int GetFEBioPath();
+	int GetLaunchConfig();
 	int GetFEBioFileVersion();
 	bool WriteNodes();
 	bool UseSubDir();
@@ -37,4 +39,6 @@ protected slots:
 
 private:
 	Ui::CDlgRun*	ui;
+
+	void runEditPathDlg(bool edit);
 };

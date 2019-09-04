@@ -5,6 +5,9 @@
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
 #include <FSCore/FSDir.h>
+#ifdef HAS_SSH
+#include "SSHHandler.h"
+#endif
 
 //-----------------------------------------------------------------------------
 int CFEBioJob::m_count = 0;
@@ -24,9 +27,13 @@ CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 CFEBioJob::~CFEBioJob()
 {
 	delete m_postDoc;
+#ifdef HAS_SSH
+	delete m_sshHandler;
+#endif
 }
 
-CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory) : m_doc(doc)
+CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig)
+	: m_doc(doc), m_launchConfig(launchConfig)
 {
 	// set the job's name
 	SetName(jobName);
@@ -59,7 +66,31 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	// add the xplt extension
 	m_plotFile += "xplt";
 
+	// set default plot file name
+	m_logFile = m_fileName;
+	pos = m_logFile.rfind(".");
+	if (pos != std::string::npos)
+	{
+		// remove extension
+		m_logFile.erase(pos + 1);
+	}
+
+	// add the xplt extension
+	m_logFile += "log";
+
 	m_postDoc = nullptr;
+
+#ifdef HAS_SSH
+	if(launchConfig.type == LOCAL)
+	{
+		m_sshHandler = nullptr;
+	}
+	else
+	{
+		m_sshHandler = new CSSHHandler(this);
+	}
+#endif
+
 }
 
 void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
@@ -82,10 +113,48 @@ void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
 #else
 	m_plotFile = (dirName + "/" + xpltName).toStdString();
 #endif
-	
+
+	// update log file name
+	QString logName = QFileInfo(QString::fromStdString(m_logFile)).fileName();
+	m_plotFile = (dirName + "/" + logName).toStdString();
+
 	// TODO: Fix possible memory leak here.
 	m_postDoc = nullptr;
 }
+
+CLaunchConfig* CFEBioJob::GetLaunchConfig()
+{
+	return &m_launchConfig;
+}
+
+void CFEBioJob::UpdateLaunchConfig(CLaunchConfig launchConfig)
+{
+	m_launchConfig = launchConfig;
+
+#ifdef HAS_SSH
+	if(m_sshHandler)
+	{
+		delete m_sshHandler;
+	}
+
+	if(launchConfig.type == LOCAL)
+	{
+		m_sshHandler = nullptr;
+	}
+	else
+	{
+		m_sshHandler = new CSSHHandler(this);
+	}
+#endif
+
+}
+
+#ifdef HAS_SSH
+CSSHHandler* CFEBioJob::GetSSHHandler()
+{
+	return m_sshHandler;
+}
+#endif
 
 void CFEBioJob::SetStatus(JOB_STATUS status)
 {
@@ -115,6 +184,16 @@ void CFEBioJob::SetPlotFileName(const std::string& plotFile)
 std::string CFEBioJob::GetPlotFileName() const
 {
 	return m_plotFile;
+}
+
+void CFEBioJob::SetLogFileName(const std::string& logFile)
+{
+	m_logFile = logFile;
+}
+
+std::string CFEBioJob::GetLogFileName() const
+{
+	return m_logFile;
 }
 
 bool CFEBioJob::HasPostDoc()

@@ -389,10 +389,10 @@ public slots:
 	Post::CGLModel* GetCurrentModel();
 
 	// update the font toolbar
-	// (e.g. when a GL widget gets selected)s
+	// (e.g. when a GL widget gets selected)
 	void UpdateFontToolbar();
 
-	void RunFEBioJob(CFEBioJob* job, int febioVersion, int febioFileVersion, bool writeNotes, QString cmd);
+	void RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNotes, QString cmd);
 
 public:
 	QStringList GetRecentFileList();

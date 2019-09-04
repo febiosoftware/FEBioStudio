@@ -24,6 +24,8 @@
 #include "PostPanel.h"
 #include "InfoPanel.h"
 #include <QFontComboBox>
+#include <vector>
+#include "LaunchConfig.h"
 #include <QtCore/QStandardPaths>
 #include "MainTabBar.h"
 
@@ -136,8 +138,7 @@ public:
 	QAction* actionPlay;
 
 public:
-	QStringList		m_febio_path;
-	QStringList		m_febio_info;
+	vector<CLaunchConfig>		m_launch_configs;
 
 	QString		m_defaultProjectFolder;
 
@@ -155,12 +156,14 @@ public:
 public:
 	void setupUi(::CMainWindow* wnd)
 	{
+		m_launch_configs.push_back(CLaunchConfig());
+		m_launch_configs.back().type = LOCAL;
+		m_launch_configs.back().name = std::string("FEBio 2.9");
+
 #ifdef WIN32
-		m_febio_path.push_back("$(FEBioStudioDir)/febio2.exe");
-		m_febio_info.push_back("FEBio 2.9");
+		m_launch_configs.back().path = std::string("$(FEBioStudioDir)/febio2.exe");
 #else
-		m_febio_path.push_back("$(FEBioStudioDir)/febio2");
-		m_febio_info.push_back("FEBio 2.9"); 		
+		m_launch_configs.back().path = std::string("$(FEBioStudioDir)/febio2");
 #endif
 
 #ifdef WIN32

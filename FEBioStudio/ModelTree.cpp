@@ -21,6 +21,10 @@
 #include "MainWindow.h"
 #include <FSCore/FSDir.h>
 
+#ifdef HAS_SSH
+#include "SSHHandler.h"
+#endif
+
 class CObjectValidator
 {
 public:
@@ -198,6 +202,19 @@ public:
 		addProperty("Plot File:" , CProperty::String)->setFlags(CProperty::Visible);
 		addProperty("", CProperty::Action)->info = QString("Open in FEBio Studio");
 		addProperty("", CProperty::Action)->info = QString("Open in PostView");
+
+#ifdef HAS_SSH
+		if(job->GetLaunchConfig()->type != LOCAL)
+		{
+			addProperty("", CProperty::Action)->info = QString("Get Remote Files");
+		}
+
+		if(job->GetLaunchConfig()->type == PBS || job->GetLaunchConfig()->type == SLURM)
+		{
+			addProperty("", CProperty::Action)->info = QString("Get Queue Status");
+		}
+#endif
+
 	}
 
 	QVariant GetPropertyValue(int i) override
@@ -253,6 +270,13 @@ public:
 			// try to open the file
 			QDesktopServices::openUrl(QUrl(QString::fromStdString(plotFile)));
 		}
+#ifdef HAS_SSH
+		else if (i == 5)
+		{
+			// Copy remote files to local dir
+			m_job->GetSSHHandler()->GetJobFiles();
+		}
+#endif
 	}
 
 private:
