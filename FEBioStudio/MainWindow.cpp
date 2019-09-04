@@ -5,7 +5,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
 #include <QMessageBox>
-#include <QMimeData>
+#include <QtCore/QMimeData>
 #include <FSCore/FSObject.h>
 #include <MeshTools/PRVArchive.h>
 #include <MeshIO/FileReader.h>
