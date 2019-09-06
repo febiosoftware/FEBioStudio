@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[202];
-    char stringdata0[4698];
+    QByteArrayData data[201];
+    char stringdata0[4685];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -229,10 +229,9 @@ QT_MOC_LITERAL(194, 4608, 17), // "UpdateFontToolbar"
 QT_MOC_LITERAL(195, 4626, 11), // "RunFEBioJob"
 QT_MOC_LITERAL(196, 4638, 10), // "CFEBioJob*"
 QT_MOC_LITERAL(197, 4649, 3), // "job"
-QT_MOC_LITERAL(198, 4653, 12), // "febioVersion"
-QT_MOC_LITERAL(199, 4666, 16), // "febioFileVersion"
-QT_MOC_LITERAL(200, 4683, 10), // "writeNotes"
-QT_MOC_LITERAL(201, 4694, 3) // "cmd"
+QT_MOC_LITERAL(198, 4653, 16), // "febioFileVersion"
+QT_MOC_LITERAL(199, 4670, 10), // "writeNotes"
+QT_MOC_LITERAL(200, 4681, 3) // "cmd"
 
     },
     "CMainWindow\0on_actionNew_triggered\0\0"
@@ -378,8 +377,8 @@ QT_MOC_LITERAL(201, 4694, 3) // "cmd"
     "DeleteAllSteps\0GetGLView\0CGLView*\0"
     "changeViewMode\0View_Mode\0vm\0GetCurrentModel\0"
     "Post::CGLModel*\0UpdateFontToolbar\0"
-    "RunFEBioJob\0CFEBioJob*\0job\0febioVersion\0"
-    "febioFileVersion\0writeNotes\0cmd"
+    "RunFEBioJob\0CFEBioJob*\0job\0febioFileVersion\0"
+    "writeNotes\0cmd"
 };
 #undef QT_MOC_LITERAL
 
@@ -561,7 +560,7 @@ static const uint qt_meta_data_CMainWindow[] = {
      189,    1, 1100,    2, 0x0a /* Public */,
      192,    0, 1103,    2, 0x0a /* Public */,
      194,    0, 1104,    2, 0x0a /* Public */,
-     195,    5, 1105,    2, 0x0a /* Public */,
+     195,    4, 1105,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -728,7 +727,7 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void, 0x80000000 | 190,  191,
     0x80000000 | 193,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 196, QMetaType::Int, QMetaType::Int, QMetaType::Bool, QMetaType::QString,  197,  198,  199,  200,  201,
+    QMetaType::Void, 0x80000000 | 196, QMetaType::Int, QMetaType::Bool, QMetaType::QString,  197,  198,  199,  200,
 
        0        // eod
 };
@@ -905,7 +904,7 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 162: { Post::CGLModel* _r = _t->GetCurrentModel();
             if (_a[0]) *reinterpret_cast< Post::CGLModel**>(_a[0]) = std::move(_r); }  break;
         case 163: _t->UpdateFontToolbar(); break;
-        case 164: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3])),(*reinterpret_cast< bool(*)>(_a[4])),(*reinterpret_cast< QString(*)>(_a[5]))); break;
+        case 164: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])),(*reinterpret_cast< bool(*)>(_a[3])),(*reinterpret_cast< QString(*)>(_a[4]))); break;
         default: ;
         }
     }
