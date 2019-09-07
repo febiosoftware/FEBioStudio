@@ -12,6 +12,8 @@
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
 		D5248DDC231C114D00691871 /* DlgCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DDA231C114D00691871 /* DlgCheck.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
+		D5DC346C23233928002D7A13 /* moc_DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346923233928002D7A13 /* moc_DlgEditPath.cpp */; };
+		D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346A23233928002D7A13 /* SSHHandler.cpp */; };
 		D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290023197E8500C16BF7 /* libFSCore.a */; };
 		D5ED290323197E8500C16BF7 /* libGLLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290223197E8500C16BF7 /* libGLLib.a */; };
 		D5ED290523197E8500C16BF7 /* libLSDyna.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290423197E8500C16BF7 /* libLSDyna.a */; };
@@ -368,6 +370,10 @@
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D5DC346823233928002D7A13 /* DlgEditPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditPath.h; sourceTree = "<group>"; };
+		D5DC346923233928002D7A13 /* moc_DlgEditPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditPath.cpp; sourceTree = "<group>"; };
+		D5DC346A23233928002D7A13 /* SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHHandler.cpp; sourceTree = "<group>"; };
+		D5DC346B23233928002D7A13 /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
 		D5ED290023197E8500C16BF7 /* libFSCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libFSCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290223197E8500C16BF7 /* libGLLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libGLLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290423197E8500C16BF7 /* libLSDyna.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libLSDyna.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -942,6 +948,7 @@
 				D5F7D7DB22FA37C40089B08E /* DlgDetachSelection.h */,
 				D5F7D7E322FA37C40089B08E /* DlgEditOutput.cpp */,
 				D5F7D75F22FA37C40089B08E /* DlgEditOutput.h */,
+				D5DC346823233928002D7A13 /* DlgEditPath.h */,
 				D5F7D72822FA37C40089B08E /* DlgEditProject.cpp */,
 				D5F7D70722FA37C40089B08E /* DlgEditProject.h */,
 				D5F7D71322FA37C40089B08E /* DlgExportFEBio.cpp */,
@@ -1077,6 +1084,7 @@
 				D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */,
 				D5F7D79B22FA37C40089B08E /* moc_DlgCloneRevolve.cpp */,
 				D5F7D79222FA37C40089B08E /* moc_DlgEditOutput.cpp */,
+				D5DC346923233928002D7A13 /* moc_DlgEditPath.cpp */,
 				D5F7D7E422FA37C40089B08E /* moc_DlgEditProject.cpp */,
 				D5F7D80722FA37C40089B08E /* moc_DlgExportFEBio.cpp */,
 				D5F7D70222FA37C40089B08E /* moc_DlgFEBioOptimize.cpp */,
@@ -1167,6 +1175,8 @@
 				D5F7D72F22FA37C40089B08E /* Sketcher.h */,
 				D5F7D7D522FA37C40089B08E /* SphereFitTool.cpp */,
 				D5F7D70422FA37C40089B08E /* SphereFitTool.h */,
+				D5DC346A23233928002D7A13 /* SSHHandler.cpp */,
+				D5DC346B23233928002D7A13 /* SSHHandler.h */,
 				D5ED2A0123198CD700C16BF7 /* StatePanel.cpp */,
 				D5ED2A0223198CD700C16BF7 /* StatePanel.h */,
 				D5F7D80822FA37C40089B08E /* StatsWindow.cpp */,
@@ -1379,6 +1389,7 @@
 				D5F7D8C022FA37C40089B08E /* GGrid.cpp in Sources */,
 				D5ED2A1323198CD900C16BF7 /* moc_MaterialPanel.cpp in Sources */,
 				D5F7D84122FA37C40089B08E /* DlgAddIC.cpp in Sources */,
+				D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */,
 				D5F7D87E22FA37C40089B08E /* PropertyListForm.cpp in Sources */,
 				D5F7D83522FA37C40089B08E /* moc_SummaryWindow.cpp in Sources */,
 				D5F7D88022FA37C40089B08E /* GLCursor.cpp in Sources */,
@@ -1477,6 +1488,7 @@
 				D5F7D8C122FA37C40089B08E /* DlgCloneGrid.cpp in Sources */,
 				D5F7D83F22FA37C40089B08E /* moc_ModelPropsPanel.cpp in Sources */,
 				D5F7D8AE22FA37C40089B08E /* GLControlBar.cpp in Sources */,
+				D5DC346C23233928002D7A13 /* moc_DlgEditPath.cpp in Sources */,
 				D5F7D8B222FA37C40089B08E /* moc_DlgLameConvertor.cpp in Sources */,
 				D5F7D8BD22FA37C40089B08E /* moc_DlgExportFEBio.cpp in Sources */,
 				D5F7D8A822FA37C40089B08E /* ModelViewer.cpp in Sources */,
