@@ -110,6 +110,7 @@
 #define FE_INCOMP_NEO_HOOKEAN			60	// new in 2.2
 #define FE_HOLZAPFEL_UC					61
 #define FE_POROUS_NEO_HOOKEAN           62
+#define FE_NATURAL_NEO_HOOKEAN          63
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -281,6 +282,20 @@ public:
 	FENeoHookean();
 
 	DECLARE_REGISTERED(FENeoHookean);
+};
+
+//-----------------------------------------------------------------------------
+// Natural Neo-Hookean
+//
+class FENaturalNeoHookean : public FEMaterial
+{
+public:
+    enum { MP_DENSITY, MP_G, MP_K };
+    
+public:
+    FENaturalNeoHookean();
+    
+    DECLARE_REGISTERED(FENaturalNeoHookean);
 };
 
 //-----------------------------------------------------------------------------

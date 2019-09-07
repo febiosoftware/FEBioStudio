@@ -70,6 +70,7 @@ CFileViewer::CFileViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), 
 	// build the filter list
 	// Make sure this list matches the one in CMainWindow::on_actionOpen_triggered()
 	// TODO: Can I somehow ensure that this is the case ?
+    m_filters.push_back(pair<QString, QString>("FEBio Studio Projects (*.fsprj)", "*.fsprj"));
 	m_filters.push_back(pair<QString, QString>("PreView files (*.prv)", "*.prv"));
 
 	// add filters to drop down
@@ -85,6 +86,7 @@ CFileViewer::CFileViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), 
 	m_fileSystem->setRootPath("C:\\");
 	QStringList flt;
 	flt << m_filters[0].second;
+    flt << m_filters[1].second;
 	m_fileSystem->setNameFilters(flt);
 	m_fileSystem->setNameFilterDisables(false);
 

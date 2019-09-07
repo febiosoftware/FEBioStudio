@@ -53,6 +53,19 @@ FENeoHookean::FENeoHookean() : FEMaterial(FE_NEO_HOOKEAN)
 }
 
 //////////////////////////////////////////////////////////////////////
+// FENaturalNeoHookean - natural neo-hookean elasticity
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FENaturalNeoHookean, MODULE_MECH, FE_NATURAL_NEO_HOOKEAN, FE_MAT_ELASTIC, "natural neo-Hookean", MaterialFlags::TOPLEVEL);
+
+FENaturalNeoHookean::FENaturalNeoHookean() : FEMaterial(FE_NATURAL_NEO_HOOKEAN)
+{
+    AddScienceParam(1, Param_DENSITY, "density", "density"        )->MakeVariable(true);
+    AddScienceParam(0, Param_STRESS ,       "G", "shear modulus"  )->MakeVariable(true);
+    AddScienceParam(0, Param_STRESS ,       "k", "bulk modulus"   )->MakeVariable(true);
+}
+
+//////////////////////////////////////////////////////////////////////
 // FEIncompNeoHookean - incompressible neo-hookean elasticity
 //////////////////////////////////////////////////////////////////////
 
@@ -61,8 +74,8 @@ REGISTER_MATERIAL(FEIncompNeoHookean, MODULE_MECH, FE_INCOMP_NEO_HOOKEAN, FE_MAT
 FEIncompNeoHookean::FEIncompNeoHookean() : FEMaterial(FE_INCOMP_NEO_HOOKEAN)
 {
 	AddScienceParam(1, Param_DENSITY, "density", "density");
-	AddScienceParam(0, Param_STRESS, "G", "Shear modulus");
-	AddScienceParam(0, Param_STRESS, "k", "Bulk modulus");
+	AddScienceParam(0, Param_STRESS, "G", "shear modulus");
+	AddScienceParam(0, Param_STRESS, "k", "bulk modulus");
 }
 
 //////////////////////////////////////////////////////////////////////
