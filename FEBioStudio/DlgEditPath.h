@@ -44,6 +44,14 @@ public:
 		launchType->addItem("Slurm Queue");
 		launchType->addItem("Custom Remote");
 #endif
+		server = nullptr;
+		port = nullptr;
+		userName = nullptr;
+		remoteDir = nullptr;
+		jobName = nullptr;
+		walltime = nullptr;
+		procNum = nullptr;
+		ram = nullptr;
 
 		form->addRow("Configuration name:", name = new QLineEdit);
 		form->addRow("FEBio executable:", path = new QLineEdit);
