@@ -236,14 +236,14 @@ void CDlgRun::runEditPathDlg(bool edit)
 		dlg.launchType->setCurrentIndex(ui->m_launch_configs->at(ui->m_last_index).type);
 		dlg.name->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).name));
 		dlg.path->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).path));
-		dlg.server->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).server));
-		dlg.port->setValue(ui->m_launch_configs->at(ui->m_last_index).port);
-		dlg.userName->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).userName));
-		dlg.remoteDir->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).remoteDir));
-		dlg.jobName->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).jobName));
-		dlg.walltime->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).walltime));
-		dlg.procNum->setValue(ui->m_launch_configs->at(ui->m_last_index).procNum);
-		dlg.ram->setValue(ui->m_launch_configs->at(ui->m_last_index).ram);
+		if (dlg.server) dlg.server->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).server));
+		if (dlg.port) dlg.port->setValue(ui->m_launch_configs->at(ui->m_last_index).port);
+		if (dlg.userName) dlg.userName->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).userName));
+		if (dlg.remoteDir) dlg.remoteDir->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).remoteDir));
+		if (dlg.jobName) dlg.jobName->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).jobName));
+		if (dlg.walltime) dlg.walltime->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).walltime));
+		if (dlg.procNum) dlg.procNum->setValue(ui->m_launch_configs->at(ui->m_last_index).procNum);
+		if (dlg.ram) dlg.ram->setValue(ui->m_launch_configs->at(ui->m_last_index).ram);
 	}
 
 	if (dlg.exec())

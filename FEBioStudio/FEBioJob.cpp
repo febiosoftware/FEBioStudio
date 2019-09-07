@@ -116,7 +116,11 @@ void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
 
 	// update log file name
 	QString logName = QFileInfo(QString::fromStdString(m_logFile)).fileName();
-	m_plotFile = (dirName + "/" + logName).toStdString();
+#ifdef WIN32
+	m_logFile = (dirName + "\\" + logName).toStdString();
+#else
+	m_logFile = (dirName + "/" + logName).toStdString();
+#endif
 
 	// TODO: Fix possible memory leak here.
 	m_postDoc = nullptr;

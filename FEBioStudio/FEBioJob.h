@@ -61,7 +61,7 @@ protected:
 private:
 	std::string		m_fileName;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name
-	std::string		m_logFile;	// the .xplt file name
+	std::string		m_logFile;	// the .log file name
 	int				m_status;	// return status
 	CLaunchConfig 	m_launchConfig;
 #ifdef HAS_SSH
