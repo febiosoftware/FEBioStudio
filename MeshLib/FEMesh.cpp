@@ -3981,7 +3981,7 @@ void FEMesh::ShowElements(vector<int>& elem, bool show)
 {
 	// show or hide all the elements
 	if (show)
-        for (int i : elem) Element(i).Show();
+        for (int i : elem) Element(i).Unhide();
 	else
         for (int i : elem) Element(i).Hide();
 

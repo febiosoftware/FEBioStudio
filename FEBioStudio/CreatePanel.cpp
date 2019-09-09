@@ -14,28 +14,28 @@
 #include <GeomLib/GOCCObject.h>
 
 //------------------------------------------------------------------------------------------------------------
-REGISTER_PREVIEW_CLASS2(GBox               , CLASS_OBJECT, "Box"            , ":/icons/box.png"          , 0);
-REGISTER_PREVIEW_CLASS2(GCylinder          , CLASS_OBJECT, "Cylinder "      , ":/icons/cylinder.png"     , 0);
-REGISTER_PREVIEW_CLASS2(GTube              , CLASS_OBJECT, "Tube"           , ":/icons/tube.png"         , 0);
-REGISTER_PREVIEW_CLASS2(GSphere            , CLASS_OBJECT, "Sphere"         , ":/icons/sphere.png"       , 0);
-REGISTER_PREVIEW_CLASS2(GCone              , CLASS_OBJECT, "Cone"           , ":/icons/cone.png"         , 0);
-REGISTER_PREVIEW_CLASS2(GTruncatedEllipsoid, CLASS_OBJECT, "Ellipsoid"      , ":/icons/ellipsoid.png"    , 0);
-REGISTER_PREVIEW_CLASS2(GTorus             , CLASS_OBJECT, "Torus"          , ":/icons/torus.png"        , 0);
-REGISTER_PREVIEW_CLASS2(GSlice             , CLASS_OBJECT, "Slice"          , ":/icons/slice.png"        , 0);
-REGISTER_PREVIEW_CLASS2(GSolidArc          , CLASS_OBJECT, "Solid Arc"      , ":/icons/solidarc.png"     , 0);
-REGISTER_PREVIEW_CLASS2(GHexagon           , CLASS_OBJECT, "Hexagon"        , ":/icons/hexagon.png"      , 0);
-REGISTER_PREVIEW_CLASS2(GQuartDogBone      , CLASS_OBJECT, "Dog bone"       , ":/icons/dogbone.png"      , 0);
-REGISTER_PREVIEW_CLASS2(GCylinderInBox     , CLASS_OBJECT, "Cylinder in Box", ":/icons/cylinderinbox.png", 0);
-REGISTER_PREVIEW_CLASS2(GSphereInBox       , CLASS_OBJECT, "Sphere in Box"  , ":/icons/sphereinbox.png"  , 0);
-REGISTER_PREVIEW_CLASS2(GHollowSphere      , CLASS_OBJECT, "Hollow Sphere"  , ":/icons/hollowsphere.png" , 0);
-REGISTER_PREVIEW_CLASS2(GThinTube          , CLASS_OBJECT, "Thin Tube"      , ":/icons/thintube.png"     , 0);
-REGISTER_PREVIEW_CLASS2(GPatch             , CLASS_OBJECT, "Patch"          , ":/icons/square.png"       , 0);
-REGISTER_PREVIEW_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/disc.png"         , 0);
-REGISTER_PREVIEW_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/ring.png"         , 0);
+REGISTER_CLASS2(GBox               , CLASS_OBJECT, "Box"            , ":/icons/box.png"          , 0);
+REGISTER_CLASS2(GCylinder          , CLASS_OBJECT, "Cylinder "      , ":/icons/cylinder.png"     , 0);
+REGISTER_CLASS2(GTube              , CLASS_OBJECT, "Tube"           , ":/icons/tube.png"         , 0);
+REGISTER_CLASS2(GSphere            , CLASS_OBJECT, "Sphere"         , ":/icons/sphere.png"       , 0);
+REGISTER_CLASS2(GCone              , CLASS_OBJECT, "Cone"           , ":/icons/cone.png"         , 0);
+REGISTER_CLASS2(GTruncatedEllipsoid, CLASS_OBJECT, "Ellipsoid"      , ":/icons/ellipsoid.png"    , 0);
+REGISTER_CLASS2(GTorus             , CLASS_OBJECT, "Torus"          , ":/icons/torus.png"        , 0);
+REGISTER_CLASS2(GSlice             , CLASS_OBJECT, "Slice"          , ":/icons/slice.png"        , 0);
+REGISTER_CLASS2(GSolidArc          , CLASS_OBJECT, "Solid Arc"      , ":/icons/solidarc.png"     , 0);
+REGISTER_CLASS2(GHexagon           , CLASS_OBJECT, "Hexagon"        , ":/icons/hexagon.png"      , 0);
+REGISTER_CLASS2(GQuartDogBone      , CLASS_OBJECT, "Dog bone"       , ":/icons/dogbone.png"      , 0);
+REGISTER_CLASS2(GCylinderInBox     , CLASS_OBJECT, "Cylinder in Box", ":/icons/cylinderinbox.png", 0);
+REGISTER_CLASS2(GSphereInBox       , CLASS_OBJECT, "Sphere in Box"  , ":/icons/sphereinbox.png"  , 0);
+REGISTER_CLASS2(GHollowSphere      , CLASS_OBJECT, "Hollow Sphere"  , ":/icons/hollowsphere.png" , 0);
+REGISTER_CLASS2(GThinTube          , CLASS_OBJECT, "Thin Tube"      , ":/icons/thintube.png"     , 0);
+REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "Patch"          , ":/icons/square.png"       , 0);
+REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/disc.png"         , 0);
+REGISTER_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/ring.png"         , 0);
 
 #ifdef HAS_OCC
-REGISTER_PREVIEW_CLASS2(GOCCBottle			, CLASS_OBJECT, "Bottle", ":/icons/bottle.png", 0);
-REGISTER_PREVIEW_CLASS2(GOCCBox             , CLASS_OBJECT, "Box"   , ":/icons/box.png", 0);
+REGISTER_CLASS2(GOCCBottle			, CLASS_OBJECT, "Bottle", ":/icons/bottle.png", 0);
+REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "Box"   , ":/icons/box.png", 0);
 #endif
 
 //------------------------------------------------------------------------------------------------------------

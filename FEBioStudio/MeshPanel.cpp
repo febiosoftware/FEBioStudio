@@ -128,30 +128,30 @@ void CDlgStartThread::threadFinished()
 
 //=============================================================================
 
-REGISTER_PREVIEW_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
-REGISTER_PREVIEW_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
-REGISTER_PREVIEW_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
-REGISTER_PREVIEW_CLASS(FEDiscardMesh          , CLASS_FEMODIFIER, "Discard Mesh"   , EDIT_MESH);
-REGISTER_PREVIEW_CLASS(FEMirrorMesh           , CLASS_FEMODIFIER, "Mirror"         , EDIT_MESH);
-REGISTER_PREVIEW_CLASS(FETetGenModifier       , CLASS_FEMODIFIER, "TetGen"         , EDIT_MESH);
-REGISTER_PREVIEW_CLASS(FEExtrudeFaces         , CLASS_FEMODIFIER, "Extrude Faces"  , EDIT_FACE);
-REGISTER_PREVIEW_CLASS(FERevolveFaces         , CLASS_FEMODIFIER, "Revolve Faces"  , EDIT_FACE);
-REGISTER_PREVIEW_CLASS(FEWeldNodes            , CLASS_FEMODIFIER, "Weld nodes"     , EDIT_MESH);
-REGISTER_PREVIEW_CLASS(FERefineMesh			  , CLASS_FEMODIFIER, "Refine Mesh"    , EDIT_MESH | EDIT_SAFE);
-REGISTER_PREVIEW_CLASS(FEConvertMesh		  , CLASS_FEMODIFIER, "Convert"        , EDIT_MESH | EDIT_SAFE);
-REGISTER_PREVIEW_CLASS(FEAddNode              , CLASS_FEMODIFIER, "Add Node"       , EDIT_MESH);
-REGISTER_PREVIEW_CLASS(FEInvertMesh           , CLASS_FEMODIFIER, "Invert"         , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
-REGISTER_PREVIEW_CLASS(FEDetachElements	      , CLASS_FEMODIFIER, "Detach"         , EDIT_ELEMENT);
-REGISTER_PREVIEW_CLASS(FEBoundaryLayerMesher  , CLASS_FEMODIFIER, "PostBL"         , EDIT_FACE | EDIT_SAFE);
-REGISTER_PREVIEW_CLASS(FESetShellThickness    , CLASS_FEMODIFIER, "Shell Thickness", EDIT_MESH | EDIT_ELEMENT);
-REGISTER_PREVIEW_CLASS(FESetFiberOrientation  , CLASS_FEMODIFIER, "Set Fibers"     , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
-REGISTER_PREVIEW_CLASS(FESetAxesOrientation   , CLASS_FEMODIFIER, "Set Axes"       , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
-REGISTER_PREVIEW_CLASS(FEAxesCurvature        , CLASS_FEMODIFIER, "Set Axes from Curvature" , EDIT_MESH | EDIT_ELEMENT | EDIT_FACE | EDIT_SAFE);
-REGISTER_PREVIEW_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
-REGISTER_PREVIEW_CLASS(FESelectElementsFromFaces, CLASS_FEMODIFIER, "Select Elems from Faces", EDIT_FACE | EDIT_SAFE);
-REGISTER_PREVIEW_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
+REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
+REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
+REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
+REGISTER_CLASS(FEDiscardMesh          , CLASS_FEMODIFIER, "Discard Mesh"   , EDIT_MESH);
+REGISTER_CLASS(FEMirrorMesh           , CLASS_FEMODIFIER, "Mirror"         , EDIT_MESH);
+REGISTER_CLASS(FETetGenModifier       , CLASS_FEMODIFIER, "TetGen"         , EDIT_MESH);
+REGISTER_CLASS(FEExtrudeFaces         , CLASS_FEMODIFIER, "Extrude Faces"  , EDIT_FACE);
+REGISTER_CLASS(FERevolveFaces         , CLASS_FEMODIFIER, "Revolve Faces"  , EDIT_FACE);
+REGISTER_CLASS(FEWeldNodes            , CLASS_FEMODIFIER, "Weld nodes"     , EDIT_MESH);
+REGISTER_CLASS(FERefineMesh			  , CLASS_FEMODIFIER, "Refine Mesh"    , EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(FEConvertMesh		  , CLASS_FEMODIFIER, "Convert"        , EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(FEAddNode              , CLASS_FEMODIFIER, "Add Node"       , EDIT_MESH);
+REGISTER_CLASS(FEInvertMesh           , CLASS_FEMODIFIER, "Invert"         , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
+REGISTER_CLASS(FEDetachElements	      , CLASS_FEMODIFIER, "Detach"         , EDIT_ELEMENT);
+REGISTER_CLASS(FEBoundaryLayerMesher  , CLASS_FEMODIFIER, "PostBL"         , EDIT_FACE | EDIT_SAFE);
+REGISTER_CLASS(FESetShellThickness    , CLASS_FEMODIFIER, "Shell Thickness", EDIT_MESH | EDIT_ELEMENT);
+REGISTER_CLASS(FESetFiberOrientation  , CLASS_FEMODIFIER, "Set Fibers"     , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
+REGISTER_CLASS(FESetAxesOrientation   , CLASS_FEMODIFIER, "Set Axes"       , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
+REGISTER_CLASS(FEAxesCurvature        , CLASS_FEMODIFIER, "Set Axes from Curvature" , EDIT_MESH | EDIT_ELEMENT | EDIT_FACE | EDIT_SAFE);
+REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
+REGISTER_CLASS(FESelectElementsFromFaces, CLASS_FEMODIFIER, "Select Elems from Faces", EDIT_FACE | EDIT_SAFE);
+REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 #ifdef HAS_MMG
-REGISTER_PREVIEW_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Refine", EDIT_MESH);
+REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Refine", EDIT_MESH);
 #endif
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)

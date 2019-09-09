@@ -17,14 +17,14 @@
 #include <QMessageBox>
 #include "Command.h"
 
-REGISTER_PREVIEW_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
-REGISTER_PREVIEW_CLASS(FESurfacePartitionSelection, CLASS_SURFACE_MODIFIER, "Partition"    , 0xFF);
-REGISTER_PREVIEW_CLASS(FESmoothSurfaceMesh        , CLASS_SURFACE_MODIFIER, "Smooth"       , 0xFF);
-REGISTER_PREVIEW_CLASS(FEEdgeCollapse             , CLASS_SURFACE_MODIFIER, "Edge Collapse", 0xFF);
-REGISTER_PREVIEW_CLASS(FEFixMesh                  , CLASS_SURFACE_MODIFIER, "Fix Mesh"     , 0xFF);
-REGISTER_PREVIEW_CLASS(FECVDDecimationModifier    , CLASS_SURFACE_MODIFIER, "Decimate"     , 0xFF);
-REGISTER_PREVIEW_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"   , 0xFF);
-REGISTER_PREVIEW_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);
+REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
+REGISTER_CLASS(FESurfacePartitionSelection, CLASS_SURFACE_MODIFIER, "Partition"    , 0xFF);
+REGISTER_CLASS(FESmoothSurfaceMesh        , CLASS_SURFACE_MODIFIER, "Smooth"       , 0xFF);
+REGISTER_CLASS(FEEdgeCollapse             , CLASS_SURFACE_MODIFIER, "Edge Collapse", 0xFF);
+REGISTER_CLASS(FEFixMesh                  , CLASS_SURFACE_MODIFIER, "Fix Mesh"     , 0xFF);
+REGISTER_CLASS(FECVDDecimationModifier    , CLASS_SURFACE_MODIFIER, "Decimate"     , 0xFF);
+REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"   , 0xFF);
+REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);
 
 class CPartitionProps : public CDataPropertyList
 {

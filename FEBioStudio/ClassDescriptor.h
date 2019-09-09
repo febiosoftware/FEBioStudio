@@ -92,8 +92,8 @@ public:
 
 //-----------------------------------------------------------------------------
 // Helper macro for registering a class with the framework.
-#define REGISTER_PREVIEW_CLASS(theClass, theType, theName, theFlag) \
+#define REGISTER_CLASS(theClass, theType, theName, theFlag) \
 	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theName, 0, theFlag));
 
-#define REGISTER_PREVIEW_CLASS2(theClass, theType, theName, theResource, theFlag) \
+#define REGISTER_CLASS2(theClass, theType, theName, theResource, theFlag) \
 	RegisterPrvClass _##theClass##_rc(new ClassDescriptor_T<theClass>(theType, theName, theResource, theFlag));
