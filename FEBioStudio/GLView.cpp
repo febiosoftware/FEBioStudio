@@ -3728,16 +3728,21 @@ void CGLView::SelectNodes(int x, int y)
 			for (int j=0; j<nodes; ++j)
 			{
 				GNode& node = *po->Node(j);
-				vec3d r = node.Position();
 
-				vec3d p = transform.WorldToScreen(r);
-
-				if (rt.contains(QPoint((int)p.x, (int)p.y)))
+				// don't select shape nodes
+				if (node.Type() != NODE_SHAPE)
 				{
-					if ((closestNode == 0) || (p.z < zmin))
+					vec3d r = node.Position();
+
+					vec3d p = transform.WorldToScreen(r);
+
+					if (rt.contains(QPoint((int)p.x, (int)p.y)))
 					{
-						closestNode = &node;
-						zmin = p.z;
+						if ((closestNode == 0) || (p.z < zmin))
+						{
+							closestNode = &node;
+							zmin = p.z;
+						}
 					}
 				}
 			}
@@ -4624,12 +4629,16 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 			{
 				GNode* node = po->Node(j);
 
-				vec3d r = node->Position();
-				vec3d p = transform.WorldToScreen(r);
-
-				if (region.IsInside((int)p.x, (int)p.y))
+				// don't select shape nodes
+				if (node->Type() != NODE_SHAPE)
 				{
-					selectedNodes.push_back(node->GetID());
+					vec3d r = node->Position();
+					vec3d p = transform.WorldToScreen(r);
+
+					if (region.IsInside((int)p.x, (int)p.y))
+					{
+						selectedNodes.push_back(node->GetID());
+					}
 				}
 			}
 		}
