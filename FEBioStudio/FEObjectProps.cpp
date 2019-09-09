@@ -11,9 +11,10 @@
 #include <FEMLib/FEDataMap.h>
 
 //=======================================================================================
-FEObjectProps::FEObjectProps(FSObject* po, FEModel* fem) : CObjectProps(po)
+FEObjectProps::FEObjectProps(FSObject* po, FEModel* fem) : CObjectProps(nullptr)
 {
 	m_fem = fem;
+	if (po) BuildParamList(po);
 }
 
 QStringList FEObjectProps::GetEnumValues(const char* ch)
