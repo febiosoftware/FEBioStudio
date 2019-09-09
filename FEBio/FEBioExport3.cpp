@@ -960,7 +960,7 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 
 	if (ops.nmatfmt != 0)
 	{
-		m_xml.add_leaf("symmetric_biphasic", (ops.nmatfmt == 1 ? 1 : 0));
+		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1018,7 +1018,7 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 
 	if (ops.nmatfmt != 0)
 	{
-		m_xml.add_leaf("symmetric_biphasic", (ops.nmatfmt == 1 ? 1 : 0));
+		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
