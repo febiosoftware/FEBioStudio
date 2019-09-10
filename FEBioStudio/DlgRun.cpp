@@ -233,85 +233,34 @@ void CDlgRun::runEditPathDlg(bool edit)
 
 	if(edit)
 	{
-		dlg.launchType->setCurrentIndex(ui->m_launch_configs->at(ui->m_last_index).type);
-		dlg.name->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).name));
-		dlg.path->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).path));
-		if (dlg.server) dlg.server->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).server));
-		if (dlg.port) dlg.port->setValue(ui->m_launch_configs->at(ui->m_last_index).port);
-		if (dlg.userName) dlg.userName->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).userName));
-		if (dlg.remoteDir) dlg.remoteDir->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).remoteDir));
-		if (dlg.jobName) dlg.jobName->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).jobName));
-		if (dlg.walltime) dlg.walltime->setText(QString::fromStdString(ui->m_launch_configs->at(ui->m_last_index).walltime));
-		if (dlg.procNum) dlg.procNum->setValue(ui->m_launch_configs->at(ui->m_last_index).procNum);
-		if (dlg.ram) dlg.ram->setValue(ui->m_launch_configs->at(ui->m_last_index).ram);
+		dlg.SetLaunchConfig(ui->m_launch_configs->at(ui->m_last_index));
 	}
 
 	if (dlg.exec())
 	{
-		QString path = dlg.path->text();
-		if (path.isEmpty())
+		// Get the new launchConfig from the dialog
+		CLaunchConfig launchConfig = dlg.GetLaunchConfig();
+		QString name = QString::fromStdString(launchConfig.name);
+
+		// If we're editing
+		if(edit)
 		{
-			QMessageBox::critical(this, "FEBio Studio", "Cannot add empty path.");
+			ui->m_launch_configs->at(ui->m_last_index) = launchConfig;
+
+			// change the config's name at m_last_index and set to the combobox to m_last_index
+			ui->launchConfig->setItemText(ui->m_last_index, name);
 			ui->launchConfig->setCurrentIndex(ui->m_last_index);
 		}
+		// Otherwise create a new config
 		else
 		{
-			QString name = dlg.name->text();
-			if (name.isEmpty()) name = path;
+			ui->m_launch_configs->push_back(launchConfig);
 
-			int configIndex;
-			// If we're editing, then get the index at m_last_index
-			if(edit)
-			{
-				configIndex = ui->m_last_index;
-			}
-			// Otherwise create a new config, and get its index
-			else
-			{
-				ui->m_launch_configs->push_back(CLaunchConfig());
-				configIndex = ui->m_launch_configs->size() - 1;
-			}
-
-			// Get the launch config parameters based on the config type
-			int type = dlg.launchType->currentIndex();
-			ui->m_launch_configs->at(configIndex).type = type;
-			ui->m_launch_configs->at(configIndex).name = dlg.name->text().toStdString();
-			ui->m_launch_configs->at(configIndex).path = dlg.path->text().toStdString();
-
-			if(type >= REMOTE)
-			{
-				ui->m_launch_configs->at(configIndex).server = dlg.server->text().toStdString();
-				ui->m_launch_configs->at(configIndex).port = dlg.port->value();
-				ui->m_launch_configs->at(configIndex).userName = dlg.userName->text().toStdString();
-				ui->m_launch_configs->at(configIndex).remoteDir = dlg.remoteDir->text().toStdString();
-			}
-
-			if(type == PBS || type == SLURM)
-			{
-				ui->m_launch_configs->at(configIndex).jobName = dlg.jobName->text().toStdString();
-				ui->m_launch_configs->at(configIndex).walltime = dlg.walltime->text().toStdString();
-				ui->m_launch_configs->at(configIndex).procNum = dlg.procNum->value();
-				ui->m_launch_configs->at(configIndex).ram = dlg.ram->value();
-			}
-
-
-			// If we're editing, change the config's name at m_last_index and set to the combobox to m_last_index
-			if(edit)
-			{
-				ui->launchConfig->setItemText(ui->m_last_index, name);
-
-				ui->launchConfig->setCurrentIndex(ui->m_last_index);
-			}
-			// Otherwise, add a new config to the combobox
-			else
-			{
-
-				ui->launchConfig->blockSignals(true);
-				ui->launchConfig->insertItem(N - 3, name);
-				ui->launchConfig->blockSignals(false);
-				ui->launchConfig->setCurrentIndex(N - 3);
-			}
-
+			// Add a new config to the combobox
+			ui->launchConfig->blockSignals(true);
+			ui->launchConfig->insertItem(N - 3, name);
+			ui->launchConfig->blockSignals(false);
+			ui->launchConfig->setCurrentIndex(N - 3);
 		}
 	}
 	else

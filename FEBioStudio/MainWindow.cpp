@@ -32,6 +32,7 @@
 #include <PostLib/ColorMap.h>
 #include <FSCore/FSDir.h>
 #include "DlgCheck.h"
+#include "Logger.h"
 
 #ifdef HAS_SSH
 #include "SSHHandler.h"
@@ -110,6 +111,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	TemplateManager::Init();
 
 	UpdateModel();
+
+	// Instantiate Logger singleton
+	CLogger::Instantiate(this);
 }
 
 //-----------------------------------------------------------------------------
