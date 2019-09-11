@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEMesh.h"
-using namespace Post;
+
 //-----------------------------------------------------------------------------
 // Integration rule for quads
 // first index is integration point, second is node
@@ -84,7 +84,7 @@ const float G8t[8][8] = {
 
 //-----------------------------------------------------------------------------
 // Calculate integral over face
-double FEMeshBase::IntegrateQuad(vec3d* r, float* v)
+double Post::FEMeshBase::IntegrateQuad(vec3d* r, float* v)
 {
 	double I = 0.f;
 	for (int i = 0; i<4; ++i)
@@ -111,7 +111,7 @@ double FEMeshBase::IntegrateQuad(vec3d* r, float* v)
 }
 //-----------------------------------------------------------------------------
 // Calculate integral over face
-float FEMeshBase::IntegrateQuad(vec3f* r, float* v)
+float Post::FEMeshBase::IntegrateQuad(vec3f* r, float* v)
 {
 	int i, j;
 
@@ -141,7 +141,7 @@ float FEMeshBase::IntegrateQuad(vec3f* r, float* v)
 
 //-----------------------------------------------------------------------------
 // Calculate integral over element
-float FEMeshBase::IntegrateHex(vec3f* r, float *v)
+float Post::FEMeshBase::IntegrateHex(vec3f* r, float *v)
 {
 	int i, j;
 	float I = 0.f;

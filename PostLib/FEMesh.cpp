@@ -6,26 +6,24 @@
 #include "FEMesh.h"
 #include <stack>
 
-using namespace Post;
-
 //=============================================================================
 
 //-----------------------------------------------------------------------------
 // Constructor
-FEMeshBase::FEMeshBase()
+Post::FEMeshBase::FEMeshBase()
 {
 }
 
 //-----------------------------------------------------------------------------
 // Destructor
-FEMeshBase::~FEMeshBase()
+Post::FEMeshBase::~FEMeshBase()
 {
 	CleanUp();
 }
 
 //-----------------------------------------------------------------------------
 // clean all depdendant structures
-void FEMeshBase::CleanUp()
+void Post::FEMeshBase::CleanUp()
 {
 	m_NEL.Clear();
 	m_NFL.Clear();
@@ -38,7 +36,7 @@ void FEMeshBase::CleanUp()
 
 //-----------------------------------------------------------------------------
 // clear everything
-void FEMeshBase::ClearAll()
+void Post::FEMeshBase::ClearAll()
 {
 	CleanUp();
 	m_Node.clear();
@@ -48,8 +46,14 @@ void FEMeshBase::ClearAll()
 }
 
 //-----------------------------------------------------------------------------
+void Post::FEMeshBase::UpdateMeshData()
+{
+
+}
+
+//-----------------------------------------------------------------------------
 // Clear all the domains
-void FEMeshBase::ClearDomains()
+void Post::FEMeshBase::ClearDomains()
 {
 	for (int i=0; i<(int) m_Dom.size(); ++i) delete m_Dom[i];
 	m_Dom.clear();
@@ -57,7 +61,7 @@ void FEMeshBase::ClearDomains()
 
 //-----------------------------------------------------------------------------
 // Clear all the parts
-void FEMeshBase::ClearParts()
+void Post::FEMeshBase::ClearParts()
 {
 	for (int i=0; i<(int) m_Part.size(); ++i) delete m_Part[i];
 	m_Part.clear();
@@ -65,7 +69,7 @@ void FEMeshBase::ClearParts()
 
 //-----------------------------------------------------------------------------
 // Clear all the surfaces
-void FEMeshBase::ClearSurfaces()
+void Post::FEMeshBase::ClearSurfaces()
 {
 	for (int i=0; i<(int) m_Surf.size(); ++i) delete m_Surf[i];
 	m_Surf.clear();
@@ -73,7 +77,7 @@ void FEMeshBase::ClearSurfaces()
 
 //-----------------------------------------------------------------------------
 // Clear all the node sets
-void FEMeshBase::ClearNodeSets()
+void Post::FEMeshBase::ClearNodeSets()
 {
 	for (int i=0; i<(int) m_NSet.size(); ++i) delete m_NSet[i];
 	m_NSet.clear();
@@ -81,7 +85,7 @@ void FEMeshBase::ClearNodeSets()
 
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::Create(int nodes, int elems)
+void Post::FEMeshBase::Create(int nodes, int elems)
 {
 	if (nodes)
 	{
@@ -109,7 +113,7 @@ void FEMeshBase::Create(int nodes, int elems)
 
 //-----------------------------------------------------------------------------
 //! Is an element exterior or not
-bool FEMeshBase::IsExterior(FEElement_* pe) const
+bool Post::FEMeshBase::IsExterior(FEElement_* pe) const
 {
 	// make sure the element is visible
 	if (pe->IsVisible() == false) return false;
@@ -132,7 +136,7 @@ bool FEMeshBase::IsExterior(FEElement_* pe) const
 
 //-----------------------------------------------------------------------------
 // Count nr of beam elements
-int FEMeshBase::BeamElements()
+int Post::FEMeshBase::BeamElements()
 {
 	int n = 0;
 	for (int i=0; i<Elements(); ++i)
@@ -145,7 +149,7 @@ int FEMeshBase::BeamElements()
 
 //-----------------------------------------------------------------------------
 // Count nr of shell elements
-int FEMeshBase::ShellElements()
+int Post::FEMeshBase::ShellElements()
 {
 	int n = 0;
 	for (int i=0; i<Elements(); ++i)
@@ -158,7 +162,7 @@ int FEMeshBase::ShellElements()
 
 //-----------------------------------------------------------------------------
 // Count nr of solid elements
-int FEMeshBase::SolidElements()
+int Post::FEMeshBase::SolidElements()
 {
 	int n = 0;
 	for (int i=0; i<Elements(); ++i)
@@ -171,7 +175,7 @@ int FEMeshBase::SolidElements()
 
 //-----------------------------------------------------------------------------
 // Find the element neighbours
-void FEMeshBase::FindNeighbours()
+void Post::FEMeshBase::FindNeighbours()
 {
 	// Build the node-element list
 	m_NEL.Build(this);
@@ -267,7 +271,7 @@ void FEMeshBase::FindNeighbours()
 
 //-----------------------------------------------------------------------------
 // Build the parts
-void FEMeshBase::UpdateDomains()
+void Post::FEMeshBase::UpdateDomains()
 {
 	ClearDomains();
 
@@ -318,7 +322,7 @@ void FEMeshBase::UpdateDomains()
 //-----------------------------------------------------------------------------
 // Build the edges. 
 // Currently, only edges from outside facets are created
-void FEMeshBase::BuildEdges()
+void Post::FEMeshBase::BuildEdges()
 {
 	int NF = Faces();
 	for (int i=0; i<NF; ++i) Face(i).m_ntag = i;
@@ -344,7 +348,7 @@ void FEMeshBase::BuildEdges()
 
 //-----------------------------------------------------------------------------
 // Build the FE faces. Note that we only create exterior faces
-void FEMeshBase::BuildFaces()
+void Post::FEMeshBase::BuildFaces()
 {
 	// make sure we only call this once
 	assert(m_Face.empty());
@@ -444,7 +448,7 @@ void FEMeshBase::BuildFaces()
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FindFaceNeighbors()
+void Post::FEMeshBase::FindFaceNeighbors()
 {
 	int nodes = Nodes();
 	int faces = Faces();
@@ -530,7 +534,7 @@ void FEMeshBase::FindFaceNeighbors()
 
 //-----------------------------------------------------------------------------
 // Update the FE data
-void FEMeshBase::Update()
+void Post::FEMeshBase::Update()
 {
 	// find the element's neighbours
 	if (m_NEL.Empty()) FindNeighbours();
@@ -549,7 +553,7 @@ void FEMeshBase::Update()
 	UpdateDomains();
 
 	// Calculate SG and normals
-	AutoSmooth(60.*PI / 180.0);
+	AutoSmooth(60.0);
 
 	// now we can figure out which nodes are interior and which are exterior
 	UpdateNodes();
@@ -557,7 +561,7 @@ void FEMeshBase::Update()
 
 //-----------------------------------------------------------------------------
 // Find the interior and exterior nodes
-void FEMeshBase::UpdateNodes()
+void Post::FEMeshBase::UpdateNodes()
 {
 	int i, j;
 
@@ -580,243 +584,6 @@ void FEMeshBase::UpdateNodes()
 }
 
 //-----------------------------------------------------------------------------
-// Partition the surface depending on a smoothing tolerance. Face neighbours
-// are only set when the faces belong to the same smoothing group.
-void FEMeshBase::AutoSmooth(double angleRadians)
-{
-	int faces = Faces();
-	for (int i=0; i<faces; ++i)
-	{
-		FEFace& f = m_Face[i];
-
-		// calculate the face normals
-		vec3f& r0 = Node(f.n[0]).m_r0;
-		vec3f& r1 = Node(f.n[1]).m_r0;
-		vec3f& r2 = Node(f.n[2]).m_r0;
-
-		f.m_fn = (r1 - r0)^(r2 - r0);
-		f.m_fn.Normalize();
-		f.m_sid = 0;
-	}
-
-	// smoothing threshold
-	double eps = cos(angleRadians);
-
-	//calculate the node normals
-	int nodes = Nodes();
-	vector<vec3f> pnorm(nodes);
-	for (int i=0; i<nodes; ++i) pnorm[i] = vec3f(0,0,0);
-
-	for (int i=0; i<faces; ++i)
-	{
-		FEFace& f = m_Face[i];
-		f.m_ntag = -1;
-	}
-
-	vector<FEFace*> F(faces);
-	int NF = 0;
-
-	// unprocessed face list
-	int ui = 0;
-
-	stack<FEFace*> stack;
-	int nsg = 0;
-	FEFace* pf = 0;
-	do
-	{
-		if (stack.empty())
-		{
-			if (nsg > 0)
-			{
-				// assign node normals
-				for (int i=0; i<NF; ++i)
-				{
-					FEFace& f = *F[i];
-					assert(f.m_ntag == nsg);
-					int nf = f.Nodes();
-					for (int k=0; k<nf; ++k) f.m_nn[k] = pnorm[ f.n[k] ];
-				}
-
-				// clear normals
-				for (int i=0; i<NF; ++i)
-				{
-					FEFace& f = *F[i];
-					int nf = f.Nodes();
-					for (int k=0; k<nf; ++k) pnorm[ f.n[k] ] = vec3f(0,0,0);
-				}
-			}
-
-			// find an unprocessed face
-			pf = 0;
-			for (int i = ui; i<faces; ++i, ++ui) if (Face(i).m_ntag == -1) { pf = &m_Face[i]; break; }
-
-			if (pf) stack.push(pf);
-			++nsg;
-			NF = 0;
-		}
-		else
-		{
-			// pop a face
-			pf = stack.top(); stack.pop();
-
-			// mark as processed
-			pf->m_ntag = nsg;
-			pf->m_sid = nsg;
-			F[NF++] = pf;
-
-			int nf = pf->Nodes();
-			int n = -1;
-			if ((nf==3)||(nf==6)||(nf==7)||(n==10)) n = 3;
-			if ((nf==4)||(nf==8)||(nf==9)) n = 4;
-
-			// add face normal to node normal
-			for (int i=0; i<nf; ++i) pnorm[pf->n[i]] += pf->m_fn;
-
-			// push unprocessed neighbours
-			for (int i=0; i<n; ++i)
-			{
-				if (pf->m_nbr[i] >= 0)
-				{
-					FEFace& f2 = m_Face[pf->m_nbr[i]];
-					if ((f2.m_ntag == -1) && (pf->m_fn*f2.m_fn > eps))
-					{
-						f2.m_ntag = -2;
-						stack.push(&f2);
-					}
-				}
-			}
-		}
-	}
-	while (pf);
-
-	// normalize face normals
-	for (int i=0; i<faces; ++i)
-	{
-		FEFace& f = m_Face[i];
-		int nf = f.Nodes();
-		for (int k=0; k<nf; ++k) f.m_nn[k].Normalize();
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Update the face normals. If bsmooth, the smoothing groups are used
-// to create a smoothed surface representation.
-void FEMeshBase::UpdateNormals(bool bsmooth)
-{
-	int faces = Faces();
-	int nodes = Nodes();
-
-	// calculate face normals
-	for (int i=0; i<faces; ++i)
-	{
-		FEFace& face = Face(i);
-
-		vec3f& r1 = Node(face.n[0]).m_rt;
-		vec3f& r2 = Node(face.n[1]).m_rt;
-		vec3f& r3 = Node(face.n[2]).m_rt;
-
-		face.m_fn = (r2-r1)^(r3-r1);
-		face.m_fn.Normalize();
-	}
-
-	for (int i=0; i<faces; ++i)
-	{
-		FEFace& f = m_Face[i];
-		f.m_ntag = -1;
-	}
-
-	// calculate node normals based on smoothing groups
-	if (bsmooth)
-	{
-		vector<FEFace*> stack(2*faces);
-		int ns = 0;
-
-		int nsg = 0;
-		vector<vec3f> nt(nodes);
-		vector<int> ntag; ntag.assign(nodes, 0);
-		vector<FEFace*> faceList(faces);
-		vector<int> nodeList(nodes);
-		int nfl = 0, nnl = 0;
-		for (int i=0; i<faces; ++i)
-		{
-			// find the next unprocessed face
-			FEFace* pf = &m_Face[i];
-			if (pf->m_ntag == -1)
-			{
-				// push this face on the stack
-				stack[ns++] = pf;
-
-				// find all connected faces
-				nfl = 0;
-				nnl = 0;
-				while (ns > 0)
-				{
-					// pop a face
-					pf = stack[--ns];
-					faceList[nfl++] = pf;
-
-					// mark as processed
-					pf->m_ntag = nsg;
-
-					int fn = pf->Nodes();
-					int fe = pf->Edges();
-
-					// add face normal to node normal
-					for (int j=0; j<fn; ++j)
-					{
-						int nj = pf->n[j];
-						nt[nj] += pf->m_fn;
-						if (ntag[nj] != 1)
-						{
-							ntag[nj] = 1;
-							nodeList[nnl++] = nj;
-						}
-					}
-
-					// push unprocessed neighbors
-					FEFace* pf2;
-					for (int j=0; j<fe; ++j)
-					{	
-						if (pf->m_nbr[j] >= 0)
-						{
-							pf2 = &m_Face[pf->m_nbr[j]];
-							if ((pf2->m_ntag == -1) && (pf2->m_sid == pf->m_sid))
-							{
-								pf2->m_ntag = nsg;
-								stack[ns++] = pf2;
-							}
-						}
-					}
-				}
-
-				// normalize normals
-				for (int j=0; j<nnl; ++j)
-				{
-					int nj = nodeList[j];
-					assert(ntag[nj] == 1);
-					nt[nj].Normalize();
-					ntag[nj] = 0;
-				}
-
-				// assign node normals
-				for (int j=0; j<nfl; ++j)
-				{
-					FEFace& f = *faceList[j];
-					assert(f.m_ntag == nsg);
-					int nf = f.Nodes();
-					for (int k=0; k<nf; ++k) f.m_nn[k] = nt[ f.n[k] ];
-				}
-
-				// clear normals for next group
-				for (int j=0; j<nnl; ++j) nt[nodeList[j]] = vec3f(0,0,0);
-				++nsg;
-			}
-		}
-	}
-}
-
-
-//-----------------------------------------------------------------------------
 // area of triangle
 double triangle_area(const vec3f& r0, const vec3f& r1, const vec3f& r2)
 {
@@ -824,7 +591,7 @@ double triangle_area(const vec3f& r0, const vec3f& r1, const vec3f& r2)
 }
 
 //-----------------------------------------------------------------------------
-double FEMeshBase::FaceArea(FEFace &f)
+double Post::FEMeshBase::FaceArea(FEFace &f)
 {
 	const int N = f.Nodes();
 	vector<vec3f> nodes(N);
@@ -836,7 +603,7 @@ double FEMeshBase::FaceArea(FEFace &f)
 }
 
 //-----------------------------------------------------------------------------
-double FEMeshBase::FaceArea(const vector<vec3f>& r, int faceType)
+double Post::FEMeshBase::FaceArea(const vector<vec3f>& r, int faceType)
 {
 	switch (faceType)
 	{
@@ -938,7 +705,7 @@ double FEMeshBase::FaceArea(const vector<vec3f>& r, int faceType)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of an element
-float FEMeshBase::ElementVolume(int iel)
+float Post::FEMeshBase::ElementVolume(int iel)
 {
 	FEElement_& el = Element(iel);
 	switch (el.Type())
@@ -960,7 +727,7 @@ float FEMeshBase::ElementVolume(int iel)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a hex element
-float FEMeshBase::HexVolume(const FEElement_& el)
+float Post::FEMeshBase::HexVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
 
@@ -1075,7 +842,7 @@ float FEMeshBase::HexVolume(const FEElement_& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pentahedral element
-float FEMeshBase::PentaVolume(const FEElement_& el)
+float Post::FEMeshBase::PentaVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
 
@@ -1188,7 +955,7 @@ float FEMeshBase::PentaVolume(const FEElement_& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a pyramid element
-float FEMeshBase::PyramidVolume(const FEElement_& el)
+float Post::FEMeshBase::PyramidVolume(const FEElement_& el)
 {
 	assert(el.Type() == FE_PYRA5);
 
@@ -1292,7 +1059,7 @@ float FEMeshBase::PyramidVolume(const FEElement_& el)
 
 //-----------------------------------------------------------------------------
 // Calculate the volume of a tetrahedral element
-float FEMeshBase::TetVolume(const FEElement_& el)
+float Post::FEMeshBase::TetVolume(const FEElement_& el)
 {
 	assert((el.Type() == FE_TET4) || (el.Type() == FE_TET10)
            || (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
@@ -1395,7 +1162,7 @@ float FEMeshBase::TetVolume(const FEElement_& el)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodePosition(const FEFace& f, vec3f* r) const
+void Post::FEMeshBase::FaceNodePosition(const FEFace& f, vec3f* r) const
 {
 	switch (f.m_type)
 	{
@@ -1423,7 +1190,7 @@ void FEMeshBase::FaceNodePosition(const FEFace& f, vec3f* r) const
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
+void Post::FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
 {
 	switch (f.m_type)
 	{
@@ -1451,7 +1218,7 @@ void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
+void Post::FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
 {
 	if (bnode)
 	{
@@ -1540,7 +1307,7 @@ bool Post::ProjectInsideReferenceElement(FEMeshBase& m, FEElement_& el, const ve
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
 	vec3f x[FEElement::MAX_NODES];
-	for (int i = 0; i<ne; ++i) x[i] = m.Node(el.m_node[i]).m_r0;
+	for (int i = 0; i<ne; ++i) x[i] = to_vec3f(m.Node(el.m_node[i]).r);
 
 	project_inside_element(el, p, r, x);
 
@@ -1625,11 +1392,11 @@ bool Post::FindElementInReferenceFrame(FEMeshBase& m, const vec3f& p, int& nelem
 		nelem = i;
 
 		// do a quick bounding box test
-		vec3f r0 = m.Node(e.m_node[0]).m_r0;
+		vec3f r0 = to_vec3f(m.Node(e.m_node[0]).r);
 		vec3f r1 = r0;
 		for (int j = 1; j<ne; ++j)
 		{
-			vec3f& rj = m.Node(e.m_node[j]).m_r0;
+			vec3f& rj = to_vec3f(m.Node(e.m_node[j]).r);
 			if (rj.x < r0.x) r0.x = rj.x;
 			if (rj.y < r0.y) r0.y = rj.y;
 			if (rj.z < r0.z) r0.z = rj.z;
@@ -1666,51 +1433,26 @@ bool Post::FindElementInReferenceFrame(FEMeshBase& m, const vec3f& p, int& nelem
 	return false;
 }
 
-int FEMeshBase::CountSelectedFaces() const
-{
-	int N = 0, NF = Faces();
-	for (int i = 0; i<NF; ++i)
-	{
-		if (Face(i).IsSelected()) N++;
-	}
-	return N;
-}
-
-void FEMeshBase::SetNodeTags(int ntag)
-{
-	for (int i=0; i<Nodes(); ++i) Node(i).m_ntag = ntag;
-}
-
-void FEMeshBase::SetEdgeTags(int ntag)
-{
-	for (int i = 0; i<Edges(); ++i) Edge(i).m_ntag = ntag;
-}
-
-void FEMeshBase::SetFaceTags(int ntag)
-{
-	for (int i = 0; i<Faces(); ++i) Face(i).m_ntag = ntag;
-}
-
-void FEMeshBase::SetElementTags(int ntag)
+void Post::FEMeshBase::SetElementTags(int ntag)
 {
 	for (int i = 0; i<Elements(); ++i) Element(i).m_ntag = ntag;
 }
 
 //=================================================================================================
 
-FEFindElement::OCTREE_BOX::OCTREE_BOX()
+Post::FEFindElement::OCTREE_BOX::OCTREE_BOX()
 {
 	m_elem = -1;
 	m_level = -1;
 }
 
-FEFindElement::OCTREE_BOX::~OCTREE_BOX()
+Post::FEFindElement::OCTREE_BOX::~OCTREE_BOX()
 {
 	for (size_t i=0; i<m_child.size(); ++i) delete m_child[i];
 	m_child.clear();
 }
 
-void FEFindElement::OCTREE_BOX::split(int levels)
+void Post::FEFindElement::OCTREE_BOX::split(int levels)
 {
 	m_level = levels;
 	if (m_level == 0) return;
@@ -1748,7 +1490,7 @@ void FEFindElement::OCTREE_BOX::split(int levels)
 	}
 }
 
-void FEFindElement::OCTREE_BOX::Add(BOX& b, int nelem)
+void Post::FEFindElement::OCTREE_BOX::Add(BOX& b, int nelem)
 {
 	if (m_level == 0)
 	{
@@ -1772,7 +1514,7 @@ void FEFindElement::OCTREE_BOX::Add(BOX& b, int nelem)
 }
 
 
-FEFindElement::OCTREE_BOX* FEFindElement::OCTREE_BOX::Find(const vec3f& r)
+Post::FEFindElement::OCTREE_BOX* Post::FEFindElement::OCTREE_BOX::Find(const vec3f& r)
 {
 	if (m_level == 0)
 	{
@@ -1792,7 +1534,7 @@ FEFindElement::OCTREE_BOX* FEFindElement::OCTREE_BOX::Find(const vec3f& r)
 }
 
 
-FEFindElement::OCTREE_BOX* FEFindElement::FindBox(const vec3f& r)
+Post::FEFindElement::OCTREE_BOX* Post::FEFindElement::FindBox(const vec3f& r)
 {
 	// make sure it's in the master box
 	if (m_bound.IsInside(r) == false) return 0;
@@ -1827,12 +1569,12 @@ FEFindElement::OCTREE_BOX* FEFindElement::FindBox(const vec3f& r)
 	return 0;
 }
 
-FEFindElement::FEFindElement(FEMeshBase& mesh) : m_mesh(mesh)
+Post::FEFindElement::FEFindElement(FEMeshBase& mesh) : m_mesh(mesh)
 {
 	m_nframe = -1;
 }
 
-void FEFindElement::InitReferenceFrame(vector<bool>& flags)
+void Post::FEFindElement::InitReferenceFrame(vector<bool>& flags)
 {
 	assert(m_nframe == 0);
 
@@ -1841,11 +1583,11 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 	int NE = m_mesh.Elements();
 	if ((NN == 0) || (NE == 0)) return;
 
-	vec3f r = m_mesh.Node(0).m_r0;
+	vec3f r = to_vec3f(m_mesh.Node(0).r);
 	BOX box(r, r);
 	for (int i = 1; i<m_mesh.Nodes(); ++i)
 	{
-		r = m_mesh.Node(i).m_r0;
+		r = to_vec3f(m_mesh.Node(i).r);
 		box += r;
 	}
 	double R = box.GetMaxExtent();
@@ -1877,12 +1619,12 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 			int ne = e.Nodes();
 
 			// do a quick bounding box test
-			vec3f r0 = m_mesh.Node(e.m_node[0]).m_r0;
+			vec3f r0 = to_vec3f(m_mesh.Node(e.m_node[0]).r);
 			vec3f r1 = r0;
 			BOX box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
-				vec3f& rj = m_mesh.Node(e.m_node[j]).m_r0;
+				vec3f& rj = to_vec3f(m_mesh.Node(e.m_node[j]).r);
 				box += rj;
 			}
 			double R = box.GetMaxExtent();
@@ -1894,7 +1636,7 @@ void FEFindElement::InitReferenceFrame(vector<bool>& flags)
 	}
 }
 
-void FEFindElement::InitCurrentFrame(vector<bool>& flags)
+void Post::FEFindElement::InitCurrentFrame(vector<bool>& flags)
 {
 	assert(m_nframe == 1);
 
@@ -1956,7 +1698,7 @@ void FEFindElement::InitCurrentFrame(vector<bool>& flags)
 	}
 }
 
-void FEFindElement::Init(int nframe)
+void Post::FEFindElement::Init(int nframe)
 {
 	vector<bool> dummy;
 	m_nframe = nframe;
@@ -1964,14 +1706,14 @@ void FEFindElement::Init(int nframe)
 	else InitCurrentFrame(dummy);
 }
 
-void FEFindElement::Init(vector<bool>& flags, int nframe)
+void Post::FEFindElement::Init(vector<bool>& flags, int nframe)
 {
 	m_nframe = nframe;
 	if (m_nframe == 0) InitReferenceFrame(flags);
 	else InitCurrentFrame(flags);
 }
 
-bool FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3])
+bool Post::FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3])
 {
 	assert(m_nframe == 0);
 
@@ -2003,7 +1745,7 @@ bool FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]
 	return false;
 }
 
-bool FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double r[3])
+bool Post::FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double r[3])
 {
 	assert(m_nframe == 1);
 

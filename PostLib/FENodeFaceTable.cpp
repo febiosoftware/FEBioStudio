@@ -4,7 +4,7 @@
 
 using namespace Post;
 
-FENodeFaceTable::FENodeFaceTable(FEMeshBase* pm)
+FENodeFaceTable::FENodeFaceTable(Post::FEMeshBase* pm)
 {
 	m_pm = pm;
 	Build();
@@ -12,7 +12,7 @@ FENodeFaceTable::FENodeFaceTable(FEMeshBase* pm)
 
 void FENodeFaceTable::Build()
 {
-	FEMeshBase& m = *m_pm;
+	Post::FEMeshBase& m = *m_pm;
 
 	int NF = m.Faces();
 	int NN = m.Nodes();

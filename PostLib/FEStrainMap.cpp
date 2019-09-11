@@ -6,7 +6,7 @@
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-void FEStrainMap::Surface::BuildNodeList(FEMeshBase& mesh)
+void FEStrainMap::Surface::BuildNodeList(Post::FEMeshBase& mesh)
 {
 	// tag all nodes that belong to this surface
 	int N = mesh.Nodes();

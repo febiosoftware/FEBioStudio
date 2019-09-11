@@ -206,11 +206,11 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 
 		ReadData(xyz, sizeof(float), 3);
 		
-		n.m_r0.x = xyz[0];
-		n.m_r0.y = xyz[1];
-		n.m_r0.z = xyz[2];
+		n.r.x = xyz[0];
+		n.r.y = xyz[1];
+		n.r.z = xyz[2];
 
-		n.m_rt = n.m_r0;
+		n.m_rt = to_vec3f(n.r);
 	}
 
 	int nread;
@@ -429,7 +429,7 @@ bool FELSDYNAPlotImport::ReadStates(FEModel& fem)
 					FENodeData<vec3f>& dsp = dynamic_cast<FENodeData<vec3f>&>(pstate->m_Data[m_nfield[LSDYNA_DISP]]);
 					for (int i=0; i<m_hdr.nump; ++i, pf += 3)
 					{
-						vec3f& r0 = mesh.Node(i).m_r0;
+						vec3f& r0 = to_vec3f(mesh.Node(i).r);
 						dsp[i].x = pf[0] - r0.x;
 						dsp[i].y = pf[1] - r0.y;
 						dsp[i].z = pf[2] - r0.z;
@@ -585,9 +585,9 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 	{
 		FENode& node = mesh.Node(i);
 
-		xf[0] = (float) node.m_r0.x;
-		xf[1] = (float) node.m_r0.y;
-		xf[2] = (float) node.m_r0.z;
+		xf[0] = (float) node.r.x;
+		xf[1] = (float) node.r.y;
+		xf[2] = (float) node.r.z;
 
 		fwrite(xf, sizeof(float), 3, fp);
 	}
@@ -702,9 +702,9 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 
 				// since the PLOT file requires floats we need to convert
 				// the doubles to single precision
-				xf[0] = node.m_r0.x + r.x;
-				xf[1] = node.m_r0.y + r.y;
-				xf[2] = node.m_r0.z + r.z;
+				xf[0] = node.r.x + r.x;
+				xf[1] = node.r.y + r.y;
+				xf[2] = node.r.z + r.z;
 
 				fwrite(xf, sizeof(float), 3, fp);
 			}

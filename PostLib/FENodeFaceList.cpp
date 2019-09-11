@@ -5,7 +5,7 @@
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-void FENodeFaceList::Build(FEMeshBase* pm)
+void FENodeFaceList::Build(Post::FEMeshBase* pm)
 {
 	int N = pm->Nodes();
 	m_NFL.resize(N);

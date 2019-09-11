@@ -190,7 +190,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 	}
 	else
 	{
-		pm->SetNodeTags(0);
+		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
 			FEElement_& e = pm->Element(i);

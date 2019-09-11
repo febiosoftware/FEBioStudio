@@ -27,7 +27,7 @@ public:
 
 public:
 	// calculate smoothing IDs based on face normals.
-	void AutoSmooth(double w);
+	void AutoSmooth(double angleDegrees);
 
 	// assign smoothing IDs based on surface partition
 	void SmoothByPartition();
@@ -53,6 +53,8 @@ public: // interface for accessing mesh items
 
 public:
 	void TagAllFaces(int ntag);
+
+	int CountSelectedFaces() const;
 
 	// see if the nodes form an edge
 	bool IsEdge(int n0, int n1);

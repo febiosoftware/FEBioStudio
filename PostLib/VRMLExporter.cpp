@@ -164,7 +164,7 @@ void VRMLExporter::write_mesh()
 		FENode& node = mesh.Node(i);
 		if (node.m_ntag >= 0)
 		{
-			sprintf(szline, "%g %g %g", node.m_r0.x, node.m_r0.y, node.m_r0.z);
+			sprintf(szline, "%lg %lg %lg", node.r.x, node.r.y, node.r.z);
 			Write(szline);
 			if (n < nodes-1) fprintf(m_fp, ",\n"); else fprintf(m_fp, "\n");
 			++n;

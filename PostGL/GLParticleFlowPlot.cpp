@@ -429,8 +429,8 @@ void CGLParticleFlowPlot::SeedParticles()
 		{
 			// calculate the face center, this will be the seed
 			// NOTE: We are using reference coordinates, therefore we assume that the mesh is not deforming!!
-			vec3f cf(0.f, 0.f, 0.f);
-			for (int j = 0; j<nf; ++j) cf += mesh.Node(f.n[j]).m_r0;
+			vec3d cf(0.f, 0.f, 0.f);
+			for (int j = 0; j<nf; ++j) cf += mesh.Node(f.n[j]).r;
 			cf /= nf;
 
 			// create a particle here
@@ -441,7 +441,7 @@ void CGLParticleFlowPlot::SeedParticles()
 			p.m_ndeath = NS;	// assume the particle will live the entire time
 
 			// set initial position and velocity
-			p.m_pos[m_seedTime] = cf;
+			p.m_pos[m_seedTime] = to_vec3f(cf);
 			p.m_vel[m_seedTime] = vf;
 
 			// add it to the pile

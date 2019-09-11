@@ -30,8 +30,6 @@ public:
 	bool	m_bext;			// exterior node or not?
 
 	// PostView
-	vec3f	m_r0;	// initial coordinates of node // TODO: I would like to remove this variable
 	vec3f	m_rt;	// current coordinates of node
 	float	m_tex;	// nodal texture coordinate
-//	bool	m_bext;	// interior or exterior node
 };

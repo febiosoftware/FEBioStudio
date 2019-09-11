@@ -309,18 +309,18 @@ protected:
 	bool ReadElemData    (FEModel& fem, FEState* pstate);
 	bool ReadFaceData    (FEModel& fem, FEState* pstate);
 
-	bool ReadElemData_NODE(FEMeshBase& m, Domain& d, FEMeshData& s, int ntype, int arrSize);
+	bool ReadElemData_NODE(Post::FEMeshBase& m, Domain& d, FEMeshData& s, int ntype, int arrSize);
 	bool ReadElemData_ITEM(Domain& d, FEMeshData& s, int ntype, int arrSize);
 	bool ReadElemData_MULT(Domain& d, FEMeshData& s, int ntype);
 
-	bool ReadFaceData_NODE(FEMeshBase& m, Surface& s, FEMeshData& data, int ntype);
+	bool ReadFaceData_NODE(Post::FEMeshBase& m, Surface& s, FEMeshData& data, int ntype);
 	bool ReadFaceData_ITEM(Surface& s, FEMeshData& data, int ntype);
-	bool ReadFaceData_MULT(FEMeshBase& m, Surface& s, FEMeshData& data, int ntype);
+	bool ReadFaceData_MULT(Post::FEMeshBase& m, Surface& s, FEMeshData& data, int ntype);
 
 	void Clear();
 
 protected:
-	FEMeshBase* GetCurrentMesh() { return m_mesh; }
+	Post::FEMeshBase* GetCurrentMesh() { return m_mesh; }
 
 protected:
 	Dictionary			m_dic;
@@ -342,5 +342,5 @@ protected:
 	int		m_nel;
 
 	FEState*	m_pstate;	//!< last read state section
-	FEMeshBase*	m_mesh;		//!< current mesh
+	Post::FEMeshBase*	m_mesh;		//!< current mesh
 };

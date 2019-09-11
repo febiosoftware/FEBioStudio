@@ -176,8 +176,8 @@ void FEBioImport::ParseGeometrySection(FEModel &fem, XMLTag &tag)
 			for (i=0; i<nn; ++i)
 			{
 				FENode& node = m_pm->Node(i);
-				tag.value(node.m_r0);
-				node.m_rt = node.m_r0;
+				tag.value(node.r);
+				node.m_rt = to_vec3f(node.r);
 				m_xml.NextTag(tag);
 			}
 		}
@@ -257,8 +257,8 @@ void FEBioImport::ParseGeometrySection2(FEModel &fem, XMLTag &tag)
 			for (int i=0; i<nn; ++i)
 			{
 				FENode& node = m_pm->Node(i);
-				tag.value(node.m_r0);
-				node.m_rt = node.m_r0;
+				tag.value(node.r);
+				node.m_rt = to_vec3f(node.r);
 				m_xml.NextTag(tag);
 			}
 		}

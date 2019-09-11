@@ -64,10 +64,10 @@ bool FERAWImageReader::Load(FEModel& fem, const char* szfile)
 			for (int i=0; i<m_ops.nx; ++i)
 			{
 				FENode& nd = pm->Node(n++);
-				nd.m_r0.x = (float) i * dx;
-				nd.m_r0.y = (float) j * dy;
-				nd.m_r0.z = (float) k * dz;
-				nd.m_rt = nd.m_r0;
+				nd.r.x = (double) i * dx;
+				nd.r.y = (double) j * dy;
+				nd.r.z = (double) k * dz;
+				nd.m_rt = to_vec3f(nd.r);
 			}
 
 	if (dim == 2)

@@ -2,6 +2,7 @@
 
 #include <MeshLib/FENode.h>
 #include <MeshLib/FEElement.h>
+#include <MeshLib/FEMeshBase.h>
 #include "FEGroup.h"
 #include "FENodeElemList.h"
 #include "FENodeFaceList.h"
@@ -13,7 +14,7 @@ using namespace std;
 namespace Post {
 
 //-----------------------------------------------------------------------------
-class FEMeshBase
+class FEMeshBase : public ::FEMeshBase
 {
 public:
 	// --- M E M O R Y   M A N A G M E N T ---
@@ -32,19 +33,13 @@ public:
 	//! clean mesh and all data
 	void ClearAll();
 
+	// from FELineMesh
+	void UpdateMeshData() override;
+
 	vector<NodeElemRef>& NodeElemList(int n) { return m_NEL.ElemList(n); }
 	vector<NodeFaceRef>& NodeFaceList(int n) { return m_NFL.FaceList(n); }
 
 	// --- G E O M E T R Y ---
-	//! return nr of nodes
-	int Nodes() const { return (int) m_Node.size(); }
-
-	//! return nr of edges
-	int Edges() const { return (int) m_Edge.size(); }
-
-	//! return nr of faces
-	int Faces() const { return (int) m_Face.size(); }
-
 	//! return nr of elements
 	virtual int Elements() const = 0;
 
@@ -58,18 +53,6 @@ public:
 
 	//! return nr of beam elements
 	int BeamElements();
-
-	//! return a node
-	FENode& Node(int i) { return m_Node[i]; }
-	const FENode& Node(int i) const { return m_Node[i]; }
-
-	//! return an edge
-	FEEdge& Edge(int i) { return m_Edge[i]; }
-	const FEEdge& Edge(int i) const { return m_Edge[i]; }
-
-	//! return a face
-	FEFace& Face(int i) { return m_Face[i]; }
-	const FEFace& Face(int i) const { return m_Face[i]; }
 
 	//! return an element
 	virtual FEElement_& Element(int i) = 0;
@@ -120,9 +103,6 @@ public:
 	//! update mesh data
 	void Update();
 
-	//! update the normals of the mesh
-	void UpdateNormals(bool smooth);
-
 	// --- E V A L U A T E ---
 
 	vec3f ElementCenter(FEElement_& el)
@@ -167,14 +147,8 @@ public:
 	void FaceNodeNormals  (FEFace& f, vec3f* n);
 	void FaceNodeTexCoords(FEFace& f, float* t, bool bnode);
 
-	void AutoSmooth(double angleRadians);
-
 	// --- S E L E C T I O N ---
-	int CountSelectedFaces() const;
 
-	void SetNodeTags(int ntag);
-	void SetEdgeTags(int ntag);
-	void SetFaceTags(int ntag);
 	void SetElementTags(int ntag);
 
 protected:
@@ -195,9 +169,6 @@ protected:
 
 protected:
 	// --- G E O M E T R Y ---
-	vector<FENode>		m_Node;	// nodal array
-	vector<FEEdge>		m_Edge;	// edge array
-	vector<FEFace>		m_Face;	// face array
 	vector<FEDomain*>	m_Dom;	// domains
 
 	// user-defined partitions
@@ -207,8 +178,6 @@ protected:
 
 	FENodeElemList		m_NEL;
 	FENodeFaceList		m_NFL;
-
-	int		m_nID;
 };
 
 template <class T> class FEMesh_ : public FEMeshBase

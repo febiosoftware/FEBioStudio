@@ -103,7 +103,7 @@ public:
 	double GetSmoothingAngleRadians() { return m_stol; }
 
 	//! get the active mesh
-	FEMeshBase* GetActiveMesh();
+	Post::FEMeshBase* GetActiveMesh();
 
 	//! Reset all the states so any update will force the state to be evaluated
 	void ResetAllStates();
@@ -166,42 +166,42 @@ public:
 
 //	void RenderFeatureEdges(FEModel* ps);
 	void RenderMeshLines(FEModel* ps, int nmat);
-	void RenderThickShell(FEFace& face, FEMeshBase* pm);
-	void RenderThickQuad(FEFace& face, FEMeshBase* pm);
-	void RenderThickTri(FEFace& face, FEMeshBase* pm);
-	void RenderThickShellOutline(FEFace& face, FEMeshBase* pm);
+	void RenderThickShell(FEFace& face, Post::FEMeshBase* pm);
+	void RenderThickQuad(FEFace& face, Post::FEMeshBase* pm);
+	void RenderThickTri(FEFace& face, Post::FEMeshBase* pm);
+	void RenderThickShellOutline(FEFace& face, Post::FEMeshBase* pm);
 	void RenderShadows(FEModel* ps, const vec3d& lp, float inf);
 
 	void AddDecoration(GDecoration* pd);
 	void RemoveDecoration(GDecoration* pd);
 
 protected:
-	void RenderFace(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode);
-	void RenderFace(FEFace& face, FEMeshBase* pm, GLColor c[4], int ndivs, bool bnode);
-	void RenderTexFace(FEFace& el, FEMeshBase* pm);
-	void RenderElementOutline(FEElement_& el, FEMeshBase* pm);
-	void RenderFaceOutline(FEFace& face, FEMeshBase* pm, int ndivs);
+	void RenderFace(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode);
+	void RenderFace(FEFace& face, Post::FEMeshBase* pm, GLColor c[4], int ndivs, bool bnode);
+	void RenderTexFace(FEFace& el, Post::FEMeshBase* pm);
+	void RenderElementOutline(FEElement_& el, Post::FEMeshBase* pm);
+	void RenderFaceOutline(FEFace& face, Post::FEMeshBase* pm, int ndivs);
 	void RenderSolidPart(FEModel* ps, CGLContext& rc, int mat);
 	void RenderSolidMaterial(FEModel* ps, int m);
 	void RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m);
-	void RenderFaceEdge(FEFace& face, int j, FEMeshBase* pm, int ndivs);
+	void RenderFaceEdge(FEFace& face, int j, Post::FEMeshBase* pm, int ndivs);
 	void RenderSolidDomain(FEDomain& dom, bool btex, bool benable);
 
 	void RenderInnerSurface(int m);
 	void RenderInnerSurfaceOutline(int m, int ndivs);
 
-	void RenderSmoothQUAD4(FEFace& f, FEMeshBase* pm, int ndivs, bool bnode);
+	void RenderSmoothQUAD4(FEFace& f, Post::FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderSmoothQUAD4(vec3f r[4], vec3f n[4], float t[4], int ndivs);
 
-	void RenderSmoothQUAD8(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode);
+	void RenderSmoothQUAD8(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderSmoothQUAD8(vec3f r[8], vec3f n[8], float t[8], int ndivs);
-	void RenderSmoothQUAD9(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode);
+	void RenderSmoothQUAD9(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderSmoothQUAD9(vec3f r[9], vec3f n[9], float t[9], int ndivs);
-	void RenderSmoothTRI6(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode);
+	void RenderSmoothTRI6(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderSmoothTRI6(vec3f r[6], vec3f n[8], float t[6], int ndivs);
-	void RenderSmoothTRI7(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode);
+	void RenderSmoothTRI7(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderSmoothTRI7(vec3f r[7], vec3f n[7], float t[7], int ndivs);
-	void RenderSmoothTRI10(FEFace& face, FEMeshBase* pm, int ndivs, bool bnode);
+	void RenderSmoothTRI10(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderSmoothTRI10(vec3f r[10], vec3f n[10], float t[10], int ndivs);
 
 	void RenderQUAD4(FEFace& f, bool bsmooth, bool bnode);
@@ -212,15 +212,15 @@ protected:
 	void RenderTRI7 (FEFace& f, bool bsmooth, bool bnode);
 	void RenderTRI10(FEFace& f, bool bsmooth, bool bnode);
 
-	void RenderTexQUAD4(FEFace& face, FEMeshBase* pm);
-	void RenderTexQUAD8(FEFace& face, FEMeshBase* pm);
-	void RenderTexTRI3 (FEFace& face, FEMeshBase* pm);
-	void RenderTexTRI6 (FEFace& face, FEMeshBase* pm);
-	void RenderTexTRI7 (FEFace& face, FEMeshBase* pm);
+	void RenderTexQUAD4(FEFace& face, Post::FEMeshBase* pm);
+	void RenderTexQUAD8(FEFace& face, Post::FEMeshBase* pm);
+	void RenderTexTRI3 (FEFace& face, Post::FEMeshBase* pm);
+	void RenderTexTRI6 (FEFace& face, Post::FEMeshBase* pm);
+	void RenderTexTRI7 (FEFace& face, Post::FEMeshBase* pm);
 
-	void RenderFace1Outline(FEFace& face, FEMeshBase* pm);
-	void RenderFace2Outline(FEFace& face, FEMeshBase* pm, int ndivs);
-	void RenderFace3Outline(FEFace& face, FEMeshBase* pm, int ndivs);
+	void RenderFace1Outline(FEFace& face, Post::FEMeshBase* pm);
+	void RenderFace2Outline(FEFace& face, Post::FEMeshBase* pm, int ndivs);
+	void RenderFace3Outline(FEFace& face, Post::FEMeshBase* pm, int ndivs);
 
 public:
 	float currentTime() const { return m_fTime; }

@@ -290,9 +290,6 @@
     <ClInclude Include="..\..\PostLib\FENikeImport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\PostLib\FENode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\PostLib\FENodeEdgeList.h">
       <Filter>Header Files</Filter>
     </ClInclude>

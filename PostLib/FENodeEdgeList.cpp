@@ -31,7 +31,7 @@ int* FENodeEdgeList::EdgeList(int node)
 	return &(m_edge[ m_index[node] ]);
 }
 
-void FENodeEdgeList::Build(FEMeshBase* pm)
+void FENodeEdgeList::Build(Post::FEMeshBase* pm)
 {
 	m_pm = pm;
 	if (pm == 0) { Clear(); return; }

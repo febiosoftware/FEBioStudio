@@ -86,7 +86,9 @@ FEModel* FEPlotMix::Load(const char **szfile, int n)
 		{
 			FENode& n1 = m1.Node(j);
 			FENode& n2 = m2.Node(j);
-			dr2[j] = (n2.m_r0 + dr2[j]) - n1.m_r0;
+			vec3f r1 = to_vec3f(n1.r);
+			vec3f r2 = to_vec3f(n2.r);
+			dr2[j] = (r2 + dr2[j]) - r1;
 		}
 
 		// add a new state by copying it from fem2

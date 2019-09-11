@@ -8,11 +8,11 @@ using namespace Post;
 
 //-----------------------------------------------------------------------------
 // Constructor
-FEState::FEState(float time, FEModel* fem, FEMeshBase* pmesh) : m_fem(fem), m_mesh(pmesh)
+FEState::FEState(float time, FEModel* fem, Post::FEMeshBase* pmesh) : m_fem(fem), m_mesh(pmesh)
 {
 	m_id = -1;
 
-	FEMeshBase& mesh = *m_mesh;
+	Post::FEMeshBase& mesh = *m_mesh;
 
 	int nodes = mesh.Nodes();
 	int edges = mesh.Edges();
@@ -42,7 +42,7 @@ FEState::FEState(float time, FEModel* fem, FEMeshBase* pmesh) : m_fem(fem), m_me
 	}
 
 	// initialize data
-	for (int i=0; i<nodes; ++i) m_NODE[i].m_rt = mesh.Node(i).m_r0;
+	for (int i=0; i<nodes; ++i) m_NODE[i].m_rt = to_vec3f(mesh.Node(i).r);
 	for (int i=0; i<elems; ++i)
 	{
 		m_ELEM[i].m_state = StatusFlags::VISIBLE;
@@ -133,7 +133,7 @@ FEState::FEState(float time, FEModel* pfem, FEState* pstate) : m_fem(pfem)
 	}
 
 	// initialize data
-	for (int i=0; i<nodes; ++i) m_NODE[i].m_rt = mesh.Node(i).m_r0;
+	for (int i=0; i<nodes; ++i) m_NODE[i].m_rt = to_vec3f(mesh.Node(i).r);
 	for (int i=0; i<elems; ++i)
 	{
 		m_ELEM[i].m_h[0] = 0.f;

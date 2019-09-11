@@ -12,7 +12,7 @@ using namespace Post;
 class MeshPartition
 {
 public:
-	MeshPartition(FEMeshBase& mesh, const vector<int>& elem, int matid, int ntype) : m_mesh(mesh), m_elem(elem) 
+	MeshPartition(Post::FEMeshBase& mesh, const vector<int>& elem, int matid, int ntype) : m_mesh(mesh), m_elem(elem)
 	{
 		m_matid = matid;
 		m_ntype = ntype;
@@ -21,7 +21,7 @@ public:
 public:
 	int		m_matid;
 	int		m_ntype;
-	FEMeshBase&		m_mesh;
+	Post::FEMeshBase&		m_mesh;
 	vector<int>	m_elem;
 };
 
@@ -326,7 +326,7 @@ bool xpltFileExport::WriteGeometry(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WriteNodeSection(FEMeshBase& m)
+bool xpltFileExport::WriteNodeSection(Post::FEMeshBase& m)
 {
 	// write the reference coordinates
 	int NN = m.Nodes();
@@ -334,9 +334,9 @@ bool xpltFileExport::WriteNodeSection(FEMeshBase& m)
 	for (int i=0; i<m.Nodes(); ++i)
 	{
 		FENode& node = m.Node(i);
-		X[3*i  ] = (float) node.m_r0.x;
-		X[3*i+1] = (float) node.m_r0.y;
-		X[3*i+2] = (float) node.m_r0.z;
+		X[3*i  ] = (float) node.r.x;
+		X[3*i+1] = (float) node.r.y;
+		X[3*i+2] = (float) node.r.z;
 	}
 
 	m_ar.WriteChunk(PLT_NODE_COORDS, X);
@@ -345,7 +345,7 @@ bool xpltFileExport::WriteNodeSection(FEMeshBase& m)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WritePartSection(FEMeshBase& mesh)
+bool xpltFileExport::WritePartSection(Post::FEMeshBase& mesh)
 {
 	// make sure there are parts
 	int NP = mesh.Parts();
@@ -372,7 +372,7 @@ bool xpltFileExport::WritePart(FEPart& part)
 	if (NE == 0) return false;
 
 	// figure out element type
-	FEMeshBase& mesh = *part.GetMesh();
+	Post::FEMeshBase& mesh = *part.GetMesh();
 	FEElement_& e0 = mesh.Element(part.m_Elem[0]);
 	int matid = e0.m_MatID + 1;
 
@@ -429,7 +429,7 @@ bool xpltFileExport::WritePart(FEPart& part)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WriteSurfaceSection(FEMeshBase& mesh)
+bool xpltFileExport::WriteSurfaceSection(Post::FEMeshBase& mesh)
 {
 	int NS = mesh.Surfaces();
 	for (int n=0; n<NS; ++n)

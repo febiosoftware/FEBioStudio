@@ -45,8 +45,8 @@ void CGLDisplacementMap::Activate(bool b)
 	{
 		CGLModel* po = GetModel();
 		FEMeshBase* pm = po->GetActiveMesh();
-		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).m_rt = pm->Node(i).m_r0;
-		pm->UpdateNormals(po->RenderSmooth());
+		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).m_rt = to_vec3f(pm->Node(i).r);
+		pm->UpdateNormals();
 	}
 }
 
@@ -81,7 +81,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
 			FENode& node = pm->Node(i);
-			vec3f du = s1.m_NODE[i].m_rt - node.m_r0;
+			vec3f du = s1.m_NODE[i].m_rt - to_vec3f(node.r);
 			m_du[i] = du;
 		}
 	}
@@ -105,8 +105,8 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 			FENode& node = pm->Node(i);
 
 			// get nodal displacements
-			vec3f d1 = s1.m_NODE[i].m_rt - node.m_r0;
-			vec3f d2 = s2.m_NODE[i].m_rt - node.m_r0;
+			vec3f d1 = s1.m_NODE[i].m_rt - to_vec3f(node.r);
+			vec3f d2 = s2.m_NODE[i].m_rt - to_vec3f(node.r);
 
 			// evaluate current displacement
 			vec3f du = d2*w + d1*(1.f - w);
@@ -145,7 +145,7 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 
 			// the actual nodal position is stored in the state
 			// this is the field that will be used for strain calculations
-			s.m_NODE[i].m_rt = node.m_r0 + dr;
+			s.m_NODE[i].m_rt = to_vec3f(node.r) + dr;
 		}
 	}
 }
@@ -162,9 +162,9 @@ void CGLDisplacementMap::UpdateNodes()
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);
-		node.m_rt = node.m_r0 + m_du[i] * m_scl;
+		node.m_rt = to_vec3f(node.r) + m_du[i] * m_scl;
 	}
 
 	// update the normals
-	pm->UpdateNormals(po->RenderSmooth());
+	pm->UpdateNormals();
 }

@@ -236,7 +236,6 @@
     <ClInclude Include="..\..\PostLib\FEModel.h" />
     <ClInclude Include="..\..\PostLib\FENikeExport.h" />
     <ClInclude Include="..\..\PostLib\FENikeImport.h" />
-    <ClInclude Include="..\..\PostLib\FENode.h" />
     <ClInclude Include="..\..\PostLib\FENodeEdgeList.h" />
     <ClInclude Include="..\..\PostLib\FENodeElemList.h" />
     <ClInclude Include="..\..\PostLib\FENodeFaceList.h" />

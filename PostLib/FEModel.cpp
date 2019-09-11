@@ -769,13 +769,13 @@ vec3f FEModel::NodePosition(int n, int ntime)
 	if (ntime >= 0)
 	{
 		FEMeshBase* mesh = GetState(ntime)->GetFEMesh();
-		r = mesh->Node(n).m_r0;
+		r = to_vec3f(mesh->Node(n).r);
 		if (m_ndisp) r += EvaluateNodeVector(n, ntime, m_ndisp);
 	}
 	else
 	{
 		FEMeshBase* mesh = GetFEMesh(0);
-		r = mesh->Node(n).m_r0;
+		r = to_vec3f(mesh->Node(n).r);
 	}
 
 	return r;
@@ -837,21 +837,21 @@ void FEModel::UpdateBoundingBox()
 {
 	FEMeshBase* mesh = GetFEMesh(0);
 	FENode& n = mesh->Node(0);
-	m_bbox.x0 = m_bbox.x1 = n.m_r0.x;
-	m_bbox.y0 = m_bbox.y1 = n.m_r0.y;
-	m_bbox.z0 = m_bbox.z1 = n.m_r0.z;
+	m_bbox.x0 = m_bbox.x1 = n.r.x;
+	m_bbox.y0 = m_bbox.y1 = n.r.y;
+	m_bbox.z0 = m_bbox.z1 = n.r.z;
 
 	int N = mesh->Nodes();
 	for (int i=0; i<N; i++)
 	{
 		FENode& n = mesh->Node(i);
-		if (n.m_r0.x < m_bbox.x0) m_bbox.x0 = n.m_r0.x;
-		if (n.m_r0.y < m_bbox.y0) m_bbox.y0 = n.m_r0.y;
-		if (n.m_r0.z < m_bbox.z0) m_bbox.z0 = n.m_r0.z;
+		if (n.r.x < m_bbox.x0) m_bbox.x0 = n.r.x;
+		if (n.r.y < m_bbox.y0) m_bbox.y0 = n.r.y;
+		if (n.r.z < m_bbox.z0) m_bbox.z0 = n.r.z;
 
-		if (n.m_r0.x > m_bbox.x1) m_bbox.x1 = n.m_r0.x;
-		if (n.m_r0.y > m_bbox.y1) m_bbox.y1 = n.m_r0.y;
-		if (n.m_r0.z > m_bbox.z1) m_bbox.z1 = n.m_r0.z;
+		if (n.r.x > m_bbox.x1) m_bbox.x1 = n.r.x;
+		if (n.r.y > m_bbox.y1) m_bbox.y1 = n.r.y;
+		if (n.r.z > m_bbox.z1) m_bbox.z1 = n.r.z;
 	}
 }
 

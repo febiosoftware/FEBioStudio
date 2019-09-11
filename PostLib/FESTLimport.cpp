@@ -131,7 +131,7 @@ void FESTLimport::build_mesh()
 	{
 		FENode& n = pm->Node(i);
 		vec3f& ri = m_Node[i];
-		n.m_r0 = n.m_rt = ri;
+		n.r = n.m_rt = ri;
 	}
 
 	// create elements

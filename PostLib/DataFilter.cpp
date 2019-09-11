@@ -8,7 +8,7 @@ using namespace Post;
 
 bool Post::DataScale(FEModel& fem, int nfield, double scale)
 {
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	Post::FEMeshBase& mesh = *fem.GetFEMesh(0);
 	float fscale = (float) scale;
 	// loop over all states
 	int NN = mesh.Nodes();
@@ -373,7 +373,7 @@ bool DataSmoothStep(FEModel& fem, int nfield, double theta)
 	for (int n = 0; n<fem.GetStates(); ++n)
 	{
 		FEState& s = *fem.GetState(n);
-		FEMeshBase& mesh = *s.GetFEMesh();
+		Post::FEMeshBase& mesh = *s.GetFEMesh();
 		if (IS_NODE_FIELD(nfield))
 		{
 			int NN = mesh.Nodes();
@@ -525,7 +525,7 @@ bool Post::DataArithmetic(FEModel& fem, int nfield, int nop, int noperand)
 	int ndst = FIELD_CODE(nfield);
 	int nsrc = FIELD_CODE(noperand);
 
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	Post::FEMeshBase& mesh = *fem.GetFEMesh(0);
 
 	// loop over all states
 	for (int n = 0; n<fem.GetStates(); ++n)
@@ -714,7 +714,7 @@ bool Post::DataGradient(FEModel& fem, int vecField, int sclField)
 		else return false;
 
 		// get the mesh
-		FEMeshBase* mesh = state.GetFEMesh();
+		Post::FEMeshBase* mesh = state.GetFEMesh();
 
 		// evaluate the field over all the nodes
 		const int NN = mesh->Nodes();
@@ -843,7 +843,7 @@ bool Post::DataGradient(FEModel& fem, int vecField, int sclField)
 }
 
 //-----------------------------------------------------------------------------
-template <typename T> void extractNodeDataComponent_T(FEMeshData& dst, FEMeshData& src, int ncomp, FEMeshBase& mesh)
+template <typename T> void extractNodeDataComponent_T(FEMeshData& dst, FEMeshData& src, int ncomp, Post::FEMeshBase& mesh)
 {
 	FENodeData_T<T>& vec = dynamic_cast<FENodeData_T<T>&>(src);
 	FENodeData<float>& scl = dynamic_cast<FENodeData<float>&>(dst);
@@ -856,7 +856,7 @@ template <typename T> void extractNodeDataComponent_T(FEMeshData& dst, FEMeshDat
 	}
 }
 
-void extractNodeDataComponent(Data_Type ntype, FEMeshData& dst, FEMeshData& src, int ncomp, FEMeshBase& mesh)
+void extractNodeDataComponent(Data_Type ntype, FEMeshData& dst, FEMeshData& src, int ncomp, Post::FEMeshBase& mesh)
 {
 	switch (ntype)
 	{
@@ -869,7 +869,7 @@ void extractNodeDataComponent(Data_Type ntype, FEMeshData& dst, FEMeshData& src,
 	}
 }
 
-template <typename T> void extractElemDataComponentITEM_T(FEMeshData& dst, FEMeshData& src, int ncomp, FEMeshBase& mesh)
+template <typename T> void extractElemDataComponentITEM_T(FEMeshData& dst, FEMeshData& src, int ncomp, Post::FEMeshBase& mesh)
 {
 	FEElemData_T<T, DATA_ITEM>& vec = dynamic_cast<FEElemData_T<T, DATA_ITEM>&>(src);
 	FEElementData<float, DATA_ITEM>& scl = dynamic_cast<FEElementData<float, DATA_ITEM>&>(dst);
@@ -885,7 +885,7 @@ template <typename T> void extractElemDataComponentITEM_T(FEMeshData& dst, FEMes
 	}
 }
 
-void extractElemDataComponentITEM_ARRAY_VEC3F(FEMeshData& dst, FEMeshData& src, int ncomp, FEMeshBase& mesh)
+void extractElemDataComponentITEM_ARRAY_VEC3F(FEMeshData& dst, FEMeshData& src, int ncomp, Post::FEMeshBase& mesh)
 {
 	FEElemArrayVec3Data& vec = dynamic_cast<FEElemArrayVec3Data&>(src);
 	FEElementData<float, DATA_ITEM>& scl = dynamic_cast<FEElementData<float, DATA_ITEM>&>(dst);
@@ -910,7 +910,7 @@ void extractElemDataComponentITEM_ARRAY_VEC3F(FEMeshData& dst, FEMeshData& src, 
 	}
 }
 
-void extractElemDataComponentITEM(Data_Type ntype, FEMeshData& dst, FEMeshData& src, int ncomp, FEMeshBase& mesh)
+void extractElemDataComponentITEM(Data_Type ntype, FEMeshData& dst, FEMeshData& src, int ncomp, Post::FEMeshBase& mesh)
 {
 	switch(ntype)
 	{
@@ -924,7 +924,7 @@ void extractElemDataComponentITEM(Data_Type ntype, FEMeshData& dst, FEMeshData& 
 	}
 }
 
-template <typename T> void extractElemDataComponentNODE_T(FEMeshData& dst, FEMeshData& src, int ncomp, FEMeshBase& mesh)
+template <typename T> void extractElemDataComponentNODE_T(FEMeshData& dst, FEMeshData& src, int ncomp, Post::FEMeshBase& mesh)
 {
 	FEElemData_T<T, DATA_NODE>& vec = dynamic_cast<FEElemData_T<T, DATA_NODE>&>(src);
 	FEElementData<float, DATA_NODE>& scl = dynamic_cast<FEElementData<float, DATA_NODE>&>(dst);
@@ -955,7 +955,7 @@ template <typename T> void extractElemDataComponentNODE_T(FEMeshData& dst, FEMes
 	}
 }
 
-void extractElemDataComponentNODE_ARRAY(FEMeshData& dst, FEMeshData& src, int ncomp, FEMeshBase& mesh)
+void extractElemDataComponentNODE_ARRAY(FEMeshData& dst, FEMeshData& src, int ncomp, Post::FEMeshBase& mesh)
 {
 	FEElemArrayDataNode& vec = dynamic_cast<FEElemArrayDataNode&>(src);
 	FEElementData<float, DATA_NODE>& scl = dynamic_cast<FEElementData<float, DATA_NODE>&>(dst);
@@ -986,7 +986,7 @@ void extractElemDataComponentNODE_ARRAY(FEMeshData& dst, FEMeshData& src, int nc
 	}
 }
 
-void extractElemDataComponentNODE(Data_Type ntype, FEMeshData& dst, FEMeshData& src, int ncomp, FEMeshBase& mesh)
+void extractElemDataComponentNODE(Data_Type ntype, FEMeshData& dst, FEMeshData& src, int ncomp, Post::FEMeshBase& mesh)
 {
 	switch(ntype)
 	{
@@ -1008,7 +1008,7 @@ FEDataField* Post::DataComponent(FEModel& fem, FEDataField* pdf, int ncomp, cons
 	Data_Type ntype = pdf->Type();
 	int nfmt = pdf->Format();
 
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	Post::FEMeshBase& mesh = *fem.GetFEMesh(0);
 
 	FEDataField* newField = 0;
 	if (nclass == CLASS_NODE)

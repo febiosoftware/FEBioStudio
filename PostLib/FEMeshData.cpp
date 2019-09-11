@@ -9,7 +9,7 @@ extern int ET_HEX[12][2];
 extern int DIAG_HEX[16][2];
 
 //-----------------------------------------------------------------------------
-FEMeshBase* FEMeshData::GetFEMesh()
+Post::FEMeshBase* FEMeshData::GetFEMesh()
 { 
 	return m_state->GetFEMesh(); 
 }
@@ -86,7 +86,7 @@ Mat3d deform_grad(FEModel& fem, int n, double r, double s, double t, int nstate,
 {
 	// get the mesh
 	FEState& state = *fem.GetState(nstate);
-	FEMeshBase& m = *state.GetFEMesh();
+	Post::FEMeshBase& m = *state.GetFEMesh();
 
 	// get the element
 	FEElement_& el = m.Element(n);
@@ -759,7 +759,7 @@ void FEVolRatio::eval(int n, float* pv)
 	for (i=0; i<N; i++) 
 	{ 
 		node = pe->m_node[i];
-		X[i] = m.Node(node).m_r0; 
+		X[i] = to_vec3f(m.Node(node).r);
 		x[i] = GetFEModel()->NodePosition(node, ntime);
 	}
 
@@ -1020,7 +1020,7 @@ void FENodePosition::eval(int n, vec3f* pv)
 //-----------------------------------------------------------------------------
 void FENodeInitPos::eval(int n, vec3f* pv)
 {
-	*pv = GetFEState()->GetFEMesh()->Node(n).m_r0;
+	*pv = to_vec3f(GetFEState()->GetFEMesh()->Node(n).r);
 }
 
 //=============================================================================
@@ -1744,7 +1744,7 @@ void FEVolStrain::eval(int n, float* pv)
 	for (i = 0; i<N; i++)
 	{ 
 		node = pe->m_node[i];
-		X[i] = GetFEMesh()->Node(node).m_r0; 
+		X[i] = to_vec3f(GetFEMesh()->Node(node).r);
 		x[i] = fem->NodePosition(node, ntime);
 	}
 

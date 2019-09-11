@@ -312,7 +312,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 			// calculate the face center, this will be the seed
 			// NOTE: We are using reference coordinates, therefore we assume that te mesh is not deforming!!
 			vec3f cf(0.f, 0.f, 0.f);
-			for (int j = 0; j<nf; ++j) cf += mesh.Node(f.n[j]).m_r0;
+			for (int j = 0; j<nf; ++j) cf += to_vec3f(mesh.Node(f.n[j]).r);
 			cf /= nf;
 
 			// project the seed into the adjacent solid element

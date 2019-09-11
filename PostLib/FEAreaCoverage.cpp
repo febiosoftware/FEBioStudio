@@ -6,7 +6,7 @@
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-void FEAreaCoverage::Surface::Create(FEMeshBase& mesh)
+void FEAreaCoverage::Surface::Create(Post::FEMeshBase& mesh)
 {
 	// this assumes that the m_face member has initialized
 	int NF = (int)m_face.size();
@@ -102,7 +102,7 @@ void FEAreaCoverage::Apply(FEModel& fem)
 	int NDATA = fem.GetDataManager()->DataFields() - 1;
 
 	// get the mesh
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	Post::FEMeshBase& mesh = *fem.GetFEMesh(0);
 
 	// build the node lists
 	m_surf1.Create(mesh);
@@ -164,7 +164,7 @@ void FEAreaCoverage::Apply(FEModel& fem)
 void FEAreaCoverage::UpdateSurface(FEAreaCoverage::Surface& s, int nstate)
 {
 	// get the mesh
-	FEMeshBase& mesh = *m_fem->GetFEMesh(0);
+	Post::FEMeshBase& mesh = *m_fem->GetFEMesh(0);
 	FEState& state = *m_fem->GetState(nstate);
 	int NF = s.Faces();
 	int NN = s.Nodes();
@@ -229,7 +229,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 {
 	Intersection q;
 	q.m_index = -1;
-	FEMeshBase& mesh = *m_fem->GetFEMesh(0);
+	Post::FEMeshBase& mesh = *m_fem->GetFEMesh(0);
 
 	vec3f rn[4];
 	FEFace& face = mesh.Face(surf.m_face[nface]);

@@ -196,12 +196,12 @@ void FEMeshBase::RemoveEdges(int ntag)
 // This function assignes group ID's to the mesh' faces based on a smoothing
 // angle.
 //
-void FEMeshBase::AutoSmooth(double w)
+void FEMeshBase::AutoSmooth(double angleDegrees)
 {
 	int NF = Faces();
 
 	// smoothing threshold
-	double eps = (double)cos(w*PI / 180);
+	double eps = (double)cos(angleDegrees * DEG2RAD);
 
 	// clear face group ID's
 	for (int i = 0; i<NF; ++i)
@@ -394,4 +394,15 @@ void FEMeshBase::UpdateMeshData()
 {
 	UpdateNormals();
 	UpdateBox();
+}
+
+//-----------------------------------------------------------------------------
+int FEMeshBase::CountSelectedFaces() const
+{
+	int N = 0, NF = Faces();
+	for (int i = 0; i<NF; ++i)
+	{
+		if (Face(i).IsSelected()) N++;
+	}
+	return N;
 }
