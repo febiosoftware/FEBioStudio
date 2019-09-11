@@ -193,6 +193,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgCloneRevolve.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgDetachSelection.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgEditOutput.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgEditPath.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgEditProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgExportFEBio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFEBioOptimize.cpp" />
@@ -239,6 +240,7 @@
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Intersect.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\Logger.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LogPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MainTabBar.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MainWindow.cpp" />
@@ -398,6 +400,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\Logger.h" />
     <ClInclude Include="..\..\FEBioStudio\modelcheck.h" />
     <ClInclude Include="..\..\FEBioStudio\SSHHandler.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
