@@ -158,6 +158,17 @@ CSSHHandler* CFEBioJob::GetSSHHandler()
 {
 	return m_sshHandler;
 }
+
+void CFEBioJob::GetRemoteJobFiles()
+{
+	m_sshHandler->GetJobFiles();
+}
+
+void CFEBioJob::StartRemoteJob()
+{
+	m_sshHandler->StartRemoteJob();
+}
+
 #endif
 
 void CFEBioJob::SetStatus(JOB_STATUS status)

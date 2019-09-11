@@ -4,10 +4,9 @@
 #include <libssh/libssh.h>
 #include <libssh/sftp.h>
 
-#include <FEBioJob.h>
-#include <LaunchConfig.h>
-#include <MainWindow.h>
-
+#include "FEBioJob.h"
+#include "LaunchConfig.h"
+#include "MainWindow.h"
 
 class CSSHHandler
 {

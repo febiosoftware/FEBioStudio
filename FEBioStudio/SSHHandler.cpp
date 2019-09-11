@@ -4,9 +4,9 @@
 #include <fstream>
 #include <fcntl.h>
 #include <QMessageBox>
-#include <QString>
 #include <QLabel>
-#include <QFileInfo>
+#include <QtCore/QString>
+#include <QtCore/QFileInfo>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QFormLayout>
@@ -515,7 +515,7 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 	}
 
 #ifdef WIN32
-	fileHandle = CreateFile(local.c_str(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	fileHandle = CreateFileA(local.c_str(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 #else
 	fd = open(local.c_str(), O_RDWR | O_CREAT, S_IRWXU);
 	if (fd < 0) {

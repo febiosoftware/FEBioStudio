@@ -21,10 +21,6 @@
 #include "MainWindow.h"
 #include <FSCore/FSDir.h>
 
-#ifdef HAS_SSH
-#include "SSHHandler.h"
-#endif
-
 class CObjectValidator
 {
 public:
@@ -274,7 +270,7 @@ public:
 		else if (i == 5)
 		{
 			// Copy remote files to local dir
-			m_job->GetSSHHandler()->GetJobFiles();
+			m_job->GetRemoteJobFiles();
 		}
 #endif
 	}

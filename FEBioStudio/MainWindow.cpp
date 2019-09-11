@@ -34,10 +34,6 @@
 #include "DlgCheck.h"
 #include "Logger.h"
 
-#ifdef HAS_SSH
-#include "SSHHandler.h"
-#endif
-
 extern GLColor col[];
 
 // create a dark style theme (work in progress)
@@ -1909,7 +1905,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 	else
 	{
 #ifdef HAS_SSH
-		job->GetSSHHandler()->StartRemoteJob();
+		job->StartRemoteJob();
 #endif
 	}
 

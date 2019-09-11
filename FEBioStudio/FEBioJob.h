@@ -44,6 +44,8 @@ public:
 
 #ifdef HAS_SSH
 	CSSHHandler* GetSSHHandler();
+	void GetRemoteJobFiles();
+	void StartRemoteJob();
 #endif
 
 	bool OpenPlotFile();
