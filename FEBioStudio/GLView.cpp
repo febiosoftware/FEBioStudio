@@ -7844,7 +7844,7 @@ void CGLView::RenderTags()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			Post::FENode& node = mesh.Node(i);
+			FENode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
 				tag.r = node.m_rt;
@@ -7861,7 +7861,7 @@ void CGLView::RenderTags()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			Post::FENode& node = mesh.Node(i);
+			FENode& node = mesh.Node(i);
 			if (node.m_ntag == 1)
 			{
 				tag.r = node.m_rt;

@@ -71,7 +71,7 @@ void CStatsWindow::Update(bool breset, bool bfit)
 	{
 		for (i=0; i<pm->Nodes(); ++i)
 		{	
-			Post::FENode& node = pm->Node(i);
+			FENode& node = pm->Node(i);
 			if (node.IsEnabled())
 			{
 				v = ps->m_NODE[i].m_val;
@@ -102,7 +102,7 @@ void CStatsWindow::Update(bool breset, bool bfit)
 	{
 		for (i=0; i<pm->Nodes(); ++i)
 		{
-			Post::FENode& node = pm->Node(i);
+			FENode& node = pm->Node(i);
 			if (node.IsEnabled())
 			{
 				v = ps->m_NODE[i].m_val;

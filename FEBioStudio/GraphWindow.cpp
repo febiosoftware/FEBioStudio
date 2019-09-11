@@ -1045,7 +1045,7 @@ void CModelGraphWindow::addSelectedNodes()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			Post::FENode& node = mesh.Node(i);
+			FENode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
 				for (int j = 0; j<nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
@@ -1065,7 +1065,7 @@ void CModelGraphWindow::addSelectedNodes()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			Post::FENode& node = mesh.Node(i);
+			FENode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
 				for (int j = 0; j<nsteps; j++) xdata[j] = (float)j + 1.f + m_firstState;
@@ -1085,7 +1085,7 @@ void CModelGraphWindow::addSelectedNodes()
 	{
 		for (int i = 0; i<NN; i++)
 		{
-			Post::FENode& node = mesh.Node(i);
+			FENode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
 				TrackNodeHistory(i, &xdata[0], m_dataX, m_firstState, m_lastState);
@@ -1106,7 +1106,7 @@ void CModelGraphWindow::addSelectedNodes()
 		vector<int> sel;
 		for (int i = 0; i < NN; i++)
 		{
-			Post::FENode& node = mesh.Node(i);
+			FENode& node = mesh.Node(i);
 			if (node.IsSelected()) sel.push_back(i);
 		}
 
@@ -1123,7 +1123,7 @@ void CModelGraphWindow::addSelectedNodes()
 
 			for (int i = 0; i < (int)sel.size(); i++)
 			{
-				Post::FENode& node = mesh.Node(sel[i]);
+				FENode& node = mesh.Node(sel[i]);
 				if (node.IsSelected())
 				{
 					// evaluate x-field

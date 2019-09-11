@@ -308,7 +308,7 @@ FEMesh* CPostObject::BuildMesh()
 	for (int i = 0; i < NN; ++i)
 	{
 		FENode& nd = mesh->Node(i);
-		Post::FENode& ns = postMesh->Node(i);
+		FENode& ns = postMesh->Node(i);
 
 		nd.r.x = ns.m_rt.x;
 		nd.r.y = ns.m_rt.y;
@@ -409,7 +409,7 @@ void CPostObject::UpdateMesh()
 	for (int i = 0; i < NN; ++i)
 	{
 		FENode& nd = mesh->Node(i);
-		Post::FENode& ns = postMesh->Node(i);
+		FENode& ns = postMesh->Node(i);
 
 		nd.r.x = ns.m_rt.x;
 		nd.r.y = ns.m_rt.y;

@@ -148,7 +148,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalNodeRange(Post::FEModel& fem, int nsta
 	int NN = mesh.Nodes();
 	for (int i=0; i<NN; i++)
 	{
-		Post::FENode& node = mesh.Node(i);
+		FENode& node = mesh.Node(i);
 		if ((bsel == false) || (node.IsSelected()))
 		{
 			float val = state.m_NODE[i].m_val;

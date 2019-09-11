@@ -158,7 +158,7 @@ double CIntegrateWindow::IntegrateNodes(Post::FEMeshBase& mesh, Post::FEState* p
 	int N = mesh.Nodes();
 	for (int i=0; i<N; ++i)
 	{
-		Post::FENode& node = mesh.Node(i);
+		FENode& node = mesh.Node(i);
 		if (node.IsSelected() && (ps->m_NODE[i].m_ntag > 0))
 		{
 			res += ps->m_NODE[i].m_val;

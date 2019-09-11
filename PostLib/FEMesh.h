@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FENode.h"
+#include <MeshLib/FENode.h>
 #include <MeshLib/FEElement.h>
 #include "FEGroup.h"
 #include "FENodeElemList.h"
