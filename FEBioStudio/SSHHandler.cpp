@@ -541,6 +541,10 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 					ssh_get_error(session));
 			CLogger::AddLogEntry(error);
 			sftp_close(file);
+
+#ifdef WIN32
+			CloseHandle(fileHandle);
+#endif
 			return SSH_ERROR;
 		}
 
@@ -556,6 +560,10 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 					strerror(errno));
 			CLogger::AddLogEntry(error);
 			sftp_close(file);
+
+#ifdef WIN32
+			CloseHandle(fileHandle);
+#endif
 			return SSH_ERROR;
 		}
 	}
@@ -565,9 +573,17 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 		sprintf(error, "Can't close the read file: %s\n",
 				ssh_get_error(session));
 		CLogger::AddLogEntry(error);
+
+#ifdef WIN32
+		CloseHandle(fileHandle);
+#endif
+
 		return rc;
 	}
 
+#ifdef WIN32
+	CloseHandle(fileHandle);
+#endif
 
 	return EndSFTPSession();
 }
