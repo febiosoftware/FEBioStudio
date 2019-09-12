@@ -15,6 +15,8 @@
 		D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346A23233928002D7A13 /* SSHHandler.cpp */; };
 		D5EBB7A7232AEAED00EED2BE /* DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A3232AEAEC00EED2BE /* DlgEditPath.cpp */; };
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
+		D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; };
+		D5EBB7AD232AEF6A00EED2BE /* libssh.4.8.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290023197E8500C16BF7 /* libFSCore.a */; };
 		D5ED290323197E8500C16BF7 /* libGLLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290223197E8500C16BF7 /* libGLLib.a */; };
 		D5ED290523197E8500C16BF7 /* libLSDyna.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290423197E8500C16BF7 /* libLSDyna.a */; };
@@ -318,6 +320,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D5EBB7AD232AEF6A00EED2BE /* libssh.4.8.1.dylib in CopyFiles */,
 				D5ED2A1F2319902B00C16BF7 /* libx265.176.dylib in CopyFiles */,
 				D5ED2A202319902B00C16BF7 /* libmp3lame.0.dylib in CopyFiles */,
 				D5ED2A212319902B00C16BF7 /* libxvidcore.4.dylib in CopyFiles */,
@@ -378,6 +381,7 @@
 		D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchConfig.h; sourceTree = "<group>"; };
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
 		D5EBB7A6232AEAED00EED2BE /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
+		D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.1.dylib; path = ../../../../../../../../../../usr/local/Cellar/libssh/0.9.0_1/lib/libssh.4.8.1.dylib; sourceTree = "<group>"; };
 		D5ED290023197E8500C16BF7 /* libFSCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libFSCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290223197E8500C16BF7 /* libGLLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libGLLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290423197E8500C16BF7 /* libLSDyna.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libLSDyna.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -776,6 +780,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */,
 				D5ED2970231988E600C16BF7 /* libtet.a in Frameworks */,
 				D5ED296D231988CB00C16BF7 /* libiconv.2.dylib in Frameworks */,
 				D5ED296E231988CB00C16BF7 /* libz.1.dylib in Frameworks */,
@@ -1222,6 +1227,7 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */,
 				D5ED296F231988E500C16BF7 /* libtet.a */,
 				D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */,
 				D5ED296C231988CA00C16BF7 /* libz.1.dylib */,
@@ -1620,6 +1626,10 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DHAS_SSH",
+				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -1673,6 +1683,10 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DHAS_SSH",
+				);
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -1693,6 +1707,7 @@
 					/usr/local/opt/qt/include/QtGui,
 					/usr/local/opt/qt/include/QtWidgets,
 					/usr/local/opt/qt/include/QtCharts,
+					/usr/local/opt/libssh/include,
 					"$(SRCROOT)/../..",
 				);
 				INFOPLIST_FILE = "Supporting Files/Info.plist";
@@ -1709,6 +1724,7 @@
 					/usr/local/opt/lame/lib,
 					/usr/local/opt/x265/lib,
 					/usr/local/lib,
+					/usr/local/Cellar/libssh/0.9.0_1/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1732,6 +1748,7 @@
 					/usr/local/opt/qt/include/QtGui,
 					/usr/local/opt/qt/include/QtWidgets,
 					/usr/local/opt/qt/include/QtCharts,
+					/usr/local/opt/libssh/include,
 					"$(SRCROOT)/../..",
 				);
 				INFOPLIST_FILE = "Supporting Files/Info.plist";
@@ -1748,6 +1765,7 @@
 					/usr/local/opt/lame/lib,
 					/usr/local/opt/x265/lib,
 					/usr/local/lib,
+					/usr/local/Cellar/libssh/0.9.0_1/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
