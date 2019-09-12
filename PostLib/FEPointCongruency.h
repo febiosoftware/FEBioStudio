@@ -1,6 +1,6 @@
 #pragma once
 #include <MathLib/math3d.h>
-#include "Intersect.h"
+#include <MeshLib/Intersect.h>
 #include <set>
 using namespace std;
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "FEMesh.h"
-#include "Intersect.h"
+#include <MeshLib/Intersect.h>
 #include <vector>
 #include <string>
 using namespace std;

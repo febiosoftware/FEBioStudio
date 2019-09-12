@@ -1,9 +1,9 @@
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "Intersect.h"
 
 //-----------------------------------------------------------------------------
 // Find intersection of a ray with a triangle
-bool IntersectTriangle(const Ray& ray, const Triangle& tri, Intersection& intersection)
+bool IntersectTriangle(const Ray& ray, const Triangle& tri, Intersection& intersection, bool evalNormal)
 {
 	const double tol = 0.01;
 
@@ -15,8 +15,8 @@ bool IntersectTriangle(const Ray& ray, const Triangle& tri, Intersection& inters
 	vec3d nn = ray.direction;
 
 	// calculate the triangle normal
-	vec3d fn = (n2 - n1)^(n3 - n1);
-	fn.Normalize();
+	vec3d fn = tri.fn;
+	if (evalNormal) { fn = (n2 - n1) ^ (n3 - n1); fn.Normalize(); }
 
 	// find the intersection of the point with the plane
 	if (fn*nn == 0.f) return false;
@@ -365,4 +365,37 @@ bool FindElementIntersection(const Ray& ray, const FEMesh& mesh, Intersection& q
 	}
 
 	return b;
+}
+
+//-----------------------------------------------------------------------------
+bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FEFace& face, Intersection& q)
+{
+	q.m_index = -1;
+
+	vec3d rn[10];
+	mesh.FaceNodePosition(face, rn);
+
+	bool bfound = false;
+	switch (face.m_type)
+	{
+	case FE_FACE_TRI3:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
+	case FE_FACE_TRI10:
+	{
+		Triangle tri = { to_vec3f(rn[0]), to_vec3f(rn[1]), to_vec3f(rn[2]) };
+		bfound = IntersectTriangle(ray, tri, q);
+	}
+	break;
+	case FE_FACE_QUAD4:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
+	{
+		Quad quad = { to_vec3f(rn[0]), to_vec3f(rn[1]), to_vec3f(rn[2]), to_vec3f(rn[3]) };
+		bfound = FastIntersectQuad(ray, quad, q);
+	}
+	break;
+	}
+
+	return bfound;
 }

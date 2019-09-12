@@ -189,7 +189,6 @@
     <ClCompile Include="..\..\PostLib\ImageModel.cpp" />
     <ClCompile Include="..\..\PostLib\ImageSlicer.cpp" />
     <ClCompile Include="..\..\PostLib\ImgAnimation.cpp" />
-    <ClCompile Include="..\..\PostLib\Intersect.cpp" />
     <ClCompile Include="..\..\PostLib\MarchingCubes.cpp" />
     <ClCompile Include="..\..\PostLib\MPEGAnimation.cpp" />
     <ClCompile Include="..\..\PostLib\Palette.cpp" />
@@ -248,7 +247,6 @@
     <ClInclude Include="..\..\PostLib\ImageModel.h" />
     <ClInclude Include="..\..\PostLib\ImageSlicer.h" />
     <ClInclude Include="..\..\PostLib\ImgAnimation.h" />
-    <ClInclude Include="..\..\PostLib\Intersect.h" />
     <ClInclude Include="..\..\PostLib\MarchingCubes.h" />
     <ClInclude Include="..\..\PostLib\MPEGAnimation.h" />
     <ClInclude Include="..\..\PostLib\Palette.h" />

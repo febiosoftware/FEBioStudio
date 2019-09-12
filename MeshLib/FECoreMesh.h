@@ -86,6 +86,12 @@ public:
 
 	// returns a list of node indices that belong to a part with part ID gid
 	void FindNodesFromPart(int gid, vector<int>& node);
+
+	int CountNodePartitions() const;
+	int CountEdgePartitions() const;
+	int CountFacePartitions() const;
+	int CountElementPartitions() const;
+	int CountSmoothingGroups() const;
 };
 
 inline FEElement_* FECoreMesh::ElementPtr(int n) { return ((n >= 0) && (n<Elements()) ? &ElementRef(n) : 0); }

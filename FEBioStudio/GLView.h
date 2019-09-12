@@ -6,7 +6,7 @@
 #include "GManipulator.h"
 #include "GTriad.h"
 #include "GGrid.h"
-#include "Intersect.h"
+#include <MeshLib/Intersect.h>
 #include "GLViewRender.h"
 #include <MeshTools/FEExtrudeFaces.h>
 #include <GLWLib/GLWidgetManager.h>

@@ -216,13 +216,6 @@ public:
 public:
 	void BuildSurfaceNodeNodeTable(vector< set<int> >& NNT);
 
-public:
-	int CountNodePartitions() const;
-	int CountEdgePartitions() const;
-	int CountFacePartitions() const;
-	int CountElementPartitions() const;
-	int CountSmoothingGroups() const;
-
 public: // The following functions may leave the mesh in an invalid state or try to restore (part) of the mesh' state.
 		 // As a result, these functions should be used with care. 
 	void UpdateNodePartitions();

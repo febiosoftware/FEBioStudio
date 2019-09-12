@@ -9,12 +9,12 @@ extern int ET_HEX[12][2];
 extern int DIAG_HEX[16][2];
 
 //-----------------------------------------------------------------------------
-Post::FEMeshBase* FEMeshData::GetFEMesh()
+Post::FEMeshBase* Post::FEMeshData::GetFEMesh()
 { 
 	return m_state->GetFEMesh(); 
 }
 
-FEModel* FEMeshData::GetFEModel()
+FEModel* Post::FEMeshData::GetFEModel()
 { 
 	return m_state->GetFEModel(); 
 }
@@ -183,7 +183,7 @@ void FEDeformationGradient::eval(int n, Mat3d* pv)
 }
 
 //-----------------------------------------------------------------------------
-FEMeshData* FEStrainDataField::CreateData(FEState* pstate)
+Post::FEMeshData* FEStrainDataField::CreateData(FEState* pstate)
 {
 	switch (m_measure)
 	{

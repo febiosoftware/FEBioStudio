@@ -239,7 +239,6 @@
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\Intersect.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Logger.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LogPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MainTabBar.cpp" />
@@ -508,7 +507,6 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\Intersect.h" />
     <ClInclude Include="..\..\FEBioStudio\LogPanel.h" />
     <CustomBuild Include="..\..\FEBioStudio\MainWindow.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

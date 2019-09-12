@@ -90,6 +90,9 @@
     <ClCompile Include="..\..\MeshLib\integrate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshLib\Intersect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshLib\FECoreMesh.h">
@@ -201,6 +204,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshLib\FEElementLibrary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshLib\Intersect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

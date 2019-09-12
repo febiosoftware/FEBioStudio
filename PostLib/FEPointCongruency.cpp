@@ -131,6 +131,7 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 	nface = -1;
 	double Dmin = 0;
 	double rsi[2];
+	vec3f o = to_vec3f(ray.origin);
 	for (int i=0; i<pm->Faces(); ++i)
 	{
 		FEFace& face = pm->Face(i);
@@ -146,7 +147,7 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 
 			if (b)
 			{
-				double D = (q - ray.origin).Length();
+				double D = (q - o).Length();
 				if ((nface == -1) || (D < Dmin))
 				{
 					nface = i;
@@ -176,7 +177,7 @@ bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, do
 	Intersection intersect;
 	bool b = ::IntersectTriangle(ray, tri, intersect);
 
-	q = intersect.point;
+	q = to_vec3f(intersect.point);
 	rs[0] = intersect.r[0];
 	rs[1] = intersect.r[1];
 
@@ -208,7 +209,7 @@ bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, d
 		Intersection intersect;
 		bool b = ::IntersectQuad(ray, quad, intersect);
 
-		q = intersect.point;
+		q = to_vec3f(intersect.point);
 		rs[0] = intersect.r[0];
 		rs[1] = intersect.r[1];
 		return b;

@@ -2,7 +2,7 @@
 #include "FEAreaCoverage.h"
 #include "FEModel.h"
 #include "FEMeshData_T.h"
-#include "Intersect.h"
+#include <MeshLib/Intersect.h>
 using namespace Post;
 
 //-----------------------------------------------------------------------------

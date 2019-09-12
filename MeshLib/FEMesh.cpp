@@ -932,69 +932,6 @@ void FEMesh::SplitFacePartition(int faceID)
 	while (true);
 }
 
-
-//-----------------------------------------------------------------------------
-// count node partitions
-int FEMesh::CountNodePartitions() const
-{
-	int max_gid = -1;
-	for (int i=0; i<Nodes(); ++i)
-	{
-		const FENode& node = Node(i);
-		if (node.m_gid > max_gid) max_gid = node.m_gid;
-	}
-	return max_gid + 1;
-}
-
-//-----------------------------------------------------------------------------
-int FEMesh::CountEdgePartitions() const
-{
-	int max_gid = -1;
-	for (int i = 0; i<Edges(); ++i)
-	{
-		const FEEdge& edge = Edge(i);
-		if (edge.m_gid > max_gid) max_gid = edge.m_gid;
-	}
-	return max_gid + 1;
-}
-
-//-----------------------------------------------------------------------------
-int FEMesh::CountFacePartitions() const
-{
-	int max_gid = -1;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		const FEFace& face = Face(i);
-		if (face.m_gid > max_gid) max_gid = face.m_gid;
-	}
-	return max_gid + 1;
-}
-
-
-//-----------------------------------------------------------------------------
-int FEMesh::CountElementPartitions() const
-{
-	int max_gid = -1;
-	for (int i = 0; i<Elements(); ++i)
-	{
-		const FEElement& elem = Element(i);
-		if (elem.m_gid > max_gid) max_gid = elem.m_gid;
-	}
-	return max_gid + 1;
-}
-
-//-----------------------------------------------------------------------------
-int FEMesh::CountSmoothingGroups() const
-{
-	int max_sg = -1;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		const FEFace& face = Face(i);
-		if (face.m_sid > max_sg) max_sg = face.m_sid;
-	}
-	return max_sg + 1;
-}
-
 //-----------------------------------------------------------------------------
 // Remove elements with tag ntag
 void FEMesh::RemoveElements(int ntag)

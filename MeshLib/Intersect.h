@@ -26,6 +26,7 @@ struct Triangle
 	vec3d	r0;
 	vec3d	r1;
 	vec3d	r2;
+	vec3d	fn;	// face normal
 };
 
 //-----------------------------------------------------------------------------
@@ -39,7 +40,8 @@ struct Quad
 
 //-----------------------------------------------------------------------------
 // Find intersection of a ray with a triangle
-bool IntersectTriangle(const Ray& ray, const Triangle& tri, Intersection& q);
+// To evaluate the normal automatically, set evalNormal to true. Otherwise, the normal in Triangle is used
+bool IntersectTriangle(const Ray& ray, const Triangle& tri, Intersection& q, bool evalNormal = true);
 
 //-----------------------------------------------------------------------------
 // Find intersection of a ray with a quad
@@ -49,6 +51,7 @@ bool FastIntersectQuad(const Ray& ray, const Quad& quad, Intersection& q);
 //-----------------------------------------------------------------------------
 bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, Intersection& q);
 bool FindFaceIntersection(const Ray& ray, const GLMesh& mesh, Intersection& q);
+bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FEFace& face, Intersection& q);
 
 //-----------------------------------------------------------------------------
 bool FindElementIntersection(const Ray& ray, const FEMesh& mesh, Intersection& q, bool selectionState = false);

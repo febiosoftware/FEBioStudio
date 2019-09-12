@@ -740,3 +740,65 @@ void FECoreMesh::UpdateItemVisibility()
 		else edge.Show();
 	}
 }
+
+//-----------------------------------------------------------------------------
+// count node partitions
+int FECoreMesh::CountNodePartitions() const
+{
+	int max_gid = -1;
+	for (int i = 0; i<Nodes(); ++i)
+	{
+		const FENode& node = Node(i);
+		if (node.m_gid > max_gid) max_gid = node.m_gid;
+	}
+	return max_gid + 1;
+}
+
+//-----------------------------------------------------------------------------
+int FECoreMesh::CountEdgePartitions() const
+{
+	int max_gid = -1;
+	for (int i = 0; i<Edges(); ++i)
+	{
+		const FEEdge& edge = Edge(i);
+		if (edge.m_gid > max_gid) max_gid = edge.m_gid;
+	}
+	return max_gid + 1;
+}
+
+//-----------------------------------------------------------------------------
+int FECoreMesh::CountFacePartitions() const
+{
+	int max_gid = -1;
+	for (int i = 0; i<Faces(); ++i)
+	{
+		const FEFace& face = Face(i);
+		if (face.m_gid > max_gid) max_gid = face.m_gid;
+	}
+	return max_gid + 1;
+}
+
+
+//-----------------------------------------------------------------------------
+int FECoreMesh::CountElementPartitions() const
+{
+	int max_gid = -1;
+	for (int i = 0; i<Elements(); ++i)
+	{
+		const FEElement_& elem = ElementRef(i);
+		if (elem.m_gid > max_gid) max_gid = elem.m_gid;
+	}
+	return max_gid + 1;
+}
+
+//-----------------------------------------------------------------------------
+int FECoreMesh::CountSmoothingGroups() const
+{
+	int max_sg = -1;
+	for (int i = 0; i<Faces(); ++i)
+	{
+		const FEFace& face = Face(i);
+		if (face.m_sid > max_sg) max_sg = face.m_sid;
+	}
+	return max_sg + 1;
+}

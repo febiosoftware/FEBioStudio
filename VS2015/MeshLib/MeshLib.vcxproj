@@ -161,6 +161,7 @@
     <ClCompile Include="..\..\MeshLib\insertCurve.cpp" />
     <ClCompile Include="..\..\MeshLib\insertCurve2.cpp" />
     <ClCompile Include="..\..\MeshLib\integrate.cpp" />
+    <ClCompile Include="..\..\MeshLib\Intersect.cpp" />
     <ClCompile Include="..\..\MeshLib\LineMesh2D.cpp" />
     <ClCompile Include="..\..\MeshLib\MeshMetrics.cpp" />
     <ClCompile Include="..\..\MeshLib\MeshTools.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="..\..\MeshLib\hex8.h" />
     <ClInclude Include="..\..\MeshLib\insertCurve.h" />
     <ClInclude Include="..\..\MeshLib\insertCurve2.h" />
+    <ClInclude Include="..\..\MeshLib\Intersect.h" />
     <ClInclude Include="..\..\MeshLib\LineMesh2D.h" />
     <ClInclude Include="..\..\MeshLib\MeshItem2D.h" />
     <ClInclude Include="..\..\MeshLib\MeshMetrics.h" />
