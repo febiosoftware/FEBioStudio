@@ -1054,15 +1054,15 @@ void FECurvature::level(int n, int l, set<int>& nl1)
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
 			// get the node-face list
-			vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
+			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
 			int NF = nfl.size();
 
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				if (m_face[nfl[i].first] == 1)
+				if (m_face[nfl[i].fid] == 1)
 				{
-					FEFace& f = pmesh->Face(nfl[i].first); 
+					FEFace& f = pmesh->Face(nfl[i].fid); 
 					f.m_ntag = 0;
 				}
 			}
@@ -1073,14 +1073,14 @@ void FECurvature::level(int n, int l, set<int>& nl1)
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
 			// get the node-face list
-			vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
+			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
 			int NF = nfl.size();
 
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].first);
-				if (m_face[nfl[i].first] == 1)
+				FEFace& f = pmesh->Face(nfl[i].fid);
+				if (m_face[nfl[i].fid] == 1)
 				{
 					if (f.m_ntag == 0)
 					{
@@ -1132,16 +1132,16 @@ float FECurvature::nodal_curvature(int n, int m)
 	vec3f r0 = pfem->NodePosition(n, ntime);
 
 	// get the node-face list
-	vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(n);
+	const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(n);
 	int NF = nfl.size();
 
 	// estimate surface normal
 	vec3f sn(0,0,0);
 	for (int i=0; i<NF; ++i) 
 	{
-		if (m_face[nfl[i].first] == 1)
+		if (m_face[nfl[i].fid] == 1)
 		{
-			FEFace& f = pmesh->Face(nfl[i].first);
+			FEFace& f = pmesh->Face(nfl[i].fid);
 			sn += pfem->FaceNormal(f, ntime);
 		}
 	}
@@ -1388,15 +1388,15 @@ void FEPrincCurvatureVector::level(int n, int l, set<int>& nl1)
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
 			// get the node-face list
-			vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
+			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
 			int NF = nfl.size();
 
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				if (m_face[nfl[i].first] == 1)
+				if (m_face[nfl[i].fid] == 1)
 				{
-					FEFace& f = pmesh->Face(nfl[i].first); 
+					FEFace& f = pmesh->Face(nfl[i].fid); 
 					f.m_ntag = 0;
 				}
 			}
@@ -1407,14 +1407,14 @@ void FEPrincCurvatureVector::level(int n, int l, set<int>& nl1)
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
 			// get the node-face list
-			vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
+			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
 			int NF = nfl.size();
 
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].first);
-				if (m_face[nfl[i].first] == 1)
+				FEFace& f = pmesh->Face(nfl[i].fid);
+				if (m_face[nfl[i].fid] == 1)
 				{
 					if (f.m_ntag == 0)
 					{
@@ -1466,16 +1466,16 @@ vec3f FEPrincCurvatureVector::nodal_curvature(int n, int m)
 	vec3f r0 = pfem->NodePosition(n, ntime);
 
 	// get the node-face list
-	vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(n);
+	const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(n);
 	int NF = nfl.size();
 
 	// estimate surface normal
 	vec3f sn(0,0,0);
 	for (int i=0; i<NF; ++i) 
 	{
-		if (m_face[nfl[i].first] == 1)
+		if (m_face[nfl[i].fid] == 1)
 		{
-			FEFace& f = pmesh->Face(nfl[i].first);
+			FEFace& f = pmesh->Face(nfl[i].fid);
 			sn += pfem->FaceNormal(f, ntime);
 		}
 	}

@@ -226,7 +226,7 @@ float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 	vec3f r0 = m_pfem->NodePosition(nid, m_nstate);
 
 	// get the node-face list
-	vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(nid);
+	const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(nid);
 	int NF = nfl.size();
 
 	// array of nodal points
@@ -468,13 +468,13 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
 			// get the node-face list
-			vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
+			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
 			int NF = nfl.size();
 
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].first); 
+				FEFace& f = pmesh->Face(nfl[i].fid); 
 				f.m_ntag = 0;
 			}
 		}
@@ -484,13 +484,13 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
 			// get the node-face list
-			vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
+			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
 			int NF = nfl.size();
 
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].first);
+				FEFace& f = pmesh->Face(nfl[i].fid);
 				if (f.m_ntag == 0)
 				{
 					int ne = f.Nodes();

@@ -493,8 +493,8 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate(FESurfaceMesh* pm)
 		Node[i].nc = 0;
 	}
 
-	FENodeFaceList NFL(pm);
-	NFL.BuildSorted();
+	FENodeFaceList NFL;
+	NFL.BuildSorted(pm);
 	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i=0; i<N; ++i)
 	{
@@ -723,8 +723,8 @@ FESurfaceMesh* FECVDDecimationModifier::Triangulate2(FESurfaceMesh* pm)
 	}
 
 	// find all clusters a node belongs to
-	FENodeFaceList NFL(pm);
-	if (NFL.BuildSorted() == false) return 0;
+	FENodeFaceList NFL;
+	if (NFL.BuildSorted(pm) == false) return 0;
 	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
 	for (int i=0; i<N; ++i)
 	{

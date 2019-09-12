@@ -172,7 +172,6 @@
     <ClCompile Include="..\..\PostLib\FEModel.cpp" />
     <ClCompile Include="..\..\PostLib\FENikeExport.cpp" />
     <ClCompile Include="..\..\PostLib\FENikeImport.cpp" />
-    <ClCompile Include="..\..\PostLib\FENodeFaceList.cpp" />
     <ClCompile Include="..\..\PostLib\FEPlotMix.cpp" />
     <ClCompile Include="..\..\PostLib\FEPointCongruency.cpp" />
     <ClCompile Include="..\..\PostLib\FERAWImageReader.cpp" />
@@ -232,7 +231,6 @@
     <ClInclude Include="..\..\PostLib\FEModel.h" />
     <ClInclude Include="..\..\PostLib\FENikeExport.h" />
     <ClInclude Include="..\..\PostLib\FENikeImport.h" />
-    <ClInclude Include="..\..\PostLib\FENodeFaceList.h" />
     <ClInclude Include="..\..\PostLib\FEPlotMix.h" />
     <ClInclude Include="..\..\PostLib\FEPointCongruency.h" />
     <ClInclude Include="..\..\PostLib\FERAWImageReader.h" />

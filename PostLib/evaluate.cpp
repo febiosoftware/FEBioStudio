@@ -320,16 +320,16 @@ void FEModel::EvalFaceField(int ntime, int nfield)
 		for (i=0; i<mesh->Nodes(); ++i)
 		{
 			NODEDATA& node = state.m_NODE[i];
-			vector<NodeFaceRef>& nfl = mesh->NodeFaceList(i);
+			const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(i);
 			node.m_val = 0.f; 
 			node.m_ntag = 0;
 			int n = 0;
 			for (j=0; j<(int) nfl.size(); ++j)
 			{
-				FACEDATA& f = state.m_FACE[nfl[j].first];
+				FACEDATA& f = state.m_FACE[nfl[j].fid];
 				if (f.m_ntag > 0)
 				{
-					node.m_val += faceData.value(nfl[j].first, nfl[j].second);
+					node.m_val += faceData.value(nfl[j].fid, nfl[j].nid);
 					++n;
 				}
 			}
@@ -729,16 +729,16 @@ void FEModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 	else if (IS_FACE_FIELD(nfield))
 	{
 		// we take the average of the adjacent face values
-		vector<NodeFaceRef>& nfl = mesh->NodeFaceList(n);
+		const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(n);
 		if (!nfl.empty())
 		{
 			int nf = (int)nfl.size(), n = 0;
 			float data[FEFace::MAX_NODES], val;
 			for (int i=0; i<nf; ++i)
 			{
-				if (EvaluateFace(nfl[i].first, ntime, nfield, data, val))
+				if (EvaluateFace(nfl[i].fid, ntime, nfield, data, val))
 				{
-					d.m_val += data[nfl[i].second];
+					d.m_val += data[nfl[i].nid];
 					++n;
 				}
 			}
@@ -2051,14 +2051,14 @@ vec3f FEModel::EvaluateNodeVector(int n, int ntime, int nvec)
 	else if (IS_FACE_FIELD(nvec))
 	{
 		// we take the average of the elements that contain this element
-		vector<NodeFaceRef>& nfl = mesh->NodeFaceList(n);
+		const vector<NodeFaceRef>& nfl = mesh->NodeFaceList(n);
 		if (!nfl.empty())
 		{
 			int n = 0;
 			vec3f fv;
 			for (int i=0; i<(int) nfl.size(); ++i) 
 			{
-				if (EvaluateFaceVector(nfl[i].first, ntime, nvec, fv)) { r += fv; n++; }
+				if (EvaluateFaceVector(nfl[i].fid, ntime, nvec, fv)) { r += fv; n++; }
 			}
 			r /= (float) n;
 		}

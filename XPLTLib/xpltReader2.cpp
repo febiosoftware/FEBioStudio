@@ -1,11 +1,12 @@
 #include "xpltReader2.h"
-#include <PostLib/FENodeFaceList.h>
+#include <MeshLib/FENodeFaceList.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEMesh.h>
 #include <PostLib/FEMeshData_T.h>
 
+using namespace Post;
 
 template <class Type> void ReadFaceData_REGION(xpltArchive& ar, Post::FEMeshBase& m, XpltReader2::Surface &s, FEMeshData &data)
 {

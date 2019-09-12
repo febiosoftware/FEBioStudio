@@ -1,9 +1,9 @@
 #include "FENodeFaceList.h"
 
 //-----------------------------------------------------------------------------
-FENodeFaceList::FENodeFaceList(FEMeshBase* pm)
+FENodeFaceList::FENodeFaceList()
 {
-	m_pm = pm;
+	m_pm = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -12,11 +12,23 @@ FENodeFaceList::~FENodeFaceList(void)
 }
 
 //-----------------------------------------------------------------------------
+void FENodeFaceList::Clear()
+{
+	m_face.clear();
+}
+
+//-----------------------------------------------------------------------------
+bool FENodeFaceList::IsEmpty() const
+{
+	return m_face.empty();
+}
+
+//-----------------------------------------------------------------------------
 // Builds a sorted node-facet list. That is, the facets form a star around the node.
 // Note that for non-manifold topologies this may fail, so make sure to check the return value.
-bool FENodeFaceList::BuildSorted()
+bool FENodeFaceList::BuildSorted(FEMeshBase* pm)
 {
-	Build();
+	Build(pm);
 
 	// sort the faces
 	int N = m_pm->Nodes();
@@ -29,31 +41,16 @@ bool FENodeFaceList::BuildSorted()
 }
 
 //-----------------------------------------------------------------------------
-void FENodeFaceList::Build()
+void FENodeFaceList::Build(FEMeshBase* pm)
 {
+	m_pm = pm;
 	assert(m_pm);
 	FEMeshBase& m = *m_pm;
 
 	int NN = m.Nodes();
 	int NF = m.Faces();
-	m_val.assign(NN, 0);
-	int nsize = 0;
-	for (int i = 0; i<NF; ++i)
-	{
-		FEFace& face = m_pm->Face(i);
-		int nf = face.Nodes();
-		for (int j = 0; j<nf; ++j) m_val[face.n[j]]++;
-		nsize += nf;
-	}
 
-	m_off.assign(NN, 0);
-	m_off[0] = 0;
-	for (int i = 1; i<NN; ++i) m_off[i] = m_off[i - 1] + m_val[i - 1];
-
-	for (int i = 0; i<NN; ++i) m_val[i] = 0;
-
-	m_pface.resize(nsize);
-	m_nface.resize(nsize);
+	m_face.resize(NN);
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& f = m.Face(i);
@@ -61,10 +58,14 @@ void FENodeFaceList::Build()
 		for (int j = 0; j<nf; ++j)
 		{
 			int n = f.n[j];
-			int noff = m_off[n] + m_val[n];
-			m_pface[noff] = &f;
-			m_nface[noff] = i;
-			m_val[n]++;
+			vector<NodeFaceRef>& li = m_face[n];
+
+			NodeFaceRef ref;
+			ref.fid = i;
+			ref.nid = j;
+			ref.pf = &f;
+
+			li.push_back(ref);
 		}
 	}
 }
@@ -94,24 +95,24 @@ int FENodeFaceList::FindFace(const FEFace& f)
 bool FENodeFaceList::Sort(int node)
 {
 	int nval = Valence(node);
-	vector<FEFace*> fl; fl.reserve(nval);
+	vector<NodeFaceRef> fl; fl.reserve(nval);
 
 	for (int i=0; i<nval; ++i) Face(node, i)->m_ntag = 0;
 
-	FEFace* pf = Face(node, 0);
-	pf->m_ntag = 1;
-	fl.push_back(pf);
+	NodeFaceRef ref = m_face[node][0];
+	ref.pf->m_ntag = 1;
+	fl.push_back(ref);
 	bool bdone = false;
 	do
 	{
 		bdone = true;
 
 		int m = -1;
-		if (pf->n[0] == node) m = 0;
-		else if (pf->n[1] == node) m = 1;
-		else if (pf->n[2] == node) m = 2;
+		if      (ref.pf->n[0] == node) m = 0;
+		else if (ref.pf->n[1] == node) m = 1;
+		else if (ref.pf->n[2] == node) m = 2;
 
-		int nj = pf->m_nbr[(m+2)%3];
+		int nj = ref.pf->m_nbr[(m+2)%3];
 		if (nj >= 0)
 		{
 			FEFace* pf2 = &m_pm->Face(nj);
@@ -119,8 +120,19 @@ bool FENodeFaceList::Sort(int node)
 			if (pf2->m_ntag == 0)
 			{
 				pf2->m_ntag = 1;
-				fl.push_back(pf2);
-				pf = pf2;
+
+				int k = 0;
+				for (; k < nval; ++k)
+				{
+					if (Face(node, k) == pf2)
+					{
+						break;
+					}
+				}
+				assert(k < nval);
+
+				fl.push_back(m_face[node][k]);
+				ref = m_face[node][k];
 				bdone = false;
 			}
 		}
@@ -130,11 +142,44 @@ bool FENodeFaceList::Sort(int node)
 	// for non-manifold topologies this algorithm
 	// can fail. In that case, we return false
 	if ((int)fl.size() != nval) return false;
-
-	for (int i=0; i<nval; ++i)
-	{
-		m_pface[m_off[node] + i] = fl[i];
-	}
+	m_face[node] = fl;
 
 	return true;
+}
+
+const vector<NodeFaceRef>& FENodeFaceList::FaceList(int n) const
+{ 
+	return m_face[n]; 
+}
+
+//-----------------------------------------------------------------------------
+// This function will fail if the facet could not be found. 
+// The most likely cause would be if the facet is an interal fact, since PostView does not
+// process internal facets (e.g. facets between two materials).
+// \todo perhaps I should modify PostView so that it stores internal facets as well.
+int FENodeFaceList::FindFace(int inode, int n[10], int m)
+{
+	FEFace ft;
+	for (int i = 0; i<m; ++i) ft.n[i] = n[i];
+	switch (m)
+	{
+	case 3: ft.m_type = FE_FACE_TRI3; break;
+	case 4: ft.m_type = FE_FACE_QUAD4; break;
+	case 6: ft.m_type = FE_FACE_TRI6; break;
+	case 7: ft.m_type = FE_FACE_TRI7; break;
+	case 8: ft.m_type = FE_FACE_QUAD8; break;
+	case 9: ft.m_type = FE_FACE_QUAD9; break;
+	case 10: ft.m_type = FE_FACE_TRI10; break;
+	default:
+		assert(false);
+	};
+
+	vector<NodeFaceRef>& ni = m_face[inode];
+	int nf = (int)ni.size();
+	for (int i = 0; i<nf; ++i)
+	{
+		FEFace& f = m_pm->Face(ni[i].fid);
+		if (f == ft) return ni[i].fid;
+	}
+	return -1;
 }

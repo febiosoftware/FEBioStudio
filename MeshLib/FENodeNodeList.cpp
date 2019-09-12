@@ -90,8 +90,8 @@ void FENodeNodeList::Build(FESurfaceMesh* pm)
 	assert(pm);
 	if (pm == 0) return;
 
-	FENodeFaceList NFL(pm);
-	NFL.Build();
+	FENodeFaceList NFL;
+	NFL.Build(pm);
 
 	int i, j, k, n;
 	int NN = pm->Nodes();

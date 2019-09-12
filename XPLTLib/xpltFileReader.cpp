@@ -34,7 +34,7 @@ xpltFileReader::~xpltFileReader()
 {
 }
 
-bool xpltFileReader::Load(FEModel& fem, const char* szfile)
+bool xpltFileReader::Load(Post::FEModel& fem, const char* szfile)
 {
 	// open the file
 	if (Open(szfile, "rb") == false) return errf("Failed opening file.");
@@ -59,7 +59,7 @@ bool xpltFileReader::Load(FEModel& fem, const char* szfile)
 	}
 
 	// set the model's meta data
-	MetaData& meta = fem.GetMetaData();
+	Post::MetaData& meta = fem.GetMetaData();
 	meta.author = m_hdr.author;
 	meta.software = m_hdr.software;
 

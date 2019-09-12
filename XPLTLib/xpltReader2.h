@@ -8,8 +8,6 @@ namespace Post {
 	class FEMeshData;
 }
 
-using namespace Post;
-
 //-----------------------------------------------------------------------------
 // This class reads the XPLT file, version 2.0
 class XpltReader2 : public xpltParser
@@ -275,20 +273,20 @@ public:
 	XpltReader2(xpltFileReader* xplt);
 	~XpltReader2();
 
-	bool Load(FEModel& fem);
+	bool Load(Post::FEModel& fem);
 
 protected:
-	bool ReadRootSection(FEModel& fem);
-	bool ReadStateSection(FEModel& fem);
+	bool ReadRootSection(Post::FEModel& fem);
+	bool ReadStateSection(Post::FEModel& fem);
 
-	bool ReadDictionary(FEModel& fem);
-	bool ReadMesh(FEModel& fem);
+	bool ReadDictionary(Post::FEModel& fem);
+	bool ReadMesh(Post::FEModel& fem);
 
 	bool ReadDictItem(DICT_ITEM& it);
 
-	void CreateMaterials(FEModel& fem);
+	void CreateMaterials(Post::FEModel& fem);
 
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(Post::FEModel& fem);
 
 protected:
 	bool ReadGlobalDicItems  ();
@@ -297,25 +295,25 @@ protected:
 	bool ReadElemDicItems    ();
 	bool ReadFaceDicItems    ();
 
-	bool ReadNodeSection   (FEModel& fem);
-	bool ReadDomainSection (FEModel& fem);
-	bool ReadSurfaceSection(FEModel& fem);
-	bool ReadNodeSetSection(FEModel& fem);
-	bool ReadPartsSection  (FEModel& fem);
+	bool ReadNodeSection   (Post::FEModel& fem);
+	bool ReadDomainSection (Post::FEModel& fem);
+	bool ReadSurfaceSection(Post::FEModel& fem);
+	bool ReadNodeSetSection(Post::FEModel& fem);
+	bool ReadPartsSection  (Post::FEModel& fem);
 
-	bool ReadGlobalData  (FEModel& fem, FEState* pstate);
-	bool ReadMaterialData(FEModel& fem, FEState* pstate);
-	bool ReadNodeData    (FEModel& fem, FEState* pstate);
-	bool ReadElemData    (FEModel& fem, FEState* pstate);
-	bool ReadFaceData    (FEModel& fem, FEState* pstate);
+	bool ReadGlobalData  (Post::FEModel& fem, Post::FEState* pstate);
+	bool ReadMaterialData(Post::FEModel& fem, Post::FEState* pstate);
+	bool ReadNodeData    (Post::FEModel& fem, Post::FEState* pstate);
+	bool ReadElemData    (Post::FEModel& fem, Post::FEState* pstate);
+	bool ReadFaceData    (Post::FEModel& fem, Post::FEState* pstate);
 
-	bool ReadElemData_NODE(Post::FEMeshBase& m, Domain& d, FEMeshData& s, int ntype, int arrSize);
-	bool ReadElemData_ITEM(Domain& d, FEMeshData& s, int ntype, int arrSize);
-	bool ReadElemData_MULT(Domain& d, FEMeshData& s, int ntype);
+	bool ReadElemData_NODE(Post::FEMeshBase& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
+	bool ReadElemData_ITEM(Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
+	bool ReadElemData_MULT(Domain& d, Post::FEMeshData& s, int ntype);
 
-	bool ReadFaceData_NODE(Post::FEMeshBase& m, Surface& s, FEMeshData& data, int ntype);
-	bool ReadFaceData_ITEM(Surface& s, FEMeshData& data, int ntype);
-	bool ReadFaceData_MULT(Post::FEMeshBase& m, Surface& s, FEMeshData& data, int ntype);
+	bool ReadFaceData_NODE(Post::FEMeshBase& m, Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_ITEM(Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_MULT(Post::FEMeshBase& m, Surface& s, Post::FEMeshData& data, int ntype);
 
 	void Clear();
 
@@ -341,6 +339,6 @@ protected:
 
 	int		m_nel;
 
-	FEState*	m_pstate;	//!< last read state section
+	Post::FEState*	m_pstate;	//!< last read state section
 	Post::FEMeshBase*	m_mesh;		//!< current mesh
 };

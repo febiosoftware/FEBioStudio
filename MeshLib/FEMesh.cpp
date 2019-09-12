@@ -1531,8 +1531,8 @@ void FEMesh::UpdateFaceNeighbors()
 	while (S.empty() == false);
 
 	// build the node-face table
-	FENodeFaceList NFT(this);
-	NFT.Build();
+	FENodeFaceList NFT;
+	NFT.Build(this);
 
 	// find all face neighbours
 	int n[4];
@@ -3662,6 +3662,7 @@ void FEMesh::PartitionElementSelection()
 						if (ej.m_gid != el.m_gid)
 						{
 							FEFace fj = el.GetFace(j);
+							fj.m_gid = nfp;
 							AddFace(fj);
 							newFaces++;
 						}
@@ -3670,7 +3671,7 @@ void FEMesh::PartitionElementSelection()
 				else
 				{
 					FEFace& face = Face(el.m_face[j]);
-					face.m_gid += nfp;
+					face.m_gid += nfp + 1;
 				}
 			}
 
@@ -3679,7 +3680,7 @@ void FEMesh::PartitionElementSelection()
 			if (ne > 0)
 			{
 				assert(el.m_face[0] != -1);
-				Face(el.m_face[0]).m_gid += nfp;
+				Face(el.m_face[0]).m_gid += nfp + 1;
 			}
 		}
 	}

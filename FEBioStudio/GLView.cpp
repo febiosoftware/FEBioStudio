@@ -5423,8 +5423,8 @@ void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
 	}
 	else
 	{
-		FENodeFaceList NFL(pm);
-		NFL.Build();
+		FENodeFaceList NFL;
+		NFL.Build(pm);
 
 		int n = n0;
 		do

@@ -1,5 +1,5 @@
 #include "xpltReader.h"
-#include <PostLib/FENodeFaceList.h>
+#include <MeshLib/FENodeFaceList.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>

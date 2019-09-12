@@ -168,8 +168,8 @@ void FEMeshSmoothingModifier::Taubin_Smoothing(FEMesh* pnew,vector<int> hashmap)
 void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int> hashmap)
 {
 	//creating Node Element list
-	FENodeFaceList NFL(pnew);
-	NFL.Build();
+	FENodeFaceList NFL;
+	NFL.Build(pnew);
 
 	//calculating m(R) for each face i.e for each triangle	
 	vector<FEFace*> mR ;

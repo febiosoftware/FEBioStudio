@@ -5,7 +5,7 @@
 #include <MeshLib/FECoreMesh.h>
 #include "FEGroup.h"
 #include <MeshLib/FENodeElementList.h>
-#include "FENodeFaceList.h"
+#include <MeshLib/FENodeFaceList.h>
 #include <FSCore/box.h>
 #include <utility>
 #include <vector>
@@ -37,7 +37,7 @@ public:
 	void UpdateMeshData() override;
 
 	const vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
-	vector<NodeFaceRef>& NodeFaceList(int n) { return m_NFL.FaceList(n); }
+	const vector<NodeFaceRef>& NodeFaceList(int n) const { return m_NFL.FaceList(n); }
 
 	// --- G E O M E T R Y ---
 

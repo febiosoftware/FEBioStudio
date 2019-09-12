@@ -102,9 +102,6 @@
     <ClCompile Include="..\..\PostLib\FENikeImport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\PostLib\FENodeFaceList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\PostLib\FEPlotMix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -276,9 +273,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\FENikeImport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PostLib\FENodeFaceList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\FEPlotMix.h">

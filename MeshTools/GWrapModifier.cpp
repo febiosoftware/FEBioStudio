@@ -131,8 +131,8 @@ void GWrapModifier::ClosestPoint(FEMesh *pm, vector<vec3d>& DS, vector<int>& tag
 	FEMesh* ptrg = m_po->GetFEMesh();
 
 	// create the node-face list for the target mesh
-	FENodeFaceList NFL(ptrg);
-	NFL.Build();
+	FENodeFaceList NFL;
+	NFL.Build(ptrg);
 
 	// get the source object
 	GObject* ps = pm->GetGObject();
