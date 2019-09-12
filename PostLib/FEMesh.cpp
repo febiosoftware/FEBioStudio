@@ -584,8 +584,32 @@ void Post::FEMeshBase::UpdateNodes()
 }
 
 //-----------------------------------------------------------------------------
+vec3d Post::FEMeshBase::ElementCenter(FEElement_& el) const
+{
+	vec3d r;
+	int N = el.Nodes();
+	for (int i = 0; i<N; i++) r += m_Node[el.m_node[i]].r;
+	return r / (float)N;
+}
+
+//-----------------------------------------------------------------------------
+vec3d Post::FEMeshBase::FaceCenter(FEFace& f) const
+{
+	vec3d r;
+	int N = f.Nodes();
+	for (int i = 0; i<N; i++) r += m_Node[f.n[i]].r;
+	return r / (float)N;
+}
+
+//-----------------------------------------------------------------------------
+vec3d Post::FEMeshBase::EdgeCenter(FEEdge& e) const
+{
+	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r)*0.5f;
+}
+
+//-----------------------------------------------------------------------------
 // area of triangle
-double triangle_area(const vec3f& r0, const vec3f& r1, const vec3f& r2)
+double triangle_area(const vec3d& r0, const vec3d& r1, const vec3d& r2)
 {
 	return ((r1 - r0)^(r2 - r0)).Length()*0.5f;
 }
@@ -594,16 +618,16 @@ double triangle_area(const vec3f& r0, const vec3f& r1, const vec3f& r2)
 double Post::FEMeshBase::FaceArea(FEFace &f)
 {
 	const int N = f.Nodes();
-	vector<vec3f> nodes(N);
+	vector<vec3d> nodes(N);
 	for (int i = 0; i < N; ++i)
 	{
-		nodes[i] = m_Node[f.n[i]].m_rt;
+		nodes[i] = m_Node[f.n[i]].r;
 	}
 	return FaceArea(nodes, N);
 }
 
 //-----------------------------------------------------------------------------
-double Post::FEMeshBase::FaceArea(const vector<vec3f>& r, int faceType)
+double Post::FEMeshBase::FaceArea(const vector<vec3d>& r, int faceType)
 {
 	switch (faceType)
 	{
@@ -677,7 +701,7 @@ double Post::FEMeshBase::FaceArea(const vector<vec3f>& r, int faceType)
 			for (n=0; n<NINT; ++n)
 			{
 				// calculate jacobian
-				vec3f dxr, dxs;
+				vec3d dxr, dxs;
 				for (i=0; i<NELN; ++i)
 				{
 					dxr.x += Gr[n][i]*r[i].x;
@@ -689,7 +713,7 @@ double Post::FEMeshBase::FaceArea(const vector<vec3f>& r, int faceType)
 					dxs.z += Gs[n][i]*r[i].z;
 				}
 
-				float detJ = (dxr ^ dxs).Length();
+				double detJ = (dxr ^ dxs).Length();
 
 				A += gw[n]*detJ;
 			}
@@ -802,8 +826,8 @@ float Post::FEMeshBase::HexVolume(const FEElement_& el)
 	float J[3][3];
 	int i, n;
 
-	vec3f rt[NELN];
-	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].m_rt;
+	vec3d rt[NELN];
+	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
 
 	for (n=0; n<NINT; ++n)
 	{
@@ -915,8 +939,8 @@ float Post::FEMeshBase::PentaVolume(const FEElement_& el)
 	float J[3][3];
 	int i, n;
 
-	vec3f rt[NELN];
-	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].m_rt;
+	vec3d rt[NELN];
+	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
 
 	for (n=0; n<NINT; ++n)
 	{
@@ -1019,8 +1043,8 @@ float Post::FEMeshBase::PyramidVolume(const FEElement_& el)
 	float J[3][3];
 	int i, n;
 
-	vec3f rt[NELN];
-	for (i = 0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].m_rt;
+	vec3d rt[NELN];
+	for (i = 0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
 
 	for (n = 0; n<NINT; ++n)
 	{
@@ -1123,8 +1147,8 @@ float Post::FEMeshBase::TetVolume(const FEElement_& el)
 	float J[3][3];
 	int i, n;
 
-	vec3f rt[NELN];
-	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].m_rt;
+	vec3d rt[NELN];
+	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
 
 	for (n=0; n<NINT; ++n)
 	{
@@ -1162,27 +1186,27 @@ float Post::FEMeshBase::TetVolume(const FEElement_& el)
 }
 
 //-----------------------------------------------------------------------------
-void Post::FEMeshBase::FaceNodePosition(const FEFace& f, vec3f* r) const
+void Post::FEMeshBase::FaceNodePosition(const FEFace& f, vec3d* r) const
 {
 	switch (f.m_type)
 	{
 	case FE_FACE_TRI10:
-		r[9] = m_Node[f.n[9]].m_rt;
+		r[9] = m_Node[f.n[9]].r;
 	case FE_FACE_QUAD9:
-		r[8] = m_Node[f.n[8]].m_rt;
+		r[8] = m_Node[f.n[8]].r;
 	case FE_FACE_QUAD8:
-		r[7] = m_Node[f.n[7]].m_rt;
+		r[7] = m_Node[f.n[7]].r;
 	case FE_FACE_TRI7:
-		r[6] = m_Node[f.n[6]].m_rt;
+		r[6] = m_Node[f.n[6]].r;
 	case FE_FACE_TRI6:
-		r[5] = m_Node[f.n[5]].m_rt;
-		r[4] = m_Node[f.n[4]].m_rt;
+		r[5] = m_Node[f.n[5]].r;
+		r[4] = m_Node[f.n[4]].r;
 	case FE_FACE_QUAD4:
-		r[3] = m_Node[f.n[3]].m_rt;
+		r[3] = m_Node[f.n[3]].r;
 	case FE_FACE_TRI3:
-		r[2] = m_Node[f.n[2]].m_rt;
-		r[1] = m_Node[f.n[1]].m_rt;
-		r[0] = m_Node[f.n[0]].m_rt;
+		r[2] = m_Node[f.n[2]].r;
+		r[1] = m_Node[f.n[1]].r;
+		r[0] = m_Node[f.n[0]].r;
 		break;
 	default:
 		assert(false);
@@ -1320,7 +1344,7 @@ bool Post::ProjectInsideElement(FEMeshBase& m, FEElement_& el, const vec3f& p, d
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
 	vec3f x[FEElement::MAX_NODES];
-	for (int i = 0; i<ne; ++i) x[i] = m.Node(el.m_node[i]).m_rt;
+	for (int i = 0; i<ne; ++i) x[i] = to_vec3f(m.Node(el.m_node[i]).r);
 
 	project_inside_element(el, p, r, x);
 
@@ -1330,7 +1354,7 @@ bool Post::ProjectInsideElement(FEMeshBase& m, FEElement_& el, const vec3f& p, d
 //-----------------------------------------------------------------------------
 bool Post::FindElementRef(FEMeshBase& m, const vec3f& p, int& nelem, double r[3])
 {
-	vec3f y[FEElement::MAX_NODES];
+	vec3d y[FEElement::MAX_NODES];
 	int NE = m.Elements();
 	for (int i=0; i<NE; ++i)
 	{
@@ -1339,11 +1363,11 @@ bool Post::FindElementRef(FEMeshBase& m, const vec3f& p, int& nelem, double r[3]
 		nelem = i;
 
 		// do a quick bounding box test
-		vec3f r0 = m.Node(e.m_node[0]).m_rt;
-		vec3f r1 = r0;
+		vec3d r0 = m.Node(e.m_node[0]).r;
+		vec3d r1 = r0;
 		for (int j=1; j<ne; ++j)
 		{
-			vec3f& rj = m.Node(e.m_node[j]).m_rt;
+			vec3d& rj = m.Node(e.m_node[j]).r;
 			if (rj.x < r0.x) r0.x = rj.x;
 			if (rj.y < r0.y) r0.y = rj.y;
 			if (rj.z < r0.z) r0.z = rj.z;
@@ -1645,11 +1669,11 @@ void Post::FEFindElement::InitCurrentFrame(vector<bool>& flags)
 	int NE = m_mesh.Elements();
 	if ((NN == 0) || (NE == 0)) return;
 
-	vec3f r = m_mesh.Node(0).m_rt;
+	vec3d r = m_mesh.Node(0).r;
 	BOX box(r, r);
 	for (int i = 1; i<m_mesh.Nodes(); ++i)
 	{
-		r = m_mesh.Node(i).m_rt;
+		r = m_mesh.Node(i).r;
 		box += r;
 	}
 	double R = box.GetMaxExtent();
@@ -1681,12 +1705,12 @@ void Post::FEFindElement::InitCurrentFrame(vector<bool>& flags)
 			int ne = e.Nodes();
 
 			// do a quick bounding box test
-			vec3f r0 = m_mesh.Node(e.m_node[0]).m_rt;
-			vec3f r1 = r0;
+			vec3d r0 = m_mesh.Node(e.m_node[0]).r;
+			vec3d r1 = r0;
 			BOX box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
-				vec3f& rj = m_mesh.Node(e.m_node[j]).m_rt;
+				vec3d& rj = m_mesh.Node(e.m_node[j]).r;
 				box += rj;
 			}
 			double R = box.GetMaxExtent();

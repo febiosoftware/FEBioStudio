@@ -151,9 +151,9 @@ bool GMeshImport::BuildMesh(FEModel& fem)
 	{
 		FENode& n = pm->Node(i);
 		NODE& node = m_Node[i];
-		n.r.x = n.m_rt.x = node.r.x;
-		n.r.y = n.m_rt.y = node.r.y;
-		n.r.z = n.m_rt.z = node.r.z;
+		n.r.x = node.r.x;
+		n.r.y = node.r.y;
+		n.r.z = node.r.z;
 	}
 
 	// create elements

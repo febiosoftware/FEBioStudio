@@ -215,7 +215,7 @@ public:
 		view->GetViewport(m_vp);
 	}
 
-	vec3f Apply(const vec3f& r)
+	vec3d Apply(const vec3d& r)
 	{
 		// get the homogeneous coordinates
 		q[0] = r.x; q[1] = r.y; q[2] = r.z; q[3] = 1.0;
@@ -231,10 +231,10 @@ public:
 
 		int W = m_vp[2];
 		int H = m_vp[3];
-		float xd = W*((d.x + 1.f)*0.5f);
-		float yd = H - H*((d.y + 1.f)*0.5f);
+		double xd = W*((d.x + 1.f)*0.5f);
+		double yd = H - H*((d.y + 1.f)*0.5f);
 
-		return vec3f(xd, yd, d.z);
+		return vec3d(xd, yd, d.z);
 	}
 
 private:
@@ -7847,7 +7847,7 @@ void CGLView::RenderTags()
 			FENode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
-				tag.r = node.m_rt;
+				tag.r = node.r;
 				tag.bvis = false;
 				tag.ntag = (node.m_bext ? 0 : 1);
 				sprintf(tag.sztag, "N%d", node.GetID());
@@ -7864,7 +7864,7 @@ void CGLView::RenderTags()
 			FENode& node = mesh.Node(i);
 			if (node.m_ntag == 1)
 			{
-				tag.r = node.m_rt;
+				tag.r = node.r;
 				tag.bvis = false;
 				tag.ntag = (node.m_bext ? 0 : 1);
 				sprintf(tag.sztag, "N%d", node.GetID());
@@ -7885,7 +7885,7 @@ void CGLView::RenderTags()
 	WorldToScreen transform(this);
 	for (int i = 0; i<nsel; i++)
 	{
-		vec3f p = transform.Apply(vtag[i].r);
+		vec3d p = transform.Apply(vtag[i].r);
 		vtag[i].wx = p.x;
 		vtag[i].wy = m_viewport[3] - p.y;
 		vtag[i].bvis = true;

@@ -209,8 +209,6 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 		n.r.x = xyz[0];
 		n.r.y = xyz[1];
 		n.r.z = xyz[2];
-
-		n.m_rt = to_vec3f(n.r);
 	}
 
 	int nread;

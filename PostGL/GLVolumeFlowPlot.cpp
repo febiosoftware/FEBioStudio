@@ -115,10 +115,10 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 	int NS = pfem->GetStates();
 
 	// update the box
-	BOX b(pm->Node(0).m_rt, pm->Node(0).m_rt);
+	BOX b(pm->Node(0).r, pm->Node(0).r);
 	for (int i = 0; i < NN; ++i)
 	{
-		vec3f& ri = pm->Node(i).m_rt;
+		vec3d& ri = pm->Node(i).r;
 		if (ri.x < b.x0) b.x0 = ri.x; if (ri.x > b.x1) b.x1 = ri.x;
 		if (ri.y < b.y0) b.y0 = ri.y; if (ri.y > b.y1) b.y1 = ri.y;
 		if (ri.z < b.z0) b.z0 = ri.z; if (ri.z > b.z1) b.z1 = ri.z;
@@ -180,14 +180,14 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 	m_crng = m_rng[ntime];
 }
 
-void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3f& norm, float ref)
+void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 {
 	slice.clear();
 	slice.reserve(100);
 
 	float ev[8];	// element nodal values
 	float ex[8];	// element nodal distances
-	vec3f er[8];
+	vec3d er[8];
 
 	const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 	const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -234,8 +234,8 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3f& norm, float ref)
 				f = (f - rng.x) / (rng.y - rng.x);
 
 				ev[k] = f;
-				er[k] = node.m_rt;
-				ex[k] = node.m_rt*norm;
+				er[k] = node.r;
+				ex[k] = node.r*norm;
 			}
 
 			// calculate the case of the element
@@ -250,14 +250,14 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3f& norm, float ref)
 				if (*pf == -1) break;
 
 				// calculate nodal positions
-				vec3f r[3];
-				float v[3];
+				vec3d r[3];
+				double v[3];
 				for (int k = 0; k<3; k++)
 				{
 					int n1 = ET_HEX[pf[k]][0];
 					int n2 = ET_HEX[pf[k]][1];
 
-					float w = 0.5;
+					double w = 0.5;
 					if (ex[n2] != ex[n1])
 						w = (ref - ex[n1]) / (ex[n2] - ex[n1]);
 					

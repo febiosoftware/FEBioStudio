@@ -202,8 +202,8 @@ void CGLSlicePlot::RenderSlice(float ref)
 				f = (f - rng.x) / (rng.y - rng.x);
 
 				ev[k] = f;
-				er[k] = node.m_rt;
-				ex[k] = node.m_rt*norm;
+				er[k] = to_vec3f(node.r);
+				ex[k] = node.r*norm;
 			}
 
 			// calculate the case of the element

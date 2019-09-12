@@ -367,7 +367,7 @@ void CGLPlaneCutPlot::RenderMesh()
 				FENode& node = pm->Node(el.m_node[nt[k]]);
 				en[k] = el.m_node[k];
 				ev[k] = node.m_tex;
-				ex[k] = node.m_rt;
+				ex[k] = node.r;
 			}
 
 			// loop over faces
@@ -573,7 +573,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 							{
 								FENode& node = pm->Node(el.m_node[nt[k]]);
 								nf[k] = (node.m_bext?1:0);
-								ex[k] = node.m_rt;
+								ex[k] = to_vec3f(node.r);
 								en[k] = el.m_node[k];
 								ev[k] = (bnode ? node.m_tex : el.m_tex);
 							}

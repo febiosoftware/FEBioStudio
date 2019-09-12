@@ -25,11 +25,7 @@ public:
 	bool IsExterior() const { return m_bext; }
 
 public:
-	// PreView
-	vec3d	r;				// nodal position
-	bool	m_bext;			// exterior node or not?
-
-	// PostView
-	vec3f	m_rt;	// current coordinates of node
-	float	m_tex;	// nodal texture coordinate
+	vec3d	r;			// nodal position
+	bool	m_bext;		// exterior node or not?
+	float	m_tex;		// nodal texture coordinate (used in Post)
 };

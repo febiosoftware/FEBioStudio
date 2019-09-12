@@ -67,7 +67,6 @@ bool FERAWImageReader::Load(FEModel& fem, const char* szfile)
 				nd.r.x = (double) i * dx;
 				nd.r.y = (double) j * dy;
 				nd.r.z = (double) k * dz;
-				nd.m_rt = to_vec3f(nd.r);
 			}
 
 	if (dim == 2)

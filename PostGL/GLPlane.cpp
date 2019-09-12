@@ -18,7 +18,7 @@ using namespace Post;
 CGLPlane::CGLPlane(FEModel* pm)
 {
 	m_pfem = pm;
-	m_e[2] = vec3f(0,0,1);
+	m_e[2] = vec3d(0,0,1);
 }
 
 CGLPlane::~CGLPlane(void)
@@ -34,11 +34,11 @@ void CGLPlane::Create(int n[3])
 		FENode& n2 = pm->Node(n[1]-1);
 		FENode& n3 = pm->Node(n[2]-1);
 
-		vec3f r1 = n1.m_rt;
-		vec3f r2 = n2.m_rt;
-		vec3f r3 = n3.m_rt;
+		vec3d r1 = n1.r;
+		vec3d r2 = n2.r;
+		vec3d r3 = n3.r;
 
-		m_rc = (r1 + r2 + r3)/3.f;
+		m_rc = (r1 + r2 + r3)/3.0;
 
 		BOX box = m_pfem->GetBoundingBox();
 		double R = box.Radius();

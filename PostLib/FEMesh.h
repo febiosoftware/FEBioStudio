@@ -105,30 +105,15 @@ public:
 
 	// --- E V A L U A T E ---
 
-	vec3f ElementCenter(FEElement_& el)
-	{
-		vec3f r;
-		int N = el.Nodes();
-		for (int i=0; i<N; i++) r += m_Node[el.m_node[i]].m_rt;
-		return r/(float)N;
-	}
+	vec3d ElementCenter(FEElement_& el) const;
+	
+	vec3d FaceCenter(FEFace& f) const;
 
-	vec3f FaceCenter(FEFace& f)
-	{
-		vec3f r;
-		int N = f.Nodes();
-		for (int i=0; i<N; i++) r += m_Node[f.n[i]].m_rt;
-		return r/(float)N;
-	}
-
-	vec3f EdgeCenter(FEEdge& e)
-	{
-		return (m_Node[e.n[0]].m_rt + m_Node[e.n[1]].m_rt)*0.5f;
-	}
+	vec3d EdgeCenter(FEEdge& e) const;
 
 	// face area
 	double FaceArea(FEFace& f);
-	double FaceArea(const vector<vec3f>& f, int faceType);
+	double FaceArea(const vector<vec3d>& f, int faceType);
 
 	// element volume
 	float ElementVolume(int iel);
@@ -143,7 +128,7 @@ public:
 	float IntegrateHex (vec3f* r, float* v);
 
 	// --- F A C E   D A T A ---
-	void FaceNodePosition (const FEFace& f, vec3f* r) const;
+	void FaceNodePosition (const FEFace& f, vec3d* r) const;
 	void FaceNodeNormals  (FEFace& f, vec3f* n);
 	void FaceNodeTexCoords(FEFace& f, float* t, bool bnode);
 

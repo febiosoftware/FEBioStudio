@@ -310,9 +310,9 @@ FEMesh* CPostObject::BuildMesh()
 		FENode& nd = mesh->Node(i);
 		FENode& ns = postMesh->Node(i);
 
-		nd.r.x = ns.m_rt.x;
-		nd.r.y = ns.m_rt.y;
-		nd.r.z = ns.m_rt.z;
+		nd.r.x = ns.r.x;
+		nd.r.y = ns.r.y;
+		nd.r.z = ns.r.z;
 	}
 
 	for (int i = 0; i < NF; ++i)
@@ -411,9 +411,9 @@ void CPostObject::UpdateMesh()
 		FENode& nd = mesh->Node(i);
 		FENode& ns = postMesh->Node(i);
 
-		nd.r.x = ns.m_rt.x;
-		nd.r.y = ns.m_rt.y;
-		nd.r.z = ns.m_rt.z;
+		nd.r.x = ns.r.x;
+		nd.r.y = ns.r.y;
+		nd.r.z = ns.r.z;
 	}
 
 	mesh->UpdateNormals();

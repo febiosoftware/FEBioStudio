@@ -12,7 +12,7 @@ void CGLModel::RenderQUAD4(FEFace& f, bool bsmooth, bool bnode)
 	FEMeshBase* pm = GetActiveMesh();
 
 	// get the nodal data
-	vec3f r[4]; pm->FaceNodePosition(f, r);
+	vec3d r[4]; pm->FaceNodePosition(f, r);
 
 	vec3f n[4]; 
 	if (bsmooth) pm->FaceNodeNormals(f, n);
@@ -42,7 +42,7 @@ void CGLModel::RenderQUAD8(FEFace& f, bool bsmooth, bool bnode)
 	FEMeshBase* pm = GetActiveMesh();
 
 	// get the nodal data
-	vec3f r[8]; pm->FaceNodePosition(f, r);
+	vec3d r[8]; pm->FaceNodePosition(f, r);
 
 	vec3f n[8]; 
 	if (bsmooth) pm->FaceNodeNormals(f, n);
@@ -90,7 +90,7 @@ void CGLModel::RenderQUAD9(FEFace& f, bool bsmooth, bool bnode)
 	FEMeshBase* pm = GetActiveMesh();
 
 	// get the nodal data
-	vec3f r[9]; pm->FaceNodePosition(f, r);
+	vec3d r[9]; pm->FaceNodePosition(f, r);
 
 	vec3f n[9]; 
 	if (bsmooth) pm->FaceNodeNormals(f, n);
@@ -150,7 +150,7 @@ void CGLModel::RenderTRI3(FEFace& f, bool bsmooth, bool bnode)
 	FEMeshBase* pm = GetActiveMesh();
 
 	// get the nodal data
-	vec3f r[3]; pm->FaceNodePosition(f, r);
+	vec3d r[3]; pm->FaceNodePosition(f, r);
 
 	vec3f n[3]; 
 	if (bsmooth) pm->FaceNodeNormals(f, n);
@@ -178,7 +178,7 @@ void CGLModel::RenderTRI6(FEFace& f, bool bsmooth, bool bnode)
 	FEMeshBase* pm = GetActiveMesh();
 
 	// get the nodal data
-	vec3f r[6]; pm->FaceNodePosition(f, r);
+	vec3d r[6]; pm->FaceNodePosition(f, r);
 
 	vec3f n[6]; 
 	if (bsmooth) pm->FaceNodeNormals(f, n);
@@ -218,7 +218,7 @@ void CGLModel::RenderTRI7(FEFace& f, bool bsmooth, bool bnode)
 	FEMeshBase* pm = GetActiveMesh();
 
 	// get the nodal data
-	vec3f r[7]; pm->FaceNodePosition(f, r);
+	vec3d r[7]; pm->FaceNodePosition(f, r);
 
 	vec3f n[7]; 
 	if (bsmooth) pm->FaceNodeNormals(f, n);
@@ -257,11 +257,19 @@ void CGLModel::RenderTRI7(FEFace& f, bool bsmooth, bool bnode)
 }
 
 //-----------------------------------------------------------------------------
-inline void glxVertex(const vec3f& n, const vec3f& r, float t)
+inline void glxVertexf(const vec3f& n, const vec3f& r, float t)
 {
 	glNormal3f(n.x, n.y, n.z);
 	glTexCoord1f(t);
 	glVertex3f(r.x, r.y, r.z);
+}
+
+//-----------------------------------------------------------------------------
+inline void glxVertexd(const vec3f& n, const vec3d& r, float t)
+{
+	glNormal3f(n.x, n.y, n.z);
+	glTexCoord1f(t);
+	glVertex3d(r.x, r.y, r.z);
 }
 
 //-----------------------------------------------------------------------------
@@ -274,7 +282,7 @@ void CGLModel::RenderTRI10(FEFace& f, bool bsmooth, bool bnode)
 	FEMeshBase* pm = GetActiveMesh();
 
 	// get the nodal data
-	vec3f r[10]; pm->FaceNodePosition(f, r);
+	vec3d r[10]; pm->FaceNodePosition(f, r);
 
 	vec3f n[10];
 	if (bsmooth) pm->FaceNodeNormals(f, n);
@@ -285,15 +293,15 @@ void CGLModel::RenderTRI10(FEFace& f, bool bsmooth, bool bnode)
 
 	glBegin(GL_TRIANGLES);
 	{
-		glxVertex(n[0], r[0], t[0]); glxVertex(n[3], r[3], t[3]); glxVertex(n[7], r[7], t[7]);
-		glxVertex(n[1], r[1], t[1]); glxVertex(n[5], r[5], t[5]); glxVertex(n[4], r[4], t[4]);
-		glxVertex(n[2], r[2], t[2]); glxVertex(n[8], r[8], t[8]); glxVertex(n[6], r[6], t[6]);
-		glxVertex(n[9], r[9], t[9]); glxVertex(n[7], r[7], t[7]); glxVertex(n[3], r[3], t[3]);
-		glxVertex(n[9], r[9], t[9]); glxVertex(n[3], r[3], t[3]); glxVertex(n[4], r[4], t[4]);
-		glxVertex(n[9], r[9], t[9]); glxVertex(n[4], r[4], t[4]); glxVertex(n[5], r[5], t[5]);
-		glxVertex(n[9], r[9], t[9]); glxVertex(n[5], r[5], t[5]); glxVertex(n[6], r[6], t[6]);
-		glxVertex(n[9], r[9], t[9]); glxVertex(n[6], r[6], t[6]); glxVertex(n[8], r[8], t[8]);
-		glxVertex(n[9], r[9], t[9]); glxVertex(n[8], r[8], t[8]); glxVertex(n[7], r[7], t[7]);
+		glxVertexd(n[0], r[0], t[0]); glxVertexd(n[3], r[3], t[3]); glxVertexd(n[7], r[7], t[7]);
+		glxVertexd(n[1], r[1], t[1]); glxVertexd(n[5], r[5], t[5]); glxVertexd(n[4], r[4], t[4]);
+		glxVertexd(n[2], r[2], t[2]); glxVertexd(n[8], r[8], t[8]); glxVertexd(n[6], r[6], t[6]);
+		glxVertexd(n[9], r[9], t[9]); glxVertexd(n[7], r[7], t[7]); glxVertexd(n[3], r[3], t[3]);
+		glxVertexd(n[9], r[9], t[9]); glxVertexd(n[3], r[3], t[3]); glxVertexd(n[4], r[4], t[4]);
+		glxVertexd(n[9], r[9], t[9]); glxVertexd(n[4], r[4], t[4]); glxVertexd(n[5], r[5], t[5]);
+		glxVertexd(n[9], r[9], t[9]); glxVertexd(n[5], r[5], t[5]); glxVertexd(n[6], r[6], t[6]);
+		glxVertexd(n[9], r[9], t[9]); glxVertexd(n[6], r[6], t[6]); glxVertexd(n[8], r[8], t[8]);
+		glxVertexd(n[9], r[9], t[9]); glxVertexd(n[8], r[8], t[8]); glxVertexd(n[7], r[7], t[7]);
 	}
 	glEnd();
 }
@@ -303,10 +311,10 @@ void CGLModel::RenderTRI10(FEFace& f, bool bsmooth, bool bnode)
 void CGLModel::RenderSmoothQUAD4(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode)
 {
 	vec3f r[4] = {
-		pm->Node(face.n[0]).m_rt,
-		pm->Node(face.n[1]).m_rt,
-		pm->Node(face.n[2]).m_rt,
-		pm->Node(face.n[3]).m_rt
+		to_vec3f(pm->Node(face.n[0]).r),
+		to_vec3f(pm->Node(face.n[1]).r),
+		to_vec3f(pm->Node(face.n[2]).r),
+		to_vec3f(pm->Node(face.n[3]).r)
 	};
 
 	vec3f n[4] = {face.m_nn[0], face.m_nn[1], face.m_nn[2], face.m_nn[3]};
@@ -367,14 +375,14 @@ void CGLModel::RenderSmoothQUAD8(FEFace& face, Post::FEMeshBase* pm, int ndivs, 
 	assert(face.m_type == FE_FACE_QUAD8);
 
 	vec3f r[8];
-	r[0] = pm->Node(face.n[0]).m_rt;
-	r[1] = pm->Node(face.n[1]).m_rt;
-	r[2] = pm->Node(face.n[2]).m_rt;
-	r[3] = pm->Node(face.n[3]).m_rt;
-	r[4] = pm->Node(face.n[4]).m_rt;
-	r[5] = pm->Node(face.n[5]).m_rt;
-	r[6] = pm->Node(face.n[6]).m_rt;
-	r[7] = pm->Node(face.n[7]).m_rt;
+	r[0] = to_vec3f(pm->Node(face.n[0]).r);
+	r[1] = to_vec3f(pm->Node(face.n[1]).r);
+	r[2] = to_vec3f(pm->Node(face.n[2]).r);
+	r[3] = to_vec3f(pm->Node(face.n[3]).r);
+	r[4] = to_vec3f(pm->Node(face.n[4]).r);
+	r[5] = to_vec3f(pm->Node(face.n[5]).r);
+	r[6] = to_vec3f(pm->Node(face.n[6]).r);
+	r[7] = to_vec3f(pm->Node(face.n[7]).r);
 
 	vec3f n[8];
 	n[0] = face.m_nn[0];
@@ -451,15 +459,15 @@ void CGLModel::RenderSmoothQUAD9(FEFace& face, Post::FEMeshBase* pm, int ndivs, 
 	assert(face.m_type == FE_FACE_QUAD9);
 
 	vec3f r[9];
-	r[0] = pm->Node(face.n[0]).m_rt;
-	r[1] = pm->Node(face.n[1]).m_rt;
-	r[2] = pm->Node(face.n[2]).m_rt;
-	r[3] = pm->Node(face.n[3]).m_rt;
-	r[4] = pm->Node(face.n[4]).m_rt;
-	r[5] = pm->Node(face.n[5]).m_rt;
-	r[6] = pm->Node(face.n[6]).m_rt;
-	r[7] = pm->Node(face.n[7]).m_rt;
-	r[8] = pm->Node(face.n[8]).m_rt;
+	r[0] = to_vec3f(pm->Node(face.n[0]).r);
+	r[1] = to_vec3f(pm->Node(face.n[1]).r);
+	r[2] = to_vec3f(pm->Node(face.n[2]).r);
+	r[3] = to_vec3f(pm->Node(face.n[3]).r);
+	r[4] = to_vec3f(pm->Node(face.n[4]).r);
+	r[5] = to_vec3f(pm->Node(face.n[5]).r);
+	r[6] = to_vec3f(pm->Node(face.n[6]).r);
+	r[7] = to_vec3f(pm->Node(face.n[7]).r);
+	r[8] = to_vec3f(pm->Node(face.n[8]).r);
 
 	vec3f n[9];
 	n[0] = face.m_nn[0];
@@ -546,12 +554,12 @@ void CGLModel::RenderSmoothTRI6(FEFace& face, Post::FEMeshBase* pm, int ndivs, b
 	assert(face.m_type == FE_FACE_TRI6);
 
 	vec3f r[6];
-	r[0] = pm->Node(face.n[0]).m_rt;
-	r[1] = pm->Node(face.n[1]).m_rt;
-	r[2] = pm->Node(face.n[2]).m_rt;
-	r[3] = pm->Node(face.n[3]).m_rt;
-	r[4] = pm->Node(face.n[4]).m_rt;
-	r[5] = pm->Node(face.n[5]).m_rt;
+	r[0] = to_vec3f(pm->Node(face.n[0]).r);
+	r[1] = to_vec3f(pm->Node(face.n[1]).r);
+	r[2] = to_vec3f(pm->Node(face.n[2]).r);
+	r[3] = to_vec3f(pm->Node(face.n[3]).r);
+	r[4] = to_vec3f(pm->Node(face.n[4]).r);
+	r[5] = to_vec3f(pm->Node(face.n[5]).r);
 
 	vec3f n[6];
 	n[0] = face.m_nn[0];
@@ -652,13 +660,13 @@ void CGLModel::RenderSmoothTRI7(FEFace& face, Post::FEMeshBase* pm, int ndivs, b
 	assert(face.m_type == FE_FACE_TRI7);
 
 	vec3f r[7];
-	r[0] = pm->Node(face.n[0]).m_rt;
-	r[1] = pm->Node(face.n[1]).m_rt;
-	r[2] = pm->Node(face.n[2]).m_rt;
-	r[3] = pm->Node(face.n[3]).m_rt;
-	r[4] = pm->Node(face.n[4]).m_rt;
-	r[5] = pm->Node(face.n[5]).m_rt;
-	r[6] = pm->Node(face.n[6]).m_rt;
+	r[0] = to_vec3f(pm->Node(face.n[0]).r);
+	r[1] = to_vec3f(pm->Node(face.n[1]).r);
+	r[2] = to_vec3f(pm->Node(face.n[2]).r);
+	r[3] = to_vec3f(pm->Node(face.n[3]).r);
+	r[4] = to_vec3f(pm->Node(face.n[4]).r);
+	r[5] = to_vec3f(pm->Node(face.n[5]).r);
+	r[6] = to_vec3f(pm->Node(face.n[6]).r);
 
 	vec3f n[7];
 	n[0] = face.m_nn[0];
@@ -762,16 +770,16 @@ void CGLModel::RenderSmoothTRI10(FEFace& face, Post::FEMeshBase* pm, int ndivs, 
 	assert(face.m_type == FE_FACE_TRI10);
 
 	vec3f r[10];
-	r[0] = pm->Node(face.n[0]).m_rt;
-	r[1] = pm->Node(face.n[1]).m_rt;
-	r[2] = pm->Node(face.n[2]).m_rt;
-	r[3] = pm->Node(face.n[3]).m_rt;
-	r[4] = pm->Node(face.n[4]).m_rt;
-	r[5] = pm->Node(face.n[5]).m_rt;
-	r[6] = pm->Node(face.n[6]).m_rt;
-	r[7] = pm->Node(face.n[7]).m_rt;
-	r[8] = pm->Node(face.n[8]).m_rt;
-	r[9] = pm->Node(face.n[9]).m_rt;
+	r[0] = to_vec3f(pm->Node(face.n[0]).r);
+	r[1] = to_vec3f(pm->Node(face.n[1]).r);
+	r[2] = to_vec3f(pm->Node(face.n[2]).r);
+	r[3] = to_vec3f(pm->Node(face.n[3]).r);
+	r[4] = to_vec3f(pm->Node(face.n[4]).r);
+	r[5] = to_vec3f(pm->Node(face.n[5]).r);
+	r[6] = to_vec3f(pm->Node(face.n[6]).r);
+	r[7] = to_vec3f(pm->Node(face.n[7]).r);
+	r[8] = to_vec3f(pm->Node(face.n[8]).r);
+	r[9] = to_vec3f(pm->Node(face.n[9]).r);
 
 	vec3f n[10];
 	n[0] = face.m_nn[0];
@@ -880,14 +888,14 @@ void CGLModel::RenderTexQUAD4(FEFace& face, Post::FEMeshBase* pm)
 {
 	glBegin(GL_QUADS);
 	{
-		vec3f r1 = pm->Node(face.n[0]).m_rt;
-		vec3f r2 = pm->Node(face.n[1]).m_rt;
-		vec3f r3 = pm->Node(face.n[2]).m_rt;
-		vec3f r4 = pm->Node(face.n[3]).m_rt;
+		vec3d r1 = pm->Node(face.n[0]).r;
+		vec3d r2 = pm->Node(face.n[1]).r;
+		vec3d r3 = pm->Node(face.n[2]).r;
+		vec3d r4 = pm->Node(face.n[3]).r;
 
-		vec3f nf = (r2 - r1) ^ (r3 - r1);
+		vec3d nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
-		glNormal3f(nf.x, nf.y, nf.z);
+		glNormal3d(nf.x, nf.y, nf.z);
 
 		float t1 = pm->Node(face.n[0]).m_tex;
 		float t2 = pm->Node(face.n[1]).m_tex;
@@ -906,18 +914,18 @@ void CGLModel::RenderTexQUAD8(FEFace& face, Post::FEMeshBase* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		vec3f r1 = pm->Node(face.n[0]).m_rt;
-		vec3f r2 = pm->Node(face.n[1]).m_rt;
-		vec3f r3 = pm->Node(face.n[2]).m_rt;
-		vec3f r4 = pm->Node(face.n[3]).m_rt;
-		vec3f r5 = pm->Node(face.n[4]).m_rt;
-		vec3f r6 = pm->Node(face.n[5]).m_rt;
-		vec3f r7 = pm->Node(face.n[6]).m_rt;
-		vec3f r8 = pm->Node(face.n[7]).m_rt;
+		vec3d r1 = pm->Node(face.n[0]).r;
+		vec3d r2 = pm->Node(face.n[1]).r;
+		vec3d r3 = pm->Node(face.n[2]).r;
+		vec3d r4 = pm->Node(face.n[3]).r;
+		vec3d r5 = pm->Node(face.n[4]).r;
+		vec3d r6 = pm->Node(face.n[5]).r;
+		vec3d r7 = pm->Node(face.n[6]).r;
+		vec3d r8 = pm->Node(face.n[7]).r;
 
-		vec3f nf = (r2 - r1) ^ (r3 - r1);
+		vec3d nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
-		glNormal3f(nf.x, nf.y, nf.z);
+		glNormal3d(nf.x, nf.y, nf.z);
 
 		float t1 = pm->Node(face.n[0]).m_tex;
 		float t2 = pm->Node(face.n[1]).m_tex;
@@ -959,13 +967,13 @@ void CGLModel::RenderTexTRI3(FEFace& face, Post::FEMeshBase* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		vec3f r1 = pm->Node(face.n[0]).m_rt;
-		vec3f r2 = pm->Node(face.n[1]).m_rt;
-		vec3f r3 = pm->Node(face.n[2]).m_rt;
+		vec3d r1 = pm->Node(face.n[0]).r;
+		vec3d r2 = pm->Node(face.n[1]).r;
+		vec3d r3 = pm->Node(face.n[2]).r;
 
-		vec3f nf = (r2 - r1) ^ (r3 - r1);
+		vec3d nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
-		glNormal3f(nf.x, nf.y, nf.z);
+		glNormal3d(nf.x, nf.y, nf.z);
 
 		float t1 = pm->Node(face.n[0]).m_tex;
 		float t2 = pm->Node(face.n[1]).m_tex;
@@ -982,16 +990,16 @@ void CGLModel::RenderTexTRI6(FEFace& face, Post::FEMeshBase* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		vec3f r1 = pm->Node(face.n[0]).m_rt;
-		vec3f r2 = pm->Node(face.n[1]).m_rt;
-		vec3f r3 = pm->Node(face.n[2]).m_rt;
-		vec3f r4 = pm->Node(face.n[3]).m_rt;
-		vec3f r5 = pm->Node(face.n[4]).m_rt;
-		vec3f r6 = pm->Node(face.n[5]).m_rt;
+		vec3d r1 = pm->Node(face.n[0]).r;
+		vec3d r2 = pm->Node(face.n[1]).r;
+		vec3d r3 = pm->Node(face.n[2]).r;
+		vec3d r4 = pm->Node(face.n[3]).r;
+		vec3d r5 = pm->Node(face.n[4]).r;
+		vec3d r6 = pm->Node(face.n[5]).r;
 
-		vec3f nf = (r2 - r1) ^ (r3 - r1);
+		vec3d nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
-		glNormal3f(nf.x, nf.y, nf.z);
+		glNormal3d(nf.x, nf.y, nf.z);
 
 		float t1 = pm->Node(face.n[0]).m_tex;
 		float t2 = pm->Node(face.n[1]).m_tex;
@@ -1023,17 +1031,17 @@ void CGLModel::RenderTexTRI7(FEFace& face, Post::FEMeshBase* pm)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		vec3f r1 = pm->Node(face.n[0]).m_rt;
-		vec3f r2 = pm->Node(face.n[1]).m_rt;
-		vec3f r3 = pm->Node(face.n[2]).m_rt;
-		vec3f r4 = pm->Node(face.n[3]).m_rt;
-		vec3f r5 = pm->Node(face.n[4]).m_rt;
-		vec3f r6 = pm->Node(face.n[5]).m_rt;
-		vec3f r7 = pm->Node(face.n[6]).m_rt;
+		vec3d r1 = pm->Node(face.n[0]).r;
+		vec3d r2 = pm->Node(face.n[1]).r;
+		vec3d r3 = pm->Node(face.n[2]).r;
+		vec3d r4 = pm->Node(face.n[3]).r;
+		vec3d r5 = pm->Node(face.n[4]).r;
+		vec3d r6 = pm->Node(face.n[5]).r;
+		vec3d r7 = pm->Node(face.n[6]).r;
 
-		vec3f nf = (r2 - r1) ^ (r3 - r1);
+		vec3d nf = (r2 - r1) ^ (r3 - r1);
 		nf.Normalize();
-		glNormal3f(nf.x, nf.y, nf.z);
+		glNormal3d(nf.x, nf.y, nf.z);
 
 		float t1 = pm->Node(face.n[0]).m_tex;
 		float t2 = pm->Node(face.n[1]).m_tex;
@@ -1077,7 +1085,7 @@ void CGLModel::RenderFace1Outline(FEFace& face, Post::FEMeshBase* pm)
 		int N = face.Nodes();
 		for (int i = 0; i < N; ++i)
 		{
-			vec3f r = pm->Node(face.n[i]).m_rt; glVertex3f(r.x, r.y, r.z);
+			vec3d r = pm->Node(face.n[i]).r; glVertex3f(r.x, r.y, r.z);
 		}
 	}
 	glEnd();
@@ -1092,15 +1100,15 @@ void CGLModel::RenderFace2Outline(FEFace& face, Post::FEMeshBase* pm, int ndivs)
 		for (int i = 0; i<NE; ++i)
 		{
 			FEEdge e = face.GetEdge(i);
-			a[0] = pm->Node(e.n[0]).m_rt;
-			a[1] = pm->Node(e.n[1]).m_rt;
-			a[2] = pm->Node(e.n[2]).m_rt;
+			a[0] = to_vec3f(pm->Node(e.n[0]).r);
+			a[1] = to_vec3f(pm->Node(e.n[1]).r);
+			a[2] = to_vec3f(pm->Node(e.n[2]).r);
 			const int M = 2 * ndivs;
 			for (int n = 0; n<M; ++n)
 			{
 				double t = n / (double)M;
 				vec3f p = e.eval(a, t);
-				glVertex3f(p.x, p.y, p.z);
+				glVertex3d(p.x, p.y, p.z);
 			}
 		}
 	}
@@ -1117,15 +1125,15 @@ void CGLModel::RenderFace3Outline(FEFace& face, Post::FEMeshBase* pm, int ndivs)
 		for (int i = 0; i<NE; ++i)
 		{
 			FEEdge e = face.GetEdge(i);
-			a[0] = pm->Node(e.n[0]).m_rt;
-			a[1] = pm->Node(e.n[1]).m_rt;
-			a[2] = pm->Node(e.n[2]).m_rt;
-			a[3] = pm->Node(e.n[3]).m_rt;
+			a[0] = to_vec3f(pm->Node(e.n[0]).r);
+			a[1] = to_vec3f(pm->Node(e.n[1]).r);
+			a[2] = to_vec3f(pm->Node(e.n[2]).r);
+			a[3] = to_vec3f(pm->Node(e.n[3]).r);
 			const int M = 2 * ndivs;
 			for (int n = 0; n<M; ++n)
 			{
 				double t = n / (double)M;
-				vec3f p = e.eval(a, t);
+				vec3d p = e.eval(a, t);
 				glVertex3f(p.x, p.y, p.z);
 			}
 		}

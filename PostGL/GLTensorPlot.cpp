@@ -369,7 +369,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 			FEElement_& elem = pm->Element(i);
 			if ((frand() <= m_dens) && elem.m_ntag)
 			{
-				vec3f r = pm->ElementCenter(elem);
+				vec3d r = pm->ElementCenter(elem);
 
 				TENSOR& t = m_val[i];
 
@@ -448,7 +448,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 			FENode& node = pm->Node(i);
 			if ((frand() <= m_dens) && node.m_ntag)
 			{
-				vec3f r = node.m_rt;
+				vec3d r = node.r;
 
 				TENSOR& t = m_val[i];
 

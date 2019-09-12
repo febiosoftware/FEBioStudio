@@ -57,7 +57,7 @@ bool FELSDYNAExport::ExportSurface(FEModel &fem, int ntime, const char *szfile)
 		FENode& node = mesh.Node(i);
 		if (node.m_ntag > 0)
 		{
-			vec3f r = node.m_rt;
+			vec3f r = to_vec3f(node.r);
 			fprintf(fp, "%8d%16.7e%16.7e%16.7e\n", node.m_ntag, r.x, r.y, r.z);
 		}
 	}
@@ -124,7 +124,8 @@ bool FELSDYNAExport::ExportSelectedSurface(FEModel &fem, int ntime, const char *
 		if (node.m_ntag == 1)
 		{
 			node.m_ntag = n++;
-			fprintf(fp, "%8d%16g%16g%16g\n", node.m_ntag, node.m_rt.x, node.m_rt.y, node.m_rt.z);
+			vec3f r = to_vec3f(node.r);
+			fprintf(fp, "%8d%16g%16g%16g\n", node.m_ntag, r.x, r.y, r.z);
 		}
 	}
 
@@ -201,7 +202,8 @@ bool FELSDYNAExport::ExportMesh(FEModel& fem, int ntime, const char* szfile)
 		FENode& node = m.Node(i);
 		if (node.m_ntag != -1)
 		{
-			fprintf(fp, "%8d%16g%16g%16g\n", node.m_ntag, node.m_rt.x, node.m_rt.y, node.m_rt.z);
+			vec3f r = to_vec3f(node.r);
+			fprintf(fp, "%8d%16g%16g%16g\n", node.m_ntag, r.x, r.y, r.z);
 		}
 	}
 

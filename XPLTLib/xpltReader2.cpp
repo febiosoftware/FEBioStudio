@@ -1136,7 +1136,6 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 
 		// assign coordinates
 		n.r = vec3f(N.x[0], N.x[1], N.x[2]);
-		n.m_rt = to_vec3f(n.r);
 	}
 
 	// set the enabled-ness of the elements and the nodes

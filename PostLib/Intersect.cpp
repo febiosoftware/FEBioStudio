@@ -143,7 +143,7 @@ bool Post::FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FE
 {
 	q.m_index = -1;
 
-	vec3f rn[10];
+	vec3d rn[10];
 	mesh.FaceNodePosition(face, rn);
 
 	bool bfound = false;
@@ -154,7 +154,7 @@ bool Post::FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FE
 	case FE_FACE_TRI7:
 	case FE_FACE_TRI10:
 	{
-		Triangle tri = { rn[0], rn[1], rn[2] };
+		Triangle tri = { to_vec3f(rn[0]), to_vec3f(rn[1]), to_vec3f(rn[2]) };
 		bfound = IntersectTriangle(ray, tri, q);
 	}
 	break;
@@ -162,7 +162,7 @@ bool Post::FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FE
 	case FE_FACE_QUAD8:
 	case FE_FACE_QUAD9:
 	{
-		Quad quad = { rn[0], rn[1], rn[2], rn[3] };
+		Quad quad = { to_vec3f(rn[0]), to_vec3f(rn[1]), to_vec3f(rn[2]), to_vec3f(rn[3]) };
 		bfound = FastIntersectQuad(ray, quad, q);
 	}
 	break;

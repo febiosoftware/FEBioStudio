@@ -182,7 +182,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			FEElement_& elem = pm->Element(i);
 			if ((frand() <= m_dens) && elem.m_ntag)
 			{
-				vec3f r = pm->ElementCenter(elem);
+				vec3f r = to_vec3f(pm->ElementCenter(elem));
 				vec3f v = m_val[i];
 				RenderVector(r, v, pglyph);
 			}
@@ -217,7 +217,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			FENode& node = pm->Node(i);
 			if ((frand() <= m_dens) && node.m_ntag)
 			{
-				vec3f r = node.m_rt;
+				vec3f r = to_vec3f(node.r);
 
 				vec3f v = m_val[i];
 

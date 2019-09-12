@@ -12,7 +12,7 @@ public:
 	public:
 		struct Face {
 			float	v[3];
-			vec3f	r[3];
+			vec3d	r[3];
 		};
 
 		void clear() { m_Face.clear(); }
@@ -35,7 +35,7 @@ public:
 	void UpdateData(bool bsave = true);
 
 private:
-	void CreateSlice(Slice& slice, const vec3f& normal, float w);
+	void CreateSlice(Slice& slice, const vec3d& normal, float w);
 	void UpdateNodalData(int ntime, bool breset);
 	void RenderSlices(std::vector<Slice>& slice, int step);
 

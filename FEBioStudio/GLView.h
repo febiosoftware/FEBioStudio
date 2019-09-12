@@ -62,7 +62,7 @@ struct GLTAG
 {
 	char	sztag[32];	// name of tag
 	float	wx, wy;		// window coordinates for tag
-	vec3f	r;			// world coordinates of tag
+	vec3d	r;			// world coordinates of tag
 	bool	bvis;		// is the tag visible or not
 	int		ntag;		// tag value
 };

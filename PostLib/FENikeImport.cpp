@@ -131,7 +131,7 @@ bool FENikeImport::ReadGeometrySection()
 		FENode& n = m_pm->Node(i);
 		if (get_line(szline) == 0) return errf("failed data for node", i+1);
 		sscanf(szline, "%*8d%*5d%g%g%g", &x, &y, &z);
-		n.r = n.m_rt = vec3f(x,y,z);
+		n.r = vec3d(x,y,z);
 	}
 
 	// read the solid elements

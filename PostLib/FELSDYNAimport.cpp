@@ -283,9 +283,9 @@ bool FELSDYNAimport::BuildMesh(FEModel& fem)
 	{
 		FENode& n = pm->Node(i);
 		in->n = i;
-		n.r.x = n.m_rt.x = (float) in->x;
-		n.r.y = n.m_rt.y = (float) in->y;
-		n.r.z = n.m_rt.z = (float) in->z;
+		n.r.x = (float) in->x;
+		n.r.y = (float) in->y;
+		n.r.z = (float) in->z;
 	}
 
 	// create solids

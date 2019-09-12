@@ -176,7 +176,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 				FENode& node = pm->Node(el.m_node[nt[k]]);
 
 				ev[k] = m_val[el.m_node[nt[k]]];
-				ex[k] = node.m_rt;
+				ex[k] = to_vec3f(node.r);
 				en[k] = m_grd[el.m_node[nt[k]]];
 			}
 

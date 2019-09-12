@@ -84,7 +84,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 			for (k=0; k<8; k++) 
 			{ 
 				node = e.m_node[NE[k]];
-				x[k] = mesh.Node(node).m_rt;
+				x[k] = to_vec3f(mesh.Node(node).r);
 				f[k] = v[node];
 				gn[k] = &G[node];
 			}

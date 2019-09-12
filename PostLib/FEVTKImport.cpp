@@ -76,7 +76,7 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 			r.x = (float)temp[k];
 			r.y = (float)temp[k + 1];
 			r.z = (float)temp[k + 2];
-			n.r = n.m_rt = r;
+			n.r = r;
 			k +=3;
 		}
 		ch = fgets(szline, 255, m_fp);
