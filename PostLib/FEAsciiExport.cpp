@@ -100,7 +100,7 @@ bool FEASCIIExport::Save(FEModel* pfem, int n0, int n1, const char* szfile)
 		{
 			if (m.Node(i).m_ntag == 1)
 			{
-				vec3f& r = to_vec3f(m.Node(i).r);
+				vec3f r = to_vec3f(m.Node(i).r);
 				fprintf(fp, "%8d,%15.7lg,%15.7lg,%15.7lg\n", i + 1, r.x, r.y, r.z);
 			}
 		}

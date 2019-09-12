@@ -54,6 +54,7 @@
 		D5B42D6D1FA1004600C56FCE /* FENodeFaceList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B42D651FA1004600C56FCE /* FENodeFaceList.cpp */; };
 		D5B42D701FA1017100C56FCE /* FEFaceEdgeList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5B42D6E1FA1017100C56FCE /* FEFaceEdgeList.cpp */; };
 		D5B42D711FA1017100C56FCE /* FEFaceEdgeList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5B42D6F1FA1017100C56FCE /* FEFaceEdgeList.h */; };
+		D5EBB7AA232AEB7E00EED2BE /* integrate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A9232AEB7E00EED2BE /* integrate.cpp */; };
 		D5ED25E323197A1F00C16BF7 /* penta15.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D623197A1D00C16BF7 /* penta15.h */; };
 		D5ED25E423197A1F00C16BF7 /* tet10.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D723197A1D00C16BF7 /* tet10.h */; };
 		D5ED25E523197A1F00C16BF7 /* penta6.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D823197A1D00C16BF7 /* penta6.h */; };
@@ -118,6 +119,7 @@
 		D5B42D651FA1004600C56FCE /* FENodeFaceList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeFaceList.cpp; sourceTree = "<group>"; };
 		D5B42D6E1FA1017100C56FCE /* FEFaceEdgeList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFaceEdgeList.cpp; sourceTree = "<group>"; };
 		D5B42D6F1FA1017100C56FCE /* FEFaceEdgeList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFaceEdgeList.h; sourceTree = "<group>"; };
+		D5EBB7A9232AEB7E00EED2BE /* integrate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = integrate.cpp; sourceTree = "<group>"; };
 		D5ED25D623197A1D00C16BF7 /* penta15.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = penta15.h; sourceTree = "<group>"; };
 		D5ED25D723197A1D00C16BF7 /* tet10.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tet10.h; sourceTree = "<group>"; };
 		D5ED25D823197A1D00C16BF7 /* penta6.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = penta6.h; sourceTree = "<group>"; };
@@ -203,6 +205,7 @@
 				D5A49E401FD74D4E0083510E /* insertCurve.h */,
 				D5A49E421FD74D4F0083510E /* insertCurve2.cpp */,
 				D5A49E411FD74D4E0083510E /* insertCurve2.h */,
+				D5EBB7A9232AEB7E00EED2BE /* integrate.cpp */,
 				D5215EDE1F018C3300838680 /* LineMesh2D.cpp */,
 				D5215EDF1F018C3300838680 /* LineMesh2D.h */,
 				D5215EE01F018C3300838680 /* MeshItem2D.h */,
@@ -342,6 +345,7 @@
 				D5B42D6D1FA1004600C56FCE /* FENodeFaceList.cpp in Sources */,
 				D5ED25EA23197A1F00C16BF7 /* FEElementLibrary.cpp in Sources */,
 				D5215EEA1F018C3300838680 /* LineMesh2D.cpp in Sources */,
+				D5EBB7AA232AEB7E00EED2BE /* integrate.cpp in Sources */,
 				D570C91D204A301400E2A1B9 /* FELineMesh.cpp in Sources */,
 				D5215EEF1F018C3300838680 /* MeshTools.cpp in Sources */,
 				D53293BA1E4A8454002798B3 /* TriMesh.cpp in Sources */,

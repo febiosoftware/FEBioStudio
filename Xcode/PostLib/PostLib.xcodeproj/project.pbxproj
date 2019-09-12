@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D5ED297323198B1E00C16BF7 /* FENodeFaceTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24A62319797000C16BF7 /* FENodeFaceTable.cpp */; };
 		D5ED297423198B1E00C16BF7 /* FEDataManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24C62319797000C16BF7 /* FEDataManager.cpp */; };
 		D5ED297523198B1E00C16BF7 /* GLImageRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24AB2319797000C16BF7 /* GLImageRenderer.cpp */; };
 		D5ED297623198B1E00C16BF7 /* GView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24BA2319797000C16BF7 /* GView.cpp */; };
@@ -34,13 +33,11 @@
 		D5ED298B23198B1E00C16BF7 /* VRMLExporter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24C92319797000C16BF7 /* VRMLExporter.cpp */; };
 		D5ED298C23198B1E00C16BF7 /* FERAWImageReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED250B2319797000C16BF7 /* FERAWImageReader.cpp */; };
 		D5ED298D23198B1E00C16BF7 /* FEDistanceMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24EA2319797000C16BF7 /* FEDistanceMap.cpp */; };
-		D5ED298E23198B1E00C16BF7 /* FENodeEdgeList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED250D2319797000C16BF7 /* FENodeEdgeList.cpp */; };
 		D5ED298F23198B1E00C16BF7 /* ColorMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24A32319797000C16BF7 /* ColorMap.cpp */; };
 		D5ED299023198B1E00C16BF7 /* GDecoration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24F22319797000C16BF7 /* GDecoration.cpp */; };
 		D5ED299123198B1E00C16BF7 /* PostView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24C82319797000C16BF7 /* PostView.cpp */; };
 		D5ED299223198B1E00C16BF7 /* FEDataField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24F82319797000C16BF7 /* FEDataField.cpp */; };
 		D5ED299323198B1E00C16BF7 /* FELSDYNAExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24D32319797000C16BF7 /* FELSDYNAExport.cpp */; };
-		D5ED299423198B1E00C16BF7 /* integrate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24C02319797000C16BF7 /* integrate.cpp */; };
 		D5ED299523198B1E00C16BF7 /* FEModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24DB2319797000C16BF7 /* FEModel.cpp */; };
 		D5ED299623198B1E00C16BF7 /* FELSDYNAimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24A02319797000C16BF7 /* FELSDYNAimport.cpp */; };
 		D5ED299723198B1E00C16BF7 /* FEStrainMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24D22319797000C16BF7 /* FEStrainMap.cpp */; };
@@ -53,7 +50,6 @@
 		D5ED299E23198B1E00C16BF7 /* FEMeshData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED25172319797000C16BF7 /* FEMeshData.cpp */; };
 		D5ED299F23198B1E00C16BF7 /* FENikeExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24BF2319797000C16BF7 /* FENikeExport.cpp */; };
 		D5ED29A023198B1E00C16BF7 /* FECurvatureMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24C32319797000C16BF7 /* FECurvatureMap.cpp */; };
-		D5ED29A123198B1E00C16BF7 /* FENodeElemList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24DE2319797000C16BF7 /* FENodeElemList.cpp */; };
 		D5ED29A223198B1E00C16BF7 /* MarchingCubes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24B02319797000C16BF7 /* MarchingCubes.cpp */; };
 		D5ED29A323198B1E00C16BF7 /* FEVTKExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24B42319797000C16BF7 /* FEVTKExport.cpp */; };
 		D5ED29A423198B1E00C16BF7 /* AVIAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24B52319797000C16BF7 /* AVIAnimation.cpp */; };
@@ -63,7 +59,6 @@
 		D5ED29A823198B1E00C16BF7 /* Animation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24E42319797000C16BF7 /* Animation.cpp */; };
 		D5ED29A923198B1E00C16BF7 /* FESTLimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24A52319797000C16BF7 /* FESTLimport.cpp */; };
 		D5ED29AA23198B1E00C16BF7 /* ImageModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24CA2319797000C16BF7 /* ImageModel.cpp */; };
-		D5ED29AB23198B1E00C16BF7 /* FENodeFaceList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24BC2319797000C16BF7 /* FENodeFaceList.cpp */; };
 		D5ED29AC23198B1E00C16BF7 /* FEFileExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24EC2319797000C16BF7 /* FEFileExport.cpp */; };
 		D5ED29AD23198B1E00C16BF7 /* FEVTKImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24CB2319797000C16BF7 /* FEVTKImport.cpp */; };
 		D5ED29AE23198B1E00C16BF7 /* FEASCIIImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED25002319797000C16BF7 /* FEASCIIImport.cpp */; };
@@ -71,8 +66,6 @@
 		D5ED29B223198B1E00C16BF7 /* VolRender.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25162319797000C16BF7 /* VolRender.h */; };
 		D5ED29B323198B1E00C16BF7 /* ImgAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24EB2319797000C16BF7 /* ImgAnimation.h */; };
 		D5ED29B423198B1E00C16BF7 /* FEFileReader.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED250F2319797000C16BF7 /* FEFileReader.h */; };
-		D5ED29B523198B1E00C16BF7 /* FENodeElemList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25042319797000C16BF7 /* FENodeElemList.h */; };
-		D5ED29B623198B1E00C16BF7 /* FENodeFaceTable.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24F92319797000C16BF7 /* FENodeFaceTable.h */; };
 		D5ED29B723198B1E00C16BF7 /* FELSDYNAPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24D42319797000C16BF7 /* FELSDYNAPlot.h */; };
 		D5ED29B823198B1E00C16BF7 /* FEFileExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25092319797000C16BF7 /* FEFileExport.h */; };
 		D5ED29B923198B1E00C16BF7 /* PostView.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24F12319797000C16BF7 /* PostView.h */; };
@@ -84,7 +77,6 @@
 		D5ED29BF23198B1E00C16BF7 /* FEDataField.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24FB2319797000C16BF7 /* FEDataField.h */; };
 		D5ED29C023198B1E00C16BF7 /* GDecoration.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25142319797000C16BF7 /* GDecoration.h */; };
 		D5ED29C123198B1E00C16BF7 /* FELSDYNAimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24E82319797000C16BF7 /* FELSDYNAimport.h */; };
-		D5ED29C223198B1E00C16BF7 /* FENodeFaceList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24B22319797000C16BF7 /* FENodeFaceList.h */; };
 		D5ED29C323198B1E00C16BF7 /* DataFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED249F2319797000C16BF7 /* DataFilter.h */; };
 		D5ED29C423198B1E00C16BF7 /* FEMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25152319797000C16BF7 /* FEMesh.h */; };
 		D5ED29C523198B1E00C16BF7 /* FEModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24D12319797000C16BF7 /* FEModel.h */; };
@@ -102,14 +94,12 @@
 		D5ED29D123198B1E00C16BF7 /* FENikeExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24E92319797000C16BF7 /* FENikeExport.h */; };
 		D5ED29D223198B1E00C16BF7 /* tools.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24EF2319797000C16BF7 /* tools.h */; };
 		D5ED29D323198B1E00C16BF7 /* VRMLExporter.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25132319797000C16BF7 /* VRMLExporter.h */; };
-		D5ED29D423198B1E00C16BF7 /* FENode.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED250C2319797000C16BF7 /* FENode.h */; };
 		D5ED29D523198B1E00C16BF7 /* FEPointCongruency.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24F02319797000C16BF7 /* FEPointCongruency.h */; };
 		D5ED29D623198B1E00C16BF7 /* MPEGAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25182319797000C16BF7 /* MPEGAnimation.h */; };
 		D5ED29D723198B1E00C16BF7 /* ImageModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24B92319797000C16BF7 /* ImageModel.h */; };
 		D5ED29D823198B1E00C16BF7 /* ImageSlicer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24F72319797000C16BF7 /* ImageSlicer.h */; };
 		D5ED29D923198B1E00C16BF7 /* MarchingCubes.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24B72319797000C16BF7 /* MarchingCubes.h */; };
 		D5ED29DA23198B1E00C16BF7 /* ValArray.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24A82319797000C16BF7 /* ValArray.h */; };
-		D5ED29DB23198B1E00C16BF7 /* FENodeEdgeList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24A72319797000C16BF7 /* FENodeEdgeList.h */; };
 		D5ED29DC23198B1E00C16BF7 /* FEASCIIImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24EE2319797000C16BF7 /* FEASCIIImport.h */; };
 		D5ED29DD23198B1E00C16BF7 /* AVIAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24BE2319797000C16BF7 /* AVIAnimation.h */; };
 		D5ED29DE23198B1E00C16BF7 /* FEAsciiExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24C12319797000C16BF7 /* FEAsciiExport.h */; };
@@ -140,8 +130,6 @@
 		D5ED24A32319797000C16BF7 /* ColorMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorMap.cpp; sourceTree = "<group>"; };
 		D5ED24A42319797000C16BF7 /* FEState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEState.h; sourceTree = "<group>"; };
 		D5ED24A52319797000C16BF7 /* FESTLimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESTLimport.cpp; sourceTree = "<group>"; };
-		D5ED24A62319797000C16BF7 /* FENodeFaceTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeFaceTable.cpp; sourceTree = "<group>"; };
-		D5ED24A72319797000C16BF7 /* FENodeEdgeList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeEdgeList.h; sourceTree = "<group>"; };
 		D5ED24A82319797000C16BF7 /* ValArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ValArray.h; sourceTree = "<group>"; };
 		D5ED24A92319797000C16BF7 /* GLObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLObject.cpp; sourceTree = "<group>"; };
 		D5ED24AA2319797000C16BF7 /* FEMaterial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMaterial.h; sourceTree = "<group>"; };
@@ -152,7 +140,6 @@
 		D5ED24AF2319797000C16BF7 /* FEDistanceMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEDistanceMap.h; sourceTree = "<group>"; };
 		D5ED24B02319797000C16BF7 /* MarchingCubes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MarchingCubes.cpp; sourceTree = "<group>"; };
 		D5ED24B12319797000C16BF7 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
-		D5ED24B22319797000C16BF7 /* FENodeFaceList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeFaceList.h; sourceTree = "<group>"; };
 		D5ED24B32319797000C16BF7 /* DataMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataMap.cpp; sourceTree = "<group>"; };
 		D5ED24B42319797000C16BF7 /* FEVTKExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEVTKExport.cpp; sourceTree = "<group>"; };
 		D5ED24B52319797000C16BF7 /* AVIAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AVIAnimation.cpp; sourceTree = "<group>"; };
@@ -162,11 +149,9 @@
 		D5ED24B92319797000C16BF7 /* ImageModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageModel.h; sourceTree = "<group>"; };
 		D5ED24BA2319797000C16BF7 /* GView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GView.cpp; sourceTree = "<group>"; };
 		D5ED24BB2319797000C16BF7 /* FEMathData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMathData.cpp; sourceTree = "<group>"; };
-		D5ED24BC2319797000C16BF7 /* FENodeFaceList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeFaceList.cpp; sourceTree = "<group>"; };
 		D5ED24BD2319797000C16BF7 /* FEGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEGroup.cpp; sourceTree = "<group>"; };
 		D5ED24BE2319797000C16BF7 /* AVIAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVIAnimation.h; sourceTree = "<group>"; };
 		D5ED24BF2319797000C16BF7 /* FENikeExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENikeExport.cpp; sourceTree = "<group>"; };
-		D5ED24C02319797000C16BF7 /* integrate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = integrate.cpp; sourceTree = "<group>"; };
 		D5ED24C12319797000C16BF7 /* FEAsciiExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEAsciiExport.h; sourceTree = "<group>"; };
 		D5ED24C22319797000C16BF7 /* FEGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEGroup.h; sourceTree = "<group>"; };
 		D5ED24C32319797000C16BF7 /* FECurvatureMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FECurvatureMap.cpp; sourceTree = "<group>"; };
@@ -196,7 +181,6 @@
 		D5ED24DB2319797000C16BF7 /* FEModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEModel.cpp; sourceTree = "<group>"; };
 		D5ED24DC2319797000C16BF7 /* FELSDYNAExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FELSDYNAExport.h; sourceTree = "<group>"; };
 		D5ED24DD2319797000C16BF7 /* GMeshImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMeshImport.h; sourceTree = "<group>"; };
-		D5ED24DE2319797000C16BF7 /* FENodeElemList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeElemList.cpp; sourceTree = "<group>"; };
 		D5ED24DF2319797000C16BF7 /* U3DFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U3DFile.h; sourceTree = "<group>"; };
 		D5ED24E02319797000C16BF7 /* constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = constants.h; sourceTree = "<group>"; };
 		D5ED24E12319797000C16BF7 /* FESTLimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESTLimport.h; sourceTree = "<group>"; };
@@ -223,18 +207,15 @@
 		D5ED24F62319797000C16BF7 /* FEFEBioExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFEBioExport.cpp; sourceTree = "<group>"; };
 		D5ED24F72319797000C16BF7 /* ImageSlicer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageSlicer.h; sourceTree = "<group>"; };
 		D5ED24F82319797000C16BF7 /* FEDataField.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEDataField.cpp; sourceTree = "<group>"; };
-		D5ED24F92319797000C16BF7 /* FENodeFaceTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeFaceTable.h; sourceTree = "<group>"; };
 		D5ED24FA2319797000C16BF7 /* FEAsciiExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEAsciiExport.cpp; sourceTree = "<group>"; };
 		D5ED24FB2319797000C16BF7 /* FEDataField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEDataField.h; sourceTree = "<group>"; };
 		D5ED24FC2319797000C16BF7 /* FEU3DImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEU3DImport.h; sourceTree = "<group>"; };
 		D5ED24FD2319797000C16BF7 /* FEBioImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBioImport.cpp; sourceTree = "<group>"; };
 		D5ED24FE2319797000C16BF7 /* GLImageRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLImageRenderer.h; sourceTree = "<group>"; };
-		D5ED24FF2319797000C16BF7 /* PostLib.pro */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PostLib.pro; sourceTree = "<group>"; };
 		D5ED25002319797000C16BF7 /* FEASCIIImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEASCIIImport.cpp; sourceTree = "<group>"; };
 		D5ED25012319797000C16BF7 /* evaluate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = evaluate.h; sourceTree = "<group>"; };
 		D5ED25022319797000C16BF7 /* FEU3DImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEU3DImport.cpp; sourceTree = "<group>"; };
 		D5ED25032319797000C16BF7 /* ColorMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorMap.h; sourceTree = "<group>"; };
-		D5ED25042319797000C16BF7 /* FENodeElemList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENodeElemList.h; sourceTree = "<group>"; };
 		D5ED25052319797000C16BF7 /* Intersect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Intersect.h; sourceTree = "<group>"; };
 		D5ED25062319797000C16BF7 /* FEMeshData_T.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshData_T.h; sourceTree = "<group>"; };
 		D5ED25072319797000C16BF7 /* FEMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMesh.cpp; sourceTree = "<group>"; };
@@ -242,8 +223,6 @@
 		D5ED25092319797000C16BF7 /* FEFileExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFileExport.h; sourceTree = "<group>"; };
 		D5ED250A2319797000C16BF7 /* U3DFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = U3DFile.cpp; sourceTree = "<group>"; };
 		D5ED250B2319797000C16BF7 /* FERAWImageReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERAWImageReader.cpp; sourceTree = "<group>"; };
-		D5ED250C2319797000C16BF7 /* FENode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENode.h; sourceTree = "<group>"; };
-		D5ED250D2319797000C16BF7 /* FENodeEdgeList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENodeEdgeList.cpp; sourceTree = "<group>"; };
 		D5ED250E2319797000C16BF7 /* FEAreaCoverage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEAreaCoverage.h; sourceTree = "<group>"; };
 		D5ED250F2319797000C16BF7 /* FEFileReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFileReader.h; sourceTree = "<group>"; };
 		D5ED25102319797000C16BF7 /* GView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GView.h; sourceTree = "<group>"; };
@@ -274,130 +253,119 @@
 		D5ED249E2319797000C16BF7 /* PostLib */ = {
 			isa = PBXGroup;
 			children = (
-				D5ED249F2319797000C16BF7 /* DataFilter.h */,
-				D5ED24A02319797000C16BF7 /* FELSDYNAimport.cpp */,
-				D5ED24A12319797000C16BF7 /* FEPlotMix.cpp */,
-				D5ED24A22319797000C16BF7 /* Intersect.cpp */,
+				D5ED24E42319797000C16BF7 /* Animation.cpp */,
+				D5ED24AC2319797000C16BF7 /* Animation.h */,
+				D5ED24B52319797000C16BF7 /* AVIAnimation.cpp */,
+				D5ED24BE2319797000C16BF7 /* AVIAnimation.h */,
 				D5ED24A32319797000C16BF7 /* ColorMap.cpp */,
+				D5ED25032319797000C16BF7 /* ColorMap.h */,
+				D5ED24E02319797000C16BF7 /* constants.h */,
+				D5ED24DA2319797000C16BF7 /* DataFilter.cpp */,
+				D5ED249F2319797000C16BF7 /* DataFilter.h */,
+				D5ED24B32319797000C16BF7 /* DataMap.cpp */,
+				D5ED24C52319797000C16BF7 /* DataMap.h */,
+				D5ED24E52319797000C16BF7 /* evaluate.cpp */,
+				D5ED25012319797000C16BF7 /* evaluate.h */,
+				D5ED24D92319797000C16BF7 /* FEAreaCoverage.cpp */,
+				D5ED250E2319797000C16BF7 /* FEAreaCoverage.h */,
+				D5ED24FA2319797000C16BF7 /* FEAsciiExport.cpp */,
+				D5ED24C12319797000C16BF7 /* FEAsciiExport.h */,
+				D5ED25002319797000C16BF7 /* FEASCIIImport.cpp */,
+				D5ED24EE2319797000C16BF7 /* FEASCIIImport.h */,
+				D5ED24FD2319797000C16BF7 /* FEBioImport.cpp */,
+				D5ED25192319797000C16BF7 /* FEBioImport.h */,
+				D5ED24C32319797000C16BF7 /* FECurvatureMap.cpp */,
+				D5ED24AE2319797000C16BF7 /* FECurvatureMap.h */,
+				D5ED24F82319797000C16BF7 /* FEDataField.cpp */,
+				D5ED24FB2319797000C16BF7 /* FEDataField.h */,
+				D5ED24C62319797000C16BF7 /* FEDataManager.cpp */,
+				D5ED24C42319797000C16BF7 /* FEDataManager.h */,
+				D5ED24EA2319797000C16BF7 /* FEDistanceMap.cpp */,
+				D5ED24AF2319797000C16BF7 /* FEDistanceMap.h */,
+				D5ED24F62319797000C16BF7 /* FEFEBioExport.cpp */,
+				D5ED24D62319797000C16BF7 /* FEFEBioExport.h */,
+				D5ED24EC2319797000C16BF7 /* FEFileExport.cpp */,
+				D5ED25092319797000C16BF7 /* FEFileExport.h */,
+				D5ED24E22319797000C16BF7 /* FEFileReader.cpp */,
+				D5ED250F2319797000C16BF7 /* FEFileReader.h */,
+				D5ED24BD2319797000C16BF7 /* FEGroup.cpp */,
+				D5ED24C22319797000C16BF7 /* FEGroup.h */,
+				D5ED24D32319797000C16BF7 /* FELSDYNAExport.cpp */,
+				D5ED24DC2319797000C16BF7 /* FELSDYNAExport.h */,
+				D5ED24A02319797000C16BF7 /* FELSDYNAimport.cpp */,
+				D5ED24E82319797000C16BF7 /* FELSDYNAimport.h */,
+				D5ED24C72319797000C16BF7 /* FELSDYNAPlot.cpp */,
+				D5ED24D42319797000C16BF7 /* FELSDYNAPlot.h */,
+				D5ED25112319797000C16BF7 /* FEMaterial.cpp */,
+				D5ED24AA2319797000C16BF7 /* FEMaterial.h */,
+				D5ED24BB2319797000C16BF7 /* FEMathData.cpp */,
+				D5ED24CC2319797000C16BF7 /* FEMathData.h */,
+				D5ED25072319797000C16BF7 /* FEMesh.cpp */,
+				D5ED25152319797000C16BF7 /* FEMesh.h */,
+				D5ED25062319797000C16BF7 /* FEMeshData_T.h */,
+				D5ED25172319797000C16BF7 /* FEMeshData.cpp */,
+				D5ED24CF2319797000C16BF7 /* FEMeshData.h */,
+				D5ED24DB2319797000C16BF7 /* FEModel.cpp */,
+				D5ED24D12319797000C16BF7 /* FEModel.h */,
+				D5ED24BF2319797000C16BF7 /* FENikeExport.cpp */,
+				D5ED24E92319797000C16BF7 /* FENikeExport.h */,
+				D5ED24B82319797000C16BF7 /* FENikeImport.cpp */,
+				D5ED24D72319797000C16BF7 /* FENikeImport.h */,
+				D5ED24A12319797000C16BF7 /* FEPlotMix.cpp */,
+				D5ED24B62319797000C16BF7 /* FEPlotMix.h */,
+				D5ED24F42319797000C16BF7 /* FEPointCongruency.cpp */,
+				D5ED24F02319797000C16BF7 /* FEPointCongruency.h */,
+				D5ED250B2319797000C16BF7 /* FERAWImageReader.cpp */,
+				D5ED24D82319797000C16BF7 /* FERAWImageReader.h */,
+				D5ED24E72319797000C16BF7 /* FEState.cpp */,
 				D5ED24A42319797000C16BF7 /* FEState.h */,
 				D5ED24A52319797000C16BF7 /* FESTLimport.cpp */,
-				D5ED24A62319797000C16BF7 /* FENodeFaceTable.cpp */,
-				D5ED24A72319797000C16BF7 /* FENodeEdgeList.h */,
-				D5ED24A82319797000C16BF7 /* ValArray.h */,
-				D5ED24A92319797000C16BF7 /* GLObject.cpp */,
-				D5ED24AA2319797000C16BF7 /* FEMaterial.h */,
-				D5ED24AB2319797000C16BF7 /* GLImageRenderer.cpp */,
-				D5ED24AC2319797000C16BF7 /* Animation.h */,
-				D5ED24AD2319797000C16BF7 /* FEVTKExport.h */,
-				D5ED24AE2319797000C16BF7 /* FECurvatureMap.h */,
-				D5ED24AF2319797000C16BF7 /* FEDistanceMap.h */,
-				D5ED24B02319797000C16BF7 /* MarchingCubes.cpp */,
-				D5ED24B12319797000C16BF7 /* stdafx.h */,
-				D5ED24B22319797000C16BF7 /* FENodeFaceList.h */,
-				D5ED24B32319797000C16BF7 /* DataMap.cpp */,
-				D5ED24B42319797000C16BF7 /* FEVTKExport.cpp */,
-				D5ED24B52319797000C16BF7 /* AVIAnimation.cpp */,
-				D5ED24B62319797000C16BF7 /* FEPlotMix.h */,
-				D5ED24B72319797000C16BF7 /* MarchingCubes.h */,
-				D5ED24B82319797000C16BF7 /* FENikeImport.cpp */,
-				D5ED24B92319797000C16BF7 /* ImageModel.h */,
-				D5ED24BA2319797000C16BF7 /* GView.cpp */,
-				D5ED24BB2319797000C16BF7 /* FEMathData.cpp */,
-				D5ED24BC2319797000C16BF7 /* FENodeFaceList.cpp */,
-				D5ED24BD2319797000C16BF7 /* FEGroup.cpp */,
-				D5ED24BE2319797000C16BF7 /* AVIAnimation.h */,
-				D5ED24BF2319797000C16BF7 /* FENikeExport.cpp */,
-				D5ED24C02319797000C16BF7 /* integrate.cpp */,
-				D5ED24C12319797000C16BF7 /* FEAsciiExport.h */,
-				D5ED24C22319797000C16BF7 /* FEGroup.h */,
-				D5ED24C32319797000C16BF7 /* FECurvatureMap.cpp */,
-				D5ED24C42319797000C16BF7 /* FEDataManager.h */,
-				D5ED24C52319797000C16BF7 /* DataMap.h */,
-				D5ED24C62319797000C16BF7 /* FEDataManager.cpp */,
-				D5ED24C72319797000C16BF7 /* FELSDYNAPlot.cpp */,
-				D5ED24C82319797000C16BF7 /* PostView.cpp */,
-				D5ED24C92319797000C16BF7 /* VRMLExporter.cpp */,
-				D5ED24CA2319797000C16BF7 /* ImageModel.cpp */,
-				D5ED24CB2319797000C16BF7 /* FEVTKImport.cpp */,
-				D5ED24CC2319797000C16BF7 /* FEMathData.h */,
-				D5ED24CD2319797000C16BF7 /* ImageSlicer.cpp */,
-				D5ED24CE2319797000C16BF7 /* ValArray.cpp */,
-				D5ED24CF2319797000C16BF7 /* FEMeshData.h */,
-				D5ED24D02319797000C16BF7 /* GLObject.h */,
-				D5ED24D12319797000C16BF7 /* FEModel.h */,
-				D5ED24D22319797000C16BF7 /* FEStrainMap.cpp */,
-				D5ED24D32319797000C16BF7 /* FELSDYNAExport.cpp */,
-				D5ED24D42319797000C16BF7 /* FELSDYNAPlot.h */,
-				D5ED24D52319797000C16BF7 /* MPEGAnimation.cpp */,
-				D5ED24D62319797000C16BF7 /* FEFEBioExport.h */,
-				D5ED24D72319797000C16BF7 /* FENikeImport.h */,
-				D5ED24D82319797000C16BF7 /* FERAWImageReader.h */,
-				D5ED24D92319797000C16BF7 /* FEAreaCoverage.cpp */,
-				D5ED24DA2319797000C16BF7 /* DataFilter.cpp */,
-				D5ED24DB2319797000C16BF7 /* FEModel.cpp */,
-				D5ED24DC2319797000C16BF7 /* FELSDYNAExport.h */,
-				D5ED24DD2319797000C16BF7 /* GMeshImport.h */,
-				D5ED24DE2319797000C16BF7 /* FENodeElemList.cpp */,
-				D5ED24DF2319797000C16BF7 /* U3DFile.h */,
-				D5ED24E02319797000C16BF7 /* constants.h */,
 				D5ED24E12319797000C16BF7 /* FESTLimport.h */,
-				D5ED24E22319797000C16BF7 /* FEFileReader.cpp */,
-				D5ED24E32319797000C16BF7 /* Palette.h */,
-				D5ED24E42319797000C16BF7 /* Animation.cpp */,
-				D5ED24E52319797000C16BF7 /* evaluate.cpp */,
-				D5ED24E62319797000C16BF7 /* VolRender.cpp */,
-				D5ED24E72319797000C16BF7 /* FEState.cpp */,
-				D5ED24E82319797000C16BF7 /* FELSDYNAimport.h */,
-				D5ED24E92319797000C16BF7 /* FENikeExport.h */,
-				D5ED24EA2319797000C16BF7 /* FEDistanceMap.cpp */,
-				D5ED24EB2319797000C16BF7 /* ImgAnimation.h */,
-				D5ED24EC2319797000C16BF7 /* FEFileExport.cpp */,
+				D5ED24D22319797000C16BF7 /* FEStrainMap.cpp */,
 				D5ED24ED2319797000C16BF7 /* FEStrainMap.h */,
-				D5ED24EE2319797000C16BF7 /* FEASCIIImport.h */,
-				D5ED24EF2319797000C16BF7 /* tools.h */,
-				D5ED24F02319797000C16BF7 /* FEPointCongruency.h */,
-				D5ED24F12319797000C16BF7 /* PostView.h */,
-				D5ED24F22319797000C16BF7 /* GDecoration.cpp */,
-				D5ED24F32319797000C16BF7 /* tools.cpp */,
-				D5ED24F42319797000C16BF7 /* FEPointCongruency.cpp */,
-				D5ED24F52319797000C16BF7 /* GMeshImport.cpp */,
-				D5ED24F62319797000C16BF7 /* FEFEBioExport.cpp */,
-				D5ED24F72319797000C16BF7 /* ImageSlicer.h */,
-				D5ED24F82319797000C16BF7 /* FEDataField.cpp */,
-				D5ED24F92319797000C16BF7 /* FENodeFaceTable.h */,
-				D5ED24FA2319797000C16BF7 /* FEAsciiExport.cpp */,
-				D5ED24FB2319797000C16BF7 /* FEDataField.h */,
-				D5ED24FC2319797000C16BF7 /* FEU3DImport.h */,
-				D5ED24FD2319797000C16BF7 /* FEBioImport.cpp */,
-				D5ED24FE2319797000C16BF7 /* GLImageRenderer.h */,
-				D5ED24FF2319797000C16BF7 /* PostLib.pro */,
-				D5ED25002319797000C16BF7 /* FEASCIIImport.cpp */,
-				D5ED25012319797000C16BF7 /* evaluate.h */,
 				D5ED25022319797000C16BF7 /* FEU3DImport.cpp */,
-				D5ED25032319797000C16BF7 /* ColorMap.h */,
-				D5ED25042319797000C16BF7 /* FENodeElemList.h */,
-				D5ED25052319797000C16BF7 /* Intersect.h */,
-				D5ED25062319797000C16BF7 /* FEMeshData_T.h */,
-				D5ED25072319797000C16BF7 /* FEMesh.cpp */,
-				D5ED25082319797000C16BF7 /* Palette.cpp */,
-				D5ED25092319797000C16BF7 /* FEFileExport.h */,
-				D5ED250A2319797000C16BF7 /* U3DFile.cpp */,
-				D5ED250B2319797000C16BF7 /* FERAWImageReader.cpp */,
-				D5ED250C2319797000C16BF7 /* FENode.h */,
-				D5ED250D2319797000C16BF7 /* FENodeEdgeList.cpp */,
-				D5ED250E2319797000C16BF7 /* FEAreaCoverage.h */,
-				D5ED250F2319797000C16BF7 /* FEFileReader.h */,
-				D5ED25102319797000C16BF7 /* GView.h */,
-				D5ED25112319797000C16BF7 /* FEMaterial.cpp */,
+				D5ED24FC2319797000C16BF7 /* FEU3DImport.h */,
+				D5ED24B42319797000C16BF7 /* FEVTKExport.cpp */,
+				D5ED24AD2319797000C16BF7 /* FEVTKExport.h */,
+				D5ED24CB2319797000C16BF7 /* FEVTKImport.cpp */,
 				D5ED25122319797000C16BF7 /* FEVTKImport.h */,
-				D5ED25132319797000C16BF7 /* VRMLExporter.h */,
+				D5ED24F22319797000C16BF7 /* GDecoration.cpp */,
 				D5ED25142319797000C16BF7 /* GDecoration.h */,
-				D5ED25152319797000C16BF7 /* FEMesh.h */,
-				D5ED25162319797000C16BF7 /* VolRender.h */,
-				D5ED25172319797000C16BF7 /* FEMeshData.cpp */,
-				D5ED25182319797000C16BF7 /* MPEGAnimation.h */,
-				D5ED25192319797000C16BF7 /* FEBioImport.h */,
+				D5ED24AB2319797000C16BF7 /* GLImageRenderer.cpp */,
+				D5ED24FE2319797000C16BF7 /* GLImageRenderer.h */,
+				D5ED24A92319797000C16BF7 /* GLObject.cpp */,
+				D5ED24D02319797000C16BF7 /* GLObject.h */,
+				D5ED24F52319797000C16BF7 /* GMeshImport.cpp */,
+				D5ED24DD2319797000C16BF7 /* GMeshImport.h */,
+				D5ED24BA2319797000C16BF7 /* GView.cpp */,
+				D5ED25102319797000C16BF7 /* GView.h */,
+				D5ED24CA2319797000C16BF7 /* ImageModel.cpp */,
+				D5ED24B92319797000C16BF7 /* ImageModel.h */,
+				D5ED24CD2319797000C16BF7 /* ImageSlicer.cpp */,
+				D5ED24F72319797000C16BF7 /* ImageSlicer.h */,
 				D5ED251A2319797000C16BF7 /* ImgAnimation.cpp */,
+				D5ED24EB2319797000C16BF7 /* ImgAnimation.h */,
+				D5ED24A22319797000C16BF7 /* Intersect.cpp */,
+				D5ED25052319797000C16BF7 /* Intersect.h */,
+				D5ED24B02319797000C16BF7 /* MarchingCubes.cpp */,
+				D5ED24B72319797000C16BF7 /* MarchingCubes.h */,
+				D5ED24D52319797000C16BF7 /* MPEGAnimation.cpp */,
+				D5ED25182319797000C16BF7 /* MPEGAnimation.h */,
+				D5ED25082319797000C16BF7 /* Palette.cpp */,
+				D5ED24E32319797000C16BF7 /* Palette.h */,
+				D5ED24C82319797000C16BF7 /* PostView.cpp */,
+				D5ED24F12319797000C16BF7 /* PostView.h */,
+				D5ED24B12319797000C16BF7 /* stdafx.h */,
+				D5ED24F32319797000C16BF7 /* tools.cpp */,
+				D5ED24EF2319797000C16BF7 /* tools.h */,
+				D5ED250A2319797000C16BF7 /* U3DFile.cpp */,
+				D5ED24DF2319797000C16BF7 /* U3DFile.h */,
+				D5ED24CE2319797000C16BF7 /* ValArray.cpp */,
+				D5ED24A82319797000C16BF7 /* ValArray.h */,
+				D5ED24E62319797000C16BF7 /* VolRender.cpp */,
+				D5ED25162319797000C16BF7 /* VolRender.h */,
+				D5ED24C92319797000C16BF7 /* VRMLExporter.cpp */,
+				D5ED25132319797000C16BF7 /* VRMLExporter.h */,
 			);
 			name = PostLib;
 			path = ../../PostLib;
@@ -430,8 +398,6 @@
 				D5ED29B223198B1E00C16BF7 /* VolRender.h in Headers */,
 				D5ED29B323198B1E00C16BF7 /* ImgAnimation.h in Headers */,
 				D5ED29B423198B1E00C16BF7 /* FEFileReader.h in Headers */,
-				D5ED29B523198B1E00C16BF7 /* FENodeElemList.h in Headers */,
-				D5ED29B623198B1E00C16BF7 /* FENodeFaceTable.h in Headers */,
 				D5ED29B723198B1E00C16BF7 /* FELSDYNAPlot.h in Headers */,
 				D5ED29B823198B1E00C16BF7 /* FEFileExport.h in Headers */,
 				D5ED29B923198B1E00C16BF7 /* PostView.h in Headers */,
@@ -443,7 +409,6 @@
 				D5ED29BF23198B1E00C16BF7 /* FEDataField.h in Headers */,
 				D5ED29C023198B1E00C16BF7 /* GDecoration.h in Headers */,
 				D5ED29C123198B1E00C16BF7 /* FELSDYNAimport.h in Headers */,
-				D5ED29C223198B1E00C16BF7 /* FENodeFaceList.h in Headers */,
 				D5ED29C323198B1E00C16BF7 /* DataFilter.h in Headers */,
 				D5ED29C423198B1E00C16BF7 /* FEMesh.h in Headers */,
 				D5ED29C523198B1E00C16BF7 /* FEModel.h in Headers */,
@@ -461,14 +426,12 @@
 				D5ED29D123198B1E00C16BF7 /* FENikeExport.h in Headers */,
 				D5ED29D223198B1E00C16BF7 /* tools.h in Headers */,
 				D5ED29D323198B1E00C16BF7 /* VRMLExporter.h in Headers */,
-				D5ED29D423198B1E00C16BF7 /* FENode.h in Headers */,
 				D5ED29D523198B1E00C16BF7 /* FEPointCongruency.h in Headers */,
 				D5ED29D623198B1E00C16BF7 /* MPEGAnimation.h in Headers */,
 				D5ED29D723198B1E00C16BF7 /* ImageModel.h in Headers */,
 				D5ED29D823198B1E00C16BF7 /* ImageSlicer.h in Headers */,
 				D5ED29D923198B1E00C16BF7 /* MarchingCubes.h in Headers */,
 				D5ED29DA23198B1E00C16BF7 /* ValArray.h in Headers */,
-				D5ED29DB23198B1E00C16BF7 /* FENodeEdgeList.h in Headers */,
 				D5ED29DC23198B1E00C16BF7 /* FEASCIIImport.h in Headers */,
 				D5ED29DD23198B1E00C16BF7 /* AVIAnimation.h in Headers */,
 				D5ED29DE23198B1E00C16BF7 /* FEAsciiExport.h in Headers */,
@@ -544,7 +507,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D5ED297323198B1E00C16BF7 /* FENodeFaceTable.cpp in Sources */,
 				D5ED297423198B1E00C16BF7 /* FEDataManager.cpp in Sources */,
 				D5ED297523198B1E00C16BF7 /* GLImageRenderer.cpp in Sources */,
 				D5ED297623198B1E00C16BF7 /* GView.cpp in Sources */,
@@ -571,13 +533,11 @@
 				D5ED298B23198B1E00C16BF7 /* VRMLExporter.cpp in Sources */,
 				D5ED298C23198B1E00C16BF7 /* FERAWImageReader.cpp in Sources */,
 				D5ED298D23198B1E00C16BF7 /* FEDistanceMap.cpp in Sources */,
-				D5ED298E23198B1E00C16BF7 /* FENodeEdgeList.cpp in Sources */,
 				D5ED298F23198B1E00C16BF7 /* ColorMap.cpp in Sources */,
 				D5ED299023198B1E00C16BF7 /* GDecoration.cpp in Sources */,
 				D5ED299123198B1E00C16BF7 /* PostView.cpp in Sources */,
 				D5ED299223198B1E00C16BF7 /* FEDataField.cpp in Sources */,
 				D5ED299323198B1E00C16BF7 /* FELSDYNAExport.cpp in Sources */,
-				D5ED299423198B1E00C16BF7 /* integrate.cpp in Sources */,
 				D5ED299523198B1E00C16BF7 /* FEModel.cpp in Sources */,
 				D5ED299623198B1E00C16BF7 /* FELSDYNAimport.cpp in Sources */,
 				D5ED299723198B1E00C16BF7 /* FEStrainMap.cpp in Sources */,
@@ -590,7 +550,6 @@
 				D5ED299E23198B1E00C16BF7 /* FEMeshData.cpp in Sources */,
 				D5ED299F23198B1E00C16BF7 /* FENikeExport.cpp in Sources */,
 				D5ED29A023198B1E00C16BF7 /* FECurvatureMap.cpp in Sources */,
-				D5ED29A123198B1E00C16BF7 /* FENodeElemList.cpp in Sources */,
 				D5ED29A223198B1E00C16BF7 /* MarchingCubes.cpp in Sources */,
 				D5ED29A323198B1E00C16BF7 /* FEVTKExport.cpp in Sources */,
 				D5ED29A423198B1E00C16BF7 /* AVIAnimation.cpp in Sources */,
@@ -600,7 +559,6 @@
 				D5ED29A823198B1E00C16BF7 /* Animation.cpp in Sources */,
 				D5ED29A923198B1E00C16BF7 /* FESTLimport.cpp in Sources */,
 				D5ED29AA23198B1E00C16BF7 /* ImageModel.cpp in Sources */,
-				D5ED29AB23198B1E00C16BF7 /* FENodeFaceList.cpp in Sources */,
 				D5ED29AC23198B1E00C16BF7 /* FEFileExport.cpp in Sources */,
 				D5ED29AD23198B1E00C16BF7 /* FEVTKImport.cpp in Sources */,
 				D5ED29AE23198B1E00C16BF7 /* FEASCIIImport.cpp in Sources */,

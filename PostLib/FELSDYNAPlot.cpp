@@ -427,7 +427,7 @@ bool FELSDYNAPlotImport::ReadStates(FEModel& fem)
 					FENodeData<vec3f>& dsp = dynamic_cast<FENodeData<vec3f>&>(pstate->m_Data[m_nfield[LSDYNA_DISP]]);
 					for (int i=0; i<m_hdr.nump; ++i, pf += 3)
 					{
-						vec3f& r0 = to_vec3f(mesh.Node(i).r);
+						vec3f r0 = to_vec3f(mesh.Node(i).r);
 						dsp[i].x = pf[0] - r0.x;
 						dsp[i].y = pf[1] - r0.y;
 						dsp[i].z = pf[2] - r0.z;

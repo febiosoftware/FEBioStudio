@@ -687,7 +687,7 @@ bool Post::FindElementInReferenceFrame(FEMeshBase& m, const vec3f& p, int& nelem
 		vec3f r1 = r0;
 		for (int j = 1; j<ne; ++j)
 		{
-			vec3f& rj = to_vec3f(m.Node(e.m_node[j]).r);
+			vec3f rj = to_vec3f(m.Node(e.m_node[j]).r);
 			if (rj.x < r0.x) r0.x = rj.x;
 			if (rj.y < r0.y) r0.y = rj.y;
 			if (rj.z < r0.z) r0.z = rj.z;
@@ -910,7 +910,7 @@ void Post::FEFindElement::InitReferenceFrame(vector<bool>& flags)
 			BOX box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
-				vec3f& rj = to_vec3f(m_mesh.Node(e.m_node[j]).r);
+				vec3f rj = to_vec3f(m_mesh.Node(e.m_node[j]).r);
 				box += rj;
 			}
 			double R = box.GetMaxExtent();

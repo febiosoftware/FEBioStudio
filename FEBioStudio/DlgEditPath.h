@@ -25,7 +25,7 @@ class CDlgEditPath : public QDialog
 
 public:
 	CDlgEditPath(QWidget* parent);
-	virtual ~CDlgEditPath() {}
+	~CDlgEditPath() {}
 
 	void SetLaunchConfig(CLaunchConfig launchConfig);
 	CLaunchConfig GetLaunchConfig();

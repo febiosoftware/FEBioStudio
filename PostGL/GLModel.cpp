@@ -3555,9 +3555,9 @@ void CGLModel::UpdateInternalSurfaces(bool eval)
 							face.m_elem[1] = pen->m_lid;
 
 							// calculate the face normals
-							vec3f& r0 = to_vec3f(mesh.Node(face.n[0]).r);
-							vec3f& r1 = to_vec3f(mesh.Node(face.n[1]).r);
-							vec3f& r2 = to_vec3f(mesh.Node(face.n[2]).r);
+							vec3f r0 = to_vec3f(mesh.Node(face.n[0]).r);
+							vec3f r1 = to_vec3f(mesh.Node(face.n[1]).r);
+							vec3f r2 = to_vec3f(mesh.Node(face.n[2]).r);
 
 							face.m_fn = (r1 - r0) ^ (r2 - r0);
 							face.m_fn.Normalize();
