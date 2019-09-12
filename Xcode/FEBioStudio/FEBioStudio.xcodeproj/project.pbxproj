@@ -17,6 +17,7 @@
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
 		D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; };
 		D5EBB7AD232AEF6A00EED2BE /* libssh.4.8.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D5EBB7AF232AF45800EED2BE /* moc_DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7AE232AF45800EED2BE /* moc_DlgEditPath.cpp */; };
 		D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290023197E8500C16BF7 /* libFSCore.a */; };
 		D5ED290323197E8500C16BF7 /* libGLLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290223197E8500C16BF7 /* libGLLib.a */; };
 		D5ED290523197E8500C16BF7 /* libLSDyna.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290423197E8500C16BF7 /* libLSDyna.a */; };
@@ -382,6 +383,7 @@
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
 		D5EBB7A6232AEAED00EED2BE /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
 		D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.1.dylib; path = ../../../../../../../../../../usr/local/Cellar/libssh/0.9.0_1/lib/libssh.4.8.1.dylib; sourceTree = "<group>"; };
+		D5EBB7AE232AF45800EED2BE /* moc_DlgEditPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditPath.cpp; sourceTree = "<group>"; };
 		D5ED290023197E8500C16BF7 /* libFSCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libFSCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290223197E8500C16BF7 /* libGLLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libGLLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290423197E8500C16BF7 /* libLSDyna.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libLSDyna.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1097,6 +1099,7 @@
 				D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */,
 				D5F7D79B22FA37C40089B08E /* moc_DlgCloneRevolve.cpp */,
 				D5F7D79222FA37C40089B08E /* moc_DlgEditOutput.cpp */,
+				D5EBB7AE232AF45800EED2BE /* moc_DlgEditPath.cpp */,
 				D5F7D7E422FA37C40089B08E /* moc_DlgEditProject.cpp */,
 				D5F7D80722FA37C40089B08E /* moc_DlgExportFEBio.cpp */,
 				D5F7D70222FA37C40089B08E /* moc_DlgFEBioOptimize.cpp */,
@@ -1409,6 +1412,7 @@
 				D5F7D8CD22FA37C40089B08E /* moc_DlgSoluteTable.cpp in Sources */,
 				D5F7D88A22FA37C40089B08E /* DlgNew.cpp in Sources */,
 				D5F7D88222FA37C40089B08E /* moc_DlgCloneRevolve.cpp in Sources */,
+				D5EBB7AF232AF45800EED2BE /* moc_DlgEditPath.cpp in Sources */,
 				D5F7D89A22FA37C40089B08E /* DlgVTKExport.cpp in Sources */,
 				D5F7D8B922FA37C40089B08E /* PlotWidget.cpp in Sources */,
 				D5F7D82B22FA37C40089B08E /* moc_GLHighlighter.cpp in Sources */,
