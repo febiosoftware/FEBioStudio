@@ -247,7 +247,7 @@ vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
 	if (m_find.FindElement(r, nelem, q))
 	{
 		ok = true;
-		FEElement_& el = mesh.Element(nelem);
+		FEElement_& el = mesh.ElementRef(nelem);
 
 		int ne = el.Nodes();
 		for (int i=0; i<ne; ++i) ve[i] = m_val[el.m_node[i]];
@@ -287,7 +287,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 	float maxStep = m_inc*R;
 
 	// tag all elements
-	mesh.SetElementTags(0);
+	mesh.TagAllElements(0);
 
 	// use the same seed
 	srand(0);
@@ -317,7 +317,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 
 			// project the seed into the adjacent solid element
 			int nelem = f.m_elem[0];
-			FEElement_* el = &mesh.Element(nelem);
+			FEElement_* el = &mesh.ElementRef(nelem);
 			el->m_ntag = 1;
 			ProjectInsideReferenceElement(mesh, *el, cf, q);
 

@@ -185,42 +185,6 @@ void FEMesh::Create(int nodes, int elems, int faces, int edges)
 }
 
 //-----------------------------------------------------------------------------
-// See if this is a shell mesh.
-bool FEMesh::IsShell() const
-{
-	int NE = Elements();
-	for (int i = 0; i<NE; ++i)
-	{
-		const FEElement& el = Element(i);
-		if (el.IsShell() == false) return false;
-	}
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// See if this is a solid mesh.
-bool FEMesh::IsSolid() const
-{
-	int NE = Elements();
-	for (int i = 0; i<NE; ++i)
-	{
-		const FEElement& el = Element(i);
-		if (el.IsSolid() == false) return false;
-	}
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// get the local node positions of a element
-void FEMesh::ElementNodeLocalPositions(const FEElement& e, vec3d* r) const
-{
-	int ne = e.Nodes();
-	for (int i=0; i<ne; ++i) r[i] = m_Node[e.m_node[i]].r;
-}
-
-//-----------------------------------------------------------------------------
 // Detach the selection and return it as a new object
 // TODO: I want to remove this function and replace it with a modifier who
 // does all the work.
@@ -230,8 +194,7 @@ FEMesh* FEMesh::DetachSelectedMesh()
 
 	// count selected elements
 	int elems = 0;
-	FEElement* pe = ElementPtr();
-	for (i=0; i<Elements(); ++i, ++pe) if (pe->IsSelected()) ++elems;
+	for (i=0; i<Elements(); ++i) if (ElementPtr(i)->IsSelected()) ++elems;
 
 	// make sure there is a selection
 	if (elems == 0) return 0;
@@ -244,9 +207,9 @@ FEMesh* FEMesh::DetachSelectedMesh()
 	FENode* pn = NodePtr();
 	for (i=0; i<Nodes(); ++i, ++pn) pn->m_ntag = -1;
 
-	pe = ElementPtr();
-	for (i=0; i<Elements(); ++i, ++pe)
+	for (i=0; i<Elements(); ++i)
 	{
+		FEElement_* pe = ElementPtr(i);
 		if (pe->IsSelected())
 		{
 			n = pe->Nodes();
@@ -278,10 +241,11 @@ FEMesh* FEMesh::DetachSelectedMesh()
 	assert(n == nodes);
 
 	// create the new elements
-	pe = ElementPtr();
 	n = 0;
-	for (i=0; i<Elements(); ++i, ++pe)
+	for (i=0; i<Elements(); ++i)
 	{
+		FEElement_* pe = ElementPtr(i);
+
 		if (pe->IsSelected())
 		{
 			FEElement& el = pm->Element(n);
@@ -326,9 +290,9 @@ FEMesh* FEMesh::DetachSelectedMesh()
 	pn = NodePtr();
 	for (i=0; i<Nodes(); ++i, ++pn) pn->m_ntag = -1;
 
-	pe = ElementPtr();
-	for (i=0; i<Elements(); ++i, ++pe)
+	for (i=0; i<Elements(); ++i)
 	{
+		FEElement_* pe = ElementPtr(i);
 		n = pe->Nodes();
 		for (j=0; j<n; ++j) Node(pe->m_node[j]).m_ntag = 1;
 	}
@@ -338,9 +302,9 @@ FEMesh* FEMesh::DetachSelectedMesh()
 	pn = NodePtr();
 	for (i=0; i<Nodes(); ++i, ++pn) if (pn->m_ntag > 0) pn->m_ntag = n++;
 
-	pe = ElementPtr();
-	for (i=0; i<Elements(); ++i, ++pe)
+	for (i=0; i<Elements(); ++i)
 	{
+		FEElement_* pe = ElementPtr(i);
 		n = pe->Nodes();
 		for (j=0; j<n; ++j)	pe->m_node[j] = Node(pe->m_node[j]).m_ntag;
 	}
@@ -368,25 +332,6 @@ FEMesh* FEMesh::DetachSelectedMesh()
 
 	// Done!
 	return pm;
-}
-
-//-----------------------------------------------------------------------------
-// Tag all elements
-void FEMesh::TagAllElements(int ntag)
-{
-	const int NE = Elements();
-	for (int i=0; i<NE; ++i) Element(i).m_ntag = ntag;
-}
-
-//-----------------------------------------------------------------------------
-int FEMesh::CountTaggedNodes(int tag) const
-{
-	int nc = 0;
-	for (int i=0; i<Nodes(); ++i)
-	{
-		if (Node(i).m_ntag == tag) nc++;
-	}
-	return nc;
 }
 
 //-----------------------------------------------------------------------------
@@ -1264,20 +1209,20 @@ void FEMesh::UpdateElementNeighbors()
 	int elems = Elements();
 
 	// reset all element neighbor and face ptrs
-	FEElement* pe = ElementPtr();
-	for (int i=0; i<elems; i++, pe++)
+	for (int i=0; i<elems; i++)
 	{
-		pe->m_ntag = i;
+		FEElement_& el = ElementRef(i);
+		el.m_ntag = i;
 		for (int j=0; j<6; ++j) 
 		{
-			pe->m_nbr[j] = -1;
-			pe->m_face[j] = -1;
+			el.m_nbr[j] = -1;
+			el.m_face[j] = -1;
 		}
 	}
 
 	// calculate the node-element table
-	FENodeElementList NET(this);
-	NET.Build();
+	FENodeElementList NET;
+	NET.Build(this);
 
 	// set up the element's neighbour pointers
 	FEEdge edge;
@@ -1285,9 +1230,9 @@ void FEMesh::UpdateElementNeighbors()
 	FEFace f1, f2, f3;
 
 	// assign neighbor elements
-	pe = ElementPtr();
-	for (int i = 0; i<elems; i++, pe++)
+	for (int i = 0; i<elems; i++)
 	{
+		FEElement_* pe = ElementPtr(i);
 		// do the solid elements
 		int n = pe->Faces();
 		for (int j = 0; j<n; j++)
@@ -1303,7 +1248,7 @@ void FEMesh::UpdateElementNeighbors()
 				for (int k=0; k < nval; k++)
 				{
 					int nbe = NET.ElementIndex(inode, k);
-					FEElement* pne = ElementPtr(nbe);
+					FEElement_* pne = ElementPtr(nbe);
 					if (pne != pe)
 					{
 						nbrf = pne->Faces();
@@ -1343,7 +1288,7 @@ void FEMesh::UpdateElementNeighbors()
 				bool bfound = false;
 				for (int k=0; k < nval; k++)
 				{
-					FEElement* pne = NET.Element(inode, k);
+					FEElement_* pne = NET.Element(inode, k);
 					if ((pne != pe) && (pe->is_equal(*pne) == false))
 					{
 						nbre = pne->Edges();
@@ -1370,7 +1315,7 @@ void FEMesh::UpdateElementNeighbors()
 				int nval = NET.Valence(inode);
 				for (int k=0; k<nval; ++k)
 				{
-					FEElement* pne = NET.Element(inode, k);
+					FEElement_* pne = NET.Element(inode, k);
 					if (pne != pe)
 					{
 						if ((pne->IsType(FE_BEAM2)) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
@@ -1447,8 +1392,8 @@ void FEMesh::UpdateFaceElementTable()
 	}
 
 	// first build the node element table
-	FENodeElementList NET(this);
-	NET.Build();
+	FENodeElementList NET;
+	NET.Build(this);
 
 	// loop over all faces
 	FEFace f2;
@@ -1462,7 +1407,7 @@ void FEMesh::UpdateFaceElementTable()
 		for (int j=0; j<nval; ++j)
 		{
 			int eid = NET.ElementIndex(n0, j);
-			FEElement* pej = ElementPtr(eid);
+			FEElement_* pej = ElementPtr(eid);
 
 			// solid elements
 			int n = pej->Faces();
@@ -1481,7 +1426,7 @@ void FEMesh::UpdateFaceElementTable()
 						else if (m < 2)
 						{
 							// set the element with the lowest GID first
-							FEElement* p0 = ElementPtr(face.m_elem[0]);
+							FEElement_* p0 = ElementPtr(face.m_elem[0]);
 							if (p0->m_gid < pej->m_gid)
 							{
 								face.m_elem[m++] = eid;
@@ -1502,7 +1447,7 @@ void FEMesh::UpdateFaceElementTable()
 		for (int j=0; j<nval; ++j)
 		{
 			int eid = NET.ElementIndex(n0, j);
-			FEElement* pej = ElementPtr(eid);
+			FEElement_* pej = ElementPtr(eid);
 
 			int n = pej->Edges();
 			if (n > 0)
@@ -1648,35 +1593,6 @@ void FEMesh::UpdateEdgeNeighbors()
 					if ((pen != pe)&&(pen->m_gid == pe->m_gid)) pe->m_nbr[j] = NET.EdgeIndex(n, k);
 				}
 			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// This function finds the interior and exterior nodes.
-void FEMesh::MarkExteriorNodes()
-{
-	int nodes = Nodes();
-	int faces = Faces();
-	int elems = Elements();
-
-	for (int i=0; i<nodes; ++i) Node(i).m_bext = false;
-	
-	for (int i=0; i<faces; ++i)
-	{
-		FEFace& face = Face(i);
-		for (int j=0; j<face.Nodes(); ++j)
-			m_Node[face.n[j]].m_bext = true;
-	}
-
-	// mark all nodes attached to beams as exterior
-	for (int i=0; i<elems; ++i)
-	{
-		FEElement& el = Element(i);
-		if (el.IsType(FE_BEAM2))
-		{
-			Node(el.m_node[0]).m_bext = true;
-			Node(el.m_node[1]).m_bext = true;
 		}
 	}
 }
@@ -2125,12 +2041,14 @@ FEMesh* FEMesh::ExtractFaces(bool selectedOnly)
 	}
 
 	// create the elements
-	FEElement* pe = pm->ElementPtr();
+	int eid = 0;
 	for (int i=0; i<Faces(); ++i)
 	{
 		FEFace& face = Face(i);
 		if (face.m_ntag)
 		{
+			FEElement_* pe = pm->ElementPtr(eid++);
+
 			int n = face.Nodes();
 			switch (n)
 			{
@@ -2147,8 +2065,6 @@ FEMesh* FEMesh::ExtractFaces(bool selectedOnly)
 			}
 
 			for (int j=0; j<n; ++j) pe->m_node[j] = Node(face.n[j]).m_ntag;
-
-			++pe;
 		}
 	}
 
@@ -2197,9 +2113,10 @@ void FEMesh::Save(OArchive &ar)
 	// write the elements
 	ar.BeginChunk(CID_MESH_ELEMENT_SECTION);
 	{
-		FEElement* pe = ElementPtr();
-		for (int i=0; i<elems; ++i, ++pe)
+		for (int i=0; i<elems; ++i)
 		{
+			FEElement_* pe = ElementPtr(i);
+
 			ar.BeginChunk(CID_MESH_ELEMENT);
 			{
 				int ntype = pe->Type();
@@ -2446,7 +2363,7 @@ void FEMesh::Load(IArchive& ar)
 		case CID_MESH_ELEMENT_SECTION:
 			{
 				int n = 0;
-				FEElement* pe = ElementPtr();
+				FEElement* pe = &m_Elem[0];
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
@@ -2890,15 +2807,6 @@ void FEMesh::InvertTaggedFaces(int ntag)
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::ClearFaceSelection()
-{
-	for (int i=0; i<Faces(); ++i)
-	{
-		Face(i).Unselect();
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Invert selected elements.
 void FEMesh::InvertTaggedElements(int ntag)
 {
@@ -2985,7 +2893,7 @@ void FEMesh::InvertTaggedElements(int ntag)
 	for (int i=0; i<Faces(); ++i)
 	{
 		FEFace& f = Face(i);
-		FEElement* pe = ElementPtr(f.m_elem[0]);
+		FEElement_* pe = ElementPtr(f.m_elem[0]);
 
 		if (pe->m_ntag == ntag)
 		{
@@ -3001,51 +2909,6 @@ void FEMesh::InvertTaggedElements(int ntag)
 	UpdateFaces();
 	UpdateNormals();
 	UpdateBox();
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::FindNodesFromPart(int gid, vector<int>& node)
-{
-	for (int i=0; i<Nodes(); ++i) Node(i).m_ntag = 0;
-	for (int i=0; i<Elements(); ++i)
-	{
-		FEElement& e = Element(i);
-		if (e.m_gid == gid)
-		{
-			int ne = e.Nodes();
-			for (int j=0; j<ne; ++j) Node(e.m_node[j]).m_ntag = 1;
-		}
-	}
-
-	int nodes = 0;
-	for (int i=0; i<Nodes(); ++i) if (Node(i).m_ntag == 1) nodes++;
-
-	node.resize(nodes);
-	nodes = 0;
-	for (int i=0; i<Nodes(); ++i)
-		if (Node(i).m_ntag == 1) node[nodes++] = i;
-}
-
-//-----------------------------------------------------------------------------
-// Find a face of an element.
-int FEMesh::FindFace(FEElement *pe, FEFace &f, FEFace& fe)
-{
-	if (pe->IsSolid())
-	{
-		int n = pe->Faces();
-		for (int i=0; i<n; ++i)
-		{
-			fe = pe->GetFace(i);
-			if (fe == f) return i;
-		}
-	}
-	if (pe->IsShell())
-	{
-		pe->GetShellFace(fe);
-		if (fe == f) return 0;
-	}
-
-	return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -3229,7 +3092,7 @@ void FEMesh::BuildFaces()
 			if (el.m_nbr[j] == -1) ++faces;
 			else
 			{
-				FEElement* pen = ElementPtr(el.m_nbr[j]);
+				FEElement_* pen = ElementPtr(el.m_nbr[j]);
 				if (el.m_gid < pen->m_gid)
 				{
 					++faces;
@@ -3268,7 +3131,7 @@ void FEMesh::BuildFaces()
 		{
 			el.m_face[j] = -1;
 			int nbid = el.m_nbr[j];
-			FEElement* pen = (nbid == -1 ? 0 : ElementPtr(nbid));
+			FEElement_* pen = (nbid == -1 ? 0 : ElementPtr(nbid));
 			if (pen == 0)
 			{
 				el.GetFace(j, *pf);
@@ -3541,8 +3404,8 @@ void FEMesh::AutoPartitionSurface()
 
 				// get the element part ID's
 				assert(pf->m_elem[0] >= 0);
-				FEElement* pe11 = ElementPtr(pf->m_elem[0]);
-				FEElement* pe12 = ElementPtr(pf->m_elem[1]);
+				FEElement_* pe11 = ElementPtr(pf->m_elem[0]);
+				FEElement_* pe12 = ElementPtr(pf->m_elem[1]);
 				int gid11 = (pe11 ? pe11->m_gid : -1);
 				int gid12 = (pe12 ? pe12->m_gid : -1);
 
@@ -3553,8 +3416,8 @@ void FEMesh::AutoPartitionSurface()
 					if (pf2)
 					{
 						assert(pf2->m_elem[0] >= 0);
-						FEElement* pe21 = ElementPtr(pf2->m_elem[0]);
-						FEElement* pe22 = ElementPtr(pf2->m_elem[1]);
+						FEElement_* pe21 = ElementPtr(pf2->m_elem[0]);
+						FEElement_* pe22 = ElementPtr(pf2->m_elem[1]);
 
 						int gid21 = (pe21 ? pe21->m_gid : -1);
 						int gid22 = (pe22 ? pe22->m_gid : -1);
@@ -3605,8 +3468,8 @@ void FEMesh::AutoPartitionSurfaceQuick()
 
 				// get the element part ID's
 				assert(pf->m_elem[0] >= 0);
-				FEElement* pe11 = ElementPtr(pf->m_elem[0]);
-				FEElement* pe12 = ElementPtr(pf->m_elem[1]);
+				FEElement_* pe11 = ElementPtr(pf->m_elem[0]);
+				FEElement_* pe12 = ElementPtr(pf->m_elem[1]);
 				int gid11 = (pe11 ? pe11->m_gid : -1);
 				int gid12 = (pe12 ? pe12->m_gid : -1);
 
@@ -3617,8 +3480,8 @@ void FEMesh::AutoPartitionSurfaceQuick()
 					if (pf2)
 					{
 						assert(pf2->m_elem[0] >= 0);
-						FEElement* pe21 = ElementPtr(pf2->m_elem[0]);
-						FEElement* pe22 = ElementPtr(pf2->m_elem[1]);
+						FEElement_* pe21 = ElementPtr(pf2->m_elem[0]);
+						FEElement_* pe22 = ElementPtr(pf2->m_elem[1]);
 
 						int gid21 = (pe21 ? pe21->m_gid : -1);
 						int gid22 = (pe22 ? pe22->m_gid : -1);
@@ -3958,74 +3821,5 @@ void FEMesh::PartitionNode(int nodeIndex)
 				break;
 			}
 		}
-	}
-}
-
-//-------------------------------------------------------------------------------------------------
-void FEMesh::ShowAllElements()
-{
-	for (int i=0; i<Nodes(); ++i) Node(i).Show();
-	for (int i=0; i<Edges(); ++i) Edge(i).Show();
-	for (int i=0; i<Faces(); ++i) Face(i).Show();
-	for (int i=0; i<Elements(); ++i) Element(i).Show();
-}
-
-//-------------------------------------------------------------------------------------------------
-void FEMesh::SelectElements(const vector<int>& elem)
-{
-    for (int i : elem) Element(i).Select();
-}
-
-//-------------------------------------------------------------------------------------------------
-void FEMesh::ShowElements(vector<int>& elem, bool show)
-{
-	// show or hide all the elements
-	if (show)
-        for (int i : elem) Element(i).Unhide();
-	else
-        for (int i : elem) Element(i).Hide();
-
-	// update visibility of all other items
-	UpdateItemVisibility();
-}
-
-//-------------------------------------------------------------------------------------------------
-void FEMesh::UpdateItemVisibility()
-{
-	// tag all visible nodes
-	TagAllNodes(0);
-	for (int i = 0; i<Elements(); ++i)
-	{
-		FEElement& el = Element(i);
-		if (el.IsVisible())
-		{
-			int ne = el.Nodes();
-			for (int j = 0; j<ne; ++j) Node(el.m_node[j]).m_ntag = 1;
-		}
-	}
-
-	// update face visibility
-	for (int i = 0; i<Faces(); ++i)
-	{
-		FEFace& face = Face(i);
-
-		FEElement* e0 = ElementPtr(face.m_elem[0]); assert(e0);
-		FEElement* e1 = ElementPtr(face.m_elem[1]);
-
-		if (!e0->IsVisible() && ((e1==0) || !e1->IsVisible())) face.Hide(); else face.Show();
-	}
-
-	// update visibility of all other items
-	for (int i = 0; i<Nodes(); ++i)
-	{
-		FENode& node = Node(i);
-		if (node.m_ntag == 1) node.Show(); else node.Hide();
-	}
-
-	for (int i = 0; i<Edges(); ++i)
-	{
-		FEEdge& edge = Edge(i);
-		if ((Node(edge.n[0]).m_ntag == 0) || (Node(edge.n[1]).m_ntag == 0)) edge.Hide();
-		else edge.Show();
 	}
 }

@@ -587,7 +587,7 @@ void CMainWindow::ReportSelection()
 	{
 		if (es->Size() == 1)
 		{
-			FEElement* el = es->Element(0);
+			FEElement_* el = es->Element(0);
 			AddLogEntry("1 element selected:\n");
 
 			switch (el->Type())

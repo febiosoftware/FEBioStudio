@@ -278,9 +278,10 @@ bool FENASTRANimport::BuildMesh(FEModel &fem)
 
 	// create elements
 	list<ELEM>::iterator ih = m_Elem.begin();
-	FEElement* pe = pm->ElementPtr();
-	for (i=0; i<elems; ++i, ++pe, ++ih)
+	for (i=0; i<elems; ++i, ++ih)
 	{
+		FEElement_* pe = pm->ElementPtr(i);
+
 		pe->SetType(ih->nn == 4? FE_TET4 : FE_HEX8);
 		for (int j=0; j<ih->nn; ++j) pe->m_node[j] = ih->n[j]-1;
 	}

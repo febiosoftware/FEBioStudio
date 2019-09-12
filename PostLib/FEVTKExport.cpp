@@ -153,13 +153,13 @@ void FEVTKExport::WriteCells(FEState* ps)
 	int NE = m.Elements();
     int nsize = 0;
 	for (int j = 0; j<NE; ++j)
-        nsize += m.Element(j).Nodes() + 1;
+        nsize += m.ElementRef(j).Nodes() + 1;
 
 	// Write CELLS
     fprintf(m_fp, "CELLS %d %d\n", NE, nsize);
     for (int j=0; j<m.Elements(); ++j)
     {
-		FEElement_& el = m.Element(j);
+		FEElement_& el = m.ElementRef(j);
         fprintf(m_fp, "%d ", el.Nodes());
         for (int k=0; k<el.Nodes(); ++k) fprintf(m_fp, "%d ", el.m_node[k]);
         fprintf(m_fp, "\n");
@@ -169,7 +169,7 @@ void FEVTKExport::WriteCells(FEState* ps)
     fprintf(m_fp, "\nCELL_TYPES %d\n", NE);
 	for (int j = 0; j<m.Elements(); ++j)
     {
-		FEElement_& el = m.Element(j);
+		FEElement_& el = m.ElementRef(j);
         int vtk_type;
         switch (el.Type()) {
             case FE_HEX8   : vtk_type = VTK_HEXAHEDRON; break;
@@ -477,7 +477,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 		float v[FEElement::MAX_NODES];
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement_& el = mesh.Element(i);
+			FEElement_& el = mesh.ElementRef(i);
 			if (data.active(i))
 			{
 				data.eval(i, v);
@@ -492,7 +492,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 		vec3f v[FEElement::MAX_NODES];
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement_& el = mesh.Element(i);
+			FEElement_& el = mesh.ElementRef(i);
 			if (data.active(i))
 			{
 				data.eval(i, v);
@@ -509,7 +509,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 		mat3fs v[FEElement::MAX_NODES];
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement_& el = mesh.Element(i);
+			FEElement_& el = mesh.ElementRef(i);
 			if (data.active(i))
 			{
 				data.eval(i, v);
@@ -526,7 +526,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 		mat3fd v[FEElement::MAX_NODES];
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement_& el = mesh.Element(i);
+			FEElement_& el = mesh.ElementRef(i);
 			if (data.active(i))
 			{
 				data.eval(i, v);
@@ -553,7 +553,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData, FE
 	if (NE == 0) return false;
 
 	// number of nodes per element
-	int ne = mesh.Element(part.m_Elem[0]).Nodes();
+	int ne = mesh.ElementRef(part.m_Elem[0]).Nodes();
 
 	// number of actually written values
 	int nval = 0;

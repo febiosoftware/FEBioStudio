@@ -517,7 +517,7 @@ template <typename T> void cached_copy_elem_data_COMP(FEMeshData& dst, FEMeshDat
 	T f[FEElement::MAX_NODES];
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.Element(i);
+		FEElement_& el = mesh.ElementRef(i);
 		if (s.active(i))
 		{
 			int ne = el.Nodes();
@@ -539,7 +539,7 @@ template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshDat
 	vector<int> index;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.Element(i);
+		FEElement_& el = mesh.ElementRef(i);
 		if (s.active(i))
 		{
 			int ne = el.Nodes();
@@ -794,7 +794,7 @@ vec3f FEModel::NodePosition(const vec3f& r, int ntime)
 		GetElementCoords(iel, ntime, x);
 
 		// evaluate 
-		FEElement_& el = mesh->Element(iel);
+		FEElement_& el = mesh->ElementRef(iel);
 
 		vec3f xt = el.eval(x, iso[0], iso[1], iso[2]);
 
@@ -823,7 +823,7 @@ vec3f FEModel::FaceNormal(FEFace& f, int ntime)
 void FEModel::GetElementCoords(int iel, int ntime, vec3f* r)
 {
 	FEMeshBase* mesh = GetState(ntime)->GetFEMesh();
-	FEElement_& elem = mesh->Element(iel);
+	FEElement_& elem = mesh->ElementRef(iel);
 	NODEDATA* pn = &m_State[ntime]->m_NODE[0];
 
 	for (int i=0; i<elem.Nodes(); i++)
@@ -919,7 +919,7 @@ void FEModel::UpdateMeshState(int ntime)
 	int NE = mesh->Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement_& el = mesh->Element(i);
+		FEElement_& el = mesh->ElementRef(i);
 		ELEMDATA& data = state.m_ELEM[i];
 
 		if ((data.m_state & StatusFlags::VISIBLE) == 0)

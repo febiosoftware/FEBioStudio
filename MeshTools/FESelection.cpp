@@ -939,13 +939,16 @@ void FEElementSelection::Invert()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Elements(); 
-	FEElement* pe = m_pMesh->ElementPtr();
-	for (int i=0; i<N; ++i, ++pe)
+	for (int i = 0; i < N; ++i)
+	{
+		FEElement_* pe = m_pMesh->ElementPtr(i);
+
 		if (pe->IsVisible())
 		{
-			if (pe->IsSelected()) pe->Unselect(); 
+			if (pe->IsSelected()) pe->Unselect();
 			else pe->Select();
 		}
+	}
 }
 
 void FEElementSelection::Update()
@@ -953,7 +956,6 @@ void FEElementSelection::Update()
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Elements();
 	FENode* pn = m_pMesh->NodePtr();
-	FEElement* pe = m_pMesh->ElementPtr();
 
 	GObject* po = m_pMesh->GetGObject();
 
@@ -968,11 +970,12 @@ void FEElementSelection::Update()
 
 	int* n, l, i, j;
 	vec3d r;
-	for (i=0; i<N; ++i, ++pe)
+	for (i=0; i<N; ++i)
 	{
+		FEElement_* pe = m_pMesh->ElementPtr(i);
 		if (pe->IsSelected())
 		{
-			FEElement& e = *pe;
+			FEElement_& e = *pe;
 			n = e.m_node;
 			l = e.Nodes();
 			m_item.push_back(i);
@@ -1014,7 +1017,7 @@ void FEElementSelection::Translate(vec3d dr)
 	int NE = (int)m_item.size();
 	for (i=0; i<NE; ++i)
 	{
-		FEElement* pe = m_pMesh->ElementPtr(m_item[i]);
+		FEElement_* pe = m_pMesh->ElementPtr(m_item[i]);
 		assert(pe->IsSelected());
 		l = pe->Nodes();
 		for (j=0; j<l; ++j)
@@ -1063,7 +1066,7 @@ void FEElementSelection::Rotate(quatd q, vec3d rc)
 	int NE = (int)m_item.size();
 	for (i=0; i<NE; ++i)
 	{
-		FEElement* pe = m_pMesh->ElementPtr(m_item[i]);
+		FEElement_* pe = m_pMesh->ElementPtr(m_item[i]);
 		l = pe->Nodes();
 		for (j=0; j<l; ++j) pn[pe->m_node[j]].m_ntag = 1;
 
@@ -1109,7 +1112,7 @@ void FEElementSelection::Scale(double s, vec3d dr, vec3d c)
 	int NE = (int)m_item.size();
 	for (i=0; i<NE; ++i)
 	{
-		FEElement* pe = m_pMesh->ElementPtr(m_item[i]);
+		FEElement_* pe = m_pMesh->ElementPtr(m_item[i]);
 		assert(pe->IsSelected());
 		l = pe->Nodes();
 		for (j=0; j<l; ++j) pn[pe->m_node[j]].m_ntag = 1;
@@ -1152,7 +1155,7 @@ FEItemListBuilder* FEElementSelection::CreateItemList()
 	return new FEPart(po, elset);
 }
 
-FEElement* FEElementSelection::Element(int i)
+FEElement_* FEElementSelection::Element(int i)
 {
 	if ((i<0) || (i>=(int) m_item.size())) return 0;
 	return m_pMesh->ElementPtr(m_item[i]);

@@ -98,7 +98,7 @@ FEMesh* FETorus::BuildMesh()
 	}
 
 	// --- create the mesh
-	FEElement* pe = pm->ElementPtr();
+	int eid = 0;
 	int nn = (nd+1)*(nd+1) + 4*nd*nd;
 	double cw = cos(-2.*PI/ns);
 	double sw = sin(-2.*PI/ns);
@@ -126,8 +126,10 @@ FEMesh* FETorus::BuildMesh()
 
 		// create the inner elements
 		for (i=0; i<nd; ++i)
-			for (j=0; j<nd; ++j, ++pe)
+			for (j=0; j<nd; ++j)
 			{
+				FEElement_* pe = pm->ElementPtr(eid++);
+
 				int* n = pe->m_node;
 
 				n[0] = k*nn + j*(nd+1) + i;
@@ -147,8 +149,10 @@ FEMesh* FETorus::BuildMesh()
 		for (j=0; j<nd; ++j)
 		{
 			int* n;
-			for (i=0; i<4*nd; ++i, ++pe)
+			for (i=0; i<4*nd; ++i)
 			{
+				FEElement_* pe = pm->ElementPtr(eid++);
+
 				n = pe->m_node;
 
 				n[0] = Nd[i];

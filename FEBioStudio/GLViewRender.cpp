@@ -198,10 +198,10 @@ void GLViewRender::RenderBox(const BOX& box)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderHEX8(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderHEX8(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX8));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4;
 	vec3d n1, n2, n3, n4;
 	glBegin(GL_QUADS);
@@ -213,12 +213,12 @@ void GLViewRender::RenderHEX8(FEElement *pe, FEMesh *pm, bool bsel)
 			r3 = pm->Node(e.m_node[FTHEX8[i][2]]).r;
 			r4 = pm->Node(e.m_node[FTHEX8[i][3]]).r;
 
-			FEElement* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
-				assert(&pm->Element(pf->m_elem[0]) == pe);
+				assert(&pm->ElementRef(pf->m_elem[0]) == pe);
 				if (pf)
 				{
 					n1 = pf->m_nn[0];
@@ -272,10 +272,10 @@ inline void glxNormalVertex(const vec3d& n, const vec3d& r)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderHEX20(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderHEX20(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX20));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r[9];
 	vec3d n[9];
 	glBegin(GL_TRIANGLES);
@@ -292,7 +292,7 @@ void GLViewRender::RenderHEX20(FEElement *pe, FEMesh *pm, bool bsel)
 			r[7] = pm->Node(e.m_node[FTHEX20[i][7]]).r;
 			r[8] = QUAD8::eval(r, 0.0, 0.0);
 
-			FEElement* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[i]);
@@ -366,10 +366,10 @@ void GLViewRender::RenderHEX20(FEElement *pe, FEMesh *pm, bool bsel)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderHEX27(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderHEX27(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX27));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4, r5, r6, r7, r8;
 	vec3d n1, n2, n3, n4, n5, n6, n7, n8;
 	glBegin(GL_TRIANGLES);
@@ -385,7 +385,7 @@ void GLViewRender::RenderHEX27(FEElement *pe, FEMesh *pm, bool bsel)
 			r7 = pm->Node(e.m_node[FTHEX20[i][6]]).r;
 			r8 = pm->Node(e.m_node[FTHEX20[i][7]]).r;
 
-			FEElement* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[i]);
@@ -451,10 +451,10 @@ void GLViewRender::RenderHEX27(FEElement *pe, FEMesh *pm, bool bsel)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderPENTA(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderPENTA(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PENTA6));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4;
 	vec3d n1, n2, n3, n4;
 	glBegin(GL_QUADS);
@@ -466,7 +466,7 @@ void GLViewRender::RenderPENTA(FEElement *pe, FEMesh *pm, bool bsel)
 			r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
 			r4 = pm->Node(e.m_node[FTPENTA[j][3]]).r;
 
-			FEElement* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
@@ -502,7 +502,7 @@ void GLViewRender::RenderPENTA(FEElement *pe, FEMesh *pm, bool bsel)
 			r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
 			r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
 
-			FEElement* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
@@ -533,10 +533,10 @@ void GLViewRender::RenderPENTA(FEElement *pe, FEMesh *pm, bool bsel)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderPENTA15(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderPENTA15(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PENTA15));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4, r5, r6, r7, r8;
 	vec3d n1, n2, n3, n4, n5, n6, n7, n8;
 	glBegin(GL_TRIANGLES);
@@ -552,7 +552,7 @@ void GLViewRender::RenderPENTA15(FEElement *pe, FEMesh *pm, bool bsel)
 			r7 = pm->Node(e.m_node[FTPENTA15[j][6]]).r;
 			r8 = pm->Node(e.m_node[FTPENTA15[j][7]]).r;
 
-			FEElement* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
@@ -623,7 +623,7 @@ void GLViewRender::RenderPENTA15(FEElement *pe, FEMesh *pm, bool bsel)
 			r5 = pm->Node(e.m_node[FTPENTA15[j][4]]).r;
 			r6 = pm->Node(e.m_node[FTPENTA15[j][5]]).r;
 
-			FEElement* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
@@ -675,10 +675,10 @@ void GLViewRender::RenderPENTA15(FEElement *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTET4(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderTET4(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3d n1, n2, n3;
 	glBegin(GL_TRIANGLES);
@@ -686,7 +686,7 @@ void GLViewRender::RenderTET4(FEElement *pe, FEMesh *pm, bool bsel)
 		for (int i = 0; i<4; ++i)
 		{
 			bool bdraw = true;
-			FEElement* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[i]);
@@ -728,17 +728,17 @@ void GLViewRender::RenderTET4(FEElement *pe, FEMesh *pm, bool bsel)
 
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTET10(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderTET10(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET10));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3d n1, n2, n3;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<4; ++i)
 		{
-			FEElement* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[i]);
@@ -775,17 +775,17 @@ void GLViewRender::RenderTET10(FEElement *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTET15(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderTET15(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET15));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3d n1, n2, n3;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<4; ++i)
 		{
-			FEElement* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[i]);
@@ -822,17 +822,17 @@ void GLViewRender::RenderTET15(FEElement *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTET20(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderTET20(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET20));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3d n1, n2, n3;
 	glBegin(GL_TRIANGLES);
 	{
 		for (int i = 0; i<4; ++i)
 		{
-			FEElement* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[i]);
@@ -870,10 +870,10 @@ void GLViewRender::RenderTET20(FEElement *pe, FEMesh *pm, bool bsel)
 
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderQUAD(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderQUAD(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD4));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r1, r2, r3, r4;
@@ -899,10 +899,10 @@ void GLViewRender::RenderQUAD(FEElement *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderQUAD8(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderQUAD8(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD8));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r1, r2, r3, r4;
@@ -928,10 +928,10 @@ void GLViewRender::RenderQUAD8(FEElement *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderQUAD9(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderQUAD9(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD9));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r1, r2, r3, r4;
@@ -957,10 +957,10 @@ void GLViewRender::RenderQUAD9(FEElement *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTRI3(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderTRI3(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TRI3));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
 	if (pf == 0) return;
 	vec3d r1, r2, r3;
@@ -983,10 +983,10 @@ void GLViewRender::RenderTRI3(FEElement *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTRI6(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderTRI6(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TRI6));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
 	if (pf == 0) return;
 	vec3d r1, r2, r3;
@@ -1009,10 +1009,10 @@ void GLViewRender::RenderTRI6(FEElement *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderPYRA5(FEElement *pe, FEMesh *pm, bool bsel)
+void GLViewRender::RenderPYRA5(FEElement_ *pe, FEMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PYRA5));
-	FEElement& e = *pe;
+	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4;
 	vec3d n1, n2, n3, n4;
 
@@ -1024,7 +1024,7 @@ void GLViewRender::RenderPYRA5(FEElement *pe, FEMesh *pm, bool bsel)
 			r2 = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
 			r3 = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
 
-			FEElement* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
@@ -1056,7 +1056,7 @@ void GLViewRender::RenderPYRA5(FEElement *pe, FEMesh *pm, bool bsel)
 		r3 = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
 		r4 = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
 
-		FEElement* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
+		FEElement_* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
 		if (pen == 0)
 		{
 			FEFace* pf = pm->FacePtr(e.m_face[4]);

@@ -82,10 +82,12 @@ FEMesh* FEGregoryPatch::BuildFEMesh()
 		}
 
 	// build the elements
-	FEElement* pe = pm->ElementPtr();
+	int eid = 0;
 	for (j=0; j<m_ny*m_my; ++j)
-		for (i=0; i<m_nx*m_mx; ++i, ++pe)
+		for (i=0; i<m_nx*m_mx; ++i)
 		{
+			FEElement_* pe = pm->ElementPtr(eid++);
+
 			pe->m_node[0] = NodeIndex(i  ,j);
 			pe->m_node[1] = NodeIndex(i+1,j);
 			pe->m_node[2] = NodeIndex(i+1,j+1);

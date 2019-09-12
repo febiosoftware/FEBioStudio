@@ -373,7 +373,7 @@ bool xpltFileExport::WritePart(FEPart& part)
 
 	// figure out element type
 	Post::FEMeshBase& mesh = *part.GetMesh();
-	FEElement_& e0 = mesh.Element(part.m_Elem[0]);
+	FEElement_& e0 = mesh.ElementRef(part.m_Elem[0]);
 	int matid = e0.m_MatID + 1;
 
 	int ne = 0;
@@ -417,7 +417,7 @@ bool xpltFileExport::WritePart(FEPart& part)
 	{
 		for (int i=0; i<NE; ++i)
 		{
-			FEElement_& el = mesh.Element(part.m_Elem[i]);
+			FEElement_& el = mesh.ElementRef(part.m_Elem[i]);
 			n[0] = el.GetID();
 			for (int j=0; j<ne; ++j) n[j+1] = el.m_node[j];
 			m_ar.WriteChunk(PLT_ELEMENT, n, ne+1);
@@ -718,7 +718,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData,
 	if (NE == 0) return false;
 
 	// number of nodes per element
-	int ne = mesh.Element(part.m_Elem[0]).Nodes();
+	int ne = mesh.ElementRef(part.m_Elem[0]).Nodes();
 
 	// number of actually written values
 	int nval = 0;

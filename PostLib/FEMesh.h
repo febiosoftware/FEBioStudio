@@ -2,9 +2,9 @@
 
 #include <MeshLib/FENode.h>
 #include <MeshLib/FEElement.h>
-#include <MeshLib/FEMeshBase.h>
+#include <MeshLib/FECoreMesh.h>
 #include "FEGroup.h"
-#include "FENodeElemList.h"
+#include <MeshLib/FENodeElementList.h>
 #include "FENodeFaceList.h"
 #include <FSCore/box.h>
 #include <utility>
@@ -14,7 +14,7 @@ using namespace std;
 namespace Post {
 
 //-----------------------------------------------------------------------------
-class FEMeshBase : public ::FEMeshBase
+class FEMeshBase : public FECoreMesh
 {
 public:
 	// --- M E M O R Y   M A N A G M E N T ---
@@ -25,7 +25,7 @@ public:
 	virtual ~FEMeshBase();
 
 	//! allocate storage for mesh
-	void Create(int nodes, int elems);
+	void Create(int nodes, int elems, int faces = 0, int edges = 0) override;
 
 	//! Clean up all data
 	void CleanUp();
@@ -36,34 +36,12 @@ public:
 	// from FELineMesh
 	void UpdateMeshData() override;
 
-	vector<NodeElemRef>& NodeElemList(int n) { return m_NEL.ElemList(n); }
+	const vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
 	vector<NodeFaceRef>& NodeFaceList(int n) { return m_NFL.FaceList(n); }
 
 	// --- G E O M E T R Y ---
-	//! return nr of elements
-	virtual int Elements() const = 0;
 
 	virtual void ClearElements() = 0;
-
-	//! return nr of shell elements
-	int ShellElements();
-
-	//! return nr of solid elements
-	int SolidElements();
-
-	//! return nr of beam elements
-	int BeamElements();
-
-	//! return an element
-	virtual FEElement_& Element(int i) = 0;
-	virtual const FEElement_& Element(int i) const = 0;
-
-	//! return pointer to element
-	FEElement_* ElementPtr(int n = 0) { return ((n >= 0) && (n<Elements()) ? &Element(n) : 0); }
-	const FEElement_* ElementPtr(int n = 0) const { return ((n >= 0) && (n<Elements()) ? &Element(n) : 0); }
-
-	//! Is an element exterior or not
-	bool IsExterior(FEElement_* pe) const;
 
 	//! return domains
 	int Domains() const { return (int) m_Dom.size(); }
@@ -103,39 +81,6 @@ public:
 	//! update mesh data
 	void Update();
 
-	// --- E V A L U A T E ---
-
-	vec3d ElementCenter(FEElement_& el) const;
-	
-	vec3d FaceCenter(FEFace& f) const;
-
-	vec3d EdgeCenter(FEEdge& e) const;
-
-	// face area
-	double FaceArea(FEFace& f);
-	double FaceArea(const vector<vec3d>& f, int faceType);
-
-	// element volume
-	float ElementVolume(int iel);
-	float HexVolume    (const FEElement_& el);
-	float PentaVolume  (const FEElement_& el);
-	float TetVolume    (const FEElement_& el);
-	float PyramidVolume(const FEElement_& el);
-
-	// --- I N T E G R A T E ---
-	double IntegrateQuad(vec3d* r, float* v);
-	float IntegrateQuad(vec3f* r, float* v);
-	float IntegrateHex (vec3f* r, float* v);
-
-	// --- F A C E   D A T A ---
-	void FaceNodePosition (const FEFace& f, vec3d* r) const;
-	void FaceNodeNormals  (FEFace& f, vec3f* n);
-	void FaceNodeTexCoords(FEFace& f, float* t, bool bnode);
-
-	// --- S E L E C T I O N ---
-
-	void SetElementTags(int ntag);
-
 protected:
 	virtual void CreateElements(int elems) = 0;
 
@@ -161,7 +106,7 @@ protected:
 	vector<FESurface*>	m_Surf;	// surfaces
 	vector<FENodeSet*>	m_NSet;	// node sets
 
-	FENodeElemList		m_NEL;
+	FENodeElementList	m_NEL;
 	FENodeFaceList		m_NFL;
 };
 
@@ -175,13 +120,13 @@ public:
 	int Elements() const { return (int) m_Elem.size(); }
 
 	//! return an element
-	FEElement_& Element(int i) { return m_Elem[i]; }
-	const FEElement_& Element(int i) const { return m_Elem[i]; }
+	FEElement_& ElementRef(int i) override { return m_Elem[i]; }
+	const FEElement_& ElementRef(int i) const override { return m_Elem[i]; }
 
-	void ClearElements() { m_Elem.clear(); }
+	void ClearElements() override { m_Elem.clear(); }
 
 protected:
-	void CreateElements(int elems) { m_Elem.resize(elems); }
+	void CreateElements(int elems) override { m_Elem.resize(elems); }
 
 protected:
 	vector<T>	m_Elem;	// element array

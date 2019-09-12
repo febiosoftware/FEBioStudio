@@ -296,7 +296,7 @@ bool FELSDYNAimport::BuildMesh(FEModel& fem)
 		list<ELEMENT_SOLID>::iterator ih = m_solid.begin();
 		for (i=0; i<solids; ++i, ++ih)
 		{
-			FEElement& el = static_cast<FEElement&>(pm->Element(ne++));
+			FEElement& el = static_cast<FEElement&>(pm->ElementRef(ne++));
 			int* n = ih->n;
 			if ((n[7] == n[6]) && (n[7]==n[5]) && (n[7]==n[4]) && (n[7]==n[3])) el.SetType(FE_TET4);
 			else if ((n[7] == n[6]) && (n[7]==n[5])) el.SetType(FE_PENTA6);
@@ -322,7 +322,7 @@ bool FELSDYNAimport::BuildMesh(FEModel& fem)
 		list<ELEMENT_SHELL>::iterator is = m_shell.begin();
 		for (i=0; i<shells; ++i, ++is)
 		{
-			FEElement& el = static_cast<FEElement&>(pm->Element(ne++));
+			FEElement& el = static_cast<FEElement&>(pm->ElementRef(ne++));
 			el.m_node[0] = FindNode(is->n[0], in); if (el.m_node[0] < 0) return false;
 			el.m_node[1] = FindNode(is->n[1], in); if (el.m_node[1] < 0) return false;
 			el.m_node[2] = FindNode(is->n[2], in); if (el.m_node[2] < 0) return false;

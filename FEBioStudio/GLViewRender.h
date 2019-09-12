@@ -18,21 +18,21 @@ public:
 	void RenderBox(const BOX& box);
 
 public:
-	void RenderHEX8(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderHEX20(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderHEX27(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderPENTA(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderTET4(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderTET10(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderTET15(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderTET20(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderQUAD(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderQUAD8(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderQUAD9(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderTRI3(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderTRI6(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderPYRA5(FEElement* pe, FEMesh* pm, bool bsel);
-	void RenderPENTA15(FEElement *pe, FEMesh *pm, bool bsel);
+	void RenderHEX8   (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderHEX20  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderHEX27  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderPENTA  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderTET4   (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderTET10  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderTET15  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderTET20  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderQUAD   (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderQUAD8  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderQUAD9  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderTRI3   (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderTRI6   (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderPYRA5  (FEElement_* pe, FEMesh* pm, bool bsel);
+	void RenderPENTA15(FEElement_* pe, FEMesh *pm, bool bsel);
 
 private:
 	CGLView*	m_view;

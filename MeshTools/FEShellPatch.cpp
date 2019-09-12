@@ -74,10 +74,12 @@ FEMesh* FEShellPatch::BuildMesh()
 	pm->Node(NodeIndex( 0,ny)).m_gid = 3;
 
 	// create the connectivity
-	FEElement* pe = pm->ElementPtr();
+	int eid = 0;
 	for (i=0; i<nx; i++)
-		for (j=0; j<ny; j++, pe++)
+		for (j=0; j<ny; j++)
 		{
+			FEElement_* pe = pm->ElementPtr(eid++);
+
 			pe->SetType(FE_QUAD4);
 			pe->m_gid = 0;
 			int* n = pe->m_node;
@@ -88,9 +90,10 @@ FEMesh* FEShellPatch::BuildMesh()
 		}
 	
 	// assign thickness to shells
-	pe = pm->ElementPtr();
-	for (i=0; i<elems; ++i, ++pe)
+	for (i=0; i<elems; ++i)
 	{
+		FEElement_* pe = pm->ElementPtr(i);
+
 		pe->m_h[0] = t;
 		pe->m_h[1] = t;
 		pe->m_h[2] = t;

@@ -254,7 +254,7 @@ bool FELSDYNAexport::write_SET_SHELL_LIST()
 				int ne[8], nc = 0;
 				for (int k=0; k<N; ++k, ++pi)
 				{
-					FEElement* pe = pi->m_pi;
+					FEElement_* pe = pi->m_pi;
 					switch (pe->Type())
 					{
 					case FE_TRI3 : ne[nc++] = pe->m_ntag; break;

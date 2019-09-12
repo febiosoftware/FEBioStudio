@@ -182,9 +182,10 @@ FEMesh* FEShellSphere::BuildMesh()
 	
 
 	// assign shell thickness
-	FEElement* pe = pm->ElementPtr();
-	for (i=0; i<elems; ++i, ++pe)
+	for (i=0; i<elems; ++i)
 	{
+		FEElement_* pe = pm->ElementPtr(i);
+
 		pe->m_h[0] = t;
 		pe->m_h[1] = t;
 		pe->m_h[2] = t;
@@ -208,9 +209,10 @@ void FEShellSphere::BuildFaces(FEMesh* pm)
 	int nfaces = pm->Elements();
 	pm->Create(0,0,nfaces);
 	FEFace* pf = pm->FacePtr();
-	FEElement* pe = pm->ElementPtr();
-	for (i=0; i<nfaces; ++i, ++pf, ++pe)
+	for (i=0; i<nfaces; ++i, ++pf)
 	{
+		FEElement_* pe = pm->ElementPtr(i);
+
 		FEFace& f = *pf;
 		f.SetType(FE_FACE_QUAD4);
 		f.m_gid = pe->m_gid;

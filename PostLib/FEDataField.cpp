@@ -620,7 +620,7 @@ bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp
 	int NE = mesh.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.Element(i);
+		FEElement_& el = mesh.ElementRef(i);
 
 		// write the element ID
 		fprintf(fp, "%d,", i + 1);

@@ -406,3 +406,215 @@ int FEMeshBase::CountSelectedFaces() const
 	}
 	return N;
 }
+
+//-----------------------------------------------------------------------------
+vec3d FEMeshBase::FaceCenter(FEFace& f) const
+{
+	vec3d r;
+	int N = f.Nodes();
+	for (int i = 0; i<N; i++) r += m_Node[f.n[i]].r;
+	return r / (float)N;
+}
+
+//-----------------------------------------------------------------------------
+vec3d FEMeshBase::EdgeCenter(FEEdge& e) const
+{
+	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r)*0.5f;
+}
+
+//-----------------------------------------------------------------------------
+// area of triangle
+double triangle_area(const vec3d& r0, const vec3d& r1, const vec3d& r2)
+{
+	return ((r1 - r0) ^ (r2 - r0)).Length()*0.5f;
+}
+
+//-----------------------------------------------------------------------------
+double FEMeshBase::FaceArea(FEFace &f)
+{
+	const int N = f.Nodes();
+	vector<vec3d> nodes(N);
+	for (int i = 0; i < N; ++i)
+	{
+		nodes[i] = m_Node[f.n[i]].r;
+	}
+	return FaceArea(nodes, N);
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshBase::ClearFaceSelection()
+{
+	for (int i = 0; i<Faces(); ++i)
+	{
+		Face(i).Unselect();
+	}
+}
+
+//-----------------------------------------------------------------------------
+double FEMeshBase::FaceArea(const vector<vec3d>& r, int faceType)
+{
+	switch (faceType)
+	{
+	case 3:
+	{
+		return triangle_area(r[0], r[1], r[2]);
+	}
+	break;
+	case 6:
+	{
+		double A = 0.0;
+		A += triangle_area(r[0], r[3], r[5]);
+		A += triangle_area(r[3], r[1], r[4]);
+		A += triangle_area(r[2], r[5], r[4]);
+		A += triangle_area(r[3], r[4], r[5]);
+		return A;
+	}
+	break;
+	case 7:
+	{
+		return triangle_area(r[0], r[1], r[2]);
+	}
+	break;
+	case 4:
+	{
+		int i, n;
+
+		// gauss-point data
+		const float a = 1.f / (float)sqrt(3.0);
+		const int NELN = 4;
+		const int NINT = 4;
+		static float gr[NINT] = { -a,  a,  a, -a };
+		static float gs[NINT] = { -a, -a,  a,  a };
+		static float gw[NINT] = { 1,  1,  1,  1 };
+
+		static float H[NINT][NELN] = { 0 };
+		static float Gr[NINT][NELN] = { 0 };
+		static float Gs[NINT][NELN] = { 0 };
+		static bool bfirst = true;
+
+		if (bfirst)
+		{
+
+			// calculate shape function values at gauss points
+			for (n = 0; n<NINT; ++n)
+			{
+				H[n][0] = 0.25f*(1 - gr[n])*(1 - gs[n]);
+				H[n][1] = 0.25f*(1 + gr[n])*(1 - gs[n]);
+				H[n][2] = 0.25f*(1 + gr[n])*(1 + gs[n]);
+				H[n][3] = 0.25f*(1 - gr[n])*(1 + gs[n]);
+			}
+
+			// calculate local derivatives of shape functions at gauss points
+			for (n = 0; n<NINT; ++n)
+			{
+				Gr[n][0] = -0.25f*(1 - gs[n]);
+				Gr[n][1] = 0.25f*(1 - gs[n]);
+				Gr[n][2] = 0.25f*(1 + gs[n]);
+				Gr[n][3] = -0.25f*(1 + gs[n]);
+
+				Gs[n][0] = -0.25f*(1 - gr[n]);
+				Gs[n][1] = -0.25f*(1 + gr[n]);
+				Gs[n][2] = 0.25f*(1 + gr[n]);
+				Gs[n][3] = 0.25f*(1 - gr[n]);
+			}
+
+			bfirst = false;
+		}
+
+		float A = 0.f;
+		for (n = 0; n<NINT; ++n)
+		{
+			// calculate jacobian
+			vec3d dxr, dxs;
+			for (i = 0; i<NELN; ++i)
+			{
+				dxr.x += Gr[n][i] * r[i].x;
+				dxr.y += Gr[n][i] * r[i].y;
+				dxr.z += Gr[n][i] * r[i].z;
+
+				dxs.x += Gs[n][i] * r[i].x;
+				dxs.y += Gs[n][i] * r[i].y;
+				dxs.z += Gs[n][i] * r[i].z;
+			}
+
+			double detJ = (dxr ^ dxs).Length();
+
+			A += gw[n] * detJ;
+		}
+
+		return A;
+	}
+	break;
+	}
+
+	return 0.0;
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshBase::FaceNodePosition(const FEFace& f, vec3d* r) const
+{
+	switch (f.m_type)
+	{
+	case FE_FACE_TRI10:
+		r[9] = m_Node[f.n[9]].r;
+	case FE_FACE_QUAD9:
+		r[8] = m_Node[f.n[8]].r;
+	case FE_FACE_QUAD8:
+		r[7] = m_Node[f.n[7]].r;
+	case FE_FACE_TRI7:
+		r[6] = m_Node[f.n[6]].r;
+	case FE_FACE_TRI6:
+		r[5] = m_Node[f.n[5]].r;
+		r[4] = m_Node[f.n[4]].r;
+	case FE_FACE_QUAD4:
+		r[3] = m_Node[f.n[3]].r;
+	case FE_FACE_TRI3:
+		r[2] = m_Node[f.n[2]].r;
+		r[1] = m_Node[f.n[1]].r;
+		r[0] = m_Node[f.n[0]].r;
+		break;
+	default:
+		assert(false);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
+{
+	switch (f.m_type)
+	{
+	case FE_FACE_TRI10:
+		n[9] = f.m_nn[9];
+	case FE_FACE_QUAD9:
+		n[8] = f.m_nn[8];
+	case FE_FACE_QUAD8:
+		n[7] = f.m_nn[7];
+	case FE_FACE_TRI7:
+		n[6] = f.m_nn[6];
+	case FE_FACE_TRI6:
+		n[5] = f.m_nn[5];
+		n[4] = f.m_nn[4];
+	case FE_FACE_QUAD4:
+		n[3] = f.m_nn[3];
+	case FE_FACE_TRI3:
+		n[2] = f.m_nn[2];
+		n[1] = f.m_nn[1];
+		n[0] = f.m_nn[0];
+		break;
+	default:
+		assert(false);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
+{
+	if (bnode)
+	{
+		for (int i = 0; i<f.Nodes(); ++i) t[i] = m_Node[f.n[i]].m_tex;
+	}
+	else
+	{
+		for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
+	}
+}

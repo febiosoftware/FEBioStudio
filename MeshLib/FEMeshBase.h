@@ -40,6 +40,21 @@ public:
 
 	void UpdateMeshData() override;
 
+	vec3d FaceCenter(FEFace& f) const;
+
+	vec3d EdgeCenter(FEEdge& e) const;
+
+	// face area
+	double FaceArea(FEFace& f);
+	double FaceArea(const vector<vec3d>& f, int faceType);
+
+	// --- F A C E   D A T A ---
+	void FaceNodePosition(const FEFace& f, vec3d* r) const;
+	void FaceNodeNormals(FEFace& f, vec3f* n);
+	void FaceNodeTexCoords(FEFace& f, float* t, bool bnode);
+
+	void ClearFaceSelection();
+
 public: // interface for accessing mesh items
 	int Faces() const { return (int)m_Face.size(); }
 	FEFace& Face(int n) { return m_Face[n]; }

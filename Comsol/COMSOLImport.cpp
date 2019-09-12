@@ -321,10 +321,11 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
     
 	// create the elements
 	list<ELEMENT>::iterator ie = m_Elem.begin();
-	FEElement* pe = pm->ElementPtr();
 	int ne;
-	for (i=0; i<elems; ++i, ++ie, ++pe)
+	for (i=0; i<elems; ++i, ++ie)
 	{
+		FEElement_* pe = pm->ElementPtr(i);
+
 		switch (ie->ntype)
 		{
             case  91: pe->SetType(FE_TRI3  ); break;

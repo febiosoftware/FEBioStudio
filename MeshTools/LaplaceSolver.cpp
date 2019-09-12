@@ -66,8 +66,8 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 	FENodeNodeList NNL(pm);
 
 	// create node-element list
-	FENodeElementList NEL(pm);
-	NEL.Build();
+	FENodeElementList NEL;
+	NEL.Build(pm);
 
 	// we'll assign values to the edges and the nodes
 	NNL.InitValues(0.0);
@@ -82,7 +82,7 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 			for (int j=0; j<eval; ++j)
 			{
 				int iel = NEL.ElementIndex(i, j);
-				FEElement& ej = *NEL.Element(i, j);
+				FEElement_& ej = *NEL.Element(i, j);
 
 				int na = ej.FindNodeIndex(i);
 				assert (na != -1);
@@ -121,7 +121,7 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 				int kel = NEL.ElementIndex(ni, k);
 				if (NEL.HasElement(nj, kel))
 				{
-					FEElement& ek = *NEL.Element(ni, k);
+					FEElement_& ek = *NEL.Element(ni, k);
 					int na = ek.FindNodeIndex(ni); assert(na != -1);
 					int nb = ek.FindNodeIndex(nj); assert(nb != -1);
 

@@ -295,7 +295,7 @@ vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok
 	if (m_find.FindElement(r, nelem, q))
 	{
 		ok = true;
-		FEElement_& el = mesh.Element(nelem);
+		FEElement_& el = mesh.ElementRef(nelem);
 
 		int ne = el.Nodes();
 		for (int i = 0; i<ne; ++i)

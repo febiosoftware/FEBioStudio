@@ -1,56 +1,55 @@
 #include "FENodeElementList.h"
 
-FENodeElementList::FENodeElementList(FEMesh* pm)
+FENodeElementList::FENodeElementList()
 {
-	m_pm = pm;
+	m_pm = nullptr;
 }
 
 FENodeElementList::~FENodeElementList()
 {
 }
 
-void FENodeElementList::Build()
+void FENodeElementList::Build(FECoreMesh* pm)
 {
+	m_pm = pm;
 	assert(m_pm);
-	int i, j;
+	m_elem.clear();
+
 	int NN = m_pm->Nodes();
 	int NE = m_pm->Elements();
 	if ((NE == 0) || (NN == 0)) return;
 
-	m_val.assign(NN, 0);
-	int nsize = 0;
-	for (i=0; i<NE; ++i)
+	m_elem.resize(NN);
+	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = m_pm->Element(i);
+		vector<NodeElemRef>& li = m_elem[i];
+		FEElement_& el = m_pm->ElementRef(i);
 		int ne = el.Nodes();
-		for (j=0; j<ne; ++j) m_val[el.m_node[j]]++;
-		nsize += ne;
-	}
-
-	m_off.resize(NN);
-	m_off[0] = 0;
-	for (i=1; i<NN; ++i) m_off[i] = m_off[i-1] + m_val[i-1];
-
-	for (i=0; i<NN; ++i) m_val[i] = 0;
-
-	m_pelem.resize(nsize);
-	m_elem.resize(nsize);
-	for (i=0; i<NE; ++i)
-	{
-		FEElement& el = m_pm->Element(i);
-		int ne = el.Nodes();
-		for (j=0; j<ne; ++j) 
+		for (int j=0; j<ne; ++j) 
 		{
 			int n = el.m_node[j];
-			int noff = m_off[n] + m_val[n];
-			m_pelem[noff] = &el;
-			m_elem[noff] = i;
-			m_val[n]++;
+
+			NodeElemRef ref;
+			ref.eid = i;
+			ref.nid = j;
+			ref.pe = &el;
+
+			li.push_back(ref);
 		}
 	}
 }
 
-bool FENodeElementList::HasElement(int node, int iel)
+void FENodeElementList::Clear()
+{
+	m_elem.clear();
+}
+
+bool FENodeElementList::IsEmpty() const
+{
+	return m_elem.empty();
+}
+
+bool FENodeElementList::HasElement(int node, int iel) const
 {
 	int nval = Valence(node);
 	for (int i=0; i<nval; ++i) 
@@ -59,7 +58,7 @@ bool FENodeElementList::HasElement(int node, int iel)
 	return false;
 }
 
-vector<int> FENodeElementList::ElementList(int n) const
+vector<int> FENodeElementList::ElementIndexList(int n) const
 {
 	vector<int> l;
 	int nval = Valence(n);

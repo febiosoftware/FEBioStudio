@@ -79,39 +79,24 @@ public:
 	// copy part of the mesh
 	void ShallowCopy(FEMesh* pm);
 
-	//! see if this is a shell mesh
-	bool IsShell() const;
-
-	//! see if this is a solid mesh
-	bool IsSolid() const;
-
 	//! clear this mesh
 	void Clear();
 
-public: // --- E L E M E N T   A C C E S S ---
+public: // from FECoreMesh
 
 	//! return number of elements
-	int Elements() const { return (int)m_Elem.size(); }
+	int Elements() const override { return (int)m_Elem.size(); }
 
 	//! return element
 	FEElement& Element(int n) { return m_Elem[n]; }
 	const FEElement& Element(int n) const { return m_Elem[n]; }
 
 	//! return reference to element
-	FEElement_& ElementRef(int n) { return m_Elem[n]; }
-	const FEElement_& ElementRef(int n) const { return m_Elem[n]; }
-
-	//! return pointer to element
-	FEElement* ElementPtr(int n=0) { return ((n>=0) && (n<(int)m_Elem.size())? &m_Elem[n] : 0); }
+	FEElement_& ElementRef(int n) override { return m_Elem[n]; }
+	const FEElement_& ElementRef(int n) const override { return m_Elem[n]; }
 
 public:
 	// --- S U B M E S H ---
-
-	// find a face of an element
-	int FindFace(FEElement* pe, FEFace& f, FEFace& fe);
-
-	// returns a list of node indices that belong to a part with part ID gid
-	void FindNodesFromPart(int gid, vector<int>& node);
 
 	FEMesh* ExtractFaces(bool selectedOnly);
 
@@ -126,9 +111,6 @@ public:
 	void UpdateFaceNeighbors();
 	void UpdateEdgeNeighbors();
 	void UpdateFaceElementTable();
-
-	// Find and label all exterior nodes
-	void MarkExteriorNodes();
 
 	void BuildFaces();
 	void BuildEdges();
@@ -157,13 +139,6 @@ public:
 	void AutoPartition(double smoothingAngle);
 
 	void PartitionNode(int node);
-
-public:
-	void ShowElements(vector<int>& elem, bool show = true);
-	void UpdateItemVisibility();
-	void ShowAllElements();
-
-	void SelectElements(const vector<int>& elem);
 
 public: // --- M E S H   M A N I P U L A T I O N ---
 
@@ -196,8 +171,6 @@ public: // --- M E S H   M A N I P U L A T I O N ---
 	void InvertTaggedFaces(int ntag);
 	void InvertSelectedFaces();
 
-	void ClearFaceSelection();
-
 	// detach the selected elements and create a new mesh
 	FEMesh* DetachSelectedMesh();
 
@@ -207,22 +180,12 @@ public: // --- M E S H   M A N I P U L A T I O N ---
 	// remove duplicate edges
 	void RemoveDuplicateFaces();
 
-public: 
-	// get the local positions of an element
-	void ElementNodeLocalPositions(const FEElement& e, vec3d* r) const;
-
 public:
-	// tag all elements
-	void TagAllElements(int ntag);
-
 	// resize arrays
 	void ResizeNodes(int newSize);
 	void ResizeEdges(int newSize);
 	void ResizeFaces(int newSize);
 	void ResizeElems(int newSize);
-
-	// return tag counts
-	int CountTaggedNodes(int tag) const;
 
 public:
 	int NodeDataFields() const { return (int)m_nodeData.size(); }

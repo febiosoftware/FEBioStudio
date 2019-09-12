@@ -23,8 +23,8 @@ void FENodeNodeList::Build(FEMesh* pm)
 	assert(pm);
 	if (pm == 0) return;
 
-	FENodeElementList NEL(pm);
-	NEL.Build();
+	FENodeElementList NEL;
+	NEL.Build(pm);
 
 	int i, j, k, n;
 	int NN = pm->Nodes();
@@ -38,7 +38,7 @@ void FENodeNodeList::Build(FEMesh* pm)
 		int nv = NEL.Valence(i);
 		for (j=n=0; j<nv; ++j)
 		{
-			FEElement* pe = NEL.Element(i, j);
+			FEElement_* pe = NEL.Element(i, j);
 			int ne = pe->Nodes();
 			for (k=0; k<ne; ++k) 
 			{
@@ -69,7 +69,7 @@ void FENodeNodeList::Build(FEMesh* pm)
 		int noff = m_off[i];
 		for (j=n=0; j<nv; ++j)
 		{
-			FEElement* pe = NEL.Element(i, j);
+			FEElement_* pe = NEL.Element(i, j);
 			int ne = pe->Nodes();
 			for (k=0; k<ne; ++k) 
 			{

@@ -3,29 +3,39 @@
 #include <vector>
 using namespace std;
 
-#include "FEMesh.h"
+#include "FECoreMesh.h"
+
+//-----------------------------------------------------------------------------
+// the first index is the element number
+// the second index is the local node index of the element
+struct NodeElemRef {
+	int		eid;	// element index in mesh
+	int		nid;	// local node index of the element
+	FEElement_*	pe;	// pointer to element
+};
 
 class FENodeElementList
 {
 public:
-	FENodeElementList(FEMesh* pm);
+	FENodeElementList();
 	~FENodeElementList();
 
-	void Build();
+	void Build(FECoreMesh* pm);
 
-	int Valence(int n) const { return m_val[n]; }
-	FEElement* Element(int n, int j) { return m_pelem[m_off[n] + j]; }
-	int ElementIndex(int n, int j) const { return m_elem[m_off[n] + j]; }
+	void Clear();
 
-	bool HasElement(int node, int iel);
+	bool IsEmpty() const;
 
-	vector<int> ElementList(int n) const;
+	int Valence(int n) const { return (int)m_elem[n].size(); }
+	FEElement_* Element(int n, int j) { return m_elem[n][j].pe; }
+	int ElementIndex(int n, int j) const { return m_elem[n][j].eid; }
+
+	bool HasElement(int node, int iel) const;
+
+	vector<int> ElementIndexList(int n) const;
+	const vector<NodeElemRef>& ElementList(int n) const { return m_elem[n]; }
 
 protected:
-	FEMesh*	m_pm;
-
-	vector<int>	m_val;
-	vector<int>	m_off;
-	vector<int>	m_elem;
-	vector<FEElement*>	m_pelem;
+	FECoreMesh*	m_pm;
+	vector< vector<NodeElemRef> >	m_elem;
 };

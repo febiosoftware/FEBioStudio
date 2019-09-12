@@ -84,9 +84,10 @@ bool FEDXFimport::Load(FEProject& prj, const char* szfile)
 
 		// create elements
 		list<FACE>::iterator is = (*pi)->m_Face.begin();
-		FEElement* pe = pm->ElementPtr();
-		for (i=0; i<elems; ++i, ++pe, ++is)
+		for (i=0; i<elems; ++i, ++is)
 		{
+			FEElement_* pe = pm->ElementPtr(i);
+
 			pe->SetType(is->nodes == 3 ? FE_TRI3 : FE_QUAD4);
 			pe->m_node[0] = is->a;
 			pe->m_node[1] = is->b;

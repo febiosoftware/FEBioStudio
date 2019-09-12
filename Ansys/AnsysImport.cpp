@@ -164,13 +164,12 @@ bool AnsysImport::BuildMesh(FEModel &fem)
 	in = m_Node.begin();
 	for (i=0; i<nodes; ++i, ++in) NLT[ in->nid - imin] = i;
 
-	// get pointer to elements
-	FEElement* pe = pm->ElementPtr();
-
 	in = m_Node.begin();
 	list<ELEM>::iterator ih = m_Elem.begin();
-	for (i=0; i<elems; ++i, ++pe, ++ih)
+	for (i=0; i<elems; ++i, ++ih)
 	{
+		FEElement_* pe = pm->ElementPtr(i);
+
 		pe->m_gid = 0;
 		ih->tag = i;
 		int* n = ih->n;

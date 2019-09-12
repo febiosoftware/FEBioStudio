@@ -338,7 +338,7 @@ public:
 
 	FEItemListBuilder* CreateItemList();
 
-	FEElement* Element(int i);
+	FEElement_* Element(int i);
 
 protected:
 	FEMesh*		m_pMesh;

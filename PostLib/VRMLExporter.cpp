@@ -188,7 +188,7 @@ void VRMLExporter::write_mesh()
 	for (i=0; i<mesh.Faces(); ++i)
 	{
 		FEFace& face = mesh.Face(i);
-		int matid = mesh.Element(face.m_elem[0]).m_MatID;
+		int matid = mesh.ElementRef(face.m_elem[0]).m_MatID;
 		GLColor& col = m_pscene->GetMaterial(matid)->diffuse;
 		r = (float) col.r *f;
 		g = (float) col.g *f;

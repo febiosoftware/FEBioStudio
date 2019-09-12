@@ -3938,13 +3938,13 @@ void CGLView::SelectFEElements(int x, int y)
 		int index = q.m_index;
 		if (view.m_bconn)
 		{
-			FEElement* pe, *pe2;
+			FEElement_* pe, *pe2;
 			int elems = pm->Elements();
 			vector<int> pint(elems);
 			int m = 0;
 
 			for (int i = 0; i<pm->Elements(); ++i) pm->Element(i).m_ntag = i;
-			std::stack<FEElement*> stack;
+			std::stack<FEElement_*> stack;
 
 			// push the first element to the stack
 			pe = pm->ElementPtr(index);
@@ -6873,7 +6873,7 @@ void CGLView::RenderFEElements(GObject* po)
 		int NE = psel->Size();
 		for (i = 0; i<NE; ++i)
 		{
-			FEElement& el = *psel->Element(i);
+			FEElement_& el = *psel->Element(i);
 			if (el.IsVisible())
 			{
 				switch (el.Type())
@@ -7405,7 +7405,7 @@ void CGLView::RenderMeshLines(GObject* po)
 	// loop over all elements
 	for (int i = 0; i<pm->Elements(); i++)
 	{
-		const FEElement& e = pm->Element(i);
+		const FEElement_& e = pm->ElementRef(i);
 		if (e.IsVisible() && (po->Part(e.m_gid)->IsVisible()))
 		{
 			switch (e.Type())
@@ -7414,7 +7414,7 @@ void CGLView::RenderMeshLines(GObject* po)
 			{
 				for (int j = 0; j<6; j++)
 				{
-					FEElement* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
 
 					if ((pen == 0) || (!pen->IsVisible()))
 					{
@@ -7441,7 +7441,7 @@ void CGLView::RenderMeshLines(GObject* po)
 				{
 					for (int j = 0; j<6; j++)
 					{
-						FEElement* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
 
 						if ((pen == 0) || (!pen->IsVisible()))
 						{
@@ -7476,7 +7476,7 @@ void CGLView::RenderMeshLines(GObject* po)
 				{
 					for (int j = 0; j<3; j++)
 					{
-						FEElement* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
 
 						if ((pen == 0) || (!pen->IsVisible()))
 						{
@@ -7498,7 +7498,7 @@ void CGLView::RenderMeshLines(GObject* po)
 
 					for (int j = 3; j<5; j++)
 					{
-						FEElement* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
 
 						if ((pen == 0) || (!pen->IsVisible()))
 						{
@@ -7557,7 +7557,7 @@ void CGLView::RenderMeshLines(GObject* po)
 				{
 					for (int j = 0; j<4; j++)
 					{
-						FEElement* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
 						if ((pen == 0) || (!pen->IsVisible()))
 						{
 							glBegin(GL_LINE_LOOP);
@@ -7580,7 +7580,7 @@ void CGLView::RenderMeshLines(GObject* po)
 				{
 					for (int j = 0; j<4; j++)
 					{
-						FEElement* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
 						if ((pen == 0) || (!pen->IsVisible()))
 						{
 							glBegin(GL_LINE_LOOP);

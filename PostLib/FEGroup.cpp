@@ -46,7 +46,7 @@ FEFace& FEDomain::Face(int n)
 //-----------------------------------------------------------------------------
 FEElement_& FEDomain::Element(int n)
 {
-	return m_pm->Element(m_Elem[n]); 
+	return m_pm->ElementRef(m_Elem[n]);
 }
 
 void FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
@@ -60,7 +60,7 @@ void FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 	int n = 0, nne = 0;
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.Element(m_Elem[i]);
+		FEElement_& el = mesh.ElementRef(m_Elem[i]);
 		int ne = el.Nodes();
 		nne += ne;
 		for (int j=0; j<ne; ++j)
@@ -76,7 +76,7 @@ void FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 	lnode.resize(nne); nne = 0;
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = mesh.Element(m_Elem[i]);
+		FEElement_& el = mesh.ElementRef(m_Elem[i]);
 		int ne = el.Nodes();
 		for (int j=0; j<ne; ++j)
 		{

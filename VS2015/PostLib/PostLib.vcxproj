@@ -173,7 +173,6 @@
     <ClCompile Include="..\..\PostLib\FENikeExport.cpp" />
     <ClCompile Include="..\..\PostLib\FENikeImport.cpp" />
     <ClCompile Include="..\..\PostLib\FENodeEdgeList.cpp" />
-    <ClCompile Include="..\..\PostLib\FENodeElemList.cpp" />
     <ClCompile Include="..\..\PostLib\FENodeFaceList.cpp" />
     <ClCompile Include="..\..\PostLib\FENodeFaceTable.cpp" />
     <ClCompile Include="..\..\PostLib\FEPlotMix.cpp" />
@@ -193,7 +192,6 @@
     <ClCompile Include="..\..\PostLib\ImageModel.cpp" />
     <ClCompile Include="..\..\PostLib\ImageSlicer.cpp" />
     <ClCompile Include="..\..\PostLib\ImgAnimation.cpp" />
-    <ClCompile Include="..\..\PostLib\integrate.cpp" />
     <ClCompile Include="..\..\PostLib\Intersect.cpp" />
     <ClCompile Include="..\..\PostLib\MarchingCubes.cpp" />
     <ClCompile Include="..\..\PostLib\MPEGAnimation.cpp" />
@@ -237,7 +235,6 @@
     <ClInclude Include="..\..\PostLib\FENikeExport.h" />
     <ClInclude Include="..\..\PostLib\FENikeImport.h" />
     <ClInclude Include="..\..\PostLib\FENodeEdgeList.h" />
-    <ClInclude Include="..\..\PostLib\FENodeElemList.h" />
     <ClInclude Include="..\..\PostLib\FENodeFaceList.h" />
     <ClInclude Include="..\..\PostLib\FENodeFaceTable.h" />
     <ClInclude Include="..\..\PostLib\FEPlotMix.h" />

@@ -118,10 +118,11 @@ bool FEIDEASimport::BuildMesh(FEModel& fem)
 
 	// create the elements
 	list<ELEMENT>::iterator ie = m_Elem.begin();
-	FEElement* pe = pm->ElementPtr();
 	int ne;
-	for (i=0; i<elems; ++i, ++ie, ++pe)
+	for (i=0; i<elems; ++i, ++ie)
 	{
+		FEElement_* pe = pm->ElementPtr(i);
+
 		switch (ie->ntype)
 		{
 		case  44: pe->SetType(FE_QUAD4 ); break;

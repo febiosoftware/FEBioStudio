@@ -518,12 +518,13 @@ FEMesh* FEBox::CreateRegularHEX8()
 	pm->Node( NodeIndex(   0, m_ny, m_nz) ).m_gid = 7;
 
 	// create the connectivity
-	FEElement* pe = pm->ElementPtr();
-
+	int n = 0;
 	for (i=0; i<m_nx; i++)
 		for (j=0; j<m_ny; j++)
-			for (k=0; k<m_nz; k++, pe++)
+			for (k=0; k<m_nz; k++)
 			{
+				FEElement_* pe = pm->ElementPtr(n++);
+
 				pe->m_node[0] = NodeIndex(i  ,j  ,k);
 				pe->m_node[1] = NodeIndex(i+1,j  ,k);
 				pe->m_node[2] = NodeIndex(i+1,j+1,k);
@@ -691,13 +692,11 @@ FEMesh* FEBox::CreateRegularTET4()
 	pm->Node( NodeIndex(   0, m_ny, m_nz) ).m_gid = 7;
 
 	// create the connectivity
-	FEElement* pe = pm->ElementPtr();
-
 	int TET[6][4] = {
 		{1, 2, 3, 6}, {0, 1, 3, 6}, {0, 6, 3, 7},
 		{1, 5, 6, 0}, {4, 7, 5, 0}, {5, 7, 6, 0}};
 
-	int n[8];
+	int n[8], eid = 0;
 	for (i=0; i<m_nx; i++)
 		for (j=0; j<m_ny; j++)
 			for (k=0; k<m_nz; k++)
@@ -711,8 +710,10 @@ FEMesh* FEBox::CreateRegularTET4()
 				n[6] = NodeIndex(i+1,j+1,k+1);
 				n[7] = NodeIndex(i  ,j+1,k+1);
 
-				for (int l=0; l<6; ++l, ++pe)
+				for (int l=0; l<6; ++l)
 				{
+					FEElement_* pe = pm->ElementPtr(eid++);
+
 					pe->m_node[0] = n[TET[l][0]];
 					pe->m_node[1] = n[TET[l][1]];
 					pe->m_node[2] = n[TET[l][2]];
@@ -909,12 +910,13 @@ FEMesh* FEBox::CreateRegularHEX20()
 	pm->Node( NodeIndex2( 0, my, mz, LUT) ).m_gid = 7;
 
 	// create the connectivity
-	FEElement* pe = pm->ElementPtr();
-
+	int eid = 0;
 	for (i=0; i<2*m_nx; i+=2)
 		for (j=0; j<2*m_ny; j+=2)
-			for (k=0; k<2*m_nz; k+=2, pe++)
+			for (k=0; k<2*m_nz; k+=2)
 			{
+				FEElement_* pe = pm->ElementPtr(eid++);
+
 				pe->m_node[0] = NodeIndex2(i  ,j  ,k, LUT);
 				pe->m_node[1] = NodeIndex2(i+2,j  ,k, LUT);
 				pe->m_node[2] = NodeIndex2(i+2,j+2,k, LUT);
@@ -1099,12 +1101,13 @@ FEMesh* FEBox::CreateRegularHEX27()
 	pm->Node( NodeIndex3( 0, my, mz) ).m_gid = 7;
 
 	// create the connectivity
-	FEElement* pe = pm->ElementPtr();
-
+	int eid = 0;
 	for (i=0; i<mx; i+=2)
 		for (j=0; j<my; j+=2)
-			for (k=0; k<mz; k+=2, pe++)
+			for (k=0; k<mz; k+=2)
 			{
+				FEElement_* pe = pm->ElementPtr(eid++);
+
 				pe->m_node[0] = NodeIndex3(i  ,j  ,k);
 				pe->m_node[1] = NodeIndex3(i+2,j  ,k);
 				pe->m_node[2] = NodeIndex3(i+2,j+2,k);

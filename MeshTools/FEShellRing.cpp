@@ -70,13 +70,15 @@ FEMesh* FEShellRing::BuildMesh()
 	}
 
 	// create elements
-	FEElement* pe = pm->ElementPtr();
+	int eid = 0;
 	int i1;
 	for (i=0; i<ns; ++i)
 	{
 		i1 = (i+1)%ns;
-		for (j=0; j<nr; ++j, ++pe)
+		for (j=0; j<nr; ++j)
 		{
+			FEElement_* pe = pm->ElementPtr(eid++);
+
 			pe->SetType(FE_QUAD4);
 			pe->m_gid = 0;//4*i/ns;
 			pe->m_node[0] = i*(nr+1)+j;
@@ -87,9 +89,10 @@ FEMesh* FEShellRing::BuildMesh()
 	}
 	
 	// assign shell thickness
-	pe = pm->ElementPtr();
-	for (i=0; i<elems; ++i, ++pe)
+	for (i=0; i<elems; ++i)
 	{
+		FEElement_* pe = pm->ElementPtr(i);
+
 		pe->m_h[0] = t;
 		pe->m_h[1] = t;
 		pe->m_h[2] = t;

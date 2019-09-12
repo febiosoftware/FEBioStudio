@@ -97,7 +97,7 @@ FEMesh* FERemoveDuplicateElements::Apply(FEMesh* pm)
 	FEMesh* pnm = new FEMesh(*pm);
 	FEMesh& m = *pnm;
 
-	FENodeElementList NEL(&m); NEL.Build();
+	FENodeElementList NEL; NEL.Build(&m);
 	int NE = m.Elements();
 	int NN = m.Nodes();
 	for (i=0; i<NE; ++i) m.Element(i).m_ntag = i;
@@ -108,12 +108,12 @@ FEMesh* FERemoveDuplicateElements::Apply(FEMesh* pm)
 		int ne = NEL.Valence(i);
 		for (j=0; j<ne; ++j)
 		{
-			FEElement& ej = *NEL.Element(i, j);
+			FEElement_& ej = *NEL.Element(i, j);
 			if (ej.m_ntag != -1)
 			{
 				for (k=j+1; k<ne; ++k)
 				{
-					FEElement& ek = *NEL.Element(i, k);
+					FEElement_& ek = *NEL.Element(i, k);
 					if ((ek.m_ntag!=-1) && (ej.is_equal(ek))) 
 					{
 						ej.m_ntag = -1;

@@ -348,7 +348,7 @@ FEMesh* CPostObject::BuildMesh()
 	for (int i = 0; i < NE; ++i)
 	{
 		FEElement& ed = mesh->Element(i);
-		FEElement_& es = postMesh->Element(i);
+		FEElement_& es = postMesh->ElementRef(i);
 
 		ed.m_gid = es.m_MatID;
 		ed.SetType(es.Type());
@@ -393,8 +393,8 @@ void CPostObject::UpdateSelection()
 
 	for (int i = 0; i < mesh->Elements(); ++i)
 	{
-		if (mesh->Element(i).IsSelected()) postMesh->Element(i).Select();
-		else postMesh->Element(i).Unselect();
+		if (mesh->Element(i).IsSelected()) postMesh->ElementRef(i).Select();
+		else postMesh->ElementRef(i).Unselect();
 	}
 
 	m_glm->UpdateSelectionLists();

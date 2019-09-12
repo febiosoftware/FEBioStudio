@@ -85,7 +85,7 @@ void Post::FEMeshBase::ClearNodeSets()
 
 
 //-----------------------------------------------------------------------------
-void Post::FEMeshBase::Create(int nodes, int elems)
+void Post::FEMeshBase::Create(int nodes, int elems, int faces, int edges)
 {
 	if (nodes)
 	{
@@ -104,73 +104,11 @@ void Post::FEMeshBase::Create(int nodes, int elems)
 		// set default element ID's
 		for (int i=0; i<elems; i++) 
 		{
-			FEElement_& el = Element(i);
+			FEElement_& el = ElementRef(i);
 			el.SetID(i+1); 
 			el.m_lid = i;	
 		}
 	}
-}
-
-//-----------------------------------------------------------------------------
-//! Is an element exterior or not
-bool Post::FEMeshBase::IsExterior(FEElement_* pe) const
-{
-	// make sure the element is visible
-	if (pe->IsVisible() == false) return false;
-
-	// get number of faces
-	int NF = pe->Faces();
-
-	// a shell has 0 faces and is always exterior
-	if (NF == 0) return true;
-
-	// solid elements
-	for (int i = 0; i<NF; ++i)
-	{
-		const FEElement_* ei = ElementPtr(pe->m_nbr[i]);
-		if ((ei == 0) || (ei->IsVisible() == false)) return true;
-	}
-
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-// Count nr of beam elements
-int Post::FEMeshBase::BeamElements()
-{
-	int n = 0;
-	for (int i=0; i<Elements(); ++i)
-	{
-		if (Element(i).IsBeam()) n++;
-	}
-
-	return n;
-}
-
-//-----------------------------------------------------------------------------
-// Count nr of shell elements
-int Post::FEMeshBase::ShellElements()
-{
-	int n = 0;
-	for (int i=0; i<Elements(); ++i)
-	{
-		if (Element(i).IsShell()) n++;
-	}
-
-	return n;
-}
-
-//-----------------------------------------------------------------------------
-// Count nr of solid elements
-int Post::FEMeshBase::SolidElements()
-{
-	int n = 0;
-	for (int i=0; i<Elements(); ++i)
-	{
-		if (Element(i).IsSolid()) n++;
-	}
-
-	return n;
 }
 
 //-----------------------------------------------------------------------------
@@ -183,7 +121,7 @@ void Post::FEMeshBase::FindNeighbours()
 	// reset all neighbors
 	for (int i=0; i<Elements(); i++)
 	{
-		FEElement_& e = Element(i);
+		FEElement_& e = ElementRef(i);
 
 		// solid elements
 		for (int  j=0; j<e.Faces(); j++) e.m_nbr[j] = -1;
@@ -199,7 +137,7 @@ void Post::FEMeshBase::FindNeighbours()
 	bool bfound;
 	for (int i=0; i<Elements(); i++)
 	{
-		FEElement_& e = Element(i);
+		FEElement_& e = ElementRef(i);
 
 		// first, do the solid elements
 		for (int j=0; j<e.Faces(); j++)
@@ -209,11 +147,11 @@ void Post::FEMeshBase::FindNeighbours()
 				e.GetFace(j, face);
 
 				// find the neighbour element
-				vector<NodeElemRef>& nel = m_NEL.ElemList(face.n[0]);
+				const vector<NodeElemRef>& nel = m_NEL.ElementList(face.n[0]);
 				bfound = false;
 				for (int k=0; k < (int) nel.size(); k++)
 				{
-					pne = &Element(nel[k].first);
+					pne = &ElementRef(nel[k].eid);
 					if (pne != &e)
 					{
 						for (int l=0; l<pne->Faces(); l++) 
@@ -221,7 +159,7 @@ void Post::FEMeshBase::FindNeighbours()
 							pne->GetFace(l, f2);
 							if (face == f2)
 							{
-								e.m_nbr[j] = nel[k].first;
+								e.m_nbr[j] = nel[k].eid;
 								pne->m_nbr[l] = i;
 								bfound = true;
 								break;
@@ -244,11 +182,11 @@ void Post::FEMeshBase::FindNeighbours()
 			edge = e.GetEdge(j);
 
 			// find the neighbour element
-			vector<NodeElemRef>& nel = m_NEL.ElemList(edge.n[0]);
+			const vector<NodeElemRef>& nel = m_NEL.ElementList(edge.n[0]);
 			bfound = false;
 			for (int k=0; k < (int) nel.size(); k++)
 			{
-				pne = &Element(nel[k].first);
+				pne = &ElementRef(nel[k].eid);
 				if ((pne != &e) && (*pne != e))
 				{
 					for (int l=0; l<pne->Edges(); l++) 
@@ -260,7 +198,7 @@ void Post::FEMeshBase::FindNeighbours()
 
 					if (bfound)
 					{
-						e.m_nbr[j] = nel[k].first;
+						e.m_nbr[j] = nel[k].eid;
 						break;
 					}
 				}
@@ -278,7 +216,7 @@ void Post::FEMeshBase::UpdateDomains()
 	// figure out how many domains there are
 	int ndom = 0;
 	int NE = Elements();
-	for (int i=0; i<NE; ++i) if (Element(i).m_MatID > ndom) ndom = Element(i).m_MatID;
+	for (int i=0; i<NE; ++i) if (ElementRef(i).m_MatID > ndom) ndom = ElementRef(i).m_MatID;
 	++ndom;
 
 	// figure out the domain sizes
@@ -287,7 +225,7 @@ void Post::FEMeshBase::UpdateDomains()
 
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& el = Element(i);
+		FEElement_& el = ElementRef(i);
 		elemSize[el.m_MatID]++;
 	}
 
@@ -308,7 +246,7 @@ void Post::FEMeshBase::UpdateDomains()
 
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = Element(i);
+		FEElement_& el = ElementRef(i);
 		m_Dom[el.m_MatID]->AddElement(i);
 	}
 
@@ -359,7 +297,7 @@ void Post::FEMeshBase::BuildFaces()
 	int NE = Elements();
 	for (i=0; i<NE; ++i)
 	{
-		FEElement_& e = Element(i);
+		FEElement_& e = ElementRef(i);
 
 		// solid elements
 		int nf = e.Faces();
@@ -377,7 +315,7 @@ void Post::FEMeshBase::BuildFaces()
 	NF = 0;
 	for (i=0; i<NE; ++i)
 	{
-		FEElement_& e = Element(i);
+		FEElement_& e = ElementRef(i);
 		
 		// solid elements
 		int nf = e.Faces();
@@ -518,8 +456,8 @@ void Post::FEMeshBase::FindFaceNeighbors()
 					// we found the neighbour
 					// also make sure that they are of similar type,
 					// that is: shells can connect only to shells and solids to solids
-					int e1 = (Element(f .m_elem[0]).IsSolid()?1:0);
-					int e2 = (Element(f2.m_elem[0]).IsSolid()?1:0);
+					int e1 = (ElementRef(f .m_elem[0]).IsSolid()?1:0);
+					int e2 = (ElementRef(f2.m_elem[0]).IsSolid()?1:0);
 					if (e1 == e2)
 					{
 						// Eureka! We found one!
@@ -537,7 +475,7 @@ void Post::FEMeshBase::FindFaceNeighbors()
 void Post::FEMeshBase::Update()
 {
 	// find the element's neighbours
-	if (m_NEL.Empty()) FindNeighbours();
+	if (m_NEL.IsEmpty()) FindNeighbours();
 
 	// now that we have found the neighbours, let's find the faces
 	if (m_Face.empty()) 
@@ -580,677 +518,6 @@ void Post::FEMeshBase::UpdateNodes()
 		FEFace& f = m_Face[i];
 		int nf = f.Nodes();
 		for (j=0; j<nf; ++j) m_Node[f.n[j]].m_bext = true;
-	}
-}
-
-//-----------------------------------------------------------------------------
-vec3d Post::FEMeshBase::ElementCenter(FEElement_& el) const
-{
-	vec3d r;
-	int N = el.Nodes();
-	for (int i = 0; i<N; i++) r += m_Node[el.m_node[i]].r;
-	return r / (float)N;
-}
-
-//-----------------------------------------------------------------------------
-vec3d Post::FEMeshBase::FaceCenter(FEFace& f) const
-{
-	vec3d r;
-	int N = f.Nodes();
-	for (int i = 0; i<N; i++) r += m_Node[f.n[i]].r;
-	return r / (float)N;
-}
-
-//-----------------------------------------------------------------------------
-vec3d Post::FEMeshBase::EdgeCenter(FEEdge& e) const
-{
-	return (m_Node[e.n[0]].r + m_Node[e.n[1]].r)*0.5f;
-}
-
-//-----------------------------------------------------------------------------
-// area of triangle
-double triangle_area(const vec3d& r0, const vec3d& r1, const vec3d& r2)
-{
-	return ((r1 - r0)^(r2 - r0)).Length()*0.5f;
-}
-
-//-----------------------------------------------------------------------------
-double Post::FEMeshBase::FaceArea(FEFace &f)
-{
-	const int N = f.Nodes();
-	vector<vec3d> nodes(N);
-	for (int i = 0; i < N; ++i)
-	{
-		nodes[i] = m_Node[f.n[i]].r;
-	}
-	return FaceArea(nodes, N);
-}
-
-//-----------------------------------------------------------------------------
-double Post::FEMeshBase::FaceArea(const vector<vec3d>& r, int faceType)
-{
-	switch (faceType)
-	{
-	case 3: 
-		{
-			return triangle_area(r[0], r[1], r[2]);
-		}
-		break;
-	case 6:
-		{
-			double A = 0.0;
-			A += triangle_area(r[0], r[3], r[5]);
-			A += triangle_area(r[3], r[1], r[4]);
-			A += triangle_area(r[2], r[5], r[4]);
-			A += triangle_area(r[3], r[4], r[5]);
-			return A;
-		}
-		break;
-	case 7:
-		{
-			return triangle_area(r[0], r[1], r[2]);
-		}
-		break;
-	case 4:
-		{
-			int i, n;
-
-			// gauss-point data
-			const float a = 1.f / (float) sqrt(3.0);
-			const int NELN = 4;
-			const int NINT = 4;
-			static float gr[NINT] = { -a,  a,  a, -a };
-			static float gs[NINT] = { -a, -a,  a,  a };
-			static float gw[NINT] = {  1,  1,  1,  1 };
-
-			static float H[NINT][NELN] = {0};
-			static float Gr[NINT][NELN] = {0};
-			static float Gs[NINT][NELN] = {0};
-			static bool bfirst = true;
-
-			if (bfirst)
-			{
-
-				// calculate shape function values at gauss points
-				for (n=0; n<NINT; ++n)
-				{
-					H[n][0] = 0.25f*(1 - gr[n])*(1 - gs[n]);
-					H[n][1] = 0.25f*(1 + gr[n])*(1 - gs[n]);
-					H[n][2] = 0.25f*(1 + gr[n])*(1 + gs[n]);
-					H[n][3] = 0.25f*(1 - gr[n])*(1 + gs[n]);
-				}
-
-				// calculate local derivatives of shape functions at gauss points
-				for (n=0; n<NINT; ++n)
-				{
-					Gr[n][0] = -0.25f*(1 - gs[n]);
-					Gr[n][1] =  0.25f*(1 - gs[n]);
-					Gr[n][2] =  0.25f*(1 + gs[n]);
-					Gr[n][3] = -0.25f*(1 + gs[n]);
-
-					Gs[n][0] = -0.25f*(1 - gr[n]);
-					Gs[n][1] = -0.25f*(1 + gr[n]);
-					Gs[n][2] =  0.25f*(1 + gr[n]);
-					Gs[n][3] =  0.25f*(1 - gr[n]);
-				}
-
-				bfirst = false;
-			}
-
-			float A = 0.f;
-			for (n=0; n<NINT; ++n)
-			{
-				// calculate jacobian
-				vec3d dxr, dxs;
-				for (i=0; i<NELN; ++i)
-				{
-					dxr.x += Gr[n][i]*r[i].x;
-					dxr.y += Gr[n][i]*r[i].y;
-					dxr.z += Gr[n][i]*r[i].z;
-
-					dxs.x += Gs[n][i]*r[i].x;
-					dxs.y += Gs[n][i]*r[i].y;
-					dxs.z += Gs[n][i]*r[i].z;
-				}
-
-				double detJ = (dxr ^ dxs).Length();
-
-				A += gw[n]*detJ;
-			}
-
-			return A;
-		}
-		break;
-	}
-
-	return 0.0;
-}
-
-
-//-----------------------------------------------------------------------------
-// Calculate the volume of an element
-float Post::FEMeshBase::ElementVolume(int iel)
-{
-	FEElement_& el = Element(iel);
-	switch (el.Type())
-	{
-	case FE_HEX8   : return HexVolume(el); break;
-	case FE_HEX20  : return HexVolume(el); break;
-	case FE_HEX27  : return HexVolume(el); break;
-	case FE_TET4   : return TetVolume(el); break;
-    case FE_TET10  : return TetVolume(el); break;
-    case FE_TET15  : return TetVolume(el); break;
-    case FE_TET20  : return TetVolume(el); break;
-	case FE_PENTA6 : return PentaVolume(el); break;
-    case FE_PENTA15: return PentaVolume(el); break;
-	case FE_PYRA5  : return PyramidVolume(el); break;
-    }
-
-	return 0.f;
-}
-
-//-----------------------------------------------------------------------------
-// Calculate the volume of a hex element
-float Post::FEMeshBase::HexVolume(const FEElement_& el)
-{
-	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
-
-	// gauss-point data
-	const float a = 1.f / (float) sqrt(3.0);
-	const int NELN = 8;
-	const int NINT = 8;
-	static float gr[NINT] = { -a,  a,  a, -a, -a,  a, a, -a };
-	static float gs[NINT] = { -a, -a,  a,  a, -a, -a, a,  a };
-	static float gt[NINT] = { -a, -a, -a, -a,  a,  a, a,  a };
-	static float gw[NINT] = {  1,  1,  1,  1,  1,  1,  1, 1 };
-
-	static float H[NINT][NELN] = {0};
-	static float Gr[NINT][NELN] = {0};
-	static float Gs[NINT][NELN] = {0};
-	static float Gt[NINT][NELN] = {0};
-	static bool bfirst = true;
-
-	if (bfirst)
-	{
-		int n;
-
-		// calculate shape function values at gauss points
-		for (n=0; n<NINT; ++n)
-		{
-			H[n][0] = 0.125f*(1 - gr[n])*(1 - gs[n])*(1 - gt[n]);
-			H[n][1] = 0.125f*(1 + gr[n])*(1 - gs[n])*(1 - gt[n]);
-			H[n][2] = 0.125f*(1 + gr[n])*(1 + gs[n])*(1 - gt[n]);
-			H[n][3] = 0.125f*(1 - gr[n])*(1 + gs[n])*(1 - gt[n]);
-			H[n][4] = 0.125f*(1 - gr[n])*(1 - gs[n])*(1 + gt[n]);
-			H[n][5] = 0.125f*(1 + gr[n])*(1 - gs[n])*(1 + gt[n]);
-			H[n][6] = 0.125f*(1 + gr[n])*(1 + gs[n])*(1 + gt[n]);
-			H[n][7] = 0.125f*(1 - gr[n])*(1 + gs[n])*(1 + gt[n]);
-		}
-
-		// calculate local derivatives of shape functions at gauss points
-		for (n=0; n<NINT; ++n)
-		{
-			Gr[n][0] = -0.125f*(1 - gs[n])*(1 - gt[n]);
-			Gr[n][1] =  0.125f*(1 - gs[n])*(1 - gt[n]);
-			Gr[n][2] =  0.125f*(1 + gs[n])*(1 - gt[n]);
-			Gr[n][3] = -0.125f*(1 + gs[n])*(1 - gt[n]);
-			Gr[n][4] = -0.125f*(1 - gs[n])*(1 + gt[n]);
-			Gr[n][5] =  0.125f*(1 - gs[n])*(1 + gt[n]);
-			Gr[n][6] =  0.125f*(1 + gs[n])*(1 + gt[n]);
-			Gr[n][7] = -0.125f*(1 + gs[n])*(1 + gt[n]);
-
-			Gs[n][0] = -0.125f*(1 - gr[n])*(1 - gt[n]);
-			Gs[n][1] = -0.125f*(1 + gr[n])*(1 - gt[n]);
-			Gs[n][2] =  0.125f*(1 + gr[n])*(1 - gt[n]);
-			Gs[n][3] =  0.125f*(1 - gr[n])*(1 - gt[n]);
-			Gs[n][4] = -0.125f*(1 - gr[n])*(1 + gt[n]);
-			Gs[n][5] = -0.125f*(1 + gr[n])*(1 + gt[n]);
-			Gs[n][6] =  0.125f*(1 + gr[n])*(1 + gt[n]);
-			Gs[n][7] =  0.125f*(1 - gr[n])*(1 + gt[n]);
-
-			Gt[n][0] = -0.125f*(1 - gr[n])*(1 - gs[n]);
-			Gt[n][1] = -0.125f*(1 + gr[n])*(1 - gs[n]);
-			Gt[n][2] = -0.125f*(1 + gr[n])*(1 + gs[n]);
-			Gt[n][3] = -0.125f*(1 - gr[n])*(1 + gs[n]);
-			Gt[n][4] =  0.125f*(1 - gr[n])*(1 - gs[n]);
-			Gt[n][5] =  0.125f*(1 + gr[n])*(1 - gs[n]);
-			Gt[n][6] =  0.125f*(1 + gr[n])*(1 + gs[n]);
-			Gt[n][7] =  0.125f*(1 - gr[n])*(1 + gs[n]);
-		}
-
-		bfirst = false;
-	}
-
-	float *Grn, *Gsn, *Gtn;
-	float vol = 0, detJ;
-	float J[3][3];
-	int i, n;
-
-	vec3d rt[NELN];
-	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	for (n=0; n<NINT; ++n)
-	{
-		Grn = Gr[n];
-		Gsn = Gs[n];
-		Gtn = Gt[n];
-
-		J[0][0] = J[0][1] = J[0][2] = 0.0;
-		J[1][0] = J[1][1] = J[1][2] = 0.0;
-		J[2][0] = J[2][1] = J[2][2] = 0.0;
-		for (i=0; i<NELN; ++i)
-		{
-			const float& Gri = Grn[i];
-			const float& Gsi = Gsn[i];
-			const float& Gti = Gtn[i];
-
-			const float& x = rt[i].x;
-			const float& y = rt[i].y;
-			const float& z = rt[i].z;
-
-			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
-			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
-			J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
-		}
-
-		// calculate the determinant
-		detJ = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) 
-			+ J[0][1]*(J[1][2]*J[2][0] - J[2][2]*J[1][0]) 
-			+ J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]);
-
-		vol += detJ*gw[n];
-	}
-
-	return vol;
-}
-
-//-----------------------------------------------------------------------------
-// Calculate the volume of a pentahedral element
-float Post::FEMeshBase::PentaVolume(const FEElement_& el)
-{
-	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
-
-	// gauss-point data
-	//gauss intergration points
-	const float a = 1.f/6.f;
-	const float b = 2.f/3.f;
-	const float c = 1.f / (float) sqrt(3.0);
-	const float w = 1.f / 6.f;
-
-	const int NELN = 6;
-	const int NINT = 6;
-
-	static float gr[NINT] = { a, b, a, a, b, a };
-	static float gs[NINT] = { a, a, b, a, a, b };
-	static float gt[NINT] = { -c, -c, -c, c, c, c };
-	static float gw[NINT] = { w, w, w, w, w, w };
-
-	static float H[NINT][NELN] = {0};
-	static float Gr[NINT][NELN] = {0};
-	static float Gs[NINT][NELN] = {0};
-	static float Gt[NINT][NELN] = {0};
-	static bool bfirst = true;
-
-	if (bfirst)
-	{
-		int n;
-
-		// calculate shape function values at gauss points
-		for (n=0; n<NINT; ++n)
-		{
-			H[n][0] = 0.5f*(1.f - gt[n])*(1.f - gr[n] - gs[n]);
-			H[n][1] = 0.5f*(1.f - gt[n])*gr[n];
-			H[n][2] = 0.5f*(1.f - gt[n])*gs[n];
-			H[n][3] = 0.5f*(1.f + gt[n])*(1.f - gr[n] - gs[n]);
-			H[n][4] = 0.5f*(1.f + gt[n])*gr[n];
-			H[n][5] = 0.5f*(1.f + gt[n])*gs[n];
-		}
-
-		// calculate local derivatives of shape functions at gauss points
-		for (n=0; n<NINT; ++n)
-		{
-			Gr[n][0] = -0.5f*(1.f - gt[n]);
-			Gr[n][1] =  0.5f*(1.f - gt[n]);
-			Gr[n][2] =  0.0f;
-			Gr[n][3] = -0.5f*(1.f + gt[n]);
-			Gr[n][4] =  0.5f*(1.f + gt[n]);
-			Gr[n][5] =  0.0f;
-
-			Gs[n][0] = -0.5f*(1.f - gt[n]);
-			Gs[n][1] =  0.0f;
-			Gs[n][2] =  0.5f*(1.f - gt[n]);
-			Gs[n][3] = -0.5f*(1.f + gt[n]);
-			Gs[n][4] =  0.0f;
-			Gs[n][5] =  0.5f*(1.f + gt[n]);
-
-			Gt[n][0] = -0.5f*(1.f - gr[n] - gs[n]);
-			Gt[n][1] = -0.5f*gr[n];
-			Gt[n][2] = -0.5f*gs[n];
-			Gt[n][3] =  0.5f*(1.f - gr[n] - gs[n]);
-			Gt[n][4] =  0.5f*gr[n];
-			Gt[n][5] =  0.5f*gs[n];
-		}
-
-		bfirst = false;
-	}
-
-	float *Grn, *Gsn, *Gtn;
-	float vol = 0, detJ;
-	float J[3][3];
-	int i, n;
-
-	vec3d rt[NELN];
-	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	for (n=0; n<NINT; ++n)
-	{
-		Grn = Gr[n];
-		Gsn = Gs[n];
-		Gtn = Gt[n];
-
-		J[0][0] = J[0][1] = J[0][2] = 0.0;
-		J[1][0] = J[1][1] = J[1][2] = 0.0;
-		J[2][0] = J[2][1] = J[2][2] = 0.0;
-		for (i=0; i<NELN; ++i)
-		{
-			const float& Gri = Grn[i];
-			const float& Gsi = Gsn[i];
-			const float& Gti = Gtn[i];
-
-			const float& x = rt[i].x;
-			const float& y = rt[i].y;
-			const float& z = rt[i].z;
-
-			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
-			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
-			J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
-		}
-
-		// calculate the determinant
-		detJ = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) 
-			+ J[0][1]*(J[1][2]*J[2][0] - J[2][2]*J[1][0]) 
-			+ J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]);
-
-		vol += detJ*gw[n];
-	}
-
-	return vol;
-}
-
-//-----------------------------------------------------------------------------
-// Calculate the volume of a pyramid element
-float Post::FEMeshBase::PyramidVolume(const FEElement_& el)
-{
-	assert(el.Type() == FE_PYRA5);
-
-	// gauss-point data
-	const float a = 1.f / (float)sqrt(3.0);
-	const int NELN = 5;
-	const int NINT = 8;
-	static float gr[NINT] = { -a, a, a, -a, -a, a, a, -a };
-	static float gs[NINT] = { -a, -a, a, a, -a, -a, a, a };
-	static float gt[NINT] = { -a, -a, -a, -a, a, a, a, a };
-	static float gw[NINT] = { 1, 1, 1, 1, 1, 1, 1, 1 };
-
-	static float H[NINT][NELN] = { 0 };
-	static float Gr[NINT][NELN] = { 0 };
-	static float Gs[NINT][NELN] = { 0 };
-	static float Gt[NINT][NELN] = { 0 };
-	static bool bfirst = true;
-
-	if (bfirst)
-	{
-		int n;
-
-		// calculate shape function values at gauss points
-		for (n = 0; n<NINT; ++n)
-		{
-			H[n][0] = 0.125f*(1 - gr[n])*(1 - gs[n])*(1 - gt[n]);
-			H[n][1] = 0.125f*(1 + gr[n])*(1 - gs[n])*(1 - gt[n]);
-			H[n][2] = 0.125f*(1 + gr[n])*(1 + gs[n])*(1 - gt[n]);
-			H[n][3] = 0.125f*(1 - gr[n])*(1 + gs[n])*(1 - gt[n]);
-			H[n][4] = 0.5f*(1 + gt[n]);
-		}
-
-		// calculate local derivatives of shape functions at gauss points
-		for (n = 0; n<NINT; ++n)
-		{
-			float r = gr[n], s = gs[n], t = gt[n];
-			Gr[n][0] = -0.125f*(1.f - s)*(1.f - t);
-			Gr[n][1] =  0.125f*(1.f - s)*(1.f - t);
-			Gr[n][2] =  0.125f*(1.f + s)*(1.f - t);
-			Gr[n][3] = -0.125f*(1.f + s)*(1.f - t);
-			Gr[n][4] = 0.f;
-
-			Gs[n][0] = -0.125f*(1.f - r)*(1.f - t);
-			Gs[n][1] = -0.125f*(1.f + r)*(1.f - t);
-			Gs[n][2] =  0.125f*(1.f + r)*(1.f - t);
-			Gs[n][3] =  0.125f*(1.f - r)*(1.f - t);
-			Gs[n][4] =  0.f;
-
-			Gt[n][0] = -0.125f*(1.f - r)*(1.f - s);
-			Gt[n][1] = -0.125f*(1.f + r)*(1.f - s);
-			Gt[n][2] = -0.125f*(1.f + r)*(1.f + s);
-			Gt[n][3] = -0.125f*(1.f - r)*(1.f + s);
-			Gt[n][4] = 0.5f;
-		}
-
-		bfirst = false;
-	}
-
-	float *Grn, *Gsn, *Gtn;
-	float vol = 0, detJ;
-	float J[3][3];
-	int i, n;
-
-	vec3d rt[NELN];
-	for (i = 0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	for (n = 0; n<NINT; ++n)
-	{
-		Grn = Gr[n];
-		Gsn = Gs[n];
-		Gtn = Gt[n];
-
-		J[0][0] = J[0][1] = J[0][2] = 0.0;
-		J[1][0] = J[1][1] = J[1][2] = 0.0;
-		J[2][0] = J[2][1] = J[2][2] = 0.0;
-		for (i = 0; i<NELN; ++i)
-		{
-			const float& Gri = Grn[i];
-			const float& Gsi = Gsn[i];
-			const float& Gti = Gtn[i];
-
-			const float& x = rt[i].x;
-			const float& y = rt[i].y;
-			const float& z = rt[i].z;
-
-			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
-			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
-			J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
-		}
-
-		// calculate the determinant
-		detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
-			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
-			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
-
-		vol += detJ*gw[n];
-	}
-
-	return vol;
-}
-
-//-----------------------------------------------------------------------------
-// Calculate the volume of a tetrahedral element
-float Post::FEMeshBase::TetVolume(const FEElement_& el)
-{
-	assert((el.Type() == FE_TET4) || (el.Type() == FE_TET10)
-           || (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
-
-	// gauss-point data
-	const float a = 0.58541020f;
-	const float b = 0.13819660f;
-	const float w = 1.f / 24.f;
-
-	const int NELN = 4;
-	const int NINT = 4;
-
-	static float gr[NINT] = { b, a, b, b };
-	static float gs[NINT] = { b, b, a, b };
-	static float gt[NINT] = { b, b, b, a };
-	static float gw[NINT] = { w, w, w, w };
-
-	static float H[NINT][NELN] = {0};
-	static float Gr[NINT][NELN] = {0};
-	static float Gs[NINT][NELN] = {0};
-	static float Gt[NINT][NELN] = {0};
-	static bool bfirst = true;
-
-	if (bfirst)
-	{
-		int n;
-
-		// calculate shape function values at gauss points
-		for (n=0; n<NINT; ++n)
-		{
-			H[n][0] = 1.f - gr[n] - gs[n] - gt[n];
-			H[n][1] = gr[n];
-			H[n][2] = gs[n];
-			H[n][3] = gt[n];
-		}
-
-		// calculate local derivatives of shape functions at gauss points
-		for (n=0; n<NINT; ++n)
-		{
-			Gr[n][0] = -1.f;
-			Gr[n][1] =  1.f;
-			Gr[n][2] =  0.f;
-			Gr[n][3] =  0.f;
-
-			Gs[n][0] = -1.f;
-			Gs[n][1] =  0.f;
-			Gs[n][2] =  1.f;
-			Gs[n][3] =  0.f;
-
-			Gt[n][0] = -1.f;
-			Gt[n][1] =  0.f;
-			Gt[n][2] =  0.f;
-			Gt[n][3] =  1.f;
-		}
-
-		bfirst = false;
-	}
-
-	float *Grn, *Gsn, *Gtn;
-	float vol = 0, detJ;
-	float J[3][3];
-	int i, n;
-
-	vec3d rt[NELN];
-	for (i=0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	for (n=0; n<NINT; ++n)
-	{
-		Grn = Gr[n];
-		Gsn = Gs[n];
-		Gtn = Gt[n];
-
-		J[0][0] = J[0][1] = J[0][2] = 0.0;
-		J[1][0] = J[1][1] = J[1][2] = 0.0;
-		J[2][0] = J[2][1] = J[2][2] = 0.0;
-		for (i=0; i<NELN; ++i)
-		{
-			const float& Gri = Grn[i];
-			const float& Gsi = Gsn[i];
-			const float& Gti = Gtn[i];
-
-			const float& x = rt[i].x;
-			const float& y = rt[i].y;
-			const float& z = rt[i].z;
-
-			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
-			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
-			J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
-		}
-
-		// calculate the determinant
-		detJ = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) 
-			+ J[0][1]*(J[1][2]*J[2][0] - J[2][2]*J[1][0]) 
-			+ J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]);
-
-		vol += detJ*gw[n];
-	}
-
-	return vol;
-}
-
-//-----------------------------------------------------------------------------
-void Post::FEMeshBase::FaceNodePosition(const FEFace& f, vec3d* r) const
-{
-	switch (f.m_type)
-	{
-	case FE_FACE_TRI10:
-		r[9] = m_Node[f.n[9]].r;
-	case FE_FACE_QUAD9:
-		r[8] = m_Node[f.n[8]].r;
-	case FE_FACE_QUAD8:
-		r[7] = m_Node[f.n[7]].r;
-	case FE_FACE_TRI7:
-		r[6] = m_Node[f.n[6]].r;
-	case FE_FACE_TRI6:
-		r[5] = m_Node[f.n[5]].r;
-		r[4] = m_Node[f.n[4]].r;
-	case FE_FACE_QUAD4:
-		r[3] = m_Node[f.n[3]].r;
-	case FE_FACE_TRI3:
-		r[2] = m_Node[f.n[2]].r;
-		r[1] = m_Node[f.n[1]].r;
-		r[0] = m_Node[f.n[0]].r;
-		break;
-	default:
-		assert(false);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void Post::FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
-{
-	switch (f.m_type)
-	{
-	case FE_FACE_TRI10:
-		n[9] = f.m_nn[9];
-	case FE_FACE_QUAD9:
-		n[8] = f.m_nn[8];
-	case FE_FACE_QUAD8:
-		n[7] = f.m_nn[7];
-	case FE_FACE_TRI7:
-		n[6] = f.m_nn[6];
-	case FE_FACE_TRI6:
-		n[5] = f.m_nn[5];
-		n[4] = f.m_nn[4];
-	case FE_FACE_QUAD4:
-		n[3] = f.m_nn[3];
-	case FE_FACE_TRI3:
-		n[2] = f.m_nn[2];
-		n[1] = f.m_nn[1];
-		n[0] = f.m_nn[0];
-		break;
-	default:
-		assert(false);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void Post::FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
-{
-	if (bnode)
-	{
-		for (int i=0; i<f.Nodes(); ++i) t[i] = m_Node[f.n[i]].m_tex;
-	}
-	else
-	{
-		for (int i=0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
 	}
 }
 
@@ -1358,7 +625,7 @@ bool Post::FindElementRef(FEMeshBase& m, const vec3f& p, int& nelem, double r[3]
 	int NE = m.Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& e = m.Element(i);
+		FEElement_& e = m.ElementRef(i);
 		int ne = e.Nodes();
 		nelem = i;
 
@@ -1376,14 +643,14 @@ bool Post::FindElementRef(FEMeshBase& m, const vec3f& p, int& nelem, double r[3]
 			if (rj.z > r1.z) r1.z = rj.z;
 		}
 
-		float dx = fabs(r0.x - r1.x);
-		float dy = fabs(r0.y - r1.y);
-		float dz = fabs(r0.z - r1.z);
+		double dx = fabs(r0.x - r1.x);
+		double dy = fabs(r0.y - r1.y);
+		double dz = fabs(r0.z - r1.z);
 
-		float R = dx;
+		double R = dx;
 		if (dy > R) R = dy;
 		if (dz > R) R = dz;
-		float eps = R*0.001f;
+		double eps = R*0.001;
 
 		r0.x -= eps;
 		r0.y -= eps;
@@ -1411,7 +678,7 @@ bool Post::FindElementInReferenceFrame(FEMeshBase& m, const vec3f& p, int& nelem
 	int NE = m.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& e = m.Element(i);
+		FEElement_& e = m.ElementRef(i);
 		int ne = e.Nodes();
 		nelem = i;
 
@@ -1455,11 +722,6 @@ bool Post::FindElementInReferenceFrame(FEMeshBase& m, const vec3f& p, int& nelem
 	}
 
 	return false;
-}
-
-void Post::FEMeshBase::SetElementTags(int ntag)
-{
-	for (int i = 0; i<Elements(); ++i) Element(i).m_ntag = ntag;
 }
 
 //=================================================================================================
@@ -1626,10 +888,10 @@ void Post::FEFindElement::InitReferenceFrame(vector<bool>& flags)
 	m_bound.split(l);
 
 	// calculate bounding boxes for all elements
-	int cflags = flags.size();
+	int cflags = (int)flags.size();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& e = m_mesh.Element(i);
+		FEElement_& e = m_mesh.ElementRef(i);
 
 		bool badd = true;
 		if (flags.empty() == false)
@@ -1688,10 +950,10 @@ void Post::FEFindElement::InitCurrentFrame(vector<bool>& flags)
 	m_bound.split(l);
 
 	// calculate bounding boxes for all elements
-	int cflags = flags.size();
+	int cflags = (int)flags.size();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement_& e = m_mesh.Element(i);
+		FEElement_& e = m_mesh.ElementRef(i);
 
 		bool badd = true;
 		if (flags.empty() == false)
@@ -1754,7 +1016,7 @@ bool Post::FEFindElement::FindInReferenceFrame(const vec3f& x, int& nelem, doubl
 
 		int nid = c->m_elem; assert(nid >= 0);
 
-		FEElement_& e = m_mesh.Element(nid);
+		FEElement_& e = m_mesh.ElementRef(nid);
 		nelem = nid;
 
 		// do a quick bounding box test
@@ -1786,7 +1048,7 @@ bool Post::FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double 
 
 		int nid = c->m_elem; assert(nid >= 0);
 
-		FEElement_& e = m_mesh.Element(nid);
+		FEElement_& e = m_mesh.ElementRef(nid);
 		nelem = nid;
 
 		// do a quick bounding box test

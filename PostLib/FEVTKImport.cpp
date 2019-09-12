@@ -110,7 +110,7 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 	int n[9];
 	for (i=0; i<elems; ++i)
 	{	
-		FEElement& el = static_cast<FEElement&>(pm->Element(i));
+		FEElement& el = static_cast<FEElement&>(pm->ElementRef(i));
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 		nread = sscanf(szline, "%d%d%d%d%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4],&n[5],&n[6],&n[7],&n[8]);
@@ -233,7 +233,7 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 
 			for (i=0; i<size; ++i)
 			{
-				FEElement_& el = pm->Element(i);
+				FEElement_& el = pm->ElementRef(i);
 				ch = fgets(szline, 255, m_fp);
 				if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 				nread = sscanf(szline, "%lg", &temp[0]);

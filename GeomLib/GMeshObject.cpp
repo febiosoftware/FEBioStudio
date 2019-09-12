@@ -194,7 +194,7 @@ void GMeshObject::UpdateSurfaces()
 	for (int i = 0; i<(int)m_Face.size(); ++i) { m_Face[i]->m_nPID[0] = m_Face[i]->m_nPID[1] = -1; }
 
 	// assign part ID's
-	FEElement* pe;
+	FEElement_* pe;
 	for (int i=0; i<m.Faces(); ++i)
 	{
 		// get the face

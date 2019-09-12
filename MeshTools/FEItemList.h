@@ -46,5 +46,5 @@ typedef FEItemList_T<FEFace> FEFaceList;
 
 //-----------------------------------------------------------------------------
 // Specialization for elements
-class FEElement;
-typedef FEItemList_T<FEElement> FEElemList;
+class FEElement_;
+typedef FEItemList_T<FEElement_> FEElemList;

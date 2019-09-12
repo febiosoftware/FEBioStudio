@@ -15,8 +15,8 @@ public:
 	FECoreMesh*	m_pmesh;	// mesh to which this element belongs
 	int		m_nelem;	// index of element
 
-	FEElement* operator -> () {return m_pmesh->ElementPtr(m_nelem);}
-	operator FEElement*(){ return m_pmesh->ElementPtr(m_nelem); }
+	FEElement_* operator -> () {return m_pmesh->ElementPtr(m_nelem);}
+	operator FEElement_*(){ return m_pmesh->ElementPtr(m_nelem); }
 };
 
 //-----------------------------------------------------------------------------

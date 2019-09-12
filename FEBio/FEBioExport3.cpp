@@ -2634,7 +2634,7 @@ void FEBioExport3::WriteMeshData(FEDataMap* map)
 			FEElemList::Iterator pe = elemList->First();
 			for (int i = 0; i<NE; ++i, ++pe)
 			{
-				FEElement& el = *(pe->m_pi);
+				FEElement_& el = *(pe->m_pi);
 				XMLElement e("e");
 				e.add_attribute("lid", i + 1);
 				e.value(v, el.Nodes());
@@ -4477,7 +4477,7 @@ void FEBioExport3::WriteElementList(FEElemList& el)
 	FEElemList::Iterator pe = el.First();
 	for (int i = 0; i<NE; ++i, ++pe)
 	{
-		FEElement& el = *(pe->m_pi);
+		FEElement_& el = *(pe->m_pi);
 		XMLElement e("e");
 		e.add_attribute("id", el.m_nid);
 		m_xml.add_empty(e);

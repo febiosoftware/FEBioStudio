@@ -1,5 +1,5 @@
-#include "stdafx.h"
-#include "FEMesh.h"
+//#include "stdafx.h"
+#include "FECoreMesh.h"
 
 //-----------------------------------------------------------------------------
 // Integration rule for quads
@@ -84,7 +84,7 @@ const float G8t[8][8] = {
 
 //-----------------------------------------------------------------------------
 // Calculate integral over face
-double Post::FEMeshBase::IntegrateQuad(vec3d* r, float* v)
+double IntegrateQuad(vec3d* r, float* v)
 {
 	double I = 0.f;
 	for (int i = 0; i<4; ++i)
@@ -111,7 +111,7 @@ double Post::FEMeshBase::IntegrateQuad(vec3d* r, float* v)
 }
 //-----------------------------------------------------------------------------
 // Calculate integral over face
-float Post::FEMeshBase::IntegrateQuad(vec3f* r, float* v)
+float IntegrateQuad(vec3f* r, float* v)
 {
 	int i, j;
 
@@ -141,7 +141,7 @@ float Post::FEMeshBase::IntegrateQuad(vec3f* r, float* v)
 
 //-----------------------------------------------------------------------------
 // Calculate integral over element
-float Post::FEMeshBase::IntegrateHex(vec3f* r, float *v)
+float IntegrateHex(vec3f* r, float *v)
 {
 	int i, j;
 	float I = 0.f;

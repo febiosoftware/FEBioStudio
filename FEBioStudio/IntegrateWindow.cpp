@@ -198,7 +198,7 @@ double CIntegrateWindow::IntegrateFaces(Post::FEMeshBase& mesh, Post::FEState* p
 			if (nn==3) r[3] = r[2];
 
 			// add to integral
-			res += mesh.IntegrateQuad(r, v);
+			res += IntegrateQuad(r, v);
 		}
 	}
 	return res;
@@ -214,7 +214,7 @@ double CIntegrateWindow::IntegrateElems(Post::FEMeshBase& mesh, Post::FEState* p
 	vec3f r[8];
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
-		FEElement_& e = mesh.Element(i);
+		FEElement_& e = mesh.ElementRef(i);
 		if (e.IsSelected() && (e.IsSolid()) && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
 		{
 			int nn = e.Nodes();
@@ -248,7 +248,7 @@ double CIntegrateWindow::IntegrateElems(Post::FEMeshBase& mesh, Post::FEState* p
 			}
 			
 			// add to integral
-			res += mesh.IntegrateHex(r, v);
+			res += IntegrateHex(r, v);
 		}
 	}
 	return res;

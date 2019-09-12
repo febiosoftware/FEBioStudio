@@ -378,7 +378,7 @@ void FEMultiBlockMesh::BuildElements(FEMesh* pm)
 	pm->Create(0, elems);
 
 	// create the elements
-	FEElement* pe = pm->ElementPtr();
+	int eid = 0;
 	for (i=0; i<NB; ++i)
 	{
 		MBBlock& b = m_MBlock[i];
@@ -386,8 +386,10 @@ void FEMultiBlockMesh::BuildElements(FEMesh* pm)
 		{
 			for (k=0; k<b.m_ny; ++k)
 			{
-				for (l=0; l<b.m_nx; ++l, ++pe)
+				for (l=0; l<b.m_nx; ++l)
 				{
+					FEElement_* pe = pm->ElementPtr(eid++);
+
 					pe->m_node[0] = GetBlockNodeIndex(b, l  , k  , j);
 					pe->m_node[1] = GetBlockNodeIndex(b, l+1, k  , j);
 					pe->m_node[2] = GetBlockNodeIndex(b, l+1, k+1, j);

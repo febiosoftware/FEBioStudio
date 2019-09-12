@@ -474,13 +474,15 @@ FEMesh* FECylinder::BuildWedged()
 	// --- B. Create the elements ---
 
 	// create the inner wedge elements
-	FEElement* ph = pm->ElementPtr();
+	int eid = 0;
 	int nlevel = 1+m_nd*m_ns;
 	for (i=0; i<m_nz; i++)
 	{
 		// wedge elements
-		for (k=0; k<m_nd; ++k, ++ph)
+		for (k=0; k<m_nd; ++k)
 		{
+			FEElement_* ph = pm->ElementPtr(eid++);
+
 			ph->SetType(FE_PENTA6);
 			ph->m_gid = 0;
 			ph->m_node[0] = i*nlevel;
@@ -495,8 +497,10 @@ FEMesh* FECylinder::BuildWedged()
 		// hex elements
 		for (j=1; j<m_ns; ++j)
 		{
-			for (k=0; k<m_nd; ++k, ++ph)
+			for (k=0; k<m_nd; ++k)
 			{
+				FEElement_* ph = pm->ElementPtr(eid++);
+
 				ph->SetType(FE_HEX8);
 				ph->m_gid = 0;
 
@@ -1063,13 +1067,15 @@ FEMesh* FECylinder2::BuildWedged()
 	// --- B. Create the elements ---
 
 	// create the inner wedge elements
-	FEElement* ph = pm->ElementPtr();
+	int eid = 0;
 	int nlevel = 1+m_nd*m_ns;
 	for (i=0; i<m_nz; i++)
 	{
 		// wedge elements
-		for (k=0; k<m_nd; ++k, ++ph)
+		for (k=0; k<m_nd; ++k)
 		{
+			FEElement_* ph = pm->ElementPtr(eid++);
+
 			ph->SetType(FE_PENTA6);
 			ph->m_gid = 0;
 			ph->m_node[0] = i*nlevel;
@@ -1084,8 +1090,10 @@ FEMesh* FECylinder2::BuildWedged()
 		// hex elements
 		for (j=1; j<m_ns; ++j)
 		{
-			for (k=0; k<m_nd; ++k, ++ph)
+			for (k=0; k<m_nd; ++k)
 			{
+				FEElement_* ph = pm->ElementPtr(eid++);
+
 				ph->SetType(FE_HEX8);
 				ph->m_gid = 0;
 

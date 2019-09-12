@@ -1015,7 +1015,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 			for (int j=0; j<D.ne; ++j)
 			{
 				ELEM& E = D.elem[j];
-				FEElement_& el = pmesh->Element(E.index);
+				FEElement_& el = pmesh->ElementRef(E.index);
 				el.m_MatID = D.mid - 1;
 				el.SetID(E.eid);
 				for (int k=0; k<4; ++k) el.m_node[k] = E.node[k];
@@ -1035,7 +1035,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 			for (int j=0; j<D.ne; ++j)
 			{
 				ELEM& E = D.elem[j];
-				FEElement_& el = pmesh->Element(E.index);
+				FEElement_& el = pmesh->ElementRef(E.index);
 				el.m_MatID = D.mid - 1;
 				el.SetID(E.eid);
 				for (int k=0; k<8; ++k) el.m_node[k] = E.node[k];
@@ -1057,7 +1057,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 				for (int j=0; j<D.ne; ++j)
 				{
 					ELEM& E = D.elem[j];
-					FELinearElement& el = static_cast<FELinearElement&>(pmesh->Element(E.index));
+					FELinearElement& el = static_cast<FELinearElement&>(pmesh->ElementRef(E.index));
 					el.m_MatID = D.mid - 1;
 					el.SetID(E.eid);
 
@@ -1094,7 +1094,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 				for (int j=0; j<D.ne; ++j)
 				{
 					ELEM& E = D.elem[j];
-					FEElement& el = static_cast<FEElement&>(pmesh->Element(E.index));
+					FEElement& el = static_cast<FEElement&>(pmesh->ElementRef(E.index));
 					el.m_MatID = D.mid - 1;
 					el.SetID(E.eid);
 
@@ -1141,7 +1141,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 	// set the enabled-ness of the elements and the nodes
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = pmesh->Element(i);
+		FEElement_& el = pmesh->ElementRef(i);
 		FEMaterial* pm = fem.GetMaterial(el.m_MatID);
 		if (pm->benable) el.Enable(); else el.Disable();
 	}
@@ -1149,7 +1149,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 	for (int i=0; i<NN; ++i) pmesh->Node(i).Disable();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement_& el = pmesh->Element(i);
+		FEElement_& el = pmesh->ElementRef(i);
 		if (el.IsEnabled())
 		{
 			int n = el.Nodes();
@@ -1308,7 +1308,7 @@ bool XpltReader2::ReadStateSection(FEModel& fem)
 			if (df.active(i))
 			{
 				df.eval(i, h);
-				int n = mesh.Element(i).Nodes();
+				int n = mesh.ElementRef(i).Nodes();
 				for (int j=0; j<n; ++j) d.m_h[j] = h[j];
 			}
 		}

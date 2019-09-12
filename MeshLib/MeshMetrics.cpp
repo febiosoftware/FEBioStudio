@@ -982,7 +982,7 @@ vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v)
 
 //-----------------------------------------------------------------------------
 // evaluate gradient at element nodes (i.e. Grad{Na(x_b)})
-vec3d ShapeGradient(const FEMesh& mesh, const FEElement& el, int na, int nb)
+vec3d ShapeGradient(const FEMesh& mesh, const FEElement_& el, int na, int nb)
 {
 	const int MN = FEElement::MAX_NODES;
 	vec3d r[MN];

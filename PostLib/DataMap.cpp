@@ -46,7 +46,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 
 	for (i=0; i<mesh.Elements(); i++)
 	{
-		FEElement_& e = mesh.Element(i);
+		FEElement_& e = mesh.ElementRef(i);
 
 		if (e.IsSolid())
 		{
@@ -129,7 +129,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	// "normalize" the gradients
 	for (i=0; i<mesh.Nodes(); i++)
 	{
-		vector<NodeElemRef>& nel = mesh.NodeElemList(i);
+		const vector<NodeElemRef>& nel = mesh.NodeElemList(i);
 		if (!nel.empty()) G[i] /= (float) nel.size();
 		G[i] *= -1;
 	}

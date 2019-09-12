@@ -160,6 +160,7 @@
     <ClCompile Include="..\..\MeshLib\FESurfaceMesh.cpp" />
     <ClCompile Include="..\..\MeshLib\insertCurve.cpp" />
     <ClCompile Include="..\..\MeshLib\insertCurve2.cpp" />
+    <ClCompile Include="..\..\MeshLib\integrate.cpp" />
     <ClCompile Include="..\..\MeshLib\LineMesh2D.cpp" />
     <ClCompile Include="..\..\MeshLib\MeshMetrics.cpp" />
     <ClCompile Include="..\..\MeshLib\MeshTools.cpp" />

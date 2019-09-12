@@ -149,7 +149,7 @@ FENodeList* FEPart::BuildNodeList()
 	list<int>::iterator it;
 	for (it = m_Item.begin(); it != m_Item.end(); ++it)
 	{
-		FEElement* pe = pm->ElementPtr(*it);
+		FEElement_* pe = pm->ElementPtr(*it);
 		for (j=0; j<pe->Nodes(); ++j) pm->Node(pe->m_node[j]).m_ntag = 1;
 	}
 
