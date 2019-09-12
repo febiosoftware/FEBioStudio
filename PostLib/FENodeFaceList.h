@@ -30,6 +30,8 @@ public:
 
 	bool Empty() { return m_NFL.empty(); }
 
+	int FindFace(int inode, int n[10], int m);
+
 protected:
 	FEMeshBase*	m_pm;
 	vector<vector<NodeFaceRef> >	m_NFL;

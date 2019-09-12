@@ -7,19 +7,26 @@ class FEEdge;
 class FENodeEdgeList
 {
 public:
-	FENodeEdgeList(const FELineMesh& mesh);
+	FENodeEdgeList(FELineMesh* mesh = nullptr);
+
+	void Build(FELineMesh* mesh);
+
+	void Clear();
+
+	bool IsEmpty() const;
 
 	// Return the number of edges for a given node
-	int Edges(int node) const { return m_val[node]; }
+	int Edges(int node) const { return (int) m_edge[node].size(); }
 
 	// Return the edge for a given node
 	const FEEdge* Edge(int node, int edge) const;
 
-	int EdgeIndex(int node, int edge) const { return m_edge[m_off[node] + edge]; }
+	// return the edge index
+	int EdgeIndex(int node, int edge) const;
+
+	const std::vector<int>& EdgeIndexList(int node) const;
 
 private:
-	const FELineMesh&	m_mesh;
-	std::vector<int>	m_val;		// Valence list
-	std::vector<int>	m_off;		// Offset into edge array
-	std::vector<int>	m_edge;		// edge list
+	FELineMesh*			m_mesh;
+	std::vector< std::vector<int> >	m_edge;		// edge list
 };

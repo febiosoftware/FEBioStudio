@@ -1,52 +1,60 @@
 #include "FENodeEdgeList.h"
 #include "FELineMesh.h"
 
-FENodeEdgeList::FENodeEdgeList(const FELineMesh& mesh) : m_mesh(mesh)
+FENodeEdgeList::FENodeEdgeList(FELineMesh* mesh) : m_mesh(mesh)
 {
+	if (mesh) Build(mesh);
+}
+
+void FENodeEdgeList::Clear()
+{
+	m_edge.clear();
+}
+
+bool FENodeEdgeList::IsEmpty() const
+{
+	return m_edge.empty();
+}
+
+void FENodeEdgeList::Build(FELineMesh* pmesh)
+{
+	m_mesh = pmesh;
+	assert(pmesh);
+	FELineMesh& mesh = *m_mesh;
+
 	// allocate valence array
-	int N = m_mesh.Nodes();
+	int N = mesh.Nodes();
 	if (N == 0) return;
-	m_val.resize(N, 0);
-
-	// fill valence array
-	int NE = m_mesh.Edges();
-	for (int i=0; i<NE; ++i)
-	{
-		const FEEdge& edge = m_mesh.Edge(i);
-
-		int n0 = edge.n[0]; assert(n0 >= 0);
-		int n1 = edge.n[1]; assert(n1 >= 0);
-
-		m_val[n0]++;
-		m_val[n1]++;
-	}
-
-	// fill offset array
-	m_off.resize(N, 0);
-	for (int i=1; i<N; ++i)
-	{
-		m_off[i] = m_off[i-1] + m_val[i-1];
-	}
-
-	// allocate edge array
-	int nsize = m_off[N-1] + m_val[N-1];
-	m_edge.resize(nsize, -1);
+	m_edge.resize(N);
 
 	// fill edge array
-	vector<int> tmp(N, 0);
+	int NE = mesh.Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		const FEEdge& edge = m_mesh.Edge(i);
+		const FEEdge& edge = mesh.Edge(i);
 		int n0 = edge.n[0];
 		int n1 = edge.n[1];
 
-		m_edge[m_off[n0] + tmp[n0]] = i; tmp[n0]++; assert(tmp[n0] <= m_val[n0]);
-		m_edge[m_off[n1] + tmp[n1]] = i; tmp[n1]++; assert(tmp[n1] <= m_val[n1]);
+		vector<int>& l0 = m_edge[n0];
+		vector<int>& l1 = m_edge[n1];
+
+		l0.push_back(i);
+		l1.push_back(i);
 	}
 }
 
 // Return the edge for a given node
 const FEEdge* FENodeEdgeList::Edge(int node, int edge) const
 {
-	return m_mesh.EdgePtr(m_edge[m_off[node] + edge]);
+	return m_mesh->EdgePtr(m_edge[node][edge]);
+}
+
+int FENodeEdgeList::EdgeIndex(int node, int edge) const 
+{ 
+	return m_edge[node][edge]; 
+}
+
+const std::vector<int>& FENodeEdgeList::EdgeIndexList(int node) const
+{
+	return m_edge[node];
 }

@@ -4221,7 +4221,7 @@ void CGLView::SelectFEEdges(int x, int y)
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
 			std::stack<FEEdge*> stack;
 
-			FENodeEdgeList NEL(*pm);
+			FENodeEdgeList NEL(pm);
 
 			// push the first face to the stack
 			FEEdge* pe = pm->EdgePtr(index);
@@ -5383,7 +5383,7 @@ void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
 	if (b0 && b1)
 	{
 		// see if we can connect the nodes by staying on edges
-		FENodeEdgeList NEL(*pm);
+		FENodeEdgeList NEL(pm);
 
 		int n = n0;
 		double Lmin = (r1 - r0).SqrLength();

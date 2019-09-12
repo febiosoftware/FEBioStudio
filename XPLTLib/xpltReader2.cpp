@@ -1,5 +1,5 @@
 #include "xpltReader2.h"
-#include <PostLib/FENodeFaceTable.h>
+#include <PostLib/FENodeFaceList.h>
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>
@@ -1162,7 +1162,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 	pmesh->Update();
 
 	// Next, we'll build a Node-Face lookup table
-	FENodeFaceTable NFT(pmesh);
+	FENodeFaceList NFT; NFT.Build(pmesh);
 
 	// next, we reindex the surfaces
 	for (int n=0; n< m_xmesh.surfaces(); ++n)

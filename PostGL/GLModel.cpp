@@ -5,8 +5,8 @@
 #include <GLLib/GLContext.h>
 #include "PostLib/constants.h"
 #include <GLLib/GLCamera.h>
-#include "PostLib/FENodeEdgeList.h"
-#include "GLWLib/GLWidgetManager.h"
+#include <MeshLib/FENodeEdgeList.h>
+#include <GLWLib/GLWidgetManager.h>
 #include <stack>
 using namespace std;
 using namespace Post;
@@ -2879,7 +2879,7 @@ void CGLModel::SelectConnectedEdges(FEEdge& e)
 	FENodeEdgeList NEL;
 	NEL.Build(&mesh);
 
-	if (NEL.Empty()) return;
+	if (NEL.IsEmpty()) return;
 
 	// find a face that has both nodes connects to
 	stack<FEEdge*> Stack;
@@ -2896,8 +2896,8 @@ void CGLModel::SelectConnectedEdges(FEEdge& e)
 		for (int i=0; i<2; ++i)
 		{
 			int m = pe->n[i];
-			int ne = NEL.Valence(m);
-			int* EL = NEL.EdgeList(m);
+			int ne = NEL.Edges(m);
+			const std::vector<int>& EL = NEL.EdgeIndexList(m);
 			for (int j=0; j<ne; ++j)
 			{
 				FEEdge& ej = mesh.Edge(EL[j]);

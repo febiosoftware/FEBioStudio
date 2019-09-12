@@ -1573,7 +1573,7 @@ void FEMesh::UpdateFaceNeighbors()
 void FEMesh::UpdateEdgeNeighbors()
 {
 	// build the node-edge table
-	FENodeEdgeList NET(*this);
+	FENodeEdgeList NET; NET.Build(this);
 
 	// find neighbours
 	int NE = Edges();

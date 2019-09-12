@@ -513,7 +513,7 @@ void FESurfaceMesh::PartitionNodeSelection()
 
 	// see if we need to split an edge
 	nsg = CountEdgePartitions();
-	FENodeEdgeList NET(*this);
+	FENodeEdgeList NET(this);
 	for (int i=0; i<(int)nodes.size(); ++i)
 	{
 		// find an edge

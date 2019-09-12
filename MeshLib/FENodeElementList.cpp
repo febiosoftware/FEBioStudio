@@ -22,19 +22,20 @@ void FENodeElementList::Build(FECoreMesh* pm)
 	m_elem.resize(NN);
 	for (int i=0; i<NE; ++i)
 	{
-		vector<NodeElemRef>& li = m_elem[i];
 		FEElement_& el = m_pm->ElementRef(i);
 		int ne = el.Nodes();
 		for (int j=0; j<ne; ++j) 
 		{
 			int n = el.m_node[j];
 
+			vector<NodeElemRef>& lj = m_elem[n];
+
 			NodeElemRef ref;
 			ref.eid = i;
 			ref.nid = j;
 			ref.pe = &el;
 
-			li.push_back(ref);
+			lj.push_back(ref);
 		}
 	}
 }
