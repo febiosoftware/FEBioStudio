@@ -366,6 +366,10 @@ protected:
 
 	void AddRegionPoint(int x, int y);
 
+	void RenderGLProgress(CPostDoc* postDoc);
+
+	bool TrackGLProgress(int x, CPostDoc* postDoc);
+
 protected slots:
 	void repaintEvent();
 
@@ -441,6 +445,10 @@ protected:
 	char			m_szsubtitle[256];
 
 	CGLWidgetManager*	m_Widget;
+
+	bool	m_drawGLProgress;
+	int		m_GLProgressHeight;
+	bool	m_trackGLProgress;
 
 private:
 	GLenum	m_video_fmt;

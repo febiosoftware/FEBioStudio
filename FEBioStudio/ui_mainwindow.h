@@ -700,6 +700,7 @@ public:
 		postToolBar->addAction(actionColorMap);
 
 		postToolBar->setDisabled(true);
+		postToolBar->hide();
 
 		// Font tool bar
 		pFontToolBar = new QToolBar(mainWindow);

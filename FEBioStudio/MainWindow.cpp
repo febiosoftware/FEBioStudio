@@ -952,6 +952,7 @@ void CMainWindow::UpdatePostToolbar()
 	if ((doc == nullptr) || (doc->IsValid() == false))
 	{
 		ui->postToolBar->setDisabled(true);
+		ui->postToolBar->hide();
 		return;
 	}
 
@@ -971,6 +972,7 @@ void CMainWindow::UpdatePostToolbar()
 		ui->pspin->setRange(1, states);
 		ui->pspin->setValue(ntime);
 		ui->postToolBar->setEnabled(true);
+		if (ui->postToolBar->isHidden()) ui->postToolBar->show();
 	}
 }
 

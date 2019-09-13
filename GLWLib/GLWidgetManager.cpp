@@ -228,32 +228,32 @@ void CGLWidgetManager::DrawWidgets(QPainter* painter)
 	for (int i=0; i<(int) m_Widget.size(); ++i) 
 	{
 		GLWidget* pw = m_Widget[i];
-		if (pw->visible() && ((pw->layer() == 0) || (pw->layer() == m_layer)))
+		DrawWidget(pw, painter);
+	}
+}
+
+void CGLWidgetManager::DrawWidget(GLWidget* pw, QPainter* painter)
+{
+	if (pw->visible() && ((pw->layer() == 0) || (pw->layer() == m_layer)))
+	{
+		// snap the widget if any of its align flags are set
+		if (pw->GetSnap()) SnapWidget(pw);
+
+		int x0 = pw->m_x;
+		int y0 = pw->m_y;
+		int x1 = pw->m_x + pw->m_w;
+		int y1 = (pw->m_y + pw->m_h);
+
+		if (pw->has_focus())
 		{
-			// snap the widget if any of its align flags are set
-			if (pw->GetSnap()) SnapWidget(pw);
-
-			int x0 = pw->m_x;
-			int y0 = pw->m_y;
-			int x1 = pw->m_x + pw->m_w;
-			int y1 = (pw->m_y+pw->m_h);
-
-
-			if (pw->has_focus())
-			{
-				painter->fillRect(x0, y0, pw->m_w, pw->m_h, QBrush(QColor::fromRgb(200,200,200,128)));
-				painter->setPen(QPen(QColor::fromRgb(0, 0, 128)));
-				painter->drawLine(x1-15, y1-1, x1-1, y1-15);
-				painter->drawLine(x1-10, y1-1, x1-1, y1-10);
-				painter->drawLine(x1- 5, y1-1, x1-1, y1- 5);
-				painter->drawRect(x0, y0, pw->m_w, pw->m_h);
-			}
+			painter->fillRect(x0, y0, pw->m_w, pw->m_h, QBrush(QColor::fromRgb(200, 200, 200, 128)));
+			painter->setPen(QPen(QColor::fromRgb(0, 0, 128)));
+			painter->drawLine(x1 - 15, y1 - 1, x1 - 1, y1 - 15);
+			painter->drawLine(x1 - 10, y1 - 1, x1 - 1, y1 - 10);
+			painter->drawLine(x1 - 5, y1 - 1, x1 - 1, y1 - 5);
+			painter->drawRect(x0, y0, pw->m_w, pw->m_h);
 		}
 	}
 
-	for (int i=0; i<(int) m_Widget.size(); ++i) 
-	{
-		GLWidget* pw = m_Widget[i];
-		if (pw->visible() && ((pw->layer() == 0)|| (pw->layer() == m_layer))) pw->draw(painter);
-	}
+	if (pw->visible() && ((pw->layer() == 0) || (pw->layer() == m_layer))) pw->draw(painter);
 }

@@ -386,6 +386,10 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	m_bsel = false;
 
+	m_drawGLProgress = true;
+	m_trackGLProgress = false;
+	m_GLProgressHeight = 10;
+
 	m_nview = VIEW_USER;
 
 	m_nsnap = SNAP_NONE;
@@ -448,6 +452,20 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	int x = ev->x();
 	int y = ev->y();
+
+	// get the active view
+	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+
+	// check GL progress bar first
+	if (postDoc && m_drawGLProgress)
+	{
+		int h = height();
+		if (y >= h - m_GLProgressHeight)
+		{
+			m_trackGLProgress = true;
+			if (TrackGLProgress(x, postDoc)) return;
+		}
+	}
 
 	// let the widget manager handle it first
 	GLWidget* pw = GLWidget::get_focus();
@@ -538,6 +556,17 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	ev->accept();
 }
 
+bool CGLView::TrackGLProgress(int x, CPostDoc* postDoc)
+{
+	int states = postDoc->GetStates();
+	if (states < 2) return false;
+
+	int n = (int)((states*x) / width() + 0.5);
+	m_pWnd->SetCurrentState(n);
+
+	return true;
+}
+
 void CGLView::mouseMoveEvent(QMouseEvent* ev)
 {
 	CDocument* pdoc = m_pWnd->GetDocument();
@@ -555,6 +584,15 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	// get the mouse position
 	int x = ev->pos().x();
 	int y = ev->pos().y();
+
+	// get the active view
+	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+
+	// check GL progress bar first
+	if (postDoc && m_drawGLProgress && m_trackGLProgress)
+	{
+		if (TrackGLProgress(x, postDoc)) return;
+	}
 
 	// let the widget manager handle it first
 	if (but1 && (m_Widget->handle(x, y, CGLWidgetManager::DRAG) == 1))
@@ -788,6 +826,17 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 {
 	int x = ev->x();
 	int y = ev->y();
+
+	// get the active view
+	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+
+	// check GL progress bar first
+	if (postDoc && m_drawGLProgress && m_trackGLProgress)
+	{
+		m_trackGLProgress = false;
+		if (TrackGLProgress(x, postDoc)) return;
+	}
+	m_trackGLProgress = false;
 
 	// let the widget manager handle it first
 	if (m_Widget->handle(x, y, CGLWidgetManager::RELEASE) == 1)
@@ -1414,7 +1463,7 @@ void CGLView::paintGL()
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-	if (postDoc == nullptr) m_ptriad->draw(&painter);
+	if (postDoc == nullptr) m_Widget->DrawWidget(m_ptriad, &painter);
 	else
 		m_Widget->DrawWidgets(&painter);
 
@@ -1428,6 +1477,12 @@ void CGLView::paintGL()
 		int x = width() - 200;
 		int y = height() - 40;
 		glPopAttrib();
+	}
+
+	// render the GL progress bar
+	if (postDoc && m_drawGLProgress)
+	{
+		RenderGLProgress(postDoc);
 	}
 
 	if ((m_nanim == ANIM_RECORDING) && (m_panim != 0))
@@ -1461,6 +1516,26 @@ void CGLView::paintGL()
 		GetCamera().Update();
 		QTimer::singleShot(50, this, SLOT(repaintEvent()));
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::RenderGLProgress(CPostDoc* postDoc)
+{
+	int states = postDoc->GetStates();
+	int state = postDoc->GetActiveState();
+	if (states < 2) return;
+
+	int w = width();
+	int h = height();
+
+	int c = (int)(state*w) / (states - 1);
+
+	glEnable(GL_BLEND);
+	const int H = m_GLProgressHeight;
+	glColor4ub(0, 255, 0, 128);
+	glRectd(0, h - H, c, h);
+	glColor4ub(0, 64, 0, 128);
+	glRectd(c, h - H, w, h);
 }
 
 //-----------------------------------------------------------------------------
