@@ -126,7 +126,6 @@
 		D5F7D82322FA37C40089B08E /* DlgSoluteTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D6F822FA37C30089B08E /* DlgSoluteTable.cpp */; };
 		D5F7D82422FA37C40089B08E /* moc_FileThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D6F922FA37C30089B08E /* moc_FileThread.cpp */; };
 		D5F7D82522FA37C40089B08E /* DlgAddEquation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D6FA22FA37C30089B08E /* DlgAddEquation.cpp */; };
-		D5F7D82622FA37C40089B08E /* Intersect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D6FC22FA37C30089B08E /* Intersect.cpp */; };
 		D5F7D82722FA37C40089B08E /* FileViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D6FD22FA37C30089B08E /* FileViewer.cpp */; };
 		D5F7D82822FA37C40089B08E /* ResourceEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70122FA37C30089B08E /* ResourceEdit.cpp */; };
 		D5F7D82922FA37C40089B08E /* moc_DlgFEBioOptimize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70222FA37C40089B08E /* moc_DlgFEBioOptimize.cpp */; };
@@ -467,7 +466,6 @@
 		D5F7D6F922FA37C30089B08E /* moc_FileThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_FileThread.cpp; sourceTree = "<group>"; };
 		D5F7D6FA22FA37C30089B08E /* DlgAddEquation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddEquation.cpp; sourceTree = "<group>"; };
 		D5F7D6FB22FA37C30089B08E /* DlgAddStep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgAddStep.h; sourceTree = "<group>"; };
-		D5F7D6FC22FA37C30089B08E /* Intersect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Intersect.cpp; sourceTree = "<group>"; };
 		D5F7D6FD22FA37C30089B08E /* FileViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileViewer.cpp; sourceTree = "<group>"; };
 		D5F7D6FE22FA37C30089B08E /* GLCanvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLCanvas.h; sourceTree = "<group>"; };
 		D5F7D6FF22FA37C30089B08E /* DlgSoluteTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSoluteTable.h; sourceTree = "<group>"; };
@@ -696,7 +694,6 @@
 		D5F7D7E322FA37C40089B08E /* DlgEditOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgEditOutput.cpp; sourceTree = "<group>"; };
 		D5F7D7E422FA37C40089B08E /* moc_DlgEditProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditProject.cpp; sourceTree = "<group>"; };
 		D5F7D7E522FA37C40089B08E /* ModelViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelViewer.cpp; sourceTree = "<group>"; };
-		D5F7D7E622FA37C40089B08E /* Intersect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Intersect.h; sourceTree = "<group>"; };
 		D5F7D7E722FA37C40089B08E /* Tool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tool.cpp; sourceTree = "<group>"; };
 		D5F7D7E822FA37C40089B08E /* moc_ModelTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ModelTree.cpp; sourceTree = "<group>"; };
 		D5F7D7E922FA37C40089B08E /* DlgAddMeshData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgAddMeshData.h; sourceTree = "<group>"; };
@@ -1052,8 +1049,6 @@
 				D5ED29FE23198CD700C16BF7 /* InfoPanel.h */,
 				D5F7D78722FA37C40089B08E /* IntegrateWindow.cpp */,
 				D5F7D78A22FA37C40089B08E /* IntegrateWindow.h */,
-				D5F7D6FC22FA37C30089B08E /* Intersect.cpp */,
-				D5F7D7E622FA37C40089B08E /* Intersect.h */,
 				D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */,
 				D5EBB7A6232AEAED00EED2BE /* Logger.cpp */,
 				D5EBB7A5232AEAEC00EED2BE /* Logger.h */,
@@ -1553,7 +1548,6 @@
 				D5F7D85622FA37C40089B08E /* menu.cpp in Sources */,
 				D5F7D8C322FA37C40089B08E /* qrc_febiostudio.cpp in Sources */,
 				D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */,
-				D5F7D82622FA37C40089B08E /* Intersect.cpp in Sources */,
 				D5F7D84222FA37C40089B08E /* DlgBatchConvert.cpp in Sources */,
 				D5F7D89022FA37C40089B08E /* PropertyList.cpp in Sources */,
 				D5F7D86222FA37C40089B08E /* Command.cpp in Sources */,
