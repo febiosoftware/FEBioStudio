@@ -244,7 +244,7 @@ public:
 
 public:
 	int FEBioJobs() const;
-	void AddFEbioJob(CFEBioJob* job, bool makeActive = true);
+	void AddFEbioJob(CFEBioJob* job);
 	CFEBioJob* GetFEBioJob(int i);
 
 	void SetActiveJob(CFEBioJob* job);

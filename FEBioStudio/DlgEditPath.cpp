@@ -287,14 +287,16 @@ void CDlgEditPath::accept()
 
 	switch(type)
 	{
-	case LOCAL:
+		// NOTE: Commenting this out since we don't need a path to run FEBio. Usually an executable name is enough. 
+		// This check would prevent that.
+/*	case LOCAL:
 		if(!info.exists())
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Please enter a valid path to the FEBio executable.");
 					return;
 		}
 		break;
-
+*/
 	case REMOTE:
 		if(ui->remoteServer->text().isEmpty())
 		{

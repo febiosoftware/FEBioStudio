@@ -1799,6 +1799,13 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 {
 	CDocument* doc = GetDocument();
 
+	if (doc->GetActiveJob())
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Cannot start job since a job is already running");
+		return;
+	}
+	else doc->SetActiveJob(job);
+
 	// get the FEBio job file path
 	string filePath = job->GetFileName();
 

@@ -819,7 +819,7 @@ void CDocument::Load(IArchive& ar)
 		else if (nid == CID_FEBIOJOB)
 		{
 			CFEBioJob* job = new CFEBioJob(this);
-			AddFEbioJob(job, false);
+			AddFEbioJob(job);
 			job->Load(ar);
 		}
 		ar.CloseChunk();
@@ -1566,10 +1566,9 @@ int CDocument::FEBioJobs() const
 	return (int) m_JobList.Size();
 }
 
-void CDocument::AddFEbioJob(CFEBioJob* job, bool makeActive)
+void CDocument::AddFEbioJob(CFEBioJob* job)
 {
 	m_JobList.Add(job);
-	if (makeActive) SetActiveJob(job);
 	SetModifiedFlag();
 }
 

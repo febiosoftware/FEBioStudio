@@ -164,24 +164,36 @@ void CMainWindow::on_actionOptions_triggered()
 
 void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
 {
-	if (exitCode == 0)
-	{
-		QMessageBox::information(this, "Run FEBio", "Normal termination");
-		AddLogEntry("FEBio exited: Normal termination\n");
-	}
-	else
-	{
-		QMessageBox::information(this, "Run FEBio", "Error termination");
-		AddLogEntry("FEBio exited: Error termination\n");
-	}
-
 	CFEBioJob* job = GetDocument()->GetActiveJob();
 	if (job)
 	{
 		job->SetStatus(exitCode == 0 ? CFEBioJob::COMPLETED : CFEBioJob::FAILED);
 		ShowInModelViewer(job);
 		GetDocument()->SetActiveJob(nullptr);
+
+		QString sret = (exitCode == 0 ? "NORMAL TERMINATION" : "ERROR TERMINATION");
+		QString jobName = QString::fromStdString(job->GetName());
+		QString msg = QString("FEBio job \"%1 \" has finished:\n\n%2\n").arg(jobName).arg(sret);
+
+		QString logmsg = QString("FEBio job \"%1 \" has finished: %2\n").arg(jobName).arg(sret);
+
+		if (exitCode == 0)
+		{
+			QMessageBox::information(this, "Run FEBio", msg);
+			AddLogEntry(logmsg);
+		}
+		else
+		{
+			QMessageBox::critical(this, "Run FEBio", msg);
+			AddLogEntry(logmsg);
+		}
 	}
+	else
+	{
+		// Not sure if we should ever get here.
+		QMessageBox::information(this, "FEBio Studio", "FEBio is done.");
+	}
+	GetDocument()->SetActiveJob(nullptr);
 
 	delete ui->m_process;
 	ui->m_process = 0;
@@ -198,6 +210,9 @@ void CMainWindow::onReadyRead()
 
 void CMainWindow::onErrorOccurred(QProcess::ProcessError err)
 {
+	// make sure we don't have an active job since onRunFinished will not be called!
+	GetDocument()->SetActiveJob(nullptr);
+
 	// suppress an error if user stopped FEBio job
 	if (ui->m_bkillProcess && (err==QProcess::Crashed))
 	{
