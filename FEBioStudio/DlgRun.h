@@ -36,6 +36,7 @@ protected slots:
 	void updateDefaultCommand();
 	void on_setCWDBtn_Clicked();
 	void onPathChanged(int n);
+	void on_selectConfigFile();
 
 private:
 	Ui::CDlgRun*	ui;

@@ -25,6 +25,7 @@ public:
 	QComboBox*	launchConfig;
 	QCheckBox*	debug;
 	QCheckBox*	writeNotes;
+	QLineEdit*	configFile;
 
 	QComboBox*	febioFile;
 	
@@ -55,15 +56,24 @@ public:
 #ifdef _DEBUG
 		febioFile->addItem("FEBio 3.0 format");
 #endif
-		
+
+		configFile = new QLineEdit;
+		configFile->setWhatsThis("Specify the location of an FEBio configuration file. (Optional)");
+		QToolButton* selectConfigFile = new QToolButton;
+		selectConfigFile->setIcon(QIcon(":/icons/open.png"));
+		QHBoxLayout* configLayout = new QHBoxLayout;
+		configLayout->addWidget(configFile);
+		configLayout->addWidget(selectConfigFile);
+
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
+		form->addRow("Job name:", jobName);
 		form->addRow("FEBio version:", launchConfig);
 		form->addRow("Working directory:", cwdLayout);
-		form->addRow("Job name:", jobName);
 		form->addRow("FEBio file format:", febioFile);
 		form->addRow("Write notes:", writeNotes = new QCheckBox);
 		form->addRow("Debug mode:", debug = new QCheckBox(""));
+		form->addRow("Config file:", configLayout);
 
 		writeNotes->setChecked(true);
 
@@ -94,8 +104,23 @@ public:
 
 		QObject::connect(debug, SIGNAL(toggled(bool)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(editCmd, SIGNAL(toggled(bool)), cmd, SLOT(setEnabled(bool)));
+		QObject::connect(selectConfigFile, SIGNAL(clicked()), dlg, SLOT(on_selectConfigFile()));
+		QObject::connect(configFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 	}
 };
+
+void CDlgRun::on_selectConfigFile()
+{
+	QString s = QFileDialog::getOpenFileName(this, "Open");
+	if (s.isEmpty() == false)
+	{ 
+#ifdef WIN32
+		s.replace('/', '\\');
+#endif
+		ui->configFile->setText(s);
+		updateDefaultCommand();
+	}
+}
 
 void CDlgRun::updateDefaultCommand()
 {
@@ -105,6 +130,9 @@ void CDlgRun::updateDefaultCommand()
 	{
 		QString t("-i $(Filename)");
 		if (bg) t += " -g";
+
+		QString configFile = ui->configFile->text();
+		if (configFile.isEmpty() == false) t += " -config " + configFile;
 		ui->cmd->setText(t);
 	}
 }
