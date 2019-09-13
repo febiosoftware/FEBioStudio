@@ -29,13 +29,13 @@ public:
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(b1);
 		h->addWidget(b2);
-		h->addWidget(new QLabel("Item:  "));
 		h->addWidget(name);
 		h->addStretch();
 		h->setMargin(0);
 		h->setSpacing(0);
 
 		edit = new QPlainTextEdit;
+		edit->setPlaceholderText("(Enter notes here)");
 		edit->setDisabled(true);
 		edit->setObjectName("edit");
 		edit->setFont(QFont("Courier", 12));
@@ -73,9 +73,10 @@ void CInfoPanel::SetObject(FSObject* po)
 		ui->po = po;
 
 		QString s = QString::fromStdString(po->GetName());
-//		std::string type = ui->m_wnd->GetDocument()->GetTypeString(po);
-//		s += QString(" (%1)").arg(QString::fromStdString(type));
+		std::string type = ui->m_wnd->GetDocument()->GetTypeString(po);
+		QString t = QString::fromStdString(type);
 
+		s = "Notes for: <b>" + s + " <i>(" + t + ")</i></b>";
 		ui->name->setText(s);
 		ui->edit->setPlainText(QString::fromStdString(po->GetInfo()));
 	}
