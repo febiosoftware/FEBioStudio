@@ -121,9 +121,6 @@ void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
 #else
 	m_logFile = (dirName + "/" + logName).toStdString();
 #endif
-
-	// TODO: Fix possible memory leak here.
-	m_postDoc = nullptr;
 }
 
 CLaunchConfig* CFEBioJob::GetLaunchConfig()
