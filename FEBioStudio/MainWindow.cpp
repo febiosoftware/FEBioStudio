@@ -103,6 +103,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// make sure the file viewer is visible
 	ui->showFileViewer();
 
+	// update the post toolbar (so it stays hidden on startup)
+	UpdatePostToolbar();
+
 	// load templates
 	TemplateManager::Init();
 
