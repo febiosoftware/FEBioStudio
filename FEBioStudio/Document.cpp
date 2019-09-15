@@ -533,6 +533,19 @@ std::string CDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GModel*>(po)) return "model";
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
 	else if (dynamic_cast<Post::CImageSource*>(po)) return "3D Image source";
+	else if (dynamic_cast<FEMaterial*>(po))
+	{
+		FEMaterial* mat = dynamic_cast<FEMaterial*>(po);
+		if (mat)
+		{
+			FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
+			std::stringstream ss;
+			const char* sztype = MF.TypeStr(mat);
+			if (sztype == 0) sztype = "";
+			ss << "Material" << " [" << sztype << "]";
+			return ss.str();
+		}
+	}
 	else
 	{
 		assert(false);
