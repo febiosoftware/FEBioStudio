@@ -51,8 +51,10 @@ void FEBioExport::WriteParam(Param &p)
 	{
 	case Param_CHOICE: 
 		{
-			int n = p.GetIntValue() + p.GetOffset();
-			e.value(n); 
+//			int n = p.GetIntValue() + p.GetOffset();
+//			e.value(n); 
+			const char* sz = p.GetEnumName(p.GetIntValue());
+			e.value(sz);
 		}
 		break;
 	case Param_INT   : e.value(p.GetIntValue  ()); break;

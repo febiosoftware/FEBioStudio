@@ -623,7 +623,7 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 			}
 
 			// output boundary section
-			int nbc = pstep->BCs() + pstep->Interfaces() + fem.GetModel().DiscreteObjects() + pstep->RCs();
+			int nbc = pstep->BCs() + pstep->Interfaces() + fem.GetModel().DiscreteObjects();
 			if ((nbc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Boundary");
@@ -631,6 +631,16 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 					WriteBoundarySection(*pstep);
 				}
 				m_xml.close_branch(); // Boundary
+			}
+
+			int nrc = pstep->RCs();
+			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
+			{
+				m_xml.add_branch("Rigid");
+				{
+					WriteRigidSection(*pstep);
+				}
+				m_xml.close_branch(); // Rigid
 			}
 
 			// output loads section
@@ -852,9 +862,9 @@ void FEBioExport3::WriteSolidControlParams(FEAnalysisStep* pstep)
 		m_xml.close_branch();
 	}
 
-	if (ops.nanalysis != 0) {
+	if ((ops.nanalysis != 0) && ops.override_rhoi) {
 		m_xml.add_leaf("alpha", ops.alpha);
-		m_xml.add_leaf("beta" , ops.beta);
+		m_xml.add_leaf("beta", ops.beta);
 		m_xml.add_leaf("gamma", ops.gamma);
 	}
 
@@ -2851,7 +2861,11 @@ void FEBioExport3::WriteBoundarySection(FEStep& s)
 
 	// rigid contact 
 	WriteBCRigid(s);
+}
 
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteRigidSection(FEStep& s)
+{
 	// rigid body constraints
 	WriteRigidConstraints(s);
 }
@@ -2909,65 +2923,17 @@ void FEBioExport3::WriteContactSection(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-
+// Write the loads section
 void FEBioExport3::WriteLoadsSection(FEStep& s)
 {
-	XMLElement el;
-
-	// nodal forces
+	// nodal loads
 	WriteLoadNodal(s);
 
-	// pressure forces
-	WriteLoadPressure(s);
-
-	// surface tractions
-	WriteLoadTraction(s);
-
-	// fluid flux
-	WriteFluidFlux(s);
-
-	// mixture normal traction
-	WriteBPNormalTraction(s);
-
-	// solute flux
-	WriteSoluteFlux(s);
-
-	// concentration flux
-	WriteConcentrationFlux(s);
-
-	// heat flux
-	WriteHeatFlux(s);
-
-	// convective heat flux
-	WriteConvectiveHeatFlux(s);
+	// surface loads
+	WriteSurfaceLoads(s);
 
 	// body loads
 	WriteBodyLoads(s);
-
-	// fluid tractions
-	WriteFluidTraction(s);
-
-	// fluid velocities
-	WriteFluidVelocity(s);
-
-	// fluid normal velocities
-	WriteFluidNormalVelocity(s);
-
-	// fluid rotational velocities
-	WriteFluidRotationalVelocity(s);
-
-	// fluid flow resistance
-	WriteFluidFlowResistance(s);
-
-	// fluid backflow stabilization
-	WriteFluidBackflowStabilization(s);
-
-	// fluid tangential stabilization
-	WriteFluidTangentialStabilization(s);
-
-	// fluid normal velocities
-	WriteFSITraction(s);
-
 }
 
 //-----------------------------------------------------------------------------
@@ -3467,19 +3433,17 @@ void FEBioExport3::WriteBCFixed(FEStep &s)
 			// create the fix tag
 			if (n > 0)
 			{
-				XMLElement tag("bc");
-				tag.add_attribute("type", "fix");
-
 				// get node set name
 				const char* szname = GetNodeSetName(pitem);
+
+				XMLElement tag("bc");
+				tag.add_attribute("name", pbc->GetName());
+				tag.add_attribute("type", "fix");
+				tag.add_attribute("node_set", szname);
 
 				// write the tag
 				m_xml.add_branch(tag);
 				{
-					XMLElement nset("node_set");
-					nset.add_attribute("ref", szname);
-					m_xml.add_empty(nset);
-					
 					m_xml.add_leaf("dofs", sbc.c_str());
 				}
 				m_xml.close_branch();
@@ -3507,13 +3471,11 @@ void FEBioExport3::WriteBCPrescribed(FEStep &s)
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
 			XMLElement e("bc");
+			e.add_attribute("name", pbc->GetName());
 			e.add_attribute("type", "prescribe");
+			e.add_attribute("node_set", GetNodeSetName(pitem));
 			m_xml.add_branch(e);
 			{
-				XMLElement nset("node_set");
-				nset.add_attribute("ref", GetNodeSetName(pitem));
-				m_xml.add_empty(nset);
-
 				m_xml.add_leaf("dof", szbc);
 				WriteParamList(*pbc);
 			}
@@ -3543,11 +3505,13 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 			FELoadCurve* plc = pbc->GetLoadCurve();
 
 			XMLElement load("nodal_load");
-			load.add_attribute("bc", bc[l]);
+			load.add_attribute("name", pbc->GetName());
 			load.add_attribute("node_set", GetNodeSetName(pitem));
 
 			m_xml.add_branch(load);
 			{
+				m_xml.add_leaf("bc", bc[l]);
+
 				XMLElement scale("scale");
 				if (plc) scale.add_attribute("lc", plc->GetID());
 				scale.value(pbc->GetLoad());
@@ -3561,504 +3525,57 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 //----------------------------------------------------------------------------
 // Export pressure loads
 //
-void FEBioExport3::WriteLoadPressure(FEStep& s)
+void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 {
 	for (int j = 0; j<s.Loads(); ++j)
 	{
-		FEPressureLoad* pbc = dynamic_cast<FEPressureLoad*>(s.Load(j));
+		FESurfaceLoad* pbc = dynamic_cast<FESurfaceLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pbc);
 
-			// create the surface list
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			XMLElement load;
-			load.name("surface_load");
-			load.add_attribute("name", pbc->GetName().c_str());
-			load.add_attribute("type", "pressure");
-			load.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(load);
+			switch (pbc->Type())
 			{
-				WriteParamList(*pbc);
+			case FE_PRESSURE_LOAD            : WriteSurfaceLoad(s, pbc, "pressure"); break;
+			case FE_SURFACE_TRACTION         : WriteSurfaceLoad(s, pbc, "traction"); break;
+			case FE_FLUID_FLUX               : WriteSurfaceLoad(s, pbc, "fluidflux"); break;
+			case FE_BP_NORMAL_TRACTION       : WriteSurfaceLoad(s, pbc, "normal_traction"); break;
+			case FE_HEAT_FLUX                : WriteSurfaceLoad(s, pbc, "heatflux"); break;
+			case FE_CONV_HEAT_FLUX           : WriteSurfaceLoad(s, pbc, "convective_heatflux"); break;
+			case FE_FLUID_TRACTION           : WriteSurfaceLoad(s, pbc, "fluid viscous traction"); break;
+			case FE_FLUID_FLOW_RESISTANCE    : WriteSurfaceLoad(s, pbc, "fluid resistance"); break;
+			case FE_FLUID_TANGENTIAL_STABIL  : WriteSurfaceLoad(s, pbc, "fluid tangential stabilization"); break;
+			case FE_FLUID_BACKFLOW_STABIL    : WriteSurfaceLoad(s, pbc, "fluid backflow stabilization"); break;
+			case FE_FSI_TRACTION             : WriteSurfaceLoad(s, pbc, "fluid-FSI traction"); break;
+			case FE_FLUID_NORMAL_VELOCITY    : WriteSurfaceLoad(s, pbc, "fluid normal velocity"); break;
+			case FE_FLUID_ROTATIONAL_VELOCITY: WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
+			case FE_FLUID_VELOCITY           : WriteSurfaceLoad(s, pbc, "fluid velocity"); break;
+			case FE_SOLUTE_FLUX              : WriteSurfaceLoad(s, pbc, "soluteflux"); break;
+			case FE_CONCENTRATION_FLUX       : WriteSurfaceLoad(s, pbc, "concentration flux"); break;
+			default:
+				assert(false);
 			}
-			m_xml.close_branch(); // surface_load
 		}
 	}
 }
 
 //----------------------------------------------------------------------------
-// Export fluid flux
-//
-void FEBioExport3::WriteFluidFlux(FEStep& s)
+void FEBioExport3::WriteSurfaceLoad(FEStep& s, FESurfaceLoad* psl, const char* sztype)
 {
+	// create the surface list
+	FEItemListBuilder* pitem = psl->GetItemList();
+	if (pitem == 0) throw InvalidItemListBuilder(psl);
 
-	for (int j = 0; j<s.Loads(); ++j)
+	XMLElement load;
+	load.name("surface_load");
+	load.add_attribute("name", psl->GetName());
+	load.add_attribute("type", sztype);
+	load.add_attribute("surface", GetSurfaceName(pitem));
+	m_xml.add_branch(load);
 	{
-		FEFluidFlux* pbc = dynamic_cast<FEFluidFlux*>(s.Load(j));
-		if (pbc && pbc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(pbc);
-
-			// create the surface list
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			XMLElement flux;
-			flux.name("surface_load");
-			flux.add_attribute("type", "fluidflux");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				WriteParamList(*pbc);
-			}
-			m_xml.close_branch(); // surface_load
-		}
+		WriteParamList(*psl);
 	}
-}
-
-
-//----------------------------------------------------------------------------
-// Export mixture normal traction
-//
-void FEBioExport3::WriteBPNormalTraction(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEBPNormalTraction* pbc = dynamic_cast<FEBPNormalTraction*>(s.Load(j));
-		if (pbc && pbc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(pbc);
-
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			XMLElement flux;
-			flux.name("surface_load");
-			flux.add_attribute("type", "normal_traction");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				WriteParamList(*pbc);
-			}
-			m_xml.close_branch(); // normal_traction
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export heat flux
-//
-void FEBioExport3::WriteHeatFlux(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEHeatFlux* pbc = dynamic_cast<FEHeatFlux*>(s.Load(j));
-		if (pbc && pbc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(pbc);
-
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "heatflux");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				WriteParamList(*pbc);
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export convective heat flux
-//
-void FEBioExport3::WriteConvectiveHeatFlux(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEConvectiveHeatFlux* pbc = dynamic_cast<FEConvectiveHeatFlux*>(s.Load(j));
-		if (pbc && pbc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(pbc);
-
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "convective_heatflux");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				WriteParamList(*pbc);
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export solute flux
-//
-void FEBioExport3::WriteSoluteFlux(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FESoluteFlux* pbc = dynamic_cast<FESoluteFlux*>(s.Load(j));
-		if (pbc && pbc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(pbc);
-
-			// get the item list builder
-			FEItemListBuilder* pitem = pbc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pbc);
-
-			XMLElement flux;
-			flux.name("surface_load");
-			flux.add_attribute("type", "soluteflux");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				WriteParamList(*pbc);
-			}
-			m_xml.close_branch(); // soluteflux
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-void FEBioExport3::WriteConcentrationFlux(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEConcentrationFlux* pcf = dynamic_cast<FEConcentrationFlux*>(s.Load(j));
-		if (pcf && pcf->IsActive())
-		{
-			if (m_writeNotes) WriteNote(pcf);
-
-			// get the item list builder
-			FEItemListBuilder* pitem = pcf->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pcf);
-
-			XMLElement flux;
-			flux.name("surface_load");
-			flux.add_attribute("type", "concentration flux");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				WriteParamList(*pcf);
-			}
-			m_xml.close_branch();
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export pressure tractions
-//
-void FEBioExport3::WriteLoadTraction(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FESurfaceTraction* ptc = dynamic_cast<FESurfaceTraction*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "traction");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				WriteParamList(*ptc);
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export fluid tractions
-//
-void FEBioExport3::WriteFluidTraction(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEFluidTraction* ptc = dynamic_cast<FEFluidTraction*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "fluid viscous traction");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				WriteParamList(*ptc);
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export fluid velocities
-//
-void FEBioExport3::WriteFluidVelocity(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEFluidVelocity* ptc = dynamic_cast<FEFluidVelocity*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "fluid velocity");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				FELoadCurve* plc = ptc->GetLoadCurve();
-				int lc = plc->GetID();
-
-				XMLElement scl("scale");
-				scl.add_attribute("lc", lc);
-				scl.value(1.0);
-				m_xml.add_leaf(scl);
-
-				m_xml.add_leaf("velocity", ptc->GetLoad());
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export fluid normal velocities
-//
-void FEBioExport3::WriteFluidNormalVelocity(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEFluidNormalVelocity* ptc = dynamic_cast<FEFluidNormalVelocity*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "fluid normal velocity");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				FELoadCurve* plc = ptc->GetLoadCurve();
-				int lc = plc->GetID();
-
-				XMLElement load("velocity");
-				load.add_attribute("lc", lc);
-				load.value(ptc->GetLoad());
-				m_xml.add_leaf(load);
-
-				XMLElement bp("prescribe_nodal_velocities");
-				bp.value(ptc->GetBP());
-				m_xml.add_leaf(bp);
-
-				XMLElement bparab("parabolic");
-				bparab.value(ptc->GetBParab());
-				m_xml.add_leaf(bparab);
-
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export fluid rotational velocities
-//
-void FEBioExport3::WriteFluidRotationalVelocity(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEFluidRotationalVelocity* ptc = dynamic_cast<FEFluidRotationalVelocity*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "fluid rotational velocity");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				FELoadCurve* plc = ptc->GetLoadCurve();
-				int lc = plc->GetID();
-
-				XMLElement load("angular_speed");
-				load.add_attribute("lc", lc);
-				load.value(ptc->GetLoad());
-				m_xml.add_leaf(load);
-
-				XMLElement axis("axis");
-				axis.value(ptc->GetAxis());
-				m_xml.add_leaf(axis);
-
-				XMLElement origin("origin");
-				origin.value(ptc->GetOrigin());
-				m_xml.add_leaf(origin);
-
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export fluid flow resistance
-//
-void FEBioExport3::WriteFluidFlowResistance(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEFluidFlowResistance* ptc = dynamic_cast<FEFluidFlowResistance*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "fluid resistance");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				FELoadCurve* plc = ptc->GetLoadCurve();
-				int lc = plc->GetID();
-
-				XMLElement load("R");
-				load.add_attribute("lc", lc);
-				load.value(ptc->GetLoad());
-				m_xml.add_leaf(load);
-
-				FELoadCurve* polc = ptc->GetPOLoadCurve();
-				int lcpo = polc->GetID();
-
-				XMLElement po("pressure_offset");
-				po.add_attribute("lc", lcpo);
-				po.value(ptc->GetPO());
-				m_xml.add_leaf(po);
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export fluid backflow stabilization
-//
-void FEBioExport3::WriteFluidBackflowStabilization(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEFluidBackflowStabilization* ptc = dynamic_cast<FEFluidBackflowStabilization*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "fluid backflow stabilization");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				FELoadCurve* plc = ptc->GetLoadCurve();
-				int lc = plc->GetID();
-
-				XMLElement load("beta");
-				load.add_attribute("lc", lc);
-				load.value(ptc->GetLoad());
-				m_xml.add_leaf(load);
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export fluid tangential stabilization
-//
-void FEBioExport3::WriteFluidTangentialStabilization(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEFluidTangentialStabilization* ptc = dynamic_cast<FEFluidTangentialStabilization*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "fluid tangential stabilization");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			{
-				FELoadCurve* plc = ptc->GetLoadCurve();
-				int lc = plc->GetID();
-
-				XMLElement load("beta");
-				load.add_attribute("lc", lc);
-				load.value(ptc->GetLoad());
-				m_xml.add_leaf(load);
-			}
-			m_xml.close_branch(); // surface_load
-		}
-	}
-}
-
-//----------------------------------------------------------------------------
-// Export FSI traction
-//
-void FEBioExport3::WriteFSITraction(FEStep& s)
-{
-	for (int j = 0; j<s.Loads(); ++j)
-	{
-		FEFSITraction* ptc = dynamic_cast<FEFSITraction*>(s.Load(j));
-		if (ptc && ptc->IsActive())
-		{
-			if (m_writeNotes) WriteNote(ptc);
-
-			FEItemListBuilder* pitem = ptc->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(ptc);
-
-			XMLElement flux("surface_load");
-			flux.add_attribute("type", "fluid-FSI traction");
-			flux.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(flux);
-			m_xml.close_branch(); // surface_load
-		}
-	}
+	m_xml.close_branch(); // surface_load
 }
 
 //-----------------------------------------------------------------------------
@@ -4092,53 +3609,18 @@ void FEBioExport3::WriteInitialSection()
 			}
 		}
 	}
-
-	// write rigid initial conditions
-	for (int i = 0; i<s.RCs(); ++i)
-	{
-		FERigidConstraint* rc = s.RC(i);
-		GMaterial* pgm = fem.GetMaterialFromID(rc->GetMaterialID());
-		if (pgm == 0) throw MissingRigidBody(rc->GetName().c_str());
-		FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
-		if (pm == 0) throw InvalidMaterialReference();
-
-		if (rc->Type() == FE_RIGID_INIT_VELOCITY)
-		{
-			FERigidVelocity* rv = dynamic_cast<FERigidVelocity*>(rc);
-			XMLElement el("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
-			{
-				m_xml.add_leaf("initial_velocity", rv->GetVelocity());
-			}
-			m_xml.close_branch();
-		}
-		else if (rc->Type() == FE_RIGID_INIT_ANG_VELOCITY)
-		{
-			FERigidAngularVelocity* rv = dynamic_cast<FERigidAngularVelocity*>(rc);
-			XMLElement el("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
-			{
-				m_xml.add_leaf("initial_angular_velocity", rv->GetVelocity());
-			}
-			m_xml.close_branch();
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitVelocity(FENodalVelocities& iv)
 {
 	XMLElement el("ic");
-	int nbc = el.add_attribute("type", "velocity");
-	vec3d v = iv.GetVelocity();
+	el.add_attribute("name", iv.GetName());
+	el.add_attribute("type", "velocity");
+	el.add_attribute("node_set", GetNodeSetName(iv.GetItemList()));
 	m_xml.add_branch(el, false);
 	{
-		XMLElement nset("node_set");
-		nset.add_attribute("ref", GetNodeSetName(iv.GetItemList()));
-		m_xml.add_empty(nset);
-
+		vec3d v = iv.GetVelocity();
 		m_xml.add_leaf("value", v);
 	}
 	m_xml.close_branch();
@@ -4637,7 +4119,7 @@ void FEBioExport3::WriteStepSection()
 			m_xml.close_branch(); // Control
 
 			// output boundary section
-			int nbc = s.BCs() + s.Interfaces() + s.RCs();
+			int nbc = s.BCs() + s.Interfaces();
 			if (nbc>0)
 			{
 				m_xml.add_branch("Boundary");
@@ -4645,6 +4127,17 @@ void FEBioExport3::WriteStepSection()
 					WriteBoundarySection(s);
 				}
 				m_xml.close_branch(); // Boundary
+			}
+
+			int nrc = s.RCs();
+			if (nrc > 0)
+			{
+				m_xml.add_branch("Rigid");
+				{
+					WriteRigidSection(s);
+				}
+				m_xml.close_branch();
+
 			}
 
 			// output loads section
@@ -4688,66 +4181,105 @@ void FEBioExport3::WriteStepSection()
 
 void FEBioExport3::WriteRigidConstraints(FEStep &s)
 {
-	const char* szbc[6] = { "x", "y", "z", "Rx", "Ry", "Rz" };
+	const char* szbc[6] = { "x", "y", "z", "Ru", "Rv", "Rw" };
 
 	for (int i = 0; i<s.RCs(); ++i)
 	{
 		FERigidConstraint* ps = s.RC(i);
 
-		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
-		if (pgm == 0) throw MissingRigidBody(ps->GetName().c_str());
-		FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
-		if (pm == 0) throw InvalidMaterialReference();
+		if (ps->IsActive())
+		{
+			if (m_writeNotes) WriteNote(ps);
 
-		if (ps->Type() == FE_RIGID_FIXED)
-		{
-			FERigidFixed* rc = dynamic_cast<FERigidFixed*>(ps);
-			XMLElement el;
-			el.name("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
+			GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
+			if (pgm == 0) throw MissingRigidBody(ps->GetName().c_str());
+			FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
+			if (pm == 0) throw InvalidMaterialReference();
+
+			if (ps->Type() == FE_RIGID_FIXED)
 			{
-				for (int j = 0; j<6; ++j)
-					if (rc->GetDOF(j))
-					{
-						XMLElement el("fixed");
-						el.add_attribute("bc", szbc[j]);
-						m_xml.add_empty(el);
-					}
+				FERigidFixed* rc = dynamic_cast<FERigidFixed*>(ps);
+				XMLElement el;
+				el.name("rigid_constraint");
+				el.add_attribute("name", ps->GetName());
+				el.add_attribute("type", "fix");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					string dof;
+					for (int j = 0; j < 6; ++j)
+						if (rc->GetDOF(j))
+						{
+							if (dof.empty() == false) dof += ",";
+							dof += szbc[j];
+						}
+					m_xml.add_leaf("dofs", dof);
+				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
-		}
-		else if (ps->Type() == FE_RIGID_DISPLACEMENT)
-		{
-			FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
-			XMLElement el;
-			el.name("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
+			else if (ps->Type() == FE_RIGID_DISPLACEMENT)
 			{
-				XMLElement el("prescribed");
-				el.add_attribute("bc", szbc[rc->GetDOF()]);
-				el.add_attribute("lc", rc->GetLoadCurve()->GetID());
-				el.value(rc->GetValue());
-				m_xml.add_leaf(el);
+				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				XMLElement el;
+				el.name("rigid_constraint");
+				el.add_attribute("name", ps->GetName());
+				el.add_attribute("type", "prescribe");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					m_xml.add_leaf("dof", szbc[rc->GetDOF()]);
+
+					el.name("value");
+					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+					el.value(rc->GetValue());
+					m_xml.add_leaf(el);
+				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
-		}
-		else if (ps->Type() == FE_RIGID_FORCE)
-		{
-			FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
-			XMLElement el;
-			el.name("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
+			else if (ps->Type() == FE_RIGID_FORCE)
 			{
-				XMLElement el("force");
-				el.add_attribute("bc", szbc[rc->GetDOF()]);
-				el.add_attribute("lc", rc->GetLoadCurve()->GetID());
-				el.value(rc->GetValue());
-				m_xml.add_leaf(el);
+				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				XMLElement el("rigid_constraint");
+				el.add_attribute("name", ps->GetName());
+				el.add_attribute("type", "force");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					m_xml.add_leaf("dof", szbc[rc->GetDOF()]);
+
+					XMLElement val("value");
+					val.add_attribute("lc", rc->GetLoadCurve()->GetID());
+					val.value(rc->GetValue());
+					m_xml.add_leaf(val);
+				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
+			else if (ps->Type() == FE_RIGID_INIT_VELOCITY)
+			{
+				FERigidVelocity* rv = dynamic_cast<FERigidVelocity*>(ps);
+				XMLElement el("rigid_constraint");
+				el.add_attribute("name", ps->GetName());
+				el.add_attribute("type", "rigid_velocity");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					m_xml.add_leaf("value", rv->GetVelocity());
+				}
+				m_xml.close_branch();
+			}
+			else if (ps->Type() == FE_RIGID_INIT_ANG_VELOCITY)
+			{
+				FERigidAngularVelocity* rv = dynamic_cast<FERigidAngularVelocity*>(ps);
+				XMLElement el("rigid_constraint");
+				el.add_attribute("name", ps->GetName());
+				el.add_attribute("type", "rigid_angular_velocity");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					m_xml.add_leaf("value", rv->GetVelocity());
+				}
+				m_xml.close_branch();
+			}
 		}
 	}
 }

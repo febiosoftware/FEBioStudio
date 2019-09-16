@@ -134,6 +134,23 @@ void Param::SetLoadCurve(const FELoadCurve& lc)
 }
 
 //-----------------------------------------------------------------------------
+const char* Param::GetEnumName(int n) const
+{
+	const char* sz = m_szenum;
+	for (int i = 0; i < n; ++i)
+	{
+		int l = strlen(sz);
+		if (l == 0) 
+		{
+			assert(false);
+			return nullptr;
+		}
+		sz += l+1;
+	}
+	return sz;
+}
+
+//-----------------------------------------------------------------------------
 Param::Param(const Param& p)
 {
 	m_nID = p.m_nID;

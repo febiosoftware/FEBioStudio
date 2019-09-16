@@ -102,6 +102,8 @@ public:
 	const char* GetEnumNames() const { return m_szenum; }
 	const char* GetIndexName() const { return m_szindx; }
 
+	const char* GetEnumName(int n) const;
+
 	Param* SetEnumNames(const char* sz);
 	Param* CopyEnumNames(const char* sz);
 	

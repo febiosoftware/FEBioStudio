@@ -641,13 +641,13 @@ void CModelTree::Build(CDocument* doc)
 	// add the constraints
 	int nlc = 0;
 	for (int i=0; i<fem.Steps(); ++i) nlc += fem.GetStep(i)->RCs();
-	t2 = AddTreeItem(t1, "Constraints", MT_CONSTRAINT_LIST, nlc);
+	t2 = AddTreeItem(t1, "Rigid Constraints", MT_CONSTRAINT_LIST, nlc);
 	UpdateRC(t2, fem, 0);
 
 	// add the connectors
 	int nconn = 0;
 	for (int i=0; i<fem.Steps(); ++i) nconn += fem.GetStep(i)->Connectors();
-	t2 = AddTreeItem(t1, "Connectors", MT_CONNECTOR_LIST, nconn);
+	t2 = AddTreeItem(t1, "Rigid Connectors", MT_CONNECTOR_LIST, nconn);
 	UpdateConnectors(t2, fem, 0);
 
 	// add the discrete objects

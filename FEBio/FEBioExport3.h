@@ -4,6 +4,7 @@
 #include "FEBioExport.h"
 
 class FEDataMap;
+class FESurfaceLoad;
 
 //-----------------------------------------------------------------------------
 typedef std::pair<std::string, FEItemListBuilder*> NamedList;
@@ -138,6 +139,8 @@ protected:
 	void WriteOutputSection();
 	void WriteStepSection();
 	void WriteConstraintSection(FEStep& s);
+	
+	void WriteRigidSection(FEStep& s);
 	void WriteRigidConstraints(FEStep& s);
 
 	void WriteBodyLoads(FEStep& s);
@@ -179,22 +182,9 @@ protected:
 	void WriteInitTemperature(FEInitTemperature&        it);
 
 	void WriteLoadNodal(FEStep& s);
-	void WriteLoadPressure(FEStep& s);
-	void WriteLoadTraction(FEStep& s);
-	void WriteFluidTraction(FEStep& s);
-	void WriteFluidVelocity(FEStep& s);
-	void WriteFluidNormalVelocity(FEStep& s);
-	void WriteFluidRotationalVelocity(FEStep& s);
-	void WriteFluidFlowResistance(FEStep& s);
-	void WriteFluidBackflowStabilization(FEStep& s);
-	void WriteFluidTangentialStabilization(FEStep& s);
-	void WriteFSITraction(FEStep& s);
-	void WriteFluidFlux(FEStep& s);
-	void WriteHeatFlux(FEStep& s);
-	void WriteConvectiveHeatFlux(FEStep& s);
-	void WriteSoluteFlux(FEStep& s);
-	void WriteBPNormalTraction(FEStep& s);
-	void WriteConcentrationFlux(FEStep& s);
+
+	void WriteSurfaceLoads(FEStep& s);
+	void WriteSurfaceLoad(FEStep& s, FESurfaceLoad* psl, const char* sztype);
 
 	void WriteContactInterface(FEStep& s, const char* sztype, FEPairedInterface* pi);
 	void WriteContactWall(FEStep& s);
