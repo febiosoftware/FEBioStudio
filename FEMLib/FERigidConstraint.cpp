@@ -172,14 +172,14 @@ FERigidVelocity::FERigidVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE
 {
 	SetTypeString("Rigid velocity");
 
-	AddVecParam(vec3d(0,0,0), "vel", "velocity");
+	AddVecParam(vec3d(0,0,0), "value", "velocity");
 }
 
 FERigidAngularVelocity::FERigidAngularVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep)
 {
 	SetTypeString("Rigid angular velocity");
 
-	AddVecParam(vec3d(0, 0, 0), "vel", "velocity");
+	AddVecParam(vec3d(0, 0, 0), "value", "angular velocity");
 }
 
 
@@ -215,7 +215,7 @@ vector<FERigidConstraint*> convertOldToNewRigidConstraint(FEModel* fem, FERigidC
 					else { assert(false); }
 
 					rp->SetMaterialID(rc->m_mid);
-					rp->setDOF(i);
+					rp->SetDOF(i);
 					rp->SetValue(rc->m_val[i]);
 					rp->SetLoadCurve(rc->m_LC[i]);
 

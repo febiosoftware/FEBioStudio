@@ -478,7 +478,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 						prc->SetName(szname);
 						prc->SetMaterialID(fem.GetMaterial(i)->GetID());
 
-						prc->setDOF(j);
+						prc->SetDOF(j);
 						prc->SetValue(1.0);
 						prc->SetLoadCurve(m_LC[BC[j]-1]);
 						s.AddRC(prc);

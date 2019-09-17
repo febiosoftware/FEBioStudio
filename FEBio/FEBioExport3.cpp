@@ -3263,12 +3263,15 @@ void FEBioExport3::WriteBCRigid(FEStep& s)
 			FEItemListBuilder* pitem = pr->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pr);
 
-			XMLElement ec("rigid");
-			const char* sz = pr->GetName().c_str();
-			ec.add_attribute("name", sz);
-			ec.add_attribute("rb", rb);
+			XMLElement ec("bc");
+			ec.add_attribute("name", pr->GetName());
+			ec.add_attribute("type", "rigid");
 			ec.add_attribute("node_set", GetNodeSetName(pitem));
-			m_xml.add_empty(ec);
+			m_xml.add_branch(ec);
+			{
+				m_xml.add_leaf("rb", rb);
+			}
+			m_xml.close_branch();
 		}
 	}
 }

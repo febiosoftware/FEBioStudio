@@ -46,9 +46,7 @@ private:
 	// boundary condition input functions
 	void ParseBCFixed     (FEStep* pstep, XMLTag& tag);
 	void ParseBCPrescribed(FEStep* pstep, XMLTag& tag);
-	void ParseBCRigidBody (FEStep* pstep, XMLTag& tag);
 	void ParseBCRigid     (FEStep* pstep, XMLTag& tag);
-	void ParseInitRigidBodu(FEStep* pstep, XMLTag& tag);
 
 private:
 	bool ParseStep(XMLTag& tag);
@@ -79,28 +77,6 @@ private:
 	void ParseNodeLoad   (FEStep* pstep, XMLTag& tag);
 	void ParseSurfaceLoad(FEStep* pstep, XMLTag& tag);
 	void ParseBodyLoad   (FEStep* pstep, XMLTag& tag);
-
-	// surface load functions (version 2.0 and up)
-	FESurfaceLoad* ParseLoadPressure          (XMLTag& tag);
-	FESurfaceLoad* ParseLoadTraction          (XMLTag& tag);
-	FESurfaceLoad* ParseLoadFluidTraction     (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidVelocity               (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidNormalVelocity         (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidRotationalVelocity     (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidFlowResistance         (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidBackFlowStabilization  (XMLTag& tag);
-    FESurfaceLoad* ParseLoadFluidTangentialStabilization(XMLTag& tag);
-    FESurfaceLoad* ParseLoadFSITraction       (XMLTag& tag);
-	FESurfaceLoad* ParseLoadFluidFlux         (XMLTag& tag);
-	FESurfaceLoad* ParseLoadSoluteFlux        (XMLTag& tag);
-	FESurfaceLoad* ParseLoadNormalTraction    (XMLTag& tag);
-	FESurfaceLoad* ParseLoadHeatFlux          (XMLTag& tag);
-	FESurfaceLoad* ParseLoadConvectiveHeatFlux(XMLTag& tag);
-	FESurfaceLoad* ParseConcentrationFlux     (XMLTag& tag);
-
-	// body loads
-	void ParseBodyForce (FEStep* pstep, XMLTag& tag);
-	void ParseHeatSource(FEStep* pstep, XMLTag& tag);
 
 private:
 	// constraint input functions

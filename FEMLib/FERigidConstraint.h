@@ -87,7 +87,7 @@ public:
 	FERigidPrescribed(int ntype, int nstep);
 
 	int GetDOF() const { return GetIntValue(DOF); }
-	void setDOF(int n) { SetIntValue(DOF, n); }
+	void SetDOF(int n) { SetIntValue(DOF, n); }
 
 	double GetValue() const { return GetFloatValue(VALUE); }
 	void SetValue(double v) { SetFloatValue(VALUE, v); }
