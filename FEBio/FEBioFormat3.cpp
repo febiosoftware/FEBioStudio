@@ -777,7 +777,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 
 	// get the node set
 	const char* szset = tag.AttributeValue("node_set");
-	FENodeSet* pg = febio.BuildFENodeSet(szset);
+	FEItemListBuilder* pg = febio.BuildItemList(szset);
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", szset);
 
 	string dofList;
@@ -934,7 +934,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	if (szname) name = szname;
 
 	XMLAtt& set = tag.Attribute("node_set");
-	FENodeSet* pg = febio.BuildFENodeSet(set.cvalue());
+	FEItemListBuilder* pg = febio.BuildItemList(set.cvalue());
 	if (pg == 0) FileReader()->AddLogEntry("Cannot find node_set \"%s\"", set.cvalue());
 
 	int bc = 0;

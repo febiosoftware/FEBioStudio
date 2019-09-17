@@ -108,9 +108,7 @@ public: // set export attributes
 
 protected:
 	bool PrepareExport(FEProject& prj);
-	void BuildNodeSetList(FEProject& prj);
-	void BuildSurfaceList(FEProject& prj);
-	void BuildElemSetList(FEProject& prj);
+	void BuildItemLists(FEProject& prj);
 
 	GPartList* BuildPartList(GMaterial* mat);
 
@@ -214,7 +212,7 @@ protected:
 
 protected:
 	const char* GetSurfaceName(FEItemListBuilder* pl);
-	const char* GetNodeSetName(FEItemListBuilder* pl);
+	string GetNodeSetName(FEItemListBuilder* pl);
 
 	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);
 	void AddSurface(const std::string& name, FEItemListBuilder* pl);

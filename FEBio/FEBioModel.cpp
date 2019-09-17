@@ -695,6 +695,24 @@ FEBioModel::PartInstance* FEBioModel::FindInstance(const char* szname)
 	return 0;
 }
 
+FEItemListBuilder* FEBioModel::BuildItemList(const char* szname)
+{
+	if ((szname == 0) || (strlen(szname) == 0)) return nullptr;
+
+	if (szname[0] == '@')
+	{
+		const char* ch = strchr(szname, ':');
+		if (ch == 0) return nullptr;
+		int n = ch - szname;
+		if (strncmp(szname, "@surface", n) == 0)
+		{
+			return BuildFESurface(szname + n + 1);
+		}
+		else return nullptr;
+	}
+	else return BuildFENodeSet(szname);
+}
+
 FENodeSet* FEBioModel::BuildFENodeSet(const char* szname)
 {
 	// see if there is a dot

@@ -64,12 +64,24 @@ const char* FEBioExport3::GetSurfaceName(FEItemListBuilder* pl)
 }
 
 //----------------------------------------------------------------------------
-const char* FEBioExport3::GetNodeSetName(FEItemListBuilder* pl)
+string FEBioExport3::GetNodeSetName(FEItemListBuilder* pl)
 {
+	// search the nodesets first
 	int N = (int)m_pNSet.size();
 	for (int i = 0; i<N; ++i)
 		if (m_pNSet[i].second == pl) return m_pNSet[i].first.c_str();
-	return 0;
+
+	// search the surfaces
+	N = (int)m_pSurf.size();
+	for (int i = 0; i<N; ++i)
+		if (m_pSurf[i].second == pl)
+		{
+			string surfName = m_pSurf[i].first;
+			return string("@surface:") + surfName;
+		}
+
+	assert(false);
+	return "";
 }
 
 //-----------------------------------------------------------------------------
@@ -204,14 +216,8 @@ bool FEBioExport3::PrepareExport(FEProject& prj)
 		}
 	}
 
-	// Build the named nodeset list
-	BuildNodeSetList(prj);
-
-	// Build the named surface list
-	BuildSurfaceList(prj);
-
-	// build the element list
-	BuildElemSetList(prj);
+	// Build the named lists
+	BuildItemLists(prj);
 
 	// see if we need to add a MeshData section
 	m_bdata = false;
@@ -242,9 +248,94 @@ bool FEBioExport3::PrepareExport(FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::BuildSurfaceList(FEProject& prj)
+void FEBioExport3::BuildItemLists(FEProject& prj)
 {
 	FEModel& fem = prj.GetFEModel();
+
+	// get the nodesets (bc's)
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->BCs(); ++j)
+		{
+			FEBoundaryCondition* pl = pstep->BC(j);
+			if (pl && pl->IsActive())
+			{
+				FEItemListBuilder* ps = pl->GetItemList();
+				if (ps == 0) throw InvalidItemListBuilder(pl);
+
+				string name = ps->GetName();
+				if (name.empty()) name = pl->GetName();
+
+				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
+				else AddNodeSet(name, ps);
+			}
+		}
+		for (int j = 0; j<pstep->Loads(); ++j)
+		{
+			// this is only for nodal loads
+			FENodalLoad* pl = dynamic_cast<FENodalLoad*>(pstep->Load(j));
+			if (pl && pl->IsActive())
+			{
+				FEItemListBuilder* ps = pl->GetItemList();
+				if (ps == 0) throw InvalidItemListBuilder(pl);
+
+				string name = ps->GetName();
+				if (name.empty()) name = pl->GetName();
+
+				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
+				else AddNodeSet(name, ps);
+			}
+		}
+		for (int j = 0; j<pstep->ICs(); ++j)
+		{
+			// this is only for nodal loads
+			FEInitialCondition* pi = pstep->IC(j);
+			if (pi && pi->IsActive())
+			{
+				FEItemListBuilder* ps = pi->GetItemList();
+				if (ps == 0) throw InvalidItemListBuilder(pi);
+
+				string name = ps->GetName();
+				if (name.empty()) name = pi->GetName();
+
+				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
+				else AddNodeSet(name, ps);
+			}
+		}
+		for (int j = 0; j<pstep->Interfaces(); ++j)
+		{
+			FERigidInterface* pri = dynamic_cast<FERigidInterface*>(pstep->Interface(j));
+			if (pri && pri->IsActive())
+			{
+				FEItemListBuilder* ps = pri->GetItemList();
+				if (ps == 0) throw InvalidItemListBuilder(pri);
+
+				string name = ps->GetName();
+				if (name.empty()) name = pri->GetName();
+
+				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
+				else AddNodeSet(name, ps);
+			}
+		}
+	}
+
+	/*	// Node sets are already written in WriteGeometryNodeSets
+	GModel& model = fem.GetModel();
+	CLogDataSettings& log = prj.GetLogDataSettings();
+	for (int i=0; i<log.LogDataSize(); ++i)
+	{
+	FELogData& di = log.LogData(i);
+	if ((di.type == FELogData::LD_NODE) && (di.groupID != -1))
+	{
+	FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
+	if (pg)
+	{
+	AddNodeSet(pg->GetName(), pg);
+	}
+	}
+	}
+	*/
 
 	// get the named surfaces (loads)
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -407,99 +498,7 @@ void FEBioExport3::BuildSurfaceList(FEProject& prj)
 			}
 		}
 	}
-}
 
-//-----------------------------------------------------------------------------
-void FEBioExport3::BuildNodeSetList(FEProject& prj)
-{
-	FEModel& fem = prj.GetFEModel();
-
-	// get the nodesets (bc's)
-	for (int i = 0; i<fem.Steps(); ++i)
-	{
-		FEStep* pstep = fem.GetStep(i);
-		for (int j = 0; j<pstep->BCs(); ++j)
-		{
-			FEBoundaryCondition* pl = pstep->BC(j);
-			if (pl && pl->IsActive())
-			{
-				FEItemListBuilder* ps = pl->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pl);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pl->GetName();
-
-				AddNodeSet(name, ps);
-			}
-		}
-		for (int j = 0; j<pstep->Loads(); ++j)
-		{
-			// this is only for nodal loads
-			FENodalLoad* pl = dynamic_cast<FENodalLoad*>(pstep->Load(j));
-			if (pl && pl->IsActive())
-			{
-				FEItemListBuilder* ps = pl->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pl);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pl->GetName();
-
-				AddNodeSet(name, ps);
-			}
-		}
-		for (int j = 0; j<pstep->ICs(); ++j)
-		{
-			// this is only for nodal loads
-			FEInitialCondition* pi = pstep->IC(j);
-			if (pi && pi->IsActive())
-			{
-				FEItemListBuilder* ps = pi->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pi);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pi->GetName();
-
-				AddNodeSet(name, ps);
-			}
-		}
-		for (int j = 0; j<pstep->Interfaces(); ++j)
-		{
-			FERigidInterface* pri = dynamic_cast<FERigidInterface*>(pstep->Interface(j));
-			if (pri && pri->IsActive())
-			{
-				FEItemListBuilder* pitem = pri->GetItemList();
-				if (pitem == 0) throw InvalidItemListBuilder(pri);
-
-				string name = pitem->GetName();
-				if (name.empty()) name = pri->GetName();
-
-				AddNodeSet(name, pitem);
-			}
-		}
-	}
-
-	/*	// Node sets are already written in WriteGeometryNodeSets
-	GModel& model = fem.GetModel();
-	CLogDataSettings& log = prj.GetLogDataSettings();
-	for (int i=0; i<log.LogDataSize(); ++i)
-	{
-	FELogData& di = log.LogData(i);
-	if ((di.type == FELogData::LD_NODE) && (di.groupID != -1))
-	{
-	FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
-	if (pg)
-	{
-	AddNodeSet(pg->GetName(), pg);
-	}
-	}
-	}
-	*/
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport3::BuildElemSetList(FEProject& prj)
-{
-	FEModel& fem = prj.GetFEModel();
 	GModel& model = fem.GetModel();
 	CLogDataSettings& log = prj.GetLogDataSettings();
 	for (int i = 0; i<log.LogDataSize(); ++i)
@@ -3430,12 +3429,12 @@ void FEBioExport3::WriteBCFixed(FEStep &s)
 			if (n > 0)
 			{
 				// get node set name
-				const char* szname = GetNodeSetName(pitem);
+				string nodeSetName = GetNodeSetName(pitem);
 
 				XMLElement tag("bc");
 				tag.add_attribute("name", pbc->GetName());
 				tag.add_attribute("type", "fix");
-				tag.add_attribute("node_set", szname);
+				tag.add_attribute("node_set", nodeSetName);
 
 				// write the tag
 				m_xml.add_branch(tag);

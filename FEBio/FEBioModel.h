@@ -409,6 +409,7 @@ public:
 	FENodeSet* BuildFENodeSet(const char* szname);
 	FESurface* BuildFESurface(const char* szname);
 	FEPart* BuildFEPart(const char* szname);
+	FEItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);
 	bool BuildDiscreteSet(GDiscreteElementSet& set, const char* szset);
