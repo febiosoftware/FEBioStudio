@@ -10,6 +10,7 @@
 #include "FEBioFormat12.h"
 #include "FEBioFormat2.h"
 #include "FEBioFormat25.h"
+#include "FEBioFormat3.h"
 #include <stdio.h>
 #include <string.h>
 #include <cstdarg>
@@ -268,6 +269,7 @@ bool FEBioImport::ParseVersion(XMLTag& tag)
 	case 0x0102: m_fmt = new FEBioFormat12 (this, *m_febio); break;
 	case 0x0200: m_fmt = new FEBioFormat2  (this, *m_febio); break;
 	case 0x0205: m_fmt = new FEBioFormat25 (this, *m_febio); break;
+	case 0x0300: m_fmt = new FEBioFormat3  (this, *m_febio); break;
 	default:
 		return false;
 	}

@@ -153,6 +153,7 @@
     <ClInclude Include="..\..\FEBio\FEBioFormat12.h" />
     <ClInclude Include="..\..\FEBio\FEBioFormat2.h" />
     <ClInclude Include="..\..\FEBio\FEBioFormat25.h" />
+    <ClInclude Include="..\..\FEBio\FEBioFormat3.h" />
     <ClInclude Include="..\..\FEBio\FEBioFormatOld.h" />
     <ClInclude Include="..\..\FEBio\FEBioImport.h" />
     <ClInclude Include="..\..\FEBio\FEBioModel.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="..\..\FEBio\FEBioFormat12.cpp" />
     <ClCompile Include="..\..\FEBio\FEBioFormat2.cpp" />
     <ClCompile Include="..\..\FEBio\FEBioFormat25.cpp" />
+    <ClCompile Include="..\..\FEBio\FEBioFormat3.cpp" />
     <ClCompile Include="..\..\FEBio\FEBioFormatOld.cpp" />
     <ClCompile Include="..\..\FEBio\FEBioImport.cpp" />
     <ClCompile Include="..\..\FEBio\FEBioModel.cpp" />

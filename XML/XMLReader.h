@@ -110,6 +110,7 @@ public:
 	void value(bool& b) { b = (atoi(m_szval) == 1); }
 	void value(vector<int>& l);
 	void value(GLColor& c);
+	void value(string& s);
 
 	const char* szvalue() { return m_szval; }
 

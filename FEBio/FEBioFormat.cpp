@@ -213,19 +213,44 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	{
 		if (ReadParam(*pstep, tag) == false)
 		{
-			if (tag == "title") tag.value(ops.sztitle);
+			if (tag == "analysis")
+			{
+				string analysis = tag.szvalue();
+				if      ((analysis == "static"      )||(analysis == "STATIC"      )) ops.nanalysis = FE_STATIC;
+				else if ((analysis == "steady-state")||(analysis == "STEADY-STATE")) ops.nanalysis = FE_STATIC;
+				else if ((analysis == "dynamic"     )||(analysis == "DYNAMIC"     )) ops.nanalysis = FE_DYNAMIC;
+				else if ((analysis == "transient"   )||(analysis == "TRANSIENT"   )) ops.nanalysis = FE_DYNAMIC;
+				else FileReader()->AddLogEntry("unknown type in analysis. Assuming static analysis (line %d)", tag.currentLine());
+			}
 			else if (tag == "time_steps") tag.value(ops.ntime);
 			else if (tag == "final_time") tag.value(ops.tfinal);
 			else if (tag == "step_size") tag.value(ops.dt);
-			else if (tag == "max_refs") tag.value(ops.maxref);
-			else if (tag == "max_ups")
+			else if (tag == "solver")
 			{
-				tag.value(ops.ilimit);
-				if (ops.ilimit == 0)
+				++tag;
+				do
 				{
-					ops.mthsol = 1;
-					ops.ilimit = 10;
+					if      (tag == "max_refs") tag.value(ops.maxref);
+					else if (tag == "max_ups")
+					{
+						tag.value(ops.ilimit);
+						if (ops.ilimit == 0)
+						{
+							ops.mthsol = 1;
+							ops.ilimit = 10;
+						}
+					}
+					else if (tag == "symmetric_stiffness")
+					{
+						int nval; tag.value(nval);
+						if (nval == 1) ops.nmatfmt = 1; else ops.nmatfmt = 2;
+					}
+					else if (tag == "diverge_reform") tag.value(ops.bdivref);
+					else if (tag == "reform_each_time_step") tag.value(ops.brefstep);
+					else ReadParam(*pstep, tag);
+					++tag;
 				}
+				while (!tag.isend());
 			}
 			else if (tag == "time_stepper")
 			{
@@ -251,44 +276,13 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 			}
-			else if (tag == "plot_level")
+			else if (tag == "alpha") 
 			{
-				char sz[256]; tag.value(sz);
-				//			ops.nplot = FE_PLOT_DEFAULT;
-				//			if (strcmp(sz, "PLOT_DEFAULT") == 0) ops.nplot = FE_PLOT_DEFAULT;
-				//			else if (strcmp(sz, "PLOT_NEVER") == 0) ops.nplot = FE_PLOT_NEVER;
-				//			else if (strcmp(sz, "PLOT_MAJOR_ITRS") == 0) ops.nplot = FE_PLOT_MAJOR_ITRS;
-				//			else if (strcmp(sz, "PLOT_MINOR_ITRS") == 0) ops.nplot = FE_PLOT_MINOR_ITRS;
-				//			else if (strcmp(sz, "PLOT_MUST_POINTS") == 0) ops.nplot = FE_PLOT_MUST_POINTS;
-			}
-			else if (tag == "analysis")
-			{
-				XMLAtt& att = tag.Attribute("type");
-				if (att == "static") ops.nanalysis = FE_STATIC;
-				else if (att == "steady-state") ops.nanalysis = FE_STATIC;
-				else if (att == "dynamic") ops.nanalysis = FE_DYNAMIC;
-				else if (att == "transient") ops.nanalysis = FE_DYNAMIC;
-				else FileReader()->AddLogEntry("unknown type in analysis. Assuming static analysis (line %d)", tag.currentLine());
-			}
-			else if (tag == "alpha") {
 				tag.value(ops.alpha); ops.override_rhoi = true;
 			}
 			else if (tag == "beta") tag.value(ops.beta);
 			else if (tag == "gamma") tag.value(ops.gamma);
 			else if (tag == "optimize_bw") tag.value(ops.bminbw);
-			else if (tag == "symmetric_biphasic")
-			{
-				int nval; tag.value(nval);
-				if (nval == 1) ops.nmatfmt = 1; else ops.nmatfmt = 2;
-			}
-			else if (tag == "symmetric_stiffness")
-			{
-				int nval; tag.value(nval);
-				if (nval == 1) ops.nmatfmt = 1; else ops.nmatfmt = 2;
-			}
-			else if (tag == "diverge_reform") tag.value(ops.bdivref);
-			else if (tag == "reform_each_time_step") tag.value(ops.brefstep);
-			else if (tag == "plot_stride") tag.value(ops.plot_stride);
 			else ParseUnknownTag(tag);
 		}
 		++tag;

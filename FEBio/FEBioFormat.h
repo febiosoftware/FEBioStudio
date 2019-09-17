@@ -44,7 +44,7 @@ protected:
 	bool ParseGlobalsSection (XMLTag& tag);
 	bool ParseMaterialSection(XMLTag& tag);
 	bool ParseOutputSection  (XMLTag& tag);
-	bool ParseLoadDataSection(XMLTag& tag);
+	virtual bool ParseLoadDataSection(XMLTag& tag);
 	bool ParsePlotfileSection(XMLTag& tag);
 	bool ParseLogfileSection (XMLTag& tag);
 

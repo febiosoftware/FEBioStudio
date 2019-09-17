@@ -60,6 +60,9 @@
     <ClInclude Include="..\..\FEBio\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\FEBio\FEBioFormat3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\FEBio\FEBioExport.cpp">
@@ -96,6 +99,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBio\FEBioModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBio\FEBioFormat3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

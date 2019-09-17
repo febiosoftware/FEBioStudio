@@ -560,14 +560,7 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 		// open the file
 		if (!m_xml.open(szfile)) return errf("Failed opening file %s", szfile);
 
-		stringstream ss;
-		ss << "This file was created with FEBio Studio version " << VERSION << "." << SUBVERSION << "." << SUBSUBVERSION;
-		m_xml.add_comment(ss.str(), true);
-
-		if (m_writeNotes)
-		{
-			WriteNote(&mdl);
-		}
+		if (m_writeNotes) WriteNote(&mdl);
 
 		// set modified formats
 		XMLElement::intFormat = "%d";
