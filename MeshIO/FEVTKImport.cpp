@@ -52,7 +52,7 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 	ch = fgets(szline, 255, m_fp);
 	if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 
-	nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg%s", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
+	nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
 	if (nread%3 != 0 && nread>9) 
 		return errf("An error occured while reading the nodal coordinates.");
 	int nodes_each_row = nread/3;
@@ -72,7 +72,7 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 
-		nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg%s", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
+		nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
 		if (nread%3 != 0 && nread != -1)
 		{ 			
 			if (i+1 != nodes/nodes_each_row)
@@ -174,7 +174,7 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 			ch = fgets(szline, 255, m_fp);
 			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 
-			nodes_each_row = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg%s", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
+			nodes_each_row = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
 			if (nodes_each_row>9) 
 				return errf("An error occured while reading the nodal coordinates.");
 			double temp2 = double(size)/nodes_each_row;
@@ -189,7 +189,7 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 				if (ch == 0 && i+1 != rows) 
 					return errf("An unexpected error occured while reading the scalar data.");
 
-				nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg%s", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
+				nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
 				if (nread > 9 && nread != -1)
 				{ 			
 					if (i+1 != rows)
