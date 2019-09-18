@@ -6,7 +6,7 @@
 class FESurfaceData : public FEMeshData
 {
 public:
-	FESurfaceData();
+	FESurfaceData(FEMesh* mesh = nullptr);
 	FESurfaceData(const FESurfaceData& data);
 	~FESurfaceData();
 	void operator = (const FESurfaceData& data);

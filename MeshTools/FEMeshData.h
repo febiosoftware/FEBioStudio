@@ -5,8 +5,7 @@ using namespace std;
 
 class FEMesh;
 
-// TODO: Should I inherit this from FSObject?
-class FEMeshData
+class FEMeshData : public FSObject
 {
 public:
 	enum DATA_CLASS {
@@ -24,10 +23,6 @@ public:
 	FEMeshData(DATA_CLASS);
 	virtual ~FEMeshData();
 
-	// get/set name
-	void SetName(const string& name);
-	const string& GetName() const;
-
 	// get the data class of this mesh data
 	DATA_CLASS GetDataClass() const;
 
@@ -44,5 +39,4 @@ protected:
 private:
 	DATA_CLASS		m_dataClass;
 	FEMesh*			m_pMesh;
-	string			m_name;
 };

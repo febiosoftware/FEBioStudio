@@ -66,18 +66,16 @@ void CMeshInspector::UpdateData(int ndata)
 	vector<double> v(NE);
 	double vmax = -1e99, vmin = 1e99, vavg = 0;
 	Mesh_Data& data = pm->GetMeshData();
+	eval.Evaluate(ndata);
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
 		if ((etype == -1) || (el.Type() == etype))
 		{
-			int nerr;
-			v[NC] = eval.EvaluateElement(i, ndata, &nerr);
-			if (nerr) data.SetElementDataTag(i, 0);
-			else data.SetElementDataTag(i, 1);
-			data.SetElementValue(i, v[NC]);
-			if (nerr == 0)
+			if (data[i].tag)
 			{
+				int nerr;
+				v[NC] = data[i].val;
 				if (v[NC] < vmin) vmin = v[NC];
 				if (v[NC] > vmax) vmax = v[NC];
 				vavg += v[NC];
@@ -92,7 +90,7 @@ void CMeshInspector::UpdateData(int ndata)
 	}
 	data.UpdateValueRange();
 
-	if (NC > 0) vavg /= (double)NC;
+	if (NC > 0) vavg /= (double)NC; else { vmin = vmax = vavg = 0.0; }
 	ui->stats->setRange(vmin, vmax, vavg);
 
 	ui->sel->setRange(vmin, vmax);

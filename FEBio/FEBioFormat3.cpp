@@ -244,6 +244,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 
 	// read element data
 	++tag;
+	vector<int> elemSet; elemSet.reserve(elems);
 	for (int i = NTE; i<elems + NTE; ++i)
 	{
 		FEElement& el = mesh.Element(i);
@@ -258,8 +259,13 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 		}
 		else throw XMLReader::InvalidTag(tag);
 
+		elemSet.push_back(i);
 		++tag;
 	}
+
+	// create new element set
+	FEBioModel::ElementSet* set = new FEBioModel::ElementSet(szname, elemSet);
+	part->AddElementSet(*set);
 }
 
 
@@ -666,7 +672,45 @@ bool FEBioFormat3::ParseMeshDataSection(XMLTag& tag)
                 }
                 else ParseUnknownTag(tag);
             }
-        }
+			else if (var == nullptr)
+			{
+				FEBioModel& feb = GetFEBioModel();
+
+				XMLAtt* name = tag.AttributePtr("name");
+				XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+				XMLAtt* set = tag.AttributePtr("elem_set");
+
+				FEMeshData::DATA_TYPE dataType;
+				if (dataTypeAtt)
+				{
+					if (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+					else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+					else return false;
+				}
+				else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+
+				FEPart* pg = feb.BuildFEPart(set->cvalue());
+				if (pg == nullptr) throw XMLReader::InvalidAttributeValue(tag, "elem_set", set->cvalue());
+
+				FEMesh* mesh = pg->GetMesh();
+				FEElementData* elemData = mesh->AddElementDataField(name->cvalue(), pg, dataType);
+
+				double val;
+				int lid;
+				++tag;
+				do
+				{
+					tag.AttributePtr("lid")->value(lid);
+					tag.value(val);
+
+					(*elemData)[lid - 1] = val;
+
+					++tag;
+				}
+				while (!tag.isend());
+			}
+			else ParseUnknownTag(tag);
+		}
 		else if (tag == "SurfaceData")
 		{
 			FEBioModel& feb = GetFEBioModel();
@@ -676,9 +720,13 @@ bool FEBioFormat3::ParseMeshDataSection(XMLTag& tag)
 			XMLAtt* surf = tag.AttributePtr("surface");
 
 			FEMeshData::DATA_TYPE dataType;
-			if(*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-			else if(*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
-			else return false;
+			if (dataTypeAtt)
+			{
+				if (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+				else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+				else return false;
+			}
+			else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
 			FESurface* feSurf = feb.BuildFESurface(surf->cvalue());
 			FEMesh* feMesh = feSurf->GetMesh();

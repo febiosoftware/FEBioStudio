@@ -1635,12 +1635,12 @@ void FEBioExport2::WriteGeometryElementData()
 				for (int k=0; k<ND; ++k)
 				{
 					FEElementData& data = pm->GetElementDataField(k);
-					if (data.GetTag(j) > 0)
+/*					if (data.GetTag(j) > 0)
 					{
 						double val = data[j];
 						m_xml.add_leaf(data.GetName().c_str(), val);
 					}
-				}
+*/				}
 				m_xml.close_branch(); // element
 			}
 		}

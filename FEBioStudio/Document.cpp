@@ -546,6 +546,7 @@ std::string CDocument::GetTypeString(FSObject* po)
 			return ss.str();
 		}
 	}
+	else if (dynamic_cast<FEMeshData*>(po)) return "Mesh data";
 	else
 	{
 		assert(false);

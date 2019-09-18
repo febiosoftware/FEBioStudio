@@ -590,6 +590,9 @@ void CPlotWidget::fitToData(bool downSize)
 		r = rectUnion(r, ri);
 	}
 
+	if (r.height() == 0.0) r.setBottom(0.0);
+	if (r.height() == 0.0) r.setTop(1.0);
+
 	if (downSize == false)
 	{
 		// only update the rect if the new rect does not fit in the old rect

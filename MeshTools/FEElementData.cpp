@@ -3,16 +3,18 @@
 #include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData() : FEMeshData(FEMeshData::PART_DATA)
+FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
 {
+	m_part = nullptr;
+	SetMesh(mesh);
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::Create(FEMesh* pm, double v)
+void FEElementData::Create(FEMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(pm);
-	m_data.assign(pm->Elements(), v);
-	m_tag.assign(pm->Elements(), 1);
+	m_part = part;
+	m_data.assign(part->size(), 0.0);
 }
 
 //-----------------------------------------------------------------------------
@@ -21,16 +23,16 @@ FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::PA
 	SetMesh(d.GetMesh());
 	SetName(d.GetName());
 	m_data = d.m_data;
-	m_tag = d.m_tag;
+	m_part = d.m_part;
 }
 
 //-----------------------------------------------------------------------------
 FEElementData& FEElementData::operator = (const FEElementData& d)
 {
+	SetName(d.GetName());
 	SetMesh(d.GetMesh());
 	m_data = d.m_data;
-	m_tag = d.m_tag;
-	SetName(d.GetName());
+	m_part = d.m_part;
 	return (*this);
 }
 
@@ -47,33 +49,30 @@ void FEElementData::FillRandomBox(double fmin, double fmax)
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::ClearTags(int n)
-{
-	int N = (int)m_tag.size();
-	for (int i = 0; i<N; ++i) m_tag[i] = n;
-}
-
-//-----------------------------------------------------------------------------
-void FEElementData::SetTag(int nelem, int ntag)
-{
-	m_tag[nelem] = ntag;
-}
-
-//-----------------------------------------------------------------------------
 void FEElementData::Save(OArchive& ar)
 {
 	int NE = GetMesh()->Elements();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
+	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
+
+	// Parts must be saved first so that the number of elements in the part can be
+	// queried before the data is read during the load operation.
+	ar.BeginChunk(CID_MESH_DATA_PART);
+	{
+		m_part->Save(ar);
+	}
+	ar.EndChunk();
+
 	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NE);
-	ar.WriteChunk(CID_MESH_DATA_TAGS, &m_tag[0], NE);
+
 }
 
 //-----------------------------------------------------------------------------
 void FEElementData::Load(IArchive& ar)
 {
-	const int NE = GetMesh()->Elements();
+	GObject* po = GetMesh()->GetGObject();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -83,14 +82,22 @@ void FEElementData::Load(IArchive& ar)
 			ar.read(szname);
 			SetName(szname);
 		}
+		else if (nid == CID_MESH_DATA_TYPE)
+		{
+			int dType;
+			ar.read(dType);
+			m_dataType = (FEMeshData::DATA_TYPE) dType;
+		}
+		else if (nid == CID_MESH_DATA_PART)
+		{
+			m_part = new FEPart(po);
+			m_part->Load(ar);
+		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
+			int NE = m_part->size();
+			m_data.resize(NE);
 			ar.read(&m_data[0], NE);
-		}
-		else if (nid == CID_MESH_DATA_TAGS)
-		{
-			const int NE = GetMesh()->Elements();
-			ar.read(&m_tag[0], NE);
 		}
 
 		ar.CloseChunk();

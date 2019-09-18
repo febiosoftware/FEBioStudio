@@ -2209,10 +2209,10 @@ void FEMesh::Save(OArchive &ar)
 			// Element data
 			for (int n=0; n<(int)m_elemData.size(); ++n)
 			{
-				FEElementData& map = m_elemData[n];
+				FEElementData* map = m_elemData[n];
 				ar.BeginChunk(CID_MESH_PART_DATA);
 				{
-					map.Save(ar);
+					map->Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -2534,7 +2534,7 @@ void FEMesh::Load(IArchive& ar)
 						break;
 					case CID_MESH_SURFACE_DATA:
 						{
-							FESurfaceData* pmap = new FESurfaceData();
+							FESurfaceData* pmap = new FESurfaceData(this);
 //							FESurfaceData* pmap = AddSurfaceDataField("(unnamed)", nullptr, FEMeshData::DATA_TYPE::DATA_SCALAR);
 //							int NF = Faces();
 //							pmap->Create(this, NF);
@@ -2544,10 +2544,9 @@ void FEMesh::Load(IArchive& ar)
 						break;
 					case CID_MESH_PART_DATA:
 						{
-							FEElementData* pmap = AddElementDataField("(unnamed)");
-							int NE = Elements();
-							pmap->Create(this, NE);
+							FEElementData* pmap = new FEElementData(this);
 							pmap->Load(ar);
+							m_elemData.push_back(pmap);
 						}
 						break;
 					}
@@ -2849,13 +2848,13 @@ void FEMesh::InvertTaggedElements(int ntag)
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FEMesh::AddElementDataField(const string& sz, double v)
+FEElementData* FEMesh::AddElementDataField(const string& sz, FEPart* part, FEMeshData::DATA_TYPE dataType)
 {
-	FEElementData map;
-	map.Create(this, v);
-	map.SetName(sz);
+	FEElementData* map = new FEElementData;
+	map->Create(this, part, dataType);
+	map->SetName(sz);
 	m_elemData.push_back(map);
-	return &m_elemData[m_elemData.size()-1];
+	return map;
 }
 
 //-----------------------------------------------------------------------------
@@ -2864,8 +2863,8 @@ FEElementData* FEMesh::FindElementDataField(const string& sz)
 	if (m_elemData.empty()) return 0;
 	for (int i = 0; i<m_elemData.size(); ++i)
 	{
-		const string& name = m_elemData[i].GetName();
-		if (name == sz) return &(m_elemData[i]);
+		const string& name = m_elemData[i]->GetName();
+		if (name == sz) return m_elemData[i];
 	}
 	return 0;
 }

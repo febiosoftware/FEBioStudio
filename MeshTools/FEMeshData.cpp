@@ -10,16 +10,6 @@ FEMeshData::~FEMeshData()
 {
 }
 
-void FEMeshData::SetName(const string& name)
-{
-	m_name = name;
-}
-
-const string& FEMeshData::GetName() const
-{ 
-	return m_name; 
-}
-
 FEMeshData::DATA_CLASS FEMeshData::GetDataClass() const
 {
 	return m_dataClass;
@@ -37,5 +27,5 @@ FEMesh* FEMeshData::GetMesh() const
 
 void FEMeshData::SetMesh(FEMesh* mesh)
 {
-	m_pMesh = const_cast<FEMesh*>(mesh);
+	m_pMesh = mesh;
 }

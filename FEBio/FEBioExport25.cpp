@@ -2888,21 +2888,23 @@ void FEBioExport25::WriteMeshDataFields()
 		{
 			FEElementData& data = pm->GetElementDataField(n);
 
+			const FEPart* pg = data.GetPart();
+
 			XMLElement tag("ElementData");
 			tag.add_attribute("name", data.GetName().c_str());
+			tag.add_attribute("elem_set", pg->GetName());
 			m_xml.add_branch(tag);
 			{
-				XMLElement el("elem");
+				XMLElement el("e");
 				int nid = el.add_attribute("id", 0);
-				for (int j=0; j<NE; ++j)
+				list<int>::const_iterator it = pg->begin();
+				for (int j = 0; j<pg->size(); ++j, ++it)
 				{
-					if (data.GetTag(j) > 0)
-					{
-						FEElement_& e = pm->ElementRef(j);
-						el.set_attribute(nid, e.m_nid);
-						el.value(data[j]);
-						m_xml.add_leaf(el, false);
-					}
+					int eid = *it;
+					FEElement_& e = pm->ElementRef(eid);
+					el.set_attribute(nid, e.m_nid);
+					el.value(data[j]);
+					m_xml.add_leaf(el, false);
 				}
 			}
 			m_xml.close_branch();

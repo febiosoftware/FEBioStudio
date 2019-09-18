@@ -201,8 +201,8 @@ public:
 	void RemoveSurfaceDataField(int i);
 
 	int ElementDataFields() const { return (int) m_elemData.size(); }
-	FEElementData* AddElementDataField(const string& name, double v = 0.0);
-	FEElementData& GetElementDataField(int i) { return m_elemData[i]; }
+	FEElementData* AddElementDataField(const string& name, FEPart* part, FEMeshData::DATA_TYPE dataType);
+	FEElementData& GetElementDataField(int i) { return *m_elemData[i]; }
 	FEElementData* FindElementDataField(const string& sz);
 	void RemoveElementDataField(int i);
 
@@ -237,7 +237,7 @@ protected:
 	// data fields
 	vector<FENodeData>		m_nodeData;
 	vector<FESurfaceData*>	m_surfData;
-	vector<FEElementData>	m_elemData;
+	vector<FEElementData*>	m_elemData;
 };
 
 double bias(double b, double x);

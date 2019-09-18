@@ -17,16 +17,58 @@ void FEMeshValuator::Evaluate(int nfield)
 	int n = 0;
 	int NE = m_mesh.Elements();
 	Mesh_Data& data = m_mesh.GetMeshData();
-	for (int i = 0; i<NE; ++i)
+	data.Init(0.0, 0);
+	if (nfield < 9)
 	{
-		FEElement& el = m_mesh.Element(i);
-		if (el.IsVisible()) 
+		for (int i = 0; i < NE; ++i)
 		{
-			double val = EvaluateElement(i, nfield);
-			data.SetElementValue(i, val);
-			data.SetElementDataTag(i, 1);
+			FEElement& el = m_mesh.Element(i);
+			if (el.IsVisible())
+			{
+				double val = EvaluateElement(i, nfield);
+				data.SetElementValue(i, val);
+				data.SetElementDataTag(i, 1);
+			}
+			else data.SetElementDataTag(i, 0);
 		}
-		else data.SetElementDataTag(i, 0);
+	}
+	else
+	{
+		nfield -= 9;
+		if ((nfield >= 0) && (nfield < m_mesh.DataFields()))
+		{
+			FEMeshData* meshData = m_mesh.GetMeshData(nfield);
+			switch (meshData->GetDataClass())
+			{
+			case FEMeshData::NODE_DATA:
+			{
+/*				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
+				int ne = el.Nodes();
+				val = 0.0;
+				for (int i = 0; i<ne; ++i) val += nodeData.get(el.m_node[i]);
+				val /= (double)ne;
+*/
+			}
+			break;
+			case FEMeshData::SURFACE_DATA:
+				// TODO: Not sure what to do here. 
+				break;
+			case FEMeshData::PART_DATA:
+			{
+				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
+				const FEPart* pg = elemData.GetPart();
+				std::list<int>::const_iterator it = pg->begin();
+				for (int i = 0; i < pg->size(); ++i, ++it)
+				{
+					int elemId = *it;
+					double val = elemData.get(i);
+					data.SetElementValue(elemId, val);
+					data.SetElementDataTag(elemId, 1);
+				}
+			}
+			break;
+			}
+		}
 	}
 
 	// update stats
@@ -76,33 +118,7 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 		val = FEMeshMetrics::Tet10MidsideNodeOffset(m_mesh, el);
 		break;
 	default:
-		nfield -= 9;
-		if ((nfield >= 0) && (nfield < m_mesh.DataFields()))
-		{
-			FEMeshData* data = m_mesh.GetMeshData(nfield);
-			switch (data->GetDataClass())
-			{
-			case FEMeshData::NODE_DATA:
-				{
-					FENodeData& nodeData = dynamic_cast<FENodeData&>(*data);
-					int ne = el.Nodes();
-					val = 0.0;
-					for (int i = 0; i<ne; ++i) val += nodeData.get(el.m_node[i]);
-					val /= (double)ne;
-				}
-				break;
-			case FEMeshData::SURFACE_DATA:
-				// TODO: Not sure what to do here. 
-				break;
-			case FEMeshData::PART_DATA:
-				{
-					FEElementData& elemData = dynamic_cast<FEElementData&>(*data);
-					val = elemData.get(n);
-					if (err) *err = (elemData.GetTag(n) == 0 ? 1 : 0);
-				}
-				break;
-			}
-		}
+		val = 0.0;
 	}
 
 	return val;

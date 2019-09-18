@@ -4,38 +4,34 @@
 #include <vector>
 using namespace std;
 
+class FEPart;
+
 //-----------------------------------------------------------------------------
 // Element data field
 class FEElementData : public FEMeshData
 {
 public:
-	FEElementData();
+	FEElementData(FEMesh* mesh = nullptr);
 	FEElementData(const FEElementData& d);
 	FEElementData& operator = (const FEElementData& d);
 
 	// create a data field
-	void Create(FEMesh* pm, double v = 0.0);
+	void Create(FEMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
 
 	// size of data field
 	int Size() { return (int)m_data.size(); }
 
 	// get/set
 	double get(int i) { return m_data[i]; }
-	void set(int i, double v, int ntag = 1) { m_data[i] = v; m_tag[i] = ntag; }
+	void set(int i, double v) { m_data[i] = v; }
 
 	// access operator
 	double& operator [] (int i) { return m_data[i]; }
 
+	// Get the element set
+	const FEPart* GetPart() const { return m_part; }
+
 	void FillRandomBox(double fmin, double fmax);
-
-	// clear all tags
-	void ClearTags(int nval = 0);
-
-	// set a tag
-	void SetTag(int nelem, int ntag);
-
-	// get a tag
-	int GetTag(int nelem) const { return m_tag[nelem]; }
 
 public:
 	void Save(OArchive& ar);
@@ -43,5 +39,5 @@ public:
 
 private:
 	vector<double>	m_data;		//!< data values
-	vector<int>		m_tag;		//!< data tags (0 == no value for element)
+	FEPart*			m_part;		//!< the part to which the data applies
 };

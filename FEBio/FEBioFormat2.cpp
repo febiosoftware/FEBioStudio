@@ -339,8 +339,8 @@ void FEBioFormat2::ParseGeometryElementData(FEBioModel::Part& part, XMLTag& tag)
 						// if we couldn't find it, let's create a new one
 						if (pdata == 0)
 						{
-							pdata = pm->AddElementDataField(dataName);
-							pdata->ClearTags();
+//							pdata = pm->AddElementDataField(dataName);
+//							pdata->ClearTags();
 						}
 
 						// make sure we have a data field at this point

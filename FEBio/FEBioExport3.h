@@ -152,6 +152,9 @@ protected:
 	void WriteGeometrySurfacesNew();
 
 	void WriteElementDataSection();
+	void WriteSurfaceDataSection();
+	void WriteEdgeDataSection();
+	void WriteNodeDataSection();
 
 	void WriteMeshDataShellThickness();
 	void WriteMeshDataMaterialFibers();

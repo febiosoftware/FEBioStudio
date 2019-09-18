@@ -239,6 +239,7 @@ bool FEBioExport3::PrepareExport(FEProject& prj)
 			}
 		}
 		if (pm->ElementDataFields() > 0) m_bdata = true;
+		if (pm->SurfaceDataFields() > 0) m_bdata = true;
 	}
 
 	// See if we have data maps
@@ -614,6 +615,16 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 				m_xml.close_branch(); // Geometry
 			}
 
+			// output mesh data section
+			if (m_bdata && m_section[FEBIO_MESHDATA])
+			{
+				m_xml.add_branch("MeshData");
+				{
+					WriteMeshDataSection();
+				}
+				m_xml.close_branch(); // MeshData
+			}
+
 			// output boundary section
 			int nbc = pstep->BCs() + pstep->Interfaces() + fem.GetModel().DiscreteObjects();
 			if ((nbc > 0) && (m_section[FEBIO_BOUNDARY]))
@@ -693,16 +704,6 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 					WriteDiscreteSection(*pstep);
 				}
 				m_xml.close_branch(); // Discrete
-			}
-
-			// output mesh data section
-			if (m_bdata && m_section[FEBIO_MESHDATA])
-			{
-				m_xml.add_branch("MeshData");
-				{
-					WriteMeshDataSection();
-				}
-				m_xml.close_branch(); // MeshData
 			}
 
 			// loadcurve data
@@ -2516,6 +2517,9 @@ void FEBioExport3::WriteGeometryDiscreteSets()
 void FEBioExport3::WriteMeshDataSection()
 {
 	WriteElementDataSection();
+	WriteSurfaceDataSection();
+	WriteEdgeDataSection();
+	WriteNodeDataSection();
 
 	FEModel& fem = *m_pfem;
 	int N = fem.DataMaps();
@@ -2818,26 +2822,81 @@ void FEBioExport3::WriteMeshDataFields()
 		{
 			FEElementData& data = pm->GetElementDataField(n);
 
+			const FEPart* pg = data.GetPart();
+
 			XMLElement tag("ElementData");
 			tag.add_attribute("name", data.GetName().c_str());
+			tag.add_attribute("elem_set", pg->GetName());
 			m_xml.add_branch(tag);
 			{
 				XMLElement el("e");
 				int nid = el.add_attribute("id", 0);
-				for (int j = 0; j<NE; ++j)
+				list<int>::const_iterator it = pg->begin();
+				for (int j = 0; j<pg->size(); ++j, ++it)
 				{
-					if (data.GetTag(j) > 0)
-					{
-						FEElement_& e = pm->ElementRef(j);
-						el.set_attribute(nid, e.m_nid);
-						el.value(data[j]);
-						m_xml.add_leaf(el, false);
-					}
+					int eid = *it;
+					FEElement_& e = pm->ElementRef(eid);
+					el.set_attribute(nid, e.m_nid);
+					el.value(data[j]);
+					m_xml.add_leaf(el, false);
 				}
 			}
 			m_xml.close_branch();
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteSurfaceDataSection()
+{
+	FEModel& fem = *m_pfem;
+	GModel& model = fem.GetModel();
+
+	for (int i = 0; i<model.Objects(); i++)
+	{
+		FEMesh* mesh = model.Object(i)->GetFEMesh();
+
+		for (int j = 0; j < mesh->SurfaceDataFields(); j++)
+		{
+			FESurfaceData sd = mesh->GetSurfaceDataField(j);
+
+			XMLElement tag("SurfaceData");
+			tag.add_attribute("name", sd.GetName().c_str());
+
+			if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
+			else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("data_type", "vector");
+
+			tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
+
+			m_xml.add_branch(tag);
+			{
+				XMLElement el("face");
+				int n1 = el.add_attribute("lid", 0);
+
+				int nid = 1;
+				for (double d : *(sd.getData()))
+				{
+					el.set_attribute(n1, nid++);
+					el.value(d);
+
+					m_xml.add_leaf(el, false);
+				}
+
+
+			}
+			m_xml.close_branch();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteEdgeDataSection()
+{
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteNodeDataSection()
+{
 }
 
 //-----------------------------------------------------------------------------

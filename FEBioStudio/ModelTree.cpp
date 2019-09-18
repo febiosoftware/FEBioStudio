@@ -610,6 +610,10 @@ void CModelTree::Build(CDocument* doc)
 	t2 = AddTreeItem(t1, "Named Selections", MT_NAMED_SELECTION, nsel);
 	UpdateGroups(t2, fem);
 
+	// Mesh data
+	t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA);
+	UpdateMeshData(t2, fem);
+
 	// add the materials
 	t2 = AddTreeItem(t1, "Materials", MT_MATERIAL_LIST, fem.Materials());
 	UpdateMaterials(t2,fem);
@@ -960,6 +964,37 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FEModel& fem)
 			{
 				FEPart* pg = po->GetFEPart(j);
 				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FEModel& fem)
+{
+	GModel& mdl = fem.GetModel();
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		FEMesh* mesh = po->GetFEMesh();
+		if (mesh)
+		{
+			for (int j = 0; j < mesh->NodeDataFields(); ++j)
+			{
+				FENodeData& data = mesh->GetNodeDataField(j);
+				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
+			}
+
+			for (int j = 0; j < mesh->SurfaceDataFields(); ++j)
+			{
+				FESurfaceData& data = mesh->GetSurfaceDataField(j);
+				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
+			}
+
+			for (int j = 0; j < mesh->ElementDataFields(); ++j)
+			{
+				FEElementData& data = mesh->GetElementDataField(j);
+				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
 			}
 		}
 	}

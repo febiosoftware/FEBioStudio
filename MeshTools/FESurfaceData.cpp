@@ -2,8 +2,9 @@
 #include "FESurfaceData.h"
 #include <MeshLib/FEMesh.h>
 
-FESurfaceData::FESurfaceData() : FEMeshData(FEMeshData::SURFACE_DATA), m_surface(nullptr)
+FESurfaceData::FESurfaceData(FEMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA), m_surface(nullptr)
 {
+	SetMesh(mesh);
 }
 
 FESurfaceData::~FESurfaceData()
@@ -51,11 +52,11 @@ void FESurfaceData::Save(OArchive& ar)
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
-	ar.WriteChunk(CID_MESH_DATA_TAGS, (int) m_dataType);
+	ar.WriteChunk(CID_MESH_DATA_TYPE, (int) m_dataType);
 
 	// Surface must be saved first so that the number of facets in the surface can be
 	// queried before the data is read during the load operation.
-	ar.BeginChunk(CID_MESH_SURFACE_DATA_SURFACE);
+	ar.BeginChunk(CID_MESH_DATA_SURFACE);
 	{
 		m_surface->Save(ar);
 	}
@@ -66,6 +67,7 @@ void FESurfaceData::Save(OArchive& ar)
 
 void FESurfaceData::Load(IArchive& ar)
 {
+	GObject* po = GetMesh()->GetGObject();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -75,15 +77,15 @@ void FESurfaceData::Load(IArchive& ar)
 			ar.read(szname);
 			SetName(szname);
 		}
-		else if(nid == CID_MESH_DATA_TAGS)
+		else if(nid == CID_MESH_DATA_TYPE)
 		{
 			int dType;
 			ar.read(dType);
 			m_dataType = (FEMeshData::DATA_TYPE) dType;
 		}
-		else if(nid == CID_MESH_SURFACE_DATA_SURFACE)
+		else if(nid == CID_MESH_DATA_SURFACE)
 		{
-			m_surface = new FESurface(nullptr);
+			m_surface = new FESurface(po);
 			m_surface->Load(ar);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
