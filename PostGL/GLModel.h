@@ -97,10 +97,10 @@ public:
 	void SetSmoothingAngle(double w);
 
 	//! get the smoothing angle in degrees
-	double GetSmoothingAngle() { return 180 * m_stol / PI; }
+	double GetSmoothingAngle() { return m_stol; }
 
 	//! get the smoothing angle in radians
-	double GetSmoothingAngleRadians() { return m_stol; }
+	double GetSmoothingAngleRadians() { return PI*m_stol/180.0; }
 
 	//! get the active mesh
 	Post::FEMeshBase* GetActiveMesh();
