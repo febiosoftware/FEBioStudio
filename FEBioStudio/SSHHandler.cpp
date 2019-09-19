@@ -4,16 +4,16 @@
 #include <fstream>
 #include <fcntl.h>
 #include <QMessageBox>
-#include <QLabel>
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QFormLayout>
-#include <QDialogButtonBox>
+#include <QInputDialog>
+
 #include "SSHHandler.h"
 #include <FSCore/FSDir.h>
 #include "Logger.h"
+#include "Encrypter.h"
+
+#include <iostream>
 
 #define MAX_XFER_BUF_SIZE 16384
 
@@ -21,51 +21,8 @@
 #define S_IRWXU (0400|0200|0100)
 #endif
 
-class CDlgPassword : public QDialog
-{
-public:
-	QFormLayout* 	form;
-	QLabel*			message;
-	QLineEdit*		password;
 
-public:
-	CDlgPassword(QWidget* parent, std::string userAndServer) : QDialog(parent)
-{
-		QString messageString = QString::fromStdString("Please enter a password for " + userAndServer);
-
-		form = new QFormLayout;
-		form->setLabelAlignment(Qt::AlignRight);
-		form->addRow(message = new QLabel(messageString));
-		form->addRow("Password:", password = new QLineEdit);
-		password->setEchoMode(QLineEdit::Password);
-
-		QVBoxLayout* l = new QVBoxLayout;
-		l->addLayout(form);
-
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-		l->addWidget(bb);
-
-		setLayout(l);
-
-		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
-		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
-}
-
-	virtual ~CDlgPassword() {}
-
-	void accept()
-	{
-		if(password->text().isEmpty())
-		{
-			QMessageBox::critical(this, "FEBio Studio", "Please enter a password.");
-			return;
-		}
-
-		QDialog::accept();
-	}
-};
-
-CSSHHandler::CSSHHandler (CFEBioJob* job) : job(job) // @suppress("Class members should be properly initialized")
+CSSHHandler::CSSHHandler (CFEBioJob* job) : job(job), passwdLength(-1) // @suppress("Class members should be properly initialized")
 {
 	// Get local .feb file name
 	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
@@ -75,19 +32,29 @@ CSSHHandler::CSSHHandler (CFEBioJob* job) : job(job) // @suppress("Class members
 
 	// Get remote base file name
 	remoteFileBase = job->GetLaunchConfig()->remoteDir + "/" + baseName;
+}
 
+void CSSHHandler::Update(CLaunchConfig& oldConfig)
+{
+	if(!job->GetLaunchConfig()->SameServer(oldConfig))
+	{
+		passwdEnc.clear();
+		passwdLength = -1;
+	}
+
+	// Get local .feb file name
+	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
+
+	QFileInfo info(localFile.c_str());
+	std::string baseName = info.baseName().toStdString();
+
+	// Get remote base file name
+	remoteFileBase = job->GetLaunchConfig()->remoteDir + "/" + baseName;
 }
 
 
 void CSSHHandler::StartRemoteJob()
 {
-	//Start the ssh session
-	if(StartSSHSession() != SSH_OK)
-	{
-		EndSSHSession();
-		return;
-	}
-
 	// Get local .feb file name
 	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
 
@@ -125,7 +92,7 @@ void CSSHHandler::StartRemoteJob()
 		// Construct remote command
 		std::string command = "qsub " + remoteFileBase + ".bash";
 
-		if(RunInteractiveNoWait(command) != SSH_OK)
+		if(RunInteractiveNoRead(command) != SSH_OK)
 		{
 			EndSSHSession();
 			return;
@@ -141,9 +108,9 @@ void CSSHHandler::StartRemoteJob()
 		}
 
 		// Construct remote command
-		std::string command = "srun " + remoteFileBase + ".bash";
+		std::string command = "sbatch " + remoteFileBase + ".bash";
 
-		if(RunInteractiveNoWait(command) != SSH_OK)
+		if(RunInteractiveNoRead(command) != SSH_OK)
 		{
 			EndSSHSession();
 			return;
@@ -156,9 +123,6 @@ void CSSHHandler::StartRemoteJob()
 
 void CSSHHandler::GetJobFiles()
 {
-	//Start the ssh session
-	StartSSHSession();
-
 	// Get local .xplt file name
 	std::string localFile = FSDir::toAbsolutePath(job->GetPlotFileName());
 
@@ -169,7 +133,7 @@ void CSSHHandler::GetJobFiles()
 	GetFile(localFile, remoteFile);
 
 	// Get local .log file name
-	localFile = FSDir::toAbsolutePath(job->GetLogFileName());
+	localFile.replace(localFile.end()-4, localFile.end(), "log");
 
 	// Get remote .log file name
 	remoteFile = remoteFileBase + ".log";
@@ -179,7 +143,47 @@ void CSSHHandler::GetJobFiles()
 
 	// Close ssh session
 	EndSSHSession();
+}
 
+void CSSHHandler::GetQueueStatus()
+{
+	std::string command;
+
+	if(job->GetLaunchConfig()->type == PBS)
+	{
+		command = "qstat";
+	}
+	else
+	{
+		command = "squeue";
+	}
+
+	std::vector<std::string> list;
+	list.push_back(command);
+
+	RunCommandList(list);
+
+	// Close ssh session
+	EndSSHSession();
+}
+
+void CSSHHandler::SetPasswordLength(int l)
+{
+	passwdLength = l;
+}
+size_t CSSHHandler::GetPasswordLength()
+{
+	return passwdLength;
+}
+
+void CSSHHandler::SetPasswdEnc(std::vector<unsigned char> passwdEnc)
+{
+	this->passwdEnc = passwdEnc;
+}
+
+std::vector<unsigned char>& CSSHHandler::GetPasswdEnc()
+{
+	return passwdEnc;
 }
 
 int CSSHHandler::StartSSHSession()
@@ -190,7 +194,7 @@ int CSSHHandler::StartSSHSession()
 	if(session == NULL)
 	{
 		QMessageBox::critical(NULL, "FEBio Studio", "Could not initialize SSH session.");
-		return -1;
+		return FAILED;
 	}
 
 	ssh_options_set(session, SSH_OPTIONS_HOST, job->GetLaunchConfig()->server.c_str());
@@ -203,18 +207,24 @@ int CSSHHandler::StartSSHSession()
 	{
 		QMessageBox::critical(NULL, "FEBio Studio", "Error connecting to server: " + *ssh_get_error(session));
 		ssh_free(session);
-		return -1;
+		return FAILED;
 	}
 
 	// Verify the server's identity
 	if (verify_knownhost() < 0)
 	{
-		return -1;
+		return FAILED;
 	}
 
-	error = authenticate();
+	error = authenticatePubkey();
+	if(error == OK) return error;
 
-	return error;
+	if(passwdLength != -1)
+	{
+		if(authenticatePassword()) return OK;
+	}
+
+	return NEEDSPSWD;
 
 }
 
@@ -224,7 +234,7 @@ void CSSHHandler::EndSSHSession()
 	ssh_free(session);
 }
 
-int CSSHHandler::authenticate()
+int CSSHHandler::authenticatePubkey()
 {
 	int rc;
 
@@ -232,52 +242,22 @@ int CSSHHandler::authenticate()
 	rc = ssh_userauth_publickey_auto(session, NULL, NULL);
 	if (rc == SSH_AUTH_SUCCESS)
 	{
-		return rc;
+		return OK;
 	}
 
-	// If that fails, try password authentication
-	std::string userAndServer = job->GetLaunchConfig()->userName + "@" + job->GetLaunchConfig()->server;
-
-	CDlgPassword dlg(NULL, userAndServer);
-	QMessageBox::StandardButton reply;
-
-	if(password == "")
-	{
-		if(dlg.exec())
-		{
-			password = dlg.password->text().toStdString();
-		}
-		else
-		{
-			return -1;
-		}
-	}
-
-	while(true)
-	{
-		rc = ssh_userauth_password(session, NULL, password.c_str());
-		if (rc != SSH_AUTH_SUCCESS)
-		{
-			QMessageBox::critical(NULL, "FEBio Studio", "Failed to authenticate with password.");
-
-			if(dlg.exec())
-			{
-				password = dlg.password->text().toStdString();
-			}
-			else
-			{
-				return -1;
-			}
-		}
-		else
-		{
-			break;
-		}
-
-	}
-
-	return rc;
+	return FAILED;
 }
+
+bool CSSHHandler::authenticatePassword()
+{
+	std::string password = CEncrypter::Instance()->Decrypt(passwdEnc, passwdLength);
+
+	int rc = ssh_userauth_password(session, NULL, password.c_str());
+	if (rc != SSH_AUTH_SUCCESS) return false;
+
+	return true;
+}
+
 
 int CSSHHandler::verify_knownhost()
 {
@@ -364,13 +344,12 @@ int CSSHHandler::verify_knownhost()
 int CSSHHandler::StartSFTPSession()
 {
 	int rc;
-	char error[256];
+	QString error;
 
 	sftp = sftp_new(session);
 	if (sftp == NULL)
 	{
-		sprintf(error, "Error allocating SFTP session: %s\n",
-				ssh_get_error(session));
+		error = QString("Error allocating SFTP session: %1\n").arg(ssh_get_error(session));
 		CLogger::AddLogEntry(error);
 		return SSH_ERROR;
 	}
@@ -378,8 +357,7 @@ int CSSHHandler::StartSFTPSession()
 	rc = sftp_init(sftp);
 	if (rc != SSH_OK)
 	{
-		sprintf(error, "Error initializing SFTP session: %s.\n",
-				sftp_get_error(sftp));
+		error = QString("Error initializing SFTP session: %1\n").arg(sftp_get_error(sftp));
 		CLogger::AddLogEntry(error);
 		sftp_free(sftp);
 		return rc;
@@ -400,7 +378,7 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 	int access_type = O_WRONLY | O_CREAT | O_TRUNC;
 	sftp_file file;
 	char buffer[MAX_XFER_BUF_SIZE];
-	char error[256];
+	QString error;
 
 	StartSFTPSession();
 
@@ -408,9 +386,8 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 			access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		sprintf(error, "Can't open file for writing: %s\n",
-				ssh_get_error(session));
-		CLogger::AddLogEntry(error);
+		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(session));
+		emit AddOutput(error);
 		return SSH_ERROR;
 	}
 
@@ -425,9 +402,8 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 			ssize_t nwritten = sftp_write(file, buffer, fin.gcount());
 			if (nwritten != fin.gcount())
 			{
-				sprintf(error, "Can't write data to file: %s\n",
-						ssh_get_error(session));
-				CLogger::AddLogEntry(error);
+				error = QString("Can't write data to file: %1\n").arg(ssh_get_error(session));
+				emit AddOutput(error);
 				sftp_close(file);
 				return SSH_ERROR;
 			}
@@ -437,9 +413,8 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 	rc = sftp_close(file);
 	if (rc != SSH_OK)
 	{
-		sprintf(error, "Can't close the written file: %s\n",
-				ssh_get_error(session));
-		CLogger::AddLogEntry(error);
+		error = QString("Can't close the written file: %1\n").arg(ssh_get_error(session));
+		emit AddOutput(error);
 		return rc;
 	}
 
@@ -451,7 +426,7 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 	int rc, nwritten;
 	int access_type = O_WRONLY | O_CREAT | O_TRUNC;
 	sftp_file file;
-	char error[256];
+	QString error;
 
 	StartSFTPSession();
 
@@ -459,18 +434,16 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 			access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		sprintf(error, "Can't open file for writing: %s\n",
-				ssh_get_error(session));
-		CLogger::AddLogEntry(error);
+		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(session));
+		emit AddOutput(error);
 		return SSH_ERROR;
 	}
 
 	nwritten = sftp_write(file, buf, bufSize);
 	if (nwritten != bufSize)
 	{
-		sprintf(error, "Can't write data to file: %s\n",
-				ssh_get_error(session));
-		CLogger::AddLogEntry(error);
+		error = QString("Can't write data to file: %1\n").arg(ssh_get_error(session));
+		emit AddOutput(error);
 		sftp_close(file);
 		return SSH_ERROR;
 	}
@@ -478,9 +451,8 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 	rc = sftp_close(file);
 	if (rc != SSH_OK)
 	{
-		sprintf(error, "Can't close the written file: %s\n",
-				ssh_get_error(session));
-		CLogger::AddLogEntry(error);
+		error = QString("Can't close the written file: %1\n").arg(ssh_get_error(session));
+		emit AddOutput(error);
 		return rc;
 	}
 
@@ -493,7 +465,7 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 	int access_type = O_RDWR;
 	sftp_file file;
 	char buffer[MAX_XFER_BUF_SIZE];
-	char error[256];
+	QString error;
 
 #ifdef WIN32
 	HANDLE fileHandle;
@@ -502,15 +474,13 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 	int fd, nwritten;
 #endif
 
-
 	StartSFTPSession();
 
 	file = sftp_open(sftp, remote.c_str(), access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		sprintf(error, "Can't open file for writing: %s\n",
-				ssh_get_error(session));
-		CLogger::AddLogEntry(error);
+		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(session));
+		emit AddOutput(error);
 		return SSH_ERROR;
 	}
 
@@ -519,9 +489,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 #else
 	fd = open(local.c_str(), O_RDWR | O_CREAT, S_IRWXU);
 	if (fd < 0) {
-		sprintf(error, "Can't open file for writing: %s\n",
-				strerror(errno));
-		CLogger::AddLogEntry(error);
+		error = QString("Can't open file for writing: %1\n").arg(strerror(errno));
+		emit AddOutput(error);
 		return SSH_ERROR;
 	}
 #endif
@@ -537,9 +506,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 		}
 		else if (nbytes < 0)
 		{
-			sprintf(error, "Error while reading file: %s\n",
-					ssh_get_error(session));
-			CLogger::AddLogEntry(error);
+			error = QString("Error while reading file: %1\n").arg(ssh_get_error(session));
+			emit AddOutput(error);
 			sftp_close(file);
 
 #ifdef WIN32
@@ -556,9 +524,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 #endif
 		if (nwritten != nbytes)
 		{
-			sprintf(error, "Error writing: %s\n",
-					strerror(errno));
-			CLogger::AddLogEntry(error);
+			error = QString("Error writing: %1\n").arg(strerror(errno));
+			emit AddOutput(error);
 			sftp_close(file);
 
 #ifdef WIN32
@@ -570,9 +537,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 
 	rc = sftp_close(file);
 	if (rc != SSH_OK) {
-		sprintf(error, "Can't close the read file: %s\n",
-				ssh_get_error(session));
-		CLogger::AddLogEntry(error);
+		error = QString("Can't close the read file: %1\n").arg(ssh_get_error(session));
+		emit AddOutput(error);
 
 #ifdef WIN32
 		CloseHandle(fileHandle);
@@ -606,6 +572,8 @@ int CSSHHandler::RunCommand(std::string command)
 		return rc;
 	}
 
+	command.push_back('\n');
+
 	rc = ssh_channel_request_exec(channel, command.c_str());
 	if (rc != SSH_OK)
 	{
@@ -618,7 +586,8 @@ int CSSHHandler::RunCommand(std::string command)
 	while (nbytes > 0)
 	{
 		buffer[nbytes] = '\0';
-		CLogger::AddLogEntry(buffer);
+		emit AddOutput(buffer);
+
 		nbytes = ssh_channel_read(channel, buffer, sizeof(buffer) - 1, 0);
 	}
 
@@ -635,7 +604,7 @@ int CSSHHandler::RunCommand(std::string command)
 	return SSH_OK;
 }
 
-int CSSHHandler::RunInteractiveNoWait(std::string command)
+int CSSHHandler::RunInteractiveNoRead(std::string command)
 {
 	ssh_channel channel;
 	int rc;
@@ -659,6 +628,8 @@ int CSSHHandler::RunInteractiveNoWait(std::string command)
 	command.push_back('\n');
 
 	rc = ssh_channel_write(channel, command.c_str(), sizeof(char)*command.length());
+
+	sleep(1);
 
 	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
@@ -704,7 +675,7 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 
 	rc = ssh_channel_write(channel, "echo $$\n", sizeof("echo $$\n"));
 
-	nbytes = ssh_channel_read(channel, buffer2, sizeof(buffer), 0);
+	nbytes = ssh_channel_read(channel, buffer2, sizeof(buffer2), 0);
 
 	string pidString(buffer2);
 
@@ -719,6 +690,8 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 		bool cont = true;
 		while(cont || nbytes > 0)
 		{
+			usleep(5000);
+
 			string test("pgrep -P ");
 
 			test.append(to_string(pid));
@@ -734,16 +707,9 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 
 			if(lines < 1) cont = false;
 
-			CLogger::AddLogEntry(buffer);
-			//      if (write(1, buffer, nbytes) != (unsigned int) nbytes)
-			//      {
-			//        ssh_channel_close(channel);
-			//        ssh_channel_free(channel);
-			//        return SSH_ERROR;
-			//      }
 			nbytes = ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer) - 1, 0);
 			buffer[nbytes] = '\0';
-
+			emit AddOutput(buffer);
 		}
 	}
 
@@ -797,6 +763,9 @@ int CSSHHandler::CreateBashFile()
 	return SendFile(bashString.c_str(), sizeof(char)*bashString.length(), remote);
 
 }
+
+
+
 
 
 #endif

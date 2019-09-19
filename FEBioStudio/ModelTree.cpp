@@ -20,6 +20,8 @@
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"
 #include <FSCore/FSDir.h>
+#include "SSHThread.h"
+#include "Logger.h"
 
 class CObjectValidator
 {
@@ -270,7 +272,29 @@ public:
 		else if (i == 5)
 		{
 			// Copy remote files to local dir
-			m_job->GetRemoteJobFiles();
+			if(m_wnd->InitializeSSH(m_job))
+			{
+				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), GETJOBFILES);
+				QObject::connect(m_job->GetSSHHandler(), &CSSHHandler::AddOutput, sshThread, &CSSHThread::GetOutput);
+				QObject::connect(sshThread, &CSSHThread::AddOutput, &CLogger::AddLogEntry);
+
+				sshThread->start();
+			}
+		}
+		else if (i == 6)
+		{
+			// Copy remote files to local dir
+			if(m_wnd->InitializeSSH(m_job))
+			{
+				m_wnd->ClearOutput();
+
+				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), GETQUEUESTATUS);
+
+				QObject::connect(m_job->GetSSHHandler(), &CSSHHandler::AddOutput, sshThread, &CSSHThread::GetOutput);
+				QObject::connect(sshThread, &CSSHThread::AddOutput, &CLogger::AddOutputEntry);
+
+				sshThread->start();
+			}
 		}
 #endif
 	}

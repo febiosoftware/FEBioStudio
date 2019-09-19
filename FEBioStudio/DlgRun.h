@@ -14,9 +14,6 @@ class CDlgRun : public QDialog
 public:
 	CDlgRun(QWidget* parent);
 
-	// Call this before exec!
-	void Init();
-
 	void SetWorkingDirectory(const QString& wd);
 	void SetJobName(const QString& fn);
 	void SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault = 0);
@@ -35,11 +32,10 @@ public:
 protected slots:
 	void updateDefaultCommand();
 	void on_setCWDBtn_Clicked();
-	void onPathChanged(int n);
+	void on_editLCBtn_Clicked();
 	void on_selectConfigFile();
 
 private:
 	Ui::CDlgRun*	ui;
-
-	void runEditPathDlg(bool edit);
+	void UpdateLaunchConfigBox(int index);
 };

@@ -16,3 +16,8 @@ void CLogger::AddLogEntry(const QString& txt)
 {
 	m_mainWindow->AddLogEntry(txt);
 }
+
+void CLogger::AddOutputEntry(const QString& txt)
+{
+	m_mainWindow->AddOutputEntry(txt);
+}

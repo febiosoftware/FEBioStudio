@@ -34,9 +34,6 @@ public:
 	void SetPlotFileName(const std::string& plotFile);
 	std::string GetPlotFileName() const;
 
-	void SetLogFileName(const std::string& logFile);
-	std::string GetLogFileName() const;
-
 	void UpdateWorkingDirectory(const std::string& dir);
 
 	CLaunchConfig* GetLaunchConfig();

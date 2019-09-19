@@ -68,7 +68,6 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	dlg.SetWorkingDirectory(jobPath);
 	dlg.SetJobName(jobName);
 	dlg.SetLaunchConfig(ui->m_launch_configs, lastLaunchConfigIndex);
-	dlg.Init();
 	if (dlg.exec())
 	{
 		// get the working directory and job name
@@ -108,6 +107,9 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		{
 			job->UpdateWorkingDirectory(jobPath.toStdString());
 			job->UpdateLaunchConfig(ui->m_launch_configs.at(lastLaunchConfigIndex));
+
+			// show it in the model viewer
+			UpdateModel(job);
 		}
 
 		// get the selected FEBio file version

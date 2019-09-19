@@ -1,31 +1,26 @@
 #pragma once
 
 #include <string>
+#include <FSCore/FSObject.h>
 
 enum launchTypes{LOCAL=0, REMOTE, PBS, SLURM, CUSTOM};
 
-class CLaunchConfig
+class CLaunchConfig : public FSObject
 {
 
 public:
 	CLaunchConfig(){}
 	~CLaunchConfig(){}
+	CLaunchConfig(const CLaunchConfig &old);
+	void operator=(const CLaunchConfig &old);
 
-	CLaunchConfig(const CLaunchConfig &old)
-	{
-		type = old.type;
-		name = old.name;
-		path = old.path;
-		server = old.server;
-		port = old.port;
-		userName = old.userName;
-		remoteDir = old.remoteDir;
-		jobName = old.jobName;
-		walltime = old.walltime;
-		procNum = old.procNum;
-		ram = old.ram;
+	bool operator!=(const CLaunchConfig &b);
+	bool operator==(const CLaunchConfig &b);
 
-	}
+	bool SameServer(const CLaunchConfig &b);
+
+	void Load(IArchive& ar) override;
+	void Save(OArchive& ar) override;
 
 	int type = 0;
 	std::string name;

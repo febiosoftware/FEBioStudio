@@ -5,6 +5,7 @@
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
 #include <FSCore/FSDir.h>
+#include <QThread>
 #ifdef HAS_SSH
 #include "SSHHandler.h"
 #endif
@@ -66,18 +67,6 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	// add the xplt extension
 	m_plotFile += "xplt";
 
-	// set default plot file name
-	m_logFile = m_fileName;
-	pos = m_logFile.rfind(".");
-	if (pos != std::string::npos)
-	{
-		// remove extension
-		m_logFile.erase(pos + 1);
-	}
-
-	// add the xplt extension
-	m_logFile += "log";
-
 	m_postDoc = nullptr;
 
 #ifdef HAS_SSH
@@ -130,21 +119,30 @@ CLaunchConfig* CFEBioJob::GetLaunchConfig()
 
 void CFEBioJob::UpdateLaunchConfig(CLaunchConfig launchConfig)
 {
+	CLaunchConfig oldConfig = m_launchConfig;
+
 	m_launchConfig = launchConfig;
 
 #ifdef HAS_SSH
-	if(m_sshHandler)
-	{
-		delete m_sshHandler;
-	}
-
 	if(launchConfig.type == LOCAL)
 	{
+		if(m_sshHandler)
+		{
+			delete m_sshHandler;
+		}
+
 		m_sshHandler = nullptr;
 	}
 	else
 	{
-		m_sshHandler = new CSSHHandler(this);
+		if(m_sshHandler)
+		{
+			m_sshHandler->Update(oldConfig);
+		}
+		else
+		{
+			m_sshHandler = new CSSHHandler(this);
+		}
 	}
 #endif
 
@@ -163,7 +161,19 @@ void CFEBioJob::GetRemoteJobFiles()
 
 void CFEBioJob::StartRemoteJob()
 {
-	m_sshHandler->StartRemoteJob();
+//	QThread* thread = new QThread;
+//
+//	m_sshHandler->moveToThread(thread);
+//
+//	connect(m_sshHandler, SIGNAL, (error(QString)), this, SLOT (errorString(QString)));
+//	connect(thread, SIGNAL (started()), m_sshHandler, SLOT (process()));
+//	connect(m_sshHandler, SIGNAL (finished()), thread, SLOT (quit()));
+//	connect(m_sshHandler, SIGNAL (finished()), m_sshHandler, SLOT (deleteLater()));
+//	connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+//	thread->start();
+
+
+//	m_sshHandler->StartRemoteJob();
 }
 
 #endif
@@ -196,16 +206,6 @@ void CFEBioJob::SetPlotFileName(const std::string& plotFile)
 std::string CFEBioJob::GetPlotFileName() const
 {
 	return m_plotFile;
-}
-
-void CFEBioJob::SetLogFileName(const std::string& logFile)
-{
-	m_logFile = logFile;
-}
-
-std::string CFEBioJob::GetLogFileName() const
-{
-	return m_logFile;
 }
 
 bool CFEBioJob::HasPostDoc()
@@ -250,6 +250,11 @@ void CFEBioJob::Save(OArchive& ar)
 	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 	ar.WriteChunk(CID_FEBIOJOB_FILENAME, m_fileName);
 	ar.WriteChunk(CID_FEBIOJOB_PLOTFILE, m_plotFile);
+
+	ar.BeginChunk(CID_FEBIOJOB_LCONFIG);
+	m_launchConfig.Save(ar);
+	ar.EndChunk();
+
 }
 
 void CFEBioJob::Load(IArchive& ar)
@@ -264,6 +269,7 @@ void CFEBioJob::Load(IArchive& ar)
 		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case CID_FEBIOJOB_FILENAME: ar.read(m_fileName); break;
 		case CID_FEBIOJOB_PLOTFILE: ar.read(m_plotFile); break;
+		case CID_FEBIOJOB_LCONFIG: {CLaunchConfig lConfig; lConfig.Load(ar); UpdateLaunchConfig(lConfig); } break;
 		}
 		ar.CloseChunk();
 	}

@@ -123,5 +123,6 @@
 		<file>icons/info.png</file>
 		<file>icons/flow.png</file>
 		<file>icons/error.png</file>
+		<file>icons/edit.png</file>
 	</qresource>
 </RCC>

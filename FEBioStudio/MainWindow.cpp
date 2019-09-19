@@ -31,8 +31,12 @@
 #include "FEBioJob.h"
 #include <PostLib/ColorMap.h>
 #include <FSCore/FSDir.h>
+#include <QInputDialog>
 #include "DlgCheck.h"
 #include "Logger.h"
+#include "SSHHandler.h"
+#include "SSHThread.h"
+#include "Encrypter.h"
 
 extern GLColor col[];
 
@@ -96,9 +100,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		ui->actionFontBold->setIcon(QIcon(":/icons/font_bold_neg.png"));
 		ui->actionFontItalic->setIcon(QIcon(":/icons/font_italic_neg.png"));
 	}
-    
-    // allow drop events
-    setAcceptDrops(true);
+
+	// allow drop events
+	setAcceptDrops(true);
 
 	// make sure the file viewer is visible
 	ui->showFileViewer();
@@ -284,7 +288,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	if (ch) szfile++;
 	ch = strrchr((char*)szfile, '"');
 	if (ch) *ch = 0;
-	*/
+	 */
 
 	// start reading the file
 	ReadFile(fileName, reader, true);
@@ -296,30 +300,30 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 //-----------------------------------------------------------------------------
 void CMainWindow::dragEnterEvent(QDragEnterEvent *e)
 {
-    if (e->mimeData()->hasUrls()) {
-        e->acceptProposedAction();
-    }
+	if (e->mimeData()->hasUrls()) {
+		e->acceptProposedAction();
+	}
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::dropEvent(QDropEvent *e)
 {
-    foreach (const QUrl &url, e->mimeData()->urls()) {
-        QString fileName = url.toLocalFile();
-        // create a file reader
-        FileReader* fileReader = CreateFileReader(fileName);
-        // make sure we have one
-        if (fileReader)
-        {
-            ReadFile(fileName, fileReader, false);
-        }
-        else {
-            QString ext = QFileInfo(fileName).suffix();
-            if ((ext.compare("prv", Qt::CaseInsensitive) == 0) ||
-                (ext.compare("fsprj", Qt::CaseInsensitive) == 0))
-                OpenDocument(fileName);
-        }
-    }
+	foreach (const QUrl &url, e->mimeData()->urls()) {
+		QString fileName = url.toLocalFile();
+		// create a file reader
+		FileReader* fileReader = CreateFileReader(fileName);
+		// make sure we have one
+		if (fileReader)
+		{
+			ReadFile(fileName, fileReader, false);
+		}
+		else {
+			QString ext = QFileInfo(fileName).suffix();
+			if ((ext.compare("prv", Qt::CaseInsensitive) == 0) ||
+					(ext.compare("fsprj", Qt::CaseInsensitive) == 0))
+				OpenDocument(fileName);
+		}
+	}
 }
 //-----------------------------------------------------------------------------
 void CMainWindow::on_recentFiles_triggered(QAction* action)
@@ -435,7 +439,7 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	// Update the command windows
 	if (ui->buildPanel->isVisible() && (psend != ui->buildPanel)) ui->buildPanel->Update();
 
-//	if (m_pCurveEdit->visible() && (m_pCurveEdit != psend)) m_pCurveEdit->Update();
+	//	if (m_pCurveEdit->visible() && (m_pCurveEdit != psend)) m_pCurveEdit->Update();
 	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update();
 }
 
@@ -879,10 +883,10 @@ void CMainWindow::readSettings()
 //-----------------------------------------------------------------------------
 void CMainWindow::UpdateUI()
 {
-/*	m_pToolbar->Update();
+	/*	m_pToolbar->Update();
 	m_pCmdWnd->Update();
 	if (m_pCurveEdit->visible()) m_pCurveEdit->Update();
-*/	
+	 */
 	ui->glc->Update();
 	RedrawGL();
 }
@@ -901,8 +905,8 @@ void CMainWindow::UpdateToolbar()
 //-----------------------------------------------------------------------------
 void CMainWindow::OpenInCurveEditor(FSObject* po)
 {
-//	OnToolsCurveEditor(0, 0);
-//	m_pCurveEdit->Select(po);
+	//	OnToolsCurveEditor(0, 0);
+	//	m_pCurveEdit->Select(po);
 }
 
 //-----------------------------------------------------------------------------
@@ -932,7 +936,7 @@ void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 			ui->modelViewer->Update();
 			if (po)
 			{
-//				ui->showModelViewer();
+				//				ui->showModelViewer();
 				ui->modelViewer->Select(po);
 			}
 		}
@@ -1165,7 +1169,7 @@ void CMainWindow::onTimer()
 
 	if (time.m_bfix)
 	{
-/*		float f0 = doc->GetTimeValue(N0);
+		/*		float f0 = doc->GetTimeValue(N0);
 		float f1 = doc->GetTimeValue(N1);
 
 		float ftime = doc->GetTimeValue();
@@ -1206,7 +1210,7 @@ void CMainWindow::onTimer()
 		}
 
 		SetCurrentTimeValue(ftime);
-*/	}
+		 */	}
 	else
 	{
 		if (time.m_mode == MODE_FORWARD)
@@ -1263,12 +1267,12 @@ void CMainWindow::onTimer()
 
 void CMainWindow::on_selectData_currentValueChanged(int index)
 {
-//	if (index == -1)
-//		ui->actionColorMap->setDisabled(true);
-//	else
+	//	if (index == -1)
+	//		ui->actionColorMap->setDisabled(true);
+	//	else
 	{
-//		if (ui->actionColorMap->isEnabled() == false)
-//			ui->actionColorMap->setEnabled(true);
+		//		if (ui->actionColorMap->isEnabled() == false)
+		//			ui->actionColorMap->setEnabled(true);
 
 		int nfield = ui->selectData->currentValue();
 		CPostDoc* doc = GetActiveDocument();
@@ -1285,9 +1289,9 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 		RedrawGL();
 	}
 
-//	UpdateGraphs(false);
+	//	UpdateGraphs(false);
 
-//	if (ui->modelViewer->isVisible()) ui->modelViewer->Update(false);
+	//	if (ui->modelViewer->isVisible()) ui->modelViewer->Update(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1362,7 +1366,7 @@ void CMainWindow::on_actionTimeSettings_triggered()
 	if (dlg.exec())
 	{
 		TIMESETTINGS& time = doc->GetTimeSettings();
-//		ui->timePanel->SetRange(time.m_start, time.m_end);
+		//		ui->timePanel->SetRange(time.m_start, time.m_end);
 
 		int ntime = doc->GetActiveState();
 		if ((ntime < time.m_start) || (ntime > time.m_end))
@@ -1917,11 +1921,101 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 	else
 	{
 #ifdef HAS_SSH
-		job->StartRemoteJob();
+		if(InitializeSSH(job))
+		{
+			CSSHThread* sshThread = new CSSHThread(job->GetSSHHandler(), STARTREMOTEJOB);
+
+			// Connect remote job output to CLogger singleton
+			connect(job->GetSSHHandler(), &CSSHHandler::AddOutput, sshThread, &CSSHThread::GetOutput);
+			connect(sshThread, &CSSHThread::AddOutput, &CLogger::AddOutputEntry);
+
+			sshThread->start();
+
+			// show the output window
+			ui->logPanel->ShowOutput();
+		}
+
+		GetDocument()->SetActiveJob(nullptr);
 #endif
 	}
 
 }
+
+#ifdef HAS_SSH
+bool CMainWindow::InitializeSSH(CFEBioJob* job)
+{
+	CSSHHandler* sshHandler = job->GetSSHHandler();
+
+	int err = sshHandler->StartSSHSession();
+
+	if(err == OK) return true;
+
+	if(err == FAILED)
+	{
+		sshHandler->EndSSHSession();
+		return false;
+	}
+
+	if(err == NEEDSPSWD)
+	{
+		// Set up string for message in dialog
+		std::string userAndServer = job->GetLaunchConfig()->userName + "@" + job->GetLaunchConfig()->server;
+		QString message = QString("Please enter a password for %1").arg(userAndServer.c_str());
+
+		bool ok;
+		QMessageBox::StandardButton reply;
+		QString QPasswd = QInputDialog::getText(NULL, "Password", message, QLineEdit::Password, "", &ok);
+
+		if(ok)
+		{
+			std::string password = QPasswd.toStdString();
+			sshHandler->SetPasswordLength(password.length());
+			sshHandler->SetPasswdEnc(CEncrypter::Instance()->Encrypt(password));
+		}
+		else
+		{
+			sshHandler->EndSSHSession();
+			return false;
+		}
+
+		while(true)
+		{
+			std::string password = CEncrypter::Instance()->Decrypt(sshHandler->GetPasswdEnc(), sshHandler->GetPasswordLength());
+
+			if (!sshHandler->authenticatePassword())
+			{
+				QMessageBox::critical(NULL, "FEBio Studio", "Failed to authenticate with password.");
+
+				QString QPasswd = QInputDialog::getText(NULL, "Password", message, QLineEdit::Password, "", &ok);
+
+				if(ok)
+				{
+					std::string password = QPasswd.toStdString();
+					sshHandler->SetPasswordLength(password.length());
+					sshHandler->SetPasswdEnc(CEncrypter::Instance()->Encrypt(password));
+				}
+				else
+				{
+					sshHandler->EndSSHSession();
+					return false;
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	return true;
+}
+#else
+bool CMainWindow::InitializeSSH(CFEBioJob* job)
+{
+	return false;
+}
+#endif
+
 
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 {

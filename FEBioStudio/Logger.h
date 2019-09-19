@@ -1,13 +1,19 @@
 #pragma once
+#include <QObject>
 #include <QtCore/QString>
 
 class CMainWindow;
 
-class CLogger
+class CLogger : public QObject
 {
+	Q_OBJECT
+
 public:
 	static void Instantiate(CMainWindow* mainWindow);
+
+public slots:
 	static void AddLogEntry(const QString& txt);
+	static void AddOutputEntry(const QString& txt);
 
 private:
 	CLogger() {}

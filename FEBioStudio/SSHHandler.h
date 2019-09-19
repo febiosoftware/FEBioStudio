@@ -8,23 +8,41 @@
 #include "LaunchConfig.h"
 #include "MainWindow.h"
 
-class CSSHHandler
+enum status{FAILED=-1, OK=0, NEEDSPSWD=1};
+
+class CSSHHandler : public QObject
 {
+	Q_OBJECT
+
 public:
 	CSSHHandler (CFEBioJob* job);
 	~CSSHHandler (){}
+	void Update(CLaunchConfig& oldConfig);
 
 	void StartRemoteJob();
-
 	void GetJobFiles();
+	void GetQueueStatus();
 
-private:
 	int StartSSHSession();
 	void EndSSHSession();
 
+	bool authenticatePassword();
+
+	void SetPasswordLength(int l);
+	size_t GetPasswordLength();
+
+	void SetPasswdEnc(std::vector<unsigned char> passwdEnc);
+	std::vector<unsigned char>& GetPasswdEnc();
+
+signals:
+	void AddOutput(const QString&);
+
+private:
 	int RunCommand(std::string command);
-	int RunInteractiveNoWait(std::string command);
+	int RunInteractiveNoRead(std::string command);
 	int RunCommandList(std::vector<std::string> commands);
+
+	int authenticatePubkey();
 
 	int StartSFTPSession();
 	int EndSFTPSession();
@@ -32,7 +50,6 @@ private:
 	int SendFile(const char * buf, int bufSize, std::string remote);
 	int GetFile(std::string local, std::string remote);
 	int verify_knownhost();
-	int authenticate();
 	int CreateBashFile();
 
 private:
@@ -40,7 +57,8 @@ private:
 	ssh_session session;
 	sftp_session sftp;
 	std::string remoteFileBase;
-	std::string password;
+	int passwdLength;
+	std::vector<unsigned char> passwdEnc;
 
 
 

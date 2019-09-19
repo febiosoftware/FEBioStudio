@@ -972,7 +972,7 @@ void Post::FEFindElement::InitCurrentFrame(vector<bool>& flags)
 			BOX box(r0, r1);
 			for (int j = 1; j<ne; ++j)
 			{
-				vec3d& rj = m_mesh.Node(e.m_node[j]).r;
+				vec3d rj = m_mesh.Node(e.m_node[j]).r;
 				box += rj;
 			}
 			double R = box.GetMaxExtent();

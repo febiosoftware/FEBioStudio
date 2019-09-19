@@ -40,8 +40,17 @@ public:
 	void setup(QDialog* dlg)
 	{
 		jobName = new QLineEdit;
+
 		launchConfig = new QComboBox;
+		QAction* editLaunchConfigs = new QAction;
+		editLaunchConfigs->setIcon(QIcon(":/icons/edit.png"));
+		QToolButton* editLCBtn = new QToolButton;
+		editLCBtn->setDefaultAction(editLaunchConfigs);
+		QBoxLayout* launchConfigLayout = new QHBoxLayout;
+		launchConfigLayout->addWidget(launchConfig);
+		launchConfigLayout->addWidget(editLCBtn);
 		
+
 		cwd = new QLineEdit;
 		QAction* setCWD = new QAction;
 		setCWD->setIcon(QIcon(":/icons/open.png"));
@@ -68,7 +77,7 @@ public:
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
 		form->addRow("Job name:", jobName);
-		form->addRow("FEBio version:", launchConfig);
+		form->addRow("Launch Configuration:", launchConfigLayout);
 		form->addRow("Working directory:", cwdLayout);
 		form->addRow("FEBio file format:", febioFile);
 		form->addRow("Write notes:", writeNotes = new QCheckBox);
@@ -97,10 +106,11 @@ public:
 		l->addLayout(h);
 		dlg->setLayout(l);
 		
+		QObject::connect(editLCBtn, SIGNAL(clicked()), dlg, SLOT(on_editLCBtn_Clicked()));
 		QObject::connect(setCWDBtn, SIGNAL(clicked()), dlg, SLOT(on_setCWDBtn_Clicked()));
 		QObject::connect(run, SIGNAL(clicked()), dlg, SLOT(accept()));
 		QObject::connect(cnl, SIGNAL(clicked()), dlg, SLOT(reject()));
-		QObject::connect(launchConfig, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onPathChanged(int)));
+//		QObject::connect(launchConfig, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onPathChanged(int)));
 
 		QObject::connect(debug, SIGNAL(toggled(bool)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(editCmd, SIGNAL(toggled(bool)), cmd, SLOT(setEnabled(bool)));
@@ -168,20 +178,26 @@ void CDlgRun::SetJobName(const QString& fn)
 	ui->jobName->setText(fn);
 }
 
-void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault)
+void CDlgRun::UpdateLaunchConfigBox(int index)
 {
-	ui->m_launch_configs = &launchConfigs;
+	ui->launchConfig->clear();
 
-	// Get Launch Config names
 	QStringList launchConfigNames;
-	for(CLaunchConfig conf : launchConfigs)
+	for(CLaunchConfig conf : *ui->m_launch_configs)
 	{
 		launchConfigNames.append(QString::fromStdString(conf.name));
 	}
 
-
 	ui->launchConfig->addItems(launchConfigNames);
-	ui->launchConfig->setCurrentIndex(ndefault);
+
+	ui->launchConfig->setCurrentIndex(0);
+}
+
+void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault)
+{
+	ui->m_launch_configs = &launchConfigs;
+
+	UpdateLaunchConfigBox(ndefault);
 	ui->m_last_index = ndefault;
 }
 
@@ -223,76 +239,14 @@ CDlgRun::CDlgRun(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgRun)
 	resize(500, 300);
 }
 
-// Call this before exec!
-void CDlgRun::Init()
+void CDlgRun::on_editLCBtn_Clicked()
 {
-	ui->launchConfig->addItem("<Edit...>");
-	ui->launchConfig->addItem("<New...>");
-	ui->launchConfig->insertSeparator(ui->launchConfig->count() - 2);
-}
-
-void CDlgRun::onPathChanged(int n)
-{
-	if (n == -1) return;
-	int N = ui->launchConfig->count();
-	if ((N>3) && (n == N - 1))
-	{
-		// Add new config
-		runEditPathDlg(false);
-	}
-	else if ((N > 3) && (n == N - 2))
-	{
-		// Edit current config
-		runEditPathDlg(true);
-	}
-	else if (n < N - 3)
-	{
-		ui->launchConfig->setToolTip(QString::fromStdString(ui->m_launch_configs->at(n).path));
-	}
-
-	ui->m_last_index = ui->launchConfig->currentIndex();
-}
-
-void CDlgRun::runEditPathDlg(bool edit)
-{
-	int N = ui->launchConfig->count();
-
-	CDlgEditPath dlg(this);
-
-	if(edit)
-	{
-		dlg.SetLaunchConfig(ui->m_launch_configs->at(ui->m_last_index));
-	}
+	CDlgEditPath dlg(this, ui->m_launch_configs);
 
 	if (dlg.exec())
 	{
-		// Get the new launchConfig from the dialog
-		CLaunchConfig launchConfig = dlg.GetLaunchConfig();
-		QString name = QString::fromStdString(launchConfig.name);
-
-		// If we're editing
-		if(edit)
-		{
-			ui->m_launch_configs->at(ui->m_last_index) = launchConfig;
-
-			// change the config's name at m_last_index and set to the combobox to m_last_index
-			ui->launchConfig->setItemText(ui->m_last_index, name);
-			ui->launchConfig->setCurrentIndex(ui->m_last_index);
-		}
-		// Otherwise create a new config
-		else
-		{
-			ui->m_launch_configs->push_back(launchConfig);
-
-			// Add a new config to the combobox
-			ui->launchConfig->blockSignals(true);
-			ui->launchConfig->insertItem(N - 3, name);
-			ui->launchConfig->blockSignals(false);
-			ui->launchConfig->setCurrentIndex(N - 3);
-		}
+		UpdateLaunchConfigBox(dlg.GetLCIndex());
 	}
-	else
-		ui->launchConfig->setCurrentIndex(ui->m_last_index);
 }
 
 
