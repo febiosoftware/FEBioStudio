@@ -797,3 +797,28 @@ FEMultiGeneration::FEMultiGeneration() : FEMaterial(FE_MULTI_GENERATION)
     AddProperty("generation", FE_MAT_GENERATION, FEMaterialProperty::NO_FIXED_SIZE);
 }
 
+//=============================================================================
+//								PRESTRAIN
+//=============================================================================
+
+REGISTER_MATERIAL(FEPrestrainMaterial, MODULE_MECH, FE_PRESTRAIN_MATERIAL, FE_MAT_ELASTIC, "prestrain elastic", MaterialFlags::TOPLEVEL);
+
+FEPrestrainMaterial::FEPrestrainMaterial() : FEMaterial(FE_PRESTRAIN_MATERIAL)
+{
+	// Add one component for the elastic material
+	AddProperty("elastic", FE_MAT_ELASTIC);
+	AddProperty("prestrain", FE_MAT_PRESTRAIN_GRADIENT);
+}
+
+//=============================================================================
+//								UNCOUPLED PRESTRAIN
+//=============================================================================
+
+REGISTER_MATERIAL(FEUncoupledPrestrainMaterial, MODULE_MECH, FE_UNCOUPLED_PRESTRAIN_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prestrain elastic", MaterialFlags::TOPLEVEL);
+
+FEUncoupledPrestrainMaterial::FEUncoupledPrestrainMaterial() : FEMaterial(FE_UNCOUPLED_PRESTRAIN_MATERIAL)
+{
+	// Add one component for the elastic material
+	AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
+	AddProperty("prestrain", FE_MAT_PRESTRAIN_GRADIENT);
+}

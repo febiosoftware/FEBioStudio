@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <MathLib/math3d.h>
+#include <MathLib/mat3d.h>
 #include "color.h"
 #include "CallTracer.h"
 #include <stack>
@@ -127,6 +128,14 @@ public:
 	IOResult read(vec3d& r) { read(r.x); read(r.y); read(r.z); return IO_OK; }
 	IOResult read(quatd& q) { read(q.x); read(q.y); read(q.z); read(q.w); return IO_OK; }
 	IOResult read(GLColor& c) { int nr = (int) fread(&c, sizeof(GLColor), 1, m_fp); if (nr != 1) return IO_ERROR; return IO_OK; }
+
+	IOResult read(mat3d& a) 
+	{ 
+		double d[9];
+		read(d, 9);
+		a = mat3d(d);
+		return IO_OK; 
+	}
 
 	IOResult read(char* sz)
 	{

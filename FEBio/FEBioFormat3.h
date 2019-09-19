@@ -29,6 +29,7 @@ private:
 	bool ParseStepSection      (XMLTag& tag);
 	bool ParseRigidSection     (XMLTag& tag);
 	bool ParseLoadDataSection  (XMLTag& tag) override;
+	bool ParseControlSection   (XMLTag& tag) override;
 
 private:
 	// geometry parsing functions (version 2.0 and up)

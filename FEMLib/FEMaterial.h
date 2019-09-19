@@ -44,6 +44,7 @@
 #define FE_MAT_SOLID_SPECIES		0x1800
 #define FE_MAT_ACTIVE_CONTRACTION_CLASS 0x1900
 #define FE_MAT_GENERATION           0x1A00
+#define FE_MAT_PRESTRAIN_GRADIENT	0x1B00
 
 // --- Material Types ---
 // These values are stored in the prv file so don't change!
@@ -111,6 +112,8 @@
 #define FE_HOLZAPFEL_UC					61
 #define FE_POROUS_NEO_HOOKEAN           62
 #define FE_NATURAL_NEO_HOOKEAN          63
+#define FE_PRESTRAIN_CONST_GRADIENT		64
+#define FE_PRESTRAIN_INSITU_GRADIENT	65
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -134,6 +137,8 @@
 #define FE_FLUID_FSI_MATERIAL       124
 #define FE_GENERATION               125
 #define FE_MULTI_GENERATION         126
+#define FE_PRESTRAIN_MATERIAL		127
+#define FE_UNCOUPLED_PRESTRAIN_MATERIAL		128
 
 // permeability materials
 #define FE_PERM_CONST				200
@@ -1761,4 +1766,24 @@ public:
 public:
 	FEStarlingSupply();
 	DECLARE_REGISTERED(FEStarlingSupply);
+};
+
+//-----------------------------------------------------------------------------
+class FEPrestrainConstGradient : public FEMaterial
+{
+public:
+	enum { MP_F0 };
+public:
+	FEPrestrainConstGradient();
+	DECLARE_REGISTERED(FEPrestrainConstGradient);
+};
+
+//-----------------------------------------------------------------------------
+class FEPrestrainInSituGradient : public FEMaterial
+{
+public:
+	enum { MP_LAM, MP_ISO };
+public:
+	FEPrestrainInSituGradient();
+	DECLARE_REGISTERED(FEPrestrainInSituGradient);
 };

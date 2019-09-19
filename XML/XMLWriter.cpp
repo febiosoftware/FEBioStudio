@@ -48,6 +48,23 @@ void XMLElement::value(const vec3d& r)
 		sprintf(m_szval, "%lg,%lg,%lg", r.x, r.y, r.z);
 }
 
+void XMLElement::value(const mat3d& a)
+{
+	char* s = m_szval;
+	if (XMLWriter::GetFloatFormat() == XMLWriter::ScientificFormat)
+	{
+		sprintf(s, "%15.7e,%15.7e,%15.7e,", a(0, 0), a(0, 1), a(0, 2)); s += strlen(s);
+		sprintf(s, "%15.7e,%15.7e,%15.7e,", a(1, 0), a(1, 1), a(1, 2)); s += strlen(s);
+		sprintf(s, "%15.7e,%15.7e,%15.7e" , a(2, 0), a(2, 1), a(2, 2));
+	}
+	else
+	{
+		sprintf(s, "%lg,%lg,%lg,", a(0,0), a(0,1), a(0,2)); s += strlen(s);
+		sprintf(s, "%lg,%lg,%lg,", a(1,0), a(1,1), a(1,2)); s += strlen(s);
+		sprintf(s, "%lg,%lg,%lg,", a(2,0), a(2,1), a(2,2));
+	}
+}
+
 int XMLElement::add_attribute(const char* szn, const char* szv)
 {
 	strcpy(m_attn[m_natt], szn);

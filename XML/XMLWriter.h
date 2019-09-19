@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <MathLib/math3d.h>
+#include <MathLib/mat3d.h>
 #include <FSCore/color.h>
 #include <vector>
 #include <string>
@@ -36,6 +37,7 @@ public:
 	void value(double g) { sprintf(m_szval, "%lg", g); }
 	void value(double* pg, int n);
 	void value(const vec3d& r);
+	void value(const mat3d& a);
 
 	int add_attribute(const char* szn, const char* szv);
 	int add_attribute(const char* szn, int n);

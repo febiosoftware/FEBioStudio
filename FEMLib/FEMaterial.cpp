@@ -2109,3 +2109,27 @@ FEStarlingSupply::FEStarlingSupply() : FEMaterial(FE_STARLING_SUPPLY)
 	AddDoubleParam(0, "kp", "filtration coefficient");
 	AddDoubleParam(0, "pv", "external pressure");
 }
+
+//=============================================================================
+// const prestrain gradient
+//=============================================================================
+
+REGISTER_MATERIAL(FEPrestrainConstGradient, MODULE_MECH, FE_PRESTRAIN_CONST_GRADIENT, FE_MAT_PRESTRAIN_GRADIENT, "prestrain gradient", 0);
+
+FEPrestrainConstGradient::FEPrestrainConstGradient() : FEMaterial(FE_PRESTRAIN_CONST_GRADIENT)
+{
+	mat3d F0; F0.unit();
+	AddMat3dParam(F0, "F0", "prestrain gradient");
+}
+
+//=============================================================================
+// in-situ stretch prestrain gradient
+//=============================================================================
+
+REGISTER_MATERIAL(FEPrestrainInSituGradient, MODULE_MECH, FE_PRESTRAIN_INSITU_GRADIENT, FE_MAT_PRESTRAIN_GRADIENT, "in-situ stretch", 0);
+
+FEPrestrainInSituGradient::FEPrestrainInSituGradient() : FEMaterial(FE_PRESTRAIN_INSITU_GRADIENT)
+{
+	AddDoubleParam(1.0, "stretch", "fiber stretch");
+	AddBoolParam(false, "isochoric", "isochoric prestrain");
+}

@@ -172,6 +172,7 @@ void CMainWindow::on_actionNew_triggered()
 						UpdateModel();
 						Update();
 						ClearLog();
+						ClearOutput();
 
 						// save empty model file
 						if (GetDocument()->SaveDocument(modelFilePath.toStdString()) == false)
@@ -204,6 +205,7 @@ void CMainWindow::on_actionNew_triggered()
 			UpdateModel();
 			Update();
 			ClearLog();
+			ClearOutput();
 		}
 	}
 

@@ -76,6 +76,143 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
 	return (m_nAnalysis != -1);
 }
+//=============================================================================
+//
+//                                C O N T R O L
+//
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+//  This function parses the control section from the xml file
+//
+bool FEBioFormat3::ParseControlSection(XMLTag& tag)
+{
+	// make sure the section is not empty
+	if (tag.isleaf()) return true;
+
+	// initialize default settings
+	STEP_SETTINGS ops; ops.Defaults();
+	ops.bauto = false;
+	int nmplc = -1;
+	ops.nanalysis = -1;
+
+	FEBioModel& febio = GetFEBioModel();
+	FEModel& fem = GetFEModel();
+
+	// create a new analysis step from these control settings
+	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
+	FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(m_pstep);
+	assert(pstep);
+
+	// parse the settings
+	++tag;
+	do
+	{
+		if (ReadParam(*pstep, tag) == false)
+		{
+			if (tag == "analysis")
+			{
+				string analysis = tag.szvalue();
+				if      ((analysis == "static"      )||(analysis == "STATIC"      )) ops.nanalysis = FE_STATIC;
+				else if ((analysis == "steady-state")||(analysis == "STEADY-STATE")) ops.nanalysis = FE_STATIC;
+				else if ((analysis == "dynamic"     )||(analysis == "DYNAMIC"     )) ops.nanalysis = FE_DYNAMIC;
+				else if ((analysis == "transient"   )||(analysis == "TRANSIENT"   )) ops.nanalysis = FE_DYNAMIC;
+				else FileReader()->AddLogEntry("unknown type in analysis. Assuming static analysis (line %d)", tag.currentLine());
+			}
+			else if (tag == "time_steps") tag.value(ops.ntime);
+			else if (tag == "final_time") tag.value(ops.tfinal);
+			else if (tag == "step_size") tag.value(ops.dt);
+			else if (tag == "solver")
+			{
+				++tag;
+				do
+				{
+					if      (tag == "max_refs") tag.value(ops.maxref);
+					else if (tag == "max_ups")
+					{
+						tag.value(ops.ilimit);
+						if (ops.ilimit == 0)
+						{
+							ops.mthsol = 1;
+							ops.ilimit = 10;
+						}
+					}
+					else if (tag == "symmetric_stiffness")
+					{
+						int nval; tag.value(nval);
+						if (nval == 1) ops.nmatfmt = 1; else ops.nmatfmt = 2;
+					}
+					else if (tag == "diverge_reform") tag.value(ops.bdivref);
+					else if (tag == "reform_each_time_step") tag.value(ops.brefstep);
+					else ReadParam(*pstep, tag);
+					++tag;
+				}
+				while (!tag.isend());
+			}
+			else if (tag == "time_stepper")
+			{
+				ops.bauto = true;
+				++tag;
+				do
+				{
+					if (tag == "dtmin") tag.value(ops.dtmin);
+					else if (tag == "dtmax")
+					{
+						tag.value(ops.dtmax);
+						XMLAtt* pa = tag.AttributePtr("lc");
+						if (pa)
+						{
+							pa->value(nmplc);
+						}
+					}
+					else if (tag == "max_retries") tag.value(ops.mxback);
+					else if (tag == "opt_iter") tag.value(ops.iteopt);
+					else if (tag == "aggressiveness") tag.value(ops.ncut);
+					else ParseUnknownTag(tag);
+
+					++tag;
+				} while (!tag.isend());
+			}
+			else if (tag == "alpha") 
+			{
+				tag.value(ops.alpha); ops.override_rhoi = true;
+			}
+			else if (tag == "beta") tag.value(ops.beta);
+			else if (tag == "gamma") tag.value(ops.gamma);
+			else if (tag == "optimize_bw") tag.value(ops.bminbw);
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	} 
+	while (!tag.isend());
+
+	// check the analysis flag
+	if (ops.nanalysis == -1)
+	{
+		// default analysis depends on step type
+		int ntype = m_pstep->GetType();
+		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI)) ops.nanalysis = FE_DYNAMIC;
+		else ops.nanalysis = FE_STATIC;
+	}
+
+	// check if final_time was set on import
+	if ((ops.tfinal > 0) && (ops.dt > 0)) ops.ntime = (int)(ops.tfinal / ops.dt);
+
+	// copy settings
+	pstep->GetSettings() = ops;
+	if (nmplc >= 0)
+	{
+		STEP_SETTINGS& ops = pstep->GetSettings();
+		ops.bmust = true;
+		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		febio.AddParamCurve(plc, nmplc - 1);
+	}
+	else ops.bmust = false;
+
+	return true;
+}
+
+
 
 //=============================================================================
 //

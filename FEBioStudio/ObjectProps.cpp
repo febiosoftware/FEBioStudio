@@ -25,6 +25,7 @@ void CObjectProps::AddParameter(Param& p)
 	}
 	break;
 	case Param_VEC3D: prop = addProperty(p.GetLongName(), CProperty::Vec3); break;
+	case Param_MAT3D: prop = addProperty(p.GetLongName(), CProperty::Mat3); break;
 	case Param_STRING: prop = addProperty(p.GetLongName(), CProperty::String); break;
 	case Param_MATH  : prop = addProperty(p.GetLongName(), CProperty::MathString); break;
 	case Param_COLOR : prop = addProperty(p.GetLongName(), CProperty::Color); break;
@@ -146,6 +147,13 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 		return t;
 	}
 	break;
+	case Param_MAT3D:
+	{
+		mat3d m = p.GetMat3dValue();
+		QString t = Mat3dToString(m);
+		return t;
+	}
+	break;
 	case Param_COLOR:
 	{
 		GLColor c = p.GetColorValue();
@@ -186,6 +194,13 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 		QString t = v.toString();
 		vec3d r = StringToVec3d(t);
 		p.SetVecValue(r);
+	}
+	break;
+	case Param_MAT3D:
+	{
+		QString t = v.toString();
+		mat3d m = StringToMat3d(t);
+		p.SetMat3dValue(m);
 	}
 	break;
 	case Param_COLOR:

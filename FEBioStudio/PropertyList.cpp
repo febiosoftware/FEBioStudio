@@ -1,4 +1,5 @@
 #include "PropertyList.h"
+#include <MathLib/mat3d.h>
 
 vec3d StringToVec3d(const QString& s)
 {
@@ -9,9 +10,31 @@ vec3d StringToVec3d(const QString& s)
 	return r;
 }
 
+mat3d StringToMat3d(const QString& s)
+{
+	string st = s.toStdString();
+	const char* sz = st.c_str();
+	double a[9];
+	sscanf(sz, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", a, a+1, a+2, a+3, a+4, a+5, a+6, a+7, a+8);
+	return mat3d(a);
+}
+
 QString Vec3dToString(const vec3d& r)
 {
 	return QString("%1,%2,%3").arg(r.x).arg(r.y).arg(r.z);
+}
+
+QString Mat3dToString(const mat3d& a)
+{
+	QString s;
+	for (int i = 0; i<3; ++i)
+		for (int j=0; j<3; ++j)
+		{ 
+			s += QString("%1").arg(a(i, j));
+
+			if ((i != 2) || (j != 2)) s += ",";
+		}
+	return s;
 }
 
 CProperty& CProperty::operator = (const CProperty& p)
@@ -88,6 +111,11 @@ CProperty* CDataPropertyList::addVec3Property(vec3d* pd, const QString& name)
 	return addProperty(name, CProperty::Vec3)->setData(pd);
 }
 
+CProperty* CDataPropertyList::addMat3Property(mat3d* pd, const QString& name)
+{
+	return addProperty(name, CProperty::Mat3)->setData(pd);
+}
+
 CProperty* CDataPropertyList::addColorProperty(QColor* pd, const QString& name)
 {
 	return addProperty(name, CProperty::Color)->setData(pd);
@@ -128,6 +156,7 @@ QVariant CDataPropertyList::GetPropertyValue(int i)
 	case CProperty::CurveList: { QStringList v = *((QStringList*)(p.pdata)); return v; } break;
 	case CProperty::Resource: { QString v = *((QString*)(p.pdata)); return v; } break;
 	case CProperty::Vec3: { vec3d v = *((vec3d*)(p.pdata)); return Vec3dToString(v); } break;
+	case CProperty::Mat3: { mat3d v = *((mat3d*)(p.pdata)); return Mat3dToString(v); } break;
 	}
 
 	return QVariant();
@@ -148,5 +177,6 @@ void CDataPropertyList::SetPropertyValue(int i, const QVariant& v)
 	case CProperty::CurveList: { QStringList& d = *((QStringList*)p.pdata); d = v.value<QStringList>(); } break;
 	case CProperty::Resource: { QString& d = *((QString*)p.pdata); d = v.value<QString>(); } break;
 	case CProperty::Vec3: { vec3d& d = *((vec3d*)p.pdata); d = StringToVec3d(v.value<QString>()); } break;
+	case CProperty::Mat3: { mat3d& d = *((mat3d*)p.pdata); d = StringToMat3d(v.value<QString>()); } break;
 	}
 }

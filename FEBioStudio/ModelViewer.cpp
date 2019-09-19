@@ -81,6 +81,7 @@ void CModelViewer::on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTr
 	}
 	else 
 	{
+		m_currentObject = nullptr;
 		ui->props->SetObjectProps(0, 0, 0);
 	}
 

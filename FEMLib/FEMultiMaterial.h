@@ -676,3 +676,32 @@ public:
     DECLARE_REGISTERED(FEMultiGeneration);
 };
 
+//-----------------------------------------------------------------------------
+// prestrain material
+class FEPrestrainMaterial : public FEMaterial
+{
+public:
+	// constructor
+	FEPrestrainMaterial();
+
+	// set the elastic component of the material
+	void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
+	FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+
+	DECLARE_REGISTERED(FEPrestrainMaterial);
+};
+
+//-----------------------------------------------------------------------------
+// uncoupled prestrain material
+class FEUncoupledPrestrainMaterial : public FEMaterial
+{
+public:
+	// constructor
+	FEUncoupledPrestrainMaterial();
+
+	// set the elastic component of the material
+	void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
+	FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+
+	DECLARE_REGISTERED(FEUncoupledPrestrainMaterial);
+};

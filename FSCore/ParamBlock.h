@@ -1,6 +1,7 @@
 #pragma once
 #include "Serializable.h"
 #include "color.h"
+#include <MathLib/mat3d.h>
 #include <MeshTools/LoadCurve.h>
 #include <vector>
 #include <string.h>
@@ -16,6 +17,7 @@ enum Param_Type {
 	Param_STRING,
 	Param_MATH,
 	Param_COLOR,
+	Param_MAT3D,
 	Param_CHOICE = 0x0020		// like INT but imported/exported as one-based numbers
 };
 
@@ -81,6 +83,7 @@ public:
 	explicit Param(double d, Param_Unit nunit = Param_NOUNIT, const char* szb = 0, const char* szn = 0);
 	explicit Param(bool b, const char* szb, const char* szn = 0);
 	explicit Param(vec3d v, const char* szb, const char* szn = 0);
+	explicit Param(mat3d v, const char* szb, const char* szn = 0);
 	explicit Param(int n, const char* szi, int idx, const char* szb, const char* szn = 0);
 	explicit Param(double d, const char* szi, int idx, const char* szb, const char* szn = 0);
 	explicit Param(double d, const char* szi, int idx, Param_Unit nunit = Param_NOUNIT, const char* szb = 0, const char* szn = 0);
@@ -116,6 +119,7 @@ public:
 	void SetIntValue   (int    a) {assert((m_ntype == Param_INT)||(m_ntype == Param_CHOICE)); val<int>  () = a; }
 	void SetBoolValue  (bool   b) {assert(m_ntype == Param_BOOL  ); val<bool> () = b; }
 	void SetVecValue   (const vec3d& v) {assert(m_ntype == Param_VEC3D ); val<vec3d>() = v; }
+	void SetMat3dValue (const mat3d& v) { assert(m_ntype == Param_MAT3D); val<mat3d>() = v; }
 	void SetStringValue(const std::string& v) {assert(m_ntype == Param_STRING); val<std::string>() = v; }
 	void SetMathString (const std::string& v) { assert(m_ntype == Param_MATH); val<std::string>() = v; }
 	void SetColorValue(const GLColor& c) { assert(m_ntype == Param_COLOR); val<GLColor>() = c; }
@@ -124,6 +128,7 @@ public:
 	int    GetIntValue   () const {assert((m_ntype == Param_INT)||(m_ntype == Param_CHOICE)); return val<int>  (); }
 	bool   GetBoolValue  () const {assert(m_ntype == Param_BOOL  ); return val<bool> (); }
 	vec3d  GetVecValue   () const {assert(m_ntype == Param_VEC3D ); return val<vec3d>(); }
+	mat3d  GetMat3dValue () const {assert(m_ntype == Param_MAT3D); return val<mat3d>(); }
 	std::string GetStringValue() const { assert(m_ntype == Param_STRING); return val<std::string>(); }
 	std::string GetMathString() const { assert(m_ntype == Param_MATH); return val<std::string>(); }
 	GLColor GetColorValue() const { assert(m_ntype == Param_COLOR); return val<GLColor>(); }
@@ -240,6 +245,15 @@ public:
 	}
 
 	Param* AddVecParam(vec3d v, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param p(v, szb, szn);
+		p.m_nID = ns;
+		m_Param.push_back(p);
+		return LastParam();
+	}
+
+	Param* AddMat3dParam(mat3d v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
 		Param p(v, szb, szn);
@@ -381,6 +395,7 @@ public:
 	Param* AddIndxDoubleParam(double d, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxDoubleParam(d, szi, idx, szb, szn); }
 	Param* AddStringParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddStringParam(s, szb, szn); }
 	Param* AddColorParam(GLColor c, const char* szb = 0, const char* szn = 0) { return m_Param.AddColorParam(c, szb, szn); }
+	Param* AddMat3dParam(mat3d v, const char* szb = 0, const char* szn = 0) { return m_Param.AddMat3dParam(v, szb, szn); }
 
 	// get a parameter from its name
 	Param* GetParam(const char* sz) { return m_Param.Find(sz); }

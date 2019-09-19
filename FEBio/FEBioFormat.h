@@ -40,7 +40,7 @@ protected:
 
 protected:
 	// common parse functions
-	bool ParseControlSection (XMLTag& tag);
+	virtual bool ParseControlSection (XMLTag& tag);
 	bool ParseGlobalsSection (XMLTag& tag);
 	bool ParseMaterialSection(XMLTag& tag);
 	bool ParseOutputSection  (XMLTag& tag);

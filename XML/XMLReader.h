@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <MathLib/math3d.h>
+#include <MathLib/mat3d.h>
 #include <FSCore/color.h>
 
 #ifndef WIN32
@@ -106,6 +107,7 @@ public:
 	void value(float* pf, int n);
 	void value(int* pi, int n);
 	void value(vec3d& v);
+	void value(mat3d& v);
 	void value(vec3f& v);
 	void value(bool& b) { b = (atoi(m_szval) == 1); }
 	void value(vector<int>& l);
