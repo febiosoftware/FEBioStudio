@@ -31,6 +31,8 @@
 		D53293591E4A838F002798B3 /* FEBioModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D53293411E4A838F002798B3 /* FEBioModel.cpp */; };
 		D532935A1E4A838F002798B3 /* FEBioModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D53293421E4A838F002798B3 /* FEBioModel.h */; };
 		D532935B1E4A838F002798B3 /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D53293431E4A838F002798B3 /* stdafx.h */; };
+		D5799E322333DC5500F22CCA /* FEBioFormat3.h in Headers */ = {isa = PBXBuildFile; fileRef = D5799E302333DC5400F22CCA /* FEBioFormat3.h */; };
+		D5799E332333DC5500F22CCA /* FEBioFormat3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5799E312333DC5500F22CCA /* FEBioFormat3.cpp */; };
 		D5A91C812173A21D00BF8B86 /* FEBioExport3.h in Headers */ = {isa = PBXBuildFile; fileRef = D5A91C7F2173A21D00BF8B86 /* FEBioExport3.h */; };
 		D5A91C822173A21D00BF8B86 /* FEBioExport3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A91C802173A21D00BF8B86 /* FEBioExport3.cpp */; };
 /* End PBXBuildFile section */
@@ -61,6 +63,8 @@
 		D53293411E4A838F002798B3 /* FEBioModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBioModel.cpp; sourceTree = "<group>"; };
 		D53293421E4A838F002798B3 /* FEBioModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBioModel.h; sourceTree = "<group>"; };
 		D53293431E4A838F002798B3 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		D5799E302333DC5400F22CCA /* FEBioFormat3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBioFormat3.h; sourceTree = "<group>"; };
+		D5799E312333DC5500F22CCA /* FEBioFormat3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBioFormat3.cpp; sourceTree = "<group>"; };
 		D5A91C7F2173A21D00BF8B86 /* FEBioExport3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBioExport3.h; sourceTree = "<group>"; };
 		D5A91C802173A21D00BF8B86 /* FEBioExport3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBioExport3.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -110,6 +114,8 @@
 				D53293361E4A838F002798B3 /* FEBioFormat.h */,
 				D53293391E4A838F002798B3 /* FEBioFormat2.cpp */,
 				D532933A1E4A838F002798B3 /* FEBioFormat2.h */,
+				D5799E312333DC5500F22CCA /* FEBioFormat3.cpp */,
+				D5799E302333DC5400F22CCA /* FEBioFormat3.h */,
 				D53293371E4A838F002798B3 /* FEBioFormat12.cpp */,
 				D53293381E4A838F002798B3 /* FEBioFormat12.h */,
 				D532933B1E4A838F002798B3 /* FEBioFormat25.cpp */,
@@ -147,6 +153,7 @@
 				D53293481E4A838F002798B3 /* FEBioExport12.h in Headers */,
 				D53293441E4A838F002798B3 /* FEBioException.h in Headers */,
 				D53293581E4A838F002798B3 /* FEBioImport.h in Headers */,
+				D5799E322333DC5500F22CCA /* FEBioFormat3.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,6 +220,7 @@
 				D532934B1E4A838F002798B3 /* FEBioExport25.cpp in Sources */,
 				D5A91C822173A21D00BF8B86 /* FEBioExport3.cpp in Sources */,
 				D53293571E4A838F002798B3 /* FEBioImport.cpp in Sources */,
+				D5799E332333DC5500F22CCA /* FEBioFormat3.cpp in Sources */,
 				D532934F1E4A838F002798B3 /* FEBioFormat12.cpp in Sources */,
 				D53293491E4A838F002798B3 /* FEBioExport2.cpp in Sources */,
 				D53293471E4A838F002798B3 /* FEBioExport12.cpp in Sources */,
