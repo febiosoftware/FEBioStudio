@@ -1634,7 +1634,7 @@ void FEBioExport2::WriteGeometryElementData()
 				}
 				for (int k=0; k<ND; ++k)
 				{
-					FEElementData& data = pm->GetElementDataField(k);
+					FEElementData& data = *pm->GetElementDataField(k);
 /*					if (data.GetTag(j) > 0)
 					{
 						double val = data[j];

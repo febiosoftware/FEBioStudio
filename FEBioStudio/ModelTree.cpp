@@ -981,19 +981,19 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FEModel& fem)
 		{
 			for (int j = 0; j < mesh->NodeDataFields(); ++j)
 			{
-				FENodeData& data = mesh->GetNodeDataField(j);
+				FENodeData& data = *mesh->GetNodeDataField(j);
 				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
 			}
 
 			for (int j = 0; j < mesh->SurfaceDataFields(); ++j)
 			{
-				FESurfaceData& data = mesh->GetSurfaceDataField(j);
+				FESurfaceData& data = *mesh->GetSurfaceDataField(j);
 				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
 			}
 
 			for (int j = 0; j < mesh->ElementDataFields(); ++j)
 			{
-				FEElementData& data = mesh->GetElementDataField(j);
+				FEElementData& data = *mesh->GetElementDataField(j);
 				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
 			}
 		}

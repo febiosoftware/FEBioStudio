@@ -190,19 +190,19 @@ public:
 public:
 	int NodeDataFields() const { return (int)m_nodeData.size(); }
 	FENodeData* AddNodeDataField(const string& name, double v = 0.0);
-	FENodeData& GetNodeDataField(int i) { return m_nodeData[i]; }
+	FENodeData* GetNodeDataField(int i) { return m_nodeData[i]; }
 	FENodeData* FindNodeDataField(const string& sz);
 	void RemoveNodeDataField(int i);
 
 	int SurfaceDataFields() const { return (int)m_surfData.size(); }
-	FESurfaceData& GetSurfaceDataField(int i) { return *m_surfData[i]; }
+	FESurfaceData* GetSurfaceDataField(int i) { return m_surfData[i]; }
 	FESurfaceData* AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType);
 	FESurfaceData* FindSurfaceDataField(const string& sz);
 	void RemoveSurfaceDataField(int i);
 
 	int ElementDataFields() const { return (int) m_elemData.size(); }
 	FEElementData* AddElementDataField(const string& name, FEPart* part, FEMeshData::DATA_TYPE dataType);
-	FEElementData& GetElementDataField(int i) { return *m_elemData[i]; }
+	FEElementData* GetElementDataField(int i) { return m_elemData[i]; }
 	FEElementData* FindElementDataField(const string& sz);
 	void RemoveElementDataField(int i);
 
@@ -235,7 +235,7 @@ protected:
 	Mesh_Data	m_data;
 
 	// data fields
-	vector<FENodeData>		m_nodeData;
+	vector<FENodeData*>		m_nodeData;
 	vector<FESurfaceData*>	m_surfData;
 	vector<FEElementData*>	m_elemData;
 };

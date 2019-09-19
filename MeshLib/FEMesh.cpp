@@ -2187,10 +2187,10 @@ void FEMesh::Save(OArchive &ar)
 			// node data
 			for (int n = 0; n<(int)m_nodeData.size(); ++n)
 			{
-				FENodeData& map = m_nodeData[n];
+				FENodeData* map = m_nodeData[n];
 				ar.BeginChunk(CID_MESH_NODE_DATA);
 				{
-					map.Save(ar);
+					map->Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -2878,11 +2878,11 @@ void FEMesh::RemoveElementDataField(int i)
 //-----------------------------------------------------------------------------
 FENodeData* FEMesh::AddNodeDataField(const string& sz, double v)
 {
-	FENodeData data;
-	data.Create(this, v);
-	data.SetName(sz);
+	FENodeData* data = new FENodeData;
+	data->Create(this, v);
+	data->SetName(sz);
 	m_nodeData.push_back(data);
-	return &m_nodeData[m_nodeData.size()-1];
+	return data;
 }
 
 //-----------------------------------------------------------------------------
@@ -2891,8 +2891,8 @@ FENodeData* FEMesh::FindNodeDataField(const string& sz)
 	if (m_nodeData.empty()) return 0;
 	for (int i=0; i<m_nodeData.size(); ++i)
 	{
-		const string& name = m_nodeData[i].GetName();
-		if (name == sz) return &(m_nodeData[i]);
+		const string& name = m_nodeData[i]->GetName();
+		if (name == sz) return m_nodeData[i];
 	}
 	return 0;
 }
@@ -2945,9 +2945,9 @@ FEMeshData* FEMesh::GetMeshData(int i)
 	int NE = ElementDataFields();
 
 	if (i<0) return 0;
-	if (i<NN) return &GetNodeDataField(i); i-= NN;
-	if (i<NS) return &GetSurfaceDataField(i); i-= NS;
-	if (i<NE) return &GetElementDataField(i);
+	if (i<NN) return GetNodeDataField(i); i-= NN;
+	if (i<NS) return GetSurfaceDataField(i); i-= NS;
+	if (i<NE) return GetElementDataField(i);
 
 	return 0;
 }

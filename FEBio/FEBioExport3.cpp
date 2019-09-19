@@ -2820,7 +2820,7 @@ void FEBioExport3::WriteMeshDataFields()
 		int ND = pm->ElementDataFields();
 		for (int n = 0; n<ND; ++n)
 		{
-			FEElementData& data = pm->GetElementDataField(n);
+			FEElementData& data = *pm->GetElementDataField(n);
 
 			const FEPart* pg = data.GetPart();
 
@@ -2858,7 +2858,7 @@ void FEBioExport3::WriteSurfaceDataSection()
 
 		for (int j = 0; j < mesh->SurfaceDataFields(); j++)
 		{
-			FESurfaceData sd = mesh->GetSurfaceDataField(j);
+			FESurfaceData& sd = *mesh->GetSurfaceDataField(j);
 
 			XMLElement tag("SurfaceData");
 			tag.add_attribute("name", sd.GetName().c_str());

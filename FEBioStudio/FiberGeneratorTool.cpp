@@ -34,7 +34,7 @@ bool CFiberGeneratorTool::OnApply()
 	if ((m_ndata >= 0) && (m_ndata < N))
 	{
 		// get node data field
-		FENodeData& D = pm->GetNodeDataField(m_ndata);
+		FENodeData& D = *pm->GetNodeDataField(m_ndata);
 
 		// calculate gradient and assign to element fiber
 		vector<vec3d> grad;
