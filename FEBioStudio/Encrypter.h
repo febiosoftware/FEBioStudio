@@ -19,7 +19,7 @@ public:
 private:
 	CEncrypter();
 	CEncrypter(CEncrypter const&) {}
-	CEncrypter& operator=(CEncrypter const&) {}
+    CEncrypter& operator=(CEncrypter const&) { return *this; }
 	virtual ~CEncrypter() {}
 
 	static CEncrypter* instance;

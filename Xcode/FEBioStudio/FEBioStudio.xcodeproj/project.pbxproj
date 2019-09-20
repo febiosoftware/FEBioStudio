@@ -12,12 +12,21 @@
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
 		D5248DDC231C114D00691871 /* DlgCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DDA231C114D00691871 /* DlgCheck.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
+		D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */; };
+		D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BD2335128D00D388FA /* Encrypter.cpp */; };
+		D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */; };
+		D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C02335128D00D388FA /* moc_Logger.cpp */; };
+		D5D5B6C82335128E00D388FA /* moc_SSHThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C22335128E00D388FA /* moc_SSHThread.cpp */; };
+		D5D5B6C92335128E00D388FA /* SSHThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C32335128E00D388FA /* SSHThread.cpp */; };
+		D5D5B6CB2335138900D388FA /* libssl.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */; };
+		D5D5B6CC2335139C00D388FA /* libssl.1.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D5D5B6CE2335160E00D388FA /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */; };
+		D5D5B6CF2335161A00D388FA /* libcrypto.1.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346A23233928002D7A13 /* SSHHandler.cpp */; };
 		D5EBB7A7232AEAED00EED2BE /* DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A3232AEAEC00EED2BE /* DlgEditPath.cpp */; };
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
 		D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; };
 		D5EBB7AD232AEF6A00EED2BE /* libssh.4.8.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5EBB7AF232AF45800EED2BE /* moc_DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7AE232AF45800EED2BE /* moc_DlgEditPath.cpp */; };
 		D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290023197E8500C16BF7 /* libFSCore.a */; };
 		D5ED290323197E8500C16BF7 /* libGLLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290223197E8500C16BF7 /* libGLLib.a */; };
 		D5ED290523197E8500C16BF7 /* libLSDyna.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290423197E8500C16BF7 /* libLSDyna.a */; };
@@ -320,6 +329,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D5D5B6CF2335161A00D388FA /* libcrypto.1.0.0.dylib in CopyFiles */,
+				D5D5B6CC2335139C00D388FA /* libssl.1.0.0.dylib in CopyFiles */,
 				D5EBB7AD232AEF6A00EED2BE /* libssh.4.8.1.dylib in CopyFiles */,
 				D5ED2A1F2319902B00C16BF7 /* libx265.176.dylib in CopyFiles */,
 				D5ED2A202319902B00C16BF7 /* libmp3lame.0.dylib in CopyFiles */,
@@ -374,6 +385,16 @@
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LaunchConfig.cpp; sourceTree = "<group>"; };
+		D5D5B6BD2335128D00D388FA /* Encrypter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encrypter.cpp; sourceTree = "<group>"; };
+		D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_SSHHandler.cpp; sourceTree = "<group>"; };
+		D5D5B6BF2335128D00D388FA /* SSHThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHThread.h; sourceTree = "<group>"; };
+		D5D5B6C02335128D00D388FA /* moc_Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_Logger.cpp; sourceTree = "<group>"; };
+		D5D5B6C12335128D00D388FA /* Encrypter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Encrypter.h; sourceTree = "<group>"; };
+		D5D5B6C22335128E00D388FA /* moc_SSHThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_SSHThread.cpp; sourceTree = "<group>"; };
+		D5D5B6C32335128E00D388FA /* SSHThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHThread.cpp; sourceTree = "<group>"; };
+		D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2s/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
+		D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2s/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
 		D5DC346823233928002D7A13 /* DlgEditPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditPath.h; sourceTree = "<group>"; };
 		D5DC346A23233928002D7A13 /* SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHHandler.cpp; sourceTree = "<group>"; };
 		D5DC346B23233928002D7A13 /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
@@ -382,7 +403,6 @@
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
 		D5EBB7A6232AEAED00EED2BE /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
 		D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.1.dylib; path = ../../../../../../../../../../usr/local/Cellar/libssh/0.9.0_1/lib/libssh.4.8.1.dylib; sourceTree = "<group>"; };
-		D5EBB7AE232AF45800EED2BE /* moc_DlgEditPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditPath.cpp; sourceTree = "<group>"; };
 		D5ED290023197E8500C16BF7 /* libFSCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libFSCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290223197E8500C16BF7 /* libGLLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libGLLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290423197E8500C16BF7 /* libLSDyna.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libLSDyna.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -779,6 +799,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5D5B6CE2335160E00D388FA /* libcrypto.1.0.0.dylib in Frameworks */,
+				D5D5B6CB2335138900D388FA /* libssl.1.0.0.dylib in Frameworks */,
 				D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */,
 				D5ED2970231988E600C16BF7 /* libtet.a in Frameworks */,
 				D5ED296D231988CB00C16BF7 /* libiconv.2.dylib in Frameworks */,
@@ -1008,6 +1030,8 @@
 				D5ED29F923198CD600C16BF7 /* DragBox.h */,
 				D5F7D74022FA37C40089B08E /* EditPanel.cpp */,
 				D5F7D6F722FA37C30089B08E /* EditPanel.h */,
+				D5D5B6BD2335128D00D388FA /* Encrypter.cpp */,
+				D5D5B6C12335128D00D388FA /* Encrypter.h */,
 				D5F7D73D22FA37C40089B08E /* FEBioJob.cpp */,
 				D5F7D7A522FA37C40089B08E /* FEBioJob.h */,
 				D5F7D76922FA37C40089B08E /* FEBioOpt.h */,
@@ -1049,6 +1073,7 @@
 				D5ED29FE23198CD700C16BF7 /* InfoPanel.h */,
 				D5F7D78722FA37C40089B08E /* IntegrateWindow.cpp */,
 				D5F7D78A22FA37C40089B08E /* IntegrateWindow.h */,
+				D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */,
 				D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */,
 				D5EBB7A6232AEAED00EED2BE /* Logger.cpp */,
 				D5EBB7A5232AEAEC00EED2BE /* Logger.h */,
@@ -1094,7 +1119,6 @@
 				D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */,
 				D5F7D79B22FA37C40089B08E /* moc_DlgCloneRevolve.cpp */,
 				D5F7D79222FA37C40089B08E /* moc_DlgEditOutput.cpp */,
-				D5EBB7AE232AF45800EED2BE /* moc_DlgEditPath.cpp */,
 				D5F7D7E422FA37C40089B08E /* moc_DlgEditProject.cpp */,
 				D5F7D80722FA37C40089B08E /* moc_DlgExportFEBio.cpp */,
 				D5F7D70222FA37C40089B08E /* moc_DlgFEBioOptimize.cpp */,
@@ -1115,6 +1139,7 @@
 				D5F7D7DF22FA37C40089B08E /* moc_GraphWindow.cpp */,
 				D5ED29FB23198CD700C16BF7 /* moc_InfoPanel.cpp */,
 				D5F7D71822FA37C40089B08E /* moc_IntegrateWindow.cpp */,
+				D5D5B6C02335128D00D388FA /* moc_Logger.cpp */,
 				D5F7D7B922FA37C40089B08E /* moc_LogPanel.cpp */,
 				D5ED2A0B23198CD900C16BF7 /* moc_MainTabBar.cpp */,
 				D5F7D7B822FA37C40089B08E /* moc_MainWindow.cpp */,
@@ -1136,6 +1161,8 @@
 				D5F7D77022FA37C40089B08E /* moc_PropertyListView.cpp */,
 				D5F7D73822FA37C40089B08E /* moc_ResourceEdit.cpp */,
 				D5F7D77B22FA37C40089B08E /* moc_SelectionBox.cpp */,
+				D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */,
+				D5D5B6C22335128E00D388FA /* moc_SSHThread.cpp */,
 				D5ED2A0623198CD800C16BF7 /* moc_StatePanel.cpp */,
 				D5F7D75922FA37C40089B08E /* moc_StatsWindow.cpp */,
 				D5F7D71722FA37C40089B08E /* moc_SummaryWindow.cpp */,
@@ -1187,6 +1214,8 @@
 				D5F7D70422FA37C40089B08E /* SphereFitTool.h */,
 				D5DC346A23233928002D7A13 /* SSHHandler.cpp */,
 				D5DC346B23233928002D7A13 /* SSHHandler.h */,
+				D5D5B6C32335128E00D388FA /* SSHThread.cpp */,
+				D5D5B6BF2335128D00D388FA /* SSHThread.h */,
 				D5ED2A0123198CD700C16BF7 /* StatePanel.cpp */,
 				D5ED2A0223198CD700C16BF7 /* StatePanel.h */,
 				D5F7D80822FA37C40089B08E /* StatsWindow.cpp */,
@@ -1225,6 +1254,8 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */,
+				D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */,
 				D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */,
 				D5ED296F231988E500C16BF7 /* libtet.a */,
 				D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */,
@@ -1399,6 +1430,7 @@
 				D5F7D8C922FA37C40089B08E /* DlgFormula.cpp in Sources */,
 				D5F7D8C022FA37C40089B08E /* GGrid.cpp in Sources */,
 				D5ED2A1323198CD900C16BF7 /* moc_MaterialPanel.cpp in Sources */,
+				D5D5B6C82335128E00D388FA /* moc_SSHThread.cpp in Sources */,
 				D5F7D84122FA37C40089B08E /* DlgAddIC.cpp in Sources */,
 				D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */,
 				D5F7D87E22FA37C40089B08E /* PropertyListForm.cpp in Sources */,
@@ -1407,7 +1439,6 @@
 				D5F7D8CD22FA37C40089B08E /* moc_DlgSoluteTable.cpp in Sources */,
 				D5F7D88A22FA37C40089B08E /* DlgNew.cpp in Sources */,
 				D5F7D88222FA37C40089B08E /* moc_DlgCloneRevolve.cpp in Sources */,
-				D5EBB7AF232AF45800EED2BE /* moc_DlgEditPath.cpp in Sources */,
 				D5F7D89A22FA37C40089B08E /* DlgVTKExport.cpp in Sources */,
 				D5F7D8B922FA37C40089B08E /* PlotWidget.cpp in Sources */,
 				D5F7D82B22FA37C40089B08E /* moc_GLHighlighter.cpp in Sources */,
@@ -1420,6 +1451,7 @@
 				D5F7D87322FA37C40089B08E /* moc_Tool.cpp in Sources */,
 				D5F7D8C222FA37C40089B08E /* DlgCloneObject.cpp in Sources */,
 				D5F7D85122FA37C40089B08E /* DlgLameConvertor.cpp in Sources */,
+				D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */,
 				D5F7D82C22FA37C40089B08E /* moc_BuildPanel.cpp in Sources */,
 				D5F7D83C22FA37C40089B08E /* DlgEditProject.cpp in Sources */,
 				D5ED2A1423198CD900C16BF7 /* moc_StatePanel.cpp in Sources */,
@@ -1434,6 +1466,7 @@
 				D5F7D8B622FA37C40089B08E /* PostDoc.cpp in Sources */,
 				D5F7D86822FA37C40089B08E /* moc_CColorButton.cpp in Sources */,
 				D5F7D83722FA37C40089B08E /* FileThread.cpp in Sources */,
+				D5D5B6C92335128E00D388FA /* SSHThread.cpp in Sources */,
 				D5ED2A1923198CD900C16BF7 /* InfoPanel.cpp in Sources */,
 				D5F7D8A522FA37C40089B08E /* LogPanel.cpp in Sources */,
 				D5F7D82322FA37C40089B08E /* DlgSoluteTable.cpp in Sources */,
@@ -1488,6 +1521,7 @@
 				D5F7D82522FA37C40089B08E /* DlgAddEquation.cpp in Sources */,
 				D5F7D82A22FA37C40089B08E /* DlgImportCOMSOL.cpp in Sources */,
 				D5F7D82422FA37C40089B08E /* moc_FileThread.cpp in Sources */,
+				D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */,
 				D5F7D8B522FA37C40089B08E /* moc_MeshSelectionBox.cpp in Sources */,
 				D5F7D89D22FA37C40089B08E /* moc_CreateSpringPane.cpp in Sources */,
 				D5F7D8B822FA37C40089B08E /* moc_GLControlBar.cpp in Sources */,
@@ -1497,6 +1531,7 @@
 				D5F7D86322FA37C40089B08E /* moc_MeshInspector.cpp in Sources */,
 				D5F7D86522FA37C40089B08E /* DlgTransform.cpp in Sources */,
 				D5F7D86922FA37C40089B08E /* GLCanvas.cpp in Sources */,
+				D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */,
 				D5F7D8C122FA37C40089B08E /* DlgCloneGrid.cpp in Sources */,
 				D5F7D83F22FA37C40089B08E /* moc_ModelPropsPanel.cpp in Sources */,
 				D5F7D8AE22FA37C40089B08E /* GLControlBar.cpp in Sources */,
@@ -1512,6 +1547,7 @@
 				D5F7D8AB22FA37C40089B08E /* stdafx.cpp in Sources */,
 				D5F7D82D22FA37C40089B08E /* template.cpp in Sources */,
 				D5F7D8A322FA37C40089B08E /* moc_GraphWindow.cpp in Sources */,
+				D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */,
 				D5ED2A1123198CD900C16BF7 /* StatePanel.cpp in Sources */,
 				D5F7D85722FA37C40089B08E /* ClassDescriptor.cpp in Sources */,
 				D5F7D8C422FA37C40089B08E /* menuTools.cpp in Sources */,
@@ -1706,6 +1742,7 @@
 					/usr/local/opt/qt/include/QtWidgets,
 					/usr/local/opt/qt/include/QtCharts,
 					/usr/local/opt/libssh/include,
+					/usr/local/opt/openssl/include,
 					"$(SRCROOT)/../..",
 				);
 				INFOPLIST_FILE = "Supporting Files/Info.plist";
@@ -1723,6 +1760,7 @@
 					/usr/local/opt/x265/lib,
 					/usr/local/lib,
 					/usr/local/Cellar/libssh/0.9.0_1/lib,
+					/usr/local/Cellar/openssl/1.0.2s/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1747,6 +1785,7 @@
 					/usr/local/opt/qt/include/QtWidgets,
 					/usr/local/opt/qt/include/QtCharts,
 					/usr/local/opt/libssh/include,
+					/usr/local/opt/openssl/include,
 					"$(SRCROOT)/../..",
 				);
 				INFOPLIST_FILE = "Supporting Files/Info.plist";
@@ -1764,6 +1803,7 @@
 					/usr/local/opt/x265/lib,
 					/usr/local/lib,
 					/usr/local/Cellar/libssh/0.9.0_1/lib,
+					/usr/local/Cellar/openssl/1.0.2s/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
