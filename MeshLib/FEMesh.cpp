@@ -2061,6 +2061,8 @@ void FEMesh::Save(OArchive &ar)
 				ar.WriteChunk(CID_MESH_ELEMENT_GID     , pe->m_gid);
 				ar.WriteChunk(CID_MESH_ELEMENT_NODES   , pe->m_node, pe->Nodes());
 				ar.WriteChunk(CID_MESH_ELEMENT_FIBER   , pe->m_fiber);
+				ar.WriteChunk(CID_MESH_ELEMENT_Q_ACTIVE, pe->m_Qactive);
+				ar.WriteChunk(CID_MESH_ELEMENT_Q       , pe->m_Q);
 				if (pe->IsShell())
 					ar.WriteChunk(CID_MESH_SHELL_THICKNESS , pe->m_h, pe->Nodes());
 //				ar.WriteChunk(CID_MESH_ELEMENT_MATERIAL, mid);
@@ -2320,7 +2322,10 @@ void FEMesh::Load(IArchive& ar)
 									else ar.read(pe->m_node, pe->Nodes());
 								}
 								break;
-							case CID_MESH_ELEMENT_FIBER: ar.read(pe->m_fiber); break;
+							case CID_MESH_ELEMENT_FIBER   : ar.read(pe->m_fiber); break;
+							case CID_MESH_ELEMENT_Q_ACTIVE: ar.read(pe->m_Qactive); break;
+							case CID_MESH_ELEMENT_Q       :  ar.read(pe->m_Q); break;
+
 							case CID_MESH_SHELL_THICKNESS:
 								{
 									ar.read(&h[0], pe->Nodes());
