@@ -275,9 +275,6 @@ public:
 			if(m_wnd->InitializeSSH(m_job))
 			{
 				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), GETJOBFILES);
-				QObject::connect(m_job->GetSSHHandler(), &CSSHHandler::AddOutput, sshThread, &CSSHThread::GetOutput);
-				QObject::connect(sshThread, &CSSHThread::AddOutput, &CLogger::AddLogEntry);
-
 				sshThread->start();
 			}
 		}
@@ -289,10 +286,6 @@ public:
 				m_wnd->ClearOutput();
 
 				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), GETQUEUESTATUS);
-
-				QObject::connect(m_job->GetSSHHandler(), &CSSHHandler::AddOutput, sshThread, &CSSHThread::GetOutput);
-				QObject::connect(sshThread, &CSSHThread::AddOutput, &CLogger::AddOutputEntry);
-
 				sshThread->start();
 			}
 		}

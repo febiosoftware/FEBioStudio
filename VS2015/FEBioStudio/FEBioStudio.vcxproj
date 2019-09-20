@@ -74,8 +74,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(ZLIBDIR);$(FFMPEGDIR)\include;$(LIBSSH)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)x64\Debug;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Debug;$(MMGLIB)\lib\Debug;$(FFMPEGDIR)\lib;$(LIBSSH)\VS2015\src\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(ZLIBDIR);$(FFMPEGDIR)\include;$(LIBSSH)\include;$(OPENSSLLIB)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)x64\Debug;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Debug;$(MMGLIB)\lib\Debug;$(FFMPEGDIR)\lib;$(LIBSSH)\VS2015\src\Debug;$(OPENSSLLIB)\lib\VC\static;$(OPENSSLLIB)\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -110,7 +110,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;nike3d.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;gllib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Debug\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Debug\zlibstaticd.lib;postlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;ssh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;nike3d.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;gllib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Debug\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Debug\zlibstaticd.lib;postlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;ssh.lib;padlock.lib;capi.lib;libapps.lib;dasync.lib;libssl_static.lib;libtestutil.lib;ossltest.lib;uitest.lib;openssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
@@ -219,6 +219,7 @@
     <ClCompile Include="..\..\FEBioStudio\Document.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DragBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\EditPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\Encrypter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioJob.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioStudio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEObjectProps.cpp" />
@@ -239,6 +240,7 @@
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\LaunchConfig.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Logger.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LogPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MainTabBar.cpp" />
@@ -292,6 +294,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_IntegrateWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_Logger.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_LogPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MainTabBar.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MainWindow.cpp" />
@@ -313,6 +316,8 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SelectionBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_SSHHandler.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_SSHThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_StatePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_StatsWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SummaryWindow.cpp" />
@@ -342,6 +347,7 @@
     <ClCompile Include="..\..\FEBioStudio\Sketcher.cpp" />
     <ClCompile Include="..\..\FEBioStudio\SphereFitTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\SSHHandler.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\SSHThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\StatePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\StatsWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\stdafx.cpp" />
@@ -373,6 +379,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
+    <ClInclude Include="..\..\FEBioStudio\Encrypter.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />
     <CustomBuild Include="..\..\FEBioStudio\MainTabBar.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -399,9 +406,23 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\Logger.h" />
+    <ClInclude Include="..\..\FEBioStudio\LaunchConfig.h" />
+    <CustomBuild Include="..\..\FEBioStudio\Logger.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\modelcheck.h" />
-    <ClInclude Include="..\..\FEBioStudio\SSHHandler.h" />
+    <CustomBuild Include="..\..\FEBioStudio\SSHHandler.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe -D HAS_SSH "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\SSHThread.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe -D HAS_SSH "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\ZipFiles.h" />
     <ClInclude Include="resource.h" />

@@ -2,7 +2,8 @@
 
 #ifdef HAS_SSH
 #include <QtCore/QThread>
-#include "SSHHandler.h"
+
+class CSSHHandler;
 
 enum funcName{STARTREMOTEJOB, GETJOBFILES, GETQUEUESTATUS};
 

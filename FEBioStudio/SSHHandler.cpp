@@ -1,19 +1,20 @@
 #ifdef HAS_SSH
+#include "stdafx.h"
+#include <libssh/libssh.h>
+#include <libssh/sftp.h>
 #include <string.h>
 #include <string>
 #include <fstream>
 #include <fcntl.h>
+#include "SSHHandler.h"
+#include "Logger.h"
+#include "Encrypter.h"
+#include <FSCore/FSDir.h>
+#include <iostream>
 #include <QMessageBox>
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
 #include <QInputDialog>
-
-#include "SSHHandler.h"
-#include <FSCore/FSDir.h>
-#include "Logger.h"
-#include "Encrypter.h"
-
-#include <iostream>
 
 #define MAX_XFER_BUF_SIZE 16384
 
@@ -21,9 +22,22 @@
 #define S_IRWXU (0400|0200|0100)
 #endif
 
-
-CSSHHandler::CSSHHandler (CFEBioJob* job) : job(job), passwdLength(-1) // @suppress("Class members should be properly initialized")
+class CSSHHandler::SSHData
 {
+public:
+	CFEBioJob* job;
+	ssh_session session;
+	sftp_session sftp;
+	std::string remoteFileBase;
+	int passwdLength;
+	std::vector<unsigned char> passwdEnc;
+};
+
+CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // @suppress("Class members should be properly initialized")
+{
+	m_data->job = job;
+	m_data->passwdLength = -1;
+
 	// Get local .feb file name
 	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
 
@@ -31,35 +45,37 @@ CSSHHandler::CSSHHandler (CFEBioJob* job) : job(job), passwdLength(-1) // @suppr
 	std::string baseName = info.baseName().toStdString();
 
 	// Get remote base file name
-	remoteFileBase = job->GetLaunchConfig()->remoteDir + "/" + baseName;
+	m_data->remoteFileBase = job->GetLaunchConfig()->remoteDir + "/" + baseName;
 }
+
+CSSHHandler::~CSSHHandler() { delete m_data; }
 
 void CSSHHandler::Update(CLaunchConfig& oldConfig)
 {
-	if(!job->GetLaunchConfig()->SameServer(oldConfig))
+	if(!m_data->job->GetLaunchConfig()->SameServer(oldConfig))
 	{
-		passwdEnc.clear();
-		passwdLength = -1;
+		m_data->passwdEnc.clear();
+		m_data->passwdLength = -1;
 	}
 
 	// Get local .feb file name
-	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
+	std::string localFile = FSDir::toAbsolutePath(m_data->job->GetFileName());
 
 	QFileInfo info(localFile.c_str());
 	std::string baseName = info.baseName().toStdString();
 
 	// Get remote base file name
-	remoteFileBase = job->GetLaunchConfig()->remoteDir + "/" + baseName;
+	m_data->remoteFileBase = m_data->job->GetLaunchConfig()->remoteDir + "/" + baseName;
 }
 
 
 void CSSHHandler::StartRemoteJob()
 {
 	// Get local .feb file name
-	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
+	std::string localFile = FSDir::toAbsolutePath(m_data->job->GetFileName());
 
 	// Get remote .feb file name
-	std::string remoteFile = remoteFileBase + ".feb";
+	std::string remoteFile = m_data->remoteFileBase + ".feb";
 
 	// Send .feb file
 	if(SendFile(localFile, remoteFile) != SSH_OK)
@@ -68,10 +84,10 @@ void CSSHHandler::StartRemoteJob()
 		return;
 	}
 
-	if(job->GetLaunchConfig()->type == REMOTE)
+	if(m_data->job->GetLaunchConfig()->type == REMOTE)
 	{
 		// Construct remote command
-		std::string command = job->GetLaunchConfig()->path + " " + remoteFile;
+		std::string command = m_data->job->GetLaunchConfig()->path + " " + remoteFile;
 
 		// Run the commands
 		if(RunCommand(command) != SSH_OK)
@@ -80,7 +96,7 @@ void CSSHHandler::StartRemoteJob()
 			return;
 		}
 	}
-	else if(job->GetLaunchConfig()->type == PBS)
+	else if(m_data->job->GetLaunchConfig()->type == PBS)
 	{
 		// Create bash file for PBS queueing system
 		if(CreateBashFile() != SSH_OK)
@@ -90,7 +106,7 @@ void CSSHHandler::StartRemoteJob()
 		}
 
 		// Construct remote command
-		std::string command = "qsub " + remoteFileBase + ".bash";
+		std::string command = "qsub " + m_data->remoteFileBase + ".bash";
 
 		if(RunInteractiveNoRead(command) != SSH_OK)
 		{
@@ -98,7 +114,7 @@ void CSSHHandler::StartRemoteJob()
 			return;
 		}
 	}
-	else if(job->GetLaunchConfig()->type == SLURM)
+	else if(m_data->job->GetLaunchConfig()->type == SLURM)
 	{
 		// Create bash file for PBS queueing system
 		if(CreateBashFile() != SSH_OK)
@@ -108,7 +124,7 @@ void CSSHHandler::StartRemoteJob()
 		}
 
 		// Construct remote command
-		std::string command = "sbatch " + remoteFileBase + ".bash";
+		std::string command = "sbatch " + m_data->remoteFileBase + ".bash";
 
 		if(RunInteractiveNoRead(command) != SSH_OK)
 		{
@@ -124,10 +140,10 @@ void CSSHHandler::StartRemoteJob()
 void CSSHHandler::GetJobFiles()
 {
 	// Get local .xplt file name
-	std::string localFile = FSDir::toAbsolutePath(job->GetPlotFileName());
+	std::string localFile = FSDir::toAbsolutePath(m_data->job->GetPlotFileName());
 
 	// Get remote .xplt file name
-	std::string remoteFile = remoteFileBase + ".xplt";
+	std::string remoteFile = m_data->remoteFileBase + ".xplt";
 
 	// Get .xplt file
 	GetFile(localFile, remoteFile);
@@ -136,7 +152,7 @@ void CSSHHandler::GetJobFiles()
 	localFile.replace(localFile.end()-4, localFile.end(), "log");
 
 	// Get remote .log file name
-	remoteFile = remoteFileBase + ".log";
+	remoteFile = m_data->remoteFileBase + ".log";
 
 	// Get .log file
 	GetFile(localFile, remoteFile);
@@ -149,7 +165,7 @@ void CSSHHandler::GetQueueStatus()
 {
 	std::string command;
 
-	if(job->GetLaunchConfig()->type == PBS)
+	if(m_data->job->GetLaunchConfig()->type == PBS)
 	{
 		command = "qstat";
 	}
@@ -169,44 +185,44 @@ void CSSHHandler::GetQueueStatus()
 
 void CSSHHandler::SetPasswordLength(int l)
 {
-	passwdLength = l;
+	m_data->passwdLength = l;
 }
 size_t CSSHHandler::GetPasswordLength()
 {
-	return passwdLength;
+	return m_data->passwdLength;
 }
 
 void CSSHHandler::SetPasswdEnc(std::vector<unsigned char> passwdEnc)
 {
-	this->passwdEnc = passwdEnc;
+	m_data->passwdEnc = passwdEnc;
 }
 
 std::vector<unsigned char>& CSSHHandler::GetPasswdEnc()
 {
-	return passwdEnc;
+	return m_data->passwdEnc;
 }
 
 int CSSHHandler::StartSSHSession()
 {
 	int error;
 
-	session = ssh_new();
-	if(session == NULL)
+	m_data->session = ssh_new();
+	if(m_data->session == NULL)
 	{
 		QMessageBox::critical(NULL, "FEBio Studio", "Could not initialize SSH session.");
 		return FAILED;
 	}
 
-	ssh_options_set(session, SSH_OPTIONS_HOST, job->GetLaunchConfig()->server.c_str());
-	ssh_options_set(session, SSH_OPTIONS_PORT, &(job->GetLaunchConfig()->port));
-	ssh_options_set(session, SSH_OPTIONS_USER, job->GetLaunchConfig()->userName.c_str());
+	ssh_options_set(m_data->session, SSH_OPTIONS_HOST, m_data->job->GetLaunchConfig()->server.c_str());
+	ssh_options_set(m_data->session, SSH_OPTIONS_PORT, &(m_data->job->GetLaunchConfig()->port));
+	ssh_options_set(m_data->session, SSH_OPTIONS_USER, m_data->job->GetLaunchConfig()->userName.c_str());
 
 	// Connect to server
-	error = ssh_connect(session);
+	error = ssh_connect(m_data->session);
 	if (error != SSH_OK)
 	{
-		QMessageBox::critical(NULL, "FEBio Studio", "Error connecting to server: " + *ssh_get_error(session));
-		ssh_free(session);
+		QMessageBox::critical(NULL, "FEBio Studio", "Error connecting to server: " + *ssh_get_error(m_data->session));
+		ssh_free(m_data->session);
 		return FAILED;
 	}
 
@@ -219,7 +235,7 @@ int CSSHHandler::StartSSHSession()
 	error = authenticatePubkey();
 	if(error == OK) return error;
 
-	if(passwdLength != -1)
+	if (m_data->passwdLength != -1)
 	{
 		if(authenticatePassword()) return OK;
 	}
@@ -230,8 +246,8 @@ int CSSHHandler::StartSSHSession()
 
 void CSSHHandler::EndSSHSession()
 {
-	ssh_disconnect(session);
-	ssh_free(session);
+	ssh_disconnect(m_data->session);
+	ssh_free(m_data->session);
 }
 
 int CSSHHandler::authenticatePubkey()
@@ -239,7 +255,7 @@ int CSSHHandler::authenticatePubkey()
 	int rc;
 
 	// Attempt Public Key authentication
-	rc = ssh_userauth_publickey_auto(session, NULL, NULL);
+	rc = ssh_userauth_publickey_auto(m_data->session, NULL, NULL);
 	if (rc == SSH_AUTH_SUCCESS)
 	{
 		return OK;
@@ -250,9 +266,9 @@ int CSSHHandler::authenticatePubkey()
 
 bool CSSHHandler::authenticatePassword()
 {
-	std::string password = CEncrypter::Instance()->Decrypt(passwdEnc, passwdLength);
+	std::string password = CEncrypter::Instance()->Decrypt(m_data->passwdEnc, m_data->passwdLength);
 
-	int rc = ssh_userauth_password(session, NULL, password.c_str());
+	int rc = ssh_userauth_password(m_data->session, NULL, password.c_str());
 	if (rc != SSH_AUTH_SUCCESS) return false;
 
 	return true;
@@ -271,7 +287,7 @@ int CSSHHandler::verify_knownhost()
 	int cmp;
 	int rc;
 
-	rc = ssh_get_server_publickey(session, &srv_pubkey);
+	rc = ssh_get_server_publickey(m_data->session, &srv_pubkey);
 	if (rc < 0) {
 		return -1;
 	}
@@ -285,7 +301,7 @@ int CSSHHandler::verify_knownhost()
 		return -1;
 	}
 
-	state = ssh_session_is_known_server(session);
+	state = ssh_session_is_known_server(m_data->session);
 	switch (state) {
 	case SSH_KNOWN_HOSTS_OK:
 		/* OK */
@@ -324,7 +340,7 @@ int CSSHHandler::verify_knownhost()
 			return -1;
 		}
 
-		rc = ssh_session_update_known_hosts(session);
+		rc = ssh_session_update_known_hosts(m_data->session);
 		if (rc < 0) {
 			QMessageBox::critical(NULL, "FEBio Studio", "Error : " + *strerror(errno));
 			return -1;
@@ -346,20 +362,20 @@ int CSSHHandler::StartSFTPSession()
 	int rc;
 	QString error;
 
-	sftp = sftp_new(session);
-	if (sftp == NULL)
+	m_data->sftp = sftp_new(m_data->session);
+	if (m_data->sftp == NULL)
 	{
-		error = QString("Error allocating SFTP session: %1\n").arg(ssh_get_error(session));
+		error = QString("Error allocating SFTP session: %1\n").arg(ssh_get_error(m_data->session));
 		CLogger::AddLogEntry(error);
 		return SSH_ERROR;
 	}
 
-	rc = sftp_init(sftp);
+	rc = sftp_init(m_data->sftp);
 	if (rc != SSH_OK)
 	{
-		error = QString("Error initializing SFTP session: %1\n").arg(sftp_get_error(sftp));
+		error = QString("Error initializing SFTP session: %1\n").arg(sftp_get_error(m_data->sftp));
 		CLogger::AddLogEntry(error);
-		sftp_free(sftp);
+		sftp_free(m_data->sftp);
 		return rc;
 	}
 
@@ -368,7 +384,7 @@ int CSSHHandler::StartSFTPSession()
 
 int CSSHHandler::EndSFTPSession()
 {
-	sftp_free(sftp);
+	sftp_free(m_data->sftp);
 	return SSH_OK;
 }
 
@@ -382,11 +398,11 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 
 	StartSFTPSession();
 
-	file = sftp_open(sftp, remote.c_str(),
+	file = sftp_open(m_data->sftp, remote.c_str(),
 			access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(session));
+		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
 		emit AddOutput(error);
 		return SSH_ERROR;
 	}
@@ -402,7 +418,7 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 			ssize_t nwritten = sftp_write(file, buffer, fin.gcount());
 			if (nwritten != fin.gcount())
 			{
-				error = QString("Can't write data to file: %1\n").arg(ssh_get_error(session));
+				error = QString("Can't write data to file: %1\n").arg(ssh_get_error(m_data->session));
 				emit AddOutput(error);
 				sftp_close(file);
 				return SSH_ERROR;
@@ -413,7 +429,7 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 	rc = sftp_close(file);
 	if (rc != SSH_OK)
 	{
-		error = QString("Can't close the written file: %1\n").arg(ssh_get_error(session));
+		error = QString("Can't close the written file: %1\n").arg(ssh_get_error(m_data->session));
 		emit AddOutput(error);
 		return rc;
 	}
@@ -430,11 +446,11 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 
 	StartSFTPSession();
 
-	file = sftp_open(sftp, remote.c_str(),
+	file = sftp_open(m_data->sftp, remote.c_str(),
 			access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(session));
+		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
 		emit AddOutput(error);
 		return SSH_ERROR;
 	}
@@ -442,7 +458,7 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 	nwritten = sftp_write(file, buf, bufSize);
 	if (nwritten != bufSize)
 	{
-		error = QString("Can't write data to file: %1\n").arg(ssh_get_error(session));
+		error = QString("Can't write data to file: %1\n").arg(ssh_get_error(m_data->session));
 		emit AddOutput(error);
 		sftp_close(file);
 		return SSH_ERROR;
@@ -451,7 +467,7 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 	rc = sftp_close(file);
 	if (rc != SSH_OK)
 	{
-		error = QString("Can't close the written file: %1\n").arg(ssh_get_error(session));
+		error = QString("Can't close the written file: %1\n").arg(ssh_get_error(m_data->session));
 		emit AddOutput(error);
 		return rc;
 	}
@@ -476,10 +492,10 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 
 	StartSFTPSession();
 
-	file = sftp_open(sftp, remote.c_str(), access_type, S_IRWXU);
+	file = sftp_open(m_data->sftp, remote.c_str(), access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(session));
+		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
 		emit AddOutput(error);
 		return SSH_ERROR;
 	}
@@ -506,7 +522,7 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 		}
 		else if (nbytes < 0)
 		{
-			error = QString("Error while reading file: %1\n").arg(ssh_get_error(session));
+			error = QString("Error while reading file: %1\n").arg(ssh_get_error(m_data->session));
 			emit AddOutput(error);
 			sftp_close(file);
 
@@ -537,7 +553,7 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 
 	rc = sftp_close(file);
 	if (rc != SSH_OK) {
-		error = QString("Can't close the read file: %1\n").arg(ssh_get_error(session));
+		error = QString("Can't close the read file: %1\n").arg(ssh_get_error(m_data->session));
 		emit AddOutput(error);
 
 #ifdef WIN32
@@ -561,7 +577,7 @@ int CSSHHandler::RunCommand(std::string command)
 	char buffer[256];
 	int nbytes;
 
-	channel = ssh_channel_new(session);
+	channel = ssh_channel_new(m_data->session);
 	if (channel == NULL)
 		return SSH_ERROR;
 
@@ -611,7 +627,7 @@ int CSSHHandler::RunInteractiveNoRead(std::string command)
 	char buffer[256];
 	int nbytes;
 
-	channel = ssh_channel_new(session);
+	channel = ssh_channel_new(m_data->session);
 	if (channel == NULL)
 		return SSH_ERROR;
 
@@ -629,7 +645,9 @@ int CSSHHandler::RunInteractiveNoRead(std::string command)
 
 	rc = ssh_channel_write(channel, command.c_str(), sizeof(char)*command.length());
 
+#ifndef WIN32
 	sleep(1);
+#endif
 
 	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
@@ -645,7 +663,7 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 	char buffer2[256];
 	int nbytes;
 
-	channel = ssh_channel_new(session);
+	channel = ssh_channel_new(m_data->session);
 	if (channel == NULL)
 		return SSH_ERROR;
 
@@ -656,7 +674,7 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 		return rc;
 	}
 
-	channel2 = ssh_channel_new(session);
+	channel2 = ssh_channel_new(m_data->session);
 	if (channel2 == NULL)
 		return SSH_ERROR;
 
@@ -690,7 +708,9 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 		bool cont = true;
 		while(cont || nbytes > 0)
 		{
+#ifndef WIN32
 			usleep(5000);
+#endif
 
 			string test("pgrep -P ");
 
@@ -728,37 +748,39 @@ int CSSHHandler::CreateBashFile()
 {
 	std::string bashString("#!/bin/bash\n\n");
 
-	if(job->GetLaunchConfig()->type == PBS)
+	CLaunchConfig* config = m_data->job->GetLaunchConfig();
+
+	if(config->type == PBS)
 	{
-		bashString += "#PBS -l nodes=1:ppn=" + std::to_string(job->GetLaunchConfig()->procNum) + "\n\n";
-		bashString += "#PBS -l mem=" + std::to_string(job->GetLaunchConfig()->ram) + "\n\n";
-		bashString += "#PBS -l walltime=" + job->GetLaunchConfig()->walltime + "\n\n";
-		if(!job->GetLaunchConfig()->jobName.empty())
+		bashString += "#PBS -l nodes=1:ppn=" + std::to_string(config->procNum) + "\n\n";
+		bashString += "#PBS -l mem=" + std::to_string(config->ram) + "\n\n";
+		bashString += "#PBS -l walltime=" + config->walltime + "\n\n";
+		if(!config->jobName.empty())
 		{
-			bashString += "#PBS -N " + job->GetLaunchConfig()->jobName + "\n\n";
-			bashString += "#PBS -o " + job->GetLaunchConfig()->remoteDir + "/" + job->GetLaunchConfig()->jobName + "_stdout.log\n\n";
-			bashString += "#PBS -e " + job->GetLaunchConfig()->remoteDir + "/" + job->GetLaunchConfig()->jobName + "_stderr.log\n\n";
+			bashString += "#PBS -N " + config->jobName + "\n\n";
+			bashString += "#PBS -o " + config->remoteDir + "/" + config->jobName + "_stdout.log\n\n";
+			bashString += "#PBS -e " + config->remoteDir + "/" + config->jobName + "_stderr.log\n\n";
 		}
-		bashString += "export OMP_NUM_THREADS=" + std::to_string(job->GetLaunchConfig()->procNum) + "\n";
-		bashString += job->GetLaunchConfig()->path + " " + remoteFileBase + ".feb";
+		bashString += "export OMP_NUM_THREADS=" + std::to_string(config->procNum) + "\n";
+		bashString += config->path + " " + m_data->remoteFileBase + ".feb";
 	}
-	else if(job->GetLaunchConfig()->type == SLURM)
+	else if(config->type == SLURM)
 	{
 		bashString += "#SBATCH -N 1\n\n";
-		bashString += "#SBATCH -n " + std::to_string(job->GetLaunchConfig()->procNum) + "\n\n";
-		bashString += "#SBATCH --mem " + std::to_string(job->GetLaunchConfig()->ram) + "\n\n";
-		bashString += "#SBATCH -t " + job->GetLaunchConfig()->walltime + "\n\n";
-		if(!job->GetLaunchConfig()->jobName.empty())
+		bashString += "#SBATCH -n " + std::to_string(config->procNum) + "\n\n";
+		bashString += "#SBATCH --mem " + std::to_string(config->ram) + "\n\n";
+		bashString += "#SBATCH -t " + config->walltime + "\n\n";
+		if(!config->jobName.empty())
 		{
-			bashString += "#SBATCH -J " + job->GetLaunchConfig()->jobName + "\n\n";
-			bashString += "#SBATCH -o " + job->GetLaunchConfig()->remoteDir + "/" + job->GetLaunchConfig()->jobName + "_stdout.log\n\n";
-			bashString += "#SBATCH -e " + job->GetLaunchConfig()->remoteDir + "/" + job->GetLaunchConfig()->jobName + "_stderr.log\n\n";
+			bashString += "#SBATCH -J " + config->jobName + "\n\n";
+			bashString += "#SBATCH -o " + config->remoteDir + "/" + config->jobName + "_stdout.log\n\n";
+			bashString += "#SBATCH -e " + config->remoteDir + "/" + config->jobName + "_stderr.log\n\n";
 		}
-		bashString += "export OMP_NUM_THREADS=" + std::to_string(job->GetLaunchConfig()->procNum) + "\n";
-		bashString += job->GetLaunchConfig()->path + " " + remoteFileBase + ".feb";
+		bashString += "export OMP_NUM_THREADS=" + std::to_string(config->procNum) + "\n";
+		bashString += config->path + " " + m_data->remoteFileBase + ".feb";
 	}
 
-	std::string remote = remoteFileBase + ".bash";
+	std::string remote = m_data->remoteFileBase + ".bash";
 
 	return SendFile(bashString.c_str(), sizeof(char)*bashString.length(), remote);
 

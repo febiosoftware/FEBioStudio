@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CDlgRun_t {
-    QByteArrayData data[7];
-    char stringdata0[87];
+    QByteArrayData data[6];
+    char stringdata0[92];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,13 +35,12 @@ QT_MOC_LITERAL(0, 0, 7), // "CDlgRun"
 QT_MOC_LITERAL(1, 8, 20), // "updateDefaultCommand"
 QT_MOC_LITERAL(2, 29, 0), // ""
 QT_MOC_LITERAL(3, 30, 20), // "on_setCWDBtn_Clicked"
-QT_MOC_LITERAL(4, 51, 13), // "onPathChanged"
-QT_MOC_LITERAL(5, 65, 1), // "n"
-QT_MOC_LITERAL(6, 67, 19) // "on_selectConfigFile"
+QT_MOC_LITERAL(4, 51, 20), // "on_editLCBtn_Clicked"
+QT_MOC_LITERAL(5, 72, 19) // "on_selectConfigFile"
 
     },
     "CDlgRun\0updateDefaultCommand\0\0"
-    "on_setCWDBtn_Clicked\0onPathChanged\0n\0"
+    "on_setCWDBtn_Clicked\0on_editLCBtn_Clicked\0"
     "on_selectConfigFile"
 };
 #undef QT_MOC_LITERAL
@@ -62,13 +61,13 @@ static const uint qt_meta_data_CDlgRun[] = {
  // slots: name, argc, parameters, tag, flags
        1,    0,   34,    2, 0x09 /* Protected */,
        3,    0,   35,    2, 0x09 /* Protected */,
-       4,    1,   36,    2, 0x09 /* Protected */,
-       6,    0,   39,    2, 0x09 /* Protected */,
+       4,    0,   36,    2, 0x09 /* Protected */,
+       5,    0,   37,    2, 0x09 /* Protected */,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,    5,
+    QMetaType::Void,
     QMetaType::Void,
 
        0        // eod
@@ -82,11 +81,12 @@ void CDlgRun::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, voi
         switch (_id) {
         case 0: _t->updateDefaultCommand(); break;
         case 1: _t->on_setCWDBtn_Clicked(); break;
-        case 2: _t->onPathChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 2: _t->on_editLCBtn_Clicked(); break;
         case 3: _t->on_selectConfigFile(); break;
         default: ;
         }
     }
+    Q_UNUSED(_a);
 }
 
 QT_INIT_METAOBJECT const QMetaObject CDlgRun::staticMetaObject = { {

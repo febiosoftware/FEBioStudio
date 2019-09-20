@@ -5,7 +5,7 @@
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
 #include <FSCore/FSDir.h>
-#include <QThread>
+#include <QtCore/QThread>
 #ifdef HAS_SSH
 #include "SSHHandler.h"
 #endif

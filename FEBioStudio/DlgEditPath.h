@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <QObject>
 #include <QDialog>
 #include "LaunchConfig.h"
 

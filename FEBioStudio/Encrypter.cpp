@@ -55,8 +55,8 @@ std::string CEncrypter::Decrypt(std::vector<unsigned char> in, size_t length)
 {
 	const size_t encslength = ((length + AES_BLOCK_SIZE) / AES_BLOCK_SIZE) * AES_BLOCK_SIZE;
 
-	std::vector<unsigned char> uout(length);
-	std::vector<char> out(length);
+	std::vector<unsigned char> uout(encslength);
+	std::vector<char> out(encslength);
 
 	unsigned char iv_dec[AES_BLOCK_SIZE];
 	memcpy(iv_dec, aes_iv, AES_BLOCK_SIZE);
@@ -69,10 +69,3 @@ std::string CEncrypter::Decrypt(std::vector<unsigned char> in, size_t length)
 
 	return std::string(&out[0]);
 }
-
-
-
-
-
-
-

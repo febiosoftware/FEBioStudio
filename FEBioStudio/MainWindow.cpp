@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "Document.h"
