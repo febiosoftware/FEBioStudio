@@ -22,6 +22,7 @@
 		D5D5B6CC2335139C00D388FA /* libssl.1.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5D5B6CE2335160E00D388FA /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */; };
 		D5D5B6CF2335161A00D388FA /* libcrypto.1.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D5D5B6D323351ED600D388FA /* moc_DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6D223351ED600D388FA /* moc_DlgEditPath.cpp */; };
 		D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346A23233928002D7A13 /* SSHHandler.cpp */; };
 		D5EBB7A7232AEAED00EED2BE /* DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A3232AEAEC00EED2BE /* DlgEditPath.cpp */; };
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
@@ -395,6 +396,7 @@
 		D5D5B6C32335128E00D388FA /* SSHThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHThread.cpp; sourceTree = "<group>"; };
 		D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2s/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
 		D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2s/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
+		D5D5B6D223351ED600D388FA /* moc_DlgEditPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditPath.cpp; sourceTree = "<group>"; };
 		D5DC346823233928002D7A13 /* DlgEditPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditPath.h; sourceTree = "<group>"; };
 		D5DC346A23233928002D7A13 /* SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHHandler.cpp; sourceTree = "<group>"; };
 		D5DC346B23233928002D7A13 /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
@@ -1119,6 +1121,7 @@
 				D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */,
 				D5F7D79B22FA37C40089B08E /* moc_DlgCloneRevolve.cpp */,
 				D5F7D79222FA37C40089B08E /* moc_DlgEditOutput.cpp */,
+				D5D5B6D223351ED600D388FA /* moc_DlgEditPath.cpp */,
 				D5F7D7E422FA37C40089B08E /* moc_DlgEditProject.cpp */,
 				D5F7D80722FA37C40089B08E /* moc_DlgExportFEBio.cpp */,
 				D5F7D70222FA37C40089B08E /* moc_DlgFEBioOptimize.cpp */,
@@ -1593,6 +1596,7 @@
 				D5F7D84F22FA37C40089B08E /* menuPhysics.cpp in Sources */,
 				D5F7D84022FA37C40089B08E /* menuRecord.cpp in Sources */,
 				D5F7D87A22FA37C40089B08E /* CommandManager.cpp in Sources */,
+				D5D5B6D323351ED600D388FA /* moc_DlgEditPath.cpp in Sources */,
 				D5F7D8AC22FA37C40089B08E /* moc_ToolsPanel.cpp in Sources */,
 				D5F7D85D22FA37C40089B08E /* moc_ObjectPanel.cpp in Sources */,
 				D5F7D89322FA37C40089B08E /* CurvePicker.cpp in Sources */,
