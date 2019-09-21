@@ -25,6 +25,7 @@ FileReader::FileReader()
 
 FileReader::~FileReader()
 {
+	Close();
 }
 
 bool FileReader::Open(const char* szfile, const char* szmode)

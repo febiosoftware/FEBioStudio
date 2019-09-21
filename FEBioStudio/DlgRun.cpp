@@ -12,6 +12,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QGroupBox>
 #include <FSCore/FSDir.h>
 #include "DlgEditPath.h"
 #include <string.h>
@@ -26,6 +27,8 @@ public:
 	QCheckBox*	debug;
 	QCheckBox*	writeNotes;
 	QLineEdit*	configFile;
+	QLineEdit*	taskName;
+	QLineEdit*	taskFile;
 
 	QComboBox*	febioFile;
 	
@@ -74,15 +77,23 @@ public:
 		configLayout->addWidget(configFile);
 		configLayout->addWidget(selectConfigFile);
 
+		taskName = new QLineEdit;
+		taskFile = new QLineEdit;
+
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
 		form->addRow("Job name:", jobName);
 		form->addRow("Launch Configuration:", launchConfigLayout);
 		form->addRow("Working directory:", cwdLayout);
 		form->addRow("FEBio file format:", febioFile);
-		form->addRow("Write notes:", writeNotes = new QCheckBox);
-		form->addRow("Debug mode:", debug = new QCheckBox(""));
-		form->addRow("Config file:", configLayout);
+
+		QFormLayout* ext = new QFormLayout;
+		ext->setLabelAlignment(Qt::AlignRight);
+		ext->addRow("Write notes:", writeNotes = new QCheckBox);
+		ext->addRow("Debug mode:", debug = new QCheckBox(""));
+		ext->addRow("Config file:", configLayout);
+		ext->addRow("Task name:", taskName);
+		ext->addRow("Task control file:", taskFile);
 
 		writeNotes->setChecked(true);
 
@@ -90,32 +101,47 @@ public:
 		cmd = new QLineEdit; cmd->setEnabled(false);
 		cmd->setText("-i $(Filename)");
 
+		QVBoxLayout* v = new QVBoxLayout;
+		v->addLayout(ext);
+		v->addWidget(editCmd);
+		v->addWidget(cmd);
+
+		QGroupBox* pg = new QGroupBox("advanced settings:");
+		pg->setLayout(v);
+		pg->hide();
+
 		QPushButton* run = new QPushButton("Run");
 		QPushButton* cnl = new QPushButton("Cancel");
+		QPushButton* more = new QPushButton("Advanced");
+		more->setCheckable(true);
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addStretch();
 		h->addWidget(run);
 		h->addWidget(cnl);
+		h->addWidget(more);
 		
 		QVBoxLayout* l = new QVBoxLayout;
 		l->addLayout(form);
-		l->addStretch();
-		l->addWidget(editCmd);
-		l->addWidget(cmd);
+		l->addWidget(pg);
 		l->addLayout(h);
 		dlg->setLayout(l);
+
+		dlg->adjustSize();
 		
 		QObject::connect(editLCBtn, SIGNAL(clicked()), dlg, SLOT(on_editLCBtn_Clicked()));
 		QObject::connect(setCWDBtn, SIGNAL(clicked()), dlg, SLOT(on_setCWDBtn_Clicked()));
 		QObject::connect(run, SIGNAL(clicked()), dlg, SLOT(accept()));
 		QObject::connect(cnl, SIGNAL(clicked()), dlg, SLOT(reject()));
+		QObject::connect(more, SIGNAL(toggled(bool)), pg, SLOT(setVisible(bool)));
 //		QObject::connect(launchConfig, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onPathChanged(int)));
 
 		QObject::connect(debug, SIGNAL(toggled(bool)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(editCmd, SIGNAL(toggled(bool)), cmd, SLOT(setEnabled(bool)));
 		QObject::connect(selectConfigFile, SIGNAL(clicked()), dlg, SLOT(on_selectConfigFile()));
 		QObject::connect(configFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
+		QObject::connect(taskName, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
+		QObject::connect(taskFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 	}
 };
 
@@ -143,6 +169,15 @@ void CDlgRun::updateDefaultCommand()
 
 		QString configFile = ui->configFile->text();
 		if (configFile.isEmpty() == false) t += " -config " + configFile;
+
+		QString taskName = ui->taskName->text();
+		if (taskName.isEmpty() == false)
+		{
+			t += " -task=\"" + taskName + "\"";
+			QString taskFile = ui->taskFile->text();
+			t += " " + taskFile;
+		}
+
 		ui->cmd->setText(t);
 	}
 }

@@ -23,6 +23,7 @@ void CFileThread::run()
 		m_fileReader = &ar;
 		if (!ar.Load(szfile))
 		{
+			m_fileReader = 0;
 			emit resultReady(false, QString("Failed opening file %1").arg(szfile));
 		}
 		else
@@ -31,14 +32,17 @@ void CFileThread::run()
 			{
 				doc.SetDocFilePath(sfile);
 				doc.Load(ar.GetArchive());
+				m_fileReader = 0;
 				emit resultReady(true, "");
 			}
 			catch (InvalidVersion)
 			{
+				m_fileReader = 0;
 				emit resultReady(false, QString("The file %1 has an invalid version number.").arg(szfile));
 			}
 			catch (ReadError e)
 			{
+				m_fileReader = 0;
 				char* sz = 0;
 				int L = CCallStack::GetCallStackString(0);
 				sz = new char[L + 1];
@@ -49,12 +53,15 @@ void CFileThread::run()
 			}
 			catch (GObjectException e)
 			{
+				m_fileReader = 0;
 				emit resultReady(false, QString("An error occurred processing model:\n%1").arg(e.ErrorMsg()));
 			}
 			catch (...)
 			{
+				m_fileReader = 0;
 				emit resultReady(false, QString("Failed opening file %1.").arg(szfile));
 			}
+			m_fileReader = 0;
 		}
 	}
 	else

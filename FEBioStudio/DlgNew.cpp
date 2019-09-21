@@ -147,6 +147,15 @@ void CDlgNew::accept()
 		return;
 	}
 
+	// make sure the project folder exists
+	QString projectFolder = ui->projectFolder->text();
+	QDir dir(projectFolder);
+	if (dir.exists() == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", QString("The folder \"%1\" does not exist.\nPlease choose a valid project folder.").arg(projectFolder));
+		return;
+	}
+
 	QDialog::accept();
 }
 
