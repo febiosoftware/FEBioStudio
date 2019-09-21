@@ -90,6 +90,10 @@ void CMainWindow::on_actionNew_triggered()
 		else if (n == QMessageBox::Cancel) return;
 	}
 
+	// close all views first
+	int n = ui->tab->count();
+	for (int i = 1; i < n; ++i) ui->tab->closeView(1);
+
 	// ask the user for a new project template
 	bool btemplate = false;
 	CDlgNew dlg(this);

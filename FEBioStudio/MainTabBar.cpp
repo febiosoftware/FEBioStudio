@@ -55,7 +55,6 @@ void CMainTabBar::closeView(int n)
 {
 	assert(n != 0);
 	assert(count() > 1);
-	delete m_docs[n];
 	m_docs.erase(m_docs.begin() + n);
 	removeTab(n);
 }
