@@ -16,6 +16,7 @@ class QMenu;
 class CGraphWindow;
 class CPostDoc;
 class CFEBioJob;
+class CSSHHandler;
 
 namespace Ui {
 	class CMainWindow;
@@ -394,13 +395,14 @@ public slots:
 
 	void RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNotes, QString cmd);
 
-	bool InitializeSSH(CFEBioJob* job);
+	void NextSSHFunction(CSSHHandler*);
 
 public:
 	QStringList GetRecentFileList();
 
 private:
 	void ReadNextFileInQueue();
+	bool HandleSSHMessage(CSSHHandler*);
 
 public:
 	int Views();

@@ -21,6 +21,7 @@
 #include "MainWindow.h"
 #include <FSCore/FSDir.h>
 #include "SSHThread.h"
+#include "SSHHandler.h"
 #include "Logger.h"
 
 class CObjectValidator
@@ -201,7 +202,6 @@ public:
 		addProperty("", CProperty::Action)->info = QString("Open in FEBio Studio");
 		addProperty("", CProperty::Action)->info = QString("Open in PostView");
 
-#ifdef HAS_SSH
 		if(job->GetLaunchConfig()->type != LOCAL)
 		{
 			addProperty("", CProperty::Action)->info = QString("Get Remote Files");
@@ -211,7 +211,6 @@ public:
 		{
 			addProperty("", CProperty::Action)->info = QString("Get Queue Status");
 		}
-#endif
 
 	}
 
@@ -268,28 +267,31 @@ public:
 			// try to open the file
 			QDesktopServices::openUrl(QUrl(QString::fromStdString(plotFile)));
 		}
-#ifdef HAS_SSH
 		else if (i == 5)
 		{
-			// Copy remote files to local dir
-			if(m_wnd->InitializeSSH(m_job))
+			if(!m_job->GetSSHHandler()->IsBusy())
 			{
-				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), GETJOBFILES);
+				// Copy remote files to local dir
+				m_job->GetSSHHandler()->SetTargetFunction(GETJOBFILES);
+
+				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), STARTSSHSESSION);
+				QObject::connect(sshThread, &CSSHThread::FinishedPart, m_wnd, &CMainWindow::NextSSHFunction);
 				sshThread->start();
 			}
 		}
 		else if (i == 6)
 		{
-			// Copy remote files to local dir
-			if(m_wnd->InitializeSSH(m_job))
+			if(!m_job->GetSSHHandler()->IsBusy())
 			{
+				// Copy remote files to local dir
 				m_wnd->ClearOutput();
 
-				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), GETQUEUESTATUS);
+				m_job->GetSSHHandler()->SetTargetFunction(GETQUEUESTATUS);
+				CSSHThread* sshThread = new CSSHThread(m_job->GetSSHHandler(), STARTSSHSESSION);
+				QObject::connect(sshThread, &CSSHThread::FinishedPart, m_wnd, &CMainWindow::NextSSHFunction);
 				sshThread->start();
 			}
 		}
-#endif
 	}
 
 private:

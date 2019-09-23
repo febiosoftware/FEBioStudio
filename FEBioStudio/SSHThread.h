@@ -5,8 +5,6 @@
 
 class CSSHHandler;
 
-enum funcName{STARTREMOTEJOB, GETJOBFILES, GETQUEUESTATUS};
-
 class CSSHThread : public QThread
 {
 	Q_OBJECT
@@ -14,16 +12,20 @@ class CSSHThread : public QThread
 	void run() Q_DECL_OVERRIDE;
 
 public:
-	CSSHThread(CSSHHandler* sshHandler, funcName func);
+	CSSHThread(CSSHHandler* sshHandler, int func = -1);
+
+	void SetFuncName(int func);
 
 public slots:
 	void GetOutput(const QString&);
+	void SendFinishedPart();
 signals:
 	void AddOutput(const QString&);
+	void FinishedPart(CSSHHandler*);
 
 private:
 	CSSHHandler*	sshHandler;
-	funcName		func;
+	int				func;
 };
 
 #endif

@@ -33,6 +33,7 @@
 #include <PostLib/ColorMap.h>
 #include <FSCore/FSDir.h>
 #include <QInputDialog>
+#include <QSemaphore>
 #include "DlgCheck.h"
 #include "Logger.h"
 #include "SSHHandler.h"
@@ -1921,19 +1922,19 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 	else
 	{
 #ifdef HAS_SSH
-		if(InitializeSSH(job))
+		CSSHHandler* handler = job->GetSSHHandler();
+
+		if(!handler->IsBusy())
 		{
-			CSSHThread* sshThread = new CSSHThread(job->GetSSHHandler(), STARTREMOTEJOB);
+			handler->SetTargetFunction(STARTREMOTEJOB);
 
-			// Connect remote job output to CLogger singleton
-			connect(job->GetSSHHandler(), &CSSHHandler::AddOutput, sshThread, &CSSHThread::GetOutput);
-			connect(sshThread, &CSSHThread::AddOutput, &CLogger::AddOutputEntry);
-
+			CSSHThread* sshThread = new CSSHThread(handler, STARTSSHSESSION);
+			QObject::connect(sshThread, &CSSHThread::FinishedPart, this, &CMainWindow::NextSSHFunction);
 			sshThread->start();
-
-			// show the output window
-			ui->logPanel->ShowOutput();
 		}
+
+		// show the output window
+		ui->logPanel->ShowOutput();
 
 		GetDocument()->SetActiveJob(nullptr);
 #endif
@@ -1941,30 +1942,34 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 
 }
 
-#ifdef HAS_SSH
-bool CMainWindow::InitializeSSH(CFEBioJob* job)
+void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)
 {
-	CSSHHandler* sshHandler = job->GetSSHHandler();
-
-	int err = sshHandler->StartSSHSession();
-
-	if(err == OK) return true;
-
-	if(err == FAILED)
+	if(!HandleSSHMessage(sshHandler))
 	{
 		sshHandler->EndSSHSession();
-		return false;
+
+		return;
 	}
 
-	if(err == NEEDSPSWD)
-	{
-		// Set up string for message in dialog
-		std::string userAndServer = job->GetLaunchConfig()->userName + "@" + job->GetLaunchConfig()->server;
-		QString message = QString("Please enter a password for %1").arg(userAndServer.c_str());
+	CSSHThread* sshThread = new CSSHThread(sshHandler, sshHandler->GetNextFunction());
+	QObject::connect(sshThread, &CSSHThread::FinishedPart, this, &CMainWindow::NextSSHFunction);
+	sshThread->start();
+}
 
+
+bool CMainWindow::HandleSSHMessage(CSSHHandler* sshHandler)
+{
+	QString QPasswd;
+	QMessageBox::StandardButton reply;
+
+	switch(sshHandler->GetMsgCode())
+	{
+	case FAILED:
+		QMessageBox::critical(this, "FEBio Studio", sshHandler->GetMessage());
+		return false;
+	case NEEDSPSWD:
 		bool ok;
-		QMessageBox::StandardButton reply;
-		QString QPasswd = QInputDialog::getText(NULL, "Password", message, QLineEdit::Password, "", &ok);
+		QPasswd = QInputDialog::getText(NULL, "Password", sshHandler->GetMessage(), QLineEdit::Password, "", &ok);
 
 		if(ok)
 		{
@@ -1974,47 +1979,20 @@ bool CMainWindow::InitializeSSH(CFEBioJob* job)
 		}
 		else
 		{
-			sshHandler->EndSSHSession();
 			return false;
 		}
+		break;
+	case YESNODIALOG:
+		 reply = QMessageBox::question(this, "FEBio Studio", sshHandler->GetMessage(),
+				 QMessageBox::Yes|QMessageBox::No);
 
-		while(true)
-		{
-			std::string password = CEncrypter::Instance()->Decrypt(sshHandler->GetPasswdEnc(), sshHandler->GetPasswordLength());
-
-			if (!sshHandler->authenticatePassword())
-			{
-				QMessageBox::critical(NULL, "FEBio Studio", "Failed to authenticate with password.");
-
-				QString QPasswd = QInputDialog::getText(NULL, "Password", message, QLineEdit::Password, "", &ok);
-
-				if(ok)
-				{
-					std::string password = QPasswd.toStdString();
-					sshHandler->SetPasswordLength(password.length());
-					sshHandler->SetPasswdEnc(CEncrypter::Instance()->Encrypt(password));
-				}
-				else
-				{
-					sshHandler->EndSSHSession();
-					return false;
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
+		 return reply == QMessageBox::Yes;
+	case DONE:
+		return false;
 	}
 
 	return true;
 }
-#else
-bool CMainWindow::InitializeSSH(CFEBioJob* job)
-{
-	return false;
-}
-#endif
 
 
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)

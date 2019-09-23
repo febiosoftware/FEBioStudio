@@ -15,6 +15,7 @@
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
 #include <QInputDialog>
+#include <QSemaphore>
 
 #define MAX_XFER_BUF_SIZE 16384
 
@@ -31,12 +32,21 @@ public:
 	std::string remoteFileBase;
 	int passwdLength;
 	std::vector<unsigned char> passwdEnc;
+
+	int code;
+	QString msg;
+
+	int nextFunction;
+	int targetFunc;
+
+	bool isBusy;
 };
 
 CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // @suppress("Class members should be properly initialized")
 {
 	m_data->job = job;
 	m_data->passwdLength = -1;
+	m_data->isBusy = false;
 
 	// Get local .feb file name
 	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
@@ -68,9 +78,11 @@ void CSSHHandler::Update(CLaunchConfig& oldConfig)
 	m_data->remoteFileBase = m_data->job->GetLaunchConfig()->remoteDir + "/" + baseName;
 }
 
-
 void CSSHHandler::StartRemoteJob()
 {
+	m_data->nextFunction = -1;
+	m_data->code = DONE;
+
 	// Get local .feb file name
 	std::string localFile = FSDir::toAbsolutePath(m_data->job->GetFileName());
 
@@ -80,7 +92,7 @@ void CSSHHandler::StartRemoteJob()
 	// Send .feb file
 	if(SendFile(localFile, remoteFile) != SSH_OK)
 	{
-		EndSSHSession();
+		m_data->msg = QString(".feb file error: %1").arg(m_data->msg);
 		return;
 	}
 
@@ -92,7 +104,8 @@ void CSSHHandler::StartRemoteJob()
 		// Run the commands
 		if(RunCommand(command) != SSH_OK)
 		{
-			EndSSHSession();
+			m_data->code = FAILED;
+			m_data->msg = "Failed to run remote command.";
 			return;
 		}
 	}
@@ -101,7 +114,7 @@ void CSSHHandler::StartRemoteJob()
 		// Create bash file for PBS queueing system
 		if(CreateBashFile() != SSH_OK)
 		{
-			EndSSHSession();
+			m_data->msg = QString("Bash file error: %1").arg(m_data->msg);
 			return;
 		}
 
@@ -110,7 +123,8 @@ void CSSHHandler::StartRemoteJob()
 
 		if(RunInteractiveNoRead(command) != SSH_OK)
 		{
-			EndSSHSession();
+			m_data->code = FAILED;
+			m_data->msg = "Failed to run remote command.";
 			return;
 		}
 	}
@@ -119,7 +133,7 @@ void CSSHHandler::StartRemoteJob()
 		// Create bash file for PBS queueing system
 		if(CreateBashFile() != SSH_OK)
 		{
-			EndSSHSession();
+			m_data->msg = QString("Bash file error: %1").arg(m_data->msg);
 			return;
 		}
 
@@ -128,17 +142,18 @@ void CSSHHandler::StartRemoteJob()
 
 		if(RunInteractiveNoRead(command) != SSH_OK)
 		{
-			EndSSHSession();
+			m_data->code = FAILED;
+			m_data->msg = "Failed to run remote command.";
 			return;
 		}
 	}
-
-	// Close ssh session
-	EndSSHSession();
 }
 
 void CSSHHandler::GetJobFiles()
 {
+	m_data->nextFunction = -1;
+	m_data->code = DONE;
+
 	// Get local .xplt file name
 	std::string localFile = FSDir::toAbsolutePath(m_data->job->GetPlotFileName());
 
@@ -146,7 +161,11 @@ void CSSHHandler::GetJobFiles()
 	std::string remoteFile = m_data->remoteFileBase + ".xplt";
 
 	// Get .xplt file
-	GetFile(localFile, remoteFile);
+	if(GetFile(localFile, remoteFile) != SSH_OK)
+	{
+		m_data->msg = QString("xplt file error: %1").arg(m_data->msg);
+		return;
+	}
 
 	// Get local .log file name
 	localFile.replace(localFile.end()-4, localFile.end(), "log");
@@ -155,14 +174,17 @@ void CSSHHandler::GetJobFiles()
 	remoteFile = m_data->remoteFileBase + ".log";
 
 	// Get .log file
-	GetFile(localFile, remoteFile);
-
-	// Close ssh session
-	EndSSHSession();
+	if(GetFile(localFile, remoteFile) != SSH_OK)
+	{
+		m_data->msg = QString("xplt file error: %1").arg(m_data->msg);
+	}
 }
 
 void CSSHHandler::GetQueueStatus()
 {
+	m_data->nextFunction = -1;
+	m_data->code = DONE;
+
 	std::string command;
 
 	if(m_data->job->GetLaunchConfig()->type == PBS)
@@ -177,10 +199,11 @@ void CSSHHandler::GetQueueStatus()
 	std::vector<std::string> list;
 	list.push_back(command);
 
-	RunCommandList(list);
-
-	// Close ssh session
-	EndSSHSession();
+	if(RunCommandList(list) != SSH_OK)
+	{
+		m_data->code = FAILED;
+		m_data->msg = "Failed to run remote command.";
+	}
 }
 
 void CSSHHandler::SetPasswordLength(int l)
@@ -202,15 +225,49 @@ std::vector<unsigned char>& CSSHHandler::GetPasswdEnc()
 	return m_data->passwdEnc;
 }
 
-int CSSHHandler::StartSSHSession()
+void CSSHHandler::SetMsgcode(int code)
 {
+	m_data->code = code;
+}
+
+int CSSHHandler::GetMsgCode()
+{
+	return m_data->code;
+}
+
+int CSSHHandler::GetNextFunction()
+{
+	return m_data->nextFunction;
+}
+
+QString CSSHHandler::GetMessage()
+{
+	return m_data->msg;
+}
+
+void CSSHHandler::SetTargetFunction(int func)
+{
+	m_data->targetFunc = func;
+}
+
+int CSSHHandler::GetTargetFunction()
+{
+	return m_data->targetFunc;
+}
+
+void CSSHHandler::StartSSHSession()
+{
+	m_data->isBusy = true;
+	m_data->nextFunction = -1;
+
 	int error;
 
 	m_data->session = ssh_new();
 	if(m_data->session == NULL)
 	{
-		QMessageBox::critical(NULL, "FEBio Studio", "Could not initialize SSH session.");
-		return FAILED;
+		m_data->code = FAILED;
+		m_data->msg = "Could not initialize SSH session.";
+		return;
 	}
 
 	ssh_options_set(m_data->session, SSH_OPTIONS_HOST, m_data->job->GetLaunchConfig()->server.c_str());
@@ -221,33 +278,156 @@ int CSSHHandler::StartSSHSession()
 	error = ssh_connect(m_data->session);
 	if (error != SSH_OK)
 	{
-		QMessageBox::critical(NULL, "FEBio Studio", "Error connecting to server: " + *ssh_get_error(m_data->session));
-		ssh_free(m_data->session);
-		return FAILED;
+		m_data->code = FAILED;
+		m_data->msg = QString("Error connecting to server: %1").arg(ssh_get_error(m_data->session));
+		return;
 	}
 
-	// Verify the server's identity
-	if (verify_knownhost() < 0)
-	{
-		return FAILED;
-	}
-
-	error = authenticatePubkey();
-	if(error == OK) return error;
-
-	if (m_data->passwdLength != -1)
-	{
-		if(authenticatePassword()) return OK;
-	}
-
-	return NEEDSPSWD;
-
+	m_data->code = OK;
+	m_data->nextFunction = VERIFYSERVER;
 }
 
 void CSSHHandler::EndSSHSession()
 {
 	ssh_disconnect(m_data->session);
 	ssh_free(m_data->session);
+	m_data->isBusy = false;
+}
+
+void CSSHHandler::VerifyKnownHost()
+{
+	enum ssh_known_hosts_e state;
+	unsigned char *hash = NULL;
+	ssh_key srv_pubkey = NULL;
+	size_t hlen;
+	char buf[10];
+	char *hexa;
+	char *p;
+	int cmp;
+	int rc;
+
+	m_data->nextFunction = -1;
+
+	rc = ssh_get_server_publickey(m_data->session, &srv_pubkey);
+	if (rc < 0)
+	{
+		m_data->code = FAILED;
+		m_data->msg = "Could not get server's public key.";
+		return;
+	}
+
+	rc = ssh_get_publickey_hash(srv_pubkey,
+			SSH_PUBLICKEY_HASH_SHA1,
+			&hash,
+			&hlen);
+	ssh_key_free(srv_pubkey);
+	if (rc < 0)
+	{
+		m_data->code = FAILED;
+		m_data->msg = "Could not get server's public key hash.";
+		return;
+	}
+
+	state = ssh_session_is_known_server(m_data->session);
+	switch (state) {
+	case SSH_KNOWN_HOSTS_OK:
+		/* OK */
+		break;
+	case SSH_KNOWN_HOSTS_CHANGED:
+		hexa = ssh_get_hexa(hash, hlen);
+
+		m_data->code = FAILED;
+		m_data->msg = QString("Host key for server changed: it is now: %1\n"
+				"For security reasons, connection will be stopped").arg(hexa);
+
+		ssh_clean_pubkey_hash(&hash);
+		return;
+	case SSH_KNOWN_HOSTS_OTHER:
+
+		m_data->code = FAILED;
+		m_data->msg = QString("The host key for this server was not found but an other"
+				"type of key exists.\nAn attacker might change the default server key to confuse your client "
+				"into thinking the key does not exist.");
+
+		ssh_clean_pubkey_hash(&hash);
+		return;
+	case SSH_KNOWN_HOSTS_NOT_FOUND:
+		emit AddOutput("Could not find known host file.\n "
+				"If you accept the host key here, the file will be automatically created.\n");
+
+
+		/* FALL THROUGH to SSH_SERVER_NOT_KNOWN behavior */
+
+	case SSH_KNOWN_HOSTS_UNKNOWN:
+		hexa = ssh_get_hexa(hash, hlen);
+
+		m_data->code = YESNODIALOG;
+		m_data->msg = QString("The server is unknown. Do you trust the host key?\nPublic key hash: %1").arg(hexa);
+		m_data->nextFunction = ADDTRUSETEDSERVER;
+
+		ssh_string_free_char(hexa);
+		ssh_clean_pubkey_hash(&hash);
+
+		break;
+	case SSH_KNOWN_HOSTS_ERROR:
+		m_data->code = FAILED;
+		m_data->msg = QString("Error : %1").arg(strerror(errno));
+		ssh_clean_pubkey_hash(&hash);
+		return;
+	}
+
+	ssh_clean_pubkey_hash(&hash);
+
+	m_data->code = OK;
+	m_data->nextFunction = AUTHENTICATE;
+	return;
+}
+
+void CSSHHandler::AddTrustedServer()
+{
+	m_data->nextFunction = -1;
+
+	int rc = ssh_session_update_known_hosts(m_data->session);
+	if (rc < 0)
+	{
+		m_data->code = FAILED;
+		m_data->msg = QString("Error : %1").arg(strerror(errno));
+		return;
+	}
+
+	m_data->code = OK;
+	m_data->nextFunction = AUTHENTICATE;
+}
+
+void CSSHHandler::Authenticate()
+{
+	if(m_data->passwdLength == -1)
+	{
+		m_data->code = authenticatePubkey();
+		if(m_data->code == OK)
+		{
+			m_data->nextFunction = TARGET;
+			return;
+		}
+	}
+
+	std::string userAndServer = m_data->job->GetLaunchConfig()->userName + "@" + m_data->job->GetLaunchConfig()->server;
+	m_data->msg = QString("Please enter a password for %1").arg(userAndServer.c_str());
+
+	if (m_data->passwdLength != -1)
+	{
+		if(authenticatePassword())
+		{
+			m_data->code = OK;
+			m_data->nextFunction = TARGET;
+			return;
+		}
+
+		m_data->msg = QString("Could not authenticate with password.\nPlease enter a password for %1").arg(userAndServer.c_str());
+	}
+
+	m_data->code = NEEDSPSWD;
+	m_data->nextFunction = AUTHENTICATE;
 }
 
 int CSSHHandler::authenticatePubkey()
@@ -274,107 +454,23 @@ bool CSSHHandler::authenticatePassword()
 	return true;
 }
 
-
-int CSSHHandler::verify_knownhost()
-{
-	enum ssh_known_hosts_e state;
-	unsigned char *hash = NULL;
-	ssh_key srv_pubkey = NULL;
-	size_t hlen;
-	char buf[10];
-	char *hexa;
-	char *p;
-	int cmp;
-	int rc;
-
-	rc = ssh_get_server_publickey(m_data->session, &srv_pubkey);
-	if (rc < 0) {
-		return -1;
-	}
-
-	rc = ssh_get_publickey_hash(srv_pubkey,
-			SSH_PUBLICKEY_HASH_SHA1,
-			&hash,
-			&hlen);
-	ssh_key_free(srv_pubkey);
-	if (rc < 0) {
-		return -1;
-	}
-
-	state = ssh_session_is_known_server(m_data->session);
-	switch (state) {
-	case SSH_KNOWN_HOSTS_OK:
-		/* OK */
-		break;
-	case SSH_KNOWN_HOSTS_CHANGED:
-		hexa = ssh_get_hexa(hash, hlen);
-
-		QMessageBox::critical(NULL, "FEBio Studio", "Host key for server changed: it is now: " + *hexa);
-		//        			+ "\nFor security reasons, connection will be stopped");
-		ssh_clean_pubkey_hash(&hash);
-
-		return -1;
-	case SSH_KNOWN_HOSTS_OTHER:
-		QMessageBox::critical(NULL, "FEBio Studio", "The host key for this server was not found but an other"
-				"type of key exists.\n An attacker might change the default server key to confuse your client "
-				"into thinking the key does not exist.");
-		ssh_clean_pubkey_hash(&hash);
-
-		return -1;
-	case SSH_KNOWN_HOSTS_NOT_FOUND:
-		//        	mainWindow->AddLogEntry("Could not find known host file.\n "
-		//        			"If you accept the host key here, the file will be automatically created.\n");
-
-		/* FALL THROUGH to SSH_SERVER_NOT_KNOWN behavior */
-
-	case SSH_KNOWN_HOSTS_UNKNOWN:
-		hexa = ssh_get_hexa(hash, hlen);
-		QMessageBox::StandardButton reply;
-		reply = QMessageBox::question(NULL, "FEBio Studio", "The server is unknown. Do you trust the host key?\n "
-				"Public key hash: " + *hexa, QMessageBox::Yes|QMessageBox::No);
-		ssh_string_free_char(hexa);
-		ssh_clean_pubkey_hash(&hash);
-
-		if(reply != QMessageBox::Yes)
-		{
-			return -1;
-		}
-
-		rc = ssh_session_update_known_hosts(m_data->session);
-		if (rc < 0) {
-			QMessageBox::critical(NULL, "FEBio Studio", "Error : " + *strerror(errno));
-			return -1;
-		}
-
-		break;
-	case SSH_KNOWN_HOSTS_ERROR:
-		QMessageBox::critical(NULL, "FEBio Studio", "Error : " + *strerror(errno));
-		ssh_clean_pubkey_hash(&hash);
-		return -1;
-	}
-
-	ssh_clean_pubkey_hash(&hash);
-	return 0;
-}
-
 int CSSHHandler::StartSFTPSession()
 {
 	int rc;
-	QString error;
 
 	m_data->sftp = sftp_new(m_data->session);
 	if (m_data->sftp == NULL)
 	{
-		error = QString("Error allocating SFTP session: %1\n").arg(ssh_get_error(m_data->session));
-		CLogger::AddLogEntry(error);
+		m_data->msg = QString("Error allocating SFTP session: %1\n").arg(ssh_get_error(m_data->session));
+		m_data->code = FAILED;
 		return SSH_ERROR;
 	}
 
 	rc = sftp_init(m_data->sftp);
 	if (rc != SSH_OK)
 	{
-		error = QString("Error initializing SFTP session: %1\n").arg(sftp_get_error(m_data->sftp));
-		CLogger::AddLogEntry(error);
+		m_data->msg = QString("Error initializing SFTP session: %1\n").arg(sftp_get_error(m_data->sftp));
+		m_data->code = FAILED;
 		sftp_free(m_data->sftp);
 		return rc;
 	}
@@ -394,16 +490,18 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 	int access_type = O_WRONLY | O_CREAT | O_TRUNC;
 	sftp_file file;
 	char buffer[MAX_XFER_BUF_SIZE];
-	QString error;
 
-	StartSFTPSession();
+	if(StartSFTPSession() != SSH_OK)
+	{
+		return SSH_ERROR;
+	}
 
 	file = sftp_open(m_data->sftp, remote.c_str(),
 			access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
-		emit AddOutput(error);
+		m_data->msg = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
+		m_data->code = FAILED;
 		return SSH_ERROR;
 	}
 
@@ -418,8 +516,8 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 			ssize_t nwritten = sftp_write(file, buffer, fin.gcount());
 			if (nwritten != fin.gcount())
 			{
-				error = QString("Can't write data to file: %1\n").arg(ssh_get_error(m_data->session));
-				emit AddOutput(error);
+				m_data->msg = QString("Can't write data to file: %1\n").arg(ssh_get_error(m_data->session));
+				m_data->code = FAILED;
 				sftp_close(file);
 				return SSH_ERROR;
 			}
@@ -429,8 +527,8 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 	rc = sftp_close(file);
 	if (rc != SSH_OK)
 	{
-		error = QString("Can't close the written file: %1\n").arg(ssh_get_error(m_data->session));
-		emit AddOutput(error);
+		m_data->msg = QString("Can't close the written file: %1\n").arg(ssh_get_error(m_data->session));
+		m_data->code = FAILED;
 		return rc;
 	}
 
@@ -450,16 +548,16 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 			access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
-		emit AddOutput(error);
+		m_data->msg = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
+		m_data->code = FAILED;
 		return SSH_ERROR;
 	}
 
 	nwritten = sftp_write(file, buf, bufSize);
 	if (nwritten != bufSize)
 	{
-		error = QString("Can't write data to file: %1\n").arg(ssh_get_error(m_data->session));
-		emit AddOutput(error);
+		m_data->msg = QString("Can't write data to file: %1\n").arg(ssh_get_error(m_data->session));
+		m_data->code = FAILED;
 		sftp_close(file);
 		return SSH_ERROR;
 	}
@@ -467,8 +565,8 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 	rc = sftp_close(file);
 	if (rc != SSH_OK)
 	{
-		error = QString("Can't close the written file: %1\n").arg(ssh_get_error(m_data->session));
-		emit AddOutput(error);
+		m_data->msg = QString("Can't close the written file: %1\n").arg(ssh_get_error(m_data->session));
+		m_data->code = FAILED;
 		return rc;
 	}
 
@@ -481,7 +579,6 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 	int access_type = O_RDWR;
 	sftp_file file;
 	char buffer[MAX_XFER_BUF_SIZE];
-	QString error;
 
 #ifdef WIN32
 	HANDLE fileHandle;
@@ -495,8 +592,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 	file = sftp_open(m_data->sftp, remote.c_str(), access_type, S_IRWXU);
 	if (file == NULL)
 	{
-		error = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
-		emit AddOutput(error);
+		m_data->msg = QString("Can't open file for writing: %1\n").arg(ssh_get_error(m_data->session));
+		m_data->code = FAILED;
 		return SSH_ERROR;
 	}
 
@@ -505,8 +602,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 #else
 	fd = open(local.c_str(), O_RDWR | O_CREAT, S_IRWXU);
 	if (fd < 0) {
-		error = QString("Can't open file for writing: %1\n").arg(strerror(errno));
-		emit AddOutput(error);
+		m_data->msg = QString("Can't open file for writing: %1\n").arg(strerror(errno));
+		m_data->code = FAILED;
 		return SSH_ERROR;
 	}
 #endif
@@ -522,8 +619,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 		}
 		else if (nbytes < 0)
 		{
-			error = QString("Error while reading file: %1\n").arg(ssh_get_error(m_data->session));
-			emit AddOutput(error);
+			m_data->msg = QString("Error while reading file: %1\n").arg(ssh_get_error(m_data->session));
+			m_data->code = FAILED;
 			sftp_close(file);
 
 #ifdef WIN32
@@ -540,8 +637,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 #endif
 		if (nwritten != nbytes)
 		{
-			error = QString("Error writing: %1\n").arg(strerror(errno));
-			emit AddOutput(error);
+			m_data->msg = QString("Error writing: %1\n").arg(strerror(errno));
+			m_data->code = FAILED;
 			sftp_close(file);
 
 #ifdef WIN32
@@ -553,8 +650,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 
 	rc = sftp_close(file);
 	if (rc != SSH_OK) {
-		error = QString("Can't close the read file: %1\n").arg(ssh_get_error(m_data->session));
-		emit AddOutput(error);
+		m_data->msg = QString("Can't close the read file: %1\n").arg(ssh_get_error(m_data->session));
+		m_data->code = FAILED;
 
 #ifdef WIN32
 		CloseHandle(fileHandle);
@@ -607,12 +704,12 @@ int CSSHHandler::RunCommand(std::string command)
 		nbytes = ssh_channel_read(channel, buffer, sizeof(buffer) - 1, 0);
 	}
 
-	if (nbytes < 0)
-	{
-		ssh_channel_close(channel);
-		ssh_channel_free(channel);
-		return SSH_ERROR;
-	}
+//	if (nbytes < 0)
+//	{
+//		ssh_channel_close(channel);
+//		ssh_channel_free(channel);
+//		return SSH_ERROR;
+//	}
 
 	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
@@ -786,8 +883,10 @@ int CSSHHandler::CreateBashFile()
 
 }
 
-
-
+bool CSSHHandler::IsBusy()
+{
+	return m_data->isBusy;
+}
 
 
 #endif

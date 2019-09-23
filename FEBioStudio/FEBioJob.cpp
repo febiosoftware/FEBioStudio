@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEBioJob.h"
 #include "PostDoc.h"
+#include "Document.h"
 #include <sstream>
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
@@ -269,7 +270,7 @@ void CFEBioJob::Load(IArchive& ar)
 		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case CID_FEBIOJOB_FILENAME: ar.read(m_fileName); break;
 		case CID_FEBIOJOB_PLOTFILE: ar.read(m_plotFile); break;
-		case CID_FEBIOJOB_LCONFIG: {CLaunchConfig lConfig; lConfig.Load(ar); UpdateLaunchConfig(lConfig); } break;
+		case CID_FEBIOJOB_LCONFIG: {CLaunchConfig lConfig; lConfig.Load(ar); m_sshHandler = nullptr; UpdateLaunchConfig(lConfig); } break;
 		}
 		ar.CloseChunk();
 	}

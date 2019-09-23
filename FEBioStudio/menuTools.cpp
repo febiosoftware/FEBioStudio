@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QApplication>
 #include <FSCore/FSDir.h>
+#include "SSHHandler.h"
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {

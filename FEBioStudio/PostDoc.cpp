@@ -29,7 +29,9 @@ public:
 
 	void clear()
 	{
-		delete glm; glm = nullptr;
+		Post::CGLModel* glmLocal = glm;
+		glm = nullptr;
+		delete glmLocal;
 		delete fem; fem = nullptr;
 		delete m_postObj; m_postObj = nullptr;
 	}
