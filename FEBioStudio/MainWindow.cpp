@@ -1993,6 +1993,25 @@ bool CMainWindow::HandleSSHMessage(CSSHHandler* sshHandler)
 	return true;
 }
 
+void CMainWindow::ShowSSHProgress(bool show)
+{
+	if(show)
+	{
+		ui->statusBar->addPermanentWidget(ui->fileProgress);
+		ui->fileProgress->show();
+	}
+	else
+	{
+		ui->statusBar->clearMessage();
+		ui->statusBar->removeWidget(ui->fileProgress);
+	}
+}
+
+void CMainWindow::UpdateSSHProgress(int n)
+{
+	ui->fileProgress->setValue(n);
+}
+
 
 void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 {

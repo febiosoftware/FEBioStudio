@@ -351,7 +351,7 @@ void CSSHHandler::VerifyKnownHost()
 		ssh_clean_pubkey_hash(&hash);
 		return;
 	case SSH_KNOWN_HOSTS_NOT_FOUND:
-		emit AddOutput("Could not find known host file.\n "
+		emit AddOutputEntry("Could not find known host file.\n "
 				"If you accept the host key here, the file will be automatically created.\n");
 
 
@@ -485,10 +485,13 @@ int CSSHHandler::EndSFTPSession()
 
 int CSSHHandler::SendFile(std::string local, std::string remote)
 {
-	int rc, nwritten;
+	int rc, nwritten, transferred = 0;
 	int access_type = O_WRONLY | O_CREAT | O_TRUNC;
 	sftp_file file;
 	char buffer[MAX_XFER_BUF_SIZE];
+
+	emit ShowProgress(true);
+	emit AddLogEntry(QString("Sending remote file %1 ... ").arg(remote.c_str()));
 
 	if(StartSFTPSession() != SSH_OK)
 	{
@@ -520,6 +523,9 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 				sftp_close(file);
 				return SSH_ERROR;
 			}
+
+			transferred += nwritten;
+			emit UpdateProgress(transferred*100/fin.tellg());
 		}
 	}
 
@@ -531,6 +537,9 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 		return rc;
 	}
 
+	emit ShowProgress(false);
+	emit AddLogEntry(QString("success!\n"));
+
 	return EndSFTPSession();
 }
 
@@ -541,7 +550,12 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 	sftp_file file;
 	QString error;
 
-	StartSFTPSession();
+	emit AddLogEntry(QString("Sending remote file %1 ... ").arg(remote.c_str()));
+
+	if(StartSFTPSession() != SSH_OK)
+	{
+		return SSH_ERROR;
+	}
 
 	file = sftp_open(m_data->sftp, remote.c_str(),
 			access_type, S_IRWXU);
@@ -569,15 +583,21 @@ int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote)
 		return rc;
 	}
 
+	emit AddLogEntry(QString("success!\n"));
+
 	return EndSFTPSession();
 }
 
 int CSSHHandler::GetFile(std::string local, std::string remote)
 {
-	int rc, nbytes;
+	int rc, nbytes, transferred = 0;
 	int access_type = O_RDWR;
 	sftp_file file;
+	sftp_attributes attributes;
 	char buffer[MAX_XFER_BUF_SIZE];
+
+	emit ShowProgress(true);
+	emit AddLogEntry(QString("Fetching remote file %1 ... ").arg(remote.c_str()));
 
 #ifdef WIN32
 	HANDLE fileHandle;
@@ -595,6 +615,8 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 		m_data->code = FAILED;
 		return SSH_ERROR;
 	}
+
+	attributes = sftp_fstat(file);
 
 #ifdef WIN32
 	fileHandle = CreateFileA(local.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -645,6 +667,9 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 #endif
 			return SSH_ERROR;
 		}
+
+		transferred += nwritten;
+		emit UpdateProgress(transferred*100/attributes->size);
 	}
 
 	rc = sftp_close(file);
@@ -662,6 +687,9 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 #ifdef WIN32
 	CloseHandle(fileHandle);
 #endif
+
+	emit ShowProgress(false);
+	emit AddLogEntry(QString("success!\n"));
 
 	return EndSFTPSession();
 }
@@ -698,7 +726,7 @@ int CSSHHandler::RunCommand(std::string command)
 	while (nbytes > 0)
 	{
 		buffer[nbytes] = '\0';
-		emit AddOutput(buffer);
+		emit AddOutputEntry(buffer);
 
 		nbytes = ssh_channel_read(channel, buffer, sizeof(buffer) - 1, 0);
 	}
@@ -825,7 +853,7 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 
 			nbytes = ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer) - 1, 0);
 			buffer[nbytes] = '\0';
-			emit AddOutput(buffer);
+			emit AddOutputEntry(buffer);
 		}
 	}
 

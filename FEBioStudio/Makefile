@@ -24251,8 +24251,6 @@ MainWindow.o: MainWindow.cpp stdafx.h \
 		../FSCore/FSDir.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QInputDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qinputdialog.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QSemaphore \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsemaphore.h \
 		DlgCheck.h \
 		Logger.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QString \
@@ -31721,9 +31719,7 @@ SSHHandler.o: SSHHandler.cpp ../MeshTools/stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlineedit.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qframe.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextcursor.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QSemaphore \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsemaphore.h
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SSHHandler.o SSHHandler.cpp
 
 SSHThread.o: SSHThread.cpp SSHThread.h \

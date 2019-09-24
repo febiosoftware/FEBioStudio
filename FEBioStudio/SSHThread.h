@@ -17,10 +17,11 @@ public:
 	void SetFuncName(int func);
 
 public slots:
-	void GetOutput(const QString&);
+//	void GetOutput(const QString&);
 	void SendFinishedPart();
 signals:
-	void AddOutput(const QString&);
+	void AddLogEntry(const QString&);
+	void AddOutputEntry(const QString&);
 	void FinishedPart(CSSHHandler*);
 
 private:

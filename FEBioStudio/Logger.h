@@ -4,6 +4,8 @@
 
 class CMainWindow;
 
+enum destination{LOG, OUTPUT};
+
 class CLogger : public QObject
 {
 	Q_OBJECT

@@ -396,6 +396,8 @@ public slots:
 	void RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNotes, QString cmd);
 
 	void NextSSHFunction(CSSHHandler*);
+	void ShowSSHProgress(bool show);
+	void UpdateSSHProgress(int);
 
 public:
 	QStringList GetRecentFileList();

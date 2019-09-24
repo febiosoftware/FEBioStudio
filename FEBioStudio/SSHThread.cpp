@@ -6,12 +6,16 @@
 CSSHThread::CSSHThread(CSSHHandler* sshHandler, int func) : sshHandler(sshHandler), func(func)
 {
 	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
-//	QObject::connect(this, &CSSHThread::finished, sshHandler, &CSSHHandler::ThreadFinished);
 	QObject::connect(this, &CSSHThread::finished, this, &CSSHThread::SendFinishedPart);
 
 
-	QObject::connect(sshHandler, &CSSHHandler::AddOutput, this, &CSSHThread::GetOutput);
-	QObject::connect(this, &CSSHThread::AddOutput, &CLogger::AddOutputEntry);
+//	QObject::connect(sshHandler, &CSSHHandler::AddOutputEntry, this, &CSSHThread::GetOutput);
+//	QObject::connect(this, &CSSHThread::AddOutput, &CLogger::AddOutputEntry);
+
+	QObject::connect(sshHandler, &CSSHHandler::AddLogEntry, this, &CSSHThread::AddLogEntry);
+	QObject::connect(sshHandler, &CSSHHandler::AddOutputEntry, this, &CSSHThread::AddOutputEntry);
+	QObject::connect(this, &CSSHThread::AddLogEntry, &CLogger::AddLogEntry);
+	QObject::connect(this, &CSSHThread::AddOutputEntry, &CLogger::AddOutputEntry);
 }
 
 void CSSHThread::SetFuncName(int func)
@@ -55,10 +59,10 @@ void CSSHThread::run()
 	}
 }
 
-void CSSHThread::GetOutput(const QString& str)
-{
-	emit AddOutput(str);
-}
+//void CSSHThread::GetOutput(const QString& str)
+//{
+//	emit AddOutput(str);
+//}
 
 void CSSHThread::SendFinishedPart()
 {

@@ -52,7 +52,10 @@ public:
 	bool IsBusy();
 
 signals:
-	void AddOutput(const QString&);
+	void AddLogEntry(const QString&);
+	void AddOutputEntry(const QString&);
+	void ShowProgress(bool);
+	void UpdateProgress(int);
 
 private:
 	int RunCommand(std::string command);

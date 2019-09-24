@@ -77,7 +77,7 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	}
 	else
 	{
-		m_sshHandler = new CSSHHandler(this);
+		m_sshHandler = NewHandler();
 	}
 #endif
 
@@ -142,7 +142,7 @@ void CFEBioJob::UpdateLaunchConfig(CLaunchConfig launchConfig)
 		}
 		else
 		{
-			m_sshHandler = new CSSHHandler(this);
+			m_sshHandler = NewHandler();
 		}
 	}
 #endif
@@ -155,26 +155,14 @@ CSSHHandler* CFEBioJob::GetSSHHandler()
 	return m_sshHandler;
 }
 
-void CFEBioJob::GetRemoteJobFiles()
+CSSHHandler* CFEBioJob::NewHandler()
 {
-	m_sshHandler->GetJobFiles();
-}
+	CSSHHandler* handler = new CSSHHandler(this);
 
-void CFEBioJob::StartRemoteJob()
-{
-//	QThread* thread = new QThread;
-//
-//	m_sshHandler->moveToThread(thread);
-//
-//	connect(m_sshHandler, SIGNAL, (error(QString)), this, SLOT (errorString(QString)));
-//	connect(thread, SIGNAL (started()), m_sshHandler, SLOT (process()));
-//	connect(m_sshHandler, SIGNAL (finished()), thread, SLOT (quit()));
-//	connect(m_sshHandler, SIGNAL (finished()), m_sshHandler, SLOT (deleteLater()));
-//	connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
-//	thread->start();
+	QObject::connect(handler, &CSSHHandler::ShowProgress, m_doc->GetMainWindow(), &CMainWindow::ShowSSHProgress);
+	QObject::connect(handler, &CSSHHandler::UpdateProgress, m_doc->GetMainWindow(), &CMainWindow::UpdateSSHProgress);
 
-
-//	m_sshHandler->StartRemoteJob();
+	return handler;
 }
 
 #endif
