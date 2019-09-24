@@ -15,7 +15,6 @@
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
 #include <QInputDialog>
-#include <QSemaphore>
 
 #define MAX_XFER_BUF_SIZE 16384
 
@@ -598,7 +597,7 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 	}
 
 #ifdef WIN32
-	fileHandle = CreateFileA(local.c_str(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	fileHandle = CreateFileA(local.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 #else
 	fd = open(local.c_str(), O_RDWR | O_CREAT, S_IRWXU);
 	if (fd < 0) {

@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[202];
-    char stringdata0[4699];
+    QByteArrayData data[203];
+    char stringdata0[4714];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -232,7 +232,8 @@ QT_MOC_LITERAL(197, 4649, 3), // "job"
 QT_MOC_LITERAL(198, 4653, 16), // "febioFileVersion"
 QT_MOC_LITERAL(199, 4670, 10), // "writeNotes"
 QT_MOC_LITERAL(200, 4681, 3), // "cmd"
-QT_MOC_LITERAL(201, 4685, 13) // "InitializeSSH"
+QT_MOC_LITERAL(201, 4685, 15), // "NextSSHFunction"
+QT_MOC_LITERAL(202, 4701, 12) // "CSSHHandler*"
 
     },
     "CMainWindow\0on_actionNew_triggered\0\0"
@@ -379,7 +380,8 @@ QT_MOC_LITERAL(201, 4685, 13) // "InitializeSSH"
     "changeViewMode\0View_Mode\0vm\0GetCurrentModel\0"
     "Post::CGLModel*\0UpdateFontToolbar\0"
     "RunFEBioJob\0CFEBioJob*\0job\0febioFileVersion\0"
-    "writeNotes\0cmd\0InitializeSSH"
+    "writeNotes\0cmd\0NextSSHFunction\0"
+    "CSSHHandler*"
 };
 #undef QT_MOC_LITERAL
 
@@ -730,7 +732,7 @@ static const uint qt_meta_data_CMainWindow[] = {
     0x80000000 | 193,
     QMetaType::Void,
     QMetaType::Void, 0x80000000 | 196, QMetaType::Int, QMetaType::Bool, QMetaType::QString,  197,  198,  199,  200,
-    QMetaType::Bool, 0x80000000 | 196,  197,
+    QMetaType::Void, 0x80000000 | 202,    2,
 
        0        // eod
 };
@@ -908,8 +910,7 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
             if (_a[0]) *reinterpret_cast< Post::CGLModel**>(_a[0]) = std::move(_r); }  break;
         case 163: _t->UpdateFontToolbar(); break;
         case 164: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])),(*reinterpret_cast< bool(*)>(_a[3])),(*reinterpret_cast< QString(*)>(_a[4]))); break;
-        case 165: { bool _r = _t->InitializeSSH((*reinterpret_cast< CFEBioJob*(*)>(_a[1])));
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
+        case 165: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
         default: ;
         }
     }

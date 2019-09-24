@@ -33,7 +33,6 @@
 #include <PostLib/ColorMap.h>
 #include <FSCore/FSDir.h>
 #include <QInputDialog>
-#include <QSemaphore>
 #include "DlgCheck.h"
 #include "Logger.h"
 #include "SSHHandler.h"
