@@ -7,7 +7,7 @@
 #include "GTriad.h"
 #include "GGrid.h"
 #include <MeshLib/Intersect.h>
-#include "GLViewRender.h"
+#include <GLLib/GLMeshRender.h>
 #include <MeshTools/FEExtrudeFaces.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
@@ -322,7 +322,7 @@ public:
 	bool GetPivotMode() { return m_bpivot; }
 	void SetPivotMode(bool b) { m_bpivot = b; }
 
-	GLViewRender& GetViewRenderer() { return m_renderer; } 
+	GLMeshRender& GetMeshRenderer() { return m_renderer; }
 
 protected:
 	void initializeGL();
@@ -377,7 +377,7 @@ protected:
 	CMainWindow*	m_pWnd;	// parent window
 	CGLCamera		m_Cam;		// the camera
 	CGLCamera		m_oldCam;	// the previous camera position
-	GLViewRender	m_renderer; // the renderer for this view
+	GLMeshRender	m_renderer; // the renderer for this view
 
 	CCommandManager	m_Cmd;	// view command history
 

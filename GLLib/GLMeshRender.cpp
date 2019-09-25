@@ -1,204 +1,16 @@
-#include "stdafx.h"
-#include "GLViewRender.h"
-#include "GLView.h"
-#include <GLLib/glx.h>
+#include "GLMeshRender.h"
+#include <MeshLib/FECoreMesh.h>
+#include <MeshLib/FEElement.h>
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/quad8.h>
-
-//-----------------------------------------------------------------------------
-GLViewRender::GLViewRender(CGLView* view) : m_view(view)
-{
-}
-
-//-----------------------------------------------------------------------------
-void GLViewRender::RenderGLMesh(GLMesh* pm, int nid)
-{
-	vec3d r0, r1, r2;
-	vec3d n0, n1, n2;
-	if (nid == -1)
-	{
-		int N = pm->Faces();
-		glBegin(GL_TRIANGLES);
-		{
-			for (int i = 0; i<N; ++i)
-			{
-				GMesh::FACE& f = pm->Face(i);
-				r0 = pm->Node(f.n[0]).r;
-				r1 = pm->Node(f.n[1]).r;
-				r2 = pm->Node(f.n[2]).r;
-
-				n0 = f.nn[0];
-				n1 = f.nn[1];
-				n2 = f.nn[2];
-
-				glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			}
-		}
-		glEnd();
-	}
-	else
-	{
-		assert(pm->m_FIL.size() > 0);
-		glBegin(GL_TRIANGLES);
-		{
-			assert((nid >= 0) && (nid < (int)pm->m_FIL.size()));
-			pair<int, int> fil = pm->m_FIL[nid];
-			for (int i = 0; i<fil.second; ++i)
-			{
-				GMesh::FACE& f = pm->Face(i + fil.first);
-				assert(f.pid == nid);
-				r0 = pm->Node(f.n[0]).r;
-				r1 = pm->Node(f.n[1]).r;
-				r2 = pm->Node(f.n[2]).r;
-
-				n0 = f.nn[0];
-				n1 = f.nn[1];
-				n2 = f.nn[2];
-
-				glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			}
-		}
-		glEnd();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void GLViewRender::RenderGLEdges(GLMesh* pm, int nid)
-{
-	vec3d r0, r1;
-	if (pm == 0) return;
-	int N = (int)pm->Edges();
-	if (N == 0) return;
-	if (nid == -1)
-	{
-		glBegin(GL_LINES);
-		{
-			for (int i = 0; i<N; ++i)
-			{
-				GMesh::EDGE& e = pm->Edge(i);
-				if ((e.n[0] != -1) && (e.n[1] != -1))
-				{
-					r0 = pm->Node(e.n[0]).r;
-					r1 = pm->Node(e.n[1]).r;
-					glVertex3d(r0.x, r0.y, r0.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-				}
-			}
-		}
-		glEnd();
-	}
-	else
-	{
-		assert(pm->m_EIL.size() > 0);
-		glBegin(GL_LINES);
-		{
-			assert((nid >= 0) && (nid < (int)pm->m_EIL.size()));
-			pair<int, int> eil = pm->m_EIL[nid];
-
-			for (int i = 0; i<eil.second; ++i)
-			{
-				GMesh::EDGE& e = pm->Edge(i + eil.first);
-				assert(e.pid == nid);
-				if ((e.n[0] != -1) && (e.n[1] != -1))
-				{
-					r0 = pm->Node(e.n[0]).r;
-					r1 = pm->Node(e.n[1]).r;
-					glVertex3d(r0.x, r0.y, r0.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-				}
-			}
-		}
-		glEnd();
-	}
-}
-
-void GLViewRender::RenderBox(const BOX& box)
-{
-	glDisable(GL_LIGHTING);
-
-	double w = box.Width()*0.51f;
-	double h = box.Height()*0.51f;
-	double d = box.Depth()*0.51f;
-
-	double dw = 0.5f*w;
-	double dh = 0.5f*h;
-	double dd = 0.5f*d;
-
-	vec3d r = box.Center();
-	glPushMatrix();
-	glTranslatef((float)r.x, (float)r.y, (float)r.z);
-
-	glBegin(GL_LINES);
-	{
-		glVertex3d(-w, -h, -d); glVertex3d(-w + dw, -h, -d);
-		glVertex3d(-w, -h, -d); glVertex3d(-w, -h + dh, -d);
-		glVertex3d(-w, -h, -d); glVertex3d(-w, -h, -d + dd);
-
-		glVertex3d(w, -h, -d); glVertex3d(w - dw, -h, -d);
-		glVertex3d(w, -h, -d); glVertex3d(w, -h + dh, -d);
-		glVertex3d(w, -h, -d); glVertex3d(w, -h, -d + dd);
-
-		glVertex3d(-w, h, -d); glVertex3d(-w + dw, h, -d);
-		glVertex3d(-w, h, -d); glVertex3d(-w, h - dh, -d);
-		glVertex3d(-w, h, -d); glVertex3d(-w, h, -d + dd);
-
-		glVertex3d(w, h, -d); glVertex3d(w - dw, h, -d);
-		glVertex3d(w, h, -d); glVertex3d(w, h - dh, -d);
-		glVertex3d(w, h, -d); glVertex3d(w, h, -d + dd);
-
-		glVertex3d(-w, -h, d); glVertex3d(-w + dw, -h, d);
-		glVertex3d(-w, -h, d); glVertex3d(-w, -h + dh, d);
-		glVertex3d(-w, -h, d); glVertex3d(-w, -h, d - dd);
-
-		glVertex3d(w, -h, d); glVertex3d(w - dw, -h, d);
-		glVertex3d(w, -h, d); glVertex3d(w, -h + dh, d);
-		glVertex3d(w, -h, d); glVertex3d(w, -h, d - dd);
-
-		glVertex3d(-w, h, d); glVertex3d(-w + dw, h, d);
-		glVertex3d(-w, h, d); glVertex3d(-w, h - dh, d);
-		glVertex3d(-w, h, d); glVertex3d(-w, h, d - dd);
-
-		glVertex3d(w, h, d); glVertex3d(w - dw, h, d);
-		glVertex3d(w, h, d); glVertex3d(w, h - dh, d);
-		glVertex3d(w, h, d); glVertex3d(w, h, d - dd);
-
-	}
-	glEnd();
-	/*
-	glBegin(GL_LINES);
-	{
-	glVertex3d(-w,-h,-d); glVertex3d( w,-h,-d);
-	glVertex3d( w,-h,-d); glVertex3d( w, h,-d);
-	glVertex3d( w, h,-d); glVertex3d(-w, h,-d);
-	glVertex3d(-w, h,-d); glVertex3d(-w,-h,-d);
-
-	glVertex3d(-w,-h, d); glVertex3d( w,-h, d);
-	glVertex3d( w,-h, d); glVertex3d( w, h, d);
-	glVertex3d( w, h, d); glVertex3d(-w, h, d);
-	glVertex3d(-w, h, d); glVertex3d(-w,-h, d);
-
-	glVertex3d(-w,-h,-d); glVertex3d(-w,-h, d);
-	glVertex3d( w,-h,-d); glVertex3d( w,-h, d);
-	glVertex3d(-w, h,-d); glVertex3d(-w, h, d);
-	glVertex3d( w, h,-d); glVertex3d( w, h, d);
-	}
-	glEnd();
-	*/
-	glPopMatrix();
-
-	glEnable(GL_LIGHTING);
-}
-
+#include <MeshTools/GLMesh.h>
+#include <GLLib/glx.h>
 
 //-----------------------------------------------------------------------------
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderHEX8(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX8));
 	FEElement_& e = *pe;
@@ -272,7 +84,7 @@ inline void glxNormalVertex(const vec3d& n, const vec3d& r)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderHEX20(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderHEX20(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX20));
 	FEElement_& e = *pe;
@@ -366,7 +178,7 @@ void GLViewRender::RenderHEX20(FEElement_ *pe, FEMesh *pm, bool bsel)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderHEX27(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderHEX27(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX27));
 	FEElement_& e = *pe;
@@ -451,7 +263,7 @@ void GLViewRender::RenderHEX27(FEElement_ *pe, FEMesh *pm, bool bsel)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderPENTA(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderPENTA(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PENTA6));
 	FEElement_& e = *pe;
@@ -470,7 +282,7 @@ void GLViewRender::RenderPENTA(FEElement_ *pe, FEMesh *pm, bool bsel)
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
-				assert(&pm->Element(pf->m_elem[0]) == pe);
+				assert(pm->ElementPtr(pf->m_elem[0]) == pe);
 				n1 = pf->m_nn[0];
 				n2 = pf->m_nn[1];
 				n3 = pf->m_nn[2];
@@ -533,7 +345,7 @@ void GLViewRender::RenderPENTA(FEElement_ *pe, FEMesh *pm, bool bsel)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLViewRender::RenderPENTA15(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderPENTA15(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PENTA15));
 	FEElement_& e = *pe;
@@ -675,7 +487,7 @@ void GLViewRender::RenderPENTA15(FEElement_ *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTET4(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderTET4(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
 	FEElement_& e = *pe;
@@ -728,7 +540,7 @@ void GLViewRender::RenderTET4(FEElement_ *pe, FEMesh *pm, bool bsel)
 
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTET10(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderTET10(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET10));
 	FEElement_& e = *pe;
@@ -775,7 +587,7 @@ void GLViewRender::RenderTET10(FEElement_ *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTET15(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderTET15(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET15));
 	FEElement_& e = *pe;
@@ -822,7 +634,7 @@ void GLViewRender::RenderTET15(FEElement_ *pe, FEMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTET20(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderTET20(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET20));
 	FEElement_& e = *pe;
@@ -870,146 +682,118 @@ void GLViewRender::RenderTET20(FEElement_ *pe, FEMesh *pm, bool bsel)
 
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderQUAD(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderQUAD(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD4));
 	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
-	vec3d r1, r2, r3, r4;
-	vec3d n1, n2, n3, n4;
-	glBegin(GL_QUADS);
-	{
-		r1 = pm->Node(e.m_node[0]).r;
-		r2 = pm->Node(e.m_node[1]).r;
-		r3 = pm->Node(e.m_node[2]).r;
-		r4 = pm->Node(e.m_node[3]).r;
+	vec3d r[4];
+	vec3f n[4];
 
-		n1 = pf->m_nn[0];
-		n2 = pf->m_nn[1];
-		n3 = pf->m_nn[2];
-		n4 = pf->m_nn[3];
+	r[0] = pm->Node(e.m_node[0]).r;
+	r[1] = pm->Node(e.m_node[1]).r;
+	r[2] = pm->Node(e.m_node[2]).r;
+	r[3] = pm->Node(e.m_node[3]).r;
 
-		glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-		glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-		glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-		glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-	}
-	glEnd();
+	n[0] = pf->m_nn[0];
+	n[1] = pf->m_nn[1];
+	n[2] = pf->m_nn[2];
+	n[3] = pf->m_nn[3];
+
+	GLX::drawQuad4(r, n);
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderQUAD8(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderQUAD8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD8));
 	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
-	vec3d r1, r2, r3, r4;
-	vec3d n1, n2, n3, n4;
-	glBegin(GL_QUADS);
-	{
-		r1 = pm->Node(e.m_node[0]).r;
-		r2 = pm->Node(e.m_node[1]).r;
-		r3 = pm->Node(e.m_node[2]).r;
-		r4 = pm->Node(e.m_node[3]).r;
+	vec3d r[4];
+	vec3f n[4];
 
-		n1 = pf->m_nn[0];
-		n2 = pf->m_nn[1];
-		n3 = pf->m_nn[2];
-		n4 = pf->m_nn[3];
+	r[0] = pm->Node(e.m_node[0]).r;
+	r[1] = pm->Node(e.m_node[1]).r;
+	r[2] = pm->Node(e.m_node[2]).r;
+	r[3] = pm->Node(e.m_node[3]).r;
 
-		glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-		glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-		glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-		glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-	}
-	glEnd();
+	n[0] = pf->m_nn[0];
+	n[1] = pf->m_nn[1];
+	n[2] = pf->m_nn[2];
+	n[3] = pf->m_nn[3];
+
+	GLX::drawQuad4(r, n);
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderQUAD9(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderQUAD9(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD9));
 	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
-	vec3d r1, r2, r3, r4;
-	vec3d n1, n2, n3, n4;
-	glBegin(GL_QUADS);
-	{
-		r1 = pm->Node(e.m_node[0]).r;
-		r2 = pm->Node(e.m_node[1]).r;
-		r3 = pm->Node(e.m_node[2]).r;
-		r4 = pm->Node(e.m_node[3]).r;
+	vec3d r[4];
+	vec3f n[4];
 
-		n1 = pf->m_nn[0];
-		n2 = pf->m_nn[1];
-		n3 = pf->m_nn[2];
-		n4 = pf->m_nn[3];
+	r[0] = pm->Node(e.m_node[0]).r;
+	r[1] = pm->Node(e.m_node[1]).r;
+	r[2] = pm->Node(e.m_node[2]).r;
+	r[3] = pm->Node(e.m_node[3]).r;
 
-		glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-		glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-		glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-		glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-	}
-	glEnd();
+	n[0] = pf->m_nn[0];
+	n[1] = pf->m_nn[1];
+	n[2] = pf->m_nn[2];
+	n[3] = pf->m_nn[3];
+
+	GLX::drawQuad4(r, n);
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTRI3(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderTRI3(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TRI3));
 	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
 	if (pf == 0) return;
-	vec3d r1, r2, r3;
-	vec3d n1, n2, n3;
-	glBegin(GL_TRIANGLES);
-	{
-		r1 = pm->Node(e.m_node[0]).r;
-		r2 = pm->Node(e.m_node[1]).r;
-		r3 = pm->Node(e.m_node[2]).r;
+	vec3d r[3];
+	vec3f n[3];
 
-		n1 = pf->m_nn[0];
-		n2 = pf->m_nn[1];
-		n3 = pf->m_nn[2];
+	r[0] = pm->Node(e.m_node[0]).r;
+	r[1] = pm->Node(e.m_node[1]).r;
+	r[2] = pm->Node(e.m_node[2]).r;
 
-		glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-		glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-		glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-	}
-	glEnd();
+	n[0] = pf->m_nn[0];
+	n[1] = pf->m_nn[1];
+	n[2] = pf->m_nn[2];
+
+	GLX::drawTri3(r, n);
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderTRI6(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderTRI6(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TRI6));
 	FEElement_& e = *pe;
 	FEFace* pf = pm->FacePtr(e.m_face[0]); assert(pf);
 	if (pf == 0) return;
-	vec3d r1, r2, r3;
-	vec3d n1, n2, n3;
-	glBegin(GL_TRIANGLES);
-	{
-		r1 = pm->Node(e.m_node[0]).r;
-		r2 = pm->Node(e.m_node[1]).r;
-		r3 = pm->Node(e.m_node[2]).r;
+	vec3d r[3];
+	vec3f n[3];
 
-		n1 = pf->m_nn[0];
-		n2 = pf->m_nn[1];
-		n3 = pf->m_nn[2];
+	r[0] = pm->Node(e.m_node[0]).r;
+	r[1] = pm->Node(e.m_node[1]).r;
+	r[2] = pm->Node(e.m_node[2]).r;
 
-		glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-		glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-		glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-	}
-	glEnd();
+	n[0] = pf->m_nn[0];
+	n[1] = pf->m_nn[1];
+	n[2] = pf->m_nn[2];
+
+	GLX::drawTri3(r, n);
 }
 
 //-----------------------------------------------------------------------------
-void GLViewRender::RenderPYRA5(FEElement_ *pe, FEMesh *pm, bool bsel)
+void GLMeshRender::RenderPYRA5(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PYRA5));
 	FEElement_& e = *pe;
@@ -1060,7 +844,7 @@ void GLViewRender::RenderPYRA5(FEElement_ *pe, FEMesh *pm, bool bsel)
 		if (pen == 0)
 		{
 			FEFace* pf = pm->FacePtr(e.m_face[4]);
-			assert(&pm->Element(pf->m_elem[0]) == pe);
+			assert(pm->ElementPtr(pf->m_elem[0]) == pe);
 			n1 = pf->m_nn[0];
 			n2 = pf->m_nn[1];
 			n3 = pf->m_nn[2];
@@ -1079,6 +863,289 @@ void GLViewRender::RenderPYRA5(FEElement_ *pe, FEMesh *pm, bool bsel)
 			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
 			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
 			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
+		}
+	}
+	glEnd();
+}
+
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderGLMesh(GLMesh* pm, int nid)
+{
+	vec3d r0, r1, r2;
+	vec3d n0, n1, n2;
+	if (nid == -1)
+	{
+		int N = pm->Faces();
+		glBegin(GL_TRIANGLES);
+		{
+			for (int i = 0; i<N; ++i)
+			{
+				GMesh::FACE& f = pm->Face(i);
+				r0 = pm->Node(f.n[0]).r;
+				r1 = pm->Node(f.n[1]).r;
+				r2 = pm->Node(f.n[2]).r;
+
+				n0 = f.nn[0];
+				n1 = f.nn[1];
+				n2 = f.nn[2];
+
+				glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
+				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+			}
+		}
+		glEnd();
+	}
+	else
+	{
+		assert(pm->m_FIL.size() > 0);
+		glBegin(GL_TRIANGLES);
+		{
+			assert((nid >= 0) && (nid < (int)pm->m_FIL.size()));
+			pair<int, int> fil = pm->m_FIL[nid];
+			for (int i = 0; i<fil.second; ++i)
+			{
+				GMesh::FACE& f = pm->Face(i + fil.first);
+				assert(f.pid == nid);
+				r0 = pm->Node(f.n[0]).r;
+				r1 = pm->Node(f.n[1]).r;
+				r2 = pm->Node(f.n[2]).r;
+
+				n0 = f.nn[0];
+				n1 = f.nn[1];
+				n2 = f.nn[2];
+
+				glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
+				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+			}
+		}
+		glEnd();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderGLEdges(GLMesh* pm, int nid)
+{
+	vec3d r0, r1;
+	if (pm == 0) return;
+	int N = (int)pm->Edges();
+	if (N == 0) return;
+	if (nid == -1)
+	{
+		glBegin(GL_LINES);
+		{
+			for (int i = 0; i<N; ++i)
+			{
+				GMesh::EDGE& e = pm->Edge(i);
+				if ((e.n[0] != -1) && (e.n[1] != -1))
+				{
+					r0 = pm->Node(e.n[0]).r;
+					r1 = pm->Node(e.n[1]).r;
+					glVertex3d(r0.x, r0.y, r0.z);
+					glVertex3d(r1.x, r1.y, r1.z);
+				}
+			}
+		}
+		glEnd();
+	}
+	else
+	{
+		assert(pm->m_EIL.size() > 0);
+		glBegin(GL_LINES);
+		{
+			assert((nid >= 0) && (nid < (int)pm->m_EIL.size()));
+			pair<int, int> eil = pm->m_EIL[nid];
+
+			for (int i = 0; i<eil.second; ++i)
+			{
+				GMesh::EDGE& e = pm->Edge(i + eil.first);
+				assert(e.pid == nid);
+				if ((e.n[0] != -1) && (e.n[1] != -1))
+				{
+					r0 = pm->Node(e.n[0]).r;
+					r1 = pm->Node(e.n[1]).r;
+					glVertex3d(r0.x, r0.y, r0.z);
+					glVertex3d(r1.x, r1.y, r1.z);
+				}
+			}
+		}
+		glEnd();
+	}
+}
+
+void RenderQUAD4(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode)
+{
+	assert(f.m_type == FE_FACE_QUAD4);
+
+	// get the nodal data
+	vec3d r[4]; pm->FaceNodePosition(f, r);
+
+	vec3f n[4];
+	if (bsmooth) pm->FaceNodeNormals(f, n);
+	else { n[0] = n[1] = n[2] = n[3] = f.m_fn; }
+
+	float t[4];
+	pm->FaceNodeTexCoords(f, t, bnode);
+
+	// render the quads
+	GLX::drawQuad4(r, n, t);
+}
+
+//-----------------------------------------------------------------------------
+// Render a 8-noded quad
+void RenderQUAD8(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode)
+{
+	assert(f.m_type == FE_FACE_QUAD8);
+
+	// get the nodal data
+	vec3d r[8]; pm->FaceNodePosition(f, r);
+
+	vec3f n[8];
+	if (bsmooth) pm->FaceNodeNormals(f, n);
+	else { n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = f.m_fn; }
+
+	float t[8];
+	pm->FaceNodeTexCoords(f, t, bnode);
+
+	GLX::drawQuad8(r, n, t);
+}
+
+//-----------------------------------------------------------------------------
+// Render a 9-noded quad
+void RenderQUAD9(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode)
+{
+	assert(f.m_type == FE_FACE_QUAD9);
+
+	// get the nodal data
+	vec3d r[9]; pm->FaceNodePosition(f, r);
+
+	vec3f n[9];
+	if (bsmooth) pm->FaceNodeNormals(f, n);
+	else { n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = f.m_fn; }
+
+	float t[9];
+	pm->FaceNodeTexCoords(f, t, bnode);
+
+	GLX::drawQuad9(r, n, t);
+}
+
+//-----------------------------------------------------------------------------
+// Render a 3-noded tri
+void RenderTRI3(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode)
+{
+	assert(f.m_type == FE_FACE_TRI3);
+
+	// get the nodal data
+	vec3d r[3]; pm->FaceNodePosition(f, r);
+
+	vec3f n[3];
+	if (bsmooth) pm->FaceNodeNormals(f, n);
+	else { n[0] = n[1] = n[2] = f.m_fn; }
+
+	float t[3];
+	pm->FaceNodeTexCoords(f, t, bnode);
+
+	GLX::drawTri3(r, n, t);
+}
+
+//-----------------------------------------------------------------------------
+// Render a 6-noded tri
+void RenderTRI6(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode)
+{
+	assert(f.m_type == FE_FACE_TRI6);
+
+	// get the nodal data
+	vec3d r[6]; pm->FaceNodePosition(f, r);
+
+	vec3f n[6];
+	if (bsmooth) pm->FaceNodeNormals(f, n);
+	else { n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = f.m_fn; }
+
+	float t[6];
+	pm->FaceNodeTexCoords(f, t, bnode);
+
+	GLX::drawTri6(r, n, t);
+}
+
+//-----------------------------------------------------------------------------
+// Render a 7-noded tri
+void RenderTRI7(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode)
+{
+	assert(f.m_type == FE_FACE_TRI7);
+
+	// get the nodal data
+	vec3d r[7]; pm->FaceNodePosition(f, r);
+
+	vec3f n[7];
+	if (bsmooth) pm->FaceNodeNormals(f, n);
+	else { n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = f.m_fn; }
+
+	float t[7];
+	pm->FaceNodeTexCoords(f, t, bnode);
+
+	GLX::drawTri7(r, n, t);
+}
+
+//-----------------------------------------------------------------------------
+// Render a 10-noded tri
+void RenderTRI10(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode)
+{
+	assert(f.m_type == FE_FACE_TRI10);
+
+	// get the nodal data
+	vec3d r[10]; pm->FaceNodePosition(f, r);
+
+	vec3f n[10];
+	if (bsmooth) pm->FaceNodeNormals(f, n);
+	else { n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = n[9] = f.m_fn; }
+
+	float t[10];
+	pm->FaceNodeTexCoords(f, t, bnode);
+
+	GLX::drawTri10(r, n, t);
+}
+
+//-----------------------------------------------------------------------------
+// Render a sub-divided 4-noded quadrilateral
+void RenderSmoothQUAD4(vec3f r[4], vec3f n[4], float q[4], int ndivs)
+{
+	float sa[4], ta[4], s, t, tk, h[4];
+	vec3f nk, rk;
+	int i, j, k;
+	glBegin(GL_QUADS);
+	for (i = 0; i<ndivs; ++i)
+	{
+		sa[0] = -1.f + i*2.f / ndivs;
+		sa[1] = -1.f + (i + 1)*2.f / ndivs;
+		sa[2] = -1.f + (i + 1)*2.f / ndivs;
+		sa[3] = -1.f + i*2.f / ndivs;
+
+		for (j = 0; j<ndivs; ++j)
+		{
+			ta[0] = -1.f + j*2.f / ndivs;
+			ta[1] = -1.f + j*2.f / ndivs;
+			ta[2] = -1.f + (j + 1)*2.f / ndivs;
+			ta[3] = -1.f + (j + 1)*2.f / ndivs;
+
+			for (k = 0; k<4; ++k)
+			{
+				s = sa[k];
+				t = ta[k];
+				h[0] = 0.25f*(1 - s)*(1 - t);
+				h[1] = 0.25f*(1 + s)*(1 - t);
+				h[2] = 0.25f*(1 + s)*(1 + t);
+				h[3] = 0.25f*(1 - s)*(1 + t);
+
+				nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3];
+				rk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3];
+				tk = q[0] * h[0] + q[1] * h[1] + q[2] * h[2] + q[3] * h[3];
+
+				glNormal3f(nk.x, nk.y, nk.z);
+				glTexCoord1f(tk);
+				glVertex3f(rk.x, rk.y, rk.z);
+			}
 		}
 	}
 	glEnd();

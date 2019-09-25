@@ -359,7 +359,40 @@ bool FreeRegion::IsInside(int x, int y) const
 	return ((nint>0) && (nint % 2));
 }
 
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_pWnd(pwnd), m_Cmd(0), m_Ttor(this), m_Rtor(this), m_Stor(this), m_renderer(this)
+//-----------------------------------------------------------------------------
+void RenderBox(const BOX& box)
+{
+	// push attributes
+	glPushAttrib(GL_ENABLE_BIT);
+
+	// set attributes
+	glEnable(GL_LINE_SMOOTH);
+	glDisable(GL_LIGHTING);
+
+	glBegin(GL_LINES);
+	{
+		glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
+		glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
+		glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
+		glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
+
+		glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
+		glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
+		glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
+		glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
+
+		glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
+		glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
+		glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
+		glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
+	}
+	glEnd();
+
+	// restore attributes
+	glPopAttrib();
+}
+
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_pWnd(pwnd), m_Cmd(0), m_Ttor(this), m_Rtor(this), m_Stor(this)
 {
 	QSurfaceFormat fmt = format();
 //	fmt.setSamples(4);
@@ -2074,7 +2107,7 @@ void CGLView::RenderSelectionBox()
 					glColor3ub(255, 255, 255);
 					if (po->IsSelected())
 					{
-						m_renderer.RenderBox(po->GetLocalBox());
+						RenderBox(po->GetLocalBox());
 						if (bnorm) RenderNormals(po, scale);
 					}
 				}
@@ -2082,7 +2115,7 @@ void CGLView::RenderSelectionBox()
 				{
 					glColor3ub(164, 0, 164);
 					assert(po->IsSelected());
-					m_renderer.RenderBox(po->GetLocalBox());
+					RenderBox(po->GetLocalBox());
 				}
 				glPopMatrix();
 			}
@@ -2093,7 +2126,7 @@ void CGLView::RenderSelectionBox()
 		glPushMatrix();
 		SetModelView(poa);
 		glColor3ub(255, 255, 0);
-		m_renderer.RenderBox(poa->GetLocalBox());
+		RenderBox(poa->GetLocalBox());
 		glPopMatrix();
 	}
 }
@@ -2237,39 +2270,6 @@ void CGLView::RenderBackground()
 	glPopMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
-}
-
-//-----------------------------------------------------------------------------
-void RenderBox(const BOX& box)
-{
-	// push attributes
-	glPushAttrib(GL_ENABLE_BIT);
-
-	// set attributes
-	glEnable(GL_LINE_SMOOTH);
-	glDisable(GL_LIGHTING);
-
-	glBegin(GL_LINES);
-	{
-		glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
-		glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
-		glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
-		glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
-
-		glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
-		glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
-		glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
-		glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
-
-		glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
-		glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
-		glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
-		glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
-	}
-	glEnd();
-
-	// restore attributes
-	glPopAttrib();
 }
 
 void CGLView::RenderImageData()

@@ -233,7 +233,6 @@
     <ClCompile Include="..\..\FEBioStudio\GLCursor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GLHighLighter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GLView.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\GLViewRender.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GLViewTransform.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GManipulator.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
@@ -514,7 +513,6 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\GLViewRender.h" />
     <ClInclude Include="..\..\FEBioStudio\GLViewTransform.h" />
     <ClInclude Include="..\..\FEBioStudio\GManipulator.h" />
     <CustomBuild Include="..\..\FEBioStudio\GraphWindow.h">

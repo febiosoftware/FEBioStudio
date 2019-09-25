@@ -191,7 +191,6 @@ protected:
 	void RenderInnerSurfaceOutline(int m, int ndivs);
 
 	void RenderSmoothQUAD4(FEFace& f, Post::FEMeshBase* pm, int ndivs, bool bnode);
-	void RenderSmoothQUAD4(vec3f r[4], vec3f n[4], float t[4], int ndivs);
 
 	void RenderSmoothQUAD8(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderSmoothQUAD8(vec3f r[8], vec3f n[8], float t[8], int ndivs);
@@ -203,14 +202,6 @@ protected:
 	void RenderSmoothTRI7(vec3f r[7], vec3f n[7], float t[7], int ndivs);
 	void RenderSmoothTRI10(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode);
 	void RenderSmoothTRI10(vec3f r[10], vec3f n[10], float t[10], int ndivs);
-
-	void RenderQUAD4(FEFace& f, bool bsmooth, bool bnode);
-	void RenderQUAD8(FEFace& f, bool bsmooth, bool bnode);
-	void RenderQUAD9(FEFace& f, bool bsmooth, bool bnode);
-	void RenderTRI3 (FEFace& f, bool bsmooth, bool bnode);
-	void RenderTRI6 (FEFace& f, bool bsmooth, bool bnode);
-	void RenderTRI7 (FEFace& f, bool bsmooth, bool bnode);
-	void RenderTRI10(FEFace& f, bool bsmooth, bool bnode);
 
 	void RenderTexQUAD4(FEFace& face, Post::FEMeshBase* pm);
 	void RenderTexQUAD8(FEFace& face, Post::FEMeshBase* pm);

@@ -7,6 +7,7 @@
 #include <GLLib/GLCamera.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <GLWLib/GLWidgetManager.h>
+#include <GLLib/GLMeshRender.h>
 #include <stack>
 using namespace std;
 using namespace Post;
@@ -1696,30 +1697,30 @@ void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bn
 	switch (face.m_type)
 	{
 	case FE_FACE_QUAD4:
-		if (ndivs == 1) RenderQUAD4(face, m_bsmooth, bnode);
+		if (ndivs == 1) RenderQUAD4(pm, face, m_bsmooth, bnode);
 		else RenderSmoothQUAD4(face, pm, ndivs, bnode);
 		break;
 	case FE_FACE_QUAD8:
-		if (ndivs == 1) RenderQUAD8(face, m_bsmooth, bnode);
+		if (ndivs == 1) RenderQUAD8(pm, face, m_bsmooth, bnode);
 		else RenderSmoothQUAD8(face, pm, ndivs, bnode);
 		break;
 	case FE_FACE_QUAD9:
-		if (ndivs == 1) RenderQUAD9(face, m_bsmooth, bnode);
+		if (ndivs == 1) RenderQUAD9(pm, face, m_bsmooth, bnode);
 		else RenderSmoothQUAD9(face, pm, ndivs, bnode);
 		break;
 	case FE_FACE_TRI3:
-		RenderTRI3(face, m_bsmooth, bnode);
+		RenderTRI3(pm, face, m_bsmooth, bnode);
 		break;
 	case FE_FACE_TRI6:
-		if (ndivs == 1) RenderTRI6(face, m_bsmooth, bnode);
+		if (ndivs == 1) RenderTRI6(pm, face, m_bsmooth, bnode);
 		else RenderSmoothTRI6(face, pm, ndivs, bnode);
 		break;
 	case FE_FACE_TRI7:
-		if (ndivs == 1) RenderTRI7(face, m_bsmooth, bnode);
+		if (ndivs == 1) RenderTRI7(pm, face, m_bsmooth, bnode);
 		else RenderSmoothTRI7(face, pm, ndivs, bnode);
 		break;
 	case FE_FACE_TRI10:
-		if (ndivs == 1) RenderTRI10(face, m_bsmooth, bnode);
+		if (ndivs == 1) RenderTRI10(pm, face, m_bsmooth, bnode);
 		else RenderSmoothTRI10(face, pm, ndivs, bnode);
 		break;
 	default:

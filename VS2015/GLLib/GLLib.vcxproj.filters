@@ -30,6 +30,9 @@
     <ClCompile Include="..\..\GLLib\GLTexture1D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\GLLib\GLMeshRender.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\GLLib\GLCamera.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\GLLib\GLTexture1D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GLLib\GLMeshRender.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -100,7 +100,7 @@ void drawEdge(CGLView* view, GEdge* edge, GLColor c)
 	view->SetModelView(po);
 
 	GLMesh& m = *po->GetRenderMesh();
-	view->GetViewRenderer().RenderGLEdges(&m, edge->GetLocalID());
+	view->GetMeshRenderer().RenderGLEdges(&m, edge->GetLocalID());
 
 	if ((edge->m_node[0] != -1) && (edge->m_node[1] != -1))
 	{
