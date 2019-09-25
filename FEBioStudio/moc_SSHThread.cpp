@@ -22,7 +22,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CSSHThread_t {
     QByteArrayData data[7];
-    char stringdata0[75];
+    char stringdata0[82];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -32,16 +32,16 @@ struct qt_meta_stringdata_CSSHThread_t {
 static const qt_meta_stringdata_CSSHThread_t qt_meta_stringdata_CSSHThread = {
     {
 QT_MOC_LITERAL(0, 0, 10), // "CSSHThread"
-QT_MOC_LITERAL(1, 11, 9), // "AddOutput"
-QT_MOC_LITERAL(2, 21, 0), // ""
-QT_MOC_LITERAL(3, 22, 12), // "FinishedPart"
-QT_MOC_LITERAL(4, 35, 12), // "CSSHHandler*"
-QT_MOC_LITERAL(5, 48, 9), // "GetOutput"
-QT_MOC_LITERAL(6, 58, 16) // "SendFinishedPart"
+QT_MOC_LITERAL(1, 11, 11), // "AddLogEntry"
+QT_MOC_LITERAL(2, 23, 0), // ""
+QT_MOC_LITERAL(3, 24, 14), // "AddOutputEntry"
+QT_MOC_LITERAL(4, 39, 12), // "FinishedPart"
+QT_MOC_LITERAL(5, 52, 12), // "CSSHHandler*"
+QT_MOC_LITERAL(6, 65, 16) // "SendFinishedPart"
 
     },
-    "CSSHThread\0AddOutput\0\0FinishedPart\0"
-    "CSSHHandler*\0GetOutput\0SendFinishedPart"
+    "CSSHThread\0AddLogEntry\0\0AddOutputEntry\0"
+    "FinishedPart\0CSSHHandler*\0SendFinishedPart"
 };
 #undef QT_MOC_LITERAL
 
@@ -56,22 +56,22 @@ static const uint qt_meta_data_CSSHThread[] = {
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       2,       // signalCount
+       3,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
        1,    1,   34,    2, 0x06 /* Public */,
        3,    1,   37,    2, 0x06 /* Public */,
+       4,    1,   40,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       5,    1,   40,    2, 0x0a /* Public */,
        6,    0,   43,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QString,    2,
-    QMetaType::Void, 0x80000000 | 4,    2,
+    QMetaType::Void, QMetaType::QString,    2,
+    QMetaType::Void, 0x80000000 | 5,    2,
 
  // slots: parameters
-    QMetaType::Void, QMetaType::QString,    2,
     QMetaType::Void,
 
        0        // eod
@@ -83,9 +83,9 @@ void CSSHThread::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         CSSHThread *_t = static_cast<CSSHThread *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->AddOutput((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 1: _t->FinishedPart((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
-        case 2: _t->GetOutput((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 0: _t->AddLogEntry((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 1: _t->AddOutputEntry((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 2: _t->FinishedPart((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
         case 3: _t->SendFinishedPart(); break;
         default: ;
         }
@@ -93,15 +93,22 @@ void CSSHThread::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         int *result = reinterpret_cast<int *>(_a[0]);
         {
             using _t = void (CSSHThread::*)(const QString & );
-            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CSSHThread::AddOutput)) {
+            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CSSHThread::AddLogEntry)) {
                 *result = 0;
+                return;
+            }
+        }
+        {
+            using _t = void (CSSHThread::*)(const QString & );
+            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CSSHThread::AddOutputEntry)) {
+                *result = 1;
                 return;
             }
         }
         {
             using _t = void (CSSHThread::*)(CSSHHandler * );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CSSHThread::FinishedPart)) {
-                *result = 1;
+                *result = 2;
                 return;
             }
         }
@@ -149,17 +156,24 @@ int CSSHThread::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void CSSHThread::AddOutput(const QString & _t1)
+void CSSHThread::AddLogEntry(const QString & _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 
 // SIGNAL 1
-void CSSHThread::FinishedPart(CSSHHandler * _t1)
+void CSSHThread::AddOutputEntry(const QString & _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 1, _a);
+}
+
+// SIGNAL 2
+void CSSHThread::FinishedPart(CSSHHandler * _t1)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 2, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

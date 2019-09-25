@@ -26,7 +26,7 @@ public:
 	std::string name;
 	std::string path;
 	std::string server;
-	int port = 0;
+	int port = 22;
 	std::string userName;
 	std::string remoteDir;
 	std::string jobName;
