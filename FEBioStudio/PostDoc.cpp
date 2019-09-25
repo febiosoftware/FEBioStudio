@@ -237,6 +237,8 @@ void CPostDoc::Render(CGLView* view)
 	glLoadIdentity();
 	cam.Transform();
 
+	glDisable(GL_CULL_FACE);
+
 	// match the selection mode
 	int selectionMode = Post::SELECT_ELEMS;
 	switch (view->GetDocument()->GetItemMode())

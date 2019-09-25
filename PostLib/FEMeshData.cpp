@@ -345,6 +345,14 @@ void FELagrangeStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// make sure it's a solid
+	if (e.IsSolid() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -384,6 +392,14 @@ void FEBiotStrain::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// make sure it's a solid
+	if (e.IsSolid() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -442,6 +458,14 @@ void FERightHencky::eval(int n, mat3fs* pv)
 {
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// make sure it's a solid
+	if (e.IsSolid() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -500,6 +524,14 @@ void FELeftCauchyGreen::eval(int n, mat3fs* pv)
 {
     // get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// make sure it's a solid
+	if (e.IsSolid() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -539,6 +571,14 @@ void FELeftStretch::eval(int n, mat3fs* pv)
 {
     // get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// make sure it's a solid
+	if (e.IsSolid() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -597,6 +637,14 @@ void FELeftHencky::eval(int n, mat3fs* pv)
 {
     // get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// make sure it's a solid
+	if (e.IsSolid() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
@@ -655,6 +703,14 @@ void FEAlmansi::eval(int n, mat3fs* pv)
 {
     // get the element
 	FEElement_& el = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// make sure it's a solid
+	if (el.IsSolid() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
     // get the iso-parameteric coordinates of the element center
     double q[3];
     el.iso_coord(-1, q);
