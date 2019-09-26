@@ -165,7 +165,6 @@
 		D5F7D84122FA37C40089B08E /* DlgAddIC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73222FA37C40089B08E /* DlgAddIC.cpp */; };
 		D5F7D84222FA37C40089B08E /* DlgBatchConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73522FA37C40089B08E /* DlgBatchConvert.cpp */; };
 		D5F7D84322FA37C40089B08E /* DlgAddContact.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73622FA37C40089B08E /* DlgAddContact.cpp */; };
-		D5F7D84422FA37C40089B08E /* GLViewRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73722FA37C40089B08E /* GLViewRender.cpp */; };
 		D5F7D84522FA37C40089B08E /* moc_ResourceEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73822FA37C40089B08E /* moc_ResourceEdit.cpp */; };
 		D5F7D84622FA37C40089B08E /* ConchoidFitTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73922FA37C40089B08E /* ConchoidFitTool.cpp */; };
 		D5F7D84722FA37C40089B08E /* DlgAddChemicalReaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73A22FA37C40089B08E /* DlgAddChemicalReaction.cpp */; };
@@ -546,7 +545,6 @@
 		D5F7D73422FA37C40089B08E /* StatsWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatsWindow.h; sourceTree = "<group>"; };
 		D5F7D73522FA37C40089B08E /* DlgBatchConvert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgBatchConvert.cpp; sourceTree = "<group>"; };
 		D5F7D73622FA37C40089B08E /* DlgAddContact.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddContact.cpp; sourceTree = "<group>"; };
-		D5F7D73722FA37C40089B08E /* GLViewRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLViewRender.cpp; sourceTree = "<group>"; };
 		D5F7D73822FA37C40089B08E /* moc_ResourceEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ResourceEdit.cpp; sourceTree = "<group>"; };
 		D5F7D73922FA37C40089B08E /* ConchoidFitTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConchoidFitTool.cpp; sourceTree = "<group>"; };
 		D5F7D73A22FA37C40089B08E /* DlgAddChemicalReaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddChemicalReaction.cpp; sourceTree = "<group>"; };
@@ -766,7 +764,6 @@
 		D5F7D81922FA37C40089B08E /* PropertyListView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PropertyListView.cpp; sourceTree = "<group>"; };
 		D5F7D81A22FA37C40089B08E /* DlgFormula.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgFormula.cpp; sourceTree = "<group>"; };
 		D5F7D81B22FA37C40089B08E /* MeshInfoPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshInfoPanel.cpp; sourceTree = "<group>"; };
-		D5F7D81C22FA37C40089B08E /* GLViewRender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLViewRender.h; sourceTree = "<group>"; };
 		D5F7D81D22FA37C40089B08E /* ModelTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelTree.cpp; sourceTree = "<group>"; };
 		D5F7D81E22FA37C40089B08E /* moc_DlgAddEquation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgAddEquation.cpp; sourceTree = "<group>"; };
 		D5F7D81F22FA37C40089B08E /* CreatePanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CreatePanel.h; sourceTree = "<group>"; };
@@ -1061,8 +1058,6 @@
 				D5F7D7F522FA37C40089B08E /* GLHighlighter.h */,
 				D5F7D7B022FA37C40089B08E /* GLView.cpp */,
 				D5F7D81422FA37C40089B08E /* GLView.h */,
-				D5F7D73722FA37C40089B08E /* GLViewRender.cpp */,
-				D5F7D81C22FA37C40089B08E /* GLViewRender.h */,
 				D5F7D79022FA37C40089B08E /* GLViewTransform.cpp */,
 				D5F7D7C922FA37C40089B08E /* GLViewTransform.h */,
 				D5F7D77122FA37C40089B08E /* GManipulator.cpp */,
@@ -1491,7 +1486,6 @@
 				D5F7D88822FA37C40089B08E /* moc_GLView.cpp in Sources */,
 				D5F7D89922FA37C40089B08E /* GTriad.cpp in Sources */,
 				D5F7D8B422FA37C40089B08E /* MeshButtonBox.cpp in Sources */,
-				D5F7D84422FA37C40089B08E /* GLViewRender.cpp in Sources */,
 				D5F7D82822FA37C40089B08E /* ResourceEdit.cpp in Sources */,
 				D5F7D86E22FA37C40089B08E /* moc_SelectionBox.cpp in Sources */,
 				D5F7D83B22FA37C40089B08E /* MeshInspector.cpp in Sources */,
