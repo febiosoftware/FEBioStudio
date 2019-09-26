@@ -56,6 +56,7 @@ public:
 	void Inflate(double dx, double dy, double dz);
 	void InflateTo(double fx, double fy, double fz);
 	void Inflate(double f);
+	void Scale(double f);
 
 	// get the coordinates of the box
 	vec3d r0() const;

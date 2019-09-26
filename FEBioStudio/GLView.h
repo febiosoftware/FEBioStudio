@@ -296,7 +296,7 @@ public:
 	void RenderLocalMaterialAxes();
 	void Render3DCursor(const vec3d& r, double R);
 	void RenderSelectionBox();
-	void RenderDefaultView();
+	void RenderModelView();
 	void RenderPostView(CPostDoc* postDoc);
 	void RenderTags();
 	void RenderImageData();

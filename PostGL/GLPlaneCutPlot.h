@@ -74,6 +74,7 @@ public:
 
 	static void InitClipPlanes();
 	static void DisableClipPlanes();
+	static void ClearClipPlanes();
 	static void EnableClipPlanes();
 
 	void Activate(bool bact);

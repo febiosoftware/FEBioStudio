@@ -96,6 +96,16 @@ void CGLPlaneCutPlot::DisableClipPlanes()
 	}
 }
 
+void CGLPlaneCutPlot::ClearClipPlanes()
+{
+	for (int i = 0; i<(int)m_clip.size(); ++i)
+	{
+		if (m_clip[i] != 0) glDisable(GL_CLIP_PLANE0 + i);
+		m_clip[i] = 0;
+		m_pcp[i] = nullptr;
+	}
+}
+
 void CGLPlaneCutPlot::EnableClipPlanes()
 {
 	for (int i=0; i<(int) m_clip.size(); ++i)
@@ -865,18 +875,16 @@ void CGLPlaneCutPlot::RenderPlane()
 
 void CGLPlaneCutPlot::Activate(bool bact)
 {
-	if (bact != IsActive())
+	if (bact != IsActive()) CGLObject::Activate(bact);
+		
+	if (bact)
 	{
-		CGLObject::Activate(bact);
-		if (bact)
-		{
-			m_nclip = GetFreePlane();
-			if (m_nclip >= 0) m_pcp[m_nclip] = this;
-		}
-		else
-		{
-			ReleasePlane();
-		}
+		m_nclip = GetFreePlane();
+		if (m_nclip >= 0) m_pcp[m_nclip] = this;
+	}
+	else
+	{
+		ReleasePlane();
 	}
 }
 

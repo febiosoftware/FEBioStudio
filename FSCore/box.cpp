@@ -165,6 +165,18 @@ void BOX::Inflate(double f)
 }
 
 //-----------------------------------------------------------------------------
+void BOX::Scale(double s)
+{
+	vec3d c = Center();
+	double w = 0.5*s*Width();
+	double h = 0.5*s*Height();
+	double d = 0.5*s*Depth();
+	x0 = c.x - w; x1 = c.x + w;
+	y0 = c.y - d; y1 = c.y + d;
+	z0 = c.z - h; z1 = c.z + h;
+}
+
+//-----------------------------------------------------------------------------
 vec3d BOX::r0() const
 {
 	return vec3d(x0, y0, z0);

@@ -399,6 +399,14 @@ void CGLModel::Render(CGLContext& rc)
 void CGLModel::RenderPlots(CGLContext& rc)
 {
 	GPlotList& PL = m_pPlot;
+	// clear all clipping planes
+	CGLPlaneCutPlot::ClearClipPlanes();
+	for (int i = 0; i < (int)PL.Size(); ++i)
+	{
+		CGLPlaneCutPlot* p = dynamic_cast<CGLPlaneCutPlot*>(m_pPlot[i]);
+		if (p->IsActive()) p->Activate(true);
+	}
+	
 	for (int i = 0; i<(int)PL.Size(); ++i)
 	{
 		CGLPlot* pl = m_pPlot[i];
@@ -408,6 +416,7 @@ void CGLModel::RenderPlots(CGLContext& rc)
 
 		if (pl->IsActive()) pl->Render(rc);
 	}
+	CGLPlaneCutPlot::DisableClipPlanes();
 }
 
 //-----------------------------------------------------------------------------

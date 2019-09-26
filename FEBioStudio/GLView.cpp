@@ -360,7 +360,15 @@ bool FreeRegion::IsInside(int x, int y) const
 }
 
 //-----------------------------------------------------------------------------
-void RenderBox(const BOX& box)
+
+inline void render_triad(double x, double y, double z, double dx, double dy, double dz)
+{
+	glVertex3d(x, y, z); glVertex3d(x + dx, y, z);
+	glVertex3d(x, y, z); glVertex3d(x, y + dy, z);
+	glVertex3d(x, y, z); glVertex3d(x, y, z + dz);
+}
+
+void RenderBox(const BOX& bbox, bool partial = true, double scale = 1.0)
 {
 	// push attributes
 	glPushAttrib(GL_ENABLE_BIT);
@@ -369,24 +377,49 @@ void RenderBox(const BOX& box)
 	glEnable(GL_LINE_SMOOTH);
 	glDisable(GL_LIGHTING);
 
-	glBegin(GL_LINES);
+	BOX box = bbox;
+	box.Scale(scale);
+
+	if (partial)
 	{
-		glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
-		glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
-		glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
-		glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
+		double dx = box.Width()*0.3;
+		double dy = box.Height()*0.3;
+		double dz = box.Depth()*0.3;
+		glBegin(GL_LINES);
+		{
+			render_triad(box.x0, box.y0, box.z0,  dx,  dy, dz);
+			render_triad(box.x1, box.y0, box.z0, -dx,  dy, dz);
+			render_triad(box.x1, box.y1, box.z0, -dx, -dy, dz);
+			render_triad(box.x0, box.y1, box.z0,  dx, -dy, dz);
 
-		glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
-		glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
-		glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
-		glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
-
-		glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
-		glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
-		glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
-		glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
+			render_triad(box.x0, box.y0, box.z1,  dx,  dy, -dz);
+			render_triad(box.x1, box.y0, box.z1, -dx,  dy, -dz);
+			render_triad(box.x1, box.y1, box.z1, -dx, -dy, -dz);
+			render_triad(box.x0, box.y1, box.z1,  dx, -dy, -dz);
+		}
+		glEnd();
 	}
-	glEnd();
+	else
+	{
+		glBegin(GL_LINES);
+		{
+			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
+			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
+			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
+			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
+
+			glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
+			glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
+			glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
+			glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
+
+			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
+			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
+			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
+			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
+		}
+		glEnd();
+	}
 
 	// restore attributes
 	glPopAttrib();
@@ -1420,7 +1453,7 @@ void CGLView::paintGL()
 	// get the active view
 	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
 
-	if (postDoc == nullptr) RenderDefaultView();
+	if (postDoc == nullptr) RenderModelView();
 	else RenderPostView(postDoc);
 
 	// render the grid
@@ -1572,7 +1605,7 @@ void CGLView::RenderGLProgress(CPostDoc* postDoc)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::RenderDefaultView()
+void CGLView::RenderModelView()
 {
 	CDocument* pdoc = GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
@@ -2107,7 +2140,7 @@ void CGLView::RenderSelectionBox()
 					glColor3ub(255, 255, 255);
 					if (po->IsSelected())
 					{
-						RenderBox(po->GetLocalBox());
+						RenderBox(po->GetLocalBox(), true, 1.025);
 						if (bnorm) RenderNormals(po, scale);
 					}
 				}
@@ -2115,7 +2148,7 @@ void CGLView::RenderSelectionBox()
 				{
 					glColor3ub(164, 0, 164);
 					assert(po->IsSelected());
-					RenderBox(po->GetLocalBox());
+					RenderBox(po->GetLocalBox(), true, 1.025);
 				}
 				glPopMatrix();
 			}
@@ -2126,7 +2159,7 @@ void CGLView::RenderSelectionBox()
 		glPushMatrix();
 		SetModelView(poa);
 		glColor3ub(255, 255, 0);
-		RenderBox(poa->GetLocalBox());
+		RenderBox(poa->GetLocalBox(), true, 1.025);
 		glPopMatrix();
 	}
 }
@@ -2299,7 +2332,7 @@ void CGLView::RenderImageData()
 //		GLColor c = img->GetColor();
 		GLColor c(255, 128, 128);
 		glColor3ub(c.r, c.g, c.b);
-		if (img->ShowBox()) RenderBox(box);
+		if (img->ShowBox()) RenderBox(box, false);
 		img->Render(rc);
 	}
 
