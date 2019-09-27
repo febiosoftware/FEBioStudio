@@ -168,12 +168,12 @@ void BOX::Inflate(double f)
 void BOX::Scale(double s)
 {
 	vec3d c = Center();
-	double w = 0.5*s*Width();
-	double h = 0.5*s*Height();
-	double d = 0.5*s*Depth();
-	x0 = c.x - w; x1 = c.x + w;
-	y0 = c.y - d; y1 = c.y + d;
-	z0 = c.z - h; z1 = c.z + h;
+	double dx = 0.5*s*Width();
+	double dy = 0.5*s*Height();
+	double dz = 0.5*s*Depth();
+	x0 = c.x - dx; x1 = c.x + dx;
+	y0 = c.y - dy; y1 = c.y + dy;
+	z0 = c.z - dz; z1 = c.z + dz;
 }
 
 //-----------------------------------------------------------------------------

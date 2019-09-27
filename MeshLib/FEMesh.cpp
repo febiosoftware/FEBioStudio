@@ -3573,9 +3573,32 @@ void FEMesh::PartitionElementSelection()
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = Element(i);
-		if (el.IsSelected()) 
-		{ 
-			el.m_gid = np;
+		if (el.IsSelected()) el.m_ntag = 1; else el.m_ntag = 0;
+	}
+
+	vector<int> s(NE, -1); int ne = 0;
+	for (int i = 0; i<NE; ++i)
+	{
+		FEElement& el = Element(i);
+		if (el.m_ntag == 1)
+		{
+			el.m_ntag = 0;
+			s[ne++] = i;
+			while (ne > 0)
+			{
+				FEElement& el = Element(s[--ne]);
+				for (int j = 0; j < el.Faces(); ++j)
+				{
+					FEElement_* pe = ElementPtr(el.m_nbr[j]);
+					if (pe && (pe->m_gid == el.m_gid) && (pe->m_ntag == 1))
+					{
+						s[ne++] = el.m_nbr[j];
+						pe->m_ntag = 0;
+					}
+				}
+				el.m_gid = np;
+			}
+			np++;
 		}
 	}
 
@@ -3603,7 +3626,7 @@ void FEMesh::PartitionElementSelection()
 						if (ej.m_gid != el.m_gid)
 						{
 							FEFace fj = el.GetFace(j);
-							fj.m_gid = nfp;
+							fj.m_gid = -1;
 							AddFace(fj);
 							newFaces++;
 						}
