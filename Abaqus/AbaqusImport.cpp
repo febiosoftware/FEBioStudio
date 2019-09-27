@@ -1515,15 +1515,18 @@ bool AbaqusImport::build_physics()
 	{
 		AbaqusModel::PART* pg = *pgi;
 		GObject* po = pg->m_po;
-		int ssections = (int)pg->m_Solid.size();
-		if (po->Parts() == ssections)
+		if (po)
 		{
-			list<AbaqusModel::SOLID_SECTION>::iterator ssi = pg->m_Solid.begin();
-			for (int i = 0; i < ssections; ++ssi, ++i)
+			int ssections = (int)pg->m_Solid.size();
+			if (po->Parts() == ssections)
 			{
-				AbaqusModel::SOLID_SECTION& ss = *ssi;
-				GMaterial* pmat = fem.FindMaterial(ss.szmat);
-				if (pmat) po->Part(i)->SetMaterialID(pmat->GetID());
+				list<AbaqusModel::SOLID_SECTION>::iterator ssi = pg->m_Solid.begin();
+				for (int i = 0; i < ssections; ++ssi, ++i)
+				{
+					AbaqusModel::SOLID_SECTION& ss = *ssi;
+					GMaterial* pmat = fem.FindMaterial(ss.szmat);
+					if (pmat) po->Part(i)->SetMaterialID(pmat->GetID());
+				}
 			}
 		}
 	}
@@ -1686,10 +1689,10 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 				}
 			}
 
-			AbaqusModel::Orientation* orient = m_inp.FindOrientation(ss.szorient);
+			AbaqusModel::Orientation* orient = part.FindOrientation(ss.szorient);
 			if (orient)
 			{
-				AbaqusModel::Distribution* dist = m_inp.FindDistribution(orient->szdist);
+				AbaqusModel::Distribution* dist = part.FindDistribution(orient->szdist);
 				if (dist)
 				{
 					// skip the first entry
@@ -2152,7 +2155,10 @@ bool AbaqusImport::read_orientation(char* szline, FILE* fp)
 	const char* szname = find_attribute(att, 3, "name");
 	read_line(szline, fp);
 
-	m_inp.AddOrientation(szname, szline);
+	AbaqusModel::PART* pg = m_inp.CurrentPart();
+	if (pg == 0) return false;
+
+	pg->AddOrientation(szname, szline);
 
 	return true;
 }
@@ -2184,7 +2190,10 @@ bool AbaqusImport::read_distribution(char* szline, FILE* fp)
 		read_line(szline, fp);
 	}
 
-	m_inp.m_Distr.push_back(D);
+	AbaqusModel::PART* pg = m_inp.CurrentPart();
+	if (pg == 0) return false;
+
+	pg->m_Distr.push_back(D);
 
 	return true;
 }

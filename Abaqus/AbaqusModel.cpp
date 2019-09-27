@@ -188,39 +188,6 @@ void AbaqusModel::SetCurrentStep(STEP* p)
 	m_pStep = p;
 }
 
-//-----------------------------------------------------------------------------
-void AbaqusModel::AddOrientation(const char* szname, const char* szdist)
-{
-	Orientation o;
-	strcpy(o.szname, szname);
-	strcpy(o.szdist, szdist);
-	m_Orient.push_back(o);
-}
-
-//-----------------------------------------------------------------------------
-AbaqusModel::Orientation* AbaqusModel::FindOrientation(const char* szname)
-{
-	if (szname == 0) return 0;
-	list<Orientation>::iterator it;
-	for (it = m_Orient.begin(); it != m_Orient.end(); ++it)
-	{
-		if (strcmp(it->szname, szname) == 0) return &(*it);
-	}
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-AbaqusModel::Distribution* AbaqusModel::FindDistribution(const char* szname)
-{
-	if (szname == 0) return 0;
-	list<Distribution>::iterator it;
-	for (it = m_Distr.begin(); it != m_Distr.end(); ++it)
-	{
-		if (strcmp(it->m_szname, szname) == 0) return &(*it);
-	}
-	return 0;
-}
-
 //=============================================================================
 
 //-----------------------------------------------------------------------------
@@ -413,6 +380,40 @@ bool AbaqusModel::PART::BuildNLT()
 
 	return true;
 }
+
+//-----------------------------------------------------------------------------
+void AbaqusModel::PART::AddOrientation(const char* szname, const char* szdist)
+{
+	Orientation o;
+	strcpy(o.szname, szname);
+	strcpy(o.szdist, szdist);
+	m_Orient.push_back(o);
+}
+
+//-----------------------------------------------------------------------------
+AbaqusModel::Orientation* AbaqusModel::PART::FindOrientation(const char* szname)
+{
+	if (szname == 0) return 0;
+	list<Orientation>::iterator it;
+	for (it = m_Orient.begin(); it != m_Orient.end(); ++it)
+	{
+		if (strcmp(it->szname, szname) == 0) return &(*it);
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+AbaqusModel::Distribution* AbaqusModel::PART::FindDistribution(const char* szname)
+{
+	if (szname == 0) return 0;
+	list<Distribution>::iterator it;
+	for (it = m_Distr.begin(); it != m_Distr.end(); ++it)
+	{
+		if (strcmp(it->m_szname, szname) == 0) return &(*it);
+	}
+	return 0;
+}
+
 
 //=============================================================================
 AbaqusModel::INSTANCE::INSTANCE()

@@ -88,6 +88,30 @@ public:
 		PART*	part;
 	};
 
+	struct Orientation
+	{
+		char	szname[Max_Name + 1];
+		char	szdist[Max_Name + 1];
+	};
+
+	class Distribution
+	{
+	public:
+		struct ENTRY
+		{
+			int		elem;
+			double	val[6];
+		};
+
+		Distribution() {}
+		Distribution(const Distribution& d) { strcpy(m_szname, d.m_szname); m_data = d.m_data; }
+		void operator = (const Distribution& d) { strcpy(m_szname, d.m_szname); m_data = d.m_data; }
+
+	public:
+		char			m_szname[Max_Name + 1];
+		vector<ENTRY>	m_data;
+	};
+
 	// part
 	class PART
 	{
@@ -150,6 +174,12 @@ public:
 		// build the node-look-up table
 		bool BuildNLT();
 
+		void AddOrientation(const char* szname, const char* szdist);
+
+		Orientation* FindOrientation(const char* szname);
+
+		Distribution* FindDistribution(const char* szname);
+
 	public:
 		char m_szname[256];
 		vector<NODE>			m_Node;		// list of nodes
@@ -159,6 +189,8 @@ public:
 		list<ELEMENT_SET>		m_ElSet;	// element sets
 		list<SURFACE>			m_Surf;		// surfaces
 		list<SOLID_SECTION>		m_Solid;	// solid section
+		list<Orientation>		m_Orient;
+		list<Distribution>		m_Distr;
 
 		vector<Tnode_itr>	m_NLT;	// Node look-up table
 		int					m_ioff;	// node id offset (min node id)
@@ -276,30 +308,6 @@ public:
 		double	time;
 	};
 
-	struct Orientation
-	{
-		char	szname[Max_Name + 1];
-		char	szdist[Max_Name + 1];
-	};
-
-	class Distribution
-	{
-	public:
-		struct ENTRY
-		{
-			int		elem;
-			double	val[6];
-		};
-
-		Distribution(){}
-		Distribution(const Distribution& d) { strcpy(m_szname, d.m_szname); m_data = d.m_data; }
-		void operator = (const Distribution& d) { strcpy(m_szname, d.m_szname); m_data = d.m_data; }
-
-	public:
-		char			m_szname[Max_Name + 1];
-		vector<ENTRY>	m_data;
-	};
-
 public:
 	// constructor
 	AbaqusModel();
@@ -378,12 +386,6 @@ public:
 
 	list<STEP>& StepList() { return m_Step; }
 
-	void AddOrientation(const char* szname, const char* szdist);
-
-	Orientation* FindOrientation(const char* szname);
-
-	Distribution* FindDistribution(const char* szname);
-
 private:
 	FEModel*	m_fem;		// the model
 
@@ -399,8 +401,4 @@ private:	// physics
 	list<BOUNDARY>		m_Boundary;		// boundary conditions
 	list<STEP>			m_Step;			// steps
 	STEP*				m_pStep;		// current step
-
-public:
-	list<Orientation>	m_Orient;
-	list<Distribution>	m_Distr;
 };
