@@ -1824,6 +1824,8 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 
 	if (warnings.empty() == false)
 	{
+		GetDocument()->SetActiveJob(nullptr);
+
 		CDlgCheck dlg(this);
 		dlg.SetWarnings(warnings);
 		if (dlg.exec() == 0)
@@ -1842,6 +1844,8 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 			AddLogEntry("FAILED\n");
+
+			GetDocument()->SetActiveJob(nullptr);
 			return;
 		}
 		else AddLogEntry("SUCCESS!\n");
@@ -1853,6 +1857,8 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 			AddLogEntry("FAILED\n");
+
+			GetDocument()->SetActiveJob(nullptr);
 			return;
 		}
 		else AddLogEntry("SUCCESS!\n");
@@ -1862,6 +1868,8 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNo
 		assert(false);
 		QMessageBox::critical(this, "Run FEBio", "Don't know what file version to save.");
 		AddLogEntry("FAILED\n");
+
+		GetDocument()->SetActiveJob(nullptr);
 		return;
 	}
 

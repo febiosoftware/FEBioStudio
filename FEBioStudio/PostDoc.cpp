@@ -271,7 +271,7 @@ CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FEMesh*)nullptr)
 	BuildMesh();
 
 	// Set the FE mesh and update
-	SetFEMesh(GetFEMesh());
+//	SetFEMesh(GetFEMesh());
 	Update(true);
 }
 

@@ -37,6 +37,7 @@ public:
 
 	int nextFunction;
 	int targetFunc;
+	std::string newDir;
 
 	bool isBusy;
 };
@@ -89,9 +90,14 @@ void CSSHHandler::StartRemoteJob()
 	std::string remoteFile = m_data->remoteFileBase + ".feb";
 
 	// Send .feb file
-	if(SendFile(localFile, remoteFile) != SSH_OK)
+	int error = SendFile(localFile, remoteFile);
+	if(error == SSH_ERROR)
 	{
 		m_data->msg = QString(".feb file error: %1").arg(m_data->msg);
+		return;
+	}
+	else if(error == YESNODIALOG)
+	{
 		return;
 	}
 
@@ -453,6 +459,20 @@ bool CSSHHandler::authenticatePassword()
 	return true;
 }
 
+void CSSHHandler::CreateRemoteDir()
+{
+	if(sftp_mkdir(m_data->sftp, m_data->newDir.c_str(), S_IRWXU) != SSH_OK)
+	{
+		m_data->msg = QString("Cannot create remote directory:\n\n%1\n\nSFTP Error: %2")
+				.arg(m_data->newDir.c_str()).arg(GetSFTPErrorText(sftp_get_error(m_data->sftp)).c_str());
+		m_data->code = FAILED;
+		return;
+	}
+
+	m_data->code = OK;
+	m_data->nextFunction = TARGET;
+}
+
 int CSSHHandler::StartSFTPSession()
 {
 	int rc;
@@ -483,9 +503,44 @@ int CSSHHandler::EndSFTPSession()
 	return SSH_OK;
 }
 
+int CSSHHandler::CheckRemoteDir()
+{
+	QString remoteDir = QString(m_data->job->GetLaunchConfig()->remoteDir.c_str());
+	QStringList dirList = remoteDir.split("/");
+
+	QString currentDir = "/";
+
+	for(QString dir : dirList)
+	{
+		if(dir.isEmpty()) continue;
+
+		currentDir += dir + "/";
+		m_data->newDir = currentDir.toStdString();
+
+		sftp_dir sftpDir = sftp_opendir(m_data->sftp, currentDir.toStdString().c_str());
+		if(sftpDir == NULL)
+		{
+			if(sftp_get_error(m_data->sftp) == SSH_FX_NO_SUCH_FILE)
+			{
+				m_data->msg = QString("The directory:\n\n%1\n\n does not exist on the remote server.\n "
+						"Would you like to create it?").arg(currentDir);
+				m_data->code = YESNODIALOG;
+				m_data->nextFunction = CREATEREMOTEDIR;
+				return YESNODIALOG;
+			}
+
+			m_data->msg = QString("Unknown error: remote directory cannot be read.");
+			m_data->code = FAILED;
+			return SSH_ERROR;
+		}
+	}
+
+	return SSH_OK;
+}
+
 int CSSHHandler::SendFile(std::string local, std::string remote)
 {
-	int rc, nwritten, transferred = 0;
+	int rc, nwritten, transferred = 0, size;
 	int access_type = O_WRONLY | O_CREAT | O_TRUNC;
 	sftp_file file;
 	char buffer[MAX_XFER_BUF_SIZE];
@@ -498,6 +553,10 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 		return SSH_ERROR;
 	}
 
+	// Check to see if remote directory exists.
+	rc = CheckRemoteDir();
+	if(rc != SSH_OK) return rc;
+
 	file = sftp_open(m_data->sftp, remote.c_str(),
 			access_type, S_IRWXU);
 	if (file == NULL)
@@ -508,6 +567,8 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 	}
 
 	ifstream fin(local.c_str(), ios::binary);
+
+	size = fin.tellg();
 
 	while(fin)
 	{
@@ -525,7 +586,7 @@ int CSSHHandler::SendFile(std::string local, std::string remote)
 			}
 
 			transferred += nwritten;
-			emit UpdateProgress(transferred*100/fin.tellg());
+			if(size > 0) emit UpdateProgress(transferred/(size/100));
 		}
 	}
 
@@ -669,7 +730,7 @@ int CSSHHandler::GetFile(std::string local, std::string remote)
 		}
 
 		transferred += nwritten;
-		emit UpdateProgress(transferred*100/attributes->size);
+		emit UpdateProgress(transferred/(attributes->size/100));
 	}
 
 	rc = sftp_close(file);
@@ -913,6 +974,59 @@ int CSSHHandler::CreateBashFile()
 bool CSSHHandler::IsBusy()
 {
 	return m_data->isBusy;
+}
+
+std::string CSSHHandler::GetSFTPErrorText(int sftpErr)
+{
+	std::string returnVal;
+
+	switch(sftpErr)
+	{
+	case SSH_FX_OK:
+		returnVal = "SSH_FX_OK";
+		break;
+	case SSH_FX_EOF:
+		returnVal = "SSH_FX_EOF";
+		break;
+	case SSH_FX_NO_SUCH_FILE:
+		returnVal = "SSH_FX_NO_SUCH_FILE";
+		break;
+	case SSH_FX_PERMISSION_DENIED:
+		returnVal = "SSH_FX_PERMISSION_DENIED";
+		break;
+	case SSH_FX_FAILURE:
+		returnVal = "SSH_FX_FAILURE";
+		break;
+	case SSH_FX_BAD_MESSAGE:
+		returnVal = "SSH_FX_BAD_MESSAGE";
+		break;
+	case SSH_FX_NO_CONNECTION:
+		returnVal = "SSH_FX_NO_CONNECTION";
+		break;
+	case SSH_FX_CONNECTION_LOST:
+		returnVal = "SSH_FX_CONNECTION_LOST";
+		break;
+	case SSH_FX_OP_UNSUPPORTED:
+		returnVal = "SSH_FX_OP_UNSUPPORTED";
+		break;
+	case SSH_FX_INVALID_HANDLE:
+		returnVal = "SSH_FX_INVALID_HANDLE";
+		break;
+	case SSH_FX_NO_SUCH_PATH:
+		returnVal = "SSH_FX_NO_SUCH_PATH";
+		break;
+	case SSH_FX_FILE_ALREADY_EXISTS:
+		returnVal = "SSH_FX_FILE_ALREADY_EXISTS";
+		break;
+	case SSH_FX_WRITE_PROTECT:
+		returnVal = "SSH_FX_WRITE_PROTECT";
+		break;
+	case SSH_FX_NO_MEDIA:
+		returnVal = "SSH_FX_NO_MEDIA";
+		break;
+	}
+
+	return returnVal;
 }
 
 

@@ -16,6 +16,7 @@
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
+#include <QFileInfo>
 #include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"
@@ -249,8 +250,8 @@ public:
 			}
 
 			m_wnd->UpdatePostPanel();
-			m_wnd->UpdatePostToolbar();
 			m_wnd->SetActivePostDoc(m_job->GetPostDoc());
+			m_wnd->UpdatePostToolbar();
 
 			SetModified(true);
 		}

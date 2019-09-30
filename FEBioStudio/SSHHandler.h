@@ -8,7 +8,8 @@
 
 class QSemaphore;
 
-enum nextFunc{ENDSSHSESSION = -1, STARTSSHSESSION, VERIFYSERVER, ADDTRUSETEDSERVER, AUTHENTICATE, TARGET, STARTREMOTEJOB, GETJOBFILES, GETQUEUESTATUS};
+enum nextFunc{ENDSSHSESSION = -1, STARTSSHSESSION, VERIFYSERVER, ADDTRUSETEDSERVER, AUTHENTICATE, TARGET,
+		STARTREMOTEJOB, GETJOBFILES, GETQUEUESTATUS, CREATEREMOTEDIR};
 
 enum msgCode{FAILED=-1, OK, NEEDSPSWD, YESNODIALOG, DONE};
 
@@ -27,6 +28,7 @@ public:
 	void VerifyKnownHost();
 	void AddTrustedServer();
 	void Authenticate();
+	void CreateRemoteDir();
 	void EndSSHSession();
 
 	void StartRemoteJob();
@@ -67,9 +69,12 @@ private:
 
 	int StartSFTPSession();
 	int EndSFTPSession();
+	int CheckRemoteDir();
 	int SendFile(std::string local, std::string remote);
 	int SendFile(const char * buf, int bufSize, std::string remote);
 	int GetFile(std::string local, std::string remote);
+
+	std::string GetSFTPErrorText(int sftpErr);
 
 	int CreateBashFile();
 

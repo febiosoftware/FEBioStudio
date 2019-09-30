@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -DLINUX -DHAS_NETGEN -DHAS_OCC -DTETLIBRARY -DHAS_QUAZIP -DHAS_SSH -DQT_OPENGL_LIB -DQT_CHARTS_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -w -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O0 -g -std=gnu++11 -w -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I. -I.. -isystem /usr/local/include -I../../../Resources/libssh/include -isystem /usr/include/libdrm -I../../../Resources/Qt/5.12.0/gcc_64/include -I../../../Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I../../../Resources/Qt/5.12.0/gcc_64/include/QtCharts -I../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I../../../Resources/Qt/5.12.0/gcc_64/include/QtGui -I../../../Resources/Qt/5.12.0/gcc_64/include/QtCore -I. -I../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++
+INCPATH       = -I. -I.. -isystem /usr/local/include -I../../../Resources/libssh/include -I../../../Resources/openssl-OpenSSL_1_1_1d/include -isystem /usr/include/libdrm -I../../../Resources/Qt/5.12.0/gcc_64/include -I../../../Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I../../../Resources/Qt/5.12.0/gcc_64/include/QtCharts -I../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I../../../Resources/Qt/5.12.0/gcc_64/include/QtGui -I../../../Resources/Qt/5.12.0/gcc_64/include/QtCore -I. -I../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -37,8 +37,8 @@ COMPRESS      = gzip -9f
 DISTNAME      = FEBioStudio1.0.0
 DISTDIR = /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/.tmp/FEBioStudio1.0.0
 LINK          = g++
-LFLAGS        = -Wl,-rpath,'$$ORIGIN/../lib/',-z,origin -Wl,-rpath,/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib
-LIBS          = $(SUBLIBS) -L/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib -L/home/sci/mherron/Resources/tetgen1.5.0/lib -ltet64 -L/opt/netgen/lib -L/home/sci/mherron/Resources/libssh/build/lib -lssh -lcrypto -L/usr/local/lib -L../build/lib -Wl,--start-group -lnglib -lcsg -linterface -lmesh -locc -lTKernel -lTKGeomBase -lTKTopAlgo -lTKPrim -lTKMesh -lTKMath -lTKBRep -lTKSTL -lTKFillet -lTKBO -lTKIGES -lTKSTEP -lTKSTEPBase -lTKXSBase -lTKG3d -lTKLCAF -lTKVCAF -lquazip5 -labaqus -lansys -lgeomlib -lmathlib -lxml -lmeshio -lfebio -lcomsol -llsdyna -lmeshtools -lfemlib -lmeshlib -lnike3d -limagelib -lfscore -lgllib -lglwlib -lpostgl -lxpltlib -lpostlib -Wl,--end-group -L/usr/lib64 -lGLU -lz -lGL -lQt5OpenGL -lQt5Charts -lQt5Widgets -lQt5Gui -lQt5Core -lpthread   
+LFLAGS        = -static-libstdc++ -static-libgcc -Wl,-rpath,'$$ORIGIN/../lib/',-z,origin -Wl,-rpath,/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib
+LIBS          = $(SUBLIBS) -L/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib -L/home/sci/mherron/Resources/tetgen1.5.0/lib -ltet64 -L/opt/netgen/lib -L/home/sci/mherron/Resources/libssh/build2/lib -lssh -L/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d -lcrypto -L/usr/local/lib -L../build/lib -Wl,--start-group -lnglib -lcsg -linterface -lmesh -locc -lTKernel -lTKGeomBase -lTKTopAlgo -lTKPrim -lTKMesh -lTKMath -lTKBRep -lTKSTL -lTKFillet -lTKBO -lTKIGES -lTKSTEP -lTKSTEPBase -lTKXSBase -lTKG3d -lTKLCAF -lTKVCAF -lquazip5 -labaqus -lansys -lgeomlib -lmathlib -lxml -lmeshio -lfebio -lcomsol -llsdyna -lmeshtools -lfemlib -lmeshlib -lnike3d -limagelib -lfscore -lgllib -lglwlib -lpostgl -lxpltlib -lpostlib -Wl,--end-group -L/usr/lib64 -lGLU -lz -lGL -lQt5OpenGL -lQt5Charts -lQt5Widgets -lQt5Gui -lQt5Core -lpthread   
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -122,7 +122,6 @@ SOURCES       = BuildPanel.cpp \
 		GLCursor.cpp \
 		GLHighLighter.cpp \
 		GLView.cpp \
-		GLViewRender.cpp \
 		GLViewTransform.cpp \
 		GManipulator.cpp \
 		GraphWindow.cpp \
@@ -316,7 +315,6 @@ OBJECTS       = BuildPanel.o \
 		GLCursor.o \
 		GLHighLighter.o \
 		GLView.o \
-		GLViewRender.o \
 		GLViewTransform.o \
 		GManipulator.o \
 		GraphWindow.o \
@@ -611,6 +609,7 @@ DIST          = ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_pre.pr
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/qt_config.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/qmake.conf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/exclusive_builds.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/toolchain.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/default_pre.prf \
@@ -704,7 +703,6 @@ DIST          = ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_pre.pr
 		GLCursor.h \
 		GLHighlighter.h \
 		GLView.h \
-		GLViewRender.h \
 		GLViewTransform.h \
 		GManipulator.h \
 		GraphWindow.h \
@@ -840,7 +838,6 @@ DIST          = ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_pre.pr
 		GLCursor.cpp \
 		GLHighLighter.cpp \
 		GLView.cpp \
-		GLViewRender.cpp \
 		GLViewTransform.cpp \
 		GManipulator.cpp \
 		GraphWindow.cpp \
@@ -1080,6 +1077,7 @@ Makefile: FEBioStudio.pro ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/qt_config.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/qmake.conf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/exclusive_builds.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/toolchain.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/default_pre.prf \
@@ -1278,6 +1276,7 @@ Makefile: FEBioStudio.pro ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/qt_config.prf:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/qmake.conf:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_post.prf:
+.qmake.stash:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/exclusive_builds.prf:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/toolchain.prf:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/default_pre.prf:
@@ -1319,8 +1318,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../febiostudio.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents BuildPanel.h CColorButton.h CIntInput.h ClassDescriptor.h Command.h CommandManager.h CommandPanel.h ConchoidFitTool.h CreateP2PlinePane.h CreatePanel.h CreateSpringPane.h CurveEditor.h CurveIntersectProps.h CurvePicker.h DataFieldSelector.h DlgAddBC.h DlgAddBodyLoad.h DlgAddChemicalReaction.h DlgAddContact.h DlgAddEquation.h DlgAddIC.h DlgAddMeshData.h DlgAddNodalLoad.h DlgAddRigidConnector.h DlgAddRigidConstraint.h DlgAddStep.h DlgAddSurfaceLoad.h DlgBatchConvert.h DlgCheck.h DlgCloneGrid.h DlgCloneObject.h DlgCloneRevolve.h DlgDetachSelection.h DlgEditOutput.h DlgEditPath.h DlgEditProject.h DlgExportFEBio.h DlgFEBioOptimize.h DlgFormula.h DlgImportAbaqus.h DlgImportCOMSOL.h DlgImportSTL.h DlgLameConvertor.h DlgLSDYNAExport.h DlgMergeObjects.h DlgModelInfo.h DlgNew.h DlgPurge.h DlgRAWImport.h DlgRun.h DlgSettings.h DlgSoluteTable.h DlgTimeSettings.h DlgTransform.h DlgVTKExport.h DlgWidgetProps.h DocTemplate.h Document.h DragBox.h EditPanel.h Encrypter.h FEBioJob.h FEBioOpt.h FEBioStudio.h FEObjectProps.h FiberGeneratorTool.h FileThread.h FileViewer.h FoamGeneratorTool.h GGrid.h GLCanvas.h GLControlBar.h GLCursor.h GLHighlighter.h GLView.h GLViewRender.h GLViewTransform.h GManipulator.h GraphWindow.h GTriad.h InfoPanel.h IntegrateWindow.h LaunchConfig.h Logger.h LogPanel.h MainTabBar.h MainWindow.h MaterialEditor.h MaterialMapTool.h MaterialPanel.h MeshButtonBox.h MeshInfoPanel.h MeshInspector.h MeshPanel.h MeshSelectionBox.h modelcheck.h ModelPropsPanel.h ModelSearch.h ModelTree.h ModelViewer.h ObjectPanel.h ObjectProps.h PlaneCutTool.h PlotWidget.h PostDataPanel.h PostDoc.h PostPanel.h PropertyList.h PropertyListForm.h PropertyListView.h ReadCurveTool.h ResourceEdit.h ScalarFieldTool.h SelectionBox.h Sketcher.h SphereFitTool.h SSHHandler.h SSHThread.h StatePanel.h StatsWindow.h stdafx.h SummaryWindow.h targetver.h Tool.h ToolBox.h ToolsPanel.h ui_buildpanel.h ui_createpanel.h ui_curveeditor.h ui_editpanel.h ui_logpanel.h ui_mainwindow.h ui_materialeditor.h ui_meshinspector.h ui_meshpanel.h ui_modelviewer.h ui_toolspanel.h version.h ViewSettings.h ZipFiles.h $(DISTDIR)/
-	$(COPY_FILE) --parents BuildPanel.cpp CColorButton.cpp ClassDescriptor.cpp Command.cpp CommandManager.cpp CommandPanel.cpp ConchoidFitTool.cpp CreateP2PLinePane.cpp CreatePanel.cpp CreateSpringPane.cpp CurveEditor.cpp CurvePicker.cpp DataFieldSelector.cpp DlgAddBC.cpp DlgAddBodyLoad.cpp DlgAddChemicalReaction.cpp DlgAddContact.cpp DlgAddEquation.cpp DlgAddIC.cpp DlgAddMeshData.cpp DlgAddNodalLoad.cpp DlgAddRigidConnector.cpp DlgAddRigidConstraint.cpp DlgAddStep.cpp DlgAddSurfaceLoad.cpp DlgBatchConvert.cpp DlgCheck.cpp DlgCloneGrid.cpp DlgCloneObject.cpp DlgCloneRevolve.cpp DlgDetachSelection.cpp DlgEditOutput.cpp DlgEditPath.cpp DlgEditProject.cpp DlgExportFEBio.cpp DlgFEBioOptimize.cpp DlgFormula.cpp DlgImportAbaqus.cpp DlgImportCOMSOL.cpp DlgImportSTL.cpp DlgLameConvertor.cpp DlgLSDYNAExport.cpp DlgMergeObjects.cpp DlgModelInfo.cpp DlgNew.cpp DlgPurge.cpp DlgRAWImport.cpp DlgRun.cpp DlgSettings.cpp DlgSoluteTable.cpp DlgTimeSettings.cpp DlgTransform.cpp DlgVTKExport.cpp DlgWidgetProps.cpp DocTemplate.cpp Document.cpp DragBox.cpp EditPanel.cpp Encrypter.cpp FEBioJob.cpp FEBioStudio.cpp FEObjectProps.cpp FiberGeneratorTool.cpp FileThread.cpp FileViewer.cpp FoamGeneratorTool.cpp GGrid.cpp GLCanvas.cpp GLControlBar.cpp GLCursor.cpp GLHighLighter.cpp GLView.cpp GLViewRender.cpp GLViewTransform.cpp GManipulator.cpp GraphWindow.cpp GTriad.cpp InfoPanel.cpp IntegrateWindow.cpp LaunchConfig.cpp Logger.cpp LogPanel.cpp MainTabBar.cpp MainWindow.cpp MaterialEditor.cpp MaterialMapTool.cpp MaterialPanel.cpp menu.cpp menuPhysics.cpp menuPost.cpp menuRecord.cpp menuTools.cpp MeshButtonBox.cpp MeshInfoPanel.cpp MeshInspector.cpp MeshPanel.cpp MeshSelectionBox.cpp modelcheck.cpp ModelPropsPanel.cpp ModelSearch.cpp ModelTree.cpp ModelViewer.cpp ObjectPanel.cpp ObjectProps.cpp PlaneCutTool.cpp PlotWidget.cpp PostDataPanel.cpp PostDoc.cpp PostPanel.cpp PropertyList.cpp PropertyListForm.cpp PropertyListView.cpp ReadCurveTool.cpp ResourceEdit.cpp ScalarFieldTool.cpp SelectionBox.cpp Sketcher.cpp SphereFitTool.cpp SSHHandler.cpp SSHThread.cpp StatePanel.cpp StatsWindow.cpp stdafx.cpp SummaryWindow.cpp template.cpp Tool.cpp ToolBox.cpp ToolsPanel.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents BuildPanel.h CColorButton.h CIntInput.h ClassDescriptor.h Command.h CommandManager.h CommandPanel.h ConchoidFitTool.h CreateP2PlinePane.h CreatePanel.h CreateSpringPane.h CurveEditor.h CurveIntersectProps.h CurvePicker.h DataFieldSelector.h DlgAddBC.h DlgAddBodyLoad.h DlgAddChemicalReaction.h DlgAddContact.h DlgAddEquation.h DlgAddIC.h DlgAddMeshData.h DlgAddNodalLoad.h DlgAddRigidConnector.h DlgAddRigidConstraint.h DlgAddStep.h DlgAddSurfaceLoad.h DlgBatchConvert.h DlgCheck.h DlgCloneGrid.h DlgCloneObject.h DlgCloneRevolve.h DlgDetachSelection.h DlgEditOutput.h DlgEditPath.h DlgEditProject.h DlgExportFEBio.h DlgFEBioOptimize.h DlgFormula.h DlgImportAbaqus.h DlgImportCOMSOL.h DlgImportSTL.h DlgLameConvertor.h DlgLSDYNAExport.h DlgMergeObjects.h DlgModelInfo.h DlgNew.h DlgPurge.h DlgRAWImport.h DlgRun.h DlgSettings.h DlgSoluteTable.h DlgTimeSettings.h DlgTransform.h DlgVTKExport.h DlgWidgetProps.h DocTemplate.h Document.h DragBox.h EditPanel.h Encrypter.h FEBioJob.h FEBioOpt.h FEBioStudio.h FEObjectProps.h FiberGeneratorTool.h FileThread.h FileViewer.h FoamGeneratorTool.h GGrid.h GLCanvas.h GLControlBar.h GLCursor.h GLHighlighter.h GLView.h GLViewTransform.h GManipulator.h GraphWindow.h GTriad.h InfoPanel.h IntegrateWindow.h LaunchConfig.h Logger.h LogPanel.h MainTabBar.h MainWindow.h MaterialEditor.h MaterialMapTool.h MaterialPanel.h MeshButtonBox.h MeshInfoPanel.h MeshInspector.h MeshPanel.h MeshSelectionBox.h modelcheck.h ModelPropsPanel.h ModelSearch.h ModelTree.h ModelViewer.h ObjectPanel.h ObjectProps.h PlaneCutTool.h PlotWidget.h PostDataPanel.h PostDoc.h PostPanel.h PropertyList.h PropertyListForm.h PropertyListView.h ReadCurveTool.h ResourceEdit.h ScalarFieldTool.h SelectionBox.h Sketcher.h SphereFitTool.h SSHHandler.h SSHThread.h StatePanel.h StatsWindow.h stdafx.h SummaryWindow.h targetver.h Tool.h ToolBox.h ToolsPanel.h ui_buildpanel.h ui_createpanel.h ui_curveeditor.h ui_editpanel.h ui_logpanel.h ui_mainwindow.h ui_materialeditor.h ui_meshinspector.h ui_meshpanel.h ui_modelviewer.h ui_toolspanel.h version.h ViewSettings.h ZipFiles.h $(DISTDIR)/
+	$(COPY_FILE) --parents BuildPanel.cpp CColorButton.cpp ClassDescriptor.cpp Command.cpp CommandManager.cpp CommandPanel.cpp ConchoidFitTool.cpp CreateP2PLinePane.cpp CreatePanel.cpp CreateSpringPane.cpp CurveEditor.cpp CurvePicker.cpp DataFieldSelector.cpp DlgAddBC.cpp DlgAddBodyLoad.cpp DlgAddChemicalReaction.cpp DlgAddContact.cpp DlgAddEquation.cpp DlgAddIC.cpp DlgAddMeshData.cpp DlgAddNodalLoad.cpp DlgAddRigidConnector.cpp DlgAddRigidConstraint.cpp DlgAddStep.cpp DlgAddSurfaceLoad.cpp DlgBatchConvert.cpp DlgCheck.cpp DlgCloneGrid.cpp DlgCloneObject.cpp DlgCloneRevolve.cpp DlgDetachSelection.cpp DlgEditOutput.cpp DlgEditPath.cpp DlgEditProject.cpp DlgExportFEBio.cpp DlgFEBioOptimize.cpp DlgFormula.cpp DlgImportAbaqus.cpp DlgImportCOMSOL.cpp DlgImportSTL.cpp DlgLameConvertor.cpp DlgLSDYNAExport.cpp DlgMergeObjects.cpp DlgModelInfo.cpp DlgNew.cpp DlgPurge.cpp DlgRAWImport.cpp DlgRun.cpp DlgSettings.cpp DlgSoluteTable.cpp DlgTimeSettings.cpp DlgTransform.cpp DlgVTKExport.cpp DlgWidgetProps.cpp DocTemplate.cpp Document.cpp DragBox.cpp EditPanel.cpp Encrypter.cpp FEBioJob.cpp FEBioStudio.cpp FEObjectProps.cpp FiberGeneratorTool.cpp FileThread.cpp FileViewer.cpp FoamGeneratorTool.cpp GGrid.cpp GLCanvas.cpp GLControlBar.cpp GLCursor.cpp GLHighLighter.cpp GLView.cpp GLViewTransform.cpp GManipulator.cpp GraphWindow.cpp GTriad.cpp InfoPanel.cpp IntegrateWindow.cpp LaunchConfig.cpp Logger.cpp LogPanel.cpp MainTabBar.cpp MainWindow.cpp MaterialEditor.cpp MaterialMapTool.cpp MaterialPanel.cpp menu.cpp menuPhysics.cpp menuPost.cpp menuRecord.cpp menuTools.cpp MeshButtonBox.cpp MeshInfoPanel.cpp MeshInspector.cpp MeshPanel.cpp MeshSelectionBox.cpp modelcheck.cpp ModelPropsPanel.cpp ModelSearch.cpp ModelTree.cpp ModelViewer.cpp ObjectPanel.cpp ObjectProps.cpp PlaneCutTool.cpp PlotWidget.cpp PostDataPanel.cpp PostDoc.cpp PostPanel.cpp PropertyList.cpp PropertyListForm.cpp PropertyListView.cpp ReadCurveTool.cpp ResourceEdit.cpp ScalarFieldTool.cpp SelectionBox.cpp Sketcher.cpp SphereFitTool.cpp SSHHandler.cpp SSHThread.cpp StatePanel.cpp StatsWindow.cpp stdafx.cpp SummaryWindow.cpp template.cpp Tool.cpp ToolBox.cpp ToolsPanel.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -1591,7 +1590,7 @@ moc_BuildPanel.cpp: CommandPanel.h \
 		BuildPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include BuildPanel.h -o moc_BuildPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include BuildPanel.h -o moc_BuildPanel.cpp
 
 moc_CColorButton.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -1706,7 +1705,7 @@ moc_CColorButton.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWid
 		CColorButton.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CColorButton.h -o moc_CColorButton.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CColorButton.h -o moc_CColorButton.cpp
 
 moc_CreateP2PlinePane.cpp: CreatePanel.h \
 		CommandPanel.h \
@@ -1819,7 +1818,7 @@ moc_CreateP2PlinePane.cpp: CreatePanel.h \
 		CreateP2PlinePane.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CreateP2PlinePane.h -o moc_CreateP2PlinePane.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CreateP2PlinePane.h -o moc_CreateP2PlinePane.cpp
 
 moc_CreatePanel.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -1931,7 +1930,7 @@ moc_CreatePanel.cpp: CommandPanel.h \
 		CreatePanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CreatePanel.h -o moc_CreatePanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CreatePanel.h -o moc_CreatePanel.cpp
 
 moc_CreateSpringPane.cpp: CreatePanel.h \
 		CommandPanel.h \
@@ -2044,7 +2043,7 @@ moc_CreateSpringPane.cpp: CreatePanel.h \
 		CreateSpringPane.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CreateSpringPane.h -o moc_CreateSpringPane.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CreateSpringPane.h -o moc_CreateSpringPane.cpp
 
 moc_CurveEditor.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainWindow \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -2227,7 +2226,7 @@ moc_CurveEditor.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMain
 		CurveEditor.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CurveEditor.h -o moc_CurveEditor.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CurveEditor.h -o moc_CurveEditor.cpp
 
 moc_CurvePicker.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -2335,7 +2334,7 @@ moc_CurvePicker.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidg
 		CurvePicker.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CurvePicker.h -o moc_CurvePicker.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include CurvePicker.h -o moc_CurvePicker.cpp
 
 moc_DataFieldSelector.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QPushButton \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qpushbutton.h \
@@ -2498,7 +2497,7 @@ moc_DataFieldSelector.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets
 		DataFieldSelector.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DataFieldSelector.h -o moc_DataFieldSelector.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DataFieldSelector.h -o moc_DataFieldSelector.cpp
 
 moc_DlgAddChemicalReaction.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -2607,7 +2606,7 @@ moc_DlgAddChemicalReaction.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWi
 		DlgAddChemicalReaction.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgAddChemicalReaction.h -o moc_DlgAddChemicalReaction.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgAddChemicalReaction.h -o moc_DlgAddChemicalReaction.cpp
 
 moc_DlgAddEquation.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -2716,7 +2715,7 @@ moc_DlgAddEquation.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QD
 		DlgAddEquation.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgAddEquation.h -o moc_DlgAddEquation.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgAddEquation.h -o moc_DlgAddEquation.cpp
 
 moc_DlgAddMeshData.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -2836,7 +2835,7 @@ moc_DlgAddMeshData.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QD
 		DlgAddMeshData.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgAddMeshData.h -o moc_DlgAddMeshData.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgAddMeshData.h -o moc_DlgAddMeshData.cpp
 
 moc_DlgCloneGrid.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -2945,7 +2944,7 @@ moc_DlgCloneGrid.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDia
 		DlgCloneGrid.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgCloneGrid.h -o moc_DlgCloneGrid.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgCloneGrid.h -o moc_DlgCloneGrid.cpp
 
 moc_DlgCloneObject.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -3054,7 +3053,7 @@ moc_DlgCloneObject.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QD
 		DlgCloneObject.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgCloneObject.h -o moc_DlgCloneObject.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgCloneObject.h -o moc_DlgCloneObject.cpp
 
 moc_DlgCloneRevolve.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -3164,7 +3163,7 @@ moc_DlgCloneRevolve.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/Q
 		DlgCloneRevolve.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgCloneRevolve.h -o moc_DlgCloneRevolve.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgCloneRevolve.h -o moc_DlgCloneRevolve.cpp
 
 moc_DlgEditOutput.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -3273,7 +3272,7 @@ moc_DlgEditOutput.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDi
 		DlgEditOutput.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgEditOutput.h -o moc_DlgEditOutput.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgEditOutput.h -o moc_DlgEditOutput.cpp
 
 moc_DlgEditPath.cpp: stdafx.h \
 		targetver.h \
@@ -3397,7 +3396,7 @@ moc_DlgEditPath.cpp: stdafx.h \
 		DlgEditPath.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgEditPath.h -o moc_DlgEditPath.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgEditPath.h -o moc_DlgEditPath.cpp
 
 moc_DlgEditProject.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -3506,7 +3505,7 @@ moc_DlgEditProject.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QD
 		DlgEditProject.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgEditProject.h -o moc_DlgEditProject.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgEditProject.h -o moc_DlgEditProject.cpp
 
 moc_DlgExportFEBio.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -3615,7 +3614,7 @@ moc_DlgExportFEBio.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QD
 		DlgExportFEBio.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgExportFEBio.h -o moc_DlgExportFEBio.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgExportFEBio.h -o moc_DlgExportFEBio.cpp
 
 moc_DlgFEBioOptimize.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWizard \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwizard.h \
@@ -3726,7 +3725,7 @@ moc_DlgFEBioOptimize.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/
 		DlgFEBioOptimize.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgFEBioOptimize.h -o moc_DlgFEBioOptimize.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgFEBioOptimize.h -o moc_DlgFEBioOptimize.cpp
 
 moc_DlgFormula.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -3845,7 +3844,7 @@ moc_DlgFormula.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialo
 		DlgFormula.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgFormula.h -o moc_DlgFormula.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgFormula.h -o moc_DlgFormula.cpp
 
 moc_DlgLameConvertor.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -3954,7 +3953,7 @@ moc_DlgLameConvertor.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/
 		DlgLameConvertor.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgLameConvertor.h -o moc_DlgLameConvertor.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgLameConvertor.h -o moc_DlgLameConvertor.cpp
 
 moc_DlgModelInfo.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -4063,7 +4062,7 @@ moc_DlgModelInfo.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDia
 		DlgModelInfo.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgModelInfo.h -o moc_DlgModelInfo.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgModelInfo.h -o moc_DlgModelInfo.cpp
 
 moc_DlgNew.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -4172,7 +4171,7 @@ moc_DlgNew.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		DlgNew.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgNew.h -o moc_DlgNew.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgNew.h -o moc_DlgNew.cpp
 
 moc_DlgRun.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -4294,7 +4293,7 @@ moc_DlgRun.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		DlgRun.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgRun.h -o moc_DlgRun.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgRun.h -o moc_DlgRun.cpp
 
 moc_DlgSettings.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -4432,7 +4431,7 @@ moc_DlgSettings.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDial
 		DlgSettings.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgSettings.h -o moc_DlgSettings.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgSettings.h -o moc_DlgSettings.cpp
 
 moc_DlgSoluteTable.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -4541,7 +4540,7 @@ moc_DlgSoluteTable.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QD
 		DlgSoluteTable.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgSoluteTable.h -o moc_DlgSoluteTable.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgSoluteTable.h -o moc_DlgSoluteTable.cpp
 
 moc_DlgWidgetProps.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -4650,7 +4649,7 @@ moc_DlgWidgetProps.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QD
 		DlgWidgetProps.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgWidgetProps.h -o moc_DlgWidgetProps.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include DlgWidgetProps.h -o moc_DlgWidgetProps.cpp
 
 moc_EditPanel.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -4759,7 +4758,7 @@ moc_EditPanel.cpp: CommandPanel.h \
 		EditPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include EditPanel.h -o moc_EditPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include EditPanel.h -o moc_EditPanel.cpp
 
 moc_FileThread.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QThread \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qthread.h \
@@ -4815,7 +4814,7 @@ moc_FileThread.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QThread \
 		FileThread.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include FileThread.h -o moc_FileThread.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include FileThread.h -o moc_FileThread.cpp
 
 moc_FileViewer.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -4923,7 +4922,7 @@ moc_FileViewer.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidge
 		FileViewer.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include FileViewer.h -o moc_FileViewer.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include FileViewer.h -o moc_FileViewer.cpp
 
 moc_GLControlBar.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -5031,7 +5030,7 @@ moc_GLControlBar.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWid
 		GLControlBar.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include GLControlBar.h -o moc_GLControlBar.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include GLControlBar.h -o moc_GLControlBar.cpp
 
 moc_GLHighlighter.cpp: ../GeomLib/GItem.h \
 		../FSCore/FSObject.h \
@@ -5099,7 +5098,7 @@ moc_GLHighlighter.cpp: ../GeomLib/GItem.h \
 		GLHighlighter.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include GLHighlighter.h -o moc_GLHighlighter.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include GLHighlighter.h -o moc_GLHighlighter.cpp
 
 moc_GLView.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QOpenGLWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qopenglwidget.h \
@@ -5254,7 +5253,7 @@ moc_GLView.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QOpenGLWid
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -5269,7 +5268,7 @@ moc_GLView.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QOpenGLWid
 		GLView.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include GLView.h -o moc_GLView.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include GLView.h -o moc_GLView.cpp
 
 moc_GraphWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainWindow \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -5447,7 +5446,7 @@ moc_GraphWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMain
 		GraphWindow.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include GraphWindow.h -o moc_GraphWindow.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include GraphWindow.h -o moc_GraphWindow.cpp
 
 moc_InfoPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -5555,7 +5554,7 @@ moc_InfoPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget
 		InfoPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include InfoPanel.h -o moc_InfoPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include InfoPanel.h -o moc_InfoPanel.cpp
 
 moc_IntegrateWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainWindow \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -5734,7 +5733,7 @@ moc_IntegrateWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/Q
 		IntegrateWindow.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include IntegrateWindow.h -o moc_IntegrateWindow.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include IntegrateWindow.h -o moc_IntegrateWindow.cpp
 
 moc_Logger.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QObject \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobject.h \
@@ -5790,7 +5789,7 @@ moc_Logger.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QObject \
 		Logger.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include Logger.h -o moc_Logger.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include Logger.h -o moc_Logger.cpp
 
 moc_LogPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -5898,7 +5897,7 @@ moc_LogPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget 
 		LogPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include LogPanel.h -o moc_LogPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include LogPanel.h -o moc_LogPanel.cpp
 
 moc_MainTabBar.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QTabBar \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qtabbar.h \
@@ -6007,7 +6006,7 @@ moc_MainTabBar.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QTabBa
 		MainTabBar.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MainTabBar.h -o moc_MainTabBar.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MainTabBar.h -o moc_MainTabBar.cpp
 
 moc_MainWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainWindow \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -6170,7 +6169,7 @@ moc_MainWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainW
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -6185,7 +6184,7 @@ moc_MainWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainW
 		MainWindow.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MainWindow.h -o moc_MainWindow.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MainWindow.h -o moc_MainWindow.cpp
 
 moc_MaterialEditor.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -6294,7 +6293,7 @@ moc_MaterialEditor.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QD
 		MaterialEditor.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MaterialEditor.h -o moc_MaterialEditor.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MaterialEditor.h -o moc_MaterialEditor.cpp
 
 moc_MaterialPanel.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -6404,7 +6403,7 @@ moc_MaterialPanel.cpp: CommandPanel.h \
 		MaterialPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MaterialPanel.h -o moc_MaterialPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MaterialPanel.h -o moc_MaterialPanel.cpp
 
 moc_MeshButtonBox.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -6513,7 +6512,7 @@ moc_MeshButtonBox.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWi
 		MeshButtonBox.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MeshButtonBox.h -o moc_MeshButtonBox.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MeshButtonBox.h -o moc_MeshButtonBox.cpp
 
 moc_MeshInspector.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainWindow \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -6624,7 +6623,7 @@ moc_MeshInspector.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMa
 		MeshInspector.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MeshInspector.h -o moc_MeshInspector.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MeshInspector.h -o moc_MeshInspector.cpp
 
 moc_MeshPanel.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -6737,7 +6736,7 @@ moc_MeshPanel.cpp: CommandPanel.h \
 		MeshPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MeshPanel.h -o moc_MeshPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MeshPanel.h -o moc_MeshPanel.cpp
 
 moc_MeshSelectionBox.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -6845,7 +6844,7 @@ moc_MeshSelectionBox.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/
 		MeshSelectionBox.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MeshSelectionBox.h -o moc_MeshSelectionBox.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include MeshSelectionBox.h -o moc_MeshSelectionBox.cpp
 
 moc_ModelPropsPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -6953,7 +6952,7 @@ moc_ModelPropsPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/Q
 		ModelPropsPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ModelPropsPanel.h -o moc_ModelPropsPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ModelPropsPanel.h -o moc_ModelPropsPanel.cpp
 
 moc_ModelSearch.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -7061,7 +7060,7 @@ moc_ModelSearch.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidg
 		ModelSearch.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ModelSearch.h -o moc_ModelSearch.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ModelSearch.h -o moc_ModelSearch.cpp
 
 moc_ModelTree.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QTreeWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qtreewidget.h \
@@ -7189,7 +7188,7 @@ moc_ModelTree.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QTreeWi
 		ModelTree.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ModelTree.h -o moc_ModelTree.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ModelTree.h -o moc_ModelTree.cpp
 
 moc_ModelViewer.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -7298,7 +7297,7 @@ moc_ModelViewer.cpp: CommandPanel.h \
 		ModelViewer.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ModelViewer.h -o moc_ModelViewer.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ModelViewer.h -o moc_ModelViewer.cpp
 
 moc_ObjectPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -7406,7 +7405,7 @@ moc_ObjectPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidg
 		ObjectPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ObjectPanel.h -o moc_ObjectPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ObjectPanel.h -o moc_ObjectPanel.cpp
 
 moc_PlotWidget.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -7516,7 +7515,7 @@ moc_PlotWidget.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidge
 		PlotWidget.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PlotWidget.h -o moc_PlotWidget.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PlotWidget.h -o moc_PlotWidget.cpp
 
 moc_PostDataPanel.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -7627,7 +7626,7 @@ moc_PostDataPanel.cpp: CommandPanel.h \
 		PostDataPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PostDataPanel.h -o moc_PostDataPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PostDataPanel.h -o moc_PostDataPanel.cpp
 
 moc_PostPanel.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -7736,7 +7735,7 @@ moc_PostPanel.cpp: CommandPanel.h \
 		PostPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PostPanel.h -o moc_PostPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PostPanel.h -o moc_PostPanel.cpp
 
 moc_PropertyListForm.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -7844,7 +7843,7 @@ moc_PropertyListForm.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/
 		PropertyListForm.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PropertyListForm.h -o moc_PropertyListForm.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PropertyListForm.h -o moc_PropertyListForm.cpp
 
 moc_PropertyListView.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -7991,7 +7990,7 @@ moc_PropertyListView.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/
 		PropertyListView.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PropertyListView.h -o moc_PropertyListView.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include PropertyListView.h -o moc_PropertyListView.cpp
 
 moc_ResourceEdit.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -8099,7 +8098,7 @@ moc_ResourceEdit.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWid
 		ResourceEdit.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ResourceEdit.h -o moc_ResourceEdit.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ResourceEdit.h -o moc_ResourceEdit.cpp
 
 moc_SelectionBox.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
@@ -8207,7 +8206,7 @@ moc_SelectionBox.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWid
 		SelectionBox.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include SelectionBox.h -o moc_SelectionBox.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include SelectionBox.h -o moc_SelectionBox.cpp
 
 moc_SSHHandler.cpp: FEBioJob.h \
 		../FSCore/FSObject.h \
@@ -8373,7 +8372,7 @@ moc_SSHHandler.cpp: FEBioJob.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -8389,7 +8388,7 @@ moc_SSHHandler.cpp: FEBioJob.h \
 		SSHHandler.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include SSHHandler.h -o moc_SSHHandler.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include SSHHandler.h -o moc_SSHHandler.cpp
 
 moc_SSHThread.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QThread \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qthread.h \
@@ -8445,7 +8444,7 @@ moc_SSHThread.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QThread \
 		SSHThread.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include SSHThread.h -o moc_SSHThread.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include SSHThread.h -o moc_SSHThread.cpp
 
 moc_StatePanel.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -8556,7 +8555,7 @@ moc_StatePanel.cpp: CommandPanel.h \
 		StatePanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include StatePanel.h -o moc_StatePanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include StatePanel.h -o moc_StatePanel.cpp
 
 moc_StatsWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainWindow \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -8735,7 +8734,7 @@ moc_StatsWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMain
 		StatsWindow.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include StatsWindow.h -o moc_StatsWindow.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include StatsWindow.h -o moc_StatsWindow.cpp
 
 moc_SummaryWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMainWindow \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -8914,7 +8913,7 @@ moc_SummaryWindow.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMa
 		SummaryWindow.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include SummaryWindow.h -o moc_SummaryWindow.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include SummaryWindow.h -o moc_SummaryWindow.cpp
 
 moc_Tool.cpp: PropertyList.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QVariant \
@@ -8993,7 +8992,7 @@ moc_Tool.cpp: PropertyList.h \
 		Tool.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include Tool.h -o moc_Tool.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include Tool.h -o moc_Tool.cpp
 
 moc_ToolBox.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QFrame \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qframe.h \
@@ -9103,7 +9102,7 @@ moc_ToolBox.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QFrame \
 		ToolBox.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ToolBox.h -o moc_ToolBox.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ToolBox.h -o moc_ToolBox.cpp
 
 moc_ToolsPanel.cpp: CommandPanel.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
@@ -9212,7 +9211,7 @@ moc_ToolsPanel.cpp: CommandPanel.h \
 		ToolsPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
-	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ToolsPanel.h -o moc_ToolsPanel.cpp
+	/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/moc $(DEFINES) --include /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/moc_predefs.h -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++ -I/home/sci/mherron/Projects/FEBioStudio/FEBioStudio -I/home/sci/mherron/Projects/FEBioStudio -I/usr/local/include -I/home/sci/mherron/Resources/libssh/include -I/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include -I/usr/include/libdrm -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCharts -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtGui -I/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/include/QtCore -I/opt/intel/compilers_and_libraries_2017.8.262/linux/ipp/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/mkl/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/tbb/include -I/opt/intel/compilers_and_libraries_2017.8.262/linux/daal/include -I/usr/include/c++/7 -I/usr/include/c++/7/x86_64-suse-linux -I/usr/include/c++/7/backward -I/usr/lib64/gcc/x86_64-suse-linux/7/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-suse-linux/7/include-fixed -I/usr/x86_64-suse-linux/include -I/usr/include ToolsPanel.h -o moc_ToolsPanel.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -9677,7 +9676,7 @@ Command.o: Command.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../GLWLib/GLWidgetManager.h \
 		../GLWLib/GLWidget.h \
@@ -9940,7 +9939,7 @@ CommandPanel.o: CommandPanel.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -10608,7 +10607,7 @@ CreatePanel.o: CreatePanel.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../GLWLib/GLWidgetManager.h \
 		../GLWLib/GLWidget.h \
@@ -10854,7 +10853,7 @@ CreateSpringPane.o: CreateSpringPane.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -11130,7 +11129,7 @@ CurveEditor.o: CurveEditor.cpp ui_curveeditor.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../GLWLib/GLWidgetManager.h \
 		../GLWLib/GLWidget.h \
@@ -12126,7 +12125,7 @@ DlgAddChemicalReaction.o: DlgAddChemicalReaction.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -15672,7 +15671,7 @@ DlgFEBioOptimize.o: DlgFEBioOptimize.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -17103,7 +17102,7 @@ DlgNew.o: DlgNew.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -17733,7 +17732,7 @@ DlgSettings.o: DlgSettings.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -17970,7 +17969,7 @@ DlgSoluteTable.o: DlgSoluteTable.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -18690,7 +18689,7 @@ DlgWidgetProps.o: DlgWidgetProps.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -19010,7 +19009,7 @@ Document.o: Document.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -19384,7 +19383,7 @@ EditPanel.o: EditPanel.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../GLWLib/GLWidgetManager.h \
 		../GLWLib/GLWidget.h \
@@ -19451,7 +19450,15 @@ EditPanel.o: EditPanel.cpp stdafx.h \
 		../MeshTools/GModifier.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EditPanel.o EditPanel.cpp
 
-Encrypter.o: Encrypter.cpp Encrypter.h
+Encrypter.o: Encrypter.cpp Encrypter.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/aes.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslconf.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslv.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/rand.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/ossl_typ.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/e_os2.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/randerr.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/symhacks.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Encrypter.o Encrypter.cpp
 
 FEBioJob.o: FEBioJob.cpp stdafx.h \
@@ -19661,7 +19668,7 @@ FEBioJob.o: FEBioJob.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -19852,7 +19859,7 @@ FEBioStudio.o: FEBioStudio.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -20320,7 +20327,7 @@ FileThread.o: FileThread.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -20561,7 +20568,7 @@ FileViewer.o: FileViewer.cpp ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidge
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -20917,7 +20924,7 @@ GGrid.o: GGrid.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -21089,7 +21096,7 @@ GLCanvas.o: GLCanvas.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -21269,7 +21276,7 @@ GLControlBar.o: GLControlBar.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -21508,7 +21515,7 @@ GLCursor.o: GLCursor.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -21681,7 +21688,7 @@ GLHighLighter.o: GLHighLighter.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -21852,7 +21859,7 @@ GLView.o: GLView.cpp GLView.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -21966,183 +21973,6 @@ GLView.o: GLView.cpp GLView.h \
 		../MeshTools/GModifier.h \
 		../MeshTools/FESurfaceModifier.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o GLView.o GLView.cpp
-
-GLViewRender.o: GLViewRender.cpp stdafx.h \
-		targetver.h \
-		GLViewRender.h \
-		../FSCore/box.h \
-		../MathLib/math3d.h \
-		../MeshLib/FEMesh.h \
-		../MeshLib/FECoreMesh.h \
-		../MeshLib/FENode.h \
-		../MeshLib/FEItem.h \
-		../MeshLib/FEElement.h \
-		../MathLib/mat3d.h \
-		../MathLib/mat3d.hpp \
-		../MeshLib/FEEdge.h \
-		../MeshLib/FEFace.h \
-		../MeshLib/FEMeshBase.h \
-		../MeshLib/FELineMesh.h \
-		../MeshTools/FEGroup.h \
-		../FSCore/FSObject.h \
-		../FSCore/ParamBlock.h \
-		../FSCore/Serializable.h \
-		../FSCore/Archive.h \
-		../FSCore/color.h \
-		../FSCore/CallTracer.h \
-		../FSCore/memtool.h \
-		../FSCore/enum.h \
-		../MeshTools/LoadCurve.h \
-		../MeshTools/FEItemListBuilder.h \
-		../MeshTools/FEItemList.h \
-		../FEMLib/FECoreModel.h \
-		../MeshTools/FENodeData.h \
-		../MeshTools/FEMeshData.h \
-		../MeshTools/FESurfaceData.h \
-		../MeshTools/FEElementData.h \
-		GLView.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QOpenGLWidget \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qopenglwidget.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtguiglobal.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qglobal.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qconfig-bootstrapped.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qconfig.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtcore-config.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsystemdetection.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qprocessordetection.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcompilerdetection.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtypeinfo.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsysinfo.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlogging.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qflags.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbasicatomic.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qgenericatomic.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_cxx11.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_msvc.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qglobalstatic.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmutex.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qnumeric.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qversiontagging.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtgui-config.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qtwidgets-config.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qwindowdefs.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobjectdefs.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qnamespace.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qwindowdefs_win.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobject.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstring.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qchar.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbytearray.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qrefcount.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qarraydata.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringliteral.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringalgorithms.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringview.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringbuilder.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlist.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qalgorithms.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qiterator.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qhashfunctions.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qpair.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbytearraylist.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringlist.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qregexp.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringmatcher.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcoreevent.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qscopedpointer.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmetatype.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvarlengtharray.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcontainerfwd.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobject_impl.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmargins.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpaintdevice.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qrect.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsize.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qpoint.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpalette.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qcolor.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qrgb.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qrgba64.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qbrush.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvector.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qmatrix.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpolygon.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qregion.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qdatastream.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qiodevice.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qline.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtransform.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpainterpath.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qimage.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpixelformat.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpixmap.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsharedpointer.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qshareddata.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qhash.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfont.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfontmetrics.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfontinfo.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qsizepolicy.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qcursor.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qkeysequence.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qevent.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvariant.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmap.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qdebug.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtextstream.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlocale.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qset.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcontiguouscache.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qurl.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qurlquery.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfile.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfiledevice.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qvector2d.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtouchdevice.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QSurfaceFormat \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qsurfaceformat.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qopengl.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qt_windows.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qopengles2ext.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qopenglext.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QNativeGestureEvent \
-		../GLLib/GLCamera.h \
-		../MathLib/Interpolator.h \
-		../PostLib/GLObject.h \
-		CommandManager.h \
-		GManipulator.h \
-		GTriad.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QColor \
-		GGrid.h \
-		../MeshLib/Intersect.h \
-		../MeshTools/GLMesh.h \
-		../MeshTools/GMesh.h \
-		../MeshTools/FEExtrudeFaces.h \
-		../MeshTools/FEModifier.h \
-		../GLWLib/GLWidgetManager.h \
-		../GLWLib/GLWidget.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QPainter \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpainter.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextoption.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpen.h \
-		../PostLib/ColorMap.h \
-		../GLLib/GLTexture1D.h \
-		../PostLib/Animation.h \
-		../GLLib/glx.h \
-		../MeshLib/MeshMetrics.h \
-		../PostLib/FEMesh.h \
-		../PostLib/FEGroup.h \
-		../MeshLib/FENodeElementList.h \
-		../MeshLib/FENodeFaceList.h \
-		../MeshLib/quad8.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o GLViewRender.o GLViewRender.cpp
 
 GLViewTransform.o: GLViewTransform.cpp stdafx.h \
 		targetver.h \
@@ -22301,7 +22131,7 @@ GLViewTransform.o: GLViewTransform.cpp stdafx.h \
 		GTriad.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QColor \
 		GGrid.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -22472,7 +22302,7 @@ GManipulator.o: GManipulator.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -22743,7 +22573,7 @@ GraphWindow.o: GraphWindow.cpp GraphWindow.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -23035,7 +22865,7 @@ InfoPanel.o: InfoPanel.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -23278,7 +23108,7 @@ IntegrateWindow.o: IntegrateWindow.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -23532,7 +23362,7 @@ Logger.o: Logger.cpp Logger.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -23869,7 +23699,7 @@ MainTabBar.o: MainTabBar.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -24053,7 +23883,7 @@ MainWindow.o: MainWindow.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -24256,7 +24086,10 @@ MainWindow.o: MainWindow.cpp stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QString \
 		SSHHandler.h \
 		SSHThread.h \
-		Encrypter.h
+		Encrypter.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/aes.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslconf.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslv.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o MainWindow.cpp
 
 MaterialEditor.o: MaterialEditor.cpp stdafx.h \
@@ -24827,7 +24660,7 @@ MaterialPanel.o: MaterialPanel.cpp MaterialPanel.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -25076,7 +24909,7 @@ menu.o: menu.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -25475,7 +25308,7 @@ menuPhysics.o: menuPhysics.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -25714,7 +25547,7 @@ menuPost.o: menuPost.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -26045,7 +25878,7 @@ menuRecord.o: menuRecord.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -26355,7 +26188,7 @@ menuTools.o: menuTools.cpp stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -27013,7 +26846,7 @@ MeshInspector.o: MeshInspector.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -27305,7 +27138,7 @@ MeshPanel.o: MeshPanel.cpp stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../GLWLib/GLWidgetManager.h \
 		../GLWLib/GLWidget.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QPainter \
@@ -27567,7 +27400,7 @@ MeshSelectionBox.o: MeshSelectionBox.cpp ../MeshTools/stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -28049,7 +27882,7 @@ ModelPropsPanel.o: ModelPropsPanel.cpp ../MeshTools/stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -28533,6 +28366,8 @@ ModelTree.o: ModelTree.cpp ../MeshTools/stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMessageBox \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmessagebox.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QFileInfo \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfileinfo.h \
 		../FEMLib/FERigidConstraint.h \
 		../MeshTools/GGroup.h \
 		MainWindow.h \
@@ -28559,7 +28394,7 @@ ModelTree.o: ModelTree.cpp ../MeshTools/stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -28780,7 +28615,7 @@ ModelViewer.o: ModelViewer.cpp ../MeshTools/stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -29052,7 +28887,7 @@ ObjectPanel.o: ObjectPanel.cpp ../MeshTools/stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -29704,7 +29539,7 @@ PostDataPanel.o: PostDataPanel.cpp ../MeshTools/stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -29975,7 +29810,7 @@ PostDoc.o: PostDoc.cpp ../MeshTools/stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -30868,7 +30703,7 @@ ReadCurveTool.o: ReadCurveTool.cpp ../MeshTools/stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -31692,7 +31527,7 @@ SSHHandler.o: SSHHandler.cpp ../MeshTools/stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -31708,6 +31543,9 @@ SSHHandler.o: SSHHandler.cpp ../MeshTools/stdafx.h \
 		Logger.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QString \
 		Encrypter.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/aes.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslconf.h \
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslv.h \
 		../FSCore/FSDir.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMessageBox \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmessagebox.h \
@@ -31893,7 +31731,7 @@ SSHThread.o: SSHThread.cpp SSHThread.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -32073,7 +31911,7 @@ StatePanel.o: StatePanel.cpp StatePanel.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -32375,7 +32213,7 @@ StatsWindow.o: StatsWindow.cpp ../MeshTools/stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -32651,7 +32489,7 @@ SummaryWindow.o: SummaryWindow.cpp ../MeshTools/stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -33236,7 +33074,7 @@ ToolsPanel.o: ToolsPanel.cpp ../MeshTools/stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		GLViewRender.h \
+		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
