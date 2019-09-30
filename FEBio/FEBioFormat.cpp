@@ -117,6 +117,30 @@ FEAnalysisStep* FEBioFormat::NewStep(FEModel& fem, int nanalysis, const char* sz
 }
 
 //-----------------------------------------------------------------------------
+bool FEBioFormat::ReadChoiceParam(Param& p, XMLTag& tag)
+{
+	const char* szval = tag.szvalue();
+
+	// see if the value string matches an enum string
+	int n = 0;
+	const char* sz = nullptr;
+	while (sz = p.GetEnumName(n))
+	{
+		if (strcmp(szval, sz) == 0)
+		{
+			p.SetIntValue(n - p.GetOffset());
+			return true;
+		}
+		n++;
+	}
+
+	// it wasn't a string. Let's assume it was a number
+	tag.value(n); p.SetIntValue(n - p.GetOffset());
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 // read a parameter from file
 bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 {
@@ -154,7 +178,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 	switch (pp->GetParamType())
 	{
 	case Param_INT   : { int n; tag.value(n); pp->SetIntValue(n   ); } break;
-	case Param_CHOICE: { int n; tag.value(n); pp->SetIntValue(n - pp->GetOffset()); } break;
+	case Param_CHOICE: ReadChoiceParam(*pp, tag); break;
 	case Param_BOOL  : { int n; tag.value(n); pp->SetBoolValue  (n==1); } break;
 	case Param_VEC3D : { vec3d v; tag.value(v); pp->SetVecValue (v); } break;
 	case Param_MAT3D : { mat3d v; tag.value(v); pp->SetMat3dValue(v); } break;

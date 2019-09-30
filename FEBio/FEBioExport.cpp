@@ -9,6 +9,7 @@ FEBioExport::FEBioExport()
 {
 	m_compress = false;
 	m_exportSelections = false;
+	m_exportEnumStrings = false;
 
 	// initialize section flags
 	for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) m_section[i] = true;
@@ -51,10 +52,16 @@ void FEBioExport::WriteParam(Param &p)
 	{
 	case Param_CHOICE: 
 		{
-//			int n = p.GetIntValue() + p.GetOffset();
-//			e.value(n); 
-			const char* sz = p.GetEnumName(p.GetIntValue());
-			e.value(sz);
+			if (m_exportEnumStrings)
+			{
+				const char* sz = p.GetEnumName(p.GetIntValue());
+				e.value(sz);
+			}
+			else
+			{
+				int n = p.GetIntValue() + p.GetOffset();
+				e.value(n); 
+			}
 		}
 		break;
 	case Param_INT   : e.value(p.GetIntValue  ()); break;

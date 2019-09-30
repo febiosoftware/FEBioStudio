@@ -962,7 +962,7 @@ FENonLinearMechanics::FENonLinearMechanics(FEModel* ps) : FEAnalysisStep(ps, FE_
 	AddDoubleParam(0    , "rtol", "Residual tolerance");
 	AddDoubleParam(0.9  , "lstol", "Line search tolerance");
 	AddDoubleParam(1e-20, "min_residual", "Minumum residual");
-	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0Broyden\0");
+	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
 	AddDoubleParam(0, "rhoi", "Spectral radius");
 }
 
@@ -1001,7 +1001,7 @@ FENonLinearBiphasic::FENonLinearBiphasic(FEModel* ps) : FEAnalysisStep(ps, FE_ST
 	AddDoubleParam(0.01 , "ptol", "Pressure tolerance");
 	AddDoubleParam(0.9  , "lstol", "Line search tolerance");
 	AddDoubleParam(1e-20, "min_residual", "Minumum residual");
-	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0Broyden\0");
+	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
 
 	m_ops.nanalysis = 1; // set transient analysis
 }
@@ -1026,7 +1026,7 @@ FEBiphasicSolutes::FEBiphasicSolutes(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_B
 	AddDoubleParam(0.01 , "ctol", "Concentration tolerance");
 	AddDoubleParam(0.9  , "lstol", "Line search tolerance");
 	AddDoubleParam(1e-20, "min_residual", "Minumum residual");
-	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0Broyden\0");
+	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
 
 	m_ops.nanalysis = 1; // set transient analysis
 }
@@ -1051,7 +1051,7 @@ FEMultiphasicAnalysis::FEMultiphasicAnalysis(FEModel* ps) : FEAnalysisStep(ps, F
 	AddDoubleParam(0.01 , "ctol", "Concentration tolerance");
 	AddDoubleParam(0.9  , "lstol", "Line search tolerance");
 	AddDoubleParam(1e-20, "min_residual", "Minumum residual");
-	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0Broyden\0");
+	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
 
 	m_ops.nanalysis = 1; // set transient analysis
     m_ops.nmatfmt = 0;   // set non-symmetric flag
@@ -1077,7 +1077,7 @@ FEFluidAnalysis::FEFluidAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP_FLUID
 	AddDoubleParam(0.9  , "lstol", "Line search tolerance");
 	AddDoubleParam(1e-20, "min_residual", "Minumum residual");
     AddDoubleParam(0    , "rhoi", "Spectral radius");
-	AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0Broyden\0");
+	AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
 	AddChoiceParam(1    , "equation_scheme", "Equation Scheme");
 
     m_ops.nanalysis = 1; // set dynamic analysis
@@ -1097,7 +1097,7 @@ FEFluidFSIAnalysis::FEFluidFSIAnalysis(FEModel* ps) : FEAnalysisStep(ps, FE_STEP
     AddDoubleParam(0.9  , "lstol", "Line search tolerance");
 	AddDoubleParam(1e-20, "min_residual", "Minumum residual");
     AddDoubleParam(0    , "rhoi", "Spectral radius");
-    AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0Broyden\0");
+    AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
     
     m_ops.nanalysis = 1; // set dynamic analysis
     m_ops.nmatfmt = 0;   // set non-symmetric flag

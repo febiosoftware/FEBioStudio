@@ -144,7 +144,7 @@ const char* Param::GetEnumName(int n) const
 		int l = strlen(sz);
 		if (l == 0) 
 		{
-			assert(false);
+//			assert(false);
 			return nullptr;
 		}
 		sz += l+1;

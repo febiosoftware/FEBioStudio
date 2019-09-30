@@ -26,6 +26,7 @@ FEBioExport3::FEBioExport3()
 	m_exportParts = false;
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
 	m_writeNotes = true;
+	m_exportEnumStrings = true;
 }
 
 FEBioExport3::~FEBioExport3()
