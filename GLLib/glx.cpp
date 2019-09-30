@@ -171,263 +171,110 @@ void GLX::drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N)
         GLX::drawLine(a, b);
 }
 
-void GLX::drawQuad4(vec3d r[4], vec3d n[4], GLColor c)
+void GLX::quad4(vec3d r[4], vec3d n[4])
 {
-	glColor4ub(c.r, c.g, c.b, c.a);
-
-	glBegin(GL_QUADS);
-	{
-		glNormal3d(n[0].x, n[0].y, n[0].z);
-		glVertex3d(r[0].x, r[0].y, r[0].z);
-
-		glNormal3d(n[1].x, n[1].y, n[1].z);
-		glVertex3d(r[1].x, r[1].y, r[1].z);
-
-		glNormal3d(n[2].x, n[2].y, n[2].z);
-		glVertex3d(r[2].x, r[2].y, r[2].z);
-
-		glNormal3d(n[3].x, n[3].y, n[3].z);
-		glVertex3d(r[3].x, r[3].y, r[3].z);
-	}
-	glEnd();
+	vertex3d(r[0], n[0]); vertex3d(r[1], n[1]); vertex3d(r[2], n[2]);
+	vertex3d(r[2], n[2]); vertex3d(r[3], n[3]); vertex3d(r[0], n[0]);
 }
 
-void GLX::drawQuad4(vec3d r[4], vec3d& n, GLColor& c)
+void GLX::quad4(vec3d r[4], vec3f n[4], float t[4])
 {
-	glColor4ub(c.r, c.g, c.b, c.a);
-	glNormal3d(n.x, n.y, n.z);
-
-	glBegin(GL_QUADS);
-	{
-		glVertex3d(r[0].x, r[0].y, r[0].z);
-		glVertex3d(r[1].x, r[1].y, r[1].z);
-		glVertex3d(r[2].x, r[2].y, r[2].z);
-		glVertex3d(r[3].x, r[3].y, r[3].z);
-	}
-	glEnd();
+	vertex3d(r[0], n[0], t[0]); vertex3d(r[1], n[1], t[1]); vertex3d(r[2], n[2], t[2]);
+	vertex3d(r[2], n[2], t[2]); vertex3d(r[3], n[3], t[3]); vertex3d(r[0], n[0], t[0]);
 }
 
-void GLX::drawQuad4(vec3d r[4], vec3f n[4])
+void GLX::quad8(vec3d r[8], vec3f n[8], float t[8])
 {
-	glBegin(GL_QUADS);
-	{
-		glNormal3f(n[0].x, n[0].y, n[0].z); glVertex3d(r[0].x, r[0].y, r[0].z);
-		glNormal3f(n[1].x, n[1].y, n[1].z); glVertex3d(r[1].x, r[1].y, r[1].z);
-		glNormal3f(n[2].x, n[2].y, n[2].z); glVertex3d(r[2].x, r[2].y, r[2].z);
-		glNormal3f(n[3].x, n[3].y, n[3].z); glVertex3d(r[3].x, r[3].y, r[3].z);
-	}
-	glEnd();
+	vertex3d(r[7], n[7], t[7]); vertex3d(r[0], n[0], t[0]); vertex3d(r[4], n[4], t[4]);
+	vertex3d(r[4], n[4], t[4]); vertex3d(r[1], n[1], t[1]); vertex3d(r[5], n[5], t[5]);
+	vertex3d(r[5], n[5], t[5]); vertex3d(r[2], n[2], t[2]); vertex3d(r[6], n[6], t[6]);
+	vertex3d(r[6], n[6], t[6]); vertex3d(r[3], n[3], t[3]); vertex3d(r[7], n[7], t[7]);
+	vertex3d(r[7], n[7], t[7]); vertex3d(r[4], n[4], t[4]); vertex3d(r[5], n[5], t[5]);
+	vertex3d(r[7], n[7], t[7]); vertex3d(r[5], n[5], t[5]); vertex3d(r[6], n[6], t[6]);
 }
 
-void GLX::drawQuad4(vec3d r[4], vec3f n[4], float t[4])
-{
-	glBegin(GL_QUADS);
-	{
-		glNormal3f(n[0].x, n[0].y, n[0].z); glTexCoord1f(t[0]); glVertex3f(r[0].x, r[0].y, r[0].z);
-		glNormal3f(n[1].x, n[1].y, n[1].z); glTexCoord1f(t[1]); glVertex3f(r[1].x, r[1].y, r[1].z);
-		glNormal3f(n[2].x, n[2].y, n[2].z); glTexCoord1f(t[2]); glVertex3f(r[2].x, r[2].y, r[2].z);
-		glNormal3f(n[3].x, n[3].y, n[3].z); glTexCoord1f(t[3]); glVertex3f(r[3].x, r[3].y, r[3].z);
-	}
-	glEnd();
-}
-
-void GLX::drawQuad8(vec3d r[8], vec3f n[8], float t[8])
-{
-	glBegin(GL_TRIANGLES);
-	{
-		glNormal3f(n[7].x, n[7].y, n[7].z); glTexCoord1f(t[7]); glVertex3f(r[7].x, r[7].y, r[7].z);
-		glNormal3f(n[0].x, n[0].y, n[0].z); glTexCoord1f(t[0]); glVertex3f(r[0].x, r[0].y, r[0].z);
-		glNormal3f(n[4].x, n[4].y, n[4].z); glTexCoord1f(t[4]); glVertex3f(r[4].x, r[4].y, r[4].z);
-
-		glNormal3f(n[4].x, n[4].y, n[4].z); glTexCoord1f(t[4]); glVertex3f(r[4].x, r[4].y, r[4].z);
-		glNormal3f(n[1].x, n[1].y, n[1].z); glTexCoord1f(t[1]); glVertex3f(r[1].x, r[1].y, r[1].z);
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-		glNormal3f(n[2].x, n[2].y, n[2].z); glTexCoord1f(t[2]); glVertex3f(r[2].x, r[2].y, r[2].z);
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-		glNormal3f(n[3].x, n[3].y, n[3].z); glTexCoord1f(t[3]); glVertex3f(r[3].x, r[3].y, r[3].z);
-		glNormal3f(n[7].x, n[7].y, n[7].z); glTexCoord1f(t[7]); glVertex3f(r[7].x, r[7].y, r[7].z);
-
-		glNormal3f(n[7].x, n[7].y, n[7].z); glTexCoord1f(t[7]); glVertex3f(r[7].x, r[7].y, r[7].z);
-		glNormal3f(n[4].x, n[4].y, n[4].z); glTexCoord1f(t[4]); glVertex3f(r[4].x, r[4].y, r[4].z);
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-
-		glNormal3f(n[7].x, n[7].y, n[7].z); glTexCoord1f(t[7]); glVertex3f(r[7].x, r[7].y, r[7].z);
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-	}
-	glEnd();
-}
-
-void GLX::drawQuad9(vec3d r[9], vec3f n[9], float t[9])
+void GLX::quad9(vec3d r[9], vec3f n[9], float t[9])
 {
 	const int T[8][3] = {
 		{ 0,4,8 },{ 8,7,0 },{ 4,1,5 },{ 5,8,4 },
 		{ 7,8,6 },{ 6,3,7 },{ 8,5,2 },{ 2,6,8 } };
 
-	glBegin(GL_TRIANGLES);
-	{
-		glNormal3f(n[T[0][0]].x, n[T[0][0]].y, n[T[0][0]].z); glTexCoord1f(t[T[0][0]]); glVertex3f(r[T[0][0]].x, r[T[0][0]].y, r[T[0][0]].z);
-		glNormal3f(n[T[0][1]].x, n[T[0][1]].y, n[T[0][1]].z); glTexCoord1f(t[T[0][1]]); glVertex3f(r[T[0][1]].x, r[T[0][1]].y, r[T[0][1]].z);
-		glNormal3f(n[T[0][2]].x, n[T[0][2]].y, n[T[0][2]].z); glTexCoord1f(t[T[0][2]]); glVertex3f(r[T[0][2]].x, r[T[0][2]].y, r[T[0][2]].z);
+	glNormal3f(n[T[0][0]].x, n[T[0][0]].y, n[T[0][0]].z); glTexCoord1f(t[T[0][0]]); glVertex3f(r[T[0][0]].x, r[T[0][0]].y, r[T[0][0]].z);
+	glNormal3f(n[T[0][1]].x, n[T[0][1]].y, n[T[0][1]].z); glTexCoord1f(t[T[0][1]]); glVertex3f(r[T[0][1]].x, r[T[0][1]].y, r[T[0][1]].z);
+	glNormal3f(n[T[0][2]].x, n[T[0][2]].y, n[T[0][2]].z); glTexCoord1f(t[T[0][2]]); glVertex3f(r[T[0][2]].x, r[T[0][2]].y, r[T[0][2]].z);
 
-		glNormal3f(n[T[1][0]].x, n[T[1][0]].y, n[T[1][0]].z); glTexCoord1f(t[T[1][0]]); glVertex3f(r[T[1][0]].x, r[T[1][0]].y, r[T[1][0]].z);
-		glNormal3f(n[T[1][1]].x, n[T[1][1]].y, n[T[1][1]].z); glTexCoord1f(t[T[1][1]]); glVertex3f(r[T[1][1]].x, r[T[1][1]].y, r[T[1][1]].z);
-		glNormal3f(n[T[1][2]].x, n[T[1][2]].y, n[T[1][2]].z); glTexCoord1f(t[T[1][2]]); glVertex3f(r[T[1][2]].x, r[T[1][2]].y, r[T[1][2]].z);
+	glNormal3f(n[T[1][0]].x, n[T[1][0]].y, n[T[1][0]].z); glTexCoord1f(t[T[1][0]]); glVertex3f(r[T[1][0]].x, r[T[1][0]].y, r[T[1][0]].z);
+	glNormal3f(n[T[1][1]].x, n[T[1][1]].y, n[T[1][1]].z); glTexCoord1f(t[T[1][1]]); glVertex3f(r[T[1][1]].x, r[T[1][1]].y, r[T[1][1]].z);
+	glNormal3f(n[T[1][2]].x, n[T[1][2]].y, n[T[1][2]].z); glTexCoord1f(t[T[1][2]]); glVertex3f(r[T[1][2]].x, r[T[1][2]].y, r[T[1][2]].z);
 
-		glNormal3f(n[T[2][0]].x, n[T[2][0]].y, n[T[2][0]].z); glTexCoord1f(t[T[2][0]]); glVertex3f(r[T[2][0]].x, r[T[2][0]].y, r[T[2][0]].z);
-		glNormal3f(n[T[2][1]].x, n[T[2][1]].y, n[T[2][1]].z); glTexCoord1f(t[T[2][1]]); glVertex3f(r[T[2][1]].x, r[T[2][1]].y, r[T[2][1]].z);
-		glNormal3f(n[T[2][2]].x, n[T[2][2]].y, n[T[2][2]].z); glTexCoord1f(t[T[2][2]]); glVertex3f(r[T[2][2]].x, r[T[2][2]].y, r[T[2][2]].z);
+	glNormal3f(n[T[2][0]].x, n[T[2][0]].y, n[T[2][0]].z); glTexCoord1f(t[T[2][0]]); glVertex3f(r[T[2][0]].x, r[T[2][0]].y, r[T[2][0]].z);
+	glNormal3f(n[T[2][1]].x, n[T[2][1]].y, n[T[2][1]].z); glTexCoord1f(t[T[2][1]]); glVertex3f(r[T[2][1]].x, r[T[2][1]].y, r[T[2][1]].z);
+	glNormal3f(n[T[2][2]].x, n[T[2][2]].y, n[T[2][2]].z); glTexCoord1f(t[T[2][2]]); glVertex3f(r[T[2][2]].x, r[T[2][2]].y, r[T[2][2]].z);
 
-		glNormal3f(n[T[3][0]].x, n[T[3][0]].y, n[T[3][0]].z); glTexCoord1f(t[T[3][0]]); glVertex3f(r[T[3][0]].x, r[T[3][0]].y, r[T[3][0]].z);
-		glNormal3f(n[T[3][1]].x, n[T[3][1]].y, n[T[3][1]].z); glTexCoord1f(t[T[3][1]]); glVertex3f(r[T[3][1]].x, r[T[3][1]].y, r[T[3][1]].z);
-		glNormal3f(n[T[3][2]].x, n[T[3][2]].y, n[T[3][2]].z); glTexCoord1f(t[T[3][2]]); glVertex3f(r[T[3][2]].x, r[T[3][2]].y, r[T[3][2]].z);
+	glNormal3f(n[T[3][0]].x, n[T[3][0]].y, n[T[3][0]].z); glTexCoord1f(t[T[3][0]]); glVertex3f(r[T[3][0]].x, r[T[3][0]].y, r[T[3][0]].z);
+	glNormal3f(n[T[3][1]].x, n[T[3][1]].y, n[T[3][1]].z); glTexCoord1f(t[T[3][1]]); glVertex3f(r[T[3][1]].x, r[T[3][1]].y, r[T[3][1]].z);
+	glNormal3f(n[T[3][2]].x, n[T[3][2]].y, n[T[3][2]].z); glTexCoord1f(t[T[3][2]]); glVertex3f(r[T[3][2]].x, r[T[3][2]].y, r[T[3][2]].z);
 
-		glNormal3f(n[T[4][0]].x, n[T[4][0]].y, n[T[4][0]].z); glTexCoord1f(t[T[4][0]]); glVertex3f(r[T[4][0]].x, r[T[4][0]].y, r[T[4][0]].z);
-		glNormal3f(n[T[4][1]].x, n[T[4][1]].y, n[T[4][1]].z); glTexCoord1f(t[T[4][1]]); glVertex3f(r[T[4][1]].x, r[T[4][1]].y, r[T[4][1]].z);
-		glNormal3f(n[T[4][2]].x, n[T[4][2]].y, n[T[4][2]].z); glTexCoord1f(t[T[4][2]]); glVertex3f(r[T[4][2]].x, r[T[4][2]].y, r[T[4][2]].z);
+	glNormal3f(n[T[4][0]].x, n[T[4][0]].y, n[T[4][0]].z); glTexCoord1f(t[T[4][0]]); glVertex3f(r[T[4][0]].x, r[T[4][0]].y, r[T[4][0]].z);
+	glNormal3f(n[T[4][1]].x, n[T[4][1]].y, n[T[4][1]].z); glTexCoord1f(t[T[4][1]]); glVertex3f(r[T[4][1]].x, r[T[4][1]].y, r[T[4][1]].z);
+	glNormal3f(n[T[4][2]].x, n[T[4][2]].y, n[T[4][2]].z); glTexCoord1f(t[T[4][2]]); glVertex3f(r[T[4][2]].x, r[T[4][2]].y, r[T[4][2]].z);
 
-		glNormal3f(n[T[5][0]].x, n[T[5][0]].y, n[T[5][0]].z); glTexCoord1f(t[T[5][0]]); glVertex3f(r[T[5][0]].x, r[T[5][0]].y, r[T[5][0]].z);
-		glNormal3f(n[T[5][1]].x, n[T[5][1]].y, n[T[5][1]].z); glTexCoord1f(t[T[5][1]]); glVertex3f(r[T[5][1]].x, r[T[5][1]].y, r[T[5][1]].z);
-		glNormal3f(n[T[5][2]].x, n[T[5][2]].y, n[T[5][2]].z); glTexCoord1f(t[T[5][2]]); glVertex3f(r[T[5][2]].x, r[T[5][2]].y, r[T[5][2]].z);
+	glNormal3f(n[T[5][0]].x, n[T[5][0]].y, n[T[5][0]].z); glTexCoord1f(t[T[5][0]]); glVertex3f(r[T[5][0]].x, r[T[5][0]].y, r[T[5][0]].z);
+	glNormal3f(n[T[5][1]].x, n[T[5][1]].y, n[T[5][1]].z); glTexCoord1f(t[T[5][1]]); glVertex3f(r[T[5][1]].x, r[T[5][1]].y, r[T[5][1]].z);
+	glNormal3f(n[T[5][2]].x, n[T[5][2]].y, n[T[5][2]].z); glTexCoord1f(t[T[5][2]]); glVertex3f(r[T[5][2]].x, r[T[5][2]].y, r[T[5][2]].z);
 
-		glNormal3f(n[T[6][0]].x, n[T[6][0]].y, n[T[6][0]].z); glTexCoord1f(t[T[6][0]]); glVertex3f(r[T[6][0]].x, r[T[6][0]].y, r[T[6][0]].z);
-		glNormal3f(n[T[6][1]].x, n[T[6][1]].y, n[T[6][1]].z); glTexCoord1f(t[T[6][1]]); glVertex3f(r[T[6][1]].x, r[T[6][1]].y, r[T[6][1]].z);
-		glNormal3f(n[T[6][2]].x, n[T[6][2]].y, n[T[6][2]].z); glTexCoord1f(t[T[6][2]]); glVertex3f(r[T[6][2]].x, r[T[6][2]].y, r[T[6][2]].z);
+	glNormal3f(n[T[6][0]].x, n[T[6][0]].y, n[T[6][0]].z); glTexCoord1f(t[T[6][0]]); glVertex3f(r[T[6][0]].x, r[T[6][0]].y, r[T[6][0]].z);
+	glNormal3f(n[T[6][1]].x, n[T[6][1]].y, n[T[6][1]].z); glTexCoord1f(t[T[6][1]]); glVertex3f(r[T[6][1]].x, r[T[6][1]].y, r[T[6][1]].z);
+	glNormal3f(n[T[6][2]].x, n[T[6][2]].y, n[T[6][2]].z); glTexCoord1f(t[T[6][2]]); glVertex3f(r[T[6][2]].x, r[T[6][2]].y, r[T[6][2]].z);
 
-		glNormal3f(n[T[7][0]].x, n[T[7][0]].y, n[T[7][0]].z); glTexCoord1f(t[T[7][0]]); glVertex3f(r[T[7][0]].x, r[T[7][0]].y, r[T[7][0]].z);
-		glNormal3f(n[T[7][1]].x, n[T[7][1]].y, n[T[7][1]].z); glTexCoord1f(t[T[7][1]]); glVertex3f(r[T[7][1]].x, r[T[7][1]].y, r[T[7][1]].z);
-		glNormal3f(n[T[7][2]].x, n[T[7][2]].y, n[T[7][2]].z); glTexCoord1f(t[T[7][2]]); glVertex3f(r[T[7][2]].x, r[T[7][2]].y, r[T[7][2]].z);
-	}
-	glEnd();
+	glNormal3f(n[T[7][0]].x, n[T[7][0]].y, n[T[7][0]].z); glTexCoord1f(t[T[7][0]]); glVertex3f(r[T[7][0]].x, r[T[7][0]].y, r[T[7][0]].z);
+	glNormal3f(n[T[7][1]].x, n[T[7][1]].y, n[T[7][1]].z); glTexCoord1f(t[T[7][1]]); glVertex3f(r[T[7][1]].x, r[T[7][1]].y, r[T[7][1]].z);
+	glNormal3f(n[T[7][2]].x, n[T[7][2]].y, n[T[7][2]].z); glTexCoord1f(t[T[7][2]]); glVertex3f(r[T[7][2]].x, r[T[7][2]].y, r[T[7][2]].z);
 }
 
-void GLX::drawTriangle(vec3d r[3], vec3d n[3], GLColor c)
+void GLX::tri3(vec3d r[3], vec3f n[3])
 {
-	glColor4ub(c.r, c.g, c.b, c.a);
-
-	glBegin(GL_TRIANGLES);
-	{
-		glNormal3d(n[0].x, n[0].y, n[0].z);
-		glVertex3d(r[0].x, r[0].y, r[0].z);
-
-		glNormal3d(n[1].x, n[1].y, n[1].z);
-		glVertex3d(r[1].x, r[1].y, r[1].z);
-
-		glNormal3d(n[2].x, n[2].y, n[2].z);
-		glVertex3d(r[2].x, r[2].y, r[2].z);
-	}
-	glEnd();
+	vertex3d(r[0], n[0]);
+	vertex3d(r[1], n[1]);
+	vertex3d(r[2], n[2]);
 }
 
-void GLX::drawTriangle(vec3d r[3], vec3d& n, GLColor& c)
+void GLX::tri3(vec3d r[3], vec3f n[3], float t[3])
 {
-	glColor4ub(c.r, c.g, c.b, c.a);
-	glNormal3d(n.x, n.y, n.z);
-
-	glBegin(GL_TRIANGLES);
-	{
-		glVertex3d(r[0].x, r[0].y, r[0].z);
-		glVertex3d(r[1].x, r[1].y, r[1].z);
-		glVertex3d(r[2].x, r[2].y, r[2].z);
-	}
-	glEnd();
+	vertex3d(r[0], n[0], t[0]);
+	vertex3d(r[1], n[1], t[1]);
+	vertex3d(r[2], n[2], t[2]);
 }
 
-void GLX::drawTri3(vec3d r[3], vec3f n[3])
+void GLX::tri6(vec3d r[6], vec3f n[6], float t[6])
 {
-	glBegin(GL_TRIANGLES);
-	{
-		glNormal3f(n[0].x, n[0].y, n[0].z); glVertex3d(r[0].x, r[0].y, r[0].z);
-		glNormal3f(n[1].x, n[1].y, n[1].z); glVertex3d(r[1].x, r[1].y, r[1].z);
-		glNormal3f(n[2].x, n[2].y, n[2].z); glVertex3d(r[2].x, r[2].y, r[2].z);
-	}
-	glEnd();
+	vertex3d(r[0], n[0], t[0]); vertex3d(r[3], n[3], t[3]); vertex3d(r[5], n[5], t[5]);
+	vertex3d(r[1], n[1], t[1]); vertex3d(r[4], n[4], t[4]); vertex3d(r[3], n[3], t[3]);
+	vertex3d(r[2], n[2], t[2]); vertex3d(r[5], n[5], t[5]); vertex3d(r[4], n[4], t[4]);
+	vertex3d(r[3], n[3], t[3]); vertex3d(r[4], n[4], t[4]); vertex3d(r[5], n[5], t[5]);
 }
 
-void GLX::drawTri3(vec3d r[3], vec3f n[3], float t[3])
+void GLX::tri7(vec3d r[7], vec3f n[7], float t[7])
 {
-	glBegin(GL_TRIANGLES);
-	{
-		glNormal3f(n[0].x, n[0].y, n[0].z); glTexCoord1f(t[0]); glVertex3d(r[0].x, r[0].y, r[0].z);
-		glNormal3f(n[1].x, n[1].y, n[1].z); glTexCoord1f(t[1]); glVertex3d(r[1].x, r[1].y, r[1].z);
-		glNormal3f(n[2].x, n[2].y, n[2].z); glTexCoord1f(t[2]); glVertex3d(r[2].x, r[2].y, r[2].z);
-	}
-	glEnd();
+	vertex3d(r[0], n[0], t[0]); vertex3d(r[3], n[3], t[3]); vertex3d(r[6], n[6], t[6]);
+	vertex3d(r[1], n[1], t[1]); vertex3d(r[6], n[6], t[6]); vertex3d(r[3], n[3], t[3]);
+	vertex3d(r[1], n[1], t[1]); vertex3d(r[4], n[4], t[4]); vertex3d(r[6], n[6], t[6]);
+	vertex3d(r[2], n[2], t[6]); vertex3d(r[6], n[6], t[6]); vertex3d(r[4], n[4], t[4]);
+	vertex3d(r[2], n[2], t[2]); vertex3d(r[5], n[5], t[5]); vertex3d(r[6], n[6], t[6]);
+	vertex3d(r[0], n[0], t[0]); vertex3d(r[6], n[6], t[6]); vertex3d(r[5], n[5], t[5]);
 }
 
-void GLX::drawTri6(vec3d r[6], vec3f n[6], float t[6])
+void GLX::tri10(vec3d r[10], vec3f n[10], float t[10])
 {
-	glBegin(GL_TRIANGLES);
-	{
-		glNormal3f(n[0].x, n[0].y, n[0].z); glTexCoord1f(t[0]); glVertex3f(r[0].x, r[0].y, r[0].z);
-		glNormal3f(n[3].x, n[3].y, n[3].z); glTexCoord1f(t[3]); glVertex3f(r[3].x, r[3].y, r[3].z);
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-
-		glNormal3f(n[1].x, n[1].y, n[1].z); glTexCoord1f(t[1]); glVertex3f(r[1].x, r[1].y, r[1].z);
-		glNormal3f(n[4].x, n[4].y, n[4].z); glTexCoord1f(t[4]); glVertex3f(r[4].x, r[4].y, r[4].z);
-		glNormal3f(n[3].x, n[3].y, n[3].z); glTexCoord1f(t[3]); glVertex3f(r[3].x, r[3].y, r[3].z);
-
-		glNormal3f(n[2].x, n[2].y, n[2].z); glTexCoord1f(t[2]); glVertex3f(r[2].x, r[2].y, r[2].z);
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-		glNormal3f(n[4].x, n[4].y, n[4].z); glTexCoord1f(t[4]); glVertex3f(r[4].x, r[4].y, r[4].z);
-
-		glNormal3f(n[3].x, n[3].y, n[3].z); glTexCoord1f(t[3]); glVertex3f(r[3].x, r[3].y, r[3].z);
-		glNormal3f(n[4].x, n[4].y, n[4].z); glTexCoord1f(t[4]); glVertex3f(r[4].x, r[4].y, r[4].z);
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-	}
-	glEnd();
-}
-
-void GLX::drawTri7(vec3d r[7], vec3f n[7], float t[7])
-{
-	glBegin(GL_TRIANGLES);
-	{
-		glNormal3f(n[0].x, n[0].y, n[0].z); glTexCoord1f(t[0]); glVertex3f(r[0].x, r[0].y, r[0].z);
-		glNormal3f(n[3].x, n[3].y, n[3].z); glTexCoord1f(t[3]); glVertex3f(r[3].x, r[3].y, r[3].z);
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-
-		glNormal3f(n[1].x, n[1].y, n[1].z); glTexCoord1f(t[1]); glVertex3f(r[1].x, r[1].y, r[1].z);
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-		glNormal3f(n[3].x, n[3].y, n[3].z); glTexCoord1f(t[3]); glVertex3f(r[3].x, r[3].y, r[3].z);
-
-		glNormal3f(n[1].x, n[1].y, n[1].z); glTexCoord1f(t[1]); glVertex3f(r[1].x, r[1].y, r[1].z);
-		glNormal3f(n[4].x, n[4].y, n[4].z); glTexCoord1f(t[4]); glVertex3f(r[4].x, r[4].y, r[4].z);
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-
-		glNormal3f(n[2].x, n[2].y, n[2].z); glTexCoord1f(t[2]); glVertex3f(r[2].x, r[2].y, r[2].z);
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-		glNormal3f(n[4].x, n[4].y, n[4].z); glTexCoord1f(t[4]); glVertex3f(r[4].x, r[4].y, r[4].z);
-
-		glNormal3f(n[2].x, n[2].y, n[2].z); glTexCoord1f(t[2]); glVertex3f(r[2].x, r[2].y, r[2].z);
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-
-		glNormal3f(n[0].x, n[0].y, n[0].z); glTexCoord1f(t[0]); glVertex3f(r[0].x, r[0].y, r[0].z);
-		glNormal3f(n[6].x, n[6].y, n[6].z); glTexCoord1f(t[6]); glVertex3f(r[6].x, r[6].y, r[6].z);
-		glNormal3f(n[5].x, n[5].y, n[5].z); glTexCoord1f(t[5]); glVertex3f(r[5].x, r[5].y, r[5].z);
-	}
-	glEnd();
-}
-
-void GLX::drawTri10(vec3d r[10], vec3f n[10], float t[10])
-{
-	glBegin(GL_TRIANGLES);
-	{
-		vertex(n[0], r[0], t[0]); vertex(n[3], r[3], t[3]); vertex(n[7], r[7], t[7]);
-		vertex(n[1], r[1], t[1]); vertex(n[5], r[5], t[5]); vertex(n[4], r[4], t[4]);
-		vertex(n[2], r[2], t[2]); vertex(n[8], r[8], t[8]); vertex(n[6], r[6], t[6]);
-		vertex(n[9], r[9], t[9]); vertex(n[7], r[7], t[7]); vertex(n[3], r[3], t[3]);
-		vertex(n[9], r[9], t[9]); vertex(n[3], r[3], t[3]); vertex(n[4], r[4], t[4]);
-		vertex(n[9], r[9], t[9]); vertex(n[4], r[4], t[4]); vertex(n[5], r[5], t[5]);
-		vertex(n[9], r[9], t[9]); vertex(n[5], r[5], t[5]); vertex(n[6], r[6], t[6]);
-		vertex(n[9], r[9], t[9]); vertex(n[6], r[6], t[6]); vertex(n[8], r[8], t[8]);
-		vertex(n[9], r[9], t[9]); vertex(n[8], r[8], t[8]); vertex(n[7], r[7], t[7]);
-	}
-	glEnd();
+	vertex3d(r[0], n[0], t[0]); vertex3d(r[3], n[3], t[3]); vertex3d(r[7], n[7], t[7]);
+	vertex3d(r[1], n[1], t[1]); vertex3d(r[5], n[5], t[5]); vertex3d(r[4], n[4], t[4]);
+	vertex3d(r[2], n[2], t[2]); vertex3d(r[8], n[8], t[8]); vertex3d(r[6], n[6], t[6]);
+	vertex3d(r[9], n[9], t[9]); vertex3d(r[7], n[7], t[7]); vertex3d(r[3], n[3], t[3]);
+	vertex3d(r[9], n[9], t[9]); vertex3d(r[3], n[3], t[3]); vertex3d(r[4], n[4], t[4]);
+	vertex3d(r[9], n[9], t[9]); vertex3d(r[4], n[4], t[4]); vertex3d(r[5], n[5], t[5]);
+	vertex3d(r[9], n[9], t[9]); vertex3d(r[5], n[5], t[5]); vertex3d(r[6], n[6], t[6]);
+	vertex3d(r[9], n[9], t[9]); vertex3d(r[6], n[6], t[6]); vertex3d(r[8], n[8], t[8]);
+	vertex3d(r[9], n[9], t[9]); vertex3d(r[8], n[8], t[8]); vertex3d(r[7], n[7], t[7]);
 }
 
 void GLX::drawLine(double x0, double y0, double x1, double y1)
@@ -459,4 +306,370 @@ void GLX::drawLine(double x0, double y0, double z0, double x1, double y1, double
 		glVertex3d(x2, y2, z2);
 	}
 	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+// Render a sub-divided 4-noded quadrilateral
+void GLX::smoothQUAD4(vec3d r[4], vec3f n[4], float t[4], int ndivs)
+{
+	const int T[2][3] = { { 0,1,2 },{ 2,3,0 } };
+	float sa[4], ta[4], h[4];
+	for (int i = 0; i<ndivs; ++i)
+	{
+		sa[0] = -1.f + i*2.f / ndivs;
+		sa[1] = -1.f + (i + 1)*2.f / ndivs;
+		sa[2] = -1.f + (i + 1)*2.f / ndivs;
+		sa[3] = -1.f + i*2.f / ndivs;
+
+		for (int j = 0; j<ndivs; ++j)
+		{
+			ta[0] = -1.f + j*2.f / ndivs;
+			ta[1] = -1.f + j*2.f / ndivs;
+			ta[2] = -1.f + (j + 1)*2.f / ndivs;
+			ta[3] = -1.f + (j + 1)*2.f / ndivs;
+
+			for (int l = 0; l < 2; ++l)
+			{
+				for (int k = 0; k < 3; ++k)
+				{
+					float sak = sa[T[l][k]];
+					float tak = ta[T[l][k]];
+					h[0] = 0.25f*(1 - sak)*(1 - tak);
+					h[1] = 0.25f*(1 + sak)*(1 - tak);
+					h[2] = 0.25f*(1 + sak)*(1 + tak);
+					h[3] = 0.25f*(1 - sak)*(1 + tak);
+
+					vec3d nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3];
+					vec3d rk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3];
+					float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3];
+
+					glNormal3f(nk.x, nk.y, nk.z);
+					glTexCoord1f(tk);
+					glVertex3f(rk.x, rk.y, rk.z);
+				}
+			}
+		}
+	}
+}
+
+void GLX::smoothQUAD8(vec3d r[8], vec3f n[8], float t[8], int ndivs)
+{
+	const int T[2][3] = { { 0,1,2 },{ 2,3,0 } };
+	float sa[4], ta[4], h[8];
+	for (int i = 0; i<ndivs; ++i)
+	{
+		sa[0] = -1.f + i*2.f / ndivs;
+		sa[1] = -1.f + (i + 1)*2.f / ndivs;
+		sa[2] = -1.f + (i + 1)*2.f / ndivs;
+		sa[3] = -1.f + i*2.f / ndivs;
+
+		for (int j = 0; j<ndivs; ++j)
+		{
+			ta[0] = -1.f + j*2.f / ndivs;
+			ta[1] = -1.f + j*2.f / ndivs;
+			ta[2] = -1.f + (j + 1)*2.f / ndivs;
+			ta[3] = -1.f + (j + 1)*2.f / ndivs;
+
+			for (int l = 0; l < 2; ++l)
+			{
+				for (int k = 0; k < 3; ++k)
+				{
+					float sak = sa[T[l][k]];
+					float tak = ta[T[l][k]];
+					h[4] = 0.5f*(1 - sak*sak)*(1 - tak);
+					h[5] = 0.5f*(1 - tak*tak)*(1 + sak);
+					h[6] = 0.5f*(1 - sak*sak)*(1 + tak);
+					h[7] = 0.5f*(1 - tak*tak)*(1 - sak);
+
+					h[0] = 0.25f*(1 - sak)*(1 - tak) - (h[4] + h[7])*0.5f;
+					h[1] = 0.25f*(1 + sak)*(1 - tak) - (h[4] + h[5])*0.5f;
+					h[2] = 0.25f*(1 + sak)*(1 + tak) - (h[5] + h[6])*0.5f;
+					h[3] = 0.25f*(1 - sak)*(1 + tak) - (h[6] + h[7])*0.5f;
+
+					vec3f nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3] + n[4] * h[4] + n[5] * h[5] + n[6] * h[6] + n[7] * h[7];
+					vec3d rk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3] + r[4] * h[4] + r[5] * h[5] + r[6] * h[6] + r[7] * h[7];
+					float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3] + t[4] * h[4] + t[5] * h[5] + t[6] * h[6] + t[7] * h[7];
+
+					glNormal3f(nk.x, nk.y, nk.z);
+					glTexCoord1f(tk);
+					glVertex3d(rk.x, rk.y, rk.z);
+				}
+			}
+		}
+	}
+}
+
+void GLX::smoothQUAD9(vec3d r[9], vec3f n[9], float t[9], int ndivs)
+{
+	const int T[2][3] = { { 0,1,2 },{ 2,3,0 } };
+	float sa[4], ta[4], h[9], R[3], S[3];
+	for (int i = 0; i<ndivs; ++i)
+	{
+		sa[0] = -1.f + i*2.f / ndivs;
+		sa[1] = -1.f + (i + 1)*2.f / ndivs;
+		sa[2] = -1.f + (i + 1)*2.f / ndivs;
+		sa[3] = -1.f + i*2.f / ndivs;
+
+		for (int j = 0; j<ndivs; ++j)
+		{
+			ta[0] = -1.f + j*2.f / ndivs;
+			ta[1] = -1.f + j*2.f / ndivs;
+			ta[2] = -1.f + (j + 1)*2.f / ndivs;
+			ta[3] = -1.f + (j + 1)*2.f / ndivs;
+
+			for (int l = 0; l < 2; ++l)
+			{
+				for (int k = 0; k < 4; ++k)
+				{
+					float sak = sa[T[l][k]];
+					float tak = ta[T[l][k]];
+
+					R[0] = 0.5f*sak*(sak - 1.f);
+					R[1] = 0.5f*sak*(sak + 1.f);
+					R[2] = 1.0f - sak*sak;
+
+					S[0] = 0.5f*tak*(tak - 1.f);
+					S[1] = 0.5f*tak*(tak + 1.f);
+					S[2] = 1.0f - tak*tak;
+
+					h[0] = R[0] * S[0];
+					h[1] = R[1] * S[0];
+					h[2] = R[1] * S[1];
+					h[3] = R[0] * S[1];
+					h[4] = R[2] * S[0];
+					h[5] = R[1] * S[2];
+					h[6] = R[2] * S[1];
+					h[7] = R[0] * S[2];
+					h[8] = R[2] * S[2];
+
+					vec3f nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3] + n[4] * h[4] + n[5] * h[5] + n[6] * h[6] + n[7] * h[7] + n[8] * h[8];
+					vec3d rk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3] + r[4] * h[4] + r[5] * h[5] + r[6] * h[6] + r[7] * h[7] + r[8] * h[8];
+					float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3] + t[4] * h[4] + t[5] * h[5] + t[6] * h[6] + t[7] * h[7] + t[8] * h[8];
+
+					glNormal3f(nk.x, nk.y, nk.z);
+					glTexCoord1f(tk);
+					glVertex3f(rk.x, rk.y, rk.z);
+				}
+			}
+		}
+	}
+}
+
+void GLX::smoothTRI6(vec3d r[6], vec3f n[6], float t[6], int ndivs)
+{
+	float sa[2], ta[2], h[8];
+	int nj = ndivs;
+
+	int sl[2][3] = { { 0,1,0 },{ 1,1,0 } };
+	int tl[2][3] = { { 0,0,1 },{ 0,1,1 } };
+
+	for (int i = 0; i<ndivs; ++i)
+	{
+		ta[0] = (float)i / ndivs;
+		ta[1] = (float)(i + 1) / ndivs;
+
+		for (int j = 0; j<nj; ++j)
+		{
+			sa[0] = (float)j / ndivs;
+			sa[1] = (float)(j + 1) / ndivs;
+
+			for (int k = 0; k<3; ++k)
+			{
+				float sak = sa[sl[0][k]];
+				float tak = ta[tl[0][k]];
+				float rak = 1.f - sak - tak;
+
+				h[0] = rak*(2.f*rak - 1.f);
+				h[1] = sak*(2.f*sak - 1.f);
+				h[2] = tak*(2.f*tak - 1.f);
+				h[3] = 4.f*rak*sak;
+				h[4] = 4.f*sak*tak;
+				h[5] = 4.f*rak*tak;
+
+				vec3f nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3] + n[4] * h[4] + n[5] * h[5];
+				vec3d xk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3] + r[4] * h[4] + r[5] * h[5];
+				float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3] + t[4] * h[4] + t[5] * h[5];
+
+				glNormal3f(nk.x, nk.y, nk.z);
+				glTexCoord1f(tk);
+				glVertex3f(xk.x, xk.y, xk.z);
+			}
+
+			if (j != nj - 1)
+			{
+				for (int k = 0; k<3; ++k)
+				{
+					float sak = sa[sl[1][k]];
+					float tak = ta[tl[1][k]];
+					float rak = 1.f - sak - tak;
+
+					h[0] = rak*(2.f*rak - 1.f);
+					h[1] = sak*(2.f*sak - 1.f);
+					h[2] = tak*(2.f*tak - 1.f);
+					h[3] = 4.f*rak*sak;
+					h[4] = 4.f*sak*tak;
+					h[5] = 4.f*rak*tak;
+
+					vec3f nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3] + n[4] * h[4] + n[5] * h[5];
+					vec3d xk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3] + r[4] * h[4] + r[5] * h[5];
+					float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3] + t[4] * h[4] + t[5] * h[5];
+
+					glNormal3f(nk.x, nk.y, nk.z);
+					glTexCoord1f(tk);
+					glVertex3f(xk.x, xk.y, xk.z);
+				}
+			}
+		}
+		nj -= 1;
+	}
+}
+
+void GLX::smoothTRI7(vec3d r[7], vec3f n[7], float t[7], int ndivs)
+{
+	int sl[2][3] = { { 0,1,0 },{ 1,1,0 } };
+	int tl[2][3] = { { 0,0,1 },{ 0,1,1 } };
+
+	float sa[2], ta[2], tk, h[7];
+	int nj = ndivs;
+
+	for (int i = 0; i<ndivs; ++i)
+	{
+		ta[0] = (float)i / ndivs;
+		ta[1] = (float)(i + 1) / ndivs;
+
+		for (int j = 0; j<nj; ++j)
+		{
+			sa[0] = (float)j / ndivs;
+			sa[1] = (float)(j + 1) / ndivs;
+
+			for (int k = 0; k<3; ++k)
+			{
+				float sak = sa[sl[0][k]];
+				float tak = ta[tl[0][k]];
+				float rak = 1.f - sak - tak;
+
+				h[6] = 27.f*rak*sak*tak;
+				h[0] = rak*(2.f*rak - 1.f) + h[6] / 9.f;
+				h[1] = sak*(2.f*sak - 1.f) + h[6] / 9.f;
+				h[2] = tak*(2.f*tak - 1.f) + h[6] / 9.f;
+				h[3] = 4.f*rak*sak - 4.f*h[6] / 9.f;
+				h[4] = 4.f*sak*tak - 4.f*h[6] / 9.f;
+				h[5] = 4.f*tak*rak - 4.f*h[6] / 9.f;
+
+				vec3f nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3] + n[4] * h[4] + n[5] * h[5] + n[6] * h[6];
+				vec3d xk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3] + r[4] * h[4] + r[5] * h[5] + r[6] * h[6];
+				float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3] + t[4] * h[4] + t[5] * h[5] + t[6] * h[6];
+
+				glNormal3f(nk.x, nk.y, nk.z);
+				glTexCoord1f(tk);
+				glVertex3f(xk.x, xk.y, xk.z);
+			}
+
+			if (j != nj - 1)
+			{
+				for (int k = 0; k<3; ++k)
+				{
+					float sak = sa[sl[1][k]];
+					float tak = ta[tl[1][k]];
+					float rak = 1.f - sak - tak;
+
+					h[6] = 27.f*rak*sak*tak;
+					h[0] = rak*(2.f*rak - 1.f) + h[6] / 9.f;
+					h[1] = sak*(2.f*sak - 1.f) + h[6] / 9.f;
+					h[2] = tak*(2.f*tak - 1.f) + h[6] / 9.f;
+					h[3] = 4.f*rak*sak - 4.f*h[6] / 9.f;
+					h[4] = 4.f*sak*tak - 4.f*h[6] / 9.f;
+					h[5] = 4.f*tak*rak - 4.f*h[6] / 9.f;
+
+					vec3f nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3] + n[4] * h[4] + n[5] * h[5] + n[6] * h[6];
+					vec3d xk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3] + r[4] * h[4] + r[5] * h[5] + r[6] * h[6];
+					float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3] + t[4] * h[4] + t[5] * h[5] + t[6] * h[6];
+
+					glNormal3f(nk.x, nk.y, nk.z);
+					glTexCoord1f(tk);
+					glVertex3f(xk.x, xk.y, xk.z);
+				}
+			}
+		}
+		nj -= 1;
+	}
+}
+
+void GLX::smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs)
+{
+	float sa[2], ta[2], tk, h[10];
+	vec3d nk, xk;
+	int i, j, k;
+	int nj = ndivs;
+
+	int sl[2][3] = { { 0, 1, 0 },{ 1, 1, 0 } };
+	int tl[2][3] = { { 0, 0, 1 },{ 0, 1, 1 } };
+
+	for (i = 0; i<ndivs; ++i)
+	{
+		ta[0] = (float)i / ndivs;
+		ta[1] = (float)(i + 1) / ndivs;
+
+		for (j = 0; j<nj; ++j)
+		{
+			sa[0] = (float)j / ndivs;
+			sa[1] = (float)(j + 1) / ndivs;
+
+			for (k = 0; k<3; ++k)
+			{
+				float sak = sa[sl[0][k]];
+				float tak = ta[tl[0][k]];
+				float rak = 1.f - sak - tak;
+
+				h[0] = 0.5f*(3.f*rak - 1.f)*(3.f*rak - 2.f)*rak;
+				h[1] = 0.5f*(3.f*sak - 1.f)*(3.f*sak - 2.f)*sak;
+				h[2] = 0.5f*(3.f*tak - 1.f)*(3.f*tak - 2.f)*tak;
+				h[3] = 9.f / 2.f*(3.f*rak - 1.f)*rak*sak;
+				h[4] = 9.f / 2.f*(3.f*sak - 1.f)*rak*sak;
+				h[5] = 9.f / 2.f*(3.f*sak - 1.f)*sak*tak;
+				h[6] = 9.f / 2.f*(3.f*tak - 1.f)*sak*tak;
+				h[7] = 9.f / 2.f*(3.f*rak - 1.f)*rak*tak;
+				h[8] = 9.f / 2.f*(3.f*tak - 1.f)*rak*tak;
+				h[9] = 27.f*rak*sak*tak;
+
+				nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3] + n[4] * h[4] + n[5] * h[5] + n[6] * h[6] + n[7] * h[7] + n[8] * h[8] + n[9] * h[9];
+				xk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3] + r[4] * h[4] + r[5] * h[5] + r[6] * h[6] + r[7] * h[7] + r[8] * h[8] + r[9] * h[9];
+				tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3] + t[4] * h[4] + t[5] * h[5] + t[6] * h[6] + t[7] * h[7] + t[8] * h[8] + t[9] * h[9];
+
+				glNormal3f(nk.x, nk.y, nk.z);
+				glTexCoord1f(tk);
+				glVertex3f(xk.x, xk.y, xk.z);
+			}
+
+			if (j != nj - 1)
+			{
+				for (k = 0; k<3; ++k)
+				{
+					float sak = sa[sl[1][k]];
+					float tak = ta[tl[1][k]];
+					float rak = 1.f - sak - tak;
+
+					h[0] = 0.5f*(3.f*rak - 1.f)*(3.f*rak - 2.f)*rak;
+					h[1] = 0.5f*(3.f*sak - 1.f)*(3.f*sak - 2.f)*sak;
+					h[2] = 0.5f*(3.f*tak - 1.f)*(3.f*tak - 2.f)*tak;
+					h[3] = 9.f / 2.f*(3.f*rak - 1.f)*rak*sak;
+					h[4] = 9.f / 2.f*(3.f*sak - 1.f)*rak*sak;
+					h[5] = 9.f / 2.f*(3.f*sak - 1.f)*sak*tak;
+					h[6] = 9.f / 2.f*(3.f*tak - 1.f)*sak*tak;
+					h[7] = 9.f / 2.f*(3.f*rak - 1.f)*rak*tak;
+					h[8] = 9.f / 2.f*(3.f*tak - 1.f)*rak*tak;
+					h[9] = 27.f*rak*sak*tak;
+
+					nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3] + n[4] * h[4] + n[5] * h[5] + n[6] * h[6] + n[7] * h[7] + n[8] * h[8] + n[9] * h[9];
+					xk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3] + r[4] * h[4] + r[5] * h[5] + r[6] * h[6] + r[7] * h[7] + r[8] * h[8] + r[9] * h[9];
+					tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3] + t[4] * h[4] + t[5] * h[5] + t[6] * h[6] + t[7] * h[7] + t[8] * h[8] + t[9] * h[9];
+
+					glNormal3f(nk.x, nk.y, nk.z);
+					glTexCoord1f(tk);
+					glVertex3f(xk.x, xk.y, xk.z);
+				}
+			}
+		}
+		nj -= 1;
+	}
 }

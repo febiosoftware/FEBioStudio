@@ -607,14 +607,7 @@ void FEMeshBase::FaceNodeNormals(FEFace& f, vec3f* n)
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t, bool bnode)
+void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t)
 {
-	if (bnode)
-	{
-		for (int i = 0; i<f.Nodes(); ++i) t[i] = m_Node[f.n[i]].m_tex;
-	}
-	else
-	{
-		for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
-	}
+	for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
 }

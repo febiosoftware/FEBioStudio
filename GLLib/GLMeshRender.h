@@ -32,12 +32,23 @@ public:
 };
 
 // drawing routines for faces
-void RenderQUAD4(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode);
-void RenderQUAD8(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode);
-void RenderQUAD9(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode);
-void RenderTRI3 (FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode);
-void RenderTRI6 (FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode);
-void RenderTRI7 (FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode);
-void RenderTRI10(FECoreMesh* pm, FEFace& f, bool bsmooth, bool bnode);
+// Note: Call this from within glBegin(GL_TRIANGLES)\glEnd() section
+void RenderQUAD4(FECoreMesh* pm, FEFace& f, bool bsmooth);
+void RenderQUAD8(FECoreMesh* pm, FEFace& f, bool bsmooth);
+void RenderQUAD9(FECoreMesh* pm, FEFace& f, bool bsmooth);
+void RenderTRI3 (FECoreMesh* pm, FEFace& f, bool bsmooth);
+void RenderTRI6 (FECoreMesh* pm, FEFace& f, bool bsmooth);
+void RenderTRI7 (FECoreMesh* pm, FEFace& f, bool bsmooth);
+void RenderTRI10(FECoreMesh* pm, FEFace& f, bool bsmooth);
 
-void RenderSmoothQUAD4(vec3f r[4], vec3f n[4], float q[4], int ndivs);
+void RenderSmoothQUAD4(FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderSmoothQUAD8(FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderSmoothQUAD9(FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderSmoothTRI3 (FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderSmoothTRI6 (FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderSmoothTRI7 (FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderSmoothTRI10(FECoreMesh* pm, FEFace& face, int ndivs);
+
+void RenderFace1Outline(FECoreMesh* pm, FEFace& face);
+void RenderFace2Outline(FECoreMesh* pm, FEFace& face, int ndivs);
+void RenderFace3Outline(FECoreMesh* pm, FEFace& face, int ndivs);

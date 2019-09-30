@@ -346,6 +346,8 @@ void CGLPlaneCutPlot::RenderMesh()
 	// calculate plane normal
 	vec3d norm = GetPlaneNormal();
 
+	Post::FEState& state = *ps->GetActiveState();
+
 	// repeat over all elements
 	for (i=0; i<pm->Elements(); ++i)
 	{
@@ -376,7 +378,7 @@ void CGLPlaneCutPlot::RenderMesh()
 			{
 				FENode& node = pm->Node(el.m_node[nt[k]]);
 				en[k] = el.m_node[k];
-				ev[k] = node.m_tex;
+				ev[k] = state.m_NODE[el.m_node[k]].m_val;
 				ex[k] = node.r;
 			}
 
@@ -539,9 +541,14 @@ void CGLPlaneCutPlot::UpdateSlice()
 	FEMeshBase* pm = mdl->GetActiveMesh();
 
 	CGLColorMap& colorMap = *mdl->GetColorMap();
-	bool bnode = colorMap.DisplayNodalValues();
+
+	float rng[2];
+	colorMap.GetRange(rng);
+	if (rng[1] == rng[0]) ++rng[1];
 
 	m_slice.Clear();
+
+	Post::FEState& state = *ps->GetActiveState();
 
 	// loop over all domains
 	for (int n=0; n<pm->Domains(); ++n)
@@ -585,7 +592,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 								nf[k] = (node.m_bext?1:0);
 								ex[k] = to_vec3f(node.r);
 								en[k] = el.m_node[k];
-								ev[k] = (bnode ? node.m_tex : el.m_tex);
+								ev[k] = state.m_NODE[el.m_node[k]].m_val;
 							}
 
 							// calculate the case of the element
@@ -622,8 +629,11 @@ void CGLPlaneCutPlot::UpdateSlice()
 									else 
 										w = 0.f;
 
+									float v = ev[n1] * (1 - w) + ev[n2] * w;
+									v = (v - rng[0]) / (rng[1] - rng[0]);
+
 									r[k] = ex[n1]*(1-w) + ex[n2]*w;
-									tex[k] = ev[n1]*(1-w) + ev[n2]*w;
+									tex[k] = v;
 									rf[k] = ((nf[n1]==1)&&(nf[n2]==1)?1:0);
 								}
 

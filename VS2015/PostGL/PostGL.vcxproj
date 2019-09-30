@@ -161,7 +161,6 @@
     <ClCompile Include="..\..\PostGL\GLTensorPlot.cpp" />
     <ClCompile Include="..\..\PostGL\GLVectorPlot.cpp" />
     <ClCompile Include="..\..\PostGL\GLVolumeFlowPlot.cpp" />
-    <ClCompile Include="..\..\PostGL\render.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\PostGL\GLVolumeFlowPlot.h" />

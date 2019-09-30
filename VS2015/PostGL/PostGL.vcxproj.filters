@@ -66,9 +66,6 @@
     <ClCompile Include="..\..\PostGL\GLVectorPlot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\PostGL\render.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\PostGL\GLVolumeFlowPlot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

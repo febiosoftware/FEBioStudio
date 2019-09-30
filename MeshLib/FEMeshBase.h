@@ -51,7 +51,7 @@ public:
 	// --- F A C E   D A T A ---
 	void FaceNodePosition(const FEFace& f, vec3d* r) const;
 	void FaceNodeNormals(FEFace& f, vec3f* n);
-	void FaceNodeTexCoords(FEFace& f, float* t, bool bnode);
+	void FaceNodeTexCoords(FEFace& f, float* t);
 
 	void ClearFaceSelection();
 

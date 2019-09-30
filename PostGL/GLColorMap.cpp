@@ -168,22 +168,30 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	}
 	else
 	{
-		for (int i = 0; i<pm->Nodes(); ++i)
+		for (int i = 0; i<pm->Faces(); ++i)
 		{
-			FENode& node = pm->Node(i);
-			NODEDATA& d0 = s0.m_NODE[i];
-			NODEDATA& d1 = s1.m_NODE[i];
-			if ((pm->Node(i).IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
+			FEFace& face = pm->Face(i);
+			if (face.IsEnabled())
 			{
-				float f0 = d0.m_val;
-				float f1 = d1.m_val;
-				float f = f0 + (f1 - f0)*w;
-				node.m_tex = f;
-				node.m_ntag = 1;
-				if (f > fmax) fmax = f;
-				if (f < fmin) fmin = f;
+				for (int j = 0; j < face.Nodes(); ++j)
+				{
+					int nj = face.n[j];
+					FENode& node = pm->Node(nj);
+					NODEDATA& d0 = s0.m_NODE[nj];
+					NODEDATA& d1 = s1.m_NODE[nj];
+					if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
+					{
+						float f0 = d0.m_val;
+						float f1 = d1.m_val;
+						float f = f0 + (f1 - f0)*w;
+						face.m_tex[j] = f;
+						node.m_ntag = 1;
+						if (f > fmax) fmax = f;
+						if (f < fmin) fmin = f;
+					}
+					else node.m_ntag = 0;
+				}
 			}
-			else node.m_ntag = 0;
 		}
 	}
 
@@ -243,13 +251,6 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	float min = m_range.min;
 	float max = m_range.max;
 	if (min == max) max++;
-	for (int i = 0; i<pm->Nodes(); ++i)
-	{
-		FENode& node = pm->Node(i);
-		if (node.IsEnabled() && (node.m_ntag > 0))
-			node.m_tex = (node.m_tex - min) / (max - min);
-		else node.m_tex = 0;
-	}
 
 	float dti = 1.f / (max - min);
 	for (int i = 0; i<pm->Faces(); ++i)

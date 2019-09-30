@@ -560,8 +560,6 @@ void CGLModel::RenderSurface(FEModel* ps, CGLContext& rc)
 
 void CGLModel::RenderSelection(CGLContext &rc)
 {
-	bool bnode = m_pcol->DisplayNodalValues();
-
 	int mode = GetSelectionMode();
 
 	// get the mesh
@@ -587,7 +585,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 			if (face.IsSelected())
 			{
 				// okay, we got one, so let's render it
-				RenderFace(face, pm, ndivs, bnode);
+				RenderFace(face, pm, ndivs);
 			}
 		}
 	}
@@ -602,7 +600,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 			if (el.IsSelected())
 			{
 				// okay, we got one, so let's render it
-				RenderFace(face, pm, ndivs, bnode);
+				RenderFace(face, pm, ndivs);
 			}
 		}
 	}
@@ -751,8 +749,6 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 	glPushAttrib(GL_ENABLE_BIT);
 	if (pmat->bclip == false) CGLPlaneCutPlot::DisableClipPlanes();
 
-	bool bnode = m_pcol->DisplayNodalValues();
-
 	// render the unselected faces
 	FEDomain& dom = pm->Domain(m);
 	int NF = dom.Faces();
@@ -812,7 +808,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 			}
 
 			// okay, we got one, so let's render it
-			RenderFace(face, pm, c, ndivs, bnode);
+			RenderFace(face, pm, c, ndivs);
 		}
 	}
 
@@ -860,7 +856,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 			}
 
 			// okay, we got one, so let's render it
-			RenderFace(face, pm, c, ndivs, bnode);
+			RenderFace(face, pm, c, ndivs);
 		}
 	}
 	glPopAttrib();
@@ -882,7 +878,6 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 //-----------------------------------------------------------------------------
 void CGLModel::RenderInnerSurface(int m)
 {
-	bool bnode = m_pcol->DisplayNodalValues();
 	bool old_smooth = m_bsmooth;
 	m_bsmooth = false;
 	Post::FEMeshBase* pm = GetActiveMesh();
@@ -890,7 +885,7 @@ void CGLModel::RenderInnerSurface(int m)
 	for (int i = 0; i<surf.Faces(); ++i)
 	{
 		FEFace& face = surf.Face(i);
-		RenderFace(face, pm, 1, bnode);
+		RenderFace(face, pm, 1);
 	}
 	m_bsmooth = old_smooth;
 }
@@ -912,7 +907,6 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 {
 	FEMeshBase* pm = GetActiveMesh();
 	int ndivs = GetSubDivisions();
-	bool bnode = m_pcol->DisplayNodalValues();
 
 	if (btex) glEnable(GL_TEXTURE_1D);
 
@@ -924,7 +918,7 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 		if (face.m_ntag == 1)
 		{
 			// okay, we got one, so let's render it
-			RenderFace(face, pm, ndivs, bnode);
+			RenderFace(face, pm, ndivs);
 		}
 	}
 
@@ -937,7 +931,7 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 		if (face.m_ntag == 2)
 		{
 			// okay, we got one, so let's render it
-			RenderFace(face, pm, ndivs, bnode);
+			RenderFace(face, pm, ndivs);
 		}
 	}
 	if (btex) glEnable(GL_TEXTURE_1D);
@@ -1402,24 +1396,6 @@ void CGLModel::RenderNormals(CGLContext& rc)
 	glPopAttrib();
 }
 
-
-//-----------------------------------------------------------------------------
-// Render a textured face.
-void CGLModel::RenderTexFace(FEFace& face, Post::FEMeshBase* pm)
-{
-	switch (face.m_type)
-	{
-	case FE_FACE_QUAD4: RenderTexQUAD4(face, pm); break;
-	case FE_FACE_QUAD8:
-	case FE_FACE_QUAD9: RenderTexQUAD8(face, pm); break;
-	case FE_FACE_TRI3 : RenderTexTRI3(face, pm); break;
-	case FE_FACE_TRI6 : RenderTexTRI6(face, pm); break;
-	case FE_FACE_TRI7 : RenderTexTRI7(face, pm); break;
-	default:
-		assert(false);
-	}
-}
-
 //-----------------------------------------------------------------------------
 // Render the mesh lines for a specific material
 //
@@ -1690,61 +1666,60 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, int ndivs, bool bnode)
+void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, int ndivs)
 {
 	if (m_bShell2Hex)
 	{
-		int ntype = pm->ElementRef(face.m_elem[0]).Type();
-		if ((ntype == FE_QUAD4) || (ntype == FE_QUAD8) || (ntype == FE_QUAD9) || (ntype == FE_TRI3) || (ntype == FE_TRI6))
+		if (pm->ElementRef(face.m_elem[0]).IsShell())
 		{
 			RenderThickShell(face, pm);
 			return;
 		}
 	}
 
-	// Render the facet
-	switch (face.m_type)
+	glBegin(GL_TRIANGLES);
+	if (ndivs == 1)
 	{
-	case FE_FACE_QUAD4:
-		if (ndivs == 1) RenderQUAD4(pm, face, m_bsmooth, bnode);
-		else RenderSmoothQUAD4(face, pm, ndivs, bnode);
-		break;
-	case FE_FACE_QUAD8:
-		if (ndivs == 1) RenderQUAD8(pm, face, m_bsmooth, bnode);
-		else RenderSmoothQUAD8(face, pm, ndivs, bnode);
-		break;
-	case FE_FACE_QUAD9:
-		if (ndivs == 1) RenderQUAD9(pm, face, m_bsmooth, bnode);
-		else RenderSmoothQUAD9(face, pm, ndivs, bnode);
-		break;
-	case FE_FACE_TRI3:
-		RenderTRI3(pm, face, m_bsmooth, bnode);
-		break;
-	case FE_FACE_TRI6:
-		if (ndivs == 1) RenderTRI6(pm, face, m_bsmooth, bnode);
-		else RenderSmoothTRI6(face, pm, ndivs, bnode);
-		break;
-	case FE_FACE_TRI7:
-		if (ndivs == 1) RenderTRI7(pm, face, m_bsmooth, bnode);
-		else RenderSmoothTRI7(face, pm, ndivs, bnode);
-		break;
-	case FE_FACE_TRI10:
-		if (ndivs == 1) RenderTRI10(pm, face, m_bsmooth, bnode);
-		else RenderSmoothTRI10(face, pm, ndivs, bnode);
-		break;
-	default:
-		assert(false);
+		// Render the facet
+		switch (face.m_type)
+		{
+		case FE_FACE_QUAD4: RenderQUAD4(pm, face, m_bsmooth); break;
+		case FE_FACE_QUAD8: RenderQUAD8(pm, face, m_bsmooth); break;
+		case FE_FACE_QUAD9: RenderQUAD9(pm, face, m_bsmooth); break;
+		case FE_FACE_TRI3 : RenderTRI3 (pm, face, m_bsmooth); break;
+		case FE_FACE_TRI6 : RenderTRI6 (pm, face, m_bsmooth); break;
+		case FE_FACE_TRI7 : RenderTRI7 (pm, face, m_bsmooth); break;
+		case FE_FACE_TRI10: RenderTRI10(pm, face, m_bsmooth); break;
+		default:
+			assert(false);
+		}
 	}
+	else
+	{
+		// Render the facet
+		switch (face.m_type)
+		{
+		case FE_FACE_QUAD4: RenderSmoothQUAD4(pm, face, ndivs); break;
+		case FE_FACE_QUAD8: RenderSmoothQUAD8(pm, face, ndivs); break;
+		case FE_FACE_QUAD9: RenderSmoothQUAD9(pm, face, ndivs); break;
+		case FE_FACE_TRI3 : RenderSmoothTRI3 (pm, face, ndivs); break;
+		case FE_FACE_TRI6 : RenderSmoothTRI6 (pm, face, ndivs); break; 
+		case FE_FACE_TRI7 : RenderSmoothTRI7 (pm, face, ndivs); break;
+		case FE_FACE_TRI10: RenderSmoothTRI10(pm, face, ndivs); break;
+		default:
+			assert(false);
+		}
+	}
+	glEnd();
 }
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, GLColor c[4], int ndivs, bool bnode)
+void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, GLColor c[4], int ndivs)
 {
 	if (m_bShell2Hex)
 	{
-		int ntype = pm->ElementRef(face.m_elem[0]).Type();
-		if ((ntype == FE_QUAD4) || (ntype == FE_QUAD8) || (ntype == FE_QUAD9) || (ntype == FE_TRI3) || (ntype == FE_TRI6))
+		if (pm->ElementRef(face.m_elem[0]).IsShell())
 		{
 			RenderThickShell(face, pm);
 			return;
@@ -1764,7 +1739,7 @@ void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, GLColor c[4], int 
 	vec3f& fn = face.m_fn;
 
 	float t[4];
-	pm->FaceNodeTexCoords(face, t, bnode);
+	pm->FaceNodeTexCoords(face, t);
 
 	if (m_bsmooth)
 	{
@@ -1784,7 +1759,12 @@ void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, GLColor c[4], int 
 				}
 				glEnd();
 			}
-			else RenderSmoothQUAD4(face, pm, ndivs, bnode);
+			else
+			{
+				glBegin(GL_TRIANGLES);
+				RenderSmoothQUAD4(pm, face, ndivs);
+				glEnd();
+			}
 			break;
 		case FE_FACE_TRI3:
 		case FE_FACE_TRI6:
@@ -1967,8 +1947,7 @@ void CGLModel::RenderFaceOutline(FEFace& face, Post::FEMeshBase* pm, int ndivs)
 {
 	if (m_bShell2Hex)
 	{
-		int ntype = pm->ElementRef(face.m_elem[0]).Type();
-		if ((ntype == FE_QUAD4) || (ntype == FE_QUAD8) || (ntype == FE_QUAD9) || (ntype == FE_TRI3) || (ntype == FE_TRI6))
+		if (pm->ElementRef(face.m_elem[0]).IsShell())
 		{
 			RenderThickShellOutline(face, pm);
 			return;
@@ -1979,19 +1958,23 @@ void CGLModel::RenderFaceOutline(FEFace& face, Post::FEMeshBase* pm, int ndivs)
 	glGetBooleanv(GL_TEXTURE_1D, &btex);
 	glDisable(GL_TEXTURE_1D);
 
-	// render the edges of the fae
-	switch (face.m_type)
+	glBegin(GL_LINE_LOOP);
 	{
-	case FE_FACE_TRI3 :
-	case FE_FACE_QUAD4: RenderFace1Outline(face, pm); break;
-	case FE_FACE_TRI6:
-	case FE_FACE_TRI7:
-	case FE_FACE_QUAD8:
-	case FE_FACE_QUAD9: RenderFace2Outline(face, pm, ndivs); break;
-	case FE_FACE_TRI10: RenderFace3Outline(face, pm, ndivs); break;
-	default:
-		assert(false);
+		// render the edges of the face
+		switch (face.m_type)
+		{
+		case FE_FACE_TRI3 :
+		case FE_FACE_QUAD4: RenderFace1Outline(pm, face); break;
+		case FE_FACE_TRI6:
+		case FE_FACE_TRI7:
+		case FE_FACE_QUAD8:
+		case FE_FACE_QUAD9: RenderFace2Outline(pm, face, ndivs); break;
+		case FE_FACE_TRI10: RenderFace3Outline(pm, face, ndivs); break;
+		default:
+			assert(false);
+		}
 	}
+	glEnd();
 
 	if (btex) glEnable(GL_TEXTURE_1D);
 }
@@ -2212,12 +2195,9 @@ void CGLModel::RenderThickTri(FEFace &face, Post::FEMeshBase* pm)
 
 	vec3f fn = face.m_fn;
 
-//	float t1 = face.m_tex[0];
-//	float t2 = face.m_tex[1];
-//	float t3 = face.m_tex[2];
-	float t1 = pm->Node(face.n[0]).m_tex;
-	float t2 = pm->Node(face.n[1]).m_tex;
-	float t3 = pm->Node(face.n[2]).m_tex;
+	float t1 = face.m_tex[0];
+	float t2 = face.m_tex[1];
+	float t3 = face.m_tex[2];
 
 	if (m_bsmooth)
 	{

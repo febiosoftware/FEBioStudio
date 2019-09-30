@@ -6526,15 +6526,15 @@ void CGLView::RenderFEFace(FEFace& face, FEMeshBase* pm)
 
 		glBegin(GL_TRIANGLES);
 		{
-			GLX::vertex(n1, r1); GLX::vertex(n4, r4); GLX::vertex(n8, r8);
-			GLX::vertex(n2, r2); GLX::vertex(n6, r6); GLX::vertex(n5, r5);
-			GLX::vertex(n3, r3); GLX::vertex(n9, r9); GLX::vertex(n7, r7);
-			GLX::vertex(n10, r10); GLX::vertex(n8, r8); GLX::vertex(n4, r4);
-			GLX::vertex(n10, r10); GLX::vertex(n4, r4); GLX::vertex(n5, r5);
-			GLX::vertex(n10, r10); GLX::vertex(n5, r5); GLX::vertex(n6, r6);
-			GLX::vertex(n10, r10); GLX::vertex(n6, r6); GLX::vertex(n7, r7);
-			GLX::vertex(n10, r10); GLX::vertex(n7, r7); GLX::vertex(n9, r9);
-			GLX::vertex(n10, r10); GLX::vertex(n9, r9); GLX::vertex(n8, r8);
+			GLX::vertex3d(r1 , n1 ); GLX::vertex3d(r4, n4); GLX::vertex3d(r8, n8);
+			GLX::vertex3d(r2 , n2 ); GLX::vertex3d(r6, n6); GLX::vertex3d(r5, n5);
+			GLX::vertex3d(r3 , n3 ); GLX::vertex3d(r9, n9); GLX::vertex3d(r7, n7);
+			GLX::vertex3d(r10, n10); GLX::vertex3d(r8, n8); GLX::vertex3d(r4, n4);
+			GLX::vertex3d(r10, n10); GLX::vertex3d(r4, n4); GLX::vertex3d(r5, n5);
+			GLX::vertex3d(r10, n10); GLX::vertex3d(r5, n5); GLX::vertex3d(r6, n6);
+			GLX::vertex3d(r10, n10); GLX::vertex3d(r6, n6); GLX::vertex3d(r7, n7);
+			GLX::vertex3d(r10, n10); GLX::vertex3d(r7, n7); GLX::vertex3d(r9, n9);
+			GLX::vertex3d(r10, n10); GLX::vertex3d(r9, n9); GLX::vertex3d(r8, n8);
 		}
 		glEnd();
 	}

@@ -27,5 +27,4 @@ public:
 public:
 	vec3d	r;			// nodal position
 	bool	m_bext;		// exterior node or not?
-	float	m_tex;		// nodal texture coordinate (used in Post)
 };
