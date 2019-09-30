@@ -31,6 +31,7 @@ public:
 	std::string remoteDir;
 	std::string jobName;
 	std::string walltime;
+	std::string customFile;
 	int procNum = 0;
 	int ram = 0;
 

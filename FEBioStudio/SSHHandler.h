@@ -77,6 +77,7 @@ private:
 	std::string GetSFTPErrorText(int sftpErr);
 
 	int CreateBashFile();
+	int ParseCustomFile(std::vector<std::string>& commands);
 
 private:
 	SSHData*	m_data;

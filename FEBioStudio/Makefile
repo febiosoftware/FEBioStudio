@@ -609,7 +609,6 @@ DIST          = ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_pre.pr
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/qt_config.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/qmake.conf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/exclusive_builds.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/toolchain.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/default_pre.prf \
@@ -1077,7 +1076,6 @@ Makefile: FEBioStudio.pro ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/qt_config.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/qmake.conf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/exclusive_builds.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/toolchain.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/default_pre.prf \
@@ -1276,7 +1274,6 @@ Makefile: FEBioStudio.pro ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/qt_config.prf:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++/qmake.conf:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_post.prf:
-.qmake.stash:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/exclusive_builds.prf:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/toolchain.prf:
 ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/default_pre.prf:
@@ -27624,6 +27621,7 @@ modelcheck.o: modelcheck.cpp ../MeshTools/stdafx.h \
 		../PostLib/GDecoration.h \
 		../PostGL/GLPlot.h \
 		../PostLib/DataMap.h \
+		../GLLib/GLMeshRender.h \
 		../GeomLib/GObject.h \
 		../GeomLib/GBaseObject.h \
 		../GeomLib/GTransform.h \
@@ -28363,6 +28361,7 @@ ModelTree.o: ModelTree.cpp ../MeshTools/stdafx.h \
 		../PostLib/GDecoration.h \
 		../PostGL/GLPlot.h \
 		../PostLib/DataMap.h \
+		../GLLib/GLMeshRender.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QMessageBox \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qmessagebox.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
@@ -28394,7 +28393,6 @@ ModelTree.o: ModelTree.cpp ../MeshTools/stdafx.h \
 		../MeshLib/Intersect.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -29762,6 +29760,7 @@ PostDoc.o: PostDoc.cpp ../MeshTools/stdafx.h \
 		../PostGL/GLPlot.h \
 		../PostLib/DataMap.h \
 		../FSCore/FSObjectList.h \
+		../GLLib/GLMeshRender.h \
 		GLView.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QOpenGLWidget \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qopenglwidget.h \
@@ -29810,7 +29809,6 @@ PostDoc.o: PostDoc.cpp ../MeshTools/stdafx.h \
 		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
-		../GLLib/GLMeshRender.h \
 		../MeshTools/FEExtrudeFaces.h \
 		../MeshTools/FEModifier.h \
 		../GLWLib/GLWidgetManager.h \
@@ -31557,7 +31555,8 @@ SSHHandler.o: SSHHandler.cpp ../MeshTools/stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlineedit.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qframe.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextcursor.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QTextStream
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SSHHandler.o SSHHandler.cpp
 
 SSHThread.o: SSHThread.cpp SSHThread.h \

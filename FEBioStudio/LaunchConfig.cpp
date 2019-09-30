@@ -13,6 +13,7 @@ CLaunchConfig::CLaunchConfig(const CLaunchConfig &old)
 	jobName = old.jobName;
 	walltime = old.walltime;
 	procNum = old.procNum;
+	customFile = old.customFile;
 	ram = old.ram;
 }
 
@@ -28,6 +29,7 @@ void CLaunchConfig::operator=(const CLaunchConfig &old)
 	jobName = old.jobName;
 	walltime = old.walltime;
 	procNum = old.procNum;
+	customFile = old.customFile;
 	ram = old.ram;
 }
 
@@ -47,6 +49,7 @@ bool CLaunchConfig::operator==(const CLaunchConfig &b)
 	if(remoteDir.compare(b.remoteDir) != 0) return false;
 	if(jobName.compare(b.jobName) != 0) return false;
 	if(walltime.compare(b.walltime) != 0) return false;
+	if(customFile.compare(b.customFile) != 0) return false;
 	if(ram != b.ram) return false;
 
 	return true;
@@ -74,6 +77,7 @@ void CLaunchConfig::Save(OArchive& ar)
 	ar.WriteChunk(CID_LCONFIG_WALLTIME, walltime);
 	ar.WriteChunk(CID_LCONFIG_PROCNUM, procNum);
 	ar.WriteChunk(CID_LCONFIG_RAM, ram);
+	ar.WriteChunk(CID_LCONFIG_CUSTOMEFILE, customFile);
 }
 
 void CLaunchConfig::Load(IArchive& ar)
@@ -93,6 +97,7 @@ void CLaunchConfig::Load(IArchive& ar)
 		case CID_LCONFIG_WALLTIME: ar.read(walltime); break;
 		case CID_LCONFIG_PROCNUM: ar.read(procNum); break;
 		case CID_LCONFIG_RAM: ar.read(ram); break;
+		case CID_LCONFIG_CUSTOMEFILE: ar.read(customFile); break;
 		}
 		ar.CloseChunk();
 	}

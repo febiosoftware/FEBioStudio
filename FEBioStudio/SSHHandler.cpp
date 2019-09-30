@@ -15,6 +15,7 @@
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
 #include <QInputDialog>
+#include <QTextStream>
 
 #define MAX_XFER_BUF_SIZE 16384
 
@@ -149,6 +150,25 @@ void CSSHHandler::StartRemoteJob()
 		{
 			m_data->code = FAILED;
 			m_data->msg = "Failed to run remote command.";
+			return;
+		}
+	}
+	else if(m_data->job->GetLaunchConfig()->type == CUSTOM)
+	{
+		std:vector<std::string> commands;
+		if(ParseCustomFile(commands) != SSH_OK) return;
+
+		if(commands.empty())
+		{
+			m_data->code = FAILED;
+			m_data->msg = QString("File: %1\n contained no commands.");
+			return;
+		}
+
+		if(RunCommandList(commands) != SSH_OK)
+		{
+			m_data->code = FAILED;
+			m_data->msg = "Failed to run remote commands.";
 			return;
 		}
 	}
@@ -970,6 +990,31 @@ int CSSHHandler::CreateBashFile()
 	return SendFile(bashString.c_str(), sizeof(char)*bashString.length(), remote);
 
 }
+
+int CSSHHandler::ParseCustomFile(std::vector<std::string>& commands)
+{
+	QString customFile = m_data->job->GetLaunchConfig()->customFile.c_str();
+	QFile file(customFile);
+	if(!file.open(QIODevice::ReadOnly))
+	{
+		m_data->msg = QString("Failed to open local custom script file:\n%1").arg(customFile);
+		m_data->code = FAILED;
+		return SSH_ERROR;
+	}
+
+	QTextStream in(&file);
+	while(!in.atEnd())
+	{
+		QString line = in.readLine();
+		if(line.startsWith("#")) continue;
+
+		commands.push_back(line.toStdString());
+	}
+	file.close();
+
+	return SSH_OK;
+}
+
 
 bool CSSHHandler::IsBusy()
 {

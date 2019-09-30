@@ -43,17 +43,18 @@ public:
 	QWidget* remotePage;
 	QWidget* PBSPage;
 	QWidget* SlurmPage;
-	//	QWidget* customPage;
+	QWidget* customPage;
 
 	QFormLayout* baseForm;
 	QFormLayout* localForm;
 	QFormLayout* remoteForm;
 	QFormLayout* PBSForm;
 	QFormLayout* SlurmForm;
-	//	QFormLayout* customForm;
+	QFormLayout* customForm;
 
-	// Appear on every config type
 	QComboBox*	launchType;
+
+	// Local config widgets
 	QLineEdit*	localPath;
 
 	// Remote config widgets
@@ -85,6 +86,13 @@ public:
 	QSpinBox*	SlurmProcNum;
 	QSpinBox*	SlurmRam;
 
+	// Custom config widgets
+	QLineEdit*	customFile;
+	QLineEdit*	customServer;
+	QSpinBox*	customPort;
+	QLineEdit*	customUserName;
+	QLineEdit*	customRemoteDir;
+
 	std::vector<CLaunchConfig>* launchConfigs;
 	std::unordered_map<QListWidgetItem*, CLaunchConfig> tempLaunchConfigs;
 
@@ -100,9 +108,6 @@ public:
 		baseForm->addRow("Launch Type:", launchType = new QComboBox);
 		launchType->addItem("Local");
 
-		// Appear on every config type
-//		baseForm->addRow("FEBio executable:", path = new QLineEdit);
-
 		localPage = new QWidget;
 		localForm = new QFormLayout;
 		localForm->setLabelAlignment(Qt::AlignRight);
@@ -116,12 +121,12 @@ public:
 		launchType->addItem("Remote");
 		launchType->addItem("PBS Queue");
 		launchType->addItem("Slurm Queue");
-//		launchType->addItem("Custom Remote");
+		launchType->addItem("Custom Remote");
 
 		remotePage = new QWidget;
 		PBSPage = new QWidget;
 		SlurmPage = new QWidget;
-		//	customPage = new QWidget;
+		customPage = new QWidget;
 
 		remoteForm = new QFormLayout;
 		remoteForm->setLabelAlignment(Qt::AlignRight);
@@ -134,6 +139,10 @@ public:
 		SlurmForm = new QFormLayout;
 		SlurmForm->setLabelAlignment(Qt::AlignRight);
 		SlurmForm->setContentsMargins(0,0,0,0);
+
+		customForm = new QFormLayout;
+		customForm->setLabelAlignment(Qt::AlignRight);
+		customForm->setContentsMargins(0,0,0,0);
 
 		// Remote config widgets
 		remoteForm->addRow("Remote executable:", remotePath = new QLineEdit);
@@ -194,6 +203,19 @@ public:
 
 		SlurmPage->setLayout(SlurmForm);
 		stack->addWidget(SlurmPage);
+
+
+		// Custom config widgets
+		customForm->addRow("Custom Script", customFile = new QLineEdit);
+		customForm->addRow("Server:", customServer = new QLineEdit);
+		customForm->addRow("Port:", customPort = new QSpinBox);
+		customPort->setValue(22);
+		customPort->setMaximum(65535);
+		customForm->addRow("Username:", customUserName = new QLineEdit);
+		customForm->addRow("Remote Directory:", customRemoteDir = new QLineEdit);
+
+		customPage->setLayout(customForm);
+		stack->addWidget(customPage);
 #endif
 		QVBoxLayout* v1 = new QVBoxLayout;
 		v1->addLayout(baseForm);
@@ -312,6 +334,14 @@ void CDlgEditPath::UpdateConfig(QListWidgetItem* item)
 		launchConfig.procNum = ui->SlurmProcNum->value();
 		launchConfig.ram = ui->SlurmRam->value();
 		break;
+	case CUSTOM:
+		launchConfig.customFile = ui->customFile->text().toStdString();
+		launchConfig.server = ui->customServer->text().toStdString();
+		launchConfig.port = ui->customPort->value();
+		launchConfig.userName = ui->customUserName->text().toStdString();
+		launchConfig.remoteDir = ui->customRemoteDir->text().toStdString();
+
+		break;
 #endif
 	}
 }
@@ -369,6 +399,12 @@ void CDlgEditPath::ChangeToConfig(QListWidgetItem* item)
 	ui->SlurmWalltime->setText(QString::fromStdString(launchConfig.walltime));
 	ui->SlurmProcNum->setValue(launchConfig.procNum);
 	ui->SlurmRam->setValue(launchConfig.ram);
+
+	ui->customFile->setText(QString::fromStdString(launchConfig.customFile));
+	ui->customServer->setText(QString::fromStdString(launchConfig.server));
+	ui->customPort->setValue(launchConfig.port);
+	ui->customUserName->setText(QString::fromStdString(launchConfig.userName));
+	ui->customRemoteDir->setText(QString::fromStdString(launchConfig.remoteDir));
 #endif
 
 	ui->stack->setCurrentIndex(launchConfig.type);
@@ -518,6 +554,33 @@ bool CDlgEditPath::ErrorCheck(int index)
 			QMessageBox::critical(this, "FEBio Studio", "Please enter a walltime.");
 			return false;
 		}
+		break;
+	case CUSTOM:
+		if(ui->customFile->text().isEmpty())
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Please enter a local path to a custom script.");
+			return false;
+		}
+
+		if(ui->customServer->text().isEmpty())
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Please enter a server address.");
+			return false;
+		}
+
+		if(ui->customUserName->text().isEmpty())
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Please enter a username.");
+			return false;
+		}
+
+		if(ui->customRemoteDir->text().isEmpty())
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Please enter a remote directory.");
+			return false;
+		}
+
+
 		break;
 #endif
 	}

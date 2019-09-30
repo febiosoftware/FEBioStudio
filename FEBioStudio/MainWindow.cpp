@@ -805,6 +805,7 @@ void CMainWindow::writeSettings()
 		settings.setValue(configName + "/walltime", ui->m_launch_configs[i].walltime.c_str());
 		settings.setValue(configName + "/procNum", ui->m_launch_configs[i].procNum);
 		settings.setValue(configName + "/ram", ui->m_launch_configs[i].ram);
+		settings.setValue(configName + "/customFile", ui->m_launch_configs[i].customFile.c_str());
 	}
 
 
@@ -860,6 +861,7 @@ void CMainWindow::readSettings()
 		ui->m_launch_configs.back().walltime = settings.value(configName + "/walltime").toString().toStdString();
 		ui->m_launch_configs.back().procNum = settings.value(configName + "/procNum").toInt();
 		ui->m_launch_configs.back().ram = settings.value(configName + "/ram").toInt();
+		ui->m_launch_configs.back().customFile = settings.value(configName + "/customFile").toString().toStdString();
 
 	}
 
