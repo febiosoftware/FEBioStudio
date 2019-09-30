@@ -64,15 +64,11 @@ CGLModel::CGLModel(FEModel* ps)
 	SetName("Model");
 
 	m_bnorm   = false;
-	m_bsmooth = true;
 	m_bghost = false;
 	m_nDivs = 0; // this means "auto"
 	m_brenderInteriorNodes = true;
 
 	m_bshowMesh = true;
-
-	m_bShell2Hex  = false;
-	m_nshellref   = 0;
 
 	m_line_col = GLColor(0,0,0);
 	m_node_col = GLColor(0,0,255);
@@ -97,6 +93,14 @@ CGLModel::~CGLModel(void)
 	delete m_pcol;
 	ClearInternalSurfaces();
 }
+
+//-----------------------------------------------------------------------------
+void CGLModel::ShowShell2Solid(bool b) { m_render.m_bShell2Solid = b; }
+bool CGLModel::ShowShell2Solid() const { return m_render.m_bShell2Solid; }
+
+//-----------------------------------------------------------------------------
+int CGLModel::ShellReferenceSurface() const { return m_render.m_nshellref; }
+void CGLModel::ShellReferenceSurface(int n) { m_render.m_nshellref = n; }
 
 //-----------------------------------------------------------------------------
 Post::FEMeshBase* CGLModel::GetActiveMesh()
@@ -585,7 +589,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 			if (face.IsSelected())
 			{
 				// okay, we got one, so let's render it
-				RenderFace(face, pm, ndivs);
+				m_render.RenderFace(face, pm, ndivs);
 			}
 		}
 	}
@@ -600,7 +604,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 			if (el.IsSelected())
 			{
 				// okay, we got one, so let's render it
-				RenderFace(face, pm, ndivs);
+				m_render.RenderFace(face, pm, ndivs);
 			}
 		}
 	}
@@ -774,22 +778,12 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 		if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
 		{
 			GLubyte a[4];
-			if (m_bsmooth)
+			for (int j=0; j<face.Nodes(); ++j)
 			{
-				for (int j=0; j<face.Nodes(); ++j)
-				{
-					vec3d r = face.m_nn[j];
-					q.RotateVector(r);
-					double z = 1-fabs(r.z);
-					a[j] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
-				}
-			}
-			else
-			{
-				vec3d r = face.m_fn;
+				vec3d r = face.m_nn[j];
 				q.RotateVector(r);
 				double z = 1-fabs(r.z);
-				a[0] = a[1] = a[2] = a[3] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
+				a[j] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
 			}
 
 			if (benable)
@@ -808,7 +802,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 			}
 
 			// okay, we got one, so let's render it
-			RenderFace(face, pm, c, ndivs);
+			m_render.RenderFace(face, pm, c, ndivs);
 		}
 	}
 
@@ -822,22 +816,12 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 		if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
 		{
 			GLubyte a[4];
-			if (m_bsmooth)
+			for (int j=0; j<face.Nodes(); ++j)
 			{
-				for (int j=0; j<face.Nodes(); ++j)
-				{
-					vec3d r = face.m_nn[j];
-					q.RotateVector(r);
-					double z = 1-fabs(r.z);
-					a[j] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
-				}
-			}
-			else
-			{
-				vec3d r = face.m_fn;
+				vec3d r = face.m_nn[j];
 				q.RotateVector(r);
 				double z = 1-fabs(r.z);
-				a[0] = a[1] = a[2] = a[3] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
+				a[j] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
 			}
 
 			if (benable)
@@ -856,7 +840,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 			}
 
 			// okay, we got one, so let's render it
-			RenderFace(face, pm, c, ndivs);
+			m_render.RenderFace(face, pm, c, ndivs);
 		}
 	}
 	glPopAttrib();
@@ -878,16 +862,13 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 //-----------------------------------------------------------------------------
 void CGLModel::RenderInnerSurface(int m)
 {
-	bool old_smooth = m_bsmooth;
-	m_bsmooth = false;
 	Post::FEMeshBase* pm = GetActiveMesh();
 	GLSurface& surf = *m_innerSurface[m];
 	for (int i = 0; i<surf.Faces(); ++i)
 	{
 		FEFace& face = surf.Face(i);
-		RenderFace(face, pm, 1);
+		m_render.RenderFace(face, pm, 1);
 	}
-	m_bsmooth = old_smooth;
 }
 
 //-----------------------------------------------------------------------------
@@ -898,7 +879,7 @@ void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
 	for (int i = 0; i<inSurf.Faces(); ++i)
 	{
 		FEFace& facet = inSurf.Face(i);
-		RenderFaceOutline(facet, pm, ndivs);
+		m_render.RenderFaceOutline(facet, pm, ndivs);
 	}
 }
 
@@ -918,7 +899,7 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 		if (face.m_ntag == 1)
 		{
 			// okay, we got one, so let's render it
-			RenderFace(face, pm, ndivs);
+			m_render.RenderFace(face, pm, ndivs);
 		}
 	}
 
@@ -931,7 +912,7 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 		if (face.m_ntag == 2)
 		{
 			// okay, we got one, so let's render it
-			RenderFace(face, pm, ndivs);
+			m_render.RenderFace(face, pm, ndivs);
 		}
 	}
 	if (btex) glEnable(GL_TEXTURE_1D);
@@ -1417,7 +1398,7 @@ void CGLModel::RenderMeshLines(FEModel* ps, int nmat)
 			if (face.IsVisible() && el.IsVisible())
 			{
 				// okay, we got one, so let's render it
-				RenderFaceOutline(face, pm, ndivs);
+				m_render.RenderFaceOutline(face, pm, ndivs);
 			}
 		}
 	}
@@ -1665,160 +1646,6 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 }
 
 //-----------------------------------------------------------------------------
-
-void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, int ndivs)
-{
-	if (m_bShell2Hex)
-	{
-		if (pm->ElementRef(face.m_elem[0]).IsShell())
-		{
-			RenderThickShell(face, pm);
-			return;
-		}
-	}
-
-	glBegin(GL_TRIANGLES);
-	if (ndivs == 1)
-	{
-		// Render the facet
-		switch (face.m_type)
-		{
-		case FE_FACE_QUAD4: RenderQUAD4(pm, face, m_bsmooth); break;
-		case FE_FACE_QUAD8: RenderQUAD8(pm, face, m_bsmooth); break;
-		case FE_FACE_QUAD9: RenderQUAD9(pm, face, m_bsmooth); break;
-		case FE_FACE_TRI3 : RenderTRI3 (pm, face, m_bsmooth); break;
-		case FE_FACE_TRI6 : RenderTRI6 (pm, face, m_bsmooth); break;
-		case FE_FACE_TRI7 : RenderTRI7 (pm, face, m_bsmooth); break;
-		case FE_FACE_TRI10: RenderTRI10(pm, face, m_bsmooth); break;
-		default:
-			assert(false);
-		}
-	}
-	else
-	{
-		// Render the facet
-		switch (face.m_type)
-		{
-		case FE_FACE_QUAD4: RenderSmoothQUAD4(pm, face, ndivs); break;
-		case FE_FACE_QUAD8: RenderSmoothQUAD8(pm, face, ndivs); break;
-		case FE_FACE_QUAD9: RenderSmoothQUAD9(pm, face, ndivs); break;
-		case FE_FACE_TRI3 : RenderSmoothTRI3 (pm, face, ndivs); break;
-		case FE_FACE_TRI6 : RenderSmoothTRI6 (pm, face, ndivs); break; 
-		case FE_FACE_TRI7 : RenderSmoothTRI7 (pm, face, ndivs); break;
-		case FE_FACE_TRI10: RenderSmoothTRI10(pm, face, ndivs); break;
-		default:
-			assert(false);
-		}
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-
-void CGLModel::RenderFace(FEFace& face, Post::FEMeshBase* pm, GLColor c[4], int ndivs)
-{
-	if (m_bShell2Hex)
-	{
-		if (pm->ElementRef(face.m_elem[0]).IsShell())
-		{
-			RenderThickShell(face, pm);
-			return;
-		}
-	}
-
-	vec3d& r1 = pm->Node(face.n[0]).r;
-	vec3d& r2 = pm->Node(face.n[1]).r;
-	vec3d& r3 = pm->Node(face.n[2]).r;
-	vec3d& r4 = pm->Node(face.n[3]).r;
-
-	vec3f& n1 = face.m_nn[0];
-	vec3f& n2 = face.m_nn[1];
-	vec3f& n3 = face.m_nn[2];
-	vec3f& n4 = face.m_nn[3];
-
-	vec3f& fn = face.m_fn;
-
-	float t[4];
-	pm->FaceNodeTexCoords(face, t);
-
-	if (m_bsmooth)
-	{
-		switch (face.m_type)
-		{
-		case FE_FACE_QUAD4:
-		case FE_FACE_QUAD8:
-		case FE_FACE_QUAD9:
-			if (ndivs <= 1)
-			{
-				glBegin(GL_QUADS);
-				{
-					glNormal3f(n1.x, n1.y, n1.z); glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
-					glNormal3f(n2.x, n2.y, n2.z); glColor4ub(c[1].r, c[1].g, c[1].b, c[1].a); glTexCoord1f(t[1]); glVertex3f(r2.x, r2.y, r2.z);
-					glNormal3f(n3.x, n3.y, n3.z); glColor4ub(c[2].r, c[2].g, c[2].b, c[2].a); glTexCoord1f(t[2]); glVertex3f(r3.x, r3.y, r3.z);
-					glNormal3f(n4.x, n4.y, n4.z); glColor4ub(c[3].r, c[3].g, c[3].b, c[3].a); glTexCoord1f(t[3]); glVertex3f(r4.x, r4.y, r4.z);
-				}
-				glEnd();
-			}
-			else
-			{
-				glBegin(GL_TRIANGLES);
-				RenderSmoothQUAD4(pm, face, ndivs);
-				glEnd();
-			}
-			break;
-		case FE_FACE_TRI3:
-		case FE_FACE_TRI6:
-		case FE_FACE_TRI7:
-			glBegin(GL_TRIANGLES);
-			{
-				glNormal3f(n1.x, n1.y, n1.z); glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
-				glNormal3f(n2.x, n2.y, n2.z); glColor4ub(c[1].r, c[1].g, c[1].b, c[1].a); glTexCoord1f(t[1]); glVertex3f(r2.x, r2.y, r2.z);
-				glNormal3f(n3.x, n3.y, n3.z); glColor4ub(c[2].r, c[2].g, c[2].b, c[2].a); glTexCoord1f(t[2]); glVertex3f(r3.x, r3.y, r3.z);
-			}
-			glEnd();
-			break;
-		default:
-			assert(false);
-		}
-	}
-	else
-	{
-		glNormal3f(fn.x, fn.y, fn.z);
-
-		switch (face.m_type)
-		{
-		case FE_FACE_QUAD4:
-		case FE_FACE_QUAD8:
-		case FE_FACE_QUAD9:
-			glBegin(GL_QUADS);
-			{
-				glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
-				glColor4ub(c[1].r, c[1].g, c[1].b, c[1].a); glTexCoord1f(t[1]); glVertex3f(r2.x, r2.y, r2.z);
-				glColor4ub(c[2].r, c[2].g, c[2].b, c[2].a); glTexCoord1f(t[2]); glVertex3f(r3.x, r3.y, r3.z);
-				glColor4ub(c[3].r, c[3].g, c[3].b, c[3].a); glTexCoord1f(t[3]); glVertex3f(r4.x, r4.y, r4.z);
-			}
-			glEnd();
-			break;
-		case FE_FACE_TRI3:
-		case FE_FACE_TRI6:
-		case FE_FACE_TRI7:
-			glBegin(GL_TRIANGLES);
-			{
-				glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
-				glColor4ub(c[1].r, c[1].g, c[1].b, c[1].a); glTexCoord1f(t[1]); glVertex3f(r2.x, r2.y, r2.z);
-				glColor4ub(c[2].r, c[2].g, c[2].b, c[2].a); glTexCoord1f(t[2]); glVertex3f(r3.x, r3.y, r3.z);
-			}
-			glEnd();
-			break;
-		default:
-			assert(false);
-		}
-	}
-}
-
-
-//-----------------------------------------------------------------------------
-
 void CGLModel::RenderElementOutline(FEElement_& el, Post::FEMeshBase* pm)
 {
 	glBegin(GL_LINES);
@@ -1939,450 +1766,6 @@ void CGLModel::RenderElementOutline(FEElement_& el, Post::FEMeshBase* pm)
 		}
 	}
 	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-
-void CGLModel::RenderFaceOutline(FEFace& face, Post::FEMeshBase* pm, int ndivs)
-{
-	if (m_bShell2Hex)
-	{
-		if (pm->ElementRef(face.m_elem[0]).IsShell())
-		{
-			RenderThickShellOutline(face, pm);
-			return;
-		}
-	}
-
-	GLboolean btex;
-	glGetBooleanv(GL_TEXTURE_1D, &btex);
-	glDisable(GL_TEXTURE_1D);
-
-	glBegin(GL_LINE_LOOP);
-	{
-		// render the edges of the face
-		switch (face.m_type)
-		{
-		case FE_FACE_TRI3 :
-		case FE_FACE_QUAD4: RenderFace1Outline(pm, face); break;
-		case FE_FACE_TRI6:
-		case FE_FACE_TRI7:
-		case FE_FACE_QUAD8:
-		case FE_FACE_QUAD9: RenderFace2Outline(pm, face, ndivs); break;
-		case FE_FACE_TRI10: RenderFace3Outline(pm, face, ndivs); break;
-		default:
-			assert(false);
-		}
-	}
-	glEnd();
-
-	if (btex) glEnable(GL_TEXTURE_1D);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void CGLModel::RenderThickShell(FEFace &face, Post::FEMeshBase* pm)
-{
-	switch(face.m_type)
-	{
-	case FE_FACE_QUAD4:
-	case FE_FACE_QUAD8:
-	case FE_FACE_QUAD9:
-		RenderThickQuad(face, pm);
-		break;
-	case FE_FACE_TRI3:
-	case FE_FACE_TRI6:
-	case FE_FACE_TRI7:
-		RenderThickTri(face, pm);
-		break;
-	}
-}
-
-void CGLModel::RenderThickQuad(FEFace &face, Post::FEMeshBase* pm)
-{
-	FEElement_& el = pm->ElementRef(face.m_elem[0]);
-	FEState* ps = m_ps->GetState(0);
-	float* h = ps->m_ELEM[face.m_elem[0]].m_h;
-
-	vec3d r1 = pm->Node(face.n[0]).r;
-	vec3d r2 = pm->Node(face.n[1]).r;
-	vec3d r3 = pm->Node(face.n[2]).r;
-	vec3d r4 = pm->Node(face.n[3]).r;
-
-	vec3f n1 = face.m_nn[0];
-	vec3f n2 = face.m_nn[1];
-	vec3f n3 = face.m_nn[2];
-	vec3f n4 = face.m_nn[3];
-
-	vec3d r1a, r2a, r3a, r4a;
-	vec3d r1b, r2b, r3b, r4b;
-	
-	switch (m_nshellref)
-	{
-	case 0:	// midsurface
-		r1a = r1 - n1*(0.5f*h[0]); r1b = r1 + n1*(0.5f*h[0]);
-		r2a = r2 - n2*(0.5f*h[1]); r2b = r2 + n2*(0.5f*h[1]);
-		r3a = r3 - n3*(0.5f*h[2]); r3b = r3 + n3*(0.5f*h[2]);
-		r4a = r4 - n4*(0.5f*h[3]); r4b = r4 + n4*(0.5f*h[3]);
-		break;
-	case 1: // top surface
-		r1a = r1; r1b = r1 + n1*h[0];
-		r2a = r2; r2b = r2 + n2*h[1];
-		r3a = r3; r3b = r3 + n3*h[2];
-		r4a = r4; r4b = r4 + n4*h[3];
-		break;
-	case 2: // bottom surface
-		r1a = r1 - n1*h[0]; r1b = r1;
-		r2a = r2 - n2*h[1]; r2b = r2;
-		r3a = r3 - n3*h[2]; r3b = r3;
-		r4a = r4 - n4*h[3]; r4b = r4;
-		break;
-	}
-
-	vec3d m1 = (r2 - r1)^n1; m1.Normalize();
-	vec3d m2 = (r3 - r2)^n1; m2.Normalize();
-	vec3d m3 = (r4 - r3)^n1; m3.Normalize();
-	vec3d m4 = (r1 - r4)^n1; m4.Normalize();
-
-	vec3f fn = face.m_fn;
-
-	float t1 = face.m_tex[0];
-	float t2 = face.m_tex[1];
-	float t3 = face.m_tex[2];
-	float t4 = face.m_tex[3];
-
-	if (m_bsmooth)
-	{
-		glBegin(GL_QUADS);
-		{
-			glNormal3f(n1.x, n1.y, n1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			glNormal3f(n2.x, n2.y, n2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glNormal3f(n3.x, n3.y, n3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-			glNormal3f(n4.x, n4.y, n4.z); glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-
-			glNormal3f(-n4.x, -n4.y, -n4.z); glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-			glNormal3f(-n3.x, -n3.y, -n3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glNormal3f(-n2.x, -n2.y, -n2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glNormal3f(-n1.x, -n1.y, -n1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-
-			if (face.m_nbr[0] == -1)
-			{
-				glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-				glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-				glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-				glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			}
-
-			if (face.m_nbr[1] == -1)
-			{
-				glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-				glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-				glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-				glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			}
-
-			if (face.m_nbr[2] == -1)
-			{
-				glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-				glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-				glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-				glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-			}
-
-			if (face.m_nbr[3] == -1)
-			{
-				glNormal3f(m4.x, m4.y, m4.z); glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-				glNormal3f(m4.x, m4.y, m4.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-				glNormal3f(m4.x, m4.y, m4.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-				glNormal3f(m4.x, m4.y, m4.z); glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-			}
-		}
-		glEnd();
-	}
-	else
-	{
-		glNormal3f(fn.x, fn.y, fn.z);
-
-		glBegin(GL_QUADS);
-		{
-			glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-			glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-
-			glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-			glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-
-			if (face.m_nbr[0] == -1)
-			{
-				glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-				glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-				glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-				glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			}
-
-			if (face.m_nbr[1] == -1)
-			{
-				glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-				glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-				glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-				glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			}
-
-			if (face.m_nbr[2] == -1)
-			{
-				glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-				glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-				glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-				glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-			}
-
-			if (face.m_nbr[3] == -1)
-			{
-				glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-				glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-				glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-				glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-			}
-		}
-		glEnd();
-	}
-}
-
-void CGLModel::RenderThickTri(FEFace &face, Post::FEMeshBase* pm)
-{
-	FEElement_& el = pm->ElementRef(face.m_elem[0]);
-	FEState* ps = m_ps->GetState(0);
-	float* h = ps->m_ELEM[face.m_elem[0]].m_h;
-
-	vec3d r1 = pm->Node(face.n[0]).r;
-	vec3d r2 = pm->Node(face.n[1]).r;
-	vec3d r3 = pm->Node(face.n[2]).r;
-
-	//h[0] = (h[0] + h[1] + h[2])/3;
-	//h[1] = h[0];
-	//h[2] = h[0];
-	vec3f n1 = face.m_nn[0];
-	vec3f n2 = face.m_nn[1];
-	vec3f n3 = face.m_nn[2];
-
-	vec3d r1a, r2a, r3a;
-	vec3d r1b, r2b, r3b;
-
-	switch (m_nshellref)
-	{
-	case 0:	// midsurface
-		r1a = r1 - n1*(0.5f*h[0]); r1b = r1 + n1*(0.5f*h[0]);
-		r2a = r2 - n2*(0.5f*h[1]); r2b = r2 + n2*(0.5f*h[1]);
-		r3a = r3 - n3*(0.5f*h[2]); r3b = r3 + n3*(0.5f*h[2]);
-		break;
-	case 1: // top surface
-		r1a = r1; r1b = r1 + n1*h[0];
-		r2a = r2; r2b = r2 + n2*h[1];
-		r3a = r3; r3b = r3 + n3*h[2];
-		break;
-	case 2: // bottom surface
-		r1a = r1 - n1*h[0]; r1b = r1;
-		r2a = r2 - n2*h[1]; r2b = r2;
-		r3a = r3 - n3*h[2]; r3b = r3;
-		break;
-	}
-
-	vec3d m1 = (r2 - r1) ^ n1; m1.Normalize();
-	vec3d m2 = (r3 - r2) ^ n1; m2.Normalize();
-	vec3d m3 = (r1 - r3) ^ n1; m3.Normalize();
-
-	vec3f fn = face.m_fn;
-
-	float t1 = face.m_tex[0];
-	float t2 = face.m_tex[1];
-	float t3 = face.m_tex[2];
-
-	if (m_bsmooth)
-	{
-		glBegin(GL_TRIANGLES);
-		{
-			glNormal3f(n1.x, n1.y, n1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			glNormal3f(n2.x, n2.y, n2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glNormal3f(n3.x, n3.y, n3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-
-			glNormal3f(-n3.x, -n3.y, -n3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glNormal3f(-n2.x, -n2.y, -n2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glNormal3f(-n1.x, -n1.y, -n1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-		}
-		glEnd();
-
-		glBegin(GL_QUADS);
-		{
-			if (face.m_nbr[0] == -1)
-			{
-				glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-				glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-				glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-				glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			}
-
-			if (face.m_nbr[1] == -1)
-			{
-				glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-				glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-				glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-				glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			}
-
-			if (face.m_nbr[2] == -1)
-			{
-				glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-				glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-				glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-				glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-			}
-		}
-		glEnd();
-	}
-	else
-	{
-		glNormal3f(fn.x, fn.y, fn.z);
-
-		glBegin(GL_TRIANGLES);
-		{
-			glNormal3f(n1.x, n1.y, n1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			glNormal3f(n2.x, n2.y, n2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glNormal3f(n3.x, n3.y, n3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-
-			glNormal3f(-n3.x, -n3.y, -n3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glNormal3f(-n2.x, -n2.y, -n2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glNormal3f(-n1.x, -n1.y, -n1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-		}
-		glEnd();
-
-		glBegin(GL_QUADS);
-		{
-			if (face.m_nbr[0] == -1)
-			{
-				glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-				glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-				glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-				glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			}
-
-			if (face.m_nbr[1] == -1)
-			{
-				glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-				glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-				glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-				glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			}
-
-			if (face.m_nbr[2] == -1)
-			{
-				glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-				glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-				glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-				glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-			}
-		}
-		glEnd();
-	}
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-void CGLModel::RenderThickShellOutline(FEFace &face, Post::FEMeshBase* pm)
-{
-	FEElement_& el = pm->ElementRef(face.m_elem[0]);
-	FEState* ps = m_ps->GetState(0);
-	float* h = ps->m_ELEM[face.m_elem[0]].m_h;
-
-	vec3d r1 = pm->Node(face.n[0]).r;
-	vec3d r2 = pm->Node(face.n[1]).r;
-	vec3d r3 = pm->Node(face.n[2]).r;
-	vec3d r4 = pm->Node(face.n[3]).r;
-
-	vec3f n1 = face.m_nn[0];
-	vec3f n2 = face.m_nn[1];
-	vec3f n3 = face.m_nn[2];
-	vec3f n4 = face.m_nn[3];
-
-	vec3d r1a, r2a, r3a, r4a;
-	vec3d r1b, r2b, r3b, r4b;
-	
-	switch (m_nshellref)
-	{
-	case 0:	// midsurface
-		r1a = r1 - n1*(0.5f*h[0]); r1b = r1 + n1*(0.5f*h[0]);
-		r2a = r2 - n2*(0.5f*h[1]); r2b = r2 + n2*(0.5f*h[1]);
-		r3a = r3 - n3*(0.5f*h[2]); r3b = r3 + n3*(0.5f*h[2]);
-		r4a = r4 - n4*(0.5f*h[3]); r4b = r4 + n4*(0.5f*h[3]);
-		break;
-	case 1: // top surface
-		r1a = r1; r1b = r1 + n1*h[0];
-		r2a = r2; r2b = r2 + n2*h[1];
-		r3a = r3; r3b = r3 + n3*h[2];
-		r4a = r4; r4b = r4 + n4*h[3];
-		break;
-	case 2: // bottom surface
-		r1a = r1 - n1*h[0]; r1b = r1;
-		r2a = r2 - n2*h[1]; r2b = r2;
-		r3a = r3 - n3*h[2]; r3b = r3;
-		r4a = r4 - n4*h[3]; r4b = r4;
-		break;
-	}
-
-	GLboolean btex;
-	glGetBooleanv(GL_TEXTURE_1D, &btex);
-	glDisable(GL_TEXTURE_1D);
-
-	switch (face.m_type)
-	{
-	case FE_FACE_QUAD4:
-	case FE_FACE_QUAD8:
-	case FE_FACE_QUAD9:
-		glBegin(GL_LINES);
-		{
-			glVertex3f(r1a.x, r1a.y, r1a.z); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glVertex3f(r2a.x, r2a.y, r2a.z); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glVertex3f(r3a.x, r3a.y, r3a.z); glVertex3f(r4a.x, r4a.y, r4a.z);
-			glVertex3f(r4a.x, r4a.y, r4a.z); glVertex3f(r1a.x, r1a.y, r1a.z);
-
-			glVertex3f(r1b.x, r1b.y, r1b.z); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glVertex3f(r2b.x, r2b.y, r2b.z); glVertex3f(r3b.x, r3b.y, r3b.z);
-			glVertex3f(r3b.x, r3b.y, r3b.z); glVertex3f(r4b.x, r4b.y, r4b.z);
-			glVertex3f(r4b.x, r4b.y, r4b.z); glVertex3f(r1b.x, r1b.y, r1b.z);
-
-			glVertex3f(r1a.x, r1a.y, r1a.z); glVertex3f(r1b.x, r1b.y, r1b.z);
-			glVertex3f(r2a.x, r2a.y, r2a.z); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glVertex3f(r3a.x, r3a.y, r3a.z); glVertex3f(r3b.x, r3b.y, r3b.z);
-			glVertex3f(r4a.x, r4a.y, r4a.z); glVertex3f(r4b.x, r4b.y, r4b.z);
-		}
-		glEnd();
-		break;
-	case FE_FACE_TRI3:
-	case FE_FACE_TRI6:
-	case FE_FACE_TRI7:
-		glBegin(GL_LINES);
-		{
-			glVertex3f(r1a.x, r1a.y, r1a.z); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glVertex3f(r2a.x, r2a.y, r2a.z); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glVertex3f(r3a.x, r3a.y, r3a.z); glVertex3f(r1a.x, r1a.y, r1a.z);
-
-			glVertex3f(r1b.x, r1b.y, r1b.z); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glVertex3f(r2b.x, r2b.y, r2b.z); glVertex3f(r3b.x, r3b.y, r3b.z);
-			glVertex3f(r3b.x, r3b.y, r3b.z); glVertex3f(r1b.x, r1b.y, r1b.z);
-
-			glVertex3f(r1a.x, r1a.y, r1a.z); glVertex3f(r1b.x, r1b.y, r1b.z);
-			glVertex3f(r2a.x, r2a.y, r2a.z); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glVertex3f(r3a.x, r3a.y, r3a.z); glVertex3f(r3b.x, r3b.y, r3b.z);
-		}
-		glEnd();
-		break;
-	default:
-		assert(false);
-	}
-
-	if (btex) glEnable(GL_TEXTURE_1D);
 }
 
 //-----------------------------------------------------------------------------
@@ -3550,6 +2933,7 @@ void CGLModel::UpdateInternalSurfaces(bool eval)
 							vec3f r2 = to_vec3f(mesh.Node(face.n[2]).r);
 
 							face.m_fn = (r1 - r0) ^ (r2 - r0);
+							for (int k = 0; k < face.Nodes(); ++k) face.m_nn[k] = face.m_fn;
 							face.m_fn.Normalize();
 							face.m_sid = 0;
 

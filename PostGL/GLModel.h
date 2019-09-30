@@ -6,6 +6,7 @@
 #include "PostLib/GDecoration.h"
 #include "GLPlot.h"
 #include <FSCore/FSObjectList.h>
+#include <GLLib/GLMeshRender.h>
 #include <vector>
 
 namespace Post {
@@ -120,14 +121,11 @@ public:
 	bool ShowNormals() { return m_bnorm; }
 	void ShowNormals(bool b) { m_bnorm = b; }
 
-	bool RenderSmooth() { return m_bsmooth; }
-	void RenderSmooth(bool b) { m_bsmooth = b; }
+	void ShowShell2Solid(bool b);
+	bool ShowShell2Solid() const;
 
-	void ShowShell2Hex(bool b) { m_bShell2Hex = b; }
-	bool ShowShell2Hex() { return m_bShell2Hex; }
-
-	int ShellReferenceSurface() { return m_nshellref; }
-	void ShellReferenceSurface(int n) { m_nshellref = n; }
+	int ShellReferenceSurface() const;
+	void ShellReferenceSurface(int n);
 
 	void SetSubDivisions(int ndivs) { m_nDivs = ndivs; }
 	int GetSubDivisions();
@@ -166,20 +164,13 @@ public:
 
 //	void RenderFeatureEdges(FEModel* ps);
 	void RenderMeshLines(FEModel* ps, int nmat);
-	void RenderThickShell(FEFace& face, Post::FEMeshBase* pm);
-	void RenderThickQuad(FEFace& face, Post::FEMeshBase* pm);
-	void RenderThickTri(FEFace& face, Post::FEMeshBase* pm);
-	void RenderThickShellOutline(FEFace& face, Post::FEMeshBase* pm);
 	void RenderShadows(FEModel* ps, const vec3d& lp, float inf);
 
 	void AddDecoration(GDecoration* pd);
 	void RemoveDecoration(GDecoration* pd);
 
 protected:
-	void RenderFace(FEFace& face, Post::FEMeshBase* pm, int ndivs);
-	void RenderFace(FEFace& face, Post::FEMeshBase* pm, GLColor c[4], int ndivs);
 	void RenderElementOutline(FEElement_& el, Post::FEMeshBase* pm);
-	void RenderFaceOutline(FEFace& face, Post::FEMeshBase* pm, int ndivs);
 	void RenderSolidPart(FEModel* ps, CGLContext& rc, int mat);
 	void RenderSolidMaterial(FEModel* ps, int m);
 	void RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m);
@@ -318,11 +309,8 @@ protected:
 
 public:
 	bool		m_bnorm;		//!< calculate normals or not
-	bool		m_bsmooth;		//!< render smooth or not
 	bool		m_bghost;		//!< render the ghost (undeformed outline)
 	bool		m_brenderInteriorNodes;	//!< render interior nodes or not
-	bool		m_bShell2Hex;	//!< render shells as hexes
-	int			m_nshellref;	//!< shell reference surface
 	int			m_nDivs;		//!< nr of element subdivisions
 	int			m_nrender;		//!< render mode
     int         m_nconv;        //!< multiview projection convention
@@ -346,6 +334,8 @@ protected:
 
 	CGLDisplacementMap*		m_pdis;
 	CGLColorMap*			m_pcol;
+
+	GLMeshRender	m_render;
 
 	// selected items
 	vector<FENode*>		m_nodeSelection;
