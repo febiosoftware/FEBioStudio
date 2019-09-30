@@ -39,7 +39,7 @@ void GTranslator::Render(int npivot, bool bactive)
 			else glColor3ub(255,0,0);
 		}
 		else glColor3ub(g.r, g.g, g.b);
-		GLX::drawLine(0, 0, 0, 0, 0, d);
+		glx::drawLine(0, 0, 0, 0, 0, d);
 
 		glTranslated(0, 0, d);
 		gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
@@ -56,7 +56,7 @@ void GTranslator::Render(int npivot, bool bactive)
 			else glColor3ub(0,255,0);
 		}
 		else glColor3ub(g.r, g.g, g.b);
-		GLX::drawLine(0, 0, 0, 0, 0, d);
+		glx::drawLine(0, 0, 0, 0, 0, d);
 
 		glTranslated(0, 0, d);
 		gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
@@ -72,7 +72,7 @@ void GTranslator::Render(int npivot, bool bactive)
 			else glColor3ub(0,0,255);
 		}
 		else glColor3ub(g.r, g.g, g.b);
-		GLX::drawLine(0, 0, 0, 0, 0, d);
+		glx::drawLine(0, 0, 0, 0, 0, d);
 
 		glTranslated(0, 0, d);
 		gluCylinder(pobj, 0.5*l, 0, l, 12, 1);
@@ -89,7 +89,7 @@ void GTranslator::Render(int npivot, bool bactive)
 			glRectd(0,0,r,r);
 
 			glColor4ub(255,255,0, 128);
-			GLX::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
 	//	glPopMatrix();
 
@@ -102,7 +102,7 @@ void GTranslator::Render(int npivot, bool bactive)
 			glRectd(0,0,r,r);
 
 			glColor4ub(255,255,0,128);
-			GLX::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
 		glPopMatrix();
 
@@ -115,7 +115,7 @@ void GTranslator::Render(int npivot, bool bactive)
 			glRectd(0,0,r,r);
 
 			glColor4ub(255,255,0,128);
-			GLX::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
 		glPopMatrix();
 	}
@@ -222,8 +222,8 @@ void GRotator::Render(int npivot, bool bactive)
 				gluDisk(pobj, 0, d, N, 1);
 
 				glColor3ub(255,255,0);
-				GLX::drawLine(0, 0, 0, 0, 0, d + l);
-				GLX::drawCircle(d, N);
+				glx::drawLine(0, 0, 0, 0, 0, d + l);
+				glx::drawCircle(d, N);
 
 				glColor3ub(255,255,0);
 				glTranslated(0, 0, d+l);
@@ -232,13 +232,13 @@ void GRotator::Render(int npivot, bool bactive)
 			else
 			{
 				glColor3ub(255,0,0);
-				GLX::drawCircle(d, N);
+				glx::drawCircle(d, N);
 			}
 		}
 		else
 		{
 			glColor3ub(128,128,128);
-			GLX::drawCircle(d, N);
+			glx::drawCircle(d, N);
 		}
 	}
 	glPopMatrix();
@@ -255,8 +255,8 @@ void GRotator::Render(int npivot, bool bactive)
 				gluDisk(pobj, 0, d, N, 1);
 
 				glColor3ub(255,255,0);
-				GLX::drawLine(0, 0, 0, 0, 0, d + l);
-				GLX::drawCircle(d, N);
+				glx::drawLine(0, 0, 0, 0, 0, d + l);
+				glx::drawCircle(d, N);
 
 				glColor3ub(255,255,0);
 				glTranslated(0, 0, d+l);
@@ -265,13 +265,13 @@ void GRotator::Render(int npivot, bool bactive)
 			else
 			{
 				glColor3ub(0,255,0);
-				GLX::drawCircle(d, N);
+				glx::drawCircle(d, N);
 			}
 		}
 		else
 		{
 			glColor3ub(128,128,128);
-			GLX::drawCircle(d, N);
+			glx::drawCircle(d, N);
 		}
 	}
 	glPopMatrix();
@@ -287,8 +287,8 @@ void GRotator::Render(int npivot, bool bactive)
 				gluDisk(pobj, 0, d, N, 1);
 
 				glColor3ub(255,255,0);
-				GLX::drawLine(0, 0, 0, 0, 0, d + l);
-				GLX::drawCircle(d, N);
+				glx::drawLine(0, 0, 0, 0, 0, d + l);
+				glx::drawCircle(d, N);
 
 				glColor3ub(255,255,0);
 				glTranslated(0, 0, d+l);
@@ -297,13 +297,13 @@ void GRotator::Render(int npivot, bool bactive)
 			else
 			{
 				glColor3ub(0,0,255);
-				GLX::drawCircle(d, N);
+				glx::drawCircle(d, N);
 			}
 		}
 		else
 		{
 			glColor3ub(128,128,128);
-			GLX::drawCircle(d, N);
+			glx::drawCircle(d, N);
 		}
 	}
 	glPopMatrix();
@@ -422,7 +422,7 @@ void GScalor::Render(int npivot, bool bactive)
 			else glColor3ub(255,0,0);
 		}
 		else glColor3ub(g.r, g.g, g.b);
-		GLX::drawLine(0, 0, 0, 0, 0, d);
+		glx::drawLine(0, 0, 0, 0, 0, d);
 
 		glTranslated(0, 0, d);
 		gluCylinder(pobj, 0.5*l, 0.5*l, l, 12, 1);
@@ -440,7 +440,7 @@ void GScalor::Render(int npivot, bool bactive)
 			else glColor3ub(0,255,0);
 		}
 		else glColor3ub(g.r, g.g, g.b);
-		GLX::drawLine(0, 0, 0, 0, 0, d);
+		glx::drawLine(0, 0, 0, 0, 0, d);
 
 		glTranslated(0, 0, d);
 		gluCylinder(pobj, 0.5*l, 0.5*l, l, 12, 1);
@@ -457,7 +457,7 @@ void GScalor::Render(int npivot, bool bactive)
 			else glColor3ub(0,0,255);
 		}
 		else glColor3ub(g.r, g.g, g.b);
-		GLX::drawLine(0, 0, 0, 0, 0, d);
+		glx::drawLine(0, 0, 0, 0, 0, d);
 
 		glTranslated(0, 0, d);
 		gluCylinder(pobj, 0.5*l, 0.5*l, l, 12, 1);
@@ -475,7 +475,7 @@ void GScalor::Render(int npivot, bool bactive)
 			glRectd(0,0,r,r);
 
 			glColor4ub(255,255,0, 128);
-			GLX::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
 	//	glPopMatrix();
 
@@ -488,7 +488,7 @@ void GScalor::Render(int npivot, bool bactive)
 			glRectd(0,0,r,r);
 
 			glColor4ub(255,255,0,128);
-			GLX::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
 		glPopMatrix();
 
@@ -501,7 +501,7 @@ void GScalor::Render(int npivot, bool bactive)
 			glRectd(0,0,r,r);
 
 			glColor4ub(255,255,0,128);
-			GLX::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
+			glx::drawLine(r, 0, 0, r, r, 0, 0, r, 0);
 		}
 		glPopMatrix();
 	}

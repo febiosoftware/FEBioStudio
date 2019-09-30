@@ -6,10 +6,21 @@
 #include <MeshTools/GLMesh.h>
 #include <GLLib/glx.h>
 
+//-----------------------------------------------------------------------------
+extern int ET_HEX[12][2];
+extern int ET_HEX20[12][3];
+extern int ET_TET[6][2];
+extern int ET_PENTA[9][2];
+extern int ET_PENTA15[9][3];
+extern int ET_TET10[6][3];
+extern int ET_PYRA5[8][2];
+
 GLMeshRender::GLMeshRender()
 {
 	m_bShell2Solid = false;
 	m_nshellref = 0;
+	m_ndivs = 1;
+	m_pointSize = 7.f;
 }
 
 //-----------------------------------------------------------------------------
@@ -70,22 +81,6 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	glEnd();
 }
 
-inline void glxVertex(const vec3d& r)
-{
-	glVertex3d(r.x, r.y, r.z);
-}
-
-inline void glxNormal(const vec3d& n)
-{
-	glNormal3d(n.x, n.y, n.z);
-}
-
-inline void glxNormalVertex(const vec3d& n, const vec3d& r)
-{
-	glNormal3d(n.x, n.y, n.z);
-	glVertex3d(r.x, r.y, r.z);
-}
-
 //-----------------------------------------------------------------------------
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
@@ -143,37 +138,37 @@ void GLMeshRender::RenderHEX20(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
 			{
-				glxNormalVertex(n[0], r[0]);
-				glxNormalVertex(n[4], r[4]);
-				glxNormalVertex(n[7], r[7]);
+				glx::vertex3d(r[0], n[0]);
+				glx::vertex3d(r[4], n[4]);
+				glx::vertex3d(r[7], n[7]);
 
-				glxNormalVertex(n[4], r[4]);
-				glxNormalVertex(n[1], r[1]);
-				glxNormalVertex(n[5], r[5]);
+				glx::vertex3d(r[4], n[4]);
+				glx::vertex3d(r[1], n[1]);
+				glx::vertex3d(r[5], n[5]);
 
-				glxNormalVertex(n[5], r[5]);
-				glxNormalVertex(n[2], r[2]);
-				glxNormalVertex(n[6], r[6]);
+				glx::vertex3d(r[5], n[5]);
+				glx::vertex3d(r[2], n[2]);
+				glx::vertex3d(r[6], n[6]);
 
-				glxNormalVertex(n[6], r[6]);
-				glxNormalVertex(n[3], r[3]);
-				glxNormalVertex(n[7], r[7]);
+				glx::vertex3d(r[6], n[6]);
+				glx::vertex3d(r[3], n[3]);
+				glx::vertex3d(r[7], n[7]);
 
-				glxNormalVertex(n[8], r[8]);
-				glxNormalVertex(n[7], r[7]);
-				glxNormalVertex(n[4], r[4]);
+				glx::vertex3d(r[8], n[8]);
+				glx::vertex3d(r[7], n[7]);
+				glx::vertex3d(r[4], n[4]);
 
-				glxNormalVertex(n[8], r[8]);
-				glxNormalVertex(n[4], r[4]);
-				glxNormalVertex(n[5], r[5]);
+				glx::vertex3d(r[8], n[8]);
+				glx::vertex3d(r[4], n[4]);
+				glx::vertex3d(r[5], n[5]);
 
-				glxNormalVertex(n[8], r[8]);
-				glxNormalVertex(n[5], r[5]);
-				glxNormalVertex(n[6], r[6]);
+				glx::vertex3d(r[8], n[8]);
+				glx::vertex3d(r[5], n[5]);
+				glx::vertex3d(r[6], n[6]);
 
-				glxNormalVertex(n[8], r[8]);
-				glxNormalVertex(n[6], r[6]);
-				glxNormalVertex(n[7], r[7]);
+				glx::vertex3d(r[8], n[8]);
+				glx::vertex3d(r[6], n[6]);
+				glx::vertex3d(r[7], n[7]);
 			}
 		}
 	}
@@ -235,29 +230,29 @@ void GLMeshRender::RenderHEX27(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
 			{
-				GLX::vertex3d(r1, n1);
-				GLX::vertex3d(r5, n5);
-				GLX::vertex3d(r8, n8);
+				glx::vertex3d(r1, n1);
+				glx::vertex3d(r5, n5);
+				glx::vertex3d(r8, n8);
 
-				GLX::vertex3d(r5, n5);
-				GLX::vertex3d(r2, n2);
-				GLX::vertex3d(r6, n6);
+				glx::vertex3d(r5, n5);
+				glx::vertex3d(r2, n2);
+				glx::vertex3d(r6, n6);
 
-				GLX::vertex3d(r6, n6);
-				GLX::vertex3d(r3, n3);
-				GLX::vertex3d(r7, n7);
+				glx::vertex3d(r6, n6);
+				glx::vertex3d(r3, n3);
+				glx::vertex3d(r7, n7);
 
-				GLX::vertex3d(r7, n7);
-				GLX::vertex3d(r4, n4);
-				GLX::vertex3d(r8, n8);
+				glx::vertex3d(r7, n7);
+				glx::vertex3d(r4, n4);
+				glx::vertex3d(r8, n8);
 
-				GLX::vertex3d(r5, n5);
-				GLX::vertex3d(r6, n6);
-				GLX::vertex3d(r8, n8);
+				glx::vertex3d(r5, n5);
+				glx::vertex3d(r6, n6);
+				glx::vertex3d(r8, n8);
 
-				GLX::vertex3d(r6, n6);
-				GLX::vertex3d(r7, n7);
-				GLX::vertex3d(r8, n8);
+				glx::vertex3d(r6, n6);
+				glx::vertex3d(r7, n7);
+				glx::vertex3d(r8, n8);
 			}
 		}
 	}
@@ -303,7 +298,7 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
 			{
-				GLX::quad4(r, n);
+				glx::quad4(r, n);
 			}
 		}
 	}
@@ -336,7 +331,7 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
 			{
-				GLX::tri3(r, n);
+				glx::tri3(r, n);
 			}
 		}
 	}
@@ -706,7 +701,7 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 	glBegin(GL_TRIANGLES);
 	{
-		GLX::quad4(r, n);
+		glx::quad4(r, n);
 	}
 	glEnd();
 }
@@ -733,7 +728,7 @@ void GLMeshRender::RenderQUAD8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 	glBegin(GL_TRIANGLES);
 	{
-		GLX::quad4(r, n);
+		glx::quad4(r, n);
 	}
 	glEnd();
 }
@@ -760,7 +755,7 @@ void GLMeshRender::RenderQUAD9(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 	glBegin(GL_TRIANGLES);
 	{
-		GLX::quad4(r, n);
+		glx::quad4(r, n);
 	}
 	glEnd();
 }
@@ -785,7 +780,7 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 	glBegin(GL_TRIANGLES);
 	{
-		GLX::tri3(r, n);
+		glx::tri3(r, n);
 	}
 	glEnd();
 }
@@ -810,7 +805,7 @@ void GLMeshRender::RenderTRI6(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 	glBegin(GL_TRIANGLES);
 	{
-		GLX::tri3(r, n);
+		glx::tri3(r, n);
 	}
 	glEnd();
 }
@@ -848,9 +843,9 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
 			{
-				GLX::vertex3d(r[0], n[0]);
-				GLX::vertex3d(r[1], n[1]);
-				GLX::vertex3d(r[2], n[2]);
+				glx::vertex3d(r[0], n[0]);
+				glx::vertex3d(r[1], n[1]);
+				glx::vertex3d(r[2], n[2]);
 			}
 		}
 	}
@@ -882,7 +877,7 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 
 		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
 		{
-			GLX::quad4(r, n);
+			glx::quad4(r, n);
 		}
 	}
 	glEnd();
@@ -996,20 +991,244 @@ void GLMeshRender::RenderGLEdges(GLMesh* pm, int nid)
 }
 
 //-----------------------------------------------------------------------------
-
-void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm, int ndivs)
+void GLMeshRender::RenderFENodes(FELineMesh* mesh)
 {
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+
+	GLfloat old_size;
+	glGetFloatv(GL_POINT_SIZE, &old_size);
+	glPointSize(m_pointSize);
+
+	// render all the nodes
+	glBegin(GL_POINTS);
+	for (int i = 0; i<mesh->Nodes(); ++i)
+	{
+		FENode& node = mesh->Node(i);
+		if (node.m_ntag)
+		{
+			if (node.IsSelected()) glColor3ub(255, 0, 0); else glColor3ub(0, 0, 255);
+			glx::vertex3d(node.r);
+		}
+	}
+	glEnd();
+
+	glPointSize(old_size);
+
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderSelectedFEEdges(FELineMesh* pm)
+{
+	glBegin(GL_LINES);
+	for (int i = 0; i<pm->Edges(); i++)
+	{
+		FEEdge& edge = pm->Edge(i);
+		if (edge.IsSelected() && edge.IsVisible())
+		{
+			RenderFEEdge(edge, pm);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderUnselectedFEEdges(FELineMesh* pm)
+{
+	glBegin(GL_LINES);
+	for (int i = 0; i<pm->Edges(); i++)
+	{
+		FEEdge& edge = pm->Edge(i);
+
+		if (!edge.IsSelected() && edge.IsVisible())
+		{
+			RenderFEEdge(edge, pm);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderMeshLines(FEMeshBase* pm)
+{
+	if (pm == 0) return;
+
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
+	glDisable(GL_LIGHTING);
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	// loop over all faces
+	for (int i = 0; i<pm->Faces(); i++)
+	{
+		const FEFace& face = pm->Face(i);
+		if (face.IsVisible())
+		{
+			switch (face.Type())
+			{
+			case FE_FACE_QUAD4:
+			{
+				glBegin(GL_LINE_LOOP);
+				{
+					const vec3d& r1 = pm->Node(face.n[0]).r;
+					const vec3d& r2 = pm->Node(face.n[1]).r;
+					const vec3d& r3 = pm->Node(face.n[2]).r;
+					const vec3d& r4 = pm->Node(face.n[3]).r;
+
+					glVertex3d(r1.x, r1.y, r1.z);
+					glVertex3d(r2.x, r2.y, r2.z);
+					glVertex3d(r3.x, r3.y, r3.z);
+					glVertex3d(r4.x, r4.y, r4.z);
+				}
+				glEnd();
+			}
+			break;
+			case FE_FACE_QUAD8:
+			case FE_FACE_QUAD9:
+			{
+				glBegin(GL_LINE_LOOP);
+				{
+					const vec3d& r1 = pm->Node(face.n[0]).r;
+					const vec3d& r2 = pm->Node(face.n[1]).r;
+					const vec3d& r3 = pm->Node(face.n[2]).r;
+					const vec3d& r4 = pm->Node(face.n[3]).r;
+					const vec3d& r5 = pm->Node(face.n[4]).r;
+					const vec3d& r6 = pm->Node(face.n[5]).r;
+					const vec3d& r7 = pm->Node(face.n[6]).r;
+					const vec3d& r8 = pm->Node(face.n[7]).r;
+
+					glVertex3d(r1.x, r1.y, r1.z);
+					glVertex3d(r5.x, r5.y, r5.z);
+					glVertex3d(r2.x, r2.y, r2.z);
+					glVertex3d(r6.x, r6.y, r6.z);
+					glVertex3d(r3.x, r3.y, r3.z);
+					glVertex3d(r7.x, r7.y, r7.z);
+					glVertex3d(r4.x, r4.y, r4.z);
+					glVertex3d(r8.x, r8.y, r8.z);
+				}
+				glEnd();
+			}
+			break;
+			case FE_FACE_TRI3:
+			{
+				glBegin(GL_LINE_LOOP);
+				{
+					const vec3d& r1 = pm->Node(face.n[0]).r;
+					const vec3d& r2 = pm->Node(face.n[1]).r;
+					const vec3d& r3 = pm->Node(face.n[2]).r;
+
+					glVertex3d(r1.x, r1.y, r1.z);
+					glVertex3d(r2.x, r2.y, r2.z);
+					glVertex3d(r3.x, r3.y, r3.z);
+				}
+				glEnd();
+			}
+			break;
+			case FE_FACE_TRI6:
+			{
+				glBegin(GL_LINE_LOOP);
+				{
+					const vec3d& r1 = pm->Node(face.n[0]).r;
+					const vec3d& r2 = pm->Node(face.n[1]).r;
+					const vec3d& r3 = pm->Node(face.n[2]).r;
+					const vec3d& r4 = pm->Node(face.n[3]).r;
+					const vec3d& r5 = pm->Node(face.n[4]).r;
+					const vec3d& r6 = pm->Node(face.n[5]).r;
+
+					glVertex3d(r1.x, r1.y, r1.z);
+					glVertex3d(r4.x, r4.y, r4.z);
+					glVertex3d(r2.x, r2.y, r2.z);
+					glVertex3d(r5.x, r5.y, r5.z);
+					glVertex3d(r3.x, r3.y, r3.z);
+					glVertex3d(r6.x, r6.y, r6.z);
+				}
+				glEnd();
+			}
+			break;
+			} // switch
+		} // if
+	} // for
+
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderSelectedFEFaces(FEMeshBase* pm)
+{
+	glBegin(GL_TRIANGLES);
+	{
+		for (int i = 0; i < pm->Faces(); i++)
+		{
+			FEFace& face = pm->Face(i);
+			if (face.IsSelected())
+			{
+				RenderFEFace(face, pm);
+			}
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderUnselectedFEFaces(FEMeshBase* pm)
+{
+	glBegin(GL_TRIANGLES);
+	{
+		for (int i = 0; i < pm->Faces(); i++)
+		{
+			FEFace& face = pm->Face(i);
+			if (!face.IsSelected() && face.IsVisible())
+			{
+				RenderFEFace(face, pm);
+			}
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderSelectedFEFacesOutline(FEMeshBase* pm)
+{
+	glBegin(GL_LINES);
+	for (int i = 0; i < pm->Faces(); i++)
+	{
+		FEFace& face = pm->Face(i);
+		if (face.IsSelected())
+		{
+			int fn = face.Nodes();
+			int ne = face.Edges();
+			for (int j = 0; j < ne; ++j)
+			{
+				FEFace* pf = (face.m_nbr[j] >= 0 ? pm->FacePtr(face.m_nbr[j]) : 0);
+				if ((pf == 0) || !pf->IsSelected() || !pf->IsVisible())
+				{
+					int jp1 = (j + 1) % ne;
+					const vec3d& r1 = pm->Node(face.n[j]).r;
+					const vec3d& r2 = pm->Node(face.n[jp1]).r;
+
+					glVertex3d(r1.x, r1.y, r1.z);
+					glVertex3d(r2.x, r2.y, r2.z);
+				}
+			}
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm)
+{
+	glBegin(GL_TRIANGLES);
 	if (m_bShell2Solid)
 	{
 		if (pm->ElementRef(face.m_elem[0]).IsShell())
 		{
 			RenderThickShell(face, pm);
+			glEnd();
 			return;
 		}
 	}
-
-	glBegin(GL_TRIANGLES);
-	if (ndivs == 1)
+	if (m_ndivs == 1)
 	{
 		// Render the facet
 		switch (face.m_type)
@@ -1030,13 +1249,13 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm, int ndivs)
 		// Render the facet
 		switch (face.m_type)
 		{
-		case FE_FACE_QUAD4: RenderSmoothQUAD4(pm, face, ndivs); break;
-		case FE_FACE_QUAD8: RenderSmoothQUAD8(pm, face, ndivs); break;
-		case FE_FACE_QUAD9: RenderSmoothQUAD9(pm, face, ndivs); break;
-		case FE_FACE_TRI3 : RenderSmoothTRI3(pm, face, ndivs); break;
-		case FE_FACE_TRI6 : RenderSmoothTRI6(pm, face, ndivs); break;
-		case FE_FACE_TRI7 : RenderSmoothTRI7(pm, face, ndivs); break;
-		case FE_FACE_TRI10: RenderSmoothTRI10(pm, face, ndivs); break;
+		case FE_FACE_QUAD4: RenderSmoothQUAD4(pm, face, m_ndivs); break;
+		case FE_FACE_QUAD8: RenderSmoothQUAD8(pm, face, m_ndivs); break;
+		case FE_FACE_QUAD9: RenderSmoothQUAD9(pm, face, m_ndivs); break;
+		case FE_FACE_TRI3 : RenderSmoothTRI3 (pm, face, m_ndivs); break;
+		case FE_FACE_TRI6 : RenderSmoothTRI6 (pm, face, m_ndivs); break;
+		case FE_FACE_TRI7 : RenderSmoothTRI7 (pm, face, m_ndivs); break;
+		case FE_FACE_TRI10: RenderSmoothTRI10(pm, face, m_ndivs); break;
 		default:
 			assert(false);
 		}
@@ -1051,7 +1270,9 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm, GLColor c[4], int nd
 	{
 		if (pm->ElementRef(face.m_elem[0]).IsShell())
 		{
+			glBegin(GL_TRIANGLES);
 			RenderThickShell(face, pm);
+			glEnd();
 			return;
 		}
 	}
@@ -1147,6 +1368,23 @@ void GLMeshRender::RenderFaceOutline(FEFace& face, FECoreMesh* pm, int ndivs)
 	if (btex) glEnable(GL_TEXTURE_1D);
 }
 
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEFace(FEFace& face, FEMeshBase* pm)
+{
+	switch (face.Type())
+	{
+	case FE_FACE_TRI3 : ::RenderTRI3 (pm, face); break;
+	case FE_FACE_TRI6 : ::RenderTRI6 (pm, face); break;
+	case FE_FACE_TRI7 : ::RenderTRI7 (pm, face); break;
+	case FE_FACE_TRI10: ::RenderTRI10(pm, face); break;
+	case FE_FACE_QUAD4: ::RenderQUAD4(pm, face); break;
+	case FE_FACE_QUAD8: ::RenderQUAD8(pm, face); break;
+	case FE_FACE_QUAD9: ::RenderQUAD9(pm, face); break;
+	default:
+		assert(false);
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void GLMeshRender::RenderThickShell(FEFace &face, FECoreMesh* pm)
 {
@@ -1217,51 +1455,38 @@ void GLMeshRender::RenderThickQuad(FEFace &face, FECoreMesh* pm)
 	float t3 = face.m_tex[2];
 	float t4 = face.m_tex[3];
 
-	glBegin(GL_QUADS);
+	// top face
+	glx::vertex3d(r1b, n1, t1); glx::vertex3d(r2b, n2, t2); glx::vertex3d(r3b, n3, t3);
+	glx::vertex3d(r3b, n3, t3); glx::vertex3d(r4b, n4, t4); glx::vertex3d(r1b, n1, t1);
+
+	// bottom face
+	glx::vertex3d(r4a, -n4, t4); glx::vertex3d(r3a, -n3, t3); glx::vertex3d(r2a, -n2, t2);
+	glx::vertex3d(r2a, -n2, t2); glx::vertex3d(r1a, -n1, t1); glx::vertex3d(r4a, -n4, t4);
+
+	// side faces
+	if (face.m_nbr[0] == -1)
 	{
-		glNormal3f(n1.x, n1.y, n1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-		glNormal3f(n2.x, n2.y, n2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-		glNormal3f(n3.x, n3.y, n3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-		glNormal3f(n4.x, n4.y, n4.z); glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-
-		glNormal3f(-n4.x, -n4.y, -n4.z); glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-		glNormal3f(-n3.x, -n3.y, -n3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-		glNormal3f(-n2.x, -n2.y, -n2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-		glNormal3f(-n1.x, -n1.y, -n1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-
-		if (face.m_nbr[0] == -1)
-		{
-			glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-			glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-		}
-
-		if (face.m_nbr[1] == -1)
-		{
-			glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-			glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-		}
-
-		if (face.m_nbr[2] == -1)
-		{
-			glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-			glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-			glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-		}
-
-		if (face.m_nbr[3] == -1)
-		{
-			glNormal3f(m4.x, m4.y, m4.z); glTexCoord1f(t4); glVertex3f(r4a.x, r4a.y, r4a.z);
-			glNormal3f(m4.x, m4.y, m4.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-			glNormal3f(m4.x, m4.y, m4.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			glNormal3f(m4.x, m4.y, m4.z); glTexCoord1f(t4); glVertex3f(r4b.x, r4b.y, r4b.z);
-		}
+		glx::vertex3d(r1a, m1, t1); glx::vertex3d(r2a, m1, t2); glx::vertex3d(r2b, m1, t2);
+		glx::vertex3d(r2b, m1, t2); glx::vertex3d(r1b, m1, t1); glx::vertex3d(r1a, m1, t1);
 	}
-	glEnd();
+
+	if (face.m_nbr[1] == -1)
+	{
+		glx::vertex3d(r2a, m2, t2); glx::vertex3d(r3a, m2, t3); glx::vertex3d(r3b, m2, t3);
+		glx::vertex3d(r3b, m2, t3); glx::vertex3d(r2b, m2, t2); glx::vertex3d(r2a, m2, t2);
+	}
+
+	if (face.m_nbr[2] == -1)
+	{
+		glx::vertex3d(r3a, m3, t3); glx::vertex3d(r4a, m3, t4); glx::vertex3d(r4b, m3, t4);
+		glx::vertex3d(r4b, m3, t4); glx::vertex3d(r3b, m3, t3); glx::vertex3d(r3a, m3, t3);
+	}
+
+	if (face.m_nbr[3] == -1)
+	{
+		glx::vertex3d(r4a, m4, t4); glx::vertex3d(r1a, m4, t1); glx::vertex3d(r1b, m4, t1);
+		glx::vertex3d(r1b, m4, t1); glx::vertex3d(r4b, m4, t4); glx::vertex3d(r4a, m4, t4);
+	}
 }
 
 void GLMeshRender::RenderThickTri(FEFace &face, FECoreMesh* pm)
@@ -1276,9 +1501,9 @@ void GLMeshRender::RenderThickTri(FEFace &face, FECoreMesh* pm)
 	//h[0] = (h[0] + h[1] + h[2])/3;
 	//h[1] = h[0];
 	//h[2] = h[0];
-	vec3f n1 = face.m_nn[0];
-	vec3f n2 = face.m_nn[1];
-	vec3f n3 = face.m_nn[2];
+	vec3d n1 = face.m_nn[0];
+	vec3d n2 = face.m_nn[1];
+	vec3d n3 = face.m_nn[2];
 
 	vec3d r1a, r2a, r3a;
 	vec3d r1b, r2b, r3b;
@@ -1312,45 +1537,34 @@ void GLMeshRender::RenderThickTri(FEFace &face, FECoreMesh* pm)
 	float t2 = face.m_tex[1];
 	float t3 = face.m_tex[2];
 
-	glBegin(GL_TRIANGLES);
+	// top face
+	glx::vertex3d(r1b, n1, t1);
+	glx::vertex3d(r2b, n2, t2);
+	glx::vertex3d(r3b, n3, t3);
+
+	// bottom face
+	glx::vertex3d(r3a, -n3, t3);
+	glx::vertex3d(r2a, -n2, t2);
+	glx::vertex3d(r1a, -n1, t1);
+
+	// side faces
+	if (face.m_nbr[0] == -1)
 	{
-		glNormal3f(n1.x, n1.y, n1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-		glNormal3f(n2.x, n2.y, n2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-		glNormal3f(n3.x, n3.y, n3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-
-		glNormal3f(-n3.x, -n3.y, -n3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-		glNormal3f(-n2.x, -n2.y, -n2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-		glNormal3f(-n1.x, -n1.y, -n1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
+		glx::vertex3d(r1a, m1, t1); glx::vertex3d(r2a, m1, t2); glx::vertex3d(r2b, m1, t2);
+		glx::vertex3d(r2b, m1, t2); glx::vertex3d(r1b, m1, t1); glx::vertex3d(r1a, m1, t1);
 	}
-	glEnd();
 
-	glBegin(GL_QUADS);
+	if (face.m_nbr[1] == -1)
 	{
-		if (face.m_nbr[0] == -1)
-		{
-			glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-			glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-			glNormal3f(m1.x, m1.y, m1.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-		}
-
-		if (face.m_nbr[1] == -1)
-		{
-			glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t2); glVertex3f(r2a.x, r2a.y, r2a.z);
-			glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-			glNormal3f(m2.x, m2.y, m2.z); glTexCoord1f(t2); glVertex3f(r2b.x, r2b.y, r2b.z);
-		}
-
-		if (face.m_nbr[2] == -1)
-		{
-			glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t3); glVertex3f(r3a.x, r3a.y, r3a.z);
-			glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t1); glVertex3f(r1a.x, r1a.y, r1a.z);
-			glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t1); glVertex3f(r1b.x, r1b.y, r1b.z);
-			glNormal3f(m3.x, m3.y, m3.z); glTexCoord1f(t3); glVertex3f(r3b.x, r3b.y, r3b.z);
-		}
+		glx::vertex3d(r2a, m2, t2); glx::vertex3d(r3a, m2, t3); glx::vertex3d(r3b, m2, t3);
+		glx::vertex3d(r3b, m2, t3); glx::vertex3d(r2b, m2, t2); glx::vertex3d(r2a, m2, t2);
 	}
-	glEnd();
+
+	if (face.m_nbr[2] == -1)
+	{
+		glx::vertex3d(r3a, m3, t3); glx::vertex3d(r1a, m3, t1); glx::vertex3d(r1b, m3, t1);
+		glx::vertex3d(r1b, m3, t1); glx::vertex3d(r3b, m3, t3); glx::vertex3d(r3a, m3, t3);
+	}
 }
 
 void GLMeshRender::RenderThickShellOutline(FEFace &face, FECoreMesh* pm)
@@ -1448,7 +1662,44 @@ void GLMeshRender::RenderThickShellOutline(FEFace &face, FECoreMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void RenderQUAD4(FECoreMesh* pm, FEFace& f)
+void RenderFEEdge(FEEdge& edge, FELineMesh* pm)
+{
+	const vec3d& r1 = pm->Node(edge.n[0]).r;
+	const vec3d& r2 = pm->Node(edge.n[1]).r;
+
+	switch (edge.Nodes())
+	{
+	case 2:
+	{
+		glx::vertex3d(r1);
+		glx::vertex3d(r2);
+	}
+	break;
+	case 3:
+	{
+		const vec3d& r3 = pm->Node(edge.n[2]).r;
+		glx::vertex3d(r1);
+		glx::vertex3d(r3);
+		glx::vertex3d(r2);
+	}
+	break;
+	case 4:
+	{
+		const vec3d& r3 = pm->Node(edge.n[2]).r;
+		const vec3d& r4 = pm->Node(edge.n[3]).r;
+		glx::vertex3d(r1);
+		glx::vertex3d(r3);
+		glx::vertex3d(r4);
+		glx::vertex3d(r2);
+	}
+	break;
+	default:
+		assert(false);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void RenderQUAD4(FEMeshBase* pm, FEFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD4);
 
@@ -1462,12 +1713,12 @@ void RenderQUAD4(FECoreMesh* pm, FEFace& f)
 	pm->FaceNodeTexCoords(f, t);
 
 	// render the quads
-	GLX::quad4(r, n, t);
+	glx::quad4(r, n, t);
 }
 
 //-----------------------------------------------------------------------------
 // Render a 8-noded quad
-void RenderQUAD8(FECoreMesh* pm, FEFace& f)
+void RenderQUAD8(FEMeshBase* pm, FEFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD8);
 
@@ -1480,12 +1731,12 @@ void RenderQUAD8(FECoreMesh* pm, FEFace& f)
 	float t[8];
 	pm->FaceNodeTexCoords(f, t);
 
-	GLX::quad8(r, n, t);
+	glx::quad8(r, n, t);
 }
 
 //-----------------------------------------------------------------------------
 // Render a 9-noded quad
-void RenderQUAD9(FECoreMesh* pm, FEFace& f)
+void RenderQUAD9(FEMeshBase* pm, FEFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD9);
 
@@ -1498,12 +1749,12 @@ void RenderQUAD9(FECoreMesh* pm, FEFace& f)
 	float t[9];
 	pm->FaceNodeTexCoords(f, t);
 
-	GLX::quad9(r, n, t);
+	glx::quad9(r, n, t);
 }
 
 //-----------------------------------------------------------------------------
 // Render a 3-noded tri
-void RenderTRI3(FECoreMesh* pm, FEFace& f)
+void RenderTRI3(FEMeshBase* pm, FEFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI3);
 
@@ -1516,12 +1767,12 @@ void RenderTRI3(FECoreMesh* pm, FEFace& f)
 	float t[3];
 	pm->FaceNodeTexCoords(f, t);
 
-	GLX::tri3(r, n, t);
+	glx::tri3(r, n, t);
 }
 
 //-----------------------------------------------------------------------------
 // Render a 6-noded tri
-void RenderTRI6(FECoreMesh* pm, FEFace& f)
+void RenderTRI6(FEMeshBase* pm, FEFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI6);
 
@@ -1534,12 +1785,12 @@ void RenderTRI6(FECoreMesh* pm, FEFace& f)
 	float t[6];
 	pm->FaceNodeTexCoords(f, t);
 
-	GLX::tri6(r, n, t);
+	glx::tri6(r, n, t);
 }
 
 //-----------------------------------------------------------------------------
 // Render a 7-noded tri
-void RenderTRI7(FECoreMesh* pm, FEFace& f)
+void RenderTRI7(FEMeshBase* pm, FEFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI7);
 
@@ -1552,12 +1803,12 @@ void RenderTRI7(FECoreMesh* pm, FEFace& f)
 	float t[7];
 	pm->FaceNodeTexCoords(f, t);
 
-	GLX::tri7(r, n, t);
+	glx::tri7(r, n, t);
 }
 
 //-----------------------------------------------------------------------------
 // Render a 10-noded tri
-void RenderTRI10(FECoreMesh* pm, FEFace& f)
+void RenderTRI10(FEMeshBase* pm, FEFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI10);
 
@@ -1570,7 +1821,7 @@ void RenderTRI10(FECoreMesh* pm, FEFace& f)
 	float t[10];
 	pm->FaceNodeTexCoords(f, t);
 
-	GLX::tri10(r, n, t);
+	glx::tri10(r, n, t);
 }
 
 //-----------------------------------------------------------------------------
@@ -1589,7 +1840,7 @@ void RenderSmoothQUAD4(FECoreMesh* pm, FEFace& face, int ndivs)
 	float t[4];
 	pm->FaceNodeTexCoords(face, t);
 
-	GLX::smoothQUAD4(r, n, t, ndivs);
+	glx::smoothQUAD4(r, n, t, ndivs);
 }
 
 //-----------------------------------------------------------------------------
@@ -1621,7 +1872,7 @@ void RenderSmoothQUAD8(FECoreMesh* pm, FEFace& face, int ndivs)
 	float t[8];
 	pm->FaceNodeTexCoords(face, t);
 
-	GLX::smoothQUAD8(r, n, t, ndivs);
+	glx::smoothQUAD8(r, n, t, ndivs);
 }
 
 
@@ -1656,7 +1907,7 @@ void RenderSmoothQUAD9(FECoreMesh* pm, FEFace& face, int ndivs)
 	float t[9];
 	pm->FaceNodeTexCoords(face, t);
 
-	GLX::smoothQUAD9(r, n, t, ndivs);
+	glx::smoothQUAD9(r, n, t, ndivs);
 }
 
 //-----------------------------------------------------------------------------
@@ -1691,7 +1942,7 @@ void RenderSmoothTRI6(FECoreMesh* pm, FEFace& face, int ndivs)
 	float t[6];
 	pm->FaceNodeTexCoords(face, t);
 
-	GLX::smoothTRI6(r, n, t, ndivs);
+	glx::smoothTRI6(r, n, t, ndivs);
 }
 
 //-----------------------------------------------------------------------------
@@ -1721,7 +1972,7 @@ void RenderSmoothTRI7(FECoreMesh* pm, FEFace& face, int ndivs)
 	float t[7];
 	pm->FaceNodeTexCoords(face, t);
 
-	GLX::smoothTRI7(r, n, t, ndivs);
+	glx::smoothTRI7(r, n, t, ndivs);
 }
 
 //-----------------------------------------------------------------------------
@@ -1757,7 +2008,7 @@ void RenderSmoothTRI10(FECoreMesh* pm, FEFace& face, int ndivs)
 	float t[10];
 	pm->FaceNodeTexCoords(face, t);
 
-	GLX::smoothTRI10(r, n, t, ndivs);
+	glx::smoothTRI10(r, n, t, ndivs);
 }
 
 void RenderFace1Outline(FECoreMesh* pm, FEFace& face)
@@ -1808,4 +2059,204 @@ void RenderFace3Outline(FECoreMesh* pm, FEFace& face, int ndivs)
 			glVertex3f(p.x, p.y, p.z);
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderElementOutline(FEElement_& el, FECoreMesh* pm)
+{
+	glBegin(GL_LINES);
+	switch (el.Type())
+	{
+	case FE_HEX8:
+	{
+		int(*et)[2] = ET_HEX;
+		for (int i = 0; i<12; ++i)
+		{
+			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+			vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+			glx::vertex3d(r0);
+			glx::vertex3d(r1);
+		}
+	}
+	break;
+	case FE_PYRA5:
+	{
+		int(*et)[2] = ET_PYRA5;
+		for (int i = 0; i<8; ++i)
+		{
+			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+			vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+			glx::vertex3d(r0);
+			glx::vertex3d(r1);
+		}
+	}
+	break;
+	case FE_HEX20:
+	{
+		int(*et)[3] = ET_HEX20;
+		for (int i = 0; i<12; ++i)
+		{
+			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+			vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+			vec3d& r2 = pm->Node(el.m_node[et[i][2]]).r;
+			glx::vertex3d(r0); glx::vertex3d(r2);
+			glx::vertex3d(r2); glx::vertex3d(r1);
+		}
+	}
+	break;
+	case FE_HEX27:
+	{
+		int(*et)[3] = ET_HEX20;
+		for (int i = 0; i<12; ++i)
+		{
+			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+			vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+			vec3d& r2 = pm->Node(el.m_node[et[i][2]]).r;
+			glx::vertex3d(r0); glx::vertex3d(r2);
+			glx::vertex3d(r2); glx::vertex3d(r1);
+		}
+	}
+	break;
+	case FE_PENTA6:
+	{
+		int(*et)[2] = ET_PENTA;
+		for (int i = 0; i<9; ++i)
+		{
+			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+			vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+			glx::vertex3d(r0);
+			glx::vertex3d(r1);
+		}
+	};
+	break;
+	case FE_PENTA15:
+	{
+		int(*et)[3] = ET_PENTA15;
+		for (int i = 0; i<9; ++i)
+		{
+			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+			vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+			vec3d& r2 = pm->Node(el.m_node[et[i][2]]).r;
+			glx::vertex3d(r0); glx::vertex3d(r2);
+			glx::vertex3d(r2); glx::vertex3d(r1);
+		}
+	};
+	break;
+	case FE_TET4:
+	case FE_TET5:
+	case FE_TET20:
+	{
+		int(*et)[2] = ET_TET;
+		for (int i = 0; i<6; ++i)
+		{
+			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+			vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+			glx::vertex3d(r0);
+			glx::vertex3d(r1);
+		}
+	}
+	break;
+	case FE_TET10:
+	case FE_TET15:
+	{
+		int(*et)[3] = ET_TET10;
+		for (int i = 0; i<6; ++i)
+		{
+			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+			vec3d& r1 = pm->Node(el.m_node[et[i][2]]).r;
+			vec3d& r2 = pm->Node(el.m_node[et[i][1]]).r;
+			glx::vertex3d(r0); glx::vertex3d(r2);
+			glx::vertex3d(r2); glx::vertex3d(r1);
+		}
+	}
+	break;
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFaceEdge(FEFace& f, int j, FEMeshBase* pm, int ndivs)
+{
+	int n = f.Edges();
+	int a = f.n[j];
+	int b = f.n[(j + 1) % n];
+	if (a > b) { a ^= b; b ^= a; a ^= b; }
+
+	glBegin(GL_LINES);
+	switch (f.m_type)
+	{
+	case FE_FACE_TRI3:
+	case FE_FACE_QUAD4:
+	{
+		vec3d r1 = pm->Node(a).r;
+		vec3d r2 = pm->Node(b).r;
+		glVertex3d(r1.x, r1.y, r1.z);
+		glVertex3d(r2.x, r2.y, r2.z);
+	}
+	break;
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
+	{
+		vec3d r1 = pm->Node(a).r;
+		vec3d r2 = pm->Node(b).r;
+		vec3d r3 = pm->Node(f.n[j + 4]).r;
+
+		float r, H[3];
+		vec3d p;
+		int n = (ndivs <= 1 ? 2 : ndivs);
+		for (int i = 0; i<n; ++i)
+		{
+			r = -1.f + 2.f*i / n;
+			H[0] = 0.5f*r*(r - 1.f);
+			H[1] = 0.5f*r*(r + 1.f);
+			H[2] = 1.f - r*r;
+			p = r1*H[0] + r2*H[1] + r3*H[2];
+			glVertex3f(p.x, p.y, p.z);
+
+			r = -1.f + 2.f*(i + 1) / n;
+			H[0] = 0.5f*r*(r - 1.f);
+			H[1] = 0.5f*r*(r + 1.f);
+			H[2] = 1.f - r*r;
+			p = r1*H[0] + r2*H[1] + r3*H[2];
+			glVertex3f(p.x, p.y, p.z);
+		}
+	}
+	break;
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
+	{
+		vec3d r1 = pm->Node(a).r;
+		vec3d r2 = pm->Node(b).r;
+		vec3d r3 = pm->Node(f.n[j + 3]).r;
+
+		float r, H[3];
+		vec3d p;
+		int n = (ndivs <= 1 ? 2 : ndivs);
+		for (int i = 0; i<n; ++i)
+		{
+			r = -1.f + 2.f*i / n;
+			H[0] = 0.5f*r*(r - 1.f);
+			H[1] = 0.5f*r*(r + 1.f);
+			H[2] = 1.f - r*r;
+			p = r1*H[0] + r2*H[1] + r3*H[2];
+			glVertex3f(p.x, p.y, p.z);
+
+			r = -1.f + 2.f*(i + 1) / n;
+			H[0] = 0.5f*r*(r - 1.f);
+			H[1] = 0.5f*r*(r + 1.f);
+			H[2] = 1.f - r*r;
+			p = r1*H[0] + r2*H[1] + r3*H[2];
+			glVertex3f(p.x, p.y, p.z);
+		}
+	}
+	break;
+	case FE_FACE_TRI10:
+	{
+		// implement this
+	}
+	break;
+	default:
+		assert(false);
+	}
+	glEnd();
 }

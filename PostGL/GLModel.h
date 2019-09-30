@@ -162,7 +162,6 @@ public:
 
 	void RenderDecorations();
 
-//	void RenderFeatureEdges(FEModel* ps);
 	void RenderMeshLines(FEModel* ps, int nmat);
 	void RenderShadows(FEModel* ps, const vec3d& lp, float inf);
 
@@ -170,11 +169,9 @@ public:
 	void RemoveDecoration(GDecoration* pd);
 
 protected:
-	void RenderElementOutline(FEElement_& el, Post::FEMeshBase* pm);
 	void RenderSolidPart(FEModel* ps, CGLContext& rc, int mat);
 	void RenderSolidMaterial(FEModel* ps, int m);
 	void RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m);
-	void RenderFaceEdge(FEFace& face, int j, Post::FEMeshBase* pm, int ndivs);
 	void RenderSolidDomain(FEDomain& dom, bool btex, bool benable);
 
 	void RenderInnerSurface(int m);

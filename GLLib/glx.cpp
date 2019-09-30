@@ -3,13 +3,13 @@
 #include "glx.h"
 
 //-----------------------------------------------------------------------------
-void GLX::translate(const vec3d& r)
+void glx::translate(const vec3d& r)
 {
 	glTranslated(r.x, r.y, r.z);
 }
 
 //-----------------------------------------------------------------------------
-void GLX::rotate(const quatd& q)
+void glx::rotate(const quatd& q)
 {
 	double w = q.GetAngle();
 	if (w != 0)
@@ -20,7 +20,7 @@ void GLX::rotate(const quatd& q)
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawLine(double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n)
+void glx::drawLine(double x0, double y0, double x1, double y1, double a0, double a1, GLColor c, int n)
 {
 	double x, y;
 	double f, g;
@@ -48,7 +48,7 @@ void GLX::drawLine(double x0, double y0, double x1, double y1, double a0, double
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawCircle(double R, int N)
+void glx::drawCircle(double R, int N)
 {
 	double x, y;
 	glBegin(GL_LINE_LOOP);
@@ -64,7 +64,7 @@ void GLX::drawCircle(double R, int N)
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawCircle(const vec3d& c, double R, int N)
+void glx::drawCircle(const vec3d& c, double R, int N)
 {
 	double x, y;
 	glBegin(GL_LINE_LOOP);
@@ -80,7 +80,7 @@ void GLX::drawCircle(const vec3d& c, double R, int N)
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawPoint(const vec3d& r)
+void glx::drawPoint(const vec3d& r)
 {
 	glBegin(GL_POINTS);
 	{
@@ -90,7 +90,7 @@ void GLX::drawPoint(const vec3d& r)
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawLine(const vec3d& a, const vec3d& b)
+void glx::drawLine(const vec3d& a, const vec3d& b)
 {
 	glBegin(GL_LINES);
 	{
@@ -101,7 +101,7 @@ void GLX::drawLine(const vec3d& a, const vec3d& b)
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
+void glx::drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
 {
 	glBegin(GL_LINES);
 	{
@@ -112,14 +112,14 @@ void GLX::drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GL
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
+void glx::drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
 {
 	glColor3ub(colA.r, colA.g, colA.b); glVertex3d(a.x, a.y, a.z);
 	glColor3ub(colB.r, colB.g, colB.b); glVertex3d(b.x, b.y, b.z);
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawArc(const vec3d& c, double R, double w0, double w1, int N)
+void glx::drawArc(const vec3d& c, double R, double w0, double w1, int N)
 {
 	glBegin(GL_LINE_STRIP);
 	{
@@ -135,7 +135,7 @@ void GLX::drawArc(const vec3d& c, double R, double w0, double w1, int N)
 }
 
 //-----------------------------------------------------------------------------
-void GLX::drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N)
+void glx::drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N)
 {
     vec3d c = b - a;
     double L = c.Length();
@@ -168,22 +168,22 @@ void GLX::drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N)
         glEnd();
     }
     else
-        GLX::drawLine(a, b);
+        glx::drawLine(a, b);
 }
 
-void GLX::quad4(vec3d r[4], vec3d n[4])
+void glx::quad4(vec3d r[4], vec3d n[4])
 {
 	vertex3d(r[0], n[0]); vertex3d(r[1], n[1]); vertex3d(r[2], n[2]);
 	vertex3d(r[2], n[2]); vertex3d(r[3], n[3]); vertex3d(r[0], n[0]);
 }
 
-void GLX::quad4(vec3d r[4], vec3f n[4], float t[4])
+void glx::quad4(vec3d r[4], vec3f n[4], float t[4])
 {
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[1], n[1], t[1]); vertex3d(r[2], n[2], t[2]);
 	vertex3d(r[2], n[2], t[2]); vertex3d(r[3], n[3], t[3]); vertex3d(r[0], n[0], t[0]);
 }
 
-void GLX::quad8(vec3d r[8], vec3f n[8], float t[8])
+void glx::quad8(vec3d r[8], vec3f n[8], float t[8])
 {
 	vertex3d(r[7], n[7], t[7]); vertex3d(r[0], n[0], t[0]); vertex3d(r[4], n[4], t[4]);
 	vertex3d(r[4], n[4], t[4]); vertex3d(r[1], n[1], t[1]); vertex3d(r[5], n[5], t[5]);
@@ -193,7 +193,7 @@ void GLX::quad8(vec3d r[8], vec3f n[8], float t[8])
 	vertex3d(r[7], n[7], t[7]); vertex3d(r[5], n[5], t[5]); vertex3d(r[6], n[6], t[6]);
 }
 
-void GLX::quad9(vec3d r[9], vec3f n[9], float t[9])
+void glx::quad9(vec3d r[9], vec3f n[9], float t[9])
 {
 	const int T[8][3] = {
 		{ 0,4,8 },{ 8,7,0 },{ 4,1,5 },{ 5,8,4 },
@@ -232,21 +232,28 @@ void GLX::quad9(vec3d r[9], vec3f n[9], float t[9])
 	glNormal3f(n[T[7][2]].x, n[T[7][2]].y, n[T[7][2]].z); glTexCoord1f(t[T[7][2]]); glVertex3f(r[T[7][2]].x, r[T[7][2]].y, r[T[7][2]].z);
 }
 
-void GLX::tri3(vec3d r[3], vec3f n[3])
+void glx::tri3(vec3d r[3], vec3f n[3])
 {
 	vertex3d(r[0], n[0]);
 	vertex3d(r[1], n[1]);
 	vertex3d(r[2], n[2]);
 }
 
-void GLX::tri3(vec3d r[3], vec3f n[3], float t[3])
+void glx::tri3(vec3d r[3], vec3d n[3])
+{
+	vertex3d(r[0], n[0]);
+	vertex3d(r[1], n[1]);
+	vertex3d(r[2], n[2]);
+}
+
+void glx::tri3(vec3d r[3], vec3f n[3], float t[3])
 {
 	vertex3d(r[0], n[0], t[0]);
 	vertex3d(r[1], n[1], t[1]);
 	vertex3d(r[2], n[2], t[2]);
 }
 
-void GLX::tri6(vec3d r[6], vec3f n[6], float t[6])
+void glx::tri6(vec3d r[6], vec3f n[6], float t[6])
 {
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[3], n[3], t[3]); vertex3d(r[5], n[5], t[5]);
 	vertex3d(r[1], n[1], t[1]); vertex3d(r[4], n[4], t[4]); vertex3d(r[3], n[3], t[3]);
@@ -254,7 +261,7 @@ void GLX::tri6(vec3d r[6], vec3f n[6], float t[6])
 	vertex3d(r[3], n[3], t[3]); vertex3d(r[4], n[4], t[4]); vertex3d(r[5], n[5], t[5]);
 }
 
-void GLX::tri7(vec3d r[7], vec3f n[7], float t[7])
+void glx::tri7(vec3d r[7], vec3f n[7], float t[7])
 {
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[3], n[3], t[3]); vertex3d(r[6], n[6], t[6]);
 	vertex3d(r[1], n[1], t[1]); vertex3d(r[6], n[6], t[6]); vertex3d(r[3], n[3], t[3]);
@@ -264,7 +271,7 @@ void GLX::tri7(vec3d r[7], vec3f n[7], float t[7])
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[6], n[6], t[6]); vertex3d(r[5], n[5], t[5]);
 }
 
-void GLX::tri10(vec3d r[10], vec3f n[10], float t[10])
+void glx::tri10(vec3d r[10], vec3f n[10], float t[10])
 {
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[3], n[3], t[3]); vertex3d(r[7], n[7], t[7]);
 	vertex3d(r[1], n[1], t[1]); vertex3d(r[5], n[5], t[5]); vertex3d(r[4], n[4], t[4]);
@@ -277,7 +284,7 @@ void GLX::tri10(vec3d r[10], vec3f n[10], float t[10])
 	vertex3d(r[9], n[9], t[9]); vertex3d(r[8], n[8], t[8]); vertex3d(r[7], n[7], t[7]);
 }
 
-void GLX::drawLine(double x0, double y0, double x1, double y1)
+void glx::drawLine(double x0, double y0, double x1, double y1)
 {
 	glBegin(GL_LINES);
 	{
@@ -287,7 +294,7 @@ void GLX::drawLine(double x0, double y0, double x1, double y1)
 	glEnd();
 }
 
-void GLX::drawLine(double x0, double y0, double z0, double x1, double y1, double z1)
+void glx::drawLine(double x0, double y0, double z0, double x1, double y1, double z1)
 {
 	glBegin(GL_LINES);
 	{
@@ -297,7 +304,7 @@ void GLX::drawLine(double x0, double y0, double z0, double x1, double y1, double
 	glEnd();
 }
 
-void GLX::drawLine(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2)
+void glx::drawLine(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2)
 {
 	glBegin(GL_LINE_STRIP);
 	{
@@ -310,7 +317,7 @@ void GLX::drawLine(double x0, double y0, double z0, double x1, double y1, double
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 4-noded quadrilateral
-void GLX::smoothQUAD4(vec3d r[4], vec3f n[4], float t[4], int ndivs)
+void glx::smoothQUAD4(vec3d r[4], vec3f n[4], float t[4], int ndivs)
 {
 	const int T[2][3] = { { 0,1,2 },{ 2,3,0 } };
 	float sa[4], ta[4], h[4];
@@ -352,7 +359,7 @@ void GLX::smoothQUAD4(vec3d r[4], vec3f n[4], float t[4], int ndivs)
 	}
 }
 
-void GLX::smoothQUAD8(vec3d r[8], vec3f n[8], float t[8], int ndivs)
+void glx::smoothQUAD8(vec3d r[8], vec3f n[8], float t[8], int ndivs)
 {
 	const int T[2][3] = { { 0,1,2 },{ 2,3,0 } };
 	float sa[4], ta[4], h[8];
@@ -399,7 +406,7 @@ void GLX::smoothQUAD8(vec3d r[8], vec3f n[8], float t[8], int ndivs)
 	}
 }
 
-void GLX::smoothQUAD9(vec3d r[9], vec3f n[9], float t[9], int ndivs)
+void glx::smoothQUAD9(vec3d r[9], vec3f n[9], float t[9], int ndivs)
 {
 	const int T[2][3] = { { 0,1,2 },{ 2,3,0 } };
 	float sa[4], ta[4], h[9], R[3], S[3];
@@ -455,7 +462,7 @@ void GLX::smoothQUAD9(vec3d r[9], vec3f n[9], float t[9], int ndivs)
 	}
 }
 
-void GLX::smoothTRI6(vec3d r[6], vec3f n[6], float t[6], int ndivs)
+void glx::smoothTRI6(vec3d r[6], vec3f n[6], float t[6], int ndivs)
 {
 	float sa[2], ta[2], h[8];
 	int nj = ndivs;
@@ -524,12 +531,12 @@ void GLX::smoothTRI6(vec3d r[6], vec3f n[6], float t[6], int ndivs)
 	}
 }
 
-void GLX::smoothTRI7(vec3d r[7], vec3f n[7], float t[7], int ndivs)
+void glx::smoothTRI7(vec3d r[7], vec3f n[7], float t[7], int ndivs)
 {
 	int sl[2][3] = { { 0,1,0 },{ 1,1,0 } };
 	int tl[2][3] = { { 0,0,1 },{ 0,1,1 } };
 
-	float sa[2], ta[2], tk, h[7];
+	float sa[2], ta[2], h[7];
 	int nj = ndivs;
 
 	for (int i = 0; i<ndivs; ++i)
@@ -595,7 +602,7 @@ void GLX::smoothTRI7(vec3d r[7], vec3f n[7], float t[7], int ndivs)
 	}
 }
 
-void GLX::smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs)
+void glx::smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs)
 {
 	float sa[2], ta[2], tk, h[10];
 	vec3d nk, xk;

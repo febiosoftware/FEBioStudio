@@ -122,13 +122,13 @@ void CGLCamera::Transform()
 	if (m_bdecal) r.z *= .999;
 
 	// position the target in camera coordinates
-	GLX::translate(-r);
+	glx::translate(-r);
 
 	// orient the camera
-	GLX::rotate(m_rot.Value());
+	glx::rotate(m_rot.Value());
 
 	// translate to world coordinates
-	GLX::translate(-GetPosition());
+	glx::translate(-GetPosition());
 }
 
 //-----------------------------------------------------------------------------

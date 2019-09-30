@@ -56,7 +56,7 @@ void GGrid::Render()
 	glPushMatrix();
 
 	// orient the grid
-	GLX::rotate(m_q);
+	glx::rotate(m_q);
 
 	// determine the scale
 	double scale = 1.f*(double) cam.GetTargetDistance();
@@ -91,8 +91,8 @@ void GGrid::Render()
 	int i1 =  n+nx;
 
 	// render the major axis
-	GLX::drawLine(0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, cy, 2 * n + 1);
-	GLX::drawLine((-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, 2 * n + 1);
+	glx::drawLine(0, (-n + ny)*s, 0, (n + ny)*s, 0, 1, cy, 2 * n + 1);
+	glx::drawLine((-n + nx)*s, 0, (n + nx)*s, 0, 0, 1, cx, 2 * n + 1);
 
 	// grid lines color
 	GLColor c1(0,0,0);
@@ -108,7 +108,7 @@ void GGrid::Render()
 		a = 0.35*a*a;
 		if (abs(i)%10 == 0) a *= 2;
 
-		if (i != 0) GLX::drawLine(i*s, (-n + ny)*s, i*s, (n + ny)*s, 0, a, c1, 2 * n + 1);
+		if (i != 0) glx::drawLine(i*s, (-n + ny)*s, i*s, (n + ny)*s, 0, a, c1, 2 * n + 1);
 	}
 
 	// render the y-lines
@@ -124,7 +124,7 @@ void GGrid::Render()
 		if (i != 0) a *= 0.25;
 		if (abs(i)%10 == 0) a *= 2;
 
-		if (i != 0) GLX::drawLine((-n + nx)*s, i*s, (n + nx)*s, i*s, 0, a, c1, 2 * n + 1);
+		if (i != 0) glx::drawLine((-n + nx)*s, i*s, (n + nx)*s, i*s, 0, a, c1, 2 * n + 1);
 	}
 
 	// restore modelview matrix

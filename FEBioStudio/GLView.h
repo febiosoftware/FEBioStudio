@@ -277,8 +277,6 @@ public:
 	void RenderFENodes(GObject* po);
 	void RenderMeshLines();
 	void RenderMeshLines(GObject* pm);
-	void RenderMeshLines(FEMeshBase* pm);
-	void RenderFEFace(FEFace& face, FEMeshBase* pm);
 
 	// other rendering functions
 	void RenderDiscrete();

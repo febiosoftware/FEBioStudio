@@ -1741,11 +1741,11 @@ void CGLView::Render3DCursor(const vec3d& r, double R)
 	gluOrtho2D(0, width(), 0, height());
 
 	glColor3ub(255, 164, 164);
-	GLX::drawLine(p.x - R, p.y, p.x - R + c, p.y);
-	GLX::drawLine(p.x + R, p.y, p.x + R - c, p.y);
-	GLX::drawLine(p.x, p.y - R, p.x, p.y - R + c);
-	GLX::drawLine(p.x, p.y + R, p.x, p.y + R - c);
-	GLX::drawCircle(p, R, 36);
+	glx::drawLine(p.x - R, p.y, p.x - R + c, p.y);
+	glx::drawLine(p.x + R, p.y, p.x + R - c, p.y);
+	glx::drawLine(p.x, p.y - R, p.x, p.y - R + c);
+	glx::drawLine(p.x, p.y + R, p.x, p.y + R - c);
+	glx::drawCircle(p, R, 36);
 
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
@@ -1974,7 +1974,7 @@ void CGLView::RenderNormals(GObject* po, double scale)
 				float g = (float) fabs(fn.y);
 				float b = (float) fabs(fn.z);
 	
-				GLX::drawLine_(p, q, GLColor::White(), GLColor::FromRGBf(r, g, b));
+				glx::drawLine_(p, q, GLColor::White(), GLColor::FromRGBf(r, g, b));
 			}
 		}
 	}
@@ -2169,10 +2169,10 @@ void RenderLine(GNode& n0, GNode& n1)
 	vec3d r0 = n0.Position();
 	vec3d r1 = n1.Position();
 
-	GLX::drawPoint(r0);
-	GLX::drawPoint(r1);
+	glx::drawPoint(r0);
+	glx::drawPoint(r1);
 
-	GLX::drawLine(r0, r1);
+	glx::drawLine(r0, r1);
 }
 
 void CGLView::RenderDiscrete()
@@ -2404,7 +2404,7 @@ void CGLView::RenderMaterialFibers()
 
 							glColor3d(r, g, b);
 
-							GLX::drawLine(c, c + q*h);
+							glx::drawLine(c, c + q*h);
 						}
 					}
 				}
@@ -2469,7 +2469,7 @@ void CGLView::RenderLocalMaterialAxes()
 
 								glColor3ub(rgb[0][k], rgb[1][k], rgb[2][k]);
 
-								GLX::drawLine(c, c + q*h);
+								glx::drawLine(c, c + q*h);
 							}
 						}
 						else if (pmat && pmat->m_naopt > -1)
@@ -2485,7 +2485,7 @@ void CGLView::RenderLocalMaterialAxes()
 
 								glColor3ub(rgb[0][k], rgb[1][k], rgb[2][k]);
 
-								GLX::drawLine(c, c + q*h);
+								glx::drawLine(c, c + q*h);
 							}
 						}
 					}
@@ -2581,7 +2581,7 @@ void CGLView::RenderRubberBand()
 			double dx = (m_x1 - m_x0);
 			double dy = (m_y1 - m_y0);
 			double R = sqrt(dx*dx + dy*dy);
-			GLX::drawCircle(vec3d(m_x0, m_y0, 0), R, 24);
+			glx::drawCircle(vec3d(m_x0, m_y0, 0), R, 24);
 		}
 		break;
 	case REGION_SELECT_FREE:
@@ -2642,7 +2642,7 @@ void CGLView::RenderRigidWalls()
 				glPushMatrix();
 				{
 					glTranslated(p.x, p.y, p.z);
-					GLX::rotate(q);
+					glx::rotate(q);
 					glColor4ub(128, 96, 0, 96);
 					glRectd(-R, -R, R, R);
 
@@ -2724,14 +2724,14 @@ void CGLView::RenderRigidJoints()
 				}
 				glEnd();
 
-				GLX::drawCircle(R, 25);
+				glx::drawCircle(R, 25);
 
 				glRotatef(90.f, 1.f, 0.f, 0.f);
-				GLX::drawCircle(R, 25);
+				glx::drawCircle(R, 25);
 				glRotatef(-90.f, 1.f, 0.f, 0.f);
 
 				glRotatef(90.f, 0.f, 1.f, 0.f);
-				GLX::drawCircle(R, 25);
+				glx::drawCircle(R, 25);
 				glRotatef(-90.f, 0.f, 1.f, 0.f);
 
 				glPopMatrix();
@@ -2779,14 +2779,14 @@ void CGLView::RenderRigidConnectors()
 				}
 				glEnd();
 
-				GLX::drawCircle(R, 25);
+				glx::drawCircle(R, 25);
 
 				glRotatef(90.f, 1.f, 0.f, 0.f);
-				GLX::drawCircle(R, 25);
+				glx::drawCircle(R, 25);
 				glRotatef(-90.f, 1.f, 0.f, 0.f);
 
 				glRotatef(90.f, 0.f, 1.f, 0.f);
-				GLX::drawCircle(R, 25);
+				glx::drawCircle(R, 25);
 				glRotatef(-90.f, 0.f, 1.f, 0.f);
 
 				glPopMatrix();
@@ -2818,10 +2818,10 @@ void CGLView::RenderRigidConnectors()
 				glEnd();
 
 				// little circle around origin, in transverse plane
-				GLX::drawCircle(R / 5, 25);
+				glx::drawCircle(R / 5, 25);
 
 				// half-circle with arrow, in transverse plane
-				GLX::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
+				glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
 				glBegin(GL_LINES);
 				{
 					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
@@ -2870,7 +2870,7 @@ void CGLView::RenderRigidConnectors()
 				glEnd();
 
 				// little circle around origin, in x-y plane
-				GLX::drawCircle(R / 5, 25);
+				glx::drawCircle(R / 5, 25);
 
 				glPopMatrix();
 			}
@@ -2903,10 +2903,10 @@ void CGLView::RenderRigidConnectors()
 				glEnd();
 
 				// little circle around origin, in transverse plane
-				GLX::drawCircle(R / 5, 25);
+				glx::drawCircle(R / 5, 25);
 
 				// half-circle with arrow, in transverse plane
-				GLX::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
+				glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
 				glBegin(GL_LINES);
 				{
 					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
@@ -2959,10 +2959,10 @@ void CGLView::RenderRigidConnectors()
 				glEnd();
 
 				// little circle around origin, in transverse plane
-				GLX::drawCircle(R / 5, 25);
+				glx::drawCircle(R / 5, 25);
 
 				// half-circle with arrow, in transverse plane
-				GLX::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
+				glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
 				glBegin(GL_LINES);
 				{
 					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
@@ -3009,7 +3009,7 @@ void CGLView::RenderRigidConnectors()
                 glEnd();
                 
                 // little circle around origin, in transverse plane
-                GLX::drawCircle(R / 5, 25);
+                glx::drawCircle(R / 5, 25);
                 
                 glPopMatrix();
             }
@@ -3022,7 +3022,7 @@ void CGLView::RenderRigidConnectors()
 				glColor3ub(255, 0, 0);
 				glPushMatrix();
 
-				GLX::drawHelix(xa, xb, R / 2, R / 2, 25);
+				glx::drawHelix(xa, xb, R / 2, R / 2, 25);
 
 				glPopMatrix();
 			}
@@ -3035,7 +3035,7 @@ void CGLView::RenderRigidConnectors()
 				glColor3ub(255, 0, 0);
 				glPushMatrix();
 
-				GLX::drawLine(xa, xb);
+				glx::drawLine(xa, xb);
 
 				glPopMatrix();
 			}
@@ -3048,7 +3048,7 @@ void CGLView::RenderRigidConnectors()
 				glColor3ub(255, 0, 0);
 				glPushMatrix();
 
-				GLX::drawLine(xa, xb);
+				glx::drawLine(xa, xb);
 
 				glPopMatrix();
 			}
@@ -3139,7 +3139,7 @@ void CGLView::RenderRigidBodies()
 				glPushMatrix();
 				{
 					glTranslated(r1.x, r1.y, r1.z);
-					GLX::rotate(q);
+					glx::rotate(q);
 
 					vec3d e2 = q*vec3d(0, 0, 1);
 
@@ -6194,37 +6194,6 @@ void CGLView::RenderObject(GObject* po)
 //					Rendering functions for FEMeshes
 //=============================================================================
 
-void renderFENodes(FELineMesh* mesh, float nodeSize)
-{
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
-	GLfloat old_size;
-	glGetFloatv(GL_POINT_SIZE, &old_size);
-	glPointSize(nodeSize);
-
-	// render all the nodes
-	glBegin(GL_POINTS);
-	{
-		for (int i = 0; i<mesh->Nodes(); ++i)
-		{
-			FENode& node = mesh->Node(i);
-			if (node.m_ntag)
-			{
-				if (node.IsSelected()) glColor3ub(255, 0, 0); else glColor3ub(0, 0, 255);
-
-				vec3d& r = node.r;
-				glVertex3d(r.x, r.y, r.z);
-			}
-		}
-	}
-	glEnd();
-
-	glPointSize(old_size);
-
-	glPopAttrib();
-}
-
 //-----------------------------------------------------------------------------
 // Render the FE nodes
 void CGLView::RenderFENodes(GObject* po)
@@ -6233,7 +6202,9 @@ void CGLView::RenderFENodes(GObject* po)
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	quatd q = m_Cam.GetOrientation();
 
+	// set the point size
 	float fsize = pdoc->GetViewSettings().m_node_size;
+	m_renderer.SetPointSize(fsize);
 
 	FEMesh* pm = po->GetFEMesh();
 	if (pm)
@@ -6291,7 +6262,7 @@ void CGLView::RenderFENodes(GObject* po)
 			}
 		}
 
-		renderFENodes(pm, fsize);
+		m_renderer.RenderFENodes(pm);
 	}
 	else
 	{
@@ -6338,7 +6309,7 @@ void CGLView::RenderFENodes(GObject* po)
 				}
 			}
 
-			renderFENodes(mesh, fsize);
+			m_renderer.RenderFENodes(mesh);
 		}
 		else
 		{
@@ -6346,201 +6317,9 @@ void CGLView::RenderFENodes(GObject* po)
 			if (pm)
 			{
 				pm->TagAllNodes(1);
-				renderFENodes(pm, fsize);
+				m_renderer.RenderFENodes(pm);
 			}
 		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderFEFace(FEFace& face, FEMeshBase* pm)
-{
-	const vec3d& r1 = pm->Node(face.n[0]).r;
-	const vec3d& r2 = pm->Node(face.n[1]).r;
-	const vec3d& r3 = pm->Node(face.n[2]).r;
-
-	const vec3d& n1 = face.m_nn[0];
-	const vec3d& n2 = face.m_nn[1];
-	const vec3d& n3 = face.m_nn[2];
-
-	switch (face.Type())
-	{
-	case FE_FACE_TRI3:
-	{
-		glBegin(GL_TRIANGLES);
-		{
-			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-		}
-		glEnd();
-	}
-	break;
-	case FE_FACE_QUAD4:
-	{
-		const vec3d& r4 = pm->Node(face.n[3]).r;
-		const vec3d& n4 = face.m_nn[3];
-		glBegin(GL_QUADS);
-		{
-			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-		}
-		glEnd();
-	}
-	break;
-	case FE_FACE_TRI6:
-	{
-		const vec3d& r4 = pm->Node(face.n[3]).r;
-		const vec3d& r5 = pm->Node(face.n[4]).r;
-		const vec3d& r6 = pm->Node(face.n[5]).r;
-
-		const vec3d& n4 = face.m_nn[3];
-		const vec3d& n5 = face.m_nn[4];
-		const vec3d& n6 = face.m_nn[5];
-
-		glBegin(GL_TRIANGLES);
-		{
-			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-
-			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-
-			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-
-			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-		}
-		glEnd();
-	}
-	break;
-	case FE_FACE_TRI7:
-	{
-		const vec3d& r4 = pm->Node(face.n[3]).r;
-		const vec3d& r5 = pm->Node(face.n[4]).r;
-		const vec3d& r6 = pm->Node(face.n[5]).r;
-		const vec3d& r7 = pm->Node(face.n[6]).r;
-
-		const vec3d& n4 = face.m_nn[3];
-		const vec3d& n5 = face.m_nn[4];
-		const vec3d& n6 = face.m_nn[5];
-		const vec3d& n7 = face.m_nn[6];
-
-		glBegin(GL_TRIANGLES);
-		{
-			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-
-			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-
-			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-
-			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-
-			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-
-			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-		}
-		glEnd();
-	}
-	break;
-	case FE_FACE_QUAD8:
-	case FE_FACE_QUAD9:
-	{
-		const vec3d& r4 = pm->Node(face.n[3]).r;
-		const vec3d& r5 = pm->Node(face.n[4]).r;
-		const vec3d& r6 = pm->Node(face.n[5]).r;
-		const vec3d& r7 = pm->Node(face.n[6]).r;
-		const vec3d& r8 = pm->Node(face.n[7]).r;
-
-		const vec3d& n4 = face.m_nn[3];
-		const vec3d& n5 = face.m_nn[4];
-		const vec3d& n6 = face.m_nn[5];
-		const vec3d& n7 = face.m_nn[6];
-		const vec3d& n8 = face.m_nn[7];
-
-		glBegin(GL_TRIANGLES);
-		{
-			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-			glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
-
-			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-			glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
-
-			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-			glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
-
-			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-			glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
-		}
-		glEnd();
-	}
-	break;
-	case FE_FACE_TRI10:
-	{
-		const vec3d& r4 = pm->Node(face.n[3]).r;
-		const vec3d& r5 = pm->Node(face.n[4]).r;
-		const vec3d& r6 = pm->Node(face.n[5]).r;
-		const vec3d& r7 = pm->Node(face.n[6]).r;
-		const vec3d& r8 = pm->Node(face.n[7]).r;
-		const vec3d& r9 = pm->Node(face.n[8]).r;
-		const vec3d& r10 = pm->Node(face.n[9]).r;
-
-		const vec3d& n4 = face.m_nn[3];
-		const vec3d& n5 = face.m_nn[4];
-		const vec3d& n6 = face.m_nn[5];
-		const vec3d& n7 = face.m_nn[6];
-		const vec3d& n8 = face.m_nn[7];
-		const vec3d& n9 = face.m_nn[8];
-		const vec3d& n10 = face.m_nn[9];
-
-		glBegin(GL_TRIANGLES);
-		{
-			GLX::vertex3d(r1 , n1 ); GLX::vertex3d(r4, n4); GLX::vertex3d(r8, n8);
-			GLX::vertex3d(r2 , n2 ); GLX::vertex3d(r6, n6); GLX::vertex3d(r5, n5);
-			GLX::vertex3d(r3 , n3 ); GLX::vertex3d(r9, n9); GLX::vertex3d(r7, n7);
-			GLX::vertex3d(r10, n10); GLX::vertex3d(r8, n8); GLX::vertex3d(r4, n4);
-			GLX::vertex3d(r10, n10); GLX::vertex3d(r4, n4); GLX::vertex3d(r5, n5);
-			GLX::vertex3d(r10, n10); GLX::vertex3d(r5, n5); GLX::vertex3d(r6, n6);
-			GLX::vertex3d(r10, n10); GLX::vertex3d(r6, n6); GLX::vertex3d(r7, n7);
-			GLX::vertex3d(r10, n10); GLX::vertex3d(r7, n7); GLX::vertex3d(r9, n9);
-			GLX::vertex3d(r10, n10); GLX::vertex3d(r9, n9); GLX::vertex3d(r8, n8);
-		}
-		glEnd();
-	}
-	break;
-	default:
-		assert(false);
 	}
 }
 
@@ -6617,59 +6396,29 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 				}
 
 				// Render the face
-				RenderFEFace(face, pm);
+				glBegin(GL_TRIANGLES);
+				{
+					m_renderer.RenderFEFace(face, pm);
+				}
+				glEnd();
 			}
 		}
 	}
 
 	// render the selected faces
-	// override some settings
 	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_POLYGON_STIPPLE);
 	glColor3ub(255, 0, 0);
-	for (int i = 0; i<pm->Faces(); i++)
-	{
-		FEFace& face = pm->Face(i);
-		if (face.IsSelected())
-		{
-			RenderFEFace(face, pm);
-		}
-	}
+	m_renderer.RenderSelectedFEFaces(pm);
 
 	// render the selected face outline
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glColor3ub(255, 255, 0);
-
-	for (int i = 0; i<pm->Faces(); i++)
-	{
-		FEFace& face = pm->Face(i);
-		if (face.IsSelected())
-		{
-			int fn = face.Nodes();
-			int ne = face.Edges();
-			for (int j = 0; j<ne; ++j)
-			{
-				FEFace* pf = (face.m_nbr[j] >= 0 ? pm->FacePtr(face.m_nbr[j]) : 0);
-				if ((pf == 0) || !pf->IsSelected() || !pf->IsVisible())
-				{
-					glBegin(GL_LINES);
-					{
-						int jp1 = (j + 1) % ne;
-						const vec3d& r1 = pm->Node(face.n[j]).r;
-						const vec3d& r2 = pm->Node(face.n[jp1]).r;
-
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-					}
-					glEnd();
-				}
-			}
-		}
-	}
+	m_renderer.RenderSelectedFEFacesOutline(pm);
 
 	glPopAttrib();
 }
@@ -6693,20 +6442,7 @@ void CGLView::RenderFESurfaceMeshFaces(GObject* po)
 
 	// render the unselected faces
 	// Note that we do not render internal faces
-	for (int i = 0; i<surfaceMesh->Faces(); i++)
-	{
-		FEFace& face = surfaceMesh->Face(i);
-
-		if (!face.IsSelected() && face.IsVisible())
-		{
-			GFace* pg = po->Face(face.m_gid);
-			if (pg && pg->IsVisible())
-			{
-				// Render the face
-				RenderFEFace(face, surfaceMesh);
-			}
-		}
-	}
+	m_renderer.RenderUnselectedFEFaces(surfaceMesh);
 
 	// render the selected faces
 	// override some settings
@@ -6716,98 +6452,15 @@ void CGLView::RenderFESurfaceMeshFaces(GObject* po)
 	glDisable(GL_LIGHTING);
 	glEnable(GL_POLYGON_STIPPLE);
 	glColor3ub(255, 0, 0);
-	for (int i = 0; i<surfaceMesh->Faces(); i++)
-	{
-		FEFace& face = surfaceMesh->Face(i);
-
-		if (face.IsSelected())
-		{
-			RenderFEFace(face, surfaceMesh);
-		}
-	}
+	m_renderer.RenderSelectedFEFaces(surfaceMesh);
 
 	// render the selected face outline
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glColor3ub(255, 255, 0);
-
-	for (int i = 0; i<surfaceMesh->Faces(); i++)
-	{
-		FEFace& face = surfaceMesh->Face(i);
-		if (face.IsSelected())
-		{
-			int fn = face.Nodes();
-			int ne = face.Edges();
-			for (int j = 0; j<ne; ++j)
-			{
-				const FEFace* pf = (face.m_nbr[j] >= 0 ? surfaceMesh->FacePtr(face.m_nbr[j]) : 0);
-				if ((pf == 0) || !pf->IsSelected() || !pf->IsVisible())
-				{
-					glBegin(GL_LINES);
-					{
-						int jp1 = (j + 1) % ne;
-						const vec3d& r1 = surfaceMesh->Node(face.n[j]).r;
-						const vec3d& r2 = surfaceMesh->Node(face.n[jp1]).r;
-
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-					}
-					glEnd();
-				}
-			}
-		}
-	}
+	m_renderer.RenderSelectedFEFacesOutline(surfaceMesh);
 
 	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-void renderEdge(FEEdge& edge, FELineMesh* pm)
-{
-	const vec3d& r1 = pm->Node(edge.n[0]).r;
-	const vec3d& r2 = pm->Node(edge.n[1]).r;
-
-	switch (edge.Nodes())
-	{
-	case 2:
-	{
-		glBegin(GL_LINES);
-		{
-			glVertex3d(r1.x, r1.y, r1.z);
-			glVertex3d(r2.x, r2.y, r2.z);
-		}
-		glEnd();
-	}
-	break;
-	case 3:
-	{
-		const vec3d& r3 = pm->Node(edge.n[2]).r;
-		glBegin(GL_LINES);
-		{
-			glVertex3d(r1.x, r1.y, r1.z);
-			glVertex3d(r3.x, r3.y, r3.z);
-			glVertex3d(r2.x, r2.y, r2.z);
-		}
-		glEnd();
-	}
-	break;
-	case 4:
-	{
-		const vec3d& r3 = pm->Node(edge.n[2]).r;
-		const vec3d& r4 = pm->Node(edge.n[3]).r;
-		glBegin(GL_LINES);
-		{
-			glVertex3d(r1.x, r1.y, r1.z);
-			glVertex3d(r3.x, r3.y, r3.z);
-			glVertex3d(r4.x, r4.y, r4.z);
-			glVertex3d(r2.x, r2.y, r2.z);
-		}
-		glEnd();
-	}
-	break;
-	default:
-		assert(false);
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -6825,41 +6478,13 @@ void CGLView::RenderFEEdges(GObject* po)
 
 	// render the unselected edges
 	glColor3ub(0, 0, 255);
-	for (int i = 0; i<pm->Edges(); i++)
-	{
-		FEEdge& edge = pm->Edge(i);
-
-		if (!edge.IsSelected() && edge.IsVisible())// && (edge.m_gid == -1))
-		{
-			renderEdge(edge, pm);
-		}
-	}
-
-	// render the unselected, crease edges
-/*	glColor3ub(0, 0, 0);
-	for (int i = 0; i<pm->Edges(); i++)
-	{
-		FEEdge& edge = pm->Edge(i);
-
-		if (!edge.IsSelected() && edge.IsVisible() && (edge.m_gid != -1))
-		{
-			renderEdge(edge, pm);
-		}
-	}
-*/
+	m_renderer.RenderUnselectedFEEdges(pm);
 
 	// render the selected edges
 	// override some settings
 	glDisable(GL_CULL_FACE);
 	glColor3ub(255, 0, 0);
-	for (int i = 0; i<pm->Edges(); i++)
-	{
-		FEEdge& edge = pm->Edge(i);
-		if (edge.IsSelected() && edge.IsVisible())
-		{
-			renderEdge(edge, pm);
-		}
-	}
+	m_renderer.RenderSelectedFEEdges(pm);
 
 	glPopAttrib();
 }
@@ -7354,6 +6979,11 @@ void CGLView::RenderMeshLines()
 	GModel& model = *pdoc->GetGModel();
 	int nitem = pdoc->GetItemMode();
 
+	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+	GLColor c = vs.m_mcol;
+	glColor3ub(c.r, c.g, c.b);
+	glLineWidth(vs.m_line_size);
+
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -7367,7 +6997,7 @@ void CGLView::RenderMeshLines()
 				if ((nitem == ITEM_MESH) || (nitem == ITEM_ELEM))
 					RenderMeshLines(po);
 				else if (nitem != ITEM_EDGE)
-					RenderMeshLines(po->GetEditableMesh());
+					m_renderer.RenderMeshLines(po->GetEditableMesh());
 				glPopMatrix();
 			}
 			else if (dynamic_cast<GSurfaceMeshObject*>(po))
@@ -7377,120 +7007,12 @@ void CGLView::RenderMeshLines()
 				{
 					glPushMatrix();
 					SetModelView(po);
-					RenderMeshLines(surfaceMesh);
+					m_renderer.RenderMeshLines(surfaceMesh);
 					glPopMatrix();
 				}
 			}
 		}
 	}
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderMeshLines(FEMeshBase* pm)
-{
-	if (pm == 0) return;
-
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
-	glDisable(GL_LIGHTING);
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
-	GLColor c = vs.m_mcol;
-	glColor3ub(c.r, c.g, c.b);
-	glLineWidth(vs.m_line_size);
-
-	// loop over all faces
-	for (int i = 0; i<pm->Faces(); i++)
-	{
-		const FEFace& face = pm->Face(i);
-		if (face.IsVisible())
-		{
-			switch (face.Type())
-			{
-			case FE_FACE_QUAD4:
-			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(face.n[0]).r;
-					const vec3d& r2 = pm->Node(face.n[1]).r;
-					const vec3d& r3 = pm->Node(face.n[2]).r;
-					const vec3d& r4 = pm->Node(face.n[3]).r;
-
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-				}
-				glEnd();
-			}
-			break;
-			case FE_FACE_QUAD8:
-			case FE_FACE_QUAD9:
-			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(face.n[0]).r;
-					const vec3d& r2 = pm->Node(face.n[1]).r;
-					const vec3d& r3 = pm->Node(face.n[2]).r;
-					const vec3d& r4 = pm->Node(face.n[3]).r;
-					const vec3d& r5 = pm->Node(face.n[4]).r;
-					const vec3d& r6 = pm->Node(face.n[5]).r;
-					const vec3d& r7 = pm->Node(face.n[6]).r;
-					const vec3d& r8 = pm->Node(face.n[7]).r;
-
-					glVertex3d(r1.x, r1.y, r1.z); 
-					glVertex3d(r5.x, r5.y, r5.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r6.x, r6.y, r6.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r7.x, r7.y, r7.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-					glVertex3d(r8.x, r8.y, r8.z);
-				}
-				glEnd();
-			}
-			break;
-			case FE_FACE_TRI3:
-			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(face.n[0]).r;
-					const vec3d& r2 = pm->Node(face.n[1]).r;
-					const vec3d& r3 = pm->Node(face.n[2]).r;
-
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-				}
-				glEnd();
-			}
-			break;
-			case FE_FACE_TRI6:
-			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(face.n[0]).r;
-					const vec3d& r2 = pm->Node(face.n[1]).r;
-					const vec3d& r3 = pm->Node(face.n[2]).r;
-					const vec3d& r4 = pm->Node(face.n[3]).r;
-					const vec3d& r5 = pm->Node(face.n[4]).r;
-					const vec3d& r6 = pm->Node(face.n[5]).r;
-
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r5.x, r5.y, r5.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r6.x, r6.y, r6.z);
-				}
-				glEnd();
-			}
-			break;
-			} // switch
-		} // if
-	} // for
-
-	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
@@ -7504,11 +7026,6 @@ void CGLView::RenderMeshLines(GObject* po)
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
 	glDisable(GL_LIGHTING);
 //	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
-	GLColor c = vs.m_mcol;
-	glColor3ub(c.r, c.g, c.b);
-	glLineWidth(vs.m_line_size);
 
 	// loop over all elements
 	for (int i = 0; i<pm->Elements(); i++)
