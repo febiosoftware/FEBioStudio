@@ -16,7 +16,7 @@
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
-#include <QFileInfo>
+#include <QtCore/QFileInfo>
 #include <FEMLib/FERigidConstraint.h>
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"

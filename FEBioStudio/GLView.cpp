@@ -5279,7 +5279,7 @@ void CGLView::SelectFENodes(int x, int y)
 	for (int i = 0; i<NN; ++i)
 	{
 		FENode& node = lineMesh->Node(i);
-		if (node.IsVisible() && ((view.m_bext == false) || node.m_bext))
+		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = po->Transform().LocalToGlobal(lineMesh->Node(i).r);
 
@@ -6258,7 +6258,7 @@ void CGLView::RenderFENodes(GObject* po)
 			for (int i = 0; i<N; ++i)
 			{
 				FENode& node = pm->Node(i);
-				if (!node.m_bext) node.m_ntag = 0;
+				if (!node.IsExterior()) node.m_ntag = 0;
 			}
 		}
 
@@ -7474,7 +7474,7 @@ void CGLView::RenderTags()
 			{
 				tag.r = node.r;
 				tag.bvis = false;
-				tag.ntag = (node.m_bext ? 0 : 1);
+				tag.ntag = (node.IsExterior() ? 0 : 1);
 				sprintf(tag.sztag, "N%d", node.GetID());
 				vtag.push_back(tag);
 			}
@@ -7491,7 +7491,7 @@ void CGLView::RenderTags()
 			{
 				tag.r = node.r;
 				tag.bvis = false;
-				tag.ntag = (node.m_bext ? 0 : 1);
+				tag.ntag = (node.IsExterior() ? 0 : 1);
 				sprintf(tag.sztag, "N%d", node.GetID());
 				vtag.push_back(tag);
 			}

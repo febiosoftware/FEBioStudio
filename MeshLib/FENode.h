@@ -21,10 +21,6 @@ public:
 	void pos(const vec3d& p) { r = p; }
 	const vec3d& pos() const { return r; }
 
-	// check exterior flag
-	bool IsExterior() const { return m_bext; }
-
 public:
 	vec3d	r;			// nodal position
-	bool	m_bext;		// exterior node or not?
 };

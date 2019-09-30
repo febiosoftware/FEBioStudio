@@ -589,7 +589,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 							for (int k=0; k<8; ++k)
 							{
 								FENode& node = pm->Node(el.m_node[nt[k]]);
-								nf[k] = (node.m_bext?1:0);
+								nf[k] = (node.IsExterior()?1:0);
 								ex[k] = to_vec3f(node.r);
 								en[k] = el.m_node[k];
 								ev[k] = state.m_NODE[el.m_node[k]].m_val;

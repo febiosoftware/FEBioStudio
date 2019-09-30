@@ -1693,7 +1693,7 @@ void FEMesh::AddNode(const vec3d& r)
 	// create a new node
 	FENode node;
 	node.r = r;
-	node.m_bext = true;	// we'll assume this node is not attached to anything
+	node.SetExterior(true);	// we'll assume this node is not attached to anything
 
 	AddNode(node);
 }

@@ -928,7 +928,7 @@ FEMesh* FEAddNode::Apply(FEMesh* pm)
 	if (po) r = po->Transform().GlobalToLocal(r);
 
 	FENode node;
-	node.m_bext = true;
+	node.SetExterior(true);
 	node.r = r;
 
 	// let's partition the node

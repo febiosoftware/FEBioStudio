@@ -634,13 +634,13 @@ void FECoreMesh::MarkExteriorNodes()
 	int faces = Faces();
 	int elems = Elements();
 
-	for (int i = 0; i<nodes; ++i) Node(i).m_bext = false;
+	for (int i = 0; i<nodes; ++i) Node(i).SetExterior(false);
 
 	for (int i = 0; i<faces; ++i)
 	{
 		FEFace& face = Face(i);
 		for (int j = 0; j<face.Nodes(); ++j)
-			m_Node[face.n[j]].m_bext = true;
+			m_Node[face.n[j]].SetExterior(true);
 	}
 
 	// mark all nodes attached to beams as exterior
@@ -649,8 +649,8 @@ void FECoreMesh::MarkExteriorNodes()
 		FEElement_& el = ElementRef(i);
 		if (el.IsType(FE_BEAM2))
 		{
-			Node(el.m_node[0]).m_bext = true;
-			Node(el.m_node[1]).m_bext = true;
+			Node(el.m_node[0]).SetExterior(true);
+			Node(el.m_node[1]).SetExterior(true);
 		}
 	}
 }

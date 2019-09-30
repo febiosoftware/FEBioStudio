@@ -510,14 +510,14 @@ void Post::FEMeshBase::UpdateNodes()
 	for (i=0; i<nodes; ++i) 
 	{
 		FENode& n = m_Node[i];
-		n.m_bext = false;
+		n.SetExterior(false);
 	}
 	
 	for (i=0; i<faces; ++i)
 	{
 		FEFace& f = m_Face[i];
 		int nf = f.Nodes();
-		for (j=0; j<nf; ++j) m_Node[f.n[j]].m_bext = true;
+		for (j=0; j<nf; ++j) m_Node[f.n[j]].SetExterior(true);
 	}
 }
 

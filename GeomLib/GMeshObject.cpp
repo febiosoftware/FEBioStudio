@@ -403,7 +403,7 @@ void GMeshObject::AddNode(vec3d r)
 {
 	FEMesh& m = *GetFEMesh();
 	FENode n;
-	n.m_bext = true;
+	n.SetExterior(true);
 	n.m_gid = (int)m_Node.size();
 
 	// convert from global to local

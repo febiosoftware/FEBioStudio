@@ -1478,7 +1478,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);
-		if (node.m_bext && node.m_ntag && (node.IsSelected() == false))
+		if (node.IsExterior() && node.m_ntag && (node.IsSelected() == false))
 		{
 			// get the nodal coordinate
 			vec3d& r = node.r;
@@ -1492,7 +1492,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
 			FENode& node = pm->Node(i);
-			if ((node.m_bext == false) && node.m_ntag && (node.IsSelected() == false))
+			if ((node.IsExterior() == false) && node.m_ntag && (node.IsSelected() == false))
 			{
 				// get the nodal coordinate
 				vec3d& r = node.r;
@@ -1515,7 +1515,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
 			FENode& node = pm->Node(i);
-			if (node.m_bext && node.m_ntag && node.IsSelected())
+			if (node.IsExterior() && node.m_ntag && node.IsSelected())
 			{
 				// get the nodal coordinate
 				vec3d r = node.r;
@@ -1534,7 +1534,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 			for (int i = 0; i<pm->Nodes(); ++i)
 			{
 				FENode& node = pm->Node(i);
-				if ((node.m_bext == false) && node.m_ntag && node.IsSelected())
+				if ((node.IsExterior() == false) && node.m_ntag && node.IsSelected())
 				{
 					// get the nodal coordinate
 					vec3d r = node.r;
