@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		D55247CA22E6388B00935C9C /* GLMirrorPlane.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247A822E6388B00935C9C /* GLMirrorPlane.h */; };
 		D55247CB22E6388B00935C9C /* GLLinePlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247A922E6388B00935C9C /* GLLinePlot.cpp */; };
-		D55247CC22E6388B00935C9C /* render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247AA22E6388B00935C9C /* render.cpp */; };
 		D55247CD22E6388B00935C9C /* GLColorMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247AB22E6388B00935C9C /* GLColorMap.cpp */; };
 		D55247CE22E6388B00935C9C /* GLVectorPlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D55247AC22E6388B00935C9C /* GLVectorPlot.cpp */; };
 		D55247CF22E6388B00935C9C /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247AD22E6388B00935C9C /* stdafx.h */; };
@@ -49,7 +48,6 @@
 		D552479922E6387900935C9C /* libPostGL.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPostGL.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D55247A822E6388B00935C9C /* GLMirrorPlane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLMirrorPlane.h; sourceTree = "<group>"; };
 		D55247A922E6388B00935C9C /* GLLinePlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLLinePlot.cpp; sourceTree = "<group>"; };
-		D55247AA22E6388B00935C9C /* render.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = render.cpp; sourceTree = "<group>"; };
 		D55247AB22E6388B00935C9C /* GLColorMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLColorMap.cpp; sourceTree = "<group>"; };
 		D55247AC22E6388B00935C9C /* GLVectorPlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLVectorPlot.cpp; sourceTree = "<group>"; };
 		D55247AD22E6388B00935C9C /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
@@ -149,7 +147,6 @@
 				D55247C822E6388B00935C9C /* GLVectorPlot.h */,
 				D5ED2A1B23198D0600C16BF7 /* GLVolumeFlowPlot.cpp */,
 				D5ED2A1A23198D0600C16BF7 /* GLVolumeFlowPlot.h */,
-				D55247AA22E6388B00935C9C /* render.cpp */,
 				D55247AD22E6388B00935C9C /* stdafx.h */,
 			);
 			name = PostGL;
@@ -256,7 +253,6 @@
 				D55247E522E6388B00935C9C /* GLMesh.cpp in Sources */,
 				D55247CE22E6388B00935C9C /* GLVectorPlot.cpp in Sources */,
 				D55247E722E6388B00935C9C /* GLMirrorPlane.cpp in Sources */,
-				D55247CC22E6388B00935C9C /* render.cpp in Sources */,
 				D55247DD22E6388B00935C9C /* GLModel.cpp in Sources */,
 				D55247E322E6388B00935C9C /* GLPlane.cpp in Sources */,
 			);
