@@ -254,6 +254,12 @@ public:
 	// set some default GL material properties
 	void SetDefaultMatProps();
 
+	// position the camera
+	void PositionCamera();
+
+	// toggle track selection feature
+	void TrackSelection(bool b);
+
 	// render functions
 public:
 	// rendering functions for GObjects
@@ -298,6 +304,7 @@ public:
 	void RenderPostView(CPostDoc* postDoc);
 	void RenderTags();
 	void RenderImageData();
+	void RenderTrack();
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
 	vec3d ScreenToGrid(int x, int y);
@@ -453,6 +460,10 @@ private:
 
 	ANIMATION_MODE	m_nanim;	// the animation mode
 	CAnimation*		m_panim;	// animation object
+
+	// tracking
+	bool	m_btrack;
+	int		m_ntrack[3];
 
 private:
 	int	m_viewport[4];		//!< store viewport coordinates

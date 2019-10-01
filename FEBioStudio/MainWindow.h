@@ -300,6 +300,7 @@ public slots:
 	void on_actionBottom_triggered();
 	void on_actionWireframe_toggled(bool b);
 	void on_actionSnap3D_triggered();
+	void on_actionTrack_toggled(bool b);
 
 	void on_actionOnlineHelp_triggered();
 	void on_actionFEBioURL_triggered();

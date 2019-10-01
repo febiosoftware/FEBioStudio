@@ -186,7 +186,7 @@ public:
 			gluPerspective(fov, ar, fnear, ffar);
 		}
 
-		view->GetCamera().Transform();
+		view->PositionCamera();
 
 		double p[16], m[16];
 		glGetDoublev(GL_PROJECTION_MATRIX, p);
@@ -439,6 +439,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	m_bsnap = false;
 	m_grid.SetView(this);
+
+	m_btrack = false;
 
 	Reset();
 
@@ -1704,6 +1706,9 @@ void CGLView::RenderPostView(CPostDoc* postDoc)
 	{
 		postDoc->Render(this);
 
+		// render the tracking
+		if (m_btrack) RenderTrack();
+
 		// render the tags
 		CDocument* doc = GetDocument();
 		VIEW_SETTINGS& view = doc->GetViewSettings();
@@ -1841,6 +1846,138 @@ void CGLView::SetupProjection()
 }
 
 //-----------------------------------------------------------------------------
+inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
+{
+	vec3d a;
+	a.x = m[0][0] * r.x + m[0][1] * r.y + m[0][2] * r.z;
+	a.y = m[1][0] * r.x + m[1][1] * r.y + m[1][2] * r.z;
+	a.z = m[2][0] * r.x + m[2][1] * r.y + m[2][2] * r.z;
+	return a;
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::PositionCamera()
+{
+	// position the camera
+	GetCamera().Transform();
+
+	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	// see if we need to track anything
+	if (pdoc->IsValid() && m_btrack)
+	{
+		FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+		int NN = pm->Nodes();
+		int* nt = m_ntrack;
+		if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { m_btrack = false; return; }
+
+		Post::FEModel& fem = *pdoc->GetFEModel();
+
+		vec3d a = fem.NodePosition(nt[0], 0);
+		vec3d b = fem.NodePosition(nt[1], 0);
+		vec3d c = fem.NodePosition(nt[2], 0);
+
+		vec3d r0 = a;
+
+		vec3d E1 = (b - a);
+		vec3d E3 = E1 ^ (c - a);
+		vec3d E2 = E3^E1;
+		E1.Normalize();
+		E2.Normalize();
+		E3.Normalize();
+
+		a = pm->Node(nt[0]).r;
+		b = pm->Node(nt[1]).r;
+		c = pm->Node(nt[2]).r;
+
+		vec3d r1 = a;
+
+		vec3d e1 = (b - a);
+		vec3d e3 = e1 ^ (c - a);
+		vec3d e2 = e3^e1;
+		e1.Normalize();
+		e2.Normalize();
+		e3.Normalize();
+
+		vec3d dr = r0 - r1;
+		glTranslatef(dr.x, dr.y, dr.z);
+
+		glTranslatef(r1.x, r1.y, r1.z);
+
+		// setup the rotation Matrix
+		GLfloat m[4][4] = { 0 }, Q[4][4] = { 0 }, Qi[4][4] = { 0 };
+		m[3][3] = 1.f;
+		Q[3][3] = 1.f;
+		Qi[3][3] = 1.f;
+
+		Q[0][0] = E1.x; Q[0][1] = E1.y; Q[0][2] = E1.z;
+		Q[1][0] = E2.x; Q[1][1] = E2.y; Q[1][2] = E2.z;
+		Q[2][0] = E3.x; Q[2][1] = E3.y; Q[2][2] = E3.z;
+
+		Qi[0][0] = E1.x; Qi[1][0] = E1.y; Qi[2][0] = E1.z;
+		Qi[0][1] = E2.x; Qi[1][1] = E2.y; Qi[2][1] = E2.z;
+		Qi[0][2] = E3.x; Qi[1][2] = E3.y; Qi[2][2] = E3.z;
+
+		m[0][0] = E1*e1; m[0][1] = E1*e2; m[0][2] = E1*e3;
+		m[1][0] = E2*e1; m[1][1] = E2*e2; m[1][2] = E2*e3;
+		m[2][0] = E3*e1; m[2][1] = E3*e2; m[2][2] = E3*e3;
+		glMultMatrixf(&Q[0][0]);
+		glMultMatrixf(&m[0][0]);
+		glMultMatrixf(&Qi[0][0]);
+
+		glTranslatef(-r1.x, -r1.y, -r1.z);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::TrackSelection(bool b)
+{
+	if (b == false)
+	{
+		m_btrack = false;
+	}
+	else
+	{
+		m_btrack = false;
+		CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+		Post::CGLModel* model = pdoc->GetGLModel(); assert(model);
+
+		int nmode = model->GetSelectionMode();
+		FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+		if (nmode == Post::SELECT_ELEMS)
+		{
+			const vector<FEElement_*> selElems = pdoc->GetGLModel()->GetElementSelection();
+			for (int i = 0; i<(int)selElems.size(); ++i)
+			{
+				FEElement_& el = *selElems[i];
+				int* n = el.m_node;
+				m_ntrack[0] = n[0];
+				m_ntrack[1] = n[1];
+				m_ntrack[2] = n[2];
+				m_btrack = true;
+				break;
+			}
+		}
+		else if (nmode == Post::SELECT_NODES)
+		{
+			int ns = 0;
+			for (int i = 0; i<pm->Nodes(); ++i)
+			{
+				if (pm->Node(i).IsSelected()) m_ntrack[ns++] = i;
+				if (ns == 3)
+				{
+					m_btrack = true;
+					break;
+				}
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CGLView::PrepModel()
 {
 	GLfloat specular[] = { 1.f, 1.f, 1.f, 1.f };
@@ -1866,7 +2003,7 @@ void CGLView::PrepModel()
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
 
 	// position the camera
-	m_Cam.Transform();
+	PositionCamera();
 }
 
 void CGLView::RenderTooltip(int x, int y)
@@ -2303,6 +2440,48 @@ void CGLView::RenderBackground()
 	glPopMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void CGLView::RenderTrack()
+{
+	if (m_btrack == false) return;
+
+	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+	int* nt = m_ntrack;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+
+	vec3d a = pm->Node(nt[0]).r;
+	vec3d b = pm->Node(nt[1]).r;
+	vec3d c = pm->Node(nt[2]).r;
+
+	vec3d e1 = (b - a);
+	vec3d e3 = e1 ^ (c - a);
+	vec3d e2 = e3^e1;
+	e1.Normalize();
+	e2.Normalize();
+	e3.Normalize();
+
+	vec3d A, B, C;
+	A = a + e1;
+	B = a + e2;
+	C = a + e3;
+
+	glColor3ub(255, 0, 255);
+	glBegin(GL_LINES);
+	{
+		glVertex3f(a.x, a.y, a.z); glVertex3f(A.x, A.y, A.z);
+		glVertex3f(a.x, a.y, a.z); glVertex3f(B.x, B.y, B.z);
+		glVertex3f(a.x, a.y, a.z); glVertex3f(C.x, C.y, C.z);
+	}
+	glEnd();
+
+	glPopAttrib();
 }
 
 void CGLView::RenderImageData()

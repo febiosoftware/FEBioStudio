@@ -1913,6 +1913,12 @@ void CMainWindow::on_actionSnap3D_triggered()
 	RedrawGL();
 }
 
+void CMainWindow::on_actionTrack_toggled(bool b)
+{
+	ui->glview->TrackSelection(b);
+	RedrawGL();
+}
+
 void CMainWindow::on_actionOnlineHelp_triggered()
 {
 	QDesktopServices::openUrl(QUrl("https://febio.org/support/"));

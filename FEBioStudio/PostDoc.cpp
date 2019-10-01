@@ -235,7 +235,8 @@ void CPostDoc::Render(CGLView* view)
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	cam.Transform();
+
+	view->PositionCamera();
 
 	glDisable(GL_CULL_FACE);
 

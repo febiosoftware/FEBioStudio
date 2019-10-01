@@ -374,6 +374,7 @@ public:
 		actionWireframe		  = addAction("Toggle wireframe", "actionWireframe"); actionWireframe->setCheckable(true); actionWireframe->setShortcut(Qt::Key_W);
 		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
 		QAction* actionSnap3D = addAction("3D cursor to selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
+		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::ControlModifier + Qt::Key_F);
 		actionFront           = addAction("Front", "actionFront");
 		actionBack            = addAction("Back" , "actionBack");
 		actionRight           = addAction("Right", "actionRight");
@@ -589,6 +590,7 @@ public:
 		menuView->addAction(actionWireframe);
 		menuView->addAction(actionShowFibers);
 		menuView->addAction(actionSnap3D);
+		menuView->addAction(actionTrack);
 		menuView->addSeparator();
 		menuView->addAction(actionFront);
 		menuView->addAction(actionBack);
