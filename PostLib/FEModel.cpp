@@ -768,8 +768,9 @@ vec3f FEModel::NodePosition(int n, int ntime)
 	vec3f r;
 	if (ntime >= 0)
 	{
+		FEState& ref = *GetState(0);
 		FEMeshBase* mesh = GetState(ntime)->GetFEMesh();
-		r = to_vec3f(mesh->Node(n).r);
+		r = ref.m_NODE[n].m_rt;
 		if (m_ndisp) r += EvaluateNodeVector(n, ntime, m_ndisp);
 	}
 	else

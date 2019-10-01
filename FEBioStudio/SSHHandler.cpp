@@ -15,7 +15,7 @@
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
 #include <QInputDialog>
-#include <QTextStream>
+#include <QtCore/QTextStream>
 
 #define MAX_XFER_BUF_SIZE 16384
 
