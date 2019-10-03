@@ -124,5 +124,6 @@
 		<file>icons/flow.png</file>
 		<file>icons/error.png</file>
 		<file>icons/edit.png</file>
+		<file>icons/splash.png</file>
 	</qresource>
 </RCC>

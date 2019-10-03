@@ -34,7 +34,7 @@ NetGenMesher::NetGenMesher() : m_occ(nullptr)
 
 NetGenMesher::NetGenMesher(GOCCObject* po) : m_occ(po)
 {
-	AddChoiceParam(2, "Mesh granularity")->SetEnumNames("Very coarse\0Coarse\0Moderate\0Fine");
+	AddChoiceParam(2, "Mesh granularity")->SetEnumNames("Very coarse\0Coarse\0Moderate\0Fine\0");
 	AddBoolParam(true, "Use local mesh modifiers");
 	AddDoubleParam(0, "Grading (0 = use default)");
 	AddDoubleParam(1000.0, "Max element size");
