@@ -201,6 +201,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgImportAbaqus.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgImportCOMSOL.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgImportSTL.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgImportXPLT.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgLameConvertor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgLSDYNAExport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgMergeObjects.cpp" />
@@ -377,6 +378,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\DlgImportXPLT.h" />
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\Encrypter.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />

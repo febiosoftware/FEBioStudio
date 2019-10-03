@@ -242,8 +242,9 @@ public:
 	{
 		if (i == 3)
 		{
+			XPLT_OPTIONS defaultOps;
 			// try to open the file
-			if (m_job->OpenPlotFile() == false)
+			if (m_job->OpenPlotFile(defaultOps) == false)
 			{
 				QMessageBox::critical(m_wnd, "FEBio Studio", "Failed to open the plot file.");
 				return;

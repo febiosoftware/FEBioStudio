@@ -149,7 +149,7 @@ void CPostDoc::SetDataField(int n)
 	imp->glm->Update(false);
 }
 
-bool CPostDoc::LoadPlotfile(const std::string& fileName)
+bool CPostDoc::LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops)
 {
 	const char* szfile = fileName.c_str();
 
@@ -171,6 +171,8 @@ bool CPostDoc::LoadPlotfile(const std::string& fileName)
 	imp->fem = new Post::FEModel;
 
 	xpltFileReader xplt;
+	xplt.SetReadStateFlag(ops.m_op);
+	xplt.SetReadStatesList(ops.m_states);
 
 	if (xplt.Load(*imp->fem, szfile) == false)
 	{

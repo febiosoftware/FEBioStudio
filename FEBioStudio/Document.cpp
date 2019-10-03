@@ -936,12 +936,12 @@ Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, i
 
 //-----------------------------------------------------------------------------
 // load a plot file
-bool CDocument::LoadPlotFile(const std::string& fileName)
+bool CDocument::LoadPlotFile(const std::string& fileName, const XPLT_OPTIONS& ops)
 {
 	// create a dummy job
 	CFEBioJob* job = new CFEBioJob(this);
 	job->SetPlotFileName(fileName);
-	if (job->OpenPlotFile() == false)
+	if (job->OpenPlotFile(ops) == false)
 	{
 		delete job;
 		return false;

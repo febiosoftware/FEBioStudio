@@ -7,6 +7,7 @@ class CDocument;
 #ifdef HAS_SSH
 class CSSHHandler;
 #endif
+class XPLT_OPTIONS;
 
 //-----------------------------------------------------------------------------
 class CFEBioJob : public FSObject
@@ -43,7 +44,7 @@ public:
 	CSSHHandler* GetSSHHandler();
 #endif
 
-	bool OpenPlotFile();
+	bool OpenPlotFile(const XPLT_OPTIONS& ops);
 
 	bool HasPostDoc();
 

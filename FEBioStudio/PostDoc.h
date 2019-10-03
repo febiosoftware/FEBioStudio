@@ -35,6 +35,35 @@ struct TIMESETTINGS
 	void Defaults();
 };
 
+//-----------------------------------------------------------------------------
+// options for loading plot files
+class XPLT_OPTIONS
+{
+public:
+	int						m_op;
+	std::vector<int>		m_states;
+
+public:
+	XPLT_OPTIONS()
+	{
+		m_op = 0;
+	}
+
+	XPLT_OPTIONS(const XPLT_OPTIONS& ops)
+	{
+		m_op = ops.m_op;
+		m_states = ops.m_states;
+	}
+
+	void operator = (const XPLT_OPTIONS& ops)
+	{
+		m_op = ops.m_op;
+		m_states = ops.m_states;
+
+	}
+};
+
+//-----------------------------------------------------------------------------
 class CPostDoc : public FSObject
 {
 	class Imp;
@@ -43,7 +72,7 @@ public:
 	CPostDoc();
 	~CPostDoc();
 
-	bool LoadPlotfile(const std::string& fileName);
+	bool LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops);
 
 	void Render(CGLView* view);
 

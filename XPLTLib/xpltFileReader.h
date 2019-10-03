@@ -71,7 +71,7 @@ public:
 	bool Load(Post::FEModel& fem, const char* szfile);
 
 	void SetReadStateFlag(int n) { m_read_state_flag = n; }
-	void SetReadStatesList(vector<int>& l) { m_state_list = l; }
+	void SetReadStatesList(const vector<int>& l) { m_state_list = l; }
 
 	int GetReadStateFlag() const { return m_read_state_flag; }
 	vector<int> GetReadStates() const { return m_state_list; }

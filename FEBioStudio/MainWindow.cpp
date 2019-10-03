@@ -38,6 +38,7 @@
 #include "SSHHandler.h"
 #include "SSHThread.h"
 #include "Encrypter.h"
+#include "DlgImportXPLT.h"
 
 extern GLColor col[];
 
@@ -237,21 +238,30 @@ void CMainWindow::OpenDocument(const QString& fileName)
 //! Open a plot file
 void CMainWindow::OpenPlotFile(const QString& fileName)
 {
-	CDocument* doc = GetDocument();
-	std::string sfile = fileName.toStdString();
-	if (doc->LoadPlotFile(sfile) == false)
+	CDlgImportXPLT dlg(this);
+	if (dlg.exec())
 	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed loading plot file.");
-	}
-	else
-	{
-		UpdateModel();
-		UpdatePostPanel();
-		UpdatePostToolbar();
+		XPLT_OPTIONS ops;
 
-		CFEBioJob* job = doc->GetFEBioJob(doc->FEBioJobs() - 1);
-		ui->modelViewer->Select(job);
-		SetActivePostDoc(job->GetPostDoc());
+		ops.m_op = dlg.m_nop;
+		ops.m_states = dlg.m_item;
+
+		CDocument* doc = GetDocument();
+		std::string sfile = fileName.toStdString();
+		if (doc->LoadPlotFile(sfile, ops) == false)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed loading plot file.");
+		}
+		else
+		{
+			UpdateModel();
+			UpdatePostPanel();
+			UpdatePostToolbar();
+
+			CFEBioJob* job = doc->GetFEBioJob(doc->FEBioJobs() - 1);
+			ui->modelViewer->Select(job);
+			SetActivePostDoc(job->GetPostDoc());
+		}
 	}
 }
 
