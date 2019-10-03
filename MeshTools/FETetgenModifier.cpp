@@ -643,7 +643,7 @@ bool FETetGenModifier::build_tetgen_remesh(FEMesh* pm, tetgenio& in)
 	for (int i=0; i<pm->Elements(); ++i)
 	{
 		FEElement& el = pm->Element(i);
-		if (el.GetType() != FE_TET4) return false;
+		if (el.Type() != FE_TET4) return false;
 	}
 
 	// all indices start from 0
@@ -796,7 +796,7 @@ bool FETetGenModifier::build_tetgen_remesh(FEMesh* pm, tetgenio& in)
 						int nf = el.Faces();
 						for (int j=0; j<nf; ++j)
 						{
-							FEElement* pe2 = pm->ElementPtr(el.m_nbr[j]);
+							FEElement_* pe2 = pm->ElementPtr(el.m_nbr[j]);
 							if (pe2 && (pe2->m_ntag == 0)) 
 							{
 								in.tetrahedronvolumelist[el.m_nbr[j]] = a*(1.0-w) + w*evol[el.m_nbr[j]];

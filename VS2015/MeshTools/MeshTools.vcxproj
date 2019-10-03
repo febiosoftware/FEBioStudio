@@ -70,10 +70,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)..;$(MMGLIB)\include;$(OCCDir)\inc;$(NETGENLIB)\nglib;$(NETGENLIB)\libsrc\include;c:\netgen\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..;$(MMGLIB)\include;$(OCCDir)\inc;$(NETGENLIB)\nglib;$(NETGENLIB)\libsrc\include;c:\netgen\include;$(TetgenDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)..;$(MMGLIB)\include;$(OCCDir)\inc;$(NETGENLIB)\nglib;$(NETGENLIB)\libsrc\include;c:\netgen\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..;$(MMGLIB)\include;$(OCCDir)\inc;$(NETGENLIB)\nglib;$(NETGENLIB)\libsrc\include;c:\netgen\include;$(TetgenDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -93,7 +93,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;HAS_MMG;HAS_NETGEN;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;HAS_MMG;HAS_NETGEN;TETLIBRARY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
@@ -127,7 +127,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;HAS_MMG;HAS_NETGEN;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;HAS_MMG;HAS_NETGEN;TETLIBRARY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>

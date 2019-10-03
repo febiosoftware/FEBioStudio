@@ -222,7 +222,7 @@ bool FETetGenMesher::build_tetgen_in_remesh(tetgenio& in)
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
 		FEElement& el = mesh.Element(i);
-		if (el.GetType() != FE_TET4) return false;
+		if (el.Type() != FE_TET4) return false;
 	}
 
 	// build the node list
