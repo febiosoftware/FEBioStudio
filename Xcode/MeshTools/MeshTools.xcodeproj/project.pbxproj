@@ -1049,6 +1049,7 @@
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_MMG",
+					"-DHAS_NETGEN",
 				);
 				SDKROOT = macosx;
 			};
@@ -1104,6 +1105,7 @@
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_MMG",
+					"-DHAS_NETGEN",
 				);
 				SDKROOT = macosx;
 			};
@@ -1119,7 +1121,11 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					/usr/local/include,
+					/usr/local/opt/opencascade/include/opencascade,
+					/Applications/Netgen.app/Contents/Resources/include,
+					/Applications/Netgen.app/Contents/Resources/include/include,
 				);
+				LIBRARY_SEARCH_PATHS = /Applications/Netgen.app/Contents/MacOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -1135,7 +1141,11 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					/usr/local/include,
+					/usr/local/opt/opencascade/include/opencascade,
+					/Applications/Netgen.app/Contents/Resources/include,
+					/Applications/Netgen.app/Contents/Resources/include/include,
 				);
+				LIBRARY_SEARCH_PATHS = /Applications/Netgen.app/Contents/MacOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};

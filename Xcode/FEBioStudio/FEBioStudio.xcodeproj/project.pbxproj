@@ -1679,6 +1679,7 @@
 					"-DHAS_SSH",
 					"-DHAS_OCC",
 					"-DHAS_MMG",
+					"-DHAS_NETGEN",
 				);
 				SDKROOT = macosx;
 			};
@@ -1738,6 +1739,7 @@
 					"-DHAS_SSH",
 					"-DHAS_OCC",
 					"-DHAS_MMG",
+					"-DHAS_NETGEN",
 				);
 				SDKROOT = macosx;
 			};
