@@ -16,6 +16,7 @@
 		D57A0B04234653F700B7C0B8 /* libmmg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B00234653F700B7C0B8 /* libmmg.a */; };
 		D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B01234653F700B7C0B8 /* libmmg2d.a */; };
 		D57A0B06234653F700B7C0B8 /* libmmgs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B02234653F700B7C0B8 /* libmmgs.a */; };
+		D57A0B092346719D00B7C0B8 /* DlgImportXPLT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */; };
 		D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */; };
 		D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BD2335128D00D388FA /* Encrypter.cpp */; };
 		D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */; };
@@ -393,6 +394,8 @@
 		D57A0B00234653F700B7C0B8 /* libmmg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg.a; path = ../../../../../../../../../../usr/local/lib/libmmg.a; sourceTree = "<group>"; };
 		D57A0B01234653F700B7C0B8 /* libmmg2d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg2d.a; path = ../../../../../../../../../../usr/local/lib/libmmg2d.a; sourceTree = "<group>"; };
 		D57A0B02234653F700B7C0B8 /* libmmgs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmgs.a; path = ../../../../../../../../../../usr/local/lib/libmmgs.a; sourceTree = "<group>"; };
+		D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgImportXPLT.cpp; sourceTree = "<group>"; };
+		D57A0B082346719D00B7C0B8 /* DlgImportXPLT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgImportXPLT.h; sourceTree = "<group>"; };
 		D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LaunchConfig.cpp; sourceTree = "<group>"; };
 		D5D5B6BD2335128D00D388FA /* Encrypter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encrypter.cpp; sourceTree = "<group>"; };
 		D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_SSHHandler.cpp; sourceTree = "<group>"; };
@@ -1005,6 +1008,8 @@
 				D5F7D7C722FA37C40089B08E /* DlgImportCOMSOL.h */,
 				D5F7D80322FA37C40089B08E /* DlgImportSTL.cpp */,
 				D5F7D7AF22FA37C40089B08E /* DlgImportSTL.h */,
+				D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */,
+				D57A0B082346719D00B7C0B8 /* DlgImportXPLT.h */,
 				D5F7D74622FA37C40089B08E /* DlgLameConvertor.cpp */,
 				D5F7D71D22FA37C40089B08E /* DlgLameConvertor.h */,
 				D5F7D71122FA37C40089B08E /* DlgLSDYNAExport.cpp */,
@@ -1606,6 +1611,7 @@
 				D5F7D84F22FA37C40089B08E /* menuPhysics.cpp in Sources */,
 				D5F7D84022FA37C40089B08E /* menuRecord.cpp in Sources */,
 				D5F7D87A22FA37C40089B08E /* CommandManager.cpp in Sources */,
+				D57A0B092346719D00B7C0B8 /* DlgImportXPLT.cpp in Sources */,
 				D5D5B6D323351ED600D388FA /* moc_DlgEditPath.cpp in Sources */,
 				D5F7D8AC22FA37C40089B08E /* moc_ToolsPanel.cpp in Sources */,
 				D5F7D85D22FA37C40089B08E /* moc_ObjectPanel.cpp in Sources */,

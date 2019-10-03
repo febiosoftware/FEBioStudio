@@ -57,6 +57,18 @@
 			<string>Viewer</string>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>xplt</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>FEBio Plot File</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>n</string>
 			</array>
 			<key>CFBundleTypeName</key>
