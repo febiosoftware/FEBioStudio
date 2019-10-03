@@ -1661,6 +1661,7 @@
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_SSH",
+					"-DHAS_OCC",
 				);
 				SDKROOT = macosx;
 			};
@@ -1718,6 +1719,7 @@
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_SSH",
+					"-DHAS_OCC",
 				);
 				SDKROOT = macosx;
 			};

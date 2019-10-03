@@ -615,8 +615,8 @@ void CMainWindow::on_actionImportGeometry_triggered()
 	filters << "RAW Image (*.raw)";
 	filters << "COMSOL Mesh (*.mphtxt)";
 	filters << "PLY (*.ply)";
-	filters << "BREP files (*.brep, *.brp)";
-	filters << "STEP files (*.step, *.stp)";
+	filters << "BREP files (*.brep *.brp)";
+	filters << "STEP files (*.step *.stp)";
 	
 	// get the project
 	FEProject& prj = m_doc->GetProject();
