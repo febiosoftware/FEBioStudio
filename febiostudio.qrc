@@ -125,5 +125,6 @@
 		<file>icons/error.png</file>
 		<file>icons/edit.png</file>
 		<file>icons/splash.png</file>
+		<file>icons/splash_hires.png</file>
 	</qresource>
 </RCC>

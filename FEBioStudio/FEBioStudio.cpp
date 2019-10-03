@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
 	MyApplication app(argc, argv);
 
 	// show the splash screen
-	QPixmap pixmap(":/icons/splash.png");
+	QPixmap pixmap(":/icons/splash_hires.png");
 	QSplashScreen splash(pixmap);
 	splash.show();
 
