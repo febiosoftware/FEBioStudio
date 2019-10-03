@@ -10,6 +10,7 @@
 #include <PostLib/PostView.h>
 #include <FSCore/FSDir.h>
 #include <MeshLib/FEElementLibrary.h>
+#include <QSplashScreen>
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>
@@ -71,6 +72,11 @@ int main(int argc, char* argv[])
 	string appdir = QApplication::applicationDirPath().toStdString();
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
+	// show the splash screen
+	QPixmap pixmap(":/icons/splash.png");
+	QSplashScreen splash(pixmap);
+	splash.show();
+
 	// initialize glew
 #ifdef WIN32
 	glewInit();
@@ -94,6 +100,8 @@ int main(int argc, char* argv[])
 	//	wnd.setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 	wnd.show();
 
+	splash.finish(&wnd);
+
 	if ((argc == 2) && (breset == false))
 	{
 		wnd.OpenDocument(argv[1]);
@@ -108,9 +116,16 @@ int main(int argc, char* argv[])
 #else
 	MyApplication app(argc, argv);
 
+	// show the splash screen
+	QPixmap pixmap(":/icons/splash.png");
+	QSplashScreen splash(pixmap);
+	splash.show();
+
 	// create the main window
 	CMainWindow wnd;
 	wnd.show();
+
+	splash.finish(&wnd);
 
 	app.setApplicationVersion("1.0.0");
 	app.setApplicationName("FEBio Studio");
