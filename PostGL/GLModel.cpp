@@ -408,7 +408,7 @@ void CGLModel::RenderPlots(CGLContext& rc)
 	for (int i = 0; i < (int)PL.Size(); ++i)
 	{
 		CGLPlaneCutPlot* p = dynamic_cast<CGLPlaneCutPlot*>(m_pPlot[i]);
-		if (p->IsActive()) p->Activate(true);
+		if (p && p->IsActive()) p->Activate(true);
 	}
 	
 	for (int i = 0; i<(int)PL.Size(); ++i)
