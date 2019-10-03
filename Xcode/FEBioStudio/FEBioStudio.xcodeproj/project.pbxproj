@@ -12,6 +12,10 @@
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
 		D5248DDC231C114D00691871 /* DlgCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DDA231C114D00691871 /* DlgCheck.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
+		D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0AFF234653F700B7C0B8 /* libmmg3d.a */; };
+		D57A0B04234653F700B7C0B8 /* libmmg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B00234653F700B7C0B8 /* libmmg.a */; };
+		D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B01234653F700B7C0B8 /* libmmg2d.a */; };
+		D57A0B06234653F700B7C0B8 /* libmmgs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B02234653F700B7C0B8 /* libmmgs.a */; };
 		D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */; };
 		D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BD2335128D00D388FA /* Encrypter.cpp */; };
 		D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */; };
@@ -385,6 +389,10 @@
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D57A0AFF234653F700B7C0B8 /* libmmg3d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg3d.a; path = ../../../../../../../../../../usr/local/lib/libmmg3d.a; sourceTree = "<group>"; };
+		D57A0B00234653F700B7C0B8 /* libmmg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg.a; path = ../../../../../../../../../../usr/local/lib/libmmg.a; sourceTree = "<group>"; };
+		D57A0B01234653F700B7C0B8 /* libmmg2d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg2d.a; path = ../../../../../../../../../../usr/local/lib/libmmg2d.a; sourceTree = "<group>"; };
+		D57A0B02234653F700B7C0B8 /* libmmgs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmgs.a; path = ../../../../../../../../../../usr/local/lib/libmmgs.a; sourceTree = "<group>"; };
 		D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LaunchConfig.cpp; sourceTree = "<group>"; };
 		D5D5B6BD2335128D00D388FA /* Encrypter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encrypter.cpp; sourceTree = "<group>"; };
 		D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_SSHHandler.cpp; sourceTree = "<group>"; };
@@ -798,6 +806,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */,
+				D57A0B04234653F700B7C0B8 /* libmmg.a in Frameworks */,
+				D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */,
+				D57A0B06234653F700B7C0B8 /* libmmgs.a in Frameworks */,
 				D5D5B6CE2335160E00D388FA /* libcrypto.1.0.0.dylib in Frameworks */,
 				D5D5B6CB2335138900D388FA /* libssl.1.0.0.dylib in Frameworks */,
 				D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */,
@@ -1252,6 +1264,10 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D57A0B00234653F700B7C0B8 /* libmmg.a */,
+				D57A0B01234653F700B7C0B8 /* libmmg2d.a */,
+				D57A0AFF234653F700B7C0B8 /* libmmg3d.a */,
+				D57A0B02234653F700B7C0B8 /* libmmgs.a */,
 				D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */,
 				D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */,
 				D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */,
@@ -1662,6 +1678,7 @@
 					"$(OTHER_CFLAGS)",
 					"-DHAS_SSH",
 					"-DHAS_OCC",
+					"-DHAS_MMG",
 				);
 				SDKROOT = macosx;
 			};
@@ -1720,6 +1737,7 @@
 					"$(OTHER_CFLAGS)",
 					"-DHAS_SSH",
 					"-DHAS_OCC",
+					"-DHAS_MMG",
 				);
 				SDKROOT = macosx;
 			};
