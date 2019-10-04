@@ -17,7 +17,7 @@ void FEMathData::eval(int n, float* pv)
 	FEState& state = *fem.GetState(ntime);
 	double time = (double)state.m_time;
 
-	FEMeshBase& mesh = *state.GetFEMesh();
+	FEPostMesh& mesh = *state.GetFEMesh();
 
 	CMathParser math;
 	math.set_variable("t", time);
@@ -52,7 +52,7 @@ void FEMathVec3Data::eval(int n, vec3f* pv)
 	FEState& state = *fem.GetState(ntime);
 	double time = (double)state.m_time;
 
-	FEMeshBase& mesh = *state.GetFEMesh();
+	FEPostMesh& mesh = *state.GetFEMesh();
 
 	CMathParser math;
 	math.set_variable("t", time);

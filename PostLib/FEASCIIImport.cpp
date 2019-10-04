@@ -402,16 +402,7 @@ bool FEASCIIImport::BuildMesh(FEModel &fem)
 
 	// create the mesh
 	ZONE& zone = m_Zone[0];
-	FEMeshBase* pm = 0;
-	switch (zone.m_ntype)
-	{
-	case ZONE_TRIANGLE: pm = new FETriMesh; break;
-	case ZONE_QUAD    : pm = new FEQuadMesh; break;
-	case ZONE_TET     : pm = new FEMeshTet4; break;
-	case ZONE_BRICK   : pm = new FEMeshHex8; break;
-	default:
-		return false;
-	}
+	FEPostMesh* pm = new FEPostMesh;
 
 	pm->Create(zone.m_nn, zone.m_ne);
 	fem.AddMesh(pm);
@@ -427,7 +418,14 @@ bool FEASCIIImport::BuildMesh(FEModel &fem)
 	// assign elements
 	for (int i=0; i<zone.m_ne; ++i)
 	{
-		FEElement_& e = pm->ElementRef(i);
+		FEElement& e = pm->Element(i);
+		switch (zone.m_ntype)
+		{
+		case ZONE_TRIANGLE: e.SetType(FE_TRI3); break;
+		case ZONE_QUAD    : e.SetType(FE_QUAD4); break;
+		case ZONE_TET     : e.SetType(FE_TET4); break;
+		case ZONE_BRICK   : e.SetType(FE_HEX8); break;
+		}
 		int* n = zone.m_Elem[i].node;
 		for (int j=0; j<e.Nodes(); ++j) e.m_node[j] = n[j]-1;
 	}

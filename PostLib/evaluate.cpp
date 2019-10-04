@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "FEMeshData_T.h"
 #include <MeshLib/MeshMetrics.h>
+#include <MeshLib/MeshTools.h>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -159,7 +160,7 @@ bool FEModel::Evaluate(int nfield, int ntime, bool breset)
 {
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 	if (mesh->Nodes() == 0) return false;
 
 	// make sure that we have to reevaluate
@@ -187,7 +188,7 @@ void FEModel::EvalNodeField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 
 	// first, we evaluate all the nodes
 	int i, j;
@@ -245,7 +246,7 @@ void FEModel::EvalFaceField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 
 	// get the data ID
 	int ndata = FIELD_CODE(nfield);
@@ -362,7 +363,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 
 	// get the state data 
 	FEState& state = *m_State[ntime];
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 
 	// first evaluate all elements
 	float data[FEElement::MAX_NODES] = {0.f};
@@ -636,7 +637,7 @@ void FEModel::EvalElemField(int ntime, int nfield)
 void FEModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 {
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 	m_ntime = ntime;
 
 	// the return value
@@ -771,7 +772,7 @@ void FEModel::EvaluateNode(int n, int ntime, int nfield, NODEDATA& d)
 void FEModel::EvaluateNode(const vec3f& p, int ntime, int nfield, NODEDATA& d)
 {
 	// find the element in which this point lies
-	FEMeshBase& mesh = *GetState(ntime)->GetFEMesh();
+	FEPostMesh& mesh = *GetState(ntime)->GetFEMesh();
 	int elid = -1;
 	double r[3];
 	if (FindElementRef(mesh, p, elid, r) == false)
@@ -806,7 +807,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 
 	// get the face
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 
 	FEFace& f = mesh->Face(n);
 	int nf = f.Nodes();
@@ -1443,7 +1444,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 bool FEModel::EvaluateElement(int n, int ntime, int nfield, float* data, float& val)
 {
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 	m_ntime = ntime;
 
 	// get the element
@@ -1990,7 +1991,7 @@ bool FEModel::EvaluateElement(int n, int ntime, int nfield, float* data, float& 
 vec3f FEModel::EvaluateNodeVector(int n, int ntime, int nvec)
 {
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 	m_ntime = ntime;
 
 	vec3f r;
@@ -2078,7 +2079,7 @@ vec3f FEModel::EvaluateNodeVector(int n, int ntime, int nvec)
 bool FEModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 {
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 	m_ntime = ntime;
 
 	FEFace& f = mesh->Face(n);
@@ -2194,7 +2195,7 @@ bool FEModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 vec3f FEModel::EvaluateElemVector(int n, int ntime, int nvec)
 {
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 	m_ntime = ntime;
 
 	vec3f r;
@@ -2316,7 +2317,7 @@ vec3f FEModel::EvaluateElemVector(int n, int ntime, int nvec)
 mat3f FEModel::EvaluateNodeTensor(int n, int ntime, int nten, int ntype)
 {
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 	m_ntime = ntime;
 
 	mat3f m;
@@ -2422,7 +2423,7 @@ mat3f FEModel::EvaluateFaceTensor(int n, int ntime, int nten, int ntype)
 mat3f FEModel::EvaluateElemTensor(int n, int ntime, int nten, int ntype)
 {
 	FEState& state = *GetState(ntime);
-	FEMeshBase* mesh = state.GetFEMesh();
+	FEPostMesh* mesh = state.GetFEMesh();
 	m_ntime = ntime;
 
 	mat3f m;

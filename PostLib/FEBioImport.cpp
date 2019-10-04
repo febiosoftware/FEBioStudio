@@ -41,7 +41,7 @@ bool FEBioImport::Load(FEModel& fem, const char* szfile)
 
 	fem.Clear();
 	m_pfem = &fem;
-	m_pm = new FEMesh;
+	m_pm = new FEPostMesh;
 	fem.AddMesh(m_pm);
 
 	// Attach the XML reader to the stream

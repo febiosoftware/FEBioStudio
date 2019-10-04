@@ -120,7 +120,7 @@ bool FENikeImport::ReadGeometrySection()
 	char szline[256];
 
 	// create the geometry
-	m_pm = new FEMesh;
+	m_pm = new FEPostMesh;
 	m_pm->Create(m_nn, m_nhel+m_nsel);	
 	m_pfem->AddMesh(m_pm);
 

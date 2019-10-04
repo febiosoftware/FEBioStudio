@@ -40,7 +40,7 @@ FEModel* FEPlotMix::Load(const char **szfile, int n)
 	pfem->GetState(1)->m_time = 1;
 
 	// get the mesh
-	FEMeshBase& m1 = *pfem->GetFEMesh(0);
+	FEPostMesh& m1 = *pfem->GetFEMesh(0);
 
 	// get the datamanager
 	FEDataManager* pdm1 = pfem->GetDataManager();
@@ -50,7 +50,7 @@ FEModel* FEPlotMix::Load(const char **szfile, int n)
 	s1.m_time = 0;
 
 	// get the mesh of the new model
-	FEMeshBase* mesh = pfem->GetFEMesh(0);
+	FEPostMesh* mesh = pfem->GetFEMesh(0);
 
 	// only read last states
 	pfr->SetReadStateFlag(XPLT_READ_LAST_STATE_ONLY);
@@ -69,7 +69,7 @@ FEModel* FEPlotMix::Load(const char **szfile, int n)
 		}
 
 		// make sure the mesh size is the same
-		FEMeshBase& m2 = *fem2.GetFEMesh(0);
+		FEPostMesh& m2 = *fem2.GetFEMesh(0);
 		if ((m1.Nodes   () != m2.Nodes()) ||
 			(m1.Elements() != m2.Elements())) { delete pfem; return 0; } 
 

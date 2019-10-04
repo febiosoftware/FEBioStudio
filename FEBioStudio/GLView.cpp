@@ -7573,7 +7573,7 @@ void CGLView::RenderTags()
 	m_ffar = 100 * radius;
 
 	// get the mesh
-	Post::FEMeshBase& mesh = *model->GetActiveMesh();
+	Post::FEPostMesh& mesh = *model->GetActiveMesh();
 
 	// create the tag array.
 	// We add a tag for each selected item

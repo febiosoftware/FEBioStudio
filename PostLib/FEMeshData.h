@@ -7,7 +7,7 @@ namespace Post {
 
 class FEModel;
 class FEState;
-class FEMeshBase;
+class FEPostMesh;
 
 //-----------------------------------------------------------------------------
 // Data class: defines possible class types for data fields
@@ -73,7 +73,7 @@ public:
 
 	FEState* GetFEState() { return m_state; }
 
-	FEMeshBase* GetFEMesh();
+	FEPostMesh* GetFEMesh();
 
 	FEModel* GetFEModel();
 

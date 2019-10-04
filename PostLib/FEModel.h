@@ -168,9 +168,9 @@ public:
 	void ClearDependants();
 
 public:
-	void AddMesh(FEMeshBase* mesh);
+	void AddMesh(FEPostMesh* mesh);
 	int Meshes() const;
-	FEMeshBase* GetFEMesh(int i);
+	FEPostMesh* GetFEMesh(int i);
 
 	void UpdateMeshState(int ntime);
 
@@ -195,7 +195,7 @@ protected:
 	MetaData	m_meta;
 
 	// --- M E S H ---
-	vector<FEMeshBase*>		m_mesh;		// the list of meshes
+	vector<FEPostMesh*>		m_mesh;		// the list of meshes
 	BOX						m_bbox;		// bounding box of mesh
 
 	// --- M A T E R I A L S ---

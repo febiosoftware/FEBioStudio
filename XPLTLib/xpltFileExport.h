@@ -3,7 +3,7 @@
 
 namespace Post {
 //-----------------------------------------------------------------------------
-class FEMeshBase;
+class FEPostMesh;
 class FEModel;
 class FEDataField;
 class FEPart;
@@ -136,9 +136,9 @@ protected:
 	bool WriteGeometry  (FEModel& fem);
 	bool WriteDataField (FEDataField& data);
 
-	bool WriteNodeSection   (FEMeshBase& m);
-	bool WritePartSection   (FEMeshBase& m);
-	bool WriteSurfaceSection(FEMeshBase& m);
+	bool WriteNodeSection   (FEPostMesh& m);
+	bool WritePartSection   (FEPostMesh& m);
+	bool WriteSurfaceSection(FEPostMesh& m);
 
 	bool WritePart(FEPart& part);
 

@@ -266,7 +266,7 @@ void CMaterialPanel::on_showButton_toggled(bool b)
 
 	Post::CGLModel& mdl = *doc.GetGLModel();
 	Post::FEModel& fem = *doc.GetFEModel();
-	Post::FEMeshBase& mesh = *fem.GetFEMesh(0);
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	QItemSelectionModel* pselect = ui->m_list->selectionModel();
 	QModelIndexList selection = pselect->selectedRows();
@@ -302,7 +302,7 @@ void CMaterialPanel::on_enableButton_toggled(bool b)
 
 	Post::CGLModel& mdl = *doc.GetGLModel();
 	Post::FEModel& fem = *doc.GetFEModel();
-	Post::FEMeshBase& mesh = *fem.GetFEMesh(0);
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	QItemSelectionModel* pselect = ui->m_list->selectionModel();
 	QModelIndexList selection = pselect->selectedRows();

@@ -122,7 +122,7 @@ void FESTLimport::build_mesh()
 	int NN = m_Node.size();
 
 	// create the mesh
-	FETriMesh* pm = new FETriMesh();
+	FEPostMesh* pm = new FEPostMesh();
 	pm->Create(NN, NF);
 	m_pfem->AddMesh(pm);
 
@@ -139,7 +139,8 @@ void FESTLimport::build_mesh()
 	for (i=0; i<NF; ++i, ++is)
 	{
 		FACET& f = *is;
-		FEElement_& e = pm->ElementRef(i);
+		FEElement& e = pm->Element(i);
+		e.SetType(FE_TRI3);
 		e.m_node[0] = f.n[0];
 		e.m_node[1] = f.n[1];
 		e.m_node[2] = f.n[2];

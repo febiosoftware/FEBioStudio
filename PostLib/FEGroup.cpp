@@ -5,7 +5,7 @@
 
 //-----------------------------------------------------------------------------
 // FEDomain constructor
-Post::FEDomain::FEDomain(Post::FEMeshBase *pm)
+Post::FEDomain::FEDomain(Post::FEPostMesh *pm)
 {
 	m_pm = pm;
 	m_nmat = -1;

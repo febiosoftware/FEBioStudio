@@ -163,6 +163,12 @@ void FEMesh::Clear()
 }
 
 //-----------------------------------------------------------------------------
+void FEMesh::ClearElements() { m_Elem.clear(); }
+
+//-----------------------------------------------------------------------------
+void FEMesh::CreateElements(int elems) { m_Elem.resize(elems); }
+
+//-----------------------------------------------------------------------------
 // Allocate storage for the mesh data. If bclear is true (default = true) all 
 // existing groups are deleted.
 void FEMesh::Create(int nodes, int elems, int faces, int edges)

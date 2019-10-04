@@ -73,7 +73,7 @@ FEASCIIExport::FEASCIIExport()
 
 bool FEASCIIExport::Save(FEModel* pfem, int n0, int n1, const char* szfile)
 {
-	FEMeshBase& m = *pfem->GetFEMesh(0);
+	FEPostMesh& m = *pfem->GetFEMesh(0);
 
 	int NN = m.Nodes();
 	int NE = m.Elements();

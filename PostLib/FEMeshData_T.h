@@ -317,7 +317,7 @@ class FEElemArrayDataNode : public FEElemItemData
 public:
 	FEElemArrayDataNode(FEState* state, int nsize, FEDataField* pdf) : FEElemItemData(state, DATA_ARRAY, DATA_NODE)
 	{
-		FEMeshBase& m = *state->GetFEMesh();
+		FEPostMesh& m = *state->GetFEMesh();
 		m_stride = nsize;
 		if (m_elem.empty())
 		{
@@ -536,7 +536,7 @@ template <typename T> class FEElementData<T, DATA_NODE> : public FEElemData_T<T,
 public:
 	FEElementData(FEState* state, FEDataField* pdf) : FEElemData_T<T, DATA_NODE>(state, pdf)
 	{
-		FEMeshBase& m = *state->GetFEMesh();
+		FEPostMesh& m = *state->GetFEMesh();
 		if (m_elem.empty())
 		{
 			int N = m.Elements();

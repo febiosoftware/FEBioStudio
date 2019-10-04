@@ -197,7 +197,7 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 	// get the mesh
 	CGLModel* mdl = GetModel();
 	FEModel* ps = mdl->GetFEModel();
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	vec2f rng = m_crng;
 	if (rng.x == rng.y) rng.y++;

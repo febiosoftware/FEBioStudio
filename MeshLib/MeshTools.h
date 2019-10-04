@@ -2,6 +2,7 @@
 #include "FEMesh.h"
 #include <MathLib/math3d.h>
 #include "FEMeshBase.h"
+#include "FECoreMesh.h"
 
 // project a node to a particular edge
 vec3d projectToEdge(const FEMeshBase& m, const vec3d& p, int gid);
@@ -71,3 +72,15 @@ inline vec3d faceNormal(const vec3d r[3])
 	vec3d N = (r[1] - r[0]) ^ (r[2] - r[0]); N.Normalize();
 	return N;
 }
+
+
+// find the element and the iso-parametric coordinates of a point inside the mesh
+bool FindElementRef(FECoreMesh& m, const vec3f& x, int& nelem, double r[3]);
+
+// project the point p in the current frame of element el. This returns the iso-parametric coordinates in r.
+// The return value is true or false depending if the point is actually inside the element
+bool ProjectInsideElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3]);
+
+bool IsInsideElement(FEElement_& el, double r[3], const double tol);
+
+void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* x);

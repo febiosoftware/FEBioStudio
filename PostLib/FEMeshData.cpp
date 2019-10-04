@@ -9,7 +9,7 @@ extern int ET_HEX[12][2];
 extern int DIAG_HEX[16][2];
 
 //-----------------------------------------------------------------------------
-Post::FEMeshBase* Post::FEMeshData::GetFEMesh()
+Post::FEPostMesh* Post::FEMeshData::GetFEMesh()
 { 
 	return m_state->GetFEMesh(); 
 }
@@ -35,7 +35,7 @@ void Post::shape_grad(FEModel& fem, int elem, double q[3], int nstate, vec3f* G)
 {
 	// get the mesh
 	FEState& state = *fem.GetState(nstate);
-	FEMeshBase& m = *state.GetFEMesh();
+	FEPostMesh& m = *state.GetFEMesh();
 
 	// get the element
 	FEElement_& el = m.ElementRef(elem);
@@ -86,7 +86,7 @@ Mat3d deform_grad(FEModel& fem, int n, double r, double s, double t, int nstate,
 {
 	// get the mesh
 	FEState& state = *fem.GetState(nstate);
-	Post::FEMeshBase& m = *state.GetFEMesh();
+	Post::FEPostMesh& m = *state.GetFEMesh();
 
 	// get the element
 	FEElement_& el = m.ElementRef(n);
@@ -774,7 +774,7 @@ void FEVolRatio::eval(int n, float* pv)
 
 	int i;
 
-	FEMeshBase& m = *GetFEMesh();
+	FEPostMesh& m = *GetFEMesh();
 	FEElement_* pe = &m.ElementRef(n);
 
 	int N = pe->Nodes();
@@ -895,7 +895,7 @@ void FEElementVolume::eval(int n, float* pv)
 //
 void FEAspectRatio::eval(int iel, float* pv)
 {
-	FEMeshBase& m = *GetFEState()->GetFEMesh();
+	FEPostMesh& m = *GetFEState()->GetFEMesh();
 	FEElement_& el = m.ElementRef(iel);
 	int nn = el.Nodes();
 	if (el.Type() == FE_HEX20) nn = 8;
@@ -941,7 +941,7 @@ void FEAspectRatio::eval(int iel, float* pv)
 void FEMaxEdgeAngle::eval(int iel, float* pv)
 {
 	FEModel& fem = *GetFEModel();
-	FEMeshBase& m = *GetFEState()->GetFEMesh();
+	FEPostMesh& m = *GetFEState()->GetFEMesh();
 	FEElement_& el = m.ElementRef(iel);
 
 	if (el.Nodes() != 8) { *pv = 90.f; return; }
@@ -1006,7 +1006,7 @@ void FEMaxEdgeAngle::eval(int iel, float* pv)
 void FEMinEdgeAngle::eval(int iel, float* pv)
 {
 	FEModel& fem = *GetFEModel();
-	FEMeshBase& m = *GetFEState()->GetFEMesh();
+	FEPostMesh& m = *GetFEState()->GetFEMesh();
 	FEElement_& el = m.ElementRef(iel);
 	if (el.Nodes() != 8) { *pv = 90.f; return; }
 
@@ -1096,7 +1096,7 @@ void FECurvature::level(int n, int l, set<int>& nl1)
 {
 	// get the model's surface
 	FEModel* pfem = GetFEModel();
-	FEMeshBase* pmesh = GetFEState()->GetFEMesh();
+	FEPostMesh* pmesh = GetFEState()->GetFEMesh();
 
 	// add the first node
 	nl1.insert(n);
@@ -1181,7 +1181,7 @@ float FECurvature::nodal_curvature(int n, int m)
 {
 	// get the model's surface
 	FEModel* pfem = GetFEModel();
-	FEMeshBase* pmesh = GetFEState()->GetFEMesh();
+	FEPostMesh* pmesh = GetFEState()->GetFEMesh();
 	int ntime = m_state->GetID();
 
 	// get the reference nodal position
@@ -1430,7 +1430,7 @@ void FEPrincCurvatureVector::level(int n, int l, set<int>& nl1)
 {
 	// get the model's surface
 	FEModel* pfem = GetFEModel();
-	FEMeshBase* pmesh = GetFEMesh();
+	FEPostMesh* pmesh = GetFEMesh();
 
 	// add the first node
 	nl1.insert(n);
@@ -1499,7 +1499,7 @@ void FEPrincCurvatureVector::eval(int n, vec3f* fv, int m)
 {
 	// get the model's surface
 	FEModel* pfem = GetFEModel();
-	FEMeshBase* pmesh = GetFEMesh();
+	FEPostMesh* pmesh = GetFEMesh();
 
 	// get the face
 	FEFace& face = pmesh->Face(n);
@@ -1515,7 +1515,7 @@ vec3f FEPrincCurvatureVector::nodal_curvature(int n, int m)
 {
 	// get the model's surface
 	FEModel* pfem = GetFEModel();
-	FEMeshBase* pmesh = GetFEMesh();
+	FEPostMesh* pmesh = GetFEMesh();
 	int ntime = m_state->GetID();
 
 	// get the reference nodal position
@@ -1726,7 +1726,7 @@ void FECongruency::eval(int n, float* f)
 
 	// get the model's surface
 	FEModel* pfem = GetFEModel();
-	FEMeshBase* pmesh = GetFEMesh();
+	FEPostMesh* pmesh = GetFEMesh();
 
 	// get the face
 	FEFace& face = pmesh->Face(n);

@@ -5,7 +5,7 @@
 namespace Post {
 
 class FEModel;
-class FEMeshBase;
+class FEPostMesh;
 
 class FEBioImport :	public FEFileReader
 {
@@ -23,7 +23,7 @@ protected:
 
 protected:
 	FEModel*	m_pfem;
-	FEMeshBase*		m_pm;
+	FEPostMesh*		m_pm;
 
 	int		m_nmat;
 	int		m_nversion;

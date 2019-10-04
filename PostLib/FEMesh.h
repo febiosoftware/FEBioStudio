@@ -2,7 +2,7 @@
 
 #include <MeshLib/FENode.h>
 #include <MeshLib/FEElement.h>
-#include <MeshLib/FECoreMesh.h>
+#include <MeshLib/FEMesh.h>
 #include "FEGroup.h"
 #include <MeshLib/FENodeElementList.h>
 #include <MeshLib/FENodeFaceList.h>
@@ -14,15 +14,15 @@ using namespace std;
 namespace Post {
 
 //-----------------------------------------------------------------------------
-class FEMeshBase : public FECoreMesh
+class FEPostMesh : public FEMesh
 {
 public:
 	// --- M E M O R Y   M A N A G M E N T ---
 	//! constructor
-	FEMeshBase();
+	FEPostMesh();
 
 	//! destructor
-	virtual ~FEMeshBase();
+	virtual ~FEPostMesh();
 
 	//! allocate storage for mesh
 	void Create(int nodes, int elems, int faces = 0, int edges = 0) override;
@@ -39,9 +39,8 @@ public:
 	const vector<NodeElemRef>& NodeElemList(int n) const { return m_NEL.ElementList(n); }
 	const vector<NodeFaceRef>& NodeFaceList(int n) const { return m_NFL.FaceList(n); }
 
+public:
 	// --- G E O M E T R Y ---
-
-	virtual void ClearElements() = 0;
 
 	//! return domains
 	int Domains() const { return (int) m_Dom.size(); }
@@ -82,9 +81,6 @@ public:
 	void Update();
 
 protected:
-	virtual void CreateElements(int elems) = 0;
-
-protected:
 	void BuildFaces();
 	void FindFaceNeighbors();
 	void FindNeighbours();
@@ -110,49 +106,13 @@ protected:
 	FENodeFaceList		m_NFL;
 };
 
-template <class T> class FEMesh_ : public FEMeshBase
-{
-public:
-	FEMesh_(){}
-
-public:
-	// number of elements
-	int Elements() const { return (int) m_Elem.size(); }
-
-	//! return an element
-	FEElement_& ElementRef(int i) override { return m_Elem[i]; }
-	const FEElement_& ElementRef(int i) const override { return m_Elem[i]; }
-
-	void ClearElements() override { m_Elem.clear(); }
-
-protected:
-	void CreateElements(int elems) override { m_Elem.resize(elems); }
-
-protected:
-	vector<T>	m_Elem;	// element array
-};
-
-typedef FEMesh_<FETri3> FETriMesh;
-typedef FEMesh_<FEQuad4> FEQuadMesh;
-typedef FEMesh_<FETet4> FEMeshTet4;
-typedef FEMesh_<FEHex8> FEMeshHex8;
-typedef FEMesh_<FEElement> FEMesh;
-typedef FEMesh_<FELinearElement> FELinearMesh;
-
-// find the element and the iso-parametric coordinates of a point inside the mesh
-bool FindElementRef(FEMeshBase& m, const vec3f& x, int& nelem, double r[3]);
-
 // find the element and the iso-parametric coordinates of a point inside the mesh
 // the x coordinates is assumed to be in reference frame
-bool FindElementInReferenceFrame(FEMeshBase& m, const vec3f& x, int& nelem, double r[3]);
+bool FindElementInReferenceFrame(FECoreMesh& m, const vec3f& x, int& nelem, double r[3]);
 
 // project the point p in the reference frame of element el. This returns the iso-parametric coordinates in r.
 // The return value is true or false depending if the point is actually inside the element
-bool ProjectInsideReferenceElement(FEMeshBase& m, FEElement_& el, const vec3f& p, double r[3]);
-
-// project the point p in the current frame of element el. This returns the iso-parametric coordinates in r.
-// The return value is true or false depending if the point is actually inside the element
-bool ProjectInsideElement(FEMeshBase& m, FEElement_& el, const vec3f& p, double r[3]);
+bool ProjectInsideReferenceElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3]);
 
 class FEFindElement
 {
@@ -179,7 +139,7 @@ public:
 	};
 
 public:
-	FEFindElement(FEMeshBase& mesh);
+	FEFindElement(FECoreMesh& mesh);
 
 	void Init(int nframe = 0);
 	void Init(vector<bool>& flags, int nframe = 0);
@@ -200,7 +160,7 @@ private:
 
 private:
 	OCTREE_BOX	m_bound;
-	FEMeshBase&	m_mesh;
+	FECoreMesh&	m_mesh;
 	int			m_nframe;	// = 0 reference, 1 = current
 };
 

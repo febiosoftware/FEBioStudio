@@ -13,7 +13,7 @@ private:
 	{
 	public:
 		int Faces() { return (int) m_face.size(); }
-		void BuildNodeList(FEMeshBase& m);
+		void BuildNodeList(FEPostMesh& m);
 
 		int Nodes() { return (int) m_node.size(); }
 

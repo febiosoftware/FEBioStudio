@@ -12,7 +12,7 @@ using namespace Post;
 class MeshPartition
 {
 public:
-	MeshPartition(Post::FEMeshBase& mesh, const vector<int>& elem, int matid, int ntype) : m_mesh(mesh), m_elem(elem)
+	MeshPartition(Post::FEPostMesh& mesh, const vector<int>& elem, int matid, int ntype) : m_mesh(mesh), m_elem(elem)
 	{
 		m_matid = matid;
 		m_ntype = ntype;
@@ -21,7 +21,7 @@ public:
 public:
 	int		m_matid;
 	int		m_ntype;
-	Post::FEMeshBase&		m_mesh;
+	Post::FEPostMesh&		m_mesh;
 	vector<int>	m_elem;
 };
 
@@ -296,7 +296,7 @@ bool xpltFileExport::WriteMaterials(FEModel& fem)
 bool xpltFileExport::WriteGeometry(FEModel& fem)
 {
 	// get the mesh
-	FEMeshBase& m = *fem.GetFEMesh(0);
+	FEPostMesh& m = *fem.GetFEMesh(0);
 
 	// node section
 	m_ar.BeginChunk(PLT_NODE_SECTION);
@@ -326,7 +326,7 @@ bool xpltFileExport::WriteGeometry(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WriteNodeSection(Post::FEMeshBase& m)
+bool xpltFileExport::WriteNodeSection(Post::FEPostMesh& m)
 {
 	// write the reference coordinates
 	int NN = m.Nodes();
@@ -345,7 +345,7 @@ bool xpltFileExport::WriteNodeSection(Post::FEMeshBase& m)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WritePartSection(Post::FEMeshBase& mesh)
+bool xpltFileExport::WritePartSection(Post::FEPostMesh& mesh)
 {
 	// make sure there are parts
 	int NP = mesh.Parts();
@@ -429,7 +429,7 @@ bool xpltFileExport::WritePart(Post::FEPart& part)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WriteSurfaceSection(Post::FEMeshBase& mesh)
+bool xpltFileExport::WriteSurfaceSection(Post::FEPostMesh& mesh)
 {
 	int NS = mesh.Surfaces();
 	for (int n=0; n<NS; ++n)
@@ -530,7 +530,7 @@ bool xpltFileExport::WriteNodeData(FEModel& fem, FEState& state)
 	FEDataManager& DM = *fem.GetDataManager();
 	FEDataFieldPtr pd = DM.FirstDataField();
 
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 	int NN = mesh.Nodes();
 	int NDATA = state.m_Data.size();
 	unsigned int nid = 1;
@@ -568,7 +568,7 @@ bool xpltFileExport::WriteElemData(FEModel& fem, FEState& state)
 	FEDataManager& DM = *fem.GetDataManager();
 	FEDataFieldPtr pd = DM.FirstDataField();
 
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 	int NDATA = state.m_Data.size();
 	unsigned int nid = 1;
 	for (int n=0; n<NDATA; ++n, ++pd)
@@ -609,7 +609,7 @@ bool xpltFileExport::WriteFaceData(FEModel& fem, FEState& state)
 	FEDataManager& DM = *fem.GetDataManager();
 	FEDataFieldPtr pd = DM.FirstDataField();
 
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 	int NDATA = state.m_Data.size();
 	unsigned int nid = 1;
 	for (int n=0; n<NDATA; ++n, ++pd)
@@ -671,10 +671,10 @@ inline void write_data(vector<float>& val, int index, const mat3fd& v)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillNodeDataArray(vector<float>& val, FEMeshData& meshData)
+bool xpltFileExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& meshData)
 {
 	FEModel& fem = *meshData.GetFEModel();
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();
 	int NN = mesh.Nodes();
@@ -709,10 +709,10 @@ bool xpltFileExport::FillNodeDataArray(vector<float>& val, FEMeshData& meshData)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData, Post::FEPart& part)
+bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FEPart& part)
 {
 	FEModel& fem = *meshData.GetFEModel();
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();
 	int nfmt  = meshData.GetFormat();
@@ -947,10 +947,10 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData,
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData, Post::FESurface& surf)
+bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FESurface& surf)
 {
 	FEModel& fem = *meshData.GetFEModel();
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int ntype = meshData.GetType();
 	int nfmt  = meshData.GetFormat();

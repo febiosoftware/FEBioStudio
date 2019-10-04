@@ -142,7 +142,7 @@ bool GMeshImport::BuildMesh(FEModel& fem)
 	fem.AddMaterial(mat);
 
 	// build the mesh
-	FEMesh* pm = new FEMesh;
+	FEPostMesh* pm = new FEPostMesh;
 	pm->Create(nodes, elems);
 	fem.AddMesh(pm);
 

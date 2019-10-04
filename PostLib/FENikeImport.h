@@ -3,7 +3,7 @@
 
 namespace Post {
 
-class FEMeshBase;
+class FEPostMesh;
 
 class FENikeImport : public FEFileReader
 {
@@ -29,6 +29,6 @@ protected:
 
 	FEModel*	m_pfem;
 
-	FEMeshBase*	m_pm;
+	FEPostMesh*	m_pm;
 };
 }

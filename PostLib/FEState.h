@@ -9,7 +9,7 @@ using namespace std;
 // forward declaration of the mesh
 namespace Post {
 	class FEModel;
-	class FEMeshBase;
+	class FEPostMesh;
 
 //-----------------------------------------------------------------------------
 enum StatusFlags {
@@ -66,7 +66,7 @@ struct POINTDATA
 class FEState
 {
 public:
-	FEState(float time, FEModel* fem, FEMeshBase* mesh);
+	FEState(float time, FEModel* fem, FEPostMesh* mesh);
 	FEState(float time, FEModel* fem, FEState* state);
 
 	void SetID(int n);
@@ -83,8 +83,8 @@ public:
 	POINTDATA& Point(int n) { return m_Point[n]; }
 	int Points() { return (int) m_Point.size(); }
 
-	void SetFEMesh(FEMeshBase* pm) { m_mesh = pm; }
-	FEMeshBase* GetFEMesh() { return m_mesh; }
+	void SetFEMesh(FEPostMesh* pm) { m_mesh = pm; }
+	FEPostMesh* GetFEMesh() { return m_mesh; }
 
 	FEModel* GetFEModel() { return m_fem; }
 
@@ -109,6 +109,6 @@ public:
 
 public:
 	FEModel*	m_fem;	//!< model this state belongs to
-	FEMeshBase*	m_mesh;	//!< The mesh this state uses
+	FEPostMesh*	m_mesh;	//!< The mesh this state uses
 };
 }

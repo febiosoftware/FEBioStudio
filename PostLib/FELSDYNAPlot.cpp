@@ -188,9 +188,9 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 	int i, j;
 
 	// get the mesh
-	FEMeshBase* pm = new FEMesh;
+	FEPostMesh* pm = new FEPostMesh;
 	fem.AddMesh(pm);
-	FEMeshBase& mesh = *pm;
+	FEPostMesh& mesh = *pm;
 
 	// clear the state data
 	fem.ClearStates();
@@ -354,7 +354,7 @@ bool FELSDYNAPlotImport::ReadStates(FEModel& fem)
 	FEState* pprev = 0;	// previously read state
 	FEState* pstate = 0;
 
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	bool bfirst = true;
 
@@ -552,7 +552,7 @@ bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], i
 	else
 		strcpy(plh.Title, sztitle);
 
-	FEMeshBase& mesh = *fem.GetFEMesh(0);
+	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	plh.neips = 2000;
 	plh.flagU = (bflag[2]?1:0);

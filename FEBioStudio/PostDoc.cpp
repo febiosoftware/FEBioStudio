@@ -300,7 +300,7 @@ FEMesh* CPostObject::BuildMesh()
 {
 	DeleteFEMesh();
 
-	Post::FEMeshBase* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
+	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
 
 	int NN = postMesh->Nodes();
 	int NE = postMesh->Elements();
@@ -377,7 +377,7 @@ FEMesh* CPostObject::BuildMesh()
 void CPostObject::UpdateSelection()
 {
 	// map selection of nodes and elements
-	Post::FEMeshBase* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
+	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
 
 	FEMesh* mesh = GetFEMesh();
 	for (int i = 0; i < mesh->Nodes(); ++i)
@@ -409,7 +409,7 @@ void CPostObject::UpdateSelection()
 
 void CPostObject::UpdateMesh()
 {
-	Post::FEMeshBase* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
+	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
 	FEMesh* mesh = GetFEMesh();
 
 	int NN = postMesh->Nodes();

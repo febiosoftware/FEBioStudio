@@ -161,7 +161,7 @@ void CGLSlicePlot::RenderSlice(float ref)
 	// get the mesh
 	CGLModel* mdl = GetModel();
 	FEModel* ps = mdl->GetFEModel();
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	vec3f norm = m_norm;
 	norm.Normalize();

@@ -4,7 +4,7 @@
 
 namespace Post {
 
-class FEMeshBase;
+class FEPostMesh;
 
 class FELSDYNAimport : public FEFileReader  
 {
@@ -61,7 +61,7 @@ protected:
 	std::list<ELEMENT_SHELL>		m_shell;
 	std::list<NODE>					m_node;
 
-	FEMeshBase*			m_pm;
+	FEPostMesh*			m_pm;
 
 	bool	m_bnresults;	// nodal results included?
 	bool	m_bshellthick;	// shell thicknesses included?

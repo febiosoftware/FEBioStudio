@@ -8,7 +8,7 @@ class CMainWindow;
 class CLineChartData;
 
 namespace Post {
-	class FEMeshBase;
+	class FEPostMesh;
 	class FEState;
 	class FEModel;
 	class CGLPlaneCutPlot;
@@ -24,10 +24,10 @@ public:
 	void Update(bool breset = true, bool bfit = false) override;
 
 private:
-	double IntegrateNodes(Post::FEMeshBase& mesh, Post::FEState* ps);
-	double IntegrateEdges(Post::FEMeshBase& mesh, Post::FEState* ps);
-	double IntegrateFaces(Post::FEMeshBase& mesh, Post::FEState* ps);
-	double IntegrateElems(Post::FEMeshBase& mesh, Post::FEState* ps);
+	double IntegrateNodes(Post::FEPostMesh& mesh, Post::FEState* ps);
+	double IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps);
+	double IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps);
+	double IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps);
 
 	void UpdateSourceOptions();
 

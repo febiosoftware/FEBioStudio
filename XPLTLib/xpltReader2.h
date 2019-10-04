@@ -4,7 +4,7 @@
 
 namespace Post {
 	class FEState;
-	class FEMeshBase;
+	class FEPostMesh;
 	class FEMeshData;
 }
 
@@ -307,18 +307,18 @@ protected:
 	bool ReadElemData    (Post::FEModel& fem, Post::FEState* pstate);
 	bool ReadFaceData    (Post::FEModel& fem, Post::FEState* pstate);
 
-	bool ReadElemData_NODE(Post::FEMeshBase& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
+	bool ReadElemData_NODE(Post::FEPostMesh& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
 	bool ReadElemData_ITEM(Domain& d, Post::FEMeshData& s, int ntype, int arrSize);
 	bool ReadElemData_MULT(Domain& d, Post::FEMeshData& s, int ntype);
 
-	bool ReadFaceData_NODE(Post::FEMeshBase& m, Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_NODE(Post::FEPostMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
 	bool ReadFaceData_ITEM(Surface& s, Post::FEMeshData& data, int ntype);
-	bool ReadFaceData_MULT(Post::FEMeshBase& m, Surface& s, Post::FEMeshData& data, int ntype);
+	bool ReadFaceData_MULT(Post::FEPostMesh& m, Surface& s, Post::FEMeshData& data, int ntype);
 
 	void Clear();
 
 protected:
-	Post::FEMeshBase* GetCurrentMesh() { return m_mesh; }
+	Post::FEPostMesh* GetCurrentMesh() { return m_mesh; }
 
 protected:
 	Dictionary			m_dic;
@@ -340,5 +340,5 @@ protected:
 	int		m_nel;
 
 	Post::FEState*	m_pstate;	//!< last read state section
-	Post::FEMeshBase*	m_mesh;		//!< current mesh
+	Post::FEPostMesh*	m_mesh;		//!< current mesh
 };

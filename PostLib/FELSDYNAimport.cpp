@@ -273,7 +273,7 @@ bool FELSDYNAimport::BuildMesh(FEModel& fem)
 	BuildMaterials(fem);
 
 	// build the mesh
-	FEMeshBase* pm = m_pm = new FEMesh;
+	FEPostMesh* pm = m_pm = new FEPostMesh;
 	pm->Create(nodes, elems);
 	fem.AddMesh(pm);
 

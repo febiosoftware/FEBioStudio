@@ -104,7 +104,7 @@ public:
 	double GetSmoothingAngleRadians() { return PI*m_stol/180.0; }
 
 	//! get the active mesh
-	Post::FEMeshBase* GetActiveMesh();
+	Post::FEPostMesh* GetActiveMesh();
 
 	//! Reset all the states so any update will force the state to be evaluated
 	void ResetAllStates();

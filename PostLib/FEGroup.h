@@ -9,7 +9,7 @@ class FECoreMesh;
 namespace Post {
 //-----------------------------------------------------------------------------
 // forward declaration of the mesh class
-class FEMeshBase;
+class FEPostMesh;
 
 //-----------------------------------------------------------------------------
 // Base class that describes a group of mesh items. 
@@ -30,7 +30,7 @@ protected:
 class FEDomain
 {
 public:
-	FEDomain(FEMeshBase* pm);
+	FEDomain(FEPostMesh* pm);
 
 	void SetMatID(int matid);
 	int GetMatID() const { return m_nmat; }
@@ -49,7 +49,7 @@ public:
 	void AddFace   (int n) { m_Face.push_back(n); }
 
 protected:
-	FEMeshBase*	m_pm;
+	FEPostMesh*	m_pm;
 	int			m_nmat;	// material index
 	int			m_ntype;
 	vector<int>	m_Face;	// face indices 

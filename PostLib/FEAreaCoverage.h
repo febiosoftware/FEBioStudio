@@ -16,7 +16,7 @@ class FEAreaCoverage
 	public:
 		int Faces() { return (int)m_face.size(); }
 
-		void Create(FEMeshBase& m);
+		void Create(FEPostMesh& m);
 
 		int Nodes() { return (int)m_node.size(); }
 

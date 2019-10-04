@@ -4,7 +4,7 @@
 using namespace std;
 
 namespace Post {
-class FEMeshBase;
+class FEPostMesh;
 
 //-----------------------------------------------------------------------------
 template <typename T>
@@ -28,12 +28,12 @@ public:
 
 	void Clear() { m_Data.clear(); m_tag.clear(); }
 
-	void SetFEMesh(FEMeshBase* pm) { m_pmesh = pm; }
+	void SetFEMesh(FEPostMesh* pm) { m_pmesh = pm; }
 
 protected:
 	vector<int>	m_tag;
 	vector< vector<T> >	m_Data;
-	FEMeshBase*	m_pmesh;
+	FEPostMesh*	m_pmesh;
 };
 
 //-----------------------------------------------------------------------------

@@ -52,7 +52,7 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 	
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh;
+	FEPostMesh* pm = new FEPostMesh;
 	fem.AddMesh(pm);
 	pm->Create(nodes, 0);
 	

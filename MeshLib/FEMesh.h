@@ -82,6 +82,10 @@ public:
 	//! clear this mesh
 	void Clear();
 
+	void ClearElements();
+
+	void CreateElements(int elems);
+
 public: // from FECoreMesh
 
 	//! return number of elements

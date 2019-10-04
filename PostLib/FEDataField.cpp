@@ -298,7 +298,7 @@ FEDataField* FEArrayDataField::Clone() const
 	return newData;
 }
 
-FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
+Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 {
 	switch (DataClass())
 	{
@@ -329,7 +329,7 @@ FEDataField* FEArrayVec3DataField::Clone() const
 	return newData;
 }
 
-FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
+Post::FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
 {
 	switch (DataClass())
 	{
@@ -372,7 +372,7 @@ bool Post::ExportNodeDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
 
 	// get the mesh
 	FEModel& fem = *glm.GetFEModel();
-	FEMeshBase& mesh = *glm.GetActiveMesh();
+	FEPostMesh& mesh = *glm.GetActiveMesh();
 
 	int nstates = fem.GetStates();
 
@@ -432,7 +432,7 @@ bool Post::ExportFaceDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
 
 	// get the mesh
 	FEModel& fem = *glm.GetFEModel();
-	FEMeshBase& mesh = *glm.GetActiveMesh();
+	FEPostMesh& mesh = *glm.GetActiveMesh();
 
 	int nstates = fem.GetStates();
 
@@ -612,7 +612,7 @@ bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp
 
 	// get the mesh
 	FEModel& fem = *glm.GetFEModel();
-	FEMeshBase& mesh = *glm.GetActiveMesh();
+	FEPostMesh& mesh = *glm.GetActiveMesh();
 
 	int nstates = fem.GetStates();
 
@@ -763,7 +763,7 @@ bool Post::AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 
 	// get the mesh
 	FEModel* pm = glm.GetFEModel();
-	FEMeshBase& m = *glm.GetActiveMesh();
+	FEPostMesh& m = *glm.GetActiveMesh();
 
 	// create a new data field
 	int ND = 0;
@@ -883,7 +883,7 @@ bool Post::AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 
 	// get the mesh
 	FEModel* pm = glm.GetFEModel();
-	FEMeshBase& m = *glm.GetActiveMesh();
+	FEPostMesh& m = *glm.GetActiveMesh();
 
 	// create a new data field
 	int ND = 0;
@@ -1003,7 +1003,7 @@ bool Post::AddElemDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 
 	// get the mesh
 	FEModel* pm = glm.GetFEModel();
-	FEMeshBase& m = *glm.GetActiveMesh();
+	FEPostMesh& m = *glm.GetActiveMesh();
 
 	// create a new data field
 	int ND = 0;

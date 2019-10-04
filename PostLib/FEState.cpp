@@ -8,11 +8,11 @@ using namespace Post;
 
 //-----------------------------------------------------------------------------
 // Constructor
-FEState::FEState(float time, FEModel* fem, Post::FEMeshBase* pmesh) : m_fem(fem), m_mesh(pmesh)
+FEState::FEState(float time, FEModel* fem, Post::FEPostMesh* pmesh) : m_fem(fem), m_mesh(pmesh)
 {
 	m_id = -1;
 
-	Post::FEMeshBase& mesh = *m_mesh;
+	Post::FEPostMesh& mesh = *m_mesh;
 
 	int nodes = mesh.Nodes();
 	int edges = mesh.Edges();
@@ -70,7 +70,7 @@ FEState::FEState(float time, FEModel* fem, Post::FEMeshBase* pmesh) : m_fem(fem)
 
 //-----------------------------------------------------------------------------
 // helper function for copying data
-template <class T> void copyData(FEMeshData* dest, FEMeshData* src) 
+template <class T> void copyData(Post::FEMeshData* dest, Post::FEMeshData* src)
 { 
 	T* pd = dynamic_cast<T*>(dest);
 	T* ps = dynamic_cast<T*>(src);
@@ -103,7 +103,7 @@ FEState::FEState(float time, FEModel* pfem, FEState* pstate) : m_fem(pfem)
 	m_id = -1;
 
 	m_mesh = pstate->m_mesh;
-	FEMeshBase& mesh = *m_mesh;
+	FEPostMesh& mesh = *m_mesh;
 
 	int nodes = mesh.Nodes();
 	int edges = mesh.Edges();
@@ -166,13 +166,13 @@ FEState::FEState(float time, FEModel* pfem, FEState* pstate) : m_fem(pfem)
 		{
 			switch (md.GetType())
 			{
-			case DATA_FLOAT  : copyData< FENodeData<FEDataTypeTraits<DATA_FLOAT  >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_VEC3F  : copyData< FENodeData<FEDataTypeTraits<DATA_VEC3F  >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3F  : copyData< FENodeData<FEDataTypeTraits<DATA_MAT3F  >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3D  : copyData< FENodeData<FEDataTypeTraits<DATA_MAT3D  >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FS : copyData< FENodeData<FEDataTypeTraits<DATA_MAT3FS >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FD : copyData< FENodeData<FEDataTypeTraits<DATA_MAT3FD >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_TENS4FS: copyData< FENodeData<FEDataTypeTraits<DATA_TENS4FS>::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_FLOAT  : copyData< Post::FENodeData<FEDataTypeTraits<DATA_FLOAT  >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_VEC3F  : copyData< Post::FENodeData<FEDataTypeTraits<DATA_VEC3F  >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3F  : copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3F  >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3D  : copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3D  >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FS : copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3FS >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FD : copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3FD >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_TENS4FS: copyData< Post::FENodeData<FEDataTypeTraits<DATA_TENS4FS>::dataType> >(&md, &pstate->m_Data[i]); break;
 			default:
 				assert(false);
 			}
@@ -181,13 +181,13 @@ FEState::FEState(float time, FEModel* pfem, FEState* pstate) : m_fem(pfem)
 		{
 			switch (md.GetType())
 			{
-			case DATA_FLOAT  : copyData< FEFaceData<FEDataTypeTraits<DATA_FLOAT  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_VEC3F  : copyData< FEFaceData<FEDataTypeTraits<DATA_VEC3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3F  : copyData< FEFaceData<FEDataTypeTraits<DATA_MAT3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3D  : copyData< FEFaceData<FEDataTypeTraits<DATA_MAT3D  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FS : copyData< FEFaceData<FEDataTypeTraits<DATA_MAT3FS >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FD : copyData< FEFaceData<FEDataTypeTraits<DATA_MAT3FD >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_TENS4FS: copyData< FEFaceData<FEDataTypeTraits<DATA_TENS4FS>::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_FLOAT  : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_FLOAT  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_VEC3F  : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_VEC3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3F  : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3D  : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3D  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FS : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3FS >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FD : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3FD >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_TENS4FS: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_TENS4FS>::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
 			default:
 				assert(false);
 			}
@@ -196,13 +196,13 @@ FEState::FEState(float time, FEModel* pfem, FEState* pstate) : m_fem(pfem)
 		{
 			switch (md.GetType())
 			{
-			case DATA_FLOAT  : copyData< FEElementData<FEDataTypeTraits<DATA_FLOAT  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_VEC3F  : copyData< FEElementData<FEDataTypeTraits<DATA_VEC3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3F  : copyData< FEElementData<FEDataTypeTraits<DATA_MAT3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3D  : copyData< FEElementData<FEDataTypeTraits<DATA_MAT3D  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FS : copyData< FEElementData<FEDataTypeTraits<DATA_MAT3FS >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FD : copyData< FEElementData<FEDataTypeTraits<DATA_MAT3FD >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_TENS4FS: copyData< FEElementData<FEDataTypeTraits<DATA_TENS4FS>::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_FLOAT  : copyData< Post::FEElementData<FEDataTypeTraits<DATA_FLOAT  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_VEC3F  : copyData< Post::FEElementData<FEDataTypeTraits<DATA_VEC3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3F  : copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3D  : copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3D  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FS : copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3FS >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FD : copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3FD >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_TENS4FS: copyData< Post::FEElementData<FEDataTypeTraits<DATA_TENS4FS>::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
 			default:
 				assert(false);
 			}

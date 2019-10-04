@@ -34,7 +34,7 @@ bool FEFEBioExport::Save(FEModel& fem, const char* szfile)
 {
 	int nmat = fem.Materials();
 
-	FEMeshBase* pm = fem.GetFEMesh(0);
+	FEPostMesh* pm = fem.GetFEMesh(0);
 	FEState* pst = fem.GetActiveState();
 	int NE = pm->Elements();
 

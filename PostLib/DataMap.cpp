@@ -15,7 +15,7 @@ void VectorMap::Gradient(int ntime, std::vector<float> &v)
 	assert(m_pmesh);
 	if (m_pmesh == 0) return;
 	vector<vec3f>& G = m_Data[ntime];
-	FEMeshBase& mesh = *m_pmesh;
+	FEPostMesh& mesh = *m_pmesh;
 
 	int i, k;
 

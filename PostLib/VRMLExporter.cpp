@@ -99,7 +99,7 @@ void VRMLExporter::write_mesh()
 
 
 	// get the mesh
-	FEMeshBase& mesh = *m_pscene->GetFEMesh(0);
+	FEPostMesh& mesh = *m_pscene->GetFEMesh(0);
 
 	// we first need to count how many nodes we have that will be exported
 	for (i=0; i<mesh.Nodes(); ++i) 
@@ -215,7 +215,7 @@ void VRMLExporter::write_states()
 	int i, j;
 
 	// get the mesh
-	FEMeshBase& mesh = *m_pscene->GetFEMesh(0);
+	FEPostMesh& mesh = *m_pscene->GetFEMesh(0);
 
 	// get the nr of states
 	int ntime = m_pscene->GetStates();

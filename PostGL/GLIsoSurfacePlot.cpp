@@ -144,7 +144,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 	FEModel* ps = mdl->GetFEModel();
 
 	// get the mesh
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	const int* nt;
 
@@ -265,7 +265,7 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FEPostMesh* pm = mdl->GetActiveMesh();
 	FEModel* pfem = mdl->GetFEModel();
 
 	int NN = pm->Nodes();

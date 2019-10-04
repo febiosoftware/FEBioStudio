@@ -914,3 +914,141 @@ double TriangleQuality(vec3d r[3])
 
 	return sqrt(Q2);
 }
+
+
+//-----------------------------------------------------------------------------
+bool FindElementRef(FECoreMesh& m, const vec3f& p, int& nelem, double r[3])
+{
+	vec3d y[FEElement::MAX_NODES];
+	int NE = m.Elements();
+	for (int i = 0; i<NE; ++i)
+	{
+		FEElement_& e = m.ElementRef(i);
+		int ne = e.Nodes();
+		nelem = i;
+
+		// do a quick bounding box test
+		vec3d r0 = m.Node(e.m_node[0]).r;
+		vec3d r1 = r0;
+		for (int j = 1; j<ne; ++j)
+		{
+			vec3d& rj = m.Node(e.m_node[j]).r;
+			if (rj.x < r0.x) r0.x = rj.x;
+			if (rj.y < r0.y) r0.y = rj.y;
+			if (rj.z < r0.z) r0.z = rj.z;
+			if (rj.x > r1.x) r1.x = rj.x;
+			if (rj.y > r1.y) r1.y = rj.y;
+			if (rj.z > r1.z) r1.z = rj.z;
+		}
+
+		double dx = fabs(r0.x - r1.x);
+		double dy = fabs(r0.y - r1.y);
+		double dz = fabs(r0.z - r1.z);
+
+		double R = dx;
+		if (dy > R) R = dy;
+		if (dz > R) R = dz;
+		double eps = R*0.001;
+
+		r0.x -= eps;
+		r0.y -= eps;
+		r0.z -= eps;
+
+		r1.x += eps;
+		r1.y += eps;
+		r1.z += eps;
+
+		if ((p.x >= r0.x) && (p.x <= r1.x) &&
+			(p.y >= r0.y) && (p.y <= r1.y) &&
+			(p.z >= r0.z) && (p.z <= r1.z))
+		{
+			if (ProjectInsideElement(m, e, p, r)) return true;
+		}
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool ProjectInsideElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
+{
+	r[0] = r[1] = r[2] = 0.f;
+	int ne = el.Nodes();
+	vec3f x[FEElement::MAX_NODES];
+	for (int i = 0; i<ne; ++i) x[i] = to_vec3f(m.Node(el.m_node[i]).r);
+
+	project_inside_element(el, p, r, x);
+
+	return IsInsideElement(el, r, 0.001);
+}
+
+
+//-----------------------------------------------------------------------------
+bool IsInsideElement(FEElement_& el, double r[3], const double tol)
+{
+	switch (el.Type())
+	{
+	case FE_TET4:
+	case FE_TET10:
+	case FE_TET15:
+	case FE_TET20:
+		return (r[0] >= -tol) && (r[1] >= -tol) && (r[2] >= -tol) && (r[0] + r[1] + r[2] <= 1.0 + tol);
+	case FE_HEX8:
+	case FE_HEX20:
+	case FE_HEX27:
+	case FE_PYRA5:
+		return ((r[0] >= -1.0 - tol) && (r[0] <= 1.0 + tol) &&
+			(r[1] >= -1.0 - tol) && (r[1] <= 1.0 + tol) &&
+			(r[2] >= -1.0 - tol) && (r[2] <= 1.0 + tol));
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* x)
+{
+	const double tol = 0.0001;
+	const int nmax = 10;
+
+	int ne = el.Nodes();
+	double dr[3], R[3];
+	Mat3d K;
+	double u2, N[FEElement::MAX_NODES], G[3][FEElement::MAX_NODES];
+	int n = 0;
+	do
+	{
+		el.shape(N, r[0], r[1], r[2]);
+		el.shape_deriv(G[0], G[1], G[2], r[0], r[1], r[2]);
+
+		R[0] = p.x;
+		R[1] = p.y;
+		R[2] = p.z;
+		for (int i = 0; i<ne; ++i)
+		{
+			R[0] -= N[i] * x[i].x;
+			R[1] -= N[i] * x[i].y;
+			R[2] -= N[i] * x[i].z;
+		}
+
+		K.zero();
+		for (int i = 0; i<ne; ++i)
+		{
+			K[0][0] -= G[0][i] * x[i].x; K[0][1] -= G[1][i] * x[i].x; K[0][2] -= G[2][i] * x[i].x;
+			K[1][0] -= G[0][i] * x[i].y; K[1][1] -= G[1][i] * x[i].y; K[1][2] -= G[2][i] * x[i].y;
+			K[2][0] -= G[0][i] * x[i].z; K[2][1] -= G[1][i] * x[i].z; K[2][2] -= G[2][i] * x[i].z;
+		}
+
+		K.Invert();
+
+		dr[0] = K[0][0] * R[0] + K[0][1] * R[1] + K[0][2] * R[2];
+		dr[1] = K[1][0] * R[0] + K[1][1] * R[1] + K[1][2] * R[2];
+		dr[2] = K[2][0] * R[0] + K[2][1] * R[1] + K[2][2] * R[2];
+
+		r[0] -= dr[0];
+		r[1] -= dr[1];
+		r[2] -= dr[2];
+
+		u2 = dr[0] * dr[0] + dr[1] * dr[1] + dr[2] * dr[2];
+		++n;
+	} while ((u2 > tol*tol) && (n < nmax));
+}
