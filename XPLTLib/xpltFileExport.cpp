@@ -365,14 +365,14 @@ bool xpltFileExport::WritePartSection(Post::FEMeshBase& mesh)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WritePart(FEPart& part)
+bool xpltFileExport::WritePart(Post::FEPart& part)
 {
 	// number of elements
 	int NE = part.Size();
 	if (NE == 0) return false;
 
 	// figure out element type
-	Post::FEMeshBase& mesh = *part.GetMesh();
+	FECoreMesh& mesh = *part.GetMesh();
 	FEElement_& e0 = mesh.ElementRef(part.m_Elem[0]);
 	int matid = e0.m_MatID + 1;
 
@@ -437,6 +437,9 @@ bool xpltFileExport::WriteSurfaceSection(Post::FEMeshBase& mesh)
 		FESurface& s = mesh.Surface(n);
 		int NF = s.Size();
 
+		// we need to cast away the const on the name
+		char* szname = const_cast<char*>(s.GetName().c_str());
+
 		m_ar.BeginChunk(PLT_SURFACE);
 		{
 			m_ar.BeginChunk(PLT_SURFACE_HDR);
@@ -444,7 +447,7 @@ bool xpltFileExport::WriteSurfaceSection(Post::FEMeshBase& mesh)
 				int sid = n+1;
 				m_ar.WriteChunk(PLT_SURFACE_ID, sid);
 				m_ar.WriteChunk(PLT_SURFACE_FACES, NF);
-				m_ar.WriteChunk(PLT_SURFACE_NAME, s.GetName());
+				m_ar.WriteChunk(PLT_SURFACE_NAME, szname, STR_SIZE);
 			}
 			m_ar.EndChunk();
 
@@ -706,7 +709,7 @@ bool xpltFileExport::FillNodeDataArray(vector<float>& val, FEMeshData& meshData)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData, FEPart& part)
+bool xpltFileExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData, Post::FEPart& part)
 {
 	FEModel& fem = *meshData.GetFEModel();
 	FEMeshBase& mesh = *fem.GetFEMesh(0);
@@ -944,7 +947,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData,
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData, FESurface& surf)
+bool xpltFileExport::FillFaceDataArray(vector<float>& val, FEMeshData& meshData, Post::FESurface& surf)
 {
 	FEModel& fem = *meshData.GetFEModel();
 	FEMeshBase& mesh = *fem.GetFEMesh(0);

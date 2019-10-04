@@ -1,7 +1,10 @@
 #pragma once
 #include <MeshLib/FEElement.h>
+#include <MeshTools/FEGroup.h>
 #include <vector>
 using namespace std;
+
+class FECoreMesh;
 
 namespace Post {
 //-----------------------------------------------------------------------------
@@ -10,20 +13,16 @@ class FEMeshBase;
 
 //-----------------------------------------------------------------------------
 // Base class that describes a group of mesh items. 
-class FEGroup
+class FEGroup : public ::FEGroup
 {
 public:
-	FEGroup(FEMeshBase* pm) { m_pm = pm; m_szname[0] = 0; }
+	FEGroup(FECoreMesh* pm, int ntype) :  ::FEGroup(nullptr, ntype) { m_pm = pm; }
 	virtual ~FEGroup(void) {}
 
-	const char* GetName();
-	void SetName(const char* szname);
-
-	FEMeshBase* GetMesh() const { return m_pm; }
+	FECoreMesh* GetMesh() const { return m_pm; }
 
 protected:
-	FEMeshBase*	m_pm;	// pointer to the parent mesh
-	char	m_szname[64];
+	FECoreMesh*	m_pm;	// pointer to the parent mesh
 };
 
 //-----------------------------------------------------------------------------
@@ -59,14 +58,16 @@ protected:
 
 //-----------------------------------------------------------------------------
 // Class that describes a group of elements
-class FEPart : public FEGroup
+class FEPart : public Post::FEGroup
 {
 public:
-	FEPart(FEMeshBase* pm) : FEGroup(pm) {}
+	FEPart(FECoreMesh* pm) : Post::FEGroup(pm, FE_PART) {}
 
 	int Size() const { return (int) m_Elem.size(); }
 
 	void GetNodeList(vector<int>& node, vector<int>& lnode);
+
+	FEItemListBuilder* Copy() override { return nullptr; }
 
 public:
 	vector<int>	m_Elem;	// element indices
@@ -74,14 +75,16 @@ public:
 
 //-------------------------------------------------------------------------
 // Class that describes a group of faces
-class FESurface : public FEGroup
+class FESurface : public Post::FEGroup
 {
 public:
-	FESurface(FEMeshBase* pm) : FEGroup(pm) {}
+	FESurface(FECoreMesh* pm) : Post::FEGroup(pm, FE_SURFACE) {}
 
 	int Size() const { return (int) m_Face.size(); }
 
 	void GetNodeList(vector<int>& node, vector<int>& lnode);
+
+	FEItemListBuilder* Copy() override { return nullptr; }
 
 public:
 	vector<int>	m_Face;	// face indices
@@ -89,10 +92,12 @@ public:
 
 //-------------------------------------------------------------------------
 //! Class that defines a node set
-class FENodeSet : public FEGroup
+class FENodeSet : public Post::FEGroup
 {
 public:
-	FENodeSet(FEMeshBase* pm) : FEGroup(pm){}
+	FENodeSet(FECoreMesh* pm) : Post::FEGroup(pm, FE_NODESET){}
+
+	FEItemListBuilder* Copy() override { return nullptr; }
 
 public:
 	vector<int>	m_Node;

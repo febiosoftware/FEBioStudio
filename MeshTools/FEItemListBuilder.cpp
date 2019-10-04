@@ -28,7 +28,7 @@ void FEItemListBuilder::Save(OArchive& ar)
 	ar.WriteChunk(NAME, GetName());
 	ar.WriteChunk(SIZE, N);
 
-	list<int>::iterator it = m_Item.begin();
+	Iterator it = m_Item.begin();
 	for (int i=0; i<N; ++i, ++it)
 	{
 		ar.WriteChunk(ITEM, (*it));
@@ -63,7 +63,7 @@ void FEItemListBuilder::Load(IArchive &ar)
 void FEItemListBuilder::remove(int n)
 {
 	if (m_Item.empty()) return;
-	list<int>::iterator pi = m_Item.begin();
+	Iterator pi = m_Item.begin();
 	for (int i=0; i<n; ++i) pi++;
 	m_Item.erase(pi);
 }
@@ -78,8 +78,8 @@ void FEItemListBuilder::Merge(list<int>& o)
 		m_Item.sort();
 
 		// remove duplicates
-		list<int>::iterator it1 = m_Item.begin(); 
-		list<int>::iterator it2 = it1; it2++;
+		Iterator it1 = m_Item.begin(); 
+		Iterator it2 = it1; it2++;
 
 		while (it2 != m_Item.end())
 		{
@@ -92,8 +92,8 @@ void FEItemListBuilder::Merge(list<int>& o)
 void FEItemListBuilder::Subtract(list<int>& o)
 {
 	// NOTE: This algorithm assumes that both lists are sorted
-	list<int>::iterator it  = m_Item.begin();
-	list<int>::iterator it2 = o.begin();
+	Iterator it  = m_Item.begin();
+	Iterator it2 = o.begin();
 	while ((it != m_Item.end()) && (it2 != o.end()))
 	{
 		if (*it == *it2)

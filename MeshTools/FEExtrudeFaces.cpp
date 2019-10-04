@@ -28,7 +28,7 @@ FEMesh* FEExtrudeFaces::Apply(FEGroup* pg)
 	}
 
 	vector<int> faceList;
-	for (list<int>::iterator it = pg->begin(); it != pg->end(); ++it)
+	for (FEItemListBuilder::Iterator it = pg->begin(); it != pg->end(); ++it)
 	{
 		faceList.push_back(*it);
 	}

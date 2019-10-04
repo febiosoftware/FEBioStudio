@@ -322,7 +322,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	if (n == 0) return;
 
 	int* pi = new int[n];
-	list<int>::iterator it = pitem->begin();
+	FEItemListBuilder::Iterator it = pitem->begin();
 	for (int i = 0; i<n; ++i, ++it) pi[i] = *it;
 
 	CDocument* pdoc = GetDocument();

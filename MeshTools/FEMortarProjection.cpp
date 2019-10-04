@@ -31,7 +31,7 @@ FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 	int nr = 0;
 
 	// loop over all slave facets
-	list<int>::iterator pi = pslave->begin();
+	FEItemListBuilder::Iterator pi = pslave->begin();
 	int NFS = pslave->size();
 	for (int i=0; i<NFS; ++i, ++pi)
 	{
@@ -70,7 +70,7 @@ FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 
 
 		// loop over all master facets
-		list<int>::iterator pj = pmaster->begin();
+		FEItemListBuilder::Iterator pj = pmaster->begin();
 		int NFM = pmaster->size();
 		for (int j=0; j<NFM; ++j, ++pj)
 		{

@@ -541,7 +541,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, FEMeshData& meshD
 }
 
 //-----------------------------------------------------------------------------
-bool FEVTKExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData, FEPart& part)
+bool FEVTKExport::FillElemDataArray(vector<float>& val, FEMeshData& meshData, Post::FEPart& part)
 {
 	FEModel& fem = *meshData.GetFEModel();
 	FEMeshBase& mesh = *fem.GetFEMesh(0);

@@ -54,7 +54,7 @@ bool CScalarFieldTool::OnApply()
 	{
 		//get the node set of each name selection
 		FENodeSet* pg = po->GetFENodeSet(m_ngen[i]);
-		for (list<int>::iterator it = pg->begin(); it != pg->end(); it++)
+		for (FEItemListBuilder::Iterator it = pg->begin(); it != pg->end(); it++)
 		{
 			int nid = *it;
 			bn[nid] = 1;

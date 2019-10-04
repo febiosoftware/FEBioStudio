@@ -57,7 +57,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			{
 				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
 				const FEPart* pg = elemData.GetPart();
-				std::list<int>::const_iterator it = pg->begin();
+				FEItemListBuilder::ConstIterator it = pg->begin();
 				for (int i = 0; i < pg->size(); ++i, ++it)
 				{
 					int elemId = *it;

@@ -21,7 +21,7 @@ FENodeList* GNodeList::BuildNodeList()
 	FEModel* pfem = dynamic_cast<FEModel*>(m_ps);
 	GModel& m = pfem->GetModel();
 	int N = m_Item.size();
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	FENodeList* ps = new FENodeList();
 	for (int i=0; i<N; ++i, ++it)
 	{
@@ -67,7 +67,7 @@ vector<GNode*> GNodeList::GetNodeList()
 	vector<GNode*> nodeList;
 	GModel& model = m_ps->GetModel();
 	int N = m_Item.size();
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GNode* pg = model.FindNode(*it);
@@ -84,7 +84,7 @@ bool GNodeList::IsValid() const
 
 	GModel& model = m_ps->GetModel();
 	int N = m_Item.size();
-	list<int>::const_iterator it = m_Item.begin();
+	FEItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GNode* pg = model.FindNode(*it);
@@ -114,7 +114,7 @@ FENodeList* GEdgeList::BuildNodeList()
 	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
 	FENodeList* ps = new FENodeList();
 	int N = m_Item.size(), i, n;
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 
 	for (n=0; n<N; ++n, ++it)
 	{
@@ -172,7 +172,7 @@ vector<GEdge*> GEdgeList::GetEdgeList()
 	vector<GEdge*> edgeList;
 	GModel& model = m_ps->GetModel();
 	int N = m_Item.size();
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GEdge* pg = model.FindEdge(*it);
@@ -197,7 +197,7 @@ bool GEdgeList::IsValid() const
 
 	GModel& model = m_ps->GetModel();
 	int N = m_Item.size();
-	list<int>::const_iterator it = m_Item.begin();
+	FEItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GEdge* pg = model.FindEdge(*it);
@@ -226,7 +226,7 @@ FENodeList* GFaceList::BuildNodeList()
 {
 	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
 	int N = m_Item.size(), n, i;
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 
 	// first we need to clear all tags
 	for (n=0; n<N; ++n, ++it)
@@ -294,7 +294,7 @@ FEFaceList* GFaceList::BuildFaceList()
 	GModel& m = dynamic_cast<FEModel*>(m_ps)->GetModel();
 	FEFaceList* ps = new FEFaceList();
 	int N = m_Item.size();
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n=0; n<N; ++n, ++it)
 	{
 		GFace* pf = m.FindSurface(*it);
@@ -326,7 +326,7 @@ vector<GFace*> GFaceList::GetFaceList()
 	vector<GFace*> surfList;
 	GModel& model = m_ps->GetModel();
 	int N = m_Item.size();
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GFace *pg = model.FindSurface(*it);
@@ -343,7 +343,7 @@ bool GFaceList::IsValid() const
 
 	GModel& model = m_ps->GetModel();
 	int N = m_Item.size();
-	list<int>::const_iterator it = m_Item.begin();
+	FEItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GFace *pg = model.FindSurface(*it);
@@ -370,7 +370,7 @@ FEElemList* GPartList::BuildElemList()
 	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
 	FEElemList* ps = new FEElemList();
 	int N = m_Item.size();
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n=0; n<N; ++n, ++it)
 	{
 		GPart *pg = model.FindPart(*it);
@@ -391,7 +391,7 @@ FENodeList* GPartList::BuildNodeList()
 {
 	GModel& model = dynamic_cast<FEModel*>(m_ps)->GetModel();
 	int N = m_Item.size(), n, i, j;
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 
 	// first we need to clear all tags
 	for (n=0; n<N; ++n, ++it)
@@ -468,7 +468,7 @@ vector<GPart*> GPartList::GetPartList()
 	vector<GPart*> partList;
 	GModel& model = m_ps->GetModel();
 	int N = m_Item.size();
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GPart *pg = model.FindPart(*it);
@@ -485,7 +485,7 @@ bool GPartList::IsValid() const
 
 	GModel& model = m_ps->GetModel();
 	int N = m_Item.size();
-	list<int>::const_iterator it = m_Item.begin();
+	FEItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
 	{
 		GPart* pg = model.FindPart(*it);

@@ -3440,7 +3440,7 @@ CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, list
 	if (n > 0)
 	{
 		m_tmp.resize(n);
-		list<int>::iterator it = m_pold->begin();
+		FEItemListBuilder::Iterator it = m_pold->begin();
 		for (int i=0; i<n; ++i, ++it) m_tmp[i] = *it;
 	}
 }
@@ -3469,7 +3469,7 @@ CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FEItemListBuilder* 
 	if (n > 0)
 	{
 		m_tmp.resize(n);
-		list<int>::iterator it = m_pold->begin();
+		FEItemListBuilder::Iterator it = m_pold->begin();
 		for (int i=0; i<n; ++i, ++it) m_tmp[i] = *it;
 	}
 }

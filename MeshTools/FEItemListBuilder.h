@@ -36,6 +36,9 @@ class FEItemListBuilder : public FSObject
 public:
 	enum {ID, NAME, MESHID, SIZE, ITEM};
 
+	typedef std::list<int>::iterator Iterator;
+	typedef std::list<int>::const_iterator ConstIterator;
+
 public:
 	FEItemListBuilder(int ntype);
 
@@ -51,12 +54,12 @@ public:
 	void add(int n) { m_Item.push_back(n); }
 	void remove(int i);
 	int size() const { return (int)m_Item.size(); }
-	list<int>::iterator begin() { return m_Item.begin(); }
-	list<int>::iterator end() { return m_Item.end(); }
-	list<int>::iterator erase(list<int>::iterator p) { return m_Item.erase(p); }
+	Iterator begin() { return m_Item.begin(); }
+	Iterator end() { return m_Item.end(); }
+	Iterator erase(Iterator p) { return m_Item.erase(p); }
 
-	list<int>::const_iterator begin() const { return m_Item.begin(); }
-	list<int>::const_iterator end() const { return m_Item.end(); }
+	ConstIterator begin() const { return m_Item.begin(); }
+	ConstIterator end() const { return m_Item.end(); }
 
 	int GetID() { return m_nID; }
 	void SetID(int nid);

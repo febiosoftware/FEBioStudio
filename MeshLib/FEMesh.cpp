@@ -3694,7 +3694,7 @@ void FEMesh::PartitionNodeSet(FENodeSet* pg)
 {
 	if ((pg == 0) || (pg->size() == 0)) return;
 
-	list<int>::iterator it = pg->begin();
+	FEItemListBuilder::Iterator it = pg->begin();
 	for (; it != pg->end(); ++it)
 	{
 		PartitionNode(*it);

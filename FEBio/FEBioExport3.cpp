@@ -2832,7 +2832,7 @@ void FEBioExport3::WriteMeshDataFields()
 			{
 				XMLElement el("e");
 				int nid = el.add_attribute("id", 0);
-				list<int>::const_iterator it = pg->begin();
+				FEItemListBuilder::ConstIterator it = pg->begin();
 				for (int j = 0; j<pg->size(); ++j, ++it)
 				{
 					int eid = *it;

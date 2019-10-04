@@ -1069,7 +1069,7 @@ bool XpltReader::BuildMesh(FEModel &fem)
 		}
 		else
 		{
-			pmesh = new FEMesh;
+			pmesh = new Post::FEMesh;
 			pmesh->Create(NN, NE);
 
 			// read the element connectivity
@@ -1168,7 +1168,7 @@ bool XpltReader::BuildMesh(FEModel &fem)
 	for (int n=0; n<(int)m_NodeSet.size(); ++n)
 	{
 		NodeSet& s = m_NodeSet[n];
-		FENodeSet* ps = new FENodeSet(pmesh);
+		Post::FENodeSet* ps = new Post::FENodeSet(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "nodeset%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
 		ps->m_Node = s.node;
@@ -1179,7 +1179,7 @@ bool XpltReader::BuildMesh(FEModel &fem)
 	for (int n=0; n<(int) m_Surf.size(); ++n)
 	{
 		Surface& s = m_Surf[n];
-		FESurface* ps = new FESurface(pmesh);
+		Post::FESurface* ps = new Post::FESurface(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "surface%02d",n+1); ps->SetName(szname); }
 		else ps->SetName(s.szname);
 		ps->m_Face.reserve(s.nf);
@@ -1191,7 +1191,7 @@ bool XpltReader::BuildMesh(FEModel &fem)
 	for (int n=0; n<(int) m_Dom.size(); ++n)
 	{
 		Domain& s = m_Dom[n];
-		FEPart* pg = new FEPart(pmesh);
+		Post::FEPart* pg = new Post::FEPart(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "part%02d",n+1); pg->SetName(szname); }
 		else pg->SetName(s.szname);
 		pg->m_Elem.resize(s.ne);

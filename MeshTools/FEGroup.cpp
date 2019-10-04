@@ -49,7 +49,7 @@ void FEGroup::Save(OArchive& ar)
 	ar.WriteChunk(MESHID, meshid);
 	ar.WriteChunk(SIZE, N);
 
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int i=0; i<N; ++i, ++it)
 	{
 		ar.WriteChunk(ITEM, (*it));
@@ -132,7 +132,7 @@ FEElemList* FEPart::BuildElemList()
 
 	FEElemList* pg = new FEElemList();
 
-	list<int>::iterator it;
+	FEItemListBuilder::Iterator it;
 	for (it = m_Item.begin(); it != m_Item.end(); ++it) pg->Add(pm, pm->ElementPtr(*it));
 
 	return pg;
@@ -146,7 +146,7 @@ FENodeList* FEPart::BuildNodeList()
 	int N = pm->Nodes();
 	for (i=0; i<N; ++i) pm->Node(i).m_ntag = 0;
 
-	list<int>::iterator it;
+	FEItemListBuilder::Iterator it;
 	for (it = m_Item.begin(); it != m_Item.end(); ++it)
 	{
 		FEElement_* pe = pm->ElementPtr(*it);
@@ -195,7 +195,7 @@ FEFaceList* FESurface::BuildFaceList()
 
 	FEFaceList* ps = new FEFaceList();
 
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 
 	for (int i=0; i<size(); ++i, ++it) ps->Add(pm, pm->FacePtr(*it));
 	return ps;
@@ -212,7 +212,7 @@ FENodeList* FESurface::BuildNodeList()
 	int i, j, n;
 	for (i=0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = 0;
 
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	int N = (int)m_Item.size();
 	for (i=0; i<N; ++i, ++it)
 	{
@@ -269,7 +269,7 @@ FENodeList* FEEdgeSet::BuildNodeList()
 	int i, j, n;
 	for (i=0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = 0;
 
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	int N = (int)m_Item.size();
 	for (i=0; i<N; ++i, ++it)
 	{
@@ -319,7 +319,7 @@ FENodeList* FENodeSet::BuildNodeList()
 	FEMesh* pm = m_pObj->GetFEMesh();
 	if (pm == 0) return 0;
 	FENodeList* ps = new FENodeList();
-	list<int>::iterator it = m_Item.begin();
+	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int i=0; i<size(); ++i, ++it) ps->Add(pm, pm->NodePtr(*it));
 	return ps;
 }

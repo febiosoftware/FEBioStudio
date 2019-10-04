@@ -2,56 +2,43 @@
 #include "FEGroup.h"
 #include "FEMesh.h"
 #include <string.h>
-using namespace Post;
-
-//-----------------------------------------------------------------------------
-void FEGroup::SetName(const char* szname)
-{
-	strcpy(m_szname, szname);
-}
-
-//-----------------------------------------------------------------------------
-const char* FEGroup::GetName()
-{
-	return m_szname;
-}
 
 //-----------------------------------------------------------------------------
 // FEDomain constructor
-FEDomain::FEDomain(Post::FEMeshBase *pm)
+Post::FEDomain::FEDomain(Post::FEMeshBase *pm)
 {
 	m_pm = pm;
 	m_nmat = -1;
 }
 
 //-----------------------------------------------------------------------------
-void FEDomain::Reserve(int nelems, int nfaces)
+void Post::FEDomain::Reserve(int nelems, int nfaces)
 {
 	m_Elem.reserve(nelems);
 	m_Face.reserve(nfaces);
 }
 
 //-----------------------------------------------------------------------------
-void FEDomain::SetMatID(int matid)
+void Post::FEDomain::SetMatID(int matid)
 {
 	m_nmat = matid;
 }
 
 //-----------------------------------------------------------------------------
-FEFace& FEDomain::Face(int n)
+FEFace& Post::FEDomain::Face(int n)
 { 
 	return m_pm->Face(m_Face[n]); 
 }
 
 //-----------------------------------------------------------------------------
-FEElement_& FEDomain::Element(int n)
+FEElement_& Post::FEDomain::Element(int n)
 {
 	return m_pm->ElementRef(m_Elem[n]);
 }
 
-void FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
+void Post::FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
-	Post::FEMeshBase& mesh = *GetMesh();
+	FECoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();
 	int NE = Size();
 
@@ -87,9 +74,9 @@ void FEPart::GetNodeList(vector<int>& node, vector<int>& lnode)
 	}
 }
 
-void FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
+void Post::FESurface::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
-	Post::FEMeshBase& mesh = *GetMesh();
+	FECoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();
 	int NF = Size();
 
