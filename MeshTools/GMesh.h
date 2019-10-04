@@ -17,6 +17,7 @@ public:
 		vec3d	n;		// normal (but not really)
 		int		tag;	// multipurpose tag
 		int		pid;	// GNode parent local ID
+		int		nid;	// Node index of FENode (in case a mesh object created this GMesh)
 	};
 
 	struct EDGE
@@ -69,6 +70,7 @@ public:
 
 public:
 	int	AddNode(const vec3d& r, int groupID = 0);
+	int	AddNode(const vec3d& r, int nodeID, int groupID);
 	void AddEdge(int* n, int nodes, int groupID = 0);
 	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true);
 	void AddFace(int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true);

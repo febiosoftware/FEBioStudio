@@ -270,12 +270,17 @@ CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FEMesh*)nullptr)
 	// store the model
 	m_glm = glm;
 
-	// build the FE mesh
-	BuildMesh();
-
 	// Set the FE mesh and update
-//	SetFEMesh(GetFEMesh());
+	SetFEMesh(glm->GetFEModel()->GetFEMesh(0));
 	Update(true);
+}
+
+CPostObject::~CPostObject()
+{
+	// The mesh is owned by the CGLModel
+	// so we have to set the mesh to zero here, otherwise the GObject baseclass will try to 
+	// delete it as well
+	SetFEMesh(nullptr);
 }
 
 FEMeshBase* CPostObject::GetEditableMesh()
@@ -295,136 +300,32 @@ BOX CPostObject::GetBoundingBox()
 	else return BOX();
 }
 
-// build the FEMesh
-FEMesh* CPostObject::BuildMesh()
-{
-	DeleteFEMesh();
-
-	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
-
-	int NN = postMesh->Nodes();
-	int NE = postMesh->Elements();
-	int NF = postMesh->Faces();
-	int NC = postMesh->Edges();
-
-	FEMesh* mesh = new FEMesh;
-	mesh->SetGObject(this);
-
-	mesh->Create(NN, NE, NF, NC);
-
-	for (int i = 0; i < NN; ++i)
-	{
-		FENode& nd = mesh->Node(i);
-		FENode& ns = postMesh->Node(i);
-
-		nd.r.x = ns.r.x;
-		nd.r.y = ns.r.y;
-		nd.r.z = ns.r.z;
-	}
-
-	for (int i = 0; i < NF; ++i)
-	{
-		FEFace& fd = mesh->Face(i);
-		FEFace& fs = postMesh->Face(i);
-
-		fd.m_type = fs.m_type;
-
-		fd.m_gid = fs.m_sid;
-		fd.m_sid = fs.m_sid;
-
-		for (int j = 0; j < fs.Nodes(); ++j)
-		{
-			fd.n[j] = fs.n[j];
-		}
-	}
-
-	for (int i = 0; i < NC; ++i)
-	{
-		FEEdge& ed = mesh->Edge(i);
-		FEEdge& es = postMesh->Edge(i);
-
-		ed.m_gid = 0;
-		ed.m_type = es.Type();
-
-		for (int j = 0; j < es.Nodes(); ++j)
-		{
-			ed.n[j] = es.n[j];
-		}
-	}
-
-	for (int i = 0; i < NE; ++i)
-	{
-		FEElement& ed = mesh->Element(i);
-		FEElement_& es = postMesh->ElementRef(i);
-
-		ed.m_gid = es.m_MatID;
-		ed.SetType(es.Type());
-
-		for (int j = 0; j < es.Nodes(); ++j) ed.m_node[j] = es.m_node[j];
-	}
-
-	mesh->UpdateElementNeighbors();
-	mesh->UpdateFaceElementTable();
-	mesh->AutoPartitionSurface();
-	mesh->Update();
-
-	ReplaceFEMesh(mesh);
-
-	return mesh;
-}
-
 // is called whenever the selection has changed
 void CPostObject::UpdateSelection()
 {
-	// map selection of nodes and elements
-	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
-
-	FEMesh* mesh = GetFEMesh();
-	for (int i = 0; i < mesh->Nodes(); ++i)
-	{
-		if (mesh->Node(i).IsSelected()) postMesh->Node(i).Select();
-		else postMesh->Node(i).Unselect();
-	}
-
-	for (int i = 0; i < mesh->Edges(); ++i)
-	{
-		if (mesh->Edge(i).IsSelected()) postMesh->Edge(i).Select();
-		else postMesh->Edge(i).Unselect();
-	}
-
-	for (int i = 0; i < mesh->Faces(); ++i)
-	{
-		if (mesh->Face(i).IsSelected()) postMesh->Face(i).Select();
-		else postMesh->Face(i).Unselect();
-	}
-
-	for (int i = 0; i < mesh->Elements(); ++i)
-	{
-		if (mesh->Element(i).IsSelected()) postMesh->ElementRef(i).Select();
-		else postMesh->ElementRef(i).Unselect();
-	}
-
 	m_glm->UpdateSelectionLists();
 }
 
 void CPostObject::UpdateMesh()
 {
-	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetFEMesh(0);
-	FEMesh* mesh = GetFEMesh();
+	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetActiveState()->GetFEMesh();
 
-	int NN = postMesh->Nodes();
-	for (int i = 0; i < NN; ++i)
+	if (GetFEMesh() != postMesh)
 	{
-		FENode& nd = mesh->Node(i);
-		FENode& ns = postMesh->Node(i);
-
-		nd.r.x = ns.r.x;
-		nd.r.y = ns.r.y;
-		nd.r.z = ns.r.z;
+		SetFEMesh(postMesh);
+		BuildGMesh();
 	}
+	else
+	{
+		GLMesh* mesh = GetRenderMesh(); assert(mesh);
 
-	mesh->UpdateNormals();
-	mesh->UpdateBox();
+		for (int i = 0; i < mesh->Nodes(); ++i)
+		{
+			GMesh::NODE& nd = mesh->Node(i);
+			FENode& ns = postMesh->Node(nd.nid);
 
-	BuildGMesh();
+			nd.r = ns.r;
+		}
+		mesh->Update();
+	}
 }

@@ -1598,12 +1598,15 @@ void CGLView::RenderGLProgress(CPostDoc* postDoc)
 
 	int c = (int)(state*w) / (states - 1);
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_BLEND);
+	glDisable(GL_LIGHTING);
 	const int H = m_GLProgressHeight;
 	glColor4ub(0, 255, 0, 128);
 	glRectd(0, h - H, c, h);
 	glColor4ub(0, 64, 0, 128);
 	glRectd(c, h - H, w, h);
+	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------

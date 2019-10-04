@@ -29,6 +29,18 @@ int GMesh::AddNode(const vec3d& r, int gid)
 	NODE v;
 	v.r = r;
 	v.pid = gid;
+	v.nid = -1;
+	m_Node.push_back(v);
+	return ((int)m_Node.size() - 1);
+}
+
+//-----------------------------------------------------------------------------
+int GMesh::AddNode(const vec3d& r, int nodeID, int gid)
+{
+	NODE v;
+	v.r = r;
+	v.pid = gid;
+	v.nid = nodeID;
 	m_Node.push_back(v);
 	return ((int)m_Node.size() - 1);
 }

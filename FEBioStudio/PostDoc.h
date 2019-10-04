@@ -120,9 +120,7 @@ class CPostObject : public GMeshObject
 {
 public:
 	CPostObject(Post::CGLModel* glm);
-
-	// build the FEMesh
-	FEMesh* BuildMesh() override;
+	~CPostObject();
 
 	FEMeshBase* GetEditableMesh() override;
 
