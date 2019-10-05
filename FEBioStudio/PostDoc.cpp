@@ -309,6 +309,7 @@ void CPostObject::UpdateSelection()
 void CPostObject::UpdateMesh()
 {
 	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetActiveState()->GetFEMesh();
+	postMesh->UpdateBox();
 
 	if (GetFEMesh() != postMesh)
 	{
