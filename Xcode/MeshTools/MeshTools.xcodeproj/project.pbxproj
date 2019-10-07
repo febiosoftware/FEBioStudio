@@ -1050,6 +1050,7 @@
 					"$(OTHER_CFLAGS)",
 					"-DHAS_MMG",
 					"-DHAS_NETGEN",
+					"-DTETLIBRARY",
 				);
 				SDKROOT = macosx;
 			};
@@ -1106,6 +1107,7 @@
 					"$(OTHER_CFLAGS)",
 					"-DHAS_MMG",
 					"-DHAS_NETGEN",
+					"-DTETLIBRARY",
 				);
 				SDKROOT = macosx;
 			};
