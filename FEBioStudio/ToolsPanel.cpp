@@ -10,6 +10,7 @@
 #include "ScalarFieldTool.h"
 #include "PlaneCutTool.h"
 #include "FiberGeneratorTool.h"
+#include "AreaCalculatorTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -38,6 +39,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CScalarFieldTool   );
 	tools.push_back(new CPlaneCutTool      );
 	tools.push_back(new CFiberGeneratorTool);
+    tools.push_back(new CAreaCalculatorTool);
 }
 
 void CToolsPanel::on_buttons_buttonClicked(int id)

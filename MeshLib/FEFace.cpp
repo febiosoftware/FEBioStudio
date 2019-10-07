@@ -375,6 +375,119 @@ void FEFace::shape(double* H, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
+//! Evaluate the derivatives of shape function values at the iso-parametric point (r,s)
+void FEFace::shape_deriv(double* Hr, double* Hs, double r, double s)
+{
+    switch (m_type)
+    {
+        case FE_FACE_TRI3:
+        {
+            Hr[0] = -1; Hs[0] = -1;
+            Hr[1] =  1; Hs[1] =  0;
+            Hr[2] =  0; Hs[2] =  1;
+        }
+            break;
+        case FE_FACE_QUAD4:
+        {
+            Hr[0] = -0.25*(1-s); Hs[0] = -0.25*(1-r);
+            Hr[1] =  0.25*(1-s); Hs[1] = -0.25*(1+r);
+            Hr[2] =  0.25*(1+s); Hs[2] =  0.25*(1+r);
+            Hr[3] = -0.25*(1+s); Hs[3] =  0.25*(1-r);
+        }
+            break;
+        case FE_FACE_TRI6:
+        {
+            Hr[0] = -3.0 + 4.0*r + 4.0*s;
+            Hr[1] =  4.0*r - 1.0;
+            Hr[2] =  0.0;
+            Hr[3] =  4.0 - 8.0*r - 4.0*s;
+            Hr[4] =  4.0*s;
+            Hr[5] = -4.0*s;
+            
+            Hs[0] = -3.0 + 4.0*s + 4.0*r;
+            Hs[1] =  0.0;
+            Hs[2] =  4.0*s - 1.0;
+            Hs[3] = -4.0*r;
+            Hs[4] =  4.0*r;
+            Hs[5] =  4.0 - 8.0*s - 4.0*r;
+        }
+            break;
+        case FE_FACE_TRI7:
+        {
+            Hr[6] = 27.0*s*(1.0 - 2.0*r - s);
+            Hr[0] = -3.0 + 4.0*r + 4.0*s     + Hr[6]/9.0;
+            Hr[1] =  4.0*r - 1.0             + Hr[6]/9.0;
+            Hr[2] =  0.0                     + Hr[6]/9.0;
+            Hr[3] =  4.0 - 8.0*r - 4.0*s - 4.0*Hr[6]/9.0;
+            Hr[4] =  4.0*s               - 4.0*Hr[6]/9.0;
+            Hr[5] = -4.0*s               - 4.0*Hr[6]/9.0;
+            
+            Hs[6] = 27.0*r*(1.0 - r - 2.0*s);
+            Hs[0] = -3.0 + 4.0*s + 4.0*r     + Hs[6]/9.0;
+            Hs[1] =  0.0                     + Hs[6]/9.0;
+            Hs[2] =  4.0*s - 1.0             + Hs[6]/9.0;
+            Hs[3] = -4.0*r               - 4.0*Hs[6]/9.0;
+            Hs[4] =  4.0*r               - 4.0*Hs[6]/9.0;
+            Hs[5] =  4.0 - 8.0*s - 4.0*r - 4.0*Hs[6]/9.0;
+        }
+            break;
+        case FE_FACE_QUAD8:
+        {
+            Hr[4] = -r*(1 - s);
+            Hr[5] = 0.5*(1 - s*s);
+            Hr[6] = -r*(1 + s);
+            Hr[7] = -0.5*(1 - s*s);
+            
+            Hr[0] = -0.25*(1 - s) - 0.5*(Hr[4] + Hr[7]);
+            Hr[1] =  0.25*(1 - s) - 0.5*(Hr[4] + Hr[5]);
+            Hr[2] =  0.25*(1 + s) - 0.5*(Hr[5] + Hr[6]);
+            Hr[3] = -0.25*(1 + s) - 0.5*(Hr[6] + Hr[7]);
+            
+            Hs[4] = -0.5*(1 - r*r);
+            Hs[5] = -s*(1 + r);
+            Hs[6] = 0.5*(1 - r*r);
+            Hs[7] = -s*(1 - r);
+            
+            Hs[0] = -0.25*(1 - r) - 0.5*(Hs[4] + Hs[7]);
+            Hs[1] = -0.25*(1 + r) - 0.5*(Hs[4] + Hs[5]);
+            Hs[2] =  0.25*(1 + r) - 0.5*(Hs[5] + Hs[6]);
+            Hs[3] =  0.25*(1 - r) - 0.5*(Hs[6] + Hs[7]);
+            
+        }
+            break;
+        case FE_FACE_QUAD9:
+        {
+            double R[3] = {0.5*r*(r-1.0), 0.5*r*(r+1.0), 1.0 - r*r};
+            double S[3] = {0.5*s*(s-1.0), 0.5*s*(s+1.0), 1.0 - s*s};
+            double DR[3] = {r-0.5, r+0.5, -2.0*r};
+            double DS[3] = {s-0.5, s+0.5, -2.0*s};
+            
+            Hr[0] = DR[0]*S[0];
+            Hr[1] = DR[1]*S[0];
+            Hr[2] = DR[1]*S[1];
+            Hr[3] = DR[0]*S[1];
+            Hr[4] = DR[2]*S[0];
+            Hr[5] = DR[1]*S[2];
+            Hr[6] = DR[2]*S[1];
+            Hr[7] = DR[0]*S[2];
+            Hr[8] = DR[2]*S[2];
+            
+            Hs[0] = R[0]*DS[0];
+            Hs[1] = R[1]*DS[0];
+            Hs[2] = R[1]*DS[1];
+            Hs[3] = R[0]*DS[1];
+            Hs[4] = R[2]*DS[0];
+            Hs[5] = R[1]*DS[2];
+            Hs[6] = R[2]*DS[1];
+            Hs[7] = R[0]*DS[2];
+            Hs[8] = R[2]*DS[2];
+        }
+        default:
+            assert(false);
+    }
+}
+
+//-----------------------------------------------------------------------------
 double FEFace::eval(double* d, double r, double s)
 {
 	double H[FEFace::MAX_NODES];
@@ -394,3 +507,135 @@ vec3f FEFace::eval(vec3f* d, double r, double s)
 	return a;
 }
 
+//-----------------------------------------------------------------------------
+double FEFace::eval_deriv1(double* d, double r, double s)
+{
+    double Hr[FEFace::MAX_NODES], Hs[FEFace::MAX_NODES];
+    shape_deriv(Hr, Hs, r, s);
+    double a = 0.0;
+    for (int i = 0; i<Nodes(); ++i) a += Hr[i] * d[i];
+    return a;
+}
+
+//-----------------------------------------------------------------------------
+double FEFace::eval_deriv2(double* d, double r, double s)
+{
+    double Hr[FEFace::MAX_NODES], Hs[FEFace::MAX_NODES];
+    shape_deriv(Hr, Hs, r, s);
+    double a = 0.0;
+    for (int i = 0; i<Nodes(); ++i) a += Hs[i] * d[i];
+    return a;
+}
+
+//-----------------------------------------------------------------------------
+vec3d FEFace::eval_deriv1(vec3d* d, double r, double s)
+{
+    double Hr[FEFace::MAX_NODES], Hs[FEFace::MAX_NODES];
+    shape_deriv(Hr, Hs, r, s);
+    vec3d a(0, 0, 0);
+    for (int i = 0; i<Nodes(); ++i) a += d[i] * Hr[i];
+    return a;
+}
+
+//-----------------------------------------------------------------------------
+vec3d FEFace::eval_deriv2(vec3d* d, double r, double s)
+{
+    double Hr[FEFace::MAX_NODES], Hs[FEFace::MAX_NODES];
+    shape_deriv(Hr, Hs, r, s);
+    vec3d a(0, 0, 0);
+    for (int i = 0; i<Nodes(); ++i) a += d[i] * Hs[i];
+    return a;
+}
+
+//-----------------------------------------------------------------------------
+int FEFace::gauss(double* gr, double* gs, double* gw)
+{
+    int nint = 0;
+    
+    switch (m_type)
+    {
+        case FE_FACE_TRI3:
+        {
+            nint = 3;
+            const double a = 1.0 / 6.0;
+            const double b = 2.0 / 3.0;
+            gr[0] = a; gs[0] = a; gw[0] = a;
+            gr[1] = b; gs[1] = a; gw[1] = a;
+            gr[2] = a; gs[2] = b; gw[2] = a;
+        }
+            break;
+        case FE_FACE_QUAD4:
+        {
+            nint = 4;
+            const double a = 1.0 / sqrt(3.0);
+            gr[0] = -a; gs[0] = -a; gw[0] = 1;
+            gr[1] =  a; gs[1] = -a; gw[1] = 1;
+            gr[2] =  a; gs[2] =  a; gw[2] = 1;
+            gr[3] = -a; gs[3] =  a; gw[3] = 1;
+        }
+            break;
+        case FE_FACE_TRI6:
+        {
+            nint = 4;
+            const double a = 1.0/3.0;
+            const double b = 1.0/5.0;
+            const double c = 3.0/5.0;
+            gr[0] = a; gs[0] = a; gw[0] = -27.0/96.0;
+            gr[1] = c; gs[1] = b; gw[1] =  25.0/96.0;
+            gr[2] = b; gs[2] = b; gw[2] =  25.0/96.0;
+            gr[3] = b; gs[3] = c; gw[3] =  25.0/96.0;
+        }
+            break;
+        case FE_FACE_TRI7:
+        {
+            nint = 4;
+            const double a = 1.0/3.0;
+            const double b = 1.0/5.0;
+            const double c = 3.0/5.0;
+            gr[0] = a; gs[0] = a; gw[0] = -27.0/96.0;
+            gr[1] = c; gs[1] = b; gw[1] =  25.0/96.0;
+            gr[2] = b; gs[2] = b; gw[2] =  25.0/96.0;
+            gr[3] = b; gs[3] = c; gw[3] =  25.0/96.0;
+        }
+            break;
+        case FE_FACE_QUAD8:
+        {
+            nint = 9;
+            const double a = sqrt(0.6);
+            const double w1 = 25.0/81.0;
+            const double w2 = 40.0/81.0;
+            const double w3 = 64.0/81.0;
+            gr[ 0] = -a; gs[ 0] = -a;  gw[ 0] = w1;
+            gr[ 1] =  0; gs[ 1] = -a;  gw[ 1] = w2;
+            gr[ 2] =  a; gs[ 2] = -a;  gw[ 2] = w1;
+            gr[ 3] = -a; gs[ 3] =  0;  gw[ 3] = w2;
+            gr[ 4] =  0; gs[ 4] =  0;  gw[ 4] = w3;
+            gr[ 5] =  a; gs[ 5] =  0;  gw[ 5] = w2;
+            gr[ 6] = -a; gs[ 6] =  a;  gw[ 6] = w1;
+            gr[ 7] =  0; gs[ 7] =  a;  gw[ 7] = w2;
+            gr[ 8] =  a; gs[ 8] =  a;  gw[ 8] = w1;
+        }
+            break;
+        case FE_FACE_QUAD9:
+        {
+            nint = 9;
+            const double a = sqrt(0.6);
+            const double w1 = 25.0/81.0;
+            const double w2 = 40.0/81.0;
+            const double w3 = 64.0/81.0;
+            gr[ 0] = -a; gs[ 0] = -a;  gw[ 0] = w1;
+            gr[ 1] =  0; gs[ 1] = -a;  gw[ 1] = w2;
+            gr[ 2] =  a; gs[ 2] = -a;  gw[ 2] = w1;
+            gr[ 3] = -a; gs[ 3] =  0;  gw[ 3] = w2;
+            gr[ 4] =  0; gs[ 4] =  0;  gw[ 4] = w3;
+            gr[ 5] =  a; gs[ 5] =  0;  gw[ 5] = w2;
+            gr[ 6] = -a; gs[ 6] =  a;  gw[ 6] = w1;
+            gr[ 7] =  0; gs[ 7] =  a;  gw[ 7] = w2;
+            gr[ 8] =  a; gs[ 8] =  a;  gw[ 8] = w1;
+        }
+        default:
+            assert(false);
+    }
+    
+    return nint;
+}

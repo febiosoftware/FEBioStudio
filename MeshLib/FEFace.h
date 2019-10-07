@@ -101,12 +101,26 @@ public:
 	// evaluate shape function at iso-parameteric point (r,s)
 	void shape(double* H, double r, double s);
 
-	// evaluate a vector expression at iso-points (r,s)
+    // evaluate derivatives of shape function at iso-parameteric point (r,s)
+    void shape_deriv(double* Hr, double* Hs, double r, double s);
+
+	// evaluate a scalar expression at iso-points (r,s)
 	double eval(double* d, double r, double s);
 
 	// evaluate a vector expression at iso-points (r,s)
 	vec3f eval(vec3f* v, double r, double s);
 
+    // evaluate the derivative of a scalar expression at iso-points (r,s)
+    double eval_deriv1(double* d, double r, double s);
+    double eval_deriv2(double* d, double r, double s);
+
+    // evaluate the derivative of a vector expression at iso-points (r,s)
+    vec3d eval_deriv1(vec3d* v, double r, double s);
+    vec3d eval_deriv2(vec3d* v, double r, double s);
+    
+    // evaluate gauss integration points and weights
+    int gauss(double* gr, double* gs, double* gw);
+    
 public:
 	int	m_type;			//!< face type
 	int	n[MAX_NODES];	//!< nodal ID's
