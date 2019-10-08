@@ -20,10 +20,10 @@ CAreaCalculatorTool::CAreaCalculatorTool() : CBasicTool("Area Calculator", HAS_A
 {
     m_Ax = m_Ay = m_Az = 0.0;
     m_A = 0.0;
-    addDoubleProperty(&m_A, "A")->setFlags(CProperty::Visible);
-    addDoubleProperty(&m_Ax, "Ax")->setFlags(CProperty::Visible);
-    addDoubleProperty(&m_Ay, "Ay")->setFlags(CProperty::Visible);
-    addDoubleProperty(&m_Az, "Az")->setFlags(CProperty::Visible);
+    addDoubleProperty(&m_A, "Area A")->setFlags(CProperty::Visible);
+    addDoubleProperty(&m_Ax, "Projected Ax")->setFlags(CProperty::Visible);
+    addDoubleProperty(&m_Ay, "Projected Ay")->setFlags(CProperty::Visible);
+    addDoubleProperty(&m_Az, "Projected Az")->setFlags(CProperty::Visible);
 
     SetApplyButtonText("Calculate");
 }
@@ -62,6 +62,7 @@ bool CAreaCalculatorTool::OnApply()
 
         // evaluate and sum up face areas
         vec3d A(0,0,0);
+        double Amag = 0;
         vec3d x[FEFace::MAX_NODES];
         double gr[FEFace::MAX_NODES], gs[FEFace::MAX_NODES], gw[FEFace::MAX_NODES];
         for (int i=0; i<F; ++i) {
@@ -76,6 +77,7 @@ bool CAreaCalculatorTool::OnApply()
                     vec3d g2 = f.eval_deriv2(x, gr[k], gs[k]);
                     vec3d g1xg2 = g1 ^ g2;
                     A += g1xg2*gw[k];
+                    Amag += g1xg2.Length();
                 }
             }
         }
@@ -84,7 +86,7 @@ bool CAreaCalculatorTool::OnApply()
         m_Ax = A.x;
         m_Ay = A.y;
         m_Az = A.z;
-        m_A = A.Length();
+        m_A = Amag;
     }
 
     return true;
