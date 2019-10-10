@@ -1022,6 +1022,7 @@ GMeshObject* GMeshObject::DetachSelection()
 
 	// create a new object for this mesh
 	GMeshObject* newObject = new GMeshObject(newMesh);
+	newObject->CopyTransform(this);
 
 	return newObject;
 }
