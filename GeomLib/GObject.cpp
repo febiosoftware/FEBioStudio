@@ -1730,7 +1730,7 @@ void GObject::UpdateItemVisibility()
 			FEElement& el = mesh->Element(i);
 			GPart* pg = Part(el.m_gid);
 			assert(pg);
-			if (pg->IsVisible()) el.Show();
+			if (pg->IsVisible()) { el.Show(); el.Unhide(); }
 			else el.Hide();
 		}
 
