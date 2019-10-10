@@ -15,7 +15,7 @@ public:
 			m_obs[i]->SetParent(nullptr);
 			delete m_obs[i];
 		}
-		m_obs.clear();
+		if (m_obs.empty()==false) m_obs.clear();
 	}
 
 	bool IsEmpty() const
