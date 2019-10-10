@@ -161,6 +161,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\FEBioStudio\AreaCalculatorTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\BuildPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CColorButton.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ClassDescriptor.cpp" />
@@ -358,6 +359,7 @@
     <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\FEBioStudio\AreaCalculatorTool.h" />
     <ClInclude Include="..\..\FEBioStudio\BuildPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\CColorButton.h" />
     <ClInclude Include="..\..\FEBioStudio\CIntInput.h" />
