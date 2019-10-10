@@ -136,7 +136,24 @@ template <> inline double XMLTag::AttributeValue<double >(const char* szatt, dou
 class XMLReader  
 {
 public:
+	enum { BUF_SIZE = 4096 };
+
+public:
 	// exceptions -----------
+
+	// Base class for Exceptions
+	class Error : public std::runtime_error
+	{
+	public:
+		Error(const std::string& err) : std::runtime_error(err) {}
+		Error(XMLTag& tag, const std::string& err);
+	};
+
+	// End of file was discovered 
+	class EndOfFile : public Error {
+	public:
+		EndOfFile() : Error("End of file") {}
+	};
 
 	class UnexpectedEOF{};
 
@@ -208,6 +225,8 @@ public:
 	// Open a file. 
 	bool Open(const char* szfile);
 
+	void Close();
+
 	// Attach a file to this reader. Reader does not take ownership of file pointer
 	bool Attach(FILE* fp);
 
@@ -221,13 +240,44 @@ public:
 
 	const std::string& GetLastComment();
 
+	int64_t currentPos()
+	{
+		return m_currentPos;
+	}
+
 protected:
 	char GetChar() 
 	{
 		char ch;
-		while ((ch=fgetc(m_fp))=='\n') ++m_nline;
-		if (feof(m_fp)) throw UnexpectedEOF();
+		while ((ch = readNextChar()) == '\n') ++m_nline;
 		return ch;
+	}
+
+	char readNextChar()
+	{
+		if (m_bufIndex >= m_bufSize)
+		{
+			if (m_eof) throw EndOfFile();
+
+			m_bufSize = fread(m_buf, 1, BUF_SIZE, m_fp);
+			m_bufIndex = 0;
+			m_eof = (m_bufSize != BUF_SIZE);
+		}
+		m_currentPos++;
+		return m_buf[m_bufIndex++];
+	}
+
+	void rewind(int64_t nstep)
+	{
+		m_bufIndex -= nstep;
+		m_currentPos -= nstep;
+
+		if (m_bufIndex < 0)
+		{
+			fseek(m_fp, m_bufIndex - m_bufSize, SEEK_CUR);
+			m_bufIndex = m_bufSize = 0;
+			m_eof = false;
+		}
 	}
 
 	// only used for processing comments
@@ -236,8 +286,7 @@ protected:
 		char ch;
 		do
 		{
-			ch = fgetc(m_fp);
-			if (feof(m_fp)) throw UnexpectedEOF();
+			ch = readNextChar();
 			if (ch == '\n') ++m_nline;
 		} 
 		while (ch == '\r');
@@ -253,8 +302,13 @@ protected:
 	bool	m_ownFile;	// flag that inidicates whether the reader owns the file pointer or not
 
 	int		m_nline;	// current line (used only as temp storage)
+	int64_t	m_currentPos;	//!< current file position
 
 	string	m_comment;	// last comment that was read
+
+	char		m_buf[BUF_SIZE];
+	int64_t		m_bufIndex, m_bufSize;
+	bool		m_eof;
 
 	friend class XMLTag;
 };

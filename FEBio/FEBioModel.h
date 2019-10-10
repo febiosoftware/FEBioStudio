@@ -38,6 +38,18 @@ private:
 class FEBioModel
 {
 public:
+	struct NODE
+	{
+		int		id;
+		vec3d	r;
+	};
+
+	struct ELEM
+	{
+		int		id;
+		int		n[FEElement::MAX_NODES];
+	};
+
 	// Class for storing node sets
 	class NodeSet
 	{

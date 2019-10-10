@@ -155,6 +155,10 @@ bool FEBioImport::Load(FEProject& prj, const char* szfile)
 		const char* sz = e.tag.m_szroot[e.tag.m_nlevel];
 		return errf("FATAL ERROR: Unmatched end tag for \"%s\" (line %d)\n", sz, e.tag.m_nstart_line);
 	}
+	catch (XMLReader::EndOfFile e)
+	{
+		// this is fine. Moving on ...
+	}
 	catch (...)
 	{
 		return errf("FATAL ERROR: unrecoverable error (line %d)\n", xml.GetCurrentLine());

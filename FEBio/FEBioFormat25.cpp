@@ -131,23 +131,34 @@ void FEBioFormat25::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
-	// first we need to figure out how many nodes there are
-	int nn = tag.children();
+	vector<FEBioModel::NODE> nodes; nodes.reserve(10000);
+
+	// read nodal coordinates
+	++tag;
+	do
+	{
+		FEBioModel::NODE node;
+		tag.value(node.r);
+		int nid = tag.AttributeValue<int>("id", -1); assert(nid != -1);
+		node.id = nid;
+
+		nodes.push_back(node);
+		++tag;
+	}
+	while (!tag.isend());
 
 	// create nodes
+	int nn = nodes.size();
 	FEMesh& mesh = *part->GetFEMesh();
 	int N0 = mesh.Nodes();
 	mesh.Create(N0 + nn, 0);
 
-	// read nodal coordinates
-	++tag;
-	for (int i = 0; i<nn; ++i)
+	for (int i = 0; i < nn; ++i)
 	{
+		FEBioModel::NODE& nd = nodes[i];
 		FENode& node = mesh.Node(N0 + i);
-		tag.value(node.r);
-		int nid = tag.AttributeValue<int>("id", -1); assert(nid != -1);
-		node.m_ntag = nid;
-		++tag;
+		node.m_ntag = nd.id;
+		node.r = nd.r;
 	}
 }
 
@@ -155,9 +166,6 @@ void FEBioFormat25::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
-
-	// first we need to figure out how many elements there are
-	int elems = tag.children();
 
 	// get the required type attribute
 	const char* sztype = tag.AttributeValue("type");
@@ -233,31 +241,47 @@ void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	// add domain to list
 	FEBioModel::Domain* dom = part->AddDomain(szname, matID);
 
+	// read the elements
+	vector<FEBioModel::ELEM> elem;
+	elem.reserve(25000);
+
+	++tag;
+	do
+	{
+		FEBioModel::ELEM el;
+		if (tag == "elem")
+		{
+			int id = tag.AttributeValue<int>("id", -1);
+			el.id = id;
+			tag.value(el.n, FEElement::MAX_NODES);
+			elem.push_back(el);
+		}
+		else throw XMLReader::InvalidTag(tag);
+
+		++tag;
+	}
+	while (!tag.isend());
+
+
 	// create elements
 	FEMesh& mesh = *part->GetFEMesh();
 	int NTE = mesh.Elements();
+	int elems = (int)elem.size();
 	mesh.Create(0, elems + NTE);
 
 	// generate the part id
 	int pid = part->Domains() - 1;
 
 	// read element data
-	++tag;
 	for (int i = NTE; i<elems + NTE; ++i)
 	{
 		FEElement& el = mesh.Element(i);
+		FEBioModel::ELEM& els = elem[i - NTE];
 		el.SetType(ntype);
 		el.m_gid = pid;
 		dom->AddElement(i);
-		if (tag == "elem")
-		{
-			int id = tag.AttributeValue<int>("id", -1);
-			el.m_nid = id;
-			tag.value(el.m_node, el.Nodes());
-		}
-		else throw XMLReader::InvalidTag(tag);
-
-		++tag;
+		el.m_nid = els.id;
+		for (int j = 0; j < el.Nodes(); ++j) el.m_node[j] = els.n[j];
 	}
 }
 
@@ -271,26 +295,34 @@ void FEBioFormat25::ParseGeometryNodeSet(FEBioModel::Part* part, XMLTag& tag)
 	// list to store node numbers
 	vector<int> list;
 
-	++tag;
-	do
+	if (tag.isleaf())
 	{
-		if (tag == "node")
-		{
-			int nid = tag.AttributeValue<int>("id", -1);
-			if (nid == -1) throw XMLReader::MissingAttribute(tag, "id");
-			list.push_back(nid - 1);
-		}
-		else if (tag == "node_set")
-		{
-			const char* szset = tag.AttributeValue("nset");
-			FEBioModel::NodeSet* ps = part->FindNodeSet(szset);
-			if (ps == 0) throw XMLReader::InvalidAttributeValue(tag, "nset", szset);
-			list.insert(list.end(), ps->nodeList().begin(), ps->nodeList().end());
-		}
-		else throw XMLReader::InvalidTag(tag);
-		++tag;
+		tag.value(list);
 	}
-	while (!tag.isend());
+	else
+	{
+
+		++tag;
+		do
+		{
+			if (tag == "node")
+			{
+				int nid = tag.AttributeValue<int>("id", -1);
+				if (nid == -1) throw XMLReader::MissingAttribute(tag, "id");
+				list.push_back(nid - 1);
+			}
+			else if (tag == "node_set")
+			{
+				const char* szset = tag.AttributeValue("nset");
+				FEBioModel::NodeSet* ps = part->FindNodeSet(szset);
+				if (ps == 0) throw XMLReader::InvalidAttributeValue(tag, "nset", szset);
+				list.insert(list.end(), ps->nodeList().begin(), ps->nodeList().end());
+			}
+			else throw XMLReader::InvalidTag(tag);
+			++tag;
+		}
+		while (!tag.isend());
+	}
 
 	// create a new node set
 	part->AddNodeSet(FEBioModel::NodeSet(name, list));
@@ -2526,14 +2558,23 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
+	char buf[256] = { 0 };
+
 	vector<GDiscreteElementSet*> set;
+	int n = 1;
 	++tag;
 	do
 	{
 		if (tag == "discrete_material")
 		{
 			const char* sztype = tag.AttributeValue("type");
-			const char* szname = tag.AttributeValue("name");
+			const char* szname = tag.AttributeValue("name", true);
+			if (szname == nullptr)
+			{
+				sprintf(buf, "discrete_material%d", n++);
+				szname = buf;
+			}
+
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
 				GLinearSpringSet* pg = new GLinearSpringSet;

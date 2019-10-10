@@ -92,6 +92,7 @@ void XMLTag::value(int* pi, int n)
 			*sze = ',';
 			sz = sze+1;
 		}
+		else break;
 	}	
 }
 
@@ -252,16 +253,29 @@ XMLReader::XMLReader()
 	m_fp = 0;
 	m_ownFile = false;
 	m_nline = 0;
+	m_bufIndex = 0;
+	m_bufSize = 0;
+	m_eof = false;
+	m_currentPos = 0;
 }
 
 XMLReader::~XMLReader()
+{
+	Close();
+}
+
+void XMLReader::Close()
 {
 	if (m_ownFile && (m_fp != 0))
 	{
 		fclose(m_fp);
 	}
-
 	m_fp = 0;
+
+	m_bufIndex = 0;
+	m_bufSize = 0;
+	m_eof = false;
+	m_currentPos = 0;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -284,8 +298,7 @@ bool XMLReader::Open(const char* szfile)
 	if (strncmp(szline, "<?xml", 5) != 0)
 	{
 		// This file is not an XML file
-		fclose(m_fp);
-		m_fp = 0;
+		Close();
 		return false;
 	}
 
@@ -320,11 +333,13 @@ bool XMLReader::FindTag(const char* sztag, XMLTag& tag)
 {
 	// go to the beginning of the file
 	fseek(m_fp, 0, SEEK_SET);
+	m_bufIndex = m_bufSize = 0;
+	m_currentPos = 0;
 
 	// set the first tag
 	tag.m_preader = this;
 	tag.m_ncurrent_line = 1;
-	fgetpos(m_fp, &tag.m_fpos);
+	tag.m_fpos = currentPos();
 
 	// find the correct tag
 	bool bfound = false;
@@ -346,7 +361,13 @@ void XMLReader::NextTag(XMLTag& tag)
 	m_nline = tag.m_ncurrent_line;
 
 	// set the current file position
-	fsetpos(m_fp, &tag.m_fpos);
+	if (m_currentPos != tag.m_fpos)
+	{
+		fseek(m_fp, tag.m_fpos, SEEK_SET);
+		m_currentPos = tag.m_fpos;
+		m_bufSize = m_bufIndex = 0;
+		m_eof = false;
+	}
 
 	// clear tag's content
 	tag.clear();
@@ -375,7 +396,7 @@ void XMLReader::NextTag(XMLTag& tag)
 	tag.m_ncurrent_line = m_nline;
 
 	// store start file pos for next element
-	fgetpos(m_fp, &tag.m_fpos);
+	tag.m_fpos = currentPos();
 }
 
 inline bool isvalid(char c)
@@ -561,7 +582,7 @@ void XMLReader::ReadEndTag(XMLTag& tag)
 			{
 				while (isspace(ch=GetChar()));
 				if (ch != '<') throw XMLSyntaxError();
-				fseek(m_fp, -1, SEEK_CUR);
+				rewind(1);
 			}
 		}
 		else
@@ -570,12 +591,12 @@ void XMLReader::ReadEndTag(XMLTag& tag)
 			// and therefor is not a leaf
 
 			tag.m_bleaf = false;
-			fseek(m_fp, -2, SEEK_CUR);
+			rewind(2);
 		}
 	}
 	else 
 	{
-		fseek(m_fp, -1, SEEK_CUR);
+		rewind(1);
 
 		--tag.m_nlevel;
 
