@@ -562,12 +562,21 @@ void CCurveEditor::on_copy_triggered()
 
 void CCurveEditor::on_paste_triggered()
 {
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
+	if (m_currentItem == 0) return;
 	if (m_plc_copy == 0) return;
-	*plc = *m_plc_copy;
-	SetLoadCurve(plc);
+
+	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	if (m_currentItem->GetLoadCurve() == 0)
+	{
+		m_currentItem->SetLoadCurve(new FELoadCurve);
+		plc = m_currentItem->GetLoadCurve();
+	}
+
+	if (plc)
+	{
+		*plc = *m_plc_copy;
+		SetLoadCurve(plc);
+	}
 }
 
 void CCurveEditor::on_xval_textEdited()
