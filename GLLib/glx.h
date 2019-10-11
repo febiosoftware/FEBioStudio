@@ -36,6 +36,12 @@ void tri6(vec3d r[6], vec3f n[6], float t[6]);
 void tri7(vec3d r[7], vec3f n[7], float t[7]);
 void tri10(vec3d r[10], vec3f n[10], float t[10]);
 
+// use inside GL_LINES
+void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3);
+void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4);
+void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4, const vec3d& r5, const vec3d& r6);
+void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4, const vec3d& r5, const vec3d& r6, const vec3d& r7, const vec3d& r8);
+
 void drawLine(double x0, double y0, double x1, double y1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2);

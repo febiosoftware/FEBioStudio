@@ -284,6 +284,44 @@ void glx::tri10(vec3d r[10], vec3f n[10], float t[10])
 	vertex3d(r[9], n[9], t[9]); vertex3d(r[8], n[8], t[8]); vertex3d(r[7], n[7], t[7]);
 }
 
+void glx::lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3)
+{
+	vertex3d(r1); vertex3d(r2);
+	vertex3d(r2); vertex3d(r3);
+	vertex3d(r3); vertex3d(r1);
+}
+
+void glx::lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4)
+{
+	vertex3d(r1); vertex3d(r2);
+	vertex3d(r2); vertex3d(r3);
+	vertex3d(r3); vertex3d(r4);
+	vertex3d(r4); vertex3d(r1);
+}
+
+void glx::lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4, const vec3d& r5, const vec3d& r6)
+{
+	vertex3d(r1); vertex3d(r2);
+	vertex3d(r2); vertex3d(r3);
+	vertex3d(r3); vertex3d(r4);
+	vertex3d(r4); vertex3d(r5);
+	vertex3d(r5); vertex3d(r6);
+	vertex3d(r6); vertex3d(r1);
+}
+
+void glx::lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4, const vec3d& r5, const vec3d& r6, const vec3d& r7, const vec3d& r8)
+{
+	vertex3d(r1); vertex3d(r2);
+	vertex3d(r2); vertex3d(r3);
+	vertex3d(r3); vertex3d(r4);
+	vertex3d(r4); vertex3d(r5);
+	vertex3d(r5); vertex3d(r6);
+	vertex3d(r6); vertex3d(r7);
+	vertex3d(r7); vertex3d(r8);
+	vertex3d(r8); vertex3d(r1);
+}
+
+
 void glx::drawLine(double x0, double y0, double x1, double y1)
 {
 	glBegin(GL_LINES);

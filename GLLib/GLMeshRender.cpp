@@ -1059,6 +1059,7 @@ void GLMeshRender::RenderMeshLines(FEMeshBase* pm)
 	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// loop over all faces
+	glBegin(GL_LINES);
 	for (int i = 0; i<pm->Faces(); i++)
 	{
 		const FEFace& face = pm->Face(i);
@@ -1068,86 +1069,50 @@ void GLMeshRender::RenderMeshLines(FEMeshBase* pm)
 			{
 			case FE_FACE_QUAD4:
 			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(face.n[0]).r;
-					const vec3d& r2 = pm->Node(face.n[1]).r;
-					const vec3d& r3 = pm->Node(face.n[2]).r;
-					const vec3d& r4 = pm->Node(face.n[3]).r;
-
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-				}
-				glEnd();
+				const vec3d& r1 = pm->Node(face.n[0]).r;
+				const vec3d& r2 = pm->Node(face.n[1]).r;
+				const vec3d& r3 = pm->Node(face.n[2]).r;
+				const vec3d& r4 = pm->Node(face.n[3]).r;
+				glx::lineLoop(r1, r2, r3, r4);
 			}
 			break;
 			case FE_FACE_QUAD8:
 			case FE_FACE_QUAD9:
 			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(face.n[0]).r;
-					const vec3d& r2 = pm->Node(face.n[1]).r;
-					const vec3d& r3 = pm->Node(face.n[2]).r;
-					const vec3d& r4 = pm->Node(face.n[3]).r;
-					const vec3d& r5 = pm->Node(face.n[4]).r;
-					const vec3d& r6 = pm->Node(face.n[5]).r;
-					const vec3d& r7 = pm->Node(face.n[6]).r;
-					const vec3d& r8 = pm->Node(face.n[7]).r;
-
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r5.x, r5.y, r5.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r6.x, r6.y, r6.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r7.x, r7.y, r7.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-					glVertex3d(r8.x, r8.y, r8.z);
-				}
-				glEnd();
+				const vec3d& r1 = pm->Node(face.n[0]).r;
+				const vec3d& r2 = pm->Node(face.n[1]).r;
+				const vec3d& r3 = pm->Node(face.n[2]).r;
+				const vec3d& r4 = pm->Node(face.n[3]).r;
+				const vec3d& r5 = pm->Node(face.n[4]).r;
+				const vec3d& r6 = pm->Node(face.n[5]).r;
+				const vec3d& r7 = pm->Node(face.n[6]).r;
+				const vec3d& r8 = pm->Node(face.n[7]).r;
+				glx::lineLoop(r1, r5, r2, r6, r3, r7, r4, r8);
 			}
 			break;
 			case FE_FACE_TRI3:
 			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(face.n[0]).r;
-					const vec3d& r2 = pm->Node(face.n[1]).r;
-					const vec3d& r3 = pm->Node(face.n[2]).r;
-
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-				}
-				glEnd();
+				const vec3d& r1 = pm->Node(face.n[0]).r;
+				const vec3d& r2 = pm->Node(face.n[1]).r;
+				const vec3d& r3 = pm->Node(face.n[2]).r;
+				glx::lineLoop(r1, r2, r3);
 			}
 			break;
 			case FE_FACE_TRI6:
 			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(face.n[0]).r;
-					const vec3d& r2 = pm->Node(face.n[1]).r;
-					const vec3d& r3 = pm->Node(face.n[2]).r;
-					const vec3d& r4 = pm->Node(face.n[3]).r;
-					const vec3d& r5 = pm->Node(face.n[4]).r;
-					const vec3d& r6 = pm->Node(face.n[5]).r;
-
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r5.x, r5.y, r5.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r6.x, r6.y, r6.z);
-				}
-				glEnd();
+				const vec3d& r1 = pm->Node(face.n[0]).r;
+				const vec3d& r2 = pm->Node(face.n[1]).r;
+				const vec3d& r3 = pm->Node(face.n[2]).r;
+				const vec3d& r4 = pm->Node(face.n[3]).r;
+				const vec3d& r5 = pm->Node(face.n[4]).r;
+				const vec3d& r6 = pm->Node(face.n[5]).r;
+				glx::lineLoop(r1, r4, r2, r5, r3, r6);
 			}
 			break;
 			} // switch
 		} // if
 	} // for
+	glEnd();
 
 	glPopAttrib();
 }

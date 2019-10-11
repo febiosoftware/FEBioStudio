@@ -7176,8 +7176,10 @@ void CGLView::RenderMeshLines()
 			{
 				glPushMatrix();
 				SetModelView(po);
-				if ((nitem == ITEM_MESH) || (nitem == ITEM_ELEM))
+				if (nitem == ITEM_ELEM)
 					RenderMeshLines(po);
+				else if (nitem == ITEM_MESH)
+					m_renderer.RenderMeshLines(pm);
 				else if (nitem != ITEM_EDGE)
 					m_renderer.RenderMeshLines(po->GetEditableMesh());
 				glPopMatrix();
