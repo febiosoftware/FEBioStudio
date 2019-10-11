@@ -309,6 +309,16 @@ void CModelViewer::on_selectButton_clicked()
 		if (psl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
 		else SelectItemList(psl, true);
 	}
+	else if (dynamic_cast<GMaterial*>(po))
+	{
+		GMaterial* mat = dynamic_cast<GMaterial*>(po);
+		FEModel* fem = pdoc->GetFEModel();
+		list<GPart*> partList = fem->GetModel().FindPartsFromMaterial(mat->GetID());
+
+		vector<int> partIdList;
+		for (GPart* pg : partList) partIdList.push_back(pg->GetID());
+		pcmd = new CCmdSelectPart(fem, partIdList, false);
+	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 	GetMainWindow()->Update(this);
