@@ -7,6 +7,7 @@ BOX::BOX()
 { 
 	x0 = y0 = z0 = 0;
 	x1 = y1 = z1 = 0; 
+	m_valid = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -15,6 +16,7 @@ BOX::BOX(double X0, double Y0, double Z0, double X1, double Y1, double Z1)
 { 
 	x0 = X0; y0 = Y0; z0 = Z0; 
 	x1 = X1; y1 = Y1; z1 = Z1; 
+	m_valid = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -24,6 +26,7 @@ BOX::BOX(const vec3d& r0, const vec3d& r1)
 	x0 = r0.x; x1 = r1.x;
 	y0 = r0.y; y1 = r1.y;
 	z0 = r0.z; z1 = r1.z;
+	m_valid = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -128,13 +131,23 @@ bool BOX::IsInside(const vec3d& r) const
 //-----------------------------------------------------------------------------
 void BOX::operator += (const vec3d& r)
 {
-	if (r.x < x0) x0 = r.x; 
-	if (r.y < y0) y0 = r.y; 
-	if (r.z < z0) z0 = r.z; 
+	if (m_valid == false)
+	{
+		x0 = x1 = r.x;
+		y0 = y1 = r.y;
+		z0 = z1 = r.z;
+		m_valid = true;
+	}
+	else
+	{
+		if (r.x < x0) x0 = r.x;
+		if (r.y < y0) y0 = r.y;
+		if (r.z < z0) z0 = r.z;
 
-	if (r.x > x1) x1 = r.x; 
-	if (r.y > y1) y1 = r.y; 
-	if (r.z > z1) z1 = r.z; 
+		if (r.x > x1) x1 = r.x;
+		if (r.y > y1) y1 = r.y;
+		if (r.z > z1) z1 = r.z;
+	}
 }
 
 //-----------------------------------------------------------------------------

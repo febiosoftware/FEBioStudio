@@ -8,6 +8,7 @@ class BOX
 public:
 	double x0, y0, z0;	
 	double x1, y1, z1;
+	bool	m_valid;
 
 public:
 	// default constructor
@@ -18,6 +19,9 @@ public:
 
 	// constructor from vectors
 	BOX(const vec3d& r0, const vec3d& r1);
+
+	// is the box valid
+	bool IsValid() const { return m_valid; }
 
 	// size of box
 	double Width () const { return x1 - x0; }
