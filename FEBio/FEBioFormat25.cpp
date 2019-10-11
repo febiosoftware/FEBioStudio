@@ -2609,7 +2609,7 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 						Param& p = pg->GetParam(GNonlinearSpringSet::MP_F);
 						p.SetFloatValue(F);
 						int lc = tag.AttributeValue<int>("lc", -1);
-						if (lc != -1) p.GetLoadCurve()->SetID(lc);
+						if (lc != -1) febio.AddParamCurve(p.GetLoadCurve(), lc -1);
 					}
 					else ParseUnknownTag(tag);
 					++tag;

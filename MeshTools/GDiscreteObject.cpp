@@ -368,6 +368,7 @@ GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteElementSet(FE_NONLINEAR_SP
 
 	// create an initial linear ramp
 	LOADPOINT p0(0,0), p1(1,1);
+	GetParamLC(MP_F)->Clear();
 	GetParamLC(MP_F)->Add(p0);
 	GetParamLC(MP_F)->Add(p1);
 }
