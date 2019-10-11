@@ -302,8 +302,11 @@ void Post::FEPostMesh::BuildFaces()
 
 		// solid elements
 		int nf = e.Faces();
-		for (j=0; j<nf; ++j)
+		for (j = 0; j < nf; ++j)
+		{
+			e.m_face[j] = -1;
 			if (e.m_nbr[j] < 0) ++NF;
+		}
 
 		// shell elements
 		if (e.Edges()) ++NF;
@@ -323,6 +326,8 @@ void Post::FEPostMesh::BuildFaces()
 		for (j=0; j<nf; ++j)
 			if (e.m_nbr[j] < 0)
 			{
+				e.m_face[j] = NF;
+
 				FEFace& f = m_Face[NF++];
 				e.GetFace(j, f);
 				f.m_elem[0] = i;
@@ -334,6 +339,8 @@ void Post::FEPostMesh::BuildFaces()
 		// shell elements
 		if (e.Edges()>0)
 		{
+			e.m_face[0] = NF;
+
 			FEFace& f = m_Face[NF++];
 			f.n[0] = e.m_node[0];
 			f.n[1] = e.m_node[1];
@@ -376,7 +383,7 @@ void Post::FEPostMesh::BuildFaces()
             }
 
 			f.m_elem[0] = i;
-			f.m_elem[1] = 0;
+			f.m_elem[1] = -1;
 			f.m_mat = e.m_MatID;
 			f.SetID(NF);
 		}
