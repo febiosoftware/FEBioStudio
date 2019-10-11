@@ -430,7 +430,11 @@ void CModelViewer::on_props_dataChanged(bool b)
 	{
 		Update();
 	}
-	else ui->tree->UpdateObject(ui->props->GetCurrentObject());
+	else
+	{
+		ui->tree->UpdateObject(ui->props->GetCurrentObject());
+		ui->m_search->UpdateObject(ui->props->GetCurrentObject());
+	}
 }
 
 void CModelViewer::OnDeleteItem()

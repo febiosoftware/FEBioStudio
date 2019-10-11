@@ -77,6 +77,15 @@ void FEStep::SetID(int nid)
 int FEStep::BCs() { return (int) imp->m_BC.Size(); }
 
 //-----------------------------------------------------------------------------
+int FEStep::ActiveBCs()
+{
+	int n = 0;
+	for (int i = 0; i < imp->m_BC.Size(); ++i)
+		if (imp->m_BC[i]->IsActive()) n++;
+	return n;
+}
+
+//-----------------------------------------------------------------------------
 FEBoundaryCondition* FEStep::BC(int i) { return imp->m_BC[i]; }
 
 //-----------------------------------------------------------------------------

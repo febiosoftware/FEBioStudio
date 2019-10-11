@@ -136,6 +136,31 @@ void CModelSearch::GetSelection(std::vector<FSObject*>& objList)
 	}
 }
 
+void CModelSearch::UpdateObject(FSObject* po)
+{
+	for (int i = 0; i < m_list->count(); ++i)
+	{
+		QListWidgetItem* item = m_list->item(i);
+		int n = item->data(Qt::UserRole).toInt();
+
+		if ((n >= 0) && (n < m_tree->Items()))
+		{
+			CModelTreeItem& treeItem = m_tree->GetItem(n);
+			FSObject* o = treeItem.obj;
+			if (o == po)
+			{
+				FEStepComponent* pc = dynamic_cast<FEStepComponent*>(o);
+				if (pc)
+				{
+					QFont font = item->font();
+					font.setItalic(pc->IsActive()==false);
+					item->setFont(font);
+				}
+			}
+		}
+	}
+}
+
 void CModelSearch::UpdateList()
 {
 	m_list->clear();
@@ -163,6 +188,15 @@ void CModelSearch::UpdateList()
 					QListWidgetItem* it = new QListWidgetItem;
 					it->setText(s);
 					it->setData(Qt::UserRole, i);
+
+					FEStepComponent* pc = dynamic_cast<FEStepComponent*>(o);
+					if (pc)
+					{
+						QFont font = it->font();
+						font.setItalic(pc->IsActive()==false);
+						it->setFont(font);
+					}
+
 					m_list->addItem(it);
 				}
 			}

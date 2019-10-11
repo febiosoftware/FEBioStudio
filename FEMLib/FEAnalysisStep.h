@@ -64,6 +64,7 @@ public:
 	void InsertBC(int n, FEBoundaryCondition* pbc);
 	int RemoveBC(FEBoundaryCondition* pbc);
 	void RemoveAllBCs();
+	int ActiveBCs();
 
 	// loads
 	int Loads();

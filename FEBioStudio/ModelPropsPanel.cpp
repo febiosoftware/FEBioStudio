@@ -19,6 +19,7 @@
 #include <FEMLib/FEMultiMaterial.h>
 #include <QGridLayout>
 #include <QComboBox>
+#include <QCheckBox>
 #include "CColorButton.h"
 #include "MeshInfoPanel.h"
 #include <GLWLib/convert.h>
@@ -30,15 +31,15 @@ CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
 {
 	QGridLayout* l = new QGridLayout;
 
-	l->addWidget(new QLabel("Name:"), 0, 0);
+	l->addWidget(new QLabel("Name:"), 0, 0, Qt::AlignRight);
 	l->addWidget(m_name = new QLineEdit, 0, 1);
 	m_name->setObjectName("name");
 
-	l->addWidget(new QLabel("Type:"), 1, 0);
-	l->addWidget(m_type = new QLabel, 1, 1);
-
 	l->addWidget(m_col = new CColorButton, 0, 2);
 	m_col->setObjectName("col");
+
+	l->addWidget(new QLabel("Type:"), 1, 0, Qt::AlignRight);
+	l->addWidget(m_type = new QLabel, 1, 1);
 
 	setLayout(l);
 
@@ -96,6 +97,10 @@ CBCObjectPropsPanel::CBCObjectPropsPanel(QWidget* parent) : QWidget(parent)
 	l->addWidget(m_list = new QComboBox, 2, 1);
 	m_list->setObjectName("list");
 
+	l->addWidget(new QLabel("Active:"), 3, 0, Qt::AlignRight);
+	l->addWidget(m_state = new QCheckBox, 3, 1);
+	m_state->setObjectName("state");
+
 	setLayout(l);
 
 	QMetaObject::connectSlotsByName(this);
@@ -142,6 +147,20 @@ void CBCObjectPropsPanel::on_list_currentIndexChanged(int n)
 	emit stepChanged(n);
 }
 
+void CBCObjectPropsPanel::showActiveState(bool b)
+{
+	m_state->setVisible(b);
+}
+
+void CBCObjectPropsPanel::setActiveState(bool b)
+{
+	m_state->setChecked(b);
+}
+
+void CBCObjectPropsPanel::on_state_toggled(bool b)
+{
+	emit stateChanged(b);
+}
 
 //=============================================================================
 class Ui::CModelPropsPanel
@@ -230,9 +249,11 @@ public:
 		obj->setNameReadOnly(!editName);
 	}
 
-	void showBCObjectInfo(bool b)
+	void showBCObjectInfo(bool b, bool showActiveState = false, bool isActive = false)
 	{
 		tool->getToolItem(BCOBJECT_PANEL)->setVisible(b);
+		if (showActiveState)
+			bcobj->setActiveState(isActive);
 	}
 
 	void showPropsPanel(bool b) { tool->getToolItem(PROPS_PANEL)->setVisible(b); }
@@ -400,7 +421,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 					ui->setBCName(name);
 					ui->setBCType(type);
 					ui->setCurrentStepID(pc->GetStep());
-					ui->showBCObjectInfo(true);
+					ui->showBCObjectInfo(true, true, pc->IsActive());
 				}
 				else ui->showObjectInfo(true, false, nameEditable);
 			}
@@ -1173,4 +1194,16 @@ void CModelPropsPanel::on_bcobject_stepChanged(int n)
 		// Changing the step of a BC requires the whole model tree to be rebuild
 		emit dataChanged(true);
 	}
+}
+
+void CModelPropsPanel::on_bcobject_stateChanged(bool isActive)
+{
+	if (m_isUpdating) return;
+
+	FEStepComponent* pc = dynamic_cast<FEStepComponent*>(m_currentObject);
+	if (pc == 0) return;
+
+	pc->Activate(isActive);
+
+	emit dataChanged(false);
 }

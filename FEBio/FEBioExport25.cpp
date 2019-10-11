@@ -312,19 +312,21 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 		for (int j=0; j<pstep->Loads(); ++j)
 		{
 			FEBoundaryCondition* pl = pstep->Load(j);
-
-			// we need to exclude nodal loads and body loads
-			if (dynamic_cast<FENodalLoad*>(pl)) pl = 0;
-			if (dynamic_cast<FEBodyLoad* >(pl)) pl = 0;
-			if (pl && pl->IsActive())
+			if (pl->IsActive())
 			{
-				FEItemListBuilder* ps = pl->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pl);
+				// we need to exclude nodal loads and body loads
+				if (dynamic_cast<FENodalLoad*>(pl)) pl = 0;
+				if (dynamic_cast<FEBodyLoad*>(pl)) pl = 0;
+				if (pl && pl->IsActive())
+				{
+					FEItemListBuilder* ps = pl->GetItemList();
+					if (ps == 0) throw InvalidItemListBuilder(pl);
 
-				string name = ps->GetName();
-				if (name.empty()) name = pl->GetName();
+					string name = ps->GetName();
+					if (name.empty()) name = pl->GetName();
 
-				AddSurface(name, ps);
+					AddSurface(name, ps);
+				}
 			}
 		}
 	}
@@ -726,7 +728,7 @@ bool FEBioExport25::Export(FEProject& prj, const char* szfile)
 			}
 
 			// output boundary section
-			int nbc = pstep->BCs() + pstep->Interfaces() + fem.GetModel().DiscreteObjects() + pstep->RCs();
+			int nbc = pstep->ActiveBCs() + pstep->Interfaces() + fem.GetModel().DiscreteObjects() + pstep->RCs();
 			if ((nbc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Boundary");

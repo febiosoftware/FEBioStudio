@@ -12,6 +12,7 @@ class QLineEdit;
 class QLabel;
 class CColorButton;
 class QComboBox;
+class QCheckBox;
 
 namespace Ui {
 	class CModelPropsPanel;
@@ -65,18 +66,25 @@ public:
 
 	int currentStepID();
 
+	void showActiveState(bool b);
+
+	void setActiveState(bool b);
+
 protected slots:
 	void on_name_textEdited(const QString&);
 	void on_list_currentIndexChanged(int n);
+	void on_state_toggled(bool b);
 
 signals:
 	void nameChanged(const QString& newName);
 	void stepChanged(int n);
+	void stateChanged(bool isActive);
 
 private:
 	QLineEdit*		m_name;
 	QLabel*			m_type;
 	QComboBox*		m_list;
+	QCheckBox*		m_state;
 };
 
 class CModelPropsPanel : public QWidget
@@ -109,6 +117,7 @@ private slots:
 	void on_props_dataChanged(int n);
 	void on_form_dataChanged(bool itemModified);
 	void on_bcobject_stepChanged(int n);
+	void on_bcobject_stateChanged(bool isActive);
 
 private:
 	void SetSelection(int n, FEItemListBuilder* it);

@@ -499,6 +499,19 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 
 	QVariant data = item->data(0, Qt::UserRole);
 	int n = data.toInt();
+
+	FSObject* po = m_data[n].obj;
+	if (po)
+	{
+		FEStepComponent* pc = dynamic_cast<FEStepComponent*>(po);
+		if (pc)
+		{
+			QFont font = item->font(0);
+			font.setItalic(pc->IsActive() == false);
+			item->setFont(0, font);
+		}
+	}
+
 	CObjectValidator* val = m_data[n].val;
 	if (val)
 	{
@@ -510,7 +523,6 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 		}
 	}
 
-	FSObject* po = m_data[n].obj;
 	if (po && (po->GetInfo().empty() == false))
 	{
 		std::string s = po->GetInfo();

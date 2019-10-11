@@ -25,6 +25,8 @@ public:
 
 	void GetSelection(std::vector<FSObject*>& sel);
 
+	void UpdateObject(FSObject* po);
+
 private:
 	void UpdateList();
 

@@ -346,19 +346,21 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
 			FEBoundaryCondition* pl = pstep->Load(j);
-
-			// we need to exclude nodal loads and body loads
-			if (dynamic_cast<FENodalLoad*>(pl)) pl = 0;
-			if (dynamic_cast<FEBodyLoad* >(pl)) pl = 0;
-			if (pl && pl->IsActive())
+			if (pl->IsActive())
 			{
-				FEItemListBuilder* ps = pl->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pl);
+				// we need to exclude nodal loads and body loads
+				if (dynamic_cast<FENodalLoad*>(pl)) pl = 0;
+				if (dynamic_cast<FEBodyLoad*>(pl)) pl = 0;
+				if (pl && pl->IsActive())
+				{
+					FEItemListBuilder* ps = pl->GetItemList();
+					if (ps == 0) throw InvalidItemListBuilder(pl);
 
-				string name = ps->GetName();
-				if (name.empty()) name = pl->GetName();
+					string name = ps->GetName();
+					if (name.empty()) name = pl->GetName();
 
-				AddSurface(name, ps);
+					AddSurface(name, ps);
+				}
 			}
 		}
 	}
@@ -371,94 +373,97 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
 			FEInterface* pj = pstep->Interface(j);
-			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
-
-			// Note: Don't export surfaces of tied-spring interfaces
-			if (dynamic_cast<FESpringTiedInterface*>(pi)) pi = 0;
-
-			if (pi && pi->IsActive())
+			if (pj->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
-				if (pms == 0) throw InvalidItemListBuilder(pi);
+				FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
 
-				string name = pms->GetName();
-				const char* szname = name.c_str();
-				if ((szname == 0) || (szname[0] == 0))
+				// Note: Don't export surfaces of tied-spring interfaces
+				if (dynamic_cast<FESpringTiedInterface*>(pi)) pi = 0;
+
+				if (pi && pi->IsActive())
 				{
-					sprintf(szbuf, "%s_master", pi->GetName().c_str());
-					szname = szbuf;
+					FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+					if (pms == 0) throw InvalidItemListBuilder(pi);
+
+					string name = pms->GetName();
+					const char* szname = name.c_str();
+					if ((szname == 0) || (szname[0] == 0))
+					{
+						sprintf(szbuf, "%s_master", pi->GetName().c_str());
+						szname = szbuf;
+					}
+					AddSurface(szname, pms);
+
+					FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+					if (pss == 0) throw InvalidItemListBuilder(pi);
+
+					name = pss->GetName();
+					szname = name.c_str();
+					if ((szname == 0) || (szname[0] == 0))
+					{
+						sprintf(szbuf, "%s_slave", pi->GetName().c_str());
+						szname = szbuf;
+					}
+					AddSurface(szname, pss);
 				}
-				AddSurface(szname, pms);
 
-				FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
-				if (pss == 0) throw InvalidItemListBuilder(pi);
-
-				name = pss->GetName();
-				szname = name.c_str();
-				if ((szname == 0) || (szname[0] == 0))
+				FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*>(pj);
+				if (pw && pw->IsActive())
 				{
-					sprintf(szbuf, "%s_slave", pi->GetName().c_str());
-					szname = szbuf;
+					FEItemListBuilder* pitem = pw->GetItemList();
+					if (pitem == 0) throw InvalidItemListBuilder(pw);
+
+					string name = pitem->GetName();
+					if (name.empty()) name = pw->GetName();
+					AddSurface(name, pitem);
 				}
-				AddSurface(szname, pss);
-			}
 
-			FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*>(pj);
-			if (pw && pw->IsActive())
-			{
-				FEItemListBuilder* pitem = pw->GetItemList();
-				if (pitem == 0) throw InvalidItemListBuilder(pw);
+				FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(pj);
+				if (prs && prs->IsActive())
+				{
+					FEItemListBuilder* pitem = prs->GetItemList();
+					if (pitem == 0) throw InvalidItemListBuilder(prs);
 
-				string name = pitem->GetName();
-				if (name.empty()) name = pw->GetName();
-				AddSurface(name, pitem);
-			}
+					string name = pitem->GetName();
+					if (name.empty()) name = prs->GetName();
+					AddSurface(name, pitem);
+				}
 
-			FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(pj);
-			if (prs && prs->IsActive())
-			{
-				FEItemListBuilder* pitem = prs->GetItemList();
-				if (pitem == 0) throw InvalidItemListBuilder(prs);
+				FEVolumeConstraint* pvc = dynamic_cast<FEVolumeConstraint*>(pj);
+				if (pvc && pvc->IsActive())
+				{
+					FEItemListBuilder* pi = pvc->GetItemList();
+					if (pi == 0) throw InvalidItemListBuilder(pi);
 
-				string name = pitem->GetName();
-				if (name.empty()) name = prs->GetName();
-				AddSurface(name, pitem);
-			}
+					string name = pi->GetName();
+					if (name.empty()) name = pvc->GetName();
 
-			FEVolumeConstraint* pvc = dynamic_cast<FEVolumeConstraint*>(pj);
-			if (pvc && pvc->IsActive())
-			{
-				FEItemListBuilder* pi = pvc->GetItemList();
-				if (pi == 0) throw InvalidItemListBuilder(pi);
+					AddSurface(name, pi);
+				}
 
-				string name = pi->GetName();
-				if (name.empty()) name = pvc->GetName();
+				FESymmetryPlane* psp = dynamic_cast<FESymmetryPlane*>(pj);
+				if (psp && psp->IsActive())
+				{
+					FEItemListBuilder* pi = psp->GetItemList();
+					if (pi == 0) throw InvalidItemListBuilder(pi);
 
-				AddSurface(name, pi);
-			}
+					string name = pi->GetName();
+					if (name.empty()) name = psp->GetName();
 
-			FESymmetryPlane* psp = dynamic_cast<FESymmetryPlane*>(pj);
-			if (psp && psp->IsActive())
-			{
-				FEItemListBuilder* pi = psp->GetItemList();
-				if (pi == 0) throw InvalidItemListBuilder(pi);
+					AddSurface(name, pi);
+				}
 
-				string name = pi->GetName();
-				if (name.empty()) name = psp->GetName();
+				FENormalFlowSurface* pcs = dynamic_cast<FENormalFlowSurface*>(pj);
+				if (pcs && pcs->IsActive())
+				{
+					FEItemListBuilder* pi = pcs->GetItemList();
+					if (pi == 0) throw InvalidItemListBuilder(pi);
 
-				AddSurface(name, pi);
-			}
+					string name = pi->GetName();
+					if (name.empty()) name = pcs->GetName();
 
-			FENormalFlowSurface* pcs = dynamic_cast<FENormalFlowSurface*>(pj);
-			if (pcs && pcs->IsActive())
-			{
-				FEItemListBuilder* pi = pcs->GetItemList();
-				if (pi == 0) throw InvalidItemListBuilder(pi);
-
-				string name = pi->GetName();
-				if (name.empty()) name = pcs->GetName();
-
-				AddSurface(name, pi);
+					AddSurface(name, pi);
+				}
 			}
 		}
 	}

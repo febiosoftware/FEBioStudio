@@ -63,11 +63,14 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
 			FEBoundaryCondition* pl = pstep->Load(j);
-			FEItemListBuilder* ps = pl->GetItemList();
-			if (ps)
+			if (pl->IsActive())
 			{
-				const string& name = ps->GetName();
-				if (name.empty() == false) m_pSurf.push_back(ps);
+				FEItemListBuilder* ps = pl->GetItemList();
+				if (ps)
+				{
+					const string& name = ps->GetName();
+					if (name.empty() == false) m_pSurf.push_back(ps);
+				}
 			}
 		}
 	}
@@ -79,7 +82,7 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
 			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pstep->Interface(j));
-			if (pi)
+			if (pi && pi->IsActive())
 			{
 				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
 				if (pms)

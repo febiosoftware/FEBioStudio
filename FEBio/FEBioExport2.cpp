@@ -73,9 +73,12 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 		for (int j=0; j<ps->Interfaces(); ++j)
 		{
 			FEInterface* pi = ps->Interface(j);
-			if (pi->Type() == FE_VOLUME_CONSTRAINT    ) m_nrc++;
-			if (pi->Type() == FE_SYMMETRY_PLANE       ) m_nrc++;
-            if (pi->Type() == FE_NORMAL_FLUID_FLOW    ) m_nrc++;
+			if (pi->IsActive())
+			{
+				if (pi->Type() == FE_VOLUME_CONSTRAINT) m_nrc++;
+				if (pi->Type() == FE_SYMMETRY_PLANE   ) m_nrc++;
+				if (pi->Type() == FE_NORMAL_FLUID_FLOW) m_nrc++;
+			}
 		}
 	}
 
@@ -86,11 +89,14 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 		for (int j=0; j<pstep->BCs(); ++j)
 		{
 			FEBoundaryCondition* pl = pstep->BC(j);
-			FEItemListBuilder* ps = pl->GetItemList();
-			if (ps)
+			if (pl->IsActive())
 			{
-				const string& name = ps->GetName();
-				if (name.empty() == false) m_pNSet.push_back(ps);
+				FEItemListBuilder* ps = pl->GetItemList();
+				if (ps)
+				{
+					const string& name = ps->GetName();
+					if (name.empty() == false) m_pNSet.push_back(ps);
+				}
 			}
 		}
 	}
@@ -102,16 +108,18 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 		for (int j=0; j<pstep->Loads(); ++j)
 		{
 			FEBoundaryCondition* pl = pstep->Load(j);
-
-			// we need to exclude nodal loads
-			if (dynamic_cast<FENodalLoad*>(pl)) pl = 0;
-			if (pl)
+			if (pl->IsActive())
 			{
-				FEItemListBuilder* ps = pl->GetItemList();
-				if (ps)
+				// we need to exclude nodal loads
+				if (dynamic_cast<FENodalLoad*>(pl)) pl = 0;
+				if (pl)
 				{
-					const string& name = ps->GetName();
-					if (name.empty() == false) m_pSurf.push_back(ps);
+					FEItemListBuilder* ps = pl->GetItemList();
+					if (ps)
+					{
+						const string& name = ps->GetName();
+						if (name.empty() == false) m_pSurf.push_back(ps);
+					}
 				}
 			}
 		}
@@ -124,56 +132,59 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 		for (int j=0; j<pstep->Interfaces(); ++j)
 		{
 			FEInterface* pj = pstep->Interface(j);
-			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
-			if (pi)
+			if (pj->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
-				if (pms)
-				{
-					const string& name = pms->GetName();
-					if (name.empty() == false) m_pSurf.push_back(pms);
-				}
-
-				FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
-				if (pss)
-				{
-					const string& name = pss->GetName();
-					if (name.empty() == false) m_pSurf.push_back(pss);
-				}
-			}
-
-			FEVolumeConstraint* pvc = dynamic_cast<FEVolumeConstraint*>(pj);
-			if (pvc)
-			{
-				FEItemListBuilder* pi = pvc->GetItemList();
+				FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pj);
 				if (pi)
 				{
-					const string& name = pi->GetName();
-					if (name.empty()) m_pSurf.push_back(pi);
-				}
-			}
+					FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+					if (pms)
+					{
+						const string& name = pms->GetName();
+						if (name.empty() == false) m_pSurf.push_back(pms);
+					}
 
-			FESymmetryPlane* psp = dynamic_cast<FESymmetryPlane*>(pj);
-			if (psp)
-			{
-				FEItemListBuilder* pi = psp->GetItemList();
-				if (pi)
+					FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+					if (pss)
+					{
+						const string& name = pss->GetName();
+						if (name.empty() == false) m_pSurf.push_back(pss);
+					}
+				}
+
+				FEVolumeConstraint* pvc = dynamic_cast<FEVolumeConstraint*>(pj);
+				if (pvc)
 				{
-					const string& name = pi->GetName();
-					if (name.empty()) m_pSurf.push_back(pi);
+					FEItemListBuilder* pi = pvc->GetItemList();
+					if (pi)
+					{
+						const string& name = pi->GetName();
+						if (name.empty()) m_pSurf.push_back(pi);
+					}
+				}
+
+				FESymmetryPlane* psp = dynamic_cast<FESymmetryPlane*>(pj);
+				if (psp)
+				{
+					FEItemListBuilder* pi = psp->GetItemList();
+					if (pi)
+					{
+						const string& name = pi->GetName();
+						if (name.empty()) m_pSurf.push_back(pi);
+					}
+				}
+
+				FENormalFlowSurface* pcs = dynamic_cast<FENormalFlowSurface*>(pj);
+				if (pcs)
+				{
+					FEItemListBuilder* pi = pcs->GetItemList();
+					if (pi)
+					{
+						const string& name = pi->GetName();
+						if (name.empty()) m_pSurf.push_back(pi);
+					}
 				}
 			}
-            
-            FENormalFlowSurface* pcs = dynamic_cast<FENormalFlowSurface*>(pj);
-            if (pcs)
-            {
-                FEItemListBuilder* pi = pcs->GetItemList();
-                if (pi)
-                {
-                    const string& name = pi->GetName();
-                    if (name.empty()) m_pSurf.push_back(pi);
-                }
-            }
 		}
 	}
 
