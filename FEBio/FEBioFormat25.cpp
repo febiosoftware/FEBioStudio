@@ -2053,6 +2053,9 @@ void FEBioFormat25::ParseContact(FEStep *pstep, XMLTag &tag)
 
 		if (pci)
 		{
+			const char* szname = tag.AttributeValue("name", true);
+			if (szname) pci->SetName(szname);
+
 			// read the parameters
 			ReadParameters(*pci, tag);
 
