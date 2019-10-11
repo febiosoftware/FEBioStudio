@@ -2234,6 +2234,11 @@ vec3f FEModel::EvaluateElemVector(int n, int ntime, int nvec)
 						r /= (float) ne;
 					}
 				}
+				else if (nfmt == DATA_REGION)
+				{
+					FEElemData_T<vec3f, DATA_REGION>& dv = dynamic_cast<FEElemData_T<vec3f, DATA_REGION>&>(rd);
+					if (dv.active(n)) dv.eval(n, &r);
+				}
 			}
 			break;
 		case DATA_MAT3FS:
