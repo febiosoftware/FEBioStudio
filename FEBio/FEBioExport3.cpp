@@ -1250,7 +1250,7 @@ void FEBioExport3::WriteMaterialSection()
 	}
 }
 
-void FEBioExport3::WriteFiberMaterial(FEFiberMaterial& f)
+void FEBioExport3::WriteFiberMaterial(FEOldFiberMaterial& f)
 {
 	XMLElement el;
 	el.name("fiber");
@@ -1319,17 +1319,47 @@ void FEBioExport3::WriteFiberMaterial(FEFiberMaterial& f)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteMaterialParams(FEMaterial* pm)
+void FEBioExport3::WriteMaterialParams(FEMaterial* pm, bool isTopLevel)
 {
+	// only export non-persistent parameters for top-level materials
+	m_exportNonPersistentParams = isTopLevel;
+
 	// Write the parameters first
 	WriteParamList(*pm);
+
+	// reset flag
+	m_exportNonPersistentParams = true;
 
 	// if the material is transversely-isotropic, we need to write the fiber data as well
 	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pm);
 	if (ptiso)
 	{
-		FEFiberMaterial& f = *(ptiso->GetFiberMaterial());
+		FEOldFiberMaterial& f = *(ptiso->GetFiberMaterial());
 		WriteFiberMaterial(f);
+	}
+
+	// write the material axes (if any)
+	if (pm->m_naopt > -1)
+	{
+		XMLElement el("mat_axis");
+		XMLElement::intFormat = "%d";
+		if (pm->m_naopt == FE_AXES_LOCAL)
+		{
+			el.add_attribute("type", "local");
+			el.value(pm->m_n, 3);
+			m_xml.add_leaf(el);
+		}
+		else if (pm->m_naopt == FE_AXES_VECTOR)
+		{
+			el.add_attribute("type", "vector");
+			m_xml.add_branch(el);
+			{
+				m_xml.add_leaf("a", pm->m_a);
+				m_xml.add_leaf("d", pm->m_d);
+			}
+			m_xml.close_branch();
+		}
+		XMLElement::setDefautlFormats();
 	}
 }
 
@@ -1346,7 +1376,7 @@ void FEBioExport3::WriteRigidMaterial(FEMaterial* pmat, XMLElement& el)
 
 		if (pm->GetBoolValue(FERigidMaterial::MP_COM) == false)
 		{
-			vec3d v = pm->GetParam(FERigidMaterial::MP_RC).GetVecValue();
+			vec3d v = pm->GetParam(FERigidMaterial::MP_RC).GetVec3dValue();
 			m_xml.add_leaf("center_of_mass", v);
 		}
 
@@ -1449,28 +1479,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 	m_xml.add_branch(el);
 	{
 		// write the material parameters (if any)
-		if (pm->Parameters()) WriteMaterialParams(pm);
-
-		// write the material axes (if any)
-		if (pm->m_naopt > -1) {
-			el.name("mat_axis");
-			if (pm->m_naopt == FE_AXES_LOCAL)
-			{
-				el.add_attribute("type", "local");
-				el.value(pm->m_n, 3);
-				m_xml.add_leaf(el);
-			}
-			else if (pm->m_naopt == FE_AXES_VECTOR)
-			{
-				el.add_attribute("type", "vector");
-				m_xml.add_branch(el);
-				{
-					m_xml.add_leaf("a", pm->m_a);
-					m_xml.add_leaf("d", pm->m_d);
-				}
-				m_xml.close_branch();
-			}
-		}
+		if (pm->Parameters()) WriteMaterialParams(pm, true);
 
 		// write the components
 		int NC = pm->Properties();
@@ -1502,11 +1511,37 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 					else
 					{
 						el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
-						m_xml.add_branch(el);
+
+						// We need some special formatting for some fiber generator materials
+						bool bdone = false;
+						if (pc->Parameters() == 1)
 						{
-							WriteMaterialParams(pc);
+							const char* sztype = pc->TypeStr();
+							Param& p = pc->GetParam(0);
+							if (sztype && (strcmp(p.GetShortName(), sztype) == 0))
+							{
+								if (p.GetParamType() == Param_VEC2I)
+								{
+									el.value(p.GetVec2iValue());
+									m_xml.add_leaf(el);
+								}
+								else if (p.GetParamType() == Param_VEC3D)
+								{
+									el.value(p.GetVec3dValue());
+									m_xml.add_leaf(el);
+								}
+								bdone = true;
+							}
 						}
-						m_xml.close_branch();
+
+						if (bdone == false)
+						{
+							m_xml.add_branch(el);
+							{
+								WriteMaterialParams(pc);
+							}
+							m_xml.close_branch();
+						}
 					}
 				}
 			}

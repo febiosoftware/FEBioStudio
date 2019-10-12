@@ -92,6 +92,7 @@ void Param::clear()
 		case Param_FLOAT : delete ((double*)m_pd); break;
 		case Param_BOOL  : delete ((bool*) m_pd); break;
 		case Param_VEC3D : delete ((vec3d*) m_pd); break;
+		case Param_VEC2I : delete ((vec2i*)m_pd); break;
 		case Param_MAT3D : delete ((mat3d*)m_pd); break;
 		case Param_STRING: delete ((std::string*) m_pd); break;
 		case Param_MATH  : delete ((std::string*) m_pd); break;
@@ -113,6 +114,7 @@ void Param::SetParamType(Param_Type t)
 	case Param_FLOAT : m_pd = new double; break;
 	case Param_BOOL  : m_pd = new bool; break;
 	case Param_VEC3D : m_pd = new vec3d; break;
+	case Param_VEC2I : m_pd = new vec2i; break;
 	case Param_MAT3D : m_pd = new mat3d; break;
 	case Param_STRING: m_pd = new std::string; break;
 	case Param_MATH  : m_pd = new std::string; break;
@@ -141,7 +143,7 @@ const char* Param::GetEnumName(int n) const
 	const char* sz = m_szenum;
 	for (int i = 0; i < n; ++i)
 	{
-		int l = strlen(sz);
+		size_t l = strlen(sz);
 		if (l == 0) 
 		{
 //			assert(false);
@@ -178,6 +180,7 @@ Param::Param(const Param& p)
 	case Param_FLOAT : { double* pd = new double; m_pd = pd; *pd = *((double*)p.m_pd); } break;
 	case Param_BOOL  : { bool*   pb = new bool  ; m_pd = pb; *pb = *((bool*  )p.m_pd); } break;
 	case Param_VEC3D : { vec3d*	 pv = new vec3d ; m_pd = pv; *pv = *((vec3d* )p.m_pd); } break;
+	case Param_VEC2I : { vec2i*	 pv = new vec2i ; m_pd = pv; *pv = *((vec2i* )p.m_pd); } break;
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
@@ -211,6 +214,7 @@ Param& Param::operator = (const Param& p)
 	case Param_FLOAT : { double* pd = new double; m_pd = pd; *pd = *((double*)p.m_pd); } break;
 	case Param_BOOL  : { bool*   pb = new bool  ; m_pd = pb; *pb = *((bool*  )p.m_pd); } break;
 	case Param_VEC3D : { vec3d*	 pv = new vec3d ; m_pd = pv; *pv = *((vec3d* )p.m_pd); } break;
+	case Param_VEC2I : { vec2i*	 pv = new vec2i ; m_pd = pv; *pv = *((vec2i* )p.m_pd); } break;
 	case Param_MAT3D : { mat3d*	 pv = new mat3d ; m_pd = pv; *pv = *((mat3d* )p.m_pd); } break;
 	case Param_STRING: { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
 	case Param_MATH  : { std::string* ps = new std::string; m_pd = ps; *ps = *((std::string*)p.m_pd); } break;
@@ -343,6 +347,29 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	*pv = v;
 	m_pd = pv;
 	m_ntype = Param_VEC3D;
+	m_szbrev = szb;
+	m_szname = (szn == 0 ? szb : szn);
+	m_szenum = 0;
+	m_nunit = Param_NOUNIT;
+	m_nstate = Param_ALLFLAGS;
+	m_szindx = 0;
+	m_nindx = -1;
+	m_plc = 0;
+	m_bcopy = false;
+	m_offset = 0;
+	m_isVariable = false;
+	m_floatRange = false;
+	m_fmin = m_fmax = m_fstep = 0.0;
+}
+
+
+//-----------------------------------------------------------------------------
+Param::Param(vec2i v, const char* szb, const char* szn)
+{
+	vec2i* pv = new vec2i;
+	*pv = v;
+	m_pd = pv;
+	m_ntype = Param_VEC2I;
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
@@ -541,7 +568,8 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	case Param_INT   : { int    n = p.GetIntValue  (); ar.WriteChunk(CID_PARAM_VALUE, n); } break;
 	case Param_CHOICE: { int    n = p.GetIntValue  (); ar.WriteChunk(CID_PARAM_VALUE, n); } break;
 	case Param_BOOL  : { bool   b = p.GetBoolValue (); ar.WriteChunk(CID_PARAM_VALUE, b); } break;
-	case Param_VEC3D : { vec3d  v = p.GetVecValue  (); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_VEC3D : { vec3d  v = p.GetVec3dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
+	case Param_VEC2I : { vec2i  v = p.GetVec2iValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_MAT3D : { mat3d  v = p.GetMat3dValue(); ar.WriteChunk(CID_PARAM_VALUE, v); } break;
 	case Param_STRING: { std::string s = p.GetStringValue(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
 	case Param_MATH  : { std::string s = p.GetMathString(); ar.WriteChunk(CID_PARAM_VALUE, s); } break;
@@ -599,6 +627,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_FLOAT : p.SetParamType(Param_FLOAT); break;
 			case Param_BOOL  : p.SetParamType(Param_BOOL ); break;
 			case Param_VEC3D : p.SetParamType(Param_VEC3D); break;
+			case Param_VEC2I : p.SetParamType(Param_VEC2I); break;
 			case Param_MAT3D : p.SetParamType(Param_MAT3D); break;
 			case Param_CHOICE: p.SetParamType(Param_CHOICE); break;
 			case Param_STRING: p.SetParamType(Param_STRING); break;
@@ -614,7 +643,8 @@ void ParamContainer::LoadParam(IArchive& ar)
 			case Param_INT   : { int    n; ar.read(n); p.SetIntValue(n); } break;
 			case Param_FLOAT : { double g; ar.read(g); p.SetFloatValue (g); } break;
 			case Param_BOOL  : { bool   b; ar.read(b); p.SetBoolValue  (b); } break;
-			case Param_VEC3D : { vec3d  v; ar.read(v); p.SetVecValue   (v); } break;
+			case Param_VEC3D : { vec3d  v; ar.read(v); p.SetVec3dValue (v); } break;
+			case Param_VEC2I : { vec2i  v; ar.read(v); p.SetVec2iValue (v); } break;
 			case Param_MAT3D : { mat3d  m; ar.read(m); p.SetMat3dValue (m); } break;
 			case Param_STRING: { std::string s; ar.read(s); p.SetStringValue(s); } break;
 			case Param_MATH  : { std::string s; ar.read(s); p.SetMathString(s); } break;

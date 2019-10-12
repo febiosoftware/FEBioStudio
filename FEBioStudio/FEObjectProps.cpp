@@ -322,7 +322,7 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CMaterialProps::CMaterialProps(FEModel& fem, GMaterial* mat) : CObjectProps(0), m_mat(mat)
+CMaterialProps::CMaterialProps(FEModel& fem, FEMaterial* mat) : CObjectProps(0), m_mat(mat)
 {
 	BuildPropertyList();
 }
@@ -334,16 +334,16 @@ void CMaterialProps::BuildPropertyList()
 	m_params.clear();
 
 	// get the material properties
-	FEMaterial* pm = m_mat->GetMaterialProperties();
+	FEMaterial* pm = m_mat;
 
 	// add the parameters
-	if (pm) BuildParamList(pm);
+	if (pm) BuildParamList(pm, true);
 
 	// add the fiber parameters
 	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pm);
 	if (ptiso)
 	{
-		FEFiberMaterial* fiber = ptiso->GetFiberMaterial();
+		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 
 		int NP = fiber->Parameters();
 		for (int i = 0; i<NP; ++i)
@@ -397,6 +397,28 @@ void CMaterialProps::BuildPropertyList()
 			break;
 		}
 	}
+	else
+	{
+		// add the material axes selection option
+		QStringList val;
+		val << "(none)";
+		val << "local node numbering";
+		val << "vector";
+		addProperty("Material axes", CProperty::Enum)->setEnumValues(val);
+
+		switch (pm->m_naopt)
+		{
+		case FE_AXES_LOCAL:
+			addProperty("n0", CProperty::Int);
+			addProperty("n1", CProperty::Int);
+			addProperty("n2", CProperty::Int);
+			break;
+		case FE_AXES_VECTOR:
+			addProperty("a", CProperty::String);
+			addProperty("d", CProperty::String);
+			break;
+		}
+	}
 }
 
 QVariant CMaterialProps::GetPropertyValue(int i)
@@ -404,12 +426,10 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 	if (i<m_params.size()) return CObjectProps::GetPropertyValue(i);
 	i -= (int)m_params.size();
 
-	FEMaterial* pm = m_mat->GetMaterialProperties();
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pm);
+	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(m_mat);
 	if (ptiso)
 	{
-		FEFiberMaterial* fiber = ptiso->GetFiberMaterial();
-
+		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 		if (i == 0) return fiber->m_naopt;
 
 		switch (fiber->m_naopt)
@@ -417,6 +437,7 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 		case FE_FIBER_LOCAL:
 			if (i == 1) return fiber->m_n[0];
 			if (i == 2) return fiber->m_n[1];
+			if (i == 3) return fiber->m_n[2];
 			break;
 		case FE_FIBER_CYLINDRICAL:
 			if (i == 1) return Vec3dToString(fiber->m_r);
@@ -446,6 +467,23 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 			break;
 		}
 	}
+	else
+	{
+		if (i == 0) return m_mat->m_naopt + 1;
+
+		switch (m_mat->m_naopt)
+		{
+		case FE_AXES_LOCAL:
+			if (i == 1) return m_mat->m_n[0];
+			if (i == 2) return m_mat->m_n[1];
+			if (i == 3) return m_mat->m_n[2];
+			break;
+		case FE_AXES_VECTOR:
+			if (i == 1) return Vec3dToString(m_mat->m_a);
+			if (i == 2) return Vec3dToString(m_mat->m_d);
+			break;
+		}
+	}
 
 	return QVariant();
 }
@@ -455,12 +493,10 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 	if (i<m_params.size()) CObjectProps::SetPropertyValue(i, v);
 	i -= (int)m_params.size();
 
-	FEMaterial* pm = m_mat->GetMaterialProperties();
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pm);
+	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(m_mat);
 	if (ptiso)
 	{
-		FEFiberMaterial* fiber = ptiso->GetFiberMaterial();
-
+		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 		if (i == 0)
 		{
 			int naopt = v.toInt();
@@ -508,6 +544,36 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 			if (i == 4) { fiber->m_d0 = StringToVec3d(v.toString()); return; }
 			if (i == 5) { fiber->m_R1 = v.toFloat(); return; }
 			if (i == 6) { fiber->m_d1 = StringToVec3d(v.toString()); return; }
+			break;
+		}
+	}
+	else
+	{
+		if (i == 0)
+		{
+			int naopt = v.toInt() - 1;
+			if (naopt != m_mat->m_naopt)
+			{
+				m_mat->m_naopt = naopt;
+
+				// rebuild the property list
+				BuildPropertyList();
+
+				// set the modified flag to that the viewer knows that the property list has changed
+				SetModified(true);
+			}
+			return;
+		}
+
+		switch (m_mat->m_naopt)
+		{
+		case FE_AXES_LOCAL:
+			if (i == 1) { m_mat->m_n[0] = v.toInt(); return; }
+			if (i == 2) { m_mat->m_n[1] = v.toInt(); return; }
+			break;
+		case FE_AXES_VECTOR:
+			if (i == 1) { m_mat->m_a = StringToVec3d(v.toString()); return; }
+			if (i == 2) { m_mat->m_d = StringToVec3d(v.toString()); return; }
 			break;
 		}
 	}

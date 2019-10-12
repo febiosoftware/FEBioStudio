@@ -34,6 +34,14 @@ class mat3da;    // anti-symmetric 3D matrix of doubles
 class mat3dd;    // diagonal matrix of doubles
 
 //-----------------------------------------------------------------------------
+class vec2i
+{
+public:
+	vec2i() { x = y = 0; }
+	int		x, y;
+};
+
+//-----------------------------------------------------------------------------
 class vec2f
 {
 public:

@@ -110,7 +110,7 @@ protected:
 	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteMultiMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteMaterialParams(FEMaterial* pm);
-	void WriteFiberMaterial(FEFiberMaterial& f);
+	void WriteFiberMaterial(FEOldFiberMaterial& f);
 	void WriteRigidMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteTCNLOrthoMaterial(FEMaterial* pmat, XMLElement& el);
 

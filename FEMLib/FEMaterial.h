@@ -45,6 +45,7 @@
 #define FE_MAT_ACTIVE_CONTRACTION_CLASS 0x1900
 #define FE_MAT_GENERATION           0x1A00
 #define FE_MAT_PRESTRAIN_GRADIENT	0x1B00
+#define FE_MAT_FIBER_GENERATOR		0x1C00
 
 // --- Material Types ---
 // These values are stored in the prv file so don't change!
@@ -168,7 +169,7 @@
 #define FE_REACTION_RATE_CONST      605
 #define FE_REACTION_RATE_HUISKES    606
 
-// fiber generators
+// fiber generators (old mechanism)
 #define FE_FIBER_LOCAL			0
 #define FE_FIBER_CYLINDRICAL	1
 #define FE_FIBER_SPHERICAL		2
@@ -243,6 +244,33 @@
 
 // solvent supplies
 #define FE_STARLING_SUPPLY			1200
+
+// fiber generators
+#define FE_FIBER_GENERATOR_LOCAL		1301
+#define FE_FIBER_GENERATOR_VECTOR		1302
+
+//-----------------------------------------------------------------------------
+class FEFiberGenerator : public FEMaterial
+{
+public:
+	FEFiberGenerator(int ntype) : FEMaterial(ntype) {}
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberGeneratorLocal : public FEFiberGenerator
+{
+public:
+	FEFiberGeneratorLocal();
+	DECLARE_REGISTERED(FEFiberGeneratorLocal);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberGeneratorVector : public FEFiberGenerator
+{
+public:
+	FEFiberGeneratorVector();
+	DECLARE_REGISTERED(FEFiberGeneratorVector);
+};
 
 //-----------------------------------------------------------------------------
 // Isotropic Elastic
@@ -427,7 +455,7 @@ public:
 //-----------------------------------------------------------------------------
 // material class for fibers
 //
-class FEFiberMaterial : public ParamContainer
+class FEOldFiberMaterial : public ParamContainer
 {
 private:
 	enum {
@@ -451,14 +479,14 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	void copy(FEFiberMaterial* pm);
+	void copy(FEOldFiberMaterial* pm);
 
 public:
-	FEFiberMaterial();
+	FEOldFiberMaterial();
 
 private:
-	FEFiberMaterial(const FEFiberMaterial& m){}
-	FEFiberMaterial& operator = (const FEFiberMaterial& m){ return (*this); }
+	FEOldFiberMaterial(const FEOldFiberMaterial& m);
+	FEOldFiberMaterial& operator = (const FEOldFiberMaterial& m);
 };
 
 //-----------------------------------------------------------------------------
@@ -474,17 +502,17 @@ public:
 	vec3d GetFiber(FEElementRef& el);
 	bool HasFibers() { return true; }
 
-	FEFiberMaterial* GetFiberMaterial();
+	FEOldFiberMaterial* GetFiberMaterial();
 
 	void copy(FEMaterial* pmat);
 	void Load(IArchive& ar);
 	void Save(OArchive& ar);
 
 protected:
-	void SetFiberMaterial(FEFiberMaterial* fiber);
+	void SetFiberMaterial(FEOldFiberMaterial* fiber);
 
 private:
-	FEFiberMaterial*	m_pfiber;
+	FEOldFiberMaterial*	m_pfiber;
 };
 
 //-----------------------------------------------------------------------------
@@ -494,7 +522,7 @@ class FETransMooneyRivlinOld : public FETransverselyIsotropic
 {
 public:
 	// the fiber class for this material
-	class Fiber : public FEFiberMaterial
+	class Fiber : public FEOldFiberMaterial
 	{
 	public:
 		enum {
@@ -523,7 +551,7 @@ class FETransVerondaWestmannOld : public FETransverselyIsotropic
 {
 public:
 	// the fiber class for this material
-	class Fiber : public FEFiberMaterial
+	class Fiber : public FEOldFiberMaterial
 	{
 	public:
 		enum {

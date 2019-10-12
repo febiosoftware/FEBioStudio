@@ -58,4 +58,6 @@ protected:
 	bool	m_compress;				//!< compress plot file
 	bool	m_exportSelections;		//!< export named selections as well
 	bool	m_exportEnumStrings;	//!< export enums as strings (otherwise output numbers)
+
+	bool	m_exportNonPersistentParams;
 };

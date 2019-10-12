@@ -107,6 +107,7 @@ public:
 	void value(float* pf, int n);
 	void value(int* pi, int n);
 	void value(vec3d& v);
+	void value(vec2i& v);
 	void value(mat3d& v);
 	void value(vec3f& v);
 	void value(bool& b) { b = (atoi(m_szval) == 1); }

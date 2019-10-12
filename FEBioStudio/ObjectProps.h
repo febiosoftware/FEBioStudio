@@ -20,7 +20,7 @@ public:
 	int Params() const { return (int) m_params.size(); }
 
 protected:
-	void BuildParamList(FSObject* po);
+	void BuildParamList(FSObject* po, bool showNonPersistent = false);
 
 	void AddParameter(Param& p);
 	QVariant GetPropertyValue(Param& p);

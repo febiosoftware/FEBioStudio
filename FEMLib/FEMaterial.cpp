@@ -7,6 +7,28 @@
 #include <MeshTools/FEProject.h>
 
 //////////////////////////////////////////////////////////////////////
+// FEFiberGeneratorLocal
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEFiberGeneratorLocal, MODULE_MECH, FE_FIBER_GENERATOR_LOCAL, FE_MAT_FIBER_GENERATOR, "local", 0);
+
+FEFiberGeneratorLocal::FEFiberGeneratorLocal() : FEFiberGenerator(FE_FIBER_GENERATOR_LOCAL)
+{
+	AddVec2iParam(vec2i(), "local", "local");
+}
+
+//////////////////////////////////////////////////////////////////////
+// FEFiberGeneratorVector
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEFiberGeneratorVector, MODULE_MECH, FE_FIBER_GENERATOR_VECTOR, FE_MAT_FIBER_GENERATOR, "vector", 0);
+
+FEFiberGeneratorVector::FEFiberGeneratorVector() : FEFiberGenerator(FE_FIBER_GENERATOR_VECTOR)
+{
+	AddVecParam(vec3d(1, 0, 0), "vector", "vector");
+}
+
+//////////////////////////////////////////////////////////////////////
 // FEIsotropicElastic  - isotropic elasticity
 //////////////////////////////////////////////////////////////////////
 
@@ -47,7 +69,7 @@ REGISTER_MATERIAL(FENeoHookean, MODULE_MECH, FE_NEO_HOOKEAN, FE_MAT_ELASTIC, "ne
 
 FENeoHookean::FENeoHookean() : FEMaterial(FE_NEO_HOOKEAN)
 {
-	AddScienceParam(1, Param_DENSITY, "density", "density"        )->MakeVariable(true);
+	AddScienceParam(1, Param_DENSITY, "density", "density"        )->MakeVariable(true)->SetPersistent(false);
 	AddScienceParam(0, Param_STRESS ,       "E", "Young's modulus")->MakeVariable(true);
 	AddScienceParam(0, Param_NONE   ,       "v", "Poisson's ratio")->MakeVariable(true);
 }
@@ -116,10 +138,10 @@ REGISTER_MATERIAL(FEMooneyRivlin, MODULE_MECH, FE_MOONEY_RIVLIN, FE_MAT_ELASTIC_
 
 FEMooneyRivlin::FEMooneyRivlin() : FEMaterial(FE_MOONEY_RIVLIN)
 {
-	AddScienceParam(1, Param_DENSITY, "density", "density"     );
+	AddScienceParam(1, Param_DENSITY, "density", "density"     )->SetPersistent(false);
 	AddScienceParam(0, Param_STRESS , "c1"     , "c1"          );
 	AddScienceParam(0, Param_STRESS , "c2"     , "c2"          );
-	AddScienceParam(0, Param_STRESS , "k"      , "bulk modulus");
+	AddScienceParam(0, Param_STRESS , "k"      , "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -198,10 +220,10 @@ FEPRLig::FEPRLig() : FEMaterial(FE_PRLIG)
 }
 
 //////////////////////////////////////////////////////////////////////
-// FEFiberMaterial - material for fibers
+// FEOldFiberMaterial - material for fibers
 //////////////////////////////////////////////////////////////////////
 
-FEFiberMaterial::FEFiberMaterial()
+FEOldFiberMaterial::FEOldFiberMaterial()
 {
 	m_naopt = FE_FIBER_LOCAL;
 	m_nuser = 0;
@@ -215,7 +237,10 @@ FEFiberMaterial::FEFiberMaterial()
 	m_R0 = 0; m_R1 = 1;
 }
 
-void FEFiberMaterial::copy(FEFiberMaterial* pm)
+FEOldFiberMaterial::FEOldFiberMaterial(const FEOldFiberMaterial& m) {}
+FEOldFiberMaterial& FEOldFiberMaterial::operator = (const FEOldFiberMaterial& m) { return (*this); }
+
+void FEOldFiberMaterial::copy(FEOldFiberMaterial* pm)
 {
 	m_naopt = pm->m_naopt;
 	m_nuser = pm->m_nuser;
@@ -234,7 +259,7 @@ void FEFiberMaterial::copy(FEFiberMaterial* pm)
 //	GetParamBlock() = pm->GetParamBlock();
 }
 
-void FEFiberMaterial::Save(OArchive &ar)
+void FEOldFiberMaterial::Save(OArchive &ar)
 {
 	ar.WriteChunk(MP_AOPT, m_naopt);
 	ar.WriteChunk(MP_N, m_n, 2);
@@ -255,9 +280,9 @@ void FEFiberMaterial::Save(OArchive &ar)
 	ar.EndChunk();
 }
 
-void FEFiberMaterial::Load(IArchive& ar)
+void FEOldFiberMaterial::Load(IArchive& ar)
 {
-	TRACE("FEFiberMaterial::Load");
+	TRACE("FEOldFiberMaterial::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -293,12 +318,12 @@ FETransverselyIsotropic::FETransverselyIsotropic(int ntype) : FEMaterial(ntype)
 	m_pfiber = 0;
 }
 
-FEFiberMaterial* FETransverselyIsotropic::GetFiberMaterial()
+FEOldFiberMaterial* FETransverselyIsotropic::GetFiberMaterial()
 {
 	return m_pfiber;
 }
 
-void FETransverselyIsotropic::SetFiberMaterial(FEFiberMaterial* fiber)
+void FETransverselyIsotropic::SetFiberMaterial(FEOldFiberMaterial* fiber)
 {
 	m_pfiber = fiber;
 }
@@ -306,7 +331,7 @@ void FETransverselyIsotropic::SetFiberMaterial(FEFiberMaterial* fiber)
 vec3d FETransverselyIsotropic::GetFiber(FEElementRef& el)
 {
 	int naopt = m_pfiber->m_naopt;
-	FEFiberMaterial& fiber = *m_pfiber;
+	FEOldFiberMaterial& fiber = *m_pfiber;
 	switch (naopt)
 	{
 	case FE_FIBER_LOCAL:
@@ -569,7 +594,7 @@ REGISTER_MATERIAL(FETransMooneyRivlin, MODULE_MECH, FE_TRANS_ISO_MOONEY_RIVLIN, 
 
 FETransMooneyRivlin::FETransMooneyRivlin() : FETransverselyIsotropic(FE_TRANS_ISO_MOONEY_RIVLIN)
 {
-	SetFiberMaterial(new FEFiberMaterial);
+	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
 	AddScienceParam(1, Param_DENSITY, "density", "density");
@@ -610,7 +635,7 @@ REGISTER_MATERIAL(FETransVerondaWestmann, MODULE_MECH, FE_TRANS_ISO_VERONDA_WEST
 
 FETransVerondaWestmann::FETransVerondaWestmann() : FETransverselyIsotropic(FE_TRANS_ISO_VERONDA_WESTMANN)
 {
-	SetFiberMaterial(new FEFiberMaterial);
+	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
 	AddScienceParam(1, Param_DENSITY, "density", "density");
@@ -670,7 +695,7 @@ REGISTER_MATERIAL(FECoupledTransIsoMooneyRivlin, MODULE_MECH, FE_COUPLED_TRANS_I
 
 FECoupledTransIsoMooneyRivlin::FECoupledTransIsoMooneyRivlin() : FETransverselyIsotropic(FE_COUPLED_TRANS_ISO_MR)
 {
-	SetFiberMaterial(new FEFiberMaterial);
+	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
 	AddScienceParam(1, Param_DENSITY, "density", "density");
@@ -729,7 +754,7 @@ REGISTER_MATERIAL(FE2DTransIsoMooneyRivlin, MODULE_MECH, FE_MAT_2D_TRANS_ISO_MR,
 
 FE2DTransIsoMooneyRivlin::FE2DTransIsoMooneyRivlin() : FETransverselyIsotropic(FE_MAT_2D_TRANS_ISO_MR)
 {
-	SetFiberMaterial(new FEFiberMaterial);
+	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
 	AddScienceParam(1, Param_DENSITY, "density");
@@ -890,7 +915,7 @@ REGISTER_MATERIAL(FEMuscleMaterial, MODULE_MECH, FE_MUSCLE_MATERIAL, FE_MAT_ELAS
 
 FEMuscleMaterial::FEMuscleMaterial() : FETransverselyIsotropic(FE_MUSCLE_MATERIAL)
 {
-	SetFiberMaterial(new FEFiberMaterial);
+	SetFiberMaterial(new FEOldFiberMaterial);
 
 	AddScienceParam(1, Param_DENSITY, "density");
 	AddScienceParam(0, Param_STRESS , "g1");
@@ -911,7 +936,7 @@ REGISTER_MATERIAL(FETendonMaterial, MODULE_MECH, FE_TENDON_MATERIAL, FE_MAT_ELAS
 
 FETendonMaterial::FETendonMaterial() : FETransverselyIsotropic(FE_TENDON_MATERIAL)
 {
-	SetFiberMaterial(new FEFiberMaterial);
+	SetFiberMaterial(new FEOldFiberMaterial);
 
 	AddScienceParam(1, Param_DENSITY, "density");
 	AddScienceParam(0, Param_STRESS , "g1");
@@ -1374,6 +1399,9 @@ FEFiberExpPow::FEFiberExpPow() : FEMaterial(FE_FIBEREXPPOW_COUPLED)
 	AddDoubleParam(0, "ksi"  , "ksi"  );
 	AddDoubleParam(0, "theta", "theta");
 	AddDoubleParam(0, "phi"  , "phi"  );
+
+//	AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
+//	GetProperty(0).SetMaterial(new FEFiberGeneratorLocal);
 }
 
 //=============================================================================
@@ -1401,7 +1429,7 @@ FEFiberExpPowUncoupled::FEFiberExpPowUncoupled() : FEMaterial(FE_FIBEREXPPOW_UNC
 	AddDoubleParam(0, "alpha", "alpha");
 	AddDoubleParam(0, "beta" , "beta" );
 	AddDoubleParam(0, "ksi"  , "ksi"  );
-    AddDoubleParam(0, "k", "bulk modulus");
+    AddDoubleParam(0, "k", "bulk modulus")->SetPersistent(false);
 	AddDoubleParam(0, "theta", "theta");
 	AddDoubleParam(0, "phi"  , "phi"  );
 }
@@ -1432,7 +1460,7 @@ FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEMaterial(FE_FIBERPOWLIN_UNC
     AddDoubleParam(0, "E", "E");
     AddDoubleParam(2, "beta" , "beta");
     AddDoubleParam(1, "lam0"  , "lam0");
-    AddDoubleParam(0, "k", "bulk modulus");
+    AddDoubleParam(0, "k", "bulk modulus")->SetPersistent(false);
     AddDoubleParam(0, "theta", "theta");
     AddDoubleParam(0, "phi"  , "phi"  );
 }

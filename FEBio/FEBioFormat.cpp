@@ -180,7 +180,8 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 	case Param_INT   : { int n; tag.value(n); pp->SetIntValue(n   ); } break;
 	case Param_CHOICE: ReadChoiceParam(*pp, tag); break;
 	case Param_BOOL  : { int n; tag.value(n); pp->SetBoolValue  (n==1); } break;
-	case Param_VEC3D : { vec3d v; tag.value(v); pp->SetVecValue (v); } break;
+	case Param_VEC3D : { vec3d v; tag.value(v); pp->SetVec3dValue (v); } break;
+	case Param_VEC2I : { vec2i v; tag.value(v); pp->SetVec2iValue(v); } break;
 	case Param_MAT3D : { mat3d v; tag.value(v); pp->SetMat3dValue(v); } break;
 	case Param_FLOAT : { double d; tag.value(d); pp->SetFloatValue(d); } break;
 	default:
@@ -671,7 +672,7 @@ FEMaterial* FEBioFormat::ParseRigidBody(XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat::ParseFiberMaterial(FEFiberMaterial& fiber, XMLTag& tag)
+void FEBioFormat::ParseFiberMaterial(FEOldFiberMaterial& fiber, XMLTag& tag)
 {
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")

@@ -620,7 +620,7 @@ void FEBioExport12::WriteMaterialSection()
 			case FE_MUSCLE_MATERIAL:
 			{
 									   FEMuscleMaterial* pm = dynamic_cast<FEMuscleMaterial*> (pmat);
-									   FEFiberMaterial& f = *pm->GetFiberMaterial();
+									   FEOldFiberMaterial& f = *pm->GetFiberMaterial();
 									   el.add_attribute("type", "muscle material");
 									   m_xml.add_branch(el);
 									   {
@@ -700,7 +700,7 @@ void FEBioExport12::WriteMaterialSection()
 			case FE_TENDON_MATERIAL:
 			{
 									   FETendonMaterial* pm = dynamic_cast<FETendonMaterial*> (pmat);
-									   FEFiberMaterial& f = *pm->GetFiberMaterial();
+									   FEOldFiberMaterial& f = *pm->GetFiberMaterial();
 									   el.add_attribute("type", "tendon material");
 									   m_xml.add_branch(el);
 									   {
@@ -779,7 +779,7 @@ void FEBioExport12::WriteMaterialSection()
 
 										  if (pm->GetBoolValue(FERigidMaterial::MP_COM) == false)
 										  {
-											  vec3d v = pm->GetParam(FERigidMaterial::MP_RC).GetVecValue();
+											  vec3d v = pm->GetParam(FERigidMaterial::MP_RC).GetVec3dValue();
 											  m_xml.add_leaf("center_of_mass", v);
 										  }
 
@@ -803,22 +803,22 @@ void FEBioExport12::WriteMaterialSection()
 								  C2 = pm->GetParam(FETCNonlinearOrthotropic::MP_C2).GetFloatValue();
 								  K = pm->GetParam(FETCNonlinearOrthotropic::MP_K).GetFloatValue();
 
-								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_BETA).GetVecValue();
+								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_BETA).GetVec3dValue();
 								  beta[0] = v.x;
 								  beta[1] = v.y;
 								  beta[2] = v.z;
 
-								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_KSI).GetVecValue();
+								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_KSI).GetVec3dValue();
 								  ksi[0] = v.x;
 								  ksi[1] = v.y;
 								  ksi[2] = v.z;
 
-								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_A).GetVecValue();
+								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_A).GetVec3dValue();
 								  a[0] = v.x;
 								  a[1] = v.y;
 								  a[2] = v.z;
 
-								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_D).GetVecValue();
+								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_D).GetVec3dValue();
 								  d[0] = v.x;
 								  d[1] = v.y;
 								  d[2] = v.z;
@@ -893,7 +893,7 @@ void FEBioExport12::WriteMaterial(FEMaterial *pm, XMLElement& el)
 //-----------------------------------------------------------------------------
 //! Write a fiber material to file.
 //! TODO: Can I use the fiber material's parameters?
-void FEBioExport12::WriteFiberMaterial(FEFiberMaterial& f)
+void FEBioExport12::WriteFiberMaterial(FEOldFiberMaterial& f)
 {
 	m_xml.add_leaf("c3", f.GetFloatValue(FETransMooneyRivlinOld::Fiber::MP_C3));
 	m_xml.add_leaf("c4", f.GetFloatValue(FETransMooneyRivlinOld::Fiber::MP_C4));
@@ -966,14 +966,14 @@ void FEBioExport12::WriteMaterialParams(FEMaterial* pm)
 	FETransMooneyRivlin* ptmr = dynamic_cast<FETransMooneyRivlin*>(pm);
 	if (ptmr)
 	{
-		FEFiberMaterial& f = *(ptmr->GetFiberMaterial());
+		FEOldFiberMaterial& f = *(ptmr->GetFiberMaterial());
 		WriteFiberMaterial(f);
 	}
 
 	FETransVerondaWestmann* ptvw = dynamic_cast<FETransVerondaWestmann*>(pm);
 	if (ptvw)
 	{
-		FEFiberMaterial& f = *(ptvw->GetFiberMaterial());
+		FEOldFiberMaterial& f = *(ptvw->GetFiberMaterial());
 		WriteFiberMaterial(f);
 	}
 }

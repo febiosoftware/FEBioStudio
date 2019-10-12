@@ -193,6 +193,9 @@ REGISTER_MATERIAL(FEUncoupledSolidMixture, MODULE_MECH, FE_UNCOUPLED_SOLID_MIXTU
 
 FEUncoupledSolidMixture::FEUncoupledSolidMixture() : FEMaterial(FE_UNCOUPLED_SOLID_MIXTURE) 
 {
+	AddScienceParam(1, Param_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, Param_STRESS , "k", "bulk modulus" )->SetPersistent(false);
+
 	AddProperty("solid", FE_MAT_ELASTIC_UNCOUPLED, FEMaterialProperty::NO_FIXED_SIZE);
 }
 

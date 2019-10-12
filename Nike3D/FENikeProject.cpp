@@ -326,7 +326,7 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 			{
 				mat.ntype = 18;
 				FETransMooneyRivlin* pm = dynamic_cast<FETransMooneyRivlin*>(pmat);
-				FEFiberMaterial& f = *pm->GetFiberMaterial();
+				FEOldFiberMaterial& f = *pm->GetFiberMaterial();
 				mat.m[0][0] = pm->GetFloatValue(FETransMooneyRivlin::MP_C1);
 				mat.m[0][1] = pm->GetFloatValue(FETransMooneyRivlin::MP_C2);
 				mat.m[0][2] = f.GetFloatValue(FETransMooneyRivlin::MP_C3);

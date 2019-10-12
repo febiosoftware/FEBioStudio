@@ -105,7 +105,7 @@ protected:
 	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteMultiMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteMaterialParams(FEMaterial* pm);
-	void WriteFiberMaterial(FEFiberMaterial& f);
+	void WriteFiberMaterial(FEOldFiberMaterial& f);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteSurface(XMLElement& el, FEItemListBuilder* pl);

@@ -15,6 +15,7 @@ class FEProject;
 class Param;
 class FEReactionMaterial;
 class FEDataMap;
+class FEMaterial;
 
 class FEObjectProps : public CObjectProps
 {
@@ -104,7 +105,7 @@ private:
 class CMaterialProps : public CObjectProps
 {
 public:
-	CMaterialProps(FEModel& fem, GMaterial* mat);
+	CMaterialProps(FEModel& fem, FEMaterial* mat);
 
 	QVariant GetPropertyValue(int i);
 
@@ -114,7 +115,7 @@ private:
 	void BuildPropertyList();
 
 private:
-	GMaterial*	m_mat;
+	FEMaterial*	m_mat;
 };
 
 class CPlotfileProperties : public CObjectProps

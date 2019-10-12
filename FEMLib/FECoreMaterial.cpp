@@ -126,6 +126,7 @@ int FEMaterialProperty::GetMaterialIndex(FEMaterial* mat)
 FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
 {
 	m_naopt = -1;
+	m_n[0] = m_n[1] = m_n[2];
 	m_parent = 0;
 	m_owner = 0;
 }
@@ -410,6 +411,15 @@ void FEMaterial::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+
+	ar.BeginChunk(CID_MAT_AXES);
+	{
+		ar.WriteChunk(0, m_naopt);
+		ar.WriteChunk(1, m_n, 3);
+		ar.WriteChunk(2, m_a);
+		ar.WriteChunk(3, m_d);
+	}
+	ar.EndChunk();
 }
 
 //-----------------------------------------------------------------------------
@@ -426,6 +436,22 @@ void FEMaterial::Load(IArchive &ar)
 		{
 		case CID_MAT_NAME: { ar.read(szname); SetName(szname); } break;
 		case CID_MAT_PARAMS: ParamContainer::Load(ar); break;
+		case CID_MAT_AXES:
+			{
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = (int)ar.GetChunkID();
+					switch (nid)
+					{
+					case 0: ar.read(m_naopt); break;
+					case 1: ar.read(m_n, 3); break;
+					case 2: ar.read(m_a); break;
+					case 3: ar.read(m_d); break;
+					}
+					ar.CloseChunk();
+				}
+			}
+			break;
         case CID_MAT_PROPERTY:
 			{
 				FEMaterialProperty* prop = 0;

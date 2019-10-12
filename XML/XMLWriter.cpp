@@ -48,6 +48,11 @@ void XMLElement::value(const vec3d& r)
 		sprintf(m_szval, "%lg,%lg,%lg", r.x, r.y, r.z);
 }
 
+void XMLElement::value(const vec2i& r)
+{
+	sprintf(m_szval, "%d,%d", r.x, r.y);
+}
+
 void XMLElement::value(const mat3d& a)
 {
 	char* s = m_szval;

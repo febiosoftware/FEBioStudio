@@ -1321,9 +1321,9 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 	// create the tree widget item
 	QTreeWidgetItem* t2 = 0;
 	if (topLevel)
-		t2 = AddTreeItem(item, name, MT_MATERIAL, 0, gmat, new CMaterialProps(fem, gmat), new CMaterialValidator(&fem, gmat));
+		t2 = AddTreeItem(item, name, MT_MATERIAL, 0, gmat, new CMaterialProps(fem, gmat->GetMaterialProperties()), new CMaterialValidator(&fem, gmat));
 	else
-		t2 = AddTreeItem(item, name, 0, 0, pmat, new FEObjectProps(pmat, &fem));
+		t2 = AddTreeItem(item, name, 0, 0, pmat, new CMaterialProps(fem, pmat));
 
 	// fill the child items
 	if (pmat)

@@ -18,6 +18,7 @@ enum Param_Type {
 	Param_MATH,
 	Param_COLOR,
 	Param_MAT3D,
+	Param_VEC2I,
 	Param_CHOICE = 0x0020		// like INT but imported/exported as one-based numbers
 };
 
@@ -47,9 +48,10 @@ enum Param_Unit
 enum Param_State {
 	Param_HIDDEN    = 0,
 
-	Param_EDITABLE  = 1,	// Parameter will be shown and edited in standard GUI components
-	Param_READWRITE = 2,	// Parameter will be imported/exported from FEBio files
-	Param_VISIBLE   = 4,	// Parameter will be displayed in model tree
+	Param_EDITABLE   = 1,	// Parameter will be shown and edited in standard GUI components
+	Param_READWRITE  = 2,	// Parameter will be imported/exported from FEBio files
+	Param_VISIBLE    = 4,	// Parameter will be displayed in model tree
+	Param_PERSISTENT = 8,	// if false, parameter will only be shown in top-level (only for materials)
 
 	Param_ALLFLAGS  = 0xF
 };
@@ -82,6 +84,7 @@ public:
 	explicit Param(double d, const char* szb, const char* szn = 0);
 	explicit Param(double d, Param_Unit nunit = Param_NOUNIT, const char* szb = 0, const char* szn = 0);
 	explicit Param(bool b, const char* szb, const char* szn = 0);
+	explicit Param(vec2i v, const char* szb, const char* szn = 0);
 	explicit Param(vec3d v, const char* szb, const char* szn = 0);
 	explicit Param(mat3d v, const char* szb, const char* szn = 0);
 	explicit Param(int n, const char* szi, int idx, const char* szb, const char* szn = 0);
@@ -118,7 +121,8 @@ public:
 	void SetFloatValue (double g) {assert(m_ntype == Param_FLOAT ); val<double>() = g; }
 	void SetIntValue   (int    a) {assert((m_ntype == Param_INT)||(m_ntype == Param_CHOICE)); val<int>  () = a; }
 	void SetBoolValue  (bool   b) {assert(m_ntype == Param_BOOL  ); val<bool> () = b; }
-	void SetVecValue   (const vec3d& v) {assert(m_ntype == Param_VEC3D ); val<vec3d>() = v; }
+	void SetVec3dValue (const vec3d& v) {assert(m_ntype == Param_VEC3D ); val<vec3d>() = v; }
+	void SetVec2iValue (const vec2i& v) { assert(m_ntype == Param_VEC2I); val<vec2i>() = v; }
 	void SetMat3dValue (const mat3d& v) { assert(m_ntype == Param_MAT3D); val<mat3d>() = v; }
 	void SetStringValue(const std::string& v) {assert(m_ntype == Param_STRING); val<std::string>() = v; }
 	void SetMathString (const std::string& v) { assert(m_ntype == Param_MATH); val<std::string>() = v; }
@@ -127,7 +131,8 @@ public:
 	double GetFloatValue () const {assert(m_ntype == Param_FLOAT ); return val<double>(); }
 	int    GetIntValue   () const {assert((m_ntype == Param_INT)||(m_ntype == Param_CHOICE)); return val<int>  (); }
 	bool   GetBoolValue  () const {assert(m_ntype == Param_BOOL  ); return val<bool> (); }
-	vec3d  GetVecValue   () const {assert(m_ntype == Param_VEC3D ); return val<vec3d>(); }
+	vec3d  GetVec3dValue () const {assert(m_ntype == Param_VEC3D ); return val<vec3d>(); }
+	vec2i  GetVec2iValue () const { assert(m_ntype == Param_VEC2I); return val<vec2i>(); }
 	mat3d  GetMat3dValue () const {assert(m_ntype == Param_MAT3D); return val<mat3d>(); }
 	std::string GetStringValue() const { assert(m_ntype == Param_STRING); return val<std::string>(); }
 	std::string GetMathString() const { assert(m_ntype == Param_MATH); return val<std::string>(); }
@@ -141,11 +146,14 @@ public:
 	bool IsEditable () const { return (m_nstate & Param_EDITABLE) != 0; }
 	bool IsReadWrite() const { return (m_nstate & Param_READWRITE) != 0; }
 	bool IsVisible  () const { return (m_nstate & Param_VISIBLE) != 0; }
+	bool IsPersistent() const { return (m_nstate & Param_PERSISTENT) != 0; }
+
+	Param* SetPersistent(bool b) { if (b) m_nstate |= Param_PERSISTENT; else m_nstate &= ~Param_PERSISTENT; return this; }
 
 	int GetOffset() const { return m_offset; }
 	Param* SetOffset(int n) { m_offset = n; return this; }
 
-	void MakeVariable(bool b) { m_isVariable = b; }
+	Param* MakeVariable(bool b) { m_isVariable = b; return this; }
 	bool IsVariable() const { return m_isVariable; }
 
 	bool UseRange() const { return m_floatRange; }
@@ -245,6 +253,15 @@ public:
 	}
 
 	Param* AddVecParam(vec3d v, const char* szb, const char* szn = 0)
+	{
+		int ns = (int)m_Param.size();
+		Param p(v, szb, szn);
+		p.m_nID = ns;
+		m_Param.push_back(p);
+		return LastParam();
+	}
+
+	Param* AddVec2iParam(vec2i v, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
 		Param p(v, szb, szn);
@@ -391,6 +408,7 @@ public:
 	Param* AddScienceParam(double d, Param_Unit nunit, const char* szb, const char* szn = 0) { return m_Param.AddScienceParam(d, nunit, szb, szn); }
 	Param* AddBoolParam(bool   b, const char* szb = 0, const char* szn = 0) { return m_Param.AddBoolParam(b, szb, szn); }
 	Param* AddVecParam(vec3d  v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVecParam(v, szb, szn); }
+	Param* AddVec2iParam(vec2i  v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVec2iParam(v, szb, szn); }
 	Param* AddIndxIntParam(int n, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxIntParam(n, szi, idx, szb, szn); }
 	Param* AddIndxDoubleParam(double d, const char* szi, int idx, const char* szb = 0, const char* szn = 0) { return m_Param.AddIndxDoubleParam(d, szi, idx, szb, szn); }
 	Param* AddStringParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddStringParam(s, szb, szn); }
@@ -416,7 +434,7 @@ public:
 	int GetIntValue(int n) const { return m_Param[n].GetIntValue(); }
 	double GetFloatValue(int n) const { return m_Param[n].GetFloatValue(); }
 	bool GetBoolValue(int n)const  { return m_Param[n].GetBoolValue(); }
-	vec3d GetVecValue(int n) const { return m_Param[n].GetVecValue(); }
+	vec3d GetVecValue(int n) const { return m_Param[n].GetVec3dValue(); }
 	FELoadCurve* GetParamLC(int n) { return m_Param[n].GetLoadCurve(); }
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }
@@ -425,7 +443,7 @@ public:
 	void SetIntValue   (int n, int    v) { m_Param[n].SetIntValue   (v); }
 	void SetFloatValue (int n, double v) { m_Param[n].SetFloatValue (v); }
 	void SetBoolValue  (int n, bool   v) { m_Param[n].SetBoolValue  (v); }
-	void SetVecValue   (int n, const vec3d& v) { m_Param[n].SetVecValue(v); }
+	void SetVecValue   (int n, const vec3d& v) { m_Param[n].SetVec3dValue(v); }
 	void SetStringValue(int n, const std::string& s) { m_Param[n].SetStringValue(s); }
 	void SetColorValue (int n, const GLColor& c) { m_Param[n].SetColorValue(c); }
 	void Clear() { m_Param.clear(); }

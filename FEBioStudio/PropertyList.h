@@ -23,6 +23,7 @@ public:
 		ColorMap,
 		Vec3,
 		Mat3,
+		Vec2i,
 
 		// from PostView
 		DataScalar,
@@ -136,6 +137,7 @@ public:
 	CProperty* addCurveListProperty(QStringList* pd, const QString& name);
 	CProperty* addResourceProperty (QString* pd, const QString& name);
 	CProperty* addVec3Property     (vec3d* pd, const QString& name);
+	CProperty* addVec2iProperty    (vec2i* pd, const QString& name);
 	CProperty* addMat3Property     (mat3d* pd, const QString& name);
 
 	QVariant GetPropertyValue(int i);
@@ -146,3 +148,5 @@ QString Vec3dToString(const vec3d& r);
 vec3d StringToVec3d(const QString& s);
 mat3d StringToMat3d(const QString& s);
 QString Mat3dToString(const mat3d& a);
+QString Vec2iToString(const vec2i& r);
+vec2i StringToVec2i(const QString& s);

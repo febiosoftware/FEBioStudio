@@ -10,6 +10,7 @@ FEBioExport::FEBioExport()
 	m_compress = false;
 	m_exportSelections = false;
 	m_exportEnumStrings = false;
+	m_exportNonPersistentParams = true;
 
 	// initialize section flags
 	for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) m_section[i] = true;
@@ -30,6 +31,9 @@ void FEBioExport::WriteParam(Param &p)
 {
 	// don't export hidden parameters
 	if (p.IsReadWrite() == false) return;
+
+	// see if we are writing non-persistent parameters
+	if ((m_exportNonPersistentParams==false) && (p.IsPersistent() == false)) return;
 
 	// get the (short) name
 	const char* szname = p.GetShortName();
@@ -67,7 +71,8 @@ void FEBioExport::WriteParam(Param &p)
 	case Param_INT   : e.value(p.GetIntValue  ()); break;
 	case Param_FLOAT : e.value(p.GetFloatValue()); break;
 	case Param_BOOL  : e.value(p.GetBoolValue ()); break;
-	case Param_VEC3D : e.value(p.GetVecValue  ()); break;
+	case Param_VEC3D : e.value(p.GetVec3dValue()); break;
+	case Param_VEC2I : e.value(p.GetVec2iValue()); break;
 	case Param_MAT3D : e.value(p.GetMat3dValue()); break;
 	case Param_MATH  :
 	{

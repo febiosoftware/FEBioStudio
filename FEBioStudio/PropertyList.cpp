@@ -19,9 +19,23 @@ mat3d StringToMat3d(const QString& s)
 	return mat3d(a);
 }
 
+vec2i StringToVec2i(const QString& s)
+{
+	string st = s.toStdString();
+	const char* sz = st.c_str();
+	vec2i r;
+	sscanf(sz, "%ld,%ld", &r.x, &r.y);
+	return r;
+}
+
 QString Vec3dToString(const vec3d& r)
 {
 	return QString("%1,%2,%3").arg(r.x).arg(r.y).arg(r.z);
+}
+
+QString Vec2iToString(const vec2i& r)
+{
+	return QString("%1,%2").arg(r.x).arg(r.y);
 }
 
 QString Mat3dToString(const mat3d& a)
@@ -111,6 +125,11 @@ CProperty* CDataPropertyList::addVec3Property(vec3d* pd, const QString& name)
 	return addProperty(name, CProperty::Vec3)->setData(pd);
 }
 
+CProperty* CDataPropertyList::addVec2iProperty(vec2i* pd, const QString& name)
+{
+	return addProperty(name, CProperty::Vec2i)->setData(pd);
+}
+
 CProperty* CDataPropertyList::addMat3Property(mat3d* pd, const QString& name)
 {
 	return addProperty(name, CProperty::Mat3)->setData(pd);
@@ -156,6 +175,7 @@ QVariant CDataPropertyList::GetPropertyValue(int i)
 	case CProperty::CurveList: { QStringList v = *((QStringList*)(p.pdata)); return v; } break;
 	case CProperty::Resource: { QString v = *((QString*)(p.pdata)); return v; } break;
 	case CProperty::Vec3: { vec3d v = *((vec3d*)(p.pdata)); return Vec3dToString(v); } break;
+	case CProperty::Vec2i: { vec2i v = *((vec2i*)(p.pdata)); return Vec2iToString(v); } break;
 	case CProperty::Mat3: { mat3d v = *((mat3d*)(p.pdata)); return Mat3dToString(v); } break;
 	}
 
@@ -177,6 +197,7 @@ void CDataPropertyList::SetPropertyValue(int i, const QVariant& v)
 	case CProperty::CurveList: { QStringList& d = *((QStringList*)p.pdata); d = v.value<QStringList>(); } break;
 	case CProperty::Resource: { QString& d = *((QString*)p.pdata); d = v.value<QString>(); } break;
 	case CProperty::Vec3: { vec3d& d = *((vec3d*)p.pdata); d = StringToVec3d(v.value<QString>()); } break;
+	case CProperty::Vec2i: { vec2i& d = *((vec2i*)p.pdata); d = StringToVec2i(v.value<QString>()); } break;
 	case CProperty::Mat3: { mat3d& d = *((mat3d*)p.pdata); d = StringToMat3d(v.value<QString>()); } break;
 	}
 }

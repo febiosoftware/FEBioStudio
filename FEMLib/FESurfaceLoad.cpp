@@ -141,7 +141,7 @@ void FESurfaceTraction::LoadParam(const Param& p)
 {
 	switch (p.GetParamID())
 	{
-	case 0: SetTraction(p.GetVecValue()); break;
+	case 0: SetTraction(p.GetVec3dValue()); break;
 	case 1: *GetLoadCurve() = *p.GetLoadCurve(); break;
 	}
 }
@@ -175,7 +175,7 @@ void FEFluidTraction::LoadParam(const Param& p)
 {
 	switch (p.GetParamID())
 	{
-	case 0: SetTraction(p.GetVecValue()); break;
+	case 0: SetTraction(p.GetVec3dValue()); break;
 	case 1: *GetLoadCurve() = *p.GetLoadCurve(); break;
 	}
 }

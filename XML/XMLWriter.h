@@ -38,6 +38,7 @@ public:
 	void value(double* pg, int n);
 	void value(const vec3d& r);
 	void value(const mat3d& a);
+	void value(const vec2i& r);
 
 	int add_attribute(const char* szn, const char* szv);
 	int add_attribute(const char* szn, int n);

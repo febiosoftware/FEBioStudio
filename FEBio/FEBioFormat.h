@@ -52,7 +52,7 @@ protected:
 	// material section helper functions
 	FEMaterial* ParseMaterial(XMLTag& tag, const char* szmat);
 	FEMaterial* ParseRigidBody(XMLTag& tag);
-	void ParseFiberMaterial(FEFiberMaterial& fiber, XMLTag& tag);
+	void ParseFiberMaterial(FEOldFiberMaterial& fiber, XMLTag& tag);
 	FEMaterial* ParseTransIsoMR    (FEMaterial* pm, XMLTag& tag);
 	FEMaterial* ParseTransIsoVW    (FEMaterial* pm, XMLTag& tag);
 	FEMaterial* ParseBiphasicSolute(FEMaterial* pm, XMLTag& tag);

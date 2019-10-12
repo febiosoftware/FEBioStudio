@@ -29,6 +29,7 @@ void CObjectProps::AddParameter(Param& p)
 	case Param_STRING: prop = addProperty(p.GetLongName(), CProperty::String); break;
 	case Param_MATH  : prop = addProperty(p.GetLongName(), CProperty::MathString); break;
 	case Param_COLOR : prop = addProperty(p.GetLongName(), CProperty::Color); break;
+	case Param_VEC2I : prop = addProperty(p.GetLongName(), CProperty::Vec2i); break;
 	case Param_BOOL:
 	{
 		const char* ch = p.GetEnumNames();
@@ -111,14 +112,14 @@ QStringList CObjectProps::GetEnumValues(const char* ch)
 	return ops;
 }
 
-void CObjectProps::BuildParamList(FSObject* po)
+void CObjectProps::BuildParamList(FSObject* po, bool showNonPersistent)
 {
 	m_po = po;
 	int NP = po->Parameters();
 	for (int i = 0; i<NP; ++i)
 	{
 		Param& p = po->GetParam(i);
-		if (p.IsEditable() || p.IsVisible())
+		if ((showNonPersistent || p.IsPersistent()) && (p.IsEditable() || p.IsVisible()))
 		{
 			AddParameter(p);
 		}
@@ -142,8 +143,15 @@ QVariant CObjectProps::GetPropertyValue(Param& p)
 	break;
 	case Param_VEC3D:
 	{
-		vec3d r = p.GetVecValue();
+		vec3d r = p.GetVec3dValue();
 		QString t = Vec3dToString(r);
+		return t;
+	}
+	break;
+	case Param_VEC2I:
+	{
+		vec2i r = p.GetVec2iValue();
+		QString t = Vec2iToString(r);
 		return t;
 	}
 	break;
@@ -193,7 +201,14 @@ void CObjectProps::SetPropertyValue(Param& p, const QVariant& v)
 	{
 		QString t = v.toString();
 		vec3d r = StringToVec3d(t);
-		p.SetVecValue(r);
+		p.SetVec3dValue(r);
+	}
+	break;
+	case Param_VEC2I:
+	{
+		QString t = v.toString();
+		vec2i r = StringToVec2i(t);
+		p.SetVec2iValue(r);
 	}
 	break;
 	case Param_MAT3D:
