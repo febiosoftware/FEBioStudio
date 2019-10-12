@@ -2290,21 +2290,42 @@ void CCmdHideObject::UnExecute()
 // CCmdHidePart
 //////////////////////////////////////////////////////////////////////
 
-CCmdHidePart::CCmdHidePart(vector<GPart*> po) : CCommand("Hide")
+CCmdHideParts::CCmdHideParts(std::list<GPart*> partList) : CCommand("Hide")
 {
-	m_partList = po;
+	m_partList = partList;
 }
 
-void CCmdHidePart::Execute()
+void CCmdHideParts::Execute()
 {
 	GModel& model = m_pDoc->GetFEModel()->GetModel();
 	model.ShowParts(m_partList, false);
 }
 
-void CCmdHidePart::UnExecute()
+void CCmdHideParts::UnExecute()
 {
 	GModel& model = m_pDoc->GetFEModel()->GetModel();
 	model.ShowParts(m_partList, true);
+}
+
+//////////////////////////////////////////////////////////////////////
+// CCmdShowParts
+//////////////////////////////////////////////////////////////////////
+
+CCmdShowParts::CCmdShowParts(std::list<GPart*> partList) : CCommand("Show parts")
+{
+	m_partList = partList;
+}
+
+void CCmdShowParts::Execute()
+{
+	GModel& model = m_pDoc->GetFEModel()->GetModel();
+	model.ShowParts(m_partList, true);
+}
+
+void CCmdShowParts::UnExecute()
+{
+	GModel& model = m_pDoc->GetFEModel()->GetModel();
+	model.ShowParts(m_partList, false);
 }
 
 //////////////////////////////////////////////////////////////////////

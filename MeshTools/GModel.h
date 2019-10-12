@@ -187,7 +187,9 @@ public:
 	void RemoveNamedSelections();
 	void RemoveEmptySelections();
 
-	list<GPart*> FindPartsFromMaterial(int matId);
+	// if match is true, the list of parts with this material is returend.
+	// if match is false, the list of parts that don't have this material is returned.
+	list<GPart*> FindPartsFromMaterial(int matId, bool bmatch = true);
 
 public:
 	// create a clone
@@ -219,6 +221,7 @@ public:
 	// show or hide a list of parts
 	void ShowParts(const vector<int>& partList, bool bshow, bool bselect = false);
 	void ShowParts(vector<GPart*>& partList, bool bshow);
+	void ShowParts(list<GPart*>& partList, bool bshow);
 	void ShowPart(GPart* pg, bool bshow = true);
 
 	void ShowAllObjects();

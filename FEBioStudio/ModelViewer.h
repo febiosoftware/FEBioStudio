@@ -107,6 +107,9 @@ private slots:
 	void OnRemoveEmptySelections();
 	void OnRemoveAllSelections();
 	void OnChangeMaterial();
+	void OnMaterialHideParts();
+	void OnMaterialShowParts();
+	void OnMaterialHideOtherParts();
 	void OnExportMaterials();
 	void OnExportAllMaterials();
 	void OnImportMaterials();

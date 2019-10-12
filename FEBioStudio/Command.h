@@ -992,17 +992,29 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-
-class CCmdHidePart : public CCommand
+class CCmdHideParts : public CCommand
 {
 public:
-	CCmdHidePart(vector<GPart*> po);
+	CCmdHideParts(std::list<GPart*> partList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	vector<GPart*>	m_partList;
+	std::list<GPart*>	m_partList;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdShowParts : public CCommand
+{
+public:
+	CCmdShowParts(std::list<GPart*> partList);
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	std::list<GPart*>	m_partList;
 };
 
 //-----------------------------------------------------------------------------

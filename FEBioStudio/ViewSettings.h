@@ -37,6 +37,7 @@ struct VIEW_SETTINGS
 	bool	m_blma;		//!< show local material axes
 	double	m_fiber_scale;	//!< scale factor for rendering fibers
 	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
+	bool	m_showDiscrete;		//!< render discrete sets
 
 	GLColor	m_col1, m_col2;		//!< background colors
 	GLColor	m_fgcol;			//!< foreground color

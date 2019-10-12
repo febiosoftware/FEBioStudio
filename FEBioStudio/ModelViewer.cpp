@@ -792,6 +792,73 @@ void CModelViewer::OnChangeMaterial()
 	}
 }
 
+void CModelViewer::OnMaterialHideParts()
+{
+	CDocument* pdoc = GetMainWindow()->GetDocument();
+	FEModel* fem = pdoc->GetFEModel();
+	GModel& mdl = fem->GetModel();
+	list<GPart*> partList;
+	for (int i = 0; i < m_selection.size(); ++i)
+	{
+		GMaterial* mat = dynamic_cast<GMaterial*>(m_selection[i]); assert(mat);
+		if (mat)
+		{
+			list<GPart*> partList_i = mdl.FindPartsFromMaterial(mat->GetID());
+			if (partList_i.empty() == false)
+			{
+				partList.insert(partList.end(), partList_i.begin(), partList_i.end());
+			}
+
+		}
+	}
+	if (partList.empty() == false)
+	{
+		pdoc->DoCommand(new CCmdHideParts(partList));
+		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CModelViewer::OnMaterialShowParts()
+{
+	CDocument* pdoc = GetMainWindow()->GetDocument();
+	FEModel* fem = pdoc->GetFEModel();
+	GModel& mdl = fem->GetModel();
+	list<GPart*> partList;
+	for (int i = 0; i < m_selection.size(); ++i)
+	{
+		GMaterial* mat = dynamic_cast<GMaterial*>(m_selection[i]); assert(mat);
+		if (mat)
+		{
+			list<GPart*> partList_i = mdl.FindPartsFromMaterial(mat->GetID());
+			if (partList_i.empty() == false)
+			{
+				partList.insert(partList.end(), partList_i.begin(), partList_i.end());
+			}
+
+		}
+	}
+	if (partList.empty() == false)
+	{
+		pdoc->DoCommand(new CCmdShowParts(partList));
+		GetMainWindow()->RedrawGL();
+	}
+}
+
+
+void CModelViewer::OnMaterialHideOtherParts()
+{
+	GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject); assert(mat);
+	if (mat == 0) return;
+
+	CDocument* pdoc = GetMainWindow()->GetDocument();
+	FEModel* fem = pdoc->GetFEModel();
+	GModel& mdl = fem->GetModel();
+	list<GPart*> partList = mdl.FindPartsFromMaterial(mat->GetID(), false);
+
+	pdoc->DoCommand(new CCmdHideParts(partList));
+	GetMainWindow()->RedrawGL();
+}
+
 void CModelViewer::OnCopyInterface()
 {
 	FEInterface* pic = dynamic_cast<FEInterface*>(m_currentObject); assert(pic);
@@ -1171,6 +1238,9 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_MATERIAL:
 		menu.addAction("Copy", this, SLOT(OnCopyMaterial()));
 		menu.addAction("Change...", this, SLOT(OnChangeMaterial()));
+		menu.addAction("Hide parts", this, SLOT(OnMaterialHideParts()));
+		menu.addAction("Show parts", this, SLOT(OnMaterialShowParts()));
+		menu.addAction("Hide other parts", this, SLOT(OnMaterialHideOtherParts()));
 		menu.addAction("Export Material(s) ...", this, SLOT(OnExportMaterials()));
 		menu.addAction("Generate map...", this, SLOT(OnGenerateMap()));
 		del = true;

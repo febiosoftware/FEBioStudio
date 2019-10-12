@@ -145,6 +145,7 @@ void CDocument::NewDocument()
 	m_view.m_blma = false;
 	m_view.m_fiber_scale = 1.0;
 	m_view.m_showHiddenFibers = false;
+	m_view.m_showDiscrete = true;
 
 	m_view.m_bcull = false;
 	m_view.m_bconn = true;
@@ -1235,7 +1236,7 @@ void CDocument::HideUnselected()
 		else if (selMode == SELECT_PART)
 		{
 			GModel* mdl = GetGModel();
-			vector<GPart*> partList;
+			list<GPart*> partList;
 			for (int i=0; i<mdl->Objects(); ++i)
 			{
 				GObject* po = mdl->Object(i);
@@ -1246,7 +1247,7 @@ void CDocument::HideUnselected()
 				}
 			}
 
-			DoCommand(new CCmdHidePart(partList));
+			DoCommand(new CCmdHideParts(partList));
 		}
 	}
 	else 

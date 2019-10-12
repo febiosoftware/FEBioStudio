@@ -723,21 +723,21 @@ void FECoreMesh::UpdateItemVisibility()
 		FEElement_* e0 = ElementPtr(face.m_elem[0]); assert(e0);
 		FEElement_* e1 = ElementPtr(face.m_elem[1]);
 
-		if (!e0->IsVisible() && ((e1 == 0) || !e1->IsVisible())) face.Hide(); else face.Show();
+		if (!e0->IsVisible() && ((e1 == 0) || !e1->IsVisible())) face.Hide(); else { face.Show(); face.Unhide(); }
 	}
 
 	// update visibility of all other items
 	for (int i = 0; i<Nodes(); ++i)
 	{
 		FENode& node = Node(i);
-		if (node.m_ntag == 1) node.Show(); else node.Hide();
+		if (node.m_ntag == 1) { node.Show(); node.Unhide(); } else node.Hide();
 	}
 
 	for (int i = 0; i<Edges(); ++i)
 	{
 		FEEdge& edge = Edge(i);
 		if ((Node(edge.n[0]).m_ntag == 0) || (Node(edge.n[1]).m_ntag == 0)) edge.Hide();
-		else edge.Show();
+		else { edge.Show(); edge.Unhide(); }
 	}
 }
 

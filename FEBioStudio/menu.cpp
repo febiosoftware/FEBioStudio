@@ -1857,6 +1857,13 @@ void CMainWindow::on_actionShowFibers_toggled(bool b)
 	RedrawGL();
 }
 
+void CMainWindow::on_actionShowDiscrete_toggled(bool b)
+{
+	VIEW_SETTINGS& view = m_doc->GetViewSettings();
+	view.m_showDiscrete = b;
+	RedrawGL();
+}
+
 void CMainWindow::changeViewMode(View_Mode vm)
 {
 	ui->glview->SetViewMode(vm);

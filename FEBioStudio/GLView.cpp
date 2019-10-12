@@ -1623,7 +1623,10 @@ void CGLView::RenderModelView()
 		if ((view.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH)) RenderModel();
 
 		// render discrete objects
-		RenderDiscrete();
+		if (view.m_showDiscrete)
+		{
+			RenderDiscrete();
+		}
 
 		// render selected box
 		RenderSelectionBox();

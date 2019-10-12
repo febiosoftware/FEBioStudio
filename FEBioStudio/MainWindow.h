@@ -292,6 +292,7 @@ public slots:
 	void on_actionViewSmooth_toggled(bool bchecked);
 	void on_actionShowNormals_toggled(bool b);
 	void on_actionShowFibers_toggled(bool b);
+	void on_actionShowDiscrete_toggled(bool b);
 	void on_actionFront_triggered();
 	void on_actionBack_triggered();
 	void on_actionLeft_triggered();

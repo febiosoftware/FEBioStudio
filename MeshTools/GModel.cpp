@@ -1351,6 +1351,25 @@ void GModel::ShowParts(vector<GPart*>& partList, bool bshow)
 }
 
 //-----------------------------------------------------------------------------
+// show or hide a list of parts
+void GModel::ShowParts(list<GPart*>& partList, bool bshow)
+{
+	for (int i = 0; i<Objects(); ++i) Object(i)->m_ntag = 0;
+	for (GPart* part : partList)
+	{
+		if (bshow) part->ShowItem(); else part->HideItem();
+		GBaseObject* po = part->Object(); assert(po);
+		if (po) po->m_ntag = 1;
+	}
+
+	for (int i = 0; i<Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		if (po->m_ntag == 1) po->UpdateItemVisibility();
+	}
+}
+
+//-----------------------------------------------------------------------------
 void GModel::ShowPart(GPart* pg, bool bshow)
 {
 	if (pg == 0) return;
@@ -1810,7 +1829,7 @@ GObject* GModel::DetachDiscreteSet(GDiscreteElementSet* set)
 	return po;
 }
 
-list<GPart*> GModel::FindPartsFromMaterial(int matId)
+list<GPart*> GModel::FindPartsFromMaterial(int matId, bool bmatch)
 {
 	list<GPart*> partList;
 	for (int i = 0; i < Objects(); ++i)
@@ -1819,7 +1838,14 @@ list<GPart*> GModel::FindPartsFromMaterial(int matId)
 		for (int j = 0; j < po->Parts(); ++j)
 		{
 			GPart* pg = po->Part(j);
-			if (pg->GetMaterialID() == matId) partList.push_back(pg);
+			if (bmatch)
+			{
+				if (pg->GetMaterialID() == matId) partList.push_back(pg);
+			}
+			else
+			{
+				if (pg->GetMaterialID() != matId) partList.push_back(pg);
+			}
 		}
 	}
 	return partList;

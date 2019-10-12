@@ -133,6 +133,7 @@ public:
 	QAction* actionOptions;
 	QAction* actionWireframe;
 	QAction* actionShowFibers;
+	QAction* actionShowDiscrete;
 
 	QAction* actionColorMap;
 	QAction* actionPlay;
@@ -373,6 +374,7 @@ public:
 		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
 		actionWireframe		  = addAction("Toggle wireframe", "actionWireframe"); actionWireframe->setCheckable(true); actionWireframe->setShortcut(Qt::Key_W);
 		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
+		actionShowDiscrete    = addAction("Show Discrete sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
 		QAction* actionSnap3D = addAction("3D cursor to selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::ControlModifier + Qt::Key_F);
 		actionFront           = addAction("Front", "actionFront");
@@ -589,6 +591,7 @@ public:
 		menuView->addAction(actionViewSmooth);
 		menuView->addAction(actionWireframe);
 		menuView->addAction(actionShowFibers);
+		menuView->addAction(actionShowDiscrete);
 		menuView->addAction(actionSnap3D);
 		menuView->addAction(actionTrack);
 		menuView->addSeparator();

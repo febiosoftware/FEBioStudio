@@ -1485,6 +1485,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	menu.addAction(ui->actionOrtho);
 	menu.addAction(ui->actionShowNormals);
 	menu.addAction(ui->actionShowFibers);
+	menu.addAction(ui->actionShowDiscrete);
 	menu.addSeparator();
 	menu.addAction(ui->actionFront);
 	menu.addAction(ui->actionBack);
