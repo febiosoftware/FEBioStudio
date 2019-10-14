@@ -52,7 +52,7 @@ PostGLClean:
 PostLibClean:
 	cd ../PostLib; rm moc*; $(MAKE) distclean
 
-clean: MocClean
+clean: #MocClean
 	for lib in $(LIBS) ; do \
 		cd ../$$lib; $(MAKE) -f ../build/makeLibs.mk clean ;\
 	done

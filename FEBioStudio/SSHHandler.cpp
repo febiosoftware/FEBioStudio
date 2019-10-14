@@ -41,6 +41,7 @@ public:
 	std::string newDir;
 
 	bool isBusy;
+	bool orphan;
 };
 
 CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // @suppress("Class members should be properly initialized")
@@ -48,6 +49,7 @@ CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // 
 	m_data->job = job;
 	m_data->passwdLength = -1;
 	m_data->isBusy = false;
+	m_data->orphan = false;
 
 	// Get local .feb file name
 	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
@@ -105,10 +107,12 @@ void CSSHHandler::StartRemoteJob()
 	if(m_data->job->GetLaunchConfig()->type == REMOTE)
 	{
 		// Construct remote command
-		std::string command = m_data->job->GetLaunchConfig()->path + " " + remoteFile;
+		std::vector<std::string> commands;
+		commands.push_back(m_data->job->GetLaunchConfig()->path + " " + remoteFile);
 
 		// Run the commands
-		if(RunCommand(command) != SSH_OK)
+//		if(RunCommand(command) != SSH_OK)
+		if(RunCommandList2(commands) != SSH_OK)
 		{
 			m_data->code = FAILED;
 			m_data->msg = "Failed to run remote command.";
@@ -165,7 +169,7 @@ void CSSHHandler::StartRemoteJob()
 			return;
 		}
 
-		if(RunCommandList(commands) != SSH_OK)
+		if(RunCommandList2(commands) != SSH_OK)
 		{
 			m_data->code = FAILED;
 			m_data->msg = "Failed to run remote commands.";
@@ -268,6 +272,11 @@ int CSSHHandler::GetNextFunction()
 QString CSSHHandler::GetMessage()
 {
 	return m_data->msg;
+}
+
+void CSSHHandler::Orphan()
+{
+	m_data->orphan = true;
 }
 
 void CSSHHandler::SetTargetFunction(int func)
@@ -935,6 +944,10 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 			nbytes = ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer) - 1, 0);
 			buffer[nbytes] = '\0';
 			emit AddOutputEntry(buffer);
+
+			nbytes = ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer) - 1, 1);
+			buffer[nbytes] = '\0';
+			emit AddOutputEntry(buffer);
 		}
 	}
 
@@ -945,6 +958,95 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 	ssh_channel_send_eof(channel2);
 	ssh_channel_close(channel2);
 	ssh_channel_free(channel2);
+	return SSH_OK;
+}
+
+int CSSHHandler::RunCommandList2(std::vector<std::string> commands)
+{
+	ssh_channel channel;
+	int rc;
+	char buffer[256];
+	int nbytes, nwritten;
+
+	channel = ssh_channel_new(m_data->session);
+	if (channel == NULL)
+		return SSH_ERROR;
+
+	rc = ssh_channel_open_session(channel);
+	if (rc != SSH_OK)
+	{
+		ssh_channel_free(channel);
+		return rc;
+	}
+
+	rc = ssh_channel_request_pty(channel);
+	if (rc != SSH_OK) return rc;
+
+	rc = ssh_channel_change_pty_size(channel, 80, 24);
+	if (rc != SSH_OK) return rc;
+
+	rc = ssh_channel_request_shell(channel);
+	if (rc != SSH_OK) return rc;
+
+	std::string fullCommand = commands.at(0);
+	for(int i = 1; i < commands.size(); i++)
+	{
+		fullCommand += " && ";
+		fullCommand += commands.at(i);
+	}
+	fullCommand += " && echo $USER \"ENDSSHNOW\"";
+	fullCommand += "\n";
+
+
+	nwritten = ssh_channel_write(channel, fullCommand.c_str(), sizeof(char)*fullCommand.length());
+
+
+	char testChar = 0x1a;
+	std::string stop = m_data->job->GetLaunchConfig()->userName + " ENDSSHNOW";
+	bool cont = true;
+	while(cont)
+	{
+		nbytes = ssh_channel_read(channel, buffer, sizeof(buffer) - 1, 0);
+		buffer[nbytes] = '\0';
+
+		int pos = std::string(buffer).find(stop);
+		if(pos != -1)
+		{
+			buffer[pos] = '\0';
+			cont = false;
+		}
+
+		emit AddOutputEntry(buffer);
+
+		if(m_data->orphan)
+		{
+			nwritten = ssh_channel_write(channel, &testChar, sizeof(char));
+			nwritten = ssh_channel_write(channel, "bg\n", sizeof("bg\n"));
+			nwritten = ssh_channel_write(channel, "disown\n", sizeof("disown\n"));
+
+			usleep(5000000L);
+
+			m_data->orphan = false;
+
+			break;
+		}
+
+		usleep(5000L);
+	}
+
+	std::cout << "We broke out!" << std::endl;
+
+
+	if (nbytes < 0)
+	{
+		ssh_channel_close(channel);
+		ssh_channel_free(channel);
+		return SSH_ERROR;
+	}
+
+	ssh_channel_send_eof(channel);
+	ssh_channel_close(channel);
+	ssh_channel_free(channel);
 	return SSH_OK;
 }
 

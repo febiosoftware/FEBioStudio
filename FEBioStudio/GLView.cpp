@@ -36,6 +36,7 @@
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
 #include "Command.h"
+#include <iostream>
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,

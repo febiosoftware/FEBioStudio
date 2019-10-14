@@ -51,6 +51,8 @@ public:
 
 	QString GetMessage();
 
+	void Orphan();
+
 	bool IsBusy();
 
 signals:
@@ -63,6 +65,7 @@ private:
 	int RunCommand(std::string command);
 	int RunInteractiveNoRead(std::string command);
 	int RunCommandList(std::vector<std::string> commands);
+	int RunCommandList2(std::vector<std::string> commands);
 
 	int authenticatePubkey();
 	bool authenticatePassword();

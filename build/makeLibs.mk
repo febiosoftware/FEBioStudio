@@ -1,9 +1,9 @@
-CCFLAGS = -g -I../ -O0 -std=c++11
+CCFLAGS = -g -O0 -std=c++14
 CCFLAGS += -I../
 CCFLAGS += -I/opt/netgen/include
 CCFLAGS += -I/opt/netgen/include/include
 CCFLAGS += -I/usr/local/include/opencascade/
-DEF = -DLINUX -DHAS_NETGEN -DHAS_OCC
+DEF = -DLINUX -DHAS_NETGEN -DHAS_OCC -DTETLIBRARY -DHAS_QUAZIP -DHAS_SSH
 LIBDIR = $(notdir $(CURDIR))
 CURLIB = $(shell echo $(LIBDIR) | tr A-Z a-z)
 
@@ -17,7 +17,7 @@ $(LIB): $(OBJ)
 	ar crs -o $(LIB) $(OBJ)
 
 %.o: %.cpp $(DEP)
-	$(CC) -c $(DEF) $(CCFLAGS) -o $@ $<
+	g++ -c $(DEF) $(CCFLAGS) -o $@ $<
 
 clean:
 	$(RM) *.o *.d $(LIB)

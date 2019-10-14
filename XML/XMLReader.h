@@ -6,6 +6,7 @@
 #include <MathLib/math3d.h>
 #include <MathLib/mat3d.h>
 #include <FSCore/color.h>
+#include <stdexcept>
 
 #ifndef WIN32
 	#include <string>
@@ -55,7 +56,11 @@ public:
 	int		m_natt;	// nr of attributes
 
 	XMLReader*	m_preader;		// pointer to reader
+#ifdef WIN32
 	fpos_t	m_fpos;				// file position of next tag
+#else
+	long int	m_fpos;				// file position of next tag
+#endif
 	int		m_nstart_line;		// line number at beginning of tag
 	int		m_ncurrent_line;	// current line number
 

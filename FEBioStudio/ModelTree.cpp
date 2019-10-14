@@ -206,6 +206,7 @@ public:
 		if(job->GetLaunchConfig()->type != LOCAL)
 		{
 			addProperty("", CProperty::Action)->info = QString("Get Remote Files");
+//			addProperty("", CProperty::Action)->info = QString("Orphan Process");
 		}
 
 		if(job->GetLaunchConfig()->type == PBS || job->GetLaunchConfig()->type == SLURM)
@@ -281,6 +282,10 @@ public:
 				sshThread->start();
 			}
 		}
+//		else if (i == 6)
+//		{
+//			m_job->GetSSHHandler()->Orphan();
+//		}
 		else if (i == 6)
 		{
 			if(!m_job->GetSSHHandler()->IsBusy())

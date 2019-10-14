@@ -12,9 +12,9 @@ MAKEFILE      = Makefile
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DLINUX -DHAS_NETGEN -DHAS_OCC -DTETLIBRARY -DHAS_QUAZIP -DHAS_SSH -DQT_OPENGL_LIB -DQT_CHARTS_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+DEFINES       = -DLINUX -DHAS_OCC -DTETLIBRARY -DHAS_NETGEN -DHAS_QUAZIP -DHAS_SSH -DQT_OPENGL_LIB -DQT_CHARTS_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -w -D_REENTRANT -fPIC $(DEFINES)
-CXXFLAGS      = -pipe -O0 -g -std=gnu++11 -w -D_REENTRANT -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -std=c++14 -O0 -g -std=gnu++1y -w -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I.. -isystem /usr/local/include -I../../../Resources/libssh/include -I../../../Resources/openssl-OpenSSL_1_1_1d/include -isystem /usr/include/libdrm -I../../../Resources/Qt/5.12.0/gcc_64/include -I../../../Resources/Qt/5.12.0/gcc_64/include/QtOpenGL -I../../../Resources/Qt/5.12.0/gcc_64/include/QtCharts -I../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets -I../../../Resources/Qt/5.12.0/gcc_64/include/QtGui -I../../../Resources/Qt/5.12.0/gcc_64/include/QtCore -I. -I../../../Resources/Qt/5.12.0/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/qmake
 DEL_FILE      = rm -f
@@ -38,7 +38,7 @@ DISTNAME      = FEBioStudio1.0.0
 DISTDIR = /home/sci/mherron/Projects/FEBioStudio/FEBioStudio/.tmp/FEBioStudio1.0.0
 LINK          = g++
 LFLAGS        = -static-libstdc++ -static-libgcc -Wl,-rpath,'$$ORIGIN/../lib/',-z,origin -Wl,-rpath,/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib
-LIBS          = $(SUBLIBS) -L/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib -L/home/sci/mherron/Resources/tetgen1.5.0/lib -ltet64 -L/opt/netgen/lib -L/home/sci/mherron/Resources/libssh/build2/lib -lssh -L/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d -lcrypto -L/usr/local/lib -L../build/lib -Wl,--start-group -lnglib -lcsg -linterface -lmesh -locc -lTKernel -lTKGeomBase -lTKTopAlgo -lTKPrim -lTKMesh -lTKMath -lTKBRep -lTKSTL -lTKFillet -lTKBO -lTKIGES -lTKSTEP -lTKSTEPBase -lTKXSBase -lTKG3d -lTKLCAF -lTKVCAF -lquazip5 -labaqus -lansys -lgeomlib -lmathlib -lxml -lmeshio -lfebio -lcomsol -llsdyna -lmeshtools -lfemlib -lmeshlib -lnike3d -limagelib -lfscore -lgllib -lglwlib -lpostgl -lxpltlib -lpostlib -Wl,--end-group -L/usr/lib64 -lGLU -lz -lGL -lQt5OpenGL -lQt5Charts -lQt5Widgets -lQt5Gui -lQt5Core -lpthread   
+LIBS          = $(SUBLIBS) -L/home/sci/mherron/Resources/Qt/5.12.0/gcc_64/lib -L/home/sci/mherron/Resources/tetgen1.5.0/ -L/opt/netgen/lib -L/home/sci/mherron/Resources/libssh/build2/lib -lssh -L/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d -lcrypto -L/usr/local/lib -L../build/lib -Wl,--start-group -ltet -lnglib -lcsg -linterface -lmesh -locc -lTKernel -lTKGeomBase -lTKTopAlgo -lTKPrim -lTKMesh -lTKMath -lTKBRep -lTKSTL -lTKFillet -lTKBO -lTKIGES -lTKSTEP -lTKSTEPBase -lTKXSBase -lTKG3d -lTKLCAF -lTKVCAF -lquazip5 -labaqus -lansys -lgeomlib -lmathlib -lxml -lmeshio -lfebio -lcomsol -llsdyna -lmeshtools -lfemlib -lmeshlib -lnike3d -limagelib -lfscore -lgllib -lglwlib -lpostgl -lxpltlib -lpostlib -Wl,--end-group -L/usr/lib64 -lGLU -lz -lGL -lQt5OpenGL -lQt5Charts -lQt5Widgets -lQt5Gui -lQt5Core -lpthread   
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -50,7 +50,8 @@ OBJECTS_DIR   = ./
 
 ####### Files
 
-SOURCES       = BuildPanel.cpp \
+SOURCES       = AreaCalculatorTool.cpp \
+		BuildPanel.cpp \
 		CColorButton.cpp \
 		ClassDescriptor.cpp \
 		Command.cpp \
@@ -90,6 +91,7 @@ SOURCES       = BuildPanel.cpp \
 		DlgImportAbaqus.cpp \
 		DlgImportCOMSOL.cpp \
 		DlgImportSTL.cpp \
+		DlgImportXPLT.cpp \
 		DlgLameConvertor.cpp \
 		DlgLSDYNAExport.cpp \
 		DlgMergeObjects.cpp \
@@ -243,7 +245,8 @@ SOURCES       = BuildPanel.cpp \
 		moc_Tool.cpp \
 		moc_ToolBox.cpp \
 		moc_ToolsPanel.cpp
-OBJECTS       = BuildPanel.o \
+OBJECTS       = AreaCalculatorTool.o \
+		BuildPanel.o \
 		CColorButton.o \
 		ClassDescriptor.o \
 		Command.o \
@@ -283,6 +286,7 @@ OBJECTS       = BuildPanel.o \
 		DlgImportAbaqus.o \
 		DlgImportCOMSOL.o \
 		DlgImportSTL.o \
+		DlgImportXPLT.o \
 		DlgLameConvertor.o \
 		DlgLSDYNAExport.o \
 		DlgMergeObjects.o \
@@ -627,7 +631,8 @@ DIST          = ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_pre.pr
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/exceptions.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/yacc.prf \
 		../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/lex.prf \
-		FEBioStudio.pro BuildPanel.h \
+		FEBioStudio.pro AreaCalculatorTool.h \
+		BuildPanel.h \
 		CColorButton.h \
 		CIntInput.h \
 		ClassDescriptor.h \
@@ -669,6 +674,7 @@ DIST          = ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_pre.pr
 		DlgImportAbaqus.h \
 		DlgImportCOMSOL.h \
 		DlgImportSTL.h \
+		DlgImportXPLT.h \
 		DlgLameConvertor.h \
 		DlgLSDYNAExport.h \
 		DlgMergeObjects.h \
@@ -765,7 +771,8 @@ DIST          = ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_pre.pr
 		ui_toolspanel.h \
 		version.h \
 		ViewSettings.h \
-		ZipFiles.h BuildPanel.cpp \
+		ZipFiles.h AreaCalculatorTool.cpp \
+		BuildPanel.cpp \
 		CColorButton.cpp \
 		ClassDescriptor.cpp \
 		Command.cpp \
@@ -805,6 +812,7 @@ DIST          = ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/spec_pre.pr
 		DlgImportAbaqus.cpp \
 		DlgImportCOMSOL.cpp \
 		DlgImportSTL.cpp \
+		DlgImportXPLT.cpp \
 		DlgLameConvertor.cpp \
 		DlgLSDYNAExport.cpp \
 		DlgMergeObjects.cpp \
@@ -1315,8 +1323,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../febiostudio.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents BuildPanel.h CColorButton.h CIntInput.h ClassDescriptor.h Command.h CommandManager.h CommandPanel.h ConchoidFitTool.h CreateP2PlinePane.h CreatePanel.h CreateSpringPane.h CurveEditor.h CurveIntersectProps.h CurvePicker.h DataFieldSelector.h DlgAddBC.h DlgAddBodyLoad.h DlgAddChemicalReaction.h DlgAddContact.h DlgAddEquation.h DlgAddIC.h DlgAddMeshData.h DlgAddNodalLoad.h DlgAddRigidConnector.h DlgAddRigidConstraint.h DlgAddStep.h DlgAddSurfaceLoad.h DlgBatchConvert.h DlgCheck.h DlgCloneGrid.h DlgCloneObject.h DlgCloneRevolve.h DlgDetachSelection.h DlgEditOutput.h DlgEditPath.h DlgEditProject.h DlgExportFEBio.h DlgFEBioOptimize.h DlgFormula.h DlgImportAbaqus.h DlgImportCOMSOL.h DlgImportSTL.h DlgLameConvertor.h DlgLSDYNAExport.h DlgMergeObjects.h DlgModelInfo.h DlgNew.h DlgPurge.h DlgRAWImport.h DlgRun.h DlgSettings.h DlgSoluteTable.h DlgTimeSettings.h DlgTransform.h DlgVTKExport.h DlgWidgetProps.h DocTemplate.h Document.h DragBox.h EditPanel.h Encrypter.h FEBioJob.h FEBioOpt.h FEBioStudio.h FEObjectProps.h FiberGeneratorTool.h FileThread.h FileViewer.h FoamGeneratorTool.h GGrid.h GLCanvas.h GLControlBar.h GLCursor.h GLHighlighter.h GLView.h GLViewTransform.h GManipulator.h GraphWindow.h GTriad.h InfoPanel.h IntegrateWindow.h LaunchConfig.h Logger.h LogPanel.h MainTabBar.h MainWindow.h MaterialEditor.h MaterialMapTool.h MaterialPanel.h MeshButtonBox.h MeshInfoPanel.h MeshInspector.h MeshPanel.h MeshSelectionBox.h modelcheck.h ModelPropsPanel.h ModelSearch.h ModelTree.h ModelViewer.h ObjectPanel.h ObjectProps.h PlaneCutTool.h PlotWidget.h PostDataPanel.h PostDoc.h PostPanel.h PropertyList.h PropertyListForm.h PropertyListView.h ReadCurveTool.h ResourceEdit.h ScalarFieldTool.h SelectionBox.h Sketcher.h SphereFitTool.h SSHHandler.h SSHThread.h StatePanel.h StatsWindow.h stdafx.h SummaryWindow.h targetver.h Tool.h ToolBox.h ToolsPanel.h ui_buildpanel.h ui_createpanel.h ui_curveeditor.h ui_editpanel.h ui_logpanel.h ui_mainwindow.h ui_materialeditor.h ui_meshinspector.h ui_meshpanel.h ui_modelviewer.h ui_toolspanel.h version.h ViewSettings.h ZipFiles.h $(DISTDIR)/
-	$(COPY_FILE) --parents BuildPanel.cpp CColorButton.cpp ClassDescriptor.cpp Command.cpp CommandManager.cpp CommandPanel.cpp ConchoidFitTool.cpp CreateP2PLinePane.cpp CreatePanel.cpp CreateSpringPane.cpp CurveEditor.cpp CurvePicker.cpp DataFieldSelector.cpp DlgAddBC.cpp DlgAddBodyLoad.cpp DlgAddChemicalReaction.cpp DlgAddContact.cpp DlgAddEquation.cpp DlgAddIC.cpp DlgAddMeshData.cpp DlgAddNodalLoad.cpp DlgAddRigidConnector.cpp DlgAddRigidConstraint.cpp DlgAddStep.cpp DlgAddSurfaceLoad.cpp DlgBatchConvert.cpp DlgCheck.cpp DlgCloneGrid.cpp DlgCloneObject.cpp DlgCloneRevolve.cpp DlgDetachSelection.cpp DlgEditOutput.cpp DlgEditPath.cpp DlgEditProject.cpp DlgExportFEBio.cpp DlgFEBioOptimize.cpp DlgFormula.cpp DlgImportAbaqus.cpp DlgImportCOMSOL.cpp DlgImportSTL.cpp DlgLameConvertor.cpp DlgLSDYNAExport.cpp DlgMergeObjects.cpp DlgModelInfo.cpp DlgNew.cpp DlgPurge.cpp DlgRAWImport.cpp DlgRun.cpp DlgSettings.cpp DlgSoluteTable.cpp DlgTimeSettings.cpp DlgTransform.cpp DlgVTKExport.cpp DlgWidgetProps.cpp DocTemplate.cpp Document.cpp DragBox.cpp EditPanel.cpp Encrypter.cpp FEBioJob.cpp FEBioStudio.cpp FEObjectProps.cpp FiberGeneratorTool.cpp FileThread.cpp FileViewer.cpp FoamGeneratorTool.cpp GGrid.cpp GLCanvas.cpp GLControlBar.cpp GLCursor.cpp GLHighLighter.cpp GLView.cpp GLViewTransform.cpp GManipulator.cpp GraphWindow.cpp GTriad.cpp InfoPanel.cpp IntegrateWindow.cpp LaunchConfig.cpp Logger.cpp LogPanel.cpp MainTabBar.cpp MainWindow.cpp MaterialEditor.cpp MaterialMapTool.cpp MaterialPanel.cpp menu.cpp menuPhysics.cpp menuPost.cpp menuRecord.cpp menuTools.cpp MeshButtonBox.cpp MeshInfoPanel.cpp MeshInspector.cpp MeshPanel.cpp MeshSelectionBox.cpp modelcheck.cpp ModelPropsPanel.cpp ModelSearch.cpp ModelTree.cpp ModelViewer.cpp ObjectPanel.cpp ObjectProps.cpp PlaneCutTool.cpp PlotWidget.cpp PostDataPanel.cpp PostDoc.cpp PostPanel.cpp PropertyList.cpp PropertyListForm.cpp PropertyListView.cpp ReadCurveTool.cpp ResourceEdit.cpp ScalarFieldTool.cpp SelectionBox.cpp Sketcher.cpp SphereFitTool.cpp SSHHandler.cpp SSHThread.cpp StatePanel.cpp StatsWindow.cpp stdafx.cpp SummaryWindow.cpp template.cpp Tool.cpp ToolBox.cpp ToolsPanel.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents AreaCalculatorTool.h BuildPanel.h CColorButton.h CIntInput.h ClassDescriptor.h Command.h CommandManager.h CommandPanel.h ConchoidFitTool.h CreateP2PlinePane.h CreatePanel.h CreateSpringPane.h CurveEditor.h CurveIntersectProps.h CurvePicker.h DataFieldSelector.h DlgAddBC.h DlgAddBodyLoad.h DlgAddChemicalReaction.h DlgAddContact.h DlgAddEquation.h DlgAddIC.h DlgAddMeshData.h DlgAddNodalLoad.h DlgAddRigidConnector.h DlgAddRigidConstraint.h DlgAddStep.h DlgAddSurfaceLoad.h DlgBatchConvert.h DlgCheck.h DlgCloneGrid.h DlgCloneObject.h DlgCloneRevolve.h DlgDetachSelection.h DlgEditOutput.h DlgEditPath.h DlgEditProject.h DlgExportFEBio.h DlgFEBioOptimize.h DlgFormula.h DlgImportAbaqus.h DlgImportCOMSOL.h DlgImportSTL.h DlgImportXPLT.h DlgLameConvertor.h DlgLSDYNAExport.h DlgMergeObjects.h DlgModelInfo.h DlgNew.h DlgPurge.h DlgRAWImport.h DlgRun.h DlgSettings.h DlgSoluteTable.h DlgTimeSettings.h DlgTransform.h DlgVTKExport.h DlgWidgetProps.h DocTemplate.h Document.h DragBox.h EditPanel.h Encrypter.h FEBioJob.h FEBioOpt.h FEBioStudio.h FEObjectProps.h FiberGeneratorTool.h FileThread.h FileViewer.h FoamGeneratorTool.h GGrid.h GLCanvas.h GLControlBar.h GLCursor.h GLHighlighter.h GLView.h GLViewTransform.h GManipulator.h GraphWindow.h GTriad.h InfoPanel.h IntegrateWindow.h LaunchConfig.h Logger.h LogPanel.h MainTabBar.h MainWindow.h MaterialEditor.h MaterialMapTool.h MaterialPanel.h MeshButtonBox.h MeshInfoPanel.h MeshInspector.h MeshPanel.h MeshSelectionBox.h modelcheck.h ModelPropsPanel.h ModelSearch.h ModelTree.h ModelViewer.h ObjectPanel.h ObjectProps.h PlaneCutTool.h PlotWidget.h PostDataPanel.h PostDoc.h PostPanel.h PropertyList.h PropertyListForm.h PropertyListView.h ReadCurveTool.h ResourceEdit.h ScalarFieldTool.h SelectionBox.h Sketcher.h SphereFitTool.h SSHHandler.h SSHThread.h StatePanel.h StatsWindow.h stdafx.h SummaryWindow.h targetver.h Tool.h ToolBox.h ToolsPanel.h ui_buildpanel.h ui_createpanel.h ui_curveeditor.h ui_editpanel.h ui_logpanel.h ui_mainwindow.h ui_materialeditor.h ui_meshinspector.h ui_meshpanel.h ui_modelviewer.h ui_toolspanel.h version.h ViewSettings.h ZipFiles.h $(DISTDIR)/
+	$(COPY_FILE) --parents AreaCalculatorTool.cpp BuildPanel.cpp CColorButton.cpp ClassDescriptor.cpp Command.cpp CommandManager.cpp CommandPanel.cpp ConchoidFitTool.cpp CreateP2PLinePane.cpp CreatePanel.cpp CreateSpringPane.cpp CurveEditor.cpp CurvePicker.cpp DataFieldSelector.cpp DlgAddBC.cpp DlgAddBodyLoad.cpp DlgAddChemicalReaction.cpp DlgAddContact.cpp DlgAddEquation.cpp DlgAddIC.cpp DlgAddMeshData.cpp DlgAddNodalLoad.cpp DlgAddRigidConnector.cpp DlgAddRigidConstraint.cpp DlgAddStep.cpp DlgAddSurfaceLoad.cpp DlgBatchConvert.cpp DlgCheck.cpp DlgCloneGrid.cpp DlgCloneObject.cpp DlgCloneRevolve.cpp DlgDetachSelection.cpp DlgEditOutput.cpp DlgEditPath.cpp DlgEditProject.cpp DlgExportFEBio.cpp DlgFEBioOptimize.cpp DlgFormula.cpp DlgImportAbaqus.cpp DlgImportCOMSOL.cpp DlgImportSTL.cpp DlgImportXPLT.cpp DlgLameConvertor.cpp DlgLSDYNAExport.cpp DlgMergeObjects.cpp DlgModelInfo.cpp DlgNew.cpp DlgPurge.cpp DlgRAWImport.cpp DlgRun.cpp DlgSettings.cpp DlgSoluteTable.cpp DlgTimeSettings.cpp DlgTransform.cpp DlgVTKExport.cpp DlgWidgetProps.cpp DocTemplate.cpp Document.cpp DragBox.cpp EditPanel.cpp Encrypter.cpp FEBioJob.cpp FEBioStudio.cpp FEObjectProps.cpp FiberGeneratorTool.cpp FileThread.cpp FileViewer.cpp FoamGeneratorTool.cpp GGrid.cpp GLCanvas.cpp GLControlBar.cpp GLCursor.cpp GLHighLighter.cpp GLView.cpp GLViewTransform.cpp GManipulator.cpp GraphWindow.cpp GTriad.cpp InfoPanel.cpp IntegrateWindow.cpp LaunchConfig.cpp Logger.cpp LogPanel.cpp MainTabBar.cpp MainWindow.cpp MaterialEditor.cpp MaterialMapTool.cpp MaterialPanel.cpp menu.cpp menuPhysics.cpp menuPost.cpp menuRecord.cpp menuTools.cpp MeshButtonBox.cpp MeshInfoPanel.cpp MeshInspector.cpp MeshPanel.cpp MeshSelectionBox.cpp modelcheck.cpp ModelPropsPanel.cpp ModelSearch.cpp ModelTree.cpp ModelViewer.cpp ObjectPanel.cpp ObjectProps.cpp PlaneCutTool.cpp PlotWidget.cpp PostDataPanel.cpp PostDoc.cpp PostPanel.cpp PropertyList.cpp PropertyListForm.cpp PropertyListView.cpp ReadCurveTool.cpp ResourceEdit.cpp ScalarFieldTool.cpp SelectionBox.cpp Sketcher.cpp SphereFitTool.cpp SSHHandler.cpp SSHThread.cpp StatePanel.cpp StatsWindow.cpp stdafx.cpp SummaryWindow.cpp template.cpp Tool.cpp ToolBox.cpp ToolsPanel.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -1368,6 +1376,7 @@ qrc_febiostudio.cpp: ../febiostudio.qrc \
 		../icons/sphereinbox.png \
 		../icons/selectObject.png \
 		../icons/back.png \
+		../icons/splash.png \
 		../icons/flow.png \
 		../icons/redo.png \
 		../icons/clonegrid.png \
@@ -1447,6 +1456,7 @@ qrc_febiostudio.cpp: ../febiostudio.qrc \
 		../icons/integrate.png \
 		../icons/font_dec_neg.png \
 		../icons/tensor.png \
+		../icons/splash_hires.png \
 		../icons/clone.png \
 		../icons/select_path.png \
 		../icons/font_italic.png \
@@ -1475,7 +1485,7 @@ compiler_moc_predefs_make_all: moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) moc_predefs.h
 moc_predefs.h: ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/data/dummy.cpp
-	g++ -pipe -O0 -g -std=gnu++11 -w -dM -E -o moc_predefs.h ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/data/dummy.cpp
+	g++ -pipe -std=c++14 -O0 -g -std=gnu++1y -w -dM -E -o moc_predefs.h ../../../Resources/Qt/5.12.0/gcc_64/mkspecs/features/data/dummy.cpp
 
 compiler_moc_header_make_all: moc_BuildPanel.cpp moc_CColorButton.cpp moc_CreateP2PlinePane.cpp moc_CreatePanel.cpp moc_CreateSpringPane.cpp moc_CurveEditor.cpp moc_CurvePicker.cpp moc_DataFieldSelector.cpp moc_DlgAddChemicalReaction.cpp moc_DlgAddEquation.cpp moc_DlgAddMeshData.cpp moc_DlgCloneGrid.cpp moc_DlgCloneObject.cpp moc_DlgCloneRevolve.cpp moc_DlgEditOutput.cpp moc_DlgEditPath.cpp moc_DlgEditProject.cpp moc_DlgExportFEBio.cpp moc_DlgFEBioOptimize.cpp moc_DlgFormula.cpp moc_DlgLameConvertor.cpp moc_DlgModelInfo.cpp moc_DlgNew.cpp moc_DlgRun.cpp moc_DlgSettings.cpp moc_DlgSoluteTable.cpp moc_DlgWidgetProps.cpp moc_EditPanel.cpp moc_FileThread.cpp moc_FileViewer.cpp moc_GLControlBar.cpp moc_GLHighlighter.cpp moc_GLView.cpp moc_GraphWindow.cpp moc_InfoPanel.cpp moc_IntegrateWindow.cpp moc_Logger.cpp moc_LogPanel.cpp moc_MainTabBar.cpp moc_MainWindow.cpp moc_MaterialEditor.cpp moc_MaterialPanel.cpp moc_MeshButtonBox.cpp moc_MeshInspector.cpp moc_MeshPanel.cpp moc_MeshSelectionBox.cpp moc_ModelPropsPanel.cpp moc_ModelSearch.cpp moc_ModelTree.cpp moc_ModelViewer.cpp moc_ObjectPanel.cpp moc_PlotWidget.cpp moc_PostDataPanel.cpp moc_PostPanel.cpp moc_PropertyListForm.cpp moc_PropertyListView.cpp moc_ResourceEdit.cpp moc_SelectionBox.cpp moc_SSHHandler.cpp moc_SSHThread.cpp moc_StatePanel.cpp moc_StatsWindow.cpp moc_SummaryWindow.cpp moc_Tool.cpp moc_ToolBox.cpp moc_ToolsPanel.cpp
 compiler_moc_header_clean:
@@ -2469,25 +2479,33 @@ moc_DataFieldSelector.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets
 		../MathLib/mat3d.hpp \
 		../MeshLib/FEEdge.h \
 		../MeshLib/FEFace.h \
+		../MeshLib/FEMesh.h \
 		../MeshLib/FECoreMesh.h \
 		../MeshLib/FEMeshBase.h \
 		../FSCore/box.h \
 		../MeshLib/FELineMesh.h \
-		../PostLib/FEGroup.h \
-		../MeshLib/FENodeElementList.h \
-		../MeshLib/FENodeFaceList.h \
-		../PostLib/FEMaterial.h \
-		../FSCore/color.h \
-		../PostLib/FEState.h \
-		../MeshTools/FEMeshData.h \
+		../MeshTools/FEGroup.h \
 		../FSCore/FSObject.h \
 		../FSCore/ParamBlock.h \
 		../FSCore/Serializable.h \
 		../FSCore/Archive.h \
+		../FSCore/color.h \
 		../FSCore/CallTracer.h \
 		../FSCore/memtool.h \
 		../FSCore/enum.h \
 		../MeshTools/LoadCurve.h \
+		../MeshTools/FEItemListBuilder.h \
+		../MeshTools/FEItemList.h \
+		../FEMLib/FECoreModel.h \
+		../MeshTools/FENodeData.h \
+		../MeshTools/FEMeshData.h \
+		../MeshTools/FESurfaceData.h \
+		../MeshTools/FEElementData.h \
+		../PostLib/FEGroup.h \
+		../MeshLib/FENodeElementList.h \
+		../MeshLib/FENodeFaceList.h \
+		../PostLib/FEMaterial.h \
+		../PostLib/FEState.h \
 		../PostLib/ValArray.h \
 		../PostLib/FEDataManager.h \
 		../PostLib/FEDataField.h \
@@ -9226,6 +9244,207 @@ compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_heade
 
 ####### Compile
 
+AreaCalculatorTool.o: AreaCalculatorTool.cpp stdafx.h \
+		targetver.h \
+		AreaCalculatorTool.h \
+		Tool.h \
+		PropertyList.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QVariant \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvariant.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qglobal.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qconfig.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtcore-config.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsystemdetection.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qprocessordetection.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtypeinfo.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsysinfo.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlogging.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qflags.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qglobalstatic.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmutex.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qnumeric.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qversiontagging.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbasicatomic.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qgenericatomic.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_msvc.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbytearray.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qrefcount.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qnamespace.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qarraydata.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlist.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qalgorithms.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qiterator.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qhashfunctions.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstring.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qchar.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringliteral.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringalgorithms.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringview.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringbuilder.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qpair.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbytearraylist.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringlist.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qregexp.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringmatcher.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmetatype.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobjectdefs.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmap.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qdebug.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qhash.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtextstream.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qiodevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobject.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcoreevent.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qscopedpointer.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobject_impl.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlocale.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qshareddata.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvector.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qpoint.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qset.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsharedpointer.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../GLWLib/convert.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QColor \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qcolor.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtguiglobal.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtgui-config.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qrgb.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qrgba64.h \
+		../FSCore/color.h \
+		../MathLib/math3d.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qwindowdefs.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qwindowdefs_win.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmargins.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpaintdevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qrect.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsize.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpalette.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qbrush.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qmatrix.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpolygon.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qregion.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qdatastream.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qline.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtransform.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpainterpath.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qimage.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpixelformat.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpixmap.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfont.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfontmetrics.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfontinfo.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qsizepolicy.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qcursor.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qkeysequence.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qevent.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qurl.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qurlquery.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfile.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfiledevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qvector2d.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtouchdevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QBoxLayout \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qboxlayout.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlayout.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlayoutitem.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qgridlayout.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QCheckBox \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qcheckbox.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qabstractbutton.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qicon.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QPushButton \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QFormLayout \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qformlayout.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QLayout \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QLineEdit \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlineedit.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qframe.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextcursor.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpen.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextoption.h \
+		Document.h \
+		../MeshTools/FEProject.h \
+		../FSCore/Serializable.h \
+		../FSCore/Archive.h \
+		../MathLib/mat3d.h \
+		../MathLib/mat3d.hpp \
+		../FSCore/CallTracer.h \
+		../FSCore/memtool.h \
+		../FSCore/enum.h \
+		../MeshTools/FEModel.h \
+		../MeshLib/FEMesh.h \
+		../MeshLib/FECoreMesh.h \
+		../MeshLib/FENode.h \
+		../MeshLib/FEItem.h \
+		../MeshLib/FEElement.h \
+		../MeshLib/FEEdge.h \
+		../MeshLib/FEFace.h \
+		../MeshLib/FEMeshBase.h \
+		../FSCore/box.h \
+		../MeshLib/FELineMesh.h \
+		../MeshTools/FEGroup.h \
+		../FSCore/FSObject.h \
+		../FSCore/ParamBlock.h \
+		../MeshTools/LoadCurve.h \
+		../MeshTools/FEItemListBuilder.h \
+		../MeshTools/FEItemList.h \
+		../FEMLib/FECoreModel.h \
+		../MeshTools/FENodeData.h \
+		../MeshTools/FEMeshData.h \
+		../MeshTools/FESurfaceData.h \
+		../MeshTools/FEElementData.h \
+		../FEMLib/FEInterface.h \
+		../FEMLib/FEStepComponent.h \
+		../FEMLib/FEComponent.h \
+		../FEMLib/FEBase.h \
+		../FEMLib/FEDataMap.h \
+		../MeshTools/GMaterial.h \
+		../FEMLib/FEConnector.h \
+		../MeshTools/GModel.h \
+		../FEMLib/FEBoundaryCondition.h \
+		../FEMLib/FEAnalysisStep.h \
+		../MeshTools/FEDataVariable.h \
+		../MathLib/MathParser.h \
+		../MeshTools/FESoluteData.h \
+		../FEMLib/FEDOF.h \
+		../FEMLib/FEInitialCondition.h \
+		../FSCore/FSObjectList.h \
+		../MeshTools/PlotDataSettings.h \
+		../MeshTools/FESelection.h \
+		../MeshTools/GDiscreteObject.h \
+		../GeomLib/GItem.h \
+		../MeshIO/FileReader.h \
+		CommandManager.h \
+		FEBioOpt.h \
+		FEBioJob.h \
+		LaunchConfig.h \
+		../PostLib/ImageModel.h \
+		../PostLib/GLImageRenderer.h \
+		../PostLib/GLObject.h \
+		ViewSettings.h \
+		modelcheck.h \
+		../MeshTools/SphereFit.h \
+		../GeomLib/GObject.h \
+		../GeomLib/GBaseObject.h \
+		../GeomLib/GTransform.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AreaCalculatorTool.o AreaCalculatorTool.cpp
+
 BuildPanel.o: BuildPanel.cpp stdafx.h \
 		targetver.h \
 		BuildPanel.h \
@@ -11520,25 +11739,33 @@ DataFieldSelector.o: DataFieldSelector.cpp DataFieldSelector.h \
 		../MathLib/mat3d.hpp \
 		../MeshLib/FEEdge.h \
 		../MeshLib/FEFace.h \
+		../MeshLib/FEMesh.h \
 		../MeshLib/FECoreMesh.h \
 		../MeshLib/FEMeshBase.h \
 		../FSCore/box.h \
 		../MeshLib/FELineMesh.h \
-		../PostLib/FEGroup.h \
-		../MeshLib/FENodeElementList.h \
-		../MeshLib/FENodeFaceList.h \
-		../PostLib/FEMaterial.h \
-		../FSCore/color.h \
-		../PostLib/FEState.h \
-		../MeshTools/FEMeshData.h \
+		../MeshTools/FEGroup.h \
 		../FSCore/FSObject.h \
 		../FSCore/ParamBlock.h \
 		../FSCore/Serializable.h \
 		../FSCore/Archive.h \
+		../FSCore/color.h \
 		../FSCore/CallTracer.h \
 		../FSCore/memtool.h \
 		../FSCore/enum.h \
 		../MeshTools/LoadCurve.h \
+		../MeshTools/FEItemListBuilder.h \
+		../MeshTools/FEItemList.h \
+		../FEMLib/FECoreModel.h \
+		../MeshTools/FENodeData.h \
+		../MeshTools/FEMeshData.h \
+		../MeshTools/FESurfaceData.h \
+		../MeshTools/FEElementData.h \
+		../PostLib/FEGroup.h \
+		../MeshLib/FENodeElementList.h \
+		../MeshLib/FENodeFaceList.h \
+		../PostLib/FEMaterial.h \
+		../PostLib/FEState.h \
 		../PostLib/ValArray.h \
 		../PostLib/FEDataManager.h \
 		../PostLib/FEDataField.h \
@@ -16343,6 +16570,135 @@ DlgImportSTL.o: DlgImportSTL.cpp stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qbuttongroup.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DlgImportSTL.o DlgImportSTL.cpp
 
+DlgImportXPLT.o: DlgImportXPLT.cpp stdafx.h \
+		targetver.h \
+		DlgImportXPLT.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtguiglobal.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qglobal.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qconfig.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtcore-config.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsystemdetection.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qprocessordetection.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtypeinfo.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsysinfo.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlogging.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qflags.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbasicatomic.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qgenericatomic.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qatomic_msvc.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qglobalstatic.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmutex.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qnumeric.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qversiontagging.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtgui-config.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qwidget.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qwindowdefs.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobjectdefs.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qnamespace.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qwindowdefs_win.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobject.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstring.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qchar.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbytearray.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qrefcount.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qarraydata.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringliteral.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringalgorithms.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringview.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringbuilder.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlist.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qalgorithms.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qiterator.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qhashfunctions.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qpair.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qbytearraylist.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringlist.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qregexp.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qstringmatcher.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcoreevent.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qscopedpointer.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmetatype.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qobject_impl.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmargins.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpaintdevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qrect.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsize.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qpoint.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpalette.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qcolor.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qrgb.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qrgba64.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qbrush.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvector.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qmatrix.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpolygon.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qregion.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qdatastream.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qiodevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qline.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtransform.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpainterpath.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qimage.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpixelformat.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpixmap.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsharedpointer.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qshareddata.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qhash.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfont.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfontmetrics.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qfontinfo.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qsizepolicy.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qcursor.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qkeysequence.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qevent.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qvariant.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qmap.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qdebug.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qtextstream.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qlocale.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qset.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qurl.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qurlquery.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfile.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfiledevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qvector2d.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtouchdevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QRadioButton \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qradiobutton.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qabstractbutton.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qicon.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QLineEdit \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlineedit.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qframe.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextcursor.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpen.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextoption.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialogButtonBox \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialogbuttonbox.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QBoxLayout \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qboxlayout.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlayout.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlayoutitem.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qgridlayout.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QLabel \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlabel.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DlgImportXPLT.o DlgImportXPLT.cpp
+
 DlgLameConvertor.o: DlgLameConvertor.cpp stdafx.h \
 		targetver.h \
 		DlgLameConvertor.h \
@@ -19872,6 +20228,8 @@ FEBioStudio.o: FEBioStudio.cpp stdafx.h \
 		../PostLib/PostView.h \
 		../FSCore/FSDir.h \
 		../MeshLib/FEElementLibrary.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QSplashScreen \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qsplashscreen.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QFileOpenEvent
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o FEBioStudio.o FEBioStudio.cpp
 
@@ -24086,7 +24444,8 @@ MainWindow.o: MainWindow.cpp stdafx.h \
 		Encrypter.h \
 		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/aes.h \
 		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslconf.h \
-		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslv.h
+		../../../Resources/openssl-OpenSSL_1_1_1d/include/openssl/opensslv.h \
+		DlgImportXPLT.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o MainWindow.cpp
 
 MaterialEditor.o: MaterialEditor.cpp stdafx.h \
@@ -27900,6 +28259,8 @@ ModelPropsPanel.o: ModelPropsPanel.cpp ../MeshTools/stdafx.h \
 		../FEMLib/FECoreMaterial.h \
 		../FEMLib/FEMaterialFactory.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QGridLayout \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QCheckBox \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qcheckbox.h \
 		MeshInfoPanel.h \
 		../MeshTools/GGroup.h \
 		Command.h \
@@ -29647,15 +30008,23 @@ PostDoc.o: PostDoc.cpp ../MeshTools/stdafx.h \
 		../MeshLib/FEElement.h \
 		../MeshLib/FEEdge.h \
 		../MeshLib/FEFace.h \
+		../MeshLib/FEMesh.h \
 		../MeshLib/FECoreMesh.h \
 		../MeshLib/FEMeshBase.h \
 		../MeshLib/FELineMesh.h \
+		../MeshTools/FEGroup.h \
+		../MeshTools/FEItemListBuilder.h \
+		../MeshTools/FEItemList.h \
+		../FEMLib/FECoreModel.h \
+		../MeshTools/FENodeData.h \
+		../MeshTools/FEMeshData.h \
+		../MeshTools/FESurfaceData.h \
+		../MeshTools/FEElementData.h \
 		../PostLib/FEGroup.h \
 		../MeshLib/FENodeElementList.h \
 		../MeshLib/FENodeFaceList.h \
 		../PostLib/FEMaterial.h \
 		../PostLib/FEState.h \
-		../MeshTools/FEMeshData.h \
 		../PostLib/ValArray.h \
 		../PostLib/FEDataManager.h \
 		../PostLib/FEDataField.h \
@@ -29799,14 +30168,6 @@ PostDoc.o: PostDoc.cpp ../MeshTools/stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QColor \
 		GGrid.h \
 		../MeshLib/Intersect.h \
-		../MeshLib/FEMesh.h \
-		../MeshTools/FEGroup.h \
-		../MeshTools/FEItemListBuilder.h \
-		../MeshTools/FEItemList.h \
-		../FEMLib/FECoreModel.h \
-		../MeshTools/FENodeData.h \
-		../MeshTools/FESurfaceData.h \
-		../MeshTools/FEElementData.h \
 		../MeshTools/GLMesh.h \
 		../MeshTools/GMesh.h \
 		../MeshTools/FEExtrudeFaces.h \
@@ -30234,16 +30595,24 @@ PropertyListForm.o: PropertyListForm.cpp PropertyListForm.h \
 		../MeshLib/FEElement.h \
 		../MeshLib/FEEdge.h \
 		../MeshLib/FEFace.h \
+		../MeshLib/FEMesh.h \
 		../MeshLib/FECoreMesh.h \
 		../MeshLib/FEMeshBase.h \
 		../FSCore/box.h \
 		../MeshLib/FELineMesh.h \
+		../MeshTools/FEGroup.h \
+		../MeshTools/FEItemListBuilder.h \
+		../MeshTools/FEItemList.h \
+		../FEMLib/FECoreModel.h \
+		../MeshTools/FENodeData.h \
+		../MeshTools/FEMeshData.h \
+		../MeshTools/FESurfaceData.h \
+		../MeshTools/FEElementData.h \
 		../PostLib/FEGroup.h \
 		../MeshLib/FENodeElementList.h \
 		../MeshLib/FENodeFaceList.h \
 		../PostLib/FEMaterial.h \
 		../PostLib/FEState.h \
-		../MeshTools/FEMeshData.h \
 		../PostLib/ValArray.h \
 		../PostLib/FEDataManager.h \
 		../PostLib/FEDataField.h \
@@ -30451,17 +30820,25 @@ PropertyListView.o: PropertyListView.cpp PropertyListView.h \
 		../MeshLib/FEElement.h \
 		../MeshLib/FEEdge.h \
 		../MeshLib/FEFace.h \
+		../MeshLib/FEMesh.h \
 		../MeshLib/FECoreMesh.h \
 		../MeshLib/FEMeshBase.h \
 		../FSCore/box.h \
 		../MeshLib/FELineMesh.h \
+		../MeshTools/FEGroup.h \
+		../FSCore/FSObject.h \
+		../MeshTools/FEItemListBuilder.h \
+		../MeshTools/FEItemList.h \
+		../FEMLib/FECoreModel.h \
+		../MeshTools/FENodeData.h \
+		../MeshTools/FEMeshData.h \
+		../MeshTools/FESurfaceData.h \
+		../MeshTools/FEElementData.h \
 		../PostLib/FEGroup.h \
 		../MeshLib/FENodeElementList.h \
 		../MeshLib/FENodeFaceList.h \
 		../PostLib/FEMaterial.h \
 		../PostLib/FEState.h \
-		../MeshTools/FEMeshData.h \
-		../FSCore/FSObject.h \
 		../PostLib/ValArray.h \
 		../PostLib/FEDataManager.h \
 		../PostLib/FEDataField.h \
@@ -33093,7 +33470,8 @@ ToolsPanel.o: ToolsPanel.cpp ../MeshTools/stdafx.h \
 		MaterialMapTool.h \
 		ScalarFieldTool.h \
 		PlaneCutTool.h \
-		FiberGeneratorTool.h
+		FiberGeneratorTool.h \
+		AreaCalculatorTool.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ToolsPanel.o ToolsPanel.cpp
 
 qrc_febiostudio.o: qrc_febiostudio.cpp 
