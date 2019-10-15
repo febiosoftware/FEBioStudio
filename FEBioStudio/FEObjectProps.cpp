@@ -322,7 +322,7 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CMaterialProps::CMaterialProps(FEModel& fem, FEMaterial* mat) : CObjectProps(0), m_mat(mat)
+CMaterialProps::CMaterialProps(FEModel& fem, FEMaterial* mat) : FEObjectProps(0, &fem), m_mat(mat)
 {
 	BuildPropertyList();
 }

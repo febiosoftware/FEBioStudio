@@ -281,7 +281,7 @@ void FEMaterial::copy(FEMaterial* pm)
 		FEMaterialProperty& mcd = GetProperty(i);
 		FEMaterialProperty& mcs = pm->GetProperty(i);
 
-		if (mcs.Size() == 1)
+		if ((mcs.Size() == 1)&&(mcd.Size() == 1))
 		{
 			if (mcs.GetMaterial())
 			{

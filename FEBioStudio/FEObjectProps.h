@@ -102,7 +102,7 @@ private:
 };
 
 
-class CMaterialProps : public CObjectProps
+class CMaterialProps : public FEObjectProps
 {
 public:
 	CMaterialProps(FEModel& fem, FEMaterial* mat);
