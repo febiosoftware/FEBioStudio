@@ -271,7 +271,7 @@ FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, int nstep) : FEPrescrib
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE);	// degree of freedom
-	AddDoubleParam(1, "scale", "scale")->SetLoadCurve();
+	AddDoubleParam(1, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
 	AddBoolParam(0, "relative", "relative");
 }
 
@@ -279,7 +279,7 @@ FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, 
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE);	// degree of freedom
-	AddDoubleParam(s, "scale", "scale")->SetLoadCurve();
+	AddDoubleParam(s, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
 	AddBoolParam(0, "relative", "relative");
 	SetDOF(bc);
 }
