@@ -116,7 +116,10 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		// get the selected FEBio file version
 		lastFEBioFileVersion = dlg.GetFEBioFileVersion();
 
-		RunFEBioJob(job, lastFEBioFileVersion, dlg.WriteNodes(), dlg.CommandLine());
+		job->m_febVersion = lastFEBioFileVersion;
+		job->m_writeNotes = dlg.WriteNotes();
+		job->m_cmd = dlg.CommandLine().toStdString();
+		RunFEBioJob(job);
 	}
 }
 

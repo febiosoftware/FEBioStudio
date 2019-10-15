@@ -1815,9 +1815,13 @@ void CMainWindow::UpdateFontToolbar()
 	else ui->pFontToolBar->setDisabled(true);
 }
 
-void CMainWindow::RunFEBioJob(CFEBioJob* job, int febioFileVersion, bool writeNotes, QString cmd)
+void CMainWindow::RunFEBioJob(CFEBioJob* job)
 {
 	CDocument* doc = GetDocument();
+
+	bool febioFileVersion = job->m_febVersion;
+	bool writeNotes = job->m_writeNotes;
+	QString cmd = QString::fromStdString(job->m_cmd);
 
 	if (doc->GetActiveJob())
 	{

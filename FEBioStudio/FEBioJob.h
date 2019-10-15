@@ -61,12 +61,20 @@ private:
 	std::string		m_plotFile;	// the .xplt file name
 	std::string		m_logFile;	// the .log file name
 	int				m_status;	// return status
+
 	CLaunchConfig 	m_launchConfig;
 #ifdef HAS_SSH
 	CSSHHandler*	m_sshHandler;
 	CSSHHandler* 	NewHandler();
 #endif
 
+public:
+	// additional run settings (TODO: Is this a good place, or should this go in the launch config?)
+	int			m_febVersion;	// the .feb file version
+	bool		m_writeNotes;	// write notes to .feb file
+	std::string	m_cmd;			// command line options
+
+public:
 	CDocument*	m_doc;
 	CPostDoc*	m_postDoc;
 

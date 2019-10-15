@@ -256,7 +256,7 @@ int CDlgRun::GetFEBioFileVersion()
 	return ui->febioFile->currentIndex();
 }
 
-bool CDlgRun::WriteNodes()
+bool CDlgRun::WriteNotes()
 {
 	return ui->writeNotes->isChecked();
 }

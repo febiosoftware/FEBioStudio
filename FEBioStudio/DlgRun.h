@@ -22,7 +22,7 @@ public:
 	QString GetJobName();
 	int GetLaunchConfig();
 	int GetFEBioFileVersion();
-	bool WriteNodes();
+	bool WriteNotes();
 	bool UseSubDir();
 
 	QString CommandLine();

@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[208];
-    char stringdata0[4806];
+    QByteArrayData data[205];
+    char stringdata0[4774];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -231,14 +231,11 @@ QT_MOC_LITERAL(196, 4661, 17), // "UpdateFontToolbar"
 QT_MOC_LITERAL(197, 4679, 11), // "RunFEBioJob"
 QT_MOC_LITERAL(198, 4691, 10), // "CFEBioJob*"
 QT_MOC_LITERAL(199, 4702, 3), // "job"
-QT_MOC_LITERAL(200, 4706, 16), // "febioFileVersion"
-QT_MOC_LITERAL(201, 4723, 10), // "writeNotes"
-QT_MOC_LITERAL(202, 4734, 3), // "cmd"
-QT_MOC_LITERAL(203, 4738, 15), // "NextSSHFunction"
-QT_MOC_LITERAL(204, 4754, 12), // "CSSHHandler*"
-QT_MOC_LITERAL(205, 4767, 15), // "ShowSSHProgress"
-QT_MOC_LITERAL(206, 4783, 4), // "show"
-QT_MOC_LITERAL(207, 4788, 17) // "UpdateSSHProgress"
+QT_MOC_LITERAL(200, 4706, 15), // "NextSSHFunction"
+QT_MOC_LITERAL(201, 4722, 12), // "CSSHHandler*"
+QT_MOC_LITERAL(202, 4735, 15), // "ShowSSHProgress"
+QT_MOC_LITERAL(203, 4751, 4), // "show"
+QT_MOC_LITERAL(204, 4756, 17) // "UpdateSSHProgress"
 
     },
     "CMainWindow\0on_actionNew_triggered\0\0"
@@ -386,8 +383,7 @@ QT_MOC_LITERAL(207, 4788, 17) // "UpdateSSHProgress"
     "DeleteAllSteps\0GetGLView\0CGLView*\0"
     "changeViewMode\0View_Mode\0vm\0GetCurrentModel\0"
     "Post::CGLModel*\0UpdateFontToolbar\0"
-    "RunFEBioJob\0CFEBioJob*\0job\0febioFileVersion\0"
-    "writeNotes\0cmd\0NextSSHFunction\0"
+    "RunFEBioJob\0CFEBioJob*\0job\0NextSSHFunction\0"
     "CSSHHandler*\0ShowSSHProgress\0show\0"
     "UpdateSSHProgress"
 };
@@ -573,10 +569,10 @@ static const uint qt_meta_data_CMainWindow[] = {
      191,    1, 1131,    2, 0x0a /* Public */,
      194,    0, 1134,    2, 0x0a /* Public */,
      196,    0, 1135,    2, 0x0a /* Public */,
-     197,    4, 1136,    2, 0x0a /* Public */,
-     203,    1, 1145,    2, 0x0a /* Public */,
-     205,    1, 1148,    2, 0x0a /* Public */,
-     207,    1, 1151,    2, 0x0a /* Public */,
+     197,    1, 1136,    2, 0x0a /* Public */,
+     200,    1, 1139,    2, 0x0a /* Public */,
+     202,    1, 1142,    2, 0x0a /* Public */,
+     204,    1, 1145,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -745,9 +741,9 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void, 0x80000000 | 192,  193,
     0x80000000 | 195,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 198, QMetaType::Int, QMetaType::Bool, QMetaType::QString,  199,  200,  201,  202,
-    QMetaType::Void, 0x80000000 | 204,    2,
-    QMetaType::Void, QMetaType::Bool,  206,
+    QMetaType::Void, 0x80000000 | 198,  199,
+    QMetaType::Void, 0x80000000 | 201,    2,
+    QMetaType::Void, QMetaType::Bool,  203,
     QMetaType::Void, QMetaType::Int,    2,
 
        0        // eod
@@ -927,7 +923,7 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 164: { Post::CGLModel* _r = _t->GetCurrentModel();
             if (_a[0]) *reinterpret_cast< Post::CGLModel**>(_a[0]) = std::move(_r); }  break;
         case 165: _t->UpdateFontToolbar(); break;
-        case 166: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])),(*reinterpret_cast< bool(*)>(_a[3])),(*reinterpret_cast< QString(*)>(_a[4]))); break;
+        case 166: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
         case 167: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
         case 168: _t->ShowSSHProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
         case 169: _t->UpdateSSHProgress((*reinterpret_cast< int(*)>(_a[1]))); break;

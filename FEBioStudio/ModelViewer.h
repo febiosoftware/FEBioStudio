@@ -102,6 +102,7 @@ private slots:
 	void OnCopyLoad();
 	void OnCopyConstraint();
 	void OnCopyStep();
+	void OnRerunJob();
 	void OnEditOutput();
 	void OnEditOutputLog();
 	void OnRemoveEmptySelections();

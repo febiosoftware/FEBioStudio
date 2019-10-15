@@ -1065,6 +1065,15 @@ void CModelViewer::OnCopyStep()
 	Select(psCopy);
 }
 
+void CModelViewer::OnRerunJob()
+{
+	CFEBioJob* job = dynamic_cast<CFEBioJob*>(m_currentObject); assert(job);
+	if (job == 0) return;
+
+	CMainWindow* wnd = GetMainWindow();
+	wnd->RunFEBioJob(job);
+}
+
 void CModelViewer::OnEditOutput()
 {
 	CDocument* pdoc = GetMainWindow()->GetDocument();
@@ -1288,6 +1297,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_STEP:
 		menu.addAction("Copy", this, SLOT(OnCopyStep()));
+		del = true;
+		break;
+	case MT_JOB:
+		menu.addAction("Rerun job", this, SLOT(OnRerunJob()));
 		del = true;
 		break;
 	default:
