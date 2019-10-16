@@ -1168,6 +1168,8 @@ void CModelPropsPanel::on_object_colorChanged(const QColor& col)
 
 void CModelPropsPanel::on_props_dataChanged(int n)
 {
+	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(m_currentObject);
+	if (po) po->Update();
 	m_wnd->RedrawGL();
 }
 

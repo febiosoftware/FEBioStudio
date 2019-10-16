@@ -67,8 +67,11 @@ void CGLColorMap::UpdateData(bool bsave)
 			if (b) m_pbar->show(); else m_pbar->hide();
 			m_pbar->SetOrientation(GetIntValue(LEGEND_ORIENT));
 		}
-		m_range.max = GetFloatValue(USER_MAX);
-		m_range.min = GetFloatValue(USER_MIN);
+		if (m_range.ntype == RANGE_USER)
+		{
+			m_range.max = GetFloatValue(USER_MAX);
+			m_range.min = GetFloatValue(USER_MIN);
+		}
 	}
 	else
 	{
@@ -111,6 +114,12 @@ void CGLColorMap::SetColorSmooth(bool b)
 {
 	m_Col.SetSmooth(b);
 	UpdateData(false);
+}
+
+//-----------------------------------------------------------------------------
+void CGLColorMap::Update()
+{
+	Update(GetModel()->currentTimeIndex(), 0.f, false);
 }
 
 //-----------------------------------------------------------------------------

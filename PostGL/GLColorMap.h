@@ -64,6 +64,8 @@ private:
 
 	void UpdateData(bool bsave = true) override;
 
+	void Update() override;
+
 protected:
 	int		m_nfield;
 	bool	m_breset;	// reset the range when the field has changed
