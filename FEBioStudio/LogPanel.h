@@ -1,5 +1,6 @@
 #pragma once
 #include <QWidget>
+#include <QTextCharFormat>
 
 namespace Ui {
 	class CLogPanel;
@@ -18,6 +19,9 @@ public:
 
 	void ShowOutput();
 
+	// Changed to allow for parsing of ANSI escape codes that might be
+	// returned from an ssh session
+	// Code taken from https://stackoverflow.com/questions/26500429/qtextedit-and-colored-bash-like-output-emulation
 	void AddText(const QString& txt, int n = 0);
 
 private slots:
@@ -26,5 +30,8 @@ private slots:
 	void on_combo_currentIndexChanged(int i);
 
 private:
+	// Code taken from https://stackoverflow.com/questions/26500429/qtextedit-and-colored-bash-like-output-emulation
+	void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
+
 	Ui::CLogPanel*	ui;
 };
