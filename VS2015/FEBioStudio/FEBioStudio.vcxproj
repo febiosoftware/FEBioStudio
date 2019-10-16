@@ -193,8 +193,8 @@
     <ClCompile Include="..\..\FEBioStudio\DlgCloneObject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgCloneRevolve.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgDetachSelection.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgEditLConfigs.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgEditOutput.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DlgEditPath.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgEditProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgExportFEBio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFEBioOptimize.cpp" />
@@ -273,8 +273,8 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneGrid.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneObject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneRevolve.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgEditLConfigs.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgEditOutput.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\moc_DlgEditPath.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgEditProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgExportFEBio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgFEBioOptimize.cpp" />
@@ -375,7 +375,7 @@
     <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h" />
     <ClInclude Include="..\..\FEBioStudio\CurvePicker.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgCheck.h" />
-    <CustomBuild Include="..\..\FEBioStudio\DlgEditPath.h">
+    <CustomBuild Include="..\..\FEBioStudio\DlgEditLConfigs.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>

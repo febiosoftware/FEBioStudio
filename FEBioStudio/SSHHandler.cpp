@@ -1110,15 +1110,18 @@ int CSSHHandler::RunCommandList(std::vector<std::string> commands)
 			nwritten = ssh_channel_write(channel, "disown\n", sizeof("disown\n"));
 
 			// Wait to ensure that the process has been broken before you stop
+#ifndef WIN32
 			usleep(5000000L);
-
+#endif
 			m_data->orphan = false;
 
 			break;
 		}
 
 		// Sleep to save cycles
+#ifndef WIN32
 		usleep(5000L);
+#endif
 	}
 
 	if (nbytes < 0)
