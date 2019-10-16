@@ -811,11 +811,12 @@ void CMainWindow::writeSettings()
 		settings.setValue(configName + "/port", ui->m_launch_configs[i].port);
 		settings.setValue(configName + "/userName", ui->m_launch_configs[i].userName.c_str());
 		settings.setValue(configName + "/remoteDir", ui->m_launch_configs[i].remoteDir.c_str());
-		settings.setValue(configName + "/jobName", ui->m_launch_configs[i].jobName.c_str());
-		settings.setValue(configName + "/walltime", ui->m_launch_configs[i].walltime.c_str());
-		settings.setValue(configName + "/procNum", ui->m_launch_configs[i].procNum);
-		settings.setValue(configName + "/ram", ui->m_launch_configs[i].ram);
+//		settings.setValue(configName + "/jobName", ui->m_launch_configs[i].jobName.c_str());
+//		settings.setValue(configName + "/walltime", ui->m_launch_configs[i].walltime.c_str());
+//		settings.setValue(configName + "/procNum", ui->m_launch_configs[i].procNum);
+//		settings.setValue(configName + "/ram", ui->m_launch_configs[i].ram);
 		settings.setValue(configName + "/customFile", ui->m_launch_configs[i].customFile.c_str());
+		settings.setValue(configName + "/text", ui->m_launch_configs[i].getText().c_str());
 	}
 
 
@@ -867,11 +868,12 @@ void CMainWindow::readSettings()
 		ui->m_launch_configs.back().port = settings.value(configName + "/port").toInt();
 		ui->m_launch_configs.back().userName = settings.value(configName + "/userName").toString().toStdString();
 		ui->m_launch_configs.back().remoteDir = settings.value(configName + "/remoteDir").toString().toStdString();
-		ui->m_launch_configs.back().jobName = settings.value(configName + "/jobName").toString().toStdString();
-		ui->m_launch_configs.back().walltime = settings.value(configName + "/walltime").toString().toStdString();
-		ui->m_launch_configs.back().procNum = settings.value(configName + "/procNum").toInt();
-		ui->m_launch_configs.back().ram = settings.value(configName + "/ram").toInt();
+//		ui->m_launch_configs.back().jobName = settings.value(configName + "/jobName").toString().toStdString();
+//		ui->m_launch_configs.back().walltime = settings.value(configName + "/walltime").toString().toStdString();
+//		ui->m_launch_configs.back().procNum = settings.value(configName + "/procNum").toInt();
+//		ui->m_launch_configs.back().ram = settings.value(configName + "/ram").toInt();
 		ui->m_launch_configs.back().customFile = settings.value(configName + "/customFile").toString().toStdString();
+		ui->m_launch_configs.back().setText(settings.value(configName + "/text").toString().toStdString());
 
 	}
 

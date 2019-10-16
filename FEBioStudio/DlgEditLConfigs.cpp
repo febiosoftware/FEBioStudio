@@ -1,4 +1,3 @@
-#include "DlgEditPath.h"
 #include <QAbstractItemView>
 #include <QAction>
 #include <QFileDialog>
@@ -14,7 +13,10 @@
 #include <QMessageBox>
 #include <QStackedWidget>
 #include <QListWidget>
+#include <QPlainTextEdit>
 #include <unordered_map>
+
+#include "DlgEditLConfigs.h"
 #include "LaunchConfig.h"
 
 
@@ -70,10 +72,18 @@ public:
 	QSpinBox*	PBSPort;
 	QLineEdit*	PBSUserName;
 	QLineEdit*	PBSRemoteDir;
-	QLineEdit*	PBSJobName;
-	QLineEdit*	PBSWalltime;
-	QSpinBox*	PBSProcNum;
-	QSpinBox*	PBSRam;
+//	QLineEdit*	PBSJobName;
+//	QLineEdit*	PBSWalltime;
+//	QSpinBox*	PBSProcNum;
+//	QSpinBox*	PBSRam;
+	QPlainTextEdit* PBSText;
+	QString DefaultPBSText = "#!/bin/bash\n\n"
+			"#PBS -l nodes=1:ppn=1\n"
+			"#PBS -l walltime=1:00:00\n"
+			"#PBS -N ${JOB_NAME}\n"
+			"#PBS -o ${REMOTE_DIR}/${JOB_NAME}_stdout.log\n"
+			"#PBS -e ${REMOTE_DIR}/${JOB_NAME}_stderr.log\n\n"
+			"${FEBIO_PATH} ${REMOTE_DIR}/${JOB_NAME}.feb";
 
 	// Slurm config widgets
 	QLineEdit*	SlurmPath;
@@ -81,17 +91,34 @@ public:
 	QSpinBox*	SlurmPort;
 	QLineEdit*	SlurmUserName;
 	QLineEdit*	SlurmRemoteDir;
-	QLineEdit*	SlurmJobName;
-	QLineEdit*	SlurmWalltime;
-	QSpinBox*	SlurmProcNum;
-	QSpinBox*	SlurmRam;
+//	QLineEdit*	SlurmJobName;
+//	QLineEdit*	SlurmWalltime;
+//	QSpinBox*	SlurmProcNum;
+//	QSpinBox*	SlurmRam;
+	QPlainTextEdit* SlurmText;
+	QString DefaultSlurmText = "#!/bin/bash\n\n"
+			"#SBATCH -N 1\n"
+			"#SBATCH -n 1\n"
+			"#SBATCH -t 1:00:00\n"
+			"#SBATCH -J ${JOB_NAME}\n"
+			"#SBATCH -o ${REMOTE_DIR}/${JOB_NAME}_stdout.log\n"
+			"#SBATCH -e ${REMOTE_DIR}/${JOB_NAME}_stderr.log\n\n"
+			"${FEBIO_PATH} ${REMOTE_DIR}/${JOB_NAME}.feb";
 
 	// Custom config widgets
-	QLineEdit*	customFile;
+//	QLineEdit*	customFile;
 	QLineEdit*	customServer;
 	QSpinBox*	customPort;
 	QLineEdit*	customUserName;
 	QLineEdit*	customRemoteDir;
+	QPlainTextEdit* customText;
+	QString DefaultCustomText = "#Use this feild to create a custom script.\n"
+				"#Lines starting with '#' are comments and will be ignored.\n"
+				"#Empty Lines will be ignored.\n"
+				"#Each line will be run as a separate command.\n\n"
+				"#You can use the following macros:\n"
+				"#\t${REMOTE_DIR}: the remote directory that you specify.\n"
+				"#\t${JOB_NAME}: your current job's name.\n";
 
 	std::vector<CLaunchConfig>* launchConfigs;
 	std::unordered_map<QListWidgetItem*, CLaunchConfig> tempLaunchConfigs;
@@ -165,21 +192,31 @@ public:
 		PBSPort->setMaximum(65535);
 		PBSForm->addRow("Username:", PBSUserName = new QLineEdit);
 		PBSForm->addRow("Remote Directory:", PBSRemoteDir = new QLineEdit);
-		PBSForm->addRow("Job Name:", PBSJobName = new QLineEdit);
-		PBSJobName->setPlaceholderText("(optional)");
-		PBSForm->addRow("Walltime:", PBSWalltime = new QLineEdit);
-		PBSWalltime->setPlaceholderText("HH:MM:SS");
-		PBSWalltime->setText("1:00:00");
-		PBSForm->addRow("Processors:", PBSProcNum = new QSpinBox);
-		PBSProcNum->setValue(1);
-		PBSForm->addRow("Ram:", PBSRam = new QSpinBox);
-		PBSRam->setMaximum(9999999);
-		PBSRam->setSingleStep(1024);
-		PBSRam->setValue(0);
+//		PBSForm->addRow("Job Name:", PBSJobName = new QLineEdit);
+//		PBSJobName->setPlaceholderText("(optional)");
+//		PBSForm->addRow("Walltime:", PBSWalltime = new QLineEdit);
+//		PBSWalltime->setPlaceholderText("HH:MM:SS");
+//		PBSWalltime->setText("1:00:00");
+//		PBSForm->addRow("Processors:", PBSProcNum = new QSpinBox);
+//		PBSProcNum->setValue(1);
+//		PBSForm->addRow("Ram:", PBSRam = new QSpinBox);
+//		PBSRam->setMaximum(9999999);
+//		PBSRam->setSingleStep(1024);
+//		PBSRam->setValue(0);
 
-		PBSPage->setLayout(PBSForm);
+		PBSText = new QPlainTextEdit(DefaultPBSText);
+		PBSText->setPlaceholderText(DefaultPBSText);
+
+		PBSText->setWordWrapMode(QTextOption::NoWrap);
+		PBSText->setMinimumWidth(PBSText->document()->size().width() * 1.1);
+		PBSText->setMinimumHeight(PBSText->fontMetrics().height() * (PBSText->document()->lineCount() + 2));
+
+		QVBoxLayout* PBSV1 = new QVBoxLayout;
+		PBSV1->addLayout(PBSForm);
+		PBSV1->addWidget(PBSText);
+
+		PBSPage->setLayout(PBSV1);
 		stack->addWidget(PBSPage);
-
 
 		// Slurm config widgets
 		SlurmForm->addRow("Remote executable:", SlurmPath = new QLineEdit);
@@ -189,24 +226,35 @@ public:
 		SlurmPort->setMaximum(65535);
 		SlurmForm->addRow("Username:", SlurmUserName = new QLineEdit);
 		SlurmForm->addRow("Remote Directory:", SlurmRemoteDir = new QLineEdit);
-		SlurmForm->addRow("Job Name:", SlurmJobName = new QLineEdit);
-		SlurmJobName->setPlaceholderText("(optional)");
-		SlurmForm->addRow("Walltime:", SlurmWalltime = new QLineEdit);
-		SlurmWalltime->setPlaceholderText("HH:MM:SS");
-		SlurmWalltime->setText("1:00:00");
-		SlurmForm->addRow("Processors:", SlurmProcNum = new QSpinBox);
-		SlurmProcNum->setValue(1);
-		SlurmForm->addRow("Ram:", SlurmRam = new QSpinBox);
-		SlurmRam->setMaximum(9999999);
-		SlurmRam->setSingleStep(1024);
-		SlurmRam->setValue(0);
+//		SlurmForm->addRow("Job Name:", SlurmJobName = new QLineEdit);
+//		SlurmJobName->setPlaceholderText("(optional)");
+//		SlurmForm->addRow("Walltime:", SlurmWalltime = new QLineEdit);
+//		SlurmWalltime->setPlaceholderText("HH:MM:SS");
+//		SlurmWalltime->setText("1:00:00");
+//		SlurmForm->addRow("Processors:", SlurmProcNum = new QSpinBox);
+//		SlurmProcNum->setValue(1);
+//		SlurmForm->addRow("Ram:", SlurmRam = new QSpinBox);
+//		SlurmRam->setMaximum(9999999);
+//		SlurmRam->setSingleStep(1024);
+//		SlurmRam->setValue(0);
+		SlurmText = new QPlainTextEdit(DefaultSlurmText);
+		SlurmText->setPlaceholderText(DefaultSlurmText);
 
-		SlurmPage->setLayout(SlurmForm);
+		SlurmText->setWordWrapMode(QTextOption::NoWrap);
+		SlurmText->setMinimumWidth(SlurmText->document()->size().width() * 1.1);
+		SlurmText->setMinimumHeight(SlurmText->fontMetrics().height() * (SlurmText->document()->lineCount() + 2));
+
+		QVBoxLayout* SlurmV1 = new QVBoxLayout;
+		SlurmV1->addLayout(SlurmForm);
+		SlurmV1->addWidget(SlurmText);
+
+
+		SlurmPage->setLayout(SlurmV1);
 		stack->addWidget(SlurmPage);
 
 
 		// Custom config widgets
-		customForm->addRow("Custom Script", customFile = new QLineEdit);
+//		customForm->addRow("Custom Script", customFile = new QLineEdit);
 		customForm->addRow("Server:", customServer = new QLineEdit);
 		customForm->addRow("Port:", customPort = new QSpinBox);
 		customPort->setValue(22);
@@ -214,7 +262,19 @@ public:
 		customForm->addRow("Username:", customUserName = new QLineEdit);
 		customForm->addRow("Remote Directory:", customRemoteDir = new QLineEdit);
 
-		customPage->setLayout(customForm);
+		customText = new QPlainTextEdit(DefaultCustomText);
+		customText->setPlaceholderText(DefaultCustomText);
+
+		customText->setWordWrapMode(QTextOption::NoWrap);
+		customText->setMinimumWidth(customText->document()->size().width() * 1.3);
+		customText->setMinimumHeight(customText->fontMetrics().height() * (customText->document()->lineCount() + 2));
+
+		QVBoxLayout* customV1 = new QVBoxLayout;
+		customV1->addLayout(customForm);
+		customV1->addWidget(customText);
+
+
+		customPage->setLayout(customV1);
 		stack->addWidget(customPage);
 #endif
 		QVBoxLayout* v1 = new QVBoxLayout;
@@ -237,6 +297,8 @@ public:
 			item->setFlags (item->flags () | Qt::ItemIsEditable);
 			tempLaunchConfigs[item] = launchConfigs->at(row);
 		}
+		launchConfigList->setFixedWidth(launchConfigList->sizeHintForColumn(0) + 10);
+
 
 		QAction* addConfig = new QAction;
 		addConfig->setIcon(QIcon(":/icons/selectAdd.png"));
@@ -251,7 +313,7 @@ public:
 		QHBoxLayout* h1 = new QHBoxLayout;
 		h1->addWidget(addConfigBtn);
 		h1->addWidget(delConfigBtn);
-		h1->insertStretch(-1);
+		h1->setAlignment(Qt::AlignLeft);
 
 		QVBoxLayout* v2 = new QVBoxLayout;
 		v2->addWidget(launchConfigList);
@@ -318,10 +380,11 @@ void CDlgEditPath::UpdateConfig(QListWidgetItem* item)
 		launchConfig.port = ui->PBSPort->value();
 		launchConfig.userName = ui->PBSUserName->text().toStdString();
 		launchConfig.remoteDir = ui->PBSRemoteDir->text().toStdString();
-		launchConfig.jobName = ui->PBSJobName->text().toStdString();
-		launchConfig.walltime = ui->PBSWalltime->text().toStdString();
-		launchConfig.procNum = ui->PBSProcNum->value();
-		launchConfig.ram = ui->PBSRam->value();
+//		launchConfig.jobName = ui->PBSJobName->text().toStdString();
+//		launchConfig.walltime = ui->PBSWalltime->text().toStdString();
+//		launchConfig.procNum = ui->PBSProcNum->value();
+//		launchConfig.ram = ui->PBSRam->value();
+		launchConfig.setText(ui->PBSText->toPlainText().toStdString());
 		break;
 	case SLURM:
 		launchConfig.path = ui->SlurmPath->text().toStdString();
@@ -329,21 +392,25 @@ void CDlgEditPath::UpdateConfig(QListWidgetItem* item)
 		launchConfig.port = ui->SlurmPort->value();
 		launchConfig.userName = ui->SlurmUserName->text().toStdString();
 		launchConfig.remoteDir = ui->SlurmRemoteDir->text().toStdString();
-		launchConfig.jobName = ui->SlurmJobName->text().toStdString();
-		launchConfig.walltime = ui->SlurmWalltime->text().toStdString();
-		launchConfig.procNum = ui->SlurmProcNum->value();
-		launchConfig.ram = ui->SlurmRam->value();
+//		launchConfig.jobName = ui->SlurmJobName->text().toStdString();
+//		launchConfig.walltime = ui->SlurmWalltime->text().toStdString();
+//		launchConfig.procNum = ui->SlurmProcNum->value();
+//		launchConfig.ram = ui->SlurmRam->value();
+		launchConfig.setText(ui->SlurmText->toPlainText().toStdString());
 		break;
 	case CUSTOM:
-		launchConfig.customFile = ui->customFile->text().toStdString();
+//		launchConfig.customFile = ui->customFile->text().toStdString();
 		launchConfig.server = ui->customServer->text().toStdString();
 		launchConfig.port = ui->customPort->value();
 		launchConfig.userName = ui->customUserName->text().toStdString();
 		launchConfig.remoteDir = ui->customRemoteDir->text().toStdString();
-
+		launchConfig.setText(ui->customText->toPlainText().toStdString());
 		break;
 #endif
 	}
+
+	// Set width for launch config list
+	ui->launchConfigList->setFixedWidth(ui->launchConfigList->sizeHintForColumn(0) + 10);
 }
 
 void CDlgEditPath::on_selection_change(QListWidgetItem* current, QListWidgetItem* previous)
@@ -385,26 +452,47 @@ void CDlgEditPath::ChangeToConfig(QListWidgetItem* item)
 	ui->PBSPort->setValue(launchConfig.port);
 	ui->PBSUserName->setText(QString::fromStdString(launchConfig.userName));
 	ui->PBSRemoteDir->setText(QString::fromStdString(launchConfig.remoteDir));
-	ui->PBSJobName->setText(QString::fromStdString(launchConfig.jobName));
-	ui->PBSWalltime->setText(QString::fromStdString(launchConfig.walltime));
-	ui->PBSProcNum->setValue(launchConfig.procNum);
-	ui->PBSRam->setValue(launchConfig.ram);
+//	ui->PBSJobName->setText(QString::fromStdString(launchConfig.jobName));
+//	ui->PBSWalltime->setText(QString::fromStdString(launchConfig.walltime));
+//	ui->PBSProcNum->setValue(launchConfig.procNum);
+//	ui->PBSRam->setValue(launchConfig.ram);
+	ui->PBSText->document()->setPlainText(ui->DefaultPBSText);
 
 	ui->SlurmPath->setText(QString::fromStdString(launchConfig.path));
 	ui->SlurmServer->setText(QString::fromStdString(launchConfig.server));
 	ui->SlurmPort->setValue(launchConfig.port);
 	ui->SlurmUserName->setText(QString::fromStdString(launchConfig.userName));
 	ui->SlurmRemoteDir->setText(QString::fromStdString(launchConfig.remoteDir));
-	ui->SlurmJobName->setText(QString::fromStdString(launchConfig.jobName));
-	ui->SlurmWalltime->setText(QString::fromStdString(launchConfig.walltime));
-	ui->SlurmProcNum->setValue(launchConfig.procNum);
-	ui->SlurmRam->setValue(launchConfig.ram);
+//	ui->SlurmJobName->setText(QString::fromStdString(launchConfig.jobName));
+//	ui->SlurmWalltime->setText(QString::fromStdString(launchConfig.walltime));
+//	ui->SlurmProcNum->setValue(launchConfig.procNum);
+//	ui->SlurmRam->setValue(launchConfig.ram);
+	ui->SlurmText->document()->setPlainText(ui->DefaultSlurmText);
 
-	ui->customFile->setText(QString::fromStdString(launchConfig.customFile));
+//	ui->customFile->setText(QString::fromStdString(launchConfig.customFile));
 	ui->customServer->setText(QString::fromStdString(launchConfig.server));
 	ui->customPort->setValue(launchConfig.port);
 	ui->customUserName->setText(QString::fromStdString(launchConfig.userName));
 	ui->customRemoteDir->setText(QString::fromStdString(launchConfig.remoteDir));
+	ui->customText->document()->setPlainText(ui->DefaultCustomText);
+
+	if(!launchConfig.getText().empty())
+	{
+		switch(launchConfig.type)
+		{
+		case PBS:
+			ui->PBSText->document()->setPlainText(launchConfig.getText().c_str());
+
+			break;
+		case SLURM:
+			ui->SlurmText->document()->setPlainText(launchConfig.getText().c_str());
+			break;
+		case CUSTOM:
+			ui->customText->document()->setPlainText(launchConfig.getText().c_str());
+			break;
+		}
+	}
+
 #endif
 
 	ui->stack->setCurrentIndex(launchConfig.type);
@@ -518,12 +606,12 @@ bool CDlgEditPath::ErrorCheck(int index)
 			return false;
 		}
 
-		if(ui->PBSWalltime->text().isEmpty())
-		{
-			QMessageBox::critical(this, "FEBio Studio", "Please enter a walltime.");
-			return false;
-		}
-		break;
+//		if(ui->PBSWalltime->text().isEmpty())
+//		{
+//			QMessageBox::critical(this, "FEBio Studio", "Please enter a walltime.");
+//			return false;
+//		}
+//		break;
 
 	case SLURM:
 		if(ui->SlurmPath->text().isEmpty())
@@ -549,16 +637,16 @@ bool CDlgEditPath::ErrorCheck(int index)
 			return false;
 		}
 
-		if(ui->SlurmWalltime->text().isEmpty())
-		{
-			QMessageBox::critical(this, "FEBio Studio", "Please enter a walltime.");
-			return false;
-		}
+//		if(ui->SlurmWalltime->text().isEmpty())
+//		{
+//			QMessageBox::critical(this, "FEBio Studio", "Please enter a walltime.");
+//			return false;
+//		}
 		break;
 	case CUSTOM:
-		if(ui->customFile->text().isEmpty())
+		if(ui->customText->toPlainText().isEmpty())
 		{
-			QMessageBox::critical(this, "FEBio Studio", "Please enter a local path to a custom script.");
+			QMessageBox::critical(this, "FEBio Studio", "Your custom script cannot be empty.");
 			return false;
 		}
 

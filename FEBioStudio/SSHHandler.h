@@ -64,8 +64,8 @@ signals:
 private:
 	int RunCommand(std::string command);
 	int RunInteractiveNoRead(std::string command);
+//	int RunCommandListOld(std::vector<std::string> commands);
 	int RunCommandList(std::vector<std::string> commands);
-	int RunCommandList2(std::vector<std::string> commands);
 
 	int authenticatePubkey();
 	bool authenticatePassword();
@@ -81,6 +81,8 @@ private:
 
 	int CreateBashFile();
 	int ParseCustomFile(std::vector<std::string>& commands);
+
+	void ReplaceMacros(QString& string);
 
 private:
 	SSHData*	m_data;

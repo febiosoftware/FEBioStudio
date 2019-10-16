@@ -10,7 +10,6 @@
 #include "Logger.h"
 #include "Encrypter.h"
 #include <FSCore/FSDir.h>
-#include <iostream>
 #include <QMessageBox>
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
@@ -112,7 +111,7 @@ void CSSHHandler::StartRemoteJob()
 
 		// Run the commands
 //		if(RunCommand(command) != SSH_OK)
-		if(RunCommandList2(commands) != SSH_OK)
+		if(RunCommandList(commands) != SSH_OK)
 		{
 			m_data->code = FAILED;
 			m_data->msg = "Failed to run remote command.";
@@ -169,7 +168,7 @@ void CSSHHandler::StartRemoteJob()
 			return;
 		}
 
-		if(RunCommandList2(commands) != SSH_OK)
+		if(RunCommandList(commands) != SSH_OK)
 		{
 			m_data->code = FAILED;
 			m_data->msg = "Failed to run remote commands.";
@@ -233,6 +232,12 @@ void CSSHHandler::GetQueueStatus()
 		m_data->code = FAILED;
 		m_data->msg = "Failed to run remote command.";
 	}
+
+//	if(RunCommand(command) != SSH_OK)
+//	{
+//		m_data->code = FAILED;
+//		m_data->msg = "Failed to run remote command.";
+//	}
 }
 
 void CSSHHandler::SetPasswordLength(int l)
@@ -869,104 +874,104 @@ int CSSHHandler::RunInteractiveNoRead(std::string command)
 	return SSH_OK;
 }
 
+//int CSSHHandler::RunCommandListOld(std::vector<std::string> commands)
+//{
+//	ssh_channel channel, channel2;
+//	int rc;
+//	char buffer[256];
+//	char buffer2[256];
+//	int nbytes;
+//
+//	channel = ssh_channel_new(m_data->session);
+//	if (channel == NULL)
+//		return SSH_ERROR;
+//
+//	rc = ssh_channel_open_session(channel);
+//	if (rc != SSH_OK)
+//	{
+//		ssh_channel_free(channel);
+//		return rc;
+//	}
+//
+//	channel2 = ssh_channel_new(m_data->session);
+//	if (channel2 == NULL)
+//		return SSH_ERROR;
+//
+//	rc = ssh_channel_open_session(channel2);
+//	if (rc != SSH_OK)
+//	{
+//		ssh_channel_free(channel2);
+//		return rc;
+//	}
+//
+//	rc = ssh_channel_request_shell(channel);
+//	if (rc != SSH_OK) return rc;
+//
+//	rc = ssh_channel_request_shell(channel2);
+//	if (rc != SSH_OK) return rc;
+//
+//	rc = ssh_channel_write(channel, "echo $$\n", sizeof("echo $$\n"));
+//
+//	nbytes = ssh_channel_read(channel, buffer2, sizeof(buffer2), 0);
+//
+//	string pidString(buffer2);
+//
+//	int pid = stoi(pidString);
+//
+//	for(string command : commands)
+//	{
+//		command.push_back('\n');
+//
+//		rc = ssh_channel_write(channel, command.c_str(), sizeof(char)*command.length());
+//
+//		bool cont = true;
+//		while(cont || nbytes > 0)
+//		{
+//#ifndef WIN32
+//			usleep(5000);
+//#endif
+//
+//			string test("pgrep -P ");
+//
+//			test.append(to_string(pid));
+//			test.append(" | wc -l\n");
+//
+//			rc = ssh_channel_write(channel2, test.c_str(), sizeof(char)*test.length());
+//
+//			ssh_channel_read(channel2, buffer2, sizeof(buffer2), 0);
+//
+//			string linesString(buffer2);
+//
+//			int lines = stoi(linesString);
+//
+//			if(lines < 1) cont = false;
+//
+//			nbytes = ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer) - 1, 0);
+//			buffer[nbytes] = '\0';
+//			emit AddOutputEntry(buffer);
+//
+//			nbytes = ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer) - 1, 1);
+//			buffer[nbytes] = '\0';
+//			emit AddOutputEntry(buffer);
+//		}
+//	}
+//
+//	ssh_channel_send_eof(channel);
+//	ssh_channel_close(channel);
+//	ssh_channel_free(channel);
+//
+//	ssh_channel_send_eof(channel2);
+//	ssh_channel_close(channel2);
+//	ssh_channel_free(channel2);
+//	return SSH_OK;
+//}
+
 int CSSHHandler::RunCommandList(std::vector<std::string> commands)
-{
-	ssh_channel channel, channel2;
-	int rc;
-	char buffer[256];
-	char buffer2[256];
-	int nbytes;
-
-	channel = ssh_channel_new(m_data->session);
-	if (channel == NULL)
-		return SSH_ERROR;
-
-	rc = ssh_channel_open_session(channel);
-	if (rc != SSH_OK)
-	{
-		ssh_channel_free(channel);
-		return rc;
-	}
-
-	channel2 = ssh_channel_new(m_data->session);
-	if (channel2 == NULL)
-		return SSH_ERROR;
-
-	rc = ssh_channel_open_session(channel2);
-	if (rc != SSH_OK)
-	{
-		ssh_channel_free(channel2);
-		return rc;
-	}
-
-	rc = ssh_channel_request_shell(channel);
-	if (rc != SSH_OK) return rc;
-
-	rc = ssh_channel_request_shell(channel2);
-	if (rc != SSH_OK) return rc;
-
-	rc = ssh_channel_write(channel, "echo $$\n", sizeof("echo $$\n"));
-
-	nbytes = ssh_channel_read(channel, buffer2, sizeof(buffer2), 0);
-
-	string pidString(buffer2);
-
-	int pid = stoi(pidString);
-
-	for(string command : commands)
-	{
-		command.push_back('\n');
-
-		rc = ssh_channel_write(channel, command.c_str(), sizeof(char)*command.length());
-
-		bool cont = true;
-		while(cont || nbytes > 0)
-		{
-#ifndef WIN32
-			usleep(5000);
-#endif
-
-			string test("pgrep -P ");
-
-			test.append(to_string(pid));
-			test.append(" | wc -l\n");
-
-			rc = ssh_channel_write(channel2, test.c_str(), sizeof(char)*test.length());
-
-			ssh_channel_read(channel2, buffer2, sizeof(buffer2), 0);
-
-			string linesString(buffer2);
-
-			int lines = stoi(linesString);
-
-			if(lines < 1) cont = false;
-
-			nbytes = ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer) - 1, 0);
-			buffer[nbytes] = '\0';
-			emit AddOutputEntry(buffer);
-
-			nbytes = ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer) - 1, 1);
-			buffer[nbytes] = '\0';
-			emit AddOutputEntry(buffer);
-		}
-	}
-
-	ssh_channel_send_eof(channel);
-	ssh_channel_close(channel);
-	ssh_channel_free(channel);
-
-	ssh_channel_send_eof(channel2);
-	ssh_channel_close(channel2);
-	ssh_channel_free(channel2);
-	return SSH_OK;
-}
-
-int CSSHHandler::RunCommandList2(std::vector<std::string> commands)
 {
 	ssh_channel channel;
 	int rc;
-	char buffer[256];
-	int nbytes, nwritten;
+	char buffer[256], buffer2[256];
+	int nbytes, nwritten, pos;
 
 	channel = ssh_channel_new(m_data->session);
 	if (channel == NULL)
@@ -994,36 +999,117 @@ int CSSHHandler::RunCommandList2(std::vector<std::string> commands)
 		fullCommand += " && ";
 		fullCommand += commands.at(i);
 	}
-	fullCommand += " && echo $USER \"ENDSSHNOW\"";
+	fullCommand += "; echo \"ENDSSHNOW\"";
 	fullCommand += "\n";
 
+	std::string start = "\"ENDSSHNOW\"";
+	std:: string stop = "ENDSSHNOW";
 
 	nwritten = ssh_channel_write(channel, fullCommand.c_str(), sizeof(char)*fullCommand.length());
 
-
-	char testChar = 0x1a;
-	std::string stop = m_data->job->GetLaunchConfig()->userName + " ENDSSHNOW";
-	bool cont = true;
-	while(cont)
+	std::string temp = "";
+	int found = 0;
+	while(found < 2)
 	{
 		nbytes = ssh_channel_read(channel, buffer, sizeof(buffer) - 1, 0);
 		buffer[nbytes] = '\0';
 
-		int pos = std::string(buffer).find(stop);
+		temp += buffer;
+		pos = temp.find(start);
 		if(pos != -1)
 		{
-			buffer[pos] = '\0';
-			cont = false;
+			temp = temp.substr(pos + 11);
+			found++;
 		}
 
-		emit AddOutputEntry(buffer);
+	}
+
+	// Trim off leading whitespace
+	pos = temp.find_first_not_of(" \n\r\t\f\v");
+	if(pos < temp.length())	temp = temp.substr(pos);
+
+	emit AddOutputEntry(temp.c_str());
+	temp.clear();
+
+	// Because our ENDSSHNOW flag could be split among multiple buffers, we need to keep our
+	// previous buffer. These pointers will allow us to swap between them each loop without
+	// the need to copy data.
+	char* pbuf1 = &buffer[0];
+	char* pbuf2 = &buffer2[0];
+	char* ptemp = pbuf2;
+
+	// Null-out both buffers.
+	*pbuf1 = '\0';
+	*pbuf2 = '\0';
+
+//	bool secondCommand = false;
+	while(true)
+	{
+		// Swap buffers
+		ptemp = pbuf2;
+		pbuf2 = pbuf1;
+		pbuf1 = ptemp;
+
+		nbytes = ssh_channel_read(channel, pbuf2, sizeof(buffer) - 1, 0);
+		*(pbuf2 + nbytes) = '\0';
+
+		// Concatenate the buffers
+		temp = pbuf1;
+		temp += pbuf2;
+
+//		// Depending on the response time of the server, the original command could be
+//		// echoed twice. This looks for a second echo, and cleans up the output a little
+//		if(!secondCommand)
+//		{
+//			pos = temp.find(start);
+//			if(pos != -1)
+//			{
+//				temp = temp.substr(pos + 11);
+//				secondCommand = true;
+//
+//				// It's possible that this same string also contains the ending code so
+//				// we test for that and end if we find it
+//				pos = temp.find(stop);
+//				if(pos != -1)
+//				{
+//					// Only print until the start of ENDSSHNOW
+//					temp = temp.substr(0, pos);
+//					emit AddOutputEntry(temp.c_str());
+//					break;
+//				}
+//
+//				// Otherwise, we just print what comes after the start signal
+//				emit AddOutputEntry(temp.c_str());
+//
+//				// Null-out both buffers.
+//				*pbuf1 = '\0';
+//				*pbuf2 = '\0';
+//				continue;
+//
+//			}
+//		}
+
+		// Search for the string
+		pos = temp.find(stop);
+		if(pos != -1)
+		{
+			// Only print until the start of ENDSSHNOW
+			temp = temp.substr(0, pos);
+			emit AddOutputEntry(temp.c_str());
+			break;
+		}
+
+		// Only print the previous buffer
+		emit AddOutputEntry(pbuf1);
 
 		if(m_data->orphan)
 		{
-			nwritten = ssh_channel_write(channel, &testChar, sizeof(char));
+			char ctrlZ = 0x1a;
+			nwritten = ssh_channel_write(channel, &ctrlZ, sizeof(char));
 			nwritten = ssh_channel_write(channel, "bg\n", sizeof("bg\n"));
 			nwritten = ssh_channel_write(channel, "disown\n", sizeof("disown\n"));
 
+			// Wait to ensure that the process has been broken before you stop
 			usleep(5000000L);
 
 			m_data->orphan = false;
@@ -1031,11 +1117,9 @@ int CSSHHandler::RunCommandList2(std::vector<std::string> commands)
 			break;
 		}
 
+		// Sleep to save cycles
 		usleep(5000L);
 	}
-
-	std::cout << "We broke out!" << std::endl;
-
 
 	if (nbytes < 0)
 	{
@@ -1053,68 +1137,90 @@ int CSSHHandler::RunCommandList2(std::vector<std::string> commands)
 
 int CSSHHandler::CreateBashFile()
 {
-	std::string bashString("#!/bin/bash\n\n");
+//	std::string bashString("#!/bin/bash\n\n");
 
-	CLaunchConfig* config = m_data->job->GetLaunchConfig();
+//	bashString += bashText.toStdString();
 
-	if(config->type == PBS)
-	{
-		bashString += "#PBS -l nodes=1:ppn=" + std::to_string(config->procNum) + "\n\n";
-		bashString += "#PBS -l mem=" + std::to_string(config->ram) + "\n\n";
-		bashString += "#PBS -l walltime=" + config->walltime + "\n\n";
-		if(!config->jobName.empty())
-		{
-			bashString += "#PBS -N " + config->jobName + "\n\n";
-			bashString += "#PBS -o " + config->remoteDir + "/" + config->jobName + "_stdout.log\n\n";
-			bashString += "#PBS -e " + config->remoteDir + "/" + config->jobName + "_stderr.log\n\n";
-		}
-		bashString += "export OMP_NUM_THREADS=" + std::to_string(config->procNum) + "\n";
-		bashString += config->path + " " + m_data->remoteFileBase + ".feb";
-	}
-	else if(config->type == SLURM)
-	{
-		bashString += "#SBATCH -N 1\n\n";
-		bashString += "#SBATCH -n " + std::to_string(config->procNum) + "\n\n";
-		bashString += "#SBATCH --mem " + std::to_string(config->ram) + "\n\n";
-		bashString += "#SBATCH -t " + config->walltime + "\n\n";
-		if(!config->jobName.empty())
-		{
-			bashString += "#SBATCH -J " + config->jobName + "\n\n";
-			bashString += "#SBATCH -o " + config->remoteDir + "/" + config->jobName + "_stdout.log\n\n";
-			bashString += "#SBATCH -e " + config->remoteDir + "/" + config->jobName + "_stderr.log\n\n";
-		}
-		bashString += "export OMP_NUM_THREADS=" + std::to_string(config->procNum) + "\n";
-		bashString += config->path + " " + m_data->remoteFileBase + ".feb";
-	}
+//	if(config->type == PBS)
+//	{
+//		bashString += "#PBS -l nodes=1:ppn=" + std::to_string(config->procNum) + "\n\n";
+//		bashString += "#PBS -l mem=" + std::to_string(config->ram) + "\n\n";
+//		bashString += "#PBS -l walltime=" + config->walltime + "\n\n";
+//		if(!config->jobName.empty())
+//		{
+//			bashString += "#PBS -N " + config->jobName + "\n\n";
+//			bashString += "#PBS -o " + config->remoteDir + "/" + config->jobName + "_stdout.log\n\n";
+//			bashString += "#PBS -e " + config->remoteDir + "/" + config->jobName + "_stderr.log\n\n";
+//		}
+//		bashString += "export OMP_NUM_THREADS=" + std::to_string(config->procNum) + "\n";
+//		bashString += config->path + " " + m_data->remoteFileBase + ".feb";
+//	}
+//	else if(config->type == SLURM)
+//	{
+//		bashString += "#SBATCH -N 1\n\n";
+//		bashString += "#SBATCH -n " + std::to_string(config->procNum) + "\n\n";
+//		bashString += "#SBATCH --mem " + std::to_string(config->ram) + "\n\n";
+//		bashString += "#SBATCH -t " + config->walltime + "\n\n";
+//		if(!config->jobName.empty())
+//		{
+//			bashString += "#SBATCH -J " + config->jobName + "\n\n";
+//			bashString += "#SBATCH -o " + config->remoteDir + "/" + config->jobName + "_stdout.log\n\n";
+//			bashString += "#SBATCH -e " + config->remoteDir + "/" + config->jobName + "_stderr.log\n\n";
+//		}
+//		bashString += "export OMP_NUM_THREADS=" + std::to_string(config->procNum) + "\n";
+//		bashString += config->path + " " + m_data->remoteFileBase + ".feb";
+//	}
+
+	QString bashText = m_data->job->GetLaunchConfig()->getText().c_str();
+
+	ReplaceMacros(bashText);
 
 	std::string remote = m_data->remoteFileBase + ".bash";
 
-	return SendFile(bashString.c_str(), sizeof(char)*bashString.length(), remote);
+	return SendFile(bashText.toStdString().c_str(), sizeof(char)*bashText.length(), remote);
 
 }
 
 int CSSHHandler::ParseCustomFile(std::vector<std::string>& commands)
 {
-	QString customFile = m_data->job->GetLaunchConfig()->customFile.c_str();
-	QFile file(customFile);
-	if(!file.open(QIODevice::ReadOnly))
-	{
-		m_data->msg = QString("Failed to open local custom script file:\n%1").arg(customFile);
-		m_data->code = FAILED;
-		return SSH_ERROR;
-	}
+//	QString customFile = m_data->job->GetLaunchConfig()->customFile.c_str();
+//	QFile file(customFile);
+//	if(!file.open(QIODevice::ReadOnly))
+//	{
+//		m_data->msg = QString("Failed to open local custom script file:\n%1").arg(customFile);
+//		m_data->code = FAILED;
+//		return SSH_ERROR;
+//	}
+//
+//	QTextStream in(&file);
+//	while(!in.atEnd())
+//	{
+//		QString line = in.readLine();
+//		if(line.startsWith("#")) continue;
+//
+//		commands.push_back(line.toStdString());
+//	}
+//	file.close();
 
-	QTextStream in(&file);
-	while(!in.atEnd())
-	{
-		QString line = in.readLine();
-		if(line.startsWith("#")) continue;
+	QString customScript = m_data->job->GetLaunchConfig()->getText().c_str();
+	ReplaceMacros(customScript);
+	QStringList commandList = customScript.split("\n", QString::SkipEmptyParts);
 
-		commands.push_back(line.toStdString());
+	for(QString command : commandList)
+	{
+		if(command.startsWith("#")) continue;
+
+		commands.push_back(command.toStdString());
 	}
-	file.close();
 
 	return SSH_OK;
+}
+
+void CSSHHandler::ReplaceMacros(QString& string)
+{
+	string.replace("${FEBIO_PATH}", m_data->job->GetLaunchConfig()->path.c_str());
+	string.replace("${JOB_NAME}", m_data->job->GetName().c_str());
+	string.replace("${REMOTE_DIR}", m_data->job->GetLaunchConfig()->remoteDir.c_str());
 }
 
 

@@ -14,8 +14,8 @@
 #include <QMessageBox>
 #include <QGroupBox>
 #include <FSCore/FSDir.h>
-#include "DlgEditPath.h"
 #include <string.h>
+#include "DlgEditLConfigs.h"
 
 
 class Ui::CDlgRun

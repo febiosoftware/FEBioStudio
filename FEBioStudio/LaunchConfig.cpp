@@ -1,6 +1,5 @@
 #include "LaunchConfig.h"
 
-
 CLaunchConfig::CLaunchConfig(const CLaunchConfig &old)
 {
 	type = old.type;
@@ -10,11 +9,12 @@ CLaunchConfig::CLaunchConfig(const CLaunchConfig &old)
 	port = old.port;
 	userName = old.userName;
 	remoteDir = old.remoteDir;
-	jobName = old.jobName;
-	walltime = old.walltime;
-	procNum = old.procNum;
+//	jobName = old.jobName;
+//	walltime = old.walltime;
+//	procNum = old.procNum;
 	customFile = old.customFile;
-	ram = old.ram;
+//	ram = old.ram;
+	text = old.text;
 }
 
 void CLaunchConfig::operator=(const CLaunchConfig &old)
@@ -26,11 +26,12 @@ void CLaunchConfig::operator=(const CLaunchConfig &old)
 	port = old.port;
 	userName = old.userName;
 	remoteDir = old.remoteDir;
-	jobName = old.jobName;
-	walltime = old.walltime;
-	procNum = old.procNum;
+//	jobName = old.jobName;
+//	walltime = old.walltime;
+//	procNum = old.procNum;
 	customFile = old.customFile;
-	ram = old.ram;
+//	ram = old.ram;
+	text = old.text;
 }
 
 bool CLaunchConfig::operator!=(const CLaunchConfig &b)
@@ -47,10 +48,11 @@ bool CLaunchConfig::operator==(const CLaunchConfig &b)
 	if(port != b.port) return false;
 	if(userName.compare(b.userName) != 0) return false;
 	if(remoteDir.compare(b.remoteDir) != 0) return false;
-	if(jobName.compare(b.jobName) != 0) return false;
-	if(walltime.compare(b.walltime) != 0) return false;
+//	if(jobName.compare(b.jobName) != 0) return false;
+//	if(walltime.compare(b.walltime) != 0) return false;
 	if(customFile.compare(b.customFile) != 0) return false;
-	if(ram != b.ram) return false;
+//	if(ram != b.ram) return false;
+	if(text.compare(b.text) != 0) return false;
 
 	return true;
 }
@@ -73,11 +75,12 @@ void CLaunchConfig::Save(OArchive& ar)
 	ar.WriteChunk(CID_LCONFIG_PORT, port);
 	ar.WriteChunk(CID_LCONFIG_USERNAME, userName);
 	ar.WriteChunk(CID_LCONFIG_REMOTEDIR, remoteDir);
-	ar.WriteChunk(CID_LCONFIG_JOBNAME, jobName);
-	ar.WriteChunk(CID_LCONFIG_WALLTIME, walltime);
-	ar.WriteChunk(CID_LCONFIG_PROCNUM, procNum);
-	ar.WriteChunk(CID_LCONFIG_RAM, ram);
+//	ar.WriteChunk(CID_LCONFIG_JOBNAME, jobName);
+//	ar.WriteChunk(CID_LCONFIG_WALLTIME, walltime);
+//	ar.WriteChunk(CID_LCONFIG_PROCNUM, procNum);
+//	ar.WriteChunk(CID_LCONFIG_RAM, ram);
 	ar.WriteChunk(CID_LCONFIG_CUSTOMEFILE, customFile);
+	ar.WriteChunk(CID_LCONFIG_TEXT, getText());
 }
 
 void CLaunchConfig::Load(IArchive& ar)
@@ -93,20 +96,132 @@ void CLaunchConfig::Load(IArchive& ar)
 		case CID_LCONFIG_PORT: ar.read(port); break;
 		case CID_LCONFIG_USERNAME: ar.read(userName); break;
 		case CID_LCONFIG_REMOTEDIR: ar.read(remoteDir); break;
-		case CID_LCONFIG_JOBNAME: ar.read(jobName); break;
-		case CID_LCONFIG_WALLTIME: ar.read(walltime); break;
-		case CID_LCONFIG_PROCNUM: ar.read(procNum); break;
-		case CID_LCONFIG_RAM: ar.read(ram); break;
+//		case CID_LCONFIG_JOBNAME: ar.read(jobName); break;
+//		case CID_LCONFIG_WALLTIME: ar.read(walltime); break;
+//		case CID_LCONFIG_PROCNUM: ar.read(procNum); break;
+//		case CID_LCONFIG_RAM: ar.read(ram); break;
 		case CID_LCONFIG_CUSTOMEFILE: ar.read(customFile); break;
+		case CID_LCONFIG_TEXT: ar.read(text); break;
 		}
 		ar.CloseChunk();
 	}
 }
 
+const std::string& CLaunchConfig::getCustomFile() const {
+	return customFile;
+}
 
+void CLaunchConfig::setCustomFile(const std::string &customFile) {
+	this->customFile = customFile;
+}
 
+const std::string& CLaunchConfig::getName() const {
+	return name;
+}
 
+void CLaunchConfig::setName(const std::string &name) {
+	this->name = name;
+}
 
+const std::string& CLaunchConfig::getPath() const {
+	return path;
+}
 
+void CLaunchConfig::setPath(const std::string &path) {
+	this->path = path;
+}
 
+int CLaunchConfig::getPort() const {
+	return port;
+}
 
+void CLaunchConfig::setPort(int port) {
+	this->port = port;
+}
+
+const std::string& CLaunchConfig::getRemoteDir() const {
+	return remoteDir;
+}
+
+void CLaunchConfig::setRemoteDir(const std::string &remoteDir) {
+	this->remoteDir = remoteDir;
+}
+
+const std::string& CLaunchConfig::getServer() const {
+	return server;
+}
+
+void CLaunchConfig::setServer(const std::string &server) {
+	this->server = server;
+}
+
+int CLaunchConfig::getType() const {
+	return type;
+}
+
+void CLaunchConfig::setType(int type) {
+	this->type = type;
+}
+
+const std::string& CLaunchConfig::getUserName() const {
+	return userName;
+}
+
+void CLaunchConfig::setUserName(const std::string &userName) {
+	this->userName = userName;
+}
+
+//const std::string& CLaunchConfig::getCustomText() const {
+//	return CustomText;
+//}
+//
+//void CLaunchConfig::setCustomText(const std::string &customText) {
+//	CustomText = customText;
+//}
+//
+//const std::string& CLaunchConfig::getPbsText() const {
+//
+//	if(PBSText.compare("${DEFAULT}") == 0)
+//	{
+//		return DefaultPBSText;
+//	}
+//
+//	return PBSText;
+//}
+//
+//void CLaunchConfig::setPbsText(const std::string &pbsText) {
+//	PBSText = pbsText;
+//}
+//
+//const std::string& CLaunchConfig::getSlurmText() const {
+//	if(PBSText.compare("${DEFAULT}") == 0)
+//	{
+//		return DefaultPBSText;
+//	}
+//
+//	return SlurmText;
+//}
+//
+//void CLaunchConfig::setSlurmText(const std::string &slurmText) {
+//	SlurmText = slurmText;
+//}
+
+void CLaunchConfig::setText(const std::string &text) {
+	this->text = text;
+}
+
+const std::string& CLaunchConfig::getText() const {
+
+//	switch(type)
+//	{
+//	case PBS:
+//		return PBSText;
+//	case SLURM:
+//		return SlurmText;
+//	case CUSTOM:
+//		return CustomText;
+//	}
+//
+//	return "";
+	return text;
+}
