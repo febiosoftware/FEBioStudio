@@ -28,9 +28,9 @@
 		D5D5B6CC2335139C00D388FA /* libssl.1.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5D5B6CE2335160E00D388FA /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */; };
 		D5D5B6CF2335161A00D388FA /* libcrypto.1.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5D5B6D323351ED600D388FA /* moc_DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6D223351ED600D388FA /* moc_DlgEditPath.cpp */; };
 		D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346A23233928002D7A13 /* SSHHandler.cpp */; };
-		D5EBB7A7232AEAED00EED2BE /* DlgEditPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A3232AEAEC00EED2BE /* DlgEditPath.cpp */; };
+		D5E04A4A2357BD1B006AC137 /* moc_DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */; };
+		D5E04A4B2357BD1B006AC137 /* DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */; };
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
 		D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; };
 		D5EBB7AD232AEF6A00EED2BE /* libssh.4.8.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -409,11 +409,11 @@
 		D5D5B6C32335128E00D388FA /* SSHThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHThread.cpp; sourceTree = "<group>"; };
 		D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2s/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
 		D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2s/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
-		D5D5B6D223351ED600D388FA /* moc_DlgEditPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditPath.cpp; sourceTree = "<group>"; };
-		D5DC346823233928002D7A13 /* DlgEditPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditPath.h; sourceTree = "<group>"; };
 		D5DC346A23233928002D7A13 /* SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHHandler.cpp; sourceTree = "<group>"; };
 		D5DC346B23233928002D7A13 /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
-		D5EBB7A3232AEAEC00EED2BE /* DlgEditPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgEditPath.cpp; sourceTree = "<group>"; };
+		D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditLConfigs.cpp; sourceTree = "<group>"; };
+		D5E04A482357BD1B006AC137 /* DlgEditLConfigs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditLConfigs.h; sourceTree = "<group>"; };
+		D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgEditLConfigs.cpp; sourceTree = "<group>"; };
 		D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchConfig.h; sourceTree = "<group>"; };
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
 		D5EBB7A6232AEAED00EED2BE /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
@@ -995,10 +995,10 @@
 				D5F7D79322FA37C40089B08E /* DlgCloneRevolve.h */,
 				D5F7D7B322FA37C40089B08E /* DlgDetachSelection.cpp */,
 				D5F7D7DB22FA37C40089B08E /* DlgDetachSelection.h */,
+				D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */,
+				D5E04A482357BD1B006AC137 /* DlgEditLConfigs.h */,
 				D5F7D7E322FA37C40089B08E /* DlgEditOutput.cpp */,
 				D5F7D75F22FA37C40089B08E /* DlgEditOutput.h */,
-				D5EBB7A3232AEAEC00EED2BE /* DlgEditPath.cpp */,
-				D5DC346823233928002D7A13 /* DlgEditPath.h */,
 				D5F7D72822FA37C40089B08E /* DlgEditProject.cpp */,
 				D5F7D70722FA37C40089B08E /* DlgEditProject.h */,
 				D5F7D71322FA37C40089B08E /* DlgExportFEBio.cpp */,
@@ -1137,8 +1137,8 @@
 				D5F7D7F422FA37C40089B08E /* moc_DlgCloneGrid.cpp */,
 				D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */,
 				D5F7D79B22FA37C40089B08E /* moc_DlgCloneRevolve.cpp */,
+				D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */,
 				D5F7D79222FA37C40089B08E /* moc_DlgEditOutput.cpp */,
-				D5D5B6D223351ED600D388FA /* moc_DlgEditPath.cpp */,
 				D5F7D7E422FA37C40089B08E /* moc_DlgEditProject.cpp */,
 				D5F7D80722FA37C40089B08E /* moc_DlgExportFEBio.cpp */,
 				D5F7D70222FA37C40089B08E /* moc_DlgFEBioOptimize.cpp */,
@@ -1448,6 +1448,7 @@
 				D5F7D84A22FA37C40089B08E /* FEBioJob.cpp in Sources */,
 				D5ED2A1823198CD900C16BF7 /* moc_MainTabBar.cpp in Sources */,
 				D5F7D88422FA37C40089B08E /* moc_DlgRun.cpp in Sources */,
+				D5E04A4A2357BD1B006AC137 /* moc_DlgEditLConfigs.cpp in Sources */,
 				D5F7D8A622FA37C40089B08E /* DlgEditOutput.cpp in Sources */,
 				D5F7D84522FA37C40089B08E /* moc_ResourceEdit.cpp in Sources */,
 				D5ED2A1023198CD900C16BF7 /* moc_PostDataPanel.cpp in Sources */,
@@ -1497,6 +1498,7 @@
 				D5F7D82322FA37C40089B08E /* DlgSoluteTable.cpp in Sources */,
 				D5ED2A0E23198CD900C16BF7 /* MainTabBar.cpp in Sources */,
 				D5F7D86722FA37C40089B08E /* GManipulator.cpp in Sources */,
+				D5E04A4B2357BD1B006AC137 /* DlgEditLConfigs.cpp in Sources */,
 				D5F7D85222FA37C40089B08E /* DlgAddBC.cpp in Sources */,
 				D5F7D85C22FA37C40089B08E /* SummaryWindow.cpp in Sources */,
 				D5F7D89B22FA37C40089B08E /* ToolBox.cpp in Sources */,
@@ -1593,7 +1595,6 @@
 				D5ED2A1523198CD900C16BF7 /* FEObjectProps.cpp in Sources */,
 				D5F7D8AD22FA37C40089B08E /* Document.cpp in Sources */,
 				D5F7D8B122FA37C40089B08E /* moc_DlgCloneGrid.cpp in Sources */,
-				D5EBB7A7232AEAED00EED2BE /* DlgEditPath.cpp in Sources */,
 				D5F7D8BE22FA37C40089B08E /* StatsWindow.cpp in Sources */,
 				D5F7D85A22FA37C40089B08E /* moc_PostPanel.cpp in Sources */,
 				D5F7D87C22FA37C40089B08E /* MainWindow.cpp in Sources */,
@@ -1618,7 +1619,6 @@
 				D5F7D84022FA37C40089B08E /* menuRecord.cpp in Sources */,
 				D5F7D87A22FA37C40089B08E /* CommandManager.cpp in Sources */,
 				D57A0B092346719D00B7C0B8 /* DlgImportXPLT.cpp in Sources */,
-				D5D5B6D323351ED600D388FA /* moc_DlgEditPath.cpp in Sources */,
 				D5F7D8AC22FA37C40089B08E /* moc_ToolsPanel.cpp in Sources */,
 				D5F7D85D22FA37C40089B08E /* moc_ObjectPanel.cpp in Sources */,
 				D5F7D89322FA37C40089B08E /* CurvePicker.cpp in Sources */,
