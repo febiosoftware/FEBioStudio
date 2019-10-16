@@ -16,7 +16,7 @@
 #include <PostGL/GLModel.h>
 #include "PostDoc.h"
 
-CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc)
+CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
 	QString title = "PostView2: Summary";
 	setWindowTitle(title);

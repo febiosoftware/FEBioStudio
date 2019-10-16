@@ -17,7 +17,7 @@
 #include <PostGL/GLPlaneCutPlot.h>
 #include "PostDoc.h"
 
-CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc)
+CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
 	QString title = "PostView2: Integrate";
 	setWindowTitle(title);

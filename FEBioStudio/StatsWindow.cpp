@@ -17,7 +17,7 @@
 #include <PostGL/GLPlaneCutPlot.h>
 #include "PostDoc.h"
 
-CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc)
+CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
 	QString title = "FEBioStudio: Statistics";
 	setWindowTitle(title);

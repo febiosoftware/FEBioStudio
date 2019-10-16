@@ -465,6 +465,9 @@ public:
 
 	CPostDoc*	doc;
 
+	QAction* actionType;
+	QAction* actionPlot;
+
 public:
 	void setupUi(::CGraphWindow* parent)
 	{
@@ -524,8 +527,8 @@ public:
 		actionSave = toolBar->addAction(QIcon(QString(":/icons/save.png")), "Save"); actionSave->setObjectName("actionSave");
 		actionClipboard = toolBar->addAction(QIcon(QString(":/icons/clipboard.png")), "Copy to clipboard"); actionClipboard->setObjectName("actionClipboard");
 
-		toolBar->addWidget(new QLabel("Type: "));
-		toolBar->addWidget(selectPlot);
+		actionType = toolBar->addWidget(new QLabel("Type: "));
+		actionPlot = toolBar->addWidget(selectPlot);
 		actionSelectX = toolBar->addWidget(x);
 		actionSelectY = toolBar->addWidget(y);
 		QPushButton* showTools = new QPushButton("Tools");
@@ -550,7 +553,7 @@ public:
 	}
 };
 
-CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc) : m_wnd(pwnd), QMainWindow(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
+CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc, int flags) : m_wnd(pwnd), QMainWindow(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
 {
 	m_nTrackTime = TRACK_TIME;
 	m_nUserMin = 0;
@@ -561,6 +564,12 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc) : m_wnd(pwnd), 
 
 	ui->setupUi(this);
 	ui->doc = postDoc;
+
+	if ((flags & SHOW_TYPE_OPTIONS) == 0)
+	{
+		ui->actionType->setVisible(false);
+		ui->actionPlot->setVisible(false);
+	}
 
 	// hide the selectors by default
 	ui->actionSelectX->setVisible(false);

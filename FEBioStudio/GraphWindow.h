@@ -168,8 +168,14 @@ public:
 		TIME_SCATTER_PLOT
 	};
 
+	enum GraphOptions
+	{
+		SHOW_TYPE_OPTIONS = 1,
+		SHOW_ALL_OPTIONS = 0xFF
+	};
+
 public:
-	CGraphWindow(CMainWindow* wnd, CPostDoc* postDoc);
+	CGraphWindow(CMainWindow* wnd, CPostDoc* postDoc, int flags = SHOW_ALL_OPTIONS);
 
 	virtual void Update(bool breset = true, bool bfit = false) = 0;
 
