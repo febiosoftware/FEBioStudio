@@ -44,6 +44,9 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 	m_bshowHidden = true;
 	m_bnormalize = false;
 
+	m_lastTime = -1;
+	m_lastDt = 0.f;
+
 	m_seed = rand();
 
 	m_nmethod = VEC_EIGEN;
@@ -107,9 +110,17 @@ CColorTexture* GLTensorPlot::GetColorMap()
 	return &m_Col;
 }
 
+void GLTensorPlot::Update()
+{
+	Update(m_lastTime, m_lastDt, false);
+}
+
 void GLTensorPlot::Update(int ntime, float dt, bool breset)
 {
 	if (breset) { m_map.Clear(); m_val.clear(); }
+
+	m_lastTime = ntime;
+	m_lastDt = dt;
 
 	CGLModel* mdl = GetModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();

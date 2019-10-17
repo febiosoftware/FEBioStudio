@@ -34,6 +34,9 @@ CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLPlot(po)
 	m_nfield = 0;
 	m_offset = 0.5f;
 
+	m_lastTime = 0;
+	m_lastDt = 0.f;
+
 	m_Col.SetDivisions(m_nslices);
 	m_Col.SetSmooth(false);
 
@@ -256,6 +259,11 @@ void CGLSlicePlot::SetEvalField(int n)
 	m_nfield = n; 
 	Update(GetModel()->currentTimeIndex(), 0.0, false);
 }
+//-----------------------------------------------------------------------------
+void CGLSlicePlot::Update()
+{
+	Update(m_lastTime, m_lastDt, false);
+}
 
 //-----------------------------------------------------------------------------
 void CGLSlicePlot::Update(int ntime, float dt, bool breset)
@@ -293,32 +301,29 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 
 		// evaluate the range
 		float fmin, fmax;
-		if (m_nrange == 0)
+		fmin = fmax = val[0];
+		for (int i=0;i<NN; ++i)
 		{
-			fmin = fmax = val[0];
-			for (int i=0;i<NN; ++i)
-			{
-				if (val[i] < fmin) fmin = val[i];
-				if (val[i] > fmax) fmax = val[i];
-			}
-			if (fmin == fmax) fmax++;
-
-			m_fmin = fmin;
-			m_fmax = fmax;
+			if (val[i] < fmin) fmin = val[i];
+			if (val[i] > fmax) fmax = val[i];
 		}
-		else
-		{
-			fmin = m_fmin;
-			fmax = m_fmax;
-			if (fmin == fmax) fmax++;
-		}
-
 		m_rng[ntime] = vec2f(fmin, fmax);
 	}
 
 	// copy current nodal values
 	m_val = m_map.State(ntime);
 
-	// update range
-	m_crng = m_rng[ntime];
+	// set range for color map
+	switch (m_nrange)
+	{
+	case 0:
+		m_crng = m_rng[ntime];
+		break;
+	case 1:
+		m_crng = vec2f((float)m_fmin, (float)m_fmax);
+		break;
+	}
+	if (m_crng.x == m_crng.y) m_crng.y++;
+
+	m_pbar->SetRange(m_crng.x, m_crng.y);
 }

@@ -68,6 +68,8 @@ public:
 
 	void UpdateData(bool bsave = true) override;
 
+	void Update();
+
 private:
 	// render a vector n at position r
 	void RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph);
@@ -80,6 +82,9 @@ protected:
 	int		m_nvec;		// vector field
 	int		m_nglyph;	// glyph type
 	int		m_ncol;		// color type
+
+	int		m_lastTime;
+	float	m_lastDt;
 
 	bool	m_bnorm;		// normalize vectors or not
 	bool	m_bautoscale;	// auto scale the vectors

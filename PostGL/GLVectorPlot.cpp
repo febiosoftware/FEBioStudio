@@ -34,6 +34,9 @@ CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLPlot(po)
 	m_ntime = -1;
 	m_nvec = -1;
 
+	m_lastTime = -1;
+	m_lastDt = 0.f;
+
 	m_nglyph = GLYPH_ARROW;
 
 	m_ncol = GLYPH_COL_SOLID;
@@ -361,9 +364,17 @@ void CGLVectorPlot::SetVectorType(int ntype)
 	Update(GetModel()->currentTimeIndex(), 0.0, false);
 }
 
+void CGLVectorPlot::Update()
+{
+	Update(m_lastTime, m_lastDt, false);
+}
+
 void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 {
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
+
+	m_lastTime = ntime;
+	m_lastDt = dt;
 
 	CGLModel* mdl = GetModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();

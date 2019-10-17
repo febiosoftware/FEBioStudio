@@ -88,6 +88,8 @@ protected:
 	void RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph);
 	void RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph);
 
+	void Update() override;
+
 protected:
 	int		m_ntensor;	// tensor field
 	int		m_nglyph;	// glyph type
@@ -109,5 +111,8 @@ protected:
 	CColorTexture	m_Col;	// glyph color (for not GLYPH_COL_SOLID)
 
 	int		m_nmethod;
+
+	int		m_lastTime;
+	float	m_lastDt;
 };
 }

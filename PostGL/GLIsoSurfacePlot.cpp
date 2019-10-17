@@ -76,10 +76,30 @@ void CGLIsoSurfacePlot::UpdateData(bool bsave)
 	if (bsave)
 	{
 		m_nfield = GetIntValue(DATA_FIELD);
+		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		AllowClipping(GetBoolValue(CLIP));
+		m_bcut_hidden = GetBoolValue(HIDDEN);
+		m_nslices = GetIntValue(SLICES);
+		if (GetBoolValue(LEGEND)) m_pbar->show(); else m_pbar->hide();
+		m_bsmooth = GetBoolValue(SMOOTH);
+		m_rangeType = GetIntValue(RANGE_TYPE);
+		m_userMax = GetFloatValue(USER_MAX);
+		m_userMin = GetFloatValue(USER_MIN);
+
+		m_Col.SetDivisions(m_nslices);
 	}
 	else
 	{
 		SetIntValue(DATA_FIELD, m_nfield);
+		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetBoolValue(CLIP, AllowClipping());
+		SetBoolValue(HIDDEN, m_bcut_hidden);
+		SetIntValue(SLICES, m_nslices);
+		SetBoolValue(LEGEND, m_pbar->visible());
+		SetBoolValue(SMOOTH, m_bsmooth);
+		SetIntValue(RANGE_TYPE, m_rangeType);
+		SetFloatValue(USER_MAX, m_userMax);
+		SetFloatValue(USER_MIN, m_userMin);
 	}
 }
 
@@ -304,7 +324,6 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 			if (val[i] < fmin) fmin = val[i];
 			if (val[i] > fmax) fmax = val[i];
 		}
-		if (fmin == fmax) fmax++;
 
 		m_rng[ntime] = vec2f(fmin, fmax);
 	}
@@ -346,6 +365,7 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 		m_crng = vec2f((float)m_userMin, (float)m_userMax);
 		break;
 	}
+	if (m_crng.x == m_crng.y) m_crng.y++;
 
 	m_pbar->SetRange(m_crng.x, m_crng.y);
 }

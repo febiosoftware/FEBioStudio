@@ -48,6 +48,8 @@ public:
 
 	void UpdateData(bool bsave = true) override;
 
+	void Update() override;
+
 protected:
 	void RenderSlice(float ref);
 
@@ -67,6 +69,9 @@ protected:
 	DataMap<float>	m_map;	// nodal values map
 	vector<float>	m_val;	// current nodal values
 	vec2f			m_crng;	// current range
+
+	int m_lastTime;
+	float	m_lastDt;
 
 	GLLegendBar*	m_pbar;
 };
