@@ -94,8 +94,8 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 	// conver them to global coordinates and normalize
 	for (int i=0; i<nodes; ++i)
 	{
-		nu[i] = pso->Transform().LocalToGlobalNormal(nu[i]);
-		nu[i] = pmo->Transform().GlobalToLocalNormal(nu[i]);
+		nu[i] = pso->GetTransform().LocalToGlobalNormal(nu[i]);
+		nu[i] = pmo->GetTransform().GlobalToLocalNormal(nu[i]);
 		nu[i].Normalize();
 	}
 
@@ -105,8 +105,8 @@ bool CSurfaceDistance::NormalProject(GObject* pso, GObject* pmo, vector<double>&
 		FENode& nodei = ps->Node(i);
 
 		// get the nodal coordinate
-		vec3d ri = pso->Transform().LocalToGlobal(nodei.r);
-		ri = pmo->Transform().GlobalToLocal(ri);
+		vec3d ri = pso->GetTransform().LocalToGlobal(nodei.r);
+		ri = pmo->GetTransform().GlobalToLocal(ri);
 		vec3d ni = nu[i];
 
 		// create a plane tangent to the ray
@@ -242,10 +242,10 @@ bool CSurfaceDistance::ClosestPoint(GObject* pso, GObject* pmo, vector<double>& 
 		FENode& nodei = ps->Node(i);
 
 		// get the global nodal coordinates
-		vec3d ri = pso->Transform().LocalToGlobal(nodei.r);
+		vec3d ri = pso->GetTransform().LocalToGlobal(nodei.r);
 
 		// convert it to the local coordinate in the master object
-		ri = pmo->Transform().GlobalToLocal(ri);
+		ri = pmo->GetTransform().GlobalToLocal(ri);
 
 		// repeat over all master nodes
 		double Dmin = 0.0;

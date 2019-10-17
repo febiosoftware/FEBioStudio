@@ -185,7 +185,6 @@
     <ClInclude Include="..\..\GeomLib\GOCCObject.h" />
     <ClInclude Include="..\..\GeomLib\GPrimitive.h" />
     <ClInclude Include="..\..\GeomLib\GSurfaceMeshObject.h" />
-    <ClInclude Include="..\..\GeomLib\GTransform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -36,7 +36,7 @@ bool FEMeshExport::Export(FEProject& prj, const char* szfile)
 		{
 			FENode& node = pm->Node(j);
 			node.m_nid = N;
-			vec3d r = po->Transform().LocalToGlobal(node.r);
+			vec3d r = po->GetTransform().LocalToGlobal(node.r);
 			fprintf(fp, "%lg %lg %lg 0\n", r.x, r.y, r.z);
 		}
 	}

@@ -40,9 +40,9 @@ bool CPlaneCutTool::OnApply()
 	}
 
 	// calculate the plane coefficients
-	vec3d r0 = pmo->Transform().GlobalToLocal(m_r0);
-	vec3d r1 = pmo->Transform().GlobalToLocal(m_r1);
-	vec3d r2 = pmo->Transform().GlobalToLocal(m_r2);
+	vec3d r0 = pmo->GetTransform().GlobalToLocal(m_r0);
+	vec3d r1 = pmo->GetTransform().GlobalToLocal(m_r1);
+	vec3d r2 = pmo->GetTransform().GlobalToLocal(m_r2);
 	double a[4];
 	vec3d n = (r1 - r0) ^ (r2 - r0);
 	a[0] = n.x;

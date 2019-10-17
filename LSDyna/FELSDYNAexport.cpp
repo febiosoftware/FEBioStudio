@@ -83,7 +83,7 @@ bool FELSDYNAexport::write_NODE()
 			for (int j=0; j<pm->Nodes(); ++j)
 			{
 				vec3d r = pm->Node(j).r;
-				r = po->Transform().LocalToGlobal(r);
+				r = po->GetTransform().LocalToGlobal(r);
 
 				fprintf(m_fp,"%8d%16.7e%16.7e%16.7e\n", n, r.x, r.y, r.z);
 				pm->Node(j).m_ntag = n++;

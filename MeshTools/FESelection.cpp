@@ -103,7 +103,7 @@ void GObjectSelection::Translate(vec3d dr)
 	{
 		GObject* po = m.Object(m_item[i]);
 		assert(po->IsSelected());
-		po->Transform().Translate(dr);
+		po->GetTransform().Translate(dr);
 	}
 	Update();
 }
@@ -116,7 +116,7 @@ void GObjectSelection::Rotate(quatd q, vec3d rc)
 	{
 		GObject* po = m.Object(m_item[i]);
 		assert(po->IsSelected());
-		po->Transform().Rotate(q, rc);
+		po->GetTransform().Rotate(q, rc);
 	}
 	Update();
 }
@@ -129,7 +129,7 @@ void GObjectSelection::Scale(double s, vec3d dr, vec3d c)
 	{
 		GObject* po = m.Object(m_item[i]);
 		assert(po->IsSelected());
-		po->Transform().Scale(s, dr, c);
+		po->GetTransform().Scale(s, dr, c);
 	}
 	Update();
 }
@@ -142,7 +142,7 @@ quatd GObjectSelection::GetOrientation()
 	{
 		GObject* po = m.Object(m_item[i]);
 		assert(po->IsSelected());
-		return po->Transform().GetRotation();
+		return po->GetTransform().GetRotation();
 	}
 
 	return quatd(0,0,0,1);
@@ -158,7 +158,7 @@ vec3d GObjectSelection::GetPivot()
 	{
 		GObject* po = m.Object(m_item[i]);
 		assert(po->IsSelected());
-		v += po->Transform().LocalToGlobal(vec3d(0, 0, 0));
+		v += po->GetTransform().LocalToGlobal(vec3d(0, 0, 0));
 	}
 	if (N != 0) v /= N;
 	return v;
@@ -168,7 +168,7 @@ vec3d GObjectSelection::GetScale()
 {
 	GModel& m = m_pfem->GetModel();
 	int N = (int) m_item.size();
-	if (N == 1) return m.Object(m_item[0])->Transform().GetScale();
+	if (N == 1) return m.Object(m_item[0])->GetTransform().GetScale();
 	return vec3d(1,1,1);
 }
 
@@ -297,7 +297,7 @@ void GPartSelection::Update()
 			{
 				for (int j=0; j<3; ++j)
 				{
-					vec3d r = po->Transform().LocalToGlobal(pm->Node(f.n[j]).r);
+					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(f.n[j]).r);
 
 					if (r.x < m_box.x0) m_box.x0 = r.x;
 					if (r.y < m_box.y0) m_box.y0 = r.y;
@@ -462,7 +462,7 @@ void GFaceSelection::Update()
 			{
 				for (int j=0; j<3; ++j)
 				{
-					vec3d r = po->Transform().LocalToGlobal(pm->Node(f.n[j]).r);
+					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(f.n[j]).r);
 
 					if (r.x < m_box.x0) m_box.x0 = r.x;
 					if (r.y < m_box.y0) m_box.y0 = r.y;
@@ -595,7 +595,7 @@ void GEdgeSelection::Update()
 			{
 				for (int j=0; j<2; ++j)
 				{
-					vec3d r = po->Transform().LocalToGlobal(pm->Node(e.n[j]).r);
+					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(e.n[j]).r);
 
 					if (r.x < m_box.x0) m_box.x0 = r.x;
 					if (r.y < m_box.y0) m_box.y0 = r.y;
@@ -982,7 +982,7 @@ void FEElementSelection::Update()
 
 			for (j=0; j<l; ++j)
 			{
-				r = po->Transform().LocalToGlobal(pn[n[j]].r);
+				r = po->GetTransform().LocalToGlobal(pn[n[j]].r);
 
 				if (r.x < m_box.x0) m_box.x0 = r.x;
 				if (r.y < m_box.y0) m_box.y0 = r.y;
@@ -1029,8 +1029,8 @@ void FEElementSelection::Translate(vec3d dr)
 	for (i=0; i<N; ++i) 
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r) + dr;
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r) + dr;
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
 	m_pMesh->UpdateNormals();
@@ -1078,10 +1078,10 @@ void FEElementSelection::Rotate(quatd q, vec3d rc)
 	for (i=0; i<N; ++i) 
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r);
 			dr = r - rc;
 			r = rc + q*dr;
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
 	m_pMesh->UpdateNormals();
@@ -1125,11 +1125,11 @@ void FEElementSelection::Scale(double s, vec3d dr, vec3d c)
 	for (i=0; i<N; ++i) 
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r);
 			r.x = c.x + dr.x*(r.x - c.x);
 			r.y = c.y + dr.y*(r.y - c.y);
 			r.z = c.z + dr.z*(r.z - c.z);
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
 	m_pMesh->UpdateNormals();
@@ -1142,7 +1142,7 @@ void FEElementSelection::Scale(double s, vec3d dr, vec3d c)
 
 quatd FEElementSelection::GetOrientation()
 {
-	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->Transform().GetRotation();
+	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
 FEItemListBuilder* FEElementSelection::CreateItemList()
@@ -1213,7 +1213,7 @@ void FEFaceSelection::Update()
 			n = f.n;
 			for (j=0; j<pf->Nodes(); ++j)
 			{
-				r = po->Transform().LocalToGlobal(pn[n[j]].r);
+				r = po->GetTransform().LocalToGlobal(pn[n[j]].r);
 
 				if (r.x < m_box.x0) m_box.x0 = r.x;
 				if (r.y < m_box.y0) m_box.y0 = r.y;
@@ -1258,9 +1258,9 @@ void FEFaceSelection::Translate(vec3d dr)
 	{
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r);
 			r += dr;
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 	}
 
@@ -1306,10 +1306,10 @@ void FEFaceSelection::Rotate(quatd q, vec3d rc)
 	for (i=0; i<N; ++i) 
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r);
 			dr = r - rc;
 			r = rc + q*dr;
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
 	m_pMesh->UpdateNormals();
@@ -1351,11 +1351,11 @@ void FEFaceSelection::Scale(double s, vec3d dr, vec3d c)
 	for (i=0; i<N; ++i) 
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r);
 			r.x = c.x + dr.x*(r.x - c.x);
 			r.y = c.y + dr.y*(r.y - c.y);
 			r.z = c.z + dr.z*(r.z - c.z);
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
 	m_pMesh->UpdateNormals();
@@ -1368,7 +1368,7 @@ void FEFaceSelection::Scale(double s, vec3d dr, vec3d c)
 
 quatd FEFaceSelection::GetOrientation()
 {
-	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->Transform().GetRotation();
+	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
 FEFaceSelection::Iterator::Iterator(FEMeshBase* pm)
@@ -1497,9 +1497,9 @@ void FEEdgeSelection::Translate(vec3d dr)
 	{
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r);
 			r += dr;
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 	}
 
@@ -1544,10 +1544,10 @@ void FEEdgeSelection::Rotate(quatd q, vec3d rc)
 	for (i=0; i<N; ++i) 
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r);
 			dr = r - rc;
 			r = rc + q*dr;
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
 	m_pMesh->UpdateMeshData();
@@ -1587,11 +1587,11 @@ void FEEdgeSelection::Scale(double s, vec3d dr, vec3d c)
 	for (i=0; i<N; ++i) 
 		if (pn[i].m_ntag) 
 		{
-			r = po->Transform().LocalToGlobal(pn[i].r);
+			r = po->GetTransform().LocalToGlobal(pn[i].r);
 			r.x = c.x + dr.x*(r.x - c.x);
 			r.y = c.y + dr.y*(r.y - c.y);
 			r.z = c.z + dr.z*(r.z - c.z);
-			pn[i].r = po->Transform().GlobalToLocal(r);
+			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
 	m_pMesh->UpdateMeshData();
@@ -1603,7 +1603,7 @@ void FEEdgeSelection::Scale(double s, vec3d dr, vec3d c)
 
 quatd FEEdgeSelection::GetOrientation()
 {
-	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->Transform().GetRotation();
+	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
 FEEdgeSelection::Iterator::Iterator(FELineMesh* pm)
@@ -1677,7 +1677,7 @@ void FENodeSelection::Update()
 	{
 		if (pn->IsSelected())
 		{
-			r = po->Transform().LocalToGlobal(pn->r);
+			r = po->GetTransform().LocalToGlobal(pn->r);
 
 			if (r.x < m_box.x0) m_box.x0 = r.x;
 			if (r.y < m_box.y0) m_box.y0 = r.y;
@@ -1704,9 +1704,9 @@ void FENodeSelection::Translate(vec3d dr)
 	vec3d r;
 	while (pn)
 	{
-		r = po->Transform().LocalToGlobal(pn->r);
+		r = po->GetTransform().LocalToGlobal(pn->r);
 		r += dr;
-		pn->r = po->Transform().GlobalToLocal(r);
+		pn->r = po->GetTransform().GlobalToLocal(r);
 		++pn;
 	}
 
@@ -1738,10 +1738,10 @@ void FENodeSelection::Rotate(quatd q, vec3d rc)
 	vec3d r;
 	while (pn)
 	{
-		r = po->Transform().LocalToGlobal(pn->r);
+		r = po->GetTransform().LocalToGlobal(pn->r);
 		dr = r - rc;
 		r = rc + q*dr;
-		pn->r = po->Transform().GlobalToLocal(r);
+		pn->r = po->GetTransform().GlobalToLocal(r);
 		++pn;
 	}
 
@@ -1767,11 +1767,11 @@ void FENodeSelection::Scale(double s, vec3d dr, vec3d c)
 	vec3d r;
 	while (pn)
 	{
-		r = po->Transform().LocalToGlobal(pn->r);
+		r = po->GetTransform().LocalToGlobal(pn->r);
 		r.x = c.x + dr.x*(r.x - c.x);
 		r.y = c.y + dr.y*(r.y - c.y);
 		r.z = c.z + dr.z*(r.z - c.z);
-		pn->r = po->Transform().GlobalToLocal(r);
+		pn->r = po->GetTransform().GlobalToLocal(r);
 		++pn;
 	}
 
@@ -1785,7 +1785,7 @@ void FENodeSelection::Scale(double s, vec3d dr, vec3d c)
 
 quatd FENodeSelection::GetOrientation()
 {
-	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->Transform().GetRotation();
+	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
 FENodeSelection::Iterator::Iterator(FELineMesh* pm)

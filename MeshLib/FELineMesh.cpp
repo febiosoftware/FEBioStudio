@@ -32,14 +32,14 @@ GObject* FELineMesh::GetGObject() { return m_pobj; }
 // info from the parent object.
 vec3d FELineMesh::LocalToGlobal(const vec3d& r) const
 {
-	if (m_pobj) return m_pobj->Transform().LocalToGlobal(r);
+	if (m_pobj) return m_pobj->GetTransform().LocalToGlobal(r);
 	else return r;
 }
 
 //-----------------------------------------------------------------------------
 vec3d FELineMesh::GlobalToLocal(const vec3d& r) const
 {
-	if (m_pobj) return m_pobj->Transform().GlobalToLocal(r);
+	if (m_pobj) return m_pobj->GetTransform().GlobalToLocal(r);
 	else return r;
 }
 

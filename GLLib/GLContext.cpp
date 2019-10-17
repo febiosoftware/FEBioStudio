@@ -9,6 +9,8 @@ CGLContext::CGLContext()
 	m_showOutline = false;
 	m_bext = false;
 	m_springThick = 1.f;
+
+	m_btrack = false;
 }
 
 CGLContext::~CGLContext(void)

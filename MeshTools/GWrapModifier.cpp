@@ -143,8 +143,8 @@ void GWrapModifier::ClosestPoint(FEMesh *pm, vector<vec3d>& DS, vector<int>& tag
 		{
 			FENode& n = pm->Node(i);
 
-			vec3d nr = ps->Transform().LocalToGlobal(n.r);
-			nr = m_po->Transform().GlobalToLocal(nr);
+			vec3d nr = ps->GetTransform().LocalToGlobal(n.r);
+			nr = m_po->GetTransform().GlobalToLocal(nr);
 
 			// find the closest node
 			int imin = 0;
@@ -173,8 +173,8 @@ void GWrapModifier::ClosestPoint(FEMesh *pm, vector<vec3d>& DS, vector<int>& tag
 				vec3d dr = nr - q;
 				if (dr*dr < dmin)
 				{
-					q = m_po->Transform().LocalToGlobal(q);
-					DS[i] = ps->Transform().GlobalToLocal(q) - n.r;
+					q = m_po->GetTransform().LocalToGlobal(q);
+					DS[i] = ps->GetTransform().GlobalToLocal(q) - n.r;
 					dmin = dr*dr;
 				}
 			}
@@ -217,8 +217,8 @@ void GWrapModifier::NormalProjection(FEMesh *pm, vector<vec3d>& DS, vector<int>&
 		{
 			if (pm->Node(i).m_ntag == 1)
 			{
-				vec3d r = ps->Transform().LocalToGlobalNormal(N[i]);
-				N[i] = m_po->Transform().GlobalToLocalNormal(r);
+				vec3d r = ps->GetTransform().LocalToGlobalNormal(N[i]);
+				N[i] = m_po->GetTransform().GlobalToLocalNormal(r);
 				N[i].Normalize();
 			}
 		}
@@ -236,8 +236,8 @@ void GWrapModifier::NormalProjection(FEMesh *pm, vector<vec3d>& DS, vector<int>&
 				vec3d n = N[i];
 
 				// get the global position
-				vec3d r = ps->Transform().LocalToGlobal(node.r);
-				r = m_po->Transform().GlobalToLocal(r);
+				vec3d r = ps->GetTransform().LocalToGlobal(node.r);
+				r = m_po->GetTransform().GlobalToLocal(r);
 
 				// loop over all faces of the target mesh
 				double dmin = 1e99, d;
@@ -251,8 +251,8 @@ void GWrapModifier::NormalProjection(FEMesh *pm, vector<vec3d>& DS, vector<int>&
 						d = (q-r)*(q-r);
 						if (d < dmin)
 						{
-							q = m_po->Transform().LocalToGlobal(q);
-							DS[i] = ps->Transform().GlobalToLocal(q) - node.r;
+							q = m_po->GetTransform().LocalToGlobal(q);
+							DS[i] = ps->GetTransform().GlobalToLocal(q) - node.r;
 							dmin = d;
 						}
 					}

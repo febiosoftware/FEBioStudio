@@ -46,7 +46,7 @@ vec3d GNode::Position() const
 	const GBaseObject* po = Object(); assert(po);
 	if (po)
 	{
-		return po->Transform().LocalToGlobal(m_r);
+		return po->GetTransform().LocalToGlobal(m_r);
 	}
 	else return m_r;
 }

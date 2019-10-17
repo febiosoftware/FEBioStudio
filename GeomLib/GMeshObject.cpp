@@ -407,7 +407,7 @@ void GMeshObject::AddNode(vec3d r)
 	n.m_gid = (int)m_Node.size();
 
 	// convert from global to local
-	r = Transform().GlobalToLocal(r);
+	r = GetTransform().GlobalToLocal(r);
 
 	// add the node to the mesh
 	n.r = r;
@@ -536,9 +536,9 @@ void GMeshObject::Save(OArchive &ar)
 	{
 		int nid = GetID();
 		ar.WriteChunk(CID_OBJ_ID, nid);
-		ar.WriteChunk(CID_OBJ_POS, Transform().GetPosition());
-		ar.WriteChunk(CID_OBJ_ROT, Transform().GetRotation());
-		ar.WriteChunk(CID_OBJ_SCALE, Transform().GetScale());
+		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
+		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
+		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
 		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
 
 		int nparts = Parts();
@@ -705,7 +705,7 @@ void GMeshObject::Load(IArchive& ar)
 
 				SetColor(col);
 
-				GTransform& transform = Transform();
+				Transform& transform = GetTransform();
 				transform.SetPosition(pos);
 				transform.SetRotation(rot);
 				transform.SetScale(scl);
@@ -887,7 +887,7 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 	{
 		GNode* n = new GNode(this);
 		GNode& no = *po->Node(i);
-		n->LocalPosition() = Transform().GlobalToLocal(po->Transform().LocalToGlobal(no.LocalPosition()));
+		n->LocalPosition() = GetTransform().GlobalToLocal(po->GetTransform().LocalToGlobal(no.LocalPosition()));
 		n->SetID(no.GetID());
 		n->SetLocalID(i + NN0);
 		n->SetType(no.Type());

@@ -45,7 +45,7 @@ FESurfaceMesh* InsertCurves2::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList
 		for (int i = 0; i<N; ++i)
 		{
 			vec3d r = ps->Node(i).r;
-			if (pd) r = pd->Transform().GlobalToLocal(r);
+			if (pd) r = pd->GetTransform().GlobalToLocal(r);
 
 			// see if it already exists in the point list
 			int nj = -1;

@@ -925,7 +925,7 @@ FEMesh* FEAddNode::Apply(FEMesh* pm)
 
 	vec3d r = GetVecValue(0);
 	GObject* po = pm->GetGObject();
-	if (po) r = po->Transform().GlobalToLocal(r);
+	if (po) r = po->GetTransform().GlobalToLocal(r);
 
 	FENode node;
 	node.SetExterior(true);

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GLPlaneCutPlot.h"
 #include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 #include "GLModel.h"
 using namespace Post;
 
@@ -38,10 +39,9 @@ CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
 	AddDoubleParam(0, "Z-normal")->SetFloatRange(-1.0, 1.0);
 	AddDoubleParam(0, "offset")->SetFloatRange(-1.0, 1.0, 0.01);
 
-	m_eq[0] = 1;
-	m_eq[1] = 0;
-	m_eq[2] = 0;
-	m_eq[3] = 0;
+	m_normal = vec3d(1, 0, 0);
+	m_offset = 0.0;
+	m_scl = 1.0;
 
 	m_rot = 0.f;
 	m_transparency = 0.25;
@@ -68,10 +68,10 @@ void CGLPlaneCutPlot::UpdateData(bool bsave)
 		m_bcut_hidden = GetBoolValue(CUT_HIDDEN);
 		m_bshow_mesh  = GetBoolValue(SHOW_MESH);
 		m_transparency = GetFloatValue(TRANSPARENCY);
-		m_eq[0] = GetFloatValue(NORMAL_X);
-		m_eq[1] = GetFloatValue(NORMAL_Y);
-		m_eq[2] = GetFloatValue(NORMAL_Z);
-		m_eq[3] = GetFloatValue(OFFSET);
+		m_normal.x = GetFloatValue(NORMAL_X);
+		m_normal.y = GetFloatValue(NORMAL_Y);
+		m_normal.z = GetFloatValue(NORMAL_Z);
+		m_offset = GetFloatValue(OFFSET);
 
 		UpdateSlice();
 	}
@@ -81,10 +81,10 @@ void CGLPlaneCutPlot::UpdateData(bool bsave)
 		SetBoolValue(CUT_HIDDEN, m_bcut_hidden);
 		SetBoolValue(SHOW_MESH, m_bshow_mesh);
 		SetFloatValue(TRANSPARENCY, m_transparency);
-		SetFloatValue(NORMAL_X, m_eq[0]);
-		SetFloatValue(NORMAL_Y, m_eq[1]);
-		SetFloatValue(NORMAL_Z, m_eq[2]);
-		SetFloatValue(OFFSET  , m_eq[3]);
+		SetFloatValue(NORMAL_X, m_normal.x);
+		SetFloatValue(NORMAL_Y, m_normal.y);
+		SetFloatValue(NORMAL_Z, m_normal.z);
+		SetFloatValue(OFFSET  , m_offset);
 	}
 }
 
@@ -136,35 +136,28 @@ void CGLPlaneCutPlot::Update(int ntime, float dt, bool breset)
 
 void CGLPlaneCutPlot::GetNormalizedEquations(double a[4])
 {
-	double L = sqrt(m_eq[0]*m_eq[0] + m_eq[1]*m_eq[1] + m_eq[2]*m_eq[2]);
-	if (L == 0) L = 1;
-	a[0] = m_eq[0]/L;
-	a[1] = m_eq[1]/L;
-	a[2] = m_eq[2]/L;
-	a[3] = m_eq[3]/L;
+	vec3d n(m_normal);
+	m_T.GetRotation().RotateVector(n);
+	n.Normalize();
+
+	double a3 = m_T.GetPosition()*n - m_scl*m_offset;
+
+	a[0] = n.x;
+	a[1] = n.y;
+	a[2] = n.z;
+	a[3] = a3;
 }
 
 //-----------------------------------------------------------------------------
 // Return the plane normal
 vec3d CGLPlaneCutPlot::GetPlaneNormal()
 {
-	double a[4];
-	GetNormalizedEquations(a);
-	return vec3d((float) a[0], (float) a[1], (float) a[2]);
+	return m_normal;
 }
 
 float CGLPlaneCutPlot::GetPlaneOffset()
 {
-	return m_eq[3];
-}
-
-void CGLPlaneCutPlot::SetPlaneEqn(GLdouble a[4])
-{
-	m_eq[0] = a[0];
-	m_eq[1] = a[1];
-	m_eq[2] = a[2];
-	m_eq[3] = a[3];
-	UpdateSlice();
+	return (float) m_offset;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -174,12 +167,28 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 	// make sure we have a clip plane ID assigned
 	if (m_nclip == -1) return;
 
+	// see if we are tracking or not
+	vec3d r = m_T.GetPosition();
+	if (rc.m_btrack)
+	{
+		m_T.SetPosition(-rc.m_track_pos);
+		m_T.SetRotation(rc.m_track_rot);
+	}
+	else
+	{
+		BOX box = GetModel()->GetFEModel()->GetBoundingBox();
+		m_T.SetPosition(-box.Center());
+		m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
+	}
+
+	if ((r == m_T.GetPosition()) == false)
+	{
+		UpdateSlice();
+	}
+
 	// get the plane equations
 	GLdouble a[4];
 	GetNormalizedEquations(a);
-
-	// calculate the plane offset
-	a[3] = -m_ref;
 
 	// set the clip plane coefficients
 	glClipPlane(GL_CLIP_PLANE0 + m_nclip, a);
@@ -343,8 +352,13 @@ void CGLPlaneCutPlot::RenderMesh()
 	int n1, n2, m1, m2;
 	bool badd;
 
-	// calculate plane normal
-	vec3d norm = GetPlaneNormal();
+	double a[4];
+	GetNormalizedEquations(a);
+
+	// set the plane normal
+	vec3d norm((float)a[0], (float)a[1], (float)a[2]);
+
+	double ref = -a[3];
 
 	Post::FEState& state = *ps->GetActiveState();
 
@@ -399,7 +413,7 @@ void CGLPlaneCutPlot::RenderMesh()
 					w2 = norm*ex[n2];
 	
 					if (w2 != w1)
-						w = (m_ref - w1)/(w2 - w1);
+						w = (ref - w1)/(w2 - w1);
 					else 
 						w = 0.f;
 
@@ -520,6 +534,9 @@ void CGLPlaneCutPlot::UpdateSlice()
 	int en[8];
 	int	rf[3];
 
+	// Get the bounding box. We need it for determining the scale
+	CGLModel* mdl = GetModel();
+
 	// get the plane equations
 	GLdouble a[4];
 	GetNormalizedEquations(a);
@@ -527,15 +544,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 	// set the plane normal
 	vec3d norm((float) a[0], (float) a[1], (float) a[2]);
 
-	CGLModel* mdl = GetModel();
-
-	// calculate the plane offset
-	m_box = mdl->GetFEModel()->GetBoundingBox();
-	float s = m_box.Radius();
-	vec3d r = m_box.Center();
-
-	m_ref = (float) a[3]*s + r*norm;
-	a[3] = -m_ref;
+	double ref = -a[3];
 
 	FEModel* ps = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
@@ -598,7 +607,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 							// calculate the case of the element
 							int ncase = 0;
 							for (int k=0; k<8; ++k) 
-							if (norm*ex[k] >= m_ref) ncase |= (1 << k);
+							if (norm*ex[k] >= ref) ncase |= (1 << k);
 
 							// store the case for this element
 							// so we don't have to calculate it again when
@@ -625,7 +634,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 									w2 = norm*ex[n2];
 			
 									if (w2 != w1)
-										w = (m_ref - w1)/(w2 - w1);
+										w = (ref - w1)/(w2 - w1);
 									else 
 										w = 0.f;
 
@@ -729,7 +738,11 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	float sum = 0.f;
 
 	// calculate plane normal
+	double a[4];
+	GetNormalizedEquations(a);
 	vec3d norm = GetPlaneNormal();
+
+	double ref = a[3];
 
 	// repeat over all elements
 	for (int i=0; i<pm->Elements(); ++i)
@@ -768,7 +781,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 			// calculate the case of the element
 			int ncase = 0;
 			for (k=0; k<8; ++k) 
-			if (norm*ex[k] >= m_ref) ncase |= (1 << k);
+			if (norm*ex[k] >= ref) ncase |= (1 << k);
 
 			// loop over faces
 			int* pf = LUT[ncase];
@@ -786,7 +799,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 					float w2 = norm*ex[n2];
 
 					float w = 0.f; 
-					if (w2 != w1) w = (m_ref - w1)/(w2 - w1);
+					if (w2 != w1) w = (ref - w1)/(w2 - w1);
 
 					r[k] = ex[n1]*(1-w) + ex[n2]*w;
 					v[k] = ev[n1]*(1-w) + ev[n2]*w;
@@ -816,23 +829,12 @@ void CGLPlaneCutPlot::RenderPlane()
 	GetNormalizedEquations(a);
 	vec3d norm((float) a[0], (float) a[1], (float) a[2]);
 
-	CGLModel* mdl = GetModel();
-
-	m_box = mdl->GetFEModel()->GetBoundingBox();
-	vec3d rc = m_box.Center();
-
 	// calculate reference value
-	vec3d p0 = norm*(-m_ref);
-
-	float N = norm*norm;
-	if (N==0) N=1;
-
-	float lam = (N*m_ref - rc*norm)/N;
-	vec3d pc = rc + norm*lam;
+	vec3d p0 = m_T.GetPosition();
 
 	glPushMatrix();
 
-	glTranslatef(pc.x, pc.y, pc.z);
+	glTranslatef(-p0.x, -p0.y, -p0.z);
 
 	quatd q = quatd(vec3d(0,0,1), norm);
 	float w = q.GetAngle();
@@ -844,7 +846,9 @@ void CGLPlaneCutPlot::RenderPlane()
 
 	glRotatef(m_rot, 0, 0, 1);
 
-	float R = m_box.Radius();
+	glTranslatef(0.f, 0.f, (float)m_scl*m_offset);
+
+	float R = m_scl;
 
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
@@ -951,7 +955,6 @@ bool CGLPlaneCutPlot::IsInsideClipRegion(const vec3d& r)
 		{
 			double a[4];
 			pcp->GetNormalizedEquations(a);
-			a[3] = pcp->GetPlaneReference();
 
 			double q = a[0] * r.x + a[1] * r.y + a[2] * r.z - a[3];
 			if (q < 0) return false;

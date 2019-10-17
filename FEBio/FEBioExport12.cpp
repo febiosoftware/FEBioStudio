@@ -1190,7 +1190,7 @@ void FEBioExport12::WriteGeometryNodes()
 				FENode& node = pm->Node(j);
 				node.m_nid = n;
 				el.set_attribute(nid, n);
-				vec3d r = po->Transform().LocalToGlobal(node.r);
+				vec3d r = po->GetTransform().LocalToGlobal(node.r);
 				el.value(r);
 				m_xml.add_leaf(el, false);
 			}
@@ -1419,7 +1419,7 @@ void FEBioExport12::WriteGeometryElementData()
 	{
 		GObject* po = model.Object(i);
 		FECoreMesh* pm = po->GetFEMesh();
-		const GTransform& T = po->Transform();
+		const Transform& T = po->GetTransform();
 
 		for (int j = 0; j<pm->Elements(); ++j)
 		{

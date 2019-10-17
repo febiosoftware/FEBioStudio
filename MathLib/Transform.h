@@ -1,14 +1,14 @@
 #pragma once
-#include "MathLib/math3d.h"
+#include "math3d.h"
 
 //-------------------------------------------------------------------
 // This class describes a transformation. 
 // It is used to define the global position, rotation, and scale of an object
-class GTransform
+class Transform
 {
 public:
 	// constructor
-	GTransform() { Reset(); }
+	Transform() { Reset(); }
 
 	// reset the transform
 	void Reset()
@@ -113,6 +113,11 @@ public:
 		m.x /= m_scl.x; m.y /= m_scl.y; m.z /= m_scl.z;
 		m.Normalize();
 		return m;
+	}
+
+	bool operator == (const Transform& T)
+	{
+		return ((m_pos == T.m_pos) && (m_scl == T.m_scl) && (m_rot == T.m_rot));
 	}
 
 private:

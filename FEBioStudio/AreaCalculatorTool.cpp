@@ -58,7 +58,7 @@ bool CAreaCalculatorTool::OnApply()
         // transform nodal coordinates
         vector<vec3d> y(N);
         for (int i=0; i<N; ++i)
-            y[i] = po->Transform().LocalToGlobal(mesh.Node(i).r);
+            y[i] = po->GetTransform().LocalToGlobal(mesh.Node(i).r);
 
         // evaluate and sum up face areas
         vec3d A(0,0,0);

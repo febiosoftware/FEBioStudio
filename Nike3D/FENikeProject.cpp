@@ -499,7 +499,7 @@ bool FENikeProject::BuildNodes(FEProject& prj)
 			FENode& node = pm->Node(j);
 			NODE& m = m_Node[nodes];
 			node.m_nid = ++nodes;
-			r = po->Transform().LocalToGlobal(node.r);
+			r = po->GetTransform().LocalToGlobal(node.r);
 			m.x = r.x;
 			m.y = r.y;
 			m.z = r.z;

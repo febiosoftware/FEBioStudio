@@ -1587,7 +1587,7 @@ void FEMesh::Attach(FEMesh& fem)
 			n0 = n1;
 			if (n0.m_gid >= 0) n0.m_gid = n1.m_gid + ng;
 			assert(po2);
-			if (po2) n0.r = po1->Transform().GlobalToLocal(po2->Transform().LocalToGlobal(n1.r));
+			if (po2) n0.r = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(n1.r));
 			else n0.r = n1.r;
 		}
 	}

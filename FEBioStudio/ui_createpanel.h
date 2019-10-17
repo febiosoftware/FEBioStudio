@@ -180,7 +180,7 @@ FSObject* CDefaultCreatePane::Create()
 	po->SetName(szname);
 
 	vec3d r = position->position();
-	po->Transform().SetPosition(r);
+	po->GetTransform().SetPosition(r);
 
 	CreateObject();
 

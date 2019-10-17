@@ -1418,7 +1418,7 @@ bool AbaqusImport::build_mesh()
 			// apply translation
 			double t[3];
 			pinst->GetTranslation(t);
-			po->Transform().SetPosition(vec3d(t[0], t[1], t[2]));
+			po->GetTransform().SetPosition(vec3d(t[0], t[1], t[2]));
 
 			// apply rotation
 			double R[7];
@@ -1427,7 +1427,7 @@ bool AbaqusImport::build_mesh()
 			{
 				vec3d a = vec3d(R[0], R[1], R[2]);
 				vec3d b = vec3d(R[3], R[4], R[5]);
-				po->Transform().Rotate(a, b, R[6]);
+				po->GetTransform().Rotate(a, b, R[6]);
 			}
 
 			// if we get here we are good to go!

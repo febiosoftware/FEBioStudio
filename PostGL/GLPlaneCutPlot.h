@@ -1,5 +1,6 @@
 #pragma once
 #include "GLPlot.h"
+#include <MathLib/Transform.h>
 #include <vector>
 
 namespace Post {
@@ -48,25 +49,14 @@ public:
 	CGLPlaneCutPlot(CGLModel* po);
 	virtual ~CGLPlaneCutPlot();
 
-	void SetBoundingBox(BOX box) { m_box = box; }
+	void SetTransform(Transform& T) { m_T = T; }
 
 	void SetRotation(float rot) { m_rot = rot; }
 	float GetRotation() { return m_rot; }
 
-	void GetPlaneEqn(GLdouble* eqn)
-	{
-		eqn[0] = m_eq[0];
-		eqn[1] = m_eq[1];
-		eqn[2] = m_eq[2];
-		eqn[3] = m_eq[3];
-	}
-
-	void SetPlaneEqn(GLdouble a[4]);
-
 	void GetNormalizedEquations(double a[4]);
 	vec3d GetPlaneNormal();
 	float GetPlaneOffset();
-	float GetPlaneReference() const { return m_ref; }
 
 	void Render(CGLContext& rc);
 	void RenderPlane();
@@ -105,11 +95,13 @@ public:
 	float	m_transparency;
 
 protected:
-	GLdouble	m_eq[4];	// plane equation
+	vec3d		m_normal;	// plane normal (not normalized yet!)
+	double		m_offset;	// plane offset in normal direction
+	double		m_scl;		// scale factor for offset
 
-	float	m_ref;	// reference = m_pos + m_off
 	float	m_rot;	// rotation around z-axis
-	BOX		m_box;	// bounding box to cut
+
+	Transform	m_T;	// local transformation
 
 	struct EDGE
 	{

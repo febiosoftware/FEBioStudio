@@ -1881,24 +1881,9 @@ void CGLView::PositionCamera()
 
 		Post::FEModel& fem = *pdoc->GetFEModel();
 
-		vec3d a = fem.NodePosition(nt[0], 0);
-		vec3d b = fem.NodePosition(nt[1], 0);
-		vec3d c = fem.NodePosition(nt[2], 0);
-
-		vec3d r0 = a;
-
-		vec3d E1 = (b - a);
-		vec3d E3 = E1 ^ (c - a);
-		vec3d E2 = E3^E1;
-		E1.Normalize();
-		E2.Normalize();
-		E3.Normalize();
-
-		a = pm->Node(nt[0]).r;
-		b = pm->Node(nt[1]).r;
-		c = pm->Node(nt[2]).r;
-
-		vec3d r1 = a;
+		vec3d a = pm->Node(nt[0]).r;
+		vec3d b = pm->Node(nt[1]).r;
+		vec3d c = pm->Node(nt[2]).r;
 
 		vec3d e1 = (b - a);
 		vec3d e3 = e1 ^ (c - a);
@@ -1907,34 +1892,26 @@ void CGLView::PositionCamera()
 		e2.Normalize();
 		e3.Normalize();
 
-		vec3d dr = r0 - r1;
-		glTranslatef(dr.x, dr.y, dr.z);
+		vec3d r0 = GetCamera().GetPosition();
+		vec3d r1 = a;
 
-		glTranslatef(r1.x, r1.y, r1.z);
+		glTranslatef(r0.x, r0.y, r0.z);
 
 		// setup the rotation Matrix
-		GLfloat m[4][4] = { 0 }, Q[4][4] = { 0 }, Qi[4][4] = { 0 };
+		GLfloat m[4][4] = { 0 };
 		m[3][3] = 1.f;
-		Q[3][3] = 1.f;
-		Qi[3][3] = 1.f;
-
-		Q[0][0] = E1.x; Q[0][1] = E1.y; Q[0][2] = E1.z;
-		Q[1][0] = E2.x; Q[1][1] = E2.y; Q[1][2] = E2.z;
-		Q[2][0] = E3.x; Q[2][1] = E3.y; Q[2][2] = E3.z;
-
-		Qi[0][0] = E1.x; Qi[1][0] = E1.y; Qi[2][0] = E1.z;
-		Qi[0][1] = E2.x; Qi[1][1] = E2.y; Qi[2][1] = E2.z;
-		Qi[0][2] = E3.x; Qi[1][2] = E3.y; Qi[2][2] = E3.z;
-
-		m[0][0] = E1*e1; m[0][1] = E1*e2; m[0][2] = E1*e3;
-		m[1][0] = E2*e1; m[1][1] = E2*e2; m[1][2] = E2*e3;
-		m[2][0] = E3*e1; m[2][1] = E3*e2; m[2][2] = E3*e3;
-		glMultMatrixf(&Q[0][0]);
+		m[0][0] = e1.x; m[0][1] = e2.x; m[0][2] = e3.x;
+		m[1][0] = e1.y; m[1][1] = e2.y; m[1][2] = e3.y;
+		m[2][0] = e1.z; m[2][1] = e2.z; m[2][2] = e3.z;
 		glMultMatrixf(&m[0][0]);
-		glMultMatrixf(&Qi[0][0]);
 
 		glTranslatef(-r1.x, -r1.y, -r1.z);
+
+		m_rc.m_btrack = true;
+		m_rc.m_track_pos = r1;
+		m_rc.m_track_rot = quatd(vec3d(1, 0, 0), e1);
 	}
+	else m_rc.m_btrack = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -2058,9 +2035,9 @@ void CGLView::RenderTooltip(int x, int y)
 void CGLView::SetModelView(GObject* po)
 {
 	// get transform data
-	vec3d r = po->Transform().GetPosition();
-	vec3d s = po->Transform().GetScale();
-	quatd q = po->Transform().GetRotation();
+	vec3d r = po->GetTransform().GetPosition();
+	vec3d s = po->GetTransform().GetScale();
+	quatd q = po->GetTransform().GetRotation();
 
 	// translate mesh
 	glTranslated(r.x, r.y, r.z);
@@ -2500,7 +2477,7 @@ void CGLView::RenderImageData()
 
 	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
 
-	CGLContext rc;
+	CGLContext& rc = m_rc;
 	rc.m_cam = &cam;
 	rc.m_showOutline = vs.m_bfeat;
 	rc.m_showMesh = vs.m_bmesh;
@@ -2577,11 +2554,11 @@ void CGLView::RenderMaterialFibers()
 							// are assumed to be in local coordinates
 							if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 							{
-								q = po->Transform().LocalToGlobalNormal(q);
+								q = po->GetTransform().LocalToGlobalNormal(q);
 							}
 
 							vec3d c(0, 0, 0);
-							for (int k = 0; k<el.Nodes(); ++k) c += po->Transform().LocalToGlobal(pm->Node(el.m_node[k]).r);
+							for (int k = 0; k<el.Nodes(); ++k) c += po->GetTransform().LocalToGlobal(pm->Node(el.m_node[k]).r);
 							c /= el.Nodes();
 
 							r = fabs(q.x);
@@ -2628,7 +2605,7 @@ void CGLView::RenderLocalMaterialAxes()
 			FEMesh* pm = po->GetFEMesh();
 			if (pm)
 			{
-				GTransform& T = po->Transform();
+				Transform& T = po->GetTransform();
 				rel.m_pmesh = pm;
 				for (int j = 0; j<pm->Elements(); ++j)
 				{
@@ -3611,9 +3588,9 @@ bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 
 		if (po->Face(face.pid)->IsVisible())
 		{
-			vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(face.n[0]).r);
-			vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(face.n[1]).r);
-			vec3d r2 = po->Transform().LocalToGlobal(mesh->Node(face.n[2]).r);
+			vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
+			vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
+			vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
 
 			Triangle tri = { r0, r1, r2 };
 			if (IntersectTriangle(ray, tri, qtmp))
@@ -3721,9 +3698,9 @@ void CGLView::SelectParts(int x, int y)
 				{
 					GMesh::FACE& face = mesh->Face(j);
 
-					vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(face.n[0]).r);
-					vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(face.n[1]).r);
-					vec3d r2 = po->Transform().LocalToGlobal(mesh->Node(face.n[2]).r);
+					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
+					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
+					vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
 
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))
@@ -3813,9 +3790,9 @@ void CGLView::SelectSurfaces(int x, int y)
 					{
 						// NOTE: Note sure why I have a scale factor here. It was originally to 0.99, but I
 						//       had to increase it. I suspect it is to overcome some z-fighting for overlapping surfaces, but not sure. 
-						vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(face.n[0]).r*0.99999);
-						vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(face.n[1]).r*0.99999);
-						vec3d r2 = po->Transform().LocalToGlobal(mesh->Node(face.n[2]).r*0.99999);
+						vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r*0.99999);
+						vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r*0.99999);
+						vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r*0.99999);
 
 						Triangle tri = {r0, r1, r2};
 						if (IntersectTriangle(ray, tri, q))
@@ -3890,8 +3867,8 @@ void CGLView::SelectEdges(int x, int y)
 				{
 					GMesh::EDGE& edge = mesh->Edge(j);
 
-					vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(edge.n[0]).r);
-					vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(edge.n[1]).r);
+					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
+					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
 
 					vec3d p0 = transform.WorldToScreen(r0);
 					vec3d p1 = transform.WorldToScreen(r1);
@@ -3966,8 +3943,8 @@ void CGLView::HighlightEdge(int x, int y)
 
 					if ((edge.n[0] != -1) && (edge.n[1] != -1))
 					{
-						vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(edge.n[0]).r);
-						vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(edge.n[1]).r);
+						vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
+						vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
 
 						vec3d p0 = transform.WorldToScreen(r0);
 						vec3d p1 = transform.WorldToScreen(r1);
@@ -4221,8 +4198,8 @@ void CGLView::SelectFEElements(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	ray.origin = po->Transform().GlobalToLocal(ray.origin);
-	ray.direction = po->Transform().GlobalToLocalNormal(ray.direction);
+	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
+	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
 
 	// find the intersection
 	Intersection q;
@@ -4365,8 +4342,8 @@ void CGLView::SelectFEFaces(int x, int y)
 	Ray ray = transform.PointToRay(x, y);
 
 	// convert ray to local coordinates
-	ray.origin = po->Transform().GlobalToLocal(ray.origin);
-	ray.direction = po->Transform().GlobalToLocalNormal(ray.direction);
+	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
+	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
 
 	// find the intersection
 	Intersection q;
@@ -4481,8 +4458,8 @@ void CGLView::SelectFEEdges(int x, int y)
 	for (int i = 0; i<NE; ++i)
 	{
 		FEEdge& edge = pm->Edge(i);
-		vec3d r0 = po->Transform().LocalToGlobal(pm->Node(edge.n[0]).r);
-		vec3d r1 = po->Transform().LocalToGlobal(pm->Node(edge.n[1]).r);
+		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
+		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
 		vec3d p0 = transform.WorldToScreen(r0);
 		vec3d p1 = transform.WorldToScreen(r1);
@@ -4616,15 +4593,15 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	if (po && po->GetEditableMesh())
 	{
 		// convert to local coordinates
-		vec3d rl = po->Transform().GlobalToLocal(ray.origin);
-		vec3d nl = po->Transform().GlobalToLocalNormal(ray.direction);
+		vec3d rl = po->GetTransform().GlobalToLocal(ray.origin);
+		vec3d nl = po->GetTransform().GlobalToLocalNormal(ray.direction);
 
 		FEMeshBase* mesh = po->GetEditableMesh();
 		vec3d q;
 		if (FindIntersection(*mesh, rl, nl, q, view.m_snapToNode))
 		{
 			if (success) *success = true;
-			q = po->Transform().LocalToGlobal(q);
+			q = po->GetTransform().LocalToGlobal(q);
 			return q;
 		}
 	}
@@ -4670,9 +4647,9 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(face.n[0]).r);
-				vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(face.n[1]).r);
-				vec3d r2 = po->Transform().LocalToGlobal(mesh->Node(face.n[2]).r);
+				vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
+				vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
+				vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -4693,7 +4670,7 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 				{
 					GMesh::NODE& node = mesh->Node(j);
 
-					vec3d r = po->Transform().LocalToGlobal(node.r);
+					vec3d r = po->GetTransform().LocalToGlobal(node.r);
 					vec3d p = transform.WorldToScreen(r);
 					if (region.IsInside((int) p.x, (int) p.y))
 					{
@@ -4740,9 +4717,9 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(face.n[0]).r);
-				vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(face.n[1]).r);
-				vec3d r2 = po->Transform().LocalToGlobal(mesh->Node(face.n[2]).r);
+				vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
+				vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
+				vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -4807,9 +4784,9 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 			{
 				GMesh::FACE& face = mesh->Face(j);
 
-				vec3d r0 = po->Transform().LocalToGlobal(mesh->Node(face.n[0]).r);
-				vec3d r1 = po->Transform().LocalToGlobal(mesh->Node(face.n[1]).r);
-				vec3d r2 = po->Transform().LocalToGlobal(mesh->Node(face.n[2]).r);
+				vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[0]).r);
+				vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[1]).r);
+				vec3d r2 = po->GetTransform().LocalToGlobal(mesh->Node(face.n[2]).r);
 
 				vec3d p0 = transform.WorldToScreen(r0);
 				vec3d p1 = transform.WorldToScreen(r1);
@@ -5047,7 +5024,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 		FENode& node = lineMesh->Node(i);
 		if (node.m_ntag == 0)
 		{
-			vec3d r = po->Transform().LocalToGlobal(node.r);
+			vec3d r = po->GetTransform().LocalToGlobal(node.r);
 
 			vec3d p = transform.WorldToScreen(r);
 
@@ -5186,7 +5163,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 
 				for (int j = 0; j<ne; ++j)
 				{
-					vec3d r = po->Transform().LocalToGlobal(pm->Node(el.m_node[j]).r);
+					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(el.m_node[j]).r);
 					vec3d p = transform.WorldToScreen(r);
 					if (region.IsInside((int)p.x, (int)p.y))
 					{
@@ -5410,8 +5387,8 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 		FEEdge& edge = pm->Edge(i);
 		if (edge.m_ntag == 0)
 		{
-			vec3d r0 = po->Transform().LocalToGlobal(pm->Node(edge.n[0]).r);
-			vec3d r1 = po->Transform().LocalToGlobal(pm->Node(edge.n[1]).r);
+			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
+			vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
 			vec3d p0 = transform.WorldToScreen(r0);
 			vec3d p1 = transform.WorldToScreen(r1);
@@ -5467,7 +5444,7 @@ void CGLView::SelectFENodes(int x, int y)
 		FENode& node = lineMesh->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
-			vec3d r = po->Transform().LocalToGlobal(lineMesh->Node(i).r);
+			vec3d r = po->GetTransform().LocalToGlobal(lineMesh->Node(i).r);
 
 			vec3d p = transform.WorldToScreen(r);
 
@@ -7506,7 +7483,7 @@ void CGLView::ZoomToObject(GObject *po)
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
-	cam.SetOrientation(po->Transform().GetRotationInverse());
+	cam.SetOrientation(po->GetTransform().GetRotationInverse());
 
 	repaint();
 }

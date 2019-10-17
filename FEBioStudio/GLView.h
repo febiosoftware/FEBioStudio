@@ -11,6 +11,7 @@
 #include <MeshTools/FEExtrudeFaces.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
+#include <GLLib/GLContext.h>
 
 class CMainWindow;
 class CDocument;
@@ -464,6 +465,9 @@ private:
 	// tracking
 	bool	m_btrack;
 	int		m_ntrack[3];
+
+public:
+	CGLContext	m_rc;
 
 private:
 	int	m_viewport[4];		//!< store viewport coordinates

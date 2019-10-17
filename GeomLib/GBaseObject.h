@@ -1,6 +1,6 @@
 #pragma once
 #include "GItem.h"
-#include "GTransform.h"
+#include <MathLib/Transform.h>
 
 //-----------------------------------------------------------------------------
 // This is a base class for GObject. I hope to describe all geometry in terms 
@@ -68,14 +68,14 @@ public:
 	void ResizeNodes(int n);
 
 public: // transformation
-	GTransform& Transform() { return m_transform; }
-	const GTransform& Transform() const { return m_transform; }
+	Transform& GetTransform() { return m_transform; }
+	const Transform& GetTransform() const { return m_transform; }
 
 	// copy transform info
 	void CopyTransform(GBaseObject* po);
 
 protected:
-	GTransform	m_transform;		// The object's transform
+	Transform	m_transform;		// The object's transform
 
 protected:
 	// --- definition of geometry ---

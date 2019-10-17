@@ -1204,7 +1204,7 @@ void FESurfaceMesh::Attach(const FESurfaceMesh& mesh)
 			const FENode& n1 = mesh.m_Node[i];
 			n0 = n1;
 			if (n0.m_gid >= 0) n0.m_gid = n1.m_gid + ng;
-			if (po2) n0.r = po1->Transform().GlobalToLocal(po2->Transform().LocalToGlobal(n1.r));
+			if (po2) n0.r = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(n1.r));
 			else n0.r = n1.r;
 		}
 	}
@@ -1333,7 +1333,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 			size_t jmin = -1;
 			const FENode& nodei = mesh.Node(i);
 			vec3d ri;
-			if (po2) ri = po1->Transform().GlobalToLocal(po2->Transform().LocalToGlobal(nodei.r));
+			if (po2) ri = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(nodei.r));
 			else ri = nodei.r;
 
 			for (size_t j=0; j<nodeList0.size(); ++j)
@@ -1374,7 +1374,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 			node0 = node1;
 
 			if (node1.m_gid >= 0) node0.m_gid = node1.m_gid + ng0;
-			if (po2) node0.r = po1->Transform().GlobalToLocal(po2->Transform().LocalToGlobal(node1.r));
+			if (po2) node0.r = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(node1.r));
 			else node0.r = node1.r;
 		}
 		else

@@ -36,7 +36,7 @@ FESurfaceMesh* InsertCurves::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList,
 		for (int i = 0; i<N; ++i)
 		{
 			vec3d r = ps->Node(i).r;
-			if (pd) r = pd->Transform().GlobalToLocal(r);
+			if (pd) r = pd->GetTransform().GlobalToLocal(r);
 			TriMesh::NODEP node = insertPoint(dyna, r, tol);
 			nodeList.push_back(node);
 		}

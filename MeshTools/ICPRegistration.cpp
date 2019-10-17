@@ -7,7 +7,7 @@ GICPRegistration::GICPRegistration()
 {
 }
 
-GTransform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double tol, const int maxIter)
+Transform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double tol, const int maxIter)
 {
 	FEMesh& trgMesh = *ptrg->GetFEMesh();
 	FEMesh& srcMesh = *psrc->GetFEMesh();
@@ -18,8 +18,8 @@ GTransform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double
 	// get the global coordinates
 	vector<vec3d> X(NX);
 	vector<vec3d> P(NP);
-	for (int i=0; i<NX; ++i) X[i] = ptrg->Transform().LocalToGlobal(trgMesh.Node(i).r);
-	for (int i=0; i<NP; ++i) P[i] = psrc->Transform().LocalToGlobal(srcMesh.Node(i).r);
+	for (int i=0; i<NX; ++i) X[i] = ptrg->GetTransform().LocalToGlobal(trgMesh.Node(i).r);
+	for (int i=0; i<NP; ++i) P[i] = psrc->GetTransform().LocalToGlobal(srcMesh.Node(i).r);
 
 	//find center of mass
 	vec3d cp0 = CenterOfMass(P);
@@ -42,7 +42,7 @@ GTransform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double
 	vector<vec3d> Y(NP);
 
 	// loop over max iteration
-	GTransform Q;
+	Transform Q;
 	double prev_err = 0.0;
 	for (int counter = 0; counter < maxIter; counter++)
 	{
@@ -62,7 +62,7 @@ GTransform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double
 		prev_err = err;
 	}
 
-	vec3d r_old = psrc->Transform().GetPosition();
+	vec3d r_old = psrc->GetTransform().GetPosition();
 	vec3d r_new = Q.GetRotation()*(r_old) + Q.GetPosition();
 
 	Q.SetPosition(r_new - r_old);
@@ -107,7 +107,7 @@ vec3d GICPRegistration::CenterOfMass(const vector<vec3d>& S)
 	return (c/N);
 }
 
-GTransform GICPRegistration::Register(const vector<vec3d>& P, const vector<vec3d>& Y, double* perr)
+Transform GICPRegistration::Register(const vector<vec3d>& P, const vector<vec3d>& Y, double* perr)
 {
 	//Find center of mass
 	vec3d cp = CenterOfMass(P);
@@ -183,7 +183,7 @@ GTransform GICPRegistration::Register(const vector<vec3d>& P, const vector<vec3d
 	// optimal translation
 	vec3d qT = cy - qR*cp;
 
-	GTransform T;
+	Transform T;
 	T.SetPosition(qT);
 	T.SetRotation(qR);
 
@@ -208,7 +208,7 @@ GTransform GICPRegistration::Register(const vector<vec3d>& P, const vector<vec3d
 	return T;
 }
 
-void GICPRegistration::ApplyTransform(const vector<vec3d>& P0, const GTransform& Q, vector<vec3d>& P)
+void GICPRegistration::ApplyTransform(const vector<vec3d>& P0, const Transform& Q, vector<vec3d>& P)
 {
 	const vec3d& t = Q.GetPosition();
 	const quatd& q = Q.GetRotation();

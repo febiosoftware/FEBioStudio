@@ -1857,9 +1857,9 @@ void FEBioExport25::WriteGeometrySectionNew()
 		instance.add_attribute("part", name.c_str());
 		m_xml.add_branch(instance);
 		{
-			vec3d p = po->Transform().GetPosition();
-			quatd q = po->Transform().GetRotation();
-			vec3d s = po->Transform().GetScale();
+			vec3d p = po->GetTransform().GetPosition();
+			quatd q = po->GetTransform().GetRotation();
+			vec3d s = po->GetTransform().GetScale();
 			m_xml.add_leaf("scale", s);
 			m_xml.add_leaf("rotate", q);
 			m_xml.add_leaf("translate", p);
@@ -2289,7 +2289,7 @@ void FEBioExport25::WriteGeometryNodes()
 				FENode& node = pm->Node(j);
 				node.m_nid = n;
 				el.set_attribute(nid, n);
-				vec3d r = po->Transform().LocalToGlobal(node.r);
+				vec3d r = po->GetTransform().LocalToGlobal(node.r);
 				el.value(r);
 				m_xml.add_leaf(el, false);
 			}
@@ -2312,8 +2312,8 @@ void FEBioExport25::WriteGeometryNodes()
 			GObject& objA = dynamic_cast<GObject&>(*nodeA.Object());
 			GObject& objB = dynamic_cast<GObject&>(*nodeB.Object());
 
-			vec3d ra = objA.Transform().LocalToGlobal(nodeA.LocalPosition());
-			vec3d rb = objB.Transform().LocalToGlobal(nodeB.LocalPosition());
+			vec3d ra = objA.GetTransform().LocalToGlobal(nodeA.LocalPosition());
+			vec3d rb = objB.GetTransform().LocalToGlobal(nodeB.LocalPosition());
 
 			int ndivs = spring.Divisions();
 			if (ndivs > 1) 
@@ -2815,7 +2815,7 @@ void FEBioExport25::WriteMeshDataMaterialFibers()
 		ElementSet& elSet = m_ElSet[i];
 		FECoreMesh* pm = elSet.mesh;
 		GObject* po = pm->GetGObject();
-		const GTransform& T = po->Transform();
+		const Transform& T = po->GetTransform();
 
 		GMaterial* pmat = fem.GetMaterialFromID(elSet.matID);
 		FETransverselyIsotropic* ptiso = 0;
@@ -2855,7 +2855,7 @@ void FEBioExport25::WriteMeshDataMaterialAxes()
 		ElementSet& elSet = m_ElSet[i];
 		FECoreMesh* pm = elSet.mesh;
 		GObject* po = pm->GetGObject();
-		const GTransform& T = po->Transform();
+		const Transform& T = po->GetTransform();
 
 		// make sure there is something to do
 		bool bwrite = false;

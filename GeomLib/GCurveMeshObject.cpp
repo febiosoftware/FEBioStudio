@@ -149,7 +149,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 		if (node.m_ntag != -1)
 		{
 			node.m_ntag = nn++;
-			vec3d r = Transform().LocalToGlobal(node.r);
+			vec3d r = GetTransform().LocalToGlobal(node.r);
 			curve->AddNode(r);
 		}
 	}
@@ -183,9 +183,9 @@ void GCurveMeshObject::Save(OArchive& ar)
 	{
 		int nid = GetID();
 		ar.WriteChunk(CID_OBJ_ID, nid);
-		ar.WriteChunk(CID_OBJ_POS, Transform().GetPosition());
-		ar.WriteChunk(CID_OBJ_ROT, Transform().GetRotation());
-		ar.WriteChunk(CID_OBJ_SCALE, Transform().GetScale());
+		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
+		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
+		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
 		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
 
 		int nparts = Parts();
@@ -349,7 +349,7 @@ void GCurveMeshObject::Load(IArchive& ar)
 
 			SetColor(col);
 
-			GTransform& transform = Transform();
+			Transform& transform = GetTransform();
 			transform.SetPosition(pos);
 			transform.SetRotation(rot);
 			transform.SetScale(scl);

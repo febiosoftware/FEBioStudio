@@ -308,7 +308,7 @@ void GObject::CollapseTransform()
 		Node(i)->LocalPosition() = Node(i)->Position();
 	}
 
-	GTransform& transform = Transform();
+	Transform& transform = GetTransform();
 
 	// collapse the mesh' nodes
 	if (imp->m_pmesh)
@@ -322,7 +322,7 @@ void GObject::CollapseTransform()
 	}
 
 	// reset the transform info
-	Transform().Reset();
+	GetTransform().Reset();
 
 	if (imp->m_pmesh) imp->m_pmesh->Update();
 	Update();
@@ -458,8 +458,8 @@ BOX GObject::GetGlobalBox() const
 	BOX box = GetLocalBox();
 	vec3d r0 = vec3d(box.x0, box.y0, box.z0);
 	vec3d r1 = vec3d(box.x1, box.y1, box.z1);
-	r0 = Transform().LocalToGlobal(r0);
-	r1 = Transform().LocalToGlobal(r1);
+	r0 = GetTransform().LocalToGlobal(r0);
+	r1 = GetTransform().LocalToGlobal(r1);
 	return BOX(r0.x, r0.y, r0.z, r1.x, r1.y, r1.z);
 }
 
@@ -1586,7 +1586,7 @@ FECurveMesh* GObject::GetFECurveMesh(int edgeId)
 		if (node.m_ntag != -1) 
 		{
 			node.m_ntag = nn++;
-			vec3d r = Transform().LocalToGlobal(node.r);
+			vec3d r = GetTransform().LocalToGlobal(node.r);
 			curve->AddNode(r);
 		}
 	}
@@ -1770,9 +1770,9 @@ void GObject::Save(OArchive &ar)
 	{
 		int nid = GetID();
 		ar.WriteChunk(CID_OBJ_ID, nid);
-		ar.WriteChunk(CID_OBJ_POS, Transform().GetPosition());
-		ar.WriteChunk(CID_OBJ_ROT, Transform().GetRotation());
-		ar.WriteChunk(CID_OBJ_SCALE, Transform().GetScale());
+		ar.WriteChunk(CID_OBJ_POS, GetTransform().GetPosition());
+		ar.WriteChunk(CID_OBJ_ROT, GetTransform().GetRotation());
+		ar.WriteChunk(CID_OBJ_SCALE, GetTransform().GetScale());
 		ar.WriteChunk(CID_OBJ_COLOR, GetColor());
 
 		int nparts = Parts();
@@ -1951,7 +1951,7 @@ void GObject::Load(IArchive& ar)
 
 			SetColor(col);
 
-			GTransform& transform = Transform();
+			Transform& transform = GetTransform();
 			transform.SetPosition(pos);
 			transform.SetRotation(rot);
 			transform.SetScale(scl);

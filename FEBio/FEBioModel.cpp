@@ -661,9 +661,9 @@ void FEBioModel::UpdateGeometry()
 		po->Update();
 
 		// apply transform
-		po->Transform().SetScale(instance.m_scl);
-		po->Transform().SetPosition(instance.m_pos);
-		po->Transform().SetRotation(instance.m_rot);
+		po->GetTransform().SetScale(instance.m_scl);
+		po->GetTransform().SetPosition(instance.m_pos);
+		po->GetTransform().SetRotation(instance.m_rot);
 
 		// update the mesh index data
 		part->GetFEBioMesh().UpdateMeshData();

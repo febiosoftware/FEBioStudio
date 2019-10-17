@@ -58,7 +58,7 @@ bool CSphereFitTool::OnApply()
 		vector<vec3d> y;
 		for (int i=0; i<N; ++i)
 		{
-			if (mesh.Node(i).m_ntag == 1) y.push_back(po->Transform().LocalToGlobal(mesh.Node(i).r));
+			if (mesh.Node(i).m_ntag == 1) y.push_back(po->GetTransform().LocalToGlobal(mesh.Node(i).r));
 		}
 
 		// find the best fit sphere

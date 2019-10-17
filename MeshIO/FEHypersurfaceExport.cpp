@@ -78,7 +78,7 @@ bool FEHypersurfaceExport::Export(FEProject& prj, const char* szfile)
 			for (j=0; j<m.Nodes(); ++j)
 			{
 				FENode& n = m.Node(j);
-				vec3d r = po->Transform().LocalToGlobal(n.r);
+				vec3d r = po->GetTransform().LocalToGlobal(n.r);
 				if (n.m_ntag) fprintf(fp, "%g %g %g\n", r.x, r.y, r.z);
 			}
 		}

@@ -1143,7 +1143,7 @@ void FEModel::UpdateData()
 							FEElement& e = pm->Element(n);
 							int ne = e.Nodes();
 							r = vec3d(0,0,0);
-							for (int m = 0; m<ne; ++m) r += po->Transform().LocalToGlobal(pm->Node(e.m_node[m]).r);
+							for (int m = 0; m<ne; ++m) r += po->GetTransform().LocalToGlobal(pm->Node(e.m_node[m]).r);
 							r /= (double) ne;
 							e.m_fiber = pv->Value(r);
 							e.m_fiber.Normalize();

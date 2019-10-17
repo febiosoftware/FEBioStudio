@@ -652,8 +652,8 @@ FEMesh* FECurveIntersect2D::Apply(FEMesh* pm)
 	for (int i = 0; i<N; ++i)
 	{
 		vec3d r = ps->Node(i).r;
-		r = m_pc->Transform().LocalToGlobal(r);
-		if (pd) r = pd->Transform().GlobalToLocal(r);
+		r = m_pc->GetTransform().LocalToGlobal(r);
+		if (pd) r = pd->GetTransform().GlobalToLocal(r);
 		DynamicMesh2D::NODEP node = dyna.insertPoint(r);
 		nodeList.push_back(node);
 	}

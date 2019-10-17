@@ -327,6 +327,9 @@ void CGLModel::RemoveDisplacementMap()
 //-----------------------------------------------------------------------------
 void CGLModel::Render(CGLContext& rc)
 {
+	// activate all clipping planes
+	CGLPlaneCutPlot::EnableClipPlanes();
+
 	if (rc.m_showOutline)
 	{
 		RenderOutline(rc);

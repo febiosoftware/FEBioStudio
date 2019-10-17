@@ -1478,7 +1478,7 @@ vector<GObject*> GModel::CloneGrid(GObject* po, int x0, int x1, int y0, int y1, 
 					}
 
 					// apply transform
-					pco->Transform().Translate(vec3d(i*dx, j*dy, k*dz));
+					pco->GetTransform().Translate(vec3d(i*dx, j*dy, k*dz));
 
 					newObjects.push_back(pco);
 				}
@@ -1498,7 +1498,7 @@ vector<GObject*> GModel::CloneRevolve(GObject* po, int count, double range, doub
 	if (count <= 0) return newObjects;
 
 	// get the source object's position
-	vec3d r = po->Transform().GetPosition();
+	vec3d r = po->GetTransform().GetPosition();
 
 	vec3d normAxis = axis.Normalized();
 
@@ -1521,13 +1521,13 @@ vector<GObject*> GModel::CloneRevolve(GObject* po, int count, double range, doub
 		pco->SetName(sz);
 
 		// calculate new positions
-		if (rotateClones) pco->Transform().Rotate(Q, center);
+		if (rotateClones) pco->GetTransform().Rotate(Q, center);
 		else
 		{
 			vec3d pos = center + Q*(r - center);
-			pco->Transform().SetPosition(pos);
+			pco->GetTransform().SetPosition(pos);
 		}
-		pco->Transform().Translate(normAxis * d);
+		pco->GetTransform().Translate(normAxis * d);
 
 		// add the object
 		newObjects.push_back(pco);
@@ -1691,7 +1691,7 @@ GObject* GModel::MergeDiscreteObject(vector<GObject*> discreteObjects, vector<GO
 
 			// get the nodal position in the local coordinates of the new object
 			vec3d r = po->Node(i)->Position();
-			r = newObj->Transform().GlobalToLocal(r);
+			r = newObj->GetTransform().GlobalToLocal(r);
 
 			// find the closest FE node
 			int closestNode = -1;

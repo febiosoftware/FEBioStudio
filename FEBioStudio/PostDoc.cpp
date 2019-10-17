@@ -228,7 +228,7 @@ void CPostDoc::Render(CGLView* view)
 
 	VIEW_SETTINGS& vs = view->GetDocument()->GetViewSettings();
 
-	CGLContext rc;
+	CGLContext& rc = view->m_rc;
 	rc.m_cam = &cam;
 	rc.m_showOutline = vs.m_bfeat;
 	rc.m_showMesh = vs.m_bmesh;
