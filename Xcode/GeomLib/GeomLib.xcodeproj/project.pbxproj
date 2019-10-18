@@ -41,7 +41,6 @@
 		D5215F661F01907100838680 /* GSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F431F01907100838680 /* GSphere.cpp */; };
 		D5215F671F01907100838680 /* GSphereInBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F441F01907100838680 /* GSphereInBox.cpp */; };
 		D5215F681F01907100838680 /* GTorus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F451F01907100838680 /* GTorus.cpp */; };
-		D5215F691F01907100838680 /* GTransform.h in Headers */ = {isa = PBXBuildFile; fileRef = D5215F461F01907100838680 /* GTransform.h */; };
 		D5215F6A1F01907100838680 /* GTruncatedEllipsoid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F471F01907100838680 /* GTruncatedEllipsoid.cpp */; };
 		D5215F6B1F01907100838680 /* GTube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5215F481F01907100838680 /* GTube.cpp */; };
 		D56584061F05BC3300594E72 /* GCurveMeshObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56584021F05BC3300594E72 /* GCurveMeshObject.cpp */; };
@@ -86,7 +85,6 @@
 		D5215F431F01907100838680 /* GSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSphere.cpp; sourceTree = "<group>"; };
 		D5215F441F01907100838680 /* GSphereInBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSphereInBox.cpp; sourceTree = "<group>"; };
 		D5215F451F01907100838680 /* GTorus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GTorus.cpp; sourceTree = "<group>"; };
-		D5215F461F01907100838680 /* GTransform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTransform.h; sourceTree = "<group>"; };
 		D5215F471F01907100838680 /* GTruncatedEllipsoid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GTruncatedEllipsoid.cpp; sourceTree = "<group>"; };
 		D5215F481F01907100838680 /* GTube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GTube.cpp; sourceTree = "<group>"; };
 		D56584021F05BC3300594E72 /* GCurveMeshObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GCurveMeshObject.cpp; sourceTree = "<group>"; };
@@ -163,7 +161,6 @@
 				D56584041F05BC3300594E72 /* GSurfaceMeshObject.cpp */,
 				D56584051F05BC3300594E72 /* GSurfaceMeshObject.h */,
 				D5215F451F01907100838680 /* GTorus.cpp */,
-				D5215F461F01907100838680 /* GTransform.h */,
 				D5215F471F01907100838680 /* GTruncatedEllipsoid.cpp */,
 				D5215F481F01907100838680 /* GTube.cpp */,
 			);
@@ -187,7 +184,6 @@
 				D5215F5C1F01907100838680 /* GObject.h in Headers */,
 				D5215F4A1F01907100838680 /* GBaseObject.h in Headers */,
 				D5215F5A1F01907100838680 /* GMultiBox.h in Headers */,
-				D5215F691F01907100838680 /* GTransform.h in Headers */,
 				D56584071F05BC3300594E72 /* GCurveMeshObject.h in Headers */,
 				D5215F561F01907100838680 /* GItem.h in Headers */,
 			);

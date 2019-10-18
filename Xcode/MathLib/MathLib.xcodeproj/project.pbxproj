@@ -20,6 +20,7 @@
 		D57B6A67209B4AC3001CABD5 /* LUSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57B6A65209B4AC3001CABD5 /* LUSolver.cpp */; };
 		D57B6A6A209B4ADE001CABD5 /* DenseMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = D57B6A68209B4ADE001CABD5 /* DenseMatrix.h */; };
 		D57B6A6B209B4ADE001CABD5 /* DenseMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57B6A69209B4ADE001CABD5 /* DenseMatrix.cpp */; };
+		D5D7154C2359F2AE002FCF98 /* Transform.h in Headers */ = {isa = PBXBuildFile; fileRef = D5D7154B2359F2AE002FCF98 /* Transform.h */; };
 		D5ED25CD23197A0400C16BF7 /* linsolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED25C423197A0300C16BF7 /* linsolver.cpp */; };
 		D5ED25CE23197A0400C16BF7 /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25C523197A0300C16BF7 /* stdafx.h */; };
 		D5ED25CF23197A0400C16BF7 /* Interpolator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED25C623197A0300C16BF7 /* Interpolator.cpp */; };
@@ -46,6 +47,7 @@
 		D57B6A65209B4AC3001CABD5 /* LUSolver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LUSolver.cpp; sourceTree = "<group>"; };
 		D57B6A68209B4ADE001CABD5 /* DenseMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DenseMatrix.h; sourceTree = "<group>"; };
 		D57B6A69209B4ADE001CABD5 /* DenseMatrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DenseMatrix.cpp; sourceTree = "<group>"; };
+		D5D7154B2359F2AE002FCF98 /* Transform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Transform.h; sourceTree = "<group>"; };
 		D5ED25C423197A0300C16BF7 /* linsolver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = linsolver.cpp; sourceTree = "<group>"; };
 		D5ED25C523197A0300C16BF7 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		D5ED25C623197A0300C16BF7 /* Interpolator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Interpolator.cpp; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 				D53293771E4A841E002798B3 /* powell.cpp */,
 				D53293781E4A841E002798B3 /* powell.h */,
 				D5ED25C523197A0300C16BF7 /* stdafx.h */,
+				D5D7154B2359F2AE002FCF98 /* Transform.h */,
 			);
 			name = MathLib;
 			path = ../../MathLib;
@@ -128,6 +131,7 @@
 				D57B6A66209B4AC3001CABD5 /* LUSolver.h in Headers */,
 				D5ED25D523197A0400C16BF7 /* MathParser.h in Headers */,
 				D5ED25D323197A0400C16BF7 /* Interpolator.h in Headers */,
+				D5D7154C2359F2AE002FCF98 /* Transform.h in Headers */,
 				D5ED25D023197A0400C16BF7 /* LinearRegression.h in Headers */,
 				D5ED25D423197A0400C16BF7 /* linsolver.h in Headers */,
 				D57B6A5D209B4A4F001CABD5 /* mat3d.h in Headers */,
