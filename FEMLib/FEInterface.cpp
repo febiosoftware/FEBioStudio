@@ -495,7 +495,7 @@ FETiedInterface::FETiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_
 {
 	SetTypeString("Tied contact");
 
-	AddBoolParam  (false, "laugon"   , "augmented Lagrangian"  );
+	AddIntParam   (0    , "laugon"   , "Contact enforcement"   )->SetEnumNames("Penalty method\0Augmented Lagrangian\0Lagrange Multipliers\0");
 	AddDoubleParam(0.2  , "tolerance", "augmentation tolerance");
 	AddDoubleParam(1.0  , "penalty"  , "penalty factor"        );
 	AddDoubleParam(0    , "minaug"   , "min augmentations"     );

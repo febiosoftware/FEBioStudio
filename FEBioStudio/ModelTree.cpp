@@ -1113,6 +1113,13 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 	}
 }
 
+void setInactive(QTreeWidgetItem* ti)
+{
+	QFont f = ti->font(0);
+	f.setItalic(true);
+	ti->setFont(0, f);
+}
+
 void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 {
 	int n, i;
@@ -1134,7 +1141,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				if (pi)
 				{
 					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), 0, flags);
-//					if (pi->IsActive()) t2->labelfont(FL_HELVETICA); else t2->labelfont(FL_HELVETICA_ITALIC);
+					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
 
@@ -1145,7 +1152,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				if (pi)
 				{
 					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-//					if (pi->IsActive()) t2->labelfont(FL_HELVETICA); else t2->labelfont(FL_HELVETICA_ITALIC);
+					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
 
@@ -1156,7 +1163,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				if (pi)
 				{
 					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-//					if (pi->IsActive()) t2->labelfont(FL_HELVETICA); else t2->labelfont(FL_HELVETICA_ITALIC);
+					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
 
@@ -1167,7 +1174,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				if (pi)
 				{
 					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-//					if (pi->IsActive()) t2->labelfont(FL_HELVETICA); else t2->labelfont(FL_HELVETICA_ITALIC);
+					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
 
@@ -1178,7 +1185,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				if (pi)
 				{
 					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-//					if (pi->IsActive()) t2->labelfont(FL_HELVETICA); else t2->labelfont(FL_HELVETICA_ITALIC);
+					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
 
@@ -1189,7 +1196,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				if (pi)
 				{
 					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-					// if (pi->IsActive()) t2->labelfont(FL_HELVETICA); else t2->labelfont(FL_HELVETICA_ITALIC);
+					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
 
@@ -1200,8 +1207,8 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
                 if (pi)
                 {
 					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-                    // if (pi->IsActive()) t2->labelfont(FL_HELVETICA); else t2->labelfont(FL_HELVETICA_ITALIC);
-                }
+					if (pi->IsActive() == false) setInactive(t2);
+				}
             }
             
 			// add the paired interfaces
@@ -1210,7 +1217,8 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(ps->Interface(i));
 				if (pi)
 				{
-					AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), new CContactValidator(pi), flags);
+					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), new CContactValidator(pi), flags);
+					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
 		}

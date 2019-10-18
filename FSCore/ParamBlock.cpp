@@ -685,6 +685,15 @@ void ParamContainer::LoadParam(IArchive& ar)
 	else
 	{
 		Param& param = GetParam(p.GetParamID());
+
+		// some boolean parameters are replaced with int parameters (e.g. laugon contact parameters)
+		if ((p.GetParamType() == Param_BOOL) && (param.GetParamType() == Param_INT))
+		{
+			bool b = p.GetBoolValue();
+			p.SetParamType(Param_INT);
+			p.SetIntValue(b ? 1 : 0);
+		}
+
 		bool var = param.IsVariable();
 		if (param.GetParamType() == p.GetParamType())
 		{
