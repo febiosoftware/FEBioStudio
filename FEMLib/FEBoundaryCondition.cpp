@@ -270,7 +270,7 @@ FEFixedFluidDilatation::FEFixedFluidDilatation(FEModel* ps, FEItemListBuilder* p
 FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, int nstep) : FEPrescribedBC(ntype, ps, nstep)
 {
 	m_nvar = -1;
-	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE);	// degree of freedom
+	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
 	AddDoubleParam(1, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
 	AddBoolParam(0, "relative", "relative");
 }
@@ -278,7 +278,7 @@ FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, int nstep) : FEPrescrib
 FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedBC(ntype, ps, pi, nstep)
 {
 	m_nvar = -1;
-	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE);	// degree of freedom
+	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
 	AddDoubleParam(s, "scale", "scale")->MakeVariable(true)->SetLoadCurve();
 	AddBoolParam(0, "relative", "relative");
 	SetDOF(bc);

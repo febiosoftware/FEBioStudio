@@ -138,6 +138,21 @@ void Param::SetLoadCurve(const FELoadCurve& lc)
 }
 
 //-----------------------------------------------------------------------------
+void Param::DeleteLoadCurve()
+{
+	if (m_plc) delete m_plc;
+	m_plc = nullptr;
+}
+
+//-----------------------------------------------------------------------------
+FELoadCurve* Param::RemoveLoadCurve()
+{
+	FELoadCurve* plc = m_plc;
+	m_plc = nullptr;
+	return plc;
+}
+
+//-----------------------------------------------------------------------------
 const char* Param::GetEnumName(int n) const
 {
 	const char* sz = m_szenum;

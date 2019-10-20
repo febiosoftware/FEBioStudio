@@ -429,7 +429,7 @@ GDeformableSpring::GDeformableSpring() : GDiscreteObject(FE_DEFORMABLE_SPRING)
 GDeformableSpring::GDeformableSpring(int n0, int n1) : GDiscreteObject(FE_DEFORMABLE_SPRING)
 {
 	AddDoubleParam(1, "E", "spring constant");
-	AddIntParam(1, "divs", "Divisions")->SetState(Param_EDITABLE);
+	AddIntParam(1, "divs", "Divisions")->SetState(Param_EDITABLE | Param_PERSISTENT);
 
 	m_node[0] = n0;
 	m_node[1] = n1;

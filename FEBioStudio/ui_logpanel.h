@@ -19,10 +19,12 @@ public:
 		txt[0] = new QPlainTextEdit;
 		txt[0]->setReadOnly(true);
 		txt[0]->setFont(QFont("Courier", 11));
+		txt[0]->setWordWrapMode(QTextOption::NoWrap);
 
 		txt[1] = new QPlainTextEdit;
 		txt[1]->setReadOnly(true);
 		txt[1]->setFont(QFont("Courier", 11));
+		txt[1]->setWordWrapMode(QTextOption::NoWrap);
 
 		stack = new QStackedWidget;
 		stack->addWidget(txt[0]);

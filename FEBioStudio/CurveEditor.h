@@ -44,6 +44,7 @@ private slots:
 	void on_clip_triggered();
 	void on_copy_triggered();
 	void on_paste_triggered();
+	void on_delete_triggered();
 	void on_xval_textEdited();
 	void on_yval_textEdited();
 	void on_deletePoint_clicked();
@@ -110,6 +111,18 @@ private:
 	FELoadCurve*	m_lc;
 	LOADPOINT		m_p;
 	int				m_index;
+};
+
+class CCmdDeleteCurve : public CCommand
+{
+public:
+	CCmdDeleteCurve(Param* pp);
+	~CCmdDeleteCurve();
+	void Execute() override;
+	void UnExecute() override;
+private:
+	FELoadCurve*	m_plc;
+	Param*			m_pp;
 };
 
 class CLoadCurveData : public CPlotData

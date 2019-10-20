@@ -31,14 +31,14 @@ FEInitConcentration::FEInitConcentration(FEModel* ps) : FEInitialCondition(FE_IN
 {
 	SetTypeString("Initial effective concentration");
 	AddDoubleParam(0, "value", "Value");
-	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE);
+	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 FEInitConcentration::FEInitConcentration(FEModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep) : FEInitialCondition(FE_INIT_CONCENTRATION, ps, pi, nstep)
 {
 	SetTypeString("Initial effective concentration");
 	AddDoubleParam(val, "value", "Value");
-	AddChoiceParam(bc, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE);
+	AddChoiceParam(bc, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 //-----------------------------------------------------------------------------
@@ -46,14 +46,14 @@ FEInitShellConcentration::FEInitShellConcentration(FEModel* ps) : FEInitialCondi
 {
     SetTypeString("Initial effective shell concentration");
     AddDoubleParam(0, "value", "Value");
-    AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE);
+    AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 FEInitShellConcentration::FEInitShellConcentration(FEModel* ps, FEItemListBuilder* pi, int bc, double val, int nstep) : FEInitialCondition(FE_INIT_SHELL_CONCENTRATION, ps, pi, nstep)
 {
     SetTypeString("Initial effective shell concentration");
     AddDoubleParam(val, "value", "Value");
-    AddChoiceParam(bc, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE);
+    AddChoiceParam(bc, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 }
 
 //-----------------------------------------------------------------------------

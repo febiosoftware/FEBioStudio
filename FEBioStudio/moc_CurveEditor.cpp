@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CCurveEditor_t {
-    QByteArrayData data[31];
-    char stringdata0[544];
+    QByteArrayData data[32];
+    char stringdata0[564];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -51,17 +51,18 @@ QT_MOC_LITERAL(16, 235, 17), // "on_save_triggered"
 QT_MOC_LITERAL(17, 253, 17), // "on_clip_triggered"
 QT_MOC_LITERAL(18, 271, 17), // "on_copy_triggered"
 QT_MOC_LITERAL(19, 289, 18), // "on_paste_triggered"
-QT_MOC_LITERAL(20, 308, 18), // "on_xval_textEdited"
-QT_MOC_LITERAL(21, 327, 18), // "on_yval_textEdited"
-QT_MOC_LITERAL(22, 346, 22), // "on_deletePoint_clicked"
-QT_MOC_LITERAL(23, 369, 20), // "on_zoomToFit_clicked"
-QT_MOC_LITERAL(24, 390, 16), // "on_zoomX_clicked"
-QT_MOC_LITERAL(25, 407, 16), // "on_zoomY_clicked"
-QT_MOC_LITERAL(26, 424, 17), // "on_undo_triggered"
-QT_MOC_LITERAL(27, 442, 17), // "on_redo_triggered"
-QT_MOC_LITERAL(28, 460, 17), // "on_math_triggered"
-QT_MOC_LITERAL(29, 478, 31), // "on_lineType_currentIndexChanged"
-QT_MOC_LITERAL(30, 510, 33) // "on_extendMode_currentIndexCha..."
+QT_MOC_LITERAL(20, 308, 19), // "on_delete_triggered"
+QT_MOC_LITERAL(21, 328, 18), // "on_xval_textEdited"
+QT_MOC_LITERAL(22, 347, 18), // "on_yval_textEdited"
+QT_MOC_LITERAL(23, 366, 22), // "on_deletePoint_clicked"
+QT_MOC_LITERAL(24, 389, 20), // "on_zoomToFit_clicked"
+QT_MOC_LITERAL(25, 410, 16), // "on_zoomX_clicked"
+QT_MOC_LITERAL(26, 427, 16), // "on_zoomY_clicked"
+QT_MOC_LITERAL(27, 444, 17), // "on_undo_triggered"
+QT_MOC_LITERAL(28, 462, 17), // "on_redo_triggered"
+QT_MOC_LITERAL(29, 480, 17), // "on_math_triggered"
+QT_MOC_LITERAL(30, 498, 31), // "on_lineType_currentIndexChanged"
+QT_MOC_LITERAL(31, 530, 33) // "on_extendMode_currentIndexCha..."
 
     },
     "CCurveEditor\0on_tree_currentItemChanged\0"
@@ -72,12 +73,12 @@ QT_MOC_LITERAL(30, 510, 33) // "on_extendMode_currentIndexCha..."
     "on_plot_pointDragged\0on_plot_draggingEnd\0"
     "on_open_triggered\0on_save_triggered\0"
     "on_clip_triggered\0on_copy_triggered\0"
-    "on_paste_triggered\0on_xval_textEdited\0"
-    "on_yval_textEdited\0on_deletePoint_clicked\0"
-    "on_zoomToFit_clicked\0on_zoomX_clicked\0"
-    "on_zoomY_clicked\0on_undo_triggered\0"
-    "on_redo_triggered\0on_math_triggered\0"
-    "on_lineType_currentIndexChanged\0"
+    "on_paste_triggered\0on_delete_triggered\0"
+    "on_xval_textEdited\0on_yval_textEdited\0"
+    "on_deletePoint_clicked\0on_zoomToFit_clicked\0"
+    "on_zoomX_clicked\0on_zoomY_clicked\0"
+    "on_undo_triggered\0on_redo_triggered\0"
+    "on_math_triggered\0on_lineType_currentIndexChanged\0"
     "on_extendMode_currentIndexChanged"
 };
 #undef QT_MOC_LITERAL
@@ -88,7 +89,7 @@ static const uint qt_meta_data_CCurveEditor[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      23,   14, // methods
+      24,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -96,29 +97,30 @@ static const uint qt_meta_data_CCurveEditor[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    2,  129,    2, 0x08 /* Private */,
-       6,    1,  134,    2, 0x08 /* Private */,
-       8,    2,  137,    2, 0x08 /* Private */,
-      11,    1,  142,    2, 0x08 /* Private */,
-      12,    1,  145,    2, 0x08 /* Private */,
-      13,    1,  148,    2, 0x08 /* Private */,
-      14,    1,  151,    2, 0x08 /* Private */,
-      15,    0,  154,    2, 0x08 /* Private */,
-      16,    0,  155,    2, 0x08 /* Private */,
-      17,    0,  156,    2, 0x08 /* Private */,
-      18,    0,  157,    2, 0x08 /* Private */,
-      19,    0,  158,    2, 0x08 /* Private */,
-      20,    0,  159,    2, 0x08 /* Private */,
-      21,    0,  160,    2, 0x08 /* Private */,
-      22,    0,  161,    2, 0x08 /* Private */,
-      23,    0,  162,    2, 0x08 /* Private */,
-      24,    0,  163,    2, 0x08 /* Private */,
-      25,    0,  164,    2, 0x08 /* Private */,
-      26,    0,  165,    2, 0x08 /* Private */,
-      27,    0,  166,    2, 0x08 /* Private */,
-      28,    0,  167,    2, 0x08 /* Private */,
-      29,    1,  168,    2, 0x08 /* Private */,
-      30,    1,  171,    2, 0x08 /* Private */,
+       1,    2,  134,    2, 0x08 /* Private */,
+       6,    1,  139,    2, 0x08 /* Private */,
+       8,    2,  142,    2, 0x08 /* Private */,
+      11,    1,  147,    2, 0x08 /* Private */,
+      12,    1,  150,    2, 0x08 /* Private */,
+      13,    1,  153,    2, 0x08 /* Private */,
+      14,    1,  156,    2, 0x08 /* Private */,
+      15,    0,  159,    2, 0x08 /* Private */,
+      16,    0,  160,    2, 0x08 /* Private */,
+      17,    0,  161,    2, 0x08 /* Private */,
+      18,    0,  162,    2, 0x08 /* Private */,
+      19,    0,  163,    2, 0x08 /* Private */,
+      20,    0,  164,    2, 0x08 /* Private */,
+      21,    0,  165,    2, 0x08 /* Private */,
+      22,    0,  166,    2, 0x08 /* Private */,
+      23,    0,  167,    2, 0x08 /* Private */,
+      24,    0,  168,    2, 0x08 /* Private */,
+      25,    0,  169,    2, 0x08 /* Private */,
+      26,    0,  170,    2, 0x08 /* Private */,
+      27,    0,  171,    2, 0x08 /* Private */,
+      28,    0,  172,    2, 0x08 /* Private */,
+      29,    0,  173,    2, 0x08 /* Private */,
+      30,    1,  174,    2, 0x08 /* Private */,
+      31,    1,  177,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void, 0x80000000 | 3, 0x80000000 | 3,    4,    5,
@@ -128,6 +130,7 @@ static const uint qt_meta_data_CCurveEditor[] = {
     QMetaType::Void, QMetaType::QPoint,    9,
     QMetaType::Void, QMetaType::QPoint,    9,
     QMetaType::Void, QMetaType::QPoint,    9,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -166,17 +169,18 @@ void CCurveEditor::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 9: _t->on_clip_triggered(); break;
         case 10: _t->on_copy_triggered(); break;
         case 11: _t->on_paste_triggered(); break;
-        case 12: _t->on_xval_textEdited(); break;
-        case 13: _t->on_yval_textEdited(); break;
-        case 14: _t->on_deletePoint_clicked(); break;
-        case 15: _t->on_zoomToFit_clicked(); break;
-        case 16: _t->on_zoomX_clicked(); break;
-        case 17: _t->on_zoomY_clicked(); break;
-        case 18: _t->on_undo_triggered(); break;
-        case 19: _t->on_redo_triggered(); break;
-        case 20: _t->on_math_triggered(); break;
-        case 21: _t->on_lineType_currentIndexChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 22: _t->on_extendMode_currentIndexChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 12: _t->on_delete_triggered(); break;
+        case 13: _t->on_xval_textEdited(); break;
+        case 14: _t->on_yval_textEdited(); break;
+        case 15: _t->on_deletePoint_clicked(); break;
+        case 16: _t->on_zoomToFit_clicked(); break;
+        case 17: _t->on_zoomX_clicked(); break;
+        case 18: _t->on_zoomY_clicked(); break;
+        case 19: _t->on_undo_triggered(); break;
+        case 20: _t->on_redo_triggered(); break;
+        case 21: _t->on_math_triggered(); break;
+        case 22: _t->on_lineType_currentIndexChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 23: _t->on_extendMode_currentIndexChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -211,13 +215,13 @@ int CCurveEditor::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 23)
+        if (_id < 24)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 23;
+        _id -= 24;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 23)
+        if (_id < 24)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 23;
+        _id -= 24;
     }
     return _id;
 }

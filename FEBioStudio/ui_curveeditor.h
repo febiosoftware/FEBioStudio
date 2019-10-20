@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include <QToolButton>
 #include <QLabel>
+#include <QSplitter>
 
 class CCurveEditorItem : public QTreeWidgetItem
 {
@@ -84,7 +85,7 @@ public:
 		curveLayout->addWidget(new QLabel("Extend:"));
 		curveLayout->addWidget(extendMode);
 		curveLayout->addStretch();
-		curveLayout->setSpacing(2);
+//		curveLayout->setSpacing(2);
 
 		plot = new CPlotWidget;
 		plot->setObjectName("plot");
@@ -140,6 +141,10 @@ public:
 		QVBoxLayout* treeLayout = new QVBoxLayout;
 		treeLayout->addWidget(filter);
 		treeLayout->addWidget(tree);
+		treeLayout->setMargin(0);
+
+		QWidget* treeWidget = new QWidget;
+		treeWidget->setLayout(treeLayout);
 
 		pltbutton = new QHBoxLayout;
 		pltbutton->addWidget(xval);
@@ -157,17 +162,16 @@ public:
 		plotLayout->addLayout(curveLayout);
 		plotLayout->addWidget(plot);
 		plotLayout->addLayout(pltbutton);
+		plotLayout->setMargin(0);
 
-		QHBoxLayout* mainLayout = new QHBoxLayout;
-		mainLayout->setMargin(0);
-		mainLayout->addLayout(treeLayout, 1);
-		mainLayout->addLayout(plotLayout, 2);
-		mainLayout->setSpacing(0);
+		QWidget* plotWidget = new QWidget;
+		plotWidget->setLayout(plotLayout);
 
-		QWidget* w = new QWidget;
-		w->setLayout(mainLayout);
+		QSplitter* splitter = new QSplitter;
+		splitter->addWidget(treeWidget);
+		splitter->addWidget(plotWidget);
 
-		wnd->setCentralWidget(w);
+		wnd->setCentralWidget(splitter);
 
 		QToolBar* toolBar = new QToolBar(wnd);
 		toolBar->setObjectName(QStringLiteral("toolBar"));
@@ -179,6 +183,7 @@ public:
 		toolBar->addSeparator();
 		QAction* copy  = toolBar->addAction(QIcon(":/icons/copy.png" ), "Copy Curve" ); copy->setObjectName("copy");
 		QAction* paste = toolBar->addAction(QIcon(":/icons/paste.png"), "Paste Curve"); paste->setObjectName("paste");
+		QAction* del   = toolBar->addAction(QIcon(":/icons/clear.png"), "Delete Curve"); del->setObjectName("delete");
 		toolBar->addSeparator();
 		undo = toolBar->addAction(QIcon(":/icons/undo.png"), "Undo"); undo->setObjectName("undo");
 		redo = toolBar->addAction(QIcon(":/icons/redo.png"), "Redo"); redo->setObjectName("redo");

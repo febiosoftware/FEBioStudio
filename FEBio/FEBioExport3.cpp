@@ -3863,11 +3863,18 @@ void FEBioExport3::WriteBodyLoad(FEBodyLoad* pbl, GPart* pg)
 void FEBioExport3::WriteBodyForce(FEBodyForce* pbf, GPart* pg)
 {
 	XMLElement el("body_load");
-	el.add_attribute("type", "const");
+	el.add_attribute("type", "body force");
 	if (pg) el.add_attribute("elem_set", pg->GetName());
 	m_xml.add_branch(el);
 	{
-		char sz[3][2] = { "x", "y", "z" };
+		double x = pbf->GetLoad(0);
+		double y = pbf->GetLoad(1);
+		double z = pbf->GetLoad(2);
+
+		stringstream s;
+		s << x << ", " << y << ", " << z;
+		m_xml.add_leaf("force", s.str());
+/*		char sz[3][2] = { "x", "y", "z" };
 		XMLElement el;
 		for (int i = 0; i<3; ++i)
 		{
@@ -3877,7 +3884,7 @@ void FEBioExport3::WriteBodyForce(FEBodyForce* pbf, GPart* pg)
 			el.value(pbf->GetLoad(i));
 			m_xml.add_leaf(el);
 		}
-	}
+*/	}
 	m_xml.close_branch();
 }
 

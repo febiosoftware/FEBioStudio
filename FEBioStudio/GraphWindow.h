@@ -1,5 +1,6 @@
 #pragma once
 #include <QMainWindow>
+#include <QDockWidget>
 #include <MathLib/MathParser.h>
 #include "PlotWidget.h"
 #include "Document.h"
@@ -149,7 +150,7 @@ public:
 };
 
 //=================================================================================================
-class CGraphWindow : public QMainWindow, public CDocObserver
+class CGraphWindow : public QDockWidget, public CDocObserver
 {
 	Q_OBJECT
 

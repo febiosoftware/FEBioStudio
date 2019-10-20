@@ -478,7 +478,6 @@ public:
 
 		centralWidget->addWidget(plot);
 		centralWidget->addWidget(tools = new QToolBox); tools->hide();
-		parent->setCentralWidget(centralWidget);
 
 		ops = new OptionsUi(plot); ops->setObjectName("options");
 		tools->addItem(ops, "Options");
@@ -544,8 +543,18 @@ public:
 		zoomBar->addSeparator();
 		actionProps = zoomBar->addAction(QIcon(QString(":/icons/properties.png")), "Properties"); actionProps->setObjectName("actionProps");
 
-		parent->addToolBar(Qt::TopToolBarArea, toolBar);
-		parent->addToolBar(Qt::BottomToolBarArea, zoomBar);
+		QWidget* mainWidget = new QWidget;
+		QVBoxLayout* layout = new QVBoxLayout;
+
+		layout->addWidget(toolBar);
+		layout->addWidget(centralWidget);
+		layout->addWidget(zoomBar);
+
+		mainWidget->setLayout(layout);
+
+		parent->setWidget(mainWidget);
+
+		parent->setFloating(true);
 
 		QObject::connect(showTools, SIGNAL(clicked(bool)), tools, SLOT(setVisible(bool)));
 
@@ -553,7 +562,7 @@ public:
 	}
 };
 
-CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc, int flags) : m_wnd(pwnd), QMainWindow(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
+CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc, int flags) : m_wnd(pwnd), QDockWidget(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
 {
 	m_nTrackTime = TRACK_TIME;
 	m_nUserMin = 0;

@@ -63,6 +63,29 @@ void CCmdMovePoint::UnExecute()
 	Execute();
 }
 
+CCmdDeleteCurve::CCmdDeleteCurve(Param* pp) : CCommand("Delete Curve")
+{
+	m_plc = nullptr;
+	m_pp = pp; assert(m_pp);
+}
+
+CCmdDeleteCurve::~CCmdDeleteCurve()
+{
+	if (m_plc) delete m_plc;
+	m_plc = nullptr;
+}
+
+void CCmdDeleteCurve::Execute()
+{
+	m_plc = m_pp->RemoveLoadCurve();
+}
+
+void CCmdDeleteCurve::UnExecute()
+{
+	if (m_plc) m_pp->SetLoadCurve(*m_plc);
+	m_plc = nullptr;
+}
+
 //=============================================================================
 
 CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CCurveEdior)
@@ -169,13 +192,12 @@ void CCurveEditor::Update()
 			int nbc = pstep->BCs();
 			for (int j = 0; j<nbc; ++j)
 			{
-				FEPrescribedDisplacement*  pdbc = dynamic_cast<FEPrescribedDisplacement* >(pstep->BC(j)); if (pdbc) ui->addTreeItem(t2, QString::fromStdString(pdbc->GetName()), pdbc->GetLoadCurve());
-				FEPrescribedRotation*      prbc = dynamic_cast<FEPrescribedRotation*     >(pstep->BC(j)); if (prbc) ui->addTreeItem(t2, QString::fromStdString(prbc->GetName()), prbc->GetLoadCurve());
-				FEPrescribedFluidPressure* ppbc = dynamic_cast<FEPrescribedFluidPressure*>(pstep->BC(j)); if (ppbc) ui->addTreeItem(t2, QString::fromStdString(ppbc->GetName()), ppbc->GetLoadCurve());
-				FEPrescribedTemperature*   ptbc = dynamic_cast<FEPrescribedTemperature*  >(pstep->BC(j)); if (ptbc) ui->addTreeItem(t2, QString::fromStdString(ptbc->GetName()), ptbc->GetLoadCurve());
-				FEPrescribedConcentration* pcbc = dynamic_cast<FEPrescribedConcentration*>(pstep->BC(j)); if (pcbc) ui->addTreeItem(t2, QString::fromStdString(pcbc->GetName()), pcbc->GetLoadCurve());
-                FEPrescribedFluidVelocity*  pvbc = dynamic_cast<FEPrescribedFluidVelocity*>(pstep->BC(j)); if (pvbc) ui->addTreeItem(t2, QString::fromStdString(pvbc->GetName()), pvbc->GetLoadCurve());
-				FEPrescribedFluidDilatation*  pebc = dynamic_cast<FEPrescribedFluidDilatation*>(pstep->BC(j)); if (pebc) ui->addTreeItem(t2, QString::fromStdString(pebc->GetName()), pebc->GetLoadCurve());
+				FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(pstep->BC(j));
+				if (pbc)
+				{
+					Param& p = pbc->GetParam(FEPrescribedDOF::SCALE);
+					ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()), p.GetLoadCurve(), &p);
+				}
 			}
 		}
 	}
@@ -568,6 +590,8 @@ void CCurveEditor::on_paste_triggered()
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 	if (m_currentItem->GetLoadCurve() == 0)
 	{
+		// TODO: I don't think this works because the load curve is not assigned to the 
+		// corresponding parameter.
 		m_currentItem->SetLoadCurve(new FELoadCurve);
 		plc = m_currentItem->GetLoadCurve();
 	}
@@ -576,6 +600,18 @@ void CCurveEditor::on_paste_triggered()
 	{
 		*plc = *m_plc_copy;
 		SetLoadCurve(plc);
+	}
+}
+
+void CCurveEditor::on_delete_triggered()
+{
+	if (m_currentItem == nullptr) return;
+	Param* p = m_currentItem->GetParam();
+	if (p->GetLoadCurve())
+	{
+		m_cmd.DoCommand(new CCmdDeleteCurve(p));
+		m_currentItem->SetLoadCurve(0);
+		SetLoadCurve(0);
 	}
 }
 
@@ -647,7 +683,7 @@ void CCurveEditor::on_zoomY_clicked()
 
 void CCurveEditor::on_undo_triggered()
 {
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
+	if (m_currentItem == 0) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	if (m_cmd.CanUndo()) m_cmd.UndoCommand();
@@ -656,7 +692,14 @@ void CCurveEditor::on_undo_triggered()
 	QString redo = m_cmd.CanRedo() ? m_cmd.GetRedoCmdName() : "(Nothing to redo)";
 	ui->setCmdNames(undo, redo);
 
-	SetLoadCurve(plc);
+	Param* pp = m_currentItem->GetParam();
+	if (plc) SetLoadCurve(plc);
+	else if (pp) {
+		plc = pp->GetLoadCurve(); 
+		m_currentItem->SetLoadCurve(plc);
+		SetLoadCurve(plc);
+	}
+
 	m_nselect = -1;
 	ui->enablePointEdit(false);
 }

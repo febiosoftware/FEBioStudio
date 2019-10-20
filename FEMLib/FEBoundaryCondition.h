@@ -199,6 +199,7 @@ public:
 //       they should not (e.g. FENodalLoad)
 class FEPrescribedDOF : public FEPrescribedBC
 {
+public:
 	enum { BC, SCALE, NTYPE };
 
 public:

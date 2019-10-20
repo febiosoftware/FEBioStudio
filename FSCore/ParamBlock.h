@@ -102,6 +102,8 @@ public:
 	void SetLoadCurve();
 	void SetLoadCurve(const FELoadCurve& lc);
 	FELoadCurve* GetLoadCurve() const { return m_plc; }
+	void DeleteLoadCurve();
+	FELoadCurve* RemoveLoadCurve();
 
 	const char* GetShortName() const { return m_szbrev; }
 	const char* GetLongName () const { return m_szname; }
@@ -141,7 +143,7 @@ public:
 	Param_Unit GetUnit() const { return m_nunit; }
 
 	int GetState() const { return m_nstate; }
-	Param* SetState(Param_State s) { m_nstate = s; return this; }
+	Param* SetState(int s) { m_nstate = s; return this; }
 
 	bool IsEditable () const { return (m_nstate & Param_EDITABLE) != 0; }
 	bool IsReadWrite() const { return (m_nstate & Param_READWRITE) != 0; }

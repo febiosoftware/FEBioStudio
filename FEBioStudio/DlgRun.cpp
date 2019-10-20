@@ -225,7 +225,8 @@ void CDlgRun::UpdateLaunchConfigBox(int index)
 
 	ui->launchConfig->addItems(launchConfigNames);
 
-	ui->launchConfig->setCurrentIndex(0);
+	if ((index >= 0) && (index < ui->launchConfig->count()))
+		ui->launchConfig->setCurrentIndex(index);
 }
 
 void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault)

@@ -436,7 +436,7 @@ FESlidingInterface::FESlidingInterface(FEModel* ps, int nstep) : FEPairedInterfa
 	AddDoubleParam(0    , "fric_coeff"  , "friction coefficient"   );
 	AddDoubleParam(0    , "fric_penalty", "friction penalty factor");
 	AddDoubleParam(0.01 , "search_tol"  , "search tolerance"       );
-	AddIntParam   (0    , "type"        , "contact type"           )->SetEnumNames("node-on-facet\0facet-on-facet\0")->SetState(Param_EDITABLE);
+	AddIntParam   (0    , "type"        , "contact type"           )->SetEnumNames("node-on-facet\0facet-on-facet\0")->SetState(Param_EDITABLE | Param_PERSISTENT);
 	AddDoubleParam(0    , "minaug"      , "min augmentations"      );
 	AddDoubleParam(10   , "maxaug"      , "max augmentations"      );
 	AddDoubleParam(0.0  , "gaptol"      , "gap tolerance"          );
