@@ -536,6 +536,9 @@ void CGLPlaneCutPlot::UpdateSlice()
 
 	// Get the bounding box. We need it for determining the scale
 	CGLModel* mdl = GetModel();
+	BOX box = GetModel()->GetFEModel()->GetBoundingBox();
+	double R = box.Radius();
+	m_scl = (R == 0.0 ? 1.0 : R);
 
 	// get the plane equations
 	GLdouble a[4];
