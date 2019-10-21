@@ -3,6 +3,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
+
 CLogPanel::CLogPanel(QWidget* parent) : QWidget(parent), ui(new Ui::CLogPanel)
 {
 	ui->setupUi(this);
@@ -102,7 +104,7 @@ void CLogPanel::AddText(const QString& txt, int n)
 	ui->txt[n]->setTextCursor(cursor);
 }
 
-void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
+void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
 {
 	switch (attribute) {
 	case 0 : { // Normal/Default (reset all attributes)
@@ -152,7 +154,15 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 		textCharFormat.setFont(defaultTextCharFormat.font());
 		break;
 	}
-	case 11 ... 19 : {
+	case 11:
+	case 12:
+	case 13:
+	case 14:
+	case 15:
+	case 16:
+	case 17:
+	case 18:
+	case 19 : {
 		QFontDatabase fontDatabase;
 		QString fontFamily = textCharFormat.fontFamily();
 		QStringList fontStyles = fontDatabase.styles(fontFamily);
@@ -205,7 +215,14 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 		textCharFormat.setFontUnderline(false);
 		break;
 	}
-	case 30 ... 37 : {
+	case 30:
+	case 31:
+	case 32:
+	case 33:
+	case 34:
+	case 35:
+	case 36:
+	case 37 : {
 		int colorIndex = attribute - 30;
 		QColor color;
 		if (QFont::Normal < textCharFormat.fontWeight()) {
@@ -321,13 +338,29 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 				int index = i.next().toInt(&ok);
 				Q_ASSERT(ok);
 				switch (index) {
-				case 0x00 ... 0x07 : { // 0x00-0x07:  standard colors (as in ESC [ 30..37 m)
+				case 0x00:
+				case 0x01:
+				case 0x02:
+				case 0x03:
+				case 0x04:
+				case 0x05:
+				case 0x06:
+				case 0x07 : { // 0x00-0x07:  standard colors (as in ESC [ 30..37 m)
 				return parseEscapeSequence(index - 0x00 + 30, i, textCharFormat, defaultTextCharFormat);
 				}
-				case 0x08 ... 0x0F : { // 0x08-0x0F:  high intensity colors (as in ESC [ 90..97 m)
+				case 0x08:
+				case 0x09:
+				case 0x0A:
+				case 0x0B:
+				case 0x0C:
+				case 0x0D:
+				case 0x0E:
+				case 0x0F : { // 0x08-0x0F:  high intensity colors (as in ESC [ 90..97 m)
 				return parseEscapeSequence(index - 0x08 + 90, i, textCharFormat, defaultTextCharFormat);
 				}
-				case 0x10 ... 0xE7 : { // 0x10-0xE7:  6*6*6=216 colors: 16 + 36*r + 6*g + b (0≤r,g,b≤5)
+				default:
+				if ((index >= 0x10) && (index <= 0xE7))
+				{ // 0x10-0xE7:  6*6*6=216 colors: 16 + 36*r + 6*g + b (0≤r,g,b≤5)
 					index -= 0x10;
 				int red = index % 6;
 				index /= 6;
@@ -337,13 +370,13 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 				index /= 6;
 				Q_ASSERT(index == 0);
 				color.setRgb(red, green, blue);
-				break;
 				}
-				case 0xE8 ... 0xFF : { // 0xE8-0xFF:  grayscale from black to white in 24 steps
+				else if ((index >= 0xE8)&&(index <= 0xFF))
+				{ // 0xE8-0xFF:  grayscale from black to white in 24 steps
 					qreal intensity = qreal(index - 0xE8) / (0xFF - 0xE8);
 				color.setRgbF(intensity, intensity, intensity);
-				break;
 				}
+				break;
 				}
 				textCharFormat.setForeground(color);
 				break;
@@ -359,7 +392,14 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 		textCharFormat.setForeground(defaultTextCharFormat.foreground());
 		break;
 	}
-	case 40 ... 47 : {
+	case 40:
+	case 41:
+	case 42:
+	case 43:
+	case 44:
+	case 45:
+	case 46:
+	case 47 : {
 		int colorIndex = attribute - 40;
 		QColor color;
 		switch (colorIndex) {
@@ -435,13 +475,29 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 				int index = i.next().toInt(&ok);
 				Q_ASSERT(ok);
 				switch (index) {
-				case 0x00 ... 0x07 : { // 0x00-0x07:  standard colors (as in ESC [ 40..47 m)
+				case 0x00:
+				case 0x01:
+				case 0x02:
+				case 0x03:
+				case 0x04:
+				case 0x05:
+				case 0x06:
+				case 0x07 : { // 0x00-0x07:  standard colors (as in ESC [ 40..47 m)
 				return parseEscapeSequence(index - 0x00 + 40, i, textCharFormat, defaultTextCharFormat);
 				}
-				case 0x08 ... 0x0F : { // 0x08-0x0F:  high intensity colors (as in ESC [ 100..107 m)
+				case 0x08:
+				case 0x09:
+				case 0x0A:
+				case 0x0B:
+				case 0x0C:
+				case 0x0D:
+				case 0x0E:
+				case 0x0F : { // 0x08-0x0F:  high intensity colors (as in ESC [ 100..107 m)
 				return parseEscapeSequence(index - 0x08 + 100, i, textCharFormat, defaultTextCharFormat);
 				}
-				case 0x10 ... 0xE7 : { // 0x10-0xE7:  6*6*6=216 colors: 16 + 36*r + 6*g + b (0≤r,g,b≤5)
+				default:
+				if ((index >= 0x10)&&(index <= 0xE7))
+				{ // 0x10-0xE7:  6*6*6=216 colors: 16 + 36*r + 6*g + b (0≤r,g,b≤5)
 					index -= 0x10;
 				int red = index % 6;
 				index /= 6;
@@ -451,13 +507,13 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 				index /= 6;
 				Q_ASSERT(index == 0);
 				color.setRgb(red, green, blue);
-				break;
 				}
-				case 0xE8 ... 0xFF : { // 0xE8-0xFF:  grayscale from black to white in 24 steps
+				else if ((index >= 0xE8)&&(index <= 0xFF))
+				{ // 0xE8-0xFF:  grayscale from black to white in 24 steps
 					qreal intensity = qreal(index - 0xE8) / (0xFF - 0xE8);
 					color.setRgbF(intensity, intensity, intensity);
-					break;
 				}
+				break;
 				}
 				textCharFormat.setBackground(color);
 				break;
@@ -473,7 +529,14 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 		textCharFormat.setBackground(defaultTextCharFormat.background());
 		break;
 	}
-	case 90 ... 97 : {
+	case 90:
+	case 91:
+	case 92:
+	case 93:
+	case 94:
+	case 95:
+	case 96:
+	case 97 : {
 		int colorIndex = attribute - 90;
 		QColor color;
 		switch (colorIndex) {
@@ -519,7 +582,14 @@ void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i,
 		textCharFormat.setForeground(color);
 		break;
 	}
-	case 100 ... 107 : {
+	case 100:
+	case 101:
+	case 102:
+	case 103:
+	case 104:
+	case 105:
+	case 106:
+	case 107 : {
 		int colorIndex = attribute - 100;
 		QColor color;
 		switch (colorIndex) {

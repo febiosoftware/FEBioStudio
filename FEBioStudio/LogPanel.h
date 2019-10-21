@@ -29,9 +29,5 @@ private slots:
 	void on_logClear_clicked(bool b);
 	void on_combo_currentIndexChanged(int i);
 
-private:
-	// Code taken from https://stackoverflow.com/questions/26500429/qtextedit-and-colored-bash-like-output-emulation
-	void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
-
 	Ui::CLogPanel*	ui;
 };
