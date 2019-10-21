@@ -1895,21 +1895,30 @@ void CGLView::PositionCamera()
 		vec3d r0 = GetCamera().GetPosition();
 		vec3d r1 = a;
 
+		// undo camera translation
 		glTranslatef(r0.x, r0.y, r0.z);
 
 		// setup the rotation Matrix
-		GLfloat m[4][4] = { 0 };
+		// NOTE: This would rotate to the element's coordinate system,
+		// but this may change the orientation a lot so it was turned off.
+/*		GLfloat m[4][4] = { 0 };
 		m[3][3] = 1.f;
 		m[0][0] = e1.x; m[0][1] = e2.x; m[0][2] = e3.x;
 		m[1][0] = e1.y; m[1][1] = e2.y; m[1][2] = e3.y;
 		m[2][0] = e1.z; m[2][1] = e2.z; m[2][2] = e3.z;
 		glMultMatrixf(&m[0][0]);
-
+*/
+		// center camera on track point
 		glTranslatef(-r1.x, -r1.y, -r1.z);
 
 		m_rc.m_btrack = true;
 		m_rc.m_track_pos = r1;
-		m_rc.m_track_rot = quatd(vec3d(1, 0, 0), e1);
+
+		// This would make the plane cut relative to the element coordinate system
+//		m_rc.m_track_rot = quatd(vec3d(1, 0, 0), e1);
+
+		// Use this if you don't want to orient planecut in element coordinate system
+		m_rc.m_track_rot = quatd(0, vec3d(0,0,1));
 	}
 	else m_rc.m_btrack = false;
 }
