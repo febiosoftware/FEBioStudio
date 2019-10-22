@@ -5909,6 +5909,10 @@ moc_LogPanel.cpp: ../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QWidget 
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfiledevice.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qvector2d.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtouchdevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QTextCharFormat \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpen.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextoption.h \
 		LogPanel.h \
 		moc_predefs.h \
 		../../../Resources/Qt/5.12.0/gcc_64/bin/moc
@@ -23847,6 +23851,10 @@ LogPanel.o: LogPanel.cpp stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qfiledevice.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qvector2d.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtouchdevice.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QTextCharFormat \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpen.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextoption.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QBoxLayout \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qboxlayout.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qlayout.h \
@@ -23858,10 +23866,7 @@ LogPanel.o: LogPanel.cpp stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qabstractscrollarea.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qframe.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextdocument.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextoption.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextcursor.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qpen.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextlayout.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qglyphrun.h \
@@ -24347,6 +24352,7 @@ MainWindow.o: MainWindow.cpp stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
 		MeshInspector.h \
 		LogPanel.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QTextCharFormat \
 		BuildPanel.h \
 		GLControlBar.h \
 		Document.h \
@@ -25386,6 +25392,7 @@ menu.o: menu.cpp stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/QDialog \
 		MeshInspector.h \
 		LogPanel.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QTextCharFormat \
 		BuildPanel.h \
 		GLControlBar.h \
 		Document.h \
@@ -26012,6 +26019,7 @@ menuPost.o: menuPost.cpp stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
 		MeshInspector.h \
 		LogPanel.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QTextCharFormat \
 		BuildPanel.h \
 		GLControlBar.h \
 		Document.h \
@@ -26343,6 +26351,7 @@ menuRecord.o: menuRecord.cpp stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qdialog.h \
 		MeshInspector.h \
 		LogPanel.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QTextCharFormat \
 		BuildPanel.h \
 		GLControlBar.h \
 		Document.h \
@@ -26661,6 +26670,7 @@ menuTools.o: menuTools.cpp stdafx.h \
 		PlotWidget.h \
 		MeshInspector.h \
 		LogPanel.h \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/QTextCharFormat \
 		BuildPanel.h \
 		GLControlBar.h \
 		Document.h \
@@ -31942,7 +31952,9 @@ SSHHandler.o: SSHHandler.cpp ../MeshTools/stdafx.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtWidgets/qframe.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextcursor.h \
 		../../../Resources/Qt/5.12.0/gcc_64/include/QtGui/qtextformat.h \
-		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QTextStream
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QTextStream \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/QThread \
+		../../../Resources/Qt/5.12.0/gcc_64/include/QtCore/qthread.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SSHHandler.o SSHHandler.cpp
 
 SSHThread.o: SSHThread.cpp SSHThread.h \

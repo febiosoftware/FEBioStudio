@@ -77,11 +77,10 @@ void CLogPanel::AddText(const QString& txt, int n)
 	QTextDocument * document = ui->txt[n]->document();
 	QRegExp const escapeSequenceExpression(R"(\x1B\[([\d;]+)m)");
 	QTextCursor cursor(document);
-	QTextCharFormat const defaultTextCharFormat = cursor.charFormat();
 	cursor.movePosition(QTextCursor::End);
+	QTextCharFormat textCharFormat = cursor.charFormat();
 	int offset = escapeSequenceExpression.indexIn(txt);
-	cursor.insertText(txt.mid(0, offset));
-	QTextCharFormat textCharFormat = defaultTextCharFormat;
+	cursor.insertText(txt.mid(0, offset), textCharFormat);
 	while (!(offset < 0)) {
 		int previousOffset = offset + escapeSequenceExpression.matchedLength();
 		QStringList capturedTexts = escapeSequenceExpression.capturedTexts().back().split(';');
@@ -90,7 +89,7 @@ void CLogPanel::AddText(const QString& txt, int n)
 			bool ok = false;
 			int attribute = i.next().toInt(&ok);
 			Q_ASSERT(ok);
-			parseEscapeSequence(attribute, i, textCharFormat, defaultTextCharFormat);
+			parseEscapeSequence(attribute, i, textCharFormat, ui->defaultTextCharFormat);
 		}
 		offset = escapeSequenceExpression.indexIn(txt, previousOffset);
 		if (offset < 0) {
@@ -99,12 +98,12 @@ void CLogPanel::AddText(const QString& txt, int n)
 			cursor.insertText(txt.mid(previousOffset, offset - previousOffset), textCharFormat);
 		}
 	}
-	cursor.setCharFormat(defaultTextCharFormat);
+	cursor.setCharFormat(ui->defaultTextCharFormat);
 	cursor.movePosition(QTextCursor::End);
 	ui->txt[n]->setTextCursor(cursor);
 }
 
-void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
+void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat)
 {
 	switch (attribute) {
 	case 0 : { // Normal/Default (reset all attributes)

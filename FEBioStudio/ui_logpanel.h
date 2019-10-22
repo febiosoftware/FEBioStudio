@@ -12,6 +12,7 @@ public:
 	QComboBox* combo;
 	QStackedWidget* stack;
 	QPlainTextEdit*	txt[2];
+	QTextCharFormat defaultTextCharFormat;
 
 public:
 	void setupUi(QWidget* parent)
@@ -52,6 +53,10 @@ public:
 		parent->setLayout(pl);
 
 		QMetaObject::connectSlotsByName(parent);
+
+		QTextDocument * document = txt[0]->document();
+		QTextCursor cursor(document);
+		defaultTextCharFormat = cursor.charFormat();
 	}
 
 	void setOutput(int n)
