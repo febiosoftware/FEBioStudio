@@ -828,9 +828,12 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 // Render the cutting plane
 void CGLPlaneCutPlot::RenderPlane()
 {
+	vec3d norm0 = m_normal;
+	norm0.Normalize();
+
 	GLdouble a[4];
 	GetNormalizedEquations(a);
-	vec3d norm((float) a[0], (float) a[1], (float) a[2]);
+	vec3d norm(a[0], a[1], a[2]);
 
 	// calculate reference value
 	vec3d p0 = m_T.GetPosition();
@@ -856,9 +859,9 @@ void CGLPlaneCutPlot::RenderPlane()
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
 
-	GLdouble r = fabs(norm.x);
-	GLdouble g = fabs(norm.y);
-	GLdouble b = fabs(norm.z);
+	GLdouble r = fabs(norm0.x);
+	GLdouble g = fabs(norm0.y);
+	GLdouble b = fabs(norm0.z);
 
 	glColor4d(r, g, b, m_transparency);
 	glDepthMask(false);

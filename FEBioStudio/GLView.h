@@ -376,6 +376,9 @@ protected:
 
 	bool TrackGLProgress(int x, CPostDoc* postDoc);
 
+protected:
+	void SetTrackingData(int n[3]);
+
 protected slots:
 	void repaintEvent();
 
@@ -465,6 +468,7 @@ private:
 	// tracking
 	bool	m_btrack;
 	int		m_ntrack[3];
+	mat3d	m_rot0;
 
 public:
 	CGLContext	m_rc;

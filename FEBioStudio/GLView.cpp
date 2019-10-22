@@ -1898,16 +1898,24 @@ void CGLView::PositionCamera()
 		// undo camera translation
 		glTranslatef(r0.x, r0.y, r0.z);
 
-		// setup the rotation Matrix
-		// NOTE: This would rotate to the element's coordinate system,
-		// but this may change the orientation a lot so it was turned off.
-/*		GLfloat m[4][4] = { 0 };
+		// set current orientation
+		mat3d Q;
+		Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
+		Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
+		Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
+
+		// setup the rotation matrix that rotates back to the original
+		// tracking orientation
+		mat3d R = m_rot0*Q.inverse();
+
+		// note that we need to pass the transpose to OGL
+		GLfloat m[4][4] = { 0 };
 		m[3][3] = 1.f;
-		m[0][0] = e1.x; m[0][1] = e2.x; m[0][2] = e3.x;
-		m[1][0] = e1.y; m[1][1] = e2.y; m[1][2] = e3.y;
-		m[2][0] = e1.z; m[2][1] = e2.z; m[2][2] = e3.z;
+		m[0][0] = R[0][0]; m[0][1] = R[1][0]; m[0][2] = R[2][0];
+		m[1][0] = R[0][1]; m[1][1] = R[1][1]; m[1][2] = R[2][1];
+		m[2][0] = R[0][2]; m[2][1] = R[1][2]; m[2][2] = R[2][2];
 		glMultMatrixf(&m[0][0]);
-*/
+
 		// center camera on track point
 		glTranslatef(-r1.x, -r1.y, -r1.z);
 
@@ -1915,12 +1923,47 @@ void CGLView::PositionCamera()
 		m_rc.m_track_pos = r1;
 
 		// This would make the plane cut relative to the element coordinate system
-//		m_rc.m_track_rot = quatd(vec3d(1, 0, 0), e1);
-
-		// Use this if you don't want to orient planecut in element coordinate system
-		m_rc.m_track_rot = quatd(0, vec3d(0,0,1));
+		m_rc.m_track_rot = quatd(R);
 	}
 	else m_rc.m_btrack = false;
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::SetTrackingData(int n[3])
+{
+	// store the nodes to track
+	m_ntrack[0] = n[0];
+	m_ntrack[1] = n[1];
+	m_ntrack[2] = n[2];
+
+	// get the current nodal positions
+	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+	int NN = pm->Nodes();
+	int* nt = m_ntrack;
+	if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
+
+	Post::FEModel& fem = *pdoc->GetFEModel();
+	vec3d a = pm->Node(nt[0]).r;
+	vec3d b = pm->Node(nt[1]).r;
+	vec3d c = pm->Node(nt[2]).r;
+
+	// setup orthogonal basis
+	vec3d e1 = (b - a);
+	vec3d e3 = e1 ^ (c - a);
+	vec3d e2 = e3^e1;
+	e1.Normalize();
+	e2.Normalize();
+	e3.Normalize();
+
+	// create matrix form
+	mat3d Q;
+	Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
+	Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
+	Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
+
+	// store as quat
+	m_rot0 = Q;
 }
 
 //-----------------------------------------------------------------------------
@@ -1947,9 +1990,8 @@ void CGLView::TrackSelection(bool b)
 			{
 				FEElement_& el = *selElems[i];
 				int* n = el.m_node;
-				m_ntrack[0] = n[0];
-				m_ntrack[1] = n[1];
-				m_ntrack[2] = n[2];
+				int m[3] = { n[0], n[1], n[2] };
+				SetTrackingData(m);
 				m_btrack = true;
 				break;
 			}
@@ -1957,11 +1999,13 @@ void CGLView::TrackSelection(bool b)
 		else if (nmode == Post::SELECT_NODES)
 		{
 			int ns = 0;
+			int m[3];
 			for (int i = 0; i<pm->Nodes(); ++i)
 			{
-				if (pm->Node(i).IsSelected()) m_ntrack[ns++] = i;
+				if (pm->Node(i).IsSelected()) m[ns++] = i;
 				if (ns == 3)
 				{
+					SetTrackingData(m);
 					m_btrack = true;
 					break;
 				}
@@ -2456,14 +2500,15 @@ void CGLView::RenderTrack()
 	vec3d e1 = (b - a);
 	vec3d e3 = e1 ^ (c - a);
 	vec3d e2 = e3^e1;
+	double l = e1.Length();
 	e1.Normalize();
 	e2.Normalize();
 	e3.Normalize();
 
 	vec3d A, B, C;
-	A = a + e1;
-	B = a + e2;
-	C = a + e3;
+	A = a + e1*l;
+	B = a + e2*l;
+	C = a + e3*l;
 
 	glColor3ub(255, 0, 255);
 	glBegin(GL_LINES);
