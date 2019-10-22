@@ -29,5 +29,6 @@ private slots:
 	void on_logClear_clicked(bool b);
 	void on_combo_currentIndexChanged(int i);
 
+private:
 	Ui::CLogPanel*	ui;
 };

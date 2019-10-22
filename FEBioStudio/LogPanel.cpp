@@ -103,7 +103,7 @@ void CLogPanel::AddText(const QString& txt, int n)
 	ui->txt[n]->setTextCursor(cursor);
 }
 
-void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat)
+void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
 {
 	switch (attribute) {
 	case 0 : { // Normal/Default (reset all attributes)
