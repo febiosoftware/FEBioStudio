@@ -74,6 +74,8 @@ int main(int argc, char* argv[])
 
 	// show the splash screen
 	QPixmap pixmap(":/icons/splash.png");
+    qreal pixelRatio = app.devicePixelRatio();
+    pixmap.setDevicePixelRatio(pixelRatio);
 	QSplashScreen splash(pixmap);
 	splash.show();
 
@@ -118,6 +120,8 @@ int main(int argc, char* argv[])
 
 	// show the splash screen
 	QPixmap pixmap(":/icons/splash_hires.png");
+    qreal pixelRatio = app.devicePixelRatio();
+    pixmap.setDevicePixelRatio(pixelRatio);
 	QSplashScreen splash(pixmap);
 	splash.show();
 
