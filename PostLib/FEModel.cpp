@@ -62,6 +62,15 @@ FEModel* FEModel::GetInstance()
 void FEModel::AddMesh(FEPostMesh* mesh)
 {
 	m_mesh.push_back(mesh);
+
+	// create a reference state for this mesh
+	FERefState* ref = new FERefState(this);
+	ref->m_Node.resize(mesh->Nodes());
+	for (int i = 0; i < mesh->Nodes(); ++i)
+	{
+		ref->m_Node[i].m_rt = to_vec3f(mesh->Node(i).r);
+	}
+	m_RefState.push_back(ref);
 }
 
 //-----------------------------------------------------------------------------
@@ -144,6 +153,7 @@ void FEModel::ClearStates()
 void FEModel::AddState(FEState* pFEState)
 {
 	pFEState->SetID((int) m_State.size());
+	pFEState->m_ref = m_RefState[m_RefState.size() - 1];
 	m_State.push_back(pFEState); 
 }
 
@@ -768,9 +778,10 @@ vec3f FEModel::NodePosition(int n, int ntime)
 	vec3f r;
 	if (ntime >= 0)
 	{
-		FEState& ref = *GetState(0);
-		FEPostMesh* mesh = GetState(ntime)->GetFEMesh();
-		r = ref.m_NODE[n].m_rt;
+		FEState* state = GetState(ntime);
+		FERefState& ref = *state->m_ref;
+		FEPostMesh* mesh = state->GetFEMesh();
+		r = ref.m_Node[n].m_rt;
 		if (m_ndisp) r += EvaluateNodeVector(n, ntime, m_ndisp);
 	}
 	else

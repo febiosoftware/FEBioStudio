@@ -43,10 +43,11 @@ void CGLDisplacementMap::Activate(bool b)
 
 	if (b == false)
 	{
-		Post::FEState& ref = *GetModel()->GetFEModel()->GetState(0);
 		CGLModel* po = GetModel();
-		FEMeshBase* pm = po->GetActiveMesh();
-		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = ref.m_NODE[i].m_rt;
+		FEState* state = po->GetActiveState();
+		Post::FERefState& ref = *state->m_ref;
+		FEMeshBase* pm = state->GetFEMesh();
+		for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).r = ref.m_Node[i].m_rt;
 		pm->UpdateNormals();
 	}
 }
@@ -72,19 +73,19 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 
 	m_du.resize(pm->Nodes());
 
-	// get the reference state
-	Post::FEState& ref = *po->GetFEModel()->GetState(0);
-
 	if (n0 == n1)
 	{
 		// update the states
 		UpdateState(n0, breset);
 		FEState& s1 = *pfem->GetState(n0);
 
+		// get the reference state
+		Post::FERefState& ref = *s1.m_ref;
+
 		// set the current nodal positions
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			vec3f du = s1.m_NODE[i].m_rt - ref.m_NODE[i].m_rt;
+			vec3f du = s1.m_NODE[i].m_rt - ref.m_Node[i].m_rt;
 			m_du[i] = du;
 		}
 	}
@@ -92,6 +93,10 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 	{
 		FEState& s1 = *pfem->GetState(n0);
 		FEState& s2 = *pfem->GetState(n1);
+
+		// get the reference state
+		Post::FERefState& ref = *s2.m_ref;
+		assert(s1.m_ref == s2.m_ref);
 
 		// update the states
 		UpdateState(n0, breset);
@@ -108,7 +113,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 			FENode& node = pm->Node(i);
 
 			// get nodal displacements
-			vec3f r0 = ref.m_NODE[i].m_rt;
+			vec3f r0 = ref.m_Node[i].m_rt;
 			vec3f d1 = s1.m_NODE[i].m_rt - r0;
 			vec3f d2 = s2.m_NODE[i].m_rt - r0;
 
@@ -135,29 +140,24 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 
 	int nfield = pfem->GetDisplacementField();
 
-	// get the reference state
-	Post::FEState& ref = *po->GetFEModel()->GetState(0);
-
 	if ((nfield >= 0) && (m_ntag[ntime] != nfield))
 	{
 		m_ntag[ntime] = nfield;
 
 		FEState& s = *pfem->GetState(ntime);
 
-		// set the current nodal positions
-		// Don't update the reference state, otherwise we could loose reference coordinates
-		// TODO: I need to store the original reference coordinates somewhere
-		if (ntime != 0)
-		{
-			for (int i = 0; i < pm->Nodes(); ++i)
-			{
-				FENode& node = pm->Node(i);
-				vec3f dr = pfem->EvaluateNodeVector(i, ntime, nfield);
+		// get the reference state
+		Post::FERefState& ref = *s.m_ref;
 
-				// the actual nodal position is stored in the state
-				// this is the field that will be used for strain calculations
-				s.m_NODE[i].m_rt = ref.m_NODE[i].m_rt + dr;
-			}
+		// set the current nodal positions
+		for (int i = 0; i < pm->Nodes(); ++i)
+		{
+			FENode& node = pm->Node(i);
+			vec3f dr = pfem->EvaluateNodeVector(i, ntime, nfield);
+
+			// the actual nodal position is stored in the state
+			// this is the field that will be used for strain calculations
+			s.m_NODE[i].m_rt = ref.m_Node[i].m_rt + dr;
 		}
 	}
 }
@@ -172,12 +172,12 @@ void CGLDisplacementMap::UpdateNodes()
 	assert(m_du.size() == pm->Nodes());
 
 	// get the reference state
-	Post::FEState& ref = *po->GetFEModel()->GetState(0);
+	Post::FERefState& ref = *po->GetFEModel()->GetState(0)->m_ref;
 
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);
-		vec3d r0 = ref.m_NODE[i].m_rt;
+		vec3d r0 = ref.m_Node[i].m_rt;
 		node.r = r0 + m_du[i] * m_scl;
 	}
 

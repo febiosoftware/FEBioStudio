@@ -195,6 +195,7 @@ protected:
 	MetaData	m_meta;
 
 	// --- M E S H ---
+	vector<FERefState*>		m_RefState;	// reference state for meshes
 	vector<FEPostMesh*>		m_mesh;		// the list of meshes
 	BOX						m_bbox;		// bounding box of mesh
 

@@ -6,11 +6,17 @@
 
 using namespace Post;
 
+FERefState::FERefState(FEModel* fem)
+{
+
+}
+
 //-----------------------------------------------------------------------------
 // Constructor
 FEState::FEState(float time, FEModel* fem, Post::FEPostMesh* pmesh) : m_fem(fem), m_mesh(pmesh)
 {
 	m_id = -1;
+	m_ref = nullptr; // will be set by model
 
 	Post::FEPostMesh& mesh = *m_mesh;
 

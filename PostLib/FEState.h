@@ -61,6 +61,17 @@ struct POINTDATA
 };
 
 //-----------------------------------------------------------------------------
+// class for storing reference state
+class FERefState
+{
+public:
+	FERefState(FEModel* fem);
+
+public:
+	vector<NODEDATA>	m_Node;
+};
+
+//-----------------------------------------------------------------------------
 // This class stores a state of a model. A state is defined by data for each
 // of the field variables associated by the model. 
 class FEState
@@ -109,6 +120,7 @@ public:
 
 public:
 	FEModel*	m_fem;	//!< model this state belongs to
+	FERefState*	m_ref;	//!< the reference state for this state
 	FEPostMesh*	m_mesh;	//!< The mesh this state uses
 };
 }

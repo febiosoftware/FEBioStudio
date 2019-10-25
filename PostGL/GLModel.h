@@ -106,6 +106,9 @@ public:
 	//! get the active mesh
 	Post::FEPostMesh* GetActiveMesh();
 
+	//! get the active state
+	Post::FEState* GetActiveState();
+
 	//! Reset all the states so any update will force the state to be evaluated
 	void ResetAllStates();
 

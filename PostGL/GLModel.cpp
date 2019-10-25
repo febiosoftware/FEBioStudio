@@ -25,15 +25,16 @@ extern int ET_PYRA5[8][2];
 // constructor
 CGLModel::CGLModel(FEModel* ps)
 {
+	m_ps = ps;
+
 	m_nTime = 0;
 	m_fTime = 0.f;
+	setCurrentTimeIndex(0);
 
 	static int layer = 1;
 	m_layer = layer++;
 
 	m_stol = 60.0;
-
-	m_ps = ps;
 
 	CGLWidgetManager::GetInstance()->SetActiveLayer(m_layer);
 
@@ -108,6 +109,14 @@ Post::FEPostMesh* CGLModel::GetActiveMesh()
 	FEModel* pfem = GetFEModel();
 	if (pfem && (pfem->GetStates() > 0)) return pfem->GetState(m_nTime)->GetFEMesh();
 	return pfem->GetFEMesh(0);
+}
+
+//-----------------------------------------------------------------------------
+Post::FEState* CGLModel::GetActiveState()
+{
+	FEModel* pfem = GetFEModel();
+	if (pfem && (pfem->GetStates() > 0)) return pfem->GetState(m_nTime);
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -297,13 +306,13 @@ void CGLModel::ResetMesh()
 	FEModel& fem = *GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	Post::FEState& ref = *fem.GetState(0);
+	Post::FERefState& ref = *fem.GetState(0)->m_ref;
 
 	int NN = mesh.Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
 		FENode& node = mesh.Node(i);
-		node.r = ref.m_NODE[i].m_rt;
+		node.r = ref.m_Node[i].m_rt;
 	}
 
 	// reevaluate normals
