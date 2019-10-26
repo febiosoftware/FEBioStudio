@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'ModelPropsPanel.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.12.0)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.12.5)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -12,7 +12,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'ModelPropsPanel.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.12.0. It"
+#error "This file was generated using the moc from 5.12.5. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -82,7 +82,7 @@ static const uint qt_meta_data_CObjectPropsPanel[] = {
 void CObjectPropsPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        CObjectPropsPanel *_t = static_cast<CObjectPropsPanel *>(_o);
+        auto *_t = static_cast<CObjectPropsPanel *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
@@ -235,7 +235,7 @@ static const uint qt_meta_data_CBCObjectPropsPanel[] = {
 void CBCObjectPropsPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        CBCObjectPropsPanel *_t = static_cast<CBCObjectPropsPanel *>(_o);
+        auto *_t = static_cast<CBCObjectPropsPanel *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
@@ -461,7 +461,7 @@ static const uint qt_meta_data_CModelPropsPanel[] = {
 void CModelPropsPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        CModelPropsPanel *_t = static_cast<CModelPropsPanel *>(_o);
+        auto *_t = static_cast<CModelPropsPanel *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
