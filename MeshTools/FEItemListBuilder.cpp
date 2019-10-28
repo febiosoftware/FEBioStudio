@@ -91,6 +91,7 @@ void FEItemListBuilder::Merge(list<int>& o)
 
 void FEItemListBuilder::Subtract(list<int>& o)
 {
+	m_Item.sort();
 	// NOTE: This algorithm assumes that both lists are sorted
 	Iterator it  = m_Item.begin();
 	Iterator it2 = o.begin();
