@@ -1028,8 +1028,6 @@ bool XpltReader::BuildMesh(FEModel &fem)
 		}
 	}
 
-	fem.AddMesh(pmesh);
-
 	// read the nodal coordinates
 	for (int i=0; i<hdr.nn; i++)
 	{
@@ -1039,6 +1037,8 @@ bool XpltReader::BuildMesh(FEModel &fem)
 		// assign coordinates
 		n.r = N.r;
 	}
+
+	fem.AddMesh(pmesh);
 
 	// set the enabled-ness of the elements and the nodes
 	for (int i=0; i<NE; ++i)
