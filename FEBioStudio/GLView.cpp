@@ -6575,11 +6575,11 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 	{
 		FEFace& face = pm->Face(i);
 
-		FEElement& el = pm->Element(face.m_elem[0]);
+		FEElement& el = pm->Element(face.m_elem[0].eid);
 		GPart* pg = po->Part(el.m_gid);
-		if ((pg->IsVisible() == false) && (face.m_elem[1] != -1))
+		if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
 		{
-			FEElement& el1 = pm->Element(face.m_elem[1]);
+			FEElement& el1 = pm->Element(face.m_elem[1].eid);
 			pg = po->Part(el1.m_gid);
 		}
 
@@ -6594,8 +6594,8 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 					SetMatProps(pmat);
 					if (view.m_bcontour)
 					{
-						if (data.GetElementDataTag(face.m_elem[0]) > 0)
-							dif = map.map(data.GetElementValue(face.m_elem[0]));
+						if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
+							dif = map.map(data.GetElementValue(face.m_elem[0].eid));
 						else
 							dif = GLColor(212, 212, 212);
 					}

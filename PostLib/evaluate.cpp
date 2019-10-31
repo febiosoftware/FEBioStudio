@@ -417,38 +417,38 @@ void FEModel::EvalElemField(int ntime, int nfield)
 		FEFace& f = mesh->Face(i);
 		FACEDATA& d = state.m_FACE[i];
 		d.m_ntag = 0;
-		ELEMDATA& e = state.m_ELEM[f.m_elem[0]];
+		ELEMDATA& e = state.m_ELEM[f.m_elem[0].eid];
 		if (e.m_state & StatusFlags::ACTIVE)
 		{
 			d.m_ntag = 1;
 
-			switch (mesh->ElementRef(f.m_elem[0]).Type())
+			switch (mesh->ElementRef(f.m_elem[0].eid).Type())
 			{
 			case FE_TET4:
 			case FE_TET5:
 			{
-					const int* fn = FTTET[f.m_elem[1]];
-					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
+					const int* fn = FTTET[f.m_elem[0].lid];
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
 					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
 				}
 				break;
 			case FE_PENTA6:
 				{
-					const int* fn = FTPENTA[f.m_elem[1]];
+					const int* fn = FTPENTA[f.m_elem[0].lid];
                     switch (f.m_type) {
                         case FE_FACE_TRI3:
-                            fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-                            fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-                            fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
+                            fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+                            fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+                            fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
                             d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2)) / 3.f;
                             break;
                         case FE_FACE_QUAD4:
-                            fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-                            fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-                            fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-                            fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
+                            fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+                            fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+                            fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+                            fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
                             d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3)) * 0.25f;
                             break;
                         default:
@@ -458,26 +458,26 @@ void FEModel::EvalElemField(int ntime, int nfield)
 				break;
             case FE_PENTA15:
                 {
-                    const int* fn = FTPENTA[f.m_elem[1]];
+                    const int* fn = FTPENTA[f.m_elem[0].lid];
                     switch (f.m_type) {
                         case FE_FACE_TRI6:
-                            fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-                            fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-                            fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-                            fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
-                            fd.value(i, 4) = elemData.value(f.m_elem[0], fn[4]);
-                            fd.value(i, 5) = elemData.value(f.m_elem[0], fn[5]);
+                            fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+                            fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+                            fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+                            fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
+                            fd.value(i, 4) = elemData.value(f.m_elem[0].eid, fn[4]);
+                            fd.value(i, 5) = elemData.value(f.m_elem[0].eid, fn[5]);
                             d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5)) / 6.f;
                             break;
                         case FE_FACE_QUAD8:
-                            fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-                            fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-                            fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-                            fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
-                            fd.value(i, 4) = elemData.value(f.m_elem[0], fn[4]);
-                            fd.value(i, 5) = elemData.value(f.m_elem[0], fn[5]);
-                            fd.value(i, 6) = elemData.value(f.m_elem[0], fn[6]);
-                            fd.value(i, 7) = elemData.value(f.m_elem[0], fn[7]);
+                            fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+                            fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+                            fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+                            fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
+                            fd.value(i, 4) = elemData.value(f.m_elem[0].eid, fn[4]);
+                            fd.value(i, 5) = elemData.value(f.m_elem[0].eid, fn[5]);
+                            fd.value(i, 6) = elemData.value(f.m_elem[0].eid, fn[6]);
+                            fd.value(i, 7) = elemData.value(f.m_elem[0].eid, fn[7]);
                             d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5) + fd.value(i, 6) + fd.value(i, 7)) * 0.125f;
                             break;
                         default:
@@ -487,135 +487,135 @@ void FEModel::EvalElemField(int ntime, int nfield)
                 break;
             case FE_HEX8:
                 {
-                    const int* fn = FTHEX8[f.m_elem[1]];
-					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-					fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
+                    const int* fn = FTHEX8[f.m_elem[0].lid];
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+					fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
 					d.m_val = 0.25f*(fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3));
 				}
 				break;
 			case FE_TET10:
 				{
-					const int* fn = FTTET10[f.m_elem[1]];
-					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-					fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
-					fd.value(i, 4) = elemData.value(f.m_elem[0], fn[4]);
-					fd.value(i, 5) = elemData.value(f.m_elem[0], fn[5]);
+					const int* fn = FTTET10[f.m_elem[0].lid];
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+					fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
+					fd.value(i, 4) = elemData.value(f.m_elem[0].eid, fn[4]);
+					fd.value(i, 5) = elemData.value(f.m_elem[0].eid, fn[5]);
 					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5)) / 6.f;
 				}
 				break;
 			case FE_TET15:
 				{
-					const int* fn = FTTET15[f.m_elem[1]];
-					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-					fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
-					fd.value(i, 4) = elemData.value(f.m_elem[0], fn[4]);
-					fd.value(i, 5) = elemData.value(f.m_elem[0], fn[5]);
-					fd.value(i, 6) = elemData.value(f.m_elem[0], fn[6]);
+					const int* fn = FTTET15[f.m_elem[0].lid];
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+					fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
+					fd.value(i, 4) = elemData.value(f.m_elem[0].eid, fn[4]);
+					fd.value(i, 5) = elemData.value(f.m_elem[0].eid, fn[5]);
+					fd.value(i, 6) = elemData.value(f.m_elem[0].eid, fn[6]);
 					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5) + fd.value(i, 6)) / 7.f;
 				}
 				break;
 			case FE_TET20:
 				{
-					const int* fn = FTTET20[f.m_elem[1]];
-					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-					fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
-					fd.value(i, 4) = elemData.value(f.m_elem[0], fn[4]);
-					fd.value(i, 5) = elemData.value(f.m_elem[0], fn[5]);
-					fd.value(i, 6) = elemData.value(f.m_elem[0], fn[6]);
-					fd.value(i, 7) = elemData.value(f.m_elem[0], fn[7]);
-					fd.value(i, 8) = elemData.value(f.m_elem[0], fn[8]);
-					fd.value(i, 9) = elemData.value(f.m_elem[0], fn[9]);
+					const int* fn = FTTET20[f.m_elem[0].lid];
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+					fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
+					fd.value(i, 4) = elemData.value(f.m_elem[0].eid, fn[4]);
+					fd.value(i, 5) = elemData.value(f.m_elem[0].eid, fn[5]);
+					fd.value(i, 6) = elemData.value(f.m_elem[0].eid, fn[6]);
+					fd.value(i, 7) = elemData.value(f.m_elem[0].eid, fn[7]);
+					fd.value(i, 8) = elemData.value(f.m_elem[0].eid, fn[8]);
+					fd.value(i, 9) = elemData.value(f.m_elem[0].eid, fn[9]);
 					d.m_val = (fd.value(i, 0) + fd.value(i, 1) + fd.value(i, 2) + fd.value(i, 3) + fd.value(i, 4) + fd.value(i, 5) + fd.value(i, 6) + fd.value(i, 7) + fd.value(i, 8) + fd.value(i, 9)) / 10.f;
 				}
 				break;
 			case FE_HEX20:
 				{
-					const int* fn = FTHEX20[f.m_elem[1]];
-					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-					fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
-					fd.value(i, 4) = elemData.value(f.m_elem[0], fn[4]);
-					fd.value(i, 5) = elemData.value(f.m_elem[0], fn[5]);
-					fd.value(i, 6) = elemData.value(f.m_elem[0], fn[6]);
-					fd.value(i, 7) = elemData.value(f.m_elem[0], fn[7]);
+					const int* fn = FTHEX20[f.m_elem[0].lid];
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+					fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
+					fd.value(i, 4) = elemData.value(f.m_elem[0].eid, fn[4]);
+					fd.value(i, 5) = elemData.value(f.m_elem[0].eid, fn[5]);
+					fd.value(i, 6) = elemData.value(f.m_elem[0].eid, fn[6]);
+					fd.value(i, 7) = elemData.value(f.m_elem[0].eid, fn[7]);
 					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7))*0.125f;
 				}
 				break;
 			case FE_HEX27:
 				{
-					const int* fn = FTHEX27[f.m_elem[1]];
-					fd.value(i, 0) = elemData.value(f.m_elem[0], fn[0]);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], fn[1]);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], fn[2]);
-					fd.value(i, 3) = elemData.value(f.m_elem[0], fn[3]);
-					fd.value(i, 4) = elemData.value(f.m_elem[0], fn[4]);
-					fd.value(i, 5) = elemData.value(f.m_elem[0], fn[5]);
-					fd.value(i, 6) = elemData.value(f.m_elem[0], fn[6]);
-					fd.value(i, 7) = elemData.value(f.m_elem[0], fn[7]);
+					const int* fn = FTHEX27[f.m_elem[0].lid];
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, fn[0]);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, fn[1]);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, fn[2]);
+					fd.value(i, 3) = elemData.value(f.m_elem[0].eid, fn[3]);
+					fd.value(i, 4) = elemData.value(f.m_elem[0].eid, fn[4]);
+					fd.value(i, 5) = elemData.value(f.m_elem[0].eid, fn[5]);
+					fd.value(i, 6) = elemData.value(f.m_elem[0].eid, fn[6]);
+					fd.value(i, 7) = elemData.value(f.m_elem[0].eid, fn[7]);
 					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7))*0.125f;
 				}
 				break;
 			case FE_TRI3:
 				{
-					fd.value(i, 0) = elemData.value(f.m_elem[0], 0);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], 1);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], 2);
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, 0);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, 1);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, 2);
 					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2))/3.0f;
 				}
 				break;
 			case FE_QUAD4:
 				{
-					fd.value(i, 0) = elemData.value(f.m_elem[0], 0);
-					fd.value(i, 1) = elemData.value(f.m_elem[0], 1);
-					fd.value(i, 2) = elemData.value(f.m_elem[0], 2);
-					fd.value(i, 3) = elemData.value(f.m_elem[0], 3);
+					fd.value(i, 0) = elemData.value(f.m_elem[0].eid, 0);
+					fd.value(i, 1) = elemData.value(f.m_elem[0].eid, 1);
+					fd.value(i, 2) = elemData.value(f.m_elem[0].eid, 2);
+					fd.value(i, 3) = elemData.value(f.m_elem[0].eid, 3);
 					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3))*0.25f;
 				}
 				break;
             case FE_QUAD8:
                 {
-                    fd.value(i, 0) = elemData.value(f.m_elem[0], 0);
-                    fd.value(i, 1) = elemData.value(f.m_elem[0], 1);
-                    fd.value(i, 2) = elemData.value(f.m_elem[0], 2);
-                    fd.value(i, 3) = elemData.value(f.m_elem[0], 3);
-                    fd.value(i, 4) = elemData.value(f.m_elem[0], 4);
-                    fd.value(i, 5) = elemData.value(f.m_elem[0], 5);
-                    fd.value(i, 6) = elemData.value(f.m_elem[0], 6);
-                    fd.value(i, 7) = elemData.value(f.m_elem[0], 7);
+                    fd.value(i, 0) = elemData.value(f.m_elem[0].eid, 0);
+                    fd.value(i, 1) = elemData.value(f.m_elem[0].eid, 1);
+                    fd.value(i, 2) = elemData.value(f.m_elem[0].eid, 2);
+                    fd.value(i, 3) = elemData.value(f.m_elem[0].eid, 3);
+                    fd.value(i, 4) = elemData.value(f.m_elem[0].eid, 4);
+                    fd.value(i, 5) = elemData.value(f.m_elem[0].eid, 5);
+                    fd.value(i, 6) = elemData.value(f.m_elem[0].eid, 6);
+                    fd.value(i, 7) = elemData.value(f.m_elem[0].eid, 7);
  					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7))*0.125f;
                 }
                 break;
             case FE_QUAD9:
                 {
-                    fd.value(i, 0) = elemData.value(f.m_elem[0], 0);
-                    fd.value(i, 1) = elemData.value(f.m_elem[0], 1);
-                    fd.value(i, 2) = elemData.value(f.m_elem[0], 2);
-                    fd.value(i, 3) = elemData.value(f.m_elem[0], 3);
-                    fd.value(i, 4) = elemData.value(f.m_elem[0], 4);
-                    fd.value(i, 5) = elemData.value(f.m_elem[0], 5);
-                    fd.value(i, 6) = elemData.value(f.m_elem[0], 6);
-                    fd.value(i, 7) = elemData.value(f.m_elem[0], 7);
-                    fd.value(i, 8) = elemData.value(f.m_elem[0], 8);
+                    fd.value(i, 0) = elemData.value(f.m_elem[0].eid, 0);
+                    fd.value(i, 1) = elemData.value(f.m_elem[0].eid, 1);
+                    fd.value(i, 2) = elemData.value(f.m_elem[0].eid, 2);
+                    fd.value(i, 3) = elemData.value(f.m_elem[0].eid, 3);
+                    fd.value(i, 4) = elemData.value(f.m_elem[0].eid, 4);
+                    fd.value(i, 5) = elemData.value(f.m_elem[0].eid, 5);
+                    fd.value(i, 6) = elemData.value(f.m_elem[0].eid, 6);
+                    fd.value(i, 7) = elemData.value(f.m_elem[0].eid, 7);
+                    fd.value(i, 8) = elemData.value(f.m_elem[0].eid, 8);
                     d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7)+fd.value(i, 8))/9.0f;
                 }
                 break;
             case FE_TRI6:
                 {
-                    fd.value(i, 0) = elemData.value(f.m_elem[0], 0);
-                    fd.value(i, 1) = elemData.value(f.m_elem[0], 1);
-                    fd.value(i, 2) = elemData.value(f.m_elem[0], 2);
-                    fd.value(i, 3) = elemData.value(f.m_elem[0], 3);
-                    fd.value(i, 4) = elemData.value(f.m_elem[0], 4);
-                    fd.value(i, 5) = elemData.value(f.m_elem[0], 5);
+                    fd.value(i, 0) = elemData.value(f.m_elem[0].eid, 0);
+                    fd.value(i, 1) = elemData.value(f.m_elem[0].eid, 1);
+                    fd.value(i, 2) = elemData.value(f.m_elem[0].eid, 2);
+                    fd.value(i, 3) = elemData.value(f.m_elem[0].eid, 3);
+                    fd.value(i, 4) = elemData.value(f.m_elem[0].eid, 4);
+                    fd.value(i, 5) = elemData.value(f.m_elem[0].eid, 5);
                     d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5))/6.0f;
                 }
 				break;
@@ -1258,16 +1258,16 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 	}
 	else if (IS_ELEM_FIELD(nfield))
 	{
-		assert((f.m_elem[0] >= 0) && (f.m_elem[0] < mesh->Elements()));
+		assert((f.m_elem[0].eid >= 0) && (f.m_elem[0].eid < mesh->Elements()));
 		float edata[FEElement::MAX_NODES] = {0.f};
-		EvaluateElement(f.m_elem[0], ntime, nfield, edata, val);
+		EvaluateElement(f.m_elem[0].eid, ntime, nfield, edata, val);
 		ntag = 1;
-		switch (mesh->ElementRef(f.m_elem[0]).Type())
+		switch (mesh->ElementRef(f.m_elem[0].eid).Type())
 		{
 		case FE_TET4:
 		case FE_TET5:
 		{
-				const int* fn = FTTET[f.m_elem[1]];
+				const int* fn = FTTET[f.m_elem[0].lid];
 				data[0] = edata[fn[0]];
 				data[1] = edata[fn[1]];
 				data[2] = edata[fn[2]];
@@ -1276,7 +1276,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
         case FE_PENTA6:
             {
-                const int* fn = FTPENTA[f.m_elem[1]];
+                const int* fn = FTPENTA[f.m_elem[0].lid];
                 switch (f.m_type) {
                     case FE_FACE_TRI3:
                         data[0] = edata[fn[0]];
@@ -1298,7 +1298,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
             break;
         case FE_PENTA15:
             {
-                const int* fn = FTPENTA[f.m_elem[1]];
+                const int* fn = FTPENTA[f.m_elem[0].lid];
                 switch (f.m_type) {
                     case FE_FACE_TRI6:
                         data[0] = edata[fn[0]];
@@ -1327,7 +1327,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
             break;
             case FE_HEX8:
             {
-                const int* fn = FTHEX8[f.m_elem[1]];
+                const int* fn = FTHEX8[f.m_elem[0].lid];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1337,7 +1337,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_TET10:
 			{
-				const int* fn = FTTET10[f.m_elem[1]];
+				const int* fn = FTTET10[f.m_elem[0].lid];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1349,7 +1349,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_TET15:
 			{
-				const int* fn = FTTET15[f.m_elem[1]];
+				const int* fn = FTTET15[f.m_elem[0].lid];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1362,7 +1362,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_TET20:
 			{
-				const int* fn = FTTET20[f.m_elem[1]];
+				const int* fn = FTTET20[f.m_elem[0].lid];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1378,7 +1378,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_HEX20:
 			{
-				const int* fn = FTHEX20[f.m_elem[1]];
+				const int* fn = FTHEX20[f.m_elem[0].lid];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];
@@ -1392,7 +1392,7 @@ bool FEModel::EvaluateFace(int n, int ntime, int nfield, float* data, float& val
 			break;
 		case FE_HEX27:
 			{
-				const int* fn = FTHEX27[f.m_elem[1]];
+				const int* fn = FTHEX27[f.m_elem[0].lid];
                 data[0] = edata[fn[0]];
                 data[1] = edata[fn[1]];
                 data[2] = edata[fn[2]];

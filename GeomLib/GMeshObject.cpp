@@ -204,12 +204,12 @@ void GMeshObject::UpdateSurfaces()
 		int pid0 = -1, pid1 = -1;
 
 		// make sure the first element is nonzero
-		pe = m.ElementPtr(f.m_elem[0]);
+		pe = m.ElementPtr(f.m_elem[0].eid);
 		if (pe == 0) throw GObjectException(this, "GMeshObject::UpdateSurfaces\n(pe == NULL)");
 		if (pe) pid0 = pe->m_gid;
 
-		// get the second element (which can be zero)
-		pe = m.ElementPtr(f.m_elem[1]);
+		// get the second element (which can be null)
+		pe = m.ElementPtr(f.m_elem[1].eid);
 		if (pe) pid1 = pe->m_gid;
 
 		// assign the part ID's

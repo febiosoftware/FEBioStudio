@@ -42,7 +42,7 @@ void FESelectElementsFromFaces::SelectElementsFromFaces(FEMesh* pm)
     {
         FEFace face = fdata[i];
         // get element to which this face belongs
-        int iel = face.m_elem[0];
+        int iel = face.m_elem[0].eid;
         // store faces that share this element
         fel[iel].push_back(i);
     }

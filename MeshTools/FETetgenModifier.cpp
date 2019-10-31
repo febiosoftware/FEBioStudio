@@ -700,7 +700,7 @@ bool FETetGenModifier::build_tetgen_remesh(FEMesh* pm, tetgenio& in)
 	{
 		FEFace& f = pm->Face(i);
 		double A = FEMeshMetrics::SurfaceArea(*pm, f);
-		FEElement& el = pm->Element(f.m_elem[0]);
+		FEElement& el = pm->Element(f.m_elem[0].eid);
 		in.facetconstraintlist[2*i  ] = i;
 		if (el.IsSelected() || f.IsSelected())
 		{
@@ -725,7 +725,7 @@ bool FETetGenModifier::build_tetgen_remesh(FEMesh* pm, tetgenio& in)
 		for (int i=0; i<faces; ++i)
 		{
 			FEFace& f = pm->Face(i);
-			FEElement& el = pm->Element(f.m_elem[0]);
+			FEElement& el = pm->Element(f.m_elem[0].eid);
 			if (el.IsSelected() || f.IsSelected()) f.m_ntag = 1; else f.m_ntag = 0;
 		}
 

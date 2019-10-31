@@ -47,7 +47,7 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[i]);
 				assert(pf);
-				assert(&pm->ElementRef(pf->m_elem[0]) == pe);
+				assert(&pm->ElementRef(pf->m_elem[0].eid) == pe);
 				if (pf)
 				{
 					n1 = pf->m_nn[0];
@@ -283,7 +283,7 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 			if (pen == 0)
 			{
 				FEFace* pf = pm->FacePtr(e.m_face[j]);
-				assert(pm->ElementPtr(pf->m_elem[0]) == pe);
+				assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
 				n[0] = pf->m_nn[0];
 				n[1] = pf->m_nn[1];
 				n[2] = pf->m_nn[2];
@@ -862,7 +862,7 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 		if (pen == 0)
 		{
 			FEFace* pf = pm->FacePtr(e.m_face[4]);
-			assert(pm->ElementPtr(pf->m_elem[0]) == pe);
+			assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
 			n[0] = pf->m_nn[0];
 			n[1] = pf->m_nn[1];
 			n[2] = pf->m_nn[2];
@@ -1186,7 +1186,7 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm)
 	glBegin(GL_TRIANGLES);
 	if (m_bShell2Solid)
 	{
-		if (pm->ElementRef(face.m_elem[0]).IsShell())
+		if (pm->ElementRef(face.m_elem[0].eid).IsShell())
 		{
 			RenderThickShell(face, pm);
 			glEnd();
@@ -1233,7 +1233,7 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm, GLColor c[4], int nd
 {
 	if (m_bShell2Solid)
 	{
-		if (pm->ElementRef(face.m_elem[0]).IsShell())
+		if (pm->ElementRef(face.m_elem[0].eid).IsShell())
 		{
 			glBegin(GL_TRIANGLES);
 			RenderThickShell(face, pm);
@@ -1301,7 +1301,7 @@ void GLMeshRender::RenderFaceOutline(FEFace& face, FECoreMesh* pm, int ndivs)
 {
 	if (m_bShell2Solid)
 	{
-		if (pm->ElementRef(face.m_elem[0]).IsShell())
+		if (pm->ElementRef(face.m_elem[0].eid).IsShell())
 		{
 			RenderThickShellOutline(face, pm);
 			return;
@@ -1370,7 +1370,7 @@ void GLMeshRender::RenderThickShell(FEFace &face, FECoreMesh* pm)
 
 void GLMeshRender::RenderThickQuad(FEFace &face, FECoreMesh* pm)
 {
-	FEElement_& el = pm->ElementRef(face.m_elem[0]);
+	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
 
 	vec3d r1 = pm->Node(face.n[0]).r;
@@ -1456,7 +1456,7 @@ void GLMeshRender::RenderThickQuad(FEFace &face, FECoreMesh* pm)
 
 void GLMeshRender::RenderThickTri(FEFace &face, FECoreMesh* pm)
 {
-	FEElement_& el = pm->ElementRef(face.m_elem[0]);
+	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
 
 	vec3d r1 = pm->Node(face.n[0]).r;
@@ -1534,7 +1534,7 @@ void GLMeshRender::RenderThickTri(FEFace &face, FECoreMesh* pm)
 
 void GLMeshRender::RenderThickShellOutline(FEFace &face, FECoreMesh* pm)
 {
-	FEElement_& el = pm->ElementRef(face.m_elem[0]);
+	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
 
 	vec3d r1 = pm->Node(face.n[0]).r;

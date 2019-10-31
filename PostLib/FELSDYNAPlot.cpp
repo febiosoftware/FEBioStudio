@@ -326,8 +326,8 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 	for (i=0; i<mesh.Faces(); ++i)
 	{
 		FEFace& f = mesh.Face(i);
-        assert(f.m_elem[0] >= 0);
-		FEElement_& el = mesh.ElementRef(f.m_elem[0]);
+        assert(f.m_elem[0].eid >= 0);
+		FEElement_& el = mesh.ElementRef(f.m_elem[0].eid);
 	}
 
 	fem.UpdateBoundingBox();

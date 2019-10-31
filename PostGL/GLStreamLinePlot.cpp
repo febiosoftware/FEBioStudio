@@ -316,7 +316,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 			cf /= nf;
 
 			// project the seed into the adjacent solid element
-			int nelem = f.m_elem[0];
+			int nelem = f.m_elem[0].eid;
 			FEElement_* el = &mesh.ElementRef(nelem);
 			el->m_ntag = 1;
 			ProjectInsideReferenceElement(mesh, *el, cf, q);

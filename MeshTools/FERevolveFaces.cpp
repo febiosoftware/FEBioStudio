@@ -187,8 +187,8 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                     face.n[3] = el.m_node[ 9];
                     face.n[4] = el.m_node[10];
                     face.n[5] = el.m_node[11];
-                    face.m_elem[0] = n;
-                    face.m_elem[1] = -1;
+                    face.m_elem[0].eid = n;
+                    face.m_elem[1].eid = -1;
                     ++n;
                     
                 }
@@ -220,8 +220,8 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                         face.n[0] = el.m_node[3];
                         face.n[1] = el.m_node[4];
                         face.n[2] = el.m_node[5];
-                        face.m_elem[0] = n;
-                        face.m_elem[1] = -1;
+                        face.m_elem[0].eid = n;
+                        face.m_elem[1].eid = -1;
                         ++n;
                     }
                     else{
@@ -332,8 +332,8 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                         face.n[1] = el.m_node[5];
                         face.n[2] = el.m_node[6];
                         face.n[3] = el.m_node[7];
-                        face.m_elem[0] = n;
-                        face.m_elem[1] = -1;
+                        face.m_elem[0].eid = n;
+                        face.m_elem[1].eid = -1;
                     }
                     else
                     {
@@ -383,8 +383,8 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                                     face.n[((j + 1) % 4) + 4] = el.m_node[11];
                                     face.n[((j + 2) % 4) + 4] = el.m_node[14];
                                     face.n[((j + 3) % 4) + 4] = el.m_node[8];
-                                    face.m_elem[0] = n;
-                                    face.m_elem[1] = -1;
+                                    face.m_elem[0].eid = n;
+                                    face.m_elem[1].eid = -1;
                                     
                                     break;
                                 }
@@ -403,8 +403,8 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                                     // move the face
                                     face.n[(j + 2) % nf] = el.m_node[5];
                                     face.n[(j + 3) % nf] = el.m_node[2];
-                                    face.m_elem[0] = n;
-                                    face.m_elem[1] = -1;
+                                    face.m_elem[0].eid = n;
+                                    face.m_elem[1].eid = -1;
                                     
                                     break;
                                 }
@@ -530,8 +530,8 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
                 face.n[0] = el.m_node[3];
                 face.n[1] = el.m_node[4];
                 face.n[2] = el.m_node[5];
-                face.m_elem[0] = n;
-                face.m_elem[1] = -1;
+                face.m_elem[0].eid = n;
+                face.m_elem[1].eid = -1;
                 
                 ++n;
             }
@@ -560,8 +560,8 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
                     face.n[1] = el.m_node[5];
                     face.n[2] = el.m_node[6];
                     face.n[3] = el.m_node[7];
-                    face.m_elem[0] = n;
-                    face.m_elem[1] = -1;
+                    face.m_elem[0].eid = n;
+                    face.m_elem[1].eid = -1;
                 }
                 else
                 {
@@ -587,8 +587,8 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
                             // move the face
                             face.n[(j + 2) % nf] = el.m_node[5];
                             face.n[(j + 3) % nf] = el.m_node[2];
-                            face.m_elem[0] = n;
-                            face.m_elem[1] = -1;
+                            face.m_elem[0].eid = n;
+                            face.m_elem[1].eid = -1;
                             
                             break;
                         }

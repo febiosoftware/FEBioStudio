@@ -720,8 +720,8 @@ void FECoreMesh::UpdateItemVisibility()
 	{
 		FEFace& face = Face(i);
 
-		FEElement_* e0 = ElementPtr(face.m_elem[0]); assert(e0);
-		FEElement_* e1 = ElementPtr(face.m_elem[1]);
+		FEElement_* e0 = ElementPtr(face.m_elem[0].eid); assert(e0);
+		FEElement_* e1 = ElementPtr(face.m_elem[1].eid);
 
 		if (!e0->IsVisible() && ((e1 == 0) || !e1->IsVisible())) face.Hide(); else { face.Show(); face.Unhide(); }
 	}

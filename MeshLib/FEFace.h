@@ -54,6 +54,12 @@ class FEFace : public FEItem
 public:
 	enum { MAX_NODES = 10 };
 
+	struct ELEM_REF
+	{
+		int		eid;	// element ID
+		int		lid;	// local face index into element's face array
+	};
+
 public:
 	//! constructor
 	FEFace();
@@ -92,7 +98,7 @@ public:
 	int FindNode(int i);
 
 	//! Is this face internal or external
-	bool IsExternal() { return (m_elem[1] == -1); }
+	bool IsExternal() { return (m_elem[1].eid == -1); }
 
 	//! See if a node list is an edge
 	int FindEdge(const FEEdge& edge);
@@ -135,6 +141,6 @@ public:
 	float	m_tex[MAX_NODES];	// nodal 1D-texture coordinates
 	float	m_texe;				// element texture coordinate
 
-	int	m_elem[2];	//!< the elements to which this face belongs
-	int	m_edge[4];	//!< the edges (interior faces don't have edges!)
+	ELEM_REF	m_elem[2];	//!< the elements to which this face belongs
+	int			m_edge[4];	//!< the edges (interior faces don't have edges!)
 };

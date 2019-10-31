@@ -306,11 +306,11 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		for (int j=0; j<NF; ++j)
 		{
 			FEFace& face = surf.Face(j);
-			if (face.m_elem[0] == -1) face.Deactivate();
+			if (face.m_elem[0].eid == -1) face.Deactivate();
 			else
 			{
 				face.Activate();
-				int iel = face.m_elem[0];
+				int iel = face.m_elem[0].eid;
 				
 				ELEMDATA& d0 = s0.m_ELEM[iel];
 				ELEMDATA& d1 = s1.m_ELEM[iel];

@@ -973,13 +973,13 @@ void FEMesh::DeleteTaggedFaces(int tag)
 		FEFace& face = Face(i);
 		if (face.m_ntag == tag)
 		{
-			if (face.m_elem[0] >= 0)
+			if (face.m_elem[0].eid >= 0)
 			{
-				Element(face.m_elem[0]).m_ntag = 1;
+				Element(face.m_elem[0].eid).m_ntag = 1;
 			}
-			if (face.m_elem[1] >= 0)
+			if (face.m_elem[1].eid >= 0)
 			{
-				Element(face.m_elem[1]).m_ntag = 1;
+				Element(face.m_elem[1].eid).m_ntag = 1;
 			}
 		}
 	}
@@ -1311,8 +1311,8 @@ void FEMesh::UpdateFaceElementTable()
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& f = Face(i);
-		f.m_elem[0] = -1;
-		f.m_elem[1] = -1;
+		f.m_elem[0].eid = -1;
+		f.m_elem[1].eid = -1;
 	}
 
 	for (int i = 0; i<NE; ++i)
@@ -1364,20 +1364,20 @@ void FEMesh::UpdateFaceElementTable()
 //						assert(m<2);
 						if (m == 0)
 						{
-							face.m_elem[m++] = eid;
+							face.m_elem[m++].eid = eid;
 						}
 						else if (m < 2)
 						{
 							// set the element with the lowest GID first
-							FEElement_* p0 = ElementPtr(face.m_elem[0]);
+							FEElement_* p0 = ElementPtr(face.m_elem[0].eid);
 							if (p0->m_gid < pej->m_gid)
 							{
-								face.m_elem[m++] = eid;
+								face.m_elem[m++].eid = eid;
 							}
 							else
 							{
-								face.m_elem[m++] = face.m_elem[0];
-								face.m_elem[0] = eid;
+								face.m_elem[m++].eid = face.m_elem[0].eid;
+								face.m_elem[0].eid = eid;
 							}
 						}
 						pej->m_face[k] = i;
@@ -1402,7 +1402,7 @@ void FEMesh::UpdateFaceElementTable()
 					{
 						if (m == 0) 
 						{	
-							face.m_elem[m++] = eid;
+							face.m_elem[m++].eid = eid;
 							pej->m_face[0] = i;
 						}
 					}
@@ -1410,7 +1410,7 @@ void FEMesh::UpdateFaceElementTable()
 			}
 		}
 
-		assert(face.m_elem[0] != -1);
+		assert(face.m_elem[0].eid != -1);
 	}
 }
 
@@ -1613,8 +1613,8 @@ void FEMesh::Attach(FEMesh& fem)
 			f0.m_gid = f1.m_gid + ng;
 
 
-			f0.m_elem[0] = f1.m_elem[0] + ne0;
-			f0.m_elem[1] = -1;
+			f0.m_elem[0].eid = f1.m_elem[0].eid + ne0;
+			f0.m_elem[1].eid = -1;
 
 			for (int j=0; j<f0.Nodes(); ++j) f0.n[j] = f1.n[j] + nn0;
 
@@ -1911,7 +1911,7 @@ void FEMesh::RemoveDuplicateFaces()
 				fi.m_ntag = 1;
 
 				// we set the element indices to 0 to avoid deleting these elements
-				fi.m_elem[0] = fi.m_elem[1] = -1;
+				fi.m_elem[0].eid = fi.m_elem[1].eid = -1;
 			}
 		}
 	}
@@ -2840,7 +2840,7 @@ void FEMesh::InvertTaggedElements(int ntag)
 	for (int i=0; i<Faces(); ++i)
 	{
 		FEFace& f = Face(i);
-		FEElement_* pe = ElementPtr(f.m_elem[0]);
+		FEElement_* pe = ElementPtr(f.m_elem[0].eid);
 
 		if (pe->m_ntag == ntag)
 		{
@@ -3350,9 +3350,9 @@ void FEMesh::AutoPartitionSurface()
 				pf->m_gid = ngid;
 
 				// get the element part ID's
-				assert(pf->m_elem[0] >= 0);
-				FEElement_* pe11 = ElementPtr(pf->m_elem[0]);
-				FEElement_* pe12 = ElementPtr(pf->m_elem[1]);
+				assert(pf->m_elem[0].eid >= 0);
+				FEElement_* pe11 = ElementPtr(pf->m_elem[0].eid);
+				FEElement_* pe12 = ElementPtr(pf->m_elem[1].eid);
 				int gid11 = (pe11 ? pe11->m_gid : -1);
 				int gid12 = (pe12 ? pe12->m_gid : -1);
 
@@ -3362,9 +3362,9 @@ void FEMesh::AutoPartitionSurface()
 					FEFace* pf2 = FacePtr(pf->m_nbr[j]);
 					if (pf2)
 					{
-						assert(pf2->m_elem[0] >= 0);
-						FEElement_* pe21 = ElementPtr(pf2->m_elem[0]);
-						FEElement_* pe22 = ElementPtr(pf2->m_elem[1]);
+						assert(pf2->m_elem[0].eid >= 0);
+						FEElement_* pe21 = ElementPtr(pf2->m_elem[0].eid);
+						FEElement_* pe22 = ElementPtr(pf2->m_elem[1].eid);
 
 						int gid21 = (pe21 ? pe21->m_gid : -1);
 						int gid22 = (pe22 ? pe22->m_gid : -1);
@@ -3414,9 +3414,9 @@ void FEMesh::AutoPartitionSurfaceQuick()
 				pf->m_gid = ngid;
 
 				// get the element part ID's
-				assert(pf->m_elem[0] >= 0);
-				FEElement_* pe11 = ElementPtr(pf->m_elem[0]);
-				FEElement_* pe12 = ElementPtr(pf->m_elem[1]);
+				assert(pf->m_elem[0].eid >= 0);
+				FEElement_* pe11 = ElementPtr(pf->m_elem[0].eid);
+				FEElement_* pe12 = ElementPtr(pf->m_elem[1].eid);
 				int gid11 = (pe11 ? pe11->m_gid : -1);
 				int gid12 = (pe12 ? pe12->m_gid : -1);
 
@@ -3426,9 +3426,9 @@ void FEMesh::AutoPartitionSurfaceQuick()
 					FEFace* pf2 = FacePtr(pf->m_nbr[j]);
 					if (pf2)
 					{
-						assert(pf2->m_elem[0] >= 0);
-						FEElement_* pe21 = ElementPtr(pf2->m_elem[0]);
-						FEElement_* pe22 = ElementPtr(pf2->m_elem[1]);
+						assert(pf2->m_elem[0].eid >= 0);
+						FEElement_* pe21 = ElementPtr(pf2->m_elem[0].eid);
+						FEElement_* pe22 = ElementPtr(pf2->m_elem[1].eid);
 
 						int gid21 = (pe21 ? pe21->m_gid : -1);
 						int gid22 = (pe22 ? pe22->m_gid : -1);

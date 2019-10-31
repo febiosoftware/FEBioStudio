@@ -199,7 +199,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 				for (int k = 0; k<NFL.Valence(nodeID);k++)
 				{
 					FEFace *fa1 = NFL.Face(nodeID,k);
-					if(fa1->m_ntag != 1 && fa1->m_elem[0] != i)
+					if(fa1->m_ntag != 1 && fa1->m_elem[0].eid != i)
 					{
 						fa1->m_ntag = 1;
 						mR.push_back(fa1);
@@ -221,7 +221,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 				double angle = acos((fa.m_fn * fa1->m_fn)/(fa.m_fn.Length() * fa1->m_fn.Length()));//angle between the normals
 				double weight1 = area_triangle(r) * exp(-m_threshold1 * angle*angle*dist*dist);
 				weight += weight1;
-				m_R_new[i] += m_R[fa1->m_elem[0]] * weight1;	
+				m_R_new[i] += m_R[fa1->m_elem[0].eid] * weight1;
 				fa1->m_ntag = 0;
 			}
 			m_R_new[i] = m_R_new[i]/weight;	
@@ -251,8 +251,8 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 					vec3d centroid = (r[0]+r[1]+r[2])/3;
 					weight += area_triangle(r);
 					vec3d PC = centroid - ni.r;
-					double temp = PC * m_R[fa1->m_elem[0]];
-					vR += (m_R[fa1->m_elem[0]] * temp)*area_triangle(r);
+					double temp = PC * m_R[fa1->m_elem[0].eid];
+					vR += (m_R[fa1->m_elem[0].eid] * temp)*area_triangle(r);
 				}	
 				vR = vR/weight;
 				ni.r = ni.r + vR;

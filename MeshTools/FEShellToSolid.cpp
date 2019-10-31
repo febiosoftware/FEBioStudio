@@ -39,7 +39,7 @@ FEMesh* FEShellToSolid::Apply(FEMesh* pm)
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& f = pm->Face(i);
-		if (pm->Element(f.m_elem[0]).IsSelected())
+		if (pm->Element(f.m_elem[0].eid).IsSelected())
 		{
 			int nf = f.Nodes();
 			for (int j=0; j<nf; ++j)

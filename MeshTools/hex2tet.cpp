@@ -271,11 +271,11 @@ FEMesh* FEHex2Tet::Apply(FEMesh* pm)
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& f = pm->Face(i);
-		FEElement& el = pm->Element(f.m_elem[0]);
+		FEElement& el = pm->Element(f.m_elem[0].eid);
 
 		// we have to figure out how each face was split by the parent element
 		int nf[3] = {f.n[0], f.n[1], f.n[2]};
-		int nelem = FindFace(pnew, 6*f.m_elem[0], nf);
+		int nelem = FindFace(pnew, 6*f.m_elem[0].eid, nf);
 		if (nelem != -1)
 		{
 			FEFace& f1 = pnew->Face(n++);
@@ -291,7 +291,7 @@ FEMesh* FEHex2Tet::Apply(FEMesh* pm)
 			f2.n[0] = f.n[2];
 			f2.n[1] = f.n[3];
 			f2.n[2] = f.n[0];
-			assert(FindFace(pnew, 6*f.m_elem[0], f2.n) != -1);
+			assert(FindFace(pnew, 6*f.m_elem[0].eid, f2.n) != -1);
 		}
 		else
 		{
@@ -301,7 +301,7 @@ FEMesh* FEHex2Tet::Apply(FEMesh* pm)
 			f1.n[0] = f.n[3];
 			f1.n[1] = f.n[0];
 			f1.n[2] = f.n[1];
-			assert(FindFace(pnew, 6 * f.m_elem[0], f1.n) != -1);
+			assert(FindFace(pnew, 6 * f.m_elem[0].eid, f1.n) != -1);
 
 			FEFace& f2 = pnew->Face(n++);
 			f2.SetType(FE_FACE_TRI3);
@@ -309,7 +309,7 @@ FEMesh* FEHex2Tet::Apply(FEMesh* pm)
 			f2.n[0] = f.n[1];
 			f2.n[1] = f.n[2];
 			f2.n[2] = f.n[3];
-			assert(FindFace(pnew, 6 * f.m_elem[0], f2.n) != -1);
+			assert(FindFace(pnew, 6 * f.m_elem[0].eid, f2.n) != -1);
 		}
 	}
 	pnew->UpdateFaces();

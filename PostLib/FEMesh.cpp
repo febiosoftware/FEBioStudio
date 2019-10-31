@@ -235,8 +235,8 @@ void Post::FEPostMesh::UpdateDomains()
 	{
 		FEFace& face = Face(i);
 
-		int ma = ElementRef(face.m_elem[0]).m_MatID;
-		int mb = (face.m_elem[1] >= 0 ? ElementRef(face.m_elem[1]).m_MatID : -1);
+		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
+		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
 
 		faceSize[ma]++;
 		if (mb >= 0) faceSize[mb]++;
@@ -260,8 +260,8 @@ void Post::FEPostMesh::UpdateDomains()
 	{
 		FEFace& face = Face(i);
 
-		int ma = ElementRef(face.m_elem[0]).m_MatID;
-		int mb = (face.m_elem[1] >= 0 ? ElementRef(face.m_elem[1]).m_MatID : -1);
+		int ma = ElementRef(face.m_elem[0].eid).m_MatID;
+		int mb = (face.m_elem[1].eid >= 0 ? ElementRef(face.m_elem[1].eid).m_MatID : -1);
 
 		m_Dom[ma]->AddFace(i);
 		if (mb >= 0) m_Dom[mb]->AddFace(i);
@@ -353,13 +353,13 @@ void Post::FEPostMesh::BuildFaces()
 
 				FEFace& f = m_Face[NF++];
 				e.GetFace(j, f);
-				f.m_elem[0] = i;
-				f.m_elem[1] = -1;
+				f.m_elem[0].eid = i; f.m_elem[0].lid = j;
+				f.m_elem[1].eid = -1;
 				f.SetID(NF);
 			}
 			else
 			{
-				// this adds an internal facet if adjacent elemetns have a different material
+				// this adds an internal facet if adjacent elements have a different material
 				FEElement_& nel = ElementRef(e.m_nbr[j]);
 				int ma = e.m_MatID;
 				int mb = nel.m_MatID;
@@ -367,13 +367,15 @@ void Post::FEPostMesh::BuildFaces()
 				{
 					FEFace& f = m_Face[NF];
 					e.GetFace(j, f);
-					f.m_elem[0] = i;
-					f.m_elem[1] = e.m_nbr[j];
+					f.m_elem[0].eid = i; 
+					f.m_elem[0].lid = j;
+					
+					f.m_elem[1].eid = e.m_nbr[j];
+					f.m_elem[1].lid = nel.FindFace(f); assert(f.m_elem[1].lid >= 0);
 					f.SetID(NF);
 
 					e.m_face[j] = NF;
-					int k = nel.FindFace(f); assert(k >= 0);
-					nel.m_face[k] = NF;
+					nel.m_face[f.m_elem[1].lid] = NF;
 
 					NF++;
 				}
@@ -427,8 +429,8 @@ void Post::FEPostMesh::BuildFaces()
                 f.m_type = FE_FACE_TRI6;
             }
 
-			f.m_elem[0] = i;
-			f.m_elem[1] = -1;
+			f.m_elem[0].eid =  i; f.m_elem[0].lid = 0;
+			f.m_elem[1].eid = -1; f.m_elem[1].lid = -1;
 			f.SetID(NF);
 		}
 	}
@@ -508,11 +510,11 @@ void Post::FEPostMesh::FindFaceNeighbors()
 					// we found the neighbour
 					// also make sure that they are of similar type,
 					// that is: shells can connect only to shells and solids to solids
-					int e1 = (ElementRef(f .m_elem[0]).IsSolid()?1:0);
-					int e2 = (ElementRef(f2.m_elem[0]).IsSolid()?1:0);
+					int e1 = (ElementRef(f .m_elem[0].eid).IsSolid()?1:0);
+					int e2 = (ElementRef(f2.m_elem[0].eid).IsSolid()?1:0);
 					// make sure external surfaces only connect to external surfaces
-					e1 += (f .m_elem[1] == -1 ? 2 : 0);
-					e2 += (f2.m_elem[1] == -1 ? 2 : 0);
+					e1 += (f .m_elem[1].eid == -1 ? 2 : 0);
+					e2 += (f2.m_elem[1].eid == -1 ? 2 : 0);
 					if (e1 == e2)
 					{
 						// Eureka! We found one!
