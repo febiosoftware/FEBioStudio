@@ -130,7 +130,6 @@ public:
 	vec3f	m_fn;				//!< face normal
 	vec3f	m_nn[MAX_NODES];	//!< node normals
 	int		m_sid;				//!< smoothing ID
-	int		m_mat;				// material id (TODO: only used in post. Can be removed?)
 
 	// TODO: move texture coordinates elsewhere
 	float	m_tex[MAX_NODES];	// nodal 1D-texture coordinates

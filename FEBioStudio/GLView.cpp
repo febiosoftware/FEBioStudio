@@ -7655,7 +7655,7 @@ void CGLView::RenderTags()
 
 			tag.r = mesh.FaceCenter(f);
 			tag.bvis = false;
-			tag.ntag = 0;
+			tag.ntag = (f.IsExternal() ? 0 : 1);
 			sprintf(tag.sztag, "F%d", f.GetID());
 			vtag.push_back(tag);
 

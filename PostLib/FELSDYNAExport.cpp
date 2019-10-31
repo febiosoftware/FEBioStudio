@@ -80,7 +80,7 @@ bool FELSDYNAExport::ExportSurface(FEModel &fem, int ntime, const char *szfile)
 		v[1] = ps->m_NODE[f.n[1]].m_val;
 		v[2] = ps->m_NODE[f.n[2]].m_val;
 		v[3] = ps->m_NODE[f.n[3]].m_val;
-		fprintf(fp, "%8d%8d%8d%8d%8d%8d\n", i+1, f.m_mat+1, n[0], n[1], n[2], n[3]);
+		fprintf(fp, "%8d%8d%8d%8d%8d%8d\n", i+1, f.m_gid+1, n[0], n[1], n[2], n[3]);
 		fprintf(fp, "%16.7e%16.7e%16.7e%16.7e\n", v[0], v[1], v[2], v[3]);
 	}
 

@@ -2,6 +2,7 @@
 
 FENode::FENode()
 {
+	m_gid = -1;
 }
 
 FENode::FENode(const FENode& n) : FEItem(n)

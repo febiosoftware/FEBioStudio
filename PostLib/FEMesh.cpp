@@ -234,7 +234,12 @@ void Post::FEPostMesh::UpdateDomains()
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& face = Face(i);
-		faceSize[face.m_mat]++;
+
+		int ma = ElementRef(face.m_elem[0]).m_MatID;
+		int mb = (face.m_elem[1] >= 0 ? ElementRef(face.m_elem[1]).m_MatID : -1);
+
+		faceSize[ma]++;
+		if (mb >= 0) faceSize[mb]++;
 	}
 
 	m_Dom.resize(ndom);
@@ -254,7 +259,12 @@ void Post::FEPostMesh::UpdateDomains()
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& face = Face(i);
-		m_Dom[face.m_mat]->AddFace(i);
+
+		int ma = ElementRef(face.m_elem[0]).m_MatID;
+		int mb = (face.m_elem[1] >= 0 ? ElementRef(face.m_elem[1]).m_MatID : -1);
+
+		m_Dom[ma]->AddFace(i);
+		if (mb >= 0) m_Dom[mb]->AddFace(i);
 	}
 }
 
@@ -286,7 +296,7 @@ void Post::FEPostMesh::BuildEdges()
 }
 
 //-----------------------------------------------------------------------------
-// Build the FE faces. Note that we only create exterior faces
+// Build the FE faces. Facets are created for all external and internal surfaces.
 void Post::FEPostMesh::BuildFaces()
 {
 	// make sure we only call this once
@@ -305,7 +315,18 @@ void Post::FEPostMesh::BuildFaces()
 		for (j = 0; j < nf; ++j)
 		{
 			e.m_face[j] = -1;
-			if (e.m_nbr[j] < 0) ++NF;
+			if (e.m_nbr[j] < 0)
+			{
+				// this adds an external facet
+				++NF;
+			}
+			else
+			{
+				// this adds an internal facet if adjacent elemetns have a different material
+				int ma = e.m_MatID;
+				int mb = ElementRef(e.m_nbr[j]).m_MatID;
+				if (ma < mb) ++NF;
+			}
 		}
 
 		// shell elements
@@ -323,18 +344,42 @@ void Post::FEPostMesh::BuildFaces()
 		
 		// solid elements
 		int nf = e.Faces();
-		for (j=0; j<nf; ++j)
+		for (j = 0; j < nf; ++j)
+		{
 			if (e.m_nbr[j] < 0)
 			{
+				// this adds an external facet
 				e.m_face[j] = NF;
 
 				FEFace& f = m_Face[NF++];
 				e.GetFace(j, f);
 				f.m_elem[0] = i;
-				f.m_elem[1] = j;
-				f.m_mat = e.m_MatID;
+				f.m_elem[1] = -1;
 				f.SetID(NF);
 			}
+			else
+			{
+				// this adds an internal facet if adjacent elemetns have a different material
+				FEElement_& nel = ElementRef(e.m_nbr[j]);
+				int ma = e.m_MatID;
+				int mb = nel.m_MatID;
+				if (ma < mb)
+				{
+					FEFace& f = m_Face[NF];
+					e.GetFace(j, f);
+					f.m_elem[0] = i;
+					f.m_elem[1] = e.m_nbr[j];
+					f.SetID(NF);
+
+					e.m_face[j] = NF;
+					int k = nel.FindFace(f); assert(k >= 0);
+					nel.m_face[k] = NF;
+
+					NF++;
+				}
+			}
+		}
+
 
 		// shell elements
 		if (e.Edges()>0)
@@ -384,7 +429,6 @@ void Post::FEPostMesh::BuildFaces()
 
 			f.m_elem[0] = i;
 			f.m_elem[1] = -1;
-			f.m_mat = e.m_MatID;
 			f.SetID(NF);
 		}
 	}
@@ -466,6 +510,9 @@ void Post::FEPostMesh::FindFaceNeighbors()
 					// that is: shells can connect only to shells and solids to solids
 					int e1 = (ElementRef(f .m_elem[0]).IsSolid()?1:0);
 					int e2 = (ElementRef(f2.m_elem[0]).IsSolid()?1:0);
+					// make sure external surfaces only connect to external surfaces
+					e1 += (f .m_elem[1] == -1 ? 2 : 0);
+					e2 += (f2.m_elem[1] == -1 ? 2 : 0);
 					if (e1 == e2)
 					{
 						// Eureka! We found one!

@@ -1038,16 +1038,55 @@ void CGLModel::RenderSolidMaterial(FEModel* ps, int m)
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& face = dom.Face(i);
-		FEElement_& el = pm->ElementRef(face.m_elem[0]);
-		// assume no-draw
-		face.m_ntag = 0;
 
-		// check render state
-		if (el.IsVisible())
+		if (face.IsExternal())
 		{
-			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && ((mode != SELECT_FACES) || !face.IsSelected()) && face.IsVisible())
+			FEElement_& el = pm->ElementRef(face.m_elem[0]);
+			// assume no-draw
+			face.m_ntag = 0;
+
+			// check render state
+			if (el.IsVisible())
 			{
-				face.m_ntag = (face.IsActive() ? 1 : 2);
+				if (((mode != SELECT_ELEMS) || !el.IsSelected()) && ((mode != SELECT_FACES) || !face.IsSelected()) && face.IsVisible())
+				{
+					face.m_ntag = (face.IsActive() ? 1 : 2);
+				}
+			}
+		}
+		else
+		{
+			// find out which element belongs to this domain
+			FEElement_& el0 = pm->ElementRef(face.m_elem[0]);
+			FEElement_& el1 = pm->ElementRef(face.m_elem[1]);
+			if ((el0.m_MatID == m) && (el0.IsVisible() && !el1.IsVisible()))
+			{
+				if (((mode != SELECT_ELEMS) || !el0.IsSelected()) && ((mode != SELECT_FACES) || !face.IsSelected()))
+				{
+					face.m_ntag = (face.IsActive() ? 1 : 2);
+				}
+			}
+			else if ((el1.m_MatID == m) && (el1.IsVisible() && !el0.IsVisible()))
+			{
+				if (((mode != SELECT_ELEMS) || !el1.IsSelected()) && ((mode != SELECT_FACES) || !face.IsSelected()))
+				{
+					face.m_ntag = (face.IsActive() ? 1 : 2);
+				}
+			}
+			else if (el0.IsVisible() && el1.IsVisible())
+			{
+				if (el0.m_MatID == m)
+				{
+					FEMaterial* pm2 = m_ps->GetMaterial(el1.m_MatID);
+					float f2 = pm2->transparency;
+					if (alpha > f2) face.m_ntag = (face.IsActive() ? 1 : 2);
+				}
+				else if (el1.m_MatID == m)
+				{
+					FEMaterial* pm2 = m_ps->GetMaterial(el0.m_MatID);
+					float f2 = pm2->transparency;
+					if (alpha > f2) face.m_ntag = (face.IsActive() ? 1 : 2);
+				}
 			}
 		}
 	}
@@ -1129,7 +1168,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 				else
 				{
 					FEFace& f2 = pm->Face(f.m_nbr[j]);
-					if (f.m_mat != f2.m_mat)
+					if (f.m_gid != f2.m_gid)
 					{
 						bdraw = true;
 					}
@@ -1214,7 +1253,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 				else
 				{
 					FEFace& f2 = pm->Face(f.m_nbr[j]);
-					if (f.m_mat != f2.m_mat)
+					if (f.m_gid != f2.m_gid)
 					{
 						bdraw = true;
 					}
@@ -1848,7 +1887,17 @@ void CGLModel::HideMaterial(int nmat)
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& f = mesh.Face(i);
-		if (mesh.ElementRef(f.m_elem[0]).IsInvisible()) f.Show(false);
+		if (f.IsExternal())
+		{
+			if (mesh.ElementRef(f.m_elem[0]).IsInvisible()) f.Show(false);
+		}
+		else
+		{
+			FEElement_& e0 = mesh.ElementRef(f.m_elem[0]);
+			FEElement_& e1 = mesh.ElementRef(f.m_elem[1]);
+
+			if (e0.IsInvisible() && e1.IsInvisible()) f.Show(false);
+		}
 	}
 
 	// hide nodes: nodes will be hidden if all elements they attach to are hidden
@@ -1900,7 +1949,17 @@ void CGLModel::ShowMaterial(int nmat)
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& f = mesh.Face(i);
-		if (mesh.ElementRef(f.m_elem[0]).IsInvisible() == false) f.Show(true);
+
+		if (f.IsExternal())
+		{
+			if (mesh.ElementRef(f.m_elem[0]).IsInvisible() == false) f.Show(true);
+		}
+		else
+		{
+			FEElement_& e0 = mesh.ElementRef(f.m_elem[0]);
+			FEElement_& e1 = mesh.ElementRef(f.m_elem[1]);
+			if (!e0.IsInvisible() || !e1.IsInvisible()) f.Show(true);
+		}
 	}
 
 	// show nodes
@@ -2114,7 +2173,7 @@ void CGLModel::SelectConnectedFaces(FEFace &f, double angleTol)
 			for (int j=0; j<pf->Edges(); ++j)
 			{
 				FEFace* pf2 = (pf->m_nbr[j] >= 0? &mesh.Face(pf->m_nbr[j]) : 0);
-				if (pf2 && (pf2->m_ntag == 0) && (pf2->m_sid == pf->m_sid) && (pf2->m_mat == pf->m_mat) && (f.m_fn*pf2->m_fn > tol))
+				if (pf2 && (pf2->m_ntag == 0) && (pf2->m_sid == pf->m_sid) && (pf2->m_gid == pf->m_gid) && (f.m_fn*pf2->m_fn > tol))
 				{
 					pf2->m_ntag = 1;
 					S.push(pf2);
@@ -2709,13 +2768,13 @@ void CGLModel::UpdateInternalSurfaces(bool eval)
 					{
 						bool badd = (pen->IsSelected() != el.IsSelected()) || !pen->IsVisible();
 
-						if ((badd == false) && (el.m_MatID != pen->m_MatID))
+/*						if ((badd == false) && (el.m_MatID != pen->m_MatID))
 						{
 							FEMaterial* pm2 = m_ps->GetMaterial(pen->m_MatID);
 							float f2 = pm2->transparency;
 							if ((f1 > f2) || (pm2->m_nrender == RENDER_MODE_WIRE)) badd = true;
 						}
-
+*/
 						if (badd)
 						{
 							el.GetFace(j, face);
