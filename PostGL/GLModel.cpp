@@ -27,9 +27,7 @@ CGLModel::CGLModel(FEModel* ps)
 {
 	m_ps = ps;
 
-	m_nTime = 0;
-	m_fTime = 0.f;
-	setCurrentTimeIndex(0);
+	SetCurrentTimeIndex(0);
 
 	static int layer = 1;
 	m_layer = layer++;
@@ -107,7 +105,7 @@ void CGLModel::ShellReferenceSurface(int n) { m_render.m_nshellref = n; }
 Post::FEPostMesh* CGLModel::GetActiveMesh()
 {
 	FEModel* pfem = GetFEModel();
-	if (pfem && (pfem->GetStates() > 0)) return pfem->GetState(m_nTime)->GetFEMesh();
+	if (pfem && (pfem->GetStates() > 0)) return m_ps->CurrentState()->GetFEMesh();
 	return pfem->GetFEMesh(0);
 }
 
@@ -115,7 +113,7 @@ Post::FEPostMesh* CGLModel::GetActiveMesh()
 Post::FEState* CGLModel::GetActiveState()
 {
 	FEModel* pfem = GetFEModel();
-	if (pfem && (pfem->GetStates() > 0)) return pfem->GetState(m_nTime);
+	if (pfem && (pfem->GetStates() > 0)) return m_ps->CurrentState();
 	return nullptr;
 }
 
@@ -134,68 +132,44 @@ void CGLModel::ResetAllStates()
 }
 
 //-----------------------------------------------------------------------------
-float CGLModel::GetTimeValue(int ntime)
-{ 
-	FEModel* pfem = GetFEModel();
-	if (pfem && (pfem->GetStates() > 0)) return pfem->GetState(ntime)->m_time;
-	return 0.f; 
-}
+float CGLModel::CurrentTime() const { return m_ps->CurrentTime(); }
 
 //-----------------------------------------------------------------------------
-void CGLModel::setCurrentTimeIndex(int ntime)
+int CGLModel::CurrentTimeIndex() const { return m_ps->CurrentTimeIndex(); }
+
+//-----------------------------------------------------------------------------
+void CGLModel::SetCurrentTimeIndex(int ntime)
 {
-	m_nTime = ntime;
-	m_fTime = GetTimeValue(m_nTime);
+	if (m_ps && m_ps->GetStates()) m_ps->SetCurrentTimeIndex(ntime);
 }
 
 //-----------------------------------------------------------------------------
 void CGLModel::SetTimeValue(float ftime)
 {
-	m_nTime = GetClosestTime(ftime);
-	m_fTime = ftime;
-}
-
-//------------------------------------------------------------------------------------------
-// This returns the time step whose time value is closest but less than t
-//
-int CGLModel::GetClosestTime(double t)
-{
-	FEModel* pfem = GetFEModel();
-	if ((pfem == 0) || (pfem->GetStates() <= 1)) return 0;
-
-	FEState& s = *pfem->GetState(0);
-	if (s.m_time >= t) return 0;
-
-	for (int i=1; i<pfem->GetStates(); ++i)
-	{
-		FEState& s = *pfem->GetState(i);
-		if (s.m_time >= t) return i-1;
-	}
-	return pfem->GetStates()-1;
-}
-
-//-----------------------------------------------------------------------------
-FEState* CGLModel::currentState()
-{
-	return GetFEModel()->GetState(m_nTime);
+	if (m_ps && m_ps->GetStates()) m_ps->SetTimeValue(ftime);
 }
 
 //-----------------------------------------------------------------------------
 // Update the model data
 bool CGLModel::Update(bool breset)
 {
+	if (m_ps == nullptr) return true;
+
+	FEModel& fem = *m_ps;
+
 	// get the time inc value
-	float dt = m_fTime - GetTimeValue(m_nTime);
+	int ntime = fem.CurrentTimeIndex();
+	float dt = fem.CurrentTime() - fem.GetTimeValue(ntime);
 
 	// update the state of the mesh
-	GetFEModel()->UpdateMeshState(m_nTime);
+	GetFEModel()->UpdateMeshState(ntime);
 	UpdateInternalSurfaces(false);
 
 	// update displacement map
-	if (m_pdis && m_pdis->IsActive()) m_pdis->Update(m_nTime, dt, breset);
+	if (m_pdis && m_pdis->IsActive()) m_pdis->Update(ntime, dt, breset);
 
 	// update the colormap
-	if (m_pcol && m_pcol->IsActive()) m_pcol->Update(m_nTime, dt, breset);
+	if (m_pcol && m_pcol->IsActive()) m_pcol->Update(ntime, dt, breset);
 
 	GetFEModel()->UpdateDependants();
 
@@ -203,7 +177,7 @@ bool CGLModel::Update(bool breset)
 	for (int i = 0; i < (int)m_pPlot.Size(); ++i)
 	{
 		CGLPlot* pi = m_pPlot[i];
-		if (pi->IsActive()) pi->Update(currentTimeIndex(), 0.0, breset);
+		if (pi->IsActive()) pi->Update(CurrentTimeIndex(), 0.0, breset);
 	}
 
 	return true;
@@ -2892,7 +2866,7 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 void CGLModel::AddPlot(CGLPlot* pplot)
 {
 	m_pPlot.Add(pplot);
-	pplot->Update(currentTime(), 0.f, true);
+	pplot->Update(CurrentTime(), 0.f, true);
 }
 
 void CGLModel::ClearPlots()

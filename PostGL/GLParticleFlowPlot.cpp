@@ -60,32 +60,32 @@ void CGLParticleFlowPlot::UpdateData(bool bsave)
 void CGLParticleFlowPlot::SetVectorType(int ntype)
 {
 	m_nvec = ntype;
-	Update(GetModel()->currentTimeIndex(), 0.0, true);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
 void CGLParticleFlowPlot::SetStepSize(float v)
 {
 	m_dt = v; 
-	Update(GetModel()->currentTimeIndex(), 0.0, true);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
 void CGLParticleFlowPlot::SetSeedTime(int n)
 {
 	if (n < 0) n = 0;
 	m_seedTime = n;
-	Update(GetModel()->currentTimeIndex(), 0.0, true);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
 void CGLParticleFlowPlot::SetThreshold(float v)
 {
 	m_vtol = v;
-	Update(GetModel()->currentTimeIndex(), 0.0, true);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
 void CGLParticleFlowPlot::SetDensity(float v)
 {
 	m_density = v;
-	Update(GetModel()->currentTimeIndex(), 0.0, true);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
 void CGLParticleFlowPlot::Render(CGLContext& rc)
@@ -111,7 +111,7 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 
 	if (m_showPath)
 	{
-		int ntime = GetModel()->currentTimeIndex();
+		int ntime = GetModel()->CurrentTimeIndex();
 		if (ntime >= m_seedTime + 1)
 		{
 			glColor3ub(0,0,255);

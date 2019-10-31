@@ -360,7 +360,7 @@ void CGLPlaneCutPlot::RenderMesh()
 
 	double ref = -a[3];
 
-	Post::FEState& state = *ps->GetActiveState();
+	Post::FEState& state = *ps->CurrentState();
 
 	// repeat over all elements
 	for (i=0; i<pm->Elements(); ++i)
@@ -560,7 +560,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 
 	m_slice.Clear();
 
-	Post::FEState& state = *ps->GetActiveState();
+	Post::FEState& state = *ps->CurrentState();
 
 	// loop over all domains
 	for (int n=0; n<pm->Domains(); ++n)
@@ -603,8 +603,8 @@ void CGLPlaneCutPlot::UpdateSlice()
 								FENode& node = pm->Node(el.m_node[nt[k]]);
 								nf[k] = (node.IsExterior()?1:0);
 								ex[k] = to_vec3f(node.r);
-								en[k] = el.m_node[k];
-								ev[k] = state.m_NODE[el.m_node[k]].m_val;
+								en[k] = el.m_node[nt[k]];
+								ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
 							}
 
 							// calculate the case of the element

@@ -181,22 +181,13 @@ protected:
 	void RenderInnerSurfaceOutline(int m, int ndivs);
 
 public:
-	float currentTime() const { return m_fTime; }
-	int currentTimeIndex() const { return m_nTime; }
+	float CurrentTime() const;
+	int CurrentTimeIndex() const;
 
-	void setCurrentTimeIndex(int n);
+	void SetCurrentTimeIndex(int n);
 
 	// set the active state closest to time t
 	void SetTimeValue(float ftime);
-
-	// get the time value of state n
-	float GetTimeValue(int ntime);
-
-	// get the state closest to time t
-	int GetClosestTime(double t);
-
-	// get the currently active state
-	FEState* currentState();
 
 public: // Selection
 	const vector<FENode*>&		GetNodeSelection   () const { return m_nodeSelection; }
@@ -321,9 +312,6 @@ public:
 	double		m_stol;			//!< smoothing threshold
 
 	bool		m_bshowMesh;
-
-	float	m_fTime;		// current time value
-	int		m_nTime;		// active time step
 
 	unsigned int	m_layer;
 

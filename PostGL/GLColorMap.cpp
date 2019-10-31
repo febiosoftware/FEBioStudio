@@ -119,7 +119,7 @@ void CGLColorMap::SetColorSmooth(bool b)
 //-----------------------------------------------------------------------------
 void CGLColorMap::Update()
 {
-	Update(GetModel()->currentTimeIndex(), 0.f, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.f, false);
 }
 
 //-----------------------------------------------------------------------------

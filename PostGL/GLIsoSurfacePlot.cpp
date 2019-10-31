@@ -267,7 +267,7 @@ void CGLIsoSurfacePlot::RenderSlice(float ref, GLColor col)
 void CGLIsoSurfacePlot::SetEvalField(int n) 
 { 
 	m_nfield = n; 
-	Update(GetModel()->currentTimeIndex(), 0.0, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 
 //-----------------------------------------------------------------------------

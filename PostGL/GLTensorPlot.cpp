@@ -95,14 +95,14 @@ void GLTensorPlot::UpdateData(bool bsave)
 void GLTensorPlot::SetTensorField(int nfield)
 {
 	m_ntensor = nfield;
-	Update(GetModel()->currentTimeIndex(), 0.0, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 
 void GLTensorPlot::SetVectorMethod(int m)
 { 
 	m_nmethod = m; 
 	for (int i=0; i<m_map.States(); ++i) m_map.SetTag(i, -1);
-	Update(GetModel()->currentTimeIndex(), 0.0, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 
 CColorTexture* GLTensorPlot::GetColorMap()

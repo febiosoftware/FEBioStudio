@@ -34,7 +34,7 @@ void GLVolumeFlowPlot::UpdateData(bool bsave)
 		m_nfield = GetIntValue(0);
 		m_Col.SetColorMap(GetIntValue(1));
 		m_alpha = GetFloatValue(2);
-		Update(GetModel()->currentTimeIndex(), 0.f, true);
+		Update(GetModel()->CurrentTimeIndex(), 0.f, true);
 	}
 	else
 	{
@@ -52,7 +52,7 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 	CGLModel& mdl = *GetModel();
 
 	FEModel* fem = mdl.GetFEModel();
-	FEState* state = fem->GetActiveState();
+	FEState* state = fem->CurrentState();
 
 	// get the current mesh
 	FEMeshBase& mesh = *mdl.GetActiveMesh();

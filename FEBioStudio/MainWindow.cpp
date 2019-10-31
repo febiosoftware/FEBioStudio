@@ -985,7 +985,7 @@ void CMainWindow::UpdatePostToolbar()
 	if (mdl == 0) ui->postToolBar->setDisabled(true);
 	else
 	{
-		int ntime = mdl->currentTimeIndex() + 1;
+		int ntime = mdl->CurrentTimeIndex() + 1;
 
 		Post::FEModel* fem = mdl->GetFEModel();
 		int states = fem->GetStates();

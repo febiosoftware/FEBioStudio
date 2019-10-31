@@ -361,7 +361,7 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 void CGLVectorPlot::SetVectorType(int ntype) 
 { 
 	m_nvec = ntype; 
-	Update(GetModel()->currentTimeIndex(), 0.0, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 
 void CGLVectorPlot::Update()

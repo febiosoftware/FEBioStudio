@@ -257,7 +257,7 @@ void CGLSlicePlot::RenderSlice(float ref)
 void CGLSlicePlot::SetEvalField(int n) 
 { 
 	m_nfield = n; 
-	Update(GetModel()->currentTimeIndex(), 0.0, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 //-----------------------------------------------------------------------------
 void CGLSlicePlot::Update()

@@ -55,8 +55,21 @@ public:
 	void SetTitle(const string& title);
 	const string& GetTitle() const;
 
-	// get the current active state
-	int currentTime() { return m_ntime; }
+	float CurrentTime() const { return m_fTime; }
+	int CurrentTimeIndex() const { return m_nTime; }
+
+	FEState* CurrentState();
+
+	void SetCurrentTimeIndex(int n);
+
+	// set the active state closest to time t
+	void SetTimeValue(float ftime);
+
+	// get the time value of state n
+	float GetTimeValue(int ntime);
+
+	// get the state closest to time t
+	int GetClosestTime(double t);
 
 	//! get the data manager
 	FEDataManager* GetDataManager() { return m_pDM; }
@@ -93,9 +106,6 @@ public:
 
 	//! retrieve pointer to a state
 	FEState* GetState(int nstate) { return m_State[nstate]; }
-
-	//! retrieve pointer to active state
-	FEState* GetActiveState() { return m_State[m_ntime]; }
 
 	//! Add a new data field
 	void AddDataField(FEDataField* pd);
@@ -189,7 +199,9 @@ protected:
 protected:
 	string	m_name;		// name (as displayed in model viewer)
 	string	m_title;	// title of project
-	int		m_ntime;	// time step that is being evaluated
+
+	float	m_fTime;		// current time value
+	int		m_nTime;		// active time step
 
 	// --- M E T A   D A T A ---
 	MetaData	m_meta;

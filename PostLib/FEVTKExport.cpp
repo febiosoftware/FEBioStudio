@@ -85,7 +85,7 @@ bool FEVTKExport::Save(FEModel& fem, const char* szfile)
 	}
 	else
 	{
-		FEState* state = fem.GetState(fem.currentTime());
+		FEState* state = fem.CurrentState();
 		return WriteState(szfile, state);
 	}
 }        

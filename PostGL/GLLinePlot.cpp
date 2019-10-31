@@ -59,13 +59,13 @@ void CGLLinePlot::UpdateData(bool bsave)
 void CGLLinePlot::SetColorMode(int m) 
 {
 	m_ncolor = m;
-	Update(GetModel()->currentTimeIndex(), 0.0, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 
 void CGLLinePlot::SetDataField(int n)
 { 
 	m_nfield = n; 
-	Update(GetModel()->currentTimeIndex(), 0.0, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ void CGLLinePlot::Render(CGLContext& rc)
 {
 	CGLModel& glm = *GetModel();
 	FEModel& fem = *glm.GetFEModel();
-	int ns = glm.currentTimeIndex();
+	int ns = glm.CurrentTimeIndex();
 
 	GLfloat zero[4] = { 0.f };
 	GLfloat one[4] = { 1.f, 1.f, 1.f, 1.f };
@@ -358,7 +358,7 @@ void CGLPointPlot::UpdateData(bool bsave)
 void CGLPointPlot::Render(CGLContext& rc)
 {
 	FEModel& fem = *GetModel()->GetFEModel();;
-	int ns = fem.currentTime();
+	int ns = GetModel()->CurrentTimeIndex();
 
 	GLfloat size_old;
 	glGetFloatv(GL_POINT_SIZE, &size_old);

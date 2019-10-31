@@ -73,14 +73,14 @@ Post::CGLModel* CPostDoc::GetGLModel()
 void CPostDoc::SetActiveState(int n)
 {
 	assert(imp->glm);
-	imp->glm->setCurrentTimeIndex(n);
+	imp->glm->SetCurrentTimeIndex(n);
 	imp->glm->Update(false);
 	imp->m_postObj->UpdateMesh();
 }
 
 int CPostDoc::GetActiveState()
 {
-	return imp->glm->currentTimeIndex();
+	return imp->glm->CurrentTimeIndex();
 }
 
 TIMESETTINGS& CPostDoc::GetTimeSettings()
@@ -122,7 +122,7 @@ std::string CPostDoc::GetFieldString()
 
 float CPostDoc::GetTimeValue()
 {
-	if (imp->glm) return imp->glm->currentTime();
+	if (imp->glm) return imp->glm->CurrentTime();
 	else return 0.f;
 }
 
@@ -308,7 +308,7 @@ void CPostObject::UpdateSelection()
 
 void CPostObject::UpdateMesh()
 {
-	Post::FEPostMesh* postMesh = m_glm->GetFEModel()->GetActiveState()->GetFEMesh();
+	Post::FEPostMesh* postMesh = m_glm->GetActiveState()->GetFEMesh();
 	postMesh->UpdateBox();
 
 	if (GetFEMesh() != postMesh)

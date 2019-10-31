@@ -13,11 +13,10 @@ void FEMathData::eval(int n, float* pv)
 {
 	FEModel& fem = *GetFEModel();
 
-	int ntime = fem.currentTime();
-	FEState& state = *fem.GetState(ntime);
-	double time = (double)state.m_time;
 
-	FEPostMesh& mesh = *state.GetFEMesh();
+	double time = m_state->m_time;
+
+	FEPostMesh& mesh = *m_state->GetFEMesh();
 
 	CMathParser math;
 	math.set_variable("t", time);
@@ -25,7 +24,7 @@ void FEMathData::eval(int n, float* pv)
 	int ierr;
 	FENode& node = mesh.Node(n);
 
-	vec3f r = fem.NodePosition(n, ntime);
+	vec3f r = fem.NodePosition(n, m_state->GetID());
 	math.set_variable("x", (double)r.x);
 	math.set_variable("y", (double)r.y);
 	math.set_variable("z", (double)r.z);
@@ -48,8 +47,8 @@ void FEMathVec3Data::eval(int n, vec3f* pv)
 {
 	FEModel& fem = *GetFEModel();
 
-	int ntime = fem.currentTime();
-	FEState& state = *fem.GetState(ntime);
+	FEState& state = *m_state;
+	int ntime = state.GetID();
 	double time = (double)state.m_time;
 
 	FEPostMesh& mesh = *state.GetFEMesh();

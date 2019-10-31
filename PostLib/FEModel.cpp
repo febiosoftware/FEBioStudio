@@ -23,7 +23,9 @@ FEModel::FEModel()
 {
 	m_ndisp = 0;
 	m_pDM = new FEDataManager(this);
-	m_ntime = 0;
+
+	m_nTime = 0;
+	m_fTime = 0.f;
 
 	m_pThis = this;
 }
@@ -56,6 +58,49 @@ void FEModel::SetInstance(FEModel* fem)
 FEModel* FEModel::GetInstance()
 {
 	return m_pThis;
+}
+
+//-----------------------------------------------------------------------------
+FEState* FEModel::CurrentState()
+{
+	return m_State[m_nTime];
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::SetCurrentTimeIndex(int ntime)
+{
+	m_nTime = ntime;
+	m_fTime = GetTimeValue(m_nTime);
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::SetTimeValue(float ftime)
+{
+	m_nTime = GetClosestTime(ftime);
+	m_fTime = ftime;
+}
+
+//------------------------------------------------------------------------------------------
+// This returns the time step whose time value is closest but less than t
+//
+int FEModel::GetClosestTime(double t)
+{
+	FEState& s = *GetState(0);
+	if (s.m_time >= t) return 0;
+
+	for (int i = 1; i<GetStates(); ++i)
+	{
+		FEState& s = *GetState(i);
+		if (s.m_time >= t) return i - 1;
+	}
+	return GetStates() - 1;
+}
+
+
+//-----------------------------------------------------------------------------
+float FEModel::GetTimeValue(int ntime)
+{
+	return GetState(ntime)->m_time;
 }
 
 //-----------------------------------------------------------------------------
@@ -95,7 +140,6 @@ void FEModel::Clear()
 	m_Mat.clear();
 	ClearStates();
 	
-	m_ntime = 0;
 	m_title.clear();
 	m_name.clear();
 }
