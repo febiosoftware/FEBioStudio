@@ -1,5 +1,6 @@
 #pragma once
 #include "GLPlot.h"
+#include <GLWLib/GLWidget.h>
 #ifdef __APPLE__
     #include <OpenGL/GLU.h>
 #else
@@ -22,7 +23,8 @@ public:
 
 	enum Glyph_Color_Type {
 		Glyph_Col_Solid,
-		Glyph_Col_Norm
+		Glyph_Col_Norm,
+		Glyph_Col_Anisotropy
 	};
 
 	enum Vector_Method {
@@ -114,5 +116,8 @@ protected:
 
 	int		m_lastTime;
 	float	m_lastDt;
+	int		m_lastCol;
+
+	GLLegendBar*	m_pbar;
 };
 }

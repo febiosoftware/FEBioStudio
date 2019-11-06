@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GLTensorPlot.h"
 #include "PostLib/constants.h"
+#include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <stdlib.h>
 using namespace Post;
@@ -20,7 +21,7 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 	AddDoubleParam(0.0, "Scale");
 	AddDoubleParam(0.0, "Density")->SetFloatRange(0.0, 1.0, 0.0001);
 	AddIntParam(0, "Glyph")->SetEnumNames("Arrow\0Line\0Sphere\0Box\0");
-	AddIntParam(0, "Glyph Color")->SetEnumNames("Solid\0Norm\0");
+	AddIntParam(0, "Glyph Color")->SetEnumNames("Solid\0Norm\0Fractional anisotropy\0");
 	AddColorParam(GLColor::White(), "Solid Color");
 	AddBoolParam(true, "Auto-scale");
 	AddBoolParam(true, "Normalize" );
@@ -33,6 +34,7 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 
 	m_nglyph = Glyph_Arrow;
 
+	m_lastCol = -1;
 	m_ncol = Glyph_Col_Solid;
 
 	m_gcl.r = 255;
@@ -51,11 +53,19 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 
 	m_nmethod = VEC_EIGEN;
 
+	m_pbar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
+	m_pbar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+	m_pbar->copy_label(szname);
+	m_pbar->ShowTitle(true);
+	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+
 	UpdateData(false);
 }
 
 GLTensorPlot::~GLTensorPlot()
 {
+	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
+	delete m_pbar;
 }
 
 void GLTensorPlot::UpdateData(bool bsave)
@@ -117,6 +127,9 @@ void GLTensorPlot::Update()
 
 void GLTensorPlot::Update(int ntime, float dt, bool breset)
 {
+	if (m_lastCol != m_ncol) breset = true;
+	m_lastCol = m_ncol;
+
 	if (breset) { m_map.Clear(); m_val.clear(); }
 
 	m_lastTime = ntime;
@@ -166,12 +179,28 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 					s.eigen(t.r, t.l);
 
 					vec3f n = t.r[0] ^ t.r[1];
-					if (n*t.r[2] < 0.f)
+
+					// NOTE: I can't do this, because the eigenvalues are sorted
+					//       so there is no guarantee that the eigenvectors are orderd orthogonally
+/*					if (n*t.r[2] < 0.f)
 					{
 						t.r[2] = -t.r[2];
 						t.l[2] = -t.l[2];
 					}
-					t.f = s.von_mises();
+*/
+					if (m_ncol == Glyph_Col_Norm)
+					{
+						t.f = s.von_mises();
+					}
+
+					if (m_ncol == Glyph_Col_Anisotropy)
+					{
+						double la = (t.l[0] + t.l[1] + t.l[2]) / 3.0;
+						double D = sqrt(t.l[0] * t.l[0] + t.l[1] * t.l[1] + t.l[2] * t.l[2]);
+						double fa = 0.0;
+						if (D != 0) fa = sqrt(3.0 / 2.0)*sqrt((t.l[0] - la)*(t.l[0] - la) + (t.l[1] - la)*(t.l[1] - la) + (t.l[2] - la)*(t.l[2] - la)) / D;
+						t.f = fa;
+					}
 
 					val[i] = t;
 				}
@@ -316,11 +345,13 @@ void GLTensorPlot::Render(CGLContext& rc)
 	{
 		glEnable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
 		GLfloat dif[] = { 1.f, 1.f, 1.f, 1.f };
+		GLfloat amb[] = { 0.1f, 0.1f, 0.1f, 1.f };
 
 		glLightfv(GL_LIGHT0, GL_DIFFUSE, dif);
-		glLightfv(GL_LIGHT0, GL_AMBIENT, dif);
+		glLightfv(GL_LIGHT0, GL_AMBIENT, amb);
 	}
 
 	if (IS_ELEM_FIELD(m_ntensor))
@@ -363,17 +394,23 @@ void GLTensorPlot::Render(CGLContext& rc)
 		}
 
 		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-		float fmax = 1.f;
-		if (m_ncol == Glyph_Col_Norm)
+		float fmax = 1.f, fmin = 0.f;
+		if (m_ncol != Glyph_Col_Solid)
 		{
-			fmax = 0.f;
-			for (int i = 0; i < pm->Elements(); ++i)
+			if (pm->Elements())
 			{
-				float f = m_val[i].f;
-				if (f > fmax) fmax = f;
+				fmin = fmax = m_val[0].f;
+				for (int i = 0; i < pm->Elements(); ++i)
+				{
+					float f = m_val[i].f;
+					if (f > fmax) fmax = f;
+					if (f < fmin) fmin = f;
+				}
+				if (fmax == fmin) fmax += 1.f;
 			}
-			if (fmax == 0.f) fmax = 1.f;
 		}
+
+		m_pbar->SetRange(fmin, fmax);
 
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
@@ -384,9 +421,9 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 				TENSOR& t = m_val[i];
 
-				if (m_ncol == Glyph_Col_Norm)
+				if (m_ncol != Glyph_Col_Solid)
 				{
-					float w = t.f / fmax;
+					float w = (t.f - fmin) / (fmax - fmin);
 					GLColor c = map.map(w);
 					glColor3ub(c.r, c.g, c.b);
 				}
@@ -439,7 +476,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 		float fmax = 1.f;
-		if (m_ncol == Glyph_Col_Norm)
+		if (m_ncol != Glyph_Col_Solid)
 		{
 			fmax = 0.f;
 			for (int i = 0; i < pm->Nodes(); ++i)
@@ -463,7 +500,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 				TENSOR& t = m_val[i];
 
-				if (m_ncol == Glyph_Col_Norm)
+				if (m_ncol != Glyph_Col_Solid)
 				{
 					float w = t.f / fmax;
 					GLColor c = map.map(w);
@@ -579,6 +616,8 @@ void GLTensorPlot::RenderSphere(TENSOR& t, float scale, GLUquadricObj* glyph)
 
 	glPushMatrix();
 	vec3f* e = t.r;
+	vec3f n = e[0] ^ e[1];
+	if (n*e[2] < 0) e[2] = -e[2];
 	GLfloat m[4][4] = {0};
 	m[3][3] = 1.f;
 	m[0][0] = e[0].x; m[0][1] = e[0].y; m[0][2] = e[0].z;
