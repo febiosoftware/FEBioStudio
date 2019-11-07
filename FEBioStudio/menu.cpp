@@ -208,6 +208,31 @@ void CMainWindow::on_actionNew_triggered()
 	if (ui->modelViewer && btemplate) ui->modelViewer->Show();
 }
 
+void CMainWindow::OpenFile(const QString& fileName)
+{
+	QString ext = QFileInfo(fileName).suffix();
+	if (ext.compare("fsprj", Qt::CaseInsensitive) == 0)
+	{
+		// read the file
+		OpenDocument(fileName);
+	}
+	else if (ext.compare("prv", Qt::CaseInsensitive) == 0)
+	{
+		// read the file
+		OpenDocument(fileName);
+	}
+	else if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
+	{
+		// load the plot file
+		OpenPlotFile(fileName);
+	}
+	else
+	{
+		assert(false);
+		QMessageBox::critical(this, "FEBio Studio", "Does not compute!");
+	}
+}
+
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
@@ -230,27 +255,7 @@ void CMainWindow::on_actionOpen_triggered()
 		QStringList files = dlg.selectedFiles();
 		QString fileName = files.first();
 
-		QString ext = QFileInfo(fileName).suffix();
-		if (ext.compare("fsprj", Qt::CaseInsensitive) == 0)
-		{
-			// read the file
-			OpenDocument(fileName);
-		}
-		else if (ext.compare("prv", Qt::CaseInsensitive) == 0)
-		{
-			// read the file
-			OpenDocument(fileName);
-		}
-		else if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
-		{
-			// load the plot file
-			OpenPlotFile(fileName);
-		}
-		else
-		{
-			assert(false);
-			QMessageBox::critical(this, "FEBio Studio", "Does not compute!");
-		}
+		OpenFile(fileName);
 	}
 }
 

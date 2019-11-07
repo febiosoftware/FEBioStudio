@@ -25,9 +25,15 @@ void FEMeshValuator::Evaluate(int nfield)
 			FEElement& el = m_mesh.Element(i);
 			if (el.IsVisible())
 			{
-				double val = EvaluateElement(i, nfield);
-				data.SetElementValue(i, val);
-				data.SetElementDataTag(i, 1);
+				try {
+					double val = EvaluateElement(i, nfield);
+					data.SetElementValue(i, val);
+					data.SetElementDataTag(i, 1);
+				}
+				catch (...)
+				{
+					data.SetElementDataTag(i, 0);
+				}
 			}
 			else data.SetElementDataTag(i, 0);
 		}
@@ -115,7 +121,7 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 		val = FEMeshMetrics::TriQuality(m_mesh, el);
 		break;
 	case 8:
-		val = FEMeshMetrics::Tet10MidsideNodeOffset(m_mesh, el);
+		val = FEMeshMetrics::Tet10MidsideNodeOffset(m_mesh, el, true);
 		break;
 	default:
 		val = 0.0;

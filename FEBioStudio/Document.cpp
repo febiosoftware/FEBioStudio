@@ -23,6 +23,7 @@
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
 #include <FSCore/FSDir.h>
+#include <QtCore/QDir>
 #include "PostDoc.h"
 #include "Command.h"
 #include <sstream>
@@ -942,6 +943,18 @@ bool CDocument::LoadPlotFile(const std::string& fileName, const XPLT_OPTIONS& op
 	// create a dummy job
 	CFEBioJob* job = new CFEBioJob(this);
 	job->SetPlotFileName(fileName);
+
+	// set the filename as the job's name
+	const char* sz = fileName.c_str();
+	const char* ch = strrchr(sz, '/');
+	if (ch == nullptr)
+	{
+		ch = strrchr(sz, '\\');
+		if (ch == nullptr) ch = sz; else ch++;
+	}
+	else ch++;
+	job->SetName(ch);
+	
 	if (job->OpenPlotFile(ops) == false)
 	{
 		delete job;

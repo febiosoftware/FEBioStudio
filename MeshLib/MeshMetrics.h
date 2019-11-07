@@ -40,7 +40,7 @@ double TetMaxDihedralAngle(const FEMesh& mesh, const FEElement& e);
 double TriQuality(const FEMesh& mesh, const FEElement& e);
 
 // max distance from tet10 mid edges nodes to edge line
-double Tet10MidsideNodeOffset(const FEMesh& mesh, const FEElement& e);
+double Tet10MidsideNodeOffset(const FEMesh& mesh, const FEElement& e, bool brel = false);
 
 // evaluate gradient at element nodes
 vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v);

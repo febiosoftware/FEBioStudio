@@ -772,34 +772,52 @@ double ElementVolume(const FEMesh& mesh, const FEElement &e)
 //-----------------------------------------------------------------------------
 // calculates the maximum distance of the midside nodes to the plane of 
 // the triangle facets.
-double Tet10MidsideNodeOffset(const FEMesh& mesh, const FEElement& el)
+double Tet10MidsideNodeOffset(const FEMesh& mesh, const FEElement& el, bool brel)
 {
-	if (el.IsType(FE_TET10) == false) return 0.0;
+	if (el.IsType(FE_TET10) == false) throw 0;
 
 	// max distance
 	double maxd = 0;
 
 	// loop over all neighbors
+	vec3d a[3];
+	bool ok = false;
 	for (int i = 0; i<4; ++i)
 	{
 		if (el.m_nbr[i] == -1)
 		{
+			ok = true;
 			int* n = FTTET10[i];
-			vec3d a = mesh.Node(el.m_node[n[0]]).r;
-			vec3d b = mesh.Node(el.m_node[n[1]]).r;
-			vec3d c = mesh.Node(el.m_node[n[2]]).r;
+			a[0] = mesh.Node(el.m_node[n[0]]).r;
+			a[1] = mesh.Node(el.m_node[n[1]]).r;
+			a[2] = mesh.Node(el.m_node[n[2]]).r;
 
-			vec3d N = (b - a) ^ (c - a);
+			vec3d N = (a[1] - a[0]) ^ (a[2] - a[0]);
 			N.Normalize();
 
 			for (int j = 0; j<3; ++j)
 			{
 				vec3d r = mesh.Node(el.m_node[n[3 + j]]).r;
-				double d = (r - a)*N;
+				vec3d dr = r - a[j];
+				vec3d t = a[(j + 1) % 3] - a[j];
+				vec3d e = t.Normalized();
+
+				double d = (dr - e*(dr*e)).Length();
+
+				if (brel)
+				{
+					double l = 0.5*t.Length();
+					d = 2.0*d/(l*l + d*d);
+				}
+
+				double D = r.Length();
+
 				if (d > maxd) maxd = d;
 			}
 		}
 	}
+
+	if (ok == false) throw 0;
 
 	return maxd;
 }
@@ -821,7 +839,7 @@ double TriQuality(const FEMesh& mesh, const FEElement& el)
 //! This calculates the radius-edge ratio
 double TetQuality(const FEMesh& mesh, const FEElement& el)
 {
-	if (el.IsType(FE_TET4) == false) return 0;
+	if ((el.IsType(FE_TET4) == false) && (el.IsType(FE_TET10) == false)) throw 0;
 
 	// get the tet's nodal coordinates
 	vec3d p[4];

@@ -189,6 +189,8 @@ public:
 	FileReader* CreateFileReader(const QString& fileName);
 	void ReadFile(const QString& fileName, FileReader* fileReader, bool clearDoc);
 
+	void OpenFile(const QString& fileName);
+
 public slots:
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();
