@@ -11,6 +11,19 @@
 		D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */; };
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
 		D5248DDC231C114D00691871 /* DlgCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DDA231C114D00691871 /* DlgCheck.cpp */; };
+		D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */; };
+		D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */; };
+		D548545A23749CF500BE1731 /* libssh.4.8.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545923749CF500BE1731 /* libssh.4.8.2.dylib */; };
+		D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545B23749D1100BE1731 /* libx265.179.dylib */; };
+		D548546123749D4700BE1731 /* libavformat.58.29.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */; };
+		D548546223749D4700BE1731 /* libavutil.56.31.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */; };
+		D548546323749D4700BE1731 /* libavcodec.58.54.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545F23749D4700BE1731 /* libavcodec.58.54.100.dylib */; };
+		D548546423749D4700BE1731 /* libswresample.3.5.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546023749D4700BE1731 /* libswresample.3.5.100.dylib */; };
+		D548546623749EA500BE1731 /* libswscale.5.5.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546523749EA500BE1731 /* libswscale.5.5.100.dylib */; };
+		D548546B23749F2100BE1731 /* QtGui.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546723749F2000BE1731 /* QtGui.framework */; };
+		D548546C23749F2100BE1731 /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546823749F2000BE1731 /* QtCore.framework */; };
+		D548546D23749F2100BE1731 /* QtCharts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546923749F2000BE1731 /* QtCharts.framework */; };
+		D548546E23749F2100BE1731 /* QtWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546A23749F2100BE1731 /* QtWidgets.framework */; };
 		D54879BF234B77D700D0E506 /* AreaCalculatorTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
 		D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0AFF234653F700B7C0B8 /* libmmg3d.a */; };
@@ -24,26 +37,16 @@
 		D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C02335128D00D388FA /* moc_Logger.cpp */; };
 		D5D5B6C82335128E00D388FA /* moc_SSHThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C22335128E00D388FA /* moc_SSHThread.cpp */; };
 		D5D5B6C92335128E00D388FA /* SSHThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C32335128E00D388FA /* SSHThread.cpp */; };
-		D5D5B6CB2335138900D388FA /* libssl.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */; };
-		D5D5B6CC2335139C00D388FA /* libssl.1.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5D5B6CE2335160E00D388FA /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */; };
-		D5D5B6CF2335161A00D388FA /* libcrypto.1.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346A23233928002D7A13 /* SSHHandler.cpp */; };
 		D5E04A4A2357BD1B006AC137 /* moc_DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */; };
 		D5E04A4B2357BD1B006AC137 /* DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */; };
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
-		D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; };
-		D5EBB7AD232AEF6A00EED2BE /* libssh.4.8.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290023197E8500C16BF7 /* libFSCore.a */; };
 		D5ED290323197E8500C16BF7 /* libGLLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290223197E8500C16BF7 /* libGLLib.a */; };
 		D5ED290523197E8500C16BF7 /* libLSDyna.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290423197E8500C16BF7 /* libLSDyna.a */; };
 		D5ED290723197E8500C16BF7 /* libMeshIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290623197E8500C16BF7 /* libMeshIO.a */; };
 		D5ED290923197E8500C16BF7 /* libMeshTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290823197E8500C16BF7 /* libMeshTools.a */; };
 		D5ED290B23197E8500C16BF7 /* libNike3D.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290A23197E8500C16BF7 /* libNike3D.a */; };
-		D5ED291023197EF500C16BF7 /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290C23197EF400C16BF7 /* QtCore.framework */; };
-		D5ED291123197EF500C16BF7 /* QtCharts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290D23197EF400C16BF7 /* QtCharts.framework */; };
-		D5ED291223197EF500C16BF7 /* QtGui.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290E23197EF400C16BF7 /* QtGui.framework */; };
-		D5ED291323197EF500C16BF7 /* QtWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290F23197EF500C16BF7 /* QtWidgets.framework */; };
 		D5ED292B2319858D00C16BF7 /* libcsgvis.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED291D2319858900C16BF7 /* libcsgvis.dylib */; };
 		D5ED292C2319858D00C16BF7 /* liboccvis.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED291E2319858A00C16BF7 /* liboccvis.dylib */; };
 		D5ED292D2319858D00C16BF7 /* libstl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED291F2319858A00C16BF7 /* libstl.dylib */; };
@@ -75,14 +78,8 @@
 		D5ED2958231987CF00C16BF7 /* libTKPrim.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED2947231987CE00C16BF7 /* libTKPrim.7.3.0.dylib */; };
 		D5ED2959231987CF00C16BF7 /* libTKMath.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED2948231987CF00C16BF7 /* libTKMath.7.3.0.dylib */; };
 		D5ED295A231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED2949231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib */; };
-		D5ED29602319882500C16BF7 /* libswscale.5.3.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED295B2319882400C16BF7 /* libswscale.5.3.100.dylib */; };
-		D5ED29612319882500C16BF7 /* libavformat.58.20.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED295C2319882400C16BF7 /* libavformat.58.20.100.dylib */; };
-		D5ED29622319882500C16BF7 /* libavutil.56.22.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED295D2319882400C16BF7 /* libavutil.56.22.100.dylib */; };
-		D5ED29632319882500C16BF7 /* libavcodec.58.35.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED295E2319882500C16BF7 /* libavcodec.58.35.100.dylib */; };
-		D5ED29642319882500C16BF7 /* libswresample.3.3.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED295F2319882500C16BF7 /* libswresample.3.3.100.dylib */; };
 		D5ED29662319885700C16BF7 /* libxvidcore.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29652319885600C16BF7 /* libxvidcore.4.dylib */; };
 		D5ED29682319887700C16BF7 /* libmp3lame.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */; };
-		D5ED296A2319888A00C16BF7 /* libx265.176.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29692319888900C16BF7 /* libx265.176.dylib */; };
 		D5ED296D231988CB00C16BF7 /* libiconv.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */; };
 		D5ED296E231988CB00C16BF7 /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED296C231988CA00C16BF7 /* libz.1.dylib */; };
 		D5ED2970231988E600C16BF7 /* libtet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED296F231988E500C16BF7 /* libtet.a */; };
@@ -100,14 +97,8 @@
 		D5ED2A1723198CD900C16BF7 /* moc_DlgNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2A0A23198CD900C16BF7 /* moc_DlgNew.cpp */; };
 		D5ED2A1823198CD900C16BF7 /* moc_MainTabBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2A0B23198CD900C16BF7 /* moc_MainTabBar.cpp */; };
 		D5ED2A1923198CD900C16BF7 /* InfoPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */; };
-		D5ED2A1F2319902B00C16BF7 /* libx265.176.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29692319888900C16BF7 /* libx265.176.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A202319902B00C16BF7 /* libmp3lame.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A212319902B00C16BF7 /* libxvidcore.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29652319885600C16BF7 /* libxvidcore.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A222319902B00C16BF7 /* libavcodec.58.35.100.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED295E2319882500C16BF7 /* libavcodec.58.35.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A232319902B00C16BF7 /* libavformat.58.20.100.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED295C2319882400C16BF7 /* libavformat.58.20.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A242319902B00C16BF7 /* libavutil.56.22.100.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED295D2319882400C16BF7 /* libavutil.56.22.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A252319902B00C16BF7 /* libswresample.3.3.100.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED295F2319882500C16BF7 /* libswresample.3.3.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A262319902B00C16BF7 /* libswscale.5.3.100.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED295B2319882400C16BF7 /* libswscale.5.3.100.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A272319902B00C16BF7 /* libTKBO.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED293E231987CC00C16BF7 /* libTKBO.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A282319902B00C16BF7 /* libTKBRep.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED2941231987CD00C16BF7 /* libTKBRep.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A292319902B00C16BF7 /* libTKernel.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED2939231987CB00C16BF7 /* libTKernel.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -335,17 +326,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D5D5B6CF2335161A00D388FA /* libcrypto.1.0.0.dylib in CopyFiles */,
-				D5D5B6CC2335139C00D388FA /* libssl.1.0.0.dylib in CopyFiles */,
-				D5EBB7AD232AEF6A00EED2BE /* libssh.4.8.1.dylib in CopyFiles */,
-				D5ED2A1F2319902B00C16BF7 /* libx265.176.dylib in CopyFiles */,
 				D5ED2A202319902B00C16BF7 /* libmp3lame.0.dylib in CopyFiles */,
 				D5ED2A212319902B00C16BF7 /* libxvidcore.4.dylib in CopyFiles */,
-				D5ED2A222319902B00C16BF7 /* libavcodec.58.35.100.dylib in CopyFiles */,
-				D5ED2A232319902B00C16BF7 /* libavformat.58.20.100.dylib in CopyFiles */,
-				D5ED2A242319902B00C16BF7 /* libavutil.56.22.100.dylib in CopyFiles */,
-				D5ED2A252319902B00C16BF7 /* libswresample.3.3.100.dylib in CopyFiles */,
-				D5ED2A262319902B00C16BF7 /* libswscale.5.3.100.dylib in CopyFiles */,
 				D5ED2A272319902B00C16BF7 /* libTKBO.7.3.0.dylib in CopyFiles */,
 				D5ED2A282319902B00C16BF7 /* libTKBRep.7.3.0.dylib in CopyFiles */,
 				D5ED2A292319902B00C16BF7 /* libTKernel.7.3.0.dylib in CopyFiles */,
@@ -390,6 +372,19 @@
 		D5248DD8231C114D00691871 /* modelcheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelcheck.h; sourceTree = "<group>"; };
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
+		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
+		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
+		D548545923749CF500BE1731 /* libssh.4.8.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.2.dylib; path = ../../../../../../../../../../usr/local/Cellar/libssh/0.9.1/lib/libssh.4.8.2.dylib; sourceTree = "<group>"; };
+		D548545B23749D1100BE1731 /* libx265.179.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.179.dylib; path = ../../../../../../../../../../usr/local/Cellar/x265/3.2.1/lib/libx265.179.dylib; sourceTree = "<group>"; };
+		D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.29.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavformat.58.29.100.dylib; sourceTree = "<group>"; };
+		D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.31.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavutil.56.31.100.dylib; sourceTree = "<group>"; };
+		D548545F23749D4700BE1731 /* libavcodec.58.54.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.58.54.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavcodec.58.54.100.dylib; sourceTree = "<group>"; };
+		D548546023749D4700BE1731 /* libswresample.3.5.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.3.5.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libswresample.3.5.100.dylib; sourceTree = "<group>"; };
+		D548546523749EA500BE1731 /* libswscale.5.5.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswscale.5.5.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libswscale.5.5.100.dylib; sourceTree = "<group>"; };
+		D548546723749F2000BE1731 /* QtGui.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtGui.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtGui.framework; sourceTree = "<group>"; };
+		D548546823749F2000BE1731 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCore.framework; sourceTree = "<group>"; };
+		D548546923749F2000BE1731 /* QtCharts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCharts.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCharts.framework; sourceTree = "<group>"; };
+		D548546A23749F2100BE1731 /* QtWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWidgets.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtWidgets.framework; sourceTree = "<group>"; };
 		D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AreaCalculatorTool.cpp; sourceTree = "<group>"; };
 		D54879BE234B77D700D0E506 /* AreaCalculatorTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AreaCalculatorTool.h; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -407,8 +402,6 @@
 		D5D5B6C12335128D00D388FA /* Encrypter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Encrypter.h; sourceTree = "<group>"; };
 		D5D5B6C22335128E00D388FA /* moc_SSHThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_SSHThread.cpp; sourceTree = "<group>"; };
 		D5D5B6C32335128E00D388FA /* SSHThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHThread.cpp; sourceTree = "<group>"; };
-		D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2s/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
-		D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2s/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
 		D5DC346A23233928002D7A13 /* SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHHandler.cpp; sourceTree = "<group>"; };
 		D5DC346B23233928002D7A13 /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
 		D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditLConfigs.cpp; sourceTree = "<group>"; };
@@ -417,17 +410,12 @@
 		D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchConfig.h; sourceTree = "<group>"; };
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
 		D5EBB7A6232AEAED00EED2BE /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
-		D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.1.dylib; path = ../../../../../../../../../../usr/local/Cellar/libssh/0.9.0_1/lib/libssh.4.8.1.dylib; sourceTree = "<group>"; };
 		D5ED290023197E8500C16BF7 /* libFSCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libFSCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290223197E8500C16BF7 /* libGLLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libGLLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290423197E8500C16BF7 /* libLSDyna.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libLSDyna.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290623197E8500C16BF7 /* libMeshIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMeshIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290823197E8500C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290A23197E8500C16BF7 /* libNike3D.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libNike3D.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D5ED290C23197EF400C16BF7 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.0/lib/QtCore.framework; sourceTree = "<group>"; };
-		D5ED290D23197EF400C16BF7 /* QtCharts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCharts.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.0/lib/QtCharts.framework; sourceTree = "<group>"; };
-		D5ED290E23197EF400C16BF7 /* QtGui.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtGui.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.0/lib/QtGui.framework; sourceTree = "<group>"; };
-		D5ED290F23197EF500C16BF7 /* QtWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWidgets.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.0/lib/QtWidgets.framework; sourceTree = "<group>"; };
 		D5ED291D2319858900C16BF7 /* libcsgvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcsgvis.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libcsgvis.dylib; sourceTree = "<group>"; };
 		D5ED291E2319858A00C16BF7 /* liboccvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liboccvis.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/liboccvis.dylib; sourceTree = "<group>"; };
 		D5ED291F2319858A00C16BF7 /* libstl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libstl.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libstl.dylib; sourceTree = "<group>"; };
@@ -459,14 +447,8 @@
 		D5ED2947231987CE00C16BF7 /* libTKPrim.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKPrim.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKPrim.7.3.0.dylib; sourceTree = "<group>"; };
 		D5ED2948231987CF00C16BF7 /* libTKMath.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMath.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKMath.7.3.0.dylib; sourceTree = "<group>"; };
 		D5ED2949231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomAlgo.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKGeomAlgo.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED295B2319882400C16BF7 /* libswscale.5.3.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswscale.5.3.100.dylib; path = ../../../../../../../../../../../usr/local/Cellar/ffmpeg/4.1.4_1/lib/libswscale.5.3.100.dylib; sourceTree = "<group>"; };
-		D5ED295C2319882400C16BF7 /* libavformat.58.20.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.20.100.dylib; path = ../../../../../../../../../../../usr/local/Cellar/ffmpeg/4.1.4_1/lib/libavformat.58.20.100.dylib; sourceTree = "<group>"; };
-		D5ED295D2319882400C16BF7 /* libavutil.56.22.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.22.100.dylib; path = ../../../../../../../../../../../usr/local/Cellar/ffmpeg/4.1.4_1/lib/libavutil.56.22.100.dylib; sourceTree = "<group>"; };
-		D5ED295E2319882500C16BF7 /* libavcodec.58.35.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.58.35.100.dylib; path = ../../../../../../../../../../../usr/local/Cellar/ffmpeg/4.1.4_1/lib/libavcodec.58.35.100.dylib; sourceTree = "<group>"; };
-		D5ED295F2319882500C16BF7 /* libswresample.3.3.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.3.3.100.dylib; path = ../../../../../../../../../../../usr/local/Cellar/ffmpeg/4.1.4_1/lib/libswresample.3.3.100.dylib; sourceTree = "<group>"; };
 		D5ED29652319885600C16BF7 /* libxvidcore.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxvidcore.4.dylib; path = ../../../../../../../../../../../usr/local/Cellar/xvid/1.3.5/lib/libxvidcore.4.dylib; sourceTree = "<group>"; };
 		D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmp3lame.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/lame/3.100/lib/libmp3lame.0.dylib; sourceTree = "<group>"; };
-		D5ED29692319888900C16BF7 /* libx265.176.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.176.dylib; path = ../../../../../../../../../../../usr/local/Cellar/x265/3.1.2/lib/libx265.176.dylib; sourceTree = "<group>"; };
 		D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = ../../../../../../../../../../../usr/lib/libiconv.2.dylib; sourceTree = "<group>"; };
 		D5ED296C231988CA00C16BF7 /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
 		D5ED296F231988E500C16BF7 /* libtet.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtet.a; path = ../../../../../../../../../../../usr/local/lib/libtet.a; sourceTree = "<group>"; };
@@ -812,24 +794,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D548546B23749F2100BE1731 /* QtGui.framework in Frameworks */,
+				D548546C23749F2100BE1731 /* QtCore.framework in Frameworks */,
+				D548546D23749F2100BE1731 /* QtCharts.framework in Frameworks */,
+				D548546E23749F2100BE1731 /* QtWidgets.framework in Frameworks */,
+				D548546623749EA500BE1731 /* libswscale.5.5.100.dylib in Frameworks */,
+				D548546123749D4700BE1731 /* libavformat.58.29.100.dylib in Frameworks */,
+				D548546223749D4700BE1731 /* libavutil.56.31.100.dylib in Frameworks */,
+				D548546323749D4700BE1731 /* libavcodec.58.54.100.dylib in Frameworks */,
+				D548546423749D4700BE1731 /* libswresample.3.5.100.dylib in Frameworks */,
+				D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */,
+				D548545A23749CF500BE1731 /* libssh.4.8.2.dylib in Frameworks */,
+				D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */,
+				D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */,
 				D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */,
 				D57A0B04234653F700B7C0B8 /* libmmg.a in Frameworks */,
 				D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */,
 				D57A0B06234653F700B7C0B8 /* libmmgs.a in Frameworks */,
-				D5D5B6CE2335160E00D388FA /* libcrypto.1.0.0.dylib in Frameworks */,
-				D5D5B6CB2335138900D388FA /* libssl.1.0.0.dylib in Frameworks */,
-				D5EBB7AC232AEF5400EED2BE /* libssh.4.8.1.dylib in Frameworks */,
 				D5ED2970231988E600C16BF7 /* libtet.a in Frameworks */,
 				D5ED296D231988CB00C16BF7 /* libiconv.2.dylib in Frameworks */,
 				D5ED296E231988CB00C16BF7 /* libz.1.dylib in Frameworks */,
-				D5ED296A2319888A00C16BF7 /* libx265.176.dylib in Frameworks */,
 				D5ED29682319887700C16BF7 /* libmp3lame.0.dylib in Frameworks */,
 				D5ED29662319885700C16BF7 /* libxvidcore.4.dylib in Frameworks */,
-				D5ED29602319882500C16BF7 /* libswscale.5.3.100.dylib in Frameworks */,
-				D5ED29612319882500C16BF7 /* libavformat.58.20.100.dylib in Frameworks */,
-				D5ED29622319882500C16BF7 /* libavutil.56.22.100.dylib in Frameworks */,
-				D5ED29632319882500C16BF7 /* libavcodec.58.35.100.dylib in Frameworks */,
-				D5ED29642319882500C16BF7 /* libswresample.3.3.100.dylib in Frameworks */,
 				D5ED294A231987CF00C16BF7 /* libTKernel.7.3.0.dylib in Frameworks */,
 				D5ED294B231987CF00C16BF7 /* libTKSTEPBase.7.3.0.dylib in Frameworks */,
 				D5ED294C231987CF00C16BF7 /* libTKSTEP.7.3.0.dylib in Frameworks */,
@@ -881,10 +867,6 @@
 				D5ED29F623198B5900C16BF7 /* libPostLib.a in Frameworks */,
 				D5F7D8FB22FA38B60089B08E /* libXML.a in Frameworks */,
 				D5F7D8FD22FA38B60089B08E /* libXPLTLib.a in Frameworks */,
-				D5ED291023197EF500C16BF7 /* QtCore.framework in Frameworks */,
-				D5ED291123197EF500C16BF7 /* QtCharts.framework in Frameworks */,
-				D5ED291223197EF500C16BF7 /* QtGui.framework in Frameworks */,
-				D5ED291323197EF500C16BF7 /* QtWidgets.framework in Frameworks */,
 				D5F7D90B22FA397D0089B08E /* Tk.framework in Frameworks */,
 				D5F7D90922FA39740089B08E /* Tcl.framework in Frameworks */,
 				D5F7D90422FA39500089B08E /* CoreFoundation.framework in Frameworks */,
@@ -1274,24 +1256,28 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D548546923749F2000BE1731 /* QtCharts.framework */,
+				D548546823749F2000BE1731 /* QtCore.framework */,
+				D548546723749F2000BE1731 /* QtGui.framework */,
+				D548546A23749F2100BE1731 /* QtWidgets.framework */,
+				D548546523749EA500BE1731 /* libswscale.5.5.100.dylib */,
+				D548545F23749D4700BE1731 /* libavcodec.58.54.100.dylib */,
+				D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */,
+				D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */,
+				D548546023749D4700BE1731 /* libswresample.3.5.100.dylib */,
+				D548545B23749D1100BE1731 /* libx265.179.dylib */,
+				D548545923749CF500BE1731 /* libssh.4.8.2.dylib */,
+				D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */,
+				D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */,
 				D57A0B00234653F700B7C0B8 /* libmmg.a */,
 				D57A0B01234653F700B7C0B8 /* libmmg2d.a */,
 				D57A0AFF234653F700B7C0B8 /* libmmg3d.a */,
 				D57A0B02234653F700B7C0B8 /* libmmgs.a */,
-				D5D5B6CD2335160E00D388FA /* libcrypto.1.0.0.dylib */,
-				D5D5B6CA2335138800D388FA /* libssl.1.0.0.dylib */,
-				D5EBB7AB232AEF5400EED2BE /* libssh.4.8.1.dylib */,
 				D5ED296F231988E500C16BF7 /* libtet.a */,
 				D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */,
 				D5ED296C231988CA00C16BF7 /* libz.1.dylib */,
-				D5ED29692319888900C16BF7 /* libx265.176.dylib */,
 				D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */,
 				D5ED29652319885600C16BF7 /* libxvidcore.4.dylib */,
-				D5ED295E2319882500C16BF7 /* libavcodec.58.35.100.dylib */,
-				D5ED295C2319882400C16BF7 /* libavformat.58.20.100.dylib */,
-				D5ED295D2319882400C16BF7 /* libavutil.56.22.100.dylib */,
-				D5ED295F2319882500C16BF7 /* libswresample.3.3.100.dylib */,
-				D5ED295B2319882400C16BF7 /* libswscale.5.3.100.dylib */,
 				D5ED293E231987CC00C16BF7 /* libTKBO.7.3.0.dylib */,
 				D5ED2941231987CD00C16BF7 /* libTKBRep.7.3.0.dylib */,
 				D5ED2939231987CB00C16BF7 /* libTKernel.7.3.0.dylib */,
@@ -1323,10 +1309,6 @@
 				D5ED291F2319858A00C16BF7 /* libstl.dylib */,
 				D5ED29202319858A00C16BF7 /* libstlvis.dylib */,
 				D5ED29292319858C00C16BF7 /* libvisual.dylib */,
-				D5ED290D23197EF400C16BF7 /* QtCharts.framework */,
-				D5ED290C23197EF400C16BF7 /* QtCore.framework */,
-				D5ED290E23197EF400C16BF7 /* QtGui.framework */,
-				D5ED290F23197EF500C16BF7 /* QtWidgets.framework */,
 				D5ED290023197E8500C16BF7 /* libFSCore.a */,
 				D5ED290223197E8500C16BF7 /* libGLLib.a */,
 				D5ED290423197E8500C16BF7 /* libLSDyna.a */,
@@ -1767,6 +1749,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/qt/Frameworks,
+					/usr/local/Cellar/qt/5.13.2/lib,
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/local/opt/qt/include/QtCore,
@@ -1793,6 +1776,10 @@
 					/usr/local/lib,
 					/usr/local/Cellar/libssh/0.9.0_1/lib,
 					/usr/local/Cellar/openssl/1.0.2s/lib,
+					/usr/local/Cellar/openssl/1.0.2t/lib,
+					/usr/local/Cellar/libssh/0.9.1/lib,
+					/usr/local/Cellar/x265/3.2.1/lib,
+					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1810,6 +1797,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/qt/Frameworks,
+					/usr/local/Cellar/qt/5.13.2/lib,
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/local/opt/qt/include/QtCore,
@@ -1836,6 +1824,10 @@
 					/usr/local/lib,
 					/usr/local/Cellar/libssh/0.9.0_1/lib,
 					/usr/local/Cellar/openssl/1.0.2s/lib,
+					/usr/local/Cellar/openssl/1.0.2t/lib,
+					/usr/local/Cellar/libssh/0.9.1/lib,
+					/usr/local/Cellar/x265/3.2.1/lib,
+					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
