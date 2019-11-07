@@ -19,6 +19,7 @@ CGLMirrorPlane::CGLMirrorPlane(CGLModel* fem) : CGLPlot(fem)
 	m_showPlane = true;
 	m_transparency = 0.25f;
 	m_offset = 0.f;
+	m_is_rendering = false;
 
 	UpdateData(false);
 }
@@ -43,6 +44,9 @@ void CGLMirrorPlane::UpdateData(bool bsave)
 
 void CGLMirrorPlane::Render(CGLContext& rc)
 {
+	// need to make sure we are not calling this recursively
+	if (m_is_rendering) return;
+
 	// plane normal
 	vec3f scl;
 	switch (m_plane)
@@ -61,7 +65,9 @@ void CGLMirrorPlane::Render(CGLContext& rc)
 	glScalef(scl.x, scl.y, scl.z);
 
 	glFrontFace(GL_CW);
+	m_is_rendering = true;
 	m->Render(rc);
+	m_is_rendering = false;
 	glFrontFace(GL_CCW);
 
 	glPopMatrix();

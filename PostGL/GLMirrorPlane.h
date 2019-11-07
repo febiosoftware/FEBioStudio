@@ -26,5 +26,7 @@ public:
 
 private:
 	vec3f	m_norm;
+
+	bool	m_is_rendering;
 };
 }
