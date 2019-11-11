@@ -126,5 +126,6 @@
 		<file>icons/edit.png</file>
 		<file>icons/splash.png</file>
 		<file>icons/splash_hires.png</file>
+		<file>icons/cylpatch.png</file>
 	</qresource>
 </RCC>

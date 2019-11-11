@@ -33,6 +33,10 @@ REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "Patch"          , ":/icons/s
 REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/disc.png"         , 0);
 REGISTER_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/ring.png"         , 0);
 
+#ifdef _DEBUG
+REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "Cylindrical Patch", ":/icons/cylpatch.png"     , 0);
+#endif
+
 #ifdef HAS_OCC
 REGISTER_CLASS2(GOCCBottle			, CLASS_OBJECT, "Bottle", ":/icons/bottle.png", 0);
 REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "Box"   , ":/icons/box.png", 0);

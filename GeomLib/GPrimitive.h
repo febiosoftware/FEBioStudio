@@ -354,6 +354,24 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+class GCylindricalPatch : public GPrimitive
+{
+public:
+	enum { W, H, R };
+
+	double Width() const;
+	double Height() const;
+	double Radius() const;
+
+public:
+	GCylindricalPatch();
+	bool Update(bool b = true);
+
+private:
+	void Create();
+};
+
+//-----------------------------------------------------------------------------
 // Gregory patch
 class GGregoryPatch : public GPrimitive
 {
