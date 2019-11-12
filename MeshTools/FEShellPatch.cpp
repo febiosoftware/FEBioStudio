@@ -167,7 +167,7 @@ FEMesh* FECylndricalPatch::BuildMesh()
 	double h = m_pobj->Height();
 	double r = m_pobj->Radius();
 
-	if (w > 2.0*r) return false;
+	if (w > 2.0*r) return nullptr;
 
 	double l = sqrt(r*r - w*w*0.25);
 
