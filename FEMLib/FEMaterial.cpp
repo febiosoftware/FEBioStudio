@@ -1684,7 +1684,7 @@ REGISTER_MATERIAL(FESchemeFEI, MODULE_MECH, FE_SCHM_FEI, FE_MAT_CFD_SCHEME, "fib
 
 FESchemeFEI::FESchemeFEI() : FEMaterial(FE_SCHM_FEI)
 {
-    AddIntParam(11, "resolution"   , "resolution");// choose from 20, 34, 60, 74, 196, 210, 396, 410, ..., 1596, 1610, 1796
+    AddIntParam(1796, "resolution"   , "resolution");// choose from 20, 34, 60, 74, 196, 210, 396, 410, ..., 1596, 1610, 1796
 }
 
 //=============================================================================

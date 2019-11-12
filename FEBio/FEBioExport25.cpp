@@ -2652,7 +2652,7 @@ void FEBioExport25::WriteGeometryDiscreteSets()
 		for (int j=0; j<step->Interfaces(); ++j)
 		{
 			FESpringTiedInterface* pst = dynamic_cast<FESpringTiedInterface*>(step->Interface(j));
-			if (pst)
+			if (pst && pst->IsActive())
 			{
 				vector<pair<int, int> > L;
 				pst->BuildSpringList(L);
