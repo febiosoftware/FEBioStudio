@@ -11,9 +11,9 @@
 		D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */; };
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
 		D5248DDC231C114D00691871 /* DlgCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DDA231C114D00691871 /* DlgCheck.cpp */; };
+		D52EF075237B632C00F9CCB7 /* libssh.4.8.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D52EF074237B632C00F9CCB7 /* libssh.4.8.3.dylib */; };
 		D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */; };
 		D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */; };
-		D548545A23749CF500BE1731 /* libssh.4.8.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545923749CF500BE1731 /* libssh.4.8.2.dylib */; };
 		D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545B23749D1100BE1731 /* libx265.179.dylib */; };
 		D548546123749D4700BE1731 /* libavformat.58.29.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */; };
 		D548546223749D4700BE1731 /* libavutil.56.31.100.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */; };
@@ -372,9 +372,9 @@
 		D5248DD8231C114D00691871 /* modelcheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelcheck.h; sourceTree = "<group>"; };
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
+		D52EF074237B632C00F9CCB7 /* libssh.4.8.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.3.dylib; path = ../../../../../../../usr/local/Cellar/libssh/0.9.2/lib/libssh.4.8.3.dylib; sourceTree = "<group>"; };
 		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
 		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
-		D548545923749CF500BE1731 /* libssh.4.8.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.2.dylib; path = ../../../../../../../../../../usr/local/Cellar/libssh/0.9.1/lib/libssh.4.8.2.dylib; sourceTree = "<group>"; };
 		D548545B23749D1100BE1731 /* libx265.179.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.179.dylib; path = ../../../../../../../../../../usr/local/Cellar/x265/3.2.1/lib/libx265.179.dylib; sourceTree = "<group>"; };
 		D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.29.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavformat.58.29.100.dylib; sourceTree = "<group>"; };
 		D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.31.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavutil.56.31.100.dylib; sourceTree = "<group>"; };
@@ -794,6 +794,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D52EF075237B632C00F9CCB7 /* libssh.4.8.3.dylib in Frameworks */,
 				D548546B23749F2100BE1731 /* QtGui.framework in Frameworks */,
 				D548546C23749F2100BE1731 /* QtCore.framework in Frameworks */,
 				D548546D23749F2100BE1731 /* QtCharts.framework in Frameworks */,
@@ -804,7 +805,6 @@
 				D548546323749D4700BE1731 /* libavcodec.58.54.100.dylib in Frameworks */,
 				D548546423749D4700BE1731 /* libswresample.3.5.100.dylib in Frameworks */,
 				D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */,
-				D548545A23749CF500BE1731 /* libssh.4.8.2.dylib in Frameworks */,
 				D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */,
 				D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */,
 				D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */,
@@ -1256,6 +1256,7 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D52EF074237B632C00F9CCB7 /* libssh.4.8.3.dylib */,
 				D548546923749F2000BE1731 /* QtCharts.framework */,
 				D548546823749F2000BE1731 /* QtCore.framework */,
 				D548546723749F2000BE1731 /* QtGui.framework */,
@@ -1266,7 +1267,6 @@
 				D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */,
 				D548546023749D4700BE1731 /* libswresample.3.5.100.dylib */,
 				D548545B23749D1100BE1731 /* libx265.179.dylib */,
-				D548545923749CF500BE1731 /* libssh.4.8.2.dylib */,
 				D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */,
 				D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */,
 				D57A0B00234653F700B7C0B8 /* libmmg.a */,
@@ -1780,6 +1780,7 @@
 					/usr/local/Cellar/libssh/0.9.1/lib,
 					/usr/local/Cellar/x265/3.2.1/lib,
 					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
+					/usr/local/Cellar/libssh/0.9.2/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1828,6 +1829,7 @@
 					/usr/local/Cellar/libssh/0.9.1/lib,
 					/usr/local/Cellar/x265/3.2.1/lib,
 					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
+					/usr/local/Cellar/libssh/0.9.2/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
