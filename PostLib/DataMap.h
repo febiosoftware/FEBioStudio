@@ -18,6 +18,10 @@ public:
 	vector<T>& State(int n) { return m_Data[n]; }
 	int GetTag(int n) { return m_tag[n]; }
 	void SetTag(int n, int ntag) { m_tag[n] = ntag; }
+	void SetTags(int n)
+	{
+		for (int i = 0; i < m_tag.size(); ++i) m_tag[i] = n;
+	}
 
 	void Create(int nstates, int items, T val = T(0), int ntag = 0)
 	{

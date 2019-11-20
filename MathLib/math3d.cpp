@@ -686,6 +686,21 @@ vec3f mat3fs::PrincDirection(int l)
 	return e[l - 1] * lam[l - 1];
 }
 
+//-----------------------------------------------------------------------------
+double fractional_anisotropy(const mat3fs& m)
+{
+	vec3f e[3];
+	float l[3];
+	m.eigen(e, l);
+
+	double la = (l[0] + l[1] + l[2]) / 3.0;
+	double D = sqrt(l[0] * l[0] + l[1] * l[1] + l[2] * l[2]);
+	double fa = 0.0;
+	if (D != 0) fa = sqrt(3.0 / 2.0)*sqrt((l[0] - la)*(l[0] - la) + (l[1] - la)*(l[1] - la) + (l[2] - la)*(l[2] - la)) / D;
+
+	return fa;
+}
+
 //=============================================================================
 Mat3d::Mat3d(double a00, double a01, double a02, double a10, double a11, double a12, double a20, double a21, double a22)
 {

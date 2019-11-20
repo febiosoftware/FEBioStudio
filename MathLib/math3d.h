@@ -695,6 +695,8 @@ public:
 	float xy, yz, xz;
 };
 
+double fractional_anisotropy(const mat3fs& m);
+
 ///////////////////////////////////////////////////////////////////
 // mat3f
 

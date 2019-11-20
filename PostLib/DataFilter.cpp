@@ -1063,3 +1063,55 @@ FEDataField* Post::DataComponent(FEModel& fem, FEDataField* pdf, int ncomp, cons
 
 	return newField;
 }
+
+//-----------------------------------------------------------------------------
+// Calculate the fractional anisotropy of a tensor field
+bool Post::DataFractionalAnsisotropy(FEModel& fem, int scalarField, int tensorField)
+{
+	int ntns = FIELD_CODE(tensorField);
+	int nscl = FIELD_CODE(scalarField);
+
+	// loop over all the states
+	for (int n = 0; n<fem.GetStates(); ++n)
+	{
+		FEState& state = *fem.GetState(n);
+		FEMeshData& v = state.m_Data[ntns];
+		FEMeshData& s = state.m_Data[nscl];
+
+		// zero the scalar field
+		Post::FEElementData<float, DATA_ITEM>* ps = nullptr;
+		if (IS_ELEM_FIELD(scalarField) && (s.GetType() == DATA_FLOAT))
+		{
+			ps = dynamic_cast<Post::FEElementData<float, DATA_ITEM>*>(&s);
+			int N = ps->size();
+			for (int i = 0; i < N; ++i) (*ps)[i] = 0.f;
+		}
+		else return false;
+
+		// get the mesh
+		Post::FEPostMesh* mesh = state.GetFEMesh();
+
+		// evaluate the field
+		if (v.GetType() == DATA_MAT3FS)
+		{
+			if (IS_ELEM_FIELD(tensorField) && (v.GetFormat() == DATA_ITEM))
+			{
+				FEElemData_T<mat3fs, DATA_ITEM>* pv = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&v);
+
+				mat3fs ev;
+				for (int i = 0; i<mesh->Elements(); ++i)
+				{
+					FEElement_& el = mesh->ElementRef(i);
+					if (pv->active(i))
+					{
+						pv->eval(i, &ev);
+
+						ps->add(i, fractional_anisotropy(ev));
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}

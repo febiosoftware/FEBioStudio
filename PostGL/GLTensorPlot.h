@@ -11,7 +11,7 @@ namespace Post {
 
 class GLTensorPlot : public CGLPlot
 {
-	enum { DATA_FIELD, METHOD, COLOR_MAP, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE };
+	enum { DATA_FIELD, METHOD, COLOR_MAP, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, RANGE_TYPE, USER_MAX, USER_MIN };
 
 public:
 	enum Glyph_Type {
@@ -96,6 +96,7 @@ protected:
 	int		m_ntensor;	// tensor field
 	int		m_nglyph;	// glyph type
 	int		m_ncol;		// color type
+	DATA_RANGE	m_range;
 
 	float	m_scale;
 	float	m_dens;

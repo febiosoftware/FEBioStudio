@@ -35,6 +35,7 @@ public:
 	void on_AddFilter_triggered();
 	void on_CopyButton_clicked();
 	void on_DeleteButton_clicked();
+	void on_FilterButton_clicked();
 	void on_ExportButton_clicked();
 	void on_dataList_clicked(const QModelIndex&);
 	void on_fieldName_editingFinished();

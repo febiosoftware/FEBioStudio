@@ -109,8 +109,8 @@ public:
 	void value(float& val)  { val = (float) atof(m_szval); }
 	void value(int& val) { val = atoi(m_szval); }
 	int value(double* pf, int n);
-	void value(float* pf, int n);
-	void value(int* pi, int n);
+	int value(float* pf, int n);
+	int value(int* pi, int n);
 	void value(vec3d& v);
 	void value(vec2i& v);
 	void value(mat3d& v);

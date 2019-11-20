@@ -55,45 +55,40 @@ int XMLTag::value(double* pf, int n)
  
 //////////////////////////////////////////////////////////////////////
 
-void XMLTag::value(float* pf, int n)
+int XMLTag::value(float* pf, int n)
 {
 	char* sz = m_szval;
-
+	int nr = 0;
 	for (int i=0; i<n; ++i)
 	{
 		char* sze = strchr(sz, ',');
-		if (sze) *sze = 0;
 
 		pf[i] = (float) atof(sz);
+		nr++;
 
-		if (sze)
-		{
-			*sze = ',';
-			sz = sze+1;
-		}
-	}	
+		if (sze) sz = sze + 1;
+		else break;
+	}
+	return nr;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void XMLTag::value(int* pi, int n)
+int XMLTag::value(int* pi, int n)
 {
 	char* sz = m_szval;
-
+	int nr = 0;
 	for (int i=0; i<n; ++i)
 	{
 		char* sze = strchr(sz, ',');
-		if (sze) *sze = 0;
 
 		pi[i] = atoi(sz);
+		nr++;
 
-		if (sze)
-		{
-			*sze = ',';
-			sz = sze+1;
-		}
+		if (sze) sz = sze + 1;
 		else break;
-	}	
+	}
+	return nr;
 }
 
 //////////////////////////////////////////////////////////////////////

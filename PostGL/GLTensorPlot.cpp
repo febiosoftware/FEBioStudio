@@ -25,6 +25,9 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 	AddColorParam(GLColor::White(), "Solid Color");
 	AddBoolParam(true, "Auto-scale");
 	AddBoolParam(true, "Normalize" );
+	AddChoiceParam(0, "Range Type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(1.0, "User max");
+	AddDoubleParam(0.0, "User min");
 
 	m_scale = 1;
 	m_dens = 1;
@@ -53,6 +56,9 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 
 	m_nmethod = VEC_EIGEN;
 
+	m_range.ntype = RANGE_DYNAMIC;
+	m_range.valid = false;
+
 	m_pbar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
 	m_pbar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
 	m_pbar->copy_label(szname);
@@ -72,6 +78,8 @@ void GLTensorPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
+		int noldcol = m_ncol;
+
 		m_ntensor = GetIntValue(DATA_FIELD);
 		m_nmethod = GetIntValue(METHOD);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
@@ -84,6 +92,21 @@ void GLTensorPlot::UpdateData(bool bsave)
 		m_gcl = GetColorValue(SOLID_COLOR);
 		m_bautoscale = GetBoolValue(AUTO_SCALE);
 		m_bnormalize = GetBoolValue(NORMALIZE);
+
+		m_range.ntype = GetIntValue(RANGE_TYPE);
+
+		if (noldcol != m_ncol)
+		{
+			m_map.SetTags(-1);
+		}
+
+		if (m_range.ntype == RANGE_USER)
+		{
+			m_range.max = GetFloatValue(USER_MAX);
+			m_range.min = GetFloatValue(USER_MIN);
+			m_range.valid = true;
+		}
+		else m_range.valid = false;
 	}
 	else
 	{
@@ -130,7 +153,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 	if (m_lastCol != m_ncol) breset = true;
 	m_lastCol = m_ncol;
 
-	if (breset) { m_map.Clear(); m_val.clear(); }
+	if (breset) { m_map.Clear(); m_val.clear(); m_range.valid = false; }
 
 	m_lastTime = ntime;
 	m_lastDt = dt;
@@ -156,17 +179,20 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 	// check the tag
 	int ntag = m_map.GetTag(ntime);
 
+	// get the state we are interested in
+	vector<TENSOR>& val = m_map.State(ntime);
+
 	// see if we need to update
+	int items = 0;
+	if (IS_ELEM_FIELD(m_ntensor)) items = pm->Elements(); else items = pm->Nodes();
 	if (ntag != m_ntensor)
 	{
 		m_map.SetTag(ntime, m_ntensor);
 
-		// get the state we are interested in
-		vector<TENSOR>& val = m_map.State(ntime);
-
 		TENSOR t;
 		if (IS_ELEM_FIELD(m_ntensor))
 		{
+			items = pm->Elements();
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
 				switch (m_nmethod)
@@ -188,6 +214,8 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 						t.l[2] = -t.l[2];
 					}
 */
+					t.f = 0.f;
+
 					if (m_ncol == Glyph_Col_Norm)
 					{
 						t.f = s.von_mises();
@@ -242,6 +270,7 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 		}
 		else
 		{
+			items = pm->Nodes();
 			for (int i = 0; i < pm->Nodes(); ++i)
 			{
 				switch (m_nmethod)
@@ -301,6 +330,37 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 		}
 	}
 
+
+	// evaluate range
+	float fmax, fmin;
+	fmax = fmin = val[0].f;
+	for (int i = 0; i < items; ++i)
+	{
+		float v = val[i].f;
+		if (v > fmax) fmax = v;
+		if (v < fmin) fmin = v;
+	}
+
+	if (m_range.valid == false)
+	{
+		m_range.max = fmax;
+		m_range.min = fmin;
+		m_range.valid = true;
+	}
+	else
+	{
+		if (m_range.ntype == RANGE_DYNAMIC)
+		{
+			m_range.max = fmax;
+			m_range.min = fmin;
+		}
+		else if (m_range.ntype == RANGE_STATIC)
+		{
+			if (fmax > m_range.max) m_range.max = fmax;
+			if (fmin < m_range.min) m_range.min = fmin;
+		}
+	}
+
 	// copy nodal values
 	m_val = m_map.State(ntime);
 }
@@ -346,6 +406,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 		glEnable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
 		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+		glColor3ub(m_gcl.r, m_gcl.g, m_gcl.b);
 
 		GLfloat dif[] = { 1.f, 1.f, 1.f, 1.f };
 		GLfloat amb[] = { 0.1f, 0.1f, 0.1f, 1.f };
@@ -397,20 +458,13 @@ void GLTensorPlot::Render(CGLContext& rc)
 		float fmax = 1.f, fmin = 0.f;
 		if (m_ncol != Glyph_Col_Solid)
 		{
-			if (pm->Elements())
-			{
-				fmin = fmax = m_val[0].f;
-				for (int i = 0; i < pm->Elements(); ++i)
-				{
-					float f = m_val[i].f;
-					if (f > fmax) fmax = f;
-					if (f < fmin) fmin = f;
-				}
-				if (fmax == fmin) fmax += 1.f;
-			}
+			fmax = m_range.max;
+			fmin = m_range.min;
 		}
 
 		m_pbar->SetRange(fmin, fmax);
+
+		if (fmax == fmin) fmax++;
 
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
@@ -475,17 +529,15 @@ void GLTensorPlot::Render(CGLContext& rc)
 		}
 
 		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-		float fmax = 1.f;
+		float fmax = 1.f, fmin = 0.f;
 		if (m_ncol != Glyph_Col_Solid)
 		{
-			fmax = 0.f;
-			for (int i = 0; i < pm->Nodes(); ++i)
-			{
-				float f = m_val[i].f;
-				if (f > fmax) fmax = f;
-			}
-			if (fmax == 0.f) fmax = 1.f;
+			fmax = m_range.max;
+			fmin = m_range.min;
 		}
+		m_pbar->SetRange(fmin, fmax);
+
+		if (fmax == fmin) fmax++;
 
 		if (m_nglyph == Glyph_Line) glDisable(GL_LIGHTING);
 
@@ -502,7 +554,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 				if (m_ncol != Glyph_Col_Solid)
 				{
-					float w = t.f / fmax;
+					float w = (t.f  - fmin)/ (fmax - fmin);
 					GLColor c = map.map(w);
 					glColor3ub(c.r, c.g, c.b);
 				}

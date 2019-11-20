@@ -15,21 +15,6 @@ class CGLColorMap : public CGLDataMap
 	enum { DATA_FIELD, DATA_SMOOTH, COLOR_MAP, NODAL_VALS, RANGE_TYPE, RANGE_DIVS, SHOW_LEGEND, LEGEND_ORIENT, USER_MAX, USER_MIN };
 
 public:
-	enum Range_Type {
-		RANGE_DYNA	= 0,
-		RANGE_STAT  = 1,
-		RANGE_USER	= 2
-	};
-
-public:
-	struct RANGE
-	{
-		float min;
-		float max;
-		int	ntype;
-	};
-
-public:
 	CGLColorMap(CGLModel* po);
 	~CGLColorMap();
 
@@ -69,7 +54,7 @@ private:
 protected:
 	int		m_nfield;
 	bool	m_breset;	// reset the range when the field has changed
-	RANGE	m_range;	// range for legend
+	DATA_RANGE	m_range;	// range for legend
 
 public:
 	bool	m_bDispNodeVals;	// render nodal values

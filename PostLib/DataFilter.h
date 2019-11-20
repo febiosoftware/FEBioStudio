@@ -26,6 +26,10 @@ bool DataArithmetic(FEModel& fem, int nfield, int nop, int noperand);
 bool DataGradient(FEModel& fem, int vecField, int sclField);
 
 //-----------------------------------------------------------------------------
+// Calculate the fractional anisotropy of a tensor field
+bool DataFractionalAnsisotropy(FEModel& fem, int scalarField, int tensorField);
+
+//-----------------------------------------------------------------------------
 // Extract a component from a data field
 FEDataField* DataComponent(FEModel& fem, FEDataField* dataField, int ncomp, const std::string& sname);
 

@@ -23,7 +23,7 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddDoubleParam(0, "User min");
 
 	m_range.min = m_range.max = 0;
-	m_range.ntype = RANGE_DYNA;
+	m_range.ntype = RANGE_DYNAMIC;
 
 	m_nfield = 0;
 	m_breset = true;
@@ -241,11 +241,11 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		{
 			switch (m_range.ntype)
 			{
-			case RANGE_DYNA:
+			case RANGE_DYNAMIC:
 				m_range.max = fmax;
 				m_range.min = fmin;
 				break;
-			case RANGE_STAT:
+			case RANGE_STATIC:
 				if (fmax > m_range.max) m_range.max = fmax;
 				if (fmin < m_range.min) m_range.min = fmin;
 				break;

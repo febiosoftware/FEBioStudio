@@ -7,6 +7,21 @@ class CGLContext;
 
 namespace Post {
 
+// enum for setting range types
+enum Range_Type {
+	RANGE_DYNAMIC = 0,
+	RANGE_STATIC  = 1,
+	RANGE_USER    = 2
+};
+
+struct DATA_RANGE
+{
+	float	min;
+	float	max;
+	int		ntype;
+	bool	valid;
+};
+
 class CGLModel;
 
 //-----------------------------------------------------------------------------
