@@ -61,6 +61,7 @@ CVolRender::CVolRender(CImageModel* img) : CGLImageRenderer(img)
 	m_A1 = 255;
 	m_Amin = 0;
 	m_Amax = 255;
+	m_shadeStrength = 0.1;
 
 	// use default grayscale color map
 	m_Col.SetColorMap(ColorMapManager::GRAY);

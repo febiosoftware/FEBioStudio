@@ -108,12 +108,20 @@ BOX BOX::operator + (const BOX& b)
 //-----------------------------------------------------------------------------
 BOX& BOX::operator += (const BOX& b)
 {
-	x0 = MIN(x0, b.x0);
-	y0 = MIN(y0, b.y0);
-	z0 = MIN(z0, b.z0);
-	x1 = MAX(x1, b.x1);
-	y1 = MAX(y1, b.y1);
-	z1 = MAX(z1, b.z1);
+	if (m_valid)
+	{
+		x0 = MIN(x0, b.x0);
+		y0 = MIN(y0, b.y0);
+		z0 = MIN(z0, b.z0);
+		x1 = MAX(x1, b.x1);
+		y1 = MAX(y1, b.y1);
+		z1 = MAX(z1, b.z1);
+	}
+	else
+	{
+		*this = b;
+		m_valid = true;
+	}
 
 	return (*this);
 }

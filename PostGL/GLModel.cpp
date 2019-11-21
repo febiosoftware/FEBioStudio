@@ -26,8 +26,7 @@ extern int ET_PYRA5[8][2];
 CGLModel::CGLModel(FEModel* ps)
 {
 	m_ps = ps;
-
-	SetCurrentTimeIndex(0);
+	SetName("Model");
 
 	static int layer = 1;
 	m_layer = layer++;
@@ -35,6 +34,31 @@ CGLModel::CGLModel(FEModel* ps)
 	m_stol = 60.0;
 
 	CGLWidgetManager::GetInstance()->SetActiveLayer(m_layer);
+
+	m_bnorm = false;
+	m_bghost = false;
+	m_nDivs = 0; // this means "auto"
+	m_brenderInteriorNodes = true;
+
+	m_bshowMesh = true;
+
+	m_line_col = GLColor(0, 0, 0);
+	m_node_col = GLColor(0, 0, 255);
+	m_sel_col = GLColor(255, 0, 0);
+
+	m_nrender = RENDER_MODE_SOLID;
+
+	m_nconv = CONV_FR_XZ;
+
+	m_selectMode = SELECT_ELEMS;
+	m_selectStyle = SELECT_RECT;
+
+	m_pcol = nullptr;
+	m_pdis = nullptr;
+
+	if (ps == nullptr) return;
+
+	SetCurrentTimeIndex(0);
 
 	// see if the mesh has any vector fields
 	// which can be used for displacement maps
@@ -50,7 +74,6 @@ CGLModel::CGLModel(FEModel* ps)
 		}
 	}
 
-	m_pdis = 0;
 	if (ndisp != -1)
 	{
 		ps->SetDisplacementField(BUILD_FIELD(1, ndisp, 0));
@@ -59,26 +82,6 @@ CGLModel::CGLModel(FEModel* ps)
 
 	// add a default color map
 	m_pcol = new CGLColorMap(this);
-
-	SetName("Model");
-
-	m_bnorm   = false;
-	m_bghost = false;
-	m_nDivs = 0; // this means "auto"
-	m_brenderInteriorNodes = true;
-
-	m_bshowMesh = true;
-
-	m_line_col = GLColor(0,0,0);
-	m_node_col = GLColor(0,0,255);
-	m_sel_col  = GLColor(255,0,0);
-
-	m_nrender = RENDER_MODE_SOLID;
-    
-    m_nconv = CONV_FR_XZ;
-
-	m_selectMode = SELECT_ELEMS;
-	m_selectStyle = SELECT_RECT;
 
 	UpdateEdge();
 	UpdateInternalSurfaces();
@@ -105,8 +108,12 @@ void CGLModel::ShellReferenceSurface(int n) { m_render.m_nshellref = n; }
 Post::FEPostMesh* CGLModel::GetActiveMesh()
 {
 	FEModel* pfem = GetFEModel();
-	if (pfem && (pfem->GetStates() > 0)) return m_ps->CurrentState()->GetFEMesh();
-	return pfem->GetFEMesh(0);
+	if (pfem)
+	{
+		if (pfem->GetStates() > 0) return m_ps->CurrentState()->GetFEMesh();
+		return pfem->GetFEMesh(0);
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -132,10 +139,10 @@ void CGLModel::ResetAllStates()
 }
 
 //-----------------------------------------------------------------------------
-float CGLModel::CurrentTime() const { return m_ps->CurrentTime(); }
+float CGLModel::CurrentTime() const { return (m_ps ? m_ps->CurrentTime() : 0.f); }
 
 //-----------------------------------------------------------------------------
-int CGLModel::CurrentTimeIndex() const { return m_ps->CurrentTimeIndex(); }
+int CGLModel::CurrentTimeIndex() const { return (m_ps ? m_ps->CurrentTimeIndex() : -1); }
 
 //-----------------------------------------------------------------------------
 void CGLModel::SetCurrentTimeIndex(int ntime)
@@ -310,6 +317,8 @@ void CGLModel::RemoveDisplacementMap()
 //-----------------------------------------------------------------------------
 void CGLModel::Render(CGLContext& rc)
 {
+	if (GetFEModel() == nullptr) return;
+
 	// activate all clipping planes
 	CGLPlaneCutPlot::EnableClipPlanes();
 
