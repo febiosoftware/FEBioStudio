@@ -647,9 +647,6 @@
     <ClInclude Include="..\..\FEBioStudio\CreateSpringPane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\CurveEditor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1034,6 +1031,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\DlgEditLConfigs.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\CurveEditor.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

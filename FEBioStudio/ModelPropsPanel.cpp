@@ -10,6 +10,7 @@
 #include <QBoxLayout>
 #include <QMessageBox>
 #include <QFormLayout>
+#include <QTabWidget>
 #include "Document.h"
 #include "MainWindow.h"
 #include "ObjectProps.h"
@@ -24,6 +25,9 @@
 #include "MeshInfoPanel.h"
 #include <GLWLib/convert.h>
 #include <MeshTools/GGroup.h>
+#include <CUILib/ImageViewer.h>
+#include <CUILib/HistogramViewer.h>
+#include <PostLib/ImageModel.h>
 #include "Command.h"
 
 //=============================================================================
@@ -185,10 +189,18 @@ private:
 	CObjectPropsPanel*	obj;
 	CBCObjectPropsPanel*	bcobj;
 	CMeshInfoPanel*	mesh;
+	QTabWidget* propsTab;
+
+	CImageViewer*		imageView;
+	CHistogramViewer*	histoView;
+
+	bool		m_showImageTools;
 
 public:
 	void setupUi(QWidget* parent)
 	{
+		m_showImageTools = false;
+
 		props = new ::CPropertyListView; props->setObjectName("props");
 		form  = new ::CPropertyListForm; form->setObjectName("form");
 
@@ -202,6 +214,9 @@ public:
 		propStack->addWidget(props);
 		propStack->addWidget(form);
 
+		propsTab = new QTabWidget;
+		propsTab->addTab(propStack, "Properties");
+
 		sel1 = new ::CSelectionBox;
 		sel1->setObjectName("select1");
 
@@ -210,12 +225,15 @@ public:
 
 		mesh = new CMeshInfoPanel;
 
+		imageView = new CImageViewer;
+		histoView = new CHistogramViewer;
+
 		// compose toolbox
 		tool = new CToolBox;
 		tool->addTool("Object", obj);
 		tool->addTool("Object", bcobj);
 		tool->addTool("Mesh Info", mesh);
-		tool->addTool("Properties", propStack);
+		tool->addTool("Properties", propsTab);
 		tool->addTool("Selection", sel1);
 		tool->addTool("Selection", sel2);
 
@@ -283,12 +301,37 @@ public:
 		form->setPropertyList(pl);
 	}
 
+	void showImageTools(bool b, Post::CImageModel* img = nullptr)
+	{
+		if (b && (m_showImageTools==false))
+		{
+			m_showImageTools = true;
+
+			imageView->SetImageModel(img);
+			histoView->SetImageModel(img);
+
+			propsTab->addTab(imageView, "Image Viewer");
+			propsTab->addTab(histoView, "Histogram");
+		}
+		else if ((b == false) && m_showImageTools)
+		{
+			m_showImageTools = false;
+
+			imageView->SetImageModel(nullptr);
+			histoView->SetImageModel(nullptr);
+
+			propsTab->removeTab(2);
+			propsTab->removeTab(1);
+		}
+	}
+
 	void showProperties(bool b)
 	{
 		if (b == false)
 		{
 			stack->setCurrentIndex(0);
 			setPropertyList(0);
+			showImageTools(false);
 		}
 		else
 		{
@@ -362,6 +405,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 	}
 	else
 	{
+		Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+		ui->showImageTools(img != nullptr, img);
+
 		ui->showProperties(true);
 		m_currentObject = po;
 		SetSelection(0, 0);
