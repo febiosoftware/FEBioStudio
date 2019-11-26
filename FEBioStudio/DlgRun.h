@@ -16,6 +16,7 @@ public:
 
 	void SetWorkingDirectory(const QString& wd);
 	void SetJobName(const QString& fn);
+	void SetJobNames(QStringList& jobNames);
 	void SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault = 0);
 
 	QString GetWorkingDirectory();

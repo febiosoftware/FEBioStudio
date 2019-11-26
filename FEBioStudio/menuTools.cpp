@@ -40,13 +40,25 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	// get the document
 	CDocument* doc = GetDocument();
 
-	// get the project folder and name
 	QString projectName = QString::fromStdString(doc->GetDocFileBase());
 	QString projectFolder = QString::fromStdString(doc->GetDocFolder());
 
-	// create a name for this job
-	QString jobName = projectName;
-	jobName += QString("_job");
+	// get the list of all the job names so far
+	QStringList jobList;
+	for (int i = 0; i < doc->FEBioJobs(); ++i)
+	{
+		CFEBioJob* job = doc->GetFEBioJob(i);
+		jobList.append(QString::fromStdString(job->GetName()));
+	}
+
+	// get the project folder and name
+	static QString jobName;
+	if (jobName.isEmpty() && jobList.isEmpty())
+	{
+		// create a name for this job
+		jobName = projectName;
+		jobName += QString("_job");
+	}
 
 	// By default, the job path will be the project folder
 	// unless the project folder is not defined, in which case we'll reuse the last path
@@ -67,7 +79,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	// setup the run dialog
 	CDlgRun dlg(this);
 	dlg.SetWorkingDirectory(jobPath);
-	dlg.SetJobName(jobName);
+	if (jobList.isEmpty() == false) dlg.SetJobNames(jobList);
+	if (jobName.isEmpty() == false) dlg.SetJobName(jobName);
 	dlg.SetLaunchConfig(ui->m_launch_configs, lastLaunchConfigIndex);
 	if (dlg.exec())
 	{

@@ -22,7 +22,7 @@ class Ui::CDlgRun
 {
 public:
 	QLineEdit*	cwd;
-	QLineEdit*	jobName;
+	QComboBox*	jobName;
 	QComboBox*	launchConfig;
 	QCheckBox*	debug;
 	QCheckBox*	writeNotes;
@@ -42,7 +42,8 @@ public:
 public:
 	void setup(QDialog* dlg)
 	{
-		jobName = new QLineEdit;
+		jobName = new QComboBox;
+		jobName->setEditable(true);
 
 		launchConfig = new QComboBox;
 		QAction* editLaunchConfigs = new QAction;
@@ -210,7 +211,12 @@ void CDlgRun::SetWorkingDirectory(const QString& wd)
 
 void CDlgRun::SetJobName(const QString& fn)
 {
-	ui->jobName->setText(fn);
+	ui->jobName->setEditText(fn);
+}
+
+void CDlgRun::SetJobNames(QStringList& jobNames)
+{
+	ui->jobName->addItems(jobNames);
 }
 
 void CDlgRun::UpdateLaunchConfigBox(int index)
@@ -244,7 +250,7 @@ QString CDlgRun::GetWorkingDirectory()
 
 QString CDlgRun::GetJobName()
 {
-	return ui->jobName->text();
+	return ui->jobName->currentText();
 }
 
 int CDlgRun::GetLaunchConfig()
@@ -317,7 +323,7 @@ void CDlgRun::accept()
 		}
 
 	// see if the job name is defined
-	if (ui->jobName->text().isEmpty())
+	if (ui->jobName->currentText().isEmpty())
 	{
 		QMessageBox::critical(this, "FEBio Studio", "You must enter valid job name.");
 		return;
