@@ -354,6 +354,7 @@
     <ClCompile Include="..\..\FEBioStudio\stdafx.cpp" />
     <ClCompile Include="..\..\FEBioStudio\SummaryWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\template.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\TetOverlapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
@@ -430,6 +431,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\ZipFiles.h" />
     <ClInclude Include="resource.h" />

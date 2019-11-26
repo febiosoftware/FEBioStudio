@@ -70,7 +70,7 @@ public:
 	virtual void updateUi();
 
 public:
-	void SetErrorString(const QString& err);
+	bool SetErrorString(const QString& err);
 	QString GetErrorString();
 
 private slots:

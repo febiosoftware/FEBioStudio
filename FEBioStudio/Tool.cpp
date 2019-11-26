@@ -77,9 +77,10 @@ QWidget* CBasicTool::createUi()
 }
 
 //-----------------------------------------------------------------------------
-void CBasicTool::SetErrorString(const QString& err)
+bool CBasicTool::SetErrorString(const QString& err)
 {
 	m_err = err;
+	return err.isEmpty();
 }
 
 //-----------------------------------------------------------------------------

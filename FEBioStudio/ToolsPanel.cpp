@@ -11,6 +11,7 @@
 #include "PlaneCutTool.h"
 #include "FiberGeneratorTool.h"
 #include "AreaCalculatorTool.h"
+#include "TetOverlapTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -40,6 +41,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CPlaneCutTool      );
 	tools.push_back(new CFiberGeneratorTool);
     tools.push_back(new CAreaCalculatorTool);
+	tools.push_back(new CTetOverlapTool    );
 }
 
 void CToolsPanel::on_buttons_buttonClicked(int id)

@@ -261,6 +261,7 @@
     <ClCompile Include="..\..\MeshTools\SphereFit.cpp" />
     <ClCompile Include="..\..\MeshTools\SpringGenerator.cpp" />
     <ClCompile Include="..\..\MeshTools\SurfaceDistance.cpp" />
+    <ClCompile Include="..\..\MeshTools\TetOverlap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h" />
@@ -362,6 +363,7 @@
     <ClInclude Include="..\..\MeshTools\SpringGenerator.h" />
     <ClInclude Include="..\..\MeshTools\stdafx.h" />
     <ClInclude Include="..\..\MeshTools\SurfaceDistance.h" />
+    <ClInclude Include="..\..\MeshTools\TetOverlap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

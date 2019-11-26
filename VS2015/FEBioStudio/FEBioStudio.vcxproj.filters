@@ -606,6 +606,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgEditLConfigs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\TetOverlapTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -948,6 +951,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\AreaCalculatorTool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

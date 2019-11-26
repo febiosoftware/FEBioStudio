@@ -370,6 +370,9 @@
     <ClCompile Include="..\..\MeshTools\SurfaceDistance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshTools\TetOverlap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h">
@@ -667,6 +670,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\SurfaceDistance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshTools\TetOverlap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -141,6 +141,12 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		return box;
 	}
 
+	if (pi.isEditable() == false)
+	{
+		QLineEdit* edit = new QLineEdit;
+		return edit;
+	}
+
 	switch (pi.type)
 	{
 	case CProperty::Int:
@@ -393,6 +399,10 @@ void CPropertyListForm::updateData()
 					if (pi.type == CProperty::Float)
 					{
 						edit->setText(QString::number(v.toDouble()));
+					}
+					else if (pi.type == CProperty::Int)
+					{
+						edit->setText(QString::number(v.toInt()));
 					}
 					else edit->setText(v.toString());
 				}
