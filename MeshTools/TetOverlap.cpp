@@ -9,7 +9,7 @@ struct TET
 };
 
 bool tet_overlap(TET& a, TET& b);
-bool box_test(BOX& a, TET& b);
+bool box_test(BOX& a, const TET& b);
 
 TetOverlap::TetOverlap()
 {
@@ -78,25 +78,75 @@ bool TetOverlap::Apply(FEMesh* mesh, std::vector<pair<int, int> >& tetList)
 	return true;
 }
 
-bool plane_test(const vec3d& q, const vec3d& n, TET& b)
+bool plane_test_x(const vec3d& q, const TET& b)
 {
 	const double eps = -1e-15;
-	if (n*(b.r[0] - q) < eps) return false;
-	if (n*(b.r[1] - q) < eps) return false;
-	if (n*(b.r[2] - q) < eps) return false;
-	if (n*(b.r[3] - q) < eps) return false;
+	if ((b.r[0].x - q.x) < eps) return false;
+	if ((b.r[1].x - q.x) < eps) return false;
+	if ((b.r[2].x - q.x) < eps) return false;
+	if ((b.r[3].x - q.x) < eps) return false;
 	return true;
 }
 
-bool box_test(BOX& a, TET& b)
+bool plane_test_xn(const vec3d& q, const TET& b)
 {
-	if (plane_test(a.r1(), vec3d(1, 0, 0), b)) return true;
-	if (plane_test(a.r1(), vec3d(0, 1, 0), b)) return true;
-	if (plane_test(a.r1(), vec3d(0, 0, 1), b)) return true;
+	const double eps = 1e-15;
+	if ((b.r[0].x - q.x) > eps) return false;
+	if ((b.r[1].x - q.x) > eps) return false;
+	if ((b.r[2].x - q.x) > eps) return false;
+	if ((b.r[3].x - q.x) > eps) return false;
+	return true;
+}
 
-	if (plane_test(a.r0(), vec3d(-1, 0, 0), b)) return true;
-	if (plane_test(a.r0(), vec3d(0, -1, 0), b)) return true;
-	if (plane_test(a.r0(), vec3d(0, 0, -1), b)) return true;
+bool plane_test_y(const vec3d& q, const TET& b)
+{
+	const double eps = -1e-15;
+	if ((b.r[0].y - q.y) < eps) return false;
+	if ((b.r[1].y - q.y) < eps) return false;
+	if ((b.r[2].y - q.y) < eps) return false;
+	if ((b.r[3].y - q.y) < eps) return false;
+	return true;
+}
+
+bool plane_test_yn(const vec3d& q, const TET& b)
+{
+	const double eps = 1e-15;
+	if ((b.r[0].y - q.y) > eps) return false;
+	if ((b.r[1].y - q.y) > eps) return false;
+	if ((b.r[2].y - q.y) > eps) return false;
+	if ((b.r[3].y - q.y) > eps) return false;
+	return true;
+}
+
+bool plane_test_z(const vec3d& q, const TET& b)
+{
+	const double eps = -1e-15;
+	if ((b.r[0].z - q.z) < eps) return false;
+	if ((b.r[1].z - q.z) < eps) return false;
+	if ((b.r[2].z - q.z) < eps) return false;
+	if ((b.r[3].z - q.z) < eps) return false;
+	return true;
+}
+
+bool plane_test_zn(const vec3d& q, const TET& b)
+{
+	const double eps = 1e-15;
+	if ((b.r[0].z - q.z) > eps) return false;
+	if ((b.r[1].z - q.z) > eps) return false;
+	if ((b.r[2].z - q.z) > eps) return false;
+	if ((b.r[3].z - q.z) > eps) return false;
+	return true;
+}
+
+bool box_test(BOX& a, const TET& b)
+{
+	if (plane_test_x(a.r1(), b)) return true;
+	if (plane_test_y(a.r1(), b)) return true;
+	if (plane_test_z(a.r1(), b)) return true;
+
+	if (plane_test_xn(a.r0(), b)) return true;
+	if (plane_test_yn(a.r0(), b)) return true;
+	if (plane_test_zn(a.r0(), b)) return true;
 
 	return false;
 }
