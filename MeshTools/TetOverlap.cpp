@@ -168,8 +168,8 @@ bool separates_by_plane(TET& a, TET& b)
 	for (int i = 0; i < 4; ++i)
 	{
 		vec3d& p0 = a.r[T[i][0]];
-		vec3d& e1 = a.r[T[i][1]] - p0;
-		vec3d& e2 = a.r[T[i][2]] - p0;
+		vec3d e1 = a.r[T[i][1]] - p0;
+		vec3d e2 = a.r[T[i][2]] - p0;
 
 		// normal
 		vec3d n = e1 ^ e2; n.Normalize();

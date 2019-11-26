@@ -14,6 +14,9 @@
       location = "group:Comsol/Comsol.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:CUILib/CUILib.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:FEBio/FEBio.xcodeproj">
    </FileRef>
    <FileRef

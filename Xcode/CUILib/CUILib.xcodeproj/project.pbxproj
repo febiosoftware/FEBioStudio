@@ -1,0 +1,354 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D5606C6F238DA438002B037E /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C68238DA438002B037E /* stdafx.h */; };
+		D5606C70238DA438002B037E /* ImageViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C69238DA438002B037E /* ImageViewer.h */; };
+		D5606C71238DA438002B037E /* moc_ImageViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6A238DA438002B037E /* moc_ImageViewer.cpp */; };
+		D5606C72238DA438002B037E /* HistogramViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C6B238DA438002B037E /* HistogramViewer.h */; };
+		D5606C73238DA438002B037E /* Histogram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6C238DA438002B037E /* Histogram.cpp */; };
+		D5606C74238DA438002B037E /* moc_HistogramViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6D238DA438002B037E /* moc_HistogramViewer.cpp */; };
+		D5606C75238DA438002B037E /* ImageViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6E238DA438002B037E /* ImageViewer.cpp */; };
+		D5606C78238DA4D4002B037E /* QtCharts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C77238DA4D4002B037E /* QtCharts.framework */; };
+		D5606C7A238DA4EC002B037E /* QtWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C79238DA4EC002B037E /* QtWidgets.framework */; };
+		D5606C7C238DA501002B037E /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7B238DA501002B037E /* QtCore.framework */; };
+		D5606C7E238DA7BA002B037E /* QtGui.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7D238DA7BA002B037E /* QtGui.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D5606C59238DA422002B037E /* libCUILib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCUILib.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5606C68238DA438002B037E /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		D5606C69238DA438002B037E /* ImageViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageViewer.h; sourceTree = "<group>"; };
+		D5606C6A238DA438002B037E /* moc_ImageViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ImageViewer.cpp; sourceTree = "<group>"; };
+		D5606C6B238DA438002B037E /* HistogramViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HistogramViewer.h; sourceTree = "<group>"; };
+		D5606C6C238DA438002B037E /* Histogram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Histogram.cpp; sourceTree = "<group>"; };
+		D5606C6D238DA438002B037E /* moc_HistogramViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_HistogramViewer.cpp; sourceTree = "<group>"; };
+		D5606C6E238DA438002B037E /* ImageViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageViewer.cpp; sourceTree = "<group>"; };
+		D5606C77238DA4D4002B037E /* QtCharts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCharts.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCharts.framework; sourceTree = "<group>"; };
+		D5606C79238DA4EC002B037E /* QtWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWidgets.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtWidgets.framework; sourceTree = "<group>"; };
+		D5606C7B238DA501002B037E /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCore.framework; sourceTree = "<group>"; };
+		D5606C7D238DA7BA002B037E /* QtGui.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtGui.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtGui.framework; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D5606C56238DA422002B037E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5606C78238DA4D4002B037E /* QtCharts.framework in Frameworks */,
+				D5606C7C238DA501002B037E /* QtCore.framework in Frameworks */,
+				D5606C7E238DA7BA002B037E /* QtGui.framework in Frameworks */,
+				D5606C7A238DA4EC002B037E /* QtWidgets.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D5606C50238DA422002B037E = {
+			isa = PBXGroup;
+			children = (
+				D5606C67238DA438002B037E /* CUILib */,
+				D5606C5A238DA422002B037E /* Products */,
+				D5606C76238DA4D3002B037E /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		D5606C5A238DA422002B037E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D5606C59238DA422002B037E /* libCUILib.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D5606C67238DA438002B037E /* CUILib */ = {
+			isa = PBXGroup;
+			children = (
+				D5606C6C238DA438002B037E /* Histogram.cpp */,
+				D5606C6B238DA438002B037E /* HistogramViewer.h */,
+				D5606C6E238DA438002B037E /* ImageViewer.cpp */,
+				D5606C69238DA438002B037E /* ImageViewer.h */,
+				D5606C6D238DA438002B037E /* moc_HistogramViewer.cpp */,
+				D5606C6A238DA438002B037E /* moc_ImageViewer.cpp */,
+				D5606C68238DA438002B037E /* stdafx.h */,
+			);
+			name = CUILib;
+			path = ../../CUILib;
+			sourceTree = "<group>";
+		};
+		D5606C76238DA4D3002B037E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D5606C7D238DA7BA002B037E /* QtGui.framework */,
+				D5606C7B238DA501002B037E /* QtCore.framework */,
+				D5606C79238DA4EC002B037E /* QtWidgets.framework */,
+				D5606C77238DA4D4002B037E /* QtCharts.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D5606C57238DA422002B037E /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5606C70238DA438002B037E /* ImageViewer.h in Headers */,
+				D5606C6F238DA438002B037E /* stdafx.h in Headers */,
+				D5606C72238DA438002B037E /* HistogramViewer.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D5606C58238DA422002B037E /* CUILib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5606C64238DA422002B037E /* Build configuration list for PBXNativeTarget "CUILib" */;
+			buildPhases = (
+				D5606C55238DA422002B037E /* Sources */,
+				D5606C56238DA422002B037E /* Frameworks */,
+				D5606C57238DA422002B037E /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CUILib;
+			productName = CUILib;
+			productReference = D5606C59238DA422002B037E /* libCUILib.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D5606C51238DA422002B037E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0940;
+				ORGANIZATIONNAME = febio.org;
+				TargetAttributes = {
+					D5606C58238DA422002B037E = {
+						CreatedOnToolsVersion = 9.4.1;
+					};
+				};
+			};
+			buildConfigurationList = D5606C54238DA422002B037E /* Build configuration list for PBXProject "CUILib" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D5606C50238DA422002B037E;
+			productRefGroup = D5606C5A238DA422002B037E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D5606C58238DA422002B037E /* CUILib */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D5606C55238DA422002B037E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5606C73238DA438002B037E /* Histogram.cpp in Sources */,
+				D5606C75238DA438002B037E /* ImageViewer.cpp in Sources */,
+				D5606C74238DA438002B037E /* moc_HistogramViewer.cpp in Sources */,
+				D5606C71238DA438002B037E /* moc_ImageViewer.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D5606C62238DA422002B037E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D5606C63238DA422002B037E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D5606C65238DA422002B037E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/opt/qt/lib,
+				);
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../..",
+					/usr/local/opt/qt/include/QtCharts,
+					/usr/local/opt/qt/include/QtCore,
+					/usr/local/opt/qt/include/QtGui,
+					/usr/local/opt/qt/include/QtWidgets,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		D5606C66238DA422002B037E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/opt/qt/lib,
+				);
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../..",
+					/usr/local/opt/qt/include/QtCharts,
+					/usr/local/opt/qt/include/QtCore,
+					/usr/local/opt/qt/include/QtGui,
+					/usr/local/opt/qt/include/QtWidgets,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5606C54238DA422002B037E /* Build configuration list for PBXProject "CUILib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5606C62238DA422002B037E /* Debug */,
+				D5606C63238DA422002B037E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5606C64238DA422002B037E /* Build configuration list for PBXNativeTarget "CUILib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5606C65238DA422002B037E /* Debug */,
+				D5606C66238DA422002B037E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D5606C51238DA422002B037E /* Project object */;
+}

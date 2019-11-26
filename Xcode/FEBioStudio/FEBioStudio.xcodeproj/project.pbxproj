@@ -25,6 +25,8 @@
 		D548546D23749F2100BE1731 /* QtCharts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546923749F2000BE1731 /* QtCharts.framework */; };
 		D548546E23749F2100BE1731 /* QtWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546A23749F2100BE1731 /* QtWidgets.framework */; };
 		D54879BF234B77D700D0E506 /* AreaCalculatorTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */; };
+		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
+		D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
 		D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0AFF234653F700B7C0B8 /* libmmg3d.a */; };
 		D57A0B04234653F700B7C0B8 /* libmmg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B00234653F700B7C0B8 /* libmmg.a */; };
@@ -387,6 +389,9 @@
 		D548546A23749F2100BE1731 /* QtWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWidgets.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtWidgets.framework; sourceTree = "<group>"; };
 		D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AreaCalculatorTool.cpp; sourceTree = "<group>"; };
 		D54879BE234B77D700D0E506 /* AreaCalculatorTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AreaCalculatorTool.h; sourceTree = "<group>"; };
+		D5606C7F238DA80C002B037E /* libCUILib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libCUILib.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlapTool.cpp; sourceTree = "<group>"; };
+		D5606C86238DAAD1002B037E /* TetOverlapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlapTool.h; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D57A0AFF234653F700B7C0B8 /* libmmg3d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg3d.a; path = ../../../../../../../../../../usr/local/lib/libmmg3d.a; sourceTree = "<group>"; };
 		D57A0B00234653F700B7C0B8 /* libmmg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg.a; path = ../../../../../../../../../../usr/local/lib/libmmg.a; sourceTree = "<group>"; };
@@ -850,6 +855,7 @@
 				D5F7D8DD22FA38B60089B08E /* libAbaqus.a in Frameworks */,
 				D5F7D8DF22FA38B60089B08E /* libAnsys.a in Frameworks */,
 				D5F7D8E122FA38B60089B08E /* libComsol.a in Frameworks */,
+				D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */,
 				D5F7D8E322FA38B60089B08E /* libFEBio.a in Frameworks */,
 				D5F7D8E522FA38B60089B08E /* libFEMLib.a in Frameworks */,
 				D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */,
@@ -1228,6 +1234,8 @@
 				D5F7D71E22FA37C40089B08E /* SummaryWindow.h */,
 				D5F7D79A22FA37C40089B08E /* targetver.h */,
 				D5F7D70A22FA37C40089B08E /* template.cpp */,
+				D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */,
+				D5606C86238DAAD1002B037E /* TetOverlapTool.h */,
 				D5F7D7E722FA37C40089B08E /* Tool.cpp */,
 				D5F7D7D322FA37C40089B08E /* Tool.h */,
 				D5F7D7CF22FA37C40089B08E /* ToolBox.cpp */,
@@ -1256,6 +1264,7 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D5606C7F238DA80C002B037E /* libCUILib.a */,
 				D52EF074237B632C00F9CCB7 /* libssh.4.8.3.dylib */,
 				D548546923749F2000BE1731 /* QtCharts.framework */,
 				D548546823749F2000BE1731 /* QtCore.framework */,
@@ -1445,6 +1454,7 @@
 				D5F7D83522FA37C40089B08E /* moc_SummaryWindow.cpp in Sources */,
 				D5F7D88022FA37C40089B08E /* GLCursor.cpp in Sources */,
 				D5F7D8CD22FA37C40089B08E /* moc_DlgSoluteTable.cpp in Sources */,
+				D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */,
 				D5F7D88A22FA37C40089B08E /* DlgNew.cpp in Sources */,
 				D5F7D88222FA37C40089B08E /* moc_DlgCloneRevolve.cpp in Sources */,
 				D5F7D89A22FA37C40089B08E /* DlgVTKExport.cpp in Sources */,
