@@ -141,21 +141,23 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		return box;
 	}
 
-	if (pi.isEditable() == false)
-	{
-		QLineEdit* edit = new QLineEdit;
-		return edit;
-	}
-
 	switch (pi.type)
 	{
 	case CProperty::Int:
 		{
-			QSpinBox* spin = new QSpinBox;
-			spin->setRange(pi.imin, pi.imax);
-			spin->setValue(v.toInt());
-			connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
-			return spin;
+			if (pi.isEditable())
+			{
+				QSpinBox* spin = new QSpinBox;
+				spin->setRange(pi.imin, pi.imax);
+				spin->setValue(v.toInt());
+				connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
+				return spin;
+			}
+			else
+			{
+				QLineEdit* edit = new QLineEdit;
+				return edit;
+			}
 		}
 		break;
 	case CProperty::Float:
