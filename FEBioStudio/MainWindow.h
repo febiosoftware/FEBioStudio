@@ -181,9 +181,13 @@ public:
 	// Add a graph to the list of managed graph windows
 	void AddGraph(CGraphWindow* graph);
 
+public:
+	QIcon GetResourceIcon(const QString& iconName);
+
 private:
 	void writeSettings();
 	void readSettings();
+	void readThemeSetting();
     
 public:
 	FileReader* CreateFileReader(const QString& fileName);
@@ -422,4 +426,16 @@ private:
 	CDocument*			m_doc;
 	CFileThread*		m_fileThread;
 	QStringList			m_fileQueue;
+};
+
+class CResource
+{
+public:
+	static QIcon Icon(const QString& iconName);
+
+public:
+	static void Init(CMainWindow* wnd);
+
+private:
+	static CMainWindow*	m_wnd;
 };

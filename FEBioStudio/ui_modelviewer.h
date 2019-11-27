@@ -10,8 +10,7 @@
 #include "ModelTree.h"
 #include "ModelPropsPanel.h"
 #include "ModelSearch.h"
-
-class CMainWindow;
+#include "MainWindow.h"
 
 class Ui::CModelViewer
 {
@@ -34,7 +33,7 @@ public:
 		selectButton->setToolTip("<font color=\"black\">Select in Graphics View");
 
 		QToolButton* deleteButton = new QToolButton; 
-		deleteButton->setIcon(QIcon(":/icons/delete.png")); 
+		deleteButton->setIcon(CResource::Icon("delete")); 
 		deleteButton->setObjectName("deleteButton"); 
 		deleteButton->setAutoRaise(true);
 		deleteButton->setToolTip("<font color=\"black\">Delete item");

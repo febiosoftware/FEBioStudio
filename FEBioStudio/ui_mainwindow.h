@@ -42,6 +42,7 @@ public:
 	CMainTabBar*	tab;
 	CGLView*	glview;
 	CGLControlBar* glc;
+	::CMainWindow*	m_wnd;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -138,6 +139,10 @@ public:
 	QAction* actionColorMap;
 	QAction* actionPlay;
 
+	QAction* selectRect;
+	QAction* selectCircle;
+	QAction* selectFree;
+
 public:
 	vector<CLaunchConfig>		m_launch_configs;
 
@@ -155,8 +160,15 @@ public:
 	QList<::CGraphWindow*>	graphList;
 
 public:
+	CMainWindow()
+	{
+		m_theme = 0;
+	}
+
 	void setupUi(::CMainWindow* wnd)
 	{
+		m_wnd = wnd;
+
 		m_launch_configs.push_back(CLaunchConfig());
 		m_launch_configs.back().type = LOCAL;
 		m_launch_configs.back().name = std::string("FEBio 2.9");
@@ -174,14 +186,10 @@ public:
 		m_process = 0;
 		m_bkillProcess = false;
 
-		m_theme = 0;
-
 		m_isAnimating = false;
 
 		curveWnd = 0;
 		meshWnd = 0;
-
-		m_wnd = wnd;
 
 		// initialize current path
 		currentPath = QDir::currentPath();
@@ -242,7 +250,7 @@ public:
 	{
 		QAction* pa = new QAction(title, m_wnd);
 		pa->setObjectName(name);
-		if (iconFile.isEmpty() == false) pa->setIcon(QIcon(iconFile));
+		if (iconFile.isEmpty() == false) pa->setIcon( m_wnd->GetResourceIcon(iconFile));
 		if (bcheckable) pa->setCheckable(true);
 		return pa;
 	}
@@ -251,9 +259,9 @@ public:
 	void buildMenu(::CMainWindow* mainWindow)
 	{
 		// --- File menu ---
-		QAction* actionNew        = addAction("New ..."    , "actionNew"   , ":/icons/new.png" ); actionNew ->setShortcuts(QKeySequence::New );
-		QAction* actionOpen       = addAction("Open ..."   , "actionOpen"  , ":/icons/open.png"); actionOpen->setShortcuts(QKeySequence::Open);
-		QAction* actionSave       = addAction("Save"       , "actionSave"  , ":/icons/save.png"); actionSave->setShortcuts(QKeySequence::Save);
+		QAction* actionNew        = addAction("New ..."    , "actionNew"   , "new" ); actionNew ->setShortcuts(QKeySequence::New );
+		QAction* actionOpen       = addAction("Open ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
+		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
 		QAction* actionSaveAs     = addAction("Save as ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
 		QAction* actionInfo       = addAction("Model info ...", "actionInfo");
 		QAction* actionImportFE   = addAction("Import FE model ..." , "actionImportFEModel");
@@ -270,8 +278,8 @@ public:
 		QAction* actionExit       = addAction("Exit"       , "actionExit"  );
 
 		// --- Edit menu ---
-		QAction* actionUndo              = addAction("Undo", "actionUndo", ":icons/undo.png"); actionUndo->setShortcuts(QKeySequence::Undo);
-		QAction* actionRedo              = addAction("Redo", "actionRedo", ":icons/redo.png"); actionRedo->setShortcuts(QKeySequence::Redo);
+		QAction* actionUndo              = addAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
+		QAction* actionRedo              = addAction("Redo", "actionRedo", "redo"); actionRedo->setShortcuts(QKeySequence::Redo);
 		QAction* actionInvertSelection   = addAction("Invert selection"  , "actionInvertSelection"  );
 		QAction* actionClearSelection    = addAction("Clear selection"   , "actionClearSelection"   );
 		QAction* actionDeleteSelection   = addAction("Delete selection"  , "actionDeleteSelection"  ); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
@@ -279,15 +287,15 @@ public:
 		QAction* actionHideSelection     = addAction("Hide selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
 		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier + Qt::Key_H);
 		QAction* actionUnhideAll         = addAction("Unhide all"        , "actionUnhideAll"        );
-		QAction* actionToggleVisible     = addAction("Toggle visibility" , "actionToggleVisible"    , ":/icons/toggle_visible.png");
+		QAction* actionToggleVisible     = addAction("Toggle visibility" , "actionToggleVisible"    , "toggle_visible");
 		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
 		QAction* actionCollapseTransform = addAction("Collapse transform", "actionCollapseTransform");
-		QAction* actionClone             = addAction("Clone object ...", "actionClone"            , ":/icons/clone.png"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
-		QAction* actionCloneGrid         = addAction("Clone grid ..."    , "actionCloneGrid"        , ":/icons/clonegrid.png");
-		QAction* actionCloneRevolve      = addAction("Clone revolve ..." , "actionCloneRevolve"     , ":/icons/clonerevolve.png");
-		QAction* actionMerge             = addAction("Merge objects ..." , "actionMerge"            , ":/icons/merge.png");
-		QAction* actionDetach            = addAction("Detach Elements"   , "actionDetach"           , ":/icons/detach.png");
-		QAction* actionExtract           = addAction("Extract Faces"     , "actionExtract"          , ":/icons/extract.png");
+		QAction* actionClone             = addAction("Clone object ...", "actionClone"            , "clone"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionCloneGrid         = addAction("Clone grid ..."    , "actionCloneGrid"        , "clonegrid");
+		QAction* actionCloneRevolve      = addAction("Clone revolve ..." , "actionCloneRevolve"     , "clonerevolve");
+		QAction* actionMerge             = addAction("Merge objects ..." , "actionMerge"            , "merge");
+		QAction* actionDetach            = addAction("Detach Elements"   , "actionDetach"           , "detach");
+		QAction* actionExtract           = addAction("Extract Faces"     , "actionExtract"          , "extract");
 		QAction* actionPurge             = addAction("Purge ..."         , "actionPurge"            );
 		QAction* actionEditProject       = addAction("Edit Project Settings ...", "actionEditProject");
 
@@ -301,38 +309,38 @@ public:
 		actionAddRigidConstraint = addAction("Add Rigid Constraint ..."      , "actionAddRigidConstraint");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
-		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", ":/icons/material.png"); actionAddMaterial->setShortcut(Qt::ControlModifier + Qt::Key_M);
+		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier + Qt::Key_M);
 		actionSoluteTable        = addAction("Solute Table ..."              , "actionSoluteTable");
 		actionSBMTable           = addAction("Solid-bound Molecule Table ...", "actionSBMTable");
 		actionAddReaction        = addAction("Chemical Reaction Editor ..."  , "actionAddReaction");
 
 		// --- Tools menu ---
-		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", ":/icons/curves.png"); actionCurveEditor->setShortcut(Qt::Key_F4);
-		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", ":/icons/inspect.png");
+		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F4);
+		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect");
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
-		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", ":/icons/febio.png"); actionFEBioRun->setShortcut(Qt::Key_F5);
+		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febio"); actionFEBioRun->setShortcut(Qt::Key_F5);
 		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
 		// --- Post menu ---
-		QAction* actionPlaneCut = addAction("Plane cut", "actionPlaneCut", ":/icons/cut.png");
-		QAction* actionMirrorPlane = addAction("Mirror plane", "actionMirrorPlane", ":/icons/mirror.png");
-		QAction* actionVectorPlot = addAction("Vector plot", "actionVectorPlot", ":/icons/vectors.png");
-		QAction* actionTensorPlot = addAction("Tensor plot", "actionTensorPlot", ":/icons/tensor.png");
-		QAction* actionIsosurfacePlot = addAction("Isosurface plot", "actionIsosurfacePlot", ":/icons/isosurface.png");
-		QAction* actionSlicePlot = addAction("Slice plot", "actionSlicePlot", ":icons/sliceplot.png");
-		QAction* actionDisplacementMap = addAction("Displacement map", "actionDisplacementMap", ":/icons/distort.png");
-		QAction* actionStreamLinePlot = addAction("Stream lines plot", "actionStreamLinePlot", ":/icons/streamlines.png");
-		QAction* actionParticleFlowPlot = addAction("Particle flow plot", "actionParticleFlowPlot", ":/icons/particle.png");
-		QAction* actionVolumeFlowPlot = addAction("Volume flow plot", "actionVolumeFlowPlot", ":/icons/flow.png");
-		QAction* actionImageSlicer = addAction("Image slicer", "actionImageSlicer", ":/icons/imageslice.png");
-		QAction* actionVolumeRender = addAction("Volume render", "actionVolumeRender", ":/icons/volrender.png");
-		QAction* actionMarchingCubes = addAction("Image isosurface", "actionMarchingCubes", ":/icons/marching_cubes.png");
-		QAction* actionGraph = addAction("New Graph ...", "actionGraph", ":/icons/chart.png"); actionGraph->setShortcut(Qt::Key_F3);
+		QAction* actionPlaneCut = addAction("Plane cut", "actionPlaneCut", "cut");
+		QAction* actionMirrorPlane = addAction("Mirror plane", "actionMirrorPlane", "mirror");
+		QAction* actionVectorPlot = addAction("Vector plot", "actionVectorPlot", "vectors");
+		QAction* actionTensorPlot = addAction("Tensor plot", "actionTensorPlot", "tensor");
+		QAction* actionIsosurfacePlot = addAction("Isosurface plot", "actionIsosurfacePlot", "isosurface");
+		QAction* actionSlicePlot = addAction("Slice plot", "actionSlicePlot", "sliceplot");
+		QAction* actionDisplacementMap = addAction("Displacement map", "actionDisplacementMap", "distort");
+		QAction* actionStreamLinePlot = addAction("Stream lines plot", "actionStreamLinePlot", "streamlines");
+		QAction* actionParticleFlowPlot = addAction("Particle flow plot", "actionParticleFlowPlot", "particle");
+		QAction* actionVolumeFlowPlot = addAction("Volume flow plot", "actionVolumeFlowPlot", "flow");
+		QAction* actionImageSlicer = addAction("Image slicer", "actionImageSlicer", "imageslice");
+		QAction* actionVolumeRender = addAction("Volume render", "actionVolumeRender", "volrender");
+		QAction* actionMarchingCubes = addAction("Image isosurface", "actionMarchingCubes", "marching_cubes");
+		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
-		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", ":/icons/integrate.png");
+		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");
 
 		actionPlaneCut->setWhatsThis("<font color=\"black\"><h3>Plane cut</h3>Add a plane cut plot to the model. A plane cut plot allows users to create a cross section of the mesh.</font>");
 		actionMirrorPlane->setWhatsThis("<font color=\"black\"><h3>Mirror plane</h3>Renders a mirrorred version of the model.</font>");
@@ -366,7 +374,7 @@ public:
 		actionZoomExtents     = addAction("Zoom to selection", "actionZoomExtents");
 		actionViewCapture     = addAction("Show capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
 		actionShowGrid        = addAction("Show Grid", "actionShowGrid"); actionShowGrid->setCheckable(true); actionShowGrid->setChecked(true); actionShowGrid->setShortcut(Qt::Key_G);
-		actionShowMeshLines   = addAction("Show Mesh Lines", "actionShowMeshLines", ":/icons/show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setShortcut(Qt::Key_M);
+		actionShowMeshLines   = addAction("Show Mesh Lines", "actionShowMeshLines", "show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setShortcut(Qt::Key_M);
 		actionShowEdgeLines   = addAction("Show Edge Lines", "actionShowEdgeLines"); actionShowEdgeLines->setCheckable(true); actionShowEdgeLines->setShortcut(Qt::Key_Z);
 		actionBackfaceCulling = addAction("Backface culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true);
 		actionViewSmooth      = addAction("Color smoothing", "actionViewSmooth"); actionViewSmooth->setShortcut(Qt::Key_C); actionViewSmooth->setCheckable(true);
@@ -393,21 +401,21 @@ public:
 		QAction* actionAbout = addAction("About FEBio Studio", "actionAbout");
 	
 		// other actions
-		actionSelectObjects  = addAction("Select Objects" , "actionSelectObjects" , ":icons/selectObject.png" , true);
-		actionSelectParts    = addAction("Select Parts"   , "actionSelectParts"   , ":icons/selectPart.png"   , true);
-		actionSelectSurfaces = addAction("Select Surfaces", "actionSelectSurfaces", ":icons/selectSurface.png", true);
-		actionSelectCurves   = addAction("Select Curves"  , "actionSelectCurves"  , ":icons/selectCurves.png", true );
-		actionSelectNodes    = addAction("Select Nodes"   , "actionSelectNodes"   , ":icons/selectNodes.png", true  );
-		actionSelectDiscrete = addAction("Select Discrete", "actionSelectDiscrete", ":icons/discrete.png", true);
+		actionSelectObjects  = addAction("Select Objects" , "actionSelectObjects" , "selectObject" , true);
+		actionSelectParts    = addAction("Select Parts"   , "actionSelectParts"   , "selectPart"   , true);
+		actionSelectSurfaces = addAction("Select Surfaces", "actionSelectSurfaces", "selectSurface", true);
+		actionSelectCurves   = addAction("Select Curves"  , "actionSelectCurves"  , "selectCurves", true );
+		actionSelectNodes    = addAction("Select Nodes"   , "actionSelectNodes"   , "selectNodes", true  );
+		actionSelectDiscrete = addAction("Select Discrete", "actionSelectDiscrete", "discrete", true);
 
-		QAction* actionSelect    = addAction("Select"   , "actionSelect"   , ":icons/select.png"   , true); actionSelect->setShortcut(Qt::Key_Q);
-		QAction* actionTranslate = addAction("Translate", "actionTranslate", ":icons/translate.png", true); actionTranslate->setShortcut(Qt::Key_T);
-		QAction* actionRotate    = addAction("Rotate"   , "actionRotate"   , ":icons/rotate.png"   , true); actionRotate->setShortcut(Qt::Key_R);
-		QAction* actionScale     = addAction("Scale"    , "actionScale"    , ":icons/scale.png"    , true); actionScale->setShortcut(Qt::Key_S);
+		QAction* actionSelect    = addAction("Select"   , "actionSelect"   , "select"   , true); actionSelect->setShortcut(Qt::Key_Q);
+		QAction* actionTranslate = addAction("Translate", "actionTranslate", "translate", true); actionTranslate->setShortcut(Qt::Key_T);
+		QAction* actionRotate    = addAction("Rotate"   , "actionRotate"   , "rotate"   , true); actionRotate->setShortcut(Qt::Key_R);
+		QAction* actionScale     = addAction("Scale"    , "actionScale"    , "scale"    , true); actionScale->setShortcut(Qt::Key_S);
 
-		QAction* selectRect   = addAction("Rectangle", "selectRect"  , ":icons/selectRect.png"  , true);
-		QAction* selectCircle = addAction("Circle"   , "selectCircle", ":icons/selectCircle.png", true);
-		QAction* selectFree   = addAction("Freehand" , "selectFree"  , ":icons/selectFree.png"  , true);
+		selectRect   = addAction("Rectangle", "selectRect"  , "selectRect"  , true);
+		selectCircle = addAction("Circle"   , "selectCircle", "selectCircle", true);
+		selectFree   = addAction("Freehand" , "selectFree"  , "selectFree"  , true);
 
 		QActionGroup* pag = new QActionGroup(mainWindow);
 		pag->addAction(actionSelectObjects);
@@ -666,13 +674,13 @@ public:
 		postToolBar->setWindowTitle("Post Toolbar");
 		mainWindow->addToolBar(Qt::TopToolBarArea, postToolBar);
 
-		QAction* actionFirst = addAction("first", "actionFirst", ":/icons/back.png");
-		QAction* actionPrev = addAction("previous", "actionPrev", ":/icons/prev.png");
-		actionPlay = addAction("Play", "actionPlay", ":/icons/play.png"); actionPlay->setShortcut(Qt::Key_Space);
+		QAction* actionFirst = addAction("first", "actionFirst", "back");
+		QAction* actionPrev = addAction("previous", "actionPrev", "prev");
+		actionPlay = addAction("Play", "actionPlay", "play"); actionPlay->setShortcut(Qt::Key_Space);
 		actionPlay->setCheckable(true);
-		QAction* actionNext = addAction("next", "actionNext", ":/icons/next.png");
-		QAction* actionLast = addAction("last", "actionLast", ":/icons/forward.png");
-		QAction* actionTime = addAction("Time settings", "actionTimeSettings", ":/icons/clock.png");
+		QAction* actionNext = addAction("next", "actionNext", "next");
+		QAction* actionLast = addAction("last", "actionLast", "forward");
+		QAction* actionTime = addAction("Time settings", "actionTimeSettings", "clock");
 
 		selectData = new CDataFieldSelector;
 		selectData->setWhatsThis("<font color=\"black\">Use this to select the current data variable that will be used to display the color map on the mesh.");
@@ -687,7 +695,7 @@ public:
 		actionLast->setWhatsThis("<font color=\"black\">Click this to go to the last time step in the model.");
 		actionTime->setWhatsThis("<font color=\"black\">Click this to open the Time Info dialog box.");
 
-		actionColorMap = addAction("Toggle colormap", "actionColorMap", ":/icons/colormap.png");
+		actionColorMap = addAction("Toggle colormap", "actionColorMap", "colormap");
 		actionColorMap->setCheckable(true);
 		actionColorMap->setWhatsThis("<font color=\"black\">Click this to turn on the color map on the model.");
 
@@ -703,6 +711,16 @@ public:
 		postToolBar->addAction(actionTime);
 		postToolBar->addWidget(selectData);
 		postToolBar->addAction(actionColorMap);
+		postToolBar->addSeparator();
+		postToolBar->addAction(actionPlaneCut);
+		postToolBar->addAction(actionMirrorPlane);
+		postToolBar->addAction(actionVectorPlot);
+		postToolBar->addAction(actionTensorPlot);
+		postToolBar->addAction(actionIsosurfacePlot);
+		postToolBar->addAction(actionSlicePlot);
+		postToolBar->addAction(actionStreamLinePlot);
+		postToolBar->addAction(actionParticleFlowPlot);
+		postToolBar->addAction(actionVolumeFlowPlot);
 
 		postToolBar->setDisabled(true);
 		postToolBar->hide();
@@ -714,12 +732,12 @@ public:
 		mainWindow->addToolBarBreak();
 		mainWindow->addToolBar(Qt::TopToolBarArea, pFontToolBar);
 
-		QAction* actionProperties = addAction("Properties ...", "actionProperties", ":/icons/properties.png");
+		QAction* actionProperties = addAction("Properties ...", "actionProperties", "properties");
 
 		pFontToolBar->addWidget(pFontStyle = new QFontComboBox); pFontStyle->setObjectName("fontStyle");
 		pFontToolBar->addWidget(pFontSize = new QSpinBox); pFontSize->setObjectName("fontSize");
-		pFontToolBar->addAction(actionFontBold = addAction("Bold", "fontBold", ":/icons/font_bold.png")); actionFontBold->setCheckable(true);
-		pFontToolBar->addAction(actionFontItalic = addAction("Italic", "fontItalic", ":/icons/font_italic.png")); actionFontItalic->setCheckable(true);
+		pFontToolBar->addAction(actionFontBold = addAction("Bold", "fontBold", "font_bold")); actionFontBold->setCheckable(true);
+		pFontToolBar->addAction(actionFontItalic = addAction("Italic", "fontItalic", "font_italic")); actionFontItalic->setCheckable(true);
 		pFontToolBar->addAction(actionProperties);
 		pFontToolBar->setEnabled(false);
 	}
@@ -943,7 +961,4 @@ private:
 			}
 		}
 	}
-
-private:
-	::CMainWindow*	m_wnd;
 };

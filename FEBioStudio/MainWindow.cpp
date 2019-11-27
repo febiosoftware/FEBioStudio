@@ -42,6 +42,16 @@
 
 extern GLColor col[];
 
+CMainWindow*	CResource::m_wnd = nullptr;
+
+void CResource::Init(CMainWindow* wnd) { m_wnd = wnd; }
+
+QIcon CResource::Icon(const QString& iconName)
+{
+	assert(m_wnd);
+	return m_wnd->GetResourceIcon(iconName);
+}
+
 // create a dark style theme (work in progress)
 void darkStyle()
 {
@@ -69,7 +79,12 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 {
 	m_doc = 0;
 
+	CResource::Init(this);
+
 	setDockOptions(dockOptions() | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
+
+	// read the theme option, before we build the UI
+	readThemeSetting();
 
 	// setup the GUI
 	ui->setupUi(this);
@@ -97,10 +112,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		v.m_nbgstyle = BG_HORIZONTAL;
 
 		GLWidget::set_base_color(GLColor(255, 255, 255));
-
-		// adjust some toolbar buttons
-		ui->actionFontBold->setIcon(QIcon(":/icons/font_bold_neg.png"));
-		ui->actionFontItalic->setIcon(QIcon(":/icons/font_italic_neg.png"));
 	}
 
 	// allow drop events
@@ -119,6 +130,29 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// Instantiate Logger singleton
 	CLogger::Instantiate(this);
+}
+
+QIcon CMainWindow::GetResourceIcon(const QString& iconName)
+{
+	QString rs(iconName);
+	if (ui->m_theme == 1)
+	{
+		rs += "_neg";
+	}
+	QString url = ":/icons/" + rs + ".png";
+
+	// make sure the icon exists
+	if (ui->m_theme == 1)
+	{
+		QFile f(url);
+		if (!f.exists())
+		{
+			// use the regular version instead
+			url = ":/icons/" + iconName + ".png";
+		}
+	}
+
+	return QIcon(url);
 }
 
 //-----------------------------------------------------------------------------
@@ -829,6 +863,15 @@ void CMainWindow::writeSettings()
 
 	settings.endGroup();
 }
+
+void CMainWindow::readThemeSetting()
+{
+	QSettings settings("MRLSoftware", "FEBio Studio");
+	settings.beginGroup("MainWindow");
+	ui->m_theme = settings.value("theme", 0).toInt();
+	settings.endGroup();
+}
+
 
 void CMainWindow::readSettings()
 {

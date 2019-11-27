@@ -11,6 +11,7 @@
 #include <QToolButton>
 #include <QLabel>
 #include <QSplitter>
+#include "MainWindow.h"
 
 class CCurveEditorItem : public QTreeWidgetItem
 {
@@ -188,7 +189,7 @@ public:
 		undo = toolBar->addAction(QIcon(":/icons/undo.png"), "Undo"); undo->setObjectName("undo");
 		redo = toolBar->addAction(QIcon(":/icons/redo.png"), "Redo"); redo->setObjectName("redo");
 		toolBar->addSeparator();
-		QAction* math = toolBar->addAction(QIcon(":/icons/formula.png"), "Formula"); math->setObjectName("math");
+		QAction* math = toolBar->addAction(CResource::Icon("formula"), "Formula"); math->setObjectName("math");
 
 		QMetaObject::connectSlotsByName(wnd);
 	}

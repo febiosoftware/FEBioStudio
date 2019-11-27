@@ -127,5 +127,10 @@
 		<file>icons/splash.png</file>
 		<file>icons/splash_hires.png</file>
 		<file>icons/cylpatch.png</file>
+		<file>icons/selectRect_neg.png</file>
+		<file>icons/selectFree_neg.png</file>
+		<file>icons/selectCircle_neg.png</file>
+		<file>icons/formula_neg.png</file>
+		<file>icons/delete_neg.png</file>
 	</qresource>
 </RCC>
