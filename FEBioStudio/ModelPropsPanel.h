@@ -31,22 +31,29 @@ public:
 
 	void setColor(const QColor& col);
 
+	void setStatus(bool b);
+
 	void showColor(bool b);
+
+	void showStatus(bool b);
 
 	void setNameReadOnly(bool b);
 
 protected slots:
 	void on_name_textEdited(const QString&);
 	void on_col_colorChanged(QColor c);
+	void on_status_clicked(bool b);
 
 signals:
 	void nameChanged(const QString& newName);
 	void colorChanged(const QColor& c);
+	void statusChanged(bool b);
 
 private:
 	QLineEdit*		m_name;
 	QLabel*			m_type;
 	CColorButton*	m_col;
+	QCheckBox*		m_status;
 };
 
 class CBCObjectPropsPanel : public QWidget
@@ -118,6 +125,7 @@ private slots:
 	void on_form_dataChanged(bool itemModified);
 	void on_bcobject_stepChanged(int n);
 	void on_bcobject_stateChanged(bool isActive);
+	void on_object_statusChanged(bool b);
 
 private:
 	void SetSelection(int n, FEItemListBuilder* it);

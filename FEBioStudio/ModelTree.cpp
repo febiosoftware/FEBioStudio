@@ -515,6 +515,15 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 			font.setItalic(pc->IsActive() == false);
 			item->setFont(0, font);
 		}
+
+
+		Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(po);
+		if (plot)
+		{
+			QFont font = item->font(0);
+			font.setItalic(plot->IsActive() == false);
+			item->setFont(0, font);
+		}
 	}
 
 	CObjectValidator* val = m_data[n].val;

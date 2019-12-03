@@ -28,6 +28,7 @@
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
 #include <PostLib/ImageModel.h>
+#include <PostGL/GLPlot.h>
 #include "Command.h"
 
 //=============================================================================
@@ -44,6 +45,10 @@ CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
 
 	l->addWidget(new QLabel("Type:"), 1, 0, Qt::AlignRight);
 	l->addWidget(m_type = new QLabel, 1, 1);
+
+	l->addWidget(new QLabel("Active:"), 2, 0, Qt::AlignRight);
+	l->addWidget(m_status = new QCheckBox, 2, 1);
+	m_status->setObjectName("status");
 
 	setLayout(l);
 
@@ -70,9 +75,19 @@ void CObjectPropsPanel::showColor(bool b)
 	m_col->setVisible(b);
 }
 
+void CObjectPropsPanel::showStatus(bool b)
+{
+	m_status->setVisible(b);
+}
+
 void CObjectPropsPanel::setNameReadOnly(bool b)
 {
 	m_name->setReadOnly(b);
+}
+
+void CObjectPropsPanel::setStatus(bool b)
+{
+	m_status->setChecked(b);
 }
 
 void CObjectPropsPanel::on_name_textEdited(const QString& t)
@@ -83,6 +98,11 @@ void CObjectPropsPanel::on_name_textEdited(const QString& t)
 void CObjectPropsPanel::on_col_colorChanged(QColor c)
 {
 	emit colorChanged(c);
+}
+
+void CObjectPropsPanel::on_status_clicked(bool b)
+{
+	emit statusChanged(b);
 }
 
 //=============================================================================
@@ -259,9 +279,11 @@ public:
 		QMetaObject::connectSlotsByName(parent);
 	}
 
-	void showObjectInfo(bool b, bool showColor = false, bool editName = true, QColor col = QColor(0,0,0)) 
+	void showObjectInfo(bool b, bool showColor = false, bool editName = true, QColor col = QColor(0,0,0), bool showActive = false, bool isActive = false) 
 	{ 
 		obj->showColor(showColor);
+		obj->showStatus(showActive);
+		if (showActive) obj->setStatus(isActive);
 		if (showColor) obj->setColor(col);
 		tool->getToolItem(OBJECT_PANEL)->setVisible(b); 
 		obj->setNameReadOnly(!editName);
@@ -468,6 +490,11 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 					ui->setBCType(type);
 					ui->setCurrentStepID(pc->GetStep());
 					ui->showBCObjectInfo(true, true, pc->IsActive());
+				}
+				else if (dynamic_cast<Post::CGLObject*>(po))
+				{
+					Post::CGLObject* plot = dynamic_cast<Post::CGLObject*>(po);
+					ui->showObjectInfo(true, false, nameEditable, QColor(0, 0, 0), true, plot->IsActive());
 				}
 				else ui->showObjectInfo(true, false, nameEditable);
 			}
@@ -1252,6 +1279,18 @@ void CModelPropsPanel::on_bcobject_stateChanged(bool isActive)
 	if (pc == 0) return;
 
 	pc->Activate(isActive);
+
+	emit dataChanged(false);
+}
+
+void CModelPropsPanel::on_object_statusChanged(bool b)
+{
+	if (m_isUpdating) return;
+
+	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(m_currentObject);
+	if (po == 0) return;
+
+	po->Activate(b);
 
 	emit dataChanged(false);
 }

@@ -231,6 +231,16 @@ void GLLegendBar::GetRange(float& fmin, float& fmax)
 	fmax = m_fmax;
 }
 
+int GLLegendBar::GetDivisions()
+{
+	return m_pMap->GetDivisions();
+}
+
+void GLLegendBar::SetDivisions(int n)
+{
+	m_pMap->SetDivisions(n);
+}
+
 void GLLegendBar::draw_gradient_vert(QPainter* painter)
 {
 	painter->beginNativePainting();

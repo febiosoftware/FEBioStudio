@@ -103,8 +103,6 @@ void GOCCObject::BuildGObject()
 	for (TopExp_Explorer anExpSF(m_occ->m_shape, TopAbs_FACE); anExpSF.More(); anExpSF.Next(), iface++)
 	{
 		GFace* face = new GFace(this);
-		face->SetID(GFace::CreateUniqueID());
-		face->SetLocalID(iface);
 		face->m_nPID[0] = 0;
 		AddFace(face);
 	}

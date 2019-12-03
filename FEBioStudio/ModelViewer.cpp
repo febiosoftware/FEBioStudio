@@ -434,6 +434,9 @@ void CModelViewer::on_props_dataChanged(bool b)
 	{
 		ui->tree->UpdateObject(ui->props->GetCurrentObject());
 		ui->m_search->UpdateObject(ui->props->GetCurrentObject());
+
+		CMainWindow* wnd = GetMainWindow();
+		wnd->RedrawGL();
 	}
 }
 

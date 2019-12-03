@@ -315,7 +315,7 @@ public:
 		actionAddReaction        = addAction("Chemical Reaction Editor ..."  , "actionAddReaction");
 
 		// --- Tools menu ---
-		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F4);
+		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F9);
 		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect");
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febio"); actionFEBioRun->setShortcut(Qt::Key_F5);

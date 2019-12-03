@@ -176,6 +176,9 @@ public:
 	void SetRange(float fmin, float fmax);
 	void GetRange(float& fmin, float& fmax);
 
+	int GetDivisions();
+	void SetDivisions(int n);
+
 protected:
 	void draw_gradient_vert(QPainter* painter);
 	void draw_gradient_horz(QPainter* painter);
