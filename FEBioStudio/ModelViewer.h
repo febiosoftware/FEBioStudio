@@ -60,6 +60,8 @@ public:
 
 	bool OnDeleteEvent() override;
 
+	void RefreshProperties();
+
 private slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
 	void on_selectButton_clicked();

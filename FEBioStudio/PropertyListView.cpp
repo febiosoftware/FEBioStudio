@@ -540,6 +540,13 @@ void CPropertyListView::FitGeometry()
 }
 
 //-----------------------------------------------------------------------------
+void CPropertyListView::Refresh()
+{
+	if (ui->m_list)
+		ui->m_data->setPropertyList(ui->m_list);
+}
+
+//-----------------------------------------------------------------------------
 void CPropertyListView::on_modelProps_clicked(const QModelIndex& index)
 {
 /*	if (ui->m_list)

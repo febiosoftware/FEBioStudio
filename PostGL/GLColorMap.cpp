@@ -125,8 +125,6 @@ void CGLColorMap::Update()
 //-----------------------------------------------------------------------------
 void CGLColorMap::Update(int ntime, float dt, bool breset)
 {
-	UpdateData();
-
 	// get the object
 	CGLModel* po = GetModel();
 
@@ -177,7 +175,26 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	}
 	else
 	{
-		for (int i = 0; i<pm->Faces(); ++i)
+		// evaluate all nodes to find range
+		for (int i = 0; i<pm->Nodes(); ++i)
+		{
+			FENode& node = pm->Node(i);
+			NODEDATA& d0 = s0.m_NODE[i];
+			NODEDATA& d1 = s1.m_NODE[i];
+			if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
+			{
+				float f0 = d0.m_val;
+				float f1 = d1.m_val;
+				float f = f0 + (f1 - f0)*w;
+				node.m_ntag = 1;
+				if (f > fmax) fmax = f;
+				if (f < fmin) fmin = f;
+			}
+			else node.m_ntag = 0;
+		}
+
+		// evaluate face values for texture generation
+		for (int i = 0; i < pm->Faces(); ++i)
 		{
 			FEFace& face = pm->Face(i);
 			if (face.IsEnabled())
@@ -194,11 +211,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 						float f1 = d1.m_val;
 						float f = f0 + (f1 - f0)*w;
 						face.m_tex[j] = f;
-						node.m_ntag = 1;
-						if (f > fmax) fmax = f;
-						if (f < fmin) fmin = f;
 					}
-					else node.m_ntag = 0;
 				}
 			}
 		}

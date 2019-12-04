@@ -246,6 +246,11 @@ void CGLPlaneCutPlot::RenderSlice()
 	GLTexture1D& tex = pcol->GetColorMap()->GetTexture();
 	glDisable(GL_CULL_FACE);
 
+	float rng[2];
+	CGLColorMap& colorMap = *mdl->GetColorMap();
+	colorMap.GetRange(rng);
+	if (rng[1] == rng[0]) ++rng[1];
+
 	// loop over all enabled materials
 	for (int n=0; n<ps->Materials(); ++n)
 	{
@@ -278,11 +283,16 @@ void CGLPlaneCutPlot::RenderSlice()
 					// render the face
 					vec3d* r = face.r;
 					float* tex = face.tex;
+
+					float t1 = (tex[0] - rng[0]) / (rng[1] - rng[0]);
+					float t2 = (tex[1] - rng[0]) / (rng[1] - rng[0]);
+					float t3 = (tex[2] - rng[0]) / (rng[1] - rng[0]);
+
 					glBegin(GL_TRIANGLES);
 					{
-						glTexCoord1f(tex[0]); glVertex3f(r[0].x, r[0].y, r[0].z);
-						glTexCoord1f(tex[1]); glVertex3f(r[1].x, r[1].y, r[1].z);
-						glTexCoord1f(tex[2]); glVertex3f(r[2].x, r[2].y, r[2].z);
+						glTexCoord1f(t1); glVertex3f(r[0].x, r[0].y, r[0].z);
+						glTexCoord1f(t2); glVertex3f(r[1].x, r[1].y, r[1].z);
+						glTexCoord1f(t3); glVertex3f(r[2].x, r[2].y, r[2].z);
 					}
 					glEnd();
 				}
@@ -552,12 +562,6 @@ void CGLPlaneCutPlot::UpdateSlice()
 	FEModel* ps = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
-	CGLColorMap& colorMap = *mdl->GetColorMap();
-
-	float rng[2];
-	colorMap.GetRange(rng);
-	if (rng[1] == rng[0]) ++rng[1];
-
 	m_slice.Clear();
 
 	Post::FEState& state = *ps->CurrentState();
@@ -642,7 +646,6 @@ void CGLPlaneCutPlot::UpdateSlice()
 										w = 0.f;
 
 									float v = ev[n1] * (1 - w) + ev[n2] * w;
-									v = (v - rng[0]) / (rng[1] - rng[0]);
 
 									r[k] = ex[n1]*(1-w) + ex[n2]*w;
 									tex[k] = v;

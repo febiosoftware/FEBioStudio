@@ -407,6 +407,11 @@ bool CModelViewer::OnDeleteEvent()
 	return true;
 }
 
+void CModelViewer::RefreshProperties()
+{
+	ui->props->Refresh();
+}
+
 void CModelViewer::on_deleteButton_clicked()
 {
 	OnDeleteItem();

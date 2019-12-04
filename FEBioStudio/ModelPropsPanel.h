@@ -107,6 +107,8 @@ public:
 
 	void Update();
 
+	void Refresh();
+
 private slots:
 	void on_select1_addButtonClicked();
 	void on_select1_subButtonClicked();

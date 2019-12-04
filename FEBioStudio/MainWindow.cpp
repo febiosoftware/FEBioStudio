@@ -1444,6 +1444,7 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 	if (doc == nullptr) return;
 	doc->SetActiveState(n - 1);
 	RedrawGL();
+	ui->modelViewer->RefreshProperties();
 }
 
 //-----------------------------------------------------------------------------

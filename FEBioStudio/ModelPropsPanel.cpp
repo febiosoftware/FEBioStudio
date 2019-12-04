@@ -198,7 +198,7 @@ class Ui::CModelPropsPanel
 		SELECTION2_PANEL,
 	};
 
-private:
+public:
 	QStackedWidget*	stack;
 	QStackedWidget*	propStack;
 	::CSelectionBox* sel1;
@@ -416,6 +416,15 @@ void CModelPropsPanel::Update()
 	m_isUpdating = true;
 	ui->setStepList(steps);
 	m_isUpdating = false;
+}
+
+void CModelPropsPanel::Refresh()
+{
+	if (m_currentObject)
+	{
+		m_currentObject->UpdateData(false);
+		ui->props->Refresh();
+	}
 }
 
 void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)

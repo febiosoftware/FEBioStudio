@@ -55,6 +55,8 @@ public:
 
 	CPropertyList* GetPropertyList();
 
+	void Refresh();
+
 signals:
 	void dataChanged(int);
 
