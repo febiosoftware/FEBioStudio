@@ -36,7 +36,7 @@ private:
 class IOFileStream
 {
 public:
-	IOFileStream(FILE* fp = nullptr);
+	IOFileStream(FILE* fp = nullptr, bool owner = true);
 	~IOFileStream();
 
 	bool Create(const char* szfile);
@@ -64,6 +64,7 @@ public:
 
 private:
 	FILE*	m_fp;
+	bool	m_fileOwner;
 	size_t	m_bufsize;		//!< buffer size
 	size_t	m_current;		//!< current index
 	unsigned char*	m_buf;	//!< buffer

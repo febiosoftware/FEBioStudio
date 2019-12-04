@@ -49,7 +49,7 @@ void IOMemBuffer::append(void* pd, int n)
 //=============================================================================
 // IOFileStream
 //=============================================================================
-IOFileStream::IOFileStream(FILE* fp)
+IOFileStream::IOFileStream(FILE* fp, bool owner)
 {
 	m_bufsize = 262144;	// = 256K
 	m_current = 0;
@@ -57,6 +57,7 @@ IOFileStream::IOFileStream(FILE* fp)
 	m_pout = new unsigned char[m_bufsize];
 	m_ncompress = 0;
 	m_fp = fp;
+	m_fileOwner = owner;
 }
 
 IOFileStream::~IOFileStream()
@@ -92,7 +93,7 @@ void IOFileStream::Close()
 	if (m_fp)
 	{
 		Flush();
-		fclose(m_fp);
+		if(m_fileOwner)	fclose(m_fp);
 	}
 	m_fp = 0;
 }
