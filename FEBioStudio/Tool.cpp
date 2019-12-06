@@ -4,16 +4,30 @@
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
+#include "MainWindow.h"
 
 //-----------------------------------------------------------------------------
 CAbstractTool::CAbstractTool(const QString& s) : m_name(s) 
 {
-	m_doc = 0; 
+	m_wnd = nullptr;
 }
 
 CDocument* CAbstractTool::GetDocument()
 { 
-	return m_doc; 
+	if (m_wnd == nullptr) return nullptr;
+	return m_wnd->GetDocument(); 
+}
+
+CPostDoc* CAbstractTool::GetPostDoc()
+{
+	if (m_wnd == nullptr) return nullptr;
+	return m_wnd->GetActiveDocument();
+}
+
+// get the main window
+CMainWindow* CAbstractTool::GetMainWindow()
+{
+	return m_wnd;
 }
 
 void CAbstractTool::updateUi()
@@ -21,14 +35,14 @@ void CAbstractTool::updateUi()
 	QApplication::activeWindow()->repaint();
 }
 
-void CAbstractTool::activate(CDocument* doc)
+void CAbstractTool::activate(CMainWindow* wnd)
 {
-	m_doc = doc;
+	m_wnd = wnd;
 }
 
 void CAbstractTool::deactivate()
 {
-	m_doc = 0;
+	m_wnd = nullptr;
 }
 
 //-----------------------------------------------------------------------------

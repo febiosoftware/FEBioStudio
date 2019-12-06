@@ -2,11 +2,13 @@
 #include "PropertyList.h"
 
 class QWidget;
+class CMainWindow;
 class CDocument;
 class CPropertyListForm;
+class CPostDoc;
 
 //-----------------------------------------------------------------------------
-// A tool implements a general purpose extension to PostView.
+// A tool implements a general purpose extension.
 // TODO: rename to CExtension?
 // TODO: Can this serve as the basis of a plugin?
 class CAbstractTool : public QObject
@@ -19,15 +21,21 @@ public:
 	const QString& name() { return m_name; }
 	void setName(const QString& s) { m_name = s; }
 
+	// get the main window
+	CMainWindow* GetMainWindow();
+
 	// get the active document
 	CDocument* GetDocument();
+
+	// get the active Post doc
+	CPostDoc* GetPostDoc();
 
 	// override this to create a custum UI widget
 	virtual QWidget* createUi() = 0;
 
 	// activate the tool
 	// The ui is about to be shown
-	virtual void activate(CDocument* doc);
+	virtual void activate(CMainWindow* wnd);
 
 	// deactivate the tool
 	// the ui is no longer shown
@@ -38,7 +46,7 @@ public:
 
 private:
 	QString			m_name;
-	CDocument*		m_doc;
+	CMainWindow*	m_wnd;
 };
 
 //-----------------------------------------------------------------------------

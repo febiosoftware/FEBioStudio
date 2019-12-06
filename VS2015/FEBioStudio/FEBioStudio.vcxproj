@@ -239,6 +239,7 @@
     <ClCompile Include="..\..\FEBioStudio\GManipulator.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ImportLinesTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LaunchConfig.cpp" />
@@ -293,6 +294,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_GLHighlighter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ImportLinesTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_Logger.cpp" />
@@ -313,6 +315,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PlotWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PostDataPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PostPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PostToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListForm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
@@ -337,6 +340,7 @@
     <ClCompile Include="..\..\FEBioStudio\PostDataPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostDoc.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PostToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyList.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListForm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListView.cpp" />
@@ -414,6 +418,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\ImportLinesTool.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\LaunchConfig.h" />
     <CustomBuild Include="..\..\FEBioStudio\Logger.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -428,6 +437,11 @@
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\SSHThread.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe -D HAS_SSH "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PostToolsPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>

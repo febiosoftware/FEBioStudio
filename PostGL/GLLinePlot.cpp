@@ -15,7 +15,7 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 	AddIntParam(0, "Color mode")->SetEnumNames("Solid\0Line Data\0Model Data\0");
 	AddColorParam(GLColor(255, 0, 0), "Solid color");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddIntParam(0, "render mode")->SetEnumNames("lines\03D lines\0");
+	AddIntParam(0, "render mode")->SetEnumNames("lines\0lines 3D\0");
 	AddDoubleParam(1.0, "line width");
 
 	m_line = 4.f;

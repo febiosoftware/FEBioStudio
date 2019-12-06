@@ -26,7 +26,7 @@ void CToolsPanel::Update()
 	{
 		m_activeTool->deactivate();
 
-		m_activeTool->activate(GetDocument());
+		m_activeTool->activate(GetMainWindow());
 	}
 }
 
@@ -59,7 +59,7 @@ void CToolsPanel::on_buttons_buttonClicked(int id)
 
 	// activate the tool
 	m_activeTool = *it;
-	m_activeTool->activate(doc);
+	m_activeTool->activate(GetMainWindow());
 
 	// show the tab
 	ui->stack->setCurrentIndex(id);
@@ -78,7 +78,7 @@ void CToolsPanel::showEvent(QShowEvent* ev)
 {
 	if (m_activeTool)
 	{
-		m_activeTool->activate(GetDocument());
+		m_activeTool->activate(GetMainWindow());
 	}
 	ev->accept();
 }
