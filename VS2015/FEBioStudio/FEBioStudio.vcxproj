@@ -276,6 +276,8 @@
     <ClCompile Include="..\..\FEBioStudio\moc_CreateSpringPane.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_CurveEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_CurvePicker.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DatabaseHandler.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DataFieldSelector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddEquation.cpp" />
@@ -401,8 +403,16 @@
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h" />
     <ClInclude Include="..\..\FEBioStudio\CurvePicker.h" />
-    <ClInclude Include="..\..\FEBioStudio\DatabaseHandler.h" />
-    <ClInclude Include="..\..\FEBioStudio\DatabasePanel.h" />
+    <CustomBuild Include="..\..\FEBioStudio\DatabaseHandler.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DatabasePanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgCheck.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgEditLConfigs.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
