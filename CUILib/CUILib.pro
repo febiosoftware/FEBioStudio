@@ -1,13 +1,12 @@
 TEMPLATE = lib
-TARGET = postlib
+TARGET = cuilib
 DESTDIR = ../build/lib
 CONFIG += debug c++14 staticlib warn_off 
 QMAKE_CXX = g++
 QMAKE_CXXFLAGS += -std=c++14 -O0
-DEFINES += LINUX HAS_OCC TETLIBRARY HAS_NETGEN HAS_QUAZIP HAS_SSH FFMPEG
+DEFINES += LINUX HAS_OCC TETLIBRARY HAS_NETGEN HAS_QUAZIP HAS_SSH
 INCLUDEPATH += ../
-INCLUDEPATH += /home/sci/mherron/Resources/tetgen1.5.0/
-INCLUDEPATH += /usr/include/ffmpeg
+QT += widgets
 
 # Input
 HEADERS += *.h

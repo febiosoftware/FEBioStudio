@@ -26,6 +26,9 @@ static void recurseAddDir(QDir d, QStringList & list) {
 
 static bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString("")) {
 
+	QStringList sl;
+	recurseAddDir(dir, sl);
+
 	QuaZip zip(filePath);
 	zip.setFileNameCodec("IBM866");
 
@@ -38,9 +41,6 @@ static bool archive(const QString & filePath, const QDir & dir, const QString & 
 	}
 
 	QFile inFile;
-
-	QStringList sl;
-	recurseAddDir(dir, sl);
 
 	QFileInfoList files;
 	foreach (QString fn, sl) files << QFileInfo(fn);

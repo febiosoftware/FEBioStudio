@@ -294,47 +294,51 @@ void CMainWindow::on_actionImportProject_triggered()
 		// get the file name
 		QStringList files = dlg.selectedFiles();
 		QString fileName = files.first();
-		QFileInfo fileInfo(fileName);
 
-		// get the parent directory's name
-		QString parentDirName = fileInfo.path();
+		ImportProject(fileName);
 
-		// create folder in which to unzip
-		QDir parentDir(parentDirName);
-		parentDir.mkdir(fileInfo.completeBaseName());
-		QString destDir = parentDirName + "/" + fileInfo.completeBaseName();
 
-		// extract files
-		QStringList extractedFiles = JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
-
-		// open first .fsprj file
-		for(QString str : extractedFiles)
-		{
-			if(QFileInfo(str).suffix().compare("fsprj", Qt::CaseInsensitive) == 0)
-			{
-				OpenDocument(str);
-				break;
-			}
-		}
+//		QFileInfo fileInfo(fileName);
+//
+//		// get the parent directory's name
+//		QString parentDirName = fileInfo.path();
+//
+//		// create folder in which to unzip
+//		QDir parentDir(parentDirName);
+//		parentDir.mkdir(fileInfo.completeBaseName());
+//		QString destDir = parentDirName + "/" + fileInfo.completeBaseName();
+//
+//		// extract files
+//		QStringList extractedFiles = JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
+//
+//		// open first .fsprj file
+//		for(QString str : extractedFiles)
+//		{
+//			if(QFileInfo(str).suffix().compare("fsprj", Qt::CaseInsensitive) == 0)
+//			{
+//				OpenDocument(str);
+//				break;
+//			}
+//		}
 
 	}
 }
 
 void CMainWindow::on_actionExportProject_triggered()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, "Export", ui->currentPath, "FEBio Studio Project (*.zip)");
-		if (fileName.isEmpty() == false)
-		{
-			// make sure the file has an extension
-			std::string sfile = fileName.toStdString();
-			std::size_t found = sfile.rfind(".");
-			if (found == std::string::npos) sfile.append(".prj");
+	QString fileName = QFileDialog::getSaveFileName(this, "Export", ui->currentPath, "FEBio Studio Project (*.prj)");
+	if (fileName.isEmpty() == false)
+	{
+		// make sure the file has an extension
+		std::string sfile = fileName.toStdString();
+		std::size_t found = sfile.rfind(".");
+		if (found == std::string::npos) sfile.append(".prj");
 
-			std::string pathName = m_doc->GetDocFolder();
+		std::string pathName = m_doc->GetDocFolder();
 
-			archive(QString::fromStdString(sfile), QDir(QString::fromStdString(pathName)));
+		archive(QString::fromStdString(sfile), QDir(QString::fromStdString(pathName)));
 
-		}
+	}
 }
 #endif
 

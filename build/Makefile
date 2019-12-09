@@ -1,8 +1,8 @@
-QMAKE = /home/sci/mherron/Resources/Qt/5.12.0/gcc_64/bin/qmake
+QMAKE = /home/sci/mherron/Resources/Qt/5.13.2/gcc_64/bin/qmake
 
 LIBS = Ansys Abaqus Comsol FEBio FEMLib FSCore GeomLib ImageLib LSDyna MathLib MeshIO MeshLib Nike3D XML XPLTLib
 
-FEBioStudio: $(LIBS) MeshTools GLLib GLWLib PostGL PostLib
+FEBioStudio: $(LIBS) MeshTools GLLib GLWLib PostGL PostLib CUILib
 	cd ../FEBioStudio; $(QMAKE) FEBioStudio.pro;
 #	$(MAKE) FEBIOStudioQMake
 	$(MAKE) -C ../FEBioStudio/;
@@ -34,6 +34,10 @@ PostLib:
 	cd ../PostLib; $(QMAKE) PostLib.pro;
 	$(MAKE) -C ../PostLib/;
 
+CUILib:
+	cd ../CUILib; $(QMAKE) CUILib.pro;
+	$(MAKE) -C ../CUILib/;
+
 FEBioStudioClean:
 	cd ../FEBioStudio; rm moc*; $(MAKE) distclean
 
@@ -52,6 +56,9 @@ PostGLClean:
 PostLibClean:
 	cd ../PostLib; rm moc*; $(MAKE) distclean
 
+CUILibClean:
+	cd ../CUILib; rm moc*; $(MAKE) distclean
+
 clean: #MocClean
 	for lib in $(LIBS) ; do \
 		cd ../$$lib; $(MAKE) -f ../build/makeLibs.mk clean ;\
@@ -62,6 +69,7 @@ clean: #MocClean
 	cd ../GLWLib/; $(MAKE) distclean
 	cd ../PostGL/; $(MAKE) distclean
 	cd ../PostLib/; $(MAKE) distclean
+	cd ../CUILib/; $(MAKE) distclean
 	cd ../FEBioStudio/; $(MAKE) distclean
 	
 MocClean:

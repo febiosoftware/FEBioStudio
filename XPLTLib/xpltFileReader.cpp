@@ -40,7 +40,7 @@ bool xpltFileReader::Load(Post::FEModel& fem, const char* szfile)
 	if (Open(szfile, "rb") == false) return errf("Failed opening file.");
 
 	// attach the file to the archive
-	IOFileStream fs(m_fp);
+	IOFileStream fs(m_fp, false);
 	if (m_ar.Open(&fs) == false) return errf("This is not a valid XPLT file.");
 
 	// open the root chunk (no compression for this sectio)

@@ -23,6 +23,7 @@
 #include "DataFieldSelector.h"
 #include "PostPanel.h"
 #include "InfoPanel.h"
+#include "DatabasePanel.h"
 #include <QFontComboBox>
 #include <vector>
 #include "LaunchConfig.h"
@@ -69,6 +70,7 @@ public:
 	::CMeshInspector* meshWnd;
 	::CPostPanel*	postPanel;
 	::CInfoPanel*	infoPanel;
+	::CDatabasePanel*	databasePanel;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -807,6 +809,13 @@ public:
 		menuView->addAction(dock6->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock6);
 
+#ifdef MODEL_REPO
+		QDockWidget* dock7 = new QDockWidget("Model DB", m_wnd); dock7->setObjectName("dockDatabase");
+		databasePanel = new ::CDatabasePanel(wnd, dock7);
+		dock7->setWidget(databasePanel);
+		menuView->addAction(dock7->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock1, dock7);
+#endif
 		// make sure the file viewer is the visible tab
 		dock1->raise();
 	}
@@ -881,6 +890,11 @@ public:
 	void showPostPanel()
 	{
 		postPanel->parentWidget()->raise();
+	}
+
+	void showDatabasePanel()
+	{
+		databasePanel->parentWidget()->raise();
 	}
 
 	void stopAnimation()

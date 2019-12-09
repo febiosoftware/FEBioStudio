@@ -40,6 +40,10 @@
 #include "Encrypter.h"
 #include "DlgImportXPLT.h"
 
+#ifdef HAS_QUAZIP
+#include "ZipFiles.h"
+#endif
+
 extern GLColor col[];
 
 CMainWindow*	CResource::m_wnd = nullptr;
@@ -220,6 +224,51 @@ void CMainWindow::ImportFiles(const QStringList& files)
 	for (int i=0; i<files.count(); ++i)
 		ui->addToRecentGeomFiles(files[i]);
 }
+
+#ifdef HAS_QUAZIP
+//-----------------------------------------------------------------------------
+// Import Project
+void CMainWindow::ImportProject(const QString& fileName)
+{
+	QFileInfo fileInfo(fileName);
+
+	// get the parent directory's name
+	QString parentDirName = fileInfo.path();
+
+	// create folder in which to unzip
+	QDir parentDir(parentDirName);
+	parentDir.mkdir(fileInfo.completeBaseName());
+	QString destDir = parentDirName + "/" + fileInfo.completeBaseName();
+
+	// extract files
+	QStringList extractedFiles = JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
+
+	// open first .fsprj file
+	bool found = false;
+	for(QString str : extractedFiles)
+	{
+		if(QFileInfo(str).suffix().compare("fsprj", Qt::CaseInsensitive) == 0)
+		{
+			found = true;
+			OpenDocument(str);
+			break;
+		}
+	}
+
+	if(!found)
+	{
+		for(QString str : extractedFiles)
+			{
+				if(QFileInfo(str).suffix().compare("feb", Qt::CaseInsensitive) == 0)
+				{
+					found = true;
+					OpenFEModel(str);
+					break;
+				}
+			}
+	}
+}
+#endif
 
 //-----------------------------------------------------------------------------
 void CMainWindow::ReadNextFileInQueue()
