@@ -32,6 +32,18 @@
 		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
 		D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
+		D579B677239F04E300278644 /* moc_DatabaseHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B662239F04E100278644 /* moc_DatabaseHandler.cpp */; };
+		D579B678239F04E300278644 /* moc_DatabasePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B663239F04E100278644 /* moc_DatabasePanel.cpp */; };
+		D579B679239F04E300278644 /* MeasureAreaTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B664239F04E100278644 /* MeasureAreaTool.cpp */; };
+		D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B665239F04E100278644 /* DatabasePanel.cpp */; };
+		D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B667239F04E100278644 /* MeasureVolumeTool.cpp */; };
+		D579B67C239F04E300278644 /* 3PointAngleTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B668239F04E100278644 /* 3PointAngleTool.cpp */; };
+		D579B67D239F04E300278644 /* AddPointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B66A239F04E100278644 /* AddPointTool.cpp */; };
+		D579B67E239F04E300278644 /* moc_AreaCoverageTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B66D239F04E200278644 /* moc_AreaCoverageTool.cpp */; };
+		D579B67F239F04E300278644 /* AreaCoverageTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B670239F04E200278644 /* AreaCoverageTool.cpp */; };
+		D579B680239F04E300278644 /* PointDistanceTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B671239F04E200278644 /* PointDistanceTool.cpp */; };
+		D579B681239F04E300278644 /* DatabaseHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B673239F04E200278644 /* DatabaseHandler.cpp */; };
+		D579B682239F04E300278644 /* 4PointAngleTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B675239F04E200278644 /* 4PointAngleTool.cpp */; };
 		D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0AFF234653F700B7C0B8 /* libmmg3d.a */; };
 		D57A0B04234653F700B7C0B8 /* libmmg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B00234653F700B7C0B8 /* libmmg.a */; };
 		D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B01234653F700B7C0B8 /* libmmg2d.a */; };
@@ -403,6 +415,27 @@
 		D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlapTool.cpp; sourceTree = "<group>"; };
 		D5606C86238DAAD1002B037E /* TetOverlapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlapTool.h; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D579B662239F04E100278644 /* moc_DatabaseHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DatabaseHandler.cpp; sourceTree = "<group>"; };
+		D579B663239F04E100278644 /* moc_DatabasePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DatabasePanel.cpp; sourceTree = "<group>"; };
+		D579B664239F04E100278644 /* MeasureAreaTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureAreaTool.cpp; sourceTree = "<group>"; };
+		D579B665239F04E100278644 /* DatabasePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DatabasePanel.cpp; sourceTree = "<group>"; };
+		D579B666239F04E100278644 /* DatabaseHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseHandler.h; sourceTree = "<group>"; };
+		D579B667239F04E100278644 /* MeasureVolumeTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureVolumeTool.cpp; sourceTree = "<group>"; };
+		D579B668239F04E100278644 /* 3PointAngleTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = 3PointAngleTool.cpp; sourceTree = "<group>"; };
+		D579B669239F04E100278644 /* MeasureVolumeTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureVolumeTool.h; sourceTree = "<group>"; };
+		D579B66A239F04E100278644 /* AddPointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AddPointTool.cpp; sourceTree = "<group>"; };
+		D579B66B239F04E200278644 /* 3PointAngleTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = 3PointAngleTool.h; sourceTree = "<group>"; };
+		D579B66C239F04E200278644 /* 4PointAngleTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = 4PointAngleTool.h; sourceTree = "<group>"; };
+		D579B66D239F04E200278644 /* moc_AreaCoverageTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_AreaCoverageTool.cpp; sourceTree = "<group>"; };
+		D579B66E239F04E200278644 /* DatabasePanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabasePanel.h; sourceTree = "<group>"; };
+		D579B66F239F04E200278644 /* AddPointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AddPointTool.h; sourceTree = "<group>"; };
+		D579B670239F04E200278644 /* AreaCoverageTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AreaCoverageTool.cpp; sourceTree = "<group>"; };
+		D579B671239F04E200278644 /* PointDistanceTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PointDistanceTool.cpp; sourceTree = "<group>"; };
+		D579B672239F04E200278644 /* MeasureAreaTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureAreaTool.h; sourceTree = "<group>"; };
+		D579B673239F04E200278644 /* DatabaseHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DatabaseHandler.cpp; sourceTree = "<group>"; };
+		D579B674239F04E200278644 /* PointDistanceTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointDistanceTool.h; sourceTree = "<group>"; };
+		D579B675239F04E200278644 /* 4PointAngleTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = 4PointAngleTool.cpp; sourceTree = "<group>"; };
+		D579B676239F04E200278644 /* AreaCoverageTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AreaCoverageTool.h; sourceTree = "<group>"; };
 		D57A0AFF234653F700B7C0B8 /* libmmg3d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg3d.a; path = ../../../../../../../../../../usr/local/lib/libmmg3d.a; sourceTree = "<group>"; };
 		D57A0B00234653F700B7C0B8 /* libmmg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg.a; path = ../../../../../../../../../../usr/local/lib/libmmg.a; sourceTree = "<group>"; };
 		D57A0B01234653F700B7C0B8 /* libmmg2d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg2d.a; path = ../../../../../../../../../../usr/local/lib/libmmg2d.a; sourceTree = "<group>"; };
@@ -927,8 +960,16 @@
 		D5F7D6F622FA37C30089B08E /* FEBioStudio */ = {
 			isa = PBXGroup;
 			children = (
+				D579B668239F04E100278644 /* 3PointAngleTool.cpp */,
+				D579B66B239F04E200278644 /* 3PointAngleTool.h */,
+				D579B675239F04E200278644 /* 4PointAngleTool.cpp */,
+				D579B66C239F04E200278644 /* 4PointAngleTool.h */,
+				D579B66A239F04E100278644 /* AddPointTool.cpp */,
+				D579B66F239F04E200278644 /* AddPointTool.h */,
 				D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */,
 				D54879BE234B77D700D0E506 /* AreaCalculatorTool.h */,
+				D579B670239F04E200278644 /* AreaCoverageTool.cpp */,
+				D579B676239F04E200278644 /* AreaCoverageTool.h */,
 				D5F7D72B22FA37C40089B08E /* BuildPanel.cpp */,
 				D5F7D79522FA37C40089B08E /* BuildPanel.h */,
 				D5F7D75822FA37C40089B08E /* CColorButton.cpp */,
@@ -955,6 +996,10 @@
 				D5F7D7FD22FA37C40089B08E /* CurveIntersectProps.h */,
 				D5F7D7C122FA37C40089B08E /* CurvePicker.cpp */,
 				D5F7D7AD22FA37C40089B08E /* CurvePicker.h */,
+				D579B673239F04E200278644 /* DatabaseHandler.cpp */,
+				D579B666239F04E100278644 /* DatabaseHandler.h */,
+				D579B665239F04E100278644 /* DatabasePanel.cpp */,
+				D579B66E239F04E200278644 /* DatabasePanel.h */,
 				D5F7D77F22FA37C40089B08E /* DataFieldSelector.cpp */,
 				D5F7D7BE22FA37C40089B08E /* DataFieldSelector.h */,
 				D5F7D74C22FA37C40089B08E /* DlgAddBC.cpp */,
@@ -1108,6 +1153,10 @@
 				D5F7D7B722FA37C40089B08E /* MaterialMapTool.h */,
 				D5ED2A0323198CD800C16BF7 /* MaterialPanel.cpp */,
 				D5ED2A0023198CD700C16BF7 /* MaterialPanel.h */,
+				D579B664239F04E100278644 /* MeasureAreaTool.cpp */,
+				D579B672239F04E200278644 /* MeasureAreaTool.h */,
+				D579B667239F04E100278644 /* MeasureVolumeTool.cpp */,
+				D579B669239F04E100278644 /* MeasureVolumeTool.h */,
 				D5F7D75622FA37C40089B08E /* menu.cpp */,
 				D5F7D74222FA37C40089B08E /* menuPhysics.cpp */,
 				D5F7D81822FA37C40089B08E /* menuPost.cpp */,
@@ -1123,6 +1172,7 @@
 				D5F7D72122FA37C40089B08E /* MeshPanel.h */,
 				D5F7D73F22FA37C40089B08E /* MeshSelectionBox.cpp */,
 				D5F7D70D22FA37C40089B08E /* MeshSelectionBox.h */,
+				D579B66D239F04E200278644 /* moc_AreaCoverageTool.cpp */,
 				D5F7D70922FA37C40089B08E /* moc_BuildPanel.cpp */,
 				D5F7D77222FA37C40089B08E /* moc_CColorButton.cpp */,
 				D5F7D7A822FA37C40089B08E /* moc_CreateP2PlinePane.cpp */,
@@ -1130,6 +1180,8 @@
 				D5F7D7D422FA37C40089B08E /* moc_CreateSpringPane.cpp */,
 				D5F7D7DD22FA37C40089B08E /* moc_CurveEditor.cpp */,
 				D5F7D71522FA37C40089B08E /* moc_CurvePicker.cpp */,
+				D579B662239F04E100278644 /* moc_DatabaseHandler.cpp */,
+				D579B663239F04E100278644 /* moc_DatabasePanel.cpp */,
 				D5F7D7C822FA37C40089B08E /* moc_DataFieldSelector.cpp */,
 				D5F7D76A22FA37C40089B08E /* moc_DlgAddChemicalReaction.cpp */,
 				D5F7D81E22FA37C40089B08E /* moc_DlgAddEquation.cpp */,
@@ -1209,6 +1261,8 @@
 				D5F7D78122FA37C40089B08E /* PlaneCutTool.h */,
 				D5F7D80222FA37C40089B08E /* PlotWidget.cpp */,
 				D5F7D74822FA37C40089B08E /* PlotWidget.h */,
+				D579B671239F04E200278644 /* PointDistanceTool.cpp */,
+				D579B674239F04E200278644 /* PointDistanceTool.h */,
 				D5ED2A0923198CD800C16BF7 /* PostDataPanel.cpp */,
 				D5ED29FC23198CD700C16BF7 /* PostDataPanel.h */,
 				D5F7D7FC22FA37C40089B08E /* PostDoc.cpp */,
@@ -1435,6 +1489,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D579B67F239F04E300278644 /* AreaCoverageTool.cpp in Sources */,
 				D5F7D83322FA37C40089B08E /* DlgExportFEBio.cpp in Sources */,
 				D5F7D85522FA37C40089B08E /* DlgTimeSettings.cpp in Sources */,
 				D5ED2A1723198CD900C16BF7 /* moc_DlgNew.cpp in Sources */,
@@ -1485,18 +1540,23 @@
 				D5F7D8CA22FA37C40089B08E /* MeshInfoPanel.cpp in Sources */,
 				D5F7D87322FA37C40089B08E /* moc_Tool.cpp in Sources */,
 				D5F7D8C222FA37C40089B08E /* DlgCloneObject.cpp in Sources */,
+				D579B67C239F04E300278644 /* 3PointAngleTool.cpp in Sources */,
 				D5F7D85122FA37C40089B08E /* DlgLameConvertor.cpp in Sources */,
+				D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */,
+				D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */,
 				D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */,
 				D5F7D82C22FA37C40089B08E /* moc_BuildPanel.cpp in Sources */,
 				D5F7D83C22FA37C40089B08E /* DlgEditProject.cpp in Sources */,
 				D5ED2A1423198CD900C16BF7 /* moc_StatePanel.cpp in Sources */,
 				D5F7D84B22FA37C40089B08E /* GLHighLighter.cpp in Sources */,
 				D5F7D86122FA37C40089B08E /* moc_DlgAddChemicalReaction.cpp in Sources */,
+				D579B679239F04E300278644 /* MeasureAreaTool.cpp in Sources */,
 				D5F7D89E22FA37C40089B08E /* SphereFitTool.cpp in Sources */,
 				D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */,
 				D5F7D88122FA37C40089B08E /* moc_ToolBox.cpp in Sources */,
 				D5163181230097A2002B01C3 /* DlgWidgetProps.cpp in Sources */,
 				D5F7D88622FA37C40089B08E /* moc_MeshButtonBox.cpp in Sources */,
+				D579B678239F04E300278644 /* moc_DatabasePanel.cpp in Sources */,
 				D5F7D83422FA37C40089B08E /* moc_CurvePicker.cpp in Sources */,
 				D5F7D8B622FA37C40089B08E /* PostDoc.cpp in Sources */,
 				D5F7D86822FA37C40089B08E /* moc_CColorButton.cpp in Sources */,
@@ -1509,6 +1569,7 @@
 				D5F7D86722FA37C40089B08E /* GManipulator.cpp in Sources */,
 				D5E04A4B2357BD1B006AC137 /* DlgEditLConfigs.cpp in Sources */,
 				D5F7D85222FA37C40089B08E /* DlgAddBC.cpp in Sources */,
+				D579B682239F04E300278644 /* 4PointAngleTool.cpp in Sources */,
 				D5F7D85C22FA37C40089B08E /* SummaryWindow.cpp in Sources */,
 				D54A8C61239EC9F800B6219A /* ImportLinesTool.cpp in Sources */,
 				D5F7D89B22FA37C40089B08E /* ToolBox.cpp in Sources */,
@@ -1528,6 +1589,7 @@
 				D5F7D82822FA37C40089B08E /* ResourceEdit.cpp in Sources */,
 				D5F7D86E22FA37C40089B08E /* moc_SelectionBox.cpp in Sources */,
 				D54A8C63239EC9F800B6219A /* moc_PostToolsPanel.cpp in Sources */,
+				D579B67D239F04E300278644 /* AddPointTool.cpp in Sources */,
 				D5F7D83B22FA37C40089B08E /* MeshInspector.cpp in Sources */,
 				D5F7D89622FA37C40089B08E /* DlgRun.cpp in Sources */,
 				D5F7D8A022FA37C40089B08E /* moc_CreatePanel.cpp in Sources */,
@@ -1572,8 +1634,10 @@
 				D5F7D8C122FA37C40089B08E /* DlgCloneGrid.cpp in Sources */,
 				D5F7D83F22FA37C40089B08E /* moc_ModelPropsPanel.cpp in Sources */,
 				D5F7D8AE22FA37C40089B08E /* GLControlBar.cpp in Sources */,
+				D579B677239F04E300278644 /* moc_DatabaseHandler.cpp in Sources */,
 				D5F7D8B222FA37C40089B08E /* moc_DlgLameConvertor.cpp in Sources */,
 				D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */,
+				D579B681239F04E300278644 /* DatabaseHandler.cpp in Sources */,
 				D5F7D8BD22FA37C40089B08E /* moc_DlgExportFEBio.cpp in Sources */,
 				D5F7D8A822FA37C40089B08E /* ModelViewer.cpp in Sources */,
 				D5F7D88922FA37C40089B08E /* moc_CreateP2PlinePane.cpp in Sources */,
@@ -1595,8 +1659,10 @@
 				D5F7D88522FA37C40089B08E /* DlgFEBioOptimize.cpp in Sources */,
 				D5F7D85E22FA37C40089B08E /* MeshPanel.cpp in Sources */,
 				D5F7D85922FA37C40089B08E /* moc_StatsWindow.cpp in Sources */,
+				D579B67E239F04E300278644 /* moc_AreaCoverageTool.cpp in Sources */,
 				D5F7D83022FA37C40089B08E /* moc_MaterialEditor.cpp in Sources */,
 				D5F7D87722FA37C40089B08E /* moc_MeshPanel.cpp in Sources */,
+				D579B680239F04E300278644 /* PointDistanceTool.cpp in Sources */,
 				D5F7D82922FA37C40089B08E /* moc_DlgFEBioOptimize.cpp in Sources */,
 				D5F7D8AF22FA37C40089B08E /* DlgAddSurfaceLoad.cpp in Sources */,
 				D5F7D88B22FA37C40089B08E /* GLView.cpp in Sources */,
