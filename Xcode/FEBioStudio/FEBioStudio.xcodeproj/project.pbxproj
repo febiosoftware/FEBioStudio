@@ -25,6 +25,10 @@
 		D548546D23749F2100BE1731 /* QtCharts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546923749F2000BE1731 /* QtCharts.framework */; };
 		D548546E23749F2100BE1731 /* QtWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D548546A23749F2100BE1731 /* QtWidgets.framework */; };
 		D54879BF234B77D700D0E506 /* AreaCalculatorTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */; };
+		D54A8C61239EC9F800B6219A /* ImportLinesTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C5B239EC9F800B6219A /* ImportLinesTool.cpp */; };
+		D54A8C62239EC9F800B6219A /* moc_ImportLinesTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C5E239EC9F800B6219A /* moc_ImportLinesTool.cpp */; };
+		D54A8C63239EC9F800B6219A /* moc_PostToolsPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */; };
+		D54A8C64239EC9F800B6219A /* PostToolsPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C60239EC9F800B6219A /* PostToolsPanel.cpp */; };
 		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
 		D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
@@ -389,6 +393,12 @@
 		D548546A23749F2100BE1731 /* QtWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWidgets.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtWidgets.framework; sourceTree = "<group>"; };
 		D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AreaCalculatorTool.cpp; sourceTree = "<group>"; };
 		D54879BE234B77D700D0E506 /* AreaCalculatorTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AreaCalculatorTool.h; sourceTree = "<group>"; };
+		D54A8C5B239EC9F800B6219A /* ImportLinesTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImportLinesTool.cpp; sourceTree = "<group>"; };
+		D54A8C5C239EC9F800B6219A /* PostToolsPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostToolsPanel.h; sourceTree = "<group>"; };
+		D54A8C5D239EC9F800B6219A /* ImportLinesTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImportLinesTool.h; sourceTree = "<group>"; };
+		D54A8C5E239EC9F800B6219A /* moc_ImportLinesTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ImportLinesTool.cpp; sourceTree = "<group>"; };
+		D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PostToolsPanel.cpp; sourceTree = "<group>"; };
+		D54A8C60239EC9F800B6219A /* PostToolsPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostToolsPanel.cpp; sourceTree = "<group>"; };
 		D5606C7F238DA80C002B037E /* libCUILib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libCUILib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlapTool.cpp; sourceTree = "<group>"; };
 		D5606C86238DAAD1002B037E /* TetOverlapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlapTool.h; sourceTree = "<group>"; };
@@ -1076,6 +1086,8 @@
 				D5F7D76822FA37C40089B08E /* GraphWindow.h */,
 				D5F7D7CD22FA37C40089B08E /* GTriad.cpp */,
 				D5F7D7F122FA37C40089B08E /* GTriad.h */,
+				D54A8C5B239EC9F800B6219A /* ImportLinesTool.cpp */,
+				D54A8C5D239EC9F800B6219A /* ImportLinesTool.h */,
 				D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */,
 				D5ED29FE23198CD700C16BF7 /* InfoPanel.h */,
 				D5F7D78722FA37C40089B08E /* IntegrateWindow.cpp */,
@@ -1145,6 +1157,7 @@
 				D5F7D70822FA37C40089B08E /* moc_GLHighlighter.cpp */,
 				D5F7D7A322FA37C40089B08E /* moc_GLView.cpp */,
 				D5F7D7DF22FA37C40089B08E /* moc_GraphWindow.cpp */,
+				D54A8C5E239EC9F800B6219A /* moc_ImportLinesTool.cpp */,
 				D5ED29FB23198CD700C16BF7 /* moc_InfoPanel.cpp */,
 				D5F7D71822FA37C40089B08E /* moc_IntegrateWindow.cpp */,
 				D5D5B6C02335128D00D388FA /* moc_Logger.cpp */,
@@ -1165,6 +1178,7 @@
 				D5F7D7D622FA37C40089B08E /* moc_PlotWidget.cpp */,
 				D5ED29FD23198CD700C16BF7 /* moc_PostDataPanel.cpp */,
 				D5F7D75A22FA37C40089B08E /* moc_PostPanel.cpp */,
+				D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */,
 				D5F7D71022FA37C40089B08E /* moc_PropertyListForm.cpp */,
 				D5F7D77022FA37C40089B08E /* moc_PropertyListView.cpp */,
 				D5F7D73822FA37C40089B08E /* moc_ResourceEdit.cpp */,
@@ -1201,6 +1215,8 @@
 				D5F7D74322FA37C40089B08E /* PostDoc.h */,
 				D5F7D78622FA37C40089B08E /* PostPanel.cpp */,
 				D5F7D7B422FA37C40089B08E /* PostPanel.h */,
+				D54A8C60239EC9F800B6219A /* PostToolsPanel.cpp */,
+				D54A8C5C239EC9F800B6219A /* PostToolsPanel.h */,
 				D5F7D7BB22FA37C40089B08E /* PropertyList.cpp */,
 				D5F7D7DA22FA37C40089B08E /* PropertyList.h */,
 				D5F7D79422FA37C40089B08E /* PropertyListForm.cpp */,
@@ -1440,6 +1456,7 @@
 				D5ED2A1823198CD900C16BF7 /* moc_MainTabBar.cpp in Sources */,
 				D5F7D88422FA37C40089B08E /* moc_DlgRun.cpp in Sources */,
 				D5E04A4A2357BD1B006AC137 /* moc_DlgEditLConfigs.cpp in Sources */,
+				D54A8C62239EC9F800B6219A /* moc_ImportLinesTool.cpp in Sources */,
 				D5F7D8A622FA37C40089B08E /* DlgEditOutput.cpp in Sources */,
 				D5F7D84522FA37C40089B08E /* moc_ResourceEdit.cpp in Sources */,
 				D5ED2A1023198CD900C16BF7 /* moc_PostDataPanel.cpp in Sources */,
@@ -1493,6 +1510,7 @@
 				D5E04A4B2357BD1B006AC137 /* DlgEditLConfigs.cpp in Sources */,
 				D5F7D85222FA37C40089B08E /* DlgAddBC.cpp in Sources */,
 				D5F7D85C22FA37C40089B08E /* SummaryWindow.cpp in Sources */,
+				D54A8C61239EC9F800B6219A /* ImportLinesTool.cpp in Sources */,
 				D5F7D89B22FA37C40089B08E /* ToolBox.cpp in Sources */,
 				D5F7D85322FA37C40089B08E /* moc_DlgSettings.cpp in Sources */,
 				D5F7D87422FA37C40089B08E /* PostPanel.cpp in Sources */,
@@ -1509,6 +1527,7 @@
 				D5F7D8B422FA37C40089B08E /* MeshButtonBox.cpp in Sources */,
 				D5F7D82822FA37C40089B08E /* ResourceEdit.cpp in Sources */,
 				D5F7D86E22FA37C40089B08E /* moc_SelectionBox.cpp in Sources */,
+				D54A8C63239EC9F800B6219A /* moc_PostToolsPanel.cpp in Sources */,
 				D5F7D83B22FA37C40089B08E /* MeshInspector.cpp in Sources */,
 				D5F7D89622FA37C40089B08E /* DlgRun.cpp in Sources */,
 				D5F7D8A022FA37C40089B08E /* moc_CreatePanel.cpp in Sources */,
@@ -1588,6 +1607,7 @@
 				D5F7D8AD22FA37C40089B08E /* Document.cpp in Sources */,
 				D5F7D8B122FA37C40089B08E /* moc_DlgCloneGrid.cpp in Sources */,
 				D5F7D8BE22FA37C40089B08E /* StatsWindow.cpp in Sources */,
+				D54A8C64239EC9F800B6219A /* PostToolsPanel.cpp in Sources */,
 				D5F7D85A22FA37C40089B08E /* moc_PostPanel.cpp in Sources */,
 				D5F7D87C22FA37C40089B08E /* MainWindow.cpp in Sources */,
 				D5F7D84922FA37C40089B08E /* ModelSearch.cpp in Sources */,
