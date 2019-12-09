@@ -161,7 +161,11 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\FEBioStudio\3PointAngleTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\4PointAngleTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\AddPointTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\AreaCalculatorTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\AreaCoverageTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\BuildPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CColorButton.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ClassDescriptor.cpp" />
@@ -174,6 +178,8 @@
     <ClCompile Include="..\..\FEBioStudio\CreateSpringPane.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CurveEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CurvePicker.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DatabaseHandler.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DataFieldSelector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddBC.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddBodyLoad.cpp" />
@@ -250,6 +256,8 @@
     <ClCompile Include="..\..\FEBioStudio\MaterialEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MaterialMapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MaterialPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MeasureAreaTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MeasureVolumeTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menu.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuPhysics.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuPost.cpp" />
@@ -260,6 +268,7 @@
     <ClCompile Include="..\..\FEBioStudio\MeshInspector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshSelectionBox.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_AreaCoverageTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_BuildPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_CColorButton.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_CreateP2PlinePane.cpp" />
@@ -337,6 +346,7 @@
     <ClCompile Include="..\..\FEBioStudio\ObjectProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PlaneCutTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PlotWidget.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PointDistanceTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostDataPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostDoc.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostPanel.cpp" />
@@ -364,7 +374,15 @@
     <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\FEBioStudio\3PointAngleTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\4PointAngleTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\AddPointTool.h" />
     <ClInclude Include="..\..\FEBioStudio\AreaCalculatorTool.h" />
+    <CustomBuild Include="..\..\FEBioStudio\AreaCoverageTool.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\BuildPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\CColorButton.h" />
     <ClInclude Include="..\..\FEBioStudio\CIntInput.h" />
@@ -383,6 +401,8 @@
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h" />
     <ClInclude Include="..\..\FEBioStudio\CurvePicker.h" />
+    <ClInclude Include="..\..\FEBioStudio\DatabaseHandler.h" />
+    <ClInclude Include="..\..\FEBioStudio\DatabasePanel.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgCheck.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgEditLConfigs.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -429,6 +449,8 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\MeasureAreaTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\MeasureVolumeTool.h" />
     <ClInclude Include="..\..\FEBioStudio\modelcheck.h" />
     <CustomBuild Include="..\..\FEBioStudio\SSHHandler.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe -D HAS_SSH "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -445,6 +467,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\PointDistanceTool.h" />
     <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\ZipFiles.h" />
@@ -618,7 +641,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\targetver.h" />
-    <ClInclude Include="..\..\FEBioStudio\Tool.h" />
+    <CustomBuild Include="..\..\FEBioStudio\Tool.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\ToolBox.h" />
     <ClInclude Include="..\..\FEBioStudio\ToolsPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\ui_buildpanel.h" />

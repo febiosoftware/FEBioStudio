@@ -19,11 +19,11 @@
 #include <PostLib/FEModel.h>
 #include <PostLib/GDecoration.h>
 #include <PostGL/GLModel.h>
-//#include "PointDistanceTool.h"
-//#include "3PointAngleTool.h"
-//#include "4PointAngleTool.h"
-//#include "AddPointTool.h"
-//#include "MeasureAreaTool.h"
+#include "PointDistanceTool.h"
+#include "3PointAngleTool.h"
+#include "4PointAngleTool.h"
+#include "AddPointTool.h"
+#include "MeasureAreaTool.h"
 //#include "TransformTool.h"
 //#include "ShellThicknessTool.h"
 //#include "SphereFitTool.h"
@@ -34,7 +34,7 @@
 //#include "PlotMixTool.h"
 //#include "AreaCoverageTool.h"
 //#include "StrainMapTool.h"
-//#include "MeasureVolumeTool.h"
+#include "MeasureVolumeTool.h"
 
 static QList<CAbstractTool*>	tools;
 
@@ -129,27 +129,25 @@ void CPostToolsPanel::Update()
 
 void CPostToolsPanel::initTools()
 {
-	/*
 	tools.push_back(new CPointDistanceTool  ());
 	tools.push_back(new C3PointAngleTool    ());
 	tools.push_back(new C4PointAngleTool    ());
-	tools.push_back(new CPlaneTool          ());
-	tools.push_back(new CPlotMixTool        ());
+//	tools.push_back(new CPlaneTool          ());
+//	tools.push_back(new CPlotMixTool        ());
 	tools.push_back(new CMeasureAreaTool    ());
-*/	tools.push_back(new CImportLinesTool    ());
-/*	tools.push_back(new CKinematTool        ());
-	tools.push_back(new CDistanceMapTool    ());
-	tools.push_back(new CCurvatureMapTool   ());
-	tools.push_back(new CPointCongruencyTool());
-	tools.push_back(new CSphereFitTool      ());
-	tools.push_back(new CTransformTool      ());
-	tools.push_back(new CShellThicknessTool ());
+	tools.push_back(new CImportLinesTool    ());
+//	tools.push_back(new CKinematTool        ());
+//	tools.push_back(new CDistanceMapTool    ());
+//	tools.push_back(new CCurvatureMapTool   ());
+//	tools.push_back(new CPointCongruencyTool());
+//	tools.push_back(new CSphereFitTool      ());
+//	tools.push_back(new CTransformTool      ());
+//	tools.push_back(new CShellThicknessTool ());
 	tools.push_back(new CAddPointTool       ());
-*/	tools.push_back(new CImportPointsTool   ());
-/*	tools.push_back(new CAreaCoverageTool   ());
-	tools.push_back(new CStrainMapTool      ());
+	tools.push_back(new CImportPointsTool   ());
+//	tools.push_back(new CAreaCoverageTool   ());
+//	tools.push_back(new CStrainMapTool      ());
 	tools.push_back(new CMeasureVolumeTool  ());
-	*/
 }
 
 void CPostToolsPanel::on_buttons_buttonClicked(int id)
@@ -163,6 +161,8 @@ void CPostToolsPanel::on_buttons_buttonClicked(int id)
 	else
 	{
 		// deactivate the active tool
+		if (ui->activeTool) ui->activeTool->deactivate();
+
 		ui->activeTool = 0;
 		ui->activeID = id;
 

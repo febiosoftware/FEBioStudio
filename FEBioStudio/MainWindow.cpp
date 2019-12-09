@@ -535,6 +535,8 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 
 	//	if (m_pCurveEdit->visible() && (m_pCurveEdit != psend)) m_pCurveEdit->Update();
 	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update();
+
+	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update();
 }
 
 //-----------------------------------------------------------------------------
