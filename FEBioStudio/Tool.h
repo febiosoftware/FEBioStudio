@@ -6,6 +6,7 @@ class CMainWindow;
 class CDocument;
 class CPropertyListForm;
 class CPostDoc;
+class GObject;
 
 //-----------------------------------------------------------------------------
 // A tool implements a general purpose extension.
@@ -23,6 +24,9 @@ public:
 
 	// get the main window
 	CMainWindow* GetMainWindow();
+
+	// get the currently active mesh
+	GObject* GetActiveObject();
 
 	// get the active document
 	CDocument* GetDocument();

@@ -5,6 +5,9 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include "MainWindow.h"
+#include "PostDoc.h"
+#include "Document.h"
+#include <PostGL/GLModel.h>
 
 //-----------------------------------------------------------------------------
 CAbstractTool::CAbstractTool(const QString& s) : m_name(s) 
@@ -43,6 +46,21 @@ void CAbstractTool::activate(CMainWindow* wnd)
 void CAbstractTool::deactivate()
 {
 	m_wnd = nullptr;
+}
+
+GObject* CAbstractTool::GetActiveObject()
+{
+	CMainWindow* wnd = GetMainWindow();
+	CPostDoc* postDoc = wnd->GetActiveDocument();
+	if (postDoc)
+	{
+		return postDoc->GetPostObject();
+	}
+	else
+	{
+		CDocument* doc = GetDocument();
+		return doc->GetActiveObject();
+	}
 }
 
 //-----------------------------------------------------------------------------

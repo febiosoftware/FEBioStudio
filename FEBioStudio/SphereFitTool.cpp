@@ -1,14 +1,8 @@
 #include "stdafx.h"
 #include "SphereFitTool.h"
-#include <QWidget>
-#include <QBoxLayout>
-#include <QCheckBox>
-#include <QPushButton>
-#include <QFormLayout>
-#include <QLineEdit>
-#include "Document.h"
 #include <MeshTools/SphereFit.h>
 #include <GeomLib/GObject.h>
+#include <MeshLib/FEMesh.h>
 
 // constructor
 CSphereFitTool::CSphereFitTool() : CBasicTool("Sphere Fit", HAS_APPLY_BUTTON)
@@ -30,56 +24,50 @@ CSphereFitTool::CSphereFitTool() : CBasicTool("Sphere Fit", HAS_APPLY_BUTTON)
 bool CSphereFitTool::OnApply()
 {
 	// get the nodal coordinates (surface only)
-	CDocument* doc = GetDocument();
-	if (doc && doc->IsValid())
+	GObject* po = GetActiveObject();
+	FEMesh* activeMesh = (po ? po->GetFEMesh() : nullptr);
+	if (activeMesh == nullptr)
 	{
-		GObject* po = doc->GetActiveObject();
-		if ((po == 0) || (po->GetFEMesh() == 0)) 
-		{
-			SetErrorString("You must select an object that has a mesh.");
-			return false;
-		}
-
-		FEMesh& mesh = *po->GetFEMesh();
-
-		int N = mesh.Nodes();
-		int F = mesh.Faces();
-		for (int i=0; i<N; ++i) mesh.Node(i).m_ntag = 0;
-		for (int i=0; i<F; ++i)
-		{
-			FEFace& f = mesh.Face(i);
-			if ((m_bsel == false) || (f.IsSelected()))
-			{
-				int nf = f.Nodes();
-				for (int j=0; j<nf; ++j) mesh.Node(f.n[j]).m_ntag = 1;
-			}
-		}
-
-		vector<vec3d> y;
-		for (int i=0; i<N; ++i)
-		{
-			if (mesh.Node(i).m_ntag == 1) y.push_back(po->GetTransform().LocalToGlobal(mesh.Node(i).r));
-		}
-
-		// find the best fit sphere
-		SphereFit fit;
-		fit.Fit(y, 50);
-		vec3d sc = fit.m_rc;
-		double R = fit.m_R;
-
-		// calculate the objective function
-		double objs = fit.ObjFunc(y);
-
-		// update GUI
-		m_x = sc.x;
-		m_y = sc.y;
-		m_z = sc.z;
-		m_R = R;
-		m_obj = objs;
-
-		// set this position as the 3D cursor
-		doc->Set3DCursor(sc);
+		SetErrorString("You must select an object that has a mesh.");
+		return false;
 	}
+
+	FEMesh& mesh = *activeMesh;
+
+	int N = mesh.Nodes();
+	int F = mesh.Faces();
+	for (int i=0; i<N; ++i) mesh.Node(i).m_ntag = 0;
+	for (int i=0; i<F; ++i)
+	{
+		FEFace& f = mesh.Face(i);
+		if ((m_bsel == false) || (f.IsSelected()))
+		{
+			int nf = f.Nodes();
+			for (int j=0; j<nf; ++j) mesh.Node(f.n[j]).m_ntag = 1;
+		}
+	}
+
+	vector<vec3d> y;
+	for (int i=0; i<N; ++i)
+	{
+		if (mesh.Node(i).m_ntag == 1) y.push_back(po->GetTransform().LocalToGlobal(mesh.Node(i).r));
+	}
+
+	// find the best fit sphere
+	SphereFit fit;
+	fit.Fit(y, 50);
+	vec3d sc = fit.m_rc;
+	double R = fit.m_R;
+
+	// calculate the objective function
+	double objs = fit.ObjFunc(y);
+
+	// update GUI
+	m_x = sc.x;
+	m_y = sc.y;
+	m_z = sc.z;
+	m_R = R;
+	m_obj = objs;
 
 	return true;
 }
