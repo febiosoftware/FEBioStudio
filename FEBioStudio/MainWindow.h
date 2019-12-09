@@ -407,6 +407,8 @@ public slots:
 	void ShowSSHProgress(bool show);
 	void UpdateSSHProgress(int);
 
+	bool DoModelCheck();
+
 public:
 	QStringList GetRecentFileList();
 

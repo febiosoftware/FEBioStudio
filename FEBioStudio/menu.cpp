@@ -537,6 +537,13 @@ void CMainWindow::on_actionExportFEModel_triggered()
 			CDlgExportFEBio dlg(this);
 			if (dlg.exec())
 			{
+				// Do a model check
+				if (DoModelCheck() == false)
+				{
+					AddLogEntry(QString("cancelled\n"));
+					return;
+				}
+
 				if (dlg.m_nversion == 0)
 				{
 					// Write version 1.x

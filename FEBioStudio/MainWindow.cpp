@@ -1861,6 +1861,27 @@ void CMainWindow::UpdateFontToolbar()
 	else ui->pFontToolBar->setDisabled(true);
 }
 
+bool CMainWindow::DoModelCheck()
+{
+	CDocument* doc = GetDocument();
+
+	vector<MODEL_ERROR> warnings = doc->CheckModel();
+
+	if (warnings.empty() == false)
+	{
+		GetDocument()->SetActiveJob(nullptr);
+
+		CDlgCheck dlg(this);
+		dlg.SetWarnings(warnings);
+		if (dlg.exec() == 0)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void CMainWindow::RunFEBioJob(CFEBioJob* job)
 {
 	CDocument* doc = GetDocument();
@@ -1883,19 +1904,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	filePath = FSDir::toAbsolutePath(filePath);
 
 	// check the model first for issues
-	vector<MODEL_ERROR> warnings = doc->CheckModel();
-
-	if (warnings.empty() == false)
-	{
-		GetDocument()->SetActiveJob(nullptr);
-
-		CDlgCheck dlg(this);
-		dlg.SetWarnings(warnings);
-		if (dlg.exec() == 0)
-		{
-			return;
-		}
-	}
+	if (DoModelCheck() == false) return;
 
 	// try to save the file first
 	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(filePath)));
