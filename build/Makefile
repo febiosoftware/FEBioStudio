@@ -4,15 +4,10 @@ LIBS = Ansys Abaqus Comsol FEBio FEMLib FSCore GeomLib ImageLib LSDyna MathLib M
 
 FEBioStudio: $(LIBS) MeshTools GLLib GLWLib PostGL PostLib CUILib
 	cd ../FEBioStudio; $(QMAKE) FEBioStudio.pro;
-#	$(MAKE) FEBIOStudioQMake
 	$(MAKE) -C ../FEBioStudio/;
 
-#FEBIOStudioQMake: FEBioStudio.pro
-#	cd ../FEBioStudio; rm moc*; $(MAKE) distclean
-#	cd ../FEBioStudio; $(QMAKE) FEBioStudio.pro;
-
 $(LIBS):
-	cd ../$@;	$(MAKE) -f ../build/makeLibs.mk
+	cd ../$@; $(MAKE) -f ../build/makeLibs.mk
 	
 MeshTools:
 	cd ../MeshTools; $(QMAKE) MeshTools.pro;
@@ -39,38 +34,29 @@ CUILib:
 	$(MAKE) -C ../CUILib/;
 
 FEBioStudioClean:
-	cd ../FEBioStudio; rm moc*; $(MAKE) distclean
+	cd ../FEBioStudio; $(MAKE) clean
 
 MeshToolsClean:
-	cd ../MeshTools; rm moc*; $(MAKE) distclean
+	cd ../MeshTools; $(MAKE) clean
 
 GLLibClean:
-	cd ../GLLib; rm moc*; $(MAKE) distclean
+	cd ../GLLib; $(MAKE) clean
 	
 GLWLibClean:
-	cd ../GLWLib; rm moc*; $(MAKE) distclean
+	cd ../GLWLib; $(MAKE) clean
 
 PostGLClean:
-	cd ../PostGL; rm moc*; $(MAKE) distclean
+	cd ../PostGL; $(MAKE) clean
 
 PostLibClean:
-	cd ../PostLib; rm moc*; $(MAKE) distclean
+	cd ../PostLib; $(MAKE) clean
 
 CUILibClean:
-	cd ../CUILib; rm moc*; $(MAKE) distclean
+	cd ../CUILib; $(MAKE) clean
 
-clean: #MocClean
+LibClean:
 	for lib in $(LIBS) ; do \
 		cd ../$$lib; $(MAKE) -f ../build/makeLibs.mk clean ;\
 	done
 
-	cd ../MeshTools/; $(MAKE) distclean
-	cd ../GLLib/; $(MAKE) distclean
-	cd ../GLWLib/; $(MAKE) distclean
-	cd ../PostGL/; $(MAKE) distclean
-	cd ../PostLib/; $(MAKE) distclean
-	cd ../CUILib/; $(MAKE) distclean
-	cd ../FEBioStudio/; $(MAKE) distclean
-	
-MocClean:
-	cd ../; rm */moc*;
+clean: LibClean MeshToolsClean GLLibClean GLWLibClean PostGLClean PostLibClean CUILibClean FEBioStudioClean

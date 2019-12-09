@@ -5,8 +5,9 @@ QMAKE_CXXFLAGS += -std=c++14 -O0
 DEFINES += LINUX HAS_OCC TETLIBRARY HAS_NETGEN HAS_QUAZIP HAS_SSH
 DESTDIR = ../build/lib
 TARGET = glwlib
-SOURCES += GLWidget.cpp
-SOURCES += GLWidgetManager.cpp
 INCLUDEPATH += ../
 QT += widgets
-#INCLUDEPATH += /usr/include/qt5/QtWidgets
+
+HEADERS += *.h
+SOURCES = $$files(*.cpp)
+SOURCES -= $$files(moc_*.cpp)

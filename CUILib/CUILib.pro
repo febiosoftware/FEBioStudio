@@ -10,5 +10,5 @@ QT += widgets
 
 # Input
 HEADERS += *.h
-
-SOURCES += *.cpp
+SOURCES = $$files(*.cpp)
+SOURCES -= $$files(moc_*.cpp)

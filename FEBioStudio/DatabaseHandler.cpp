@@ -202,16 +202,16 @@ void CDatabaseHandler::authReply(QNetworkReply *r)
 	getModelList();
 //	TCPUpload("test");
 
-	QVariantMap feed;
-	feed.insert("name", "testprojectFBS");
-	feed.insert("description", "Test to see if this works in FBS");
-	feed.insert("version", 1);
-	QList<QVariant> files;
-	files.append("testfile.feb");
-	feed.insert("files", files);
-	QByteArray payload=QJsonDocument::fromVariant(feed).toJson();
-
-	upload(payload);
+//	QVariantMap feed;
+//	feed.insert("name", "testprojectFBS");
+//	feed.insert("description", "Test to see if this works in FBS");
+//	feed.insert("version", 1);
+//	QList<QVariant> files;
+//	files.append("testfile.feb");
+//	feed.insert("files", files);
+//	QByteArray payload=QJsonDocument::fromVariant(feed).toJson();
+//
+//	upload(payload);
 }
 
 

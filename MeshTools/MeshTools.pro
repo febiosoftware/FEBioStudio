@@ -13,4 +13,5 @@ INCLUDEPATH += /home/sci/mherron/Resources/tetgen1.5.0/
 INCLUDEPATH += /home/sci/mherron/Resources/mmg/build/include
 
 HEADERS += *.h
-SOURCES += *.cpp
+SOURCES = $$files(*.cpp)
+SOURCES -= $$files(moc_*.cpp)

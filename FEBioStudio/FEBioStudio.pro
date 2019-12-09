@@ -54,5 +54,9 @@ LIBS += /home/sci/mherron/Resources/mmg/build/lib/libmmg3d.a
 
 RESOURCES = ../febiostudio.qrc
 
-SOURCES += *.cpp
 HEADERS += *.h
+SOURCES = $$files(*.cpp)
+SOURCES -= $$files(moc_*.cpp)
+SOURCES -= $$files(qrc_*)
+
+
