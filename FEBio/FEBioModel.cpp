@@ -984,6 +984,17 @@ FEPart* FEBioModel::BuildFEPart(const char* szname)
 	}
 }
 
+FEPart* FEBioModel::BuildFEPart(FEBioModel::Domain* dom)
+{
+	assert(Instances() == 1);
+	PartInstance* part = GetInstance(0);
+
+	FEPart* pg = new FEPart(part->GetGObject(), dom->GetElementIDList());
+
+	pg->SetName(dom->name());
+
+	return pg;
+}
 
 FEBioModel::SurfacePair* FEBioModel::FindSurfacePair(const char* szname)
 {

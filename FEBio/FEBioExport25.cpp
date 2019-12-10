@@ -2923,19 +2923,22 @@ void FEBioExport25::WriteMeshDataFields()
 
 			const FEPart* pg = data.GetPart();
 
+			double scale = data.GetScaleFactor();
+
 			XMLElement tag("ElementData");
-			tag.add_attribute("name", data.GetName().c_str());
+			tag.add_attribute("var", data.GetName().c_str());
 			tag.add_attribute("elem_set", pg->GetName());
+			if (scale != 1.0) tag.add_attribute("scale", scale);
 			m_xml.add_branch(tag);
 			{
-				XMLElement el("e");
-				int nid = el.add_attribute("id", 0);
+				XMLElement el("elem");
+				int nid = el.add_attribute("lid", 0);
 				FEItemListBuilder::ConstIterator it = pg->begin();
 				for (int j = 0; j<pg->size(); ++j, ++it)
 				{
 					int eid = *it;
 					FEElement_& e = pm->ElementRef(eid);
-					el.set_attribute(nid, e.m_nid);
+					el.set_attribute(nid, j + 1);
 					el.value(data[j]);
 					m_xml.add_leaf(el, false);
 				}

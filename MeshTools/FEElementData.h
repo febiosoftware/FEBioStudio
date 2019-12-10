@@ -33,6 +33,9 @@ public:
 
 	void FillRandomBox(double fmin, double fmax);
 
+	void SetScaleFactor(double s);
+	double GetScaleFactor() const;
+
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -40,4 +43,5 @@ public:
 private:
 	vector<double>	m_data;		//!< data values
 	FEPart*			m_part;		//!< the part to which the data applies
+	double			m_scale;	//!< scale factor
 };

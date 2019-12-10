@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------------
 FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
 {
+	m_scale = 1.0;
 	m_part = nullptr;
 	SetMesh(mesh);
 }
@@ -49,6 +50,18 @@ void FEElementData::FillRandomBox(double fmin, double fmax)
 }
 
 //-----------------------------------------------------------------------------
+void FEElementData::SetScaleFactor(double s)
+{
+	m_scale = s;
+}
+
+//-----------------------------------------------------------------------------
+double FEElementData::GetScaleFactor() const
+{
+	return m_scale;
+}
+
+//-----------------------------------------------------------------------------
 void FEElementData::Save(OArchive& ar)
 {
 	int NE = GetMesh()->Elements();
@@ -56,6 +69,7 @@ void FEElementData::Save(OArchive& ar)
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
 	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
+	ar.WriteChunk(CID_MESH_DATA_SCALE, m_scale);
 
 	// Parts must be saved first so that the number of elements in the part can be
 	// queried before the data is read during the load operation.
@@ -87,6 +101,10 @@ void FEElementData::Load(IArchive& ar)
 			int dType;
 			ar.read(dType);
 			m_dataType = (FEMeshData::DATA_TYPE) dType;
+		}
+		else if (nid == CID_MESH_DATA_SCALE)
+		{
+			ar.read(m_scale);
 		}
 		else if (nid == CID_MESH_DATA_PART)
 		{

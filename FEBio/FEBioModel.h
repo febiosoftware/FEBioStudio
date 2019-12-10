@@ -140,6 +140,8 @@ public:
 
 		int ElementID(int n) const { return m_elem[n]; }
 
+		vector<int> GetElementIDList() const { return m_elem; }
+
 	private:
 		int			m_matID;	// zero-based material index
 		std::string m_name;	
@@ -421,6 +423,7 @@ public:
 	FENodeSet* BuildFENodeSet(const char* szname);
 	FESurface* BuildFESurface(const char* szname);
 	FEPart* BuildFEPart(const char* szname);
+	FEPart* BuildFEPart(Domain* dom);
 	FEItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);

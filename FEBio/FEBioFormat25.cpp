@@ -697,6 +697,41 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
                 }
                 else ParseUnknownTag(tag);
             }
+			else
+			{
+				// Read the data and store it as a mesh data section
+				FEBioModel& feb = GetFEBioModel();
+
+				const char* szset = tag.AttributeValue("elem_set");
+				FEBioModel::Domain* dom = feb.FindDomain(szset);
+				if (dom)
+				{
+					FEPart* pg = feb.BuildFEPart(dom);
+					if (pg)
+					{
+						FEMesh* mesh = pg->GetMesh();
+						FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
+
+						double scale = tag.AttributeValue("scale", 1.0);
+						pd->SetScaleFactor(scale);
+
+						double val;
+						int lid;
+						++tag;
+						do
+						{
+							tag.AttributePtr("lid")->value(lid);
+							tag.value(val);
+
+							(*pd)[lid - 1] = val;
+
+							++tag;
+						} while (!tag.isend());
+					}
+					else ParseUnknownTag(tag);
+				}
+				else ParseUnknownTag(tag);
+			}
         }
 		else if (tag == "SurfaceData")
 		{
