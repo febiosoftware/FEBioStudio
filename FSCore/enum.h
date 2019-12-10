@@ -573,6 +573,7 @@
 #define FE_PRESCRIBED_SHELL_DISPLACEMENT	0x002A	// added in 2.0
 #define FE_NODAL_SHELL_VELOCITIES			0x002B	// added in 2.0
 #define FE_CONCENTRATION_FLUX				0x002C	// added in 2.0
+#define FE_SBM_POINT_SOURCE					0x002D
 
 //--------------------------------------------------------
 // Interface types

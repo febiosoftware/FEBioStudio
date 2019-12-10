@@ -491,3 +491,14 @@ FEHeatSource::FEHeatSource(FEModel* ps, int nstep) : FEBodyLoad(FE_HEAT_SOURCE, 
 	SetTypeString("Heat Source");
 	AddDoubleParam(0, "Q", "Q")->SetLoadCurve();
 }
+
+//-----------------------------------------------------------------------------
+FESBMPointSource::FESBMPointSource(FEModel* ps, int nstep) : FEBodyLoad(FE_SBM_POINT_SOURCE, ps, nstep)
+{
+	SetTypeString("SBM Point Source");
+	AddIntParam(1, "sbm", "sbm");
+	AddDoubleParam(0, "value", "value");
+	AddDoubleParam(0, "x", "x");
+	AddDoubleParam(0, "y", "y");
+	AddDoubleParam(0, "z", "z");
+}

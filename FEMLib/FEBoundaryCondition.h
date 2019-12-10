@@ -370,3 +370,14 @@ public:
 	double GetLoad() { return GetFloatValue(LOAD); }
 	void SetLoad(double v) { SetFloatValue(LOAD, v); }
 };
+
+//-----------------------------------------------------------------------------
+// SBM source (experimental feature)
+class FESBMPointSource : public FEBodyLoad
+{
+public:
+	enum { SBM, VALUE, POS_X, POS_Y, POS_Z };
+
+public:
+	FESBMPointSource(FEModel* ps, int nstep = 0);
+};

@@ -4384,6 +4384,19 @@ void FEBioExport25::WriteBodyLoad(FEBodyLoad* pbl, GPart* pg)
 
 	FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pbl);
 	if (phs) WriteHeatSource(phs, pg);
+
+	FESBMPointSource* pps = dynamic_cast<FESBMPointSource*>(pbl);
+	if (pps)
+	{
+		XMLElement el("body_load");
+		el.add_attribute("type", "sbm point source");
+		if (pg) el.add_attribute("elem_set", pg->GetName());
+		m_xml.add_branch(el);
+		{
+			WriteParamList(*pps);
+		}
+		m_xml.close_branch();	
+	}
 }
 
 //-----------------------------------------------------------------------------
