@@ -501,4 +501,5 @@ FESBMPointSource::FESBMPointSource(FEModel* ps, int nstep) : FEBodyLoad(FE_SBM_P
 	AddDoubleParam(0, "x", "x");
 	AddDoubleParam(0, "y", "y");
 	AddDoubleParam(0, "z", "z");
+	AddBoolParam(true, "weigh_volume", "weigh volume");
 }
