@@ -11,7 +11,6 @@
 		D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */; };
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
 		D5248DDC231C114D00691871 /* DlgCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DDA231C114D00691871 /* DlgCheck.cpp */; };
-		D52EF075237B632C00F9CCB7 /* libssh.4.8.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D52EF074237B632C00F9CCB7 /* libssh.4.8.3.dylib */; };
 		D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */; };
 		D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */; };
 		D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545B23749D1100BE1731 /* libx265.179.dylib */; };
@@ -96,7 +95,6 @@
 		D5ED2958231987CF00C16BF7 /* libTKPrim.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED2947231987CE00C16BF7 /* libTKPrim.7.3.0.dylib */; };
 		D5ED2959231987CF00C16BF7 /* libTKMath.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED2948231987CF00C16BF7 /* libTKMath.7.3.0.dylib */; };
 		D5ED295A231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED2949231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib */; };
-		D5ED29662319885700C16BF7 /* libxvidcore.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29652319885600C16BF7 /* libxvidcore.4.dylib */; };
 		D5ED29682319887700C16BF7 /* libmp3lame.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */; };
 		D5ED296D231988CB00C16BF7 /* libiconv.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */; };
 		D5ED296E231988CB00C16BF7 /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED296C231988CA00C16BF7 /* libz.1.dylib */; };
@@ -116,7 +114,6 @@
 		D5ED2A1823198CD900C16BF7 /* moc_MainTabBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2A0B23198CD900C16BF7 /* moc_MainTabBar.cpp */; };
 		D5ED2A1923198CD900C16BF7 /* InfoPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */; };
 		D5ED2A202319902B00C16BF7 /* libmp3lame.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		D5ED2A212319902B00C16BF7 /* libxvidcore.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29652319885600C16BF7 /* libxvidcore.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A272319902B00C16BF7 /* libTKBO.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED293E231987CC00C16BF7 /* libTKBO.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A282319902B00C16BF7 /* libTKBRep.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED2941231987CD00C16BF7 /* libTKBRep.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A292319902B00C16BF7 /* libTKernel.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED2939231987CB00C16BF7 /* libTKernel.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -148,6 +145,9 @@
 		D5ED2A432319902B00C16BF7 /* libstl.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED291F2319858A00C16BF7 /* libstl.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A442319902B00C16BF7 /* libstlvis.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29202319858A00C16BF7 /* libstlvis.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D5ED2A452319902B00C16BF7 /* libvisual.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5ED29292319858C00C16BF7 /* libvisual.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D5EF347323A03BA500BF4D56 /* libxvidcore.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */; };
+		D5EF347423A03BFB00BF4D56 /* libxvidcore.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D5EF347623A03C1A00BF4D56 /* libssh.4.8.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EF347523A03C1900BF4D56 /* libssh.4.8.3.dylib */; };
 		D5F7D82322FA37C40089B08E /* DlgSoluteTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D6F822FA37C30089B08E /* DlgSoluteTable.cpp */; };
 		D5F7D82422FA37C40089B08E /* moc_FileThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D6F922FA37C30089B08E /* moc_FileThread.cpp */; };
 		D5F7D82522FA37C40089B08E /* DlgAddEquation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D6FA22FA37C30089B08E /* DlgAddEquation.cpp */; };
@@ -344,8 +344,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D5EF347423A03BFB00BF4D56 /* libxvidcore.4.dylib in CopyFiles */,
 				D5ED2A202319902B00C16BF7 /* libmp3lame.0.dylib in CopyFiles */,
-				D5ED2A212319902B00C16BF7 /* libxvidcore.4.dylib in CopyFiles */,
 				D5ED2A272319902B00C16BF7 /* libTKBO.7.3.0.dylib in CopyFiles */,
 				D5ED2A282319902B00C16BF7 /* libTKBRep.7.3.0.dylib in CopyFiles */,
 				D5ED2A292319902B00C16BF7 /* libTKernel.7.3.0.dylib in CopyFiles */,
@@ -390,7 +390,6 @@
 		D5248DD8231C114D00691871 /* modelcheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelcheck.h; sourceTree = "<group>"; };
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
-		D52EF074237B632C00F9CCB7 /* libssh.4.8.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.3.dylib; path = ../../../../../../../usr/local/Cellar/libssh/0.9.2/lib/libssh.4.8.3.dylib; sourceTree = "<group>"; };
 		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
 		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
 		D548545B23749D1100BE1731 /* libx265.179.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.179.dylib; path = ../../../../../../../../../../usr/local/Cellar/x265/3.2.1/lib/libx265.179.dylib; sourceTree = "<group>"; };
@@ -495,7 +494,6 @@
 		D5ED2947231987CE00C16BF7 /* libTKPrim.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKPrim.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKPrim.7.3.0.dylib; sourceTree = "<group>"; };
 		D5ED2948231987CF00C16BF7 /* libTKMath.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMath.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKMath.7.3.0.dylib; sourceTree = "<group>"; };
 		D5ED2949231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomAlgo.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKGeomAlgo.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED29652319885600C16BF7 /* libxvidcore.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxvidcore.4.dylib; path = ../../../../../../../../../../../usr/local/Cellar/xvid/1.3.5/lib/libxvidcore.4.dylib; sourceTree = "<group>"; };
 		D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmp3lame.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/lame/3.100/lib/libmp3lame.0.dylib; sourceTree = "<group>"; };
 		D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = ../../../../../../../../../../../usr/lib/libiconv.2.dylib; sourceTree = "<group>"; };
 		D5ED296C231988CA00C16BF7 /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
@@ -524,6 +522,8 @@
 		D5ED2A0B23198CD900C16BF7 /* moc_MainTabBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_MainTabBar.cpp; sourceTree = "<group>"; };
 		D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InfoPanel.cpp; sourceTree = "<group>"; };
 		D5ED2A1E23198DAD00C16BF7 /* FEBioStudio.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = FEBioStudio.entitlements; sourceTree = "<group>"; };
+		D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxvidcore.4.dylib; path = ../../../../../../../../../../usr/local/Cellar/xvid/1.3.6/lib/libxvidcore.4.dylib; sourceTree = "<group>"; };
+		D5EF347523A03C1900BF4D56 /* libssh.4.8.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.3.dylib; path = ../../../../../../../../../../usr/local/Cellar/libssh/0.9.2/lib/libssh.4.8.3.dylib; sourceTree = "<group>"; };
 		D5F7D6E222FA37670089B08E /* FEBioStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FEBioStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5F7D6ED22FA37680089B08E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D5F7D6F722FA37C30089B08E /* EditPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditPanel.h; sourceTree = "<group>"; };
@@ -842,7 +842,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D52EF075237B632C00F9CCB7 /* libssh.4.8.3.dylib in Frameworks */,
+				D5EF347623A03C1A00BF4D56 /* libssh.4.8.3.dylib in Frameworks */,
+				D5EF347323A03BA500BF4D56 /* libxvidcore.4.dylib in Frameworks */,
 				D548546B23749F2100BE1731 /* QtGui.framework in Frameworks */,
 				D548546C23749F2100BE1731 /* QtCore.framework in Frameworks */,
 				D548546D23749F2100BE1731 /* QtCharts.framework in Frameworks */,
@@ -863,7 +864,6 @@
 				D5ED296D231988CB00C16BF7 /* libiconv.2.dylib in Frameworks */,
 				D5ED296E231988CB00C16BF7 /* libz.1.dylib in Frameworks */,
 				D5ED29682319887700C16BF7 /* libmp3lame.0.dylib in Frameworks */,
-				D5ED29662319885700C16BF7 /* libxvidcore.4.dylib in Frameworks */,
 				D5ED294A231987CF00C16BF7 /* libTKernel.7.3.0.dylib in Frameworks */,
 				D5ED294B231987CF00C16BF7 /* libTKSTEPBase.7.3.0.dylib in Frameworks */,
 				D5ED294C231987CF00C16BF7 /* libTKSTEP.7.3.0.dylib in Frameworks */,
@@ -1334,8 +1334,9 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D5EF347523A03C1900BF4D56 /* libssh.4.8.3.dylib */,
+				D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */,
 				D5606C7F238DA80C002B037E /* libCUILib.a */,
-				D52EF074237B632C00F9CCB7 /* libssh.4.8.3.dylib */,
 				D548546923749F2000BE1731 /* QtCharts.framework */,
 				D548546823749F2000BE1731 /* QtCore.framework */,
 				D548546723749F2000BE1731 /* QtGui.framework */,
@@ -1356,7 +1357,6 @@
 				D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */,
 				D5ED296C231988CA00C16BF7 /* libz.1.dylib */,
 				D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */,
-				D5ED29652319885600C16BF7 /* libxvidcore.4.dylib */,
 				D5ED293E231987CC00C16BF7 /* libTKBO.7.3.0.dylib */,
 				D5ED2941231987CD00C16BF7 /* libTKBRep.7.3.0.dylib */,
 				D5ED2939231987CB00C16BF7 /* libTKernel.7.3.0.dylib */,
@@ -1877,6 +1877,7 @@
 					/usr/local/Cellar/x265/3.2.1/lib,
 					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
 					/usr/local/Cellar/libssh/0.9.2/lib,
+					/usr/local/Cellar/xvid/1.3.6/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1926,6 +1927,7 @@
 					/usr/local/Cellar/x265/3.2.1/lib,
 					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
 					/usr/local/Cellar/libssh/0.9.2/lib,
+					/usr/local/Cellar/xvid/1.3.6/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
