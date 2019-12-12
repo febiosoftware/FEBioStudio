@@ -1269,28 +1269,66 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 
 void CMainWindow::on_actionHideSelection_triggered()
 {
-	CDocument* pdoc = GetDocument();
+	CPostDoc* postDoc = GetActiveDocument();
+	if (postDoc)
+	{
+		Post::CGLModel& mdl = *postDoc->GetGLModel();
+		switch (mdl.GetSelectionMode())
+		{
+		case Post::SELECT_NODES: mdl.HideSelectedNodes(); break;
+		case Post::SELECT_EDGES: mdl.HideSelectedEdges(); break;
+		case Post::SELECT_FACES: mdl.HideSelectedFaces(); break;
+		case Post::SELECT_ELEMS: mdl.HideSelectedElements(); break;
+		}
+		postDoc->UpdateFEModel();
+		RedrawGL();
+	}
+	else
+	{
+		CDocument* pdoc = GetDocument();
 
-	pdoc->HideCurrentSelection();
-	UpdateModel();
-	Update();
+		pdoc->HideCurrentSelection();
+		UpdateModel();
+		Update();
+	}
 }
 
 void CMainWindow::on_actionHideUnselected_triggered()
 {
-	CDocument* pdoc = GetDocument();
-
-	pdoc->HideUnselected();
-	UpdateModel();
-	Update();
+	CPostDoc* postDoc = GetActiveDocument();
+	if (postDoc)
+	{
+		Post::CGLModel& mdl = *postDoc->GetGLModel();
+		mdl.HideUnselectedElements();
+		postDoc->UpdateFEModel();
+		RedrawGL();
+	}
+	else
+	{
+		CDocument* pdoc = GetDocument();
+		pdoc->HideUnselected();
+		UpdateModel();
+		Update();
+	}
 }
 
 void CMainWindow::on_actionUnhideAll_triggered()
 {
-	CDocument* doc = GetDocument();
-	doc->DoCommand(new CCmdUnhideAll());
-	UpdateModel();
-	Update();
+	CPostDoc* postDoc = GetActiveDocument();
+	if (postDoc)
+	{
+		Post::CGLModel& mdl = *postDoc->GetGLModel();
+		mdl.UnhideAll();
+		postDoc->UpdateFEModel();
+		RedrawGL();
+	}
+	else
+	{
+		CDocument* doc = GetDocument();
+		doc->DoCommand(new CCmdUnhideAll());
+		UpdateModel();
+		Update();
+	}
 }
 
 void CMainWindow::on_actionToggleVisible_triggered()

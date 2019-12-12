@@ -219,6 +219,20 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// Convert a tet4 mesh into a hex8 mesh
+//
+class FETet4ToHex8 : public FEModifier
+{
+public:
+	FETet4ToHex8();
+	FEMesh* Apply(FEMesh* pm);
+
+	void SetSmoothing(bool b) { m_bsmooth = b; }
+private:
+	bool	m_bsmooth;
+};
+
+//-----------------------------------------------------------------------------
 // Convert a tet10 mesh into a tet4 mesh
 //
 class FETet10ToTet4 : public FEModifier

@@ -823,6 +823,7 @@ FEConvertMesh::FEConvertMesh() : FEModifier("Convert")
 		"Tet4 to Tet10\0"\
 		"Tet4 to Tet15\0"\
 		"Tet4 to Tet20\0"\
+		"Tet4 to Hex8\0"\
 		"Tet5 to Tet4\0"\
 		"Tet10 to Tet4\0"\
 		"Tet15 to Tet4\0"\
@@ -865,35 +866,42 @@ FEMesh* FEConvertMesh::Apply(FEMesh* pm)
 		}
 		break;
 	case 5: pmod = new FETet4ToTet20; break;
-	case 6: pmod = new FETet5ToTet4; break;
-	case 7: pmod = new FETet10ToTet4; break;
-	case 8: pmod = new FETet15ToTet4; break;
-	case 9:
+	case 6: 
+		{
+			FETet4ToHex8* pfe = new FETet4ToHex8;
+			pfe->SetSmoothing(bsmooth);
+			pmod = pfe;
+		}
+		break;
+	case 7: pmod = new FETet5ToTet4; break;
+	case 8: pmod = new FETet10ToTet4; break;
+	case 9: pmod = new FETet15ToTet4; break;
+	case 10:
 		{
 			  FEHex8ToHex20* pfe = new FEHex8ToHex20;
 			  pfe->SetSmoothing(bsmooth);
 			  pmod = pfe;
 		}
 		break;
-	case 10: pmod = new FEHex20ToHex8; break;
-	case 11:
+	case 11: pmod = new FEHex20ToHex8; break;
+	case 12:
 		{
 			  FEQuad4ToQuad8* pfe = new FEQuad4ToQuad8;
 			  pfe->SetSmoothing(bsmooth);
 			  pmod = pfe;
 		}
 		break;
-	case 12: pmod = new FEQuad8ToQuad4; break;
-	case 13:
+	case 13: pmod = new FEQuad8ToQuad4; break;
+	case 14:
 		{
 			FETri3ToTri6* pfe = new FETri3ToTri6;
 			pfe->SetSmoothing(bsmooth);
 			pmod = pfe;
 		}
 		break;
-	case 14: pmod = new FETri6ToTri3; break;
-	case 15: pmod = new FELinearToQuadratic; break;
-	case 16: pmod = new FEQuadraticToLinear; break;
+	case 15: pmod = new FETri6ToTri3; break;
+	case 16: pmod = new FELinearToQuadratic; break;
+	case 17: pmod = new FEQuadraticToLinear; break;
 	default:
 		FEModifier::SetError("Unknown converter selected");
 		assert(false);

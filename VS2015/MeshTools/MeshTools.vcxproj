@@ -217,6 +217,7 @@
     <ClCompile Include="..\..\MeshTools\FESurfaceModifier.cpp" />
     <ClCompile Include="..\..\MeshTools\FETet10ToTet4.cpp" />
     <ClCompile Include="..\..\MeshTools\FETet15ToTet4.cpp" />
+    <ClCompile Include="..\..\MeshTools\FETet4ToHex8.cpp" />
     <ClCompile Include="..\..\MeshTools\FETet4ToTet10.cpp" />
     <ClCompile Include="..\..\MeshTools\FETet4ToTet15.cpp" />
     <ClCompile Include="..\..\MeshTools\FETet4ToTet20.cpp" />
