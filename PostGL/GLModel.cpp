@@ -299,6 +299,86 @@ void CGLModel::ResetMesh()
 	// reevaluate normals
 	mesh.UpdateNormals();
 }
+
+//-----------------------------------------------------------------------------
+//! Toggle element visibility
+void CGLModel::ToggleVisibleElements()
+{
+	FEModel& fem = *GetFEModel();
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement& el = mesh.Element(i);
+		if (el.IsVisible()) el.Hide(); else {
+			el.Show();
+			el.Unhide();
+		}
+	}
+
+	// nodes will be hidden if all elements they attach to are hidden
+	int NN = mesh.Nodes();
+	for (int i = 0; i<NN; ++i) mesh.Node(i).m_ntag = 0;
+	for (int i = 0; i<mesh.Elements(); ++i)
+	{
+		FEElement_& el = mesh.ElementRef(i);
+		if (el.IsHidden() == false)
+		{
+			int ne = el.Nodes();
+			for (int j = 0; j<ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 1;
+		}
+	}
+
+	for (int i = 0; i < NN; ++i)
+	{
+		FENode& node = mesh.Node(i);
+		if (node.m_ntag == 0) mesh.Node(i).Hide();
+		else
+		{
+			node.Unhide();
+			node.Show();
+		}
+	}
+
+	// hide faces
+	int NF = mesh.Faces();
+	for (int i = 0; i<NF; ++i)
+	{
+		FEFace& f = mesh.Face(i);
+		if (f.IsExternal())
+		{
+			if (mesh.ElementRef(f.m_elem[0].eid).IsHidden()) f.Hide();
+			else { f.Show(); f.Unhide(); }
+		}
+		else
+		{
+			if (mesh.ElementRef(f.m_elem[0].eid).IsHidden() && 
+				mesh.ElementRef(f.m_elem[1].eid).IsHidden()) f.Hide();
+			else
+			{
+				f.Show();
+				f.Unhide();
+			}
+		}
+	}
+
+	// hide edges
+	int NL = mesh.Edges();
+	for (int i = 0; i<NL; ++i)
+	{
+		FEEdge& edge = mesh.Edge(i);
+		FENode& node0 = mesh.Node(edge.n[0]);
+		FENode& node1 = mesh.Node(edge.n[1]);
+		if (node0.IsHidden() || node1.IsHidden()) edge.Hide();
+		else
+		{
+			edge.Show();
+			edge.Unhide();
+		}
+	}
+	UpdateSelectionLists();
+}
+
 //-----------------------------------------------------------------------------
 void CGLModel::RemoveDisplacementMap()
 {

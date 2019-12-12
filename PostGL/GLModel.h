@@ -7,6 +7,7 @@
 #include "GLPlot.h"
 #include <FSCore/FSObjectList.h>
 #include <GLLib/GLMeshRender.h>
+#include <MeshLib/Intersect.h>
 #include <vector>
 
 namespace Post {
@@ -114,6 +115,9 @@ public:
 
 	//! reset the mesh nodes
 	void ResetMesh();
+
+	//! Toggle element visibility
+	void ToggleVisibleElements();
 
 public:
 	// return internal surfaces

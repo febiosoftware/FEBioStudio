@@ -1333,41 +1333,52 @@ void CMainWindow::on_actionUnhideAll_triggered()
 
 void CMainWindow::on_actionToggleVisible_triggered()
 {
-	CDocument* doc = GetDocument();
-
-	int nsel = doc->GetSelectionMode();
-	int nitem = doc->GetItemMode();
-
-	CCommand* cmd = 0;
-	if (nitem == ITEM_MESH)
+	CPostDoc* postDoc = GetActiveDocument();
+	if (postDoc)
 	{
-		switch (nsel)
-		{
-		case SELECT_OBJECT  : cmd = new CCmdToggleObjectVisibility; break;
-		case SELECT_PART    : cmd = new CCmdTogglePartVisibility; break;
-		case SELECT_DISCRETE: cmd = new CCmdToggleDiscreteVisibility; break;
-		}
+		Post::CGLModel& mdl = *postDoc->GetGLModel();
+		mdl.ToggleVisibleElements();
+		postDoc->UpdateFEModel();
+		RedrawGL();
 	}
 	else
 	{
-		GObject* po = doc->GetActiveObject();
-		if (po == 0) return;
+		CDocument* doc = GetDocument();
 
-		FEMesh* pm = po->GetFEMesh();
-		FEMeshBase* pmb = po->GetEditableMesh();
+		int nsel = doc->GetSelectionMode();
+		int nitem = doc->GetItemMode();
 
-		switch (nitem)
+		CCommand* cmd = 0;
+		if (nitem == ITEM_MESH)
 		{
-		case ITEM_ELEM: if (pm) cmd = new CCmdToggleElementVisibility(); break;
-		case ITEM_FACE: if (pmb) cmd = new CCmdToggleFEFaceVisibility(); break;
+			switch (nsel)
+			{
+			case SELECT_OBJECT: cmd = new CCmdToggleObjectVisibility; break;
+			case SELECT_PART: cmd = new CCmdTogglePartVisibility; break;
+			case SELECT_DISCRETE: cmd = new CCmdToggleDiscreteVisibility; break;
+			}
 		}
-	}
+		else
+		{
+			GObject* po = doc->GetActiveObject();
+			if (po == 0) return;
 
-	if (cmd) 
-	{
-		doc->DoCommand(cmd);
-		UpdateModel();
-		RedrawGL();
+			FEMesh* pm = po->GetFEMesh();
+			FEMeshBase* pmb = po->GetEditableMesh();
+
+			switch (nitem)
+			{
+			case ITEM_ELEM: if (pm) cmd = new CCmdToggleElementVisibility(); break;
+			case ITEM_FACE: if (pmb) cmd = new CCmdToggleFEFaceVisibility(); break;
+			}
+		}
+
+		if (cmd)
+		{
+			doc->DoCommand(cmd);
+			UpdateModel();
+			RedrawGL();
+		}
 	}
 }
 

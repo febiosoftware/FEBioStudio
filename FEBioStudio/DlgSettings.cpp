@@ -119,6 +119,26 @@ public:
 	int		m_theme;
 };
 
+//-----------------------------------------------------------------------------
+class CSelectionProps : public CDataPropertyList
+{
+public:
+	CSelectionProps()
+	{
+		addBoolProperty(&m_bconnect, "Select connected");
+		addEnumProperty(&m_ntagInfo, "Tag info")->setEnumValues(QStringList() << "Item numbers" << "Item numbers and connecting nodes");
+		addBoolProperty(&m_backface, "Ignore backfacing items");
+		addBoolProperty(&m_binterior, "Ignore interior items");
+		m_bconnect = false;
+		m_ntagInfo = 0;
+	}
+
+public:
+	bool	m_bconnect;
+	int		m_ntagInfo;
+	bool	m_backface;
+	bool	m_binterior;
+};
 
 //=================================================================================================
 ColorGradient::ColorGradient(QWidget* parent) : QWidget(parent)
@@ -445,11 +465,13 @@ public:
 	QDialogButtonBox*	buttonBox;
 	CPaletteWidget*		m_pal;
 	CColormapWidget*	m_map;
+	CSelectionProps*	m_select;
 
 	::CPropertyListView*	bg_panel;
 	::CPropertyListView*	di_panel;
 	::CPropertyListView*	ph_panel;
 	::CPropertyListForm*	ui_panel;
+	::CPropertyListView*	se_panel;
 
 public:
 	CDlgSettings(QDialog* parent, ::CMainWindow* wnd)
@@ -460,6 +482,7 @@ public:
 		m_ui = new CUIProps(parent, wnd);
 		m_pal = new CPaletteWidget;
 		m_map = new CColormapWidget;
+		m_select = new CSelectionProps;
 	}
 
 	void setupUi(::CDlgSettings* pwnd)
@@ -472,10 +495,12 @@ public:
 		di_panel = new ::CPropertyListView;
 		ph_panel = new ::CPropertyListView;
 		ui_panel = new ::CPropertyListForm;
+		se_panel = new ::CPropertyListView;
 
 		pt->addTab(bg_panel, "Background");
 		pt->addTab(di_panel, "Display");
 		pt->addTab(ph_panel, "Physics");
+		pt->addTab(se_panel, "Selection");
 		pt->addTab(ui_panel, "UI");
 		pt->addTab(m_pal, "Palette");
 		pt->addTab(m_map, "Colormap");
@@ -522,6 +547,11 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_ui->m_bcmd = view.m_clearUndoOnSave;
 	ui->m_ui->m_theme = pwnd->currentTheme();
 
+	ui->m_select->m_bconnect = view.m_bconn;
+	ui->m_select->m_ntagInfo = view.m_ntagInfo;
+	ui->m_select->m_backface = view.m_bcullSel;
+	ui->m_select->m_binterior = view.m_bext;
+
 	ui->setupUi(this);
 
 	// fill the palette list
@@ -548,6 +578,7 @@ void CDlgSettings::showEvent(QShowEvent* ev)
 	ui->di_panel->Update(ui->m_display);
 	ui->ph_panel->Update(ui->m_physics);
 	ui->ui_panel->setPropertyList(ui->m_ui);
+	ui->se_panel->Update(ui->m_select);
 }
 
 void CDlgSettings::onTabChanged(int n)
@@ -588,6 +619,11 @@ void CDlgSettings::apply()
 	view.m_apply = (ui->m_ui->m_apply ? 1 : 0);
 	view.m_clearUndoOnSave = ui->m_ui->m_bcmd;
 	
+	view.m_bconn = ui->m_select->m_bconnect;
+	view.m_ntagInfo = ui->m_select->m_ntagInfo;
+	view.m_bcullSel = ui->m_select->m_backface;
+	view.m_bext = ui->m_select->m_binterior;
+
 	m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
 
 	m_pwnd->RedrawGL();
