@@ -1562,6 +1562,12 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
     }
     else
         el.add_attribute("type", sztype);
+
+	if ((pm->Parameters() == 0) && (pm->Properties() == 0))
+	{
+		m_xml.add_empty(el);
+		return;
+	}
     
 	m_xml.add_branch(el);
 	{
@@ -1623,11 +1629,18 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
 
 						if (bdone == false)
 						{
-							m_xml.add_branch(el);
+							if (pc->Parameters() == 0)
 							{
-								WriteMaterialParams(pc);
+								m_xml.add_empty(el);
 							}
-							m_xml.close_branch();
+							else
+							{
+								m_xml.add_branch(el);
+								{
+									WriteMaterialParams(pc);
+								}
+								m_xml.close_branch();
+							}
 						}
 					}
 				}
