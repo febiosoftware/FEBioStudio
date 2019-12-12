@@ -837,7 +837,7 @@ FEConvertMesh::FEConvertMesh() : FEModifier("Convert")
 		"Quadratic to Linear\0\0";
 
 	AddIntParam(0, "convert", "Convert")->SetEnumNames(szops);
-	AddBoolParam(false, "smooth", "smooth quadratic elements");
+	AddBoolParam(false, "smooth", "smooth surface");
 }
 
 FEMesh* FEConvertMesh::Apply(FEMesh* pm)
