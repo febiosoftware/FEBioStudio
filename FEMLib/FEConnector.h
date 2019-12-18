@@ -39,7 +39,7 @@ public:
 class FERigidSphericalJoint : public FEConnector
 {
 public:
-    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, J_ORIG,
+    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG,
         MIN_AUG, MAX_AUG, B_ROT, ROT_X, ROT_Y, ROT_Z, MX, MY, MZ };
     
 public:
@@ -53,7 +53,7 @@ public:
 class FERigidRevoluteJoint : public FEConnector
 {
 public:
-    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, J_ORIG, J_AXIS, T_AXIS,
+    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
         MIN_AUG, MAX_AUG, B_ROT, ROT, MOMENT };
     
 public:
@@ -67,7 +67,7 @@ public:
 class FERigidPrismaticJoint : public FEConnector
 {
 public:
-    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, J_ORIG, J_AXIS, T_AXIS,
+    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
         MIN_AUG, MAX_AUG, B_TRANS, TRANS, FORCE };
     
 public:
@@ -81,7 +81,7 @@ public:
 class FERigidCylindricalJoint : public FEConnector
 {
 public:
-    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, J_ORIG, J_AXIS, T_AXIS,
+    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
         MIN_AUG, MAX_AUG, B_TRANS, TRANS, FORCE, B_ROT, ROT, MOMENT };
     
 public:
@@ -95,7 +95,7 @@ public:
 class FERigidPlanarJoint : public FEConnector
 {
 public:
-    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, J_ORIG, J_AXIS, T_AXIS,
+    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
         MIN_AUG, MAX_AUG, B_TRANS1, TRANS1, B_TRANS2, TRANS2, B_ROT, ROT };
     
 public:
@@ -109,7 +109,7 @@ public:
 class FERigidLock : public FEConnector
 {
 public:
-    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, J_ORIG, J_AXIS, T_AXIS,
+    enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
         MIN_AUG, MAX_AUG };
     
 public:

@@ -139,7 +139,8 @@ FERigidSphericalJoint::FERigidSphericalJoint(FEModel* ps, int nstep) : FEConnect
     AddDoubleParam(0           , "angtol"               , "angular tolerance");
     AddDoubleParam(1           , "force_penalty"        , "force penalty factor");
     AddDoubleParam(0           , "moment_penalty"       , "moment penalty factor");
-    AddVecParam   (vec3d(0,0,0), "joint_origin"         , "joint origin"        );
+    AddIntParam   (1           , "auto_penalty"         , "auto penalty"         );
+    AddVecParam   (vec3d(0,0,0), "joint_origin"         , "joint origin"         );
     AddIntParam   (0           , "minaug"               , "minimum augmentations");
     AddIntParam   (10          , "maxaug"               , "maximum augmentations");
     AddBoolParam  (0           , "prescribed_rotation"  , "prescribed rotation flag");
@@ -170,6 +171,7 @@ FERigidRevoluteJoint::FERigidRevoluteJoint(FEModel* ps, int nstep) : FEConnector
     AddDoubleParam(0           , "angtol"               , "angular tolerance");
     AddDoubleParam(1           , "force_penalty"        , "force penalty factor");
     AddDoubleParam(0           , "moment_penalty"       , "moment penalty factor");
+    AddIntParam   (1           , "auto_penalty"         , "auto penalty"         );
     AddVecParam   (vec3d(0,0,0), "joint_origin"         , "joint origin"        );
     AddVecParam   (vec3d(0,0,0), "rotation_axis"        , "rotation axis"       );
     AddVecParam   (vec3d(0,0,0), "transverse_axis"      , "transverse axis"     );
@@ -199,6 +201,7 @@ FERigidPrismaticJoint::FERigidPrismaticJoint(FEModel* ps, int nstep) : FEConnect
     AddDoubleParam(0           , "angtol"               , "angular tolerance");
     AddDoubleParam(1           , "force_penalty"        , "force penalty factor");
     AddDoubleParam(0           , "moment_penalty"       , "moment penalty factor");
+    AddIntParam   (1           , "auto_penalty"         , "auto penalty"         );
     AddVecParam   (vec3d(0,0,0), "joint_origin"         , "joint origin"       );
     AddVecParam   (vec3d(0,0,0), "translation_axis"     , "translation axis"   );
     AddVecParam   (vec3d(0,0,0), "transverse_axis"      , "transverse axis"    );
@@ -228,6 +231,7 @@ FERigidCylindricalJoint::FERigidCylindricalJoint(FEModel* ps, int nstep) : FECon
     AddDoubleParam(0           , "angtol"               , "angular tolerance");
     AddDoubleParam(1           , "force_penalty"        , "force penalty factor");
     AddDoubleParam(0           , "moment_penalty"       , "moment penalty factor");
+    AddIntParam   (1           , "auto_penalty"         , "auto penalty"         );
     AddVecParam   (vec3d(0,0,0), "joint_origin"         , "joint origin"        );
     AddVecParam   (vec3d(0,0,0), "joint_axis"           , "joint axis"          );
     AddVecParam   (vec3d(0,0,0), "transverse_axis"      , "transverse axis"     );
@@ -260,6 +264,7 @@ FERigidPlanarJoint::FERigidPlanarJoint(FEModel* ps, int nstep) : FEConnector(FE_
     AddDoubleParam(0           , "angtol"               , "angular tolerance");
     AddDoubleParam(1           , "force_penalty"        , "force penalty factor");
     AddDoubleParam(0           , "moment_penalty"       , "moment penalty factor");
+    AddIntParam   (1           , "auto_penalty"         , "auto penalty"         );
     AddVecParam   (vec3d(0,0,0), "joint_origin"         , "joint origin"        );
     AddVecParam   (vec3d(0,0,0), "rotation_axis"        , "rotation axis"       );
     AddVecParam   (vec3d(0,0,0), "translation_axis_1"   , "translation axis 1"  );
@@ -292,6 +297,7 @@ FERigidLock::FERigidLock(FEModel* ps, int nstep) : FEConnector(FE_RC_RIGID_LOCK,
     AddDoubleParam(0           , "angtol"               , "angular tolerance");
     AddDoubleParam(1           , "force_penalty"        , "force penalty factor");
     AddDoubleParam(0           , "moment_penalty"       , "moment penalty factor");
+    AddIntParam   (1           , "auto_penalty"         , "auto penalty"         );
     AddVecParam   (vec3d(0,0,0), "joint_origin"         , "joint origin"         );
     AddVecParam   (vec3d(0,0,0), "first_axis"           , "first axis"           );
     AddVecParam   (vec3d(0,0,0), "second_axis"          , "second axis"          );
