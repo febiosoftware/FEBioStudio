@@ -10,6 +10,23 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+int XMLAtt::value(double* pf, int n)
+{
+	char* sz = m_szval;
+	int nr = 0;
+	for (int i = 0; i<n; ++i)
+	{
+		char* sze = strchr(sz, ',');
+
+		pf[i] = atof(sz);
+		nr++;
+
+		if (sze) sz = sze + 1;
+		else break;
+	}
+	return nr;
+}
+
 //////////////////////////////////////////////////////////////////////
 // XMLTag
 //////////////////////////////////////////////////////////////////////

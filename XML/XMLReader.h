@@ -26,6 +26,8 @@ public:
 
 	template <typename T> T value() { return T(0); }
 
+	int value(double* v, int n);
+
 	const char* cvalue() { return m_szval; }
 
 	bool operator == (const char* szval) { return (strcmp(szval, m_szval) == 0); }
