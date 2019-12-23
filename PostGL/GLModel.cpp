@@ -936,16 +936,29 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderInnerSurface(int m)
+void CGLModel::RenderInnerSurface(int m, bool btex)
 {
 	m_render.SetDivisions(1);
 	Post::FEPostMesh* pm = GetActiveMesh();
 	GLSurface& surf = *m_innerSurface[m];
+
+	// render active faces
+	if (btex) glEnable(GL_TEXTURE_1D);
 	for (int i = 0; i<surf.Faces(); ++i)
 	{
 		FEFace& face = surf.Face(i);
-		m_render.RenderFace(face, pm);
+		if (face.IsActive()) m_render.RenderFace(face, pm);
 	}
+
+	// render inactive faces
+	if (btex) glDisable(GL_TEXTURE_1D);
+	for (int i = 0; i<surf.Faces(); ++i)
+	{
+		FEFace& face = surf.Face(i);
+		if (face.IsActive() == false) m_render.RenderFace(face, pm);
+	}
+
+	if (btex) glEnable(GL_TEXTURE_1D);
 }
 
 //-----------------------------------------------------------------------------
@@ -1180,7 +1193,7 @@ void CGLModel::RenderSolidMaterial(FEModel* ps, int m)
 	if (mode != SELECT_FACES)
 	{
 		if (btex) glColor3ub(255,255,255);
-		RenderInnerSurface(m);
+		RenderInnerSurface(m, btex);
 	}
 
 	if (pmat->benable && m_pcol->IsActive())

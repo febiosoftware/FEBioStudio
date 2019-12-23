@@ -322,24 +322,28 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			if (face.m_elem[0].eid == -1) face.Deactivate();
 			else
 			{
-				face.Activate();
-				int iel = face.m_elem[0].eid;
-				
-				ELEMDATA& d0 = s0.m_ELEM[iel];
-				ELEMDATA& d1 = s1.m_ELEM[iel];
-
-				if (((d0.m_state & StatusFlags::ACTIVE)==0) || ((d1.m_state & StatusFlags::ACTIVE)== 0)) face.Deactivate();
+				if (IS_FACE_FIELD(m_nfield)) face.Deactivate();
 				else
 				{
-					float v0 = d0.m_val;
-					float v1 = d1.m_val;
-					float v = v0 + (v1 - v0)*w;
+					face.Activate();
+					int iel = face.m_elem[0].eid;
 
-					float tex = (v - min) / (max - min);
+					ELEMDATA& d0 = s0.m_ELEM[iel];
+					ELEMDATA& d1 = s1.m_ELEM[iel];
 
-					int nf = face.Nodes();
-					face.m_texe = tex;
-					for (int k=0; k<nf; ++k) face.m_tex[k] = tex;
+					if (((d0.m_state & StatusFlags::ACTIVE) == 0) || ((d1.m_state & StatusFlags::ACTIVE) == 0)) face.Deactivate();
+					else
+					{
+						float v0 = d0.m_val;
+						float v1 = d1.m_val;
+						float v = v0 + (v1 - v0)*w;
+
+						float tex = (v - min) / (max - min);
+
+						int nf = face.Nodes();
+						face.m_texe = tex;
+						for (int k = 0; k < nf; ++k) face.m_tex[k] = tex;
+					}
 				}
 			}
 		}

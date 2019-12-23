@@ -181,7 +181,7 @@ protected:
 	void RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m);
 	void RenderSolidDomain(FEDomain& dom, bool btex, bool benable);
 
-	void RenderInnerSurface(int m);
+	void RenderInnerSurface(int m, bool btex = true);
 	void RenderInnerSurfaceOutline(int m, int ndivs);
 
 public:

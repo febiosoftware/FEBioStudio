@@ -24,8 +24,10 @@ FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
 	// create a new mesh
 	int nodes = tet15->Nodes();
 	int elems = tet15->Elements();
+	int faces = tet15->Faces();
+	int edges = tet15->Edges();
 	FEMesh* pnew = new FEMesh;
-	pnew->Create(nodes, 4*elems);
+	pnew->Create(nodes, 4*elems, 3*faces, 2*edges);
 
 	// copy the nodes from the tet15 mesh
 	for (int i = 0; i<nodes; ++i)
@@ -60,8 +62,53 @@ FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
 		}
 	}
 
+	// create the new faces
+	const int FLT[3][4] = {
+		{ 0, 3, 6, 5 },
+		{ 3, 1, 4, 6 },
+		{ 2, 5, 6, 4 }
+	};
+
+	int nf = 0;
+	for (int i = 0; i < faces; ++i)
+	{
+		FEFace& f0 = tet15->Face(i);
+
+		for (int j = 0; j < 3; ++j)
+		{
+			FEFace& f1 = pnew->Face(nf++);
+
+			f1.SetType(FE_FACE_QUAD4);
+			f1.m_gid = f0.m_gid;
+			f1.m_sid = f0.m_sid;
+
+			for (int k = 0; k < 4; ++k) f1.n[k] = f0.n[FLT[j][k]];
+		}
+	}
+
+	// create new edges
+	const int ELT[2][2] = { {0,2}, {2,1} };
+	int nc = 0;
+	for (int i = 0; i < edges; ++i)
+	{
+		FEEdge& c0 = tet15->Edge(i);
+		for (int j = 0; j < 2; ++j)
+		{
+			FEEdge& c1 = pnew->Edge(nc++);
+			c1.SetType(FE_EDGE2);
+			c1.m_gid = c0.m_gid;
+
+			c1.n[0] = c0.n[ELT[j][0]];
+			c1.n[1] = c0.n[ELT[j][1]];
+		}
+	}
+
 	// build the other mesh structures
-	pnew->RebuildMesh();
+	pnew->UpdateElementNeighbors();
+	pnew->UpdateFaces();
+	pnew->MarkExteriorNodes();
+	pnew->UpdateEdgeNeighbors();
+	pnew->UpdateNormals();
 
 	// don't forget to clean up
 	delete tet15;
