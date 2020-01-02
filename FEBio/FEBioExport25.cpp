@@ -435,6 +435,13 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 	if (m_exportSelections)
 	{
 		GModel& model = fem.GetModel();
+		int faces = model.FaceLists();
+		for (int i = 0; i < faces; ++i)
+		{
+			GFaceList* pfl = model.FaceList(i);
+			AddSurface(pfl->GetName(), pfl);
+		}
+
 		int nobj = model.Objects();
 		for (int i = 0; i<nobj; ++i)
 		{
@@ -446,7 +453,6 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 				for (int j = 0; j<nsurf; ++j)
 				{
 					FESurface* ps = po->GetFESurface(j);
-					const string& name = ps->GetName();
 					AddSurface(ps->GetName(), ps);
 				}
 			}
