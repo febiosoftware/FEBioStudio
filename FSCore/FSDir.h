@@ -14,7 +14,7 @@ public:
 
 public:
 	static void setMacro(const std::string& def, const std::string& val);
-	static std::string toAbsolutePath(const std::string& path);
+	static std::string toAbsolutePath(const std::string& path, bool expandSymbolicLinks = true);
 	static std::string toRelativePath(const std::string& path);
 	static std::string fileBase(const std::string& path);
 	static std::string fileName(const std::string& path);

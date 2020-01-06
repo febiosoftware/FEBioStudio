@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FSDir.h"
+#include <QtCore/QFileInfo>
 using namespace std;
 map<string, string>	FSDir::m_defs;
 
@@ -43,12 +44,9 @@ std::string FSDir::toAbsolutePath() const
 	return toAbsolutePath(m_path);
 }
 
-std::string FSDir::toAbsolutePath(const std::string& path)
+std::string FSDir::toAbsolutePath(const std::string& path, bool expandSymbolicLinks)
 {
 	string s(path);
-#ifdef WIN32
-	windowsify(s);
-#endif
 
 	// replace all the macros
 	map<string, string>::iterator it;
@@ -57,6 +55,24 @@ std::string FSDir::toAbsolutePath(const std::string& path)
 		string def_i = "$(" + it->first + ")";
 		replace(s, def_i, it->second);
 	}
+
+	// expand symbolic links
+	if (expandSymbolicLinks)
+	{
+		// see if this is a symbolic link
+		QFileInfo fileInfo(QString::fromStdString(s));
+		if (fileInfo.isSymLink())
+		{
+			// it is, so get the target
+			QString absPath = fileInfo.symLinkTarget();
+			s = absPath.toStdString();
+		}
+	}
+
+#ifdef WIN32
+	windowsify(s);
+#endif
+
 	return s;
 }
 

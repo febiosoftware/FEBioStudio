@@ -661,6 +661,8 @@ void CMainWindow::on_actionImportImage_triggered()
 	QStringList filters;
 	filters << "RAW files (*.raw)";
 
+	CDocument* doc = GetDocument();
+
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
@@ -678,7 +680,6 @@ void CMainWindow::on_actionImportImage_triggered()
 		std::string sfile = fileName.toStdString();
 
 		// create 'resources' subdirectory
-		CDocument* doc = GetDocument();
 		std::string sPath = doc->GetDocFolder();
 
 		if (!sPath.empty())
@@ -686,18 +687,17 @@ void CMainWindow::on_actionImportImage_triggered()
 			QString projectPath = QString::fromStdString(sPath);
 			QDir projectDir(projectPath);
 			projectDir.mkdir("resources");
-			QString resourceDir = projectPath + "/resources/";
+			projectDir.cd("resources");
+			QString resourceDir = projectDir.absolutePath();
 
 
 			// store path for linked file
-			QString linkName = resourceDir + QFileInfo(fileName).fileName();
+			QString linkName = projectDir.absoluteFilePath(QFileInfo(fileName).fileName());
 
 			// add .lnk extension to link when on windows
 #ifdef WIN32
 			linkName += ".lnk";
 #endif
-
-
 			// create link in resources directory
 			QFile originalFile(fileName);
 			originalFile.link(linkName);
