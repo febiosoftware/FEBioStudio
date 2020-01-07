@@ -61,8 +61,8 @@ public:
 		filter->addItem("Boundary Conditions");
 		filter->addItem("Loads");
 		filter->addItem("Contact");
-		filter->addItem("Constraints");
-		filter->addItem("Connectors");
+		filter->addItem("Rigid Constraints");
+		filter->addItem("Rigid Connectors");
 		filter->addItem("Steps");
 
 		tree = new QTreeWidget;

@@ -82,8 +82,8 @@ private slots:
 	void OnAddBodyLoad();
 	void OnAddInitialCondition();
 	void OnAddContact();
-	void OnAddConstraint();
-	void OnAddConnector();
+	void OnAddRigidConstraint();
+	void OnAddRigidConnector();
 	void OnAddStep();
 	void OnHideObject();
 	void OnShowObject();
@@ -100,9 +100,9 @@ private slots:
 	void OnCopyInterface();
 	void OnCopyBC();
 	void OnCopyIC();
-	void OnCopyConnector();
+	void OnCopyRigidConnector();
 	void OnCopyLoad();
-	void OnCopyConstraint();
+	void OnCopyRigidConstraint();
 	void OnCopyStep();
 	void OnRerunJob();
 	void OnEditOutput();
@@ -123,8 +123,8 @@ private slots:
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();
 	void OnDeleteAllContact();
-	void OnDeleteAllConstraints();
-	void OnDeleteAllConnectors();
+	void OnDeleteAllRigidConstraints();
+	void OnDeleteAllRigidConnectors();
 	void OnDeleteAllSteps();
 
 signals:

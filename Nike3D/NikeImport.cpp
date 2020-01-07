@@ -1494,9 +1494,9 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 	}
 
 	// rigid constraints
-	for (i=0; i<s.RCs(); ++i)
+	for (i=0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(s.RC(i));
+		FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(s.RigidConstraint(i));
 		if (rc)
 		{
 			FELoadCurve& lc = *rc->GetLoadCurve();

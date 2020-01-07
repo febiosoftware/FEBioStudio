@@ -87,15 +87,15 @@ std::string defaultInterfaceName(FEModel* fem, FEInterface* pi)
 	return ss.str();
 }
 
-std::string defaultConnectorName(FEModel* fem, FEConnector* pi)
+std::string defaultRigidConnectorName(FEModel* fem, FERigidConnector* pi)
 {
-	int nrc = CountConnectors<FEConnector>(*fem);
+	int nrc = CountConnectors<FERigidConnector>(*fem);
 	stringstream ss;
 	ss << "RigidConnector" << nrc + 1;
 	return  ss.str();
 }
 
-std::string defaultConstraintName(FEModel* fem, FERigidConstraint* pc)
+std::string defaultRigidConstraintName(FEModel* fem, FERigidConstraint* pc)
 {
 	int nrc = CountRigidConstraints<FERigidConstraint>(*fem);
 	stringstream ss;
@@ -984,7 +984,7 @@ void FEModel::DeleteAllContact()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllConstraints()
+void FEModel::DeleteAllRigidConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
@@ -994,12 +994,12 @@ void FEModel::DeleteAllConstraints()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllConnectors()
+void FEModel::DeleteAllRigidConnectors()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
 		FEStep* pstep = GetStep(i);
-		pstep->RemoveAllConnectors();
+		pstep->RemoveAllRigidConnectors();
 	}
 }
 
@@ -1166,12 +1166,12 @@ void FEModel::AssignComponentToStep(FEStepComponent* pc, FEStep* ps)
 {
 	if      (dynamic_cast<FEInterface*        >(pc)) AssignInterfaceToStep (dynamic_cast<FEInterface*        >(pc), ps);
 	else if (dynamic_cast<FEInitialCondition* >(pc)) AssignICToStep        (dynamic_cast<FEInitialCondition* >(pc), ps);
-	else if (dynamic_cast<FERigidConstraint*  >(pc)) AssignConstraintToStep(dynamic_cast<FERigidConstraint*  >(pc), ps);
+	else if (dynamic_cast<FERigidConstraint*  >(pc)) AssignRigidConstraintToStep(dynamic_cast<FERigidConstraint*  >(pc), ps);
 	else if (dynamic_cast<FENodalLoad*        >(pc)) AssignLoadToStep      (dynamic_cast<FEBoundaryCondition*>(pc), ps);
 	else if (dynamic_cast<FESurfaceLoad*      >(pc)) AssignLoadToStep      (dynamic_cast<FEBoundaryCondition*>(pc), ps);
 	else if (dynamic_cast<FEBodyLoad*         >(pc)) AssignLoadToStep      (dynamic_cast<FEBoundaryCondition*>(pc), ps);
 	else if (dynamic_cast<FEBoundaryCondition*>(pc)) AssignBCToStep        (dynamic_cast<FEBoundaryCondition*>(pc), ps);
-	else if (dynamic_cast<FEConnector*        >(pc)) AssignConnectorToStep (dynamic_cast<FEConnector*        >(pc), ps);
+	else if (dynamic_cast<FERigidConnector*   >(pc)) AssignRigidConnectorToStep (dynamic_cast<FERigidConnector*>(pc), ps);
 	else
 	{
 		assert(false);
@@ -1250,7 +1250,7 @@ void FEModel::AssignInterfaceToStep(FEInterface* pi, FEStep *ps)
 //-----------------------------------------------------------------------------
 // This function reassigns a constraint to a different step
 // TODO: Make a command for this operation
-void FEModel::AssignConstraintToStep(FERigidConstraint* pc, FEStep *ps)
+void FEModel::AssignRigidConstraintToStep(FERigidConstraint* pc, FEStep *ps)
 {
 	FEStep* po = FindStep(pc->GetStep());
 	assert(po);
@@ -1267,7 +1267,7 @@ void FEModel::AssignConstraintToStep(FERigidConstraint* pc, FEStep *ps)
 //-----------------------------------------------------------------------------
 // This function reassigns a connector to a different step
 // TODO: Make a command for this operation
-void FEModel::AssignConnectorToStep(FEConnector* pi, FEStep *ps)
+void FEModel::AssignRigidConnectorToStep(FERigidConnector* pi, FEStep *ps)
 {
     FEStep* po = FindStep(pi->GetStep());
     assert(po);
@@ -1275,8 +1275,8 @@ void FEModel::AssignConnectorToStep(FEConnector* pi, FEStep *ps)
     
     if (po != ps)
     {
-        po->RemoveConnector(pi);
-        ps->AddConnector(pi);
+        po->RemoveRigidConnector(pi);
+        ps->AddRigidConnector(pi);
         pi->SetStep(ps->GetID());
     }
 }
@@ -1407,10 +1407,10 @@ int FEModel::CountConstraints(int type)
 	{
 		FEStep* step = GetStep(i);
 
-		int NRC = step->RCs();
+		int NRC = step->RigidConstraints();
 		for (int j = 0; j<NRC; ++j)
 		{
-			FERigidConstraint* prc = step->RC(j);
+			FERigidConstraint* prc = step->RigidConstraint(j);
 			if (prc->Type() == type) n++;
 		}
 	}

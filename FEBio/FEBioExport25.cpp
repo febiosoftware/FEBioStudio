@@ -638,7 +638,7 @@ bool FEBioExport25::Export(FEProject& prj, const char* szfile)
 			FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
 			if (pstep == 0) return errf("Step 1 is not an analysis step.");
 			ntype = pstep->GetType();
-			if (pstep->BCs() + pstep->Loads() + pstep->Interfaces() + pstep->RCs() == 0) bsingle_step = true;
+			if (pstep->BCs() + pstep->Loads() + pstep->Interfaces() + pstep->RigidConstraints() == 0) bsingle_step = true;
 		}
 
 		// open the file
@@ -734,7 +734,7 @@ bool FEBioExport25::Export(FEProject& prj, const char* szfile)
 			}
 
 			// output boundary section
-			int nbc = pstep->ActiveBCs() + pstep->Interfaces() + fem.GetModel().DiscreteObjects() + pstep->RCs();
+			int nbc = pstep->ActiveBCs() + pstep->Interfaces() + fem.GetModel().DiscreteObjects() + pstep->RigidConstraints();
 			if ((nbc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Boundary");
@@ -771,7 +771,7 @@ bool FEBioExport25::Export(FEProject& prj, const char* szfile)
 			int nnlc = CountInterfaces<FEVolumeConstraint>(fem)
             + CountInterfaces<FESymmetryPlane>(fem)
             + CountInterfaces<FENormalFlowSurface>(fem)
-            + CountConnectors<FEConnector>(fem)
+            + CountConnectors<FERigidConnector>(fem)
 			+ CountInterfaces<FERigidJoint>(fem);
 			if ((nnlc > 0) && (m_section[FEBIO_CONSTRAINTS]))
 			{
@@ -783,7 +783,7 @@ bool FEBioExport25::Export(FEProject& prj, const char* szfile)
 			}
 
 			// output initial section
-			int nic = pstep->ICs() + pstep->RCs(FE_RIGID_INIT_VELOCITY) + pstep->RCs(FE_RIGID_INIT_ANG_VELOCITY);
+			int nic = pstep->ICs() + pstep->RigidConstraints(FE_RIGID_INIT_VELOCITY) + pstep->RigidConstraints(FE_RIGID_INIT_ANG_VELOCITY);
 			if ((nic > 0) && (m_section[FEBIO_INITIAL]))
 			{
 				m_xml.add_branch("Initial");
@@ -4201,9 +4201,9 @@ void FEBioExport25::WriteInitialSection()
 	}
 
 	// write rigid initial conditions
-	for (int i=0; i<s.RCs(); ++i)
+	for (int i=0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* rc = s.RC(i);
+		FERigidConstraint* rc = s.RigidConstraint(i);
 		GMaterial* pgm = fem.GetMaterialFromID(rc->GetMaterialID());
 		if (pgm == 0) throw MissingRigidBody(rc->GetName().c_str());
 		FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
@@ -4793,7 +4793,7 @@ void FEBioExport25::WriteStepSection()
 			m_xml.close_branch(); // Control
 
 			// output boundary section
-			int nbc = s.BCs() + s.Interfaces() + s.RCs();
+			int nbc = s.BCs() + s.Interfaces() + s.RigidConstraints();
 			if (nbc>0)
 			{
 				m_xml.add_branch("Boundary");
@@ -4826,7 +4826,7 @@ void FEBioExport25::WriteStepSection()
 			}
 
 			// output constraint section
-			int nnlc = s.RCs() + CountInterfaces<FEVolumeConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem) + s.Connectors();
+			int nnlc = s.RigidConstraints() + CountInterfaces<FEVolumeConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem) + s.RigidConnectors();
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");
@@ -4846,9 +4846,9 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 {
 	const char* szbc[6] = { "x", "y", "z", "Rx", "Ry", "Rz" };
 
-	for (int i=0; i<s.RCs(); ++i)
+	for (int i=0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* ps = s.RC(i);
+		FERigidConstraint* ps = s.RigidConstraint(i);
 
 		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
 		if (pgm == 0) throw MissingRigidBody(ps->GetName().c_str());
@@ -4913,10 +4913,10 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 //
 void FEBioExport25::WriteConnectors(FEStep& s)
 {
-    for (int i=0; i<s.Connectors(); ++i)
+    for (int i=0; i<s.RigidConnectors(); ++i)
     {
         // rigid connectors
-        FEConnector* pj = s.Connector(i);
+		FERigidConnector* pj = s.RigidConnector(i);
         if (pj && pj->IsActive())
         {
 			if (m_writeNotes) m_xml.add_comment(pj->GetInfo());

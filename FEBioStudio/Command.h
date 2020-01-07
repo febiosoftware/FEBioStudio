@@ -148,18 +148,18 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class CCmdAddConnector : public CCommand
+class CCmdAddRigidConnector : public CCommand
 {
 public:
-    CCmdAddConnector(FEStep* ps, FEConnector* pi) : CCommand("Add connector") { m_ps = ps; m_pint = pi; m_bdel = true; }
-    ~CCmdAddConnector() { if (m_bdel) delete m_pint; }
+	CCmdAddRigidConnector(FEStep* ps, FERigidConnector* pi) : CCommand("Add rigid connector") { m_ps = ps; m_pint = pi; m_bdel = true; }
+    ~CCmdAddRigidConnector() { if (m_bdel) delete m_pint; }
     
     void Execute();
     void UnExecute();
     
 protected:
     FEStep*			m_ps;
-    FEConnector*	m_pint;
+	FERigidConnector*	m_pint;
     bool			m_bdel;
 };
 

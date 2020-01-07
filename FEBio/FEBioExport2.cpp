@@ -68,7 +68,7 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 	for (int i=0; i<fem.Steps(); ++i)
 	{
 		FEStep* ps = fem.GetStep(i);
-		m_nrc += ps->RCs();
+		m_nrc += ps->RigidConstraints();
 
 		for (int j=0; j<ps->Interfaces(); ++j)
 		{
@@ -235,7 +235,7 @@ bool FEBioExport2::Export(FEProject& prj, const char* szfile)
 		FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
 		ntype = pstep->GetType();
 		if (pstep == 0) return errf("Step 1 is not an analysis step.");
-		if (pstep->BCs() + pstep->Loads() + pstep->Interfaces() + pstep->RCs() == 0) bsingle_step = true;
+		if (pstep->BCs() + pstep->Loads() + pstep->Interfaces() + pstep->RigidConstraints() == 0) bsingle_step = true;
 	}
 
 	// see if any of the steps are poro
@@ -349,7 +349,7 @@ bool FEBioExport2::Export(FEProject& prj, const char* szfile)
 			}
 
 			// output constraints section
-            int ncn = pstep->Connectors();
+            int ncn = pstep->RigidConnectors();
 			if (((m_nrc > 0) || (ncn > 0)) && (m_section[FEBIO_CONSTRAINTS]))
 			{
 				m_xml.add_branch("Constraints");
@@ -2756,10 +2756,10 @@ void FEBioExport2::WriteNormalFlow(FEStep& s)
 //
 void FEBioExport2::WriteConnectors(FEStep& s)
 {
-    for (int i=0; i<s.Connectors(); ++i)
+    for (int i=0; i<s.RigidConnectors(); ++i)
     {
         // rigid connectors
-        FEConnector* pj = s.Connector(i);
+		FERigidConnector* pj = s.RigidConnector(i);
         if (pj && pj->IsActive())
         {
             XMLElement ec("constraint");
@@ -4960,7 +4960,7 @@ void FEBioExport2::WriteStepSection()
 			}
 
 			// output constraint section
-			if (s.RCs())
+			if (s.RigidConstraints())
 			{
 				m_xml.add_branch("Constraints");
 				{
@@ -4977,9 +4977,9 @@ void FEBioExport2::WriteConstraintSection(FEStep &s)
 {
 	const char* szbc[6] = { "x", "y", "z", "Rx", "Ry", "Rz" };
 
-	for (int i = 0; i<s.RCs(); ++i)
+	for (int i = 0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* ps = s.RC(i);
+		FERigidConstraint* ps = s.RigidConstraint(i);
 
 		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
 		if (pgm == 0) throw MissingRigidBody(ps->GetName());

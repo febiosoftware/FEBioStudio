@@ -91,20 +91,20 @@ void CCmdAddInterface::UnExecute()
 }
 
 //////////////////////////////////////////////////////////////////////
-// CCmdAddConnector
+// CCmdAddRigidConnector
 //////////////////////////////////////////////////////////////////////
 
-void CCmdAddConnector::Execute()
+void CCmdAddRigidConnector::Execute()
 {
     // add the connector to the step
-    m_ps->AddConnector(m_pint);
+    m_ps->AddRigidConnector(m_pint);
     m_bdel = false;
 }
 
-void CCmdAddConnector::UnExecute()
+void CCmdAddRigidConnector::UnExecute()
 {
     // remove the connector from the step
-    m_ps->RemoveConnector(m_pint);
+    m_ps->RemoveRigidConnector(m_pint);
     m_bdel = true;
 }
 

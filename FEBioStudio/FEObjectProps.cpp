@@ -265,7 +265,7 @@ void CRigidConstraintSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidConnectorSettings::CRigidConnectorSettings(FEModel& fem, FEConnector* pi) : CObjectProps(0), m_rc(pi)
+CRigidConnectorSettings::CRigidConnectorSettings(FEModel& fem, FERigidConnector* pi) : CObjectProps(0), m_rc(pi)
 {
 	QStringList mats;
 	m_rbA = -1, m_rbB = -1;

@@ -274,7 +274,7 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 			prc->SetStep(step->GetID());
 
 			std::string name = dlg.m_name;
-			if (name.empty()) name = defaultConstraintName(fem, prc);
+			if (name.empty()) name = defaultRigidConstraintName(fem, prc);
 
 			GMaterial* pmat = dlg.GetMaterial();
 			if (pmat) prc->SetMaterialID(pmat->GetID());
@@ -293,7 +293,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 	if (dlg.exec())
 	{
 		FEModel* fem = m_doc->GetFEModel();
-		FEConnector* pc = fecore_new<FEConnector>(fem, FE_RIGID_CONNECTOR, dlg.GetType());
+		FERigidConnector* pc = fecore_new<FERigidConnector>(fem, FE_RIGID_CONNECTOR, dlg.GetType());
 		assert(pc);
 		if (pc)
 		{
@@ -306,10 +306,10 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 			pc->SetStep(stepID);
 
 			std::string name = dlg.GetName();
-			if (name.empty()) name = defaultConnectorName(fem, pc);
+			if (name.empty()) name = defaultRigidConnectorName(fem, pc);
 
 			pc->SetName(name);
-			step->AddConnector(pc);
+			step->AddRigidConnector(pc);
 			UpdateModel(pc);
 		}
 	}

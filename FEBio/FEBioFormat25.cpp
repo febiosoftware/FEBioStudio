@@ -2456,7 +2456,7 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 {
 	FEModel& fem = GetFEModel();
 
-	FEConnector* pi;
+	FERigidConnector* pi;
 	char szname[256];
 
 	switch (rc) {
@@ -2507,7 +2507,7 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
-	pstep->AddConnector(pi);
+	pstep->AddRigidConnector(pi);
 
 	int na = -1, nb = -1;
 

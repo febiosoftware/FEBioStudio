@@ -36,7 +36,7 @@ public:
 	FSObjectList<FELinearConstraintSet>	m_LC;
 
 	// rigid connectors (nonlinear constraints)
-	FSObjectList<FEConnector>	m_CN;
+	FSObjectList<FERigidConnector>	m_CN;
 };
 
 
@@ -210,13 +210,13 @@ void FEStep::RemoveAllInterfaces()
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RCs() { return (int)imp->m_RC.Size(); }
+int FEStep::RigidConstraints() { return (int)imp->m_RC.Size(); }
 
 //-----------------------------------------------------------------------------
-FERigidConstraint* FEStep::RC(int i) { return imp->m_RC[i]; }
+FERigidConstraint* FEStep::RigidConstraint(int i) { return imp->m_RC[i]; }
 
 //-----------------------------------------------------------------------------
-int FEStep::RCs(int ntype)
+int FEStep::RigidConstraints(int ntype)
 {
 	int nc = 0;
 	for (int i = 0; i<(int)imp->m_RC.Size(); ++i)
@@ -271,33 +271,33 @@ void FEStep::RemoveAllLinearConstraints()
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::Connectors() { return (int)imp->m_CN.Size(); }
+int FEStep::RigidConnectors() { return (int)imp->m_CN.Size(); }
 
 //-----------------------------------------------------------------------------
-FEConnector* FEStep::Connector(int i) { return imp->m_CN[i]; }
+FERigidConnector* FEStep::RigidConnector(int i) { return imp->m_CN[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddConnector(FEConnector* pi)
+void FEStep::AddRigidConnector(FERigidConnector* pi)
 {
 	imp->m_CN.Add(pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertConnector(int n, FEConnector* pi)
+void FEStep::InsertRigidConnector(int n, FERigidConnector* pi)
 { 
 	imp->m_CN.Insert(n, pi);
 	pi->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveConnector(FEConnector* pi)
+int FEStep::RemoveRigidConnector(FERigidConnector* pi)
 {
 	return (int)imp->m_CN.Remove(pi);
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllConnectors()
+void FEStep::RemoveAllRigidConnectors()
 {
 	imp->m_CN.Clear();
 }
@@ -393,14 +393,14 @@ void FEStep::Save(OArchive &ar)
 	}
 
 	// save the rigid constriants
-	int nrc = RCs();
+	int nrc = RigidConstraints();
 	if (nrc > 0)
 	{
 		ar.BeginChunk(CID_RC_SECTION);
 		{
 			for (int i=0; i<nrc; ++i)
 			{
-				FERigidConstraint* pr = RC(i);
+				FERigidConstraint* pr = RigidConstraint(i);
 				int ntype = pr->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -413,14 +413,14 @@ void FEStep::Save(OArchive &ar)
 	}
     
     // save the connectors
-    int ncnct = Connectors();
+    int ncnct = RigidConnectors();
     if (ncnct > 0)
     {
         ar.BeginChunk(CID_CONNECTOR_SECTION);
         {
             for (int i=0; i<ncnct; ++i)
             {
-                FEConnector* pi = Connector(i);
+				FERigidConnector* pi = RigidConnector(i);
                 int ntype = pi->Type();
                 ar.BeginChunk(ntype);
                 {
@@ -654,7 +654,7 @@ void FEStep::Load(IArchive &ar)
 
 						vector<FERigidConstraint*> rc = convertOldToNewRigidConstraint(m_pfem, rc_old);
 
-						// add RCs
+						// add rigid constraints
 						for (int i=0; i<(int) rc.size(); ++i) AddRC(rc[i]);
 					}
 					else
@@ -688,7 +688,7 @@ void FEStep::Load(IArchive &ar)
                 {
                     int ntype = ar.GetChunkID();
                     
-                    FEConnector* pi = 0;
+					FERigidConnector* pi = 0;
                     switch (ntype)
                     {
                         case FE_RC_SPHERICAL_JOINT		: pi = new FERigidSphericalJoint    (m_pfem); break;
@@ -709,7 +709,7 @@ void FEStep::Load(IArchive &ar)
                     pi->Load(ar);
                     
                     // add interface to step
-                    AddConnector(pi);
+                    AddRigidConnector(pi);
                     
                     ar.CloseChunk();
                 }

@@ -310,13 +310,13 @@ void CCurveEditor::Update()
 	// add constraints
 	if (Filter(FLT_CONSTRAINT))
 	{
-		t2 = ui->addTreeItem(t1, "Constraints");
+		t2 = ui->addTreeItem(t1, "Rigid Constraints");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
 			FEStep* pstep = fem.GetStep(i);
-			for (int j = 0; j<pstep->RCs(); ++j)
+			for (int j = 0; j<pstep->RigidConstraints(); ++j)
 			{
-				FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RC(j));
+				FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
 				if (pc)
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
@@ -329,13 +329,13 @@ void CCurveEditor::Update()
 	// add rigid connectors
 	if (Filter(FLT_CONNECTOR))
 	{
-		t2 = ui->addTreeItem(t1, "Connectors");
+		t2 = ui->addTreeItem(t1, "Rigid Connectors");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
 			FEStep* pstep = fem.GetStep(i);
-			for (int j = 0; j<pstep->Connectors(); ++j)
+			for (int j = 0; j<pstep->RigidConnectors(); ++j)
 			{
-				FEConnector* pc = pstep->Connector(j);
+				FERigidConnector* pc = pstep->RigidConnector(j);
 				int NP = pc->Parameters();
 				if (NP > 0)
 				{

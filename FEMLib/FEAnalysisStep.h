@@ -8,7 +8,7 @@ class FEBoundaryCondition;
 class FEInterface;
 class FERigidConstraint;
 class FELinearConstraintSet;
-class FEConnector;
+class FERigidConnector;
 class FEInitialCondition;
 
 //-----------------------------------------------------------------------------
@@ -91,9 +91,9 @@ public:
 	void RemoveAllInterfaces();
 
 	// rigid constraints
-	int RCs();
-	int RCs(int ntype);
-	FERigidConstraint* RC(int i);
+	int RigidConstraints();
+	int RigidConstraints(int ntype);
+	FERigidConstraint* RigidConstraint(int i);
 	void AddRC(FERigidConstraint* prc);
 	void InsertRC(int n, FERigidConstraint* prc);
 	int RemoveRC(FERigidConstraint* prc);
@@ -105,13 +105,13 @@ public:
 	void AddLinearConstraint(FELinearConstraintSet* plc);
 	void RemoveAllLinearConstraints();
 
-    // rigid connectors (nonlinear constraints)
-	int Connectors();
-	FEConnector* Connector(int i);
-    void AddConnector(FEConnector* pi);
-    void InsertConnector(int n, FEConnector* pi);
-    int RemoveConnector(FEConnector* pi);
-	void RemoveAllConnectors();
+    // rigid connectors
+	int RigidConnectors();
+	FERigidConnector* RigidConnector(int i);
+    void AddRigidConnector(FERigidConnector* pi);
+    void InsertRigidConnector(int n, FERigidConnector* pi);
+    int RemoveRigidConnector(FERigidConnector* pi);
+	void RemoveAllRigidConnectors();
     
 	static void ResetCounter();
 

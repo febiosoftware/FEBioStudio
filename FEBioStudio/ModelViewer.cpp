@@ -517,13 +517,13 @@ void CModelViewer::OnAddContact()
 	wnd->on_actionAddContact_triggered();
 }
 
-void CModelViewer::OnAddConstraint()
+void CModelViewer::OnAddRigidConstraint()
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->on_actionAddRigidConstraint_triggered();
 }
 
-void CModelViewer::OnAddConnector()
+void CModelViewer::OnAddRigidConnector()
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->on_actionAddRigidConnector_triggered();
@@ -954,9 +954,9 @@ void CModelViewer::OnCopyIC()
 	Select(picCopy);
 }
 
-void CModelViewer::OnCopyConnector()
+void CModelViewer::OnCopyRigidConnector()
 {
-	FEConnector* pc = dynamic_cast<FEConnector*>(m_currentObject); assert(pc);
+	FERigidConnector* pc = dynamic_cast<FERigidConnector*>(m_currentObject); assert(pc);
 	if (pc == 0) return;
 
 	CDocument* pdoc = GetMainWindow()->GetDocument();
@@ -964,11 +964,11 @@ void CModelViewer::OnCopyConnector()
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEConnector* pcCopy =  dynamic_cast<FEConnector*>(fecore->Create(fem, FE_RIGID_CONNECTOR, pc->Type()));
+	FERigidConnector* pcCopy =  dynamic_cast<FERigidConnector*>(fecore->Create(fem, FE_RIGID_CONNECTOR, pc->Type()));
 	assert(pcCopy);
 
 	// create a name
-	string name = defaultConnectorName(fem, pc);
+	string name = defaultRigidConnectorName(fem, pc);
 	pcCopy->SetName(name);
 
 	// copy parameters
@@ -976,7 +976,7 @@ void CModelViewer::OnCopyConnector()
 
 	// add the load to the doc
 	FEStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddConnector(step, pcCopy));
+	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy));
 
 	// update the model viewer
 	Update();
@@ -1016,7 +1016,7 @@ void CModelViewer::OnCopyLoad()
 	Select(plCopy);
 }
 
-void CModelViewer::OnCopyConstraint()
+void CModelViewer::OnCopyRigidConstraint()
 {
 	FERigidConstraint* pc = dynamic_cast<FERigidConstraint*>(m_currentObject); assert(pc);
 	if (pc == 0) return;
@@ -1030,7 +1030,7 @@ void CModelViewer::OnCopyConstraint()
 	assert(pcCopy);
 
 	// create a name
-	string name = defaultConstraintName(fem, pc);
+	string name = defaultRigidConstraintName(fem, pc);
 	pcCopy->SetName(name);
 
 	// copy parameters
@@ -1183,14 +1183,14 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllContact()));
 		break;
 	case MT_CONSTRAINT_LIST:
-		menu.addAction("Add Rigid Constraint ...", this, SLOT(OnAddConstraint()));
+		menu.addAction("Add Rigid Constraint ...", this, SLOT(OnAddRigidConstraint()));
 		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllConstraints()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConstraints()));
 		break;
 	case MT_CONNECTOR_LIST:
-		menu.addAction("Add Rigid Connector ...", this, SLOT(OnAddConnector()));
+		menu.addAction("Add Rigid Connector ...", this, SLOT(OnAddRigidConnector()));
 		menu.addSeparator();
-		menu.addAction("Delete All", this, SLOT(OnDeleteAllConnectors()));
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConnectors()));
 		break;
 	case MT_STEP_LIST:
 		menu.addAction("Add Analysis Step ...", this, SLOT(OnAddStep()));
@@ -1405,14 +1405,14 @@ void CModelViewer::OnDeleteAllContact()
 	GetMainWindow()->DeleteAllContact();
 }
 
-void CModelViewer::OnDeleteAllConstraints()
+void CModelViewer::OnDeleteAllRigidConstraints()
 {
-	GetMainWindow()->DeleteAllConstraints();
+	GetMainWindow()->DeleteAllRigidConstraints();
 }
 
-void CModelViewer::OnDeleteAllConnectors()
+void CModelViewer::OnDeleteAllRigidConnectors()
 {
-	GetMainWindow()->DeleteAllConnectors();
+	GetMainWindow()->DeleteAllRigidConnectors();
 }
 
 void CModelViewer::OnDeleteAllSteps()

@@ -22,7 +22,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
     QByteArrayData data[206];
-    char stringdata0[4787];
+    char stringdata0[4797];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -217,26 +217,26 @@ QT_MOC_LITERAL(182, 4470, 11), // "DeleteAllBC"
 QT_MOC_LITERAL(183, 4482, 14), // "DeleteAllLoads"
 QT_MOC_LITERAL(184, 4497, 11), // "DeleteAllIC"
 QT_MOC_LITERAL(185, 4509, 16), // "DeleteAllContact"
-QT_MOC_LITERAL(186, 4526, 20), // "DeleteAllConstraints"
-QT_MOC_LITERAL(187, 4547, 19), // "DeleteAllConnectors"
-QT_MOC_LITERAL(188, 4567, 14), // "DeleteAllSteps"
-QT_MOC_LITERAL(189, 4582, 9), // "GetGLView"
-QT_MOC_LITERAL(190, 4592, 8), // "CGLView*"
-QT_MOC_LITERAL(191, 4601, 14), // "changeViewMode"
-QT_MOC_LITERAL(192, 4616, 9), // "View_Mode"
-QT_MOC_LITERAL(193, 4626, 2), // "vm"
-QT_MOC_LITERAL(194, 4629, 15), // "GetCurrentModel"
-QT_MOC_LITERAL(195, 4645, 15), // "Post::CGLModel*"
-QT_MOC_LITERAL(196, 4661, 17), // "UpdateFontToolbar"
-QT_MOC_LITERAL(197, 4679, 11), // "RunFEBioJob"
-QT_MOC_LITERAL(198, 4691, 10), // "CFEBioJob*"
-QT_MOC_LITERAL(199, 4702, 3), // "job"
-QT_MOC_LITERAL(200, 4706, 15), // "NextSSHFunction"
-QT_MOC_LITERAL(201, 4722, 12), // "CSSHHandler*"
-QT_MOC_LITERAL(202, 4735, 15), // "ShowSSHProgress"
-QT_MOC_LITERAL(203, 4751, 4), // "show"
-QT_MOC_LITERAL(204, 4756, 17), // "UpdateSSHProgress"
-QT_MOC_LITERAL(205, 4774, 12) // "DoModelCheck"
+QT_MOC_LITERAL(186, 4526, 25), // "DeleteAllRigidConstraints"
+QT_MOC_LITERAL(187, 4552, 24), // "DeleteAllRigidConnectors"
+QT_MOC_LITERAL(188, 4577, 14), // "DeleteAllSteps"
+QT_MOC_LITERAL(189, 4592, 9), // "GetGLView"
+QT_MOC_LITERAL(190, 4602, 8), // "CGLView*"
+QT_MOC_LITERAL(191, 4611, 14), // "changeViewMode"
+QT_MOC_LITERAL(192, 4626, 9), // "View_Mode"
+QT_MOC_LITERAL(193, 4636, 2), // "vm"
+QT_MOC_LITERAL(194, 4639, 15), // "GetCurrentModel"
+QT_MOC_LITERAL(195, 4655, 15), // "Post::CGLModel*"
+QT_MOC_LITERAL(196, 4671, 17), // "UpdateFontToolbar"
+QT_MOC_LITERAL(197, 4689, 11), // "RunFEBioJob"
+QT_MOC_LITERAL(198, 4701, 10), // "CFEBioJob*"
+QT_MOC_LITERAL(199, 4712, 3), // "job"
+QT_MOC_LITERAL(200, 4716, 15), // "NextSSHFunction"
+QT_MOC_LITERAL(201, 4732, 12), // "CSSHHandler*"
+QT_MOC_LITERAL(202, 4745, 15), // "ShowSSHProgress"
+QT_MOC_LITERAL(203, 4761, 4), // "show"
+QT_MOC_LITERAL(204, 4766, 17), // "UpdateSSHProgress"
+QT_MOC_LITERAL(205, 4784, 12) // "DoModelCheck"
 
     },
     "CMainWindow\0on_actionNew_triggered\0\0"
@@ -380,9 +380,10 @@ QT_MOC_LITERAL(205, 4774, 12) // "DoModelCheck"
     "onExportAllMaterials\0onImportMaterials\0"
     "DeleteAllMaterials\0DeleteAllBC\0"
     "DeleteAllLoads\0DeleteAllIC\0DeleteAllContact\0"
-    "DeleteAllConstraints\0DeleteAllConnectors\0"
-    "DeleteAllSteps\0GetGLView\0CGLView*\0"
-    "changeViewMode\0View_Mode\0vm\0GetCurrentModel\0"
+    "DeleteAllRigidConstraints\0"
+    "DeleteAllRigidConnectors\0DeleteAllSteps\0"
+    "GetGLView\0CGLView*\0changeViewMode\0"
+    "View_Mode\0vm\0GetCurrentModel\0"
     "Post::CGLModel*\0UpdateFontToolbar\0"
     "RunFEBioJob\0CFEBioJob*\0job\0NextSSHFunction\0"
     "CSSHHandler*\0ShowSSHProgress\0show\0"
@@ -917,8 +918,8 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 156: _t->DeleteAllLoads(); break;
         case 157: _t->DeleteAllIC(); break;
         case 158: _t->DeleteAllContact(); break;
-        case 159: _t->DeleteAllConstraints(); break;
-        case 160: _t->DeleteAllConnectors(); break;
+        case 159: _t->DeleteAllRigidConstraints(); break;
+        case 160: _t->DeleteAllRigidConnectors(); break;
         case 161: _t->DeleteAllSteps(); break;
         case 162: { CGLView* _r = _t->GetGLView();
             if (_a[0]) *reinterpret_cast< CGLView**>(_a[0]) = std::move(_r); }  break;

@@ -216,9 +216,9 @@ void FEBioExport::BuildLoadCurveList(FEModel& fem)
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FEStep* pstep = fem.GetStep(i);
-		for (int j = 0; j<pstep->Connectors(); ++j)
+		for (int j = 0; j<pstep->RigidConnectors(); ++j)
 		{
-			FEConnector* pci = pstep->Connector(j);
+			FERigidConnector* pci = pstep->RigidConnector(j);
 			if (pci->IsActive()) AddLoadCurves(*pci);
 		}
 	}
@@ -227,9 +227,9 @@ void FEBioExport::BuildLoadCurveList(FEModel& fem)
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FEStep* ps = fem.GetStep(i);
-		for (int j = 0; j<ps->RCs(); ++j)
+		for (int j = 0; j<ps->RigidConstraints(); ++j)
 		{
-			FERigidPrescribed* prc = dynamic_cast<FERigidPrescribed*>(ps->RC(j));
+			FERigidPrescribed* prc = dynamic_cast<FERigidPrescribed*>(ps->RigidConstraint(j));
 			if (prc && prc->IsActive() && (prc->GetDOF() >= 0))
 			{
 				AddLoadCurve(prc->GetLoadCurve());

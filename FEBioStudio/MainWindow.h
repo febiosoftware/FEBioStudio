@@ -157,28 +157,9 @@ public:
 	// Generate a map
 	void GenerateMap(FSObject* po);
 
-public:
+	// clear the recent project list
 	void ClearRecentProjectsList();
 
-public:
-	void AddBC          (int nstep);
-	void AddBoundaryLoad(int nstep);
-	void AddBodyLoad    (int nstep);
-	void AddContact     (int nstep);
-	void AddConstraint  (int nstep);
-    void AddConnector   (int nstep);
-
-
-	//! helper function for the create menu handlers
-	void OnCreateObject(const char* sz);
-
-	//! helper function for the sketch menu handlers
-	void OnSketchObject(int n);
-
-	//! helper function for the modify menu handlers
-	void OnAddModifier(const char* sz);
-
-public:
 	// remove a graph from the list
 	void RemoveGraph(CGraphWindow* graph);
 
@@ -391,8 +372,8 @@ public slots:
 	void DeleteAllLoads();
 	void DeleteAllIC();
 	void DeleteAllContact();
-	void DeleteAllConstraints();
-	void DeleteAllConnectors();
+	void DeleteAllRigidConstraints();
+	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
 
 	CGLView* GetGLView();

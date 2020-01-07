@@ -202,9 +202,9 @@ void check_006(CDocument* doc, std::vector<FSObject*>& objList)
 				FEStep* pstep = fem.GetStep(n);
 				
 				// see if this material is referenced by any rigid constraints
-				for (int j = 0; j < pstep->RCs(); ++j)
+				for (int j = 0; j < pstep->RigidConstraints(); ++j)
 				{
-					FERigidConstraint* prc = pstep->RC(j);
+					FERigidConstraint* prc = pstep->RigidConstraint(j);
 					if (prc->GetMaterialID() == matId)
 					{
 						matUsed = true;
@@ -214,9 +214,9 @@ void check_006(CDocument* doc, std::vector<FSObject*>& objList)
 				if (matUsed) break;
 
 				// see if this material is referenced by any rigid connector
-				for (int j = 0; j < pstep->Connectors(); ++j)
+				for (int j = 0; j < pstep->RigidConnectors(); ++j)
 				{
-					FEConnector* prc = pstep->Connector(j);
+					FERigidConnector* prc = pstep->RigidConnector(j);
 					if ((prc->m_rbA == matId) || (prc->m_rbB == matId))
 					{
 						matUsed = true;

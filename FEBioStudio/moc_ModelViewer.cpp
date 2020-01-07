@@ -22,7 +22,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CModelViewer_t {
     QByteArrayData data[71];
-    char stringdata0[1129];
+    char stringdata0[1159];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -58,50 +58,50 @@ QT_MOC_LITERAL(23, 349, 16), // "OnAddSurfaceLoad"
 QT_MOC_LITERAL(24, 366, 13), // "OnAddBodyLoad"
 QT_MOC_LITERAL(25, 380, 21), // "OnAddInitialCondition"
 QT_MOC_LITERAL(26, 402, 12), // "OnAddContact"
-QT_MOC_LITERAL(27, 415, 15), // "OnAddConstraint"
-QT_MOC_LITERAL(28, 431, 14), // "OnAddConnector"
-QT_MOC_LITERAL(29, 446, 9), // "OnAddStep"
-QT_MOC_LITERAL(30, 456, 12), // "OnHideObject"
-QT_MOC_LITERAL(31, 469, 12), // "OnShowObject"
-QT_MOC_LITERAL(32, 482, 14), // "OnSelectObject"
-QT_MOC_LITERAL(33, 497, 22), // "OnSelectDiscreteObject"
-QT_MOC_LITERAL(34, 520, 22), // "OnDetachDiscreteObject"
-QT_MOC_LITERAL(35, 543, 10), // "OnHidePart"
-QT_MOC_LITERAL(36, 554, 10), // "OnShowPart"
-QT_MOC_LITERAL(37, 565, 12), // "OnSelectPart"
-QT_MOC_LITERAL(38, 578, 15), // "OnSelectSurface"
-QT_MOC_LITERAL(39, 594, 13), // "OnSelectCurve"
-QT_MOC_LITERAL(40, 608, 12), // "OnSelectNode"
-QT_MOC_LITERAL(41, 621, 14), // "OnCopyMaterial"
-QT_MOC_LITERAL(42, 636, 15), // "OnCopyInterface"
-QT_MOC_LITERAL(43, 652, 8), // "OnCopyBC"
-QT_MOC_LITERAL(44, 661, 8), // "OnCopyIC"
-QT_MOC_LITERAL(45, 670, 15), // "OnCopyConnector"
-QT_MOC_LITERAL(46, 686, 10), // "OnCopyLoad"
-QT_MOC_LITERAL(47, 697, 16), // "OnCopyConstraint"
-QT_MOC_LITERAL(48, 714, 10), // "OnCopyStep"
-QT_MOC_LITERAL(49, 725, 10), // "OnRerunJob"
-QT_MOC_LITERAL(50, 736, 12), // "OnEditOutput"
-QT_MOC_LITERAL(51, 749, 15), // "OnEditOutputLog"
-QT_MOC_LITERAL(52, 765, 23), // "OnRemoveEmptySelections"
-QT_MOC_LITERAL(53, 789, 21), // "OnRemoveAllSelections"
-QT_MOC_LITERAL(54, 811, 16), // "OnChangeMaterial"
-QT_MOC_LITERAL(55, 828, 19), // "OnMaterialHideParts"
-QT_MOC_LITERAL(56, 848, 19), // "OnMaterialShowParts"
-QT_MOC_LITERAL(57, 868, 24), // "OnMaterialHideOtherParts"
-QT_MOC_LITERAL(58, 893, 17), // "OnExportMaterials"
-QT_MOC_LITERAL(59, 911, 20), // "OnExportAllMaterials"
-QT_MOC_LITERAL(60, 932, 17), // "OnImportMaterials"
-QT_MOC_LITERAL(61, 950, 20), // "OnDeleteAllMaterials"
-QT_MOC_LITERAL(62, 971, 17), // "OnSwapMasterSlave"
-QT_MOC_LITERAL(63, 989, 13), // "OnGenerateMap"
-QT_MOC_LITERAL(64, 1003, 13), // "OnDeleteAllBC"
-QT_MOC_LITERAL(65, 1017, 16), // "OnDeleteAllLoads"
-QT_MOC_LITERAL(66, 1034, 13), // "OnDeleteAllIC"
-QT_MOC_LITERAL(67, 1048, 18), // "OnDeleteAllContact"
-QT_MOC_LITERAL(68, 1067, 22), // "OnDeleteAllConstraints"
-QT_MOC_LITERAL(69, 1090, 21), // "OnDeleteAllConnectors"
-QT_MOC_LITERAL(70, 1112, 16) // "OnDeleteAllSteps"
+QT_MOC_LITERAL(27, 415, 20), // "OnAddRigidConstraint"
+QT_MOC_LITERAL(28, 436, 19), // "OnAddRigidConnector"
+QT_MOC_LITERAL(29, 456, 9), // "OnAddStep"
+QT_MOC_LITERAL(30, 466, 12), // "OnHideObject"
+QT_MOC_LITERAL(31, 479, 12), // "OnShowObject"
+QT_MOC_LITERAL(32, 492, 14), // "OnSelectObject"
+QT_MOC_LITERAL(33, 507, 22), // "OnSelectDiscreteObject"
+QT_MOC_LITERAL(34, 530, 22), // "OnDetachDiscreteObject"
+QT_MOC_LITERAL(35, 553, 10), // "OnHidePart"
+QT_MOC_LITERAL(36, 564, 10), // "OnShowPart"
+QT_MOC_LITERAL(37, 575, 12), // "OnSelectPart"
+QT_MOC_LITERAL(38, 588, 15), // "OnSelectSurface"
+QT_MOC_LITERAL(39, 604, 13), // "OnSelectCurve"
+QT_MOC_LITERAL(40, 618, 12), // "OnSelectNode"
+QT_MOC_LITERAL(41, 631, 14), // "OnCopyMaterial"
+QT_MOC_LITERAL(42, 646, 15), // "OnCopyInterface"
+QT_MOC_LITERAL(43, 662, 8), // "OnCopyBC"
+QT_MOC_LITERAL(44, 671, 8), // "OnCopyIC"
+QT_MOC_LITERAL(45, 680, 20), // "OnCopyRigidConnector"
+QT_MOC_LITERAL(46, 701, 10), // "OnCopyLoad"
+QT_MOC_LITERAL(47, 712, 21), // "OnCopyRigidConstraint"
+QT_MOC_LITERAL(48, 734, 10), // "OnCopyStep"
+QT_MOC_LITERAL(49, 745, 10), // "OnRerunJob"
+QT_MOC_LITERAL(50, 756, 12), // "OnEditOutput"
+QT_MOC_LITERAL(51, 769, 15), // "OnEditOutputLog"
+QT_MOC_LITERAL(52, 785, 23), // "OnRemoveEmptySelections"
+QT_MOC_LITERAL(53, 809, 21), // "OnRemoveAllSelections"
+QT_MOC_LITERAL(54, 831, 16), // "OnChangeMaterial"
+QT_MOC_LITERAL(55, 848, 19), // "OnMaterialHideParts"
+QT_MOC_LITERAL(56, 868, 19), // "OnMaterialShowParts"
+QT_MOC_LITERAL(57, 888, 24), // "OnMaterialHideOtherParts"
+QT_MOC_LITERAL(58, 913, 17), // "OnExportMaterials"
+QT_MOC_LITERAL(59, 931, 20), // "OnExportAllMaterials"
+QT_MOC_LITERAL(60, 952, 17), // "OnImportMaterials"
+QT_MOC_LITERAL(61, 970, 20), // "OnDeleteAllMaterials"
+QT_MOC_LITERAL(62, 991, 17), // "OnSwapMasterSlave"
+QT_MOC_LITERAL(63, 1009, 13), // "OnGenerateMap"
+QT_MOC_LITERAL(64, 1023, 13), // "OnDeleteAllBC"
+QT_MOC_LITERAL(65, 1037, 16), // "OnDeleteAllLoads"
+QT_MOC_LITERAL(66, 1054, 13), // "OnDeleteAllIC"
+QT_MOC_LITERAL(67, 1068, 18), // "OnDeleteAllContact"
+QT_MOC_LITERAL(68, 1087, 27), // "OnDeleteAllRigidConstraints"
+QT_MOC_LITERAL(69, 1115, 26), // "OnDeleteAllRigidConnectors"
+QT_MOC_LITERAL(70, 1142, 16) // "OnDeleteAllSteps"
 
     },
     "CModelViewer\0currentObjectChanged\0\0"
@@ -115,26 +115,26 @@ QT_MOC_LITERAL(70, 1112, 16) // "OnDeleteAllSteps"
     "OnAddMaterial\0OnUnhideAllObjects\0"
     "OnUnhideAllParts\0OnAddBC\0OnAddSurfaceLoad\0"
     "OnAddBodyLoad\0OnAddInitialCondition\0"
-    "OnAddContact\0OnAddConstraint\0"
-    "OnAddConnector\0OnAddStep\0OnHideObject\0"
-    "OnShowObject\0OnSelectObject\0"
+    "OnAddContact\0OnAddRigidConstraint\0"
+    "OnAddRigidConnector\0OnAddStep\0"
+    "OnHideObject\0OnShowObject\0OnSelectObject\0"
     "OnSelectDiscreteObject\0OnDetachDiscreteObject\0"
     "OnHidePart\0OnShowPart\0OnSelectPart\0"
     "OnSelectSurface\0OnSelectCurve\0"
     "OnSelectNode\0OnCopyMaterial\0OnCopyInterface\0"
-    "OnCopyBC\0OnCopyIC\0OnCopyConnector\0"
-    "OnCopyLoad\0OnCopyConstraint\0OnCopyStep\0"
-    "OnRerunJob\0OnEditOutput\0OnEditOutputLog\0"
-    "OnRemoveEmptySelections\0OnRemoveAllSelections\0"
-    "OnChangeMaterial\0OnMaterialHideParts\0"
-    "OnMaterialShowParts\0OnMaterialHideOtherParts\0"
-    "OnExportMaterials\0OnExportAllMaterials\0"
-    "OnImportMaterials\0OnDeleteAllMaterials\0"
-    "OnSwapMasterSlave\0OnGenerateMap\0"
-    "OnDeleteAllBC\0OnDeleteAllLoads\0"
-    "OnDeleteAllIC\0OnDeleteAllContact\0"
-    "OnDeleteAllConstraints\0OnDeleteAllConnectors\0"
-    "OnDeleteAllSteps"
+    "OnCopyBC\0OnCopyIC\0OnCopyRigidConnector\0"
+    "OnCopyLoad\0OnCopyRigidConstraint\0"
+    "OnCopyStep\0OnRerunJob\0OnEditOutput\0"
+    "OnEditOutputLog\0OnRemoveEmptySelections\0"
+    "OnRemoveAllSelections\0OnChangeMaterial\0"
+    "OnMaterialHideParts\0OnMaterialShowParts\0"
+    "OnMaterialHideOtherParts\0OnExportMaterials\0"
+    "OnExportAllMaterials\0OnImportMaterials\0"
+    "OnDeleteAllMaterials\0OnSwapMasterSlave\0"
+    "OnGenerateMap\0OnDeleteAllBC\0"
+    "OnDeleteAllLoads\0OnDeleteAllIC\0"
+    "OnDeleteAllContact\0OnDeleteAllRigidConstraints\0"
+    "OnDeleteAllRigidConnectors\0OnDeleteAllSteps"
 };
 #undef QT_MOC_LITERAL
 
@@ -310,8 +310,8 @@ void CModelViewer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 15: _t->OnAddBodyLoad(); break;
         case 16: _t->OnAddInitialCondition(); break;
         case 17: _t->OnAddContact(); break;
-        case 18: _t->OnAddConstraint(); break;
-        case 19: _t->OnAddConnector(); break;
+        case 18: _t->OnAddRigidConstraint(); break;
+        case 19: _t->OnAddRigidConnector(); break;
         case 20: _t->OnAddStep(); break;
         case 21: _t->OnHideObject(); break;
         case 22: _t->OnShowObject(); break;
@@ -328,9 +328,9 @@ void CModelViewer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 33: _t->OnCopyInterface(); break;
         case 34: _t->OnCopyBC(); break;
         case 35: _t->OnCopyIC(); break;
-        case 36: _t->OnCopyConnector(); break;
+        case 36: _t->OnCopyRigidConnector(); break;
         case 37: _t->OnCopyLoad(); break;
-        case 38: _t->OnCopyConstraint(); break;
+        case 38: _t->OnCopyRigidConstraint(); break;
         case 39: _t->OnCopyStep(); break;
         case 40: _t->OnRerunJob(); break;
         case 41: _t->OnEditOutput(); break;
@@ -351,8 +351,8 @@ void CModelViewer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 56: _t->OnDeleteAllLoads(); break;
         case 57: _t->OnDeleteAllIC(); break;
         case 58: _t->OnDeleteAllContact(); break;
-        case 59: _t->OnDeleteAllConstraints(); break;
-        case 60: _t->OnDeleteAllConnectors(); break;
+        case 59: _t->OnDeleteAllRigidConstraints(); break;
+        case 60: _t->OnDeleteAllRigidConnectors(); break;
         case 61: _t->OnDeleteAllSteps(); break;
         default: ;
         }

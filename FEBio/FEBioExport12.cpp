@@ -132,7 +132,7 @@ bool FEBioExport12::Export(FEProject& prj, const char* szfile)
 		FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
 		ntype = pstep->GetType();
 		if (pstep == 0) return errf("Step 1 is not an analysis step.");
-		if (pstep->BCs() + pstep->Loads() + pstep->Interfaces() + pstep->RCs() == 0) bsingle_step = true;
+		if (pstep->BCs() + pstep->Loads() + pstep->Interfaces() + pstep->RigidConstraints() == 0) bsingle_step = true;
 	}
 
 	// see if any of the steps are poro
@@ -4198,7 +4198,7 @@ void FEBioExport12::WriteStepSection()
 			}
 
 			// output constraint section
-			if (s.RCs())
+			if (s.RigidConstraints())
 			{
 				m_xml.add_branch("Constraints");
 				{
@@ -4215,9 +4215,9 @@ void FEBioExport12::WriteConstraintSection(FEStep &s)
 {
 	const char* szbc[6] = { "trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z" };
 
-	for (int i = 0; i<s.RCs(); ++i)
+	for (int i = 0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* ps = s.RC(i);
+		FERigidConstraint* ps = s.RigidConstraint(i);
 
 		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
 		if (pgm == 0) throw MissingRigidBody(ps->GetName());

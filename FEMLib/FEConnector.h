@@ -7,11 +7,11 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 // Base class for contact interfaces
-class FEConnector : public FEStepComponent
+class FERigidConnector : public FEStepComponent
 {
 public:
-	FEConnector(int ntype, FEModel* ps, int nstep);
-	virtual ~FEConnector();
+	FERigidConnector(int ntype, FEModel* ps, int nstep);
+	virtual ~FERigidConnector();
 
 	int Type();
 
@@ -36,7 +36,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid spherical joint
 //
-class FERigidSphericalJoint : public FEConnector
+class FERigidSphericalJoint : public FERigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG,
@@ -50,7 +50,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid revolute joint
 //
-class FERigidRevoluteJoint : public FEConnector
+class FERigidRevoluteJoint : public FERigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -64,7 +64,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid prismatic joint
 //
-class FERigidPrismaticJoint : public FEConnector
+class FERigidPrismaticJoint : public FERigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -78,7 +78,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid cylindrical joint
 //
-class FERigidCylindricalJoint : public FEConnector
+class FERigidCylindricalJoint : public FERigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -92,7 +92,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid planar joint
 //
-class FERigidPlanarJoint : public FEConnector
+class FERigidPlanarJoint : public FERigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -106,7 +106,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid lock joint
 //
-class FERigidLock : public FEConnector
+class FERigidLock : public FERigidConnector
 {
 public:
     enum {TOL, GTOL, ATOL, F_PENALTY, M_PENALTY, AUTOPEN, J_ORIG, J_AXIS, T_AXIS,
@@ -120,7 +120,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid spring
 //
-class FERigidSpring : public FEConnector
+class FERigidSpring : public FERigidConnector
 {
 public:
     enum { K, XA, XB };
@@ -132,7 +132,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid damper
 //
-class FERigidDamper : public FEConnector
+class FERigidDamper : public FERigidConnector
 {
 public:
     enum { C, XA, XB };
@@ -144,7 +144,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid angular damper
 //
-class FERigidAngularDamper : public FEConnector
+class FERigidAngularDamper : public FERigidConnector
 {
 public:
     enum { C };
@@ -156,7 +156,7 @@ public:
 //-----------------------------------------------------------------------------
 //  This class implements a rigid contractile force
 //
-class FERigidContractileForce : public FEConnector
+class FERigidContractileForce : public FERigidConnector
 {
 public:
     enum { F, XA, XB };

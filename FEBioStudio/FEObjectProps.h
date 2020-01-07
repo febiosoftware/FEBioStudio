@@ -10,7 +10,7 @@ class FESoluteMaterial;
 class FEAnalysisStep;
 class FERigidInterface;
 class FERigidConstraint;
-class FEConnector;
+class FERigidConnector;
 class FEProject;
 class Param;
 class FEReactionMaterial;
@@ -88,14 +88,14 @@ private:
 class CRigidConnectorSettings : public CObjectProps
 {
 public:
-	CRigidConnectorSettings(FEModel& fem, FEConnector* rc);
+	CRigidConnectorSettings(FEModel& fem, FERigidConnector* rc);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	FEConnector*		m_rc;
+	FERigidConnector*	m_rc;
 	vector<GMaterial*>	m_mat;
 	int					m_rbA;
 	int					m_rbB;

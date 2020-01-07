@@ -6,10 +6,10 @@
 using namespace std;
 
 //=============================================================================
-// FEConnector
+// FERigidConnector
 //-----------------------------------------------------------------------------
 
-FEConnector::FEConnector(int ntype, FEModel* ps, int nstep)
+FERigidConnector::FERigidConnector(int ntype, FEModel* ps, int nstep)
 {
     m_ntype = ntype;
 	SetStep(nstep);
@@ -21,25 +21,25 @@ FEConnector::FEConnector(int ntype, FEModel* ps, int nstep)
 }
 
 //-----------------------------------------------------------------------------
-FEConnector::~FEConnector()
+FERigidConnector::~FERigidConnector()
 {
     
 }
 
 //-----------------------------------------------------------------------------
-void FEConnector::SetPosition(const vec3d& r)
+void FERigidConnector::SetPosition(const vec3d& r)
 {
 
 }
 
 //-----------------------------------------------------------------------------
-int FEConnector::Type()
+int FERigidConnector::Type()
 { 
 	return m_ntype; 
 }
 
 //-----------------------------------------------------------------------------
-void FEConnector::SaveList(FEItemListBuilder* pitem, OArchive& ar)
+void FERigidConnector::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 {
     if (pitem)
     {
@@ -50,11 +50,11 @@ void FEConnector::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FEConnector::LoadList(IArchive& ar)
+FEItemListBuilder* FERigidConnector::LoadList(IArchive& ar)
 {
     FEItemListBuilder* pitem = 0;
     
-    if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FEConnector::LoadList");
+    if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FERigidConnector::LoadList");
     unsigned int ntype = ar.GetChunkID();
     switch (ntype)
     {
@@ -88,7 +88,7 @@ FEItemListBuilder* FEConnector::LoadList(IArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-void FEConnector::Save(OArchive& ar)
+void FERigidConnector::Save(OArchive& ar)
 {
     ar.WriteChunk(CID_CONNECTOR_NAME, GetName());
 	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
@@ -105,9 +105,9 @@ void FEConnector::Save(OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-void FEConnector::Load(IArchive& ar)
+void FERigidConnector::Load(IArchive& ar)
 {
-    TRACE("FEConnector::Load");
+    TRACE("FERigidConnector::Load");
     while (IArchive::IO_OK == ar.OpenChunk())
     {
         switch (ar.GetChunkID())
@@ -120,7 +120,7 @@ void FEConnector::Load(IArchive& ar)
 			case CID_RC_RIGIDBODY_A: ar.read(m_rbA); break;
             case CID_RC_RIGIDBODY_B: ar.read(m_rbB); break;
             default:
-                throw ReadError("unknown CID in FEConnector::Load");
+                throw ReadError("unknown CID in FERigidConnector::Load");
         }
         ar.CloseChunk();
     }
@@ -130,7 +130,7 @@ void FEConnector::Load(IArchive& ar)
 // FERigidSphericalJoint
 //-----------------------------------------------------------------------------
 
-FERigidSphericalJoint::FERigidSphericalJoint(FEModel* ps, int nstep) : FEConnector(FE_RC_SPHERICAL_JOINT, ps, nstep)
+FERigidSphericalJoint::FERigidSphericalJoint(FEModel* ps, int nstep) : FERigidConnector(FE_RC_SPHERICAL_JOINT, ps, nstep)
 {
     SetTypeString("rigid spherical joint");
     
@@ -162,7 +162,7 @@ void FERigidSphericalJoint::SetPosition(const vec3d& r)
 // FERigidRevoluteJoint
 //-----------------------------------------------------------------------------
 
-FERigidRevoluteJoint::FERigidRevoluteJoint(FEModel* ps, int nstep) : FEConnector(FE_RC_REVOLUTE_JOINT, ps, nstep)
+FERigidRevoluteJoint::FERigidRevoluteJoint(FEModel* ps, int nstep) : FERigidConnector(FE_RC_REVOLUTE_JOINT, ps, nstep)
 {
     SetTypeString("rigid revolute joint");
     
@@ -192,7 +192,7 @@ void FERigidRevoluteJoint::SetPosition(const vec3d& r)
 // FERigidPrismaticJoint
 //-----------------------------------------------------------------------------
 
-FERigidPrismaticJoint::FERigidPrismaticJoint(FEModel* ps, int nstep) : FEConnector(FE_RC_PRISMATIC_JOINT, ps, nstep)
+FERigidPrismaticJoint::FERigidPrismaticJoint(FEModel* ps, int nstep) : FERigidConnector(FE_RC_PRISMATIC_JOINT, ps, nstep)
 {
     SetTypeString("rigid prismatic joint");
     
@@ -222,7 +222,7 @@ void FERigidPrismaticJoint::SetPosition(const vec3d& r)
 // FERigidCylindricalJoint
 //-----------------------------------------------------------------------------
 
-FERigidCylindricalJoint::FERigidCylindricalJoint(FEModel* ps, int nstep) : FEConnector(FE_RC_CYLINDRICAL_JOINT, ps, nstep)
+FERigidCylindricalJoint::FERigidCylindricalJoint(FEModel* ps, int nstep) : FERigidConnector(FE_RC_CYLINDRICAL_JOINT, ps, nstep)
 {
     SetTypeString("rigid cylindrical joint");
     
@@ -255,7 +255,7 @@ void FERigidCylindricalJoint::SetPosition(const vec3d& r)
 // FERigidPlanarJoint
 //-----------------------------------------------------------------------------
 
-FERigidPlanarJoint::FERigidPlanarJoint(FEModel* ps, int nstep) : FEConnector(FE_RC_PLANAR_JOINT, ps, nstep)
+FERigidPlanarJoint::FERigidPlanarJoint(FEModel* ps, int nstep) : FERigidConnector(FE_RC_PLANAR_JOINT, ps, nstep)
 {
     SetTypeString("rigid planar joint");
     
@@ -288,7 +288,7 @@ void FERigidPlanarJoint::SetPosition(const vec3d& r)
 // FERigidLock
 //-----------------------------------------------------------------------------
 
-FERigidLock::FERigidLock(FEModel* ps, int nstep) : FEConnector(FE_RC_RIGID_LOCK, ps, nstep)
+FERigidLock::FERigidLock(FEModel* ps, int nstep) : FERigidConnector(FE_RC_RIGID_LOCK, ps, nstep)
 {
     SetTypeString("rigid lock");
     
@@ -315,7 +315,7 @@ void FERigidLock::SetPosition(const vec3d& r)
 // FERigidSpring
 //-----------------------------------------------------------------------------
 
-FERigidSpring::FERigidSpring(FEModel* ps, int nstep) : FEConnector(FE_RC_SPRING, ps, nstep)
+FERigidSpring::FERigidSpring(FEModel* ps, int nstep) : FERigidConnector(FE_RC_SPRING, ps, nstep)
 {
     SetTypeString("rigid spring");
     
@@ -328,7 +328,7 @@ FERigidSpring::FERigidSpring(FEModel* ps, int nstep) : FEConnector(FE_RC_SPRING,
 // FERigidDamper
 //-----------------------------------------------------------------------------
 
-FERigidDamper::FERigidDamper(FEModel* ps, int nstep) : FEConnector(FE_RC_DAMPER, ps, nstep)
+FERigidDamper::FERigidDamper(FEModel* ps, int nstep) : FERigidConnector(FE_RC_DAMPER, ps, nstep)
 {
     SetTypeString("rigid damper");
     
@@ -341,7 +341,7 @@ FERigidDamper::FERigidDamper(FEModel* ps, int nstep) : FEConnector(FE_RC_DAMPER,
 // FERigidAngularDamper
 //-----------------------------------------------------------------------------
 
-FERigidAngularDamper::FERigidAngularDamper(FEModel* ps, int nstep) : FEConnector(FE_RC_ANGULAR_DAMPER, ps, nstep)
+FERigidAngularDamper::FERigidAngularDamper(FEModel* ps, int nstep) : FERigidConnector(FE_RC_ANGULAR_DAMPER, ps, nstep)
 {
     SetTypeString("rigid angular damper");
     
@@ -352,7 +352,7 @@ FERigidAngularDamper::FERigidAngularDamper(FEModel* ps, int nstep) : FEConnector
 // FERigidContractileForce
 //-----------------------------------------------------------------------------
 
-FERigidContractileForce::FERigidContractileForce(FEModel* ps, int nstep) : FEConnector(FE_RC_CONTRACTILE_FORCE, ps, nstep)
+FERigidContractileForce::FERigidContractileForce(FEModel* ps, int nstep) : FERigidConnector(FE_RC_CONTRACTILE_FORCE, ps, nstep)
 {
     SetTypeString("rigid contractile force");
     

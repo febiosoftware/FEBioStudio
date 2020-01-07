@@ -1732,26 +1732,26 @@ void CMainWindow::DeleteAllContact()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllConstraints()
+void CMainWindow::DeleteAllRigidConstraints()
 {
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
-		fem.DeleteAllConstraints();
+		fem.DeleteAllRigidConstraints();
 		UpdateModel();
 		RedrawGL();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::DeleteAllConnectors()
+void CMainWindow::DeleteAllRigidConnectors()
 {
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid connectors?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
 		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
-		fem.DeleteAllConnectors();
+		fem.DeleteAllRigidConnectors();
 		UpdateModel();
 		RedrawGL();
 	}

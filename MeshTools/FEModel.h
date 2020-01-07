@@ -53,8 +53,8 @@ public:
 	void DeleteAllLoads();
 	void DeleteAllIC();
 	void DeleteAllContact();
-	void DeleteAllConstraints();
-	void DeleteAllConnectors();
+	void DeleteAllRigidConstraints();
+	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
 
 	// clear the selections of all the bc, loads, etc.
@@ -112,8 +112,8 @@ public:
 	void AssignLoadToStep(FEBoundaryCondition* pbc, FEStep* ps);
 	void AssignICToStep(FEInitialCondition* pic, FEStep* ps);
 	void AssignInterfaceToStep(FEInterface* pi, FEStep* ps);
-	void AssignConstraintToStep(FERigidConstraint* pc, FEStep* ps);
-    void AssignConnectorToStep(FEConnector* pi, FEStep* ps);
+	void AssignRigidConstraintToStep(FERigidConstraint* pc, FEStep* ps);
+    void AssignRigidConnectorToStep(FERigidConnector* pi, FEStep* ps);
 
 	void AssignComponentToStep(FEStepComponent* pc, FEStep* ps);
 
@@ -269,9 +269,9 @@ template <class T> int CountConnectors(FEModel& fem)
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FEStep* ps = fem.GetStep(i);
-		for (int j = 0; j<ps->Connectors(); ++j)
+		for (int j = 0; j<ps->RigidConnectors(); ++j)
 		{
-			T* pbc = dynamic_cast<T*>(ps->Connector(j));
+			T* pbc = dynamic_cast<T*>(ps->RigidConnector(j));
 			if (pbc) nc++;
 		}
 	}
@@ -286,9 +286,9 @@ template <class T> int CountRigidConstraints(FEModel& fem)
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		FEStep* ps = fem.GetStep(i);
-		for (int j = 0; j<ps->RCs(); ++j)
+		for (int j = 0; j<ps->RigidConstraints(); ++j)
 		{
-			T* pbc = dynamic_cast<T*>(ps->RC(j));
+			T* pbc = dynamic_cast<T*>(ps->RigidConstraint(j));
 			if (pbc) nc++;
 		}
 	}
@@ -303,6 +303,6 @@ std::string defaultBCName(FEModel* fem, FEBoundaryCondition* pbc);
 std::string defaultICName(FEModel* fem, FEInitialCondition* pic);
 std::string defaultLoadName(FEModel* fem, FEBoundaryCondition* pbc);
 std::string defaultInterfaceName(FEModel* fem, FEInterface* pi);
-std::string defaultConnectorName(FEModel* fem, FEConnector* pc);
-std::string defaultConstraintName(FEModel* fem, FERigidConstraint* pc);
+std::string defaultRigidConnectorName(FEModel* fem, FERigidConnector* pc);
+std::string defaultRigidConstraintName(FEModel* fem, FERigidConstraint* pc);
 std::string defaultStepName(FEModel* fem, FEAnalysisStep* ps);

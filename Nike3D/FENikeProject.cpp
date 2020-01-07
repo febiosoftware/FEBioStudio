@@ -386,9 +386,9 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 				// we need to loop over all the rigid constraints for this step
 				// and set the material properties accordingly
 				for (j=0; j<6; ++j) mat.m[2][j] = 0;
-				for (k=0; k<step.RCs(); ++k)
+				for (k=0; k<step.RigidConstraints(); ++k)
 				{
-					FERigidConstraint& rc = *step.RC(k);
+					FERigidConstraint& rc = *step.RigidConstraint(k);
 					if (rc.GetMaterialID() == pgm->GetID())
 					{
 						switch (rc.Type())

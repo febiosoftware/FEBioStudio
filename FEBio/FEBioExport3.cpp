@@ -648,7 +648,7 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = pstep->RCs();
+			int nrc = pstep->RigidConstraints();
 			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Rigid");
@@ -685,7 +685,7 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 			int nnlc = CountInterfaces<FEVolumeConstraint>(fem)
 				+CountInterfaces<FESymmetryPlane>(fem)
 				+CountInterfaces<FENormalFlowSurface>(fem)
-				+CountConnectors<FEConnector>(fem)
+				+CountConnectors<FERigidConnector>(fem)
 				+CountInterfaces<FERigidJoint>(fem);
 			if ((nnlc > 0) && (m_section[FEBIO_CONSTRAINTS]))
 			{
@@ -697,7 +697,7 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 			}
 
 			// output initial section
-			int nic = pstep->ICs() + pstep->RCs(FE_RIGID_INIT_VELOCITY) + pstep->RCs(FE_RIGID_INIT_ANG_VELOCITY);
+			int nic = pstep->ICs() + pstep->RigidConstraints(FE_RIGID_INIT_VELOCITY) + pstep->RigidConstraints(FE_RIGID_INIT_ANG_VELOCITY);
 			if ((nic > 0) && (m_section[FEBIO_INITIAL]))
 			{
 				m_xml.add_branch("Initial");
@@ -4237,7 +4237,7 @@ void FEBioExport3::WriteStepSection()
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = s.RCs();
+			int nrc = s.RigidConstraints();
 			if (nrc > 0)
 			{
 				m_xml.add_branch("Rigid");
@@ -4271,7 +4271,7 @@ void FEBioExport3::WriteStepSection()
 			}
 
 			// output constraint section
-			int nnlc = s.RCs() + CountInterfaces<FEVolumeConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
+			int nnlc = s.RigidConstraints() + CountInterfaces<FEVolumeConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");
@@ -4291,9 +4291,9 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 {
 	const char* szbc[6] = { "x", "y", "z", "Ru", "Rv", "Rw" };
 
-	for (int i = 0; i<s.RCs(); ++i)
+	for (int i = 0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* ps = s.RC(i);
+		FERigidConstraint* ps = s.RigidConstraint(i);
 
 		if (ps->IsActive())
 		{
@@ -4397,10 +4397,10 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 //
 void FEBioExport3::WriteConnectors(FEStep& s)
 {
-	for (int i = 0; i<s.Connectors(); ++i)
+	for (int i = 0; i<s.RigidConnectors(); ++i)
 	{
 		// rigid connectors
-		FEConnector* pj = s.Connector(i);
+		FERigidConnector* pj = s.RigidConnector(i);
 		if (pj && pj->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pj);

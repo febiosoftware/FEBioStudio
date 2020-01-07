@@ -691,14 +691,14 @@ void CModelTree::Build(CDocument* doc)
 
 	// add the constraints
 	int nlc = 0;
-	for (int i=0; i<fem.Steps(); ++i) nlc += fem.GetStep(i)->RCs();
+	for (int i=0; i<fem.Steps(); ++i) nlc += fem.GetStep(i)->RigidConstraints();
 	t2 = AddTreeItem(t1, "Rigid Constraints", MT_CONSTRAINT_LIST, nlc);
 	UpdateRC(t2, fem, 0);
 
 	// add the connectors
-	int nconn = 0;
-	for (int i=0; i<fem.Steps(); ++i) nconn += fem.GetStep(i)->Connectors();
-	t2 = AddTreeItem(t1, "Rigid Connectors", MT_CONNECTOR_LIST, nconn);
+	int nrc = 0;
+	for (int i=0; i<fem.Steps(); ++i) nrc += fem.GetStep(i)->RigidConnectors();
+	t2 = AddTreeItem(t1, "Rigid Connectors", MT_CONNECTOR_LIST, nrc);
 	UpdateConnectors(t2, fem, 0);
 
 	// add the discrete objects
@@ -1266,11 +1266,11 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEModel& fem)
 		UpdateContact(t3, fem, pstep);
 
 		// add the constraints
-		t3 = AddTreeItem(t2, "Constraints", MT_CONSTRAINT_LIST, pstep->RCs());
+		t3 = AddTreeItem(t2, "Rigid Constraints", MT_CONSTRAINT_LIST, pstep->RigidConstraints());
 		UpdateRC(t3, fem, pstep);
 
 		// add the connectors
-		t3 = AddTreeItem(t2, "Connectors", MT_CONNECTOR_LIST, pstep->Connectors());
+		t3 = AddTreeItem(t2, "Rigid Connectors", MT_CONNECTOR_LIST, pstep->RigidConnectors());
 		UpdateConnectors(t3, fem, pstep);
 	}
 }
@@ -1283,9 +1283,9 @@ void CModelTree::UpdateRC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 		FEStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
-			for (int j = 0; j<ps->RCs(); ++j)
+			for (int j = 0; j<ps->RigidConstraints(); ++j)
 			{
-				FERigidConstraint* prc = ps->RC(j);
+				FERigidConstraint* prc = ps->RigidConstraint(j);
 
 				CPropertyList* pl = new CRigidConstraintSettings(fem, prc);
 
@@ -1305,9 +1305,9 @@ void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FEModel& fem, FEStep* pst
 		FEStep* ps = fem.GetStep(i);
 		if ((pstep == 0) || (ps == pstep))
 		{
-			for (int j = 0; j<ps->Connectors(); ++j)
+			for (int j = 0; j<ps->RigidConnectors(); ++j)
 			{
-				FEConnector* prc = ps->Connector(j);
+				FERigidConnector* prc = ps->RigidConnector(j);
 				CPropertyList* pl = new CRigidConnectorSettings(fem, prc);
 
 				int flags = SHOW_PROPERTY_FORM;
