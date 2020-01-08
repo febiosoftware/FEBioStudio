@@ -4,6 +4,7 @@
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEConnector.h>
+#include <FEMLib/FELoad.h>
 #include <FSCore/ParamBlock.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/GDiscreteObject.h>
@@ -327,16 +328,16 @@ protected:
 class CCmdAddLoad : public CCommand
 {
 public:
-	CCmdAddLoad(FEStep* ps, FEBoundaryCondition* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
+	CCmdAddLoad(FEStep* ps, FELoad* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
 	~CCmdAddLoad() { if (m_bdel) delete m_pfc; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*					m_ps;
-	FEBoundaryCondition*	m_pfc;
-	bool					m_bdel;
+	FEStep*		m_ps;
+	FELoad*		m_pfc;
+	bool		m_bdel;
 };
 
 //-----------------------------------------------------------------------------

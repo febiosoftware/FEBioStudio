@@ -229,6 +229,7 @@ public slots:
 	void on_actionAddBodyLoad_triggered();
 	void on_actionAddIC_triggered();
 	void on_actionAddContact_triggered();
+	void on_actionAddConstraint_triggered();
 	void on_actionAddRigidConstraint_triggered();
 	void on_actionAddRigidConnector_triggered();
 	void on_actionAddMaterial_triggered();
@@ -372,6 +373,7 @@ public slots:
 	void DeleteAllLoads();
 	void DeleteAllIC();
 	void DeleteAllContact();
+	void DeleteAllConstraints();
 	void DeleteAllRigidConstraints();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();

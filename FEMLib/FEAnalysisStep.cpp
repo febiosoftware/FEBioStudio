@@ -6,6 +6,7 @@
 #include "FESurfaceLoad.h"
 #include "FEMKernel.h"
 #include "FEInterface.h"
+#include "FEModelConstraint.h"
 #include <FSCore/FSObjectList.h>
 
 int FEStep::m_ncount = 0;
@@ -21,13 +22,16 @@ public:
 	FSObjectList<FEBoundaryCondition>	m_BC;
 
 	// loads
-	FSObjectList<FEBoundaryCondition>	m_FC;
+	FSObjectList<FELoad>	m_FC;
 
 	// initial condition
 	FSObjectList<FEInitialCondition>		m_IC;
 
 	// contact interfaces
 	FSObjectList<FEInterface>	m_Int;
+
+	// constraints
+	FSObjectList<FEModelConstraint>	m_NLC;
 
 	// rigid constraints	
 	FSObjectList<FERigidConstraint>	m_RC;
@@ -118,24 +122,24 @@ void FEStep::RemoveAllBCs()
 int FEStep::Loads() { return (int)imp->m_FC.Size(); }
 
 //-----------------------------------------------------------------------------
-FEBoundaryCondition* FEStep::Load(int i) { return imp->m_FC[i]; }
+FELoad* FEStep::Load(int i) { return imp->m_FC[i]; }
 
 //-----------------------------------------------------------------------------
-void FEStep::AddLoad(FEBoundaryCondition* pfc)
+void FEStep::AddLoad(FELoad* pfc)
 { 
 	imp->m_FC.Add(pfc);
 	pfc->SetStep(GetID()); 
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::InsertLoad(int n, FEBoundaryCondition* pfc)
+void FEStep::InsertLoad(int n, FELoad* pfc)
 { 
 	imp->m_FC.Insert(n, pfc);
 	pfc->SetStep(GetID());
 }
 
 //-----------------------------------------------------------------------------
-int FEStep::RemoveLoad(FEBoundaryCondition* pfc)
+int FEStep::RemoveLoad(FELoad* pfc)
 {
 	return (int)imp->m_FC.Remove(pfc);
 }
@@ -210,6 +214,55 @@ void FEStep::RemoveAllInterfaces()
 }
 
 //-----------------------------------------------------------------------------
+int FEStep::Constraints()
+{
+	return (int) imp->m_NLC.Size();
+}
+
+//-----------------------------------------------------------------------------
+int FEStep::Constraints(int ntype)
+{
+	int nc = 0;
+	for (int i = 0; i<(int)imp->m_NLC.Size(); ++i)
+	{
+		if (imp->m_NLC[i]->Type() == ntype) nc++;
+	}
+	return nc;
+}
+
+//-----------------------------------------------------------------------------
+FEModelConstraint* FEStep::Constraint(int i)
+{
+	return imp->m_NLC[i];
+}
+
+//-----------------------------------------------------------------------------
+void FEStep::AddConstraint(FEModelConstraint* pc)
+{
+	imp->m_NLC.Add(pc);
+	pc->SetStep(GetID());
+}
+
+//-----------------------------------------------------------------------------
+void FEStep::InsertConstraint(int n, FEModelConstraint* pc)
+{
+	imp->m_NLC.Insert(n, pc);
+	pc->SetStep(GetID());
+}
+
+//-----------------------------------------------------------------------------
+void FEStep::RemoveConstraint(FEModelConstraint* pc)
+{
+	imp->m_NLC.Remove(pc);
+}
+
+//-----------------------------------------------------------------------------
+void FEStep::RemoveAllConstraints()
+{
+	imp->m_NLC.Clear();
+}
+
+//-----------------------------------------------------------------------------
 int FEStep::RigidConstraints() { return (int)imp->m_RC.Size(); }
 
 //-----------------------------------------------------------------------------
@@ -247,7 +300,7 @@ int FEStep::RemoveRC(FERigidConstraint* prc)
 }
 
 //-----------------------------------------------------------------------------
-void FEStep::RemoveAllConstraints()
+void FEStep::RemoveAllRigidConstraints()
 {
 	imp->m_RC.Clear();
 }
@@ -303,6 +356,22 @@ void FEStep::RemoveAllRigidConnectors()
 }
 
 //-----------------------------------------------------------------------------
+#define MoveComponent(Type, Fnc) (dynamic_cast<Type*>(pc)) Fnc(dynamic_cast<Type*>(pc))
+
+void FEStep::AddComponent(FEModelComponent* pc)
+{
+	pc->SetStep(GetID());
+	if      MoveComponent(FEBoundaryCondition, AddBC);
+	else if MoveComponent(FELoad             , AddLoad);
+	else if MoveComponent(FEInterface        , AddInterface);
+	else if MoveComponent(FEInitialCondition , AddIC);
+	else if MoveComponent(FERigidConstraint  , AddRC);
+	else if MoveComponent(FERigidConnector   , AddRigidConnector);
+	else if MoveComponent(FEModelConstraint  , AddConstraint);
+	else assert(false);
+}
+
+//-----------------------------------------------------------------------------
 void FEStep::Save(OArchive &ar)
 {
 	// write the name
@@ -340,7 +409,7 @@ void FEStep::Save(OArchive &ar)
 		{
 			for (int i=0; i<nfc; ++i)
 			{
-				FEBoundaryCondition* pb = Load(i);
+				FELoad* pb = Load(i);
 				int ntype = pb->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -385,6 +454,26 @@ void FEStep::Save(OArchive &ar)
 				ar.BeginChunk(ntype);
 				{
 					pi->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+	// save the constraints
+	int nmlc = Constraints();
+	if (nmlc > 0)
+	{
+		ar.BeginChunk(CID_CONSTRAINT_SECTION);
+		{
+			for (int i = 0; i < nmlc; ++i)
+			{
+				FEModelConstraint* pmc = Constraint(i);
+				int ntype = pmc->Type();
+				ar.BeginChunk(ntype);
+				{
+					pmc->Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -452,7 +541,7 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FEBoundaryCondition* pb = 0;
+					FEModelComponent* pb = 0;
 					switch (ntype)
 					{
 					case FE_FIXED_DISPLACEMENT		 : pb = new FEFixedDisplacement         (m_pfem); break;
@@ -536,9 +625,9 @@ void FEStep::Load(IArchive &ar)
 					if (ar.Version() < 0x00020000)
 					{
 						if (dynamic_cast<FEInitialCondition*>(pb)) AddIC(dynamic_cast<FEInitialCondition*>(pb));
-						else AddBC(pb);
+						else AddBC(dynamic_cast<FEBoundaryCondition*>(pb));
 					}
-					else AddBC(pb);
+					else AddBC(dynamic_cast<FEBoundaryCondition*>(pb));
 
 					ar.CloseChunk();
 				}
@@ -550,17 +639,17 @@ void FEStep::Load(IArchive &ar)
 				{
 					int ntype = ar.GetChunkID();
 
-					FEBoundaryCondition* pl = 0;
+					FELoad* pl = 0;
 
 					if (ntype == FE_NODAL_LOAD) pl = new FENodalLoad(m_pfem);
 					else
 					{
 						// see if it's a surface load
-						pl = fecore_new<FEBoundaryCondition>(m_pfem, FE_SURFACE_LOAD, ntype);
+						pl = fecore_new<FELoad>(m_pfem, FE_SURFACE_LOAD, ntype);
 						if (pl == 0)
 						{
 							// could be a body load
-							pl = fecore_new<FEBoundaryCondition>(m_pfem, FE_BODY_LOAD, ntype);
+							pl = fecore_new<FELoad>(m_pfem, FE_BODY_LOAD, ntype);
 						}
 					}
 
@@ -626,19 +715,54 @@ void FEStep::Load(IArchive &ar)
 					// make sure we were able to allocate an interface
 					if (pi == 0)
 					{
-						throw ReadError("error parsing unknown CID_INTERFACE_SECTION FEStep::Load");
+						// some "contact" interfaces were moved to constraints
+						FEModelConstraint* pc = fecore_new<FEModelConstraint>(m_pfem, FE_CONSTRAINT, ntype);
+						if (pc)
+						{
+							pc->Load(ar);
+							AddConstraint(pc);
+						}
+						else throw ReadError("error parsing unknown CID_INTERFACE_SECTION FEStep::Load");
 					}
+					else
+					{
+						// load the interface data
+						pi->Load(ar);
 
-					// load the interface data
-					pi->Load(ar);
-
-					// add interface to step
-					AddInterface(pi);
+						// add interface to step
+						AddInterface(pi);
+					}
 
 					ar.CloseChunk();
 				}
 			}
 			break;
+		case CID_CONSTRAINT_SECTION: // model constraints
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int ntype = ar.GetChunkID();
+
+				FEModelConstraint* pmc = fecore_new<FEModelConstraint>(m_pfem, FE_CONSTRAINT, ntype);
+
+				// make sure we were able to allocate a constraint
+				if (pmc == 0)
+				{
+					throw ReadError("error parsing unknown CID_INTERFACE_SECTION FEStep::Load");
+				}
+				else
+				{
+					// load the constraint data
+					pmc->Load(ar);
+
+					// add constraint to step
+					AddConstraint(pmc);
+				}
+
+				ar.CloseChunk();
+			}
+		}
+		break;
 		case CID_RC_SECTION: // rigid constraints
 			{
 				while (IArchive::IO_OK == ar.OpenChunk())

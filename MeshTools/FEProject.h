@@ -26,7 +26,8 @@ enum FESuperClass
 	FE_INITIAL_CONDITION,
 	FE_INTERFACE,
 	FE_RIGID_CONSTRAINT,
-	FE_RIGID_CONNECTOR
+	FE_RIGID_CONNECTOR,
+	FE_CONSTRAINT
 };
 
 //-----------------------------------------------------------------------------

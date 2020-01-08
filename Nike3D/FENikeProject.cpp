@@ -4,6 +4,7 @@
 #include <FEMLib/FERigidConstraint.h>
 #include <MeshLib/MeshMetrics.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <memory>
@@ -1002,7 +1003,7 @@ bool FENikeProject::BuildNodalLoads(FEProject& prj)
 		{
 			FELoadCurve& lc = *pbc->GetLoadCurve();
 			int nlc = AddLoadCurve(lc);
-			int bc = pbc->GetBC() + 1;
+			int bc = pbc->GetDOF() + 1;
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			auto_ptr<FENodeList> pg(pitem->BuildNodeList() );
 			FENodeList::Iterator pn = pg->First();

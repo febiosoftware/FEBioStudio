@@ -8,6 +8,7 @@
 #include <MathLib/MathParser.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FEBodyLoad.h>
 
 CCmdAddPoint::CCmdAddPoint(FELoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
 {
@@ -212,7 +213,7 @@ void CCurveEditor::Update()
 			int nbc = pstep->Loads();
 			for (int j = 0; j<nbc; ++j)
 			{
-				FEBoundaryCondition* plj = pstep->Load(j);
+				FELoad* plj = pstep->Load(j);
 
                 FEFluidFlowResistance* pfr = dynamic_cast<FEFluidFlowResistance*>(pstep->Load(j));
                 if (pfr) {

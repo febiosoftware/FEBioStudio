@@ -1,14 +1,18 @@
 #pragma once
-#include "FEBoundaryCondition.h"
+#include "FELoad.h"
 
 //=============================================================================
-// Base class for prescribed pressure loads.
+// Base class for surface loads.
 //
-class FESurfaceLoad : public FEPrescribedBC
+class FESurfaceLoad : public FELoad
 {
 public:
-	FESurfaceLoad(int ntype, FEModel* ps) : FEPrescribedBC(ntype, ps) {}
-	FESurfaceLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FEPrescribedBC(ntype, ps, pi, nstep){}
+	FESurfaceLoad(int ntype, FEModel* ps) : FELoad(ntype, ps) {}
+	FESurfaceLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep){}
+
+	// return the "primary" load curve
+	// TODO: remove this
+	virtual FELoadCurve* GetLoadCurve() = 0;
 };
 
 //-----------------------------------------------------------------------------

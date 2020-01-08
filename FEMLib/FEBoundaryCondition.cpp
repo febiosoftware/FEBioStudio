@@ -4,10 +4,10 @@
 #include <MeshTools/GGroup.h>
 
 //-----------------------------------------------------------------------------
-// FEBoundaryCondition
+// FEModelComponent
 //-----------------------------------------------------------------------------
 
-FEBoundaryCondition::FEBoundaryCondition(int ntype, FEModel* ps, int nstep)
+FEModelComponent::FEModelComponent(int ntype, FEModel* ps, int nstep)
 {
 	m_ps = ps;
 	m_pItem = 0;
@@ -16,7 +16,7 @@ FEBoundaryCondition::FEBoundaryCondition(int ntype, FEModel* ps, int nstep)
 	m_sztype = "(not defined)";
 }
 
-FEBoundaryCondition::FEBoundaryCondition(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep)
+FEModelComponent::FEModelComponent(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep)
 {
 	m_ps = ps;
 	m_ntype = ntype;
@@ -25,12 +25,12 @@ FEBoundaryCondition::FEBoundaryCondition(int ntype, FEModel* ps, FEItemListBuild
 	m_sztype = "(not defined)";
 }
 
-FEBoundaryCondition::~FEBoundaryCondition(void)
+FEModelComponent::~FEModelComponent(void)
 {
 	if (m_pItem) delete m_pItem;
 }
 
-void FEBoundaryCondition::Save(OArchive &ar)
+void FEModelComponent::Save(OArchive &ar)
 {
 	// write the name
 	ar.WriteChunk(NAME, GetName());
@@ -63,9 +63,9 @@ void FEBoundaryCondition::Save(OArchive &ar)
 
 //-----------------------------------------------------------------------------
 
-void FEBoundaryCondition::Load(IArchive &ar)
+void FEModelComponent::Load(IArchive &ar)
 {
-	TRACE("FEBoundaryCondition::Load");
+	TRACE("FEModelComponent::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -115,13 +115,13 @@ void FEBoundaryCondition::Load(IArchive &ar)
 }
 
 //=============================================================================
-FEFixedDOF::FEFixedDOF(int ntype, FEModel* fem) : FEEssentialBC(ntype, fem)
+FEFixedDOF::FEFixedDOF(int ntype, FEModel* fem) : FEBoundaryCondition(ntype, fem)
 {
 	m_nvar = -1;
 	AddIntParam(0)->SetState(Param_HIDDEN); // the BC parameter
 }
 
-FEFixedDOF::FEFixedDOF(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEEssentialBC(ntype, fem, pi, nstep)
+FEFixedDOF::FEFixedDOF(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEBoundaryCondition(ntype, fem, pi, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0)->SetState(Param_HIDDEN); // the BC parameter
@@ -446,60 +446,4 @@ FEPrescribedFluidDilatation::FEPrescribedFluidDilatation(FEModel* ps, FEItemList
 {
     SetTypeString("Prescribed Fluid Dilatation");
 	SetVarID(ps->GetVariableIndex("Fluid Dilatation"));
-}
-
-//=============================================================================
-// NODAL LOAD
-//=============================================================================
-FENodalLoad::FENodalLoad(FEModel* ps) : FEPrescribedBC(FE_NODAL_LOAD, ps)
-{
-	SetTypeString("Nodal Load");
-	AddIntParam(0, "bc", "bc");
-	AddDoubleParam(1, "load", "load")->SetLoadCurve();
-}
-
-//-----------------------------------------------------------------------------
-FENodalLoad::FENodalLoad(FEModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep) : FEPrescribedBC(FE_NODAL_LOAD, ps, pi, nstep)
-{
-	SetTypeString("Nodal Load");
-	AddIntParam(bc, "bc", "bc");
-	AddDoubleParam(f, "load", "load")->SetLoadCurve();
-}
-
-//=============================================================================
-// Body loads
-//=============================================================================
-
-//-----------------------------------------------------------------------------
-
-FEBodyForce::FEBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_BODY_FORCE, ps, nstep)
-{
-	SetTypeString("Body Force");
-	AddDoubleParam(0, "x", "x")->SetLoadCurve();
-	AddDoubleParam(0, "y", "y")->SetLoadCurve();
-	AddDoubleParam(0, "z", "z")->SetLoadCurve();
-}
-
-FELoadCurve* FEBodyForce::GetLoadCurve(int n)
-{
-	return GetParamLC(LOAD1 + n);
-}
-
-//-----------------------------------------------------------------------------
-FEHeatSource::FEHeatSource(FEModel* ps, int nstep) : FEBodyLoad(FE_HEAT_SOURCE, ps, nstep)
-{
-	SetTypeString("Heat Source");
-	AddDoubleParam(0, "Q", "Q")->SetLoadCurve();
-}
-
-//-----------------------------------------------------------------------------
-FESBMPointSource::FESBMPointSource(FEModel* ps, int nstep) : FEBodyLoad(FE_SBM_POINT_SOURCE, ps, nstep)
-{
-	SetTypeString("SBM Point Source");
-	AddIntParam(1, "sbm", "sbm");
-	AddDoubleParam(0, "value", "value");
-	AddDoubleParam(0, "x", "x");
-	AddDoubleParam(0, "y", "y");
-	AddDoubleParam(0, "z", "z");
-	AddBoolParam(true, "weigh_volume", "weigh volume");
 }

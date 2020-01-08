@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FEBodyLoad.h>
 #include "FEBioExport.h"
 
 //-----------------------------------------------------------------------------
@@ -203,6 +204,7 @@ protected:
 	void WriteSymmetryPlane     (FEStep& s);
     void WriteNormalFlow        (FEStep& s);
 	void WriteRigidJoint        (FEStep& s);
+	void WriteConstraints       (FEStep& s);
 
 	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteRigidMaterial(FEMaterial* pmat, XMLElement& el);

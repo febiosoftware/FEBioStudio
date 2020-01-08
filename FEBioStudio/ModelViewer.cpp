@@ -4,6 +4,7 @@
 #include "MainWindow.h"
 #include "Document.h"
 #include <FEMLib/FEInitialCondition.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <QMessageBox>
 #include <QMenu>
 #include "DlgEditOutput.h"
@@ -517,6 +518,12 @@ void CModelViewer::OnAddContact()
 	wnd->on_actionAddContact_triggered();
 }
 
+void CModelViewer::OnAddConstraint()
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->on_actionAddConstraint_triggered();
+}
+
 void CModelViewer::OnAddRigidConstraint()
 {
 	CMainWindow* wnd = GetMainWindow();
@@ -985,7 +992,7 @@ void CModelViewer::OnCopyRigidConnector()
 
 void CModelViewer::OnCopyLoad()
 {
-	FEBoundaryCondition* pl = dynamic_cast<FEBoundaryCondition*>(m_currentObject); assert(pl);
+	FELoad* pl = dynamic_cast<FELoad*>(m_currentObject); assert(pl);
 	if (pl == 0) return;
 
 	CDocument* pdoc = GetMainWindow()->GetDocument();
@@ -993,11 +1000,11 @@ void CModelViewer::OnCopyLoad()
 
 	// copy the load
 	FEMKernel* fecore = FEMKernel::Instance();
-	FEBoundaryCondition* plCopy = 0;
+	FELoad* plCopy = 0;
 	if (dynamic_cast<FESurfaceLoad*>(pl))
-		plCopy = dynamic_cast<FEBoundaryCondition*>(fecore->Create(fem, FE_SURFACE_LOAD, pl->Type()));
+		plCopy = dynamic_cast<FELoad*>(fecore->Create(fem, FE_SURFACE_LOAD, pl->Type()));
 	else if (dynamic_cast<FEBodyLoad*>(pl))
-		plCopy = dynamic_cast<FEBoundaryCondition*>(fecore->Create(fem, FE_BODY_LOAD, pl->Type()));
+		plCopy = dynamic_cast<FELoad*>(fecore->Create(fem, FE_BODY_LOAD, pl->Type()));
 	assert(plCopy);
 
 	// create a name
@@ -1183,11 +1190,16 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllContact()));
 		break;
 	case MT_CONSTRAINT_LIST:
+		menu.addAction("Add Constraint ...", this, SLOT(OnAddConstraint()));
+		menu.addSeparator();
+		menu.addAction("Delete All", this, SLOT(OnDeleteAllConstraints()));
+		break;
+	case MT_RIGID_CONSTRAINT_LIST:
 		menu.addAction("Add Rigid Constraint ...", this, SLOT(OnAddRigidConstraint()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConstraints()));
 		break;
-	case MT_CONNECTOR_LIST:
+	case MT_RIGID_CONNECTOR_LIST:
 		menu.addAction("Add Rigid Connector ...", this, SLOT(OnAddRigidConnector()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidConnectors()));
@@ -1286,7 +1298,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Copy", this, SLOT(OnCopyBC()));
 		del = true;
 		break;
-	case MT_CONNECTOR:
+	case MT_RIGID_CONNECTOR:
 		menu.addAction("Copy", this, SLOT(OnCopyConnector()));
 		del = true;
 		break;
@@ -1299,7 +1311,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Generate map...", this, SLOT(OnGenerateMap()));
 		del = true;
 		break;
-	case MT_CONSTRAINT:
+	case MT_RIGID_CONSTRAINT:
 		menu.addAction("Copy", this, SLOT(OnCopyConstraint()));
 		del = true;
 		break;
@@ -1403,6 +1415,11 @@ void CModelViewer::OnDeleteAllIC()
 void CModelViewer::OnDeleteAllContact()
 {
 	GetMainWindow()->DeleteAllContact();
+}
+
+void CModelViewer::OnDeleteAllConstraints()
+{
+	GetMainWindow()->DeleteAllConstraints();
 }
 
 void CModelViewer::OnDeleteAllRigidConstraints()

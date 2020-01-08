@@ -373,7 +373,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 					sprintf(szname, "FixedConstraint%02d", nfc-1);
 					pbc->SetName(szname);
 					pbc->SetBC(bc);
-					s.AddBC(pbc);
+					s.AddComponent(pbc);
 				}
 				else
 				{
@@ -382,7 +382,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 					sprintf(szname, "FixedConstraint%02d", nfc-1);
 					prc->SetName(szname);
 					prc->SetBC(bc);
-					s.AddBC(prc);
+					s.AddComponent(prc);
 				}
 			}
 		}
@@ -427,7 +427,7 @@ void FENIKEImport::build_constraints(FENikeProject& nike)
 			pbc->SetDOF(nbc-1);
 			FELoadCurve* plc = pbc->GetLoadCurve();
 			*plc = m_LC[nlc-1];
-			s.AddBC(pbc);
+			s.AddComponent(pbc);
 		}
 	}
 	while (nbc);
@@ -1437,10 +1437,10 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 		// loop over all boundary conditions
 		for (i=0; i<s.Loads(); ++i)
 		{
-			FEBoundaryCondition* pbc = s.Load(i);
+			FELoad* pl = s.Load(i);
 
 			// nodal forces
-			FENodalLoad* pfc = dynamic_cast<FENodalLoad*>(pbc);
+			FENodalLoad* pfc = dynamic_cast<FENodalLoad*>(pl);
 			if (pfc)
 			{
 				plc = pfc->GetLoadCurve();
@@ -1448,7 +1448,7 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 			}
 
 			// pressure forces
-			FEPressureLoad* ppc = dynamic_cast<FEPressureLoad*>(pbc);
+			FEPressureLoad* ppc = dynamic_cast<FEPressureLoad*>(pl);
 			if (ppc)
 			{
 				plc = ppc->GetLoadCurve();

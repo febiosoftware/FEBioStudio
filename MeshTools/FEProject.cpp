@@ -2,8 +2,10 @@
 #include "FEProject.h"
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FEModelConstraint.h>
 #include "GGroup.h"
 #include <GeomLib/GObject.h>
 #include <string>
@@ -252,8 +254,6 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FERigidWallInterface         , MODULE_MECH, FE_INTERFACE        , FE_RIGID_WALL                   , "Rigid wall");
 	REGISTER_FE_CLASS(FERigidSphereInterface       , MODULE_MECH, FE_INTERFACE        , FE_RIGID_SPHERE_CONTACT         , "Rigid sphere");
 	REGISTER_FE_CLASS(FERigidJoint                 , MODULE_MECH, FE_INTERFACE        , FE_RIGID_JOINT                  , "Rigid joint");
-	REGISTER_FE_CLASS(FEVolumeConstraint           , MODULE_MECH, FE_INTERFACE        , FE_VOLUME_CONSTRAINT            , "Volume constraint");
-	REGISTER_FE_CLASS(FESymmetryPlane              , MODULE_MECH, FE_INTERFACE        , FE_SYMMETRY_PLANE               , "Symmetry plane");
 	REGISTER_FE_CLASS(FEBodyForce                  , MODULE_MECH, FE_BODY_LOAD        , FE_BODY_FORCE                   , "Body force");
 
 	REGISTER_FE_CLASS(FERigidFixed			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation");
@@ -272,6 +272,10 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FERigidDamper				, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_DAMPER				, "Damper");
 	REGISTER_FE_CLASS(FERigidAngularDamper		, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_ANGULAR_DAMPER		, "Angular damper");
 	REGISTER_FE_CLASS(FERigidContractileForce	, MODULE_MECH, FE_RIGID_CONNECTOR, FE_RC_CONTRACTILE_FORCE	, "Contractile force");
+
+	REGISTER_FE_CLASS(FESymmetryPlane    , MODULE_MECH, FE_CONSTRAINT, FE_SYMMETRY_PLANE   , "Symmetry plane");
+	REGISTER_FE_CLASS(FEVolumeConstraint , MODULE_MECH, FE_CONSTRAINT, FE_VOLUME_CONSTRAINT, "Volume constraint");
+	REGISTER_FE_CLASS(FEWarpingConstraint, MODULE_MECH, FE_CONSTRAINT, FE_WARP_CONSTRAINT  , "warp-image");
 
 	// --- HEAT MODULE ---
 	REGISTER_FE_CLASS(FEHeatTransfer         , MODULE_HEAT, FE_ANALYSIS         , FE_STEP_HEAT_TRANSFER    , "Heat Transfer");
@@ -325,7 +329,8 @@ void FEProject::InitModules()
     REGISTER_FE_CLASS(FEFluidFlowResistance     , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_FLOW_RESISTANCE       , "Fluid flow resistance");
     REGISTER_FE_CLASS(FEFluidBackflowStabilization, MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_BACKFLOW_STABIL     , "Fluid back flow stabilization");
     REGISTER_FE_CLASS(FEFluidTangentialStabilization, MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_TANGENTIAL_STABIL , "Fluid tangential stabilization");
-    REGISTER_FE_CLASS(FENormalFlowSurface       , MODULE_FLUID, FE_INTERFACE   , FE_NORMAL_FLUID_FLOW           , "Normal flow constraint");
+
+	REGISTER_FE_CLASS(FENormalFlowSurface, MODULE_FLUID, FE_CONSTRAINT, FE_NORMAL_FLUID_FLOW, "Normal flow constraint");
 
     // --- FLUID-FSI MODULE ---
     REGISTER_FE_CLASS(FEFluidFSIAnalysis        , MODULE_FLUID_FSI, FE_ANALYSIS    , FE_STEP_FLUID_FSI   , "Fluid-FSI Mechanics");

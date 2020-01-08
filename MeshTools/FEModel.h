@@ -53,6 +53,7 @@ public:
 	void DeleteAllLoads();
 	void DeleteAllIC();
 	void DeleteAllContact();
+	void DeleteAllConstraints();
 	void DeleteAllRigidConstraints();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
@@ -109,7 +110,7 @@ public:
 	void InsertStep(int n, FEStep* ps);
 
 	void AssignBCToStep(FEBoundaryCondition* pbc, FEStep* ps);
-	void AssignLoadToStep(FEBoundaryCondition* pbc, FEStep* ps);
+	void AssignLoadToStep(FELoad* pl, FEStep* ps);
 	void AssignICToStep(FEInitialCondition* pic, FEStep* ps);
 	void AssignInterfaceToStep(FEInterface* pi, FEStep* ps);
 	void AssignRigidConstraintToStep(FERigidConstraint* pc, FEStep* ps);
@@ -211,6 +212,23 @@ template <class T> int CountInterfaces(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
+// helper function for identifying the number of constraints of a specific type that have been defined.
+template <class T> int CountConstraints(FEModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FEStep* ps = fem.GetStep(i);
+		for (int j = 0; j<ps->Constraints(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->Constraint(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
+//-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
 template <class T> int CountBCs(FEModel& fem)
 {
@@ -301,8 +319,9 @@ std::string Namify(const char* sz);
 // functions for creating default names
 std::string defaultBCName(FEModel* fem, FEBoundaryCondition* pbc);
 std::string defaultICName(FEModel* fem, FEInitialCondition* pic);
-std::string defaultLoadName(FEModel* fem, FEBoundaryCondition* pbc);
+std::string defaultLoadName(FEModel* fem, FELoad* pbc);
 std::string defaultInterfaceName(FEModel* fem, FEInterface* pi);
+std::string defaultConstraintName(FEModel* fem, FEModelConstraint* pi);
 std::string defaultRigidConnectorName(FEModel* fem, FERigidConnector* pc);
 std::string defaultRigidConstraintName(FEModel* fem, FERigidConstraint* pc);
 std::string defaultStepName(FEModel* fem, FEAnalysisStep* ps);

@@ -3,6 +3,8 @@
 #include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
+#include <FEMLib/FEBodyLoad.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GDiscreteObject.h>
 
 FEBioFormat2::FEBioFormat2(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
@@ -556,7 +558,7 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 		FEFixedDisplacement* pbc = new FEFixedDisplacement(&fem, pg, bc, pstep->GetID());
 		sprintf(szname, "FixedDisplacement%02d", CountBCs<FEFixedDisplacement>(fem)+1);
 		pbc->SetName(szname);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc < 64)
 	{
@@ -564,21 +566,21 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 		FEFixedRotation* pbc = new FEFixedRotation(&fem, pg, bc, pstep->GetID());
 		sprintf(szname, "FixedRotation%02d", CountBCs<FEFixedRotation>(fem)+1);
 		pbc->SetName(szname);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc == 64)
 	{
 		FEFixedTemperature* pbc = new FEFixedTemperature(&fem, pg, 1, pstep->GetID());
 		sprintf(szname, "FixedTemperature%02d", CountBCs<FEFixedTemperature>(fem)+1);
 		pbc->SetName(szname);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc == 128)
 	{
 		FEFixedFluidPressure* pbc = new FEFixedFluidPressure(&fem, pg, 1, pstep->GetID());
 		sprintf(szname, "FixedFluidPressure%02d", CountBCs<FEFixedFluidPressure>(fem)+1);
 		pbc->SetName(szname);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if ((bc < 2048) && (bc >= 256))
 	{
@@ -586,14 +588,14 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 		FEFixedFluidVelocity* pbc = new FEFixedFluidVelocity(&fem, pg, bc, pstep->GetID());
 		sprintf(szname, "FixedFluidVelocity%02d", CountBCs<FEFixedFluidVelocity>(fem)+1);
 		pbc->SetName(szname);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc == 2048)
 	{
 		FEFixedFluidDilatation* pbc = new FEFixedFluidDilatation(&fem, pg, 1, pstep->GetID());
 		sprintf(szname, "FixedFluidDilatation%02d", CountBCs<FEFixedFluidDilatation>(fem)+1);
 		pbc->SetName(szname);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc < (1 << 15))
 	{
@@ -601,7 +603,7 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 		FEFixedShellDisplacement* pbc = new FEFixedShellDisplacement(&fem, pg, bc, pstep->GetID());
 		sprintf(szname, "FixedShellDisplacement%02d", CountBCs<FEFixedShellDisplacement>(fem)+1);
 		pbc->SetName(szname);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else
 	{
@@ -611,7 +613,7 @@ void FEBioFormat2::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			FEFixedConcentration* pbc = new FEFixedConcentration(&fem, pg, bc, pstep->GetID());
 			sprintf(szname, "FixedConcentration%02d", CountBCs<FEFixedConcentration>(fem)+1);
 			pbc->SetName(szname);
-			pstep->AddBC(pbc);
+			pstep->AddComponent(pbc);
 		}
 	}
 
@@ -761,7 +763,7 @@ void FEBioFormat2::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	static int n = 1;
 	sprintf(szname, "PrescribedBC%02d", n++);
 	pbc->SetName(szname);
-	pstep->AddBC(pbc);
+	pstep->AddComponent(pbc);
 
 	if (tag.isleaf() == false)
 	{
@@ -2830,13 +2832,13 @@ void FEBioFormat2::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 
 	// create a new volume constraint
 	FEVolumeConstraint* pi = new FEVolumeConstraint(&fem, pstep->GetID());
-	pstep->AddInterface(pi);
+	pstep->AddConstraint(pi);
 
 	// get the (optional) contact name
 	char szbuf[256];
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname) sprintf(szbuf, "%s", szname);
-	else sprintf(szbuf, "VolumeConstraint%02d", CountInterfaces<FEVolumeConstraint>(fem) + 1);
+	else sprintf(szbuf, "VolumeConstraint%02d", CountConstraints<FEVolumeConstraint>(fem) + 1);
 	pi->SetName(szbuf);
 
 	// get the mesh (need it for defining the surface)
@@ -2859,7 +2861,7 @@ void FEBioFormat2::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 
 				// create a new surface
 				FESurface* ps = ParseContactSurface(tag);
-				sprintf(szbuf, "VolumeConstraintSurface%02d", CountInterfaces<FEVolumeConstraint>(fem));
+				sprintf(szbuf, "VolumeConstraintSurface%02d", CountConstraints<FEVolumeConstraint>(fem));
 				ps->SetName(szn ? szn : szbuf);
 
 				// assign the surface
@@ -2883,13 +2885,13 @@ void FEBioFormat2::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 
 	// create a new volume constraint
 	FESymmetryPlane* pi = new FESymmetryPlane(&fem, pstep->GetID());
-	pstep->AddInterface(pi);
+	pstep->AddConstraint(pi);
 
 	// get the (optional) contact name
 	char szbuf[256];
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname) sprintf(szbuf, "%s", szname);
-	else sprintf(szbuf, "SymmetrtPlane%02d", CountInterfaces<FESymmetryPlane>(fem) +1);
+	else sprintf(szbuf, "SymmetrtPlane%02d", CountConstraints<FESymmetryPlane>(fem) +1);
 	pi->SetName(szbuf);
 
 	// read parameters
@@ -2908,7 +2910,7 @@ void FEBioFormat2::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 
 				// create a new surface
 				FESurface* ps = ParseContactSurface(tag);
-				sprintf(szbuf, "SymmetryPlaneSurface%02d", CountInterfaces<FESymmetryPlane>(fem));
+				sprintf(szbuf, "SymmetryPlaneSurface%02d", CountConstraints<FESymmetryPlane>(fem));
 				ps->SetName(szn ? szn : szbuf);
 
 				// assign the surface
@@ -2932,13 +2934,13 @@ void FEBioFormat2::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
     
     // create a new volume constraint
     FENormalFlowSurface* pi = new FENormalFlowSurface(&fem, pstep->GetID());
-    pstep->AddInterface(pi);
+    pstep->AddConstraint(pi);
     
     // get the (optional) contact name
     char szbuf[256];
     const char* szname = tag.AttributeValue("name", true);
     if (szname) sprintf(szbuf, "%s", szname);
-    else sprintf(szbuf, "NormalFlowSurface%02d", CountInterfaces<FENormalFlowSurface>(fem) +1);
+    else sprintf(szbuf, "NormalFlowSurface%02d", CountConstraints<FENormalFlowSurface>(fem) +1);
     pi->SetName(szbuf);
     
     // read parameters
@@ -2957,7 +2959,7 @@ void FEBioFormat2::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
                 
                 // create a new surface
                 FESurface* ps = ParseContactSurface(tag);
-                sprintf(szbuf, "NormalFlowSurface%02d", CountInterfaces<FENormalFlowSurface>(fem));
+                sprintf(szbuf, "NormalFlowSurface%02d", CountConstraints<FENormalFlowSurface>(fem));
                 ps->SetName(szn ? szn : szbuf);
                 
                 // assign the surface

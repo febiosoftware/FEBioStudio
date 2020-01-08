@@ -3,11 +3,11 @@
 
 //-----------------------------------------------------------------------------
 // Base class for initial conditions
-class FEInitialCondition : public FEBoundaryCondition
+class FEInitialCondition : public FEModelComponent
 {
 public:
-	FEInitialCondition(int ntype, FEModel* ps, int nstep = 0) : FEBoundaryCondition(ntype, ps, nstep) {}
-	FEInitialCondition(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEBoundaryCondition(ntype, ps, pi, nstep) {}
+	FEInitialCondition(int ntype, FEModel* ps, int nstep = 0) : FEModelComponent(ntype, ps, nstep) {}
+	FEInitialCondition(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEModelComponent(ntype, ps, pi, nstep) {}
 };
 
 //-----------------------------------------------------------------------------

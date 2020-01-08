@@ -4,6 +4,8 @@
 #include <MeshTools/FEGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
+#include <FEMLib/FEBodyLoad.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <assert.h>
 
@@ -992,7 +994,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			name = szbuf;
 		}
 		pbc->SetName(name);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc < 64)
 	{
@@ -1004,7 +1006,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			name = szbuf;
 		}
 		pbc->SetName(name);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc == 64)
 	{
@@ -1015,7 +1017,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			name = szbuf;
 		}
 		pbc->SetName(name);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc == 128)
 	{
@@ -1026,7 +1028,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			name = szbuf;
 		}
 		pbc->SetName(name);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if ((bc < 2048) && (bc >= 256))
 	{
@@ -1038,7 +1040,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			name = szbuf;
 		}
 		pbc->SetName(name);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc == 2048)
 	{
@@ -1049,7 +1051,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			name = szbuf;
 		}
 		pbc->SetName(name);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else if (bc < (1 << 15))
 	{
@@ -1061,7 +1063,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 			name = szbuf;
 		}
 		pbc->SetName(name);
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 	else
 	{
@@ -1075,7 +1077,7 @@ void FEBioFormat3::ParseBCFixed(FEStep* pstep, XMLTag &tag)
 				name = szbuf;
 			}
 			pbc->SetName(name);
-			pstep->AddBC(pbc);
+			pstep->AddComponent(pbc);
 		}
 	}
 }
@@ -1183,7 +1185,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	// get the optional name
 	if (name.empty()) name = pg->GetName();
 	pbc->SetName(name);
-	pstep->AddBC(pbc);
+	pstep->AddComponent(pbc);
 
 	pbc->SetRelativeFlag(relative);
 	pbc->SetScaleFactor(scale);
@@ -2412,7 +2414,7 @@ void FEBioFormat3::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname == 0)
 	{
-		sprintf(szbuf, "VolumeConstraint%02d", CountInterfaces<FEVolumeConstraint>(fem)+1);
+		sprintf(szbuf, "VolumeConstraint%02d", CountConstraints<FEVolumeConstraint>(fem)+1);
 		szname = szbuf;
 	}
 
@@ -2425,7 +2427,7 @@ void FEBioFormat3::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 	FEVolumeConstraint* pi = new FEVolumeConstraint(&fem, pstep->GetID());
 	pi->SetName(szname);
 	pi->SetItemList(psurf);
-	pstep->AddInterface(pi);
+	pstep->AddConstraint(pi);
 
 	// read parameters
 	ReadParameters(*pi, tag);
@@ -2445,7 +2447,7 @@ void FEBioFormat3::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname == 0)
 	{
-		sprintf(szbuf, "SymmetryPlane%02d", CountInterfaces<FESymmetryPlane>(fem)+1);
+		sprintf(szbuf, "SymmetryPlane%02d", CountConstraints<FESymmetryPlane>(fem)+1);
 		szname = szbuf;
 	}
 
@@ -2458,7 +2460,7 @@ void FEBioFormat3::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 	FESymmetryPlane* pi = new FESymmetryPlane(&fem, pstep->GetID());
 	pi->SetName(szname);
 	pi->SetItemList(psurf);
-	pstep->AddInterface(pi);
+	pstep->AddConstraint(pi);
 
 	// read parameters
 	ReadParameters(*pi, tag);
@@ -2478,7 +2480,7 @@ void FEBioFormat3::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
     const char* szname = tag.AttributeValue("name", true);
     if (szname == 0)
     {
-        sprintf(szbuf, "NormalFlowSurface%02d", CountInterfaces<FENormalFlowSurface>(fem)+1);
+        sprintf(szbuf, "NormalFlowSurface%02d", CountConstraints<FENormalFlowSurface>(fem)+1);
         szname = szbuf;
     }
     
@@ -2491,7 +2493,7 @@ void FEBioFormat3::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
     FENormalFlowSurface* pi = new FENormalFlowSurface(&fem, pstep->GetID());
     pi->SetName(szname);
     pi->SetItemList(psurf);
-    pstep->AddInterface(pi);
+    pstep->AddConstraint(pi);
     
     // read parameters
     ReadParameters(*pi, tag);

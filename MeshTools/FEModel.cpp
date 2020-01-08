@@ -8,6 +8,8 @@
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
 #include <vector>
 #include <sstream>
@@ -63,7 +65,7 @@ std::string defaultICName(FEModel* fem, FEInitialCondition* pic)
 	return ss.str();
 }
 
-std::string defaultLoadName(FEModel* fem, FEBoundaryCondition* pbc)
+std::string defaultLoadName(FEModel* fem, FELoad* pbc)
 {
 	const char* ch = pbc->GetTypeString();
 	string type = Namify(ch);
@@ -81,6 +83,18 @@ std::string defaultInterfaceName(FEModel* fem, FEInterface* pi)
 	string type = Namify(ch);
 
 	int n = fem->CountInterfaces(pi->Type());
+
+	stringstream ss;
+	ss << type << n + 1;
+	return ss.str();
+}
+
+std::string defaultConstraintName(FEModel* fem, FEModelConstraint* pi)
+{
+	const char* ch = pi->GetTypeString();
+	string type = Namify(ch);
+
+	int n = fem->CountConstraints(pi->Type());
 
 	stringstream ss;
 	ss << type << n + 1;
@@ -984,12 +998,22 @@ void FEModel::DeleteAllContact()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::DeleteAllRigidConstraints()
+void FEModel::DeleteAllConstraints()
 {
 	for (int i = 0; i<Steps(); ++i)
 	{
 		FEStep* pstep = GetStep(i);
 		pstep->RemoveAllConstraints();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEModel::DeleteAllRigidConstraints()
+{
+	for (int i = 0; i<Steps(); ++i)
+	{
+		FEStep* pstep = GetStep(i);
+		pstep->RemoveAllRigidConstraints();
 	}
 }
 
@@ -1056,8 +1080,8 @@ void FEModel::ClearSelections()
 
 		for (int i=0; i<step->Loads(); ++i)
 		{
-			FEBoundaryCondition* pbc = step->Load(i);
-			delete pbc->GetItemList(); pbc->SetItemList(0);
+			FELoad* pl = step->Load(i);
+			delete pl->GetItemList(); pl->SetItemList(0);
 		}
 
 		for (int i = 0; i<step->ICs(); ++i)
@@ -1164,13 +1188,11 @@ void FEModel::UpdateData()
 //-----------------------------------------------------------------------------
 void FEModel::AssignComponentToStep(FEStepComponent* pc, FEStep* ps)
 {
-	if      (dynamic_cast<FEInterface*        >(pc)) AssignInterfaceToStep (dynamic_cast<FEInterface*        >(pc), ps);
-	else if (dynamic_cast<FEInitialCondition* >(pc)) AssignICToStep        (dynamic_cast<FEInitialCondition* >(pc), ps);
+	if      (dynamic_cast<FEInterface*        >(pc)) AssignInterfaceToStep      (dynamic_cast<FEInterface*        >(pc), ps);
+	else if (dynamic_cast<FEInitialCondition* >(pc)) AssignICToStep             (dynamic_cast<FEInitialCondition* >(pc), ps);
 	else if (dynamic_cast<FERigidConstraint*  >(pc)) AssignRigidConstraintToStep(dynamic_cast<FERigidConstraint*  >(pc), ps);
-	else if (dynamic_cast<FENodalLoad*        >(pc)) AssignLoadToStep      (dynamic_cast<FEBoundaryCondition*>(pc), ps);
-	else if (dynamic_cast<FESurfaceLoad*      >(pc)) AssignLoadToStep      (dynamic_cast<FEBoundaryCondition*>(pc), ps);
-	else if (dynamic_cast<FEBodyLoad*         >(pc)) AssignLoadToStep      (dynamic_cast<FEBoundaryCondition*>(pc), ps);
-	else if (dynamic_cast<FEBoundaryCondition*>(pc)) AssignBCToStep        (dynamic_cast<FEBoundaryCondition*>(pc), ps);
+	else if (dynamic_cast<FELoad*             >(pc)) AssignLoadToStep           (dynamic_cast<FELoad*>(pc), ps);
+	else if (dynamic_cast<FEBoundaryCondition*>(pc)) AssignBCToStep             (dynamic_cast<FEBoundaryCondition*>(pc), ps);
 	else if (dynamic_cast<FERigidConnector*   >(pc)) AssignRigidConnectorToStep (dynamic_cast<FERigidConnector*>(pc), ps);
 	else
 	{
@@ -1199,17 +1221,17 @@ void FEModel::AssignBCToStep(FEBoundaryCondition *pbc, FEStep *ps)
 //-----------------------------------------------------------------------------
 // This function reassigns a boundary condition to a different step
 // TODO: Make a command for this operation
-void FEModel::AssignLoadToStep(FEBoundaryCondition *pbc, FEStep *ps)
+void FEModel::AssignLoadToStep(FELoad* pl, FEStep *ps)
 {
-	FEStep* po = FindStep(pbc->GetStep());
+	FEStep* po = FindStep(pl->GetStep());
 	assert(po);
 	if (po == 0) return;
 
 	if (po != ps)
 	{
-		po->RemoveLoad(pbc);
-		ps->AddLoad(pbc);
-		pbc->SetStep(ps->GetID());
+		po->RemoveLoad(pl);
+		ps->AddLoad(pl);
+		pl->SetStep(ps->GetID());
 	}
 }
 
@@ -1353,8 +1375,8 @@ int FEModel::CountLoads(int type)
 		int NL = step->Loads();
 		for (int j = 0; j<NL; ++j)
 		{
-			FEBoundaryCondition* pbc = step->Load(j);
-			if (pbc->Type() == type) n++;
+			FELoad* pl = step->Load(j);
+			if (pl->Type() == type) n++;
 		}
 	}
 	return n;

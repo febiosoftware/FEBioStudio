@@ -418,6 +418,9 @@
 // --- initial conditions
 #define CID_IC_SECTION				0x00140000
 
+// --- model constraints
+#define CID_CONSTRAINT_SECTION		0x00150000
+
 // rigid connector joint data
 #define CID_RC_SPHERICAL_JOINT		0x000E5000
 #define CID_RC_REVOLUTE_JOINT		0x000E5001
@@ -591,14 +594,11 @@
 #define FE_MULTIPHASIC_INTERFACE		0x000B
 #define FE_STICKY_INTERFACE				0x000C
 #define FE_PERIODIC_BOUNDARY			0x000D
-#define FE_VOLUME_CONSTRAINT			0x000E	// added in 1.17
 #define FE_RIGID_SPHERE_CONTACT			0x000F	// added in 1.20
-#define FE_SYMMETRY_PLANE				0x0010	// added in 2.0
 #define FE_SLIDING_WITH_GAPS			0x0011	// added in 2.0
 #define FE_FACET_ON_FACET_SLIDING		0x0012	// added in 2.0
 #define FE_FACET_ON_FACET_TIED			0x0013	// added in 2.0
 #define FE_TIEDMULTIPHASIC_INTERFACE	0x0014	// added in 2.0
-#define FE_NORMAL_FLUID_FLOW            0x0015	// added in 2.0
 #define FE_TIED_ELASTIC_INTERFACE       0x0016	// added in 2.0
 #define FE_GAPHEATFLUX_INTERFACE		0x0017	// added in 2.1
 
@@ -614,3 +614,10 @@
 #define FE_RC_ANGULAR_DAMPER		0x0008
 #define FE_RC_CONTRACTILE_FORCE		0x0009
 #define FE_RC_RIGID_LOCK            0x000A
+
+//--------------------------------------------------------
+// Constraint types
+#define FE_SYMMETRY_PLANE				0x0010	// added in 2.0
+#define FE_NORMAL_FLUID_FLOW            0x0015	// added in 2.0
+#define FE_VOLUME_CONSTRAINT			0x000E	// added in 1.17
+#define FE_WARP_CONSTRAINT				0x002E

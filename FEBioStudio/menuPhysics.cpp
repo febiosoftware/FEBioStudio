@@ -7,6 +7,7 @@
 #include "DlgAddBodyLoad.h"
 #include "DlgAddIC.h"
 #include "DlgAddContact.h"
+#include "DlgAddConstraint.h"
 #include "DlgAddStep.h"
 #include "DlgSoluteTable.h"
 #include "DlgAddChemicalReaction.h"
@@ -17,7 +18,9 @@
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FEModelConstraint.h>
 #include "Command.h"
 #include <QMessageBox>
 #include <sstream>
@@ -254,6 +257,30 @@ void CMainWindow::on_actionAddContact_triggered()
 			FEStep* step = fem.GetStep(dlg.m_nstep);
 			pi->SetStep(step->GetID());
 			step->AddInterface(pi);
+			UpdateModel(pi);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddConstraint_triggered()
+{
+	FEProject& prj = m_doc->GetProject();
+	FEModel& fem = *m_doc->GetFEModel();
+	CDlgAddConstraint dlg(prj, this);
+	if (dlg.exec())
+	{
+		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.m_ntype); assert(pi);
+		if (pi)
+		{
+			// create a name
+			std::string name = dlg.m_name;
+			if (name.empty()) name = defaultConstraintName(&fem, pi);
+			pi->SetName(name);
+
+			// assign it to the correct step
+			FEStep* step = fem.GetStep(dlg.m_nstep);
+			pi->SetStep(step->GetID());
+			step->AddConstraint(pi);
 			UpdateModel(pi);
 		}
 	}

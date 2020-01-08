@@ -1562,7 +1562,7 @@ bool AbaqusImport::build_physics()
 				char szname[256] = { 0 };
 				sprintf(szname, "bc_%d", n);
 				pbc->SetName(szname);
-				fem.GetStep(0)->AddBC(pbc);
+				fem.GetStep(0)->AddComponent(pbc);
 			}
 		}
 	}

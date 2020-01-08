@@ -82,6 +82,7 @@ private slots:
 	void OnAddBodyLoad();
 	void OnAddInitialCondition();
 	void OnAddContact();
+	void OnAddConstraint();
 	void OnAddRigidConstraint();
 	void OnAddRigidConnector();
 	void OnAddStep();
@@ -123,6 +124,7 @@ private slots:
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();
 	void OnDeleteAllContact();
+	void OnDeleteAllConstraints();
 	void OnDeleteAllRigidConstraints();
 	void OnDeleteAllRigidConnectors();
 	void OnDeleteAllSteps();

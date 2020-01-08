@@ -1,55 +1,21 @@
 #pragma once
-#include "FEStepComponent.h"
+#include "FEModelComponent.h"
 #include "MeshTools/FEGroup.h"
 #include "MeshTools/FEItemListBuilder.h"
 #include <list>
 using namespace std;
 
-class FEModel;
-
-//-----------------------------------------------------------------------------
-// Base class for all boundary conditions
-// 
-
-class FEBoundaryCondition : public FEStepComponent
-{
-public:
-	enum {NAME, PARAMS, LIST, STEP};
-
-public:
-	FEBoundaryCondition(int ntype, FEModel* ps, int nstep = 0);
-	FEBoundaryCondition(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
-
-	virtual ~FEBoundaryCondition(void);
-
-	int Type() { return m_ntype; }
-	
-	FEItemListBuilder* GetItemList() { return m_pItem; }
-	void SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
-
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
-
-	FEModel* GetFEModel() { return m_ps; }
-
-protected:
-	int			m_ntype;	// type of boundary condition
-	FEModel*	m_ps;		// pointer to model
-
-	FEItemListBuilder*	m_pItem;	// list of item indices to apply the BC too
-};
-
 //=============================================================================
 // Base class for fixed and prescribed BCs
-class FEEssentialBC : public FEBoundaryCondition
+class FEBoundaryCondition : public FEModelComponent
 {
 public:
-	FEEssentialBC(int ntype, FEModel* fem, int nstep = 0) : FEBoundaryCondition(ntype, fem, nstep){}
-	FEEssentialBC(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEBoundaryCondition(ntype, fem, pi, nstep){}
+	FEBoundaryCondition(int ntype, FEModel* fem, int nstep = 0) : FEModelComponent(ntype, fem, nstep){}
+	FEBoundaryCondition(int ntype, FEModel* fem, FEItemListBuilder* pi, int nstep) : FEModelComponent(ntype, fem, pi, nstep){}
 };
 
 //=============================================================================
-class FEFixedDOF : public FEEssentialBC
+class FEFixedDOF : public FEBoundaryCondition
 {
 	enum {BC};
 
@@ -184,11 +150,11 @@ public:
 // Prescribed boundary condition base class
 //=============================================================================
 // This is the base class for all BC classes that define a LC
-class FEPrescribedBC : public FEEssentialBC
+class FEPrescribedBC : public FEBoundaryCondition
 {
 public:
-	FEPrescribedBC(int ntype, FEModel* ps, int nstep = 0) : FEEssentialBC(ntype, ps, nstep){}
-	FEPrescribedBC(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEEssentialBC(ntype, ps, pi, nstep) {}
+	FEPrescribedBC(int ntype, FEModel* ps, int nstep = 0) : FEBoundaryCondition(ntype, ps, nstep){}
+	FEPrescribedBC(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEBoundaryCondition(ntype, ps, pi, nstep) {}
 
 public:
 	virtual FELoadCurve* GetLoadCurve() = 0;
@@ -305,79 +271,4 @@ class FEPrescribedFluidDilatation : public FEPrescribedDOF
 public:
     FEPrescribedFluidDilatation(FEModel* ps);
     FEPrescribedFluidDilatation(FEModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
-};
-
-//=============================================================================
-// NODAL LOADS
-//=============================================================================
-class FENodalLoad : public FEPrescribedBC
-{
-public:
-	enum {BC, LOAD};
-
-public:
-	FENodalLoad(FEModel* ps);
-	FENodalLoad(FEModel* ps, FEItemListBuilder* pi, int bc, double f, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
-	
-	int GetBC() { return GetIntValue(BC); }
-	void SetBC(int n) { SetIntValue(BC, n); }
-
-	void SetLoad(double f) { SetFloatValue(LOAD, f); }
-	double GetLoad() { return GetFloatValue(LOAD); }
-};
-
-//=============================================================================
-// Body loads
-//=============================================================================
-// Base class for all volumetric body loads
-class FEBodyLoad : public FEBoundaryCondition
-{
-public:
-	FEBodyLoad(int ntype, FEModel* ps, int nstep) : FEBoundaryCondition(ntype, ps, nstep) {}
-};
-
-//-----------------------------------------------------------------------------
-// Body Force
-class FEBodyForce : public FEBodyLoad
-{
-public:
-	enum {LOAD1, LOAD2, LOAD3};
-
-	FELoadCurve* GetLoadCurve(int n);
-
-	double GetLoad(int n) { return GetFloatValue(LOAD1 + n); }
-
-	void SetLoad(int n, double v) { SetFloatValue(LOAD1 + n, v); }
-
-public:
-	FEBodyForce(FEModel* ps, int nstep = 0);
-};
-
-//-----------------------------------------------------------------------------
-// Heat Source
-class FEHeatSource : public FEBodyLoad
-{
-public:
-	enum {LOAD};
-
-public:
-	FEHeatSource(FEModel* ps, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
-
-	double GetLoad() { return GetFloatValue(LOAD); }
-	void SetLoad(double v) { SetFloatValue(LOAD, v); }
-};
-
-//-----------------------------------------------------------------------------
-// SBM source (experimental feature)
-class FESBMPointSource : public FEBodyLoad
-{
-public:
-	enum { SBM, VALUE, POS_X, POS_Y, POS_Z };
-
-public:
-	FESBMPointSource(FEModel* ps, int nstep = 0);
 };

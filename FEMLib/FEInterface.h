@@ -123,39 +123,6 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-// This class implements a volume constraint
-class FEVolumeConstraint : public FESoloInterface
-{
-public:
-	enum { LAUGON, ALTOL, PENALTY };
-
-public:
-	FEVolumeConstraint(FEModel* ps, int nstep = 0);
-};
-
-//-----------------------------------------------------------------------------
-// This class implements a symmetry plane constraint
-class FESymmetryPlane : public FESoloInterface
-{
-public:
-	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
-
-public:
-	FESymmetryPlane(FEModel* ps, int nstep = 0);
-};
-
-//-----------------------------------------------------------------------------
-// This class implements a normal fluid flow constraint
-class FENormalFlowSurface : public FESoloInterface
-{
-public:
-    enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, RHS };
-    
-public:
-    FENormalFlowSurface(FEModel* ps, int nstep = 0);
-};
-
-//-----------------------------------------------------------------------------
 //  This class implements the sliding contact interface
 // NOTE: This class is now obsolete. It was deprecated since it does not map nicely to an FEBio contact interface
 //       It was replaced by the FESlidingWithGapsInterface and FEFacetOnFacetInterface.

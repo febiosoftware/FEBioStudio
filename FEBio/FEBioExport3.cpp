@@ -2,7 +2,9 @@
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEDataMap.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GGroup.h>
 #include <FEBioStudio/version.h>
@@ -345,7 +347,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
-			FEBoundaryCondition* pl = pstep->Load(j);
+			FELoad* pl = pstep->Load(j);
 			if (pl->IsActive())
 			{
 				// we need to exclude nodal loads and body loads
@@ -428,7 +430,14 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 					if (name.empty()) name = prs->GetName();
 					AddSurface(name, pitem);
 				}
+			}
+		}
 
+		for (int j = 0; j < pstep->Constraints(); ++j)
+		{
+			FEModelConstraint* pj = pstep->Constraint(j);
+			if (pj->IsActive())
+			{
 				FEVolumeConstraint* pvc = dynamic_cast<FEVolumeConstraint*>(pj);
 				if (pvc && pvc->IsActive())
 				{
@@ -441,18 +450,6 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 					AddSurface(name, pi);
 				}
 
-				FESymmetryPlane* psp = dynamic_cast<FESymmetryPlane*>(pj);
-				if (psp && psp->IsActive())
-				{
-					FEItemListBuilder* pi = psp->GetItemList();
-					if (pi == 0) throw InvalidItemListBuilder(pi);
-
-					string name = pi->GetName();
-					if (name.empty()) name = psp->GetName();
-
-					AddSurface(name, pi);
-				}
-
 				FENormalFlowSurface* pcs = dynamic_cast<FENormalFlowSurface*>(pj);
 				if (pcs && pcs->IsActive())
 				{
@@ -461,6 +458,18 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 
 					string name = pi->GetName();
 					if (name.empty()) name = pcs->GetName();
+
+					AddSurface(name, pi);
+				}
+
+				FESymmetryPlane* psp = dynamic_cast<FESymmetryPlane*>(pj);
+				if (psp && psp->IsActive())
+				{
+					FEItemListBuilder* pi = psp->GetItemList();
+					if (pi == 0) throw InvalidItemListBuilder(pi);
+
+					string name = pi->GetName();
+					if (name.empty()) name = psp->GetName();
 
 					AddSurface(name, pi);
 				}
@@ -682,11 +691,9 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 			}
 
 			// output constraints section
-			int nnlc = CountInterfaces<FEVolumeConstraint>(fem)
-				+CountInterfaces<FESymmetryPlane>(fem)
-				+CountInterfaces<FENormalFlowSurface>(fem)
-				+CountConnectors<FERigidConnector>(fem)
+			int nnlc = +CountConnectors<FERigidConnector>(fem)
 				+CountInterfaces<FERigidJoint>(fem);
+				+CountConstraints<FEModelConstraint>(fem);
 			if ((nnlc > 0) && (m_section[FEBIO_CONSTRAINTS]))
 			{
 				m_xml.add_branch("Constraints");
@@ -3425,6 +3432,29 @@ void FEBioExport3::WriteLinearConstraints(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
+void FEBioExport3::WriteConstraints(FEStep& s)
+{
+	for (int i = 0; i<s.Constraints(); ++i)
+	{
+		FEModelConstraint* pw = s.Constraint(i);
+		if (pw && pw->IsActive())
+		{
+			if (m_writeNotes) WriteNote(pw);
+
+			XMLElement ec("constraint");
+			ec.add_attribute("type", pw->GetTypeString());
+			const char* sz = pw->GetName().c_str();
+			ec.add_attribute("name", sz);
+			m_xml.add_branch(ec);
+			{
+				WriteParamList(*pw);
+			}
+			m_xml.close_branch(); // constraint
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FEBioExport3::WriteVolumeConstraint(FEStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
@@ -3451,9 +3481,9 @@ void FEBioExport3::WriteVolumeConstraint(FEStep& s)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteSymmetryPlane(FEStep& s)
 {
-	for (int i = 0; i<s.Interfaces(); ++i)
+	for (int i = 0; i<s.Constraints(); ++i)
 	{
-		FESymmetryPlane* pw = dynamic_cast<FESymmetryPlane*> (s.Interface(i));
+		FESymmetryPlane* pw = dynamic_cast<FESymmetryPlane*> (s.Constraint(i));
 		if (pw && pw->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pw);
@@ -3476,9 +3506,9 @@ void FEBioExport3::WriteSymmetryPlane(FEStep& s)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteNormalFlow(FEStep& s)
 {
-	for (int i = 0; i<s.Interfaces(); ++i)
+	for (int i = 0; i<s.Constraints(); ++i)
 	{
-		FENormalFlowSurface* pw = dynamic_cast<FENormalFlowSurface*> (s.Interface(i));
+		FENormalFlowSurface* pw = dynamic_cast<FENormalFlowSurface*> (s.Constraint(i));
 		if (pw && pw->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pw);
@@ -3602,7 +3632,7 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-			int l = pbc->GetBC();
+			int l = pbc->GetDOF();
 			FELoadCurve* plc = pbc->GetLoadCurve();
 
 			XMLElement load("nodal_load");
@@ -4271,7 +4301,7 @@ void FEBioExport3::WriteStepSection()
 			}
 
 			// output constraint section
-			int nnlc = s.RigidConstraints() + CountInterfaces<FEVolumeConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
+			int nnlc = s.RigidConstraints() + CountConstraints<FEModelConstraint>(*m_pfem) + CountInterfaces<FERigidJoint>(*m_pfem);
 			if (nnlc > 0)
 			{
 				m_xml.add_branch("Constraints");
@@ -4450,6 +4480,7 @@ void FEBioExport3::WriteConnectors(FEStep& s)
 void FEBioExport3::WriteConstraintSection(FEStep &s)
 {
 	// some contact definitions are actually stored in the constraint section
+	WriteConstraints(s);
 	WriteVolumeConstraint(s);
 	WriteSymmetryPlane(s);
 	WriteNormalFlow(s);

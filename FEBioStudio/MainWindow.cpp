@@ -1732,6 +1732,19 @@ void CMainWindow::DeleteAllContact()
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::DeleteAllConstraints()
+{
+	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
+	{
+		CDocument* doc = GetDocument();
+		FEModel& fem = *doc->GetFEModel();
+		fem.DeleteAllConstraints();
+		UpdateModel();
+		RedrawGL();
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllRigidConstraints()
 {
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))

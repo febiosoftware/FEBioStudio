@@ -18,6 +18,8 @@
 #include <QMessageBox>
 #include <QtCore/QFileInfo>
 #include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FELoad.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"
 #include <FSCore/FSDir.h>
@@ -56,7 +58,7 @@ private:
 class CBCValidator : public CObjectValidator
 {
 public:
-	CBCValidator(FEBoundaryCondition* pbc) : m_pbc(pbc), m_err(0) {}
+	CBCValidator(FEModelComponent* pbc) : m_pbc(pbc), m_err(0) {}
 
 	QString GetErrorString() const 
 	{ 
@@ -87,7 +89,7 @@ public:
 	}
 
 private:
-	FEBoundaryCondition* m_pbc;
+	FEModelComponent* m_pbc;
 	int	m_err;
 };
 
@@ -689,16 +691,22 @@ void CModelTree::Build(CDocument* doc)
 	t2 = AddTreeItem(t1, "Contact", MT_CONTACT_LIST, nint);
 	UpdateContact(t2, fem, 0);
 
-	// add the constraints
+	// add the nonlinear constraints
 	int nlc = 0;
-	for (int i=0; i<fem.Steps(); ++i) nlc += fem.GetStep(i)->RigidConstraints();
-	t2 = AddTreeItem(t1, "Rigid Constraints", MT_CONSTRAINT_LIST, nlc);
+	for (int i = 0; i<fem.Steps(); ++i) nlc += fem.GetStep(i)->Constraints();
+	t2 = AddTreeItem(t1, "Constraints", MT_CONSTRAINT_LIST, nlc);
+	UpdateConstraints(t2, fem, 0);
+
+	// add the constraints
+	int nnlc = 0;
+	for (int i=0; i<fem.Steps(); ++i) nnlc += fem.GetStep(i)->RigidConstraints();
+	t2 = AddTreeItem(t1, "Rigid Constraints", MT_RIGID_CONSTRAINT_LIST, nnlc);
 	UpdateRC(t2, fem, 0);
 
 	// add the connectors
 	int nrc = 0;
 	for (int i=0; i<fem.Steps(); ++i) nrc += fem.GetStep(i)->RigidConnectors();
-	t2 = AddTreeItem(t1, "Rigid Connectors", MT_CONNECTOR_LIST, nrc);
+	t2 = AddTreeItem(t1, "Rigid Connectors", MT_RIGID_CONNECTOR_LIST, nrc);
 	UpdateConnectors(t2, fem, 0);
 
 	// add the discrete objects
@@ -1085,7 +1093,7 @@ void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 		{
 			for (int j = 0; j<ps->Loads(); ++j)
 			{
-				FEBoundaryCondition* pfc = ps->Load(j);
+				FELoad* pfc = ps->Load(j);
 				assert(pfc->GetStep() == ps->GetID());
 
 				int flags = SHOW_PROPERTY_FORM;
@@ -1187,39 +1195,6 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				}
 			}
 
-			// add the volume constraints
-			for (i = 0; i<ps->Interfaces(); ++i)
-			{
-				FEVolumeConstraint* pi = dynamic_cast<FEVolumeConstraint*>(ps->Interface(i));
-				if (pi)
-				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-					if (pi->IsActive() == false) setInactive(t2);
-				}
-			}
-
-			// add the symmetry planes
-			for (i = 0; i<ps->Interfaces(); ++i)
-			{
-				FESymmetryPlane* pi = dynamic_cast<FESymmetryPlane*>(ps->Interface(i));
-				if (pi)
-				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-					if (pi->IsActive() == false) setInactive(t2);
-				}
-			}
-
-            // add the constrained normal fluid flow surfaces
-            for (i = 0; i<ps->Interfaces(); ++i)
-            {
-                FENormalFlowSurface* pi = dynamic_cast<FENormalFlowSurface*>(ps->Interface(i));
-                if (pi)
-                {
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
-					if (pi->IsActive() == false) setInactive(t2);
-				}
-            }
-            
 			// add the paired interfaces
 			for (i = 0; i<ps->Interfaces(); ++i)
 			{
@@ -1228,6 +1203,32 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				{
 					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), new CContactValidator(pi), flags);
 					if (pi->IsActive() == false) setInactive(t2);
+				}
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
+{
+	QTreeWidgetItem* t2;
+	for (int n = 0; n<fem.Steps(); ++n)
+	{
+		FEStep* ps = fem.GetStep(n);
+		if ((pstep == 0) || (pstep == ps))
+		{
+			int flags = 0;
+			if (pstep == 0) flags |= DUPLICATE_ITEM;
+
+			// add constraints
+			for (int i = 0; i<ps->Constraints(); ++i)
+			{
+				FEModelConstraint* pc = ps->Constraint(i);
+				if (pc)
+				{
+					t2 = AddTreeItem(t1, QString::fromStdString(pc->GetName()), MT_CONSTRAINT, 0, pc, new CObjectProps(pc), 0, flags);
+					if (pc->IsActive() == false) setInactive(t2);
 				}
 			}
 		}
@@ -1265,12 +1266,16 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEModel& fem)
 		t3 = AddTreeItem(t2, "Contact", MT_CONTACT_LIST, pstep->Interfaces());
 		UpdateContact(t3, fem, pstep);
 
+		// add the nonlinear constraints
+		t3 = AddTreeItem(t2, "Constraints", MT_CONSTRAINT_LIST, pstep->Constraints());
+		UpdateConstraints(t3, fem, pstep);
+
 		// add the constraints
-		t3 = AddTreeItem(t2, "Rigid Constraints", MT_CONSTRAINT_LIST, pstep->RigidConstraints());
+		t3 = AddTreeItem(t2, "Rigid Constraints", MT_RIGID_CONSTRAINT_LIST, pstep->RigidConstraints());
 		UpdateRC(t3, fem, pstep);
 
 		// add the connectors
-		t3 = AddTreeItem(t2, "Rigid Connectors", MT_CONNECTOR_LIST, pstep->RigidConnectors());
+		t3 = AddTreeItem(t2, "Rigid Connectors", MT_RIGID_CONNECTOR_LIST, pstep->RigidConnectors());
 		UpdateConnectors(t3, fem, pstep);
 	}
 }
@@ -1291,7 +1296,7 @@ void CModelTree::UpdateRC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep) flags |= DUPLICATE_ITEM;
-				AddTreeItem(t1, QString::fromStdString(prc->GetName()), MT_CONSTRAINT, 0, prc, pl, new CRigidConstraintValidator(prc), flags);
+				AddTreeItem(t1, QString::fromStdString(prc->GetName()), MT_RIGID_CONSTRAINT, 0, prc, pl, new CRigidConstraintValidator(prc), flags);
 			}
 		}
 	}
@@ -1312,7 +1317,7 @@ void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FEModel& fem, FEStep* pst
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep) flags |= DUPLICATE_ITEM;
-				AddTreeItem(t1, QString::fromStdString(prc->GetName()), MT_CONNECTOR, 0, prc, pl, 0, flags);
+				AddTreeItem(t1, QString::fromStdString(prc->GetName()), MT_RIGID_CONNECTOR, 0, prc, pl, 0, flags);
 			}
 		}
 	}

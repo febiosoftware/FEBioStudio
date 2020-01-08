@@ -9,6 +9,7 @@
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/GGroup.h>
 #include <memory>
@@ -62,7 +63,7 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
-			FEBoundaryCondition* pl = pstep->Load(j);
+			FELoad* pl = pstep->Load(j);
 			if (pl->IsActive())
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
@@ -2925,7 +2926,7 @@ void FEBioExport12::WriteLoadNodal(FEStep& s)
 				bool bn;
 				char bc[][3] = { "x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
 
-				int l = pbc->GetBC();
+				int l = pbc->GetDOF();
 				plc = pbc->GetLoadCurve();
 				lc = plc->GetID();
 				bn = true; // plc->IsActive();

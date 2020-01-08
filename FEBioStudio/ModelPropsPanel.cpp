@@ -17,6 +17,7 @@
 #include <GeomLib/GPrimitive.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <QGridLayout>
 #include <QComboBox>

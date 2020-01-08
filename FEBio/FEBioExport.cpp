@@ -2,6 +2,7 @@
 #include "FEBioExport.h"
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FELoad.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 
@@ -196,8 +197,8 @@ void FEBioExport::BuildLoadCurveList(FEModel& fem)
 		FEStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
-			FEBoundaryCondition* pbc = pstep->Load(j);
-			if (pbc && pbc->IsActive()) AddLoadCurves(*pbc);
+			FELoad* pl = pstep->Load(j);
+			if (pl && pl->IsActive()) AddLoadCurves(*pl);
 		}
 	}
 

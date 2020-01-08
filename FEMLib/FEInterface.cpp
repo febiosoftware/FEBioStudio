@@ -377,50 +377,6 @@ vec3d FERigidSphereInterface::Center()
 }
 
 //=============================================================================
-// FEVolumeConstraint
-//-----------------------------------------------------------------------------
-
-FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FESoloInterface(FE_VOLUME_CONSTRAINT, ps, nstep)
-{
-	SetTypeString("Volume Constraint");
-
-	AddBoolParam  (false, "laugon" , "augmented lagrangian"  );
-	AddDoubleParam(0.2  , "augtol" , "augmentation tolerance");
-	AddDoubleParam(1    , "penalty", "penalty factor"        );
-}
-
-//=============================================================================
-// FESymmetryPlane
-//-----------------------------------------------------------------------------
-
-FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESoloInterface(FE_SYMMETRY_PLANE, ps, nstep)
-{
-	SetTypeString("Symmetry plane");
-
-	AddBoolParam(true, "laugon", "augmented lagrangian");
-	AddDoubleParam(0.2, "tol", "augmentation tolerance");
-	AddDoubleParam(1, "penalty", "penalty factor");
-	AddDoubleParam(0, "minaug", "min. augmentations");
-	AddDoubleParam(0, "maxaug", "max. augmentations");
-}
-
-//=============================================================================
-// FENormalFlowSurface
-//-----------------------------------------------------------------------------
-
-FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESoloInterface(FE_NORMAL_FLUID_FLOW, ps, nstep)
-{
-    SetTypeString("Normal flow constraint");
-    
-    AddBoolParam(true, "laugon", "augmented lagrangian");
-    AddDoubleParam(0.2, "tol", "augmentation tolerance");
-    AddDoubleParam(1, "penalty", "penalty factor");
-    AddDoubleParam(0, "minaug", "min. augmentations");
-    AddDoubleParam(0, "maxaug", "max. augmentations");
-	AddDoubleParam(0, "rhs", "rhs");
-}
-
-//=============================================================================
 // FESlidingInterface
 //-----------------------------------------------------------------------------
 

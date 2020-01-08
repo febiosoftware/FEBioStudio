@@ -99,6 +99,7 @@ public:
 	QAction* actionAddBodyLoad;
 	QAction* actionAddIC;
 	QAction* actionAddContact;
+	QAction* actionAddConstraint;
 	QAction* actionAddRigidConstraint;
 	QAction* actionAddRigidConnector;
 	QAction* actionAddStep;
@@ -308,6 +309,7 @@ public:
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier + Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
+		actionAddConstraint      = addAction("Add Constraint..."             , "actionAddConstraint");
 		actionAddRigidConstraint = addAction("Add Rigid Constraint ..."      , "actionAddRigidConstraint");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
@@ -531,6 +533,7 @@ public:
 		menuPhysics->addAction(actionAddBodyLoad);
 		menuPhysics->addAction(actionAddIC);
 		menuPhysics->addAction(actionAddContact);
+		menuPhysics->addAction(actionAddConstraint);
 		menuPhysics->addAction(actionAddRigidConstraint);
 		menuPhysics->addAction(actionAddRigidConnector);
 		menuPhysics->addAction(actionAddMaterial);

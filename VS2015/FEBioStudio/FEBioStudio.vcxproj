@@ -184,6 +184,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgAddBC.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddBodyLoad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddChemicalReaction.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddConstraint.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddContact.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddEquation.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddIC.cpp" />
@@ -413,6 +414,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\DlgAddConstraint.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgCheck.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgEditLConfigs.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

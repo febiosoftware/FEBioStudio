@@ -5,6 +5,7 @@
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FEBodyLoad.h>
 #include <stdarg.h>
 
 // are there any objects?
@@ -320,7 +321,7 @@ void check_009(CDocument* doc, std::vector<FSObject*>& objList)
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->Loads(); ++j)
 		{
-			FEBoundaryCondition* pl = step->Load(j);
+			FELoad* pl = step->Load(j);
 			if ((dynamic_cast<FEBodyLoad*>(pl) == nullptr) && (pl->GetItemList() == nullptr))
 			{
 				objList.push_back(pl);

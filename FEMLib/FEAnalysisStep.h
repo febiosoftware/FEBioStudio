@@ -5,11 +5,14 @@ using namespace std;
 
 class FEModel;
 class FEBoundaryCondition;
+class FELoad;
 class FEInterface;
 class FERigidConstraint;
 class FELinearConstraintSet;
 class FERigidConnector;
 class FEInitialCondition;
+class FEModelComponent;
+class FEModelConstraint;
 
 //-----------------------------------------------------------------------------
 // Analysis types
@@ -68,10 +71,10 @@ public:
 
 	// loads
 	int Loads();
-	FEBoundaryCondition* Load(int i);
-	void AddLoad(FEBoundaryCondition* pfc);
-	void InsertLoad(int n, FEBoundaryCondition* pfc);
-	int RemoveLoad(FEBoundaryCondition* pfc);
+	FELoad* Load(int i);
+	void AddLoad(FELoad* pfc);
+	void InsertLoad(int n, FELoad* pfc);
+	int RemoveLoad(FELoad* pfc);
 	void RemoveAllLoads();
 
 	// initial conditions
@@ -90,6 +93,15 @@ public:
 	int RemoveInterface(FEInterface* pi);
 	void RemoveAllInterfaces();
 
+	// non-linear constraints
+	int Constraints();
+	int Constraints(int ntype);
+	FEModelConstraint* Constraint(int i);
+	void AddConstraint(FEModelConstraint* pc);
+	void InsertConstraint(int n, FEModelConstraint* pc);
+	void RemoveConstraint(FEModelConstraint* pc);
+	void RemoveAllConstraints();
+
 	// rigid constraints
 	int RigidConstraints();
 	int RigidConstraints(int ntype);
@@ -97,7 +109,7 @@ public:
 	void AddRC(FERigidConstraint* prc);
 	void InsertRC(int n, FERigidConstraint* prc);
 	int RemoveRC(FERigidConstraint* prc);
-	void RemoveAllConstraints();
+	void RemoveAllRigidConstraints();
 
 	// linear constraints
 	int LinearConstraints();
@@ -112,6 +124,9 @@ public:
     void InsertRigidConnector(int n, FERigidConnector* pi);
     int RemoveRigidConnector(FERigidConnector* pi);
 	void RemoveAllRigidConnectors();
+
+	// convenience function for adding components
+	void AddComponent(FEModelComponent* pc);
     
 	static void ResetCounter();
 

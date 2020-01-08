@@ -144,6 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\FEMLib\FEAnalysisStep.cpp" />
+    <ClCompile Include="..\..\FEMLib\FEBodyLoad.cpp" />
     <ClCompile Include="..\..\FEMLib\FEBoundaryCondition.cpp" />
     <ClCompile Include="..\..\FEMLib\FEComponent.cpp" />
     <ClCompile Include="..\..\FEMLib\FEConnector.cpp" />
@@ -152,10 +153,12 @@
     <ClCompile Include="..\..\FEMLib\FEDOF.cpp" />
     <ClCompile Include="..\..\FEMLib\FEInitialCondition.cpp" />
     <ClCompile Include="..\..\FEMLib\FEInterface.cpp" />
+    <ClCompile Include="..\..\FEMLib\FELoad.cpp" />
     <ClCompile Include="..\..\FEMLib\FEMaterial.cpp" />
     <ClCompile Include="..\..\FEMLib\FEMaterialFactory.cpp" />
     <ClCompile Include="..\..\FEMLib\FEMaterialLibrary.cpp" />
     <ClCompile Include="..\..\FEMLib\FEMKernel.cpp" />
+    <ClCompile Include="..\..\FEMLib\FEModelConstraint.cpp" />
     <ClCompile Include="..\..\FEMLib\FEMultiMaterial.cpp" />
     <ClCompile Include="..\..\FEMLib\FERigidConstraint.cpp" />
     <ClCompile Include="..\..\FEMLib\FESurfaceLoad.cpp" />
@@ -164,6 +167,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\FEMLib\FEAnalysisStep.h" />
     <ClInclude Include="..\..\FEMLib\FEBase.h" />
+    <ClInclude Include="..\..\FEMLib\FEBodyLoad.h" />
     <ClInclude Include="..\..\FEMLib\FEBoundaryCondition.h" />
     <ClInclude Include="..\..\FEMLib\FEComponent.h" />
     <ClInclude Include="..\..\FEMLib\FEConnector.h" />
@@ -173,10 +177,13 @@
     <ClInclude Include="..\..\FEMLib\FEDOF.h" />
     <ClInclude Include="..\..\FEMLib\FEInitialCondition.h" />
     <ClInclude Include="..\..\FEMLib\FEInterface.h" />
+    <ClInclude Include="..\..\FEMLib\FELoad.h" />
     <ClInclude Include="..\..\FEMLib\FEMaterial.h" />
     <ClInclude Include="..\..\FEMLib\FEMaterialFactory.h" />
     <ClInclude Include="..\..\FEMLib\FEMaterialLibrary.h" />
     <ClInclude Include="..\..\FEMLib\FEMKernel.h" />
+    <ClInclude Include="..\..\FEMLib\FEModelComponent.h" />
+    <ClInclude Include="..\..\FEMLib\FEModelConstraint.h" />
     <ClInclude Include="..\..\FEMLib\FEMultiMaterial.h" />
     <ClInclude Include="..\..\FEMLib\FERigidConstraint.h" />
     <ClInclude Include="..\..\FEMLib\FEStepComponent.h" />
