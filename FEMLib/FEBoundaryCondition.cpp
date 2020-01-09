@@ -267,7 +267,7 @@ FEFixedFluidDilatation::FEFixedFluidDilatation(FEModel* ps, FEItemListBuilder* p
 // PRESCRIBED DOF
 //=============================================================================
 
-FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, int nstep) : FEPrescribedBC(ntype, ps, nstep)
+FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, int nstep) : FEBoundaryCondition(ntype, ps, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom
@@ -275,7 +275,7 @@ FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, int nstep) : FEPrescrib
 	AddBoolParam(0, "relative", "relative");
 }
 
-FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedBC(ntype, ps, pi, nstep)
+FEPrescribedDOF::FEPrescribedDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEBoundaryCondition(ntype, ps, pi, nstep)
 {
 	m_nvar = -1;
 	AddIntParam(0, "dof", "Degree of freedom")->SetState(Param_EDITABLE | Param_PERSISTENT);	// degree of freedom

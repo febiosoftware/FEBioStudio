@@ -1188,119 +1188,15 @@ void FEModel::UpdateData()
 //-----------------------------------------------------------------------------
 void FEModel::AssignComponentToStep(FEStepComponent* pc, FEStep* ps)
 {
-	if      (dynamic_cast<FEInterface*        >(pc)) AssignInterfaceToStep      (dynamic_cast<FEInterface*        >(pc), ps);
-	else if (dynamic_cast<FEInitialCondition* >(pc)) AssignICToStep             (dynamic_cast<FEInitialCondition* >(pc), ps);
-	else if (dynamic_cast<FERigidConstraint*  >(pc)) AssignRigidConstraintToStep(dynamic_cast<FERigidConstraint*  >(pc), ps);
-	else if (dynamic_cast<FELoad*             >(pc)) AssignLoadToStep           (dynamic_cast<FELoad*>(pc), ps);
-	else if (dynamic_cast<FEBoundaryCondition*>(pc)) AssignBCToStep             (dynamic_cast<FEBoundaryCondition*>(pc), ps);
-	else if (dynamic_cast<FERigidConnector*   >(pc)) AssignRigidConnectorToStep (dynamic_cast<FERigidConnector*>(pc), ps);
-	else
-	{
-		assert(false);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// This function reassigns a boundary condition to a different step
-// TODO: Make a command for this operation
-void FEModel::AssignBCToStep(FEBoundaryCondition *pbc, FEStep *ps)
-{
-	FEStep* po = FindStep(pbc->GetStep());
-	assert(po);
-	if (po == 0) return;
-
-	if (po != ps)
-	{
-		po->RemoveBC(pbc);
-		ps->AddBC(pbc);
-		pbc->SetStep(ps->GetID());
-	}
-}
-
-
-//-----------------------------------------------------------------------------
-// This function reassigns a boundary condition to a different step
-// TODO: Make a command for this operation
-void FEModel::AssignLoadToStep(FELoad* pl, FEStep *ps)
-{
-	FEStep* po = FindStep(pl->GetStep());
-	assert(po);
-	if (po == 0) return;
-
-	if (po != ps)
-	{
-		po->RemoveLoad(pl);
-		ps->AddLoad(pl);
-		pl->SetStep(ps->GetID());
-	}
-}
-
-//-----------------------------------------------------------------------------
-// This function reassigns an initial condition to a different step
-// TODO: Make a command for this operation
-void FEModel::AssignICToStep(FEInitialCondition* pic, FEStep* ps)
-{
-	FEStep* po = FindStep(pic->GetStep());
-	assert(po);
-	if (po == 0) return;
-
-	if (po != ps)
-	{
-		po->RemoveIC(pic);
-		ps->AddIC(pic);
-		pic->SetStep(ps->GetID());
-	}
-}
-
-//-----------------------------------------------------------------------------
-// This function reassigns an interface to a different step
-// TODO: Make a command for this operation
-void FEModel::AssignInterfaceToStep(FEInterface* pi, FEStep *ps)
-{
-	FEStep* po = FindStep(pi->GetStep());
-	assert(po);
-	if (po == 0) return;
-
-	if (po != ps)
-	{
-		po->RemoveInterface(pi);
-		ps->AddInterface(pi);
-		pi->SetStep(ps->GetID());
-	}
-}
-
-//-----------------------------------------------------------------------------
-// This function reassigns a constraint to a different step
-// TODO: Make a command for this operation
-void FEModel::AssignRigidConstraintToStep(FERigidConstraint* pc, FEStep *ps)
-{
 	FEStep* po = FindStep(pc->GetStep());
 	assert(po);
 	if (po == 0) return;
 
 	if (po != ps)
 	{
-		po->RemoveRC(pc);
-		ps->AddRC(pc);
-		pc->SetStep(ps->GetID());
+		po->RemoveComponent(pc);
+		ps->AddComponent(pc);
 	}
-}
-
-//-----------------------------------------------------------------------------
-// This function reassigns a connector to a different step
-// TODO: Make a command for this operation
-void FEModel::AssignRigidConnectorToStep(FERigidConnector* pi, FEStep *ps)
-{
-    FEStep* po = FindStep(pi->GetStep());
-    assert(po);
-    if (po == 0) return;
-    
-    if (po != ps)
-    {
-        po->RemoveRigidConnector(pi);
-        ps->AddRigidConnector(pi);
-        pi->SetStep(ps->GetID());
-    }
 }
 
 //-----------------------------------------------------------------------------

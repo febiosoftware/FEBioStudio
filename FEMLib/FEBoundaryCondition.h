@@ -149,21 +149,7 @@ public:
 //=============================================================================
 // Prescribed boundary condition base class
 //=============================================================================
-// This is the base class for all BC classes that define a LC
-class FEPrescribedBC : public FEBoundaryCondition
-{
-public:
-	FEPrescribedBC(int ntype, FEModel* ps, int nstep = 0) : FEBoundaryCondition(ntype, ps, nstep){}
-	FEPrescribedBC(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEBoundaryCondition(ntype, ps, pi, nstep) {}
-
-public:
-	virtual FELoadCurve* GetLoadCurve() = 0;
-};
-
-// TODO: Try to incorporate this class in FEPrescribedBC.
-//       Problem is that some classes are derived from FEPrescribedBC although 
-//       they should not (e.g. FENodalLoad)
-class FEPrescribedDOF : public FEPrescribedBC
+class FEPrescribedDOF : public FEBoundaryCondition
 {
 public:
 	enum { BC, SCALE, NTYPE };

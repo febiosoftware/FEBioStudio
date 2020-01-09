@@ -860,7 +860,7 @@ void FEBioFormat2::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	sprintf(szname, "ForceLoad%02d", CountLoads<FENodalLoad>(fem)+1);
 	pbc->SetName(szname);
 	febio.AddParamCurve(pbc->GetLoadCurve(), lc);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// assign nodes to node sets
 	double s = 1.0;
@@ -955,7 +955,7 @@ void FEBioFormat2::ParseLoadPressure(FEStep* pstep, XMLTag& tag)
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 	FEPressureLoad* pbc = new FEPressureLoad(&fem);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// set the name
 	char szname[256] = { 0 };
@@ -994,7 +994,7 @@ void FEBioFormat2::ParseLoadTraction(FEStep* pstep, XMLTag& tag)
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 	FESurfaceTraction* pbc = new FESurfaceTraction(&fem);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// set the name
 	char szname[256] = { 0 };
@@ -1037,7 +1037,7 @@ void FEBioFormat2::ParseLoadFluidTraction(FEStep* pstep, XMLTag& tag)
 	// create a new surface load
 	FEModel& fem = GetFEModel();
 	FEFluidTraction* pbc = new FEFluidTraction(&fem);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// set the name
 	char szname[256] = { 0 };
@@ -1079,7 +1079,7 @@ void FEBioFormat2::ParseLoadFluidVelocity(FEStep* pstep, XMLTag& tag)
     // create a new surface load
     FEModel& fem = GetFEModel();
     FEFluidVelocity* pbc = new FEFluidVelocity(&fem);
-    pstep->AddLoad(pbc);
+    pstep->AddComponent(pbc);
     
     // set the name
     char szname[256] = { 0 };
@@ -1116,7 +1116,7 @@ void FEBioFormat2::ParseLoadFluidNormalVelocity(FEStep* pstep, XMLTag& tag)
     // create a new surface load
     FEModel& fem = GetFEModel();
     FEFluidNormalVelocity* pbc = new FEFluidNormalVelocity(&fem);
-    pstep->AddLoad(pbc);
+    pstep->AddComponent(pbc);
     
     // set the name
     char szname[256] = { 0 };
@@ -1160,7 +1160,7 @@ void FEBioFormat2::ParseLoadFluidRotationalVelocity(FEStep* pstep, XMLTag& tag)
     // create a new surface load
     FEModel& fem = GetFEModel();
     FEFluidRotationalVelocity* pbc = new FEFluidRotationalVelocity(&fem);
-    pstep->AddLoad(pbc);
+    pstep->AddComponent(pbc);
     
     // set the name
     char szname[256] = { 0 };
@@ -1204,7 +1204,7 @@ void FEBioFormat2::ParseLoadFluidFlowResistance(FEStep* pstep, XMLTag& tag)
     // create a new surface load
     FEModel& fem = GetFEModel();
     FEFluidFlowResistance* pbc = new FEFluidFlowResistance(&fem);
-    pstep->AddLoad(pbc);
+    pstep->AddComponent(pbc);
     
     // set the name
     char szname[256] = { 0 };
@@ -1248,7 +1248,7 @@ void FEBioFormat2::ParseLoadFluidBackflowStabilization(FEStep* pstep, XMLTag& ta
     // create a new surface load
     FEModel& fem = GetFEModel();
     FEFluidBackflowStabilization* pbc = new FEFluidBackflowStabilization(&fem);
-    pstep->AddLoad(pbc);
+    pstep->AddComponent(pbc);
     
     // set the name
     char szname[256] = { 0 };
@@ -1282,7 +1282,7 @@ void FEBioFormat2::ParseLoadFluidTangentialStabilization(FEStep* pstep, XMLTag& 
     // create a new surface load
     FEModel& fem = GetFEModel();
     FEFluidTangentialStabilization* pbc = new FEFluidTangentialStabilization(&fem);
-    pstep->AddLoad(pbc);
+    pstep->AddComponent(pbc);
     
     // set the name
     char szname[256] = { 0 };
@@ -1316,7 +1316,7 @@ void FEBioFormat2::ParseLoadFSITraction(FEStep* pstep, XMLTag& tag)
     // create a new surface load
     FEModel& fem = GetFEModel();
     FEFSITraction* pbc = new FEFSITraction(&fem);
-    pstep->AddLoad(pbc);
+    pstep->AddComponent(pbc);
     
     // set the name
     char szname[256] = { 0 };
@@ -1344,7 +1344,7 @@ void FEBioFormat2::ParseLoadFluidFlux(FEStep* pstep, XMLTag& tag)
 
 	// create a new surface load
 	FEFluidFlux* pbc = new FEFluidFlux(&fem);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// set the name
 	char szname[256] = { 0 };
@@ -1390,7 +1390,7 @@ void FEBioFormat2::ParseLoadSoluteFlux(FEStep* pstep, XMLTag& tag)
 
 	// create a new surface load
 	FESoluteFlux* pbc = new FESoluteFlux(&fem);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// set the name
 	char szname[256] = { 0 };
@@ -1437,7 +1437,7 @@ void FEBioFormat2::ParseLoadConcentrationFlux(FEStep* pstep, XMLTag& tag)
 
 	// create a new surface load
 	FEConcentrationFlux* pcf = new FEConcentrationFlux(&fem);
-	pstep->AddLoad(pcf);
+	pstep->AddComponent(pcf);
 
 	// set the name
 	char szname[256] = { 0 };
@@ -1479,7 +1479,7 @@ void FEBioFormat2::ParseLoadNormalTraction(FEStep* pstep, XMLTag& tag)
 
 	// create a new surface load
 	FEBPNormalTraction* pbc = new FEBPNormalTraction(&fem);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 	pbc->SetStep(pstep->GetID());
 
 	// set the name
@@ -1526,7 +1526,7 @@ void FEBioFormat2::ParseLoadHeatFlux(FEStep* pstep, XMLTag& tag)
 
 	// create a new surface load
 	FEHeatFlux* pbc = new FEHeatFlux(&fem);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// set the name
 	char szname[256] = { 0 };
@@ -1562,7 +1562,7 @@ void FEBioFormat2::ParseLoadConvectiveHeatFlux(FEStep* pstep, XMLTag& tag)
 
 	// create a new surface load
 	FEConvectiveHeatFlux* pbc = new FEConvectiveHeatFlux(&fem);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// set the name
 	char szname[256] = { 0 };
@@ -1642,7 +1642,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialVelocity%02d", CountICs<FENodalVelocities>(fem)+1);
 			pbc->SetName(szname);
-			m_pBCStep->AddIC(pbc);
+			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "concentration")	// initial concentration BC
 		{
@@ -1680,7 +1680,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialConcentration%02d", CountICs<FEInitConcentration>(fem)+1);
 			pbc->SetName(szname);
-			m_pBCStep->AddIC(pbc);
+			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "fluid_pressure")	// initial fluid pressure
 		{
@@ -1710,7 +1710,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialFluidPressure%02d", CountICs<FEInitFluidPressure>(fem)+1);
 			pbc->SetName(szname);
-			m_pBCStep->AddIC(pbc);
+			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "temperature")	// initial temperature
 		{
@@ -1740,7 +1740,7 @@ bool FEBioFormat2::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialTemperature%02d", CountICs<FEInitTemperature>(fem)+1);
 			pbc->SetName(szname);
-			m_pBCStep->AddIC(pbc);
+			m_pBCStep->AddComponent(pbc);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -1963,7 +1963,7 @@ void FEBioFormat2::ParseContactSliding(FEStep* pstep, XMLTag& tag)
 	GMeshObject* po = GetGObject();
 
 	ParseContactParams(tag, pi, nid);
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -1985,7 +1985,7 @@ void FEBioFormat2::ParseContactF2FSliding(FEStep* pstep, XMLTag& tag)
 	pi->SetName(szbuf);
 
 	ParseContactParams(tag, pi, nid);
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2008,7 +2008,7 @@ void FEBioFormat2::ParseContactBiphasic(FEStep* pstep, XMLTag& tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2033,7 +2033,7 @@ void FEBioFormat2::ParseContactSolute(FEStep* pstep, XMLTag& tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2057,7 +2057,7 @@ void FEBioFormat2::ParseContactMultiphasic(FEStep* pstep, XMLTag& tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2081,7 +2081,7 @@ void FEBioFormat2::ParseContactTiedMultiphasic(FEStep* pstep, XMLTag& tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 //-----------------------------------------------------------------------------
 void FEBioFormat2::ParseContactTied(FEStep *pstep, XMLTag &tag)
@@ -2102,7 +2102,7 @@ void FEBioFormat2::ParseContactTied(FEStep *pstep, XMLTag &tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2124,7 +2124,7 @@ void FEBioFormat2::ParseContactTiedElastic(FEStep* pstep, XMLTag& tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2148,7 +2148,7 @@ void FEBioFormat2::ParseContactSticky(FEStep *pstep, XMLTag &tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2172,7 +2172,7 @@ void FEBioFormat2::ParseContactPeriodic(FEStep *pstep, XMLTag &tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2196,7 +2196,7 @@ void FEBioFormat2::ParseContactTC(FEStep *pstep, XMLTag &tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2220,7 +2220,7 @@ void FEBioFormat2::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
 	ParseContactParams(tag, pi, nid);
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2292,7 +2292,7 @@ void FEBioFormat2::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pci);
+	pstep->AddComponent(pci);
 }
 
 //-----------------------------------------------------------------------------
@@ -2361,7 +2361,7 @@ void FEBioFormat2::ParseContactRigid(FEStep *pstep, XMLTag &tag)
 			if (sz) sprintf(szbuf, "%s", szname);
 			else sprintf(szbuf, "RigidInterface%02d", i + 1);
 			pi->SetName(szbuf);
-			pstep->AddInterface(pi);
+			pstep->AddComponent(pi);
 		}
 	}
 }
@@ -2378,7 +2378,7 @@ void FEBioFormat2::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 
 	int na = -1, nb = -1;
 
@@ -2624,7 +2624,7 @@ void FEBioFormat2::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 	FEModel &fem = GetFEModel();
 
 	FEBodyForce* pbl = new FEBodyForce(&fem, pstep->GetID());
-	pstep->AddLoad(pbl);
+	pstep->AddComponent(pbl);
 
 	++tag;
 	do
@@ -2646,7 +2646,7 @@ void FEBioFormat2::ParseHeatSource(FEStep *pstep, XMLTag &tag)
 	FEModel &fem = GetFEModel();
 
 	FEHeatSource* phs = new FEHeatSource(&fem, pstep->GetID());
-	pstep->AddLoad(phs);
+	pstep->AddComponent(phs);
 
 	++tag;
 	const char* szlc;
@@ -2832,7 +2832,7 @@ void FEBioFormat2::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 
 	// create a new volume constraint
 	FEVolumeConstraint* pi = new FEVolumeConstraint(&fem, pstep->GetID());
-	pstep->AddConstraint(pi);
+	pstep->AddComponent(pi);
 
 	// get the (optional) contact name
 	char szbuf[256];
@@ -2885,7 +2885,7 @@ void FEBioFormat2::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 
 	// create a new volume constraint
 	FESymmetryPlane* pi = new FESymmetryPlane(&fem, pstep->GetID());
-	pstep->AddConstraint(pi);
+	pstep->AddComponent(pi);
 
 	// get the (optional) contact name
 	char szbuf[256];
@@ -2934,7 +2934,7 @@ void FEBioFormat2::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
     
     // create a new volume constraint
     FENormalFlowSurface* pi = new FENormalFlowSurface(&fem, pstep->GetID());
-    pstep->AddConstraint(pi);
+    pstep->AddComponent(pi);
     
     // get the (optional) contact name
     char szbuf[256];

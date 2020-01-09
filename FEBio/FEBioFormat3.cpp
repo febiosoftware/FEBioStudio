@@ -1232,7 +1232,7 @@ void FEBioFormat3::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 	// create the interface
 	FERigidInterface* pi = new FERigidInterface(&fem, pmat, pg, pstep->GetID());
 	pi->SetName(name.c_str());
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //=============================================================================
@@ -1451,7 +1451,7 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	FENodalLoad* pbc = new FENodalLoad(&fem, pg, bc, 1, pstep->GetID());
 	sprintf(szname, "ForceLoad%02d", CountLoads<FENodalLoad>(fem)+1);
 	pbc->SetName(szname);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// assign nodes to node sets
 	++tag;
@@ -1540,7 +1540,7 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 		psl->SetInfo(comment);
 
 		// add to the step
-		pstep->AddLoad(psl);
+		pstep->AddComponent(psl);
 	}
 }
 
@@ -1582,7 +1582,7 @@ void FEBioFormat3::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	{
 		pbl->SetInfo(comment);
 		if (name.empty() == false) pbl->SetName(name);
-		pstep->AddLoad(pbl);
+		pstep->AddComponent(pbl);
 		ReadParameters(*pbl, tag);
 	}
 }
@@ -1706,7 +1706,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			if (pic)
 			{
 				pic->SetName(szname);
-				m_pBCStep->AddIC(pic);
+				m_pBCStep->AddComponent(pic);
 			}
 		}
 		else ParseUnknownTag(tag);
@@ -1798,7 +1798,7 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 			}
 
 			// add to the analysis step
-			pstep->AddInterface(pci);
+			pstep->AddComponent(pci);
 		}
 	}
 }
@@ -2097,7 +2097,7 @@ void FEBioFormat3::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pci);
+	pstep->AddComponent(pci);
 }
 
 //-----------------------------------------------------------------------------
@@ -2111,7 +2111,7 @@ void FEBioFormat3::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 
 	int na = -1, nb = -1;
 
@@ -2427,7 +2427,7 @@ void FEBioFormat3::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 	FEVolumeConstraint* pi = new FEVolumeConstraint(&fem, pstep->GetID());
 	pi->SetName(szname);
 	pi->SetItemList(psurf);
-	pstep->AddConstraint(pi);
+	pstep->AddComponent(pi);
 
 	// read parameters
 	ReadParameters(*pi, tag);
@@ -2460,7 +2460,7 @@ void FEBioFormat3::ParseSymmetryPlane(FEStep* pstep, XMLTag& tag)
 	FESymmetryPlane* pi = new FESymmetryPlane(&fem, pstep->GetID());
 	pi->SetName(szname);
 	pi->SetItemList(psurf);
-	pstep->AddConstraint(pi);
+	pstep->AddComponent(pi);
 
 	// read parameters
 	ReadParameters(*pi, tag);
@@ -2493,7 +2493,7 @@ void FEBioFormat3::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
     FENormalFlowSurface* pi = new FENormalFlowSurface(&fem, pstep->GetID());
     pi->SetName(szname);
     pi->SetItemList(psurf);
-    pstep->AddConstraint(pi);
+    pstep->AddComponent(pi);
     
     // read parameters
     ReadParameters(*pi, tag);

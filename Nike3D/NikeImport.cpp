@@ -684,7 +684,7 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 			FERigidInterface* pi = new FERigidInterface(ps, pgm, pn, ps->GetStep(0)->GetID());
 			sprintf(szname, "RigidInterface%02d", nrns);
 			pi->SetName(szname);
-			ps->GetStep(0)->AddInterface(pi);
+			ps->GetStep(0)->AddComponent(pi);
 			++nrns;
 		}
 	}
@@ -771,7 +771,7 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 				pi->SetName(szname);
 				pi->SetMaster(pms);
 				pi->SetSlave(pss);
-				ps->GetStep(0)->AddInterface(pi);
+				ps->GetStep(0)->AddComponent(pi);
 
 				pi->SetFloatValue(FETiedInterface::ALTOL, si.toln);
 				pi->SetFloatValue(FETiedInterface::PENALTY, si.pen);
@@ -783,7 +783,7 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 				FESlidingWithGapsInterface* pi = new FESlidingWithGapsInterface(ps);
 				sprintf(szname, "SlidingInterface%02d", i+1);
 				pi->SetName(szname);
-				ps->GetStep(0)->AddInterface(pi);
+				ps->GetStep(0)->AddComponent(pi);
 				pi->SetMaster(pms);
 				pi->SetSlave(pss);
 

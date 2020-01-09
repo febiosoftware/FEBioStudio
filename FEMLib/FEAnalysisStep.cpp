@@ -358,8 +358,9 @@ void FEStep::RemoveAllRigidConnectors()
 //-----------------------------------------------------------------------------
 #define MoveComponent(Type, Fnc) (dynamic_cast<Type*>(pc)) Fnc(dynamic_cast<Type*>(pc))
 
-void FEStep::AddComponent(FEModelComponent* pc)
+void FEStep::AddComponent(FEStepComponent* pc)
 {
+	// remove it from the old step
 	pc->SetStep(GetID());
 	if      MoveComponent(FEBoundaryCondition, AddBC);
 	else if MoveComponent(FELoad             , AddLoad);
@@ -368,6 +369,22 @@ void FEStep::AddComponent(FEModelComponent* pc)
 	else if MoveComponent(FERigidConstraint  , AddRC);
 	else if MoveComponent(FERigidConnector   , AddRigidConnector);
 	else if MoveComponent(FEModelConstraint  , AddConstraint);
+	else assert(false);
+}
+
+//-----------------------------------------------------------------------------
+#define TryRemoveComponent(Type, Cont) (dynamic_cast<Type*>(pc)) imp->Cont.Remove(dynamic_cast<Type*>(pc))
+
+void FEStep::RemoveComponent(FEStepComponent* pc)
+{
+	assert(pc->GetStep() == GetID());
+	if      TryRemoveComponent(FEBoundaryCondition, m_BC);
+	else if TryRemoveComponent(FELoad             , m_FC);
+	else if TryRemoveComponent(FEInitialCondition , m_IC);
+	else if TryRemoveComponent(FEInterface        , m_Int);
+	else if TryRemoveComponent(FEModelConstraint  , m_NLC);
+	else if TryRemoveComponent(FERigidConstraint  , m_RC);
+	else if TryRemoveComponent(FERigidConnector   , m_CN);
 	else assert(false);
 }
 

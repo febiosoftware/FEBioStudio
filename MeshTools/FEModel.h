@@ -109,13 +109,6 @@ public:
 	int DeleteStep(FEStep* ps);
 	void InsertStep(int n, FEStep* ps);
 
-	void AssignBCToStep(FEBoundaryCondition* pbc, FEStep* ps);
-	void AssignLoadToStep(FELoad* pl, FEStep* ps);
-	void AssignICToStep(FEInitialCondition* pic, FEStep* ps);
-	void AssignInterfaceToStep(FEInterface* pi, FEStep* ps);
-	void AssignRigidConstraintToStep(FERigidConstraint* pc, FEStep* ps);
-    void AssignRigidConnectorToStep(FERigidConnector* pi, FEStep* ps);
-
 	void AssignComponentToStep(FEStepComponent* pc, FEStep* ps);
 
 	// --- data variables ---

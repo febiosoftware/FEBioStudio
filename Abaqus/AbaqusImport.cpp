@@ -1588,7 +1588,7 @@ bool AbaqusImport::build_physics()
 				pl->SetLoad(p.m_surf[i].load);
 
 				// add it to the initial step
-				fem.GetStep(0)->AddLoad(pl);
+				fem.GetStep(0)->AddComponent(pl);
 			}
 			else return false;
 		}

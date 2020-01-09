@@ -1046,7 +1046,7 @@ void FEBioFormat25::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 	// create the interface
 	FERigidInterface* pi = new FERigidInterface(&fem, pmat, pg, pstep->GetID());
 	pi->SetName(name.c_str());
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -1191,7 +1191,7 @@ void FEBioFormat25::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	FENodalLoad* pbc = new FENodalLoad(&fem, pg, bc, 1, pstep->GetID());
 	sprintf(szname, "ForceLoad%02d", CountLoads<FENodalLoad>(fem)+1);
 	pbc->SetName(szname);
-	pstep->AddLoad(pbc);
+	pstep->AddComponent(pbc);
 
 	// assign nodes to node sets
 	++tag;
@@ -1254,7 +1254,7 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 		psl->SetInfo(comment);
 
 		// add to the step
-		pstep->AddLoad(psl);
+		pstep->AddComponent(psl);
 	}
 }
 
@@ -2009,7 +2009,7 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 			if (pic)
 			{
 				pic->SetName(szname);
-				m_pBCStep->AddIC(pic);
+				m_pBCStep->AddComponent(pic);
 			}
 		}
 		else ParseUnknownTag(tag);
@@ -2111,7 +2111,7 @@ void FEBioFormat25::ParseContact(FEStep *pstep, XMLTag &tag)
 			}
 
 			// add to the analysis step
-			pstep->AddInterface(pci);
+			pstep->AddComponent(pci);
 		}
 	}
 }
@@ -2410,7 +2410,7 @@ void FEBioFormat25::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pci);
+	pstep->AddComponent(pci);
 }
 
 //-----------------------------------------------------------------------------
@@ -2424,7 +2424,7 @@ void FEBioFormat25::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 
 	int na = -1, nb = -1;
 
@@ -2687,7 +2687,7 @@ void FEBioFormat25::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 	FEModel& fem = GetFEModel();
 
 	FEBodyForce* pbl = new FEBodyForce(&fem, pstep->GetID());
-	pstep->AddLoad(pbl);
+	pstep->AddComponent(pbl);
 
 	++tag;
 	do
@@ -2708,7 +2708,7 @@ void FEBioFormat25::ParseHeatSource(FEStep *pstep, XMLTag &tag)
 	FEModel& fem = GetFEModel();
 
 	FEHeatSource* phs = new FEHeatSource(&fem, pstep->GetID());
-	pstep->AddLoad(phs);
+	pstep->AddComponent(phs);
 
 	++tag;
 	const char* szlc;

@@ -752,7 +752,7 @@ void FEBioFormatOld::ParseForceLoad(FEStep *pstep, XMLTag &tag)
 			pbc->SetName(szname);
 			pFC[cc[j][i]] = pbc;
 			pNS[cc[j][i]] = pg;
-			pstep->AddLoad(pbc);
+			pstep->AddComponent(pbc);
 		}
 	}
 
@@ -867,7 +867,7 @@ void FEBioFormatOld::ParsePressureLoad(FEStep *pstep, XMLTag &tag)
 		pbc->SetName(szname);
 		pPC[i] = pbc;
 		pSF[i] = ps;
-		pstep->AddLoad(pbc);
+		pstep->AddComponent(pbc);
 	}
 
 	// set the correct face group ID's
@@ -965,7 +965,7 @@ void FEBioFormatOld::ParseTractionLoad(FEStep* pstep, XMLTag& tag)
 		pbc->SetName(szname);
 		pPC[i] = pbc;
 		pSF[i] = ps;
-		pstep->AddLoad(pbc);
+		pstep->AddComponent(pbc);
 	}
 
 	// set the correct face group ID's
@@ -1083,7 +1083,7 @@ void FEBioFormatOld::ParseFluidFlux(FEStep *pstep, XMLTag &tag)
 		pbc->SetName(szname);
 		pPC[i] = pbc;
 		pSF[i] = ps;
-		pstep->AddLoad(pbc);
+		pstep->AddComponent(pbc);
 	}
 
 	// set the correct face group ID's
@@ -1201,7 +1201,7 @@ void FEBioFormatOld::ParseBPNormalTraction(FEStep *pstep, XMLTag &tag)
 		pbc->SetName(szname);
 		pPC[i] = pbc;
 		pSF[i] = ps;
-		pstep->AddLoad(pbc);
+		pstep->AddComponent(pbc);
 	}
 
 	// set the correct face group ID's
@@ -1302,7 +1302,7 @@ void FEBioFormatOld::ParseHeatFlux(FEStep *pstep, XMLTag &tag)
 		pbc->SetLoad(scl);
 		pPC[i] = pbc;
 		pSF[i] = ps;
-		pstep->AddLoad(pbc);
+		pstep->AddComponent(pbc);
 	}
 
 	// set the correct face group ID's
@@ -1408,7 +1408,7 @@ void FEBioFormatOld::ParseSoluteFlux(FEStep *pstep, XMLTag &tag)
 		pbc->SetLoad(scl);
 		pPC[i] = pbc;
 		pSF[i] = ps;
-		pstep->AddLoad(pbc);
+		pstep->AddComponent(pbc);
 	}
 
 	// set the correct face group ID's
@@ -1471,7 +1471,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialVelocity%02d", CountBCs<FENodalVelocities>(fem) + 1);
 			pbc->SetName(szname);
-			m_pBCStep->AddIC(pbc);
+			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "concentration")	// initial concentration BC
 		{
@@ -1510,7 +1510,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialConcentration%02d", CountBCs<FEInitConcentration>(fem) + 1);
 			pbc->SetName(szname);
-			m_pBCStep->AddIC(pbc);
+			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "fluid_pressure")	// initial fluid pressure
 		{
@@ -1541,7 +1541,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialFluidPressure%02d", CountBCs<FEInitFluidPressure>(fem) + 1);
 			pbc->SetName(szname);
-			m_pBCStep->AddIC(pbc);
+			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "temperature")	// initial temperature
 		{
@@ -1572,7 +1572,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialTemperature%02d", CountBCs<FEInitTemperature>(fem) + 1);
 			pbc->SetName(szname);
-			m_pBCStep->AddIC(pbc);
+			m_pBCStep->AddComponent(pbc);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -1723,7 +1723,7 @@ void FEBioFormatOld::ParseContactSliding(FEStep* pstep, XMLTag& tag)
 		++tag;
 	} while (!tag.isend());
 
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -1788,7 +1788,7 @@ void FEBioFormatOld::ParseContactF2FSliding(FEStep* pstep, XMLTag& tag)
 		++tag;
 	} while (!tag.isend());
 
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -1847,7 +1847,7 @@ void FEBioFormatOld::ParseContactBiphasic(FEStep* pstep, XMLTag& tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -1907,7 +1907,7 @@ void FEBioFormatOld::ParseContactSolute(FEStep* pstep, XMLTag& tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -1967,7 +1967,7 @@ void FEBioFormatOld::ParseContactMultiphasic(FEStep* pstep, XMLTag& tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2027,7 +2027,7 @@ void FEBioFormatOld::ParseContactTied(FEStep *pstep, XMLTag &tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2087,7 +2087,7 @@ void FEBioFormatOld::ParseContactSticky(FEStep *pstep, XMLTag &tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2147,7 +2147,7 @@ void FEBioFormatOld::ParseContactPeriodic(FEStep *pstep, XMLTag &tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2207,7 +2207,7 @@ void FEBioFormatOld::ParseContactTC(FEStep *pstep, XMLTag &tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2267,7 +2267,7 @@ void FEBioFormatOld::ParseContactTiedPoro(FEStep *pstep, XMLTag &tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 }
 
 //-----------------------------------------------------------------------------
@@ -2327,7 +2327,7 @@ void FEBioFormatOld::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	} while (!tag.isend());
 
 	// add interface to step
-	pstep->AddInterface(pci);
+	pstep->AddComponent(pci);
 }
 
 //-----------------------------------------------------------------------------
@@ -2393,7 +2393,7 @@ void FEBioFormatOld::ParseContactRigid(FEStep *pstep, XMLTag &tag)
 			if (sz) sprintf(szbuf, "%s", szname);
 			else sprintf(szbuf, "RigidInterface%02d", i + 1);
 			pi->SetName(szbuf);
-			pstep->AddInterface(pi);
+			pstep->AddComponent(pi);
 		}
 	}
 }
@@ -2411,7 +2411,7 @@ void FEBioFormatOld::ParseContactJoint(FEStep *pstep, XMLTag &tag)
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
-	pstep->AddInterface(pi);
+	pstep->AddComponent(pi);
 
 	int na = -1, nb = -1;
 
@@ -2556,7 +2556,7 @@ void FEBioFormatOld::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 	FEModel& fem = GetFEModel();
 
 	FEBodyForce* pbl = new FEBodyForce(&fem, pstep->GetID());
-	pstep->AddLoad(pbl);
+	pstep->AddComponent(pbl);
 
 	++tag;
 	do
@@ -2577,7 +2577,7 @@ void FEBioFormatOld::ParseHeatSource(FEStep *pstep, XMLTag &tag)
 	FEModel& fem = GetFEModel();
 
 	FEHeatSource* phs = new FEHeatSource(&fem, pstep->GetID());
-	pstep->AddLoad(phs);
+	pstep->AddComponent(phs);
 
 	++tag;
 	const char* szlc;
@@ -2969,7 +2969,7 @@ void FEBioFormatOld::ParseVolumeConstraint(FEStep* pstep, XMLTag& tag)
 
 	// create a new volume constraint
 	FEVolumeConstraint* pi = new FEVolumeConstraint(&fem, pstep->GetID());
-	pstep->AddConstraint(pi);
+	pstep->AddComponent(pi);
 
 	// get the (optional) contact name
 	char szbuf[256];

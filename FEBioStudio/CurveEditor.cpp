@@ -237,19 +237,14 @@ void CCurveEditor::Update()
 						}
 						else
 						{
-							FEPrescribedBC* pbc = dynamic_cast<FEPrescribedBC*>(plj);
-							if (pbc) ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()), pbc->GetLoadCurve());
-							else
+							int N = plj->Parameters();
+							for (int k = 0; k < N; ++k)
 							{
-								int N = plj->Parameters();
-								for (int k = 0; k < N; ++k)
+								Param& pk = plj->GetParam(k);
+								if (pk.IsEditable() && (pk.GetParamType() == Param_FLOAT))
 								{
-									Param& pk = plj->GetParam(k);
-									if (pk.IsEditable() && (pk.GetParamType() == Param_FLOAT))
-									{
-										FELoadCurve* plc = pk.GetLoadCurve();
-										ui->addTreeItem(t2, pk.GetLongName(), plc, &pk);
-									}
+									FELoadCurve* plc = pk.GetLoadCurve();
+									ui->addTreeItem(t2, pk.GetLongName(), plc, &pk);
 								}
 							}
 						}

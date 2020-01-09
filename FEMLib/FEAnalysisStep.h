@@ -11,7 +11,7 @@ class FERigidConstraint;
 class FELinearConstraintSet;
 class FERigidConnector;
 class FEInitialCondition;
-class FEModelComponent;
+class FEStepComponent;
 class FEModelConstraint;
 
 //-----------------------------------------------------------------------------
@@ -125,8 +125,9 @@ public:
     int RemoveRigidConnector(FERigidConnector* pi);
 	void RemoveAllRigidConnectors();
 
-	// convenience function for adding components
-	void AddComponent(FEModelComponent* pc);
+	// convenience functions for working with components
+	void AddComponent(FEStepComponent* pc);
+	void RemoveComponent(FEStepComponent* pc);
     
 	static void ResetCounter();
 
