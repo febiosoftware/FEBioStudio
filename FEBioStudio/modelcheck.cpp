@@ -7,6 +7,7 @@
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <stdarg.h>
+#include <sstream>
 
 // are there any objects?
 void check_000(CDocument* doc, std::vector<FSObject*>& objList);
@@ -47,6 +48,9 @@ void check_011(CDocument* doc, std::vector<FSObject*>& objList);
 // see if there are any output variables defined
 void check_012(CDocument* doc, std::vector<FSObject*>& objList);
 
+// see if shell thickness are zero for non-rigid parts
+void check_013(CDocument* doc, std::vector<FSObject*>& objList);
+
 typedef void(*ERROR_FUNC)(CDocument*, std::vector<FSObject*>&);
 
 struct ERROR_DATA
@@ -69,7 +73,8 @@ vector<ERROR_DATA> error = {
 	{ CRITICAL, "Load \"%s\" has no selection assigned.", check_009 },
 	{ CRITICAL, "Boundary condition \"%s\" has no selection assigned.", check_010 },
 	{ CRITICAL, "Initial condition \"%s\" has no selection assigned.", check_011 },
-	{ WARNING , "This model does not define any output variables.", check_012 }
+	{ WARNING , "This model does not define any output variables.", check_012 },
+	{ CRITICAL, "Some shells in part \"%s\" have zero thickness.", check_013 }
 };
 
 const char* errorString(int error_code)
@@ -87,7 +92,21 @@ MODEL_ERROR make_error(int error_code, FSObject* po = nullptr)
 	// make the message
 	char sztxt[1024] = { 0 };
 	if (po)
-		sprintf(sztxt, error[error_code].errStr, po->GetName().c_str());
+	{
+		string s = po->GetName();
+		if (dynamic_cast<GPart*>(po))
+		{
+			GPart* pg = dynamic_cast<GPart*>(po);
+			GBaseObject* o = pg->Object();
+			if (o)
+			{
+				stringstream ss;
+				ss << po->GetName() + " (" + o->GetName() + ")";
+				s = ss.str();
+			}
+		}
+		sprintf(sztxt, error[error_code].errStr, s.c_str());
+	}
 	else 
 		sprintf(sztxt, error[error_code].errStr, "(null)");
 
@@ -380,5 +399,62 @@ void check_012(CDocument* doc, std::vector<FSObject*>& objList)
 	if (na == 0)
 	{
 		objList.push_back(&fem);
+	}
+}
+
+// see if shell thickness are zero for non-rigid parts
+void check_013(CDocument* doc, std::vector<FSObject*>& objList)
+{
+	FEModel& fem = *doc->GetFEModel();
+	GModel& mdl = fem.GetModel();
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* obj_i = mdl.Object(i);
+		FEMesh* pm = obj_i->GetFEMesh();
+		if (pm)
+		{
+			int parts = obj_i->Parts();
+			for (int n = 0; n < parts; ++n)
+			{
+				GPart* pg = obj_i->Part(n);
+
+				int zeroShells = 0;
+				int NE = pm->Elements();
+				for (int j = 0; j < NE; ++j)
+				{
+					FEElement& el = pm->Element(j);
+					if (el.IsShell() && (el.m_gid == n))
+					{
+						int ne = el.Nodes();
+						for (int k = 0; k < ne; ++k)
+						{
+							if (el.m_h[k] == 0.0) zeroShells++;
+						}
+					}
+					if (zeroShells) break;
+				}
+
+				if (zeroShells > 0)
+				{
+					// see if the material is rigid
+					int mid = pg->GetMaterialID();
+					if (mid >= 0)
+					{
+						GMaterial* pm = fem.GetMaterialFromID(mid);
+						FEMaterial* mat = pm->GetMaterialProperties();
+						if (mat && (dynamic_cast<FERigidMaterial*>(mat)))
+						{
+							// we allow zero thickness for rigid parts
+							zeroShells = 0;
+						}
+					}
+				}
+
+				if (zeroShells)
+				{
+					objList.push_back(pg);
+				}
+			}
+		}
 	}
 }
