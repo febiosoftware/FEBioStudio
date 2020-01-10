@@ -1331,18 +1331,18 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class CCmdSetBCItemList : public CCommand
+class CCmdSetModelComponentItemList : public CCommand
 {
 public:
-	CCmdSetBCItemList(FEBoundaryCondition* pbc, FEItemListBuilder* pl);
-	~CCmdSetBCItemList();
+	CCmdSetModelComponentItemList(FEModelComponent* pbc, FEItemListBuilder* pl);
+	~CCmdSetModelComponentItemList();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEBoundaryCondition*	m_pbc;
-	FEItemListBuilder*		m_pl;
+	FEModelComponent*	m_pbc;
+	FEItemListBuilder*	m_pl;
 };
 
 //-----------------------------------------------------------------------------

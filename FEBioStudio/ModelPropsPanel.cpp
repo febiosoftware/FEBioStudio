@@ -528,6 +528,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
 		if (pbc) { SetSelection(0, pbc->GetItemList()); return; }
 
+		FELoad* pbl = dynamic_cast<FELoad*>(m_currentObject);
+		if (pbl) { SetSelection(0, pbl->GetItemList()); return; }
+
 		FESoloInterface* solo = dynamic_cast<FESoloInterface*>(m_currentObject);
 		if (solo) { SetSelection(0, solo->GetItemList()); return; }
 
@@ -695,8 +698,8 @@ void CModelPropsPanel::addSelection(int n)
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
 
-	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
-	if (pbc)
+	FEModelComponent* pmc = dynamic_cast<FEModelComponent*>(m_currentObject);
+	if (pmc)
 	{
 		// don't allow object selections 
 		if (dynamic_cast<GObjectSelection*>(ps)) 
@@ -706,7 +709,7 @@ void CModelPropsPanel::addSelection(int n)
 		}
 
 		// for body loads, only allow part selections
-		if (dynamic_cast<FEBodyLoad*>(pbc) && (dynamic_cast<GPartSelection*>(ps) == 0))
+		if (dynamic_cast<FEBodyLoad*>(pmc) && (dynamic_cast<GPartSelection*>(ps) == 0))
 		{
 			QMessageBox::critical(this, "FEBio Studio", "You cannot apply this selection to a body load.");
 			return;
@@ -716,17 +719,17 @@ void CModelPropsPanel::addSelection(int n)
 		//		if (dynamic_cast<GPartSelection*>(ps) && (dynamic_cast<FEInitialCondition*>(m_pbc)==0)) return;
 
 		// only allow surface selections for surface loads
-		if (dynamic_cast<FESurfaceLoad*>(pbc) && (dynamic_cast<GFaceSelection*>(ps) == 0) && (dynamic_cast<FEFaceSelection*>(ps) == 0))
+		if (dynamic_cast<FESurfaceLoad*>(pmc) && (dynamic_cast<GFaceSelection*>(ps) == 0) && (dynamic_cast<FEFaceSelection*>(ps) == 0))
 		{
 			QMessageBox::critical(this, "FEBio Studio", "You cannot apply this selection to a surface load.");
 			return;
 		}
 
-		FEItemListBuilder* pl = pbc->GetItemList();
+		FEItemListBuilder* pl = pmc->GetItemList();
 		if (pl == 0)
 		{
-			pdoc->DoCommand(new CCmdSetBCItemList(pbc, ps->CreateItemList()));
-			SetSelection(0, pbc->GetItemList());
+			pdoc->DoCommand(new CCmdSetModelComponentItemList(pmc, ps->CreateItemList()));
+			SetSelection(0, pmc->GetItemList());
 		}
 		else
 		{
@@ -743,7 +746,7 @@ void CModelPropsPanel::addSelection(int n)
 				list<int> l = pg->CopyItems();
 				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 			}
-			SetSelection(0, pbc->GetItemList());
+			SetSelection(0, pmc->GetItemList());
 			delete pg;
 		}
 

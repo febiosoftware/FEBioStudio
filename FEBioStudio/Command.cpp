@@ -3396,28 +3396,28 @@ void CCmdAddMaterial::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdSetBCItemList
+// CCmdSetModelComponentItemList
 //-----------------------------------------------------------------------------
 
-CCmdSetBCItemList::CCmdSetBCItemList(FEBoundaryCondition* pbc, FEItemListBuilder* pl) : CCommand("Assign BC")
+CCmdSetModelComponentItemList::CCmdSetModelComponentItemList(FEModelComponent* pbc, FEItemListBuilder* pl) : CCommand("Assign BC")
 {
 	m_pbc = pbc;
 	m_pl = pl;
 }
 
-CCmdSetBCItemList::~CCmdSetBCItemList()
+CCmdSetModelComponentItemList::~CCmdSetModelComponentItemList()
 {
 	if (m_pl) delete m_pl;
 }
 
-void CCmdSetBCItemList::Execute()
+void CCmdSetModelComponentItemList::Execute()
 {
 	FEItemListBuilder* pold = m_pbc->GetItemList();
 	m_pbc->SetItemList(m_pl);
 	m_pl = pold;
 }
 
-void CCmdSetBCItemList::UnExecute()
+void CCmdSetModelComponentItemList::UnExecute()
 {
 	Execute();
 }
