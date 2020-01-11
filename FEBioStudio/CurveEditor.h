@@ -39,6 +39,9 @@ private slots:
 	void on_plot_draggingStart(QPoint p);
 	void on_plot_pointDragged(QPoint p);
 	void on_plot_draggingEnd(QPoint p);
+	void on_plot_backgroundImageChanged();
+	void on_plot_doneZoomToRect();
+	void on_plot_doneSelectingRect(QRect);
 	void on_open_triggered();
 	void on_save_triggered();
 	void on_clip_triggered();
@@ -51,6 +54,7 @@ private slots:
 	void on_zoomToFit_clicked();
 	void on_zoomX_clicked();
 	void on_zoomY_clicked();
+	void on_map_clicked();
 	void on_undo_triggered();
 	void on_redo_triggered();
 	void on_math_triggered();

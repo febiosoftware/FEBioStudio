@@ -15,6 +15,8 @@
 #include <QBoxLayout>
 #include <QLineEdit>
 #include <QValidator>
+#include <QImage>
+#include <QFileDialog>
 
 //-----------------------------------------------------------------------------
 class CDlgPlotWidgetProps_Ui
@@ -263,6 +265,7 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 	m_select = false;
 	m_bzoomRect = false;
 	m_bvalidRect = false;
+	m_mapToRect = false;
 
 	m_bshowLegend = true;
 	m_bviewLocked = false;
@@ -309,6 +312,8 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 	if (h < 200) h = 200;
 	m_sizeHint = QSize(w, h);
 
+	m_img = nullptr;
+
 	m_pZoomToFit = new QAction(QIcon(QString(":/icons/zoom_fit.png")), tr("Zoom to fit"), this);
 	connect(m_pZoomToFit, SIGNAL(triggered()), this, SLOT(OnZoomToFit()));
 
@@ -317,6 +322,12 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 
 	m_pCopyToClip = new QAction(QIcon(QString(":/icons/clipboard.png")), tr("Copy to clipboard"), this);
 	connect(m_pCopyToClip, SIGNAL(triggered()), this, SLOT(OnCopyToClipboard()));
+
+	m_pickBGImage = new QAction(QIcon(QString(":/icons/bgimage.png")), tr("Select Background Image"), this);
+	connect(m_pickBGImage, SIGNAL(triggered()), this, SLOT(OnBGImage()));
+
+	m_clrBGImage = new QAction(tr("Clear Background Image"), this);
+	connect(m_clrBGImage, SIGNAL(triggered()), this, SLOT(OnClearBGImage()));
 }
 
 //-----------------------------------------------------------------------------
@@ -335,6 +346,8 @@ void CPlotWidget::contextMenuEvent(QContextMenuEvent* ev)
 		menu.addAction(m_pCopyToClip);
 		menu.addSeparator();
 		menu.addAction(m_pShowProps);
+		menu.addAction(m_pickBGImage);
+		menu.addAction(m_clrBGImage);
 		menu.exec(ev->globalPos());
 	}
 }
@@ -467,6 +480,59 @@ void CPlotWidget::OnCopyToClipboard()
 		}
 		clipboard->setText(s);
 	}
+}
+
+//-----------------------------------------------------------------------------
+bool CPlotWidget::HasBackgroundImage() const
+{
+	return (m_img != nullptr);
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::mapToUserRect()
+{
+	m_bzoomRect = true;
+	m_bvalidRect = false;
+	m_mapToRect = true;
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::mapToUserRect(QRect rt, QRectF rng)
+{
+	QRect src = rect();
+	double rx = rng.width() / rt.width();
+	double xmin = rng.left() - rx*(rt.left() - src.left());
+	double xmax = rng.right() + rx*(src.right() - rt.right());
+
+	double ry = rng.height() / rt.height();
+	int y0 = src.top();
+	int y1 = src.bottom();
+	double ymax = rng.bottom() + ry*(rt.top() - src.top());
+	double ymin = rng.top()    - ry*(src.bottom() - rt.bottom());
+
+	setViewRect(QRectF(xmin, ymin, xmax - xmin, ymax - ymin));
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::OnBGImage()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, "Select Image", "", "PNG Images (*png)");
+	if (fileName.isEmpty() == false)
+	{
+		QImage* img = new QImage(fileName);
+		SetBackgroundImage(img);
+
+		emit backgroundImageChanged();
+
+		repaint();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::OnClearBGImage()
+{
+	SetBackgroundImage(nullptr);
+	emit backgroundImageChanged();
 }
 
 //-----------------------------------------------------------------------------
@@ -715,9 +781,13 @@ void CPlotWidget::mouseReleaseEvent(QMouseEvent* ev)
 
 	if (m_bzoomRect)
 	{
-		fitToRect(QRect(X0, Y0, X1-X0+1, Y1-Y0+1));
+		QRect rt(X0, Y0, X1 - X0 + 1, Y1 - Y0 + 1);
+		if (m_mapToRect == false) 
+			fitToRect(rt);
 		m_bzoomRect = false;
 		m_bvalidRect = false;
+		m_mapToRect = false;
+		emit doneSelectingRect(rt);
 		emit doneZoomToRect();
 		repaint();
 	}
@@ -789,6 +859,13 @@ QPoint CPlotWidget::ViewToScreen(const QPointF& p)
 }
 
 //-----------------------------------------------------------------------------
+void CPlotWidget::SetBackgroundImage(QImage* img)
+{
+	if (m_img) delete m_img;
+	m_img = img;
+}
+
+//-----------------------------------------------------------------------------
 void CPlotWidget::paintEvent(QPaintEvent* pe)
 {
 	// Process base event first
@@ -803,8 +880,11 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing, true);
 
-	// clear the background
-	p.fillRect(m_screenRect, m_bgCol);
+	if (m_img)
+		p.drawImage(m_screenRect, *m_img);
+	else 
+		// clear the background
+		p.fillRect(m_screenRect, m_bgCol);
 
 /*	int W = rect().width();
 	int H = rect().height();

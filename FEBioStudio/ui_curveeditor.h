@@ -139,6 +139,11 @@ public:
 		zoomy->setIcon(QIcon(":/icons/zoom_y.png"));
 		zoomy->setToolTip("<font color=\"black\">Zoom Y extents");
 
+		QToolButton* map = new QToolButton; map->setObjectName("map");
+		map->setAutoRaise(true);
+		map->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
+		map->setToolTip("<font color=\"black\">Map to rectangle");
+
 		QVBoxLayout* treeLayout = new QVBoxLayout;
 		treeLayout->addWidget(filter);
 		treeLayout->addWidget(tree);
@@ -156,6 +161,7 @@ public:
 		pltbutton->addWidget(zoomx);
 		pltbutton->addWidget(zoomy);
 		pltbutton->addWidget(zoom);
+		pltbutton->addWidget(map);
 		pltbutton->addStretch();
 		pltbutton->setSpacing(2);
 

@@ -573,6 +573,34 @@ void CCurveEditor::on_open_triggered()
 	}
 }
 
+void CCurveEditor::on_plot_backgroundImageChanged()
+{
+	if (ui->plot->HasBackgroundImage())
+	{
+		ui->plot->setXAxisColor(QColor(0, 0, 0));
+		ui->plot->setYAxisColor(QColor(0, 0, 0));
+	}
+	else
+	{
+		ui->plot->setXAxisColor(QColor(255, 255, 255));
+		ui->plot->setYAxisColor(QColor(255, 255, 255));
+	}
+}
+
+void CCurveEditor::on_plot_doneZoomToRect()
+{
+
+}
+
+void CCurveEditor::on_plot_doneSelectingRect(QRect rt)
+{
+	CDlgPlotWidgetProps dlg;
+	if (dlg.exec())
+	{
+		ui->plot->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+	}
+}
+
 void CCurveEditor::on_save_triggered()
 {
 }
@@ -688,6 +716,11 @@ void CCurveEditor::on_zoomY_clicked()
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 	ui->plot->OnZoomToHeight();
+}
+
+void CCurveEditor::on_map_clicked()
+{
+	ui->plot->mapToUserRect();
 }
 
 void CCurveEditor::on_undo_triggered()

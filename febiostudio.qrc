@@ -132,5 +132,7 @@
 		<file>icons/selectCircle_neg.png</file>
 		<file>icons/formula_neg.png</file>
 		<file>icons/delete_neg.png</file>
+		<file>icons/bgimage.png</file>
+		<file>icons/zoom-fit-best-2.png</file>
 	</qresource>
 </RCC>

@@ -8,6 +8,7 @@ using namespace std;
 class QPainter;
 class QAction;
 class CPlotWidget;
+class QImage;
 
 //-----------------------------------------------------------------------------
 // Manages a set of (x,y) value pairs
@@ -205,13 +206,21 @@ public:
 
 	QRect ScreenRect() const { return m_screenRect; }
 
+	bool HasBackgroundImage() const;
+
+	void mapToUserRect();
+
+	void mapToUserRect(QRect rt, QRectF rng);
+
 signals:
 	void doneZoomToRect();
+	void doneSelectingRect(QRect rt);
 	void pointClicked(QPointF p, bool bshift);
 	void pointSelected(int n);
 	void pointDragged(QPoint p);
 	void draggingStart(QPoint p);
 	void draggingEnd(QPoint p);
+	void backgroundImageChanged();
 
 protected:
 	void mousePressEvent  (QMouseEvent* ev);
@@ -234,6 +243,7 @@ public:
 
 	bool		m_bzoomRect;
 	bool		m_bvalidRect;
+	bool		m_mapToRect;
 	bool		m_select;
 	bool		m_newSelect;
 	bool		m_bdragging;
@@ -245,6 +255,8 @@ public:
 	QPointF ScreenToView(const QPoint& p);
 	QPoint ViewToScreen(const QPointF& p);
 
+	void SetBackgroundImage(QImage* img);
+
 protected:
 	//! render the plot
 	void paintEvent(QPaintEvent* pe);
@@ -255,6 +267,8 @@ public slots:
 	void OnZoomToFit();
 	void OnShowProps();
 	void OnCopyToClipboard();
+	void OnBGImage();
+	void OnClearBGImage();
 
 private: // drawing helper functions
 	void drawAxes(QPainter& p);
@@ -286,7 +300,10 @@ private:
 	QAction*	m_pZoomToFit;
 	QAction*	m_pShowProps;
 	QAction*	m_pCopyToClip;
+	QAction*	m_pickBGImage;
+	QAction*	m_clrBGImage;
 	QSize		m_sizeHint;
+	QImage*		m_img;
 };
 
 
