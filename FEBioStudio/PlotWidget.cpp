@@ -533,6 +533,7 @@ void CPlotWidget::OnClearBGImage()
 {
 	SetBackgroundImage(nullptr);
 	emit backgroundImageChanged();
+	repaint();
 }
 
 //-----------------------------------------------------------------------------
