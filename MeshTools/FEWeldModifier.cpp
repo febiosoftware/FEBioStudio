@@ -28,6 +28,8 @@ FEMesh* FEWeldNodes::Apply(FEMesh* pm)
 	// now we modify the element node numbers
 	UpdateElements(pnm);
 
+	pnm->DeleteTaggedElements(1);
+
 	pnm->RemoveIsolatedNodes();
 
 	pnm->RebuildMesh();
@@ -119,30 +121,42 @@ void FEWeldNodes::UpdateElements(FEMesh* pnm)
 		}
 		else if (ne == 4)
 		{
-			assert(el.IsType(FE_QUAD4));
-			if ((en[0]==en[1])||(en[0]==en[2])||(en[0]==en[3])||
-				(en[1]==en[2])||(en[1]==en[3])||(en[2]==en[3]))
+			switch(el.Type())
 			{
-				int n = 1;
-				for (int j=1; j<4; ++j)
+			case FE_QUAD4:
+				if ((en[0]==en[1])||(en[0]==en[2])||(en[0]==en[3])||
+						(en[1]==en[2])||(en[1]==en[3])||(en[2]==en[3]))
 				{
-					bool b = true;
-					for (int k=0; k<n; ++k)
-						if (en[j] == en[k]) { b = false; break; }
+					int n = 1;
+					for (int j=1; j<4; ++j)
+					{
+						bool b = true;
+						for (int k=0; k<n; ++k)
+							if (en[j] == en[k]) { b = false; break; }
 
-					if (b) { en[n++] = en[j]; }
-				}
+						if (b) { en[n++] = en[j]; }
+					}
 
-				if (n==3)
-				{
-					// downgrade to triangle
-					el.SetType(FE_TRI3);
+					if (n==3)
+					{
+						// downgrade to triangle
+						el.SetType(FE_TRI3);
+					}
+					else if (n<3)
+					{
+						// mark for deletion
+						el.m_ntag = 1;
+					}
 				}
-				else if (n<3)
+				break;
+			case FE_TET4:
+				if ((en[0]==en[1])||(en[0]==en[2])||(en[0]==en[3])||
+						(en[1]==en[2])||(en[1]==en[3])||(en[2]==en[3]))
 				{
 					// mark for deletion
 					el.m_ntag = 1;
 				}
+				break;
 			}
 		}
 	}
