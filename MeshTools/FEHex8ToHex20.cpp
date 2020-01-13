@@ -547,14 +547,14 @@ FEMesh* FEHex20ToHex8::Apply(FEMesh* pm)
 		e1.m_gid = e0.m_gid;
 
 		e1.SetType(FE_HEX8);
-		e1.m_node[0] = e0.m_node[0];
-		e1.m_node[1] = e0.m_node[1];
-		e1.m_node[2] = e0.m_node[2];
-		e1.m_node[3] = e0.m_node[3];
-		e1.m_node[4] = e0.m_node[4];
-		e1.m_node[5] = e0.m_node[5];
-		e1.m_node[6] = e0.m_node[6];
-		e1.m_node[7] = e0.m_node[7];
+		e1.m_node[0] = pm->Node(e0.m_node[0]).m_ntag;
+		e1.m_node[1] = pm->Node(e0.m_node[1]).m_ntag;
+		e1.m_node[2] = pm->Node(e0.m_node[2]).m_ntag;
+		e1.m_node[3] = pm->Node(e0.m_node[3]).m_ntag;
+		e1.m_node[4] = pm->Node(e0.m_node[4]).m_ntag;
+		e1.m_node[5] = pm->Node(e0.m_node[5]).m_ntag;
+		e1.m_node[6] = pm->Node(e0.m_node[6]).m_ntag;
+		e1.m_node[7] = pm->Node(e0.m_node[7]).m_ntag;
 	}
 
 	// create the new faces
@@ -566,10 +566,10 @@ FEMesh* FEHex20ToHex8::Apply(FEMesh* pm)
 		f1.SetType(FE_FACE_QUAD4);
 		f1.m_gid = f0.m_gid;
 		f1.m_sid = f0.m_sid;
-		f1.n[0] = f0.n[0];
-		f1.n[1] = f0.n[1];
-		f1.n[2] = f0.n[2];
-		f1.n[3] = f0.n[3];
+		f1.n[0] = pm->Node(f0.n[0]).m_ntag;
+		f1.n[1] = pm->Node(f0.n[1]).m_ntag;
+		f1.n[2] = pm->Node(f0.n[2]).m_ntag;
+		f1.n[3] = pm->Node(f0.n[3]).m_ntag;
 		f1.m_elem[0] = f0.m_elem[0];
 		f1.m_elem[1] = f0.m_elem[1];
 		f1.m_nbr[0] = f0.m_nbr[0];
@@ -584,8 +584,9 @@ FEMesh* FEHex20ToHex8::Apply(FEMesh* pm)
 		FEEdge& e0 = pm->Edge(i);
 		FEEdge& e1 = pnew->Edge(i);
 
-		e1.n[0] = e0.n[0];
-		e1.n[1] = e0.n[1];
+		e1.SetType(FE_EDGE2);
+		e1.n[0] = pm->Node(e0.n[0]).m_ntag;
+		e1.n[1] = pm->Node(e0.n[1]).m_ntag;
 		e1.n[2] = -1;
 		e1.m_gid = e0.m_gid;
 		e1.m_nbr[0] = e0.m_nbr[0];
