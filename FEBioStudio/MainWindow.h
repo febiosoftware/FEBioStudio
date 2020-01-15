@@ -222,6 +222,7 @@ public slots:
 	void on_actionDetach_triggered();
 	void on_actionExtract_triggered();
 	void on_actionEditProject_triggered();
+	void on_actionFaceToElem_triggered();
 
 	void on_actionAddBC_triggered();
 	void on_actionAddNodalLoad_triggered();

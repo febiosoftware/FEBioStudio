@@ -172,9 +172,6 @@
     <ClCompile Include="..\..\MeshTools\FERevolveFaces.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\FESelectElementsFromFaces.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\FESelection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -520,9 +517,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FERevolveFaces.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\FESelectElementsFromFaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FESelection.h">

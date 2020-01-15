@@ -1832,6 +1832,23 @@ void CMainWindow::on_actionEditProject_triggered()
 	UpdatePhysicsUi();
 }
 
+void CMainWindow::on_actionFaceToElem_triggered()
+{
+	CDocument* doc = GetDocument();
+	FESelection* sel = doc->GetCurrentSelection();
+	if (sel->Type() == SELECT_FE_FACES)
+	{
+		FEFaceSelection* selectedFaces = dynamic_cast<FEFaceSelection*>(sel);
+		FEMesh* mesh = dynamic_cast<FEMesh*>(selectedFaces->GetMesh());
+		if (mesh)
+		{
+			mesh->SelectElementsFromFaces();
+			doc->SetItemMode(ITEM_ELEM);
+			repaint();
+		}
+	}
+}
+
 void CMainWindow::on_actionUndoViewChange_triggered()
 {
 	ui->glview->UndoViewChange();

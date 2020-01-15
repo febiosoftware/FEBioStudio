@@ -195,7 +195,6 @@
     <ClCompile Include="..\..\MeshTools\FEQuartDogBone.cpp" />
     <ClCompile Include="..\..\MeshTools\FERefineSurface.cpp" />
     <ClCompile Include="..\..\MeshTools\FERevolveFaces.cpp" />
-    <ClCompile Include="..\..\MeshTools\FESelectElementsFromFaces.cpp" />
     <ClCompile Include="..\..\MeshTools\FESelection.cpp" />
     <ClCompile Include="..\..\MeshTools\FEShellDisc.cpp" />
     <ClCompile Include="..\..\MeshTools\FEShellPatch.cpp" />
@@ -313,7 +312,6 @@
     <ClInclude Include="..\..\MeshTools\FEQuartDogBone.h" />
     <ClInclude Include="..\..\MeshTools\FERefineSurface.h" />
     <ClInclude Include="..\..\MeshTools\FERevolveFaces.h" />
-    <ClInclude Include="..\..\MeshTools\FESelectElementsFromFaces.h" />
     <ClInclude Include="..\..\MeshTools\FESelection.h" />
     <ClInclude Include="..\..\MeshTools\FEShellDisc.h" />
     <ClInclude Include="..\..\MeshTools\FEShellPatch.h" />

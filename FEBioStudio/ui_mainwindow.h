@@ -302,6 +302,8 @@ public:
 		QAction* actionPurge             = addAction("Purge ..."         , "actionPurge"            );
 		QAction* actionEditProject       = addAction("Edit Project Settings ...", "actionEditProject");
 
+		QAction* actionFace2Elems        = addAction("Face to Element selection", "actionFaceToElem");
+
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
@@ -500,6 +502,10 @@ public:
 		menuFile->addSeparator();
 		menuFile->addAction(actionExit);
 
+		QMenu* moreSelection = new QMenu("More selection options");
+		moreSelection->addAction(actionFace2Elems);
+
+
 		// Edit menu
 		menuBar->addAction(menuEdit->menuAction());
 		menuEdit->addAction(actionUndo);
@@ -514,6 +520,7 @@ public:
 		menuEdit->addAction(actionHideUnselected);
 		menuEdit->addAction(actionUnhideAll);
 		menuEdit->addAction(actionToggleVisible);
+		menuEdit->addAction(moreSelection->menuAction());
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionTransform);
 		menuEdit->addAction(actionCollapseTransform);

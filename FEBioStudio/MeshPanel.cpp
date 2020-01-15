@@ -6,7 +6,6 @@
 #include <MeshTools/FEWeldModifier.h>
 #include <MeshTools/FEAutoPartition.h>
 #include <MeshTools/FEBoundaryLayerMesher.h>
-#include <MeshTools/FESelectElementsFromFaces.h>
 #include <MeshTools/FEAxesCurvature.h>
 #include <MeshTools/FEExtrudeFaces.h>
 #include <MeshTools/FECreateShells.h>
@@ -148,7 +147,6 @@ REGISTER_CLASS(FESetFiberOrientation  , CLASS_FEMODIFIER, "Set Fibers"     , EDI
 REGISTER_CLASS(FESetAxesOrientation   , CLASS_FEMODIFIER, "Set Axes"       , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
 REGISTER_CLASS(FEAxesCurvature        , CLASS_FEMODIFIER, "Set Axes from Curvature" , EDIT_MESH | EDIT_ELEMENT | EDIT_FACE | EDIT_SAFE);
 REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
-REGISTER_CLASS(FESelectElementsFromFaces, CLASS_FEMODIFIER, "Select Elems from Faces", EDIT_FACE | EDIT_SAFE);
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 #ifdef HAS_MMG
 REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Refine", EDIT_MESH);

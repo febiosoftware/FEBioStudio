@@ -184,6 +184,9 @@ public: // --- M E S H   M A N I P U L A T I O N ---
 	// remove duplicate edges
 	void RemoveDuplicateFaces();
 
+	// select elements based on face selection
+	void SelectElementsFromFaces();
+
 public:
 	// resize arrays
 	void ResizeNodes(int newSize);
