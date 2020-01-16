@@ -1076,7 +1076,7 @@ void FENodePosition::eval(int n, vec3f* pv)
 //-----------------------------------------------------------------------------
 void FENodeInitPos::eval(int n, vec3f* pv)
 {
-	*pv = to_vec3f(GetFEState()->GetFEMesh()->Node(n).r);
+	*pv = to_vec3f(GetFEModel()->NodePosition(n, 0));
 }
 
 //=============================================================================

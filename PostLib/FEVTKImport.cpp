@@ -169,7 +169,8 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 			if (strstr(ch, "POINT_DATA") != 0)
 			{
-				if (!readPointData(szline)) return errf("Error while reading POINT_DATA");
+//				if (!readPointData(szline)) return errf("Error while reading POINT_DATA");
+				size = atoi(ch + 10);
 			}
 			if(strstr(ch,"CELL_DATA")!=0)
 			{
@@ -188,7 +189,7 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 			return errf("Only scalar data is supported.");	
 		vector<double> data; 
 		//reading shell thickness
-		if(isShellThickness)
+		if(isShellThickness || isScalar)
 		{			
 			data.reserve(size);
 			//Check how many nodes are there in each line
