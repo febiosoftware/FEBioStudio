@@ -1842,9 +1842,12 @@ void CMainWindow::on_actionFaceToElem_triggered()
 		FEMesh* mesh = dynamic_cast<FEMesh*>(selectedFaces->GetMesh());
 		if (mesh)
 		{
-			mesh->SelectElementsFromFaces();
-			doc->SetItemMode(ITEM_ELEM);
-			repaint();
+			vector<int> selectedElems = mesh->GetElementsFromSelectedFaces();
+			if (selectedElems.empty() == false)
+			{
+				CCmdSelectElements* cmd = new CCmdSelectElements(mesh, selectedElems, false);
+				doc->DoCommand(cmd);
+			}
 		}
 	}
 }

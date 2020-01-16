@@ -185,7 +185,7 @@ public: // --- M E S H   M A N I P U L A T I O N ---
 	void RemoveDuplicateFaces();
 
 	// select elements based on face selection
-	void SelectElementsFromFaces();
+	vector<int> GetElementsFromSelectedFaces();
 
 public:
 	// resize arrays

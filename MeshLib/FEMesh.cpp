@@ -1926,32 +1926,20 @@ void FEMesh::RemoveDuplicateFaces()
 
 //-----------------------------------------------------------------------------
 // select elements based on face selection
-void FEMesh::SelectElementsFromFaces()
+vector<int> FEMesh::GetElementsFromSelectedFaces()
 {
 	// tag elements for selection
 	int ne0 = Elements();
 	vector<bool> selem(ne0, false);
 
-	// store list of selected faces in fdata
-	vector<FEFace> fdata;
-
-	for (int i = 0; i<Faces(); ++i)
-	{
-		FEFace& face = Face(i);
-		if (face.IsSelected()) {
-			fdata.push_back(face);
-			face.Unselect();
-		}
-	}
-
-	int ne1 = (int)fdata.size();
+	int faces = Faces();
 
 	// map faces to their element
 	std::map<int, vector<int>> fel;
 	std::map<int, vector<int>>::iterator it;
-	for (int i = 0; i<ne1; ++i)
+	for (int i = 0; i<faces; ++i)
 	{
-		FEFace face = fdata[i];
+		FEFace& face = Face(i);
 		// get element to which this face belongs
 		int iel = face.m_elem[0].eid;
 		// store faces that share this element
@@ -1960,9 +1948,12 @@ void FEMesh::SelectElementsFromFaces()
 
 	// mark all nodes on the selected faces
 	for (int i = 0; i<Nodes(); ++i) Node(i).m_ntag = -1;
-	for (int i = 0; i<ne1; ++i)
-		for (int j = 0; j<fdata[i].Nodes(); ++j)
-			Node(fdata[i].n[j]).m_ntag = 1;
+	for (int i = 0; i < faces; ++i)
+	{
+		FEFace& face = Face(i);
+		for (int j = 0; j < face.Nodes(); ++j)
+			Node(face.n[j]).m_ntag = 1;
+	}
 
 	// find all elements that share nodes with these faces
 	// fne key = non-face element
@@ -1970,7 +1961,7 @@ void FEMesh::SelectElementsFromFaces()
 	std::map<int, vector<int>> fne;
 	std::map<int, vector<int>>::iterator ie;
 	for (int i = 0; i<Elements(); ++i) {
-		FEElement el = Element(i);
+		FEElement& el = Element(i);
 		vector<int> shared_nodes;
 		shared_nodes.reserve(el.Nodes());
 		for (int j = 0; j<el.Nodes(); ++j) {
@@ -1981,6 +1972,8 @@ void FEMesh::SelectElementsFromFaces()
 			fne[i] = shared_nodes;
 	}
 
+	vector<int> selection;
+
 	for (it = fel.begin(); it != fel.end(); ++it) {
 		if (it->second.size() == 1) {
 			// only one face connected to this element
@@ -1989,21 +1982,21 @@ void FEMesh::SelectElementsFromFaces()
 		}
 		else if (it->second.size() == 2) {
 			// two faces connected to this element
-			FEFace face0 = fdata[it->second[0]];
-			FEFace face1 = fdata[it->second[1]];
+			FEFace& face0 = Face(it->second[0]);
+			FEFace& face1 = Face(it->second[1]);
 			// check if they share common nodes
 			vector<int> cn;
 			for (int i = 0; i<face0.Nodes(); ++i)
 				for (int j = 0; j<face1.Nodes(); ++j)
 					if (face0.n[i] == face1.n[j]) cn.push_back(face0.n[i]);
 			// only allow two shared nodes
-			if (cn.size() != 2) return;
+			if (cn.size() != 2) return selection;
 			int iel = (int)it->first;
 			selem[iel] = true;
 		}
 		else if (it->second.size() > 2)
 			// more than two faces share same element
-			return;
+			return selection;
 	}
 
 	// add hex and penta elements that belong to internal corner edges
@@ -2016,7 +2009,9 @@ void FEMesh::SelectElementsFromFaces()
 
 	// select all the tagged elements
 	for (int i = 0; i<ne0; ++i)
-		if (selem[i]) Element(i).Select();
+		if (selem[i]) selection.push_back(i);
+
+	return selection;
 }
 
 //-----------------------------------------------------------------------------
