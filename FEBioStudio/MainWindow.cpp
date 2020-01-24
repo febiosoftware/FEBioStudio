@@ -2045,7 +2045,10 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		// extract the arguments
 		QStringList args = cmd.split(" ", QString::SkipEmptyParts);
 
+		std::string configFile = job->GetConfigFileName();
+
 		args.replaceInStrings("$(Filename)", QString::fromStdString(fileName));
+		args.replaceInStrings("$(ConfigFile)", QString::fromStdString(configFile));
 
 		// get ready
 		AddLogEntry(QString("Starting FEBio: %1\n").arg(args.join(" ")));

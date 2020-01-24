@@ -21,10 +21,12 @@ public:
 
 	QString GetWorkingDirectory();
 	QString GetJobName();
+	QString GetConfigFileName();
 	int GetLaunchConfig();
 	int GetFEBioFileVersion();
 	bool WriteNotes();
 	bool UseSubDir();
+	void SetConfigFileName(const QString& configFile);
 
 	QString CommandLine();
 

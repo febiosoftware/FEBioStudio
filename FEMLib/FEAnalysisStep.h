@@ -187,6 +187,7 @@ struct STEP_SETTINGS
     // linear solver settings
 	bool	bminbw;			// minimze bandwidth
 	int		nmatfmt;		// matrix storage format: 0 = default, 1 = symmetric, 2 = non-symmetric
+	int		neqscheme;		// equation scheme, 0 = default, 1 = block
 
 	// analysis settings
 	int		nanalysis;		// type of analysis

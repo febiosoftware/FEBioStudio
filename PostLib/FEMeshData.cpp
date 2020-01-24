@@ -815,7 +815,7 @@ void FEVolRatio::eval(int n, float* pv)
 	for (i=0; i<N; i++) 
 	{ 
 		node = pe->m_node[i];
-		X[i] = to_vec3f(m.Node(node).r);
+		X[i] = GetFEModel()->NodePosition(node, 0); 
 		x[i] = GetFEModel()->NodePosition(node, ntime);
 	}
 
@@ -1800,7 +1800,7 @@ void FEVolStrain::eval(int n, float* pv)
 	for (i = 0; i<N; i++)
 	{ 
 		node = pe->m_node[i];
-		X[i] = to_vec3f(GetFEMesh()->Node(node).r);
+		X[i] = fem->NodePosition(node, 0);
 		x[i] = fem->NodePosition(node, ntime);
 	}
 

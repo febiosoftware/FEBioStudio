@@ -976,6 +976,11 @@ void FEBioExport25::WriteSolidControlParams(FEAnalysisStep* pstep)
     {
         m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1? 1: 0));
     }
+
+	if (ops.neqscheme != 0)
+	{
+		m_xml.add_leaf("equation_scheme", ops.neqscheme);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1076,6 +1081,11 @@ void FEBioExport25::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 	{
 		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1? 1: 0));
 	}
+
+	if (ops.neqscheme != 0)
+	{
+		m_xml.add_leaf("equation_scheme", ops.neqscheme);
+	}
 }
 
 
@@ -1133,6 +1143,11 @@ void FEBioExport25::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 	if (ops.nmatfmt != 0)
 	{
 		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1? 1: 0));
+	}
+
+	if (ops.neqscheme != 0)
+	{
+		m_xml.add_leaf("equation_scheme", ops.neqscheme);
 	}
 }
 

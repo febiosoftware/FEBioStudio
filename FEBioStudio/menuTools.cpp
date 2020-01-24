@@ -82,6 +82,17 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	if (jobList.isEmpty() == false) dlg.SetJobNames(jobList);
 	if (jobName.isEmpty() == false) dlg.SetJobName(jobName);
 	dlg.SetLaunchConfig(ui->m_launch_configs, lastLaunchConfigIndex);
+
+	if (doc->FEBioJobs() > 0)
+	{
+		CFEBioJob* job = doc->GetFEBioJob(0);
+		std::string s = job->GetConfigFileName();
+		if (s.empty() == false)
+		{
+			dlg.SetConfigFileName(QString::fromStdString(s));
+		}
+	}
+
 	if (dlg.exec())
 	{
 		// get the working directory and job name
@@ -125,6 +136,9 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			// show it in the model viewer
 			UpdateModel(job);
 		}
+
+		QString configFile = dlg.GetConfigFileName();
+		if (configFile.isEmpty() == false) job->SetConfigFileName(configFile.toStdString());
 
 		// get the selected FEBio file version
 		lastFEBioFileVersion = dlg.GetFEBioFileVersion();

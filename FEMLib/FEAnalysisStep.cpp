@@ -925,6 +925,7 @@ void STEP_SETTINGS::Defaults()
 	mthsol = 0;
 	bminbw = false;
 	nmatfmt = 0;	// = default matrix storage
+	neqscheme = 0;	// = default equation scheme
 	ilimit = 10;
 	maxref = 15;
 

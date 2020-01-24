@@ -169,7 +169,7 @@ void CDlgRun::updateDefaultCommand()
 		if (bg) t += " -g";
 
 		QString configFile = ui->configFile->text();
-		if (configFile.isEmpty() == false) t += " -config " + configFile;
+		if (configFile.isEmpty() == false) t += " -config $(ConfigFile)";
 
 		QString taskName = ui->taskName->text();
 		if (taskName.isEmpty() == false)
@@ -251,6 +251,16 @@ QString CDlgRun::GetWorkingDirectory()
 QString CDlgRun::GetJobName()
 {
 	return ui->jobName->currentText();
+}
+
+QString CDlgRun::GetConfigFileName()
+{
+	return ui->configFile->text();
+}
+
+void CDlgRun::SetConfigFileName(const QString& configFile)
+{
+	ui->configFile->setText(configFile);
 }
 
 int CDlgRun::GetLaunchConfig()

@@ -86,6 +86,7 @@ CAnalysisTimeSettings::CAnalysisTimeSettings(FEAnalysisStep* step) : CObjectProp
 
 	addProperty("Linear solver", CProperty::Group);
 	addProperty("Matrix Symmetry", CProperty::Enum)->setEnumValues(QStringList() << "default" << "symmetric" << "non-symmetric");
+	addProperty("Equation Scheme", CProperty::Enum)->setEnumValues(QStringList() << "default" << "block");
 
 	addProperty("Nonlinear solver", CProperty::Group);
 	BuildParamList(step);
@@ -118,10 +119,11 @@ QVariant CAnalysisTimeSettings::GetPropertyValue(int i)
 	case 11: return set.ncut;
 	case 12: return 0;
 	case 13: return set.nmatfmt;
-	case 14: return 0;
+	case 14: return set.neqscheme;
+	case 15: return 0;
 	default:
 	{
-		i -= 15;
+		i -= 16;
 		int N = m_step->Parameters();
 		if (i < N)
 			return CObjectProps::GetPropertyValue(i);
@@ -165,10 +167,11 @@ void CAnalysisTimeSettings::SetPropertyValue(int i, const QVariant& v)
 	case 11: set.ncut = v.toInt(); break;
 	case 12: break;
 	case 13: set.nmatfmt = v.toInt(); break;
-	case 14: break;
+	case 14: set.neqscheme = v.toInt(); break;
+	case 15: break;
 	default:
 	{
-		i -= 15;
+		i -= 16;
 		int N = m_step->Parameters();
 		if (i < N)
 			CObjectProps::SetPropertyValue(i, v);

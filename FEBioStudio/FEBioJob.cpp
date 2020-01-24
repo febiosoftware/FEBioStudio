@@ -197,6 +197,16 @@ std::string CFEBioJob::GetPlotFileName() const
 	return m_plotFile;
 }
 
+void CFEBioJob::SetConfigFileName(const std::string& configFile)
+{
+	m_cnfFile = configFile;
+}
+
+std::string CFEBioJob::GetConfigFileName() const
+{
+	return m_cnfFile;
+}
+
 bool CFEBioJob::HasPostDoc()
 {
 	return (m_postDoc != nullptr);

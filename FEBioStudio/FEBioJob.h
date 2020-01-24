@@ -35,6 +35,9 @@ public:
 	void SetPlotFileName(const std::string& plotFile);
 	std::string GetPlotFileName() const;
 
+	void SetConfigFileName(const std::string& configFile);
+	std::string GetConfigFileName() const;
+
 	void UpdateWorkingDirectory(const std::string& dir);
 
 	CLaunchConfig* GetLaunchConfig();
@@ -60,6 +63,7 @@ private:
 	std::string		m_fileName;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name
 	std::string		m_logFile;	// the .log file name
+	std::string		m_cnfFile;	// the config file
 	int				m_status;	// return status
 
 	CLaunchConfig 	m_launchConfig;
