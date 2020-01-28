@@ -1,0 +1,37 @@
+#include <string>
+#include <string.h>
+#include <vector>
+
+class QJsonDocument;
+class QString;
+class CRepoProject;
+class CDatabasePanel;
+
+class CLocalDatabaseHandler
+{
+	class Imp;
+
+public:
+	CLocalDatabaseHandler(std::string dbPath, CDatabasePanel* dbPanel);
+	~CLocalDatabaseHandler();
+
+	void update(QJsonDocument& jsonDoc);
+
+	void GetProjects();
+	void GetProjectFiles(int ID);
+
+	void GetProjectData(int ID);
+	void GetFileData(int ID);
+	void GetProjectTags(int ID);
+
+	QString FilePathFromID(int ID, int type);
+	QString FileNameFromID(int ID, int type);
+	QString FullFileNameFromID(int ID, int type);
+	int ProjectIDFromFileID(int ID, int type);
+
+
+private:
+	Imp* imp;
+
+
+};

@@ -150,6 +150,7 @@ public:
 	vector<CLaunchConfig>		m_launch_configs;
 
 	QString		m_defaultProjectFolder;
+	QString		m_repositoryFolder;
 
 	QProcess*	m_process;
 	bool		m_bkillProcess;

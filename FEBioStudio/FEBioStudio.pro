@@ -21,7 +21,7 @@ LIBS += -L/home/sci/mherron/Resources/Qt/5.13.2/gcc_64/lib
 LIBS += -L/home/sci/mherron/Resources/tetgen1.5.0/
 LIBS += -L/opt/netgen/lib 
 LIBS += -L/home/sci/mherron/Resources/libssh/build2/lib -lssh 
-LIBS += -L/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d -lcrypto
+LIBS += -L/home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d -lcrypto -lssl
 LIBS += -L/usr/local/lib 
 LIBS += -L../build/lib
 LIBS += -Wl,--start-group
@@ -46,7 +46,7 @@ LIBS += -lgllib -lglwlib -lpostgl -lxpltlib -lpostlib -lcuilib
 
 LIBS += -Wl,--end-group
 
-LIBS += -L/usr/lib64 -lGLU -lGL -lz
+LIBS += -L/usr/lib64 -lGLU -lGL -lz -lsqlite3
 
 LIBS += -lavformat -lavcodec -lavresample -lavutil -lswresample -lswscale
 

@@ -1,18 +1,19 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'CreatePanel.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.12.0)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.13.2)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
+#include <memory>
 #include "CreatePanel.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'CreatePanel.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.12.0. It"
+#error "This file was generated using the moc from 5.13.2. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -70,7 +71,7 @@ static const uint qt_meta_data_CCreatePanel[] = {
 void CCreatePanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        CCreatePanel *_t = static_cast<CCreatePanel *>(_o);
+        auto *_t = static_cast<CCreatePanel *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->on_create_clicked(); break;
@@ -173,7 +174,7 @@ static const uint qt_meta_data_CCreateButtonPanel[] = {
 void CCreateButtonPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        CCreateButtonPanel *_t = static_cast<CCreateButtonPanel *>(_o);
+        auto *_t = static_cast<CCreateButtonPanel *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->buttonClicked((*reinterpret_cast< int(*)>(_a[1]))); break;
@@ -235,7 +236,7 @@ int CCreateButtonPanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 // SIGNAL 0
 void CCreateButtonPanel::buttonClicked(int _t1)
 {
-    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 struct qt_meta_stringdata_CDefaultCreatePane_t {
@@ -354,7 +355,7 @@ static const uint qt_meta_data_CCreateLoftSurface[] = {
 void CCreateLoftSurface::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        CCreateLoftSurface *_t = static_cast<CCreateLoftSurface *>(_o);
+        auto *_t = static_cast<CCreateLoftSurface *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->itemPicked((*reinterpret_cast< GItem*(*)>(_a[1]))); break;

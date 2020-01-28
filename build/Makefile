@@ -1,8 +1,8 @@
 QMAKE = /home/sci/mherron/Resources/Qt/5.13.2/gcc_64/bin/qmake
 
-LIBS = Ansys Abaqus Comsol FEBio FEMLib FSCore GeomLib ImageLib LSDyna MathLib MeshIO MeshLib Nike3D XML XPLTLib
+LIBS = Ansys Abaqus Comsol FEBio FEMLib GeomLib ImageLib LSDyna MathLib MeshIO MeshLib Nike3D XML XPLTLib
 
-FEBioStudio: $(LIBS) MeshTools GLLib GLWLib PostGL PostLib CUILib
+FEBioStudio: $(LIBS) MeshTools GLLib GLWLib PostGL PostLib CUILib FSCore
 	cd ../FEBioStudio; $(QMAKE) FEBioStudio.pro;
 	$(MAKE) -C ../FEBioStudio/;
 
@@ -33,6 +33,10 @@ CUILib:
 	cd ../CUILib; $(QMAKE) CUILib.pro;
 	$(MAKE) -C ../CUILib/;
 
+FSCore:
+	cd ../FSCore; $(QMAKE) FSCore.pro;
+	$(MAKE) -C ../FSCore/;
+
 FEBioStudioClean:
 	cd ../FEBioStudio; $(MAKE) clean
 
@@ -54,9 +58,12 @@ PostLibClean:
 CUILibClean:
 	cd ../CUILib; $(MAKE) clean
 
+FSCoreClean:
+	cd ../FSCore; $(MAKE) clean
+
 LibClean:
 	for lib in $(LIBS) ; do \
 		cd ../$$lib; $(MAKE) -f ../build/makeLibs.mk clean ;\
 	done
 
-clean: LibClean MeshToolsClean GLLibClean GLWLibClean PostGLClean PostLibClean CUILibClean FEBioStudioClean
+clean: LibClean MeshToolsClean GLLibClean GLWLibClean PostGLClean PostLibClean CUILibClean FSCoreClean FEBioStudioClean

@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
+#include <QStandardPaths>
 #include <QMessageBox>
 #include <QtCore/QMimeData>
 #include <FSCore/FSObject.h>
@@ -134,6 +135,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// Instantiate Logger singleton
 	CLogger::Instantiate(this);
+
+	//Initialize the DatabasePanel. This requires information read in from the settings
+	ui->databasePanel->Init(ui->m_repositoryFolder);
 }
 
 QIcon CMainWindow::GetResourceIcon(const QString& iconName)
@@ -876,7 +880,18 @@ void CMainWindow::writeSettings()
 	settings.setValue("currentPath", ui->currentPath);
 
 	settings.setValue("defaultProjectFolder", ui->m_defaultProjectFolder);
+	settings.setValue("repositoryFolder", ui->m_repositoryFolder);
 
+	QStringList folders = ui->fileViewer->FolderList();
+	settings.setValue("folders", folders);
+
+	settings.setValue("recentFiles", ui->m_recentFiles);
+	settings.setValue("recentFEFiles", ui->m_recentFEFiles);
+	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
+
+	settings.endGroup();
+
+	settings.beginGroup("LaunchConfigurations");
 	// Create and save a list of launch config names
 	QStringList launch_config_names;
 	for(CLaunchConfig conf : ui->m_launch_configs)
@@ -903,15 +918,6 @@ void CMainWindow::writeSettings()
 		settings.setValue(configName + "/customFile", ui->m_launch_configs[i].customFile.c_str());
 		settings.setValue(configName + "/text", ui->m_launch_configs[i].getText().c_str());
 	}
-
-
-	QStringList folders = ui->fileViewer->FolderList();
-	settings.setValue("folders", folders);
-
-	settings.setValue("recentFiles", ui->m_recentFiles);
-	settings.setValue("recentFEFiles", ui->m_recentFEFiles);
-	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
-
 	settings.endGroup();
 }
 
@@ -939,6 +945,25 @@ void CMainWindow::readSettings()
 
 	settings.beginGroup("FolderSettings");
 	ui->currentPath = settings.value("currentPath", QDir::homePath()).toString();
+
+	ui->m_defaultProjectFolder = settings.value("defaultProjectFolder", ui->m_defaultProjectFolder).toString();
+	ui->m_repositoryFolder = settings.value("repositoryFolder", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/modelRepo").toString();
+
+	QStringList folders = settings.value("folders").toStringList();
+	if (folders.isEmpty() == false)
+	{
+		ui->fileViewer->SetFolderList(folders);
+	}
+
+	ui->fileViewer->setCurrentPath(ui->currentPath);
+
+	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
+	QStringList recentFEFiles = settings.value("recentFEFiles").toStringList(); ui->setRecentFEFiles(recentFEFiles);
+	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
+
+	settings.endGroup();
+
+	settings.beginGroup("LaunchConfigurations");
 
 	QStringList launch_config_names;
 	launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
@@ -970,21 +995,6 @@ void CMainWindow::readSettings()
 		ui->m_launch_configs.back().setText(settings.value(configName + "/text").toString().toStdString());
 
 	}
-
-	ui->m_defaultProjectFolder = settings.value("defaultProjectFolder", ui->m_defaultProjectFolder).toString();
-
-	QStringList folders = settings.value("folders").toStringList();
-	if (folders.isEmpty() == false)
-	{
-		ui->fileViewer->SetFolderList(folders);
-	}
-
-	ui->fileViewer->setCurrentPath(ui->currentPath);
-
-	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
-	QStringList recentFEFiles = settings.value("recentFEFiles").toStringList(); ui->setRecentFEFiles(recentFEFiles);
-	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
-
 	settings.endGroup();
 }
 

@@ -1,0 +1,47 @@
+#include <QtCore/QObject>
+#include <QList>
+
+class QNetworkReply;
+class QSslError;
+class CDatabasePanel;
+class CLocalDatabaseHandler;
+class CMainWindow;
+
+class CRepoConnectionHandler : public QObject
+{
+	Q_OBJECT
+
+	class Imp;
+
+public:
+	CRepoConnectionHandler(CDatabasePanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd);
+	~CRepoConnectionHandler();
+
+	void authenticate(QString userName, QString password);
+//	void getModelList();
+	void getTables();
+	void getFile(int id, int type);
+	void upload(QByteArray projectInfo);
+
+	QString getUsername();
+
+private slots:
+	void connFinished(QNetworkReply *r);
+	void sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors);
+
+private:
+	bool NetworkAccessibleCheck();
+//	bool AuthCheck();
+
+	void authReply(QNetworkReply *r);
+//	void authCheckReply(QNetworkReply *r);
+//	void modelListReply(QNetworkReply *r);
+	void getTablesReply(QNetworkReply *r);
+	void getFileReply(QNetworkReply *r);
+	void uploadReply(QNetworkReply *r);
+
+	void TCPUpload(QString fileToken);
+
+	Imp* imp;
+
+};

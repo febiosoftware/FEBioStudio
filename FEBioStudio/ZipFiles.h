@@ -61,17 +61,36 @@ static bool archive(const QString & filePath, const QDir & dir, const QString & 
 			return false;
 		}
 
+		QString realPath;
+
 		if(fileInfo.isSymLink())
 		{
-			if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.symLinkTarget()))) {
-				return false;
-			}
+			realPath = fileInfo.symLinkTarget();
+
+//			if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.symLinkTarget())), NULL, 0, 0, 0, true) {
+//				return false;
+//			}
 		}
 		else
 		{
-			if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.filePath()))) {
-				return false;
-			}
+			realPath = fileInfo.filePath();
+
+//			if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.filePath())), NULL, 0, 0, 0, true) {
+//				return false;
+//			}
+		}
+
+		QuaZipNewInfo zipFileInfo(fileNameWithRelativePath, realPath);
+
+		// For writing uncompressed files
+//		zipFileInfo.uncompressedSize = fileInfo.size();
+
+//		if (!outFile.open(QIODevice::WriteOnly, zipFileInfo, NULL, 0, 0, 0, true)) {
+//			return false;
+//		}
+
+		if (!outFile.open(QIODevice::WriteOnly, zipFileInfo)) {
+			return false;
 		}
 
 		while (inFile.getChar(&c) && outFile.putChar(c));

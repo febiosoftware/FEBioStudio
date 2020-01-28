@@ -72,6 +72,8 @@
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 
+#include <iostream>
+
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
@@ -226,10 +228,22 @@ void CMainWindow::OpenFile(const QString& fileName)
 		// load the plot file
 		OpenPlotFile(fileName);
 	}
+	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
+	{
+		// load the feb file
+		OpenFEModel(fileName);
+	}
+	else if (ext.compare("prj", Qt::CaseInsensitive) == 0)
+	{
+		// Extract the project file and open it
+		ImportProject(fileName);
+	}
 	else
 	{
-		assert(false);
-		QMessageBox::critical(this, "FEBio Studio", "Does not compute!");
+		// Open any other files (e.g. log files) with the system's associated program
+		QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+//		assert(false);
+//		QMessageBox::critical(this, "FEBio Studio", "Does not compute!");
 	}
 }
 
