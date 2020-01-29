@@ -21,13 +21,16 @@ public:
 //	void getModelList();
 	void getTables();
 	void getFile(int id, int type);
-	void upload(QByteArray projectInfo);
+//	void upload(QByteArray projectInfo);
+	void uploadFileRequest(QByteArray projectInfo);
+	void uploadFile(QString fileToken);
 
 	QString getUsername();
 
 private slots:
 	void connFinished(QNetworkReply *r);
 	void sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors);
+	void progress(qint64 bytesReceived, qint64 bytesTotal);
 
 private:
 	bool NetworkAccessibleCheck();
@@ -38,9 +41,11 @@ private:
 //	void modelListReply(QNetworkReply *r);
 	void getTablesReply(QNetworkReply *r);
 	void getFileReply(QNetworkReply *r);
-	void uploadReply(QNetworkReply *r);
+//	void uploadReply(QNetworkReply *r);
+	void uploadFileRequestReply(QNetworkReply *r);
+	void uploadFileReply(QNetworkReply *r);
 
-	void TCPUpload(QString fileToken);
+//	void TCPUpload(QString fileToken);
 
 	Imp* imp;
 

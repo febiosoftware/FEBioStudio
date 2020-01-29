@@ -35,24 +35,7 @@
 
 #include <iostream>
 
-//class StackedWidget : public QStackedWidget
-//{
-//public:
-//	StackedWidget(QWidget* parent) : QStackedWidget(parent) {}
-//private:
-//	QSize sizeHint() const override
-//	{
-//		return parentWidget()->sizeHint();
-//	}
-//
-//	QSize minimumSizeHint() const override
-//	{
-//		return parentWidget()->minimumSizeHint();
-//	}
-//
-//};
-
-enum ITEMTYPES {PROJECT = 1001, FOLDER = 1002, FILEITEM = 1003};
+enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
 
 class CustomTreeWidgetItem : public QTreeWidgetItem
 {
@@ -97,7 +80,7 @@ public:
 		localCopy++;
 		UpdateLocalCopyColor();
 
-		if(type() != PROJECT)
+		if(type() != PROJECTITEM)
 		{
 			static_cast<CustomTreeWidgetItem*>(parent())->AddLocalCopy();
 
@@ -109,7 +92,7 @@ public:
 		localCopy--;
 		UpdateLocalCopyColor();
 
-		if(type() != PROJECT)
+		if(type() != PROJECTITEM)
 		{
 			static_cast<CustomTreeWidgetItem*>(parent())->SubtractLocalCopy();
 
@@ -169,7 +152,7 @@ class ProjectItem : public CustomTreeWidgetItem
 {
 public:
 	ProjectItem(QString name, int projectID)
-		: CustomTreeWidgetItem(name, PROJECT), m_projectID(projectID)
+		: CustomTreeWidgetItem(name, PROJECTITEM), m_projectID(projectID)
 	{
 		setIcon(0, QIcon(":/icons/FEBioStudio.png"));
 	}
@@ -190,7 +173,7 @@ class FolderItem : public CustomTreeWidgetItem
 {
 public:
 	FolderItem(QString name)
-		: CustomTreeWidgetItem(name, FOLDER)
+		: CustomTreeWidgetItem(name, FOLDERITEM)
 	{
 		setIcon(0, QIcon::fromTheme("folder"));
 	}
@@ -213,7 +196,7 @@ public:
 		}
 		else if(name.endsWith(".feb"))
 		{
-			setIcon(0, QIcon(":/icons/FEBio.png"));
+			setIcon(0, QIcon(":/icons/febio.png"));
 		}
 		else if(name.endsWith(".prv"))
 		{
@@ -251,36 +234,6 @@ private:
 
 };
 
-class CInfoItem : public QWidget
-{
-public:
-	CInfoItem(QString label, QString data = "", QWidget* parent = 0)
-	{
-		m_label = new QLabel(label + ":");
-		QFont font = m_label->font();
-		font.setItalic(true);
-		m_label->setFont(font);
-
-		m_data = new QLabel(data);
-
-		QHBoxLayout* layout = new QHBoxLayout;
-
-		layout->addWidget(m_label);
-
-		layout->addSpacing(100 - m_label->fontMetrics().boundingRect(label).width());
-		layout->addWidget(m_data);
-		layout->addStretch();
-
-		layout->setMargin(0);
-
-		setLayout(layout);
-	}
-
-	~CInfoItem(){};
-
-	QLabel* m_data;
-	QLabel* m_label;
-};
 
 class Ui::CDatabasePanel
 {
@@ -301,12 +254,12 @@ public:
 
 	QLabel* projectName;
 	QLabel* projectDesc;
-	CInfoItem* ownerInfoItem;
-	CInfoItem* versionInfoItem;
-	CInfoItem* tagsInfoItem;
+	QLabel* projectOwner;
+	QLabel* projectVersion;
+	QLabel* projectTags;
 
-	CInfoItem* filenameInfoItem;
-	CInfoItem* fileDescInfoItem;
+	QLabel* filenameLabel;
+	QLabel* fileDescLabel;
 
 	QToolBar* toolbar;
 
@@ -318,6 +271,7 @@ public:
 
 	QLineEdit* searchLineEdit;
 	QAction* actionSearch;
+	QAction* actionClearSearch;
 
 
 
@@ -396,6 +350,9 @@ public:
 		actionSearch = new QAction(QIcon(":/icons/search.png"), "Search", parent);
 		actionSearch->setObjectName("actionSearch");
 		searchBar->addAction(actionSearch);
+		actionClearSearch = new QAction(QIcon(":/icons/clear.png"), "Clear", parent);
+		actionClearSearch->setObjectName("actionClearSearch");
+		searchBar->addAction(actionClearSearch);
 
 		modelVBLayout->addWidget(searchBar);
 
@@ -427,10 +384,13 @@ public:
 		modelInfoLayout->addWidget(projectDesc = new QLabel);
 		projectDesc->setWordWrap(true);
 
-		modelInfoLayout->addWidget(ownerInfoItem = new CInfoItem("Owner"));
-		modelInfoLayout->addWidget(versionInfoItem = new CInfoItem("Version"));
-		modelInfoLayout->addWidget(tagsInfoItem = new CInfoItem("Tags"));
+		QFormLayout* modelInfoForm = new QFormLayout;
+		modelInfoForm->setHorizontalSpacing(10);
+		modelInfoForm->addRow("Owner:", projectOwner = new QLabel);
+		modelInfoForm->addRow("Version:", projectVersion = new QLabel);
+		modelInfoForm->addRow("Tags:", projectTags = new QLabel);
 
+		modelInfoLayout->addLayout(modelInfoForm);
 
 		projectInfoBox->addTool("Project Info", projectDummy);
 
@@ -438,8 +398,12 @@ public:
 		QVBoxLayout* fileInfoLayout = new QVBoxLayout;
 		fileDummy->setLayout(fileInfoLayout);
 
-		fileInfoLayout->addWidget(filenameInfoItem = new CInfoItem("Filename"));
-		fileInfoLayout->addWidget(fileDescInfoItem = new CInfoItem("Description"));
+		QFormLayout* fileInfoForm = new QFormLayout;
+		fileInfoForm->setHorizontalSpacing(10);
+		fileInfoForm->addRow("Filename:", filenameLabel = new QLabel);
+		fileInfoForm->addRow("Description:", fileDescLabel = new QLabel);
+
+		fileInfoLayout->addLayout(fileInfoForm);
 
 		projectInfoBox->addTool("File Info", fileDummy);
 		projectInfoBox->getToolItem(1)->hide();
@@ -450,9 +414,6 @@ public:
 		modelPage->setLayout(modelVBLayout);
 
 		stack->addWidget(modelPage);
-
-//		QFileIconProvider provider;
-//		folderIcon = provider.icon(QFileIconProvider::Folder);
 
 	}
 
@@ -513,9 +474,6 @@ CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent)
 	repoHandler = NULL;
 
 	QMetaObject::connectSlotsByName(this);
-
-//	QObject::connect(ui->treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(getProjectData()));
-//	QObject::connect(ui->treeWidget, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(contextMenu(const QPoint)));
 }
 
 void CDatabasePanel::Init(QString repositoryFolder)
@@ -734,7 +692,7 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 		QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
 
-		repoHandler->upload(payload);
+		repoHandler->uploadFileRequest(payload);
 	}
 
 }
@@ -763,12 +721,22 @@ void CDatabasePanel::on_actionSearch_triggered()
 
 }
 
+void CDatabasePanel::on_actionClearSearch_triggered()
+{
+	ui->searchLineEdit->clear();
+
+	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+	{
+		static_cast<ProjectItem*>(ui->treeWidget->topLevelItem(item))->setHidden(false);
+	}
+}
+
 void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item)
 {
 	int ID;
 	int type;
 
-	if(item->type() == PROJECT)
+	if(item->type() == PROJECTITEM)
 	{
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
 		ID = projItem->getProjectID();
@@ -795,7 +763,7 @@ void CDatabasePanel::OpenItem(CustomTreeWidgetItem *item)
 	int ID;
 	int type;
 
-	if(item->type() == PROJECT)
+	if(item->type() == PROJECTITEM)
 	{
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
 		ID = projItem->getProjectID();
@@ -828,7 +796,7 @@ void CDatabasePanel::DeleteItem(CustomTreeWidgetItem *item)
 	int ID;
 	int type;
 
-	if(item->type() == PROJECT)
+	if(item->type() == PROJECTITEM)
 	{
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
 		ID = projItem->getProjectID();
@@ -858,7 +826,7 @@ void CDatabasePanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 	int ID;
 	int type;
 
-	if(item->type() == PROJECT)
+	if(item->type() == PROJECTITEM)
 	{
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
 		ID = projItem->getProjectID();
@@ -904,7 +872,7 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 			tagString += ui->currentTags[tag];
 		}
 	}
-	ui->tagsInfoItem->m_data->setText(tagString);
+	ui->projectTags->setText(tagString);
 
 	// If a file was selected, show update the file info, otherwise hide it
 	if(item->type() == FILEITEM)
@@ -940,11 +908,9 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 
 	switch(item->type())
 	{
-	case PROJECT:
+	case PROJECTITEM:
 	case FILEITEM:
 	{
-//		menu.addAction("Download", this, SLOT(OnDownloadClicked()));
-
 		menu.addAction(ui->actionDownload);
 
 		if(item->LocalCopy())
@@ -965,15 +931,16 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 void CDatabasePanel::SetProjectData(char **data)
 {
 	ui->projectName->setText(data[0]);
-	ui->projectDesc->setText(data[1]);
-	ui->ownerInfoItem->m_data->setText(data[2]);
-	ui->versionInfoItem->m_data->setText(data[3]);
+	QString description = QString(data[1]).replace("\\n", "\n");
+	ui->projectDesc->setText(description);
+	ui->projectOwner->setText(data[2]);
+	ui->projectVersion->setText(data[3]);
 }
 
 void CDatabasePanel::SetFileData(char **data)
 {
-	ui->filenameInfoItem->m_data->setText(data[0]);
-	ui->fileDescInfoItem->m_data->setText(data[1]);
+	ui->filenameLabel->setText(data[0]);
+	ui->fileDescLabel->setText(data[1]);
 }
 
 void CDatabasePanel::AddCurrentTag(char **data)

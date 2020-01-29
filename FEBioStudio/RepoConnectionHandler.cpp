@@ -138,18 +138,41 @@ void CRepoConnectionHandler::getFile(int id, int type)
 
 	if(NetworkAccessibleCheck())
 	{
-		imp->restclient->get(request);
+		QNetworkReply* reply = imp->restclient->get(request);
+
+		QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CRepoConnectionHandler::progress);
 	}
 
 }
 
-void CRepoConnectionHandler::upload(QByteArray projectInfo)
+//void CRepoConnectionHandler::upload(QByteArray projectInfo)
+//{
+//	QUrl myurl;
+//	myurl.setScheme("https");
+//	myurl.setHost("omen.sci.utah.edu");
+//	myurl.setPort(4433);
+//	myurl.setPath("/modelRepo/api/v1.0/upload");
+//
+//	QNetworkRequest request;
+//	request.setUrl(myurl);
+//	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+//	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+//	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+//
+//	if(NetworkAccessibleCheck())
+//	{
+//		imp->restclient->post(request, projectInfo);
+//	}
+//
+//}
+
+void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 {
 	QUrl myurl;
 	myurl.setScheme("https");
 	myurl.setHost("omen.sci.utah.edu");
 	myurl.setPort(4433);
-	myurl.setPath("/modelRepo/api/v1.0/upload");
+	myurl.setPath("/modelRepo/api/v1.0/uploadFileRequest");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -160,6 +183,34 @@ void CRepoConnectionHandler::upload(QByteArray projectInfo)
 	if(NetworkAccessibleCheck())
 	{
 		imp->restclient->post(request, projectInfo);
+	}
+}
+
+void CRepoConnectionHandler::uploadFile(QString fileToken)
+{
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost("omen.sci.utah.edu");
+	myurl.setPort(4433);
+	myurl.setPath("/modelRepo/api/v1.0/uploadFile");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setRawHeader(QByteArray("fileToken"), fileToken.toUtf8());
+
+	string fileName = imp->m_wnd->GetDocument()->GetDocFolder() + "/.projOutForUpload.prj";
+
+	if(NetworkAccessibleCheck())
+	{
+		archive(fileName.c_str(), QDir(imp->m_wnd->GetDocument()->GetDocFolder().c_str()));
+
+		QFile* arch = new QFile(fileName.c_str());
+		arch->open(QIODevice::ReadOnly);
+
+		QNetworkReply* reply = imp->restclient->post(request, arch);
+		arch->setParent(reply);
 	}
 
 }
@@ -184,10 +235,18 @@ void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 	{
 		getFileReply(r);
 	}
-	else if(URL.contains("upload"))
+	else if(URL.contains("uploadFileRequest"))
 	{
-		uploadReply(r);
+		uploadFileRequestReply(r);
 	}
+	else if(URL.contains("uploadFile"))
+	{
+		uploadFileReply(r);
+	}
+//	else if(URL.contains("upload"))
+//	{
+//		uploadReply(r);
+//	}
 	else if(URL.contains("tables"))
 	{
 		getTablesReply(r);
@@ -204,6 +263,13 @@ void CRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<Q
 
 	reply->ignoreSslErrors();
 
+}
+
+void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal)
+{
+	cout << "Total: " << bytesTotal << endl;
+	cout << "Received: " << bytesReceived << endl;
+	cout << (float)bytesReceived/(float)bytesTotal*100 << "%" << endl;
 }
 
 bool CRepoConnectionHandler::NetworkAccessibleCheck()
@@ -398,7 +464,35 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 
 }
 
-void CRepoConnectionHandler::uploadReply(QNetworkReply *r)
+//void CRepoConnectionHandler::uploadReply(QNetworkReply *r)
+//{
+//	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+//
+//	if(statusCode == 200)
+//	{
+//		QString fileToken = r->readAll();
+//
+//		TCPUpload(fileToken);
+//
+//		getTables();
+//
+//		imp->dbPanel->SetModelList();
+//	}
+//	else if(statusCode == 403)
+//	{
+//		imp->dbPanel->LoginTimeout();
+//	}
+//	else
+//	{
+//		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+//		message += std::to_string(statusCode).c_str();
+//
+//		imp->dbPanel->FailedLogin(message);
+//	}
+//
+//}
+
+void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -406,11 +500,8 @@ void CRepoConnectionHandler::uploadReply(QNetworkReply *r)
 	{
 		QString fileToken = r->readAll();
 
-		TCPUpload(fileToken);
+		uploadFile(fileToken);
 
-		getTables();
-
-		imp->dbPanel->SetModelList();
 	}
 	else if(statusCode == 403)
 	{
@@ -426,50 +517,60 @@ void CRepoConnectionHandler::uploadReply(QNetworkReply *r)
 
 }
 
-void CRepoConnectionHandler::TCPUpload(QString fileToken)
+void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
 {
-	QTcpSocket socket;
-	socket.connectToHost("omen.sci.utah.edu", 50000);
-
-	socket.waitForReadyRead(5000);
-
-	QByteArray message = socket.readAll();
-
-//	cout << message.toStdString() << endl;
-
-	socket.write(imp->token.toUtf8());
-
-	socket.waitForReadyRead(5000);
-
-	message = socket.readAll();
-
-//	cout << message.toStdString() << endl;
-
-	socket.write(fileToken.toUtf8());
-
-	socket.waitForReadyRead(5000);
-
-	message = socket.readAll();
-
-//	cout << message.toStdString() << endl;
-
 	string fileName = imp->m_wnd->GetDocument()->GetDocFolder() + "/.projOutForUpload.prj";
+	QFile::remove(fileName.c_str());
 
-	cout << "FileName: " << fileName << endl;
+	getTables();
 
-	archive(fileName.c_str(), QDir(imp->m_wnd->GetDocument()->GetDocFolder().c_str()));
+	imp->dbPanel->SetModelList();
+}
 
-	QFile arch(fileName.c_str());
-	arch.open(QIODevice::ReadOnly);
-
-	while(socket.write(arch.read(1024)))
-	{
-		socket.flush();
-	}
-
-	arch.close();
-
-	arch.remove();
+//void CRepoConnectionHandler::TCPUpload(QString fileToken)
+//{
+//	QTcpSocket socket;
+//	socket.connectToHost("omen.sci.utah.edu", 50000);
+//
+//	socket.waitForReadyRead(5000);
+//
+//	QByteArray message = socket.readAll();
+//
+////	cout << message.toStdString() << endl;
+//
+//	socket.write(imp->token.toUtf8());
+//
+//	socket.waitForReadyRead(5000);
+//
+//	message = socket.readAll();
+//
+////	cout << message.toStdString() << endl;
+//
+//	socket.write(fileToken.toUtf8());
+//
+//	socket.waitForReadyRead(5000);
+//
+//	message = socket.readAll();
+//
+////	cout << message.toStdString() << endl;
+//
+//	string fileName = imp->m_wnd->GetDocument()->GetDocFolder() + "/.projOutForUpload.prj";
+//
+//	cout << "FileName: " << fileName << endl;
+//
+//	archive(fileName.c_str(), QDir(imp->m_wnd->GetDocument()->GetDocFolder().c_str()));
+//
+//	QFile arch(fileName.c_str());
+//	arch.open(QIODevice::ReadOnly);
+//
+//	while(socket.write(arch.read(1024)))
+//	{
+//		socket.flush();
+//	}
+//
+//	arch.close();
+//
+//	arch.remove();
 
 
 //	QBuffer buff;
@@ -563,7 +664,7 @@ void CRepoConnectionHandler::TCPUpload(QString fileToken)
 //	}
 
 
-}
+//}
 
 QString CRepoConnectionHandler::getUsername()
 {

@@ -488,8 +488,6 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 	QString query = QString("SELECT ID FROM projects WHERE owner LIKE '%%1%' OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
 	std::string queryStd = query.toStdString();
 
-	cout << queryStd <<endl;
-
 	imp->getTable(queryStd, &table, &rows, &cols);
 
 	for(int row = 1; row <= rows; row++)
@@ -503,8 +501,6 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 	query = QString("SELECT projectFilenames.project FROM filenames JOIN projectFilenames ON filenames.ID = projectFilenames.filename WHERE filenames.filename LIKE '%%1%' OR filenames.description LIKE '%%1%'").arg(term);
 	queryStd = query.toStdString();
 
-	cout << queryStd <<endl;
-
 	imp->getTable(queryStd, &table, &rows, &cols);
 
 	for(int row = 1; row <= rows; row++)
@@ -517,8 +513,6 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 	// Matches project tags
 	query = QString("SELECT projectTags.project FROM tags JOIN projectTags ON tags.ID = projectTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
 	queryStd = query.toStdString();
-
-	cout << queryStd <<endl;
 
 	imp->getTable(queryStd, &table, &rows, &cols);
 
