@@ -50,9 +50,7 @@ public:
 	//! import a list of files
 	void ImportFiles(const QStringList& fileNames);
 
-#ifdef HAS_QUAZIP
 	void ImportProject(const QString& fileName);
-#endif
 
 	// open the object in the curve editor
 	void OpenInCurveEditor(FSObject* po);

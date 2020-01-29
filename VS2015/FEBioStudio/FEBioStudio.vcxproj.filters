@@ -645,19 +645,31 @@
     <ClCompile Include="..\..\FEBioStudio\moc_AreaCoverageTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\DatabaseHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\DatabasePanel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\moc_DatabaseHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\moc_DatabasePanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\DlgAddConstraint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\DlgUpload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\LocalDatabaseHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\RepoConnectionHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\RepoProject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgUpload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_RepoConnectionHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -893,9 +905,6 @@
     <ClInclude Include="..\..\FEBioStudio\PlaneCutTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\PlotWidget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\PropertyList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1025,6 +1034,18 @@
     <ClInclude Include="..\..\FEBioStudio\DlgAddConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\DlgUpload.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\LocalDatabaseHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\RepoConnectionHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\RepoProject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
@@ -1123,10 +1144,10 @@
     <CustomBuild Include="..\..\FEBioStudio\Tool.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\DatabaseHandler.h">
+    <CustomBuild Include="..\..\FEBioStudio\DatabasePanel.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\DatabasePanel.h">
+    <CustomBuild Include="..\..\FEBioStudio\PlotWidget.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

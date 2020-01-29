@@ -501,7 +501,7 @@ int CLocalDatabaseHandler::ProjectIDFromFileID(int ID, int type)
 
 #else
 
-CLocalDatabaseHandler::CLocalDatabaseHandler(std::string dbPath){}
+CLocalDatabaseHandler::CLocalDatabaseHandler(std::string dbPath, CDatabasePanel* dbPanel){}
 CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc){}
 

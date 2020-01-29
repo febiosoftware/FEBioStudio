@@ -573,22 +573,16 @@ QString CRepoConnectionHandler::getUsername()
 
 #else
 
-CRepoConnectionHandler::CRepoConnectionHandler(CDatabasePanel* dbPanel, CMainWindow* wnd){}
+CRepoConnectionHandler::CRepoConnectionHandler(CDatabasePanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd){}
 CRepoConnectionHandler::~CRepoConnectionHandler(){}
 void CRepoConnectionHandler::authenticate(QString userName, QString password){}
-void CRepoConnectionHandler::getFile(int id){}
+void CRepoConnectionHandler::getFile(int id, int type){}
 void CRepoConnectionHandler::upload(QByteArray projectInfo){}
 void CRepoConnectionHandler::connFinished(QNetworkReply *r){}
 void CRepoConnectionHandler::authReply(QNetworkReply *r){}
 void CRepoConnectionHandler::getFileReply(QNetworkReply *r){}
 void CRepoConnectionHandler::uploadReply(QNetworkReply *r){}
 void CRepoConnectionHandler::TCPUpload(QString fileToken){}
+void CRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors) {}
 
 #endif
-
-
-
-
-
-
-

@@ -963,16 +963,16 @@ QString CDatabasePanel::RepositoryFolder()
 
 CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent){}
 CDatabasePanel::~CDatabasePanel(){}
-void CDatabasePanel::SetModelList(QJsonDocument& jsonDoc){}
+void CDatabasePanel::Init(QString repositoryFolder) {}
+void CDatabasePanel::SetModelList(){}
 void CDatabasePanel::on_loginButton_clicked(){}
 void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column){}
-void CDatabasePanel::getProjectData(){}
+void CDatabasePanel::on_actionDownload_triggered() {}
+void CDatabasePanel::on_actionOpen_triggered() {}
+void CDatabasePanel::on_actionOpenFileLocation_triggered() {}
+void CDatabasePanel::on_actionDelete_triggered() {}
+void CDatabasePanel::on_actionUpload_triggered() {}
+void CDatabasePanel::on_treeWidget_itemSelectionChanged() {}
+void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos) {}
 
 #endif
-
-
-
-
-
-
-

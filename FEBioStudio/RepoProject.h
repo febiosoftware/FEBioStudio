@@ -1,6 +1,6 @@
 #include <vector>
-#include <QString>
-#include <QStringList>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
 
 class CRepoProject
 {

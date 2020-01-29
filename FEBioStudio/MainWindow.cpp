@@ -5,7 +5,7 @@
 #include <QApplication>
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
-#include <QStandardPaths>
+#include <QtCore/QStandardPaths>
 #include <QMessageBox>
 #include <QtCore/QMimeData>
 #include <FSCore/FSObject.h>
@@ -272,6 +272,8 @@ void CMainWindow::ImportProject(const QString& fileName)
 			}
 	}
 }
+#else
+void CMainWindow::ImportProject(const QString& fileName) {}
 #endif
 
 //-----------------------------------------------------------------------------
