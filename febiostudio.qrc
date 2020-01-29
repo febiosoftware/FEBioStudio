@@ -139,5 +139,6 @@
 		<file>icons/openContaining.png</file>
 		<file>icons/PreView.png</file>
 		<file>icons/PostView.png</file>
+		<file>icons/febiorun.png</file>
 	</qresource>
 </RCC>

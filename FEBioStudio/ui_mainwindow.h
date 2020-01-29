@@ -325,7 +325,7 @@ public:
 		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F9);
 		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect");
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
-		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febio"); actionFEBioRun->setShortcut(Qt::Key_F5);
+		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
