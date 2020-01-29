@@ -316,6 +316,9 @@ public:
 	QAction* actionDelete;
 	QAction* actionUpload;
 
+	QLineEdit* searchLineEdit;
+	QAction* actionSearch;
+
 
 
 public:
@@ -388,6 +391,13 @@ public:
 
 		modelVBLayout->addWidget(toolbar);
 
+		QToolBar* searchBar = new QToolBar;
+		searchBar->addWidget(searchLineEdit = new QLineEdit);
+		actionSearch = new QAction(QIcon(":/icons/search.png"), "Search", parent);
+		actionSearch->setObjectName("actionSearch");
+		searchBar->addAction(actionSearch);
+
+		modelVBLayout->addWidget(searchBar);
 
 		treeWidget = new QTreeWidget;
 		treeWidget->setObjectName("treeWidget");
@@ -415,6 +425,8 @@ public:
 		projectName->setFont(font);
 
 		modelInfoLayout->addWidget(projectDesc = new QLabel);
+		projectDesc->setWordWrap(true);
+
 		modelInfoLayout->addWidget(ownerInfoItem = new CInfoItem("Owner"));
 		modelInfoLayout->addWidget(versionInfoItem = new CInfoItem("Version"));
 		modelInfoLayout->addWidget(tagsInfoItem = new CInfoItem("Tags"));
@@ -428,7 +440,6 @@ public:
 
 		fileInfoLayout->addWidget(filenameInfoItem = new CInfoItem("Filename"));
 		fileInfoLayout->addWidget(fileDescInfoItem = new CInfoItem("Description"));
-
 
 		projectInfoBox->addTool("File Info", fileDummy);
 		projectInfoBox->getToolItem(1)->hide();
@@ -725,6 +736,30 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 		repoHandler->upload(payload);
 	}
+
+}
+
+void CDatabasePanel::on_actionSearch_triggered()
+{
+	std::unordered_set<int> projIDs = dbHandler->FullTextSearch(ui->searchLineEdit->text());
+
+	ui->treeWidget->blockSignals(true);
+
+	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+	{
+		ProjectItem* current = static_cast<ProjectItem*>(ui->treeWidget->topLevelItem(item));
+
+		if(projIDs.count(current->getProjectID()) > 0)
+		{
+			current->setHidden(false);
+		}
+		else
+		{
+			current->setHidden(true);
+		}
+	}
+
+	ui->treeWidget->blockSignals(false);
 
 }
 

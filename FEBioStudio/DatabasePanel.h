@@ -52,6 +52,7 @@ private slots:
 	void on_actionOpenFileLocation_triggered();
 	void on_actionDelete_triggered();
 	void on_actionUpload_triggered();
+	void on_actionSearch_triggered();
 	void on_treeWidget_itemSelectionChanged();
 	void on_treeWidget_customContextMenuRequested(const QPoint &pos);
 

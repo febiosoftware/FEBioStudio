@@ -1,6 +1,7 @@
 #include <string>
 #include <string.h>
 #include <vector>
+#include <unordered_set>
 
 class QJsonDocument;
 class QString;
@@ -23,6 +24,8 @@ public:
 	void GetProjectData(int ID);
 	void GetFileData(int ID);
 	void GetProjectTags(int ID);
+
+	std::unordered_set<int> FullTextSearch(QString term);
 
 	QString FilePathFromID(int ID, int type);
 	QString FileNameFromID(int ID, int type);

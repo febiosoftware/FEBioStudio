@@ -455,7 +455,7 @@ void CLocalDatabaseHandler::GetProjectFiles(int ID)
 
 void CLocalDatabaseHandler::GetProjectData(int ID)
 {
-	std::string query("SELECT name, description, username, version FROM projects JOIN users on users.id = projects.id WHERE projects.id = ");
+	std::string query("SELECT name, description, username, version FROM projects JOIN users on users.id = projects.owner WHERE projects.id = ");
 	query += std::to_string(ID);
 
 	imp->execute(query, setProjectDataCallback, imp->dbPanel);
@@ -476,6 +476,63 @@ void CLocalDatabaseHandler::GetProjectTags(int ID)
 
 	imp->execute(query, addCurrentTagCallback, imp->dbPanel);
 }
+
+std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
+{
+	char **table;
+	int rows, cols;
+
+	std::unordered_set<int> projects;
+
+	// Matches owners, names, and descriptions of projects
+	QString query = QString("SELECT ID FROM projects WHERE owner LIKE '%%1%' OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+	std::string queryStd = query.toStdString();
+
+	cout << queryStd <<endl;
+
+	imp->getTable(queryStd, &table, &rows, &cols);
+
+	for(int row = 1; row <= rows; row++)
+	{
+		projects.insert(stoi(table[row]));
+	}
+
+	sqlite3_free_table(table);
+
+	// Matches filenames and descriptions
+	query = QString("SELECT projectFilenames.project FROM filenames JOIN projectFilenames ON filenames.ID = projectFilenames.filename WHERE filenames.filename LIKE '%%1%' OR filenames.description LIKE '%%1%'").arg(term);
+	queryStd = query.toStdString();
+
+	cout << queryStd <<endl;
+
+	imp->getTable(queryStd, &table, &rows, &cols);
+
+	for(int row = 1; row <= rows; row++)
+	{
+		projects.insert(stoi(table[row]));
+	}
+
+	sqlite3_free_table(table);
+
+	// Matches project tags
+	query = QString("SELECT projectTags.project FROM tags JOIN projectTags ON tags.ID = projectTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
+	queryStd = query.toStdString();
+
+	cout << queryStd <<endl;
+
+	imp->getTable(queryStd, &table, &rows, &cols);
+
+	for(int row = 1; row <= rows; row++)
+	{
+		projects.insert(stoi(table[row]));
+	}
+
+	sqlite3_free_table(table);
+
+	return projects;
+}
+
+
 
 QString CLocalDatabaseHandler::FilePathFromID(int ID, int type)
 {
