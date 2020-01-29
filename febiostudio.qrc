@@ -134,11 +134,10 @@
 		<file>icons/delete_neg.png</file>
 		<file>icons/bgimage.png</file>
 		<file>icons/zoom-fit-best-2.png</file>
-                <file>icons/download.png</file>
-                <file>icons/upload.png</file>
-                <file>icons/openContaining.png</file>
-                <file>icons/PreView.png</file>
-                <file>icons/PostView.png</file>
-                <file>icons/FEBio.png</file>
+		<file>icons/download.png</file>
+		<file>icons/upload.png</file>
+		<file>icons/openContaining.png</file>
+		<file>icons/PreView.png</file>
+		<file>icons/PostView.png</file>
 	</qresource>
 </RCC>
