@@ -13,8 +13,8 @@ class CGLDisplacementMap : public CGLDataMap
 public:
 	CGLDisplacementMap(CGLModel* po);
 
-	void Update(int ntime, float dt, bool breset);
-	void Activate(bool b);
+	void Update(int ntime, float dt, bool breset) override;
+	void Activate(bool b) override;
 
 	void UpdateState(int ntime, bool breset = false);
 

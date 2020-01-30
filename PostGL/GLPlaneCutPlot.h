@@ -58,7 +58,7 @@ public:
 	vec3d GetPlaneNormal();
 	float GetPlaneOffset();
 
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 	void RenderPlane();
 	float Integrate(FEState* ps);
 
@@ -67,9 +67,9 @@ public:
 	static void ClearClipPlanes();
 	static void EnableClipPlanes();
 
-	void Activate(bool bact);
+	void Activate(bool bact) override;
 
-	void Update(int ntime, float dt, bool breset);
+	void Update(int ntime, float dt, bool breset) override;
 
 	void UpdateData(bool bsave = true) override;
 

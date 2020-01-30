@@ -74,7 +74,7 @@ public:
 	virtual ~FEMesh();
 
 	// allocate space for mesh
-	void Create(int nodes, int elems, int faces = 0, int edges = 0);
+	void Create(int nodes, int elems, int faces = 0, int edges = 0) override;
 
 	// copy part of the mesh
 	void ShallowCopy(FEMesh* pm);

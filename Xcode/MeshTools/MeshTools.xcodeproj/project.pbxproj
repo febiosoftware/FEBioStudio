@@ -129,14 +129,12 @@
 		D5ED287823197DE400C16BF7 /* ConchoidFit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED279E23197DE300C16BF7 /* ConchoidFit.cpp */; };
 		D5ED287923197DE400C16BF7 /* FEModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED279F23197DE300C16BF7 /* FEModifier.h */; };
 		D5ED287A23197DE400C16BF7 /* FEAdvancingFrontMesher2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A023197DE300C16BF7 /* FEAdvancingFrontMesher2D.cpp */; };
-		D5ED287B23197DE400C16BF7 /* FESelectElementsFromFaces.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A123197DE300C16BF7 /* FESelectElementsFromFaces.h */; };
 		D5ED287C23197DE400C16BF7 /* FESelection.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A223197DE300C16BF7 /* FESelection.h */; };
 		D5ED287D23197DE400C16BF7 /* FEDomain.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A323197DE300C16BF7 /* FEDomain.h */; };
 		D5ED287E23197DE400C16BF7 /* FEQuartDogBone.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A423197DE300C16BF7 /* FEQuartDogBone.h */; };
 		D5ED287F23197DE400C16BF7 /* ICPRegistration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A523197DE300C16BF7 /* ICPRegistration.cpp */; };
 		D5ED288023197DE400C16BF7 /* FEFileExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A623197DE300C16BF7 /* FEFileExport.cpp */; };
 		D5ED288123197DE400C16BF7 /* FEShellTorus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A723197DE300C16BF7 /* FEShellTorus.cpp */; };
-		D5ED288223197DE400C16BF7 /* FESelectElementsFromFaces.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27A823197DE300C16BF7 /* FESelectElementsFromFaces.cpp */; };
 		D5ED288323197DE400C16BF7 /* FEMMGRemesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27A923197DE300C16BF7 /* FEMMGRemesh.h */; };
 		D5ED288423197DE400C16BF7 /* FEBox.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27AA23197DE300C16BF7 /* FEBox.h */; };
 		D5ED288523197DE400C16BF7 /* FEShellTube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27AB23197DE300C16BF7 /* FEShellTube.cpp */; };
@@ -353,14 +351,12 @@
 		D5ED279E23197DE300C16BF7 /* ConchoidFit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConchoidFit.cpp; sourceTree = "<group>"; };
 		D5ED279F23197DE300C16BF7 /* FEModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEModifier.h; sourceTree = "<group>"; };
 		D5ED27A023197DE300C16BF7 /* FEAdvancingFrontMesher2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEAdvancingFrontMesher2D.cpp; sourceTree = "<group>"; };
-		D5ED27A123197DE300C16BF7 /* FESelectElementsFromFaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESelectElementsFromFaces.h; sourceTree = "<group>"; };
 		D5ED27A223197DE300C16BF7 /* FESelection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FESelection.h; sourceTree = "<group>"; };
 		D5ED27A323197DE300C16BF7 /* FEDomain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEDomain.h; sourceTree = "<group>"; };
 		D5ED27A423197DE300C16BF7 /* FEQuartDogBone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEQuartDogBone.h; sourceTree = "<group>"; };
 		D5ED27A523197DE300C16BF7 /* ICPRegistration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ICPRegistration.cpp; sourceTree = "<group>"; };
 		D5ED27A623197DE300C16BF7 /* FEFileExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFileExport.cpp; sourceTree = "<group>"; };
 		D5ED27A723197DE300C16BF7 /* FEShellTorus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellTorus.cpp; sourceTree = "<group>"; };
-		D5ED27A823197DE300C16BF7 /* FESelectElementsFromFaces.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESelectElementsFromFaces.cpp; sourceTree = "<group>"; };
 		D5ED27A923197DE300C16BF7 /* FEMMGRemesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMMGRemesh.h; sourceTree = "<group>"; };
 		D5ED27AA23197DE300C16BF7 /* FEBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBox.h; sourceTree = "<group>"; };
 		D5ED27AB23197DE300C16BF7 /* FEShellTube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellTube.cpp; sourceTree = "<group>"; };
@@ -583,8 +579,6 @@
 				D5ED276D23197DE300C16BF7 /* FERefineSurface.h */,
 				D5ED27FF23197DE400C16BF7 /* FERevolveFaces.cpp */,
 				D5ED27C823197DE400C16BF7 /* FERevolveFaces.h */,
-				D5ED27A823197DE300C16BF7 /* FESelectElementsFromFaces.cpp */,
-				D5ED27A123197DE300C16BF7 /* FESelectElementsFromFaces.h */,
 				D5ED279B23197DE300C16BF7 /* FESelection.cpp */,
 				D5ED27A223197DE300C16BF7 /* FESelection.h */,
 				D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */,
@@ -740,7 +734,6 @@
 				D5ED288E23197DE400C16BF7 /* FESplitModifier.h in Headers */,
 				D5ED283023197DE400C16BF7 /* FESurfaceModifier.h in Headers */,
 				D5ED283D23197DE400C16BF7 /* PointCloud3d.h in Headers */,
-				D5ED287B23197DE400C16BF7 /* FESelectElementsFromFaces.h in Headers */,
 				D5ED28C423197DE400C16BF7 /* SurfaceDistance.h in Headers */,
 				D5ED282623197DE400C16BF7 /* FEElementData.h in Headers */,
 				D5ED281423197DE400C16BF7 /* FESphereInBox.h in Headers */,
@@ -859,6 +852,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = D5ED271023197DD200C16BF7;
 			productRefGroup = D5ED271A23197DD200C16BF7 /* Products */;
@@ -886,7 +880,6 @@
 				D5ED280823197DE400C16BF7 /* FETet15ToTet4.cpp in Sources */,
 				D5ED286123197DE400C16BF7 /* FESurfaceIntersect.cpp in Sources */,
 				D5ED288A23197DE400C16BF7 /* BivariatePolynomialSpline.cpp in Sources */,
-				D5ED288223197DE400C16BF7 /* FESelectElementsFromFaces.cpp in Sources */,
 				D5ED28BE23197DE400C16BF7 /* FEGregoryPatch.cpp in Sources */,
 				D5ED289123197DE400C16BF7 /* FEHexSplitModifier.cpp in Sources */,
 				D5ED28B723197DE400C16BF7 /* GradientMap.cpp in Sources */,

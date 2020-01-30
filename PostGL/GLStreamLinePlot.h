@@ -47,10 +47,10 @@ public:
 	CGLStreamLinePlot(CGLModel* fem);
 	~CGLStreamLinePlot();
 
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 
-	void Update();
-	void Update(int ntime, float dt, bool breset);
+	void Update() override;
+	void Update(int ntime, float dt, bool breset) override;
 
 	void UpdateStreamLines();
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D58D432023E32BF000DB8BE7 /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D58D431F23E32BF000DB8BE7 /* QtCore.framework */; };
 		D5ED262523197ADA00C16BF7 /* box.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261023197ADA00C16BF7 /* box.h */; };
 		D5ED262623197ADA00C16BF7 /* Archive.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261123197ADA00C16BF7 /* Archive.h */; };
 		D5ED262723197ADA00C16BF7 /* FSObjectList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261223197ADA00C16BF7 /* FSObjectList.h */; };
@@ -31,6 +32,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D58D431F23E32BF000DB8BE7 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCore.framework; sourceTree = "<group>"; };
 		D5ED260123197AC300C16BF7 /* libFSCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFSCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED261023197ADA00C16BF7 /* box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = box.h; sourceTree = "<group>"; };
 		D5ED261123197ADA00C16BF7 /* Archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Archive.h; sourceTree = "<group>"; };
@@ -60,17 +62,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D58D432023E32BF000DB8BE7 /* QtCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D58D431E23E32BEF00DB8BE7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D58D431F23E32BF000DB8BE7 /* QtCore.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		D5ED25F823197AC300C16BF7 = {
 			isa = PBXGroup;
 			children = (
 				D5ED260F23197ADA00C16BF7 /* FSCore */,
 				D5ED260223197AC300C16BF7 /* Products */,
+				D58D431E23E32BEF00DB8BE7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -173,6 +185,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = D5ED25F823197AC300C16BF7;
 			productRefGroup = D5ED260223197AC300C16BF7 /* Products */;
@@ -320,6 +333,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/qt/5.13.2/lib,
+				);
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
@@ -333,6 +350,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/qt/5.13.2/lib,
+				);
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";

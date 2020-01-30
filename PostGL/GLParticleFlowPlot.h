@@ -45,9 +45,9 @@ class CGLParticleFlowPlot : public CGLPlot
 public:
 	CGLParticleFlowPlot(CGLModel* mdl);
 
-	void Update(int ntime, float dt, bool breset);
+	void Update(int ntime, float dt, bool breset) override;
 
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 
 	void UpdateData(bool bsave = true) override;
 

@@ -44,7 +44,7 @@ public:
 	float GetSliceOffset() const { return m_offset; }
 	void SetSliceOffset(float f);
 
-	void UpdateTexture() { m_Col.UpdateTexture(); }
+	void UpdateTexture() override { m_Col.UpdateTexture(); }
 
 	void UpdateData(bool bsave = true) override;
 

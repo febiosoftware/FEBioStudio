@@ -62,8 +62,8 @@ public:
 
 	void UpdateData(bool bsave = true) override;
 
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 	CImageSource* GetImageSource() { return m_img; }
 

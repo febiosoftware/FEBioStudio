@@ -32,7 +32,7 @@ public:
 
 	void Update(int ntime, float dt, bool breset) override;
 
-	void UpdateData(bool bsave = true);
+	void UpdateData(bool bsave = true) override;
 
 private:
 	void CreateSlice(Slice& slice, const vec3d& normal, float w);

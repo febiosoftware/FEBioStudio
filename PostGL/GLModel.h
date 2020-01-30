@@ -148,7 +148,7 @@ public:
 
 public:
 	// call this to render the model
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 
 	void RenderPlots(CGLContext& rc);
 

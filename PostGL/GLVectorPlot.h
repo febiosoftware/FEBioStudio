@@ -31,7 +31,7 @@ public:
 	CGLVectorPlot(CGLModel* po);
 	virtual ~CGLVectorPlot();
 
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 
 	void SetScaleFactor(float g) { m_scale = g; }
 	double GetScaleFactor() { return m_scale; }
@@ -62,13 +62,13 @@ public:
 
 	CColorTexture* GetColorMap() { return &m_Col; }
 
-	void Update(int ntime, float dt, bool breset);
+	void Update(int ntime, float dt, bool breset) override;
 
-	void UpdateTexture() { m_Col.UpdateTexture(); }
+	void UpdateTexture() override { m_Col.UpdateTexture(); }
 
 	void UpdateData(bool bsave = true) override;
 
-	void Update();
+	void Update() override;
 
 private:
 	// render a vector n at position r

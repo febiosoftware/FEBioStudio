@@ -13,7 +13,7 @@ public:
 	CGLLinePlot(CGLModel* po);
 	virtual ~CGLLinePlot();
 
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 
 	float GetLineWidth() { return m_line; }
 	void SetLineWidth(float f) { m_line = f; }
@@ -31,9 +31,9 @@ public:
 	void SetDataField(int n);
 
 	CColorTexture* GetColorMap() { return &m_Col; }
-	void UpdateTexture() { m_Col.UpdateTexture(); }
+	void UpdateTexture() override { m_Col.UpdateTexture(); }
 
-	void Update(int ntime, float dt, bool breset);
+	void Update(int ntime, float dt, bool breset) override;
 
 	void UpdateData(bool bsave = true) override;
 
@@ -73,7 +73,7 @@ public:
 	CGLPointPlot(CGLModel* po);
 	virtual ~CGLPointPlot();
 
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 
 	float GetPointSize(int n = 0) { return m_set[n].size; }
 	void SetPointSize(float f, int n = 0) { m_set[n].size = f; }

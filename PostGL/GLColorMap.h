@@ -20,7 +20,7 @@ public:
 
 	Post::CColorTexture* GetColorMap() { return &m_Col; }
 
-	void Update(int ntime, float dt, bool breset);
+	void Update(int ntime, float dt, bool breset) override;
 
 	int GetEvalField() const { return m_nfield; }
 	void SetEvalField(int n);
@@ -42,7 +42,7 @@ public:
 	bool GetColorSmooth();
 	void SetColorSmooth(bool b);
 
-	void Activate(bool b) { CGLObject::Activate(b); ShowLegend(b); }
+	void Activate(bool b) override { CGLObject::Activate(b); ShowLegend(b); }
 
 private:
 	void UpdateState(int ntime, bool breset);

@@ -44,11 +44,11 @@ public:
 	GLTensorPlot(CGLModel* po);
 	~GLTensorPlot();
 
-	void Render(CGLContext& rc);
+	void Render(CGLContext& rc) override;
 
 	CColorTexture* GetColorMap();
 
-	void Update(int ntime, float dt, bool breset);
+	void Update(int ntime, float dt, bool breset) override;
 
 	void UpdateData(bool bsave = true) override;
 
