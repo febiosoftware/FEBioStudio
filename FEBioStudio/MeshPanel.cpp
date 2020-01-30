@@ -35,7 +35,7 @@ MeshingThread::MeshingThread(GObject* po)
 
 void MeshingThread::run()
 {
-	m_mesher = m_po->GetFEMesher();
+	m_mesher = m_po->GetMesher();
 	m_po->BuildMesh();
 	emit resultReady();
 }
@@ -181,7 +181,7 @@ void CMeshPanel::Update()
 	}
 	else
 	{
-		FEMesher* mesher = activeObject->GetFEMesher();
+		FEMesher* mesher = activeObject->GetMesher();
 		if (mesher)
 		{
 			ui->setMesherPropertyList(new CObjectProps(mesher));
@@ -263,7 +263,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	GObject* activeObject = doc->GetActiveObject();
 	if (activeObject == 0) return;
 
-	FEMesher* mesher = activeObject->GetFEMesher();
+	FEMesher* mesher = activeObject->GetMesher();
 	if (mesher == 0) return;
 
 	MeshingThread* thread = new MeshingThread(activeObject);

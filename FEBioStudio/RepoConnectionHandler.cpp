@@ -25,7 +25,11 @@
 #include "Document.h"
 #include "LocalDatabaseHandler.h"
 
-#include <quazip5/quazip.h>
+#ifdef __APPLE__
+    #include <quazip/JlCompress.h>
+#else
+    #include <quazip5/JlCompress.h>
+#endif
 #include "ZipFiles.h"
 #include <iostream>
 

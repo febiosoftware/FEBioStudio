@@ -24,7 +24,11 @@
 #include <QByteArray>
 #include <QDir>
 #include <QFileIconProvider>
-#include <quazip5/JlCompress.h>
+#ifdef __APPLE__
+    #include <quazip/JlCompress.h>
+#else
+    #include <quazip5/JlCompress.h>
+#endif
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"

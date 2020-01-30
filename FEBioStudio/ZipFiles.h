@@ -1,7 +1,13 @@
 #ifdef HAS_QUAZIP
-#include <quazip5/JlCompress.h>
-#include <quazip5/quazip.h>
-#include <quazip5/quazipfile.h>
+#ifdef __APPLE__
+    #include <quazip/JlCompress.h>
+    #include <quazip/quazip.h>
+    #include <quazip/quazipfile.h>
+#else
+    #include <quazip5/JlCompress.h>
+    #include <quazip5/quazip.h>
+    #include <quazip5/quazipfile.h>
+#endif
 
 static void recurseAddDir(QDir d, QStringList & list) {
 

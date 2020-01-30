@@ -31,7 +31,16 @@
 		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
 		D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
-		D579B677239F04E300278644 /* moc_DatabaseHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B662239F04E100278644 /* moc_DatabaseHandler.cpp */; };
+		D576570023E32E6900E4F70F /* moc_DlgUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */; };
+		D576570123E32E6900E4F70F /* LocalDatabaseHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */; };
+		D576570223E32E6900E4F70F /* DlgUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F523E32E6800E4F70F /* DlgUpload.cpp */; };
+		D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F823E32E6800E4F70F /* RepoProject.cpp */; };
+		D576570423E32E6900E4F70F /* RepoConnectionHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */; };
+		D576570523E32E6900E4F70F /* DlgAddConstraint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656FC23E32E6900E4F70F /* DlgAddConstraint.cpp */; };
+		D576570623E32E6900E4F70F /* moc_RepoConnectionHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */; };
+		D576571623E32F7E00E4F70F /* QtNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571523E32F7E00E4F70F /* QtNetwork.framework */; };
+		D576571823E3345500E4F70F /* libquazip.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */; };
+		D576571A23E3347D00E4F70F /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571923E3347D00E4F70F /* libsqlite3.0.dylib */; };
 		D579B678239F04E300278644 /* moc_DatabasePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B663239F04E100278644 /* moc_DatabasePanel.cpp */; };
 		D579B679239F04E300278644 /* MeasureAreaTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B664239F04E100278644 /* MeasureAreaTool.cpp */; };
 		D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B665239F04E100278644 /* DatabasePanel.cpp */; };
@@ -41,7 +50,6 @@
 		D579B67E239F04E300278644 /* moc_AreaCoverageTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B66D239F04E200278644 /* moc_AreaCoverageTool.cpp */; };
 		D579B67F239F04E300278644 /* AreaCoverageTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B670239F04E200278644 /* AreaCoverageTool.cpp */; };
 		D579B680239F04E300278644 /* PointDistanceTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B671239F04E200278644 /* PointDistanceTool.cpp */; };
-		D579B681239F04E300278644 /* DatabaseHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B673239F04E200278644 /* DatabaseHandler.cpp */; };
 		D579B682239F04E300278644 /* 4PointAngleTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B675239F04E200278644 /* 4PointAngleTool.cpp */; };
 		D57A0B03234653F700B7C0B8 /* libmmg3d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0AFF234653F700B7C0B8 /* libmmg3d.a */; };
 		D57A0B04234653F700B7C0B8 /* libmmg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B00234653F700B7C0B8 /* libmmg.a */; };
@@ -414,11 +422,25 @@
 		D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlapTool.cpp; sourceTree = "<group>"; };
 		D5606C86238DAAD1002B037E /* TetOverlapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlapTool.h; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		D579B662239F04E100278644 /* moc_DatabaseHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DatabaseHandler.cpp; sourceTree = "<group>"; };
+		D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgUpload.cpp; sourceTree = "<group>"; };
+		D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalDatabaseHandler.cpp; sourceTree = "<group>"; };
+		D57656F523E32E6800E4F70F /* DlgUpload.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgUpload.cpp; sourceTree = "<group>"; };
+		D57656F623E32E6800E4F70F /* RepoConnectionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoConnectionHandler.h; sourceTree = "<group>"; };
+		D57656F723E32E6800E4F70F /* LocalDatabaseHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalDatabaseHandler.h; sourceTree = "<group>"; };
+		D57656F823E32E6800E4F70F /* RepoProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RepoProject.cpp; sourceTree = "<group>"; };
+		D57656F923E32E6800E4F70F /* DlgAddConstraint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgAddConstraint.h; sourceTree = "<group>"; };
+		D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RepoConnectionHandler.cpp; sourceTree = "<group>"; };
+		D57656FB23E32E6800E4F70F /* RepoProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoProject.h; sourceTree = "<group>"; };
+		D57656FC23E32E6900E4F70F /* DlgAddConstraint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddConstraint.cpp; sourceTree = "<group>"; };
+		D57656FD23E32E6900E4F70F /* DlgUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgUpload.h; sourceTree = "<group>"; };
+		D57656FE23E32E6900E4F70F /* moc_predefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moc_predefs.h; sourceTree = "<group>"; };
+		D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_RepoConnectionHandler.cpp; sourceTree = "<group>"; };
+		D576571523E32F7E00E4F70F /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.14.1/lib/QtNetwork.framework; sourceTree = "<group>"; };
+		D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquazip.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/quazip/0.8.1/lib/libquazip.1.0.0.dylib; sourceTree = "<group>"; };
+		D576571923E3347D00E4F70F /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/sqlite/3.30.1/lib/libsqlite3.0.dylib; sourceTree = "<group>"; };
 		D579B663239F04E100278644 /* moc_DatabasePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DatabasePanel.cpp; sourceTree = "<group>"; };
 		D579B664239F04E100278644 /* MeasureAreaTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureAreaTool.cpp; sourceTree = "<group>"; };
 		D579B665239F04E100278644 /* DatabasePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DatabasePanel.cpp; sourceTree = "<group>"; };
-		D579B666239F04E100278644 /* DatabaseHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseHandler.h; sourceTree = "<group>"; };
 		D579B667239F04E100278644 /* MeasureVolumeTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureVolumeTool.cpp; sourceTree = "<group>"; };
 		D579B668239F04E100278644 /* 3PointAngleTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = 3PointAngleTool.cpp; sourceTree = "<group>"; };
 		D579B669239F04E100278644 /* MeasureVolumeTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureVolumeTool.h; sourceTree = "<group>"; };
@@ -431,7 +453,6 @@
 		D579B670239F04E200278644 /* AreaCoverageTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AreaCoverageTool.cpp; sourceTree = "<group>"; };
 		D579B671239F04E200278644 /* PointDistanceTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PointDistanceTool.cpp; sourceTree = "<group>"; };
 		D579B672239F04E200278644 /* MeasureAreaTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureAreaTool.h; sourceTree = "<group>"; };
-		D579B673239F04E200278644 /* DatabaseHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DatabaseHandler.cpp; sourceTree = "<group>"; };
 		D579B674239F04E200278644 /* PointDistanceTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointDistanceTool.h; sourceTree = "<group>"; };
 		D579B675239F04E200278644 /* 4PointAngleTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = 4PointAngleTool.cpp; sourceTree = "<group>"; };
 		D579B676239F04E200278644 /* AreaCoverageTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AreaCoverageTool.h; sourceTree = "<group>"; };
@@ -842,11 +863,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D576571A23E3347D00E4F70F /* libsqlite3.0.dylib in Frameworks */,
+				D576571823E3345500E4F70F /* libquazip.1.0.0.dylib in Frameworks */,
 				D5EF347623A03C1A00BF4D56 /* libssh.4.8.3.dylib in Frameworks */,
 				D5EF347323A03BA500BF4D56 /* libxvidcore.4.dylib in Frameworks */,
 				D548546B23749F2100BE1731 /* QtGui.framework in Frameworks */,
 				D548546C23749F2100BE1731 /* QtCore.framework in Frameworks */,
 				D548546D23749F2100BE1731 /* QtCharts.framework in Frameworks */,
+				D576571623E32F7E00E4F70F /* QtNetwork.framework in Frameworks */,
 				D548546E23749F2100BE1731 /* QtWidgets.framework in Frameworks */,
 				D548546623749EA500BE1731 /* libswscale.5.5.100.dylib in Frameworks */,
 				D548546123749D4700BE1731 /* libavformat.58.29.100.dylib in Frameworks */,
@@ -996,8 +1020,6 @@
 				D5F7D7FD22FA37C40089B08E /* CurveIntersectProps.h */,
 				D5F7D7C122FA37C40089B08E /* CurvePicker.cpp */,
 				D5F7D7AD22FA37C40089B08E /* CurvePicker.h */,
-				D579B673239F04E200278644 /* DatabaseHandler.cpp */,
-				D579B666239F04E100278644 /* DatabaseHandler.h */,
 				D579B665239F04E100278644 /* DatabasePanel.cpp */,
 				D579B66E239F04E200278644 /* DatabasePanel.h */,
 				D5F7D77F22FA37C40089B08E /* DataFieldSelector.cpp */,
@@ -1008,6 +1030,8 @@
 				D5F7D72222FA37C40089B08E /* DlgAddBodyLoad.h */,
 				D5F7D73A22FA37C40089B08E /* DlgAddChemicalReaction.cpp */,
 				D5F7D73322FA37C40089B08E /* DlgAddChemicalReaction.h */,
+				D57656FC23E32E6900E4F70F /* DlgAddConstraint.cpp */,
+				D57656F923E32E6800E4F70F /* DlgAddConstraint.h */,
 				D5F7D73622FA37C40089B08E /* DlgAddContact.cpp */,
 				D5F7D7C022FA37C40089B08E /* DlgAddContact.h */,
 				D5F7D6FA22FA37C30089B08E /* DlgAddEquation.cpp */,
@@ -1082,6 +1106,8 @@
 				D5F7D79622FA37C40089B08E /* DlgTimeSettings.h */,
 				D5F7D76F22FA37C40089B08E /* DlgTransform.cpp */,
 				D5F7D7FB22FA37C40089B08E /* DlgTransform.h */,
+				D57656F523E32E6800E4F70F /* DlgUpload.cpp */,
+				D57656FD23E32E6900E4F70F /* DlgUpload.h */,
 				D5F7D7CE22FA37C40089B08E /* DlgVTKExport.cpp */,
 				D5F7D72322FA37C40089B08E /* DlgVTKExport.h */,
 				D516317F2300979E002B01C3 /* DlgWidgetProps.cpp */,
@@ -1139,6 +1165,8 @@
 				D5F7D78A22FA37C40089B08E /* IntegrateWindow.h */,
 				D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */,
 				D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */,
+				D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */,
+				D57656F723E32E6800E4F70F /* LocalDatabaseHandler.h */,
 				D5EBB7A6232AEAED00EED2BE /* Logger.cpp */,
 				D5EBB7A5232AEAEC00EED2BE /* Logger.h */,
 				D5F7D7E122FA37C40089B08E /* LogPanel.cpp */,
@@ -1180,7 +1208,6 @@
 				D5F7D7D422FA37C40089B08E /* moc_CreateSpringPane.cpp */,
 				D5F7D7DD22FA37C40089B08E /* moc_CurveEditor.cpp */,
 				D5F7D71522FA37C40089B08E /* moc_CurvePicker.cpp */,
-				D579B662239F04E100278644 /* moc_DatabaseHandler.cpp */,
 				D579B663239F04E100278644 /* moc_DatabasePanel.cpp */,
 				D5F7D7C822FA37C40089B08E /* moc_DataFieldSelector.cpp */,
 				D5F7D76A22FA37C40089B08E /* moc_DlgAddChemicalReaction.cpp */,
@@ -1201,6 +1228,7 @@
 				D5F7D79D22FA37C40089B08E /* moc_DlgRun.cpp */,
 				D5F7D74D22FA37C40089B08E /* moc_DlgSettings.cpp */,
 				D5F7D82122FA37C40089B08E /* moc_DlgSoluteTable.cpp */,
+				D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */,
 				D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */,
 				D5F7D77A22FA37C40089B08E /* moc_EditPanel.cpp */,
 				D5F7D6F922FA37C30089B08E /* moc_FileThread.cpp */,
@@ -1231,8 +1259,10 @@
 				D5ED29FD23198CD700C16BF7 /* moc_PostDataPanel.cpp */,
 				D5F7D75A22FA37C40089B08E /* moc_PostPanel.cpp */,
 				D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */,
+				D57656FE23E32E6900E4F70F /* moc_predefs.h */,
 				D5F7D71022FA37C40089B08E /* moc_PropertyListForm.cpp */,
 				D5F7D77022FA37C40089B08E /* moc_PropertyListView.cpp */,
+				D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */,
 				D5F7D73822FA37C40089B08E /* moc_ResourceEdit.cpp */,
 				D5F7D77B22FA37C40089B08E /* moc_SelectionBox.cpp */,
 				D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */,
@@ -1280,6 +1310,10 @@
 				D5F7D81022FA37C40089B08E /* qrc_febiostudio.cpp */,
 				D5F7D7BD22FA37C40089B08E /* ReadCurveTool.cpp */,
 				D5F7D74F22FA37C40089B08E /* ReadCurveTool.h */,
+				D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */,
+				D57656F623E32E6800E4F70F /* RepoConnectionHandler.h */,
+				D57656F823E32E6800E4F70F /* RepoProject.cpp */,
+				D57656FB23E32E6800E4F70F /* RepoProject.h */,
 				D5F7D70122FA37C30089B08E /* ResourceEdit.cpp */,
 				D5F7D70322FA37C40089B08E /* ResourceEdit.h */,
 				D5F7D78922FA37C40089B08E /* ScalarFieldTool.cpp */,
@@ -1334,12 +1368,15 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D576571923E3347D00E4F70F /* libsqlite3.0.dylib */,
+				D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */,
 				D5EF347523A03C1900BF4D56 /* libssh.4.8.3.dylib */,
 				D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */,
 				D5606C7F238DA80C002B037E /* libCUILib.a */,
 				D548546923749F2000BE1731 /* QtCharts.framework */,
 				D548546823749F2000BE1731 /* QtCore.framework */,
 				D548546723749F2000BE1731 /* QtGui.framework */,
+				D576571523E32F7E00E4F70F /* QtNetwork.framework */,
 				D548546A23749F2100BE1731 /* QtWidgets.framework */,
 				D548546523749EA500BE1731 /* libswscale.5.5.100.dylib */,
 				D548545F23749D4700BE1731 /* libavcodec.58.54.100.dylib */,
@@ -1447,7 +1484,7 @@
 		D5F7D6DA22FA37670089B08E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1030;
+				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = febio.org;
 				TargetAttributes = {
 					D5F7D6E122FA37670089B08E = {
@@ -1491,6 +1528,7 @@
 			files = (
 				D579B67F239F04E300278644 /* AreaCoverageTool.cpp in Sources */,
 				D5F7D83322FA37C40089B08E /* DlgExportFEBio.cpp in Sources */,
+				D576570423E32E6900E4F70F /* RepoConnectionHandler.cpp in Sources */,
 				D5F7D85522FA37C40089B08E /* DlgTimeSettings.cpp in Sources */,
 				D5ED2A1723198CD900C16BF7 /* moc_DlgNew.cpp in Sources */,
 				D5F7D86C22FA37C40089B08E /* Sketcher.cpp in Sources */,
@@ -1524,6 +1562,7 @@
 				D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */,
 				D5F7D87E22FA37C40089B08E /* PropertyListForm.cpp in Sources */,
 				D5F7D83522FA37C40089B08E /* moc_SummaryWindow.cpp in Sources */,
+				D576570123E32E6900E4F70F /* LocalDatabaseHandler.cpp in Sources */,
 				D5F7D88022FA37C40089B08E /* GLCursor.cpp in Sources */,
 				D5F7D8CD22FA37C40089B08E /* moc_DlgSoluteTable.cpp in Sources */,
 				D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */,
@@ -1593,6 +1632,7 @@
 				D5F7D83B22FA37C40089B08E /* MeshInspector.cpp in Sources */,
 				D5F7D89622FA37C40089B08E /* DlgRun.cpp in Sources */,
 				D5F7D8A022FA37C40089B08E /* moc_CreatePanel.cpp in Sources */,
+				D576570023E32E6900E4F70F /* moc_DlgUpload.cpp in Sources */,
 				D5F7D8A722FA37C40089B08E /* moc_DlgEditProject.cpp in Sources */,
 				D5F7D87922FA37C40089B08E /* CurveEditor.cpp in Sources */,
 				D5F7D87122FA37C40089B08E /* moc_DlgAddMeshData.cpp in Sources */,
@@ -1606,6 +1646,7 @@
 				D5F7D89822FA37C40089B08E /* MaterialMapTool.cpp in Sources */,
 				D5F7D83D22FA37C40089B08E /* BuildPanel.cpp in Sources */,
 				D5F7D87622FA37C40089B08E /* ScalarFieldTool.cpp in Sources */,
+				D576570623E32E6900E4F70F /* moc_RepoConnectionHandler.cpp in Sources */,
 				D5F7D89122FA37C40089B08E /* DlgModelInfo.cpp in Sources */,
 				D5F7D83A22FA37C40089B08E /* PlaneCutTool.cpp in Sources */,
 				D5F7D86F22FA37C40089B08E /* DataFieldSelector.cpp in Sources */,
@@ -1633,11 +1674,10 @@
 				D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */,
 				D5F7D8C122FA37C40089B08E /* DlgCloneGrid.cpp in Sources */,
 				D5F7D83F22FA37C40089B08E /* moc_ModelPropsPanel.cpp in Sources */,
+				D576570523E32E6900E4F70F /* DlgAddConstraint.cpp in Sources */,
 				D5F7D8AE22FA37C40089B08E /* GLControlBar.cpp in Sources */,
-				D579B677239F04E300278644 /* moc_DatabaseHandler.cpp in Sources */,
 				D5F7D8B222FA37C40089B08E /* moc_DlgLameConvertor.cpp in Sources */,
 				D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */,
-				D579B681239F04E300278644 /* DatabaseHandler.cpp in Sources */,
 				D5F7D8BD22FA37C40089B08E /* moc_DlgExportFEBio.cpp in Sources */,
 				D5F7D8A822FA37C40089B08E /* ModelViewer.cpp in Sources */,
 				D5F7D88922FA37C40089B08E /* moc_CreateP2PlinePane.cpp in Sources */,
@@ -1673,6 +1713,8 @@
 				D5F7D8AD22FA37C40089B08E /* Document.cpp in Sources */,
 				D5F7D8B122FA37C40089B08E /* moc_DlgCloneGrid.cpp in Sources */,
 				D5F7D8BE22FA37C40089B08E /* StatsWindow.cpp in Sources */,
+				D576570223E32E6900E4F70F /* DlgUpload.cpp in Sources */,
+				D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */,
 				D54A8C64239EC9F800B6219A /* PostToolsPanel.cpp in Sources */,
 				D5F7D85A22FA37C40089B08E /* moc_PostPanel.cpp in Sources */,
 				D5F7D87C22FA37C40089B08E /* MainWindow.cpp in Sources */,
@@ -1770,6 +1812,8 @@
 					"-DHAS_OCC",
 					"-DHAS_MMG",
 					"-DHAS_NETGEN",
+					"-DHAS_QUAZIP",
+					"-DMODEL_REPO",
 				);
 				SDKROOT = macosx;
 			};
@@ -1830,6 +1874,8 @@
 					"-DHAS_OCC",
 					"-DHAS_MMG",
 					"-DHAS_NETGEN",
+					"-DHAS_QUAZIP",
+					"-DMODEL_REPO",
 				);
 				SDKROOT = macosx;
 			};
@@ -1840,20 +1886,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/qt/Frameworks,
-					/usr/local/Cellar/qt/5.13.2/lib,
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/local/opt/qt/include/QtCore,
 					/usr/local/opt/qt/include/QtGui,
 					/usr/local/opt/qt/include/QtWidgets,
 					/usr/local/opt/qt/include/QtCharts,
+					/usr/local/opt/qt/include/QtNetwork,
 					/usr/local/opt/libssh/include,
 					/usr/local/opt/openssl/include,
+					/usr/local/opt/quazip/include,
 					"$(SRCROOT)/../..",
 				);
 				INFOPLIST_FILE = "Supporting Files/Info.plist";
@@ -1869,6 +1917,8 @@
 					/usr/local/opt/xvid/lib,
 					/usr/local/opt/lame/lib,
 					/usr/local/opt/x265/lib,
+					/usr/local/opt/quazip/lib,
+					/usr/local/opt/sqlite/3.30.1/lib,
 					/usr/local/lib,
 					/usr/local/Cellar/libssh/0.9.0_1/lib,
 					/usr/local/Cellar/openssl/1.0.2s/lib,
@@ -1878,6 +1928,7 @@
 					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
 					/usr/local/Cellar/libssh/0.9.2/lib,
 					/usr/local/Cellar/xvid/1.3.6/lib,
+					/usr/local/Cellar/quazip/0.8.1/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1890,20 +1941,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/qt/Frameworks,
-					/usr/local/Cellar/qt/5.13.2/lib,
 				);
 				HEADER_SEARCH_PATHS = (
 					/usr/local/opt/qt/include/QtCore,
 					/usr/local/opt/qt/include/QtGui,
 					/usr/local/opt/qt/include/QtWidgets,
 					/usr/local/opt/qt/include/QtCharts,
+					/usr/local/opt/qt/include/QtNetwork,
 					/usr/local/opt/libssh/include,
 					/usr/local/opt/openssl/include,
+					/usr/local/opt/quazip/include,
 					"$(SRCROOT)/../..",
 				);
 				INFOPLIST_FILE = "Supporting Files/Info.plist";
@@ -1919,6 +1972,8 @@
 					/usr/local/opt/xvid/lib,
 					/usr/local/opt/lame/lib,
 					/usr/local/opt/x265/lib,
+					/usr/local/opt/quazip/lib,
+					/usr/local/opt/sqlite/3.30.1/lib,
 					/usr/local/lib,
 					/usr/local/Cellar/libssh/0.9.0_1/lib,
 					/usr/local/Cellar/openssl/1.0.2s/lib,
@@ -1928,6 +1983,7 @@
 					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
 					/usr/local/Cellar/libssh/0.9.2/lib,
 					/usr/local/Cellar/xvid/1.3.6/lib,
+					/usr/local/Cellar/quazip/0.8.1/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
