@@ -22,6 +22,13 @@
 //return 0;
 //}
 
+static int addCategoryCallback(void *dbPanel, int argc, char **argv, char **azColName)
+{
+	((CDatabasePanel*) dbPanel)->AddCategory(argv);
+
+	return 0;
+}
+
 static int addProjectCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
 	((CDatabasePanel*) dbPanel)->AddProject(argv);
@@ -78,6 +85,58 @@ public:
 			return;
 		}
 
+//		rc = sqlite3_exec(
+//				db,
+//				"CREATE TABLE IF NOT EXISTS 'users' ("
+//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
+//				"	'username'	TEXT NOT NULL UNIQUE);"
+//				"CREATE TABLE IF NOT EXISTS 'authors' ("
+//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
+//				"	'firstName'	TEXT NOT NULL,"
+//				"	'lastName'	TEXT NOT NULL);"
+//				"CREATE TABLE IF NOT EXISTS 'projects' ("
+//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
+//				"	'owner'	INTEGER NOT NULL,"
+//				"	'name'	TEXT NOT NULL,"
+//				"	'description'	TEXT NOT NULL,"
+//				"	'version'	INTEGER NOT NULL,"
+//				"   'fileID'      INTEGER NOT NULL UNIQUE);"
+//				"CREATE TABLE IF NOT EXISTS 'projectFilenames' ("
+//				"	'project'	INTEGER NOT NULL,"
+//				"	'filename'	INTEGER NOT NULL UNIQUE);"
+//				"CREATE TABLE IF NOT EXISTS 'tags' ("
+//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
+//				"	'tag'	TEXT NOT NULL);"
+//				"CREATE TABLE IF NOT EXISTS 'projectTags' ("
+//				"	'project'	INTEGER NOT NULL,"
+//				"	'tag'	INTEGER NOT NULL);"
+//				"CREATE TABLE IF NOT EXISTS 'publications' ("
+//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
+//				"	'title'	TEXT NOT NULL,"
+//				"	'date'	TEXT NOT NULL,"
+//				"	'journal'	TEXT NOT NULL,"
+//				"	'edition'	TEXT NOT NULL,"
+//				"   'DOI'	TEXT);"
+//				"CREATE TABLE IF NOT EXISTS 'publicationAuthors' ("
+//				"	'author'	INTEGER NOT NULL,"
+//				"	'order'	INTEGER NOT NULL,"
+//				"	'publication'	INTEGER NOT NULL);"
+//				"CREATE TABLE IF NOT EXISTS 'filenames' ("
+//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
+//				"	'filename'	TEXT NOT NULL,"
+//				"   'description'   TEXT,"
+//				"	'localCopy'	INTEGER DEFAULT 0);"
+//				"CREATE TABLE IF NOT EXISTS 'fileTags' ("
+//				"	'file'	INTEGER NOT NULL,"
+//				"	'tag'	INTEGER NOT NULL);"
+//				"CREATE TABLE IF NOT EXISTS 'projectPubs' ("
+//				"	'project'	INTEGER NOT NULL,"
+//				"	'publication'	INTEGER NOT NULL);",
+//				NULL,
+//				NULL,
+//				&zErrMsg
+//				);
+
 		rc = sqlite3_exec(
 				db,
 				"CREATE TABLE IF NOT EXISTS 'users' ("
@@ -87,16 +146,16 @@ public:
 				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
 				"	'firstName'	TEXT NOT NULL,"
 				"	'lastName'	TEXT NOT NULL);"
+				"CREATE TABLE IF NOT EXISTS 'categories' ("
+				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
+				"	'category'	TEXT NOT NULL);"
 				"CREATE TABLE IF NOT EXISTS 'projects' ("
 				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
 				"	'owner'	INTEGER NOT NULL,"
 				"	'name'	TEXT NOT NULL,"
 				"	'description'	TEXT NOT NULL,"
 				"	'version'	INTEGER NOT NULL,"
-				"   'fileID'      INTEGER NOT NULL UNIQUE);"
-				"CREATE TABLE IF NOT EXISTS 'projectFilenames' ("
-				"	'project'	INTEGER NOT NULL,"
-				"	'filename'	INTEGER NOT NULL UNIQUE);"
+				"	'category'	INTEGER NOT NULL);"
 				"CREATE TABLE IF NOT EXISTS 'tags' ("
 				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
 				"	'tag'	TEXT NOT NULL);"
@@ -116,6 +175,7 @@ public:
 				"	'publication'	INTEGER NOT NULL);"
 				"CREATE TABLE IF NOT EXISTS 'filenames' ("
 				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
+				"	'project'	INTEGER NOT NULL,"
 				"	'filename'	TEXT NOT NULL,"
 				"   'description'   TEXT,"
 				"	'localCopy'	INTEGER DEFAULT 0);"
@@ -128,7 +188,7 @@ public:
 				NULL,
 				NULL,
 				&zErrMsg
-				);
+		);
 
 		if( rc!=SQLITE_OK )
 		{
@@ -262,7 +322,7 @@ public:
 		// If it's an entire project file
 		if(type == FULL)
 		{
-			query += "SELECT users.username FROM projects JOIN users ON projects.owner = users.ID WHERE projects.fileID = ";
+			query += "SELECT users.username FROM projects JOIN users ON projects.owner = users.ID WHERE projects.ID = ";
 			query += std::to_string(ID);
 
 			getTable(query, &table, &rows, &cols);
@@ -275,7 +335,7 @@ public:
 		// If it's a single file from a project
 		else
 		{
-			query += "SELECT users.username, projects.name FROM projects JOIN users ON projects.owner = users.ID JOIN projectFilenames ON projects.ID = projectFilenames.project WHERE projectFilenames.filename = ";
+			query += "SELECT users.username, projects.name FROM projects JOIN users ON projects.owner = users.ID JOIN filenames ON projects.ID = filenames.project WHERE filenames.ID = ";
 			query += std::to_string(ID);
 
 			getTable(query, &table, &rows, &cols);
@@ -304,7 +364,7 @@ public:
 		// If it's an entire project file
 		if(type == FULL)
 		{
-			query += "SELECT name FROM projects WHERE fileID = ";
+			query += "SELECT name FROM projects WHERE ID = ";
 			query += std::to_string(ID);
 		}
 		// If it's a single file from a project
@@ -351,30 +411,17 @@ public:
 		return filename;
 	}
 
-	int ProjectIDFromFileID(int ID, int type)
+	int ProjectIDFromFileID(int ID)
 	{
 		char **table;
 		int rows, cols;
 
-		std::string query;
-		int projID;
-
-		// If it's an entire project file
-		if(type == FULL)
-		{
-			query += "SELECT ID FROM projects WHERE fileID = ";
-			query += std::to_string(ID);
-		}
-		// If it's a single file from a project
-		else
-		{
-			query += "SELECT project FROM projectFilenames WHERE filename = ";
-			query += std::to_string(ID);
-
-		}
+		std::string query("SELECT project FROM filenames WHERE ID = ");
+		query += std::to_string(ID);
 
 		getTable(query, &table, &rows, &cols);
 
+		int projID;
 		if(rows == 1)
 		{
 			projID += stoi(table[1]);
@@ -401,9 +448,7 @@ CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
 {
 	// Empty tables for which upsert would not work
-	std::string query("DELETE FROM projectFilenames");
-	imp->execute(query);
-	query = "DELETE FROM projectTags";
+	std::string query("DELETE FROM projectTags");
 	imp->execute(query);
 	query = "DELETE FROM projectPubs";
 	imp->execute(query);
@@ -438,16 +483,23 @@ void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
 	imp->checkLocalCopies();
 }
 
+void CLocalDatabaseHandler::GetCategories()
+{
+	std::string query("SELECT category FROM categories");
+
+	imp->execute(query, addCategoryCallback, imp->dbPanel);
+}
+
 void CLocalDatabaseHandler::GetProjects()
 {
-	std::string query("SELECT projects.ID, name FROM projects");
+	std::string query("SELECT projects.ID, projects.name, users.username, categories.category FROM projects JOIN categories ON projects.category = categories.ID JOIN users ON projects.owner = users.ID");
 
 	imp->execute(query, addProjectCallback, imp->dbPanel);
 }
 
 void CLocalDatabaseHandler::GetProjectFiles(int ID)
 {
-	std::string query("SELECT filenames.ID, filenames.filename, filenames.localCopy from filenames join projectFilenames on filenames.ID = projectFilenames.filename where projectFilenames.project = ");
+	std::string query("SELECT ID, filename, localCopy from filenames where project = ");
 	query += std::to_string(ID);
 
 	imp->execute(query, addProjectFilesCallback, imp->dbPanel);
@@ -498,7 +550,7 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 	sqlite3_free_table(table);
 
 	// Matches filenames and descriptions
-	query = QString("SELECT projectFilenames.project FROM filenames JOIN projectFilenames ON filenames.ID = projectFilenames.filename WHERE filenames.filename LIKE '%%1%' OR filenames.description LIKE '%%1%'").arg(term);
+	query = QString("SELECT project FROM filenames WHERE filename LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
 	queryStd = query.toStdString();
 
 	imp->getTable(queryStd, &table, &rows, &cols);
@@ -543,9 +595,9 @@ QString CLocalDatabaseHandler::FullFileNameFromID(int ID, int type)
 	return imp->GetFullFilename(ID, type);
 }
 
-int CLocalDatabaseHandler::ProjectIDFromFileID(int ID, int type)
+int CLocalDatabaseHandler::ProjectIDFromFileID(int ID)
 {
-	return imp->ProjectIDFromFileID(ID, type);
+	return imp->ProjectIDFromFileID(ID);
 }
 
 

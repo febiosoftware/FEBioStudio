@@ -18,6 +18,7 @@ public:
 
 	void update(QJsonDocument& jsonDoc);
 
+	void GetCategories();
 	void GetProjects();
 	void GetProjectFiles(int ID);
 
@@ -30,7 +31,7 @@ public:
 	QString FilePathFromID(int ID, int type);
 	QString FileNameFromID(int ID, int type);
 	QString FullFileNameFromID(int ID, int type);
-	int ProjectIDFromFileID(int ID, int type);
+	int ProjectIDFromFileID(int ID);
 
 
 private:

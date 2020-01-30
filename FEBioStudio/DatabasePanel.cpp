@@ -179,7 +179,7 @@ public:
 	FolderItem(QString name)
 		: CustomTreeWidgetItem(name, FOLDERITEM)
 	{
-		setIcon(0, QIcon::fromTheme("folder"));
+		setIcon(0, QIcon(":/icons/folder.png"));
 	}
 
 	CustomTreeWidgetItem* getProjectItem()
@@ -464,6 +464,7 @@ public:
 	ProjectItem* currentProject;
 	std::unordered_map<std::string, CustomTreeWidgetItem*> currentProjectFolders;
 	QStringList currentTags;
+	std::unordered_map<int, ProjectItem*> projectItemsByID;
 	std::unordered_map<int, FileItem*> fileItemsByID;
 };
 
@@ -503,6 +504,13 @@ void CDatabasePanel::SetModelList()
 	ui->treeWidget->blockSignals(true);
 	ui->treeWidget->clear();
 	ui->treeWidget->blockSignals(false);
+
+	dbHandler->GetCategories();
+
+	QString category("My Projects");
+	QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
+	item->setIcon(0, QIcon(":/icons/folder.png"));
+	ui->treeWidget->addTopLevelItem(item);
 
 	dbHandler->GetProjects();
 
@@ -577,28 +585,8 @@ void CDatabasePanel::DownloadFinished(int fileID, int fileType)
 
 		JlCompress::extractFiles(filename, JlCompress::getFileList(filename), dir);
 
-
-		// Find the corresponding project item
-		int projID = dbHandler->ProjectIDFromFileID(fileID, fileType);
-
-		ProjectItem* projItem = nullptr;
-
-		for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
-		{
-			ProjectItem* current = static_cast<ProjectItem*>(ui->treeWidget->topLevelItem(item));
-
-			if(current->getProjectID() == projID)
-			{
-				projItem = current;
-				break;
-			}
-		}
-
-		// Once found, set the appropriate local copy flag
-		if(projItem)
-		{
-			projItem->setLocalCopyRecursive(true);
-		}
+		// Set the appropriate local copy flags
+		ui->projectItemsByID[fileID]->setLocalCopyRecursive(true);
 
 	}
 	else
@@ -606,15 +594,47 @@ void CDatabasePanel::DownloadFinished(int fileID, int fileType)
 		ui->fileItemsByID[fileID]->AddLocalCopy();
 	}
 
+	on_treeWidget_itemSelectionChanged();
+}
+
+void CDatabasePanel::AddCategory(char **data)
+{
+	QString category(data[0]);
+	QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
+	item->setIcon(0, QIcon(":/icons/folder.png"));
+
+	ui->treeWidget->addTopLevelItem(item);
+
 }
 
 void CDatabasePanel::AddProject(char **data)
 {
 	int ID = stoi(data[0]);
-	QString name = data[1];
+	QString name(data[1]);
+	QString owner(data[2]);
+	QString category(data[3]);
+
+	if(repoHandler->getUsername().compare(owner) == 0)
+	{
+		category = "My Projects";
+	}
 
 	ProjectItem* projectItem = new ProjectItem(name, ID);
-	ui->treeWidget->addTopLevelItem(projectItem);
+	ui->projectItemsByID[ID] = projectItem;
+
+
+	QTreeWidgetItem* categoryItem;
+	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+	{
+		QTreeWidgetItem* current = ui->treeWidget->topLevelItem(item);
+		if(current->text(0).compare(category) == 0)
+		{
+			categoryItem = current;
+			break;
+		}
+	}
+
+	categoryItem->addChild(projectItem);
 
 	ui->currentProject = projectItem;
 	ui->currentProjectFolders.clear();
@@ -670,6 +690,8 @@ void CDatabasePanel::on_actionOpenFileLocation_triggered()
 void CDatabasePanel::on_actionDelete_triggered()
 {
 	DeleteItem(static_cast<CustomTreeWidgetItem*>(ui->treeWidget->selectedItems()[0]));
+
+	on_treeWidget_itemSelectionChanged();
 }
 
 void CDatabasePanel::on_actionUpload_triggered()
@@ -707,17 +729,15 @@ void CDatabasePanel::on_actionSearch_triggered()
 
 	ui->treeWidget->blockSignals(true);
 
-	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+	for(std::pair<int, ProjectItem*> current : ui->projectItemsByID)
 	{
-		ProjectItem* current = static_cast<ProjectItem*>(ui->treeWidget->topLevelItem(item));
-
-		if(projIDs.count(current->getProjectID()) > 0)
+		if(projIDs.count(current.second->getProjectID()) > 0)
 		{
-			current->setHidden(false);
+			current.second->setHidden(false);
 		}
 		else
 		{
-			current->setHidden(true);
+			current.second->setHidden(true);
 		}
 	}
 
@@ -729,9 +749,9 @@ void CDatabasePanel::on_actionClearSearch_triggered()
 {
 	ui->searchLineEdit->clear();
 
-	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+	for(std::pair<int, ProjectItem*> current : ui->projectItemsByID)
 	{
-		static_cast<ProjectItem*>(ui->treeWidget->topLevelItem(item))->setHidden(false);
+		current.second->setHidden(false);
 	}
 }
 
@@ -854,6 +874,19 @@ void CDatabasePanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 
 void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 {
+	if(ui->treeWidget->selectedItems()[0]->type() == 0)
+	{
+		ui->projectInfoBox->getToolItem(0)->hide();
+		ui->projectInfoBox->getToolItem(1)->hide();
+
+		ui->actionDownload->setEnabled(false);
+		ui->actionOpen->setEnabled(false);
+		ui->actionOpenFileLocation->setEnabled(false);
+		ui->actionDelete->setEnabled(false);
+
+		return;
+	}
+
 	// Find the project item
 	CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(ui->treeWidget->selectedItems()[0]);
 	ProjectItem* projItem = static_cast<ProjectItem*>(item->getProjectItem());
@@ -878,6 +911,8 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	}
 	ui->projectTags->setText(tagString);
 
+	ui->projectInfoBox->getToolItem(0)->show();
+
 	// If a file was selected, show update the file info, otherwise hide it
 	if(item->type() == FILEITEM)
 	{
@@ -889,6 +924,8 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 		ui->projectInfoBox->getToolItem(1)->hide();
 	}
 
+
+	ui->actionDownload->setEnabled(true);
 	if(item->LocalCopy())
 	{
 		ui->actionOpen->setEnabled(true);
@@ -905,6 +942,8 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 
 void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 {
+	if(ui->treeWidget->itemAt(pos)->type() == 0) return;
+
 	CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(ui->treeWidget->itemAt(pos));
 	item->setSelected(true);
 
@@ -935,8 +974,7 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 void CDatabasePanel::SetProjectData(char **data)
 {
 	ui->projectName->setText(data[0]);
-	QString description = QString(data[1]).replace("\\n", "\n");
-	ui->projectDesc->setText(description);
+	ui->projectDesc->setText(data[1]);
 	ui->projectOwner->setText(data[2]);
 	ui->projectVersion->setText(data[3]);
 }

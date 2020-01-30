@@ -35,6 +35,7 @@ public:
 	void DownloadFinished(int fileID, int fileType);
 
 	// SQLite callbacks
+	void AddCategory(char **argv);
 	void AddProject(char **argv);
 	void AddProjectFile(char **argv);
 	void SetProjectData(char **argv);
