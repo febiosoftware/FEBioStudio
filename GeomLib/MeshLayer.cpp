@@ -492,7 +492,18 @@ void MeshLayerManager::InsertObject(int npos, GObject* po)
 
 		if (i != m_activeLayer)
 		{
-			layer->SetMeshData(npos, po->CreateDefaultMesher(), nullptr);
+			FEMesher* mesher = po->CreateDefaultMesher();
+			FEMesh* mesh = nullptr;
+
+			// if the object has no mesher, we are going to copy the current mesh
+			if (mesher == nullptr)
+			{
+				FEMesh* oldMesh = po->GetFEMesh();
+				if (oldMesh) mesh = new FEMesh(*oldMesh);
+			}
+
+			// add the object (and mesh data) to the layer
+			layer->SetMeshData(npos, mesher, mesh);
 		}
 	}
 }
@@ -541,7 +552,7 @@ void MeshLayerManager::InsertObjectMeshList(ObjectMeshList* oml)
 	assert(oml->m_mesh.size() == Layers());
 	assert(oml->m_mesher.size() == Layers());
 
-	m_gm->InsertObject(oml->m_po, oml->m_index);
+	m_gm->InsertObject(oml->m_po, oml->m_index, false);
 
 	for (int i = 0; i < Layers(); ++i)
 	{

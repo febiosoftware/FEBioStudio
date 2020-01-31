@@ -85,7 +85,7 @@ public:
 	int RemoveObject(GObject* po, bool deleteMeshList = false);
 
 	// insert an object before the index
-	void InsertObject(GObject* po, int n);
+	void InsertObject(GObject* po, int n, bool updateManager = true);
 
 	// --- part functions ---
 

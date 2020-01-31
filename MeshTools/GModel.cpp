@@ -184,7 +184,7 @@ int GModel::RemoveObject(GObject* po, bool deleteMeshList)
 
 //-----------------------------------------------------------------------------
 
-void GModel::InsertObject(GObject* po, int n)
+void GModel::InsertObject(GObject* po, int n, bool updateManager)
 {
 	assert( (n>=0) && (n<=Objects()) );
 
@@ -192,7 +192,7 @@ void GModel::InsertObject(GObject* po, int n)
 	imp->m_Obj.Insert(n, po);
 
 	// insert the object in the mesh layer manager
-	imp->m_mlm->InsertObject(n, po);
+	if (updateManager) imp->m_mlm->InsertObject(n, po);
 
 	// update bounding box
 	UpdateBoundingBox();
