@@ -162,6 +162,12 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 	Update();
 }
 
+// default mesher
+FEMesher* GSurfaceMeshObject::CreateDefaultMesher()
+{
+	return new FETetGenMesher(this);
+}
+
 FEMesh* GSurfaceMeshObject::BuildMesh()
 {
 	// make sure that the surface is triangular and is closed

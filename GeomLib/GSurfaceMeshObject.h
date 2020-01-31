@@ -23,6 +23,9 @@ public:
 	// update data structures
 	void Update();
 
+	// default mesher
+	FEMesher* CreateDefaultMesher() override;
+
 	// return the surface mesh
 	FESurfaceMesh* GetSurfaceMesh();
 	const FESurfaceMesh* GetSurfaceMesh() const;

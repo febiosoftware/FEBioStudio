@@ -12,6 +12,9 @@ class GOCCObject : public GObject
 public:
 	GOCCObject(int type = GOCCOBJECT);
 
+	// create the default mesher for this object
+	FEMesher* CreateDefaultMesher() override;
+
 	// build the mesh for visualization
 	void BuildGMesh() override;
 

@@ -47,6 +47,11 @@ GOCCObject::GOCCObject(int type) : GObject(type)
 	SetFEMesher(new NetGenMesher(this));
 }
 
+FEMesher* GOCCObject::CreateDefaultMesher()
+{
+	return new NetGenMesher(this);
+}
+
 void GOCCObject::SetShape(TopoDS_Shape& shape, bool bupdate)
 {
 #ifdef HAS_OCC
