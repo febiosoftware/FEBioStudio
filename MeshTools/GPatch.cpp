@@ -20,6 +20,12 @@ GPatch::GPatch() : GPrimitive(GPATCH)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GPatch::CreateDefaultMesher()
+{
+	return new FEShellPatch(this);
+}
+
+//-----------------------------------------------------------------------------
 
 bool GPatch::Update(bool b)
 {

@@ -501,10 +501,10 @@ void GModifiedObject::Load(IArchive &ar)
 }
 
 //-----------------------------------------------------------------------------
-FEMesher* GModifiedObject::GetMesher()
+FEMesher* GModifiedObject::GetFEMesher()
 {
-	if (GetMesher() == 0) return m_po->GetMesher();
-	return GetMesher();
+	if (GObject::GetFEMesher() == 0) return m_po->GetFEMesher();
+	return GObject::GetFEMesher();
 }
 
 //-----------------------------------------------------------------------------

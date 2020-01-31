@@ -1018,5 +1018,7 @@ void CDatabasePanel::on_actionDelete_triggered() {}
 void CDatabasePanel::on_actionUpload_triggered() {}
 void CDatabasePanel::on_treeWidget_itemSelectionChanged() {}
 void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos) {}
+void CDatabasePanel::on_actionSearch_triggered() {}
+void CDatabasePanel::on_actionClearSearch_triggered() {}
 
 #endif

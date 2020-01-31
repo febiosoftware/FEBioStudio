@@ -682,12 +682,13 @@ CRepoConnectionHandler::CRepoConnectionHandler(CDatabasePanel* dbPanel, CLocalDa
 CRepoConnectionHandler::~CRepoConnectionHandler(){}
 void CRepoConnectionHandler::authenticate(QString userName, QString password){}
 void CRepoConnectionHandler::getFile(int id, int type){}
-void CRepoConnectionHandler::upload(QByteArray projectInfo){}
+//void CRepoConnectionHandler::upload(QByteArray projectInfo){}
 void CRepoConnectionHandler::connFinished(QNetworkReply *r){}
 void CRepoConnectionHandler::authReply(QNetworkReply *r){}
 void CRepoConnectionHandler::getFileReply(QNetworkReply *r){}
-void CRepoConnectionHandler::uploadReply(QNetworkReply *r){}
-void CRepoConnectionHandler::TCPUpload(QString fileToken){}
+//void CRepoConnectionHandler::uploadReply(QNetworkReply *r){}
+//void CRepoConnectionHandler::TCPUpload(QString fileToken){}
 void CRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors) {}
+void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal) {}
 
 #endif

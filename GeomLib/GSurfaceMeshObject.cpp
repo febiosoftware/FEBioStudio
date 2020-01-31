@@ -180,7 +180,7 @@ FEMesh* GSurfaceMeshObject::BuildMesh()
 	}
 
 	// get the tetgen mesher
-	FETetGenMesher* mesher = static_cast<FETetGenMesher*>(GetMesher());
+	FETetGenMesher* mesher = static_cast<FETetGenMesher*>(GetFEMesher());
 
 	// keep a pointer to the old mesh
 	FEMesh* pold = GetFEMesh();

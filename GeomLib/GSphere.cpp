@@ -18,6 +18,12 @@ GSphere::GSphere() : GPrimitive(GSPHERE)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GSphere::CreateDefaultMesher()
+{
+	return new FESphere(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GSphere::Update(bool b)
 {
 	double R = GetFloatValue(RADIUS);

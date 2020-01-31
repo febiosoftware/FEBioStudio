@@ -6,7 +6,7 @@
 #include <QMessageBox>
 #include "ObjectProps.h"
 #include "Document.h"
-#include "Command.h"
+#include "Commands.h"
 #include "MainWindow.h"
 #include "GLView.h"
 #include "CreateP2PlinePane.h"

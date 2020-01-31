@@ -76,6 +76,8 @@ private slots:
 	void OnDeleteItem();
 	void OnAddMaterial();
 	void OnUnhideAllObjects();
+	void OnCreateNewMeshLayer();
+	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
 	void OnAddBC();
 	void OnAddSurfaceLoad();

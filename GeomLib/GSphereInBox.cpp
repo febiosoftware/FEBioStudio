@@ -16,6 +16,12 @@ GSphereInBox::GSphereInBox() : GPrimitive(GSPHERE_IN_BOX)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GSphereInBox::CreateDefaultMesher()
+{
+	return new FESphereInBox(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GSphereInBox::Update(bool b)
 {
 	double W = GetFloatValue(WIDTH);

@@ -18,6 +18,12 @@ GTruncatedEllipsoid::GTruncatedEllipsoid() : GPrimitive(GTRUNC_ELLIPSOID)
 	Create();
 }
 
+//-----------------------------------------------------------------------------
+FEMesher* GTruncatedEllipsoid::CreateDefaultMesher()
+{
+	return new FETruncatedEllipsoid(this);
+}
+
 bool GTruncatedEllipsoid::Update(bool b)
 {
 	double Ra = GetFloatValue(RA);

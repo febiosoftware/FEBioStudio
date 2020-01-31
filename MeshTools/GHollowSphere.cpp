@@ -21,6 +21,12 @@ GHollowSphere::GHollowSphere() : GPrimitive(GHOLLOW_SPHERE)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GHollowSphere::CreateDefaultMesher()
+{
+	return new FEHollowSphere(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GHollowSphere::Update(bool b)
 {
 	double R0 = GetFloatValue(RIN);

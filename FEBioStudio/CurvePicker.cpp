@@ -8,7 +8,7 @@
 #include "SelectionBox.h"
 #include "FEBioStudio.h"
 #include "Document.h"
-#include "Command.h"
+#include "Commands.h"
 
 class Ui::CCurvePicker
 {

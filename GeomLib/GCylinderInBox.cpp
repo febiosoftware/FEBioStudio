@@ -18,6 +18,12 @@ GCylinderInBox::GCylinderInBox() : GPrimitive(GCYLINDER_IN_BOX)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GCylinderInBox::CreateDefaultMesher()
+{
+	return new FECylinderInBox(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GCylinderInBox::Update(bool b)
 {
 	m_W = GetFloatValue(WIDTH);

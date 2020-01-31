@@ -131,15 +131,15 @@ void GPrimitive::Save(OArchive &ar)
 	}
 
 	// save the mesher object
-	if (GetMesher())
+	if (GetFEMesher())
 	{
 		ar.BeginChunk(CID_OBJ_FEMESHER);
 		{
 			int ntype = 0;
-			if (dynamic_cast<FETetGenMesher*>(GetMesher())) ntype = 1;
+			if (dynamic_cast<FETetGenMesher*>(GetFEMesher())) ntype = 1;
 			ar.BeginChunk(ntype);
 			{
-				GetMesher()->Save(ar);
+				GetFEMesher()->Save(ar);
 			}
 			ar.EndChunk();
 		}
@@ -329,8 +329,8 @@ void GPrimitive::Load(IArchive& ar)
 		// mesher object (obsolete way)
 		case CID_OBJ_DEFAULT_MESHER:
 			if (ar.Version() > 0x00010005) throw ReadError("error parsing CID_OBJ_DEFAULT_MESHER (GPrimitive::Load)");
-			assert(GetMesher());
-			GetMesher()->Load(ar);
+			assert(GetFEMesher());
+			GetFEMesher()->Load(ar);
 			break;
 		// mesher object (new way)
 		case CID_OBJ_FEMESHER:
@@ -347,7 +347,7 @@ void GPrimitive::Load(IArchive& ar)
 					default:
 						throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
 					}
-					GetMesher()->Load(ar);
+					GetFEMesher()->Load(ar);
 				}
 				ar.CloseChunk();
 				if (ar.OpenChunk() != IArchive::IO_END) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");

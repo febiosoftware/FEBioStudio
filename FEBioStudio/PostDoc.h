@@ -122,10 +122,6 @@ public:
 	CPostObject(Post::CGLModel* glm);
 	~CPostObject();
 
-	FEMeshBase* GetEditableMesh() override;
-
-	FELineMesh* GetEditableLineMesh() override;
-
 	// is called whenever the selection has changed
 	void UpdateSelection() override;
 

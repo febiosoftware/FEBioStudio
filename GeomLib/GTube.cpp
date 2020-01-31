@@ -21,6 +21,12 @@ GTube::GTube() : GPrimitive(GTUBE)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GTube::CreateDefaultMesher()
+{
+	return new FETube(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GTube::Update(bool b)
 {
 	double R0 = GetFloatValue(RIN);
@@ -139,6 +145,12 @@ GTube2::GTube2() : GPrimitive(GTUBE2)
 	SetFEMesher(new FETube2(this));
 
 	Create();
+}
+
+//-----------------------------------------------------------------------------
+FEMesher* GTube2::CreateDefaultMesher()
+{
+	return new FETube2(this);
 }
 
 //-----------------------------------------------------------------------------

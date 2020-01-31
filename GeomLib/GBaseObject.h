@@ -60,6 +60,8 @@ public:
 
 	void ClearAll();
 	void ClearFaces();
+	void ClearEdges();
+	void ClearNodes();
 	void ClearParts();
 
 	void ResizeParts(int n);

@@ -172,6 +172,7 @@
     <ClCompile Include="..\..\FEBioStudio\Command.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CommandManager.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CommandPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\Commands.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ConchoidFitTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CreateP2PLinePane.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CreatePanel.cpp" />
@@ -397,6 +398,7 @@
     <ClInclude Include="..\..\FEBioStudio\Command.h" />
     <ClInclude Include="..\..\FEBioStudio\CommandManager.h" />
     <ClInclude Include="..\..\FEBioStudio\CommandPanel.h" />
+    <ClInclude Include="..\..\FEBioStudio\Commands.h" />
     <ClInclude Include="..\..\FEBioStudio\ConchoidFitTool.h" />
     <ClInclude Include="..\..\FEBioStudio\CreateP2PlinePane.h" />
     <ClInclude Include="..\..\FEBioStudio\CreatePanel.h" />

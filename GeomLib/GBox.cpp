@@ -19,6 +19,12 @@ GBox::GBox() : GPrimitive(GBOX)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GBox::CreateDefaultMesher()
+{
+	return new FEBox(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GBox::Update(bool b)
 {
 	double w = GetFloatValue(WIDTH);

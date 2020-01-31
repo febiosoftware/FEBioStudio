@@ -7,13 +7,15 @@
 #include <FEMLib/FEBodyLoad.h>
 #include <QMessageBox>
 #include <QMenu>
+#include <QInputDialog>
 #include "DlgEditOutput.h"
 #include "MaterialEditor.h"
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <GeomLib/GObject.h>
-#include "Command.h"
+#include <GeomLib/MeshLayer.h>
+#include "Commands.h"
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
@@ -473,6 +475,59 @@ void CModelViewer::OnUnhideAllObjects()
 	m->ShowAllObjects();
 	Update();
 	GetMainWindow()->RedrawGL();
+}
+
+void CModelViewer::OnCreateNewMeshLayer()
+{
+	CDocument* doc = GetDocument();
+	GModel* gm = doc->GetGModel();
+	int layers = gm->MeshLayers();
+	QString s = QString("Layer") + QString::number(layers + 1);
+	QString newLayer = QInputDialog::getText(this, "New Layer", "Layer name:", QLineEdit::Normal, s);
+	if (newLayer.isEmpty() == false)
+	{
+		string layerName = newLayer.toStdString();
+		int n = gm->FindMeshLayer(layerName);
+		if (n >= 0)
+		{
+			QMessageBox::critical(this, "FEBio Studio", "Failed creating layer. Layer name already taken.");
+		}
+		else
+		{
+			CCmdGroup* cmd = new CCmdGroup(string("Add mesh layer: ") + layerName);
+			cmd->AddCommand(new CCmdAddMeshLayer(gm, layerName));
+//			cmd->AddCommand(new CCmdSetActiveMeshLayer(gm, layers));
+			doc->DoCommand(cmd);
+			Update();
+			GetMainWindow()->RedrawGL();
+		}
+	}
+}
+
+void CModelViewer::OnDeleteMeshLayer()
+{
+	CDocument* doc = GetDocument();
+	GModel* gm = doc->GetGModel();
+	int layers = gm->MeshLayers();
+	int activeLayer = gm->GetActiveMeshLayer();
+	if ((activeLayer == 0) || (layers == 1))
+	{
+		QMessageBox::warning(this, "FEBio Studio", "You cannot delete the Default mesh layer.");
+		return;
+	}
+	else
+	{
+		if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete the current mesh layer?"))
+		{
+			// to delete the active mesh layer, we must first select a different layer as the active layer.
+			// We'll choose the default layer
+			string s = gm->GetMeshLayerName(activeLayer);
+			CCmdGroup* cmd = new CCmdGroup(string("Delete mesh layer: " + s));
+			cmd->AddCommand(new CCmdSetActiveMeshLayer(gm, 0));
+			cmd->AddCommand(new CCmdDeleteMeshLayer(gm, activeLayer));
+			doc->DoCommand(cmd);
+		}
+	}
 }
 
 void CModelViewer::OnUnhideAllParts()
@@ -1153,13 +1208,40 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	// add delete action
 	bool del = false;
 
+	CDocument* doc = GetDocument();
+	GModel* gm = doc->GetGModel();
+
 	switch (data->type)
 	{
 	case MT_OBJECT_LIST:
-		menu.addAction("Show All", this, SLOT(OnUnhideAllObjects()));
+		{
+			menu.addAction("Show All Objects", this, SLOT(OnUnhideAllObjects()));
+			menu.addSeparator();
+
+			QMenu* sub = new QMenu("Set Active Mesh Layer");
+			int layers = gm->MeshLayers();
+			int activeLayer = gm->GetActiveMeshLayer();
+			for (int i = 0; i < layers; ++i)
+			{
+				string s = gm->GetMeshLayerName(i);
+				QAction* a = sub->addAction(QString::fromStdString(s));
+				a->setCheckable(true);
+				if (i == activeLayer) a->setChecked(true);
+			}
+
+			QObject::connect(sub, SIGNAL(triggered(QAction*)), GetMainWindow(), SLOT(OnSelectMeshLayer(QAction*)));
+
+			menu.addAction(sub->menuAction());
+			menu.addAction("New Mesh Layer ...", this, SLOT(OnCreateNewMeshLayer()));
+
+			if (layers > 1)
+			{
+				menu.addAction("Delete Active Mesh Layer", this, SLOT(OnDeleteMeshLayer()));
+			}
+		}
 		break;
 	case MT_PART_LIST:
-		menu.addAction("Show All", this, SLOT(OnUnhideAllParts()));
+		menu.addAction("Show All Parts", this, SLOT(OnUnhideAllParts()));
 		break;
 	case MT_MATERIAL_LIST:
 		menu.addAction("Add Material ...", this, SLOT(OnAddMaterial()));

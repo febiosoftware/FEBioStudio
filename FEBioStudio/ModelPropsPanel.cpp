@@ -30,7 +30,7 @@
 #include <CUILib/HistogramViewer.h>
 #include <PostLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
-#include "Command.h"
+#include "Commands.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)

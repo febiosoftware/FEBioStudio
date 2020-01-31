@@ -25,7 +25,8 @@
 #include <QProgressBar>
 #include <sstream>
 #include <QtCore/QTimer>
-#include "Command.h"
+#include <GeomLib/MeshLayer.h>
+#include "Commands.h"
 
 MeshingThread::MeshingThread(GObject* po)
 {
@@ -35,7 +36,7 @@ MeshingThread::MeshingThread(GObject* po)
 
 void MeshingThread::run()
 {
-	m_mesher = m_po->GetMesher();
+	m_mesher = m_po->GetFEMesher();
 	m_po->BuildMesh();
 	emit resultReady();
 }
@@ -162,6 +163,7 @@ CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, p
 void CMeshPanel::Update()
 {
 	CDocument* doc = GetDocument();
+	GModel* gm = doc->GetGModel();
 	GObject* activeObject = doc->GetActiveObject();
 
 	ui->obj->Update();
@@ -177,11 +179,16 @@ void CMeshPanel::Update()
 		GMeshObject*  meshObject = dynamic_cast<GMeshObject*>(activeObject);
 
 		// show the modifiers for editable meshes
-		ui->showButtonsPanel(true);
+		// only for the default mesh layer, otherwise
+		// we show only the non-editable mesh modifiers
+		if (gm->GetActiveMeshLayer() == 0)
+			ui->showButtonsPanel(true);
+		else
+			ui->showButtonsPanel2(true);
 	}
 	else
 	{
-		FEMesher* mesher = activeObject->GetMesher();
+		FEMesher* mesher = activeObject->GetFEMesher();
 		if (mesher)
 		{
 			ui->setMesherPropertyList(new CObjectProps(mesher));
@@ -263,7 +270,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	GObject* activeObject = doc->GetActiveObject();
 	if (activeObject == 0) return;
 
-	FEMesher* mesher = activeObject->GetMesher();
+	FEMesher* mesher = activeObject->GetFEMesher();
 	if (mesher == 0) return;
 
 	MeshingThread* thread = new MeshingThread(activeObject);

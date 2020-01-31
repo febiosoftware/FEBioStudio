@@ -20,7 +20,12 @@ GThinTube::GThinTube() : GPrimitive(GSHELL_TUBE)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GThinTube::CreateDefaultMesher()
+{
+	return new FEShellTube(this);
+}
 
+//-----------------------------------------------------------------------------
 bool GThinTube::Update(bool b)
 {
 	double R = GetFloatValue(RAD);
@@ -96,6 +101,12 @@ GCylindricalPatch::GCylindricalPatch() : GPrimitive(GCYLINDRICAL_PATCH)
 	SetFEMesher(new FECylndricalPatch(this));
 
 	Create();
+}
+
+//-----------------------------------------------------------------------------
+FEMesher* GCylindricalPatch::CreateDefaultMesher()
+{
+	return new FECylndricalPatch(this);
 }
 
 double GCylindricalPatch::Width() const { return GetFloatValue(W); }

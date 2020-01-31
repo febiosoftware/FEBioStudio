@@ -19,6 +19,12 @@ GRing::GRing() : GPrimitive(GRING)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GRing::CreateDefaultMesher()
+{
+	return new FEShellRing(this);
+}
+
+//-----------------------------------------------------------------------------
 void GRing::Create()
 {
 	int i;

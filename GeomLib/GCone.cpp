@@ -22,6 +22,12 @@ GCone::GCone() : GPrimitive(GCONE)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GCone::CreateDefaultMesher()
+{
+	return new FECone(this);
+}
+
+//-----------------------------------------------------------------------------
 void GCone::Create()
 {
 	GLMesh* gmesh = new GLMesh();

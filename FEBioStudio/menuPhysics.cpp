@@ -21,7 +21,7 @@
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEModelConstraint.h>
-#include "Command.h"
+#include "Commands.h"
 #include <QMessageBox>
 #include <sstream>
 

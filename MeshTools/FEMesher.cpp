@@ -2,6 +2,7 @@
 #include "FEMesher.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/FETetGenMesher.h>
 #include <stack>
 using namespace std;
 
@@ -52,4 +53,19 @@ MeshingProgress FEMesher::Progress()
 void FEMesher::Terminate()
 {
 
+}
+
+FEMesher* FEMesher::Create(GObject* po, int classType)
+{
+	FEMesher* mesher = nullptr;
+	switch (classType)
+	{
+	case 0: mesher = po->CreateDefaultMesher(); break;
+	case 1: mesher = new FETetGenMesher(po); break;
+	default:
+		assert(false);
+	}
+	assert(mesher);
+
+	return mesher;
 }

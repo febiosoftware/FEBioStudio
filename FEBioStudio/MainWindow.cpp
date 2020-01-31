@@ -40,6 +40,7 @@
 #include "SSHThread.h"
 #include "Encrypter.h"
 #include "DlgImportXPLT.h"
+#include "Commands.h"
 
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
@@ -1603,7 +1604,46 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	menu.addAction(ui->actionTop);
 	menu.addAction(ui->actionBottom);
 	menu.addSeparator();
+
+	if (GetActiveDocument() == nullptr)
+	{
+		GModel* gm = GetDocument()->GetGModel();
+		int layers = gm->MeshLayers();
+		if (layers > 1)
+		{
+			QMenu* sub = new QMenu("Set Active Mesh Layer");
+			int activeLayer = gm->GetActiveMeshLayer();
+			for (int i = 0; i < layers; ++i)
+			{
+				string s = gm->GetMeshLayerName(i);
+				QAction* a = sub->addAction(QString::fromStdString(s));
+				a->setCheckable(true);
+				if (i == activeLayer) a->setChecked(true);
+			}
+			QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
+			menu.addAction(sub->menuAction());
+			menu.addSeparator();
+		}
+	}
 	menu.addAction(ui->actionOptions);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::OnSelectMeshLayer(QAction* ac)
+{
+	CDocument* doc = GetDocument();
+	GModel* gm = doc->GetGModel();
+
+	string s = ac->text().toStdString();
+
+	int layer = gm->FindMeshLayer(s); assert(layer >= 0);
+
+	if (layer != gm->GetActiveMeshLayer())
+	{
+		doc->DoCommand(new CCmdSetActiveMeshLayer(gm, layer));
+		UpdateModel();
+		RedrawGL();
+	}
 }
 
 //-----------------------------------------------------------------------------

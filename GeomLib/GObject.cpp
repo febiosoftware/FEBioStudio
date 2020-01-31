@@ -80,7 +80,14 @@ void GObject::SetColor(const GLColor& c) { imp->m_col = c; }
 
 //-----------------------------------------------------------------------------
 // retrieve the mesher
-FEMesher* GObject::GetMesher() { return imp->m_pMesher; }
+FEMesher* GObject::GetFEMesher() { return imp->m_pMesher; }
+
+//-----------------------------------------------------------------------------
+// create a default mesher
+FEMesher* GObject::CreateDefaultMesher()
+{
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 // retrieve the FE mesh
@@ -96,7 +103,6 @@ void GObject::DeleteFEMesh() { delete imp->m_pmesh; imp->m_pmesh = 0; }
 //-----------------------------------------------------------------------------
 void GObject::SetFEMesher(FEMesher *pmesher)
 {
-	if (imp->m_pMesher) delete imp->m_pMesher;
 	imp->m_pMesher = pmesher;
 }
 

@@ -16,6 +16,12 @@ GDisc::GDisc() : GPrimitive(GDISC)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GDisc::CreateDefaultMesher()
+{
+	return new FEShellDisc(this);
+}
+
+//-----------------------------------------------------------------------------
 // create the disc object
 void GDisc::Create()
 {

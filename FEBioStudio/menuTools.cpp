@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <FSCore/FSDir.h>
 #include "SSHHandler.h"
+#include <GeomLib/MeshLayer.h>
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
@@ -193,6 +194,64 @@ void CMainWindow::on_actionOptions_triggered()
 {
 	CDlgSettings dlg(this);
 	dlg.exec();
+}
+
+void CMainWindow::on_actionLayerInfo_triggered()
+{
+	CLogPanel* log = ui->logPanel;
+	log->AddText("\nMesh Layer Info:\n===================\n");
+	GModel* gm = GetDocument()->GetGModel();
+	int nobjs = gm->Objects();
+	int layers = gm->MeshLayers();
+	MeshLayerManager* mlm = gm->GetMeshLayerManager();
+
+	// get the longest layer name
+	int l = 0;
+	for (int i = 0; i < layers; ++i)
+	{
+		const std::string& s = gm->GetMeshLayerName(i);
+		int sl = s.length();
+		if (sl > l) l = sl;
+	}
+
+	for (int i = 0; i < layers; ++i)
+	{
+		log->AddText(QString::number(i) + ".");
+		QString name = QString::fromStdString(gm->GetMeshLayerName(i));
+		log->AddText(QString("%1:").arg(name, -l));
+
+		for (int j = 0; j < nobjs; ++j)
+		{
+			const FEMesher* mesher = nullptr;
+			const FEMesh*	mesh = nullptr;
+
+			if (i == gm->GetActiveMeshLayer())
+			{
+				mesher = gm->Object(j)->GetFEMesher();
+				mesh = gm->Object(j)->GetFEMesh();
+			}
+			else
+			{
+				mesher = mlm->GetFEMesher(i, j);
+				mesh = mlm->GetFEMesh(i, j);
+			}
+
+			ulong pmesher = (ulong)mesher;
+			ulong pmesh   = (ulong)mesh;
+
+			QString s1; s1.setNum(pmesher, 16);
+			QString s2; s2.setNum(pmesh, 16);
+
+			log->AddText(QString("%1|%2").arg(s1, 8, '0').arg(s2, 8, '0'));
+
+			if (j != nobjs - 1) log->AddText(",");
+		}
+
+		if (i == gm->GetActiveMeshLayer())
+			log->AddText("***\n");
+		else
+			log->AddText("\n");
+	}
 }
 
 void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)

@@ -7,8 +7,10 @@
 #define SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
-// PRV FILE VERSION
-#define SAVE_VERSION	0x00030000
+// FSPRJ FILE VERSION
+// 3.0: first version of .fsprj (same as last prv version)
+// 3.1: Added support for mesh layers
+#define SAVE_VERSION	0x00030001
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D

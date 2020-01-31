@@ -330,6 +330,10 @@ public:
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
+#ifdef _DEBUG
+		QAction* actionLayerInfo = addAction("Print Layer Info", "actionLayerInfo"); actionLayerInfo->setShortcut(Qt::Key_F11);
+#endif
+
 		// --- Post menu ---
 		QAction* actionPlaneCut = addAction("Plane cut", "actionPlaneCut", "cut");
 		QAction* actionMirrorPlane = addAction("Mirror plane", "actionMirrorPlane", "mirror");
@@ -594,7 +598,9 @@ public:
 		menuTools->addAction(actionMeshInspector);
 		menuTools->addAction(actionElasticityConvertor);
 		menuTools->addAction(actionOptions);
-
+#ifdef _DEBUG
+		menuTools->addAction(actionLayerInfo);
+#endif
 		// View menu
 		menuBar->addAction(menuView->menuAction());
 		menuView->addAction(actionUndoViewChange);

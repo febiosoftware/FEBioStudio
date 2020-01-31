@@ -18,6 +18,12 @@ GSlice::GSlice() : GPrimitive(GSLICE)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GSlice::CreateDefaultMesher()
+{
+	return new FESlice(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GSlice::Update(bool b)
 {
 	m_R = GetFloatValue(RADIUS);

@@ -14,7 +14,7 @@ GPLCObject::GPLCObject() : GObject(GPLC_OBJECT)
 //-----------------------------------------------------------------------------
 FEMesh* GPLCObject::BuildMesh()
 {
-	SetFEMesh(GetMesher()->BuildMesh());
+	SetFEMesh(GetFEMesher()->BuildMesh());
 	return GetFEMesh();
 }
 

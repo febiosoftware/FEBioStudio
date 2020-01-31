@@ -16,7 +16,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include "GLHighlighter.h"
-#include "Command.h"
+#include "Commands.h"
 using namespace std;
 
 class Ui::CCreateSpringPane

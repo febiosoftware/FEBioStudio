@@ -6,6 +6,7 @@
 #include <QInputDialog>
 #include "ui_mainwindow.h"
 #include "Document.h"
+#include "Commands.h"
 #include <FEBio/FEBioExport12.h>
 #include <FEBio/FEBioExport2.h>
 #include <FEBio/FEBioExport25.h>
@@ -1250,7 +1251,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 				{
 					GObject* po = model.Object(i);
 					if (po->IsSelected())
-						pcmd->AddCommand(new CCmdDeleteFSObject(po));
+						pcmd->AddCommand(new CCmdDeleteGObject(&model, po));
 				}
 				m_doc->DoCommand(pcmd);
 			}
@@ -1753,7 +1754,7 @@ void CMainWindow::on_actionMerge_triggered()
 	{
 		// remove the old object
 		GObject* po = sel->Object(i);
-		pcmd->AddCommand(new CCmdDeleteFSObject(po));
+		pcmd->AddCommand(new CCmdDeleteGObject(&m, po));
 	}
 	// add the new object
 	pcmd->AddCommand(new CCmdAddAndSelectObject(newObject));

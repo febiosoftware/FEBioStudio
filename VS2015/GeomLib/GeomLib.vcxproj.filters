@@ -105,6 +105,9 @@
     <ClCompile Include="..\..\GeomLib\GTube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\GeomLib\MeshLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\GeomLib\GBaseObject.h">
@@ -138,6 +141,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\GeomLib\GSurfaceMeshObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GeomLib\MeshLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

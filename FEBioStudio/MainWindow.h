@@ -244,6 +244,7 @@ public slots:
 	void on_actionFEBioStop_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionOptions_triggered();
+	void on_actionLayerInfo_triggered();
 
 	// Post menu actions
 	void on_actionPlaneCut_triggered();
@@ -340,6 +341,8 @@ public slots:
 	void on_tab_tabCloseRequested(int n);
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
+
+	void OnSelectMeshLayer(QAction* ac);
 
 	void CloseView(int n);
 	void CloseView(CPostDoc* postDoc);

@@ -115,6 +115,15 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	FEMesh* pm = new FEMesh(*po->GetFEMesh());
 	SetFEMesh(pm);
 
+	SetName(po->GetName());
+
+	// copy data
+	CopyTransform(po);
+	SetColor(po->GetColor());
+
+	// copy the selection state
+	if (po->IsSelected()) Select();
+
 	// rebuild the GMesh
 	BuildGMesh();
 }

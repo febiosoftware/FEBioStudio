@@ -17,6 +17,12 @@ GQuartDogBone::GQuartDogBone() : GPrimitive(GQUART_DOG_BONE)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GQuartDogBone::CreateDefaultMesher()
+{
+	return new FEQuartDogBone(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GQuartDogBone::Update(bool b)
 {
 	double cw = GetFloatValue(CWIDTH );

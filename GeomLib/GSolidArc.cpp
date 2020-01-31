@@ -18,6 +18,12 @@ GSolidArc::GSolidArc() : GPrimitive(GSOLIDARC)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GSolidArc::CreateDefaultMesher()
+{
+	return new FESolidArc(this);
+}
+
+//-----------------------------------------------------------------------------
 bool GSolidArc::Update(bool b)
 {
 	double R0 = GetFloatValue(RIN);

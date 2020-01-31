@@ -82,7 +82,10 @@ public:
 	void SetFEMesher(FEMesher* pmesher);
 
 	// retrieve the mesher
-	virtual FEMesher* GetMesher();
+	virtual FEMesher* GetFEMesher();
+
+	// create a default mesher
+	virtual FEMesher* CreateDefaultMesher();
 
 	// retrieve the FE mesh
 	FEMesh* GetFEMesh();
@@ -96,6 +99,9 @@ public:
 
 	// replace the current mesh
 	void ReplaceFEMesh(FEMesh* pm, bool bup = false, bool bdel = false);
+
+	// set the FE mesh
+	void SetFEMesh(FEMesh* pm);
 
 	// replace the current surface mesh
 	virtual void ReplaceSurfaceMesh(FESurfaceMesh* newMesh);
@@ -178,9 +184,6 @@ protected: // helper functions for building the GMesh
 	void BuildEdgeMesh        (GLMesh* glmesh, GEdge& e);
 
 protected:
-	// set the FE mesh
-	void SetFEMesh(FEMesh* pm);
-
 	// set the render mesh
 	void SetRenderMesh(GLMesh* mesh);
 

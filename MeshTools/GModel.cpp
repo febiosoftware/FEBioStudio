@@ -12,6 +12,7 @@
 #include <MeshTools/GGroup.h>
 #include <MeshLib/FEMesh.h>
 #include <FEMLib/FEAnalysisStep.h>
+#include <GeomLib/MeshLayer.h>
 
 GNodeIterator::GNodeIterator(GModel& m) : m_mdl(m)
 {
@@ -77,17 +78,20 @@ class GModel::Imp
 public:
 	Imp()
 	{
+		m_mlm = nullptr;
 		m_ps = nullptr;
 	}
 
 	~Imp()
 	{
-
+		delete m_mlm;
 	}
 
 public:
 	FEModel*			m_ps;	//!< pointer to model
 	BOX					m_box;	//!< bounding box
+
+	MeshLayerManager*	m_mlm;
 
 	FSObjectList<GObject>	m_Obj;	//!< list of objects
 
@@ -104,6 +108,8 @@ GModel::GModel(FEModel* ps): imp(new GModel::Imp)
 {
 	SetName("Model");
 	imp->m_ps = ps;
+	imp->m_mlm = new MeshLayerManager(this);
+	imp->m_mlm->AddLayer("Default");
 }
 
 //-----------------------------------------------------------------------------
@@ -160,10 +166,13 @@ void GModel::Reset()
 }
 
 //-----------------------------------------------------------------------------
-int GModel::RemoveObject(GObject* po)
+int GModel::RemoveObject(GObject* po, bool deleteMeshList)
 {
-	// remove the mesh from the list
+	// remove the object from the list
 	size_t n = imp->m_Obj.Remove(po);
+
+	// remove it from the mesh layers
+	imp->m_mlm->RemoveObject(po, deleteMeshList);
 
 	// update the bounding box
 	UpdateBoundingBox();
@@ -181,6 +190,9 @@ void GModel::InsertObject(GObject* po, int n)
 
 	// insert the mesh to the list
 	imp->m_Obj.Insert(n, po);
+
+	// insert the object in the mesh layer manager
+	imp->m_mlm->InsertObject(n, po);
 
 	// update bounding box
 	UpdateBoundingBox();
@@ -361,7 +373,12 @@ void GModel::ReplaceObject(GObject* po, GObject* pn)
 //-----------------------------------------------------------------------------
 void GModel::AddObject(GObject* po)
 { 
+	// add the object to the object list
 	imp->m_Obj.Add(po);
+
+	// add the object to the layers
+	imp->m_mlm->AddObject(po);
+
 	UpdateBoundingBox();
 }
 
@@ -921,6 +938,13 @@ void GModel::Save(OArchive &ar)
 	}
 	ar.EndChunk();
 
+	// save mesh layers
+	ar.BeginChunk(CID_MESH_LAYERS);
+	{
+		imp->m_mlm->Save(ar);
+	}
+	ar.EndChunk();
+
 	// save the parts
 	for (int i=0; i<(int)imp->m_GPart.Size(); ++i)
 	{
@@ -1030,6 +1054,11 @@ void GModel::Load(IArchive &ar)
 {
 	TRACE("GModel::Load");
 
+	// re-allocate mesh layer manager
+	delete imp->m_mlm;
+	imp->m_mlm = new MeshLayerManager(this);
+	imp->m_mlm->AddLayer("Default");
+
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -1043,6 +1072,11 @@ void GModel::Load(IArchive &ar)
 				SetInfo(info);
 			}
 		break;
+		case CID_MESH_LAYERS:
+			{
+				imp->m_mlm->Load(ar);
+			}
+			break;
 		case CID_OBJ_GOBJECTS:
 			{
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -1054,7 +1088,7 @@ void GModel::Load(IArchive &ar)
 					if (po == 0) throw ReadError("error parsing CID_OBJ_GOBJECTS in GModel::Load");
 
 					// add object to the model
-					AddObject(po);
+					imp->m_Obj.Add(po);
 
 					// load the object data
 					po->Load(ar);
@@ -1850,4 +1884,64 @@ list<GPart*> GModel::FindPartsFromMaterial(int matId, bool bmatch)
 		}
 	}
 	return partList;
+}
+
+int GModel::MeshLayers() const
+{
+	return imp->m_mlm->Layers();
+}
+
+int GModel::GetActiveMeshLayer() const
+{
+	return imp->m_mlm->GetActiveLayer();
+}
+
+void GModel::SetActiveMeshLayer(int n)
+{
+	imp->m_mlm->SetActiveLayer(n);
+}
+
+int GModel::FindMeshLayer(const std::string& s)
+{
+	return imp->m_mlm->FindMeshLayer(s);
+}
+
+const std::string& GModel::GetMeshLayerName(int i) const
+{
+	return imp->m_mlm->GetLayerName(i);
+}
+
+bool GModel::AddMeshLayer(const std::string& layerName)
+{
+	return imp->m_mlm->AddLayer(layerName);
+}
+
+ObjectMeshList* GModel::GetObjectMeshList(GObject* po)
+{
+	return imp->m_mlm->GetObjectMeshList(po);
+}
+
+void GModel::InsertObjectMeshList(ObjectMeshList* oml)
+{
+	imp->m_mlm->InsertObjectMeshList(oml);
+}
+
+void GModel::DeleteMeshLayer(int n)
+{
+	imp->m_mlm->DeleteLayer(n);
+}
+
+MeshLayer* GModel::RemoveMeshLayer(int index) 
+{
+	return imp->m_mlm->RemoveMeshLayer(index);
+}
+
+void GModel::InsertMeshLayer(int index, MeshLayer* layer)
+{
+	imp->m_mlm->InsertMeshLayer(index, layer);
+}
+
+MeshLayerManager* GModel::GetMeshLayerManager()
+{
+	return imp->m_mlm;
 }

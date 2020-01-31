@@ -17,6 +17,12 @@ GCylinder::GCylinder() : GPrimitive(GCYLINDER)
 }
 
 //-----------------------------------------------------------------------------
+FEMesher* GCylinder::CreateDefaultMesher()
+{
+	return new FECylinder(this);
+}
+
+//-----------------------------------------------------------------------------
 // Create the cylinder geometry
 void GCylinder::Create()
 {
@@ -122,6 +128,12 @@ GCylinder2::GCylinder2() : GPrimitive(GCYLINDER2)
 	SetFEMesher(new FECylinder2(this));
 
 	Create();
+}
+
+//-----------------------------------------------------------------------------
+FEMesher* GCylinder2::CreateDefaultMesher()
+{
+	return new FECylinder2(this);
 }
 
 //-----------------------------------------------------------------------------

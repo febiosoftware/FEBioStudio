@@ -283,16 +283,6 @@ CPostObject::~CPostObject()
 	SetFEMesh(nullptr);
 }
 
-FEMeshBase* CPostObject::GetEditableMesh()
-{
-	return GetFEMesh();
-}
-
-FELineMesh* CPostObject::GetEditableLineMesh()
-{
-	return GetFEMesh();
-}
-
 BOX CPostObject::GetBoundingBox()
 {
 	FEMesh* mesh = GetFEMesh();

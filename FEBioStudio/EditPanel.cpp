@@ -15,7 +15,7 @@
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMeshObject.h>
 #include <QMessageBox>
-#include "Command.h"
+#include "Commands.h"
 
 REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
 REGISTER_CLASS(FESurfacePartitionSelection, CLASS_SURFACE_MODIFIER, "Partition"    , 0xFF);

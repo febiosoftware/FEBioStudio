@@ -14,7 +14,7 @@
 #include <QLabel>
 #include "MainWindow.h"
 #include "Document.h"
-#include "Command.h"
+#include "Commands.h"
 
 class Ui::CMeshSelectionBox
 {

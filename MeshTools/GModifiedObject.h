@@ -39,7 +39,7 @@ public:
 	GObject* Clone();
 
 	// get the mesher object
-	FEMesher* GetMesher();
+	FEMesher* GetFEMesher();
 
 protected:
 	void CloneChild();

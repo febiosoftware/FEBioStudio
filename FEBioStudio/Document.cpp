@@ -25,7 +25,7 @@
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
 #include "PostDoc.h"
-#include "Command.h"
+#include "Commands.h"
 #include <sstream>
 
 extern const int COLORS = 16;

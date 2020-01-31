@@ -92,6 +92,20 @@ void GBaseObject::ClearFaces()
 }
 
 //-----------------------------------------------------------------------------
+void GBaseObject::ClearEdges()
+{
+	for (int i = 0; i<(int)m_Edge.size(); ++i) delete m_Edge[i];
+	m_Edge.clear();
+}
+
+//-----------------------------------------------------------------------------
+void GBaseObject::ClearNodes()
+{
+	for (int i = 0; i<(int)m_Node.size(); ++i) delete m_Node[i];
+	m_Node.clear();
+}
+
+//-----------------------------------------------------------------------------
 void GBaseObject::ClearParts()
 {
 	for (int i = 0; i<(int)m_Part.size(); ++i) delete m_Part[i];

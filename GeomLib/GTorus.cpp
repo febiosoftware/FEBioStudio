@@ -18,6 +18,12 @@ GTorus::GTorus() : GPrimitive(GTORUS)
 	Create();
 }
 
+//-----------------------------------------------------------------------------
+FEMesher* GTorus::CreateDefaultMesher()
+{
+	return new FETorus(this);
+}
+
 //----------------------------------------------------------------------------
 bool GTorus::Update(bool b)
 {

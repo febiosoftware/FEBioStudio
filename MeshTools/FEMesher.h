@@ -3,6 +3,8 @@
 #include <FSCore/FSObject.h>
 #include <MeshLib/FEMesh.h>
 
+class GObject;
+
 struct MeshingProgress
 {
 	double		percent;
@@ -41,4 +43,7 @@ public:
 	// return progress
 	virtual MeshingProgress Progress();
 	virtual void Terminate();
+
+public:
+	static FEMesher* Create(GObject* po, int classType);
 };

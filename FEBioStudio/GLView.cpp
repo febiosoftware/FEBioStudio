@@ -35,7 +35,7 @@
 #include "PostDoc.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
-#include "Command.h"
+#include "Commands.h"
 #include <iostream>
 
 static GLubyte poly_mask[128] = {
@@ -1532,7 +1532,14 @@ void CGLView::paintGL()
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
-	if (postDoc == nullptr) m_Widget->DrawWidget(m_ptriad, &painter);
+	if (postDoc == nullptr)
+	{
+		painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
+		int activeLayer = model.GetActiveMeshLayer();
+		const std::string& s = model.GetMeshLayerName(activeLayer);
+		painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
+		m_Widget->DrawWidget(m_ptriad, &painter);
+	}
 	else
 		m_Widget->DrawWidgets(&painter);
 
