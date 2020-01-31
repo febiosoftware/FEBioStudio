@@ -214,40 +214,50 @@ void CMainWindow::on_actionLayerInfo_triggered()
 		if (sl > l) l = sl;
 	}
 
+	int activeLayer = gm->GetActiveMeshLayer();
 	for (int i = 0; i < layers; ++i)
 	{
 		log->AddText(QString::number(i) + ".");
 		QString name = QString::fromStdString(gm->GetMeshLayerName(i));
 		log->AddText(QString("%1:").arg(name, -l));
 
-		for (int j = 0; j < nobjs; ++j)
+		int nc = nobjs;
+		int meshes = mlm->FEMeshes(i);
+		if (meshes != nobjs)
 		{
-			const FEMesher* mesher = nullptr;
-			const FEMesh*	mesh = nullptr;
-
-			if (i == gm->GetActiveMeshLayer())
+			log->AddText(QString("(Incorrect number of meshes: %1 / %2)").arg(meshes).arg(nobjs));
+		}
+		else
+		{
+			for (int j = 0; j < nc; ++j)
 			{
-				mesher = gm->Object(j)->GetFEMesher();
-				mesh = gm->Object(j)->GetFEMesh();
+				const FEMesher* mesher = nullptr;
+				const FEMesh*	mesh = nullptr;
+
+				if (i == activeLayer)
+				{
+					mesher = gm->Object(j)->GetFEMesher();
+					mesh = gm->Object(j)->GetFEMesh();
+				}
+				else
+				{
+					mesher = mlm->GetFEMesher(i, j);
+					mesh = mlm->GetFEMesh(i, j);
+				}
+
+				ulong pmesher = (ulong)mesher;
+				ulong pmesh = (ulong)mesh;
+
+				QString s1; s1.setNum(pmesher, 16);
+				QString s2; s2.setNum(pmesh, 16);
+
+				log->AddText(QString("%1|%2").arg(s1, 8, '0').arg(s2, 8, '0'));
+
+				if (j != nobjs - 1) log->AddText(",");
 			}
-			else
-			{
-				mesher = mlm->GetFEMesher(i, j);
-				mesh = mlm->GetFEMesh(i, j);
-			}
-
-			ulong pmesher = (ulong)mesher;
-			ulong pmesh   = (ulong)mesh;
-
-			QString s1; s1.setNum(pmesher, 16);
-			QString s2; s2.setNum(pmesh, 16);
-
-			log->AddText(QString("%1|%2").arg(s1, 8, '0').arg(s2, 8, '0'));
-
-			if (j != nobjs - 1) log->AddText(",");
 		}
 
-		if (i == gm->GetActiveMeshLayer())
+		if (i == activeLayer)
 			log->AddText("***\n");
 		else
 			log->AddText("\n");

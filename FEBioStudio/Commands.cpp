@@ -40,7 +40,7 @@ void CCmdAddObject::UnExecute()
 	GModel* gm = m_pDoc->GetGModel();
 
 	// remove the mesh from the model
-	gm->RemoveObject(m_pobj);
+	gm->RemoveObject(m_pobj, true);
 
 	m_bdel = true;
 }

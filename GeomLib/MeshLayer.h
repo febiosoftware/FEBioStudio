@@ -49,6 +49,7 @@ public:
 public:
 	const FEMesher* GetFEMesher(int layer, int obj);
 	const FEMesh* GetFEMesh(int layer, int obj);
+	int FEMeshes(int layer);
 
 public:
 	void Save(OArchive& ar) override;

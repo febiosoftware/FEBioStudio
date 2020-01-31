@@ -1088,7 +1088,7 @@ void GModel::Load(IArchive &ar)
 					if (po == 0) throw ReadError("error parsing CID_OBJ_GOBJECTS in GModel::Load");
 
 					// add object to the model
-					imp->m_Obj.Add(po);
+					AddObject(po);
 
 					// load the object data
 					po->Load(ar);

@@ -496,7 +496,7 @@ void CModelViewer::OnCreateNewMeshLayer()
 		{
 			CCmdGroup* cmd = new CCmdGroup(string("Add mesh layer: ") + layerName);
 			cmd->AddCommand(new CCmdAddMeshLayer(gm, layerName));
-//			cmd->AddCommand(new CCmdSetActiveMeshLayer(gm, layers));
+			cmd->AddCommand(new CCmdSetActiveMeshLayer(gm, layers));
 			doc->DoCommand(cmd);
 			Update();
 			GetMainWindow()->RedrawGL();

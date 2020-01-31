@@ -458,7 +458,18 @@ void MeshLayerManager::AddObject(GObject* po)
 
 		if (i != m_activeLayer)
 		{
-			layer->SetMeshData(n, po->CreateDefaultMesher(), nullptr);
+			FEMesher* mesher = po->CreateDefaultMesher();
+			FEMesh* mesh = nullptr;
+
+			// if the object has no mesher, we are going to copy the current mesh
+			if (mesher == nullptr)
+			{
+				FEMesh* oldMesh = po->GetFEMesh();
+				if (oldMesh) mesh = new FEMesh(*oldMesh);
+			}
+
+			// add the object (and mesh data) to the layer
+			layer->SetMeshData(n, mesher, mesh);
 		}
 	}
 }
@@ -576,4 +587,9 @@ const FEMesher* MeshLayerManager::GetFEMesher(int layer, int obj)
 const FEMesh* MeshLayerManager::GetFEMesh(int layer, int obj)
 {
 	return m_layerList[layer]->GetFEMesh(obj);
+}
+
+int MeshLayerManager::FEMeshes(int layer)
+{
+	return m_layerList[layer]->Meshes();
 }
