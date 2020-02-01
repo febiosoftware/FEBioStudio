@@ -1640,8 +1640,18 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 
 	if (layer != gm->GetActiveMeshLayer())
 	{
+		// since objects may not have meshes in the new layer, we make sure we are 
+		// in object selection mode
+		if (doc->GetItemMode() != ITEM_MESH)
+		{
+			doc->SetItemMode(ITEM_MESH);
+			UpdateGLControlBar();
+		}
+
+		// change the mesh layer
 		doc->DoCommand(new CCmdSetActiveMeshLayer(gm, layer));
 		UpdateModel();
+		UpdateGLControlBar();
 		RedrawGL();
 	}
 }
