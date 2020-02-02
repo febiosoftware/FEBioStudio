@@ -1652,6 +1652,7 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 		doc->DoCommand(new CCmdSetActiveMeshLayer(gm, layer));
 		UpdateModel();
 		UpdateGLControlBar();
+		ui->buildPanel->Update();
 		RedrawGL();
 	}
 }
