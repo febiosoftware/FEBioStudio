@@ -188,10 +188,8 @@ public slots:
 	void on_actionExportFEModel_triggered();
 	void on_actionImportGeometry_triggered();
 	void on_actionExportGeometry_triggered();
-#ifdef HAS_QUAZIP
 	void on_actionImportProject_triggered();
 	void on_actionExportProject_triggered();
-#endif
 	void on_actionImportImage_triggered();
 	void on_actionConvertFeb_triggered();
 	void on_actionConvertGeo_triggered();

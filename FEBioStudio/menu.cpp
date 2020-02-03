@@ -355,6 +355,9 @@ void CMainWindow::on_actionExportProject_triggered()
 
 	}
 }
+#else
+void CMainWindow::on_actionImportProject_triggered() {}
+void CMainWindow::on_actionExportProject_triggered() {}
 #endif
 
 void CMainWindow::on_actionSaveAs_triggered()

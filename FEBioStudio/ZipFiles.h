@@ -3,7 +3,11 @@
     #include <quazip/JlCompress.h>
     #include <quazip/quazip.h>
     #include <quazip/quazipfile.h>
-#else
+#elif WIN32
+	#include <JlCompress.h>
+	#include <quazip.h>
+	#include <quazipfile.h>
+#else 
     #include <quazip5/JlCompress.h>
     #include <quazip5/quazip.h>
     #include <quazip5/quazipfile.h>
