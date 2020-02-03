@@ -24,11 +24,7 @@
 #include <QByteArray>
 #include <QDir>
 #include <QFileIconProvider>
-#ifdef __APPLE__
-    #include <quazip/JlCompress.h>
-#else
-    #include <quazip5/JlCompress.h>
-#endif
+#include <JlCompress.h>
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
@@ -623,7 +619,7 @@ void CDatabasePanel::AddProject(char **data)
 	ui->projectItemsByID[ID] = projectItem;
 
 
-	QTreeWidgetItem* categoryItem;
+	QTreeWidgetItem* categoryItem = nullptr;
 	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
 	{
 		QTreeWidgetItem* current = ui->treeWidget->topLevelItem(item);
@@ -633,7 +629,7 @@ void CDatabasePanel::AddProject(char **data)
 			break;
 		}
 	}
-
+	assert(categoryItem);
 	categoryItem->addChild(projectItem);
 
 	ui->currentProject = projectItem;

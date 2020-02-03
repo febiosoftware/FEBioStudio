@@ -421,7 +421,7 @@ public:
 
 		getTable(query, &table, &rows, &cols);
 
-		int projID;
+		int projID = 0;
 		if(rows == 1)
 		{
 			projID += stoi(table[1]);

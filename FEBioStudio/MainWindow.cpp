@@ -246,7 +246,7 @@ void CMainWindow::ImportProject(const QString& fileName)
 	QString destDir = parentDirName + "/" + fileInfo.completeBaseName();
 
 	// extract files
-	QStringList extractedFiles = JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
+	QStringList extractedFiles = extractAllFiles(fileName, destDir);
 
 	// open first .fsprj file
 	bool found = false;
