@@ -173,15 +173,7 @@ void CMainWindow::on_actionNew_triggered()
 						ClearOutput();
 
 						// save empty model file
-						if (GetDocument()->SaveDocument(modelFilePath.toStdString()) == false)
-						{
-							QMessageBox::critical(this, "FEBio Studio", "Failed saving model file.");
-						}
-						else
-						{
-							UpdateTitle();
-							ui->addToRecentFiles(modelFilePath);
-						}
+						SaveProject(modelFilePath);
 					}
 				}
 			}
@@ -280,11 +272,7 @@ void CMainWindow::on_actionSave_triggered()
 	if (fileName.empty()) on_actionSaveAs_triggered();
 	else
 	{
-		if (m_doc->SaveDocument(fileName))
-		{
-			UpdateTitle();
-			ui->addToRecentFiles(QString::fromStdString(fileName));
-		}
+		SaveProject(QString::fromStdString(fileName));
 	}
 }
 
@@ -360,21 +348,42 @@ void CMainWindow::on_actionImportProject_triggered() {}
 void CMainWindow::on_actionExportProject_triggered() {}
 #endif
 
+bool CMainWindow::SaveProject(const QString& fileName)
+{
+	// make sure the file has an extension
+	std::string sfile = fileName.toStdString();
+	std::size_t found = sfile.rfind(".");
+	if (found == std::string::npos) sfile.append(".fsprj");
+
+	// start log message
+	ui->logPanel->AddText(QString("Saving project: %1 ...").arg(QString::fromStdString(sfile)));
+
+	// save the document
+	bool success = m_doc->SaveDocument(sfile.c_str());
+
+	ui->logPanel->AddText(success ? "SUCCESS\n" : "FAILED\n");
+
+	// save the document
+	if (success)
+	{
+		UpdateTitle();
+		ui->addToRecentFiles(fileName);
+	}
+	else
+	{
+		QString errStr = QString("Failed storing file to:\n%1").arg(QString::fromStdString(sfile));
+		QMessageBox::critical(this, "FEBio Studio", errStr);
+	}
+
+	return success;
+}
+
 void CMainWindow::on_actionSaveAs_triggered()
 {
 	QString fileName = QFileDialog::getSaveFileName(this, "Export", ui->currentPath, "FEBio Studio Project (*.fsprj)");
 	if (fileName.isEmpty() == false)
 	{
-		// make sure the file has an extension
-		std::string sfile = fileName.toStdString();
-		std::size_t found = sfile.rfind(".");
-		if (found == std::string::npos) sfile.append(".fsprj");
-
-		if (m_doc->SaveDocument(sfile.c_str()))
-		{
-			UpdateTitle();
-			ui->addToRecentFiles(fileName);
-		}
+		SaveProject(fileName);
 	}
 }
 

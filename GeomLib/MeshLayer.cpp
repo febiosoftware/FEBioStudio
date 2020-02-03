@@ -250,6 +250,7 @@ void MeshLayer::Load(IArchive& ar)
 			Mesh& m = m_meshList[index];
 			assert(m.mesh == nullptr);
 			m.mesh = new FEMesh();
+			m.mesh->SetGObject(m.po);
 			m.mesh->Load(ar);
 		}
 		ar.CloseChunk();

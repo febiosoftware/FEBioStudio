@@ -178,6 +178,8 @@ public:
 
 	void OpenFile(const QString& fileName);
 
+	bool SaveProject(const QString& fileName);
+
 public slots:
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();
