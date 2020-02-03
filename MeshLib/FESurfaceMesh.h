@@ -21,7 +21,9 @@ public:
 
 	void Create(unsigned int nodes, unsigned int edges, unsigned int faces);
 
-	void RebuildMesh();
+	void RebuildMesh(double smoothingAngle = 60.0);
+
+	void AutoPartition(double smoothingAngle);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);

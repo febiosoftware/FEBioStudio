@@ -63,3 +63,18 @@ FESurfaceMesh* FESurfacePartitionSelection::Apply(FESurfaceMesh* pm, FEGroup* pg
 
 	return 0;
 }
+
+//=============================================================================
+FESurfaceAutoPartition::FESurfaceAutoPartition() : FESurfaceModifier("Auto Partition")
+{
+	AddDoubleParam(30.0, "Crease angle:", "Crease angle (degrees):");
+}
+
+//-----------------------------------------------------------------------------
+FESurfaceMesh* FESurfaceAutoPartition::Apply(FESurfaceMesh* pm)
+{
+	double w = GetFloatValue(0);
+	FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+	newMesh->AutoPartition(w);
+	return newMesh;
+}

@@ -35,3 +35,11 @@ public:
 private:
 	int	m_partition;
 };
+
+//-----------------------------------------------------------------------------
+class FESurfaceAutoPartition : public FESurfaceModifier
+{
+public:
+	FESurfaceAutoPartition();
+	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+};

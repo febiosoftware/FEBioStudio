@@ -147,17 +147,29 @@ void FESurfaceMesh::Update()
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::RebuildMesh()
+void FESurfaceMesh::RebuildMesh(double smoothingAngle)
 {
 	// find all the face neighbors
 	UpdateFaceNeighbors();
 
 	// partition
+	AutoPartition(smoothingAngle);
+
+	UpdateBox();
+}
+
+//-----------------------------------------------------------------------------
+void FESurfaceMesh::AutoPartition(double smoothingAngle)
+{
+	// auto-smooth the surface
+	AutoSmooth(smoothingAngle);
+
+	// now, assign face groupd IDs
 	int NF = Faces();
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& face = Face(i);
-		face.m_gid = 0;
+		face.m_gid = face.m_sid;
 	}
 
 	// update normals
@@ -171,8 +183,6 @@ void FESurfaceMesh::RebuildMesh()
 
 	// partition nodes
 	AutoPartitionNodes();
-
-	UpdateBox();
 }
 
 //-----------------------------------------------------------------------------
@@ -195,6 +205,18 @@ void FESurfaceMesh::AutoPartitionEdges()
 
 				FEEdge* edge = FindEdge(n0, n1); assert(edge);
 				if (edge) edge->m_gid = 0;
+			}
+			else
+			{
+				FEFace& f2 = Face(face.m_nbr[j]);
+				if (face.m_gid < f2.m_gid)
+				{
+					int n0 = face.n[j];
+					int n1 = face.n[(j + 1) % nn];
+
+					FEEdge* edge = FindEdge(n0, n1); assert(edge);
+					if (edge) edge->m_gid = 0;
+				}
 			}
 		}
 	}

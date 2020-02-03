@@ -150,7 +150,7 @@ REGISTER_CLASS(FEAxesCurvature        , CLASS_FEMODIFIER, "Set Axes from Curvatu
 REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 #ifdef HAS_MMG
-REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Refine", EDIT_MESH);
+REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Refine", EDIT_MESH | EDIT_SAFE);
 #endif
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)

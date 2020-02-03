@@ -154,7 +154,7 @@ void FEBinarySTLimport::build_mesh()
 	}
 
 	// update the mesh
-	pm->Update();
+	pm->RebuildMesh();
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(pm);
 
 	static int nc = 1;
