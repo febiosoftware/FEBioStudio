@@ -11,6 +11,8 @@ void recurseAddDir(QDir d, QStringList & list)
 
 	for (QString file : qsl) {
 
+		if(file.startsWith(".")) continue;
+
 		QFileInfo finfo(QString("%1/%2").arg(d.path()).arg(file));
 
 		if (finfo.isDir()) {
@@ -46,7 +48,7 @@ bool archive(const QString & filePath, const QDir & dir, const QString & comment
 	QFile inFile;
 
 	QFileInfoList files;
-	foreach(QString fn, sl) files << QFileInfo(fn);
+	foreach(QString fn, sl)	files << QFileInfo(fn);
 
 	QuaZipFile outFile(&zip);
 
