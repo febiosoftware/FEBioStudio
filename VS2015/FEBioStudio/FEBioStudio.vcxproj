@@ -82,7 +82,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PostViewDir);$(ZLIBDIR);$(FFMPEGDIR)\include;$(LIBSSH)\include;$(OPENSSLLIB)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(QT512DIR)\include;$(QT512DIR)\include\QtCore;$(QT512DIR)\include\QtGui;$(QT512DIR)\include\QtWidgets;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(PostViewDir);$(ZLIBDIR);$(FFMPEGDIR)\include;$(LIBSSH)\include;$(OPENSSLLIB)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)x64\Release;$(QT512DIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Release;$(MMGLIB)\lib\Release;$(FFMPEGDIR)\lib;$(LIBSSH)\VS2015\src\Release;$(OPENSSLLIB)\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

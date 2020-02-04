@@ -47,6 +47,13 @@ vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v);
 
 // evaluate gradient at element nodes (i.e. Grad{Na(x_b)})
 vec3d ShapeGradient(const FEMesh& mesh, const FEElement_& el, int na, int nb);
+
+// get the min edge length of an element
+double MinEdgeLength(const FEMesh& mesh, const FEElement& e);
+
+// get the max edge length of an element
+double MaxEdgeLength(const FEMesh& mesh, const FEElement& e);
+
 }
 
 extern int FTHEX8[6][4];

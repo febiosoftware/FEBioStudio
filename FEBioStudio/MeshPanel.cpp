@@ -280,8 +280,6 @@ void CMeshPanel::on_apply_clicked(bool b)
 		Update();
 		CMainWindow* w = GetMainWindow();
 		w->UpdateGLControlBar();
-		CDocument* doc = GetDocument();
-		GObject* activeObject = doc->GetActiveObject();
 		w->UpdateModel(activeObject, false);
 		w->RedrawGL();
 

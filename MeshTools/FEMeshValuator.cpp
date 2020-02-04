@@ -18,7 +18,7 @@ void FEMeshValuator::Evaluate(int nfield)
 	int NE = m_mesh.Elements();
 	Mesh_Data& data = m_mesh.GetMeshData();
 	data.Init(0.0, 0);
-	if (nfield < 9)
+	if (nfield < 11)
 	{
 		for (int i = 0; i < NE; ++i)
 		{
@@ -40,7 +40,7 @@ void FEMeshValuator::Evaluate(int nfield)
 	}
 	else
 	{
-		nfield -= 9;
+		nfield -= 11;
 		if ((nfield >= 0) && (nfield < m_mesh.DataFields()))
 		{
 			FEMeshData* meshData = m_mesh.GetMeshData(nfield);
@@ -122,6 +122,12 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 		break;
 	case 8:
 		val = FEMeshMetrics::Tet10MidsideNodeOffset(m_mesh, el, true);
+		break;
+	case 9:
+		val = FEMeshMetrics::MinEdgeLength(m_mesh, el);
+		break;
+	case 10:
+		val = FEMeshMetrics::MaxEdgeLength(m_mesh, el);
 		break;
 	default:
 		val = 0.0;

@@ -73,6 +73,16 @@ int FTPYRA5[5][4] = {
 };
 
 //-----------------------------------------------------------------------
+// in MeshTools\lut.cpp
+extern int ET_HEX[12][2];
+extern int ET_TET[6][2];
+extern int ET_PENTA[9][2];
+
+// in FEElement.cpp
+extern int ET_TRI[3][2];
+extern int ET_QUAD[4][2];
+
+//-----------------------------------------------------------------------
 // The following tables are the values of the shape function derivatives at the nodes
 // first index = integration, second = node
 double GHEX8[8][8][3] = {
@@ -1039,6 +1049,74 @@ vec3d ShapeGradient(const FEMesh& mesh, const FEElement_& el, int na, int nb)
 	grad.z = J[2][0] * G[na][0] + J[2][1] * G[na][1] + J[2][2] * G[na][2];
 
 	return grad;
+}
+
+// get the min edge length of an element
+double MinEdgeLength(const FEMesh& mesh, const FEElement& e)
+{
+	// get the number of edges and edge table
+	// TODO: do ELEM_PYRA
+	int edges = 0;
+	const int(*ET)[2] = 0;
+	int shape = e.Shape();
+	switch (shape)
+	{
+	case ELEM_HEX  : edges = 12; ET = ET_HEX  ; break;
+	case ELEM_TET  : edges =  6; ET = ET_TET  ; break;
+	case ELEM_PENTA: edges =  9; ET = ET_PENTA; break;
+	case ELEM_TRI  : edges =  3; ET = ET_TRI  ; break;
+	case ELEM_QUAD : edges =  4; ET = ET_QUAD ; break;
+	default:
+		assert(false);
+		return 0;
+	}
+	
+	// find the smallest edge
+	double Lmin = 1e99;
+	for (int i = 0; i < edges; ++i)
+	{
+		vec3d r1 = mesh.Node(e.m_node[ET[i][0]]).pos();
+		vec3d r2 = mesh.Node(e.m_node[ET[i][1]]).pos();
+
+		double L = (r2 - r1).Length();
+		if (L < Lmin) Lmin = L;
+	}
+
+	return Lmin;
+}
+
+// get the max edge length of an element
+double MaxEdgeLength(const FEMesh& mesh, const FEElement& e)
+{
+	// get the number of edges and edge table
+	// TODO: do ELEM_PYRA
+	int edges = 0;
+	const int(*ET)[2] = 0;
+	int shape = e.Shape();
+	switch (shape)
+	{
+	case ELEM_HEX  : edges = 12; ET = ET_HEX  ; break;
+	case ELEM_TET  : edges =  6; ET = ET_TET  ; break;
+	case ELEM_PENTA: edges =  9; ET = ET_PENTA; break;
+	case ELEM_TRI  : edges =  3; ET = ET_TRI  ; break;
+	case ELEM_QUAD : edges =  4; ET = ET_QUAD ; break;
+	default:
+		assert(false);
+		return 0;
+	}
+	
+	// find the smallest edge
+	double Lmax = 0.0;
+	for (int i = 0; i < edges; ++i)
+	{
+		vec3d r1 = mesh.Node(e.m_node[ET[i][0]]).pos();
+		vec3d r2 = mesh.Node(e.m_node[ET[i][1]]).pos();
+
+		double L = (r2 - r1).Length();
+		if (L > Lmax) Lmax = L;
+	}
+
+	return Lmax;
 }
 
 }

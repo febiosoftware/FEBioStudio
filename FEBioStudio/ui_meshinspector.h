@@ -116,7 +116,7 @@ public:
 class Ui::CMeshInspector
 {
 public:
-	enum { MAX_EVAL_FIELDS = 9 };
+	enum { MAX_EVAL_FIELDS = 11 };
 
 public:
 	CMeshInfo*		info;
@@ -263,6 +263,8 @@ public:
 		items << "Tet maximal dihedral angle";
 		items << "Triangle quality";
 		items << "Tet10 midside node offset";
+		items << "Minimum element edge length";
+		items << "Maximum element edge length";
 		var->clear();
 		var->addItems(items);
 

@@ -678,24 +678,24 @@ FEElement& FEElement::operator = (const FEElement& el)
 	return *this;
 }
 
-const int ET_QUAD[4][2] = {
+int ET_QUAD[4][2] = {
 	{ 0, 1 },
 	{ 1, 2 },
 	{ 2, 3 },
 	{ 3, 0 } };
 
-const int ET_QUAD8[4][3] = {
+int ET_QUAD8[4][3] = {
 	{ 0, 1, 4 },
 	{ 1, 2, 5 },
 	{ 2, 3, 6 },
 	{ 3, 0, 7 } };
 
-const int ET_TRI[3][2] = {
+int ET_TRI[3][2] = {
 	{ 0, 1 },
 	{ 1, 2 },
 	{ 2, 3 } };
 
-const int ET_TRI6[3][3] = {
+int ET_TRI6[3][3] = {
 	{ 0, 1, 3 },
 	{ 1, 2, 4 },
 	{ 2, 0, 5 } };
