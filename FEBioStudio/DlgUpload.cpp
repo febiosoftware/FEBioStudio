@@ -86,9 +86,7 @@ public:
 		v2->setAlignment(Qt::AlignTop);
 
 		newTag = new QLineEdit;
-		QStringList wordList;
-		wordList << "static" << "contact" << "neo-hookean" << "biphasic" << "cervical";
-		completer = new QCompleter(wordList);
+		completer = new QCompleter;
 		completer->setCaseSensitivity(Qt::CaseInsensitive);
 		newTag->setCompleter(completer);
 		v1->addWidget(newTag);
@@ -160,11 +158,13 @@ void CDlgUpload::setVersion(QString version)
 	ui->version->setText(version);
 }
 
-void CDlgUpload::setTags(QStringList tags)
+void CDlgUpload::setTags(QStringList& tags)
 {
 	delete ui->completer;
+	ui->completer = new QCompleter(tags);
+	ui->completer->setCaseSensitivity(Qt::CaseInsensitive);
 
-	ui->newTag->setCompleter(ui->completer = new QCompleter(tags));
+	ui->newTag->setCompleter(ui->completer);
 }
 
 QString CDlgUpload::getName()

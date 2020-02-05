@@ -62,7 +62,7 @@ public:
 	void setDescription(QString desc);
 	void setOwner(QString owner);
 	void setVersion(QString version);
-	void setTags(QStringList tags);
+	void setTags(QStringList& tags);
 
 
 	QString getName();
