@@ -8,6 +8,8 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QStringList>
+#include <QString>
 #include "RepoProject.h"
 #include "DatabasePanel.h"
 
@@ -497,6 +499,29 @@ void CLocalDatabaseHandler::GetProjects()
 	imp->execute(query, addProjectCallback, imp->dbPanel);
 }
 
+QStringList CLocalDatabaseHandler::GetTags()
+{
+	char **table;
+	int rows, cols;
+
+	QStringList tags;
+
+	// Matches owners, names, and descriptions of projects
+	QString query = QString("SELECT tag FROM tags;");
+	std::string queryStd = query.toStdString();
+
+	imp->getTable(queryStd, &table, &rows, &cols);
+
+	for(int row = 1; row <= rows; row++)
+	{
+		tags.append(table[row]);
+	}
+
+	sqlite3_free_table(table);
+
+	return tags;
+}
+
 void CLocalDatabaseHandler::GetProjectFiles(int ID)
 {
 	std::string query("SELECT ID, filename, localCopy from filenames where project = ");
@@ -537,7 +562,7 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 	std::unordered_set<int> projects;
 
 	// Matches owners, names, and descriptions of projects
-	QString query = QString("SELECT ID FROM projects WHERE owner LIKE '%%1%' OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+	QString query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner=users.ID WHERE username LIKE '%%1%' OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
 	std::string queryStd = query.toStdString();
 
 	imp->getTable(queryStd, &table, &rows, &cols);

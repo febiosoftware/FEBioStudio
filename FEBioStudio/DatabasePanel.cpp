@@ -4,6 +4,8 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <QApplication>
+#include <QPalette>
 #include <QMenu>
 #include <QAction>
 #include <QDialog>
@@ -11,6 +13,7 @@
 #include <QToolButton>
 #include <QToolBar>
 #include <QBoxLayout>
+#include <QSplitter>
 #include <QToolButton>
 #include <QStackedLayout>
 #include <QFormLayout>
@@ -66,11 +69,11 @@ public:
 	{
 		if(LocalCopy())
 		{
-			setForeground(0, Qt::black);
+			setForeground(0, qApp->palette().color(QPalette::Active, QPalette::Text));
 		}
 		else
 		{
-			setForeground(0, Qt::gray);
+			setForeground(0, qApp->palette().color(QPalette::Disabled, QPalette::Text));
 		}
 	}
 
@@ -154,7 +157,7 @@ public:
 	ProjectItem(QString name, int projectID)
 		: CustomTreeWidgetItem(name, PROJECTITEM), m_projectID(projectID)
 	{
-		setIcon(0, QIcon(":/icons/FEBioStudio.png"));
+		setIcon(0, QIcon(":/icons/folder.png"));
 	}
 
 	CustomTreeWidgetItem* getProjectItem()
@@ -356,13 +359,16 @@ public:
 
 		modelVBLayout->addWidget(searchBar);
 
+		QSplitter* splitter = new QSplitter;
+		splitter->setOrientation(Qt::Vertical);
+
 		treeWidget = new QTreeWidget;
 		treeWidget->setObjectName("treeWidget");
 		treeWidget->setColumnCount(1);
 		treeWidget->setHeaderLabel("Project Database");
 		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 		treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-		modelVBLayout->addWidget(treeWidget);
+		splitter->addWidget(treeWidget);
 
 		projectInfoBox = new CToolBox;
 		QWidget* projectDummy = new QWidget;
@@ -408,7 +414,10 @@ public:
 		projectInfoBox->addTool("File Info", fileDummy);
 		projectInfoBox->getToolItem(1)->hide();
 
-		modelVBLayout->addWidget(projectInfoBox);
+		splitter->addWidget(projectInfoBox);
+
+		modelVBLayout->addWidget(splitter);
+
 
 		modelPage = new QWidget;
 		modelPage->setLayout(modelVBLayout);
@@ -696,6 +705,8 @@ void CDatabasePanel::on_actionUpload_triggered()
 	dlg.setName(m_wnd->GetDocument()->GetDocFileBase().c_str());
 	dlg.setOwner(repoHandler->getUsername());
 	dlg.setVersion("1");
+	QStringList tags = dbHandler->GetTags();
+	dlg.setTags(tags);
 
 
 	if (dlg.exec())

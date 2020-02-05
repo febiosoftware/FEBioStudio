@@ -5,6 +5,7 @@
 
 class QJsonDocument;
 class QString;
+class QStringList;
 class CRepoProject;
 class CDatabasePanel;
 
@@ -20,6 +21,7 @@ public:
 
 	void GetCategories();
 	void GetProjects();
+	QStringList GetTags();
 	void GetProjectFiles(int ID);
 
 	void GetProjectData(int ID);
