@@ -190,6 +190,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgAddIC.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddMeshData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddNodalLoad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddPublication.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddRigidConnector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddRigidConstraint.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddStep.cpp" />
@@ -284,6 +285,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddEquation.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddMeshData.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgAddPublication.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneGrid.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneObject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgCloneRevolve.cpp" />
@@ -417,6 +419,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgAddConstraint.h" />
+    <CustomBuild Include="..\..\FEBioStudio\DlgAddPublication.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgCheck.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgEditLConfigs.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

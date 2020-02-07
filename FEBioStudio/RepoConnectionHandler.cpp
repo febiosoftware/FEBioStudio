@@ -272,7 +272,7 @@ void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal)
 
 bool CRepoConnectionHandler::NetworkAccessibleCheck()
 {
-	if(imp->restclient->networkAccessible() == QNetworkAccessManager::Accessible)
+/*	if(imp->restclient->networkAccessible() == QNetworkAccessManager::Accessible)
 	{
 		return true;
 	}
@@ -282,6 +282,8 @@ bool CRepoConnectionHandler::NetworkAccessibleCheck()
 
 		return false;
 	}
+*/
+	return true;
 }
 
 //bool CRepoConnectionHandler::AuthCheck()
