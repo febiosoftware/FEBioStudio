@@ -1436,7 +1436,13 @@ bool FEBioFormat::ParsePlotfileSection(XMLTag &tag)
 
 	XMLAtt* pat = tag.AttributePtr("type");
 	if ((pat == 0) || ((*pat != "febio") && (*pat != "febio2"))) { ParseUnknownAttribute(tag, "type"); return true; }
-	if (tag.isleaf()) return true;
+	if (tag.isleaf())
+	{
+		// add the default ones
+		fem.AddPlotVariable(FEBioModel::PlotVariable("displacement"));
+		fem.AddPlotVariable(FEBioModel::PlotVariable("stress"));
+		return true;
+	}
 
 	++tag;
 	do
