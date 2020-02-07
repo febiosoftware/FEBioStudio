@@ -12,8 +12,8 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QFrame>
-
 #include "DlgUpload.h"
+#include "DlgAddPublication.h"
 
 
 //ClickableLabel::ClickableLabel(QWidget* parent, Qt::WindowFlags f)
@@ -70,6 +70,8 @@ public:
 	QCompleter* completer;
 	QListWidget* tags;
 
+	QAction* actionAddPub;
+
 public:
 	void setup(QDialog* dlg)
 	{
@@ -112,14 +114,26 @@ public:
 		tagLayout->addLayout(v1);
 		tagLayout->addLayout(v2);
 
-
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
 		QVBoxLayout* layout = new QVBoxLayout;
 
 		layout->addLayout(form);
 		layout->addWidget(new QLabel("Tags:"));
 		layout->addLayout(tagLayout);
+
+		layout->addWidget(new QLabel("Publications:"));
+
+		QHBoxLayout* pubHLayout = new QHBoxLayout;
+		pubHLayout->addStretch();
+
+		actionAddPub = new QAction(QIcon(":/icons/selectAdd.png"), "Add Publication", dlg);
+		actionAddPub->setObjectName("actionAddPub");
+		QToolButton* addPubBtn = new QToolButton;
+		addPubBtn->setDefaultAction(actionAddPub);
+		pubHLayout->addWidget(addPubBtn);
+
+		layout->addLayout(pubHLayout);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
 
 		dlg->setLayout(layout);
@@ -228,3 +242,24 @@ void CDlgUpload::on_delTagBtn_clicked()
 		delete item;
 	}
 }
+
+void CDlgUpload::on_actionAddPub_triggered()
+{
+	CDlgAddPublication dlg(this);
+
+	if(dlg.exec())
+	{
+
+	}
+
+}
+
+
+
+
+
+
+
+
+
+

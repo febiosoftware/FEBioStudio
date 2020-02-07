@@ -75,6 +75,7 @@ public:
 public slots:
 	void on_addTagBtn_clicked();
 	void on_delTagBtn_clicked();
+	void on_actionAddPub_triggered();
 
 private:
 	Ui::CDlgUpload*	ui;

@@ -1,5 +1,5 @@
 /****************************************************************************
-** Meta object code from reading C++ file 'DlgUpload.h'
+** Meta object code from reading C++ file 'DlgAddPublication.h'
 **
 ** Created by: The Qt Meta Object Compiler version 67 (Qt 5.13.2)
 **
@@ -7,11 +7,11 @@
 *****************************************************************************/
 
 #include <memory>
-#include "DlgUpload.h"
+#include "DlgAddPublication.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
-#error "The header file 'DlgUpload.h' doesn't include <QObject>."
+#error "The header file 'DlgAddPublication.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
 #error "This file was generated using the moc from 5.13.2. It"
 #error "cannot be used with the include files from this version of Qt."
@@ -21,30 +21,33 @@
 QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-struct qt_meta_stringdata_CDlgUpload_t {
-    QByteArrayData data[5];
-    char stringdata0[80];
+struct qt_meta_stringdata_CDlgAddPublication_t {
+    QByteArrayData data[7];
+    char stringdata0[97];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_CDlgUpload_t, stringdata0) + ofs \
+    qptrdiff(offsetof(qt_meta_stringdata_CDlgAddPublication_t, stringdata0) + ofs \
         - idx * sizeof(QByteArrayData)) \
     )
-static const qt_meta_stringdata_CDlgUpload_t qt_meta_stringdata_CDlgUpload = {
+static const qt_meta_stringdata_CDlgAddPublication_t qt_meta_stringdata_CDlgAddPublication = {
     {
-QT_MOC_LITERAL(0, 0, 10), // "CDlgUpload"
-QT_MOC_LITERAL(1, 11, 20), // "on_addTagBtn_clicked"
-QT_MOC_LITERAL(2, 32, 0), // ""
-QT_MOC_LITERAL(3, 33, 20), // "on_delTagBtn_clicked"
-QT_MOC_LITERAL(4, 54, 25) // "on_actionAddPub_triggered"
+QT_MOC_LITERAL(0, 0, 18), // "CDlgAddPublication"
+QT_MOC_LITERAL(1, 19, 22), // "on_DOILookup_triggered"
+QT_MOC_LITERAL(2, 42, 0), // ""
+QT_MOC_LITERAL(3, 43, 23), // "on_actionBack_triggered"
+QT_MOC_LITERAL(4, 67, 12), // "connFinished"
+QT_MOC_LITERAL(5, 80, 14), // "QNetworkReply*"
+QT_MOC_LITERAL(6, 95, 1) // "r"
 
     },
-    "CDlgUpload\0on_addTagBtn_clicked\0\0"
-    "on_delTagBtn_clicked\0on_actionAddPub_triggered"
+    "CDlgAddPublication\0on_DOILookup_triggered\0"
+    "\0on_actionBack_triggered\0connFinished\0"
+    "QNetworkReply*\0r"
 };
 #undef QT_MOC_LITERAL
 
-static const uint qt_meta_data_CDlgUpload[] = {
+static const uint qt_meta_data_CDlgAddPublication[] = {
 
  // content:
        8,       // revision
@@ -60,55 +63,54 @@ static const uint qt_meta_data_CDlgUpload[] = {
  // slots: name, argc, parameters, tag, flags
        1,    0,   29,    2, 0x0a /* Public */,
        3,    0,   30,    2, 0x0a /* Public */,
-       4,    0,   31,    2, 0x0a /* Public */,
+       4,    1,   31,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 5,    6,
 
        0        // eod
 };
 
-void CDlgUpload::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void CDlgAddPublication::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        auto *_t = static_cast<CDlgUpload *>(_o);
+        auto *_t = static_cast<CDlgAddPublication *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->on_addTagBtn_clicked(); break;
-        case 1: _t->on_delTagBtn_clicked(); break;
-        case 2: _t->on_actionAddPub_triggered(); break;
+        case 0: _t->on_DOILookup_triggered(); break;
+        case 1: _t->on_actionBack_triggered(); break;
+        case 2: _t->connFinished((*reinterpret_cast< QNetworkReply*(*)>(_a[1]))); break;
         default: ;
         }
     }
-    Q_UNUSED(_a);
 }
 
-QT_INIT_METAOBJECT const QMetaObject CDlgUpload::staticMetaObject = { {
+QT_INIT_METAOBJECT const QMetaObject CDlgAddPublication::staticMetaObject = { {
     &QDialog::staticMetaObject,
-    qt_meta_stringdata_CDlgUpload.data,
-    qt_meta_data_CDlgUpload,
+    qt_meta_stringdata_CDlgAddPublication.data,
+    qt_meta_data_CDlgAddPublication,
     qt_static_metacall,
     nullptr,
     nullptr
 } };
 
 
-const QMetaObject *CDlgUpload::metaObject() const
+const QMetaObject *CDlgAddPublication::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *CDlgUpload::qt_metacast(const char *_clname)
+void *CDlgAddPublication::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_CDlgUpload.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_CDlgAddPublication.stringdata0))
         return static_cast<void*>(this);
     return QDialog::qt_metacast(_clname);
 }
 
-int CDlgUpload::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int CDlgAddPublication::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QDialog::qt_metacall(_c, _id, _a);
     if (_id < 0)
