@@ -56,6 +56,10 @@
 		D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B01234653F700B7C0B8 /* libmmg2d.a */; };
 		D57A0B06234653F700B7C0B8 /* libmmgs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B02234653F700B7C0B8 /* libmmgs.a */; };
 		D57A0B092346719D00B7C0B8 /* DlgImportXPLT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */; };
+		D5CA211523EF7025001AE230 /* moc_DlgAddPublication.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA210F23EF7025001AE230 /* moc_DlgAddPublication.cpp */; };
+		D5CA211623EF7025001AE230 /* ZipFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211023EF7025001AE230 /* ZipFiles.cpp */; };
+		D5CA211723EF7025001AE230 /* DlgAddPublication.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211123EF7025001AE230 /* DlgAddPublication.cpp */; };
+		D5CA211823EF7025001AE230 /* Commands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211323EF7025001AE230 /* Commands.cpp */; };
 		D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */; };
 		D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BD2335128D00D388FA /* Encrypter.cpp */; };
 		D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */; };
@@ -462,6 +466,12 @@
 		D57A0B02234653F700B7C0B8 /* libmmgs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmgs.a; path = ../../../../../../../../../../usr/local/lib/libmmgs.a; sourceTree = "<group>"; };
 		D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgImportXPLT.cpp; sourceTree = "<group>"; };
 		D57A0B082346719D00B7C0B8 /* DlgImportXPLT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgImportXPLT.h; sourceTree = "<group>"; };
+		D5CA210F23EF7025001AE230 /* moc_DlgAddPublication.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgAddPublication.cpp; sourceTree = "<group>"; };
+		D5CA211023EF7025001AE230 /* ZipFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipFiles.cpp; sourceTree = "<group>"; };
+		D5CA211123EF7025001AE230 /* DlgAddPublication.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddPublication.cpp; sourceTree = "<group>"; };
+		D5CA211223EF7025001AE230 /* DlgAddPublication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgAddPublication.h; sourceTree = "<group>"; };
+		D5CA211323EF7025001AE230 /* Commands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Commands.cpp; sourceTree = "<group>"; };
+		D5CA211423EF7025001AE230 /* Commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Commands.h; sourceTree = "<group>"; };
 		D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LaunchConfig.cpp; sourceTree = "<group>"; };
 		D5D5B6BD2335128D00D388FA /* Encrypter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encrypter.cpp; sourceTree = "<group>"; };
 		D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_SSHHandler.cpp; sourceTree = "<group>"; };
@@ -1007,6 +1017,8 @@
 				D5F7D7ED22FA37C40089B08E /* CommandManager.h */,
 				D5F7D80422FA37C40089B08E /* CommandPanel.cpp */,
 				D5F7D7D022FA37C40089B08E /* CommandPanel.h */,
+				D5CA211323EF7025001AE230 /* Commands.cpp */,
+				D5CA211423EF7025001AE230 /* Commands.h */,
 				D5F7D73922FA37C40089B08E /* ConchoidFitTool.cpp */,
 				D5F7D7D922FA37C40089B08E /* ConchoidFitTool.h */,
 				D5F7D74422FA37C40089B08E /* CreateP2PLinePane.cpp */,
@@ -1042,6 +1054,8 @@
 				D5F7D7E922FA37C40089B08E /* DlgAddMeshData.h */,
 				D5F7D7B522FA37C40089B08E /* DlgAddNodalLoad.cpp */,
 				D5F7D72E22FA37C40089B08E /* DlgAddNodalLoad.h */,
+				D5CA211123EF7025001AE230 /* DlgAddPublication.cpp */,
+				D5CA211223EF7025001AE230 /* DlgAddPublication.h */,
 				D5F7D70C22FA37C40089B08E /* DlgAddRigidConnector.cpp */,
 				D5F7D81322FA37C40089B08E /* DlgAddRigidConnector.h */,
 				D5F7D7E022FA37C40089B08E /* DlgAddRigidConstraint.cpp */,
@@ -1213,6 +1227,7 @@
 				D5F7D76A22FA37C40089B08E /* moc_DlgAddChemicalReaction.cpp */,
 				D5F7D81E22FA37C40089B08E /* moc_DlgAddEquation.cpp */,
 				D5F7D78222FA37C40089B08E /* moc_DlgAddMeshData.cpp */,
+				D5CA210F23EF7025001AE230 /* moc_DlgAddPublication.cpp */,
 				D5F7D7F422FA37C40089B08E /* moc_DlgCloneGrid.cpp */,
 				D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */,
 				D5F7D79B22FA37C40089B08E /* moc_DlgCloneRevolve.cpp */,
@@ -1359,6 +1374,7 @@
 				D5F7D76722FA37C40089B08E /* ui_toolspanel.h */,
 				D5F7D71922FA37C40089B08E /* version.h */,
 				D5ED29F823198CD600C16BF7 /* ViewSettings.h */,
+				D5CA211023EF7025001AE230 /* ZipFiles.cpp */,
 				D5ED2A0823198CD800C16BF7 /* ZipFiles.h */,
 			);
 			name = FEBioStudio;
@@ -1561,6 +1577,7 @@
 				D54879BF234B77D700D0E506 /* AreaCalculatorTool.cpp in Sources */,
 				D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */,
 				D5F7D87E22FA37C40089B08E /* PropertyListForm.cpp in Sources */,
+				D5CA211623EF7025001AE230 /* ZipFiles.cpp in Sources */,
 				D5F7D83522FA37C40089B08E /* moc_SummaryWindow.cpp in Sources */,
 				D576570123E32E6900E4F70F /* LocalDatabaseHandler.cpp in Sources */,
 				D5F7D88022FA37C40089B08E /* GLCursor.cpp in Sources */,
@@ -1671,6 +1688,7 @@
 				D5F7D86322FA37C40089B08E /* moc_MeshInspector.cpp in Sources */,
 				D5F7D86522FA37C40089B08E /* DlgTransform.cpp in Sources */,
 				D5F7D86922FA37C40089B08E /* GLCanvas.cpp in Sources */,
+				D5CA211723EF7025001AE230 /* DlgAddPublication.cpp in Sources */,
 				D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */,
 				D5F7D8C122FA37C40089B08E /* DlgCloneGrid.cpp in Sources */,
 				D5F7D83F22FA37C40089B08E /* moc_ModelPropsPanel.cpp in Sources */,
@@ -1729,7 +1747,9 @@
 				D5F7D85622FA37C40089B08E /* menu.cpp in Sources */,
 				D5F7D8C322FA37C40089B08E /* qrc_febiostudio.cpp in Sources */,
 				D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */,
+				D5CA211523EF7025001AE230 /* moc_DlgAddPublication.cpp in Sources */,
 				D5F7D84222FA37C40089B08E /* DlgBatchConvert.cpp in Sources */,
+				D5CA211823EF7025001AE230 /* Commands.cpp in Sources */,
 				D5F7D89022FA37C40089B08E /* PropertyList.cpp in Sources */,
 				D5F7D86222FA37C40089B08E /* Command.cpp in Sources */,
 				D5F7D8C622FA37C40089B08E /* moc_ModelSearch.cpp in Sources */,
@@ -1901,7 +1921,7 @@
 					/usr/local/opt/qt/include/QtNetwork,
 					/usr/local/opt/libssh/include,
 					/usr/local/opt/openssl/include,
-					/usr/local/opt/quazip/include,
+					/usr/local/opt/quazip/include/quazip,
 					"$(SRCROOT)/../..",
 				);
 				INFOPLIST_FILE = "Supporting Files/Info.plist";
@@ -1956,7 +1976,7 @@
 					/usr/local/opt/qt/include/QtNetwork,
 					/usr/local/opt/libssh/include,
 					/usr/local/opt/openssl/include,
-					/usr/local/opt/quazip/include,
+					/usr/local/opt/quazip/include/quazip,
 					"$(SRCROOT)/../..",
 				);
 				INFOPLIST_FILE = "Supporting Files/Info.plist";

@@ -335,11 +335,14 @@
 				EXECUTABLE_PREFIX = lib;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/qt/5.13.2/lib,
+					/usr/local/opt/qt/Frameworks,
 				);
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../..",
+					/usr/local/opt/qt/include/QtCore,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -352,11 +355,14 @@
 				EXECUTABLE_PREFIX = lib;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/qt/5.13.2/lib,
+					/usr/local/opt/qt/Frameworks,
 				);
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/../..";
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../..",
+					/usr/local/opt/qt/include/QtCore,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};

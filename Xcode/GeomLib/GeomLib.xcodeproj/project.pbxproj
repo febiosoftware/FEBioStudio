@@ -47,6 +47,8 @@
 		D56584071F05BC3300594E72 /* GCurveMeshObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D56584031F05BC3300594E72 /* GCurveMeshObject.h */; };
 		D56584081F05BC3300594E72 /* GSurfaceMeshObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56584041F05BC3300594E72 /* GSurfaceMeshObject.cpp */; };
 		D56584091F05BC3300594E72 /* GSurfaceMeshObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D56584051F05BC3300594E72 /* GSurfaceMeshObject.h */; };
+		D5CA211B23EF7041001AE230 /* MeshLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211923EF7041001AE230 /* MeshLayer.cpp */; };
+		D5CA211C23EF7041001AE230 /* MeshLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5CA211A23EF7041001AE230 /* MeshLayer.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -91,6 +93,8 @@
 		D56584031F05BC3300594E72 /* GCurveMeshObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCurveMeshObject.h; sourceTree = "<group>"; };
 		D56584041F05BC3300594E72 /* GSurfaceMeshObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GSurfaceMeshObject.cpp; sourceTree = "<group>"; };
 		D56584051F05BC3300594E72 /* GSurfaceMeshObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSurfaceMeshObject.h; sourceTree = "<group>"; };
+		D5CA211923EF7041001AE230 /* MeshLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshLayer.cpp; sourceTree = "<group>"; };
+		D5CA211A23EF7041001AE230 /* MeshLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshLayer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,6 +167,8 @@
 				D5215F451F01907100838680 /* GTorus.cpp */,
 				D5215F471F01907100838680 /* GTruncatedEllipsoid.cpp */,
 				D5215F481F01907100838680 /* GTube.cpp */,
+				D5CA211923EF7041001AE230 /* MeshLayer.cpp */,
+				D5CA211A23EF7041001AE230 /* MeshLayer.h */,
 			);
 			name = GeomLib;
 			path = ../../GeomLib;
@@ -182,6 +188,7 @@
 				D5215F5E1F01907100838680 /* GPrimitive.h in Headers */,
 				D5215F531F01907100838680 /* geomlib.h in Headers */,
 				D5215F5C1F01907100838680 /* GObject.h in Headers */,
+				D5CA211C23EF7041001AE230 /* MeshLayer.h in Headers */,
 				D5215F4A1F01907100838680 /* GBaseObject.h in Headers */,
 				D5215F5A1F01907100838680 /* GMultiBox.h in Headers */,
 				D56584071F05BC3300594E72 /* GCurveMeshObject.h in Headers */,
@@ -261,6 +268,7 @@
 				D5215F521F01907100838680 /* geomlib.cpp in Sources */,
 				D5215F491F01907100838680 /* GBaseObject.cpp in Sources */,
 				D50F18B821E0E90200DD595F /* GOCCObject.cpp in Sources */,
+				D5CA211B23EF7041001AE230 /* MeshLayer.cpp in Sources */,
 				D5215F641F01907100838680 /* GSlice.cpp in Sources */,
 				D5215F631F01907100838680 /* GShellTube.cpp in Sources */,
 				D5215F6A1F01907100838680 /* GTruncatedEllipsoid.cpp in Sources */,
