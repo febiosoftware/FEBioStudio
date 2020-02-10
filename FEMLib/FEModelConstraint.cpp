@@ -62,7 +62,7 @@ FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESurfaceCons
 
 FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESurfaceConstraint(FE_SYMMETRY_PLANE, ps, nstep)
 {
-	SetTypeString("Symmetry plane");
+	SetTypeString("symmetry plane");
 
 	AddBoolParam(true, "laugon", "augmented lagrangian");
 	AddDoubleParam(0.2, "tol", "augmentation tolerance");
