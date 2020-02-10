@@ -277,6 +277,27 @@ void CMainWindow::on_actionAddConstraint_triggered()
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
 			pi->SetName(name);
 
+			FESurfaceConstraint* psc = dynamic_cast<FESurfaceConstraint*>(pi);
+			if (psc)
+			{
+				// figure out the selection
+				FESelection* psel = m_doc->GetCurrentSelection();
+				if (psel && psel->Size())
+				{
+					int ntype = psel->Type();
+					switch (ntype)
+					{
+					case SELECT_SURFACES:
+					case SELECT_FE_FACES:
+					{
+						FEItemListBuilder* items = psel->CreateItemList();
+						psc->SetItemList(items);
+					}
+					break;
+					}
+				}
+			}
+
 			// assign it to the correct step
 			FEStep* step = fem.GetStep(dlg.m_nstep);
 			pi->SetStep(step->GetID());
