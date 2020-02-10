@@ -8,8 +8,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FESurfaceConstraint : public FEModelConstraint
+{
+public:
+	FESurfaceConstraint(int ntype, FEModel* fem, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
 // This class implements a volume constraint
-class FEVolumeConstraint : public FEModelConstraint
+class FEVolumeConstraint : public FESurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY };
@@ -20,7 +27,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // This class implements a normal fluid flow constraint
-class FENormalFlowSurface : public FEModelConstraint
+class FENormalFlowSurface : public FESurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, RHS };
@@ -31,7 +38,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // This class implements a symmetry plane constraint
-class FESymmetryPlane : public FEModelConstraint
+class FESymmetryPlane : public FESurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };

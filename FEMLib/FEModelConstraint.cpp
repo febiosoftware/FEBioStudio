@@ -6,11 +6,16 @@ FEModelConstraint::FEModelConstraint(int ntype, FEModel* fem, int nstep) : FEMod
 
 }
 
+FESurfaceConstraint::FESurfaceConstraint(int ntype, FEModel* fem, int nstep) : FEModelConstraint(ntype, fem, nstep)
+{
+
+}
+
 //=============================================================================
 // FEVolumeConstraint
 //-----------------------------------------------------------------------------
 
-FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FEModelConstraint(FE_VOLUME_CONSTRAINT, ps, nstep)
+FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FESurfaceConstraint(FE_VOLUME_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("Volume Constraint");
 
@@ -39,7 +44,7 @@ FEWarpingConstraint::FEWarpingConstraint(FEModel* fem) : FEModelConstraint(FE_WA
 // FENormalFlowSurface
 //-----------------------------------------------------------------------------
 
-FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FEModelConstraint(FE_NORMAL_FLUID_FLOW, ps, nstep)
+FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESurfaceConstraint(FE_NORMAL_FLUID_FLOW, ps, nstep)
 {
 	SetTypeString("Normal flow constraint");
 
@@ -55,7 +60,7 @@ FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FEModelConstr
 // FESymmetryPlane
 //-----------------------------------------------------------------------------
 
-FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FEModelConstraint(FE_SYMMETRY_PLANE, ps, nstep)
+FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESurfaceConstraint(FE_SYMMETRY_PLANE, ps, nstep)
 {
 	SetTypeString("Symmetry plane");
 

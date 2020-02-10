@@ -19,6 +19,7 @@
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <QGridLayout>
 #include <QComboBox>
 #include <QCheckBox>
@@ -533,6 +534,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 
 		FESoloInterface* solo = dynamic_cast<FESoloInterface*>(m_currentObject);
 		if (solo) { SetSelection(0, solo->GetItemList()); return; }
+
+		FESurfaceConstraint* psc = dynamic_cast<FESurfaceConstraint*>(m_currentObject);
+		if (psc) { SetSelection(0, psc->GetItemList()); return;	}
 
 		GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject);
 		if (mat) { SetSelection(mat); return;	}

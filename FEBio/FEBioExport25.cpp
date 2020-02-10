@@ -401,38 +401,14 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 			FEModelConstraint* pj = pstep->Constraint(j);
 			if (pj->IsActive())
 			{
-				FEVolumeConstraint* pvc = dynamic_cast<FEVolumeConstraint*>(pj);
-				if (pvc && pvc->IsActive())
+				FESurfaceConstraint* psf = dynamic_cast<FESurfaceConstraint*>(pj);
+				if (psf && psf->IsActive())
 				{
-					FEItemListBuilder* pi = pvc->GetItemList();
+					FEItemListBuilder* pi = psf->GetItemList();
 					if (pi == 0) throw InvalidItemListBuilder(pi);
 
 					string name = pi->GetName();
-					if (name.empty()) name = pvc->GetName();
-
-					AddSurface(name, pi);
-				}
-
-				FENormalFlowSurface* pcs = dynamic_cast<FENormalFlowSurface*>(pj);
-				if (pcs && pcs->IsActive())
-				{
-					FEItemListBuilder* pi = pcs->GetItemList();
-					if (pi == 0) throw InvalidItemListBuilder(pi);
-
-					string name = pi->GetName();
-					if (name.empty()) name = pcs->GetName();
-
-					AddSurface(name, pi);
-				}
-
-				FESymmetryPlane* psp = dynamic_cast<FESymmetryPlane*>(pj);
-				if (psp && psp->IsActive())
-				{
-					FEItemListBuilder* pi = psp->GetItemList();
-					if (pi == 0) throw InvalidItemListBuilder(pi);
-
-					string name = pi->GetName();
-					if (name.empty()) name = psp->GetName();
+					if (name.empty()) name = psf->GetName();
 
 					AddSurface(name, pi);
 				}
@@ -3516,6 +3492,13 @@ void FEBioExport25::WriteConstraints(FEStep& s)
 			ec.add_attribute("type", pw->GetTypeString());
 			const char* sz = pw->GetName().c_str();
 			ec.add_attribute("name", sz);
+
+			FESurfaceConstraint* psf = dynamic_cast<FESurfaceConstraint*>(pw);
+			if (psf)
+			{
+				ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
+			}
+
 			m_xml.add_branch(ec);
 			{
 				WriteParamList(*pw);
@@ -3524,76 +3507,6 @@ void FEBioExport25::WriteConstraints(FEStep& s)
 		}
 	}
 }
-//-----------------------------------------------------------------------------
-void FEBioExport25::WriteVolumeConstraint(FEStep& s)
-{
-	for (int i=0; i<s.Constraints(); ++i)
-	{
-		FEVolumeConstraint* pw = dynamic_cast<FEVolumeConstraint*> (s.Constraint(i));
-		if (pw && pw->IsActive())
-		{
-			if (m_writeNotes) m_xml.add_comment(pw->GetInfo());
-			XMLElement ec("constraint");
-			ec.add_attribute("type", "volume");
-			const char* sz = pw->GetName().c_str();
-            ec.add_attribute("name", sz);
-			ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
-			m_xml.add_branch(ec);
-			{
-				WriteParamList(*pw);
-			}
-			m_xml.close_branch(); // constraint
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport25::WriteSymmetryPlane(FEStep& s)
-{
-	for (int i = 0; i<s.Constraints(); ++i)
-	{
-		FESymmetryPlane* pw = dynamic_cast<FESymmetryPlane*> (s.Constraint(i));
-		if (pw && pw->IsActive())
-		{
-			if (m_writeNotes) m_xml.add_comment(pw->GetInfo());
-			XMLElement ec("constraint");
-			ec.add_attribute("type", "symmetry plane");
-			const char* sz = pw->GetName().c_str();
-			ec.add_attribute("name", sz);
-			ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
-			m_xml.add_branch(ec);
-			{
-				WriteParamList(*pw);
-			}
-			m_xml.close_branch(); // constraint
-		}
-	}
-}
-
-
-//-----------------------------------------------------------------------------
-void FEBioExport25::WriteNormalFlow(FEStep& s)
-{
-    for (int i = 0; i<s.Constraints(); ++i)
-    {
-        FENormalFlowSurface* pw = dynamic_cast<FENormalFlowSurface*> (s.Constraint(i));
-        if (pw && pw->IsActive())
-        {
-			if (m_writeNotes) m_xml.add_comment(pw->GetInfo());
-			XMLElement ec("constraint");
-            ec.add_attribute("type", "normal fluid flow");
-            const char* sz = pw->GetName().c_str();
-            ec.add_attribute("name", sz);
-            ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
-            m_xml.add_branch(ec);
-            {
-                WriteParamList(*pw);
-            }
-            m_xml.close_branch(); // constraint
-        }
-    }
-}
-
 
 //-----------------------------------------------------------------------------
 // Write the fixed boundary conditions
@@ -5010,9 +4923,6 @@ void FEBioExport25::WriteConstraintSection(FEStep &s)
 {
 	// some contact definitions are actually stored in the constraint section
 	WriteConstraints(s);
-	WriteVolumeConstraint(s);
-	WriteSymmetryPlane(s);
-    WriteNormalFlow(s);
     WriteConnectors(s);
 	WriteRigidJoint(s);
 }

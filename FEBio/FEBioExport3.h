@@ -192,10 +192,7 @@ protected:
 	void WriteContactWall(FEStep& s);
 	void WriteContactSphere(FEStep& s);
 	void WriteLinearConstraints(FEStep& s);
-	void WriteVolumeConstraint(FEStep& s);
 	void WriteConnectors(FEStep& s);
-	void WriteSymmetryPlane(FEStep& s);
-	void WriteNormalFlow(FEStep& s);
 	void WriteRigidJoint(FEStep& s);
 	void WriteConstraints(FEStep& s);
 
