@@ -232,7 +232,7 @@ FECFDUCMaterial::FECFDUCMaterial() : FEMaterial(FE_CFD_MATERIAL_UC)
 	AddProperty("distribution", FE_MAT_CFD_DIST);
     
     // Add scheme component
-	AddProperty("scheme", FE_MAT_CFD_SCHEME_UC);
+	AddProperty("scheme", FE_MAT_CFD_SCHEME);
 }
 
 //=============================================================================

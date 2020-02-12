@@ -34,7 +34,7 @@
 #define FE_MAT_CFD_DIST				0x0E00
 #define FE_MAT_CFD_SCHEME			0x0F00
 #define FE_MAT_CFD_FIBER_UC			0x1000
-#define FE_MAT_CFD_SCHEME_UC		0x1100
+#define FE_MAT_CFD_SCHEME_UC		0x1100	// This is obsolete. Only retained for backward compatibility
 #define FE_MAT_RV_RELAX				0x1200
 #define FE_MAT_SOLVENT_SUPPLY		0x1300
 #define FE_MAT_REACTION_RATE		0x1400
