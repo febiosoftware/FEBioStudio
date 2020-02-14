@@ -308,6 +308,61 @@ private:
 	CFEBioJob*		m_job;
 };
 
+//-----------------------------------------------------------------------------
+class CModelProps : public CPropertyList
+{
+public:
+	CModelProps(Post::CGLModel* fem) : m_fem(fem)
+	{
+		addProperty("Element subdivions", CProperty::Int)->setIntRange(0, 100).setAutoValue(true);
+		addProperty("Render mode", CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "wireframe" << "solid");
+		addProperty("Render undeformed outline", CProperty::Bool);
+		addProperty("Outline color", CProperty::Color);
+		addProperty("Node color", CProperty::Color);
+		addProperty("Selection color", CProperty::Color);
+		addProperty("Shells as hexes", CProperty::Bool);
+		addProperty("Shell reference surface", CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
+		addProperty("Smoothing angle", CProperty::Float);
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		QVariant v;
+		switch (i)
+		{
+		case 0: v = m_fem->m_nDivs; break;
+		case 1: v = m_fem->m_nrender; break;
+		case 2: v = m_fem->m_bghost; break;
+		case 3: v = toQColor(m_fem->m_line_col); break;
+		case 4: v = toQColor(m_fem->m_node_col); break;
+		case 5: v = toQColor(m_fem->m_sel_col); break;
+		case 6: v = m_fem->ShowShell2Solid(); break;
+		case 7: v = m_fem->ShellReferenceSurface(); break;
+		case 8: v = m_fem->GetSmoothingAngle(); break;
+		}
+		return v;
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		switch (i)
+		{
+		case 0: m_fem->m_nDivs = v.toInt(); break;
+		case 1: m_fem->m_nrender = v.toInt(); break;
+		case 2: m_fem->m_bghost = v.toBool(); break;
+		case 3: m_fem->m_line_col = toGLColor(v.value<QColor>());
+		case 4: m_fem->m_node_col = toGLColor(v.value<QColor>());
+		case 5: m_fem->m_sel_col = toGLColor(v.value<QColor>());
+		case 6: m_fem->ShowShell2Solid(v.toBool()); break;
+		case 7: m_fem->ShellReferenceSurface(v.toInt()); break;
+		case 8: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		}
+	}
+
+private:
+	Post::CGLModel*	m_fem;
+};
+
 //=============================================================================
 
 CModelTree::CModelTree(CModelViewer* view, QWidget* parent) : QTreeWidget(parent), m_view(view)
@@ -763,19 +818,27 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 		CPostDoc* doc = job->GetPostDoc();
 		if (doc)
 		{
+			// get the plot file name
+			string fileName = job->GetPlotFileName();
+			size_t n = fileName.rfind('\\');
+			if (n == string::npos) n = fileName.rfind('/');
+			if (n != string::npos) fileName.erase(0, n + 1);
+
 			Post::CGLModel* glm = doc->GetGLModel();
 			if (glm)
 			{
+				QTreeWidgetItem* t3 = AddTreeItem(t2, QString::fromStdString(fileName), MT_POST_MODEL, 0, glm, new CModelProps(glm));
+
 				Post::CGLColorMap* cm = glm->GetColorMap();
 				if (cm)
 				{
-					AddTreeItem(t2, QString::fromStdString(cm->GetName()), MT_POST_PLOT, 0, cm, new CObjectProps(cm));
+					AddTreeItem(t3, QString::fromStdString(cm->GetName()), MT_POST_PLOT, 0, cm, new CObjectProps(cm));
 				}
 
 				Post::CGLDisplacementMap* dm = glm->GetDisplacementMap();
 				if (dm)
 				{
-					AddTreeItem(t2, QString::fromStdString(dm->GetName()), MT_POST_PLOT, 0, dm, new CObjectProps(dm));
+					AddTreeItem(t3, QString::fromStdString(dm->GetName()), MT_POST_PLOT, 0, dm, new CObjectProps(dm));
 				}
 
 				int plots = glm->Plots();
@@ -783,7 +846,7 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 				{
 					Post::CGLPlot* plt = glm->Plot(j);
 					string name = plt->GetName();
-					AddTreeItem(t2, QString::fromStdString(name), MT_POST_PLOT, 0, plt, new CObjectProps(plt));
+					AddTreeItem(t3, QString::fromStdString(name), MT_POST_PLOT, 0, plt, new CObjectProps(plt));
 				}
 			}
 		}

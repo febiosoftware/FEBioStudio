@@ -978,6 +978,12 @@ void FEModel::UpdateMeshState(int ntime)
 		FEElement_& el = mesh->ElementRef(i);
 		ELEMDATA& data = state.m_ELEM[i];
 
+		if (el.IsShell())
+		{
+			int n = el.Nodes();
+			for (int j = 0; j < n; ++j) el.m_h[j] = data.m_h[j];
+		}
+
 		if ((data.m_state & StatusFlags::VISIBLE) == 0)
 		{
 			el.SetEroded(true);
