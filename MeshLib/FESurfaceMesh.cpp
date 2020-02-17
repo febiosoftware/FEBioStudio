@@ -1911,3 +1911,20 @@ void FESurfaceMesh::SelectFaces(const vector<int>& faceList)
 {
     for (int i : faceList) Face(i).Select();
 }
+
+//================================================================================
+// Is the mesh closed (i.e. do all faces have neighbors)
+bool MeshTools::IsMeshClosed(FESurfaceMesh& m)
+{
+	int NF = m.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FEFace& f = m.Face(i);
+		int ne = f.Edges();
+		for (int j = 0; j < ne; ++j)
+		{
+			if (f.m_nbr[j] == -1) return false;
+		}
+	}
+	return true;
+}

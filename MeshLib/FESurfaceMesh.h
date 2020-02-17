@@ -99,3 +99,8 @@ public:
 
 // Create a TriMesh from a surface mesh
 void BuildTriMesh(TriMesh& dyna, FESurfaceMesh* pm);
+
+namespace MeshTools {
+	// Is the mesh closed (i.e. do all faces have neighbors)
+	bool IsMeshClosed(FESurfaceMesh& m);
+}

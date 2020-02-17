@@ -43,6 +43,13 @@ FESurfaceMesh* FECVDDecimationModifier::Apply(FESurfaceMesh* pm)
 		return 0;
 	}
 
+	// some sanity checks
+	if (MeshTools::IsMeshClosed(*pm) == false)
+	{
+		FESurfaceModifier::SetError("Mesh is not closed.");
+		return 0;
+	}
+
 	// do the initialization
 	if (Initialize(pm) == false) return 0;
 

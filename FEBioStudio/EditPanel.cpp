@@ -146,7 +146,11 @@ void CEditPanel::on_apply_clicked(bool b)
 			bool ret = doc->ApplyFESurfaceModifier(*ui->m_mod, surfaceObject, g);
 			if (ret == false)
 			{
-				QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this selection");
+				std::string err;
+				if (ui->m_mod) err = ui->m_mod->GetErrorString();
+				if (err.empty()) err = "(unknown)";
+				QString errStr = QString::fromStdString(err);
+				QMessageBox::critical(this, "Apply modifier", "Cannot apply this modifier to this selection.\nERROR: " + errStr);
 			}
 			GetMainWindow()->RedrawGL();
 			GetMainWindow()->UpdateModel(activeObject, true);
