@@ -158,6 +158,35 @@ FEVerondaWestmann::FEVerondaWestmann() : FEMaterial(FE_VERONDA_WESTMANN)
 	AddScienceParam(0, Param_STRESS , "k"      , "bulk modulus");
 }
 
+
+//////////////////////////////////////////////////////////////////////
+// FECoupledMooneyRivlin
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FECoupledMooneyRivlin, MODULE_MECH, FE_COUPLED_MOONEY_RIVLIN, FE_MAT_ELASTIC, "coupled Mooney-Rivlin", MaterialFlags::TOPLEVEL);
+
+FECoupledMooneyRivlin::FECoupledMooneyRivlin() : FEMaterial(FE_COUPLED_MOONEY_RIVLIN)
+{
+	AddScienceParam(1, Param_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, Param_STRESS, "c1", "c1");
+	AddScienceParam(0, Param_STRESS, "c2", "c2");
+	AddScienceParam(0, Param_STRESS, "k", "bulk modulus");
+}
+
+//////////////////////////////////////////////////////////////////////
+// FECoupledVerondaWestmann
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FECoupledVerondaWestmann, MODULE_MECH, FE_COUPLED_VERONDA_WESTMANN, FE_MAT_ELASTIC, "coupled Veronda-Westmann", MaterialFlags::TOPLEVEL);
+
+FECoupledVerondaWestmann::FECoupledVerondaWestmann() : FEMaterial(FE_COUPLED_VERONDA_WESTMANN)
+{
+	AddScienceParam(1, Param_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, Param_STRESS, "c1", "c1");
+	AddScienceParam(0, Param_NONE, "c2", "c2");
+	AddScienceParam(0, Param_STRESS, "k", "bulk modulus");
+}
+
 //////////////////////////////////////////////////////////////////////
 // FEHolmesMow -Holmes-Mow elasticity
 //////////////////////////////////////////////////////////////////////
@@ -666,6 +695,27 @@ void FETransVerondaWestmann::Convert(FETransVerondaWestmannOld* pold)
 	SetFloatValue(MP_LAM    , oldFiber->GetFloatValue(FETransVerondaWestmannOld::Fiber::MP_LAM));
 
 	GetFiberMaterial()->copy(oldFiber);
+}
+
+//////////////////////////////////////////////////////////////////////
+// FECoupledTransIsoVerondaWestmann
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FECoupledTransIsoVerondaWestmann, MODULE_MECH, FE_COUPLED_TRANS_ISO_VW, FE_MAT_ELASTIC, "coupled trans-iso Veronda-Westmann", MaterialFlags::TOPLEVEL);
+
+FECoupledTransIsoVerondaWestmann::FECoupledTransIsoVerondaWestmann() : FETransverselyIsotropic(FE_COUPLED_TRANS_ISO_VW)
+{
+	SetFiberMaterial(new FEOldFiberMaterial);
+
+	// define material parameters
+	AddScienceParam(1, Param_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, Param_STRESS, "c1", "c1");
+	AddScienceParam(0, Param_STRESS, "c2", "c2");
+	AddScienceParam(0, Param_STRESS, "c3", "c3");
+	AddScienceParam(0, Param_STRESS, "c4", "c4");
+	AddScienceParam(0, Param_STRESS, "c5", "c5");
+	AddScienceParam(0, Param_NOUNIT, "lambda", "lambda");
+	AddScienceParam(0, Param_STRESS, "k", "bulk modulus");
 }
 
 //=============================================================================
@@ -1411,6 +1461,20 @@ FEFiberExpPow::FEFiberExpPow() : FEMaterial(FE_FIBEREXPPOW_COUPLED)
 REGISTER_MATERIAL(FEFiberExpLinear, MODULE_MECH, FE_FIBEREXPLIN_COUPLED, FE_MAT_ELASTIC, "fiber-exp-linear", 0);
 
 FEFiberExpLinear::FEFiberExpLinear() : FEMaterial(FE_FIBEREXPLIN_COUPLED)
+{
+	AddDoubleParam(0.0, "c3", "c3");
+	AddDoubleParam(0.0, "c4", "c4");
+	AddDoubleParam(0.0, "c5", "c5");
+	AddDoubleParam(0.0, "lambda", "lambda");
+}
+
+//=============================================================================
+// Fiber-Exp-Linear uncoupled
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberExpLinearUncoupled, MODULE_MECH, FE_FIBEREXPLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled fiber-exp-linear", 0);
+
+FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEMaterial(FE_FIBEREXPLIN_UNCOUPLED)
 {
 	AddDoubleParam(0.0, "c3", "c3");
 	AddDoubleParam(0.0, "c4", "c4");

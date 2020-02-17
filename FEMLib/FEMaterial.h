@@ -115,6 +115,10 @@
 #define FE_NATURAL_NEO_HOOKEAN          63
 #define FE_PRESTRAIN_CONST_GRADIENT		64
 #define FE_PRESTRAIN_INSITU_GRADIENT	65
+#define FE_COUPLED_MOONEY_RIVLIN		66	// added in FS 1.0
+#define FE_COUPLED_VERONDA_WESTMANN		67  // added in FS 1.0
+#define FE_FIBEREXPLIN_UNCOUPLED		68  // added in FS 1.0
+#define FE_COUPLED_TRANS_ISO_VW			69  // added in FS 1.0
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -397,6 +401,34 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// coupled Mooney-Rivlin
+//
+class FECoupledMooneyRivlin : public FEMaterial
+{
+public:
+	enum { MP_DENSITY, MP_A, MP_B, MP_K };
+
+public:
+	FECoupledMooneyRivlin();
+
+	DECLARE_REGISTERED(FECoupledMooneyRivlin);
+};
+
+//-----------------------------------------------------------------------------
+// coupled Veronda-Westmann
+//
+class FECoupledVerondaWestmann : public FEMaterial
+{
+public:
+	enum { MP_DENSITY, MP_A, MP_B, MP_K };
+
+public:
+	FECoupledVerondaWestmann();
+
+	DECLARE_REGISTERED(FECoupledVerondaWestmann);
+};
+
+//-----------------------------------------------------------------------------
 // Holmes-Mow
 //
 class FEHolmesMow : public FEMaterial
@@ -616,6 +648,19 @@ public:
 	void Convert(FETransVerondaWestmannOld* mat);
 
 	DECLARE_REGISTERED(FETransVerondaWestmann);
+};
+
+//-----------------------------------------------------------------------------
+class FECoupledTransIsoVerondaWestmann : public FETransverselyIsotropic
+{
+public:
+	// this material's material parameters
+	enum { MP_DENSITY, MP_C1, MP_C2, MP_C3, MP_C4, MP_C5, MP_LAM, MP_K };
+
+public:
+	FECoupledTransIsoVerondaWestmann();
+
+	DECLARE_REGISTERED(FECoupledTransIsoVerondaWestmann);
 };
 
 //-----------------------------------------------------------------------------
@@ -1127,6 +1172,16 @@ public:
 public:
 	FEFiberExpLinear();
 	DECLARE_REGISTERED(FEFiberExpLinear);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberExpLinearUncoupled : public FEMaterial
+{
+public:
+	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
+public:
+	FEFiberExpLinearUncoupled();
+	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
 };
 
 //-----------------------------------------------------------------------------
