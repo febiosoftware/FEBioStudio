@@ -1388,7 +1388,9 @@ void FEFaceSelection::Iterator::operator ++()
 
 FEItemListBuilder* FEFaceSelection::CreateItemList()
 {
-	FEMeshBase* pm = GetMesh();
+	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	if (pm == nullptr) return nullptr;
+
 	GObject* po = pm->GetGObject();
 	vector<int> fs;
 	for (int i=0; i<pm->Faces(); ++i)
@@ -1623,7 +1625,8 @@ void FEEdgeSelection::Iterator::operator ++()
 
 FEItemListBuilder* FEEdgeSelection::CreateItemList()
 {
-	FELineMesh* pm = GetMesh();
+	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	if (pm == nullptr) return nullptr;
 	GObject* po = pm->GetGObject();
 	vector<int> es;
 	for (int i=0; i<pm->Edges(); ++i)
@@ -1804,7 +1807,9 @@ void FENodeSelection::Iterator::operator ++()
 
 FEItemListBuilder* FENodeSelection::CreateItemList()
 {
-	FELineMesh* pm = GetMesh();
+	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	if (pm == nullptr) return nullptr;
+
 	GObject* po = pm->GetGObject();
 	vector<int> ns;
 	for (int i=0; i<pm->Nodes(); ++i)

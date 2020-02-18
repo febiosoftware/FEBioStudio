@@ -13,6 +13,7 @@
 #include <QComboBox>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include "Logger.h"
 
 class CGLControlBar_UI
 {
@@ -196,75 +197,84 @@ void CGLControlBar::Update()
 
 	GObject* po = view->GetActiveObject();
 
-	GSurfaceMeshObject* ps = dynamic_cast<GSurfaceMeshObject*>(po);
-	if (ps)
+	int meshMode = ui->m_wnd->GetMeshMode();
+
+	CLogger::AddLogEntry(QString("mesh mode = %1\n").arg(meshMode));
+
+	if (meshMode == MESH_MODE_VOLUME)
 	{
-		ui->showEditButtons(true, false);
-		int item = pdoc->GetItemMode();
-		if (item == ITEM_ELEM) { pdoc->SetItemMode(ITEM_MESH); item = ITEM_MESH; }
-		switch (item)
+		if (po && po->GetFEMesh())
 		{
-		case ITEM_MESH: ui->checkButton(-1); break;
-//		case ITEM_ELEM: ui->checkButton(0); break;
-		case ITEM_FACE: ui->checkButton(1); break;
-		case ITEM_EDGE: ui->checkButton(2); break;
-		case ITEM_NODE: ui->checkButton(3); break;
+			ui->showEditButtons(true);
+
+			int item = pdoc->GetItemMode();
+			switch (item)
+			{
+			case ITEM_MESH: ui->checkButton(-1); break;
+			case ITEM_ELEM: ui->checkButton(0); break;
+			case ITEM_FACE: ui->checkButton(1); break;
+			case ITEM_EDGE: ui->checkButton(2); break;
+			case ITEM_NODE: ui->checkButton(3); break;
+			}
+
+			VIEW_SETTINGS& view = pdoc->GetViewSettings();
+			ui->selConnect->setChecked(view.m_bconn);
+			ui->selPath->setChecked(view.m_bselpath);
+			ui->maxAngle->setValue(view.m_fconn);
+			ui->cull->setChecked(!view.m_bcullSel);
+
+			return;
 		}
-
-		VIEW_SETTINGS& view = pdoc->GetViewSettings();
-		ui->selConnect->setChecked(view.m_bconn);
-		ui->selPath->setChecked(view.m_bselpath);
-		ui->maxAngle->setValue(view.m_fconn);
-		ui->cull->setChecked(!view.m_bcullSel);
-
-		return;
 	}
-
-	GCurveMeshObject* pc = dynamic_cast<GCurveMeshObject*>(po);
-	if (pc)
+	else
 	{
-		ui->showEditButtons(true, false, false);
-		int item = pdoc->GetItemMode();
-		if (item == ITEM_ELEM) { pdoc->SetItemMode(ITEM_MESH); item = ITEM_MESH; }
-		switch (item)
+		GSurfaceMeshObject* ps = dynamic_cast<GSurfaceMeshObject*>(po);
+		if (ps)
 		{
-		case ITEM_MESH: ui->checkButton(-1); break;
-//		case ITEM_ELEM: ui->checkButton(0); break;
-//		case ITEM_FACE: ui->checkButton(1); break;
-		case ITEM_EDGE: ui->checkButton(2); break;
-		case ITEM_NODE: ui->checkButton(3); break;
+			ui->showEditButtons(true, false);
+			int item = pdoc->GetItemMode();
+			if (item == ITEM_ELEM) { pdoc->SetItemMode(ITEM_MESH); item = ITEM_MESH; }
+			switch (item)
+			{
+			case ITEM_MESH: ui->checkButton(-1); break;
+				//		case ITEM_ELEM: ui->checkButton(0); break;
+			case ITEM_FACE: ui->checkButton(1); break;
+			case ITEM_EDGE: ui->checkButton(2); break;
+			case ITEM_NODE: ui->checkButton(3); break;
+			}
+
+			VIEW_SETTINGS& view = pdoc->GetViewSettings();
+			ui->selConnect->setChecked(view.m_bconn);
+			ui->selPath->setChecked(view.m_bselpath);
+			ui->maxAngle->setValue(view.m_fconn);
+			ui->cull->setChecked(!view.m_bcullSel);
+
+			return;
 		}
 
-		VIEW_SETTINGS& view = pdoc->GetViewSettings();
-		ui->selConnect->setChecked(view.m_bconn);
-		ui->selPath->setChecked(view.m_bselpath);
-		ui->maxAngle->setValue(view.m_fconn);
-		ui->cull->setChecked(!view.m_bcullSel);
-
-		return;
-	}
-
-	if (po && po->GetFEMesh())
-	{
-		ui->showEditButtons(true);
-
-		int item = pdoc->GetItemMode();
-		switch (item)
+		GCurveMeshObject* pc = dynamic_cast<GCurveMeshObject*>(po);
+		if (pc)
 		{
-		case ITEM_MESH: ui->checkButton(-1); break;
-		case ITEM_ELEM: ui->checkButton(0); break;
-		case ITEM_FACE: ui->checkButton(1); break;
-		case ITEM_EDGE: ui->checkButton(2); break;
-		case ITEM_NODE: ui->checkButton(3); break;
+			ui->showEditButtons(true, false, false);
+			int item = pdoc->GetItemMode();
+			if (item == ITEM_ELEM) { pdoc->SetItemMode(ITEM_MESH); item = ITEM_MESH; }
+			switch (item)
+			{
+			case ITEM_MESH: ui->checkButton(-1); break;
+				//		case ITEM_ELEM: ui->checkButton(0); break;
+				//		case ITEM_FACE: ui->checkButton(1); break;
+			case ITEM_EDGE: ui->checkButton(2); break;
+			case ITEM_NODE: ui->checkButton(3); break;
+			}
+
+			VIEW_SETTINGS& view = pdoc->GetViewSettings();
+			ui->selConnect->setChecked(view.m_bconn);
+			ui->selPath->setChecked(view.m_bselpath);
+			ui->maxAngle->setValue(view.m_fconn);
+			ui->cull->setChecked(!view.m_bcullSel);
+
+			return;
 		}
-
-		VIEW_SETTINGS& view = pdoc->GetViewSettings();
-		ui->selConnect->setChecked(view.m_bconn);
-		ui->selPath->setChecked(view.m_bselpath);
-		ui->maxAngle->setValue(view.m_fconn);
-		ui->cull->setChecked(!view.m_bcullSel);
-
-		return;
 	}
 
 	ui->showEditButtons(false);

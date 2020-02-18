@@ -58,7 +58,7 @@ void CMainWindow::on_actionAddBC_triggered()
 				case SELECT_FE_NODES:
 					{
 						FEItemListBuilder* items = psel->CreateItemList();
-						pbc->SetItemList(items);
+						if (items) pbc->SetItemList(items);
 					}
 					break;
 				}

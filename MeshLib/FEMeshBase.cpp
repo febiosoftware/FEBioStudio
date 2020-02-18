@@ -611,3 +611,69 @@ void FEMeshBase::FaceNodeTexCoords(FEFace& f, float* t)
 {
 	for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
 }
+
+//==============================================================================
+std::vector<int> MeshTools::GetConnectedFaces(FEMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions)
+{
+	vector<int> faceList; 
+	faceList.reserve(pm->Faces());
+
+	for (int i = 0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
+	std::stack<FEFace*> stack;
+
+	// push the first face to the stack
+	FEFace* pf = pm->FacePtr(nface);
+	faceList.push_back(nface);
+	pf->m_ntag = -1;
+	stack.push(pf);
+
+	vec3d Nf = pf->m_fn;
+	double wtol = 1.000001*cos(PI*tolAngleDeg / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
+	bool bmax = (tolAngleDeg != 0.0);
+
+	int gid = pf->m_gid;
+
+	pm->TagAllNodes(0);
+	if (respectPartitions)
+	{
+		int NE = pm->Edges();
+		for (int i = 0; i<NE; ++i)
+		{
+			FEEdge& e = pm->Edge(i);
+			pm->Node(e.n[0]).m_ntag = 1;
+			pm->Node(e.n[1]).m_ntag = 1;
+		}
+	}
+
+	// now push the rest
+	while (!stack.empty())
+	{
+		pf = stack.top(); stack.pop();
+		int n = pf->Edges();
+		for (int i = 0; i<n; ++i)
+			if (pf->m_nbr[i] >= 0)
+			{
+				int n0 = pf->n[i];
+				int n1 = pf->n[(i + 1) % n];
+				int m0 = pm->Node(n0).m_ntag;
+				int m1 = pm->Node(n1).m_ntag;
+
+				FEFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
+
+				bool bpush = true;
+				if (pf2->m_ntag < 0) bpush = false;
+				else if (pf2->IsVisible() == false) bpush = false;
+				else if (bmax && (pf2->m_fn*to_vec3f(Nf) < wtol)) bpush = false;
+				else if (respectPartitions && ((pf2->m_gid != gid) || ((m0 == 1) && (m1 == 1) && pm->IsCreaseEdge(n0, n1)))) bpush = false;
+
+				if (bpush)
+				{
+					faceList.push_back(pf2->m_ntag);
+					pf2->m_ntag = -1;
+					stack.push(pf2);
+				}
+			}
+	}
+
+	return faceList;
+}

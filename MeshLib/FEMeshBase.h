@@ -93,3 +93,14 @@ protected:
 	std::vector<FEFace>		m_Face;	//!< FE faces
 	BOX	m_box;		// bounding box
 };
+
+//-------------------------------------------------------------------
+namespace MeshTools {
+	// get a list of face indices, connected to a face 
+	// INPUT:
+	// pm               : the mesh
+	// nface            : the index of the start face
+	// tolAngleDeg      : angle of selection tolerance (degrees). Set to zero to turn off.
+	// respectPartitions: do not cross surface partitions if true
+	std::vector<int> GetConnectedFaces(FEMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions);
+}

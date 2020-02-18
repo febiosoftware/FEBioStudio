@@ -930,6 +930,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		return;
 	}
 
+	// which mesh is active (surface or volume)
+	int meshMode = m_pWnd->GetMeshMode();
+
 	m_bextrude = false;
 
 	AddRegionPoint(x, y);
@@ -959,10 +962,22 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 							return ;
 						};
 					}
-					else if (item == ITEM_ELEM) SelectFEElements(m_x0, m_y0);
-					else if (item == ITEM_FACE) SelectFEFaces   (m_x0, m_y0);
-					else if (item == ITEM_EDGE) SelectFEEdges   (m_x0, m_y0);
-					else if (item == ITEM_NODE) SelectFENodes   (m_x0, m_y0);
+					else
+					{
+						if (meshMode == MESH_MODE_VOLUME)
+						{
+							if      (item == ITEM_ELEM) SelectFEElements(m_x0, m_y0);
+							else if (item == ITEM_FACE) SelectFEFaces(m_x0, m_y0);
+							else if (item == ITEM_EDGE) SelectFEEdges(m_x0, m_y0);
+							else if (item == ITEM_NODE) SelectFENodes(m_x0, m_y0);
+						}
+						else
+						{
+							if      (item == ITEM_FACE) SelectSurfaceFaces(m_x0, m_y0);
+							else if (item == ITEM_EDGE) SelectSurfaceEdges(m_x0, m_y0);
+							else if (item == ITEM_NODE) SelectSurfaceNodes(m_x0, m_y0);
+						}
+					}
 
 					bool bok = false;
 					vec3d r = PickPoint(m_x0, m_y0, &bok);
@@ -2177,6 +2192,9 @@ void CGLView::RenderModel()
 	// Get the item mode
 	int item = pdoc->GetItemMode();
 
+	// get the mesh mode
+	int meshMode = m_pWnd->GetMeshMode();
+
 	// get the selection mode
 	int nsel = pdoc->GetSelectionMode();
 
@@ -2253,30 +2271,56 @@ void CGLView::RenderModel()
 				SetModelView(po);
 				if (po == poa)
 				{
-					if (item == ITEM_ELEM)
+					if (meshMode == MESH_MODE_VOLUME)
 					{
-						RenderFEElements(po);
+						if (item == ITEM_ELEM)
+						{
+							RenderFEElements(po);
+						}
+						else if (item == ITEM_FACE)
+						{
+							RenderFEFaces(po);
+						}
+						else if (item == ITEM_EDGE)
+						{
+							RenderFEFaces(po);
+							m_Cam.LineDrawMode(true);
+							m_Cam.Transform();
+							SetModelView(po);
+							RenderFEEdges(po);
+							m_Cam.LineDrawMode(false);
+							m_Cam.Transform();
+						}
+						else if (item == ITEM_NODE)
+						{
+							RenderFEFaces(po);
+							RenderFENodes(po);
+						}
+						if (bnorm) RenderNormals(po, scale);
 					}
-					else if (item == ITEM_FACE)
+					else
 					{
-						RenderFEFaces(po);
+						if (item == ITEM_FACE)
+						{
+							RenderSurfaceMeshFaces(po);
+						}
+						else if (item == ITEM_EDGE)
+						{
+							RenderSurfaceMeshFaces(po);
+							m_Cam.LineDrawMode(true);
+							m_Cam.Transform();
+							SetModelView(po);
+							RenderSurfaceMeshEdges(po);
+							m_Cam.LineDrawMode(false);
+							m_Cam.Transform();
+						}
+						else if (item == ITEM_NODE)
+						{
+							RenderSurfaceMeshFaces(po);
+							RenderSurfaceMeshNodes(po);
+						}
+						if (bnorm) RenderNormals(po, scale);
 					}
-					else if (item == ITEM_EDGE)
-					{
-						RenderFEFaces(po);
-						m_Cam.LineDrawMode(true);
-						m_Cam.Transform();
-						SetModelView(po);
-						RenderFEEdges(po);
-						m_Cam.LineDrawMode(false);
-						m_Cam.Transform();
-					}
-					else if (item == ITEM_NODE)
-					{
-						RenderFEFaces(po);
-						RenderFENodes(po);
-					}
-					if (bnorm) RenderNormals(po, scale);
 				}
 				else RenderObject(po);
 				glPopMatrix();
@@ -4384,18 +4428,12 @@ void CGLView::SelectFEFaces(int x, int y)
 	CDocument* pdoc = GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
-	// Get the mesh
+	// Get the active object
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetFEMesh();
-	if (pm == 0)
-	{
-		if (dynamic_cast<GSurfaceMeshObject*>(po))
-		{
-			pm = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
-		}
-	}
+	// get the FE mesh
+	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	// convert the point to a ray
@@ -4415,70 +4453,11 @@ void CGLView::SelectFEFaces(int x, int y)
 		int index = q.m_index;
 		if (view.m_bconn)
 		{
-			FEFace* pf, *pf2;
-			vector<int> pint(pm->Faces());
-			int m = 0;
+			// get the list of connected faces
+			vector<int> faceList = MeshTools::GetConnectedFaces(pm, index, (view.m_bmax ? view.m_fconn : 0.0), view.m_bpart);
 
-			for (int i = 0; i<pm->Faces(); ++i) pm->Face(i).m_ntag = i;
-			std::stack<FEFace*> stack;
-
-			// push the first face to the stack
-			pf = pm->FacePtr(index);
-			pint[m++] = index;
-			pf->m_ntag = -1;
-			stack.push(pf);
-
-			vec3d Nf = pf->m_fn;
-			double wtol = 1.000001*cos(PI*view.m_fconn / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
-
-			bool bpart = view.m_bpart;
-			int gid = pf->m_gid;
-
-			pm->TagAllNodes(0);
-			if (bpart)
-			{
-				int NE = pm->Edges();
-				for (int i=0; i<NE; ++i) 
-				{
-					FEEdge& e = pm->Edge(i);
-					pm->Node(e.n[0]).m_ntag = 1;
-					pm->Node(e.n[1]).m_ntag = 1;
-				}
-			}
-
-			// now push the rest
-			int n;
-			while (!stack.empty())
-			{
-				pf = stack.top(); stack.pop();
-				n = pf->Edges();
-				for (int i = 0; i<n; ++i)
-				if (pf->m_nbr[i] >= 0)
-				{
-					int n0 = pf->n[i];
-					int n1 = pf->n[(i + 1) % n];
-					int m0 = pm->Node(n0).m_ntag;
-					int m1 = pm->Node(n1).m_ntag;
-
-					pf2 = pm->FacePtr(pf->m_nbr[i]);
-
-					bool bpush = true;
-					if (pf2->m_ntag < 0) bpush = false;
-					else if (pf2->IsVisible() == false) bpush = false;
-					else if (view.m_bmax && (pf2->m_fn*to_vec3f(Nf) < wtol)) bpush = false;
-					else if (bpart && ((pf2->m_gid != gid) || ((m0 == 1) && (m1 == 1) && pm->IsCreaseEdge(n0, n1)))) bpush = false;
-
-					if (bpush)
-					{
-						pint[m++] = pf2->m_ntag;
-						pf2->m_ntag = -1;
-						stack.push(pf2);
-					}
-				}
-			}
-
-			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, &pint[0], m);
-			else pcmd = new CCmdSelectFaces(pm, &pint[0], m, m_bshift);
+			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, faceList);
+			else pcmd = new CCmdSelectFaces(pm, faceList, m_bshift);
 		}
 		else
 		{
@@ -4501,7 +4480,8 @@ void CGLView::SelectFEEdges(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FELineMesh* pm = po->GetEditableLineMesh();
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
 
 	int X = x;
 	int Y = y;
@@ -4611,6 +4591,277 @@ void CGLView::SelectFEEdges(int x, int y)
 		}
 	}
 	else if (!m_bshift) pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
+
+	if (pcmd) pdoc->DoCommand(pcmd);
+}
+
+void CGLView::SelectSurfaceFaces(int x, int y)
+{
+	// get the document
+	CDocument* pdoc = GetDocument();
+	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+
+	// Get the active object
+	GSurfaceMeshObject* po = dynamic_cast<GSurfaceMeshObject*>(GetActiveObject());
+	if (po == 0) return;
+
+	// get the surface mesh
+	FEMeshBase* pm = po->GetSurfaceMesh();
+	if (pm == 0) return;
+
+	// convert the point to a ray
+	makeCurrent();
+	GLViewTransform transform(this);
+	Ray ray = transform.PointToRay(x, y);
+
+	// convert ray to local coordinates
+	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
+	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
+
+	// find the intersection
+	Intersection q;
+	CCommand* pcmd = 0;
+	if (FindFaceIntersection(ray, *pm, q))
+	{
+		int index = q.m_index;
+		if (view.m_bconn)
+		{
+			// get the list of connected faces
+			vector<int> faceList = MeshTools::GetConnectedFaces(pm, index, (view.m_bmax ? view.m_fconn : 0.0), view.m_bpart);
+
+			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, faceList);
+			else pcmd = new CCmdSelectFaces(pm, faceList, m_bshift);
+		}
+		else
+		{
+			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, &index, 1);
+			else pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+		}
+	}
+	else if (!m_bshift) pcmd = new CCmdSelectFaces(pm, 0, 0, false);
+
+	if (pcmd) pdoc->DoCommand(pcmd);
+}
+
+void CGLView::SelectSurfaceEdges(int x, int y)
+{
+	// get the document
+	CDocument* pdoc = GetDocument();
+	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+
+	// Get the mesh
+	GObject* po = GetActiveObject();
+	if (po == 0) return;
+
+	FELineMesh* pm = po->GetEditableLineMesh();
+
+	int X = x;
+	int Y = y;
+	int S = 6;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+	makeCurrent();
+	GLViewTransform transform(this);
+
+	vec3d o(0, 0, 0);
+	vec3d O = transform.WorldToScreen(o);
+
+	int index = -1;
+	float zmin = 0.f;
+	int NE = pm->Edges();
+	for (int i = 0; i<NE; ++i)
+	{
+		FEEdge& edge = pm->Edge(i);
+		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
+		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
+
+		vec3d p0 = transform.WorldToScreen(r0);
+		vec3d p1 = transform.WorldToScreen(r1);
+
+		// make sure p0, p1 are in front of the camers
+		if (((p0.x >= 0) || (p1.x >= 0)) && ((p0.y >= 0) || (p1.y >= 0)) &&
+			(p0.z > -1) && (p0.z < 1) && (p1.z > -1) && (p1.z < 1))
+		{
+			// see if the edge intersects
+			if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+			{
+				if ((index == -1) || (p0.z < zmin))
+				{
+					index = i;
+					zmin = p0.z;
+				}
+			}
+		}
+	}
+
+	// parse the selection buffer
+	CCommand* pcmd = 0;
+	if (index >= 0)
+	{
+		if (view.m_bconn)
+		{
+			vector<int> pint(pm->Edges());
+			int m = 0;
+
+			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
+			std::stack<FEEdge*> stack;
+
+			FENodeEdgeList NEL(pm);
+
+			// push the first face to the stack
+			FEEdge* pe = pm->EdgePtr(index);
+			pint[m++] = index;
+			pe->m_ntag = -1;
+			stack.push(pe);
+
+			int gid = pe->m_gid;
+
+			// setup the direction vector
+			vec3d& r0 = pm->Node(pe->n[0]).r;
+			vec3d& r1 = pm->Node(pe->n[1]).r;
+			vec3d t1 = r1 - r0; t1.Normalize();
+
+			// angle tolerance
+			double wtol = 1.000001*cos(PI*view.m_fconn / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
+
+																 // now push the rest
+			while (!stack.empty())
+			{
+				pe = stack.top(); stack.pop();
+
+				for (int i = 0; i<2; ++i)
+				{
+					int n = NEL.Edges(pe->n[i]);
+					for (int j = 0; j<n; ++j)
+					{
+						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
+						if (edgeID >= 0)
+						{
+							FEEdge* pe2 = pm->EdgePtr(edgeID);
+							vec3d& r0 = pm->Node(pe2->n[0]).r;
+							vec3d& r1 = pm->Node(pe2->n[1]).r;
+							vec3d t2 = r1 - r0; t2.Normalize();
+							if (pe2->IsVisible() && ((view.m_bmax == false) || (fabs(t1*t2) >= wtol)) && ((gid == -1) || (pe2->m_gid == gid)))
+							{
+								pint[m++] = pe2->m_ntag;
+								pe2->m_ntag = -1;
+								stack.push(pe2);
+							}
+						}
+					}
+				}
+			}
+
+			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, &pint[0], m);
+			else pcmd = new CCmdSelectFEEdges(pm, &pint[0], m, m_bshift);
+		}
+		else
+		{
+			int num = (int)index;
+			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, &num, 1);
+			else pcmd = new CCmdSelectFEEdges(pm, &num, 1, m_bshift);
+		}
+	}
+	else if (!m_bshift) pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
+
+	if (pcmd) pdoc->DoCommand(pcmd);
+}
+
+void CGLView::SelectSurfaceNodes(int x, int y)
+{
+	static int lastIndex = -1;
+
+	// get the document
+	CDocument* pdoc = GetDocument();
+	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	int nsel = pdoc->GetSelectionStyle();
+
+	// Get the mesh
+	GObject* po = GetActiveObject();
+	if (po == 0) return;
+
+	FEMeshBase* pm = po->GetEditableMesh();
+	FELineMesh* lineMesh = po->GetEditableLineMesh();
+	if (lineMesh == 0) return;
+
+	int X = x;
+	int Y = y;
+	int S = 6;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+	makeCurrent();
+	GLViewTransform transform(this);
+
+	int index = -1;
+	float zmin = 0.f;
+	int NN = lineMesh->Nodes();
+	for (int i = 0; i<NN; ++i)
+	{
+		FENode& node = lineMesh->Node(i);
+		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
+		{
+			vec3d r = po->GetTransform().LocalToGlobal(lineMesh->Node(i).r);
+
+			vec3d p = transform.WorldToScreen(r);
+
+			if (rt.contains(QPoint((int)p.x, (int)p.y)))
+			{
+				if ((index == -1) || (p.z < zmin))
+				{
+					index = i;
+					zmin = p.z;
+				}
+			}
+		}
+	}
+
+	CCommand* pcmd = 0;
+	if (index >= 0)
+	{
+		if (view.m_bconn && pm)
+		{
+			vector<int> pint(pm->Nodes(), 0);
+
+			if (view.m_bselpath == false)
+			{
+				TagConnectedNodes(pm, index);
+				lastIndex = -1;
+			}
+			else
+			{
+				if ((lastIndex != -1) && (lastIndex != index))
+				{
+					TagNodesByShortestPath(pm, lastIndex, index);
+					lastIndex = index;
+				}
+				else
+				{
+					pm->TagAllNodes(0);
+					pm->Node(index).m_ntag = 1;
+					lastIndex = index;
+				}
+			}
+
+			// fill the pint array
+			int m = 0;
+			for (int i = 0; i<pm->Nodes(); ++i)
+				if (pm->Node(i).m_ntag == 1) pint[m++] = i;
+
+			if (m_bctrl) pcmd = new CCmdUnselectNodes(&pint[0], m);
+			else pcmd = new CCmdSelectFENodes(pm, &pint[0], m, m_bshift);
+		}
+		else
+		{
+			if (m_bctrl) pcmd = new CCmdUnselectNodes(&index, 1);
+			else pcmd = new CCmdSelectFENodes(lineMesh, &index, 1, m_bshift);
+			lastIndex = -1;
+		}
+	}
+	else if (!m_bshift)
+	{
+		pcmd = new CCmdSelectFENodes(lineMesh, 0, 0, false);
+		lastIndex = -1;
+	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -5486,9 +5737,8 @@ void CGLView::SelectFENodes(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
-	FELineMesh* lineMesh = po->GetEditableLineMesh();
-	if (lineMesh == 0) return;
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
 
 	int X = x;
 	int Y = y;
@@ -5500,13 +5750,13 @@ void CGLView::SelectFENodes(int x, int y)
 
 	int index = -1;
 	float zmin = 0.f;
-	int NN = lineMesh->Nodes();
+	int NN = pm->Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = lineMesh->Node(i);
+		FENode& node = pm->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
-			vec3d r = po->GetTransform().LocalToGlobal(lineMesh->Node(i).r);
+			vec3d r = po->GetTransform().LocalToGlobal(pm->Node(i).r);
 
 			vec3d p = transform.WorldToScreen(r);
 
@@ -5559,13 +5809,13 @@ void CGLView::SelectFENodes(int x, int y)
 		else
 		{
 			if (m_bctrl) pcmd = new CCmdUnselectNodes(&index, 1);
-			else pcmd = new CCmdSelectFENodes(lineMesh, &index, 1, m_bshift);
+			else pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
 			lastIndex = -1;
 		}
 	}
 	else if (!m_bshift)
 	{
-		pcmd = new CCmdSelectFENodes(lineMesh, 0, 0, false);
+		pcmd = new CCmdSelectFENodes(pm, 0, 0, false);
 		lastIndex = -1;
 	}
 
@@ -6549,18 +6799,7 @@ void CGLView::RenderFENodes(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-// Render the FE Faces
 void CGLView::RenderFEFaces(GObject* po)
-{
-	if (dynamic_cast<GSurfaceMeshObject*>(po))
-	{
-		RenderFESurfaceMeshFaces(po);
-	}
-	else RenderFEMeshFaces(po);
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderFEMeshFaces(GObject* po)
 {
 	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
 	FEModel& fem = *GetDocument()->GetFEModel();
@@ -6649,7 +6888,7 @@ void CGLView::RenderFEMeshFaces(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::RenderFESurfaceMeshFaces(GObject* po)
+void CGLView::RenderSurfaceMeshFaces(GObject* po)
 {
 	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po); assert(surfaceObject);
 	if (surfaceObject == 0) return;
@@ -6676,7 +6915,7 @@ void CGLView::RenderFESurfaceMeshFaces(GObject* po)
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_POLYGON_STIPPLE);
-	glColor3ub(255, 0, 0);
+	glColor3ub(255, 128, 0);
 	m_renderer.RenderSelectedFEFaces(surfaceMesh);
 
 	// render the selected face outline
@@ -6689,13 +6928,104 @@ void CGLView::RenderFESurfaceMeshFaces(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-// Render the FE Edges
-void CGLView::RenderFEEdges(GObject* po)
+void CGLView::RenderSurfaceMeshEdges(GObject* po)
 {
 	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
 	FEModel& fem = *GetDocument()->GetFEModel();
 	FELineMesh* pm = po->GetEditableLineMesh();
 	assert(pm);
+	if (pm == 0) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+
+	// render the unselected edges
+	glColor3ub(0, 0, 255);
+	m_renderer.RenderUnselectedFEEdges(pm);
+
+	// render the selected edges
+	// override some settings
+	glDisable(GL_CULL_FACE);
+	glColor3ub(255, 0, 0);
+	m_renderer.RenderSelectedFEEdges(pm);
+
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::RenderSurfaceMeshNodes(GObject* po)
+{
+	CDocument* pdoc = GetDocument();
+	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	quatd q = m_Cam.GetOrientation();
+
+	// set the point size
+	float fsize = pdoc->GetViewSettings().m_node_size;
+	m_renderer.SetPointSize(fsize);
+
+	FEMeshBase* mesh = po->GetEditableMesh();
+	if (mesh)
+	{
+		// reset all tags
+		mesh->TagAllNodes(1);
+
+		// make sure we render all isolated nodes
+		int NF = mesh->Faces();
+		for (int i = 0; i<NF; ++i)
+		{
+			FEFace& face = mesh->Face(i);
+			int n = face.Nodes();
+			for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
+		}
+
+		// check visibility
+		for (int i = 0; i<NF; ++i)
+		{
+			FEFace& face = mesh->Face(i);
+			if (face.IsVisible())
+			{
+				int n = face.Nodes();
+				for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 1;
+			}
+		}
+
+		// check the cull
+		if (view.m_bcull)
+		{
+			vec3d f;
+			for (int i = 0; i<NF; ++i)
+			{
+				FEFace& face = mesh->Face(i);
+				int n = face.Nodes();
+				for (int j = 0; j<n; ++j)
+				{
+					vec3d nn = face.m_nn[j];
+					f = q*nn;
+					if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
+				}
+			}
+		}
+
+		m_renderer.RenderFENodes(mesh);
+	}
+	else
+	{
+		FELineMesh* pm = po->GetEditableLineMesh();
+		if (pm)
+		{
+			pm->TagAllNodes(1);
+			m_renderer.RenderFENodes(pm);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Render the FE Edges
+void CGLView::RenderFEEdges(GObject* po)
+{
+	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
+	FEModel& fem = *GetDocument()->GetFEModel();
+	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	glPushAttrib(GL_ENABLE_BIT);

@@ -45,6 +45,11 @@
 #define ITEM_EDGE		5
 
 //-----------------------------------------------------------------------------
+// mesh selection modes
+#define MESH_MODE_VOLUME	0
+#define MESH_MODE_SURFACE	1
+
+//-----------------------------------------------------------------------------
 // back ground styles
 #define BG_COLOR1		0
 #define BG_COLOR2		1

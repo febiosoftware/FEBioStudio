@@ -14,12 +14,22 @@ public:
 	::CEditPanel*	edit;
 	::CMeshPanel*	mesh;
 	::CToolsPanel*	tools;
+	::CMainWindow*	mainWindow;
 
 	QTabWidget*	tab;
 
+	enum BUILD_PANELS {
+		CREATE_PANEL = 0,
+		EDIT_PANEL = 1,
+		MESH_PANEL = 2,
+		TOOLS_PANEL = 3
+	};
+
 public:
-	void setup(QWidget* parent, CMainWindow* wnd)
+	void setup(QWidget* parent, ::CMainWindow* wnd)
 	{
+		mainWindow = wnd;
+
 		tab = new QTabWidget; tab->setObjectName("buildTab");
 
 		tab->addTab(create = new ::CCreatePanel(wnd, parent), "Create");

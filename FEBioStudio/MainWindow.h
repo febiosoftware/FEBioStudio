@@ -100,6 +100,9 @@ public:
     //! Process drop event
     void dropEvent(QDropEvent *e);
 
+	//! get the mesh mode
+	int GetMeshMode();
+
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.

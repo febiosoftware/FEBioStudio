@@ -24,6 +24,9 @@ public:
 	bool OnEscapeEvent();
 	bool OnDeleteEvent();
 
+	bool IsEditPanelVisible();
+	bool IsMeshPanelVisible();
+
 public slots:
 	void on_buildTab_currentChanged(int index);
 

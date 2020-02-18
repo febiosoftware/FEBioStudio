@@ -732,13 +732,27 @@ void CModelPropsPanel::addSelection(int n)
 		FEItemListBuilder* pl = pmc->GetItemList();
 		if (pl == 0)
 		{
-			pdoc->DoCommand(new CCmdSetModelComponentItemList(pmc, ps->CreateItemList()));
-			SetSelection(0, pmc->GetItemList());
+			FEItemListBuilder* item = ps->CreateItemList();
+			if (item == nullptr)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.");
+				return;
+			}
+			else
+			{
+				pdoc->DoCommand(new CCmdSetModelComponentItemList(pmc, item));
+				SetSelection(0, pmc->GetItemList());
+			}
 		}
 		else
 		{
 			// create the item list builder
 			FEItemListBuilder* pg = ps->CreateItemList();
+			if (pg == nullptr)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.");
+				return;
+			}
 
 			// merge with the current list
 			if (pg->Type() != pl->Type())

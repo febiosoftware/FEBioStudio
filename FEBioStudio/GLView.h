@@ -149,11 +149,18 @@ public:
 	void HighlightEdge(int x, int y);
 
 	void SelectObjects   (int x, int y);
+	bool SelectPivot(int x, int y);
+
+	// select items of an FE mesh
 	void SelectFEElements(int x, int y);
 	void SelectFEFaces   (int x, int y);
 	void SelectFEEdges   (int x, int y);
 	void SelectFENodes   (int x, int y);
-	bool SelectPivot(int x, int y);
+
+	// select items of a surface mesh
+	void SelectSurfaceFaces(int x, int y);
+	void SelectSurfaceEdges(int x, int y);
+	void SelectSurfaceNodes(int x, int y);
 
 	void RegionSelectObjects (const SelectRegion& region);
 	void RegionSelectParts   (const SelectRegion& region);
@@ -278,12 +285,15 @@ public:
 	void RenderFEElements(GObject* po);
 	void RenderFEAllElements(FEMesh* pm, bool bext = false);
 	void RenderFEFaces(GObject* po);
-	void RenderFEMeshFaces(GObject* po);
-	void RenderFESurfaceMeshFaces(GObject* po);
 	void RenderFEEdges(GObject* po);
 	void RenderFENodes(GObject* po);
 	void RenderMeshLines();
 	void RenderMeshLines(GObject* pm);
+
+	// rendering functions for surface meshes
+	void RenderSurfaceMeshFaces(GObject* po);
+	void RenderSurfaceMeshEdges(GObject* po);
+	void RenderSurfaceMeshNodes(GObject* po);
 
 	// other rendering functions
 	void RenderDiscrete();

@@ -356,6 +356,14 @@ void CMainWindow::OpenPlotFile(const QString& fileName)
 }
 
 //-----------------------------------------------------------------------------
+//! get the mesh mode
+int CMainWindow::GetMeshMode()
+{
+	if (ui->buildPanel->IsEditPanelVisible()) return MESH_MODE_SURFACE;
+	else return MESH_MODE_VOLUME;
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::OpenFEModel(const QString& fileName)
 {
 	m_fileQueue.clear();
