@@ -1416,10 +1416,19 @@ bool CDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMesh
 	FESurfaceMesh* newMesh = modifier.Apply(mesh, sel);
 	if (newMesh == 0) return false;
 
+	// if the object has an FE mesh, we need to delete it
+	CCommand* cmd = nullptr;
+	if (po->GetFEMesh())
+	{
+		CCmdGroup* cmdg = new CCmdGroup("Apply surface modifier");
+		cmdg->AddCommand(new CCmdChangeFEMesh(po, nullptr));
+		cmdg->AddCommand(new CCmdChangeFESurfaceMesh(po, newMesh));
+		cmd = cmdg;
+	}
+	else cmd = new CCmdChangeFESurfaceMesh(po, newMesh);
+	
 	// swap the meshes
-	return DoCommand(new CCmdChangeFESurfaceMesh(po, newMesh));
-
-	return true;
+	return DoCommand(cmd);
 }
 
 bool CDocument::ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList)

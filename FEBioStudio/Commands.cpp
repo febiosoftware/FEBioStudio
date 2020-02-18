@@ -2921,7 +2921,6 @@ void CCmdApplySurfaceModifier::UnExecute()
 CCmdChangeFEMesh::CCmdChangeFEMesh(GObject* po, FEMesh* pm, bool bup) : CCommand("Change mesh")
 {
 	assert(po);
-	assert(pm);
 	m_update = bup;
 	m_po = po;
 	m_pnew = pm;

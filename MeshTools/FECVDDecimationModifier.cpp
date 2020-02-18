@@ -121,7 +121,7 @@ bool FECVDDecimationModifier::Initialize(FESurfaceMesh* pm)
 
 	// target number of clusters/vertices
 	int NC = (int) (pct*N0);
-	if (NC <= 0) return FESurfaceModifier::SetError("Invalid number of target vertices (= %d)", NC);
+	if (NC < 4) NC = 4;
 
 	// allocate cluster data
 	// number of clusters equals number of target nodes

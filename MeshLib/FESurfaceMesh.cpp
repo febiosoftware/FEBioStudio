@@ -1803,6 +1803,7 @@ void FESurfaceMesh::Load(IArchive& ar)
 
 	// rebuild mesh' data
 	UpdateFaceNeighbors();
+	UpdateEdgeNeighbors();
 	UpdateNormals();
 	UpdateBox();
 }

@@ -125,8 +125,19 @@ void CEditPanel::Apply()
 
 void CEditPanel::on_apply_clicked(bool b)
 {
+	// get the acrive object
 	GObject* activeObject = ui->m_currenObject;
 	if (activeObject == 0) return;
+
+	// check for a FE mesh
+	FEMesh* pm = activeObject->GetFEMesh();
+	if (pm)
+	{
+		if (QMessageBox::question(this, "Apply Changes", "This object has a mesh. This mesh has to be discarded before the changes can be applied.\nDo you wish to discard the mesh?", QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+		{
+			return;
+		}
+	}
 
 	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(activeObject);
 	if (surfaceObject)
@@ -161,21 +172,10 @@ void CEditPanel::on_apply_clicked(bool b)
 	}
 	else
 	{
-		FEMesh* pm = activeObject->GetFEMesh();
-		if (pm)
-		{
-			if (QMessageBox::question(this, "Apply Changes", "This object has a mesh. This mesh has to be discarded before the changes can be applied.\nDo you wish to discard the mesh?", QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
-			{
-				if (dynamic_cast<GMeshObject*>(activeObject) == 0) activeObject->DeleteFEMesh();
-			}
-			else return;
-		}
-
-		if (activeObject)
-		{
-			CCommand* cmd = new CCmdChangeObjectParams(activeObject);
-			GetDocument()->DoCommand(cmd, activeObject->GetName());
-		}
+		CCmdGroup* cmd = new CCmdGroup("Change mesh");
+		cmd->AddCommand(new CCmdChangeFEMesh(activeObject, nullptr));
+		cmd->AddCommand(new CCmdChangeObjectParams(activeObject));
+		GetDocument()->DoCommand(cmd);
 	}
 
 	// clear any highlights

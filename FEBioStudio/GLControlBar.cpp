@@ -199,8 +199,6 @@ void CGLControlBar::Update()
 
 	int meshMode = ui->m_wnd->GetMeshMode();
 
-	CLogger::AddLogEntry(QString("mesh mode = %1\n").arg(meshMode));
-
 	if (meshMode == MESH_MODE_VOLUME)
 	{
 		if (po && po->GetFEMesh())
