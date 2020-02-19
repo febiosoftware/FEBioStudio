@@ -4,8 +4,10 @@
 #include <PostLib/FEModel.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
+#include <PostLib/GView.h>
 #include <PostLib/Palette.h>
 #include <PostGL/GLModel.h>
+#include <PostGL/GLPlot.h>
 #include "GLView.h"
 #include "Document.h"
 
@@ -39,6 +41,8 @@ public:
 public:
 	Post::CGLModel*	glm;
 	Post::FEModel*	fem;
+	Post::CGView	m_view;
+	std::string		m_fileName;
 
 	CPostObject*	m_postObj;
 
@@ -68,6 +72,11 @@ Post::FEModel* CPostDoc::GetFEModel()
 Post::CGLModel* CPostDoc::GetGLModel()
 {
 	return imp->glm;
+}
+
+Post::CGView* CPostDoc::GetView()
+{
+	return &imp->m_view;
 }
 
 void CPostDoc::SetActiveState(int n)
@@ -110,6 +119,63 @@ void CPostDoc::ActivateColormap(bool bchecked)
 	UpdateFEModel();
 }
 
+void CPostDoc::DeleteObject(Post::CGLObject* po)
+{
+	Post::CGLPlot* pp = dynamic_cast<Post::CGLPlot*>(po);
+	if (pp)
+	{
+		delete pp;
+	}
+	else if (dynamic_cast<GLCameraTransform*>(po))
+	{
+		GLCameraTransform* pt = dynamic_cast<GLCameraTransform*>(po);
+		Post::CGView* pview = GetView();
+		pview->DeleteKey(pt);
+	}
+/*	else if (dynamic_cast<Post::CImageModel*>(po))
+	{
+		Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+		for (int i = 0; i < (int)m_img.size(); ++i)
+		{
+			if (m_img[i] == img)
+			{
+				delete img;
+				m_img.erase(m_img.begin() + i);
+				break;
+			}
+		}
+	}
+	else if (dynamic_cast<CGLImageRenderer*>(po))
+	{
+		CGLImageRenderer* ir = dynamic_cast<CGLImageRenderer*>(po);
+		CImageModel* img = ir->GetImageModel();
+		img->RemoveRenderer(ir);
+	}
+*/	else if (dynamic_cast<Post::CGLDisplacementMap*>(po))
+	{
+		Post::CGLDisplacementMap* map = dynamic_cast<Post::CGLDisplacementMap*>(po);
+		Post::CGLModel* m = GetGLModel();
+		assert(map == m->GetDisplacementMap());
+		m->RemoveDisplacementMap();
+		UpdateFEModel(true);
+	}
+/*	else if (dynamic_cast<Post::CGLVisual*>(po))
+	{
+		list<Post::CGLVisual*>::iterator it = m_pObj.begin();
+		for (int i = 0; i<(int)m_pObj.size(); ++i, ++it)
+		{
+			Post::CGLVisual* pv = (*it);
+			if (pv == po)
+			{
+				delete pv;
+				m_pObj.erase(it);
+				break;
+			}
+		}
+	}
+*/
+}
+
 std::string CPostDoc::GetFieldString()
 {
 	if (IsValid())
@@ -149,6 +215,11 @@ void CPostDoc::SetDataField(int n)
 	imp->glm->Update(false);
 }
 
+std::string CPostDoc::GetFileName()
+{
+	return imp->m_fileName;
+}
+
 bool CPostDoc::LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops)
 {
 	const char* szfile = fileName.c_str();
@@ -183,6 +254,7 @@ bool CPostDoc::LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops
 
 	// set the file name as title
 	imp->fem->SetTitle(sztitle);
+	imp->m_fileName = sztitle;
 
 	// assign material attributes
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();

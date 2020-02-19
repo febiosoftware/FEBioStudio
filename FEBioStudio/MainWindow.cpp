@@ -1130,6 +1130,9 @@ void CMainWindow::SetActivePostDoc(CPostDoc* postDoc)
 		{
 			SetActiveView(view);
 		}
+
+		// raise the post panel
+		ui->postPanel->parentWidget()->raise();
 	}
 }
 
@@ -1173,6 +1176,9 @@ void CMainWindow::on_tab_currentChanged(int n)
 	UpdatePostPanel();
 	UpdatePostToolbar();
 	RedrawGL();
+
+	if (n == 0) ui->modelViewer->parentWidget()->raise();
+	else ui->postPanel->parentWidget()->raise();
 }
 
 //-----------------------------------------------------------------------------

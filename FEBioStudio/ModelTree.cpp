@@ -814,7 +814,7 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 	{
 		CFEBioJob* job = doc->GetFEBioJob(i);
 		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(job->GetName()), MT_JOB, 0, job, new CFEBioJobProps(m_view->GetMainWindow(), job), 0, SHOW_PROPERTY_FORM);
-
+/*
 		CPostDoc* doc = job->GetPostDoc();
 		if (doc)
 		{
@@ -850,6 +850,7 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 				}
 			}
 		}
+*/
 	}
 }
 

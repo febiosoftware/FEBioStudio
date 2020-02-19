@@ -1,5 +1,6 @@
 #pragma once
 #include "PostPanel.h"
+#include "PostModelPanel.h"
 #include "PostDataPanel.h"
 #include "MaterialPanel.h"
 #include "StatePanel.h"
@@ -10,6 +11,7 @@
 class Ui::CPostPanel
 {
 public:
+	::CPostModelPanel*	mdl;
 	::CPostDataPanel*	data;
 	::CMaterialPanel*	mat;
 	::CStatePanel*		state;
@@ -22,6 +24,7 @@ public:
 	{
 		tab = new QTabWidget; tab->setObjectName("postTab");
 
+		tab->addTab(mdl = new ::CPostModelPanel(wnd, parent), "Model");
 		tab->addTab(mat = new ::CMaterialPanel(wnd, parent), "Material");
 		tab->addTab(data = new ::CPostDataPanel(wnd, parent), "Data");
 		tab->addTab(state = new ::CStatePanel(wnd, parent), "State");

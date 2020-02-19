@@ -140,6 +140,7 @@
 		<file>icons/PreView.png</file>
 		<file>icons/PostView.png</file>
 		<file>icons/febiorun.png</file>
-                <file>icons/folder.png</file>
+		<file>icons/folder.png</file>
+		<file>icons/mesh.png</file>
 	</qresource>
 </RCC>

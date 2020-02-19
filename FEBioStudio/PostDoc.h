@@ -11,6 +11,8 @@ namespace Post {
 	class CGLModel;
 	class FEDataField;
 	class CPalette;
+	class CGView;
+	class CGLObject;
 }
 
 class CPostObject;
@@ -108,6 +110,12 @@ public:
 	std::string GetTitle();
 
 	void ActivateColormap(bool bchecked);
+
+	void DeleteObject(Post::CGLObject* po);
+
+	Post::CGView* GetView();
+
+	std::string GetFileName();
 
 private:
 	void ApplyPalette(const Post::CPalette& pal);
