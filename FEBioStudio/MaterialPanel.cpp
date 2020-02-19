@@ -104,6 +104,7 @@ public:
 		update = true;
 
 		QVBoxLayout* pg = new QVBoxLayout;
+		pg->setMargin(0);
 
 		QSplitter* psplitter = new QSplitter;
 		psplitter->setOrientation(Qt::Vertical);
@@ -151,8 +152,23 @@ public:
 
 	void setColor(QListWidgetItem* item, GLColor c)
 	{
+		QColor c2 = QColor::fromRgb(c.r, c.g, c.b);
+		QColor c1 = c2.lighter();
+		QColor c3 = c2.darker();
+
+		QRadialGradient g(QPointF(8, 8), 12);
+		g.setColorAt(0.0, c1);
+		g.setColorAt(0.2, c2);
+		g.setColorAt(1.0, c3);
+
 		QPixmap pix(24, 24);
-		pix.fill(QColor(c.r, c.g, c.b));
+		pix.fill(Qt::transparent);
+		QPainter p(&pix);
+		p.setRenderHint(QPainter::Antialiasing);
+		p.setPen(Qt::PenStyle::NoPen);
+		p.setBrush(QBrush(g));
+		p.drawEllipse(2, 2, 20, 20);
+		p.end();
 		item->setIcon(QIcon(pix));
 	}
 };

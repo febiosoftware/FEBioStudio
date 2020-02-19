@@ -1192,6 +1192,28 @@ void CMainWindow::on_tab_tabCloseRequested(int n)
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::OnPostObjectStateChanged()
+{
+	Post::CGLModel* mdl = GetCurrentModel();
+	if (mdl == nullptr) return;
+	bool b = mdl->GetColorMap()->IsActive();
+	if (b != ui->actionColorMap->isChecked()) ui->actionColorMap->setChecked(b);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::OnPostObjectPropsChanged()
+{
+	Post::CGLModel* mdl = GetCurrentModel();
+	if (mdl == nullptr) return;
+
+	int dataField = mdl->GetColorMap()->GetEvalField();
+	if (ui->selectData->currentValue() != dataField) ui->selectData->setCurrentValue(dataField);
+
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::CloseView(int n)
 {
 	ui->tab->closeView(n);
@@ -1206,9 +1228,11 @@ void CMainWindow::CloseView(CPostDoc* postDoc)
 
 //-----------------------------------------------------------------------------
 //! Update the post panel
-void CMainWindow::UpdatePostPanel()
+void CMainWindow::UpdatePostPanel(bool braise, Post::CGLObject* po)
 {
 	ui->postPanel->Update();
+	if (braise) ui->postPanel->parentWidget()->raise();
+	ui->postPanel->SelectObject(po);
 }
 
 //-----------------------------------------------------------------------------
@@ -1420,6 +1444,8 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 			ui->actionColorMap->toggle();
 		}
 
+		UpdatePostPanel(false, doc->GetGLModel()->GetColorMap());
+
 		ui->glview->UpdateWidgets(false);
 		RedrawGL();
 	}
@@ -1539,6 +1565,7 @@ void CMainWindow::on_actionColorMap_toggled(bool bchecked)
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
 	doc->ActivateColormap(bchecked);
+	UpdatePostPanel(false, doc->GetGLModel()->GetColorMap());
 	RedrawGL();
 }
 

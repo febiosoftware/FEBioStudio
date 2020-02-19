@@ -66,3 +66,8 @@ void CPostPanel::Apply()
 	CCommandPanel* p = ui->currentPanel();
 	if (p) p->Apply();
 }
+
+void CPostPanel::SelectObject(Post::CGLObject* po)
+{
+	ui->mdl->selectObject(po);
+}

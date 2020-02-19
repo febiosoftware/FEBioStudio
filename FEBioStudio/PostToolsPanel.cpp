@@ -53,7 +53,7 @@ public:
 		activeTool = 0;
 
 		QVBoxLayout* pg = new QVBoxLayout(parent);
-		pg->setMargin(2);
+		pg->setMargin(0);
 		
 		QGroupBox* box = new QGroupBox("Tools");
 		

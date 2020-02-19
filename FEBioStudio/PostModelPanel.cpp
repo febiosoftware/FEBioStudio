@@ -363,13 +363,14 @@ public:
 	void setupUi(::CPostModelPanel* parent)
 	{
 		QVBoxLayout* pg = new QVBoxLayout(parent);
+		pg->setMargin(0);
 		
 		QSplitter* psplitter = new QSplitter;
 		psplitter->setOrientation(Qt::Vertical);
 		pg->addWidget(psplitter);
 
 		m_tree = new QTreeWidget;
-		m_tree->setObjectName(QStringLiteral("modelTree"));
+		m_tree->setObjectName(QStringLiteral("postModel"));
 		m_tree->setColumnCount(1);
 		m_tree->setHeaderHidden(true);
 
@@ -464,6 +465,9 @@ public:
 CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CPostModelPanel)
 {
 	ui->setupUi(this);
+
+	QObject::connect(this, SIGNAL(postObjectStateChanged()), pwnd, SLOT(OnPostObjectStateChanged()));
+	QObject::connect(this, SIGNAL(postObjectPropsChanged()), pwnd, SLOT(OnPostObjectPropsChanged()));
 }
 
 CPostDoc* CPostModelPanel::GetActiveDocument()
@@ -509,7 +513,7 @@ void CPostModelPanel::UpdateView()
 	QTreeWidgetItem* psel = ui->m_tree->currentItem();
 	if (psel && psel->text(0) == QString("View"))
 	{
-		on_modelTree_currentItemChanged(psel, psel);
+		on_postModel_currentItemChanged(psel, psel);
 	}
 }
 
@@ -708,11 +712,11 @@ void CPostModelPanel::Update(bool breset)
 	}
 	else
 	{
-		on_modelTree_currentItemChanged(ui->m_tree->currentItem(), 0);
+		on_postModel_currentItemChanged(ui->m_tree->currentItem(), 0);
 	}
 }
 
-void CPostModelPanel::on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev)
+void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev)
 {
 	if (current)
 	{
@@ -757,7 +761,7 @@ void CPostModelPanel::on_modelTree_currentItemChanged(QTreeWidgetItem* current, 
 	}
 }
 
-void CPostModelPanel::on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column)
+void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int column)
 {
 	int n = item->data(0, Qt::UserRole).toInt();
 	GLCameraTransform* pkey = dynamic_cast<GLCameraTransform*>(m_obj[n]);
@@ -799,7 +803,8 @@ void CPostModelPanel::on_props_dataChanged()
 {
 	Post::CGLObject* po = selectedObject();
 	if (po) po->Update();
-	GetMainWindow()->RedrawGL();
+
+	emit postObjectPropsChanged();
 }
 
 void CPostModelPanel::on_enabled_stateChanged(int nstate)
@@ -822,9 +827,7 @@ void CPostModelPanel::on_enabled_stateChanged(int nstate)
 //		item->setTextColor(0, Qt::black);
 	}
 
-	CMainWindow* wnd = GetMainWindow();
-//	wnd->CheckUi();
-	wnd->RedrawGL();
+	emit postObjectStateChanged();
 }
 /*
 void CModelViewer::on_autoUpdate_toggled(bool b)

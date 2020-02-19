@@ -43,9 +43,7 @@ void CMainWindow::on_actionPlaneCut_triggered()
 	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
+	UpdatePostPanel(true, pp);
 	RedrawGL();
 }
 
@@ -61,9 +59,7 @@ void CMainWindow::on_actionMirrorPlane_triggered()
 	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
+	UpdatePostPanel(true, pp);
 	RedrawGL();
 }
 
@@ -79,9 +75,7 @@ void CMainWindow::on_actionVectorPlot_triggered()
 	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
+	UpdatePostPanel(true, pp);
 	RedrawGL();
 }
 
@@ -97,9 +91,7 @@ void CMainWindow::on_actionTensorPlot_triggered()
 	Post::GLTensorPlot* pp = new Post::GLTensorPlot(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
+	UpdatePostPanel(true, pp);
 	RedrawGL();
 }
 
@@ -115,10 +107,7 @@ void CMainWindow::on_actionStreamLinePlot_triggered()
 	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
-
+	UpdatePostPanel(true, pp);
 	RedrawGL();
 }
 
@@ -134,10 +123,7 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
-
+	UpdatePostPanel(true, pp);
 	RedrawGL();
 }
 
@@ -153,10 +139,7 @@ void CMainWindow::on_actionVolumeFlowPlot_triggered()
 	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
-
+	UpdatePostPanel(true, pp);
 	RedrawGL();
 }
 
@@ -220,9 +203,7 @@ void CMainWindow::on_actionIsosurfacePlot_triggered()
 	Post::CGLIsoSurfacePlot* pp = new Post::CGLIsoSurfacePlot(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
+	UpdatePostPanel(true, pp);
 	RedrawGL();
 }
 
@@ -234,9 +215,7 @@ void CMainWindow::on_actionSlicePlot_triggered()
 	Post::CGLSlicePlot* pp = new Post::CGLSlicePlot(glm);
 	glm->AddPlot(pp);
 
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(pp);
-	ui->modelViewer->parentWidget()->raise();
+	UpdatePostPanel(true, pp);
 
 	RedrawGL();
 }

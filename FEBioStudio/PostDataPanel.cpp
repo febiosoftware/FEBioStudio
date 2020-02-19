@@ -252,6 +252,7 @@ public:
 		m_activeField = 0;
 
 		QVBoxLayout* pg = new QVBoxLayout(parent);
+		pg->setMargin(0);
 
 		const int BW = 60;
 		const int BH = 23;

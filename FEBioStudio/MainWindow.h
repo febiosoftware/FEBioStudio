@@ -121,7 +121,7 @@ public:
 	void SetActivePostDoc(CPostDoc* postDoc);
 
 	//! Update the post panel
-	void UpdatePostPanel();
+	void UpdatePostPanel(bool braise = false, Post::CGLObject* po = nullptr);
 
 	//! Update the model editor
 	void UpdateModel(FSObject* po = 0, bool bupdate = true);
@@ -342,6 +342,10 @@ public slots:
 
 	void on_tab_currentChanged(int n);
 	void on_tab_tabCloseRequested(int n);
+
+	// slots from Post panel
+	void OnPostObjectStateChanged();
+	void OnPostObjectPropsChanged();
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 

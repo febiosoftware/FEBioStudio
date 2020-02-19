@@ -5,6 +5,10 @@ namespace Ui {
 	class CPostPanel;
 }
 
+namespace Post {
+	class CGLObject;
+}
+
 class CPostPanel : public CCommandPanel
 {
 	Q_OBJECT
@@ -15,6 +19,8 @@ public:
 	void Update();
 
 	void Apply();
+
+	void SelectObject(Post::CGLObject* po);
 
 public slots:
 	void on_postTab_currentChanged(int index);
