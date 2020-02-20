@@ -56,6 +56,14 @@ void CPropertyListForm::clear()
 	m_widget.clear();
 }
 
+class MyCheckBox : public QCheckBox
+{
+public:
+	MyCheckBox(QWidget* parent = nullptr) : QCheckBox(parent) { m_data = -1; };
+public:
+	int	m_data;
+};
+
 //-----------------------------------------------------------------------------
 // attach a property list to this form
 void CPropertyListForm::setPropertyList(CPropertyList* pl)
@@ -78,6 +86,7 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 		QVariant v = pl->GetPropertyValue(i);
 		QWidget* pw = 0;
 		QString label = pi.name;
+		if (label.isEmpty() == false) label += ":";
 
 		// see if we need to create a group
 		if (pi.type == CProperty::Group)
@@ -118,8 +127,28 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 			pw = createPropertyEditor(pi, v);
 			if (pi.isEditable() == false) pw->setDisabled(true);
 
-			// add the widget (if defined)
-			if (pw) form->addRow(label, pw);
+			if (pi.param && pi.param->IsCheckable() && pw)
+			{
+				QWidget* tmp = new QWidget;
+				QHBoxLayout* l = new QHBoxLayout;
+				MyCheckBox* c = new MyCheckBox;
+				c->m_data = i;
+				c->setChecked(pi.param->IsChecked());
+				l->setMargin(0);
+				l->addWidget(c);
+				l->addWidget(pw);
+				tmp->setLayout(l);
+
+				QObject::connect(c, SIGNAL(stateChanged(int)), this, SLOT(onCheckStateChanged(int)));
+
+				// add the widget (if defined)
+				if (pw) form->addRow(label, tmp);
+			}
+			else
+			{
+				// add the widget (if defined)
+				if (pw) form->addRow(label, pw);
+			}
 
 			// add the widget to the list.
 			// Note that we always add the pw, even when it's zero. 
@@ -409,6 +438,27 @@ void CPropertyListForm::updateData()
 					else edit->setText(v.toString());
 				}
 			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CPropertyListForm::onCheckStateChanged(int m)
+{
+	// get the sending widget
+	QWidget* pw = qobject_cast<QWidget*>(sender());
+	if (pw == 0) return;
+
+	MyCheckBox* pc = dynamic_cast<MyCheckBox*>(pw);
+	if (pc)
+	{
+		int n = pc->m_data;
+		assert(n >= 0);
+		CProperty& p = m_list->Property(n);
+
+		if (p.param && p.param->IsCheckable())
+		{
+			p.param->SetChecked(pc->isChecked());
 		}
 	}
 }

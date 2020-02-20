@@ -188,6 +188,10 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		assert(false);
 		return false;
 	}
+
+	// if parameter is checkable, mark it as checked
+	if (pp->IsCheckable()) pp->SetChecked(true);
+
 	return true;
 }
 

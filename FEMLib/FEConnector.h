@@ -164,3 +164,10 @@ public:
 public:
     FERigidContractileForce(FEModel* ps, int nstep = 0);
 };
+
+//-----------------------------------------------------------------------------
+class FEGenericRigidJoint : public FERigidConnector
+{
+public:
+	FEGenericRigidJoint(FEModel* ps, int nstep = 0);
+};

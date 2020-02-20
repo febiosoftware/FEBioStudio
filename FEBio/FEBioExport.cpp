@@ -36,6 +36,9 @@ void FEBioExport::WriteParam(Param &p)
 	// see if we are writing non-persistent parameters
 	if ((m_exportNonPersistentParams==false) && (p.IsPersistent() == false)) return;
 
+	// if parameter is checkable, we only write it when it's checked
+	if (p.IsCheckable() && !p.IsChecked()) return;
+
 	// get the (short) name
 	const char* szname = p.GetShortName();
 

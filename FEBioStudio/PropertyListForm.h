@@ -35,6 +35,7 @@ private:
 private slots:
 	// catch-all slot for when a widget gets changed
 	void onDataChanged();
+	void onCheckStateChanged(int n);
 
 signals:
 	// send when a widget is changed

@@ -163,6 +163,7 @@ bool CGLModel::Update(bool breset)
 	if (m_ps == nullptr) return true;
 
 	FEModel& fem = *m_ps;
+	if (fem.GetStates() == 0) return true;
 
 	// get the time inc value
 	int ntime = fem.CurrentTimeIndex();

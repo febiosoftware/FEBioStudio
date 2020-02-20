@@ -171,11 +171,19 @@ public:
 	void SetFloatRange(double fmin, double fmax, double fstep = 0.0);
 	void SetIntRange(int imin, int imax, int istep = 1);
 
+	void SetCheckable(bool b);
+	bool IsCheckable() const;
+	void SetChecked(bool b);
+	bool IsChecked() const;
+
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
 	Param_Unit		m_nunit;	// scientific unit
 	int				m_nstate;	// parameter state
+	
+	bool			m_checkable;
+	bool			m_checked;
 
 	void*			m_pd;		// pointer to actual value
 	FELoadCurve*	m_plc;		// load curve for parameter

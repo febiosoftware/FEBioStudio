@@ -199,9 +199,9 @@ class CFEBioJobProps : public CPropertyList
 public:
 	CFEBioJobProps(CMainWindow* wnd, CFEBioJob* job) : m_wnd(wnd), m_job(job)
 	{
-		addProperty("FEBio File:", CProperty::String)->setFlags(CProperty::Visible);
-		addProperty("Status:", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
-		addProperty("Plot File:" , CProperty::String)->setFlags(CProperty::Visible);
+		addProperty("FEBio File", CProperty::String)->setFlags(CProperty::Visible);
+		addProperty("Status", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
+		addProperty("Plot File" , CProperty::String)->setFlags(CProperty::Visible);
 		addProperty("", CProperty::Action)->info = QString("Open in FEBio Studio");
 		addProperty("", CProperty::Action)->info = QString("Open in PostView");
 

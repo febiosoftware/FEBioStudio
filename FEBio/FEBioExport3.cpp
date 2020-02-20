@@ -4355,6 +4355,7 @@ void FEBioExport3::WriteConnectors(FEStep& s)
 			else if (dynamic_cast<FERigidDamper*          >(pj)) ec.add_attribute("type", "rigid damper");
 			else if (dynamic_cast<FERigidAngularDamper*   >(pj)) ec.add_attribute("type", "rigid angular damper");
 			else if (dynamic_cast<FERigidContractileForce*>(pj)) ec.add_attribute("type", "rigid contractile force");
+			else if (dynamic_cast<FEGenericRigidJoint*    >(pj)) ec.add_attribute("type", "generic rigid joint");
 			else
 				assert(false);
 

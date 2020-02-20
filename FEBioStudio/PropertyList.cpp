@@ -80,6 +80,7 @@ CProperty::CProperty(const QString& sname, CProperty::Type itype) : name(sname),
 	fstep = 0.01;
 	bauto = false;
 	brange = false;
+	param = nullptr;
 }
 
 CProperty::CProperty(const QString& sname, CProperty::Type itype, const QString& sinfo) : name(sname), type(itype), info(sinfo)
@@ -92,6 +93,7 @@ CProperty::CProperty(const QString& sname, CProperty::Type itype, const QString&
 	fstep = 0.01;
 	bauto = false;
 	brange = false;
+	param = nullptr;
 }
 
 

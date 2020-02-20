@@ -20,6 +20,8 @@ Param::Param()
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -78,6 +80,30 @@ void Param::SetIntRange(int imin, int imax, int istep)
 	m_fmin = imin;
 	m_fmax = imax;
 	m_fstep = istep;
+}
+
+//-----------------------------------------------------------------------------
+void Param::SetCheckable(bool b)
+{
+	m_checkable = b;
+}
+
+//-----------------------------------------------------------------------------
+bool Param::IsCheckable() const
+{
+	return m_checkable;
+}
+
+//-----------------------------------------------------------------------------
+void Param::SetChecked(bool b)
+{
+	m_checked = b;
+}
+
+//-----------------------------------------------------------------------------
+bool Param::IsChecked() const
+{
+	return (m_checkable ? m_checked : false);
 }
 
 //-----------------------------------------------------------------------------
@@ -188,6 +214,8 @@ Param::Param(const Param& p)
 	m_fmin = p.m_fmin;
 	m_fmax = p.m_fmax;
 	m_fstep = p.m_fstep;
+	m_checkable = p.m_checkable;
+	m_checked = p.m_checked;
 	switch (m_ntype)
 	{
 	case Param_INT   : { int*    pi = new int   ; m_pd = pi; *pi = *((int*   )p.m_pd); } break;
@@ -221,6 +249,8 @@ Param& Param::operator = (const Param& p)
 //  m_nindx = p.m_nindx;
 	m_offset = p.m_offset;
 	m_isVariable = p.m_isVariable;
+//	m_checkable = p.m_checkable;
+	m_checked = p.m_checked;
 
 	switch (m_ntype)
 	{
@@ -265,6 +295,8 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -287,6 +319,8 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -309,6 +343,8 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -331,6 +367,8 @@ Param::Param(double d, Param_Unit nunit, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -353,6 +391,8 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -375,6 +415,8 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 
@@ -398,6 +440,8 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -420,6 +464,8 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -441,6 +487,8 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 Param::Param(const std::string& val, const char* szb, const char* szn)
@@ -462,6 +510,8 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -484,6 +534,8 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
     
 //-----------------------------------------------------------------------------
@@ -506,6 +558,8 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
     
 //-----------------------------------------------------------------------------
@@ -527,6 +581,8 @@ Param::Param(double d, const char* szi, int idx, Param_Unit nunit, const char* s
 	m_isVariable = false;
 	m_floatRange = false;
 	m_fmin = m_fmax = m_fstep = 0.0;
+	m_checkable = false;
+	m_checked = false;
 }
 
 //=============================================================================
@@ -576,6 +632,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 
 	ar.WriteChunk(CID_PARAM_ID, nid);
 	ar.WriteChunk(CID_PARAM_TYPE, ntype);
+	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
 
 	switch (ntype)
 	{
@@ -626,6 +683,7 @@ void ParamContainer::Load(IArchive &ar)
 void ParamContainer::LoadParam(IArchive& ar)
 {
 	int npid;
+	bool b;
 	Param p;
 	int ntype = -1;
 	while (IArchive::IO_OK == ar.OpenChunk())
@@ -634,6 +692,7 @@ void ParamContainer::LoadParam(IArchive& ar)
 		switch (nid)
 		{
 		case CID_PARAM_ID: ar.read(npid); p.SetParamID(npid); break;
+		case CID_PARAM_CHECKED: ar.read(b); p.SetChecked(b); break;
 		case CID_PARAM_TYPE: 
 			ar.read(ntype); 
 			switch (ntype)
@@ -716,9 +775,15 @@ void ParamContainer::LoadParam(IArchive& ar)
 		}
 		else
 		{
-			assert(param.IsVariable());
-			param.SetParamType(p.GetParamType());
-			param = p;
+			if (param.IsVariable())
+			{
+				param.SetParamType(p.GetParamType());
+				param = p;
+			}
+			else
+			{
+				// TODO: print some type of error message that parameters are mismatched	
+			}
 		}
 		if (var) param.MakeVariable(true);
 	}

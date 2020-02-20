@@ -303,6 +303,7 @@
 #define CID_PARAM_ID				0x000C0001
 #define CID_PARAM_TYPE				0x000C0002
 #define CID_PARAM_VALUE				0x000C0003
+#define CID_PARAM_CHECKED			0x000C0004
 
 // --- boundary conditions ---
 #define CID_BC_SECTION					0x000D0000
@@ -621,6 +622,7 @@
 #define FE_RC_ANGULAR_DAMPER		0x0008
 #define FE_RC_CONTRACTILE_FORCE		0x0009
 #define FE_RC_RIGID_LOCK            0x000A
+#define FE_RC_GENERIC_JOINT			0x000B
 
 //--------------------------------------------------------
 // Constraint types

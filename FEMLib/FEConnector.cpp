@@ -360,3 +360,23 @@ FERigidContractileForce::FERigidContractileForce(FEModel* ps, int nstep) : FERig
     AddVecParam   (vec3d(0,0,0), "insertion_a" , "insertion point a");
     AddVecParam   (vec3d(0,0,0), "insertion_b" , "insertion point b");
 }
+
+//=============================================================================
+// FEGenericRigidJoint
+//-----------------------------------------------------------------------------
+
+FEGenericRigidJoint::FEGenericRigidJoint(FEModel* ps, int nstep) : FERigidConnector(FE_RC_GENERIC_JOINT, ps, nstep)
+{
+	SetTypeString("generic rigid joint");
+
+	AddChoiceParam(0, "laugon", "Enforcement method")->SetEnumNames("Penalty method\0Augmented Lagrangian\0Lagrange multiplier\0");
+	AddDoubleParam(0, "penalty", "Penalty");
+	AddDoubleParam(0, "tolerance", "Tolerance");
+	AddVecParam(vec3d(0, 0, 0), "joint", "joint position");
+	AddDoubleParam(0, "prescribe_x" , "x" )->SetCheckable(true);
+	AddDoubleParam(0, "prescribe_y" , "y" )->SetCheckable(true);
+	AddDoubleParam(0, "prescribe_z" , "z" )->SetCheckable(true);
+	AddDoubleParam(0, "prescribe_Rx", "Rx")->SetCheckable(true);
+	AddDoubleParam(0, "prescribe_Ry", "Ry")->SetCheckable(true);
+	AddDoubleParam(0, "prescribe_Rz", "Rz")->SetCheckable(true);
+}

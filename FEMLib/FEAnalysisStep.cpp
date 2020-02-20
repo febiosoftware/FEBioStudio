@@ -842,6 +842,7 @@ void FEStep::Load(IArchive &ar)
                         case FE_RC_DAMPER               : pi = new FERigidDamper            (m_pfem); break;
                         case FE_RC_ANGULAR_DAMPER       : pi = new FERigidAngularDamper     (m_pfem); break;
                         case FE_RC_CONTRACTILE_FORCE    : pi = new FERigidContractileForce  (m_pfem); break;
+						case FE_RC_GENERIC_JOINT        : pi = new FEGenericRigidJoint      (m_pfem); break;
                         default:
                             throw ReadError("error parsing unknown CID_CONNECTOR_SECTION FEStep::Load");
                     }

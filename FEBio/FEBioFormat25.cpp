@@ -2502,6 +2502,10 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 		pi = new FERigidContractileForce(&fem, pstep->GetID());
 		sprintf(szname, "RigidContractileForce%02d", CountConnectors<FERigidContractileForce>(fem)+1);
 		break;
+	case 10:
+		pi = new FEGenericRigidJoint(&fem, pstep->GetID());
+		sprintf(szname, "GenericRigidJoint%02d", CountConnectors<FEGenericRigidJoint>(fem) + 1);
+		break;
 	default:
 		assert(false);
 		break;
@@ -2763,6 +2767,7 @@ bool FEBioFormat25::ParseConstraintSection(XMLTag& tag)
 			else if (strcmp(sztype, "rigid damper"           ) == 0) ParseConnector(pstep, tag, 7);
 			else if (strcmp(sztype, "rigid angular damper"   ) == 0) ParseConnector(pstep, tag, 8);
 			else if (strcmp(sztype, "rigid contractile force") == 0) ParseConnector(pstep, tag, 9);
+			else if (strcmp(sztype, "generic rigid joint"    ) == 0) ParseConnector(pstep, tag, 10);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
