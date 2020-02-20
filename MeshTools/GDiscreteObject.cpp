@@ -307,18 +307,14 @@ void GDiscreteElementSet::Load(IArchive& ar)
 	}
 }
 
+//=============================================================================
+GDiscreteSpringSet::GDiscreteSpringSet(int ntype) : GDiscreteElementSet(ntype)
+{
+
+}
+
 //-----------------------------------------------------------------------------
-GLinearSpringSet::GLinearSpringSet() : GDiscreteElementSet(FE_LINEAR_SPRING_SET)
-{
-	AddDoubleParam(1, "E", "spring constant");
-}
-
-void GLinearSpringSet::SetSpringConstant(double E)
-{
-	SetFloatValue(MP_E, E);
-}
-
-void GLinearSpringSet::Save(OArchive& ar)
+void GDiscreteSpringSet::Save(OArchive& ar)
 {
 	ar.WriteChunk(0, GetName());
 	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
@@ -338,9 +334,10 @@ void GLinearSpringSet::Save(OArchive& ar)
 	ar.WriteChunk(3, GetColor());
 }
 
-void GLinearSpringSet::Load(IArchive& ar)
+//-----------------------------------------------------------------------------
+void GDiscreteSpringSet::Load(IArchive& ar)
 {
-	TRACE("GSpringSet::Load");
+	TRACE("GDiscreteSpringSet::Load");
 
 	string s;
 	GLColor col = GetColor();
@@ -361,8 +358,20 @@ void GLinearSpringSet::Load(IArchive& ar)
 	SetColor(col);
 }
 
+//=============================================================================
+GLinearSpringSet::GLinearSpringSet() : GDiscreteSpringSet(FE_LINEAR_SPRING_SET)
+{
+	AddDoubleParam(1, "E", "spring constant");
+}
+
 //-----------------------------------------------------------------------------
-GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteElementSet(FE_NONLINEAR_SPRING_SET)
+void GLinearSpringSet::SetSpringConstant(double E)
+{
+	SetFloatValue(MP_E, E);
+}
+
+//-----------------------------------------------------------------------------
+GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteSpringSet(FE_NONLINEAR_SPRING_SET)
 {
 	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
 
@@ -373,47 +382,14 @@ GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteElementSet(FE_NONLINEAR_SP
 	GetParamLC(MP_F)->Add(p1);
 }
 
-void GNonlinearSpringSet::Save(OArchive& ar)
+//=============================================================================
+GHillContractileDiscreteSet::GHillContractileDiscreteSet() : GDiscreteSpringSet(FE_HILL_CONTRACTILE_SET)
 {
-	ar.WriteChunk(0, GetName());
-	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
-	if (m_elem.size() > 0)
-	{
-		ar.BeginChunk(1);
-		{
-			GDiscreteElementSet::Save(ar);
-		}
-		ar.EndChunk();
-	}
-	ar.BeginChunk(2);
-	{
-		ParamContainer::Save(ar);
-	}
-	ar.EndChunk();
-	ar.WriteChunk(3, GetColor());
-}
-
-void GNonlinearSpringSet::Load(IArchive& ar)
-{
-	TRACE("GNonlinearSpringSet::Load");
-
-	string s;
-	GLColor col = GetColor();
-	while (IArchive::IO_OK == ar.OpenChunk())
-	{
-		int nid = ar.GetChunkID();
-		switch (nid)
-		{
-		case 0: ar.read(s); SetName(s); break;
-		case 1: GDiscreteElementSet::Load(ar); break;
-		case 2: ParamContainer::Load(ar); break;
-		case 3: ar.read(col); break;
-		case CID_FEOBJ_INFO: ar.read(s); SetInfo(s); break;
-		}
-		ar.CloseChunk();
-	}
-
-	SetColor(col);
+	AddDoubleParam(0, "Fmax", "Max force");
+	AddDoubleParam(1, "Lmax", "Max length");
+	AddDoubleParam(1, "L0", "Initial length");
+	AddDoubleParam(1, "Ksh", "Shape parameter");
+	AddDoubleParam(0, "ac", "Activation");
 }
 
 //-----------------------------------------------------------------------------

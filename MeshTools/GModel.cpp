@@ -1139,6 +1139,7 @@ void GModel::Load(IArchive &ar)
 					case FE_GENERAL_SPRING      : po = new GGeneralSpring(); break;
 					case FE_LINEAR_SPRING_SET   : po = new GLinearSpringSet(); break;
 					case FE_NONLINEAR_SPRING_SET: po = new GNonlinearSpringSet(); break;
+					case FE_HILL_CONTRACTILE_SET: po = new GHillContractileDiscreteSet(); break;
 					default:
 						throw ReadError("error parsing CID_DISCRETE_OBJECT (GModel::Load)");
 					}

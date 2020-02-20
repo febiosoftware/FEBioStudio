@@ -531,6 +531,7 @@ std::string CDocument::GetTypeString(FSObject* po)
 	}
 	else if (dynamic_cast<GLinearSpringSet*>(po)) return "Linear spring set";
 	else if (dynamic_cast<GNonlinearSpringSet*>(po)) return "Nonlinear spring set";
+	else if (dynamic_cast<GHillContractileDiscreteSet*>(po)) return "Hill";
 	else if (dynamic_cast<GDiscreteElement*>(po)) return "discrete element";
 	else if (dynamic_cast<FEPart*>(po)) return "element selection";
 	else if (dynamic_cast<FESurface*>(po)) return "face selection";

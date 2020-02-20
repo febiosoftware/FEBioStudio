@@ -2622,6 +2622,34 @@ void FEBioExport25::WriteGeometryDiscreteSets()
 			}
 			m_xml.close_branch();
 		}
+		GHillContractileDiscreteSet* phs = dynamic_cast<GHillContractileDiscreteSet*>(model.DiscreteObject(i));
+		if (phs && (phs->size()))
+		{
+			XMLElement el("DiscreteSet");
+			el.add_attribute("name", phs->GetName().c_str());
+			m_xml.add_branch(el);
+			{
+				int N = phs->size();
+				for (int n = 0; n<N; ++n)
+				{
+					GDiscreteElement& el = phs->element(n);
+					GNode* pn0 = model.FindNode(el.Node(0));
+					GNode* pn1 = model.FindNode(el.Node(1));
+					if (pn0 && pn1)
+					{
+						GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
+						GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
+
+						int n[2];
+						n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
+						n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
+
+						m_xml.add_leaf("delem", n, 2);
+					}
+				}
+			}
+			m_xml.close_branch();
+		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
 		if (ds)
 		{
@@ -3170,6 +3198,18 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 			}
 			m_xml.close_branch();
 		}
+		GHillContractileDiscreteSet* phs = dynamic_cast<GHillContractileDiscreteSet*>(model.DiscreteObject(i));
+		if (phs && (phs->size()))
+		{
+			dmat.set_attribute(n1, n++);
+			dmat.set_attribute(n2, phs->GetName().c_str());
+			dmat.set_attribute(n3, "Hill");
+			m_xml.add_branch(dmat, false);
+			{
+				WriteParamList(*phs);
+			}
+			m_xml.close_branch();
+		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
 		if (ds)
 		{
@@ -3235,6 +3275,13 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 		{
 			disc.set_attribute(n1, n++);
 			disc.set_attribute(n2, pnl->GetName().c_str());
+			m_xml.add_empty(disc, false);
+		}
+		GHillContractileDiscreteSet* phs = dynamic_cast<GHillContractileDiscreteSet*>(model.DiscreteObject(i));
+		if (phs && (phs->size()))
+		{
+			disc.set_attribute(n1, n++);
+			disc.set_attribute(n2, phs->GetName().c_str());
 			m_xml.add_empty(disc, false);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));

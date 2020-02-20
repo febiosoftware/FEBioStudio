@@ -97,6 +97,8 @@ CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(
 	m_nselect = -1;
 	ui->setupUi(this);
 	resize(600, 400);
+
+	setWindowTitle("Curve Editor");
 }
 
 void CCurveEditor::Update()
@@ -344,6 +346,30 @@ void CCurveEditor::Update()
 							FELoadCurve* plc = p.GetLoadCurve();
 							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
 						}
+					}
+				}
+			}
+		}
+	}
+
+	// discrete materials
+	if (Filter(FLT_DISCRETE))
+	{
+		t2 = ui->addTreeItem(t1, "Discrete");
+		for (int i = 0; i < model.DiscreteObjects(); ++i)
+		{
+			GDiscreteObject* po = model.DiscreteObject(i);
+			int NP = po->Parameters();
+			if (NP > 0)
+			{
+				t3 = ui->addTreeItem(t2, QString::fromStdString(po->GetName()));
+				for (int n = 0; n<NP; ++n)
+				{
+					Param& p = po->GetParam(n);
+					if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
+					{
+						FELoadCurve* plc = p.GetLoadCurve();
+						ui->addTreeItem(t3, p.GetLongName(), plc, &p);
 					}
 				}
 			}

@@ -196,6 +196,7 @@ CNewDiscreteSetDlg::CNewDiscreteSetDlg(QWidget* parent) : QDialog(parent)
 
 	m_combo->addItem("Linear");
 	m_combo->addItem("Nonlinear");
+	m_combo->addItem("Hill");
 
 	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 

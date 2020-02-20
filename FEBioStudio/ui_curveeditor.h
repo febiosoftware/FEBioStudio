@@ -63,6 +63,7 @@ public:
 		filter->addItem("Contact");
 		filter->addItem("Rigid Constraints");
 		filter->addItem("Rigid Connectors");
+		filter->addItem("Discrete Materials");
 		filter->addItem("Steps");
 
 		tree = new QTreeWidget;

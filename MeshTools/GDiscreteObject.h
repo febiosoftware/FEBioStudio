@@ -11,6 +11,7 @@
 #define FE_NONLINEAR_SPRING_SET	5
 #define FE_DISCRETE_ELEMENT		6
 #define FE_DEFORMABLE_SPRING	7
+#define FE_HILL_CONTRACTILE_SET	8
 
 class GDiscreteObject : public FSObject
 {
@@ -143,7 +144,17 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class GLinearSpringSet : public GDiscreteElementSet
+class GDiscreteSpringSet : public GDiscreteElementSet
+{
+public:
+	GDiscreteSpringSet(int ntype);
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+class GLinearSpringSet : public GDiscreteSpringSet
 {
 public:
 	enum { MP_E };
@@ -152,23 +163,25 @@ public:
 	GLinearSpringSet();
 
 	void SetSpringConstant(double E);
-
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
 };
 
 //-----------------------------------------------------------------------------
-class GNonlinearSpringSet : public GDiscreteElementSet
+class GNonlinearSpringSet : public GDiscreteSpringSet
 {
 public:
 	enum { MP_F };
 
 public:
 	GNonlinearSpringSet();
-
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
 };
+
+//-----------------------------------------------------------------------------
+class GHillContractileDiscreteSet : public GDiscreteSpringSet
+{
+public:
+	GHillContractileDiscreteSet();
+};
+
 
 //-----------------------------------------------------------------------------
 class GDeformableSpring : public GDiscreteObject

@@ -148,15 +148,15 @@ void CCreateSpringPane::on_newSet_clicked()
 		int ntype = dlg.m_type;
 
 		GDiscreteElementSet* po = 0;
-		if (ntype == 0)
+		switch (ntype)
 		{
-			po = new GLinearSpringSet;
+		case 0: po = new GLinearSpringSet; break;
+		case 1: po = new GNonlinearSpringSet; break;
+		case 2: po = new GHillContractileDiscreteSet; break;
+		default:
+			assert(false);
+			return;
 		}
-		else if (ntype == 1)
-		{
-			po = new GNonlinearSpringSet;
-		}
-		else return;
 
 		std::string sname;
 		if (name.isEmpty())
