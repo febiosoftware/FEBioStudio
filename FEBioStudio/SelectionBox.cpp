@@ -16,6 +16,10 @@ public:
 	QLabel*			type;
 	QListWidget*	list;
 	QWidget*		nameType;
+	QToolButton*	pb1;
+	QToolButton*	pb2;
+	QToolButton*	pb3;
+	QToolButton*	pb4;
 
 public:
 	void setupUi(QWidget* parent)
@@ -34,13 +38,13 @@ public:
 		list->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
 
 		const int W = 24;
-		QToolButton* pb1 = new QToolButton; pb1->setObjectName("addButton"); pb1->setIcon(QIcon(":/icons/selectAdd.png")); 
+		pb1 = new QToolButton; pb1->setObjectName("addButton"); pb1->setIcon(QIcon(":/icons/selectAdd.png")); 
 		pb1->setAutoRaise(true); pb1->setFixedSize(W, W); pb1->setIconSize(pb1->size());
-		QToolButton* pb2 = new QToolButton; pb2->setObjectName("subButton"); pb2->setIcon(QIcon(":/icons/selectSub.png"));
+		pb2 = new QToolButton; pb2->setObjectName("subButton"); pb2->setIcon(QIcon(":/icons/selectSub.png"));
 		pb2->setAutoRaise(true); pb2->setFixedSize(W, W); pb2->setIconSize(pb2->size());
-		QToolButton* pb3 = new QToolButton; pb3->setObjectName("delButton"); pb3->setIcon(QIcon(":/icons/selectDel.png"));
+		pb3 = new QToolButton; pb3->setObjectName("delButton"); pb3->setIcon(QIcon(":/icons/selectDel.png"));
 		pb3->setAutoRaise(true); pb3->setFixedSize(W, W); pb3->setIconSize(pb3->size());
-		QToolButton* pb4 = new QToolButton; pb4->setObjectName("selButton"); pb4->setIcon(QIcon(":/icons/select.png"   ));
+		pb4 = new QToolButton; pb4->setObjectName("selButton"); pb4->setIcon(QIcon(":/icons/select.png"   ));
 		pb4->setAutoRaise(true); pb4->setFixedSize(W, W); pb4->setIconSize(pb4->size());
 
 		QVBoxLayout* buttonLayout = new QVBoxLayout;
@@ -81,6 +85,34 @@ void CSelectionBox::setName(const QString& name)
 void CSelectionBox::setType(const QString& type)
 {
 	ui->type->setText(type);
+}
+
+void CSelectionBox::enableAddButton(bool b)
+{
+	ui->pb1->setEnabled(b);
+}
+
+void CSelectionBox::enableRemoveButton(bool b)
+{
+	ui->pb2->setEnabled(b);
+}
+
+void CSelectionBox::enableDeleteButton(bool b)
+{
+	ui->pb3->setEnabled(b);
+}
+
+void CSelectionBox::enableSelectButton(bool b)
+{
+	ui->pb4->setEnabled(b);
+}
+
+void CSelectionBox::enableAllButtons(bool b)
+{
+	enableAddButton(b);
+	enableRemoveButton(b);
+	enableDeleteButton(b);
+	enableSelectButton(b);
 }
 
 void CSelectionBox::on_addButton_clicked()

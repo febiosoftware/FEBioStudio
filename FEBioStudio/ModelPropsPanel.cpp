@@ -555,6 +555,13 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			return;
 		}
 
+		GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(m_currentObject);
+		if (ds)
+		{
+			SetSelection(ds);
+			return;
+		}
+
 		ui->showSelectionPanel1(false);
 		ui->showSelectionPanel2(false);
 	}
@@ -576,7 +583,7 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 	QString name = QString::fromStdString(item->GetName());
 	sel->showNameType(true);
 	sel->setName(name);
-
+	sel->enableAllButtons(true);
 	sel->clearData();
 
 	// set the type
@@ -668,6 +675,7 @@ void CModelPropsPanel::SetSelection(GMaterial* pmat)
 	// clear the name
 	::CSelectionBox* sel = ui->selectionPanel(0);
 	sel->showNameType(false);
+	sel->enableAllButtons(true);
 
 	// set the type
 	sel->setType("Domains");
@@ -686,6 +694,34 @@ void CModelPropsPanel::SetSelection(GMaterial* pmat)
 		}
 	}
 }
+
+void CModelPropsPanel::SetSelection(GDiscreteElementSet* set)
+{
+	// get the document
+	CDocument* pdoc = m_wnd->GetDocument();
+	FEModel& fem = *pdoc->GetFEModel();
+	GModel& mdl = fem.GetModel();
+
+	// clear the name
+	::CSelectionBox* sel = ui->selectionPanel(0);
+	sel->showNameType(false);
+	sel->enableAddButton(false);
+	sel->enableRemoveButton(false);
+	sel->enableDeleteButton(false);
+
+	// set the type
+	sel->setType("Discrete Elements");
+
+	// set the items
+	sel->clearData();
+	int N = set->size();
+	for (int i = 0; i<N; ++i)
+	{
+		GDiscreteElement& de = set->element(i);
+		sel->addData(QString::fromStdString(de.GetName()), i);
+	}
+}
+
 
 void CModelPropsPanel::on_select1_addButtonClicked() { addSelection(0); }
 void CModelPropsPanel::on_select2_addButtonClicked() { addSelection(1); }
@@ -1215,6 +1251,11 @@ void CModelPropsPanel::selSelection(int n)
 	else if (dynamic_cast<GMaterial*>(m_currentObject))
 	{
 		pcmd = new CCmdSelectPart(ps, &l[0], (int)l.size(), false);
+	}
+	else if (dynamic_cast<GDiscreteElementSet*>(m_currentObject))
+	{
+		GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(m_currentObject);
+		pcmd = new CCmdSelectDiscreteElements(ds, l, false);
 	}
 
 	// execute command

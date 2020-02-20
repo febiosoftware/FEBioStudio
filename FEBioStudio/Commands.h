@@ -556,7 +556,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-
 class CCmdSelectDiscrete : public CCommand
 {
 public:
@@ -572,6 +571,23 @@ protected:
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };
+
+//-----------------------------------------------------------------------------
+class CCmdSelectDiscreteElements : public CCommand
+{
+public:
+	CCmdSelectDiscreteElements(GDiscreteElementSet* set, const vector<int>& elemList, bool badd);
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	GDiscreteElementSet*	m_ps;	// pointer to discrete element set
+	vector<int>		m_elemList;		// list of discrete objects to select
+	vector<bool>	m_bold;			// old selection state of surfaces
+	bool			m_badd;			// add to current selection
+};
+
 
 //-----------------------------------------------------------------------------
 

@@ -35,6 +35,12 @@ public:
 
 	void showNameType(bool b);
 
+	void enableAddButton(bool b);
+	void enableRemoveButton(bool b);
+	void enableDeleteButton(bool b);
+	void enableSelectButton(bool b);
+	void enableAllButtons(bool b);
+
 signals:
 	void addButtonClicked();
 	void subButtonClicked();
