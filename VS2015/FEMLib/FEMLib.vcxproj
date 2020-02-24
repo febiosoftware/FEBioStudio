@@ -150,6 +150,7 @@
     <ClCompile Include="..\..\FEMLib\FEConnector.cpp" />
     <ClCompile Include="..\..\FEMLib\FECoreMaterial.cpp" />
     <ClCompile Include="..\..\FEMLib\FEDataMap.cpp" />
+    <ClCompile Include="..\..\FEMLib\FEDiscreteMaterial.cpp" />
     <ClCompile Include="..\..\FEMLib\FEDOF.cpp" />
     <ClCompile Include="..\..\FEMLib\FEInitialCondition.cpp" />
     <ClCompile Include="..\..\FEMLib\FEInterface.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="..\..\FEMLib\FECoreMaterial.h" />
     <ClInclude Include="..\..\FEMLib\FECoreModel.h" />
     <ClInclude Include="..\..\FEMLib\FEDataMap.h" />
+    <ClInclude Include="..\..\FEMLib\FEDiscreteMaterial.h" />
     <ClInclude Include="..\..\FEMLib\FEDOF.h" />
     <ClInclude Include="..\..\FEMLib\FEInitialCondition.h" />
     <ClInclude Include="..\..\FEMLib\FEInterface.h" />

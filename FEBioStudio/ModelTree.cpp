@@ -906,10 +906,17 @@ void CModelTree::UpdateDiscrete(QTreeWidgetItem* t1, FEModel& fem)
 	for (int i = 0; i<model.DiscreteObjects(); ++i)
 	{
 		GDiscreteObject* po = model.DiscreteObject(i);
-		if (dynamic_cast<GDiscreteElementSet*>(po))
+		if (dynamic_cast<GDiscreteSpringSet*>(po))
 		{
-			GDiscreteElementSet* pg = dynamic_cast<GDiscreteElementSet*>(po);
-			QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(pg));
+			GDiscreteSpringSet* pg = dynamic_cast<GDiscreteSpringSet*>(po);
+
+			FEDiscreteMaterial* dm = pg->GetMaterial();
+			if (dm)
+			{
+				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, new CObjectProps(dm));
+			}
+			else QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_DISCRETE_SET, pg->size(), pg, nullptr);
+
 /*			for (int j = 0; j<pg->size(); ++j)
 			{
 				GDiscreteElement& el = pg->element(j);

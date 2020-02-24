@@ -1,17 +1,17 @@
 #pragma once
-
 #include <FSCore/FSObject.h>
+#include <FEMLib/FEDiscreteMaterial.h>
 #include <GeomLib/GItem.h>
 
 #define FE_DISCRETE_OBJECT		0
 #define FE_DISCRETE_SPRING		1
 #define FE_GENERAL_SPRING		2
 #define FE_ARMATURE				3
-#define FE_LINEAR_SPRING_SET	4
-#define FE_NONLINEAR_SPRING_SET	5
+#define FE_LINEAR_SPRING_SET	4	// obsolete
+#define FE_NONLINEAR_SPRING_SET	5	// obsolete
 #define FE_DISCRETE_ELEMENT		6
 #define FE_DEFORMABLE_SPRING	7
-#define FE_HILL_CONTRACTILE_SET	8
+#define FE_DISCRETE_SPRING_SET	8
 
 class GDiscreteObject : public FSObject
 {
@@ -135,6 +135,8 @@ public:
 	void SelectComponent(int n);
 	void UnselectComponent(int n);
 
+	void Clear();
+
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -147,14 +149,23 @@ protected:
 class GDiscreteSpringSet : public GDiscreteElementSet
 {
 public:
-	GDiscreteSpringSet(int ntype);
+	GDiscreteSpringSet();
+
+	void CopyDiscreteElementSet(GDiscreteElementSet* ds);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
+
+	void SetMaterial(FEDiscreteMaterial* mat);
+	FEDiscreteMaterial* GetMaterial();
+
+private:
+	FEDiscreteMaterial*	m_mat;
 };
 
 //-----------------------------------------------------------------------------
-class GLinearSpringSet : public GDiscreteSpringSet
+// NOTE: This class is obsolete. Maintained for backward compatibility
+class GLinearSpringSet : public GDiscreteElementSet
 {
 public:
 	enum { MP_E };
@@ -162,26 +173,23 @@ public:
 public:
 	GLinearSpringSet();
 
-	void SetSpringConstant(double E);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };
 
 //-----------------------------------------------------------------------------
-class GNonlinearSpringSet : public GDiscreteSpringSet
+// NOTE: This class is obsolete. Maintained for backward compatibility
+class GNonlinearSpringSet : public GDiscreteElementSet
 {
 public:
 	enum { MP_F };
 
 public:
 	GNonlinearSpringSet();
-};
 
-//-----------------------------------------------------------------------------
-class GHillContractileDiscreteSet : public GDiscreteSpringSet
-{
-public:
-	GHillContractileDiscreteSet();
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };
-
 
 //-----------------------------------------------------------------------------
 class GDeformableSpring : public GDiscreteObject

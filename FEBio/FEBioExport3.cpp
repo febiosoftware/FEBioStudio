@@ -2417,45 +2417,17 @@ void FEBioExport3::WriteGeometryDiscreteSets()
 				m_xml.close_branch();
 			}
 		}
-		GLinearSpringSet* pl = dynamic_cast<GLinearSpringSet*>(model.DiscreteObject(i));
-		if (pl && (pl->size()))
+		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
+		if (pds && (pds->size()))
 		{
 			XMLElement el("DiscreteSet");
-			el.add_attribute("name", pl->GetName().c_str());
+			el.add_attribute("name", pds->GetName().c_str());
 			m_xml.add_branch(el);
 			{
-				int N = pl->size();
+				int N = pds->size();
 				for (int n = 0; n<N; ++n)
 				{
-					GDiscreteElement& el = pl->element(n);
-					GNode* pn0 = model.FindNode(el.Node(0));
-					GNode* pn1 = model.FindNode(el.Node(1));
-					if (pn0 && pn1)
-					{
-						GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
-						GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
-
-						int n[2];
-						n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
-						n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
-
-						m_xml.add_leaf("delem", n, 2);
-					}
-				}
-			}
-			m_xml.close_branch();
-		}
-		GNonlinearSpringSet* pnl = dynamic_cast<GNonlinearSpringSet*>(model.DiscreteObject(i));
-		if (pnl && (pnl->size()))
-		{
-			XMLElement el("DiscreteSet");
-			el.add_attribute("name", pnl->GetName().c_str());
-			m_xml.add_branch(el);
-			{
-				int N = pnl->size();
-				for (int n = 0; n<N; ++n)
-				{
-					GDiscreteElement& el = pnl->element(n);
+					GDiscreteElement& el = pds->element(n);
 					GNode* pn0 = model.FindNode(el.Node(0));
 					GNode* pn1 = model.FindNode(el.Node(1));
 					if (pn0 && pn1)
@@ -3066,27 +3038,25 @@ void FEBioExport3::WriteDiscreteSection(FEStep& s)
 			}
 			m_xml.close_branch();
 		}
-		GLinearSpringSet* pl = dynamic_cast<GLinearSpringSet*>(model.DiscreteObject(i));
-		if (pl && (pl->size()))
+		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
+		if (pds && (pds->size()))
 		{
 			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, pl->GetName().c_str());
-			dmat.set_attribute(n3, "linear spring");
-			m_xml.add_branch(dmat, false);
+			dmat.set_attribute(n2, pds->GetName().c_str());
+
+			FEDiscreteMaterial* dm = pds->GetMaterial();
+			switch (dm->Type())
 			{
-				WriteParamList(*pl);
+			case FE_LINEAR_SPRING_SET   : dmat.set_attribute(n3, "linear spring"); break;
+			case FE_NONLINEAR_SPRING_SET: dmat.set_attribute(n3, "nonlinear spring"); break;
+			case FE_DISCRETE_HILL       : dmat.set_attribute(n3, "Hill"); break;
+			default:
+				assert(false);
 			}
-			m_xml.close_branch();
-		}
-		GNonlinearSpringSet* pnl = dynamic_cast<GNonlinearSpringSet*>(model.DiscreteObject(i));
-		if (pnl && (pnl->size()))
-		{
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, pnl->GetName().c_str());
-			dmat.set_attribute(n3, "nonlinear spring");
+			
 			m_xml.add_branch(dmat, false);
 			{
-				WriteParamList(*pnl);
+				WriteParamList(*dm);
 			}
 			m_xml.close_branch();
 		}
@@ -3143,18 +3113,11 @@ void FEBioExport3::WriteDiscreteSection(FEStep& s)
 			disc.set_attribute(n2, pg->GetName().c_str());
 			m_xml.add_empty(disc, false);
 		}
-		GLinearSpringSet* pl = dynamic_cast<GLinearSpringSet*>(model.DiscreteObject(i));
-		if (pl && (pl->size()))
+		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
+		if (pds && (pds->size()))
 		{
 			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, pl->GetName().c_str());
-			m_xml.add_empty(disc, false);
-		}
-		GNonlinearSpringSet* pnl = dynamic_cast<GNonlinearSpringSet*>(model.DiscreteObject(i));
-		if (pnl && (pnl->size()))
-		{
-			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, pnl->GetName().c_str());
+			disc.set_attribute(n2, pds->GetName().c_str());
 			m_xml.add_empty(disc, false);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));

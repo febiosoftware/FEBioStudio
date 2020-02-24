@@ -247,6 +247,13 @@ void FEBioExport::BuildLoadCurveList(FEModel& fem)
 	{
 		GDiscreteObject* pg = mdl.DiscreteObject(i);
 		AddLoadCurves(*pg);
+
+		GDiscreteSpringSet* ps = dynamic_cast<GDiscreteSpringSet*>(pg);
+		if (ps)
+		{
+			FEDiscreteMaterial* pm = ps->GetMaterial();
+			if (pm) AddLoadCurves(*pm);
+		}
 	}
 }
 

@@ -78,6 +78,9 @@
     <ClCompile Include="..\..\FEMLib\FEModelConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEMLib\FEDiscreteMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEMLib\FEAnalysisStep.h">
@@ -153,6 +156,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEMLib\FEModelConstraint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEMLib\FEDiscreteMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

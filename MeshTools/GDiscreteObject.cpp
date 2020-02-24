@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GDiscreteObject.h"
 #include <FSCore/Archive.h>
+#include <sstream>
 
 GDiscreteObject::GDiscreteObject(int ntype)
 {
@@ -169,7 +170,13 @@ GDiscreteElementSet::GDiscreteElementSet(int ntype) : GDiscreteObject(ntype)
 //-----------------------------------------------------------------------------
 GDiscreteElementSet::~GDiscreteElementSet()
 {
-	for (size_t i=0; i<m_elem.size(); ++i) delete m_elem[i];
+	Clear();
+}
+
+//-----------------------------------------------------------------------------
+void GDiscreteElementSet::Clear()
+{
+	for (size_t i = 0; i<m_elem.size(); ++i) delete m_elem[i];
 	m_elem.clear();
 }
 
@@ -308,9 +315,43 @@ void GDiscreteElementSet::Load(IArchive& ar)
 }
 
 //=============================================================================
-GDiscreteSpringSet::GDiscreteSpringSet(int ntype) : GDiscreteElementSet(ntype)
+GDiscreteSpringSet::GDiscreteSpringSet() : GDiscreteElementSet(FE_DISCRETE_SPRING_SET)
 {
+	m_mat = nullptr;
+}
 
+//-----------------------------------------------------------------------------
+void GDiscreteSpringSet::CopyDiscreteElementSet(GDiscreteElementSet* ds)
+{
+	m_elem.clear();
+	int N = ds->size();
+	m_elem.reserve(N);
+	for (int i = 0; i < N; ++i)
+	{
+		GDiscreteElement& de = ds->element(i);
+		GDiscreteElement* pe = new GDiscreteElement(de);
+		std::string name = de.GetName();
+		if (name.empty())
+		{
+			std::stringstream ss; 
+			ss << "spring" << i + 1;
+			name = ss.str();
+		}
+		pe->SetName(de.GetName());
+		m_elem.push_back(pe);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void GDiscreteSpringSet::SetMaterial(FEDiscreteMaterial* mat)
+{
+	m_mat = mat;
+}
+
+//-----------------------------------------------------------------------------
+FEDiscreteMaterial* GDiscreteSpringSet::GetMaterial()
+{
+	return m_mat;
 }
 
 //-----------------------------------------------------------------------------
@@ -332,10 +373,96 @@ void GDiscreteSpringSet::Save(OArchive& ar)
 	}
 	ar.EndChunk();
 	ar.WriteChunk(3, GetColor());
+
+	if (m_mat)
+	{
+		ar.BeginChunk(4);
+		{
+			ar.BeginChunk(m_mat->Type());
+			{
+				m_mat->Save(ar);
+			}
+			ar.EndChunk();
+		}
+		ar.EndChunk();
+	}
 }
 
 //-----------------------------------------------------------------------------
 void GDiscreteSpringSet::Load(IArchive& ar)
+{
+	TRACE("GDiscreteSpringSet::Load");
+
+	if (m_mat) delete m_mat;
+	m_mat = nullptr;
+
+	string s;
+	GLColor col = GetColor();
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case 0: ar.read(s); SetName(s); break;
+		case 1: GDiscreteElementSet::Load(ar); break;
+		case 2: ParamContainer::Load(ar); break;
+		case 3: ar.read(col); break;
+		case CID_FEOBJ_INFO: ar.read(s); SetInfo(s); break;
+		case 4:
+			{
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int mid = ar.GetChunkID();
+					switch (mid)
+					{
+					case FE_LINEAR_SPRING_SET: m_mat = new FELinearSpringMaterial; break;
+					case FE_NONLINEAR_SPRING_SET: m_mat = new FENonLinearSpringMaterial; break;
+					case FE_DISCRETE_HILL: m_mat = new FEHillContractileMaterial; break;
+					default:
+						assert(false);
+						throw ReadError("Unknown discrete material");
+					}
+					m_mat->Load(ar);
+
+					ar.CloseChunk();
+				}
+			}
+		}
+		ar.CloseChunk();
+	}
+
+	SetColor(col);
+}
+
+//=============================================================================
+GLinearSpringSet::GLinearSpringSet() : GDiscreteElementSet(FE_LINEAR_SPRING_SET)
+{
+	AddDoubleParam(1, "E", "spring constant");
+}
+
+//-----------------------------------------------------------------------------
+void GLinearSpringSet::Save(OArchive& ar)
+{
+	ar.WriteChunk(0, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
+	if (m_elem.size() > 0)
+	{
+		ar.BeginChunk(1);
+		{
+			GDiscreteElementSet::Save(ar);
+		}
+		ar.EndChunk();
+	}
+	ar.BeginChunk(2);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+	ar.WriteChunk(3, GetColor());
+}
+
+//-----------------------------------------------------------------------------
+void GLinearSpringSet::Load(IArchive& ar)
 {
 	TRACE("GDiscreteSpringSet::Load");
 
@@ -358,20 +485,8 @@ void GDiscreteSpringSet::Load(IArchive& ar)
 	SetColor(col);
 }
 
-//=============================================================================
-GLinearSpringSet::GLinearSpringSet() : GDiscreteSpringSet(FE_LINEAR_SPRING_SET)
-{
-	AddDoubleParam(1, "E", "spring constant");
-}
-
 //-----------------------------------------------------------------------------
-void GLinearSpringSet::SetSpringConstant(double E)
-{
-	SetFloatValue(MP_E, E);
-}
-
-//-----------------------------------------------------------------------------
-GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteSpringSet(FE_NONLINEAR_SPRING_SET)
+GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteElementSet(FE_NONLINEAR_SPRING_SET)
 {
 	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
 
@@ -382,14 +497,50 @@ GNonlinearSpringSet::GNonlinearSpringSet() : GDiscreteSpringSet(FE_NONLINEAR_SPR
 	GetParamLC(MP_F)->Add(p1);
 }
 
-//=============================================================================
-GHillContractileDiscreteSet::GHillContractileDiscreteSet() : GDiscreteSpringSet(FE_HILL_CONTRACTILE_SET)
+
+//-----------------------------------------------------------------------------
+void GNonlinearSpringSet::Save(OArchive& ar)
 {
-	AddDoubleParam(0, "Fmax", "Max force");
-	AddDoubleParam(1, "Lmax", "Max length");
-	AddDoubleParam(1, "L0", "Initial length");
-	AddDoubleParam(1, "Ksh", "Shape parameter");
-	AddDoubleParam(0, "ac", "Activation");
+	ar.WriteChunk(0, GetName());
+	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
+	if (m_elem.size() > 0)
+	{
+		ar.BeginChunk(1);
+		{
+			GDiscreteElementSet::Save(ar);
+		}
+		ar.EndChunk();
+	}
+	ar.BeginChunk(2);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+	ar.WriteChunk(3, GetColor());
+}
+
+//-----------------------------------------------------------------------------
+void GNonlinearSpringSet::Load(IArchive& ar)
+{
+	TRACE("GDiscreteSpringSet::Load");
+
+	string s;
+	GLColor col = GetColor();
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case 0: ar.read(s); SetName(s); break;
+		case 1: GDiscreteElementSet::Load(ar); break;
+		case 2: ParamContainer::Load(ar); break;
+		case 3: ar.read(col); break;
+		case CID_FEOBJ_INFO: ar.read(s); SetInfo(s); break;
+		}
+		ar.CloseChunk();
+	}
+
+	SetColor(col);
 }
 
 //-----------------------------------------------------------------------------

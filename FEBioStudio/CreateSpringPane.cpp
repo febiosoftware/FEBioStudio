@@ -147,17 +147,23 @@ void CCreateSpringPane::on_newSet_clicked()
 		QString name = dlg.m_name;
 		int ntype = dlg.m_type;
 
-		GDiscreteElementSet* po = 0;
+		// allocate discrete material
+		FEDiscreteMaterial* dmat = nullptr;
 		switch (ntype)
 		{
-		case 0: po = new GLinearSpringSet; break;
-		case 1: po = new GNonlinearSpringSet; break;
-		case 2: po = new GHillContractileDiscreteSet; break;
+		case 0: dmat = new FELinearSpringMaterial; break;
+		case 1: dmat = new FENonLinearSpringMaterial; break;
+		case 2: dmat = new FEHillContractileMaterial; break;
 		default:
 			assert(false);
 			return;
 		}
 
+		// create discrete element set and assign material
+		GDiscreteSpringSet* po = new GDiscreteSpringSet();
+		po->SetMaterial(dmat);
+
+		// create a name
 		std::string sname;
 		if (name.isEmpty())
 		{
@@ -170,9 +176,9 @@ void CCreateSpringPane::on_newSet_clicked()
 		{
 			sname = name.toStdString();
 		}
-
 		po->SetName(sname);
 
+		// add it to the model
 		geom.AddDiscreteObject(po);
 
 		name = QString::fromStdString(sname);

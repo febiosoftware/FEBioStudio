@@ -1597,59 +1597,108 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
 					bool is_multi = false;
 					switch (pc->Type())
 					{
-					case FE_SBM_MATERIAL     : is_multi = true; break;
+					case FE_SBM_MATERIAL: is_multi = true; break;
 					case FE_REACTANT_MATERIAL: is_multi = true; break;
-					case FE_PRODUCT_MATERIAL : is_multi = true; break;
-					case FE_SPECIES_MATERIAL : is_multi = true; break;
+					case FE_PRODUCT_MATERIAL: is_multi = true; break;
+					case FE_SPECIES_MATERIAL: is_multi = true; break;
 					case FE_SOLID_SPECIES_MATERIAL: is_multi = true; break;
 					}
 
-					if ((pc->Properties() > 0)||is_multi) WriteMaterial(pc, el);
+					if (pc->ClassID() == FE_MAT_1DFUNC)
+					{
+						// we need some special handling for 1D functions
+						FE1DPointFunction* f1d = dynamic_cast<FE1DPointFunction*>(pc);
+						assert(f1d);
+						WritePointCurve(f1d, el);
+					}
 					else
 					{
-						el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
-
-						// We need some special formatting for some fiber generator materials
-						bool bdone = false;
-						if (pc->Parameters() == 1)
+						if ((pc->Properties() > 0) || is_multi) WriteMaterial(pc, el);
+						else
 						{
-							const char* sztype = pc->TypeStr();
-							Param& p = pc->GetParam(0);
-							if (sztype && (strcmp(p.GetShortName(), sztype) == 0))
-							{
-								if (p.GetParamType() == Param_VEC2I)
-								{
-									el.value(p.GetVec2iValue());
-									m_xml.add_leaf(el);
-								}
-								else if (p.GetParamType() == Param_VEC3D)
-								{
-									el.value(p.GetVec3dValue());
-									m_xml.add_leaf(el);
-								}
-								bdone = true;
-							}
-						}
+							el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
 
-						if (bdone == false)
-						{
-							if (pc->Parameters() == 0)
+							// We need some special formatting for some fiber generator materials
+							bool bdone = false;
+							if (pc->Parameters() == 1)
 							{
-								m_xml.add_empty(el);
-							}
-							else
-							{
-								m_xml.add_branch(el);
+								const char* sztype = pc->TypeStr();
+								Param& p = pc->GetParam(0);
+								if (sztype && (strcmp(p.GetShortName(), sztype) == 0))
 								{
-									WriteMaterialParams(pc);
+									if (p.GetParamType() == Param_VEC2I)
+									{
+										el.value(p.GetVec2iValue());
+										m_xml.add_leaf(el);
+									}
+									else if (p.GetParamType() == Param_VEC3D)
+									{
+										el.value(p.GetVec3dValue());
+										m_xml.add_leaf(el);
+									}
+									bdone = true;
 								}
-								m_xml.close_branch();
+							}
+
+							if (bdone == false)
+							{
+								if (pc->Parameters() == 0)
+								{
+									m_xml.add_empty(el);
+								}
+								else
+								{
+									m_xml.add_branch(el);
+									{
+										WriteMaterialParams(pc);
+									}
+									m_xml.close_branch();
+								}
 							}
 						}
 					}
 				}
 			}
 		}
+	}
+	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport25::WritePointCurve(FE1DPointFunction* f1d, XMLElement& el)
+{
+	FELoadCurve* plc = f1d->GetPointCurve();
+
+	el.add_attribute("type", "point");
+	m_xml.add_branch(el);
+	{
+		int ntype = plc->GetType();
+		switch (ntype)
+		{
+		case FELoadCurve::LC_LINEAR: m_xml.add_leaf("interpolate", "linear"); break;
+		case FELoadCurve::LC_STEP  : m_xml.add_leaf("interpolate", "step"); break;
+		case FELoadCurve::LC_SMOOTH: m_xml.add_leaf("interpolate", "smooth"); break;
+		}
+
+		int nextend = plc->GetExtend();
+		switch (nextend)
+		{
+		case FELoadCurve::EXT_CONSTANT     : m_xml.add_leaf("extend", "constant"); break;
+		case FELoadCurve::EXT_EXTRAPOLATE  : m_xml.add_leaf("extend", "extrapolate"); break;
+		case FELoadCurve::EXT_REPEAT       : m_xml.add_leaf("extend", "repeat"); break;
+		case FELoadCurve::EXT_REPEAT_OFFSET: m_xml.add_leaf("extend", "repeat offset"); break;
+		}
+
+		m_xml.add_branch("points");
+		int n = plc->Size();
+		for (int i = 0; i < n; ++i)
+		{
+			LOADPOINT& pi = plc->Item(i);
+			double d[2] = { pi.time, pi.load };
+			m_xml.add_leaf("pt", d, 2);
+		}
+
+		m_xml.close_branch();
 	}
 	m_xml.close_branch();
 }
@@ -2566,73 +2615,17 @@ void FEBioExport25::WriteGeometryDiscreteSets()
 				m_xml.close_branch();
 			}
 		}
-		GLinearSpringSet* pl = dynamic_cast<GLinearSpringSet*>(model.DiscreteObject(i));
-		if (pl && (pl->size()))
+		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
+		if (pds && (pds->size()))
 		{
 			XMLElement el("DiscreteSet");
-			el.add_attribute("name", pl->GetName().c_str());
+			el.add_attribute("name", pds->GetName().c_str());
 			m_xml.add_branch(el);
 			{
-				int N = pl->size();
+				int N = pds->size();
 				for (int n=0; n<N; ++n)
 				{
-					GDiscreteElement& el = pl->element(n);
-					GNode* pn0 = model.FindNode(el.Node(0));
-					GNode* pn1 = model.FindNode(el.Node(1));
-					if (pn0 && pn1)
-					{
-						GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
-						GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
-
-						int n[2];
-						n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
-						n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
-
-						m_xml.add_leaf("delem", n, 2);
-					}
-				}
-			}
-			m_xml.close_branch();
-		}
-		GNonlinearSpringSet* pnl = dynamic_cast<GNonlinearSpringSet*>(model.DiscreteObject(i));
-		if (pnl && (pnl->size()))
-		{
-			XMLElement el("DiscreteSet");
-			el.add_attribute("name", pnl->GetName().c_str());
-			m_xml.add_branch(el);
-			{
-				int N = pnl->size();
-				for (int n=0; n<N; ++n)
-				{
-					GDiscreteElement& el = pnl->element(n);
-					GNode* pn0 = model.FindNode(el.Node(0));
-					GNode* pn1 = model.FindNode(el.Node(1));
-					if (pn0 && pn1)
-					{
-						GObject* po0 = dynamic_cast<GObject*>(pn0->Object());
-						GObject* po1 = dynamic_cast<GObject*>(pn1->Object());
-
-						int n[2];
-						n[0] = po0->GetFENode(pn0->GetLocalID())->m_nid;
-						n[1] = po1->GetFENode(pn1->GetLocalID())->m_nid;
-
-						m_xml.add_leaf("delem", n, 2);
-					}
-				}
-			}
-			m_xml.close_branch();
-		}
-		GHillContractileDiscreteSet* phs = dynamic_cast<GHillContractileDiscreteSet*>(model.DiscreteObject(i));
-		if (phs && (phs->size()))
-		{
-			XMLElement el("DiscreteSet");
-			el.add_attribute("name", phs->GetName().c_str());
-			m_xml.add_branch(el);
-			{
-				int N = phs->size();
-				for (int n = 0; n<N; ++n)
-				{
-					GDiscreteElement& el = phs->element(n);
+					GDiscreteElement& el = pds->element(n);
 					GNode* pn0 = model.FindNode(el.Node(0));
 					GNode* pn1 = model.FindNode(el.Node(1));
 					if (pn0 && pn1)
@@ -3134,17 +3127,17 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 	GModel& model = fem.GetModel();
 
 	// Write the discrete materials
-	XMLElement dmat("discrete_material");
-	int n1 = dmat.add_attribute("id", 0);
-	int n2 = dmat.add_attribute("name", "");
-	int n3 = dmat.add_attribute("type", "");
-
 	int n = 1;
 	for (int i=0; i<model.DiscreteObjects(); ++i)
 	{
 		GLinearSpring* ps = dynamic_cast<GLinearSpring*>(model.DiscreteObject(i));
 		if (ps)
 		{
+			XMLElement dmat("discrete_material");
+			int n1 = dmat.add_attribute("id", 0);
+			int n2 = dmat.add_attribute("name", "");
+			int n3 = dmat.add_attribute("type", "");
+
 			dmat.set_attribute(n1, n++);
 			dmat.set_attribute(n2, ps->GetName().c_str());
 			dmat.set_attribute(n3, "linear spring");
@@ -3157,6 +3150,11 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 		GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(model.DiscreteObject(i));
 		if (pg)
 		{
+			XMLElement dmat("discrete_material");
+			int n1 = dmat.add_attribute("id", 0);
+			int n2 = dmat.add_attribute("name", "");
+			int n3 = dmat.add_attribute("type", "");
+
 			dmat.set_attribute(n1, n++);
 			dmat.set_attribute(n2, pg->GetName().c_str());
 			dmat.set_attribute(n3, "nonlinear spring");
@@ -3174,45 +3172,23 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 			}
 			m_xml.close_branch();
 		}
-		GLinearSpringSet* pl = dynamic_cast<GLinearSpringSet*>(model.DiscreteObject(i));
-		if (pl && (pl->size()))
+		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
+		if (pds && (pds->size()))
 		{
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, pl->GetName().c_str());
-			dmat.set_attribute(n3, "linear spring");
-			m_xml.add_branch(dmat, false);
-			{
-				WriteParamList(*pl);
-			}
-			m_xml.close_branch();
-		}
-		GNonlinearSpringSet* pnl = dynamic_cast<GNonlinearSpringSet*>(model.DiscreteObject(i));
-		if (pnl && (pnl->size()))
-		{
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, pnl->GetName().c_str());
-			dmat.set_attribute(n3, "nonlinear spring");
-			m_xml.add_branch(dmat, false);
-			{
-				WriteParamList(*pnl);
-			}
-			m_xml.close_branch();
-		}
-		GHillContractileDiscreteSet* phs = dynamic_cast<GHillContractileDiscreteSet*>(model.DiscreteObject(i));
-		if (phs && (phs->size()))
-		{
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, phs->GetName().c_str());
-			dmat.set_attribute(n3, "Hill");
-			m_xml.add_branch(dmat, false);
-			{
-				WriteParamList(*phs);
-			}
-			m_xml.close_branch();
+			XMLElement dmat("discrete_material");
+			dmat.add_attribute("id", n++);
+			dmat.add_attribute("name", pds->GetName().c_str());
+			FEDiscreteMaterial* dm = pds->GetMaterial();
+			WriteMaterial(dm, dmat);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
 		if (ds)
 		{
+			XMLElement dmat("discrete_material");
+			int n1 = dmat.add_attribute("id", 0);
+			int n2 = dmat.add_attribute("name", "");
+			int n3 = dmat.add_attribute("type", "");
+
 			GDeformableSpring& spring = dynamic_cast<GDeformableSpring&>(*ds);
 			dmat.set_attribute(n1, n++);
 			dmat.set_attribute(n2, spring.GetName().c_str());
@@ -3228,6 +3204,11 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 	// Write the spring-tied interfaces
 	for (int i=0; i<s.Interfaces(); ++i)
 	{
+		XMLElement dmat("discrete_material");
+		int n1 = dmat.add_attribute("id", 0);
+		int n2 = dmat.add_attribute("name", "");
+		int n3 = dmat.add_attribute("type", "");
+
 		FESpringTiedInterface* pst = dynamic_cast<FESpringTiedInterface*>(s.Interface(i));
 		if (pst)
 		{
@@ -3244,8 +3225,8 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 
 	// write the discrete element sets
 	XMLElement disc("discrete");
-	n1 = disc.add_attribute("dmat", 0);
-	n2 = disc.add_attribute("discrete_set", "");
+	int n1 = disc.add_attribute("dmat", 0);
+	int n2 = disc.add_attribute("discrete_set", "");
 	n = 1;
 	for (int i=0; i<model.DiscreteObjects(); ++i)
 	{
@@ -3263,25 +3244,11 @@ void FEBioExport25::WriteDiscreteSection(FEStep& s)
 			disc.set_attribute(n2, pg->GetName().c_str());
 			m_xml.add_empty(disc, false);
 		}
-		GLinearSpringSet* pl = dynamic_cast<GLinearSpringSet*>(model.DiscreteObject(i));
-		if (pl && (pl->size()))
+		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
+		if (pds && (pds->size()))
 		{
 			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, pl->GetName().c_str());
-			m_xml.add_empty(disc, false);
-		}
-		GNonlinearSpringSet* pnl = dynamic_cast<GNonlinearSpringSet*>(model.DiscreteObject(i));
-		if (pnl && (pnl->size()))
-		{
-			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, pnl->GetName().c_str());
-			m_xml.add_empty(disc, false);
-		}
-		GHillContractileDiscreteSet* phs = dynamic_cast<GHillContractileDiscreteSet*>(model.DiscreteObject(i));
-		if (phs && (phs->size()))
-		{
-			disc.set_attribute(n1, n++);
-			disc.set_attribute(n2, phs->GetName().c_str());
+			disc.set_attribute(n2, pds->GetName().c_str());
 			m_xml.add_empty(disc, false);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));

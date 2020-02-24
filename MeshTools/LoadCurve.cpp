@@ -69,6 +69,12 @@ FELoadCurve& FELoadCurve::operator =(const FELoadCurve& lc)
 	return (*this);
 }
 
+void FELoadCurve::Add(double x, double y)
+{
+	LOADPOINT pt = { x, y };
+	Add(pt);
+}
+
 int FELoadCurve::Add(const LOADPOINT& pt)
 {
 	int n = 0;

@@ -8,6 +8,9 @@
 typedef std::pair<std::string, FEItemListBuilder*> NamedList;
 
 //-----------------------------------------------------------------------------
+class FE1DPointFunction;
+
+//-----------------------------------------------------------------------------
 //! Exporter for FEBio format specification version 2.5
 class FEBioExport25 : public FEBioExport
 {
@@ -212,6 +215,8 @@ protected:
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteElementList(FEElemList& el);
+
+	void WritePointCurve(FE1DPointFunction* f1d, XMLElement& el);
 
 protected:
 	FEModel*		m_pfem;

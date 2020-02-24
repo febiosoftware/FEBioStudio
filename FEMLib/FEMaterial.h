@@ -15,37 +15,39 @@
 #define FE_MAT_REACTION_DIFFUSION	0x0020
 #define FE_MAT_RIGID				0x0040
 #define FE_MAT_FLUID_FSI            0x0080
+#define FE_MAT_DISCRETE				0x0100
+#define FE_MAT_1DFUNC				0x0200
 
 // component classes
 // These values must not contain the top level class values in the lower bits!
-#define FE_MAT_PERMEABILITY			0x0100
-#define FE_MAT_DIFFUSIVITY          0x0200
-#define FE_MAT_SOLUBILITY			0x0300
-#define FE_MAT_OSMOTIC_COEFFICIENT	0x0400
-#define FE_MAT_SOLUTE				0x0500
-#define FE_MAT_SBM					0x0600
-#define FE_MAT_REACTION				0x0700
-#define FE_MAT_DAMAGE				0x0800
-#define FE_MAT_DAMAGE_CRITERION		0x0900
-#define FE_MAT_DAMAGE_CRITERION_UC	0x0A00
-#define FE_MAT_FLUID_ELASTIC		0x0B00
-#define FE_MAT_FLUID_VISCOSITY		0x0C00
-#define FE_MAT_CFD_FIBER			0x0D00
-#define FE_MAT_CFD_DIST				0x0E00
-#define FE_MAT_CFD_SCHEME			0x0F00
-#define FE_MAT_CFD_FIBER_UC			0x1000
-#define FE_MAT_CFD_SCHEME_UC		0x1100	// This is obsolete. Only retained for backward compatibility
-#define FE_MAT_RV_RELAX				0x1200
-#define FE_MAT_SOLVENT_SUPPLY		0x1300
-#define FE_MAT_REACTION_RATE		0x1400
-#define FE_MAT_REACTION_REACTANTS	0x1500
-#define FE_MAT_REACTION_PRODUCTS	0x1600
-#define FE_MAT_SPECIES				0x1700
-#define FE_MAT_SOLID_SPECIES		0x1800
-#define FE_MAT_ACTIVE_CONTRACTION_CLASS 0x1900
-#define FE_MAT_GENERATION           0x1A00
-#define FE_MAT_PRESTRAIN_GRADIENT	0x1B00
-#define FE_MAT_FIBER_GENERATOR		0x1C00
+#define FE_MAT_PERMEABILITY				0x00010000
+#define FE_MAT_DIFFUSIVITY				0x00020000
+#define FE_MAT_SOLUBILITY				0x00030000
+#define FE_MAT_OSMOTIC_COEFFICIENT		0x00040000
+#define FE_MAT_SOLUTE					0x00050000
+#define FE_MAT_SBM						0x00060000
+#define FE_MAT_REACTION					0x00070000
+#define FE_MAT_DAMAGE					0x00080000
+#define FE_MAT_DAMAGE_CRITERION			0x00090000
+#define FE_MAT_DAMAGE_CRITERION_UC		0x000A0000
+#define FE_MAT_FLUID_ELASTIC			0x000B0000
+#define FE_MAT_FLUID_VISCOSITY			0x000C0000
+#define FE_MAT_CFD_FIBER				0x000D0000
+#define FE_MAT_CFD_DIST					0x000E0000
+#define FE_MAT_CFD_SCHEME				0x000F0000
+#define FE_MAT_CFD_FIBER_UC				0x00100000
+#define FE_MAT_CFD_SCHEME_UC			0x00110000	// This is obsolete. Only retained for backward compatibility
+#define FE_MAT_RV_RELAX					0x00120000
+#define FE_MAT_SOLVENT_SUPPLY			0x00130000
+#define FE_MAT_REACTION_RATE			0x00140000
+#define FE_MAT_REACTION_REACTANTS		0x00150000
+#define FE_MAT_REACTION_PRODUCTS		0x00160000
+#define FE_MAT_SPECIES					0x00170000
+#define FE_MAT_SOLID_SPECIES			0x00180000
+#define FE_MAT_ACTIVE_CONTRACTION_CLASS 0x00190000
+#define FE_MAT_GENERATION				0x001A0000
+#define FE_MAT_PRESTRAIN_GRADIENT		0x001B0000
+#define FE_MAT_FIBER_GENERATOR			0x001C0000
 
 // --- Material Types ---
 // These values are stored in the prv file so don't change!
@@ -252,6 +254,14 @@
 // fiber generators
 #define FE_FIBER_GENERATOR_LOCAL		1301
 #define FE_FIBER_GENERATOR_VECTOR		1302
+
+// discrete materials
+#define FE_DISCRETE_LINEAR_SPRING		1401
+#define FE_DISCRETE_NONLINEAR_SPRING	1402
+#define FE_DISCRETE_HILL				1403
+
+// 1D functions
+#define FE_FNC1D_POINT		1501
 
 //-----------------------------------------------------------------------------
 class FEFiberGenerator : public FEMaterial

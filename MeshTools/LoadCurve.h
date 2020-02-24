@@ -49,6 +49,7 @@ public:
 
 	FELoadCurve& operator = (const FELoadCurve& lc);
 
+	void Add(double x, double y);
 	int Add(const LOADPOINT& pt);
 	void Delete(int n);
 	void Clear() { m_Pt.clear(); }

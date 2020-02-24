@@ -1870,75 +1870,76 @@ void FEBioExport2::WriteDiscreteSection(FEStep& s)
 				m_xml.close_branch(); // spring
 			}
 		}
-		GLinearSpringSet* pl = dynamic_cast<GLinearSpringSet*>(model.DiscreteObject(i));
+		GDiscreteSpringSet* pl = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
 		if (pl)
 		{
-			double E = pl->GetFloatValue(GLinearSpringSet::MP_E);
-			int N = pl->size();
-			for (int n=0; n<N; ++n)
+			FEDiscreteMaterial* m = pl->GetMaterial();
+			if (dynamic_cast<FELinearSpringMaterial*>(m))
 			{
-				GDiscreteElement& el = pl->element(n);
-				GNode* pn0 = model.FindNode(el.Node(0));
-				GNode* pn1 = model.FindNode(el.Node(1));
-				if (pn0 && pn1)
+				double E = m->GetFloatValue(0);
+				int N = pl->size();
+				for (int n=0; n<N; ++n)
 				{
-					int n[2];
-					GObject* po; FENode* pn;
-
-					po = dynamic_cast<GObject*>(pn0->Object()); assert(po);
-					pn = po->GetFENode(pn0->GetLocalID()); assert(pn);
-					n[0] = pn->m_nid;
-
-					po = dynamic_cast<GObject*>(pn1->Object()); assert(po);
-					pn = po->GetFENode(pn1->GetLocalID()); assert(pn);
-					n[1] = pn->m_nid;
-
-					m_xml.add_branch("spring");
+					GDiscreteElement& el = pl->element(n);
+					GNode* pn0 = model.FindNode(el.Node(0));
+					GNode* pn1 = model.FindNode(el.Node(1));
+					if (pn0 && pn1)
 					{
-						m_xml.add_leaf("node", n, 2);
-						m_xml.add_leaf("E", E);
+						int n[2];
+						GObject* po; FENode* pn;
+
+						po = dynamic_cast<GObject*>(pn0->Object()); assert(po);
+						pn = po->GetFENode(pn0->GetLocalID()); assert(pn);
+						n[0] = pn->m_nid;
+
+						po = dynamic_cast<GObject*>(pn1->Object()); assert(po);
+						pn = po->GetFENode(pn1->GetLocalID()); assert(pn);
+						n[1] = pn->m_nid;
+
+						m_xml.add_branch("spring");
+						{
+							m_xml.add_leaf("node", n, 2);
+							m_xml.add_leaf("E", E);
+						}
+						m_xml.close_branch();
 					}
-					m_xml.close_branch();
 				}
 			}
-		}
-		GNonlinearSpringSet* pns = dynamic_cast<GNonlinearSpringSet*>(model.DiscreteObject(i));
-		if (pns)
-		{
-			Param& p = pns->GetParam(GNonlinearSpringSet::MP_F);
-			double F = p.GetFloatValue();
-			int lc = p.GetLoadCurve()->GetID();
-			int N = pns->size();
-			for (int n=0; n<N; ++n)
+			else if (dynamic_cast<FENonLinearSpringMaterial*>(m))
 			{
-				GDiscreteElement& el = pns->element(n);
-				GNode* pn0 = model.FindNode(el.Node(0));
-				GNode* pn1 = model.FindNode(el.Node(1));
-				if (pn0 && pn1)
+				double F = 0; // TODO: Get the F value
+				int N = pl->size();
+				for (int n = 0; n < N; ++n)
 				{
-					int n[2];
-					GObject* po; FENode* pn;
-
-					po = dynamic_cast<GObject*>(pn0->Object()); assert(po);
-					pn = po->GetFENode(pn0->GetLocalID()); assert(pn);
-					n[0] = pn->m_nid;
-
-					po = dynamic_cast<GObject*>(pn1->Object()); assert(po);
-					pn = po->GetFENode(pn1->GetLocalID()); assert(pn);
-					n[1] = pn->m_nid;
-
-					XMLElement el("spring");
-					el.add_attribute("type", "nonlinear");
-					m_xml.add_branch(el);
+					GDiscreteElement& el = pl->element(n);
+					GNode* pn0 = model.FindNode(el.Node(0));
+					GNode* pn1 = model.FindNode(el.Node(1));
+					if (pn0 && pn1)
 					{
-						m_xml.add_leaf("node", n, 2);
+						int n[2];
+						GObject* po; FENode* pn;
 
-						XMLElement f("force");
-						f.add_attribute("lc", lc);
-						f.value(F);
-						m_xml.add_leaf(f);
+						po = dynamic_cast<GObject*>(pn0->Object()); assert(po);
+						pn = po->GetFENode(pn0->GetLocalID()); assert(pn);
+						n[0] = pn->m_nid;
+
+						po = dynamic_cast<GObject*>(pn1->Object()); assert(po);
+						pn = po->GetFENode(pn1->GetLocalID()); assert(pn);
+						n[1] = pn->m_nid;
+
+						XMLElement el("spring");
+						el.add_attribute("type", "nonlinear");
+						m_xml.add_branch(el);
+						{
+							m_xml.add_leaf("node", n, 2);
+
+							XMLElement f("force");
+//							f.add_attribute("lc", lc);
+							f.value(F);
+							m_xml.add_leaf(f);
+						}
+						m_xml.close_branch();
 					}
-					m_xml.close_branch();
 				}
 			}
 		}

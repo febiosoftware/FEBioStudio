@@ -2299,7 +2299,9 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			const char* szname = tag.AttributeValue("name");
 			if ((strcmp(sztype, "linear spring") == 0) || (strcmp(sztype, "tension-only linear spring") == 0))
 			{
-				GLinearSpringSet* pg = new GLinearSpringSet;
+				FELinearSpringMaterial* mat = new FELinearSpringMaterial();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+				pg->SetMaterial(mat);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
 				++tag;
@@ -2309,7 +2311,7 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 					{
 						double E;
 						tag.value(E);
-						pg->SetFloatValue(GLinearSpringSet::MP_E, E);
+						mat->SetSpringConstant(E);
 					}
 					else ParseUnknownTag(tag);
 					++tag;
@@ -2318,7 +2320,9 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 			}
 			else if (strcmp(sztype, "nonlinear spring") == 0)
 			{
-				GNonlinearSpringSet* pg = new GNonlinearSpringSet;
+				FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();
+				GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+				pg->SetMaterial(mat);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
 				++tag;
@@ -2328,10 +2332,8 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 					{
 						double F;
 						tag.value(F);
-						Param& p = pg->GetParam(GNonlinearSpringSet::MP_F);
-						p.SetFloatValue(F);
 						int lc = tag.AttributeValue<int>("lc", -1);
-						if (lc != -1) p.GetLoadCurve()->SetID(lc);
+						// TODO: assign the force to the material
 					}
 					else ParseUnknownTag(tag);
 					++tag;
