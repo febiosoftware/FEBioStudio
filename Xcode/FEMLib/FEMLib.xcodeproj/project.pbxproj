@@ -39,6 +39,8 @@
 		D5A91C8C2173A23400BF8B86 /* FEStepComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = D5A91C862173A23400BF8B86 /* FEStepComponent.h */; };
 		D5A91C8D2173A23400BF8B86 /* FEComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = D5A91C872173A23400BF8B86 /* FEComponent.h */; };
 		D5A91C8E2173A23400BF8B86 /* FEComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A91C882173A23400BF8B86 /* FEComponent.cpp */; };
+		D5C13EDF240478C3005897E1 /* FEDiscreteMaterial.h in Headers */ = {isa = PBXBuildFile; fileRef = D5C13EDD240478C3005897E1 /* FEDiscreteMaterial.h */; };
+		D5C13EE0240478C3005897E1 /* FEDiscreteMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5C13EDE240478C3005897E1 /* FEDiscreteMaterial.cpp */; };
 		D5ED25A3231979B500C16BF7 /* FEMultiMaterial.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED2596231979B400C16BF7 /* FEMultiMaterial.h */; };
 		D5ED25A4231979B500C16BF7 /* FEMultiMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2597231979B400C16BF7 /* FEMultiMaterial.cpp */; };
 		D5ED25A5231979B500C16BF7 /* FERigidConstraint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2598231979B400C16BF7 /* FERigidConstraint.cpp */; };
@@ -88,6 +90,8 @@
 		D5A91C862173A23400BF8B86 /* FEStepComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEStepComponent.h; sourceTree = "<group>"; };
 		D5A91C872173A23400BF8B86 /* FEComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEComponent.h; sourceTree = "<group>"; };
 		D5A91C882173A23400BF8B86 /* FEComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEComponent.cpp; sourceTree = "<group>"; };
+		D5C13EDD240478C3005897E1 /* FEDiscreteMaterial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEDiscreteMaterial.h; sourceTree = "<group>"; };
+		D5C13EDE240478C3005897E1 /* FEDiscreteMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEDiscreteMaterial.cpp; sourceTree = "<group>"; };
 		D5ED2596231979B400C16BF7 /* FEMultiMaterial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMultiMaterial.h; sourceTree = "<group>"; };
 		D5ED2597231979B400C16BF7 /* FEMultiMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMultiMaterial.cpp; sourceTree = "<group>"; };
 		D5ED2598231979B400C16BF7 /* FERigidConstraint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERigidConstraint.cpp; sourceTree = "<group>"; };
@@ -149,6 +153,8 @@
 				D53297D61E4A9712002798B3 /* FECoreModel.h */,
 				D5A91C842173A23400BF8B86 /* FEDataMap.cpp */,
 				D5A91C852173A23400BF8B86 /* FEDataMap.h */,
+				D5C13EDE240478C3005897E1 /* FEDiscreteMaterial.cpp */,
+				D5C13EDD240478C3005897E1 /* FEDiscreteMaterial.h */,
 				D53297D71E4A9712002798B3 /* FEDOF.cpp */,
 				D53297D81E4A9712002798B3 /* FEDOF.h */,
 				D54DD6291F8D46980083D517 /* FEInitialCondition.cpp */,
@@ -209,6 +215,7 @@
 				D53297E51E4A9712002798B3 /* FEDOF.h in Headers */,
 				D576571123E32E9300E4F70F /* FEModelComponent.h in Headers */,
 				D53297DE1E4A9712002798B3 /* FEBoundaryCondition.h in Headers */,
+				D5C13EDF240478C3005897E1 /* FEDiscreteMaterial.h in Headers */,
 				D5ED25AF231979B500C16BF7 /* FEMaterialLibrary.h in Headers */,
 				D54DD62C1F8D46980083D517 /* FEInitialCondition.h in Headers */,
 				D576570F23E32E9300E4F70F /* FEModelConstraint.h in Headers */,
@@ -281,6 +288,7 @@
 				D53297DD1E4A9712002798B3 /* FEBoundaryCondition.cpp in Sources */,
 				D53297DB1E4A9712002798B3 /* FEAnalysisStep.cpp in Sources */,
 				D5ED25A5231979B500C16BF7 /* FERigidConstraint.cpp in Sources */,
+				D5C13EE0240478C3005897E1 /* FEDiscreteMaterial.cpp in Sources */,
 				D5A91C8A2173A23400BF8B86 /* FEDataMap.cpp in Sources */,
 				D5ED25AB231979B500C16BF7 /* FEMaterialLibrary.cpp in Sources */,
 				D53297E41E4A9712002798B3 /* FEDOF.cpp in Sources */,

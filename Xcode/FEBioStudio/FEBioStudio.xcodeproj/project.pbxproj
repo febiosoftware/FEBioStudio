@@ -56,6 +56,8 @@
 		D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B01234653F700B7C0B8 /* libmmg2d.a */; };
 		D57A0B06234653F700B7C0B8 /* libmmgs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B02234653F700B7C0B8 /* libmmgs.a */; };
 		D57A0B092346719D00B7C0B8 /* DlgImportXPLT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */; };
+		D5C13EDB24047890005897E1 /* moc_PostModelPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */; };
+		D5C13EDC24047890005897E1 /* PostModelPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5C13EDA24047890005897E1 /* PostModelPanel.cpp */; };
 		D5CA211523EF7025001AE230 /* moc_DlgAddPublication.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA210F23EF7025001AE230 /* moc_DlgAddPublication.cpp */; };
 		D5CA211623EF7025001AE230 /* ZipFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211023EF7025001AE230 /* ZipFiles.cpp */; };
 		D5CA211723EF7025001AE230 /* DlgAddPublication.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211123EF7025001AE230 /* DlgAddPublication.cpp */; };
@@ -466,6 +468,9 @@
 		D57A0B02234653F700B7C0B8 /* libmmgs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmgs.a; path = ../../../../../../../../../../usr/local/lib/libmmgs.a; sourceTree = "<group>"; };
 		D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgImportXPLT.cpp; sourceTree = "<group>"; };
 		D57A0B082346719D00B7C0B8 /* DlgImportXPLT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgImportXPLT.h; sourceTree = "<group>"; };
+		D5C13ED824047890005897E1 /* PostModelPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostModelPanel.h; sourceTree = "<group>"; };
+		D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PostModelPanel.cpp; sourceTree = "<group>"; };
+		D5C13EDA24047890005897E1 /* PostModelPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostModelPanel.cpp; sourceTree = "<group>"; };
 		D5CA210F23EF7025001AE230 /* moc_DlgAddPublication.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgAddPublication.cpp; sourceTree = "<group>"; };
 		D5CA211023EF7025001AE230 /* ZipFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipFiles.cpp; sourceTree = "<group>"; };
 		D5CA211123EF7025001AE230 /* DlgAddPublication.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddPublication.cpp; sourceTree = "<group>"; };
@@ -1272,6 +1277,7 @@
 				D5F7D75E22FA37C40089B08E /* moc_ObjectPanel.cpp */,
 				D5F7D7D622FA37C40089B08E /* moc_PlotWidget.cpp */,
 				D5ED29FD23198CD700C16BF7 /* moc_PostDataPanel.cpp */,
+				D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */,
 				D5F7D75A22FA37C40089B08E /* moc_PostPanel.cpp */,
 				D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */,
 				D57656FE23E32E6900E4F70F /* moc_predefs.h */,
@@ -1312,6 +1318,8 @@
 				D5ED29FC23198CD700C16BF7 /* PostDataPanel.h */,
 				D5F7D7FC22FA37C40089B08E /* PostDoc.cpp */,
 				D5F7D74322FA37C40089B08E /* PostDoc.h */,
+				D5C13EDA24047890005897E1 /* PostModelPanel.cpp */,
+				D5C13ED824047890005897E1 /* PostModelPanel.h */,
 				D5F7D78622FA37C40089B08E /* PostPanel.cpp */,
 				D5F7D7B422FA37C40089B08E /* PostPanel.h */,
 				D54A8C60239EC9F800B6219A /* PostToolsPanel.cpp */,
@@ -1648,6 +1656,7 @@
 				D579B67D239F04E300278644 /* AddPointTool.cpp in Sources */,
 				D5F7D83B22FA37C40089B08E /* MeshInspector.cpp in Sources */,
 				D5F7D89622FA37C40089B08E /* DlgRun.cpp in Sources */,
+				D5C13EDC24047890005897E1 /* PostModelPanel.cpp in Sources */,
 				D5F7D8A022FA37C40089B08E /* moc_CreatePanel.cpp in Sources */,
 				D576570023E32E6900E4F70F /* moc_DlgUpload.cpp in Sources */,
 				D5F7D8A722FA37C40089B08E /* moc_DlgEditProject.cpp in Sources */,
@@ -1706,6 +1715,7 @@
 				D5F7D8AB22FA37C40089B08E /* stdafx.cpp in Sources */,
 				D5F7D82D22FA37C40089B08E /* template.cpp in Sources */,
 				D5F7D8A322FA37C40089B08E /* moc_GraphWindow.cpp in Sources */,
+				D5C13EDB24047890005897E1 /* moc_PostModelPanel.cpp in Sources */,
 				D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */,
 				D5ED2A1123198CD900C16BF7 /* StatePanel.cpp in Sources */,
 				D5F7D85722FA37C40089B08E /* ClassDescriptor.cpp in Sources */,
