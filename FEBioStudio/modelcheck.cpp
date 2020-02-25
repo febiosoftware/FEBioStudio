@@ -51,6 +51,12 @@ void check_012(CDocument* doc, std::vector<FSObject*>& objList);
 // see if shell thickness are zero for non-rigid parts
 void check_013(CDocument* doc, std::vector<FSObject*>& objList);
 
+// do rigid connectors have two different rigid bodies
+void check_014(CDocument* doc, std::vector<FSObject*>& objList);
+
+// do rigid connectors have two rigid bodies defined
+void check_015(CDocument* doc, std::vector<FSObject*>& objList);
+
 typedef void(*ERROR_FUNC)(CDocument*, std::vector<FSObject*>&);
 
 struct ERROR_DATA
@@ -74,7 +80,9 @@ vector<ERROR_DATA> error = {
 	{ CRITICAL, "Boundary condition \"%s\" has no selection assigned.", check_010 },
 	{ CRITICAL, "Initial condition \"%s\" has no selection assigned.", check_011 },
 	{ WARNING , "This model does not define any output variables.", check_012 },
-	{ CRITICAL, "Some shells in part \"%s\" have zero thickness.", check_013 }
+	{ CRITICAL, "Some shells in part \"%s\" have zero thickness.", check_013 },
+	{ WARNING , "Rigid connector \"%s\" connects the same rigid body.", check_014 },
+	{ CRITICAL, "Rigid connector \"%s\" does not connect two rigid bodies.", check_015 },
 };
 
 const char* errorString(int error_code)
@@ -454,6 +462,44 @@ void check_013(CDocument* doc, std::vector<FSObject*>& objList)
 				{
 					objList.push_back(pg);
 				}
+			}
+		}
+	}
+}
+
+// do rigid connectors have two different rigid bodies
+void check_014(CDocument* doc, std::vector<FSObject*>& objList)
+{
+	FEModel& fem = *doc->GetFEModel();
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		int nrc = pstep->RigidConnectors();
+		for (int j = 0; j < nrc; ++j)
+		{
+			FERigidConnector* rc = pstep->RigidConnector(j);
+			if (rc->m_rbA == rc->m_rbB)
+			{
+				objList.push_back(rc);
+			}
+		}
+	}
+}
+
+// do rigid connectors have two rigid bodies defined
+void check_015(CDocument* doc, std::vector<FSObject*>& objList)
+{
+	FEModel& fem = *doc->GetFEModel();
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		int nrc = pstep->RigidConnectors();
+		for (int j = 0; j < nrc; ++j)
+		{
+			FERigidConnector* rc = pstep->RigidConnector(j);
+			if ((rc->m_rbA == -1) || (rc->m_rbB == -1))
+			{
+				objList.push_back(rc);
 			}
 		}
 	}

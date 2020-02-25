@@ -1154,6 +1154,7 @@ FENonLinearBiphasic::FENonLinearBiphasic(FEModel* ps) : FEAnalysisStep(ps, FE_ST
 	AddDoubleParam(0.9  , "lstol", "Line search tolerance");
 	AddDoubleParam(1e-20, "min_residual", "Minumum residual");
 	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
+	AddChoiceParam(0, "mixed_formulation", "formulation")->SetEnumNames("default\0mixed formulation\0");
 
 	m_ops.nanalysis = 1; // set transient analysis
 }
