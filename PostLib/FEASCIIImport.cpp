@@ -405,7 +405,6 @@ bool FEASCIIImport::BuildMesh(FEModel &fem)
 	FEPostMesh* pm = new FEPostMesh;
 
 	pm->Create(zone.m_nn, zone.m_ne);
-	fem.AddMesh(pm);
 
 	// assign nodes
 	for (int i=0; i<zone.m_nn; ++i)
@@ -414,6 +413,7 @@ bool FEASCIIImport::BuildMesh(FEModel &fem)
 		float* v = zone.m_Node[i].v;
 		n.r = vec3d(v[0], v[1], v[2]);
 	}
+	fem.AddMesh(pm);
 
 	// assign elements
 	for (int i=0; i<zone.m_ne; ++i)

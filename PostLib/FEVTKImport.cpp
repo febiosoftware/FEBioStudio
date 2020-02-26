@@ -53,7 +53,6 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 
 	// create a new mesh
 	FEPostMesh* pm = new FEPostMesh;
-	fem.AddMesh(pm);
 	pm->Create(nodes, 0);
 	
 	// read the nodes
@@ -152,6 +151,7 @@ bool FEVTKimport::Load(FEModel& fem, const char* szfile)
 	ch = fgets(szline, 255, m_fp);
 
 	// update the mesh
+	fem.AddMesh(pm);
 	pm->Update();
 	m_pfem->UpdateBoundingBox();
 

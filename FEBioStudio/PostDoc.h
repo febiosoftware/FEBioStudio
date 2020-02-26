@@ -117,6 +117,12 @@ public:
 
 	std::string GetFileName();
 
+	// get the model's bounding box
+	BOX GetBoundingBox();
+
+	// get the selection bounding box
+	BOX GetSelectionBox();
+
 private:
 	void ApplyPalette(const Post::CPalette& pal);
 

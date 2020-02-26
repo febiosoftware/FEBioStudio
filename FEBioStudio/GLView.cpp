@@ -880,6 +880,9 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	m_y1 = y;
 
 	m_Cam.Update(true);
+
+	m_pWnd->OnCameraChanged();
+
 	ev->accept();
 }
 
@@ -1209,7 +1212,7 @@ bool CGLView::event(QEvent* event)
 
 void CGLView::initializeGL()
 {
-	GLfloat amb1[] = { .09f, .09f, .1f, 1.f };
+	GLfloat amb1[] = { .09f, .09f, .09f, 1.f };
 	GLfloat dif1[] = { .8f, .8f, .8f, 1.f };
 
 	//	GLfloat amb2[] = {.0f, .0f, .0f, 1.f};
@@ -1887,8 +1890,10 @@ inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
 //-----------------------------------------------------------------------------
 void CGLView::PositionCamera()
 {
+	CGLCamera& cam = GetCamera();
+
 	// position the camera
-	GetCamera().Transform();
+	cam.Transform();
 
 	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
@@ -2060,6 +2065,34 @@ void CGLView::PrepModel()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	//	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
+
+	// set the diffuse lighting intensity
+	CDocument* pdoc = GetDocument();
+	if (pdoc && pdoc->IsValid())
+	{
+		VIEW_SETTINGS& view = pdoc->GetViewSettings();
+
+		// turn on/off lighting
+		if (view.m_bLighting)
+			glEnable(GL_LIGHTING);
+		else
+			glDisable(GL_LIGHTING);
+
+		// position the light
+		vec3f lp = GetLightPosition();
+		GLfloat fv[4] = { 0 };
+		fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
+		glLightfv(GL_LIGHT0, GL_POSITION, fv);
+
+		GLfloat d = view.m_diffuse;
+		GLfloat dv[4] = { d, d, d, 1.f };
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
+
+		// set the ambient lighting intensity
+		GLfloat f = view.m_ambient;
+		GLfloat av[4] = { f, f, f, 1.f };
+		glLightfv(GL_LIGHT0, GL_AMBIENT, av);
+	}
 
 	// position the camera
 	PositionCamera();
@@ -4280,9 +4313,7 @@ void CGLView::SelectDiscrete(int x, int y)
 //-----------------------------------------------------------------------------
 GObject* CGLView::GetActiveObject()
 {
-	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
-	if (postDoc == nullptr) return GetDocument()->GetActiveObject();
-	return postDoc->GetPostObject();
+	return m_pWnd->GetActiveObject();
 }
 
 //-----------------------------------------------------------------------------
@@ -7834,7 +7865,8 @@ void CGLView::RenderMeshLines(GObject* po)
 // selected object is too close.
 void CGLView::ZoomSelection(bool forceZoom)
 {
-	if (m_pWnd->GetActiveDocument() == nullptr)
+	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	if (postDoc == nullptr)
 	{
 		// get the current selection
 		FESelection* ps = GetDocument()->GetCurrentSelection();
@@ -7860,7 +7892,36 @@ void CGLView::ZoomSelection(bool forceZoom)
 		}
 		else ZoomExtents();
 	}
-	else ZoomExtents();
+	else
+	{
+		if (postDoc->IsValid())
+		{
+			BOX box = postDoc->GetSelectionBox();
+
+			if (box.IsValid() == false)
+			{
+				ZoomExtents();
+			}
+			else
+			{
+				if (box.Radius() < 1e-8f)
+				{
+					float L = 1.f;
+					BOX bb = postDoc->GetBoundingBox();
+					float R = bb.GetMaxExtent();
+					if (R < 1e-8f) L = 1.f; else L = 0.05f*R;
+
+					box.InflateTo(L, L, L);
+				}
+
+				CGLCamera* pcam = &GetCamera();
+				pcam->SetTarget(box.Center());
+				pcam->SetTargetDistance(3.f*box.Radius());
+
+				repaint();
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------

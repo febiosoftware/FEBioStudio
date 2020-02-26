@@ -71,3 +71,9 @@ void CPostPanel::SelectObject(Post::CGLObject* po)
 {
 	ui->mdl->selectObject(po);
 }
+
+void CPostPanel::OnViewChanged()
+{
+	CPostModelPanel* mdl = ui->mdl;
+	if (mdl && mdl->isVisible()) mdl->UpdateView();
+}

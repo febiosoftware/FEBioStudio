@@ -92,7 +92,7 @@ public:
 	void setCurrentTheme(int n);
 
 	//! Open a plot file
-	void OpenPlotFile(const QString& fileName);
+	void OpenPlotFile(const QString& fileName, bool showLoadOptions = true);
     
     //! Process drag event
     void dragEnterEvent(QDragEnterEvent *e);
@@ -167,6 +167,9 @@ public:
 	// Add a graph to the list of managed graph windows
 	void AddGraph(CGraphWindow* graph);
 
+	// camera was changed
+	void OnCameraChanged();
+
 public:
 	QIcon GetResourceIcon(const QString& iconName);
 
@@ -179,7 +182,7 @@ public:
 	FileReader* CreateFileReader(const QString& fileName);
 	void ReadFile(const QString& fileName, FileReader* fileReader, bool clearDoc);
 
-	void OpenFile(const QString& fileName);
+	void OpenFile(const QString& fileName, bool showLoadOptions = true);
 
 	bool SaveProject(const QString& fileName);
 
@@ -211,6 +214,8 @@ public slots:
 	void on_actionHideSelection_triggered();
 	void on_actionHideUnselected_triggered();
 	void on_actionUnhideAll_triggered();
+	void on_actionFind_triggered();
+	void on_actionSelectRange_triggered();
 	void on_actionToggleVisible_triggered();
 	void on_actionNameSelection_triggered();
 	void on_actionTransform_triggered();
@@ -274,6 +279,7 @@ public slots:
 	void on_actionRecordPause_triggered();
 	void on_actionRecordStop_triggered();
 
+	// View menu actions
 	void on_actionUndoViewChange_triggered();
 	void on_actionRedoViewChange_triggered();
 	void on_actionZoomSelect_triggered();
@@ -297,6 +303,10 @@ public slots:
 	void on_actionWireframe_toggled(bool b);
 	void on_actionSnap3D_triggered();
 	void on_actionTrack_toggled(bool b);
+	void on_actionViewVPSave_triggered();
+	void on_actionViewVPPrev_triggered();
+	void on_actionViewVPNext_triggered();
+	void on_actionSyncViews_triggered();
 
 	void on_actionOnlineHelp_triggered();
 	void on_actionFEBioURL_triggered();
@@ -418,6 +428,7 @@ public:
 	void AddView(const std::string& viewName, CPostDoc* doc = nullptr, bool makeActive = true);
 	CPostDoc* GetActiveDocument();
 	int FindView(CPostDoc* postDoc);
+	GObject* GetActiveObject();
 
 private:
 	Ui::CMainWindow*	ui;

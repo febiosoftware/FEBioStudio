@@ -2378,6 +2378,83 @@ void CGLModel::SelectConnectedVolumeNodes(int n)
 	UpdateSelectionLists(SELECT_NODES);
 }
 
+
+//-----------------------------------------------------------------------------
+void CGLModel::SelectElemsInRange(float fmin, float fmax, bool bsel)
+{
+	Post::FEPostMesh* pm = GetActiveMesh();
+	int N = pm->Elements();
+	FEState* ps = GetActiveState();
+	for (int i = 0; i<N; ++i)
+	{
+		FEElement_& el = pm->ElementRef(i);
+		if (el.IsEnabled() && el.IsVisible() && ((bsel == false) || (el.IsSelected())))
+		{
+			float v = ps->m_ELEM[i].m_val;
+			if ((v >= fmin) && (v <= fmax)) el.Select();
+			else el.Unselect();
+		}
+	}
+	UpdateSelectionLists();
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::SelectNodesInRange(float fmin, float fmax, bool bsel)
+{
+	Post::FEPostMesh* pm = GetActiveMesh();
+	int N = pm->Nodes();
+	FEState* ps = GetActiveState();
+	for (int i = 0; i<N; ++i)
+	{
+		FENode& node = pm->Node(i);
+		if (node.IsEnabled() && node.IsVisible() && ((bsel == false) || (node.IsSelected())))
+		{
+			float v = ps->m_NODE[i].m_val;
+			if ((v >= fmin) && (v <= fmax)) node.Select();
+			else node.Unselect();
+		}
+	}
+	UpdateSelectionLists();
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::SelectEdgesInRange(float fmin, float fmax, bool bsel)
+{
+	Post::FEPostMesh* pm = GetActiveMesh();
+	int N = pm->Edges();
+	FEState* ps = GetActiveState();
+	for (int i = 0; i<N; ++i)
+	{
+		FEEdge& edge = pm->Edge(i);
+		if (edge.IsEnabled() && edge.IsVisible() && ((bsel == false) || (edge.IsSelected())))
+		{
+			float v = ps->m_EDGE[i].m_val;
+			if ((v >= fmin) && (v <= fmax)) edge.Select();
+			else edge.Unselect();
+		}
+	}
+	UpdateSelectionLists();
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::SelectFacesInRange(float fmin, float fmax, bool bsel)
+{
+	Post::FEPostMesh* pm = GetActiveMesh();
+	FEState* ps = GetActiveState();
+	int N = pm->Faces();
+	for (int i = 0; i<N; ++i)
+	{
+		FEFace& f = pm->Face(i);
+		if (f.IsEnabled() && f.IsVisible() && ((bsel == false) || (f.IsSelected())))
+		{
+			float v = ps->m_FACE[i].m_val;
+			if ((v >= fmin) && (v <= fmax)) f.Select();
+			else f.Unselect();
+		}
+	}
+	UpdateSelectionLists();
+}
+
 //-----------------------------------------------------------------------------
 // Hide selected elements
 void CGLModel::HideSelectedElements()

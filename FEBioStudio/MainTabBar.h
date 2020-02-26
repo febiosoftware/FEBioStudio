@@ -19,6 +19,7 @@ public:
 	int findView(CPostDoc* doc);
 	CPostDoc* getActiveDoc();
 	void closeView(int n);
+	CPostDoc* getPostDoc(int i);
 
 private:
 	std::vector<CPostDoc*>	m_docs;

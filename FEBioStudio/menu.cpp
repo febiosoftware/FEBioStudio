@@ -68,11 +68,13 @@
 #include "DlgBatchConvert.h"
 #include "version.h"
 #include "PostDoc.h"
+#include "DlgFind.h"
+#include "DlgSelectRange.h"
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
-
+#include <PostLib/GView.h>
 #include <iostream>
 
 #ifdef HAS_QUAZIP
@@ -203,7 +205,7 @@ void CMainWindow::on_actionNew_triggered()
 	if (ui->modelViewer && btemplate) ui->modelViewer->Show();
 }
 
-void CMainWindow::OpenFile(const QString& fileName)
+void CMainWindow::OpenFile(const QString& fileName, bool showLoadOptions)
 {
 	QString ext = QFileInfo(fileName).suffix();
 	if (ext.compare("fsprj", Qt::CaseInsensitive) == 0)
@@ -219,7 +221,7 @@ void CMainWindow::OpenFile(const QString& fileName)
 	else if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
 	{
 		// load the plot file
-		OpenPlotFile(fileName);
+		OpenPlotFile(fileName, showLoadOptions);
 	}
 	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
@@ -1358,6 +1360,86 @@ void CMainWindow::on_actionUnhideAll_triggered()
 	}
 }
 
+void CMainWindow::on_actionFind_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+	if (doc->IsValid() == false) return;
+
+	Post::CGLModel* model = doc->GetGLModel(); assert(model);
+	if (model == 0) return;
+
+	int nview = model->GetSelectionMode();
+	int nsel = 0;
+	if (nview == Post::SELECT_NODES) nsel = 0;
+	if (nview == Post::SELECT_EDGES) nsel = 1;
+	if (nview == Post::SELECT_FACES) nsel = 2;
+	if (nview == Post::SELECT_ELEMS) nsel = 3;
+
+	CDlgFind dlg(this, nsel);
+
+	if (dlg.exec())
+	{
+		Post::CGLModel* pm = doc->GetGLModel();
+
+		if (dlg.m_bsel[0]) nview = Post::SELECT_NODES;
+		if (dlg.m_bsel[1]) nview = Post::SELECT_EDGES;
+		if (dlg.m_bsel[2]) nview = Post::SELECT_FACES;
+		if (dlg.m_bsel[3]) nview = Post::SELECT_ELEMS;
+
+		CGLControlBar* pb = ui->glc;
+		switch (nview)
+		{
+		case Post::SELECT_NODES: pb->SetMeshItem(ITEM_NODE); pm->SelectNodes(dlg.m_item, dlg.m_bclear); break;
+		case Post::SELECT_EDGES: pb->SetMeshItem(ITEM_EDGE); pm->SelectEdges(dlg.m_item, dlg.m_bclear); break;
+		case Post::SELECT_FACES: pb->SetMeshItem(ITEM_FACE); pm->SelectFaces(dlg.m_item, dlg.m_bclear); break;
+		case Post::SELECT_ELEMS: pb->SetMeshItem(ITEM_ELEM); pm->SelectElements(dlg.m_item, dlg.m_bclear); break;
+		}
+
+		doc->GetGLModel()->UpdateSelectionLists();
+		ReportSelection();
+		RedrawGL();
+	}
+}
+
+void CMainWindow::on_actionSelectRange_triggered()
+{
+	CPostDoc* postDoc = GetActiveDocument();
+	if (postDoc == nullptr) return;
+	if (!postDoc->IsValid()) return;
+
+	Post::CGLModel* model = postDoc->GetGLModel(); assert(model);
+	if (model == 0) return;
+
+	Post::CGLColorMap* pcol = postDoc->GetGLModel()->GetColorMap();
+	if (pcol == 0) return;
+
+	float d[2];
+	pcol->GetRange(d);
+
+	CDlgSelectRange dlg(this);
+	dlg.m_min = d[0];
+	dlg.m_max = d[1];
+
+	if (dlg.exec())
+	{
+		CDocument* doc = GetDocument();
+		switch (model->GetSelectionMode())
+		{
+		case Post::SELECT_NODES: doc->SetItemMode(ITEM_NODE); model->SelectNodesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
+		case Post::SELECT_EDGES: doc->SetItemMode(ITEM_EDGE); model->SelectEdgesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
+		case Post::SELECT_FACES: doc->SetItemMode(ITEM_FACE); model->SelectFacesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
+		case Post::SELECT_ELEMS: doc->SetItemMode(ITEM_ELEM); model->SelectElemsInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
+		}
+
+		model->UpdateSelectionLists();
+		postDoc->UpdateFEModel();
+		ReportSelection();
+		UpdateGLControlBar();
+		RedrawGL();
+	}
+}
+
 void CMainWindow::on_actionToggleVisible_triggered()
 {
 	CPostDoc* postDoc = GetActiveDocument();
@@ -2036,6 +2118,77 @@ void CMainWindow::on_actionTrack_toggled(bool b)
 {
 	ui->glview->TrackSelection(b);
 	RedrawGL();
+}
+
+void CMainWindow::on_actionViewVPSave_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+
+	CGLCamera& cam = ui->glview->GetCamera();
+	GLCameraTransform t;
+	cam.GetTransform(t);
+
+	Post::CGView& view = *doc->GetView();
+	static int n = 0; n++;
+	char szname[64] = { 0 };
+	sprintf(szname, "key%02d", n);
+	t.SetName(szname);
+	view.AddCameraKey(t);
+	ui->postPanel->Update();
+}
+
+void CMainWindow::on_actionViewVPPrev_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+
+	Post::CGView& view = *doc->GetView();
+	if (view.CameraKeys() > 0)
+	{
+		view.PrevKey();
+		ui->glview->GetCamera().SetTransform(view.GetCurrentKey());
+		RedrawGL();
+	}
+}
+
+void CMainWindow::on_actionViewVPNext_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+
+	Post::CGView& view = *doc->GetView();
+	if (view.CameraKeys() > 0)
+	{
+		view.NextKey();
+		ui->glview->GetCamera().SetTransform(view.GetCurrentKey());
+		RedrawGL();
+	}
+}
+
+// sync the views of all documents to the currently active one
+void CMainWindow::on_actionSyncViews_triggered()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+
+	Post::CGView& view = *doc->GetView();
+	CGLCamera& cam = view.GetCamera();
+	GLCameraTransform transform;
+	cam.GetTransform(transform);
+	int views = ui->tab->views();
+	for (int i = 1; i < views; ++i)
+	{
+		CPostDoc* doci = ui->tab->getPostDoc(i);
+		if (doci != doc)
+		{
+			CGLCamera& cami = doci->GetView()->GetCamera();
+
+			// copy the transforms
+			cami.SetTransform(transform);
+			cami.Update(true);
+		}
+	}
 }
 
 void CMainWindow::on_actionOnlineHelp_triggered()

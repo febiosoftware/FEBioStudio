@@ -326,32 +326,36 @@ void CMainWindow::OpenDocument(const QString& fileName)
 
 //-----------------------------------------------------------------------------
 //! Open a plot file
-void CMainWindow::OpenPlotFile(const QString& fileName)
+void CMainWindow::OpenPlotFile(const QString& fileName, bool showLoadOptions)
 {
-	CDlgImportXPLT dlg(this);
-	if (dlg.exec())
+	XPLT_OPTIONS ops;
+
+	if (showLoadOptions)
 	{
-		XPLT_OPTIONS ops;
-
-		ops.m_op = dlg.m_nop;
-		ops.m_states = dlg.m_item;
-
-		CDocument* doc = GetDocument();
-		std::string sfile = fileName.toStdString();
-		if (doc->LoadPlotFile(sfile, ops) == false)
+		CDlgImportXPLT dlg(this);
+		if (dlg.exec())
 		{
-			QMessageBox::critical(this, "FEBio Studio", "Failed loading plot file.");
+			ops.m_op = dlg.m_nop;
+			ops.m_states = dlg.m_item;
 		}
-		else
-		{
-			UpdateModel();
-			UpdatePostPanel();
-			UpdatePostToolbar();
+		else return;
+	}
 
-			CFEBioJob* job = doc->GetFEBioJob(doc->FEBioJobs() - 1);
-			ui->modelViewer->Select(job);
-			SetActivePostDoc(job->GetPostDoc());
-		}
+	CDocument* doc = GetDocument();
+	std::string sfile = fileName.toStdString();
+	if (doc->LoadPlotFile(sfile, ops) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed loading plot file.");
+	}
+	else
+	{
+		UpdateModel();
+		UpdatePostPanel();
+		UpdatePostToolbar();
+
+		CFEBioJob* job = doc->GetFEBioJob(doc->FEBioJobs() - 1);
+		ui->modelViewer->Select(job);
+		SetActivePostDoc(job->GetPostDoc());
 	}
 }
 
@@ -584,8 +588,14 @@ void CMainWindow::Reset()
 
 bool CMainWindow::maybeSave()
 {
-	if (GetDocument()->IsModified())
+	CDocument* doc = GetDocument();
+	if (doc->IsModified())
 	{
+		// If the model does not have a file associated and only contains
+		// jobs, we will not ask the question
+		std::string fileName = doc->GetDocFilePath();
+		if (fileName.empty() && (doc->GetGModel()->Objects() == 0)) return true;
+		
 		QMessageBox::StandardButton b = QMessageBox::question(this, "", "The project was changed. Do you want to save it?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 		if (b == QMessageBox::Cancel) return false;
 
@@ -1162,6 +1172,14 @@ int CMainWindow::FindView(CPostDoc* postDoc)
 	return ui->tab->findView(postDoc);
 }
 
+//-----------------------------------------------------------------------------
+GObject* CMainWindow::GetActiveObject()
+{
+	CPostDoc* postDoc = GetActiveDocument();
+	if (postDoc == nullptr) return GetDocument()->GetActiveObject();
+	return postDoc->GetPostObject();
+}
+
 //-----------------------------------------------------------------
 void CMainWindow::AddView(const std::string& viewName, CPostDoc* doc, bool makeActive)
 {
@@ -1175,6 +1193,7 @@ void CMainWindow::on_tab_currentChanged(int n)
 {
 	UpdatePostPanel();
 	UpdatePostToolbar();
+	ui->updateMeshInspector();
 	RedrawGL();
 
 	if (n == 0) ui->modelViewer->parentWidget()->raise();
@@ -1910,6 +1929,14 @@ void CMainWindow::GenerateMap(FSObject* po)
 			QMessageBox::critical(this, "FEBio Studio", "It pains me to inform you that your command could not be executed.");
 		}
 		else UpdateModel(data);
+	}
+}
+
+void CMainWindow::OnCameraChanged()
+{
+	if (ui->postPanel->isVisible())
+	{
+		ui->postPanel->OnViewChanged();
 	}
 }
 

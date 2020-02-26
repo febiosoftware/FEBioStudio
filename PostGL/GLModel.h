@@ -230,6 +230,11 @@ public: // Selection
 	//! select connected nodes in volume
 	void SelectConnectedVolumeNodes(int n);
 
+	// selection
+	void SelectNodesInRange(float fmin, float fmax, bool bsel);
+	void SelectEdgesInRange(float fmin, float fmax, bool bsel);
+	void SelectFacesInRange(float fmin, float fmax, bool bsel);
+	void SelectElemsInRange(float fmin, float fmax, bool bsel);
 
 	// --- V I S I B I L I T Y ---
 	//! hide elements by material ID

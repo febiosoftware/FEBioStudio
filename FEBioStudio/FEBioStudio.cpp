@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 
 	if ((argc == 2) && (breset == false))
 	{
-		wnd.OpenFile(argv[1]);
+		wnd.OpenFile(argv[1], false);
 	}
 	else
 	{

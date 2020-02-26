@@ -144,7 +144,6 @@ bool GMeshImport::BuildMesh(FEModel& fem)
 	// build the mesh
 	FEPostMesh* pm = new FEPostMesh;
 	pm->Create(nodes, elems);
-	fem.AddMesh(pm);
 
 	// create nodes
 	for (i=0; i<nodes; ++i)
@@ -184,6 +183,7 @@ bool GMeshImport::BuildMesh(FEModel& fem)
 	}
 
 	// update the mesh
+	fem.AddMesh(pm);
 	pm->Update();
 	fem.UpdateBoundingBox();
 

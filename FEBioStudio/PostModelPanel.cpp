@@ -131,7 +131,7 @@ private:
 class CViewProps : public CPropertyList
 {
 public:
-	CViewProps(Post::CGView& view) : m_view(view)
+	CViewProps(CGLView& view) : m_view(view)
 	{
 		addProperty("X-angle", CProperty::Float);
 		addProperty("Y-angle", CProperty::Float);
@@ -198,7 +198,7 @@ public:
 	}
 
 private:
-	Post::CGView&	m_view;
+	CGLView&	m_view;
 };
 
 //-----------------------------------------------------------------------------
@@ -511,7 +511,7 @@ Post::CGLObject* CPostModelPanel::selectedObject()
 void CPostModelPanel::UpdateView()
 {
 	QTreeWidgetItem* psel = ui->m_tree->currentItem();
-	if (psel && psel->text(0) == QString("View"))
+	if (psel && (psel->text(0) == QString("View")))
 	{
 		on_postModel_currentItemChanged(psel, psel);
 	}
@@ -682,12 +682,12 @@ void CPostModelPanel::Update(bool breset)
 					}
 				}
 			}
-	
+*/	
 			Post::CGView& view = *pdoc->GetView();
 			pi1 = new CModelTreeItem(&view, ui->m_tree);
 			pi1->setText(0, "View");
 			pi1->setIcon(0, QIcon(QString(":/icons/view.png")));
-			ui->m_list.push_back(new CViewProps(view));
+			ui->m_list.push_back(new CViewProps(*GetMainWindow()->GetGLView()));
 			pi1->setData(0, Qt::UserRole, (int) (ui->m_list.size() - 1));
 			pi1->setExpanded(true);
 			m_obj.push_back(0);
@@ -705,7 +705,7 @@ void CPostModelPanel::Update(bool breset)
 				pi2->setData(0, Qt::UserRole, (int) (ui->m_list.size() - 1));
 				m_obj.push_back(&key);
 			}
-*/		}
+		}
 
 		// This can crash PostView if po no longer exists (e.g. after new file is read)
 //		if (po) selectObject(po);
@@ -769,6 +769,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int 
 	{
 		Post::CGView* view = GetActiveDocument()->GetView();
 		view->SetCurrentKey(pkey);
+		GetMainWindow()->GetGLView()->GetCamera().SetTransform(*pkey);
 		GetMainWindow()->RedrawGL();
 	}
 }

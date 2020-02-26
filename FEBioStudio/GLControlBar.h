@@ -13,6 +13,8 @@ public:
 
 	void Update();
 
+	void SetMeshItem(int n);
+
 private slots:
 	void onPivotChanged();
 	void onPivotClicked(bool b);

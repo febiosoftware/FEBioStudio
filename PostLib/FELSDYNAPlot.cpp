@@ -189,7 +189,6 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 
 	// get the mesh
 	FEPostMesh* pm = new FEPostMesh;
-	fem.AddMesh(pm);
 	FEPostMesh& mesh = *pm;
 
 	// clear the state data
@@ -210,6 +209,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 		n.r.y = xyz[1];
 		n.r.z = xyz[2];
 	}
+	fem.AddMesh(pm);
 
 	int nread;
 	int n[9];

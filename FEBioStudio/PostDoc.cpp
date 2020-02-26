@@ -215,6 +215,75 @@ void CPostDoc::SetDataField(int n)
 	imp->glm->Update(false);
 }
 
+BOX CPostDoc::GetBoundingBox()
+{
+	BOX b;
+	if (imp->fem) b = imp->fem->GetBoundingBox();
+	return b;
+}
+
+BOX CPostDoc::GetSelectionBox()
+{
+	BOX box;
+
+	if (IsValid() == false)
+	{
+		box = BOX(-1, -1, -1, 1, 1, 1);
+		return box;
+	}
+
+	Post::CGLModel* mdl = GetGLModel();
+	if (mdl == nullptr)
+	{
+		box = BOX(-1, -1, -1, 1, 1, 1);
+	}
+	else
+	{
+		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
+		const vector<FEElement_*> selElems = mdl->GetElementSelection();
+		for (int i = 0; i < (int)selElems.size(); ++i)
+		{
+			FEElement_& el = *selElems[i];
+			int nel = el.Nodes();
+			for (int j = 0; j < nel; ++j) box += mesh.Node(el.m_node[j]).r;
+		}
+
+		const vector<FEFace*> selFaces = GetGLModel()->GetFaceSelection();
+		for (int i = 0; i < (int)selFaces.size(); ++i)
+		{
+			FEFace& face = *selFaces[i];
+			int nel = face.Nodes();
+			for (int j = 0; j < nel; ++j) box += mesh.Node(face.n[j]).r;
+		}
+
+		const vector<FEEdge*> selEdges = GetGLModel()->GetEdgeSelection();
+		for (int i = 0; i < (int)selEdges.size(); ++i)
+		{
+			FEEdge& edge = *selEdges[i];
+			int nel = edge.Nodes();
+			for (int j = 0; j < nel; ++j) box += mesh.Node(edge.n[j]).r;
+		}
+
+		const vector<FENode*> selNodes = GetGLModel()->GetNodeSelection();
+		for (int i = 0; i < (int)selNodes.size(); ++i)
+		{
+			FENode& node = *selNodes[i];
+			box += node.r;
+		}
+	}
+
+	//	if (box.IsValid())
+	{
+		if ((box.Width() < 1e-5) || (box.Height() < 1e-4) || (box.Depth() < 1e-4))
+		{
+			float R = box.Radius();
+			box.InflateTo(R, R, R);
+		}
+	}
+
+	return box;
+}
+
 std::string CPostDoc::GetFileName()
 {
 	return imp->m_fileName;
@@ -264,6 +333,7 @@ bool CPostDoc::LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops
 	imp->glm = new Post::CGLModel(imp->fem);
 
 	imp->m_postObj = new CPostObject(imp->glm);
+	imp->m_postObj->SetName(sztitle);
 
 	imp->m_timeSettings.m_start = 0;
 	imp->m_timeSettings.m_end = GetStates() - 1;
@@ -325,6 +395,74 @@ void CPostDoc::Render(CGLView* view)
 	case ITEM_NODE: selectionMode = Post::SELECT_NODES; break;
 	}
 	imp->glm->SetSelectionMode(selectionMode);
+
+
+	if (vs.m_bShadows)
+	{
+		BOX box = GetBoundingBox();
+
+		float a = vs.m_shadow_intensity;
+		GLfloat shadow[] = { a, a, a, 1 };
+		GLfloat zero[] = { 0, 0, 0, 1 };
+		GLfloat ones[] = { 1,1,1,1 };
+		GLfloat lp[4] = { 0 };
+
+		glEnable(GL_STENCIL_TEST);
+
+		float inf = box.Radius()*100.f;
+
+		vec3d lpv = view->GetLightPosition();
+
+		quatd q = cam.GetOrientation();
+		q.Inverse().RotateVector(lpv);
+
+		lp[0] = lpv.x;
+		lp[1] = lpv.y;
+		lp[2] = lpv.z;
+
+		// set coloring for shadows
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, shadow);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+
+		glStencilFunc(GL_ALWAYS, 0x00, 0xff);
+		glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
+
+		// render the scene
+		imp->glm->Render(rc);
+
+		// Create mask in stencil buffer
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glDepthMask(GL_FALSE);
+
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
+
+		Post::FEModel* fem = imp->glm->GetFEModel();
+		imp->glm->RenderShadows(fem, lpv, inf);
+
+		glCullFace(GL_BACK);
+		glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
+
+		imp->glm->RenderShadows(fem, lpv, inf);
+
+		// Render the scene in light
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glDepthMask(GL_TRUE);
+
+		GLfloat d = vs.m_diffuse;
+		GLfloat dv[4] = { d, d, d, 1.f };
+
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, ones);
+
+		glStencilFunc(GL_EQUAL, 0, 0xff);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+		glDisable(GL_CULL_FACE);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
 
 	imp->glm->Render(rc);
 

@@ -58,3 +58,8 @@ void CMainTabBar::closeView(int n)
 	m_docs.erase(m_docs.begin() + n);
 	removeTab(n);
 }
+
+CPostDoc* CMainTabBar::getPostDoc(int i)
+{
+	return m_docs[i];
+}

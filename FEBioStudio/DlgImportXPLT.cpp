@@ -10,7 +10,7 @@
 // converts a string to a list of numbers. 
 // Note: no white space allowed in the string.
 // Note: the numbers are converted to zero-base
-bool string_to_int_list(char* sz, std::vector<int>& list)
+static bool string_to_int_list(char* sz, std::vector<int>& list)
 {
 	// remove all white-space
 	char* ch = sz;

@@ -48,6 +48,65 @@ GLColor col[COLORS] = {
 	GLColor(120, 0, 240)
 };
 
+void VIEW_SETTINGS::Defaults()
+{
+	m_bgrid = true;
+	m_bmesh = true;
+	m_bfeat = true;
+	m_bnorm = false;
+	m_nrender = RENDER_SOLID;
+	m_scaleNormals = 1.0;
+	m_nconv = 0;
+
+	m_bjoint = true;
+	m_bwall = true;
+	m_brigid = true;
+	m_bfiber = false;
+	m_bcontour = false;
+	m_blma = false;
+	m_fiber_scale = 1.0;
+	m_showHiddenFibers = false;
+	m_showDiscrete = true;
+
+	m_bcull = false;
+	m_bconn = true;
+	m_bmax = true;
+	m_bpart = true;
+	m_bhide = false;
+	m_bext = false;
+	m_bsoft = false;
+	m_fconn = 30.f;
+	m_bcullSel = true;
+	m_bselpath = false;
+
+	m_apply = 0;
+	m_clearUndoOnSave = true;
+
+	m_pos3d = vec3d(0, 0, 0);
+
+	m_bTags = true;
+	m_ntagInfo = 0;
+
+	m_col1 = GLColor(164,164,255);
+	m_col2 = GLColor(96,96,164);		
+
+	m_mcol = GLColor(0, 0, 128);
+	m_fgcol = GLColor(0, 0, 0);
+	m_node_size = 7.f;
+	m_line_size = 1.0f;
+	m_bline_smooth = true;
+	m_bpoint_smooth = true;
+
+	m_snapToGrid = true;
+	m_snapToNode = false;
+
+	m_bLighting = true;
+	m_bShadows = false;
+	m_shadow_intensity = 0.5f;
+	m_ambient = 0.09f;
+	m_diffuse = 0.8f;
+}
+
 //=============================================================================
 CDocObserver::CDocObserver(CDocument* doc) : m_doc(doc)
 {
@@ -130,46 +189,9 @@ void CDocument::NewDocument()
 	m_vs.nstyle = REGION_SELECT_BOX;
 
 	// default display properties
-	m_view.m_bgrid = true;
-	m_view.m_bmesh = true;
-	m_view.m_bfeat = true;
-	m_view.m_bnorm = false;
-	m_view.m_nrender = RENDER_SOLID;
-	m_view.m_scaleNormals = 1.0;
-    m_view.m_nconv = 0;
+	m_view.Defaults();
 
-	m_view.m_bjoint = true;
-	m_view.m_bwall = true;
-	m_view.m_brigid = true;
-	m_view.m_bfiber = false;
-	m_view.m_bcontour = false;
-	m_view.m_blma = false;
-	m_view.m_fiber_scale = 1.0;
-	m_view.m_showHiddenFibers = false;
-	m_view.m_showDiscrete = true;
-
-	m_view.m_bcull = false;
-	m_view.m_bconn = true;
-	m_view.m_bmax = true;
-	m_view.m_bpart = true;
-	m_view.m_bhide = false;
-	m_view.m_bext = false;
-	m_view.m_bsoft = false;
-	m_view.m_fconn = 30.f;
-	m_view.m_bcullSel = true;
-	m_view.m_bselpath = false;
-
-	m_view.m_apply = 0;
-	m_view.m_clearUndoOnSave = true;
-
-	m_view.m_pos3d = vec3d(0, 0, 0);
-
-	m_view.m_bTags = true;
-	m_view.m_ntagInfo = 0;
-
-	//	m_view.m_col1 = GLColor(164,164,255);
-	//	m_view.m_col2 = GLColor(96,96,164);
-
+	// set some theme dependant settings
 	int ntheme = GetMainWindow()->currentTheme();
 	if (ntheme == 0)
 	{
@@ -183,17 +205,6 @@ void CDocument::NewDocument()
 		m_view.m_col2 = GLColor(128, 128, 128);
 		m_view.m_nbgstyle = BG_HORIZONTAL;
 	}
-
-	//	m_view.m_mcol = GLColor(128, 128, 128);
-	m_view.m_mcol = GLColor(0, 0, 128);
-	m_view.m_fgcol = GLColor(0, 0, 0);
-	m_view.m_node_size = 7.f;
-	m_view.m_line_size = 1.0f;
-	m_view.m_bline_smooth = true;
-	m_view.m_bpoint_smooth = true;
-
-	m_view.m_snapToGrid = true;
-	m_view.m_snapToNode = false;
 
 	// reset selection
 	if (m_psel) delete m_psel;

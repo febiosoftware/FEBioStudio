@@ -178,6 +178,21 @@ CGLControlBar::CGLControlBar(CMainWindow* wnd, QWidget* parent) : QWidget(parent
 	ui->showEditButtons(false);
 }
 
+void CGLControlBar::SetMeshItem(int n)
+{
+	CDocument* pdoc = ui->m_wnd->GetDocument();
+	pdoc->SetItemMode(n);
+	switch (n)
+	{
+	case ITEM_ELEM: ui->checkButton(0); break;
+	case ITEM_FACE: ui->checkButton(1); break;
+	case ITEM_EDGE: ui->checkButton(2); break;
+	case ITEM_NODE: ui->checkButton(3); break;
+	default:
+		ui->checkButton(-1);
+	}
+}
+
 void CGLControlBar::Update()
 {
 	CGLView* view = ui->m_wnd->GetGLView();

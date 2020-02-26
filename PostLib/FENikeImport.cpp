@@ -122,7 +122,6 @@ bool FENikeImport::ReadGeometrySection()
 	// create the geometry
 	m_pm = new FEPostMesh;
 	m_pm->Create(m_nn, m_nhel+m_nsel);	
-	m_pfem->AddMesh(m_pm);
 
 	// read the nodes
 	float x, y, z;
@@ -133,6 +132,7 @@ bool FENikeImport::ReadGeometrySection()
 		sscanf(szline, "%*8d%*5d%g%g%g", &x, &y, &z);
 		n.r = vec3d(x,y,z);
 	}
+	m_pfem->AddMesh(m_pm);
 
 	// read the solid elements
 	int n[8], nm;

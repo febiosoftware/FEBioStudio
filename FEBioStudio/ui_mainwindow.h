@@ -289,6 +289,8 @@ public:
 		QAction* actionHideSelection     = addAction("Hide selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
 		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier + Qt::Key_H);
 		QAction* actionUnhideAll         = addAction("Unhide all"        , "actionUnhideAll"        );
+		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); actionFind->setShortcut(Qt::ControlModifier + Qt::Key_F);
+		QAction* actionSelectRange       = addAction("Select in range ...", "actionSelectRange"     );
 		QAction* actionToggleVisible     = addAction("Toggle visibility" , "actionToggleVisible"    , "toggle_visible");
 		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
 		QAction* actionCollapseTransform = addAction("Collapse transform", "actionCollapseTransform");
@@ -393,13 +395,17 @@ public:
 		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
 		actionShowDiscrete    = addAction("Show Discrete sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
 		QAction* actionSnap3D = addAction("3D cursor to selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
-		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::ControlModifier + Qt::Key_F);
+		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
 		actionFront           = addAction("Front", "actionFront");
 		actionBack            = addAction("Back" , "actionBack");
 		actionRight           = addAction("Right", "actionRight");
 		actionLeft            = addAction("Left" , "actionLeft");
 		actionTop             = addAction("Top"  , "actionTop");
 		actionBottom          = addAction("Bottom", "actionBottom");
+		QAction* actionViewVPSave = addAction("Save viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL + Qt::Key_K);
+		QAction* actionViewVPPrev = addAction("Prev viewpoint", "actionViewVPPrev"); actionViewVPPrev->setShortcut(Qt::Key_J);
+		QAction* actionViewVPNext = addAction("Next viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
+		QAction* actionSyncViews  = addAction("Sync all views", "actionSyncViews");
 
 		// --- Help menu ---
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
@@ -525,6 +531,9 @@ public:
 		menuEdit->addAction(actionToggleVisible);
 		menuEdit->addAction(moreSelection->menuAction());
 		menuEdit->addSeparator();
+		menuEdit->addAction(actionFind);
+		menuEdit->addAction(actionSelectRange);
+		menuEdit->addSeparator();
 		menuEdit->addAction(actionTransform);
 		menuEdit->addAction(actionCollapseTransform);
 		menuEdit->addSeparator();
@@ -626,6 +635,11 @@ public:
 		menuView->addAction(actionLeft);
 		menuView->addAction(actionTop);
 		menuView->addAction(actionBottom);
+		menuView->addSeparator();
+		menuView->addAction(actionViewVPSave);
+		menuView->addAction(actionViewVPPrev);
+		menuView->addAction(actionViewVPNext);
+		menuView->addAction(actionSyncViews);
 		menuView->addSeparator();
 
 		// Help menu
@@ -855,6 +869,14 @@ public:
 		meshWnd->show();
 		meshWnd->raise();
 		meshWnd->activateWindow();
+	}
+
+	void updateMeshInspector()
+	{
+		if (meshWnd && meshWnd->isVisible())
+		{
+			meshWnd->Update();
+		}
 	}
 
 	void setRecentFiles(QStringList& recentFiles)

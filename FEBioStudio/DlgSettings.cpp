@@ -140,6 +140,106 @@ public:
 	bool	m_binterior;
 };
 
+//-----------------------------------------------------------------------------
+class CLightingProps : public CPropertyList
+{
+public:
+	CLightingProps()
+	{
+		addProperty("Enable lighting", CProperty::Bool);
+		addProperty("Diffuse intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
+		addProperty("Ambient intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
+		addProperty("Render shadows", CProperty::Bool);
+		addProperty("Shadow intensity", CProperty::Float)->setFloatRange(0.0, 1.0);
+		addProperty("Light direction"  , CProperty::Vec3);
+
+		m_blight = true;
+		m_diffuse = 0.7f;
+		m_ambient = 0.3f;
+		m_bshadow = false;
+		m_shadow = 0.1f;
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		QVariant v;
+		switch (i)
+		{
+		case 0: return m_blight; break;
+		case 1: return m_diffuse; break;
+		case 2: return m_ambient; break;
+		case 3: return m_bshadow; break;
+		case 4: return m_shadow; break;
+		case 5: return vecToString(m_pos); break;
+		}
+		return v;
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		switch (i)
+		{
+		case 0: m_blight = v.toBool(); break;
+		case 1: m_diffuse = v.toFloat(); break;
+		case 2: m_ambient = v.toFloat(); break;
+		case 3: m_bshadow = v.toBool(); break;
+		case 4: m_shadow = v.toFloat(); break;
+		case 5: m_pos = stringToVec(v.toString()); break;
+		}
+	}
+
+public:
+	bool	m_blight;
+	float	m_diffuse;
+	float	m_ambient;
+	bool	m_bshadow;
+	float	m_shadow;
+	vec3f	m_pos;
+};
+
+//-----------------------------------------------------------------------------
+class CCameraProps : public CPropertyList
+{
+public:
+	CCameraProps()
+	{
+		addProperty("Animate camera", CProperty::Bool);
+		addProperty("Animation speed", CProperty::Float)->setFloatRange(0.0, 1.0);
+		addProperty("Animation bias", CProperty::Float)->setFloatRange(0.0, 1.0);
+
+		m_banim = true;
+		m_speed = 0.8f;
+		m_bias = 0.8f;
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		QVariant v;
+		switch (i)
+		{
+		case 0: return m_banim; break;
+		case 1: return m_speed; break;
+		case 2: return m_bias; break;
+		}
+		return v;
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		switch (i)
+		{
+		case 0: m_banim = v.toBool(); break;
+		case 1: m_speed = v.toFloat(); break;
+		case 2: m_bias = v.toFloat(); break;
+		}
+	}
+
+public:
+	bool	m_banim;
+	float	m_speed;
+	float	m_bias;
+};
+
 //=================================================================================================
 ColorGradient::ColorGradient(QWidget* parent) : QWidget(parent)
 {
@@ -466,12 +566,16 @@ public:
 	CPaletteWidget*		m_pal;
 	CColormapWidget*	m_map;
 	CSelectionProps*	m_select;
+	CLightingProps*		m_light;
+	CCameraProps*		m_cam;
 
 	::CPropertyListView*	bg_panel;
 	::CPropertyListView*	di_panel;
 	::CPropertyListView*	ph_panel;
 	::CPropertyListForm*	ui_panel;
 	::CPropertyListView*	se_panel;
+	::CPropertyListView*	li_panel;
+	::CPropertyListView*	ca_panel;
 
 public:
 	CDlgSettings(QDialog* parent, ::CMainWindow* wnd)
@@ -483,6 +587,8 @@ public:
 		m_pal = new CPaletteWidget;
 		m_map = new CColormapWidget;
 		m_select = new CSelectionProps;
+		m_light = new CLightingProps;
+		m_cam = new CCameraProps;
 	}
 
 	void setupUi(::CDlgSettings* pwnd)
@@ -496,9 +602,13 @@ public:
 		ph_panel = new ::CPropertyListView;
 		ui_panel = new ::CPropertyListForm;
 		se_panel = new ::CPropertyListView;
+		li_panel = new ::CPropertyListView;
+		ca_panel = new ::CPropertyListView;
 
 		pt->addTab(bg_panel, "Background");
 		pt->addTab(di_panel, "Display");
+		pt->addTab(li_panel, "Lighting");
+		pt->addTab(ca_panel, "Camera");
 		pt->addTab(ph_panel, "Physics");
 		pt->addTab(se_panel, "Selection");
 		pt->addTab(ui_panel, "UI");
@@ -523,6 +633,9 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 	CDocument* pdoc = m_pwnd->GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	CGLView* glview = pwnd->GetGLView();
+
+	CGLCamera& cam = glview->GetCamera();
 
 	ui->m_bg->m_bg1 = toQColor(view.m_col1);
 	ui->m_bg->m_bg2 = toQColor(view.m_col2);
@@ -552,6 +665,17 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_select->m_backface = view.m_bcullSel;
 	ui->m_select->m_binterior = view.m_bext;
 
+	ui->m_light->m_blight = view.m_bLighting;
+	ui->m_light->m_diffuse = view.m_diffuse;
+	ui->m_light->m_ambient = view.m_ambient;
+	ui->m_light->m_bshadow = view.m_bShadows;
+	ui->m_light->m_shadow = view.m_shadow_intensity;
+	if (glview) ui->m_light->m_pos = glview->GetLightPosition();
+
+	ui->m_cam->m_banim = true;
+	ui->m_cam->m_bias = cam.GetCameraBias();
+	ui->m_cam->m_speed = cam.GetCameraSpeed();
+
 	ui->setupUi(this);
 
 	// fill the palette list
@@ -579,6 +703,8 @@ void CDlgSettings::showEvent(QShowEvent* ev)
 	ui->ph_panel->Update(ui->m_physics);
 	ui->ui_panel->setPropertyList(ui->m_ui);
 	ui->se_panel->Update(ui->m_select);
+	ui->li_panel->Update(ui->m_light);
+	ui->ca_panel->Update(ui->m_cam);
 }
 
 void CDlgSettings::onTabChanged(int n)
@@ -596,6 +722,9 @@ void CDlgSettings::apply()
 	CDocument* pdoc = m_pwnd->GetDocument();
 
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	CGLView* glview = m_pwnd->GetGLView();
+
+	CGLCamera& cam = glview->GetCamera();
 
 	view.m_col1 = toGLColor(ui->m_bg->m_bg1);
 	view.m_col2 = toGLColor(ui->m_bg->m_bg2);
@@ -623,6 +752,16 @@ void CDlgSettings::apply()
 	view.m_ntagInfo = ui->m_select->m_ntagInfo;
 	view.m_bcullSel = ui->m_select->m_backface;
 	view.m_bext = ui->m_select->m_binterior;
+
+	view.m_bLighting = ui->m_light->m_blight;
+	view.m_diffuse   = ui->m_light->m_diffuse;
+	view.m_ambient   = ui->m_light->m_ambient;
+	view.m_bShadows  = ui->m_light->m_bshadow;
+	view.m_shadow_intensity = ui->m_light->m_shadow;
+	if (glview) glview->SetLightPosition(ui->m_light->m_pos);
+
+	cam.SetCameraBias(ui->m_cam->m_bias);
+	cam.SetCameraSpeed(ui->m_cam->m_speed);
 
 	m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
 

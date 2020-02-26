@@ -284,6 +284,8 @@ void FEModel::EvalFaceField(int ntime, int nfield)
 					avg += tmp[j];
 					state.m_NODE[face.n[j]].m_val = tmp[j];
 					state.m_NODE[face.n[j]].m_ntag = 1;
+
+					state.m_FaceData.value(i, j) = tmp[j];
 				}
 
 				state.m_FACE[i].m_val = avg / face.Nodes();

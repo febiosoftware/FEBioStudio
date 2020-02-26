@@ -275,7 +275,6 @@ bool FELSDYNAimport::BuildMesh(FEModel& fem)
 	// build the mesh
 	FEPostMesh* pm = m_pm = new FEPostMesh;
 	pm->Create(nodes, elems);
-	fem.AddMesh(pm);
 
 	// create nodes
 	list<NODE>::iterator in = m_node.begin();
@@ -287,6 +286,7 @@ bool FELSDYNAimport::BuildMesh(FEModel& fem)
 		n.r.y = (float) in->y;
 		n.r.z = (float) in->z;
 	}
+	fem.AddMesh(pm);
 
 	// create solids
 	int ne = 0;

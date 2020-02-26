@@ -168,6 +168,7 @@
     <ClCompile Include="..\..\FEBioStudio\AreaCoverageTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\BuildPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CColorButton.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\CIntInput.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ClassDescriptor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Command.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CommandManager.cpp" />
@@ -206,6 +207,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgEditProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgExportFEBio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFEBioOptimize.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgFind.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFormula.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgImportAbaqus.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgImportCOMSOL.cpp" />
@@ -219,6 +221,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgPurge.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgRAWImport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgRun.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgSelectRange.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSoluteTable.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTimeSettings.cpp" />
@@ -432,12 +435,14 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\DlgFind.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgImportXPLT.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUpload.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\DlgSelectRange.h" />
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\Encrypter.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />

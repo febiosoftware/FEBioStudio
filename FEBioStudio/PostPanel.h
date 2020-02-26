@@ -22,6 +22,8 @@ public:
 
 	void SelectObject(Post::CGLObject* po);
 
+	void OnViewChanged();
+
 public slots:
 	void on_postTab_currentChanged(int index);
 

@@ -13,8 +13,7 @@ CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd),
 
 void CMeshInspector::Update()
 {
-	CDocument* doc = m_wnd->GetDocument();
-	m_po = doc->GetActiveObject();
+	m_po = m_wnd->GetActiveObject();
 	ui->setMesh(m_po);
 
 	UpdateData(ui->var->currentIndex());
@@ -114,7 +113,7 @@ void CMeshInspector::UpdateData(int ndata)
 	CPlotData* pltData = new CBarChartData;
 	for (int i=0; i<M; ++i)
 	{
-		double v = vmin + i*(vmax - vmin)/(NC-1);
+		double v = vmin + i*(vmax - vmin)/(M-1);
 		pltData->addPoint(v, bin[i]);
 	}
 	ui->plot->addPlotData(pltData);

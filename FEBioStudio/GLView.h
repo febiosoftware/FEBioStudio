@@ -377,6 +377,10 @@ public:
 
 	void UpdateWidgets(bool bposition = true);
 
+	// get/set light position
+	vec3f GetLightPosition() { return m_light; }
+	void SetLightPosition(vec3f lp) { m_light = lp; }
+
 protected:
 	void PanView(vec3d r);
 
@@ -415,6 +419,8 @@ protected:
 	double	m_st;	// total scale
 	double	m_sa;	// accumulated scale
 	vec3d	m_ds;	// direction of scale
+
+	vec3f	m_light;
 
 	double	m_wt;	// total rotation
 	double	m_wa;	// total accumulated rotation

@@ -57,6 +57,15 @@ struct VIEW_SETTINGS
 
 	bool	m_bTags;
 	int		m_ntagInfo;	// amount of info shown on tags
+
+	// lighting settings
+	bool	m_bLighting;	// use lighting or not
+	bool	m_bShadows;		// use shadows or not
+	float	m_shadow_intensity;	// shadow intensity
+	float	m_ambient;		// scene light ambient intensity
+	float	m_diffuse;		// scene light diffuse inentisty
+
+	void Defaults();
 };
 
 //-----------------------------------------------------------------------------

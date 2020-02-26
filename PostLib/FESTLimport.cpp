@@ -124,7 +124,6 @@ void FESTLimport::build_mesh()
 	// create the mesh
 	FEPostMesh* pm = new FEPostMesh();
 	pm->Create(NN, NF);
-	m_pfem->AddMesh(pm);
 
 	// create nodes
 	for (i=0; i<NN; ++i)
@@ -133,6 +132,7 @@ void FESTLimport::build_mesh()
 		vec3f& ri = m_Node[i];
 		n.r = ri;
 	}
+	m_pfem->AddMesh(pm);
 
 	// create elements
 	list<FACET>::iterator is = m_Face.begin();
