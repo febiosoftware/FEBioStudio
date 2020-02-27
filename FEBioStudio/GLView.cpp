@@ -2072,6 +2072,9 @@ void CGLView::PrepModel()
 	{
 		VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
+		// set the line width
+		glLineWidth(view.m_line_size);
+
 		// turn on/off lighting
 		if (view.m_bLighting)
 			glEnable(GL_LIGHTING);
@@ -2655,8 +2658,6 @@ void CGLView::RenderMaterialFibers()
 	FEElementRef rel;
 
 	glDisable(GL_LIGHTING);
-
-	glLineWidth(view.m_line_size);
 
 	BOX box = model.GetBoundingBox();
 	double h = 0.05*box.GetMaxExtent()*view.m_fiber_scale;
@@ -6096,7 +6097,6 @@ void CGLView::RenderFeatureEdges()
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glColor3ub(0, 0, 0);
-	glLineWidth(1.5f);
 
 	CDocument* pdoc = GetDocument();
 	FEModel* ps = pdoc->GetFEModel();
@@ -6253,7 +6253,6 @@ void CGLView::RenderEdges(GObject* po)
 {
 	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT);
 	glDisable(GL_LIGHTING);
-	glLineWidth(1.5f);
 	glColor3ub(0, 0, 255);
 
 	GLMesh& m = *po->GetRenderMesh();
@@ -6278,7 +6277,6 @@ void CGLView::RenderSelectedEdges(GObject* po)
 	glDisable(GL_LIGHTING);
 	glColor3ub(255, 255, 0);
 	vec3d r1, r2;
-	glLineWidth(2.0f);
 
 	GLMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
@@ -7568,7 +7566,6 @@ void CGLView::RenderMeshLines()
 	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
 	GLColor c = vs.m_mcol;
 	glColor3ub(c.r, c.g, c.b);
-	glLineWidth(vs.m_line_size);
 
 	for (int i = 0; i<model.Objects(); ++i)
 	{

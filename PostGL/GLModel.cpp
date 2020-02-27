@@ -458,7 +458,7 @@ void CGLModel::Render(CGLContext& rc)
 	// render the edges
 	if (mode == SELECT_EDGES)
 	{
-		glDepthRange(0, 0.999999);
+		glDepthRange(0, 0.9999);
 		RenderEdges(fem, rc);
 		glDepthRange(0, 1);
 	}
@@ -466,7 +466,7 @@ void CGLModel::Render(CGLContext& rc)
 	// render the nodes
 	if (mode == SELECT_NODES)
 	{
-		glDepthRange(0, 0.999985);
+		glDepthRange(0, 0.99985);
 		RenderNodes(fem, rc);
 		glDepthRange(0, 1);
 	}
@@ -689,7 +689,6 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// render the outline of the selected elements
 	glDisable(GL_DEPTH_TEST);
 	glColor3ub(255,255,0);
-	glLineWidth(1.5f);
 
 	// do the selected elements first
 	if (mode == SELECT_ELEMS)
@@ -1017,8 +1016,6 @@ void CGLModel::RenderSolidPart(FEModel* ps, CGLContext& rc, int mat)
 	// get the material
 	FEMaterial* pmat = ps->GetMaterial(mat);
 
-	glPolygonOffset(1.0, 1.0);
-
 	// set the rendering mode
 	int nmode = m_nrender;
 	if (pmat->m_nrender != RENDER_MODE_DEFAULT) nmode = pmat->m_nrender;
@@ -1035,8 +1032,6 @@ void CGLModel::RenderSolidPart(FEModel* ps, CGLContext& rc, int mat)
 		RenderOutline(rc, mat);
 	}
 
-	glPolygonOffset(0.0, 0.0);
-
 	// Render the mesh lines
 	if (m_bshowMesh && (GetSelectionMode() != SELECT_EDGES))
 	{
@@ -1051,16 +1046,18 @@ void CGLModel::RenderSolidPart(FEModel* ps, CGLContext& rc, int mat)
 		// make sure the material is visible
 		if (pmat->bvisible && pmat->bmesh)
 		{
-//			glDepthRange(0, 0.999999);
+			glDepthRange(0, 0.9999);
 
 			// set the material properties
 			GLColor c = pmat->meshcol;
 			glColor3ub(c.r, c.g, c.b);
 			RenderMeshLines(ps, mat);
 
-//			glDepthRange(0, 1.0);
+			glDepthRange(0, 1.0);
 		}
 		CGLPlaneCutPlot::EnableClipPlanes();
+
+		glPolygonOffset(0.0, 0.0);
 
 		// restore attributes
 		glPopAttrib();

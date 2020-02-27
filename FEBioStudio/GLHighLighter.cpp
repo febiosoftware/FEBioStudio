@@ -127,6 +127,9 @@ void GLHighlighter::draw()
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 
+	GLfloat line_old;
+	glGetFloatv(GL_LINE_WIDTH, &line_old);
+
 	glLineWidth(2.0f);
 
     for (GItem* item : m_This.m_item)
@@ -140,6 +143,7 @@ void GLHighlighter::draw()
 		GEdge* edge = dynamic_cast<GEdge*>(m_This.m_activeItem);
 		if (edge) drawEdge(view, edge, m_This.m_activeColor);
 	}
+	glLineWidth(line_old);
 
 	glPopAttrib();
 }
