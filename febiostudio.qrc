@@ -143,5 +143,7 @@
 		<file>icons/folder.png</file>
 		<file>icons/mesh.png</file>
 		<file>icons/view.png</file>
+		<file>icons/snapshot.png</file>
+		<file>icons/ignore.png</file>
 	</qresource>
 </RCC>

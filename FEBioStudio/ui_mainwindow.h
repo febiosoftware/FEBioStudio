@@ -268,6 +268,7 @@ public:
 		QAction* actionOpen       = addAction("Open ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
 		QAction* actionSaveAs     = addAction("Save as ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
+		QAction* actionSnapShot   = addAction("Snapshot ...", "actionSnapShot", "snapshot");
 		QAction* actionInfo       = addAction("Model info ...", "actionInfo");
 		QAction* actionImportFE   = addAction("Import FE model ..." , "actionImportFEModel");
 		QAction* actionExportFE   = addAction("Export FE model ..." , "actionExportFEModel");
@@ -667,6 +668,7 @@ public:
 		mainToolBar->addAction(actionNew );
 		mainToolBar->addAction(actionOpen);
 		mainToolBar->addAction(actionSave);
+		mainToolBar->addAction(actionSnapShot);
 		mainToolBar->addSeparator();
 		mainToolBar->addAction(actionUndo);
 		mainToolBar->addAction(actionRedo);

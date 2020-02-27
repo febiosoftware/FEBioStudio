@@ -191,6 +191,7 @@ public slots:
 	void on_actionOpen_triggered();
 	void on_actionSave_triggered();
 	void on_actionSaveAs_triggered();
+	void on_actionSnapShot_triggered();
 	void on_actionInfo_triggered();
 	void on_actionImportFEModel_triggered();
 	void on_actionExportFEModel_triggered();

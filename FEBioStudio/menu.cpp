@@ -389,6 +389,39 @@ void CMainWindow::on_actionSaveAs_triggered()
 	}
 }
 
+void CMainWindow::on_actionSnapShot_triggered()
+{
+	QImage img = ui->glview->CaptureScreen();
+
+	const uchar* bits = img.bits();
+
+	QStringList filters;
+	filters << "Bitmap files (*.bmp)"
+		<< "PNG files (*.png)"
+		<< "JPEG files (*.jpg)";
+
+	QFileDialog dlg(this, "Save Image");
+	dlg.setNameFilters(filters);
+	dlg.setFileMode(QFileDialog::AnyFile);
+	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	if (dlg.exec())
+	{
+		QString fileName = dlg.selectedFiles().first();
+		int nfilter = filters.indexOf(dlg.selectedNameFilter());
+		bool bret = false;
+		switch (nfilter)
+		{
+		case 0: bret = img.save(fileName, "BMP"); break;
+		case 1: bret = img.save(fileName, "PNG"); break;
+		case 2: bret = img.save(fileName, "JPG"); break;
+		}
+		if (bret == false)
+		{
+			QMessageBox::critical(this, "PostView", "Failed saving image file.");
+		}
+	}
+}
+
 void CMainWindow::on_actionInfo_triggered()
 {
 	CDocument* doc = GetDocument();
@@ -2223,7 +2256,7 @@ void CMainWindow::on_actionAbout_triggered()
 		<p><b>Version %1.%2.%3</b></p>\
 		<p>Musculoskeletal Research Laboratories, University of Utah</p>\
 		<p>Musculoskeletal Biomechanics Laboratory, Columbia University</p>\
-		<p>Copyright (c) 2019, All rights reserved</p>\
+		<p>Copyright (c) 2019 - 2020, All rights reserved</p>\
 		<hr>\
 		<p>When using FEBio or FEBioStudio in your publications, please cite:</p>\
 		<p><b>Maas SA, Ellis BJ, Ateshian GA, Weiss JA: FEBio: Finite Elements for Biomechanics. Journal of Biomechanical Engineering, 134(1):011005, 2012</b></p>"\

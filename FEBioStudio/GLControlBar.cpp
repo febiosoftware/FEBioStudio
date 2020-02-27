@@ -31,6 +31,7 @@ public:
 	QDoubleSpinBox*	maxAngle;
 	QToolButton*	selPath;
 	QToolButton*	cull;
+	QToolButton*	noint;
 
 public:
 	void setup(CGLControlBar* bar)
@@ -62,6 +63,7 @@ public:
 
 		selPath = addButton(QIcon(":/icons/select_path.png"), "Select by closest path");
 		cull    = addButton(QIcon(":/icons/backface.png"), "Select backfacing");
+		noint   = addButton(QIcon(":/icons/ignore.png"), "Ignore interior");
 
 		QHBoxLayout* hl = new QHBoxLayout;
 		hl->setMargin(0);
@@ -79,6 +81,7 @@ public:
 		hl->addWidget(maxAngle);
 		hl->addWidget(selPath);
 		hl->addWidget(cull);
+		hl->addWidget(noint);
 		hl->addStretch();
 
 		QButtonGroup* bg = new QButtonGroup(bar);
@@ -125,6 +128,7 @@ public:
 		QObject::connect(selPath, SIGNAL(clicked(bool)), bar, SLOT(onSelectClosestPath(bool)));
 		QObject::connect(maxAngle, SIGNAL(valueChanged(double)), bar, SLOT(onMaxAngleChanged(double)));
 		QObject::connect(cull, SIGNAL(clicked(bool)), bar, SLOT(onSelectBackfacing(bool)));
+		QObject::connect(noint, SIGNAL(clicked(bool)), bar, SLOT(onIgnoreInterior(bool)));
 	}
 
 	QToolButton* addButton(const QIcon& icon, const QString& toolTip, bool isCheckable = true)
@@ -235,6 +239,7 @@ void CGLControlBar::Update()
 			ui->selPath->setChecked(view.m_bselpath);
 			ui->maxAngle->setValue(view.m_fconn);
 			ui->cull->setChecked(!view.m_bcullSel);
+			ui->noint->setChecked(view.m_bext);
 
 			return;
 		}
@@ -261,6 +266,7 @@ void CGLControlBar::Update()
 			ui->selPath->setChecked(view.m_bselpath);
 			ui->maxAngle->setValue(view.m_fconn);
 			ui->cull->setChecked(!view.m_bcullSel);
+			ui->noint->setChecked(view.m_bext);
 
 			return;
 		}
@@ -285,6 +291,7 @@ void CGLControlBar::Update()
 			ui->selPath->setChecked(view.m_bselpath);
 			ui->maxAngle->setValue(view.m_fconn);
 			ui->cull->setChecked(!view.m_bcullSel);
+			ui->noint->setChecked(view.m_bext);
 
 			return;
 		}
@@ -395,4 +402,11 @@ void CGLControlBar::onSelectBackfacing(bool b)
 	CDocument* pdoc = ui->m_wnd->GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	view.m_bcullSel = !b;
+}
+
+void CGLControlBar::onIgnoreInterior(bool b)
+{
+	CDocument* pdoc = ui->m_wnd->GetDocument();
+	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	view.m_bext = b;
 }

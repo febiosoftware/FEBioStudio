@@ -26,6 +26,7 @@ private slots:
 	void onSelectClosestPath(bool b);
 	void onMaxAngleChanged(double v);
 	void onSelectBackfacing(bool b);
+	void onIgnoreInterior(bool b);
 	void onHideSelection(bool b);
 	void onShowAll(bool b);
 	void onZoomSelectClicked(bool b);
