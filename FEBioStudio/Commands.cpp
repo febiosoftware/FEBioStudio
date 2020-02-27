@@ -1601,50 +1601,48 @@ void CCmdSelectElements::UnExecute()
 // CCmdUnselectElements
 //////////////////////////////////////////////////////////////////////
 
-CCmdUnselectElements::CCmdUnselectElements(int* pe, int N) : CCommand("Unselect")
+CCmdUnselectElements::CCmdUnselectElements(FEMesh* mesh, int* pe, int N) : CCommand("Unselect")
 {
-	int i;
-
 	// get the current mesh
-	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
+	m_mesh = mesh;
+	FEMesh* pm = mesh;
 	int M = pm->Elements();
 
 	// store the elements selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Element(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->Element(i).IsSelected();
 
 	// store the elements we need to select
 	m_N = N;
 	m_pel = new int[m_N];
-	for (i = 0; i<N; ++i) m_pel[i] = pe[i];
+	for (int i = 0; i<N; ++i) m_pel[i] = pe[i];
 }
 
-CCmdUnselectElements::CCmdUnselectElements(const vector<int>& elem) : CCommand("Unselect")
+CCmdUnselectElements::CCmdUnselectElements(FEMesh* mesh, const vector<int>& elem) : CCommand("Unselect")
 {
-	int i;
 	int N = (int)elem.size();
 
 	// get the current mesh
-	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
+	m_mesh = mesh;
+	FEMesh* pm = m_mesh;
 	int M = pm->Elements();
 
 	// store the elements selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Element(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->Element(i).IsSelected();
 
 	// store the elements we need to select
 	m_N = N;
 	m_pel = new int[m_N];
-	for (i = 0; i<N; ++i) m_pel[i] = elem[i];
+	for (int i = 0; i<N; ++i) m_pel[i] = elem[i];
 }
 
 
 void CCmdUnselectElements::Execute()
 {
-	int i;
 	m_pDoc->SetItemMode(ITEM_ELEM);
-	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
-	for (i = 0; i<m_N; ++i) pm->Element(m_pel[i]).Unselect();
+	FEMesh* pm = m_mesh;
+	for (int i = 0; i<m_N; ++i) pm->Element(m_pel[i]).Unselect();
 
 	GObject* po = pm->GetGObject();
 	if (po) po->UpdateSelection();
@@ -1653,7 +1651,7 @@ void CCmdUnselectElements::Execute()
 void CCmdUnselectElements::UnExecute()
 {
 	m_pDoc->SetItemMode(ITEM_ELEM);
-	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
+	FEMesh* pm = m_mesh;
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
 		FEElement& el = pm->Element(i);
@@ -2060,50 +2058,46 @@ void CCmdSelectFENodes::UnExecute()
 // CCmdUnselectNodes
 //////////////////////////////////////////////////////////////////////
 
-CCmdUnselectNodes::CCmdUnselectNodes(int* pn, int N) : CCommand("Unselect")
+CCmdUnselectNodes::CCmdUnselectNodes(FELineMesh* pm, int* pn, int N) : CCommand("Unselect")
 {
-	int i;
-
 	// get the current mesh
-	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
+	m_mesh = pm;
 	int M = pm->Nodes();
 
 	// store the nodes selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Node(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->Node(i).IsSelected();
 
 	// store the nodes we need to select
 	m_N = N;
 	m_pn = new int[m_N];
-	for (i = 0; i<N; ++i) m_pn[i] = pn[i];
+	for (int i = 0; i<N; ++i) m_pn[i] = pn[i];
 }
 
-CCmdUnselectNodes::CCmdUnselectNodes(const vector<int>& node) : CCommand("Unselect")
+CCmdUnselectNodes::CCmdUnselectNodes(FELineMesh* pm, const vector<int>& node) : CCommand("Unselect")
 {
-	int i;
 	int N = (int)node.size();
 
 	// get the current mesh
-	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
+	m_mesh = pm;
 	int M = pm->Nodes();
 
 	// store the nodes selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Node(i).IsSelected();
+	for (int i = 0; i<M; ++i) m_ptag[i] = pm->Node(i).IsSelected();
 
 	// store the nodes we need to select
 	m_N = N;
 	m_pn = new int[m_N];
-	for (i = 0; i<N; ++i) m_pn[i] = node[i];
+	for (int i = 0; i<N; ++i) m_pn[i] = node[i];
 }
 
 
 void CCmdUnselectNodes::Execute()
 {
-	int i;
 	m_pDoc->SetItemMode(ITEM_NODE);
-	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
-	for (i = 0; i<m_N; ++i) pm->Node(m_pn[i]).Unselect();
+	FELineMesh* pm = m_mesh;
+	for (int i = 0; i<m_N; ++i) pm->Node(m_pn[i]).Unselect();
 	GObject* po = pm->GetGObject();
 	if (po) po->UpdateSelection();
 }
@@ -2111,7 +2105,7 @@ void CCmdUnselectNodes::Execute()
 void CCmdUnselectNodes::UnExecute()
 {
 	m_pDoc->SetItemMode(ITEM_NODE);
-	FEMesh* pm = m_pDoc->GetActiveObject()->GetFEMesh();
+	FELineMesh* pm = m_mesh;
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);

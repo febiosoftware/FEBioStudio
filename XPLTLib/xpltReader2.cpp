@@ -1598,13 +1598,16 @@ bool XpltReader2::ReadElemData_ITEM(XpltReader2::Domain& dom, Post::FEMeshData& 
 	case ARRAY:
 	{
 		vector<float> a(NE*arrSize);
-		m_ar.read(a);
-		FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(s);
+		if (arrSize > 0)
+		{
+			m_ar.read(a);
+			FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(s);
 
-		vector<int> elem(NE);
-		for (int i = 0; i<NE; ++i) elem[i] = dom.elem[i].index;
+			vector<int> elem(NE);
+			for (int i = 0; i < NE; ++i) elem[i] = dom.elem[i].index;
 
-		dm.setData(a, elem);
+			dm.setData(a, elem);
+		}
 	}
 	break;
 	case ARRAY_VEC3F:

@@ -75,7 +75,6 @@ public:
 public slots:
 	void accept();
 	void onClicked(QAbstractButton*);
-	void onTabChanged(int n);
 
 private:
 	void UpdatePalettes();

@@ -659,14 +659,15 @@ protected:
 class CCmdUnselectElements : public CCommand
 {
 public:
-	CCmdUnselectElements(int* pe, int N);
-	CCmdUnselectElements(const vector<int>& elem);
+	CCmdUnselectElements(FEMesh* mesh, int* pe, int N);
+	CCmdUnselectElements(FEMesh* mesh, const vector<int>& elem);
 	~CCmdUnselectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	FEMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
 	bool	m_badd; // add to selection or not
@@ -778,14 +779,15 @@ protected:
 class CCmdUnselectNodes : public CCommand
 {
 public:
-	CCmdUnselectNodes(int* pn, int N);
-	CCmdUnselectNodes(const vector<int>& node);
+	CCmdUnselectNodes(FELineMesh* pm, int* pn, int N);
+	CCmdUnselectNodes(FELineMesh* pm, const vector<int>& node);
 	~CCmdUnselectNodes() { delete[] m_ptag; delete[] m_pn; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	FELineMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of nodes
 	int*	m_pn;	// array of nodes indices we need to select
 	bool	m_badd; // add to selection or not

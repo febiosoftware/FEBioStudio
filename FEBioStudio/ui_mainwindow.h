@@ -57,6 +57,7 @@ public:
 	QMenu* menuRecentFiles;
 	QMenu* menuRecentFEFiles;
 	QMenu* menuRecentGeomFiles;
+	QMenu* menuWindows;
 
 	QActionGroup* recentFilesActionGroup;
 	QActionGroup* recentFEFilesActionGroup;
@@ -642,6 +643,8 @@ public:
 		menuView->addAction(actionSyncViews);
 		menuView->addSeparator();
 
+		menuWindows = menuView->addMenu("Windows");
+
 		// Help menu
 		menuBar->addAction(menuHelp->menuAction());
 		menuHelp->addAction(actionFEBioURL);
@@ -800,21 +803,21 @@ public:
 		fileViewer->setObjectName(QStringLiteral("fileViewer"));
 		dock1->setWidget(fileViewer);
 		m_wnd->addDockWidget(Qt::LeftDockWidgetArea, dock1);
-		menuView->addAction(dock1->toggleViewAction());
+		menuWindows->addAction(dock1->toggleViewAction());
 
 		QDockWidget* dock2 = new QDockWidget("Model", m_wnd); dock2->setObjectName("dockModel");
 		dock2->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 		modelViewer = new ::CModelViewer(m_wnd, dock2);
 		modelViewer->setObjectName("modelViewer");
 		dock2->setWidget(modelViewer);
-		menuView->addAction(dock2->toggleViewAction());
+		menuWindows->addAction(dock2->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock1, dock2);
 
 		QDockWidget* dock3 = new QDockWidget("Build", m_wnd); dock3->setObjectName("dockBuild");
 		dock3->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 		buildPanel = new ::CBuildPanel(m_wnd, dock3);
 		dock3->setWidget(buildPanel);
-		menuView->addAction(dock3->toggleViewAction());
+		menuWindows->addAction(dock3->toggleViewAction());
 		m_wnd->addDockWidget(Qt::RightDockWidgetArea, dock3);
 //		m_wnd->tabifyDockWidget(dock2, dock3);
 
@@ -822,27 +825,27 @@ public:
 		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
 		logPanel = new ::CLogPanel(dock4);
 		dock4->setWidget(logPanel);
-		menuView->addAction(dock4->toggleViewAction());
+		menuWindows->addAction(dock4->toggleViewAction());
 		m_wnd->addDockWidget(Qt::BottomDockWidgetArea, dock4);
 
 		QDockWidget* dock5 = new QDockWidget("Post", m_wnd); dock5->setObjectName("dockPost");
 		dock5->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 		postPanel = new ::CPostPanel(m_wnd, dock5);
 		dock5->setWidget(postPanel);
-		menuView->addAction(dock5->toggleViewAction());
+		menuWindows->addAction(dock5->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock1, dock5);
 
 		QDockWidget* dock6 = new QDockWidget("Notes", m_wnd); dock6->setObjectName("dockInfo");
 		infoPanel = new ::CInfoPanel(wnd, dock6);
 		dock6->setWidget(infoPanel);
-		menuView->addAction(dock6->toggleViewAction());
+		menuWindows->addAction(dock6->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock6);
 
 #ifdef MODEL_REPO
 		QDockWidget* dock7 = new QDockWidget("Model DB", m_wnd); dock7->setObjectName("dockDatabase");
 		databasePanel = new ::CDatabasePanel(wnd, dock7);
 		dock7->setWidget(databasePanel);
-		menuView->addAction(dock7->toggleViewAction());
+		menuWindows->addAction(dock7->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock1, dock7);
 #endif
 		// make sure the file viewer is the visible tab

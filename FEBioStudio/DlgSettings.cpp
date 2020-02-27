@@ -5,10 +5,12 @@
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QTabWidget>
+#include <QListWidget>
 #include <QLabel>
 #include <QDialogButtonBox>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QStackedWidget>
 #include "PropertyList.h"
 #include "PropertyListForm.h"
 #include "PropertyListView.h"
@@ -593,10 +595,6 @@ public:
 
 	void setupUi(::CDlgSettings* pwnd)
 	{
-		QVBoxLayout* pg = new QVBoxLayout(pwnd);
-
-		QTabWidget* pt = new QTabWidget;
-
 		bg_panel = new ::CPropertyListView;
 		di_panel = new ::CPropertyListView;
 		ph_panel = new ::CPropertyListView;
@@ -605,16 +603,27 @@ public:
 		li_panel = new ::CPropertyListView;
 		ca_panel = new ::CPropertyListView;
 
-		pt->addTab(bg_panel, "Background");
-		pt->addTab(di_panel, "Display");
-		pt->addTab(li_panel, "Lighting");
-		pt->addTab(ca_panel, "Camera");
-		pt->addTab(ph_panel, "Physics");
-		pt->addTab(se_panel, "Selection");
-		pt->addTab(ui_panel, "UI");
-		pt->addTab(m_pal, "Palette");
-		pt->addTab(m_map, "Colormap");
-		pg->addWidget(pt);
+		QStackedWidget* stack = new QStackedWidget;
+		QListWidget* list = new QListWidget;
+
+		stack->addWidget(bg_panel); list->addItem("Background");
+		stack->addWidget(ca_panel); list->addItem("Camera");
+		stack->addWidget(m_map   ); list->addItem("Colormap");
+		stack->addWidget(di_panel); list->addItem("Display");
+		stack->addWidget(li_panel); list->addItem("Lighting");
+		stack->addWidget(m_pal   ); list->addItem("Palette");
+		stack->addWidget(ph_panel); list->addItem("Physics");
+		stack->addWidget(se_panel); list->addItem("Selection");
+		stack->addWidget(ui_panel); list->addItem("UI");
+		list->setResizeMode(QListView::ResizeMode::Adjust);
+
+		QHBoxLayout* hl = new QHBoxLayout;
+		hl->setMargin(0);
+		hl->addWidget(list);
+		hl->addWidget(stack);
+		
+		QVBoxLayout* pg = new QVBoxLayout(pwnd);
+		pg->addLayout(hl);
 
 		buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply);
 		pg->addWidget(buttonBox);
@@ -622,7 +631,7 @@ public:
 		QObject::connect(buttonBox, SIGNAL(accepted()), pwnd, SLOT(accept()));
 		QObject::connect(buttonBox, SIGNAL(rejected()), pwnd, SLOT(reject()));
 		QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), pwnd, SLOT(onClicked(QAbstractButton*)));
-		QObject::connect(pt, SIGNAL(currentChanged(int)), pwnd, SLOT(onTabChanged(int)));
+		QObject::connect(list, SIGNAL(currentRowChanged(int)), stack, SLOT(setCurrentIndex(int)));
 	}
 };
 
@@ -630,6 +639,7 @@ public:
 CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pwnd))
 {
 	m_pwnd = pwnd;
+	setWindowTitle("Options");
 
 	CDocument* pdoc = m_pwnd->GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
@@ -705,16 +715,6 @@ void CDlgSettings::showEvent(QShowEvent* ev)
 	ui->se_panel->Update(ui->m_select);
 	ui->li_panel->Update(ui->m_light);
 	ui->ca_panel->Update(ui->m_cam);
-}
-
-void CDlgSettings::onTabChanged(int n)
-{
-	switch (n)
-	{
-	case 0: ui->bg_panel->FitGeometry(); break;
-	case 1: ui->di_panel->FitGeometry(); break;
-	case 2: ui->ph_panel->FitGeometry(); break;
-	}
 }
 
 void CDlgSettings::apply()

@@ -4433,14 +4433,14 @@ void CGLView::SelectFEElements(int x, int y)
 				}
 			}
 
-			if (m_bctrl) pcmd = new CCmdUnselectElements(&pint[0], m);
+			if (m_bctrl) pcmd = new CCmdUnselectElements(pm, &pint[0], m);
 			else pcmd = new CCmdSelectElements(pm, &pint[0], m, m_bshift);
 		}
 		else
 		{
 			int num = (int)index;
 			if (m_bctrl)
-				pcmd = new CCmdUnselectElements(&num, 1);
+				pcmd = new CCmdUnselectElements(pm, &num, 1);
 			else
 				pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
 		}
@@ -4878,12 +4878,12 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 			for (int i = 0; i<pm->Nodes(); ++i)
 				if (pm->Node(i).m_ntag == 1) pint[m++] = i;
 
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(&pint[0], m);
+			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &pint[0], m);
 			else pcmd = new CCmdSelectFENodes(pm, &pint[0], m, m_bshift);
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(&index, 1);
+			if (m_bctrl) pcmd = new CCmdUnselectNodes(lineMesh, &index, 1);
 			else pcmd = new CCmdSelectFENodes(lineMesh, &index, 1, m_bshift);
 			lastIndex = -1;
 		}
@@ -5380,7 +5380,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectNodes(selectedNodes);
+	if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, selectedNodes);
 	else pcmd = new CCmdSelectFENodes(pm, selectedNodes, m_bshift);
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -5526,7 +5526,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectElements(selectedElements);
+	if (m_bctrl) pcmd = new CCmdUnselectElements(pm, selectedElements);
 	else pcmd = new CCmdSelectElements(pm, selectedElements, m_bshift);
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -5834,12 +5834,12 @@ void CGLView::SelectFENodes(int x, int y)
 			for (int i = 0; i<pm->Nodes(); ++i)
 				if (pm->Node(i).m_ntag == 1) pint[m++] = i;
 
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(&pint[0], m);
+			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &pint[0], m);
 			else pcmd = new CCmdSelectFENodes(pm, &pint[0], m, m_bshift);
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnselectNodes(&index, 1);
+			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &index, 1);
 			else pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
 			lastIndex = -1;
 		}
