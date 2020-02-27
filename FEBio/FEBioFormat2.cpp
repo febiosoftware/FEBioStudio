@@ -462,8 +462,9 @@ bool FEBioFormat2::ParseBoundarySection(XMLTag& tag)
 	++tag;
 	do
 	{
-		if      (tag == "fix"      ) ParseBCFixed     (m_pBCStep, tag);
-		else if (tag == "prescribe") ParseBCPrescribed(m_pBCStep, tag);
+		if      (tag == "fix"       ) ParseBCFixed     (m_pBCStep, tag);
+		else if (tag == "prescribe" ) ParseBCPrescribed(m_pBCStep, tag);
+		else if (tag == "rigid_body") ParseRigidConstraint(m_pBCStep, tag);
 		else ParseUnknownTag(tag);
 		++tag;
 	} while (!tag.isend());
@@ -2804,7 +2805,8 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 				if (hasName == false) sprintf(szname, "RigidForce%02d", n++);
 				pf->SetName(szname);
 				pstep->AddRC(pf);
-				febio.AddParamCurve(pf->GetLoadCurve(), lc - 1);
+				if (lc > 0) febio.AddParamCurve(pf->GetLoadCurve(), lc - 1);
+				else pf->GetLoadCurve()->Clear();
 			}
 			else ParseUnknownTag(tag);
 		}
@@ -3000,8 +3002,6 @@ bool FEBioFormat2::ParseStepSection(XMLTag &tag)
 	FEModel& fem = GetFEModel();
 	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis, szname);
 	m_pBCStep = m_pstep;
-
-	m_nAnalysis = -1;
 
 	do
 	{
