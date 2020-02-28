@@ -180,8 +180,8 @@ double CIntegrateWindow::IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* p
 double CIntegrateWindow::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	double res = 0.0;
-	float v[4];
-	vec3f r[4];
+	float v[FEFace::MAX_NODES];
+	vec3f r[FEFace::MAX_NODES];
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
 		FEFace& f = mesh.Face(i);
@@ -191,11 +191,27 @@ double CIntegrateWindow::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* p
 
 			// get the nodal values
 			for (int j=0; j<nn; ++j) v[j] = ps->m_NODE[f.n[j]].m_val;
-			if (nn==3) v[3] = v[2];
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				v[3] = v[2];
+				break;
+			}
 
 			// get the nodal coordinates
 			for (int j=0; j<nn; ++j) r[j] = ps->m_NODE[f.n[j]].m_rt;
-			if (nn==3) r[3] = r[2];
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				r[3] = r[2];
+				break;
+			}
 
 			// add to integral
 			res += IntegrateQuad(r, v);
@@ -210,8 +226,8 @@ double CIntegrateWindow::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* p
 double CIntegrateWindow::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 {
 	double res = 0.0;
-	float v[8];
-	vec3f r[8];
+	float v[FEElement::MAX_NODES];
+	vec3f r[FEElement::MAX_NODES];
 	for (int i=0; i<mesh.Elements(); ++i)
 	{
 		FEElement_& e = mesh.ElementRef(i);
@@ -236,6 +252,8 @@ double CIntegrateWindow::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* p
 				break;
 			case FE_TET4:
 			case FE_TET5:
+			case FE_TET10:
+			case FE_TET15:
 				v[7] = v[3]; r[7] = r[3];
 				v[6] = v[3]; r[6] = r[3];
 				v[5] = v[3]; r[5] = r[3];
