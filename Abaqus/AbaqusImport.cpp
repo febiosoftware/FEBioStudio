@@ -2112,7 +2112,7 @@ bool AbaqusImport::read_solid_section(char* szline, FILE* fp)
 	ATTRIBUTE att[5];
 	int n = parse_line(szline, att);
 
-	AbaqusModel::PART* pg = m_inp.CurrentPart();
+	AbaqusModel::PART* pg = m_inp.GetActivePart(true);
 	if (pg == 0) return false;
 
 	const char* szelset = find_attribute(att, 5, "elset");

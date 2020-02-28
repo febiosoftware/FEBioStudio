@@ -286,6 +286,9 @@ void CMainWindow::ReadNextFileInQueue()
 	// get the next file name
 	QString fileName = m_fileQueue.at(0);
 
+	// remove the last file that was read
+	m_fileQueue.removeAt(0);
+
 	// create a file reader
 	FileReader* fileReader = CreateFileReader(fileName);
 
@@ -486,7 +489,7 @@ void CMainWindow::finishedReadingFile(bool success, const QString& errorString)
 			QMessageBox::critical(this, "FEBio Studio", err);
 		}
 
-		QString err = QString("FAILED:\n%1").arg(errorString);
+		QString err = QString("FAILED:\n%1\n").arg(errorString);
 		AddLogEntry(err);
 		return;
 	}
@@ -504,9 +507,6 @@ void CMainWindow::finishedReadingFile(bool success, const QString& errorString)
 	{
 		AddLogEntry("success!\n");
 	}
-
-	// remove the last file that was read
-	if (m_fileQueue.isEmpty() == false) m_fileQueue.removeAt(0);
 
 	if (m_fileQueue.isEmpty() == false)
 	{
