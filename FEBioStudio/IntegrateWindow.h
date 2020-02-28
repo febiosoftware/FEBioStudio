@@ -24,11 +24,6 @@ public:
 	void Update(bool breset = true, bool bfit = false) override;
 
 private:
-	double IntegrateNodes(Post::FEPostMesh& mesh, Post::FEState* ps);
-	double IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps);
-	double IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps);
-	double IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps);
-
 	void UpdateSourceOptions();
 
 	void UpdateIntegral();

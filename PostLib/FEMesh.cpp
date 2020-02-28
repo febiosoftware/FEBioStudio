@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "FEMesh.h"
+#include "FEState.h"
 #include <MeshLib/MeshTools.h>
 #include <stack>
 
@@ -988,4 +989,124 @@ bool Post::FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double 
 
 	nelem = -1;
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+double Post::IntegrateNodes(Post::FEPostMesh& mesh, Post::FEState* ps)
+{
+	double res = 0.0;
+	int N = mesh.Nodes();
+	for (int i = 0; i<N; ++i)
+	{
+		FENode& node = mesh.Node(i);
+		if (node.IsSelected() && (ps->m_NODE[i].m_ntag > 0))
+		{
+			res += ps->m_NODE[i].m_val;
+		}
+	}
+	return res;
+}
+
+//-----------------------------------------------------------------------------
+double Post::IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps)
+{
+	assert(false);
+	return 0.0;
+}
+
+// This function calculates the integral over a surface. Note that if the surface
+// is triangular, then we calculate the integral from a degenerate quad.
+double Post::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
+{
+	double res = 0.0;
+	float v[FEFace::MAX_NODES];
+	vec3f r[FEFace::MAX_NODES];
+	for (int i = 0; i<mesh.Faces(); ++i)
+	{
+		FEFace& f = mesh.Face(i);
+		if (f.IsSelected() && f.IsActive())
+		{
+			int nn = f.Nodes();
+
+			// get the nodal values
+			for (int j = 0; j<nn; ++j) v[j] = ps->m_NODE[f.n[j]].m_val;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				v[3] = v[2];
+				break;
+			}
+
+			// get the nodal coordinates
+			for (int j = 0; j<nn; ++j) r[j] = ps->m_NODE[f.n[j]].m_rt;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				r[3] = r[2];
+				break;
+			}
+
+			// add to integral
+			res += IntegrateQuad(r, v);
+		}
+	}
+	return res;
+}
+
+//-----------------------------------------------------------------------------
+// This function calculates the integral over a volume. Note that if the volume
+// is not hexahedral, then we calculate the integral from a degenerate hex.
+double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
+{
+	double res = 0.0;
+	float v[FEElement::MAX_NODES];
+	vec3f r[FEElement::MAX_NODES];
+	for (int i = 0; i<mesh.Elements(); ++i)
+	{
+		FEElement_& e = mesh.ElementRef(i);
+		if (e.IsSelected() && (e.IsSolid()) && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		{
+			int nn = e.Nodes();
+
+			// get the nodal values and coordinates
+			for (int j = 0; j<nn; ++j) v[j] = ps->m_NODE[e.m_node[j]].m_val;
+			for (int j = 0; j<nn; ++j) r[j] = ps->m_NODE[e.m_node[j]].m_rt;
+			switch (e.Type())
+			{
+			case FE_PENTA6:
+				v[7] = v[5]; r[7] = r[5];
+				v[6] = v[5]; r[6] = r[5];
+				v[5] = v[4]; r[5] = r[4];
+				v[4] = v[3]; r[4] = r[3];
+				v[3] = v[2]; r[3] = r[2];
+				v[2] = v[2]; r[2] = r[2];
+				v[1] = v[1]; r[1] = r[1];
+				v[0] = v[0]; r[0] = r[0];
+				break;
+			case FE_TET4:
+			case FE_TET5:
+			case FE_TET10:
+			case FE_TET15:
+				v[7] = v[3]; r[7] = r[3];
+				v[6] = v[3]; r[6] = r[3];
+				v[5] = v[3]; r[5] = r[3];
+				v[4] = v[3]; r[4] = r[3];
+				v[3] = v[2]; r[3] = r[2];
+				v[2] = v[2]; r[2] = r[2];
+				v[1] = v[1]; r[1] = r[1];
+				v[0] = v[0]; r[0] = r[0];
+				break;
+			}
+
+			// add to integral
+			res += IntegrateHex(r, v);
+		}
+	}
+	return res;
 }

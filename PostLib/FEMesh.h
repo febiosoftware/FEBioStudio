@@ -168,4 +168,18 @@ inline bool FEFindElement::FindElement(const vec3f& x, int& nelem, double r[3])
 {
 	return (m_nframe == 0 ? FindInReferenceFrame(x, nelem, r) : FindInCurrentFrame(x, nelem, r));
 }
-}
+
+class FEState;
+
+double IntegrateNodes(Post::FEPostMesh& mesh, Post::FEState* ps);
+double IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps);
+
+// This function calculates the integral over a surface. Note that if the surface
+// is triangular, then we calculate the integral from a degenerate quad.
+double IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps);
+
+// This function calculates the integral over a volume. Note that if the volume
+// is not hexahedral, then we calculate the integral from a degenerate hex.
+double IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps);
+
+} // namespace Post
