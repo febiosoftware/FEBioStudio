@@ -545,6 +545,9 @@ void Post::FEPostMesh::Update()
 		FindFaceNeighbors();
 	}
 
+	// partition the surface
+	AutoPartitionSurface();
+
 	// next, we build the edges
 	if (m_Edge.empty()) BuildEdges();
 

@@ -204,10 +204,10 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 	// render the mesh
 	if (m_bshow_mesh)
 	{
-		glDepthRange(0, 0.9999);
+		rc.m_cam->LineDrawMode(true);
 		RenderMesh();
 		RenderOutline();
-		glDepthRange(0, 1);
+		rc.m_cam->LineDrawMode(false);
 	}
 
 	if (rc.m_showOutline)
@@ -221,9 +221,9 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 		glPushAttrib(GL_LIGHTING_BIT);
 		glDisable(GL_LIGHTING);
 		DisableClipPlanes();
-		glDepthRange(0, 0.99999);
+		rc.m_cam->LineDrawMode(true);
 		RenderPlane();
-		glDepthRange(0, 1);
+		rc.m_cam->LineDrawMode(false);
 		EnableClipPlanes();
 		glPopAttrib();
 	}

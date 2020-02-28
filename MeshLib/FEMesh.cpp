@@ -3685,7 +3685,8 @@ void FEMesh::PartitionElementSelection()
 			while (ne > 0)
 			{
 				FEElement& el = Element(s[--ne]);
-				for (int j = 0; j < el.Faces(); ++j)
+				int nbr = (el.IsSolid() ? el.Faces() : el.Edges());
+				for (int j = 0; j < nbr; ++j)
 				{
 					FEElement_* pe = ElementPtr(el.m_nbr[j]);
 					if (pe && (pe->m_gid == el.m_gid) && (pe->m_ntag == 1))

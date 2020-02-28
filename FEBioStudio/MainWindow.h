@@ -356,7 +356,7 @@ public slots:
 
 	// slots from Post panel
 	void OnPostObjectStateChanged();
-	void OnPostObjectPropsChanged();
+	void OnPostObjectPropsChanged(Post::CGLObject* po);
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 

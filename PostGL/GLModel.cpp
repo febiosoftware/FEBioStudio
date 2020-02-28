@@ -405,7 +405,9 @@ void CGLModel::Render(CGLContext& rc)
 
 	if (rc.m_showOutline)
 	{
+		rc.m_cam->LineDrawMode(true);
 		RenderOutline(rc);
+		rc.m_cam->LineDrawMode(false);
 	}
 
 	// first we render all the plots
@@ -458,17 +460,17 @@ void CGLModel::Render(CGLContext& rc)
 	// render the edges
 	if (mode == SELECT_EDGES)
 	{
-		glDepthRange(0, 0.9999);
+		rc.m_cam->LineDrawMode(true);
 		RenderEdges(fem, rc);
-		glDepthRange(0, 1);
+		rc.m_cam->LineDrawMode(false);
 	}
 
 	// render the nodes
 	if (mode == SELECT_NODES)
 	{
-		glDepthRange(0, 0.99985);
+		rc.m_cam->LineDrawMode(true);
 		RenderNodes(fem, rc);
-		glDepthRange(0, 1);
+		rc.m_cam->LineDrawMode(false);
 	}
 
 	// render decorations
@@ -1046,18 +1048,16 @@ void CGLModel::RenderSolidPart(FEModel* ps, CGLContext& rc, int mat)
 		// make sure the material is visible
 		if (pmat->bvisible && pmat->bmesh)
 		{
-			glDepthRange(0, 0.9999);
+			rc.m_cam->LineDrawMode(true);
 
 			// set the material properties
 			GLColor c = pmat->meshcol;
 			glColor3ub(c.r, c.g, c.b);
 			RenderMeshLines(ps, mat);
 
-			glDepthRange(0, 1.0);
+			rc.m_cam->LineDrawMode(false);
 		}
 		CGLPlaneCutPlot::EnableClipPlanes();
-
-		glPolygonOffset(0.0, 0.0);
 
 		// restore attributes
 		glPopAttrib();

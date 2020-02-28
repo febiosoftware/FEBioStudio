@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[223];
-    char stringdata0[5249];
+    QByteArrayData data[224];
+    char stringdata0[5266];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -191,69 +191,70 @@ QT_MOC_LITERAL(156, 4296, 21), // "on_tab_currentChanged"
 QT_MOC_LITERAL(157, 4318, 24), // "on_tab_tabCloseRequested"
 QT_MOC_LITERAL(158, 4343, 24), // "OnPostObjectStateChanged"
 QT_MOC_LITERAL(159, 4368, 24), // "OnPostObjectPropsChanged"
-QT_MOC_LITERAL(160, 4393, 35), // "on_modelViewer_currentObjectC..."
-QT_MOC_LITERAL(161, 4429, 9), // "FSObject*"
-QT_MOC_LITERAL(162, 4439, 2), // "po"
-QT_MOC_LITERAL(163, 4442, 17), // "OnSelectMeshLayer"
-QT_MOC_LITERAL(164, 4460, 2), // "ac"
-QT_MOC_LITERAL(165, 4463, 9), // "CloseView"
-QT_MOC_LITERAL(166, 4473, 9), // "CPostDoc*"
-QT_MOC_LITERAL(167, 4483, 7), // "postDoc"
-QT_MOC_LITERAL(168, 4491, 15), // "SetCurrentState"
-QT_MOC_LITERAL(169, 4507, 10), // "closeEvent"
-QT_MOC_LITERAL(170, 4518, 12), // "QCloseEvent*"
-QT_MOC_LITERAL(171, 4531, 2), // "ev"
-QT_MOC_LITERAL(172, 4534, 13), // "keyPressEvent"
-QT_MOC_LITERAL(173, 4548, 10), // "QKeyEvent*"
-QT_MOC_LITERAL(174, 4559, 19), // "finishedReadingFile"
-QT_MOC_LITERAL(175, 4579, 7), // "success"
-QT_MOC_LITERAL(176, 4587, 11), // "errorString"
-QT_MOC_LITERAL(177, 4599, 17), // "checkFileProgress"
-QT_MOC_LITERAL(178, 4617, 13), // "StopAnimation"
-QT_MOC_LITERAL(179, 4631, 7), // "onTimer"
-QT_MOC_LITERAL(180, 4639, 21), // "on_glview_pointPicked"
-QT_MOC_LITERAL(181, 4661, 5), // "vec3d"
-QT_MOC_LITERAL(182, 4667, 1), // "r"
-QT_MOC_LITERAL(183, 4669, 26), // "on_glview_selectionChanged"
-QT_MOC_LITERAL(184, 4696, 13), // "onRunFinished"
-QT_MOC_LITERAL(185, 4710, 8), // "exitCode"
-QT_MOC_LITERAL(186, 4719, 20), // "QProcess::ExitStatus"
-QT_MOC_LITERAL(187, 4740, 2), // "es"
-QT_MOC_LITERAL(188, 4743, 11), // "onReadyRead"
-QT_MOC_LITERAL(189, 4755, 15), // "onErrorOccurred"
-QT_MOC_LITERAL(190, 4771, 22), // "QProcess::ProcessError"
-QT_MOC_LITERAL(191, 4794, 3), // "err"
-QT_MOC_LITERAL(192, 4798, 17), // "onExportMaterials"
-QT_MOC_LITERAL(193, 4816, 18), // "vector<GMaterial*>"
-QT_MOC_LITERAL(194, 4835, 7), // "matList"
-QT_MOC_LITERAL(195, 4843, 20), // "onExportAllMaterials"
-QT_MOC_LITERAL(196, 4864, 17), // "onImportMaterials"
-QT_MOC_LITERAL(197, 4882, 18), // "DeleteAllMaterials"
-QT_MOC_LITERAL(198, 4901, 11), // "DeleteAllBC"
-QT_MOC_LITERAL(199, 4913, 14), // "DeleteAllLoads"
-QT_MOC_LITERAL(200, 4928, 11), // "DeleteAllIC"
-QT_MOC_LITERAL(201, 4940, 16), // "DeleteAllContact"
-QT_MOC_LITERAL(202, 4957, 20), // "DeleteAllConstraints"
-QT_MOC_LITERAL(203, 4978, 25), // "DeleteAllRigidConstraints"
-QT_MOC_LITERAL(204, 5004, 24), // "DeleteAllRigidConnectors"
-QT_MOC_LITERAL(205, 5029, 14), // "DeleteAllSteps"
-QT_MOC_LITERAL(206, 5044, 9), // "GetGLView"
-QT_MOC_LITERAL(207, 5054, 8), // "CGLView*"
-QT_MOC_LITERAL(208, 5063, 14), // "changeViewMode"
-QT_MOC_LITERAL(209, 5078, 9), // "View_Mode"
-QT_MOC_LITERAL(210, 5088, 2), // "vm"
-QT_MOC_LITERAL(211, 5091, 15), // "GetCurrentModel"
-QT_MOC_LITERAL(212, 5107, 15), // "Post::CGLModel*"
-QT_MOC_LITERAL(213, 5123, 17), // "UpdateFontToolbar"
-QT_MOC_LITERAL(214, 5141, 11), // "RunFEBioJob"
-QT_MOC_LITERAL(215, 5153, 10), // "CFEBioJob*"
-QT_MOC_LITERAL(216, 5164, 3), // "job"
-QT_MOC_LITERAL(217, 5168, 15), // "NextSSHFunction"
-QT_MOC_LITERAL(218, 5184, 12), // "CSSHHandler*"
-QT_MOC_LITERAL(219, 5197, 15), // "ShowSSHProgress"
-QT_MOC_LITERAL(220, 5213, 4), // "show"
-QT_MOC_LITERAL(221, 5218, 17), // "UpdateSSHProgress"
-QT_MOC_LITERAL(222, 5236, 12) // "DoModelCheck"
+QT_MOC_LITERAL(160, 4393, 16), // "Post::CGLObject*"
+QT_MOC_LITERAL(161, 4410, 2), // "po"
+QT_MOC_LITERAL(162, 4413, 35), // "on_modelViewer_currentObjectC..."
+QT_MOC_LITERAL(163, 4449, 9), // "FSObject*"
+QT_MOC_LITERAL(164, 4459, 17), // "OnSelectMeshLayer"
+QT_MOC_LITERAL(165, 4477, 2), // "ac"
+QT_MOC_LITERAL(166, 4480, 9), // "CloseView"
+QT_MOC_LITERAL(167, 4490, 9), // "CPostDoc*"
+QT_MOC_LITERAL(168, 4500, 7), // "postDoc"
+QT_MOC_LITERAL(169, 4508, 15), // "SetCurrentState"
+QT_MOC_LITERAL(170, 4524, 10), // "closeEvent"
+QT_MOC_LITERAL(171, 4535, 12), // "QCloseEvent*"
+QT_MOC_LITERAL(172, 4548, 2), // "ev"
+QT_MOC_LITERAL(173, 4551, 13), // "keyPressEvent"
+QT_MOC_LITERAL(174, 4565, 10), // "QKeyEvent*"
+QT_MOC_LITERAL(175, 4576, 19), // "finishedReadingFile"
+QT_MOC_LITERAL(176, 4596, 7), // "success"
+QT_MOC_LITERAL(177, 4604, 11), // "errorString"
+QT_MOC_LITERAL(178, 4616, 17), // "checkFileProgress"
+QT_MOC_LITERAL(179, 4634, 13), // "StopAnimation"
+QT_MOC_LITERAL(180, 4648, 7), // "onTimer"
+QT_MOC_LITERAL(181, 4656, 21), // "on_glview_pointPicked"
+QT_MOC_LITERAL(182, 4678, 5), // "vec3d"
+QT_MOC_LITERAL(183, 4684, 1), // "r"
+QT_MOC_LITERAL(184, 4686, 26), // "on_glview_selectionChanged"
+QT_MOC_LITERAL(185, 4713, 13), // "onRunFinished"
+QT_MOC_LITERAL(186, 4727, 8), // "exitCode"
+QT_MOC_LITERAL(187, 4736, 20), // "QProcess::ExitStatus"
+QT_MOC_LITERAL(188, 4757, 2), // "es"
+QT_MOC_LITERAL(189, 4760, 11), // "onReadyRead"
+QT_MOC_LITERAL(190, 4772, 15), // "onErrorOccurred"
+QT_MOC_LITERAL(191, 4788, 22), // "QProcess::ProcessError"
+QT_MOC_LITERAL(192, 4811, 3), // "err"
+QT_MOC_LITERAL(193, 4815, 17), // "onExportMaterials"
+QT_MOC_LITERAL(194, 4833, 18), // "vector<GMaterial*>"
+QT_MOC_LITERAL(195, 4852, 7), // "matList"
+QT_MOC_LITERAL(196, 4860, 20), // "onExportAllMaterials"
+QT_MOC_LITERAL(197, 4881, 17), // "onImportMaterials"
+QT_MOC_LITERAL(198, 4899, 18), // "DeleteAllMaterials"
+QT_MOC_LITERAL(199, 4918, 11), // "DeleteAllBC"
+QT_MOC_LITERAL(200, 4930, 14), // "DeleteAllLoads"
+QT_MOC_LITERAL(201, 4945, 11), // "DeleteAllIC"
+QT_MOC_LITERAL(202, 4957, 16), // "DeleteAllContact"
+QT_MOC_LITERAL(203, 4974, 20), // "DeleteAllConstraints"
+QT_MOC_LITERAL(204, 4995, 25), // "DeleteAllRigidConstraints"
+QT_MOC_LITERAL(205, 5021, 24), // "DeleteAllRigidConnectors"
+QT_MOC_LITERAL(206, 5046, 14), // "DeleteAllSteps"
+QT_MOC_LITERAL(207, 5061, 9), // "GetGLView"
+QT_MOC_LITERAL(208, 5071, 8), // "CGLView*"
+QT_MOC_LITERAL(209, 5080, 14), // "changeViewMode"
+QT_MOC_LITERAL(210, 5095, 9), // "View_Mode"
+QT_MOC_LITERAL(211, 5105, 2), // "vm"
+QT_MOC_LITERAL(212, 5108, 15), // "GetCurrentModel"
+QT_MOC_LITERAL(213, 5124, 15), // "Post::CGLModel*"
+QT_MOC_LITERAL(214, 5140, 17), // "UpdateFontToolbar"
+QT_MOC_LITERAL(215, 5158, 11), // "RunFEBioJob"
+QT_MOC_LITERAL(216, 5170, 10), // "CFEBioJob*"
+QT_MOC_LITERAL(217, 5181, 3), // "job"
+QT_MOC_LITERAL(218, 5185, 15), // "NextSSHFunction"
+QT_MOC_LITERAL(219, 5201, 12), // "CSSHHandler*"
+QT_MOC_LITERAL(220, 5214, 15), // "ShowSSHProgress"
+QT_MOC_LITERAL(221, 5230, 4), // "show"
+QT_MOC_LITERAL(222, 5235, 17), // "UpdateSSHProgress"
+QT_MOC_LITERAL(223, 5253, 12) // "DoModelCheck"
 
     },
     "CMainWindow\0on_actionNew_triggered\0\0"
@@ -395,10 +396,10 @@ QT_MOC_LITERAL(222, 5236, 12) // "DoModelCheck"
     "on_actionProperties_triggered\0"
     "on_tab_currentChanged\0on_tab_tabCloseRequested\0"
     "OnPostObjectStateChanged\0"
-    "OnPostObjectPropsChanged\0"
-    "on_modelViewer_currentObjectChanged\0"
-    "FSObject*\0po\0OnSelectMeshLayer\0ac\0"
-    "CloseView\0CPostDoc*\0postDoc\0SetCurrentState\0"
+    "OnPostObjectPropsChanged\0Post::CGLObject*\0"
+    "po\0on_modelViewer_currentObjectChanged\0"
+    "FSObject*\0OnSelectMeshLayer\0ac\0CloseView\0"
+    "CPostDoc*\0postDoc\0SetCurrentState\0"
     "closeEvent\0QCloseEvent*\0ev\0keyPressEvent\0"
     "QKeyEvent*\0finishedReadingFile\0success\0"
     "errorString\0checkFileProgress\0"
@@ -585,44 +586,44 @@ static const uint qt_meta_data_CMainWindow[] = {
      156,    1, 1169,    2, 0x0a /* Public */,
      157,    1, 1172,    2, 0x0a /* Public */,
      158,    0, 1175,    2, 0x0a /* Public */,
-     159,    0, 1176,    2, 0x0a /* Public */,
-     160,    1, 1177,    2, 0x0a /* Public */,
-     163,    1, 1180,    2, 0x0a /* Public */,
-     165,    1, 1183,    2, 0x0a /* Public */,
-     165,    1, 1186,    2, 0x0a /* Public */,
-     168,    1, 1189,    2, 0x0a /* Public */,
-     169,    1, 1192,    2, 0x0a /* Public */,
-     172,    1, 1195,    2, 0x0a /* Public */,
-     174,    2, 1198,    2, 0x0a /* Public */,
-     177,    0, 1203,    2, 0x0a /* Public */,
-     178,    0, 1204,    2, 0x0a /* Public */,
-     179,    0, 1205,    2, 0x0a /* Public */,
-     180,    1, 1206,    2, 0x0a /* Public */,
-     183,    0, 1209,    2, 0x0a /* Public */,
-     184,    2, 1210,    2, 0x0a /* Public */,
-     188,    0, 1215,    2, 0x0a /* Public */,
-     189,    1, 1216,    2, 0x0a /* Public */,
-     192,    1, 1219,    2, 0x0a /* Public */,
-     195,    0, 1222,    2, 0x0a /* Public */,
-     196,    0, 1223,    2, 0x0a /* Public */,
-     197,    0, 1224,    2, 0x0a /* Public */,
-     198,    0, 1225,    2, 0x0a /* Public */,
-     199,    0, 1226,    2, 0x0a /* Public */,
-     200,    0, 1227,    2, 0x0a /* Public */,
-     201,    0, 1228,    2, 0x0a /* Public */,
-     202,    0, 1229,    2, 0x0a /* Public */,
-     203,    0, 1230,    2, 0x0a /* Public */,
-     204,    0, 1231,    2, 0x0a /* Public */,
-     205,    0, 1232,    2, 0x0a /* Public */,
-     206,    0, 1233,    2, 0x0a /* Public */,
-     208,    1, 1234,    2, 0x0a /* Public */,
-     211,    0, 1237,    2, 0x0a /* Public */,
-     213,    0, 1238,    2, 0x0a /* Public */,
-     214,    1, 1239,    2, 0x0a /* Public */,
-     217,    1, 1242,    2, 0x0a /* Public */,
-     219,    1, 1245,    2, 0x0a /* Public */,
-     221,    1, 1248,    2, 0x0a /* Public */,
-     222,    0, 1251,    2, 0x0a /* Public */,
+     159,    1, 1176,    2, 0x0a /* Public */,
+     162,    1, 1179,    2, 0x0a /* Public */,
+     164,    1, 1182,    2, 0x0a /* Public */,
+     166,    1, 1185,    2, 0x0a /* Public */,
+     166,    1, 1188,    2, 0x0a /* Public */,
+     169,    1, 1191,    2, 0x0a /* Public */,
+     170,    1, 1194,    2, 0x0a /* Public */,
+     173,    1, 1197,    2, 0x0a /* Public */,
+     175,    2, 1200,    2, 0x0a /* Public */,
+     178,    0, 1205,    2, 0x0a /* Public */,
+     179,    0, 1206,    2, 0x0a /* Public */,
+     180,    0, 1207,    2, 0x0a /* Public */,
+     181,    1, 1208,    2, 0x0a /* Public */,
+     184,    0, 1211,    2, 0x0a /* Public */,
+     185,    2, 1212,    2, 0x0a /* Public */,
+     189,    0, 1217,    2, 0x0a /* Public */,
+     190,    1, 1218,    2, 0x0a /* Public */,
+     193,    1, 1221,    2, 0x0a /* Public */,
+     196,    0, 1224,    2, 0x0a /* Public */,
+     197,    0, 1225,    2, 0x0a /* Public */,
+     198,    0, 1226,    2, 0x0a /* Public */,
+     199,    0, 1227,    2, 0x0a /* Public */,
+     200,    0, 1228,    2, 0x0a /* Public */,
+     201,    0, 1229,    2, 0x0a /* Public */,
+     202,    0, 1230,    2, 0x0a /* Public */,
+     203,    0, 1231,    2, 0x0a /* Public */,
+     204,    0, 1232,    2, 0x0a /* Public */,
+     205,    0, 1233,    2, 0x0a /* Public */,
+     206,    0, 1234,    2, 0x0a /* Public */,
+     207,    0, 1235,    2, 0x0a /* Public */,
+     209,    1, 1236,    2, 0x0a /* Public */,
+     212,    0, 1239,    2, 0x0a /* Public */,
+     214,    0, 1240,    2, 0x0a /* Public */,
+     215,    1, 1241,    2, 0x0a /* Public */,
+     218,    1, 1244,    2, 0x0a /* Public */,
+     220,    1, 1247,    2, 0x0a /* Public */,
+     222,    1, 1250,    2, 0x0a /* Public */,
+     223,    0, 1253,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -774,28 +775,24 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void, QMetaType::Int,  129,
     QMetaType::Void, QMetaType::Int,  129,
     QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 161,  162,
-    QMetaType::Void, 0x80000000 | 19,  164,
+    QMetaType::Void, 0x80000000 | 160,  161,
+    QMetaType::Void, 0x80000000 | 163,  161,
+    QMetaType::Void, 0x80000000 | 19,  165,
     QMetaType::Void, QMetaType::Int,  129,
-    QMetaType::Void, 0x80000000 | 166,  167,
+    QMetaType::Void, 0x80000000 | 167,  168,
     QMetaType::Void, QMetaType::Int,  129,
-    QMetaType::Void, 0x80000000 | 170,  171,
-    QMetaType::Void, 0x80000000 | 173,  171,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  175,  176,
+    QMetaType::Void, 0x80000000 | 171,  172,
+    QMetaType::Void, 0x80000000 | 174,  172,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  176,  177,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 181,  182,
+    QMetaType::Void, 0x80000000 | 182,  183,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int, 0x80000000 | 186,  185,  187,
+    QMetaType::Void, QMetaType::Int, 0x80000000 | 187,  186,  188,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 190,  191,
-    QMetaType::Void, 0x80000000 | 193,  194,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 191,  192,
+    QMetaType::Void, 0x80000000 | 194,  195,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -803,13 +800,17 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    0x80000000 | 207,
-    QMetaType::Void, 0x80000000 | 209,  210,
-    0x80000000 | 212,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 215,  216,
-    QMetaType::Void, 0x80000000 | 218,    2,
-    QMetaType::Void, QMetaType::Bool,  220,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    0x80000000 | 208,
+    QMetaType::Void, 0x80000000 | 210,  211,
+    0x80000000 | 213,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 216,  217,
+    QMetaType::Void, 0x80000000 | 219,    2,
+    QMetaType::Void, QMetaType::Bool,  221,
     QMetaType::Void, QMetaType::Int,    2,
     QMetaType::Bool,
 
@@ -971,7 +972,7 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 146: _t->on_tab_currentChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 147: _t->on_tab_tabCloseRequested((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 148: _t->OnPostObjectStateChanged(); break;
-        case 149: _t->OnPostObjectPropsChanged(); break;
+        case 149: _t->OnPostObjectPropsChanged((*reinterpret_cast< Post::CGLObject*(*)>(_a[1]))); break;
         case 150: _t->on_modelViewer_currentObjectChanged((*reinterpret_cast< FSObject*(*)>(_a[1]))); break;
         case 151: _t->OnSelectMeshLayer((*reinterpret_cast< QAction*(*)>(_a[1]))); break;
         case 152: _t->CloseView((*reinterpret_cast< int(*)>(_a[1]))); break;

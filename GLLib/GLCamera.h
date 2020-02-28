@@ -43,7 +43,7 @@ public:
 	void Update(bool bhit = false);
 
 	// set line-draw or decal mode
-	void LineDrawMode(bool b) { m_bdecal = b; }
+	void LineDrawMode(bool b);
 
 public:
 	void SetCameraSpeed(double f);
@@ -127,4 +127,6 @@ public:
 private:
 	double	m_speed;
 	double	m_bias;
+
+	double	m_depthScale;	// depth scale for line drawing
 };

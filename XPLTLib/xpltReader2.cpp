@@ -1014,6 +1014,7 @@ bool XpltReader2::BuildMesh(FEModel &fem)
 			ELEM& E = D.elem[j];
 			FEElement& el = pmesh->Element(E.index);
 			el.m_MatID = D.mid - 1;
+			el.m_gid = i;
 			el.SetID(E.eid);
 
 			FEElementType etype;

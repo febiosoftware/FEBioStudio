@@ -1221,14 +1221,17 @@ void CMainWindow::OnPostObjectStateChanged()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::OnPostObjectPropsChanged()
+void CMainWindow::OnPostObjectPropsChanged(Post::CGLObject* po)
 {
 	Post::CGLModel* mdl = GetCurrentModel();
 	if (mdl == nullptr) return;
 
-	int dataField = mdl->GetColorMap()->GetEvalField();
-	if (ui->selectData->currentValue() != dataField) ui->selectData->setCurrentValue(dataField);
-
+	Post::CGLColorMap* colorMap = dynamic_cast<Post::CGLColorMap*>(po);
+	if (colorMap)
+	{
+		int dataField = mdl->GetColorMap()->GetEvalField();
+		if (ui->selectData->currentValue() != dataField) ui->selectData->setCurrentValue(dataField);
+	}
 	RedrawGL();
 }
 

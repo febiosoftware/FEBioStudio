@@ -467,7 +467,7 @@ CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CCommandP
 	ui->setupUi(this);
 
 	QObject::connect(this, SIGNAL(postObjectStateChanged()), pwnd, SLOT(OnPostObjectStateChanged()));
-	QObject::connect(this, SIGNAL(postObjectPropsChanged()), pwnd, SLOT(OnPostObjectPropsChanged()));
+	QObject::connect(this, SIGNAL(postObjectPropsChanged(Post::CGLObject*)), pwnd, SLOT(OnPostObjectPropsChanged(Post::CGLObject*)));
 }
 
 CPostDoc* CPostModelPanel::GetActiveDocument()
@@ -805,7 +805,7 @@ void CPostModelPanel::on_props_dataChanged()
 	Post::CGLObject* po = selectedObject();
 	if (po) po->Update();
 
-	emit postObjectPropsChanged();
+	emit postObjectPropsChanged(po);
 }
 
 void CPostModelPanel::on_enabled_stateChanged(int nstate)

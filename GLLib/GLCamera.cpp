@@ -53,6 +53,8 @@ void CGLCamera::Reset()
 	Update(true);
 
 	m_bdecal = false;
+
+	m_depthScale = 0.9999;
 }
 
 //-----------------------------------------------------------------------------
@@ -101,6 +103,14 @@ void CGLCamera::Update(bool bhit)
 }
 
 //-----------------------------------------------------------------------------
+// set line-draw or decal mode
+void CGLCamera::LineDrawMode(bool b)
+{ 
+	m_bdecal = b; 
+	glDepthRange(0.0, (b ? m_depthScale : 1.0));
+}
+
+//-----------------------------------------------------------------------------
 // This sets up the GL matrix transformation for rendering
 void CGLCamera::Transform()
 {
@@ -119,7 +129,7 @@ void CGLCamera::Transform()
 	vec3d r = Target();
 	
 	// zoom-in a little when in decal mode
-	if (m_bdecal) r.z *= .999;
+//	if (m_bdecal) r.z *= .999;
 
 	// position the target in camera coordinates
 	glx::translate(-r);

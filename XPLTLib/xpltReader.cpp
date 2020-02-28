@@ -999,6 +999,7 @@ bool XpltReader::BuildMesh(FEModel &fem)
 			ELEM& E = D.elem[j];
 			FEElement& el = static_cast<FEElement&>(pmesh->ElementRef(E.index));
 			el.m_MatID = D.mid - 1;
+			el.m_gid = i;
 			el.SetID(E.eid);
 
 			FEElementType etype;

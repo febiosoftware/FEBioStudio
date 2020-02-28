@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CPostModelPanel_t {
-    QByteArrayData data[16];
-    char stringdata0[272];
+    QByteArrayData data[18];
+    char stringdata0[292];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,23 +35,25 @@ QT_MOC_LITERAL(0, 0, 15), // "CPostModelPanel"
 QT_MOC_LITERAL(1, 16, 22), // "postObjectStateChanged"
 QT_MOC_LITERAL(2, 39, 0), // ""
 QT_MOC_LITERAL(3, 40, 22), // "postObjectPropsChanged"
-QT_MOC_LITERAL(4, 63, 31), // "on_postModel_currentItemChanged"
-QT_MOC_LITERAL(5, 95, 16), // "QTreeWidgetItem*"
-QT_MOC_LITERAL(6, 112, 7), // "current"
-QT_MOC_LITERAL(7, 120, 4), // "prev"
-QT_MOC_LITERAL(8, 125, 30), // "on_postModel_itemDoubleClicked"
-QT_MOC_LITERAL(9, 156, 4), // "item"
-QT_MOC_LITERAL(10, 161, 6), // "column"
-QT_MOC_LITERAL(11, 168, 27), // "on_nameEdit_editingFinished"
-QT_MOC_LITERAL(12, 196, 23), // "on_deleteButton_clicked"
-QT_MOC_LITERAL(13, 220, 20), // "on_props_dataChanged"
-QT_MOC_LITERAL(14, 241, 23), // "on_enabled_stateChanged"
-QT_MOC_LITERAL(15, 265, 6) // "nstate"
+QT_MOC_LITERAL(4, 63, 16), // "Post::CGLObject*"
+QT_MOC_LITERAL(5, 80, 2), // "po"
+QT_MOC_LITERAL(6, 83, 31), // "on_postModel_currentItemChanged"
+QT_MOC_LITERAL(7, 115, 16), // "QTreeWidgetItem*"
+QT_MOC_LITERAL(8, 132, 7), // "current"
+QT_MOC_LITERAL(9, 140, 4), // "prev"
+QT_MOC_LITERAL(10, 145, 30), // "on_postModel_itemDoubleClicked"
+QT_MOC_LITERAL(11, 176, 4), // "item"
+QT_MOC_LITERAL(12, 181, 6), // "column"
+QT_MOC_LITERAL(13, 188, 27), // "on_nameEdit_editingFinished"
+QT_MOC_LITERAL(14, 216, 23), // "on_deleteButton_clicked"
+QT_MOC_LITERAL(15, 240, 20), // "on_props_dataChanged"
+QT_MOC_LITERAL(16, 261, 23), // "on_enabled_stateChanged"
+QT_MOC_LITERAL(17, 285, 6) // "nstate"
 
     },
     "CPostModelPanel\0postObjectStateChanged\0"
-    "\0postObjectPropsChanged\0"
-    "on_postModel_currentItemChanged\0"
+    "\0postObjectPropsChanged\0Post::CGLObject*\0"
+    "po\0on_postModel_currentItemChanged\0"
     "QTreeWidgetItem*\0current\0prev\0"
     "on_postModel_itemDoubleClicked\0item\0"
     "column\0on_nameEdit_editingFinished\0"
@@ -75,27 +77,27 @@ static const uint qt_meta_data_CPostModelPanel[] = {
 
  // signals: name, argc, parameters, tag, flags
        1,    0,   54,    2, 0x06 /* Public */,
-       3,    0,   55,    2, 0x06 /* Public */,
+       3,    1,   55,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       4,    2,   56,    2, 0x08 /* Private */,
-       8,    2,   61,    2, 0x08 /* Private */,
-      11,    0,   66,    2, 0x08 /* Private */,
-      12,    0,   67,    2, 0x08 /* Private */,
+       6,    2,   58,    2, 0x08 /* Private */,
+      10,    2,   63,    2, 0x08 /* Private */,
       13,    0,   68,    2, 0x08 /* Private */,
-      14,    1,   69,    2, 0x08 /* Private */,
+      14,    0,   69,    2, 0x08 /* Private */,
+      15,    0,   70,    2, 0x08 /* Private */,
+      16,    1,   71,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void,
-    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 4,    5,
 
  // slots: parameters
-    QMetaType::Void, 0x80000000 | 5, 0x80000000 | 5,    6,    7,
-    QMetaType::Void, 0x80000000 | 5, QMetaType::Int,    9,   10,
+    QMetaType::Void, 0x80000000 | 7, 0x80000000 | 7,    8,    9,
+    QMetaType::Void, 0x80000000 | 7, QMetaType::Int,   11,   12,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,   15,
+    QMetaType::Void, QMetaType::Int,   17,
 
        0        // eod
 };
@@ -107,7 +109,7 @@ void CPostModelPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->postObjectStateChanged(); break;
-        case 1: _t->postObjectPropsChanged(); break;
+        case 1: _t->postObjectPropsChanged((*reinterpret_cast< Post::CGLObject*(*)>(_a[1]))); break;
         case 2: _t->on_postModel_currentItemChanged((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< QTreeWidgetItem*(*)>(_a[2]))); break;
         case 3: _t->on_postModel_itemDoubleClicked((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
         case 4: _t->on_nameEdit_editingFinished(); break;
@@ -126,7 +128,7 @@ void CPostModelPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
             }
         }
         {
-            using _t = void (CPostModelPanel::*)();
+            using _t = void (CPostModelPanel::*)(Post::CGLObject * );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CPostModelPanel::postObjectPropsChanged)) {
                 *result = 1;
                 return;
@@ -182,9 +184,10 @@ void CPostModelPanel::postObjectStateChanged()
 }
 
 // SIGNAL 1
-void CPostModelPanel::postObjectPropsChanged()
+void CPostModelPanel::postObjectPropsChanged(Post::CGLObject * _t1)
 {
-    QMetaObject::activate(this, &staticMetaObject, 1, nullptr);
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 1, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

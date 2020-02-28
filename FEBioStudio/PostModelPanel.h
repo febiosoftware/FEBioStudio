@@ -46,7 +46,7 @@ private slots:
 
 signals:
 	void postObjectStateChanged();
-	void postObjectPropsChanged();
+	void postObjectPropsChanged(Post::CGLObject* po);
 
 private:
 	CPostDoc* GetActiveDocument();
