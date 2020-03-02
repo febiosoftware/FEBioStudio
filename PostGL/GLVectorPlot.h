@@ -2,12 +2,28 @@
 #include "GLPlot.h"
 
 class GLUquadric;
+class GLLegendBar;
 
 namespace Post {
 
 class CGLVectorPlot : public CGLPlot 
 {
-	enum { DATA_FIELD, COLOR_MAP, CLIP, SHOW_HIDDEN, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, NORMALIZE, AUTO_SCALE, SCALE };
+	enum { 
+		DATA_FIELD, 
+		COLOR_MAP, 
+		CLIP, 
+		SHOW_HIDDEN, 
+		DENSITY, 
+		GLYPH, 
+		GLYPH_COLOR, 
+		SOLID_COLOR, 
+		NORMALIZE, 
+		AUTO_SCALE, 
+		SCALE,
+		RANGE_TYPE,
+		USER_MAX,
+		USER_MIN
+	};
 
 public:
 	// glyph types	
@@ -39,8 +55,8 @@ public:
 	void SetDensity(float d) { m_dens = d; }
 	double GetDensity() { return m_dens; }
 
-	int GetVectorType() { return m_nvec; }
-	void SetVectorType(int ntype);
+	int GetVectorField() { return m_nvec; }
+	void SetVectorField(int ntype);
 
 	int GetGlyphType() { return m_nglyph; }
 	void SetGlyphType(int ntype) { m_nglyph = ntype; }
@@ -100,6 +116,12 @@ protected:
 	vector<vec3f>	m_val;	// current values
 	vec2f			m_crng;	// current range
 
+	int				m_rngType;
+	double			m_usr[2];	// user range
+	vec2f			m_staticRange;
+
 	float			m_fscale;	// total scale factor for rendering
+
+	GLLegendBar*	m_pbar;
 };
 }

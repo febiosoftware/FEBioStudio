@@ -2,6 +2,7 @@
 #include "GLVectorPlot.h"
 #include "PostLib/ColorMap.h"
 #include "PostLib/constants.h"
+#include "GLWLib/GLWidgetManager.h"
 #include <PostGL/GLModel.h>
 using namespace Post;
 
@@ -27,6 +28,9 @@ CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLPlot(po)
 	AddBoolParam(true, "Normalize" );
 	AddBoolParam(true, "Auto-scale");
 	AddDoubleParam(0., "Scale"     );
+	AddIntParam(0, "Range type")->SetEnumNames("Dynamic\0Static\0User\0");
+	AddDoubleParam(1., "User Max"  );
+	AddDoubleParam(0., "User Min"  );
 
 	m_scale = 1;
 	m_dens = 1;
@@ -52,12 +56,26 @@ CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLPlot(po)
 
 	m_seed = rand();
 
+	m_rngType = 0;
+	m_usr[0] = 0.0;
+	m_usr[1] = 1.0;
+
+	m_pbar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
+	m_pbar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+	m_pbar->SetOrientation(GLLegendBar::HORIZONTAL);
+	m_pbar->copy_label(szname);
+	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+
+	m_pbar->hide();
+	m_pbar->ShowTitle(true);
+
 	UpdateData(false);
 }
 
 CGLVectorPlot::~CGLVectorPlot()
 {
-
+	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
+	delete m_pbar;
 }
 
 void CGLVectorPlot::UpdateData(bool bsave)
@@ -75,6 +93,16 @@ void CGLVectorPlot::UpdateData(bool bsave)
 		m_bnorm = GetBoolValue(NORMALIZE);
 		m_bautoscale = GetBoolValue(AUTO_SCALE);
 		m_scale = GetFloatValue(SCALE);
+		m_rngType = GetIntValue(RANGE_TYPE);
+		m_usr[1] = GetFloatValue(USER_MAX);
+		m_usr[0] = GetFloatValue(USER_MIN);
+
+		if (m_ncol == 0) m_pbar->hide();
+		else
+		{
+			m_pbar->SetRange(m_crng.x, m_crng.y);
+			m_pbar->show();
+		}
 	}
 	else
 	{
@@ -89,6 +117,9 @@ void CGLVectorPlot::UpdateData(bool bsave)
 		SetBoolValue(NORMALIZE, m_bnorm);
 		SetBoolValue(AUTO_SCALE, m_bautoscale);
 		SetFloatValue(SCALE, m_scale);
+		SetIntValue(RANGE_TYPE, m_rngType);
+		SetFloatValue(USER_MAX, m_usr[1]);
+		SetFloatValue(USER_MIN, m_usr[0]);
 	}
 }
 
@@ -358,10 +389,10 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	glPopMatrix();
 }
 
-void CGLVectorPlot::SetVectorType(int ntype) 
+void CGLVectorPlot::SetVectorField(int ntype) 
 { 
 	m_nvec = ntype; 
-	Update(GetModel()->CurrentTimeIndex(), 0.0, false);
+	Update(GetModel()->CurrentTimeIndex(), 0.0, true);
 }
 
 void CGLVectorPlot::Update()
@@ -434,8 +465,37 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 		if (rng.y == rng.x) ++rng.y;
 	}
 
+	// update static range
+	if (breset)
+	{
+		m_staticRange = m_rng[ntime];
+	}
+	else
+	{
+		vec2f& rng = m_rng[ntime];
+		if (rng.x < m_staticRange.x) m_staticRange.x = rng.x;
+		if (rng.y > m_staticRange.y) m_staticRange.y = rng.y;
+	}
+
+	// choose the range for rendering
+	switch (m_rngType)
+	{
+	case 0: // dynamic
+		m_crng = m_rng[ntime];
+		break;
+	case 1: // static
+		m_crng = m_staticRange;
+		break;
+	case 2: // user
+		m_crng.x = m_usr[0];
+		m_crng.y = m_usr[1];
+		break;
+	}
+	if (m_crng.x == m_crng.y) m_crng.y++;
+
+	// update the color bar's range
+	m_pbar->SetRange(m_crng.x, m_crng.y);
+
 	// copy nodal values
 	m_val = m_map.State(ntime);
-	m_crng = m_rng[ntime];
-	if (m_crng.x == m_crng.y) m_crng.y++;
 }
