@@ -18,6 +18,8 @@ public:
 
 	void Update();
 
+	void Reset();
+
 	void Apply();
 
 	void SelectObject(Post::CGLObject* po);

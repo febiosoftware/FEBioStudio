@@ -71,9 +71,6 @@ public:
 	// set the data selector
 	void SetDataSelector(CDataSelector* dataSelector);
 
-	// update the menu
-	void UpdateMenu();
-
 	// return the field ID of the selected menu
 	int currentValue() const;
 

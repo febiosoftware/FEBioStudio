@@ -136,15 +136,7 @@ void CDataSelectorButton::SetDataSelector(CDataSelector* dataSelector)
 {
 	if (m_src) delete m_src;
 	m_src = dataSelector;
-//	m_currentValue = -1;
-	UpdateMenu();
-}
 
-void CDataSelectorButton::UpdateMenu()
-{
-	// get the current field
-	// we'll use it to restore the current selected option
-	int noldField = m_currentValue;
 	m_currentValue = -1;
 	setText("");
 
@@ -153,9 +145,6 @@ void CDataSelectorButton::UpdateMenu()
 
 	// build a new menu
 	if (m_src) m_src->BuildMenu(m_menu);
-
-	// try to set the old field
-	if (noldField != m_currentValue) setCurrentValue(noldField);
 }
 
 int CDataSelectorButton::currentValue() const

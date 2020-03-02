@@ -50,6 +50,12 @@ CPostPanel::CPostPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, p
 	ui->setup(this, wnd);
 }
 
+void CPostPanel::Reset()
+{
+	ui->mdl->Update();
+	Update();
+}
+
 void CPostPanel::Update()
 {
 	CCommandPanel* p = ui->currentPanel();

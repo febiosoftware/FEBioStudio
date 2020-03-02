@@ -1103,24 +1103,37 @@ void CMainWindow::UpdatePostToolbar()
 		return;
 	}
 
+	Post::CGLModel* mdl = doc->GetGLModel();
+	if (mdl == 0)
+	{
+		ui->postToolBar->setDisabled(true);
+		return;
+	}
+
+	Post::CGLColorMap* map = mdl->GetColorMap();
+
+	// rebuild the menu
 	Post::FEModel* pfem = doc->GetFEModel();
 	ui->selectData->BuildMenu(pfem, Post::DATA_SCALAR);
+	ui->selectData->blockSignals(true);
+	ui->selectData->setCurrentValue(map->GetEvalField());
+	ui->selectData->blockSignals(false);
 
-	Post::CGLModel* mdl = doc->GetGLModel();
-	if (mdl == 0) ui->postToolBar->setDisabled(true);
-	else
-	{
-		int ntime = mdl->CurrentTimeIndex() + 1;
+	// update the color map state
+	if (map->IsActive()) ui->actionColorMap->setChecked(true);
+	else ui->actionColorMap->setChecked(false);
 
-		Post::FEModel* fem = mdl->GetFEModel();
-		int states = fem->GetStates();
-		QString suff = QString("/%1").arg(states);
-		ui->pspin->setSuffix(suff);
-		ui->pspin->setRange(1, states);
-		ui->pspin->setValue(ntime);
-		ui->postToolBar->setEnabled(true);
-		if (ui->postToolBar->isHidden()) ui->postToolBar->show();
-	}
+	// update the state indicator
+	int ntime = mdl->CurrentTimeIndex() + 1;
+
+	Post::FEModel* fem = mdl->GetFEModel();
+	int states = fem->GetStates();
+	QString suff = QString("/%1").arg(states);
+	ui->pspin->setSuffix(suff);
+	ui->pspin->setRange(1, states);
+	ui->pspin->setValue(ntime);
+	ui->postToolBar->setEnabled(true);
+	if (ui->postToolBar->isHidden()) ui->postToolBar->show();
 }
 
 //-----------------------------------------------------------------------------
@@ -1252,7 +1265,7 @@ void CMainWindow::CloseView(CPostDoc* postDoc)
 //! Update the post panel
 void CMainWindow::UpdatePostPanel(bool braise, Post::CGLObject* po)
 {
-	ui->postPanel->Update();
+	ui->postPanel->Reset();
 	if (braise) ui->postPanel->parentWidget()->raise();
 	ui->postPanel->SelectObject(po);
 }
@@ -1466,7 +1479,7 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 			ui->actionColorMap->toggle();
 		}
 
-		UpdatePostPanel(false, doc->GetGLModel()->GetColorMap());
+		ui->postPanel->SelectObject(doc->GetGLModel()->GetColorMap());
 
 		ui->glview->UpdateWidgets(false);
 		RedrawGL();
@@ -1587,7 +1600,7 @@ void CMainWindow::on_actionColorMap_toggled(bool bchecked)
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
 	doc->ActivateColormap(bchecked);
-	UpdatePostPanel(false, doc->GetGLModel()->GetColorMap());
+	ui->postPanel->SelectObject(doc->GetGLModel()->GetColorMap());
 	RedrawGL();
 }
 
