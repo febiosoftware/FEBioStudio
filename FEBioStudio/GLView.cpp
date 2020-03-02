@@ -1559,7 +1559,11 @@ void CGLView::paintGL()
 		m_Widget->DrawWidget(m_ptriad, &painter);
 	}
 	else
+	{
+		int layer = postDoc->GetGLModel()->m_layer;
+		m_Widget->SetActiveLayer(layer);
 		m_Widget->DrawWidgets(&painter);
+	}
 
 	painter.end();
 
