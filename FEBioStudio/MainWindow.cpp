@@ -1584,6 +1584,14 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 	doc->SetActiveState(n - 1);
 	RedrawGL();
 	ui->modelViewer->RefreshProperties();
+
+	int graphs = ui->graphList.size();
+	QList<CGraphWindow*>::iterator it = ui->graphList.begin();
+	for (int i = 0; i < graphs; ++i, ++it)
+	{
+		CGraphWindow* w = *it;
+		w->Update(false);
+	}
 }
 
 //-----------------------------------------------------------------------------
