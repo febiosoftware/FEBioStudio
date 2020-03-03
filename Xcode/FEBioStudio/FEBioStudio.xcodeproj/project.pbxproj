@@ -56,6 +56,9 @@
 		D57A0B05234653F700B7C0B8 /* libmmg2d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B01234653F700B7C0B8 /* libmmg2d.a */; };
 		D57A0B06234653F700B7C0B8 /* libmmgs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D57A0B02234653F700B7C0B8 /* libmmgs.a */; };
 		D57A0B092346719D00B7C0B8 /* DlgImportXPLT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */; };
+		D5BA5337240D5470001A5C0F /* DlgSelectRange.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */; };
+		D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5334240D5470001A5C0F /* CIntInput.cpp */; };
+		D5BA5339240D5470001A5C0F /* DlgFind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5335240D5470001A5C0F /* DlgFind.cpp */; };
 		D5C13EDB24047890005897E1 /* moc_PostModelPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */; };
 		D5C13EDC24047890005897E1 /* PostModelPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5C13EDA24047890005897E1 /* PostModelPanel.cpp */; };
 		D5CA211523EF7025001AE230 /* moc_DlgAddPublication.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA210F23EF7025001AE230 /* moc_DlgAddPublication.cpp */; };
@@ -468,6 +471,11 @@
 		D57A0B02234653F700B7C0B8 /* libmmgs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmgs.a; path = ../../../../../../../../../../usr/local/lib/libmmgs.a; sourceTree = "<group>"; };
 		D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgImportXPLT.cpp; sourceTree = "<group>"; };
 		D57A0B082346719D00B7C0B8 /* DlgImportXPLT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgImportXPLT.h; sourceTree = "<group>"; };
+		D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgSelectRange.cpp; sourceTree = "<group>"; };
+		D5BA5333240D5470001A5C0F /* DlgSelectRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSelectRange.h; sourceTree = "<group>"; };
+		D5BA5334240D5470001A5C0F /* CIntInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CIntInput.cpp; sourceTree = "<group>"; };
+		D5BA5335240D5470001A5C0F /* DlgFind.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgFind.cpp; sourceTree = "<group>"; };
+		D5BA5336240D5470001A5C0F /* DlgFind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgFind.h; sourceTree = "<group>"; };
 		D5C13ED824047890005897E1 /* PostModelPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostModelPanel.h; sourceTree = "<group>"; };
 		D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PostModelPanel.cpp; sourceTree = "<group>"; };
 		D5C13EDA24047890005897E1 /* PostModelPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostModelPanel.cpp; sourceTree = "<group>"; };
@@ -1013,6 +1021,7 @@
 				D5F7D79522FA37C40089B08E /* BuildPanel.h */,
 				D5F7D75822FA37C40089B08E /* CColorButton.cpp */,
 				D5F7D75022FA37C40089B08E /* CColorButton.h */,
+				D5BA5334240D5470001A5C0F /* CIntInput.cpp */,
 				D5F7D74B22FA37C40089B08E /* CIntInput.h */,
 				D5F7D75722FA37C40089B08E /* ClassDescriptor.cpp */,
 				D5F7D7CA22FA37C40089B08E /* ClassDescriptor.h */,
@@ -1091,6 +1100,8 @@
 				D5F7D7D222FA37C40089B08E /* DlgExportFEBio.h */,
 				D5F7D79E22FA37C40089B08E /* DlgFEBioOptimize.cpp */,
 				D5F7D74922FA37C40089B08E /* DlgFEBioOptimize.h */,
+				D5BA5335240D5470001A5C0F /* DlgFind.cpp */,
+				D5BA5336240D5470001A5C0F /* DlgFind.h */,
 				D5F7D81A22FA37C40089B08E /* DlgFormula.cpp */,
 				D5F7D74E22FA37C40089B08E /* DlgFormula.h */,
 				D5F7D76622FA37C40089B08E /* DlgImportAbaqus.cpp */,
@@ -1117,6 +1128,8 @@
 				D5F7D75C22FA37C40089B08E /* DlgRAWImport.h */,
 				D5F7D7C622FA37C40089B08E /* DlgRun.cpp */,
 				D5F7D75522FA37C40089B08E /* DlgRun.h */,
+				D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */,
+				D5BA5333240D5470001A5C0F /* DlgSelectRange.h */,
 				D5F7D82222FA37C40089B08E /* DlgSettings.cpp */,
 				D5F7D80C22FA37C40089B08E /* DlgSettings.h */,
 				D5F7D6F822FA37C30089B08E /* DlgSoluteTable.cpp */,
@@ -1641,6 +1654,7 @@
 				D5F7D87422FA37C40089B08E /* PostPanel.cpp in Sources */,
 				D5F7D84D22FA37C40089B08E /* EditPanel.cpp in Sources */,
 				D5F7D85F22FA37C40089B08E /* SelectionBox.cpp in Sources */,
+				D5BA5339240D5470001A5C0F /* DlgFind.cpp in Sources */,
 				D5F7D84822FA37C40089B08E /* DocTemplate.cpp in Sources */,
 				D5F7D8BF22FA37C40089B08E /* MaterialEditor.cpp in Sources */,
 				D5F7D86B22FA37C40089B08E /* ModelPropsPanel.cpp in Sources */,
@@ -1712,6 +1726,7 @@
 				D5F7D8A122FA37C40089B08E /* moc_CurveEditor.cpp in Sources */,
 				D5F7D8BC22FA37C40089B08E /* ObjectPanel.cpp in Sources */,
 				D5F7D84322FA37C40089B08E /* DlgAddContact.cpp in Sources */,
+				D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */,
 				D5F7D8AB22FA37C40089B08E /* stdafx.cpp in Sources */,
 				D5F7D82D22FA37C40089B08E /* template.cpp in Sources */,
 				D5F7D8A322FA37C40089B08E /* moc_GraphWindow.cpp in Sources */,
@@ -1730,6 +1745,7 @@
 				D579B67E239F04E300278644 /* moc_AreaCoverageTool.cpp in Sources */,
 				D5F7D83022FA37C40089B08E /* moc_MaterialEditor.cpp in Sources */,
 				D5F7D87722FA37C40089B08E /* moc_MeshPanel.cpp in Sources */,
+				D5BA5337240D5470001A5C0F /* DlgSelectRange.cpp in Sources */,
 				D579B680239F04E300278644 /* PointDistanceTool.cpp in Sources */,
 				D5F7D82922FA37C40089B08E /* moc_DlgFEBioOptimize.cpp in Sources */,
 				D5F7D8AF22FA37C40089B08E /* DlgAddSurfaceLoad.cpp in Sources */,
