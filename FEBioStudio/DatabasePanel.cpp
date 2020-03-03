@@ -35,6 +35,7 @@
 #include "LocalDatabaseHandler.h"
 #include "RepoProject.h"
 #include "ToolBox.h"
+#include "PublicationWidgetView.h"
 
 #include <iostream>
 
@@ -264,6 +265,8 @@ public:
 	QLabel* filenameLabel;
 	QLabel* fileDescLabel;
 
+	::CPublicationWidgetView* projectPubs;
+
 	QToolBar* toolbar;
 
 	QAction* actionDownload;
@@ -279,6 +282,8 @@ public:
 
 
 public:
+	CDatabasePanel() : currentProject(nullptr), openAfterDownload(nullptr){}
+
 	void setupUi(::CDatabasePanel* parent)
 	{
 		stack = new QStackedLayout(parent);
@@ -400,6 +405,9 @@ public:
 
 		projectInfoBox->addTool("Project Info", projectDummy);
 
+		projectInfoBox->addTool("Publications", projectPubs = new ::CPublicationWidgetView);
+		projectInfoBox->getToolItem(1)->hide();
+
 		QWidget* fileDummy = new QWidget;
 		QVBoxLayout* fileInfoLayout = new QVBoxLayout;
 		fileDummy->setLayout(fileInfoLayout);
@@ -412,7 +420,7 @@ public:
 		fileInfoLayout->addLayout(fileInfoForm);
 
 		projectInfoBox->addTool("File Info", fileDummy);
-		projectInfoBox->getToolItem(1)->hide();
+		projectInfoBox->getToolItem(2)->hide();
 
 		splitter->addWidget(projectInfoBox);
 
@@ -471,6 +479,10 @@ public:
 	QStringList currentTags;
 	std::unordered_map<int, ProjectItem*> projectItemsByID;
 	std::unordered_map<int, FileItem*> fileItemsByID;
+
+	CustomTreeWidgetItem* openAfterDownload;
+
+
 };
 
 CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent)
@@ -599,6 +611,12 @@ void CDatabasePanel::DownloadFinished(int fileID, int fileType)
 		ui->fileItemsByID[fileID]->AddLocalCopy();
 	}
 
+	if(ui->openAfterDownload)
+	{
+		OpenItem(ui->openAfterDownload);
+		ui->openAfterDownload = nullptr;
+	}
+
 	on_treeWidget_itemSelectionChanged();
 }
 
@@ -672,9 +690,13 @@ void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int 
 	if(!customItem->LocalCopy())
 	{
 		DownloadItem(customItem);
-	}
 
-	OpenItem(customItem);
+		ui->openAfterDownload = customItem;
+	}
+	else
+	{
+		OpenItem(customItem);
+	}
 }
 
 void CDatabasePanel::on_actionDownload_triggered()
@@ -701,31 +723,52 @@ void CDatabasePanel::on_actionDelete_triggered()
 
 void CDatabasePanel::on_actionUpload_triggered()
 {
-	CDlgUpload dlg(this);
-	dlg.setName(m_wnd->GetDocument()->GetDocFileBase().c_str());
-	dlg.setOwner(repoHandler->getUsername());
-	dlg.setVersion("1");
-	QStringList tags = dbHandler->GetTags();
-	dlg.setTags(tags);
-
-
-	if (dlg.exec())
+	if(repoHandler->getUploadPermission())
 	{
-		QVariantMap projectInfo;
-		projectInfo.insert("name", dlg.getName());
-		projectInfo.insert("description", dlg.getDescription());
-		projectInfo.insert("version", dlg.getVersion());
+		CDlgUpload dlg(this);
+		dlg.setName(m_wnd->GetDocument()->GetDocFileBase().c_str());
+		dlg.setOwner(repoHandler->getUsername());
+		dlg.setVersion("1");
+		QStringList tags = dbHandler->GetTags();
+		dlg.setTags(tags);
 
-		QList<QVariant> tags;
-		for(QString tag : dlg.getTags())
+
+		if (dlg.exec())
 		{
-			tags.append(tag);
+			QVariantMap projectInfo;
+			projectInfo.insert("name", dlg.getName());
+			projectInfo.insert("description", dlg.getDescription());
+			projectInfo.insert("version", dlg.getVersion());
+
+			QList<QVariant> tags;
+			for(QString tag : dlg.getTags())
+			{
+				tags.append(tag);
+			}
+			projectInfo.insert("tags", tags);
+
+			projectInfo.insert("publications", dlg.getPublicationInfo());
+
+			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
+
+			std::cout << payload.toStdString() << std::endl;
+
+			repoHandler->uploadFileRequest(payload);
 		}
-		projectInfo.insert("tags", tags);
+	}
+	else
+	{
+		QDialog *dlg = new QDialog(this);
+		QVBoxLayout* l = new QVBoxLayout;
+		dlg->setLayout(l);
+		QLabel *msg = new QLabel("You do not have permission to upload models to the model repository.");
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok);
+		l->addWidget(msg);
+		l->addWidget(bb);
 
-		QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 
-		repoHandler->uploadFileRequest(payload);
+		dlg->exec();
 	}
 
 }
@@ -885,6 +928,7 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	{
 		ui->projectInfoBox->getToolItem(0)->hide();
 		ui->projectInfoBox->getToolItem(1)->hide();
+		ui->projectInfoBox->getToolItem(2)->hide();
 
 		ui->actionDownload->setEnabled(false);
 		ui->actionOpen->setEnabled(false);
@@ -920,15 +964,29 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 
 	ui->projectInfoBox->getToolItem(0)->show();
 
+	//Get the project publications
+	ui->projectPubs->clear();
+	dbHandler->GetProjectPubs(projItem->getProjectID());
+
+	if(ui->projectPubs->count() == 0)
+	{
+		ui->projectInfoBox->getToolItem(1)->hide();
+	}
+	else
+	{
+		ui->projectInfoBox->getToolItem(1)->show();
+	}
+
+
 	// If a file was selected, show update the file info, otherwise hide it
 	if(item->type() == FILEITEM)
 	{
 		dbHandler->GetFileData(static_cast<FileItem*>(item)->getFileID());
-		ui->projectInfoBox->getToolItem(1)->show();
+		ui->projectInfoBox->getToolItem(2)->show();
 	}
 	else
 	{
-		ui->projectInfoBox->getToolItem(1)->hide();
+		ui->projectInfoBox->getToolItem(2)->hide();
 	}
 
 
@@ -995,6 +1053,11 @@ void CDatabasePanel::SetFileData(char **data)
 void CDatabasePanel::AddCurrentTag(char **data)
 {
 	ui->currentTags.append(data[0]);
+}
+
+void CDatabasePanel::AddPublication(QVariantMap data)
+{
+	ui->projectPubs->addPublication(data);
 }
 
 void CDatabasePanel::PrintModel(char **argv)

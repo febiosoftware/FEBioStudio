@@ -10,6 +10,8 @@
 #include <QJsonObject>
 #include <QStringList>
 #include <QString>
+#include <QStringList>
+#include <QVariantMap>
 #include "RepoProject.h"
 #include "DatabasePanel.h"
 
@@ -87,58 +89,6 @@ public:
 			return;
 		}
 
-//		rc = sqlite3_exec(
-//				db,
-//				"CREATE TABLE IF NOT EXISTS 'users' ("
-//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-//				"	'username'	TEXT NOT NULL UNIQUE);"
-//				"CREATE TABLE IF NOT EXISTS 'authors' ("
-//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-//				"	'firstName'	TEXT NOT NULL,"
-//				"	'lastName'	TEXT NOT NULL);"
-//				"CREATE TABLE IF NOT EXISTS 'projects' ("
-//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-//				"	'owner'	INTEGER NOT NULL,"
-//				"	'name'	TEXT NOT NULL,"
-//				"	'description'	TEXT NOT NULL,"
-//				"	'version'	INTEGER NOT NULL,"
-//				"   'fileID'      INTEGER NOT NULL UNIQUE);"
-//				"CREATE TABLE IF NOT EXISTS 'projectFilenames' ("
-//				"	'project'	INTEGER NOT NULL,"
-//				"	'filename'	INTEGER NOT NULL UNIQUE);"
-//				"CREATE TABLE IF NOT EXISTS 'tags' ("
-//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-//				"	'tag'	TEXT NOT NULL);"
-//				"CREATE TABLE IF NOT EXISTS 'projectTags' ("
-//				"	'project'	INTEGER NOT NULL,"
-//				"	'tag'	INTEGER NOT NULL);"
-//				"CREATE TABLE IF NOT EXISTS 'publications' ("
-//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-//				"	'title'	TEXT NOT NULL,"
-//				"	'date'	TEXT NOT NULL,"
-//				"	'journal'	TEXT NOT NULL,"
-//				"	'edition'	TEXT NOT NULL,"
-//				"   'DOI'	TEXT);"
-//				"CREATE TABLE IF NOT EXISTS 'publicationAuthors' ("
-//				"	'author'	INTEGER NOT NULL,"
-//				"	'order'	INTEGER NOT NULL,"
-//				"	'publication'	INTEGER NOT NULL);"
-//				"CREATE TABLE IF NOT EXISTS 'filenames' ("
-//				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-//				"	'filename'	TEXT NOT NULL,"
-//				"   'description'   TEXT,"
-//				"	'localCopy'	INTEGER DEFAULT 0);"
-//				"CREATE TABLE IF NOT EXISTS 'fileTags' ("
-//				"	'file'	INTEGER NOT NULL,"
-//				"	'tag'	INTEGER NOT NULL);"
-//				"CREATE TABLE IF NOT EXISTS 'projectPubs' ("
-//				"	'project'	INTEGER NOT NULL,"
-//				"	'publication'	INTEGER NOT NULL);",
-//				NULL,
-//				NULL,
-//				&zErrMsg
-//				);
-
 		rc = sqlite3_exec(
 				db,
 				"CREATE TABLE IF NOT EXISTS 'users' ("
@@ -167,13 +117,15 @@ public:
 				"CREATE TABLE IF NOT EXISTS 'publications' ("
 				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
 				"	'title'	TEXT NOT NULL,"
-				"	'date'	TEXT NOT NULL,"
+				"	'year'	TEXT NOT NULL,"
 				"	'journal'	TEXT NOT NULL,"
-				"	'edition'	TEXT NOT NULL,"
+				"	'volume'	TEXT NOT NULL,"
+				"	'issue'	TEXT NOT NULL,"
+				"	'pages'	TEXT NOT NULL,"
 				"   'DOI'	TEXT);"
 				"CREATE TABLE IF NOT EXISTS 'publicationAuthors' ("
 				"	'author'	INTEGER NOT NULL,"
-				"	'order'	INTEGER NOT NULL,"
+				"	'ordering'	INTEGER NOT NULL,"
 				"	'publication'	INTEGER NOT NULL);"
 				"CREATE TABLE IF NOT EXISTS 'filenames' ("
 				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
@@ -552,6 +504,66 @@ void CLocalDatabaseHandler::GetProjectTags(int ID)
 	query += std::to_string(ID);
 
 	imp->execute(query, addCurrentTagCallback, imp->dbPanel);
+}
+
+void CLocalDatabaseHandler::GetProjectPubs(int ID)
+{
+	char **table;
+	int rows, cols;
+
+	QVariantMap data;
+
+	// Get all publications for this project
+	QString query = QString("SELECT publications.ID, title, year, journal, volume, issue, pages, DOI FROM publications JOIN projectPubs ON publications.ID = projectPubs.publication WHERE projectPubs.project = %1").arg(ID);
+	std::string queryStd = query.toStdString();
+
+	imp->getTable(queryStd, &table, &rows, &cols);
+
+	// Extract information about each project
+	for(int row = 1; row <= rows; row++)
+	{
+		int rowStart = row*cols;
+
+		data["title"] = QString(table[rowStart + 1]);
+		data["year"] = QString(table[rowStart + 2]);
+		data["journal"] = QString(table[rowStart + 3]);
+		data["volume"] = QString(table[rowStart + 4]);
+		data["issue"] = QString(table[rowStart + 5]);
+		data["pages"] = QString(table[rowStart + 6]);
+		data["DOI"] = QString(table[rowStart + 7]);
+
+		// Get Authors for this publication
+		char **table2;
+		int rows2, cols2;
+
+		QString query2 = QString("SELECT firstName, lastName FROM authors JOIN publicationAuthors ON publicationAuthors.author = authors.ID WHERE publicationAuthors.publication = %1 ORDER BY publicationAuthors.ordering").arg(table[rowStart]);
+		std::string queryStd2 = query2.toStdString();
+
+		imp->getTable(queryStd2, &table2, &rows2, &cols2);
+
+		QStringList authorGiven;
+		QStringList authorFamily;
+
+		for(int row2 = 1; row2 <= rows2; row2++)
+		{
+			int rowStart2 = row2*cols2;
+
+			authorGiven.push_back(table2[rowStart2]);
+			authorFamily.push_back(table2[rowStart2 + 1]);
+
+		}
+
+		sqlite3_free_table(table2);
+
+		data["authorGiven"] = authorGiven;
+		data["authorFamily"] = authorFamily;
+
+		imp->dbPanel->AddPublication(data);
+	}
+
+
+	sqlite3_free_table(table);
+
 }
 
 std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)

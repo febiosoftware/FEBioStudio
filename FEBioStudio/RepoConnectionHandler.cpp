@@ -31,7 +31,7 @@ class CRepoConnectionHandler::Imp
 {
 public:
 	Imp(CDatabasePanel* dbPanel, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* handler, CMainWindow* wnd)
-		: dbPanel(dbPanel), dbHandler(dbHandler), m_wnd(wnd)
+		: dbPanel(dbPanel), dbHandler(dbHandler), m_wnd(wnd), uploadPermission(0)
 	{
 		restclient = new QNetworkAccessManager(handler);
 
@@ -56,6 +56,7 @@ public:
 
 	QString username;
 	QString token;
+	int uploadPermission;
 
 };
 
@@ -315,8 +316,14 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 
 	if(statusCode == 200)
 	{
+		QJsonDocument jsonDoc = QJsonDocument::fromJson(r->readAll());
+		QJsonObject obj = jsonDoc.object();
+
+		imp->token = obj.value("authToken").toString();
+		imp->uploadPermission = obj.value("uploader").toInt();
+
 		// Store the authentication token
-		imp->token = (QString)r->readAll();
+//		imp->token = (QString)r->readAll();
 
 		// Send a requst to get the repository data
 		getTables();
@@ -671,6 +678,10 @@ QString CRepoConnectionHandler::getUsername()
 	return imp->username;
 }
 
+int CRepoConnectionHandler::getUploadPermission()
+{
+	return imp->uploadPermission;
+}
 
 #else
 

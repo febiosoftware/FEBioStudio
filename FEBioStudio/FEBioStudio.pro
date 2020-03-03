@@ -7,6 +7,7 @@ CONFIG += qt opengl qtwidgets qtcharts warn_off
 DEFINES += LINUX HAS_OCC TETLIBRARY HAS_NETGEN HAS_QUAZIP HAS_SSH HAS_MMG FFMPEG MODEL_REPO
 INCLUDEPATH += ../
 INCLUDEPATH += /usr/local/include/
+INCLUDEPATH += /usr/local/include/quazip5
 INCLUDEPATH += /home/sci/mherron/Resources/libssh/include/
 INCLUDEPATH += /home/sci/mherron/Resources/openssl-OpenSSL_1_1_1d/include/
 INCLUDEPATH += /usr/include/ffmpeg

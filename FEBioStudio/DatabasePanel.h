@@ -41,6 +41,7 @@ public:
 	void SetProjectData(char **argv);
 	void SetFileData(char **argv);
 	void AddCurrentTag(char **argv);
+	void AddPublication(QVariantMap data);
 	void PrintModel(char **argv);
 
 	QString RepositoryFolder();

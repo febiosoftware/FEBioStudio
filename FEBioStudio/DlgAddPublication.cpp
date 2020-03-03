@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <QWidget>
+#include <QStringList>
 #include <QStackedLayout>
 #include <QAction>
 #include <QLineEdit>
@@ -18,7 +19,9 @@
 #include <QVariantMap>
 #include <QUrl>
 #include "DlgAddPublication.h"
-//#include "PublicationWidget.h"
+#include "PublicationWidgetView.h"
+#include "PublicationWidget.h"
+
 
 #include <iostream>
 
@@ -40,6 +43,28 @@ public:
 		headers.append("Family Name");
 		setHeaderLabels(headers);
 	}
+
+	QStringList getAuthorGiven()
+	{
+		QStringList authorGiven;
+		for(int item = 0; item < topLevelItemCount(); item++)
+		{
+			authorGiven.push_back(topLevelItem(item)->text(1));
+		}
+
+		return authorGiven;
+	}
+
+	QStringList getAuthorFamily()
+		{
+			QStringList authorFamily;
+			for(int item = 0; item < topLevelItemCount(); item++)
+			{
+				authorFamily.push_back(topLevelItem(item)->text(2));
+			}
+
+			return authorFamily;
+		}
 
 protected:
 	void dropEvent(QDropEvent *event)
@@ -63,9 +88,12 @@ class Ui::CDlgAddPublication
 public:
 	QStackedLayout* stack;
 
-	QWidget* DOIPage;
+	QWidget* queryPage;
 	QLineEdit* DOI;
 	QAction* DOILookup;
+	QLineEdit* query;
+	QAction* queryLookup;
+	::CPublicationWidgetView* pubs;
 
 	QWidget* infoPage;
 	QLineEdit* title;
@@ -77,53 +105,66 @@ public:
 	QLineEdit* DOI2;
 	AuthorTreeWidget* authors;
 
-	QAction* actionBack;
-
 public:
 	void setup(QDialog* dlg)
 	{
-		QVBoxLayout* layout = new QVBoxLayout;
+//		QVBoxLayout* layout = new QVBoxLayout;
 		stack = new QStackedLayout;
 
 		// DOI Page
-		DOIPage = new QWidget;
-		QVBoxLayout* DOIPageLayout = new QVBoxLayout;
-		QHBoxLayout* hlayout = new QHBoxLayout;
+		queryPage = new QWidget;
+		QVBoxLayout* queryPageLayout = new QVBoxLayout;
+		QFormLayout* queryForm = new QFormLayout;
+		QHBoxLayout* DOILayout = new QHBoxLayout;
 
-		QFormLayout* DOIForm = new QFormLayout;
-		DOIForm->addRow("DOI: ", DOI = new QLineEdit);
-
-		hlayout->addLayout(DOIForm);
+		DOI = new QLineEdit;
+		DOILayout->addWidget(DOI);
 
 		DOILookup = new QAction(dlg);
 		DOILookup->setIcon(QIcon(":/icons/search.png"));
 		DOILookup->setObjectName("DOILookup");
 		QToolButton* DOILookupBtn = new QToolButton;
 		DOILookupBtn->setDefaultAction(DOILookup);
+		DOILayout->addWidget(DOILookupBtn);
 
-		hlayout->addWidget(DOILookupBtn);
+		queryForm->addRow("DOI: ", DOILayout);
 
-		DOIPageLayout->addLayout(hlayout);
 
-//		CPublicationWidget* test = new CPublicationWidget("This is a test", "This is a test to see how big this thing can get.\n\nAnd if it can handle new lines.\n\nOr is that's not supported.");
-//		DOIPageLayout->addWidget(test);
+		QHBoxLayout* queryLayout= new QHBoxLayout;
 
-		DOIPage->setLayout(DOIPageLayout);
-		stack->addWidget(DOIPage);
+		query = new QLineEdit;
+		queryLayout->addWidget(query);
+
+		queryLookup = new QAction(dlg);
+		queryLookup->setIcon(QIcon(":/icons/search.png"));
+		queryLookup->setObjectName("queryLookup");
+		QToolButton* queryLookupBtn = new QToolButton;
+		queryLookupBtn->setDefaultAction(queryLookup);
+
+		queryLayout->addWidget(queryLookupBtn);
+
+		queryForm->addRow("Search: ", queryLayout);
+
+		queryPageLayout->addLayout(queryForm);
+
+		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::SELECTABLE);
+		queryPageLayout->addWidget(pubs);
+
+		QDialogButtonBox* querybb = new QDialogButtonBox;
+		QPushButton* manualButton = querybb->addButton("Manual Input", QDialogButtonBox::ActionRole);
+		querybb->addButton(QDialogButtonBox::Cancel);
+
+		QObject::connect(querybb, SIGNAL(rejected()), dlg, SLOT(reject()));
+		QObject::connect(manualButton, SIGNAL(clicked()), dlg, SLOT(manualButtonClicked()));
+
+		queryPageLayout->addWidget(querybb);
+
+		queryPage->setLayout(queryPageLayout);
+		stack->addWidget(queryPage);
 
 		// Info Page
 		infoPage = new QWidget;
 		QVBoxLayout* infoPageLayout = new QVBoxLayout;
-
-		actionBack = new QAction(dlg);
-//		actionBack->setIcon(QIcon(":/icons/search.png"));
-		actionBack->setText("<");
-		actionBack->setObjectName("actionBack");
-		QToolButton* actionBackBtn = new QToolButton;
-		actionBackBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-		actionBackBtn->setDefaultAction(actionBack);
-
-		infoPageLayout->addWidget(actionBackBtn);
 
 		QFormLayout* infoForm = new QFormLayout;
 		infoForm->addRow("Title: ", title = new QLineEdit);
@@ -140,63 +181,49 @@ public:
 
 		infoPageLayout->addWidget(authors);
 
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		QPushButton* backButton = bb->addButton("Back", QDialogButtonBox::ActionRole);
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+		QObject::connect(backButton, SIGNAL(clicked()), dlg, SLOT(backButtonClicked()));
+
+		infoPageLayout->addWidget(bb);
+
 		infoPage->setLayout(infoPageLayout);
 		stack->addWidget(infoPage);
 
-		layout->addLayout(stack);
+//		layout->addLayout(stack);
 
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-		layout->addWidget(bb);
 
-		dlg->setLayout(layout);
 
-		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
-		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+		dlg->setLayout(stack);
+
+
 
 	}
 
-	void SetInfoFromDOI(QJsonDocument& jsonDoc)
+	void SetPublicationInfo(::CPublicationWidget* pub)
 	{
-		QJsonObject message = jsonDoc.object().value("message").toObject();
-
-		title->setText(message.value("title").toArray().at(0).toString());
+		title->setText(pub->getTitle());
 		title->setCursorPosition(0);
 
-		if(message.contains("published-print"))
-		{
-			year->setText(QString::number(message.value("published-print").toObject().value("date-parts").toArray().at(0).toArray().at(0).toInt()));
-		}
-		else if(message.contains("created"))
-		{
-			year->setText(QString::number(message.value("created").toObject().value("date-parts").toArray().at(0).toArray().at(0).toInt()));
-		}
-
-		journal->setText(message.value("container-title").toArray().at(0).toString());
+		journal->setText(pub->getJournal());
 		journal->setCursorPosition(0);
-		volume->setText(message.value("volume").toString());
-		issue->setText(message.value("issue").toString());
-		pages->setText(message.value("page").toString());
-		DOI2->setText(message.value("DOI").toString());
+
+		year->setText(pub->getYear());
+		volume->setText(pub->getVolume());
+		issue->setText(pub->getIssue());
+		pages->setText(pub->getPages());
+		DOI2->setText(pub->getDOI());
 		DOI2->setCursorPosition(0);
 
 		authors->clear();
-		int order = 2;
-		for(QJsonValueRef author : message.value("author").toArray())
+		for(int author = 0; author < pub->getAuthorFamily().size(); author++)
 		{
-			QJsonObject authorObject = author.toObject();
 			QStringList info;
-
-			if(authorObject.value("sequence").toString().compare("first") == 0)
-			{
-				info.push_back("1");
-			}
-			else
-			{
-				info.push_back(QString::number(order++));
-			}
-
-			info.push_back(authorObject.value("given").toString());
-			info.push_back(authorObject.value("family").toString());
+			info.push_back(QString::number(author));
+			info.push_back(pub->getAuthorGiven()[author]);
+			info.push_back(pub->getAuthorFamily()[author]);
 
 			QTreeWidgetItem* item = new QTreeWidgetItem(info);
 			authors->addTopLevelItem(item);
@@ -204,6 +231,52 @@ public:
 
 		stack->setCurrentIndex(1);
 	}
+
+	void addPublication(QJsonObject& publication)
+	{
+		QString title = publication.value("title").toArray().at(0).toString();
+		QString journal = publication.value("container-title").toArray().at(0).toString();
+		QString volume = publication.value("volume").toString();
+		QString issue = publication.value("issue").toString();
+		QString pages = publication.value("page").toString();
+		QString DOI = publication.value("DOI").toString();
+
+		QString year;
+
+		if(publication.contains("published-print"))
+		{
+			year = QString::number(publication.value("published-print").toObject().value("date-parts").toArray().at(0).toArray().at(0).toInt());
+		}
+		else if(publication.contains("created"))
+		{
+			year = QString::number(publication.value("created").toObject().value("date-parts").toArray().at(0).toArray().at(0).toInt());
+		}
+
+		QStringList authorGiven;
+		QStringList authorFamily;
+
+		for(QJsonValueRef author : publication.value("author").toArray())
+		{
+			QJsonObject authorObject = author.toObject();
+			QStringList info;
+
+			if(authorObject.value("sequence").toString().compare("first") == 0)
+			{
+				authorGiven.push_front(authorObject.value("given").toString());
+				authorFamily.push_front(authorObject.value("family").toString());
+			}
+			else
+			{
+				authorGiven.push_back(authorObject.value("given").toString());
+				authorFamily.push_back(authorObject.value("family").toString());
+			}
+
+		}
+
+		pubs->addPublication(title, year, journal, volume, issue, pages, DOI, authorGiven, authorFamily);
+
+	}
+
 };
 
 CDlgAddPublication::CDlgAddPublication(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddPublication)
@@ -213,6 +286,7 @@ CDlgAddPublication::CDlgAddPublication(QWidget* parent) : QDialog(parent), ui(ne
 
 	restclient = new QNetworkAccessManager;
 	connect(restclient, SIGNAL(finished(QNetworkReply*)), this, SLOT(connFinished(QNetworkReply*)));
+	connect(ui->pubs, &CPublicationWidgetView::chosen_publication, this, &CDlgAddPublication::publicationChosen);
 
 	QMetaObject::connectSlotsByName(this);
 }
@@ -232,16 +306,118 @@ void CDlgAddPublication::on_DOILookup_triggered()
 
 }
 
-void CDlgAddPublication::on_actionBack_triggered()
+void CDlgAddPublication::on_queryLookup_triggered()
 {
-	ui->stack->setCurrentIndex(0);
+	QStringList terms = ui->query->text().split(" ");
+	QString path = QString("/works?query.bibliographic=");
+
+	for(auto term : terms)
+	{
+		path += term + "+";
+	}
+
+	// Remove the last +
+	path.chop(1);
+
+	path += "&rows=10&filter=type:journal-article";
+
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost("api.crossref.org");
+	myurl.setPath(path);
+
+	// Necessary becuase it was not parsing the ? properly
+	myurl.setUrl(QUrl::fromPercentEncoding(myurl.toEncoded()));
+
+	std::cout << myurl.toString().toStdString() << std::endl;
+
+	QNetworkRequest request(myurl);
+	restclient->get(request);
+
 }
 
 void CDlgAddPublication::connFinished(QNetworkReply* r)
 {
+	ui->pubs->clear();
+
 	QJsonDocument jsonDoc = QJsonDocument::fromJson(r->readAll());
 
-	ui->SetInfoFromDOI(jsonDoc);
+	QJsonObject message = jsonDoc.object().value("message").toObject();
+
+	if(message.contains("items"))
+	{
+		for(auto publication : message.value("items").toArray())
+		{
+			QJsonObject pub = publication.toObject();
+
+			ui->addPublication(pub);
+		}
+	}
+	else
+	{
+		ui->addPublication(message);
+	}
+
+}
+
+void CDlgAddPublication::publicationChosen(CPublicationWidget* pub)
+{
+	ui->SetPublicationInfo(pub);
+}
+
+void CDlgAddPublication::manualButtonClicked()
+{
+	ui->stack->setCurrentIndex(1);
+}
+
+void CDlgAddPublication::backButtonClicked()
+{
+	ui->stack->setCurrentIndex(0);
+}
+
+QString CDlgAddPublication::getTitle()
+{
+	return ui->title->text();
+}
+
+QString CDlgAddPublication::getYear()
+{
+	return ui->year->text();
+}
+
+QString CDlgAddPublication::getJournal()
+{
+	return ui->journal->text();
+}
+
+QString CDlgAddPublication::getVolume()
+{
+	return ui->volume->text();
+}
+
+QString CDlgAddPublication::getIssue()
+{
+	return ui->issue->text();
+}
+
+QString CDlgAddPublication::getPages()
+{
+	return ui->pages->text();
+}
+
+QString CDlgAddPublication::getDOI()
+{
+	return ui->DOI2->text();
+}
+
+QStringList CDlgAddPublication::getAuthorGiven()
+{
+	return ui->authors->getAuthorGiven();
+}
+
+QStringList CDlgAddPublication::getAuthorFamily()
+{
+	return ui->authors->getAuthorFamily();
 }
 
 

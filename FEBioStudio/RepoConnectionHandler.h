@@ -26,6 +26,7 @@ public:
 	void uploadFile(QString fileToken);
 
 	QString getUsername();
+	int getUploadPermission();
 
 private slots:
 	void connFinished(QNetworkReply *r);

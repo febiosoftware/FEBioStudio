@@ -10,6 +10,7 @@ namespace Ui {
 class QStringList;
 class QNetworkAccessManager;
 class QNetworkReply;
+class CPublicationWidget;
 
 
 class CDlgAddPublication : public QDialog
@@ -19,9 +20,23 @@ class CDlgAddPublication : public QDialog
 public:
 	CDlgAddPublication(QWidget* parent);
 
+	QString getTitle();
+	QString getYear();
+	QString getJournal();
+	QString getVolume();
+	QString getIssue();
+	QString getPages();
+	QString getDOI();
+	QStringList getAuthorGiven();
+	QStringList getAuthorFamily();
+
+
 public slots:
 	void on_DOILookup_triggered();
-	void on_actionBack_triggered();
+	void on_queryLookup_triggered();
+	void publicationChosen(CPublicationWidget* pub);
+	void manualButtonClicked();
+	void backButtonClicked();
 	void connFinished(QNetworkReply* r);
 
 private:

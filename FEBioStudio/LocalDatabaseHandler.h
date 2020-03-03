@@ -25,8 +25,10 @@ public:
 	void GetProjectFiles(int ID);
 
 	void GetProjectData(int ID);
-	void GetFileData(int ID);
 	void GetProjectTags(int ID);
+	void GetProjectPubs(int ID);
+	void GetFileData(int ID);
+
 
 	std::unordered_set<int> FullTextSearch(QString term);
 

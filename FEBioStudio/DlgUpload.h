@@ -70,12 +70,12 @@ public:
 	QString getOwner();
 	QString getVersion();
 	QStringList getTags();
+	QList<QVariant> getPublicationInfo();
 
 
 public slots:
 	void on_addTagBtn_clicked();
 	void on_delTagBtn_clicked();
-	void on_actionAddPub_triggered();
 
 private:
 	Ui::CDlgUpload*	ui;

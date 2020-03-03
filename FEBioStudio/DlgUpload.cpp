@@ -13,8 +13,7 @@
 #include <QLabel>
 #include <QFrame>
 #include "DlgUpload.h"
-#include "DlgAddPublication.h"
-
+#include "PublicationWidgetView.h"
 
 //ClickableLabel::ClickableLabel(QWidget* parent, Qt::WindowFlags f)
 //    : QLabel(parent) {
@@ -69,8 +68,7 @@ public:
 	QLineEdit* newTag;
 	QCompleter* completer;
 	QListWidget* tags;
-
-	QAction* actionAddPub;
+	::CPublicationWidgetView* pubs;
 
 public:
 	void setup(QDialog* dlg)
@@ -122,16 +120,9 @@ public:
 
 		layout->addWidget(new QLabel("Publications:"));
 
-		QHBoxLayout* pubHLayout = new QHBoxLayout;
-		pubHLayout->addStretch();
+		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::EDITABLE);
+		layout->addWidget(pubs);
 
-		actionAddPub = new QAction(QIcon(":/icons/selectAdd.png"), "Add Publication", dlg);
-		actionAddPub->setObjectName("actionAddPub");
-		QToolButton* addPubBtn = new QToolButton;
-		addPubBtn->setDefaultAction(actionAddPub);
-		pubHLayout->addWidget(addPubBtn);
-
-		layout->addLayout(pubHLayout);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
@@ -222,6 +213,10 @@ QStringList CDlgUpload::getTags()
 	return tagList;
 }
 
+QList<QVariant> CDlgUpload::getPublicationInfo()
+{
+	return ui->pubs->getPublicationInfo();
+}
 
 void CDlgUpload::on_addTagBtn_clicked()
 {
@@ -242,18 +237,6 @@ void CDlgUpload::on_delTagBtn_clicked()
 		delete item;
 	}
 }
-
-void CDlgUpload::on_actionAddPub_triggered()
-{
-	CDlgAddPublication dlg(this);
-
-	if(dlg.exec())
-	{
-
-	}
-
-}
-
 
 
 
