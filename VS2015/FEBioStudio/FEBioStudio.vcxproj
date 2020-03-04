@@ -338,6 +338,8 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PostToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListForm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListView.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PublicationWidget.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PublicationWidgetView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_RepoConnectionHandler.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SelectionBox.cpp" />
@@ -367,6 +369,8 @@
     <ClCompile Include="..\..\FEBioStudio\PropertyList.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListForm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListView.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PublicationWidget.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PublicationWidgetView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\qrc_febiostudio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ReadCurveTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\RepoConnectionHandler.cpp" />
@@ -508,6 +512,16 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\PostModelPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PublicationWidget.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PublicationWidgetView.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QT512DIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
