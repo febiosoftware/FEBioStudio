@@ -530,6 +530,24 @@ void FEBioExport25::BuildNodeSetList(FEProject& prj)
 		}
 	}
 
+	// check for node sets, used in log data
+	GModel& mdl = fem.GetModel();
+	CLogDataSettings& logData = prj.GetLogDataSettings();
+	int ndata = logData.LogDataSize();
+	for (int i = 0; i < ndata; ++i)
+	{
+		FELogData& ld = logData.LogData(i);
+		if (ld.type == FELogData::LD_NODE)
+		{
+			// Find the node set
+			FEItemListBuilder* itemList = mdl.FindNamedSelection(ld.groupID);
+			if (itemList)
+			{
+				AddNodeSet(itemList->GetName(), itemList);
+			}
+		}
+	}
+
 /*	// Node sets are already written in WriteGeometryNodeSets
 	GModel& model = fem.GetModel();
 	CLogDataSettings& log = prj.GetLogDataSettings();
