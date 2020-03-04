@@ -76,6 +76,7 @@ public:
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
 	QProgressBar*	fileProgress;
+	QProgressBar*	indeterminateProgress;
 
 	CDataFieldSelector*	selectData;
 	QSpinBox*	pspin;
@@ -247,6 +248,11 @@ public:
 		fileProgress->setRange(0, 100);
 		fileProgress->setMaximumWidth(200);
 		fileProgress->setMaximumHeight(15);
+
+		indeterminateProgress = new QProgressBar;
+		indeterminateProgress->setRange(0, 0);
+		indeterminateProgress->setMaximumWidth(200);
+		indeterminateProgress->setMaximumHeight(15);
 
 		QMetaObject::connectSlotsByName(wnd);
 	}

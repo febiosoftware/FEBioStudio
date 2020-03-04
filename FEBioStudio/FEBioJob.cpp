@@ -159,8 +159,8 @@ CSSHHandler* CFEBioJob::NewHandler()
 {
 	CSSHHandler* handler = new CSSHHandler(this);
 
-	QObject::connect(handler, &CSSHHandler::ShowProgress, m_doc->GetMainWindow(), &CMainWindow::ShowSSHProgress);
-	QObject::connect(handler, &CSSHHandler::UpdateProgress, m_doc->GetMainWindow(), &CMainWindow::UpdateSSHProgress);
+	QObject::connect(handler, &CSSHHandler::ShowProgress, m_doc->GetMainWindow(), &CMainWindow::ShowProgress);
+	QObject::connect(handler, &CSSHHandler::UpdateProgress, m_doc->GetMainWindow(), &CMainWindow::UpdateProgress);
 
 	return handler;
 }

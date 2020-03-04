@@ -411,8 +411,9 @@ public slots:
 	void RunFEBioJob(CFEBioJob* job);
 
 	void NextSSHFunction(CSSHHandler*);
-	void ShowSSHProgress(bool show);
-	void UpdateSSHProgress(int);
+	void ShowProgress(bool show, QString message = "");
+	void ShowIndeterminateProgress(bool show, QString message = "");
+	void UpdateProgress(int);
 
 	bool DoModelCheck();
 

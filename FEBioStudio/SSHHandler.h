@@ -58,7 +58,7 @@ public:
 signals:
 	void AddLogEntry(const QString&);
 	void AddOutputEntry(const QString&);
-	void ShowProgress(bool);
+	void ShowProgress(bool, QString message = "");
 	void UpdateProgress(int);
 
 private:

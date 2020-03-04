@@ -2295,10 +2295,11 @@ bool CMainWindow::HandleSSHMessage(CSSHHandler* sshHandler)
 	return true;
 }
 
-void CMainWindow::ShowSSHProgress(bool show)
+void CMainWindow::ShowProgress(bool show, QString message)
 {
 	if(show)
 	{
+		ui->statusBar->showMessage(message);
 		ui->statusBar->addPermanentWidget(ui->fileProgress);
 		ui->fileProgress->show();
 	}
@@ -2309,7 +2310,22 @@ void CMainWindow::ShowSSHProgress(bool show)
 	}
 }
 
-void CMainWindow::UpdateSSHProgress(int n)
+void CMainWindow::ShowIndeterminateProgress(bool show, QString message)
+{
+	if(show)
+	{
+		ui->statusBar->showMessage(message);
+		ui->statusBar->addPermanentWidget(ui->indeterminateProgress);
+		ui->indeterminateProgress->show();
+	}
+	else
+	{
+		ui->statusBar->clearMessage();
+		ui->statusBar->removeWidget(ui->indeterminateProgress);
+	}
+}
+
+void CMainWindow::UpdateProgress(int n)
 {
 	ui->fileProgress->setValue(n);
 }

@@ -600,7 +600,9 @@ void CDatabasePanel::DownloadFinished(int fileID, int fileType)
 		QString dir = fileInfo.path() + "/";
 		dir += fileInfo.baseName();
 
+//		m_wnd->ShowIndeterminateProgress(true, "Unzipping...");
 		JlCompress::extractFiles(filename, JlCompress::getFileList(filename), dir);
+//		m_wnd->ShowIndeterminateProgress(false);
 
 		// Set the appropriate local copy flags
 		ui->projectItemsByID[fileID]->setLocalCopyRecursive(true);

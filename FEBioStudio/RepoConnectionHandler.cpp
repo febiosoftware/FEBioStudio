@@ -140,6 +140,8 @@ void CRepoConnectionHandler::getFile(int id, int type)
 		QNetworkReply* reply = imp->restclient->get(request);
 
 		QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CRepoConnectionHandler::progress);
+
+		imp->m_wnd->ShowProgress(true, "Downloading...");
 	}
 
 }
@@ -269,6 +271,8 @@ void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal)
 	cout << "Total: " << bytesTotal << endl;
 	cout << "Received: " << bytesReceived << endl;
 	cout << (float)bytesReceived/(float)bytesTotal*100 << "%" << endl;
+
+	imp->m_wnd->UpdateProgress((float)bytesReceived/(float)bytesTotal*100);
 }
 
 bool CRepoConnectionHandler::NetworkAccessibleCheck()
@@ -399,6 +403,8 @@ void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 
 void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 {
+	imp->m_wnd->ShowProgress(false);
+
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
 	if(statusCode == 200)
@@ -436,6 +442,7 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 
 		imp->dbPanel->FailedLogin(message);
 	}
+
 
 //	if(IDType == GLOBAL)
 //	{
