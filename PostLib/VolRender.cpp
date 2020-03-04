@@ -435,6 +435,7 @@ void CVolRender::Render(CGLContext& rc)
 	}
 	else glBindTexture(GL_TEXTURE_2D, m_texID);
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 
@@ -453,8 +454,7 @@ void CVolRender::Render(CGLContext& rc)
 	if ((y > x) && (y > z)) { RenderY(r.y > 0 ? 1 : -1); }
 	if ((z > y) && (z > x)) { RenderZ(r.z > 0 ? 1 : -1); }
 
-	glDisable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
+	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------

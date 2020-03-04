@@ -2091,6 +2091,13 @@ void CMainWindow::on_actionShowDiscrete_toggled(bool b)
 	RedrawGL();
 }
 
+void CMainWindow::on_actionToggleLight_triggered()
+{
+	VIEW_SETTINGS& view = m_doc->GetViewSettings();
+	view.m_bLighting = !view.m_bLighting;
+	RedrawGL();
+}
+
 void CMainWindow::changeViewMode(View_Mode vm)
 {
 	ui->glview->SetViewMode(vm);

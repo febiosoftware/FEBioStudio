@@ -218,7 +218,7 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 	// render the plane
 	if (m_bshowplane)
 	{
-		glPushAttrib(GL_LIGHTING_BIT);
+		glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
 		glDisable(GL_LIGHTING);
 		DisableClipPlanes();
 		rc.m_cam->LineDrawMode(true);

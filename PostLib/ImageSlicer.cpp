@@ -178,6 +178,7 @@ void CImageSlicer::Render(CGLContext& rc)
 
 	BOX box = GetImageModel()->GetBoundingBox();
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 
@@ -213,6 +214,5 @@ void CImageSlicer::Render(CGLContext& rc)
 	}
 	glEnd();
 
-	glEnable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
+	glPopAttrib();
 }

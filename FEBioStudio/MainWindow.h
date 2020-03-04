@@ -295,6 +295,7 @@ public slots:
 	void on_actionShowNormals_toggled(bool b);
 	void on_actionShowFibers_toggled(bool b);
 	void on_actionShowDiscrete_toggled(bool b);
+	void on_actionToggleLight_triggered();
 	void on_actionFront_triggered();
 	void on_actionBack_triggered();
 	void on_actionLeft_triggered();

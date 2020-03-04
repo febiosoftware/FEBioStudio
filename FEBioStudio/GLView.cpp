@@ -2525,6 +2525,7 @@ void CGLView::RenderBackground()
 	glPushMatrix();
 	glLoadIdentity();
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_CULL_FACE);
@@ -2558,9 +2559,7 @@ void CGLView::RenderBackground()
 	}
 	glEnd();
 
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_DEPTH_TEST);
+	glPopAttrib();
 
 	glPopMatrix();
 
@@ -2661,6 +2660,7 @@ void CGLView::RenderMaterialFibers()
 
 	FEElementRef rel;
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 
 	BOX box = model.GetBoundingBox();
@@ -2718,7 +2718,7 @@ void CGLView::RenderMaterialFibers()
 		}
 	}
 
-	glEnable(GL_LIGHTING);
+	glPopAttrib();
 }
 
 void CGLView::RenderLocalMaterialAxes()
@@ -2732,6 +2732,7 @@ void CGLView::RenderLocalMaterialAxes()
 
 	FEElementRef rel;
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
@@ -2800,7 +2801,7 @@ void CGLView::RenderLocalMaterialAxes()
 		}
 	}
 
-	glEnable(GL_LIGHTING);
+	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
@@ -2872,6 +2873,7 @@ void CGLView::RenderRubberBand()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glColor3ub(255, 255, 255);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -2906,10 +2908,8 @@ void CGLView::RenderRubberBand()
 		break;
 	}
 
-	glEnable(GL_CULL_FACE);
-	glDisable(GL_LINE_STIPPLE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glEnable(GL_LIGHTING);
+	glPopAttrib();
 }
 
 
@@ -3005,6 +3005,7 @@ void CGLView::RenderRigidJoints()
 	double scale = 0.05*(double)m_Cam.GetTargetDistance();
 	double R = 0.5*scale;
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 	glColor3ub(255, 0, 0);
@@ -3045,8 +3046,7 @@ void CGLView::RenderRigidJoints()
 		}
 	}
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_DEPTH_TEST);
+	glPopAttrib();
 }
 
 void CGLView::RenderRigidConnectors()
@@ -3059,6 +3059,7 @@ void CGLView::RenderRigidConnectors()
 	double scale = 0.05*(double)m_Cam.GetTargetDistance();
 	double R = 0.5*scale;
 
+	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 	glColor3ub(0, 0, 255);
@@ -3362,8 +3363,7 @@ void CGLView::RenderRigidConnectors()
 		}
 	}
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_DEPTH_TEST);
+	glPopAttrib();
 }
 
 

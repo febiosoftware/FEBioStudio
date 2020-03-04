@@ -141,7 +141,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 //	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
 
 	// store attributes
-	glPushAttrib(GL_LIGHTING_BIT);
+	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
 
 	// create the cylinder object
 	glEnable(GL_LIGHTING);

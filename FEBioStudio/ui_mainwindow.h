@@ -140,6 +140,7 @@ public:
 	QAction* actionWireframe;
 	QAction* actionShowFibers;
 	QAction* actionShowDiscrete;
+	QAction* actionToggleLight;
 
 	QAction* actionColorMap;
 	QAction* actionPlay;
@@ -404,6 +405,7 @@ public:
 		actionShowDiscrete    = addAction("Show Discrete sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
 		QAction* actionSnap3D = addAction("3D cursor to selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
+		actionToggleLight     = addAction("Toggle Lighting", "actionToggleLight");
 		actionFront           = addAction("Front", "actionFront");
 		actionBack            = addAction("Back" , "actionBack");
 		actionRight           = addAction("Right", "actionRight");
@@ -636,6 +638,7 @@ public:
 		menuView->addAction(actionShowDiscrete);
 		menuView->addAction(actionSnap3D);
 		menuView->addAction(actionTrack);
+		menuView->addAction(actionToggleLight);
 		menuView->addSeparator();
 		menuView->addAction(actionFront);
 		menuView->addAction(actionBack);
