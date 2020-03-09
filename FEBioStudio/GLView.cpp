@@ -177,9 +177,9 @@ public:
 		double ffar = view->GetFarPlane();
 		if (ortho)
 		{
-			double z = view->GetCamera().GetTargetDistance();
-			double dx = z*tan(0.5*fov*PI / 180.0)*ar;
-			double dy = z*tan(0.5*fov*PI / 180.0);
+			GLdouble f = 0.2*view->GetCamera().GetTargetDistance();
+			double dx = f*ar;
+			double dy = f;
 			glOrtho(-dx, dx, -dy, dy, fnear, ffar);
 		}
 		else
@@ -505,6 +505,15 @@ CGLView::~CGLView()
 CDocument* CGLView::GetDocument()
 {
 	return m_pWnd->GetDocument();
+}
+
+void CGLView::UpdateCamera(bool hitCameraTarget)
+{
+	CPostDoc* doc = m_pWnd->GetActiveDocument();
+	if (doc && doc->IsValid())
+	{
+		GetCamera().Update(hitCameraTarget);
+	}
 }
 
 void CGLView::resizeGL(int w, int h)
@@ -8006,12 +8015,6 @@ void CGLView::RenderTags()
 
 	VIEW_SETTINGS& view = doc->GetViewSettings();
 
-	double radius = box.Radius();
-	vec3d rc = box.Center();
-
-	m_fnear = 0.01*radius;
-	m_ffar = 100 * radius;
-
 	// get the mesh
 	Post::FEPostMesh& mesh = *model->GetActiveMesh();
 
@@ -8125,7 +8128,7 @@ void CGLView::RenderTags()
 	int nsel = (int)vtag.size();
 	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
 
-								 // find out where the tags are on the screen
+	// find out where the tags are on the screen
 	WorldToScreen transform(this);
 	for (int i = 0; i<nsel; i++)
 	{

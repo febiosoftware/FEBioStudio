@@ -145,5 +145,6 @@
 		<file>icons/view.png</file>
 		<file>icons/snapshot.png</file>
 		<file>icons/ignore.png</file>
+		<file>icons/refresh.png</file>
 	</qresource>
 </RCC>

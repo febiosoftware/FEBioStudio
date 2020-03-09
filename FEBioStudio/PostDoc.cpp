@@ -289,6 +289,59 @@ std::string CPostDoc::GetFileName()
 	return imp->m_fileName;
 }
 
+bool CPostDoc::ReloadPlotfile()
+{
+	// clear the FE model
+	imp->glm->SetFEModel(nullptr);
+	delete imp->fem;
+
+	// delete the postObject
+	delete imp->m_postObj; imp->m_postObj = nullptr;
+
+	// create new FE model
+	imp->fem = new Post::FEModel;
+
+	const char* szfile = imp->m_fileName.c_str();
+
+	// extract the file title
+	const char* sztitle = 0;
+	const char* ch2 = strrchr(szfile, '/');
+	if (ch2 == 0)
+	{
+		ch2 = strrchr(szfile, '\\');
+		if (ch2 == 0) ch2 = szfile; else ++ch2;
+	}
+	else ++ch2;
+	sztitle = ch2;
+
+	xpltFileReader xplt;
+	if (xplt.Load(*imp->fem, szfile) == false)
+	{
+		delete imp->fem;
+		imp->fem = nullptr;
+		return false;
+	}
+	imp->fem->SetTitle(sztitle);
+
+	// assign material attributes
+	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	ApplyPalette(pal);
+
+	// reassign the FE model
+	imp->glm->SetFEModel(imp->fem);
+	imp->glm->Update(true);
+	imp->fem->UpdateBoundingBox();
+
+	// create a new post object
+	imp->m_postObj = new CPostObject(imp->glm);
+	imp->m_postObj->SetName(sztitle);
+
+	imp->m_timeSettings.m_start = 0;
+	imp->m_timeSettings.m_end = GetStates() - 1;
+
+	return true;
+}
+
 bool CPostDoc::LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops)
 {
 	const char* szfile = fileName.c_str();
@@ -323,7 +376,7 @@ bool CPostDoc::LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops
 
 	// set the file name as title
 	imp->fem->SetTitle(sztitle);
-	imp->m_fileName = sztitle;
+	imp->m_fileName = fileName;
 
 	// assign material attributes
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();

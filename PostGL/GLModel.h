@@ -80,6 +80,8 @@ public:
 	CGLModel(FEModel* ps);
 	~CGLModel(void);
 
+	void SetFEModel(FEModel* ps);
+
 	CGLDisplacementMap* GetDisplacementMap() { return m_pdis; }
 	CGLColorMap* GetColorMap() { return m_pcol; }
 	FEModel* GetFEModel() { return m_ps; }

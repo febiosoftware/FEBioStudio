@@ -76,6 +76,8 @@ public:
 
 	bool LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops);
 
+	bool ReloadPlotfile();
+
 	void Render(CGLView* view);
 
 	bool IsValid();

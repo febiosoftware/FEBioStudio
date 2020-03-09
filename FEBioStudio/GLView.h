@@ -140,6 +140,8 @@ public:
 
 	void Reset();
 
+	void UpdateCamera(bool hitCameraTarget);
+
 	void SelectParts   (int x, int y);
 	void SelectSurfaces(int x, int y);
 	void SelectEdges   (int x, int y);

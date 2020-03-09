@@ -97,6 +97,14 @@ CGLModel::~CGLModel(void)
 }
 
 //-----------------------------------------------------------------------------
+void CGLModel::SetFEModel(FEModel* ps)
+{
+	ClearInternalSurfaces();
+	m_ps = ps;
+	if (ps) UpdateInternalSurfaces();
+}
+
+//-----------------------------------------------------------------------------
 void CGLModel::ShowShell2Solid(bool b) { m_render.m_bShell2Solid = b; }
 bool CGLModel::ShowShell2Solid() const { return m_render.m_bShell2Solid; }
 

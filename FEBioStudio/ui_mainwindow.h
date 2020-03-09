@@ -719,6 +719,7 @@ public:
 		postToolBar->setWindowTitle("Post Toolbar");
 		mainWindow->addToolBar(Qt::TopToolBarArea, postToolBar);
 
+		QAction* actionRefresh = addAction("Reload", "actionRefresh", "refresh");
 		QAction* actionFirst = addAction("first", "actionFirst", "back");
 		QAction* actionPrev = addAction("previous", "actionPrev", "prev");
 		actionPlay = addAction("Play", "actionPlay", "play"); actionPlay->setShortcut(Qt::Key_Space);
@@ -733,6 +734,7 @@ public:
 //		selectData->setFixedHeight(23);
 		selectData->setObjectName("selectData");
 		
+		actionRefresh->setWhatsThis("<font color=\"black\">Click this to reload the plot file.");
 		actionFirst->setWhatsThis("<font color=\"black\">Click this to go to the first time step in the model.");
 		actionPrev->setWhatsThis("<font color=\"black\">Click this to go to the previous time step in the model.");
 		actionPlay->setWhatsThis("<font color=\"black\">Click this to toggle the animation on or off");
@@ -744,6 +746,8 @@ public:
 		actionColorMap->setCheckable(true);
 		actionColorMap->setWhatsThis("<font color=\"black\">Click this to turn on the color map on the model.");
 
+		postToolBar->addAction(actionRefresh);
+		postToolBar->addSeparator();
 		postToolBar->addAction(actionFirst);
 		postToolBar->addAction(actionPrev);
 		postToolBar->addAction(actionPlay);

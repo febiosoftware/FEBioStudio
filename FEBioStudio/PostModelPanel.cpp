@@ -562,7 +562,7 @@ void CPostModelPanel::Update(bool breset)
 			if (mdl)
 			{
 				pi1 = new CModelTreeItem(0, ui->m_tree);
-				pi1->setText(0, QString::fromStdString(pdoc->GetFileName()));
+				pi1->setText(0, QString::fromStdString(pdoc->GetTitle()));
 				pi1->setIcon(0, QIcon(QString(":/icons/postview.png")));
 				ui->m_list.push_back(new CModelProps(mdl));
 				pi1->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));

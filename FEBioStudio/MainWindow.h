@@ -337,6 +337,7 @@ public slots:
 	// Post toolbar
 	void on_selectData_currentValueChanged(int i);
 	void on_actionPlay_toggled(bool bchecked);
+	void on_actionRefresh_triggered();
 	void on_actionFirst_triggered();
 	void on_actionPrev_triggered();
 	void on_actionNext_triggered();
