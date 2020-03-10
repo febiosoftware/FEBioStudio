@@ -55,7 +55,7 @@ void QSelectBox::addSourceItem(const QString& item, int data, int flag)
 	li->setData(Qt::UserRole, data);
 	if (flag == 1)
 	{
-		li->setTextColor(Qt::red);
+		li->setForeground(Qt::red);
 	}
 }
 
@@ -66,7 +66,7 @@ void QSelectBox::addTargetItem(const QString& item, int data, int flag)
 	li->setData(Qt::UserRole, data);
 	if (flag == 1)
 	{
-		li->setTextColor(Qt::red);
+		li->setForeground(Qt::red);
 	}
 }
 

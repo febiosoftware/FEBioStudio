@@ -679,7 +679,7 @@ void CModelTree::Select(const std::vector<FSObject*>& objList)
 			if ((item.obj == objList[i]) && ((item.flag & OBJECT_NOT_EDITABLE) == 0))
 			{
 				ShowItem(*it);
-				setItemSelected(*it, true);
+				(*it)->setSelected(true);
 				break;
 			}
 		}
@@ -946,7 +946,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 
 		t2 = AddTreeItem(t1, QString::fromStdString(po->GetName()), MT_OBJECT, 0, po, 0, new CGObjectValidator(po));
 
-		if (po->IsVisible() == false) t2->setTextColor(0, Qt::gray);
+		if (po->IsVisible() == false) t2->setForeground(0, Qt::gray);
 
 		t3 = AddTreeItem(t2, "Parts", MT_PART_LIST, po->Parts(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		for (int j = 0; j<po->Parts(); ++j)
@@ -956,7 +956,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 
 			if (pg->IsVisible() == false)
 			{
-				t4->setTextColor(0, Qt::gray);
+				t4->setForeground(0, Qt::gray);
 			}
 		}
 		t3->setExpanded(false);
@@ -966,7 +966,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		{
 			GFace* pg = po->Face(j);
 			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_SURFACE, 0, pg);
-			if (pg->IsVisible() == false) t4->setTextColor(0, Qt::gray);
+			if (pg->IsVisible() == false) t4->setForeground(0, Qt::gray);
 		}
 		t3->setExpanded(false);
 
@@ -975,7 +975,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		{
 			GEdge* pg = po->Edge(j);
 			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_EDGE, 0, pg);
-			if (pg->IsVisible() == false) t4->setTextColor(0, Qt::gray);
+			if (pg->IsVisible() == false) t4->setForeground(0, Qt::gray);
 		}
 		t3->setExpanded(false);
 
@@ -986,7 +986,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 			if ((pg->Type() == 0) || (pg->Type() == NODE_VERTEX))
 			{
 				t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_NODE, 0, pg);
-				if (pg->IsVisible() == false) t4->setTextColor(0, Qt::gray);
+				if (pg->IsVisible() == false) t4->setForeground(0, Qt::gray);
 			}
 		}
 		t3->setExpanded(false);

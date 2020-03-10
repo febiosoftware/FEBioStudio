@@ -610,7 +610,7 @@ void CModelViewer::OnHideObject()
 			m.ShowObject(po, false);
 
 			QTreeWidgetItem* item = ui->tree->FindItem(po);
-			if (item) item->setTextColor(0, Qt::gray);
+			if (item) item->setForeground(0, Qt::gray);
 		}
 	}
 
@@ -631,7 +631,7 @@ void CModelViewer::OnShowObject()
 			m.ShowObject(po, true);
 
 			QTreeWidgetItem* item = ui->tree->FindItem(po);
-			if (item) item->setTextColor(0, Qt::black);
+			if (item) item->setForeground(0, Qt::black);
 		}
 	}
 	CMainWindow* wnd = GetMainWindow();
@@ -708,7 +708,7 @@ void CModelViewer::OnHidePart()
 			m.ShowPart(pg, false);
 
 			QTreeWidgetItem* item = ui->tree->FindItem(pg);
-			if (item) item->setTextColor(0, Qt::gray);
+			if (item) item->setForeground(0, Qt::gray);
 		}
 	}
 
@@ -729,7 +729,7 @@ void CModelViewer::OnShowPart()
 			m.ShowPart(pg);
 
 			QTreeWidgetItem* item = ui->tree->FindItem(pg);
-			if (item) item->setTextColor(0, Qt::black);
+			if (item) item->setForeground(0, Qt::black);
 		}
 	}
 	CMainWindow* wnd = GetMainWindow();

@@ -29,7 +29,7 @@ public:
 			lengths.push_back(temp.fontMetrics().horizontalAdvance(word));
 		}
 
-		spaceSize = temp.fontMetrics().width(" ");
+		spaceSize = temp.fontMetrics().horizontalAdvance(" ");
 
 		layout = new QVBoxLayout;
 		layout->setContentsMargins(0, 0, 0, 0);

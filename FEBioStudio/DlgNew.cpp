@@ -12,7 +12,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QCheckBox>
-#include <QApplication>
+#include <QGuiApplication>
+#include <QScreen>
 #include <QDesktopWidget>
 #include "DocTemplate.h"
 #include "MainWindow.h"
@@ -125,7 +126,8 @@ CDlgNew::CDlgNew(CMainWindow* parent ) : QDialog(parent), ui(new Ui::CDlgNew)
 
 void CDlgNew::showEvent(QShowEvent* ev)
 {
-	QRect screenGeometry = QApplication::desktop()->screenGeometry();
+	QList<QScreen*> screenList = QGuiApplication::screens();
+	QRect screenGeometry = screenList.at(0)->geometry();
 	int x = (screenGeometry.width() - width()) / 2;
 	int y = (screenGeometry.height() - height()) / 2;
 	move(x, y);

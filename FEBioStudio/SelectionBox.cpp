@@ -161,7 +161,7 @@ void CSelectionBox::addData(const QString& item, int data, int fmt)
 	if (fmt != 0)
 	{
 		QListWidgetItem* w = ui->list->item(ui->list->count() - 1);
-		w->setTextColor(Qt::red);
+		w->setForeground(Qt::red);
 	}
 }
 

@@ -1005,8 +1005,8 @@ void CPlotWidget::drawSelection(QPainter& p)
 		QFontMetrics fm(font);
 		QString sx = QString("X:%1").arg(pf.x());
 		QString sy = QString("Y:%1").arg(pf.y());
-		int wx = fm.width(sx);
-		int wy = fm.width(sy);
+		int wx = fm.horizontalAdvance(sx);
+		int wy = fm.horizontalAdvance(sy);
 		int d = 3;
 		int W = (wx > wy ? wx : wy) + 2*d;
 		int H = 3*fm.height() + 4*d;
@@ -1120,7 +1120,7 @@ void CPlotWidget::drawAxesLabels(QPainter& p)
 
 				if (m_yAxis.labelAlignment == ALIGN_LABEL_LEFT)
 				{
-					int w = p.fontMetrics().width(s);
+					int w = p.fontMetrics().horizontalAdvance(s);
 					p.drawText(xPos - w - 5, iy + p.fontMetrics().height() / 3, s);
 				}
 				else
@@ -1155,7 +1155,7 @@ void CPlotWidget::drawAxesLabels(QPainter& p)
 				if (fabs(g) < 1e-7) g = 0;
 				sprintf(sz, "%lg", g);
 				QString s(sz);
-				int w = p.fontMetrics().width(s);
+				int w = p.fontMetrics().horizontalAdvance(s);
 				if (m_xAxis.labelAlignment == ALIGN_LABEL_BOTTOM)
 					p.drawText(ix - w / 2, yPos + p.fontMetrics().height(), s);
 				else
