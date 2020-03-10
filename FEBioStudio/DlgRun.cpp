@@ -207,6 +207,10 @@ void CDlgRun::SetWorkingDirectory(const QString& wd)
 	workingDir.replace("/", "\\");
 #endif
 	ui->cwd->setText(workingDir);
+
+	// show the absolute path as a tool tip
+	std::string absPath = FSDir::toAbsolutePath(wd.toStdString());
+	ui->cwd->setToolTip(QString::fromStdString(absPath));
 }
 
 void CDlgRun::SetJobName(const QString& fn)
@@ -318,20 +322,21 @@ void CDlgRun::accept()
 	spath = dir.toAbsolutePath();
 
 	// check if it exists
-		QDir qdir(QString::fromStdString(spath));
-		if (path.isEmpty() || (qdir.exists() == false))
+	// TODO: Commenting this out since it was annoying to see this question every time. 
+/*
+	QDir qdir(QString::fromStdString(spath));
+	if (path.isEmpty() || (qdir.exists() == false))
+	{
+		QMessageBox::StandardButton reply;
+		reply = QMessageBox::question(this, "FEBio Studio", "The directory you specified does not exist. Create it?",
+				QMessageBox::Yes|QMessageBox::No);
+
+		if(!(reply == QMessageBox::Yes))
 		{
-			QMessageBox::StandardButton reply;
-			reply = QMessageBox::question(this, "FEBio Studio", "The directory you specified does not exist. Create it?",
-					QMessageBox::Yes|QMessageBox::No);
-
-			if(!(reply == QMessageBox::Yes))
-			{
-				return;
-			}
-
+			return;
 		}
-
+	}
+*/
 	// see if the job name is defined
 	if (ui->jobName->currentText().isEmpty())
 	{

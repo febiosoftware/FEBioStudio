@@ -1309,9 +1309,7 @@ void CGLView::initializeGL()
 void CGLView::Reset()
 {
 	m_Cam.SetTargetDistance(4.0);
-	quatd q(PI*0.4, vec3d(-1, 0, 0));
-	m_Cam.SetOrientation(q);
-	m_Cam.Update(true);
+	m_Cam.Reset();
 	GLHighlighter::ClearHighlights();
 	repaint();
 }

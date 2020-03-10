@@ -108,9 +108,14 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		QString realPath = QString::fromStdString((dir.toAbsolutePath()));
 
 		// create job directory if it doesn't exist.
-		if(!QFile(realPath).exists()){
-			QDir(realPath).mkpath(realPath);
-
+		if(!QFile(realPath).exists())
+		{
+			bool b = QDir(realPath).mkpath(realPath);
+			if (b == false)
+			{
+				QMessageBox::critical(this, "FEBioStudio", "Failed creating working directory.\nCannot run job.");
+				return;
+			}
 		}
 
 		// see if a job with this name already exists

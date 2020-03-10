@@ -35,12 +35,13 @@ REGISTER_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/r
 
 #ifdef _DEBUG
 REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "Cylindrical Patch", ":/icons/cylpatch.png"     , 0);
-#endif
 
 #ifdef HAS_OCC
 REGISTER_CLASS2(GOCCBottle			, CLASS_OBJECT, "Bottle", ":/icons/bottle.png", 0);
 REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "Box"   , ":/icons/box.png", 0);
 #endif
+
+#endif // _DEBUG
 
 //------------------------------------------------------------------------------------------------------------
 CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CCreatePanel)

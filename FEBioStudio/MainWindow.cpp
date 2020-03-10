@@ -2127,8 +2127,6 @@ bool CMainWindow::DoModelCheck()
 
 	if (warnings.empty() == false)
 	{
-		GetDocument()->SetActiveJob(nullptr);
-
 		CDlgCheck dlg(this);
 		dlg.SetWarnings(warnings);
 		if (dlg.exec() == 0)
@@ -2148,12 +2146,12 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	bool writeNotes = job->m_writeNotes;
 	QString cmd = QString::fromStdString(job->m_cmd);
 
+	// see if we already have a job running.
 	if (doc->GetActiveJob())
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Cannot start job since a job is already running");
 		return;
 	}
-	else doc->SetActiveJob(job);
 
 	// get the FEBio job file path
 	string filePath = job->GetFileName();
@@ -2174,8 +2172,6 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 			AddLogEntry("FAILED\n");
-
-			GetDocument()->SetActiveJob(nullptr);
 			return;
 		}
 		else AddLogEntry("SUCCESS!\n");
@@ -2187,8 +2183,6 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 			AddLogEntry("FAILED\n");
-
-			GetDocument()->SetActiveJob(nullptr);
 			return;
 		}
 		else AddLogEntry("SUCCESS!\n");
@@ -2198,8 +2192,6 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		assert(false);
 		QMessageBox::critical(this, "Run FEBio", "Don't know what file version to save.");
 		AddLogEntry("FAILED\n");
-
-		GetDocument()->SetActiveJob(nullptr);
 		return;
 	}
 
@@ -2217,6 +2209,9 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		fileName = filePath.substr(n + 1, string::npos);
 	}
 	else fileName = filePath;
+
+	// set this as the active job
+	doc->SetActiveJob(job);
 
 	if(job->GetLaunchConfig()->type == LOCAL)
 	{
