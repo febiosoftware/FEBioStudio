@@ -9,9 +9,9 @@ GBox::GBox() : GPrimitive(GBOX)
 {
 	m_w = m_h = m_d = 1.0;
 
-	AddDoubleParam(m_w, "w", "Width" );
-	AddDoubleParam(m_h, "h", "Height");
-	AddDoubleParam(m_d, "d", "Depth" );
+	AddDoubleParam(m_w, "w", "Width (X)" );
+	AddDoubleParam(m_h, "h", "Height (Y)");
+	AddDoubleParam(m_d, "d", "Depth (Z)" );
 	
 	SetFEMesher(new FEBox(this));
 

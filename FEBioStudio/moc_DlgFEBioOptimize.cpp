@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'DlgFEBioOptimize.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.13.2)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -13,7 +13,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'DlgFEBioOptimize.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.13.2. It"
+#error "This file was generated using the moc from 5.14.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -86,7 +86,7 @@ void CDlgFEBioOptimize::qt_static_metacall(QObject *_o, QMetaObject::Call _c, in
 }
 
 QT_INIT_METAOBJECT const QMetaObject CDlgFEBioOptimize::staticMetaObject = { {
-    &QWizard::staticMetaObject,
+    QMetaObject::SuperData::link<QWizard::staticMetaObject>(),
     qt_meta_stringdata_CDlgFEBioOptimize.data,
     qt_meta_data_CDlgFEBioOptimize,
     qt_static_metacall,
@@ -180,7 +180,7 @@ void CSelectParam::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
 }
 
 QT_INIT_METAOBJECT const QMetaObject CSelectParam::staticMetaObject = { {
-    &QWidget::staticMetaObject,
+    QMetaObject::SuperData::link<QWidget::staticMetaObject>(),
     qt_meta_stringdata_CSelectParam.data,
     qt_meta_data_CSelectParam,
     qt_static_metacall,
@@ -261,7 +261,7 @@ void CDlgSelectParam::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
 }
 
 QT_INIT_METAOBJECT const QMetaObject CDlgSelectParam::staticMetaObject = { {
-    &QDialog::staticMetaObject,
+    QMetaObject::SuperData::link<QDialog::staticMetaObject>(),
     qt_meta_stringdata_CDlgSelectParam.data,
     qt_meta_data_CDlgSelectParam,
     qt_static_metacall,

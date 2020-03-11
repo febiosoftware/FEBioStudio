@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'MeshPanel.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.13.2)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -13,7 +13,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'MeshPanel.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.13.2. It"
+#error "This file was generated using the moc from 5.14.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -99,7 +99,7 @@ void CMeshPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
 }
 
 QT_INIT_METAOBJECT const QMetaObject CMeshPanel::staticMetaObject = { {
-    &CCommandPanel::staticMetaObject,
+    QMetaObject::SuperData::link<CCommandPanel::staticMetaObject>(),
     qt_meta_stringdata_CMeshPanel.data,
     qt_meta_data_CMeshPanel,
     qt_static_metacall,
@@ -202,7 +202,7 @@ void MeshingThread::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
 }
 
 QT_INIT_METAOBJECT const QMetaObject MeshingThread::staticMetaObject = { {
-    &QThread::staticMetaObject,
+    QMetaObject::SuperData::link<QThread::staticMetaObject>(),
     qt_meta_stringdata_MeshingThread.data,
     qt_meta_data_MeshingThread,
     qt_static_metacall,
@@ -311,7 +311,7 @@ void CDlgStartThread::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
 }
 
 QT_INIT_METAOBJECT const QMetaObject CDlgStartThread::staticMetaObject = { {
-    &QDialog::staticMetaObject,
+    QMetaObject::SuperData::link<QDialog::staticMetaObject>(),
     qt_meta_stringdata_CDlgStartThread.data,
     qt_meta_data_CDlgStartThread,
     qt_static_metacall,

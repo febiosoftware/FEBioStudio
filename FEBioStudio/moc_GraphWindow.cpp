@@ -1,18 +1,19 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'GraphWindow.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.12.5)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
+#include <memory>
 #include "GraphWindow.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'GraphWindow.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.12.5. It"
+#error "This file was generated using the moc from 5.14.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -93,7 +94,7 @@ void OptionsUi::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
 }
 
 QT_INIT_METAOBJECT const QMetaObject OptionsUi::staticMetaObject = { {
-    &CPlotTool::staticMetaObject,
+    QMetaObject::SuperData::link<CPlotTool::staticMetaObject>(),
     qt_meta_stringdata_OptionsUi.data,
     qt_meta_data_OptionsUi,
     qt_static_metacall,
@@ -203,7 +204,7 @@ void RegressionUi::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
 }
 
 QT_INIT_METAOBJECT const QMetaObject RegressionUi::staticMetaObject = { {
-    &CPlotTool::staticMetaObject,
+    QMetaObject::SuperData::link<CPlotTool::staticMetaObject>(),
     qt_meta_stringdata_RegressionUi.data,
     qt_meta_data_RegressionUi,
     qt_static_metacall,
@@ -302,7 +303,7 @@ void MathPlot::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, vo
 }
 
 QT_INIT_METAOBJECT const QMetaObject MathPlot::staticMetaObject = { {
-    &CPlotTool::staticMetaObject,
+    QMetaObject::SuperData::link<CPlotTool::staticMetaObject>(),
     qt_meta_stringdata_MathPlot.data,
     qt_meta_data_MathPlot,
     qt_static_metacall,
@@ -450,7 +451,7 @@ void CGraphWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
 }
 
 QT_INIT_METAOBJECT const QMetaObject CGraphWindow::staticMetaObject = { {
-    &QDockWidget::staticMetaObject,
+    QMetaObject::SuperData::link<QDockWidget::staticMetaObject>(),
     qt_meta_stringdata_CGraphWindow.data,
     qt_meta_data_CGraphWindow,
     qt_static_metacall,

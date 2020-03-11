@@ -1,18 +1,19 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'PostDataPanel.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.12.5)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
+#include <memory>
 #include "PostDataPanel.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'PostDataPanel.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.12.5. It"
+#error "This file was generated using the moc from 5.14.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -124,7 +125,7 @@ void CPostDataPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
 }
 
 QT_INIT_METAOBJECT const QMetaObject CPostDataPanel::staticMetaObject = { {
-    &CCommandPanel::staticMetaObject,
+    QMetaObject::SuperData::link<CCommandPanel::staticMetaObject>(),
     qt_meta_stringdata_CPostDataPanel.data,
     qt_meta_data_CPostDataPanel,
     qt_static_metacall,
@@ -218,7 +219,7 @@ void CDlgAddDataFile::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
 }
 
 QT_INIT_METAOBJECT const QMetaObject CDlgAddDataFile::staticMetaObject = { {
-    &QDialog::staticMetaObject,
+    QMetaObject::SuperData::link<QDialog::staticMetaObject>(),
     qt_meta_stringdata_CDlgAddDataFile.data,
     qt_meta_data_CDlgAddDataFile,
     qt_static_metacall,

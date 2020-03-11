@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'CreatePanel.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.13.2)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -13,7 +13,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'CreatePanel.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.13.2. It"
+#error "This file was generated using the moc from 5.14.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -82,7 +82,7 @@ void CCreatePanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
 }
 
 QT_INIT_METAOBJECT const QMetaObject CCreatePanel::staticMetaObject = { {
-    &CCommandPanel::staticMetaObject,
+    QMetaObject::SuperData::link<CCommandPanel::staticMetaObject>(),
     qt_meta_stringdata_CCreatePanel.data,
     qt_meta_data_CCreatePanel,
     qt_static_metacall,
@@ -194,7 +194,7 @@ void CCreateButtonPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, i
 }
 
 QT_INIT_METAOBJECT const QMetaObject CCreateButtonPanel::staticMetaObject = { {
-    &QWidget::staticMetaObject,
+    QMetaObject::SuperData::link<QWidget::staticMetaObject>(),
     qt_meta_stringdata_CCreateButtonPanel.data,
     qt_meta_data_CCreateButtonPanel,
     qt_static_metacall,
@@ -282,7 +282,7 @@ void CDefaultCreatePane::qt_static_metacall(QObject *_o, QMetaObject::Call _c, i
 }
 
 QT_INIT_METAOBJECT const QMetaObject CDefaultCreatePane::staticMetaObject = { {
-    &CCreatePane::staticMetaObject,
+    QMetaObject::SuperData::link<CCreatePane::staticMetaObject>(),
     qt_meta_stringdata_CDefaultCreatePane.data,
     qt_meta_data_CDefaultCreatePane,
     qt_static_metacall,
@@ -365,7 +365,7 @@ void CCreateLoftSurface::qt_static_metacall(QObject *_o, QMetaObject::Call _c, i
 }
 
 QT_INIT_METAOBJECT const QMetaObject CCreateLoftSurface::staticMetaObject = { {
-    &CCreatePane::staticMetaObject,
+    QMetaObject::SuperData::link<CCreatePane::staticMetaObject>(),
     qt_meta_stringdata_CCreateLoftSurface.data,
     qt_meta_data_CCreateLoftSurface,
     qt_static_metacall,
@@ -446,7 +446,7 @@ void CCreateExtrude::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
 }
 
 QT_INIT_METAOBJECT const QMetaObject CCreateExtrude::staticMetaObject = { {
-    &CCreatePane::staticMetaObject,
+    QMetaObject::SuperData::link<CCreatePane::staticMetaObject>(),
     qt_meta_stringdata_CCreateExtrude.data,
     qt_meta_data_CCreateExtrude,
     qt_static_metacall,
