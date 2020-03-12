@@ -129,6 +129,7 @@ FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
 	m_n[0] = m_n[1] = m_n[2];
 	m_parent = 0;
 	m_owner = 0;
+	m_hasMatAxes = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -302,6 +303,12 @@ void FEMaterial::copy(FEMaterial* pm)
 			}
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+bool FEMaterial::HasMaterialAxes() const
+{
+	return m_hasMatAxes;
 }
 
 //-----------------------------------------------------------------------------

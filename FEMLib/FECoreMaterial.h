@@ -112,6 +112,7 @@ public:
 	virtual vec3d GetFiber(FEElementRef& el) { return vec3d(0,0,0); };
 	
 	// local material axes
+	bool HasMaterialAxes() const;
 	mat3d GetMatAxes(FEElementRef& el);
 
 public:
@@ -164,6 +165,7 @@ protected:
 	
 public:
 	// local material axes
+	bool	m_hasMatAxes;		// flag whether this material needs mat axes (default false)
 	int		m_naopt;		// axes option
 	int		m_n[3];			// local node numbering
 	vec3d	m_a;			// axes vector a

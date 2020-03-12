@@ -402,24 +402,27 @@ void CMaterialProps::BuildPropertyList()
 	}
 	else
 	{
-		// add the material axes selection option
-		QStringList val;
-		val << "(none)";
-		val << "local node numbering";
-		val << "vector";
-		addProperty("Material axes", CProperty::Enum)->setEnumValues(val);
-
-		switch (pm->m_naopt)
+		if (pm->HasMaterialAxes())
 		{
-		case FE_AXES_LOCAL:
-			addProperty("n0", CProperty::Int);
-			addProperty("n1", CProperty::Int);
-			addProperty("n2", CProperty::Int);
-			break;
-		case FE_AXES_VECTOR:
-			addProperty("a", CProperty::String);
-			addProperty("d", CProperty::String);
-			break;
+			// add the material axes selection option
+			QStringList val;
+			val << "(none)";
+			val << "local node numbering";
+			val << "vector";
+			addProperty("Material axes", CProperty::Enum)->setEnumValues(val);
+
+			switch (pm->m_naopt)
+			{
+			case FE_AXES_LOCAL:
+				addProperty("n0", CProperty::Int);
+				addProperty("n1", CProperty::Int);
+				addProperty("n2", CProperty::Int);
+				break;
+			case FE_AXES_VECTOR:
+				addProperty("a", CProperty::String);
+				addProperty("d", CProperty::String);
+				break;
+			}
 		}
 	}
 }
