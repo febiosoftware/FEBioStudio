@@ -86,6 +86,8 @@ public:
 
 	void Update() override;
 
+	void Activate(bool b) override;
+
 private:
 	// render a vector n at position r
 	void RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph);

@@ -97,7 +97,7 @@ void CGLVectorPlot::UpdateData(bool bsave)
 		m_usr[1] = GetFloatValue(USER_MAX);
 		m_usr[0] = GetFloatValue(USER_MIN);
 
-		if (m_ncol == 0) m_pbar->hide();
+		if ((m_ncol == 0) || !IsActive()) m_pbar->hide();
 		else
 		{
 			m_pbar->SetRange(m_crng.x, m_crng.y);
@@ -398,6 +398,17 @@ void CGLVectorPlot::SetVectorField(int ntype)
 void CGLVectorPlot::Update()
 {
 	Update(m_lastTime, m_lastDt, false);
+}
+
+void CGLVectorPlot::Activate(bool b)
+{
+	CGLPlot::Activate(b);
+	if ((m_ncol == 0) || !IsActive()) m_pbar->hide();
+	else
+	{
+		m_pbar->SetRange(m_crng.x, m_crng.y);
+		m_pbar->show();
+	}
 }
 
 void CGLVectorPlot::Update(int ntime, float dt, bool breset)
