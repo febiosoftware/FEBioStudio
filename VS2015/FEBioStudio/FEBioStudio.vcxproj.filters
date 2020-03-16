@@ -711,6 +711,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PublicationWidgetView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\DlgExportLSDYNA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -978,6 +981,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\FEBioJob.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\DlgExportLSDYNA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

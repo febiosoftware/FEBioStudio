@@ -186,6 +186,9 @@ public:
 
 	bool SaveProject(const QString& fileName);
 
+	void ExportGeometry();
+	void ExportPostGeometry();
+
 public slots:
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();

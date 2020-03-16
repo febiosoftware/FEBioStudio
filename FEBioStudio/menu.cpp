@@ -62,6 +62,7 @@
 #include "DlgEditProject.h"
 #include "DlgDetachSelection.h"
 #include "DlgModelInfo.h"
+#include "DlgExportLSDYNA.h"
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <QDesktopServices>
 #include "DlgPurge.h"
@@ -75,6 +76,7 @@
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GView.h>
+#include <PostLib/FELSDYNAExport.h>
 #include <iostream>
 
 #ifdef HAS_QUAZIP
@@ -790,6 +792,177 @@ void CMainWindow::on_actionImportImage_triggered()
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()
+{
+	CPostDoc* postDoc = GetActiveDocument();
+	if (postDoc) ExportPostGeometry();
+	else ExportGeometry();
+}
+
+void CMainWindow::ExportPostGeometry()
+{
+	CPostDoc* doc = GetActiveDocument();
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
+
+	QStringList filters;
+/*	filters << "FEBio xplt files (*.xplt)"
+		<< "FEBio files (*.feb)"
+		<< "ASCII files (*.*)"
+		<< "VRML files (*.wrl)"
+		<< "LSDYNA Keyword (*.k)"
+		<< "BYU files(*.byu)"
+		<< "NIKE3D files (*.n)"
+		<< "VTK files (*.vtk)"
+		<< "LSDYNA database (*.d3plot)";
+*/
+	filters << "LSDYNA Keyword (*.k)";
+
+	QFileDialog dlg(this, "Save");
+	dlg.setFileMode(QFileDialog::AnyFile);
+	dlg.setNameFilters(filters);
+	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	if (dlg.exec() == 0) return;
+
+	QStringList files = dlg.selectedFiles();
+	QString filter = dlg.selectedNameFilter();
+
+	int nfilter = filters.indexOf(filter);
+
+	QString fileName = files.first();
+
+	if (fileName.isEmpty()) return;
+	string sfilename = fileName.toStdString();
+	const char* szfilename = sfilename.c_str();
+
+	Post::FEModel& fem = *doc->GetFEModel();
+
+	bool bret = false;
+	QString error("(unknown)");
+	switch (nfilter)
+	{
+/*	case 0:
+	{
+		CDlgExportXPLT dlg(this);
+		if (dlg.exec() == QDialog::Accepted)
+		{
+			Post::xpltFileExport ex;
+			ex.SetCompression(dlg.m_bcompress);
+			bret = ex.Save(fem, szfilename);
+			error = ex.GetErrorMessage();
+		}
+	}
+	break;
+	case 1:
+	{
+		Post::FEFEBioExport fr;
+		bret = fr.Save(fem, szfilename);
+	}
+	break;
+	case 2:
+	{
+		CDlgExportAscii dlg(this);
+		if (dlg.exec() == QDialog::Accepted)
+		{
+			// decide which time steps to export
+			int n0, n1;
+			if (dlg.m_nstep == 0) n0 = n1 = doc->currentTime();
+			else
+			{
+				n0 = 0;
+				n1 = fem.GetStates() - 1;
+			}
+
+			// export the data
+			Post::FEASCIIExport out;
+			out.m_bcoords = dlg.m_bcoords;
+			out.m_bedata = dlg.m_bedata;
+			out.m_belem = dlg.m_belem;
+			out.m_bface = dlg.m_bface;
+			out.m_bfnormals = dlg.m_bfnormals;
+			out.m_bndata = dlg.m_bndata;
+			out.m_bselonly = dlg.m_bsel;
+
+			bret = out.Save(&fem, n0, n1, szfilename);
+		}
+	}
+	break;
+	case 3:
+	{
+		Post::VRMLExporter exporter;
+		bret = exporter.Save(&fem, szfilename);
+	}
+	break;
+*/	case 0:
+	{
+		CDlgExportLSDYNA dlg(this);
+		if (dlg.exec())
+		{
+			Post::FELSDYNAExport w;
+			w.m_bsel = dlg.m_bsel;
+			w.m_bsurf = dlg.m_bsurf;
+			w.m_bnode = dlg.m_bnode;
+			bret = w.Save(fem, doc->GetActiveState(), szfilename);
+		}
+	}
+	break;
+/*	case 5:
+	{
+		bret = doc->ExportBYU(szfilename);
+	}
+	break;
+	case 6:
+	{
+		Post::FENikeExport fr;
+		bret = fr.Save(fem, szfilename);
+	}
+	break;
+	case 7:
+	{
+		CDlgExportVTK dlg(this);
+		if (dlg.exec())
+		{
+			Post::FEVTKExport w;
+			w.ExportAllStates(dlg.m_ops[0]);
+			bret = w.Save(fem, szfilename);
+			error = "Failed writing VTK file";
+		}
+	}
+	break;
+	case 8:
+	{
+		CDlgExportLSDYNAPlot dlg(&fem, this);
+		if (dlg.exec())
+		{
+			Post::FELSDYNAPlotExport ls;
+			bret = ls.Save(fem, szfilename, dlg.m_flag, dlg.m_code);
+			error = "Failed writing LSDYNA database file";
+		}
+	}
+	break;
+*/	default:
+		assert(false);
+		error = "Unknown file type";
+		break;
+	}
+
+	if (bret == false)
+	{
+		QMessageBox b;
+		b.setText(QString("Failed saving file.\nReason:%1").arg(error));
+		b.setIcon(QMessageBox::Critical);
+		b.exec();
+	}
+	else
+	{
+		QMessageBox::information(this, "PostView2", "Success saving file!");
+	}
+
+	if (bret == false)
+	{
+		QMessageBox::critical(this, "FEBioStudio", "Failed exporting geometry.");
+	}
+}
+
+void CMainWindow::ExportGeometry()
 {
 	// supported file formats
 	QStringList filters;

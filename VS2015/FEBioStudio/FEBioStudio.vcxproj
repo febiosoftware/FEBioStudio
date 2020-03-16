@@ -206,6 +206,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgEditOutput.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgEditProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgExportFEBio.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgExportLSDYNA.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFEBioOptimize.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFind.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFormula.cpp" />
@@ -463,6 +464,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\DlgExportLSDYNA.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgFind.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgImportXPLT.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUpload.h">
