@@ -426,8 +426,8 @@ public:
 	quatd Inverse() const
 	{
 		double N = w*w + x*x + y*y + z*z;
-
-		return quatd(-x/N, -y/N, -z/N, w/N);
+		if (N == 0.0) return quatd(x, y, z, w);
+		else return quatd(-x/N, -y/N, -z/N, w/N);
 	}
 
 	double DotProduct(const quatd& q) const
