@@ -69,6 +69,7 @@
 		D5CA211623EF7025001AE230 /* ZipFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211023EF7025001AE230 /* ZipFiles.cpp */; };
 		D5CA211723EF7025001AE230 /* DlgAddPublication.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211123EF7025001AE230 /* DlgAddPublication.cpp */; };
 		D5CA211823EF7025001AE230 /* Commands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA211323EF7025001AE230 /* Commands.cpp */; };
+		D5D161A824218339000F8544 /* DlgExportLSDYNA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D161A724218338000F8544 /* DlgExportLSDYNA.cpp */; };
 		D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */; };
 		D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BD2335128D00D388FA /* Encrypter.cpp */; };
 		D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */; };
@@ -495,6 +496,8 @@
 		D5CA211223EF7025001AE230 /* DlgAddPublication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgAddPublication.h; sourceTree = "<group>"; };
 		D5CA211323EF7025001AE230 /* Commands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Commands.cpp; sourceTree = "<group>"; };
 		D5CA211423EF7025001AE230 /* Commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Commands.h; sourceTree = "<group>"; };
+		D5D161A624218338000F8544 /* DlgExportLSDYNA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgExportLSDYNA.h; sourceTree = "<group>"; };
+		D5D161A724218338000F8544 /* DlgExportLSDYNA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgExportLSDYNA.cpp; sourceTree = "<group>"; };
 		D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LaunchConfig.cpp; sourceTree = "<group>"; };
 		D5D5B6BD2335128D00D388FA /* Encrypter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encrypter.cpp; sourceTree = "<group>"; };
 		D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_SSHHandler.cpp; sourceTree = "<group>"; };
@@ -1108,6 +1111,8 @@
 				D5F7D70722FA37C40089B08E /* DlgEditProject.h */,
 				D5F7D71322FA37C40089B08E /* DlgExportFEBio.cpp */,
 				D5F7D7D222FA37C40089B08E /* DlgExportFEBio.h */,
+				D5D161A724218338000F8544 /* DlgExportLSDYNA.cpp */,
+				D5D161A624218338000F8544 /* DlgExportLSDYNA.h */,
 				D5F7D79E22FA37C40089B08E /* DlgFEBioOptimize.cpp */,
 				D5F7D74922FA37C40089B08E /* DlgFEBioOptimize.h */,
 				D5BA5335240D5470001A5C0F /* DlgFind.cpp */,
@@ -1803,6 +1808,7 @@
 				D5F7D89722FA37C40089B08E /* moc_DataFieldSelector.cpp in Sources */,
 				D5F7D84F22FA37C40089B08E /* menuPhysics.cpp in Sources */,
 				D5F7D84022FA37C40089B08E /* menuRecord.cpp in Sources */,
+				D5D161A824218339000F8544 /* DlgExportLSDYNA.cpp in Sources */,
 				D5F7D87A22FA37C40089B08E /* CommandManager.cpp in Sources */,
 				D57A0B092346719D00B7C0B8 /* DlgImportXPLT.cpp in Sources */,
 				D5F7D8AC22FA37C40089B08E /* moc_ToolsPanel.cpp in Sources */,
