@@ -161,7 +161,12 @@ QIcon CMainWindow::GetResourceIcon(const QString& iconName)
 		}
 	}
 
-	return QIcon(url);
+	int dpr = devicePixelRatio();
+	QPixmap pixmap(url);
+	pixmap.setDevicePixelRatio(dpr);
+	QIcon icon;
+	icon.addPixmap(pixmap);
+	return icon;
 }
 
 //-----------------------------------------------------------------------------
