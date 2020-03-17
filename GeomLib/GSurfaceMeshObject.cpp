@@ -185,14 +185,14 @@ FEMesh* GSurfaceMeshObject::BuildMesh()
 			if (face.m_nbr[j] == -1) return 0;
 	}
 
-	// get the tetgen mesher
-	FETetGenMesher* mesher = static_cast<FETetGenMesher*>(GetFEMesher());
+	// get the mesher
+	FEMesher* mesher = GetFEMesher();
 
 	// keep a pointer to the old mesh
 	FEMesh* pold = GetFEMesh();
 
 	// create a new mesh
-	FEMesh* pmesh = mesher->CreateMesh(m_surfmesh);
+	FEMesh* pmesh = mesher->BuildMesh();
 	SetFEMesh(pmesh);
 
 	// now it is safe to delete the old mesh

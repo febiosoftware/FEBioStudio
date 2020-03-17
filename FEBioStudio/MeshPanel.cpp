@@ -26,7 +26,61 @@
 #include <sstream>
 #include <QtCore/QTimer>
 #include <GeomLib/MeshLayer.h>
+#include <MeshTools/FEShellMesher.h>
+#include <MeshTools/FETetGenMesher.h>
 #include "Commands.h"
+
+class CSurfaceMesherProps : public CObjectProps
+{
+public:
+	CSurfaceMesherProps(GSurfaceMeshObject* po) : CObjectProps(nullptr), m_po(po)
+	{
+		BuildParameterList();
+	}
+
+	void BuildParameterList()
+	{
+		Clear();
+		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "TetGen" << "Shell Mesh");
+		BuildParamList(m_po->GetFEMesher());
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		FEMesher* mesher = m_po->GetFEMesher();
+
+		if (i == 0)
+		{
+			if (dynamic_cast<FEShellMesher*>(mesher)) return 1; else return 0;
+		}
+		else return CObjectProps::GetPropertyValue(i - 1);
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		FEMesher* mesher = m_po->GetFEMesher();
+		if (i == 0)
+		{
+			int val = v.toInt();
+			if ((val == 0) && (dynamic_cast<FETetGenMesher*>(mesher) == nullptr))
+			{
+				m_po->SetFEMesher(new FETetGenMesher(m_po));
+				BuildParameterList();
+				SetModified(true);
+			}
+			else if (dynamic_cast<FEShellMesher*>(mesher) == nullptr)
+			{
+				m_po->SetFEMesher(new FEShellMesher(m_po));
+				BuildParameterList();
+				SetModified(true);
+			}
+		}
+		else CObjectProps::SetPropertyValue(i - 1, v);
+	}
+
+private:
+	GSurfaceMeshObject*	m_po;
+};
 
 MeshingThread::MeshingThread(GObject* po)
 {
@@ -188,11 +242,20 @@ void CMeshPanel::Update()
 	}
 	else
 	{
-		FEMesher* mesher = activeObject->GetFEMesher();
-		if (mesher)
+		GSurfaceMeshObject* surfaceMeshObject = dynamic_cast<GSurfaceMeshObject*>(activeObject);
+		if (surfaceMeshObject)
 		{
-			ui->setMesherPropertyList(new CObjectProps(mesher));
+			ui->setMesherPropertyList(new CSurfaceMesherProps(surfaceMeshObject));
 			ui->showMesherParametersPanel(true);
+		}
+		else
+		{
+			FEMesher* mesher = activeObject->GetFEMesher();
+			if (mesher)
+			{
+				ui->setMesherPropertyList(new CObjectProps(mesher));
+				ui->showMesherParametersPanel(true);
+			}
 		}
 
 		FEMesh* mesh = activeObject->GetFEMesh();

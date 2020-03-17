@@ -115,6 +115,7 @@ QStringList CObjectProps::GetEnumValues(const char* ch)
 void CObjectProps::BuildParamList(FSObject* po, bool showNonPersistent)
 {
 	m_po = po;
+	m_params.clear();
 	int NP = po->Parameters();
 	for (int i = 0; i<NP; ++i)
 	{

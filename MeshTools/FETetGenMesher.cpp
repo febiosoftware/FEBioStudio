@@ -2,6 +2,7 @@
 #include "FETetGenMesher.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/geom.h>
+#include <GeomLib/GSurfaceMeshObject.h>
 #include "FEModifier.h"
 
 //-----------------------------------------------------------------------------
@@ -65,6 +66,12 @@ int FETetGenMesher::ElementType()
 //
 FEMesh* FETetGenMesher::BuildMesh()
 {
+	GSurfaceMeshObject* surfObj = dynamic_cast<GSurfaceMeshObject*>(m_po);
+	if (surfObj)
+	{
+		return CreateMesh(surfObj->GetSurfaceMesh());
+	}
+
 #ifdef TETLIBRARY
 	// allocate tetgen structures
 	tetgenio in, out;
