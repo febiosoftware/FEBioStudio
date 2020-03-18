@@ -968,9 +968,12 @@ Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, i
 // load a plot file
 bool CDocument::LoadPlotFile(const std::string& fileName, const XPLT_OPTIONS& ops)
 {
+	// try to turn this into a relative path to the project folder
+	string relPath = FSDir::toRelativePath(fileName);
+
 	// create a dummy job
 	CFEBioJob* job = new CFEBioJob(this);
-	job->SetPlotFileName(fileName);
+	job->SetPlotFileName(relPath);
 
 	// set the filename as the job's name
 	const char* sz = fileName.c_str();
