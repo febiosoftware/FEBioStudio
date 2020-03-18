@@ -1,5 +1,6 @@
 #include "GSurfaceMeshObject.h"
 #include <MeshTools/FETetGenMesher.h>
+#include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FEModifier.h>
 #include <MeshLib/FECurveMesh.h>
 #include <MeshTools/GLMesh.h>
@@ -563,6 +564,23 @@ void GSurfaceMeshObject::Save(OArchive& ar)
 		ar.EndChunk();
 	}
 
+	// save the mesher object
+	if (GetFEMesher())
+	{
+		ar.BeginChunk(CID_OBJ_FEMESHER);
+		{
+			int ntype = 0;
+			if (dynamic_cast<FETetGenMesher*>(GetFEMesher())) ntype = 1;
+			if (dynamic_cast<FEShellMesher*>(GetFEMesher())) ntype = 2;
+			ar.BeginChunk(ntype);
+			{
+				GetFEMesher()->Save(ar);
+			}
+			ar.EndChunk();
+		}
+		ar.EndChunk();
+	}
+
 	// save the mesh
 	if (GetFEMesh())
 	{
@@ -802,6 +820,27 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 				}
 				assert((int)m_Node.size() == nnodes);
 			}
+		}
+		break;
+		// mesher object
+		case CID_OBJ_FEMESHER:
+		{
+			if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
+			else
+			{
+				int ntype = ar.GetChunkID();
+				switch (ntype)
+				{
+				case 0: break;	// use default mesher (for primitives)
+				case 1: SetFEMesher(new FETetGenMesher(this)); break;
+				case 2: SetFEMesher(new FEShellMesher(this)); break;
+				default:
+					throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
+				}
+				GetFEMesher()->Load(ar);
+			}
+			ar.CloseChunk();
+			if (ar.OpenChunk() != IArchive::IO_END) throw ReadError("error parsing CID_OBJ_FEMESHER (GPrimitive::Load)");
 		}
 		break;
 		// the mesh object

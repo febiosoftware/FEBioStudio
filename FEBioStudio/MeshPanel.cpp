@@ -42,6 +42,7 @@ public:
 	{
 		Clear();
 		addProperty("Meshing Method", CProperty::Enum)->setEnumValues(QStringList() << "TetGen" << "Shell Mesh");
+		addProperty("Properties", CProperty::Group);
 		BuildParamList(m_po->GetFEMesher());
 	}
 
@@ -53,7 +54,8 @@ public:
 		{
 			if (dynamic_cast<FEShellMesher*>(mesher)) return 1; else return 0;
 		}
-		else return CObjectProps::GetPropertyValue(i - 1);
+		else if (i > 1) return CObjectProps::GetPropertyValue(i - 2);
+		else return QVariant();
 	}
 
 	void SetPropertyValue(int i, const QVariant& v)
@@ -75,7 +77,7 @@ public:
 				SetModified(true);
 			}
 		}
-		else CObjectProps::SetPropertyValue(i - 1, v);
+		else if (i > 1) CObjectProps::SetPropertyValue(i - 2, v);
 	}
 
 private:

@@ -24,12 +24,13 @@ FEMesh*	FEShellMesher::BuildMesh()
 
 	int NF = surfaceMesh->Faces();
 	int NN = surfaceMesh->Nodes();
+	int NC = surfaceMesh->Edges();
 
 	double h0 = GetFloatValue(0);
 
 	// allocate mesh
 	FEMesh* mesh = new FEMesh;
-	mesh->Create(NN, NF, NF);
+	mesh->Create(NN, NF, NF, NC);
 
 	// create nodes
 	for (int i = 0; i < NN; ++i)
@@ -37,6 +38,14 @@ FEMesh*	FEShellMesher::BuildMesh()
 		FENode& sn = surfaceMesh->Node(i);
 		FENode& dn = mesh->Node(i);
 		dn = sn;
+	}
+
+	// create edges
+	for (int i = 0; i < NC; ++i)
+	{
+		FEEdge& se = surfaceMesh->Edge(i);
+		FEEdge& de = mesh->Edge(i);
+		de = se;
 	}
 
 	// create faces
