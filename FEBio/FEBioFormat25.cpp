@@ -2664,7 +2664,16 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 			}
 			else
 			{
-				assert(false);
+				FEMaterial* mat = ParseMaterial(tag, sztype);
+				FEDiscreteMaterial* dmat = dynamic_cast<FEDiscreteMaterial*>(mat);
+				if (dmat)
+				{
+					GDiscreteSpringSet* pg = new GDiscreteSpringSet();
+					pg->SetMaterial(dmat);
+					pg->SetName(szname);
+					fem.GetModel().AddDiscreteObject(pg);
+					set.push_back(pg);
+				}
 			}
 		}
 		else if (tag == "discrete")

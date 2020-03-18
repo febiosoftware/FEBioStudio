@@ -47,6 +47,7 @@ FEHillContractileMaterial::FEHillContractileMaterial() : FEDiscreteMaterial(FE_D
 	AddDoubleParam(1, "L0"  , "Initial length");
 	AddDoubleParam(1, "Ksh" , "Shape parameter");
 	AddDoubleParam(0, "ac"  , "Activation");
+//	AddDoubleParam(1, "Vmax", "Max velocity scale");
 
 	AddProperty("Sv" , FE_MAT_1DFUNC);
 	AddProperty("Ftl", FE_MAT_1DFUNC);

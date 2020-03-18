@@ -65,6 +65,15 @@ void FEMaterialProperty::AddMaterial(FEMaterial* pm)
 		{
 			if (m_mat[i] == 0) { m_mat[i] = pm; return; }
 		}
+
+		// TODO: I only get here for 1D point-functions, but not sure 
+		//       for any other reason. 
+		if (m_mat.size() == 1)
+		{
+			delete m_mat[0];
+			m_mat[0] = pm;
+			return;
+		}
 		assert(false);
 	}
 }

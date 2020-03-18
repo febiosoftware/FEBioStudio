@@ -33,14 +33,17 @@ void FEBioMesh::UpdateMeshData()
 
 	m_iFace.resize(nsize);
 	m_pFace.resize(nodes);
-	int *pi = &m_iFace[0];
 
-	for (i = 0; i<nodes; ++i)
+	if (nsize > 0)
 	{
-		m_pFace[i] = pi;
-		n = m_nFace[i];
-		pi += n;
-		m_nFace[i] = 0;
+		int *pi = &m_iFace[0];
+		for (i = 0; i < nodes; ++i)
+		{
+			m_pFace[i] = pi;
+			n = m_nFace[i];
+			pi += n;
+			m_nFace[i] = 0;
+		}
 	}
 
 	for (i = 0; i<faces; ++i)

@@ -2,6 +2,7 @@
 #include "FEBioFormat.h"
 #include "FEBioImport.h"
 #include <GeomLib/GMeshObject.h>
+#include <FEMLib/FEDiscreteMaterial.h>
 
 //-----------------------------------------------------------------------------
 int GetDOFCode(const char* sz)
@@ -579,6 +580,7 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 	case FE_TRIPHASIC_MATERIAL         : return ParseTriphasic        (pm, tag); break;
 	case FE_MULTIPHASIC_MATERIAL       : return ParseMultiphasic      (pm, tag); break;
 	case FE_REACTION_DIFFUSION_MATERIAL: return ParseReactionDiffusion(pm, tag); break;
+	case FE_FNC1D_POINT                : return Parse1DFunction       (pm, tag); break;
 	}
 
 	// parse the material parameters
@@ -1326,6 +1328,51 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 	}
 	while (!tag.isend());
 
+	return pm;
+}
+
+//-----------------------------------------------------------------------------
+FEMaterial* FEBioFormat::Parse1DFunction(FEMaterial* pm, XMLTag& tag)
+{
+	FE1DPointFunction* fnc = dynamic_cast<FE1DPointFunction*>(pm);
+	if (fnc == nullptr) return 0;
+
+	FELoadCurve* plc = fnc->GetPointCurve();
+	plc->Clear();
+
+	++tag;
+	do
+	{
+		if (tag == "interpolate")
+		{
+			const char* szval = tag.szvalue();
+			if (stricmp(szval, "smooth") == 0) plc->SetType(FELoadCurve::LC_SMOOTH);
+			if (stricmp(szval, "linear") == 0) plc->SetType(FELoadCurve::LC_LINEAR);
+			if (stricmp(szval, "step"  ) == 0) plc->SetType(FELoadCurve::LC_STEP);
+		}
+		else if (tag == "extend")
+		{
+			const char* szval = tag.szvalue();
+			if (stricmp(szval, "constant"     ) == 0) plc->SetExtend(FELoadCurve::EXT_CONSTANT);
+			if (stricmp(szval, "extrapolate"  ) == 0) plc->SetExtend(FELoadCurve::EXT_EXTRAPOLATE);
+			if (stricmp(szval, "repeat"       ) == 0) plc->SetExtend(FELoadCurve::EXT_REPEAT);
+			if (stricmp(szval, "repeat offset") == 0) plc->SetExtend(FELoadCurve::EXT_REPEAT_OFFSET);
+		}
+		else if (tag == "points")
+		{
+			++tag;
+			do
+			{
+				double d[2] = { 0.0, 0.0 };
+				tag.value(d, 2);
+				plc->Add(d[0], d[1]);
+				++tag;
+			}
+			while (!tag.isend());
+		}
+		++tag;
+	}
+	while (!tag.isend());
 	return pm;
 }
 
