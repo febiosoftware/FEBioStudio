@@ -103,6 +103,9 @@ public:
 	//! get the mesh mode
 	int GetMeshMode();
 
+	// set the current time value
+	void SetCurrentTimeValue(float ftime);
+
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.

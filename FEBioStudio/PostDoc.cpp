@@ -192,6 +192,21 @@ float CPostDoc::GetTimeValue()
 	else return 0.f;
 }
 
+float CPostDoc::GetTimeValue(int n)
+{
+	if (imp->glm) return imp->glm->GetFEModel()->GetTimeValue(n);
+	else return 0.f;
+}
+
+void CPostDoc::SetCurrentTimeValue(float ftime)
+{
+	if (IsValid())
+	{
+		imp->glm->SetTimeValue(ftime);
+		UpdateFEModel();
+	}
+}
+
 void CPostDoc::UpdateAllStates()
 {
 	if (IsValid() == false) return;

@@ -7,7 +7,7 @@ GLHighlighter GLHighlighter::m_This;
 
 GLHighlighter::GLHighlighter() : m_view(0), m_activeItem(0), m_btrack(false)
 {
-	m_activeColor = GLColor(255, 255, 0);
+	m_activeColor = GLColor(0, 255, 255);
 	m_pickColor   = GLColor(0, 0, 255);
 }
 

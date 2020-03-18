@@ -422,6 +422,10 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 	FEPostMesh* pm = mdl->GetActiveMesh();
 	FEModel* pfem = mdl->GetFEModel();
 
+	int N = pfem->GetStates();
+	if (N == 0) return;
+
+	// allocate buffers if needed
 	if (m_map.States() == 0)
 	{
 		// nr of states
@@ -438,43 +442,47 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 		m_val.resize(NM);
 	}
 
-	 // check the tag
-	int ntag = m_map.GetTag(ntime);
+	// get the current states
+	int n0 = ntime;
+	int n1 = (ntime + 1 >= N ? ntime : ntime + 1);
+	if (dt == 0.f) n1 = n0;
 
-	// see if we need to update
-	if (ntag != m_nvec)
+	// Update the states
+	UpdateState(n0);
+	if (n1 != n0) UpdateState(n1);
+
+	// copy nodal values
+	if (n1 == n0)
 	{
-		m_map.SetTag(ntime, m_nvec);
-
-		// get the state we are interested in
-		vector<vec3f>& val = m_map.State(ntime);
-		
-		vec2f& rng = m_rng[ntime];
-		rng.x = rng.y = 0;
-
-		float L;
-
-		if (IS_ELEM_FIELD(m_nvec))
-		{
-			for (int i = 0; i < pm->Elements(); ++i)
-			{
-				val[i] = pfem->EvaluateElemVector(i, ntime, m_nvec);
-				L = val[i].Length();
-				if (L > rng.y) rng.y = L;
-			}
-		}
-		else
-		{
-			for (int i = 0; i < pm->Nodes(); ++i)
-			{
-				val[i] = pfem->EvaluateNodeVector(i, ntime, m_nvec);
-				L = val[i].Length();
-				if (L > rng.y) rng.y = L;
-			}
-		}
-
-		if (rng.y == rng.x) ++rng.y;
+		m_val = m_map.State(ntime);
 	}
+	else
+	{
+		// get the state
+		FEState& s0 = *pfem->GetState(n0);
+		FEState& s1 = *pfem->GetState(n1);
+
+		float df = s1.m_time - s0.m_time;
+		if (df == 0) df = 1.f;
+
+		float w = dt / df;
+
+		int ND = 0;
+		if (IS_ELEM_FIELD(m_nvec)) ND = pm->Elements();
+		else ND = pm->Nodes();
+
+		vector<vec3f>& data0 = m_map.State(n0);
+		vector<vec3f>& data1 = m_map.State(n1);
+
+		for (int i = 0; i < ND; ++i)
+		{
+			vec3f v0 = data0[i];
+			vec3f v1 = data1[i];
+			m_val[i] = v0*(1.f - w) + v1*w;
+		}
+	}
+
+	// TODO: when n1 != n0 we need to update the range
 
 	// update static range
 	if (breset)
@@ -506,7 +514,47 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 
 	// update the color bar's range
 	m_pbar->SetRange(m_crng.x, m_crng.y);
+}
 
-	// copy nodal values
-	m_val = m_map.State(ntime);
+void CGLVectorPlot::UpdateState(int nstate)
+{
+	CGLModel* mdl = GetModel();
+	FEPostMesh* pm = mdl->GetActiveMesh();
+	FEModel* pfem = mdl->GetFEModel();
+
+	// check the tag
+	int ntag = m_map.GetTag(nstate);
+
+	// see if we need to update
+	if (ntag != m_nvec)
+	{
+		m_map.SetTag(nstate, m_nvec);
+
+		// get the state we are interested in
+		vector<vec3f>& val = m_map.State(nstate);
+
+		vec2f& rng = m_rng[nstate];
+		rng.x = rng.y = 0;
+
+		if (IS_ELEM_FIELD(m_nvec))
+		{
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				val[i] = pfem->EvaluateElemVector(i, nstate, m_nvec);
+				float L = val[i].Length();
+				if (L > rng.y) rng.y = L;
+			}
+		}
+		else
+		{
+			for (int i = 0; i < pm->Nodes(); ++i)
+			{
+				val[i] = pfem->EvaluateNodeVector(i, nstate, m_nvec);
+				float L = val[i].Length();
+				if (L > rng.y) rng.y = L;
+			}
+		}
+
+		if (rng.y == rng.x) ++rng.y;
+	}
 }

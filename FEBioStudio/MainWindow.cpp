@@ -1352,6 +1352,30 @@ void CMainWindow::on_selectFree_toggled(bool b)
 }
 
 //-----------------------------------------------------------------------------
+// set the current time value
+void CMainWindow::SetCurrentTimeValue(float ftime)
+{
+	CPostDoc* doc = GetActiveDocument();
+	if (doc == nullptr) return;
+
+	int n0 = doc->GetActiveState();
+	doc->SetCurrentTimeValue(ftime);
+	int n1 = doc->GetActiveState();
+
+	if (n0 != n1)
+	{
+		ui->pspin->blockSignals(true);
+		ui->pspin->setValue(n1 + 1);
+		ui->pspin->blockSignals(false);
+	}
+
+	// update the rest
+//	UpdateTools(false);
+//	UpdateGraphs(false);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::onTimer()
 {
 	if (ui->m_isAnimating == false) return;
@@ -1368,7 +1392,7 @@ void CMainWindow::onTimer()
 
 	if (time.m_bfix)
 	{
-		/*		float f0 = doc->GetTimeValue(N0);
+		float f0 = doc->GetTimeValue(N0);
 		float f1 = doc->GetTimeValue(N1);
 
 		float ftime = doc->GetTimeValue();
@@ -1409,7 +1433,7 @@ void CMainWindow::onTimer()
 		}
 
 		SetCurrentTimeValue(ftime);
-		 */	}
+	}
 	else
 	{
 		if (time.m_mode == MODE_FORWARD)

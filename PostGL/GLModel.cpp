@@ -193,7 +193,7 @@ bool CGLModel::Update(bool breset)
 	for (int i = 0; i < (int)m_pPlot.Size(); ++i)
 	{
 		CGLPlot* pi = m_pPlot[i];
-		if (pi->IsActive()) pi->Update(CurrentTimeIndex(), 0.0, breset);
+		if (pi->IsActive()) pi->Update(ntime, dt, breset);
 	}
 
 	return true;

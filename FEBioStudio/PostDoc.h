@@ -103,6 +103,10 @@ public:
 
 	float GetTimeValue();
 
+	float GetTimeValue(int n);
+
+	void SetCurrentTimeValue(float ftime);
+
 	void UpdateAllStates();
 
 	void UpdateFEModel(bool breset = false);
