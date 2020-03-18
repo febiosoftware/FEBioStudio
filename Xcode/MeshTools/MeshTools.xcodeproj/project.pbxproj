@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D50C858623A283F400E42D37 /* FETet4ToHex8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */; };
+		D5173D042421ABA400462BAF /* FEShellMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5173D022421ABA400462BAF /* FEShellMesher.cpp */; };
+		D5173D052421ABA400462BAF /* FEShellMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5173D032421ABA400462BAF /* FEShellMesher.h */; };
 		D5606C83238DA8FA002B037E /* TetOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C81238DA8FA002B037E /* TetOverlap.cpp */; };
 		D5606C84238DA8FA002B037E /* TetOverlap.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C82238DA8FA002B037E /* TetOverlap.h */; };
 		D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */; };
@@ -228,6 +230,8 @@
 
 /* Begin PBXFileReference section */
 		D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToHex8.cpp; sourceTree = "<group>"; };
+		D5173D022421ABA400462BAF /* FEShellMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellMesher.cpp; sourceTree = "<group>"; };
+		D5173D032421ABA400462BAF /* FEShellMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellMesher.h; sourceTree = "<group>"; };
 		D5606C81238DA8FA002B037E /* TetOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlap.cpp; sourceTree = "<group>"; };
 		D5606C82238DA8FA002B037E /* TetOverlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlap.h; sourceTree = "<group>"; };
 		D5ED271923197DD200C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -583,6 +587,8 @@
 				D5ED27A223197DE300C16BF7 /* FESelection.h */,
 				D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */,
 				D5ED276E23197DE300C16BF7 /* FEShellDisc.h */,
+				D5173D022421ABA400462BAF /* FEShellMesher.cpp */,
+				D5173D032421ABA400462BAF /* FEShellMesher.h */,
 				D5ED277723197DE300C16BF7 /* FEShellPatch.cpp */,
 				D5ED274723197DE300C16BF7 /* FEShellPatch.h */,
 				D5ED278523197DE300C16BF7 /* FEShellRing.cpp */,
@@ -802,6 +808,7 @@
 				D5ED280C23197DE400C16BF7 /* FEProject.h in Headers */,
 				D5ED283723197DE400C16BF7 /* FECurveMesher.h in Headers */,
 				D5ED281023197DE400C16BF7 /* FECylinder.h in Headers */,
+				D5173D052421ABA400462BAF /* FEShellMesher.h in Headers */,
 				D5ED286723197DE400C16BF7 /* FECone.h in Headers */,
 				D5ED282F23197DE400C16BF7 /* FEShellToSolid.h in Headers */,
 				D5ED288423197DE400C16BF7 /* FEBox.h in Headers */,
@@ -933,6 +940,7 @@
 				D5ED288523197DE400C16BF7 /* FEShellTube.cpp in Sources */,
 				D5ED287523197DE400C16BF7 /* FESelection.cpp in Sources */,
 				D5ED28D123197DE400C16BF7 /* FEMeshValuator.cpp in Sources */,
+				D5173D042421ABA400462BAF /* FEShellMesher.cpp in Sources */,
 				D5ED285A23197DE400C16BF7 /* FEModel.cpp in Sources */,
 				D5ED284423197DE400C16BF7 /* GModel.cpp in Sources */,
 				D5ED282323197DE400C16BF7 /* NetGenMesher.cpp in Sources */,
