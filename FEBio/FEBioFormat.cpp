@@ -1,8 +1,13 @@
+#include <cstring>
 #include "stdafx.h"
 #include "FEBioFormat.h"
 #include "FEBioImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
+
+#ifndef WIN32
+#define stricmp strcmp
+#endif
 
 //-----------------------------------------------------------------------------
 int GetDOFCode(const char* sz)
