@@ -387,7 +387,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 			if (sz && (strlen(sz) > 0)) gmat->SetName(sz);
 
 			// add the material
-			fem.AddMaterial(gmat);
+			doc->DoCommand(new CCmdAddMaterial(gmat));
 
 			UpdateModel(gmat);
 		}

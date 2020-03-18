@@ -250,7 +250,7 @@ bool CDocument::IsModified() { return m_bModified; }
 void CDocument::SetModifiedFlag(bool bset)
 {
 	m_bModified = bset;
-//	if (m_wnd) m_wnd->UpdateTitle();
+	if (m_wnd) m_wnd->UpdateTitle();
 }
 
 //-----------------------------------------------------------------------------
@@ -863,7 +863,7 @@ void CDocument::Load(IArchive& ar)
 		else if (nid == CID_FEBIOJOB)
 		{
 			CFEBioJob* job = new CFEBioJob(this);
-			AddFEbioJob(job);
+			m_JobList.Add(job);
 			job->Load(ar);
 		}
 		ar.CloseChunk();

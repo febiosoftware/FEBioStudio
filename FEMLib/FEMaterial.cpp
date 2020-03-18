@@ -49,6 +49,8 @@ REGISTER_MATERIAL(FEOrthoElastic, MODULE_MECH, FE_ORTHO_ELASTIC, FE_MAT_ELASTIC,
 
 FEOrthoElastic::FEOrthoElastic() : FEMaterial(FE_ORTHO_ELASTIC)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(1, Param_DENSITY, "density", "density"    );
 	AddScienceParam(0, Param_STRESS ,       "E1", "E1 modulus");
 	AddScienceParam(0, Param_STRESS ,       "E2", "E2 modulus");
@@ -121,6 +123,8 @@ REGISTER_MATERIAL(FEGasserOgdenHolzapfelUC, MODULE_MECH, FE_HOLZAPFEL_UC, FE_MAT
 
 FEGasserOgdenHolzapfelUC::FEGasserOgdenHolzapfelUC() : FEMaterial(FE_HOLZAPFEL_UC)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(1, Param_DENSITY, "density", "density");
 	AddDoubleParam(0, "c", "c");
 	AddDoubleParam(0, "k1", "k1");
@@ -780,6 +784,8 @@ REGISTER_MATERIAL(FEMooneyRivlinVonMisesFibers, MODULE_MECH, FE_MAT_MR_VON_MISES
 
 FEMooneyRivlinVonMisesFibers::FEMooneyRivlinVonMisesFibers() : FEMaterial(FE_MAT_MR_VON_MISES_FIBERS)
 {
+	m_hasMatAxes = true;
+
 	// define material parameters
 	AddScienceParam(1, Param_DENSITY, "density");
 	AddScienceParam(0, Param_STRESS, "c1");
@@ -884,6 +890,8 @@ REGISTER_MATERIAL(FETCNonlinearOrthotropic, MODULE_MECH, FE_TCNL_ORTHO, FE_MAT_E
 
 FETCNonlinearOrthotropic::FETCNonlinearOrthotropic() : FEMaterial(FE_TCNL_ORTHO)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(1, Param_DENSITY, "density");
 	AddScienceParam(0, Param_STRESS , "c1");
 	AddScienceParam(0, Param_STRESS , "c2");
@@ -901,6 +909,8 @@ REGISTER_MATERIAL(FEFungOrthotropic, MODULE_MECH, FE_FUNG_ORTHO, FE_MAT_ELASTIC_
 
 FEFungOrthotropic::FEFungOrthotropic() : FEMaterial(FE_FUNG_ORTHO)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(1, Param_DENSITY, "density", "density");
 	AddScienceParam(0, Param_STRESS , "E1", "E1");
 	AddScienceParam(0, Param_STRESS , "E2", "E2");
@@ -923,6 +933,8 @@ REGISTER_MATERIAL(FEFungOrthoCompressible, MODULE_MECH, FE_FUNG_ORTHO_COUPLED, F
 
 FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_COUPLED)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(1, Param_DENSITY, "density", "density");
 	AddScienceParam(0, Param_STRESS , "E1", "E1");
 	AddScienceParam(0, Param_STRESS , "E2", "E2");
@@ -945,6 +957,8 @@ REGISTER_MATERIAL(FELinearOrthotropic, MODULE_MECH, FE_LINEAR_ORTHO, FE_MAT_ELAS
 
 FELinearOrthotropic::FELinearOrthotropic() : FEMaterial(FE_LINEAR_ORTHO)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(1, Param_DENSITY, "density", "density");
 	AddScienceParam(0, Param_STRESS , "E1", "E1");
 	AddScienceParam(0, Param_STRESS , "E2", "E2");
@@ -1082,6 +1096,8 @@ REGISTER_MATERIAL(FEEFDDonnan, MODULE_MECH, FE_EFD_DONNAN, FE_MAT_ELASTIC, "EFD 
 
 FEEFDDonnan::FEEFDDonnan() : FEMaterial(FE_EFD_DONNAN)
 {
+	m_hasMatAxes = true;
+
 	AddDoubleParam(0, "phiw0", "phiw0");
 	AddDoubleParam(0, "cF0", "cF0");
 	AddDoubleParam(0, "bosm", "bosm");
@@ -1098,6 +1114,8 @@ REGISTER_MATERIAL(FEEFDVerondaWestmann, MODULE_MECH, FE_EFD_VERONDA_WESTMANN, FE
 
 FEEFDVerondaWestmann::FEEFDVerondaWestmann() : FEMaterial(FE_EFD_VERONDA_WESTMANN)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(0, Param_STRESS, "c1", "c1");
 	AddScienceParam(0, Param_STRESS, "c2", "c2");
 	AddScienceParam(0, Param_STRESS, "k", "bulk modulus");
@@ -1113,6 +1131,8 @@ REGISTER_MATERIAL(FECubicCLE, MODULE_MECH, FE_CLE_CUBIC, FE_MAT_ELASTIC, "cubic 
 
 FECubicCLE::FECubicCLE() : FEMaterial(FE_CLE_CUBIC)
 {
+	m_hasMatAxes = true;
+
     AddScienceParam(1, Param_DENSITY, "density", "density");
     AddScienceParam(0, Param_STRESS , "lp1", "lambda_+1");
     AddScienceParam(0, Param_STRESS , "lm1", "lambda_-1");
@@ -1128,6 +1148,8 @@ REGISTER_MATERIAL(FEOrthotropicCLE, MODULE_MECH, FE_CLE_ORTHOTROPIC, FE_MAT_ELAS
 
 FEOrthotropicCLE::FEOrthotropicCLE() : FEMaterial(FE_CLE_ORTHOTROPIC)
 {
+	m_hasMatAxes = true;
+
     AddScienceParam(1, Param_DENSITY, "density", "density");
     AddScienceParam(0, Param_STRESS , "lp11", "lambda_+11");
     AddScienceParam(0, Param_STRESS , "lp22", "lambda_+22");
@@ -1277,6 +1299,8 @@ REGISTER_MATERIAL(FEPermAteshianWeissTransIso, MODULE_BIPHASIC, FE_PERM_REF_TRAN
 
 FEPermAteshianWeissTransIso::FEPermAteshianWeissTransIso() : FEMaterial(FE_PERM_REF_TRANS_ISO)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(0, Param_PERMEABILITY, "perm0" , "perm0" );
 	AddScienceParam(0, Param_PERMEABILITY, "perm1T", "perm1T");
 	AddScienceParam(0, Param_PERMEABILITY, "perm1A", "perm1A");
@@ -1298,6 +1322,8 @@ REGISTER_MATERIAL(FEPermAteshianWeissOrtho, MODULE_BIPHASIC, FE_PERM_REF_ORTHO, 
 
 FEPermAteshianWeissOrtho::FEPermAteshianWeissOrtho() : FEMaterial(FE_PERM_REF_ORTHO)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(0, Param_PERMEABILITY, "perm0" , "perm0");
 	AddVecParam(vec3d(0,0,0), "perm1" , "perm1");
 	AddVecParam(vec3d(0,0,0), "perm2" , "perm2");
@@ -1403,6 +1429,8 @@ REGISTER_MATERIAL(FESFDSBM, MODULE_MECH, FE_SFD_SBM, FE_MAT_ELASTIC, "spherical 
 
 FESFDSBM::FESFDSBM() : FEMaterial(FE_SFD_SBM)
 {
+	m_hasMatAxes = true;
+
 	AddScienceParam(0, Param_NONE        , "alpha", "alpha" );
 	AddScienceParam(0, Param_NONE        , "beta", "beta"   );
 	AddScienceParam(0, Param_NONE        , "ksi0" , "ksi0"  );
@@ -1419,6 +1447,8 @@ REGISTER_MATERIAL(FEEFDCoupled, MODULE_MECH, FE_EFD_COUPLED, FE_MAT_ELASTIC, "el
 
 FEEFDCoupled::FEEFDCoupled() : FEMaterial(FE_EFD_COUPLED)
 {
+	m_hasMatAxes = true;
+
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi" , "ksi" );
 }
@@ -1431,6 +1461,8 @@ REGISTER_MATERIAL(FEEFDUncoupled, MODULE_MECH, FE_EFD_UNCOUPLED, FE_MAT_ELASTIC_
 
 FEEFDUncoupled::FEEFDUncoupled() : FEMaterial(FE_EFD_UNCOUPLED)
 {
+	m_hasMatAxes = true;
+
 	AddVecParam(vec3d(0,0,0), "beta" , "beta");
 	AddVecParam(vec3d(0,0,0), "ksi" , "ksi");
 	AddScienceParam(0, Param_STRESS, "k", "bulk modulus");
