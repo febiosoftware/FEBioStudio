@@ -370,6 +370,7 @@ public slots:
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
 	void OnSelectMeshLayer(QAction* ac);
+	void OnSelectObjectTransparencyMode(QAction* ac);
 
 	void CloseView(int n);
 	void CloseView(CPostDoc* postDoc);

@@ -1765,12 +1765,27 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	menu.addAction(ui->actionShowFibers);
 	menu.addAction(ui->actionShowDiscrete);
 	menu.addSeparator();
-	menu.addAction(ui->actionFront);
-	menu.addAction(ui->actionBack);
-	menu.addAction(ui->actionLeft);
-	menu.addAction(ui->actionRight);
-	menu.addAction(ui->actionTop);
-	menu.addAction(ui->actionBottom);
+
+	QMenu* view = new QMenu("Standard views");
+	view->addAction(ui->actionFront);
+	view->addAction(ui->actionBack);
+	view->addAction(ui->actionLeft);
+	view->addAction(ui->actionRight);
+	view->addAction(ui->actionTop);
+	view->addAction(ui->actionBottom);
+
+	menu.addAction(view->menuAction());
+	menu.addSeparator();
+
+	// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
+	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+	QMenu* display = new QMenu("Object transparency mode");
+	QAction* a;
+	a = display->addAction("None"           ); a->setCheckable(true); if (vs.m_transparencyMode == 0) a->setChecked(true);
+	a = display->addAction("Selected only"  ); a->setCheckable(true); if (vs.m_transparencyMode == 1) a->setChecked(true);
+	a = display->addAction("Unselected only"); a->setCheckable(true); if (vs.m_transparencyMode == 2) a->setChecked(true);
+	QObject::connect(display, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectTransparencyMode(QAction*)));
+	menu.addAction(display->menuAction());
 	menu.addSeparator();
 
 	if (GetActiveDocument() == nullptr)
@@ -1823,6 +1838,18 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 		ui->buildPanel->Update();
 		RedrawGL();
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
+{
+	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+
+	if      (ac->text() == "None"           ) vs.m_transparencyMode = 0;
+	else if (ac->text() == "Selected only"  ) vs.m_transparencyMode = 1;
+	else if (ac->text() == "Unselected only") vs.m_transparencyMode = 2;
+
+	RedrawGL();
 }
 
 //-----------------------------------------------------------------------------
