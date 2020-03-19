@@ -55,6 +55,7 @@ public:
         QStringList vconv;
         vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
         addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
+		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
 	}
 
 public:
@@ -64,6 +65,7 @@ public:
 	bool	m_bnormal;
 	double	m_scaleNormal;
     int     m_nconv;
+	int		m_ntrans;
 };
 
 //-----------------------------------------------------------------------------
@@ -658,6 +660,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_display->m_bnormal = view.m_bnorm;
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
     ui->m_display->m_nconv = view.m_nconv;
+	ui->m_display->m_ntrans = view.m_transparencyMode;
 
 	ui->m_physics->m_showRigidJoints = view.m_brigid;
 	ui->m_physics->m_showRigidWalls = view.m_bwall;
@@ -737,6 +740,7 @@ void CDlgSettings::apply()
 	view.m_bnorm = ui->m_display->m_bnormal;
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
     view.m_nconv = ui->m_display->m_nconv;
+	view.m_transparencyMode = ui->m_display->m_ntrans;
 
 	view.m_brigid = ui->m_physics->m_showRigidJoints;
 	view.m_bwall = ui->m_physics->m_showRigidWalls;

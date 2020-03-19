@@ -6348,6 +6348,8 @@ void CGLView::RenderSurfaces(GObject* po)
 {
 	if (!po->IsVisible()) return;
 
+	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+
 	// get the GLMesh
 	FEModel& fem = *GetDocument()->GetFEModel();
 	GLMesh* pm = po->GetRenderMesh();
@@ -6390,8 +6392,19 @@ void CGLView::RenderSurfaces(GObject* po)
 					pgmat = pg;
 				}
 
+				if (vs.m_transparencyMode != 0)
+				{
+					switch (vs.m_transparencyMode)
+					{
+					case 1: if (po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
+					case 2: if (!po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
+					}
+				}
+
 				// render the face
 				m_renderer.RenderGLMesh(pm, n);
+
+				if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
 	}
@@ -6557,6 +6570,8 @@ void CGLView::RenderParts(GObject* po)
 {
 	if (!po->IsVisible()) return;
 
+	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+
 	// get the GLMesh
 	FEModel& fem = *GetDocument()->GetFEModel();
 	GLMesh* pm = po->GetRenderMesh();
@@ -6596,9 +6611,20 @@ void CGLView::RenderParts(GObject* po)
 				pgmat = pg;
 			}
 
+			if (vs.m_transparencyMode != 0)
+			{
+				switch (vs.m_transparencyMode)
+				{
+				case 1: if (po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
+				case 2: if (!po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
+				}
+			}
+
 			// render the face
 			int nid = pg->GetLocalID();
 			m_renderer.RenderGLMesh(pm, n);
+
+			if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
 		}
 	}
 }
@@ -6643,8 +6669,12 @@ void CGLView::RenderObject(GObject* po)
 {
 	if (!po->IsVisible()) return;
 
+	CDocument* doc = GetDocument();
+
+	VIEW_SETTINGS& vs = doc->GetViewSettings();
+
 	// get the GLMesh
-	FEModel& fem = *GetDocument()->GetFEModel();
+	FEModel& fem = *doc->GetFEModel();
 	GLMesh* pm = po->GetRenderMesh();
 	if (pm == 0) return;
 	assert(pm);
@@ -6682,12 +6712,24 @@ void CGLView::RenderObject(GObject* po)
 					SetMatProps(pmat);
 					GLColor c = po->GetColor();
 					if (pmat) c = pmat->Diffuse();
+
 					glColor3ub(c.r, c.g, c.b);
 					pgmat = pg;
 				}
 
+				if (vs.m_transparencyMode != 0)
+				{
+					switch (vs.m_transparencyMode)
+					{
+					case 1: if (po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
+					case 2: if (!po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
+					}
+				}
+
 				// render the face
 				m_renderer.RenderGLMesh(pm, n);
+
+				if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
 	}

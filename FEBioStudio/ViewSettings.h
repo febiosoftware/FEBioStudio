@@ -65,6 +65,9 @@ struct VIEW_SETTINGS
 	float	m_ambient;		// scene light ambient intensity
 	float	m_diffuse;		// scene light diffuse inentisty
 
+	// object transparency
+	int		m_transparencyMode;		// 0 = off, 1 = selected only, 2 = unselected only
+
 	void Defaults();
 };
 
