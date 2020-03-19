@@ -2,6 +2,7 @@
 #include "FEBioJob.h"
 #include "PostDoc.h"
 #include "Document.h"
+#include <PostLib/FEModel.h>
 #include <sstream>
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
@@ -238,6 +239,20 @@ bool CFEBioJob::OpenPlotFile(const XPLT_OPTIONS& ops)
 	if (m_postDoc->LoadPlotfile(plotFile, ops) == false)
 	{
 		return false;
+	}
+
+	// map material colors from the pre-model to the post-model
+	FEModel* fem = m_doc->GetFEModel();
+	Post::FEModel* postfem = m_postDoc->GetFEModel();
+	if (fem->Materials() == postfem->Materials())
+	{
+		int mats = fem->Materials();
+		for (int i = 0; i < mats; ++i)
+		{
+			GMaterial* gmat = fem->GetMaterial(i);
+			Post::FEMaterial* pmat = postfem->GetMaterial(i);
+			pmat->diffuse = gmat->Diffuse();
+		}
 	}
 
 	return true;
