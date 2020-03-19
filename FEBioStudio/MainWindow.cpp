@@ -1756,14 +1756,12 @@ void CMainWindow::ClearStatusMessage()
 //-----------------------------------------------------------------------------
 void CMainWindow::BuildContextMenu(QMenu& menu)
 {
+	CPostDoc* postDoc = GetActiveDocument();
 	menu.addAction(ui->actionZoomSelect);
 	menu.addAction(ui->actionShowGrid);
 	menu.addAction(ui->actionShowMeshLines);
 	menu.addAction(ui->actionShowEdgeLines);
 	menu.addAction(ui->actionOrtho);
-	menu.addAction(ui->actionShowNormals);
-	menu.addAction(ui->actionShowFibers);
-	menu.addAction(ui->actionShowDiscrete);
 	menu.addSeparator();
 
 	QMenu* view = new QMenu("Standard views");
@@ -1777,35 +1775,43 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	menu.addAction(view->menuAction());
 	menu.addSeparator();
 
-	// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
-	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
-	QMenu* display = new QMenu("Object transparency mode");
-	QAction* a;
-	a = display->addAction("None"           ); a->setCheckable(true); if (vs.m_transparencyMode == 0) a->setChecked(true);
-	a = display->addAction("Selected only"  ); a->setCheckable(true); if (vs.m_transparencyMode == 1) a->setChecked(true);
-	a = display->addAction("Unselected only"); a->setCheckable(true); if (vs.m_transparencyMode == 2) a->setChecked(true);
-	QObject::connect(display, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectTransparencyMode(QAction*)));
-	menu.addAction(display->menuAction());
-	menu.addSeparator();
-
-	if (GetActiveDocument() == nullptr)
+	if (postDoc == nullptr)
 	{
-		GModel* gm = GetDocument()->GetGModel();
-		int layers = gm->MeshLayers();
-		if (layers > 1)
+		menu.addAction(ui->actionShowNormals);
+		menu.addAction(ui->actionShowFibers);
+		menu.addAction(ui->actionShowDiscrete);
+		menu.addSeparator();
+
+		// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
+		VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+		QMenu* display = new QMenu("Object transparency mode");
+		QAction* a;
+		a = display->addAction("None"); a->setCheckable(true); if (vs.m_transparencyMode == 0) a->setChecked(true);
+		a = display->addAction("Selected only"); a->setCheckable(true); if (vs.m_transparencyMode == 1) a->setChecked(true);
+		a = display->addAction("Unselected only"); a->setCheckable(true); if (vs.m_transparencyMode == 2) a->setChecked(true);
+		QObject::connect(display, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectTransparencyMode(QAction*)));
+		menu.addAction(display->menuAction());
+		menu.addSeparator();
+
+		if (GetActiveDocument() == nullptr)
 		{
-			QMenu* sub = new QMenu("Set Active Mesh Layer");
-			int activeLayer = gm->GetActiveMeshLayer();
-			for (int i = 0; i < layers; ++i)
+			GModel* gm = GetDocument()->GetGModel();
+			int layers = gm->MeshLayers();
+			if (layers > 1)
 			{
-				string s = gm->GetMeshLayerName(i);
-				QAction* a = sub->addAction(QString::fromStdString(s));
-				a->setCheckable(true);
-				if (i == activeLayer) a->setChecked(true);
+				QMenu* sub = new QMenu("Set Active Mesh Layer");
+				int activeLayer = gm->GetActiveMeshLayer();
+				for (int i = 0; i < layers; ++i)
+				{
+					string s = gm->GetMeshLayerName(i);
+					QAction* a = sub->addAction(QString::fromStdString(s));
+					a->setCheckable(true);
+					if (i == activeLayer) a->setChecked(true);
+				}
+				QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
+				menu.addAction(sub->menuAction());
+				menu.addSeparator();
 			}
-			QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
-			menu.addAction(sub->menuAction());
-			menu.addSeparator();
 		}
 	}
 	menu.addAction(ui->actionOptions);
