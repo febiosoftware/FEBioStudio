@@ -187,7 +187,9 @@ bool CGLModel::Update(bool breset)
 	// update the colormap
 	if (m_pcol && m_pcol->IsActive()) m_pcol->Update(ntime, dt, breset);
 
-	GetFEModel()->UpdateDependants();
+	// NOTE: commenting this out since this would cause the FieldDataSelector's menu
+	//       to be rebuild each time a user selected a new field
+//	GetFEModel()->UpdateDependants();
 
 	// update the plot list
 	for (int i = 0; i < (int)m_pPlot.Size(); ++i)

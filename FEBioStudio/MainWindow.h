@@ -93,6 +93,7 @@ public:
 
 	//! Open a plot file
 	void OpenPlotFile(const QString& fileName, bool showLoadOptions = true);
+	void OpenPlotFile(CFEBioJob* job);
     
     //! Process drag event
     void dragEnterEvent(QDragEnterEvent *e);

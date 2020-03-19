@@ -368,6 +368,22 @@ void CMainWindow::OpenPlotFile(const QString& fileName, bool showLoadOptions)
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::OpenPlotFile(CFEBioJob* job)
+{
+	XPLT_OPTIONS defaultOps;
+	// try to open the file
+	if (job->OpenPlotFile(defaultOps) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to open the plot file.");
+		return;
+	}
+
+	UpdatePostPanel();
+	SetActivePostDoc(job->GetPostDoc());
+	UpdatePostToolbar();
+}
+
+//-----------------------------------------------------------------------------
 //! get the mesh mode
 int CMainWindow::GetMeshMode()
 {

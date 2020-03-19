@@ -96,6 +96,17 @@ void CModelViewer::on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTr
 	emit currentObjectChanged(po);
 }
 
+void CModelViewer::on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column)
+{
+	FSObject* po = GetCurrentObject();
+	if (po == nullptr) return;
+
+	CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
+	if (job == nullptr) return;
+
+	GetMainWindow()->OpenPlotFile(job);
+}
+
 void CModelViewer::SetCurrentItem(int item)
 {
 	if (item >= 0)

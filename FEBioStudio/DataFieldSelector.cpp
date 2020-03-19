@@ -62,6 +62,8 @@ CModelDataSelector::~CModelDataSelector()
 void CModelDataSelector::Update(FEModel* pfem)
 {
 	if (pfem == nullptr) m_fem = nullptr;
+
+	emit dataChanged();
 }
 
 void CModelDataSelector::BuildMenu(QMenu* menu)
@@ -145,11 +147,22 @@ void CDataSelectorButton::SetDataSelector(CDataSelector* dataSelector)
 
 	// build a new menu
 	if (m_src) m_src->BuildMenu(m_menu);
+
+	QObject::connect(dataSelector, SIGNAL(dataChanged()), this, SLOT(onDataChanged()));
 }
 
 int CDataSelectorButton::currentValue() const
 {
 	return m_currentValue;
+}
+
+void CDataSelectorButton::onDataChanged()
+{
+	// clear the menu
+	m_menu->clear();
+
+	// build a new menu
+	if (m_src) m_src->BuildMenu(m_menu);
 }
 
 QAction* findAction(QMenu* menu, int searchValue)

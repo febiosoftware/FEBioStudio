@@ -32,7 +32,7 @@
 //#include "DistanceMapTool.h"
 //#include "PlaneTool.h"
 //#include "PlotMixTool.h"
-//#include "AreaCoverageTool.h"
+#include "AreaCoverageTool.h"
 //#include "StrainMapTool.h"
 #include "MeasureVolumeTool.h"
 
@@ -145,7 +145,7 @@ void CPostToolsPanel::initTools()
 //	tools.push_back(new CShellThicknessTool ());
 	tools.push_back(new CAddPointTool       ());
 	tools.push_back(new CImportPointsTool   ());
-//	tools.push_back(new CAreaCoverageTool   ());
+	tools.push_back(new CAreaCoverageTool   ());
 //	tools.push_back(new CStrainMapTool      ());
 	tools.push_back(new CMeasureVolumeTool  ());
 }

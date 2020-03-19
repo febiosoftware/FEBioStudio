@@ -6,13 +6,18 @@
 #include <PostLib/FEModel.h>
 
 // Abstract class for creating the menu of the CDataSelectorButton.
-class CDataSelector
+class CDataSelector : public QObject
 {
+	Q_OBJECT
+
 public:
 	CDataSelector();
 	virtual ~CDataSelector();
 
 	virtual void BuildMenu(QMenu* menu) = 0;
+
+signals:
+	void dataChanged();
 };
 
 // generic selector for displaying a list of options
@@ -82,6 +87,7 @@ public:
 
 protected slots:
 	void onAction(QAction* pa);
+	void onDataChanged();
 
 signals:
 	void currentValueChanged(int n);
