@@ -116,15 +116,28 @@ FEMesh*	NetGenMesher::BuildMesh()
             break;
     }
 
-	// set OCC parameters
+    // create new occ geometry object
+    shared_ptr<OCCGeometry> occgeo = make_shared<OCCGeometry>();
+
+#ifdef LINUX
+    // set OCC parameters
 	//
+    OCCParameters par;
+    mparam.closeedgefac = resthcloseedgefac_list[gran];
+    par.resthminedgelen = resthminedgelen_list[gran];
+    par.resthminedgelenenable = 1;
+
+    occgeo->SetOCCParameters(par);
+#else
+    // set OCC parameters
+	//
+
 	occparam.resthcloseedgefac = resthcloseedgefac_list[gran];
 	occparam.resthcloseedgeenable = 1;
 	occparam.resthminedgelen = resthminedgelen_list[gran];
 	occparam.resthminedgelenenable = 1;
+#endif
 
-	// create new occ geometry object
-	shared_ptr<OCCGeometry> occgeo = make_shared<OCCGeometry>();
 	occgeo->shape = m_occ->GetShape();
 	occgeo->changed = 1;
 	occgeo->BuildFMap();
