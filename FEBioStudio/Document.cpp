@@ -967,40 +967,6 @@ Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, i
 }
 
 //-----------------------------------------------------------------------------
-// load a plot file
-bool CDocument::LoadPlotFile(const std::string& fileName, const XPLT_OPTIONS& ops)
-{
-	// try to turn this into a relative path to the project folder
-	string relPath = FSDir::toRelativePath(fileName);
-
-	// create a dummy job
-	CFEBioJob* job = new CFEBioJob(this);
-	job->SetPlotFileName(relPath);
-
-	// set the filename as the job's name
-	const char* sz = fileName.c_str();
-	const char* ch = strrchr(sz, '/');
-	if (ch == nullptr)
-	{
-		ch = strrchr(sz, '\\');
-		if (ch == nullptr) ch = sz; else ch++;
-	}
-	else ch++;
-	job->SetName(ch);
-	
-	if (job->OpenPlotFile(ops) == false)
-	{
-		delete job;
-		return false;
-	}
-	else
-	{
-		AddFEbioJob(job);
-		return true;
-	}
-}
-
-//-----------------------------------------------------------------------------
 bool CDocument::Convert(const std::string& inFileName, const std::string& outFileName, FEFileImport* reader, FEFileExport* writer)
 {
 	// dummy project so we don't override this one

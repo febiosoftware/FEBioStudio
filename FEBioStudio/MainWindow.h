@@ -8,6 +8,7 @@
 class FSObject;
 class CDocument;
 class CFileThread;
+class CPostFileThread;
 class FileReader;
 class GMaterial;
 class CCreatePanel;
@@ -17,6 +18,7 @@ class CGraphWindow;
 class CPostDoc;
 class CFEBioJob;
 class CSSHHandler;
+class xpltFileReader;
 
 namespace Ui {
 	class CMainWindow;
@@ -93,7 +95,7 @@ public:
 
 	//! Open a plot file
 	void OpenPlotFile(const QString& fileName, bool showLoadOptions = true);
-	void OpenPlotFile(CFEBioJob* job);
+	void OpenPlotFile(CFEBioJob* job, xpltFileReader* xplt = nullptr);
     
     //! Process drag event
     void dragEnterEvent(QDragEnterEvent *e);
@@ -381,7 +383,9 @@ public slots:
 	void keyPressEvent(QKeyEvent* ev);
 
 	void finishedReadingFile(bool success, const QString& errorString);
+	void finishedReadingPostFile(bool success, const QString& errorString);
 	void checkFileProgress();
+	void checkPostFileProgress();
 
 	void StopAnimation();
 
@@ -446,6 +450,7 @@ private:
 	Ui::CMainWindow*	ui;
 	CDocument*			m_doc;
 	CFileThread*		m_fileThread;
+	CPostFileThread*	m_postFileThread;
 	QStringList			m_fileQueue;
 };
 

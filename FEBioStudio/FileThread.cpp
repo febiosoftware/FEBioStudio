@@ -2,8 +2,10 @@
 #include "FileThread.h"
 #include "MainWindow.h"
 #include "Document.h"
+#include "PostDoc.h"
 #include <MeshTools/PRVArchive.h>
 #include <GeomLib/GObject.h>
+#include <XPLTLib/xpltFileReader.h>
 
 CFileThread::CFileThread(CMainWindow* wnd, FileReader* file, bool bclear, const QString& fileName) : m_wnd(wnd), m_fileReader(file), m_fileName(fileName)
 {
@@ -92,6 +94,30 @@ void CFileThread::run()
 }
 
 float CFileThread::getFileProgress() const
+{
+	if (m_fileReader) return m_fileReader->GetFileProgress();
+	return 0.f;
+}
+
+CPostFileThread::CPostFileThread(CMainWindow* wnd, CFEBioJob* job, xpltFileReader* file) : m_wnd(wnd), m_job(job), m_fileReader(file)
+{
+	QObject::connect(this, SIGNAL(resultReady(bool, const QString&)), wnd, SLOT(finishedReadingPostFile(bool, const QString&)));
+	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
+}
+
+void CPostFileThread::run()
+{
+	if (m_fileReader)
+	{
+		CFEBioJob& job = *m_job;
+		bool ret = job.OpenPlotFile(m_fileReader);
+		std::string err = m_fileReader->GetErrorMessage();
+		emit resultReady(ret, QString(err.c_str()));
+	}
+	else emit resultReady(false, "No file reader");
+}
+
+float CPostFileThread::getFileProgress() const
 {
 	if (m_fileReader) return m_fileReader->GetFileProgress();
 	return 0.f;

@@ -225,7 +225,7 @@ size_t CFEBioJob::RemoveChild(FSObject* po)
 	return 0;
 }
 
-bool CFEBioJob::OpenPlotFile(const XPLT_OPTIONS& ops)
+bool CFEBioJob::OpenPlotFile(xpltFileReader* xplt)
 {
 	string plotFile = FSDir::toAbsolutePath(m_plotFile);
 
@@ -236,7 +236,7 @@ bool CFEBioJob::OpenPlotFile(const XPLT_OPTIONS& ops)
 		m_postDoc->SetName(GetName());
 	}
 
-	if (m_postDoc->LoadPlotfile(plotFile, ops) == false)
+	if (m_postDoc->LoadPlotfile(plotFile, xplt) == false)
 	{
 		return false;
 	}

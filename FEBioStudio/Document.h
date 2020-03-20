@@ -125,9 +125,6 @@ public:
 	// import image data
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
-	// load a plot file
-	bool LoadPlotFile(const std::string& fileName, const XPLT_OPTIONS& ops);
-
 	// save/load project
 	void Load(IArchive& ar);
 	void Save(OArchive& ar);

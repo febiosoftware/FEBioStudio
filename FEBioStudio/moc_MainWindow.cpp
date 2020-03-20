@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[229];
-    char stringdata0[5383];
+    QByteArrayData data[231];
+    char stringdata0[5429];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -213,54 +213,56 @@ QT_MOC_LITERAL(177, 4654, 10), // "QKeyEvent*"
 QT_MOC_LITERAL(178, 4665, 19), // "finishedReadingFile"
 QT_MOC_LITERAL(179, 4685, 7), // "success"
 QT_MOC_LITERAL(180, 4693, 11), // "errorString"
-QT_MOC_LITERAL(181, 4705, 17), // "checkFileProgress"
-QT_MOC_LITERAL(182, 4723, 13), // "StopAnimation"
-QT_MOC_LITERAL(183, 4737, 7), // "onTimer"
-QT_MOC_LITERAL(184, 4745, 21), // "on_glview_pointPicked"
-QT_MOC_LITERAL(185, 4767, 5), // "vec3d"
-QT_MOC_LITERAL(186, 4773, 1), // "r"
-QT_MOC_LITERAL(187, 4775, 26), // "on_glview_selectionChanged"
-QT_MOC_LITERAL(188, 4802, 13), // "onRunFinished"
-QT_MOC_LITERAL(189, 4816, 8), // "exitCode"
-QT_MOC_LITERAL(190, 4825, 20), // "QProcess::ExitStatus"
-QT_MOC_LITERAL(191, 4846, 2), // "es"
-QT_MOC_LITERAL(192, 4849, 11), // "onReadyRead"
-QT_MOC_LITERAL(193, 4861, 15), // "onErrorOccurred"
-QT_MOC_LITERAL(194, 4877, 22), // "QProcess::ProcessError"
-QT_MOC_LITERAL(195, 4900, 3), // "err"
-QT_MOC_LITERAL(196, 4904, 17), // "onExportMaterials"
-QT_MOC_LITERAL(197, 4922, 18), // "vector<GMaterial*>"
-QT_MOC_LITERAL(198, 4941, 7), // "matList"
-QT_MOC_LITERAL(199, 4949, 20), // "onExportAllMaterials"
-QT_MOC_LITERAL(200, 4970, 17), // "onImportMaterials"
-QT_MOC_LITERAL(201, 4988, 18), // "DeleteAllMaterials"
-QT_MOC_LITERAL(202, 5007, 11), // "DeleteAllBC"
-QT_MOC_LITERAL(203, 5019, 14), // "DeleteAllLoads"
-QT_MOC_LITERAL(204, 5034, 11), // "DeleteAllIC"
-QT_MOC_LITERAL(205, 5046, 16), // "DeleteAllContact"
-QT_MOC_LITERAL(206, 5063, 20), // "DeleteAllConstraints"
-QT_MOC_LITERAL(207, 5084, 25), // "DeleteAllRigidConstraints"
-QT_MOC_LITERAL(208, 5110, 24), // "DeleteAllRigidConnectors"
-QT_MOC_LITERAL(209, 5135, 14), // "DeleteAllSteps"
-QT_MOC_LITERAL(210, 5150, 9), // "GetGLView"
-QT_MOC_LITERAL(211, 5160, 8), // "CGLView*"
-QT_MOC_LITERAL(212, 5169, 14), // "changeViewMode"
-QT_MOC_LITERAL(213, 5184, 9), // "View_Mode"
-QT_MOC_LITERAL(214, 5194, 2), // "vm"
-QT_MOC_LITERAL(215, 5197, 15), // "GetCurrentModel"
-QT_MOC_LITERAL(216, 5213, 15), // "Post::CGLModel*"
-QT_MOC_LITERAL(217, 5229, 17), // "UpdateFontToolbar"
-QT_MOC_LITERAL(218, 5247, 11), // "RunFEBioJob"
-QT_MOC_LITERAL(219, 5259, 10), // "CFEBioJob*"
-QT_MOC_LITERAL(220, 5270, 3), // "job"
-QT_MOC_LITERAL(221, 5274, 15), // "NextSSHFunction"
-QT_MOC_LITERAL(222, 5290, 12), // "CSSHHandler*"
-QT_MOC_LITERAL(223, 5303, 12), // "ShowProgress"
-QT_MOC_LITERAL(224, 5316, 4), // "show"
-QT_MOC_LITERAL(225, 5321, 7), // "message"
-QT_MOC_LITERAL(226, 5329, 25), // "ShowIndeterminateProgress"
-QT_MOC_LITERAL(227, 5355, 14), // "UpdateProgress"
-QT_MOC_LITERAL(228, 5370, 12) // "DoModelCheck"
+QT_MOC_LITERAL(181, 4705, 23), // "finishedReadingPostFile"
+QT_MOC_LITERAL(182, 4729, 17), // "checkFileProgress"
+QT_MOC_LITERAL(183, 4747, 21), // "checkPostFileProgress"
+QT_MOC_LITERAL(184, 4769, 13), // "StopAnimation"
+QT_MOC_LITERAL(185, 4783, 7), // "onTimer"
+QT_MOC_LITERAL(186, 4791, 21), // "on_glview_pointPicked"
+QT_MOC_LITERAL(187, 4813, 5), // "vec3d"
+QT_MOC_LITERAL(188, 4819, 1), // "r"
+QT_MOC_LITERAL(189, 4821, 26), // "on_glview_selectionChanged"
+QT_MOC_LITERAL(190, 4848, 13), // "onRunFinished"
+QT_MOC_LITERAL(191, 4862, 8), // "exitCode"
+QT_MOC_LITERAL(192, 4871, 20), // "QProcess::ExitStatus"
+QT_MOC_LITERAL(193, 4892, 2), // "es"
+QT_MOC_LITERAL(194, 4895, 11), // "onReadyRead"
+QT_MOC_LITERAL(195, 4907, 15), // "onErrorOccurred"
+QT_MOC_LITERAL(196, 4923, 22), // "QProcess::ProcessError"
+QT_MOC_LITERAL(197, 4946, 3), // "err"
+QT_MOC_LITERAL(198, 4950, 17), // "onExportMaterials"
+QT_MOC_LITERAL(199, 4968, 18), // "vector<GMaterial*>"
+QT_MOC_LITERAL(200, 4987, 7), // "matList"
+QT_MOC_LITERAL(201, 4995, 20), // "onExportAllMaterials"
+QT_MOC_LITERAL(202, 5016, 17), // "onImportMaterials"
+QT_MOC_LITERAL(203, 5034, 18), // "DeleteAllMaterials"
+QT_MOC_LITERAL(204, 5053, 11), // "DeleteAllBC"
+QT_MOC_LITERAL(205, 5065, 14), // "DeleteAllLoads"
+QT_MOC_LITERAL(206, 5080, 11), // "DeleteAllIC"
+QT_MOC_LITERAL(207, 5092, 16), // "DeleteAllContact"
+QT_MOC_LITERAL(208, 5109, 20), // "DeleteAllConstraints"
+QT_MOC_LITERAL(209, 5130, 25), // "DeleteAllRigidConstraints"
+QT_MOC_LITERAL(210, 5156, 24), // "DeleteAllRigidConnectors"
+QT_MOC_LITERAL(211, 5181, 14), // "DeleteAllSteps"
+QT_MOC_LITERAL(212, 5196, 9), // "GetGLView"
+QT_MOC_LITERAL(213, 5206, 8), // "CGLView*"
+QT_MOC_LITERAL(214, 5215, 14), // "changeViewMode"
+QT_MOC_LITERAL(215, 5230, 9), // "View_Mode"
+QT_MOC_LITERAL(216, 5240, 2), // "vm"
+QT_MOC_LITERAL(217, 5243, 15), // "GetCurrentModel"
+QT_MOC_LITERAL(218, 5259, 15), // "Post::CGLModel*"
+QT_MOC_LITERAL(219, 5275, 17), // "UpdateFontToolbar"
+QT_MOC_LITERAL(220, 5293, 11), // "RunFEBioJob"
+QT_MOC_LITERAL(221, 5305, 10), // "CFEBioJob*"
+QT_MOC_LITERAL(222, 5316, 3), // "job"
+QT_MOC_LITERAL(223, 5320, 15), // "NextSSHFunction"
+QT_MOC_LITERAL(224, 5336, 12), // "CSSHHandler*"
+QT_MOC_LITERAL(225, 5349, 12), // "ShowProgress"
+QT_MOC_LITERAL(226, 5362, 4), // "show"
+QT_MOC_LITERAL(227, 5367, 7), // "message"
+QT_MOC_LITERAL(228, 5375, 25), // "ShowIndeterminateProgress"
+QT_MOC_LITERAL(229, 5401, 14), // "UpdateProgress"
+QT_MOC_LITERAL(230, 5416, 12) // "DoModelCheck"
 
     },
     "CMainWindow\0on_actionNew_triggered\0\0"
@@ -411,7 +413,8 @@ QT_MOC_LITERAL(228, 5370, 12) // "DoModelCheck"
     "CPostDoc*\0postDoc\0SetCurrentState\0"
     "closeEvent\0QCloseEvent*\0ev\0keyPressEvent\0"
     "QKeyEvent*\0finishedReadingFile\0success\0"
-    "errorString\0checkFileProgress\0"
+    "errorString\0finishedReadingPostFile\0"
+    "checkFileProgress\0checkPostFileProgress\0"
     "StopAnimation\0onTimer\0on_glview_pointPicked\0"
     "vec3d\0r\0on_glview_selectionChanged\0"
     "onRunFinished\0exitCode\0QProcess::ExitStatus\0"
@@ -439,7 +442,7 @@ static const uint qt_meta_data_CMainWindow[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-     193,   14, // methods
+     195,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -447,199 +450,201 @@ static const uint qt_meta_data_CMainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,  979,    2, 0x0a /* Public */,
-       3,    0,  980,    2, 0x0a /* Public */,
-       4,    0,  981,    2, 0x0a /* Public */,
-       5,    0,  982,    2, 0x0a /* Public */,
-       6,    0,  983,    2, 0x0a /* Public */,
-       7,    0,  984,    2, 0x0a /* Public */,
-       8,    0,  985,    2, 0x0a /* Public */,
-       9,    0,  986,    2, 0x0a /* Public */,
-      10,    0,  987,    2, 0x0a /* Public */,
-      11,    0,  988,    2, 0x0a /* Public */,
-      12,    0,  989,    2, 0x0a /* Public */,
-      13,    0,  990,    2, 0x0a /* Public */,
-      14,    0,  991,    2, 0x0a /* Public */,
-      15,    0,  992,    2, 0x0a /* Public */,
-      16,    0,  993,    2, 0x0a /* Public */,
-      17,    0,  994,    2, 0x0a /* Public */,
-      18,    1,  995,    2, 0x0a /* Public */,
-      21,    1,  998,    2, 0x0a /* Public */,
-      22,    1, 1001,    2, 0x0a /* Public */,
-      23,    0, 1004,    2, 0x0a /* Public */,
-      24,    0, 1005,    2, 0x0a /* Public */,
-      25,    0, 1006,    2, 0x0a /* Public */,
-      26,    0, 1007,    2, 0x0a /* Public */,
-      27,    0, 1008,    2, 0x0a /* Public */,
-      28,    0, 1009,    2, 0x0a /* Public */,
-      29,    0, 1010,    2, 0x0a /* Public */,
-      30,    0, 1011,    2, 0x0a /* Public */,
-      31,    0, 1012,    2, 0x0a /* Public */,
-      32,    0, 1013,    2, 0x0a /* Public */,
-      33,    0, 1014,    2, 0x0a /* Public */,
-      34,    0, 1015,    2, 0x0a /* Public */,
-      35,    0, 1016,    2, 0x0a /* Public */,
-      36,    0, 1017,    2, 0x0a /* Public */,
-      37,    0, 1018,    2, 0x0a /* Public */,
-      38,    0, 1019,    2, 0x0a /* Public */,
-      39,    0, 1020,    2, 0x0a /* Public */,
-      40,    0, 1021,    2, 0x0a /* Public */,
-      41,    0, 1022,    2, 0x0a /* Public */,
-      42,    0, 1023,    2, 0x0a /* Public */,
-      43,    0, 1024,    2, 0x0a /* Public */,
-      44,    0, 1025,    2, 0x0a /* Public */,
-      45,    0, 1026,    2, 0x0a /* Public */,
-      46,    0, 1027,    2, 0x0a /* Public */,
-      47,    0, 1028,    2, 0x0a /* Public */,
-      48,    0, 1029,    2, 0x0a /* Public */,
-      49,    0, 1030,    2, 0x0a /* Public */,
-      50,    0, 1031,    2, 0x0a /* Public */,
-      51,    0, 1032,    2, 0x0a /* Public */,
-      52,    0, 1033,    2, 0x0a /* Public */,
-      53,    0, 1034,    2, 0x0a /* Public */,
-      54,    0, 1035,    2, 0x0a /* Public */,
-      55,    0, 1036,    2, 0x0a /* Public */,
-      56,    0, 1037,    2, 0x0a /* Public */,
-      57,    0, 1038,    2, 0x0a /* Public */,
-      58,    0, 1039,    2, 0x0a /* Public */,
-      59,    0, 1040,    2, 0x0a /* Public */,
-      60,    0, 1041,    2, 0x0a /* Public */,
-      61,    0, 1042,    2, 0x0a /* Public */,
-      62,    0, 1043,    2, 0x0a /* Public */,
-      63,    0, 1044,    2, 0x0a /* Public */,
-      64,    0, 1045,    2, 0x0a /* Public */,
-      65,    0, 1046,    2, 0x0a /* Public */,
-      66,    0, 1047,    2, 0x0a /* Public */,
-      67,    0, 1048,    2, 0x0a /* Public */,
-      68,    0, 1049,    2, 0x0a /* Public */,
-      69,    0, 1050,    2, 0x0a /* Public */,
-      70,    0, 1051,    2, 0x0a /* Public */,
-      71,    0, 1052,    2, 0x0a /* Public */,
-      72,    0, 1053,    2, 0x0a /* Public */,
-      73,    0, 1054,    2, 0x0a /* Public */,
-      74,    0, 1055,    2, 0x0a /* Public */,
-      75,    0, 1056,    2, 0x0a /* Public */,
-      76,    0, 1057,    2, 0x0a /* Public */,
-      77,    0, 1058,    2, 0x0a /* Public */,
-      78,    0, 1059,    2, 0x0a /* Public */,
-      79,    0, 1060,    2, 0x0a /* Public */,
-      80,    0, 1061,    2, 0x0a /* Public */,
-      81,    0, 1062,    2, 0x0a /* Public */,
-      82,    0, 1063,    2, 0x0a /* Public */,
-      83,    0, 1064,    2, 0x0a /* Public */,
-      84,    0, 1065,    2, 0x0a /* Public */,
-      85,    0, 1066,    2, 0x0a /* Public */,
-      86,    0, 1067,    2, 0x0a /* Public */,
-      87,    0, 1068,    2, 0x0a /* Public */,
-      88,    0, 1069,    2, 0x0a /* Public */,
-      89,    0, 1070,    2, 0x0a /* Public */,
-      90,    0, 1071,    2, 0x0a /* Public */,
-      91,    0, 1072,    2, 0x0a /* Public */,
-      92,    0, 1073,    2, 0x0a /* Public */,
-      93,    1, 1074,    2, 0x0a /* Public */,
-      95,    1, 1077,    2, 0x0a /* Public */,
-      97,    1, 1080,    2, 0x0a /* Public */,
-      98,    1, 1083,    2, 0x0a /* Public */,
-      99,    1, 1086,    2, 0x0a /* Public */,
-     100,    1, 1089,    2, 0x0a /* Public */,
-     101,    1, 1092,    2, 0x0a /* Public */,
-     102,    1, 1095,    2, 0x0a /* Public */,
-     103,    1, 1098,    2, 0x0a /* Public */,
-     104,    1, 1101,    2, 0x0a /* Public */,
-     105,    0, 1104,    2, 0x0a /* Public */,
-     106,    0, 1105,    2, 0x0a /* Public */,
-     107,    0, 1106,    2, 0x0a /* Public */,
-     108,    0, 1107,    2, 0x0a /* Public */,
-     109,    0, 1108,    2, 0x0a /* Public */,
-     110,    0, 1109,    2, 0x0a /* Public */,
-     111,    0, 1110,    2, 0x0a /* Public */,
-     112,    1, 1111,    2, 0x0a /* Public */,
-     113,    0, 1114,    2, 0x0a /* Public */,
-     114,    1, 1115,    2, 0x0a /* Public */,
-     115,    0, 1118,    2, 0x0a /* Public */,
-     116,    0, 1119,    2, 0x0a /* Public */,
-     117,    0, 1120,    2, 0x0a /* Public */,
-     118,    0, 1121,    2, 0x0a /* Public */,
-     119,    0, 1122,    2, 0x0a /* Public */,
-     120,    0, 1123,    2, 0x0a /* Public */,
-     121,    0, 1124,    2, 0x0a /* Public */,
-     122,    0, 1125,    2, 0x0a /* Public */,
-     123,    0, 1126,    2, 0x0a /* Public */,
-     124,    0, 1127,    2, 0x0a /* Public */,
-     125,    1, 1128,    2, 0x0a /* Public */,
-     126,    1, 1131,    2, 0x0a /* Public */,
-     127,    1, 1134,    2, 0x0a /* Public */,
-     128,    1, 1137,    2, 0x0a /* Public */,
-     129,    1, 1140,    2, 0x0a /* Public */,
-     131,    1, 1143,    2, 0x0a /* Public */,
-     132,    1, 1146,    2, 0x0a /* Public */,
-     133,    1, 1149,    2, 0x0a /* Public */,
-     134,    1, 1152,    2, 0x0a /* Public */,
-     135,    1, 1155,    2, 0x0a /* Public */,
-     136,    1, 1158,    2, 0x0a /* Public */,
-     137,    1, 1161,    2, 0x0a /* Public */,
-     138,    1, 1164,    2, 0x0a /* Public */,
-     139,    1, 1167,    2, 0x0a /* Public */,
-     140,    1, 1170,    2, 0x0a /* Public */,
-     142,    1, 1173,    2, 0x0a /* Public */,
-     143,    0, 1176,    2, 0x0a /* Public */,
-     144,    0, 1177,    2, 0x0a /* Public */,
-     145,    0, 1178,    2, 0x0a /* Public */,
-     146,    0, 1179,    2, 0x0a /* Public */,
-     147,    0, 1180,    2, 0x0a /* Public */,
-     148,    0, 1181,    2, 0x0a /* Public */,
-     149,    1, 1182,    2, 0x0a /* Public */,
-     150,    1, 1185,    2, 0x0a /* Public */,
-     151,    1, 1188,    2, 0x0a /* Public */,
-     153,    1, 1191,    2, 0x0a /* Public */,
-     154,    1, 1194,    2, 0x0a /* Public */,
-     156,    1, 1197,    2, 0x0a /* Public */,
-     157,    0, 1200,    2, 0x0a /* Public */,
-     158,    1, 1201,    2, 0x0a /* Public */,
-     159,    1, 1204,    2, 0x0a /* Public */,
-     160,    0, 1207,    2, 0x0a /* Public */,
-     161,    1, 1208,    2, 0x0a /* Public */,
-     164,    1, 1211,    2, 0x0a /* Public */,
-     166,    1, 1214,    2, 0x0a /* Public */,
-     168,    1, 1217,    2, 0x0a /* Public */,
-     169,    1, 1220,    2, 0x0a /* Public */,
-     169,    1, 1223,    2, 0x0a /* Public */,
-     172,    1, 1226,    2, 0x0a /* Public */,
-     173,    1, 1229,    2, 0x0a /* Public */,
-     176,    1, 1232,    2, 0x0a /* Public */,
-     178,    2, 1235,    2, 0x0a /* Public */,
-     181,    0, 1240,    2, 0x0a /* Public */,
-     182,    0, 1241,    2, 0x0a /* Public */,
-     183,    0, 1242,    2, 0x0a /* Public */,
-     184,    1, 1243,    2, 0x0a /* Public */,
-     187,    0, 1246,    2, 0x0a /* Public */,
-     188,    2, 1247,    2, 0x0a /* Public */,
-     192,    0, 1252,    2, 0x0a /* Public */,
-     193,    1, 1253,    2, 0x0a /* Public */,
-     196,    1, 1256,    2, 0x0a /* Public */,
-     199,    0, 1259,    2, 0x0a /* Public */,
-     200,    0, 1260,    2, 0x0a /* Public */,
-     201,    0, 1261,    2, 0x0a /* Public */,
-     202,    0, 1262,    2, 0x0a /* Public */,
-     203,    0, 1263,    2, 0x0a /* Public */,
-     204,    0, 1264,    2, 0x0a /* Public */,
-     205,    0, 1265,    2, 0x0a /* Public */,
-     206,    0, 1266,    2, 0x0a /* Public */,
-     207,    0, 1267,    2, 0x0a /* Public */,
-     208,    0, 1268,    2, 0x0a /* Public */,
-     209,    0, 1269,    2, 0x0a /* Public */,
-     210,    0, 1270,    2, 0x0a /* Public */,
-     212,    1, 1271,    2, 0x0a /* Public */,
-     215,    0, 1274,    2, 0x0a /* Public */,
-     217,    0, 1275,    2, 0x0a /* Public */,
-     218,    1, 1276,    2, 0x0a /* Public */,
-     221,    1, 1279,    2, 0x0a /* Public */,
-     223,    2, 1282,    2, 0x0a /* Public */,
-     223,    1, 1287,    2, 0x2a /* Public | MethodCloned */,
-     226,    2, 1290,    2, 0x0a /* Public */,
-     226,    1, 1295,    2, 0x2a /* Public | MethodCloned */,
-     227,    1, 1298,    2, 0x0a /* Public */,
-     228,    0, 1301,    2, 0x0a /* Public */,
+       1,    0,  989,    2, 0x0a /* Public */,
+       3,    0,  990,    2, 0x0a /* Public */,
+       4,    0,  991,    2, 0x0a /* Public */,
+       5,    0,  992,    2, 0x0a /* Public */,
+       6,    0,  993,    2, 0x0a /* Public */,
+       7,    0,  994,    2, 0x0a /* Public */,
+       8,    0,  995,    2, 0x0a /* Public */,
+       9,    0,  996,    2, 0x0a /* Public */,
+      10,    0,  997,    2, 0x0a /* Public */,
+      11,    0,  998,    2, 0x0a /* Public */,
+      12,    0,  999,    2, 0x0a /* Public */,
+      13,    0, 1000,    2, 0x0a /* Public */,
+      14,    0, 1001,    2, 0x0a /* Public */,
+      15,    0, 1002,    2, 0x0a /* Public */,
+      16,    0, 1003,    2, 0x0a /* Public */,
+      17,    0, 1004,    2, 0x0a /* Public */,
+      18,    1, 1005,    2, 0x0a /* Public */,
+      21,    1, 1008,    2, 0x0a /* Public */,
+      22,    1, 1011,    2, 0x0a /* Public */,
+      23,    0, 1014,    2, 0x0a /* Public */,
+      24,    0, 1015,    2, 0x0a /* Public */,
+      25,    0, 1016,    2, 0x0a /* Public */,
+      26,    0, 1017,    2, 0x0a /* Public */,
+      27,    0, 1018,    2, 0x0a /* Public */,
+      28,    0, 1019,    2, 0x0a /* Public */,
+      29,    0, 1020,    2, 0x0a /* Public */,
+      30,    0, 1021,    2, 0x0a /* Public */,
+      31,    0, 1022,    2, 0x0a /* Public */,
+      32,    0, 1023,    2, 0x0a /* Public */,
+      33,    0, 1024,    2, 0x0a /* Public */,
+      34,    0, 1025,    2, 0x0a /* Public */,
+      35,    0, 1026,    2, 0x0a /* Public */,
+      36,    0, 1027,    2, 0x0a /* Public */,
+      37,    0, 1028,    2, 0x0a /* Public */,
+      38,    0, 1029,    2, 0x0a /* Public */,
+      39,    0, 1030,    2, 0x0a /* Public */,
+      40,    0, 1031,    2, 0x0a /* Public */,
+      41,    0, 1032,    2, 0x0a /* Public */,
+      42,    0, 1033,    2, 0x0a /* Public */,
+      43,    0, 1034,    2, 0x0a /* Public */,
+      44,    0, 1035,    2, 0x0a /* Public */,
+      45,    0, 1036,    2, 0x0a /* Public */,
+      46,    0, 1037,    2, 0x0a /* Public */,
+      47,    0, 1038,    2, 0x0a /* Public */,
+      48,    0, 1039,    2, 0x0a /* Public */,
+      49,    0, 1040,    2, 0x0a /* Public */,
+      50,    0, 1041,    2, 0x0a /* Public */,
+      51,    0, 1042,    2, 0x0a /* Public */,
+      52,    0, 1043,    2, 0x0a /* Public */,
+      53,    0, 1044,    2, 0x0a /* Public */,
+      54,    0, 1045,    2, 0x0a /* Public */,
+      55,    0, 1046,    2, 0x0a /* Public */,
+      56,    0, 1047,    2, 0x0a /* Public */,
+      57,    0, 1048,    2, 0x0a /* Public */,
+      58,    0, 1049,    2, 0x0a /* Public */,
+      59,    0, 1050,    2, 0x0a /* Public */,
+      60,    0, 1051,    2, 0x0a /* Public */,
+      61,    0, 1052,    2, 0x0a /* Public */,
+      62,    0, 1053,    2, 0x0a /* Public */,
+      63,    0, 1054,    2, 0x0a /* Public */,
+      64,    0, 1055,    2, 0x0a /* Public */,
+      65,    0, 1056,    2, 0x0a /* Public */,
+      66,    0, 1057,    2, 0x0a /* Public */,
+      67,    0, 1058,    2, 0x0a /* Public */,
+      68,    0, 1059,    2, 0x0a /* Public */,
+      69,    0, 1060,    2, 0x0a /* Public */,
+      70,    0, 1061,    2, 0x0a /* Public */,
+      71,    0, 1062,    2, 0x0a /* Public */,
+      72,    0, 1063,    2, 0x0a /* Public */,
+      73,    0, 1064,    2, 0x0a /* Public */,
+      74,    0, 1065,    2, 0x0a /* Public */,
+      75,    0, 1066,    2, 0x0a /* Public */,
+      76,    0, 1067,    2, 0x0a /* Public */,
+      77,    0, 1068,    2, 0x0a /* Public */,
+      78,    0, 1069,    2, 0x0a /* Public */,
+      79,    0, 1070,    2, 0x0a /* Public */,
+      80,    0, 1071,    2, 0x0a /* Public */,
+      81,    0, 1072,    2, 0x0a /* Public */,
+      82,    0, 1073,    2, 0x0a /* Public */,
+      83,    0, 1074,    2, 0x0a /* Public */,
+      84,    0, 1075,    2, 0x0a /* Public */,
+      85,    0, 1076,    2, 0x0a /* Public */,
+      86,    0, 1077,    2, 0x0a /* Public */,
+      87,    0, 1078,    2, 0x0a /* Public */,
+      88,    0, 1079,    2, 0x0a /* Public */,
+      89,    0, 1080,    2, 0x0a /* Public */,
+      90,    0, 1081,    2, 0x0a /* Public */,
+      91,    0, 1082,    2, 0x0a /* Public */,
+      92,    0, 1083,    2, 0x0a /* Public */,
+      93,    1, 1084,    2, 0x0a /* Public */,
+      95,    1, 1087,    2, 0x0a /* Public */,
+      97,    1, 1090,    2, 0x0a /* Public */,
+      98,    1, 1093,    2, 0x0a /* Public */,
+      99,    1, 1096,    2, 0x0a /* Public */,
+     100,    1, 1099,    2, 0x0a /* Public */,
+     101,    1, 1102,    2, 0x0a /* Public */,
+     102,    1, 1105,    2, 0x0a /* Public */,
+     103,    1, 1108,    2, 0x0a /* Public */,
+     104,    1, 1111,    2, 0x0a /* Public */,
+     105,    0, 1114,    2, 0x0a /* Public */,
+     106,    0, 1115,    2, 0x0a /* Public */,
+     107,    0, 1116,    2, 0x0a /* Public */,
+     108,    0, 1117,    2, 0x0a /* Public */,
+     109,    0, 1118,    2, 0x0a /* Public */,
+     110,    0, 1119,    2, 0x0a /* Public */,
+     111,    0, 1120,    2, 0x0a /* Public */,
+     112,    1, 1121,    2, 0x0a /* Public */,
+     113,    0, 1124,    2, 0x0a /* Public */,
+     114,    1, 1125,    2, 0x0a /* Public */,
+     115,    0, 1128,    2, 0x0a /* Public */,
+     116,    0, 1129,    2, 0x0a /* Public */,
+     117,    0, 1130,    2, 0x0a /* Public */,
+     118,    0, 1131,    2, 0x0a /* Public */,
+     119,    0, 1132,    2, 0x0a /* Public */,
+     120,    0, 1133,    2, 0x0a /* Public */,
+     121,    0, 1134,    2, 0x0a /* Public */,
+     122,    0, 1135,    2, 0x0a /* Public */,
+     123,    0, 1136,    2, 0x0a /* Public */,
+     124,    0, 1137,    2, 0x0a /* Public */,
+     125,    1, 1138,    2, 0x0a /* Public */,
+     126,    1, 1141,    2, 0x0a /* Public */,
+     127,    1, 1144,    2, 0x0a /* Public */,
+     128,    1, 1147,    2, 0x0a /* Public */,
+     129,    1, 1150,    2, 0x0a /* Public */,
+     131,    1, 1153,    2, 0x0a /* Public */,
+     132,    1, 1156,    2, 0x0a /* Public */,
+     133,    1, 1159,    2, 0x0a /* Public */,
+     134,    1, 1162,    2, 0x0a /* Public */,
+     135,    1, 1165,    2, 0x0a /* Public */,
+     136,    1, 1168,    2, 0x0a /* Public */,
+     137,    1, 1171,    2, 0x0a /* Public */,
+     138,    1, 1174,    2, 0x0a /* Public */,
+     139,    1, 1177,    2, 0x0a /* Public */,
+     140,    1, 1180,    2, 0x0a /* Public */,
+     142,    1, 1183,    2, 0x0a /* Public */,
+     143,    0, 1186,    2, 0x0a /* Public */,
+     144,    0, 1187,    2, 0x0a /* Public */,
+     145,    0, 1188,    2, 0x0a /* Public */,
+     146,    0, 1189,    2, 0x0a /* Public */,
+     147,    0, 1190,    2, 0x0a /* Public */,
+     148,    0, 1191,    2, 0x0a /* Public */,
+     149,    1, 1192,    2, 0x0a /* Public */,
+     150,    1, 1195,    2, 0x0a /* Public */,
+     151,    1, 1198,    2, 0x0a /* Public */,
+     153,    1, 1201,    2, 0x0a /* Public */,
+     154,    1, 1204,    2, 0x0a /* Public */,
+     156,    1, 1207,    2, 0x0a /* Public */,
+     157,    0, 1210,    2, 0x0a /* Public */,
+     158,    1, 1211,    2, 0x0a /* Public */,
+     159,    1, 1214,    2, 0x0a /* Public */,
+     160,    0, 1217,    2, 0x0a /* Public */,
+     161,    1, 1218,    2, 0x0a /* Public */,
+     164,    1, 1221,    2, 0x0a /* Public */,
+     166,    1, 1224,    2, 0x0a /* Public */,
+     168,    1, 1227,    2, 0x0a /* Public */,
+     169,    1, 1230,    2, 0x0a /* Public */,
+     169,    1, 1233,    2, 0x0a /* Public */,
+     172,    1, 1236,    2, 0x0a /* Public */,
+     173,    1, 1239,    2, 0x0a /* Public */,
+     176,    1, 1242,    2, 0x0a /* Public */,
+     178,    2, 1245,    2, 0x0a /* Public */,
+     181,    2, 1250,    2, 0x0a /* Public */,
+     182,    0, 1255,    2, 0x0a /* Public */,
+     183,    0, 1256,    2, 0x0a /* Public */,
+     184,    0, 1257,    2, 0x0a /* Public */,
+     185,    0, 1258,    2, 0x0a /* Public */,
+     186,    1, 1259,    2, 0x0a /* Public */,
+     189,    0, 1262,    2, 0x0a /* Public */,
+     190,    2, 1263,    2, 0x0a /* Public */,
+     194,    0, 1268,    2, 0x0a /* Public */,
+     195,    1, 1269,    2, 0x0a /* Public */,
+     198,    1, 1272,    2, 0x0a /* Public */,
+     201,    0, 1275,    2, 0x0a /* Public */,
+     202,    0, 1276,    2, 0x0a /* Public */,
+     203,    0, 1277,    2, 0x0a /* Public */,
+     204,    0, 1278,    2, 0x0a /* Public */,
+     205,    0, 1279,    2, 0x0a /* Public */,
+     206,    0, 1280,    2, 0x0a /* Public */,
+     207,    0, 1281,    2, 0x0a /* Public */,
+     208,    0, 1282,    2, 0x0a /* Public */,
+     209,    0, 1283,    2, 0x0a /* Public */,
+     210,    0, 1284,    2, 0x0a /* Public */,
+     211,    0, 1285,    2, 0x0a /* Public */,
+     212,    0, 1286,    2, 0x0a /* Public */,
+     214,    1, 1287,    2, 0x0a /* Public */,
+     217,    0, 1290,    2, 0x0a /* Public */,
+     219,    0, 1291,    2, 0x0a /* Public */,
+     220,    1, 1292,    2, 0x0a /* Public */,
+     223,    1, 1295,    2, 0x0a /* Public */,
+     225,    2, 1298,    2, 0x0a /* Public */,
+     225,    1, 1303,    2, 0x2a /* Public | MethodCloned */,
+     228,    2, 1306,    2, 0x0a /* Public */,
+     228,    1, 1311,    2, 0x2a /* Public | MethodCloned */,
+     229,    1, 1314,    2, 0x0a /* Public */,
+     230,    0, 1317,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -803,36 +808,38 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void, 0x80000000 | 174,  175,
     QMetaType::Void, 0x80000000 | 177,  175,
     QMetaType::Void, QMetaType::Bool, QMetaType::QString,  179,  180,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 185,  186,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Int, 0x80000000 | 190,  189,  191,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 194,  195,
-    QMetaType::Void, 0x80000000 | 197,  198,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  179,  180,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 187,  188,
     QMetaType::Void,
+    QMetaType::Void, QMetaType::Int, 0x80000000 | 192,  191,  193,
     QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 196,  197,
+    QMetaType::Void, 0x80000000 | 199,  200,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    0x80000000 | 211,
-    QMetaType::Void, 0x80000000 | 213,  214,
-    0x80000000 | 216,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 219,  220,
-    QMetaType::Void, 0x80000000 | 222,    2,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  224,  225,
-    QMetaType::Void, QMetaType::Bool,  224,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  224,  225,
-    QMetaType::Void, QMetaType::Bool,  224,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    0x80000000 | 213,
+    QMetaType::Void, 0x80000000 | 215,  216,
+    0x80000000 | 218,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 221,  222,
+    QMetaType::Void, 0x80000000 | 224,    2,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  226,  227,
+    QMetaType::Void, QMetaType::Bool,  226,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  226,  227,
+    QMetaType::Void, QMetaType::Bool,  226,
     QMetaType::Void, QMetaType::Int,    2,
     QMetaType::Bool,
 
@@ -1006,40 +1013,42 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 158: _t->closeEvent((*reinterpret_cast< QCloseEvent*(*)>(_a[1]))); break;
         case 159: _t->keyPressEvent((*reinterpret_cast< QKeyEvent*(*)>(_a[1]))); break;
         case 160: _t->finishedReadingFile((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
-        case 161: _t->checkFileProgress(); break;
-        case 162: _t->StopAnimation(); break;
-        case 163: _t->onTimer(); break;
-        case 164: _t->on_glview_pointPicked((*reinterpret_cast< const vec3d(*)>(_a[1]))); break;
-        case 165: _t->on_glview_selectionChanged(); break;
-        case 166: _t->onRunFinished((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QProcess::ExitStatus(*)>(_a[2]))); break;
-        case 167: _t->onReadyRead(); break;
-        case 168: _t->onErrorOccurred((*reinterpret_cast< QProcess::ProcessError(*)>(_a[1]))); break;
-        case 169: _t->onExportMaterials((*reinterpret_cast< const vector<GMaterial*>(*)>(_a[1]))); break;
-        case 170: _t->onExportAllMaterials(); break;
-        case 171: _t->onImportMaterials(); break;
-        case 172: _t->DeleteAllMaterials(); break;
-        case 173: _t->DeleteAllBC(); break;
-        case 174: _t->DeleteAllLoads(); break;
-        case 175: _t->DeleteAllIC(); break;
-        case 176: _t->DeleteAllContact(); break;
-        case 177: _t->DeleteAllConstraints(); break;
-        case 178: _t->DeleteAllRigidConstraints(); break;
-        case 179: _t->DeleteAllRigidConnectors(); break;
-        case 180: _t->DeleteAllSteps(); break;
-        case 181: { CGLView* _r = _t->GetGLView();
+        case 161: _t->finishedReadingPostFile((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 162: _t->checkFileProgress(); break;
+        case 163: _t->checkPostFileProgress(); break;
+        case 164: _t->StopAnimation(); break;
+        case 165: _t->onTimer(); break;
+        case 166: _t->on_glview_pointPicked((*reinterpret_cast< const vec3d(*)>(_a[1]))); break;
+        case 167: _t->on_glview_selectionChanged(); break;
+        case 168: _t->onRunFinished((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QProcess::ExitStatus(*)>(_a[2]))); break;
+        case 169: _t->onReadyRead(); break;
+        case 170: _t->onErrorOccurred((*reinterpret_cast< QProcess::ProcessError(*)>(_a[1]))); break;
+        case 171: _t->onExportMaterials((*reinterpret_cast< const vector<GMaterial*>(*)>(_a[1]))); break;
+        case 172: _t->onExportAllMaterials(); break;
+        case 173: _t->onImportMaterials(); break;
+        case 174: _t->DeleteAllMaterials(); break;
+        case 175: _t->DeleteAllBC(); break;
+        case 176: _t->DeleteAllLoads(); break;
+        case 177: _t->DeleteAllIC(); break;
+        case 178: _t->DeleteAllContact(); break;
+        case 179: _t->DeleteAllConstraints(); break;
+        case 180: _t->DeleteAllRigidConstraints(); break;
+        case 181: _t->DeleteAllRigidConnectors(); break;
+        case 182: _t->DeleteAllSteps(); break;
+        case 183: { CGLView* _r = _t->GetGLView();
             if (_a[0]) *reinterpret_cast< CGLView**>(_a[0]) = std::move(_r); }  break;
-        case 182: _t->changeViewMode((*reinterpret_cast< View_Mode(*)>(_a[1]))); break;
-        case 183: { Post::CGLModel* _r = _t->GetCurrentModel();
+        case 184: _t->changeViewMode((*reinterpret_cast< View_Mode(*)>(_a[1]))); break;
+        case 185: { Post::CGLModel* _r = _t->GetCurrentModel();
             if (_a[0]) *reinterpret_cast< Post::CGLModel**>(_a[0]) = std::move(_r); }  break;
-        case 184: _t->UpdateFontToolbar(); break;
-        case 185: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
-        case 186: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
-        case 187: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 188: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 189: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 190: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 191: _t->UpdateProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 192: { bool _r = _t->DoModelCheck();
+        case 186: _t->UpdateFontToolbar(); break;
+        case 187: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
+        case 188: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
+        case 189: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 190: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 191: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 192: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 193: _t->UpdateProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 194: { bool _r = _t->DoModelCheck();
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
@@ -1075,13 +1084,13 @@ int CMainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 193)
+        if (_id < 195)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 193;
+        _id -= 195;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 193)
+        if (_id < 195)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 193;
+        _id -= 195;
     }
     return _id;
 }

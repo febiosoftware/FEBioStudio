@@ -357,7 +357,7 @@ bool CPostDoc::ReloadPlotfile()
 	return true;
 }
 
-bool CPostDoc::LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops)
+bool CPostDoc::LoadPlotfile(const std::string& fileName, xpltFileReader* xplt)
 {
 	const char* szfile = fileName.c_str();
 
@@ -378,11 +378,7 @@ bool CPostDoc::LoadPlotfile(const std::string& fileName, const XPLT_OPTIONS& ops
 	// create new FE model
 	imp->fem = new Post::FEModel;
 
-	xpltFileReader xplt;
-	xplt.SetReadStateFlag(ops.m_op);
-	xplt.SetReadStatesList(ops.m_states);
-
-	if (xplt.Load(*imp->fem, szfile) == false)
+	if (xplt->Load(*imp->fem, szfile) == false)
 	{
 		delete imp->fem;
 		imp->fem = nullptr;

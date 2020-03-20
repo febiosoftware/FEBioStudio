@@ -41,6 +41,7 @@
 #include "Encrypter.h"
 #include "DlgImportXPLT.h"
 #include "Commands.h"
+#include <XPLTLib/xpltFileReader.h>
 
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
@@ -84,6 +85,9 @@ void darkStyle()
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_doc = 0;
+
+	m_fileThread = nullptr;
+	m_postFileThread = nullptr;
 
 	CResource::Init(this);
 
@@ -336,51 +340,61 @@ void CMainWindow::OpenDocument(const QString& fileName)
 //! Open a plot file
 void CMainWindow::OpenPlotFile(const QString& fileName, bool showLoadOptions)
 {
-	XPLT_OPTIONS ops;
-
+	xpltFileReader* xplt = nullptr;
 	if (showLoadOptions)
 	{
 		CDlgImportXPLT dlg(this);
 		if (dlg.exec())
 		{
-			ops.m_op = dlg.m_nop;
-			ops.m_states = dlg.m_item;
+			xplt = new xpltFileReader;
+			xplt->SetReadStateFlag(dlg.m_nop);
+			xplt->SetReadStatesList(dlg.m_item);
 		}
 		else return;
 	}
 
 	CDocument* doc = GetDocument();
 	std::string sfile = fileName.toStdString();
-	if (doc->LoadPlotFile(sfile, ops) == false)
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed loading plot file.");
-	}
-	else
-	{
-		UpdateModel();
-		UpdatePostPanel();
-		UpdatePostToolbar();
 
-		CFEBioJob* job = doc->GetFEBioJob(doc->FEBioJobs() - 1);
-		ui->modelViewer->Select(job);
-		SetActivePostDoc(job->GetPostDoc());
-	}
+	// try to turn this into a relative path to the project folder
+	string relPath = FSDir::toRelativePath(sfile);
+
+	// create a dummy job
+	CFEBioJob* job = new CFEBioJob(doc);
+	job->SetPlotFileName(relPath);
+
+	// set the filename as the job's name
+	string fileBase = FSDir::fileBase(sfile);
+	job->SetName(fileBase);
+
+	// add it to the document
+	doc->AddFEbioJob(job);
+
+	// open the job's plotfile
+	OpenPlotFile(job, xplt);
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::OpenPlotFile(CFEBioJob* job)
+void CMainWindow::OpenPlotFile(CFEBioJob* job, xpltFileReader* xpltReader)
 {
-	XPLT_OPTIONS defaultOps;
-	// try to open the file
-	if (job->OpenPlotFile(defaultOps) == false)
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed to open the plot file.");
-		return;
-	}
+	if (xpltReader == nullptr) xpltReader = new xpltFileReader();
 
-	UpdatePostPanel();
-	SetActivePostDoc(job->GetPostDoc());
-	UpdatePostToolbar();
+	// create the file reading thread and run it
+	m_postFileThread = new CPostFileThread(this, job, xpltReader);
+	m_postFileThread->start();
+
+	string plotFile = FSDir::toAbsolutePath(job->GetPlotFileName());
+	QString fileName = QString::fromStdString(plotFile);
+	ui->statusBar->showMessage(QString("Reading file %1 ...").arg(fileName));
+	AddLogEntry(QString("Reading file %1 ...").arg(fileName));
+
+	int H = ui->statusBar->height() - 5;
+	ui->fileProgress->setFixedHeight(H);
+
+	ui->fileProgress->setValue(0);
+	ui->statusBar->addPermanentWidget(ui->fileProgress);
+	ui->fileProgress->show();
+	QTimer::singleShot(100, this, SLOT(checkFileProgress()));
 }
 
 //-----------------------------------------------------------------------------
@@ -486,12 +500,25 @@ void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
 //-----------------------------------------------------------------------------
 void CMainWindow::checkFileProgress()
 {
-	if (m_fileThread)
+	float f = 1.f;
+	if (m_fileThread) f = m_fileThread->getFileProgress();
+	else if (m_postFileThread) f = m_postFileThread->getFileProgress();
+	else return;
+
+	int n = (int)(100.f*f);
+	ui->fileProgress->setValue(n);
+	if (f < 1.0f) QTimer::singleShot(100, this, SLOT(checkFileProgress()));
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::checkPostFileProgress()
+{
+	if (m_postFileThread)
 	{
-		float f = m_fileThread->getFileProgress();
+		float f = m_postFileThread->getFileProgress();
 		int n = (int)(100.f*f);
 		ui->fileProgress->setValue(n);
-		if (f < 1.0f) QTimer::singleShot(100, this, SLOT(checkFileProgress()));
+		if (f < 1.0f) QTimer::singleShot(100, this, SLOT(checkPostFileProgress()));
 	}
 }
 
@@ -544,6 +571,34 @@ void CMainWindow::finishedReadingFile(bool success, const QString& errorString)
 
 		// If the main window is not active, this will alert the user that the file has been read. 
 		QApplication::alert(this, 0);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::finishedReadingPostFile(bool success, const QString& errorString)
+{
+	if (m_postFileThread == nullptr) return;
+
+	CFEBioJob* job = m_postFileThread->GetFEBioJob();
+	m_postFileThread = nullptr;
+	ui->statusBar->clearMessage();
+	ui->statusBar->removeWidget(ui->fileProgress);
+
+	if (success == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed loading plot file.");
+		AddLogEntry("FAILED!\n");
+	}
+	else
+	{
+		AddLogEntry("success!\n");
+
+		ui->modelViewer->Select(job);
+		SetActivePostDoc(job->GetPostDoc());
+
+		UpdateModel();
+		UpdatePostPanel();
+		UpdatePostToolbar();
 	}
 }
 
