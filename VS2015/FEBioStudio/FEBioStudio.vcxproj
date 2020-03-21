@@ -182,6 +182,7 @@
     <ClCompile Include="..\..\FEBioStudio\CurvePicker.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DataFieldSelector.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DistanceMapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddBC.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddBodyLoad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddChemicalReaction.cpp" />
@@ -286,6 +287,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_CurvePicker.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DataFieldSelector.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DistanceMapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddEquation.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddMeshData.cpp" />
@@ -448,6 +450,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\DatabasePanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DistanceMapTool.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>

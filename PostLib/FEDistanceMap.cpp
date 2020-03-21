@@ -32,25 +32,13 @@ void FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 	}
 
 	// create the local node list
-	m_lnode.resize(Faces()*4);
+	const int MN = FEFace::MAX_NODES;
+	m_lnode.resize(Faces()*MN);
 	for (int i=0; i<Faces(); ++i)
 	{
 		FEFace& f = mesh.Face(m_face[i]);
-		if (f.Nodes() == 4)
-		{
-			m_lnode[4*i  ] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4*i  ] >= 0);
-			m_lnode[4*i+1] = mesh.Node(f.n[1]).m_ntag; assert(m_lnode[4*i+1] >= 0);
-			m_lnode[4*i+2] = mesh.Node(f.n[2]).m_ntag; assert(m_lnode[4*i+2] >= 0);
-			m_lnode[4*i+3] = mesh.Node(f.n[3]).m_ntag; assert(m_lnode[4*i+3] >= 0);
-		}
-		else if (f.Nodes() == 3)
-		{
-			m_lnode[4*i  ] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4*i  ] >= 0);
-			m_lnode[4*i+1] = mesh.Node(f.n[1]).m_ntag; assert(m_lnode[4*i+1] >= 0);
-			m_lnode[4*i+2] = mesh.Node(f.n[2]).m_ntag; assert(m_lnode[4*i+2] >= 0);
-			m_lnode[4*i+3] = m_lnode[4*i+2];
-		}
-		else assert(false);
+		int nf = f.Nodes();
+		for (int j=0; j<nf; ++j) m_lnode[MN * i + j] = mesh.Node(f.n[j]).m_ntag;
 	}
 
 	// create the node-facet look-up table
@@ -61,7 +49,7 @@ void FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
-			int inode = m_lnode[4*i+j];
+			int inode = m_lnode[MN*i+j];
 			m_NLT[inode].push_back(m_face[i]);
 		}
 	}
@@ -77,13 +65,14 @@ void FEDistanceMap::BuildNormalList(FEDistanceMap::Surface& s)
 	int NN = s.Nodes();
 	s.m_norm.resize(NN);
 
+	const int MN = FEFace::MAX_NODES;
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& f = mesh.Face(s.m_face[i]);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j) 
 		{
-			int n = s.m_lnode[4*i + j]; assert(n>=0);
+			int n = s.m_lnode[MN*i + j]; assert(n>=0);
 			s.m_norm[n] = f.m_nn[j];
 		}
 	}
@@ -108,6 +97,8 @@ void FEDistanceMap::Apply(FEModel& fem)
 
 	// get the mesh
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+
+	const int MN = FEFace::MAX_NODES;
 
 	// build the node lists
 	m_surf1.BuildNodeList(mesh);
@@ -143,7 +134,7 @@ void FEDistanceMap::Apply(FEModel& fem)
 			}
 		}
 		vector<int> nf1(m_surf1.Faces());
-		for (int i=0; i<m_surf1.Faces(); ++i) nf1[i] = 4; //mesh.Face(m_surf1.m_face[i]).Nodes();
+		for (int i=0; i<m_surf1.Faces(); ++i) nf1[i] = MN; //mesh.Face(m_surf1.m_face[i]).Nodes();
 		df.add(a, m_surf1.m_face, m_surf1.m_lnode, nf1);
 
 		// loop over all nodes of surface 2
@@ -162,7 +153,7 @@ void FEDistanceMap::Apply(FEModel& fem)
 			}
 		}
 		vector<int> nf2(m_surf2.Faces());
-		for (int i = 0; i<m_surf2.Faces(); ++i) nf2[i] = 4; //mesh.Face(m_surf2.m_face[i]).Nodes();
+		for (int i = 0; i<m_surf2.Faces(); ++i) nf2[i] = MN; //mesh.Face(m_surf2.m_face[i]).Nodes();
 		df.add(b, m_surf2.m_face, m_surf2.m_lnode, nf2);
 	}
 }
@@ -219,17 +210,32 @@ bool FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& q)
 	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
 	
 	// number of element nodes
-	int ne = f.Nodes();
+	int nf = f.Nodes();
 	
 	// get the elements nodal positions
-	vec3f y[4];
-	for (int i=0; i<ne; ++i) y[i] = m_pfem->NodePosition(f.n[i], ntime);
+	const int MN = FEFace::MAX_NODES;
+	vec3f y[MN];
 	
 	// calculate normal projection of x onto element
-	switch (ne)
+	switch (f.Type())
 	{
-	case 3: return ProjectToTriangle(y, x, q, m_tol); break;
-	case 4: return ProjectToQuad    (y, x, q, m_tol); break;
+	case FE_FACE_TRI3:
+	case FE_FACE_TRI6:
+	case FE_FACE_TRI7:
+	case FE_FACE_TRI10:
+		{
+			for (int i = 0; i<3; ++i) y[i] = m_pfem->NodePosition(f.n[i], ntime);
+			return ProjectToTriangle(y, x, q, m_tol);
+		}
+		break;
+	case FE_FACE_QUAD4:
+	case FE_FACE_QUAD8:
+	case FE_FACE_QUAD9:
+		{
+			for (int i = 0; i<4; ++i) y[i] = m_pfem->NodePosition(f.n[i], ntime);
+			return ProjectToQuad(y, x, q, m_tol);
+		}
+		break;
 	default:
 		assert(false);
 	}

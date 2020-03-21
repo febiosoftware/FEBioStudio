@@ -37,25 +37,13 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 	m_pos.resize(nn);
 
 	// create the local node list
-	m_lnode.resize(Faces() * 4);
+	const int MN = FEFace::MAX_NODES;
+	m_lnode.resize(Faces() * MN);
 	for (int i = 0; i<Faces(); ++i)
 	{
 		FEFace& f = mesh.Face(m_face[i]);
-		if (f.Nodes() == 4)
-		{
-			m_lnode[4 * i] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4 * i] >= 0);
-			m_lnode[4 * i + 1] = mesh.Node(f.n[1]).m_ntag; assert(m_lnode[4 * i + 1] >= 0);
-			m_lnode[4 * i + 2] = mesh.Node(f.n[2]).m_ntag; assert(m_lnode[4 * i + 2] >= 0);
-			m_lnode[4 * i + 3] = mesh.Node(f.n[3]).m_ntag; assert(m_lnode[4 * i + 3] >= 0);
-		}
-		else if (f.Nodes() == 3)
-		{
-			m_lnode[4 * i] = mesh.Node(f.n[0]).m_ntag; assert(m_lnode[4 * i] >= 0);
-			m_lnode[4 * i + 1] = mesh.Node(f.n[1]).m_ntag; assert(m_lnode[4 * i + 1] >= 0);
-			m_lnode[4 * i + 2] = mesh.Node(f.n[2]).m_ntag; assert(m_lnode[4 * i + 2] >= 0);
-			m_lnode[4 * i + 3] = m_lnode[4 * i + 2];
-		}
-		else assert(false);
+		int nf = f.Nodes();
+		for (int j = 0; j < nf; ++j) m_lnode[MN*i + j] = mesh.Node(f.n[j]).m_ntag;
 	}
 
 	// create the node-facet look-up table
@@ -66,7 +54,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
-			int inode = m_lnode[4 * i + j];
+			int inode = m_lnode[MN * i + j];
 			m_NLT[inode].push_back(m_face[i]);
 		}
 	}
@@ -108,6 +96,8 @@ void FEAreaCoverage::Apply(FEModel& fem)
 	m_surf1.Create(mesh);
 	m_surf2.Create(mesh);
 
+	const int MN = FEFace::MAX_NODES;
+
 	// repeat for all steps
 	int nstep = fem.GetStates();
 	for (int n = 0; n<nstep; ++n)
@@ -134,8 +124,8 @@ void FEAreaCoverage::Apply(FEModel& fem)
 				a[i] = 1.f;
 			}
 		}
-		vector<int> nf1(m_surf1.Faces());
-		for (int i = 0; i<m_surf1.Faces(); ++i) nf1[i] = 4;//mesh.Face(m_surf1.m_face[i]).Nodes();
+		vector<int> nf1(m_surf1.Faces());                     // TODO: The reason I have to comment this out is because m_lnode has a fixed size per face
+		for (int i = 0; i < m_surf1.Faces(); ++i) nf1[i] = MN;// mesh.Face(m_surf1.m_face[i]).Nodes();
 		df.add(a, m_surf1.m_face, m_surf1.m_lnode, nf1);
 
 
@@ -155,7 +145,7 @@ void FEAreaCoverage::Apply(FEModel& fem)
 			}
 		}
 		vector<int> nf2(m_surf2.Faces());
-		for (int i = 0; i<m_surf2.Faces(); ++i) nf2[i] = 4;//mesh.Face(m_surf2.m_face[i]).Nodes();
+		for (int i = 0; i < m_surf2.Faces(); ++i) nf2[i] = MN;// mesh.Face(m_surf2.m_face[i]).Nodes();
 		df.add(b, m_surf2.m_face, m_surf2.m_lnode, nf2);
 	}
 }
@@ -178,14 +168,15 @@ void FEAreaCoverage::UpdateSurface(FEAreaCoverage::Surface& s, int nstate)
 	// update face normals
 	s.m_fnorm.assign(NF, vec3f(0.f, 0.f, 0.f));
 	s.m_norm.assign(NN, vec3f(0.f,0.f,0.f));
+	const int MN = FEFace::MAX_NODES;
 	vec3f r[3];
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& f = mesh.Face(s.m_face[i]);
 
-		r[0] = s.m_pos[s.m_lnode[i*4    ]];
-		r[1] = s.m_pos[s.m_lnode[i*4 + 1]];
-		r[2] = s.m_pos[s.m_lnode[i*4 + 2]];
+		r[0] = s.m_pos[s.m_lnode[i*MN    ]];
+		r[1] = s.m_pos[s.m_lnode[i*MN + 1]];
+		r[2] = s.m_pos[s.m_lnode[i*MN + 2]];
 
 		vec3f N = (r[1] - r[0])^(r[2] - r[0]);
 
@@ -195,8 +186,7 @@ void FEAreaCoverage::UpdateSurface(FEAreaCoverage::Surface& s, int nstate)
 		int nf = f.Nodes();
 		for (int j = 0; j<nf; ++j)
 		{
-			assert(j<4);
-			int n = s.m_lnode[4 * i + j]; assert(n >= 0);
+			int n = s.m_lnode[MN * i + j]; assert(n >= 0);
 			s.m_norm[n] += N;
 		}
 	}
@@ -234,6 +224,8 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	vec3f rn[4];
 	FEFace& face = mesh.Face(surf.m_face[nface]);
 
+	const int MN = FEFace::MAX_NODES;
+
 	bool bfound = false;
 	switch (face.m_type)
 	{
@@ -244,7 +236,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	{
 		for (int i = 0; i<3; ++i)
 		{
-			rn[i] = surf.m_pos[surf.m_lnode[4 * nface + i]];
+			rn[i] = surf.m_pos[surf.m_lnode[MN * nface + i]];
 		}
 
 		Triangle tri = { rn[0], rn[1], rn[2], surf.m_fnorm[nface] };
@@ -257,7 +249,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	{
 		for (int i = 0; i<4; ++i)
 		{
-			rn[i] = surf.m_pos[surf.m_lnode[4 * nface + i]];
+			rn[i] = surf.m_pos[surf.m_lnode[MN * nface + i]];
 		}
 
 		Quad quad = { rn[0], rn[1], rn[2], rn[3] };

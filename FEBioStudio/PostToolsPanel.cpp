@@ -29,7 +29,7 @@
 //#include "SphereFitTool.h"
 //#include "PointCongruencyTool.h"
 #include "ImportLinesTool.h"
-//#include "DistanceMapTool.h"
+#include "DistanceMapTool.h"
 //#include "PlaneTool.h"
 //#include "PlotMixTool.h"
 #include "AreaCoverageTool.h"
@@ -137,7 +137,7 @@ void CPostToolsPanel::initTools()
 	tools.push_back(new CMeasureAreaTool    ());
 	tools.push_back(new CImportLinesTool    ());
 //	tools.push_back(new CKinematTool        ());
-//	tools.push_back(new CDistanceMapTool    ());
+	tools.push_back(new CDistanceMapTool    ());
 //	tools.push_back(new CCurvatureMapTool   ());
 //	tools.push_back(new CPointCongruencyTool());
 //	tools.push_back(new CSphereFitTool      ());
