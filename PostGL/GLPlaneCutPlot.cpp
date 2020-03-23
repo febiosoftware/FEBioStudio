@@ -14,6 +14,8 @@ const int HEX_NT[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 const int PEN_NT[8] = {0, 1, 2, 2, 3, 4, 5, 5};
 const int TET_NT[8] = {0, 1, 2, 2, 3, 3, 3, 3};
 const int PYR_NT[8] = {0, 1, 2, 3, 4, 4, 4, 4};
+const int QUAD_NT[4] = { 0, 1, 2, 3 };
+const int TRI_NT[4]  = { 0, 1, 2, 2 };
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -665,56 +667,93 @@ void CGLPlaneCutPlot::UpdateSlice()
 
 								m_slice.AddFace(face);
 
-								// add all edges to the list
-								for (int k=0; k<3; ++k)
-								{
-									int n1 = pf[k];
-									int n2 = pf[(k+1)%3];
-
-									bool badd = true;
-									// make sure this edge is on the surface
-									if ((rf[k] != 1) || (rf[(k+1)%3] != 1)) badd = false;
-									else
-									{
-										// make sure we don't have this edge yet
-										for (int m=0; m<ne; ++m)
-										{
-											int m1 = edge[m].m_n[0];
-											int m2 = edge[m].m_n[1];
-											if (((n1 == m1) && (n2 == m2)) ||
-												((n1 == m2) && (n2 == m1)))
-											{
-												badd = false;
-												edge[m].m_ntag++;
-												break;
-											}
-										}
-									}
-
-									if (badd)
-									{
-										edge[ne].m_n[0] = n1;
-										edge[ne].m_n[1] = n2;
-										edge[ne].m_r[0] = r[k];
-										edge[ne].m_r[1] = r[(k+1)%3];
-										edge[ne].m_ntag = 0;
-										++ne;
-									}
-								}
-
 								pf+=3;
 							}
-
-							// add the lines
-							GLSlice::EDGE e;
-							for (int k=0; k<ne; ++k)
-								if (edge[k].m_ntag == 0)
-								{
-									e.r[0] = edge[k].m_r[0];
-									e.r[1] = edge[k].m_r[1];
-									m_slice.AddEdge(e);
-								}
 						}
+					}
+				}
+			}
+		}
+	}
+
+	// loop over faces to determine edges
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		FEFace& face = pm->Face(i);
+
+		int elemId = face.m_elem[0].eid;
+		FEElement& el = pm->Element(elemId);
+		int pid = el.m_MatID;
+		if (pid >= 0)
+		{
+			FEDomain& dom = pm->Domain(pid);
+			int matId = dom.GetMatID();
+			if ((matId >= 0) && (matId < ps->Materials()))
+			{
+				FEMaterial* pmat = ps->GetMaterial(matId);
+				if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
+				{
+					const int *nt = nullptr;
+					switch (face.Type())
+					{
+					case FE_FACE_TRI3 : nt = TRI_NT; break;
+					case FE_FACE_TRI6 : nt = TRI_NT; break;
+					case FE_FACE_TRI7 : nt = TRI_NT; break;
+					case FE_FACE_TRI10: nt = TRI_NT; break;
+					case FE_FACE_QUAD4: nt = QUAD_NT; break;
+					case FE_FACE_QUAD8: nt = QUAD_NT; break;
+					case FE_FACE_QUAD9: nt = QUAD_NT; break;
+					}
+
+					// get the nodal values
+					for (int k = 0; k<4; ++k)
+					{
+						FENode& node = pm->Node(face.n[nt[k]]);
+						ex[k] = to_vec3f(node.r);
+						en[k] = el.m_node[nt[k]];
+						ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
+					}
+
+					// calculate the case of the face
+					int ncase = 0;
+					for (int k = 0; k<4; ++k)
+						if (norm*ex[k] >= ref) ncase |= (1 << k);
+
+					// loop over faces
+					int* pf = LUT2D[ncase];
+					int ne = 0;
+					for (int l = 0; l < 2; l++)
+					{
+						if (*pf == -1) break;
+
+						// calculate nodal positions
+						vec3d r[2];
+						float w1, w2, w;
+						for (int k = 0; k<2; k++)
+						{
+							int n1 = ET2D[pf[k]][0];
+							int n2 = ET2D[pf[k]][1];
+
+							w1 = norm*ex[n1];
+							w2 = norm*ex[n2];
+
+							if (w2 != w1)
+								w = (ref - w1) / (w2 - w1);
+							else
+								w = 0.f;
+
+							float v = ev[n1] * (1 - w) + ev[n2] * w;
+
+							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+						}
+
+						// add the edge
+						GLSlice::EDGE e;
+						e.r[0] = r[0];
+						e.r[1] = r[1];
+						m_slice.AddEdge(e);
+
+						pf += 2;
 					}
 				}
 			}
