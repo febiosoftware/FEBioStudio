@@ -1331,8 +1331,8 @@ void CModelPropsPanel::on_bcobject_stepChanged(int n)
 	FEStepComponent* pc = dynamic_cast<FEStepComponent*>(m_currentObject);
 	if (pc == 0) return;
 
-	n = ui->current_bcobject_value();
-	if ((n!=-1) && (pc->GetStep() != n))
+	int stepId = ui->current_bcobject_value();
+	if ((stepId !=-1) && (pc->GetStep() != stepId))
 	{
 		FEModel* fem = m_wnd->GetDocument()->GetFEModel();
 
