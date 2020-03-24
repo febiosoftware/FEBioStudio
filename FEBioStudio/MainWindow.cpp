@@ -593,10 +593,10 @@ void CMainWindow::finishedReadingPostFile(bool success, const QString& errorStri
 	{
 		AddLogEntry("success!\n");
 
+		UpdateModel();
 		ui->modelViewer->Select(job);
 		SetActivePostDoc(job->GetPostDoc());
 
-		UpdateModel();
 		UpdatePostPanel();
 		UpdatePostToolbar();
 	}

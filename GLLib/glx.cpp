@@ -464,7 +464,7 @@ void glx::smoothQUAD9(vec3d r[9], vec3f n[9], float t[9], int ndivs)
 
 			for (int l = 0; l < 2; ++l)
 			{
-				for (int k = 0; k < 4; ++k)
+				for (int k = 0; k < 3; ++k)
 				{
 					float sak = sa[T[l][k]];
 					float tak = ta[T[l][k]];
