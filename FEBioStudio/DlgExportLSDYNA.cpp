@@ -113,7 +113,7 @@ void CDlgExportLSDYNAPlot::accept()
 		m_code[i] = ui->m_code[i]->currentValue();
 		if (m_flag[i] && (m_code[i] == -1))
 		{
-			QMessageBox::critical(this, "PostView2", QString("Please select a valid field for \"%1\" or uncheck this item").arg(ui->m_flag[i]->text()));
+			QMessageBox::critical(this, "FEBio Studio", QString("Please select a valid field for \"%1\" or uncheck this item").arg(ui->m_flag[i]->text()));
 			return;
 		}
 	}

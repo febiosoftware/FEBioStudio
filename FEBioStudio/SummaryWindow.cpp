@@ -18,7 +18,7 @@
 
 CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "PostView2: Summary";
+	QString title = "FEBio Studio: Summary";
 	setWindowTitle(title);
 
 	m_ncurrentData = -1;

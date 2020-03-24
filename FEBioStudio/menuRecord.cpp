@@ -78,7 +78,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 			if (ch == 0) sprintf(szfilename + l, ".mpg");
 			bret = ui->glview->NewAnimation(szfilename, panim);
 #else
-			QMessageBox::critical(this, "PostView2", "This video format is not supported in this version");
+			QMessageBox::critical(this, "FEBio Studio", "This video format is not supported in this version");
 #endif
 		}
 
@@ -87,7 +87,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 			ui->m_old_title = windowTitle();
 			setWindowTitle(ui->m_old_title + "   (RECORDING PAUSED)");
 		}
-		else bret = QMessageBox::critical(this, "PostView", "Failed creating animation stream.");
+		else bret = QMessageBox::critical(this, "FEBio Studio", "Failed creating animation stream.");
 
 		RedrawGL();
 	}
@@ -103,7 +103,7 @@ void CMainWindow::on_actionRecordStart_triggered()
 
 		ui->glview->StartAnimation();
 	}
-	else QMessageBox::information(this, "PostView", "You need to create a new video file before you can start recording");
+	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file before you can start recording");
 }
 
 void CMainWindow::on_actionRecordPause_triggered()
@@ -116,7 +116,7 @@ void CMainWindow::on_actionRecordPause_triggered()
 			setWindowTitle(ui->m_old_title + "   (RECORDING PAUSED)");
 		}
 	}
-	else QMessageBox::information(this, "PostView", "You need to create a new video file first.");
+	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
 }
 
 void CMainWindow::on_actionRecordStop_triggered()
@@ -131,5 +131,5 @@ void CMainWindow::on_actionRecordStop_triggered()
 
 		ui->m_old_title.clear();
 	}
-	else QMessageBox::information(this, "PostView", "You need to create a new video file first.");
+	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
 }

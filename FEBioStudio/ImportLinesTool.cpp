@@ -90,7 +90,7 @@ void CImportLinesTool::OnApply()
 			bsuccess = (nret != 0);
 			if (nret == 2)
 			{
-				QMessageBox::warning(0, "PostView2", "End-of-file reached before all states were processed.");
+				QMessageBox::warning(0, "FEBio Studio", "End-of-file reached before all states were processed.");
 			}
 		}
 		else
@@ -114,7 +114,7 @@ void CImportLinesTool::OnApply()
 		}
 		else
 		{
-			QMessageBox::critical(0, "PostView2", "Failed reading line data file.");
+			QMessageBox::critical(0, "FEBio Studio", "Failed reading line data file.");
 		}
 	}
 }
@@ -401,7 +401,7 @@ void CImportPointsTool::OnApply()
 		FILE* fp = fopen(fileName.c_str(), "rt");
 		if (fp == 0)
 		{
-			QMessageBox::critical(0, "PostView2", "Failed opening data file.");
+			QMessageBox::critical(0, "FEBio Studio", "Failed opening data file.");
 			return;
 		}
 

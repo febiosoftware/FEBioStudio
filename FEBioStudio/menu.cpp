@@ -419,7 +419,7 @@ void CMainWindow::on_actionSnapShot_triggered()
 		}
 		if (bret == false)
 		{
-			QMessageBox::critical(this, "PostView", "Failed saving image file.");
+			QMessageBox::critical(this, "FEBio Studio", "Failed saving image file.");
 		}
 	}
 }
@@ -953,12 +953,12 @@ void CMainWindow::ExportPostGeometry()
 	}
 	else
 	{
-		QMessageBox::information(this, "PostView2", "Success saving file!");
+		QMessageBox::information(this, "FEBio Studio", "Success saving file!");
 	}
 
 	if (bret == false)
 	{
-		QMessageBox::critical(this, "FEBioStudio", "Failed exporting geometry.");
+		QMessageBox::critical(this, "FEBio Studio", "Failed exporting geometry.");
 	}
 }
 

@@ -1428,7 +1428,7 @@ void CGLView::StopAnimation()
 
 		if (m_panim->Frames() == 0)
 		{
-			QMessageBox::warning(this, "PostView2", "This animation contains no frames. Only an empty video file was saved.");
+			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
 		}
 
 		// close the stream
@@ -1597,7 +1597,7 @@ void CGLView::paintGL()
 		if (m_panim->Write(im) == false)
 		{
 			StopAnimation();
-			QMessageBox::critical(this, "PostView2", "An error occurred while recording.");
+			QMessageBox::critical(this, "FEBio Studio", "An error occurred while recording.");
 		}
 	}
 

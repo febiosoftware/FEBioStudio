@@ -19,7 +19,7 @@
 
 CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "PostView2: Integrate";
+	QString title = "FEBio Studio: Integrate";
 	setWindowTitle(title);
 	m_nsrc = -1;
 }

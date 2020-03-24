@@ -1622,7 +1622,7 @@ void CMainWindow::on_actionRefresh_triggered()
 	xpltFileReader xplt;
 	if (doc->ReloadPlotfile(&xplt) == false)
 	{
-		QMessageBox::critical(this, tr("PostView2"), "Failed updating the model");
+		QMessageBox::critical(this, tr("FEBio Studio"), "Failed updating the model");
 	}
 	else if (doc->IsValid())
 	{

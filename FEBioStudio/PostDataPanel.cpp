@@ -650,7 +650,7 @@ void CPostDataPanel::on_AddFromFile_triggered()
 	CPostDoc* doc = GetActiveDocument();
 	if (doc->IsValid() == false)
 	{
-		QMessageBox::critical(this, "PostView", "No model data loaded");
+		QMessageBox::critical(this, "FEBio Studio", "No model data loaded");
 		return;
 	}
 

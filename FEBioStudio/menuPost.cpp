@@ -231,7 +231,7 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 	{
 		if (pm->AddDisplacementMap() == false)
 		{
-			QMessageBox::warning(this, "PostView", "You need at least one vector field before you can define a displacement map.");
+			QMessageBox::warning(this, "FEBio Studio", "You need at least one vector field before you can define a displacement map.");
 		}
 		else
 		{
@@ -241,7 +241,7 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 	}
 	else
 	{
-		QMessageBox::information(this, "PostView", "This model already has a displacement map.");
+		QMessageBox::information(this, "FEBio Studio", "This model already has a displacement map.");
 	}
 */
 }

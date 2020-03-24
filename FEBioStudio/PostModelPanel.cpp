@@ -796,7 +796,7 @@ void CPostModelPanel::on_deleteButton_clicked()
 			Update(true);
 			GetMainWindow()->RedrawGL();
 		}
-		else QMessageBox::information(this, "PostView2", "Cannot delete this object");
+		else QMessageBox::information(this, "FEBio Studio", "Cannot delete this object");
 	}
 }
 
