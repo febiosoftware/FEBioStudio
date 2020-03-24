@@ -6,6 +6,7 @@
 #include <GLLib/GLCamera.h>
 #include <PostLib/GView.h>
 #include <PostLib/Palette.h>
+#include <PostLib/FEMeshData_T.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlot.h>
 #include "GLView.h"
@@ -304,8 +305,15 @@ std::string CPostDoc::GetFileName()
 	return imp->m_fileName;
 }
 
-bool CPostDoc::ReloadPlotfile()
+bool CPostDoc::ReloadPlotfile(xpltFileReader* xplt)
 {
+	// keep a list of data fields 
+	std::vector<std::string>	data;
+	Post::FEModel* fem = imp->fem;
+	Post::FEDataManager* pDM = fem->GetDataManager();
+	Post::FEDataFieldPtr pdf = pDM->FirstDataField();
+	for (int i = 0; i<pDM->DataFields(); ++i, ++pdf) data.push_back(string((*pdf)->GetName()));
+
 	// clear the FE model
 	imp->glm->SetFEModel(nullptr);
 	delete imp->fem;
@@ -329,8 +337,7 @@ bool CPostDoc::ReloadPlotfile()
 	else ++ch2;
 	sztitle = ch2;
 
-	xpltFileReader xplt;
-	if (xplt.Load(*imp->fem, szfile) == false)
+	if (xplt->Load(*imp->fem, szfile) == false)
 	{
 		delete imp->fem;
 		imp->fem = nullptr;
@@ -338,12 +345,34 @@ bool CPostDoc::ReloadPlotfile()
 	}
 	imp->fem->SetTitle(sztitle);
 
+	// reassign the model
+	imp->glm->SetFEModel(imp->fem);
+
+	// reload data fields
+	fem = imp->fem;
+	int ndata = (int) data.size();
+	pDM = fem->GetDataManager();
+	for (int i=0; i<ndata; ++i)
+	{
+		string& si = data[i];
+
+		// see if the model already defines this field
+		bool bfound = false;
+		Post::FEDataFieldPtr pdf = pDM->FirstDataField();
+		for (int i=0; i<pDM->DataFields(); ++i, ++pdf)
+		{
+			if (si.compare((*pdf)->GetName()) == 0) { bfound = true; break; }
+		}
+
+		// If not, try to add it
+		if (bfound == false) Post::AddStandardDataField(*imp->glm, si);
+	}
+
 	// assign material attributes
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
 
-	// reassign the FE model
-	imp->glm->SetFEModel(imp->fem);
+	// update model
 	imp->glm->Update(true);
 	imp->fem->UpdateBoundingBox();
 

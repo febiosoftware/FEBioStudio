@@ -1619,7 +1619,8 @@ void CMainWindow::on_actionRefresh_triggered()
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
 
-	if (doc->ReloadPlotfile() == false)
+	xpltFileReader xplt;
+	if (doc->ReloadPlotfile(&xplt) == false)
 	{
 		QMessageBox::critical(this, tr("PostView2"), "Failed updating the model");
 	}

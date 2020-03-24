@@ -601,9 +601,10 @@ void CPostDataPanel::Update(bool breset)
 
 void CPostDataPanel::on_AddStandard_triggered()
 {
+	// NOTE: Make sure this list matches the list in Post::AddStandardDataField (FEDataField.cpp)
 	QStringList items;
 	items.push_back("Position");
-	items.push_back("Initial Position");
+	items.push_back("Initial position");
 	items.push_back("Deformation gradient");
 	items.push_back("Infinitesimal strain");
 	items.push_back("Lagrange strain");
@@ -629,13 +630,11 @@ void CPostDataPanel::on_AddStandard_triggered()
 	items.push_back("1-Princ Curvature vector");
 	items.push_back("2-Princ Curvature vector");
 
-
 	bool ok = false;
 	QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
 	if (ok)
 	{
-		int nitem = items.indexOf(item);
-		if (Post::AddStandardDataField(*GetActiveDocument()->GetGLModel(), nitem, true) == false)
+		if (Post::AddStandardDataField(*GetActiveDocument()->GetGLModel(), item.toStdString(), true) == false)
 		{
 			QMessageBox::critical(this, "Add Data Field", "Failed adding data");
 		}

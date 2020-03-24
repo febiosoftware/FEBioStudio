@@ -140,7 +140,8 @@ bool ExportNodeDataField(CGLModel& glm, const FEDataField& df, FILE* fp);
 bool ExportFaceDataField(CGLModel& glm, const FEDataField& df, FILE* fp);
 bool ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp);
 
-bool AddStandardDataField(CGLModel& glm, int ndata, bool bselection_only);
+//-----------------------------------------------------------------------------
+bool AddStandardDataField(CGLModel& glm, const std::string& dataField, bool bselection_only = false);
 bool AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);
 bool AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);
 bool AddElemDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);

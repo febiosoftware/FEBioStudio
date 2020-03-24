@@ -702,43 +702,38 @@ bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp
 	return true;
 }
 
-//------------------------------------------------------------------------------------------
-// NOTE: the ndata relates to the index in DataPanel::on_AddStandard_triggered
-// TODO: Find a better mechanism
-bool Post::AddStandardDataField(CGLModel& glm, int ndata, bool bselection_only)
+//=============================================================================
+bool Post::AddStandardDataField(CGLModel& glm, const std::string& dataField, bool bselection_only)
 {
-	FEDataField* pdf = 0;
-	switch (ndata)
-	{
-	case  0: pdf = new FEDataField_T<FENodePosition         >("Position"); break;
-	case  1: pdf = new FEDataField_T<FENodeInitPos          >("Initial position"); break;
-	case  2: pdf = new FEDataField_T<FEDeformationGradient  >("Deformation gradient"); break;
-	case  3: pdf = new FEStrainDataField("Infinitesimal strain", FEStrainDataField::INF_STRAIN); break;
-	case  4: pdf = new FEStrainDataField("Lagrange strain", FEStrainDataField::LAGRANGE); break;
-	case  5: pdf = new FEStrainDataField("Right Cauchy-Green", FEStrainDataField::RIGHT_CAUCHY_GREEN); break;
-	case  6: pdf = new FEStrainDataField("Right stretch", FEStrainDataField::RIGHT_STRETCH); break;
-	case  7: pdf = new FEStrainDataField("Biot strain", FEStrainDataField::BIOT); break;
-	case  8: pdf = new FEStrainDataField("Right Hencky", FEStrainDataField::RIGHT_HENCKY); break;
-	case  9: pdf = new FEStrainDataField("Left Cauchy-Green", FEStrainDataField::LEFT_CAUCHY_GREEN); break;
-	case 10: pdf = new FEStrainDataField("Left stretch", FEStrainDataField::LEFT_STRETCH); break;
-	case 11: pdf = new FEStrainDataField("Left Hencky", FEStrainDataField::LEFT_HENCKY); break;
-	case 12: pdf = new FEStrainDataField("Almansi strain", FEStrainDataField::ALMANSI); break;
-	case 13: pdf = new FEDataField_T<FEElementVolume        >("Volume"); break;
-	case 14: pdf = new FEDataField_T<FEVolRatio             >("Volume ratio"); break;
-	case 15: pdf = new FEDataField_T<FEVolStrain            >("Volume strain"); break;
-	case 16: pdf = new FEDataField_T<FEAspectRatio          >("Aspect ratio"); break;
-	case 17: pdf = new FECurvatureField("1-Princ curvature", FECurvatureField::PRINC1_CURVATURE); break;
-	case 18: pdf = new FECurvatureField("2-Princ curvature", FECurvatureField::PRINC2_CURVATURE); break;
-	case 19: pdf = new FECurvatureField("Gaussian curvature", FECurvatureField::GAUSS_CURVATURE); break;
-	case 20: pdf = new FECurvatureField("Mean curvature", FECurvatureField::MEAN_CURVATURE); break;
-	case 21: pdf = new FECurvatureField("RMS curvature", FECurvatureField::RMS_CURVATURE); break;
-	case 22: pdf = new FECurvatureField("Princ curvature difference", FECurvatureField::DIFF_CURVATURE); break;
-	case 23: pdf = new FEDataField_T<FECongruency           >("Congruency"); break;
-	case 24: pdf = new FEDataField_T<FEPrincCurvatureVector1>("1-Princ curvature vector"); break;
-	case 25: pdf = new FEDataField_T<FEPrincCurvatureVector2>("2-Princ curvature vector"); break;
-	default:
-		return false;
-	}
+	FEDataField* pdf = nullptr;
+	if      (dataField.compare("Position"                  ) == 0) pdf = new FEDataField_T<FENodePosition         >("Position"                  );
+	else if (dataField.compare("Initial position"          ) == 0) pdf = new FEDataField_T<FENodeInitPos          >("Initial position"          );
+	else if (dataField.compare("Deformation gradient"      ) == 0) pdf = new FEDataField_T<FEDeformationGradient  >("Deformation gradient"      );
+	else if (dataField.compare("Infinitesimal strain"      ) == 0) pdf = new FEStrainDataField("Infinitesimal strain", FEStrainDataField::INF_STRAIN        );
+	else if (dataField.compare("Lagrange strain"           ) == 0) pdf = new FEStrainDataField("Lagrange strain"     , FEStrainDataField::LAGRANGE          );
+	else if (dataField.compare("Right Cauchy-Green"        ) == 0) pdf = new FEStrainDataField("Right Cauchy-Green"  , FEStrainDataField::RIGHT_CAUCHY_GREEN);
+	else if (dataField.compare("Right stretch"             ) == 0) pdf = new FEStrainDataField("Right stretch"       , FEStrainDataField::RIGHT_STRETCH     );
+	else if (dataField.compare("Biot strain"               ) == 0) pdf = new FEStrainDataField("Biot strain"         , FEStrainDataField::BIOT              );
+	else if (dataField.compare("Right Hencky"              ) == 0) pdf = new FEStrainDataField("Right Hencky"        , FEStrainDataField::RIGHT_HENCKY      );
+    else if (dataField.compare("Left Cauchy-Green"         ) == 0) pdf = new FEStrainDataField("Left Cauchy-Green"   , FEStrainDataField::LEFT_CAUCHY_GREEN );
+    else if (dataField.compare("Left stretch"              ) == 0) pdf = new FEStrainDataField("Left stretch"        , FEStrainDataField::LEFT_STRETCH      );
+    else if (dataField.compare("Left Hencky"               ) == 0) pdf = new FEStrainDataField("Left Hencky"         , FEStrainDataField::LEFT_HENCKY       );
+    else if (dataField.compare("Almansi strain"            ) == 0) pdf = new FEStrainDataField("Almansi strain"      , FEStrainDataField::ALMANSI           );
+	else if (dataField.compare("Volume"                    ) == 0) pdf = new FEDataField_T<FEElementVolume        >("Volume"                    );
+	else if (dataField.compare("Volume ratio"              ) == 0) pdf = new FEDataField_T<FEVolRatio             >("Volume ratio"              );
+	else if (dataField.compare("Volume strain"             ) == 0) pdf = new FEDataField_T<FEVolStrain            >("Volume strain"             );
+	else if (dataField.compare("Aspect ratio"              ) == 0) pdf = new FEDataField_T<FEAspectRatio          >("Aspect ratio"              );
+	else if (dataField.compare("1-Princ curvature"         ) == 0) pdf = new FECurvatureField("1-Princ curvature"         , FECurvatureField::PRINC1_CURVATURE);
+	else if (dataField.compare("2-Princ curvature"         ) == 0) pdf = new FECurvatureField("2-Princ curvature"         , FECurvatureField::PRINC2_CURVATURE);
+	else if (dataField.compare("Gaussian curvature"        ) == 0) pdf = new FECurvatureField("Gaussian curvature"        , FECurvatureField::GAUSS_CURVATURE );
+	else if (dataField.compare("Mean curvature"            ) == 0) pdf = new FECurvatureField("Mean curvature"            , FECurvatureField::MEAN_CURVATURE  );
+	else if (dataField.compare("RMS curvature"             ) == 0) pdf = new FECurvatureField("RMS curvature"             , FECurvatureField::RMS_CURVATURE   );
+	else if (dataField.compare("Princ curvature difference") == 0) pdf = new FECurvatureField("Princ curvature difference", FECurvatureField::DIFF_CURVATURE  );
+	else if (dataField.compare("Congruency"                ) == 0) pdf = new FEDataField_T<FECongruency           >("Congruency"                );
+	else if (dataField.compare("1-Princ curvature vector"  ) == 0) pdf = new FEDataField_T<FEPrincCurvatureVector1>("1-Princ curvature vector");
+	else if (dataField.compare("2-Princ curvature vector"  ) == 0) pdf = new FEDataField_T<FEPrincCurvatureVector2>("2-Princ curvature vector");
+
+	if (pdf == nullptr) return false;
 
 	FEModel& fem = *glm.GetFEModel();
 

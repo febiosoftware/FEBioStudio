@@ -51,7 +51,7 @@ public:
 
 	bool LoadPlotfile(const std::string& fileName, xpltFileReader* xplt);
 
-	bool ReloadPlotfile();
+	bool ReloadPlotfile(xpltFileReader* xplt);
 
 	void Render(CGLView* view);
 

@@ -234,11 +234,20 @@ bool CFEBioJob::OpenPlotFile(xpltFileReader* xplt)
 		m_postDoc = new CPostDoc;
 		m_postDoc->SetParent(this);
 		m_postDoc->SetName(GetName());
+		if (m_postDoc->LoadPlotfile(plotFile, xplt) == false)
+		{
+			return false;
+		}
 	}
-
-	if (m_postDoc->LoadPlotfile(plotFile, xplt) == false)
+	else
 	{
-		return false;
+		bool bret = true;
+		// if the job already has the same plot file open
+		// we reload the plot file
+		if (m_postDoc->GetFileName() == plotFile) bret = m_postDoc->ReloadPlotfile(xplt);
+		else bret = m_postDoc->LoadPlotfile(plotFile, xplt);
+
+		if (bret == false) return false;
 	}
 
 	// map material colors from the pre-model to the post-model
