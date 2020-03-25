@@ -178,7 +178,7 @@ void CDocument::NewDocument()
 	GMaterial::ResetRefs();
 
 	// set document as not modified
-	SetModifiedFlag(false);
+	m_bModified = false;
 	m_bValid = true;
 
 	// Clear the command history
@@ -231,7 +231,7 @@ void CDocument::Clear()
 	GMaterial::ResetRefs();
 
 	// set document as not modified
-	SetModifiedFlag(false);
+	m_bModified = false;
 	m_bValid = true;
 
 	// Clear the command history
@@ -251,8 +251,11 @@ bool CDocument::IsModified() { return m_bModified; }
 //-----------------------------------------------------------------------------
 void CDocument::SetModifiedFlag(bool bset)
 {
-	m_bModified = bset;
-	if (m_wnd) m_wnd->UpdateTitle();
+	if (bset != m_bModified)
+	{
+		m_bModified = bset;
+		if (m_wnd) m_wnd->UpdateTitle();
+	}
 }
 
 //-----------------------------------------------------------------------------
