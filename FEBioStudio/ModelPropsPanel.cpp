@@ -978,6 +978,29 @@ void CModelPropsPanel::subSelection(int n)
 		return;
 	}
 
+	FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(m_currentObject);
+	if (psl)
+	{
+		FEItemListBuilder* pl = psl->GetItemList();
+		if (pl)
+		{
+			// create the item list builder
+			FEItemListBuilder* pg = ps->CreateItemList();
+
+			// subtract from the current list
+			if (pg->Type() == pl->Type())
+			{
+				list<int> l = pg->CopyItems();
+				pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
+			}
+
+			SetSelection(0, psl->GetItemList());
+			delete pg;
+			emit selectionChanged();
+		}
+		return;
+	}
+
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
 	if (pi)
 	{
@@ -1096,6 +1119,9 @@ void CModelPropsPanel::delSelection(int n)
 	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
 	if (pbc) pl = pbc->GetItemList();
 
+	FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(m_currentObject);
+	if (psl) pl = psl->GetItemList();
+
 	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
 	if (psi) pl = psi->GetItemList();
 
@@ -1200,6 +1226,9 @@ void CModelPropsPanel::selSelection(int n)
 
 	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
 	if (psi) pl = psi->GetItemList();
+
+	FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(m_currentObject);
+	if (psl) pl = psl->GetItemList();
 
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
 	if (pi) pl = (n==0? pi->GetMasterSurfaceList() : pi->GetSlaveSurfaceList());
