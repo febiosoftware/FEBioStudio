@@ -2012,7 +2012,7 @@ vec3f FEModel::EvaluateNodeVector(int n, int ntime, int nvec)
 				FENodeData_T<mat3fs>& dm = dynamic_cast<FENodeData_T<mat3fs>&>(rd);
 				mat3fs m;
 				dm.eval(n, &m);
-				r = m.PrincDirection(ncomp+1);
+				r = m.PrincDirection(ncomp);
 			}
 			break;
 		default:
@@ -2150,7 +2150,7 @@ bool FEModel::EvaluateFaceVector(int n, int ntime, int nvec, vec3f& r)
 				FEFaceData_T<mat3fs,DATA_ITEM>& dm = dynamic_cast<FEFaceData_T<mat3fs,DATA_ITEM>&>(rd);
 				mat3fs m;
 				dm.eval(n, &m);
-				r = m.PrincDirection(ncomp+1);
+				r = m.PrincDirection(ncomp);
 				return true;
 			}
 			break;
@@ -2239,7 +2239,7 @@ vec3f FEModel::EvaluateElemVector(int n, int ntime, int nvec)
 					{
 						mat3fs m;
 						dm.eval(n, &m);
-						r = m.PrincDirection(ncomp+1);
+						r = m.PrincDirection(ncomp);
 					}
 				}
 				else if (nfmt == DATA_COMP)
@@ -2251,7 +2251,7 @@ vec3f FEModel::EvaluateElemVector(int n, int ntime, int nvec)
 					{
 						dm.eval(n, m);
 						int ne = mesh->ElementRef(n).Nodes();
-						for (int i=0; i<ne; ++i) r += m[i].PrincDirection(ncomp + 1);
+						for (int i=0; i<ne; ++i) r += m[i].PrincDirection(ncomp);
 						r /= (float) ne;
 					}
 				}

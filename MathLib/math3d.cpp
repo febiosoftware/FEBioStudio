@@ -683,7 +683,7 @@ vec3f mat3fs::PrincDirection(int l)
 	vec3f e[3];
 	float lam[3];
 	eigen(e, lam);
-	return e[l - 1] * lam[l - 1];
+	return e[l] * lam[l];
 }
 
 //-----------------------------------------------------------------------------
