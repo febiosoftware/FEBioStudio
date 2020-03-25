@@ -305,6 +305,7 @@ public:
 	void UpdateColorMaps();
 
 protected:
+	void BuildInternalSurfaces();
 	void UpdateInternalSurfaces(bool eval = true);
 	void ClearInternalSurfaces();
 	void UpdateEdge();

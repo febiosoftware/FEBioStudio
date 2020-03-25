@@ -280,25 +280,22 @@ void FEMeshBase::UpdateNormals()
 	{
 		FEFace* pf = FacePtr(i);
 
+		// reset smoothing id
+		pf->m_ntag = -1;
+
 		// calculate the face normals
 		vec3d& r0 = Node(pf->n[0]).r;
 		vec3d& r1 = Node(pf->n[1]).r;
 		vec3d& r2 = Node(pf->n[2]).r;
 
 		pf->m_fn = to_vec3f((r1 - r0) ^ (r2 - r0));
-		pf->m_fn.Normalize();
 
 		int nf = pf->Nodes();
 		for (int j = 0; j<nf; ++j) pf->m_nn[j] = pf->m_fn;
 	}
 
-	//calculate the node normals
-	vector<vec3d> norm; norm.resize(NN);
-	for (int i = 0; i<NN; ++i) norm[i] = vec3d(0, 0, 0);
-
-	// reset smoothing id's
-	FEFace* pf = FacePtr();
-	for (int i = 0; i<NF; ++i, ++pf) pf->m_ntag = -1;
+	// buffer for storing node normals
+	vector<vec3f> norm(NN, vec3f(0.f, 0.f, 0.f));
 
 	// this array keeps track of all faces in a smoothing group
 	vector<FEFace*> F(NF);
@@ -350,7 +347,7 @@ void FEMeshBase::UpdateNormals()
 				pf = F[j];
 				assert(pf->m_ntag == nsg);
 				int nf = pf->Nodes();
-				for (int k = 0; k<nf; ++k) pf->m_nn[k] = to_vec3f(norm[pf->n[k]]);
+				for (int k = 0; k<nf; ++k) pf->m_nn[k] = norm[pf->n[k]];
 			}
 
 			// clear normals
@@ -358,7 +355,7 @@ void FEMeshBase::UpdateNormals()
 			{
 				pf = F[j];
 				int nf = pf->Nodes();
-				for (int k = 0; k<nf; ++k) norm[pf->n[k]] = vec3d(0, 0, 0);
+				for (int k = 0; k<nf; ++k) norm[pf->n[k]] = vec3f(0.f, 0.f, 0.f);
 			}
 			++nsg;
 			FC = 0;
@@ -366,9 +363,10 @@ void FEMeshBase::UpdateNormals()
 	}
 
 	// normalize face normals
-	pf = FacePtr();
+	FEFace* pf = FacePtr();
 	for (int i = 0; i<NF; ++i, ++pf)
 	{
+		pf->m_fn.Normalize();
 		int n = pf->Nodes();
 		for (int j = 0; j<n; ++j) pf->m_nn[j].Normalize();
 	}

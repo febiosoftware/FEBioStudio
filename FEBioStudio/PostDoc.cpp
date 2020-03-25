@@ -620,6 +620,8 @@ void CPostObject::UpdateMesh()
 
 			nd.r = ns.r;
 		}
-		mesh->Update();
+//		mesh->Update();
+		mesh->UpdateBoundingBox();
+		mesh->UpdateNormals();
 	}
 }

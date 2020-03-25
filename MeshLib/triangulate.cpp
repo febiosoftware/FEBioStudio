@@ -141,7 +141,6 @@ GLMesh* triangulate(GTriangulate& c)
 	f.sid = 0;
 
 	pm->Update();
-	pm->UpdateNormals();
 
 	return pm;
 }

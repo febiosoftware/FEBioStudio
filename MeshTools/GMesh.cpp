@@ -249,101 +249,70 @@ void GMesh::UpdateNormals(int* pid, int nsize)
 // Update normals for all faces using smoothing groups
 void GMesh::UpdateNormals()
 {
-	int i;
-
 	int NN = Nodes();
 	int NF = Faces();
 
 	// calculate face normals
-	for (i=0; i<NF; ++i) 
+	for (int i=0; i<NF; ++i) 
 	{
 		FACE& f = m_Face[i];
 
-		// calculate the face normals
+		// reset smoothing id
+		f.tag = -1;
+
+		// calculate the face normal
 		vec3d& r0 = Node(f.n[0]).r;
 		vec3d& r1 = Node(f.n[1]).r;
 		vec3d& r2 = Node(f.n[2]).r;
-
 		f.fn = (r1 - r0)^(r2 - r0);
-		f.fn.Normalize();
-
-		f.nn[0] = f.fn;
-		f.nn[1] = f.fn;
-		f.nn[2] = f.fn;
 	}
 
 	//calculate the node normals
-	vector<vec3d> norm; norm.resize(NN);
-	for (i=0; i<NN; ++i) norm[i] = vec3d(0,0,0);
-
-	// reset smoothing id's
-	for (i=0; i<NF; ++i) m_Face[i].tag = -1;
+	vector<vec3d> norm(NN, vec3d(0,0,0));
 
 	vector<FACE*> F(NF);
 	int FC = 0;
 
-	// unprocessed face start index
-	int ui = 0;
-
-	FACE* pf;
 	stack<FACE*> stack;
 	int nsg = 0;
-	do
+	for (int i=0; i < NF; ++i)
 	{
-		if (stack.empty())
+		FACE* pf = &m_Face[i];
+		if (pf->tag == -1)
 		{
-			if (nsg > 0)
+			// clear normals
+			for (int j = 0; j<FC; ++j)
 			{
-				// assign node normals
-				for (i=0; i<FC; ++i)
-				{
-					pf = F[i];
-					assert(pf->tag == nsg-1);
-					pf->nn[0] = norm[ pf->n[0] ];
-					pf->nn[1] = norm[ pf->n[1] ];
-					pf->nn[2] = norm[ pf->n[2] ];
-				}
-
-				// clear normals
-				for (i=0; i<FC; ++i)
-				{
-					pf = F[i];
-					norm[ pf->n[0] ] = vec3d(0,0,0);
-					norm[ pf->n[1] ] = vec3d(0,0,0);
-					norm[ pf->n[2] ] = vec3d(0,0,0);
-				}
+				FACE* pf2 = F[j];
+				norm[pf2->n[0]] = vec3d(0, 0, 0);
+				norm[pf2->n[1]] = vec3d(0, 0, 0);
+				norm[pf2->n[2]] = vec3d(0, 0, 0);
 			}
-
-			// find and unprocessed face
-			pf = 0;
-			for (i=ui; i<NF; ++i, ++ui) if (m_Face[i].tag == -1) { pf = &m_Face[i]; break; }
-
-			if (pf) stack.push(pf);
-			++nsg;
 			FC = 0;
-		}
-		else
-		{
-			// pop a face
-			pf = stack.top(); stack.pop();
 
-			// mark as processed
-			pf->tag = nsg-1;
-			F[FC++] = pf;
-
-			FACE* pf2;
-			for (i=0; i<3; ++i)
+			stack.push(pf);
+			while (stack.empty() == false)
 			{
-				// add face normal to node normal
-				norm[pf->n[i]] += pf->fn;
+				// pop a face
+				pf = stack.top(); stack.pop();
 
-				// push unprocessed neighbour
-				if (pf->nbr[i] >= 0)
+				// mark as processed
+				pf->tag = nsg;
+				F[FC++] = pf;
+
+				// add face normal to node normal
+				norm[pf->n[0]] += pf->fn;
+				norm[pf->n[1]] += pf->fn;
+				norm[pf->n[2]] += pf->fn;
+
+				// process neighbors
+				for (int j = 0; j<3; ++j)
 				{
-					pf2 = &m_Face[pf->nbr[i]];
-					if (pf2 && (pf2->tag == -1) && (pf->sid == pf2->sid))
+					// push unprocessed neighbor
+					if (pf->nbr[j] >= 0)
 					{
-						if (pf2->tag == -1) 
+						FACE* pf2 = &m_Face[pf->nbr[j]];
+						if ((pf2->tag == -1) && (pf->sid == pf2->sid))
 						{
 							pf2->tag = -2;
 							stack.push(pf2);
@@ -351,14 +320,26 @@ void GMesh::UpdateNormals()
 					}
 				}
 			}
+
+			// assign node normals
+			for (int j = 0; j<FC; ++j)
+			{
+				FACE* pf2 = F[j];
+				assert(pf2->tag == nsg);
+				pf2->nn[0] = norm[pf2->n[0]];
+				pf2->nn[1] = norm[pf2->n[1]];
+				pf2->nn[2] = norm[pf2->n[2]];
+			}
+
+			++nsg;
 		}
 	}
-	while (pf);
 
 	// normalize face normals
-	for (i=0; i<NF; ++i)
+	for (int i=0; i<NF; ++i)
 	{
 		FACE& f = m_Face[i];
+		f.fn.Normalize();
 		f.nn[0].Normalize();
 		f.nn[1].Normalize();
 		f.nn[2].Normalize();

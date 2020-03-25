@@ -84,7 +84,8 @@ CGLModel::CGLModel(FEModel* ps)
 	m_pcol = new CGLColorMap(this);
 
 	UpdateEdge();
-	UpdateInternalSurfaces();
+	BuildInternalSurfaces();
+	Update(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -101,7 +102,7 @@ void CGLModel::SetFEModel(FEModel* ps)
 {
 	ClearInternalSurfaces();
 	m_ps = ps;
-	if (ps) UpdateInternalSurfaces();
+	if (ps) BuildInternalSurfaces();
 }
 
 //-----------------------------------------------------------------------------
@@ -179,7 +180,10 @@ bool CGLModel::Update(bool breset)
 
 	// update the state of the mesh
 	GetFEModel()->UpdateMeshState(ntime);
-	UpdateInternalSurfaces(false);
+
+	// TODO: Calling this will rebuild the internal surfaces
+	//       I should only need to do this when the mesh has changed
+//	UpdateInternalSurfaces(false);
 
 	// update displacement map
 	if (m_pdis && m_pdis->IsActive()) m_pdis->Update(ntime, dt, breset);
@@ -2900,12 +2904,12 @@ void CGLModel::ClearInternalSurfaces()
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::UpdateInternalSurfaces(bool eval)
+void CGLModel::BuildInternalSurfaces()
 {
 	ClearInternalSurfaces();
 
 	int nmat = m_ps->Materials();
-	for (int i=0; i<nmat; ++i) m_innerSurface.push_back(new GLSurface);
+	for (int i = 0; i<nmat; ++i) m_innerSurface.push_back(new GLSurface);
 
 	Post::FEPostMesh& mesh = *GetActiveMesh();
 	FEFace face;
@@ -2917,25 +2921,25 @@ void CGLModel::UpdateInternalSurfaces(bool eval)
 
 		float f1 = m_ps->GetMaterial(m)->transparency;
 
-		for (int i=0; i<NE; ++i)
+		for (int i = 0; i<NE; ++i)
 		{
 			FEElement_& el = dom.Element(i);
 			if (el.IsVisible())
 			{
-				for (int j=0; j<el.Faces(); ++j)
+				for (int j = 0; j<el.Faces(); ++j)
 				{
 					FEElement_* pen = mesh.ElementPtr(el.m_nbr[j]);
 					if (pen)
 					{
 						bool badd = (pen->IsSelected() != el.IsSelected()) || !pen->IsVisible();
 
-/*						if ((badd == false) && (el.m_MatID != pen->m_MatID))
+						/*						if ((badd == false) && (el.m_MatID != pen->m_MatID))
 						{
-							FEMaterial* pm2 = m_ps->GetMaterial(pen->m_MatID);
-							float f2 = pm2->transparency;
-							if ((f1 > f2) || (pm2->m_nrender == RENDER_MODE_WIRE)) badd = true;
+						FEMaterial* pm2 = m_ps->GetMaterial(pen->m_MatID);
+						float f2 = pm2->transparency;
+						if ((f1 > f2) || (pm2->m_nrender == RENDER_MODE_WIRE)) badd = true;
 						}
-*/
+						*/
 						if (badd)
 						{
 							el.GetFace(j, face);
@@ -2959,6 +2963,13 @@ void CGLModel::UpdateInternalSurfaces(bool eval)
 			}
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::UpdateInternalSurfaces(bool eval)
+{
+	// Build the internal surfaces
+	BuildInternalSurfaces();
 
 	// reevaluate model
 	if (eval) Update(false);

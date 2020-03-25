@@ -23,10 +23,23 @@ void CGLDisplacementMap::UpdateData(bool bsave)
 	if (bsave)
 	{
 		FEModel* pfem = GetModel()->GetFEModel();
-		if (pfem) pfem->SetDisplacementField(GetIntValue(DATA_FIELD));
-		m_scl = (float)GetFloatValue(SCALE);
 
-		UpdateNodes();
+		bool bupdate = false;
+		int dispField = GetIntValue(DATA_FIELD);
+		if (pfem && (pfem->GetDisplacementField() != dispField))
+		{
+			pfem->SetDisplacementField(dispField);
+			bupdate = true;
+		}
+
+		float scl = GetFloatValue(SCALE);
+		if (scl != m_scl)
+		{
+			m_scl = scl;
+			bupdate = true;
+		}
+
+		if (bupdate) UpdateNodes();
 	}
 	else
 	{
