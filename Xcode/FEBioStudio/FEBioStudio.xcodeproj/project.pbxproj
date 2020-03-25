@@ -28,6 +28,8 @@
 		D54A8C62239EC9F800B6219A /* moc_ImportLinesTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C5E239EC9F800B6219A /* moc_ImportLinesTool.cpp */; };
 		D54A8C63239EC9F800B6219A /* moc_PostToolsPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */; };
 		D54A8C64239EC9F800B6219A /* PostToolsPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C60239EC9F800B6219A /* PostToolsPanel.cpp */; };
+		D5565EC7242B922000D7E478 /* DistanceMapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5565EC5242B922000D7E478 /* DistanceMapTool.cpp */; };
+		D5565EC9242B932500D7E478 /* moc_DistanceMapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5565EC8242B932500D7E478 /* moc_DistanceMapTool.cpp */; };
 		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
 		D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
@@ -432,6 +434,9 @@
 		D54A8C5E239EC9F800B6219A /* moc_ImportLinesTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ImportLinesTool.cpp; sourceTree = "<group>"; };
 		D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PostToolsPanel.cpp; sourceTree = "<group>"; };
 		D54A8C60239EC9F800B6219A /* PostToolsPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostToolsPanel.cpp; sourceTree = "<group>"; };
+		D5565EC5242B922000D7E478 /* DistanceMapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DistanceMapTool.cpp; sourceTree = "<group>"; };
+		D5565EC6242B922000D7E478 /* DistanceMapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DistanceMapTool.h; sourceTree = "<group>"; };
+		D5565EC8242B932500D7E478 /* moc_DistanceMapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DistanceMapTool.cpp; sourceTree = "<group>"; };
 		D5606C7F238DA80C002B037E /* libCUILib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libCUILib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlapTool.cpp; sourceTree = "<group>"; };
 		D5606C86238DAAD1002B037E /* TetOverlapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlapTool.h; sourceTree = "<group>"; };
@@ -1063,6 +1068,8 @@
 				D579B66E239F04E200278644 /* DatabasePanel.h */,
 				D5F7D77F22FA37C40089B08E /* DataFieldSelector.cpp */,
 				D5F7D7BE22FA37C40089B08E /* DataFieldSelector.h */,
+				D5565EC5242B922000D7E478 /* DistanceMapTool.cpp */,
+				D5565EC6242B922000D7E478 /* DistanceMapTool.h */,
 				D5F7D74C22FA37C40089B08E /* DlgAddBC.cpp */,
 				D5F7D80E22FA37C40089B08E /* DlgAddBC.h */,
 				D5F7D75322FA37C40089B08E /* DlgAddBodyLoad.cpp */,
@@ -1257,6 +1264,7 @@
 				D5F7D71522FA37C40089B08E /* moc_CurvePicker.cpp */,
 				D579B663239F04E100278644 /* moc_DatabasePanel.cpp */,
 				D5F7D7C822FA37C40089B08E /* moc_DataFieldSelector.cpp */,
+				D5565EC8242B932500D7E478 /* moc_DistanceMapTool.cpp */,
 				D5F7D76A22FA37C40089B08E /* moc_DlgAddChemicalReaction.cpp */,
 				D5F7D81E22FA37C40089B08E /* moc_DlgAddEquation.cpp */,
 				D5F7D78222FA37C40089B08E /* moc_DlgAddMeshData.cpp */,
@@ -1781,6 +1789,7 @@
 				D5ED2A1523198CD900C16BF7 /* FEObjectProps.cpp in Sources */,
 				D5F7D8AD22FA37C40089B08E /* Document.cpp in Sources */,
 				D5F7D8B122FA37C40089B08E /* moc_DlgCloneGrid.cpp in Sources */,
+				D5565EC7242B922000D7E478 /* DistanceMapTool.cpp in Sources */,
 				D5F7D8BE22FA37C40089B08E /* StatsWindow.cpp in Sources */,
 				D576570223E32E6900E4F70F /* DlgUpload.cpp in Sources */,
 				D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */,
@@ -1806,6 +1815,7 @@
 				D5F7D8C622FA37C40089B08E /* moc_ModelSearch.cpp in Sources */,
 				D5F7D87F22FA37C40089B08E /* DlgAddMeshData.cpp in Sources */,
 				D5F7D89722FA37C40089B08E /* moc_DataFieldSelector.cpp in Sources */,
+				D5565EC9242B932500D7E478 /* moc_DistanceMapTool.cpp in Sources */,
 				D5F7D84F22FA37C40089B08E /* menuPhysics.cpp in Sources */,
 				D5F7D84022FA37C40089B08E /* menuRecord.cpp in Sources */,
 				D5D161A824218339000F8544 /* DlgExportLSDYNA.cpp in Sources */,
