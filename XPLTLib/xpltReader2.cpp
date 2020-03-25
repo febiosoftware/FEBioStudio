@@ -278,11 +278,13 @@ bool XpltReader2::ReadDictionary(FEModel& fem)
 	pdm->Clear();
 
 	// read nodal variables
+	int nfields = 0;
 	int i;
 	int nv = (int)m_dic.m_Node.size();
 	for (i=0; i<nv; ++i)
 	{
 		DICT_ITEM& it = m_dic.m_Node[i];
+		it.index = nfields++;
 
 		// add nodal field
 		switch (it.ntype)
@@ -311,6 +313,7 @@ bool XpltReader2::ReadDictionary(FEModel& fem)
 	for (i=0; i<nv; ++i)
 	{
 		DICT_ITEM& it = m_dic.m_Elem[i];
+		it.index = nfields++;
 
 		switch (it.nfmt)
 		{
@@ -413,6 +416,7 @@ bool XpltReader2::ReadDictionary(FEModel& fem)
 	for (i=0; i<nv; ++i)
 	{
 		DICT_ITEM& it = m_dic.m_Face[i];
+		it.index = nfields++;
 
 		switch (it.nfmt)
 		{
@@ -1745,14 +1749,15 @@ bool XpltReader2::ReadFaceData(FEModel& fem, FEState* pstate)
 					nv--;
 					assert((nv>=0)&&(nv<(int)m_dic.m_Face.size()));
 					if ((nv < 0) || (nv >= (int)m_dic.m_Face.size())) return errf("Failed reading all state data");
-					DICT_ITEM it = m_dic.m_Face[nv];
+					const DICT_ITEM& it = m_dic.m_Face[nv];
 					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						int ns = m_ar.GetChunkID() - 1;
 						assert((ns >= 0)&&(ns < m_xmesh.surfaces()));
 						if ((ns < 0) || (ns >= m_xmesh.surfaces())) return errf("Failed reading all state data");
 
-						int nfield = dm.FindDataField(it.szname);
+//						int nfield = dm.FindDataField(it.szname);
+						int nfield = it.index;
 
 						Surface& s = m_xmesh.surface(ns);
 						switch (it.nfmt)
