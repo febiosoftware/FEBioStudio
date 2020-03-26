@@ -1382,7 +1382,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(data->obj);
 			if (pci)
 			{
-				menu.addAction("Swap Master/Slave", this, SLOT(OnSwapMasterSlave()));
+				menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
 			}
 			del = true;
 		}

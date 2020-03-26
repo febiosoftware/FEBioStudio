@@ -165,7 +165,7 @@ class CContactValidator : public CObjectValidator
 public:
 	CContactValidator(FEPairedInterface* pci) : m_pci(pci) {}
 
-	QString GetErrorString() const { return "master/slave not specified"; }
+	QString GetErrorString() const { return "primary/secondary not specified"; }
 
 	bool IsValid()
 	{

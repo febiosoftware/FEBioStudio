@@ -32,6 +32,7 @@ public:
 		nameType->setLayout(form);
 
 		list = new QListWidget;
+		list->setObjectName("list");
 		list->setSelectionMode(QAbstractItemView::ExtendedSelection);
 		//	list->setFixedHeight(200);
 
@@ -138,6 +139,11 @@ void CSelectionBox::on_selButton_clicked()
 void CSelectionBox::on_name_textEdited(const QString& t)
 {
 	emit nameChanged(t);
+}
+
+void CSelectionBox::on_list_itemDoubleClicked(QListWidgetItem *item)
+{
+	emit selButtonClicked();
 }
 
 void CSelectionBox::clearData()

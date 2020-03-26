@@ -4,6 +4,8 @@
 #include <list>
 using namespace std;
 
+class QListWidgetItem;
+
 namespace Ui {
 	class CSelectionBox;
 };
@@ -54,6 +56,7 @@ private slots:
 	void on_delButton_clicked();
 	void on_selButton_clicked();
 	void on_name_textEdited(const QString& t);
+	void on_list_itemDoubleClicked(QListWidgetItem *item);
 
 private:
 	Ui::CSelectionBox*	ui;
