@@ -170,6 +170,7 @@
     <ClCompile Include="..\..\MeshIO\FileReader.cpp" />
     <ClCompile Include="..\..\MeshIO\PRVObjectExport.cpp" />
     <ClCompile Include="..\..\MeshIO\PRVObjectImport.cpp" />
+    <ClCompile Include="..\..\MeshIO\STEPImport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshIO\BREPImport.h" />
@@ -201,6 +202,7 @@
     <ClInclude Include="..\..\MeshIO\PRVObjectFormat.h" />
     <ClInclude Include="..\..\MeshIO\PRVObjectImport.h" />
     <ClInclude Include="..\..\MeshIO\stdafx.h" />
+    <ClInclude Include="..\..\MeshIO\STEPImport.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

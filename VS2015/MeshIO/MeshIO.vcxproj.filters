@@ -99,6 +99,9 @@
     <ClCompile Include="..\..\MeshIO\PRVObjectImport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshIO\STEPImport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshIO\BREPImport.h">
@@ -186,6 +189,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshIO\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshIO\STEPImport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

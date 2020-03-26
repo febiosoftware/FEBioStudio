@@ -46,6 +46,7 @@
 #include <MeshIO/PRVObjectImport.h>
 #include <MeshIO/PRVObjectExport.h>
 #include <MeshIO/BREPImport.h>
+#include <MeshIO/STEPImport.h>
 #include "DlgImportAbaqus.h"
 #include "DlgRAWImport.h"
 #include "DlgImportCOMSOL.h"
