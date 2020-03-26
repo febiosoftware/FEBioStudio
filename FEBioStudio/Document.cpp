@@ -938,7 +938,7 @@ bool CDocument::ImportGeometry(FEFileImport* preader, const char *szfile)
 	if (preader->Load(m_Project, szfile) == false) return false;
 
 	// set the modified flag
-	SetModifiedFlag();
+	m_bModified = true;
 
 	return true;
 }

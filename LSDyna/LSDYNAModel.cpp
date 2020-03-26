@@ -253,7 +253,7 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 
 	// update the mesh
 //	pm->RemoveIsolatedNodes();
-	pm->RebuildMesh(180.0);
+	pm->RebuildMesh();
 
 	m_po = new GMeshObject(pm);
 
