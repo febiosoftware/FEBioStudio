@@ -2698,7 +2698,7 @@ void CGLView::RenderLocalMaterialAxes()
 								glx::drawLine(c, c + q*h);
 							}
 						}
-						else if (pmat && pmat->m_naopt > -1)
+						else if (pmat)
 						{
 							vec3d c(0, 0, 0);
 							for (int k = 0; k<el.Nodes(); ++k) c += pm->NodePosition(el.m_node[k]);

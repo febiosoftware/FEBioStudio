@@ -2258,6 +2258,13 @@ void CMainWindow::on_actionShowFibers_toggled(bool b)
 	RedrawGL();
 }
 
+void CMainWindow::on_actionShowMatAxes_toggled(bool b)
+{
+	VIEW_SETTINGS& view = m_doc->GetViewSettings();
+	view.m_blma = b;
+	RedrawGL();
+}
+
 void CMainWindow::on_actionShowDiscrete_toggled(bool b)
 {
 	VIEW_SETTINGS& view = m_doc->GetViewSettings();

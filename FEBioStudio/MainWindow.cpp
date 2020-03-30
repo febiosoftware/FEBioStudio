@@ -1114,6 +1114,7 @@ void CMainWindow::UpdateToolbar()
 
 	VIEW_SETTINGS& view = m_doc->GetViewSettings();
 	if (view.m_bfiber != ui->actionShowFibers->isChecked()) ui->actionShowFibers->trigger();
+	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();
 }
@@ -1835,6 +1836,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	{
 		menu.addAction(ui->actionShowNormals);
 		menu.addAction(ui->actionShowFibers);
+		menu.addAction(ui->actionShowMatAxes);
 		menu.addAction(ui->actionShowDiscrete);
 		menu.addSeparator();
 

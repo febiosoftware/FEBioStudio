@@ -366,7 +366,6 @@ mat3d FEMaterial::GetMatAxes(FEElementRef& el)
 		}
 	}
 	
-	assert(false);
 	mat3d Q;
 	Q.unit();
 	return Q;

@@ -58,6 +58,7 @@ public:
 	QMenu* menuRecentFEFiles;
 	QMenu* menuRecentGeomFiles;
 	QMenu* menuWindows;
+	QMenu* menuViews;
 
 	QActionGroup* recentFilesActionGroup;
 	QActionGroup* recentFEFilesActionGroup;
@@ -139,6 +140,7 @@ public:
 	QAction* actionOptions;
 	QAction* actionWireframe;
 	QAction* actionShowFibers;
+	QAction* actionShowMatAxes;
 	QAction* actionShowDiscrete;
 	QAction* actionToggleLight;
 
@@ -402,6 +404,7 @@ public:
 		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
 		actionWireframe		  = addAction("Toggle wireframe", "actionWireframe"); actionWireframe->setCheckable(true); actionWireframe->setShortcut(Qt::Key_W);
 		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
+		actionShowMatAxes     = addAction("Toggle material axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
 		actionShowDiscrete    = addAction("Show Discrete sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
 		QAction* actionSnap3D = addAction("3D cursor to selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
@@ -635,18 +638,22 @@ public:
 		menuView->addAction(actionViewSmooth);
 		menuView->addAction(actionWireframe);
 		menuView->addAction(actionShowFibers);
+		menuView->addAction(actionShowMatAxes);
 		menuView->addAction(actionShowDiscrete);
 		menuView->addAction(actionSnap3D);
 		menuView->addAction(actionTrack);
 		menuView->addAction(actionToggleLight);
 		menuView->addSeparator();
-		menuView->addAction(actionFront);
-		menuView->addAction(actionBack);
-		menuView->addAction(actionRight);
-		menuView->addAction(actionLeft);
-		menuView->addAction(actionTop);
-		menuView->addAction(actionBottom);
-		menuView->addSeparator();
+
+		menuViews = menuView->addMenu("Standard views");
+		menuViews->addAction(actionFront);
+		menuViews->addAction(actionBack);
+		menuViews->addAction(actionRight);
+		menuViews->addAction(actionLeft);
+		menuViews->addAction(actionTop);
+		menuViews->addAction(actionBottom);
+
+		menuViews->addSeparator();
 		menuView->addAction(actionViewVPSave);
 		menuView->addAction(actionViewVPPrev);
 		menuView->addAction(actionViewVPNext);
