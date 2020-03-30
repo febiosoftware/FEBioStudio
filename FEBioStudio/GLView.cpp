@@ -157,93 +157,6 @@ bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 	return false;
 }
 
-class WorldToScreen
-{
-public:
-	// NOTE: make sure to call makeCurrent before calling the constructor!!
-	WorldToScreen(CGLView* view) : m_PM(4, 4), q(4, 0.0), c(4, 0.0)
-	{
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-
-		// get the projection mode
-		bool ortho = view->OrhographicProjection();
-
-		// set up the projection Matrix
-		double fov = view->GetFOV();
-		double ar = view->GetAspectRatio();
-		double fnear = view->GetNearPlane();
-		double ffar = view->GetFarPlane();
-		if (ortho)
-		{
-			GLdouble f = 0.2*view->GetCamera().GetTargetDistance();
-			double dx = f*ar;
-			double dy = f;
-			glOrtho(-dx, dx, -dy, dy, fnear, ffar);
-		}
-		else
-		{
-			gluPerspective(fov, ar, fnear, ffar);
-		}
-
-		view->PositionCamera();
-
-		double p[16], m[16];
-		glGetDoublev(GL_PROJECTION_MATRIX, p);
-		glGetDoublev(GL_MODELVIEW_MATRIX, m);
-
-		int vp[4];
-		glGetIntegerv(GL_VIEWPORT, vp);
-
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-
-		// calculate projection Matrix
-		Matrix P(4, 4);
-		for (int i = 0; i<4; ++i)
-			for (int j = 0; j<4; ++j) P(i, j) = p[j * 4 + i];
-
-		// calculate modelview Matrix
-		Matrix M(4, 4);
-		for (int i = 0; i<4; ++i)
-			for (int j = 0; j<4; ++j) M(i, j) = m[j * 4 + i];
-
-		// multiply them together
-		m_PM = P*M;
-
-		// store the viewport
-		view->GetViewport(m_vp);
-	}
-
-	vec3d Apply(const vec3d& r)
-	{
-		// get the homogeneous coordinates
-		q[0] = r.x; q[1] = r.y; q[2] = r.z; q[3] = 1.0;
-
-		// calculcate clip coordinates
-		m_PM.mult(q, c);
-
-		// calculate device coordinates
-		vec3f d;
-		d.x = c[0] / c[3];
-		d.y = c[1] / c[3];
-		d.z = c[2] / c[3];
-
-		int W = m_vp[2];
-		int H = m_vp[3];
-		double xd = W*((d.x + 1.f)*0.5f);
-		double yd = H - H*((d.y + 1.f)*0.5f);
-
-		return vec3d(xd, yd, d.z);
-	}
-
-private:
-	Matrix m_PM;
-	int	m_vp[4];
-	vector<double>	c, q;
-};
-
 //=============================================================================
 bool SelectRegion::LineIntersects(int x0, int y0, int x1, int y1) const
 {
@@ -1850,8 +1763,6 @@ void CGLView::SetupProjection()
 
 	if (height() == 0) m_ar = 1; m_ar = (GLfloat)width() / (GLfloat)height();
 
-	GLdouble f = 0.2*m_Cam.GetTargetDistance();
-	
 	CDocument* doc = GetDocument();
 
 	BOX box;
@@ -1878,6 +1789,7 @@ void CGLView::SetupProjection()
 	// set up projection matrix
 	if (m_bortho)
 	{
+		GLdouble f = 0.35*m_Cam.GetTargetDistance();
 		m_ox = f*m_ar;
 		m_oy = f;
 		glOrtho(-m_ox, m_ox, -m_oy, m_oy, m_fnear, m_ffar);
@@ -8169,10 +8081,10 @@ void CGLView::RenderTags()
 	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
 
 	// find out where the tags are on the screen
-	WorldToScreen transform(this);
+	GLViewTransform transform(this);
 	for (int i = 0; i<nsel; i++)
 	{
-		vec3d p = transform.Apply(vtag[i].r);
+		vec3d p = transform.WorldToScreen(vtag[i].r);
 		vtag[i].wx = p.x;
 		vtag[i].wy = m_viewport[3] - p.y;
 		vtag[i].bvis = true;
