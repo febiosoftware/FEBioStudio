@@ -162,6 +162,7 @@
     <ClCompile Include="..\..\PostLib\FEFileExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEFileReader.cpp" />
     <ClCompile Include="..\..\PostLib\FEGroup.cpp" />
+    <ClCompile Include="..\..\PostLib\FEKinemat.cpp" />
     <ClCompile Include="..\..\PostLib\FELSDYNAExport.cpp" />
     <ClCompile Include="..\..\PostLib\FELSDYNAimport.cpp" />
     <ClCompile Include="..\..\PostLib\FELSDYNAPlot.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="..\..\PostLib\FEFileExport.h" />
     <ClInclude Include="..\..\PostLib\FEFileReader.h" />
     <ClInclude Include="..\..\PostLib\FEGroup.h" />
+    <ClInclude Include="..\..\PostLib\FEKinemat.h" />
     <ClInclude Include="..\..\PostLib\FELSDYNAExport.h" />
     <ClInclude Include="..\..\PostLib\FELSDYNAimport.h" />
     <ClInclude Include="..\..\PostLib\FELSDYNAPlot.h" />

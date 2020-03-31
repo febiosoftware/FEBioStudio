@@ -13,6 +13,7 @@ namespace Post {
 	class CPalette;
 	class CGView;
 	class CGLObject;
+	class FEFileReader;
 }
 
 class CPostObject;
@@ -52,6 +53,8 @@ public:
 	bool LoadPlotfile(const std::string& fileName, xpltFileReader* xplt);
 
 	bool ReloadPlotfile(xpltFileReader* xplt);
+
+	bool LoadFEModel(Post::FEFileReader* fileReader, const char* szfile);
 
 	void Render(CGLView* view);
 

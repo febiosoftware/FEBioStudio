@@ -386,6 +386,63 @@ bool CPostDoc::ReloadPlotfile(xpltFileReader* xplt)
 	return true;
 }
 
+//-----------------------------------------------------------------------------
+bool CPostDoc::LoadFEModel(Post::FEFileReader* fileReader, const char* szfile)
+{
+	const int MAXLINE = 512;
+	char* ch;
+
+	// extract the path of the szfile
+	char szpath[MAXLINE];
+	strcpy(szpath, szfile);
+	if ((ch = strrchr(szpath, '/')) == 0)
+	{
+		if ((ch = strrchr(szpath, '\\')) == 0) szpath[0] = 0;
+		else ch[1] = 0;
+	}
+	else ch[1] = 0;
+
+	// extract the file title
+	const char* sztitle = 0;
+	const char* ch2 = strrchr(szfile, '/');
+	if (ch2 == 0)
+	{
+		ch2 = strrchr(szfile, '\\');
+		if (ch2 == 0) ch2 = szfile; else ++ch2;
+	}
+	else ++ch2;
+	sztitle = ch2;
+
+	// remove the old object
+	imp->clear();
+
+	// create new FE model
+	imp->fem = new Post::FEModel;
+
+	// load the scene
+	if (fileReader->Load(*imp->fem, szfile) == false)
+	{
+		delete imp->fem;
+		imp->fem = nullptr;
+		return false;
+	}
+
+	// assign material attributes
+	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+	ApplyPalette(pal);
+
+	// create new GLmodel
+	imp->glm = new Post::CGLModel(imp->fem);
+	imp->m_postObj = new CPostObject(imp->glm);
+	imp->m_postObj->SetName(sztitle);
+
+	imp->m_timeSettings.m_start = 0;
+	imp->m_timeSettings.m_end = GetStates() - 1;
+
+	// it's all good !
+	return true;
+}
+
 bool CPostDoc::LoadPlotfile(const std::string& fileName, xpltFileReader* xplt)
 {
 	const char* szfile = fileName.c_str();

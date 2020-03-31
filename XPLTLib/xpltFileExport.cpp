@@ -301,7 +301,7 @@ bool xpltFileExport::WriteGeometry(FEModel& fem)
 	// node section
 	m_ar.BeginChunk(PLT_NODE_SECTION);
 	{
-		if (WriteNodeSection(m) == false) return false;
+		if (WriteNodeSection(fem) == false) return false;
 	}
 	m_ar.EndChunk();
 
@@ -326,17 +326,22 @@ bool xpltFileExport::WriteGeometry(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WriteNodeSection(Post::FEPostMesh& m)
+bool xpltFileExport::WriteNodeSection(FEModel& fem)
 {
+	FEPostMesh& m = *fem.GetFEMesh(0);
+
+	Post::FEState* s0 = fem.GetState(0);
+	Post::FERefState* ref = s0->m_ref;
+
 	// write the reference coordinates
 	int NN = m.Nodes();
 	vector<float> X(3*NN);
 	for (int i=0; i<m.Nodes(); ++i)
 	{
-		FENode& node = m.Node(i);
-		X[3*i  ] = (float) node.r.x;
-		X[3*i+1] = (float) node.r.y;
-		X[3*i+2] = (float) node.r.z;
+		vec3f r = ref->m_Node[i].m_rt;
+		X[3*i  ] = r.x;
+		X[3*i+1] = r.y;
+		X[3*i+2] = r.z;
 	}
 
 	m_ar.WriteChunk(PLT_NODE_COORDS, X);
@@ -348,7 +353,7 @@ bool xpltFileExport::WriteNodeSection(Post::FEPostMesh& m)
 bool xpltFileExport::WritePartSection(Post::FEPostMesh& mesh)
 {
 	// make sure there are parts
-	int NP = mesh.Parts();
+	int NP = mesh.Domains();
 	if (NP == 0) return false;
 
 	// write all partitions
@@ -356,7 +361,7 @@ bool xpltFileExport::WritePartSection(Post::FEPostMesh& mesh)
 	{
 		m_ar.BeginChunk(PLT_DOMAIN);
 		{
-			if (WritePart(mesh.Part(nd)) == false) return false;
+			if (WritePart(mesh, mesh.Domain(nd)) == false) return false;
 		}
 		m_ar.EndChunk();
 	}
@@ -365,15 +370,14 @@ bool xpltFileExport::WritePartSection(Post::FEPostMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::WritePart(Post::FEPart& part)
+bool xpltFileExport::WritePart(FEPostMesh& mesh, Post::FEDomain& part)
 {
 	// number of elements
-	int NE = part.Size();
+	int NE = part.Elements();
 	if (NE == 0) return false;
 
 	// figure out element type
-	FECoreMesh& mesh = *part.GetMesh();
-	FEElement_& e0 = mesh.ElementRef(part.m_Elem[0]);
+	FEElement_& e0 = part.Element(0);
 	int matid = e0.m_MatID + 1;
 
 	int ne = 0;
@@ -417,7 +421,7 @@ bool xpltFileExport::WritePart(Post::FEPart& part)
 	{
 		for (int i=0; i<NE; ++i)
 		{
-			FEElement_& el = mesh.ElementRef(part.m_Elem[i]);
+			FEElement_& el = part.Element(i);
 			n[0] = el.GetID();
 			for (int j=0; j<ne; ++j) n[j+1] = el.m_node[j];
 			m_ar.WriteChunk(PLT_ELEMENT, n, ne+1);

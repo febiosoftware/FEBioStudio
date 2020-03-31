@@ -167,7 +167,7 @@ QIcon CMainWindow::GetResourceIcon(const QString& iconName)
 
 	int dpr = devicePixelRatio();
 	QPixmap pixmap(url);
-	pixmap.setDevicePixelRatio(dpr);
+//	pixmap.setDevicePixelRatio(dpr);
 	QIcon icon;
 	icon.addPixmap(pixmap);
 	return icon;

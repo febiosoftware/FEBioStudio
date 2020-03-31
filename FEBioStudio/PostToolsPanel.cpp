@@ -31,7 +31,7 @@
 #include "ImportLinesTool.h"
 #include "DistanceMapTool.h"
 //#include "PlaneTool.h"
-//#include "PlotMixTool.h"
+#include "PlotMixTool.h"
 #include "AreaCoverageTool.h"
 //#include "StrainMapTool.h"
 #include "MeasureVolumeTool.h"
@@ -136,7 +136,7 @@ void CPostToolsPanel::initTools()
 //	tools.push_back(new CPlotMixTool        ());
 	tools.push_back(new CMeasureAreaTool    ());
 	tools.push_back(new CImportLinesTool    ());
-//	tools.push_back(new CKinematTool        ());
+	tools.push_back(new CKinematTool        ());
 	tools.push_back(new CDistanceMapTool    ());
 //	tools.push_back(new CCurvatureMapTool   ());
 //	tools.push_back(new CPointCongruencyTool());

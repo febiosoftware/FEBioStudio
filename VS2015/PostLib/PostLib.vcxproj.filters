@@ -180,6 +180,9 @@
     <ClCompile Include="..\..\PostLib\GLImageRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\PostLib\FEKinemat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\PostLib\Animation.h">
@@ -351,6 +354,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\VRMLExporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PostLib\FEKinemat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

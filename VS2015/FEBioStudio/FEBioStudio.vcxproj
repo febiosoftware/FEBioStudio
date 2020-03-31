@@ -208,6 +208,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgEditProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgExportFEBio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgExportLSDYNA.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgExportXPLT.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFEBioOptimize.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFind.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgFormula.cpp" />
@@ -334,6 +335,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_ModelTree.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ModelViewer.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ObjectPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_PlotMixTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PlotWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PostDataPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PostModelPanel.cpp" />
@@ -362,6 +364,7 @@
     <ClCompile Include="..\..\FEBioStudio\ObjectPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ObjectProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PlaneCutTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PlotMixTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PlotWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PointDistanceTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostDataPanel.cpp" />
@@ -472,6 +475,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgExportLSDYNA.h" />
+    <ClInclude Include="..\..\FEBioStudio\DlgExportXPLT.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgFind.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgImportXPLT.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUpload.h">
@@ -534,6 +538,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\PostToolsPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PlotMixTool.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>

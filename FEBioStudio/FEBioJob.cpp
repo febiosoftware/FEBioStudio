@@ -267,6 +267,21 @@ bool CFEBioJob::OpenPlotFile(xpltFileReader* xplt)
 	return true;
 }
 
+// load a project from file
+bool CFEBioJob::LoadFEModel(Post::FEFileReader* preader, const char* szfile)
+{
+	// make sure we have a post doc
+	if (m_postDoc == nullptr)
+	{
+		m_postDoc = new CPostDoc;
+		m_postDoc->SetParent(this);
+		m_postDoc->SetName(GetName());
+	}
+
+	// load the model
+	return m_postDoc->LoadFEModel(preader, szfile);
+}
+
 void CFEBioJob::Save(OArchive& ar)
 {
 	ar.WriteChunk(CID_FEOBJ_NAME, GetName());

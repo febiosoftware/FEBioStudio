@@ -1,5 +1,6 @@
 #pragma once
 #include <FSCore/FSObject.h>
+#include <PostLib/FEFileReader.h>
 #include "LaunchConfig.h"
 
 class CPostDoc;
@@ -48,6 +49,9 @@ public:
 #endif
 
 	bool OpenPlotFile(xpltFileReader* xplt);
+
+	// load a project from file
+	bool LoadFEModel(Post::FEFileReader* preader, const char* szfile);
 
 	bool HasPostDoc();
 

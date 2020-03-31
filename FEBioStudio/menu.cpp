@@ -78,6 +78,8 @@
 #include <PostLib/ImageModel.h>
 #include <PostLib/GView.h>
 #include <PostLib/FELSDYNAExport.h>
+#include "DlgExportXPLT.h"
+#include <XPLTLib/xpltFileExport.h>
 #include <iostream>
 
 #ifdef HAS_QUAZIP
@@ -805,17 +807,15 @@ void CMainWindow::ExportPostGeometry()
 	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 	QStringList filters;
-/*	filters << "FEBio xplt files (*.xplt)"
-		<< "FEBio files (*.feb)"
-		<< "ASCII files (*.*)"
-		<< "VRML files (*.wrl)"
-		<< "LSDYNA Keyword (*.k)"
-		<< "BYU files(*.byu)"
-		<< "NIKE3D files (*.n)"
-		<< "VTK files (*.vtk)"
-		<< "LSDYNA database (*.d3plot)";
-*/
-	filters << "LSDYNA Keyword (*.k)";
+	filters << "FEBio xplt files (*.xplt)"
+		//		<< "FEBio files (*.feb)"
+		//		<< "ASCII files (*.*)"
+		//		<< "VRML files (*.wrl)"
+		<< "LSDYNA Keyword (*.k)";
+//		<< "BYU files(*.byu)"
+//		<< "NIKE3D files (*.n)"
+//		<< "VTK files (*.vtk)"
+//		<< "LSDYNA database (*.d3plot)";
 
 	QFileDialog dlg(this, "Save");
 	dlg.setFileMode(QFileDialog::AnyFile);
@@ -840,7 +840,7 @@ void CMainWindow::ExportPostGeometry()
 	QString error("(unknown)");
 	switch (nfilter)
 	{
-/*	case 0:
+	case 0:
 	{
 		CDlgExportXPLT dlg(this);
 		if (dlg.exec() == QDialog::Accepted)
@@ -852,7 +852,7 @@ void CMainWindow::ExportPostGeometry()
 		}
 	}
 	break;
-	case 1:
+/*	case 1:
 	{
 		Post::FEFEBioExport fr;
 		bret = fr.Save(fem, szfilename);
@@ -892,7 +892,7 @@ void CMainWindow::ExportPostGeometry()
 		bret = exporter.Save(&fem, szfilename);
 	}
 	break;
-*/	case 0:
+*/	case 1:
 	{
 		CDlgExportLSDYNA dlg(this);
 		if (dlg.exec())

@@ -10,6 +10,7 @@ class FEPart;
 class FESurface;
 class FEState;
 class FEMeshData;
+class FEDomain;
 
 //-----------------------------------------------------------------------------
 // Class for writing FEBio XPLT files.
@@ -136,11 +137,11 @@ protected:
 	bool WriteGeometry  (FEModel& fem);
 	bool WriteDataField (FEDataField& data);
 
-	bool WriteNodeSection   (FEPostMesh& m);
+	bool WriteNodeSection   (FEModel& fem);
 	bool WritePartSection   (FEPostMesh& m);
 	bool WriteSurfaceSection(FEPostMesh& m);
 
-	bool WritePart(FEPart& part);
+	bool WritePart(FEPostMesh& m, FEDomain& part);
 
 	bool WriteState(FEModel& fem, FEState& state);
 	bool WriteNodeData(FEModel& fem, FEState& state);
