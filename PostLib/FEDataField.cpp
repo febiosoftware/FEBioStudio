@@ -278,6 +278,9 @@ std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 		switch (m_ntype)
 		{
 		case DATA_MAT3FS: return name; break;
+		case DATA_MAT3FD: return name; break;
+		case DATA_MAT3D : return name; break;
+		case DATA_MAT3F : return name; break;
 		}
 	}
 

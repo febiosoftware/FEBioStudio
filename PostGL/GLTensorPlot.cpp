@@ -79,6 +79,7 @@ void GLTensorPlot::UpdateData(bool bsave)
 	if (bsave)
 	{
 		int noldcol = m_ncol;
+		int noldmeth = m_nmethod;
 
 		m_ntensor = GetIntValue(DATA_FIELD);
 		m_nmethod = GetIntValue(METHOD);
@@ -107,6 +108,11 @@ void GLTensorPlot::UpdateData(bool bsave)
 			m_range.valid = true;
 		}
 		else m_range.valid = false;
+
+		if (noldmeth != m_nmethod)
+		{
+			for (int i = 0; i<m_map.States(); ++i) m_map.SetTag(i, -1);
+		}
 	}
 	else
 	{
