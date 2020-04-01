@@ -11,6 +11,7 @@
 #include <FSCore/FSDir.h>
 #include <MeshLib/FEElementLibrary.h>
 #include <QSplashScreen>
+#include <QDebug>
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>
@@ -73,6 +74,8 @@ int main(int argc, char* argv[])
 	app.setWindowIcon(QIcon(":/icons/FEBioStudio.png"));
 
 	string appdir = QApplication::applicationDirPath().toStdString();
+	qDebug() << appdir.c_str();
+	
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
 	// show the splash screen
@@ -120,6 +123,10 @@ int main(int argc, char* argv[])
 
 #else
 	MyApplication app(argc, argv);
+	
+	string appdir = QApplication::applicationDirPath().toStdString();
+	
+	FSDir::setMacro("FEBioStudioDir", appdir);
 
 	// show the splash screen
 	QPixmap pixmap(":/icons/splash_hires.png");
@@ -127,17 +134,27 @@ int main(int argc, char* argv[])
     pixmap.setDevicePixelRatio(pixelRatio);
 	QSplashScreen splash(pixmap);
 	splash.show();
+	
+	bool breset = false;
+	for (int i = 0; i < argc; ++i)
+	{
+		if (strcmp(argv[i], "-reset") == 0)
+		{
+			breset = true;
+			break;
+		}
+	}
 
 	// create the main window
 	CMainWindow wnd;
-	wnd.show();
+	app.SetMainWindow(&wnd);
+	wnd.show();	
 
 	splash.finish(&wnd);
 
 	app.setApplicationVersion("1.0.0");
 	app.setApplicationName("FEBio Studio");
 	app.setApplicationDisplayName("FEBio Studio");
-	app.SetMainWindow(&wnd);
 	return app.exec();
 
 #endif
