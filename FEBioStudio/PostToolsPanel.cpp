@@ -11,8 +11,8 @@
 #include <QSpinBox>
 #include <QCloseEvent>
 #include <QShowEvent>
-#include <QScrollArea>
 #include "Tool.h"
+#include "ToolBox.h"
 #include "MainWindow.h"
 #include "Document.h"
 #include <PostLib/FEMesh.h>
@@ -55,7 +55,7 @@ public:
 		QVBoxLayout* pg = new QVBoxLayout(parent);
 		pg->setMargin(0);
 		
-		QGroupBox* box = new QGroupBox("Tools");
+		QWidget* box = new QWidget;
 		
 		QGridLayout* grid = new QGridLayout;
 		box->setLayout(grid);
@@ -70,9 +70,10 @@ public:
 		{
 			CAbstractTool* tool = *it;
 			QPushButton* but = new QPushButton(tool->name());
+			but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 			but->setCheckable(true);
 
-			grid->addWidget(but, i/3, i%3);
+			grid->addWidget(but, i/2, i%2);
 			group->addButton(but); group->setId(but, i+1);
 		}
 
@@ -85,27 +86,23 @@ public:
 		for (int i=0; i<ntools; ++i, ++it)
 		{
 			CAbstractTool* tool = *it;
-			QGroupBox* pg = new QGroupBox(tool->name());
-			QVBoxLayout* layout = new QVBoxLayout;
-			pg->setLayout(layout);
-
 			QWidget* pw = tool->createUi();
 			if (pw == 0)
 			{
 				QLabel* pl = new QLabel("(no properties)");
 				pl->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-				layout->addWidget(pl);
+				stack->addWidget(pl);
 			}
-			else layout->addWidget(pw);
-			stack->addWidget(pg);
+			else stack->addWidget(pw);
 		}
-		
-		QScrollArea* scrollArea = new QScrollArea();
-		
-		scrollArea->setWidget(stack);
 
-		pg->addWidget(box);
-		pg->addWidget(scrollArea);
+		// create the toolbox
+		CToolBox* tool = new CToolBox;
+		tool->addTool("Tools", box);
+		tool->addTool("Parameters", stack);
+
+		pg->addWidget(tool);
+		pg->addStretch();
 
 		QMetaObject::connectSlotsByName(parent);
 	}

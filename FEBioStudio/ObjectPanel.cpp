@@ -15,6 +15,7 @@
 CObjectPanel::CObjectPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent)
 {
 	name = new QLineEdit;
+	name->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 	type = new QLabel;
 	color = new CColorButton;
 

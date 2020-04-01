@@ -29,7 +29,7 @@ public:
 		m_folder->setObjectName("folder");
 		m_folder->setEditable(true);
 		m_folder->setInsertPolicy(QComboBox::NoInsert);
-		m_folder->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+		m_folder->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 		m_folder->setMaxCount(15);
 
 		m_fileFilter = new QComboBox(parent);

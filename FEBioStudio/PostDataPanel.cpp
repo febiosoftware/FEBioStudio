@@ -274,7 +274,6 @@ public:
 
 		QPushButton* pbCpy = new QPushButton("Copy"); pbCpy->setObjectName("CopyButton"); //pbCpy->setFixedSize(BW, BH); 
 		QPushButton* pbDel = new QPushButton("Delete"); pbDel->setObjectName("DeleteButton"); //pbDel->setFixedSize(BW, BH); 
-		QPushButton* pbFlt = new QPushButton("Filter..."); pbFlt->setObjectName("FilterButton");
 		QPushButton* pbExp = new QPushButton("Export..."); pbExp->setObjectName("ExportButton"); //pbExp->setFixedSize(BW, BH); 
 
 		QHBoxLayout* ph = new QHBoxLayout;
@@ -282,7 +281,6 @@ public:
 		ph->addWidget(pbAdd);
 		ph->addWidget(pbCpy);
 		ph->addWidget(pbDel);
-		ph->addWidget(pbFlt);
 		ph->addWidget(pbExp);
 		ph->addStretch();
 
@@ -778,7 +776,7 @@ void CPostDataPanel::on_DeleteButton_clicked()
 	}
 }
 
-void CPostDataPanel::on_FilterButton_clicked()
+void CPostDataPanel::on_AddFilter_triggered()
 {
 	CMainWindow* wnd = GetMainWindow();
 	QItemSelectionModel* select = ui->list->selectionModel();
@@ -889,112 +887,6 @@ void CPostDataPanel::on_FilterButton_clicked()
 				Update(true);
 				doc.UpdateFEModel(true);
 				wnd->RedrawGL();
-			}
-		}
-	}
-}
-
-void CPostDataPanel::on_AddFilter_triggered()
-{
-	QItemSelectionModel* select = ui->list->selectionModel();
-	QModelIndexList selRow = select->selectedRows();
-	if (selRow.count() == 1)
-	{
-		int nsel = selRow.at(0).row();
-		CPostDoc& doc = *GetActiveDocument();
-		Post::FEModel& fem = *doc.GetFEModel();
-		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
-		if (pdf)
-		{
-			// build a list of compatible data fields
-			vector<QString> dataNames;
-			vector<int> dataIds;
-			for (int i = 0; i<dm.DataFields(); ++i)
-			{
-				Post::FEDataField* pdi = *dm.DataField(i);
-				QString name = QString::fromStdString(pdi->GetName());
-				if ((pdi != pdf) &&
-					(pdi->DataClass() == pdf->DataClass()) &&
-					(pdi->Format() == pdf->Format()) &&
-					((pdi->Type() == pdf->Type()) || (pdi->Type() == Post::DATA_FLOAT)))
-				{
-					dataNames.push_back(name);
-					dataIds.push_back(i);
-				}
-			}
-
-			CDlgFilter dlg(this);
-			dlg.setDataOperands(dataNames);
-			dlg.setDataField(pdf);
-
-			QString name = QString::fromStdString(pdf->GetName());
-			QString newName = QString("%0_flt").arg(name);
-			dlg.setDefaultName(newName);
-
-			if (dlg.exec())
-			{
-				// get the name for the new field
-				string sname = dlg.getNewName().toStdString();
-
-				Post::FEDataField* newData = 0;
-				bool bret = true;
-				int nfield = pdf->GetFieldID();
-				switch (dlg.m_nflt)
-				{
-				case 0:
-				{
-					newData = fem.CreateCachedCopy(pdf, sname.c_str());
-					bret = DataScale(fem, newData->GetFieldID(), dlg.m_scale);
-				}
-				break;
-				case 1:
-				{
-					newData = fem.CreateCachedCopy(pdf, sname.c_str());
-					bret = DataSmooth(fem, newData->GetFieldID(), dlg.m_theta, dlg.m_iters);
-				}
-				break;
-				case 2:
-				{
-					newData = fem.CreateCachedCopy(pdf, sname.c_str());
-					Post::FEDataFieldPtr p = fem.GetDataManager()->DataField(dataIds[dlg.m_ndata]);
-					bret = DataArithmetic(fem, newData->GetFieldID(), dlg.m_nop, (*p)->GetFieldID());
-				}
-				break;
-				case 3:
-				{
-					// create new vector field for storing the gradient
-					newData = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(sname.c_str(), Post::EXPORT_DATA);
-					fem.AddDataField(newData);
-
-					// now, calculate gradient from scalar field
-					bret = DataGradient(fem, newData->GetFieldID(), nfield);
-				}
-				break;
-				case 4:
-				{
-					// create new field for storing the component
-					newData = DataComponent(fem, pdf, dlg.getArrayComponent(), sname);
-					if (newData == 0)
-					{
-						QMessageBox::critical(this, "Data Filter", "Failed to extract component.");
-					}
-				}
-				break;
-				default:
-					QMessageBox::critical(this, "Data Filter", "Don't know this filter.");
-				}
-
-				if (bret == false)
-				{
-					if (newData) fem.DeleteDataField(newData);
-					QMessageBox::critical(this, "Data Filter", "Cannot apply this filter.");
-				}
-
-				GetMainWindow()->UpdatePostToolbar();
-				Update(true);
-				doc.UpdateFEModel(true);
-				GetMainWindow()->RedrawGL();
 			}
 		}
 	}
