@@ -12,6 +12,8 @@
 #include "SSHHandler.h"
 #endif
 
+#include <iostream>
+
 //-----------------------------------------------------------------------------
 int CFEBioJob::m_count = 0;
 
@@ -90,6 +92,7 @@ void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
 
 	// update feb file name
 	QString febName = QFileInfo(QString::fromStdString(m_fileName)).fileName();
+
 #ifdef WIN32
 	m_fileName = (dirName + "\\" + febName).toStdString();
 #else
@@ -107,6 +110,7 @@ void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)
 
 	// update log file name
 	QString logName = QFileInfo(QString::fromStdString(m_logFile)).fileName();
+
 #ifdef WIN32
 	m_logFile = (dirName + "\\" + logName).toStdString();
 #else
@@ -305,8 +309,22 @@ void CFEBioJob::Load(IArchive& ar)
 		{
 		case CID_FEOBJ_NAME: { string name; ar.read(name); SetName(name); } break;
 		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
-		case CID_FEBIOJOB_FILENAME: ar.read(m_fileName); break;
-		case CID_FEBIOJOB_PLOTFILE: ar.read(m_plotFile); break;
+		case CID_FEBIOJOB_FILENAME:
+			ar.read(m_fileName);
+#ifdef WIN32
+			m_fileName = QString::fromStdString(m_fileName).replace("\","\\").toStdString();
+#else
+			m_fileName = QString::fromStdString(m_fileName).replace("\\","/").toStdString();
+#endif
+			break;
+		case CID_FEBIOJOB_PLOTFILE:
+			ar.read(m_plotFile);
+#ifdef WIN32
+			m_plotFile = QString::fromStdString(m_plotFile).replace("\","\\").toStdString();
+#else
+			m_plotFile = QString::fromStdString(m_plotFile).replace("\\","/").toStdString();
+#endif
+			break;
 		case CID_FEBIOJOB_LCONFIG: {CLaunchConfig lConfig; lConfig.Load(ar); m_sshHandler = nullptr; UpdateLaunchConfig(lConfig); } break;
 		}
 		ar.CloseChunk();
