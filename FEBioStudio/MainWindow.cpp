@@ -1177,6 +1177,7 @@ void CMainWindow::UpdatePostToolbar()
 	{
 		ui->postToolBar->setDisabled(true);
 		ui->postToolBar->hide();
+		ui->buildToolBar->show();
 		return;
 	}
 
@@ -1211,6 +1212,7 @@ void CMainWindow::UpdatePostToolbar()
 	ui->pspin->setValue(ntime);
 	ui->postToolBar->setEnabled(true);
 	if (ui->postToolBar->isHidden()) ui->postToolBar->show();
+	ui->buildToolBar->hide();
 }
 
 //-----------------------------------------------------------------------------

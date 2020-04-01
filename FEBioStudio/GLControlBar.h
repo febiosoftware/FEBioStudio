@@ -31,6 +31,7 @@ private slots:
 	void onShowAll(bool b);
 	void onZoomSelectClicked(bool b);
 	void onZoomAllClicked(bool b);
+	void onToggleMesh(bool b);
 
 private:
 	CGLControlBar_UI*	ui;

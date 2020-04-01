@@ -60,6 +60,9 @@ int main(int argc, char* argv[])
 	Post::Initialize();
 
 #ifndef __APPLE__
+
+	QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
 	// create the application object
 	QApplication app(argc, argv);
 

@@ -81,7 +81,8 @@ public:
 
 	CDataFieldSelector*	selectData;
 	QSpinBox*	pspin;
-	QToolBar* postToolBar;
+	QToolBar*	postToolBar;
+	QToolBar*	buildToolBar;
 
 	QToolBar* pFontToolBar;
 	QFontComboBox*	pFontStyle;
@@ -689,36 +690,40 @@ public:
 		mainToolBar->addAction(actionUndo);
 		mainToolBar->addAction(actionRedo);
 		mainToolBar->addSeparator();
-		mainToolBar->addAction(actionSelect);
-		mainToolBar->addAction(actionTranslate);
-		mainToolBar->addAction(actionRotate);
-		mainToolBar->addAction(actionScale);
-		mainToolBar->addWidget(coord);
-		mainToolBar->addSeparator();
-		mainToolBar->addAction(actionSelectObjects);
-		mainToolBar->addAction(actionSelectParts   );
-		mainToolBar->addAction(actionSelectSurfaces);
-		mainToolBar->addAction(actionSelectCurves  );
-		mainToolBar->addAction(actionSelectNodes   );
-		mainToolBar->addAction(actionSelectDiscrete);
-		mainToolBar->addSeparator();
 		mainToolBar->addAction(selectRect);
 		mainToolBar->addAction(selectCircle);
 		mainToolBar->addAction(selectFree);
-		mainToolBar->addSeparator();
-		mainToolBar->addAction(actionAddMaterial);
-		mainToolBar->addAction(actionCurveEditor);
-		mainToolBar->addAction(actionMeshInspector);
-		mainToolBar->addAction(actionFEBioRun);
-		mainToolBar->addSeparator();
-		mainToolBar->addAction(actionShowMeshLines);
-		mainToolBar->addSeparator();
-		mainToolBar->addAction(actionMerge);
-		mainToolBar->addAction(actionDetach);
-		mainToolBar->addAction(actionExtract);
-		mainToolBar->addAction(actionClone);
-		mainToolBar->addAction(actionCloneGrid);
-		mainToolBar->addAction(actionCloneRevolve);
+
+		// Build tool bar
+		buildToolBar = new QToolBar(mainWindow);
+		buildToolBar->setObjectName(QStringLiteral("buildToolBar"));
+		buildToolBar->setWindowTitle("Build Toolbar");
+
+		buildToolBar->addAction(actionSelect);
+		buildToolBar->addAction(actionTranslate);
+		buildToolBar->addAction(actionRotate);
+		buildToolBar->addAction(actionScale);
+		buildToolBar->addWidget(coord);
+		buildToolBar->addSeparator();
+		buildToolBar->addAction(actionSelectObjects);
+		buildToolBar->addAction(actionSelectParts);
+		buildToolBar->addAction(actionSelectSurfaces);
+		buildToolBar->addAction(actionSelectCurves);
+		buildToolBar->addAction(actionSelectNodes);
+		buildToolBar->addAction(actionSelectDiscrete);
+		buildToolBar->addSeparator();
+		buildToolBar->addAction(actionCurveEditor);
+		buildToolBar->addAction(actionMeshInspector);
+		buildToolBar->addAction(actionFEBioRun);
+		buildToolBar->addSeparator();
+		buildToolBar->addAction(actionMerge);
+		buildToolBar->addAction(actionDetach);
+		buildToolBar->addAction(actionExtract);
+		buildToolBar->addAction(actionClone);
+		buildToolBar->addAction(actionCloneGrid);
+		buildToolBar->addAction(actionCloneRevolve);
+
+		mainWindow->addToolBar(Qt::TopToolBarArea, buildToolBar);
 
 		// Post tool bar
 		postToolBar = new QToolBar(mainWindow);
