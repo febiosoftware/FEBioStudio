@@ -104,6 +104,7 @@ QWidget* CBasicTool::createUi()
 
 		QObject::connect(pb, SIGNAL(clicked(bool)), this, SLOT(on_button_clicked()));
 	}
+	pl->addStretch();
 
 	return pw;
 }

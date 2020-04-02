@@ -102,7 +102,6 @@ public:
 		tool->addTool("Parameters", stack);
 
 		pg->addWidget(tool);
-		pg->addStretch();
 
 		QMetaObject::connectSlotsByName(parent);
 	}

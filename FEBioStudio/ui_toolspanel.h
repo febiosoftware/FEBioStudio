@@ -20,7 +20,7 @@ public:
 		QList<CAbstractTool*>& tools = parent->tools;
 
 		QVBoxLayout* pg = new QVBoxLayout(parent);
-		pg->setMargin(2);
+		pg->setMargin(1);
 
 		QWidget* box = new QWidget;
 
@@ -69,7 +69,6 @@ public:
 		tool->addTool("Parameters", stack);
 
 		pg->addWidget(tool);
-		pg->addStretch();
 
 		QMetaObject::connectSlotsByName(parent);
 	}
