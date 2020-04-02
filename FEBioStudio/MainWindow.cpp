@@ -109,7 +109,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	}
 
 	// activate dark style
-	if (ui->m_theme == 1) 
+	if (ui->m_theme == 1)
 	{
 		darkStyle();
 
@@ -123,6 +123,23 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
+#ifdef LINUX
+	if(ui->m_theme == 2)
+	{
+		qApp->setStyle(QStyleFactory::create("adwaita"));
+	}
+	else if(ui->m_theme == 3)
+	{
+		qApp->setStyle(QStyleFactory::create("adwaita-dark"));
+
+		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+		v.m_col1 = GLColor(83, 83, 83);
+		v.m_col2 = GLColor(128, 128, 128);
+		v.m_nbgstyle = BG_HORIZONTAL;
+
+		GLWidget::set_base_color(GLColor(255, 255, 255));
+	}
+#endif
 
 	// allow drop events
 	setAcceptDrops(true);

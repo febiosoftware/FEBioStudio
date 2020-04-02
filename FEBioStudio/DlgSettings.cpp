@@ -99,7 +99,11 @@ public:
 	{
 		addBoolProperty(&m_apply, "Emulate apply action");
 		addBoolProperty(&m_bcmd , "Clear undo stack on save");
-		addEnumProperty(&m_theme, "Theme")->setEnumValues(QStringList() << "Default" << "Dark");
+		QStringList themes  = QStringList() << "Default" << "Dark";
+#ifdef LINUX
+		themes << "Adwaita" << "Adwaita Dark";
+#endif
+		addEnumProperty(&m_theme, "Theme")->setEnumValues(themes);
 		addProperty("Recent projects list", CProperty::Action)->info = QString("Clear");
 	}
 
