@@ -311,17 +311,13 @@ void CFEBioJob::Load(IArchive& ar)
 		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case CID_FEBIOJOB_FILENAME:
 			ar.read(m_fileName);
-#ifdef WIN32
-			m_fileName = QString::fromStdString(m_fileName).replace("\","\\").toStdString();
-#else
+#ifndef WIN32
 			m_fileName = QString::fromStdString(m_fileName).replace("\\","/").toStdString();
 #endif
 			break;
 		case CID_FEBIOJOB_PLOTFILE:
 			ar.read(m_plotFile);
-#ifdef WIN32
-			m_plotFile = QString::fromStdString(m_plotFile).replace("\","\\").toStdString();
-#else
+#ifndef WIN32
 			m_plotFile = QString::fromStdString(m_plotFile).replace("\\","/").toStdString();
 #endif
 			break;
