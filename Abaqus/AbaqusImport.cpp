@@ -1162,6 +1162,7 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 			natt = parse_line(szline, a);
 			const char* sztype = find_attribute(a, natt, "TYPE");
 			if (sztype && szicmp(sztype, "ISOTROPIC")) mat.ntype = 1;
+			else if (sztype == nullptr) mat.ntype = 1;
 
 			read_line(szline, fp);
 			char* sz = szline;
