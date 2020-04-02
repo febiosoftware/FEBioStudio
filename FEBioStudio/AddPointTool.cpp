@@ -63,9 +63,12 @@ void CAddPointTool::deactivate()
 	if (m_deco)
 	{
 		CPostDoc* doc = GetPostDoc();
-		doc->GetGLModel()->RemoveDecoration(m_deco);
-		delete m_deco;
-		m_deco = 0;
+		if (doc)
+		{
+			doc->GetGLModel()->RemoveDecoration(m_deco);
+			delete m_deco;
+			m_deco = 0;
+		}
 	}
 }
 

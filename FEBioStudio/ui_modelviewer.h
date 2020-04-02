@@ -68,17 +68,9 @@ public:
 		props = new ::CModelPropsPanel(mainWnd);
 		props->setObjectName("props");
 
-		QScrollArea* scroll = new QScrollArea;
-		scroll->setWidget(props);
-		scroll->setWidgetResizable(true);
-//		scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-		//	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-		//	setBackgroundRole(QPalette::Light);
-		scroll->setFrameShape(QFrame::NoFrame);
-
 		QSplitter* splitter = new QSplitter(Qt::Vertical);
 		splitter->addWidget(m_stack);
-		splitter->addWidget(scroll);
+		splitter->addWidget(props);
 		splitter->setContentsMargins(0, 0, 0, 0);
 
 		QHBoxLayout* buttonLayout = new QHBoxLayout;

@@ -1,5 +1,5 @@
 #pragma once
-#include <QFrame>
+#include <QScrollArea>
 #include <QtCore/QList>
 
 class QPushButton;
@@ -15,7 +15,7 @@ private:
 	QPushButton* pb;
 };
 
-class CToolBox : public QFrame
+class CToolBox : public QScrollArea
 {
 	Q_OBJECT
 

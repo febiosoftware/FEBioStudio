@@ -29,18 +29,22 @@ void CToolItem::setTitle(const QString& t)
 	pb->setText(t);
 }
 
-CToolBox::CToolBox(QWidget* parent) : QFrame(parent)
+CToolBox::CToolBox(QWidget* parent) : QScrollArea(parent)
 {
+	QWidget* dummy = new QWidget;
 	QVBoxLayout* mainLayout = new QVBoxLayout;
 	mainLayout->setMargin(0);
 	mainLayout->setSpacing(0);
 	mainLayout->setAlignment(Qt::AlignTop);
-	setLayout(mainLayout);
+	dummy->setLayout(mainLayout);
+	setWidget(dummy);
+	setWidgetResizable(true);
+	setFrameShape(QFrame::NoFrame);
 }
 
 void CToolBox::addTool(const QString& name, QWidget* tool)
 {
-	QLayout* mainLayout = layout();
+	QLayout* mainLayout = widget()->layout();
 	CToolItem* item = new CToolItem(name, tool);
 	mainLayout->addWidget(item);
 	m_items.push_back(item);

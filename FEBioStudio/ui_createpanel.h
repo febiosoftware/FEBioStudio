@@ -404,6 +404,7 @@ public:
 		QVBoxLayout* l = new QVBoxLayout;
 		l->addWidget(panes);
 		l->addWidget(createButton);
+		l->addStretch();
 
 		QWidget* dummy = new QWidget;
 		dummy->setLayout(l);
@@ -417,7 +418,6 @@ public:
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->setMargin(0);
 		mainLayout->addWidget(tool);
-		mainLayout->addStretch();
 
 		// set the layout
 		parent->setLayout(mainLayout);
