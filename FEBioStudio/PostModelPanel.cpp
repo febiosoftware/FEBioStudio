@@ -779,6 +779,9 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 	QString name = ui->name->text();
 	QTreeWidgetItem* item = ui->m_tree->currentItem();
 	if (item) item->setText(0, name);
+
+	Post::CGLObject* po = selectedObject();
+	if (po) po->SetName(name.toStdString());
 }
 
 void CPostModelPanel::on_deleteButton_clicked()

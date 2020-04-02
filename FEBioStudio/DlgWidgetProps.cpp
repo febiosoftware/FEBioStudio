@@ -251,6 +251,7 @@ public:
 
 	QDialogButtonBox* buttonBox;
 	QComboBox* placement;
+	QComboBox* orientation;
 
 public:
 	void setupUi(QDialog* parent)
@@ -275,6 +276,15 @@ public:
 					ph->addWidget(placement);
 					ph->addStretch();
 				labelsPageLayout->addLayout(ph);
+
+				QHBoxLayout* pol = new QHBoxLayout;
+				QLabel* pl = new QLabel("Orientation:");
+				orientation = new QComboBox;
+				orientation->addItems(QStringList() << "Horizontal" << "Vertical");
+				pol->addWidget(pl);
+				pol->addWidget(orientation);
+				pol->addStretch();
+				labelsPageLayout->addLayout(pol);
 				plabelFont = new CFontWidget;
 				labelsPageLayout->addWidget(plabelFont);
 			labelsPage->setLayout(labelsPageLayout);
@@ -305,6 +315,7 @@ CDlgLegendProps::CDlgLegendProps(GLWidget* widget, CMainWindow* parent) : QDialo
 
 	ui->pshowLabels->setChecked(pb->ShowLabels());
 	ui->pprec->setValue(pb->GetPrecision());
+	ui->orientation->setCurrentIndex(pb->Orientation());
 
 	QFont labelFont = pb->get_font();
 	ui->plabelFont->setFont(labelFont, toQColor(pb->get_fg_color()));
@@ -316,22 +327,36 @@ CDlgLegendProps::CDlgLegendProps(GLWidget* widget, CMainWindow* parent) : QDialo
 
 void CDlgLegendProps::apply()
 {
-	int x = ui->ppos->x();
-	int y = ui->ppos->y();
-	int w = ui->ppos->w();
-	int h = ui->ppos->h();
-	pw->resize(x, y, w, h);
-
 	GLLegendBar* pb = dynamic_cast<GLLegendBar*>(pw);
 	pb->ShowLabels(ui->pshowLabels->isChecked());
 	pb->SetPrecision(ui->pprec->value());
 	pb->SetLabelPosition(ui->placement->currentIndex());
 
+	int oldOrient = pb->Orientation();
+	int newOrient = ui->orientation->currentIndex();
+
 	QFont labelFont = ui->plabelFont->getFont();
 	pb->set_font(labelFont);
 	pb->set_fg_color(toGLColor(ui->plabelFont->getFontColor()));
 
-	if (m_wnd) m_wnd->RedrawGL();
+	if (oldOrient != newOrient)
+	{
+		pb->SetOrientation(newOrient);
+
+		if (m_wnd) m_wnd->RedrawGL();
+
+		// update the positions
+		ui->ppos->setPosition(pw->x(), pw->y(), pw->w(), pw->h());
+	}
+	else
+	{
+		int x = ui->ppos->x();
+		int y = ui->ppos->y();
+		int w = ui->ppos->w();
+		int h = ui->ppos->h();
+		pw->resize(x, y, w, h);
+		if (m_wnd) m_wnd->RedrawGL();
+	}
 }
 
 void CDlgLegendProps::accept()

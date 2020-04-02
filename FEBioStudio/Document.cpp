@@ -901,7 +901,7 @@ void CDocument::LoadResources(IArchive& ar)
 		case CID_RESOURCE_IMAGEMODEL:
 		{
 			Post::CImageModel* img = new Post::CImageModel(nullptr);
-			AddImageModel(img);
+			m_img.Add(img);
 			img->Load(ar);
 		}
 		break;

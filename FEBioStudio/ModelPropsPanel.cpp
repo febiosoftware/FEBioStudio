@@ -198,6 +198,7 @@ class Ui::CModelPropsPanel
 		PROPS_PANEL,
 		SELECTION1_PANEL,
 		SELECTION2_PANEL,
+		IMAGE_PANEL
 	};
 
 public:
@@ -211,7 +212,7 @@ public:
 	CObjectPropsPanel*	obj;
 	CBCObjectPropsPanel*	bcobj;
 	CMeshInfoPanel*	mesh;
-	QTabWidget* propsTab;
+	QTabWidget* imageTab;
 
 	CImageViewer*		imageView;
 	CHistogramViewer*	histoView;
@@ -236,9 +237,6 @@ public:
 		propStack->addWidget(props);
 		propStack->addWidget(form);
 
-		propsTab = new QTabWidget;
-		propsTab->addTab(propStack, "Properties");
-
 		sel1 = new ::CSelectionBox;
 		sel1->setObjectName("select1");
 
@@ -249,15 +247,19 @@ public:
 
 		imageView = new CImageViewer;
 		histoView = new CHistogramViewer;
+		imageTab = new QTabWidget;
+		imageTab->addTab(imageView, "Image Viewer");
+		imageTab->addTab(histoView, "Histogram");
 
 		// compose toolbox
 		tool = new CToolBox;
 		tool->addTool("Object", obj);
 		tool->addTool("Object", bcobj);
 		tool->addTool("Mesh Info", mesh);
-		tool->addTool("Properties", propsTab);
+		tool->addTool("Properties", propStack);
 		tool->addTool("Selection", sel1);
 		tool->addTool("Selection", sel2);
+		tool->addTool("3D Image", imageTab);
 
 		// hide all panels initially
 //		tool->getToolItem(OBJECT_PANEL)->setVisible(false);
@@ -325,7 +327,7 @@ public:
 		form->setPropertyList(pl);
 	}
 
-	void showImageTools(bool b, Post::CImageModel* img = nullptr)
+	void showImagePanel(bool b, Post::CImageModel* img = nullptr)
 	{
 		if (b && (m_showImageTools==false))
 		{
@@ -333,9 +335,6 @@ public:
 
 			imageView->SetImageModel(img);
 			histoView->SetImageModel(img);
-
-			propsTab->addTab(imageView, "Image Viewer");
-			propsTab->addTab(histoView, "Histogram");
 		}
 		else if ((b == false) && m_showImageTools)
 		{
@@ -343,10 +342,8 @@ public:
 
 			imageView->SetImageModel(nullptr);
 			histoView->SetImageModel(nullptr);
-
-			propsTab->removeTab(2);
-			propsTab->removeTab(1);
 		}
+		tool->getToolItem(IMAGE_PANEL)->setVisible(b);
 	}
 
 	void showProperties(bool b)
@@ -355,7 +352,6 @@ public:
 		{
 			stack->setCurrentIndex(0);
 			setPropertyList(0);
-			showImageTools(false);
 		}
 		else
 		{
@@ -438,10 +434,20 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 	}
 	else
 	{
-		Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
-		ui->showImageTools(img != nullptr, img);
-
 		ui->showProperties(true);
+		ui->showImagePanel(false);
+		Post::CImageSource* imgSrc = dynamic_cast<Post::CImageSource*>(po);
+		if (imgSrc)
+		{
+			Post::CImageModel* img = imgSrc->GetImageModel();
+			if (img)
+			{
+				ui->showPropsPanel(false);
+				ui->showImagePanel(true, img);
+				props = nullptr;
+			}
+		}
+
 		m_currentObject = po;
 		SetSelection(0, 0);
 		SetSelection(1, 0);

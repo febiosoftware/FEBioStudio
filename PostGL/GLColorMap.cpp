@@ -18,7 +18,6 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddIntParam (0, "Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddIntParam (10, "Range divisions")->SetIntRange(1, 100);
 	AddBoolParam(true, "Show Legend");
-	AddIntParam (0, "Legend orientation")->SetEnumNames("Horizontal\0Vertical\0");
 	AddDoubleParam(0, "User max");
 	AddDoubleParam(0, "User min");
 
@@ -64,7 +63,6 @@ void CGLColorMap::UpdateData(bool bsave)
 		{
 			bool b = GetBoolValue(SHOW_LEGEND);
 			if (b) m_pbar->show(); else m_pbar->hide();
-			m_pbar->SetOrientation(GetIntValue(LEGEND_ORIENT));
 			m_pbar->SetDivisions(GetIntValue(RANGE_DIVS));
 		}
 		if (m_range.ntype == RANGE_USER)
@@ -83,7 +81,6 @@ void CGLColorMap::UpdateData(bool bsave)
 		if (m_pbar)
 		{
 			SetBoolValue(SHOW_LEGEND, m_pbar->visible());
-			SetIntValue(LEGEND_ORIENT, m_pbar->Orientation());
 			SetIntValue(RANGE_DIVS, m_pbar->GetDivisions());
 		}
 		SetFloatValue(USER_MAX, m_range.max);

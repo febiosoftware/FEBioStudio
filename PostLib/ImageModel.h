@@ -10,12 +10,13 @@ class C3DImage;
 
 namespace Post {
 
+class CImageModel;
 class CGLImageRenderer;
 
 class CImageSource : public FSObject
 {
 public:
-	CImageSource();
+	CImageSource(CImageModel* imgModel = nullptr);
 	~CImageSource();
 
 	void SetFileName(const std::string& fileName);
@@ -32,8 +33,13 @@ public:
 	int Height() const;
 	int Depth() const;
 
+public:
+	CImageModel* GetImageModel();
+	void SetImageModel(CImageModel* imgModel);
+
 private:
 	C3DImage*	m_img;
+	CImageModel*	m_imgModel;
 };
 
 class CImageModel : public CGLObject
@@ -65,7 +71,7 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
-	CImageSource* GetImageSource() { return m_img; }
+	CImageSource* GetImageSource();
 
 private:
 	BOX				m_box;						//!< physical dimensions of image

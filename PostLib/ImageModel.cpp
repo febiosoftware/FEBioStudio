@@ -6,7 +6,7 @@
 #include <assert.h>
 using namespace Post;
 
-CImageSource::CImageSource()
+CImageSource::CImageSource(CImageModel* imgModel)
 {
 	AddStringParam("", "file name")->SetState(Param_VISIBLE);
 	AddIntParam(0, "NX")->SetState(Param_VISIBLE);
@@ -14,6 +14,17 @@ CImageSource::CImageSource()
 	AddIntParam(2, "NZ")->SetState(Param_VISIBLE);
 
 	m_img = nullptr;
+	m_imgModel = imgModel;
+}
+
+CImageModel* CImageSource::GetImageModel()
+{
+	return m_imgModel;
+}
+
+void CImageSource::SetImageModel(CImageModel* imgModel) 
+{
+	m_imgModel = imgModel;
 }
 
 CImageSource::~CImageSource()
@@ -127,7 +138,7 @@ void CImageModel::UpdateData(bool bsave)
 
 bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box)
 {
-	if (m_img == nullptr) m_img = new CImageSource;
+	if (m_img == nullptr) m_img = new CImageSource(this);
 
 	if (m_img->LoadImageData(fileName, nx, ny, nz) == false)
 	{
@@ -203,6 +214,11 @@ void CImageModel::Save(OArchive& ar)
 	}
 }
 
+CImageSource* CImageModel::GetImageSource()
+{ 
+	return m_img; 
+}
+
 void CImageModel::Load(IArchive& ar)
 {
 	delete m_img; m_img = nullptr;
@@ -217,7 +233,7 @@ void CImageModel::Load(IArchive& ar)
 			break;
 		case 1:
 			{
-				m_img = new CImageSource;
+				m_img = new CImageSource(this);
 				m_img->Load(ar);
 			}
 			break;
