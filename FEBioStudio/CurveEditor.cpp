@@ -89,6 +89,8 @@ void CCmdDeleteCurve::UnExecute()
 
 //=============================================================================
 
+QRect CCurveEditor::m_preferredSize;
+
 CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CCurveEdior)
 {
 	m_currentItem = 0;
@@ -99,6 +101,26 @@ CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(
 	resize(600, 400);
 
 	setWindowTitle("Curve Editor");
+
+	if (m_preferredSize.isValid())
+	{
+		setGeometry(m_preferredSize);
+	}
+}
+
+QRect CCurveEditor::preferredSize()
+{
+	return m_preferredSize;
+}
+
+void CCurveEditor::setPreferredSize(const QRect& rt)
+{
+	m_preferredSize = rt;
+}
+
+void CCurveEditor::closeEvent(QCloseEvent* ev)
+{
+	m_preferredSize = geometry();
 }
 
 void CCurveEditor::Update()

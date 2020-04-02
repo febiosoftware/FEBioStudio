@@ -25,6 +25,11 @@ public:
 
 	void Update();
 
+	void closeEvent(QCloseEvent* ev);
+
+	static QRect preferredSize();
+	static void setPreferredSize(const QRect& rt);
+
 private:
 	bool Filter(int n) { if ((m_nflt == FLT_ALL) || (m_nflt == n)) return true; return false; }
 	void AddMaterial(FEMaterial* pm, QTreeWidgetItem* tp);
@@ -72,6 +77,8 @@ private:
 
 	// undo stack
 	CBasicCmdManager	m_cmd;
+
+	static QRect	m_preferredSize;
 };
 
 class CCmdAddPoint : public CCommand

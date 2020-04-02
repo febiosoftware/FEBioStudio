@@ -13,6 +13,8 @@
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QRadioButton>
+#include <QGuiApplication>
+#include <QScreen>
 #include "MainWindow.h"
 #include "Document.h"
 #include <PostLib/FEModel.h>
@@ -562,6 +564,8 @@ public:
 	}
 };
 
+QRect CGraphWindow::m_preferredSize;
+
 CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc, int flags) : m_wnd(pwnd), QDockWidget(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
 {
 	m_nTrackTime = TRACK_TIME;
@@ -586,13 +590,31 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc, int flags) : m_
 
 	ui->ops->setUserTimeRange(m_nUserMin, m_nUserMax);
 	setMinimumWidth(500);
-	resize(800, 600);
+
+	if (m_preferredSize.isValid())
+	{
+		setGeometry(m_preferredSize);
+	}
+	else resize(800, 600);
 }
 
 //-----------------------------------------------------------------------------
 void CGraphWindow::closeEvent(QCloseEvent* closeEvent)
 {
 	m_wnd->RemoveGraph(this);
+	m_preferredSize = geometry();
+}
+
+//-----------------------------------------------------------------------------
+QRect CGraphWindow::preferredSize()
+{
+	return m_preferredSize;
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::setPreferredSize(const QRect& rt)
+{
+	m_preferredSize = rt;
 }
 
 //-----------------------------------------------------------------------------
@@ -907,6 +929,7 @@ void CDataGraphWindow::Update(bool breset, bool bfit)
 	}
 	UpdatePlots();
 }
+
 
 //=============================================================================
 CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc)

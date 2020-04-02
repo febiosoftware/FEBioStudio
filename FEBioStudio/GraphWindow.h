@@ -182,6 +182,9 @@ public:
 
 	void closeEvent(QCloseEvent* closeEvent) override;
 
+	static QRect preferredSize();
+	static void setPreferredSize(const QRect& rt);
+
 	// get the plot widget
 	CPlotWidget* GetPlotWidget();
 
@@ -260,6 +263,8 @@ private:
 
 	int		m_nTrackTime;
 	int		m_nUserMin, m_nUserMax;	//!< manual time step range
+
+	static QRect	m_preferredSize;
 };
 
 //=================================================================================================

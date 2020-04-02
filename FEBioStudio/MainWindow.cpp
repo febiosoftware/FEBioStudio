@@ -984,6 +984,9 @@ void CMainWindow::writeSettings()
 	settings.setValue("geometry", saveGeometry());
 	settings.setValue("state", saveState());
 	settings.setValue("theme", ui->m_theme);
+	QRect rt;
+	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
+	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
 	settings.endGroup();
 
 	settings.beginGroup("PostSettings");
@@ -1051,6 +1054,13 @@ void CMainWindow::readSettings()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 	ui->m_theme = settings.value("theme", 0).toInt();
+
+	QRect rt;
+	rt = settings.value("curveEditorSize", QRect()).toRect();
+	if (rt.isValid()) CCurveEditor::setPreferredSize(rt);
+	rt = settings.value("graphWindowSize", QRect()).toRect();
+	if (rt.isValid()) CGraphWindow::setPreferredSize(rt);
+
 	settings.endGroup();
 
 	settings.beginGroup("PostSettings");
