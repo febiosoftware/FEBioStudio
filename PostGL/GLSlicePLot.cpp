@@ -8,7 +8,7 @@ using namespace Post;
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
 
-CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLPlot(po)
+CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLLegendPlot(po)
 {
 	static int n = 1;
 	char szname[128] = {0};
@@ -44,18 +44,12 @@ CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLPlot(po)
 	m_fmin = 0.f;
 	m_fmax = 0.f;
 
-	m_pbar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	m_pbar->align(GLW_ALIGN_LEFT| GLW_ALIGN_VCENTER);
-	m_pbar->copy_label(szname);
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
+	bar->align(GLW_ALIGN_LEFT| GLW_ALIGN_VCENTER);
+	bar->copy_label(szname);
+	SetLegendBar(bar);
 
 	UpdateData(false);
-}
-
-CGLSlicePlot::~CGLSlicePlot()
-{
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
-	delete m_pbar;	
 }
 
 int CGLSlicePlot::GetSlices() { return m_nslices; }
@@ -325,5 +319,6 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
-	m_pbar->SetRange(m_crng.x, m_crng.y);
+	GLLegendBar* bar = GetLegendBar();
+	bar->SetRange(m_crng.x, m_crng.y);
 }

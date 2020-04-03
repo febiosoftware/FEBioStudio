@@ -6,7 +6,7 @@
 #include <stdlib.h>
 using namespace Post;
 
-GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
+GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLLegendPlot(po)
 {
 	static int n = 1;
 	char szname[128] = { 0 };
@@ -59,19 +59,13 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLPlot(po)
 	m_range.ntype = RANGE_DYNAMIC;
 	m_range.valid = false;
 
-	m_pbar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
-	m_pbar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	m_pbar->copy_label(szname);
-	m_pbar->ShowTitle(true);
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
+	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+	bar->copy_label(szname);
+	bar->ShowTitle(true);
+	SetLegendBar(bar);
 
 	UpdateData(false);
-}
-
-GLTensorPlot::~GLTensorPlot()
-{
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
-	delete m_pbar;
 }
 
 void GLTensorPlot::UpdateData(bool bsave)
@@ -468,7 +462,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 			fmin = m_range.min;
 		}
 
-		m_pbar->SetRange(fmin, fmax);
+		GetLegendBar()->SetRange(fmin, fmax);
 
 		if (fmax == fmin) fmax++;
 
@@ -541,7 +535,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 			fmax = m_range.max;
 			fmin = m_range.min;
 		}
-		m_pbar->SetRange(fmin, fmax);
+		GetLegendBar()->SetRange(fmin, fmax);
 
 		if (fmax == fmin) fmax++;
 

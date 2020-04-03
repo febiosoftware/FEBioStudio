@@ -45,6 +45,8 @@ public:
 	CGLModel* GetModel() { return m_pModel; }
 	void SetModel(CGLModel* pm) { m_pModel = pm; }
 
+	virtual void ChangeName(const std::string& name);
+
 protected:
 	bool			m_bactive;
 	CGLModel*		m_pModel;

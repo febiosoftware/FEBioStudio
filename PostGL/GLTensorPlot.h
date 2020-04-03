@@ -9,7 +9,7 @@
 
 namespace Post {
 
-class GLTensorPlot : public CGLPlot
+class GLTensorPlot : public CGLLegendPlot
 {
 	enum { DATA_FIELD, METHOD, COLOR_MAP, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, RANGE_TYPE, USER_MAX, USER_MIN };
 
@@ -42,7 +42,6 @@ private:
 
 public:
 	GLTensorPlot(CGLModel* po);
-	~GLTensorPlot();
 
 	void Render(CGLContext& rc) override;
 
@@ -118,7 +117,5 @@ protected:
 	int		m_lastTime;
 	float	m_lastDt;
 	int		m_lastCol;
-
-	GLLegendBar*	m_pbar;
 };
 }

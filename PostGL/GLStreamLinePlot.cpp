@@ -6,7 +6,7 @@ using namespace Post;
 
 //=================================================================================================
 
-CGLStreamLinePlot::CGLStreamLinePlot(CGLModel* fem) : CGLPlot(fem), m_find(*fem->GetActiveMesh())
+CGLStreamLinePlot::CGLStreamLinePlot(CGLModel* fem) : CGLLegendPlot(fem), m_find(*fem->GetActiveMesh())
 {
 	static int n = 1;
 	char szname[128] = { 0 };
@@ -41,20 +41,14 @@ CGLStreamLinePlot::CGLStreamLinePlot(CGLModel* fem) : CGLPlot(fem), m_find(*fem-
 
 	m_Col.SetDivisions(10);
 
-	m_pbar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
-	m_pbar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	m_pbar->SetType(GLLegendBar::GRADIENT);
-	m_pbar->copy_label(szname);
-	m_pbar->ShowTitle(true);
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
+	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+	bar->SetType(GLLegendBar::GRADIENT);
+	bar->copy_label(szname);
+	bar->ShowTitle(true);
+	SetLegendBar(bar);
 
 	UpdateData(false);
-}
-
-CGLStreamLinePlot::~CGLStreamLinePlot()
-{
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
-	delete m_pbar;
 }
 
 void CGLStreamLinePlot::Update()
@@ -95,11 +89,6 @@ void CGLStreamLinePlot::UpdateData(bool bsave)
 void CGLStreamLinePlot::SetVectorType(int ntype)
 {
 	m_nvec = ntype;
-
-	FEModel* fem = GetModel()->GetFEModel();
-	std::string dataName = fem->getDataString(m_nvec, DATA_VECTOR);
-	m_pbar->copy_label(dataName.c_str());
-
 	Update();
 }
 
@@ -231,7 +220,7 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 		break;
 	}
 
-	m_pbar->SetRange(m_crng.x, m_crng.y);
+	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
 
 	// update stream lins
 	UpdateStreamLines();

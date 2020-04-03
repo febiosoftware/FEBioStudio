@@ -2655,7 +2655,8 @@ bool FEBioFormat25::ParseDiscreteSection(XMLTag& tag)
 						double F;
 						tag.value(F);
 						int lc = tag.AttributeValue<int>("lc", -1);
-						// TODO: Assign force to material
+						mat->SetFloatValue(0, F);
+						if (lc > 0) GetFEBioModel().AddParamCurve(mat->GetParamPtr(0), lc - 1);
 					}
 					else ParseUnknownTag(tag);
 					++tag;

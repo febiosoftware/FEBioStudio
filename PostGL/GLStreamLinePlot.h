@@ -4,7 +4,7 @@
 
 namespace Post {
 
-class CGLStreamLinePlot : public CGLPlot
+class CGLStreamLinePlot : public CGLLegendPlot
 {
 	enum { DATA_FIELD, COLOR_MAP, CLIP, STEP_SIZE, DENSITY, THRESHOLD, RANGE, DIVS, USER_MAX, USER_MIN };
 
@@ -45,7 +45,6 @@ public:
 
 public:
 	CGLStreamLinePlot(CGLModel* fem);
-	~CGLStreamLinePlot();
 
 	void Render(CGLContext& rc) override;
 
@@ -113,6 +112,5 @@ private:
 	int		m_rangeType;				//!< dynamic, static, or user-defined
 	double	m_userMin, m_userMax;		//!< range for user-defined range
 	double	m_rngMin, m_rngMax;
-	GLLegendBar*	m_pbar;
 };
 }

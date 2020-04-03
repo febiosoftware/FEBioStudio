@@ -75,3 +75,42 @@ void FEMathVec3Data::eval(int n, vec3f* pv)
 
 	if (pv) *pv = v;
 }
+
+FEMathMat3Data::FEMathMat3Data(FEState* state, FEMathMat3DataField* pdf) : FENodeData_T<mat3f>(state, pdf)
+{
+	m_pdf = pdf;
+}
+
+// evaluate the nodal data for this state
+void FEMathMat3Data::eval(int n, mat3f* pv)
+{
+	if (pv == nullptr) return;
+
+	FEModel& fem = *GetFEModel();
+
+	FEState& state = *m_state;
+	int ntime = state.GetID();
+	double time = (double)state.m_time;
+
+	FEPostMesh& mesh = *state.GetFEMesh();
+
+	CMathParser math;
+	math.set_variable("t", time);
+
+	int ierr;
+	FENode& node = mesh.Node(n);
+
+	vec3f r = fem.NodePosition(n, ntime);
+	math.set_variable("x", (double)r.x);
+	math.set_variable("y", (double)r.y);
+	math.set_variable("z", (double)r.z);
+
+	float m[9] = { 0.f };
+	for (int i = 0; i < 9; ++i)
+	{
+		const std::string& eq = m_pdf->EquationString(i);
+		m[i] = (float) math.eval(eq.c_str(), ierr);
+	}
+
+	*pv = mat3f(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
+}

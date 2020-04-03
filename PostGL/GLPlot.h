@@ -5,6 +5,8 @@
 #include "PostLib/GLObject.h"
 #include "PostLib/DataMap.h"
 
+class GLLegendBar;
+
 namespace Post {
 
 class CGLModel;
@@ -24,4 +26,23 @@ public:
 
 	virtual void UpdateTexture() {}
 };
+
+class CGLLegendPlot : public CGLPlot
+{
+public:
+	CGLLegendPlot(CGLModel* po = 0);
+	virtual ~CGLLegendPlot();
+
+	void SetLegendBar(GLLegendBar* bar);
+	GLLegendBar* GetLegendBar();
+
+	void ChangeName(const std::string& name) override;
+
+	bool ShowLegend() const;
+	void ShowLegend(bool b);
+
+private:
+	GLLegendBar*	m_pbar;
+};
+
 }

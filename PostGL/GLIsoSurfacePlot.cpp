@@ -12,7 +12,7 @@ extern int ET_HEX[12][2];
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CGLIsoSurfacePlot::CGLIsoSurfacePlot(CGLModel* po) : CGLPlot(po)
+CGLIsoSurfacePlot::CGLIsoSurfacePlot(CGLModel* po) : CGLLegendPlot(po)
 {
 	static int n = 1;
 	char szname[128] = { 0 };
@@ -44,20 +44,14 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot(CGLModel* po) : CGLPlot(po)
 	m_Col.SetDivisions(m_nslices);
 	m_Col.SetSmooth(false);
 
-	m_pbar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
-	m_pbar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	m_pbar->SetType(GLLegendBar::DISCRETE);
-	m_pbar->copy_label(szname);
-	m_pbar->ShowTitle(true);
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
+	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+	bar->SetType(GLLegendBar::DISCRETE);
+	bar->copy_label(szname);
+	bar->ShowTitle(true);
+	SetLegendBar(bar);
 
 	UpdateData(false);
-}
-
-CGLIsoSurfacePlot::~CGLIsoSurfacePlot()
-{
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
-	delete m_pbar;	
 }
 
 int CGLIsoSurfacePlot::GetSlices() 
@@ -73,6 +67,8 @@ void CGLIsoSurfacePlot::SetSlices(int nslices)
 
 void CGLIsoSurfacePlot::UpdateData(bool bsave)
 {
+	GLLegendBar* bar = GetLegendBar();
+
 	if (bsave)
 	{
 		m_nfield = GetIntValue(DATA_FIELD);
@@ -80,7 +76,7 @@ void CGLIsoSurfacePlot::UpdateData(bool bsave)
 		AllowClipping(GetBoolValue(CLIP));
 		m_bcut_hidden = GetBoolValue(HIDDEN);
 		m_nslices = GetIntValue(SLICES);
-		if (GetBoolValue(LEGEND)) m_pbar->show(); else m_pbar->hide();
+		if (GetBoolValue(LEGEND)) bar->show(); else bar->hide();
 		m_bsmooth = GetBoolValue(SMOOTH);
 		m_rangeType = GetIntValue(RANGE_TYPE);
 		m_userMax = GetFloatValue(USER_MAX);
@@ -95,7 +91,7 @@ void CGLIsoSurfacePlot::UpdateData(bool bsave)
 		SetBoolValue(CLIP, AllowClipping());
 		SetBoolValue(HIDDEN, m_bcut_hidden);
 		SetIntValue(SLICES, m_nslices);
-		SetBoolValue(LEGEND, m_pbar->visible());
+		SetBoolValue(LEGEND, bar->visible());
 		SetBoolValue(SMOOTH, m_bsmooth);
 		SetIntValue(RANGE_TYPE, m_rangeType);
 		SetFloatValue(USER_MAX, m_userMax);
@@ -367,5 +363,5 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
-	m_pbar->SetRange(m_crng.x, m_crng.y);
+	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
 }

@@ -12,3 +12,8 @@ CGLObject::~CGLObject(void)
 {
 
 }
+
+void CGLObject::ChangeName(const std::string& name)
+{
+	FSObject::SetName(name);
+}

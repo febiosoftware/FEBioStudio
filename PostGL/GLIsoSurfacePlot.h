@@ -5,7 +5,7 @@
 
 namespace Post {
 
-class CGLIsoSurfacePlot : public CGLPlot  
+class CGLIsoSurfacePlot : public CGLLegendPlot
 {
 	enum { DATA_FIELD, COLOR_MAP, CLIP, HIDDEN, SLICES, LEGEND, SMOOTH, RANGE_TYPE, USER_MAX, USER_MIN };
 
@@ -18,7 +18,6 @@ public:
 
 public:
 	CGLIsoSurfacePlot(CGLModel* po);
-	virtual ~CGLIsoSurfacePlot();
 
 	int GetSlices();
 	void SetSlices(int nslices);
@@ -34,9 +33,6 @@ public:
 	void SetEvalField(int n);
 
 	CColorTexture* GetColorMap() { return &m_Col; }
-
-	bool ShowLegend() { return m_pbar->visible(); }
-	void ShowLegend(bool b) { if (b) m_pbar->show(); else m_pbar->hide(); }
 
 	bool CutHidden() { return m_bcut_hidden; }
 	void CutHidden(bool b) { m_bcut_hidden = b; }
@@ -82,7 +78,5 @@ protected:
 
 	int		m_lastTime;
 	float	m_lastdt;
-
-	GLLegendBar*	m_pbar;
 };
 }

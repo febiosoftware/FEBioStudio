@@ -5,13 +5,12 @@
 
 namespace Post {
 
-class CGLSlicePlot : public CGLPlot  
+class CGLSlicePlot : public CGLLegendPlot  
 {
 	enum { DATA_FIELD, COLOR_MAP, CLIP, SHOW_LEGEND, SLICES, SLICE_OFFSET, RANGE, RANGE_MAX, RANGE_MIN, NORMAL_X, NORMAL_Y, NORMAL_Z };
 
 public:
 	CGLSlicePlot(CGLModel* po);
-	virtual ~CGLSlicePlot();
 
 	void SetBoundingBox(BOX box) { m_box = box; }
 
@@ -29,9 +28,6 @@ public:
 	CColorTexture* GetColorMap() { return &m_Col; }
 
 	void Update(int ntime, float dt, bool breset) override;
-
-	bool ShowLegend() { return m_pbar->visible(); }
-	void ShowLegend(bool b) { if (b) m_pbar->show(); else m_pbar->hide(); }
 
 	void SetRangeType(int ntype) { m_nrange = ntype; }
 	int GetRangeType() const { return m_nrange; }
@@ -72,7 +68,5 @@ protected:
 
 	int m_lastTime;
 	float	m_lastDt;
-
-	GLLegendBar*	m_pbar;
 };
 }

@@ -11,11 +11,12 @@ public:
 	CDlgAddEquation(QWidget* parent = 0);
 
 	QString GetDataName();
-	QString GetEquation(int n = 0);
+
 	int GetDataType();
 
-protected slots:
-	void typeChanged(int n);
+	QString GetScalarEquation();
+	QStringList GetVectorEquations();
+	QStringList GetMatrixEquations();
 
 private:
 	CDlgAddEquation_UI*	ui;

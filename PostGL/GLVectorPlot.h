@@ -2,11 +2,10 @@
 #include "GLPlot.h"
 
 class GLUquadric;
-class GLLegendBar;
 
 namespace Post {
 
-class CGLVectorPlot : public CGLPlot 
+class CGLVectorPlot : public CGLLegendPlot 
 {
 	enum { 
 		DATA_FIELD, 
@@ -45,7 +44,6 @@ public:
 
 public:
 	CGLVectorPlot(CGLModel* po);
-	virtual ~CGLVectorPlot();
 
 	void Render(CGLContext& rc) override;
 
@@ -125,7 +123,5 @@ protected:
 	vec2f			m_staticRange;
 
 	float			m_fscale;	// total scale factor for rendering
-
-	GLLegendBar*	m_pbar;
 };
 }

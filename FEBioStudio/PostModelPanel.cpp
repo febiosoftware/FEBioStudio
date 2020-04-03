@@ -781,7 +781,11 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 	if (item) item->setText(0, name);
 
 	Post::CGLObject* po = selectedObject();
-	if (po) po->SetName(name.toStdString());
+	if (po)
+	{
+		po->ChangeName(name.toStdString());
+		GetMainWindow()->RedrawGL();
+	}
 }
 
 void CPostModelPanel::on_deleteButton_clicked()

@@ -10,7 +10,7 @@ using namespace Post;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLPlot(po)
+CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLLegendPlot(po)
 {
 	static int n = 1;
 	char szname[128] = {0};
@@ -60,22 +60,16 @@ CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLPlot(po)
 	m_usr[0] = 0.0;
 	m_usr[1] = 1.0;
 
-	m_pbar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	m_pbar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
-	m_pbar->SetOrientation(GLLegendBar::HORIZONTAL);
-	m_pbar->copy_label(szname);
-	CGLWidgetManager::GetInstance()->AddWidget(m_pbar);
+	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
+	bar->align(GLW_ALIGN_BOTTOM | GLW_ALIGN_HCENTER);
+	bar->SetOrientation(GLLegendBar::HORIZONTAL);
+	bar->copy_label(szname);
+	SetLegendBar(bar);
 
-	m_pbar->hide();
-	m_pbar->ShowTitle(true);
+	bar->hide();
+	bar->ShowTitle(true);
 
 	UpdateData(false);
-}
-
-CGLVectorPlot::~CGLVectorPlot()
-{
-	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
-	delete m_pbar;
 }
 
 void CGLVectorPlot::UpdateData(bool bsave)
@@ -97,11 +91,12 @@ void CGLVectorPlot::UpdateData(bool bsave)
 		m_usr[1] = GetFloatValue(USER_MAX);
 		m_usr[0] = GetFloatValue(USER_MIN);
 
-		if ((m_ncol == 0) || !IsActive()) m_pbar->hide();
+		GLLegendBar* bar = GetLegendBar();
+		if ((m_ncol == 0) || !IsActive()) bar->hide();
 		else
 		{
-			m_pbar->SetRange(m_crng.x, m_crng.y);
-			m_pbar->show();
+			bar->SetRange(m_crng.x, m_crng.y);
+			bar->show();
 		}
 	}
 	else
@@ -402,12 +397,13 @@ void CGLVectorPlot::Update()
 
 void CGLVectorPlot::Activate(bool b)
 {
-	CGLPlot::Activate(b);
-	if ((m_ncol == 0) || !IsActive()) m_pbar->hide();
+	CGLLegendPlot::Activate(b);
+	GLLegendBar* bar = GetLegendBar();
+	if ((m_ncol == 0) || !IsActive()) bar->hide();
 	else
 	{
-		m_pbar->SetRange(m_crng.x, m_crng.y);
-		m_pbar->show();
+		bar->SetRange(m_crng.x, m_crng.y);
+		bar->show();
 	}
 }
 
@@ -513,7 +509,8 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
 	// update the color bar's range
-	m_pbar->SetRange(m_crng.x, m_crng.y);
+	GLLegendBar* bar = GetLegendBar();
+	bar->SetRange(m_crng.x, m_crng.y);
 }
 
 void CGLVectorPlot::UpdateState(int nstate)
