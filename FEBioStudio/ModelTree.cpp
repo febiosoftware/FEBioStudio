@@ -194,6 +194,27 @@ private:
 	FERigidConstraint*	m_rc;	
 };
 
+class CRigidInterfaceValidator : public CObjectValidator
+{
+public:
+	CRigidInterfaceValidator(FERigidInterface* ri) : m_ri(ri) {}
+
+	QString GetErrorString() const 
+	{ 
+		if (m_ri->GetRigidBody() == nullptr) return "No rigid body assigned"; 
+		else if (m_ri->GetItemList() == nullptr) return "No selection assigned";
+		else return "";
+	}
+
+	bool IsValid() 
+	{ 
+		return ((m_ri->GetRigidBody() != nullptr) && (m_ri->GetItemList() != nullptr)); 
+	}
+
+private:
+	FERigidInterface*	m_ri;
+};
+
 class CFEBioJobProps : public CPropertyList
 {
 public:
@@ -1218,7 +1239,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				FERigidInterface* pi = dynamic_cast<FERigidInterface*>(ps->Interface(i));
 				if (pi)
 				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), 0, flags);
+					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), new CRigidInterfaceValidator(pi), flags);
 					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}

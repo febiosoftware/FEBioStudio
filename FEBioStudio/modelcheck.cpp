@@ -57,6 +57,9 @@ void check_014(CDocument* doc, std::vector<FSObject*>& objList);
 // do rigid connectors have two rigid bodies defined
 void check_015(CDocument* doc, std::vector<FSObject*>& objList);
 
+// check if a rigid interface was assigned a rigid body
+void check_016(CDocument* doc, std::vector<FSObject*>& objList);
+
 typedef void(*ERROR_FUNC)(CDocument*, std::vector<FSObject*>&);
 
 struct ERROR_DATA
@@ -83,6 +86,7 @@ vector<ERROR_DATA> error = {
 	{ CRITICAL, "Some shells in part \"%s\" have zero thickness.", check_013 },
 	{ WARNING , "Rigid connector \"%s\" connects the same rigid body.", check_014 },
 	{ CRITICAL, "Rigid connector \"%s\" does not connect two rigid bodies.", check_015 },
+	{ CRITICAL, "A rigid body was not assigned to rigid interface \"%s\".", check_016 }
 };
 
 const char* errorString(int error_code)
@@ -500,6 +504,25 @@ void check_015(CDocument* doc, std::vector<FSObject*>& objList)
 			if ((rc->m_rbA == -1) || (rc->m_rbB == -1))
 			{
 				objList.push_back(rc);
+			}
+		}
+	}
+}
+
+// check if a rigid interface was assigned a rigid body
+void check_016(CDocument* doc, std::vector<FSObject*>& objList)
+{
+	FEModel& fem = *doc->GetFEModel();
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		int ni = pstep->Interfaces();
+		for (int j = 0; j < ni; ++j)
+		{
+			FERigidInterface* ri = dynamic_cast<FERigidInterface*>(pstep->Interface(j));
+			if (ri->GetRigidBody() == nullptr)
+			{
+				objList.push_back(ri);
 			}
 		}
 	}
