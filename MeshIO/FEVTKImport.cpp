@@ -49,36 +49,31 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 	
 	// read the nodes
 	//Check how many nodes are there in each line
-	ch = fgets(szline, 255, m_fp);
-	if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-
-	nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
-	if (nread%3 != 0 && nread>9) 
-		return errf("An error occured while reading the nodal coordinates.");
-	int nodes_each_row = nread/3;
-	double temp2 = double(nodes)/nodes_each_row;
-	int rows = ceil(temp2);
-	for (i=0; i<rows; ++i)
-	{	
-		for (j=0,k=0;j<nodes_each_row && i*nodes_each_row+j <nodes;j++)
-		{
-			FENode& n= pm->Node(i*nodes_each_row+j);
-			vec3d& r = n.r;
-			r.x = temp[k];
-			r.y = temp[k+1];
-			r.z = temp[k+2];
-			k +=3;
-		}
+	int nodesRead = 0;
+	while (nodesRead < nodes)
+	{
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 
-		nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
-		if (nread%3 != 0 && nread != -1)
-		{ 			
-			if (i+1 != nodes/nodes_each_row)
-				return errf("An error occured while reading the nodal coordinates.");
+		nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7], &temp[8]);
+		if (nread % 3 != 0 && nread > 9)
+			return errf("An error occured while reading the nodal coordinates.");
+
+		int nodes_in_row = nread / 3;
+
+		k = 0;
+		for (j=0; j<nodes_in_row; ++j)
+		{
+			FENode& n = pm->Node(nodesRead++);
+			vec3d& r = n.r;
+			r.x = temp[k    ];
+			r.y = temp[k + 1];
+			r.z = temp[k + 2];
+			k += 3;
 		}
 	}
+	assert(nodesRead == nodes);
+
 	//Reading element data
 	while(1)
 	{		
@@ -97,19 +92,18 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 	pm->Create(0, elems);
 
 	// read the elements
-	int n[9];
+	int n[FEElement::MAX_NODES + 1];
 	for (i=0; i<elems; ++i)
 	{	
 		FEElement& el = pm->Element(i);
 		el.m_gid = 0;
 		ch = fgets(szline, 255, m_fp);
 		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-		nread = sscanf(szline, "%d%d%d%d%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4],&n[5],&n[6],&n[7],&n[8]);
+		nread = sscanf(szline, "%d%d%d%d%d%d%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4],&n[5],&n[6],&n[7],&n[8], &n[9], &n[10]);
 		int min = 0;
 		switch (n[0])
 		{
 		case 3: 
-
 			el.SetType(FE_TRI3);
 			el.m_node[0] = n[1]-min;
 			el.m_node[1] = n[2]-min;
@@ -135,6 +129,19 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 			el.m_node[5] = n[6]-min;
 			el.m_node[6] = n[7]-min;
 			el.m_node[7] = n[8]-min;
+			break;
+		case 10:
+			el.SetType(FE_TET10);
+			el.m_node[0] = n[ 1] - min;
+			el.m_node[1] = n[ 2] - min;
+			el.m_node[2] = n[ 3] - min;
+			el.m_node[3] = n[ 4] - min;
+			el.m_node[4] = n[ 5] - min;
+			el.m_node[5] = n[ 6] - min;
+			el.m_node[6] = n[ 7] - min;
+			el.m_node[7] = n[ 8] - min;
+			el.m_node[8] = n[ 9] - min;
+			el.m_node[9] = n[10] - min;
 			break;
 		default:
 			delete pm;
@@ -174,11 +181,11 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 			ch = fgets(szline, 255, m_fp);
 			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 
-			nodes_each_row = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
+			int nodes_each_row = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
 			if (nodes_each_row>9) 
 				return errf("An error occured while reading the nodal coordinates.");
 			double temp2 = double(size)/nodes_each_row;
-			rows = ceil(temp2);
+			int rows = ceil(temp2);
 			for (i=0; i<rows; ++i)
 			{	
 				for (j=0;j<nodes_each_row && i*nodes_each_row+j <size;j++)
