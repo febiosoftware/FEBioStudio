@@ -47,6 +47,28 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), w, SLOT(reject()));
 	}
 
+	void AddMaterial(FEMaterial* mat, QTreeWidgetItem* item)
+	{
+		for (int j = 0; j < mat->Parameters(); ++j)
+		{
+			Param& paramj = mat->GetParam(j);
+			QTreeWidgetItem* paramItem = new QTreeWidgetItem(QStringList() << paramj.GetShortName(), 2);
+			item->addChild(paramItem);
+		}
+
+		for (int j = 0; j < mat->Properties(); ++j)
+		{
+			FEMaterialProperty& prop = mat->GetProperty(j);
+			FEMaterial* mj = mat->GetProperty(j).GetMaterial();
+			if (mj)
+			{
+				QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(prop.GetName()), 2);
+				AddMaterial(mj, matItem);
+				item->addChild(matItem);
+			}
+		}
+	}
+
 	void BuildTree()
 	{
 		QTreeWidgetItem* root = new QTreeWidgetItem(QStringList() << "fem", 0);
@@ -60,12 +82,8 @@ public:
 				GMaterial* mat = m_fem->GetMaterial(i);
 				QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(mat->GetName()), 1);
 				FEMaterial* matProps = mat->GetMaterialProperties();
-				for (int j = 0; j < matProps->Parameters(); ++j)
-				{
-					Param& paramj = matProps->GetParam(j);
-					QTreeWidgetItem* paramItem = new QTreeWidgetItem(QStringList() << paramj.GetShortName(), 2);
-					matItem->addChild(paramItem);
-				}
+
+				AddMaterial(matProps, matItem);
 				root->addChild(matItem);
 			}
 		}
