@@ -83,6 +83,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	if (jobList.isEmpty() == false) dlg.SetJobNames(jobList);
 	if (jobName.isEmpty() == false) dlg.SetJobName(jobName);
 	dlg.SetLaunchConfig(ui->m_launch_configs, lastLaunchConfigIndex);
+	dlg.SetFEBioFileVersion(lastFEBioFileVersion);
 
 	if (doc->FEBioJobs() > 0)
 	{

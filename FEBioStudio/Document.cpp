@@ -107,6 +107,7 @@ void VIEW_SETTINGS::Defaults()
 	m_diffuse = 0.8f;
 
 	m_transparencyMode = 0; // = off
+	m_objectColor = 0; // = default (by material)
 }
 
 //=============================================================================

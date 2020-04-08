@@ -247,6 +247,11 @@ void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int nde
 	ui->m_last_index = ndefault;
 }
 
+void CDlgRun::SetFEBioFileVersion(int fileVersion)
+{
+	ui->febioFile->setCurrentIndex(fileVersion);
+}
+
 QString CDlgRun::GetWorkingDirectory()
 {
 	return ui->cwd->text();

@@ -125,6 +125,11 @@ void GModel::Clear()
 	// cleanup all objects
 	imp->m_Obj.Clear();
 
+	// clear mesh layers
+	delete imp->m_mlm;
+	imp->m_mlm = new MeshLayerManager(this);
+	imp->m_mlm->AddLayer("Default");
+
 	// cleanup all groups
 	imp->m_GPart.Clear();
 	imp->m_GFace.Clear();

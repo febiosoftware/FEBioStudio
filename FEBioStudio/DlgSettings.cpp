@@ -56,6 +56,7 @@ public:
         vconv <<"First-angle projection (XZ)"<<"First-angle projection (XY)"<<"Third-angle projection (XY)";
         addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
+		addEnumProperty(&m_nobjcol, "Object color")->setEnumValues(QStringList() << "Default" << "Object");
 	}
 
 public:
@@ -66,6 +67,7 @@ public:
 	double	m_scaleNormal;
     int     m_nconv;
 	int		m_ntrans;
+	int		m_nobjcol;
 };
 
 //-----------------------------------------------------------------------------
@@ -137,6 +139,7 @@ public:
 		addEnumProperty(&m_ntagInfo, "Tag info")->setEnumValues(QStringList() << "Item numbers" << "Item numbers and connecting nodes");
 		addBoolProperty(&m_backface, "Ignore backfacing items");
 		addBoolProperty(&m_binterior, "Ignore interior items");
+		addBoolProperty(&m_bpart    , "Respect partitions");
 		m_bconnect = false;
 		m_ntagInfo = 0;
 	}
@@ -146,6 +149,7 @@ public:
 	int		m_ntagInfo;
 	bool	m_backface;
 	bool	m_binterior;
+	bool	m_bpart;
 };
 
 //-----------------------------------------------------------------------------
@@ -665,6 +669,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_display->m_scaleNormal = view.m_scaleNormals;
     ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
+	ui->m_display->m_nobjcol = view.m_objectColor;
 
 	ui->m_physics->m_showRigidJoints = view.m_brigid;
 	ui->m_physics->m_showRigidWalls = view.m_bwall;
@@ -681,6 +686,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_select->m_ntagInfo = view.m_ntagInfo;
 	ui->m_select->m_backface = view.m_bcullSel;
 	ui->m_select->m_binterior = view.m_bext;
+	ui->m_select->m_bpart = view.m_bpart;
 
 	ui->m_light->m_blight = view.m_bLighting;
 	ui->m_light->m_diffuse = view.m_diffuse;
@@ -745,6 +751,7 @@ void CDlgSettings::apply()
 	view.m_scaleNormals = ui->m_display->m_scaleNormal;
     view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
+	view.m_objectColor = ui->m_display->m_nobjcol;
 
 	view.m_brigid = ui->m_physics->m_showRigidJoints;
 	view.m_bwall = ui->m_physics->m_showRigidWalls;
@@ -760,6 +767,7 @@ void CDlgSettings::apply()
 	view.m_ntagInfo = ui->m_select->m_ntagInfo;
 	view.m_bcullSel = ui->m_select->m_backface;
 	view.m_bext = ui->m_select->m_binterior;
+	view.m_bpart = ui->m_select->m_bpart;
 
 	view.m_bLighting = ui->m_light->m_blight;
 	view.m_diffuse   = ui->m_light->m_diffuse;

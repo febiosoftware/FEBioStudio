@@ -6296,12 +6296,21 @@ void CGLView::RenderSurfaces(GObject* po)
 				// material, we need to change the mat props
 				if (pg != pgmat)
 				{
-					GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-					SetMatProps(pmat);
-					GLColor c = po->GetColor();
-					if (pmat) c = pmat->Diffuse();
-					glColor3ub(c.r, c.g, c.b);
-					pgmat = pg;
+					if (vs.m_objectColor == 0)
+					{
+						GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
+						SetMatProps(pmat);
+						GLColor c = po->GetColor();
+						if (pmat) c = pmat->Diffuse();
+						glColor3ub(c.r, c.g, c.b);
+						pgmat = pg;
+					}
+					else
+					{
+						SetMatProps(0);
+						GLColor c = po->GetColor();
+						glColor3ub(c.r, c.g, c.b);
+					}
 				}
 
 				if (vs.m_transparencyMode != 0)
@@ -6513,14 +6522,23 @@ void CGLView::RenderParts(GObject* po)
 		{
 			// if this part is not the current part defining the 
 			// material, we need to change the mat props
-			if (pg != pgmat)
+			if (vs.m_objectColor == 0)
 			{
-				GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-				SetMatProps(pmat);
+				if (pg != pgmat)
+				{
+					GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
+					SetMatProps(pmat);
+					GLColor c = po->GetColor();
+					if (pmat) c = pmat->Diffuse();
+					glColor3ub(c.r, c.g, c.b);
+					pgmat = pg;
+				}
+			}
+			else
+			{
+				SetMatProps(0);
 				GLColor c = po->GetColor();
-				if (pmat) c = pmat->Diffuse();
 				glColor3ub(c.r, c.g, c.b);
-				pgmat = pg;
 			}
 
 			if (vs.m_transparencyMode != 0)
@@ -6618,15 +6636,24 @@ void CGLView::RenderObject(GObject* po)
 			{
 				// if this part is not the current part defining the 
 				// material, we need to change the mat props
-				if (pg != pgmat)
+				if (vs.m_objectColor == 0)
 				{
-					GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-					SetMatProps(pmat);
-					GLColor c = po->GetColor();
-					if (pmat) c = pmat->Diffuse();
+					if (pg != pgmat)
+					{
+						GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
+						SetMatProps(pmat);
+						GLColor c = po->GetColor();
+						if (pmat) c = pmat->Diffuse();
 
+						glColor3ub(c.r, c.g, c.b);
+						pgmat = pg;
+					}
+				}
+				else
+				{
+					SetMatProps(0);
+					GLColor c = po->GetColor();
 					glColor3ub(c.r, c.g, c.b);
-					pgmat = pg;
 				}
 
 				if (vs.m_transparencyMode != 0)
@@ -6828,28 +6855,31 @@ void CGLView::RenderFEFaces(GObject* po)
 		{
 			if (pg && pg->IsVisible())
 			{
-				if (pg->GetMaterialID() != nmatid)
+				if (view.m_objectColor == 0)
 				{
-					nmatid = pg->GetMaterialID();
-					GMaterial* pmat = fem.GetMaterialFromID(nmatid);
-					SetMatProps(pmat);
-					if (view.m_bcontour)
+					if (pg->GetMaterialID() != nmatid)
 					{
-						if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
-							dif = map.map(data.GetElementValue(face.m_elem[0].eid));
-						else
-							dif = GLColor(212, 212, 212);
-					}
-					else dif = (pmat ? pmat->Diffuse() : col);
-					glColor3ub(dif.r, dif.g, dif.b);
+						nmatid = pg->GetMaterialID();
+						GMaterial* pmat = fem.GetMaterialFromID(nmatid);
+						SetMatProps(pmat);
+						if (view.m_bcontour)
+						{
+							if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
+								dif = map.map(data.GetElementValue(face.m_elem[0].eid));
+							else
+								dif = GLColor(212, 212, 212);
+						}
+						else dif = (pmat ? pmat->Diffuse() : col);
+						glColor3ub(dif.r, dif.g, dif.b);
 
-					int glmode = 0;
-					if (pmat && (pmat->m_nrender != 0))
-					{
-						GLint n[2];
-						glGetIntegerv(GL_POLYGON_MODE, n);
-						glmode = n[1];
-						if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						int glmode = 0;
+						if (pmat && (pmat->m_nrender != 0))
+						{
+							GLint n[2];
+							glGetIntegerv(GL_POLYGON_MODE, n);
+							glmode = n[1];
+							if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						}
 					}
 				}
 
@@ -7076,33 +7106,36 @@ void CGLView::RenderFEElements(GObject* po)
 			GPart* pg = po->Part(el.m_gid);
 			if (pg->IsVisible())
 			{
-				if ((pg->GetMaterialID() != nmatid) || (view.m_bcontour))
+				if (view.m_objectColor == 0)
 				{
-					GMaterial* pmat = 0;
-					if (pg->GetMaterialID() != nmatid)
+					if ((pg->GetMaterialID() != nmatid) || (view.m_bcontour))
 					{
-						nmatid = pg->GetMaterialID();
-						pmat = fem.GetMaterialFromID(nmatid);
-						SetMatProps(pmat);
-					}
+						GMaterial* pmat = 0;
+						if (pg->GetMaterialID() != nmatid)
+						{
+							nmatid = pg->GetMaterialID();
+							pmat = fem.GetMaterialFromID(nmatid);
+							SetMatProps(pmat);
+						}
 
-					if (view.m_bcontour)
-					{
-						if (data.GetElementDataTag(i) > 0)
-							dif = map.map(data.GetElementValue(i));
-						else
-							dif = GLColor(212, 212, 212);
-					}
-					else dif = (pmat != 0 ? pmat->Diffuse() : col);
+						if (view.m_bcontour)
+						{
+							if (data.GetElementDataTag(i) > 0)
+								dif = map.map(data.GetElementValue(i));
+							else
+								dif = GLColor(212, 212, 212);
+						}
+						else dif = (pmat != 0 ? pmat->Diffuse() : col);
 
-					glColor3ub(dif.r, dif.g, dif.b);
+						glColor3ub(dif.r, dif.g, dif.b);
 
-					if (pmat && (pmat->m_nrender != 0))
-					{
-						GLint n[2];
-						glGetIntegerv(GL_POLYGON_MODE, n);
-						glmode = n[1];
-						if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						if (pmat && (pmat->m_nrender != 0))
+						{
+							GLint n[2];
+							glGetIntegerv(GL_POLYGON_MODE, n);
+							glmode = n[1];
+							if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						}
 					}
 				}
 
