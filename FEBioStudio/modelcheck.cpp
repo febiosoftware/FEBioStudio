@@ -520,7 +520,7 @@ void check_016(CDocument* doc, std::vector<FSObject*>& objList)
 		for (int j = 0; j < ni; ++j)
 		{
 			FERigidInterface* ri = dynamic_cast<FERigidInterface*>(pstep->Interface(j));
-			if (ri->GetRigidBody() == nullptr)
+			if (ri && (ri->GetRigidBody() == nullptr))
 			{
 				objList.push_back(ri);
 			}
