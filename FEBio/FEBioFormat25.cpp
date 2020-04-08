@@ -300,6 +300,9 @@ void FEBioFormat25::ParseGeometryNodeSet(FEBioModel::Part* part, XMLTag& tag)
 	if (tag.isleaf())
 	{
 		tag.value(list);
+
+		// make the list zero-based
+		for (int i = 0; i < list.size(); ++i) list[i]--;
 	}
 	else
 	{
@@ -1838,6 +1841,7 @@ void FEBioFormat25::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 {
 	XMLAtt& att = tag.Attribute("type");
 	if      (att == "const"      ) ParseBodyForce (pstep, tag);
+	else if (att == "non-const"  ) ParseNonConstBodyForce(pstep, tag);
 	else if (att == "heat_source") ParseHeatSource(pstep, tag);
 	else ParseUnknownAttribute(tag, "type");
 }
@@ -2711,6 +2715,27 @@ void FEBioFormat25::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 		if (ReadParam(*pbl, tag) == false) ParseUnknownTag(tag);
 		else ++tag;
 	}
+	while (!tag.isend());
+
+	char szname[256] = { 0 };
+	sprintf(szname, "BodyForce%02d", CountLoads<FEBodyForce>(fem));
+	pbl->SetName(szname);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat25::ParseNonConstBodyForce(FEStep *pstep, XMLTag &tag)
+{
+	FEModel& fem = GetFEModel();
+
+	FEBodyForce* pbl = new FEBodyForce(&fem, pstep->GetID());
+	pstep->AddComponent(pbl);
+
+	++tag;
+	do
+	{
+		if (ReadParam(*pbl, tag) == false) ParseUnknownTag(tag);
+		else ++tag;
+	} 
 	while (!tag.isend());
 
 	char szname[256] = { 0 };

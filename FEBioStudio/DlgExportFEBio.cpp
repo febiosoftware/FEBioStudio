@@ -13,7 +13,6 @@ class Ui::CDlgExportFEBio
 {
 public:
 	QComboBox*	combo;
-	QCheckBox*  part;
 	QCheckBox*	sel;
 	QCheckBox*	comp;
 	QCheckBox*	notes;
@@ -29,7 +28,6 @@ public:
 		combo->addItem("febio_spec 2.0");
 		combo->addItem("febio_spec 2.5");
 		combo->addItem("febio_spec 3.0");
-		combo->setCurrentIndex(2);
 		l->setBuddy(combo);
 
 		QHBoxLayout* formatLayout = new QHBoxLayout;
@@ -40,8 +38,6 @@ public:
 		sel = new QCheckBox("export named selections (version 2.5)");
 		sel->setChecked(true);
 
-		part = new QCheckBox("export parts (version 2.5)");
-
 		comp = new QCheckBox("Use plotfile compression");
 
 		notes = new QCheckBox("Write notes (version 2.5 and up)");
@@ -50,7 +46,6 @@ public:
 		QVBoxLayout* topLayout = new QVBoxLayout;
 		topLayout->addLayout(formatLayout);
 		topLayout->addWidget(sel);
-		topLayout->addWidget(part);
 		topLayout->addWidget(notes);
 		topLayout->addWidget(comp);
 
@@ -115,14 +110,17 @@ public:
 	}
 };
 
+int CDlgExportFEBio::m_nversion = -1;
+
 CDlgExportFEBio::CDlgExportFEBio(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgExportFEBio)
 {
 	ui->setupUi(this);
-	m_bexportParts = false;
 	m_compress = false;
 	m_bexportSelections = false;
 
-	m_nversion = 2;
+	if (m_nversion == -1) m_nversion = 2;
+	ui->combo->setCurrentIndex(m_nversion);
+
 	for (int i=0; i<MAX_SECTIONS; ++i) 
 	{
 		m_nsection[i] = true;
@@ -133,7 +131,6 @@ CDlgExportFEBio::CDlgExportFEBio(QWidget* parent) : QDialog(parent), ui(new Ui::
 void CDlgExportFEBio::accept()
 {
 	m_nversion = ui->combo->currentIndex();
-	m_bexportParts = ui->part->isChecked();
 	m_compress = ui->comp->isChecked();
 	m_bexportSelections = ui->sel->isChecked();
 	m_writeNotes = ui->notes->isChecked();

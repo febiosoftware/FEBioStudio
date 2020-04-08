@@ -143,14 +143,15 @@ protected:
 	void WriteRigidConstraints(FEStep& s);
 
 	void WriteBodyLoads(FEStep& s);
-	void WriteBodyLoad(FEBodyLoad* pbl, GPart* pg);
-	void WriteBodyForce(FEBodyForce* pbf, GPart* pg);
-	void WriteHeatSource(FEHeatSource* phs, GPart* pg);
+	void WriteBodyLoad(FEBodyLoad* pbl);
+	void WriteBodyForce(FEBodyForce* pbf);
+	void WriteHeatSource(FEHeatSource* phs);
 
 	// Used by new Part export feature
 	void WriteGeometryObject(Part* po);
 	void WriteGeometryNodeSetsNew();
 	void WriteGeometrySurfacesNew();
+	void WriteGeometryElementSetsNew();
 
 	void WriteElementDataSection();
 	void WriteSurfaceDataSection();
@@ -215,6 +216,7 @@ protected:
 protected:
 	const char* GetSurfaceName(FEItemListBuilder* pl);
 	string GetNodeSetName(FEItemListBuilder* pl);
+	string GetElementSetName(FEItemListBuilder* pl);
 
 	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);
 	void AddSurface(const std::string& name, FEItemListBuilder* pl);

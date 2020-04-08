@@ -15,6 +15,7 @@ using namespace std;
 //-----------------------------------------------------------------------------
 // defined in FEFEBioExport25.cpp
 FENodeList* BuildNodeList(GFace* pf);
+FENodeList* BuildNodeList(GPart* pg);
 FENodeList* BuildNodeList(GNode* pn);
 FEFaceList* BuildFaceList(GFace* face);
 const char* ElementTypeString(int ntype);
@@ -67,6 +68,16 @@ const char* FEBioExport3::GetSurfaceName(FEItemListBuilder* pl)
 }
 
 //----------------------------------------------------------------------------
+string FEBioExport3::GetElementSetName(FEItemListBuilder* pl)
+{
+	int N = (int)m_pESet.size();
+	for (int i = 0; i<N; ++i)
+		if (m_pESet[i].second == pl) return m_pESet[i].first.c_str();
+	assert(false);
+	return "";
+}
+
+//----------------------------------------------------------------------------
 string FEBioExport3::GetNodeSetName(FEItemListBuilder* pl)
 {
 	// search the nodesets first
@@ -81,6 +92,15 @@ string FEBioExport3::GetNodeSetName(FEItemListBuilder* pl)
 		{
 			string surfName = m_pSurf[i].first;
 			return string("@surface:") + surfName;
+		}
+
+	// search the element sets
+	N = (int)m_pESet.size();
+	for (int i=0; i<N; ++i)
+		if (m_pESet[i].second == pl)
+		{
+			string setName = m_pESet[i].first;
+			return string("@elem_set:") + setName;
 		}
 
 	assert(false);
@@ -122,6 +142,29 @@ void FEBioExport3::AddNodeSet(const std::string& name, FEItemListBuilder* pl)
 			}
 		}
 		break;
+		case GO_PART:
+		{
+			GPartList* itemList = dynamic_cast<GPartList*>(pl); assert(itemList);
+			vector<GPart*> partList = itemList->GetPartList();
+			for (int i = 0; i<partList.size(); ++i)
+			{
+				GPart* pg = partList[i];
+				GObject* po = dynamic_cast<GObject*>(pg->Object());
+				Part* part = FindPart(po);
+				NodeSet* ns = part->FindNodeSet(pg->GetName());
+				if (ns == 0) part->m_NSet.push_back(new NodeSet(pg->GetName(), BuildNodeList(pg)));
+			}
+		}
+		break;
+		case FE_NODESET:
+		{
+			FENodeSet* nset = dynamic_cast<FENodeSet*>(pl); assert(nset);
+			GObject* po = nset->GetGObject();
+			Part* part = FindPart(po);
+			NodeSet* ns = part->FindNodeSet(name);
+			if (ns == 0) part->m_NSet.push_back(new NodeSet(name, nset->BuildNodeList()));
+		}
+		break;
 		case FE_SURFACE:
 		{
 			FESurface* face = dynamic_cast<FESurface*>(pl); assert(face);
@@ -131,6 +174,8 @@ void FEBioExport3::AddNodeSet(const std::string& name, FEItemListBuilder* pl)
 			if (ns == 0) part->m_NSet.push_back(new NodeSet(name, face->BuildNodeList()));
 		}
 		break;
+		default:
+			assert(false);
 		}
 	}
 
@@ -272,6 +317,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				if (name.empty()) name = pl->GetName();
 
 				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
+				else if (ps->Type() == GO_PART) AddElemSet(name, ps);
 				else AddNodeSet(name, ps);
 			}
 		}
@@ -288,7 +334,20 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				if (name.empty()) name = pl->GetName();
 
 				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
+				else if (ps->Type() == GO_PART) AddElemSet(name, ps);
 				else AddNodeSet(name, ps);
+			}
+
+			FEBodyLoad* pbl = dynamic_cast<FEBodyLoad*>(pstep->Load(j));
+			if (pbl && pbl->IsActive())
+			{
+				FEItemListBuilder* ps = pbl->GetItemList();
+				if (ps)
+				{
+					string name = ps->GetName();
+					if (name.empty()) name = pbl->GetName();
+					if (ps->Type() == GO_PART) AddElemSet(name, ps);
+				}
 			}
 		}
 		for (int j = 0; j<pstep->ICs(); ++j)
@@ -384,29 +443,29 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 
 				if (pi && pi->IsActive())
 				{
-					FEItemListBuilder* pms = pi->GetMasterSurfaceList();
-					if (pms == 0) throw InvalidItemListBuilder(pi);
-
-					string name = pms->GetName();
-					const char* szname = name.c_str();
-					if ((szname == 0) || (szname[0] == 0))
-					{
-						sprintf(szbuf, "%s_master", pi->GetName().c_str());
-						szname = szbuf;
-					}
-					AddSurface(szname, pms);
-
 					FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
 					if (pss == 0) throw InvalidItemListBuilder(pi);
 
-					name = pss->GetName();
-					szname = name.c_str();
+					string name = pss->GetName();
+					const char* szname = name.c_str();
 					if ((szname == 0) || (szname[0] == 0))
 					{
-						sprintf(szbuf, "%s_slave", pi->GetName().c_str());
+						sprintf(szbuf, "%s_primary", pi->GetName().c_str());
 						szname = szbuf;
 					}
 					AddSurface(szname, pss);
+
+					FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+					if (pms == 0) throw InvalidItemListBuilder(pi);
+
+					name = pms->GetName();
+					szname = name.c_str();
+					if ((szname == 0) || (szname[0] == 0))
+					{
+						sprintf(szbuf, "%s_secondary", pi->GetName().c_str());
+						szname = szbuf;
+					}
+					AddSurface(szname, pms);
 				}
 
 				FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*>(pj);
@@ -701,16 +760,6 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 				m_xml.close_branch(); // Discrete
 			}
 
-			// loadcurve data
-			if ((m_pLC.size() > 0) && (m_section[FEBIO_LOADDATA]))
-			{
-				m_xml.add_branch("LoadData");
-				{
-					WriteLoadDataSection();
-				}
-				m_xml.close_branch(); // LoadData
-			}
-
 			// step data
 			if (m_section[FEBIO_STEPS])
 			{
@@ -719,6 +768,16 @@ bool FEBioExport3::Export(FEProject& prj, const char* szfile)
 					WriteStepSection();
 				}
 				m_xml.close_branch();
+			}
+
+			// loadcurve data
+			if ((m_pLC.size() > 0) && (m_section[FEBIO_LOADDATA]))
+			{
+				m_xml.add_branch("LoadData");
+				{
+					WriteLoadDataSection();
+				}
+				m_xml.close_branch(); // LoadData
 			}
 
 			// Output data
@@ -911,15 +970,31 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
-	m_xml.add_leaf("diverge_reform", ops.bdivref);
-	m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("diverge_reform", ops.bdivref);
+		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.bminbw)
+		{
+			m_xml.add_leaf("optimize_bw", 1);
+		}
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
 
 	if (ops.bauto)
 	{
@@ -941,24 +1016,6 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1796,6 +1853,9 @@ void FEBioExport3::WriteGeometrySectionNew()
 	// write the global surfaces
 	WriteGeometrySurfacesNew();
 
+	// write the global element sets
+	WriteGeometryElementSetsNew();
+
 	// write the surface pairs
 	WriteGeometrySurfacePairs();
 }
@@ -1917,11 +1977,8 @@ void FEBioExport3::WriteGeometryNodeSetsNew()
 			{
 				GNode* node = nodeList[i];
 				GObject* po = dynamic_cast<GObject*>(node->Object());
-				XMLElement nset("NodeSet");
-
 				string name = string(po->GetName()) + "." + string(node->GetName());
-				nset.add_attribute("node_set", name.c_str());
-				m_xml.add_empty(nset);
+				m_xml.add_leaf("node_set", name);
 			}
 		}
 		break;
@@ -1933,11 +1990,8 @@ void FEBioExport3::WriteGeometryNodeSetsNew()
 			{
 				GEdge* edge = edgeList[i];
 				GObject* po = dynamic_cast<GObject*>(edge->Object());
-				XMLElement nset("NodeSet");
-
 				string name = string(po->GetName()) + "." + string(edge->GetName());
-				nset.add_attribute("node_set", name.c_str());
-				m_xml.add_empty(nset);
+				m_xml.add_leaf("node_set", name);
 			}
 		}
 		break;
@@ -1949,11 +2003,8 @@ void FEBioExport3::WriteGeometryNodeSetsNew()
 			{
 				GFace* face = faceList[i];
 				GObject* po = dynamic_cast<GObject*>(face->Object());
-				XMLElement nset("NodeSet");
-
 				string name = string(po->GetName()) + "." + string(face->GetName());
-				nset.add_attribute("node_set", name.c_str());
-				m_xml.add_empty(nset);
+				m_xml.add_leaf("node_set", name);
 			}
 		}
 		break;
@@ -1965,11 +2016,25 @@ void FEBioExport3::WriteGeometryNodeSetsNew()
 			{
 				GPart* part = partList[i];
 				GObject* po = dynamic_cast<GObject*>(part->Object());
-				XMLElement nset("NodeSet");
-
 				string name = string(po->GetName()) + "." + string(part->GetName());
-				nset.add_attribute("node_set", name.c_str());
-				m_xml.add_empty(nset);
+				m_xml.add_leaf("node_set", name);
+			}
+		}
+		break;
+		case FE_NODESET:
+		{
+			FENodeSet* nodeSet = dynamic_cast<FENodeSet*>(pil); assert(nodeSet);
+			for (int i = 0; i<m_Part.size(); ++i)
+			{
+				Part* part = m_Part[i];
+				NodeSet* ns = part->FindNodeSet(m_pNSet[i].first.c_str());
+				if (ns)
+				{
+					GObject* po = part->m_obj;
+					string name = string(po->GetName()) + "." + listName;
+					m_xml.add_leaf("node_set", name);
+					break;
+				}
 			}
 		}
 		break;
@@ -1982,16 +2047,16 @@ void FEBioExport3::WriteGeometryNodeSetsNew()
 				NodeSet* ns = part->FindNodeSet(m_pNSet[i].first.c_str());
 				if (ns)
 				{
-					XMLElement nset("NodeSet");
 					GObject* po = part->m_obj;
 					string name = string(po->GetName()) + "." + listName;
-					nset.add_attribute("node_set", name.c_str());
-					m_xml.add_empty(nset);
+					m_xml.add_leaf("node_set", name);
 					break;
 				}
 			}
 		}
 		break;
+		default:
+			assert(false);
 		}
 		m_xml.close_branch();
 	}
@@ -2111,11 +2176,8 @@ void FEBioExport3::WriteGeometrySurfacesNew()
 				{
 					GFace* face = faceList[i];
 					GObject* po = dynamic_cast<GObject*>(face->Object());
-					XMLElement nset("Surface");
-
 					string name = string(po->GetName()) + "." + string(face->GetName());
-					nset.add_attribute("surface", name.c_str());
-					m_xml.add_empty(nset);
+					m_xml.add_leaf("surface", name);
 				}
 			}
 			break;
@@ -2123,11 +2185,43 @@ void FEBioExport3::WriteGeometrySurfacesNew()
 			{
 				FESurface* surf = dynamic_cast<FESurface*>(pl); assert(surf);
 				GObject* po = surf->GetGObject();
-
 				string name = string(po->GetName()) + "." + sname;
-				XMLElement nset("Surface");
-				nset.add_attribute("surface", name.c_str());
-				m_xml.add_empty(nset);
+				m_xml.add_leaf("surface", name);
+			}
+			break;
+			default:
+				break;
+			}
+		}
+		m_xml.close_branch();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteGeometryElementSetsNew()
+{
+	int NS = (int)m_pESet.size();
+	for (int i = 0; i<NS; ++i)
+	{
+		FEItemListBuilder* pl = m_pESet[i].second;
+		XMLElement el("ElementSet");
+		string sname = m_pESet[i].first;
+		el.add_attribute("name", m_pESet[i].first.c_str());
+		m_xml.add_branch(el);
+		{
+			switch (pl->Type())
+			{
+			case GO_PART:
+			{
+				GPartList* itemList = dynamic_cast<GPartList*>(pl); assert(itemList);
+				vector<GPart*> partList = itemList->GetPartList();
+				for (size_t i = 0; i<partList.size(); ++i)
+				{
+					GPart* pg = partList[i];
+					GObject* po = dynamic_cast<GObject*>(pg->Object());
+					string name = string(po->GetName()) + "." + string(pg->GetName());
+					m_xml.add_leaf("elem_set", name);
+				}
 			}
 			break;
 			default:
@@ -2166,13 +2260,8 @@ void FEBioExport3::WriteGeometrySurfacePairs()
 				el.add_attribute("name", pi->GetName().c_str());
 				m_xml.add_branch(el);
 				{
-					XMLElement master("master");
-					master.add_attribute("surface", GetSurfaceName(pms));
-					m_xml.add_empty(master);
-
-					XMLElement slave("slave");
-					slave.add_attribute("surface", GetSurfaceName(pss));
-					m_xml.add_empty(slave);
+					m_xml.add_leaf("primary", GetSurfaceName(pss));
+					m_xml.add_leaf("secondary", GetSurfaceName(pms));
 				}
 				m_xml.close_branch();
 			}
@@ -3763,37 +3852,29 @@ void FEBioExport3::WriteBodyLoads(FEStep& s)
 		if (pbl && pbl->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pbl);
-
-			GPartList* pg = dynamic_cast<GPartList*>(pbl->GetItemList());
-
-			vector<GPart*> partList;
-			if (pg) partList = pg->GetPartList();
-
-			if (partList.empty()) WriteBodyLoad(pbl, 0);
-			else
-			{
-				for (int j = 0; j<partList.size(); ++j) WriteBodyLoad(pbl, partList[j]);
-			}
+			WriteBodyLoad(pbl);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteBodyLoad(FEBodyLoad* pbl, GPart* pg)
+void FEBioExport3::WriteBodyLoad(FEBodyLoad* pbl)
 {
 	FEBodyForce* pbf = dynamic_cast<FEBodyForce*>(pbl);
-	if (pbf) WriteBodyForce(pbf, pg);
+	if (pbf) WriteBodyForce(pbf);
 
 	FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pbl);
-	if (phs) WriteHeatSource(phs, pg);
+	if (phs) WriteHeatSource(phs);
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteBodyForce(FEBodyForce* pbf, GPart* pg)
+void FEBioExport3::WriteBodyForce(FEBodyForce* pbf)
 {
+	FEItemListBuilder* pitem = pbf->GetItemList();
+
 	XMLElement el("body_load");
 	el.add_attribute("type", "body force");
-	if (pg) el.add_attribute("elem_set", pg->GetName());
+	if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
 	m_xml.add_branch(el);
 	{
 		double x = pbf->GetLoad(0);
@@ -3818,11 +3899,13 @@ void FEBioExport3::WriteBodyForce(FEBodyForce* pbf, GPart* pg)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteHeatSource(FEHeatSource* phs, GPart* pg)
+void FEBioExport3::WriteHeatSource(FEHeatSource* phs)
 {
+	FEItemListBuilder* pitem = phs->GetItemList();
+
 	XMLElement el("body_load");
 	el.add_attribute("type", "heat_source");
-	if (pg) el.add_attribute("elem_set", pg->GetName());
+	if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
 	m_xml.add_branch(el);
 	{
 		WriteParamList(*phs);

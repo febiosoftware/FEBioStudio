@@ -636,7 +636,6 @@ void CMainWindow::on_actionExportFEModel_triggered()
 				{
 					// write version 2.5
 					FEBioExport25 writer;
-					writer.SetExportPartsFlag(dlg.m_bexportParts);
 					writer.SetPlotfileCompressionFlag(dlg.m_compress);
 					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 					writer.SetWriteNotesFlag(dlg.m_writeNotes);
@@ -648,7 +647,6 @@ void CMainWindow::on_actionExportFEModel_triggered()
 				{
 					// write version 3.0
 					FEBioExport3 writer;
-					writer.SetExportPartsFlag(dlg.m_bexportParts);
 					writer.SetPlotfileCompressionFlag(dlg.m_compress);
 					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 					writer.SetWriteNotesFlag(dlg.m_writeNotes);

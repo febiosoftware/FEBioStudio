@@ -18,9 +18,8 @@ public:
 	void accept();
 
 public:
-	int		m_nversion;
+	static int		m_nversion;
 	bool	m_nsection[MAX_SECTIONS];
-	bool	m_bexportParts;
 	bool	m_bexportSelections;
 	bool	m_compress;
 	bool	m_writeNotes;
