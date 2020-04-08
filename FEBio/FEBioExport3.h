@@ -121,7 +121,7 @@ protected:
 	void WriteGeometrySectionNew();	// new, grouped by parts
 	void WriteGeometryNodes();
 	void WriteGeometryElements();
-	void WriteGeometryPart(GPart* pg, bool useMatNames = false);
+	void WriteGeometryPart(GPart* pg, bool writeMats = true, bool useMatNames = false);
 	void WriteGeometrySurfaces();
 	void WriteGeometryElementSets();
 	void WriteGeometrySurfacePairs();

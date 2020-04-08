@@ -25,7 +25,7 @@ const char* ElementTypeString(int ntype);
 
 FEBioExport3::FEBioExport3()
 {
-	m_exportParts = false;
+	m_exportParts = true;
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
@@ -1762,9 +1762,30 @@ void FEBioExport3::WriteGeometrySectionNew()
 			vec3d p = po->GetTransform().GetPosition();
 			quatd q = po->GetTransform().GetRotation();
 			vec3d s = po->GetTransform().GetScale();
-			m_xml.add_leaf("scale", s);
-			m_xml.add_leaf("rotate", q);
-			m_xml.add_leaf("translate", p);
+			m_xml.add_branch("transform");
+			{
+				m_xml.add_leaf("scale", s);
+				m_xml.add_leaf("rotate", q);
+				m_xml.add_leaf("translate", p);
+			}
+			m_xml.close_branch();
+
+			// write all material assignments
+			int ndom = po->Parts();
+			for (int j = 0; j < ndom; ++j)
+			{
+				GPart* pg = po->Part(j);
+
+				// get the material
+				GMaterial* pmat = m_pfem->GetMaterialFromID(pg->GetMaterialID());
+				if (pmat)
+				{
+					XMLElement elems("Elements");
+					elems.add_attribute("name", pg->GetName());
+					elems.add_attribute("mat", pmat->GetName());
+					m_xml.add_empty(elems);
+				}
+			}
 		}
 		m_xml.close_branch();
 	}
@@ -1790,7 +1811,7 @@ void FEBioExport3::WriteGeometryObject(FEBioExport3::Part* part)
 	// Write the nodes
 	m_xml.add_branch("Nodes");
 	{
-		XMLElement el("n");
+		XMLElement el("node");
 		int nid = el.add_attribute("id", 0);
 		for (int j = 0; j<pm->Nodes(); ++j)
 		{
@@ -1811,7 +1832,7 @@ void FEBioExport3::WriteGeometryObject(FEBioExport3::Part* part)
 		GPart* pg = po->Part(p);
 
 		// write this part
-		WriteGeometryPart(pg, true);
+		WriteGeometryPart(pg, false);
 	}
 
 	// write all node sets
@@ -2179,7 +2200,7 @@ void FEBioExport3::WriteGeometryNodes()
 
 		m_xml.add_branch(tagNodes);
 		{
-			XMLElement el("n");
+			XMLElement el("node");
 			int nid = el.add_attribute("id", 0);
 			for (int j = 0; j<pm->Nodes(); ++j, ++n)
 			{
@@ -2261,13 +2282,13 @@ void FEBioExport3::WriteGeometryElements()
 			GPart* pg = po->Part(p);
 
 			// write this part
-			WriteGeometryPart(pg);
+			WriteGeometryPart(pg, true, false);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteGeometryPart(GPart* pg, bool useMatNames)
+void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames)
 {
 	FEModel& s = *m_pfem;
 	GModel& model = s.GetModel();
@@ -2309,7 +2330,7 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool useMatNames)
 			if (sztype == 0) throw FEBioExportError();
 			XMLElement xe("Elements");
 			if (sztype) xe.add_attribute("type", sztype);
-			if (nmat > 0)
+			if ((nmat > 0) && writeMats)
 			{
 				if (useMatNames) xe.add_attribute("mat", pmat->GetName().c_str());
 				else xe.add_attribute("mat", nmat);
@@ -2328,7 +2349,7 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool useMatNames)
 			xe.add_attribute("name", szname);
 			m_xml.add_branch(xe);
 			{
-				XMLElement xej("e");
+				XMLElement xej("elem");
 				int n1 = xej.add_attribute("id", (int)0);
 
 				for (int j = i; j<NE; ++j)
@@ -4191,7 +4212,7 @@ void FEBioExport3::WriteStepSection()
 
 void FEBioExport3::WriteRigidConstraints(FEStep &s)
 {
-	const char* szbc[6] = { "x", "y", "z", "Ru", "Rv", "Rw" };
+	const char* szbc[6] = { "Rx", "Ry", "Rz", "Ru", "Rv", "Rw" };
 
 	for (int i = 0; i<s.RigidConstraints(); ++i)
 	{
@@ -4213,7 +4234,6 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				el.name("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
 				el.add_attribute("type", "fix");
-				el.add_attribute("mat", pgm->m_ntag);
 				m_xml.add_branch(el);
 				{
 					string dof;
@@ -4223,6 +4243,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 							if (dof.empty() == false) dof += ",";
 							dof += szbc[j];
 						}
+					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("dofs", dof);
 				}
 				m_xml.close_branch();
@@ -4234,11 +4255,10 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				el.name("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
 				el.add_attribute("type", "prescribe");
-				el.add_attribute("mat", pgm->m_ntag);
 				m_xml.add_branch(el);
 				{
+					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("dof", szbc[rc->GetDOF()]);
-
 					el.name("value");
 					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
 					el.value(rc->GetValue());
@@ -4252,11 +4272,10 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				XMLElement el("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
 				el.add_attribute("type", "force");
-				el.add_attribute("mat", pgm->m_ntag);
 				m_xml.add_branch(el);
 				{
+					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("dof", szbc[rc->GetDOF()]);
-
 					XMLElement val("value");
 					val.add_attribute("lc", rc->GetLoadCurve()->GetID());
 					val.value(rc->GetValue());
@@ -4270,9 +4289,9 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				XMLElement el("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
 				el.add_attribute("type", "rigid_velocity");
-				el.add_attribute("mat", pgm->m_ntag);
 				m_xml.add_branch(el);
 				{
+					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("value", rv->GetVelocity());
 				}
 				m_xml.close_branch();
@@ -4283,9 +4302,9 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				XMLElement el("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
 				el.add_attribute("type", "rigid_angular_velocity");
-				el.add_attribute("mat", pgm->m_ntag);
 				m_xml.add_branch(el);
 				{
+					m_xml.add_leaf("rb", pgm->m_ntag);
 					m_xml.add_leaf("value", rv->GetVelocity());
 				}
 				m_xml.close_branch();

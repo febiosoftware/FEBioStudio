@@ -1262,6 +1262,8 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 	FEBioModel& febio = GetFEBioModel();
 	FEModel& fem = GetFEModel();
 
+	const char* szdof[6] = { "Rx", "Ry", "Rz", "Ru", "Rv", "Rw" };
+
 	char szname[256] = { 0 };
 
 	++tag;
@@ -1269,15 +1271,6 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 	{
 		if (tag == "rigid_constraint")
 		{
-			// get the material ID
-			int nid = tag.Attribute("mat").value<int>() - 1;
-
-			// get the rigid material
-			GMaterial* pgm = 0;
-			if (nid >= 0) pgm = febio.GetMaterial(nid);
-			int matid = (pgm ? pgm->GetID() : -1);
-			assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
-
 			// get the name attribute
 			string name;
 			const char* szname = tag.AttributeValue("name", true);
@@ -1289,7 +1282,6 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 			if (type == "fix")
 			{
 				FERigidFixed* pc = CREATE_RIGID_CONSTRAINT(FERigidFixed);
-				pc->SetMaterialID(matid);
 				if (name.empty() == false) pc->SetName(name);
 
 				++tag;
@@ -1304,15 +1296,28 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 						{
 							const char* ch2 = strchr(ch, ',');
 							int n = (ch2 ? ch2 - ch : strlen(ch));
-							if (strncmp(ch,  "x", n) == 0) pc->SetDOF(0, true);
-							if (strncmp(ch,  "y", n) == 0) pc->SetDOF(1, true);
-							if (strncmp(ch,  "z", n) == 0) pc->SetDOF(2, true);
-							if (strncmp(ch, "Ru", n) == 0) pc->SetDOF(3, true);
-							if (strncmp(ch, "Rv", n) == 0) pc->SetDOF(4, true);
-							if (strncmp(ch, "Rw", n) == 0) pc->SetDOF(5, true);
+							if (strncmp(ch, szdof[0], n) == 0) pc->SetDOF(0, true);
+							if (strncmp(ch, szdof[1], n) == 0) pc->SetDOF(1, true);
+							if (strncmp(ch, szdof[2], n) == 0) pc->SetDOF(2, true);
+							if (strncmp(ch, szdof[3], n) == 0) pc->SetDOF(3, true);
+							if (strncmp(ch, szdof[4], n) == 0) pc->SetDOF(4, true);
+							if (strncmp(ch, szdof[5], n) == 0) pc->SetDOF(5, true);
 
 							if (ch2) ch = ch2 + 1; else ch = 0;
 						}
+					}
+					else if (tag == "rb")
+					{
+						int mid = -1;
+						tag.value(mid);
+
+						// get the rigid material
+						GMaterial* pgm = 0;
+						if (mid > 0) pgm = febio.GetMaterial(mid - 1);
+						int matid = (pgm ? pgm->GetID() : -1);
+						assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+
+						pc->SetMaterialID(matid);
 					}
 					++tag;
 				}
@@ -1321,7 +1326,6 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 			else if (type == "prescribe")
 			{
 				FERigidDisplacement* pc = CREATE_RIGID_CONSTRAINT(FERigidDisplacement);
-				pc->SetMaterialID(matid);
 				if (name.empty() == false) pc->SetName(name);
 
 				++tag;
@@ -1330,12 +1334,25 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 					if (tag == "dof")
 					{
 						const char* sz = tag.szvalue();
-						if (strcmp(sz,  "x") == 0) pc->SetDOF(0);
-						if (strcmp(sz,  "y") == 0) pc->SetDOF(1);
-						if (strcmp(sz,  "z") == 0) pc->SetDOF(2);
-						if (strcmp(sz, "Ru") == 0) pc->SetDOF(3);
-						if (strcmp(sz, "Rv") == 0) pc->SetDOF(4);
-						if (strcmp(sz, "Rw") == 0) pc->SetDOF(5);
+						if (strcmp(sz, szdof[0]) == 0) pc->SetDOF(0);
+						if (strcmp(sz, szdof[1]) == 0) pc->SetDOF(1);
+						if (strcmp(sz, szdof[2]) == 0) pc->SetDOF(2);
+						if (strcmp(sz, szdof[3]) == 0) pc->SetDOF(3);
+						if (strcmp(sz, szdof[4]) == 0) pc->SetDOF(4);
+						if (strcmp(sz, szdof[5]) == 0) pc->SetDOF(5);
+					}
+					else if (tag == "rb")
+					{
+						int mid = -1;
+						tag.value(mid);
+
+						// get the rigid material
+						GMaterial* pgm = 0;
+						if (mid > 0) pgm = febio.GetMaterial(mid - 1);
+						int matid = (pgm ? pgm->GetID() : -1);
+						assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+
+						pc->SetMaterialID(matid);
 					}
 					else ReadParam(*pc, tag);
 					++tag;
@@ -1345,7 +1362,6 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 			else if (type == "force")
 			{
 				FERigidForce* pc = CREATE_RIGID_CONSTRAINT(FERigidForce);
-				pc->SetMaterialID(matid);
 				if (name.empty() == false) pc->SetName(name);
 
 				++tag;
@@ -1354,12 +1370,25 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 					if (tag == "dof")
 					{
 						const char* sz = tag.szvalue();
-						if (strcmp(sz, "x") == 0) pc->SetDOF(0);
-						if (strcmp(sz, "y") == 0) pc->SetDOF(1);
-						if (strcmp(sz, "z") == 0) pc->SetDOF(2);
-						if (strcmp(sz, "Ru") == 0) pc->SetDOF(3);
-						if (strcmp(sz, "Rv") == 0) pc->SetDOF(4);
-						if (strcmp(sz, "Rw") == 0) pc->SetDOF(5);
+						if (strcmp(sz, szdof[0]) == 0) pc->SetDOF(0);
+						if (strcmp(sz, szdof[1]) == 0) pc->SetDOF(1);
+						if (strcmp(sz, szdof[2]) == 0) pc->SetDOF(2);
+						if (strcmp(sz, szdof[3]) == 0) pc->SetDOF(3);
+						if (strcmp(sz, szdof[4]) == 0) pc->SetDOF(4);
+						if (strcmp(sz, szdof[5]) == 0) pc->SetDOF(5);
+					}
+					else if (tag == "rb")
+					{
+						int mid = -1;
+						tag.value(mid);
+
+						// get the rigid material
+						GMaterial* pgm = 0;
+						if (mid > 0) pgm = febio.GetMaterial(mid - 1);
+						int matid = (pgm ? pgm->GetID() : -1);
+						assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+
+						pc->SetMaterialID(matid);
 					}
 					else ReadParam(*pc, tag);
 					++tag;
@@ -1369,16 +1398,62 @@ bool FEBioFormat3::ParseRigidSection(XMLTag& tag)
 			else if (type == "rigid_velocity")
 			{
 				FERigidVelocity* pv = CREATE_RIGID_CONSTRAINT(FERigidVelocity);
-				pv->SetMaterialID(matid);
 				if (name.empty() == false) pv->SetName(name);
-				ReadParameters(*pv, tag);
+				++tag;
+				do
+				{
+					if (tag == "rb")
+					{
+						int mid = -1;
+						tag.value(mid);
+
+						// get the rigid material
+						GMaterial* pgm = 0;
+						if (mid > 0) pgm = febio.GetMaterial(mid - 1);
+						int matid = (pgm ? pgm->GetID() : -1);
+						assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+
+						pv->SetMaterialID(matid);
+					}
+					else if (tag == "value")
+					{
+						vec3d v(0., 0., 0.);
+						tag.value(v);
+						pv->SetVelocity(v);
+					}
+					++tag;
+				} 
+				while (!tag.isend());
 			}
 			else if (type == "rigid_angular_velocity")
 			{
 				FERigidAngularVelocity* pv = CREATE_RIGID_CONSTRAINT(FERigidAngularVelocity);
-				pv->SetMaterialID(matid);
 				if (name.empty() == false) pv->SetName(name);
-				ReadParameters(*pv, tag);
+				++tag;
+				do
+				{
+					if (tag == "rb")
+					{
+						int mid = -1;
+						tag.value(mid);
+
+						// get the rigid material
+						GMaterial* pgm = 0;
+						if (mid > 0) pgm = febio.GetMaterial(mid - 1);
+						int matid = (pgm ? pgm->GetID() : -1);
+						assert(dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties()));
+
+						pv->SetMaterialID(matid);
+					}
+					else if (tag == "value")
+					{
+						vec3d w(0., 0., 0.);
+						tag.value(w);
+						pv->SetVelocity(w);
+					}
+					++tag;
+				} 
+				while (!tag.isend());
 			}
 			else ParseUnknownTag(tag);
 		}
