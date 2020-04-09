@@ -171,7 +171,7 @@ FEMesher* GSurfaceMeshObject::CreateDefaultMesher()
 
 FEMesh* GSurfaceMeshObject::BuildMesh()
 {
-	// make sure that the surface is triangular and is closed
+	// make sure that the surface is triangular
 	int NF = m_surfmesh->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
@@ -180,10 +180,6 @@ FEMesh* GSurfaceMeshObject::BuildMesh()
 		// Only triangles, quads are accepted
 		int nf = face.Nodes();
 		if ((nf != 3) && (nf != 4)) return 0;
-
-		// mesh has to to be closed
-		for (int j=0; j<nf; ++j)
-			if (face.m_nbr[j] == -1) return 0;
 	}
 
 	// get the mesher

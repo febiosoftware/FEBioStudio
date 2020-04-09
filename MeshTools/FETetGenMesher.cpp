@@ -964,9 +964,13 @@ bool FETetGenMesher::build_plc(FESurfaceMesh* pm, tetgenio& in)
 	for (i = 0; i<pm->Faces(); ++i)
 	{
 		FEFace& f = pm->Face(i);
-		for (j = 0; j<f.Nodes(); ++j)
+		int fn = f.Nodes();
+		for (j = 0; j<fn; ++j)
 		{
 			pm->Node(f.n[j]).m_ntag = 1;
+
+			// Make sure each face has a neighbor
+			if (f.m_nbr[j] == -1) return false;
 		}
 	}
 
