@@ -1598,13 +1598,14 @@ void FEMesh::Attach(FEMesh& fem)
 	if (faces > 0)
 	{
 		// find the largest GID
-		int ng = -1;
+		int ng = -1, sg = -1;
 		for (i=0; i<nf0; ++i)
 		{
 			FEFace& f = m_Face[i];
 			if (f.m_gid > ng) ng = f.m_gid;
+			if (f.m_sid > sg) sg = f.m_gid;
 		}
-		++ng;
+		++ng; ++sg;
 
 		m_Face.resize(faces);
 		for (i=0; i<nf1; ++i)
@@ -1613,7 +1614,7 @@ void FEMesh::Attach(FEMesh& fem)
 			FEFace& f1 = fem.m_Face[i];
 			f0 = f1;
 			f0.m_gid = f1.m_gid + ng;
-
+			f0.m_sid = f1.m_sid + sg;
 
 			f0.m_elem[0].eid = f1.m_elem[0].eid + ne0;
 			f0.m_elem[1].eid = -1;
@@ -1623,7 +1624,7 @@ void FEMesh::Attach(FEMesh& fem)
 			f0.m_nbr[0] = f1.m_nbr[0] + nf0;
 			f0.m_nbr[1] = f1.m_nbr[1] + nf0;
 			f0.m_nbr[2] = f1.m_nbr[2] + nf0;
-			f0.m_nbr[3] = f1.m_nbr[3] + nf0;
+			if (f0.Nodes() == 4) f0.m_nbr[3] = f1.m_nbr[3] + nf0; else f0.m_nbr[3] = -1;
 		}
 	}
 
@@ -1658,6 +1659,11 @@ void FEMesh::Attach(FEMesh& fem)
 
 			int nf = e1.Faces();
 			for (j=0; j<nf; ++j) e0.m_face[j] = nf0 + e1.m_face[j];
+
+			if (e1.IsShell())
+			{
+				e0.m_face[0] = nf0 + e1.m_face[0];
+			}
 		}
 	}
 
