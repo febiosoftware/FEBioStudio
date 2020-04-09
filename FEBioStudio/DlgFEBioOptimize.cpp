@@ -189,6 +189,8 @@ public:
 	QComboBox*	method;
 	QLineEdit*	objTol;
 	QLineEdit*	fDiffScale;
+	QComboBox*	out;
+	QComboBox*	print;
 
 	// page 3 (Parameters)
 	CSelectParam* paramName;
@@ -227,6 +229,8 @@ public:
 		opt.method = method->currentIndex();
 		opt.obj_tol = objTol->text().toDouble();
 		opt.f_diff_scale = fDiffScale->text().toDouble();
+		opt.outLevel = out->currentIndex();
+		opt.printLevel = print->currentIndex();
 
 		// get parameters
 		opt.m_params.clear();
@@ -311,6 +315,12 @@ public:
 
 		l->addRow("Forward difference scale:", fDiffScale = new QLineEdit);
 		fDiffScale->setValidator(new QDoubleValidator);
+
+		l->addRow("Output", out = new QComboBox);
+		l->addRow("Print level", print = new QComboBox);
+
+		out->addItems(QStringList() << "LOG_DEFAULT" << "LOG_NEVER" << "LOG_FILE_ONLY" << "LOG_SCREEN_ONLY" << "LOG_FILE_AND_SCREEN");
+		print->addItems(QStringList() << "PRINT_ITERATIONS" << "PRINT_VERBOSE");
 
 		opsPage->setLayout(l);
 

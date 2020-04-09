@@ -54,6 +54,8 @@ public:
 		method = 0;
 		obj_tol = 1e-4;
 		f_diff_scale = 0.001;
+		outLevel = 0;
+		printLevel = 0;
 	}
 
 	FEBioOpt(const FEBioOpt& op)
@@ -95,6 +97,8 @@ public:
 	int		method;			// optimization method
 	double	obj_tol;		// objective tolerance
 	double	f_diff_scale;	// forward difference scale factor
+	int		outLevel;		// output level
+	int		printLevel;		// print level
 
 	std::string		m_objParam;	// the objective parameter
 

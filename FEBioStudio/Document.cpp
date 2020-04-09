@@ -1529,6 +1529,9 @@ FEDataMap* CDocument::CreateDataMap(FSObject* po, std::string& mapName, std::str
 
 bool CDocument::GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt)
 {
+	const char* szlog[] = { "LOG_DEFAULT", "LOG_NEVER", "LOG_FILE_ONLY", "LOG_SCREEN_ONLY", "LOG_FILE_AND_SCREEN" };
+	const char* szprt[] = { "PRINT_ITERATIONS", "PRINT_VERBOSE" };
+
 	XMLWriter xml;
 
 	if (xml.open(fileName.c_str()) == false) return false;
@@ -1548,6 +1551,8 @@ bool CDocument::GenerateFEBioOptimizationFile(const std::string& fileName, FEBio
 	{
 		xml.add_leaf("obj_tol", opt.obj_tol);
 		xml.add_leaf("f_diff_scale", opt.f_diff_scale);
+		xml.add_leaf("log_level", szlog[opt.outLevel]);
+		xml.add_leaf("print_level", szprt[opt.printLevel]);
 	}
 	xml.close_branch();
 
