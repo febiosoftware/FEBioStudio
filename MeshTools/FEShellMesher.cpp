@@ -65,7 +65,12 @@ FEMesh*	FEShellMesher::BuildMesh()
 		FEFace& sf = surfaceMesh->Face(i);
 		FEElement& el = mesh->Element(i);
 
-		el.m_gid = 0;
+		assert(sf.m_gid >= 0);
+		GFace* pf = po->Face(sf.m_gid);
+		assert(pf->m_nPID[0] >= 0);
+		int pid = po->Part(pf->m_nPID[0])->GetLocalID();
+
+		el.m_gid = pid;
 		switch (sf.Type())
 		{
 		case FE_FACE_TRI3: el.SetType(FE_TRI3); break;
