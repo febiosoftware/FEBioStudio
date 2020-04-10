@@ -38,7 +38,7 @@ void FENodeData::Save(OArchive& ar)
 
 void FENodeData::Load(IArchive& ar)
 {
-	const int NN = GetMesh()->Elements();
+	const int NN = GetMesh()->Nodes();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();

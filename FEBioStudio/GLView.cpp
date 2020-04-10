@@ -6914,7 +6914,7 @@ void CGLView::RenderFEFaces(GObject* po)
 //-----------------------------------------------------------------------------
 void CGLView::RenderSurfaceMeshFaces(GObject* po)
 {
-	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po); assert(surfaceObject);
+	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po);
 	if (surfaceObject == 0) return;
 
 	FESurfaceMesh* surfaceMesh = surfaceObject->GetSurfaceMesh();

@@ -48,12 +48,22 @@ void FEMeshValuator::Evaluate(int nfield)
 			{
 			case FEMeshData::NODE_DATA:
 			{
-/*				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
-				int ne = el.Nodes();
-				val = 0.0;
-				for (int i = 0; i<ne; ++i) val += nodeData.get(el.m_node[i]);
-				val /= (double)ne;
-*/
+				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
+				FEMesh* mesh = nodeData.GetMesh();
+				for (int i=0; i < mesh->Elements(); ++i)
+				{ 
+					FEElement& el = mesh->Element(i);
+					int ne = el.Nodes();
+					double val = 0.0;
+					for (int j = 0; j < ne; ++j)
+					{
+						val += nodeData.get(el.m_node[j]);
+					}
+					val /= (double)ne;
+
+					data.SetElementDataTag(i, 1);
+					data.SetElementValue(i, val);
+				}
 			}
 			break;
 			case FEMeshData::SURFACE_DATA:

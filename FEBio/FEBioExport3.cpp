@@ -1837,10 +1837,10 @@ void FEBioExport3::WriteGeometrySectionNew()
 				GMaterial* pmat = m_pfem->GetMaterialFromID(pg->GetMaterialID());
 				if (pmat)
 				{
-					XMLElement elems("Elements");
-					elems.add_attribute("name", pg->GetName());
-					elems.add_attribute("mat", pmat->GetName());
-					m_xml.add_empty(elems);
+					XMLElement domain("domain");
+					domain.add_attribute("name", pg->GetName());
+					domain.add_attribute("mat", pmat->GetName());
+					m_xml.add_empty(domain);
 				}
 			}
 		}
