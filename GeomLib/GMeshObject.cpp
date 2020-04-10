@@ -408,7 +408,7 @@ int GMeshObject::MakeGNode(int n)
 //-----------------------------------------------------------------------------
 // This function adds a node to the GMeshObject and to the FEMesh
 
-void GMeshObject::AddNode(vec3d r)
+int GMeshObject::AddNode(vec3d r)
 {
 	FEMesh& m = *GetFEMesh();
 	FENode n;
@@ -431,6 +431,8 @@ void GMeshObject::AddNode(vec3d r)
 
 	m.UpdateBox();
 	BuildGMesh();
+
+	return gn->GetID();
 }
 
 //-----------------------------------------------------------------------------

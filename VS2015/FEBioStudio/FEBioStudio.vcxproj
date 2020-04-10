@@ -255,6 +255,7 @@
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ImportLinesTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ImportSpringsTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\LaunchConfig.cpp" />
@@ -517,6 +518,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\ImportSpringsTool.h" />
     <ClInclude Include="..\..\FEBioStudio\LaunchConfig.h" />
     <CustomBuild Include="..\..\FEBioStudio\Logger.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

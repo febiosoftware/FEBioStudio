@@ -12,6 +12,7 @@
 #include "FiberGeneratorTool.h"
 #include "AreaCalculatorTool.h"
 #include "TetOverlapTool.h"
+#include "ImportSpringsTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -42,6 +43,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CFiberGeneratorTool);
     tools.push_back(new CAreaCalculatorTool);
 	tools.push_back(new CTetOverlapTool    );
+	tools.push_back(new CImportSpringsTool );
 }
 
 void CToolsPanel::on_buttons_buttonClicked(int id)

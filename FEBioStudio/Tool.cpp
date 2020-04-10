@@ -135,6 +135,7 @@ void CBasicTool::on_button_clicked()
 		QMessageBox::critical(wnd, "Error", err);
 	}
 	updateUi();
+	GetMainWindow()->UpdateModel();
 }
 
 //-----------------------------------------------------------------------------

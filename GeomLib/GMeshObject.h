@@ -36,7 +36,7 @@ public:
 
 	int MakeGNode(int n);
 
-	void AddNode(vec3d r);
+	int AddNode(vec3d r);
 
 	virtual FEMesh* BuildMesh() override;
 

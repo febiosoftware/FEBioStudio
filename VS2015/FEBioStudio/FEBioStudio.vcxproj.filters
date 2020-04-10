@@ -729,6 +729,9 @@
     <ClCompile Include="..\..\FEBioStudio\DlgExportXPLT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\ImportSpringsTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -1001,10 +1004,10 @@
     <ClInclude Include="..\..\FEBioStudio\DlgExportLSDYNA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\PlotMixTool.h">
+    <ClInclude Include="..\..\FEBioStudio\DlgExportXPLT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\DlgExportXPLT.h">
+    <ClInclude Include="..\..\FEBioStudio\ImportSpringsTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1238,6 +1241,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\DistanceMapTool.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PlotMixTool.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
