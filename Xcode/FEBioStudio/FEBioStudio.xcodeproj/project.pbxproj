@@ -28,6 +28,10 @@
 		D54A8C62239EC9F800B6219A /* moc_ImportLinesTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C5E239EC9F800B6219A /* moc_ImportLinesTool.cpp */; };
 		D54A8C63239EC9F800B6219A /* moc_PostToolsPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */; };
 		D54A8C64239EC9F800B6219A /* PostToolsPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54A8C60239EC9F800B6219A /* PostToolsPanel.cpp */; };
+		D54D2CE82444A7DE00146123 /* DlgExportXPLT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CE42444A7DE00146123 /* DlgExportXPLT.cpp */; };
+		D54D2CE92444A7DE00146123 /* PlotMixTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CE62444A7DE00146123 /* PlotMixTool.cpp */; };
+		D54D2CEA2444A7DE00146123 /* ImportSpringsTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */; };
+		D54D2CF02444E42500146123 /* moc_PlotMixTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CEF2444E42500146123 /* moc_PlotMixTool.cpp */; };
 		D5565EC7242B922000D7E478 /* DistanceMapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5565EC5242B922000D7E478 /* DistanceMapTool.cpp */; };
 		D5565EC9242B932500D7E478 /* moc_DistanceMapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5565EC8242B932500D7E478 /* moc_DistanceMapTool.cpp */; };
 		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
@@ -434,6 +438,13 @@
 		D54A8C5E239EC9F800B6219A /* moc_ImportLinesTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ImportLinesTool.cpp; sourceTree = "<group>"; };
 		D54A8C5F239EC9F800B6219A /* moc_PostToolsPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PostToolsPanel.cpp; sourceTree = "<group>"; };
 		D54A8C60239EC9F800B6219A /* PostToolsPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostToolsPanel.cpp; sourceTree = "<group>"; };
+		D54D2CE22444A7DE00146123 /* ImportSpringsTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImportSpringsTool.h; sourceTree = "<group>"; };
+		D54D2CE32444A7DE00146123 /* PlotMixTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlotMixTool.h; sourceTree = "<group>"; };
+		D54D2CE42444A7DE00146123 /* DlgExportXPLT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgExportXPLT.cpp; sourceTree = "<group>"; };
+		D54D2CE52444A7DE00146123 /* DlgExportXPLT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgExportXPLT.h; sourceTree = "<group>"; };
+		D54D2CE62444A7DE00146123 /* PlotMixTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlotMixTool.cpp; sourceTree = "<group>"; };
+		D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImportSpringsTool.cpp; sourceTree = "<group>"; };
+		D54D2CEF2444E42500146123 /* moc_PlotMixTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PlotMixTool.cpp; sourceTree = "<group>"; };
 		D5565EC5242B922000D7E478 /* DistanceMapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DistanceMapTool.cpp; sourceTree = "<group>"; };
 		D5565EC6242B922000D7E478 /* DistanceMapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DistanceMapTool.h; sourceTree = "<group>"; };
 		D5565EC8242B932500D7E478 /* moc_DistanceMapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DistanceMapTool.cpp; sourceTree = "<group>"; };
@@ -1120,6 +1131,8 @@
 				D5F7D7D222FA37C40089B08E /* DlgExportFEBio.h */,
 				D5D161A724218338000F8544 /* DlgExportLSDYNA.cpp */,
 				D5D161A624218338000F8544 /* DlgExportLSDYNA.h */,
+				D54D2CE42444A7DE00146123 /* DlgExportXPLT.cpp */,
+				D54D2CE52444A7DE00146123 /* DlgExportXPLT.h */,
 				D5F7D79E22FA37C40089B08E /* DlgFEBioOptimize.cpp */,
 				D5F7D74922FA37C40089B08E /* DlgFEBioOptimize.h */,
 				D5BA5335240D5470001A5C0F /* DlgFind.cpp */,
@@ -1213,6 +1226,8 @@
 				D5F7D7F122FA37C40089B08E /* GTriad.h */,
 				D54A8C5B239EC9F800B6219A /* ImportLinesTool.cpp */,
 				D54A8C5D239EC9F800B6219A /* ImportLinesTool.h */,
+				D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */,
+				D54D2CE22444A7DE00146123 /* ImportSpringsTool.h */,
 				D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */,
 				D5ED29FE23198CD700C16BF7 /* InfoPanel.h */,
 				D5F7D78722FA37C40089B08E /* IntegrateWindow.cpp */,
@@ -1311,6 +1326,7 @@
 				D5F7D7E822FA37C40089B08E /* moc_ModelTree.cpp */,
 				D5F7D77522FA37C40089B08E /* moc_ModelViewer.cpp */,
 				D5F7D75E22FA37C40089B08E /* moc_ObjectPanel.cpp */,
+				D54D2CEF2444E42500146123 /* moc_PlotMixTool.cpp */,
 				D5F7D7D622FA37C40089B08E /* moc_PlotWidget.cpp */,
 				D5ED29FD23198CD700C16BF7 /* moc_PostDataPanel.cpp */,
 				D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */,
@@ -1348,6 +1364,8 @@
 				D5F7D77622FA37C40089B08E /* ObjectProps.h */,
 				D5F7D72422FA37C40089B08E /* PlaneCutTool.cpp */,
 				D5F7D78122FA37C40089B08E /* PlaneCutTool.h */,
+				D54D2CE62444A7DE00146123 /* PlotMixTool.cpp */,
+				D54D2CE32444A7DE00146123 /* PlotMixTool.h */,
 				D5F7D80222FA37C40089B08E /* PlotWidget.cpp */,
 				D5F7D74822FA37C40089B08E /* PlotWidget.h */,
 				D579B671239F04E200278644 /* PointDistanceTool.cpp */,
@@ -1627,6 +1645,7 @@
 				D5F7D84122FA37C40089B08E /* DlgAddIC.cpp in Sources */,
 				D54879BF234B77D700D0E506 /* AreaCalculatorTool.cpp in Sources */,
 				D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */,
+				D54D2CE92444A7DE00146123 /* PlotMixTool.cpp in Sources */,
 				D5F7D87E22FA37C40089B08E /* PropertyListForm.cpp in Sources */,
 				D5CA211623EF7025001AE230 /* ZipFiles.cpp in Sources */,
 				D5F7D83522FA37C40089B08E /* moc_SummaryWindow.cpp in Sources */,
@@ -1714,7 +1733,9 @@
 				D5F7D88D22FA37C40089B08E /* DlgAddNodalLoad.cpp in Sources */,
 				D5F7D89422FA37C40089B08E /* FoamGeneratorTool.cpp in Sources */,
 				D5ED2A1623198CD900C16BF7 /* PostDataPanel.cpp in Sources */,
+				D54D2CF02444E42500146123 /* moc_PlotMixTool.cpp in Sources */,
 				D5F7D89822FA37C40089B08E /* MaterialMapTool.cpp in Sources */,
+				D54D2CE82444A7DE00146123 /* DlgExportXPLT.cpp in Sources */,
 				D5F7D83D22FA37C40089B08E /* BuildPanel.cpp in Sources */,
 				D5F7D87622FA37C40089B08E /* ScalarFieldTool.cpp in Sources */,
 				D576570623E32E6900E4F70F /* moc_RepoConnectionHandler.cpp in Sources */,
@@ -1757,6 +1778,7 @@
 				D5F7D83122FA37C40089B08E /* moc_PropertyListForm.cpp in Sources */,
 				D5F7D8A122FA37C40089B08E /* moc_CurveEditor.cpp in Sources */,
 				D5F7D8BC22FA37C40089B08E /* ObjectPanel.cpp in Sources */,
+				D54D2CEA2444A7DE00146123 /* ImportSpringsTool.cpp in Sources */,
 				D5F7D84322FA37C40089B08E /* DlgAddContact.cpp in Sources */,
 				D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */,
 				D5F7D8AB22FA37C40089B08E /* stdafx.cpp in Sources */,

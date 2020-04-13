@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D54D2CED2444DFA500146123 /* FEKinemat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CEB2444DFA500146123 /* FEKinemat.cpp */; };
+		D54D2CEE2444DFA500146123 /* FEKinemat.h in Headers */ = {isa = PBXBuildFile; fileRef = D54D2CEC2444DFA500146123 /* FEKinemat.h */; };
 		D5ED297423198B1E00C16BF7 /* FEDataManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24C62319797000C16BF7 /* FEDataManager.cpp */; };
 		D5ED297523198B1E00C16BF7 /* GLImageRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24AB2319797000C16BF7 /* GLImageRenderer.cpp */; };
 		D5ED297623198B1E00C16BF7 /* GView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24BA2319797000C16BF7 /* GView.cpp */; };
@@ -121,6 +123,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D54D2CEB2444DFA500146123 /* FEKinemat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEKinemat.cpp; sourceTree = "<group>"; };
+		D54D2CEC2444DFA500146123 /* FEKinemat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEKinemat.h; sourceTree = "<group>"; };
 		D5ED249F2319797000C16BF7 /* DataFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataFilter.h; sourceTree = "<group>"; };
 		D5ED24A02319797000C16BF7 /* FELSDYNAimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FELSDYNAimport.cpp; sourceTree = "<group>"; };
 		D5ED24A12319797000C16BF7 /* FEPlotMix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEPlotMix.cpp; sourceTree = "<group>"; };
@@ -286,6 +290,8 @@
 				D5ED250F2319797000C16BF7 /* FEFileReader.h */,
 				D5ED24BD2319797000C16BF7 /* FEGroup.cpp */,
 				D5ED24C22319797000C16BF7 /* FEGroup.h */,
+				D54D2CEB2444DFA500146123 /* FEKinemat.cpp */,
+				D54D2CEC2444DFA500146123 /* FEKinemat.h */,
 				D5ED24D32319797000C16BF7 /* FELSDYNAExport.cpp */,
 				D5ED24DC2319797000C16BF7 /* FELSDYNAExport.h */,
 				D5ED24A02319797000C16BF7 /* FELSDYNAimport.cpp */,
@@ -391,6 +397,7 @@
 				D5ED29B123198B1E00C16BF7 /* FECurvatureMap.h in Headers */,
 				D5ED29B223198B1E00C16BF7 /* VolRender.h in Headers */,
 				D5ED29B323198B1E00C16BF7 /* ImgAnimation.h in Headers */,
+				D54D2CEE2444DFA500146123 /* FEKinemat.h in Headers */,
 				D5ED29B423198B1E00C16BF7 /* FEFileReader.h in Headers */,
 				D5ED29B723198B1E00C16BF7 /* FELSDYNAPlot.h in Headers */,
 				D5ED29B823198B1E00C16BF7 /* FEFileExport.h in Headers */,
@@ -510,6 +517,7 @@
 				D5ED297B23198B1E00C16BF7 /* tools.cpp in Sources */,
 				D5ED297C23198B1E00C16BF7 /* GLObject.cpp in Sources */,
 				D5ED297D23198B1E00C16BF7 /* FEU3DImport.cpp in Sources */,
+				D54D2CED2444DFA500146123 /* FEKinemat.cpp in Sources */,
 				D5ED297E23198B1E00C16BF7 /* FEState.cpp in Sources */,
 				D5ED297F23198B1E00C16BF7 /* FEFileReader.cpp in Sources */,
 				D5ED298123198B1E00C16BF7 /* FELSDYNAPlot.cpp in Sources */,
