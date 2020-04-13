@@ -194,6 +194,17 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 						if (name.empty()) m_pSurf.push_back(pi);
 					}
 				}
+                
+                FEFrictionlessFluidWall* pfw = dynamic_cast<FEFrictionlessFluidWall*>(pj);
+                if (pfw)
+                {
+                    FEItemListBuilder* pi = pfw->GetItemList();
+                    if (pi)
+                    {
+                        const string& name = pi->GetName();
+                        if (name.empty()) m_pSurf.push_back(pi);
+                    }
+                }
 			}
 		}
 	}
@@ -2762,6 +2773,37 @@ void FEBioExport2::WriteNormalFlow(FEStep& s)
         }
     }
 }
+
+//-----------------------------------------------------------------------------
+void FEBioExport2::WriteFrictionlessFluidWall(FEStep& s)
+{
+    for (int i = 0; i<s.Constraints(); ++i)
+    {
+        FEFrictionlessFluidWall* pw = dynamic_cast<FEFrictionlessFluidWall*> (s.Constraint(i));
+        if (pw && pw->IsActive())
+        {
+            XMLElement ec("constraint");
+            ec.add_attribute("type", "frictionless fluid wall");
+            const char* sz = pw->GetName().c_str();
+            ec.add_attribute("name", sz);
+            m_xml.add_branch(ec);
+            {
+                // write all parameters
+                int NP = pw->Parameters();
+                for (int n = 0; n<NP; ++n) WriteParam(pw->GetParam(n));
+
+                FEItemListBuilder* pitem = pw->GetItemList();
+                if (pitem == 0) throw InvalidItemListBuilder(pw);
+
+                // slave surface
+                XMLElement el("surface");
+                WriteSurface(el, pitem);
+            }
+            m_xml.close_branch(); // constraint
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 // write rigid connectors
 //

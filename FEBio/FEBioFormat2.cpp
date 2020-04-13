@@ -2693,6 +2693,7 @@ bool FEBioFormat2::ParseConstraintSection(XMLTag& tag)
 			if      (strcmp(sztype, "volume"                 ) == 0) ParseVolumeConstraint(pstep, tag);
 			else if (strcmp(sztype, "symmetry plane"         ) == 0) ParseSymmetryPlane   (pstep, tag);
             else if (strcmp(sztype, "normal fluid flow"      ) == 0) ParseNrmlFldVlctSrf  (pstep, tag);
+            else if (strcmp(sztype, "frictionless fluid wall") == 0) ParseFrictionlessFluidWall(pstep, tag);
 			else if (strcmp(sztype, "rigid spherical joint"  ) == 0) ParseConnector(pstep, tag, 0);
 			else if (strcmp(sztype, "rigid revolute joint"   ) == 0) ParseConnector(pstep, tag, 1);
 			else if (strcmp(sztype, "rigid prismatic joint"  ) == 0) ParseConnector(pstep, tag, 2);
@@ -2970,6 +2971,55 @@ void FEBioFormat2::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
             else ParseUnknownTag(tag);
         }
         
+        // go to the next tag
+        ++tag;
+    } while (!tag.isend());
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat2::ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag)
+{
+    FEModel& fem = GetFEModel();
+
+    // make sure there is something to read
+    if (tag.isempty()) return;
+
+    // create a new volume constraint
+    FEFrictionlessFluidWall* pi = new FEFrictionlessFluidWall(&fem, pstep->GetID());
+    pstep->AddComponent(pi);
+
+    // get the (optional) contact name
+    char szbuf[256];
+    const char* szname = tag.AttributeValue("name", true);
+    if (szname) sprintf(szbuf, "%s", szname);
+    else sprintf(szbuf, "FrictionlessFluidWall%02d", CountConstraints<FEFrictionlessFluidWall>(fem) +1);
+    pi->SetName(szbuf);
+
+    // read parameters
+    ++tag;
+    do
+    {
+        // try to read the parameters
+        if (ReadParam(*pi, tag) == false)
+        {
+            // read the surface definition
+            if (tag == "surface")
+            {
+                // get the (optional) name
+                // if no name is provided a default one will be provided
+                const char* szn = tag.AttributeValue("name", true);
+
+                // create a new surface
+                FESurface* ps = ParseContactSurface(tag);
+                sprintf(szbuf, "FrictionlessFluidWall%02d", CountConstraints<FEFrictionlessFluidWall>(fem));
+                ps->SetName(szn ? szn : szbuf);
+
+                // assign the surface
+                pi->SetItemList(ps);
+            }
+            else ParseUnknownTag(tag);
+        }
+
         // go to the next tag
         ++tag;
     } while (!tag.isend());

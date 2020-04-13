@@ -106,6 +106,7 @@ protected:
     void WriteConnectors        (FEStep& s);
 	void WriteSymmetryPlane     (FEStep& s);
     void WriteNormalFlow        (FEStep& s);
+    void WriteFrictionlessFluidWall(FEStep& s);
 
 	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteMultiMaterial(FEMaterial* pmat, XMLElement& el);

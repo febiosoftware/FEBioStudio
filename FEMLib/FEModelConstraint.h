@@ -53,3 +53,15 @@ class FEWarpingConstraint : public FEModelConstraint
 public:
 	FEWarpingConstraint(FEModel* fem);
 };
+
+//-----------------------------------------------------------------------------
+// This class implements a frictionless fluid wall constraint
+class FEFrictionlessFluidWall : public FESurfaceConstraint
+{
+public:
+    enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
+
+public:
+    FEFrictionlessFluidWall(FEModel* ps, int nstep = 0);
+};
+

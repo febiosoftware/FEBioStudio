@@ -48,12 +48,12 @@ FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESurfaceCons
 {
 	SetTypeString("Normal flow constraint");
 
-	AddBoolParam(true, "laugon", "augmented lagrangian");
+	AddBoolParam(false, "laugon", "augmented lagrangian");
 	AddDoubleParam(0.2, "tol", "augmentation tolerance");
-	AddDoubleParam(1, "penalty", "penalty factor");
-	AddDoubleParam(0, "minaug", "min. augmentations");
-	AddDoubleParam(0, "maxaug", "max. augmentations");
-	AddDoubleParam(0, "rhs", "rhs");
+	AddDoubleParam(1  , "penalty", "penalty factor");
+	AddDoubleParam(0  , "minaug", "min. augmentations");
+	AddDoubleParam(10 , "maxaug", "max. augmentations");
+	AddDoubleParam(0  , "rhs", "rhs");
 }
 
 //=============================================================================
@@ -66,7 +66,22 @@ FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESurfaceConstraint(F
 
 	AddBoolParam(true, "laugon", "augmented lagrangian");
 	AddDoubleParam(0.2, "tol", "augmentation tolerance");
-	AddDoubleParam(1, "penalty", "penalty factor");
-	AddDoubleParam(0, "minaug", "min. augmentations");
-	AddDoubleParam(0, "maxaug", "max. augmentations");
+	AddDoubleParam(1  , "penalty", "penalty factor");
+	AddDoubleParam(0  , "minaug", "min. augmentations");
+	AddDoubleParam(10 , "maxaug", "max. augmentations");
+}
+
+//=============================================================================
+// FEFrictionlessFluidWall
+//-----------------------------------------------------------------------------
+
+FEFrictionlessFluidWall::FEFrictionlessFluidWall(FEModel* ps, int nstep) : FESurfaceConstraint(FE_FRICTIONLESS_FLUID_WALL, ps, nstep)
+{
+    SetTypeString("frictionless fluid wall");
+
+    AddBoolParam(false, "laugon", "augmented lagrangian");
+    AddDoubleParam(0.2, "tol", "augmentation tolerance");
+    AddDoubleParam(1  , "penalty", "penalty factor");
+    AddDoubleParam(0  , "minaug", "min. augmentations");
+    AddDoubleParam(10 , "maxaug", "max. augmentations");
 }

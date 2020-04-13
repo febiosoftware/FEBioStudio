@@ -630,3 +630,4 @@
 #define FE_NORMAL_FLUID_FLOW            0x0015	// added in 2.0
 #define FE_VOLUME_CONSTRAINT			0x000E	// added in 1.17
 #define FE_WARP_CONSTRAINT				0x002E
+#define FE_FRICTIONLESS_FLUID_WALL      0x002F  // added in 2.0

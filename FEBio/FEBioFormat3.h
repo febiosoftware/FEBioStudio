@@ -81,9 +81,10 @@ private:
 
 private:
 	// constraint input functions
-	void ParseVolumeConstraint(FEStep* pstep, XMLTag& tag);
-	void ParseSymmetryPlane   (FEStep* pstep, XMLTag& tag);
-    void ParseNrmlFldVlctSrf  (FEStep* pstep, XMLTag& tag);
+	void ParseVolumeConstraint     (FEStep* pstep, XMLTag& tag);
+	void ParseSymmetryPlane        (FEStep* pstep, XMLTag& tag);
+    void ParseNrmlFldVlctSrf       (FEStep* pstep, XMLTag& tag);
+    void ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag);
 
 private:
 	// connector input functions

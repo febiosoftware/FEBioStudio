@@ -2794,6 +2794,7 @@ bool FEBioFormat25::ParseConstraintSection(XMLTag& tag)
 			if      (strcmp(sztype, "volume"                 ) == 0) ParseVolumeConstraint(pstep, tag);
 			else if (strcmp(sztype, "symmetry plane"         ) == 0) ParseSymmetryPlane(pstep, tag);
             else if (strcmp(sztype, "normal fluid flow"      ) == 0) ParseNrmlFldVlctSrf(pstep, tag);
+            else if (strcmp(sztype, "frictionless fluid wall") == 0) ParseFrictionlessFluidWall(pstep, tag);
 			else if (strcmp(sztype, "rigid spherical joint"  ) == 0) ParseConnector(pstep, tag, 0);
 			else if (strcmp(sztype, "rigid revolute joint"   ) == 0) ParseConnector(pstep, tag, 1);
 			else if (strcmp(sztype, "rigid prismatic joint"  ) == 0) ParseConnector(pstep, tag, 2);
@@ -2909,6 +2910,39 @@ void FEBioFormat25::ParseNrmlFldVlctSrf(FEStep* pstep, XMLTag& tag)
     pi->SetItemList(psurf);
     pstep->AddComponent(pi);
     
+    // read parameters
+    ReadParameters(*pi, tag);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat25::ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag)
+{
+    FEBioModel& febio = GetFEBioModel();
+    FEModel& fem = GetFEModel();
+
+    // make sure there is something to read
+    if (tag.isempty()) return;
+
+    // get the (optional) contact name
+    char szbuf[256];
+    const char* szname = tag.AttributeValue("name", true);
+    if (szname == 0)
+    {
+        sprintf(szbuf, "FrictionlessFluidWall%02d", CountConstraints<FEFrictionlessFluidWall>(fem)+1);
+        szname = szbuf;
+    }
+
+    // find the surface
+    const char* szsurf = tag.AttributeValue("surface");
+    FESurface* psurf = febio.BuildFESurface(szsurf);
+    if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "surface", szsurf);
+
+    // create a new frictionless fluid wall
+    FEFrictionlessFluidWall* pi = new FEFrictionlessFluidWall(&fem);
+    pi->SetName(szname);
+    pi->SetItemList(psurf);
+    pstep->AddComponent(pi);
+
     // read parameters
     ReadParameters(*pi, tag);
 }

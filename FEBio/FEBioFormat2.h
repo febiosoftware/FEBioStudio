@@ -53,10 +53,11 @@ private:
 	void ParseContactParams(XMLTag& tag, FEPairedInterface* pc, int nid);
 
 	// constraint input functions
-	void ParseRigidConstraint (FEStep* pstep, XMLTag& tag);
-	void ParseVolumeConstraint(FEStep* pstep, XMLTag& tag);
-	void ParseSymmetryPlane   (FEStep* pstep, XMLTag& tag);
-    void ParseNrmlFldVlctSrf  (FEStep* pstep, XMLTag& tag);
+	void ParseRigidConstraint      (FEStep* pstep, XMLTag& tag);
+	void ParseVolumeConstraint     (FEStep* pstep, XMLTag& tag);
+	void ParseSymmetryPlane        (FEStep* pstep, XMLTag& tag);
+    void ParseNrmlFldVlctSrf       (FEStep* pstep, XMLTag& tag);
+    void ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag);
 
 	// connector input functions
 	void ParseConnector(FEStep* pstep, XMLTag& tag, const int rc);
