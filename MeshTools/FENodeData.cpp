@@ -1,28 +1,29 @@
 #include "stdafx.h"
 #include "FENodeData.h"
 #include <MeshLib/FEMesh.h>
+#include <GeomLib/GObject.h>
 
-FENodeData::FENodeData() : FEMeshData(FEMeshData::NODE_DATA)
+FENodeData::FENodeData(GObject* po) : FEMeshData(FEMeshData::NODE_DATA)
 {
+	m_po = po;
+	m_nodeSet = nullptr;
 }
 
 FENodeData::FENodeData(const FENodeData& d) : FEMeshData(FEMeshData::NODE_DATA)
 {
-	SetName(d.GetName());
-	SetMesh(d.GetMesh());
-	m_data = d.m_data;
 }
 
 FENodeData& FENodeData::operator=(const FENodeData& d)
 {
-	SetName(d.GetName());
-	SetMesh(d.GetMesh());
-	m_data = d.m_data;
 	return *this;
 }
 
-void FENodeData::Create(FEMesh* pm, double v)
+void FENodeData::Create(double v)
 {
+	delete m_nodeSet;
+	m_nodeSet = new FENodeSet(m_po);
+	m_nodeSet->CreateFromMesh();
+	FEMesh* pm = m_po->GetFEMesh();
 	SetMesh(pm);
 	m_data.assign(pm->Nodes(), v);
 }
@@ -39,6 +40,7 @@ void FENodeData::Save(OArchive& ar)
 void FENodeData::Load(IArchive& ar)
 {
 	const int NN = GetMesh()->Nodes();
+	Create();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -55,4 +57,10 @@ void FENodeData::Load(IArchive& ar)
 
 		ar.CloseChunk();
 	}
+}
+
+// get the item list
+FEItemListBuilder* FENodeData::GetItemList()
+{
+	return m_nodeSet;
 }

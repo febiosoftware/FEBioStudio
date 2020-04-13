@@ -10,6 +10,7 @@ public:
 
 private:
 	QString		m_name;
+	int			m_ntype;
 	int			m_ngen[2];
 	double		m_weight[2];
 };

@@ -37,39 +37,24 @@ private:
 		~Surface() { delete m_faceList; }
 	};
 
-	class ElementSet
+	class ElementList
 	{
 	public:
-		FECoreMesh*	mesh;
-		int			matID;
-		string		name;
-		vector<int>	elem;
+		string		m_name;
+		FEElemList*	m_elemList;
 
 	public:
-		ElementSet(){ mesh = 0; }
-		ElementSet(const ElementSet& es)
-		{
-			mesh = es.mesh;
-			name = es.name;
-			elem = es.elem;
-			matID = es.matID;
-		}
-
-		void operator = (const ElementSet& es)
-		{
-			mesh = es.mesh;
-			name = es.name;
-			elem = es.elem;
-			matID = es.matID;
-		}
+		ElementList(const string& name, FEElemList* elemList) : m_name(name), m_elemList(elemList) {}
+		~ElementList() { delete m_elemList; }
 	};
 
 	class Part
 	{
 	public:
-		GObject*			m_obj;
-		vector<NodeSet*>	m_NSet;
-		vector<Surface*>	m_Surf;
+		GObject*				m_obj;
+		vector<NodeSet*>		m_NSet;
+		vector<Surface*>		m_Surf;
+		vector<ElementList*>	m_ELst;
 
 	public:
 		Part(GObject* po) : m_obj(po){}
@@ -77,6 +62,7 @@ private:
 		{
 			for (size_t i = 0; i<m_NSet.size(); ++i) delete m_NSet[i];
 			for (size_t i = 0; i<m_Surf.size(); ++i) delete m_Surf[i];
+			for (size_t i = 0; i<m_ELst.size(); ++i) delete m_ELst[i];
 		}
 		NodeSet* FindNodeSet(const string& name)
 		{
@@ -89,6 +75,39 @@ private:
 			for (size_t i = 0; i<m_Surf.size(); ++i)
 				if (m_Surf[i]->m_name == name) return m_Surf[i];
 			return 0;
+		}
+		ElementList* FindElementSet(const string& name)
+		{
+			for (size_t i = 0; i<m_ELst.size(); ++i)
+				if (m_ELst[i]->m_name == name) return m_ELst[i];
+			return 0;
+		}
+	};
+
+	class ElementSet
+	{
+	public:
+		FECoreMesh*	m_mesh;
+		int			m_matID;
+		string		m_name;
+		vector<int>	m_elem;
+
+	public:
+		ElementSet() { m_mesh = 0; }
+		ElementSet(const ElementSet& es)
+		{
+			m_mesh = es.m_mesh;
+			m_name = es.m_name;
+			m_elem = es.m_elem;
+			m_matID = es.m_matID;
+		}
+
+		void operator = (const ElementSet& es)
+		{
+			m_mesh = es.m_mesh;
+			m_name = es.m_name;
+			m_elem = es.m_elem;
+			m_matID = es.m_matID;
 		}
 	};
 

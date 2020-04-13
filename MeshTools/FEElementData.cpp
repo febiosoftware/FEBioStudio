@@ -64,7 +64,6 @@ double FEElementData::GetScaleFactor() const
 //-----------------------------------------------------------------------------
 void FEElementData::Save(OArchive& ar)
 {
-	int NE = GetMesh()->Elements();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
@@ -79,8 +78,8 @@ void FEElementData::Save(OArchive& ar)
 	}
 	ar.EndChunk();
 
+	int NE = m_part->size();
 	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NE);
-
 }
 
 //-----------------------------------------------------------------------------

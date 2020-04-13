@@ -2671,7 +2671,7 @@ void FEMesh::Load(IArchive& ar)
 						{
 							FENodeData* pmap = AddNodeDataField("(unnamed)");
 							int NN = Nodes();
-							pmap->Create(this, NN);
+							pmap->Create(NN);
 							pmap->Load(ar);
 						}
 						break;
@@ -3035,8 +3035,8 @@ void FEMesh::InsertElementData(int i, FEElementData* data)
 //-----------------------------------------------------------------------------
 FENodeData* FEMesh::AddNodeDataField(const string& sz, double v)
 {
-	FENodeData* data = new FENodeData;
-	data->Create(this, v);
+	FENodeData* data = new FENodeData(GetGObject());
+	data->Create(v);
 	data->SetName(sz);
 	m_nodeData.push_back(data);
 	return data;

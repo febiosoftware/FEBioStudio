@@ -230,7 +230,24 @@ void FEBioExport3::AddSurface(const std::string& name, FEItemListBuilder* pl)
 //-----------------------------------------------------------------------------
 void FEBioExport3::AddElemSet(const std::string& name, FEItemListBuilder* pl)
 {
-	if (pl) m_pESet.push_back(NamedList(string(name), pl));
+	assert(pl);
+	if (pl == nullptr) return;
+	if (m_exportParts)
+	{
+		switch (pl->Type())
+		{
+		case FE_PART:
+		{
+			FEPart* pg = dynamic_cast<FEPart*>(pl); assert(pg);
+			GObject* po = pg->GetGObject();
+			Part* part = FindPart(po);
+			ElementList* es = part->FindElementSet(name);
+			if (es == 0) part->m_ELst.push_back(new ElementList(name, pg->BuildElemList()));
+		}
+		break;
+		}
+	}
+	m_pESet.push_back(NamedList(string(name), pl));
 }
 
 //-----------------------------------------------------------------------------
@@ -288,6 +305,7 @@ bool FEBioExport3::PrepareExport(FEProject& prj)
 		}
 		if (pm->ElementDataFields() > 0) m_bdata = true;
 		if (pm->SurfaceDataFields() > 0) m_bdata = true;
+		if (pm->NodeDataFields() > 0) m_bdata = true;
 	}
 
 	// See if we have data maps
@@ -567,6 +585,32 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 			if (pg)
 			{
 				AddElemSet(pg->GetName(), pg);
+			}
+		}
+	}
+
+	// export item lists for mesh data
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		FEMesh* mesh = po->GetFEMesh();
+		if (mesh)
+		{
+			int ND = mesh->NodeDataFields();
+			for (int j = 0; j < ND; ++j)
+			{
+				FENodeData* data = mesh->GetNodeDataField(j);
+				FEItemListBuilder* pg = data->GetItemList();
+				if (pg) AddNodeSet(data->GetName(), pg);
+			}
+
+			int NE = mesh->ElementDataFields();
+			for (int j = 0; j < NE; ++j)
+			{
+				FEElementData* data = mesh->GetElementDataField(j);
+				FEPart* pg = const_cast<FEPart*>(data->GetPart());
+				FEItemListBuilder* pil = pg;
+				if (pg) AddElemSet(data->GetName(), pil);
 			}
 		}
 	}
@@ -1907,11 +1951,24 @@ void FEBioExport3::WriteGeometryObject(FEBioExport3::Part* part)
 	{
 		Surface* s = part->m_Surf[i];
 		XMLElement el("Surface");
-		el.add_attribute("name", s->m_name.c_str());
+		el.add_attribute("name", s->m_name);
 		m_xml.add_branch(el);
 		{
 			FEFaceList* faceList = s->m_faceList;
 			WriteSurfaceSection(*faceList);
+		}
+		m_xml.close_branch();
+	}
+
+	// write all element sets
+	for (int i = 0; i < part->m_ELst.size(); ++i)
+	{
+		ElementList* es = part->m_ELst[i];
+		XMLElement el("ElementSet");
+		el.add_attribute("name", es->m_name);
+		m_xml.add_branch(el);
+		{
+			WriteElementList(*es->m_elemList);
 		}
 		m_xml.close_branch();
 	}
@@ -2215,13 +2272,21 @@ void FEBioExport3::WriteGeometryElementSetsNew()
 			{
 				GPartList* itemList = dynamic_cast<GPartList*>(pl); assert(itemList);
 				vector<GPart*> partList = itemList->GetPartList();
-				for (size_t i = 0; i<partList.size(); ++i)
+				for (size_t i = 0; i < partList.size(); ++i)
 				{
 					GPart* pg = partList[i];
 					GObject* po = dynamic_cast<GObject*>(pg->Object());
 					string name = string(po->GetName()) + "." + string(pg->GetName());
 					m_xml.add_leaf("elem_set", name);
 				}
+			}
+			break;
+			case FE_PART:
+			{
+				FEPart* part = dynamic_cast<FEPart*>(pl); assert(part);
+				GObject* po = part->GetGObject();
+				string name = string(po->GetName()) + "." + sname;
+				m_xml.add_leaf("elem_set", name);
 			}
 			break;
 			default:
@@ -2431,9 +2496,9 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames
 				sprintf(szname, "%s__%d", pg->GetName().c_str(), nset + 1);
 
 			ElementSet es;
-			es.mesh = pm;
-			es.name = szname;
-			es.matID = pg->GetMaterialID();
+			es.m_mesh = pm;
+			es.m_name = szname;
+			es.m_matID = pg->GetMaterialID();
 
 			xe.add_attribute("name", szname);
 			m_xml.add_branch(xe);
@@ -2457,7 +2522,7 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames
 						ej.m_nid = eid;
 						ncount++;
 
-						es.elem.push_back(j);
+						es.m_elem.push_back(j);
 					}
 				}
 			}
@@ -2778,13 +2843,13 @@ void FEBioExport3::WriteMeshDataShellThickness()
 	for (int i = 0; i<(int)m_ElSet.size(); ++i)
 	{
 		ElementSet& elset = m_ElSet[i];
-		FECoreMesh* pm = elset.mesh;
+		FECoreMesh* pm = elset.m_mesh;
 
 		// see if this mesh has shells
 		bool bshell = false;
-		for (int k = 0; k<(int)elset.elem.size(); ++k)
+		for (int k = 0; k<(int)elset.m_elem.size(); ++k)
 		{
-			FEElement_& el = pm->ElementRef(elset.elem[k]);
+			FEElement_& el = pm->ElementRef(elset.m_elem[k]);
 			if (el.IsShell()) { bshell = true; break; }
 		}
 
@@ -2793,16 +2858,16 @@ void FEBioExport3::WriteMeshDataShellThickness()
 		{
 			XMLElement tag("ElementData");
 			tag.add_attribute("var", "shell thickness");
-			tag.add_attribute("elem_set", elset.name.c_str());
+			tag.add_attribute("elem_set", elset.m_name.c_str());
 			m_xml.add_branch(tag);
 			{
 				XMLElement el("e");
 				int n1 = el.add_attribute("lid", 0);
 
 				int nid = 1;
-				for (int k = 0; k<(int)elset.elem.size(); ++k)
+				for (int k = 0; k<(int)elset.m_elem.size(); ++k)
 				{
-					FEElement_& e = pm->ElementRef(elset.elem[k]);
+					FEElement_& e = pm->ElementRef(elset.m_elem[k]);
 					if (e.IsShell())
 					{
 						el.set_attribute(n1, nid++);
@@ -2826,27 +2891,27 @@ void FEBioExport3::WriteMeshDataMaterialFibers()
 	for (int i = 0; i<NSET; ++i)
 	{
 		ElementSet& elSet = m_ElSet[i];
-		FECoreMesh* pm = elSet.mesh;
+		FECoreMesh* pm = elSet.m_mesh;
 		GObject* po = pm->GetGObject();
 		const Transform& T = po->GetTransform();
 
-		GMaterial* pmat = fem.GetMaterialFromID(elSet.matID);
+		GMaterial* pmat = fem.GetMaterialFromID(elSet.m_matID);
 		FETransverselyIsotropic* ptiso = 0;
 		if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
 
 		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 		{
-			int NE = (int)elSet.elem.size();
+			int NE = (int)elSet.m_elem.size();
 			XMLElement tag("ElementData");
 			tag.add_attribute("var", "fiber");
-			tag.add_attribute("elem_set", elSet.name.c_str());
+			tag.add_attribute("elem_set", elSet.m_name.c_str());
 			m_xml.add_branch(tag);
 			{
 				XMLElement el("e");
 				int nid = el.add_attribute("lid", 0);
 				for (int j = 0; j<NE; ++j)
 				{
-					FEElement_& e = pm->ElementRef(elSet.elem[j]);
+					FEElement_& e = pm->ElementRef(elSet.m_elem[j]);
 					vec3d a = T.LocalToGlobalNormal(e.m_fiber);
 					el.set_attribute(nid, j + 1);
 					el.value(a);
@@ -2866,16 +2931,16 @@ void FEBioExport3::WriteMeshDataMaterialAxes()
 	for (int i = 0; i<NSET; ++i)
 	{
 		ElementSet& elSet = m_ElSet[i];
-		FECoreMesh* pm = elSet.mesh;
+		FECoreMesh* pm = elSet.m_mesh;
 		GObject* po = pm->GetGObject();
 		const Transform& T = po->GetTransform();
 
 		// make sure there is something to do
 		bool bwrite = false;
-		int NE = (int)elSet.elem.size();
+		int NE = (int)elSet.m_elem.size();
 		for (int j = 0; j<NE; ++j)
 		{
-			FEElement_& el = pm->ElementRef(elSet.elem[j]);
+			FEElement_& el = pm->ElementRef(elSet.m_elem[j]);
 			if (el.m_Qactive) { bwrite = true; break; }
 		}
 
@@ -2885,7 +2950,7 @@ void FEBioExport3::WriteMeshDataMaterialAxes()
 			int n = 0;
 			XMLElement tag("ElementData");
 			tag.add_attribute("var", "mat_axis");
-			tag.add_attribute("elem_set", elSet.name.c_str());
+			tag.add_attribute("elem_set", elSet.m_name.c_str());
 			m_xml.add_branch(tag);
 			{
 				XMLElement el("e");
@@ -2893,7 +2958,7 @@ void FEBioExport3::WriteMeshDataMaterialAxes()
 
 				for (int j = 0; j<NE; ++j)
 				{
-					FEElement_& e = pm->ElementRef(elSet.elem[j]);
+					FEElement_& e = pm->ElementRef(elSet.m_elem[j]);
 					if (e.m_Qactive)
 					{
 						// e.m_Q is in local coordinates, so transform it to global coordinates
@@ -2936,19 +3001,19 @@ void FEBioExport3::WriteMeshDataFields()
 
 			const FEPart* pg = data.GetPart();
 
-			XMLElement tag("ElementData");
+			XMLElement tag("element_data");
 			tag.add_attribute("name", data.GetName().c_str());
-			tag.add_attribute("elem_set", pg->GetName());
+			tag.add_attribute("elem_set", data.GetName());
 			m_xml.add_branch(tag);
 			{
 				XMLElement el("e");
-				int nid = el.add_attribute("id", 0);
+				int nid = el.add_attribute("lid", 0);
 				FEItemListBuilder::ConstIterator it = pg->begin();
 				for (int j = 0; j<pg->size(); ++j, ++it)
 				{
 					int eid = *it;
 					FEElement_& e = pm->ElementRef(eid);
-					el.set_attribute(nid, e.m_nid);
+					el.set_attribute(nid, j + 1);
 					el.value(data[j]);
 					m_xml.add_leaf(el, false);
 				}
@@ -3009,6 +3074,42 @@ void FEBioExport3::WriteEdgeDataSection()
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteNodeDataSection()
 {
+	FEModel& fem = *m_pfem;
+	GModel& model = fem.GetModel();
+
+	for (int i = 0; i<model.Objects(); i++)
+	{
+		FEMesh* mesh = model.Object(i)->GetFEMesh();
+
+		for (int j = 0; j < mesh->NodeDataFields(); j++)
+		{
+			FENodeData& nd = *mesh->GetNodeDataField(j);
+
+			XMLElement tag("node_data");
+			tag.add_attribute("name", nd.GetName().c_str());
+
+			if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
+			else if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("data_type", "vector");
+
+			tag.add_attribute("node_set", nd.GetName().c_str());
+
+			m_xml.add_branch(tag);
+			{
+				XMLElement el("node");
+				int n1 = el.add_attribute("lid", 0);
+
+				int nid = 1;
+				for (int i=0; i<nd.Size(); ++i)
+				{
+					el.set_attribute(n1, nid++);
+					el.value(nd.get(i));
+
+					m_xml.add_leaf(el, false);
+				}
+			}
+			m_xml.close_branch();
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

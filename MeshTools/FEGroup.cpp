@@ -125,6 +125,16 @@ FEItemListBuilder* FEPart::Copy()
 }
 
 //-----------------------------------------------------------------------------
+void FEPart::CreateFromMesh()
+{
+	Clear();
+	FEMesh* m = GetMesh();
+	if (m == nullptr) return;
+	int NE = m->Elements();
+	for (int i = 0; i < NE; ++i) add(i);
+}
+
+//-----------------------------------------------------------------------------
 FEElemList* FEPart::BuildElemList()
 {
 	FEMesh* pm = m_pObj->GetFEMesh();
@@ -312,6 +322,15 @@ FEItemListBuilder* FENodeSet::Copy()
 	FENodeSet* pg = new FENodeSet(m_pObj);
 	pg->m_Item = m_Item;
 	return pg;
+}
+
+void FENodeSet::CreateFromMesh()
+{
+	Clear();
+	FEMesh* m = m_pObj->GetFEMesh();
+	if (m == nullptr) return;
+	int NN = m->Nodes();
+	for (int i = 0; i < NN; ++i) add(i);
 }
 
 FENodeList* FENodeSet::BuildNodeList()

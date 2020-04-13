@@ -12,7 +12,10 @@ CScalarFieldTool::CScalarFieldTool() : CBasicTool("Scalar Field", HAS_APPLY_BUTT
 	m_weight[0] = 0.0;
 	m_weight[1] = 1.0;
 
+	m_ntype = 0;
+
 	addStringProperty(&m_name, "Name");
+	addIntProperty(&m_ntype, "Type")->setEnumValues(QStringList() << "nodal data" << "element data");
 	addIntProperty(&m_ngen[0], "Nodeset 1");
 	addDoubleProperty(&m_weight[0], "Value 1");
 	addIntProperty(&m_ngen[1], "Nodeset 2");
@@ -68,9 +71,31 @@ bool CScalarFieldTool::OnApply()
 	LaplaceSolver L;
 	L.Solve(pm, val, bn);
 
-	// create node data
-	FENodeData* pdata = pm->AddNodeDataField(m_name.toStdString());
-	for (int i = 0; i<NN; i++) pdata->set(i, val[i]);
+	if (m_ntype == 0)
+	{
+		// create node data
+		FENodeData* pdata = pm->AddNodeDataField(m_name.toStdString());
+		for (int i = 0; i<NN; i++) pdata->set(i, val[i]);
+	}
+	else
+	{
+		// create element data
+		int NE = pm->Elements();
+		FEPart* pg = new FEPart(po);
+		pg->CreateFromMesh();
+		FEElementData* pdata = pm->AddElementDataField(m_name.toStdString(), pg, FEMeshData::DATA_SCALAR);
+
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement& el = pm->Element(i);
+			int ne = el.Nodes();
+			double v = 0.0;
+			for (int j = 0; j < ne; ++j) v += val[el.m_node[j]];
+			v /= (double)ne;
+
+			pdata->set(i, v);
+		}
+	}
 
 	return true;
 }

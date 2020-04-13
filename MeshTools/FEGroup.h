@@ -60,6 +60,8 @@ public:
 	FEPart(GObject* po, const vector<int>&  elset);
 	~FEPart(){}
 
+	void CreateFromMesh();
+
 	FEElemList* BuildElemList();
 	FENodeList* BuildNodeList();
 
@@ -110,6 +112,8 @@ public:
 	FENodeSet(GObject* po) : FEGroup(po, FE_NODESET) {}
 	FENodeSet(GObject* po, const vector<int>& node);
 	~FENodeSet(){}
+
+	void CreateFromMesh();
 
 	FEItemListBuilder* Copy();
 	void Copy(FENodeSet* pg);

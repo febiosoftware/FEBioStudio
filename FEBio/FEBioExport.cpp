@@ -85,6 +85,13 @@ void FEBioExport::WriteParam(Param &p)
 		e.value(smath.c_str());
 	}
 	break;
+	case Param_STRING:
+	{
+		e.add_attribute("type", "map");
+		std::string s = p.GetStringValue();
+		e.value(s.c_str());
+	}
+	break;
     default:
 		assert(false);
 	}

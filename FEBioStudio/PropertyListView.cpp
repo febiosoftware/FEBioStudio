@@ -25,7 +25,9 @@ CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent
 {
 	addItem("<constant>");
 	addItem("<math>");
-//	addItem("<map>");
+#ifdef _DEBUG
+	addItem("<map>");
+#endif
 	setEditable(true);
 	setInsertPolicy(QComboBox::NoInsert);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -73,6 +75,7 @@ void CEditVariableProperty::onCurrentIndexChanged(int index)
 		Param* p = m_prop->param;
 		if (index == 0) p->SetParamType(Param_FLOAT);
 		if (index == 1) p->SetParamType(Param_MATH);
+		if (index == 2) p->SetParamType(Param_STRING);
 	}
 
 	setEditText("0");
