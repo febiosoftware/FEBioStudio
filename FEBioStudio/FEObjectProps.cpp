@@ -402,7 +402,7 @@ void CMaterialProps::BuildPropertyList()
 	}
 	else
 	{
-		if (pm->HasMaterialAxes())
+		if (pm && pm->HasMaterialAxes())
 		{
 			// add the material axes selection option
 			QStringList val;
