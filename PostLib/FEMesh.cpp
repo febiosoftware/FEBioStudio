@@ -112,8 +112,7 @@ void Post::FEPostMesh::Create(int nodes, int elems, int faces, int edges)
 		}
 
 		// allocate storage for element data
-		m_data.Resize(elems);
-		m_data.Init(0.0, 1);
+		m_data.Clear();
 	}
 }
 

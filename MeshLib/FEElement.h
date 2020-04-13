@@ -110,6 +110,7 @@ public:
 	//! Get the face i (only solids have faces)
 	FEFace GetFace(int i) const;
 	void GetFace(int i, FEFace& face) const;
+	int GetLocalFaceIndices(int i, int* n) const;
 
 	//! Get the edge
 	FEEdge GetEdge(int i);

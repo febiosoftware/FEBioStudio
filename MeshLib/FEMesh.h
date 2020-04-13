@@ -11,6 +11,7 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 class FESurfaceMesh;
+class FEMesh;
 
 //-----------------------------------------------------------------------------
 // Forward declaration of GObject class. The GObject class will own and manage
@@ -22,7 +23,8 @@ class Mesh_Data
 {
 	struct DATA
 	{
-		double	val;
+		double	val[FEElement::MAX_NODES];	// nodal values for element
+		int		nval;						// number of nodal values (should equal nr of nodes for corresponding element)
 		int		tag;
 	};
 
@@ -33,20 +35,26 @@ public:
 
 	void Clear();
 
-	void Resize(size_t size);
+	void Init(FEMesh* mesh, double initVal, int initTag);
 
-	void Init(double data, int idata);
+	bool IsValid() const { return (m_data.empty() == false); }
 
 	DATA& operator[](size_t n) { return m_data[n]; }
 
 	// get the current element value
-	double GetElementValue(int n) const { return m_data[n].val; }
+	double GetElementValue(int elem, int node) const { return m_data[elem].val[node]; }
+
+	// get the average element value
+	double GetElementAverageValue(int elem);
 
 	// get the data tag
 	int GetElementDataTag(int n) const { return m_data[n].tag; }
 
-	// set the element value
-	void SetElementValue(int n, double v) { m_data[n].val = v; }
+	// set the element's node value
+	void SetElementValue(int elem, int node, double v) { m_data[elem].val[node] = v; }
+
+	// set the element (average) value
+	void SetElementValue(int elem, double v);
 
 	// set the data tag
 	void SetElementDataTag(int n, int tag) { m_data[n].tag = tag; }
@@ -200,18 +208,24 @@ public:
 	FENodeData* GetNodeDataField(int i) { return m_nodeData[i]; }
 	FENodeData* FindNodeDataField(const string& sz);
 	void RemoveNodeDataField(int i);
+	int GetNodeDataIndex(FENodeData* data);
+	void InsertNodeData(int i, FENodeData* data);
 
 	int SurfaceDataFields() const { return (int)m_surfData.size(); }
 	FESurfaceData* GetSurfaceDataField(int i) { return m_surfData[i]; }
 	FESurfaceData* AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType);
 	FESurfaceData* FindSurfaceDataField(const string& sz);
 	void RemoveSurfaceDataField(int i);
+	int GetSurfaceDataIndex(FESurfaceData* data);
+	void InsertSurfaceData(int i, FESurfaceData* data);
 
 	int ElementDataFields() const { return (int) m_elemData.size(); }
 	FEElementData* AddElementDataField(const string& name, FEPart* part, FEMeshData::DATA_TYPE dataType);
 	FEElementData* GetElementDataField(int i) { return m_elemData[i]; }
 	FEElementData* FindElementDataField(const string& sz);
 	void RemoveElementDataField(int i);
+	int GetElementDataIndex(FEElementData* data);
+	void InsertElementData(int i, FEElementData* data);
 
 	// simpler interface for accessing data fields
 	int DataFields() const;

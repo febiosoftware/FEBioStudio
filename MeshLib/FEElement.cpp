@@ -109,6 +109,125 @@ FEFace FEElement_::GetFace(int i) const
 }
 
 //-----------------------------------------------------------------------------
+int FEElement_::GetLocalFaceIndices(int i, int* n) const
+{
+	int nodes = -1;
+	switch (Type())
+	{
+	case FE_HEX8:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 5; n[3] = 4; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 6; n[3] = 5; break;
+		case 2: n[0] = 2; n[1] = 3; n[2] = 7; n[3] = 6; break;
+		case 3: n[0] = 3; n[1] = 0; n[2] = 4; n[3] = 7; break;
+		case 4: n[0] = 3; n[1] = 2; n[2] = 1; n[3] = 0; break;
+		case 5: n[0] = 4; n[1] = 5; n[2] = 6; n[3] = 7; break;
+		}
+		nodes = 4;
+		break;
+	case FE_HEX20:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 5; n[3] = 4; n[4] =  8; n[5] = 17; n[6] = 12; n[7] = 16; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 6; n[3] = 5; n[4] =  9; n[5] = 18; n[6] = 13; n[7] = 17; break;
+		case 2: n[0] = 2; n[1] = 3; n[2] = 7; n[3] = 6; n[4] = 10; n[5] = 19; n[6] = 14; n[7] = 18; break;
+		case 3: n[0] = 3; n[1] = 0; n[2] = 4; n[3] = 7; n[4] = 11; n[5] = 16; n[6] = 15; n[7] = 19; break;
+		case 4: n[0] = 3; n[1] = 2; n[2] = 1; n[3] = 0; n[4] = 10; n[5] =  9; n[6] =  8; n[7] = 11; break;
+		case 5: n[0] = 4; n[1] = 5; n[2] = 6; n[3] = 7; n[4] = 12; n[5] = 13; n[6] = 14; n[7] = 15; break;
+		}
+		nodes = 8;
+		break;
+	case FE_HEX27:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 5; n[3] = 4; n[4] =  8; n[5] = 17; n[6] = 12; n[7] = 16; n[8] = 20; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 6; n[3] = 5; n[4] =  9; n[5] = 18; n[6] = 13; n[7] = 17; n[8] = 21; break;
+		case 2: n[0] = 2; n[1] = 3; n[2] = 7; n[3] = 6; n[4] = 10; n[5] = 19; n[6] = 14; n[7] = 18; n[8] = 22; break;
+		case 3: n[0] = 3; n[1] = 0; n[2] = 4; n[3] = 7; n[4] = 11; n[5] = 16; n[6] = 15; n[7] = 19; n[8] = 23; break;
+		case 4: n[0] = 3; n[1] = 2; n[2] = 1; n[3] = 0; n[4] = 10; n[5] =  9; n[6] =  8; n[7] = 11; n[8] = 24; break;
+		case 5: n[0] = 4; n[1] = 5; n[2] = 6; n[3] = 7; n[4] = 12; n[5] = 13; n[6] = 14; n[7] = 15; n[8] = 25; break;
+		}
+		nodes = 9;
+		break;
+	case FE_PENTA6:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 4; n[3] = 3; nodes = 4; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 5; n[3] = 4; nodes = 4; break;
+		case 2: n[0] = 0; n[1] = 3; n[2] = 5; n[3] = 2; nodes = 4; break;
+		case 3: n[0] = 0; n[1] = 2; n[2] = 1; nodes = 3; break;
+		case 4: n[0] = 3; n[1] = 4; n[2] = 5; nodes = 3; break;
+		}
+		break;
+	case FE_PYRA5:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 4; nodes = 3; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 4; nodes = 3; break;
+		case 2: n[0] = 2; n[1] = 3; n[2] = 4; nodes = 3; break;
+		case 3: n[0] = 3; n[1] = 0; n[2] = 4; nodes = 3; break;
+		case 4: n[0] = 3; n[1] = 2; n[2] = 1; n[3] = 0; nodes = 4; break;
+		}
+		break;
+	case FE_PENTA15:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 4; n[3] = 3; n[4] =  6; n[5] = 13; n[6] =  9; n[7] = 12; nodes = 8; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 5; n[3] = 4; n[4] =  7; n[5] = 14; n[6] = 10; n[7] = 13; nodes = 8; break;
+		case 2: n[0] = 0; n[1] = 3; n[2] = 5; n[3] = 2; n[4] = 12; n[5] = 11; n[6] = 14; n[7] =  8; nodes = 8; break;
+		case 3: n[0] = 0; n[1] = 2; n[2] = 1; n[3] = 8; n[4] =  7; n[5] =  6; n[6] = n[7] = -1; nodes = 6; break;
+		case 4: n[0] = 3; n[1] = 4; n[2] = 5; n[3] = 9; n[4] = 10; n[5] = 11; n[6] = n[7] = -1; nodes = 6; break;
+		}
+		break;
+	case FE_TET4:
+	case FE_TET5:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = n[3] = 3; n[4] = n[5] = n[6] = n[7] = -1; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = n[3] = 3; n[4] = n[5] = n[6] = n[7] = -1; break;
+		case 2: n[0] = 0; n[1] = 3; n[2] = n[3] = 2; n[4] = n[5] = n[6] = n[7] = -1; break;
+		case 3: n[0] = 0; n[1] = 2; n[2] = n[3] = 1; n[4] = n[5] = n[6] = n[7] = -1; break;
+		}
+		nodes = 3;
+		break;
+	case FE_TET10:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 3; n[3] = 4; n[4] = 8; n[5] = 7; n[6] = n[7] = -1; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 3; n[3] = 5; n[4] = 9; n[5] = 8; n[6] = n[7] = -1; break;
+		case 2: n[0] = 2; n[1] = 0; n[2] = 3; n[3] = 6; n[4] = 7; n[5] = 9; n[6] = n[7] = -1; break;
+		case 3: n[0] = 2; n[1] = 1; n[2] = 0; n[3] = 5; n[4] = 4; n[5] = 6; n[6] = n[7] = -1; break;
+		}
+		nodes = 6;
+		break;
+	case FE_TET15:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 3; n[3] = 4; n[4] = 8; n[5] = 7; n[6] = 11; n[7] = -1; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 3; n[3] = 5; n[4] = 9; n[5] = 8; n[6] = 12; n[7] = -1; break;
+		case 2: n[0] = 2; n[1] = 0; n[2] = 3; n[3] = 6; n[4] = 7; n[5] = 9; n[6] = 13; n[7] = -1; break;
+		case 3: n[0] = 2; n[1] = 1; n[2] = 0; n[3] = 5; n[4] = 4; n[5] = 6; n[6] = 10; n[7] = -1; break;
+		}
+		nodes = 7;
+		break;
+	case FE_TET20:
+		switch (i)
+		{
+		case 0: n[0] = 0; n[1] = 1; n[2] = 3; n[3] = 4; n[4] = 5; n[5] = 12; n[6] = 13; n[7] = 10; n[8] = 11; n[9] = 16; break;
+		case 1: n[0] = 1; n[1] = 2; n[2] = 3; n[3] = 6; n[4] = 7; n[5] = 14; n[6] = 15; n[7] = 12; n[8] = 13; n[9] = 17; break;
+		case 2: n[0] = 2; n[1] = 0; n[2] = 3; n[3] = 9; n[4] = 8; n[5] = 10; n[6] = 11; n[7] = 14; n[8] = 15; n[9] = 18; break;
+		case 3: n[0] = 2; n[1] = 1; n[2] = 0; n[3] = 7; n[4] = 6; n[5] =  5; n[6] =  4; n[7] =  9; n[8] =  8; n[9] = 19; break;
+		}
+		nodes = 10;
+		break;
+	}
+
+	assert(nodes > 0);
+	return nodes;
+}
+
+//-----------------------------------------------------------------------------
 void FEElement_::GetFace(int i, FEFace& f) const
 {
 	int* m = m_node;

@@ -1,5 +1,20 @@
 #pragma once
 #include "Command.h"
+#include <MeshTools/FEModifier.h>
+#include <FEMLib/FEInterface.h>
+#include <GeomLib/GObject.h>
+#include <FEMLib/FEBoundaryCondition.h>
+#include <FEMLib/FEConnector.h>
+#include <FEMLib/FELoad.h>
+#include <FSCore/ParamBlock.h>
+#include <MeshTools/GGroup.h>
+#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/FERigidConstraint.h>
+#include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModifiedObject.h>
+#include <MeshTools/FESurfaceModifier.h>
+#include <GeomLib/GSurfaceMeshObject.h>
+#include <GLLib/GLCamera.h>
 
 //-----------------------------------------------------------------------------
 
@@ -1387,4 +1402,19 @@ protected:
 	GModel*	m_gm;
 	int		m_layerIndex;
 	MeshLayer*	m_layer;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdRemoveMeshData : public CCommand
+{
+public:
+	CCmdRemoveMeshData(FEMeshData* meshData);
+	~CCmdRemoveMeshData();
+
+	void Execute() override;
+	void UnExecute() override;
+
+private:
+	FEMeshData*	m_data;
+	int		m_index;
 };

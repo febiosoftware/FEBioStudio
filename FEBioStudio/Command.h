@@ -1,19 +1,5 @@
 #pragma once
-#include <MeshTools/FEModifier.h>
-#include <FEMLib/FEInterface.h>
-#include <GeomLib/GObject.h>
-#include <FEMLib/FEBoundaryCondition.h>
-#include <FEMLib/FEConnector.h>
-#include <FEMLib/FELoad.h>
-#include <FSCore/ParamBlock.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <FEMLib/FERigidConstraint.h>
-#include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModifiedObject.h>
-#include <MeshTools/FESurfaceModifier.h>
-#include <GeomLib/GSurfaceMeshObject.h>
-#include <GLLib/GLCamera.h>
+#include <string>
 #include "ViewSettings.h"
 
 class CDocument;
@@ -45,14 +31,14 @@ private:
 class CCommand  
 {
 public:
-	CCommand(const string& name);
+	CCommand(const std::string& name);
 	virtual ~CCommand();
 
 	virtual void Execute  () = 0;
 	virtual void UnExecute() = 0;
 
 	const char* GetName() const;
-	void SetName(const string& name);
+	void SetName(const std::string& name);
 
 	VIEW_STATE GetViewState();
 
@@ -62,7 +48,7 @@ protected:
 	// doc/view state variables
 	VIEW_STATE	m_state;
 
-	string m_name;	// command name
+	std::string m_name;	// command name
 
 	friend class CCommandManager;
 };

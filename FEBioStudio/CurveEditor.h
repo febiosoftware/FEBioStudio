@@ -3,6 +3,8 @@
 #include "CommandManager.h"
 #include "Command.h"
 #include "PlotWidget.h"
+#include <MeshTools/LoadCurve.h>
+#include <FSCore/ParamBlock.h>
 
 class CMainWindow;
 class FELoadCurve;

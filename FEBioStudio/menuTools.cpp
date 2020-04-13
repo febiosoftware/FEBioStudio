@@ -12,6 +12,7 @@
 #include <FSCore/FSDir.h>
 #include "SSHHandler.h"
 #include <GeomLib/MeshLayer.h>
+#include <GeomLib/GObject.h>
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {

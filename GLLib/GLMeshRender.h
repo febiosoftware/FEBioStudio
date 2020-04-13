@@ -59,6 +59,8 @@ public:
 	void RenderPYRA5  (FEElement_* pe, FECoreMesh* pm, bool bsel);
 	void RenderPENTA15(FEElement_* pe, FECoreMesh *pm, bool bsel);
 
+	void RenderHEX8(FEElement_ *pe, FECoreMesh *pm, GLColor* col);
+
 public:
 	// drawing routines for faces
 	void RenderFEFace(FEFace& face, FEMeshBase* pm);

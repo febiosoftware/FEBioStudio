@@ -51,19 +51,47 @@ void Mesh_Data::operator = (const Mesh_Data& d)
 void Mesh_Data::Clear()
 {
 	m_data.clear();
+	m_min = m_max = 0.0;
 }
 
 //-----------------------------------------------------------------------------
-void Mesh_Data::Resize(size_t size)
+void Mesh_Data::Init(FEMesh* mesh, double initVal, int initTag)
 {
-	m_data.resize(size);
+	int NE = mesh->Elements();
+	m_data.resize(NE);
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement& el = mesh->Element(i);
+		DATA& di = m_data[i];
+		int ne = el.Nodes();
+		di.nval = ne;
+		di.tag = initTag;
+		for (int j = 0; j < ne; ++j)
+		{
+			di.val[j] = initVal;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
-void Mesh_Data::Init(double data, int idata)
+// get the average element value
+double Mesh_Data::GetElementAverageValue(int elem)
 {
-	DATA d = { data, idata };
-	m_data.assign(m_data.size(), d);
+	double v = 0.0;
+	if (m_data[elem].tag != 0)
+	{
+		for (int i = 0; i < m_data[elem].nval; ++i) v += m_data[elem].val[i];
+		v /= (double)m_data[elem].nval;
+	}
+	return v;
+}
+
+//-----------------------------------------------------------------------------
+// set the element (average) value
+void Mesh_Data::SetElementValue(int elem, double v)
+{
+	int ne = m_data[elem].nval;
+	for (int i = 0; i < ne; ++i) m_data[elem].val[i] = v;
 }
 
 //-----------------------------------------------------------------------------
@@ -78,18 +106,22 @@ void Mesh_Data::UpdateValueRange()
 	{
 		if (m_data[i].tag != 0)
 		{
-			m_min = m_max = m_data[i].val;
+			m_min = m_max = m_data[i].val[0];
 			break;
 		}
 	}
 
 	// update range
-	for (; i<N; ++i)
+	for (i=0; i<N; ++i)
 	{
-		if (m_data[i].tag != 0)
+		DATA& di = m_data[i];
+		if (di.tag != 0)
 		{
-			if (m_data[i].val > m_max) m_max = m_data[i].val;
-			if (m_data[i].val < m_min) m_min = m_data[i].val;
+			for (int j = 0; j < di.nval; ++j)
+			{
+				if (di.val[j] > m_max) m_max = di.val[j];
+				if (di.val[j] < m_min) m_min = di.val[j];
+			}
 		}
 	}
 }
@@ -182,11 +214,7 @@ void FEMesh::Create(int nodes, int elems, int faces, int edges)
 	if (edges > 0) { if (edges) m_Edge.resize(edges); else m_Edge.clear(); }
 
 	// allocate storage for element data
-	if (elems > 0) 
-	{
-		m_data.Resize(elems);
-		m_data.Init(0.0, 1);
-	}
+	if (elems > 0) m_data.Clear();
 
 	// see if we need to clear the maps
 	if (elems > 0) m_elemData.clear();
@@ -292,7 +320,7 @@ FEMesh* FEMesh::DetachSelectedMesh()
 		}
 	}
 	m_Elem.resize(n);
-	m_data.Resize(n);
+	m_data.Clear();
 
 	// tag nodes which will be kept
 	pn = NodePtr();
@@ -962,7 +990,7 @@ void FEMesh::RemoveElements(int ntag)
 	}
 
 	m_Elem.resize(n);
-	m_data.Resize(n);
+	m_data.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -1366,7 +1394,8 @@ void FEMesh::UpdateFaceElementTable()
 //						assert(m<2);
 						if (m == 0)
 						{
-							face.m_elem[m++].eid = eid;
+							face.m_elem[m  ].eid = eid;
+							face.m_elem[m++].lid = k;
 						}
 						else if (m < 2)
 						{
@@ -1374,12 +1403,16 @@ void FEMesh::UpdateFaceElementTable()
 							FEElement_* p0 = ElementPtr(face.m_elem[0].eid);
 							if (p0->m_gid < pej->m_gid)
 							{
-								face.m_elem[m++].eid = eid;
+								face.m_elem[m  ].eid = eid;
+								face.m_elem[m++].lid = k;
 							}
 							else
 							{
-								face.m_elem[m++].eid = face.m_elem[0].eid;
+								face.m_elem[m  ].eid = face.m_elem[0].eid;
+								face.m_elem[m++].lid = face.m_elem[0].lid;
+
 								face.m_elem[0].eid = eid;
+								face.m_elem[0].lid = k;
 							}
 						}
 						pej->m_face[k] = i;
@@ -1404,7 +1437,8 @@ void FEMesh::UpdateFaceElementTable()
 					{
 						if (m == 0) 
 						{	
-							face.m_elem[m++].eid = eid;
+							face.m_elem[m  ].eid = eid;
+							face.m_elem[m++].lid = 0;
 							pej->m_face[0] = i;
 						}
 					}
@@ -1641,7 +1675,7 @@ void FEMesh::Attach(FEMesh& fem)
 		++ng;
 
 		m_Elem.resize(elems);
-		m_data.Resize(elems);
+		m_data.Clear();
 		for (i=0; i<ne1; ++i) 
 		{
 			FEElement& e0 = m_Elem[ne0 + i];
@@ -2985,6 +3019,20 @@ void FEMesh::RemoveElementDataField(int i)
 }
 
 //-----------------------------------------------------------------------------
+int FEMesh::GetElementDataIndex(FEElementData* data)
+{
+	for (int i = 0; i < m_elemData.size(); ++i)
+		if (m_elemData[i] == data) return i;
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::InsertElementData(int i, FEElementData* data)
+{
+	m_elemData.insert(m_elemData.begin() + i, data);
+}
+
+//-----------------------------------------------------------------------------
 FENodeData* FEMesh::AddNodeDataField(const string& sz, double v)
 {
 	FENodeData* data = new FENodeData;
@@ -3013,6 +3061,20 @@ void FEMesh::RemoveNodeDataField(int i)
 }
 
 //-----------------------------------------------------------------------------
+int FEMesh::GetNodeDataIndex(FENodeData* data)
+{
+	for (int i = 0; i < m_nodeData.size(); ++i)
+		if (m_nodeData[i] == data) return i;
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::InsertNodeData(int i, FENodeData* data)
+{
+	m_nodeData.insert(m_nodeData.begin() + i, data);
+}
+
+//-----------------------------------------------------------------------------
 FESurfaceData* FEMesh::AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
@@ -3038,6 +3100,20 @@ FESurfaceData* FEMesh::FindSurfaceDataField(const string& sz)
 void FEMesh::RemoveSurfaceDataField(int i)
 {
 	m_surfData.erase(m_surfData.begin() + i);
+}
+
+//-----------------------------------------------------------------------------
+int FEMesh::GetSurfaceDataIndex(FESurfaceData* data)
+{
+	for (int i = 0; i < m_surfData.size(); ++i)
+		if (m_surfData[i] == data) return i;
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::InsertSurfaceData(int i, FESurfaceData* data)
+{
+	m_surfData.insert(m_surfData.begin() + i, data);
 }
 
 //-----------------------------------------------------------------------------

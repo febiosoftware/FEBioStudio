@@ -2,6 +2,7 @@
 #include "CommandManager.h"
 #include "Command.h"
 #include "Document.h"
+#include <GeomLib/GObject.h>
 
 std::string CBasicCmdManager::m_err;
 

@@ -82,6 +82,76 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
+inline void glxColor(const GLColor& c)
+{
+	glColor3ub(c.r, c.g, c.b);
+}
+
+//-----------------------------------------------------------------------------
+// TODO: This may not always give the desired result: I render using both
+//		 element and face data. But that cannot always be guaranteed to be consistent.
+//		 What I need to do is only render using element or face data, but not both.
+void GLMeshRender::RenderHEX8(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
+{
+	assert(pe->IsType(FE_HEX8));
+	FEElement_& e = *pe;
+	vec3d r1, r2, r3, r4;
+	vec3d n1, n2, n3, n4;
+	GLColor c[4];
+	glBegin(GL_QUADS);
+	{
+		for (int i = 0; i<6; ++i)
+		{
+			r1 = pm->Node(e.m_node[FTHEX8[i][0]]).r;
+			r2 = pm->Node(e.m_node[FTHEX8[i][1]]).r;
+			r3 = pm->Node(e.m_node[FTHEX8[i][2]]).r;
+			r4 = pm->Node(e.m_node[FTHEX8[i][3]]).r;
+
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			if (pen == 0)
+			{
+				FEFace* pf = pm->FacePtr(e.m_face[i]);
+				assert(pf);
+				assert(&pm->ElementRef(pf->m_elem[0].eid) == pe);
+				if (pf)
+				{
+					n1 = pf->m_nn[0];
+					n2 = pf->m_nn[1];
+					n3 = pf->m_nn[2];
+					n4 = pf->m_nn[3];
+
+					c[0] = col[FTHEX8[i][0]];
+					c[1] = col[FTHEX8[i][1]];
+					c[2] = col[FTHEX8[i][2]];
+					c[3] = col[FTHEX8[i][3]];
+				}
+				else
+				{
+					vec3d n = (r2 - r1) ^ (r3 - r1);
+					n.Normalize();
+					n1 = n2 = n3 = n4 = n;
+				}
+			}
+			else
+			{
+				vec3d n = (r2 - r1) ^ (r3 - r1);
+				n.Normalize();
+				n1 = n2 = n3 = n4 = n;
+			}
+
+			if ((pen == 0) || (!pen->IsVisible()))
+			{
+				glNormal3d(n1.x, n1.y, n1.z); glxColor(c[0]); glVertex3d(r1.x, r1.y, r1.z);
+				glNormal3d(n2.x, n2.y, n2.z); glxColor(c[1]); glVertex3d(r2.x, r2.y, r2.z);
+				glNormal3d(n3.x, n3.y, n3.z); glxColor(c[2]); glVertex3d(r3.x, r3.y, r3.z);
+				glNormal3d(n4.x, n4.y, n4.z); glxColor(c[3]); glVertex3d(r4.x, r4.y, r4.z);
+			}
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.

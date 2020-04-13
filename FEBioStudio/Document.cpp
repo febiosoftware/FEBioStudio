@@ -1358,6 +1358,11 @@ void CDocument::DeleteObject(FSObject* po)
 		}
 		DoCommand(new CCmdDeleteFSObject(po));
 	}
+	else if (dynamic_cast<FEMeshData*>(po))
+	{
+		FEMeshData* pd = dynamic_cast<FEMeshData*>(po);
+		DoCommand(new CCmdRemoveMeshData(pd));
+	}
 	else
 	{
 		assert(false);

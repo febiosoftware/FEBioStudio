@@ -17,7 +17,7 @@ void FEMeshValuator::Evaluate(int nfield)
 	int n = 0;
 	int NE = m_mesh.Elements();
 	Mesh_Data& data = m_mesh.GetMeshData();
-	data.Init(0.0, 0);
+	data.Init(&m_mesh, 0.0, 0);
 	if (nfield < 11)
 	{
 		for (int i = 0; i < NE; ++i)
@@ -54,15 +54,12 @@ void FEMeshValuator::Evaluate(int nfield)
 				{ 
 					FEElement& el = mesh->Element(i);
 					int ne = el.Nodes();
-					double val = 0.0;
 					for (int j = 0; j < ne; ++j)
 					{
-						val += nodeData.get(el.m_node[j]);
+						double val = nodeData.get(el.m_node[j]);
+						data.SetElementValue(i, j, val);
 					}
-					val /= (double)ne;
-
 					data.SetElementDataTag(i, 1);
-					data.SetElementValue(i, val);
 				}
 			}
 			break;

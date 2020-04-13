@@ -6836,7 +6836,8 @@ void CGLView::RenderFEFaces(GObject* po)
 	double vmin, vmax;
 	Post::CColorMap map;
 	Mesh_Data& data = pm->GetMeshData();
-	if (view.m_bcontour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+	bool showContour = (view.m_bcontour && data.IsValid());
+	if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
 	for (int i = 0; i<pm->Faces(); i++)
@@ -6855,40 +6856,65 @@ void CGLView::RenderFEFaces(GObject* po)
 		{
 			if (pg && pg->IsVisible())
 			{
-				if (view.m_objectColor == 0)
+				if (showContour)
 				{
-					if (pg->GetMaterialID() != nmatid)
+					if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
 					{
-						nmatid = pg->GetMaterialID();
-						GMaterial* pmat = fem.GetMaterialFromID(nmatid);
-						SetMatProps(pmat);
-						if (view.m_bcontour)
-						{
-							if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
-								dif = map.map(data.GetElementValue(face.m_elem[0].eid));
-							else
-								dif = GLColor(212, 212, 212);
-						}
-						else dif = (pmat ? pmat->Diffuse() : col);
+						int fnl[FEElement::MAX_NODES];
+						int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
+						assert(nn == face.Nodes());
+
+						GLColor c[FEFace::MAX_NODES];
+						int nf = face.Nodes();
+						for (int j = 0; j<nf; ++j)
+							c[j] = map.map(data.GetElementValue(face.m_elem[0].eid, fnl[j]));
+
+						// Render the face
+						m_renderer.RenderFace(face, pm, c, 1);
+					}
+					else
+					{
+						dif = GLColor(212, 212, 212);
 						glColor3ub(dif.r, dif.g, dif.b);
 
-						int glmode = 0;
-						if (pmat && (pmat->m_nrender != 0))
+						// Render the face
+						glBegin(GL_TRIANGLES);
 						{
-							GLint n[2];
-							glGetIntegerv(GL_POLYGON_MODE, n);
-							glmode = n[1];
-							if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+							m_renderer.RenderFEFace(face, pm);
 						}
+						glEnd();
 					}
 				}
-
-				// Render the face
-				glBegin(GL_TRIANGLES);
+				else 
 				{
-					m_renderer.RenderFEFace(face, pm);
+					if (view.m_objectColor == 0)
+					{
+						if (pg->GetMaterialID() != nmatid)
+						{
+							nmatid = pg->GetMaterialID();
+							GMaterial* pmat = fem.GetMaterialFromID(nmatid);
+							SetMatProps(pmat);
+							dif = (pmat ? pmat->Diffuse() : col);
+							glColor3ub(dif.r, dif.g, dif.b);
+
+							int glmode = 0;
+							if (pmat && (pmat->m_nrender != 0))
+							{
+								GLint n[2];
+								glGetIntegerv(GL_POLYGON_MODE, n);
+								glmode = n[1];
+								if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+							}
+						}
+					}
+
+					// Render the face
+					glBegin(GL_TRIANGLES);
+					{
+						m_renderer.RenderFEFace(face, pm);
+					}
+					glEnd();
 				}
-				glEnd();
 			}
 		}
 	}
@@ -7093,7 +7119,8 @@ void CGLView::RenderFEElements(GObject* po)
 	double vmin, vmax;
 	Post::CColorMap map;
 	Mesh_Data& data = pm->GetMeshData();
-	if (view.m_bcontour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+	bool showContour = (view.m_bcontour && data.IsValid());
+	if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
 	int NE = pm->Elements();
@@ -7106,68 +7133,95 @@ void CGLView::RenderFEElements(GObject* po)
 			GPart* pg = po->Part(el.m_gid);
 			if (pg->IsVisible())
 			{
-				if (view.m_objectColor == 0)
+				if (showContour)
 				{
-					if ((pg->GetMaterialID() != nmatid) || (view.m_bcontour))
+					GLColor c[FEElement::MAX_NODES];
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j)
 					{
-						GMaterial* pmat = 0;
+						if (data.GetElementDataTag(i) > 0)
+							c[j] = map.map(data.GetElementValue(i, j));
+						else
+							c[j] = GLColor(212, 212, 212);
+					}
+
+					switch (el.Type())
+					{
+					case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, c); break;
+					case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, true); break;
+					case FE_HEX27 : m_renderer.RenderHEX27(&el, pm, true); break;
+					case FE_PENTA6: m_renderer.RenderPENTA(&el, pm, true); break;
+					case FE_PENTA15: m_renderer.RenderPENTA15(&el, pm, true); break;
+					case FE_TET4  : m_renderer.RenderTET4(&el, pm, true); break;
+					case FE_TET5  : m_renderer.RenderTET4(&el, pm, true); break;
+					case FE_TET10 : m_renderer.RenderTET10(&el, pm, true); break;
+					case FE_TET15 : m_renderer.RenderTET15(&el, pm, true); break;
+					case FE_TET20 : m_renderer.RenderTET20(&el, pm, true); break;
+					case FE_QUAD4 : m_renderer.RenderQUAD(&el, pm, true); break;
+					case FE_QUAD8 : m_renderer.RenderQUAD8(&el, pm, true); break;
+					case FE_QUAD9 : m_renderer.RenderQUAD9(&el, pm, true); break;
+					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, true); break;
+					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
+					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
+					case FE_BEAM2 : break;
+					case FE_BEAM3 : break;
+					default:
+						assert(false);
+					}
+
+				}
+				else
+				{
+					if (view.m_objectColor == 0)
+					{
 						if (pg->GetMaterialID() != nmatid)
 						{
-							nmatid = pg->GetMaterialID();
-							pmat = fem.GetMaterialFromID(nmatid);
-							SetMatProps(pmat);
-						}
+							GMaterial* pmat = 0;
+							if (pg->GetMaterialID() != nmatid)
+							{
+								nmatid = pg->GetMaterialID();
+								pmat = fem.GetMaterialFromID(nmatid);
+								SetMatProps(pmat);
+							}
 
-						if (view.m_bcontour)
-						{
-							if (data.GetElementDataTag(i) > 0)
-								dif = map.map(data.GetElementValue(i));
-							else
-								dif = GLColor(212, 212, 212);
-						}
-						else dif = (pmat != 0 ? pmat->Diffuse() : col);
+							dif = (pmat != 0 ? pmat->Diffuse() : col);
 
-						glColor3ub(dif.r, dif.g, dif.b);
+							glColor3ub(dif.r, dif.g, dif.b);
 
-						if (pmat && (pmat->m_nrender != 0))
-						{
-							GLint n[2];
-							glGetIntegerv(GL_POLYGON_MODE, n);
-							glmode = n[1];
-							if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+							if (pmat && (pmat->m_nrender != 0))
+							{
+								GLint n[2];
+								glGetIntegerv(GL_POLYGON_MODE, n);
+								glmode = n[1];
+								if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+							}
 						}
 					}
-				}
 
-				switch (el.Type())
-				{
-				case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, true); break;
-				case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, true); break;
-				case FE_HEX27 : m_renderer.RenderHEX27(&el, pm, true); break;
-				case FE_PENTA6: m_renderer.RenderPENTA(&el, pm, true); break;
-				case FE_PENTA15: m_renderer.RenderPENTA15(&el, pm, true); break;
-				case FE_TET4  : m_renderer.RenderTET4(&el, pm, true); break;
-				case FE_TET5  : m_renderer.RenderTET4(&el, pm, true); break;
-				case FE_TET10 : m_renderer.RenderTET10(&el, pm, true); break;
-				case FE_TET15 : m_renderer.RenderTET15(&el, pm, true); break;
-				case FE_TET20 : m_renderer.RenderTET20(&el, pm, true); break;
-				case FE_QUAD4 : m_renderer.RenderQUAD(&el, pm, true); break;
-				case FE_QUAD8 : m_renderer.RenderQUAD8(&el, pm, true); break;
-				case FE_QUAD9 : m_renderer.RenderQUAD9(&el, pm, true); break;
-				case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, true); break;
-				case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
-				case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
-				case FE_BEAM2 : break;
-				case FE_BEAM3 : break;
-				default:
-					assert(false);
+					switch (el.Type())
+					{
+					case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, true); break;
+					case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, true); break;
+					case FE_HEX27 : m_renderer.RenderHEX27(&el, pm, true); break;
+					case FE_PENTA6: m_renderer.RenderPENTA(&el, pm, true); break;
+					case FE_PENTA15: m_renderer.RenderPENTA15(&el, pm, true); break;
+					case FE_TET4  : m_renderer.RenderTET4(&el, pm, true); break;
+					case FE_TET5  : m_renderer.RenderTET4(&el, pm, true); break;
+					case FE_TET10 : m_renderer.RenderTET10(&el, pm, true); break;
+					case FE_TET15 : m_renderer.RenderTET15(&el, pm, true); break;
+					case FE_TET20 : m_renderer.RenderTET20(&el, pm, true); break;
+					case FE_QUAD4 : m_renderer.RenderQUAD(&el, pm, true); break;
+					case FE_QUAD8 : m_renderer.RenderQUAD8(&el, pm, true); break;
+					case FE_QUAD9 : m_renderer.RenderQUAD9(&el, pm, true); break;
+					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, true); break;
+					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
+					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
+					case FE_BEAM2 : break;
+					case FE_BEAM3 : break;
+					default:
+						assert(false);
+					}
 				}
-
-				/*			if (el.m_pmat && (el.m_pmat->m_nrender != 0))
-				{
-				glPolygonMode(GL_FRONT_AND_BACK, glmode);
-				}
-				*/
 			}
 		}
 	}

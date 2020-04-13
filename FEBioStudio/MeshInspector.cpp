@@ -61,34 +61,38 @@ void CMeshInspector::UpdateData(int ndata)
 	FEMeshValuator eval(*pm);
 
 	int NE = pm->Elements();
-	int NC = 0;
-	vector<double> v(NE);
+	vector<double> v; v.reserve(NE*FEElement::MAX_NODES);
 	double vmax = -1e99, vmin = 1e99, vavg = 0;
-	Mesh_Data& data = pm->GetMeshData();
 	eval.Evaluate(ndata);
-	for (int i = 0; i<NE; ++i)
+	Mesh_Data& data = pm->GetMeshData();
+	if (data.IsValid())
 	{
-		FEElement& el = pm->Element(i);
-		if ((etype == -1) || (el.Type() == etype))
+		for (int i = 0; i < NE; ++i)
 		{
-			if (data[i].tag)
+			FEElement& el = pm->Element(i);
+			int ne = el.Nodes();
+			if ((etype == -1) || (el.Type() == etype))
 			{
-				int nerr;
-				v[NC] = data[i].val;
-				if (v[NC] < vmin) vmin = v[NC];
-				if (v[NC] > vmax) vmax = v[NC];
-				vavg += v[NC];
-				++NC;
+				if (data[i].tag)
+				{
+					int nerr;
+					for (int j = 0; j < ne; ++j)
+					{
+						double vj = data.GetElementValue(i, j);
+						vavg += vj;
+						v.push_back(vj);
+					}
+				}
+			}
+			else
+			{
+				data.SetElementDataTag(i, 0);
 			}
 		}
-		else
-		{
-			data.SetElementValue(i, 0.0);
-			data.SetElementDataTag(i, 0);
-		}
+		data.UpdateValueRange();
+		data.GetValueRange(vmin, vmax);
 	}
-	data.UpdateValueRange();
-
+	int NC = v.size();
 	if (NC > 0) vavg /= (double)NC; else { vmin = vmax = vavg = 0.0; }
 	ui->stats->setRange(vmin, vmax, vavg);
 
@@ -153,7 +157,7 @@ void CMeshInspector::on_select_clicked()
 		{
 			if (data.GetElementDataTag(i) > 0)
 			{
-				double v = data.GetElementValue(i);
+				double v = data.GetElementAverageValue(i);
 				if ((v + eps >= smin) && (v - eps <= smax)) elem.push_back(i);
 			}
 		}
