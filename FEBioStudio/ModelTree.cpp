@@ -1116,21 +1116,9 @@ void CModelTree::UpdateMeshData(QTreeWidgetItem* t1, FEModel& fem)
 		FEMesh* mesh = po->GetFEMesh();
 		if (mesh)
 		{
-			for (int j = 0; j < mesh->NodeDataFields(); ++j)
+			for (int j = 0; j < mesh->MeshDataFields(); ++j)
 			{
-				FENodeData& data = *mesh->GetNodeDataField(j);
-				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
-			}
-
-			for (int j = 0; j < mesh->SurfaceDataFields(); ++j)
-			{
-				FESurfaceData& data = *mesh->GetSurfaceDataField(j);
-				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
-			}
-
-			for (int j = 0; j < mesh->ElementDataFields(); ++j)
-			{
-				FEElementData& data = *mesh->GetElementDataField(j);
+				FEMeshData& data = *mesh->GetMeshDataField(j);
 				AddTreeItem(t1, QString::fromStdString(data.GetName()), MT_MESH_DATA, 0, &data);
 			}
 		}

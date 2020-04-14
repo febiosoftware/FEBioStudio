@@ -11,7 +11,7 @@ public:
 	enum DATA_CLASS {
 		NODE_DATA,
 		SURFACE_DATA,
-		PART_DATA
+		ELEMENT_DATA
 	};
 
 	enum DATA_TYPE {

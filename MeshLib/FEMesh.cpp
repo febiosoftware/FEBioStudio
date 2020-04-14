@@ -162,9 +162,6 @@ FEMesh::FEMesh(FEMesh& m)
 
 	// copy element data
 	m_data = m.m_data;
-	m_nodeData = m.m_nodeData;
-	m_surfData = m.m_surfData;
-	m_elemData = m.m_elemData;
 
 	// copy bounding box
 	m_box = m.m_box;
@@ -189,11 +186,15 @@ void FEMesh::Clear()
 	m_Elem.clear();
 	m_Node.clear();
 
-	m_data.Clear();
+	ClearMeshData();
+}
 
-	m_nodeData.clear();
-	m_surfData.clear();
-	m_elemData.clear();
+//-----------------------------------------------------------------------------
+void FEMesh::ClearMeshData()
+{
+	m_data.Clear();
+	for (int i = 0; i < m_meshData.size(); ++i) delete m_meshData[i];
+	m_meshData.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -213,11 +214,8 @@ void FEMesh::Create(int nodes, int elems, int faces, int edges)
 	if (faces > 0) { if (faces) m_Face.resize(faces); else m_Face.clear(); }
 	if (edges > 0) { if (edges) m_Edge.resize(edges); else m_Edge.clear(); }
 
-	// allocate storage for element data
-	if (elems > 0) m_data.Clear();
-
-	// see if we need to clear the maps
-	if (elems > 0) m_elemData.clear();
+	// clear mesh data
+	ClearMeshData();
 }
 
 //-----------------------------------------------------------------------------
@@ -2320,41 +2318,47 @@ void FEMesh::Save(OArchive &ar)
 	}
 
 	// write the mesh data 
-	if (DataFields() > 0)
+	if (MeshDataFields() > 0)
 	{
 		ar.BeginChunk(CID_MESH_DATA_SECTION);
 		{
 			// node data
-			for (int n = 0; n<(int)m_nodeData.size(); ++n)
+			for (int n = 0; n<(int)m_meshData.size(); ++n)
 			{
-				FENodeData* map = m_nodeData[n];
-				ar.BeginChunk(CID_MESH_NODE_DATA);
+				FEMeshData* meshData = m_meshData[n];
+				switch (meshData->GetDataClass())
 				{
-					map->Save(ar);
-				}
-				ar.EndChunk();
-			}
-
-			// surface data
-			for (int n = 0; n<(int)m_surfData.size(); ++n)
-			{
-				FESurfaceData* map = m_surfData[n];
-				ar.BeginChunk(CID_MESH_SURFACE_DATA);
+				case FEMeshData::NODE_DATA:
 				{
-					map->Save(ar);
+					FENodeData* map = dynamic_cast<FENodeData*>(meshData); assert(map);
+					ar.BeginChunk(CID_MESH_NODE_DATA);
+					{
+						map->Save(ar);
+					}
+					ar.EndChunk();
 				}
-				ar.EndChunk();
-			}
-
-			// Element data
-			for (int n=0; n<(int)m_elemData.size(); ++n)
-			{
-				FEElementData* map = m_elemData[n];
-				ar.BeginChunk(CID_MESH_PART_DATA);
+				break;
+				case FEMeshData::SURFACE_DATA:
 				{
-					map->Save(ar);
+					FESurfaceData* map = dynamic_cast<FESurfaceData*>(meshData); assert(map);
+					ar.BeginChunk(CID_MESH_SURFACE_DATA);
+					{
+						map->Save(ar);
+					}
+					ar.EndChunk();
 				}
-				ar.EndChunk();
+				break;
+				case FEMeshData::ELEMENT_DATA:
+				{
+					FEElementData* map = dynamic_cast<FEElementData*>(meshData); assert(map);
+					ar.BeginChunk(CID_MESH_PART_DATA);
+					{
+						map->Save(ar);
+					}
+					ar.EndChunk();
+				}
+				break;
+				}
 			}
 		}
 		ar.EndChunk();
@@ -2682,14 +2686,14 @@ void FEMesh::Load(IArchive& ar)
 //							int NF = Faces();
 //							pmap->Create(this, NF);
 							pmap->Load(ar);
-							m_surfData.push_back(pmap);
+							m_meshData.push_back(pmap);
 						}
 						break;
 					case CID_MESH_PART_DATA:
 						{
 							FEElementData* pmap = new FEElementData(this);
 							pmap->Load(ar);
-							m_elemData.push_back(pmap);
+							m_meshData.push_back(pmap);
 						}
 						break;
 					}
@@ -2996,40 +3000,49 @@ FEElementData* FEMesh::AddElementDataField(const string& sz, FEPart* part, FEMes
 	FEElementData* map = new FEElementData;
 	map->Create(this, part, dataType);
 	map->SetName(sz);
-	m_elemData.push_back(map);
+	m_meshData.push_back(map);
 	return map;
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FEMesh::FindElementDataField(const string& sz)
+int FEMesh::MeshDataFields() const { return (int)m_meshData.size(); }
+
+//-----------------------------------------------------------------------------
+FEMeshData* FEMesh::GetMeshDataField(int i) { return m_meshData[i]; }
+
+//-----------------------------------------------------------------------------
+Mesh_Data& FEMesh::GetMeshData() { return m_data; }
+
+//-----------------------------------------------------------------------------
+FEMeshData* FEMesh::FindMeshDataField(const string& sz)
 {
-	if (m_elemData.empty()) return 0;
-	for (int i = 0; i<m_elemData.size(); ++i)
+	if (m_meshData.empty()) return 0;
+	for (int i = 0; i<m_meshData.size(); ++i)
 	{
-		const string& name = m_elemData[i]->GetName();
-		if (name == sz) return m_elemData[i];
+		const string& name = m_meshData[i]->GetName();
+		if (name == sz) return m_meshData[i];
 	}
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::RemoveElementDataField(int i)
+void FEMesh::RemoveMeshDataField(int i)
 {
-	m_elemData.erase(m_elemData.begin() + i);
+	m_meshData.erase(m_meshData.begin() + i);
 }
 
 //-----------------------------------------------------------------------------
-int FEMesh::GetElementDataIndex(FEElementData* data)
+int FEMesh::GetMeshDataIndex(FEMeshData* data)
 {
-	for (int i = 0; i < m_elemData.size(); ++i)
-		if (m_elemData[i] == data) return i;
+	for (int i = 0; i < m_meshData.size(); ++i)
+		if (m_meshData[i] == data) return i;
 	return -1;
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::InsertElementData(int i, FEElementData* data)
+void FEMesh::InsertMeshData(int i, FEMeshData* data)
 {
-	m_elemData.insert(m_elemData.begin() + i, data);
+	m_meshData.insert(m_meshData.begin() + i, data);
 }
 
 //-----------------------------------------------------------------------------
@@ -3038,40 +3051,8 @@ FENodeData* FEMesh::AddNodeDataField(const string& sz, double v)
 	FENodeData* data = new FENodeData(GetGObject());
 	data->Create(v);
 	data->SetName(sz);
-	m_nodeData.push_back(data);
+	m_meshData.push_back(data);
 	return data;
-}
-
-//-----------------------------------------------------------------------------
-FENodeData* FEMesh::FindNodeDataField(const string& sz)
-{
-	if (m_nodeData.empty()) return 0;
-	for (int i=0; i<m_nodeData.size(); ++i)
-	{
-		const string& name = m_nodeData[i]->GetName();
-		if (name == sz) return m_nodeData[i];
-	}
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::RemoveNodeDataField(int i)
-{
-	m_nodeData.erase(m_nodeData.begin() + i);
-}
-
-//-----------------------------------------------------------------------------
-int FEMesh::GetNodeDataIndex(FENodeData* data)
-{
-	for (int i = 0; i < m_nodeData.size(); ++i)
-		if (m_nodeData[i] == data) return i;
-	return -1;
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::InsertNodeData(int i, FENodeData* data)
-{
-	m_nodeData.insert(m_nodeData.begin() + i, data);
 }
 
 //-----------------------------------------------------------------------------
@@ -3080,74 +3061,8 @@ FESurfaceData* FEMesh::AddSurfaceDataField(const string& name, FESurface* surfac
 	FESurfaceData* data = new FESurfaceData;
 	data->Create(this, surface, dataType);
 	data->SetName(name);
-	m_surfData.push_back(data);
+	m_meshData.push_back(data);
 	return data;
-}
-
-//-----------------------------------------------------------------------------
-FESurfaceData* FEMesh::FindSurfaceDataField(const string& sz)
-{
-	if (m_surfData.empty()) return 0;
-	for (int i = 0; i<m_surfData.size(); ++i)
-	{
-		const string& name = m_surfData[i]->GetName();
-		if (name == sz) return (m_surfData[i]);
-	}
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::RemoveSurfaceDataField(int i)
-{
-	m_surfData.erase(m_surfData.begin() + i);
-}
-
-//-----------------------------------------------------------------------------
-int FEMesh::GetSurfaceDataIndex(FESurfaceData* data)
-{
-	for (int i = 0; i < m_surfData.size(); ++i)
-		if (m_surfData[i] == data) return i;
-	return -1;
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::InsertSurfaceData(int i, FESurfaceData* data)
-{
-	m_surfData.insert(m_surfData.begin() + i, data);
-}
-
-//-----------------------------------------------------------------------------
-int FEMesh::DataFields() const
-{
-	return NodeDataFields() + SurfaceDataFields() + ElementDataFields();
-}
-
-//-----------------------------------------------------------------------------
-FEMeshData* FEMesh::GetMeshData(int i)
-{
-	int NN = NodeDataFields();
-	int NS = SurfaceDataFields();
-	int NE = ElementDataFields();
-
-	if (i<0) return 0;
-	if (i<NN) return GetNodeDataField(i); i-= NN;
-	if (i<NS) return GetSurfaceDataField(i); i-= NS;
-	if (i<NE) return GetElementDataField(i);
-
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::RemoveMeshData(int i)
-{
-	int NN = NodeDataFields();
-	int NS = SurfaceDataFields();
-	int NE = ElementDataFields();
-
-	if (i<0) return;
-	if (i<NN) RemoveNodeDataField(i);
-	else if (i - NN < NS) RemoveSurfaceDataField(i - NN);
-	else if (i - NN - NS < NE) RemoveElementDataField(i - NN - NS);
 }
 
 //-----------------------------------------------------------------------------

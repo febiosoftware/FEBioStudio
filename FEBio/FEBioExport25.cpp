@@ -328,8 +328,7 @@ bool FEBioExport25::PrepareExport(FEProject& prj)
 				break;
 			}
 		}
-		if (pm->ElementDataFields() > 0) m_bdata = true;
-		if (pm->SurfaceDataFields() > 0) m_bdata = true;
+		if (pm->MeshDataFields() > 0) m_bdata = true;
 	}
 
 	return true;
@@ -2795,37 +2794,39 @@ void FEBioExport25::WriteSurfaceDataSection()
 	{
 		FEMesh* mesh = model.Object(i)->GetFEMesh();
 
-		for (int j = 0; j < mesh->SurfaceDataFields(); j++)
+		for (int j = 0; j < mesh->MeshDataFields(); j++)
 		{
-			FESurfaceData& sd = *mesh->GetSurfaceDataField(j);
-
-			XMLElement tag("SurfaceData");
-			tag.add_attribute("name", sd.GetName().c_str());
-
-			if(sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
-			else if(sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("data_type", "vector");
-
-			tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
-
-			m_xml.add_branch(tag);
+			FESurfaceData* surfData = dynamic_cast<FESurfaceData*>(mesh->GetMeshDataField(j));
+			if (surfData)
 			{
-				XMLElement el("face");
-				int n1 = el.add_attribute("lid", 0);
+				FESurfaceData& sd = *surfData;
 
-				int nid = 1;
-				for (double d : *(sd.getData()))
+				XMLElement tag("SurfaceData");
+				tag.add_attribute("name", sd.GetName().c_str());
+
+				if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
+				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("data_type", "vector");
+
+				tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
+
+				m_xml.add_branch(tag);
 				{
-					el.set_attribute(n1, nid++);
-					el.value(d);
+					XMLElement el("face");
+					int n1 = el.add_attribute("lid", 0);
 
-					m_xml.add_leaf(el, false);
+					int nid = 1;
+					for (double d : *(sd.getData()))
+					{
+						el.set_attribute(n1, nid++);
+						el.value(d);
+
+						m_xml.add_leaf(el, false);
+					}
+
+
 				}
-
-
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
-
-
 		}
 
 
@@ -3005,34 +3006,38 @@ void FEBioExport25::WriteMeshDataFields()
 		FEMesh* pm = po->GetFEMesh();
 		int NE = pm->Elements();
 
-		int ND = pm->ElementDataFields();
+		int ND = pm->MeshDataFields();
 		for (int n=0; n<ND; ++n)
 		{
-			FEElementData& data = *pm->GetElementDataField(n);
-
-			const FEPart* pg = data.GetPart();
-
-			double scale = data.GetScaleFactor();
-
-			XMLElement tag("ElementData");
-			tag.add_attribute("var", data.GetName().c_str());
-			tag.add_attribute("elem_set", pg->GetName());
-			if (scale != 1.0) tag.add_attribute("scale", scale);
-			m_xml.add_branch(tag);
+			FEElementData* elemData = dynamic_cast<FEElementData*>(pm->GetMeshDataField(n));
+			if (elemData)
 			{
-				XMLElement el("elem");
-				int nid = el.add_attribute("lid", 0);
-				FEItemListBuilder::ConstIterator it = pg->begin();
-				for (int j = 0; j<pg->size(); ++j, ++it)
+				FEElementData& data = *elemData;
+
+				const FEPart* pg = data.GetPart();
+
+				double scale = data.GetScaleFactor();
+
+				XMLElement tag("ElementData");
+				tag.add_attribute("var", data.GetName().c_str());
+				tag.add_attribute("elem_set", pg->GetName());
+				if (scale != 1.0) tag.add_attribute("scale", scale);
+				m_xml.add_branch(tag);
 				{
-					int eid = *it;
-					FEElement_& e = pm->ElementRef(eid);
-					el.set_attribute(nid, j + 1);
-					el.value(data[j]);
-					m_xml.add_leaf(el, false);
+					XMLElement el("elem");
+					int nid = el.add_attribute("lid", 0);
+					FEItemListBuilder::ConstIterator it = pg->begin();
+					for (int j = 0; j < pg->size(); ++j, ++it)
+					{
+						int eid = *it;
+						FEElement_& e = pm->ElementRef(eid);
+						el.set_attribute(nid, j + 1);
+						el.value(data[j]);
+						m_xml.add_leaf(el, false);
+					}
 				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
 		}
 	}
 }

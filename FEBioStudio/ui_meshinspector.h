@@ -269,13 +269,13 @@ public:
 		var->addItems(items);
 
 		// Add data fields
-		if (pm->DataFields())
+		if (pm->MeshDataFields())
 		{
 			var->insertSeparator(var->count());
 
-			for (int i = 0; i<pm->DataFields(); ++i)
+			for (int i = 0; i<pm->MeshDataFields(); ++i)
 			{
-				FEMeshData& di = *pm->GetMeshData(i);
+				FEMeshData& di = *pm->GetMeshDataField(i);
 				var->addItem(QString::fromStdString(di.GetName()));
 			}
 		}

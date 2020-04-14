@@ -41,9 +41,9 @@ void FEMeshValuator::Evaluate(int nfield)
 	else
 	{
 		nfield -= 11;
-		if ((nfield >= 0) && (nfield < m_mesh.DataFields()))
+		if ((nfield >= 0) && (nfield < m_mesh.MeshDataFields()))
 		{
-			FEMeshData* meshData = m_mesh.GetMeshData(nfield);
+			FEMeshData* meshData = m_mesh.GetMeshDataField(nfield);
 			switch (meshData->GetDataClass())
 			{
 			case FEMeshData::NODE_DATA:
@@ -66,7 +66,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::SURFACE_DATA:
 				// TODO: Not sure what to do here. 
 				break;
-			case FEMeshData::PART_DATA:
+			case FEMeshData::ELEMENT_DATA:
 			{
 				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
 				const FEPart* pg = elemData.GetPart();

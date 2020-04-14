@@ -3,7 +3,7 @@
 #include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
+FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
 {
 	m_scale = 1.0;
 	m_part = nullptr;
@@ -19,7 +19,7 @@ void FEElementData::Create(FEMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataT
 }
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::PART_DATA)
+FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::ELEMENT_DATA)
 {
 	SetMesh(d.GetMesh());
 	SetName(d.GetName());

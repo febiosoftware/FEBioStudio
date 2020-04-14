@@ -3705,38 +3705,13 @@ CCmdRemoveMeshData::~CCmdRemoveMeshData()
 void CCmdRemoveMeshData::Execute()
 {
 	FEMesh* mesh = m_data->GetMesh();
-	if (dynamic_cast<FENodeData*>(m_data))
-	{
-		m_index = mesh->GetNodeDataIndex(dynamic_cast<FENodeData*>(m_data)); assert(m_index >= 0);
-		mesh->RemoveNodeDataField(m_index);
-	}
-	else if (dynamic_cast<FESurfaceData*>(m_data))
-	{
-		m_index = mesh->GetSurfaceDataIndex(dynamic_cast<FESurfaceData*>(m_data)); assert(m_index >= 0);
-		mesh->RemoveSurfaceDataField(m_index);
-	}
-	else if (dynamic_cast<FEElementData*>(m_data))
-	{
-		m_index = mesh->GetElementDataIndex(dynamic_cast<FEElementData*>(m_data)); assert(m_index >= 0);
-		mesh->RemoveElementDataField(m_index);
-	}
+	m_index = mesh->GetMeshDataIndex(m_data); assert(m_index >= 0);
+	mesh->RemoveMeshDataField(m_index);
 }
 
 void CCmdRemoveMeshData::UnExecute()
 {
 	FEMesh* mesh = m_data->GetMesh();
-	if (dynamic_cast<FENodeData*>(m_data))
-	{
-		mesh->InsertNodeData(m_index, dynamic_cast<FENodeData*>(m_data));
-	}
-	else if (dynamic_cast<FESurfaceData*>(m_data))
-	{
-		mesh->InsertSurfaceData(m_index, dynamic_cast<FESurfaceData*>(m_data));
-	}
-	else if (dynamic_cast<FEElementData*>(m_data))
-	{
-		mesh->InsertElementData(m_index, dynamic_cast<FEElementData*>(m_data));
-	}
-
+	mesh->InsertMeshData(m_index, m_data);
 	m_index = -1;
 }

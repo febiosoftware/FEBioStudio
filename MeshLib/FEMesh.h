@@ -203,36 +203,19 @@ public:
 	void ResizeElems(int newSize);
 
 public:
-	int NodeDataFields() const { return (int)m_nodeData.size(); }
+	int MeshDataFields() const;
+	FEMeshData* GetMeshDataField(int i);
+	FEMeshData* FindMeshDataField(const string& sz);
+	void RemoveMeshDataField(int i);
+	int GetMeshDataIndex(FEMeshData* data);
+	void InsertMeshData(int i, FEMeshData* data);
+
 	FENodeData* AddNodeDataField(const string& name, double v = 0.0);
-	FENodeData* GetNodeDataField(int i) { return m_nodeData[i]; }
-	FENodeData* FindNodeDataField(const string& sz);
-	void RemoveNodeDataField(int i);
-	int GetNodeDataIndex(FENodeData* data);
-	void InsertNodeData(int i, FENodeData* data);
-
-	int SurfaceDataFields() const { return (int)m_surfData.size(); }
-	FESurfaceData* GetSurfaceDataField(int i) { return m_surfData[i]; }
 	FESurfaceData* AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType);
-	FESurfaceData* FindSurfaceDataField(const string& sz);
-	void RemoveSurfaceDataField(int i);
-	int GetSurfaceDataIndex(FESurfaceData* data);
-	void InsertSurfaceData(int i, FESurfaceData* data);
-
-	int ElementDataFields() const { return (int) m_elemData.size(); }
 	FEElementData* AddElementDataField(const string& name, FEPart* part, FEMeshData::DATA_TYPE dataType);
-	FEElementData* GetElementDataField(int i) { return m_elemData[i]; }
-	FEElementData* FindElementDataField(const string& sz);
-	void RemoveElementDataField(int i);
-	int GetElementDataIndex(FEElementData* data);
-	void InsertElementData(int i, FEElementData* data);
+	void ClearMeshData();
 
-	// simpler interface for accessing data fields
-	int DataFields() const;
-	FEMeshData* GetMeshData(int i);
-	void RemoveMeshData(int i);
-
-	Mesh_Data& GetMeshData() { return m_data; }
+	Mesh_Data& GetMeshData();
 
 public:
 	void BuildSurfaceNodeNodeTable(vector< set<int> >& NNT);
@@ -256,9 +239,7 @@ protected:
 	Mesh_Data	m_data;
 
 	// data fields
-	vector<FENodeData*>		m_nodeData;
-	vector<FESurfaceData*>	m_surfData;
-	vector<FEElementData*>	m_elemData;
+	vector<FEMeshData*>		m_meshData;
 };
 
 double bias(double b, double x);

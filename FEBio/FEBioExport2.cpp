@@ -1354,7 +1354,7 @@ void FEBioExport2::WriteGeometrySection()
 			}
 		}
 
-		if (pm->ElementDataFields() > 0) bdata = true;
+		if (pm->MeshDataFields() > 0) bdata = true;
 	}
 
 	// write element data section if necessary
@@ -1627,7 +1627,7 @@ void FEBioExport2::WriteGeometryElementData()
 	{
 		GObject* po = model.Object(i);
 		FEMesh* pm = po->GetFEMesh();
-		int ND = pm->ElementDataFields();
+		int ND = pm->MeshDataFields();
 		const Transform& T = po->GetTransform();
 
 		for (int j=0; j<pm->Elements(); ++j)
@@ -1666,7 +1666,7 @@ void FEBioExport2::WriteGeometryElementData()
 				}
 				for (int k=0; k<ND; ++k)
 				{
-					FEElementData& data = *pm->GetElementDataField(k);
+					FEElementData* data = dynamic_cast<FEElementData*>(pm->GetMeshDataField(k));
 /*					if (data.GetTag(j) > 0)
 					{
 						double val = data[j];

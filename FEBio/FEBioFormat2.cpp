@@ -336,7 +336,7 @@ void FEBioFormat2::ParseGeometryElementData(FEBioModel::Part& part, XMLTag& tag)
 					if ((pdata == 0) || (pdata->GetName() != dataName))
 					{
 						// see if we can find this data field
-						pdata = pm->FindElementDataField(dataName);
+						pdata = dynamic_cast<FEElementData*>(pm->FindMeshDataField(dataName));
 
 						// if we couldn't find it, let's create a new one
 						if (pdata == 0)
