@@ -1648,6 +1648,17 @@ CFEBioJob* CDocument::FindFEBioJob(const std::string& s)
 	return nullptr;
 }
 
+CFEBioJob* CDocument::FindFEBioJob(CPostDoc* postDoc)
+{
+	for (int i = 0; i < FEBioJobs(); ++i)
+	{
+		CFEBioJob* job = m_JobList[i];
+		if (job->GetPostDoc() == postDoc) return job;
+	}
+
+	return nullptr;
+}
+
 int CDocument::ImageModels() const
 {
 	return (int)m_img.Size();

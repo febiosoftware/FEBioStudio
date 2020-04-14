@@ -233,38 +233,45 @@ bool CFEBioJob::OpenPlotFile(xpltFileReader* xplt)
 {
 	string plotFile = FSDir::toAbsolutePath(m_plotFile);
 
+	// see if we need to reload this plot file or not
+	bool breload = false;
+
 	if (m_postDoc == nullptr)
 	{
 		m_postDoc = new CPostDoc;
 		m_postDoc->SetParent(this);
 		m_postDoc->SetName(GetName());
+	}
+	else breload = (m_postDoc->GetFileName() == plotFile);
+
+	if (breload == false)
+	{
 		if (m_postDoc->LoadPlotfile(plotFile, xplt) == false)
 		{
 			return false;
 		}
+
+		// map material colors from the pre-model to the post-model
+		FEModel* fem = m_doc->GetFEModel();
+		Post::FEModel* postfem = m_postDoc->GetFEModel();
+		if (fem->Materials() == postfem->Materials())
+		{
+			int mats = fem->Materials();
+			for (int i = 0; i < mats; ++i)
+			{
+				GMaterial* gmat = fem->GetMaterial(i);
+				Post::FEMaterial* pmat = postfem->GetMaterial(i);
+				pmat->diffuse = gmat->Diffuse();
+			}
+		}
 	}
 	else
 	{
-		bool bret = true;
 		// if the job already has the same plot file open
 		// we reload the plot file
-		if (m_postDoc->GetFileName() == plotFile) bret = m_postDoc->ReloadPlotfile(xplt);
-		else bret = m_postDoc->LoadPlotfile(plotFile, xplt);
-
-		if (bret == false) return false;
-	}
-
-	// map material colors from the pre-model to the post-model
-	FEModel* fem = m_doc->GetFEModel();
-	Post::FEModel* postfem = m_postDoc->GetFEModel();
-	if (fem->Materials() == postfem->Materials())
-	{
-		int mats = fem->Materials();
-		for (int i = 0; i < mats; ++i)
+		if (m_postDoc->ReloadPlotfile(xplt) == false)
 		{
-			GMaterial* gmat = fem->GetMaterial(i);
-			Post::FEMaterial* pmat = postfem->GetMaterial(i);
-			pmat->diffuse = gmat->Diffuse();
+			return false;
 		}
 	}
 

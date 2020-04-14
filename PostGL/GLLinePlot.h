@@ -40,6 +40,7 @@ public:
 protected:
 	void RenderLines(FEState& s);
 	void Render3DLines(FEState& s);
+	bool ShowLine(LINEDATA& l, FEState& s);
 
 private:
 	float		m_line;		//!< line thickness
@@ -47,6 +48,7 @@ private:
 	int			m_nmode;	//!< rendering mode
 	int			m_ncolor;	//!< color option
 	int			m_nfield;
+	bool		m_show;		//!< hide when containing elements are hidden
 	CColorTexture	m_Col;	//!< line color (when m_ncolor is not solid)
 
 private:

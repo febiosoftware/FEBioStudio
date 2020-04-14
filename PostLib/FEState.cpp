@@ -217,13 +217,15 @@ FEState::FEState(float time, FEModel* pfem, FEState* pstate) : m_fem(pfem)
 }
 
 //-----------------------------------------------------------------------------
-void FEState::AddLine(vec3f a, vec3f b, float data_a, float data_b)
+void FEState::AddLine(vec3f a, vec3f b, float data_a, float data_b, int el0, int el1)
 {
 	LINEDATA L;
 	L.m_r0 = a;
 	L.m_r1 = b;
 	L.m_user_data[0] = data_a;
 	L.m_user_data[1] = data_b;
+	L.m_elem[0] = el0;
+	L.m_elem[1] = el1;
 	m_Line.push_back(L);
 }
 

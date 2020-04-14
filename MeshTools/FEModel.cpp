@@ -658,7 +658,10 @@ void FEModel::Save(OArchive& ar)
 			for (int i=0; i<nmats; ++i)
 			{
 				GMaterial* pm = GetMaterial(i);
-				int ntype = pm->GetMaterialProperties()->Type();
+
+				int ntype = 0;
+				FEMaterial* mat = pm->GetMaterialProperties();
+				if (mat) ntype = mat->Type();
 				ar.BeginChunk(ntype);
 				{
 					pm->Save(ar);
@@ -869,7 +872,6 @@ void FEModel::LoadMaterials(IArchive& ar)
 		else if (ntype == FE_COUPLED_TRANS_ISO_MR_OLD) pmat = new FECoupledTransIsoMooneyRivlinOld;
 		else pmat = FEMaterialFactory::Create(ntype);
 
-		if (pmat == 0) throw ReadError("unknown CID in FEModel::LoadMaterials");
 		GMaterial* pgm = new GMaterial(pmat);
 
 		// load material data

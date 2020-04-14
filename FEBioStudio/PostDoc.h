@@ -14,6 +14,7 @@ namespace Post {
 	class CGView;
 	class CGLObject;
 	class FEFileReader;
+	class FEMaterial;
 }
 
 class CPostObject;
@@ -36,6 +37,55 @@ struct TIMESETTINGS
 	double	m_dt;		// fixed time step size
 
 	void Defaults();
+};
+
+//-----------------------------------------------------------------------------
+// model data which is used for file updates
+class ModelData
+{
+private:
+	struct MODEL
+	{
+		bool	m_bnorm;	// calculate normals or not
+		bool	m_boutline;	// render as outline
+		bool	m_bghost;	// render ghost
+		bool	m_bShell2Hex; // render shells as hexes
+		int		m_nshellref;	// shell reference surface
+		int		m_nDivs;	// nr of element subdivisions
+		int		m_nrender;	// render mode
+		double	m_smooth;	// smoothing angle
+	};
+
+	struct COLORMAP
+	{
+		bool	m_bactive;
+		int		m_ntype;
+		int		m_ndivs;
+		bool	m_bsmooth;	// smooth gradient or not
+		float	m_min;
+		float	m_max;
+		float	m_user[2];	// user range
+		bool	m_bDispNodeVals;	// render nodal values
+		int		m_nRangeType;	// range type
+		int		m_nField;
+	};
+
+	struct DISPLACEMENTMAP
+	{
+		int		m_nfield;	// vector field defining the displacement
+		float	m_scale;	// displacement scale factor
+	};
+
+public:
+	ModelData(Post::CGLModel* po);
+	void SetData(Post::CGLModel* po);
+
+protected:
+	MODEL						m_mdl;	// CGLModel data
+	COLORMAP					m_cmap;	// CColorMap data
+	DISPLACEMENTMAP				m_dmap;	// DisplacementMap data
+	std::vector<Post::FEMaterial>		m_mat;	// material list
+	std::vector<std::string>	m_data;	// data field strings
 };
 
 //-----------------------------------------------------------------------------

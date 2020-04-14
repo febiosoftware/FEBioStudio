@@ -72,10 +72,7 @@ FEMatDescriptor* FEMaterialFactory::AtIndex(int index)
 FEMaterial* FEMaterialFactory::Create(int nid)
 {
 	assert(m_pFac);
-
 	FEMatDescriptor* pd = m_pFac->Find(nid);
-	assert(pd);
-
 	return (pd?pd->Create():0);
 }
 

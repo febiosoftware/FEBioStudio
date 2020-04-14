@@ -1649,35 +1649,16 @@ void CMainWindow::on_actionRefresh_triggered()
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
 
-	xpltFileReader xplt;
-	if (doc->ReloadPlotfile(&xplt) == false)
+	CDocument* mainDoc = GetDocument();
+	CFEBioJob* job = mainDoc->FindFEBioJob(doc);
+	if (job == nullptr)
 	{
-		QMessageBox::critical(this, tr("FEBio Studio"), "Failed updating the model");
+		QMessageBox::critical(this, "FEBio Studio", "Failed updating model.");
+		return;
 	}
-	else if (doc->IsValid())
-	{
-		int N = doc->GetFEModel()->GetStates();
-		if (N > 1) ui->postToolBar->setEnabled(true);
 
-		Post::FEModel* fem = doc->GetFEModel();
-		int nfield = doc->GetEvalField();
-
-		// we need to update the model viewer before we rebuild the selection menu
-		ui->modelViewer->Update();
-
-		// now, we can rebuild the 
-		ui->selectData->BuildMenu(doc->GetFEModel(), Post::DATA_SCALAR);
-		ui->selectData->blockSignals(true);
-		ui->selectData->setCurrentValue(nfield);
-		ui->selectData->blockSignals(false);
-		ui->actionColorMap->setDisabled(false);
-
-		// update the UI
-		UpdatePostPanel();
-		UpdatePostToolbar();
-		ui->glview->UpdateCamera(true);
-		RedrawGL();
-	}
+	xpltFileReader* xplt = new xpltFileReader;
+	OpenPlotFile(job, xplt);
 }
 
 //-----------------------------------------------------------------------------

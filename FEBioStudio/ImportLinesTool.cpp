@@ -270,7 +270,7 @@ int CImportLinesTool::ReadAng2Format(const char* szfile)
 				vec3f r1 = GetCoordinatesFromFrag(fem, nstate, b);
 
 				// add the line
-				s.AddLine(r0, r1, a.user_data, b.user_data);
+				s.AddLine(r0, r1, a.user_data, b.user_data, a.iel, b.iel);
 			}
 		}
 
@@ -313,7 +313,7 @@ int CImportLinesTool::ReadAng2Format(const char* szfile)
 			vec3f r1 = GetCoordinatesFromFrag(fem, nstate, b);
 
 			// add the line data
-			s.AddLine(r0, r1, va, vb);
+			s.AddLine(r0, r1, va, vb, a.iel, b.iel);
 		}
 
 		// next state

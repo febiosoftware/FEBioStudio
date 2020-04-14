@@ -85,19 +85,20 @@ void GMaterial::Save(OArchive &ar)
 	ar.WriteChunk(CID_MAT_SHININESS, m_shininess);
 	ar.WriteChunk(CID_MAT_RENDER, m_nrender);
 
-	assert(m_pm);
-	ar.BeginChunk(CID_MAT_PARAMS);
+	if (m_pm)
 	{
-		m_pm->Save(ar);
+		ar.BeginChunk(CID_MAT_PARAMS);
+		{
+			m_pm->Save(ar);
+		}
+		ar.EndChunk();
 	}
-	ar.EndChunk();
 }
 
 void GMaterial::Load(IArchive &ar)
 {
 	TRACE("GMaterial::Load");
 
-	assert(m_pm);
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -112,7 +113,7 @@ void GMaterial::Load(IArchive &ar)
 		case CID_MAT_EMISSION: ar.read(m_emission); break;
 		case CID_MAT_SHININESS: ar.read(m_shininess); break;
 		case CID_MAT_RENDER: ar.read(m_nrender); break;
-		case CID_MAT_PARAMS: m_pm->Load(ar); break;
+		case CID_MAT_PARAMS: assert(m_pm); m_pm->Load(ar); break;
 		}
 		ar.CloseChunk();
 	}

@@ -253,6 +253,7 @@ public:
 	CFEBioJob* GetActiveJob();
 	
 	CFEBioJob* FindFEBioJob(const std::string& s);
+	CFEBioJob* FindFEBioJob(CPostDoc* postDoc);
 
 	// checks the model for issues and returns the warnings as a string array
 	std::vector<MODEL_ERROR>	CheckModel();

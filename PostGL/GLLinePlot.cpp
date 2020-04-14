@@ -17,12 +17,14 @@ CGLLinePlot::CGLLinePlot(CGLModel* po) : CGLPlot(po)
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
 	AddIntParam(0, "render mode")->SetEnumNames("lines\0lines 3D\0");
 	AddDoubleParam(1.0, "line width");
+	AddBoolParam(true, "Show on hidden elements");
 
 	m_line = 4.f;
 	m_nmode = 0;
 	m_ncolor = 0;
 	m_col = GLColor(255, 0, 0);
 	m_nfield = -1;
+	m_show = true;
 
 	m_rng.x = 0.f;
 	m_rng.y = 1.f;
@@ -126,8 +128,11 @@ void CGLLinePlot::RenderLines(FEState& s)
 			for (int i = 0; i < NL; ++i)
 			{
 				LINEDATA& l = s.Line(i);
-				glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-				glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
+				if (m_show || ShowLine(l, s))
+				{
+					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
+					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
+				}
 			}
 		}
 		glEnd();
@@ -146,17 +151,19 @@ void CGLLinePlot::RenderLines(FEState& s)
 			for (int i = 0; i < NL; ++i)
 			{
 				LINEDATA& l = s.Line(i);
+				if (m_show || ShowLine(l, s))
+				{
+					float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
+					float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
 
-				float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
-				float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
+					GLColor c0 = map.map(f0);
+					GLColor c1 = map.map(f1);
 
-				GLColor c0 = map.map(f0);
-				GLColor c1 = map.map(f1);
-
-				glColor3ub(c0.r, c0.g, c0.b);
-				glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-				glColor3ub(c1.r, c1.g, c1.b);
-				glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
+					glColor3ub(c0.r, c0.g, c0.b);
+					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
+					glColor3ub(c1.r, c1.g, c1.b);
+					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
+				}
 			}
 		}
 		glEnd();
@@ -182,6 +189,18 @@ void glxCylinder(float H, float R, float t0 = 0.f, float t1 = 1.f)
 }
 
 //-----------------------------------------------------------------------------
+bool CGLLinePlot::ShowLine(LINEDATA& l, FEState& s)
+{
+	if ((l.m_elem[0] == -1) || (l.m_elem[1] == -1)) return true;
+
+	Post::FEPostMesh* m = s.GetFEMesh();
+	FEElement& e0 = m->Element(l.m_elem[0]);
+	FEElement& e1 = m->Element(l.m_elem[1]);
+
+	return (e0.IsVisible() || e1.IsVisible());
+}
+
+//-----------------------------------------------------------------------------
 void CGLLinePlot::Render3DLines(FEState& s)
 {
 	if (m_ncolor == 0)
@@ -190,24 +209,27 @@ void CGLLinePlot::Render3DLines(FEState& s)
 		for (int i = 0; i < NL; ++i)
 		{
 			LINEDATA& l = s.Line(i);
-			vec3f n = l.m_r1 - l.m_r0;
-			float L = n.Length();
-			n.Normalize();
-
-			glPushMatrix();
+			if (m_show || ShowLine(l, s))
 			{
-				glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
+				vec3f n = l.m_r1 - l.m_r0;
+				float L = n.Length();
+				n.Normalize();
 
-				quatd q(vec3f(0, 0, 1), n);
-				vec3d r = q.GetVector();
-				double angle = 180 * q.GetAngle() / PI;
-				if ((angle != 0.0) && (r.Length() > 0))
-					glRotated(angle, r.x, r.y, r.z);
+				glPushMatrix();
+				{
+					glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
 
-				// render cylinder
-				glxCylinder(L, m_line);
+					quatd q(vec3f(0, 0, 1), n);
+					vec3d r = q.GetVector();
+					double angle = 180 * q.GetAngle() / PI;
+					if ((angle != 0.0) && (r.Length() > 0))
+						glRotated(angle, r.x, r.y, r.z);
+
+					// render cylinder
+					glxCylinder(L, m_line);
+				}
+				glPopMatrix();
 			}
-			glPopMatrix();
 		}
 	}
 	else
@@ -226,27 +248,30 @@ void CGLLinePlot::Render3DLines(FEState& s)
 		for (int i = 0; i < NL; ++i)
 		{
 			LINEDATA& l = s.Line(i);
-			vec3f n = l.m_r1 - l.m_r0;
-			float L = n.Length();
-			n.Normalize();
-
-			glPushMatrix();
+			if (m_show || ShowLine(l, s))
 			{
-				glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
+				vec3f n = l.m_r1 - l.m_r0;
+				float L = n.Length();
+				n.Normalize();
 
-				quatd q(vec3f(0, 0, 1), n);
-				vec3d r = q.GetVector();
-				double angle = 180 * q.GetAngle() / PI;
-				if ((angle != 0.0) && (r.Length() > 0))
-					glRotated(angle, r.x, r.y, r.z);
+				glPushMatrix();
+				{
+					glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
 
-				float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
-				float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
+					quatd q(vec3f(0, 0, 1), n);
+					vec3d r = q.GetVector();
+					double angle = 180 * q.GetAngle() / PI;
+					if ((angle != 0.0) && (r.Length() > 0))
+						glRotated(angle, r.x, r.y, r.z);
 
-				// render cylinder
-				glxCylinder(L, m_line, f0, f1);
+					float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
+					float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
+
+					// render cylinder
+					glxCylinder(L, m_line, f0, f1);
+				}
+				glPopMatrix();
 			}
-			glPopMatrix();
 		}
 
 		glPopAttrib();

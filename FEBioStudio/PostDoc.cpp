@@ -24,6 +24,123 @@ void TIMESETTINGS::Defaults()
 	m_dt = 0.01;
 }
 
+//-----------------------------------------------------------------------------
+ModelData::ModelData(Post::CGLModel *po)
+{
+	if (po == 0) return;
+
+	// set model props
+	m_mdl.m_bnorm      = po->m_bnorm;
+	m_mdl.m_bghost     = po->m_bghost;
+	m_mdl.m_bShell2Hex = po->ShowShell2Solid();
+	m_mdl.m_nshellref  = po->ShellReferenceSurface();
+	m_mdl.m_nDivs      = po->m_nDivs;
+	m_mdl.m_nrender    = po->m_nrender;
+	m_mdl.m_smooth     = po->GetSmoothingAngle();
+
+	// set colormap props
+	Post::CGLColorMap* pglmap = po->GetColorMap();
+	if (pglmap)
+	{
+		m_cmap.m_bactive = pglmap->IsActive();
+		m_cmap.m_nRangeType = pglmap->GetRangeType();
+		m_cmap.m_bDispNodeVals = pglmap->DisplayNodalValues();
+		m_cmap.m_nField = pglmap->GetEvalField();
+		pglmap->GetRange(m_cmap.m_user);
+
+		Post::CColorTexture* pcm = pglmap->GetColorMap();
+		m_cmap.m_ntype = pcm->GetColorMap();
+		m_cmap.m_ndivs = pcm->GetDivisions();
+		m_cmap.m_bsmooth = pcm->GetSmooth();
+//		pcm->GetRange(m_cmap.m_min, m_cmap.m_max);
+	}
+
+	// displacement map
+	Post::FEModel* ps = po->GetFEModel();
+	m_dmap.m_nfield = ps->GetDisplacementField();
+
+	// materials 
+	int N = ps->Materials();
+	m_mat.resize(N);
+	for (int i=0; i<N; ++i) m_mat[i] = *ps->GetMaterial(i);
+
+	// store the data field strings
+	m_data.clear();
+	Post::FEDataManager* pDM = ps->GetDataManager();
+	Post::FEDataFieldPtr pdf = pDM->FirstDataField();
+	for (int i=0; i<pDM->DataFields(); ++i, ++pdf) m_data.push_back(string((*pdf)->GetName()));
+}
+
+void ModelData::SetData(Post::CGLModel* po)
+{
+	// set model data
+	po->m_bnorm      = m_mdl.m_bnorm;
+	po->m_bghost     = m_mdl.m_bghost;
+	po->ShowShell2Solid(m_mdl.m_bShell2Hex);
+	po->ShellReferenceSurface(m_mdl.m_nshellref);
+	po->m_nDivs      = m_mdl.m_nDivs;
+	po->m_nrender    = m_mdl.m_nrender;
+	po->SetSmoothingAngle(m_mdl.m_smooth);
+
+	// set color map data
+	Post::CGLColorMap* pglmap = po->GetColorMap();
+	if (pglmap)
+	{
+		pglmap->SetRangeType(m_cmap.m_nRangeType);
+		pglmap->SetRange(m_cmap.m_user);
+		pglmap->DisplayNodalValues(m_cmap.m_bDispNodeVals);
+		pglmap->SetEvalField(m_cmap.m_nField);
+		pglmap->Activate(m_cmap.m_bactive);
+
+		Post::CColorTexture* pcm = pglmap->GetColorMap();
+		pcm->SetColorMap(m_cmap.m_ntype);
+		pcm->SetDivisions(m_cmap.m_ndivs);
+		pcm->SetSmooth(m_cmap.m_bsmooth);
+//		pcm->SetRange(m_cmap.m_min, m_cmap.m_max);
+	}
+
+	// displacement map
+	Post::FEModel* ps = po->GetFEModel();
+	ps->SetDisplacementField(m_dmap.m_nfield);
+
+	// materials
+	if (!m_mat.empty())
+	{
+		int N0 = (int)m_mat.size();
+		int N1 = ps->Materials();
+		int N = (N0<N1?N0:N1);
+		for (int i=0; i<N; ++i) *ps->GetMaterial(i) = m_mat[i];
+
+		// update the mesh state
+		Post::FEPostMesh* pmesh = po->GetActiveMesh();
+		for (int i=0; i<N; ++i)
+		{
+			Post::FEMaterial* pm = ps->GetMaterial(i);
+			if (pm->bvisible == false) po->HideMaterial(i);
+		}
+	}
+
+	// reload data fields
+	int ndata = (int)m_data.size();
+	Post::FEDataManager* pDM = ps->GetDataManager();
+	Post::FEDataFieldPtr pdf;
+	for (int i=0; i<ndata; ++i)
+	{
+		string& si = m_data[i];
+
+		// see if the model already defines this field
+		bool bfound = false;
+		pdf = pDM->FirstDataField();
+		for (int i=0; i<pDM->DataFields(); ++i, ++pdf)
+		{
+			if (si.compare((*pdf)->GetName()) == 0) { bfound = true; break; }
+		}
+
+		// If not, try to add it
+		if (bfound == false) Post::AddStandardDataField(*po, si);
+	}
+}
+
 class CPostDoc::Imp 
 {
 public:
@@ -307,6 +424,9 @@ std::string CPostDoc::GetFileName()
 
 bool CPostDoc::ReloadPlotfile(xpltFileReader* xplt)
 {
+	// if this is a file update, store the model data settings
+	ModelData MD(imp->glm);
+
 	// keep a list of data fields 
 	std::vector<std::string>	data;
 	Post::FEModel* fem = imp->fem;
@@ -348,29 +468,11 @@ bool CPostDoc::ReloadPlotfile(xpltFileReader* xplt)
 	// reassign the model
 	imp->glm->SetFEModel(imp->fem);
 
-	// reload data fields
-	fem = imp->fem;
-	int ndata = (int) data.size();
-	pDM = fem->GetDataManager();
-	for (int i=0; i<ndata; ++i)
-	{
-		string& si = data[i];
-
-		// see if the model already defines this field
-		bool bfound = false;
-		Post::FEDataFieldPtr pdf = pDM->FirstDataField();
-		for (int i=0; i<pDM->DataFields(); ++i, ++pdf)
-		{
-			if (si.compare((*pdf)->GetName()) == 0) { bfound = true; break; }
-		}
-
-		// If not, try to add it
-		if (bfound == false) Post::AddStandardDataField(*imp->glm, si);
-	}
-
 	// assign material attributes
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
+
+	MD.SetData(imp->glm);
 
 	// update model
 	imp->glm->Update(true);
@@ -493,7 +595,7 @@ bool CPostDoc::LoadPlotfile(const std::string& fileName, xpltFileReader* xplt)
 
 bool CPostDoc::IsValid()
 {
-	return (imp->glm != nullptr);
+	return ((imp->glm != nullptr) && (imp->glm->GetFEModel() != nullptr) && (imp->m_postObj != nullptr));
 }
 
 void CPostDoc::ApplyPalette(const Post::CPalette& pal)
