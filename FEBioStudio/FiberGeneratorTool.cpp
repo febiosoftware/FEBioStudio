@@ -3,6 +3,7 @@
 #include "Document.h"
 #include <MeshTools/GradientMap.h>
 #include <GeomLib/GObject.h>
+#include <MeshTools/FENodeData.h>
 
 CFiberGeneratorTool::CFiberGeneratorTool() : CBasicTool("Fiber generator", HAS_APPLY_BUTTON)
 {

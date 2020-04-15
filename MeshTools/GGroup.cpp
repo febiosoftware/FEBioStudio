@@ -357,11 +357,32 @@ bool GFaceList::IsValid() const
 // GPartList
 //-----------------------------------------------------------------------------
 
+FEModel* GPartList::m_model = nullptr;
+
+GPartList* GPartList::CreateNew()
+{
+	assert(m_model);
+	return new GPartList(m_model);
+}
+
+void GPartList::SetModel(FEModel* mdl)
+{
+	m_model = mdl;
+}
+
 GPartList::GPartList(FEModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART)
 {
 	int N = pg->Count();
 	GPartSelection::Iterator it(pg);
 	for (int i=0; i<N; ++i, ++it) add(it->GetID());
+}
+
+//-----------------------------------------------------------------------------
+void GPartList::Create(GObject* po)
+{
+	if (po == nullptr) return;
+	int N = po->Parts();
+	for (int i = 0; i < N; ++i) add(po->Part(i)->GetID());
 }
 
 //-----------------------------------------------------------------------------
@@ -380,7 +401,7 @@ FEElemList* GPartList::BuildElemList()
 		for (int i=0; i<m.Elements(); ++i)
 		{
 			FEElement& e = m.Element(i);
-			if (e.m_gid == gid) ps->Add(&m, &e);
+			if (e.m_gid == gid) ps->Add(&m, &e, i);
 		}
 	}
 	return ps;

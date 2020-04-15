@@ -11,6 +11,7 @@
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
+#include <MeshTools/GGroup.h>
 #include <vector>
 #include <sstream>
 #include <algorithm>
@@ -713,6 +714,8 @@ void FEModel::Load(IArchive& ar)
 	// clear the model
 	Clear();
 
+	GPartList::SetModel(this);
+
 	// read the model data
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -728,6 +731,8 @@ void FEModel::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+
+	GPartList::SetModel(nullptr);
 }
 
 //-----------------------------------------------------------------------------

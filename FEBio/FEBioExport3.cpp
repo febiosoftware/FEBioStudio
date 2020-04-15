@@ -7,6 +7,9 @@
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GGroup.h>
+#include <MeshTools/FENodeData.h>
+#include <MeshTools/FESurfaceData.h>
+#include <MeshTools/FEElementData.h>
 #include <FEBioStudio/version.h>
 #include <memory>
 #include <sstream>
@@ -612,6 +615,14 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
 					FEPart* pg = const_cast<FEPart*>(map->GetPart());
+					FEItemListBuilder* pil = pg;
+					if (pg) AddElemSet(data->GetName(), pil);
+				}
+				break;
+				case FEMeshData::PART_DATA:
+				{
+					FEPartData* map = dynamic_cast<FEPartData*>(data); assert(map);
+					GPartList* pg = const_cast<GPartList*>(map->GetPartList());
 					FEItemListBuilder* pil = pg;
 					if (pg) AddElemSet(data->GetName(), pil);
 				}
@@ -2722,7 +2733,7 @@ void FEBioExport3::WriteElementDataSection()
 
 	WriteMeshDataMaterialAxes();
 
-	WriteMeshDataFields();
+	WriteElementDataFields();
 }
 
 //-----------------------------------------------------------------------------
@@ -2990,7 +3001,7 @@ void FEBioExport3::WriteMeshDataMaterialAxes()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteMeshDataFields()
+void FEBioExport3::WriteElementDataFields()
 {
 	FEModel& fem = *m_pfem;
 	GModel& model = fem.GetModel();
@@ -3026,8 +3037,33 @@ void FEBioExport3::WriteMeshDataFields()
 						m_xml.add_leaf(el, false);
 					}
 				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
+			FEPartData* partData = dynamic_cast<FEPartData*>(pm->GetMeshDataField(n));
+			if (partData)
+			{
+				FEPartData& data = *partData;
+				GPartList* partList = const_cast<GPartList*>(data.GetPartList());
+
+				FEElemList* pg = partList->BuildElemList();
+
+				XMLElement tag("element_data");
+				tag.add_attribute("name", data.GetName().c_str());
+				tag.add_attribute("elem_set", data.GetName());
+				m_xml.add_branch(tag);
+				{
+					XMLElement el("e");
+					int nid = el.add_attribute("lid", 0);
+					int N = pg->Size();
+					for (int j = 0; j < N; ++j)
+					{
+						el.set_attribute(nid, j + 1);
+						el.value(data[j]);
+						m_xml.add_leaf(el, false);
+					}
+				}
+				m_xml.close_branch();
+			}
 		}
 	}
 }

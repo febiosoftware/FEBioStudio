@@ -2,6 +2,7 @@
 #include "GradientMap.h"
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/MeshMetrics.h>
+#include <MeshTools/FENodeData.h>
 
 GradientMap::GradientMap()
 {

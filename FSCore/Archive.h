@@ -166,6 +166,8 @@ public:
 		return IO_OK;
 	}
 
+	IOResult read(std::vector<double>& v);
+
 	// conversion to FILE* 
 	operator FILE* () { return m_fp; }
 
@@ -325,7 +327,7 @@ template <typename T>
 class OLeaf<vector<T> > : public OChunk
 {
 public:
-	OLeaf(unsigned int nid, vector<T>& a) : OChunk(nid)
+	OLeaf(unsigned int nid, const vector<T>& a) : OChunk(nid)
 	{
 		m_nsize = (int)a.size();
 		assert(m_nsize > 0);

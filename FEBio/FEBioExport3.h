@@ -180,7 +180,7 @@ protected:
 	void WriteMeshDataShellThickness();
 	void WriteMeshDataMaterialFibers();
 	void WriteMeshDataMaterialAxes();
-	void WriteMeshDataFields();
+	void WriteElementDataFields();
 	void WriteMeshData(FEDataMap* map);
 
 	void WriteSolidControlParams(FEAnalysisStep* pstep);

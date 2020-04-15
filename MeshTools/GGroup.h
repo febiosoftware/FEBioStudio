@@ -88,6 +88,8 @@ public:
 	GPartList(FEModel* ps) : GGroup(ps, GO_PART){}
 	GPartList(FEModel* ps, GPartSelection* pg);
 
+	void Create(GObject* po);
+
 	vector<GPart*>	GetPartList();
 
 	FEItemListBuilder* Copy() override;
@@ -96,4 +98,8 @@ public:
 	FEElemList* BuildElemList() override;
 
 	bool IsValid() const override;
+
+	static GPartList* CreateNew();
+	static void SetModel(FEModel* mdl);
+	static FEModel* m_model;
 };

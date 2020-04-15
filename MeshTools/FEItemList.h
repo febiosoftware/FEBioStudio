@@ -15,9 +15,10 @@ template <class T> class FEItemList_T
 public:
 	struct ITEM
 	{
-		ITEM(FECoreMesh* pm, T* pi) { m_pm = pm; m_pi = pi; }
+		ITEM(FECoreMesh* pm, T* pi, int lid = -1) { m_pm = pm; m_pi = pi; m_lid = lid; }
 		FECoreMesh*	m_pm;
 		T*		m_pi;
+		int		m_lid;
 	};
 
 	typedef typename list<ITEM>::iterator Iterator;
@@ -25,7 +26,7 @@ public:
 public:
 	FEItemList_T(){}
 
-	void Add(FECoreMesh* pm, T* pn) { m_Item.push_back(ITEM(pm, pn)); }
+	void Add(FECoreMesh* pm, T* pn, int lid = -1) { m_Item.push_back(ITEM(pm, pn, lid)); }
 	int Size() { return (int)m_Item.size(); }
 	Iterator First() { return m_Item.begin(); }
 	Iterator End() { return m_Item.end(); }

@@ -6,6 +6,9 @@
 #include "FENodeElementList.h"
 #include "FENodeFaceList.h"
 #include "FENodeEdgeList.h"
+#include "MeshTools/FENodeData.h"
+#include "MeshTools/FESurfaceData.h"
+#include "MeshTools/FEElementData.h"
 #include <algorithm>
 #include <unordered_set>
 #include <map>
@@ -2351,6 +2354,16 @@ void FEMesh::Save(OArchive &ar)
 				case FEMeshData::ELEMENT_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(meshData); assert(map);
+					ar.BeginChunk(CID_MESH_ELEM_DATA);
+					{
+						map->Save(ar);
+					}
+					ar.EndChunk();
+				}
+				break;
+				case FEMeshData::PART_DATA:
+				{
+					FEPartData* map = dynamic_cast<FEPartData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_PART_DATA);
 					{
 						map->Save(ar);
@@ -2689,9 +2702,16 @@ void FEMesh::Load(IArchive& ar)
 							m_meshData.push_back(pmap);
 						}
 						break;
-					case CID_MESH_PART_DATA:
+					case CID_MESH_ELEM_DATA:
 						{
 							FEElementData* pmap = new FEElementData(this);
+							pmap->Load(ar);
+							m_meshData.push_back(pmap);
+						}
+						break;
+					case CID_MESH_PART_DATA:
+						{
+							FEPartData* pmap = new FEPartData(this);
 							pmap->Load(ar);
 							m_meshData.push_back(pmap);
 						}
@@ -3043,6 +3063,13 @@ int FEMesh::GetMeshDataIndex(FEMeshData* data)
 void FEMesh::InsertMeshData(int i, FEMeshData* data)
 {
 	m_meshData.insert(m_meshData.begin() + i, data);
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::AddMeshDataField(FEMeshData* data)
+{
+	assert(data);
+	if (data) m_meshData.push_back(data);
 }
 
 //-----------------------------------------------------------------------------

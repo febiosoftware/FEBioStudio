@@ -1,9 +1,7 @@
 #pragma once
 #include "FECoreMesh.h"
 #include "MeshTools/FEGroup.h"
-#include "MeshTools/FENodeData.h"
-#include "MeshTools/FESurfaceData.h"
-#include "MeshTools/FEElementData.h"
+#include <MeshTools/FEMeshData.h>
 #include <vector>
 #include <set>
 #include <string>
@@ -12,6 +10,10 @@ using namespace std;
 //-----------------------------------------------------------------------------
 class FESurfaceMesh;
 class FEMesh;
+class FEMeshData;
+class FENodeData;
+class FESurfaceData;
+class FEElementData;
 
 //-----------------------------------------------------------------------------
 // Forward declaration of GObject class. The GObject class will own and manage
@@ -209,6 +211,7 @@ public:
 	void RemoveMeshDataField(int i);
 	int GetMeshDataIndex(FEMeshData* data);
 	void InsertMeshData(int i, FEMeshData* data);
+	void AddMeshDataField(FEMeshData* data);
 
 	FENodeData* AddNodeDataField(const string& name, double v = 0.0);
 	FESurfaceData* AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType);

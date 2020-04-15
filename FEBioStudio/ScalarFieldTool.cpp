@@ -3,6 +3,9 @@
 #include "Document.h"
 #include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
+#include <MeshTools/GGroup.h>
+#include <MeshTools/FENodeData.h>
+#include <MeshTools/FEElementData.h>
 
 CScalarFieldTool::CScalarFieldTool() : CBasicTool("Scalar Field", HAS_APPLY_BUTTON)
 {
@@ -80,14 +83,19 @@ bool CScalarFieldTool::OnApply()
 	else
 	{
 		// create element data
-		int NE = pm->Elements();
-		FEPart* pg = new FEPart(po);
-		pg->CreateFromMesh();
-		FEElementData* pdata = pm->AddElementDataField(m_name.toStdString(), pg, FEMeshData::DATA_SCALAR);
+		GPartList* pg = new GPartList(ps);
+		pg->Create(po);
+		FEPartData* pdata = new FEPartData;
+		pdata->SetName(m_name.toStdString());
+		pdata->Create(pg);
+		pm->AddMeshDataField(pdata);
 
-		for (int i = 0; i < NE; ++i)
+		FEElemList* elemList = pg->BuildElemList();
+		int NE = elemList->Size();
+		auto it = elemList->First();
+		for (int i = 0; i < NE; ++i, ++it)
 		{
-			FEElement& el = pm->Element(i);
+			FEElement_& el = *it->m_pi;
 			int ne = el.Nodes();
 			double v = 0.0;
 			for (int j = 0; j < ne; ++j) v += val[el.m_node[j]];
@@ -95,6 +103,7 @@ bool CScalarFieldTool::OnApply()
 
 			pdata->set(i, v);
 		}
+		delete elemList;
 	}
 
 	return true;

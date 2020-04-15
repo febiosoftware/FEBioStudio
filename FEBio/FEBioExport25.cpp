@@ -10,6 +10,8 @@
 #include <FEMLib/FEModelConstraint.h>
 #include <FEBioStudio/version.h>
 #include <MeshTools/GGroup.h>
+#include <MeshTools/FEElementData.h>
+#include <MeshTools/FESurfaceData.h>
 #include <GeomLib/GObject.h>
 #include <memory>
 #include <sstream>

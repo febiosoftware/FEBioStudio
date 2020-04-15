@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEElementData.h"
 #include <MeshLib/FEMesh.h>
+#include <MeshTools/GGroup.h>
 
 //-----------------------------------------------------------------------------
 FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
@@ -115,6 +116,103 @@ void FEElementData::Load(IArchive& ar)
 			int NE = m_part->size();
 			m_data.resize(NE);
 			ar.read(&m_data[0], NE);
+		}
+
+		ar.CloseChunk();
+	}
+}
+
+//=============================================================================
+FEPartData::FEPartData(FEMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
+{
+	SetMesh(mesh);
+}
+
+FEPartData::FEPartData(const FEPartData& d) : FEMeshData(FEMeshData::PART_DATA)
+{
+
+}
+
+FEPartData& FEPartData::operator = (const FEPartData& d)
+{
+	return *this;
+}
+
+// create a data field
+bool FEPartData::Create(GPartList* part, FEMeshData::DATA_TYPE dataType)
+{
+	assert(part);
+	m_data.clear();
+	m_part = part;
+	if (part == nullptr) return false;
+
+	FEElemList* elem = part->BuildElemList();
+	if (elem == nullptr) return false;
+
+	int NE = elem->Size();
+	m_data.resize(NE);
+
+	delete elem;
+
+	return true;
+}
+
+// size of data field
+int FEPartData::Size() const
+{ 
+	return (int)m_data.size(); 
+}
+
+// Get the part list
+const GPartList* FEPartData::GetPartList()
+{
+	return m_part;
+}
+
+void FEPartData::Save(OArchive& ar)
+{
+	const string& dataName = GetName();
+	const char* szname = dataName.c_str();
+	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
+	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
+
+	// Parts must be saved first so that the number of elements in the part can be
+	// queried before the data is read during the load operation.
+	ar.BeginChunk(CID_MESH_DATA_PART);
+	{
+		m_part->Save(ar);
+	}
+	ar.EndChunk();
+
+	ar.WriteChunk(CID_MESH_DATA_VALUES, m_data);
+}
+
+void FEPartData::Load(IArchive& ar)
+{
+	GObject* po = GetMesh()->GetGObject();
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		if (nid == CID_MESH_DATA_NAME)
+		{
+			char szname[256];
+			ar.read(szname);
+			SetName(szname);
+		}
+		else if (nid == CID_MESH_DATA_TYPE)
+		{
+			int dType;
+			ar.read(dType);
+			m_dataType = (FEMeshData::DATA_TYPE) dType;
+		}
+		else if (nid == CID_MESH_DATA_PART)
+		{
+			m_part = GPartList::CreateNew();
+			m_part->Load(ar);
+		}
+		else if (nid == CID_MESH_DATA_VALUES)
+		{
+			ar.read(m_data);
 		}
 
 		ar.CloseChunk();

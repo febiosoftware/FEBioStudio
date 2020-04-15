@@ -2,6 +2,9 @@
 #include "FEMeshValuator.h"
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/triangulate.h>
+#include <MeshTools/GGroup.h>
+#include <MeshTools/FENodeData.h>
+#include <MeshTools/FEElementData.h>
 
 //-----------------------------------------------------------------------------
 // constructor
@@ -75,6 +78,23 @@ void FEMeshValuator::Evaluate(int nfield)
 				{
 					int elemId = *it;
 					double val = elemData.get(i);
+					data.SetElementValue(elemId, val);
+					data.SetElementDataTag(elemId, 1);
+				}
+			}
+			break;
+			case FEMeshData::PART_DATA:
+			{
+				FEPartData& partData = dynamic_cast<FEPartData&>(*meshData);
+				GPartList* partList = const_cast<GPartList*>(partData.GetPartList());
+
+				FEElemList* pg = partList->BuildElemList();
+				auto it = pg->First();
+				int N = pg->Size();
+				for (int i = 0; i < N; ++i, ++it)
+				{
+					int elemId = it->m_lid;
+					double val = partData.get(i);
 					data.SetElementValue(elemId, val);
 					data.SetElementDataTag(elemId, 1);
 				}

@@ -359,6 +359,17 @@ unsigned int IArchive::GetChunkID()
 	return pc->id;
 }
 
+IArchive::IOResult IArchive::read(std::vector<double>& v)
+{
+	CHUNK* pc = m_Chunk.top();
+
+	int nsize = pc->nsize / sizeof(double);
+	v.resize(nsize);
+	int nread = (int)fread(&v[0], sizeof(double), nsize, m_fp);
+	if (nread != nsize) return IO_ERROR;
+	return IO_OK;
+}
+
 //////////////////////////////////////////////////////////////////////
 // OArchive
 //////////////////////////////////////////////////////////////////////
