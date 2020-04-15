@@ -2025,6 +2025,8 @@ bool AbaqusImport::read_step(char* szline, FILE* fp)
 
 	const char* szname = find_attribute(att, 5, "name");
 	AbaqusModel::STEP* step = m_inp.AddStep(szname);
+	step->dt0 = 1.0;
+	step->time = 1;
 
 	// parse till END STEP
 	while (!feof(fp))
@@ -2058,6 +2060,11 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 	AbaqusModel::BOUNDARY BC;
 	ATTRIBUTE att[4];
 	read_line(szline, fp);
+
+	AbaqusModel::NODE_SET* dummy = nullptr;
+	int ndof = -1;
+	double val = 0.0;
+
 	while (!feof(fp) && (szline[0] != '*'))
 	{
 		int n = parse_line(szline, att);
@@ -2065,16 +2072,29 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 		{
 			const char* szset = att[0].szatt;
 			AbaqusModel::NODE_SET* ns = m_inp.FindNodeSet(szset);
+			ndof = atoi(att[1].szatt);
+			val = atof(att[3].szatt);
+			if (ns == nullptr)
+			{
+				int nid = atoi(szset);
 
-			int ndof = atoi(att[1].szatt);
+				AbaqusModel::PART* part = m_inp.CurrentPart();
+				if (part == nullptr) return false;
 
-			double val = atof(att[3].szatt);
+				if (dummy == nullptr)
+				{
+					dummy = &part->AddNodeSet("_unnamed")->second;
+					dummy->part = part;
+				}
 
-			if (ns) BC.add(ns, ndof, val);
-			else return false;
+				dummy->node.push_back(part->FindNode(nid));
+			}
+			else BC.add(ns, ndof, val);
 		}
 		read_line(szline, fp);
 	}
+
+	if (dummy) BC.add(dummy, ndof, val);
 
 	m_inp.AddBoundaryCondition(BC);
 
@@ -2132,7 +2152,7 @@ bool AbaqusImport::read_static(char* szline, FILE* fp)
 {
 	// read the next line
 	read_line(szline, fp);
-
+	if (szline[0] == '*') return true;
 	// parse it
 	ATTRIBUTE att[5];
 	parse_line(szline, att);

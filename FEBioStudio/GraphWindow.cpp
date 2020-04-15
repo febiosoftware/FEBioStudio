@@ -569,7 +569,7 @@ QRect CGraphWindow::m_preferredSize;
 CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc, int flags) : m_wnd(pwnd), QDockWidget(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
 {
 	m_nTrackTime = TRACK_TIME;
-	m_nUserMin = 0;
+	m_nUserMin = 1;
 	m_nUserMax = -1;
 
 	// delete the window when it's closed
@@ -639,8 +639,8 @@ int CGraphWindow::GetTimeTrackOption()
 //-----------------------------------------------------------------------------
 void CGraphWindow::GetUserTimeRange(int& minTime, int& maxTime)
 {
-	minTime = m_nUserMin;
-	maxTime = m_nUserMax;
+	minTime = m_nUserMin - 1;
+	maxTime = (m_nUserMax != -1 ? m_nUserMax - 1 : -1);
 }
 
 //-----------------------------------------------------------------------------
@@ -874,6 +874,29 @@ void CGraphWindow::on_options_optionsChanged()
 	case 2: m_nTrackTime = TRACK_USER_RANGE; 
 		{
 			ui->ops->getUserTimeRange(m_nUserMin, m_nUserMax);
+
+			CPostDoc* doc = GetPostDoc();
+			if (doc)
+			{
+				// check the range. Note that user min and max are one-based!
+				Post::FEModel* fem = doc->GetFEModel();
+				int N = fem->GetStates();
+				if (m_nUserMin < 1) m_nUserMin = 1;
+				if (m_nUserMin > N) m_nUserMin = N;
+
+				if (m_nUserMax != -1)
+				{
+					if (m_nUserMax < 1) m_nUserMax = 1;
+					if (m_nUserMax > N) m_nUserMax = N;
+					if (m_nUserMax < m_nUserMin)
+					{
+						int tmp = m_nUserMin;
+						m_nUserMin = m_nUserMax;
+						m_nUserMax = tmp;
+					}
+				}
+			}
+
 			ui->ops->setUserTimeRange(m_nUserMin, m_nUserMax);
 		}
 		break;
@@ -1153,9 +1176,27 @@ void CModelGraphWindow::addSelectedNodes()
 
 		if (sel.empty() == false)
 		{
-			int nsteps = m_lastState - m_firstState + 1;
+			int states = fem.GetStates();
+
+			int state0 = m_firstState;
+			int state1 = m_lastState;
+
+			if (state0 < 0) state0 = 0;
+			if (state0 >= states) state0 = states - 1;
+
+			if (state1 < 0) state1 = 0;
+			if (state1 >= states) state1 = states - 1;
+
+			if (state1 < state0)
+			{
+				int tmp = state0;
+				state0 = state1;
+				state1 = tmp;
+			}
+
+			int nsteps = state1 - state0 + 1;
 			if (nsteps > 32) nsteps = 32;
-			for (int i = m_firstState; i < m_firstState + nsteps; ++i)
+			for (int i = state0; i < state0 + nsteps; ++i)
 			{
 				CLineChartData* plot = new CLineChartData;
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
@@ -1168,10 +1209,10 @@ void CModelGraphWindow::addSelectedNodes()
 				if (node.IsSelected())
 				{
 					// evaluate x-field
-					TrackNodeHistory(sel[i], &xdata[0], m_dataX, m_firstState, m_firstState + nsteps - 1);
+					TrackNodeHistory(sel[i], &xdata[0], m_dataX, state0, state0 + nsteps - 1);
 
 					// evaluate y-field
-					TrackNodeHistory(sel[i], &ydata[0], m_dataY, m_firstState, m_firstState + nsteps - 1);
+					TrackNodeHistory(sel[i], &ydata[0], m_dataY, state0, state0 + nsteps - 1);
 
 					for (int j = 0; j < nsteps; ++j)
 					{
