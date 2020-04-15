@@ -625,7 +625,7 @@ std::vector<int> MeshTools::GetConnectedFaces(FEMeshBase* pm, int nface, double 
 	pf->m_ntag = -1;
 	stack.push(pf);
 
-	vec3d Nf = pf->m_fn;
+	vec3f Nf = pf->m_fn;
 	double wtol = 1.000001*cos(PI*tolAngleDeg / 180.0); // scale factor to address some numerical round-off issue when selecting 180 degrees
 	bool bmax = (tolAngleDeg != 0.0);
 
@@ -638,8 +638,11 @@ std::vector<int> MeshTools::GetConnectedFaces(FEMeshBase* pm, int nface, double 
 		for (int i = 0; i<NE; ++i)
 		{
 			FEEdge& e = pm->Edge(i);
-			pm->Node(e.n[0]).m_ntag = 1;
-			pm->Node(e.n[1]).m_ntag = 1;
+			if (e.m_gid != -1)
+			{
+				pm->Node(e.n[0]).m_ntag = 1;
+				pm->Node(e.n[1]).m_ntag = 1;
+			}
 		}
 	}
 
@@ -661,7 +664,7 @@ std::vector<int> MeshTools::GetConnectedFaces(FEMeshBase* pm, int nface, double 
 				bool bpush = true;
 				if (pf2->m_ntag < 0) bpush = false;
 				else if (pf2->IsVisible() == false) bpush = false;
-				else if (bmax && (pf2->m_fn*to_vec3f(Nf) < wtol)) bpush = false;
+				else if (bmax && (pf2->m_fn*Nf < wtol)) bpush = false;
 				else if (respectPartitions && ((pf2->m_gid != gid) || ((m0 == 1) && (m1 == 1) && pm->IsCreaseEdge(n0, n1)))) bpush = false;
 
 				if (bpush)
