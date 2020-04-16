@@ -6,6 +6,14 @@
 #include <limits.h>
 
 //-----------------------------------------------------------------------------
+bool FEFillHole::EdgeRing::contains(int inode)
+{
+	for (int i = 0; i < m_node.size(); ++i)
+		if (inode == m_node[i]) return true;
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 // Create a new mesh where the hole is filled. The hole is defined by a node
 // that lies on the edge of the hole.
 FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
@@ -194,13 +202,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	mesh.TagAllEdges(0);
 
 	//To save all the node normals
-	vector<vec3d> node_normals;
-	node_normals.reserve(mesh.Nodes());
-	for (int i = 0 ; i< mesh.Nodes();i++ )
-	{
-		vec3d temp;
-		node_normals.push_back(temp);
-	}
+	vector<vec3d> node_normals(mesh.Nodes(), vec3d(0,0,0));
 	for(int i = 0 ;i < mesh.Faces();i++)
 	{
 		FEFace &Face = mesh.Face(i);
@@ -295,7 +297,15 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 		if (iedge == -1) return false;
 
 		// add the node (unless we're back we're we started)
-		if (jnode != inode) ring.add(jnode, mesh.Node(jnode).r, node_normals[jnode]);
+		if (jnode != inode)
+		{
+			// make sure the node is not already part of the ring.
+			// It is possible that the ring closes on itself, but not
+			// on the first node. This is an invalid topology that we cannot
+			// handle. 
+			if (ring.contains(jnode)) return false;
+			ring.add(jnode, mesh.Node(jnode).r, node_normals[jnode]);
+		}
 	}
 	while (jnode != inode);
 

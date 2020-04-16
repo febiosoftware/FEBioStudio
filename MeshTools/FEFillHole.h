@@ -27,6 +27,8 @@ public:
 		void GetLeftEar(int n0, int n1, EdgeRing& ear);
 		void GetRightEar(int n0, int n1, EdgeRing & ear);
 
+		bool contains(int inode);
+
 	public:
 		vector<vec3d>	m_r;		// nodal positions
 		vector<int>		m_node;		// sorted list of nodes defining the closed loop

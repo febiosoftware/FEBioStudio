@@ -32,6 +32,9 @@ public:
 
 	void assignToPartition(int n);
 
+protected:
+	void PartitionSelectedFaces(FESurfaceMesh* mesh);
+
 private:
 	int	m_partition;
 };

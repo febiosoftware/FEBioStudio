@@ -60,8 +60,36 @@ FESurfaceMesh* FESurfacePartitionSelection::Apply(FESurfaceMesh* pm, FEGroup* pg
 		newMesh->PartitionNodeSelection();
 		return newMesh;
 	}
+	else
+	{
+		int n = pm->CountSelectedFaces();
+		if (n > 0)
+		{
+			FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+			PartitionSelectedFaces(newMesh);
+			return newMesh;
+		}
+	}
 
 	return 0;
+}
+
+void FESurfacePartitionSelection::PartitionSelectedFaces(FESurfaceMesh* mesh)
+{
+	int NF = mesh->Faces();
+	int ng = mesh->CountFacePartitions();
+	for (int i = 0; i < NF; ++i)
+	{
+		FEFace& f = mesh->Face(i);
+		if (f.IsSelected())
+		{
+			f.m_gid = ng;
+		}
+	}
+	mesh->UpdateFacePartitions();
+	mesh->BuildEdges();
+	mesh->AutoPartitionEdges();
+	mesh->AutoPartitionNodes();
 }
 
 //=============================================================================
