@@ -294,7 +294,7 @@ public:
 		// --- Edit menu ---
 		QAction* actionUndo              = addAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
 		QAction* actionRedo              = addAction("Redo", "actionRedo", "redo"); actionRedo->setShortcuts(QKeySequence::Redo);
-		QAction* actionInvertSelection   = addAction("Invert selection"  , "actionInvertSelection"  );
+		QAction* actionInvertSelection   = addAction("Invert selection"  , "actionInvertSelection"  ); actionInvertSelection->setShortcut(Qt::AltModifier + Qt::Key_I);
 		QAction* actionClearSelection    = addAction("Clear selection"   , "actionClearSelection"   );
 		QAction* actionDeleteSelection   = addAction("Delete selection"  , "actionDeleteSelection"  ); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
 		QAction* actionNameSelection     = addAction("Name selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier + Qt::Key_G);

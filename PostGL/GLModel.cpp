@@ -425,7 +425,7 @@ void CGLModel::Render(CGLContext& rc)
 	}
 
 	// first we render all the plots
-	RenderPlots(rc);
+	RenderPlots(rc, 0);
 
 	// activate all clipping planes
 	CGLPlaneCutPlot::EnableClipPlanes();
@@ -487,12 +487,16 @@ void CGLModel::Render(CGLContext& rc)
 		rc.m_cam->LineDrawMode(false);
 	}
 
+	// first render all the plots that need to be rendered after the model
+	// (i.e. planecuts)
+	RenderPlots(rc, 1);
+
 	// render decorations
 	RenderDecorations();
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderPlots(CGLContext& rc)
+void CGLModel::RenderPlots(CGLContext& rc, int renderOrder)
 {
 	GPlotList& PL = m_pPlot;
 	// clear all clipping planes
@@ -510,7 +514,7 @@ void CGLModel::RenderPlots(CGLContext& rc)
 		if (pl->AllowClipping()) CGLPlaneCutPlot::EnableClipPlanes();
 		else CGLPlaneCutPlot::DisableClipPlanes();
 
-		if (pl->IsActive()) pl->Render(rc);
+		if (pl->IsActive() && (pl->GetRenderOrder() == renderOrder)) pl->Render(rc);
 	}
 	CGLPlaneCutPlot::DisableClipPlanes();
 }

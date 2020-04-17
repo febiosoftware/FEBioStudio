@@ -152,7 +152,7 @@ public:
 	// call this to render the model
 	void Render(CGLContext& rc) override;
 
-	void RenderPlots(CGLContext& rc);
+	void RenderPlots(CGLContext& rc, int renderOrder = 0);
 
 public:
 	void RenderNodes(FEModel* ps, CGLContext& rc);

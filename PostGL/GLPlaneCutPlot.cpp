@@ -27,6 +27,8 @@ vector<CGLPlaneCutPlot*> CGLPlaneCutPlot::m_pcp;
 
 CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
 {
+	SetRenderOrder(1);
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "Planecut.%02d", n++);
@@ -112,7 +114,22 @@ void CGLPlaneCutPlot::EnableClipPlanes()
 {
 	for (int i=0; i<(int) m_clip.size(); ++i)
 	{
-		if (m_clip[i] != 0) glEnable(GL_CLIP_PLANE0 + i);
+		if (m_clip[i] != 0)
+		{
+			glEnable(GL_CLIP_PLANE0 + i);
+
+			CGLPlaneCutPlot* pc = m_pcp[i];
+
+			if (pc)
+			{
+				// get the plane equations
+				GLdouble a[4];
+				pc->GetNormalizedEquations(a);
+
+				// set the clip plane coefficients
+				glClipPlane(GL_CLIP_PLANE0 + i, a);
+			}
+		}
 	}
 }
 

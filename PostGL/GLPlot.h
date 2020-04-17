@@ -24,7 +24,13 @@ public:
 	CGLPlot(CGLModel* po = 0);
 	virtual ~CGLPlot();
 
-	virtual void UpdateTexture() {}
+	virtual void UpdateTexture();
+
+	void SetRenderOrder(int renderOrder);
+	int GetRenderOrder() const;
+
+private:
+	int	m_renderOrder;
 };
 
 class CGLLegendPlot : public CGLPlot

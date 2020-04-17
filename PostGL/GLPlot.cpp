@@ -5,10 +5,26 @@ using namespace Post;
 
 CGLPlot::CGLPlot(CGLModel* po) : CGLVisual(po)
 {
+	m_renderOrder = 0;
 }
 
 CGLPlot::~CGLPlot()
 {
+}
+
+void CGLPlot::UpdateTexture() 
+{
+
+}
+
+void CGLPlot::SetRenderOrder(int renderOrder)
+{
+	m_renderOrder = renderOrder;
+}
+
+int CGLPlot::GetRenderOrder() const
+{
+	return m_renderOrder;
 }
 
 CGLLegendPlot::CGLLegendPlot(CGLModel* po) : CGLPlot(po)
