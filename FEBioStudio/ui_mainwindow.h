@@ -773,6 +773,7 @@ public:
 		postToolBar->addWidget(selectData);
 		postToolBar->addAction(actionColorMap);
 		postToolBar->addSeparator();
+		postToolBar->addAction(actionGraph);
 		postToolBar->addAction(actionPlaneCut);
 		postToolBar->addAction(actionMirrorPlane);
 		postToolBar->addAction(actionVectorPlot);
