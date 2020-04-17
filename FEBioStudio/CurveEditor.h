@@ -11,6 +11,7 @@ class FELoadCurve;
 class FEMaterial;
 class QTreeWidgetItem;
 class CCurveEditorItem;
+class FSObject;
 
 namespace Ui {
 	class CCurveEdior;
@@ -20,7 +21,7 @@ class CCurveEditor : public QMainWindow
 {
 	Q_OBJECT
 
-	enum { FLT_ALL, FLT_GEO, FLT_MAT, FLT_BC, FLT_LOAD, FLT_CONTACT, FLT_CONSTRAINT, FLT_CONNECTOR, FLT_DISCRETE, FLT_STEP };
+	enum { FLT_ALL, FLT_GEO, FLT_MAT, FLT_BC, FLT_LOAD, FLT_CONTACT, FLT_CONSTRAINT, FLT_CONNECTOR, FLT_DISCRETE, FLT_STEP, FLT_LOAD_CURVES };
 
 public:
 	CCurveEditor(CMainWindow* wnd);
@@ -38,6 +39,12 @@ private:
 	void AddMultiMaterial(FEMaterial* pm, QTreeWidgetItem* tp);
 	void SetLoadCurve(FELoadCurve* plc);
 	void UpdateLoadCurve();
+
+private:
+	void BuildLoadCurves();
+	void BuildModelTree();
+	void BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po);
+	void BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, const std::string& name);
 
 private slots:
 	void on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);

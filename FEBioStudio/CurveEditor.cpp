@@ -10,6 +10,7 @@
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidConstraint.h>
+#include <sstream>
 
 CCmdAddPoint::CCmdAddPoint(FELoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
 {
@@ -131,6 +132,215 @@ void CCurveEditor::Update()
 	ui->plot->clearData();
 	m_currentItem = 0;
 
+	if (m_nflt == FLT_LOAD_CURVES)
+	{
+		BuildLoadCurves();
+	}
+	else
+	{
+		BuildModelTree();
+	}
+}
+
+void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po)
+{
+	int np = po->Parameters();
+	for (int n = 0; n < np; ++n)
+	{
+		Param& p = po->GetParam(n);
+		FELoadCurve* plc = p.GetLoadCurve();
+		if (plc)
+		{
+			string name = po->GetName() + "." + p.GetShortName();
+			ui->addTreeItem(t1, QString::fromStdString(name), plc, &p);
+		}
+	}
+}
+
+void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, const std::string& name)
+{
+	int NP = mat->Parameters();
+	for (int n = 0; n < NP; ++n)
+	{
+		Param& p = mat->GetParam(n);
+		FELoadCurve* plc = p.GetLoadCurve();
+		if (plc)
+		{
+			string paramName = name + "." + p.GetShortName();
+			ui->addTreeItem(t1, QString::fromStdString(paramName), plc, &p);
+		}
+	}
+
+	NP = mat->Properties();
+	for (int n = 0; n < NP; ++n)
+	{
+		FEMaterialProperty& matProp = mat->GetProperty(n);
+
+		int np = matProp.Size();
+		if (np == 1)
+		{
+			FEMaterial* pm = matProp.GetMaterial(0);
+			if (pm)
+			{
+				string paramName = name + "." + matProp.GetName();
+				BuildMaterialCurves(t1, pm, paramName);
+			}
+		}
+		else
+		{
+			for (int j = 0; j < np; ++j)
+			{
+				FEMaterial* pm = matProp.GetMaterial(j);
+				if (pm)
+				{
+					std::stringstream ss; 
+					ss << name << "." << matProp.GetName() << "[" << j << "]";
+					string paramName = ss.str();
+					BuildMaterialCurves(t1, pm, paramName);
+				}
+			}
+		}
+	}
+}
+
+void CCurveEditor::BuildLoadCurves()
+{
+	QTreeWidgetItem* t1 = new QTreeWidgetItem(ui->tree);
+	t1->setExpanded(true);
+	t1->setText(0, "Model");
+
+	CDocument* doc = m_wnd->GetDocument();
+	FEModel& fem = *doc->GetFEModel();
+	GModel& model = fem.GetModel();
+
+	for (int i = 0; i<model.DiscreteObjects(); ++i)
+	{
+		GDiscreteObject* po = model.DiscreteObject(i);
+		GLinearSpring* pls = dynamic_cast<GLinearSpring*>(po);
+		if (pls)
+		{
+			FELoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
+			if (plc)
+			{
+				string name = pls->GetName() + ".E";
+				ui->addTreeItem(t1, QString::fromStdString(name), plc);
+			}
+		}
+
+		GGeneralSpring* pgs = dynamic_cast<GGeneralSpring*>(po);
+		if (pgs)
+		{
+			FELoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
+			if (plc)
+			{
+				string name = pls->GetName() + ".F";
+				ui->addTreeItem(t1, QString::fromStdString(name), plc);
+			}
+		}
+	}
+
+	// add the materials
+	for (int i = 0; i<fem.Materials(); ++i)
+	{
+		GMaterial* pgm = fem.GetMaterial(i);
+		FEMaterial* pm = pgm->GetMaterialProperties();
+		if (pm)
+		{
+			BuildMaterialCurves(t1, pm, pgm->GetName());
+		}
+	}
+
+	// add the boundary condition data
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		int nbc = pstep->BCs();
+		for (int j = 0; j<nbc; ++j)
+		{
+			FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(pstep->BC(j));
+			if (pbc) BuildLoadCurves(t1, pbc);
+		}
+	}
+
+	// add the load data
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		int nbc = pstep->Loads();
+		for (int j = 0; j < nbc; ++j)
+		{
+			FELoad* plj = pstep->Load(j);
+			BuildLoadCurves(t1, plj);
+		}
+	}
+
+	// add contact interfaces
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->Interfaces(); ++j)
+		{
+			FEInterface* pi = pstep->Interface(j);
+			BuildLoadCurves(t1, pi);
+		}
+	}
+
+	// add constraints
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->RigidConstraints(); ++j)
+		{
+			FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
+			if (pc) BuildLoadCurves(t1, pc);
+		}
+	}
+
+	// add rigid connectors
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->RigidConnectors(); ++j)
+		{
+			FERigidConnector* pc = pstep->RigidConnector(j);
+			if (pc) BuildLoadCurves(t1, pc);
+		}
+	}
+
+	// discrete materials
+	for (int i = 0; i < model.DiscreteObjects(); ++i)
+	{
+		GDiscreteObject* po = model.DiscreteObject(i);
+		if (po) BuildLoadCurves(t1, po);
+
+/*		GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(po);
+		if (dss)
+		{
+			FEDiscreteMaterial* dm = dss->GetMaterial();
+			if (dm)
+			{
+				t3 = ui->addTreeItem(t2, QString::fromStdString(dss->GetName()));
+				AddMaterial(dm, t3);
+			}
+		}
+*/
+	}
+
+	// must point curves
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FEStep* pstep = fem.GetStep(i);
+		FEAnalysisStep* pas = dynamic_cast<FEAnalysisStep*>(pstep);
+		if (pas && pas->GetSettings().bmust)
+		{
+			string name = pas->GetName() + ".must point";
+			ui->addTreeItem(t1, QString::fromStdString(name), pas->GetMustPointLoadCurve());
+		}
+	}
+}
+
+void CCurveEditor::BuildModelTree()
+{
 	QTreeWidgetItem* t1 = new QTreeWidgetItem(ui->tree);
 	t1->setExpanded(true);
 	t1->setText(0, "Model");

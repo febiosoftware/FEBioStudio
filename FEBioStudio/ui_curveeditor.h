@@ -65,6 +65,7 @@ public:
 		filter->addItem("Rigid Connectors");
 		filter->addItem("Discrete Materials");
 		filter->addItem("Steps");
+		filter->addItem("Loadcurves");
 
 		tree = new QTreeWidget;
 		tree->header()->close();
