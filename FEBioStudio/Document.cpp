@@ -307,30 +307,30 @@ const char* CDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 //-----------------------------------------------------------------------------
 bool CDocument::DoCommand(CCommand* pcmd)
 {
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
 	UpdateSelection();
 	GetGModel()->UpdateBoundingBox();
-
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
 	return ret;
 }
 
 //-----------------------------------------------------------------------------
 bool CDocument::DoCommand(CCommand* pcmd, const std::string& s)
 {
-	bool ret = m_pCmd->DoCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	GetGModel()->UpdateBoundingBox();
-
 	CMainWindow* wnd = GetMainWindow();
 	if (s.empty() == false)
 	{
 		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
 	}
 	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+
+	bool ret = m_pCmd->DoCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	GetGModel()->UpdateBoundingBox();
 	return ret;
 }
 
@@ -417,14 +417,14 @@ void CDocument::UpdateObservers(bool bnew)
 void CDocument::SetViewState(VIEW_STATE vs)
 {
 	m_vs = vs;
-	UpdateSelection();
+	UpdateSelection(false);
 //	if (m_wnd) m_wnd->UpdateUI();
 }
 
 //-----------------------------------------------------------------------------
 // SELECTION
 //-----------------------------------------------------------------------------
-void CDocument::UpdateSelection()
+void CDocument::UpdateSelection(bool report)
 {
 	// delete old selection
 	if (m_psel) delete m_psel;
@@ -479,7 +479,7 @@ void CDocument::UpdateSelection()
 
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool
-	m_wnd->ReportSelection();
+	if (report) m_wnd->ReportSelection();
 }
 
 //-----------------------------------------------------------------------------

@@ -802,6 +802,7 @@ void CMainWindow::ReportSelection()
 	break;
 	}
 	SetStatusMessage(msg);
+	AddLogEntry(msg + "\n");
 
 	FEElementSelection* es = dynamic_cast<FEElementSelection*>(sel);
 	if (es)
@@ -809,8 +810,6 @@ void CMainWindow::ReportSelection()
 		if (es->Size() == 1)
 		{
 			FEElement_* el = es->Element(0);
-			AddLogEntry("1 element selected:\n");
-
 			switch (el->Type())
 			{
 			case FE_HEX8   : AddLogEntry("  Type = HEX8"   ); break;
@@ -866,7 +865,6 @@ void CMainWindow::ReportSelection()
 		{
 			FEFaceSelection::Iterator it = fs->begin();
 			FEFace* pf = it;
-			AddLogEntry("1 face selected:\n");
 			switch (pf->Type())
 			{
 			case FE_FACE_TRI3 : AddLogEntry("  Type = TRI3"); break;

@@ -1374,7 +1374,7 @@ void CMainWindow::on_actionClearSelection_triggered()
 				case SELECT_FACE    : m_doc->DoCommand(new CCmdSelectSurface (m_doc->GetFEModel(), 0, 0, false)); break;
 				case SELECT_EDGE    : m_doc->DoCommand(new CCmdSelectEdge    (m_doc->GetFEModel(), 0, 0, false)); break;
 				case SELECT_NODE    : m_doc->DoCommand(new CCmdSelectNode    (m_doc->GetFEModel(), 0, 0, false)); break;
-				case SELECT_DISCRETE: m_doc->DoCommand(new CCmdSelectDiscrete(m_doc->GetFEModel(), 0, 0, false)); break;
+				case SELECT_DISCRETE: m_doc->DoCommand(new CCmdSelectDiscrete(m_doc->GetGModel(), 0, 0, false)); break;
 				}
 			}
 			break;

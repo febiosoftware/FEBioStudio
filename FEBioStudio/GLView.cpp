@@ -4225,10 +4225,10 @@ void CGLView::SelectDiscrete(int x, int y)
 		else
 		{
 			if (m_bctrl) pcmd = new CCmdUnSelectDiscrete(ps, &index, 1);
-			else pcmd = new CCmdSelectDiscrete(ps, &index, 1, m_bshift);
+			else pcmd = new CCmdSelectDiscrete(&model, &index, 1, m_bshift);
 		}
 	}
-	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectDiscrete(ps, 0, 0, false);
+	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectDiscrete(&model, 0, 0, false);
 
 	// execute command
 	if (pcmd) pdoc->DoCommand(pcmd);
@@ -5234,7 +5234,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 
 	CCommand* pcmd = 0;
 	if (m_bctrl) pcmd = new CCmdUnSelectDiscrete(ps, selectedObjects);
-	else pcmd = new CCmdSelectDiscrete(ps, selectedObjects, m_bshift);
+	else pcmd = new CCmdSelectDiscrete(&model, selectedObjects, m_bshift);
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 

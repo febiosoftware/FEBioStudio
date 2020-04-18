@@ -168,7 +168,7 @@ public:
 
 	// --- Data ---
 	FESelection* GetCurrentSelection();
-	void UpdateSelection();
+	void UpdateSelection(bool report = true);
 
 	FEModel* GetFEModel();
 
@@ -193,16 +193,16 @@ public:
 	void SetViewState(VIEW_STATE vs);
 
 	int GetTransformMode() { return m_vs.ntrans; }
-	void SetTransformMode(int mode) { m_vs.ntrans = mode; UpdateSelection(); }
+	void SetTransformMode(int mode) { m_vs.ntrans = mode; UpdateSelection(false); }
 
 	int GetSelectionMode() { return m_vs.nselect; }
-	void SetSelectionMode(int mode) { m_vs.nitem = ITEM_MESH; m_vs.nselect = mode; UpdateSelection(); }
+	void SetSelectionMode(int mode) { m_vs.nitem = ITEM_MESH; m_vs.nselect = mode; UpdateSelection(false); }
 
 	void SetSelectionStyle(int nstyle) { m_vs.nstyle = nstyle; }
 	int GetSelectionStyle() { return m_vs.nstyle; }
 
 	int GetItemMode() { return m_vs.nitem; }
-	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(); }
+	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(false); }
 
 	static std::string GetTypeString(FSObject* po);
 

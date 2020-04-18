@@ -19,7 +19,7 @@ void CBuildPanel::Update()
 	CCommandPanel* p = ui->currentPanel();
 	if (p) p->Update();
 	ui->mainWindow->UpdateGLControlBar();
-	ui->mainWindow->GetDocument()->UpdateSelection();
+	ui->mainWindow->GetDocument()->UpdateSelection(false);
 	ui->mainWindow->RedrawGL();
 }
 

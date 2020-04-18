@@ -302,7 +302,7 @@ void CModelViewer::on_selectButton_clicked()
 		GDiscreteObject* ps = dynamic_cast<GDiscreteObject*>(po);
 		GModel& fem = pdoc->GetFEModel()->GetModel();
 		int n = fem.FindDiscreteObjectIndex(ps);
-		pcmd = new CCmdSelectDiscrete(pdoc->GetFEModel(), &n, 1, false);
+		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
 	}
 	else if (dynamic_cast<FESoloInterface*>(po))
 	{
@@ -657,14 +657,18 @@ void CModelViewer::OnSelectObject()
 	CMainWindow* wnd = GetMainWindow();
 	wnd->SetSelectionMode(SELECT_OBJECT);
 
+	vector<GObject*> sel; 
 	for (int i = 0; i<m_selection.size(); ++i)
 	{
 		GObject* po = dynamic_cast<GObject*>(m_selection[i]); assert(po);
-		if (po && po->IsVisible()) po->Select();
+		if (po && po->IsVisible()) sel.push_back(po);
 	}
-	GetDocument()->UpdateSelection();
-	wnd->Update(this);
-	wnd->RedrawGL();
+
+	if (sel.empty() == false)
+	{
+		doc->DoCommand(new CCmdSelectObject(sel, true));
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnSelectDiscreteObject()
@@ -675,14 +679,18 @@ void CModelViewer::OnSelectDiscreteObject()
 	CMainWindow* wnd = GetMainWindow();
 	wnd->SetSelectionMode(SELECT_DISCRETE);
 
+	vector<GDiscreteObject*> sel;
 	for (int i=0; i<(int)m_selection.size(); ++i)
 	{
 		GDiscreteObject* po = dynamic_cast<GDiscreteObject*>(m_selection[i]); assert(po);
-		if (po) po->Select();
+		if (po) sel.push_back(po);
 	}
-	GetDocument()->UpdateSelection();
 
-	wnd->RedrawGL();
+	if (sel.empty() == false)
+	{
+		doc->DoCommand(new CCmdSelectDiscrete(&m, sel, true));
+		wnd->RedrawGL();
+	}
 }
 
 void CModelViewer::OnDetachDiscreteObject()

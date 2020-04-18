@@ -574,15 +574,16 @@ protected:
 class CCmdSelectDiscrete : public CCommand
 {
 public:
-	CCmdSelectDiscrete(FEModel* ps, int* pobj, int n, bool badd);
-	CCmdSelectDiscrete(FEModel* ps, const vector<int>& obj, bool badd);
+	CCmdSelectDiscrete(GModel* ps, int* pobj, int n, bool badd);
+	CCmdSelectDiscrete(GModel* ps, const vector<int>& obj, bool badd);
+	CCmdSelectDiscrete(GModel* ps, const vector<GDiscreteObject*>& obj, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
-	vector<int>		m_obj;		// list of discrete objects to select
+	GModel*						m_pgm;		// pointer to model
+	vector<GDiscreteObject*>	m_obj;		// list of discrete objects to select
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
 };

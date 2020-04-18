@@ -1308,16 +1308,14 @@ void CCmdUnSelectNode::UnExecute()
 // CCmdSelectDiscrete
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectDiscrete::CCmdSelectDiscrete(FEModel* ps, int* pobj, int n, bool badd) : CCommand("Select Discrete")
+CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, int* pobj, int n, bool badd) : CCommand("Select Discrete")
 {
-	// get the model
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
-
-	m_ps = ps;
+	m_pgm = ps;
+	GModel& m = *m_pgm;
 	if (n > 0)
 	{
 		m_obj.resize(n);
-		for (int i = 0; i<n; ++i) m_obj[i] = pobj[i];
+		for (int i = 0; i<n; ++i) m_obj[i] = m.DiscreteObject(pobj[i]);
 	}
 
 	int N = m.DiscreteObjects();
@@ -1326,12 +1324,26 @@ CCmdSelectDiscrete::CCmdSelectDiscrete(FEModel* ps, int* pobj, int n, bool badd)
 	m_badd = badd;
 }
 
-CCmdSelectDiscrete::CCmdSelectDiscrete(FEModel* ps, const vector<int>& obj, bool badd) : CCommand("Select Discrete")
+CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, const vector<int>& obj, bool badd) : CCommand("Select Discrete")
 {
-	// get the model
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
+	m_pgm = ps;
+	GModel& m = *m_pgm;
 
-	m_ps = ps;
+	int n = obj.size();
+	m_obj.resize(n);
+	for (int i = 0; i<n; ++i) m_obj[i] = m.DiscreteObject(obj[i]);
+
+	int N = m.DiscreteObjects();
+	m_bold.resize(N);
+	for (int i = 0; i<N; ++i) m_bold[i] = m.DiscreteObject(i)->IsSelected();
+	m_badd = badd;
+}
+
+CCmdSelectDiscrete::CCmdSelectDiscrete(GModel* ps, const vector<GDiscreteObject*>& obj, bool badd) : CCommand("Select Discrete")
+{
+	m_pgm = ps;
+	GModel& m = *m_pgm;
+	
 	m_obj = obj;
 
 	int N = m.DiscreteObjects();
@@ -1340,11 +1352,9 @@ CCmdSelectDiscrete::CCmdSelectDiscrete(FEModel* ps, const vector<int>& obj, bool
 	m_badd = badd;
 }
 
-
 void CCmdSelectDiscrete::Execute()
 {
-	// get the model
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
+	GModel& m = *m_pgm;
 	int ND = m.DiscreteObjects();
 	int i, n;
 	if (!m_badd)
@@ -1356,7 +1366,7 @@ void CCmdSelectDiscrete::Execute()
 	n = m_obj.size();
 	for (i = 0; i<n; ++i)
 	{
-		GDiscreteObject* pn = m.DiscreteObject(m_obj[i]);
+		GDiscreteObject* pn = m_obj[i];
 		if (pn) pn->Select();
 	}
 
@@ -1365,8 +1375,7 @@ void CCmdSelectDiscrete::Execute()
 
 void CCmdSelectDiscrete::UnExecute()
 {
-	// get the model
-	GModel& m = m_pDoc->GetFEModel()->GetModel();
+	GModel& m = *m_pgm;
 	int n = m_bold.size();
 	for (int i = 0; i<n; ++i)
 	{
@@ -1509,7 +1518,7 @@ void CCmdInvertSelection::UnExecute()
 // CCmdSelectElements
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectElements::CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd) : CCommand("Select")
+CCmdSelectElements::CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd) : CCommand("Select Elements")
 {
 	int i;
 
@@ -1534,7 +1543,7 @@ CCmdSelectElements::CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd) : 
 	}
 }
 
-CCmdSelectElements::CCmdSelectElements(FEMesh* pm, vector<int>& el, bool badd) : CCommand("Select")
+CCmdSelectElements::CCmdSelectElements(FEMesh* pm, vector<int>& el, bool badd) : CCommand("Select Elements")
 {
 	int i;
 	int N = (int)el.size();
@@ -1669,7 +1678,7 @@ void CCmdUnselectElements::UnExecute()
 // CCmdSelectFaces
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectFaces::CCmdSelectFaces(FEMeshBase* pm, int* pf, int N, bool badd) : CCommand("Select")
+CCmdSelectFaces::CCmdSelectFaces(FEMeshBase* pm, int* pf, int N, bool badd) : CCommand("Select Faces")
 {
 	int i;
 
@@ -1694,7 +1703,7 @@ CCmdSelectFaces::CCmdSelectFaces(FEMeshBase* pm, int* pf, int N, bool badd) : CC
 	}
 }
 
-CCmdSelectFaces::CCmdSelectFaces(FEMeshBase* pm, vector<int>& fl, bool badd) : CCommand("Select")
+CCmdSelectFaces::CCmdSelectFaces(FEMeshBase* pm, vector<int>& fl, bool badd) : CCommand("Select Faces")
 {
 	int i;
 	int N = (int)fl.size();
@@ -1820,7 +1829,7 @@ void CCmdUnselectFaces::UnExecute()
 // CCmdSelectFEEdges
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectFEEdges::CCmdSelectFEEdges(FELineMesh* pm, int* pe, int N, bool badd) : CCommand("Select")
+CCmdSelectFEEdges::CCmdSelectFEEdges(FELineMesh* pm, int* pe, int N, bool badd) : CCommand("Select Edges")
 {
 	m_pm = pm;
 	m_badd = badd;
@@ -1843,7 +1852,7 @@ CCmdSelectFEEdges::CCmdSelectFEEdges(FELineMesh* pm, int* pe, int N, bool badd) 
 	}
 }
 
-CCmdSelectFEEdges::CCmdSelectFEEdges(FELineMesh* pm, vector<int>& el, bool badd) : CCommand("Select")
+CCmdSelectFEEdges::CCmdSelectFEEdges(FELineMesh* pm, vector<int>& el, bool badd) : CCommand("Select Edges")
 {
 	int N = (int)el.size();
 
@@ -1969,7 +1978,7 @@ void CCmdUnselectFEEdges::UnExecute()
 // CCmdSelectFENodes
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectFENodes::CCmdSelectFENodes(FELineMesh* pm, int* pn, int N, bool badd) : CCommand("Select")
+CCmdSelectFENodes::CCmdSelectFENodes(FELineMesh* pm, int* pn, int N, bool badd) : CCommand("Select Nodes")
 {
 	int i;
 
@@ -1994,7 +2003,7 @@ CCmdSelectFENodes::CCmdSelectFENodes(FELineMesh* pm, int* pn, int N, bool badd) 
 	}
 }
 
-CCmdSelectFENodes::CCmdSelectFENodes(FELineMesh* pm, vector<int>& nl, bool badd) : CCommand("Select")
+CCmdSelectFENodes::CCmdSelectFENodes(FELineMesh* pm, vector<int>& nl, bool badd) : CCommand("Select Nodes")
 {
 	int i;
 	int N = (int)nl.size();
