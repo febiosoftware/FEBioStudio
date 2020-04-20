@@ -261,5 +261,15 @@ void CStatePanel::on_deleteButton_clicked()
 			++m;
 		}
 		Update(true);
+
+		int states = fem.GetStates();
+
+		TIMESETTINGS& ts = doc.GetTimeSettings();
+		if (ts.m_end >= states) ts.m_end = states - 1;
+		int n = doc.GetActiveState();
+		if (n >= states - 1) n = states - 1;
+		doc.SetActiveState(n);
+		GetMainWindow()->UpdatePostToolbar();
+		GetMainWindow()->Update(this);
 	}
 }
