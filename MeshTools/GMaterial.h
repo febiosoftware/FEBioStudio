@@ -13,6 +13,9 @@ class FEMaterial;
 class GMaterial : public FSObject
 {
 public:
+	enum {MAX_COLORS = 16};
+
+public:
 	GMaterial(FEMaterial* pm = 0);
 	~GMaterial(void);
 

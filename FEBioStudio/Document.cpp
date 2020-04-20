@@ -28,25 +28,8 @@
 #include "Commands.h"
 #include <sstream>
 
-extern const int COLORS = 16;
-GLColor col[COLORS] = {
-	GLColor(240, 164, 96),
-	GLColor(240, 240, 0),
-	GLColor(240, 0, 240),
-	GLColor(0, 240, 240),
-	GLColor(240, 180, 0),
-	GLColor(240, 0, 180),
-	GLColor(180, 240, 0),
-	GLColor(0, 240, 180),
-	GLColor(180, 0, 240),
-	GLColor(0, 180, 240),
-	GLColor(0, 180, 0),
-	GLColor(0, 0, 180),
-	GLColor(180, 180, 0),
-	GLColor(0, 180, 180),
-	GLColor(180, 0, 180),
-	GLColor(120, 0, 240)
-};
+// defined in MeshTools\GMaterial.cpp
+extern GLColor col[];
 
 void VIEW_SETTINGS::Defaults()
 {
@@ -140,7 +123,7 @@ CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
 	
 	Post::CPalette pal("preview");
-	for (int i = 0; i < COLORS; ++i)
+	for (int i = 0; i < GMaterial::MAX_COLORS; ++i)
 	{
 		GLColor c = col[i];
 		GLColor glc(c.r, c.g, c.b);
