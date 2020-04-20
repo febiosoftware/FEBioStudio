@@ -1,5 +1,5 @@
 #pragma once
-#include "FEMesh.h"
+#include "FEPostMesh.h"
 #include <MeshLib/Intersect.h>
 #include <vector>
 #include <string>

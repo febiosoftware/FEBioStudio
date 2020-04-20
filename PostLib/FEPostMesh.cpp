@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "FEMesh.h"
+#include "FEPostMesh.h"
 #include "FEState.h"
 #include <MeshLib/MeshTools.h>
 #include <stack>

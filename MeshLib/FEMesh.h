@@ -1,6 +1,6 @@
 #pragma once
 #include "FECoreMesh.h"
-#include "MeshTools/FEGroup.h"
+#include <MeshTools/FEGroup.h>
 #include <MeshTools/FEMeshData.h>
 #include <vector>
 #include <set>
@@ -14,11 +14,6 @@ class FEMeshData;
 class FENodeData;
 class FESurfaceData;
 class FEElementData;
-
-//-----------------------------------------------------------------------------
-// Forward declaration of GObject class. The GObject class will own and manage
-// the FEMesh. 
-class GObject;
 
 //-----------------------------------------------------------------------------
 class Mesh_Data

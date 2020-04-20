@@ -2,7 +2,7 @@
 #include "GMeshImport.h"
 #include <FSCore/color.h>
 #include "FEModel.h"
-#include "FEMesh.h"
+#include "FEPostMesh.h"
 using namespace Post;
 
 GMeshImport::GMeshImport(void) : FEFileReader("GMesh")

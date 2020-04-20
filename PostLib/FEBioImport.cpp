@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FEBioImport.h"
 #include "FEModel.h"
-#include "FEMesh.h"
+#include "FEPostMesh.h"
 using namespace Post;
 
 FEBioImport::FEBioImport(void) : FEFileReader("FEBio input")

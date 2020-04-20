@@ -8,9 +8,6 @@
 #include "FELineMesh.h"
 
 //-------------------------------------------------------------------
-class GObject;
-
-//-------------------------------------------------------------------
 // Base class for mesh classes.
 // Essentially manages the nodes, edges, and faces
 class FEMeshBase : public FELineMesh

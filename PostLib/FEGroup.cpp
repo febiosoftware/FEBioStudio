@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEGroup.h"
-#include "FEMesh.h"
+#include "FEPostMesh.h"
 #include <string.h>
 
 //-----------------------------------------------------------------------------

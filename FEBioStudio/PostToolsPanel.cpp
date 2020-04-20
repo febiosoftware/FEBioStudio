@@ -15,7 +15,7 @@
 #include "ToolBox.h"
 #include "MainWindow.h"
 #include "Document.h"
-#include <PostLib/FEMesh.h>
+#include <PostLib/FEPostMesh.h>
 #include <PostLib/FEModel.h>
 #include <PostLib/GDecoration.h>
 #include <PostGL/GLModel.h>

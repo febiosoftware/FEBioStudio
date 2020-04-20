@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEState.h"
-#include "FEMesh.h"
+#include "FEPostMesh.h"
 #include "FEModel.h"
 #include "FEMeshData_T.h"
 

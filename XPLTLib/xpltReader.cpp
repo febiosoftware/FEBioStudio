@@ -3,7 +3,7 @@
 #include <PostLib/FEDataManager.h>
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>
-#include <PostLib/FEMesh.h>
+#include <PostLib/FEPostMesh.h>
 #include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
