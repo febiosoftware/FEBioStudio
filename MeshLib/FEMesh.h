@@ -131,7 +131,7 @@ public:
 	void UpdateFaces();
 
 	// reconstruct the mesh
-	void RebuildMesh(double smoothingAngle = 60.0, bool autoSurface = true);
+	void RebuildMesh(double smoothingAngle = 60.0, bool autoSurface = true, bool partitionMesh = false);
 
 public:
 	void AutoPartitionElements();

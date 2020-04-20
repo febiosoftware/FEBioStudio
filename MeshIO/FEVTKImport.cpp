@@ -244,7 +244,7 @@ bool FEVTKimport::Load(FEProject& prj, const char* szfile)
 
 	Close();
 
-	pm->RebuildMesh(180.0);
+	pm->RebuildMesh(60.0, true, true);
 
 	GMeshObject* po = new GMeshObject(pm);
 	po->Update();

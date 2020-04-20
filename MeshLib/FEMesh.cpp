@@ -3313,10 +3313,16 @@ void FEMesh::UpdateFaces()
 
 //-----------------------------------------------------------------------------
 // This function builds the surface, edges and node of the mesh
-void FEMesh::RebuildMesh(double smoothingAngle, bool autoSurface)
+void FEMesh::RebuildMesh(double smoothingAngle, bool autoSurface, bool partitionMesh)
 {
 	// update the element neighbours
 	UpdateElementNeighbors();
+
+	// partition the elements based on element connectivity
+	if (partitionMesh)
+	{
+		AutoPartitionElements();
+	}
 
 	// build the faces
 	BuildFaces();
