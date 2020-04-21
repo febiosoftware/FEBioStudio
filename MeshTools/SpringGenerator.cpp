@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "SpringGenerator.h"
+#include "GDiscreteObject.h"
+#include "GModel.h"
 
 CSpringGenerator::CSpringGenerator(GModel& model) : m_model(model)
 {

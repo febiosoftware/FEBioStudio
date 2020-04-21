@@ -1,5 +1,5 @@
 #pragma once
-#include <MeshTools/LoadCurve.h>
+#include <FSCore/LoadCurve.h>
 #include "FECoreMaterial.h"
 #include "FEMaterialFactory.h"
 

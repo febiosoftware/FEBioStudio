@@ -83,14 +83,16 @@ bool CScalarFieldTool::OnApply()
 	else
 	{
 		// create element data
-		GPartList* pg = new GPartList(ps);
-		pg->Create(po);
-		FEPartData* pdata = new FEPartData;
+		int parts = po->Parts();
+		vector<int> partList(parts);
+		for (int i = 0; i < parts; ++i) partList[i] = i;
+
+		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(m_name.toStdString());
-		pdata->Create(pg);
+		pdata->Create(partList);
 		pm->AddMeshDataField(pdata);
 
-		FEElemList* elemList = pg->BuildElemList();
+		FEElemList* elemList = pdata->BuildElemList();
 		int NE = elemList->Size();
 		auto it = elemList->First();
 		for (int i = 0; i < NE; ++i, ++it)

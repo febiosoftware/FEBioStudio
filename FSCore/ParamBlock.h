@@ -2,7 +2,7 @@
 #include "Serializable.h"
 #include "color.h"
 #include <MathLib/mat3d.h>
-#include <MeshTools/LoadCurve.h>
+#include "LoadCurve.h"
 #include <vector>
 #include <string.h>
 using namespace std;

@@ -86,9 +86,8 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::PART_DATA:
 			{
 				FEPartData& partData = dynamic_cast<FEPartData&>(*meshData);
-				GPartList* partList = const_cast<GPartList*>(partData.GetPartList());
 
-				FEElemList* pg = partList->BuildElemList();
+				FEElemList* pg = partData.BuildElemList();
 				auto it = pg->First();
 				int N = pg->Size();
 				for (int i = 0; i < N; ++i, ++it)
@@ -98,6 +97,7 @@ void FEMeshValuator::Evaluate(int nfield)
 					data.SetElementValue(elemId, val);
 					data.SetElementDataTag(elemId, 1);
 				}
+				delete pg;
 			}
 			break;
 			}

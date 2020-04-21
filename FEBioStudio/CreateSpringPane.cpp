@@ -15,6 +15,7 @@
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
+#include <MeshTools/GModel.h>
 #include "GLHighlighter.h"
 #include "Commands.h"
 using namespace std;

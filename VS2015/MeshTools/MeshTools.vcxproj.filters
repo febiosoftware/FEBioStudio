@@ -334,9 +334,6 @@
     <ClCompile Include="..\..\MeshTools\LaplaceSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshTools\LoadCurve.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshTools\lut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -637,9 +634,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\LaplaceSolver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshTools\LoadCurve.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\NetGenMesher.h">

@@ -6,7 +6,6 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 // forward declarations
-class FEModel;
 class FEPart;
 class FESurface;
 class FEEdgeSet;

@@ -1,11 +1,11 @@
 #pragma once
 #include "FEMeshData.h"
+#include "FEItemList.h"
 #include <string>
 #include <vector>
 using namespace std;
 
 class FEPart;
-class GPartList;
 
 //-----------------------------------------------------------------------------
 // Element data field
@@ -57,10 +57,7 @@ public:
 	FEPartData& operator = (const FEPartData& d);
 
 	// create a data field
-	bool Create(GPartList* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
-
-	// Get the part list
-	const GPartList* GetPartList();
+	bool Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
 
 	// size of data field
 	int Size() const;
@@ -72,11 +69,14 @@ public:
 	// access operator
 	double& operator [] (int i) { return m_data[i]; }
 
+	// build the element list
+	FEElemList* BuildElemList();
+
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
 private:
 	vector<double>		m_data;		//!< data values
-	GPartList*			m_part;		//!< the part to which the data applies
+	vector<int>			m_part;		//!< the part to which the data applies
 };

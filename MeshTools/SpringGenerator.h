@@ -1,7 +1,9 @@
 #pragma once
-#include "GModel.h"
 #include <vector>
-#include "GDiscreteObject.h"
+#include <MathLib/math3d.h>
+
+class GModel;
+class GDiscreteElementSet;
 
 class CSpringGenerator
 {

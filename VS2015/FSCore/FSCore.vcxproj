@@ -149,6 +149,7 @@
     <ClCompile Include="..\..\FSCore\CallTracer.cpp" />
     <ClCompile Include="..\..\FSCore\FSDir.cpp" />
     <ClCompile Include="..\..\FSCore\FSObject.cpp" />
+    <ClCompile Include="..\..\FSCore\LoadCurve.cpp" />
     <ClCompile Include="..\..\FSCore\memtool.cpp" />
     <ClCompile Include="..\..\FSCore\ParamBlock.cpp" />
     <ClCompile Include="..\..\FSCore\Serializable.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="..\..\FSCore\FSDir.h" />
     <ClInclude Include="..\..\FSCore\FSObject.h" />
     <ClInclude Include="..\..\FSCore\FSObjectList.h" />
+    <ClInclude Include="..\..\FSCore\LoadCurve.h" />
     <ClInclude Include="..\..\FSCore\memtool.h" />
     <ClInclude Include="..\..\FSCore\ParamBlock.h" />
     <ClInclude Include="..\..\FSCore\Serializable.h" />

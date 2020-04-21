@@ -166,6 +166,7 @@ public:
 		return IO_OK;
 	}
 
+	IOResult read(std::vector<int>& v);
 	IOResult read(std::vector<double>& v);
 
 	// conversion to FILE* 

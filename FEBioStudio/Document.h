@@ -1,8 +1,8 @@
 #pragma once
 
 #include <MeshTools/FEProject.h>
-#include <MeshTools/LoadCurve.h>
 #include <MeshTools/FESelection.h>
+#include <FSCore/LoadCurve.h>
 #include <FSCore/Serializable.h>
 #include <MeshIO/FileReader.h>
 #include <FEMLib/FEDataMap.h>

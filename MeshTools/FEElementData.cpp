@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "FEElementData.h"
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/GGroup.h>
 
 //-----------------------------------------------------------------------------
 FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
@@ -139,34 +138,55 @@ FEPartData& FEPartData::operator = (const FEPartData& d)
 }
 
 // create a data field
-bool FEPartData::Create(GPartList* part, FEMeshData::DATA_TYPE dataType)
+bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType)
 {
-	assert(part);
+	FEMesh* mesh = GetMesh();
+	assert(mesh);
 	m_data.clear();
-	m_part = part;
-	if (part == nullptr) return false;
+	m_part = partList;
 
-	FEElemList* elem = part->BuildElemList();
-	if (elem == nullptr) return false;
-
-	int NE = elem->Size();
-	m_data.resize(NE);
-
-	delete elem;
+	int NE = mesh->Elements();
+	int nsize = 0;
+	for (int i = 0; i < partList.size(); ++i)
+	{
+		int pid = partList[i];
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement& el = mesh->Element(i);
+			if (el.m_gid == pid) nsize++;
+		}
+	}
+	m_data.resize(nsize);
 
 	return true;
+}
+
+FEElemList* FEPartData::BuildElemList()
+{
+	FEMesh* mesh = GetMesh();
+	assert(mesh);
+
+	FEElemList* elemList = new FEElemList;
+	int NE = mesh->Elements();
+	for (int i = 0; i < m_part.size(); ++i)
+	{
+		int pid = m_part[i];
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement& el = mesh->Element(i);
+			if (el.m_gid == pid)
+			{
+				elemList->Add(mesh, &el, i);
+			}
+		}
+	}
+	return elemList;
 }
 
 // size of data field
 int FEPartData::Size() const
 { 
 	return (int)m_data.size(); 
-}
-
-// Get the part list
-const GPartList* FEPartData::GetPartList()
-{
-	return m_part;
 }
 
 void FEPartData::Save(OArchive& ar)
@@ -178,11 +198,7 @@ void FEPartData::Save(OArchive& ar)
 
 	// Parts must be saved first so that the number of elements in the part can be
 	// queried before the data is read during the load operation.
-	ar.BeginChunk(CID_MESH_DATA_PART);
-	{
-		m_part->Save(ar);
-	}
-	ar.EndChunk();
+	ar.WriteChunk(CID_MESH_DATA_PART, m_part);
 
 	ar.WriteChunk(CID_MESH_DATA_VALUES, m_data);
 }
@@ -207,8 +223,7 @@ void FEPartData::Load(IArchive& ar)
 		}
 		else if (nid == CID_MESH_DATA_PART)
 		{
-			m_part = GPartList::CreateNew();
-			m_part->Load(ar);
+			ar.read(m_part);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{

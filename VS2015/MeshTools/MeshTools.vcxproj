@@ -251,7 +251,6 @@
     <ClCompile Include="..\..\MeshTools\hex2tet.cpp" />
     <ClCompile Include="..\..\MeshTools\ICPRegistration.cpp" />
     <ClCompile Include="..\..\MeshTools\LaplaceSolver.cpp" />
-    <ClCompile Include="..\..\MeshTools\LoadCurve.cpp" />
     <ClCompile Include="..\..\MeshTools\lut.cpp" />
     <ClCompile Include="..\..\MeshTools\NetGenMesher.cpp" />
     <ClCompile Include="..\..\MeshTools\Plane.cpp" />
@@ -353,7 +352,6 @@
     <ClInclude Include="..\..\MeshTools\GSketch.h" />
     <ClInclude Include="..\..\MeshTools\ICPRegistration.h" />
     <ClInclude Include="..\..\MeshTools\LaplaceSolver.h" />
-    <ClInclude Include="..\..\MeshTools\LoadCurve.h" />
     <ClInclude Include="..\..\MeshTools\NetGenMesher.h" />
     <ClInclude Include="..\..\MeshTools\Plane.h" />
     <ClInclude Include="..\..\MeshTools\PlotDataSettings.h" />

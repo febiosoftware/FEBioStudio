@@ -2,8 +2,6 @@
 #include "MeshLib/FEMesh.h"
 #include "FEMLib/FEInterface.h"
 #include "FEMLib/FEConnector.h"
-#include "LoadCurve.h"
-#include <FSCore/Serializable.h>
 #include "FEMLib/FECoreModel.h"
 #include "FEMLib/FEBoundaryCondition.h"
 #include "FEMLib/FEAnalysisStep.h"

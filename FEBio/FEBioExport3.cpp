@@ -624,7 +624,8 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				case FEMeshData::PART_DATA:
 				{
 					FEPartData* map = dynamic_cast<FEPartData*>(data); assert(map);
-					GPartList* pg = const_cast<GPartList*>(map->GetPartList());
+					GPartList* pg = 0;// const_cast<GPartList*>(map->GetPartList());
+					assert(pg);
 					FEItemListBuilder* pil = pg;
 					if (pg) AddElemSet(data->GetName(), pil);
 				}
@@ -3045,9 +3046,7 @@ void FEBioExport3::WriteElementDataFields()
 			if (partData)
 			{
 				FEPartData& data = *partData;
-				GPartList* partList = const_cast<GPartList*>(data.GetPartList());
-
-				FEElemList* pg = partList->BuildElemList();
+				FEElemList* pg = data.BuildElemList();
 
 				XMLElement tag("element_data");
 				tag.add_attribute("name", data.GetName().c_str());
@@ -3065,6 +3064,8 @@ void FEBioExport3::WriteElementDataFields()
 					}
 				}
 				m_xml.close_branch();
+
+				delete pg;
 			}
 		}
 	}
