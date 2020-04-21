@@ -7,7 +7,7 @@ using namespace std;
 
 namespace Post {
 
-class FEModel;
+class FEPostModel;
 
 class FEAreaCoverage
 {
@@ -42,7 +42,7 @@ public:
 	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
 
 	// apply the map
-	void Apply(FEModel& fem);
+	void Apply(FEPostModel& fem);
 
 protected:
 	// build node normal list
@@ -55,7 +55,7 @@ protected:
 protected:
 	Surface		m_surf1;
 	Surface		m_surf2;
-	FEModel*	m_fem;
+	FEPostModel*	m_fem;
 	string  	m_name;
 };
 }

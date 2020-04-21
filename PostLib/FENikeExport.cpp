@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FENikeExport.h"
+#include "FEPostModel.h"
 #include <stdio.h>
 
 using namespace Post;
@@ -12,7 +13,7 @@ FENikeExport::~FENikeExport(void)
 {
 }
 
-bool FENikeExport::Save(FEModel &fem, const char *szfile)
+bool FENikeExport::Save(FEPostModel &fem, const char *szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;

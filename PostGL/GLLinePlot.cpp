@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GLLinePlot.h"
 #include <PostGL/GLModel.h>
+#include <PostLib/FEPostModel.h>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -76,7 +77,7 @@ void CGLLinePlot::SetDataField(int n)
 void CGLLinePlot::Render(CGLContext& rc)
 {
 	CGLModel& glm = *GetModel();
-	FEModel& fem = *glm.GetFEModel();
+	FEPostModel& fem = *glm.GetFEModel();
 	int ns = glm.CurrentTimeIndex();
 
 	GLfloat zero[4] = { 0.f };
@@ -289,7 +290,7 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 	if (m_ncolor == 1)
 	{
 		CGLModel& glm = *GetModel();
-		FEModel& fem = *glm.GetFEModel();
+		FEPostModel& fem = *glm.GetFEModel();
 
 		FEState& s = *fem.GetState(ntime);
 		int NL = s.Lines();
@@ -311,7 +312,7 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 	else if (m_ncolor == 2)
 	{
 		CGLModel& glm = *GetModel();
-		FEModel& fem = *glm.GetFEModel();
+		FEPostModel& fem = *glm.GetFEModel();
 
 		FEState& s = *fem.GetState(ntime);
 		int NL = s.Lines();
@@ -384,7 +385,7 @@ void CGLPointPlot::UpdateData(bool bsave)
 //-----------------------------------------------------------------------------
 void CGLPointPlot::Render(CGLContext& rc)
 {
-	FEModel& fem = *GetModel()->GetFEModel();;
+	FEPostModel& fem = *GetModel()->GetFEModel();;
 	int ns = GetModel()->CurrentTimeIndex();
 
 	GLfloat size_old;

@@ -3,7 +3,7 @@
 #include <QMenu>
 #include <QComboBox>
 #include <PostLib/FEMeshData.h>
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 
 // Abstract class for creating the menu of the CDataSelectorButton.
 class CDataSelector : public QObject
@@ -48,17 +48,17 @@ public:
 class CModelDataSelector : public CDataSelector, public Post::FEModelDependant
 {
 public:
-	CModelDataSelector(Post::FEModel* fem, Post::Data_Tensor_Type ntype, bool btvec = false);
+	CModelDataSelector(Post::FEPostModel* fem, Post::Data_Tensor_Type ntype, bool btvec = false);
 	~CModelDataSelector();
 
 	void BuildMenu(QMenu* menu) override;
 
 public:
 	// inherited from FEModelDependant
-	void Update(Post::FEModel* pfem) override;
+	void Update(Post::FEPostModel* pfem) override;
 
 private:
-	Post::FEModel*			m_fem;
+	Post::FEPostModel*		m_fem;
 	Post::Data_Tensor_Type	m_class;
 	bool m_bvec;
 };
@@ -103,7 +103,7 @@ class CDataFieldSelector : public CDataSelectorButton
 public:
 	CDataFieldSelector(QWidget* parent = nullptr);
 
-	void BuildMenu(Post::FEModel* fem, Post::Data_Tensor_Type ntype, bool btvec = false);
+	void BuildMenu(Post::FEPostModel* fem, Post::Data_Tensor_Type ntype, bool btvec = false);
 };
 
 class CColorMapSelector : public QComboBox

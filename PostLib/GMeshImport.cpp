@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GMeshImport.h"
 #include <FSCore/color.h>
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include "FEPostMesh.h"
 using namespace Post;
 
@@ -13,7 +13,7 @@ GMeshImport::~GMeshImport(void)
 {
 }
 
-bool GMeshImport::Load(FEModel& fem, const char* szfile)
+bool GMeshImport::Load(FEPostModel& fem, const char* szfile)
 {
 	// open the file
 	if (Open(szfile, "rt") == false) return false;
@@ -124,7 +124,7 @@ bool GMeshImport::ReadElements()
 	return true;
 }
 
-bool GMeshImport::BuildMesh(FEModel& fem)
+bool GMeshImport::BuildMesh(FEPostModel& fem)
 {
 	int i;
 

@@ -1,19 +1,19 @@
 #include "stdafx.h"
 #include "FEState.h"
 #include "FEPostMesh.h"
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include "FEMeshData_T.h"
 
 using namespace Post;
 
-FERefState::FERefState(FEModel* fem)
+FERefState::FERefState(FEPostModel* fem)
 {
 
 }
 
 //-----------------------------------------------------------------------------
 // Constructor
-FEState::FEState(float time, FEModel* fem, Post::FEPostMesh* pmesh) : m_fem(fem), m_mesh(pmesh)
+FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(fem), m_mesh(pmesh)
 {
 	m_id = -1;
 	m_ref = nullptr; // will be set by model
@@ -104,7 +104,7 @@ int FEState::GetID() const
 
 //-----------------------------------------------------------------------------
 // Constructor
-FEState::FEState(float time, FEModel* pfem, FEState* pstate) : m_fem(pfem)
+FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 {
 	m_id = -1;
 

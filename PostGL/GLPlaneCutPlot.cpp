@@ -257,7 +257,7 @@ void CGLPlaneCutPlot::RenderSlice()
 {
 	CGLModel* mdl = GetModel();
 
-	FEModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFEModel();
 	FEMeshBase* pm = mdl->GetActiveMesh();
 
 	CGLColorMap* pcol = mdl->GetColorMap();
@@ -355,7 +355,7 @@ void CGLPlaneCutPlot::RenderMesh()
 
 	CGLModel* mdl = GetModel();
 
-	FEModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	glColor3ub(0,0,0);
@@ -512,7 +512,7 @@ void CGLPlaneCutPlot::RenderOutline()
 {
 	CGLModel* mdl = GetModel();
 
-	FEModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFEModel();
 	FEMeshBase* pm = mdl->GetActiveMesh();
 
 	// store attributes
@@ -578,7 +578,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 
 	double ref = -a[3];
 
-	FEModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	m_slice.Clear();
@@ -786,7 +786,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 
 	CGLModel* mdl = GetModel();
 
-	FEModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	float ev[8];

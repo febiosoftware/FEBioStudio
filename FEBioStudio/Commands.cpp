@@ -1586,8 +1586,7 @@ void CCmdSelectElements::Execute()
 		if ((n >= 0) && (n<NE)) m_pm->Element(n).Select();
 	}
 
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 void CCmdSelectElements::UnExecute()
@@ -1602,8 +1601,7 @@ void CCmdSelectElements::UnExecute()
 			el.Unselect();
 	}
 
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1653,8 +1651,7 @@ void CCmdUnselectElements::Execute()
 	FEMesh* pm = m_mesh;
 	for (int i = 0; i<m_N; ++i) pm->Element(m_pel[i]).Unselect();
 
-	GObject* po = pm->GetGObject();
-	if (po) po->UpdateSelection();
+	pm->UpdateSelection();
 }
 
 void CCmdUnselectElements::UnExecute()
@@ -1669,9 +1666,7 @@ void CCmdUnselectElements::UnExecute()
 		else
 			el.Unselect();
 	}
-
-	GObject* po = pm->GetGObject();
-	if (po) po->UpdateSelection();
+	pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1745,8 +1740,7 @@ void CCmdSelectFaces::Execute()
 		if ((n >= 0) && (n<NF)) m_pm->Face(n).Select();
 	}
 
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 void CCmdSelectFaces::UnExecute()
@@ -1760,8 +1754,7 @@ void CCmdSelectFaces::UnExecute()
 		else
 			face.Unselect();
 	}
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1805,8 +1798,7 @@ void CCmdUnselectFaces::Execute()
 {
 	m_pDoc->SetItemMode(ITEM_FACE);
 	for (int i = 0; i<m_N; ++i) m_pm->Face(m_pface[i]).Unselect();
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 void CCmdUnselectFaces::UnExecute()
@@ -1820,8 +1812,7 @@ void CCmdUnselectFaces::UnExecute()
 		else
 			face.Unselect();
 	}
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 
@@ -1891,8 +1882,7 @@ void CCmdSelectFEEdges::Execute()
 		int n = m_pedge[i];
 		if ((n >= 0) && (n<NE)) m_pm->Edge(n).Select();
 	}
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 void CCmdSelectFEEdges::UnExecute()
@@ -1906,8 +1896,7 @@ void CCmdSelectFEEdges::UnExecute()
 		else
 			edge.Unselect();
 	}
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1955,8 +1944,7 @@ void CCmdUnselectFEEdges::Execute()
 {
 	m_pDoc->SetItemMode(ITEM_EDGE);
 	for (int i = 0; i<m_N; ++i) m_pm->Edge(m_pedge[i]).Unselect();
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 void CCmdUnselectFEEdges::UnExecute()
@@ -1970,8 +1958,7 @@ void CCmdUnselectFEEdges::UnExecute()
 		else
 			edge.Unselect();
 	}
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2044,8 +2031,7 @@ void CCmdSelectFENodes::Execute()
 		int n = m_pn[i];
 		if ((n >= 0) && (n<NN)) m_pm->Node(n).Select();
 	}
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 void CCmdSelectFENodes::UnExecute()
@@ -2059,8 +2045,7 @@ void CCmdSelectFENodes::UnExecute()
 		else
 			node.Unselect();
 	}
-	GObject* po = m_pm->GetGObject();
-	if (po) po->UpdateSelection();
+	m_pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2107,8 +2092,7 @@ void CCmdUnselectNodes::Execute()
 	m_pDoc->SetItemMode(ITEM_NODE);
 	FELineMesh* pm = m_mesh;
 	for (int i = 0; i<m_N; ++i) pm->Node(m_pn[i]).Unselect();
-	GObject* po = pm->GetGObject();
-	if (po) po->UpdateSelection();
+	pm->UpdateSelection();
 }
 
 void CCmdUnselectNodes::UnExecute()
@@ -2123,8 +2107,7 @@ void CCmdUnselectNodes::UnExecute()
 		else
 			node.Unselect();
 	}
-	GObject* po = pm->GetGObject();
-	if (po) po->UpdateSelection();
+	pm->UpdateSelection();
 }
 
 //////////////////////////////////////////////////////////////////////

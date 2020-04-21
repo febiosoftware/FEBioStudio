@@ -8,7 +8,7 @@ FEU3DImport::FEU3DImport() : FEFileReader("U3D")
 {
 }
 
-bool FEU3DImport::Load(FEModel& fem, const char* szfile)
+bool FEU3DImport::Load(FEPostModel& fem, const char* szfile)
 {
 	if (Open(szfile, "rb") == false) return errf("Failed opening file");
 

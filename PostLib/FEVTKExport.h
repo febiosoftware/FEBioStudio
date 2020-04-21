@@ -1,16 +1,16 @@
 #pragma once
 #include "FEFileExport.h"
-
+#include "FEPostModel.h"
 namespace Post {
 
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 class FEVTKExport : public FEFileExport
 {
 public:
     FEVTKExport(void);
     ~FEVTKExport(void);
     
-    bool Save(FEModel& fem, const char* szfile) override;
+    bool Save(FEPostModel& fem, const char* szfile) override;
 
 	void ExportAllStates(bool b);
 

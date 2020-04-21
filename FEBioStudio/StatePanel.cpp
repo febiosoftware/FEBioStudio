@@ -1,7 +1,7 @@
 #include "StatePanel.h"
 #include "MainWindow.h"
 #include "Document.h"
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 #include <QBoxLayout>
 #include <QTableWidget>
 #include <QLabel>
@@ -32,7 +32,7 @@ public:
 		return 2;
 	}
 
-	void SetFEModel(Post::FEModel* pfem)
+	void SetFEModel(Post::FEPostModel* pfem)
 	{
 		beginResetModel();
 		m_fem = pfem;
@@ -70,7 +70,7 @@ public:
 	}
 
 private:
-	Post::FEModel*	m_fem;
+	Post::FEPostModel*	m_fem;
 };
 
 class Ui::CDlgAddState
@@ -180,7 +180,7 @@ void CStatePanel::Update(bool breset)
 	if (breset)
 	{
 		CPostDoc* pdoc = GetActiveDocument();
-		Post::FEModel* fem = (pdoc ? pdoc->GetFEModel() : nullptr);
+		Post::FEPostModel* fem = (pdoc ? pdoc->GetFEModel() : nullptr);
 		ui->data->SetFEModel(fem);
 	}
 }
@@ -198,7 +198,7 @@ void CStatePanel::on_addButton_clicked()
 	CDlgAddState dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFEModel();
 		int N = dlg.m_nstates;
 		int M = (N < 2 ? 1 : N - 1);
 		double t0 = dlg.m_minTime;
@@ -217,7 +217,7 @@ void CStatePanel::on_editButton_clicked()
 	CPostDoc& doc = *GetActiveDocument();
 	if (doc.IsValid() == false) return;
 
-	Post::FEModel& fem = *doc.GetFEModel();
+	Post::FEPostModel& fem = *doc.GetFEModel();
 	QItemSelectionModel* selection = ui->list->selectionModel();
 	QModelIndexList selRows = selection->selectedRows();
 	int ncount = selRows.count();
@@ -245,7 +245,7 @@ void CStatePanel::on_deleteButton_clicked()
 	CPostDoc& doc = *GetActiveDocument();
 	if (doc.IsValid() == false) return;
 
-	Post::FEModel& fem = *doc.GetFEModel();
+	Post::FEPostModel& fem = *doc.GetFEModel();
 	QItemSelectionModel* selection = ui->list->selectionModel();
 	QModelIndexList selRows = selection->selectedRows();
 

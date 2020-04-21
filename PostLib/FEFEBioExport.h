@@ -10,6 +10,6 @@ public:
 	FEFEBioExport(void) {}
 	~FEFEBioExport(void) {}
 
-	bool Save(FEModel& fem, const char* szfile);
+	bool Save(FEPostModel& fem, const char* szfile);
 };
 }

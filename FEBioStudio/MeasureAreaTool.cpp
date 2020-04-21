@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "MeasureAreaTool.h"
 #include "PostDoc.h"
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 #include "MainWindow.h"
 #include <PostGL/GLModel.h>
 using namespace Post;
@@ -60,7 +60,7 @@ bool CMeasureAreaTool::OnApply()
 	CPostDoc* doc = GetPostDoc();
 	if (doc && doc->IsValid())
 	{
-		Post::FEModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFEModel();
 		Post::CGLModel* mdl = doc->GetGLModel();
 		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
 		int index = mdl->CurrentTimeIndex();

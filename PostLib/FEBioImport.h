@@ -4,7 +4,7 @@
 
 namespace Post {
 
-class FEModel;
+class FEPostModel;
 class FEPostMesh;
 
 class FEBioImport :	public FEFileReader
@@ -13,16 +13,16 @@ public:
 	FEBioImport();
 	~FEBioImport();
 
-	bool Load(FEModel& fem, const char* szfile);
+	bool Load(FEPostModel& fem, const char* szfile);
 
 protected:
-	void ParseMaterialSection(FEModel& fem, XMLTag& tag);
-	void ParseGeometrySection(FEModel& fem, XMLTag& tag);
-	void ParseGeometrySection2(FEModel& fem, XMLTag& tag);
+	void ParseMaterialSection(FEPostModel& fem, XMLTag& tag);
+	void ParseGeometrySection(FEPostModel& fem, XMLTag& tag);
+	void ParseGeometrySection2(FEPostModel& fem, XMLTag& tag);
 	bool ParseVersion(XMLTag& tag);
 
 protected:
-	FEModel*	m_pfem;
+	FEPostModel*	m_pfem;
 	FEPostMesh*		m_pm;
 
 	int		m_nmat;

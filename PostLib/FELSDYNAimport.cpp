@@ -6,6 +6,7 @@
 #include "FELSDYNAimport.h"
 #include "FEDataManager.h"
 #include "FEMeshData_T.h"
+#include "FEPostModel.h"
 #include "constants.h"
 
 using namespace Post;
@@ -46,7 +47,7 @@ char* FELSDYNAimport::get_line(char* szline)
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAimport::Load(FEModel& fem, const char* szfile)
+bool FELSDYNAimport::Load(FEPostModel& fem, const char* szfile)
 {
 	// open the file
 	if (Open(szfile, "rt") == false) return errf("Failed opening file.");
@@ -216,7 +217,7 @@ bool FELSDYNAimport::Read_Nodal_Results()
 }
 
 //-----------------------------------------------------------------------------
-void FELSDYNAimport::BuildMaterials(FEModel& fem)
+void FELSDYNAimport::BuildMaterials(FEPostModel& fem)
 {
 	int shells = m_shell.size();
 	int solids = m_solid.size();
@@ -250,7 +251,7 @@ void FELSDYNAimport::BuildMaterials(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAimport::BuildMesh(FEModel& fem)
+bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 {
 	int i;
 

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FEAsciiExport.h"
+#include "FEPostModel.h"
 #include <stdio.h>
 using namespace Post;
 
@@ -71,7 +72,7 @@ FEASCIIExport::FEASCIIExport()
 	m_szfmt[0] = 0;
 }
 
-bool FEASCIIExport::Save(FEModel* pfem, int n0, int n1, const char* szfile)
+bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 {
 	FEPostMesh& m = *pfem->GetFEMesh(0);
 

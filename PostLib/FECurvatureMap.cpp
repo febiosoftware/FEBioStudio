@@ -68,7 +68,7 @@ void FECongruencyMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-void FECongruencyMap::Apply(FEModel& fem)
+void FECongruencyMap::Apply(FEPostModel& fem)
 {
 	// store the model
 	m_pfem = &fem;

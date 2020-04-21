@@ -7,7 +7,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include "Document.h"
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 #include <MeshTools/SphereFit.h>
 #include "PropertyListView.h"
 #include <PostLib/FEPointCongruency.h>
@@ -136,7 +136,7 @@ bool CImportLinesTool::ReadOldFormat(const char* szfile)
 	FILE* fp = fopen(szfile, "rt");
 	if (fp == 0) return false;
 
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	char szline[256] = { 0 };
 	while (!feof(fp))
@@ -171,7 +171,7 @@ struct FRAG
 	double	user_data;
 };
 
-vec3f GetCoordinatesFromFrag(Post::FEModel& fem, int nstate, FRAG& a)
+vec3f GetCoordinatesFromFrag(Post::FEPostModel& fem, int nstate, FRAG& a)
 {
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	vec3f x[FEElement::MAX_NODES];
@@ -199,7 +199,7 @@ int CImportLinesTool::ReadAng2Format(const char* szfile)
 	FILE* fp = fopen(szfile, "rb");
 	if (fp == 0) return 0;
 
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	// read the magic number
@@ -423,7 +423,7 @@ void CImportPointsTool::OnApply()
 			return;
 		}
 
-		Post::FEModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFEModel();
 
 		char szline[256] = {0};
 		while (!feof(fp))

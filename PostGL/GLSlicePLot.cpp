@@ -157,7 +157,7 @@ void CGLSlicePlot::RenderSlice(float ref)
 
 	// get the mesh
 	CGLModel* mdl = GetModel();
-	FEModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	vec3f norm = m_norm;
@@ -265,7 +265,7 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 	CGLModel* mdl = GetModel();
 
 	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFEModel();
 
 	int NN = pm->Nodes();
 	int NS = pfem->GetStates();

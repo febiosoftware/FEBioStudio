@@ -1216,7 +1216,7 @@ void CMainWindow::UpdatePostToolbar()
 	Post::CGLColorMap* map = mdl->GetColorMap();
 
 	// rebuild the menu
-	Post::FEModel* pfem = doc->GetFEModel();
+	Post::FEPostModel* pfem = doc->GetFEModel();
 	ui->selectData->BuildMenu(pfem, Post::DATA_SCALAR);
 	ui->selectData->blockSignals(true);
 	ui->selectData->setCurrentValue(map->GetEvalField());
@@ -1229,7 +1229,7 @@ void CMainWindow::UpdatePostToolbar()
 	// update the state indicator
 	int ntime = mdl->CurrentTimeIndex() + 1;
 
-	Post::FEModel* fem = mdl->GetFEModel();
+	Post::FEPostModel* fem = mdl->GetFEModel();
 	int states = fem->GetStates();
 	QString suff = QString("/%1").arg(states);
 	ui->pspin->setSuffix(suff);

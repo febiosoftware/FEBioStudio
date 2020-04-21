@@ -7,7 +7,7 @@ class CMainWindow;
 class CPostDoc;
 
 namespace Post {
-	class FEModel;
+	class FEPostModel;
 }
 
 class CSummaryWindow : public CGraphWindow
@@ -26,10 +26,10 @@ public:
 	void Update(bool breset, bool bfit = false) override;
 
 private:
-	RANGE EvalNodeRange(Post::FEModel& fem, int ntime, bool bsel);
-	RANGE EvalEdgeRange(Post::FEModel& fem, int ntime, bool bsel);
-	RANGE EvalFaceRange(Post::FEModel& fem, int ntime, bool bsel, bool bvol);
-	RANGE EvalElemRange(Post::FEModel& fem, int ntime, bool bsel, bool bvol);
+	RANGE EvalNodeRange(Post::FEPostModel& fem, int ntime, bool bsel);
+	RANGE EvalEdgeRange(Post::FEPostModel& fem, int ntime, bool bsel);
+	RANGE EvalFaceRange(Post::FEPostModel& fem, int ntime, bool bsel, bool bvol);
+	RANGE EvalElemRange(Post::FEPostModel& fem, int ntime, bool bsel, bool bvol);
 
 private:
 	int		m_ncurrentData;

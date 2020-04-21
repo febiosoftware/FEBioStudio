@@ -7,7 +7,7 @@
 class CGLView;
 
 namespace Post {
-	class FEModel;
+	class FEPostModel;
 	class CGLModel;
 	class FEDataField;
 	class CPalette;
@@ -119,7 +119,7 @@ public:
 
 	void SetDataField(int n);
 
-	Post::FEModel* GetFEModel();
+	Post::FEPostModel* GetFEModel();
 
 	Post::CGLModel* GetGLModel();
 

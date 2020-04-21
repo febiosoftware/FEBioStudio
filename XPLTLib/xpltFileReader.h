@@ -21,7 +21,7 @@ public:
 	xpltParser(xpltFileReader* xplt);
 	virtual ~xpltParser();
 
-	virtual bool Load(Post::FEModel& fem) = 0;
+	virtual bool Load(Post::FEPostModel& fem) = 0;
 
 	bool errf(const char* sz);
 
@@ -68,7 +68,7 @@ public:
 	xpltFileReader();
 	~xpltFileReader();
 
-	bool Load(Post::FEModel& fem, const char* szfile);
+	bool Load(Post::FEPostModel& fem, const char* szfile);
 
 	void SetReadStateFlag(int n) { m_read_state_flag = n; }
 	void SetReadStatesList(const vector<int>& l) { m_state_list = l; }

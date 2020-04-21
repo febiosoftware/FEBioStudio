@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FENikeImport.h"
 #include <stdlib.h>
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include <FSCore/color.h>
 
 using namespace Post;
@@ -17,7 +17,7 @@ FENikeImport::~FENikeImport(void)
 
 }
 
-bool FENikeImport::Load(FEModel &fem, const char *szfile)
+bool FENikeImport::Load(FEPostModel &fem, const char *szfile)
 {
 	// open the file
 	if (Open(szfile, "rt") == false) return errf("Failed opening NIKE file.");

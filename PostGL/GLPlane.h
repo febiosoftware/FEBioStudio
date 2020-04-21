@@ -1,13 +1,15 @@
 #pragma once
-#include "PostLib/GLObject.h"
-#include "PostLib/FEModel.h"
+#include <PostLib/GLObject.h>
 
 namespace Post {
+
+	class FEPostModel;
+
 //-----------------------------------------------------------------------------
 class CGLPlane : public CGLVisual
 {
 public:
-	CGLPlane(Post::FEModel* pfem);
+	CGLPlane(Post::FEPostModel* pfem);
 	~CGLPlane(void);
 
 	void Render(CGLContext& rc);
@@ -17,7 +19,7 @@ public:
 	vec3d Normal() { return m_e[2]; }
 
 protected:
-	Post::FEModel*	m_pfem;	// pointer to mesh
+	Post::FEPostModel*	m_pfem;	// pointer to mesh
 
 	vec3d		m_rc;
 	vec3d		m_e[3];

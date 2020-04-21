@@ -22,13 +22,13 @@ private:
 class CDlgExportLSDYNAPlot_UI;
 
 namespace Post {
-	class FEModel;
+	class FEPostModel;
 }
 
 class CDlgExportLSDYNAPlot : public QDialog
 {
 public:
-	CDlgExportLSDYNAPlot(Post::FEModel* fem, QWidget* parent);
+	CDlgExportLSDYNAPlot(Post::FEPostModel* fem, QWidget* parent);
 
 	void accept();
 

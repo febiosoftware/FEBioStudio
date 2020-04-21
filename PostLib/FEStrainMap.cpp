@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEStrainMap.h"
 #include "FEMeshData_T.h"
+#include "FEPostModel.h"
 #include "tools.h"
 
 using namespace Post;
@@ -95,7 +96,7 @@ void FEStrainMap::SetBackSurface2(std::vector<int>& s)
 }
 
 // apply the map
-void FEStrainMap::Apply(FEModel& fem)
+void FEStrainMap::Apply(FEPostModel& fem)
 {
 	// relative distance to allow penetration
 	double distTol = 1.0;

@@ -16,7 +16,7 @@
 #include "MainWindow.h"
 #include "Document.h"
 #include <PostLib/FEPostMesh.h>
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 #include <PostLib/GDecoration.h>
 #include <PostGL/GLModel.h>
 #include "PointDistanceTool.h"

@@ -2,6 +2,7 @@
 #include "FEASCIIImport.h"
 #include "FEDataManager.h"
 #include "FEMeshData_T.h"
+#include "FEPostModel.h"
 #include <cctype>
 #include <stdlib.h>
 using namespace Post;
@@ -61,7 +62,7 @@ FEASCIIImport::~FEASCIIImport(void)
 {
 }
 
-bool FEASCIIImport::Load(FEModel &fem, const char *szfile)
+bool FEASCIIImport::Load(FEPostModel &fem, const char *szfile)
 {
 	// open the text file
 	if (Open(szfile, "rt") == false) return false;
@@ -395,7 +396,7 @@ bool FEASCIIImport::ReadElements(FEASCIIImport::ZONE& zone)
 	return true;
 }
 
-bool FEASCIIImport::BuildMesh(FEModel &fem)
+bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 {
 	// make sure we have at least one zone
 	if (m_Zone.empty()) return false;

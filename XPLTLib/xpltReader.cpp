@@ -4,6 +4,7 @@
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEState.h>
 #include <PostLib/FEPostMesh.h>
+#include <PostLib/FEPostModel.h>
 #include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
@@ -81,7 +82,7 @@ void XpltReader::Clear()
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::Load(FEModel& fem)
+bool XpltReader::Load(FEPostModel& fem)
 {
 	// make sure all data is cleared
 	Clear();
@@ -168,7 +169,7 @@ bool XpltReader::Load(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // Header section is already read by xpltFileReader
-bool XpltReader::ReadRootSection(FEModel& fem)
+bool XpltReader::ReadRootSection(FEPostModel& fem)
 {
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -225,7 +226,7 @@ bool XpltReader::ReadDictItem(DICT_ITEM& it)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadDictionary(FEModel& fem)
+bool XpltReader::ReadDictionary(FEPostModel& fem)
 {
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -600,7 +601,7 @@ bool XpltReader::ReadFaceDicItems()
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadMaterials(FEModel& fem)
+bool XpltReader::ReadMaterials(FEPostModel& fem)
 {
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -633,7 +634,7 @@ bool XpltReader::ReadMaterials(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void XpltReader::CreateMaterials(FEModel& fem)
+void XpltReader::CreateMaterials(FEPostModel& fem)
 {
 	// initialize material properties
 	fem.ClearMaterials();
@@ -647,7 +648,7 @@ void XpltReader::CreateMaterials(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadMesh(FEModel &fem)
+bool XpltReader::ReadMesh(FEPostModel &fem)
 {
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -668,7 +669,7 @@ bool XpltReader::ReadMesh(FEModel &fem)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadNodeSection(FEModel &fem)
+bool XpltReader::ReadNodeSection(FEPostModel &fem)
 {
 	const xpltFileReader::HEADER& hdr = m_xplt->GetHeader();
 	vector<float> a(3 * hdr.nn);
@@ -696,7 +697,7 @@ bool XpltReader::ReadNodeSection(FEModel &fem)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadDomainSection(FEModel &fem)
+bool XpltReader::ReadDomainSection(FEPostModel &fem)
 {
 	int nd = 0, index = 0;
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
@@ -798,7 +799,7 @@ bool XpltReader::ReadDomainSection(FEModel &fem)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadSurfaceSection(FEModel &fem)
+bool XpltReader::ReadSurfaceSection(FEPostModel &fem)
 {
 	const xpltFileReader::HEADER& hdr = m_xplt->GetHeader();
 	int nodes_per_facet = hdr.nmax_facet_nodes;
@@ -903,7 +904,7 @@ bool XpltReader::ReadSurfaceSection(FEModel &fem)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadNodeSetSection(FEModel& fem)
+bool XpltReader::ReadNodeSetSection(FEPostModel& fem)
 {
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
@@ -956,7 +957,7 @@ bool XpltReader::ReadNodeSetSection(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::BuildMesh(FEModel &fem)
+bool XpltReader::BuildMesh(FEPostModel &fem)
 {
 	// clear the state data
 	fem.ClearStates();
@@ -1121,7 +1122,7 @@ bool XpltReader::BuildMesh(FEModel &fem)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadStateSection(FEModel& fem)
+bool XpltReader::ReadStateSection(FEPostModel& fem)
 {
 	// get the mesh
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
@@ -1199,19 +1200,19 @@ bool XpltReader::ReadStateSection(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadGlobalData(FEModel& fem, FEState* pstate)
+bool XpltReader::ReadGlobalData(FEPostModel& fem, FEState* pstate)
 {
 	return false;
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadMaterialData(FEModel& fem, FEState* pstate)
+bool XpltReader::ReadMaterialData(FEPostModel& fem, FEState* pstate)
 {
 	return false;
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadNodeData(FEModel& fem, FEState* pstate)
+bool XpltReader::ReadNodeData(FEPostModel& fem, FEState* pstate)
 {
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	FEDataManager& dm = *fem.GetDataManager();
@@ -1311,7 +1312,7 @@ bool XpltReader::ReadNodeData(FEModel& fem, FEState* pstate)
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadElemData(FEModel &fem, FEState* pstate)
+bool XpltReader::ReadElemData(FEPostModel &fem, FEState* pstate)
 {
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	FEDataManager& dm = *fem.GetDataManager();
@@ -1687,7 +1688,7 @@ bool XpltReader::ReadElemData_MULT(XpltReader::Domain& dom, Post::FEMeshData& s,
 }
 
 //-----------------------------------------------------------------------------
-bool XpltReader::ReadFaceData(FEModel& fem, FEState* pstate)
+bool XpltReader::ReadFaceData(FEPostModel& fem, FEState* pstate)
 {
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	FEDataManager& dm = *fem.GetDataManager();

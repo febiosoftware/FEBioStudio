@@ -56,14 +56,14 @@ public:
 	FELSDYNAPlotImport();
 	~FELSDYNAPlotImport();
 
-	bool Load(FEModel& fem, const char* szfile);
+	bool Load(FEPostModel& fem, const char* szfile);
 
 protected:
-	bool ReadHeader   (FEModel& fem);
-	bool ReadMesh     (FEModel& fem);
-	bool ReadStates   (FEModel& fem);
+	bool ReadHeader   (FEPostModel& fem);
+	bool ReadMesh     (FEPostModel& fem);
+	bool ReadStates   (FEPostModel& fem);
 
-	void CreateMaterials(FEModel& fem);
+	void CreateMaterials(FEPostModel& fem);
 
 protected:
 	int ReadData(void* pd, size_t nsize, size_t ncnt, bool bdump = false);
@@ -84,6 +84,6 @@ protected:
 class FELSDYNAPlotExport
 {
 public:
-	bool Save(FEModel& fem, const char* szfile, bool bflag[6], int ncode[6]);
+	bool Save(FEPostModel& fem, const char* szfile, bool bflag[6], int ncode[6]);
 };
 }

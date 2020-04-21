@@ -1829,7 +1829,7 @@ void CGLView::PositionCamera()
 		int* nt = m_ntrack;
 		if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { m_btrack = false; return; }
 
-		Post::FEModel& fem = *pdoc->GetFEModel();
+		Post::FEPostModel& fem = *pdoc->GetFEModel();
 
 		vec3d a = pm->Node(nt[0]).r;
 		vec3d b = pm->Node(nt[1]).r;
@@ -1893,7 +1893,7 @@ void CGLView::SetTrackingData(int n[3])
 	int* nt = m_ntrack;
 	if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
 
-	Post::FEModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFEModel();
 	vec3d a = pm->Node(nt[0]).r;
 	vec3d b = pm->Node(nt[1]).r;
 	vec3d c = pm->Node(nt[2]).r;
@@ -6827,7 +6827,7 @@ void CGLView::RenderFEFaces(GObject* po)
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
-	GLColor col = pm->GetGObject()->GetColor();
+	GLColor col = po->GetColor();
 	GLColor dif = col;
 	SetMatProps(0);
 	glColor3ub(dif.r, dif.g, dif.b);
@@ -8048,7 +8048,7 @@ void CGLView::RenderTags()
 	if (pdoc == nullptr) return;
 	
 	Post::CGLModel* model = pdoc->GetGLModel();
-	Post::FEModel* fem = pdoc->GetFEModel();
+	Post::FEPostModel* fem = pdoc->GetFEModel();
 	if (fem == nullptr) return;
 	BOX box = fem->GetBoundingBox();
 

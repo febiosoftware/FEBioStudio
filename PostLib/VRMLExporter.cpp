@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "VRMLExporter.h"
+#include "FEPostModel.h"
 using namespace Post;
 //-----------------------------------------------------------------------------
 
@@ -24,7 +25,7 @@ void VRMLExporter::dectab()
 	if (l > 0) m_sztab[l-1] = 0;
 }
 
-bool VRMLExporter::Save(FEModel* pscene, const char* szfile)
+bool VRMLExporter::Save(FEPostModel* pscene, const char* szfile)
 {
 	// open the file
 	m_fp = fopen(szfile, "wt");

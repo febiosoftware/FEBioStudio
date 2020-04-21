@@ -4,13 +4,17 @@
 using namespace std;
 
 namespace Post {
+
+// forward declaration
+class FEPostModel;
+
 //-----------------------------------------------------------------------------
 // The data manager stores the attributes (name and type) of the different
 // data fields.
 class FEDataManager
 {
 public:
-	FEDataManager(FEModel* pm);
+	FEDataManager(FEPostModel* pm);
 	~FEDataManager(void);
 
 	//! add a data field
@@ -36,6 +40,6 @@ public:
 
 protected:
 	vector<FEDataField*>	m_Data;
-	FEModel*	m_pm;
+	FEPostModel*	m_pm;
 };
 }

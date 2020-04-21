@@ -8,7 +8,7 @@ using namespace std;
 //-----------------------------------------------------------------------------
 // forward declaration of the mesh
 namespace Post {
-	class FEModel;
+	class FEPostModel;
 	class FEPostMesh;
 
 //-----------------------------------------------------------------------------
@@ -66,7 +66,7 @@ struct POINTDATA
 class FERefState
 {
 public:
-	FERefState(FEModel* fem);
+	FERefState(FEPostModel* fem);
 
 public:
 	vector<NODEDATA>	m_Node;
@@ -78,8 +78,8 @@ public:
 class FEState
 {
 public:
-	FEState(float time, FEModel* fem, FEPostMesh* mesh);
-	FEState(float time, FEModel* fem, FEState* state);
+	FEState(float time, FEPostModel* fem, FEPostMesh* mesh);
+	FEState(float time, FEPostModel* fem, FEState* state);
 
 	void SetID(int n);
 
@@ -98,12 +98,12 @@ public:
 	void SetFEMesh(FEPostMesh* pm) { m_mesh = pm; }
 	FEPostMesh* GetFEMesh() { return m_mesh; }
 
-	FEModel* GetFEModel() { return m_fem; }
+	FEPostModel* GetFEModel() { return m_fem; }
 
 public:
 	float	m_time;		// time value
 	int		m_nField;	// the field whos values are contained in m_pval
-	int		m_id;		// index in state array of FEModel
+	int		m_id;		// index in state array of FEPostModel
 	bool	m_bsmooth;
 
 	vector<NODEDATA>	m_NODE;		// nodal data
@@ -120,8 +120,8 @@ public:
 	FEMeshDataList	m_Data;	// data
 
 public:
-	FEModel*	m_fem;	//!< model this state belongs to
-	FERefState*	m_ref;	//!< the reference state for this state
-	FEPostMesh*	m_mesh;	//!< The mesh this state uses
+	FEPostModel*	m_fem;	//!< model this state belongs to
+	FERefState*		m_ref;	//!< the reference state for this state
+	FEPostMesh*		m_mesh;	//!< The mesh this state uses
 };
 }

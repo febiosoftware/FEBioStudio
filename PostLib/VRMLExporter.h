@@ -1,16 +1,17 @@
 #pragma once
-
-#include "FEModel.h"
 #include <list>
 #include <stdio.h>
 namespace Post {
+
+	class FEPostModel;
+
 class VRMLExporter
 {
 public:
 	VRMLExporter(void);
 	~VRMLExporter(void);
 
-	bool Save(FEModel* pscene, const char* szfile);
+	bool Save(FEPostModel* pscene, const char* szfile);
 
 protected:
 	void inctab();
@@ -26,7 +27,7 @@ protected:
 	void write_timer();
 
 protected:
-	FEModel*	m_pscene;
+	FEPostModel*	m_pscene;
 	FILE*	m_fp;
 	char	m_sztab[256];
 };

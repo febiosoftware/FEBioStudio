@@ -21,12 +21,12 @@ public:
 	GMeshImport(void);
 	~GMeshImport(void);
 
-	bool Load(FEModel& fem, const char* szfile);
+	bool Load(FEPostModel& fem, const char* szfile);
 
 protected:
 	bool ReadNodes();
 	bool ReadElements();
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FEPostModel& fem);
 
 protected:
 	std::vector<NODE>	m_Node;

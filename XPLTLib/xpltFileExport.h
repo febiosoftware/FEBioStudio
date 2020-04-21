@@ -4,7 +4,7 @@
 namespace Post {
 //-----------------------------------------------------------------------------
 class FEPostMesh;
-class FEModel;
+class FEPostModel;
 class FEDataField;
 class FEPart;
 class FESurface;
@@ -121,7 +121,7 @@ public:
 	xpltFileExport();
 
 	// Save the model to file. 
-	bool Save(FEModel& fem, const char* szfile);
+	bool Save(FEPostModel& fem, const char* szfile);
 
 	// get the error message (if any)
 	const char* GetErrorMessage() const { return m_szerr; }
@@ -130,23 +130,23 @@ public:
 	void SetCompression(bool b) { m_ncompress = (b ? 1 : 0); }
 
 protected:
-	bool WriteRoot(FEModel& fem);
-	bool WriteHeader    (FEModel& fem);
-	bool WriteDictionary(FEModel& fem);
-	bool WriteMaterials (FEModel& fem);
-	bool WriteGeometry  (FEModel& fem);
+	bool WriteRoot(FEPostModel& fem);
+	bool WriteHeader    (FEPostModel& fem);
+	bool WriteDictionary(FEPostModel& fem);
+	bool WriteMaterials (FEPostModel& fem);
+	bool WriteGeometry  (FEPostModel& fem);
 	bool WriteDataField (FEDataField& data);
 
-	bool WriteNodeSection   (FEModel& fem);
+	bool WriteNodeSection   (FEPostModel& fem);
 	bool WritePartSection   (FEPostMesh& m);
 	bool WriteSurfaceSection(FEPostMesh& m);
 
 	bool WritePart(FEPostMesh& m, FEDomain& part);
 
-	bool WriteState(FEModel& fem, FEState& state);
-	bool WriteNodeData(FEModel& fem, FEState& state);
-	bool WriteElemData(FEModel& fem, FEState& state);
-	bool WriteFaceData(FEModel& fem, FEState& state);
+	bool WriteState(FEPostModel& fem, FEState& state);
+	bool WriteNodeData(FEPostModel& fem, FEState& state);
+	bool WriteElemData(FEPostModel& fem, FEState& state);
+	bool WriteFaceData(FEPostModel& fem, FEState& state);
 
 	bool FillNodeDataArray(vector<float>& val, FEMeshData& data);
 	bool FillElemDataArray(vector<float>& val, FEMeshData& data, FEPart& part);

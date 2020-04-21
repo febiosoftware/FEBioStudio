@@ -22,7 +22,7 @@ void CGLDisplacementMap::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-		FEModel* pfem = GetModel()->GetFEModel();
+		FEPostModel* pfem = GetModel()->GetFEModel();
 
 		bool bupdate = false;
 		int dispField = GetIntValue(DATA_FIELD);
@@ -43,7 +43,7 @@ void CGLDisplacementMap::UpdateData(bool bsave)
 	}
 	else
 	{
-		FEModel* pfem = GetModel()->GetFEModel();
+		FEPostModel* pfem = GetModel()->GetFEModel();
 		if (pfem) SetIntValue(DATA_FIELD, pfem->GetDisplacementField());
 		SetFloatValue(SCALE, m_scl);
 	}
@@ -73,7 +73,7 @@ void CGLDisplacementMap::Update(int ntime, float dt, bool breset)
 
 	CGLModel* po = GetModel();
 	FEMeshBase* pm = po->GetActiveMesh();
-	FEModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFEModel();
 
 	// get the number of states and make sure we have something
 	int N = pfem->GetStates();
@@ -144,7 +144,7 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 {
 	CGLModel* po = GetModel();
 	FEMeshBase* pm = po->GetActiveMesh();
-	FEModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFEModel();
 
 	int N = pfem->GetStates();
 

@@ -1,10 +1,11 @@
 #pragma once
-#include "FEModel.h"
 #include <vector>
+#include <MathLib/math3d.h>
 
 namespace Post {
 
-class FEModel;
+class FEPostModel;
+class FEPostMesh;
 
 class FEStrainMap
 {
@@ -37,7 +38,7 @@ public:
 	void SetBackSurface2(std::vector<int>& s);
 
 	// apply the map
-	void Apply(FEModel& fem);
+	void Apply(FEPostModel& fem);
 
 protected:
 	// update the surface normal positions
@@ -58,7 +59,7 @@ protected:
 	Surface		m_front2;
 	Surface		m_back2;
 
-	FEModel*	m_fem;
+	FEPostModel*	m_fem;
 
 	double	m_tol;
 };

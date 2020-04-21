@@ -38,7 +38,7 @@ public:
 	FELSDYNAimport();
 	virtual ~FELSDYNAimport();
 
-	bool Load(FEModel& fem, const char* szfile);
+	bool Load(FEPostModel& fem, const char* szfile);
 
 	int FindNode(int id, std::list<NODE>::iterator& pn);
 
@@ -53,8 +53,8 @@ protected:
 	bool Read_Node();
 	bool Read_Nodal_Results();
 
-	void BuildMaterials(FEModel& fem);
-	bool BuildMesh(FEModel& fem);
+	void BuildMaterials(FEPostModel& fem);
+	bool BuildMesh(FEPostModel& fem);
 
 protected:
 	std::list<ELEMENT_SOLID>		m_solid;
@@ -67,7 +67,7 @@ protected:
 	bool	m_bshellthick;	// shell thicknesses included?
 	bool	m_bdispl;		// define displacement field?
 
-	char			m_szline[256];
+	char	m_szline[256];
 };
 
 }

@@ -5,6 +5,8 @@
 
 namespace Post {
 
+	class FEState;
+
 class CGLPlaneCutPlot : public CGLPlot  
 {
 	enum { SHOW_PLANE, CUT_HIDDEN, SHOW_MESH, TRANSPARENCY, NORMAL_X, NORMAL_Y, NORMAL_Z, OFFSET };

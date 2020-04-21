@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FERAWImageReader.h"
 #include "FEMeshData_T.h"
+#include "FEPostModel.h"
 
 using namespace Post;
 
@@ -14,7 +15,7 @@ FERAWImageReader::FERAWImageReader() : FEFileReader("RAW")
 }
 
 //-----------------------------------------------------------------------------
-bool FERAWImageReader::Load(FEModel& fem, const char* szfile)
+bool FERAWImageReader::Load(FEPostModel& fem, const char* szfile)
 {
 	if ((m_ops.nx <= 0) || (m_ops.ny <= 0) || (m_ops.nz <= 0)) return errf("Invalid image dimensions");
 	if (m_ops.nformat != 0) return errf("Invalid image format");

@@ -4,10 +4,9 @@
 #include <string>
 
 //-----------------------------------------------------------------------------
-// forward declaration of the FEModel class
 namespace Post {
 
-class FEModel;
+// forward declarations
 class CGLModel;
 
 //-----------------------------------------------------------------------------

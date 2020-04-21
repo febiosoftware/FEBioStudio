@@ -2,7 +2,7 @@
 #include "xpltFileReader.h"
 #include "xpltReader.h"
 #include "xpltReader2.h"
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 
 xpltParser::xpltParser(xpltFileReader* xplt) : m_xplt(xplt), m_ar(xplt->GetArchive())
 {
@@ -34,7 +34,7 @@ xpltFileReader::~xpltFileReader()
 {
 }
 
-bool xpltFileReader::Load(Post::FEModel& fem, const char* szfile)
+bool xpltFileReader::Load(Post::FEPostModel& fem, const char* szfile)
 {
 	// open the file
 	if (Open(szfile, "rb") == false) return errf("Failed opening file.");

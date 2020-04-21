@@ -10,7 +10,7 @@ FELSDYNAExport::FELSDYNAExport()
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAExport::Save(FEModel &fem, int ntime, const char *szfile)
+bool FELSDYNAExport::Save(FEPostModel &fem, int ntime, const char *szfile)
 {
 	if (m_bsurf)
 	{
@@ -21,7 +21,7 @@ bool FELSDYNAExport::Save(FEModel &fem, int ntime, const char *szfile)
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAExport::ExportSurface(FEModel &fem, int ntime, const char *szfile)
+bool FELSDYNAExport::ExportSurface(FEPostModel &fem, int ntime, const char *szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -92,7 +92,7 @@ bool FELSDYNAExport::ExportSurface(FEModel &fem, int ntime, const char *szfile)
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAExport::ExportSelectedSurface(FEModel &fem, int ntime, const char *szfile)
+bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const char *szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -170,7 +170,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEModel &fem, int ntime, const char *
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAExport::ExportMesh(FEModel& fem, int ntime, const char* szfile)
+bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 {
 	int i, j;
 
@@ -309,7 +309,7 @@ bool FELSDYNAExport::ExportMesh(FEModel& fem, int ntime, const char* szfile)
 }
 
 //-----------------------------------------------------------------------------
-void FELSDYNAExport::NodalResults(FEModel &fem, int ntime, FILE* fp)
+void FELSDYNAExport::NodalResults(FEPostModel &fem, int ntime, FILE* fp)
 {
 	FEPostMesh& m = *fem.GetFEMesh(0);
 	int NN = m.Nodes();

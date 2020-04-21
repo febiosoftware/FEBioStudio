@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEBioImport.h"
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include "FEPostMesh.h"
 using namespace Post;
 
@@ -35,7 +35,7 @@ bool FEBioImport::ParseVersion(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioImport::Load(FEModel& fem, const char* szfile)
+bool FEBioImport::Load(FEPostModel& fem, const char* szfile)
 {
 	if (Open(szfile, "rt") == false) return errf("Failed opening FEBio input file.");
 
@@ -123,7 +123,7 @@ bool FEBioImport::Load(FEModel& fem, const char* szfile)
 	return true;
 }
 
-void FEBioImport::ParseMaterialSection(FEModel& fem, XMLTag& tag)
+void FEBioImport::ParseMaterialSection(FEPostModel& fem, XMLTag& tag)
 {
 	FEMaterial mat;
 
@@ -150,7 +150,7 @@ void FEBioImport::ParseMaterialSection(FEModel& fem, XMLTag& tag)
 	}
 }
 
-void FEBioImport::ParseGeometrySection(FEModel &fem, XMLTag &tag)
+void FEBioImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 {
 	int i, j;
 
@@ -232,7 +232,7 @@ void FEBioImport::ParseGeometrySection(FEModel &fem, XMLTag &tag)
 	while (!tag.isend());
 }
 
-void FEBioImport::ParseGeometrySection2(FEModel &fem, XMLTag &tag)
+void FEBioImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
 {
 	// make sure the section is not empty
 	if (tag.isleaf()) return;

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <PostLib/FEPostModel.h>
 
 #ifdef WIN32
 #include <Windows.h>
@@ -15,7 +16,7 @@
 #include "GLPlane.h"
 using namespace Post;
 
-CGLPlane::CGLPlane(FEModel* pm)
+CGLPlane::CGLPlane(FEPostModel* pm)
 {
 	m_pfem = pm;
 	m_e[2] = vec3d(0,0,1);

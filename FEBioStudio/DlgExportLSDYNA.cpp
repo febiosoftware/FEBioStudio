@@ -60,7 +60,7 @@ class CDlgExportLSDYNAPlot_UI
 public:
 	QCheckBox*			m_flag[6];
 	CDataFieldSelector*	m_code[6];
-	FEModel*			m_fem;
+	FEPostModel*		m_fem;
 
 public:
 	void setup(QDialog* dlg)
@@ -93,7 +93,7 @@ public:
 	}
 };
 
-CDlgExportLSDYNAPlot::CDlgExportLSDYNAPlot(FEModel* fem, QWidget* parent) : QDialog(parent), ui(new CDlgExportLSDYNAPlot_UI)
+CDlgExportLSDYNAPlot::CDlgExportLSDYNAPlot(FEPostModel* fem, QWidget* parent) : QDialog(parent), ui(new CDlgExportLSDYNAPlot_UI)
 {
 	for (int i = 0; i < 6; ++i)
 	{

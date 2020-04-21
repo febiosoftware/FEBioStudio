@@ -1,6 +1,6 @@
 #pragma once
 #include "GLPlot.h"
-
+#include <PostLib/FEState.h>
 namespace Post {
 
 //-----------------------------------------------------------------------------

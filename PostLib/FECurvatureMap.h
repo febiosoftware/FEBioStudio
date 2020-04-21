@@ -1,5 +1,5 @@
 #pragma once
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include <MathLib/math3d.h>
 #include "FEMeshData_T.h"
 
@@ -41,7 +41,7 @@ public:
 	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
 
 	// apply the map
-	void Apply(FEModel& fem);
+	void Apply(FEPostModel& fem);
 
 protected:
 	// project r onto the surface
@@ -60,9 +60,9 @@ protected:
 	void EvalSurface(Surface& surf, FEState* ps);
 
 protected:
-	Surface		m_surf1;
-	Surface		m_surf2;
-	FEModel*	m_pfem;
+	Surface			m_surf1;
+	Surface			m_surf2;
+	FEPostModel*	m_pfem;
 
 	double	m_tol;	// projection tolerance
 };

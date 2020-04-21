@@ -28,19 +28,19 @@ public:
 
 	// This function is called whenever the model changes
 	// When the model is deleted it will call this function with 0
-	virtual void Update(FEModel* pfem) = 0;
+	virtual void Update(FEPostModel* pfem) = 0;
 };
 
 //-----------------------------------------------------------------------------
-// Class that describes an FEModel. A model consists of a mesh (in the future
+// Class that describes an FEPostModel. A model consists of a mesh (in the future
 // there can be multiple meshes to support remeshing), a list of materials
 // and a list of states. The states contain the data associated with the model
-class FEModel  
+class FEPostModel  
 {
 public:
 	// con-/destructor
-	FEModel();
-	virtual ~FEModel();
+	FEPostModel();
+	virtual ~FEPostModel();
 
 	// clear all model data
 	void Clear();
@@ -185,8 +185,8 @@ public:
 	void UpdateMeshState(int ntime);
 
 public:
-	static void SetInstance(FEModel* fem);
-	static FEModel* GetInstance();
+	static void SetInstance(FEPostModel* fem);
+	static FEPostModel* GetInstance();
 
 	MetaData& GetMetaData() { return m_meta; }
 
@@ -222,6 +222,6 @@ protected:
 	// dependants
 	vector<FEModelDependant*>	m_Dependants;
 
-	static FEModel*	m_pThis;
+	static FEPostModel*	m_pThis;
 };
 } // namespace Post

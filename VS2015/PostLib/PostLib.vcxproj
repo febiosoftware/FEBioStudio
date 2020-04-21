@@ -169,12 +169,12 @@
     <ClCompile Include="..\..\PostLib\FEMaterial.cpp" />
     <ClCompile Include="..\..\PostLib\FEMathData.cpp" />
     <ClCompile Include="..\..\PostLib\FEMeshData.cpp" />
-    <ClCompile Include="..\..\PostLib\FEModel.cpp" />
     <ClCompile Include="..\..\PostLib\FENikeExport.cpp" />
     <ClCompile Include="..\..\PostLib\FENikeImport.cpp" />
     <ClCompile Include="..\..\PostLib\FEPlotMix.cpp" />
     <ClCompile Include="..\..\PostLib\FEPointCongruency.cpp" />
     <ClCompile Include="..\..\PostLib\FEPostMesh.cpp" />
+    <ClCompile Include="..\..\PostLib\FEPostModel.cpp" />
     <ClCompile Include="..\..\PostLib\FERAWImageReader.cpp" />
     <ClCompile Include="..\..\PostLib\FEState.cpp" />
     <ClCompile Include="..\..\PostLib\FESTLimport.cpp" />
@@ -228,12 +228,12 @@
     <ClInclude Include="..\..\PostLib\FEMathData.h" />
     <ClInclude Include="..\..\PostLib\FEMeshData.h" />
     <ClInclude Include="..\..\PostLib\FEMeshData_T.h" />
-    <ClInclude Include="..\..\PostLib\FEModel.h" />
     <ClInclude Include="..\..\PostLib\FENikeExport.h" />
     <ClInclude Include="..\..\PostLib\FENikeImport.h" />
     <ClInclude Include="..\..\PostLib\FEPlotMix.h" />
     <ClInclude Include="..\..\PostLib\FEPointCongruency.h" />
     <ClInclude Include="..\..\PostLib\FEPostMesh.h" />
+    <ClInclude Include="..\..\PostLib\FEPostModel.h" />
     <ClInclude Include="..\..\PostLib\FERAWImageReader.h" />
     <ClInclude Include="..\..\PostLib\FEState.h" />
     <ClInclude Include="..\..\PostLib\FESTLimport.h" />

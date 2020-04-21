@@ -17,7 +17,7 @@
 #include <QScreen>
 #include "MainWindow.h"
 #include "Document.h"
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 #include <QToolBox>
 #include <QLineEdit>
 #include <PostGL/GLDataMap.h>
@@ -879,7 +879,7 @@ void CGraphWindow::on_options_optionsChanged()
 			if (doc)
 			{
 				// check the range. Note that user min and max are one-based!
-				Post::FEModel* fem = doc->GetFEModel();
+				Post::FEPostModel* fem = doc->GetFEModel();
 				int N = fem->GetStates();
 				if (m_nUserMin < 1) m_nUserMin = 1;
 				if (m_nUserMin > N) m_nUserMin = N;
@@ -936,7 +936,7 @@ void CDataGraphWindow::Update(bool breset, bool bfit)
 	CPostDoc* doc = GetPostDoc();
 	if (doc)
 	{
-		Post::FEModel* fem = doc->GetFEModel();
+		Post::FEPostModel* fem = doc->GetFEModel();
 		int nsteps = fem->GetStates();
 		CLineChartData* plot = new CLineChartData;
 		for (int j = 0; j < nsteps; ++j)
@@ -1039,7 +1039,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	//	pview->SetCurrentTimeIndex(ntime);
 
 	Post::CGLModel* po = doc->GetGLModel();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
@@ -1094,7 +1094,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 void CModelGraphWindow::addSelectedNodes()
 {
 	CPostDoc* doc = GetPostDoc();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -1239,7 +1239,7 @@ void CModelGraphWindow::addSelectedNodes()
 void CModelGraphWindow::addSelectedEdges()
 {
 	CPostDoc* doc = GetPostDoc();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -1281,7 +1281,7 @@ void CModelGraphWindow::addSelectedEdges()
 void CModelGraphWindow::addSelectedFaces()
 {
 	CPostDoc* doc = GetPostDoc();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -1323,7 +1323,7 @@ void CModelGraphWindow::addSelectedFaces()
 void CModelGraphWindow::addSelectedElems()
 {
 	CPostDoc* doc = GetPostDoc();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nsteps = m_lastState - m_firstState + 1;
@@ -1452,7 +1452,7 @@ void CModelGraphWindow::addSelectedElems()
 void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDoc* doc = GetPostDoc();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -1474,7 +1474,7 @@ void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int 
 void CModelGraphWindow::TrackEdgeHistory(int edge, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDoc* doc = GetPostDoc();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -1496,7 +1496,7 @@ void CModelGraphWindow::TrackEdgeHistory(int edge, float* pval, int nfield, int 
 void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDoc* doc = GetPostDoc();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;
@@ -1518,7 +1518,7 @@ void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int
 void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDoc* doc = GetPostDoc();
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	int nsteps = fem.GetStates();
 	if (nmin <       0) nmin = 0;

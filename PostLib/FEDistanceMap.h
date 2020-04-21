@@ -1,5 +1,5 @@
 #pragma once
-#include "FEModel.h"
+#include "FEPostModel.h"
 
 namespace Post {
 
@@ -34,7 +34,7 @@ public:
 	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
 
 	// apply the map
-	void Apply(FEModel& fem);
+	void Apply(FEPostModel& fem);
 
 protected:
 	// build node normal list
@@ -47,9 +47,9 @@ protected:
 	bool ProjectToFacet(FEFace& face, vec3f& r, int ntime, vec3f& q);
 
 protected:
-	Surface		m_surf1;
-	Surface		m_surf2;
-	FEModel*	m_pfem;
+	Surface			m_surf1;
+	Surface			m_surf2;
+	FEPostModel*	m_pfem;
 
 public:
 	double	m_tol;			//!< projection tolerance

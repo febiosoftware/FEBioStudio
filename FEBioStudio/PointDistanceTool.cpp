@@ -123,7 +123,7 @@ void CPointDistanceTool::updateLength()
 	CPostDoc* doc = GetPostDoc();
 	if (doc && doc->IsValid())
 	{
-		Post::FEModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFEModel();
 		Post::CGLModel* mdl = doc->GetGLModel();
 		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
 		int ntime = mdl->CurrentTimeIndex();
@@ -153,7 +153,7 @@ void CPointDistanceTool::update(bool reset)
 		CPostDoc* doc = GetPostDoc();
 		if (doc && doc->IsValid())
 		{
-			Post::FEModel& fem = *doc->GetFEModel();
+			Post::FEPostModel& fem = *doc->GetFEModel();
 			Post::CGLModel* mdl = doc->GetGLModel();
 			Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
 			const vector<FENode*> selectedNodes = doc->GetGLModel()->GetNodeSelection();

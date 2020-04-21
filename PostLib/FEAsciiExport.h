@@ -1,13 +1,15 @@
 #pragma once
-#include "FEModel.h"
 
 namespace Post {
 
+	class FEPostModel;
+
 class FEASCIIExport
 {
+
 public:
 	FEASCIIExport();
-	bool Save(FEModel* pfem, int n0, int n1, const char* szfile);
+	bool Save(FEPostModel* pfem, int n0, int n1, const char* szfile);
 
 public:
 	bool	m_bselonly;	// export selection only

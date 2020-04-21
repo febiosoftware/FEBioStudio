@@ -1,6 +1,7 @@
 #pragma once
 #include "GLPlot.h"
 #include "GLWLib/GLWidget.h"
+#include <PostLib/FEPostMesh.h>
 
 namespace Post {
 

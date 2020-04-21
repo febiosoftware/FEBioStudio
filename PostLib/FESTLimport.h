@@ -18,7 +18,7 @@ public:
 	FESTLimport(void);
 	virtual ~FESTLimport(void);
 
-	bool Load(FEModel& fem, const char* szfile);
+	bool Load(FEPostModel& fem, const char* szfile);
 
 protected:
 	bool read_line(char* szline, const char* sz);
@@ -27,7 +27,7 @@ protected:
 	int find_node(vec3f& r, const double eps = 1e-12);
 
 protected:
-	FEModel*			m_pfem;
+	FEPostModel*		m_pfem;
 	std::list<FACET>	m_Face;
 	std::vector<vec3f>	m_Node;
 	int					m_nline;	// line counter

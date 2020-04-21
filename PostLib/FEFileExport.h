@@ -1,7 +1,8 @@
 #pragma once
-#include "FEModel.h"
 
 namespace Post {
+
+	class FEPostModel;
 
 //-----------------------------------------------------------------------------
 // Base class for file exporters
@@ -11,7 +12,7 @@ public:
 	FEFileExport(void);
 	virtual ~FEFileExport(void);
 
-	virtual bool Save(FEModel& fem, const char* szfile) = 0;
+	virtual bool Save(FEPostModel& fem, const char* szfile) = 0;
 };
 
 }

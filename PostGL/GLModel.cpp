@@ -23,7 +23,7 @@ extern int ET_PYRA5[8][2];
 
 //-----------------------------------------------------------------------------
 // constructor
-CGLModel::CGLModel(FEModel* ps)
+CGLModel::CGLModel(FEPostModel* ps)
 {
 	m_ps = ps;
 	SetName("Model");
@@ -98,7 +98,7 @@ CGLModel::~CGLModel(void)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::SetFEModel(FEModel* ps)
+void CGLModel::SetFEModel(FEPostModel* ps)
 {
 	ClearInternalSurfaces();
 	m_ps = ps;
@@ -116,7 +116,7 @@ void CGLModel::ShellReferenceSurface(int n) { m_render.m_nshellref = n; }
 //-----------------------------------------------------------------------------
 Post::FEPostMesh* CGLModel::GetActiveMesh()
 {
-	FEModel* pfem = GetFEModel();
+	FEPostModel* pfem = GetFEModel();
 	if (pfem)
 	{
 		if (pfem->GetStates() > 0) return m_ps->CurrentState()->GetFEMesh();
@@ -128,7 +128,7 @@ Post::FEPostMesh* CGLModel::GetActiveMesh()
 //-----------------------------------------------------------------------------
 Post::FEState* CGLModel::GetActiveState()
 {
-	FEModel* pfem = GetFEModel();
+	FEPostModel* pfem = GetFEModel();
 	if (pfem && (pfem->GetStates() > 0)) return m_ps->CurrentState();
 	return nullptr;
 }
@@ -136,7 +136,7 @@ Post::FEState* CGLModel::GetActiveState()
 //-----------------------------------------------------------------------------
 void CGLModel::ResetAllStates()
 {
-	FEModel* fem = GetFEModel();
+	FEPostModel* fem = GetFEModel();
 	if ((fem == 0) || (fem->GetStates() == 0)) return;
 
 	int N = fem->GetStates();
@@ -171,7 +171,7 @@ bool CGLModel::Update(bool breset)
 {
 	if (m_ps == nullptr) return true;
 
-	FEModel& fem = *m_ps;
+	FEPostModel& fem = *m_ps;
 	if (fem.GetStates() == 0) return true;
 
 	// get the time inc value
@@ -248,7 +248,7 @@ void CGLModel::SetSmoothingAngle(double w)
 { 
 	m_stol = w;
 
-	FEModel* ps = GetFEModel();
+	FEPostModel* ps = GetFEModel();
 	if (ps == 0) return;
 
 	FEMeshBase* pm = ps->GetFEMesh(0);
@@ -260,7 +260,7 @@ bool CGLModel::AddDisplacementMap(const char* szvectorField)
 {
 	if (szvectorField == nullptr) szvectorField = "displacement";
 
-	FEModel* ps = GetFEModel();
+	FEPostModel* ps = GetFEModel();
 
 	// see if the mesh has any vector fields
 	// which can be used for displacement maps
@@ -299,7 +299,7 @@ bool CGLModel::HasDisplacementMap()
 //-----------------------------------------------------------------------------
 void CGLModel::ResetMesh()
 {
-	FEModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	Post::FERefState& ref = *fem.GetState(0)->m_ref;
@@ -319,7 +319,7 @@ void CGLModel::ResetMesh()
 //! Toggle element visibility
 void CGLModel::ToggleVisibleElements()
 {
-	FEModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	for (int i = 0; i < mesh.Elements(); ++i)
@@ -397,7 +397,7 @@ void CGLModel::ToggleVisibleElements()
 //-----------------------------------------------------------------------------
 void CGLModel::RemoveDisplacementMap()
 {
-	FEModel* ps = GetFEModel();
+	FEPostModel* ps = GetFEModel();
 	ps->SetDisplacementField(0);
 	delete m_pdis;
 	m_pdis = 0;
@@ -434,7 +434,7 @@ void CGLModel::Render(CGLContext& rc)
 	RenderInteriorNodes(rc.m_bext == false);
 
 	// get the FE model
-	FEModel* fem = GetFEModel();
+	FEPostModel* fem = GetFEModel();
 
 	m_bshowMesh = rc.m_showMesh;
 
@@ -555,7 +555,7 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderFaces(FEModel* ps, CGLContext& rc)
+void CGLModel::RenderFaces(FEPostModel* ps, CGLContext& rc)
 {
 	// get the mesh
 	Post::FEPostMesh* pm = GetActiveMesh();
@@ -589,7 +589,7 @@ void CGLModel::RenderFaces(FEModel* ps, CGLContext& rc)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderElems(FEModel* ps, CGLContext& rc)
+void CGLModel::RenderElems(FEPostModel* ps, CGLContext& rc)
 {
 	// get the mesh
 	Post::FEPostMesh* pm = GetActiveMesh();
@@ -623,7 +623,7 @@ void CGLModel::RenderElems(FEModel* ps, CGLContext& rc)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderSurface(FEModel* ps, CGLContext& rc)
+void CGLModel::RenderSurface(FEPostModel* ps, CGLContext& rc)
 {
 	// get the mesh
 	Post::FEPostMesh* pm = GetActiveMesh();
@@ -663,7 +663,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	int mode = GetSelectionMode();
 
 	// get the mesh
-	FEModel* ps = m_ps;
+	FEPostModel* ps = m_ps;
 	Post::FEPostMesh* pm = GetActiveMesh();
 
 	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT);
@@ -817,7 +817,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 
 //-----------------------------------------------------------------------------
 
-void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m)
+void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 {
 	FEMaterial* pmat = ps->GetMaterial(m);
 	Post::FEPostMesh* pm = GetActiveMesh();
@@ -1031,7 +1031,7 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderSolidPart(FEModel* ps, CGLContext& rc, int mat)
+void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 {
 	// get the material
 	FEMaterial* pmat = ps->GetMaterial(mat);
@@ -1083,7 +1083,7 @@ void CGLModel::RenderSolidPart(FEModel* ps, CGLContext& rc, int mat)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderSolidMaterial(FEModel* ps, int m)
+void CGLModel::RenderSolidMaterial(FEPostModel* ps, int m)
 {
 	// make sure a part with this material exists
 	FEPostMesh* pm = GetActiveMesh();
@@ -1229,7 +1229,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 	int a, b;
 	vec3d r1, r2;
 
-	FEModel* ps = m_ps;
+	FEPostModel* ps = m_ps;
 	FEMeshBase* pm = GetActiveMesh();
 
 	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT);
@@ -1313,7 +1313,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 
 void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 {
-	FEModel* ps = m_ps;
+	FEPostModel* ps = m_ps;
 	Post::FEPostMesh* pm = GetActiveMesh();
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -1380,7 +1380,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 void CGLModel::RenderNormals(CGLContext& rc)
 {
 	// get the mesh
-	FEModel* ps = m_ps;
+	FEPostModel* ps = m_ps;
 	Post::FEPostMesh* pm = GetActiveMesh();
 
 	BOX box = ps->GetBoundingBox();
@@ -1429,7 +1429,7 @@ void CGLModel::RenderNormals(CGLContext& rc)
 //-----------------------------------------------------------------------------
 // Render the mesh lines for a specific material
 //
-void CGLModel::RenderMeshLines(FEModel* ps, int nmat)
+void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 {
 	// get the mesh
 	Post::FEPostMesh* pm = GetActiveMesh();
@@ -1465,7 +1465,7 @@ void CGLModel::RenderMeshLines(FEModel* ps, int nmat)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLModel::RenderShadows(FEModel* ps, const vec3d& lp, float inf)
+void CGLModel::RenderShadows(FEPostModel* ps, const vec3d& lp, float inf)
 {
 	Post::FEPostMesh* pm = GetActiveMesh();
 
@@ -1578,7 +1578,7 @@ void CGLModel::RenderShadows(FEModel* ps, const vec3d& lp, float inf)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
+void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 {
 	Post::FEPostMesh* pm = GetActiveMesh();
 
@@ -1696,7 +1696,7 @@ void CGLModel::RenderNodes(FEModel* ps, CGLContext& rc)
 
 //-----------------------------------------------------------------------------
 // Render the edges of the model.
-void CGLModel::RenderEdges(FEModel* ps, CGLContext& rc)
+void CGLModel::RenderEdges(FEPostModel* ps, CGLContext& rc)
 {
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
@@ -2085,7 +2085,7 @@ void CGLModel::ShowMaterial(int nmat)
 void CGLModel::UpdateMeshState()
 {
 	Post::FEPostMesh& mesh = *GetActiveMesh();
-	FEModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFEModel();
 
 	// update the elements
 	for (int i=0; i<mesh.Elements(); ++i)

@@ -2,8 +2,8 @@
 #include "PostLib/GLObject.h"
 #include "GLDisplacementMap.h"
 #include "GLColorMap.h"
-#include "PostLib/FEModel.h"
-#include "PostLib/GDecoration.h"
+#include <PostLib/FEPostModel.h>
+#include <PostLib/GDecoration.h>
 #include "GLPlot.h"
 #include <FSCore/FSObjectList.h>
 #include <GLLib/GLMeshRender.h>
@@ -77,14 +77,14 @@ protected:
 class CGLModel : public CGLVisual
 {
 public:
-	CGLModel(FEModel* ps);
+	CGLModel(FEPostModel* ps);
 	~CGLModel(void);
 
-	void SetFEModel(FEModel* ps);
+	void SetFEModel(FEPostModel* ps);
 
 	CGLDisplacementMap* GetDisplacementMap() { return m_pdis; }
 	CGLColorMap* GetColorMap() { return m_pcol; }
-	FEModel* GetFEModel() { return m_ps; }
+	FEPostModel* GetFEModel() { return m_ps; }
 
 	bool Update(bool breset) override;
 	void UpdateDisplacements(int nstate, bool breset = false);
@@ -155,11 +155,11 @@ public:
 	void RenderPlots(CGLContext& rc, int renderOrder = 0);
 
 public:
-	void RenderNodes(FEModel* ps, CGLContext& rc);
-	void RenderEdges(FEModel* ps, CGLContext& rc);
-	void RenderFaces(FEModel* ps, CGLContext& rc);
-	void RenderElems(FEModel* ps, CGLContext& rc);
-	void RenderSurface(FEModel* ps, CGLContext& rc);
+	void RenderNodes(FEPostModel* ps, CGLContext& rc);
+	void RenderEdges(FEPostModel* ps, CGLContext& rc);
+	void RenderFaces(FEPostModel* ps, CGLContext& rc);
+	void RenderElems(FEPostModel* ps, CGLContext& rc);
+	void RenderSurface(FEPostModel* ps, CGLContext& rc);
 
 public:
 	void RenderOutline(CGLContext& rc, int nmat = -1);
@@ -171,16 +171,16 @@ public:
 
 	void RenderDecorations();
 
-	void RenderMeshLines(FEModel* ps, int nmat);
-	void RenderShadows(FEModel* ps, const vec3d& lp, float inf);
+	void RenderMeshLines(FEPostModel* ps, int nmat);
+	void RenderShadows(FEPostModel* ps, const vec3d& lp, float inf);
 
 	void AddDecoration(GDecoration* pd);
 	void RemoveDecoration(GDecoration* pd);
 
 protected:
-	void RenderSolidPart(FEModel* ps, CGLContext& rc, int mat);
-	void RenderSolidMaterial(FEModel* ps, int m);
-	void RenderTransparentMaterial(CGLContext& rc, FEModel* ps, int m);
+	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
+	void RenderSolidMaterial(FEPostModel* ps, int m);
+	void RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m);
 	void RenderSolidDomain(FEDomain& dom, bool btex, bool benable);
 
 	void RenderInnerSurface(int m, bool btex = true);
@@ -328,7 +328,7 @@ public:
 	unsigned int	m_layer;
 
 protected:
-	FEModel*			m_ps;
+	FEPostModel*			m_ps;
 	vector<GLSurface*>		m_innerSurface;
 	GLEdge					m_edge;	// all line elements from springs
 

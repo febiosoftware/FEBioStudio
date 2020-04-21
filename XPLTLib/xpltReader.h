@@ -223,21 +223,21 @@ public:
 	XpltReader(xpltFileReader* xplt);
 	~XpltReader();
 
-	bool Load(Post::FEModel& fem);
+	bool Load(Post::FEPostModel& fem);
 
 protected:
-	bool ReadRootSection(Post::FEModel& fem);
-	bool ReadStateSection(Post::FEModel& fem);
+	bool ReadRootSection(Post::FEPostModel& fem);
+	bool ReadStateSection(Post::FEPostModel& fem);
 
-	bool ReadDictionary(Post::FEModel& fem);
-	bool ReadMaterials(Post::FEModel& fem);
-	bool ReadMesh(Post::FEModel& fem);
+	bool ReadDictionary(Post::FEPostModel& fem);
+	bool ReadMaterials(Post::FEPostModel& fem);
+	bool ReadMesh(Post::FEPostModel& fem);
 
 	bool ReadDictItem(DICT_ITEM& it);
 
-	void CreateMaterials(Post::FEModel& fem);
+	void CreateMaterials(Post::FEPostModel& fem);
 
-	bool BuildMesh(Post::FEModel& fem);
+	bool BuildMesh(Post::FEPostModel& fem);
 
 protected:
 	bool ReadGlobalDicItems  ();
@@ -246,16 +246,16 @@ protected:
 	bool ReadElemDicItems    ();
 	bool ReadFaceDicItems    ();
 
-	bool ReadNodeSection   (Post::FEModel& fem);
-	bool ReadDomainSection (Post::FEModel& fem);
-	bool ReadSurfaceSection(Post::FEModel& fem);
-	bool ReadNodeSetSection(Post::FEModel& fem);
+	bool ReadNodeSection   (Post::FEPostModel& fem);
+	bool ReadDomainSection (Post::FEPostModel& fem);
+	bool ReadSurfaceSection(Post::FEPostModel& fem);
+	bool ReadNodeSetSection(Post::FEPostModel& fem);
 
-	bool ReadGlobalData  (Post::FEModel& fem, Post::FEState* pstate);
-	bool ReadMaterialData(Post::FEModel& fem, Post::FEState* pstate);
-	bool ReadNodeData    (Post::FEModel& fem, Post::FEState* pstate);
-	bool ReadElemData    (Post::FEModel& fem, Post::FEState* pstate);
-	bool ReadFaceData    (Post::FEModel& fem, Post::FEState* pstate);
+	bool ReadGlobalData  (Post::FEPostModel& fem, Post::FEState* pstate);
+	bool ReadMaterialData(Post::FEPostModel& fem, Post::FEState* pstate);
+	bool ReadNodeData    (Post::FEPostModel& fem, Post::FEState* pstate);
+	bool ReadElemData    (Post::FEPostModel& fem, Post::FEState* pstate);
+	bool ReadFaceData    (Post::FEPostModel& fem, Post::FEState* pstate);
 
 	bool ReadElemData_NODE(Post::FEPostMesh& m, Domain& d, Post::FEMeshData& s, int ntype, int arrSize = 0);
 	bool ReadElemData_ITEM(Domain& d, Post::FEMeshData& s, int ntype, int arrSize = 0);

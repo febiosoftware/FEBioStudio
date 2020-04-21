@@ -155,7 +155,7 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 	}
 
 	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFEModel();
 
 	if (m_map.States() == 0)
 	{
@@ -319,7 +319,7 @@ void CGLParticleFlowPlot::AdvanceParticles(int n0, int n1)
 	// get the model
 	CGLModel* mdl = GetModel();
 	if (mdl == 0) return;
-	FEModel& fem = *mdl->GetFEModel();
+	FEPostModel& fem = *mdl->GetFEModel();
 
 	// get the mesh
 	FEMeshBase& mesh = *mdl->GetActiveMesh();
@@ -394,7 +394,7 @@ void CGLParticleFlowPlot::SeedParticles()
 	if (mdl == 0) return;
 
 	// get the number of states
-	FEModel* fem = mdl->GetFEModel();
+	FEPostModel* fem = mdl->GetFEModel();
 	int NS = fem->GetStates();
 
 	// make sure there is a valid seed time

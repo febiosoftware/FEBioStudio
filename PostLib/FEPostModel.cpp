@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include "FEDataManager.h"
 #include "constants.h"
 #include "FEMeshData_T.h"
@@ -13,13 +13,13 @@ extern int ET_HEX[12][2];
 
 namespace Post {
 
-FEModel* FEModel::m_pThis = 0;
+FEPostModel* FEPostModel::m_pThis = 0;
 
 //=============================================================================
-//								F E M O D E L
+//								F E P O S T M O D E L
 //=============================================================================
 // constructor
-FEModel::FEModel()
+FEPostModel::FEPostModel()
 {
 	m_ndisp = 0;
 	m_pDM = new FEDataManager(this);
@@ -32,7 +32,7 @@ FEModel::FEModel()
 
 //-----------------------------------------------------------------------------
 // desctructor
-FEModel::~FEModel()
+FEPostModel::~FEPostModel()
 {
 	Clear();
 	delete m_pDM;
@@ -43,38 +43,38 @@ FEModel::~FEModel()
 	ClearDependants();
 }
 
-void FEModel::DeleteMeshes()
+void FEPostModel::DeleteMeshes()
 {
 	// delete all meshes
 	for (size_t i = 0; i<m_mesh.size(); ++i) delete m_mesh[i];
 	m_mesh.clear();
 }
 
-void FEModel::SetInstance(FEModel* fem)
+void FEPostModel::SetInstance(FEPostModel* fem)
 {
 	m_pThis = fem;
 }
 
-FEModel* FEModel::GetInstance()
+FEPostModel* FEPostModel::GetInstance()
 {
 	return m_pThis;
 }
 
 //-----------------------------------------------------------------------------
-FEState* FEModel::CurrentState()
+FEState* FEPostModel::CurrentState()
 {
 	return m_State[m_nTime];
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::SetCurrentTimeIndex(int ntime)
+void FEPostModel::SetCurrentTimeIndex(int ntime)
 {
 	m_nTime = ntime;
 	m_fTime = GetTimeValue(m_nTime);
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::SetTimeValue(float ftime)
+void FEPostModel::SetTimeValue(float ftime)
 {
 	m_nTime = GetClosestTime(ftime);
 	m_fTime = ftime;
@@ -83,7 +83,7 @@ void FEModel::SetTimeValue(float ftime)
 //------------------------------------------------------------------------------------------
 // This returns the time step whose time value is closest but less than t
 //
-int FEModel::GetClosestTime(double t)
+int FEPostModel::GetClosestTime(double t)
 {
 	FEState& s = *GetState(0);
 	if (s.m_time >= t) return 0;
@@ -98,13 +98,13 @@ int FEModel::GetClosestTime(double t)
 
 
 //-----------------------------------------------------------------------------
-float FEModel::GetTimeValue(int ntime)
+float FEPostModel::GetTimeValue(int ntime)
 {
 	return GetState(ntime)->m_time;
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddMesh(FEPostMesh* mesh)
+void FEPostModel::AddMesh(FEPostMesh* mesh)
 {
 	m_mesh.push_back(mesh);
 
@@ -119,13 +119,13 @@ void FEModel::AddMesh(FEPostMesh* mesh)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::Meshes() const
+int FEPostModel::Meshes() const
 {
 	return (int) m_mesh.size();
 }
 
 //-----------------------------------------------------------------------------
-FEPostMesh* FEModel::GetFEMesh(int n)
+FEPostMesh* FEPostModel::GetFEMesh(int n)
 {
 	return m_mesh[n];
 }
@@ -133,7 +133,7 @@ FEPostMesh* FEModel::GetFEMesh(int n)
 //-----------------------------------------------------------------------------
 // Clear the data of the model
 // TODO: This does not delete the mesh. Should I?
-void FEModel::Clear()
+void FEPostModel::Clear()
 {
 	DeleteMeshes();
 
@@ -145,32 +145,32 @@ void FEModel::Clear()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::SetTitle(const string& title)
+void FEPostModel::SetTitle(const string& title)
 {
 	m_title = title;
 }
 
 //-----------------------------------------------------------------------------
-const string& FEModel::GetTitle() const
+const string& FEPostModel::GetTitle() const
 {
 	return m_title;
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::SetName(const std::string& name)
+void FEPostModel::SetName(const std::string& name)
 {
 	m_name = name;
 }
 
 //-----------------------------------------------------------------------------
-const string& FEModel::GetName() const
+const string& FEPostModel::GetName() const
 {
 	return m_name;
 }
 
 //-----------------------------------------------------------------------------
 // add a material to the model
-void FEModel::AddMaterial(FEMaterial& mat)
+void FEPostModel::AddMaterial(FEMaterial& mat)
 { 
 	static int n = 1;
 	if (m_Mat.empty()) n = 1;
@@ -187,14 +187,14 @@ void FEModel::AddMaterial(FEMaterial& mat)
 
 //-----------------------------------------------------------------------------
 // clear the FE-states
-void FEModel::ClearStates()
+void FEPostModel::ClearStates()
 {
 	for (int i=0; i<(int) m_State.size(); i++) delete m_State[i];
 	m_State.clear();
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddState(FEState* pFEState)
+void FEPostModel::AddState(FEState* pFEState)
 {
 	pFEState->SetID((int) m_State.size());
 	pFEState->m_ref = m_RefState[m_RefState.size() - 1];
@@ -203,7 +203,7 @@ void FEModel::AddState(FEState* pFEState)
 
 //-----------------------------------------------------------------------------
 // add a state
-void FEModel::AddState(float ftime)
+void FEPostModel::AddState(float ftime)
 {
 	vector<FEState*>::iterator it = m_State.begin();
 	for (it = m_State.begin(); it != m_State.end(); ++it)
@@ -221,7 +221,7 @@ void FEModel::AddState(float ftime)
 
 //-----------------------------------------------------------------------------
 // delete a state
-void FEModel::DeleteState(int n)
+void FEPostModel::DeleteState(int n)
 {
 	vector<FEState*>::iterator it = m_State.begin();
 	int N = m_State.size();
@@ -235,7 +235,7 @@ void FEModel::DeleteState(int n)
 
 //-----------------------------------------------------------------------------
 // insert a state a time f
-void FEModel::InsertState(FEState *ps, float f)
+void FEPostModel::InsertState(FEState *ps, float f)
 {
 	vector<FEState*>::iterator it = m_State.begin();
 	for (it=m_State.begin(); it != m_State.end(); ++it)
@@ -276,7 +276,7 @@ template <typename Type, Data_Format Fmt> void copy_face_data(FEMeshData& d, FEM
 
 //-----------------------------------------------------------------------------
 // Copy a data field
-FEDataField* FEModel::CopyDataField(FEDataField* pd, const char* sznewname)
+FEDataField* FEPostModel::CopyDataField(FEDataField* pd, const char* sznewname)
 {
 	// Clone the data field
 	FEDataField* pdcopy = pd->Clone();
@@ -615,7 +615,7 @@ template <typename T> void cached_copy_elem_data_NODE(FEMeshData& dst, FEMeshDat
 
 //-----------------------------------------------------------------------------
 //! Create a cached copy of a data field
-FEDataField* FEModel::CreateCachedCopy(FEDataField* pd, const char* sznewname)
+FEDataField* FEPostModel::CreateCachedCopy(FEDataField* pd, const char* sznewname)
 {
 	// create a new data field that will store a cached copy
 	FEDataField* pdcopy = createCachedDataField(pd, sznewname);
@@ -729,7 +729,7 @@ FEDataField* FEModel::CreateCachedCopy(FEDataField* pd, const char* sznewname)
 
 //-----------------------------------------------------------------------------
 // Get the field variable name
-std::string FEModel::getDataString(int ndata, Data_Tensor_Type ntype)
+std::string FEPostModel::getDataString(int ndata, Data_Tensor_Type ntype)
 {
 	FEDataManager& dm = *GetDataManager();
 	return dm.getDataString(ndata, ntype);
@@ -737,7 +737,7 @@ std::string FEModel::getDataString(int ndata, Data_Tensor_Type ntype)
 
 //-----------------------------------------------------------------------------
 // Delete a data field
-void FEModel::DeleteDataField(FEDataField* pd)
+void FEPostModel::DeleteDataField(FEDataField* pd)
 {
 	// find out which data field this is
 	FEDataFieldPtr it = m_pDM->FirstDataField();
@@ -767,7 +767,7 @@ void FEModel::DeleteDataField(FEDataField* pd)
 
 //-----------------------------------------------------------------------------
 // Add a data field to all states of the model
-void FEModel::AddDataField(FEDataField* pd)
+void FEPostModel::AddDataField(FEDataField* pd)
 {
 	// add the data field to the data manager
 	m_pDM->AddDataField(pd);
@@ -785,7 +785,7 @@ void FEModel::AddDataField(FEDataField* pd)
 
 //-----------------------------------------------------------------------------
 // Add an data field to all states of the model
-void FEModel::AddDataField(FEDataField* pd, vector<int>& L)
+void FEPostModel::AddDataField(FEDataField* pd, vector<int>& L)
 {
 	assert(pd->DataClass() == CLASS_FACE);
 
@@ -817,7 +817,7 @@ void FEModel::AddDataField(FEDataField* pd, vector<int>& L)
 //-----------------------------------------------------------------------------
 // This function calculates the position of a node based on the selected
 // displacement field.
-vec3f FEModel::NodePosition(int n, int ntime)
+vec3f FEPostModel::NodePosition(int n, int ntime)
 {
 	vec3f r;
 	if (ntime >= 0)
@@ -838,7 +838,7 @@ vec3f FEModel::NodePosition(int n, int ntime)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEModel::NodePosition(const vec3f& r, int ntime)
+vec3f FEPostModel::NodePosition(const vec3f& r, int ntime)
 {
 	FEPostMesh* mesh = GetState(ntime)->GetFEMesh();
 
@@ -864,7 +864,7 @@ vec3f FEModel::NodePosition(const vec3f& r, int ntime)
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEModel::FaceNormal(FEFace& f, int ntime)
+vec3f FEPostModel::FaceNormal(FEFace& f, int ntime)
 {
 	vec3f r0 = NodePosition(f.n[0], ntime);
 	vec3f r1 = NodePosition(f.n[1], ntime);
@@ -876,7 +876,7 @@ vec3f FEModel::FaceNormal(FEFace& f, int ntime)
 
 //-----------------------------------------------------------------------------
 // get the nodal coordinates of an element at time n
-void FEModel::GetElementCoords(int iel, int ntime, vec3f* r)
+void FEPostModel::GetElementCoords(int iel, int ntime, vec3f* r)
 {
 	FEPostMesh* mesh = GetState(ntime)->GetFEMesh();
 	FEElement_& elem = mesh->ElementRef(iel);
@@ -889,7 +889,7 @@ void FEModel::GetElementCoords(int iel, int ntime, vec3f* r)
 //-----------------------------------------------------------------------------
 // Update the bounding box of the mesh. Note that this box bounds the reference
 // configuration, not the current configuration
-void FEModel::UpdateBoundingBox()
+void FEPostModel::UpdateBoundingBox()
 {
 	FEPostMesh* mesh = GetFEMesh(0);
 	FENode& n = mesh->Node(0);
@@ -912,7 +912,7 @@ void FEModel::UpdateBoundingBox()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddDependant(FEModelDependant* pc)
+void FEPostModel::AddDependant(FEModelDependant* pc)
 {
 	// make sure we have not added this dependant yet
 	if (m_Dependants.empty() == false)
@@ -928,14 +928,14 @@ void FEModel::AddDependant(FEModelDependant* pc)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::UpdateDependants()
+void FEPostModel::UpdateDependants()
 {
 	int N = m_Dependants.size();
 	for (int i=0; i<N; ++i) m_Dependants[i]->Update(this);
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::RemoveDependant(FEModelDependant* pc)
+void FEPostModel::RemoveDependant(FEModelDependant* pc)
 {
 	int N = m_Dependants.size();
 	if (N > 0)
@@ -954,7 +954,7 @@ void FEModel::RemoveDependant(FEModelDependant* pc)
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::ClearDependants()
+void FEPostModel::ClearDependants()
 {
 	int N = m_Dependants.size();
 	if (N > 0)
@@ -967,7 +967,7 @@ void FEModel::ClearDependants()
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::UpdateMeshState(int ntime)
+void FEPostModel::UpdateMeshState(int ntime)
 {
 	FEState& state = *GetState(ntime);
 

@@ -3,7 +3,7 @@
 #include "FEDataManager.h"
 #include "constants.h"
 #include "FEMeshData_T.h"
-
+#include "FEPostModel.h"
 using namespace Post;
 
 // this function performs a big-endian to little endian or vice versa byteswap
@@ -44,7 +44,7 @@ FELSDYNAPlotImport::~FELSDYNAPlotImport()
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAPlotImport::Load(FEModel &fem, const char *szfile)
+bool FELSDYNAPlotImport::Load(FEPostModel &fem, const char *szfile)
 {
 	// reset family plot file counter
 	m_ifile = 0;
@@ -110,7 +110,7 @@ int FELSDYNAPlotImport::ReadData(void* pd, size_t nsize, size_t ncnt, bool bdump
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAPlotImport::ReadHeader(FEModel& fem)
+bool FELSDYNAPlotImport::ReadHeader(FEPostModel& fem)
 {
 	// read the plot header
 	if (fread(&m_hdr, 64*sizeof(int), 1, m_fp) == -1) return errf("Failed reading header. This is an invalid or corrupted file.");
@@ -170,7 +170,7 @@ bool FELSDYNAPlotImport::ReadHeader(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-void FELSDYNAPlotImport::CreateMaterials(FEModel& fem)
+void FELSDYNAPlotImport::CreateMaterials(FEPostModel& fem)
 {
 	// initialize material properties
 	fem.ClearMaterials();
@@ -183,7 +183,7 @@ void FELSDYNAPlotImport::CreateMaterials(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
+bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 {
 	int i, j;
 
@@ -336,7 +336,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEModel &fem)
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAPlotImport::ReadStates(FEModel& fem)
+bool FELSDYNAPlotImport::ReadStates(FEPostModel& fem)
 {
 	// read the timesteps
 	int nnd = m_hdr.nump*(m_hdr.flagT + 3*(m_hdr.flagU + m_hdr.flagV + m_hdr.flagA));
@@ -532,7 +532,7 @@ bool FELSDYNAPlotImport::ReadStates(FEModel& fem)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-bool FELSDYNAPlotExport::Save(FEModel& fem, const char* szfile, bool bflag[6], int ncode[6])
+bool FELSDYNAPlotExport::Save(FEPostModel& fem, const char* szfile, bool bflag[6], int ncode[6])
 {
 	int i, j, N;
 

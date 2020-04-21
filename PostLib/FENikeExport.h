@@ -10,7 +10,7 @@ public:
 	FENikeExport(void);
 	~FENikeExport(void);
 
-	bool Save(FEModel& fem, const char* szfile);
+	bool Save(FEPostModel& fem, const char* szfile);
 };
 
 }

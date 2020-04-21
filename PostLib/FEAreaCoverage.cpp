@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEAreaCoverage.h"
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include "FEMeshData_T.h"
 #include <MeshLib/Intersect.h>
 using namespace Post;
@@ -67,7 +67,7 @@ FEAreaCoverage::FEAreaCoverage() : m_fem(0)
 }
 
 //-----------------------------------------------------------------------------
-void FEAreaCoverage::Apply(FEModel& fem)
+void FEAreaCoverage::Apply(FEPostModel& fem)
 {
 	static int ncalls = 0; ncalls++;
 

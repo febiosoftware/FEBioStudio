@@ -374,7 +374,7 @@ bool Post::ExportNodeDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEModel& fem = *glm.GetFEModel();
+	FEPostModel& fem = *glm.GetFEModel();
 	FEPostMesh& mesh = *glm.GetActiveMesh();
 
 	int nstates = fem.GetStates();
@@ -434,7 +434,7 @@ bool Post::ExportFaceDataField(CGLModel& glm, const FEDataField& df, FILE* fp)
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEModel& fem = *glm.GetFEModel();
+	FEPostModel& fem = *glm.GetFEModel();
 	FEPostMesh& mesh = *glm.GetActiveMesh();
 
 	int nstates = fem.GetStates();
@@ -614,7 +614,7 @@ bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp
 	int ndata = FIELD_CODE(nfield);
 
 	// get the mesh
-	FEModel& fem = *glm.GetFEModel();
+	FEPostModel& fem = *glm.GetFEModel();
 	FEPostMesh& mesh = *glm.GetActiveMesh();
 
 	int nstates = fem.GetStates();
@@ -738,7 +738,7 @@ bool Post::AddStandardDataField(CGLModel& glm, const std::string& dataField, boo
 
 	if (pdf == nullptr) return false;
 
-	FEModel& fem = *glm.GetFEModel();
+	FEPostModel& fem = *glm.GetFEModel();
 
 	// NOTE: This only works with curvatures
 	if (bselection_only && (glm.GetSelectionMode() == SELECT_FACES))
@@ -760,7 +760,7 @@ bool Post::AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEModel* pm = glm.GetFEModel();
+	FEPostModel* pm = glm.GetFEModel();
 	FEPostMesh& m = *glm.GetActiveMesh();
 
 	// create a new data field
@@ -880,7 +880,7 @@ bool Post::AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEModel* pm = glm.GetFEModel();
+	FEPostModel* pm = glm.GetFEModel();
 	FEPostMesh& m = *glm.GetActiveMesh();
 
 	// create a new data field
@@ -1000,7 +1000,7 @@ bool Post::AddElemDataFromFile(CGLModel& glm, const char* szfile, const char* sz
 	if (fp == 0) return false;
 
 	// get the mesh
-	FEModel* pm = glm.GetFEModel();
+	FEPostModel* pm = glm.GetFEModel();
 	FEPostMesh& m = *glm.GetActiveMesh();
 
 	// create a new data field

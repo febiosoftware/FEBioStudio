@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FESTLimport.h"
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include <ctype.h>
 #include <FSCore/color.h>
 
@@ -37,7 +37,7 @@ bool FESTLimport::read_line(char* szline, const char* sz)
 	return true;
 }
 
-bool FESTLimport::Load(FEModel& fem, const char* szfile)
+bool FESTLimport::Load(FEPostModel& fem, const char* szfile)
 {
 	fem.Clear();
 	m_pfem = &fem;

@@ -6,6 +6,13 @@ FELineMesh::FELineMesh() : m_pobj(0)
 }
 
 //-----------------------------------------------------------------------------
+void FELineMesh::UpdateSelection()
+{
+	GObject* po = GetGObject();
+	if (po) po->UpdateSelection();
+}
+
+//-----------------------------------------------------------------------------
 // Tag all nodes
 void FELineMesh::TagAllNodes(int ntag)
 {

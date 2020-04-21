@@ -144,11 +144,11 @@ void CGLVectorPlot::Render(CGLContext& rc)
 	gluQuadricNormals(pglyph, GLU_SMOOTH);
 
 	CGLModel* mdl = GetModel();
-	FEModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFEModel();
 
 	srand(m_seed);
 
-	FEModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFEModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	// calculate scale factor for rendering
@@ -416,7 +416,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
-	FEModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFEModel();
 
 	int N = pfem->GetStates();
 	if (N == 0) return;
@@ -517,7 +517,7 @@ void CGLVectorPlot::UpdateState(int nstate)
 {
 	CGLModel* mdl = GetModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
-	FEModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFEModel();
 
 	// check the tag
 	int ntag = m_map.GetTag(nstate);

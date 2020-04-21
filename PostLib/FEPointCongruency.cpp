@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEPointCongruency.h"
-#include "FEModel.h"
+#include "FEPostModel.h"
 
 using namespace Post;
 
@@ -13,7 +13,7 @@ FEPointCongruency::FEPointCongruency()
 }
 
 //-----------------------------------------------------------------------------
-FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEModel* pfem, int nid, int nstate)
+FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEPostModel* pfem, int nid, int nstate)
 {
 	CONGRUENCY_DATA d;
 	d.H1 = 0;

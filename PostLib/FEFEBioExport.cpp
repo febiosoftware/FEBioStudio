@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEFEBioExport.h"
 #include <XML/XMLWriter.h>
+#include "FEPostModel.h"
 using namespace Post;
 
 const char* elementTypeStr(int ntype)
@@ -30,7 +31,7 @@ const char* elementTypeStr(int ntype)
 	return szeltype;		
 }
 
-bool FEFEBioExport::Save(FEModel& fem, const char* szfile)
+bool FEFEBioExport::Save(FEPostModel& fem, const char* szfile)
 {
 	int nmat = fem.Materials();
 

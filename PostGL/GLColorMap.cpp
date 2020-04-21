@@ -127,7 +127,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 
 	// get the mesh
 	FEPostMesh* pm = po->GetActiveMesh();
-	FEModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFEModel();
 
 	int N = pfem->GetStates();
 	if (N == 0) return;
@@ -351,7 +351,7 @@ void CGLColorMap::UpdateState(int ntime, bool breset)
 {
 	// get the model
 	CGLModel* po = GetModel();
-	FEModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFEModel();
 
 	// make sure the field variable is still valid
 	if (pfem->IsValidFieldCode(m_nfield, ntime) == false)

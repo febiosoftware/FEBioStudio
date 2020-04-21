@@ -137,7 +137,7 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 
 	CGLModel* mdl = GetModel();
 	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFEModel();
 
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); m_prob.clear(); }
 

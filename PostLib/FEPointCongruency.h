@@ -8,7 +8,7 @@ class FEFace;
 
 namespace Post {
 
-class FEModel;
+class FEPostModel;
 
 //-----------------------------------------------------------------------------
 class FEPointCongruency
@@ -32,7 +32,7 @@ public:
 	FEPointCongruency();
 
 	// measure the congruency of a point
-	CONGRUENCY_DATA Congruency(FEModel* pm, int node, int nstate);
+	CONGRUENCY_DATA Congruency(FEPostModel* pm, int node, int nstate);
 
 	void SetLevels(int niter) { m_nlevels = niter; }
 
@@ -53,7 +53,7 @@ public:
 	int	m_nmax;
 
 private:
-	FEModel*	m_pfem;
-	int			m_nstate;
+	FEPostModel*	m_pfem;
+	int				m_nstate;
 };
 }

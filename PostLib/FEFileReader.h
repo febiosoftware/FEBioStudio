@@ -18,7 +18,7 @@ typedef off_t off_type;
 // forward declaration of model class
 namespace Post {
 
-class FEModel;
+class FEPostModel;
 
 //-----------------------------------------------------------------------------
 class FEFileReader
@@ -28,7 +28,7 @@ public:
 	virtual ~FEFileReader();
 
 	// This function must be overloaded in derived classes
-	virtual bool Load(FEModel& fem, const char* szfile) = 0;
+	virtual bool Load(FEPostModel& fem, const char* szfile) = 0;
 
 public:
 	// get the error string

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FEMathData.h"
+#include "FEPostModel.h"
 
 using namespace Post;
 
@@ -11,7 +12,7 @@ FEMathData::FEMathData(FEState* state, FEMathDataField* pdf) : FENodeData_T<floa
 // evaluate all the nodal data for this state
 void FEMathData::eval(int n, float* pv)
 {
-	FEModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFEModel();
 
 
 	double time = m_state->m_time;
@@ -45,7 +46,7 @@ FEMathVec3Data::FEMathVec3Data(FEState* state, FEMathVec3DataField* pdf) : FENod
 // evaluate all the nodal data for this state
 void FEMathVec3Data::eval(int n, vec3f* pv)
 {
-	FEModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFEModel();
 
 	FEState& state = *m_state;
 	int ntime = state.GetID();
@@ -86,7 +87,7 @@ void FEMathMat3Data::eval(int n, mat3f* pv)
 {
 	if (pv == nullptr) return;
 
-	FEModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFEModel();
 
 	FEState& state = *m_state;
 	int ntime = state.GetID();

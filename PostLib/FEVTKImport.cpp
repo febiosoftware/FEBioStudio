@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEVTKImport.h"
 #include "FEMeshData_T.h"
+#include "FEPostModel.h"
 
 using namespace Post;
 
@@ -12,7 +13,7 @@ FEVTKimport::~FEVTKimport(void)
 {
 }
 
-bool FEVTKimport::Load(FEModel& fem, const char* szfile)
+bool FEVTKimport::Load(FEPostModel& fem, const char* szfile)
 {
 	fem.Clear();
 	m_pfem = &fem;

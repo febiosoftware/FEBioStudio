@@ -5,7 +5,7 @@ using namespace std;
 
 namespace Post {
 
-class FEModel;
+class FEPostModel;
 class FEState;
 class FEPostMesh;
 
@@ -75,7 +75,7 @@ public:
 
 	FEPostMesh* GetFEMesh();
 
-	FEModel* GetFEModel();
+	FEPostModel* GetFEModel();
 
 protected:
 	FEState*	m_state;
@@ -131,5 +131,5 @@ template <> class FEDataTypeTraits<DATA_MAT3FD> { public: typedef mat3fd dataTyp
 template <> class FEDataTypeTraits<DATA_TENS4FS>{ public: typedef tens4fs dataType; };
 
 
-void shape_grad(FEModel& fem, int elem, double q[3], int nstate, vec3f* G);
+void shape_grad(FEPostModel& fem, int elem, double q[3], int nstate, vec3f* G);
 }

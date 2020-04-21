@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PostDoc.h"
 #include <XPLTLib/xpltFileReader.h>
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 #include <PostLib/GView.h>
@@ -56,7 +56,7 @@ ModelData::ModelData(Post::CGLModel *po)
 	}
 
 	// displacement map
-	Post::FEModel* ps = po->GetFEModel();
+	Post::FEPostModel* ps = po->GetFEModel();
 	m_dmap.m_nfield = ps->GetDisplacementField();
 
 	// materials 
@@ -100,7 +100,7 @@ void ModelData::SetData(Post::CGLModel* po)
 	}
 
 	// displacement map
-	Post::FEModel* ps = po->GetFEModel();
+	Post::FEPostModel* ps = po->GetFEModel();
 	ps->SetDisplacementField(m_dmap.m_nfield);
 
 	// materials
@@ -157,10 +157,10 @@ public:
 	}
 
 public:
-	Post::CGLModel*	glm;
-	Post::FEModel*	fem;
-	Post::CGView	m_view;
-	std::string		m_fileName;
+	Post::CGLModel*		glm;
+	Post::FEPostModel*	fem;
+	Post::CGView		m_view;
+	std::string			m_fileName;
 
 	CPostObject*	m_postObj;
 
@@ -182,7 +182,7 @@ int CPostDoc::GetStates()
 	return imp->fem->GetStates();
 }
 
-Post::FEModel* CPostDoc::GetFEModel()
+Post::FEPostModel* CPostDoc::GetFEModel()
 {
 	return imp->fem;
 }
@@ -429,7 +429,7 @@ bool CPostDoc::ReloadPlotfile(xpltFileReader* xplt)
 
 	// keep a list of data fields 
 	std::vector<std::string>	data;
-	Post::FEModel* fem = imp->fem;
+	Post::FEPostModel* fem = imp->fem;
 	Post::FEDataManager* pDM = fem->GetDataManager();
 	Post::FEDataFieldPtr pdf = pDM->FirstDataField();
 	for (int i = 0; i<pDM->DataFields(); ++i, ++pdf) data.push_back(string((*pdf)->GetName()));
@@ -442,7 +442,7 @@ bool CPostDoc::ReloadPlotfile(xpltFileReader* xplt)
 	delete imp->m_postObj; imp->m_postObj = nullptr;
 
 	// create new FE model
-	imp->fem = new Post::FEModel;
+	imp->fem = new Post::FEPostModel;
 
 	const char* szfile = imp->m_fileName.c_str();
 
@@ -519,7 +519,7 @@ bool CPostDoc::LoadFEModel(Post::FEFileReader* fileReader, const char* szfile)
 	imp->clear();
 
 	// create new FE model
-	imp->fem = new Post::FEModel;
+	imp->fem = new Post::FEPostModel;
 
 	// load the scene
 	if (fileReader->Load(*imp->fem, szfile) == false)
@@ -564,7 +564,7 @@ bool CPostDoc::LoadPlotfile(const std::string& fileName, xpltFileReader* xplt)
 	imp->clear();
 
 	// create new FE model
-	imp->fem = new Post::FEModel;
+	imp->fem = new Post::FEPostModel;
 
 	if (xplt->Load(*imp->fem, szfile) == false)
 	{
@@ -690,7 +690,7 @@ void CPostDoc::Render(CGLView* view)
 		glCullFace(GL_FRONT);
 		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
 
-		Post::FEModel* fem = imp->glm->GetFEModel();
+		Post::FEPostModel* fem = imp->glm->GetFEModel();
 		imp->glm->RenderShadows(fem, lpv, inf);
 
 		glCullFace(GL_BACK);

@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "FEDataManager.h"
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include "constants.h"
 using namespace Post;
 
-FEDataManager::FEDataManager(FEModel* pm)
+FEDataManager::FEDataManager(FEPostModel* pm)
 {
 	m_pm = pm;
 }

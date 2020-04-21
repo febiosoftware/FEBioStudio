@@ -1,8 +1,9 @@
 #pragma once
 
 #include "FEMeshData.h"
-#include "FEModel.h"
 #include "FEState.h"
+#include "FEPostMesh.h"
+#include "FEDataField.h"
 #include <set>
 using namespace std;
 

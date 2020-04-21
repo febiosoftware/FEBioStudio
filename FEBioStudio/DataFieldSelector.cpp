@@ -1,5 +1,4 @@
 #include "DataFieldSelector.h"
-#include <PostLib/FEModel.h>
 #include <PostLib/constants.h>
 #include <PostLib/ColorMap.h>
 #include <QPainter>
@@ -46,7 +45,7 @@ void CTimeStepSelector::BuildMenu(QMenu* menu)
 }
 
 
-CModelDataSelector::CModelDataSelector(FEModel* fem, Data_Tensor_Type ntype, bool btvec)
+CModelDataSelector::CModelDataSelector(FEPostModel* fem, Data_Tensor_Type ntype, bool btvec)
 {
 	m_fem = fem;
 	m_class = ntype;
@@ -59,7 +58,7 @@ CModelDataSelector::~CModelDataSelector()
 	if (m_fem) m_fem->RemoveDependant(this);
 }
 
-void CModelDataSelector::Update(FEModel* pfem)
+void CModelDataSelector::Update(FEPostModel* pfem)
 {
 	if (pfem == nullptr) m_fem = nullptr;
 
@@ -273,7 +272,7 @@ CDataFieldSelector::CDataFieldSelector(QWidget* parent) : CDataSelectorButton(pa
 {
 }
 
-void CDataFieldSelector::BuildMenu(FEModel* fem, Data_Tensor_Type ntype, bool btvec)
+void CDataFieldSelector::BuildMenu(FEPostModel* fem, Data_Tensor_Type ntype, bool btvec)
 {
 	SetDataSelector(new CModelDataSelector(fem, ntype, btvec));
 }

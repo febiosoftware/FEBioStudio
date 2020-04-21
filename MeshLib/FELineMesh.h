@@ -13,6 +13,8 @@ public:
 
 	virtual void UpdateMeshData() = 0;
 
+	virtual void UpdateSelection();
+
 public: // node interface
 
 	// access node data

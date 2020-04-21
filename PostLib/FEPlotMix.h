@@ -1,7 +1,8 @@
 #pragma once
-#include "FEModel.h"
 
 namespace Post {
+
+class FEPostModel;
 
 class FEPlotMix
 {
@@ -9,9 +10,9 @@ public:
 	FEPlotMix(void);
 	~FEPlotMix(void);
 
-	FEModel* Load(const char** szfile, int n);
+	FEPostModel* Load(const char** szfile, int n);
 
 protected:
-	void ClearStates(FEModel& fem);
+	void ClearStates(FEPostModel& fem);
 };
 }

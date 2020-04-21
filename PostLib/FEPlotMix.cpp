@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "FEPostModel.h"
 #include "FEPlotMix.h"
 #include "FELSDYNAPlot.h"
 #include "XPLTLib/xpltFileReader.h"
@@ -22,7 +23,7 @@ FEPlotMix::~FEPlotMix(void)
 }
 
 //------------------------------------------------------------------------------
-FEModel* FEPlotMix::Load(const char **szfile, int n)
+FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 {
 	if (n <= 0) return 0;
 
@@ -30,7 +31,7 @@ FEModel* FEPlotMix::Load(const char **szfile, int n)
 	xpltFileReader* pfr = new xpltFileReader;
 
 	// load the first model
-	FEModel* pfem = new FEModel;
+	FEPostModel* pfem = new FEPostModel;
 	pfem->SetTitle("PlotMix");
 	pfr->SetReadStateFlag(XPLT_READ_FIRST_AND_LAST);
 	if (pfr->Load(*pfem, szfile[0]) == false) { delete pfem; return 0; }
@@ -59,7 +60,7 @@ FEModel* FEPlotMix::Load(const char **szfile, int n)
 	for (int i=1; i<n; ++i)
 	{
 		// create a new scene
-		FEModel fem2;
+		FEPostModel fem2;
 
 		// try to load the scene
 		if (pfr->Load(fem2, szfile[i]) == false)
@@ -107,7 +108,7 @@ FEModel* FEPlotMix::Load(const char **szfile, int n)
 }
 
 //------------------------------------------------------------------------------
-void FEPlotMix::ClearStates(FEModel &fem)
+void FEPlotMix::ClearStates(FEPostModel &fem)
 {
 	while (fem.GetStates() > 1) fem.DeleteState(0);
 }

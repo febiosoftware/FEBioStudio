@@ -10,7 +10,6 @@ class CLineChartData;
 namespace Post {
 	class FEPostMesh;
 	class FEState;
-	class FEModel;
 	class CGLPlaneCutPlot;
 }
 

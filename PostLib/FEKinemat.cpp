@@ -90,7 +90,7 @@ bool FEKinemat::ReadKine(const char* szfile)
 //-----------------------------------------------------------------------------
 bool FEKinemat::BuildStates(Post::CGLModel* glm)
 {
-	FEModel& fem = *glm->GetFEModel();
+	FEPostModel& fem = *glm->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	int NMAT = fem.Materials();
 	int NN = mesh.Nodes();

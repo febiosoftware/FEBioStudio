@@ -11,7 +11,7 @@ public:
 	FENikeImport();
 	~FENikeImport();
 
-	bool Load(FEModel& fem, const char* szfile);
+	bool Load(FEPostModel& fem, const char* szfile);
 
 protected:
 	char* get_line(char* szline);
@@ -27,7 +27,7 @@ protected:
 	int	m_nbel;	// nr of beam elements
 	int	m_nsel;	// nr of shell elements
 
-	FEModel*	m_pfem;
+	FEPostModel*	m_pfem;
 
 	FEPostMesh*	m_pm;
 };

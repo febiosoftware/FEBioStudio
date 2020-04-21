@@ -51,7 +51,7 @@ public:
 	FEASCIIImport(void);
 	~FEASCIIImport(void);
 
-	bool Load(FEModel& fem, const char* szfile);
+	bool Load(FEPostModel& fem, const char* szfile);
 
 protected:
 	bool ReadTitle    ();
@@ -61,7 +61,7 @@ protected:
 	bool ReadNodes   (ZONE& zone);
 	bool ReadElements(ZONE& zone);
 
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FEPostModel& fem);
 
 	bool getline(char* szline, int nmax);
 

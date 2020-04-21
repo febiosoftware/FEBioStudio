@@ -363,7 +363,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Elements"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
-			pcg->AddCommand(new CCmdSelectObject(pm->GetGObject(), badd));
+			pcg->AddCommand(new CCmdSelectObject(pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectElements(pm, pi, n, badd));
 		}
 		break;
@@ -372,7 +372,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Faces"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
-			pcg->AddCommand(new CCmdSelectObject(pm->GetGObject(), badd));
+			pcg->AddCommand(new CCmdSelectObject(pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectFaces(pm, pi, n, badd));
 		}
 		break;
@@ -381,7 +381,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Nodes"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
-			pcg->AddCommand(new CCmdSelectObject(pm->GetGObject(), badd));
+			pcg->AddCommand(new CCmdSelectObject(pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectFENodes(pm, pi, n, badd));
 		}
 		break;

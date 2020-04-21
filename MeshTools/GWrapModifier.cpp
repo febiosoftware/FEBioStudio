@@ -56,9 +56,9 @@ void GWrapModifier::Apply(GObject* po)
 	switch (ntype)
 	{
 	case 0: // normal projection
-		NormalProjection(pm, DS, tag, nsteps); break;
+		NormalProjection(po, DS, tag, nsteps); break;
 	case 1:	// closest point
-		ClosestPoint(pm, DS, tag); break;
+		ClosestPoint(po, DS, tag); break;
 	default:
 		assert(false);
 	}
@@ -125,7 +125,7 @@ void GWrapModifier::Apply(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-void GWrapModifier::ClosestPoint(FEMesh *pm, vector<vec3d>& DS, vector<int>& tag)
+void GWrapModifier::ClosestPoint(GObject *ps, vector<vec3d>& DS, vector<int>& tag)
 {
 	// get the target mesh
 	FEMesh* ptrg = m_po->GetFEMesh();
@@ -134,8 +134,8 @@ void GWrapModifier::ClosestPoint(FEMesh *pm, vector<vec3d>& DS, vector<int>& tag
 	FENodeFaceList NFL;
 	NFL.Build(ptrg);
 
-	// get the source object
-	GObject* ps = pm->GetGObject();
+	// get the source mesh
+	FEMesh* pm = ps->GetFEMesh();
 
 /*	for (int i=0; i<pm->Nodes(); ++i)
 	{
@@ -184,15 +184,15 @@ void GWrapModifier::ClosestPoint(FEMesh *pm, vector<vec3d>& DS, vector<int>& tag
 }
 
 //-----------------------------------------------------------------------------
-void GWrapModifier::NormalProjection(FEMesh *pm, vector<vec3d>& DS, vector<int>& tag, int nsteps)
+void GWrapModifier::NormalProjection(GObject* ps, vector<vec3d>& DS, vector<int>& tag, int nsteps)
 {
 	int i, j;
 
 	// get the target mesh
 	FEMesh* ptrg = m_po->GetFEMesh();
 
-	// get the source object
-	GObject* ps = pm->GetGObject();
+	// get the source mesh
+	FEMesh* pm = ps->GetFEMesh();
 
 	// store the original positions of the mesh
 	vector<vec3d> r0; r0.resize(pm->Nodes());

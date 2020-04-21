@@ -25,7 +25,7 @@ public:
 	FERAWImageReader();
 
 	// load image data
-	bool Load(FEModel& fem, const char* szfile);
+	bool Load(FEPostModel& fem, const char* szfile);
 
 	// set the options (must be done before loading!)
 	void SetOptions(OPTIONS& o) { m_ops = o; }

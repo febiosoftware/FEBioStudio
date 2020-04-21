@@ -12,6 +12,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <PostLib/constants.h>
+#include <PostLib/FEPostMesh.h>
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
 #include "PostDoc.h"
@@ -37,7 +38,7 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	}
 
 	Post::CGLModel* po = doc->GetGLModel();
-	Post::FEModel* pfem = doc->GetFEModel();
+	Post::FEPostModel* pfem = doc->GetFEModel();
 	Post::FEPostMesh* pfe = po->GetActiveMesh();
 	int nodes = pfe->Nodes();
 
@@ -136,7 +137,7 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 
 //-----------------------------------------------------------------------------
 // Evaluate the range of unpacked nodal data values
-CSummaryWindow::RANGE CSummaryWindow::EvalNodeRange(Post::FEModel& fem, int nstate, bool bsel)
+CSummaryWindow::RANGE CSummaryWindow::EvalNodeRange(Post::FEPostModel& fem, int nstate, bool bsel)
 {
 	RANGE rng = {-1e20f, 1e20f, 0.f};
 
@@ -167,7 +168,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalNodeRange(Post::FEModel& fem, int nsta
 
 //-----------------------------------------------------------------------------
 // Evaluate the range of unpacked nodal data values
-CSummaryWindow::RANGE CSummaryWindow::EvalEdgeRange(Post::FEModel& fem, int nstate, bool bsel)
+CSummaryWindow::RANGE CSummaryWindow::EvalEdgeRange(Post::FEPostModel& fem, int nstate, bool bsel)
 {
 	RANGE rng = {-1e20f, 1e20f, 0.f};
 
@@ -198,7 +199,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalEdgeRange(Post::FEModel& fem, int nsta
 
 //-----------------------------------------------------------------------------
 // Evaluate the range of unpacked element data values
-CSummaryWindow::RANGE CSummaryWindow::EvalElemRange(Post::FEModel& fem, int nstate, bool bsel, bool bvol)
+CSummaryWindow::RANGE CSummaryWindow::EvalElemRange(Post::FEPostModel& fem, int nstate, bool bsel, bool bvol)
 {
 	RANGE rng = {-1e20f, 1e20f, 0.f};
 
@@ -240,7 +241,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalElemRange(Post::FEModel& fem, int nsta
 
 //-----------------------------------------------------------------------------
 // Evaluate the range of unpacked face data values
-CSummaryWindow::RANGE CSummaryWindow::EvalFaceRange(Post::FEModel& fem, int nstate, bool bsel, bool bvol)
+CSummaryWindow::RANGE CSummaryWindow::EvalFaceRange(Post::FEPostModel& fem, int nstate, bool bsel, bool bvol)
 {
 	RANGE rng = {-1e20f, 1e20f, 0.f};
 

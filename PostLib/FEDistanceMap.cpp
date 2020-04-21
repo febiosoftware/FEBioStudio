@@ -79,7 +79,7 @@ void FEDistanceMap::BuildNormalList(FEDistanceMap::Surface& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEDistanceMap::Apply(FEModel& fem)
+void FEDistanceMap::Apply(FEPostModel& fem)
 {
 	static int ncalls = 0; ncalls++;
 	char szname[64];

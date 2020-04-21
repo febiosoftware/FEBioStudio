@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "DataFilter.h"
-#include "FEModel.h"
+#include "FEPostModel.h"
 #include "constants.h"
 #include "FEMeshData_T.h"
 #include "evaluate.h"
 using namespace Post;
 
-bool Post::DataScale(FEModel& fem, int nfield, double scale)
+bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 {
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	float fscale = (float) scale;
@@ -366,7 +366,7 @@ bool Post::DataScale(FEModel& fem, int nfield, double scale)
 
 //-----------------------------------------------------------------------------
 // Apply a smoothing step operation on data
-bool DataSmoothStep(FEModel& fem, int nfield, double theta)
+bool DataSmoothStep(FEPostModel& fem, int nfield, double theta)
 {
 	// loop over all states
 	int ndata = FIELD_CODE(nfield);
@@ -501,7 +501,7 @@ bool DataSmoothStep(FEModel& fem, int nfield, double theta)
 
 //-----------------------------------------------------------------------------
 // Apply a smoothing operation on data
-bool Post::DataSmooth(FEModel& fem, int nfield, double theta, int niters)
+bool Post::DataSmooth(FEPostModel& fem, int nfield, double theta, int niters)
 {
 	for (int n = 0; n<niters; ++n) 
 	{
@@ -520,7 +520,7 @@ double flt_div(double d, double s) { return d/s; }
 double flt_err(double d, double s) { return fabs(d - s); }
 
 //-----------------------------------------------------------------------------
-bool Post::DataArithmetic(FEModel& fem, int nfield, int nop, int noperand)
+bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 {
 	int ndst = FIELD_CODE(nfield);
 	int nsrc = FIELD_CODE(noperand);
@@ -692,7 +692,7 @@ bool Post::DataArithmetic(FEModel& fem, int nfield, int nop, int noperand)
 }
 
 //-----------------------------------------------------------------------------
-bool Post::DataGradient(FEModel& fem, int vecField, int sclField)
+bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
 {
 	int nvec = FIELD_CODE(vecField);
 	int nscl = FIELD_CODE(sclField);
@@ -1000,7 +1000,7 @@ void extractElemDataComponentNODE(Data_Type ntype, Post::FEMeshData& dst, Post::
 	}
 }
 
-FEDataField* Post::DataComponent(FEModel& fem, FEDataField* pdf, int ncomp, const std::string& sname)
+FEDataField* Post::DataComponent(FEPostModel& fem, FEDataField* pdf, int ncomp, const std::string& sname)
 {
 	if (pdf == 0) return 0;
 
@@ -1066,7 +1066,7 @@ FEDataField* Post::DataComponent(FEModel& fem, FEDataField* pdf, int ncomp, cons
 
 //-----------------------------------------------------------------------------
 // Calculate the fractional anisotropy of a tensor field
-bool Post::DataFractionalAnsisotropy(FEModel& fem, int scalarField, int tensorField)
+bool Post::DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tensorField)
 {
 	int ntns = FIELD_CODE(tensorField);
 	int nscl = FIELD_CODE(scalarField);

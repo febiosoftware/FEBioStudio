@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include <PostLib/FEModel.h>
+#include <PostLib/FEPostModel.h>
 
 namespace Post {
 	class CImageModel;
@@ -20,7 +20,7 @@ public:
 
 	void Update();
 
-	void Update(Post::FEModel* fem) override;
+	void Update(Post::FEPostModel* fem) override;
 
 private:
 	void UpdatePath();

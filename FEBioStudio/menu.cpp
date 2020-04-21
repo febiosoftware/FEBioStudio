@@ -832,7 +832,7 @@ void CMainWindow::ExportPostGeometry()
 	string sfilename = fileName.toStdString();
 	const char* szfilename = sfilename.c_str();
 
-	Post::FEModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	bool bret = false;
 	QString error("(unknown)");
