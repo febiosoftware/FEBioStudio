@@ -130,7 +130,6 @@ public:
 
 public:
 	void AutoPartitionElements();
-	void AutoPartitionSurface();
 	void AutoPartitionSurfaceQuick();
 	void AutoPartitionEdges();
 	void AutoPartitionNodes();

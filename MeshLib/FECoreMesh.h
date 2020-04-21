@@ -92,6 +92,9 @@ public:
 	int CountFacePartitions() const;
 	int CountElementPartitions() const;
 	int CountSmoothingGroups() const;
+
+public:
+	void AutoPartitionSurface();
 };
 
 inline FEElement_* FECoreMesh::ElementPtr(int n) { return ((n >= 0) && (n<Elements()) ? &ElementRef(n) : 0); }
