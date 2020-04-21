@@ -1,5 +1,6 @@
 #include "FEVTKImport.h"
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModel.h>
 
 FEVTKimport::FEVTKimport()
 {

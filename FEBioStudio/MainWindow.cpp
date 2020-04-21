@@ -42,6 +42,7 @@
 #include "DlgImportXPLT.h"
 #include "Commands.h"
 #include <XPLTLib/xpltFileReader.h>
+#include <MeshTools/GModel.h>
 
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"

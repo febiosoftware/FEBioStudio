@@ -5,7 +5,6 @@
 #include "LoadCurve.h"
 #include <FSCore/Serializable.h>
 #include "FEMLib/FECoreModel.h"
-#include "GModel.h"
 #include "FEMLib/FEBoundaryCondition.h"
 #include "FEMLib/FEAnalysisStep.h"
 #include "GMaterial.h"

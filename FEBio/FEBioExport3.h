@@ -6,6 +6,9 @@
 
 class FEDataMap;
 class FESurfaceLoad;
+class GPartList;
+class GMaterial;
+class GPart;
 
 //-----------------------------------------------------------------------------
 typedef std::pair<std::string, FEItemListBuilder*> NamedList;

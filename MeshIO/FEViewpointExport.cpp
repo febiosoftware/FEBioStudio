@@ -1,5 +1,6 @@
 #include "FEViewpointExport.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 FEViewpointExport::FEViewpointExport(void)
 {

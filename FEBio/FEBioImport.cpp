@@ -6,6 +6,7 @@
 #include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <MeshTools/GModel.h>
 #include "FEBioFormatOld.h"
 #include "FEBioFormat12.h"
 #include "FEBioFormat2.h"

@@ -7,6 +7,7 @@
 #include <FEMLib/FEBodyLoad.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/GModel.h>
 #include <memory>
 using namespace std;
 

@@ -3,6 +3,9 @@
 #include "FEBioExport.h"
 
 //-----------------------------------------------------------------------------
+class GPart;
+
+//-----------------------------------------------------------------------------
 //! Exporter for FEBio format specification version 2.x
 class FEBioExport2 : public FEBioExport
 {

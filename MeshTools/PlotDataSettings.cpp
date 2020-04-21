@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PlotDataSettings.h"
 #include "FEProject.h"
+#include "GModel.h"
 
 FEPlotVariable::FEPlotVariable(int module, const string& name, const string& displayName, bool bactive, bool bshow, DOMAIN_TYPE type)
 {

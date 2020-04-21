@@ -35,6 +35,7 @@
 #include "PostDoc.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
+#include <MeshTools/GModel.h>
 #include "Commands.h"
 #include <iostream>
 

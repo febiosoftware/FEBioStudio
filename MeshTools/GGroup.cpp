@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GGroup.h"
 #include "FEModel.h"
+#include "GModel.h"
 #include <GeomLib/GObject.h>
 
 GGroup::GGroup(FEModel* ps, int ntype) : FEItemListBuilder(ntype)

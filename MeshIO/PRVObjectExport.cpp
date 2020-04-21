@@ -4,6 +4,7 @@
 #include "PRVObjectFormat.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/GModel.h>
 
 PRVObjectExport::PRVObjectExport()
 {

@@ -31,6 +31,7 @@
 #include <CUILib/HistogramViewer.h>
 #include <PostLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
+#include <MeshTools/GModel.h>
 #include "Commands.h"
 
 //=============================================================================

@@ -1,5 +1,6 @@
 #include "FETetGenImport.h"
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
 FETetGenImport::FETetGenImport()

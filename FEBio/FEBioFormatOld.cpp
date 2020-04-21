@@ -6,6 +6,7 @@
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/GModel.h>
 
 FEBioFormatOld::FEBioFormatOld(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {

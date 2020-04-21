@@ -1,5 +1,6 @@
 #include "FEVTKExport.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 FEVTKExport::FEVTKExport(void)
 {

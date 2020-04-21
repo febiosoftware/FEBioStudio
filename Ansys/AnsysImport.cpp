@@ -1,5 +1,6 @@
 #include "AnsysImport.h"
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModel.h>
 
 AnsysImport::AnsysImport()
 {

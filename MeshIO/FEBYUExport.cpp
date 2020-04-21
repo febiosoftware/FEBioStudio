@@ -1,5 +1,6 @@
 #include "FEBYUExport.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 FEBYUExport::FEBYUExport(void)
 {

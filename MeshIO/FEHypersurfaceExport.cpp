@@ -1,5 +1,6 @@
 #include "FEHypersurfaceExport.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 FEHypersurfaceExport::FEHypersurfaceExport(void)
 {

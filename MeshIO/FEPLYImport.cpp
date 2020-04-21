@@ -1,5 +1,6 @@
 #include "FEPLYImport.h"
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/GModel.h>
 
 FEPLYImport::FEPLYImport()
 {

@@ -11,6 +11,7 @@
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/FEElementData.h>
+#include <MeshTools/GModel.h>
 #include <GeomLib/GObject.h>
 #include <memory>
 using namespace std;

@@ -9,6 +9,7 @@
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/GModel.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------

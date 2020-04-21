@@ -7,6 +7,7 @@
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEModelConstraint.h>
 #include "GGroup.h"
+#include "GModel.h"
 #include <GeomLib/GObject.h>
 #include <string>
 using namespace std;

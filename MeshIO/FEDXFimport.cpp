@@ -4,6 +4,7 @@
 
 #include "FEDXFimport.h"
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModel.h>
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
 

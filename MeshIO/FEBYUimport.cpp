@@ -1,5 +1,6 @@
 #include "FEBYUimport.h"
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/GModel.h>
 
 FEBYUimport::FEBYUimport()
 {

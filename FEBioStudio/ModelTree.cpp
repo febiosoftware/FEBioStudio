@@ -20,6 +20,7 @@
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <MeshTools/GModel.h>
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"
 #include <FSCore/FSDir.h>

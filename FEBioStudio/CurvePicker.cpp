@@ -9,6 +9,7 @@
 #include "FEBioStudio.h"
 #include "Document.h"
 #include "Commands.h"
+#include <MeshTools/GModel.h>
 
 class Ui::CCurvePicker
 {

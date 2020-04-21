@@ -13,6 +13,7 @@
 #include "SSHHandler.h"
 #include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {

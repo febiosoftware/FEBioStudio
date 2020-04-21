@@ -3,6 +3,7 @@
 #include "Document.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/GModel.h>
 #include <QDir>
 
 CImportSpringsTool::CImportSpringsTool() : CBasicTool("Import Springs", HAS_APPLY_BUTTON)

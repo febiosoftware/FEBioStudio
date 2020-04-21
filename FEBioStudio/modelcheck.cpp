@@ -6,6 +6,7 @@
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEBodyLoad.h>
+#include <MeshTools/GModel.h>
 #include <stdarg.h>
 #include <sstream>
 

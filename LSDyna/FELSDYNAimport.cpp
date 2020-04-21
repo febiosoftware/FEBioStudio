@@ -4,6 +4,7 @@
 
 #include "FELSDYNAimport.h"
 #include "GeomLib/GMeshObject.h"
+#include <MeshTools/GModel.h>
 #include <vector>
 using namespace std;
 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "StepImport.h"
 #include <GeomLib/GOCCObject.h>
+#include <MeshTools/GModel.h>
 #ifdef HAS_OCC
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>

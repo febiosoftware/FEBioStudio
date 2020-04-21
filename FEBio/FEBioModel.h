@@ -4,6 +4,7 @@
 #include <MeshTools/FEProject.h>
 
 class GMeshObject;
+class GDiscreteElementSet;
 
 //-----------------------------------------------------------------------------
 // Helper class for processing and finding mesh data 

@@ -12,6 +12,7 @@
 #include <MeshTools/GGroup.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
+#include <MeshTools/GModel.h>
 #include <GeomLib/GObject.h>
 #include <memory>
 #include <sstream>

@@ -1,6 +1,7 @@
 #include "FEInterface.h"
 #include <MeshTools/FEModel.h>
 #include <MeshTools/GGroup.h>
+#include <MeshTools/GModel.h>
 #include <set>
 #include <memory>
 using namespace std;

@@ -1,5 +1,6 @@
 #include "FESTLExport.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 FESTLExport::FESTLExport(void)
 {

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEPLYExport.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 FEPLYExport::FEPLYExport(void)
 {

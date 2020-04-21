@@ -9,6 +9,7 @@ typedef std::pair<std::string, FEItemListBuilder*> NamedList;
 
 //-----------------------------------------------------------------------------
 class FE1DPointFunction;
+class GPart;
 
 //-----------------------------------------------------------------------------
 //! Exporter for FEBio format specification version 2.5

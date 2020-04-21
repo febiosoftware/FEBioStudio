@@ -11,7 +11,8 @@
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GGroup.h>
+#include "GGroup.h"
+#include "GModel.h"
 #include <vector>
 #include <sstream>
 #include <algorithm>

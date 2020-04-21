@@ -5,6 +5,7 @@
 #include <FEMLib/FELoad.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/GModel.h>
 
 FEBioExport::FEBioExport()
 {

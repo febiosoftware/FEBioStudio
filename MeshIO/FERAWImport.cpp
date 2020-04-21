@@ -1,5 +1,6 @@
 #include "FERAWImport.h"
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
 FERAWImport::FERAWImport()

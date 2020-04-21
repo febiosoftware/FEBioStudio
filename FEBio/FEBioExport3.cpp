@@ -10,7 +10,9 @@
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/FEElementData.h>
+#include <MeshTools/GModel.h>
 #include <FEBioStudio/version.h>
+#include <MeshTools/GModel.h>
 #include <memory>
 #include <sstream>
 using namespace std;

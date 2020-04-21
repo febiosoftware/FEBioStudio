@@ -1,5 +1,6 @@
 #include "FEBinarySTLimport.h"
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
 FEBinarySTLimport::FEBinarySTLimport()

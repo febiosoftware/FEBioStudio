@@ -1,5 +1,6 @@
 #include "FESTLimport.h"
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
 FESTLimport::FESTLimport()

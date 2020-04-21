@@ -15,6 +15,7 @@
 #include <FEMLib/FESurfaceLoad.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/MeshLayer.h>
+#include <MeshTools/GModel.h>
 #include "Commands.h"
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)

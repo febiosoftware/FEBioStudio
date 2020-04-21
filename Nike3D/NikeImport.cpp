@@ -7,6 +7,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMaterial.h>
 #include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/GModel.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <string.h>
 

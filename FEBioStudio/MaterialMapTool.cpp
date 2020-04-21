@@ -5,6 +5,7 @@
 #include <PostLib/ColorMap.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 CMaterialMapTool::CMaterialMapTool() : CBasicTool("Material Map", HAS_APPLY_BUTTON)
 {

@@ -1,5 +1,6 @@
 #include "FEMeshImport.h"
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModel.h>
 
 FEMeshImport::FEMeshImport()
 {

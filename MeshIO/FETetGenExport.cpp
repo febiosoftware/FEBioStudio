@@ -1,5 +1,6 @@
 #include "FETetGenExport.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 
 FETetGenExport::FETetGenExport()
 {

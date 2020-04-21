@@ -16,6 +16,9 @@
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GLLib/GLCamera.h>
 
+class ObjectMeshList;
+class MeshLayer;
+
 //-----------------------------------------------------------------------------
 
 class CCmdAddObject : public CCommand

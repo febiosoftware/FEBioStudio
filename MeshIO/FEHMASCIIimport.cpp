@@ -1,5 +1,6 @@
 #include "FEHMASCIIimport.h"
 #include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModel.h>
 
 FEHMASCIIimport::FEHMASCIIimport()
 {

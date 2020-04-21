@@ -78,6 +78,7 @@
 #include <PostLib/ImageModel.h>
 #include <PostLib/GView.h>
 #include <PostLib/FELSDYNAExport.h>
+#include <MeshTools/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>

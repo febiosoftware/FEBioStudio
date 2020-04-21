@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DlgEditOutput.h"
 #include <MeshTools/FEProject.h>
+#include <MeshTools/GModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/FEGroup.h>

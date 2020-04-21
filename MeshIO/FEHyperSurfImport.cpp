@@ -1,5 +1,6 @@
 #include "FEHyperSurfImport.h"
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/GModel.h>
 
 FEHyperSurfImport::FEHyperSurfImport()
 {

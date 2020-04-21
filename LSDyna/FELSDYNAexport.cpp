@@ -1,5 +1,6 @@
 #include "FELSDYNAexport.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/GModel.h>
 #include <memory>
 
 //-----------------------------------------------------------------------------

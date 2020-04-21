@@ -22,6 +22,7 @@
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
+#include <MeshTools/GModel.h>
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
 #include "PostDoc.h"
