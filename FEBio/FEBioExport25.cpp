@@ -4233,32 +4233,35 @@ void FEBioExport25::WriteInitialSection()
 	for (int i=0; i<s.RigidConstraints(); ++i)
 	{
 		FERigidConstraint* rc = s.RigidConstraint(i);
-		GMaterial* pgm = fem.GetMaterialFromID(rc->GetMaterialID());
-		if (pgm == 0) throw MissingRigidBody(rc->GetName().c_str());
-		FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
-		if (pm == 0) throw InvalidMaterialReference();
+		if (rc->IsActive())
+		{
+			GMaterial* pgm = fem.GetMaterialFromID(rc->GetMaterialID());
+			if (pgm == 0) throw MissingRigidBody(rc->GetName().c_str());
+			FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
+			if (pm == 0) throw InvalidMaterialReference();
 
-		if (rc->Type() == FE_RIGID_INIT_VELOCITY)
-		{
-			FERigidVelocity* rv = dynamic_cast<FERigidVelocity*>(rc);
-			XMLElement el("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
+			if (rc->Type() == FE_RIGID_INIT_VELOCITY)
 			{
-				m_xml.add_leaf("initial_velocity", rv->GetVelocity());
+				FERigidVelocity* rv = dynamic_cast<FERigidVelocity*>(rc);
+				XMLElement el("rigid_body");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					m_xml.add_leaf("initial_velocity", rv->GetVelocity());
+				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
-		}
-		else if (rc->Type() == FE_RIGID_INIT_ANG_VELOCITY)
-		{
-			FERigidAngularVelocity* rv = dynamic_cast<FERigidAngularVelocity*>(rc);
-			XMLElement el("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
+			else if (rc->Type() == FE_RIGID_INIT_ANG_VELOCITY)
 			{
-				m_xml.add_leaf("initial_angular_velocity", rv->GetVelocity());
+				FERigidAngularVelocity* rv = dynamic_cast<FERigidAngularVelocity*>(rc);
+				XMLElement el("rigid_body");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					m_xml.add_leaf("initial_angular_velocity", rv->GetVelocity());
+				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
 		}
 	}
 }
@@ -4878,61 +4881,63 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 	for (int i=0; i<s.RigidConstraints(); ++i)
 	{
 		FERigidConstraint* ps = s.RigidConstraint(i);
-
-		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
-		if (pgm == 0) throw MissingRigidBody(ps->GetName().c_str());
-		FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
-		if (pm == 0) throw InvalidMaterialReference();
-
-		if (ps->Type() == FE_RIGID_FIXED)
+		if (ps->IsActive())
 		{
-			FERigidFixed* rc = dynamic_cast<FERigidFixed*>(ps);
-			XMLElement el;
-			el.name("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
+			GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
+			if (pgm == 0) throw MissingRigidBody(ps->GetName().c_str());
+			FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
+			if (pm == 0) throw InvalidMaterialReference();
+
+			if (ps->Type() == FE_RIGID_FIXED)
 			{
-				for (int j = 0; j<6; ++j)
-				if (rc->GetDOF(j))
+				FERigidFixed* rc = dynamic_cast<FERigidFixed*>(ps);
+				XMLElement el;
+				el.name("rigid_body");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
 				{
-					XMLElement el("fixed");
-					el.add_attribute("bc", szbc[j]);
-					m_xml.add_empty(el);
+					for (int j = 0; j < 6; ++j)
+						if (rc->GetDOF(j))
+						{
+							XMLElement el("fixed");
+							el.add_attribute("bc", szbc[j]);
+							m_xml.add_empty(el);
+						}
 				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
-		}
-		else if (ps->Type() == FE_RIGID_DISPLACEMENT)
-		{
-			FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
-            XMLElement el;
-            el.name("rigid_body");
-            el.add_attribute("mat", pgm->m_ntag);
-            m_xml.add_branch(el);
-            {
-				XMLElement el("prescribed");
-				el.add_attribute("bc", szbc[rc->GetDOF()]);
-				el.add_attribute("lc", rc->GetLoadCurve()->GetID());
-				el.value(rc->GetValue());
-				m_xml.add_leaf(el);
-			}
-            m_xml.close_branch();
-        }
-		else if (ps->Type() == FE_RIGID_FORCE)
-		{
-			FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
-			XMLElement el;
-			el.name("rigid_body");
-			el.add_attribute("mat", pgm->m_ntag);
-			m_xml.add_branch(el);
+			else if (ps->Type() == FE_RIGID_DISPLACEMENT)
 			{
-				XMLElement el("force");
-				el.add_attribute("bc", szbc[rc->GetDOF()]);
-				el.add_attribute("lc", rc->GetLoadCurve()->GetID());
-				el.value(rc->GetValue());
-				m_xml.add_leaf(el);
+				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				XMLElement el;
+				el.name("rigid_body");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					XMLElement el("prescribed");
+					el.add_attribute("bc", szbc[rc->GetDOF()]);
+					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+					el.value(rc->GetValue());
+					m_xml.add_leaf(el);
+				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
+			else if (ps->Type() == FE_RIGID_FORCE)
+			{
+				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				XMLElement el;
+				el.name("rigid_body");
+				el.add_attribute("mat", pgm->m_ntag);
+				m_xml.add_branch(el);
+				{
+					XMLElement el("force");
+					el.add_attribute("bc", szbc[rc->GetDOF()]);
+					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+					el.value(rc->GetValue());
+					m_xml.add_leaf(el);
+				}
+				m_xml.close_branch();
+			}
 		}
 	}
 }
