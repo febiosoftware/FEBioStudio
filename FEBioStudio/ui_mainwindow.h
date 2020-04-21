@@ -736,6 +736,12 @@ public:
 		QAction* actionPrev = addAction("previous", "actionPrev", "prev");
 		actionPlay = addAction("Play", "actionPlay", "play"); actionPlay->setShortcut(Qt::Key_Space);
 		actionPlay->setCheckable(true);
+
+		QIcon icon(":/icons/play.png");
+		QPixmap pix(":/icons/pause.png");
+		icon.addPixmap(pix, QIcon::Mode::Active, QIcon::State::On);
+		actionPlay->setIcon(icon);
+
 		QAction* actionNext = addAction("next", "actionNext", "next");
 		QAction* actionLast = addAction("last", "actionLast", "forward");
 		QAction* actionTime = addAction("Time settings", "actionTimeSettings", "clock");

@@ -146,5 +146,6 @@
 		<file>icons/snapshot.png</file>
 		<file>icons/ignore.png</file>
 		<file>icons/refresh.png</file>
+		<file>icons/pause.png</file>
 	</qresource>
 </RCC>
