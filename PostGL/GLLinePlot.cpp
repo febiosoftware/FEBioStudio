@@ -47,6 +47,7 @@ void CGLLinePlot::UpdateData(bool bsave)
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		m_nmode = GetIntValue(RENDER_MODE);
 		m_line = GetFloatValue(LINE_WIDTH);
+		m_show = GetBoolValue(SHOW_ALWAYS);
 	}
 	else
 	{
@@ -55,6 +56,7 @@ void CGLLinePlot::UpdateData(bool bsave)
 		SetColorValue(SOLID_COLOR, m_col);
 		SetIntValue(RENDER_MODE, m_nmode);
 		SetFloatValue(LINE_WIDTH, m_line);
+		SetBoolValue(SHOW_ALWAYS, m_show);
 	}
 }
 

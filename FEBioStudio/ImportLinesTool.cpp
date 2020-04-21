@@ -109,7 +109,7 @@ void CImportLinesTool::OnApply()
 			ui->m_ncount++;
 			ui->name->setText(QString("Lines%1").arg(ui->m_ncount));
 
-			GetMainWindow()->UpdateModel(pgl, true);
+			GetMainWindow()->UpdatePostPanel(false, pgl);
 			updateUi();
 		}
 		else
@@ -248,8 +248,23 @@ int CImportLinesTool::ReadAng2Format(const char* szfile)
 	// store the raw data
 	vector<pair<FRAG, FRAG> > raw;
 
+	// we need to make sure that the mesh' coordinates
+	// are the initial coordinates
+	const int N = mesh.Nodes();
+	vector<vec3d> tmp(N);
+
+	// copy the initial positions to this mesh
+	for (int i = 0; i < N; ++i)
+	{
+		tmp[i] = mesh.Node(i).r;
+		mesh.Node(i).r = fem.NodePosition(i, 0);
+	}
+
+	// build search tool
 	FEFindElement find(mesh);
 	find.Init(flags);
+
+	int nret = 1;
 
 	int nstate = 0;
 	while (!feof(fp) && !ferror(fp))
@@ -276,18 +291,18 @@ int CImportLinesTool::ReadAng2Format(const char* szfile)
 
 		// read number of segments 
 		unsigned int segs = 0;
-		if (fread(&segs, sizeof(unsigned int), 1, fp) != 1) { fclose(fp); return 2; }
+		if (fread(&segs, sizeof(unsigned int), 1, fp) != 1) { fclose(fp); nret = 2; break; }
 
 		// read time stamp (is not used right now)
 		float ftime = 0.0f;
-		if (fread(&ftime, sizeof(float), 1, fp) != 1) { fclose(fp); return 2; }
+		if (fread(&ftime, sizeof(float), 1, fp) != 1) { fclose(fp); nret = 2; break; }
 
 		// read the segments
 		int nd = 6 + 2 * ndataFields;
 		vector<float> d(nd, 0.f);
 		for (int i=0; i<segs; ++i)
 		{
-			if (fread(&d[0], sizeof(float), nd, fp) != nd) { fclose(fp); return 2; }
+			if (fread(&d[0], sizeof(float), nd, fp) != nd) { fclose(fp); nret = 2; break; }
 
 			// store the raw coordinates
 			float* c = &d[0];
@@ -315,14 +330,17 @@ int CImportLinesTool::ReadAng2Format(const char* szfile)
 			// add the line data
 			s.AddLine(r0, r1, va, vb, a.iel, b.iel);
 		}
+		if (nret != 1) break;
 
 		// next state
 		nstate++;
 	}
-
 	fclose(fp);
 
-	return 1;
+	// restore mesh' nodal positions
+	for (int i = 0; i < N; ++i) mesh.Node(i).r = tmp[i];
+
+	return nret;
 }
 
 
