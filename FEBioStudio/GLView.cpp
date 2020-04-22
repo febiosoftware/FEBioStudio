@@ -1288,7 +1288,7 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt)
 	}
 
 	// get the frame rate
-	float fps = 0.f; //m_wnd->GetTimeController()->GetFPS();
+	float fps = m_pWnd->GetActiveDocument()->GetTimeSettings().m_fps;
 	if (fps == 0.f) fps = 10.f;
 
 	// create the animation

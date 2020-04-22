@@ -38,5 +38,7 @@ protected:
     
 private:
     bool Rgb24ToYuv420p(QImage &im);
+
+    int m_repeatFrames;
 };
 #endif

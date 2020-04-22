@@ -3,28 +3,28 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include "PostDoc.h"
 #include <PostLib/ImgAnimation.h>
 #include <PostLib/AVIAnimation.h>
 #include <PostLib/MPEGAnimation.h>
+#include <PostLib/GIFAnimation.h>
 
 void CMainWindow::on_actionRecordNew_triggered()
 {
+	QStringList filters;
 #ifdef WIN32
 	int noff = 1;
-	QStringList filters;
-	filters << "Windows AVI files (*.avi)"
-		<< "Bitmap files (*.bmp)"
-		<< "JPG files (*.jpg)"
-		<< "PNG files (*.png)"
-		<< "MPG files (*.mpg)";
+	filters << "Windows AVI files (*.avi)";
 #else
 	int noff = 0;
-	QStringList filters;
-	filters << "Bitmap files (*.bmp)"
-		<< "JPG files (*.jpg)"
-		<< "Tiff files (*.tiff)"
-		<< "MPG files (*.mpg)";
 #endif
+
+	filters << "MPG files (*.mpg)"
+			<< "GIF files (*.gif)"
+			<< "PNG files (*.png)"
+			<< "Bitmap files (*.bmp)"
+			<< "JPG files (*.jpg)";
+
 
 	QFileDialog dlg(this, "Save");
 	dlg.setNameFilters(filters);
@@ -55,24 +55,6 @@ void CMainWindow::on_actionRecordNew_triggered()
 		if (nfilter == noff)
 #endif
 		{
-			panim = new CBmpAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".bmp");
-			bret = ui->glview->NewAnimation(szfilename, panim);
-		}
-		else if (nfilter == noff + 1)
-		{
-			panim = new CJpgAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".jpg");
-			bret = ui->glview->NewAnimation(szfilename, panim);
-		}
-		else if (nfilter == noff + 2)
-		{
-			panim = new CPNGAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".png");
-			bret = ui->glview->NewAnimation(szfilename, panim);
-		}
-		else if (nfilter == noff + 3)
-		{
 #ifdef FFMPEG
 			panim = new CMPEGAnimation;
 			if (ch == 0) sprintf(szfilename + l, ".mpg");
@@ -80,6 +62,31 @@ void CMainWindow::on_actionRecordNew_triggered()
 #else
 			QMessageBox::critical(this, "FEBio Studio", "This video format is not supported in this version");
 #endif
+		}
+		else if (nfilter == noff + 1)
+		{
+			panim = new CGIFAnimation;
+			if (ch == 0) sprintf(szfilename + l, ".gif");
+			bret = ui->glview->NewAnimation(szfilename, panim);
+		}
+		else if (nfilter == noff + 2)
+		{
+			panim = new CPNGAnimation;
+			if (ch == 0) sprintf(szfilename + l, ".png");
+			bret = ui->glview->NewAnimation(szfilename, panim);
+
+		}
+		else if (nfilter == noff + 3)
+		{
+			panim = new CBmpAnimation;
+			if (ch == 0) sprintf(szfilename + l, ".bmp");
+			bret = ui->glview->NewAnimation(szfilename, panim);
+		}
+		else if (nfilter == noff + 4)
+		{
+			panim = new CJpgAnimation;
+			if (ch == 0) sprintf(szfilename + l, ".jpg");
+			bret = ui->glview->NewAnimation(szfilename, panim);
 		}
 
 		if (bret)
