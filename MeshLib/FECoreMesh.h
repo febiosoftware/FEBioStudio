@@ -104,3 +104,7 @@ inline const FEElement_* FECoreMesh::ElementPtr(int n) const { return ((n >= 0) 
 double IntegrateQuad(vec3d* r, float* v);
 float IntegrateQuad(vec3f* r, float* v);
 float IntegrateHex(vec3f* r, float* v);
+
+double hex8_volume(vec3d* r);
+double tet4_volume(vec3d* r);
+double tet10_volume(vec3d* r);

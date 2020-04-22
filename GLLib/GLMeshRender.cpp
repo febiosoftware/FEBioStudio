@@ -2065,7 +2065,7 @@ void RenderFace2Outline(FECoreMesh* pm, FEFace& face, int ndivs)
 		a[0] = to_vec3f(pm->Node(e.n[0]).r);
 		a[1] = to_vec3f(pm->Node(e.n[1]).r);
 		a[2] = to_vec3f(pm->Node(e.n[2]).r);
-		const int M = 2 * ndivs;
+		const int M = (ndivs < 2 ? 2 : ndivs);
 		for (int n = 0; n<M; ++n)
 		{
 			double t = n / (double)M;
@@ -2097,7 +2097,7 @@ void RenderFace3Outline(FECoreMesh* pm, FEFace& face, int ndivs)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderElementOutline(FEElement_& el, FECoreMesh* pm)
+void GLMeshRender::RenderElementOutline(FEElement_& el, FECoreMesh* pm, int ndivs)
 {
 	glBegin(GL_LINES);
 	switch (el.Type())
@@ -2194,14 +2194,29 @@ void GLMeshRender::RenderElementOutline(FEElement_& el, FECoreMesh* pm)
 	case FE_TET10:
 	case FE_TET15:
 	{
+		FEEdge edge;
+		edge.SetType(FE_EDGE3);
+		vec3f a[3];
 		int(*et)[3] = ET_TET10;
 		for (int i = 0; i<6; ++i)
 		{
 			vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
-			vec3d& r1 = pm->Node(el.m_node[et[i][2]]).r;
-			vec3d& r2 = pm->Node(el.m_node[et[i][1]]).r;
-			glx::vertex3d(r0); glx::vertex3d(r2);
-			glx::vertex3d(r2); glx::vertex3d(r1);
+			vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+			vec3d& r2 = pm->Node(el.m_node[et[i][2]]).r;
+
+			vec3f p = to_vec3f(r0);
+			a[0] = to_vec3f(r0);
+			a[1] = to_vec3f(r1);
+			a[2] = to_vec3f(r2);
+			const int M = (ndivs < 2 ? 2 : ndivs);
+			for (int n = 1; n<=M; ++n)
+			{
+				double t = n / (double)M;
+				vec3f q = edge.eval(a, t);
+				glVertex3d(p.x, p.y, p.z);
+				glVertex3d(q.x, q.y, q.z);
+				p = q;
+			}
 		}
 	}
 	break;

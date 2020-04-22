@@ -1,4 +1,6 @@
 #include "FECoreMesh.h"
+#include "hex8.h"
+#include "tet4.h"
 
 //-----------------------------------------------------------------------------
 //! constructor
@@ -119,11 +121,8 @@ double FECoreMesh::ElementVolume(int iel)
 }
 
 //-----------------------------------------------------------------------------
-// Calculate the volume of a hex element
-double FECoreMesh::HexVolume(const FEElement_& el)
+double hex8_volume(vec3d* r)
 {
-	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
-
 	// gauss-point data
 	const double a = 1.f / (float)sqrt(3.0);
 	const int NELN = 8;
@@ -141,81 +140,38 @@ double FECoreMesh::HexVolume(const FEElement_& el)
 
 	if (bfirst)
 	{
-		int n;
-
-		// calculate shape function values at gauss points
-		for (n = 0; n<NINT; ++n)
+		for (int n = 0; n<NINT; ++n)
 		{
-			H[n][0] = 0.125*(1 - gr[n])*(1 - gs[n])*(1 - gt[n]);
-			H[n][1] = 0.125*(1 + gr[n])*(1 - gs[n])*(1 - gt[n]);
-			H[n][2] = 0.125*(1 + gr[n])*(1 + gs[n])*(1 - gt[n]);
-			H[n][3] = 0.125*(1 - gr[n])*(1 + gs[n])*(1 - gt[n]);
-			H[n][4] = 0.125*(1 - gr[n])*(1 - gs[n])*(1 + gt[n]);
-			H[n][5] = 0.125*(1 + gr[n])*(1 - gs[n])*(1 + gt[n]);
-			H[n][6] = 0.125*(1 + gr[n])*(1 + gs[n])*(1 + gt[n]);
-			H[n][7] = 0.125*(1 - gr[n])*(1 + gs[n])*(1 + gt[n]);
-		}
+			// calculate shape function values at gauss points
+			HEX8::shape(H[n], gr[n], gs[n], gt[n]);
 
-		// calculate local derivatives of shape functions at gauss points
-		for (n = 0; n<NINT; ++n)
-		{
-			Gr[n][0] = -0.125*(1 - gs[n])*(1 - gt[n]);
-			Gr[n][1] = 0.125*(1 - gs[n])*(1 - gt[n]);
-			Gr[n][2] = 0.125*(1 + gs[n])*(1 - gt[n]);
-			Gr[n][3] = -0.125*(1 + gs[n])*(1 - gt[n]);
-			Gr[n][4] = -0.125*(1 - gs[n])*(1 + gt[n]);
-			Gr[n][5] = 0.125*(1 - gs[n])*(1 + gt[n]);
-			Gr[n][6] = 0.125*(1 + gs[n])*(1 + gt[n]);
-			Gr[n][7] = -0.125*(1 + gs[n])*(1 + gt[n]);
-
-			Gs[n][0] = -0.125*(1 - gr[n])*(1 - gt[n]);
-			Gs[n][1] = -0.125*(1 + gr[n])*(1 - gt[n]);
-			Gs[n][2] = 0.125*(1 + gr[n])*(1 - gt[n]);
-			Gs[n][3] = 0.125*(1 - gr[n])*(1 - gt[n]);
-			Gs[n][4] = -0.125*(1 - gr[n])*(1 + gt[n]);
-			Gs[n][5] = -0.125*(1 + gr[n])*(1 + gt[n]);
-			Gs[n][6] = 0.125*(1 + gr[n])*(1 + gt[n]);
-			Gs[n][7] = 0.125*(1 - gr[n])*(1 + gt[n]);
-
-			Gt[n][0] = -0.125*(1 - gr[n])*(1 - gs[n]);
-			Gt[n][1] = -0.125*(1 + gr[n])*(1 - gs[n]);
-			Gt[n][2] = -0.125*(1 + gr[n])*(1 + gs[n]);
-			Gt[n][3] = -0.125*(1 - gr[n])*(1 + gs[n]);
-			Gt[n][4] = 0.125*(1 - gr[n])*(1 - gs[n]);
-			Gt[n][5] = 0.125*(1 + gr[n])*(1 - gs[n]);
-			Gt[n][6] = 0.125*(1 + gr[n])*(1 + gs[n]);
-			Gt[n][7] = 0.125*(1 - gr[n])*(1 + gs[n]);
+			// calculate local derivatives of shape functions at gauss points
+			HEX8::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
 		}
 
 		bfirst = false;
 	}
 
-	double *Grn, *Gsn, *Gtn;
-	double vol = 0, detJ;
 	double J[3][3];
-	int i, n;
-
-	vec3d rt[NELN];
-	for (i = 0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	for (n = 0; n<NINT; ++n)
+	double vol = 0;
+	for (int n = 0; n<NINT; ++n)
 	{
-		Grn = Gr[n];
-		Gsn = Gs[n];
-		Gtn = Gt[n];
+		double* Grn = Gr[n];
+		double* Gsn = Gs[n];
+		double* Gtn = Gt[n];
 
 		J[0][0] = J[0][1] = J[0][2] = 0.0;
 		J[1][0] = J[1][1] = J[1][2] = 0.0;
 		J[2][0] = J[2][1] = J[2][2] = 0.0;
-		for (i = 0; i<NELN; ++i)
+		for (int i = 0; i<NELN; ++i)
 		{
 			double Gri = Grn[i];
 			double Gsi = Gsn[i];
 			double Gti = Gtn[i];
 
-			double x = rt[i].x;
-			double y = rt[i].y;
-			double z = rt[i].z;
+			double x = r[i].x;
+			double y = r[i].y;
+			double z = r[i].z;
 
 			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
 			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
@@ -223,7 +179,7 @@ double FECoreMesh::HexVolume(const FEElement_& el)
 		}
 
 		// calculate the determinant
-		detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+		double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
 			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
 			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
 
@@ -231,6 +187,18 @@ double FECoreMesh::HexVolume(const FEElement_& el)
 	}
 
 	return vol;
+}
+
+//-----------------------------------------------------------------------------
+// Calculate the volume of a hex element
+double FECoreMesh::HexVolume(const FEElement_& el)
+{
+	assert((el.Type() == FE_HEX8) || (el.Type() == FE_HEX20) || (el.Type() == FE_HEX27));
+
+	vec3d rt[FEElement::MAX_NODES];
+	for (int i = 0; i<8; ++i) rt[i] = m_Node[el.m_node[i]].r;
+
+	return hex8_volume(rt);
 }
 
 //-----------------------------------------------------------------------------
@@ -451,12 +419,8 @@ double FECoreMesh::PyramidVolume(const FEElement_& el)
 }
 
 //-----------------------------------------------------------------------------
-// Calculate the volume of a tetrahedral element
-double FECoreMesh::TetVolume(const FEElement_& el)
+double tet4_volume(vec3d* r)
 {
-	assert((el.Type() == FE_TET4) || (el.Type() == FE_TET10)
-		|| (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
-
 	// gauss-point data
 	const double a = 0.58541020f;
 	const double b = 0.13819660f;
@@ -478,65 +442,38 @@ double FECoreMesh::TetVolume(const FEElement_& el)
 
 	if (bfirst)
 	{
-		int n;
-
-		// calculate shape function values at gauss points
-		for (n = 0; n<NINT; ++n)
+		for (int n = 0; n<NINT; ++n)
 		{
-			H[n][0] = 1.0 - gr[n] - gs[n] - gt[n];
-			H[n][1] = gr[n];
-			H[n][2] = gs[n];
-			H[n][3] = gt[n];
-		}
+			// calculate shape function values at gauss points
+			TET4::shape(H[n], gr[n], gs[n], gt[n]);
 
-		// calculate local derivatives of shape functions at gauss points
-		for (n = 0; n<NINT; ++n)
-		{
-			Gr[n][0] = -1.0;
-			Gr[n][1] = 1.0;
-			Gr[n][2] = 0.0;
-			Gr[n][3] = 0.0;
-
-			Gs[n][0] = -1.0;
-			Gs[n][1] = 0.0;
-			Gs[n][2] = 1.0;
-			Gs[n][3] = 0.0;
-
-			Gt[n][0] = -1.0;
-			Gt[n][1] = 0.0;
-			Gt[n][2] = 0.0;
-			Gt[n][3] = 1.0;
+			// calculate local derivatives of shape functions at gauss points
+			TET4::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
 		}
 
 		bfirst = false;
 	}
 
-	double *Grn, *Gsn, *Gtn;
-	double vol = 0, detJ;
 	double J[3][3];
-	int i, n;
-
-	vec3d rt[NELN];
-	for (i = 0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	for (n = 0; n<NINT; ++n)
+	double vol = 0;
+	for (int n = 0; n<NINT; ++n)
 	{
-		Grn = Gr[n];
-		Gsn = Gs[n];
-		Gtn = Gt[n];
+		double* Grn = Gr[n];
+		double* Gsn = Gs[n];
+		double* Gtn = Gt[n];
 
 		J[0][0] = J[0][1] = J[0][2] = 0.0;
 		J[1][0] = J[1][1] = J[1][2] = 0.0;
 		J[2][0] = J[2][1] = J[2][2] = 0.0;
-		for (i = 0; i<NELN; ++i)
+		for (int i = 0; i<NELN; ++i)
 		{
 			double Gri = Grn[i];
 			double Gsi = Gsn[i];
 			double Gti = Gtn[i];
 
-			double x = rt[i].x;
-			double y = rt[i].y;
-			double z = rt[i].z;
+			double x = r[i].x;
+			double y = r[i].y;
+			double z = r[i].z;
 
 			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
 			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
@@ -544,7 +481,7 @@ double FECoreMesh::TetVolume(const FEElement_& el)
 		}
 
 		// calculate the determinant
-		detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+		double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
 			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
 			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
 
@@ -552,6 +489,103 @@ double FECoreMesh::TetVolume(const FEElement_& el)
 	}
 
 	return vol;
+}
+
+//-----------------------------------------------------------------------------
+double tet10_volume(vec3d* r)
+{
+	// gauss-point data
+	const double a = 0.58541020;
+	const double b = 0.13819660;
+	const double w = 1.0 / 24.0;
+
+	const int NELN = 10;
+	const int NINT = 4;
+
+	static double gr[NINT] = { b, a, b, b };
+	static double gs[NINT] = { b, b, a, b };
+	static double gt[NINT] = { b, b, b, a };
+	static double gw[NINT] = { w, w, w, w };
+
+	static double H[NINT][NELN] = { 0 };
+	static double Gr[NINT][NELN] = { 0 };
+	static double Gs[NINT][NELN] = { 0 };
+	static double Gt[NINT][NELN] = { 0 };
+	static bool bfirst = true;
+
+	if (bfirst)
+	{
+		for (int n = 0; n<NINT; ++n)
+		{
+			// calculate shape function values at gauss points
+			TET4::shape(H[n], gr[n], gs[n], gt[n]);
+
+			// calculate local derivatives of shape functions at gauss points
+			TET4::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+		}
+
+		bfirst = false;
+	}
+
+	double J[3][3];
+	double vol = 0;
+	for (int n = 0; n<NINT; ++n)
+	{
+		double* Grn = Gr[n];
+		double* Gsn = Gs[n];
+		double* Gtn = Gt[n];
+
+		J[0][0] = J[0][1] = J[0][2] = 0.0;
+		J[1][0] = J[1][1] = J[1][2] = 0.0;
+		J[2][0] = J[2][1] = J[2][2] = 0.0;
+		for (int i = 0; i<NELN; ++i)
+		{
+			double Gri = Grn[i];
+			double Gsi = Gsn[i];
+			double Gti = Gtn[i];
+
+			double x = r[i].x;
+			double y = r[i].y;
+			double z = r[i].z;
+
+			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+			J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+		}
+
+		// calculate the determinant
+		double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+
+		vol += detJ*gw[n];
+	}
+
+	return vol;
+}
+
+//-----------------------------------------------------------------------------
+// Calculate the volume of a tetrahedral element
+double FECoreMesh::TetVolume(const FEElement_& el)
+{
+	assert((el.Type() == FE_TET4) || (el.Type() == FE_TET10)
+		|| (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
+
+	vec3d rt[FEElement::MAX_NODES];
+	for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
+
+	switch (el.Type())
+	{
+	case FE_TET4:
+	case FE_TET20:
+		return tet4_volume(rt);
+		break;
+	case FE_TET10:
+	case FE_TET15:
+		return tet10_volume(rt);
+		break;
+	}
+	return 0.0;
 }
 
 //-----------------------------------------------------------------------------

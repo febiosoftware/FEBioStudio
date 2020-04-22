@@ -14,7 +14,7 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddIntParam (-1, "Data field", "Data field")->SetEnumNames("@data_scalar");
 	AddBoolParam(true, "Gradient smoothing");
 	AddIntParam (0, "Color map")->SetEnumNames("@color_map");
-	AddBoolParam(true, "Nodal Values");
+	AddBoolParam(true, "Nodal smoothing");
 	AddIntParam (0, "Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddIntParam (10, "Range divisions")->SetIntRange(1, 100);
 	AddBoolParam(true, "Show Legend");

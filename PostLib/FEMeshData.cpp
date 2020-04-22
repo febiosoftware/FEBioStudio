@@ -753,8 +753,56 @@ void FEAlmansi::eval(int n, mat3fs* pv)
 }
 
 //-----------------------------------------------------------------------------
+double element_volume(int ntype, vec3d* r)
+{
+	switch (ntype)
+	{
+	case FE_TET4:
+	case FE_TET20:
+		return tet4_volume(r);
+		break;
+	case FE_TET10:
+	case FE_TET15:
+		return tet10_volume(r);
+		break;
+	case FE_HEX8:
+	case FE_HEX20:
+	case FE_HEX27:
+		return hex8_volume(r);
+		break;
+	}
+	return 0.0;
+}
+
+//-----------------------------------------------------------------------------
 // Volume ratio
 //
+void FEVolRatio::eval(int n, float* pv)
+{
+	FEPostModel& fem = *GetFEModel();
+	FEPostMesh& m = *GetFEMesh();
+
+	FEElement_* pe = &m.ElementRef(n);
+
+	// get the initial and current nodal positions
+	int N = pe->Nodes();
+	vec3d X[FEElement::MAX_NODES], x[FEElement::MAX_NODES];
+	int ntime = m_state->GetID();
+	for (int i=0; i<N; i++) 
+	{ 
+		int node = pe->m_node[i];
+		X[i] = fem.NodePosition(node, 0); 
+		x[i] = fem.NodePosition(node, ntime);
+	}
+
+	double v0 = element_volume(pe->Type(), X);
+	double vt = element_volume(pe->Type(), x);
+
+	if (v0 == 0.0) *pv = 0.f;
+	else *pv = (float) (vt / v0);
+}
+
+/*
 void FEVolRatio::eval(int n, float* pv)
 {
 	static double dN_hex[3][8] = {
@@ -772,18 +820,12 @@ void FEVolRatio::eval(int n, float* pv)
 		{-1,0,1,0 },
 		{-1,0,0,1 }};
 
-	int i;
-
+	FEPostModel& fem = *GetFEModel();
 	FEPostMesh& m = *GetFEMesh();
 	FEElement_* pe = &m.ElementRef(n);
 
-	int N = pe->Nodes();
-	if (pe->Type() == FE_HEX20) N = 8;
-	if (pe->Type() == FE_HEX27) N = 8;
-	int node;
-
 	double *dN1, *dN2, *dN3;
-
+	int N = pe->Nodes();
 	switch (pe->Type())
 	{
 	case FE_HEX8:
@@ -792,17 +834,22 @@ void FEVolRatio::eval(int n, float* pv)
 		dN1 = dN_hex[0];
 		dN2 = dN_hex[1];
 		dN3 = dN_hex[2];
+		N = 8;
 		break;
 	case FE_PENTA6:
     case FE_PENTA15:
         dN1 = dN_pen[0];
 		dN2 = dN_pen[1];
 		dN3 = dN_pen[2];
+		N = 6;
 		break;
 	case FE_TET4:
+	case FE_TET10:
+	case FE_TET15:
 		dN1 = dN_tet[0];
 		dN2 = dN_tet[1];
 		dN3 = dN_tet[2];
+		N = 4;
 		break;
 	default:
 		*pv = 0;
@@ -812,18 +859,18 @@ void FEVolRatio::eval(int n, float* pv)
 	// get the initial and current nodal positions
 	vec3f X[8], x[8];
 	int ntime = m_state->GetID();
-	for (i=0; i<N; i++) 
+	for (int i=0; i<N; i++) 
 	{ 
-		node = pe->m_node[i];
-		X[i] = GetFEModel()->NodePosition(node, 0); 
-		x[i] = GetFEModel()->NodePosition(node, ntime);
+		int node = pe->m_node[i];
+		X[i] = fem.NodePosition(node, 0); 
+		x[i] = fem.NodePosition(node, ntime);
 	}
 
 	// calculate (average) partial derivatives
 	double dNx[8], dNy[8], dNz[8];
 
 	double J[9] = {0}, Ji[9], detJ;
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
 		J[0] += dN1[i]*X[i].x;
 		J[1] += dN1[i]*X[i].y;
@@ -852,7 +899,7 @@ void FEVolRatio::eval(int n, float* pv)
 	Ji[7] = detJ*(-J[0]*J[7] + J[1]*J[6]);
 	Ji[8] = detJ*( J[0]*J[4] - J[1]*J[3]);
 
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
 		dNx[i] = Ji[0]*dN1[i] + Ji[1]*dN2[i] + Ji[2]*dN3[i];
 		dNy[i] = Ji[3]*dN1[i] + Ji[4]*dN2[i] + Ji[5]*dN3[i];
@@ -861,7 +908,7 @@ void FEVolRatio::eval(int n, float* pv)
 
 	// calculate average def gradient
 	double F[9] = {0}, detF;
-	for (i=0; i<N; ++i)
+	for (int i=0; i<N; ++i)
 	{
 		F[0] += dNx[i]*x[i].x;
 		F[1] += dNy[i]*x[i].x;
@@ -879,6 +926,7 @@ void FEVolRatio::eval(int n, float* pv)
 
 	*pv = (float) detF;
 }
+*/
 
 //-----------------------------------------------------------------------------
 

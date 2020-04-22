@@ -39,7 +39,7 @@ public:
 	void RenderUnselectedFEFaces(FEMeshBase* pm);
 	void RenderSelectedFEFacesOutline(FEMeshBase* pm);
 
-	void RenderElementOutline(FEElement_& el, FECoreMesh* pm);
+	void RenderElementOutline(FEElement_& el, FECoreMesh* pm, int ndivs);
 
 public:
 	// drawing routines for elements
