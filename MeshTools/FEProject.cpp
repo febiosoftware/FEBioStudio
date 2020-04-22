@@ -129,6 +129,9 @@ void FEProject::Save(OArchive& ar)
 	// save the title
 	ar.WriteChunk(CID_PRJ_TITLE   , m_title);
 
+	// save the modules flag
+	ar.WriteChunk(CID_PRJ_MODULES, m_module);
+
 	// save the model data
 	ar.BeginChunk(CID_FEM);
 	{
@@ -171,6 +174,7 @@ void FEProject::Load(IArchive &ar)
 		switch (nid)
 		{
 		case CID_PRJ_TITLE  : ar.read(m_title); break;
+		case CID_PRJ_MODULES: ar.read(m_module); break;
 		case CID_FEM        : m_fem.Load(ar); break;
 		case CID_PRJ_OUTPUT : m_plt.Load(ar); break;
 		case CID_PRJ_LOGDATA: m_log.Load(ar); break;

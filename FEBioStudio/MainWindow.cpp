@@ -582,6 +582,7 @@ void CMainWindow::finishedReadingFile(bool success, const QString& errorString)
 	{
 		UpdateTitle();
 		Reset();
+		UpdatePhysicsUi();
 		UpdateModel();
 		UpdateToolbar();
 		Update();
