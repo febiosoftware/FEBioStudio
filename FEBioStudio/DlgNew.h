@@ -20,6 +20,8 @@ public:
 
 	bool createNew();
 
+	bool openRecentFile();
+
 	QString getRecentFileName();
 
 	QString getProjectName();
@@ -34,6 +36,7 @@ public:
 
 public slots:
 	void onProjectFolder();
+	void onOpenClicked();
 
 public:
 	Ui::CDlgNew*	ui;

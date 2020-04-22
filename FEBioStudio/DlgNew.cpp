@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QGuiApplication>
+#include <QPushButton>
 #include <QScreen>
 #include <QDesktopWidget>
 #include "DocTemplate.h"
@@ -23,7 +24,12 @@ class Ui::CDlgNew
 public:
 	::CMainWindow*	m_wnd;
 
-	int	m_nchoice;
+	// user choice for opening file:
+	// 0 = open from recent file list
+	// 1 = open another 
+	int m_userChoice;
+
+	int	m_ntemplate;
 	QListWidget*	list;
 	QTabWidget*		tab;
 	QListWidget*	recentFilesList;
@@ -36,7 +42,8 @@ public:
 	{
 		m_wnd = wnd;
 
-		m_nchoice = 0;
+		m_ntemplate = 0;
+		m_userChoice = 0;
 
 		tab = new QTabWidget;
 
@@ -93,10 +100,26 @@ public:
 
 		tab->addTab(newProject, "New Project");
 
+		QWidget* openProject = new QWidget;
+		QVBoxLayout* l = new QVBoxLayout;
+		l->setMargin(0);
 		recentFilesList = new QListWidget;
 		QStringList recentFiles = wnd->GetRecentFileList();
 		recentFilesList->addItems(recentFiles);
-		tab->addTab(recentFilesList, "Recent Project");
+
+		l->addWidget(recentFilesList);
+
+		QHBoxLayout* h2 = new QHBoxLayout;
+		h2->setMargin(0);
+		h2->addStretch();
+		QPushButton* open = new QPushButton("Open another project ...");
+		open->setObjectName("open");
+		h2->addWidget(open);
+		l->addLayout(h2);
+
+		openProject->setLayout(l);
+
+		tab->addTab(openProject, "Open Project");
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addWidget(tab);
@@ -115,6 +138,7 @@ public:
 		QObject::connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), dlg, SLOT(accept()));
 		QObject::connect(recentFilesList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), dlg, SLOT(accept()));
 		QObject::connect(tb, SIGNAL(clicked()), dlg, SLOT(onProjectFolder()));
+		QObject::connect(open, SIGNAL(clicked()), dlg, SLOT(onOpenClicked()));
 	}
 };
 
@@ -133,9 +157,15 @@ void CDlgNew::showEvent(QShowEvent* ev)
 	move(x, y);
 }
 
+void CDlgNew::onOpenClicked()
+{
+	ui->m_userChoice = 1;
+	accept();
+}
+
 void CDlgNew::accept()
 {
-	ui->m_nchoice = ui->list->currentIndex().row();
+	ui->m_ntemplate = ui->list->currentIndex().row();
 
 	if (ui->projectName->text().isEmpty())
 	{
@@ -163,12 +193,17 @@ void CDlgNew::accept()
 
 int CDlgNew::getTemplate()
 { 
-	return ui->m_nchoice;
+	return ui->m_ntemplate;
 }
 
 bool CDlgNew::createNew()
 {
 	return (ui->tab->currentIndex() == 0);
+}
+
+bool CDlgNew::openRecentFile()
+{
+	return ((ui->tab->currentIndex() == 1) && (ui->m_userChoice == 0));
 }
 
 QString CDlgNew::getProjectName()

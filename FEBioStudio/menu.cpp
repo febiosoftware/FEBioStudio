@@ -187,11 +187,20 @@ void CMainWindow::on_actionNew_triggered()
 			}
 			else
 			{
-				QString fileName = dlg.getRecentFileName();
+				if (dlg.openRecentFile())
+				{
+					QString fileName = dlg.getRecentFileName();
 
-				// read the file
-				std::string sfile = fileName.toStdString();
-				OpenDocument(sfile.c_str());
+					// read the file
+					std::string sfile = fileName.toStdString();
+					OpenDocument(sfile.c_str());
+				}
+				else
+				{
+					// Open a file
+					on_actionOpen_triggered();
+					return;
+				}
 			}
 		}
 		else
