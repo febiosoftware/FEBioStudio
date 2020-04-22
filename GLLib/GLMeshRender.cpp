@@ -1253,7 +1253,6 @@ void GLMeshRender::RenderSelectedFEFacesOutline(FEMeshBase* pm)
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm)
 {
-	glBegin(GL_TRIANGLES);
 	if (m_bShell2Solid)
 	{
 		if (pm->ElementRef(face.m_elem[0].eid).IsShell())
@@ -1295,7 +1294,6 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm)
 			assert(false);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------

@@ -680,6 +680,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// render the selected faces
 	if (mode == SELECT_FACES)
 	{
+		glBegin(GL_TRIANGLES);
 		for (int i=0; i<pm->Faces(); ++i)
 		{
 			FEFace& face = pm->Face(i);
@@ -689,11 +690,13 @@ void CGLModel::RenderSelection(CGLContext &rc)
 				m_render.RenderFace(face, pm);
 			}
 		}
+		glEnd();
 	}
 
 	// render the selected elements
 	if (mode == SELECT_ELEMS)
 	{
+		glBegin(GL_TRIANGLES);
 		for (int i = 0; i<pm->Faces(); ++i)
 		{
 			FEFace& face = pm->Face(i);
@@ -704,6 +707,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 				m_render.RenderFace(face, pm);
 			}
 		}
+		glEnd();
 	}
 
 	// render the outline of the selected elements
@@ -959,19 +963,29 @@ void CGLModel::RenderInnerSurface(int m, bool btex)
 
 	// render active faces
 	if (btex) glEnable(GL_TEXTURE_1D);
+	glBegin(GL_TRIANGLES);
 	for (int i = 0; i<surf.Faces(); ++i)
 	{
 		FEFace& face = surf.Face(i);
-		if (face.IsActive()) m_render.RenderFace(face, pm);
+		if (face.IsActive())
+		{
+			m_render.RenderFace(face, pm);
+		}
 	}
+	glEnd();
 
 	// render inactive faces
 	if (btex) glDisable(GL_TEXTURE_1D);
+	glBegin(GL_TRIANGLES);
 	for (int i = 0; i<surf.Faces(); ++i)
 	{
 		FEFace& face = surf.Face(i);
-		if (face.IsActive() == false) m_render.RenderFace(face, pm);
+		if (face.IsActive() == false)
+		{
+			m_render.RenderFace(face, pm);
+		}
 	}
+	glEnd();
 
 	if (btex) glEnable(GL_TEXTURE_1D);
 }
@@ -999,6 +1013,7 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 	if (btex) glEnable(GL_TEXTURE_1D);
 
 	// render active faces
+	glBegin(GL_TRIANGLES);
 	int NF = dom.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
@@ -1009,10 +1024,12 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 			m_render.RenderFace(face, pm);
 		}
 	}
+	glEnd();
 
 	// render inactive faces
 	if (btex) glDisable(GL_TEXTURE_1D);
 	if (m_pcol->IsActive() && benable) glColor4ub(m_col_inactive.r, m_col_inactive.g, m_col_inactive.b, m_col_inactive.a);
+	glBegin(GL_TRIANGLES);
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& face = dom.Face(i);
@@ -1022,6 +1039,7 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 			m_render.RenderFace(face, pm);
 		}
 	}
+	glEnd();
 	if (btex) glEnable(GL_TEXTURE_1D);
 }
 
