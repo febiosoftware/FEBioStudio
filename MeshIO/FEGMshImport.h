@@ -9,7 +9,7 @@ protected:
 	{
 		int ntype;
 		int	gid;
-		int node[10];
+		int node[20];
 	};
 
 public:

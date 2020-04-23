@@ -321,6 +321,19 @@ void glx::lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3
 	vertex3d(r8); vertex3d(r1);
 }
 
+void glx::lineLoop(const vec3d r[9])
+{
+	vertex3d(r[0]); vertex3d(r[1]);
+	vertex3d(r[1]); vertex3d(r[2]);
+	vertex3d(r[2]); vertex3d(r[3]);
+	vertex3d(r[3]); vertex3d(r[4]);
+	vertex3d(r[4]); vertex3d(r[5]);
+	vertex3d(r[5]); vertex3d(r[6]);
+	vertex3d(r[6]); vertex3d(r[7]);
+	vertex3d(r[7]); vertex3d(r[8]);
+	vertex3d(r[8]); vertex3d(r[0]);
+}
+
 
 void glx::drawLine(double x0, double y0, double x1, double y1)
 {

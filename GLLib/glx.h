@@ -41,6 +41,7 @@ void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3);
 void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4);
 void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4, const vec3d& r5, const vec3d& r6);
 void lineLoop(const vec3d& r1, const vec3d& r2, const vec3d& r3, const vec3d& r4, const vec3d& r5, const vec3d& r6, const vec3d& r7, const vec3d& r8);
+void lineLoop(const vec3d r[9]);
 
 void drawLine(double x0, double y0, double x1, double y1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1);

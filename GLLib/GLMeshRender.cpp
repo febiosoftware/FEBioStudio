@@ -1169,6 +1169,7 @@ void GLMeshRender::RenderMeshLines(FEMeshBase* pm)
 			}
 			break;
 			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
 			{
 				const vec3d& r1 = pm->Node(face.n[0]).r;
 				const vec3d& r2 = pm->Node(face.n[1]).r;
@@ -1177,6 +1178,21 @@ void GLMeshRender::RenderMeshLines(FEMeshBase* pm)
 				const vec3d& r5 = pm->Node(face.n[4]).r;
 				const vec3d& r6 = pm->Node(face.n[5]).r;
 				glx::lineLoop(r1, r4, r2, r5, r3, r6);
+			}
+			break;
+			case FE_FACE_TRI10:
+			{
+				vec3d r[9];
+				r[0] = pm->Node(face.n[0]).r;
+				r[1] = pm->Node(face.n[3]).r;
+				r[2] = pm->Node(face.n[4]).r;
+				r[3] = pm->Node(face.n[1]).r;
+				r[4] = pm->Node(face.n[5]).r;
+				r[5] = pm->Node(face.n[6]).r;
+				r[6] = pm->Node(face.n[2]).r;
+				r[7] = pm->Node(face.n[8]).r;
+				r[8] = pm->Node(face.n[7]).r;
+				glx::lineLoop(r);
 			}
 			break;
 			} // switch
@@ -1351,6 +1367,7 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm, GLColor c[4], int nd
 	case FE_FACE_TRI3:
 	case FE_FACE_TRI6:
 	case FE_FACE_TRI7:
+	case FE_FACE_TRI10:
 		glBegin(GL_TRIANGLES);
 		{
 			glNormal3f(n1.x, n1.y, n1.z); glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
@@ -1431,6 +1448,7 @@ void GLMeshRender::RenderThickShell(FEFace &face, FECoreMesh* pm)
 	case FE_FACE_TRI3:
 	case FE_FACE_TRI6:
 	case FE_FACE_TRI7:
+	case FE_FACE_TRI10:
 		RenderThickTri(face, pm);
 		break;
 	}
@@ -1671,6 +1689,7 @@ void GLMeshRender::RenderThickShellOutline(FEFace &face, FECoreMesh* pm)
 	case FE_FACE_TRI3:
 	case FE_FACE_TRI6:
 	case FE_FACE_TRI7:
+	case FE_FACE_TRI10:
 		glBegin(GL_LINES);
 		{
 			glVertex3f(r1a.x, r1a.y, r1a.z); glVertex3f(r2a.x, r2a.y, r2a.z);
@@ -2084,7 +2103,7 @@ void RenderFace3Outline(FECoreMesh* pm, FEFace& face, int ndivs)
 		a[1] = to_vec3f(pm->Node(e.n[1]).r);
 		a[2] = to_vec3f(pm->Node(e.n[2]).r);
 		a[3] = to_vec3f(pm->Node(e.n[3]).r);
-		const int M = 2 * ndivs;
+		const int M = (ndivs < 2 ? 3 : ndivs);
 		for (int n = 0; n<M; ++n)
 		{
 			double t = n / (double)M;
@@ -2300,7 +2319,24 @@ void GLMeshRender::RenderFaceEdge(FEFace& f, int j, FEMeshBase* pm, int ndivs)
 	break;
 	case FE_FACE_TRI10:
 	{
-		// implement this
+		FEEdge e = f.GetEdge(j);
+
+		vec3f r[4];
+		r[0] = to_vec3f(pm->Node(e.n[0]).r);
+		r[1] = to_vec3f(pm->Node(e.n[1]).r);
+		r[2] = to_vec3f(pm->Node(e.n[2]).r);
+		r[3] = to_vec3f(pm->Node(e.n[3]).r);
+
+		vec3d p = r[0], q;
+		int n = (ndivs < 3 ? 3 : ndivs);
+		for (int i = 1; i<=n; ++i)
+		{
+			float w = (float) i / n;
+			q = e.eval(r, w);
+			glVertex3f(p.x, p.y, p.z);
+			glVertex3f(q.x, q.y, q.z);
+			p = q;
+		}	
 	}
 	break;
 	default:

@@ -43,18 +43,10 @@ bool FEGMshImport::Load(FEProject& prj, const char* szfile)
 	// close the file
 	Close();
 
-	// create a new object from this mesh
-	GMeshObject* po = new GMeshObject((FEMesh*) 0);
+	m_pm->RebuildMesh();
 
-	if (m_pm->Faces() > 0)
-	{
-		m_pm->RebuildMesh(false);
-	}
-	else 
-	{
-		m_pm->RebuildMesh();
-	}
-	po->ReplaceFEMesh(m_pm, false);
+	// create a new object from this mesh
+	GMeshObject* po = new GMeshObject(m_pm);
 
 	char szname[256];
 	FileTitle(szname);
@@ -144,6 +136,24 @@ bool FEGMshImport::ReadNodes()
 
 //-----------------------------------------------------------------------------
 
+int scan_line(const char* sz, int* data, int nmax)
+{
+	if ((sz == 0) || sz[0] == 0) return 0;
+	if (nmax == 0) return 0;
+	int n = 0;
+	while (*sz)
+	{
+		while (*sz && isspace(*sz)) sz++;
+		if (*sz)
+		{
+			data[n++] = atoi(sz);
+			while (*sz && (isspace(*sz) == 0)) sz++;
+		}
+	}
+	return n;
+}
+
+//-----------------------------------------------------------------------------
 bool FEGMshImport::ReadElements()
 {
 	fgets(m_szline, 255, m_fp);
@@ -158,12 +168,13 @@ bool FEGMshImport::ReadElements()
 
 	// read the elements
 	ELEMENT el;
-	int n[15];
+	const int NMAX = 30;
+	int n[NMAX];
 
 	for (int i=0; i<elems; ++i)
 	{
 		fgets(m_szline, 255, m_fp);
-		int nread = sscanf(m_szline,"%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",n,n+1,n+2,n+3,n+4,n+5,n+6,n+7,n+8,n+9,n+10,n+11,n+12,n+13,n+14);
+		int nread = scan_line(m_szline, n, NMAX);
 
 		// element type
 		int etype = n[1];
@@ -251,6 +262,36 @@ bool FEGMshImport::ReadElements()
             el.node[9] = m[8] - 1;
             Elem.push_back(el);
             break;
+		case 29: // 20-tet tehrahedron
+			{
+				if (nread != 3 + ntags + 20) return errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_TET20;
+
+// 1 2 3 4 5 6 7 8 10 9 12 11 16 15 14 13 18 20 19 17
+				el.node[ 0] = m[ 0] - 1;
+				el.node[ 1] = m[ 1] - 1;
+				el.node[ 2] = m[ 2] - 1;
+				el.node[ 3] = m[ 3] - 1;
+				el.node[ 4] = m[ 4] - 1;
+				el.node[ 5] = m[ 5] - 1;
+				el.node[ 6] = m[ 6] - 1;
+				el.node[ 7] = m[ 7] - 1;
+				el.node[ 8] = m[ 9] - 1;
+				el.node[ 9] = m[ 8] - 1;
+				el.node[10] = m[11] - 1;
+				el.node[11] = m[10] - 1;
+				el.node[12] = m[15] - 1;
+				el.node[13] = m[14] - 1;
+				el.node[14] = m[13] - 1;
+				el.node[15] = m[12] - 1;
+				el.node[16] = m[17] - 1;
+				el.node[17] = m[19] - 1;
+				el.node[18] = m[18] - 1;
+				el.node[19] = m[16] - 1;
+
+				Elem.push_back(el);
+			}
+			break;
 		}
 	}
 
@@ -331,6 +372,11 @@ bool FEGMshImport::ReadElements()
                 el.m_node[8] = e.node[8];
                 el.m_node[9] = e.node[9];
                 break;
+			case FE_TET20:
+				{
+					for (int i = 0; i < 20; ++i) el.m_node[i] = e.node[i];
+				}
+				break;
 			default:
 				return false;
 			}

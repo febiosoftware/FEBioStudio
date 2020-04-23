@@ -777,6 +777,21 @@ void CGLModel::RenderSelection(CGLContext &rc)
 				}
 				glEnd();
 				break;
+			case FE_FACE_TRI10:
+				glBegin(GL_LINE_LOOP);
+				{
+					glVertex3f(r[0].x, r[0].y, r[0].z);
+					glVertex3f(r[3].x, r[3].y, r[3].z);
+					glVertex3f(r[4].x, r[4].y, r[4].z);
+					glVertex3f(r[1].x, r[1].y, r[1].z);
+					glVertex3f(r[5].x, r[5].y, r[5].z);
+					glVertex3f(r[6].x, r[6].y, r[6].z);
+					glVertex3f(r[2].x, r[2].y, r[2].z);
+					glVertex3f(r[8].x, r[8].y, r[8].z);
+					glVertex3f(r[7].x, r[7].y, r[7].z);
+				}
+				glEnd();
+				break;
 			case FE_FACE_QUAD8:
 				glBegin(GL_LINE_LOOP);
 				{
@@ -1573,6 +1588,7 @@ void CGLModel::RenderShadows(FEPostModel* ps, const vec3d& lp, float inf)
 				case FE_FACE_TRI3:
 				case FE_FACE_TRI6:
 				case FE_FACE_TRI7:
+				case FE_FACE_TRI10:
 					glBegin(GL_TRIANGLES);
 					{
 						glVertex3f(r3.x, r3.y, r3.z);
