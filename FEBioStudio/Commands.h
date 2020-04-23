@@ -1331,6 +1331,26 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class CCmdRemoveItemListBuilder : public CCommand
+{
+public:
+	CCmdRemoveItemListBuilder(FEModelComponent* pmc);
+	CCmdRemoveItemListBuilder(FESoloInterface* pmc);
+	CCmdRemoveItemListBuilder(FEPairedInterface* pmc, int n);
+	~CCmdRemoveItemListBuilder();
+
+	void Execute();
+	void UnExecute();
+
+private:
+	FEItemListBuilder*	m_pitem;
+	FESoloInterface*	m_psi;
+	FEPairedInterface*	m_ppi;
+	FEModelComponent*	m_pmc;
+	int	m_index;
+};
+
+//-----------------------------------------------------------------------------
 class CCmdDeleteGObject : public CCommand
 {
 public:

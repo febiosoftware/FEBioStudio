@@ -845,6 +845,7 @@ int CGIFAnimation::Write(QImage& im)
 {
 	QImage im2 = im.convertToFormat(QImage::Format_RGBA8888);
 	GifWriteFrame(g, im2.bits(), m_nx, m_ny, m_delay);
+	m_ncnt++;
 	return 1;
 }
 

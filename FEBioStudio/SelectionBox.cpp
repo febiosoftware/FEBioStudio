@@ -21,6 +21,8 @@ public:
 	QToolButton*	pb3;
 	QToolButton*	pb4;
 
+	QToolButton*	clr;
+
 public:
 	void setupUi(QWidget* parent)
 	{
@@ -28,7 +30,15 @@ public:
 
 		QFormLayout* form = new QFormLayout;
 		form->addRow("Name:", name = new QLineEdit); name->setObjectName("name");
-		form->addRow("Type:", type = new QLabel(""));
+
+		QHBoxLayout* h = new QHBoxLayout;
+		h->setMargin(0);
+		h->addWidget(type = new QLabel(""));
+		h->addWidget(clr = new QToolButton); clr->setIcon(QIcon(":/icons/delete.png"));
+		clr->setToolTip("Clear the selection.");
+		clr->setObjectName("clearSelection");
+		form->addRow("Type:", h);
+		
 		nameType->setLayout(form);
 
 		list = new QListWidget;
@@ -134,6 +144,11 @@ void CSelectionBox::on_delButton_clicked()
 void CSelectionBox::on_selButton_clicked()
 {
 	emit selButtonClicked();
+}
+
+void CSelectionBox::on_clearSelection_clicked()
+{
+	emit clearButtonClicked();
 }
 
 void CSelectionBox::on_name_textEdited(const QString& t)

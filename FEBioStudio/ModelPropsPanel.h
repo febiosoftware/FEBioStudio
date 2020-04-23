@@ -115,10 +115,12 @@ private slots:
 	void on_select1_subButtonClicked();
 	void on_select1_delButtonClicked();
 	void on_select1_selButtonClicked();
+	void on_select1_clearButtonClicked();
 	void on_select2_addButtonClicked();
 	void on_select2_subButtonClicked();
 	void on_select2_delButtonClicked();
 	void on_select2_selButtonClicked();
+	void on_select2_clearButtonClicked();
 	void on_select1_nameChanged(const QString& t);
 	void on_select2_nameChanged(const QString& t);
 	void on_object_nameChanged(const QString&);
@@ -139,6 +141,7 @@ private:
 	void subSelection(int n);
 	void delSelection(int n);
 	void selSelection(int n);
+	void clearSelection(int n);
 
 signals:
 	void nameChanged(const QString& txt);

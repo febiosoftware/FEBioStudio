@@ -58,6 +58,9 @@ public:
 	FEItemListBuilder*	GetMasterSurfaceList() { return m_pMaster; }
 	FEItemListBuilder*	GetSlaveSurfaceList () { return m_pSlave;  }
 
+	FEItemListBuilder* GetItemList(int index) { return (index == 0 ? GetSlaveSurfaceList() : GetMasterSurfaceList()); }
+	void SetItemList(int index, FEItemListBuilder* itemList) { (index == 0 ? SetSlave(itemList) : SetMaster(itemList)); }
+
 	void SwapMasterSlave();
 
 	void Save(OArchive& ar);

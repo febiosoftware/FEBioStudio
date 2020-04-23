@@ -3541,6 +3541,70 @@ void CCmdRemoveFromItemListBuilder::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
+// CCmdRemoveItemListBuilder
+//-----------------------------------------------------------------------------
+
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FEModelComponent* pmc) : CCommand("Remove selection")
+{
+	m_pmc = pmc;
+	m_psi = nullptr;
+	m_ppi = nullptr;
+	m_pitem = nullptr;
+	m_index = -1;
+}
+
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FESoloInterface* pmc) : CCommand("Remove selection")
+{
+	m_pmc = nullptr;
+	m_psi = pmc;
+	m_ppi = nullptr;
+	m_pitem = nullptr;
+	m_index = -1;
+}
+
+
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FEPairedInterface* pmc, int n) : CCommand("Remove selection")
+{
+	m_pmc = nullptr;
+	m_psi = nullptr;
+	m_ppi = pmc;
+	m_pitem = nullptr;
+	m_index = n;
+}
+
+CCmdRemoveItemListBuilder::~CCmdRemoveItemListBuilder()
+{
+	if (m_pitem) delete m_pitem;
+}
+
+void CCmdRemoveItemListBuilder::Execute()
+{
+	if (m_pmc)
+	{
+		m_pitem = m_pmc->GetItemList();
+		m_pmc->SetItemList(nullptr);
+	}
+	if (m_psi)
+	{
+		m_pitem = m_psi->GetItemList();
+		m_psi->SetItemList(nullptr);
+	}
+	if (m_ppi)
+	{
+		m_pitem = m_ppi->GetItemList(m_index);
+		m_ppi->SetItemList(m_index, nullptr);
+	}
+}
+
+void CCmdRemoveItemListBuilder::UnExecute()
+{
+	if (m_pmc) m_pmc->SetItemList(m_pitem);
+	if (m_psi) m_psi->SetItemList(m_pitem);
+	if (m_ppi) m_ppi->SetItemList(m_index, m_pitem);
+	m_pitem = nullptr;
+}
+
+//-----------------------------------------------------------------------------
 // CCmdDeleteGObject
 //-----------------------------------------------------------------------------
 

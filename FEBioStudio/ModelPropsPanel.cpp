@@ -1123,45 +1123,58 @@ void CModelPropsPanel::delSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
-	if (pbc) pl = pbc->GetItemList();
-
-	FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(m_currentObject);
-	if (psl) pl = psl->GetItemList();
-
-	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
-	if (psi) pl = psi->GetItemList();
-
-	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
-	if (pi) pl = (n == 0 ? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());
-
-	CSelectionBox* sel = ui->selectionPanel(n);
-
-	if (pl)
+	FEModelComponent* pmc = dynamic_cast<FEModelComponent*>(m_currentObject);
+	if (pmc)
 	{
-		list<int> items;
-		sel->getSelectedItems(items);
-		pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
-		SetSelection(n, pl);
-		emit selectionChanged();
+		pl = pmc->GetItemList();
+		if (pl)
+		{
+			CSelectionBox* sel = ui->selectionPanel(n);
+			list<int> items;
+			sel->getSelectedItems(items);
+
+			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
+
+			SetSelection(n, pl);
+			emit selectionChanged();
+		}
 	}
-	else if (dynamic_cast<GMaterial*>(m_currentObject))
+	else
 	{
-		vector<int> items;
-		sel->getSelectedItems(items);
-		pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetFEModel(), items, 0));
-		SetSelection(dynamic_cast<GMaterial*>(m_currentObject));
-		m_wnd->RedrawGL();
-		emit selectionChanged();
-	}
-	else if (dynamic_cast<FEItemListBuilder*>(m_currentObject))
-	{
-		pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
-		list<int> items;
-		sel->getSelectedItems(items);
-		pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
-		SetSelection(n, pl);
-		emit selectionChanged();
+		FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
+		if (psi) pl = psi->GetItemList();
+
+		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+		if (pi) pl = (n == 0 ? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());
+
+		CSelectionBox* sel = ui->selectionPanel(n);
+
+		if (pl)
+		{
+			list<int> items;
+			sel->getSelectedItems(items);
+			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
+			SetSelection(n, pl);
+			emit selectionChanged();
+		}
+		else if (dynamic_cast<GMaterial*>(m_currentObject))
+		{
+			vector<int> items;
+			sel->getSelectedItems(items);
+			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetFEModel(), items, 0));
+			SetSelection(dynamic_cast<GMaterial*>(m_currentObject));
+			m_wnd->RedrawGL();
+			emit selectionChanged();
+		}
+		else if (dynamic_cast<FEItemListBuilder*>(m_currentObject))
+		{
+			pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+			list<int> items;
+			sel->getSelectedItems(items);
+			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
+			SetSelection(n, pl);
+			emit selectionChanged();
+		}
 	}
 }
 
@@ -1185,6 +1198,60 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 
 	string sname = t.toStdString();
 	pl->SetName(sname);
+}
+
+void CModelPropsPanel::on_select1_clearButtonClicked() { clearSelection(0); }
+void CModelPropsPanel::on_select2_clearButtonClicked() { clearSelection(1); }
+
+void CModelPropsPanel::clearSelection(int n)
+{
+	CDocument* pdoc = m_wnd->GetDocument();
+
+	FEItemListBuilder* pl = 0;
+
+	if (dynamic_cast<FEModelComponent*>(m_currentObject))
+	{
+		FEModelComponent* pmc = dynamic_cast<FEModelComponent*>(m_currentObject);
+		pl = pmc->GetItemList();
+		if (pl)
+		{
+			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pmc));
+			SetSelection(n, nullptr);
+			emit selectionChanged();
+		}
+	}
+	else if (dynamic_cast<FESoloInterface*>(m_currentObject))
+	{
+		FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
+		pl = psi->GetItemList();
+		if (pl)
+		{
+			pdoc->DoCommand(new CCmdRemoveItemListBuilder(psi));
+			SetSelection(n, nullptr);
+			emit selectionChanged();
+		}
+	}
+	else if (dynamic_cast<FEPairedInterface*>(m_currentObject))
+	{
+		FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
+		pl = (n == 0 ? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());
+		if (pl)
+		{
+			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pi, n));
+			SetSelection(n, nullptr);
+			emit selectionChanged();
+		}
+	}
+	else if (dynamic_cast<GMaterial*>(m_currentObject))
+	{
+		vector<int> items;
+		CSelectionBox* sel = ui->selectionPanel(n);
+		sel->getAllItems(items);
+		pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetFEModel(), items, 0));
+		SetSelection(dynamic_cast<GMaterial*>(m_currentObject));
+		m_wnd->RedrawGL();
+		emit selectionChanged();
+	}
 }
 
 void CModelPropsPanel::on_select2_nameChanged(const QString& t)
