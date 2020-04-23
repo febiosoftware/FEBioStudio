@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D58A0B482452419A0084A352 /* LoadCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = D58A0B46245241990084A352 /* LoadCurve.h */; };
+		D58A0B492452419A0084A352 /* LoadCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D58A0B472452419A0084A352 /* LoadCurve.cpp */; };
 		D58D432023E32BF000DB8BE7 /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D58D431F23E32BF000DB8BE7 /* QtCore.framework */; };
 		D5ED262523197ADA00C16BF7 /* box.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261023197ADA00C16BF7 /* box.h */; };
 		D5ED262623197ADA00C16BF7 /* Archive.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED261123197ADA00C16BF7 /* Archive.h */; };
@@ -32,6 +34,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D58A0B46245241990084A352 /* LoadCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoadCurve.h; sourceTree = "<group>"; };
+		D58A0B472452419A0084A352 /* LoadCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LoadCurve.cpp; sourceTree = "<group>"; };
 		D58D431F23E32BF000DB8BE7 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCore.framework; sourceTree = "<group>"; };
 		D5ED260123197AC300C16BF7 /* libFSCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFSCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED261023197ADA00C16BF7 /* box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = box.h; sourceTree = "<group>"; };
@@ -97,27 +101,29 @@
 		D5ED260F23197ADA00C16BF7 /* FSCore */ = {
 			isa = PBXGroup;
 			children = (
-				D5ED261023197ADA00C16BF7 /* box.h */,
+				D5ED262423197ADA00C16BF7 /* Archive.cpp */,
 				D5ED261123197ADA00C16BF7 /* Archive.h */,
-				D5ED261223197ADA00C16BF7 /* FSObjectList.h */,
-				D5ED261323197ADA00C16BF7 /* CallTracer.cpp */,
-				D5ED261423197ADA00C16BF7 /* stdafx.h */,
-				D5ED261523197ADA00C16BF7 /* FSObject.h */,
-				D5ED261623197ADA00C16BF7 /* memtool.cpp */,
 				D5ED261723197ADA00C16BF7 /* box.cpp */,
-				D5ED261823197ADA00C16BF7 /* enum.h */,
-				D5ED261923197ADA00C16BF7 /* ParamBlock.cpp */,
-				D5ED261A23197ADA00C16BF7 /* memtool.h */,
-				D5ED261B23197ADA00C16BF7 /* color.h */,
-				D5ED261C23197ADA00C16BF7 /* Serializable.h */,
-				D5ED261D23197ADA00C16BF7 /* FSDir.cpp */,
+				D5ED261023197ADA00C16BF7 /* box.h */,
+				D5ED261323197ADA00C16BF7 /* CallTracer.cpp */,
 				D5ED261E23197ADA00C16BF7 /* CallTracer.h */,
+				D5ED261B23197ADA00C16BF7 /* color.h */,
+				D5ED261823197ADA00C16BF7 /* enum.h */,
+				D5ED261D23197ADA00C16BF7 /* FSDir.cpp */,
+				D5ED262123197ADA00C16BF7 /* FSDir.h */,
+				D5ED262323197ADA00C16BF7 /* FSObject.cpp */,
+				D5ED261523197ADA00C16BF7 /* FSObject.h */,
+				D5ED261223197ADA00C16BF7 /* FSObjectList.h */,
+				D58A0B472452419A0084A352 /* LoadCurve.cpp */,
+				D58A0B46245241990084A352 /* LoadCurve.h */,
+				D5ED261623197ADA00C16BF7 /* memtool.cpp */,
+				D5ED261A23197ADA00C16BF7 /* memtool.h */,
+				D5ED261923197ADA00C16BF7 /* ParamBlock.cpp */,
 				D5ED261F23197ADA00C16BF7 /* ParamBlock.h */,
 				D5ED262023197ADA00C16BF7 /* Serializable.cpp */,
-				D5ED262123197ADA00C16BF7 /* FSDir.h */,
+				D5ED261C23197ADA00C16BF7 /* Serializable.h */,
 				D5ED262223197ADA00C16BF7 /* stdafx.cpp */,
-				D5ED262323197ADA00C16BF7 /* FSObject.cpp */,
-				D5ED262423197ADA00C16BF7 /* Archive.cpp */,
+				D5ED261423197ADA00C16BF7 /* stdafx.h */,
 			);
 			name = FSCore;
 			path = ../../FSCore;
@@ -140,6 +146,7 @@
 				D5ED263023197ADA00C16BF7 /* color.h in Headers */,
 				D5ED262A23197ADA00C16BF7 /* FSObject.h in Headers */,
 				D5ED263623197ADA00C16BF7 /* FSDir.h in Headers */,
+				D58A0B482452419A0084A352 /* LoadCurve.h in Headers */,
 				D5ED262623197ADA00C16BF7 /* Archive.h in Headers */,
 				D5ED262723197ADA00C16BF7 /* FSObjectList.h in Headers */,
 			);
@@ -207,6 +214,7 @@
 				D5ED263923197ADA00C16BF7 /* Archive.cpp in Sources */,
 				D5ED262823197ADA00C16BF7 /* CallTracer.cpp in Sources */,
 				D5ED262B23197ADA00C16BF7 /* memtool.cpp in Sources */,
+				D58A0B492452419A0084A352 /* LoadCurve.cpp in Sources */,
 				D5ED263223197ADA00C16BF7 /* FSDir.cpp in Sources */,
 				D5ED263823197ADA00C16BF7 /* FSObject.cpp in Sources */,
 				D5ED263723197ADA00C16BF7 /* stdafx.cpp in Sources */,

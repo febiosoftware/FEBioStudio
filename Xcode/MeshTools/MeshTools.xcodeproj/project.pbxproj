@@ -192,7 +192,6 @@
 		D5ED28B723197DE400C16BF7 /* GradientMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27DF23197DE400C16BF7 /* GradientMap.cpp */; };
 		D5ED28B823197DE400C16BF7 /* FEMultiBlockMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27E023197DE400C16BF7 /* FEMultiBlockMesh.h */; };
 		D5ED28B923197DE400C16BF7 /* BivariateSpline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E123197DE400C16BF7 /* BivariateSpline.cpp */; };
-		D5ED28BA23197DE400C16BF7 /* LoadCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E223197DE400C16BF7 /* LoadCurve.cpp */; };
 		D5ED28BB23197DE400C16BF7 /* FEFileExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27E323197DE400C16BF7 /* FEFileExport.h */; };
 		D5ED28BC23197DE400C16BF7 /* GModifiedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27E423197DE400C16BF7 /* GModifiedObject.cpp */; };
 		D5ED28BD23197DE400C16BF7 /* FETruncatedEllipsoid.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27E523197DE400C16BF7 /* FETruncatedEllipsoid.h */; };
@@ -222,7 +221,6 @@
 		D5ED28D523197DE400C16BF7 /* FEGregoryPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27FD23197DE400C16BF7 /* FEGregoryPatch.h */; };
 		D5ED28D623197DE400C16BF7 /* BivariateSpline.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED27FE23197DE400C16BF7 /* BivariateSpline.h */; };
 		D5ED28D723197DE400C16BF7 /* FERevolveFaces.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED27FF23197DE400C16BF7 /* FERevolveFaces.cpp */; };
-		D5ED28D823197DE400C16BF7 /* LoadCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED280023197DE400C16BF7 /* LoadCurve.h */; };
 		D5ED28D923197DE400C16BF7 /* FEMeshData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED280123197DE400C16BF7 /* FEMeshData.cpp */; };
 		D5ED28DA23197DE400C16BF7 /* GRevolveModifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED280223197DE400C16BF7 /* GRevolveModifier.cpp */; };
 		D5ED28DB23197DE400C16BF7 /* FETet4ToTet15.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED280323197DE400C16BF7 /* FETet4ToTet15.cpp */; };
@@ -243,7 +241,6 @@
 		D5ED272D23197DE200C16BF7 /* GWrapModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GWrapModifier.cpp; sourceTree = "<group>"; };
 		D5ED272E23197DE200C16BF7 /* GModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GModifier.h; sourceTree = "<group>"; };
 		D5ED272F23197DE200C16BF7 /* ICPRegistration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICPRegistration.h; sourceTree = "<group>"; };
-		D5ED273023197DE200C16BF7 /* FECore.vcproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = FECore.vcproj; sourceTree = "<group>"; };
 		D5ED273123197DE200C16BF7 /* FEProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEProject.h; sourceTree = "<group>"; };
 		D5ED273323197DE300C16BF7 /* GGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GGroup.h; sourceTree = "<group>"; };
 		D5ED273423197DE300C16BF7 /* FESmoothMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESmoothMesh.cpp; sourceTree = "<group>"; };
@@ -389,7 +386,6 @@
 		D5ED27C323197DE400C16BF7 /* FEMeshSmoothingModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshSmoothingModifier.cpp; sourceTree = "<group>"; };
 		D5ED27C423197DE400C16BF7 /* FECylinderInBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FECylinderInBox.h; sourceTree = "<group>"; };
 		D5ED27C523197DE400C16BF7 /* GDiscreteObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GDiscreteObject.cpp; sourceTree = "<group>"; };
-		D5ED27C623197DE400C16BF7 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		D5ED27C723197DE400C16BF7 /* Quadric.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quadric.h; sourceTree = "<group>"; };
 		D5ED27C823197DE400C16BF7 /* FERevolveFaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FERevolveFaces.h; sourceTree = "<group>"; };
 		D5ED27C923197DE400C16BF7 /* SphereFit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SphereFit.h; sourceTree = "<group>"; };
@@ -417,7 +413,6 @@
 		D5ED27DF23197DE400C16BF7 /* GradientMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GradientMap.cpp; sourceTree = "<group>"; };
 		D5ED27E023197DE400C16BF7 /* FEMultiBlockMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMultiBlockMesh.h; sourceTree = "<group>"; };
 		D5ED27E123197DE400C16BF7 /* BivariateSpline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BivariateSpline.cpp; sourceTree = "<group>"; };
-		D5ED27E223197DE400C16BF7 /* LoadCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LoadCurve.cpp; sourceTree = "<group>"; };
 		D5ED27E323197DE400C16BF7 /* FEFileExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFileExport.h; sourceTree = "<group>"; };
 		D5ED27E423197DE400C16BF7 /* GModifiedObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GModifiedObject.cpp; sourceTree = "<group>"; };
 		D5ED27E523197DE400C16BF7 /* FETruncatedEllipsoid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETruncatedEllipsoid.h; sourceTree = "<group>"; };
@@ -447,7 +442,6 @@
 		D5ED27FD23197DE400C16BF7 /* FEGregoryPatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEGregoryPatch.h; sourceTree = "<group>"; };
 		D5ED27FE23197DE400C16BF7 /* BivariateSpline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BivariateSpline.h; sourceTree = "<group>"; };
 		D5ED27FF23197DE400C16BF7 /* FERevolveFaces.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERevolveFaces.cpp; sourceTree = "<group>"; };
-		D5ED280023197DE400C16BF7 /* LoadCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoadCurve.h; sourceTree = "<group>"; };
 		D5ED280123197DE400C16BF7 /* FEMeshData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshData.cpp; sourceTree = "<group>"; };
 		D5ED280223197DE400C16BF7 /* GRevolveModifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRevolveModifier.cpp; sourceTree = "<group>"; };
 		D5ED280323197DE400C16BF7 /* FETet4ToTet15.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToTet15.cpp; sourceTree = "<group>"; };
@@ -501,7 +495,6 @@
 				D5ED27AA23197DE300C16BF7 /* FEBox.h */,
 				D5ED275E23197DE300C16BF7 /* FECone.cpp */,
 				D5ED278D23197DE300C16BF7 /* FECone.h */,
-				D5ED273023197DE200C16BF7 /* FECore.vcproj */,
 				D5ED278B23197DE300C16BF7 /* FECreateShells.cpp */,
 				D5ED27F823197DE400C16BF7 /* FECreateShells.h */,
 				D5ED277523197DE300C16BF7 /* FECurveIntersect.cpp */,
@@ -679,8 +672,6 @@
 				D5ED272F23197DE200C16BF7 /* ICPRegistration.h */,
 				D5ED279823197DE300C16BF7 /* LaplaceSolver.cpp */,
 				D5ED27B523197DE300C16BF7 /* LaplaceSolver.h */,
-				D5ED27E223197DE400C16BF7 /* LoadCurve.cpp */,
-				D5ED280023197DE400C16BF7 /* LoadCurve.h */,
 				D5ED27D523197DE400C16BF7 /* lut.cpp */,
 				D5ED274923197DE300C16BF7 /* NetGenMesher.cpp */,
 				D5ED279D23197DE300C16BF7 /* NetGenMesher.h */,
@@ -694,7 +685,6 @@
 				D5ED27EB23197DE400C16BF7 /* PRVArchive.h */,
 				D5ED277C23197DE300C16BF7 /* Quadric.cpp */,
 				D5ED27C723197DE400C16BF7 /* Quadric.h */,
-				D5ED27C623197DE400C16BF7 /* ReadMe.txt */,
 				D5ED27C023197DE400C16BF7 /* SphereFit.cpp */,
 				D5ED27C923197DE400C16BF7 /* SphereFit.h */,
 				D5ED27CA23197DE400C16BF7 /* SpringGenerator.cpp */,
@@ -764,7 +754,6 @@
 				D5ED283623197DE400C16BF7 /* FELinearToQuadratic.h in Headers */,
 				D5ED28BF23197DE400C16BF7 /* FEShellTorus.h in Headers */,
 				D5ED288F23197DE400C16BF7 /* LaplaceSolver.h in Headers */,
-				D5ED28D823197DE400C16BF7 /* LoadCurve.h in Headers */,
 				D5ED282C23197DE400C16BF7 /* FEShellTube.h in Headers */,
 				D5ED286423197DE400C16BF7 /* FEShellSphere.h in Headers */,
 				D5ED283523197DE400C16BF7 /* FEGroup.h in Headers */,
@@ -991,7 +980,6 @@
 				D5ED280E23197DE400C16BF7 /* FESmoothMesh.cpp in Sources */,
 				D5ED28A223197DE400C16BF7 /* SpringGenerator.cpp in Sources */,
 				D50C858623A283F400E42D37 /* FETet4ToHex8.cpp in Sources */,
-				D5ED28BA23197DE400C16BF7 /* LoadCurve.cpp in Sources */,
 				D5ED283423197DE400C16BF7 /* FEAxesCurvature.cpp in Sources */,
 				D5ED289823197DE400C16BF7 /* PlotDataSettings.cpp in Sources */,
 				D5ED289C23197DE400C16BF7 /* FEMeshSmoothingModifier.cpp in Sources */,
