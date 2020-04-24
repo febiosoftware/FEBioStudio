@@ -1071,33 +1071,44 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 {
     Qt::KeyboardModifiers key = ev->modifiers();
     bool balt   = (key & Qt::AltModifier);
-    
 	CGLCamera* pcam = &m_Cam;
-    if (balt) {
-        if (m_pivot == PIVOT_NONE)
-        {
-            int y = ev->delta();
-            if (y > 0) pcam->Zoom(0.95f);
-            if (y < 0) pcam->Zoom(1.0f / 0.95f);
-                
-            repaint();
-                
-            m_pWnd->UpdateGLControlBar();
-        }
-    }
-    else {
-        if (m_pivot == PIVOT_NONE)
-        {
-            int dx = ev->pixelDelta().x();
-            int dy = ev->pixelDelta().y();
-            vec3d r = vec3d(-dx, dy, 0.f);
-            PanView(r);
-            
-            repaint();
-            
-            m_pWnd->UpdateGLControlBar();
-        }
-    }
+	Qt::MouseEventSource eventSource = ev->source();
+	if (eventSource == Qt::MouseEventSource::MouseEventNotSynthesized)
+	{
+		int y = ev->angleDelta().y();
+		if (y > 0) pcam->Zoom(0.95f);
+		if (y < 0) pcam->Zoom(1.0f / 0.95f);
+		repaint();
+		m_pWnd->UpdateGLControlBar();
+	}
+	else
+	{
+		if (balt) {
+			if (m_pivot == PIVOT_NONE)
+			{
+				int y = ev->angleDelta().y();
+				if (y > 0) pcam->Zoom(0.95f);
+				if (y < 0) pcam->Zoom(1.0f / 0.95f);
+
+				repaint();
+
+				m_pWnd->UpdateGLControlBar();
+			}
+		}
+		else {
+			if (m_pivot == PIVOT_NONE)
+			{
+				int dx = ev->pixelDelta().x();
+				int dy = ev->pixelDelta().y();
+				vec3d r = vec3d(-dx, dy, 0.f);
+				PanView(r);
+
+				repaint();
+
+				m_pWnd->UpdateGLControlBar();
+			}
+		}
+	}
 
 	m_Cam.Update(true);
 	ev->accept();
