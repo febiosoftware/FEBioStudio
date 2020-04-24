@@ -91,6 +91,10 @@ public:
 				}
 			}
 		}
+		else
+		{
+			if (m_parent == nullptr) setText(1, "(click here to choose material)");
+		}
 
 		setExpanded(true);
 
@@ -200,6 +204,7 @@ public:
 		tree->clear();
 		MaterialEditorItem* item = new MaterialEditorItem(tree);
 		item->setText(0, "Material");
+		item->setText(1, "(click here to select material)");
 		item->SetClassID(matClass->currentData().toInt());
 	}
 
