@@ -109,6 +109,8 @@ void CMainWindow::on_actionNew_triggered()
 	bool btemplate = false;
 	CDlgNew dlg(this);
 
+	dlg.setShowOnStart(ui->m_showNewOnStartup);
+
 	if (ui->m_defaultProjectFolder.isEmpty() == false)
 	{
 		dlg.setProjectFolder(ui->m_defaultProjectFolder);
@@ -215,6 +217,8 @@ void CMainWindow::on_actionNew_triggered()
 			ClearOutput();
 		}
 	}
+
+	ui->m_showNewOnStartup = dlg.showOnStart();
 
 	ui->glview->Reset();
 	if (ui->modelViewer && btemplate) ui->modelViewer->Show();

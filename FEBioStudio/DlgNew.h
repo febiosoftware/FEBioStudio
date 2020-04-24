@@ -22,6 +22,9 @@ public:
 
 	bool openRecentFile();
 
+	bool showOnStart();
+	void setShowOnStart(bool b);
+
 	QString getRecentFileName();
 
 	QString getProjectName();

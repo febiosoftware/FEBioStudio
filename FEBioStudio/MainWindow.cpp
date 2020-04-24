@@ -972,6 +972,11 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	}
 }
 
+void CMainWindow::NewSession()
+{
+	if (ui->m_showNewOnStartup) on_actionNew_triggered();
+}
+
 void CMainWindow::SetCurrentFolder(const QString& folder)
 {
 	ui->currentPath = folder;
@@ -984,6 +989,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("geometry", saveGeometry());
 	settings.setValue("state", saveState());
 	settings.setValue("theme", ui->m_theme);
+	settings.setValue("showProjectManangerOnStart", ui->m_showNewOnStartup);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1054,6 +1060,7 @@ void CMainWindow::readSettings()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 	ui->m_theme = settings.value("theme", 0).toInt();
+	ui->m_showNewOnStartup = settings.value("showProjectManangerOnStart", true).toBool();
 
 	QRect rt;
 	rt = settings.value("curveEditorSize", QRect()).toRect();

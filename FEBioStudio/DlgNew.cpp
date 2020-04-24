@@ -36,6 +36,7 @@ public:
 	QLineEdit*		projectFolder;
 	QLineEdit*		projectName;
 	QCheckBox*		createFolder;
+	QCheckBox*		showOnStart;
 
 public:
 	void setup(::CMainWindow* wnd, QDialog* dlg)
@@ -124,8 +125,12 @@ public:
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addWidget(tab);
 
+		QHBoxLayout* bl = new QHBoxLayout;
+		bl->addWidget(showOnStart = new QCheckBox("Show this dialog at startup")); showOnStart->setChecked(true);
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-		mainLayout->addWidget(bb);
+		bl->addWidget(bb);
+
+		mainLayout->addLayout(bl);
 
 		dlg->setLayout(mainLayout);
 
@@ -161,6 +166,16 @@ void CDlgNew::onOpenClicked()
 {
 	ui->m_userChoice = 1;
 	accept();
+}
+
+bool CDlgNew::showOnStart()
+{
+	return ui->showOnStart->isChecked();
+}
+
+void CDlgNew::setShowOnStart(bool b)
+{
+	ui->showOnStart->setChecked(b);
 }
 
 void CDlgNew::accept()

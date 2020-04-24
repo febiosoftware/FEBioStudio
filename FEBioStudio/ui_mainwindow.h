@@ -165,6 +165,8 @@ public:
 
 	QString	m_old_title;
 
+	bool	m_showNewOnStartup;
+
 	bool	m_isAnimating;
 
 	QList<::CGraphWindow*>	graphList;
@@ -173,6 +175,8 @@ public:
 	CMainWindow()
 	{
 		m_theme = 0;
+
+		m_showNewOnStartup = true;
 	}
 
 	void setupUi(::CMainWindow* wnd)

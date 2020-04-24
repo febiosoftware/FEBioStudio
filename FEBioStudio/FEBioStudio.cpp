@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		wnd.on_actionNew_triggered();
+		wnd.NewSession();
 	}
 
 	return app.exec();

@@ -109,6 +109,9 @@ public:
 	// set the current time value
 	void SetCurrentTimeValue(float ftime);
 
+	// start new session
+	void NewSession();
+
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.
