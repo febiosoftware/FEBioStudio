@@ -52,6 +52,7 @@ public:
 	void Add(double x, double y);
 	int Add(const LOADPOINT& pt);
 	void Delete(int n);
+	void Delete(const vector<int>& indexList);
 	void Clear() { m_Pt.clear(); }
 
 	double Value(double time);

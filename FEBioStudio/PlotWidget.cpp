@@ -17,6 +17,7 @@
 #include <QValidator>
 #include <QImage>
 #include <QFileDialog>
+#include <QRgb>
 
 //-----------------------------------------------------------------------------
 class CDlgPlotWidgetProps_Ui
@@ -262,7 +263,6 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 {
 	ColorList::init();
 
-	m_select = false;
 	m_bzoomRect = false;
 	m_bvalidRect = false;
 	m_mapToRect = false;
@@ -545,15 +545,15 @@ void CPlotWidget::setTitle(const QString& t)
 //-----------------------------------------------------------------------------
 void CPlotWidget::clearData()
 {
-	m_select = false;
+	m_selection.clear();
 	for (int i=0; i<(int) m_data.size(); ++i) m_data[i]->clear();
 }
 
 //-----------------------------------------------------------------------------
 void CPlotWidget::clear()
 {
-	m_select = false;
-    for (CPlotData* var : m_data) delete var;
+	m_selection.clear();
+	for (CPlotData* var : m_data) delete var;
 	m_data.clear();
 	repaint();
 }
@@ -707,32 +707,38 @@ void CPlotWidget::mousePressEvent(QMouseEvent* ev)
 	if (m_bzoomRect) m_bvalidRect = true;
 
 	m_bdragging = false;
+	m_bregionSelect = false;
+
+	bool bshift = ev->modifiers() & Qt::ShiftModifier;
 
 	if (ev->button() == Qt::LeftButton)
 	{
+		// first, see if a point is selected
 		QPoint pt = ev->pos();
 		const int eps = 3;
 
 		m_newSelect = false;
-		for (int i = 0; i<(int)m_data.size(); ++i)
+		if (bshift == false) m_selection.clear();
+		for (int i = 0; i < (int)m_data.size(); ++i)
 		{
 			CPlotData& plot = *m_data[i];
-			for (int j = 0; j<plot.size(); ++j)
+			for (int j = 0; j < plot.size(); ++j)
 			{
 				QPointF& rj = plot.Point(j);
 				QPoint p = ViewToScreen(rj);
 				if ((abs(p.x() - pt.x()) <= eps) && (abs(p.y() - pt.y()) <= eps))
 				{
 					m_newSelect = true;
-					m_selection.ndataIndex = i;
-					m_selection.npointIndex = j;
-
+					addToSelection(i, j);
 					emit pointSelected(j);
+					break;
 				}
 			}
+			if (m_newSelect) break;
 		}
 
-		if (m_newSelect) m_select = true;
+		// if no new selection was added and shift is not pressed, clear the selection
+		if ((bshift == false) && (m_newSelect == false)) m_selection.clear();
 	}
 
 	ev->accept();
@@ -745,26 +751,37 @@ void CPlotWidget::mouseMoveEvent(QMouseEvent* ev)
 	{
 		QPoint p = ev->pos();
 
-		if (m_newSelect)
+		bool bshift = ev->modifiers() & Qt::ShiftModifier;
+		if (bshift && (m_bregionSelect == false)) m_bregionSelect = true;
+
+		if (m_bregionSelect)
 		{
-			if (m_bdragging == false)
-			{
-				m_bdragging = true;
-				emit draggingStart(m_mouseInitPos);
-			}
-			
-			emit pointDragged(p);
+			m_mousePos = p;
+			repaint();
 		}
 		else
 		{
-			if ((m_bzoomRect == false) && (m_bviewLocked == false))
+			if (m_newSelect)
 			{
-				QPointF r0 = ScreenToView(m_mousePos);
-				QPointF r1 = ScreenToView(p);
-				m_viewRect.translate(r0.x() - r1.x(), r0.y() - r1.y());
+				if (m_bdragging == false)
+				{
+					m_bdragging = true;
+					emit draggingStart(m_mouseInitPos);
+				}
+
+				emit pointDragged(p);
 			}
-			m_mousePos = p;
-			repaint();
+			else
+			{
+				if ((m_bzoomRect == false) && (m_bviewLocked == false))
+				{
+					QPointF r0 = ScreenToView(m_mousePos);
+					QPointF r1 = ScreenToView(p);
+					m_viewRect.translate(r0.x() - r1.x(), r0.y() - r1.y());
+				}
+				m_mousePos = p;
+				repaint();
+			}
 		}
 	}
 	ev->accept();
@@ -780,41 +797,55 @@ void CPlotWidget::mouseReleaseEvent(QMouseEvent* ev)
 	if (X1 < X0) { X0 ^= X1; X1 ^= X0; X0 ^= X1; }
 	if (Y1 < Y0) { Y0 ^= Y1; Y1 ^= Y0; Y0 ^= Y1; }
 
-	if (m_bzoomRect)
+	if ((X0 == X1) && (Y0 == Y1)) { m_bregionSelect = false; m_bvalidRect = false; }
+
+	if (m_bregionSelect)
 	{
-		QRect rt(X0, Y0, X1 - X0 + 1, Y1 - Y0 + 1);
-		if (m_mapToRect == false) 
-			fitToRect(rt);
-		m_bzoomRect = false;
+		m_bregionSelect = false;
 		m_bvalidRect = false;
-		m_mapToRect = false;
-		emit doneSelectingRect(rt);
-		emit doneZoomToRect();
+
+		QRect rt(X0, Y0, X1 - X0 + 1, Y1 - Y0 + 1);
+		regionSelect(rt);
+		emit regionSelected(rt);
+
 		repaint();
 	}
-	else if ((X0==X1)&&(Y0==Y1))
+	else
 	{
-		if (ev->button() == Qt::LeftButton)
+		if (m_bzoomRect)
 		{
-			if (m_select && (m_newSelect == false))
-				emit pointSelected(-1);
-
-			m_select = m_newSelect;
-
-			if (m_select == false)
-			{
-				QPointF fp = ScreenToView(m_mousePos);
-				emit pointClicked(fp, ev->modifiers() & Qt::ShiftModifier );
-			}
-
+			QRect rt(X0, Y0, X1 - X0 + 1, Y1 - Y0 + 1);
+			if (m_mapToRect == false)
+				fitToRect(rt);
+			m_bzoomRect = false;
+			m_bvalidRect = false;
+			m_mapToRect = false;
+			emit doneSelectingRect(rt);
+			emit doneZoomToRect();
 			repaint();
 		}
-	}
-	
-	if (m_bdragging)
-	{
-		emit draggingEnd(ev->pos());
-		m_bdragging = false;
+		else if ((X0 == X1) && (Y0 == Y1))
+		{
+			if (ev->button() == Qt::LeftButton)
+			{
+				if (m_newSelect == false)
+					emit pointSelected(-1);
+
+				if (m_newSelect == false)
+				{
+					QPointF fp = ScreenToView(m_mousePos);
+					emit pointClicked(fp, ev->modifiers() & Qt::ShiftModifier);
+				}
+
+				repaint();
+			}
+		}
+
+		if (m_bdragging)
+		{
+			emit draggingEnd(ev->pos());
+			m_bdragging = false;
+		}
 	}
 	ev->accept();
 }
@@ -844,11 +875,43 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 }
 
 //-----------------------------------------------------------------------------
+void CPlotWidget::regionSelect(QRect rt)
+{
+	m_newSelect = false;
+//	m_selection.clear();
+	for (int i = 0; i < (int)m_data.size(); ++i)
+	{
+		CPlotData& plot = *m_data[i];
+		for (int j = 0; j < plot.size(); ++j)
+		{
+			QPointF& rj = plot.Point(j);
+			QPoint p = ViewToScreen(rj);
+			if (rt.contains(p))
+			{
+				addToSelection(i, j);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 QPointF CPlotWidget::ScreenToView(const QPoint& p)
 {
 	qreal x = m_viewRect.left  () + (m_viewRect.width ()*(p.x() - m_screenRect.left())/(m_screenRect.width ()));
 	qreal y = m_viewRect.bottom() + (m_viewRect.height()*(m_screenRect.top() - p.y() )/(m_screenRect.height()));
 	return QPointF(x, y);
+}
+
+//-----------------------------------------------------------------------------
+QRectF CPlotWidget::ScreenToView(const QRect& rt)
+{
+	QPoint p0 = rt.topLeft();
+	QPoint p1 = rt.bottomRight();
+
+	QPointF r0 = ScreenToView(p0);
+	QPointF r1 = ScreenToView(p1);
+
+	return QRectF(r0, r1);
 }
 
 //-----------------------------------------------------------------------------
@@ -937,16 +1000,18 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	p.setClipRect(m_screenRect);
 	drawAllData(p);
 
-	if (m_bzoomRect && m_bvalidRect)
+	if ((m_bzoomRect && m_bvalidRect) || m_bregionSelect)
 	{
+		int l = m_bgCol.lightness();
+		QColor penCol(l > 100 ? QColor(Qt::black) : QColor(Qt::white));
 		QRect rt(m_mouseInitPos, m_mousePos);
 		p.setBrush(Qt::NoBrush);
-		p.setPen(QPen(Qt::black, 1, Qt::DashLine));
+		p.setPen(QPen(penCol, 1, Qt::DashLine));
 		p.drawRect(rt);
 	}
 
 	// render the selection
-	if (m_select) drawSelection(p);
+	if (m_selection.empty() == false) drawSelection(p);
 }
 
 void CPlotWidget::drawLegend(QPainter& p)
@@ -991,46 +1056,50 @@ void CPlotWidget::drawLegend(QPainter& p)
 
 void CPlotWidget::drawSelection(QPainter& p)
 {
-	QPointF pf = dataPoint(m_selection.ndataIndex, m_selection.npointIndex);
-	QPoint pt = ViewToScreen(pf);
-	if (m_screenRect.contains(pt, true))
+	for (int i = 0; i < m_selection.size(); ++i)
 	{
-		if ((m_selection.ndataIndex < 0) || (m_selection.ndataIndex >= m_data.size())) return;
+		Selection& si = m_selection[i];
 
-		const QString& label = m_data[m_selection.ndataIndex]->label();
-
-		QFont font = p.font();
-		QFont boldFont = font; boldFont.setBold(true);
-
-		QFontMetrics fm(font);
-		QString sx = QString("X:%1").arg(pf.x());
-		QString sy = QString("Y:%1").arg(pf.y());
-		int wx = fm.horizontalAdvance(sx);
-		int wy = fm.horizontalAdvance(sy);
-		int d = 3;
-		int W = (wx > wy ? wx : wy) + 2*d;
-		int H = 3*fm.height() + 4*d;
-		if (W < H) W = H;
-		p.setPen(Qt::black);
-
-		int X = pt.x();
-		int Y = pt.y();
-		if (X + W > m_screenRect.right()) X = m_screenRect.right() - W;
-		if (Y + H > m_screenRect.bottom()) Y = m_screenRect.bottom() - H;
-
-		p.setBrush(m_selCol);
-		p.drawEllipse(pt, 5, 5);
-
-		if (m_bshowToolTip)
+		QPointF pf = dataPoint(si.ndataIndex, si.npointIndex);
+		QPoint pt = ViewToScreen(pf);
+		if (m_screenRect.contains(pt, true))
 		{
-			p.setBrush(Qt::yellow);
-			p.drawRect(X, Y, W, H);
+			if ((si.ndataIndex < 0) || (si.ndataIndex >= m_data.size())) return;
 
-			p.setFont(boldFont);
-			p.drawText(X+d, Y + fm.ascent() + d, label);
-			p.setFont(font);
-			p.drawText(X+d, Y + fm.ascent() + fm.height() + 2*d, sx);
-			p.drawText(X+d, Y + fm.ascent() + 2*fm.height() + 3*d, sy);
+			p.setPen(Qt::black);
+			p.setBrush(m_selCol);
+			p.drawEllipse(pt, 5, 5);
+
+			if (m_bshowToolTip && (m_selection.size() == 1))
+			{
+				const QString& label = m_data[si.ndataIndex]->label();
+
+				QFont font = p.font();
+				QFont boldFont = font; boldFont.setBold(true);
+
+				QFontMetrics fm(font);
+				QString sx = QString("X:%1").arg(pf.x());
+				QString sy = QString("Y:%1").arg(pf.y());
+				int wx = fm.horizontalAdvance(sx);
+				int wy = fm.horizontalAdvance(sy);
+				int d = 3;
+				int W = (wx > wy ? wx : wy) + 2 * d;
+				int H = 3 * fm.height() + 4 * d;
+				if (W < H) W = H;
+				int X = pt.x();
+				int Y = pt.y();
+				if (X + W > m_screenRect.right()) X = m_screenRect.right() - W;
+				if (Y + H > m_screenRect.bottom()) Y = m_screenRect.bottom() - H;
+
+				p.setBrush(Qt::yellow);
+				p.drawRect(X, Y, W, H);
+
+				p.setFont(boldFont);
+				p.drawText(X + d, Y + fm.ascent() + d, label);
+				p.setFont(font);
+				p.drawText(X + d, Y + fm.ascent() + fm.height() + 2 * d, sx);
+				p.drawText(X + d, Y + fm.ascent() + 2 * fm.height() + 3 * d, sy);
+			}
 		}
 	}
 }
@@ -1333,10 +1402,21 @@ void CPlotWidget::setYAxisLabelAlignment(AxisLabelAlignment a)
 //-----------------------------------------------------------------------------
 void CPlotWidget::selectPoint(int ndata, int npoint)
 {
-	m_select = true;
-	m_selection.ndataIndex = ndata;
-	m_selection.npointIndex = npoint;
+	m_selection.clear();
+	m_selection.push_back(Selection{ ndata, npoint });
 	repaint();
 
 	emit pointSelected(npoint);
+}
+
+void CPlotWidget::addToSelection(int ndata, int npoint)
+{
+	Selection s{ ndata, npoint };
+	for (int i = 0; i < m_selection.size(); ++i)
+	{
+		Selection& si = m_selection[i];
+		if ((s.ndataIndex == si.ndataIndex) && 
+			(s.npointIndex == si.npointIndex)) return;
+	}
+	m_selection.push_back(s);
 }

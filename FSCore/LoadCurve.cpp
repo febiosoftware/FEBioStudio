@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "LoadCurve.h"
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -100,6 +101,26 @@ void FELoadCurve::Delete(int n)
 		vector<LOADPOINT>::iterator it = m_Pt.begin();
 		for (int i=0; i<n; ++i) ++it;
 		m_Pt.erase(it);
+	}
+}
+
+void FELoadCurve::Delete(const vector<int>& indexList)
+{
+	vector<int> tmp;
+	int N = indexList.size();
+	for (int i = 0; i < N; ++i)
+	{
+		int n = indexList[i];
+		if ((n >= 0) && (n < Size())) tmp.push_back(n);
+	}
+
+	std::sort(tmp.begin(), tmp.end());
+
+	for (int i = 0; i < N; ++i)
+	{
+		int n = tmp[i];
+		m_Pt.erase(m_Pt.begin() + n);
+		for (int j = i + 1; j < N; ++j) tmp[j]--;
 	}
 }
 

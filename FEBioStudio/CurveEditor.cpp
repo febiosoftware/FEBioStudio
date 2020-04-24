@@ -30,7 +30,7 @@ void CCmdAddPoint::UnExecute()
 	m_lc->Delete(m_index);
 }
 
-CCmdRemovePoint::CCmdRemovePoint(FELoadCurve* plc, int index) : CCommand("Remove point")
+CCmdRemovePoint::CCmdRemovePoint(FELoadCurve* plc, const vector<int>& index) : CCommand("Remove point")
 {
 	m_lc = plc;
 	m_index = index;
@@ -38,14 +38,13 @@ CCmdRemovePoint::CCmdRemovePoint(FELoadCurve* plc, int index) : CCommand("Remove
 
 void CCmdRemovePoint::Execute()
 {
-	m_pt = m_lc->Item(m_index);
+	m_copy = *m_lc;
 	m_lc->Delete(m_index);
 }
 
 void CCmdRemovePoint::UnExecute()
 {
-	int m = m_lc->Add(m_pt);
-	assert(m == m_index);
+	*m_lc = m_copy;
 }
 
 CCmdMovePoint::CCmdMovePoint(FELoadCurve* plc, int index, LOADPOINT to) : CCommand("Move point")
@@ -99,7 +98,6 @@ CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(
 	m_currentItem = 0;
 	m_plc_copy = 0;
 	m_nflt = FLT_ALL;
-	m_nselect = -1;
 	ui->setupUi(this);
 	resize(600, 400);
 
@@ -749,13 +747,21 @@ void CCurveEditor::on_plot_pointClicked(QPointF p, bool shift)
 
 void CCurveEditor::on_plot_pointSelected(int n)
 {
+	UpdateSelection();
+}
+
+void CCurveEditor::UpdateSelection()
+{
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	m_nselect = n;
-	if (n >= 0)
+	if (plc == nullptr) return;
+
+	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+
+	if (sel.size() == 1)
 	{
 		ui->enablePointEdit(true);
-		LOADPOINT pt = plc->Item(n);
+		LOADPOINT pt = plc->Item(sel[0].npointIndex);
 		ui->setPointValues(pt.time, pt.load);
 	}
 	else
@@ -769,16 +775,20 @@ void CCurveEditor::on_plot_pointDragged(QPoint p)
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
-	if (m_nselect>=0)
+	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+
+	if (sel.size() == 1)
 	{
+		int n = sel[0].npointIndex;
+
 		QPointF pf = ui->plot->ScreenToView(p);
 		if (ui->isSnapToGrid()) pf = ui->plot->SnapToGrid(pf);
 
-		LOADPOINT& lp = plc->Item(m_nselect);
+		LOADPOINT& lp = plc->Item(n);
 		lp.time = pf.x();
 		lp.load = pf.y();
 
-		ui->plot->getPlotData(0).Point(m_nselect) = pf;
+		ui->plot->getPlotData(0).Point(n) = pf;
 
 		ui->setPointValues(pf.x(), pf.y());
 
@@ -791,9 +801,11 @@ void CCurveEditor::on_plot_draggingStart(QPoint p)
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
-	if (m_nselect >= 0)
+	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+
+	if (sel.size() == 1)
 	{
-		LOADPOINT& lp = plc->Item(m_nselect);
+		LOADPOINT& lp = plc->Item(sel[0].npointIndex);
 		ui->m_p0.setX(lp.time);
 		ui->m_p0.setY(lp.load);
 	}
@@ -804,16 +816,20 @@ void CCurveEditor::on_plot_draggingEnd(QPoint p)
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
-	if (m_nselect >= 0)
+	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+
+	if (sel.size() == 1)
 	{
+		int n = sel[0].npointIndex;
+
 		LOADPOINT lp0;
 		lp0.time = ui->m_p0.x();
 		lp0.load = ui->m_p0.y();
 
-		LOADPOINT lp = plc->Item(m_nselect);
-		plc->Item(m_nselect) = lp0;
+		LOADPOINT lp = plc->Item(n);
+		plc->Item(n) = lp0;
 
-		m_cmd.DoCommand(new CCmdMovePoint(plc, m_nselect, lp));
+		m_cmd.DoCommand(new CCmdMovePoint(plc, n, lp));
 
 		UpdateLoadCurve();
 	}
@@ -854,6 +870,11 @@ void CCurveEditor::on_plot_backgroundImageChanged()
 void CCurveEditor::on_plot_doneZoomToRect()
 {
 
+}
+
+void CCurveEditor::on_plot_regionSelected(QRect rt)
+{
+	UpdateSelection();
 }
 
 void CCurveEditor::on_plot_doneSelectingRect(QRect rt)
@@ -921,10 +942,12 @@ void CCurveEditor::on_xval_textEdited()
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
-	if (m_nselect >= 0)
+	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+
+	if (sel.size() == 1)
 	{
 		QPointF p = ui->getPointValue();
-		LOADPOINT& it = plc->Item(m_nselect);
+		LOADPOINT& it = plc->Item(sel[0].npointIndex);
 		it.time = p.x();
 		it.load = p.y();
 		UpdateLoadCurve();
@@ -936,10 +959,12 @@ void CCurveEditor::on_yval_textEdited()
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
-	if (m_nselect >= 0)
+	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+
+	if (sel.size() == 1)
 	{
 		QPointF p = ui->getPointValue();
-		LOADPOINT& it = plc->Item(m_nselect);
+		LOADPOINT& it = plc->Item(sel[0].npointIndex);
 		it.time = p.x();
 		it.load = p.y();
 		UpdateLoadCurve();
@@ -951,12 +976,15 @@ void CCurveEditor::on_deletePoint_clicked()
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
-	if (m_nselect >= 0)
-	{
-		m_cmd.DoCommand(new CCmdRemovePoint(plc, m_nselect));
+	vector<CPlotWidget::Selection> sel = ui->plot->selection();
 
+	if (sel.empty() == false)
+	{
+		vector<int> points;
+		for (int i = 0; i < sel.size(); ++i) points.push_back(sel[i].npointIndex);
+
+		m_cmd.DoCommand(new CCmdRemovePoint(plc, points));
 		SetLoadCurve(plc);
-		m_nselect = -1;
 		ui->enablePointEdit(false);
 	}
 }
@@ -1006,7 +1034,6 @@ void CCurveEditor::on_undo_triggered()
 		SetLoadCurve(plc);
 	}
 
-	m_nselect = -1;
 	ui->enablePointEdit(false);
 }
 
@@ -1022,7 +1049,6 @@ void CCurveEditor::on_redo_triggered()
 	ui->setCmdNames(undo, redo);
 
 	SetLoadCurve(plc);
-	m_nselect = -1;
 	ui->enablePointEdit(false);
 }
 
@@ -1060,7 +1086,6 @@ void CCurveEditor::on_math_triggered()
 		}
 
 		SetLoadCurve(plc);
-		m_nselect = -1;
 		ui->enablePointEdit(false);
 	}	
 }

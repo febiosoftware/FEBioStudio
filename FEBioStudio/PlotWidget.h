@@ -212,9 +212,12 @@ public:
 
 	void mapToUserRect(QRect rt, QRectF rng);
 
+	vector<Selection> selection() const { return m_selection; }
+
 signals:
 	void doneZoomToRect();
 	void doneSelectingRect(QRect rt);
+	void regionSelected(QRect rt);
 	void pointClicked(QPointF p, bool bshift);
 	void pointSelected(int n);
 	void pointDragged(QPoint p);
@@ -228,6 +231,10 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* ev);
 	void contextMenuEvent (QContextMenuEvent* ev);
 	void wheelEvent       (QWheelEvent* ev);
+
+	void regionSelect(QRect rt);
+
+	void addToSelection(int ndata, int npoint);
 
 public:
 	QString	m_title;
@@ -244,15 +251,17 @@ public:
 	bool		m_bzoomRect;
 	bool		m_bvalidRect;
 	bool		m_mapToRect;
-	bool		m_select;
 	bool		m_newSelect;
 	bool		m_bdragging;
+	bool		m_bregionSelect;
 	bool		m_bsmoothLines;
 	bool		m_bshowDataMarks;
-	Selection	m_selection;
 	int			m_dataMarkSize;
 
+	vector<Selection>	m_selection;
+
 	QPointF ScreenToView(const QPoint& p);
+	QRectF ScreenToView(const QRect& rt);
 	QPoint ViewToScreen(const QPointF& p);
 
 	void SetBackgroundImage(QImage* img);

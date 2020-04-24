@@ -45,6 +45,7 @@ private:
 	void BuildModelTree();
 	void BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po);
 	void BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, const std::string& name);
+	void UpdateSelection();
 
 private slots:
 	void on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
@@ -56,6 +57,7 @@ private slots:
 	void on_plot_draggingEnd(QPoint p);
 	void on_plot_backgroundImageChanged();
 	void on_plot_doneZoomToRect();
+	void on_plot_regionSelected(QRect);
 	void on_plot_doneSelectingRect(QRect);
 	void on_open_triggered();
 	void on_save_triggered();
@@ -82,7 +84,6 @@ private:
 	CMainWindow*		m_wnd;
 	FELoadCurve*		m_plc_copy;
 	int					m_nflt;
-	int					m_nselect;
 
 	// undo stack
 	CBasicCmdManager	m_cmd;
@@ -109,15 +110,15 @@ private:
 class CCmdRemovePoint : public CCommand
 {
 public:
-	CCmdRemovePoint(FELoadCurve* plc, int index);
+	CCmdRemovePoint(FELoadCurve* plc, const vector<int>& index);
 
 	void Execute() override;
 	void UnExecute() override;
 
 private:
 	FELoadCurve*	m_lc;
-	LOADPOINT		m_pt;
-	int				m_index;
+	FELoadCurve		m_copy;
+	vector<int>		m_index;
 };
 
 class CCmdMovePoint: public CCommand
