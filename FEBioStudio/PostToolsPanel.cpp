@@ -17,7 +17,7 @@
 #include "Document.h"
 #include <PostLib/FEPostMesh.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/GDecoration.h>
+#include <GLLib/GDecoration.h>
 #include <PostGL/GLModel.h>
 #include "PointDistanceTool.h"
 #include "3PointAngleTool.h"

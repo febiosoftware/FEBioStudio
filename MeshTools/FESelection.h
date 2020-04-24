@@ -325,6 +325,23 @@ protected:
 class FEElementSelection : public FESelection
 {
 public:
+	class Iterator
+	{
+	public:
+		Iterator(FEMesh* pm);
+
+		operator FEElement_*() { return m_pelem; }
+		FEElement_* operator -> () { return m_pelem; }
+
+		void operator ++ ();
+
+	protected:
+		FEMesh*		m_pm;
+		FEElement_*	m_pelem;
+		int			m_n;
+	};
+
+public:
 	FEElementSelection(FEModel* ps, FEMesh* pm) : FESelection(SELECT_FE_ELEMENTS) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
@@ -462,6 +479,8 @@ public:
 	FELineMesh* GetMesh() { return m_pMesh; }
 
 	FEItemListBuilder* CreateItemList();
+
+	FENodeSelection::Iterator First();
 
 protected:
 	FELineMesh*	m_pMesh;

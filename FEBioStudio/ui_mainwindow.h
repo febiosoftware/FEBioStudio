@@ -29,6 +29,7 @@
 #include "LaunchConfig.h"
 #include <QtCore/QStandardPaths>
 #include "MainTabBar.h"
+#include "DlgMeasure.h"
 
 class QProcess;
 
@@ -73,6 +74,7 @@ public:
 	::CPostPanel*	postPanel;
 	::CInfoPanel*	infoPanel;
 	::CDatabasePanel*	databasePanel;
+	::CDlgMeasure*	measureTool;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -96,6 +98,7 @@ public:
 	QAction* actionSelectCurves;
 	QAction* actionSelectNodes;
 	QAction* actionSelectDiscrete;
+	QAction* actionMeasureTool;
 
 	QAction* actionAddBC;
 	QAction* actionAddNodalLoad;
@@ -175,6 +178,8 @@ public:
 	CMainWindow()
 	{
 		m_theme = 0;
+
+		measureTool = nullptr;
 
 		m_showNewOnStartup = true;
 	}
@@ -450,6 +455,8 @@ public:
 		selectCircle = addAction("Circle"   , "selectCircle", "selectCircle", true);
 		selectFree   = addAction("Freehand" , "selectFree"  , "selectFree"  , true);
 
+		actionMeasureTool = addAction("Measure tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
+
 		QActionGroup* pag = new QActionGroup(mainWindow);
 		pag->addAction(actionSelectObjects);
 		pag->addAction(actionSelectParts);
@@ -697,6 +704,8 @@ public:
 		mainToolBar->addAction(selectRect);
 		mainToolBar->addAction(selectCircle);
 		mainToolBar->addAction(selectFree);
+		mainToolBar->addSeparator();
+		mainToolBar->addAction(actionMeasureTool);
 
 		// Build tool bar
 		buildToolBar = new QToolBar(mainWindow);

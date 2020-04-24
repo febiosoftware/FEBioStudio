@@ -1415,6 +1415,20 @@ void CGLView::paintGL()
 	// render the image data
 	RenderImageData();
 
+	// render the decorations
+	if (m_deco.empty() == false)
+	{
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+		glColor3ub(255, 255, 0);
+		for (int i = 0; i < m_deco.size(); ++i)
+		{
+			m_deco[i]->render();
+		}
+		glPopAttrib();
+	}
+
 	// render the 3D cursor
 	if (postDoc == nullptr)
 	{
@@ -3613,6 +3627,31 @@ void CGLView::AddRegionPoint(int x, int y)
 	}
 }
 
+//-----------------------------------------------------------------------------
+void CGLView::AddDecoration(GDecoration* deco)
+{
+	// make sure the deco is not defined
+	for (int i = 0; i < m_deco.size(); ++i)
+	{
+		if (deco == m_deco[i]) return;
+	}
+	m_deco.push_back(deco);
+	repaint();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::RemoveDecoration(GDecoration* deco)
+{
+	for (int i = 0; i < m_deco.size(); ++i)
+	{
+		if (deco == m_deco[i])
+		{
+			m_deco.erase(m_deco.begin() + i);
+			repaint();
+			return;
+		}
+	}
+}
 
 //-----------------------------------------------------------------------------
 void CGLView::PanView(vec3d r)

@@ -12,6 +12,7 @@
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
 #include <GLLib/GLContext.h>
+#include <GLLib/GDecoration.h>
 
 class CMainWindow;
 class CDocument;
@@ -383,6 +384,10 @@ public:
 	vec3f GetLightPosition() { return m_light; }
 	void SetLightPosition(vec3f lp) { m_light = lp; }
 
+public:
+	void AddDecoration(GDecoration* deco);
+	void RemoveDecoration(GDecoration* deco);
+
 protected:
 	void PanView(vec3d r);
 
@@ -487,6 +492,8 @@ private:
 	bool	m_btrack;
 	int		m_ntrack[3];
 	mat3d	m_rot0;
+
+	vector<GDecoration*>	m_deco;
 
 public:
 	CGLContext	m_rc;

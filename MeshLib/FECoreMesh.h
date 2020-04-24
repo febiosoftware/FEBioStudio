@@ -55,6 +55,7 @@ public:
 
 	// element volume
 	double ElementVolume(int iel);
+	double ElementVolume(const FEElement_& el);
 	double HexVolume(const FEElement_& el);
 	double PentaVolume(const FEElement_& el);
 	double TetVolume(const FEElement_& el);

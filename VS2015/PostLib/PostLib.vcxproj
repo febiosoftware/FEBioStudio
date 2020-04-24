@@ -182,7 +182,6 @@
     <ClCompile Include="..\..\PostLib\FEU3DImport.cpp" />
     <ClCompile Include="..\..\PostLib\FEVTKExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEVTKImport.cpp" />
-    <ClCompile Include="..\..\PostLib\GDecoration.cpp" />
     <ClCompile Include="..\..\PostLib\GIFAnimation.cpp" />
     <ClCompile Include="..\..\PostLib\GLImageRenderer.cpp" />
     <ClCompile Include="..\..\PostLib\GLObject.cpp" />
@@ -242,7 +241,6 @@
     <ClInclude Include="..\..\PostLib\FEU3DImport.h" />
     <ClInclude Include="..\..\PostLib\FEVTKExport.h" />
     <ClInclude Include="..\..\PostLib\FEVTKImport.h" />
-    <ClInclude Include="..\..\PostLib\GDecoration.h" />
     <ClInclude Include="..\..\PostLib\GIFAnimation.h" />
     <ClInclude Include="..\..\PostLib\GLImageRenderer.h" />
     <ClInclude Include="..\..\PostLib\GLObject.h" />

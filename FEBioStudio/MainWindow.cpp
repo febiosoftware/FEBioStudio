@@ -651,6 +651,8 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update();
 
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update();
+
+	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1457,6 +1459,13 @@ void CMainWindow::on_selectFree_toggled(bool b)
 {
 	if (b) m_doc->SetSelectionStyle(REGION_SELECT_FREE);
 	Update();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionMeasureTool_triggered()
+{
+	if (ui->measureTool == nullptr) ui->measureTool = new CDlgMeasure(this);
+	ui->measureTool->show();
 }
 
 //-----------------------------------------------------------------------------

@@ -347,6 +347,8 @@ public slots:
 	void on_selectCircle_toggled(bool b);
 	void on_selectFree_toggled(bool b);
 
+	void on_actionMeasureTool_triggered();
+
 	// Post toolbar
 	void on_selectData_currentValueChanged(int i);
 	void on_actionPlay_toggled(bool bchecked);

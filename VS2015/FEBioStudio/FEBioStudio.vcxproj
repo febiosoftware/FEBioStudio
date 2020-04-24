@@ -218,6 +218,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgImportXPLT.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgLameConvertor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgLSDYNAExport.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgMeasure.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgMergeObjects.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgModelInfo.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgNew.cpp" />
@@ -304,6 +305,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgFEBioOptimize.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgFormula.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgLameConvertor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgMeasure.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgModelInfo.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgNew.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgRun.cpp" />
@@ -480,6 +482,11 @@
     <ClInclude Include="..\..\FEBioStudio\DlgFind.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgImportXPLT.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUpload.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgMeasure.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>

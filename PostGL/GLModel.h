@@ -3,7 +3,7 @@
 #include "GLDisplacementMap.h"
 #include "GLColorMap.h"
 #include <PostLib/FEPostModel.h>
-#include <PostLib/GDecoration.h>
+#include <GLLib/GDecoration.h>
 #include "GLPlot.h"
 #include <FSCore/FSObjectList.h>
 #include <GLLib/GLMeshRender.h>

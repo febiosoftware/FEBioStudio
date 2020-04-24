@@ -931,6 +931,21 @@ void GDiscreteSelection::Update()
 // FEElementSelection
 //////////////////////////////////////////////////////////////////////
 
+
+FEElementSelection::Iterator::Iterator(FEMesh* pm)
+{
+	m_pm = pm;
+	m_n = 0;
+	if (m_pm == 0) return;
+	do { m_pelem = m_pm->ElementPtr(m_n++); } while (m_pelem && !m_pelem->IsSelected());
+}
+
+void FEElementSelection::Iterator::operator ++()
+{
+	if (m_pm == 0) return;
+	do { m_pelem = m_pm->ElementPtr(m_n++); } while (m_pelem && !m_pelem->IsSelected());
+}
+
 int FEElementSelection::Count()
 {
 	return (int)m_item.size();
@@ -1648,6 +1663,11 @@ int FENodeSelection::Count()
 		if (pn->IsSelected()) ++N;
 
 	return N;
+}
+
+FENodeSelection::Iterator FENodeSelection::First()
+{
+	return Iterator(m_pMesh);
 }
 
 void FENodeSelection::Invert()

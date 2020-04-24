@@ -143,6 +143,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\GLLib\GDecoration.cpp" />
     <ClCompile Include="..\..\GLLib\GLCamera.cpp" />
     <ClCompile Include="..\..\GLLib\GLContext.cpp" />
     <ClCompile Include="..\..\GLLib\GLMeshRender.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="..\..\GLLib\glx.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\GLLib\GDecoration.h" />
     <ClInclude Include="..\..\GLLib\GLCamera.h" />
     <ClInclude Include="..\..\GLLib\GLContext.h" />
     <ClInclude Include="..\..\GLLib\GLMeshRender.h" />
