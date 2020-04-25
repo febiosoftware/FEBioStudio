@@ -22,7 +22,6 @@
 #include "AddPointTool.h"
 //#include "TransformTool.h"
 //#include "ShellThicknessTool.h"
-//#include "SphereFitTool.h"
 //#include "PointCongruencyTool.h"
 #include "ImportLinesTool.h"
 #include "DistanceMapTool.h"
@@ -127,7 +126,6 @@ void CPostToolsPanel::initTools()
 	tools.push_back(new CDistanceMapTool    (wnd));
 //	tools.push_back(new CCurvatureMapTool   (wnd));
 //	tools.push_back(new CPointCongruencyTool(wnd));
-//	tools.push_back(new CSphereFitTool      (wnd));
 //	tools.push_back(new CTransformTool      (wnd));
 //	tools.push_back(new CShellThicknessTool (wnd));
 	tools.push_back(new CAddPointTool       (wnd));

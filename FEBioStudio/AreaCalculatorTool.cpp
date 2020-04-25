@@ -12,7 +12,6 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include "Document.h"
-#include <MeshTools/SphereFit.h>
 #include <GeomLib/GObject.h>
 
 // constructor

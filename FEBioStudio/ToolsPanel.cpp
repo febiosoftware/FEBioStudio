@@ -2,7 +2,6 @@
 #include "ToolsPanel.h"
 #include "ui_toolspanel.h"
 #include "MainWindow.h"
-#include "SphereFitTool.h"
 #include "ConchoidFitTool.h"
 #include "ReadCurveTool.h"
 #include "FoamGeneratorTool.h"
@@ -11,7 +10,6 @@
 #include "PlaneCutTool.h"
 #include "FiberGeneratorTool.h"
 #include "AreaCalculatorTool.h"
-#include "TetOverlapTool.h"
 #include "ImportSpringsTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
@@ -32,7 +30,6 @@ void CToolsPanel::Update()
 void CToolsPanel::initTools()
 {
 	CMainWindow* wnd = GetMainWindow();
-	tools.push_back(new CSphereFitTool     (wnd));
 	tools.push_back(new CConchoidFitTool   (wnd));
 	tools.push_back(new CReadCurveTool     (wnd));
 	tools.push_back(new CFoamGeneratorTool (wnd));
@@ -41,7 +38,6 @@ void CToolsPanel::initTools()
 	tools.push_back(new CPlaneCutTool      (wnd));
 	tools.push_back(new CFiberGeneratorTool(wnd));
     tools.push_back(new CAreaCalculatorTool(wnd));
-	tools.push_back(new CTetOverlapTool    (wnd));
 	tools.push_back(new CImportSpringsTool (wnd));
 }
 

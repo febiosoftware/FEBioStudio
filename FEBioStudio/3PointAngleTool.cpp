@@ -57,7 +57,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-C3PointAngleTool::C3PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "3Point Angle")
+C3PointAngleTool::C3PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "3 Point Angle")
 {
 	addProperty("node 1", CProperty::Int);
 	addProperty("node 2", CProperty::Int);

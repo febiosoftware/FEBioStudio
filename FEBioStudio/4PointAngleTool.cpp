@@ -76,7 +76,7 @@ void C4PointAngleTool::SetPropertyValue(int i, const QVariant& v)
 }
 
 //-----------------------------------------------------------------------------
-C4PointAngleTool::C4PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "4Point Angle")
+C4PointAngleTool::C4PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "4 Point Angle")
 {
 	addProperty("node 1", CProperty::Int);
 	addProperty("node 2", CProperty::Int);

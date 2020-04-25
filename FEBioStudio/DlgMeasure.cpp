@@ -14,6 +14,8 @@
 #include "3PointAngleTool.h"
 #include "4PointAngleTool.h"
 #include "MeasureAreaTool.h"
+#include "SphereFitTool.h"
+#include "TetOverlapTool.h"
 
 class Ui::CDlgMeasure
 {
@@ -82,6 +84,8 @@ public:
 		m_tools.push_back(new C3PointAngleTool(m_wnd));
 		m_tools.push_back(new C4PointAngleTool(m_wnd));
 		m_tools.push_back(new CMeasureAreaTool(m_wnd));
+		m_tools.push_back(new CSphereFitTool(m_wnd));
+		m_tools.push_back(new CTetOverlapTool(m_wnd));
 	}
 
 	void clearTools()

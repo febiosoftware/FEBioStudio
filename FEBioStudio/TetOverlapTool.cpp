@@ -16,16 +16,9 @@ bool CTetOverlapTool::OnApply()
 {
 	m_ncount = 0;
 
-	CDocument* doc = GetDocument();
-	if ((doc == nullptr) || !doc->IsValid()) return SetErrorString("No valid document");
+	FEMesh* mesh = GetActiveMesh();
+	if (mesh == nullptr) return SetErrorString("You need to select a meshed object");
 
-	GObject* po = doc->GetActiveObject();
-	if ((po == 0) || (po->GetFEMesh() == 0))
-	{
-		return SetErrorString("You must select an object that has a mesh.");
-	}
-
-	FEMesh* mesh = po->GetFEMesh();
 	if (mesh->IsType(FE_TET4) == false)
 	{
 		return SetErrorString("This tool only works with tet4 meshes.");

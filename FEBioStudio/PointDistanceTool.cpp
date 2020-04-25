@@ -26,7 +26,7 @@ void CPointDistanceTool::SetPropertyValue(int i, const QVariant& v)
 	if (i==1) m_node2 = v.toInt();
 }
 
-CPointDistanceTool::CPointDistanceTool(CMainWindow* wnd) : CBasicTool(wnd, "Pt.Distance")
+CPointDistanceTool::CPointDistanceTool(CMainWindow* wnd) : CBasicTool(wnd, "Point Distance")
 { 
 	m_node1 = 0; 
 	m_node2 = 0; 

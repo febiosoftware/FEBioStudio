@@ -3,6 +3,7 @@
 #include <MeshTools/SphereFit.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
+#include <GLLib/GDecoration.h>
 
 // constructor
 CSphereFitTool::CSphereFitTool(CMainWindow* wnd) : CBasicTool(wnd, "Sphere Fit", HAS_APPLY_BUTTON)
@@ -23,6 +24,8 @@ CSphereFitTool::CSphereFitTool(CMainWindow* wnd) : CBasicTool(wnd, "Sphere Fit",
 
 bool CSphereFitTool::OnApply()
 {
+	SetDecoration(nullptr);
+
 	// get the nodal coordinates (surface only)
 	GObject* po = GetActiveObject();
 	FEMesh* activeMesh = (po ? po->GetFEMesh() : nullptr);
@@ -68,6 +71,8 @@ bool CSphereFitTool::OnApply()
 	m_z = sc.z;
 	m_R = R;
 	m_obj = objs;
+
+	SetDecoration(new GSphereDecoration(to_vec3f(sc), R));
 
 	return true;
 }

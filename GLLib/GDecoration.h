@@ -72,6 +72,19 @@ private:
 };
 
 //-------------------------------------------------------------------
+class GSphereDecoration : public GDecoration
+{
+public:
+	GSphereDecoration(const vec3f& a, double R);
+
+	void render();
+
+private:
+	vec3d	m_c;
+	double	m_R;
+};
+
+//-------------------------------------------------------------------
 class GCompositeDecoration : public GDecoration
 {
 public:

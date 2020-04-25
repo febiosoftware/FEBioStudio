@@ -12,13 +12,13 @@
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
 #include <GLLib/GLContext.h>
-#include <GLLib/GDecoration.h>
 
 class CMainWindow;
 class CDocument;
 class GCurveMeshObject;
 class CPostDoc;
 class GMaterial;
+class GDecoration;
 
 // coordinate system modes
 #define COORD_GLOBAL	0

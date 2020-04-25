@@ -2,12 +2,15 @@
 #ifdef WIN32
 #include <Windows.h>
 #include <gl/gl.h>
+#include <gl/GLU.h>
 #endif
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
+#include <OpenGL/GLU.h>
 #endif
 #ifdef LINUX
 #include <GL/gl.h>
+#include <GL/glu.h>
 #endif
 
 void GPointDecoration::render()
@@ -98,6 +101,23 @@ void GArcDecoration::render()
 		p0 = p1;
 	}
 	glEnd();
+}
+
+GSphereDecoration::GSphereDecoration(const vec3f& a, double R)
+{
+	m_c = a;
+	m_R = R;
+	m_col = GLColor(255, 255, 0, 64);
+}
+
+void GSphereDecoration::render()
+{
+	GLUquadric* glq = gluNewQuadric();
+	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+	glTranslatef(m_c.x, m_c.y, m_c.z);
+	gluSphere(glq, m_R, 64, 32);
+	glTranslatef(-m_c.x, -m_c.y, -m_c.z);
+	gluDeleteQuadric(glq);
 }
 
 GCompositeDecoration::GCompositeDecoration()
