@@ -7,7 +7,7 @@
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
 
-CMaterialMapTool::CMaterialMapTool() : CBasicTool("Material Map", HAS_APPLY_BUTTON)
+CMaterialMapTool::CMaterialMapTool(CMainWindow* wnd) : CBasicTool(wnd, "Material Map", HAS_APPLY_BUTTON)
 {
 	m_nmat = 5;
 

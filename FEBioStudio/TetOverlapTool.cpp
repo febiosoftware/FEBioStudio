@@ -5,7 +5,7 @@
 #include <MeshTools/TetOverlap.h>
 
 // constructor
-CTetOverlapTool::CTetOverlapTool() : CBasicTool("Tet Overlap", HAS_APPLY_BUTTON)
+CTetOverlapTool::CTetOverlapTool(CMainWindow* wnd) : CBasicTool(wnd, "Tet Overlap", HAS_APPLY_BUTTON)
 {
 	m_ncount = 0;
 	addIntProperty(&m_ncount, "Overlapping tets")->setFlags(CProperty::Visible);

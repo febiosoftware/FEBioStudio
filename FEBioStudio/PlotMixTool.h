@@ -35,7 +35,7 @@ class CKinematTool : public CAbstractTool
 
 public:
 	// constructor
-	CKinematTool();
+	CKinematTool(CMainWindow* wnd);
 
 	// get the property list
 	QWidget* createUi();

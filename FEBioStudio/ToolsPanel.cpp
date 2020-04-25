@@ -25,31 +25,30 @@ void CToolsPanel::Update()
 {
 	if (m_activeTool)
 	{
-		m_activeTool->deactivate();
-
-		m_activeTool->activate(GetMainWindow());
+		m_activeTool->Update();
 	}
 }
 
 void CToolsPanel::initTools()
 {
-	tools.push_back(new CSphereFitTool     );
-	tools.push_back(new CConchoidFitTool   );
-	tools.push_back(new CReadCurveTool     );
-	tools.push_back(new CFoamGeneratorTool );
-	tools.push_back(new CMaterialMapTool   );
-	tools.push_back(new CScalarFieldTool   );
-	tools.push_back(new CPlaneCutTool      );
-	tools.push_back(new CFiberGeneratorTool);
-    tools.push_back(new CAreaCalculatorTool);
-	tools.push_back(new CTetOverlapTool    );
-	tools.push_back(new CImportSpringsTool );
+	CMainWindow* wnd = GetMainWindow();
+	tools.push_back(new CSphereFitTool     (wnd));
+	tools.push_back(new CConchoidFitTool   (wnd));
+	tools.push_back(new CReadCurveTool     (wnd));
+	tools.push_back(new CFoamGeneratorTool (wnd));
+	tools.push_back(new CMaterialMapTool   (wnd));
+	tools.push_back(new CScalarFieldTool   (wnd));
+	tools.push_back(new CPlaneCutTool      (wnd));
+	tools.push_back(new CFiberGeneratorTool(wnd));
+    tools.push_back(new CAreaCalculatorTool(wnd));
+	tools.push_back(new CTetOverlapTool    (wnd));
+	tools.push_back(new CImportSpringsTool (wnd));
 }
 
 void CToolsPanel::on_buttons_buttonClicked(int id)
 {
 	// deactivate the active tool
-	if (m_activeTool) m_activeTool->deactivate();
+	if (m_activeTool) m_activeTool->Deactivate();
 	m_activeTool = 0;
 
 	// find the tool
@@ -61,7 +60,7 @@ void CToolsPanel::on_buttons_buttonClicked(int id)
 
 	// activate the tool
 	m_activeTool = *it;
-	m_activeTool->activate(GetMainWindow());
+	m_activeTool->Activate();
 
 	// show the tab
 	ui->stack->setCurrentIndex(id);
@@ -71,7 +70,7 @@ void CToolsPanel::hideEvent(QHideEvent* ev)
 {
 	if (m_activeTool)
 	{
-		m_activeTool->deactivate();
+		m_activeTool->Deactivate();
 	}
 	ev->accept();
 }
@@ -80,7 +79,7 @@ void CToolsPanel::showEvent(QShowEvent* ev)
 {
 	if (m_activeTool)
 	{
-		m_activeTool->activate(GetMainWindow());
+		m_activeTool->Activate();
 	}
 	ev->accept();
 }

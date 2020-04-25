@@ -13,7 +13,7 @@ class CImportSpringsTool : public CBasicTool
 	};
 
 public:
-	CImportSpringsTool();
+	CImportSpringsTool(CMainWindow* wnd);
 
 	bool OnApply();
 

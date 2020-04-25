@@ -7,7 +7,7 @@
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FEElementData.h>
 
-CScalarFieldTool::CScalarFieldTool() : CBasicTool("Scalar Field", HAS_APPLY_BUTTON)
+CScalarFieldTool::CScalarFieldTool(CMainWindow* wnd) : CBasicTool(wnd, "Scalar Field", HAS_APPLY_BUTTON)
 {
 	m_ngen[0] = 0;
 	m_ngen[1] = 0;

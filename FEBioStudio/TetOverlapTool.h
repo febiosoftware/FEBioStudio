@@ -6,7 +6,7 @@ class CTetOverlapTool : public CBasicTool
 {
 public:
 	// constructor
-	CTetOverlapTool();
+	CTetOverlapTool(CMainWindow* wnd);
 
 	// method called when user presses Apply button (optional)
 	bool OnApply();

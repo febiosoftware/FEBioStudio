@@ -19,11 +19,7 @@
 #include <PostLib/FEPostModel.h>
 #include <GLLib/GDecoration.h>
 #include <PostGL/GLModel.h>
-#include "PointDistanceTool.h"
-#include "3PointAngleTool.h"
-#include "4PointAngleTool.h"
 #include "AddPointTool.h"
-#include "MeasureAreaTool.h"
 //#include "TransformTool.h"
 //#include "ShellThicknessTool.h"
 //#include "SphereFitTool.h"
@@ -117,33 +113,28 @@ void CPostToolsPanel::Update()
 {
 	if (ui->activeTool)
 	{
-		ui->activeTool->deactivate();
-
-		ui->activeTool->activate(GetMainWindow());
+		ui->activeTool->Update();
 	}
 }
 
 void CPostToolsPanel::initTools()
 {
-	tools.push_back(new CPointDistanceTool  ());
-	tools.push_back(new C3PointAngleTool    ());
-	tools.push_back(new C4PointAngleTool    ());
-//	tools.push_back(new CPlaneTool          ());
-//	tools.push_back(new CPlotMixTool        ());
-	tools.push_back(new CMeasureAreaTool    ());
-	tools.push_back(new CImportLinesTool    ());
-	tools.push_back(new CKinematTool        ());
-	tools.push_back(new CDistanceMapTool    ());
-//	tools.push_back(new CCurvatureMapTool   ());
-//	tools.push_back(new CPointCongruencyTool());
-//	tools.push_back(new CSphereFitTool      ());
-//	tools.push_back(new CTransformTool      ());
-//	tools.push_back(new CShellThicknessTool ());
-	tools.push_back(new CAddPointTool       ());
-	tools.push_back(new CImportPointsTool   ());
-	tools.push_back(new CAreaCoverageTool   ());
-//	tools.push_back(new CStrainMapTool      ());
-	tools.push_back(new CMeasureVolumeTool  ());
+	CMainWindow* wnd = GetMainWindow();
+//	tools.push_back(new CPlaneTool          (wnd));
+//	tools.push_back(new CPlotMixTool        (wnd));
+	tools.push_back(new CImportLinesTool    (wnd));
+	tools.push_back(new CKinematTool        (wnd));
+	tools.push_back(new CDistanceMapTool    (wnd));
+//	tools.push_back(new CCurvatureMapTool   (wnd));
+//	tools.push_back(new CPointCongruencyTool(wnd));
+//	tools.push_back(new CSphereFitTool      (wnd));
+//	tools.push_back(new CTransformTool      (wnd));
+//	tools.push_back(new CShellThicknessTool (wnd));
+	tools.push_back(new CAddPointTool       (wnd));
+	tools.push_back(new CImportPointsTool   (wnd));
+	tools.push_back(new CAreaCoverageTool   (wnd));
+//	tools.push_back(new CStrainMapTool      (wnd));
+	tools.push_back(new CMeasureVolumeTool  (wnd));
 }
 
 void CPostToolsPanel::on_buttons_buttonClicked(int id)
@@ -157,14 +148,14 @@ void CPostToolsPanel::on_buttons_buttonClicked(int id)
 	else
 	{
 		// deactivate the active tool
-		if (ui->activeTool) ui->activeTool->deactivate();
+		if (ui->activeTool) ui->activeTool->Deactivate();
 
 		ui->activeTool = 0;
 		ui->activeID = id;
 
 		// find the tool
 		ui->activeTool = tools.at(id - 1); assert(ui->activeTool);
-		ui->activeTool->activate(GetMainWindow());
+		ui->activeTool->Activate();
 
 		// show the tab
 		ui->stack->setCurrentIndex(id);
@@ -178,7 +169,7 @@ void CPostToolsPanel::hideEvent(QHideEvent* ev)
 {
 	if (ui->activeTool)
 	{
-		ui->activeTool->deactivate();
+		ui->activeTool->Deactivate();
 	}
 	ev->accept();
 }
@@ -187,7 +178,7 @@ void CPostToolsPanel::showEvent(QShowEvent* ev)
 {
 	if (ui->activeTool)
 	{
-		ui->activeTool->activate(GetMainWindow());
+		ui->activeTool->Activate();
 	}
 	ev->accept();
 }

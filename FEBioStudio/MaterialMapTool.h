@@ -4,7 +4,7 @@
 class CMaterialMapTool : public CBasicTool
 {
 public:
-	CMaterialMapTool();
+	CMaterialMapTool(CMainWindow* wnd);
 
 	bool OnApply();
 

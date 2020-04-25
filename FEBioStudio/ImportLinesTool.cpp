@@ -61,7 +61,7 @@ public:
 };
 
 // constructor
-CImportLinesTool::CImportLinesTool() : CAbstractTool("Import lines")
+CImportLinesTool::CImportLinesTool(CMainWindow* wnd) : CAbstractTool(wnd, "Import lines")
 {
 	ui = 0;
 }
@@ -388,7 +388,7 @@ public:
 };
 
 // constructor
-CImportPointsTool::CImportPointsTool() : CAbstractTool("Import points")
+CImportPointsTool::CImportPointsTool(CMainWindow* wnd) : CAbstractTool(wnd, "Import points")
 {
 	ui = 0;
 }

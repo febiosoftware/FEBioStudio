@@ -5,7 +5,7 @@
 class CPlaneCutTool : public CBasicTool
 {
 public:
-	CPlaneCutTool();
+	CPlaneCutTool(CMainWindow* wnd);
 
 	bool OnApply();
 

@@ -8,7 +8,7 @@ class CMeasureVolumeTool : public CBasicTool
 {
 public:
 	// constructor
-	CMeasureVolumeTool();
+	CMeasureVolumeTool(CMainWindow* wnd);
 
 	// Apply button
 	bool OnApply() override;

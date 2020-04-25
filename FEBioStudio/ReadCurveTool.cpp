@@ -13,7 +13,7 @@
 #include "Document.h"
 #include "MainWindow.h"
 
-CReadCurveTool::CReadCurveTool() : CBasicTool("Read Curve", HAS_APPLY_BUTTON)
+CReadCurveTool::CReadCurveTool(CMainWindow* wnd) : CBasicTool(wnd, "Read Curve", HAS_APPLY_BUTTON)
 {
 	addResourceProperty(&m_file, "File");
 	addBoolProperty(&m_bcheck, "Close curve");

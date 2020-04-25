@@ -13,6 +13,7 @@ class CDlgMeasure : public QDialog
 
 public:
 	CDlgMeasure(CMainWindow* wnd);
+	~CDlgMeasure();
 
 	void Update();
 

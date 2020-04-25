@@ -10,7 +10,7 @@ class CAreaCalculatorTool : public CBasicTool
 {
 public:
     // constructor
-    CAreaCalculatorTool();
+    CAreaCalculatorTool(CMainWindow* wnd);
 
     // method called when user presses Apply button (optional)
     bool OnApply();

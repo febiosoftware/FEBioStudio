@@ -54,7 +54,7 @@ public:
 	}
 };
 
-CPlotMixTool::CPlotMixTool(CMainWindow* wnd) : CAbstractTool("Plot Mix")
+CPlotMixTool::CPlotMixTool(CMainWindow* wnd) : CAbstractTool(wnd, "Plot Mix")
 {
 	ui = 0;
 }
@@ -185,7 +185,7 @@ public:
 	}
 };
 
-CKinematTool::CKinematTool() : CAbstractTool("Kinemat")
+CKinematTool::CKinematTool(CMainWindow* wnd) : CAbstractTool(wnd, "Kinemat")
 {
 	ui = 0;
 }

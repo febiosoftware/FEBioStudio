@@ -11,7 +11,7 @@
 #include <GeomLib/GObject.h>
 
 // constructor
-CConchoidFitTool::CConchoidFitTool() : CBasicTool("Conchoid Fit", HAS_APPLY_BUTTON)
+CConchoidFitTool::CConchoidFitTool(CMainWindow* wnd) : CBasicTool(wnd, "Conchoid Fit", HAS_APPLY_BUTTON)
 {
 	m_bsel = false;
 	m_x = m_y = m_z = 0.0;

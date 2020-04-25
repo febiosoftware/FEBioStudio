@@ -16,7 +16,7 @@
 #include <GeomLib/GObject.h>
 
 // constructor
-CAreaCalculatorTool::CAreaCalculatorTool() : CBasicTool("Area Calculator", HAS_APPLY_BUTTON)
+CAreaCalculatorTool::CAreaCalculatorTool(CMainWindow* wnd) : CBasicTool(wnd, "Area Calculator", HAS_APPLY_BUTTON)
 {
     m_Ax = m_Ay = m_Az = 0.0;
     m_A = 0.0;

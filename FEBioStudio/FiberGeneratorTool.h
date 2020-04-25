@@ -4,7 +4,7 @@
 class CFiberGeneratorTool : public CBasicTool
 {
 public:
-	CFiberGeneratorTool();
+	CFiberGeneratorTool(CMainWindow* wnd);
 
 	bool OnApply();
 

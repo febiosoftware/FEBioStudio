@@ -77,15 +77,13 @@ void C4PointAngleTool::SetPropertyValue(int i, const QVariant& v)
 }
 
 //-----------------------------------------------------------------------------
-C4PointAngleTool::C4PointAngleTool() : CBasicTool("4Point Angle")
+C4PointAngleTool::C4PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "4Point Angle")
 {
 	addProperty("node 1", CProperty::Int);
 	addProperty("node 2", CProperty::Int);
 	addProperty("node 3", CProperty::Int);
 	addProperty("node 4", CProperty::Int);
 	addProperty("angle", CProperty::Float)->setFlags(CProperty::Visible);
-
-	m_deco = 0;
 
 	m_node[0] = 0;
 	m_node[1] = 0;
@@ -95,30 +93,9 @@ C4PointAngleTool::C4PointAngleTool() : CBasicTool("4Point Angle")
 }
 
 //-----------------------------------------------------------------------------
-void C4PointAngleTool::activate(CMainWindow* wnd)
-{
-	CBasicTool::activate(wnd);
-	update(true);
-}
-
-//-----------------------------------------------------------------------------
-void C4PointAngleTool::deactivate()
-{
-	CBasicTool::deactivate();
-	if (m_deco)
-	{
-		CPostDoc* doc = GetPostDoc();
-		if (doc) doc->GetGLModel()->RemoveDecoration(m_deco);
-		delete m_deco;
-		m_deco = 0;
-	}
-}
-
-//-----------------------------------------------------------------------------
 void C4PointAngleTool::UpdateAngle()
 {
 	m_angle = 0.0;
-	if (m_deco) m_deco->setVisible(false);
 	CPostDoc* doc = GetPostDoc();
 	if (doc && doc->IsValid())
 	{
@@ -139,57 +116,38 @@ void C4PointAngleTool::UpdateAngle()
 			vec3f e2 = d - c; e2.Normalize();
 
 			m_angle = 180.0*acos(e1*e2)/PI;
-
-			if (m_deco)
-			{
-				m_deco->setPosition(a, b, c, d);
-				m_deco->setVisible(true);
-			}
 		}
 	}
 	updateUi();
 }
 
 //-----------------------------------------------------------------------------
-void C4PointAngleTool::update(bool breset)
+void C4PointAngleTool::Update()
 {
-	if (breset)
+	CPostDoc* doc = GetPostDoc();
+	if (doc && doc->IsValid())
 	{
-		CPostDoc* doc = GetPostDoc();
-		if (doc && doc->IsValid())
+		Post::FEPostModel& fem = *doc->GetFEModel();
+		Post::CGLModel* mdl = doc->GetGLModel();
+		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
+		const vector<FENode*> selectedNodes = doc->GetGLModel()->GetNodeSelection();
+		int N = (int)selectedNodes.size();
+		int nsel = 0;
+		for (int i = 0; i<N; ++i)
 		{
-			Post::FEPostModel& fem = *doc->GetFEModel();
-			Post::CGLModel* mdl = doc->GetGLModel();
-			Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
-			const vector<FENode*> selectedNodes = doc->GetGLModel()->GetNodeSelection();
-			int N = (int)selectedNodes.size();
-			int nsel = 0;
-			for (int i = 0; i<N; ++i)
+			int nid = selectedNodes[i]->GetID();
+			if      (m_node[0] == 0) m_node[0] = nid;
+			else if (m_node[1] == 0) m_node[1] = nid;
+			else if (m_node[2] == 0) m_node[2] = nid;
+			else if (m_node[3] == 0) m_node[3] = nid;
+			else
 			{
-				int nid = selectedNodes[i]->GetID();
-				if      (m_node[0] == 0) m_node[0] = nid;
-				else if (m_node[1] == 0) m_node[1] = nid;
-				else if (m_node[2] == 0) m_node[2] = nid;
-				else if (m_node[3] == 0) m_node[3] = nid;
-				else
-				{
-					m_node[0] = m_node[1];
-					m_node[1] = m_node[2];
-					m_node[2] = m_node[3];
-					m_node[3] = nid;
-				}
+				m_node[0] = m_node[1];
+				m_node[1] = m_node[2];
+				m_node[2] = m_node[3];
+				m_node[3] = nid;
 			}
-
-			if (m_deco)
-			{
-				doc->GetGLModel()->RemoveDecoration(m_deco);
-				delete m_deco;
-				m_deco = 0;
-			}
-			m_deco = new C4PointAngleDecoration;
-			doc->GetGLModel()->AddDecoration(m_deco);
-			UpdateAngle();
 		}
+		UpdateAngle();
 	}
-	else UpdateAngle();
 }

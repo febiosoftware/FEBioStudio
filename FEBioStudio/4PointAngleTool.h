@@ -10,15 +10,10 @@ class C4PointAngleTool : public CBasicTool
 {
 public:
 	// constructor
-	C4PointAngleTool();
+	C4PointAngleTool(CMainWindow* wnd);
 
-	// activate the tool
-	void activate(CMainWindow* wnd);
-
-	// deactive the tool
-	void deactivate();
-
-	void update(bool breset);
+	// update
+	void Update() override;
 
 private:
 	void UpdateAngle();
@@ -28,8 +23,6 @@ private:
 private:
 	int		m_node[4];
 	double	m_angle;
-
-	C4PointAngleDecoration*	m_deco;
 
 	friend class Props;
 };

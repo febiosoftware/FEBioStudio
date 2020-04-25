@@ -7,6 +7,8 @@ class CDocument;
 class CPropertyListForm;
 class CPostDoc;
 class GObject;
+class GDecoration;
+class FEMesh;
 
 //-----------------------------------------------------------------------------
 // A tool implements a general purpose extension.
@@ -16,7 +18,7 @@ class CAbstractTool : public QObject
 {
 public:
 	// constructor. Requires a name for the plugin
-	CAbstractTool(const QString& s);
+	CAbstractTool(CMainWindow* wnd, const QString& s);
 
 	// retrieve attributes
 	const QString& name() { return m_name; }
@@ -39,18 +41,28 @@ public:
 
 	// activate the tool
 	// The ui is about to be shown
-	virtual void activate(CMainWindow* wnd);
+	virtual void Activate();
 
 	// deactivate the tool
 	// the ui is no longer shown
-	virtual void deactivate();
+	virtual void Deactivate();
 
 	// update the Ui
 	virtual void updateUi();
 
+	// Update the tool
+	virtual void Update();
+
+	// set the decoration
+	void SetDecoration(GDecoration* deco);
+
+	// get the active mesh
+	FEMesh* GetActiveMesh();
+
 private:
 	QString			m_name;
 	CMainWindow*	m_wnd;
+	GDecoration*	m_deco;
 };
 
 //-----------------------------------------------------------------------------
@@ -67,7 +79,7 @@ public:
 	};
 
 public:
-	CBasicTool(const QString& s, unsigned int flags = 0);
+	CBasicTool(CMainWindow* wnd, const QString& s, unsigned int flags = 0);
 
 	// set the text to appear on the "apply" button (must be called in constructor)
 	void SetApplyButtonText(const QString& text);

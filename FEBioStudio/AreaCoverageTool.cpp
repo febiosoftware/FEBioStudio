@@ -50,7 +50,7 @@ public:
 
 //=============================================================================
 
-CAreaCoverageTool::CAreaCoverageTool() : CAbstractTool("Area Coverage")
+CAreaCoverageTool::CAreaCoverageTool(CMainWindow* wnd) : CAbstractTool(wnd, "Area Coverage")
 {
 	ui = 0;
 }

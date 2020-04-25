@@ -54,7 +54,7 @@ public:
 };
 
 // constructor
-CDistanceMapTool::CDistanceMapTool() : CAbstractTool("Distance Map")
+CDistanceMapTool::CDistanceMapTool(CMainWindow* wnd) : CAbstractTool(wnd, "Distance Map")
 {
 	ui = 0;
 }
@@ -135,7 +135,7 @@ public:
 };
 
 // constructor
-CCurvatureMapTool::CCurvatureMapTool() : CAbstractTool("Curvature Map")
+CCurvatureMapTool::CCurvatureMapTool(CMainWindow* wnd) : CAbstractTool(wnd, "Curvature Map")
 {
 	ui = 0;
 }

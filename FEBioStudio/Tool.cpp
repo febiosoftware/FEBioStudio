@@ -1,6 +1,5 @@
 #include "Tool.h"
 #include "PropertyListForm.h"
-#include <QApplication>
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
@@ -10,9 +9,10 @@
 #include <PostGL/GLModel.h>
 
 //-----------------------------------------------------------------------------
-CAbstractTool::CAbstractTool(const QString& s) : m_name(s) 
+CAbstractTool::CAbstractTool(CMainWindow* wnd, const QString& s) : m_name(s)
 {
-	m_wnd = nullptr;
+	m_wnd = wnd;
+	m_deco = nullptr;
 }
 
 CDocument* CAbstractTool::GetDocument()
@@ -35,17 +35,58 @@ CMainWindow* CAbstractTool::GetMainWindow()
 
 void CAbstractTool::updateUi()
 {
-	QApplication::activeWindow()->repaint();
+	m_wnd->repaint();
 }
 
-void CAbstractTool::activate(CMainWindow* wnd)
+// Update the tool
+void CAbstractTool::Update()
 {
-	m_wnd = wnd;
+
 }
 
-void CAbstractTool::deactivate()
+void CAbstractTool::Activate()
 {
-	m_wnd = nullptr;
+	Update();
+}
+
+void CAbstractTool::Deactivate()
+{
+	SetDecoration(nullptr);
+}
+
+// set the decoration
+void CAbstractTool::SetDecoration(GDecoration* deco)
+{
+	CGLView* view = m_wnd->GetGLView();
+	if (m_deco)
+	{
+		view->RemoveDecoration(m_deco);
+		delete m_deco;
+	}
+	m_deco = deco;
+	if (m_deco) view->AddDecoration(m_deco);
+}
+
+// get the active mesh
+FEMesh* CAbstractTool::GetActiveMesh()
+{
+	GObject* po = nullptr;
+	CPostDoc* postDoc = m_wnd->GetActiveDocument();
+	if (postDoc)
+	{
+		if (postDoc->IsValid())
+		{
+			po = postDoc->GetPostObject();
+		}
+	}
+	else
+	{
+		CDocument* doc = m_wnd->GetDocument();
+		po = doc->GetActiveObject();
+	}
+
+	if (po) return po->GetFEMesh();
+	else return nullptr;
 }
 
 GObject* CAbstractTool::GetActiveObject()
@@ -64,7 +105,7 @@ GObject* CAbstractTool::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
-CBasicTool::CBasicTool(const QString& s, unsigned int flags) : CAbstractTool(s)
+CBasicTool::CBasicTool(CMainWindow* wnd, const QString& s, unsigned int flags) : CAbstractTool(wnd, s)
 {
 	m_list = 0;
 	m_form = 0;
@@ -129,7 +170,7 @@ void CBasicTool::on_button_clicked()
 	bool ret = OnApply();
 	if (ret == false)
 	{
-		QWidget* wnd = QApplication::activeWindow();
+		CMainWindow* wnd = GetMainWindow();
 		QString err = GetErrorString();
 		if (err.isEmpty()) err = "An unknown error has occurred";
 		QMessageBox::critical(wnd, "Error", err);

@@ -49,13 +49,10 @@ void GLineDecoration::render()
 			glVertex3f(r2.x, r2.y, r2.z);
 		}
 		glEnd();
-
-		p1->render();
-		p2->render();
 	}
 }
 
-GArcDecoration::GArcDecoration(vec3d& c, vec3d& p0, vec3d& p1, int ndivs, double scale)
+GArcDecoration::GArcDecoration(const vec3f& c, const vec3f& p0, const vec3f& p1, int ndivs, double scale)
 {
 	m_c = c;
 	m_e0 = p0 - c; double l0 = m_e0.Length(); m_e0.Normalize();
@@ -80,7 +77,8 @@ void GArcDecoration::render()
 	quatd Q0(0.0, vec3d(0, 0, 1));
 	quatd Q1(m_e0, m_e1);
 
-	vec3d p0 = m_c + m_e0*m_scale;
+	vec3d c(m_c);
+	vec3d p0 = c + m_e0*m_scale;
 
 	glColor3ub(m_col.r, m_col.g, m_col.b);
 	glBegin(GL_LINES);
@@ -92,7 +90,7 @@ void GArcDecoration::render()
 		vec3d rt = m_e0;
 		Q.RotateVector(rt);
 
-		vec3d p1 = m_c + rt*m_scale;
+		vec3d p1 = c + rt*m_scale;
 
 		glVertex3d(p0.x, p0.y, p0.z);
 		glVertex3d(p1.x, p1.y, p1.z);

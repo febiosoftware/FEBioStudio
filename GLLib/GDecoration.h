@@ -58,14 +58,14 @@ private:
 class GArcDecoration : public GDecoration
 {
 public:
-	GArcDecoration(vec3d& c, vec3d& p0, vec3d& p1, int ndivs = 10, double scale = 0.25);
+	GArcDecoration(const vec3f& c, const vec3f& p0, const vec3f& p1, int ndivs = 10, double scale = 0.25);
 
 	void render();
 
 private:
-	vec3d	m_c;
-	vec3d	m_e0;
-	vec3d	m_e1;
+	vec3f	m_c;
+	vec3f	m_e0;
+	vec3f	m_e1;
 
 	double	m_scale;
 	int		m_divs;

@@ -6,7 +6,7 @@ class CSphereFitTool : public CBasicTool
 {
 public:
 	// constructor
-	CSphereFitTool();
+	CSphereFitTool(CMainWindow* wnd);
 
 	// method called when user presses Apply button (optional)
 	bool OnApply();

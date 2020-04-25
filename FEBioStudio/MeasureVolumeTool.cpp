@@ -24,7 +24,7 @@ void CMeasureVolumeTool::SetPropertyValue(int i, const QVariant& v)
 }
 
 //-----------------------------------------------------------------------------
-CMeasureVolumeTool::CMeasureVolumeTool() : CBasicTool("Measure Volume", CBasicTool::HAS_APPLY_BUTTON)
+CMeasureVolumeTool::CMeasureVolumeTool(CMainWindow* wnd) : CBasicTool(wnd, "Measure Volume", CBasicTool::HAS_APPLY_BUTTON)
 {
 	addProperty("selected faces", CProperty::Int)->setFlags(CProperty::Visible);
 	addProperty("volume", CProperty::Float)->setFlags(CProperty::Visible);

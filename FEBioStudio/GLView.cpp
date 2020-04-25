@@ -3630,6 +3630,7 @@ void CGLView::AddRegionPoint(int x, int y)
 //-----------------------------------------------------------------------------
 void CGLView::AddDecoration(GDecoration* deco)
 {
+	if (deco == nullptr) return;
 	// make sure the deco is not defined
 	for (int i = 0; i < m_deco.size(); ++i)
 	{
@@ -3642,6 +3643,7 @@ void CGLView::AddDecoration(GDecoration* deco)
 //-----------------------------------------------------------------------------
 void CGLView::RemoveDecoration(GDecoration* deco)
 {
+	if (deco == nullptr) return;
 	for (int i = 0; i < m_deco.size(); ++i)
 	{
 		if (deco == m_deco[i])

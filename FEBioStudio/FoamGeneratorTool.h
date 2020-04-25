@@ -8,7 +8,7 @@ class GMeshObject;
 class CFoamGeneratorTool : public CBasicTool
 {
 public:
-	CFoamGeneratorTool();
+	CFoamGeneratorTool(CMainWindow* wnd);
 
 	bool OnApply();
 

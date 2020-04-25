@@ -16,6 +16,7 @@ public:
 		point[2] = new GPointDecoration(vec3f(0,0,0));
 		line[0] = new GLineDecoration(point[0], point[1]);
 		line[1] = new GLineDecoration(point[1], point[2]);
+		arc = nullptr;
 		setVisible(false);
 	}
 
@@ -26,6 +27,7 @@ public:
 		delete point[2];
 		delete point[1];
 		delete point[0];
+		if (arc) delete arc;
 	}
 
 	void setPosition(const vec3f& a, const vec3f& b, const vec3f& c)
@@ -33,6 +35,9 @@ public:
 		point[0]->setPosition(a);
 		point[1]->setPosition(b);
 		point[2]->setPosition(c);
+
+		if (arc) delete arc;
+		arc = new GArcDecoration(b, a, c);
 	}
 
 	void render()
@@ -42,22 +47,22 @@ public:
 		point[2]->render();
 		line[0]->render();
 		line[1]->render();
+		if (arc) arc->render();
 	}
 
 private:
 	GPointDecoration*	point[3];
 	GLineDecoration*	line[2];
+	GArcDecoration*		arc;
 };
 
 //-----------------------------------------------------------------------------
-C3PointAngleTool::C3PointAngleTool() : CBasicTool("3Point Angle")
+C3PointAngleTool::C3PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "3Point Angle")
 {
 	addProperty("node 1", CProperty::Int);
 	addProperty("node 2", CProperty::Int);
 	addProperty("node 3", CProperty::Int);
 	addProperty("angle", CProperty::Float)->setFlags(CProperty::Visible);
-
-	m_deco = 0;
 
 	m_node[0] = 0;
 	m_node[1] = 0;
@@ -84,102 +89,71 @@ void C3PointAngleTool::SetPropertyValue(int i, const QVariant& v)
 	if (i == 0) m_node[0] = v.toInt();
 	if (i == 1) m_node[1] = v.toInt();
 	if (i == 2) m_node[2] = v.toInt();
-	UpdateAngle();
 }
 
 //-----------------------------------------------------------------------------
-void C3PointAngleTool::activate(CMainWindow* wnd)
+void C3PointAngleTool::addPoint(int n)
 {
-	CBasicTool::activate(wnd);
-	update(true);
-}
+	if (n <= 0) return;
 
-//-----------------------------------------------------------------------------
-void C3PointAngleTool::deactivate()
-{
-	CBasicTool::deactivate();
-	if (m_deco)
+	// see if we have this point already
+	for (int i = 0; i < 3; ++i) if (m_node[i] == n) return;
+
+	// we don't so add it to the back
+	if (m_node[2] == 0)
 	{
-		CPostDoc* doc = GetPostDoc();
-		if (doc) doc->GetGLModel()->RemoveDecoration(m_deco);
-		delete m_deco;
-		m_deco = 0;
+		int m = 2;
+		while ((m > 0) && (m_node[m - 1] == 0)) m--;
+		m_node[m] = n;
+	}
+	else
+	{
+		m_node[0] = m_node[1];
+		m_node[1] = m_node[2];
+		m_node[2] = n;
 	}
 }
 
 //-----------------------------------------------------------------------------
-void C3PointAngleTool::update(bool breset)
+void C3PointAngleTool::Update()
 {
-	if (breset)
-	{
-		CPostDoc* doc = GetPostDoc();
-		if (doc && doc->IsValid())
-		{
-			Post::FEPostModel& fem = *doc->GetFEModel();
-			Post::CGLModel* mdl = doc->GetGLModel();
-			Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
-			const vector<FENode*> selectedNodes = doc->GetGLModel()->GetNodeSelection();
-			int N = (int) selectedNodes.size();
-			int nsel = 0;
-			for (int i = 0; i<N; ++i)
-			{
-				int nid = selectedNodes[i]->GetID();
-				if      (m_node[0] == 0) m_node[0] = nid;
-				else if (m_node[1] == 0) m_node[1] = nid;
-				else if (m_node[2] == 0) m_node[2] = nid;
-				else
-				{
-					m_node[0] = m_node[1];
-					m_node[1] = m_node[2];
-					m_node[2] = nid;
-				}
-			}
-
-			if (m_deco)
-			{
-				doc->GetGLModel()->RemoveDecoration(m_deco);
-				delete m_deco;
-				m_deco = 0;
-			}
-			m_deco = new C3PointAngleDecoration;
-			doc->GetGLModel()->AddDecoration(m_deco);
-			UpdateAngle();
-		}
-	}
-	else UpdateAngle();
-}
-
-//-----------------------------------------------------------------------------
-void C3PointAngleTool::UpdateAngle()
-{
+	SetDecoration(nullptr);
 	m_angle = 0.0;
-	if (m_deco) m_deco->setVisible(false);
-	CPostDoc* doc = GetPostDoc();
-	if (doc && doc->IsValid())
+
+	FEMesh* mesh = GetActiveMesh();
+	if (mesh == nullptr) return;
+
+	int nsel = 0;
+	int N = mesh->Nodes();
+	for (int i = 0; i<N; ++i)
 	{
-		Post::FEPostModel& fem = *doc->GetFEModel();
-		Post::CGLModel* mdl = doc->GetGLModel();
-		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
-		int ntime = mdl->CurrentTimeIndex();
-		int NN = mesh.Nodes();
-		if ((m_node[0] >   0)&&(m_node[1] >   0)&&(m_node[2] >   0)&&
-			(m_node[0] <= NN)&&(m_node[1] <= NN)&&(m_node[2] <= NN))
+		FENode& node = mesh->Node(i);
+		if (node.IsSelected())
 		{
-			vec3f a = fem.NodePosition(m_node[0]-1, ntime);
-			vec3f b = fem.NodePosition(m_node[1]-1, ntime);
-			vec3f c = fem.NodePosition(m_node[2]-1, ntime);
-			
-			vec3f e1 = a - b; e1.Normalize();
-			vec3f e2 = c - b; e2.Normalize();
-
-			m_angle = 180.0*acos(e1*e2)/PI;
-
-			if (m_deco) 
-			{
-				m_deco->setPosition(a, b, c);
-				m_deco->setVisible(true);
-			}
+			nsel++;
+			int nid = i+1;
+			addPoint(nid);
 		}
 	}
-	updateUi();
+
+	if (nsel == 0)
+	{
+		m_node[0] = m_node[1] = m_node[2] = 0;
+	}
+
+	if ((m_node[0]>0)&& (m_node[1]>0)&& (m_node[2]>0))
+	{
+		vec3f a = to_vec3f(mesh->Node(m_node[0]-1).pos());
+		vec3f b = to_vec3f(mesh->Node(m_node[1]-1).pos());
+		vec3f c = to_vec3f(mesh->Node(m_node[2]-1).pos());
+
+		vec3f e1 = a - b; e1.Normalize();
+		vec3f e2 = c - b; e2.Normalize();
+
+		m_angle = 180.0*acos(e1*e2) / PI;
+
+		C3PointAngleDecoration* deco = new C3PointAngleDecoration;
+		deco->setPosition(a, b, c);
+		SetDecoration(deco);
+	}
 }

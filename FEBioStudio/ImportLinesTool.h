@@ -14,7 +14,7 @@ class CImportLinesTool : public CAbstractTool
 
 public:
 	// constructor
-	CImportLinesTool();
+	CImportLinesTool(CMainWindow* wnd);
 
 	// get the property list
 	QWidget* createUi();
@@ -39,7 +39,7 @@ class CImportPointsTool : public CAbstractTool
 
 public:
 	// constructor
-	CImportPointsTool();
+	CImportPointsTool(CMainWindow* wnd);
 
 	// get the property list
 	QWidget* createUi();

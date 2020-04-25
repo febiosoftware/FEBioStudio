@@ -5,7 +5,7 @@
 #include <GeomLib/GObject.h>
 #include <MeshTools/FENodeData.h>
 
-CFiberGeneratorTool::CFiberGeneratorTool() : CBasicTool("Fiber generator", HAS_APPLY_BUTTON)
+CFiberGeneratorTool::CFiberGeneratorTool(CMainWindow* wnd) : CBasicTool(wnd, "Fiber generator", HAS_APPLY_BUTTON)
 {
 	m_niter = 0;
 	m_ndata = 0;

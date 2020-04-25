@@ -6,7 +6,7 @@
 #include <MeshTools/GModel.h>
 #include <QDir>
 
-CImportSpringsTool::CImportSpringsTool() : CBasicTool("Import Springs", HAS_APPLY_BUTTON)
+CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
 {
 	addResourceProperty(&m_fileName, "Filename");
 	addDoubleProperty(&m_tol, "Snap tolerance");

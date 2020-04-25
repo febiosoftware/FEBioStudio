@@ -4,7 +4,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/FEModifier.h>
 
-CPlaneCutTool::CPlaneCutTool() : CBasicTool("Plane cut", HAS_APPLY_BUTTON)
+CPlaneCutTool::CPlaneCutTool(CMainWindow* wnd) : CBasicTool(wnd, "Plane cut", HAS_APPLY_BUTTON)
 {
 	addDoubleProperty(&m_r0.x, "X1");	
 	addDoubleProperty(&m_r0.y, "Y1");

@@ -6,7 +6,7 @@ class CConchoidFitTool : public CBasicTool
 {
 public:
 	// constructor
-	CConchoidFitTool();
+	CConchoidFitTool(CMainWindow* wnd);
 
 	bool OnApply();
 

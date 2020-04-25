@@ -6,7 +6,7 @@ class CReadCurveTool : public CBasicTool
 {
 public:
 	// constructor
-	CReadCurveTool();
+	CReadCurveTool(CMainWindow* wnd);
 
 	bool OnApply();
 

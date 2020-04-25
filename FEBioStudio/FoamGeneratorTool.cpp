@@ -4,7 +4,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <QMessageBox>
 
-CFoamGeneratorTool::CFoamGeneratorTool() : CBasicTool("Foam generator", HAS_APPLY_BUTTON)
+CFoamGeneratorTool::CFoamGeneratorTool(CMainWindow* wnd) : CBasicTool(wnd, "Foam generator", HAS_APPLY_BUTTON)
 {
 	addIntProperty(&m_foam.m_nx, "nx");
 	addIntProperty(&m_foam.m_ny, "ny");

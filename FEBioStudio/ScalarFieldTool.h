@@ -4,7 +4,7 @@
 class CScalarFieldTool : public CBasicTool
 {
 public:
-	CScalarFieldTool();
+	CScalarFieldTool(CMainWindow* wnd);
 
 	bool OnApply();
 
