@@ -16,9 +16,10 @@ public:
 	void Update() override;
 
 private:
-	void UpdateAngle();
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
+
+	void addPoint(int n);
 
 private:
 	int		m_node[4];

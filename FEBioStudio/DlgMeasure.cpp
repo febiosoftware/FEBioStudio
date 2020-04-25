@@ -26,8 +26,6 @@ public:
 
 	QRect	m_rt;
 
-	GDecoration*	m_deco;
-
 	CAbstractTool*	m_activeTool;
 
 public:
@@ -35,7 +33,6 @@ public:
 	{
 		QVBoxLayout* l = new QVBoxLayout;
 
-		m_deco = nullptr;
 		m_activeTool = nullptr;
 
 		// Measures tools pane
@@ -92,18 +89,6 @@ public:
 		for (int i = 0; i < m_tools.size(); ++i) delete m_tools[i];
 		m_tools.clear();
 	}
-
-	void setDecoration(GDecoration* deco)
-	{
-		CGLView* view = m_wnd->GetGLView();
-		if (m_deco) 
-		{
-			view->RemoveDecoration(m_deco); 
-			delete m_deco;
-		}
-		m_deco = deco;
-		if (m_deco) view->AddDecoration(m_deco);
-	}
 };
 
 CDlgMeasure::CDlgMeasure(CMainWindow* wnd) : QDialog(wnd, Qt::Tool), ui(new Ui::CDlgMeasure)
@@ -127,9 +112,7 @@ void CDlgMeasure::showEvent(QShowEvent* ev)
 
 void CDlgMeasure::closeEvent(QCloseEvent* ev)
 {
-	ui->setDecoration(nullptr);
 	ui->m_rt = geometry();
-
 	if (ui->m_activeTool) ui->m_activeTool->Deactivate();
 	ui->m_activeTool = nullptr;
 }

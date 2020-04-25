@@ -73,7 +73,6 @@ void C4PointAngleTool::SetPropertyValue(int i, const QVariant& v)
 	if (i==1) m_node[1] = v.toInt();
 	if (i==2) m_node[2] = v.toInt();
 	if (i==3) m_node[3] = v.toInt();
-	UpdateAngle();
 }
 
 //-----------------------------------------------------------------------------
@@ -93,61 +92,71 @@ C4PointAngleTool::C4PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "4Point A
 }
 
 //-----------------------------------------------------------------------------
-void C4PointAngleTool::UpdateAngle()
+void C4PointAngleTool::addPoint(int n)
 {
-	m_angle = 0.0;
-	CPostDoc* doc = GetPostDoc();
-	if (doc && doc->IsValid())
-	{
-		Post::FEPostModel& fem = *doc->GetFEModel();
-		Post::CGLModel* mdl = doc->GetGLModel();
-		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
-		int ntime = mdl->CurrentTimeIndex();
-		int NN = mesh.Nodes();
-		if ((m_node[0] >   0)&&(m_node[1] >   0)&&(m_node[2] >   0)&&(m_node[3] >  0)&&
-			(m_node[0] <= NN)&&(m_node[1] <= NN)&&(m_node[2] <= NN)&&(m_node[3] <= NN))
-		{
-			vec3f a = fem.NodePosition(m_node[0]-1, ntime);
-			vec3f b = fem.NodePosition(m_node[1]-1, ntime);
-			vec3f c = fem.NodePosition(m_node[2]-1, ntime);
-			vec3f d = fem.NodePosition(m_node[3]-1, ntime);
-			
-			vec3f e1 = b - a; e1.Normalize();
-			vec3f e2 = d - c; e2.Normalize();
+	if (n <= 0) return;
 
-			m_angle = 180.0*acos(e1*e2)/PI;
-		}
+	// see if we have this point already
+	for (int i = 0; i < 4; ++i) if (m_node[i] == n) return;
+
+	// we don't so add it to the back
+	if (m_node[3] == 0)
+	{
+		int m = 3;
+		while ((m > 0) && (m_node[m - 1] == 0)) m--;
+		m_node[m] = n;
 	}
-	updateUi();
+	else
+	{
+		m_node[0] = m_node[1];
+		m_node[1] = m_node[2];
+		m_node[2] = m_node[3];
+		m_node[3] = n;
+	}
 }
+
 
 //-----------------------------------------------------------------------------
 void C4PointAngleTool::Update()
 {
-	CPostDoc* doc = GetPostDoc();
-	if (doc && doc->IsValid())
+	SetDecoration(nullptr);
+	m_angle = 0.0;
+
+	FEMesh* mesh = GetActiveMesh();
+	if (mesh == nullptr) return;
+
+	int nsel = 0;
+	int N = mesh->Nodes();
+	for (int i = 0; i<N; ++i)
 	{
-		Post::FEPostModel& fem = *doc->GetFEModel();
-		Post::CGLModel* mdl = doc->GetGLModel();
-		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
-		const vector<FENode*> selectedNodes = doc->GetGLModel()->GetNodeSelection();
-		int N = (int)selectedNodes.size();
-		int nsel = 0;
-		for (int i = 0; i<N; ++i)
+		FENode& node = mesh->Node(i);
+		if (node.IsSelected())
 		{
-			int nid = selectedNodes[i]->GetID();
-			if      (m_node[0] == 0) m_node[0] = nid;
-			else if (m_node[1] == 0) m_node[1] = nid;
-			else if (m_node[2] == 0) m_node[2] = nid;
-			else if (m_node[3] == 0) m_node[3] = nid;
-			else
-			{
-				m_node[0] = m_node[1];
-				m_node[1] = m_node[2];
-				m_node[2] = m_node[3];
-				m_node[3] = nid;
-			}
+			nsel++;
+			int nid = i + 1;
+			addPoint(nid);
 		}
-		UpdateAngle();
+	}
+
+	if (nsel == 0)
+	{
+		m_node[0] = m_node[1] = m_node[2] = m_node[3] = 0;
+	}
+
+	if ((m_node[0]>0) && (m_node[1]>0) && (m_node[2]>0) && (m_node[3] > 0))
+	{
+		vec3f a = to_vec3f(mesh->Node(m_node[0] - 1).pos());
+		vec3f b = to_vec3f(mesh->Node(m_node[1] - 1).pos());
+		vec3f c = to_vec3f(mesh->Node(m_node[2] - 1).pos());
+		vec3f d = to_vec3f(mesh->Node(m_node[3] - 1).pos());
+
+		vec3f e1 = b - a; e1.Normalize();
+		vec3f e2 = d - c; e2.Normalize();
+
+		m_angle = 180.0*acos(e1*e2) / PI;
+
+		C4PointAngleDecoration* deco = new C4PointAngleDecoration;
+		deco->setPosition(a, b, c, d);
+		SetDecoration(deco);
 	}
 }
