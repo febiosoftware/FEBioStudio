@@ -30,6 +30,7 @@
 #include <QtCore/QStandardPaths>
 #include "MainTabBar.h"
 #include "DlgMeasure.h"
+#include "PostToolBar.h"
 
 class QProcess;
 
@@ -81,9 +82,7 @@ public:
 	QProgressBar*	fileProgress;
 	QProgressBar*	indeterminateProgress;
 
-	CDataFieldSelector*	selectData;
-	QSpinBox*	pspin;
-	QToolBar*	postToolBar;
+	CPostToolBar*	postToolBar;
 	QToolBar*	buildToolBar;
 
 	QToolBar* pFontToolBar;
@@ -148,8 +147,6 @@ public:
 	QAction* actionShowDiscrete;
 	QAction* actionToggleLight;
 
-	QAction* actionColorMap;
-	QAction* actionPlay;
 
 	QAction* selectRect;
 	QAction* selectCircle;
@@ -739,59 +736,10 @@ public:
 		mainWindow->addToolBar(Qt::TopToolBarArea, buildToolBar);
 
 		// Post tool bar
-		postToolBar = new QToolBar(mainWindow);
+		postToolBar = new CPostToolBar(mainWindow);
 		postToolBar->setObjectName(QStringLiteral("postToolBar"));
 		postToolBar->setWindowTitle("Post Toolbar");
 		mainWindow->addToolBar(Qt::TopToolBarArea, postToolBar);
-
-		QAction* actionRefresh = addAction("Reload", "actionRefresh", "refresh");
-		QAction* actionFirst = addAction("first", "actionFirst", "back");
-		QAction* actionPrev = addAction("previous", "actionPrev", "prev");
-		actionPlay = addAction("Play", "actionPlay", "play"); actionPlay->setShortcut(Qt::Key_Space);
-		actionPlay->setCheckable(true);
-
-		QIcon icon(":/icons/play.png");
-		QPixmap pix(":/icons/pause.png");
-		icon.addPixmap(pix, QIcon::Mode::Active, QIcon::State::On);
-		actionPlay->setIcon(icon);
-
-		QAction* actionNext = addAction("next", "actionNext", "next");
-		QAction* actionLast = addAction("last", "actionLast", "forward");
-		QAction* actionTime = addAction("Time settings", "actionTimeSettings", "clock");
-
-		selectData = new CDataFieldSelector;
-		selectData->setWhatsThis("<font color=\"black\">Use this to select the current data variable that will be used to display the color map on the mesh.");
-		selectData->setMinimumWidth(300);
-//		selectData->setFixedHeight(23);
-		selectData->setObjectName("selectData");
-		
-		actionRefresh->setWhatsThis("<font color=\"black\">Click this to reload the plot file.");
-		actionFirst->setWhatsThis("<font color=\"black\">Click this to go to the first time step in the model.");
-		actionPrev->setWhatsThis("<font color=\"black\">Click this to go to the previous time step in the model.");
-		actionPlay->setWhatsThis("<font color=\"black\">Click this to toggle the animation on or off");
-		actionNext->setWhatsThis("<font color=\"black\">Click this to go to the next time step");
-		actionLast->setWhatsThis("<font color=\"black\">Click this to go to the last time step in the model.");
-		actionTime->setWhatsThis("<font color=\"black\">Click this to open the Time Info dialog box.");
-
-		actionColorMap = addAction("Toggle colormap", "actionColorMap", "colormap");
-		actionColorMap->setCheckable(true);
-		actionColorMap->setWhatsThis("<font color=\"black\">Click this to turn on the color map on the model.");
-
-		postToolBar->addAction(actionRefresh);
-		postToolBar->addSeparator();
-		postToolBar->addAction(actionFirst);
-		postToolBar->addAction(actionPrev);
-		postToolBar->addAction(actionPlay);
-		postToolBar->addAction(actionNext);
-		postToolBar->addAction(actionLast);
-		postToolBar->addWidget(pspin = new QSpinBox);
-		pspin->setObjectName("selectTime");
-		pspin->setMinimumWidth(80);
-		pspin->setSuffix("/100");
-		postToolBar->addAction(actionTime);
-		postToolBar->addWidget(selectData);
-		postToolBar->addAction(actionColorMap);
-		postToolBar->addSeparator();
 		postToolBar->addAction(actionGraph);
 		postToolBar->addAction(actionPlaneCut);
 		postToolBar->addAction(actionMirrorPlane);
@@ -987,7 +935,7 @@ public:
 	void stopAnimation()
 	{
 		m_isAnimating = false;
-		actionPlay->setChecked(false);
+		postToolBar->CheckPlayButton(false);
 	}
 
 private:

@@ -126,6 +126,9 @@ public:
 	//! Update the post tool bar
 	void UpdatePostToolbar();
 
+	//! Update UI configuration
+	void UpdateUIConfig();
+
 	//! set the post doc that will be rendered in the GL view
 	void SetActivePostDoc(CPostDoc* postDoc);
 

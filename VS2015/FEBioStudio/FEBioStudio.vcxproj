@@ -374,6 +374,7 @@
     <ClCompile Include="..\..\FEBioStudio\PostDoc.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostModelPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PostToolBar.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyList.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListForm.cpp" />
@@ -577,6 +578,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\PostToolBar.h" />
     <ClInclude Include="..\..\FEBioStudio\RepoProject.h" />
     <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />

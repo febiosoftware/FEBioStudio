@@ -738,6 +738,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgMeasure.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\PostToolBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -1016,7 +1019,7 @@
     <ClInclude Include="..\..\FEBioStudio\ImportSpringsTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\DlgMeasure.h">
+    <ClInclude Include="..\..\FEBioStudio\PostToolBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1253,6 +1256,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\PlotMixTool.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgMeasure.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

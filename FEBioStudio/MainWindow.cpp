@@ -148,8 +148,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// make sure the file viewer is visible
 	ui->showFileViewer();
 
-	// update the post toolbar (so it stays hidden on startup)
-	UpdatePostToolbar();
+	// update the UI configuration (this will start the UI in build configuration)
+	UpdateUIConfig();
 
 	// load templates
 	TemplateManager::Init();
@@ -616,8 +616,7 @@ void CMainWindow::finishedReadingPostFile(bool success, const QString& errorStri
 		ui->modelViewer->Select(job);
 		SetActivePostDoc(job->GetPostDoc());
 
-		UpdatePostPanel();
-		UpdatePostToolbar();
+		UpdateUIConfig();
 	}
 }
 
@@ -1205,50 +1204,43 @@ void CMainWindow::UpdateGLControlBar()
 }
 
 //-----------------------------------------------------------------------------
-//! Update the post tool bar
-void CMainWindow::UpdatePostToolbar()
+void CMainWindow::UpdateUIConfig()
 {
 	CPostDoc* doc = GetActiveDocument();
-	if ((doc == nullptr) || (doc->IsValid() == false))
+	if (doc == nullptr)
 	{
+		// Build Mode
 		ui->postToolBar->setDisabled(true);
 		ui->postToolBar->hide();
+		ui->menuPost->menuAction()->setVisible(false);
 		ui->buildToolBar->show();
 		return;
 	}
-
-	Post::CGLModel* mdl = doc->GetGLModel();
-	if (mdl == 0)
+	else
 	{
-		ui->postToolBar->setDisabled(true);
-		return;
+		// Post Mode
+		ui->postToolBar->show();
+		ui->menuPost->menuAction()->setVisible(true);
+		ui->buildToolBar->hide();
+		UpdatePostPanel();
 	}
 
-	Post::CGLColorMap* map = mdl->GetColorMap();
+	if (doc->IsValid() == false)
+	{
+		ui->postToolBar->setDisabled(true);
+	}
+	else
+	{
+		ui->postToolBar->Update();
+	}
+}
 
-	// rebuild the menu
-	Post::FEPostModel* pfem = doc->GetFEModel();
-	ui->selectData->BuildMenu(pfem, Post::DATA_SCALAR);
-	ui->selectData->blockSignals(true);
-	ui->selectData->setCurrentValue(map->GetEvalField());
-	ui->selectData->blockSignals(false);
-
-	// update the color map state
-	if (map->IsActive()) ui->actionColorMap->setChecked(true);
-	else ui->actionColorMap->setChecked(false);
-
-	// update the state indicator
-	int ntime = mdl->CurrentTimeIndex() + 1;
-
-	Post::FEPostModel* fem = mdl->GetFEModel();
-	int states = fem->GetStates();
-	QString suff = QString("/%1").arg(states);
-	ui->pspin->setSuffix(suff);
-	ui->pspin->setRange(1, states);
-	ui->pspin->setValue(ntime);
-	ui->postToolBar->setEnabled(true);
-	if (ui->postToolBar->isHidden()) ui->postToolBar->show();
-	ui->buildToolBar->hide();
+//-----------------------------------------------------------------------------
+//! Update the post tool bar
+void CMainWindow::UpdatePostToolbar()
+{
+	if (ui->postToolBar->isVisible())
+		ui->postToolBar->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1319,8 +1311,7 @@ void CMainWindow::AddView(const std::string& viewName, CPostDoc* doc, bool makeA
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_currentChanged(int n)
 {
-	UpdatePostPanel();
-	UpdatePostToolbar();
+	UpdateUIConfig();
 	ui->updateMeshInspector();
 	RedrawGL();
 
@@ -1344,7 +1335,7 @@ void CMainWindow::OnPostObjectStateChanged()
 	Post::CGLModel* mdl = GetCurrentModel();
 	if (mdl == nullptr) return;
 	bool b = mdl->GetColorMap()->IsActive();
-	if (b != ui->actionColorMap->isChecked()) ui->actionColorMap->setChecked(b);
+	ui->postToolBar->CheckColorMap(b);
 	RedrawGL();
 }
 
@@ -1358,7 +1349,7 @@ void CMainWindow::OnPostObjectPropsChanged(Post::CGLObject* po)
 	if (colorMap)
 	{
 		int dataField = mdl->GetColorMap()->GetEvalField();
-		if (ui->selectData->currentValue() != dataField) ui->selectData->setCurrentValue(dataField);
+		ui->postToolBar->SetDataField(dataField);
 	}
 	RedrawGL();
 }
@@ -1481,9 +1472,7 @@ void CMainWindow::SetCurrentTimeValue(float ftime)
 
 	if (n0 != n1)
 	{
-		ui->pspin->blockSignals(true);
-		ui->pspin->setValue(n1 + 1);
-		ui->pspin->blockSignals(false);
+		ui->postToolBar->SetSpinValue(n1 + 1, true);
 	}
 
 	// update the rest
@@ -1587,7 +1576,7 @@ void CMainWindow::onTimer()
 				if (time.m_bloop == false) StopAnimation();
 			}
 		}
-		ui->pspin->setValue(nstep+1);
+		ui->postToolBar->SetSpinValue(nstep+1);
 	}
 
 	// TODO: Should I start the event before or after the view is redrawn?
@@ -1614,15 +1603,15 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 		//		if (ui->actionColorMap->isEnabled() == false)
 		//			ui->actionColorMap->setEnabled(true);
 
-		int nfield = ui->selectData->currentValue();
+		int nfield = ui->postToolBar->GetDataField();
 		CPostDoc* doc = GetActiveDocument();
 		if (doc == nullptr) return;
 		doc->SetDataField(nfield);
 
 		// turn on the colormap
-		if (ui->actionColorMap->isChecked() == false)
+		if (ui->postToolBar->IsColorMapActive() == false)
 		{
-			ui->actionColorMap->toggle();
+			ui->postToolBar->ToggleColorMap();
 		}
 
 		ui->postPanel->SelectObject(doc->GetGLModel()->GetColorMap());
@@ -1659,7 +1648,6 @@ void CMainWindow::on_actionPlay_toggled(bool bchecked)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionRefresh_triggered()
 {
-	ui->actionColorMap->setDisabled(true);
 	ui->postToolBar->setDisabled(true);
 
 	CPostDoc* doc = GetActiveDocument();
@@ -1683,7 +1671,7 @@ void CMainWindow::on_actionFirst_triggered()
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
 	TIMESETTINGS& time = doc->GetTimeSettings();
-	ui->pspin->setValue(time.m_start+1);
+	ui->postToolBar->SetSpinValue(time.m_start+1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1695,7 +1683,7 @@ void CMainWindow::on_actionPrev_triggered()
 	int nstep = doc->GetActiveState();
 	nstep--;
 	if (nstep < time.m_start) nstep = time.m_start;
-	ui->pspin->setValue(nstep+1);
+	ui->postToolBar->SetSpinValue(nstep+1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1707,7 +1695,7 @@ void CMainWindow::on_actionNext_triggered()
 	int nstep = doc->GetActiveState();
 	nstep++;
 	if (nstep > time.m_end) nstep = time.m_end;
-	ui->pspin->setValue(nstep+1);
+	ui->postToolBar->SetSpinValue(nstep+1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1716,7 +1704,7 @@ void CMainWindow::on_actionLast_triggered()
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
 	TIMESETTINGS& time = doc->GetTimeSettings();
-	ui->pspin->setValue(time.m_end+1);
+	ui->postToolBar->SetSpinValue(time.m_end+1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1738,7 +1726,7 @@ void CMainWindow::on_actionTimeSettings_triggered()
 			if (ntime > time.m_end) ntime = time.m_end;
 		}
 
-		ui->pspin->setValue(ntime + 1);
+		ui->postToolBar->SetSpinValue(ntime + 1);
 		RedrawGL();
 	}
 }
@@ -1766,7 +1754,7 @@ void CMainWindow::SetCurrentState(int n)
 {
 	CPostDoc* doc = GetActiveDocument();
 	if (doc == nullptr) return;
-	ui->pspin->setValue(n + 1);
+	ui->postToolBar->SetSpinValue(n + 1);
 }
 
 //-----------------------------------------------------------------------------
