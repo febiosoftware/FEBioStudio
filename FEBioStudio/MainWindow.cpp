@@ -1214,6 +1214,9 @@ void CMainWindow::UpdateUIConfig()
 		ui->postToolBar->hide();
 		ui->menuPost->menuAction()->setVisible(false);
 		ui->buildToolBar->show();
+		ui->buildPanel->parentWidget()->show();
+		ui->postPanel->parentWidget()->hide();
+		ui->modelViewer->parentWidget()->show();
 		return;
 	}
 	else
@@ -1222,16 +1225,13 @@ void CMainWindow::UpdateUIConfig()
 		ui->postToolBar->show();
 		ui->menuPost->menuAction()->setVisible(true);
 		ui->buildToolBar->hide();
-		UpdatePostPanel();
-	}
+		ui->buildPanel->parentWidget()->hide();
+		ui->postPanel->parentWidget()->show();
+		ui->modelViewer->parentWidget()->hide();
 
-	if (doc->IsValid() == false)
-	{
-		ui->postToolBar->setDisabled(true);
-	}
-	else
-	{
-		ui->postToolBar->Update();
+		UpdatePostPanel();
+		if (doc->IsValid()) ui->postToolBar->Update();
+		else ui->postToolBar->setDisabled(true);
 	}
 }
 

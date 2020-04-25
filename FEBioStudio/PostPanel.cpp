@@ -24,7 +24,7 @@ public:
 	{
 		tab = new QTabWidget; tab->setObjectName("postTab");
 
-		tab->addTab(mdl = new ::CPostModelPanel(wnd, parent), "Model");
+		tab->addTab(mdl = new ::CPostModelPanel(wnd, parent), "View");
 		tab->addTab(mat = new ::CMaterialPanel(wnd, parent), "Material");
 		tab->addTab(data = new ::CPostDataPanel(wnd, parent), "Data");
 		tab->addTab(state = new ::CStatePanel(wnd, parent), "State");
