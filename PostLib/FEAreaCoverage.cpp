@@ -3,6 +3,7 @@
 #include "FEPostModel.h"
 #include "FEMeshData_T.h"
 #include <MeshLib/Intersect.h>
+#include "constants.h"
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -62,32 +63,48 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 
 
 //-----------------------------------------------------------------------------
-FEAreaCoverage::FEAreaCoverage() : m_fem(0)
+FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem) : Post::FEDataField("area coverage", DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 {
+	m_fem = fem;
 }
 
 //-----------------------------------------------------------------------------
-void FEAreaCoverage::Apply(FEPostModel& fem)
+Post::FEDataField* Post::FEAreaCoverage::Clone() const
 {
-	static int ncalls = 0; ncalls++;
+	FEAreaCoverage* pd = new FEAreaCoverage(m_fem);
+	pd->m_surf1 = m_surf1;
+	pd->m_surf2 = m_surf2;
+	return pd;
+}
 
-	if (m_name.empty())
-	{
-		char szname[64];
-		if (ncalls == 1)
-			sprintf(szname, "area coverage");
-		else
-			sprintf(szname, "area coverage (%d)", ncalls);
+//-----------------------------------------------------------------------------
+void Post::FEAreaCoverage::InitSurface(int n)
+{
+	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
 
-		m_name = szname;
-	}
+	vector<int> L;
+	for (int i = 0; i<mesh.Faces(); ++i) if (mesh.Face(i).IsSelected()) L.push_back(i);
 
-	// store the model
-	m_fem = &fem;
+	if (n == 0) SetSelection1(L);
+	if (n == 1) SetSelection2(L);
+}
 
-	// add a new data field
-	fem.AddDataField(new FEDataField_T<FEFaceData<float, DATA_NODE> >(m_name.c_str(), EXPORT_DATA));
-	int NDATA = fem.GetDataManager()->DataFields() - 1;
+//-----------------------------------------------------------------------------
+int Post::FEAreaCoverage::GetSurfaceSize(int i)
+{
+	return (i == 0 ? m_surf1.Faces() : m_surf2.Faces());
+}
+
+//-----------------------------------------------------------------------------
+Post::FEMeshData* Post::FEAreaCoverage::CreateData(Post::FEState* pstate)
+{
+	return new Post::FEFaceData<float, DATA_NODE>(pstate, this);
+}
+
+//-----------------------------------------------------------------------------
+void FEAreaCoverage::Apply()
+{
+	FEPostModel& fem = *m_fem;
 
 	// get the mesh
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
@@ -98,6 +115,9 @@ void FEAreaCoverage::Apply(FEPostModel& fem)
 
 	const int MN = FEFace::MAX_NODES;
 
+	// get the field index
+	int nfield = FIELD_CODE(GetFieldID());
+
 	// repeat for all steps
 	int nstep = fem.GetStates();
 	for (int n = 0; n<nstep; ++n)
@@ -107,7 +127,7 @@ void FEAreaCoverage::Apply(FEPostModel& fem)
 		UpdateSurface(m_surf2, n);
 
 		FEState* ps = fem.GetState(n);
-		FEFaceData<float, DATA_NODE>& df = dynamic_cast<FEFaceData<float, DATA_NODE>&>(ps->m_Data[NDATA]);
+		FEFaceData<float, DATA_NODE>& df = dynamic_cast<FEFaceData<float, DATA_NODE>&>(ps->m_Data[nfield]);
 
 		// repeat over all nodes of surface 1
 		vector<float> a(m_surf1.Nodes(), 0.f);

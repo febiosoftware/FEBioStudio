@@ -3,13 +3,14 @@
 #include <MeshLib/Intersect.h>
 #include <vector>
 #include <string>
+#include "FEDataField.h"
 using namespace std;
 
 namespace Post {
 
 class FEPostModel;
 
-class FEAreaCoverage
+class FEAreaCoverage : public FEDataField
 {
 	class Surface
 	{
@@ -32,19 +33,24 @@ class FEAreaCoverage
 	};
 
 public:
-	FEAreaCoverage();
+	FEAreaCoverage(FEPostModel* fem);
 
-	// set the name of the data field that will be created
-	void SetDataFieldName(const std::string& name) { m_name = name; }
+	FEDataField* Clone() const override;
 
+	FEMeshData* CreateData(FEState* pstate) override;
+
+	void InitSurface(int n);
+
+	int GetSurfaceSize(int i);
+
+	// apply the map
+	void Apply();
+
+protected:
 	// assign selections
 	void SetSelection1(vector<int>& s) { m_surf1.m_face = s; }
 	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
 
-	// apply the map
-	void Apply(FEPostModel& fem);
-
-protected:
 	// build node normal list
 	void UpdateSurface(FEAreaCoverage::Surface& s, int nstate);
 
@@ -56,6 +62,5 @@ protected:
 	Surface		m_surf1;
 	Surface		m_surf2;
 	FEPostModel*	m_fem;
-	string  	m_name;
 };
 }

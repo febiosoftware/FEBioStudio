@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "MainWindow.h"
 #include "DlgLameConvertor.h"
+#include "DlgKinemat.h"
+#include "DlgPlotMix.h"
 #include "DlgSettings.h"
 #include "DlgRun.h"
 #include "ui_mainwindow.h"
@@ -28,6 +30,18 @@ void CMainWindow::on_actionMeshInspector_triggered()
 void CMainWindow::on_actionElasticityConvertor_triggered()
 {
 	CDlgLameConvertor dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionKinemat_triggered()
+{
+	CDlgKinemat dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionPlotMix_triggered()
+{
+	CDlgPlotMix dlg(this);
 	dlg.exec();
 }
 

@@ -22,7 +22,6 @@
 //#include "PointCongruencyTool.h"
 #include "ImportLinesTool.h"
 //#include "PlaneTool.h"
-#include "PlotMixTool.h"
 //#include "StrainMapTool.h"
 
 static QList<CAbstractTool*>	tools;
@@ -114,9 +113,7 @@ void CPostToolsPanel::initTools()
 {
 	CMainWindow* wnd = GetMainWindow();
 //	tools.push_back(new CPlaneTool          (wnd));
-//	tools.push_back(new CPlotMixTool        (wnd));
 	tools.push_back(new CImportLinesTool    (wnd));
-	tools.push_back(new CKinematTool        (wnd));
 //	tools.push_back(new CCurvatureMapTool   (wnd));
 //	tools.push_back(new CPointCongruencyTool(wnd));
 	tools.push_back(new CImportPointsTool   (wnd));

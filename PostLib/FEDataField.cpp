@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "PostGL/GLModel.h"
 #include "FEDistanceMap.h"
+#include "FEAreaCoverage.h"
 using namespace Post;
 
 FEDataField::FEDataField(const std::string& name, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
@@ -739,6 +740,7 @@ bool Post::AddStandardDataField(CGLModel& glm, const std::string& dataField, boo
 	else if (dataField.compare("1-Princ curvature vector"  ) == 0) pdf = new FEDataField_T<FEPrincCurvatureVector1>("1-Princ curvature vector");
 	else if (dataField.compare("2-Princ curvature vector"  ) == 0) pdf = new FEDataField_T<FEPrincCurvatureVector2>("2-Princ curvature vector");
 	else if (dataField.compare("distance map"              ) == 0) pdf = new FEDistanceMap(&fem);
+	else if (dataField.compare("area coverage"             ) == 0) pdf = new FEAreaCoverage(&fem);
 
 	if (pdf == nullptr) return false;
 

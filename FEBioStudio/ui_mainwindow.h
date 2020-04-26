@@ -343,6 +343,8 @@ public:
 		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F9);
 		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect");
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
+		QAction* actionKinemat = addAction("Kinemat ...", "actionKinemat");
+		QAction* actionPlotMix = addAction("Plotmix ...", "actionPlotMix");
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
@@ -626,6 +628,8 @@ public:
 		menuTools->addAction(actionCurveEditor);
 		menuTools->addAction(actionMeshInspector);
 		menuTools->addAction(actionElasticityConvertor);
+		menuTools->addAction(actionKinemat);
+		menuTools->addAction(actionPlotMix);
 		menuTools->addAction(actionOptions);
 #ifdef _DEBUG
 		menuTools->addAction(actionLayerInfo);

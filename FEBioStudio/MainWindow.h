@@ -264,6 +264,8 @@ public slots:
 	void on_actionCurveEditor_triggered();
 	void on_actionMeshInspector_triggered();
 	void on_actionElasticityConvertor_triggered();
+	void on_actionKinemat_triggered();
+	void on_actionPlotMix_triggered();
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
 	void on_actionFEBioOptimize_triggered();
