@@ -17,7 +17,6 @@ public:
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-	int		m_nsel;		// selected faces
 	double	m_vol;		// volume of selection
 	int		m_nformula;	// choose formula
 

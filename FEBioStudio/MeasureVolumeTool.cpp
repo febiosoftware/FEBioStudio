@@ -10,9 +10,8 @@ QVariant CMeasureVolumeTool::GetPropertyValue(int i)
 {
 	switch (i)
 	{
-	case 0: return m_nsel; break;
+	case 0: return m_nformula; break;
 	case 1: return m_vol; break;
-	case 2: return m_nformula; break;
 	}
 	return QVariant();
 }
@@ -24,13 +23,11 @@ void CMeasureVolumeTool::SetPropertyValue(int i, const QVariant& v)
 }
 
 //-----------------------------------------------------------------------------
-CMeasureVolumeTool::CMeasureVolumeTool(CMainWindow* wnd) : CBasicTool(wnd, "Measure Volume", CBasicTool::HAS_APPLY_BUTTON)
+CMeasureVolumeTool::CMeasureVolumeTool(CMainWindow* wnd) : CBasicTool(wnd, "Surface Volume", CBasicTool::HAS_APPLY_BUTTON)
 {
-	addProperty("selected faces", CProperty::Int)->setFlags(CProperty::Visible);
-	addProperty("volume", CProperty::Float)->setFlags(CProperty::Visible);
 	addProperty("symmetry", CProperty::Enum)->setEnumValues(QStringList() << "(None)" << "X" << "Y" << "Z");
+	addProperty("volume", CProperty::Float)->setFlags(CProperty::Visible);
 
-	m_nsel = 0;
 	m_vol = 0.0;
 	m_nformula = 0;
 }
@@ -38,38 +35,30 @@ CMeasureVolumeTool::CMeasureVolumeTool(CMainWindow* wnd) : CBasicTool(wnd, "Meas
 //-----------------------------------------------------------------------------
 bool CMeasureVolumeTool::OnApply()
 {
-	m_nsel = 0;
 	m_vol = 0.0;
-	CPostDoc* doc = GetPostDoc();
-	if (doc && doc->IsValid())
+
+	FEMesh* mesh = GetActiveMesh();
+	if (mesh == nullptr) return false;
+
+	int NF = mesh->Faces();
+	for (int i = 0; i<NF; ++i)
 	{
-		Post::FEPostModel& fem = *doc->GetFEModel();
-		Post::CGLModel* mdl = doc->GetGLModel();
-		Post::FEPostMesh& mesh = *mdl->GetActiveMesh();
-		int ntime = fem.CurrentTime();
-		const vector<FEFace*> selectedFaces = doc->GetGLModel()->GetFaceSelection();
-		int N = (int)selectedFaces.size();
-		for (int i = 0; i<N; ++i)
+		FEFace& f = mesh->Face(i);
+
+		// get the average position, area and normal
+		vec3d r = mesh->FaceCenter(f);
+		double area = mesh->FaceArea(f);
+		vec3d N = f.m_fn;
+
+		switch (m_nformula)
 		{
-			FEFace& f = *selectedFaces[i];
-
-			// get the average position, area and normal
-			vec3d r = mesh.FaceCenter(f);
-			double area = mesh.FaceArea(f);
-			vec3d N = f.m_fn;
-
-			switch (m_nformula)
-			{
-			case 0: m_vol += area*(N*r) / 3.f; break;
-			case 1: m_vol += 2.f*area*(r.x*N.x); break;
-			case 2: m_vol += 2.f*area*(r.y*N.y); break;
-			case 3: m_vol += 2.f*area*(r.z*N.z); break;
-			}
-			++m_nsel;
+		case 0: m_vol += area*(N*r) / 3.f; break;
+		case 1: m_vol += 2.f*area*(r.x*N.x); break;
+		case 2: m_vol += 2.f*area*(r.y*N.y); break;
+		case 3: m_vol += 2.f*area*(r.z*N.z); break;
 		}
-
-		m_vol = fabs(m_vol);
 	}
-	updateUi();
+
+	m_vol = fabs(m_vol);
 	return true;
 }
