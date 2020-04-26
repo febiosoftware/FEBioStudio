@@ -1,3 +1,4 @@
+
 #include "stdafx.h"
 #include "PostDataPanel.h"
 #include <QBoxLayout>
@@ -29,6 +30,7 @@
 #include "PostDoc.h"
 #include <PostLib/FEDataField.h>
 #include <PostLib/FEDistanceMap.h>
+#include <PostLib/FEAreaCoverage.h>
 #include "DlgAddEquation.h"
 
 class CCurvatureProps : public CPropertyList
@@ -199,6 +201,54 @@ public:
 private:
 	Post::FEDistanceMap*	m_map;
 };
+
+class CAreaCoverageProps : public CPropertyList
+{
+public:
+	CAreaCoverageProps(Post::FEAreaCoverage* map) : m_map(map)
+	{
+		addProperty("Assign to surface1", CProperty::Action, "");
+		addProperty("Assign to surface2", CProperty::Action, "");
+		addProperty("", CProperty::Action, "Apply");
+	}
+
+	QVariant GetPropertyValue(int i) override
+	{
+		if (i == 0)
+		{
+			int n = m_map->GetSurfaceSize(0);
+			return QString("(%1 Faces)").arg(n);
+		}
+		if (i == 1)
+		{
+			int n = m_map->GetSurfaceSize(1);
+			return QString("(%1 Faces)").arg(n);
+		}
+		return QVariant();
+	}
+
+	void SetPropertyValue(int i, const QVariant& v) override
+	{
+		if (i == 0)
+		{
+			m_map->InitSurface(0);
+			SetModified(true);
+		}
+		else if (i == 1)
+		{
+			m_map->InitSurface(1);
+			SetModified(true);
+		}
+		else if (i == 2)
+		{
+			m_map->Apply();
+		}
+	}
+
+private:
+	Post::FEAreaCoverage*	m_map;
+};
+
 
 class CDataModel : public QAbstractTableModel
 {
@@ -681,6 +731,7 @@ void CPostDataPanel::on_AddStandard_triggered()
 	items.push_back("1-Princ Curvature vector");
 	items.push_back("2-Princ Curvature vector");
 	items.push_back("distance map");
+	items.push_back("area coverage");
 
 	bool ok = false;
 	QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
@@ -1027,6 +1078,11 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 	{
 		Post::FEDistanceMap* ps = dynamic_cast<Post::FEDistanceMap*>(p);
 		ui->m_prop->setPropertyList(new CDistanceMapProps(ps));
+	}
+	else if (dynamic_cast<Post::FEAreaCoverage*>(p))
+	{
+		Post::FEAreaCoverage* ps = dynamic_cast<Post::FEAreaCoverage*>(p);
+		ui->m_prop->setPropertyList(new CAreaCoverageProps(ps));
 	}
 	else ui->m_prop->setPropertyList(nullptr);
 

@@ -23,7 +23,6 @@
 #include "ImportLinesTool.h"
 //#include "PlaneTool.h"
 #include "PlotMixTool.h"
-#include "AreaCoverageTool.h"
 //#include "StrainMapTool.h"
 
 static QList<CAbstractTool*>	tools;
@@ -121,7 +120,6 @@ void CPostToolsPanel::initTools()
 //	tools.push_back(new CCurvatureMapTool   (wnd));
 //	tools.push_back(new CPointCongruencyTool(wnd));
 	tools.push_back(new CImportPointsTool   (wnd));
-	tools.push_back(new CAreaCoverageTool   (wnd));
 //	tools.push_back(new CStrainMapTool      (wnd));
 }
 
