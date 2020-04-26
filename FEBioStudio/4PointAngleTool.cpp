@@ -153,10 +153,22 @@ void C4PointAngleTool::Update()
 		vec3f e1 = b - a; e1.Normalize();
 		vec3f e2 = d - c; e2.Normalize();
 
-		m_angle = 180.0*acos(e1*e2) / PI;
+		double dot = e1*e2;
+		if (dot > 1.0) dot = 1.0;
+		else if (dot < -1.0) dot = -1.0;
+
+		m_angle = 180.0*acos(dot) / PI;
 
 		C4PointAngleDecoration* deco = new C4PointAngleDecoration;
 		deco->setPosition(a, b, c, d);
+		SetDecoration(deco);
+	}
+	else if ((m_node[0]>0) && (m_node[1]>0))
+	{
+		vec3f a = to_vec3f(mesh->Node(m_node[0] - 1).pos());
+		vec3f b = to_vec3f(mesh->Node(m_node[1] - 1).pos());
+
+		GLineDecoration* deco = new GLineDecoration(a, b);
 		SetDecoration(deco);
 	}
 }

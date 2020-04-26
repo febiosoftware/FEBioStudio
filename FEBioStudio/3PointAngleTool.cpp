@@ -156,4 +156,12 @@ void C3PointAngleTool::Update()
 		deco->setPosition(a, b, c);
 		SetDecoration(deco);
 	}
+	else if ((m_node[0] > 0) && (m_node[1] > 0))
+	{
+		vec3f a = to_vec3f(mesh->Node(m_node[0] - 1).pos());
+		vec3f b = to_vec3f(mesh->Node(m_node[1] - 1).pos());
+
+		GLineDecoration* deco = new GLineDecoration(a,  b);
+		SetDecoration(deco);
+	}
 }
