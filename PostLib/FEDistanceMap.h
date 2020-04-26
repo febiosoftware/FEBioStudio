@@ -6,7 +6,7 @@ namespace Post {
 //-----------------------------------------------------------------------------
 // This class maps the distance between two surfaces and adds a field variable
 // to the mesh
-class FEDistanceMap
+class FEDistanceMap : public FEDataField
 {
 private:
 	class Surface
@@ -27,16 +27,24 @@ private:
 	};
 
 public:
-	FEDistanceMap() { m_tol = 0.01; m_bsigned = false; }
+	FEDistanceMap(FEPostModel* fem);
 
-	// assign selections
-	void SetSelection1(vector<int>& s) { m_surf1.m_face = s; }
-	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
+	FEDataField* Clone() const override;
 
-	// apply the map
-	void Apply(FEPostModel& fem);
+	FEMeshData* CreateData(FEState* pstate) override;
+
+	void Apply();
+
+	void InitSurface(int n);
+
+	int GetSurfaceSize(int i);
 
 protected:
+	// assign selections
+	void SetSelection1(vector<int>& s) { m_surf1.m_face = s; }
+
+	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
+
 	// build node normal list
 	void BuildNormalList(FEDistanceMap::Surface& s);
 

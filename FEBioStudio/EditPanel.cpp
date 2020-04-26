@@ -76,7 +76,7 @@ CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, p
 	ui->setupUi(this, wnd);
 }
 
-void CEditPanel::Update()
+void CEditPanel::Update(bool breset)
 {
 	CDocument* doc = GetDocument();
 

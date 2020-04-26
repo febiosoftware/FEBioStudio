@@ -14,7 +14,7 @@ CDocument*	CCommandPanel::GetDocument()
 }
 
 //-----------------------------------------------------------------------------
-void CCommandPanel::Update()
+void CCommandPanel::Update(bool b)
 {
 	// by default, nothing to do
 }

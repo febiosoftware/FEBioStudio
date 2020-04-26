@@ -3,6 +3,7 @@
 #include "FEMeshData_T.h"
 #include "constants.h"
 #include "PostGL/GLModel.h"
+#include "FEDistanceMap.h"
 using namespace Post;
 
 FEDataField::FEDataField(const std::string& name, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
@@ -708,6 +709,8 @@ bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp
 //=============================================================================
 bool Post::AddStandardDataField(CGLModel& glm, const std::string& dataField, bool bselection_only)
 {
+	FEPostModel& fem = *glm.GetFEModel();
+
 	FEDataField* pdf = nullptr;
 	if      (dataField.compare("Position"                  ) == 0) pdf = new FEDataField_T<FENodePosition         >("Position"                  );
 	else if (dataField.compare("Initial position"          ) == 0) pdf = new FEDataField_T<FENodeInitPos          >("Initial position"          );
@@ -735,10 +738,9 @@ bool Post::AddStandardDataField(CGLModel& glm, const std::string& dataField, boo
 	else if (dataField.compare("Congruency"                ) == 0) pdf = new FEDataField_T<FECongruency           >("Congruency"                );
 	else if (dataField.compare("1-Princ curvature vector"  ) == 0) pdf = new FEDataField_T<FEPrincCurvatureVector1>("1-Princ curvature vector");
 	else if (dataField.compare("2-Princ curvature vector"  ) == 0) pdf = new FEDataField_T<FEPrincCurvatureVector2>("2-Princ curvature vector");
+	else if (dataField.compare("distance map"              ) == 0) pdf = new FEDistanceMap(&fem);
 
 	if (pdf == nullptr) return false;
-
-	FEPostModel& fem = *glm.GetFEModel();
 
 	// NOTE: This only works with curvatures
 	if (bselection_only && (glm.GetSelectionMode() == SELECT_FACES))

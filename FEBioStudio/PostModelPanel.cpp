@@ -517,11 +517,6 @@ void CPostModelPanel::UpdateView()
 	}
 }
 
-void CPostModelPanel::Update()
-{
-	Update(true);
-}
-
 void CPostModelPanel::Update(bool breset)
 {
 	if (breset)

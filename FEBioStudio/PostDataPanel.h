@@ -25,8 +25,7 @@ class CPostDataPanel : public CCommandPanel
 public:
 	CPostDataPanel(CMainWindow* pwnd, QWidget* parent = 0);
 
-	void Update(bool breset);
-	void Update() override;
+	void Update(bool breset) override;
 
 	private slots:
 	void on_AddStandard_triggered();
@@ -38,7 +37,7 @@ public:
 	void on_ExportButton_clicked();
 	void on_dataList_clicked(const QModelIndex&);
 	void on_fieldName_editingFinished();
-	void on_props_dataChanged(int n);
+	void on_props_dataChanged(bool b);
 
 private:
 	CPostDoc* GetActiveDocument();

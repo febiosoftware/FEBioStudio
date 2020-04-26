@@ -16,7 +16,7 @@ public:
 	CToolsPanel(CMainWindow* wnd, QWidget* parent = 0);
 
 	// update the tools panel
-	void Update();
+	void Update(bool breset = true) override;
 
 private:
 	void initTools();

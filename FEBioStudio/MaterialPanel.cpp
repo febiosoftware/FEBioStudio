@@ -186,11 +186,6 @@ CPostDoc* CMaterialPanel::GetActiveDocument()
 	return GetMainWindow()->GetActiveDocument();
 }
 
-void CMaterialPanel::Update()
-{
-	Update(true);
-}
-
 void CMaterialPanel::Update(bool breset)
 {
 	if (breset == false) return;

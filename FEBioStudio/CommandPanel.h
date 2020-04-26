@@ -23,7 +23,7 @@ public:
 	CDocument*	GetDocument();
 
 	//! Update the command panel, since the model has changed
-	virtual void Update();
+	virtual void Update(bool breset = true);
 
 	//! Process Esc key event (return true if processed)
 	virtual bool OnEscapeEvent() { return false; }

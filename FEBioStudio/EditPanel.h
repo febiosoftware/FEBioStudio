@@ -15,7 +15,7 @@ public:
 	CEditPanel(CMainWindow* wnd, QWidget* parent = 0);
 
 	// update mesh panel
-	void Update() override;
+	void Update(bool breset = true) override;
 
 	void Apply() override;
 

@@ -644,12 +644,12 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	UpdateGLControlBar();
 
 	// Update the command windows
-	if (ui->buildPanel->isVisible() && (psend != ui->buildPanel)) ui->buildPanel->Update();
+	if (ui->buildPanel->isVisible() && (psend != ui->buildPanel)) ui->buildPanel->Update(breset);
 
 	//	if (m_pCurveEdit->visible() && (m_pCurveEdit != psend)) m_pCurveEdit->Update();
 	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update();
 
-	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update();
+	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
 
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 }
@@ -1913,7 +1913,7 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 		doc->DoCommand(new CCmdSetActiveMeshLayer(gm, layer));
 		UpdateModel();
 		UpdateGLControlBar();
-		ui->buildPanel->Update();
+		ui->buildPanel->Update(true);
 		RedrawGL();
 	}
 }

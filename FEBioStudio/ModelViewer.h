@@ -19,7 +19,7 @@ public:
 	CModelViewer(CMainWindow* wnd, QWidget* parent = 0);
 
 	// update the model tree and props window
-	void Update() override;
+	void Update(bool breset = true) override;
 
 	// get the currently selected object
 	FSObject* GetCurrentObject();

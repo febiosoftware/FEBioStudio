@@ -16,7 +16,7 @@ public:
 
 	CCreatePanel* CreatePanel();
 
-	void Update();
+	void Update(bool breset) override;
 
 	void Apply();
 

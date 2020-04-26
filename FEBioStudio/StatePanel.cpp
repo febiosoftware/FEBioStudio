@@ -170,11 +170,6 @@ CPostDoc* CStatePanel::GetActiveDocument()
 	return GetMainWindow()->GetActiveDocument();
 }
 
-void CStatePanel::Update()
-{
-	Update(true);
-}
-
 void CStatePanel::Update(bool breset)
 {
 	if (breset)

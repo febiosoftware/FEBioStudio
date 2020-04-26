@@ -216,7 +216,7 @@ CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, p
 	ui->setupUi(this, wnd);
 }
 
-void CMeshPanel::Update()
+void CMeshPanel::Update(bool breset)
 {
 	CDocument* doc = GetDocument();
 	GModel* gm = doc->GetGModel();

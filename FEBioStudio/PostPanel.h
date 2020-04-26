@@ -16,7 +16,7 @@ class CPostPanel : public CCommandPanel
 public:
 	CPostPanel(CMainWindow* wnd, QWidget* parent = 0);
 
-	void Update();
+	void Update(bool breset = true) override;
 
 	void Reset();
 

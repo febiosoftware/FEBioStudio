@@ -14,7 +14,7 @@ CCreatePanel* CBuildPanel::CreatePanel()
 	return ui->create;
 }
 
-void CBuildPanel::Update()
+void CBuildPanel::Update(bool breset)
 {
 	CCommandPanel* p = ui->currentPanel();
 	if (p) p->Update();
@@ -25,7 +25,7 @@ void CBuildPanel::Update()
 
 void CBuildPanel::on_buildTab_currentChanged(int index)
 {
-	Update();
+	Update(true);
 }
 
 bool CBuildPanel::IsEditPanelVisible()

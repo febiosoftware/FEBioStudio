@@ -23,10 +23,12 @@
 #include <QtCore/QAbstractTableModel>
 #include <PostLib/DataFilter.h>
 #include "PropertyListView.h"
+#include "PropertyListForm.h"
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEMathData.h>
 #include "PostDoc.h"
 #include <PostLib/FEDataField.h>
+#include <PostLib/FEDistanceMap.h>
 #include "DlgAddEquation.h"
 
 class CCurvatureProps : public CPropertyList
@@ -151,6 +153,52 @@ public:
 	}
 };
 
+class CDistanceMapProps : public CPropertyList
+{
+public:
+	CDistanceMapProps(Post::FEDistanceMap* map) : m_map(map)
+	{
+		addProperty("Assign to surface1", CProperty::Action, "");
+		addProperty("Assign to surface2", CProperty::Action, "");
+		addProperty("", CProperty::Action, "Apply");
+	}
+
+	QVariant GetPropertyValue(int i) override
+	{
+		if (i == 0)
+		{
+			int n = m_map->GetSurfaceSize(0);
+			return QString("(%1 Faces)").arg(n);
+		}
+		if (i == 1)
+		{
+			int n = m_map->GetSurfaceSize(1);
+			return QString("(%1 Faces)").arg(n);
+		}
+		return QVariant();
+	}
+
+	void SetPropertyValue(int i, const QVariant& v) override
+	{
+		if (i == 0)
+		{
+			m_map->InitSurface(0);
+			SetModified(true);
+		}
+		else if (i == 1)
+		{
+			m_map->InitSurface(1);
+			SetModified(true);
+		}
+		else if (i == 2)
+		{
+			m_map->Apply();
+		}
+	}
+
+private:
+	Post::FEDistanceMap*	m_map;
+};
 
 class CDataModel : public QAbstractTableModel
 {
@@ -163,6 +211,8 @@ public:
 		m_fem = pfem;
 		endResetModel();
 	}
+
+	Post::FEPostModel* GetFEModel() { return m_fem; }
 
 	int rowCount(const QModelIndex& index) const
 	{
@@ -241,7 +291,7 @@ class Ui::CPostDataPanel
 public:
 	CDataModel*	data;
 	QTableView*	list;
-	::CPropertyListView*	m_prop;
+	::CPropertyListForm*	m_prop;
 	QLineEdit*	name;
 
 	Post::FEDataField*	m_activeField;
@@ -305,7 +355,7 @@ public:
 
 		psplitter->addWidget(list);
 
-		m_prop = new ::CPropertyListView;
+		m_prop = new ::CPropertyListForm;
 		m_prop->setObjectName("props");
 
 		QWidget* w = new QWidget;
@@ -579,21 +629,24 @@ CPostDoc* CPostDataPanel::GetActiveDocument()
 	return GetMainWindow()->GetActiveDocument();
 }
 
-void CPostDataPanel::Update()
-{
-	Update(true);
-}
-
 void CPostDataPanel::Update(bool breset)
 {
-	if (breset)
+	CPostDoc* pdoc = GetActiveDocument();
+	if (pdoc)
 	{
-		CPostDoc* pdoc = GetActiveDocument();
-		ui->m_prop->Update(0);
-		if (pdoc)
+		Post::FEPostModel* oldFem = ui->data->GetFEModel();
+		Post::FEPostModel* newFem = pdoc->GetFEModel();
+
+		if ((oldFem != newFem) || breset)
+		{
+			ui->m_prop->setPropertyList(nullptr);
 			ui->data->SetFEModel(pdoc->GetFEModel());
-		else
-			ui->data->SetFEModel(nullptr);
+		}
+	}
+	else
+	{
+		ui->m_prop->setPropertyList(nullptr);
+		ui->data->SetFEModel(nullptr);
 	}
 }
 
@@ -627,6 +680,7 @@ void CPostDataPanel::on_AddStandard_triggered()
 	items.push_back("Congruency");
 	items.push_back("1-Princ Curvature vector");
 	items.push_back("2-Princ Curvature vector");
+	items.push_back("distance map");
 
 	bool ok = false;
 	QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
@@ -952,24 +1006,29 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 	if ((dynamic_cast<Post::FECurvatureField*>(p)))
 	{
 		Post::FECurvatureField* pf = dynamic_cast<Post::FECurvatureField*>(p);
-		ui->m_prop->Update(new CCurvatureProps(pf));
+		ui->m_prop->setPropertyList(new CCurvatureProps(pf));
 	}
 	else if (dynamic_cast<Post::FEMathDataField*>(p))
 	{
 		Post::FEMathDataField* pm = dynamic_cast<Post::FEMathDataField*>(p);
-		ui->m_prop->Update(new CMathDataProps(pm));
+		ui->m_prop->setPropertyList(new CMathDataProps(pm));
 	}
 	else if (dynamic_cast<Post::FEMathVec3DataField*>(p))
 	{
 		Post::FEMathVec3DataField* pm = dynamic_cast<Post::FEMathVec3DataField*>(p);
-		ui->m_prop->Update(new CMathDataVec3Props(pm));
+		ui->m_prop->setPropertyList(new CMathDataVec3Props(pm));
 	}
 	else if (dynamic_cast<Post::FEStrainDataField*>(p))
 	{
 		Post::FEStrainDataField* ps = dynamic_cast<Post::FEStrainDataField*>(p);
-		ui->m_prop->Update(new CStrainProps(ps, nstates));
+		ui->m_prop->setPropertyList(new CStrainProps(ps, nstates));
 	}
-	else ui->m_prop->Update(0);
+	else if (dynamic_cast<Post::FEDistanceMap*>(p))
+	{
+		Post::FEDistanceMap* ps = dynamic_cast<Post::FEDistanceMap*>(p);
+		ui->m_prop->setPropertyList(new CDistanceMapProps(ps));
+	}
+	else ui->m_prop->setPropertyList(nullptr);
 
 	ui->m_activeField = p;
 
@@ -984,11 +1043,11 @@ void CPostDataPanel::on_fieldName_editingFinished()
 		ui->m_activeField->SetName(t.toStdString());
 		Update(true);
 		CPostDoc& doc = *GetActiveDocument();
-		//		doc.GetFEModel()->UpdateDependants();
+//		doc.GetFEModel()->UpdateDependants();
 	}
 }
 
-void CPostDataPanel::on_props_dataChanged(int n)
+void CPostDataPanel::on_props_dataChanged(bool b)
 {
 	CPostDoc* doc = GetActiveDocument();
 	doc->GetGLModel()->ResetAllStates();

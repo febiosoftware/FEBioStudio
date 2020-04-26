@@ -24,8 +24,7 @@ public:
 	CPostModelPanel(CMainWindow* pwnd, QWidget* parent = 0);
 
 public:
-	void Update() override;
-	void Update(bool breset);
+	void Update(bool breset) override;
 
 	// this is called when the view needs to be updated
 	void UpdateView();

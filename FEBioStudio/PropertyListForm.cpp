@@ -292,7 +292,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		break;
 	case CProperty::Action:
 		{
-			QPushButton* b = new QPushButton(pi.info);
+			QPushButton* b = new QPushButton(v.isValid() ? v.toString() : pi.info);
 			connect(b, SIGNAL(clicked(bool)), this, SLOT(onDataChanged()));
 			return b;
 		}

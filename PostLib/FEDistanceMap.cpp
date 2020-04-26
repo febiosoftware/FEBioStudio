@@ -3,10 +3,47 @@
 #include "FEMeshData_T.h"
 #include <stdio.h>
 #include "tools.h"
-using namespace Post;
+#include "constants.h"
 
 //-----------------------------------------------------------------------------
-void FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
+Post::FEDistanceMap::FEDistanceMap(Post::FEPostModel* fem) : Post::FEDataField("distance map", DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+{ 
+	m_pfem = fem;
+	m_tol = 0.01; 
+	m_bsigned = false; 
+}
+
+//-----------------------------------------------------------------------------
+Post::FEDataField* Post::FEDistanceMap::Clone() const
+{
+	FEDistanceMap* pd = new FEDistanceMap(m_pfem);
+	pd->m_surf1 = m_surf1;
+	pd->m_surf2 = m_surf2;
+	pd->m_tol = m_tol;
+	pd->m_bsigned = m_bsigned;
+	return pd;
+}
+
+//-----------------------------------------------------------------------------
+void Post::FEDistanceMap::InitSurface(int n)
+{
+	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
+
+	vector<int> L;
+	for (int i = 0; i<mesh.Faces(); ++i) if (mesh.Face(i).IsSelected()) L.push_back(i);
+
+	if (n == 0) SetSelection1(L);
+	if (n == 1) SetSelection2(L);
+}
+
+//-----------------------------------------------------------------------------
+int Post::FEDistanceMap::GetSurfaceSize(int i)
+{
+	return (i == 0 ? m_surf1.Faces() : m_surf2.Faces());
+}
+
+//-----------------------------------------------------------------------------
+void Post::FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 {
 	// tag all nodes that belong to this surface
 	int N = mesh.Nodes();
@@ -56,7 +93,7 @@ void FEDistanceMap::Surface::BuildNodeList(Post::FEPostMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-void FEDistanceMap::BuildNormalList(FEDistanceMap::Surface& s)
+void Post::FEDistanceMap::BuildNormalList(Post::FEDistanceMap::Surface& s)
 {
 	// get the mesh
 	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
@@ -79,21 +116,16 @@ void FEDistanceMap::BuildNormalList(FEDistanceMap::Surface& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEDistanceMap::Apply(FEPostModel& fem)
+Post::FEMeshData* Post::FEDistanceMap::CreateData(Post::FEState* pstate)
 {
-	static int ncalls = 0; ncalls++;
-	char szname[64];
-	if (ncalls==1)
-		sprintf(szname, "distance map");
-	else
-		sprintf(szname, "distance map (%d)", ncalls);
+	return new Post::FEFaceData<float, DATA_NODE>(pstate, this);
+}
 
+//-----------------------------------------------------------------------------
+void Post::FEDistanceMap::Apply()
+{
 	// store the model
-	m_pfem = &fem;
-
-	// add a new data field
-	fem.AddDataField(new FEDataField_T<FEFaceData<float, DATA_NODE> >(szname, EXPORT_DATA));
-	int NDATA = fem.GetDataManager()->DataFields()-1;
+	Post::FEPostModel& fem = *m_pfem;
 
 	// get the mesh
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
@@ -111,16 +143,17 @@ void FEDistanceMap::Apply(FEPostModel& fem)
 		BuildNormalList(m_surf2);
 	}
 
-	// repeat for all steps
-	int nstep = fem.GetStates();
-	for (int n=0; n<nstep; ++n)
+	// get the field index
+	int nfield = FIELD_CODE(GetFieldID());
+
+	for (int n = 0; n < fem.GetStates(); ++n)
 	{
 		FEState* ps = fem.GetState(n);
-		FEFaceData<float,DATA_NODE>& df = dynamic_cast<FEFaceData<float,DATA_NODE>&>(ps->m_Data[NDATA]);
+		Post::FEFaceData<float, DATA_NODE>* df = dynamic_cast<Post::FEFaceData<float, DATA_NODE>*>(&ps->m_Data[nfield]);
 
 		// loop over all nodes of surface 1
 		vector<float> a(m_surf1.Nodes());
-		for (int i=0; i<m_surf1.Nodes(); ++i)
+		for (int i = 0; i < m_surf1.Nodes(); ++i)
 		{
 			int inode = m_surf1.m_node[i];
 			FENode& node = mesh.Node(inode);
@@ -134,12 +167,12 @@ void FEDistanceMap::Apply(FEPostModel& fem)
 			}
 		}
 		vector<int> nf1(m_surf1.Faces());
-		for (int i=0; i<m_surf1.Faces(); ++i) nf1[i] = MN; //mesh.Face(m_surf1.m_face[i]).Nodes();
-		df.add(a, m_surf1.m_face, m_surf1.m_lnode, nf1);
+		for (int i = 0; i < m_surf1.Faces(); ++i) nf1[i] = MN; //mesh.Face(m_surf1.m_face[i]).Nodes();
+		df->add(a, m_surf1.m_face, m_surf1.m_lnode, nf1);
 
 		// loop over all nodes of surface 2
 		vector<float> b(m_surf2.Nodes());
-		for (int i=0; i<m_surf2.Nodes(); ++i)
+		for (int i = 0; i < m_surf2.Nodes(); ++i)
 		{
 			int inode = m_surf2.m_node[i];
 			FENode& node = mesh.Node(inode);
@@ -153,13 +186,13 @@ void FEDistanceMap::Apply(FEPostModel& fem)
 			}
 		}
 		vector<int> nf2(m_surf2.Faces());
-		for (int i = 0; i<m_surf2.Faces(); ++i) nf2[i] = MN; //mesh.Face(m_surf2.m_face[i]).Nodes();
-		df.add(b, m_surf2.m_face, m_surf2.m_lnode, nf2);
+		for (int i = 0; i < m_surf2.Faces(); ++i) nf2[i] = MN; //mesh.Face(m_surf2.m_face[i]).Nodes();
+		df->add(b, m_surf2.m_face, m_surf2.m_lnode, nf2);
 	}
 }
 
 //-----------------------------------------------------------------------------
-vec3f FEDistanceMap::project(FEDistanceMap::Surface& surf, vec3f& r, int ntime)
+vec3f Post::FEDistanceMap::project(Post::FEDistanceMap::Surface& surf, vec3f& r, int ntime)
 {
 	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);
 
@@ -204,7 +237,7 @@ vec3f FEDistanceMap::project(FEDistanceMap::Surface& surf, vec3f& r, int ntime)
 }
 
 //-----------------------------------------------------------------------------
-bool FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& q)
+bool Post::FEDistanceMap::ProjectToFacet(FEFace& f, vec3f& x, int ntime, vec3f& q)
 {
 	// get the mesh to which this surface belongs
 	Post::FEPostMesh& mesh = *m_pfem->GetFEMesh(0);

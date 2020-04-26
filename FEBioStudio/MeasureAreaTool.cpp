@@ -1,10 +1,16 @@
 #include "stdafx.h"
 #include "MeasureAreaTool.h"
-#include "PostDoc.h"
-#include <PostLib/FEPostModel.h>
-#include "MainWindow.h"
-#include <PostGL/GLModel.h>
-using namespace Post;
+#include <MeshLib/FEMesh.h>
+
+//-----------------------------------------------------------------------------
+CMeasureAreaTool::CMeasureAreaTool(CMainWindow* wnd) : CBasicTool(wnd, "Measure Area")
+{
+	addProperty("selected faces", CProperty::Int)->setFlags(CProperty::Visible);
+	addProperty("area", CProperty::Float)->setFlags(CProperty::Visible);
+
+	m_nsel = 0;
+	m_area = 0.0;
+}
 
 //-----------------------------------------------------------------------------
 QVariant CMeasureAreaTool::GetPropertyValue(int i)
@@ -20,16 +26,6 @@ QVariant CMeasureAreaTool::GetPropertyValue(int i)
 //-----------------------------------------------------------------------------
 void CMeasureAreaTool::SetPropertyValue(int i, const QVariant& v)
 {
-}
-
-//-----------------------------------------------------------------------------
-CMeasureAreaTool::CMeasureAreaTool(CMainWindow* wnd) : CBasicTool(wnd, "Measure Area")
-{
-	addProperty("selected faces", CProperty::Int)->setFlags(CProperty::Visible);
-	addProperty("area", CProperty::Float)->setFlags(CProperty::Visible);
-
-	m_nsel = 0;
-	m_area = 0.0;
 }
 
 //-----------------------------------------------------------------------------

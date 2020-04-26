@@ -163,7 +163,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\FEBioStudio\3PointAngleTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\4PointAngleTool.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\AddPointTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\AreaCalculatorTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\AreaCoverageTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\BuildPanel.cpp" />
@@ -182,7 +181,6 @@
     <ClCompile Include="..\..\FEBioStudio\CurvePicker.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DataFieldSelector.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DistanceMapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddBC.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddBodyLoad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddChemicalReaction.cpp" />
@@ -237,6 +235,7 @@
     <ClCompile Include="..\..\FEBioStudio\Document.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DragBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\EditPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ElementVolumeTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Encrypter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioJob.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioStudio.cpp" />
@@ -290,7 +289,6 @@
     <ClCompile Include="..\..\FEBioStudio\moc_CurvePicker.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DataFieldSelector.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\moc_DistanceMapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddEquation.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddMeshData.cpp" />
@@ -406,7 +404,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\3PointAngleTool.h" />
     <ClInclude Include="..\..\FEBioStudio\4PointAngleTool.h" />
-    <ClInclude Include="..\..\FEBioStudio\AddPointTool.h" />
     <ClInclude Include="..\..\FEBioStudio\AreaCalculatorTool.h" />
     <CustomBuild Include="..\..\FEBioStudio\AreaCoverageTool.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -461,11 +458,6 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\DistanceMapTool.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
-    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgAddConstraint.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgAddPublication.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -494,6 +486,7 @@
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgSelectRange.h" />
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
+    <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h" />
     <ClInclude Include="..\..\FEBioStudio\Encrypter.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />
     <CustomBuild Include="..\..\FEBioStudio\MainTabBar.h">

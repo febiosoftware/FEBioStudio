@@ -19,7 +19,7 @@ CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd,
 	ui->setupUi(this);
 }
 
-void CToolsPanel::Update()
+void CToolsPanel::Update(bool breset)
 {
 	if (m_activeTool)
 	{

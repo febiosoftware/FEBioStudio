@@ -45,7 +45,7 @@ QT_MOC_LITERAL(9, 184, 19), // "on_dataList_clicked"
 QT_MOC_LITERAL(10, 204, 11), // "QModelIndex"
 QT_MOC_LITERAL(11, 216, 28), // "on_fieldName_editingFinished"
 QT_MOC_LITERAL(12, 245, 20), // "on_props_dataChanged"
-QT_MOC_LITERAL(13, 266, 1) // "n"
+QT_MOC_LITERAL(13, 266, 1) // "b"
 
     },
     "CPostDataPanel\0on_AddStandard_triggered\0"
@@ -55,7 +55,7 @@ QT_MOC_LITERAL(13, 266, 1) // "n"
     "on_DeleteButton_clicked\0on_ExportButton_clicked\0"
     "on_dataList_clicked\0QModelIndex\0"
     "on_fieldName_editingFinished\0"
-    "on_props_dataChanged\0n"
+    "on_props_dataChanged\0b"
 };
 #undef QT_MOC_LITERAL
 
@@ -94,7 +94,7 @@ static const uint qt_meta_data_CPostDataPanel[] = {
     QMetaType::Void,
     QMetaType::Void, 0x80000000 | 10,    2,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,   13,
+    QMetaType::Void, QMetaType::Bool,   13,
 
        0        // eod
 };
@@ -114,7 +114,7 @@ void CPostDataPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 6: _t->on_ExportButton_clicked(); break;
         case 7: _t->on_dataList_clicked((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
         case 8: _t->on_fieldName_editingFinished(); break;
-        case 9: _t->on_props_dataChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 9: _t->on_props_dataChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
         default: ;
         }
     }

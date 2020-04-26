@@ -627,9 +627,6 @@
     <ClCompile Include="..\..\FEBioStudio\4PointAngleTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\AddPointTool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\AreaCoverageTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -714,12 +711,6 @@
     <ClCompile Include="..\..\FEBioStudio\DlgExportLSDYNA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\DistanceMapTool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\moc_DistanceMapTool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\PlotMixTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -739,6 +730,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\PostToolBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\ElementVolumeTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -977,9 +971,6 @@
     <ClInclude Include="..\..\FEBioStudio\4PointAngleTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\AddPointTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\MeasureAreaTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1020,6 +1011,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\PostToolBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1250,9 +1244,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\ModelTree.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\DistanceMapTool.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\PlotMixTool.h">

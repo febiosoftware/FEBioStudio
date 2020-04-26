@@ -24,7 +24,7 @@ CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wn
 	m_currentObject = 0;
 }
 
-void CModelViewer::Update()
+void CModelViewer::Update(bool breset)
 {
 	CDocument* doc = GetDocument();
 

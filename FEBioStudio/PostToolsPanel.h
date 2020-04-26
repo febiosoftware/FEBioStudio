@@ -15,7 +15,7 @@ class CPostToolsPanel : public CCommandPanel
 public:
 	CPostToolsPanel(CMainWindow* window, QWidget* parent = 0);
 
-	void Update() override;
+	void Update(bool breset = true) override;
 
 private:
 	void initTools();

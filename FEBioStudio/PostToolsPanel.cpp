@@ -19,12 +19,8 @@
 #include <PostLib/FEPostModel.h>
 #include <GLLib/GDecoration.h>
 #include <PostGL/GLModel.h>
-#include "AddPointTool.h"
-//#include "TransformTool.h"
-//#include "ShellThicknessTool.h"
 //#include "PointCongruencyTool.h"
 #include "ImportLinesTool.h"
-#include "DistanceMapTool.h"
 //#include "PlaneTool.h"
 #include "PlotMixTool.h"
 #include "AreaCoverageTool.h"
@@ -108,7 +104,7 @@ CPostToolsPanel::CPostToolsPanel(CMainWindow* window, QWidget* parent) : CComman
 	ui->setupUi(this);
 }
 
-void CPostToolsPanel::Update()
+void CPostToolsPanel::Update(bool breset)
 {
 	if (ui->activeTool)
 	{
@@ -123,12 +119,8 @@ void CPostToolsPanel::initTools()
 //	tools.push_back(new CPlotMixTool        (wnd));
 	tools.push_back(new CImportLinesTool    (wnd));
 	tools.push_back(new CKinematTool        (wnd));
-	tools.push_back(new CDistanceMapTool    (wnd));
 //	tools.push_back(new CCurvatureMapTool   (wnd));
 //	tools.push_back(new CPointCongruencyTool(wnd));
-//	tools.push_back(new CTransformTool      (wnd));
-//	tools.push_back(new CShellThicknessTool (wnd));
-	tools.push_back(new CAddPointTool       (wnd));
 	tools.push_back(new CImportPointsTool   (wnd));
 	tools.push_back(new CAreaCoverageTool   (wnd));
 //	tools.push_back(new CStrainMapTool      (wnd));

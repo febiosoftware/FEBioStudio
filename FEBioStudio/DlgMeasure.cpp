@@ -16,6 +16,7 @@
 #include "MeasureAreaTool.h"
 #include "SphereFitTool.h"
 #include "TetOverlapTool.h"
+#include "ElementVolumeTool.h"
 
 class Ui::CDlgMeasure
 {
@@ -84,6 +85,7 @@ public:
 		m_tools.push_back(new C3PointAngleTool(m_wnd));
 		m_tools.push_back(new C4PointAngleTool(m_wnd));
 		m_tools.push_back(new CMeasureAreaTool(m_wnd));
+		m_tools.push_back(new CElementVolumeTool(m_wnd));
 		m_tools.push_back(new CSphereFitTool(m_wnd));
 		m_tools.push_back(new CTetOverlapTool(m_wnd));
 	}

@@ -52,14 +52,14 @@ CPostPanel::CPostPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, p
 
 void CPostPanel::Reset()
 {
-	ui->mdl->Update();
+	ui->mdl->Update(true);
 	Update();
 }
 
-void CPostPanel::Update()
+void CPostPanel::Update(bool breset)
 {
 	CCommandPanel* p = ui->currentPanel();
-	if (p) p->Update();
+	if (p) p->Update(breset);
 }
 
 void CPostPanel::on_postTab_currentChanged(int index)
