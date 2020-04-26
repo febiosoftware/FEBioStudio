@@ -211,6 +211,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgFormula.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgImportAbaqus.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgImportCOMSOL.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgImportLines.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgImportSTL.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgImportXPLT.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgKinemat.cpp" />
@@ -255,7 +256,6 @@
     <ClCompile Include="..\..\FEBioStudio\GManipulator.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\ImportLinesTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ImportSpringsTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
@@ -302,6 +302,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgExportFEBio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgFEBioOptimize.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgFormula.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgImportLines.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgKinemat.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgLameConvertor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgMeasure.cpp" />
@@ -320,7 +321,6 @@
     <ClCompile Include="..\..\FEBioStudio\moc_GLHighlighter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\moc_ImportLinesTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_Logger.cpp" />
@@ -468,6 +468,11 @@
     <ClInclude Include="..\..\FEBioStudio\DlgExportLSDYNA.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgExportXPLT.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgFind.h" />
+    <CustomBuild Include="..\..\FEBioStudio\DlgImportLines.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgImportXPLT.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUpload.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -519,11 +524,6 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\ImportLinesTool.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
-    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\ImportSpringsTool.h" />
     <ClInclude Include="..\..\FEBioStudio\LaunchConfig.h" />
     <CustomBuild Include="..\..\FEBioStudio\Logger.h">
@@ -571,6 +571,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\PostPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\PostToolBar.h" />
     <ClInclude Include="..\..\FEBioStudio\RepoProject.h" />
     <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h" />
@@ -824,11 +825,6 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </ClInclude>
-    <CustomBuild Include="..\..\FEBioStudio\PostPanel.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
-    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\PropertyList.h" />
     <CustomBuild Include="..\..\FEBioStudio\PropertyListForm.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

@@ -20,7 +20,6 @@
 #include <GLLib/GDecoration.h>
 #include <PostGL/GLModel.h>
 //#include "PointCongruencyTool.h"
-#include "ImportLinesTool.h"
 //#include "PlaneTool.h"
 //#include "StrainMapTool.h"
 
@@ -113,10 +112,8 @@ void CPostToolsPanel::initTools()
 {
 	CMainWindow* wnd = GetMainWindow();
 //	tools.push_back(new CPlaneTool          (wnd));
-	tools.push_back(new CImportLinesTool    (wnd));
 //	tools.push_back(new CCurvatureMapTool   (wnd));
 //	tools.push_back(new CPointCongruencyTool(wnd));
-	tools.push_back(new CImportPointsTool   (wnd));
 //	tools.push_back(new CStrainMapTool      (wnd));
 }
 

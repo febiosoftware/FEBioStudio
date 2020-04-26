@@ -1,5 +1,5 @@
 /****************************************************************************
-** Meta object code from reading C++ file 'ImportLinesTool.h'
+** Meta object code from reading C++ file 'DlgImportLines.h'
 **
 ** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.1)
 **
@@ -7,11 +7,11 @@
 *****************************************************************************/
 
 #include <memory>
-#include "ImportLinesTool.h"
+#include "DlgImportLines.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
-#error "The header file 'ImportLinesTool.h' doesn't include <QObject>."
+#error "The header file 'DlgImportLines.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
 #error "This file was generated using the moc from 5.14.1. It"
 #error "cannot be used with the include files from this version of Qt."
@@ -21,28 +21,28 @@
 QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-struct qt_meta_stringdata_CImportLinesTool_t {
+struct qt_meta_stringdata_CDlgImportLines_t {
     QByteArrayData data[4];
-    char stringdata0[35];
+    char stringdata0[34];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_CImportLinesTool_t, stringdata0) + ofs \
+    qptrdiff(offsetof(qt_meta_stringdata_CDlgImportLines_t, stringdata0) + ofs \
         - idx * sizeof(QByteArrayData)) \
     )
-static const qt_meta_stringdata_CImportLinesTool_t qt_meta_stringdata_CImportLinesTool = {
+static const qt_meta_stringdata_CDlgImportLines_t qt_meta_stringdata_CDlgImportLines = {
     {
-QT_MOC_LITERAL(0, 0, 16), // "CImportLinesTool"
-QT_MOC_LITERAL(1, 17, 7), // "OnApply"
-QT_MOC_LITERAL(2, 25, 0), // ""
-QT_MOC_LITERAL(3, 26, 8) // "OnBrowse"
+QT_MOC_LITERAL(0, 0, 15), // "CDlgImportLines"
+QT_MOC_LITERAL(1, 16, 7), // "OnApply"
+QT_MOC_LITERAL(2, 24, 0), // ""
+QT_MOC_LITERAL(3, 25, 8) // "OnBrowse"
 
     },
-    "CImportLinesTool\0OnApply\0\0OnBrowse"
+    "CDlgImportLines\0OnApply\0\0OnBrowse"
 };
 #undef QT_MOC_LITERAL
 
-static const uint qt_meta_data_CImportLinesTool[] = {
+static const uint qt_meta_data_CDlgImportLines[] = {
 
  // content:
        8,       // revision
@@ -66,10 +66,10 @@ static const uint qt_meta_data_CImportLinesTool[] = {
        0        // eod
 };
 
-void CImportLinesTool::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void CDlgImportLines::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        auto *_t = static_cast<CImportLinesTool *>(_o);
+        auto *_t = static_cast<CDlgImportLines *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->OnApply(); break;
@@ -80,32 +80,32 @@ void CImportLinesTool::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int
     Q_UNUSED(_a);
 }
 
-QT_INIT_METAOBJECT const QMetaObject CImportLinesTool::staticMetaObject = { {
-    QMetaObject::SuperData::link<CAbstractTool::staticMetaObject>(),
-    qt_meta_stringdata_CImportLinesTool.data,
-    qt_meta_data_CImportLinesTool,
+QT_INIT_METAOBJECT const QMetaObject CDlgImportLines::staticMetaObject = { {
+    QMetaObject::SuperData::link<QDialog::staticMetaObject>(),
+    qt_meta_stringdata_CDlgImportLines.data,
+    qt_meta_data_CDlgImportLines,
     qt_static_metacall,
     nullptr,
     nullptr
 } };
 
 
-const QMetaObject *CImportLinesTool::metaObject() const
+const QMetaObject *CDlgImportLines::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *CImportLinesTool::qt_metacast(const char *_clname)
+void *CDlgImportLines::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_CImportLinesTool.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_CDlgImportLines.stringdata0))
         return static_cast<void*>(this);
-    return CAbstractTool::qt_metacast(_clname);
+    return QDialog::qt_metacast(_clname);
 }
 
-int CImportLinesTool::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int CDlgImportLines::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = CAbstractTool::qt_metacall(_c, _id, _a);
+    _id = QDialog::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
@@ -119,28 +119,28 @@ int CImportLinesTool::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     }
     return _id;
 }
-struct qt_meta_stringdata_CImportPointsTool_t {
+struct qt_meta_stringdata_CDlgImportPoints_t {
     QByteArrayData data[4];
-    char stringdata0[36];
+    char stringdata0[35];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_CImportPointsTool_t, stringdata0) + ofs \
+    qptrdiff(offsetof(qt_meta_stringdata_CDlgImportPoints_t, stringdata0) + ofs \
         - idx * sizeof(QByteArrayData)) \
     )
-static const qt_meta_stringdata_CImportPointsTool_t qt_meta_stringdata_CImportPointsTool = {
+static const qt_meta_stringdata_CDlgImportPoints_t qt_meta_stringdata_CDlgImportPoints = {
     {
-QT_MOC_LITERAL(0, 0, 17), // "CImportPointsTool"
-QT_MOC_LITERAL(1, 18, 7), // "OnApply"
-QT_MOC_LITERAL(2, 26, 0), // ""
-QT_MOC_LITERAL(3, 27, 8) // "OnBrowse"
+QT_MOC_LITERAL(0, 0, 16), // "CDlgImportPoints"
+QT_MOC_LITERAL(1, 17, 7), // "OnApply"
+QT_MOC_LITERAL(2, 25, 0), // ""
+QT_MOC_LITERAL(3, 26, 8) // "OnBrowse"
 
     },
-    "CImportPointsTool\0OnApply\0\0OnBrowse"
+    "CDlgImportPoints\0OnApply\0\0OnBrowse"
 };
 #undef QT_MOC_LITERAL
 
-static const uint qt_meta_data_CImportPointsTool[] = {
+static const uint qt_meta_data_CDlgImportPoints[] = {
 
  // content:
        8,       // revision
@@ -164,10 +164,10 @@ static const uint qt_meta_data_CImportPointsTool[] = {
        0        // eod
 };
 
-void CImportPointsTool::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void CDlgImportPoints::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        auto *_t = static_cast<CImportPointsTool *>(_o);
+        auto *_t = static_cast<CDlgImportPoints *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->OnApply(); break;
@@ -178,32 +178,32 @@ void CImportPointsTool::qt_static_metacall(QObject *_o, QMetaObject::Call _c, in
     Q_UNUSED(_a);
 }
 
-QT_INIT_METAOBJECT const QMetaObject CImportPointsTool::staticMetaObject = { {
-    QMetaObject::SuperData::link<CAbstractTool::staticMetaObject>(),
-    qt_meta_stringdata_CImportPointsTool.data,
-    qt_meta_data_CImportPointsTool,
+QT_INIT_METAOBJECT const QMetaObject CDlgImportPoints::staticMetaObject = { {
+    QMetaObject::SuperData::link<QDialog::staticMetaObject>(),
+    qt_meta_stringdata_CDlgImportPoints.data,
+    qt_meta_data_CDlgImportPoints,
     qt_static_metacall,
     nullptr,
     nullptr
 } };
 
 
-const QMetaObject *CImportPointsTool::metaObject() const
+const QMetaObject *CDlgImportPoints::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *CImportPointsTool::qt_metacast(const char *_clname)
+void *CDlgImportPoints::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_CImportPointsTool.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_CDlgImportPoints.stringdata0))
         return static_cast<void*>(this);
-    return CAbstractTool::qt_metacast(_clname);
+    return QDialog::qt_metacast(_clname);
 }
 
-int CImportPointsTool::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int CDlgImportPoints::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = CAbstractTool::qt_metacall(_c, _id, _a);
+    _id = QDialog::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {

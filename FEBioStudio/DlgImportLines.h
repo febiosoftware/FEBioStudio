@@ -1,23 +1,20 @@
 #pragma once
-#include "Tool.h"
+#include <QDialog>
 
 //-----------------------------------------------------------------------------
-class CDocument;
+class CMainWindow;
 
-class CImportLinesToolUI;
-class CImportPointsToolUI;
+class CDlgImportLinesUI;
+class CDlgImportPointsUI;
 
 //-----------------------------------------------------------------------------
-class CImportLinesTool : public CAbstractTool
+class CDlgImportLines : public QDialog
 {
 	Q_OBJECT
 
 public:
 	// constructor
-	CImportLinesTool(CMainWindow* wnd);
-
-	// get the property list
-	QWidget* createUi();
+	CDlgImportLines(CMainWindow* wnd);
 
 private slots:
 	void OnApply();
@@ -28,27 +25,22 @@ private:
 	int ReadAng2Format(const char* szfile);
 
 private:
-	CImportLinesToolUI*		ui;
-	friend class Props;
+	CDlgImportLinesUI*		ui;
 };
 
 //-----------------------------------------------------------------------------
-class CImportPointsTool : public CAbstractTool
+class CDlgImportPoints : public QDialog
 {
 	Q_OBJECT
 
 public:
 	// constructor
-	CImportPointsTool(CMainWindow* wnd);
-
-	// get the property list
-	QWidget* createUi();
+	CDlgImportPoints(CMainWindow* wnd);
 
 private slots:
 	void OnApply();
 	void OnBrowse();
 
 private:
-	CImportPointsToolUI*	ui;
-	friend class Props;
+	CDlgImportPointsUI*	ui;
 };

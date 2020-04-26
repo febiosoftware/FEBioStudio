@@ -372,6 +372,8 @@ public:
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
 		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");
+		QAction* actionImportPoints = addAction("Import points ...", "actionImportPoints");
+		QAction* actionImportLines = addAction("Import lines ...", "actionImportLines");
 
 		actionPlaneCut->setWhatsThis("<font color=\"black\"><h3>Plane cut</h3>Add a plane cut plot to the model. A plane cut plot allows users to create a cross section of the mesh.</font>");
 		actionMirrorPlane->setWhatsThis("<font color=\"black\"><h3>Mirror plane</h3>Renders a mirrorred version of the model.</font>");
@@ -614,6 +616,8 @@ public:
 		menuPost->addAction(actionSummary);
 		menuPost->addAction(actionStats);
 		menuPost->addAction(actionIntegrate);
+		menuPost->addAction(actionImportPoints);
+		menuPost->addAction(actionImportLines);
 
 		// Record menu
 		menuBar->addAction(menuRecord->menuAction());

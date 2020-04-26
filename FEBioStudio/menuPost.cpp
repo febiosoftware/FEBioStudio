@@ -21,6 +21,7 @@
 #include "SummaryWindow.h"
 #include "StatsWindow.h"
 #include "IntegrateWindow.h"
+#include "DlgImportLines.h"
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
@@ -301,4 +302,16 @@ void CMainWindow::on_actionIntegrate_triggered()
 	integrateWindow->activateWindow();
 
 	AddGraph(integrateWindow);
+}
+
+void CMainWindow::on_actionImportPoints_triggered()
+{
+	CDlgImportPoints dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionImportLines_triggered()
+{
+	CDlgImportLines dlg(this);
+	dlg.exec();
 }
