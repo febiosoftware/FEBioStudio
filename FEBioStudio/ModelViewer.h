@@ -62,6 +62,8 @@ public:
 
 	void RefreshProperties();
 
+	void blockUpdate(bool block);
+
 private slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
 	void on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column);
@@ -73,6 +75,7 @@ private slots:
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);
 
+public slots:
 	// slots for model tree context menu actions
 	void OnDeleteItem();
 	void OnAddMaterial();

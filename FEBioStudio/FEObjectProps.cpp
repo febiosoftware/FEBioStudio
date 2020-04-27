@@ -586,30 +586,6 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CPlotfileProperties::CPlotfileProperties(FEProject& prj) : CObjectProps(0)
-{
-	CPlotDataSettings& plt = prj.GetPlotDataSettings();
-
-	for (int i = 0; i<plt.PlotVariables(); ++i)
-	{
-		FEPlotVariable& var = plt.PlotVariable(i);
-		if (var.isShown() && var.isActive())
-		{
-			addProperty(QString::fromStdString(var.displayName()), CProperty::Bool)->setFlags(CProperty::Visible);
-		}
-	}
-}
-
-QVariant CPlotfileProperties::GetPropertyValue(int i)
-{
-	return true;
-}
-
-void CPlotfileProperties::SetPropertyValue(int i, const QVariant& v)
-{
-}
-
-//=======================================================================================
 CLogfileProperties::CLogfileProperties(FEProject& prj) : CObjectProps(0)
 {
 	CLogDataSettings& log = prj.GetLogDataSettings();

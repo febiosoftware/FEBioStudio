@@ -408,11 +408,9 @@ void CMainWindow::on_actionSaveAs_triggered()
 	}
 }
 
-void CMainWindow::on_actionSnapShot_triggered()
+void CMainWindow::SaveImage(QImage& image)
 {
-	QImage img = ui->glview->CaptureScreen();
-
-	const uchar* bits = img.bits();
+	const uchar* bits = image.bits();
 
 	QStringList filters;
 	filters << "Bitmap files (*.bmp)"
@@ -430,15 +428,21 @@ void CMainWindow::on_actionSnapShot_triggered()
 		bool bret = false;
 		switch (nfilter)
 		{
-		case 0: bret = img.save(fileName, "BMP"); break;
-		case 1: bret = img.save(fileName, "PNG"); break;
-		case 2: bret = img.save(fileName, "JPG"); break;
+		case 0: bret = image.save(fileName, "BMP"); break;
+		case 1: bret = image.save(fileName, "PNG"); break;
+		case 2: bret = image.save(fileName, "JPG"); break;
 		}
 		if (bret == false)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Failed saving image file.");
 		}
 	}
+}
+
+void CMainWindow::on_actionSnapShot_triggered()
+{
+	QImage img = ui->glview->CaptureScreen();
+	SaveImage(img);
 }
 
 void CMainWindow::on_actionInfo_triggered()

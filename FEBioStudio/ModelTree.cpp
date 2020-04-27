@@ -320,6 +320,47 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+class CPlotfileProperties : public CObjectProps
+{
+public:
+	CPlotfileProperties(CModelViewer* wnd, FEProject& prj) : CObjectProps(0), m_wnd(wnd)
+	{
+		CPlotDataSettings& plt = prj.GetPlotDataSettings();
+
+		int ncount = 0;
+		for (int i = 0; i<plt.PlotVariables(); ++i)
+		{
+			FEPlotVariable& var = plt.PlotVariable(i);
+			if (var.isShown() && var.isActive())
+			{
+				addProperty(QString::fromStdString(var.displayName()), CProperty::Bool)->setFlags(CProperty::Visible);
+				ncount++;
+			}
+		}
+
+		addProperty("", CProperty::Action, "Edit plot variables ...");
+		m_actionIndex = ncount;
+	}
+
+	QVariant GetPropertyValue(int i) { return (i != m_actionIndex ? true : QVariant()); }
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		if (i == m_actionIndex)
+		{
+			m_wnd->blockUpdate(true);
+			m_wnd->OnEditOutput();
+			SetModified(true);
+			m_wnd->blockUpdate(false);
+		}
+	}
+
+private:
+	CModelViewer*	m_wnd;
+	int	m_actionIndex;
+};
+
+//-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
 {
 public:
@@ -1519,6 +1560,6 @@ void CModelTree::AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* 
 //-----------------------------------------------------------------------------
 void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FEProject& prj)
 {
-	AddTreeItem(t1, "plotfile", MT_PROJECT_OUTPUT, 0, 0, new CPlotfileProperties(prj), 0, 1);
+	AddTreeItem(t1, "plotfile", MT_PROJECT_OUTPUT, 0, 0, new CPlotfileProperties(m_view, prj), 0, 1);
 	AddTreeItem(t1, "logfile", MT_PROJECT_OUTPUT_LOG, 0, 0, new CLogfileProperties(prj), 0, 1);
 }

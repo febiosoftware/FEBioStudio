@@ -23,9 +23,13 @@ public:
 
 	QToolButton* srcButton;
 
+	bool	m_blockUpdate;
+
 public:
 	void setupUi(::CMainWindow* mainWnd, ::CModelViewer* wnd)
 	{
+		m_blockUpdate = false;
+
 		QToolButton* selectButton = new QToolButton; 
 		selectButton->setIcon(QIcon(":/icons/select.png")); 
 		selectButton->setObjectName("selectButton"); 

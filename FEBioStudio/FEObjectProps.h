@@ -118,14 +118,6 @@ private:
 	FEMaterial*	m_mat;
 };
 
-class CPlotfileProperties : public CObjectProps
-{
-public:
-	CPlotfileProperties(FEProject& prj);
-	QVariant GetPropertyValue(int i);
-	void SetPropertyValue(int i, const QVariant& v);
-};
-
 class CLogfileProperties : public CObjectProps
 {
 public:

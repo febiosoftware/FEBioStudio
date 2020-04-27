@@ -24,8 +24,15 @@ CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wn
 	m_currentObject = 0;
 }
 
+void CModelViewer::blockUpdate(bool block)
+{
+	ui->m_blockUpdate = block;
+}
+
 void CModelViewer::Update(bool breset)
 {
+	if (ui->m_blockUpdate) return;
+
 	CDocument* doc = GetDocument();
 
 //	FSObject* po = m_currentObject;

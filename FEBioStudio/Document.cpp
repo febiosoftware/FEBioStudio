@@ -53,7 +53,7 @@ void VIEW_SETTINGS::Defaults()
 	m_showDiscrete = true;
 
 	m_bcull = false;
-	m_bconn = true;
+	m_bconn = false;
 	m_bmax = true;
 	m_bpart = true;
 	m_bhide = false;
@@ -805,7 +805,7 @@ void CDocument::Load(IArchive& ar)
 				switch (nid)
 				{
 				case CID_VIEW_CULL            : nret = ar.read(m_view.m_bcull); break;
-				case CID_VIEW_CONNECTED       : nret = ar.read(m_view.m_bconn); break;
+//				case CID_VIEW_CONNECTED       : nret = ar.read(m_view.m_bconn); break;
 				case CID_VIEW_ANGLE_CONSTRAINT: nret = ar.read(m_view.m_bmax); break;
 				case CID_VIEW_CONN_ANGLE      : nret = ar.read(m_view.m_fconn); break;
 //				case CID_VIEW_PARTBOUNDS      : nret = ar.read(m_view.m_bpart); break;

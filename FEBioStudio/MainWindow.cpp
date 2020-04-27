@@ -652,6 +652,13 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
 
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
+
+	// update graph windows
+	QList<::CGraphWindow*>::iterator it = ui->graphList.begin();
+	for (int i = 0; i < ui->graphList.size(); ++i, ++it)
+	{
+		(*it)->Update(breset);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1312,6 +1319,7 @@ void CMainWindow::AddView(const std::string& viewName, CPostDoc* doc, bool makeA
 void CMainWindow::on_tab_currentChanged(int n)
 {
 	UpdateUIConfig();
+	UpdateGLControlBar();
 	ui->updateMeshInspector();
 	RedrawGL();
 

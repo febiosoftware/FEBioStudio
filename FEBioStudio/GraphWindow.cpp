@@ -457,6 +457,7 @@ public:
 
 	QAction* actionSave;
 	QAction* actionClipboard;
+	QAction* actionSnapshot;
 	QAction* actionProps;
 	QAction* actionZoomSelect;
 
@@ -527,6 +528,7 @@ public:
 		toolBar = new QToolBar(parent);
 		actionSave = toolBar->addAction(QIcon(QString(":/icons/save.png")), "Save"); actionSave->setObjectName("actionSave");
 		actionClipboard = toolBar->addAction(QIcon(QString(":/icons/clipboard.png")), "Copy to clipboard"); actionClipboard->setObjectName("actionClipboard");
+		actionSnapshot = toolBar->addAction(QIcon(QString(":/icons/bgimage.png")), "Save picture"); actionSnapshot->setObjectName("actionSnapshot");
 
 		actionType = toolBar->addWidget(new QLabel("Type: "));
 		actionPlot = toolBar->addWidget(selectPlot);
@@ -828,6 +830,15 @@ void CGraphWindow::on_actionClipboard_triggered()
 }
 
 //-----------------------------------------------------------------------------
+void CGraphWindow::on_actionSnapshot_triggered()
+{
+	CPlotWidget* plot = this->GetPlotWidget();
+	QImage pixmap(plot->size(), QImage::Format_ARGB32);
+	plot->render(&pixmap);
+	m_wnd->SaveImage(pixmap);
+}
+
+//-----------------------------------------------------------------------------
 void CGraphWindow::on_actionProps_triggered()
 {
 	ui->plot->OnShowProps();
@@ -1029,11 +1040,14 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		return;
 	}
 
+	// TODO: When the selection changed, breset is false, but we do need to update
+	//       This if statement would prevent that, so I commented it out, but now
+	//       we might be doing unneccessary updates. 
 	// When a reset is not required, see if we actually need to update anything
-	if ((breset == false) && (bfit == false))
-	{
-		if ((nmin == m_firstState) && (nmax == m_lastState) && (m_dataX == m_dataXPrev) && (m_dataY == m_dataYPrev) && (m_xtype == m_xtypeprev)) return;
-	}
+//	if ((breset == false) && (bfit == false))
+//	{
+//		if ((nmin == m_firstState) && (nmax == m_lastState) && (m_dataX == m_dataXPrev) && (m_dataY == m_dataYPrev) && (m_xtype == m_xtypeprev)) return;
+//	}
 
 	// set current time point index (TODO: Not sure if this is still used)
 	//	pview->SetCurrentTimeIndex(ntime);

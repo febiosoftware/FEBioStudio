@@ -342,8 +342,8 @@ int MathPlot::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     return _id;
 }
 struct qt_meta_stringdata_CGraphWindow_t {
-    QByteArrayData data[15];
-    char stringdata0[360];
+    QByteArrayData data[16];
+    char stringdata0[388];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -359,14 +359,15 @@ QT_MOC_LITERAL(3, 45, 30), // "on_selectY_currentValueChanged"
 QT_MOC_LITERAL(4, 76, 33), // "on_selectPlot_currentIndexCha..."
 QT_MOC_LITERAL(5, 110, 23), // "on_actionSave_triggered"
 QT_MOC_LITERAL(6, 134, 28), // "on_actionClipboard_triggered"
-QT_MOC_LITERAL(7, 163, 24), // "on_actionProps_triggered"
-QT_MOC_LITERAL(8, 188, 28), // "on_actionZoomWidth_triggered"
-QT_MOC_LITERAL(9, 217, 29), // "on_actionZoomHeight_triggered"
-QT_MOC_LITERAL(10, 247, 26), // "on_actionZoomFit_triggered"
-QT_MOC_LITERAL(11, 274, 27), // "on_actionZoomSelect_toggled"
-QT_MOC_LITERAL(12, 302, 8), // "bchecked"
-QT_MOC_LITERAL(13, 311, 22), // "on_plot_doneZoomToRect"
-QT_MOC_LITERAL(14, 334, 25) // "on_options_optionsChanged"
+QT_MOC_LITERAL(7, 163, 27), // "on_actionSnapshot_triggered"
+QT_MOC_LITERAL(8, 191, 24), // "on_actionProps_triggered"
+QT_MOC_LITERAL(9, 216, 28), // "on_actionZoomWidth_triggered"
+QT_MOC_LITERAL(10, 245, 29), // "on_actionZoomHeight_triggered"
+QT_MOC_LITERAL(11, 275, 26), // "on_actionZoomFit_triggered"
+QT_MOC_LITERAL(12, 302, 27), // "on_actionZoomSelect_toggled"
+QT_MOC_LITERAL(13, 330, 8), // "bchecked"
+QT_MOC_LITERAL(14, 339, 22), // "on_plot_doneZoomToRect"
+QT_MOC_LITERAL(15, 362, 25) // "on_options_optionsChanged"
 
     },
     "CGraphWindow\0on_selectX_currentValueChanged\0"
@@ -374,6 +375,7 @@ QT_MOC_LITERAL(14, 334, 25) // "on_options_optionsChanged"
     "on_selectPlot_currentIndexChanged\0"
     "on_actionSave_triggered\0"
     "on_actionClipboard_triggered\0"
+    "on_actionSnapshot_triggered\0"
     "on_actionProps_triggered\0"
     "on_actionZoomWidth_triggered\0"
     "on_actionZoomHeight_triggered\0"
@@ -389,7 +391,7 @@ static const uint qt_meta_data_CGraphWindow[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      12,   14, // methods
+      13,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -397,18 +399,19 @@ static const uint qt_meta_data_CGraphWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   74,    2, 0x08 /* Private */,
-       3,    1,   77,    2, 0x08 /* Private */,
-       4,    1,   80,    2, 0x08 /* Private */,
-       5,    0,   83,    2, 0x08 /* Private */,
-       6,    0,   84,    2, 0x08 /* Private */,
-       7,    0,   85,    2, 0x08 /* Private */,
-       8,    0,   86,    2, 0x08 /* Private */,
-       9,    0,   87,    2, 0x08 /* Private */,
-      10,    0,   88,    2, 0x08 /* Private */,
-      11,    1,   89,    2, 0x08 /* Private */,
-      13,    0,   92,    2, 0x08 /* Private */,
-      14,    0,   93,    2, 0x08 /* Private */,
+       1,    1,   79,    2, 0x08 /* Private */,
+       3,    1,   82,    2, 0x08 /* Private */,
+       4,    1,   85,    2, 0x08 /* Private */,
+       5,    0,   88,    2, 0x08 /* Private */,
+       6,    0,   89,    2, 0x08 /* Private */,
+       7,    0,   90,    2, 0x08 /* Private */,
+       8,    0,   91,    2, 0x08 /* Private */,
+       9,    0,   92,    2, 0x08 /* Private */,
+      10,    0,   93,    2, 0x08 /* Private */,
+      11,    0,   94,    2, 0x08 /* Private */,
+      12,    1,   95,    2, 0x08 /* Private */,
+      14,    0,   98,    2, 0x08 /* Private */,
+      15,    0,   99,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int,    2,
@@ -420,7 +423,8 @@ static const uint qt_meta_data_CGraphWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,   12,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Bool,   13,
     QMetaType::Void,
     QMetaType::Void,
 
@@ -438,13 +442,14 @@ void CGraphWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 2: _t->on_selectPlot_currentIndexChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 3: _t->on_actionSave_triggered(); break;
         case 4: _t->on_actionClipboard_triggered(); break;
-        case 5: _t->on_actionProps_triggered(); break;
-        case 6: _t->on_actionZoomWidth_triggered(); break;
-        case 7: _t->on_actionZoomHeight_triggered(); break;
-        case 8: _t->on_actionZoomFit_triggered(); break;
-        case 9: _t->on_actionZoomSelect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 10: _t->on_plot_doneZoomToRect(); break;
-        case 11: _t->on_options_optionsChanged(); break;
+        case 5: _t->on_actionSnapshot_triggered(); break;
+        case 6: _t->on_actionProps_triggered(); break;
+        case 7: _t->on_actionZoomWidth_triggered(); break;
+        case 8: _t->on_actionZoomHeight_triggered(); break;
+        case 9: _t->on_actionZoomFit_triggered(); break;
+        case 10: _t->on_actionZoomSelect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 11: _t->on_plot_doneZoomToRect(); break;
+        case 12: _t->on_options_optionsChanged(); break;
         default: ;
         }
     }
@@ -481,13 +486,13 @@ int CGraphWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 12)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 13;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 12)
+        if (_id < 13)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 12;
+        _id -= 13;
     }
     return _id;
 }

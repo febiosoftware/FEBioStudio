@@ -201,6 +201,8 @@ public:
 	void ExportGeometry();
 	void ExportPostGeometry();
 
+	void SaveImage(QImage& image);
+
 public slots:
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();

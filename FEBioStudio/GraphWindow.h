@@ -249,6 +249,7 @@ private slots:
 	void on_selectPlot_currentIndexChanged(int);
 	void on_actionSave_triggered();
 	void on_actionClipboard_triggered();
+	void on_actionSnapshot_triggered();
 	void on_actionProps_triggered();
 	void on_actionZoomWidth_triggered();
 	void on_actionZoomHeight_triggered();
