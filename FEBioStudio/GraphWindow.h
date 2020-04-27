@@ -11,9 +11,11 @@ class QLineEdit;
 class QRadioButton;
 class QCheckBox;
 class QComboBox;
+class QStackedWidget;
 class QLabel;
 class CDataSelector;
 class CPostDoc;
+class CColorButton;
 
 namespace Ui {
 	class CGraphWindow;
@@ -64,6 +66,28 @@ signals:
 
 public:
 	OptionsUi(CGraphWidget* graph, QWidget* parent = 0);
+};
+
+//=================================================================================================
+// data options
+class DataOptionsUI : public CPlotTool
+{
+	Q_OBJECT
+
+public slots:
+	void onIndexChange(int n);
+	void onDataChange();
+
+public:
+	DataOptionsUI(CGraphWidget* graph, QWidget* parent = 0);
+
+	void Update();
+
+private:
+	QComboBox*		m_data;
+	QStackedWidget*	m_stack;
+	CGraphWidget*	m_graph;
+	CColorButton*	m_col;
 };
 
 //=================================================================================================

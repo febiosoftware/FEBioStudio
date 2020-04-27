@@ -2,7 +2,7 @@
 #include "PlotWidget.h"
 #include "DataFieldSelector.h"
 #include <QToolBar>
-#include <qstackedwidget.h>
+#include <QStackedWidget>
 #include <QLabel>
 #include <QAction>
 #include <QFileDialog>
@@ -422,6 +422,68 @@ void MathPlot::hideEvent(QHideEvent* ev)
 }
 
 //=============================================================================
+DataOptionsUI::DataOptionsUI(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent)
+{
+	m_graph = graph;
+
+	m_data = new QComboBox;
+	m_stack = new QStackedWidget;
+	QLabel* dummy = new QLabel;
+	m_stack->addWidget(dummy);
+
+	QFormLayout* l = new QFormLayout;
+	m_col = new CColorButton;
+	l->addRow("line color", m_col);
+
+	QWidget* ops = new QWidget;
+	ops->setLayout(l);
+	m_stack->addWidget(ops);
+
+	QVBoxLayout* mainLayout = new QVBoxLayout;
+	mainLayout->addWidget(m_data);
+	mainLayout->addWidget(m_stack);
+	setLayout(mainLayout);
+
+	QObject::connect(m_data, SIGNAL(currentIndexChanged(int)), this, SLOT(onIndexChange(int)));
+	QObject::connect(m_col, SIGNAL(colorChanged(QColor)), this, SLOT(onDataChange()));
+}
+
+void DataOptionsUI::onIndexChange(int n)
+{
+	if (n < 0) m_stack->setCurrentIndex(0);
+	else
+	{
+		CPlotData& p = m_graph->getPlotData(n);
+		m_col->setColor(p.color());
+		m_stack->setCurrentIndex(1);
+	}
+}
+
+void DataOptionsUI::onDataChange()
+{
+	int n = m_data->currentIndex();
+	if (n < 0) return;
+
+	CPlotData& d = m_graph->getPlotData(n);
+	d.setColor(m_col->color());
+
+	m_graph->repaint();
+}
+
+void DataOptionsUI::Update()
+{
+	m_data->clear();
+
+	int n = m_graph->plots();
+	for (int i = 0; i < n; ++i)
+	{
+		CPlotData& di = m_graph->getPlotData(i);
+		m_data->addItem(di.label());
+	}
+}
+
+
+//=============================================================================
 void CGraphWidget::paintEvent(QPaintEvent* pe)
 {
 	CPlotWidget::paintEvent(pe);
@@ -465,6 +527,7 @@ public:
 	QAction* actionSelectY;
 
 	OptionsUi*	ops;
+	DataOptionsUI*	data;
 
 	CPostDoc*	doc;
 
@@ -485,6 +548,10 @@ public:
 		ops = new OptionsUi(plot); ops->setObjectName("options");
 		tools->addItem(ops, "Options");
 		plot->addTool(ops);
+
+		data = new DataOptionsUI(plot); data->setObjectName("data");
+		tools->addItem(data, "Data options");
+		plot->addTool(data);
 
 		CPlotTool* tool = new RegressionUi(plot);
 		tools->addItem(tool, "Curve fitting");

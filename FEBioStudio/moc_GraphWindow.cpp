@@ -138,6 +138,105 @@ void OptionsUi::optionsChanged()
 {
     QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
 }
+struct qt_meta_stringdata_DataOptionsUI_t {
+    QByteArrayData data[5];
+    char stringdata0[44];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_DataOptionsUI_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_DataOptionsUI_t qt_meta_stringdata_DataOptionsUI = {
+    {
+QT_MOC_LITERAL(0, 0, 13), // "DataOptionsUI"
+QT_MOC_LITERAL(1, 14, 13), // "onIndexChange"
+QT_MOC_LITERAL(2, 28, 0), // ""
+QT_MOC_LITERAL(3, 29, 1), // "n"
+QT_MOC_LITERAL(4, 31, 12) // "onDataChange"
+
+    },
+    "DataOptionsUI\0onIndexChange\0\0n\0"
+    "onDataChange"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_DataOptionsUI[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       2,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    1,   24,    2, 0x0a /* Public */,
+       4,    0,   27,    2, 0x0a /* Public */,
+
+ // slots: parameters
+    QMetaType::Void, QMetaType::Int,    3,
+    QMetaType::Void,
+
+       0        // eod
+};
+
+void DataOptionsUI::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<DataOptionsUI *>(_o);
+        Q_UNUSED(_t)
+        switch (_id) {
+        case 0: _t->onIndexChange((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 1: _t->onDataChange(); break;
+        default: ;
+        }
+    }
+}
+
+QT_INIT_METAOBJECT const QMetaObject DataOptionsUI::staticMetaObject = { {
+    QMetaObject::SuperData::link<CPlotTool::staticMetaObject>(),
+    qt_meta_stringdata_DataOptionsUI.data,
+    qt_meta_data_DataOptionsUI,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *DataOptionsUI::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *DataOptionsUI::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_DataOptionsUI.stringdata0))
+        return static_cast<void*>(this);
+    return CPlotTool::qt_metacast(_clname);
+}
+
+int DataOptionsUI::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = CPlotTool::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 2)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 2;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 2)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 2;
+    }
+    return _id;
+}
 struct qt_meta_stringdata_RegressionUi_t {
     QByteArrayData data[7];
     char stringdata0[63];
