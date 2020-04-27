@@ -41,12 +41,24 @@ public:
 	const QString& label() const { return m_label; }
 	void setLabel(const QString& label) { m_label = label; }
 
-	// set/get color
-	QColor color() const { return m_col; }
-	void setColor(const QColor& col) { m_col = col; }
-
 	// sort the data
 	void sort();
+
+public:
+	QColor lineColor() const { return m_lineColor; }
+	void setLineColor(const QColor& col) { m_lineColor = col; }
+
+	QColor fillColor() const { return m_fillColor; }
+	void setFillColor(const QColor& col) { m_fillColor = col; }
+
+	int lineWidth() const { return m_lineWidth; }
+	void setLineWidth(int n) { m_lineWidth = (n > 1 ? n : 1); }
+
+	void setMarkerSize(int n) { m_markerSize = n; }
+	int markerSize() const { return m_markerSize; }
+
+	void setMarkerType(int n) { m_markerType = n; }
+	int markerType() const { return m_markerType; }
 
 public:
 	virtual	void draw(QPainter& painter, CPlotWidget& plt) = 0;
@@ -54,7 +66,15 @@ public:
 protected:
 	vector<QPointF>	m_data;
 	QString			m_label;
-	QColor			m_col;
+
+protected:
+	QColor	m_lineColor;
+	int		m_lineWidth;
+
+	QColor	m_fillColor;
+
+	int		m_markerType;
+	int		m_markerSize;
 };
 
 //-----------------------------------------------------------------------------
@@ -129,6 +149,8 @@ public:
 	// clears everything
 	void clear();
 
+	void Resize(int n);
+
 	// get/set show legend
 	bool showLegend() const { return m_bshowLegend; }
 	void showLegend(bool b) { m_bshowLegend = b; }
@@ -176,11 +198,8 @@ public:
 	bool lineSmoothing() const { return m_bsmoothLines; }
 	void setLineSmoothing(bool b) { m_bsmoothLines = b; }
 
-	bool showDataMarks() const { return m_bshowDataMarks; }
-	void showDataMarks(bool b) { m_bshowDataMarks = b; }
-
-	void setDataMarkSize(int n) { m_dataMarkSize = n; }
-	int getDataMarkSize() const { return m_dataMarkSize; }
+	bool drawGrid() const { return m_bdrawGrid; }
+	void setDrawGrid(bool b) { m_bdrawGrid = b; }
 
 	void scaleAxisLabels(bool b) { m_bscaleAxisLabels = b; }
 
@@ -255,8 +274,7 @@ public:
 	bool		m_bdragging;
 	bool		m_bregionSelect;
 	bool		m_bsmoothLines;
-	bool		m_bshowDataMarks;
-	int			m_dataMarkSize;
+	bool		m_bdrawGrid;
 
 	vector<Selection>	m_selection;
 

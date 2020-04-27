@@ -36,16 +36,11 @@ public:
 
 //=================================================================================================
 // Graph options
-class OptionsUi : public CPlotTool
+class GraphOptionsUI;
+
+class GraphOptions : public CPlotTool
 {
 	Q_OBJECT
-
-public:
-	QRadioButton*	timeOption[3];
-	QLineEdit*		timeRange;
-	QCheckBox*		smoothLines;
-	QCheckBox*		dataMarks;
-	QCheckBox*		autoRange;
 
 public:
 	int currentOption();
@@ -54,9 +49,9 @@ public:
 
 	bool lineSmoothing();
 
-	bool showDataMarks();
-
 	bool autoRangeUpdate();
+
+	bool drawGrid();
 
 public slots:
 	void onOptionsChanged();
@@ -65,29 +60,30 @@ signals:
 	void optionsChanged();
 
 public:
-	OptionsUi(CGraphWidget* graph, QWidget* parent = 0);
+	GraphOptions(CGraphWidget* graph, QWidget* parent = 0);
+
+private:
+	GraphOptionsUI*	ui;
 };
 
 //=================================================================================================
 // data options
-class DataOptionsUI : public CPlotTool
+class DataOptionsUI;
+class DataOptions : public CPlotTool
 {
 	Q_OBJECT
 
 public slots:
 	void onIndexChange(int n);
-	void onDataChange();
+	void onDataChange(int n);
 
 public:
-	DataOptionsUI(CGraphWidget* graph, QWidget* parent = 0);
+	DataOptions(CGraphWidget* graph, QWidget* parent = 0);
 
 	void Update();
 
 private:
-	QComboBox*		m_data;
-	QStackedWidget*	m_stack;
-	CGraphWidget*	m_graph;
-	CColorButton*	m_col;
+	DataOptionsUI*	ui;
 };
 
 //=================================================================================================
@@ -221,9 +217,20 @@ public:
 	void GetTimeRange(int& minTime, int& maxTime);
 
 public: // convenience functions for modifying the plot widget
+	// number of data plots
+	int Plots();
+
+	// get the plot data
+	CPlotData* GetPlotData(int i);
 
 	// clear all plots
 	void ClearPlots();
+
+	// resize plots
+	void ResizePlots(int n);
+
+	// clear data on plots
+	void ClearPlotsData();
 
 	// add a plot
 	void AddPlotData(CPlotData* plot);
@@ -329,10 +336,13 @@ private:
 	void addSelectedFaces();
 	void addSelectedElems();
 
+	CLineChartData* nextData();
+
 private: // temporary variables used during update
 	int	m_xtype, m_xtypeprev;			// x-plot field option (0=time, 1=steps, 2=data field)
 	int	m_firstState, m_lastState;		// first and last time step to be evaluated
 	int	m_dataX, m_dataY;				// X and Y data field IDs
 	int	m_dataXPrev, m_dataYPrev;		// Previous X, Y data fields
+	int	m_pltCounter;
 };
 

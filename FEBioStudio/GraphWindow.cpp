@@ -20,80 +20,97 @@
 #include <PostLib/FEPostModel.h>
 #include <QToolBox>
 #include <QLineEdit>
+#include <QSignalMapper>
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
 #include "version.h"
 #include <QValidator>
 #include <QComboBox>
+#include <QSpinBox>
 #include <MathLib/LinearRegression.h>
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include "PostDoc.h"
 
-OptionsUi::OptionsUi(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent)
+class GraphOptionsUI
 {
-	QVBoxLayout* l = new QVBoxLayout;
-	l->addWidget(timeOption[0] = new QRadioButton("Time step range"));
-	l->addWidget(timeOption[1] = new QRadioButton("Current time step"));
-	l->addWidget(timeOption[2] = new QRadioButton("User range:"));
-	l->addWidget(timeRange = new QLineEdit);
-	l->addWidget(smoothLines = new QCheckBox("Smooth lines"));
-	l->addWidget(dataMarks   = new QCheckBox("Show data marks"));
-	l->addWidget(autoRange   = new QCheckBox("auto update plot range"));
-	l->addStretch();
-	setLayout(l);
+public:
+	QRadioButton*	timeOption[3];
+	QLineEdit*		timeRange;
+	QCheckBox*		smoothLines;
+	QCheckBox*		autoRange;
+	QCheckBox*		drawGrid;
 
-	smoothLines->setChecked(true);
-	dataMarks->setChecked(true);
-	autoRange->setChecked(true);
+	void setup(QWidget* w)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(timeOption[0] = new QRadioButton("Time step range"));
+		l->addWidget(timeOption[1] = new QRadioButton("Current time step"));
+		l->addWidget(timeOption[2] = new QRadioButton("User range:"));
+		l->addWidget(timeRange = new QLineEdit);
+		l->addWidget(smoothLines = new QCheckBox("Smooth lines"));
+		l->addWidget(autoRange = new QCheckBox("auto update plot range"));
+		l->addWidget(drawGrid = new QCheckBox("Draw grid lines"));
+		l->addStretch();
+		w->setLayout(l);
 
-	timeOption[0]->setChecked(true);
+		smoothLines->setChecked(true);
+		autoRange->setChecked(true);
+		drawGrid->setChecked(true);
 
-	QObject::connect(timeOption[0], SIGNAL(clicked()), this, SLOT(onOptionsChanged()));
-	QObject::connect(timeOption[1], SIGNAL(clicked()), this, SLOT(onOptionsChanged()));
-	QObject::connect(timeOption[2], SIGNAL(clicked()), this, SLOT(onOptionsChanged()));
-	QObject::connect(timeRange    , SIGNAL(editingFinished()), this, SLOT(onOptionsChanged()));
-	QObject::connect(smoothLines  , SIGNAL(stateChanged(int)), SLOT(onOptionsChanged()));
-	QObject::connect(dataMarks    , SIGNAL(stateChanged(int)), SLOT(onOptionsChanged()));
-	QObject::connect(autoRange  ,   SIGNAL(stateChanged(int)), SLOT(onOptionsChanged()));
+		timeOption[0]->setChecked(true);
+
+		QObject::connect(timeOption[0], SIGNAL(clicked()), w, SLOT(onOptionsChanged()));
+		QObject::connect(timeOption[1], SIGNAL(clicked()), w, SLOT(onOptionsChanged()));
+		QObject::connect(timeOption[2], SIGNAL(clicked()), w, SLOT(onOptionsChanged()));
+		QObject::connect(drawGrid, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+		QObject::connect(timeRange, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
+		QObject::connect(smoothLines, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+		QObject::connect(autoRange, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+	}
+};
+
+GraphOptions::GraphOptions(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent), ui(new GraphOptionsUI)
+{
+	ui->setup(this);
 }
 
-void OptionsUi::onOptionsChanged()
+void GraphOptions::onOptionsChanged()
 {
 	emit optionsChanged();
 }
 
-int OptionsUi::currentOption()
+int GraphOptions::currentOption()
 {
-	if (timeOption[0]->isChecked()) return 0;
-	if (timeOption[1]->isChecked()) return 1;
-	if (timeOption[2]->isChecked()) return 2;
+	if (ui->timeOption[0]->isChecked()) return 0;
+	if (ui->timeOption[1]->isChecked()) return 1;
+	if (ui->timeOption[2]->isChecked()) return 2;
 	return -1;
 }
 
-bool OptionsUi::lineSmoothing()
+bool GraphOptions::lineSmoothing()
 {
-	return smoothLines->isChecked();
+	return ui->smoothLines->isChecked();
 }
 
-bool OptionsUi::showDataMarks()
+bool GraphOptions::autoRangeUpdate()
 {
-	return dataMarks->isChecked();
+	return ui->autoRange->isChecked();
 }
 
-bool OptionsUi::autoRangeUpdate()
+bool GraphOptions::drawGrid()
 {
-	return autoRange->isChecked();
+	return ui->drawGrid->isChecked();
 }
 
-void OptionsUi::setUserTimeRange(int imin, int imax)
+void GraphOptions::setUserTimeRange(int imin, int imax)
 {
-	timeRange->setText(QString("%1:%2").arg(imin).arg(imax));
+	ui->timeRange->setText(QString("%1:%2").arg(imin).arg(imax));
 }
 
-void OptionsUi::getUserTimeRange(int& imin, int& imax)
+void GraphOptions::getUserTimeRange(int& imin, int& imax)
 {
-	QStringList l = timeRange->text().split(':');
+	QStringList l = ui->timeRange->text().split(':');
 	imin = imax = 0;
 	if (l.size() == 1)
 	{
@@ -422,63 +439,107 @@ void MathPlot::hideEvent(QHideEvent* ev)
 }
 
 //=============================================================================
-DataOptionsUI::DataOptionsUI(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent)
+
+class DataOptionsUI
 {
-	m_graph = graph;
+public:
+	QComboBox*		m_data;
+	QStackedWidget*	m_stack;
+	CGraphWidget*	m_graph;
 
-	m_data = new QComboBox;
-	m_stack = new QStackedWidget;
-	QLabel* dummy = new QLabel;
-	m_stack->addWidget(dummy);
+	CColorButton*	m_lineCol;
+	QSpinBox*		m_lineWidth;
+	QSpinBox*		m_markerSize;
+	QComboBox*		m_markerType;
 
-	QFormLayout* l = new QFormLayout;
-	m_col = new CColorButton;
-	l->addRow("line color", m_col);
+public:
+	void setup(DataOptions* w)
+	{
+		m_data = new QComboBox;
+		m_stack = new QStackedWidget;
+		QLabel* dummy = new QLabel;
+		m_stack->addWidget(dummy);
 
-	QWidget* ops = new QWidget;
-	ops->setLayout(l);
-	m_stack->addWidget(ops);
+		QStringList markersTypes;
+		markersTypes << "None" << "Square" << "Circle" << "Diamond" << "Triangle" << "Cross" << "Plus";
 
-	QVBoxLayout* mainLayout = new QVBoxLayout;
-	mainLayout->addWidget(m_data);
-	mainLayout->addWidget(m_stack);
-	setLayout(mainLayout);
+		QFormLayout* l = new QFormLayout;
+		l->addRow("color", m_lineCol = new CColorButton);
+		l->addRow("line width", m_lineWidth = new QSpinBox); m_lineWidth->setRange(1, 15);
+		l->addRow("marker type", m_markerType = new QComboBox); m_markerType->addItems(markersTypes);
+		l->addRow("marker size", m_markerSize = new QSpinBox); m_markerSize->setRange(1, 15);
 
-	QObject::connect(m_data, SIGNAL(currentIndexChanged(int)), this, SLOT(onIndexChange(int)));
-	QObject::connect(m_col, SIGNAL(colorChanged(QColor)), this, SLOT(onDataChange()));
+		QWidget* ops = new QWidget;
+		ops->setLayout(l);
+		m_stack->addWidget(ops);
+
+		QVBoxLayout* mainLayout = new QVBoxLayout;
+		mainLayout->addWidget(m_data);
+		mainLayout->addWidget(m_stack);
+		w->setLayout(mainLayout);
+
+		QObject::connect(m_data, SIGNAL(currentIndexChanged(int)), w, SLOT(onIndexChange(int)));
+
+		QSignalMapper* mapper = new QSignalMapper;
+
+		QObject::connect(m_lineCol, SIGNAL(colorChanged(QColor)), mapper, SLOT(map())); mapper->setMapping(m_lineCol, 0);
+		QObject::connect(m_lineWidth, SIGNAL(valueChanged(int)), mapper, SLOT(map())); mapper->setMapping(m_lineWidth, 1);
+		QObject::connect(m_markerType, SIGNAL(currentIndexChanged(int)), mapper, SLOT(map())); mapper->setMapping(m_markerType, 2);
+		QObject::connect(m_markerSize, SIGNAL(valueChanged(int)), mapper, SLOT(map())); mapper->setMapping(m_markerSize, 3);
+
+		QObject::connect(mapper, SIGNAL(mapped(int)), w, SLOT(onDataChange(int)));
+	}
+};
+
+DataOptions::DataOptions(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent), ui(new DataOptionsUI)
+{
+	ui->m_graph = graph;
+	ui->setup(this);
 }
 
-void DataOptionsUI::onIndexChange(int n)
+void DataOptions::onIndexChange(int n)
 {
-	if (n < 0) m_stack->setCurrentIndex(0);
+	if (n < 0) ui->m_stack->setCurrentIndex(0);
 	else
 	{
-		CPlotData& p = m_graph->getPlotData(n);
-		m_col->setColor(p.color());
-		m_stack->setCurrentIndex(1);
+		blockSignals(true);
+		CPlotData& p = ui->m_graph->getPlotData(n);
+		ui->m_lineCol->setColor(p.lineColor());
+		ui->m_lineWidth->setValue(p.lineWidth());
+		ui->m_markerType->setCurrentIndex(p.markerType());
+		ui->m_markerSize->setValue(p.markerSize());
+		ui->m_stack->setCurrentIndex(1);
+		blockSignals(false);
 	}
 }
 
-void DataOptionsUI::onDataChange()
+void DataOptions::onDataChange(int nprop)
 {
-	int n = m_data->currentIndex();
+	int n = ui->m_data->currentIndex();
 	if (n < 0) return;
 
-	CPlotData& d = m_graph->getPlotData(n);
-	d.setColor(m_col->color());
+	// NOTE: make sure the order here corresponds to the values defined in the signal mapper above.
+	CPlotData& d = ui->m_graph->getPlotData(n);
+	switch (nprop)
+	{
+	case 0: d.setLineColor(ui->m_lineCol->color()); d.setFillColor(ui->m_lineCol->color()); break;
+	case 1: d.setLineWidth(ui->m_lineWidth->value()); break;
+	case 2: d.setMarkerType(ui->m_markerType->currentIndex()); break;
+	case 3: d.setMarkerSize(ui->m_markerSize->value()); break;
+	}
 
-	m_graph->repaint();
+	ui->m_graph->repaint();
 }
 
-void DataOptionsUI::Update()
+void DataOptions::Update()
 {
-	m_data->clear();
+	ui->m_data->clear();
 
-	int n = m_graph->plots();
+	int n = ui->m_graph->plots();
 	for (int i = 0; i < n; ++i)
 	{
-		CPlotData& di = m_graph->getPlotData(i);
-		m_data->addItem(di.label());
+		CPlotData& di = ui->m_graph->getPlotData(i);
+		ui->m_data->addItem(di.label());
 	}
 }
 
@@ -526,8 +587,8 @@ public:
 	QAction* actionSelectX;
 	QAction* actionSelectY;
 
-	OptionsUi*	ops;
-	DataOptionsUI*	data;
+	GraphOptions*	ops;
+	DataOptions*	data;
 
 	CPostDoc*	doc;
 
@@ -543,13 +604,15 @@ public:
 		plot->setObjectName("plot");
 
 		centralWidget->addWidget(plot);
-		centralWidget->addWidget(tools = new QToolBox); tools->hide();
+		centralWidget->addWidget(tools = new QToolBox);
+		centralWidget->setStretchFactor(0, 4);
+		tools->hide();
 
-		ops = new OptionsUi(plot); ops->setObjectName("options");
+		ops = new GraphOptions(plot); ops->setObjectName("options");
 		tools->addItem(ops, "Options");
 		plot->addTool(ops);
 
-		data = new DataOptionsUI(plot); data->setObjectName("data");
+		data = new DataOptions(plot); data->setObjectName("data");
 		tools->addItem(data, "Data options");
 		plot->addTool(data);
 
@@ -753,9 +816,30 @@ void CGraphWindow::GetTimeRange(int& minTime, int& maxTime)
 }
 
 //-----------------------------------------------------------------------------
+// number of data plots
+int CGraphWindow::Plots() { return ui->plot->plots(); }
+
+//-----------------------------------------------------------------------------
+// get the plot data
+CPlotData* CGraphWindow::GetPlotData(int i) { return &ui->plot->getPlotData(i); }
+
+//-----------------------------------------------------------------------------
 void CGraphWindow::ClearPlots()
 {
 	ui->plot->clear();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::ResizePlots(int n)
+{
+	ui->plot->Resize(n);
+}
+
+//-----------------------------------------------------------------------------
+// clear data on plots
+void CGraphWindow::ClearPlotsData()
+{
+	ui->plot->clearData();
 }
 
 //-----------------------------------------------------------------------------
@@ -986,11 +1070,11 @@ void CGraphWindow::on_options_optionsChanged()
 	bool smooth = ui->ops->lineSmoothing();
 	ui->plot->setLineSmoothing(smooth);
 
-	bool marks = ui->ops->showDataMarks();
-	ui->plot->showDataMarks(marks);
-
 	bool autoRng = ui->ops->autoRangeUpdate();
 	ui->plot->setAutoRangeUpdate(autoRng);
+
+	bool bshowGrid = ui->ops->drawGrid();
+	ui->plot->setDrawGrid(bshowGrid);
 
 	Update(false);
 }
@@ -1149,14 +1233,17 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		for (int i = 0; i<nsteps; ++i) po->GetDisplacementMap()->UpdateState(i);
 	}
 
-	// get the graph of the track view and clear it
-	ClearPlots();
+	// clear data on plots (we don't delete the plots so that we can retain user changes)
+	ClearPlotsData();
+	m_pltCounter = 0;
 
 	// add selections
 	addSelectedNodes();
 	addSelectedEdges();
 	addSelectedFaces();
 	addSelectedElems();
+
+	ResizePlots(m_pltCounter);
 
 	// redraw
 	if ((m_dataX != m_dataXPrev) || (m_dataY != m_dataYPrev) || (m_xtype != m_xtypeprev) || bfit)
@@ -1169,6 +1256,22 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	m_xtypeprev = m_xtype;
 
 	UpdatePlots();
+}
+
+//-----------------------------------------------------------------------------
+CLineChartData* CModelGraphWindow::nextData()
+{
+	if (m_pltCounter >= Plots())
+	{
+		m_pltCounter++;
+		CLineChartData* data = new CLineChartData();
+		AddPlotData(data);
+		return data;
+	}
+	else
+	{
+		return dynamic_cast<CLineChartData*>(GetPlotData(m_pltCounter++));
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1198,10 +1301,9 @@ void CModelGraphWindow::addSelectedNodes()
 				// evaluate y-field
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = new CLineChartData;
+				CLineChartData* plot = nextData();
 				plot->setLabel(QString("N%1").arg(i + 1));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
-				AddPlotData(plot);
 			}
 		}
 	}
@@ -1218,10 +1320,9 @@ void CModelGraphWindow::addSelectedNodes()
 				// evaluate y-field
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = new CLineChartData;
+				CLineChartData* plot = nextData();
 				plot->setLabel(QString("N%1").arg(i + 1));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
-				AddPlotData(plot);
 			}
 		}
 	}
@@ -1238,10 +1339,9 @@ void CModelGraphWindow::addSelectedNodes()
 				// evaluate y-field
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = new CLineChartData;
+				CLineChartData* plot = nextData();
 				plot->setLabel(QString("N%1").arg(i + 1));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
-				AddPlotData(plot);
 			}
 		}
 	}
@@ -1279,9 +1379,8 @@ void CModelGraphWindow::addSelectedNodes()
 			if (nsteps > 32) nsteps = 32;
 			for (int i = state0; i < state0 + nsteps; ++i)
 			{
-				CLineChartData* plot = new CLineChartData;
+				CLineChartData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
-				AddPlotData(plot);
 			}
 
 			for (int i = 0; i < (int)sel.size(); i++)
@@ -1350,10 +1449,9 @@ void CModelGraphWindow::addSelectedEdges()
 			// evaluate y-field
 			TrackEdgeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-			CLineChartData* plot = new CLineChartData;
+			CLineChartData* plot = nextData();
 			plot->setLabel(QString("L%1").arg(i + 1));
 			for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
-			AddPlotData(plot);
 		}
 	}
 }
@@ -1392,10 +1490,9 @@ void CModelGraphWindow::addSelectedFaces()
 			// evaluate y-field
 			TrackFaceHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-			CLineChartData* plot = new CLineChartData;
+			CLineChartData* plot = nextData();
 			plot->setLabel(QString("F%1").arg(i + 1));
 			for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
-			AddPlotData(plot);
 		}
 	}
 }
@@ -1427,10 +1524,9 @@ void CModelGraphWindow::addSelectedElems()
 				// evaluate y-field
 				TrackElementHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = new CLineChartData;
+				CLineChartData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 				plot->setLabel(QString("E%1").arg(i + 1));
-				AddPlotData(plot);
 			}
 		}
 		break;
@@ -1446,10 +1542,9 @@ void CModelGraphWindow::addSelectedElems()
 				// evaluate y-field
 				TrackElementHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = new CLineChartData;
+				CLineChartData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 				plot->setLabel(QString("E%1").arg(i + 1));
-				AddPlotData(plot);
 			}
 		}
 		break;
@@ -1465,10 +1560,9 @@ void CModelGraphWindow::addSelectedElems()
 				// evaluate y-field
 				TrackElementHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = new CLineChartData;
+				CLineChartData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 				plot->setLabel(QString("E%1").arg(i + 1));
-				AddPlotData(plot);
 			}
 		}
 		break;
@@ -1487,9 +1581,8 @@ void CModelGraphWindow::addSelectedElems()
 			if (nsteps > 32) nsteps = 32;
 			for (int i = m_firstState; i < m_firstState + nsteps; ++i)
 			{
-				CLineChartData* plot = new CLineChartData;
+				CLineChartData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
-				AddPlotData(plot);
 			}
 
 			for (int i = 0; i < (int)sel.size(); i++)

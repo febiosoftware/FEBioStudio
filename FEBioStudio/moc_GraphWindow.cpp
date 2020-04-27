@@ -21,28 +21,29 @@
 QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-struct qt_meta_stringdata_OptionsUi_t {
+struct qt_meta_stringdata_GraphOptions_t {
     QByteArrayData data[4];
-    char stringdata0[43];
+    char stringdata0[46];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_OptionsUi_t, stringdata0) + ofs \
+    qptrdiff(offsetof(qt_meta_stringdata_GraphOptions_t, stringdata0) + ofs \
         - idx * sizeof(QByteArrayData)) \
     )
-static const qt_meta_stringdata_OptionsUi_t qt_meta_stringdata_OptionsUi = {
+static const qt_meta_stringdata_GraphOptions_t qt_meta_stringdata_GraphOptions = {
     {
-QT_MOC_LITERAL(0, 0, 9), // "OptionsUi"
-QT_MOC_LITERAL(1, 10, 14), // "optionsChanged"
-QT_MOC_LITERAL(2, 25, 0), // ""
-QT_MOC_LITERAL(3, 26, 16) // "onOptionsChanged"
+QT_MOC_LITERAL(0, 0, 12), // "GraphOptions"
+QT_MOC_LITERAL(1, 13, 14), // "optionsChanged"
+QT_MOC_LITERAL(2, 28, 0), // ""
+QT_MOC_LITERAL(3, 29, 16) // "onOptionsChanged"
 
     },
-    "OptionsUi\0optionsChanged\0\0onOptionsChanged"
+    "GraphOptions\0optionsChanged\0\0"
+    "onOptionsChanged"
 };
 #undef QT_MOC_LITERAL
 
-static const uint qt_meta_data_OptionsUi[] = {
+static const uint qt_meta_data_GraphOptions[] = {
 
  // content:
        8,       // revision
@@ -70,10 +71,10 @@ static const uint qt_meta_data_OptionsUi[] = {
        0        // eod
 };
 
-void OptionsUi::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void GraphOptions::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        auto *_t = static_cast<OptionsUi *>(_o);
+        auto *_t = static_cast<GraphOptions *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->optionsChanged(); break;
@@ -83,8 +84,8 @@ void OptionsUi::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (OptionsUi::*)();
-            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&OptionsUi::optionsChanged)) {
+            using _t = void (GraphOptions::*)();
+            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&GraphOptions::optionsChanged)) {
                 *result = 0;
                 return;
             }
@@ -93,30 +94,30 @@ void OptionsUi::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
     Q_UNUSED(_a);
 }
 
-QT_INIT_METAOBJECT const QMetaObject OptionsUi::staticMetaObject = { {
+QT_INIT_METAOBJECT const QMetaObject GraphOptions::staticMetaObject = { {
     QMetaObject::SuperData::link<CPlotTool::staticMetaObject>(),
-    qt_meta_stringdata_OptionsUi.data,
-    qt_meta_data_OptionsUi,
+    qt_meta_stringdata_GraphOptions.data,
+    qt_meta_data_GraphOptions,
     qt_static_metacall,
     nullptr,
     nullptr
 } };
 
 
-const QMetaObject *OptionsUi::metaObject() const
+const QMetaObject *GraphOptions::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *OptionsUi::qt_metacast(const char *_clname)
+void *GraphOptions::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_OptionsUi.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_GraphOptions.stringdata0))
         return static_cast<void*>(this);
     return CPlotTool::qt_metacast(_clname);
 }
 
-int OptionsUi::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int GraphOptions::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = CPlotTool::qt_metacall(_c, _id, _a);
     if (_id < 0)
@@ -134,34 +135,33 @@ int OptionsUi::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void OptionsUi::optionsChanged()
+void GraphOptions::optionsChanged()
 {
     QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
 }
-struct qt_meta_stringdata_DataOptionsUI_t {
+struct qt_meta_stringdata_DataOptions_t {
     QByteArrayData data[5];
-    char stringdata0[44];
+    char stringdata0[42];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_DataOptionsUI_t, stringdata0) + ofs \
+    qptrdiff(offsetof(qt_meta_stringdata_DataOptions_t, stringdata0) + ofs \
         - idx * sizeof(QByteArrayData)) \
     )
-static const qt_meta_stringdata_DataOptionsUI_t qt_meta_stringdata_DataOptionsUI = {
+static const qt_meta_stringdata_DataOptions_t qt_meta_stringdata_DataOptions = {
     {
-QT_MOC_LITERAL(0, 0, 13), // "DataOptionsUI"
-QT_MOC_LITERAL(1, 14, 13), // "onIndexChange"
-QT_MOC_LITERAL(2, 28, 0), // ""
-QT_MOC_LITERAL(3, 29, 1), // "n"
-QT_MOC_LITERAL(4, 31, 12) // "onDataChange"
+QT_MOC_LITERAL(0, 0, 11), // "DataOptions"
+QT_MOC_LITERAL(1, 12, 13), // "onIndexChange"
+QT_MOC_LITERAL(2, 26, 0), // ""
+QT_MOC_LITERAL(3, 27, 1), // "n"
+QT_MOC_LITERAL(4, 29, 12) // "onDataChange"
 
     },
-    "DataOptionsUI\0onIndexChange\0\0n\0"
-    "onDataChange"
+    "DataOptions\0onIndexChange\0\0n\0onDataChange"
 };
 #undef QT_MOC_LITERAL
 
-static const uint qt_meta_data_DataOptionsUI[] = {
+static const uint qt_meta_data_DataOptions[] = {
 
  // content:
        8,       // revision
@@ -176,52 +176,52 @@ static const uint qt_meta_data_DataOptionsUI[] = {
 
  // slots: name, argc, parameters, tag, flags
        1,    1,   24,    2, 0x0a /* Public */,
-       4,    0,   27,    2, 0x0a /* Public */,
+       4,    1,   27,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int,    3,
-    QMetaType::Void,
+    QMetaType::Void, QMetaType::Int,    3,
 
        0        // eod
 };
 
-void DataOptionsUI::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void DataOptions::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        auto *_t = static_cast<DataOptionsUI *>(_o);
+        auto *_t = static_cast<DataOptions *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->onIndexChange((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 1: _t->onDataChange(); break;
+        case 1: _t->onDataChange((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
     }
 }
 
-QT_INIT_METAOBJECT const QMetaObject DataOptionsUI::staticMetaObject = { {
+QT_INIT_METAOBJECT const QMetaObject DataOptions::staticMetaObject = { {
     QMetaObject::SuperData::link<CPlotTool::staticMetaObject>(),
-    qt_meta_stringdata_DataOptionsUI.data,
-    qt_meta_data_DataOptionsUI,
+    qt_meta_stringdata_DataOptions.data,
+    qt_meta_data_DataOptions,
     qt_static_metacall,
     nullptr,
     nullptr
 } };
 
 
-const QMetaObject *DataOptionsUI::metaObject() const
+const QMetaObject *DataOptions::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *DataOptionsUI::qt_metacast(const char *_clname)
+void *DataOptions::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_DataOptionsUI.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_DataOptions.stringdata0))
         return static_cast<void*>(this);
     return CPlotTool::qt_metacast(_clname);
 }
 
-int DataOptionsUI::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int DataOptions::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = CPlotTool::qt_metacall(_c, _id, _a);
     if (_id < 0)

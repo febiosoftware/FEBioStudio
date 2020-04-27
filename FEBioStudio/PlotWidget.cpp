@@ -133,14 +133,76 @@ double findScale(double fmin, double fmax)
 	return dd;
 }
 
+//-----------------------------------------------------------------------------
+void drawDiamond(QPainter& painter, const QRect& rt)
+{
+	QPoint c = rt.center();
+	const QPointF points[4] = {
+		QPointF(c.x(), rt.top()),
+		QPointF(rt.left(), c.y()),
+		QPointF(c.x(), rt.bottom()),
+		QPointF(rt.right(), c.y())
+	};
+
+	painter.drawConvexPolygon(points, 4);
+}
+
+//-----------------------------------------------------------------------------
+void drawTriangle(QPainter& painter, const QRect& rt)
+{
+	QPoint c = rt.center();
+	const QPointF points[3] = {
+		QPointF(c.x(), rt.top()),
+		QPointF(rt.left(), rt.bottom()),
+		QPointF(rt.right(), rt.bottom()),
+	};
+
+	painter.drawConvexPolygon(points, 3);
+}
+
+//-----------------------------------------------------------------------------
+void drawCross(QPainter& painter, const QRect& rt)
+{
+	painter.drawLine(rt.topLeft(), rt.bottomRight());
+	painter.drawLine(rt.topRight(), rt.bottomLeft());
+}
+
+//-----------------------------------------------------------------------------
+void drawPlus(QPainter& painter, const QRect& rt)
+{
+	QPoint c = rt.center();
+	painter.drawLine(c.x(), rt.top(), c.x(), rt.bottom());
+	painter.drawLine(rt.left(), c.y(), rt.right(), c.y());
+}
+
+//-----------------------------------------------------------------------------
+void drawMarker(QPainter& painter, const QPoint& pt, int nsize, int type)
+{
+	int n2 = nsize / 2;
+	QRect rect(pt.x() - n2, pt.y() - n2, nsize, nsize);
+	switch (type)
+	{
+	case 0: break;
+	case 1: painter.drawRect(rect); break;
+	case 2: painter.drawEllipse(rect); break;
+	case 3: drawDiamond(painter, rect); break;
+	case 4: drawTriangle(painter, rect); break;
+	case 5: drawCross(painter, rect); break;
+	case 6: drawPlus(painter, rect); break;
+	}
+}
+
 //=============================================================================
 void CLineChartData::draw(QPainter& p, CPlotWidget& plt)
 {
 	int N = size();
 	if (N == 0) return;
 
+	QColor col = lineColor();
+	QPen pen(col, m_lineWidth);
+	p.setPen(pen);
+
 	QPoint p0 = plt.ViewToScreen(Point(0)), p1(p0);
-	QBrush b = p.brush();
 	p.setBrush(Qt::NoBrush);
 	for (int i = 1; i<N; ++i)
 	{
@@ -149,18 +211,17 @@ void CLineChartData::draw(QPainter& p, CPlotWidget& plt)
 		p0 = p1;
 	}
 
-	int n = plt.getDataMarkSize();
-	int n2 = n/2;
+	int n = m_markerSize;
+	int n2 = n/2 + 1;
 
 	// draw the marks
-	if (plt.showDataMarks())
+	if (m_markerType > 0)
 	{
-		p.setBrush(b);
+		p.setBrush(m_fillColor);
 		for (int i = 0; i<N; ++i)
 		{
 			p1 = plt.ViewToScreen(Point(i));
-			QRect r(p1.x() - n2, p1.y() - n2, n, n);
-			p.drawRect(r);
+			drawMarker(p, p1, m_markerSize, m_markerType);
 		}
 	}
 }
@@ -172,7 +233,7 @@ void CBarChartData::draw(QPainter& p, CPlotWidget& plt)
 	if (N == 0) return;
 
 	p.setPen(Qt::NoPen);
-	p.setBrush(color());
+	p.setBrush(m_fillColor);
 	for (int i = 0; i<N; ++i)
 	{
 		QPointF& pi = Point(i);
@@ -187,6 +248,9 @@ void CBarChartData::draw(QPainter& p, CPlotWidget& plt)
 
 CPlotData::CPlotData()
 {
+	m_lineWidth = 2;
+	m_markerSize = 5;
+	m_markerType = 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -199,7 +263,11 @@ CPlotData::CPlotData(const CPlotData& d)
 {
 	m_data = d.m_data;
 	m_label = d.m_label;
-	m_col = d.m_col;
+	m_lineColor = d.m_lineColor;
+	m_fillColor = d.m_fillColor;
+	m_lineWidth = d.m_lineWidth;
+	m_markerSize = d.m_markerSize;
+	m_markerType = d.m_markerType;
 }
 
 //-----------------------------------------------------------------------------
@@ -207,7 +275,11 @@ CPlotData& CPlotData::operator = (const CPlotData& d)
 {
 	m_data = d.m_data;
 	m_label = d.m_label;
-	m_col = d.m_col;
+	m_lineColor = d.m_lineColor;
+	m_fillColor = d.m_fillColor;
+	m_lineWidth = d.m_lineWidth;
+	m_markerSize = d.m_markerSize;
+	m_markerType = d.m_markerType;
 	return *this;
 }
 
@@ -281,10 +353,7 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 	m_bshowToolTip = true;
 
 	m_bsmoothLines = true;
-	m_bshowDataMarks = true;
-
-	m_dataMarkSize = 5;
-
+	m_bdrawGrid = true;
 	m_bautoRngUpdate = true;
 
 	// set default colors
@@ -550,6 +619,13 @@ void CPlotWidget::clearData()
 }
 
 //-----------------------------------------------------------------------------
+void CPlotWidget::Resize(int n)
+{
+	for (int i = n; i < plots(); ++i) delete m_data[i];
+	m_data.resize(n);
+}
+
+//-----------------------------------------------------------------------------
 void CPlotWidget::clear()
 {
 	m_selection.clear();
@@ -563,7 +639,8 @@ void CPlotWidget::addPlotData(CPlotData* p)
 {
 	int N = (int)m_data.size();
 
-	p->setColor(ColorList::color(N));
+	p->setLineColor(ColorList::color(N));
+	p->setFillColor(ColorList::color(N));
 
 	m_data.push_back(p);
 
@@ -985,7 +1062,7 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	}
 
 	// draw the grid
-	drawGrid(p);
+	if (m_bdrawGrid) drawGrid(p);
 
 	// draw the grid axes
 	drawAxes(p);
@@ -1039,7 +1116,7 @@ void CPlotWidget::drawLegend(QPainter& p)
 	for (int i=0; i<N; ++i)
 	{
 		CPlotData& plot = *m_data[i];
-		p.setPen(QPen(plot.color(), 2));
+		p.setPen(QPen(plot.lineColor(), 2));
 		int Y = Y0 + i*(Y1 - Y0)/N;
 		p.drawLine(X0, Y, X0 + LW, Y);
 	}
@@ -1334,11 +1411,6 @@ void CPlotWidget::drawAllData(QPainter& p)
 	int N = (int)m_data.size();
 	for (int i=0; i<N; ++i)
 	{
-		QColor col = m_data[i]->color();
-		QPen pen(col, 2);
-		p.setPen(pen);
-		p.setBrush(col);
-
 		m_data[i]->draw(p, *this);
 	}
 

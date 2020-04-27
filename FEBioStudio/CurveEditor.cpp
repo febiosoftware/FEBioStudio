@@ -680,7 +680,7 @@ void CCurveEditor::SetLoadCurve(FELoadCurve* plc)
 			data->addPoint(pt.time, pt.load);
 		}
 		ui->plot->addPlotData(data);
-		data->setColor(QColor(64, 192, 128));
+		data->setLineColor(QColor(64, 192, 128));
 
 		ui->setCurveType(plc->GetType(), plc->GetExtend());
 	}
@@ -1135,7 +1135,7 @@ void CLoadCurveData::draw(QPainter& painter, CPlotWidget& plt)
 	}
 
 	// draw the marks
-	if (plt.showDataMarks())
+	if (m_markerType > 0)
 	{
 		painter.setBrush(b);
 		for (int i = 0; i<N; ++i)
