@@ -588,6 +588,12 @@ void CMainWindow::finishedReadingFile(bool success, const QString& errorString)
 		Update();
 		if (ui->modelViewer) ui->modelViewer->Show();
 
+		// set the "Model" tab to the project's name
+		CDocument* doc = GetDocument();
+		std::string file = doc->GetDocFileBase();
+		if (file.empty()) file = "Model";
+		ui->tab->setTabText(0, QString::fromStdString(file));
+
 		// If the main window is not active, this will alert the user that the file has been read. 
 		QApplication::alert(this, 0);
 	}

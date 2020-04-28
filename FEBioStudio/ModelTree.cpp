@@ -750,7 +750,10 @@ void CModelTree::Build(CDocument* doc)
 	FEModel& fem = *doc->GetFEModel();
 	GModel& mdl = fem.GetModel();
 
-	QTreeWidgetItem* t1 = AddTreeItem(nullptr, "Model", 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
+	std::string modelName = doc->GetDocFileBase();
+	if (modelName.empty()) modelName = "Model";
+
+	QTreeWidgetItem* t1 = AddTreeItem(nullptr, QString::fromStdString(modelName), 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
 	t1->setExpanded(true);
 
 	// add data variables
