@@ -13,7 +13,7 @@ FEPointCongruency::FEPointCongruency()
 }
 
 //-----------------------------------------------------------------------------
-FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEPostModel* pfem, int nid, int nstate)
+FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEMesh* mesh, int nid)
 {
 	CONGRUENCY_DATA d;
 	d.H1 = 0;
@@ -28,9 +28,10 @@ FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEPostModel* pf
 	d.nface = -1;
 
 	// store a pointer to the mesh
-	m_pfem = pfem;
-	m_nstate = nstate;
-	FEPostMesh* pm = m_pfem->GetFEMesh(0);
+	m_mesh = mesh;
+	if (mesh == nullptr) return d;
+
+	m_NFL.Build(m_mesh);
 
 	// find the projection of the node onto the opposing surface
 	vec3f q, sn;
@@ -45,7 +46,7 @@ FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEPostModel* pf
 
 		// find the local curvature measure at the projection
 		d.nface = nface;
-		FEFace& face = pm->Face(nface);
+		FEFace& face = m_mesh->Face(nface);
 		vec3f tsn = -sn;
 		d.H2 = face_curvature(face, rs, tsn, MEAN);
 		d.G2 = face_curvature(face, rs, tsn, DIFF);
@@ -100,10 +101,10 @@ float FEPointCongruency::face_curvature(FEFace& face, double rs[2], vec3f& sn, i
 //-----------------------------------------------------------------------------
 bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec3f& sn)
 {
-	FEPostMesh* pm = m_pfem->GetFEMesh(0);
+	FEMesh* pm = m_mesh;
 
 	// get the node position
-	vec3f nr = m_pfem->NodePosition(nid, m_nstate);
+	vec3f nr = to_vec3f(pm->Node(nid).pos());
 
 	// find the normal at this node
 	sn = vec3f(0.f, 0.f, 0.f);
@@ -127,7 +128,7 @@ bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec
 //-----------------------------------------------------------------------------
 bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q, double rs[2])
 {
-	FEPostMesh* pm = m_pfem->GetFEMesh(0);
+	FEMesh* pm = m_mesh;
 	nface = -1;
 	double Dmin = 0;
 	double rsi[2];
@@ -166,11 +167,11 @@ bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, do
 {
 	const double tol = 0.01;
 
-	FEPostMesh* pm = m_pfem->GetFEMesh(0);
+	FEMesh* pm = m_mesh;
 
-	vec3f n1 = m_pfem->NodePosition(face.n[0], m_nstate);
-	vec3f n2 = m_pfem->NodePosition(face.n[1], m_nstate);
-	vec3f n3 = m_pfem->NodePosition(face.n[2], m_nstate);
+	vec3f n1 = to_vec3f(pm->Node(face.n[0]).pos());
+	vec3f n2 = to_vec3f(pm->Node(face.n[1]).pos());
+	vec3f n3 = to_vec3f(pm->Node(face.n[2]).pos());
 
 	Triangle tri = {n1, n2, n3};
 
@@ -198,12 +199,12 @@ bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, d
 	if (IntersectTri3(ray, tri1, q, rs) ||
 		IntersectTri3(ray, tri2, q, rs))
 	{
-		FEPostMesh* pm = m_pfem->GetFEMesh(0);
+		FEMesh* pm = m_mesh;
 		vec3f y[4];
-		y[0] = m_pfem->NodePosition(face.n[0], m_nstate);
-		y[1] = m_pfem->NodePosition(face.n[1], m_nstate);
-		y[2] = m_pfem->NodePosition(face.n[2], m_nstate);
-		y[3] = m_pfem->NodePosition(face.n[3], m_nstate);
+		y[0] = to_vec3f(pm->Node(face.n[0]).pos());
+		y[1] = to_vec3f(pm->Node(face.n[1]).pos());
+		y[2] = to_vec3f(pm->Node(face.n[2]).pos());
+		y[3] = to_vec3f(pm->Node(face.n[3]).pos());
 
 		Quad quad = {y[0], y[1], y[2], y[3]};
 		Intersection intersect;
@@ -221,13 +222,13 @@ bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, d
 float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 {
 	// get the model's surface
-	FEPostMesh* pmesh = m_pfem->GetFEMesh(0);
+	FEMesh* pm = m_mesh;
 
 	// get the reference nodal position
-	vec3f r0 = m_pfem->NodePosition(nid, m_nstate);
+	vec3f r0 = to_vec3f(pm->Node(nid).pos());
 
 	// get the node-face list
-	const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(nid);
+	const vector<NodeFaceRef>& nfl = m_NFL.FaceList(nid);
 	int NF = nfl.size();
 
 	// array of nodal points
@@ -247,7 +248,7 @@ float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 	set<int>::iterator it;
 	for (it=nl1.begin(); it != nl1.end(); ++it)
 	{
-		if (*it != nid) x.push_back(m_pfem->NodePosition(*it, m_nstate));
+		if (*it != nid) x.push_back(to_vec3f(pm->Node(*it).pos()));
 	}
 	y.resize(x.size());
 	int nn = x.size();
@@ -455,7 +456,7 @@ float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 void FEPointCongruency::level(int n, int l, set<int>& nl1)
 {
 	// get the model's surface
-	FEPostMesh* pmesh = m_pfem->GetFEMesh(0);
+	FEMesh* pmesh = m_mesh;
 
 	// add the first node
 	nl1.insert(n);
@@ -469,7 +470,7 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
 			// get the node-face list
-			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
+			const vector<NodeFaceRef>& nfl = m_NFL.FaceList(*it);
 			int NF = nfl.size();
 
 			// add the other nodes
@@ -485,7 +486,7 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 		for (it = nl1.begin(); it != nl1.end(); ++it)
 		{
 			// get the node-face list
-			const vector<NodeFaceRef>& nfl = pmesh->NodeFaceList(*it);
+			const vector<NodeFaceRef>& nfl = m_NFL.FaceList(*it);
 			int NF = nfl.size();
 
 			// add the other nodes

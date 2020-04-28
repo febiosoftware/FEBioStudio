@@ -343,7 +343,6 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PostDataPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PostModelPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PostPanel.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\moc_PostToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListForm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PropertyListView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PublicationWidget.cpp" />
@@ -369,13 +368,13 @@
     <ClCompile Include="..\..\FEBioStudio\PlaneCutTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PlaneTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PlotWidget.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PointCongruencyTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PointDistanceTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostDataPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostDoc.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostModelPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostToolBar.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\PostToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyList.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListForm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyListView.cpp" />
@@ -547,16 +546,12 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\PostToolsPanel.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
-    </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\PlaneTool.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\PointCongruencyTool.h" />
     <ClInclude Include="..\..\FEBioStudio\PointDistanceTool.h" />
     <CustomBuild Include="..\..\FEBioStudio\RepoConnectionHandler.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

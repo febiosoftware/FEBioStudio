@@ -1,6 +1,7 @@
 #pragma once
 #include <MathLib/math3d.h>
 #include <MeshLib/Intersect.h>
+#include <MeshLib/FENodeFaceList.h>
 #include <set>
 using namespace std;
 
@@ -32,7 +33,7 @@ public:
 	FEPointCongruency();
 
 	// measure the congruency of a point
-	CONGRUENCY_DATA Congruency(FEPostModel* pm, int node, int nstate);
+	CONGRUENCY_DATA Congruency(FEMesh* pm, int node);
 
 	void SetLevels(int niter) { m_nlevels = niter; }
 
@@ -53,7 +54,7 @@ public:
 	int	m_nmax;
 
 private:
-	FEPostModel*	m_pfem;
-	int				m_nstate;
+	FEMesh*		m_mesh;
+	FENodeFaceList	m_NFL;
 };
 }

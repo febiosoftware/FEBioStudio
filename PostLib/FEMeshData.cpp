@@ -1782,7 +1782,7 @@ void FECongruency::eval(int n, float* f)
 	for (int i = 0; i<face.Nodes(); ++i)
 	{
 		int in = face.n[i];
-		f[i] = (float) map.Congruency(pfem, in, ntime).Ke;
+		f[i] = (float) map.Congruency(pmesh, in).Ke;
 	}
 }
 

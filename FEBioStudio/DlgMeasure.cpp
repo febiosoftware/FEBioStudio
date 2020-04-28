@@ -19,6 +19,7 @@
 #include "ElementVolumeTool.h"
 #include "MeasureVolumeTool.h"
 #include "PlaneTool.h"
+#include "PointCongruencyTool.h"
 
 class Ui::CDlgMeasure
 {
@@ -92,6 +93,7 @@ public:
 		m_tools.push_back(new CTetOverlapTool(m_wnd));
 		m_tools.push_back(new CMeasureVolumeTool(m_wnd));
 		m_tools.push_back(new CPlaneTool(m_wnd));
+		m_tools.push_back(new CPointCongruencyTool(m_wnd));
 	}
 
 	void clearTools()

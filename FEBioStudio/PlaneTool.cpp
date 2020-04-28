@@ -48,6 +48,7 @@ public:
 		point[2]->setPosition(c);
 
 		vec3f N = (b - a) ^ (c - a);
+		double L = N.Length(); N /= 2.f*(float)sqrt(L);
 
 		vec3f o = (a + b + c) / 3.f;
 		center->setPosition(o);
