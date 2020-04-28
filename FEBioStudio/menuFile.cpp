@@ -2295,18 +2295,6 @@ void CMainWindow::on_actionToggleLight_triggered()
 	RedrawGL();
 }
 
-void CMainWindow::changeViewMode(View_Mode vm)
-{
-	ui->glview->SetViewMode(vm);
-
-	// switch to ortho view if we're not in it
-	bool bortho = ui->glview->OrhographicProjection();
-	if (bortho == false)
-	{
-		ui->actionOrtho->trigger();
-	}
-}
-
 void CMainWindow::on_actionFront_triggered()
 {
 	changeViewMode(VIEW_FRONT);

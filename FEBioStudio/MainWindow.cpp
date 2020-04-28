@@ -2533,3 +2533,15 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 {
 	ui->infoPanel->SetObject(po);
 }
+
+void CMainWindow::changeViewMode(View_Mode vm)
+{
+	ui->glview->SetViewMode(vm);
+
+	// switch to ortho view if we're not in it
+	bool bortho = ui->glview->OrhographicProjection();
+	if (bortho == false)
+	{
+		ui->actionOrtho->trigger();
+	}
+}
