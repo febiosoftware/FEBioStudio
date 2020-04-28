@@ -55,6 +55,19 @@ void GLineDecoration::render()
 	}
 }
 
+void GTriangleDecoration::render()
+{
+	vec3f& r1 = p1->position();
+	vec3f& r2 = p2->position();
+	vec3f& r3 = p3->position();
+	glColor4ub(m_col.r, m_col.g, m_col.b, m_col.a);
+	glBegin(GL_TRIANGLES);
+	glVertex3f(r1.x, r1.y, r1.z);
+	glVertex3f(r2.x, r2.y, r2.z);
+	glVertex3f(r3.x, r3.y, r3.z);
+	glEnd();
+}
+
 GArcDecoration::GArcDecoration(const vec3f& c, const vec3f& p0, const vec3f& p1, int ndivs, double scale)
 {
 	m_c = c;

@@ -15,6 +15,8 @@ public:
 	bool isVisible() const { return bvisible; }
 	void setVisible(bool b) { bvisible = b; }
 
+	void setColor(GLColor c) { m_col = c; }
+
 protected:
 	bool	bvisible;
 	GLColor	m_col;
@@ -53,6 +55,22 @@ private:
 	GPointDecoration* p1;
 	GPointDecoration* p2;
 };
+
+//-------------------------------------------------------------------
+class GTriangleDecoration : public GDecoration
+{
+public:
+	GTriangleDecoration() { p1 = p2 = p3 = 0; }
+	GTriangleDecoration(GPointDecoration* point1, GPointDecoration* point2, GPointDecoration* point3) : p1(point1), p2(point2), p3(point3) {}
+
+	void render();
+
+private:
+	GPointDecoration* p1;
+	GPointDecoration* p2;
+	GPointDecoration* p3;
+};
+
 
 //-------------------------------------------------------------------
 class GArcDecoration : public GDecoration

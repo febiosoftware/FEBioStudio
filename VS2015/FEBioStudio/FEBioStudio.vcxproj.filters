@@ -735,6 +735,12 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgImportLines.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\PlaneTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_PlaneTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -1026,6 +1032,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\PostPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\PlaneTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
