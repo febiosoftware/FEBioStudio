@@ -55,5 +55,7 @@ bool CPointCongruencyTool::OnApply()
 		m_Kemin = d.Kemin;
 		m_Kemax = d.Kemax;
 		m_cong = d.Ke;
+        return true;
 	}
+    return false;
 }

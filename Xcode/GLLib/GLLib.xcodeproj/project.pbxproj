@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D555F45C233D061000808BCE /* GLMeshRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D555F45A233D061000808BCE /* GLMeshRender.cpp */; };
 		D555F45D233D061000808BCE /* GLMeshRender.h in Headers */ = {isa = PBXBuildFile; fileRef = D555F45B233D061000808BCE /* GLMeshRender.h */; };
+		D5CC3A54245B4CA200311F48 /* GDecoration.h in Headers */ = {isa = PBXBuildFile; fileRef = D5CC3A52245B4CA200311F48 /* GDecoration.h */; };
+		D5CC3A55245B4CA200311F48 /* GDecoration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CC3A53245B4CA200311F48 /* GDecoration.cpp */; };
 		D5ED265B23197CC000C16BF7 /* GLTexture1D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED265223197CC000C16BF7 /* GLTexture1D.cpp */; };
 		D5ED265C23197CC000C16BF7 /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED265323197CC000C16BF7 /* stdafx.h */; };
 		D5ED265D23197CC000C16BF7 /* GLContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED265423197CC000C16BF7 /* GLContext.cpp */; };
@@ -25,6 +27,8 @@
 /* Begin PBXFileReference section */
 		D555F45A233D061000808BCE /* GLMeshRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLMeshRender.cpp; sourceTree = "<group>"; };
 		D555F45B233D061000808BCE /* GLMeshRender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLMeshRender.h; sourceTree = "<group>"; };
+		D5CC3A52245B4CA200311F48 /* GDecoration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GDecoration.h; sourceTree = "<group>"; };
+		D5CC3A53245B4CA200311F48 /* GDecoration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GDecoration.cpp; sourceTree = "<group>"; };
 		D5ED264323197CAE00C16BF7 /* libGLLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libGLLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED265223197CC000C16BF7 /* GLTexture1D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLTexture1D.cpp; sourceTree = "<group>"; };
 		D5ED265323197CC000C16BF7 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
@@ -74,6 +78,8 @@
 		D5ED265123197CC000C16BF7 /* GLLib */ = {
 			isa = PBXGroup;
 			children = (
+				D5CC3A53245B4CA200311F48 /* GDecoration.cpp */,
+				D5CC3A52245B4CA200311F48 /* GDecoration.h */,
 				D5ED265523197CC000C16BF7 /* GLCamera.cpp */,
 				D5ED265723197CC000C16BF7 /* GLCamera.h */,
 				D5ED265423197CC000C16BF7 /* GLContext.cpp */,
@@ -111,6 +117,7 @@
 				D5ED266123197CC000C16BF7 /* GLTexture1D.h in Headers */,
 				D5ED265C23197CC000C16BF7 /* stdafx.h in Headers */,
 				D5ED265F23197CC000C16BF7 /* GLContext.h in Headers */,
+				D5CC3A54245B4CA200311F48 /* GDecoration.h in Headers */,
 				D5ED266023197CC000C16BF7 /* GLCamera.h in Headers */,
 				D555F45D233D061000808BCE /* GLMeshRender.h in Headers */,
 				D5ED266323197CC000C16BF7 /* glx.h in Headers */,
@@ -177,6 +184,7 @@
 				D5ED265D23197CC000C16BF7 /* GLContext.cpp in Sources */,
 				D5ED265B23197CC000C16BF7 /* GLTexture1D.cpp in Sources */,
 				D555F45C233D061000808BCE /* GLMeshRender.cpp in Sources */,
+				D5CC3A55245B4CA200311F48 /* GDecoration.cpp in Sources */,
 				D5ED265E23197CC000C16BF7 /* GLCamera.cpp in Sources */,
 				D5ED266223197CC000C16BF7 /* glx.cpp in Sources */,
 			);
