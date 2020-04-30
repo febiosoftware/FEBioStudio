@@ -974,6 +974,7 @@ void FEMesh::SplitFacePartition(int faceID)
 void FEMesh::RemoveElements(int ntag)
 {
 	int n = 0;
+    bool bdata = (m_data.m_data.size() > 0);
 	for (int i = 0; i<Elements(); ++i)
 	{
 		FEElement& e1 = Element(i);
@@ -984,7 +985,7 @@ void FEMesh::RemoveElements(int ntag)
 			if (i != n)
 			{
 				e2 = e1;
-				m_data[n] = m_data[i];
+				if (bdata) m_data[n] = m_data[i];
 			}
 			n++;
 		}
