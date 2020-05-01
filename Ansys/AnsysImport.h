@@ -23,13 +23,13 @@ class AnsysImport : public FEFileImport
 	};
 
 public:
-	AnsysImport();
+	AnsysImport(FEProject& prj);
 	~AnsysImport(void);
 
 	bool read_NBLOCK();
 	bool read_EBLOCK();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	bool BuildMesh(FEModel& fem);
@@ -39,6 +39,5 @@ protected:
 	list<ELEM>	m_Elem;
 
 private:
-	FEProject*	m_pprj;
 	char	m_szline[256];
 };

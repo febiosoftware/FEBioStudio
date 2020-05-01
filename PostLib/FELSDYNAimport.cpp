@@ -16,7 +16,7 @@ using namespace Post;
 //////////////////////////////////////////////////////////////////////
 
 //-----------------------------------------------------------------------------
-FELSDYNAimport::FELSDYNAimport() : FEFileReader("LSDYNA keyword")
+FELSDYNAimport::FELSDYNAimport(FEPostModel* fem) : FEFileReader(fem)
 {
 	m_bdispl = false;
 }
@@ -47,7 +47,7 @@ char* FELSDYNAimport::get_line(char* szline)
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAimport::Load(FEPostModel& fem, const char* szfile)
+bool FELSDYNAimport::Load(const char* szfile)
 {
 	// open the file
 	if (Open(szfile, "rt") == false) return errf("Failed opening file.");
@@ -113,7 +113,7 @@ bool FELSDYNAimport::Load(FEPostModel& fem, const char* szfile)
 #endif
 
 	// build the mesh
-	return BuildMesh(fem);
+	return BuildMesh(*m_fem);
 }
 
 //-----------------------------------------------------------------------------

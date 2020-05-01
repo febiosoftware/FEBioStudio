@@ -1,176 +1,137 @@
-#include <QFileSystemModel>
-#include <QListView>
-#include <QBoxLayout>
-#include <QComboBox>
+#include "stdafx.h"
 #include "FileViewer.h"
 #include "MainWindow.h"
-#include <QToolButton>
+#include "DocManager.h"
+#include "Document.h"
+#include "ModelDocument.h"
+#include <QTreeWidget>
+#include <QFileSystemModel>
+#include <QBoxLayout>
+#include <QHeaderView>
 
 class Ui::CFileViewer
 {
 public:
-	QComboBox*	m_fileFilter;
-	QListView*	m_fileList;
-	QComboBox*	m_folder;
+	::CMainWindow*	m_wnd;
+	QTreeWidget*	m_tree;
 
 public:
 	void setupUi(QWidget* parent)
 	{
-		QVBoxLayout* pg = new QVBoxLayout(parent);
-		QHBoxLayout* pg2 = new QHBoxLayout;
+		QVBoxLayout* l = new QVBoxLayout(parent);
+		l->setMargin(0);
 
-		QToolButton* pb = new QToolButton(parent);
-		pb->setObjectName(QStringLiteral("toolUp"));
-		pb->setIcon(QIcon(":/icons/up.png"));
-		pb->setAutoRaise(true);
-		pb->setToolTip("<font color=\"black\">Parent folder");
+		m_tree = new QTreeWidget;
+		m_tree->setColumnCount(1);
+		m_tree->header()->hide();
+		m_tree->setObjectName("fileList");
+		
+		l->addWidget(m_tree);
 
-		m_folder = new QComboBox;
-		m_folder->setObjectName("folder");
-		m_folder->setEditable(true);
-		m_folder->setInsertPolicy(QComboBox::NoInsert);
-		m_folder->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-		m_folder->setMaxCount(15);
-
-		m_fileFilter = new QComboBox(parent);
-		m_fileFilter->setObjectName(QStringLiteral("fileFilter"));
-
-		m_fileList = new QListView(parent);
-		m_fileList->setObjectName(QStringLiteral("fileList"));
-
-		pg2->addWidget(pb);
-		pg2->addWidget(m_folder);
-		pg->addLayout(pg2);
-		pg->addWidget(m_fileFilter);
-		pg->addWidget(m_fileList);
-	}
-
-	void addFolder(const QString& folder)
-	{
-		// see if this item already exists
-		int n = m_folder->findText(folder);
-		if (n != -1) return;
-
-		// if not, add it
-		n = m_folder->count();
-		if (n == m_folder->maxCount())
-		{
-			m_folder->removeItem(0);
-		}
-		m_folder->addItem(folder);
-		m_folder->setCurrentIndex(m_folder->count() - 1);
+		parent->setLayout(l);
 	}
 };
 
-CFileViewer::CFileViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), m_wnd(pwnd), ui(new Ui::CFileViewer)
+CFileViewer::CFileViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), ui(new Ui::CFileViewer)
 {
+	ui->m_wnd = pwnd;
 	// build Ui
 	ui->setupUi(this);
-
-	// build the filter list
-	// Make sure this list matches the one in CMainWindow::on_actionOpen_triggered()
-	// TODO: Can I somehow ensure that this is the case ?
-    m_filters.push_back(pair<QString, QString>("FEBio Studio Projects (*.fsprj)", "*.fsprj"));
-	m_filters.push_back(pair<QString, QString>("PreView files (*.prv)", "*.prv"));
-
-	// add filters to drop down
-	int nflts = (int)m_filters.size();
-	for (int i = 0; i<nflts; ++i)
-	{
-		pair<QString, QString>& flt = m_filters[i];
-		ui->m_fileFilter->addItem(flt.first);
-	}
-
-	// create a model for the file system
-	m_fileSystem = new QFileSystemModel;
-	m_fileSystem->setRootPath("C:\\");
-	QStringList flt;
-	flt << m_filters[0].second;
-    flt << m_filters[1].second;
-	m_fileSystem->setNameFilters(flt);
-	m_fileSystem->setNameFilterDisables(false);
-
-	// set the file system model
-	ui->m_fileList->setModel(m_fileSystem);
-	ui->m_fileList->setRootIndex(m_fileSystem->index("C:\\Users\\steve\\Documents"));
 
 	QMetaObject::connectSlotsByName(this);
 }
 
-QString CFileViewer::currentPath() const
+void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column)
 {
-	return m_fileSystem->filePath(ui->m_fileList->rootIndex());
-}
-
-void CFileViewer::setCurrentPath(const QString& s)
-{
-	ui->m_fileList->setRootIndex(m_fileSystem->index(s));
-
-	int n = ui->m_folder->findText(s);
-	if (n >= 0) ui->m_folder->setCurrentIndex(n);
-	else ui->m_folder->setEditText(currentPath());
-}
-
-QStringList CFileViewer::FolderList()
-{
-	QStringList folders;
-	for (int i = 0; i<ui->m_folder->count(); ++i)
+	QVariant v = item->data(0, Qt::UserRole);
+	if (v.type() == QVariant::Int)
 	{
-		folders << ui->m_folder->itemText(i);
+		ui->m_wnd->SetActiveView(v.toInt());
 	}
-	return folders;
-}
-
-void CFileViewer::SetFolderList(const QStringList& folders)
-{
-	ui->m_folder->clear();
-	ui->m_folder->addItems(folders);
-	ui->m_folder->setCurrentIndex(0);
-}
-
-void CFileViewer::on_fileList_doubleClicked(const QModelIndex& index)
-{
-	if (m_fileSystem->isDir(index))
+	else if (v.type() == QVariant::String)
 	{
-		ui->m_fileList->setRootIndex(index);
-		ui->m_folder->setEditText(currentPath());
-	}
-	else
-	{
-		m_wnd->OpenDocument(m_fileSystem->filePath(index));
-
-		QString filePath = currentPath();
-		m_wnd->SetCurrentFolder(filePath);
-
-		ui->addFolder(filePath);
+		QString filePath = v.toString();
+		CDocument* doc = ui->m_wnd->FindDocument(filePath.toStdString());
+		if (doc)
+			ui->m_wnd->SetActiveDocument(doc);
+		else
+			ui->m_wnd->OpenFile(filePath, true);
 	}
 }
 
-void CFileViewer::on_fileFilter_currentIndexChanged(int index)
+void CFileViewer::Update()
 {
-	if ((index >= 0) && (index < m_filters.size()))
+	ui->m_tree->clear();
+
+	CDocManager* dm = ui->m_wnd->GetDocManager();
+
+	// Open files list
+	QTreeWidgetItem* it = new QTreeWidgetItem(QStringList("OPEN FILES"));
+	QFont f = it->font(0);
+	f.setBold(true);
+	it->setFont(0, f);
+	ui->m_tree->addTopLevelItem(it);
+	it->setExpanded(true);
+
+	QFontInfo fi(f);
+
+	int px = fi.pixelSize();
+	px = 5 * px / 3;
+	it->setSizeHint(0, QSize(100, px));
+	
+	for (int i = 0; i < dm->Documents(); ++i)
 	{
-		QStringList filters;
-		pair<QString, QString>& flt = m_filters[index];
-		filters << flt.second;
-		m_fileSystem->setNameFilters(filters);
+		CDocument* doc = dm->GetDocument(i);
+		QString docPath = QString::fromStdString(doc->GetDocFilePath());
+
+		QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
+		t2->setText(0, QString::fromStdString(doc->GetDocTitle()));
+		t2->setData(0, Qt::UserRole, i);
+		if (docPath.isEmpty() == false)
+		{
+			t2->setToolTip(0, docPath);
+		}
+		t2->setSizeHint(0, QSize(100, px));
+	}
+
+	// Project list
+	it = new QTreeWidgetItem(QStringList("PROJECT (unsaved)"));
+	it->setFont(0, f);
+	ui->m_tree->addTopLevelItem(it);
+	it->setExpanded(true);
+	it->setSizeHint(0, QSize(0, px));
+
+	for (int i = 0; i < dm->Documents(); ++i)
+	{
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(dm->GetDocument(i));
+		if (doc && (doc->GetDocFilePath().empty() == false))
+		{
+			QString docFile = QString::fromStdString(doc->GetDocFileName());
+			QString docPath = QString::fromStdString(doc->GetDocFilePath());
+
+			QTreeWidgetItem* t2 = new QTreeWidgetItem(QStringList(docFile));
+			t2->setSizeHint(0, QSize(100, 50));
+			t2->setToolTip(0, docPath);
+			t2->setData(0, Qt::UserRole, docPath);
+			t2->setSizeHint(0, QSize(100, px));
+
+			for (int n = 0; n < doc->FEBioJobs(); ++n)
+			{
+				CFEBioJob* job = doc->GetFEBioJob(n);
+
+				std::string plotFile = job->GetPlotFileName();
+				QString xpltPath(doc->ToAbsolutePath(plotFile));
+
+				QFileInfo xpltFile(xpltPath);
+
+				QTreeWidgetItem* t3 = new QTreeWidgetItem(t2);
+				t3->setText(0, xpltFile.fileName());
+				t3->setToolTip(0, xpltPath);
+				t3->setData(0, Qt::UserRole, xpltPath);
+				t3->setSizeHint(0, QSize(100, px));
+			}
+			it->addChild(t2);
+		}
 	}
 }
 
-void CFileViewer::on_toolUp_clicked()
-{
-	QModelIndex n = ui->m_fileList->rootIndex();
-	n = m_fileSystem->parent(n);
-	ui->m_fileList->setRootIndex(n);
-	ui->m_folder->setEditText(currentPath());
-}
-
-void CFileViewer::on_folder_currentIndexChanged(const QString& text)
-{
-	setCurrentPath(text);
-}
-
-void CFileViewer::on_folder_editTextChanged(const QString& text)
-{
-	setCurrentPath(text);
-}

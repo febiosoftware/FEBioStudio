@@ -35,10 +35,10 @@ protected:
 	};
 
 public:
-	FELSDYNAimport();
+	FELSDYNAimport(FEPostModel* fem);
 	virtual ~FELSDYNAimport();
-
-	bool Load(FEPostModel& fem, const char* szfile);
+	
+	bool Load(const char* szfile) override;
 
 	int FindNode(int id, std::list<NODE>::iterator& pn);
 

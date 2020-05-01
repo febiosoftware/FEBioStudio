@@ -198,6 +198,7 @@
     <ClInclude Include="..\..\MeshIO\FEVTKExport.h" />
     <ClInclude Include="..\..\MeshIO\FEVTKImport.h" />
     <ClInclude Include="..\..\MeshIO\FileReader.h" />
+    <ClInclude Include="..\..\MeshIO\FileWriter.h" />
     <ClInclude Include="..\..\MeshIO\PRVObjectExport.h" />
     <ClInclude Include="..\..\MeshIO\PRVObjectFormat.h" />
     <ClInclude Include="..\..\MeshIO\PRVObjectImport.h" />

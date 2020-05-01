@@ -1066,7 +1066,7 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 
 	// set the rendering mode
 	int nmode = m_nrender;
-	if (pmat->m_nrender != RENDER_MODE_DEFAULT) nmode = pmat->m_nrender;
+	if (pmat->m_nrender != RENDER_MODE_DEFAULT) nmode = pmat->m_nrender - 1;
 
 	if (nmode == RENDER_MODE_SOLID)
 	{

@@ -9,7 +9,7 @@
 class FERAWImport : public FEFileImport
 {
 public:
-	FERAWImport();
+	FERAWImport(FEProject& prj);
 	~FERAWImport();
 
 	//! Set the image dimensions
@@ -19,7 +19,7 @@ public:
 	void SetBoxSize(double x0, double y0, double z0, double w, double h, double d);
 
 	//! Load the image data
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	int	m_nx, m_ny, m_nz;		//!< image dimensions

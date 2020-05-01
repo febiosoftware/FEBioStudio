@@ -15,10 +15,10 @@ protected:
 	};
 
 public:
-	FEBYUimport();
+	FEBYUimport(FEProject& prj);
 	~FEBYUimport(void);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	vector<PART>	m_Part;

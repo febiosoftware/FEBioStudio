@@ -5,8 +5,8 @@
 class FEViewpointExport : public FEFileExport
 {
 public:
-	FEViewpointExport(void);
+	FEViewpointExport(FEProject& prj);
 	~FEViewpointExport(void);
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile) override;
 };

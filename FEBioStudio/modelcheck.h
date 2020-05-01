@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-class CDocument;
+class FEProject;
 
 enum ERROR_TYPE
 {
@@ -11,4 +11,4 @@ enum ERROR_TYPE
 
 typedef std::pair<ERROR_TYPE, std::string> MODEL_ERROR;
 
-void checkModel(CDocument* doc, std::vector<MODEL_ERROR>& errorList);
+void checkModel(FEProject& prj, std::vector<MODEL_ERROR>& errorList);

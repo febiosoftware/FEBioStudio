@@ -6,7 +6,7 @@
 
 class CMainWindow;
 class QModelIndex;
-class CPostDoc;
+class CPostDocument;
 
 namespace Post {
 	class FEDataField;
@@ -40,7 +40,7 @@ public:
 	void on_props_dataChanged(bool b);
 
 private:
-	CPostDoc* GetActiveDocument();
+	CPostDocument* GetActiveDocument();
 
 private:
 	Ui::CPostDataPanel* ui;

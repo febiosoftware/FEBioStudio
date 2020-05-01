@@ -40,11 +40,10 @@ public:
 	const char* GetName() const;
 	void SetName(const std::string& name);
 
+	void SetViewState(VIEW_STATE state);
 	VIEW_STATE GetViewState();
 
 protected:
-	static CDocument* m_pDoc;
-
 	// doc/view state variables
 	VIEW_STATE	m_state;
 

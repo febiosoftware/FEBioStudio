@@ -27,14 +27,13 @@ FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 {
 	if (n <= 0) return 0;
 
-	// create the file import
-	xpltFileReader* pfr = new xpltFileReader;
-
 	// load the first model
 	FEPostModel* pfem = new FEPostModel;
 	pfem->SetTitle("PlotMix");
+	xpltFileReader* pfr = new xpltFileReader(pfem);
 	pfr->SetReadStateFlag(XPLT_READ_FIRST_AND_LAST);
-	if (pfr->Load(*pfem, szfile[0]) == false) { delete pfem; return 0; }
+	if (pfr->Load(szfile[0]) == false) { delete pfem; delete pfr; return 0; }
+	delete pfr;
 
 	// the "time" value will be the state
 	pfem->GetState(0)->m_time = 0;
@@ -53,21 +52,26 @@ FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 	// get the mesh of the new model
 	FEPostMesh* mesh = pfem->GetFEMesh(0);
 
-	// only read last states
-	pfr->SetReadStateFlag(XPLT_READ_LAST_STATE_ONLY);
-
 	// load the other models
 	for (int i=1; i<n; ++i)
 	{
 		// create a new scene
 		FEPostModel fem2;
 
+		// create reader 
+		pfr = new xpltFileReader(&fem2);
+
+		// only read last states
+		pfr->SetReadStateFlag(XPLT_READ_LAST_STATE_ONLY);
+
 		// try to load the scene
-		if (pfr->Load(fem2, szfile[i]) == false)
+		if (pfr->Load(szfile[i]) == false)
 		{
 			delete pfem;
+			delete pfr;
 			return 0;
 		}
+		delete pfr;
 
 		// make sure the mesh size is the same
 		FEPostMesh& m2 = *fem2.GetFEMesh(0);
@@ -100,9 +104,6 @@ FEPostModel* FEPlotMix::Load(const char **szfile, int n)
 
 		pfem->AddState(pstate);
 	}
-
-	// cleanup
-	delete pfr;
 
 	return pfem;
 }

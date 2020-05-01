@@ -3,7 +3,7 @@
 #include <vector>
 
 class CModelViewer;
-class CDocument;
+class CModelDocument;
 class CPropertyList;
 class FEModel;
 class FEStep;
@@ -98,7 +98,7 @@ public:
 	CModelTree(CModelViewer* view, QWidget* parent = 0);
 
 	// build the model tree from the document
-	void Build(CDocument* doc);
+	void Build(CModelDocument* doc);
 
 	void ShowItem(QTreeWidgetItem* item);
 
@@ -136,8 +136,8 @@ protected:
 	void UpdateMaterials  (QTreeWidgetItem* t1, FEModel& fem);
 	void UpdateDiscrete   (QTreeWidgetItem* t1, FEModel& fem);
 	void UpdateOutput     (QTreeWidgetItem* t1, FEProject& prj);
-	void UpdateJobs       (QTreeWidgetItem* t1, CDocument* doc);
-	void UpdateImages     (QTreeWidgetItem* t1, CDocument* doc);
+	void UpdateJobs       (QTreeWidgetItem* t1, CModelDocument* doc);
+	void UpdateImages     (QTreeWidgetItem* t1, CModelDocument* doc);
 	void UpdateMeshData   (QTreeWidgetItem* t1, FEModel& fem);
 
 	void AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FEModel& fem, bool topLevel);

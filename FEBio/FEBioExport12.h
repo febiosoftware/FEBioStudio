@@ -1,6 +1,7 @@
 #pragma once
 #include <FEMLib/FEMultiMaterial.h>
 #include "FEBioExport.h"
+#include <MeshTools/FEProject.h>
 
 //-----------------------------------------------------------------------------
 class FEBioExport12 : public FEBioExport
@@ -27,12 +28,12 @@ public:
 	};
 
 public:
-	FEBioExport12();
+	FEBioExport12(FEProject& prj);
 	virtual ~FEBioExport12();
 
 	void Clear();
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile);
 
 public: // set export attributes
 	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
@@ -112,7 +113,6 @@ protected:
 
 protected:
 	FEModel*		m_pfem;
-	FEProject*		m_pprj;
 
 protected:
 	bool HasSurface(FEItemListBuilder* pl);

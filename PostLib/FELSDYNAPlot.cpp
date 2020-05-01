@@ -33,7 +33,7 @@ void byteswap(int* pi, int n)
 }
 
 //-----------------------------------------------------------------------------
-FELSDYNAPlotImport::FELSDYNAPlotImport() : FEFileReader("LSDYNA database")
+FELSDYNAPlotImport::FELSDYNAPlotImport(FEPostModel* fem) : FEFileReader(fem)
 {
 	m_brepeat = false;
 	m_naction = 0;
@@ -44,7 +44,7 @@ FELSDYNAPlotImport::~FELSDYNAPlotImport()
 }
 
 //-----------------------------------------------------------------------------
-bool FELSDYNAPlotImport::Load(FEPostModel &fem, const char *szfile)
+bool FELSDYNAPlotImport::Load(const char *szfile)
 {
 	// reset family plot file counter
 	m_ifile = 0;
@@ -53,16 +53,16 @@ bool FELSDYNAPlotImport::Load(FEPostModel &fem, const char *szfile)
 	if (Open(szfile, "rb") == false) return errf("Failed opening file %s.", szfile);
 
 	// read the header
-	if (ReadHeader(fem) == false) return false;
+	if (ReadHeader(*m_fem) == false) return false;
 
 	// create materials
-	CreateMaterials(fem);
+	CreateMaterials(*m_fem);
 
 	// read the mesh
-	if (ReadMesh(fem) == false) return false;
+	if (ReadMesh(*m_fem) == false) return false;
 
 	// read the states
-	if (ReadStates(fem) == false) return false;
+	if (ReadStates(*m_fem) == false) return false;
 
 	return true;
 }
@@ -85,7 +85,8 @@ int FELSDYNAPlotImport::ReadData(void* pd, size_t nsize, size_t ncnt, bool bdump
 		m_ifile++;
 
 		char sznewfile[256] = {0};
-		sprintf(sznewfile, "%s%02d", m_fileName.c_str(), m_ifile);
+		string fileName = GetFileName();
+		sprintf(sznewfile, "%s%02d", fileName.c_str(), m_ifile);
 
 		// try to open it
 		m_fp = fopen(sznewfile, "rb");

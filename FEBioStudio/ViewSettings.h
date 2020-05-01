@@ -51,8 +51,6 @@ struct VIEW_SETTINGS
 	bool	m_snapToGrid;		//!< snap to grid
 	bool	m_snapToNode;		//!< snap to nodes
 
-	bool	m_clearUndoOnSave;	//!< clear undo stack on save
-
 	vec3d	m_pos3d;	// The location of the 3D cursor
 
 	bool	m_bTags;

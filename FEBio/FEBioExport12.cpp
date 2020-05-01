@@ -16,7 +16,7 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-FEBioExport12::FEBioExport12()
+FEBioExport12::FEBioExport12(FEProject& prj) : FEBioExport(prj)
 {
 	// initialize section flags
 	for (int i = 0; i<MAX_SECTIONS; ++i) m_section[i] = true;
@@ -107,15 +107,14 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 
 //-----------------------------------------------------------------------------
 //! Export the project to the FEBio 1.x format.
-bool FEBioExport12::Export(FEProject& prj, const char* szfile)
+bool FEBioExport12::Write(const char* szfile)
 {
 	// get the project and model
-	m_pprj = &prj;
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 
 	// prepare for export
-	if (PrepareExport(prj) == false) return errf("Not all objects are meshed.");
+	if (PrepareExport(m_prj) == false) return errf("Not all objects are meshed.");
 
 	// get the initial step
 	FEStep* pstep = fem.GetStep(0);
@@ -3638,7 +3637,7 @@ void FEBioExport12::WriteLoadTraction(FEStep& s)
 //
 void FEBioExport12::WriteInitialSection()
 {
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	FEStep& s = *fem.GetStep(0);
 
 	vector<int> VC; VC.resize(m_nodes);
@@ -4043,7 +4042,7 @@ void FEBioExport12::WriteSurface(XMLElement& el, FEItemListBuilder* pl)
 
 void FEBioExport12::WriteOutputSection()
 {
-	CPlotDataSettings& plt = m_pprj->GetPlotDataSettings();
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	int N = plt.PlotVariables();
 	if (N > 0)
 	{
@@ -4076,9 +4075,9 @@ void FEBioExport12::WriteOutputSection()
 		else m_xml.add_empty(p);
 	}
 
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
-	CLogDataSettings& log = m_pprj->GetLogDataSettings();
+	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	N = log.LogDataSize();
 	if (N > 0)
 	{

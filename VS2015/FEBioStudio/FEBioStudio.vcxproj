@@ -233,6 +233,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgUpload.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgVTKExport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgWidgetProps.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DocManager.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DocTemplate.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Document.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DragBox.cpp" />
@@ -256,6 +257,7 @@
     <ClCompile Include="..\..\FEBioStudio\GManipulator.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\GView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ImportSpringsTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
@@ -270,11 +272,14 @@
     <ClCompile Include="..\..\FEBioStudio\MaterialPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeasureAreaTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeasureVolumeTool.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\menu.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuEdit.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuFile.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuHelp.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuPhysics.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuPost.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuRecord.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuTools.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshButtonBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshInfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshInspector.cpp" />
@@ -359,6 +364,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\modelcheck.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ModelDocument.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ModelFileReader.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ModelFileWriter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelPropsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelSearch.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelTree.cpp" />
@@ -371,8 +379,9 @@
     <ClCompile Include="..\..\FEBioStudio\PointCongruencyTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PointDistanceTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostDataPanel.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\PostDoc.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PostDocument.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostModelPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\PostObject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PostToolBar.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PropertyList.cpp" />
@@ -395,7 +404,6 @@
     <ClCompile Include="..\..\FEBioStudio\StatsWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\stdafx.cpp" />
     <ClCompile Include="..\..\FEBioStudio\SummaryWindow.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\template.cpp" />
     <ClCompile Include="..\..\FEBioStudio\TetOverlapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolBox.cpp" />
@@ -496,6 +504,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgSelectRange.h" />
+    <ClInclude Include="..\..\FEBioStudio\DocManager.h" />
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h" />
     <ClInclude Include="..\..\FEBioStudio\Encrypter.h" />
@@ -525,6 +534,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\GView.h" />
     <ClInclude Include="..\..\FEBioStudio\ImportSpringsTool.h" />
     <ClInclude Include="..\..\FEBioStudio\LaunchConfig.h" />
     <CustomBuild Include="..\..\FEBioStudio\Logger.h">
@@ -551,6 +561,9 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\ModelDocument.h" />
+    <ClInclude Include="..\..\FEBioStudio\ModelFileReader.h" />
+    <ClInclude Include="..\..\FEBioStudio\ModelFileWriter.h" />
     <ClInclude Include="..\..\FEBioStudio\PointCongruencyTool.h" />
     <ClInclude Include="..\..\FEBioStudio\PointDistanceTool.h" />
     <CustomBuild Include="..\..\FEBioStudio\RepoConnectionHandler.h">
@@ -573,6 +586,8 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\PostDocument.h" />
+    <ClInclude Include="..\..\FEBioStudio\PostObject.h" />
     <ClInclude Include="..\..\FEBioStudio\PostPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\PostToolBar.h" />
     <ClInclude Include="..\..\FEBioStudio\RepoProject.h" />
@@ -822,11 +837,6 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\PostDoc.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\PropertyList.h" />
     <CustomBuild Include="..\..\FEBioStudio\PropertyListForm.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

@@ -8,19 +8,19 @@
 #include <MeshTools/GDiscreteObject.h>
 
 //-----------------------------------------------------------------------------
-PRVObjectImport::PRVObjectImport()
+PRVObjectImport::PRVObjectImport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
 //-----------------------------------------------------------------------------
-bool PRVObjectImport::Load(FEProject& prj, const char* szfile)
+bool PRVObjectImport::Load(const char* szfile)
 {
 	if (Open(szfile, "rb") == false) return false;
 
 	// open archive         P V O
 	if (m_ar.Open(m_fp, 0x0050564F) == false) return false;
 
-	bool ret = LoadObjects(m_ar, prj);
+	bool ret = LoadObjects(m_ar, m_prj);
 
 	Close();
 

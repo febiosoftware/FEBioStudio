@@ -10,10 +10,10 @@ class FEPostMesh;
 class FEBioImport :	public FEFileReader
 {
 public:
-	FEBioImport();
+	FEBioImport(FEPostModel* fem);
 	~FEBioImport();
 
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 
 protected:
 	void ParseMaterialSection(FEPostModel& fem, XMLTag& tag);
@@ -22,7 +22,6 @@ protected:
 	bool ParseVersion(XMLTag& tag);
 
 protected:
-	FEPostModel*	m_pfem;
 	FEPostMesh*		m_pm;
 
 	int		m_nmat;

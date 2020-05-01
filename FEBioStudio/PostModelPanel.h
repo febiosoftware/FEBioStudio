@@ -4,11 +4,8 @@
 
 //-----------------------------------------------------------------------------
 class QTreeWidgetItem;
-class CPostDoc;
-
-namespace Post {
-	class CGLObject;
-}
+class CPostDocument;
+class FSObject;
 
 //-----------------------------------------------------------------------------
 namespace Ui {
@@ -29,9 +26,9 @@ public:
 	// this is called when the view needs to be updated
 	void UpdateView();
 
-	void selectObject(Post::CGLObject* po);
+	void selectObject(FSObject* po);
 
-	Post::CGLObject* selectedObject();
+	FSObject* selectedObject();
 
 private slots:
 	void on_postModel_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
@@ -45,12 +42,12 @@ private slots:
 
 signals:
 	void postObjectStateChanged();
-	void postObjectPropsChanged(Post::CGLObject* po);
+	void postObjectPropsChanged(FSObject* po);
 
 private:
-	CPostDoc* GetActiveDocument();
+	CPostDocument* GetActiveDocument();
 
 private:
 	Ui::CPostModelPanel*				ui;
-	std::vector<Post::CGLObject*>	m_obj;
+	std::vector<FSObject*>	m_obj;
 };

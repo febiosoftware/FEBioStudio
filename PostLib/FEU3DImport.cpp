@@ -4,11 +4,11 @@
 
 using namespace Post;
 
-FEU3DImport::FEU3DImport() : FEFileReader("U3D")
+FEU3DImport::FEU3DImport(FEPostModel* fem) : FEFileReader(fem)
 {
 }
 
-bool FEU3DImport::Load(FEPostModel& fem, const char* szfile)
+bool FEU3DImport::Load(const char* szfile)
 {
 	if (Open(szfile, "rb") == false) return errf("Failed opening file");
 

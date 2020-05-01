@@ -22,10 +22,10 @@ public:
 
 public:
 	// constructor
-	FERAWImageReader();
+	FERAWImageReader(FEPostModel* fem);
 
 	// load image data
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 
 	// set the options (must be done before loading!)
 	void SetOptions(OPTIONS& o) { m_ops = o; }

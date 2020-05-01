@@ -12,7 +12,7 @@
 #include <QInputDialog>
 #include <QFormLayout>
 #include <QDialogButtonBox>
-#include "PostDoc.h"
+#include "PostDocument.h"
 
 class CStateModel : public QAbstractTableModel
 {
@@ -163,18 +163,16 @@ CStatePanel::CStatePanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwn
 	ui->setupUi(this);
 }
 
-CPostDoc* CStatePanel::GetActiveDocument()
+CPostDocument* CStatePanel::GetActiveDocument()
 {
-	CDocument* doc = GetMainWindow()->GetDocument();
-	if (doc->FEBioJobs() == 0) return nullptr;
-	return GetMainWindow()->GetActiveDocument();
+	return GetMainWindow()->GetPostDocument();
 }
 
 void CStatePanel::Update(bool breset)
 {
 	if (breset)
 	{
-		CPostDoc* pdoc = GetActiveDocument();
+		CPostDocument* pdoc = GetActiveDocument();
 		Post::FEPostModel* fem = (pdoc ? pdoc->GetFEModel() : nullptr);
 		ui->data->SetFEModel(fem);
 	}
@@ -187,13 +185,13 @@ void CStatePanel::on_stateList_doubleClicked(const QModelIndex& index)
 
 void CStatePanel::on_addButton_clicked()
 {
-	CPostDoc& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
+	CPostDocument* doc = GetActiveDocument();
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 	CDlgAddState dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFEModel();
 		int N = dlg.m_nstates;
 		int M = (N < 2 ? 1 : N - 1);
 		double t0 = dlg.m_minTime;
@@ -209,10 +207,10 @@ void CStatePanel::on_addButton_clicked()
 
 void CStatePanel::on_editButton_clicked()
 {
-	CPostDoc& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
+	CPostDocument* doc = GetActiveDocument();
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
-	Post::FEPostModel& fem = *doc.GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 	QItemSelectionModel* selection = ui->list->selectionModel();
 	QModelIndexList selRows = selection->selectedRows();
 	int ncount = selRows.count();
@@ -237,10 +235,10 @@ void CStatePanel::on_editButton_clicked()
 
 void CStatePanel::on_deleteButton_clicked()
 {
-	CPostDoc& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
+	CPostDocument* doc = GetActiveDocument();
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
-	Post::FEPostModel& fem = *doc.GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFEModel();
 	QItemSelectionModel* selection = ui->list->selectionModel();
 	QModelIndexList selRows = selection->selectedRows();
 
@@ -259,11 +257,11 @@ void CStatePanel::on_deleteButton_clicked()
 
 		int states = fem.GetStates();
 
-		TIMESETTINGS& ts = doc.GetTimeSettings();
+		TIMESETTINGS& ts = doc->GetTimeSettings();
 		if (ts.m_end >= states) ts.m_end = states - 1;
-		int n = doc.GetActiveState();
+		int n = doc->GetActiveState();
 		if (n >= states - 1) n = states - 1;
-		doc.SetActiveState(n);
+		doc->SetActiveState(n);
 		GetMainWindow()->UpdatePostToolbar();
 		GetMainWindow()->Update(this);
 	}

@@ -19,10 +19,10 @@ public:
 	};
 
 public:
-	FETetGenImport();
+	FETetGenImport(FEProject& prj);
 	~FETetGenImport(void);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	bool BuildMesh(FEModel& fem);

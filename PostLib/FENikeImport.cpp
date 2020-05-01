@@ -6,10 +6,9 @@
 
 using namespace Post;
 
-FENikeImport::FENikeImport(void) : FEFileReader("NIKE3D input")
+FENikeImport::FENikeImport(FEPostModel* fem) : FEFileReader(fem)
 {
 	m_pm = 0;
-	m_pfem = 0;
 }
 
 FENikeImport::~FENikeImport(void)
@@ -17,13 +16,12 @@ FENikeImport::~FENikeImport(void)
 
 }
 
-bool FENikeImport::Load(FEPostModel &fem, const char *szfile)
+bool FENikeImport::Load(const char *szfile)
 {
 	// open the file
 	if (Open(szfile, "rt") == false) return errf("Failed opening NIKE file.");
 
-	fem.Clear();
-	m_pfem = &fem;
+	m_fem->Clear();
 
 	// read control section
 	if (ReadControlSection() == false) return false;
@@ -39,11 +37,11 @@ bool FENikeImport::Load(FEPostModel &fem, const char *szfile)
 
 	// update the mesh
 	if (m_pm) m_pm->Update(); else return false;
-	fem.UpdateBoundingBox();
+	m_fem->UpdateBoundingBox();
 
 	// we need a single state
-	FEState* ps = new FEState(0.f, &fem, fem.GetFEMesh(0));
-	fem.AddState(ps);
+	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));
+	m_fem->AddState(ps);
 
 	return true;
 }
@@ -69,7 +67,7 @@ bool FENikeImport::ReadControlSection()
 	if (get_line(szline) == 0) return errf("failed reading control card %d", 1);
 	char* ch = strchr(szline, '\n');
 	if (ch) *ch = 0;
-	m_pfem->SetTitle(szline);
+	m_fem->SetTitle(szline);
 
 	// read card 2
 	if (get_line(szline) == 0) return errf("failed reading control card %d", 2);
@@ -108,7 +106,7 @@ bool FENikeImport::ReadMaterialSection()
 
 		// add a material to the scene
 		FEMaterial mat;
-		m_pfem->AddMaterial(mat);
+		m_fem->AddMaterial(mat);
 	}
 
 	return true;
@@ -132,7 +130,7 @@ bool FENikeImport::ReadGeometrySection()
 		sscanf(szline, "%*8d%*5d%g%g%g", &x, &y, &z);
 		n.r = vec3d(x,y,z);
 	}
-	m_pfem->AddMesh(m_pm);
+	m_fem->AddMesh(m_pm);
 
 	// read the solid elements
 	int n[8], nm;

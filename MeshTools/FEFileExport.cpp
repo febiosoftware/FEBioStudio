@@ -10,7 +10,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEFileExport::FEFileExport()
+FEFileExport::FEFileExport(FEProject& prj) : m_prj(prj)
 {
 
 }

@@ -4,8 +4,8 @@
 
 // rendering modes
 #define RENDER_MODE_DEFAULT	0
-#define RENDER_MODE_WIRE	1
-#define RENDER_MODE_SOLID	2
+#define RENDER_MODE_SOLID	1
+#define RENDER_MODE_WIRE	2
 
 #define RENDER_TRANS_CONSTANT	0
 #define RENDER_TRANS_WEIGHTED	1

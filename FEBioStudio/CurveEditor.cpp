@@ -1,6 +1,6 @@
 #include "ui_curveeditor.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPainter>
@@ -208,7 +208,9 @@ void CCurveEditor::BuildLoadCurves()
 	t1->setExpanded(true);
 	t1->setText(0, "Model");
 
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
+	if (doc == nullptr) return;
+
 	FEModel& fem = *doc->GetFEModel();
 	GModel& model = fem.GetModel();
 
@@ -340,11 +342,12 @@ void CCurveEditor::BuildLoadCurves()
 
 void CCurveEditor::BuildModelTree()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
+
 	QTreeWidgetItem* t1 = new QTreeWidgetItem(ui->tree);
 	t1->setExpanded(true);
 	t1->setText(0, "Model");
 
-	CDocument* doc = m_wnd->GetDocument();
 	FEModel& fem = *doc->GetFEModel();
 	GModel& model = fem.GetModel();
 

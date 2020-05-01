@@ -6,7 +6,7 @@
 
 using namespace Post;
 
-FESTLimport::FESTLimport(void) : FEFileReader("STL")
+FESTLimport::FESTLimport(FEPostModel* fem) : FEFileReader(fem)
 {
 
 }
@@ -37,10 +37,9 @@ bool FESTLimport::read_line(char* szline, const char* sz)
 	return true;
 }
 
-bool FESTLimport::Load(FEPostModel& fem, const char* szfile)
+bool FESTLimport::Load(const char* szfile)
 {
-	fem.Clear();
-	m_pfem = &fem;
+	m_fem->Clear();
 	m_nline = 0;
 
 	// try to open the file
@@ -106,7 +105,7 @@ void FESTLimport::build_mesh()
 
 	// add one material to the scene
 	FEMaterial mat;
-	m_pfem->AddMaterial(mat);
+	m_fem->AddMaterial(mat);
 
 	// reserve space for nodes
 	int NF = m_Face.size();
@@ -132,7 +131,7 @@ void FESTLimport::build_mesh()
 		vec3f& ri = m_Node[i];
 		n.r = ri;
 	}
-	m_pfem->AddMesh(pm);
+	m_fem->AddMesh(pm);
 
 	// create elements
 	list<FACET>::iterator is = m_Face.begin();
@@ -149,11 +148,11 @@ void FESTLimport::build_mesh()
 
 	// update the mesh
 	pm->Update();
-	m_pfem->UpdateBoundingBox();
+	m_fem->UpdateBoundingBox();
 
 	// we need a single state
-	FEState* ps = new FEState(0.f, m_pfem, m_pfem->GetFEMesh(0));
-	m_pfem->AddState(ps);
+	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));
+	m_fem->AddState(ps);
 }
 
 int FESTLimport::find_node(vec3f& r, const double eps)

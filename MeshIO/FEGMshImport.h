@@ -13,8 +13,8 @@ protected:
 	};
 
 public:
-	FEGMshImport();
-	bool Load(FEProject& prj, const char* szfile);
+	FEGMshImport(FEProject& prj);
+	bool Load(const char* szfile);
 
 protected:
 	bool ReadMeshFormat();

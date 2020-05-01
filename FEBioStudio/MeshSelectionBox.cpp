@@ -13,7 +13,7 @@
 #include <QInputDialog>
 #include <QLabel>
 #include "MainWindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include "Commands.h"
 
 class Ui::CMeshSelectionBox
@@ -207,7 +207,7 @@ void CMeshSelectionBox::onButtonClicked(int id)
 	case 3: newMode = ITEM_NODE; break;
 	}
 
-	CDocument* pdoc = ui->wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(ui->wnd->GetDocument());
 	pdoc->SetItemMode(newMode);
 
 	FESelection* sel = pdoc->GetCurrentSelection();
@@ -312,24 +312,26 @@ void CMeshSelectionBox::on_selectAndHide_toggled(bool b)
 
 void CMeshSelectionBox::on_hideSelection_triggered(bool b)
 {
-	CDocument* pdoc = ui->wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(ui->wnd->GetDocument());
+	if (pdoc == nullptr) return;
 
 	FESelection* ps = pdoc->GetCurrentSelection();
 	if (ps && ps->Size())
 	{
-		pdoc->DoCommand(new CCmdHideSelection());
+		pdoc->DoCommand(new CCmdHideSelection(pdoc));
 		ui->wnd->Update(0, true);
 	}
 }
 
 void CMeshSelectionBox::on_unhideAll_triggered(bool b)
 {
-	CDocument* pdoc = ui->wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(ui->wnd->GetDocument());
+	if (pdoc == nullptr) return;
 
 	FEModel* ps = pdoc->GetFEModel();
 	if (!ps) return;
 
-	CCmdUnhideAll* pcmd = new CCmdUnhideAll();
+	CCmdUnhideAll* pcmd = new CCmdUnhideAll(pdoc);
 	pdoc->DoCommand(pcmd);
 
 	ui->wnd->Update(0, true);
@@ -337,7 +339,8 @@ void CMeshSelectionBox::on_unhideAll_triggered(bool b)
 
 void CMeshSelectionBox::on_growSelection_triggered(bool b)
 {
-	CDocument* pdoc = ui->wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(ui->wnd->GetDocument());
+	if (pdoc == nullptr) return;
 
 	GObject* po = pdoc->GetActiveObject(); assert(po);
 	FEMeshBase* pm = po->GetEditableMesh();
@@ -357,7 +360,7 @@ void CMeshSelectionBox::on_growSelection_triggered(bool b)
 
 void CMeshSelectionBox::on_shrinkSelection_triggered(bool b)
 {
-	CDocument* pdoc = ui->wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(ui->wnd->GetDocument());
 
 	GObject* po = pdoc->GetActiveObject();
 	assert(po);

@@ -15,9 +15,9 @@
 #include <PostLib/FEPostMesh.h>
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
-#include "PostDoc.h"
+#include "PostDocument.h"
 
-CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc, 0)
+CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
 	QString title = "FEBio Studio: Summary";
 	setWindowTitle(title);
@@ -27,7 +27,7 @@ CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWind
 
 void CSummaryWindow::Update(bool breset, bool bfit)
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	if (breset)
 	{
 		if (doc->IsValid())

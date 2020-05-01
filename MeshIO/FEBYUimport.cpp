@@ -2,7 +2,7 @@
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEBYUimport::FEBYUimport()
+FEBYUimport::FEBYUimport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -10,9 +10,9 @@ FEBYUimport::~FEBYUimport(void)
 {
 }
 
-bool FEBYUimport::Load(FEProject& prj, const char* szfile)
+bool FEBYUimport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 
 	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
 

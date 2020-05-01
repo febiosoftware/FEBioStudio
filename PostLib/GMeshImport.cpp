@@ -5,7 +5,7 @@
 #include "FEPostMesh.h"
 using namespace Post;
 
-GMeshImport::GMeshImport(void) : FEFileReader("GMesh")
+GMeshImport::GMeshImport(FEPostModel* fem) : FEFileReader(fem)
 {
 }
 
@@ -13,7 +13,7 @@ GMeshImport::~GMeshImport(void)
 {
 }
 
-bool GMeshImport::Load(FEPostModel& fem, const char* szfile)
+bool GMeshImport::Load(const char* szfile)
 {
 	// open the file
 	if (Open(szfile, "rt") == false) return false;
@@ -31,7 +31,7 @@ bool GMeshImport::Load(FEPostModel& fem, const char* szfile)
 	// close the file
 	Close();
 
-	return BuildMesh(fem);
+	return BuildMesh(*m_fem);
 }
 
 bool GMeshImport::ReadNodes()

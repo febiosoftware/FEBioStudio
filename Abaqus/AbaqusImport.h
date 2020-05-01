@@ -30,10 +30,10 @@ public:	// import options
 	bool	m_breadPhysics;	// read the physics (i.e. materials, bcs, etc).
 
 public:
-	AbaqusImport();
+	AbaqusImport(FEProject& prj);
 	virtual ~AbaqusImport();
 
-	bool Load(FEProject& fem, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	// read a line and increment line counter

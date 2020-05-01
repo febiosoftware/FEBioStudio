@@ -21,9 +21,8 @@ using namespace std;
 extern GLColor col[];
 
 //-----------------------------------------------------------------------------
-FEBioImport::FEBioImport()
+FEBioImport::FEBioImport(FEProject& prj) : FEFileImport(prj)
 {
-	m_pprj = 0;
 	m_szlog = 0;
 	m_febio = 0;
 	m_geomOnly = false;
@@ -85,7 +84,7 @@ void FEBioImport::AddLogEntry(const char* sz, ...)
 //  Imports an FEBio input file
 //  The actual file is parsed using the XMLReader class.
 //
-bool FEBioImport::Load(FEProject& prj, const char* szfile)
+bool FEBioImport::Load(const char* szfile)
 {
 	ClearLog();
 
@@ -105,8 +104,7 @@ bool FEBioImport::Load(FEProject& prj, const char* szfile)
 	XMLReader xml;
 	if (xml.Attach(m_fp) == false) return errf("This is not a valid FEBio input file");
 
-	m_pprj = &prj;
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
 
 	// create a new FEBioModel
@@ -357,7 +355,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	}
 
 	// update plot variables
-	CPlotDataSettings& plt = m_pprj->GetPlotDataSettings();
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	GModel& mdl = fem.GetModel();
 	for (int i=0; i<m_febio->PlotVariables(); ++i)
 	{
@@ -417,7 +415,7 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 	GModel& model = fem.GetModel();
 	GMeshObject* po = 0;
 	if (model.Objects() == 1) po = dynamic_cast<GMeshObject*>(model.Object(0));
-	CLogDataSettings& log = m_pprj->GetLogDataSettings();
+	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	log.ClearLogData();
 	for (int i = 0; i<m_febio->LogVariables(); ++i)
 	{

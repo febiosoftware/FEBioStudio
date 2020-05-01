@@ -44,9 +44,6 @@ std::string CImageSource::GetFileName() const
 
 bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
 {
-	// do string-substitution
-	string abspath = FSDir::toAbsolutePath(fileName);
-
 	C3DImage* im = new C3DImage;
 	if (im->Create(nx, ny, nz) == false)
 	{
@@ -54,7 +51,7 @@ bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, in
 		return false;
 	}
 
-	if (im->LoadFromFile(abspath.c_str(), 8) == false)
+	if (im->LoadFromFile(fileName.c_str(), 8) == false)
 	{
 		delete im;
 		return false;

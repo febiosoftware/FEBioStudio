@@ -1,12 +1,11 @@
 #pragma once
-
 #include <MeshTools/FEFileExport.h>
 
 class FEHypersurfaceExport : public FEFileExport
 {
 public:
-	FEHypersurfaceExport(void);
+	FEHypersurfaceExport(FEProject& prj);
 	~FEHypersurfaceExport(void);
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile) override;
 };

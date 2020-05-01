@@ -1,8 +1,9 @@
 #include "FEViewpointExport.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 
-FEViewpointExport::FEViewpointExport(void)
+FEViewpointExport::FEViewpointExport(FEProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -10,7 +11,7 @@ FEViewpointExport::~FEViewpointExport(void)
 {
 }
 
-bool FEViewpointExport::Export(FEProject &prj, const char* szfile)
+bool FEViewpointExport::Write(const char* szfile)
 {
 	int m, n, k;
 	// the file name should just be the base name of the coordinate
@@ -24,7 +25,7 @@ bool FEViewpointExport::Export(FEProject &prj, const char* szfile)
 	FILE* fp = fopen(szfcor, "wt");
 	if (fp == 0) return false;
 
-	FEModel* ps = &prj.GetFEModel();
+	FEModel* ps = &m_prj.GetFEModel();
 	GModel& model = ps->GetModel();
 
 	int nn = 1;

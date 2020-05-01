@@ -5,16 +5,16 @@ namespace Ui {
 	class CDlgTimeSettings;
 };
 
-class CPostDoc;
+class CPostDocument;
 
 class CDlgTimeSettings : public QDialog
 {
 public:
-	CDlgTimeSettings(CPostDoc* doc, QWidget* parent);
+	CDlgTimeSettings(CPostDocument* doc, QWidget* parent);
 
 	void accept();
 
 private:
 	Ui::CDlgTimeSettings* ui;
-	CPostDoc*	m_doc;
+	CPostDocument*	m_doc;
 };

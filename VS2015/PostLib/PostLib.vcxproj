@@ -186,7 +186,6 @@
     <ClCompile Include="..\..\PostLib\GLImageRenderer.cpp" />
     <ClCompile Include="..\..\PostLib\GLObject.cpp" />
     <ClCompile Include="..\..\PostLib\GMeshImport.cpp" />
-    <ClCompile Include="..\..\PostLib\GView.cpp" />
     <ClCompile Include="..\..\PostLib\ImageModel.cpp" />
     <ClCompile Include="..\..\PostLib\ImageSlicer.cpp" />
     <ClCompile Include="..\..\PostLib\ImgAnimation.cpp" />
@@ -245,7 +244,6 @@
     <ClInclude Include="..\..\PostLib\GLImageRenderer.h" />
     <ClInclude Include="..\..\PostLib\GLObject.h" />
     <ClInclude Include="..\..\PostLib\GMeshImport.h" />
-    <ClInclude Include="..\..\PostLib\GView.h" />
     <ClInclude Include="..\..\PostLib\ImageModel.h" />
     <ClInclude Include="..\..\PostLib\ImageSlicer.h" />
     <ClInclude Include="..\..\PostLib\ImgAnimation.h" />

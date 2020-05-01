@@ -7,7 +7,7 @@
 #include "MainWindow.h"
 #include "BuildPanel.h"
 #include "CreatePanel.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GSurfaceMeshObject.h>
@@ -33,11 +33,12 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <PostLib/ImageModel.h>
-#include "PostDoc.h"
+#include "PostDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/GModel.h>
 #include "Commands.h"
+#include "PostObject.h"
 #include <iostream>
 
 static GLubyte poly_mask[128] = {
@@ -424,7 +425,7 @@ CDocument* CGLView::GetDocument()
 
 void CGLView::UpdateCamera(bool hitCameraTarget)
 {
-	CPostDoc* doc = m_pWnd->GetActiveDocument();
+	CPostDocument* doc = m_pWnd->GetPostDocument();
 	if (doc && doc->IsValid())
 	{
 		GetCamera().Update(hitCameraTarget);
@@ -440,6 +441,7 @@ void CGLView::resizeGL(int w, int h)
 void CGLView::mousePressEvent(QMouseEvent* ev)
 {
 	CDocument* pdoc = m_pWnd->GetDocument();
+	if (pdoc == nullptr) return;
 
 	int ntrans = pdoc->GetTransformMode();
 
@@ -447,7 +449,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	int y = ev->y();
 
 	// get the active view
-	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	// check GL progress bar first
 	if (postDoc && m_drawGLProgress)
@@ -532,11 +534,15 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		}
 		else m_ds = vec3d(1, 1, 1);
 
-		FESelection* ps = pdoc->GetCurrentSelection();
-		if (m_coord == COORD_LOCAL)
+		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (mdoc)
 		{
-			quatd q = ps->GetOrientation();
-			q.RotateVector(m_ds);
+			FESelection* ps = mdoc->GetCurrentSelection();
+			if (m_coord == COORD_LOCAL)
+			{
+				quatd q = ps->GetOrientation();
+				q.RotateVector(m_ds);
+			}
 		}
 
 		m_ds.Normalize();
@@ -549,7 +555,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 	ev->accept();
 }
 
-bool CGLView::TrackGLProgress(int x, CPostDoc* postDoc)
+bool CGLView::TrackGLProgress(int x, CPostDocument* postDoc)
 {
 	int states = postDoc->GetStates();
 	if (states < 2) return false;
@@ -563,6 +569,9 @@ bool CGLView::TrackGLProgress(int x, CPostDoc* postDoc)
 void CGLView::mouseMoveEvent(QMouseEvent* ev)
 {
 	CDocument* pdoc = m_pWnd->GetDocument();
+	if (pdoc == nullptr) return;
+
+	CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
 
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
 	bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
@@ -579,7 +588,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	int y = ev->pos().y();
 
 	// get the active view
-	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	// check GL progress bar first
 	if (postDoc && m_drawGLProgress && m_trackGLProgress)
@@ -689,7 +698,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				{
 					FEExtrudeFaces mod;
 					mod.SetExtrusionDistance(0.0);
-					pdoc->ApplyFEModifier(mod, po, 0, false);
+					mdoc->ApplyFEModifier(mod, po, 0, false);
 				}
 
 				m_bextrude = false;
@@ -702,7 +711,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			quatd q = m_Cam.GetOrientation();
 
 			q.Inverse().RotateVector(dr);
-			FESelection* ps = pdoc->GetCurrentSelection();
+			FESelection* ps = mdoc->GetCurrentSelection();
 			if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
 
 			if (m_pivot == PIVOT_X) dr.y = dr.z = 0;
@@ -759,7 +768,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (m_pivot == PIVOT_Y) q = quatd(f, vec3d(0, 1, 0));
 				if (m_pivot == PIVOT_Z) q = quatd(f, vec3d(0, 0, 1));
 
-				FESelection* ps = pdoc->GetCurrentSelection();
+				FESelection* ps = mdoc->GetCurrentSelection();
 				assert(ps);
 
 				if (m_coord == COORD_LOCAL)
@@ -792,7 +801,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				df = st / m_st;
 			}
 			m_st *= df;
-			FESelection* ps = pdoc->GetCurrentSelection();
+			FESelection* ps = mdoc->GetCurrentSelection();
 			ps->Scale(df, m_ds, GetPivotPosition());
 
 			m_pWnd->UpdateGLControlBar();
@@ -820,11 +829,11 @@ void CGLView::mouseDoubleClickEvent(QMouseEvent* ev)
 
 void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 {
+	// get the active view
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
+
 	int x = ev->x();
 	int y = ev->y();
-
-	// get the active view
-	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
 
 	// check GL progress bar first
 	if (postDoc && m_drawGLProgress && m_trackGLProgress)
@@ -843,6 +852,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		return;
 	}
 	CDocument* pdoc = m_pWnd->GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	int ntrans = pdoc->GetTransformMode();
@@ -954,16 +965,21 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 					delete preg;
 				}
 
-				FESelection* psel = pdoc->GetCurrentSelection();
-				if (psel) 
+				CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+				if (mdoc)
 				{
-					if (psel->Size() && view.m_bhide)
+					FESelection* psel = mdoc->GetCurrentSelection();
+					if (psel)
 					{
-						pdoc->DoCommand(new CCmdHideSelection());
+						if (psel->Size() && view.m_bhide)
+						{
+							pdoc->DoCommand(new CCmdHideSelection(mdoc));
+						}
 					}
+					m_pWnd->Update(0, false);
+					emit selectionChanged();
 				}
-				m_pWnd->Update(0, false);
-				emit selectionChanged();
+
 				repaint();
 			}
 			else
@@ -1012,13 +1028,15 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	}
 	else 
 	{
-		FESelection* ps = pdoc->GetCurrentSelection();
+		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (mdoc == nullptr) return;
+		FESelection* ps = mdoc->GetCurrentSelection();
 		CCommand* cmd = 0;
 		if ((ntrans == TRANSFORM_MOVE) && (but == Qt::LeftButton))
 		{
 			if (!m_pmod)
 			{
-				cmd = new CCmdTranslateSelection(m_rt);
+				cmd = new CCmdTranslateSelection(mdoc, m_rt);
 			}
 			else
 			{
@@ -1042,13 +1060,13 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				}
 
 				q.MakeUnit();
-				cmd = new CCmdRotateSelection(q, GetPivotPosition());
+				cmd = new CCmdRotateSelection(mdoc, q, GetPivotPosition());
 				m_wt = 0;
 			}
 		}
 		else if ((ntrans == TRANSFORM_SCALE) && (but == Qt::LeftButton))
 		{
-			cmd = new CCmdScaleSelection(m_st, m_ds, GetPivotPosition());
+			cmd = new CCmdScaleSelection(mdoc, m_st, m_ds, GetPivotPosition());
 			m_st = m_sa = 1;
 		}
 
@@ -1194,23 +1212,12 @@ void CGLView::initializeGL()
 
 	glPolygonStipple(poly_mask);
 
-	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
-
-	if (view.m_bline_smooth)
-	{
-		glEnable(GL_LINE_SMOOTH);
-		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-	}
-	else glDisable(GL_LINE_SMOOTH);
+	glEnable(GL_LINE_SMOOTH);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
 	glPointSize(7.0f);
-	if (view.m_bpoint_smooth)
-	{
-		glEnable(GL_POINT_SMOOTH);
-		glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-	}
-	else glDisable(GL_POINT_SMOOTH);
+	glEnable(GL_POINT_SMOOTH);
+	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
 	int Y = 0;
 	m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""));
@@ -1243,11 +1250,11 @@ void CGLView::Reset()
 //-----------------------------------------------------------------------------
 void CGLView::UpdateWidgets(bool bposition)
 {
-	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	if (postDoc && postDoc->IsValid())
 	{
-		const string& title = postDoc->GetName();
+		const string& title = postDoc->GetDocFileName();
 		m_ptitle->copy_label(title.c_str());
 		m_ptitle->fit_to_size();
 
@@ -1300,7 +1307,8 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt)
 	}
 
 	// get the frame rate
-	float fps = m_pWnd->GetActiveDocument()->GetTimeSettings().m_fps;
+	float fps = 10.f;
+	if (m_pWnd->GetPostDocument()) fps = m_pWnd->GetPostDocument()->GetTimeSettings().m_fps;
 	if (fps == 0.f) fps = 10.f;
 
 	// create the animation
@@ -1390,11 +1398,16 @@ void CGLView::repaintEvent()
 
 void CGLView::paintGL()
 {
-	// Get the document
+	// Get the current document
 	CDocument* pdoc = GetDocument();
+	if (pdoc == nullptr)
+	{
+		glClearColor(.2f, .2f, .2f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		return;
+	}
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
-	FEModel* ps = pdoc->GetFEModel();
-	GModel& model = ps->GetModel();
 
 	int nitem = pdoc->GetItemMode();
 
@@ -1405,7 +1418,7 @@ void CGLView::paintGL()
 	RenderBackground();
 
 	// get the active view
-	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	if (postDoc == nullptr) RenderModelView();
 	else RenderPostView(postDoc);
@@ -1464,7 +1477,7 @@ void CGLView::paintGL()
 	{
 		if (postDoc && postDoc->IsValid())// && view.m_bTitle)
 		{
-			string title = postDoc->GetName();
+			string title = postDoc->GetDocFileBase();
 			m_ptitle->copy_label(title.c_str());
 
 			sprintf(m_szsubtitle, "%s\nTime = %.4g", postDoc->GetFieldString().c_str(), postDoc->GetTimeValue());
@@ -1499,17 +1512,27 @@ void CGLView::paintGL()
 
 	if (postDoc == nullptr)
 	{
-		painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
-		int activeLayer = model.GetActiveMeshLayer();
-		const std::string& s = model.GetMeshLayerName(activeLayer);
-		painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
-		m_Widget->DrawWidget(m_ptriad, &painter);
+		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
+		if (mdoc)
+		{
+			FEModel* ps = mdoc->GetFEModel();
+			GModel& model = ps->GetModel();
+
+			painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
+			int activeLayer = model.GetActiveMeshLayer();
+			const std::string& s = model.GetMeshLayerName(activeLayer);
+			painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
+			m_Widget->DrawWidget(m_ptriad, &painter);
+		}
 	}
 	else
 	{
-		int layer = postDoc->GetGLModel()->m_layer;
-		m_Widget->SetActiveLayer(layer);
-		m_Widget->DrawWidgets(&painter);
+		if (postDoc->IsValid())
+		{
+			int layer = postDoc->GetGLModel()->m_layer;
+			m_Widget->SetActiveLayer(layer);
+			m_Widget->DrawWidgets(&painter);
+		}
 	}
 
 	painter.end();
@@ -1564,8 +1587,10 @@ void CGLView::paintGL()
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::RenderGLProgress(CPostDoc* postDoc)
+void CGLView::RenderGLProgress(CPostDocument* postDoc)
 {
+	if ((postDoc == nullptr) || (postDoc->IsValid() == false)) return;
+
 	int states = postDoc->GetStates();
 	int state = postDoc->GetActiveState();
 	if (states < 2) return;
@@ -1589,7 +1614,7 @@ void CGLView::RenderGLProgress(CPostDoc* postDoc)
 //-----------------------------------------------------------------------------
 void CGLView::RenderModelView()
 {
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	int nitem = pdoc->GetItemMode();
 
@@ -1683,11 +1708,116 @@ void CGLView::RenderModelView()
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::RenderPostView(CPostDoc* postDoc)
+void CGLView::RenderPostView(CPostDocument* postDoc)
 {
 	if (postDoc && postDoc->IsValid())
 	{
-		postDoc->Render(this);
+		Post::CGLModel* glm = postDoc->GetGLModel();
+
+		CGLCamera& cam = GetCamera();
+
+		VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+
+		glm->m_nrender = vs.m_nrender + 1;
+
+		CGLContext& rc = m_rc;
+		rc.m_cam = &cam;
+		rc.m_showOutline = vs.m_bfeat;
+		rc.m_showMesh = vs.m_bmesh;
+		rc.m_q = cam.GetOrientation();
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		PositionCamera();
+
+		glDisable(GL_CULL_FACE);
+
+		// match the selection mode
+		int selectionMode = Post::SELECT_ELEMS;
+		switch (GetDocument()->GetItemMode())
+		{
+		case ITEM_MESH:
+		case ITEM_ELEM: selectionMode = Post::SELECT_ELEMS; break;
+		case ITEM_FACE: selectionMode = Post::SELECT_FACES; break;
+		case ITEM_EDGE: selectionMode = Post::SELECT_EDGES; break;
+		case ITEM_NODE: selectionMode = Post::SELECT_NODES; break;
+		}
+		glm->SetSelectionMode(selectionMode);
+
+
+		if (vs.m_bShadows)
+		{
+			BOX box = postDoc->GetBoundingBox();
+
+			float a = vs.m_shadow_intensity;
+			GLfloat shadow[] = { a, a, a, 1 };
+			GLfloat zero[] = { 0, 0, 0, 1 };
+			GLfloat ones[] = { 1,1,1,1 };
+			GLfloat lp[4] = { 0 };
+
+			glEnable(GL_STENCIL_TEST);
+
+			float inf = box.Radius()*100.f;
+
+			vec3d lpv = GetLightPosition();
+
+			quatd q = cam.GetOrientation();
+			q.Inverse().RotateVector(lpv);
+
+			lp[0] = lpv.x;
+			lp[1] = lpv.y;
+			lp[2] = lpv.z;
+
+			// set coloring for shadows
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, shadow);
+			glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+
+			glStencilFunc(GL_ALWAYS, 0x00, 0xff);
+			glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
+
+			// render the scene
+			glm->Render(rc);
+
+			// Create mask in stencil buffer
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+			glDepthMask(GL_FALSE);
+
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT);
+			glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
+
+			Post::FEPostModel* fem = glm->GetFEModel();
+			glm->RenderShadows(fem, lpv, inf);
+
+			glCullFace(GL_BACK);
+			glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
+
+			glm->RenderShadows(fem, lpv, inf);
+
+			// Render the scene in light
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			glDepthMask(GL_TRUE);
+
+			GLfloat d = vs.m_diffuse;
+			GLfloat dv[4] = { d, d, d, 1.f };
+
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
+			glLightfv(GL_LIGHT0, GL_SPECULAR, ones);
+
+			glStencilFunc(GL_EQUAL, 0, 0xff);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+			glDisable(GL_CULL_FACE);
+
+			glClear(GL_DEPTH_BUFFER_BIT);
+		}
+
+		glm->Render(rc);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
 
 		// render the tracking
 		if (m_btrack) RenderTrack();
@@ -1793,10 +1923,11 @@ void CGLView::SetupProjection()
 	CDocument* doc = GetDocument();
 
 	BOX box;
-	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc == nullptr)
 	{
-		box = doc->GetModelBox();
+		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+		box = mdoc->GetModelBox();
 	}
 	else if (postDoc->IsValid())
 	{
@@ -1845,7 +1976,7 @@ void CGLView::PositionCamera()
 	// position the camera
 	cam.Transform();
 
-	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+	CPostDocument* pdoc = m_pWnd->GetPostDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	// see if we need to track anything
@@ -1914,7 +2045,7 @@ void CGLView::SetTrackingData(int n[3])
 	m_ntrack[2] = n[2];
 
 	// get the current nodal positions
-	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+	CPostDocument* pdoc = m_pWnd->GetPostDocument();
 	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 	int NN = pm->Nodes();
 	int* nt = m_ntrack;
@@ -1953,7 +2084,7 @@ void CGLView::TrackSelection(bool b)
 	else
 	{
 		m_btrack = false;
-		CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+		CPostDocument* pdoc = m_pWnd->GetPostDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 		Post::CGLModel* model = pdoc->GetGLModel(); assert(model);
@@ -2167,8 +2298,9 @@ void CGLView::RenderNormals(GObject* po, double scale)
 //-----------------------------------------------------------------------------
 void CGLView::RenderModel()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// get the model
@@ -2317,8 +2449,9 @@ void CGLView::RenderModel()
 
 void CGLView::RenderSelectionBox()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// get the model
@@ -2388,8 +2521,8 @@ void RenderLine(GNode& n0, GNode& n1)
 
 void CGLView::RenderDiscrete()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
 
 	// get the selection mode
 	int nsel = pdoc->GetSelectionMode();
@@ -2519,7 +2652,7 @@ void CGLView::RenderTrack()
 {
 	if (m_btrack == false) return;
 
-	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+	CPostDocument* pdoc = m_pWnd->GetPostDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
 	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
@@ -2595,8 +2728,8 @@ void CGLView::RenderImageData()
 
 void CGLView::RenderMaterialFibers()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
 
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
@@ -2669,8 +2802,8 @@ void CGLView::RenderMaterialFibers()
 
 void CGLView::RenderLocalMaterialAxes()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
 
 	// get the model
 	FEModel* ps = pdoc->GetFEModel();
@@ -2755,8 +2888,8 @@ void CGLView::RenderLocalMaterialAxes()
 //
 void CGLView::RenderPivot(bool bpick)
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
 
 	// get the current selection
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -2861,7 +2994,9 @@ void CGLView::RenderRubberBand()
 
 void CGLView::RenderRigidWalls()
 {
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	FEModel* ps = pdoc->GetFEModel();
 	BOX box = ps->GetModel().GetBoundingBox();
 	double R = box.GetMaxExtent();
@@ -2943,8 +3078,8 @@ void CGLView::RenderRigidWalls()
 
 void CGLView::RenderRigidJoints()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
 
 	FEModel* ps = pdoc->GetFEModel();
 
@@ -2997,8 +3132,8 @@ void CGLView::RenderRigidJoints()
 
 void CGLView::RenderRigidConnectors()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
 
 	FEModel* ps = pdoc->GetFEModel();
 
@@ -3315,8 +3450,8 @@ void CGLView::RenderRigidConnectors()
 
 void CGLView::RenderRigidBodies()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
 
 	FEModel* ps = pdoc->GetFEModel();
 
@@ -3730,10 +3865,10 @@ bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 // Select Objects
 void CGLView::SelectObjects(int x, int y)
 {
-	makeCurrent();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
 
-	// get the document
-	CDocument* pdoc = GetDocument();
+	makeCurrent();
 
 	FEModel* ps = pdoc->GetFEModel();
 	GModel& model = ps->GetModel();
@@ -3764,15 +3899,15 @@ void CGLView::SelectObjects(int x, int y)
 	string objName;
 	if (closestObject != 0)
 	{
-		if (m_bctrl) pcmd = new CCmdUnselectObject(closestObject);
-		else pcmd = new CCmdSelectObject(closestObject, m_bshift);
+		if (m_bctrl) pcmd = new CCmdUnselectObject(&model, closestObject);
+		else pcmd = new CCmdSelectObject(&model, closestObject, m_bshift);
 		objName = closestObject->GetName();
 	}
 	else if ((m_bctrl == false) && (m_bshift == false)) 
 	{
 		// this clears the selection, but we only do this when there is an object currently selected
 		FESelection* sel = pdoc->GetCurrentSelection();
-		if (sel && sel->Size()) pcmd = new CCmdSelectObject(0, false);
+		if (sel && sel->Size()) pcmd = new CCmdSelectObject(&model, 0, false);
 		objName = "<Empty>";
 	}
 
@@ -3784,8 +3919,9 @@ void CGLView::SelectObjects(int x, int y)
 // Select parts
 void CGLView::SelectParts(int x, int y)
 {
-	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// Get the model
@@ -3854,13 +3990,13 @@ void CGLView::SelectParts(int x, int y)
 	if (closestPart != 0)
 	{
 		int index = closestPart->GetID();
-		if (m_bctrl) pcmd = new CCmdUnSelectPart(ps, &index, 1);
-		else pcmd = new CCmdSelectPart(ps, &index, 1, m_bshift);
+		if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, &index, 1);
+		else pcmd = new CCmdSelectPart(&model, &index, 1, m_bshift);
 		partName = closestPart->GetName();
 	}
 	else if ((m_bctrl == false) && (m_bshift == false))
 	{
-		pcmd = new CCmdSelectPart(ps, 0, 0, false);
+		pcmd = new CCmdSelectPart(&model, 0, 0, false);
 		partName = "<Empty>";
 	}
 
@@ -3872,8 +4008,9 @@ void CGLView::SelectParts(int x, int y)
 // select faces
 void CGLView::SelectSurfaces(int x, int y)
 {
-	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// get the fe model
@@ -3935,11 +4072,11 @@ void CGLView::SelectSurfaces(int x, int y)
 	if (closestSurface != 0)
 	{
 		int index = closestSurface->GetID();
-		if (m_bctrl) pcmd = new CCmdUnSelectSurface(ps, &index, 1);
-		else pcmd = new CCmdSelectSurface(ps, &index, 1, m_bshift);
+		if (m_bctrl) pcmd = new CCmdUnSelectSurface(&model, &index, 1);
+		else pcmd = new CCmdSelectSurface(&model, &index, 1, m_bshift);
 		surfName = ps->GetName();
 	}
-	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectSurface(ps, 0, 0, false);
+	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectSurface(&model, 0, 0, false);
 
 	// execute command
 	if (pcmd) pdoc->DoCommand(pcmd, surfName);
@@ -3949,8 +4086,9 @@ void CGLView::SelectSurfaces(int x, int y)
 // select edges
 void CGLView::SelectEdges(int x, int y)
 {
-	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// get the fe model
@@ -4008,11 +4146,11 @@ void CGLView::SelectEdges(int x, int y)
 	if (closestEdge != 0)
 	{
 		int index = closestEdge->GetID();
-		if (m_bctrl) pcmd = new CCmdUnSelectEdge(ps, &index, 1);
-		else pcmd = new CCmdSelectEdge(ps, &index, 1, m_bshift);
+		if (m_bctrl) pcmd = new CCmdUnSelectEdge(&model, &index, 1);
+		else pcmd = new CCmdSelectEdge(&model, &index, 1, m_bshift);
 		edgeName = ps->GetName();
 	}
-	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectEdge(ps, 0, 0, false);
+	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectEdge(&model, 0, 0, false);
 
 	// execute command
 	if (pcmd) pdoc->DoCommand(pcmd, edgeName);
@@ -4022,8 +4160,9 @@ void CGLView::SelectEdges(int x, int y)
 // highlight edges
 void CGLView::HighlightEdge(int x, int y)
 {
-	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// get the fe model
@@ -4087,8 +4226,9 @@ void CGLView::HighlightEdge(int x, int y)
 // select nodes
 void CGLView::SelectNodes(int x, int y)
 {
-	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// get the fe model
@@ -4143,11 +4283,11 @@ void CGLView::SelectNodes(int x, int y)
 	{
 		int index = closestNode->GetID();
 		assert(closestNode->Type() != NODE_SHAPE);
-		if (m_bctrl) pcmd = new CCmdUnSelectNode(ps, &index, 1);
-		else pcmd = new CCmdSelectNode(ps, &index, 1, m_bshift);
+		if (m_bctrl) pcmd = new CCmdUnSelectNode(&model, &index, 1);
+		else pcmd = new CCmdSelectNode(&model, &index, 1, m_bshift);
 		nodeName = ps->GetName();
 	}
-	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectNode(ps, 0, 0, false);
+	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectNode(&model, 0, 0, false);
 
 	// execute command
 	if (pcmd) pdoc->DoCommand(pcmd, nodeName);
@@ -4157,8 +4297,9 @@ void CGLView::SelectNodes(int x, int y)
 // select nodes
 void CGLView::SelectDiscrete(int x, int y)
 {
-	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	// get the fe model
@@ -4278,7 +4419,7 @@ void CGLView::SelectDiscrete(int x, int y)
 		}
 		else
 		{
-			if (m_bctrl) pcmd = new CCmdUnSelectDiscrete(ps, &index, 1);
+			if (m_bctrl) pcmd = new CCmdUnSelectDiscrete(&model, &index, 1);
 			else pcmd = new CCmdSelectDiscrete(&model, &index, 1, m_bshift);
 		}
 	}
@@ -4943,8 +5084,10 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 
 void CGLView::RegionSelectObjects(const SelectRegion& region)
 {
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	// get the document
-	CDocument* pdoc = GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5006,15 +5149,17 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnselectObject(selectedObjects);
-	else pcmd = new CCmdSelectObject(selectedObjects, m_bshift);
+	if (m_bctrl) pcmd = new CCmdUnselectObject(&model, selectedObjects);
+	else pcmd = new CCmdSelectObject(&model, selectedObjects, m_bshift);
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
 void CGLView::RegionSelectParts(const SelectRegion& region)
 {
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	// get the document
-	CDocument* pdoc = GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5072,15 +5217,17 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectPart(ps, selectedParts);
-	else pcmd = new CCmdSelectPart(ps, selectedParts, m_bshift);
+	if (m_bctrl) pcmd = new CCmdUnSelectPart(&model, selectedParts);
+	else pcmd = new CCmdSelectPart(&model, selectedParts, m_bshift);
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
 void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 {
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	// get the document
-	CDocument* pdoc = GetDocument();
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5136,16 +5283,17 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectSurface(ps, selectedSurfaces);
-	else pcmd = new CCmdSelectSurface(ps, selectedSurfaces, m_bshift);
+	if (m_bctrl) pcmd = new CCmdUnSelectSurface(&model, selectedSurfaces);
+	else pcmd = new CCmdSelectSurface(&model, selectedSurfaces, m_bshift);
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
 
 void CGLView::RegionSelectEdges(const SelectRegion& region)
 {
-	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5192,20 +5340,22 @@ void CGLView::RegionSelectEdges(const SelectRegion& region)
 
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectEdge(ps, selectedEdges);
-	else pcmd = new CCmdSelectEdge(ps, selectedEdges, m_bshift);
+	if (m_bctrl) pcmd = new CCmdUnSelectEdge(&model, selectedEdges);
+	else pcmd = new CCmdSelectEdge(&model, selectedEdges, m_bshift);
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
 
 void CGLView::RegionSelectNodes(const SelectRegion& region)
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	// get the document
-	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
-	int nsel = pdoc->GetSelectionStyle();
+	VIEW_SETTINGS& view = doc->GetViewSettings();
+	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FEModel* ps = doc->GetFEModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5238,20 +5388,22 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectNode(ps, selectedNodes);
-	else pcmd = new CCmdSelectNode(ps, selectedNodes, m_bshift);
-	if (pcmd) pdoc->DoCommand(pcmd);
+	if (m_bctrl) pcmd = new CCmdUnSelectNode(&model, selectedNodes);
+	else pcmd = new CCmdSelectNode(&model, selectedNodes, m_bshift);
+	if (pcmd) doc->DoCommand(pcmd);
 }
 
 void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	// get the document
-	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
-	int nsel = pdoc->GetSelectionStyle();
+	VIEW_SETTINGS& view = doc->GetViewSettings();
+	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FEModel* ps = doc->GetFEModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5287,9 +5439,9 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 	}
 
 	CCommand* pcmd = 0;
-	if (m_bctrl) pcmd = new CCmdUnSelectDiscrete(ps, selectedObjects);
+	if (m_bctrl) pcmd = new CCmdUnSelectDiscrete(&model, selectedObjects);
 	else pcmd = new CCmdSelectDiscrete(&model, selectedObjects, m_bshift);
-	if (pcmd) pdoc->DoCommand(pcmd);
+	if (pcmd) doc->DoCommand(pcmd);
 }
 
 //-----------------------------------------------------------------------------
@@ -6071,12 +6223,14 @@ void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
 //-----------------------------------------------------------------------------
 void CGLView::RenderFeatureEdges()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	glColor3ub(0, 0, 0);
 
-	CDocument* pdoc = GetDocument();
-	FEModel* ps = pdoc->GetFEModel();
+	FEModel* ps = doc->GetFEModel();
 	GModel& model = ps->GetModel();
 
 	for (int k = 0; k<model.Objects(); ++k)
@@ -6099,7 +6253,9 @@ void CGLView::RenderFeatureEdges()
 //-----------------------------------------------------------------------------
 vec3d CGLView::GetPickPosition()
 {
-	return GetDocument()->Get3DCursor();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return vec3d(0, 0, 0);
+	return doc->Get3DCursor();
 }
 
 //-----------------------------------------------------------------------------
@@ -6108,7 +6264,9 @@ vec3d CGLView::GetPivotPosition()
 	if (m_bpivot) return m_pv;
 	else
 	{
-		CDocument* pdoc = GetDocument();
+		CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (pdoc == nullptr) return vec3d(0,0,0);
+
 		FESelection* ps = pdoc->GetCurrentSelection();
 		vec3d r(0, 0, 0);
 		if (ps && ps->Size())
@@ -6133,9 +6291,9 @@ void CGLView::SetPivot(const vec3d& r)
 //-----------------------------------------------------------------------------
 quatd CGLView::GetPivotRotation()
 {
-	if (m_coord == COORD_LOCAL)
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc && (m_coord == COORD_LOCAL))
 	{
-		CDocument* doc = GetDocument();
 		FESelection* ps = doc->GetCurrentSelection();
 		if (ps) return ps->GetOrientation();
 	}
@@ -6314,10 +6472,13 @@ void CGLView::RenderSurfaces(GObject* po)
 {
 	if (!po->IsVisible()) return;
 
-	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	VIEW_SETTINGS& vs = doc->GetViewSettings();
 
 	// get the GLMesh
-	FEModel& fem = *GetDocument()->GetFEModel();
+	FEModel& fem = *doc->GetFEModel();
 	GLMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
@@ -6545,10 +6706,13 @@ void CGLView::RenderParts(GObject* po)
 {
 	if (!po->IsVisible()) return;
 
-	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	VIEW_SETTINGS& vs = doc->GetViewSettings();
 
 	// get the GLMesh
-	FEModel& fem = *GetDocument()->GetFEModel();
+	FEModel& fem = *doc->GetFEModel();
 	GLMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
@@ -6653,7 +6817,8 @@ void CGLView::RenderObject(GObject* po)
 {
 	if (!po->IsVisible()) return;
 
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
 
 	VIEW_SETTINGS& vs = doc->GetViewSettings();
 
@@ -6876,8 +7041,11 @@ void CGLView::RenderFENodes(GObject* po)
 //-----------------------------------------------------------------------------
 void CGLView::RenderFEFaces(GObject* po)
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
-	FEModel& fem = *GetDocument()->GetFEModel();
+	FEModel& fem = *doc->GetFEModel();
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
@@ -7001,8 +7169,11 @@ void CGLView::RenderSurfaceMeshFaces(GObject* po)
 	assert(surfaceMesh);
 	if (surfaceMesh == 0) return;
 
-	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
-	FEModel& fem = *GetDocument()->GetFEModel();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	VIEW_SETTINGS& view = doc->GetViewSettings();
+	FEModel& fem = *doc->GetFEModel();
 
 	GLColor col = po->GetColor();
 	SetMatProps(0);
@@ -7034,8 +7205,11 @@ void CGLView::RenderSurfaceMeshFaces(GObject* po)
 //-----------------------------------------------------------------------------
 void CGLView::RenderSurfaceMeshEdges(GObject* po)
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
-	FEModel& fem = *GetDocument()->GetFEModel();
+	FEModel& fem = *doc->GetFEModel();
 	FELineMesh* pm = po->GetEditableLineMesh();
 	assert(pm);
 	if (pm == 0) return;
@@ -7127,8 +7301,11 @@ void CGLView::RenderSurfaceMeshNodes(GObject* po)
 // Render the FE Edges
 void CGLView::RenderFEEdges(GObject* po)
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
-	FEModel& fem = *GetDocument()->GetFEModel();
+	FEModel& fem = *doc->GetFEModel();
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
@@ -7152,7 +7329,10 @@ void CGLView::RenderFEEdges(GObject* po)
 // Render the FE elements
 void CGLView::RenderFEElements(GObject* po)
 {
-	FEModel& fem = *GetDocument()->GetFEModel();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
+	FEModel& fem = *pdoc->GetFEModel();
 	FEMesh* pm = po->GetFEMesh();
 	assert(pm);
 	if (pm == 0) return;
@@ -7289,7 +7469,7 @@ void CGLView::RenderFEElements(GObject* po)
 	glDisable(GL_LIGHTING);
 
 	// render the selected faces
-	CDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
 	FEElementSelection* psel = dynamic_cast<FEElementSelection*>(pdoc->GetCurrentSelection());
 	if (psel && psel->Size() > 0)
 	{
@@ -7334,7 +7514,9 @@ void CGLView::RenderFEElements(GObject* po)
 void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 
 	bool bcull = view.m_bcull;
@@ -7665,7 +7847,9 @@ void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
 //-----------------------------------------------------------------------------
 void CGLView::RenderMeshLines()
 {
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
 	GModel& model = *pdoc->GetGModel();
 	int nitem = pdoc->GetItemMode();
 
@@ -7968,11 +8152,13 @@ void CGLView::RenderMeshLines(GObject* po)
 // selected object is too close.
 void CGLView::ZoomSelection(bool forceZoom)
 {
-	CPostDoc* postDoc = m_pWnd->GetActiveDocument();
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc == nullptr)
 	{
 		// get the current selection
-		FESelection* ps = GetDocument()->GetCurrentSelection();
+		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+
+		FESelection* ps = mdoc->GetCurrentSelection();
 
 		// zoom out on current selection
 		if (ps && ps->Size() != 0)
@@ -8063,18 +8249,16 @@ void CGLView::ZoomTo(const BOX& box)
 void CGLView::ZoomExtents(bool banimate)
 {
 	BOX box;
-	if (m_pWnd->GetActiveDocument() == nullptr)
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
+	if (postDoc == nullptr)
 	{
-		CDocument* doc = GetDocument();
-		if (doc == 0) return;
-		box = GetDocument()->GetModelBox();
+		CModelDocument* mdoc = m_pWnd->GetModelDocument();
+		if (mdoc == 0) return;
+		box = mdoc->GetModelBox();
 	}
 	else
 	{
-		CPostDoc* doc = m_pWnd->GetActiveDocument();
-		if (doc == nullptr) return;
-
-		CPostObject* po = doc->GetPostObject();
+		CPostObject* po = postDoc->GetPostObject();
 		if (po == nullptr) return;
 
 		box = po->GetBoundingBox();
@@ -8098,7 +8282,7 @@ void CGLView::ZoomExtents(bool banimate)
 void CGLView::RenderTags()
 {
 	CDocument* doc = GetDocument();
-	CPostDoc* pdoc = m_pWnd->GetActiveDocument();
+	CPostDocument* pdoc = m_pWnd->GetPostDocument();
 	if (pdoc == nullptr) return;
 	
 	Post::CGLModel* model = pdoc->GetGLModel();

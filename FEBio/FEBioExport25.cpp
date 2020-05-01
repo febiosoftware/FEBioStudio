@@ -120,7 +120,7 @@ FEFaceList* BuildFaceList(GFace* face)
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEBioExport25::FEBioExport25()
+FEBioExport25::FEBioExport25(FEProject& prj) : FEBioExport(prj)
 {
 	m_exportParts = false;
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
@@ -647,18 +647,17 @@ void FEBioExport25::BuildElemSetList(FEProject& prj)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport25::Export(FEProject& prj, const char* szfile)
+bool FEBioExport25::Write(const char* szfile)
 {
 	// get the project and model
-	m_pprj = &prj;
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
 	m_pfem = &fem;
 
 	// prepare for export
 	try
 	{
-		if (PrepareExport(prj) == false) return false;
+		if (PrepareExport(m_prj) == false) return false;
 
 		// get the initial step
 		FEStep* pstep = fem.GetStep(0);
@@ -3585,7 +3584,7 @@ void FEBioExport25::WriteConstraints(FEStep& s)
 // Write the fixed boundary conditions
 void FEBioExport25::WriteBCFixed(FEStep &s)
 {
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 
 	for (int i = 0; i<s.BCs(); ++i)
 	{
@@ -3633,7 +3632,7 @@ void FEBioExport25::WriteBCFixed(FEStep &s)
 // Export prescribed boundary conditions
 void FEBioExport25::WriteBCPrescribed(FEStep &s)
 {
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	for (int i=0; i<s.BCs(); ++i)
 	{
 		FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(s.BC(i));
@@ -4202,7 +4201,7 @@ void FEBioExport25::WriteFSITraction(FEStep& s)
 //
 void FEBioExport25::WriteInitialSection()
 {
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	FEStep& s = *fem.GetStep(0);
 
 	// initial velocities
@@ -4677,7 +4676,7 @@ void FEBioExport25::WriteElementList(FEElemList& el)
 //-----------------------------------------------------------------------------
 void FEBioExport25::WriteOutputSection()
 {
-	CPlotDataSettings& plt = m_pprj->GetPlotDataSettings();
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	int N = plt.PlotVariables();
 	if (N > 0)
 	{
@@ -4737,9 +4736,9 @@ void FEBioExport25::WriteOutputSection()
 		else m_xml.add_empty(p);
 	}
 
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
-	CLogDataSettings& log = m_pprj->GetLogDataSettings();
+	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	N = log.LogDataSize();
 	if (N > 0)
 	{

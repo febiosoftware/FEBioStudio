@@ -57,7 +57,6 @@ public:
 	QMenu* menuView;
 	QMenu* menuHelp;
 	QMenu* menuRecentFiles;
-	QMenu* menuRecentFEFiles;
 	QMenu* menuRecentGeomFiles;
 	QMenu* menuWindows;
 	QMenu* menuViews;
@@ -119,7 +118,6 @@ public:
 	QString currentPath;
 
 	QStringList	m_recentFiles;
-	QStringList	m_recentFEFiles;
 	QStringList	m_recentGeomFiles;
 
 	QAction* actionUndoViewChange;
@@ -155,13 +153,14 @@ public:
 public:
 	vector<CLaunchConfig>		m_launch_configs;
 
-	QString		m_defaultProjectFolder;
+	QString		m_defaultProjectParent;
 	QString		m_repositoryFolder;
 
 	QProcess*	m_process;
 	bool		m_bkillProcess;
 
 	int			m_theme;	// 0 = default, 1 = dark
+	bool		m_clearUndoOnSave;
 
 	QString	m_old_title;
 
@@ -175,6 +174,7 @@ public:
 	CMainWindow()
 	{
 		m_theme = 0;
+		m_clearUndoOnSave = true;
 
 		measureTool = nullptr;
 
@@ -196,7 +196,7 @@ public:
 #endif
 
 #ifdef WIN32
-		m_defaultProjectFolder = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+		m_defaultProjectParent = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #endif
 
 		m_process = 0;
@@ -217,7 +217,6 @@ public:
 
 		tab = new CMainTabBar(wnd);
 		tab->setObjectName("tab");
-		tab->addView("Model");
 
 		// create the central widget
 		QWidget* w = new QWidget;
@@ -239,6 +238,8 @@ public:
 		l->addWidget(glview);
 		l->addWidget(glc);
 		w->setLayout(l);
+
+		glc->hide();
 
 		// set the central widget
 		wnd->setCentralWidget(w);
@@ -280,48 +281,47 @@ public:
 	void buildMenu(::CMainWindow* mainWindow)
 	{
 		// --- File menu ---
-		QAction* actionNew        = addAction("New ..."    , "actionNew"   , "new" ); actionNew ->setShortcuts(QKeySequence::New );
-		QAction* actionOpen       = addAction("Open ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
+		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
+		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
-		QAction* actionSaveAs     = addAction("Save as ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
+		QAction* actionSaveAs     = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
+		QAction* actionSaveAll    = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_S);
 		QAction* actionSnapShot   = addAction("Snapshot ...", "actionSnapShot", "snapshot");
-		QAction* actionInfo       = addAction("Model info ...", "actionInfo");
-		QAction* actionImportFE   = addAction("Import FE model ..." , "actionImportFEModel");
 		QAction* actionExportFE   = addAction("Export FE model ..." , "actionExportFEModel");
-		QAction* actionImportGeom = addAction("Import geometry ...", "actionImportGeometry");
-		QAction* actionExportGeom = addAction("Export geometry ...", "actionExportGeometry");
-		QAction* actionImportProject = addAction("Import project ...", "actionImportProject");
-		QAction* actionExportProject = addAction("Export project ...", "actionExportProject");
-		QAction* actionImportImg  = addAction("Import image ...", "actionImportImage");
-		QAction* actionConvertFeb    = addAction("FEBio files ...", "actionConvertFeb");
-		QAction* actionConvertGeo = addAction("Geometry files ...", "actionConvertGeo");
+		QAction* actionImportGeom = addAction("Import Geometry ...", "actionImportGeometry");
+		QAction* actionExportGeom = addAction("Export Geometry ...", "actionExportGeometry");
+		QAction* actionOpenProject   = addAction("Open Project ...", "actionOpenProject");
+		QAction* actionImportProject = addAction("Import Project Archive ...", "actionImportProject");
+		QAction* actionExportProject = addAction("Export Project Archive ...", "actionExportProject");
+		QAction* actionImportImg  = addAction("Import Image ...", "actionImportImage");
+		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
+		QAction* actionConvertGeo = addAction("Geometry Files ...", "actionConvertGeo");
 		QAction* actionExit       = addAction("Exit"       , "actionExit"  );
 
 		// --- Edit menu ---
 		QAction* actionUndo              = addAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
 		QAction* actionRedo              = addAction("Redo", "actionRedo", "redo"); actionRedo->setShortcuts(QKeySequence::Redo);
-		QAction* actionInvertSelection   = addAction("Invert selection"  , "actionInvertSelection"  ); actionInvertSelection->setShortcut(Qt::AltModifier + Qt::Key_I);
-		QAction* actionClearSelection    = addAction("Clear selection"   , "actionClearSelection"   );
-		QAction* actionDeleteSelection   = addAction("Delete selection"  , "actionDeleteSelection"  ); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
-		QAction* actionNameSelection     = addAction("Name selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier + Qt::Key_G);
-		QAction* actionHideSelection     = addAction("Hide selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
+		QAction* actionInvertSelection   = addAction("Invert Selection"  , "actionInvertSelection"  ); actionInvertSelection->setShortcut(Qt::AltModifier + Qt::Key_I);
+		QAction* actionClearSelection    = addAction("Clear Selection"   , "actionClearSelection"   );
+		QAction* actionDeleteSelection   = addAction("Delete Selection"  , "actionDeleteSelection"  ); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
+		QAction* actionNameSelection     = addAction("Name Selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier + Qt::Key_G);
+		QAction* actionHideSelection     = addAction("Hide Selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
 		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier + Qt::Key_H);
-		QAction* actionUnhideAll         = addAction("Unhide all"        , "actionUnhideAll"        );
+		QAction* actionUnhideAll         = addAction("Unhide All"        , "actionUnhideAll"        );
 		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); actionFind->setShortcut(Qt::ControlModifier + Qt::Key_F);
-		QAction* actionSelectRange       = addAction("Select in range ...", "actionSelectRange"     );
-		QAction* actionToggleVisible     = addAction("Toggle visibility" , "actionToggleVisible"    , "toggle_visible");
+		QAction* actionSelectRange       = addAction("Select Range ...", "actionSelectRange"     );
+		QAction* actionToggleVisible     = addAction("Toggle Visibility" , "actionToggleVisible"    , "toggle_visible");
 		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
-		QAction* actionCollapseTransform = addAction("Collapse transform", "actionCollapseTransform");
-		QAction* actionClone             = addAction("Clone object ...", "actionClone"            , "clone"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
-		QAction* actionCloneGrid         = addAction("Clone grid ..."    , "actionCloneGrid"        , "clonegrid");
-		QAction* actionCloneRevolve      = addAction("Clone revolve ..." , "actionCloneRevolve"     , "clonerevolve");
-		QAction* actionMerge             = addAction("Merge objects ..." , "actionMerge"            , "merge");
+		QAction* actionCollapseTransform = addAction("Collapse Transform", "actionCollapseTransform");
+		QAction* actionClone             = addAction("Clone Object ...", "actionClone"            , "clone"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionCloneGrid         = addAction("Clone Grid ..."    , "actionCloneGrid"        , "clonegrid");
+		QAction* actionCloneRevolve      = addAction("Clone Revolve ..." , "actionCloneRevolve"     , "clonerevolve");
+		QAction* actionMerge             = addAction("Merge Objects ..." , "actionMerge"            , "merge");
 		QAction* actionDetach            = addAction("Detach Elements"   , "actionDetach"           , "detach");
 		QAction* actionExtract           = addAction("Extract Faces"     , "actionExtract"          , "extract");
 		QAction* actionPurge             = addAction("Purge ..."         , "actionPurge"            );
-		QAction* actionEditProject       = addAction("Edit Project Settings ...", "actionEditProject");
 
-		QAction* actionFace2Elems        = addAction("Face to Element selection", "actionFaceToElem");
+		QAction* actionFace2Elems        = addAction("Face to Element Selection", "actionFaceToElem");
 
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
@@ -338,6 +338,7 @@ public:
 		actionSoluteTable        = addAction("Solute Table ..."              , "actionSoluteTable");
 		actionSBMTable           = addAction("Solid-bound Molecule Table ...", "actionSBMTable");
 		actionAddReaction        = addAction("Chemical Reaction Editor ..."  , "actionAddReaction");
+		QAction* actionEditProject = addAction("Edit Physics Modules ...", "actionEditProject");
 
 		// --- Tools menu ---
 		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F9);
@@ -355,25 +356,25 @@ public:
 #endif
 
 		// --- Post menu ---
-		QAction* actionPlaneCut = addAction("Plane cut", "actionPlaneCut", "cut");
-		QAction* actionMirrorPlane = addAction("Mirror plane", "actionMirrorPlane", "mirror");
-		QAction* actionVectorPlot = addAction("Vector plot", "actionVectorPlot", "vectors");
-		QAction* actionTensorPlot = addAction("Tensor plot", "actionTensorPlot", "tensor");
-		QAction* actionIsosurfacePlot = addAction("Isosurface plot", "actionIsosurfacePlot", "isosurface");
-		QAction* actionSlicePlot = addAction("Slice plot", "actionSlicePlot", "sliceplot");
-		QAction* actionDisplacementMap = addAction("Displacement map", "actionDisplacementMap", "distort");
-		QAction* actionStreamLinePlot = addAction("Stream lines plot", "actionStreamLinePlot", "streamlines");
-		QAction* actionParticleFlowPlot = addAction("Particle flow plot", "actionParticleFlowPlot", "particle");
-		QAction* actionVolumeFlowPlot = addAction("Volume flow plot", "actionVolumeFlowPlot", "flow");
-		QAction* actionImageSlicer = addAction("Image slicer", "actionImageSlicer", "imageslice");
-		QAction* actionVolumeRender = addAction("Volume render", "actionVolumeRender", "volrender");
-		QAction* actionMarchingCubes = addAction("Image isosurface", "actionMarchingCubes", "marching_cubes");
+		QAction* actionPlaneCut = addAction("Planecut", "actionPlaneCut", "cut");
+		QAction* actionMirrorPlane = addAction("Mirror Plane", "actionMirrorPlane", "mirror");
+		QAction* actionVectorPlot = addAction("Vector Plot", "actionVectorPlot", "vectors");
+		QAction* actionTensorPlot = addAction("Tensor Plot", "actionTensorPlot", "tensor");
+		QAction* actionIsosurfacePlot = addAction("Isosurface Plot", "actionIsosurfacePlot", "isosurface");
+		QAction* actionSlicePlot = addAction("Slice Plot", "actionSlicePlot", "sliceplot");
+		QAction* actionDisplacementMap = addAction("Displacement Map", "actionDisplacementMap", "distort");
+		QAction* actionStreamLinePlot = addAction("Streamlines Plot", "actionStreamLinePlot", "streamlines");
+		QAction* actionParticleFlowPlot = addAction("Particleflow Plot", "actionParticleFlowPlot", "particle");
+		QAction* actionVolumeFlowPlot = addAction("Volumeflow Plot", "actionVolumeFlowPlot", "flow");
+		QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
+		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
+		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
 		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
 		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");
-		QAction* actionImportPoints = addAction("Import points ...", "actionImportPoints");
-		QAction* actionImportLines = addAction("Import lines ...", "actionImportLines");
+		QAction* actionImportPoints = addAction("Import Points ...", "actionImportPoints");
+		QAction* actionImportLines = addAction("Import Lines ...", "actionImportLines");
 
 		actionPlaneCut->setWhatsThis("<font color=\"black\"><h3>Plane cut</h3>Add a plane cut plot to the model. A plane cut plot allows users to create a cross section of the mesh.</font>");
 		actionMirrorPlane->setWhatsThis("<font color=\"black\"><h3>Mirror plane</h3>Renders a mirrorred version of the model.</font>");
@@ -403,21 +404,21 @@ public:
 		// --- View menu ---
 		actionUndoViewChange  = addAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_U);
 		actionRedoViewChange  = addAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_R);
-		actionZoomSelect      = addAction("Zoom to selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
-		actionZoomExtents     = addAction("Zoom to selection", "actionZoomExtents");
-		actionViewCapture     = addAction("Show capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
+		actionZoomSelect      = addAction("Zoom to Selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
+		actionZoomExtents     = addAction("Zoom to Selection", "actionZoomExtents");
+		actionViewCapture     = addAction("Show Capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
 		actionShowGrid        = addAction("Show Grid", "actionShowGrid"); actionShowGrid->setCheckable(true); actionShowGrid->setChecked(true); actionShowGrid->setShortcut(Qt::Key_G);
 		actionShowMeshLines   = addAction("Show Mesh Lines", "actionShowMeshLines", "show_mesh"); actionShowMeshLines->setCheckable(true); actionShowMeshLines->setShortcut(Qt::Key_M);
 		actionShowEdgeLines   = addAction("Show Edge Lines", "actionShowEdgeLines"); actionShowEdgeLines->setCheckable(true); actionShowEdgeLines->setShortcut(Qt::Key_Z);
-		actionBackfaceCulling = addAction("Backface culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true);
-		actionViewSmooth      = addAction("Color smoothing", "actionViewSmooth"); actionViewSmooth->setShortcut(Qt::Key_C); actionViewSmooth->setCheckable(true);
+		actionBackfaceCulling = addAction("Backface Culling", "actionBackfaceCulling"); actionBackfaceCulling->setCheckable(true);
+		actionViewSmooth      = addAction("Color Smoothing", "actionViewSmooth"); actionViewSmooth->setShortcut(Qt::Key_C); actionViewSmooth->setCheckable(true);
 		actionOrtho           = addAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
 		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
-		actionWireframe		  = addAction("Toggle wireframe", "actionWireframe"); actionWireframe->setCheckable(true); actionWireframe->setShortcut(Qt::Key_W);
+		actionWireframe		  = addAction("Toggle Wireframe", "actionWireframe"); actionWireframe->setCheckable(true); actionWireframe->setShortcut(Qt::Key_W);
 		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
-		actionShowMatAxes     = addAction("Toggle material axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
-		actionShowDiscrete    = addAction("Show Discrete sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
-		QAction* actionSnap3D = addAction("3D cursor to selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
+		actionShowMatAxes     = addAction("Toggle Material Axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
+		actionShowDiscrete    = addAction("Show Discrete Sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
+		QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
 		actionToggleLight     = addAction("Toggle Lighting", "actionToggleLight");
 		actionFront           = addAction("Front", "actionFront");
@@ -426,10 +427,10 @@ public:
 		actionLeft            = addAction("Left" , "actionLeft");
 		actionTop             = addAction("Top"  , "actionTop");
 		actionBottom          = addAction("Bottom", "actionBottom");
-		QAction* actionViewVPSave = addAction("Save viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL + Qt::Key_K);
-		QAction* actionViewVPPrev = addAction("Prev viewpoint", "actionViewVPPrev"); actionViewVPPrev->setShortcut(Qt::Key_J);
-		QAction* actionViewVPNext = addAction("Next viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
-		QAction* actionSyncViews  = addAction("Sync all views", "actionSyncViews");
+		QAction* actionViewVPSave = addAction("Save Viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL + Qt::Key_K);
+		QAction* actionViewVPPrev = addAction("Prev Viewpoint", "actionViewVPPrev"); actionViewVPPrev->setShortcut(Qt::Key_J);
+		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
+		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews");
 
 		// --- Help menu ---
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
@@ -456,7 +457,7 @@ public:
 		selectCircle = addAction("Circle"   , "selectCircle", "selectCircle", true);
 		selectFree   = addAction("Freehand" , "selectFree"  , "selectFree"  , true);
 
-		actionMeasureTool = addAction("Measure tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
+		actionMeasureTool = addAction("Measure Tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
 
 		QActionGroup* pag = new QActionGroup(mainWindow);
 		pag->addAction(actionSelectObjects);
@@ -492,9 +493,8 @@ public:
 		menuView   = new QMenu("View", menuBar);
 		menuHelp   = new QMenu("Help", menuBar);
 
-		menuRecentFiles = new QMenu("Recent Files");
-		menuRecentFEFiles = new QMenu("Recent FE model Files");
-		menuRecentGeomFiles = new QMenu("Recent geometry Files");
+		menuRecentFiles = new QMenu("Open Recent");
+		menuRecentGeomFiles = new QMenu("Import Recent Geometry");
 
 		recentFilesActionGroup = new QActionGroup(mainWindow);
 		recentFilesActionGroup->setObjectName("recentFiles");
@@ -507,25 +507,25 @@ public:
 
 		// File menu
 		menuBar->addAction(menuFile->menuAction());
-		menuFile->addAction(actionNew);
+
+		menuFile->addAction(actionNewModel);
+		menuFile->addSeparator();
+		menuFile->addAction(actionOpenProject);
 		menuFile->addAction(actionOpen);
+		menuFile->addAction(menuRecentFiles->menuAction());
+		menuFile->addAction(actionImportGeom);
+		menuFile->addAction(menuRecentGeomFiles->menuAction());
+		menuFile->addSeparator();
 		menuFile->addAction(actionSave);
 		menuFile->addAction(actionSaveAs);
-		menuFile->addAction(menuRecentFiles->menuAction());
-		menuFile->addAction(actionInfo);
+		menuFile->addAction(actionSaveAll);
+		menuFile->addAction(actionExportFE);
+		menuFile->addAction(actionExportGeom);
 #ifdef HAS_QUAZIP
 		menuFile->addSeparator();
 		menuFile->addAction(actionImportProject);
 		menuFile->addAction(actionExportProject);
 #endif
-		menuFile->addSeparator();
-		menuFile->addAction(actionImportFE);
-		menuFile->addAction(actionExportFE);
-		menuFile->addAction(menuRecentFEFiles->menuAction());
-		menuFile->addSeparator();
-		menuFile->addAction(actionImportGeom);
-		menuFile->addAction(actionExportGeom);
-		menuFile->addAction(menuRecentGeomFiles->menuAction());
 		menuFile->addSeparator();
 		menuFile->addAction(actionImportImg);
 
@@ -567,8 +567,6 @@ public:
 		menuEdit->addAction(actionMerge);
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionPurge);
-		menuEdit->addSeparator();
-		menuEdit->addAction(actionEditProject);
 
 		// Physics menu
 		menuBar->addAction(menuPhysics->menuAction());
@@ -587,6 +585,8 @@ public:
 		menuPhysics->addAction(actionSoluteTable);
 		menuPhysics->addAction(actionSBMTable);
 		menuPhysics->addAction(actionAddReaction);
+		menuPhysics->addSeparator();
+		menuPhysics->addAction(actionEditProject);
 
 		// FEBio menu
 		menuBar->addAction(menuFEBio->menuAction());
@@ -693,30 +693,30 @@ public:
 		QToolBar* mainToolBar = m_wnd->addToolBar("Main toolbar");
 		mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
 
+		mainToolBar->addAction(actionNewModel);
+		mainToolBar->addAction(actionOpen);
+		mainToolBar->addAction(actionSave);
+		mainToolBar->addAction(actionSnapShot);
+
+		// Build tool bar
 		coord = new QComboBox;
 		coord->setObjectName("selectCoord");
 		coord->addItem("Global");
 		coord->addItem("Local");
 
-		mainToolBar->addAction(actionNew );
-		mainToolBar->addAction(actionOpen);
-		mainToolBar->addAction(actionSave);
-		mainToolBar->addAction(actionSnapShot);
-		mainToolBar->addSeparator();
-		mainToolBar->addAction(actionUndo);
-		mainToolBar->addAction(actionRedo);
-		mainToolBar->addSeparator();
-		mainToolBar->addAction(selectRect);
-		mainToolBar->addAction(selectCircle);
-		mainToolBar->addAction(selectFree);
-		mainToolBar->addSeparator();
-		mainToolBar->addAction(actionMeasureTool);
-
-		// Build tool bar
 		buildToolBar = new QToolBar(mainWindow);
 		buildToolBar->setObjectName(QStringLiteral("buildToolBar"));
 		buildToolBar->setWindowTitle("Build Toolbar");
 
+		buildToolBar->addAction(actionUndo);
+		buildToolBar->addAction(actionRedo);
+		buildToolBar->addSeparator();
+		buildToolBar->addAction(selectRect);
+		buildToolBar->addAction(selectCircle);
+		buildToolBar->addAction(selectFree);
+		buildToolBar->addSeparator();
+		buildToolBar->addAction(actionMeasureTool);
+		buildToolBar->addSeparator();
 		buildToolBar->addAction(actionSelect);
 		buildToolBar->addAction(actionTranslate);
 		buildToolBar->addAction(actionRotate);
@@ -890,11 +890,6 @@ public:
 		setRecentFileList(m_recentFiles, recentFiles, menuRecentFiles, recentFilesActionGroup);
 	}
 
-	void setRecentFEFiles(QStringList& recentFiles)
-	{
-		setRecentFileList(m_recentFEFiles, recentFiles, menuRecentFEFiles, recentFEFilesActionGroup);
-	}
-
 	void setRecentGeomFiles(QStringList& recentFiles)
 	{
 		setRecentFileList(m_recentGeomFiles, recentFiles, menuRecentGeomFiles, recentGeomFilesActionGroup);
@@ -903,11 +898,6 @@ public:
 	void addToRecentFiles(const QString& file)
 	{
 		addToRecentFilesList(m_recentFiles, file, menuRecentFiles, recentFilesActionGroup);
-	}
-
-	void addToRecentFEFiles(const QString& file)
-	{
-		addToRecentFilesList(m_recentFEFiles, file, menuRecentFEFiles, recentFEFilesActionGroup);
 	}
 
 	void addToRecentGeomFiles(const QString& file)
@@ -1016,6 +1006,65 @@ private:
 				menu->insertAction(firstAction, pa);
 				actionGroup->addAction(pa);
 			}
+		}
+	}
+
+public:
+	void setUIConfig(int config)
+	{
+		if (config == 0)
+		{
+			// no open documents
+			menuEdit->menuAction()->setVisible(false);
+			menuPhysics->menuAction()->setVisible(false);
+			menuPost->menuAction()->setVisible(false);
+			menuRecord->menuAction()->setVisible(false);
+
+			buildToolBar->hide();
+			postToolBar->hide();
+			pFontToolBar->hide();
+
+			glc->hide();
+
+			modelViewer->parentWidget()->hide();
+			buildPanel->parentWidget()->hide();
+			postPanel->parentWidget()->hide();
+		}
+		else if (config == 1)
+		{
+			// build mode
+			menuEdit->menuAction()->setVisible(true);
+			menuPhysics->menuAction()->setVisible(true);
+			menuPost->menuAction()->setVisible(false);
+			menuRecord->menuAction()->setVisible(true);
+
+			buildToolBar->show();
+			postToolBar->hide();
+			pFontToolBar->show();
+
+			glc->show();
+
+			modelViewer->parentWidget()->show();
+			buildPanel->parentWidget()->show();
+			postPanel->parentWidget()->hide();
+		}
+		else if (config == 2)
+		{
+			// post mode
+			menuEdit->menuAction()->setVisible(true);
+			menuPhysics->menuAction()->setVisible(false);
+			menuPost->menuAction()->setVisible(true);
+			menuRecord->menuAction()->setVisible(true);
+
+			buildToolBar->hide();
+			postToolBar->show();
+			pFontToolBar->show();
+
+			glc->show();
+
+			modelViewer->parentWidget()->hide();
+			buildPanel->parentWidget()->hide();
+			postPanel->parentWidget()->show();
 		}
 	}
 };

@@ -29,7 +29,7 @@ bool CMaterialMapTool::OnApply()
 	CDocument* pdoc = GetDocument();
 
 	std::string sfile = m_file.toStdString();
-
+/*
 	FELSDYNAimport reader;
 	if (!pdoc->ImportGeometry(&reader, sfile.c_str()))
 	{
@@ -132,6 +132,6 @@ bool CMaterialMapTool::OnApply()
 			}
 		}
 	}
-
+*/
 	return true;
 }

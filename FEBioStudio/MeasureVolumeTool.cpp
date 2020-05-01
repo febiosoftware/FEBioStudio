@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "MeasureVolumeTool.h"
-#include "PostDoc.h"
-#include <PostLib/FEPostModel.h>
-#include <PostGL/GLModel.h>
-using namespace Post;
+#include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
 QVariant CMeasureVolumeTool::GetPropertyValue(int i)

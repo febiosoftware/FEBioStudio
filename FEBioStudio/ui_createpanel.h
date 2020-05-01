@@ -30,7 +30,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <MeshTools/GPLCObject.h>
-#include "Document.h"
+#include "ModelDocument.h"
 #include "GLHighlighter.h"
 #include "GLCursor.h"
 #include <GeomLib/GSurfaceMeshObject.h>
@@ -351,7 +351,7 @@ FSObject* CCreateExtrude::Create()
 {
 	static int n = 1;
 
-	CDocument* doc = m_parent->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 	if (doc == 0) return 0;
 
 	GObject* activeObject = doc->GetActiveObject();

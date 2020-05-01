@@ -6,8 +6,8 @@
 class FEHyperSurfImport : public FEFileImport
 {
 public:
-	FEHyperSurfImport();
+	FEHyperSurfImport(FEProject& prj);
 	~FEHyperSurfImport(void);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile) override;
 };

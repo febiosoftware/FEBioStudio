@@ -10,17 +10,16 @@ class FEVTKimport :	public FEFileReader
 {
 
 public:
-	FEVTKimport();
+	FEVTKimport(FEPostModel* fem);
 	~FEVTKimport(void);
 
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 
 protected:
 	bool readPointData(char* ch);
 	
 protected:
 	bool BuildMesh();
-	FEPostModel*	m_pfem;
 	FEState*		m_ps;
 };
 }

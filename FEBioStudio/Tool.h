@@ -5,7 +5,7 @@ class QWidget;
 class CMainWindow;
 class CDocument;
 class CPropertyListForm;
-class CPostDoc;
+class CPostDocument;
 class GObject;
 class GDecoration;
 class FEMesh;
@@ -34,7 +34,7 @@ public:
 	CDocument* GetDocument();
 
 	// get the active Post doc
-	CPostDoc* GetPostDoc();
+	CPostDocument* GetPostDoc();
 
 	// override this to create a custum UI widget
 	virtual QWidget* createUi() = 0;

@@ -1,30 +1,26 @@
 #include "stdafx.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
+#include "ModelFileReader.h"
 #include <QApplication>
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 #include <QMessageBox>
+#include <QDirIterator>
+#include <QDeskTopServices>
 #include <QtCore/QMimeData>
 #include <FSCore/FSObject.h>
-#include <MeshTools/PRVArchive.h>
-#include <MeshIO/FileReader.h>
 #include <QtCore/QTimer>
 #include <QFileDialog>
-#include <FEBio/FEBioImport.h>
 #include "DocTemplate.h"
 #include "CreatePanel.h"
 #include "FileThread.h"
 #include "GLHighlighter.h"
-#include <Nike3D/NikeImport.h>
-#include <Abaqus/AbaqusImport.h>
 #include <QStyleFactory>
-#include "DlgImportAbaqus.h"
 #include "DlgAddMeshData.h"
 #include "GraphWindow.h"
-#include "PostDoc.h"
 #include "DlgTimeSettings.h"
 #include <PostGL/GLModel.h>
 #include "DlgWidgetProps.h"
@@ -43,6 +39,9 @@
 #include "Commands.h"
 #include <XPLTLib/xpltFileReader.h>
 #include <MeshTools/GModel.h>
+#include "DocManager.h"
+#include "PostDocument.h"
+#include "ModelDocument.h"
 
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
@@ -80,15 +79,17 @@ void darkStyle()
 	palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
 	palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
 	qApp->setPalette(palette);
+
+	QCoreApplication::setAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles, true);
+	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
 }
 
 //-----------------------------------------------------------------------------
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
-	m_doc = 0;
+	m_DocManager = new CDocManager(this);
 
 	m_fileThread = nullptr;
-	m_postFileThread = nullptr;
 
 	CResource::Init(this);
 
@@ -99,9 +100,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// setup the GUI
 	ui->setupUi(this);
-
-	// create a new document
-	m_doc = new CDocument(this);
 
 	// read the settings
 	if (reset == false)
@@ -117,11 +115,11 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		// NOTE: I'm not sure if I can set the dark theme before I can create the document.
 		//       Since the bg colors are already set, I need to do this here. Make sure
 		//       the values set here coincide with the values from CDocument::NewDocument
-		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+/*		VIEW_SETTINGS& v = m_doc->GetViewSettings();
 		v.m_col1 = GLColor(83, 83, 83);
 		v.m_col2 = GLColor(128, 128, 128);
 		v.m_nbgstyle = BG_HORIZONTAL;
-
+*/
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
 #ifdef LINUX
@@ -148,13 +146,11 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// make sure the file viewer is visible
 	ui->showFileViewer();
 
-	// update the UI configuration (this will start the UI in build configuration)
+	// update the UI configuration
 	UpdateUIConfig();
 
 	// load templates
 	TemplateManager::Init();
-
-	UpdateModel();
 
 	// Instantiate Logger singleton
 	CLogger::Instantiate(this);
@@ -195,7 +191,7 @@ QIcon CMainWindow::GetResourceIcon(const QString& iconName)
 CMainWindow::~CMainWindow()
 {
 	// delete document
-	delete m_doc;
+	delete m_DocManager;
 }
 
 //-----------------------------------------------------------------------------
@@ -203,6 +199,20 @@ CMainWindow::~CMainWindow()
 int CMainWindow::currentTheme() const
 {
 	return ui->m_theme;
+}
+
+//-----------------------------------------------------------------------------
+// clear command stack on save
+bool CMainWindow::clearCommandStackOnSave() const
+{
+	return ui->m_clearUndoOnSave;
+}
+
+//-----------------------------------------------------------------------------
+// set clear command stack on save
+void CMainWindow::setClearCommandStackOnSave(bool b)
+{
+	ui->m_clearUndoOnSave = b;
 }
 
 //-----------------------------------------------------------------------------
@@ -215,40 +225,155 @@ void CMainWindow::setCurrentTheme(int n)
 //-----------------------------------------------------------------------------
 void CMainWindow::UpdateTitle()
 {
-	// get the file name
-	if (m_doc)
+	QString projectName = ProjectName();
+	if (projectName.isEmpty() == false)
 	{
-		std::string wndTitle = m_doc->GetDocFileName();
-		if (wndTitle.empty()) wndTitle = "Untitled";
-
-		if (m_doc->IsModified()) wndTitle += "*";
-
-		wndTitle += " - FEBio Studio";
-		setWindowTitle(QString::fromStdString(wndTitle));
+		setWindowTitle(projectName);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::ReadFile(const QString& fileName, FileReader* fileReader, bool clearDoc)
+//! update the tab's text
+void CMainWindow::UpdateTab(CDocument* doc)
 {
-	if (clearDoc) GetDocument()->Clear();
+	if (doc == nullptr) return;
 
-	m_fileThread = new CFileThread(this, fileReader, false, fileName);
-	m_fileThread->start();
-	ui->statusBar->showMessage(QString("Reading file %1 ...").arg(fileName));
-	ui->fileProgress->setValue(0);
-	ui->statusBar->addPermanentWidget(ui->fileProgress);
-	ui->fileProgress->show();
-	AddLogEntry(QString("Reading file %1 ... ").arg(fileName));
-	QTimer::singleShot(100, this, SLOT(checkFileProgress()));
+	int n = ui->tab->findView(doc);
+	assert(n >= 0);
+	if (n >= 0)
+	{
+		QString file = QString::fromStdString(doc->GetDocTitle());
+		if (doc->IsModified()) file += "*";
+		ui->tab->setTabText(n, file);
+
+		QString path = QString::fromStdString(doc->GetDocFilePath());
+		if (path.isEmpty() == false) ui->tab->setToolTip(path); else ui->tab->setToolTip("");
+	}
+
+	ui->fileViewer->Update();
+}
+
+//-----------------------------------------------------------------------------
+// Read a file asynchronously
+// doc        : the document that is being modified 
+// fileName   : the file name of the file that is read
+// fileReader : the object that reads the file's content
+// flags      : flags indicating what to do after the file is read
+void CMainWindow::ReadFile(CDocument* doc, const QString& fileName, FileReader* fileReader, int flags)
+{
+	m_fileQueue.push_back(QueuedFile(doc, fileName, fileReader, flags));
+	ReadNextFileInQueue();
+}
+
+void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions)
+{
+	// stop any animation
+	if (ui->m_isAnimating) ui->postToolBar->CheckPlayButton(false);
+
+	// convert to native separators
+	QString fileName = QDir::toNativeSeparators(filePath);
+
+	// check to extension to see what to do
+	QString ext = QFileInfo(fileName).suffix();
+	if ((ext.compare("fsm", Qt::CaseInsensitive) == 0) ||
+		(ext.compare("prv", Qt::CaseInsensitive) == 0) ||
+		(ext.compare("fsprj", Qt::CaseInsensitive) == 0))
+	{
+		OpenDocument(fileName);
+	}
+	else if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
+	{
+		// load the plot file
+		OpenPlotFile(fileName, showLoadOptions);
+	}
+	else if ((ext.compare("feb", Qt::CaseInsensitive) == 0) ||
+		(ext.compare("inp", Qt::CaseInsensitive) == 0) ||
+		(ext.compare("n", Qt::CaseInsensitive) == 0))
+	{
+		// load the feb file
+		OpenFEModel(fileName);
+	}
+	else if (ext.compare("prj", Qt::CaseInsensitive) == 0)
+	{
+		// Extract the project archive and open it
+		ImportProjectArchive(fileName);
+	}
+	else
+	{
+		// Open any other files (e.g. log files) with the system's associated program
+		QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+		//		assert(false);
+		//		QMessageBox::critical(this, "FEBio Studio", "Does not compute!");
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::ReadFile(QueuedFile& qfile)
+{
+	// if this is a reload, clear the document
+	if (qfile.m_doc && (qfile.m_flags & QueuedFile::RELOAD_DOCUMENT))
+	{
+		qfile.m_doc->Clear();
+		Update(nullptr, true);
+	}
+
+	// read the file, either threaded or directly
+	if (qfile.m_flags & QueuedFile::NO_THREAD)
+	{
+		bool bret = false;
+		QString errorString;
+		if (qfile.m_fileReader == nullptr)
+		{
+			AddLogEntry("Don't know how to read file.");
+		}
+		else
+		{
+			string sfile = qfile.m_fileName.toStdString();
+			bret = qfile.m_fileReader->Load(sfile.c_str());
+			std::string err = qfile.m_fileReader->GetErrorMessage();
+			errorString = QString::fromStdString(err);
+		}
+		finishedReadingFile(bret, qfile, errorString);
+	}
+	else
+	{
+		assert(m_fileThread == nullptr);
+		m_fileThread = new CFileThread(this, qfile);
+		m_fileThread->start();
+		ui->statusBar->showMessage(QString("Reading file %1 ...").arg(qfile.m_fileName));
+		ui->fileProgress->setValue(0);
+		ui->statusBar->addPermanentWidget(ui->fileProgress);
+		ui->fileProgress->show();
+		AddLogEntry(QString("Reading file %1 ... ").arg(qfile.m_fileName));
+		QTimer::singleShot(100, this, SLOT(checkFileProgress()));
+	}
 }
 
 //-----------------------------------------------------------------------------
 // read a list of files
 void CMainWindow::ImportFiles(const QStringList& files)
 {
+	CDocument* doc = GetDocument();
+	if (doc == nullptr)
+	{
+		QMessageBox::critical(this, "Import Files", "No active document.");
+		return;
+	}
+
 	// set the queue
-	m_fileQueue = files;
+	for (int i = 0; i < files.size(); ++i)
+	{
+		QString fileName = files[i];
+		FileReader* fileReader = CreateFileReader(fileName);
+		if (fileReader)
+		{
+			m_fileQueue.push_back(QueuedFile(doc, fileName, fileReader, 0));
+		}
+		else
+		{
+			AddLogEntry(QString("Don't know how to read: %1\n").arg(fileName));
+		}
+	}
 
 	// start the process
 	ReadNextFileInQueue();
@@ -260,7 +385,7 @@ void CMainWindow::ImportFiles(const QStringList& files)
 #ifdef HAS_QUAZIP
 //-----------------------------------------------------------------------------
 // Import Project
-void CMainWindow::ImportProject(const QString& fileName)
+void CMainWindow::ImportProjectArchive(const QString& fileName)
 {
 	QFileInfo fileInfo(fileName);
 
@@ -301,118 +426,152 @@ void CMainWindow::ImportProject(const QString& fileName)
 	}
 }
 #else
-void CMainWindow::ImportProject(const QString& fileName) {}
+void CMainWindow::ImportProjectArchive(const QString& fileName) {}
 #endif
 
 //-----------------------------------------------------------------------------
 void CMainWindow::ReadNextFileInQueue()
 {
+	// If a file is being processed, just wait
+	if (m_fileThread) return;
+
 	// make sure we have a file
-	if (m_fileQueue.isEmpty()) return;
+	if (m_fileQueue.empty()) return;
 
 	// get the next file name
-	QString fileName = m_fileQueue.at(0);
+	QueuedFile nextFile = m_fileQueue[0];
 
 	// remove the last file that was read
-	m_fileQueue.removeAt(0);
+	m_fileQueue.erase(m_fileQueue.begin());
 
-	// create a file reader
-	FileReader* fileReader = CreateFileReader(fileName);
+	// start reading the file
+	ReadFile(nextFile);
+}
 
-	// make sure we have one
-	if (fileReader)
+//-----------------------------------------------------------------------------
+// Open a project
+bool CMainWindow::OpenProject(const QString& projectPath)
+{
+	// loop over all files in project folder
+	int filesRead = 0;
+	QDirIterator it(projectPath, QStringList() << "*.fsm", QDir::Files);
+	while (it.hasNext())
 	{
-		ReadFile(fileName, fileReader, false);
+		QString fileName = it.next();
+		OpenDocument(fileName);
+		filesRead++;
 	}
-	else
-	{
-		QMessageBox::critical(this, "Read file", QString("Cannot read file\n{0}").arg(fileName));
-	}
+
+	return (filesRead != 0);
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::OpenDocument(const QString& fileName)
 {
-	m_fileQueue.clear();
+	// Stop the timer if it's running
+	if (ui->m_isAnimating) ui->m_isAnimating = false;
 
-	// check to see if the document is modified or not
-	if (m_doc->IsModified())
+	// see if the file is already open
+	int docs = m_DocManager->Documents();
+	for (int i = 0; i < docs; ++i)
 	{
-		QString msg("The project was modified since the last save.\nDo you want to save the project ?");
-		int n = QMessageBox::question(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
-		if (n == QMessageBox::Yes)
+		CDocument* doc = m_DocManager->GetDocument(i);
+		std::string sfile = doc->GetDocFilePath();
+		QString fileName_i = QString::fromStdString(sfile);
+		if (fileName == fileName_i)
 		{
-			on_actionSave_triggered();
+			ui->tab->setCurrentIndex(i);
+			on_actionRefresh_triggered();
+			QApplication::alert(this);
+			return;
 		}
-		else if (n == QMessageBox::Cancel) return;
 	}
 
+	// create a new document
+	CModelDocument* doc = new CModelDocument(this);
+	doc->SetDocFilePath(fileName.toStdString());
+
 	// start reading the file
-	ReadFile(fileName, 0, true);
+	ReadFile(doc, fileName, new ModelFileReader(doc), QueuedFile::NEW_DOCUMENT);
 
 	// add file to recent list
 	ui->addToRecentFiles(fileName);
+}
+
+//! add a document 
+void CMainWindow::AddDocument(CDocument* doc)
+{
+	// add it to the doc manager
+	m_DocManager->AddDocument(doc);
+
+	// make it the active one
+	SetActiveDocument(doc);
+}
+
+//-----------------------------------------------------------------------------
+bool compare_filename(const std::string& file1, const std::string& file2)
+{
+	if (file1.size() != file2.size()) return false;
+
+	int l = file1.size();
+	for (int i = 0; i < l; ++i)
+	{
+		char c1 = file1[i];
+		char c2 = file2[i];
+
+		if ((c1 == '/') || (c1 == '\\'))
+		{
+			if ((c2 != '/') && (c2 != '\\')) return false;
+		}
+		else if (c1 != c2) return false;
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+CDocument* CMainWindow::FindDocument(const std::string& filePath)
+{
+	for (int i = 0; i < m_DocManager->Documents(); ++i)
+	{
+		CDocument* doc = m_DocManager->GetDocument(i);
+		std::string file_i = doc->GetDocFilePath();
+		if (compare_filename(filePath, file_i)) return doc;
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 //! Open a plot file
 void CMainWindow::OpenPlotFile(const QString& fileName, bool showLoadOptions)
 {
-	xpltFileReader* xplt = nullptr;
-	if (showLoadOptions)
+	// see if this file is already open
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(FindDocument(fileName.toStdString()));
+	if (doc == nullptr)
 	{
-		CDlgImportXPLT dlg(this);
-		if (dlg.exec())
+		doc = new CPostDocument(this);
+		xpltFileReader* xplt = new xpltFileReader(doc->GetFEModel());
+		doc->SetFileReader(xplt);
+		if (showLoadOptions)
 		{
-			xplt = new xpltFileReader;
-			xplt->SetReadStateFlag(dlg.m_nop);
-			xplt->SetReadStatesList(dlg.m_item);
+			CDlgImportXPLT dlg(this);
+			if (dlg.exec())
+			{
+				xplt->SetReadStateFlag(dlg.m_nop);
+				xplt->SetReadStatesList(dlg.m_item);
+			}
+			else
+			{
+				delete doc;
+				return;
+			}
 		}
-		else return;
+		ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::NEW_DOCUMENT);
 	}
-
-	CDocument* doc = GetDocument();
-	std::string sfile = fileName.toStdString();
-
-	// try to turn this into a relative path to the project folder
-	string relPath = FSDir::toRelativePath(sfile);
-
-	// create a dummy job
-	CFEBioJob* job = new CFEBioJob(doc);
-	job->SetPlotFileName(relPath);
-
-	// set the filename as the job's name
-	string fileBase = FSDir::fileBase(sfile);
-	job->SetName(fileBase);
-
-	// add it to the document
-	doc->AddFEbioJob(job);
-
-	// open the job's plotfile
-	OpenPlotFile(job, xplt);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::OpenPlotFile(CFEBioJob* job, xpltFileReader* xpltReader)
-{
-	if (xpltReader == nullptr) xpltReader = new xpltFileReader();
-
-	// create the file reading thread and run it
-	m_postFileThread = new CPostFileThread(this, job, xpltReader);
-	m_postFileThread->start();
-
-	string plotFile = FSDir::toAbsolutePath(job->GetPlotFileName());
-	QString fileName = QString::fromStdString(plotFile);
-	ui->statusBar->showMessage(QString("Reading file %1 ...").arg(fileName));
-	AddLogEntry(QString("Reading file %1 ...").arg(fileName));
-
-	int H = ui->statusBar->height() - 5;
-	ui->fileProgress->setFixedHeight(H);
-
-	ui->fileProgress->setValue(0);
-	ui->statusBar->addPermanentWidget(ui->fileProgress);
-	ui->fileProgress->show();
-	QTimer::singleShot(100, this, SLOT(checkFileProgress()));
+	else
+	{
+		ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::RELOAD_DOCUMENT);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -421,49 +580,6 @@ int CMainWindow::GetMeshMode()
 {
 	if (ui->buildPanel->IsEditPanelVisible()) return MESH_MODE_SURFACE;
 	else return MESH_MODE_VOLUME;
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::OpenFEModel(const QString& fileName)
-{
-	m_fileQueue.clear();
-
-	// create a file reader
-	FileReader* reader = 0;
-	QString ext = QFileInfo(fileName).suffix();
-	if      (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioImport();
-	else if (ext.compare("n"  , Qt::CaseInsensitive) == 0) reader = new FENIKEImport();
-	else if (ext.compare("inp", Qt::CaseInsensitive) == 0) 
-	{
-		AbaqusImport* abaqusReader = new AbaqusImport();
-
-		CDlgImportAbaqus dlg(abaqusReader, this);
-		if (dlg.exec() == 0)
-		{
-			return;
-		}
-
-		abaqusReader->m_breadPhysics = true;
-		reader = abaqusReader;
-	}
-	else
-	{
-		QMessageBox::critical(this, "Read File", QString("Cannot reade file\n%0").arg(fileName));
-		return;
-	}
-
-	/*	// remove quotes from the filename
-	char* ch = strchr((char*)szfile, '"');
-	if (ch) szfile++;
-	ch = strrchr((char*)szfile, '"');
-	if (ch) *ch = 0;
-	 */
-
-	// start reading the file
-	ReadFile(fileName, reader, true);
-
-	// add file to recent list
-	ui->addToRecentFEFiles(fileName);
 }
 
 //-----------------------------------------------------------------------------
@@ -484,7 +600,9 @@ void CMainWindow::dropEvent(QDropEvent *e)
 		// make sure we have one
 		if (fileReader)
 		{
-			ReadFile(fileName, fileReader, false);
+			CDocument* doc = GetDocument();
+			if (doc)
+				ReadFile(doc, fileName, fileReader, 0);
 		}
 		else {
 			QString ext = QFileInfo(fileName).suffix();
@@ -494,33 +612,12 @@ void CMainWindow::dropEvent(QDropEvent *e)
 		}
 	}
 }
-//-----------------------------------------------------------------------------
-void CMainWindow::on_recentFiles_triggered(QAction* action)
-{
-	QString fileName = action->text();
-	OpenDocument(fileName);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_recentFEFiles_triggered(QAction* action)
-{
-	QString fileName = action->text();
-	OpenFEModel(fileName);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
-{
-	QString fileName = action->text();
-	ImportFiles(QStringList(fileName));
-}
 
 //-----------------------------------------------------------------------------
 void CMainWindow::checkFileProgress()
 {
 	float f = 1.f;
 	if (m_fileThread) f = m_fileThread->getFileProgress();
-	else if (m_postFileThread) f = m_postFileThread->getFileProgress();
 	else return;
 
 	int n = (int)(100.f*f);
@@ -529,27 +626,24 @@ void CMainWindow::checkFileProgress()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::checkPostFileProgress()
+void CMainWindow::on_finishedReadingFile(bool success, const QString& errorString)
 {
-	if (m_postFileThread)
-	{
-		float f = m_postFileThread->getFileProgress();
-		int n = (int)(100.f*f);
-		ui->fileProgress->setValue(n);
-		if (f < 1.0f) QTimer::singleShot(100, this, SLOT(checkPostFileProgress()));
-	}
+	assert(m_fileThread);
+	if (m_fileThread == nullptr) return;
+	QueuedFile qfile = m_fileThread->GetFile();
+	m_fileThread = nullptr;
+	finishedReadingFile(success, qfile, errorString);
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::finishedReadingFile(bool success, const QString& errorString)
+void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QString& errorString)
 {
-	m_fileThread = 0;
 	ui->statusBar->clearMessage();
 	ui->statusBar->removeWidget(ui->fileProgress);
 
 	if (success == false)
 	{
-		if (m_fileQueue.isEmpty())
+		if (m_fileQueue.empty())
 		{
 			QString err = QString("Failed reading file :\n%1").arg(errorString);
 			QMessageBox::critical(this, "FEBio Studio", err);
@@ -557,42 +651,82 @@ void CMainWindow::finishedReadingFile(bool success, const QString& errorString)
 
 		QString err = QString("FAILED:\n%1\n").arg(errorString);
 		AddLogEntry(err);
+
+		// if this was a new document, we need to delete the document
+		if (file.m_flags & QueuedFile::NEW_DOCUMENT)
+		{
+			delete file.m_doc;
+		}
+
 		return;
 	}
-	else if (errorString.isEmpty() == false)
+	else
 	{
-		if (m_fileQueue.isEmpty())
+		if (errorString.isEmpty() == false)
 		{
-			QMessageBox::information(this, "FEBio Studio", errorString);
+			if (m_fileQueue.empty())
+			{
+				QMessageBox::information(this, "FEBio Studio", errorString);
+			}
+			AddLogEntry("success!\n");
+			AddLogEntry("Warnings were generated:\n");
+			AddLogEntry(errorString);
+			AddLogEntry("\n");
 		}
-		AddLogEntry("success!\n");
-		AddLogEntry("Warnings were generated:\n");
-		AddLogEntry(errorString);
-	}
-	else 
-	{
-		AddLogEntry("success!\n");
+		else
+		{
+			AddLogEntry("success!\n");
+		}
+
+		// if this was a new document, make it the active one 
+		if (file.m_flags & QueuedFile::NEW_DOCUMENT)
+		{
+			CDocument* doc = file.m_doc; assert(doc);
+			doc->SetFileReader(file.m_fileReader);
+			doc->SetDocFilePath(file.m_fileName.toStdString());
+			bool b = doc->Initialize();
+			if (b == false)
+			{
+				AddLogEntry("Document initialization failed!\n");
+			}
+			AddDocument(doc);
+
+			// for fsprj files we set the "project" directory. 
+			FSDir path(file.m_fileName.toStdString());
+			if (path.fileExt() == "fsprj")
+			{
+				FSDir::setMacro("ProjectDir", ".");
+			}
+		}
+		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
+		{
+			CDocument* doc = file.m_doc; assert(doc);
+			bool b = doc->Initialize();
+			if (b == false)
+			{
+				AddLogEntry("File could not be reloaded!\n");
+			}
+			SetActiveDocument(file.m_doc);
+		}
+		else
+		{
+			SetActiveDocument(file.m_doc);
+		}
 	}
 
-	if (m_fileQueue.isEmpty() == false)
+	if (m_fileQueue.empty() == false)
 	{
 		ReadNextFileInQueue();
 	}
 	else
 	{
-		UpdateTitle();
 		Reset();
 		UpdatePhysicsUi();
 		UpdateModel();
 		UpdateToolbar();
+		UpdatePostToolbar();
 		Update();
 		if (ui->modelViewer) ui->modelViewer->Show();
-
-		// set the "Model" tab to the project's name
-		CDocument* doc = GetDocument();
-		std::string file = doc->GetDocFileBase();
-		if (file.empty()) file = "Model";
-		ui->tab->setTabText(0, QString::fromStdString(file));
 
 		// If the main window is not active, this will alert the user that the file has been read. 
 		QApplication::alert(this, 0);
@@ -600,42 +734,12 @@ void CMainWindow::finishedReadingFile(bool success, const QString& errorString)
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::finishedReadingPostFile(bool success, const QString& errorString)
-{
-	if (m_postFileThread == nullptr) return;
-
-	CFEBioJob* job = m_postFileThread->GetFEBioJob();
-	m_postFileThread = nullptr;
-	ui->statusBar->clearMessage();
-	ui->statusBar->removeWidget(ui->fileProgress);
-
-	if (success == false)
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed loading plot file.");
-		AddLogEntry("FAILED!\n");
-	}
-	else
-	{
-		AddLogEntry("success!\n");
-
-		UpdateModel();
-		ui->modelViewer->Select(job);
-		SetActivePostDoc(job->GetPostDoc());
-
-		UpdateUIConfig();
-	}
-}
-
-//-----------------------------------------------------------------------------
 void CMainWindow::Update(QWidget* psend, bool breset)
 {
-	static bool bmodified = !m_doc->IsModified();
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
 
-	if (bmodified != m_doc->IsModified())
-	{
-		UpdateTitle();
-		bmodified = m_doc->IsModified();
-	}
+	UpdateTab(doc);
 
 	if (breset)
 	{
@@ -686,6 +790,18 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 }
 
 //-----------------------------------------------------------------------------
+//! close the current open project
+void CMainWindow::CloseProject()
+{
+	// close all views first
+	int n = ui->tab->count();
+	for (int i = 1; i < n; ++i) ui->tab->closeView(1);
+
+	// clear project folder
+	m_projectFolder.clear();
+}
+
+//-----------------------------------------------------------------------------
 //! This function resets the GL View. It is called when creating a new file new
 //! (CWnd::OnFileNew) or when opening a file (CWnd::OnFileOpen). 
 //! \sa CGLView::Reset
@@ -695,20 +811,51 @@ void CMainWindow::Reset()
 	ui->glview->ZoomExtents(false);
 }
 
+//-----------------------------------------------------------------------------
+//! Get the active document
+CDocument* CMainWindow::GetDocument() 
+{ 
+	return ui->tab->getActiveDoc();
+}
+
+CModelDocument* CMainWindow::GetModelDocument() { return dynamic_cast<CModelDocument*>(GetDocument()); }
+CPostDocument* CMainWindow::GetPostDocument() { return dynamic_cast<CPostDocument*>(GetDocument()); }
+
+//-----------------------------------------------------------------------------
+// get the document manager
+CDocManager* CMainWindow::GetDocManager()
+{
+	return m_DocManager;
+}
+
+//-----------------------------------------------------------------------------
 bool CMainWindow::maybeSave()
 {
-	CDocument* doc = GetDocument();
-	if (doc->IsModified())
+	// are there any unsaved documents open?
+	int docs = m_DocManager->Documents();
+	int unsavedDocs = 0;
+	for (int i=0; i<docs; ++i)
+	{ 
+		CDocument* doc = m_DocManager->GetDocument(i);
+		if (doc->IsModified()) unsavedDocs++;
+	}
+
+	if (unsavedDocs > 0)
 	{
-		// If the model does not have a file associated and only contains
-		// jobs, we will not ask the question
-		std::string fileName = doc->GetDocFilePath();
-		if (fileName.empty() && (doc->GetGModel()->Objects() == 0)) return true;
-		
-		QMessageBox::StandardButton b = QMessageBox::question(this, "", "The project was changed. Do you want to save it?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		QMessageBox::StandardButton b = QMessageBox::question(this, "", "There are unsaved documents open.\nAre you sure you want to exit?", QMessageBox::Yes | QMessageBox::No);
+		if (b == QMessageBox::No) return false;
+	}
+	return true;
+}
+
+bool CMainWindow::maybeSave(CDocument* doc)
+{
+	if (doc && doc->IsModified())
+	{
+		QMessageBox::StandardButton b = QMessageBox::question(this, "", "The file was changed. Do you want to save it?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 		if (b == QMessageBox::Cancel) return false;
 
-		if (b==QMessageBox::Yes)
+		if (b == QMessageBox::Yes)
 		{
 			on_actionSave_triggered();
 		}
@@ -719,7 +866,9 @@ bool CMainWindow::maybeSave()
 
 void CMainWindow::ReportSelection()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
 	FESelection* sel = doc->GetCurrentSelection();
 	if ((sel == 0) || (sel->Size() == 0)) 
 	{
@@ -950,19 +1099,23 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 		// give the build panels a chance to react first
 		if (ui->buildPanel->OnEscapeEvent()) return;
 
-		// if the build panel didn't process it, clear selection
-		FESelection* ps = m_doc->GetCurrentSelection();
-		if ((ps == 0) || (ps->Size() == 0))
+		CModelDocument* doc = GetModelDocument();
+		if (doc)
 		{
-			if (m_doc->GetItemMode() != ITEM_MESH) m_doc->SetItemMode(ITEM_MESH);
-			else ui->SetSelectionMode(SELECT_OBJECT);
-			Update();
-			UpdateUI();
+			// if the build panel didn't process it, clear selection
+			FESelection* ps = doc->GetCurrentSelection();
+			if ((ps == 0) || (ps->Size() == 0))
+			{
+				if (doc->GetItemMode() != ITEM_MESH) doc->SetItemMode(ITEM_MESH);
+				else ui->SetSelectionMode(SELECT_OBJECT);
+				Update();
+				UpdateUI();
+			}
+			else on_actionClearSelection_triggered();
+			ev->accept();
+			GLHighlighter::ClearHighlights();
+			GLHighlighter::setTracking(false);
 		}
-		else on_actionClearSelection_triggered();
-		ev->accept();
-		GLHighlighter::ClearHighlights();
-		GLHighlighter::setTracking(false);
 	}
 	else if ((ev->key() == Qt::Key_1) && (ev->modifiers() && Qt::CTRL)) 
 	{
@@ -988,7 +1141,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 
 void CMainWindow::NewSession()
 {
-	if (ui->m_showNewOnStartup) on_actionNew_triggered();
+//	if (ui->m_showNewOnStartup) on_actionNewProject_triggered();
 }
 
 void CMainWindow::SetCurrentFolder(const QString& folder)
@@ -1016,14 +1169,10 @@ void CMainWindow::writeSettings()
 	settings.beginGroup("FolderSettings");
 	settings.setValue("currentPath", ui->currentPath);
 
-	settings.setValue("defaultProjectFolder", ui->m_defaultProjectFolder);
+	settings.setValue("defaultProjectFolder", ui->m_defaultProjectParent);
 	settings.setValue("repositoryFolder", ui->m_repositoryFolder);
 
-	QStringList folders = ui->fileViewer->FolderList();
-	settings.setValue("folders", folders);
-
 	settings.setValue("recentFiles", ui->m_recentFiles);
-	settings.setValue("recentFEFiles", ui->m_recentFEFiles);
 	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
 
 	settings.endGroup();
@@ -1091,19 +1240,10 @@ void CMainWindow::readSettings()
 	settings.beginGroup("FolderSettings");
 	ui->currentPath = settings.value("currentPath", QDir::homePath()).toString();
 
-	ui->m_defaultProjectFolder = settings.value("defaultProjectFolder", ui->m_defaultProjectFolder).toString();
+	ui->m_defaultProjectParent = settings.value("defaultProjectFolder", ui->m_defaultProjectParent).toString();
 	ui->m_repositoryFolder = settings.value("repositoryFolder", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/modelRepo").toString();
 
-	QStringList folders = settings.value("folders").toStringList();
-	if (folders.isEmpty() == false)
-	{
-		ui->fileViewer->SetFolderList(folders);
-	}
-
-	ui->fileViewer->setCurrentPath(ui->currentPath);
-
 	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
-	QStringList recentFEFiles = settings.value("recentFEFiles").toStringList(); ui->setRecentFEFiles(recentFEFiles);
 	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
 
 	settings.endGroup();
@@ -1158,9 +1298,12 @@ void CMainWindow::UpdateUI()
 //-----------------------------------------------------------------------------
 void CMainWindow::UpdateToolbar()
 {
-	if (m_doc->IsValid() == false) return;
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = m_doc->GetViewSettings();
+	if (doc->IsValid() == false) return;
+
+	VIEW_SETTINGS& view = doc->GetViewSettings();
 	if (view.m_bfiber != ui->actionShowFibers->isChecked()) ui->actionShowFibers->trigger();
 	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
@@ -1219,32 +1362,35 @@ void CMainWindow::UpdateGLControlBar()
 //-----------------------------------------------------------------------------
 void CMainWindow::UpdateUIConfig()
 {
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr)
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc == nullptr)
 	{
-		// Build Mode
-		ui->postToolBar->setDisabled(true);
-		ui->postToolBar->hide();
-		ui->menuPost->menuAction()->setVisible(false);
-		ui->buildToolBar->show();
-		ui->buildPanel->parentWidget()->show();
-		ui->postPanel->parentWidget()->hide();
-		ui->modelViewer->parentWidget()->show();
+		Update(0, true);
+
+		CDocument* doc = GetDocument();
+		if (doc)
+		{
+			// Build Mode
+			ui->setUIConfig(1);
+			ui->modelViewer->parentWidget()->raise();
+		}
+		else
+		{
+			// no open docs
+			ui->setUIConfig(0);
+		}
 		return;
 	}
 	else
 	{
 		// Post Mode
-		ui->postToolBar->show();
-		ui->menuPost->menuAction()->setVisible(true);
-		ui->buildToolBar->hide();
-		ui->buildPanel->parentWidget()->hide();
-		ui->postPanel->parentWidget()->show();
-		ui->modelViewer->parentWidget()->hide();
+		ui->setUIConfig(2);
 
 		UpdatePostPanel();
-		if (doc->IsValid()) ui->postToolBar->Update();
+		if (postDoc->IsValid()) ui->postToolBar->Update();
 		else ui->postToolBar->setDisabled(true);
+
+		ui->postPanel->parentWidget()->raise();
 	}
 }
 
@@ -1258,24 +1404,16 @@ void CMainWindow::UpdatePostToolbar()
 
 //-----------------------------------------------------------------------------
 //! set the post doc that will be rendered in the GL view
-void CMainWindow::SetActivePostDoc(CPostDoc* postDoc)
+void CMainWindow::SetActiveDocument(CDocument* doc)
 {
-	if (postDoc == nullptr) 
-		SetActiveView(0);
+	int view = ui->tab->findView(doc);
+	if (view == -1)
+	{
+		AddView(doc->GetDocFileName(), doc);
+	}
 	else
 	{
-		int view = ui->tab->findView(postDoc);
-		if (view == -1)
-		{
-			AddView(postDoc->GetName(), postDoc);
-		}
-		else
-		{
-			SetActiveView(view);
-		}
-
-		// raise the post panel
-		ui->postPanel->parentWidget()->raise();
+		SetActiveView(view);
 	}
 }
 
@@ -1290,31 +1428,26 @@ void CMainWindow::SetActiveView(int n)
 {
 	ui->tab->setActiveView(n);
 	ui->glview->UpdateWidgets(false);
+	UpdateUIConfig();
 	RedrawGL();
 }
 
 //-----------------------------------------------------------------
-CPostDoc* CMainWindow::GetActiveDocument()
+int CMainWindow::FindView(CDocument* doc)
 {
-	return ui->tab->getActiveDoc();
-}
-
-//-----------------------------------------------------------------
-int CMainWindow::FindView(CPostDoc* postDoc)
-{
-	return ui->tab->findView(postDoc);
+	return ui->tab->findView(doc);
 }
 
 //-----------------------------------------------------------------------------
 GObject* CMainWindow::GetActiveObject()
 {
-	CPostDoc* postDoc = GetActiveDocument();
-	if (postDoc == nullptr) return GetDocument()->GetActiveObject();
-	return postDoc->GetPostObject();
+	CDocument* doc = GetDocument();
+	if (doc) return doc->GetActiveObject();
+	return nullptr;
 }
 
 //-----------------------------------------------------------------
-void CMainWindow::AddView(const std::string& viewName, CPostDoc* doc, bool makeActive)
+void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool makeActive)
 {
 	ui->tab->addView(viewName, doc, makeActive);
 	ui->glview->ZoomExtents(false);
@@ -1336,11 +1469,9 @@ void CMainWindow::on_tab_currentChanged(int n)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_tabCloseRequested(int n)
 {
-	// Don't close the first view, which is the model view
-	if (n == 0) return;
-
 	// Okay, remove the view
 	CloseView(n);
+	ui->fileViewer->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1354,7 +1485,7 @@ void CMainWindow::OnPostObjectStateChanged()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::OnPostObjectPropsChanged(Post::CGLObject* po)
+void CMainWindow::OnPostObjectPropsChanged(FSObject* po)
 {
 	Post::CGLModel* mdl = GetCurrentModel();
 	if (mdl == nullptr) return;
@@ -1371,13 +1502,23 @@ void CMainWindow::OnPostObjectPropsChanged(Post::CGLObject* po)
 //-----------------------------------------------------------------------------
 void CMainWindow::CloseView(int n)
 {
+	CDocument* doc = ui->tab->getDocument(n);
+
+	if (doc->IsModified())
+	{
+		if (maybeSave(doc) == false) return;
+	}
+
+	m_DocManager->RemoveDocument(n);
+
 	ui->tab->closeView(n);
+	UpdateUIConfig();
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::CloseView(CPostDoc* postDoc)
+void CMainWindow::CloseView(CDocument* doc)
 {
-	int n = FindView(postDoc);
+	int n = FindView(doc);
 	if (n >= 0) CloseView(n);
 }
 
@@ -1406,380 +1547,98 @@ void CMainWindow::ZoomTo(const BOX& box)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectObjects_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionMode(SELECT_OBJECT); 
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionMode(SELECT_OBJECT);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectParts_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionMode(SELECT_PART);
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionMode(SELECT_PART);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectSurfaces_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionMode(SELECT_FACE);
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionMode(SELECT_FACE);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectCurves_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionMode(SELECT_EDGE);
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionMode(SELECT_EDGE);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectNodes_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionMode(SELECT_NODE);
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionMode(SELECT_NODE);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectDiscrete_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionMode(SELECT_DISCRETE);
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionMode(SELECT_DISCRETE);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectRect_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionStyle(REGION_SELECT_BOX);
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionStyle(REGION_SELECT_BOX);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectCircle_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionStyle(REGION_SELECT_CIRCLE);
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionStyle(REGION_SELECT_CIRCLE);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectFree_toggled(bool b)
 {
-	if (b) m_doc->SetSelectionStyle(REGION_SELECT_FREE);
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	if (b) doc->SetSelectionStyle(REGION_SELECT_FREE);
 	Update();
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_actionMeasureTool_triggered()
-{
-	if (ui->measureTool == nullptr) ui->measureTool = new CDlgMeasure(this);
-	ui->measureTool->show();
-}
-
-//-----------------------------------------------------------------------------
-// set the current time value
-void CMainWindow::SetCurrentTimeValue(float ftime)
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-
-	int n0 = doc->GetActiveState();
-	doc->SetCurrentTimeValue(ftime);
-	int n1 = doc->GetActiveState();
-
-	if (n0 != n1)
-	{
-		ui->postToolBar->SetSpinValue(n1 + 1, true);
-	}
-
-	// update the rest
-//	UpdateTools(false);
-//	UpdateGraphs(false);
-	RedrawGL();
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::onTimer()
-{
-	if (ui->m_isAnimating == false) return;
-
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	TIMESETTINGS& time = doc->GetTimeSettings();
-
-	int N = doc->GetFEModel()->GetStates();
-	int N0 = time.m_start;
-	int N1 = time.m_end;
-
-	int nstep = doc->GetActiveState();
-
-	if (time.m_bfix)
-	{
-		float f0 = doc->GetTimeValue(N0);
-		float f1 = doc->GetTimeValue(N1);
-
-		float ftime = doc->GetTimeValue();
-
-		if (time.m_mode == MODE_FORWARD)
-		{
-			ftime += time.m_dt;
-			if (ftime > f1)
-			{
-				if (time.m_bloop) ftime = f0;
-				else { ftime = f1; StopAnimation(); }
-			}
-		}
-		else if (time.m_mode == MODE_REVERSE)
-		{
-			ftime -= time.m_dt;
-			if (ftime < f0)
-			{
-				if (time.m_bloop) ftime = f1;
-				else { ftime = f0; StopAnimation(); }
-			}
-		}
-		else if (time.m_mode == MODE_CYLCE)
-		{
-			ftime += time.m_dt*time.m_inc;
-			if (ftime > f1)
-			{
-				time.m_inc = -1;
-				ftime = f1;
-				if (time.m_bloop == false) StopAnimation();
-			}
-			else if (ftime < f0)
-			{
-				time.m_inc = 1;
-				ftime = f0;
-				if (time.m_bloop == false) StopAnimation();
-			}
-		}
-
-		SetCurrentTimeValue(ftime);
-	}
-	else
-	{
-		if (time.m_mode == MODE_FORWARD)
-		{
-			nstep++;
-			if (nstep > N1)
-			{
-				if (time.m_bloop) nstep = N0;
-				else { nstep = N1; StopAnimation(); }
-			}
-		}
-		else if (time.m_mode == MODE_REVERSE)
-		{
-			nstep--;
-			if (nstep < N0)
-			{
-				if (time.m_bloop) nstep = N1;
-				else { nstep = N0; StopAnimation(); }
-			}
-		}
-		else if (time.m_mode == MODE_CYLCE)
-		{
-			nstep += time.m_inc;
-			if (nstep > N1)
-			{
-				time.m_inc = -1;
-				nstep = N1;
-				if (time.m_bloop == false) StopAnimation();
-			}
-			else if (nstep < N0)
-			{
-				time.m_inc = 1;
-				nstep = N0;
-				if (time.m_bloop == false) StopAnimation();
-			}
-		}
-		ui->postToolBar->SetSpinValue(nstep+1);
-	}
-
-	// TODO: Should I start the event before or after the view is redrawn?
-	if (ui->m_isAnimating)
-	{
-		if (doc == nullptr) return;
-		if (doc->IsValid())
-		{
-			TIMESETTINGS& time = doc->GetTimeSettings();
-			double fps = time.m_fps;
-			if (fps < 1.0) fps = 1.0;
-			double msec_per_frame = 1000.0 / fps;
-			QTimer::singleShot(msec_per_frame, this, SLOT(onTimer()));
-		}
-	}
-}
-
-void CMainWindow::on_selectData_currentValueChanged(int index)
-{
-	//	if (index == -1)
-	//		ui->actionColorMap->setDisabled(true);
-	//	else
-	{
-		//		if (ui->actionColorMap->isEnabled() == false)
-		//			ui->actionColorMap->setEnabled(true);
-
-		int nfield = ui->postToolBar->GetDataField();
-		CPostDoc* doc = GetActiveDocument();
-		if (doc == nullptr) return;
-		doc->SetDataField(nfield);
-
-		// turn on the colormap
-		if (ui->postToolBar->IsColorMapActive() == false)
-		{
-			ui->postToolBar->ToggleColorMap();
-		}
-
-		ui->postPanel->SelectObject(doc->GetGLModel()->GetColorMap());
-
-		ui->glview->UpdateWidgets(false);
-		RedrawGL();
-	}
-
-	//	UpdateGraphs(false);
-
-	//	if (ui->modelViewer->isVisible()) ui->modelViewer->Update(false);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_actionPlay_toggled(bool bchecked)
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc && doc->IsValid())
-	{
-		if (bchecked)
-		{
-			TIMESETTINGS& time = doc->GetTimeSettings();
-			double fps = time.m_fps;
-			if (fps < 1.0) fps = 1.0;
-			double msec_per_frame = 1000.0 / fps;
-
-			ui->m_isAnimating = true;
-			QTimer::singleShot(msec_per_frame, this, SLOT(onTimer()));
-		}
-		else ui->m_isAnimating = false;
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_actionRefresh_triggered()
-{
-	ui->postToolBar->setDisabled(true);
-
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-
-	CDocument* mainDoc = GetDocument();
-	CFEBioJob* job = mainDoc->FindFEBioJob(doc);
-	if (job == nullptr)
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed updating model.");
-		return;
-	}
-
-	xpltFileReader* xplt = new xpltFileReader;
-	OpenPlotFile(job, xplt);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_actionFirst_triggered()
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	TIMESETTINGS& time = doc->GetTimeSettings();
-	ui->postToolBar->SetSpinValue(time.m_start+1);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_actionPrev_triggered()
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	TIMESETTINGS& time = doc->GetTimeSettings();
-	int nstep = doc->GetActiveState();
-	nstep--;
-	if (nstep < time.m_start) nstep = time.m_start;
-	ui->postToolBar->SetSpinValue(nstep+1);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_actionNext_triggered()
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	TIMESETTINGS& time = doc->GetTimeSettings();
-	int nstep = doc->GetActiveState();
-	nstep++;
-	if (nstep > time.m_end) nstep = time.m_end;
-	ui->postToolBar->SetSpinValue(nstep+1);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_actionLast_triggered()
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	TIMESETTINGS& time = doc->GetTimeSettings();
-	ui->postToolBar->SetSpinValue(time.m_end+1);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_actionTimeSettings_triggered()
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-
-	CDlgTimeSettings dlg(doc, this);
-	if (dlg.exec())
-	{
-		TIMESETTINGS& time = doc->GetTimeSettings();
-		//		ui->timePanel->SetRange(time.m_start, time.m_end);
-
-		int ntime = doc->GetActiveState();
-		if ((ntime < time.m_start) || (ntime > time.m_end))
-		{
-			if (ntime < time.m_start) ntime = time.m_start;
-			if (ntime > time.m_end) ntime = time.m_end;
-		}
-
-		ui->postToolBar->SetSpinValue(ntime + 1);
-		RedrawGL();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_selectTime_valueChanged(int n)
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	doc->SetActiveState(n - 1);
-	RedrawGL();
-	ui->modelViewer->RefreshProperties();
-
-	int graphs = ui->graphList.size();
-	QList<CGraphWindow*>::iterator it = ui->graphList.begin();
-	for (int i = 0; i < graphs; ++i, ++it)
-	{
-		CGraphWindow* w = *it;
-		w->Update(false);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::SetCurrentState(int n)
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	ui->postToolBar->SetSpinValue(n + 1);
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_actionColorMap_toggled(bool bchecked)
-{
-	CPostDoc* doc = GetActiveDocument();
-	if (doc == nullptr) return;
-	doc->ActivateColormap(bchecked);
-	ui->postPanel->SelectObject(doc->GetGLModel()->GetColorMap());
-	RedrawGL();
-}
+void CMainWindow::on_postSelectRect_toggled(bool b) { on_selectRect_toggled(b); }
+void CMainWindow::on_postSelectCircle_toggled(bool b) { on_selectCircle_toggled(b); }
+void CMainWindow::on_postSelectFree_toggled(bool b) { on_selectFree_toggled(b); }
+void CMainWindow::on_postActionMeasureTool_triggered() { on_actionMeasureTool_triggered(); }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::StopAnimation()
@@ -1841,7 +1700,6 @@ void CMainWindow::ClearStatusMessage()
 //-----------------------------------------------------------------------------
 void CMainWindow::BuildContextMenu(QMenu& menu)
 {
-	CPostDoc* postDoc = GetActiveDocument();
 	menu.addAction(ui->actionZoomSelect);
 	menu.addAction(ui->actionShowGrid);
 	menu.addAction(ui->actionShowMeshLines);
@@ -1860,6 +1718,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	menu.addAction(view->menuAction());
 	menu.addSeparator();
 
+	CPostDocument* postDoc = GetPostDocument();
 	if (postDoc == nullptr)
 	{
 		menu.addAction(ui->actionShowNormals);
@@ -1879,9 +1738,10 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		menu.addAction(display->menuAction());
 		menu.addSeparator();
 
-		if (GetActiveDocument() == nullptr)
+		CModelDocument* doc = GetModelDocument();
+		if (doc)
 		{
-			GModel* gm = GetDocument()->GetGModel();
+			GModel* gm = doc->GetGModel();
 			int layers = gm->MeshLayers();
 			if (layers > 1)
 			{
@@ -1906,7 +1766,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectMeshLayer(QAction* ac)
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* gm = doc->GetGModel();
 
 	string s = ac->text().toStdString();
@@ -1948,7 +1808,10 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 // Update the physics menu based on active modules
 void CMainWindow::UpdatePhysicsUi()
 {
-	FEProject& prj = GetDocument()->GetProject();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
 	int module = prj.GetModule();
 
 	ui->actionAddRigidConstraint->setVisible(module & MODULE_MECH);
@@ -1961,7 +1824,9 @@ void CMainWindow::UpdatePhysicsUi()
 //-----------------------------------------------------------------------------
 void CMainWindow::onExportAllMaterials()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	FEModel& fem = *doc->GetFEModel();
 
 	vector<GMaterial*> matList;
@@ -1986,7 +1851,7 @@ void CMainWindow::onExportMaterials(const vector<GMaterial*>& matList)
 	if (fileName.isEmpty() == false)
 	{
 		CDocument* doc = GetDocument();
-		if (doc->ExportMaterials(fileName.toStdString(), matList) == false)
+//		if (doc->ExportMaterials(fileName.toStdString(), matList) == false)
 		{
 			QMessageBox::critical(this, "Export Materials", "Failed exporting materials");
 		}
@@ -1996,11 +1861,12 @@ void CMainWindow::onExportMaterials(const vector<GMaterial*>& matList)
 //-----------------------------------------------------------------------------
 void CMainWindow::onImportMaterials()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "PreView Materials (*.pvm)");
 	if (fileNames.isEmpty() == false)
 	{
-		CDocument* doc = GetDocument();
-
 		for (int i=0; i<fileNames.size(); ++i)
 		{
 			QString file = fileNames.at(i);
@@ -2019,9 +1885,11 @@ void CMainWindow::onImportMaterials()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllMaterials()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all materials?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllMaterials();
 		UpdateModel();
@@ -2032,9 +1900,11 @@ void CMainWindow::DeleteAllMaterials()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllBC()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all boundary conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllBC();
 		UpdateModel();
@@ -2045,9 +1915,11 @@ void CMainWindow::DeleteAllBC()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllLoads()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all loads?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllLoads();
 		UpdateModel();
@@ -2058,9 +1930,11 @@ void CMainWindow::DeleteAllLoads()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllIC()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all initial conditions?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllIC();
 		UpdateModel();
@@ -2071,9 +1945,11 @@ void CMainWindow::DeleteAllIC()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllContact()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all contact interfaces?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllContact();
 		UpdateModel();
@@ -2084,9 +1960,11 @@ void CMainWindow::DeleteAllContact()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllConstraints()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllConstraints();
 		UpdateModel();
@@ -2097,9 +1975,11 @@ void CMainWindow::DeleteAllConstraints()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllRigidConstraints()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid constraints?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllRigidConstraints();
 		UpdateModel();
@@ -2110,9 +1990,11 @@ void CMainWindow::DeleteAllRigidConstraints()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllRigidConnectors()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all rigid connectors?\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllRigidConnectors();
 		UpdateModel();
@@ -2123,9 +2005,11 @@ void CMainWindow::DeleteAllRigidConnectors()
 //-----------------------------------------------------------------------------
 void CMainWindow::DeleteAllSteps()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to delete all steps?\nThis will also delete all boundary conditions, etc., associated with the steps.\nThis cannot be undone.", QMessageBox::Ok | QMessageBox::Cancel))
 	{
-		CDocument* doc = GetDocument();
 		FEModel& fem = *doc->GetFEModel();
 		fem.DeleteAllSteps();
 		UpdateModel();
@@ -2142,6 +2026,9 @@ void CMainWindow::ClearRecentProjectsList()
 //-----------------------------------------------------------------------------
 void CMainWindow::GenerateMap(FSObject* po)
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	CDlgAddMeshData dlg(po, this);
 	if (dlg.exec())
 	{
@@ -2149,7 +2036,6 @@ void CMainWindow::GenerateMap(FSObject* po)
 		std::string paramName = dlg.GetParamName();
 		Param_Type paramType = dlg.GetParamType();
 
-		CDocument* doc = GetDocument();
 		FSObject* data = doc->CreateDataMap(po, mapName, paramName, paramType);
 		if (data == 0)
 		{
@@ -2283,9 +2169,9 @@ void CMainWindow::UpdateFontToolbar()
 	else ui->pFontToolBar->setDisabled(true);
 }
 
-bool CMainWindow::DoModelCheck()
+bool CMainWindow::DoModelCheck(CModelDocument* doc)
 {
-	CDocument* doc = GetDocument();
+	if (doc == nullptr) return false;
 
 	vector<MODEL_ERROR> warnings = doc->CheckModel();
 
@@ -2304,35 +2190,42 @@ bool CMainWindow::DoModelCheck()
 
 void CMainWindow::RunFEBioJob(CFEBioJob* job)
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = job->GetDocument();
+	assert(doc);
+	if (doc == nullptr) return;
 
 	bool febioFileVersion = job->m_febVersion;
 	bool writeNotes = job->m_writeNotes;
 	QString cmd = QString::fromStdString(job->m_cmd);
 
 	// see if we already have a job running.
-	if (doc->GetActiveJob())
+	if (CFEBioJob::GetActiveJob())
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Cannot start job since a job is already running");
 		return;
 	}
 
-	// get the FEBio job file path
-	string filePath = job->GetFileName();
-
-	// do string substitution
-	filePath = FSDir::toAbsolutePath(filePath);
-
 	// check the model first for issues
-	if (DoModelCheck() == false) return;
+	if (DoModelCheck(doc) == false) return;
+
+	// get the FEBio job (relative) file path
+	string febFile = job->GetFEBFileName();
+	// do string substitution
+	febFile = FSDir::expandMacros(febFile);
+
+	// convert to an absolute path
+	QDir modelDir(QString::fromStdString(doc->GetDocFolder()));
+	QString absPath = modelDir.absoluteFilePath(QString::fromStdString(febFile));
+
+	febFile = QDir::toNativeSeparators(absPath).toStdString();
 
 	// try to save the file first
-	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(filePath)));
+	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
 
 	if (febioFileVersion == 0)
 	{
-		FEBioExport25 feb;
-		if (feb.Export(doc->GetProject(), filePath.c_str()) == false)
+		FEBioExport25 feb(doc->GetProject());
+		if (feb.Write(febFile.c_str()) == false)
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 			AddLogEntry("FAILED\n");
@@ -2342,8 +2235,8 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	}
 	else if (febioFileVersion == 1)
 	{
-		FEBioExport3 feb;
-		if (feb.Export(doc->GetProject(), filePath.c_str()) == false)
+		FEBioExport3 feb(doc->GetProject());
+		if (feb.Write(febFile.c_str()) == false)
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 			AddLogEntry("FAILED\n");
@@ -2363,36 +2256,28 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	ClearOutput();
 
 	// extract the working directory and file title from the file path
-	size_t n = filePath.rfind('/');
-	if (n == string::npos) n = filePath.rfind('\\');
-
-	string cwd, fileName;
-	if (n != string::npos)
-	{
-		cwd = filePath.substr(0, n);
-		fileName = filePath.substr(n + 1, string::npos);
-	}
-	else fileName = filePath;
+	QFileInfo fileInfo(absPath);
+	QString workingDir = fileInfo.absolutePath();
+	QString fileName = fileInfo.fileName();
 
 	// set this as the active job
-	doc->SetActiveJob(job);
+	CFEBioJob::SetActiveJob(job);
 
 	if(job->GetLaunchConfig()->type == LOCAL)
 	{
 		// create new process
 		ui->m_process = new QProcess(this);
 		ui->m_process->setProcessChannelMode(QProcess::MergedChannels);
-		if (cwd.empty() == false)
+		if (workingDir.isEmpty() == false)
 		{
-			QString wd = QString::fromStdString(cwd);
-			AddLogEntry(QString("Setting current working directory to: %1\n").arg(wd));
-			ui->m_process->setWorkingDirectory(wd);
+			AddLogEntry(QString("Setting current working directory to: %1\n").arg(workingDir));
+			ui->m_process->setWorkingDirectory(workingDir);
 		}
 		QString program = QString::fromStdString(job->GetLaunchConfig()->path);
 
 		// do string substitution
 		string sprogram = program.toStdString();
-		sprogram = FSDir::toAbsolutePath(sprogram);
+		sprogram = FSDir::expandMacros(sprogram);
 		program = QString::fromStdString(sprogram);
 
 		// extract the arguments
@@ -2400,7 +2285,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 
 		std::string configFile = job->GetConfigFileName();
 
-		args.replaceInStrings("$(Filename)", QString::fromStdString(fileName));
+		args.replaceInStrings("$(Filename)", fileName);
 		args.replaceInStrings("$(ConfigFile)", QString::fromStdString(configFile));
 
 		// get ready
@@ -2435,7 +2320,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		// show the output window
 		ui->logPanel->ShowOutput();
 
-		GetDocument()->SetActiveJob(nullptr);
+		CFEBioJob::SetActiveJob(nullptr);
 #endif
 	}
 
@@ -2544,4 +2429,22 @@ void CMainWindow::changeViewMode(View_Mode vm)
 	{
 		ui->actionOrtho->trigger();
 	}
+}
+
+QStringList CMainWindow::GetRecentFileList()
+{
+	return ui->m_recentFiles;
+}
+
+QString CMainWindow::ProjectFolder()
+{
+	return m_projectFolder;
+}
+
+QString CMainWindow::ProjectName()
+{
+	if (m_projectFolder.isEmpty()) return QString();
+	QDir dir(m_projectFolder);
+	QStringList l = QDir::toNativeSeparators(dir.path()).split(dir.separator(), Qt::SkipEmptyParts);
+	return l.last();
 }

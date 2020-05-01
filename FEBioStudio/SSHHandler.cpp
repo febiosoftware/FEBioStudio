@@ -52,7 +52,7 @@ CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // 
 	m_data->orphan = false;
 
 	// Get local .feb file name
-	std::string localFile = FSDir::toAbsolutePath(job->GetFileName());
+	std::string localFile = FSDir::expandMacros(job->GetFEBFileName());
 
 	QFileInfo info(localFile.c_str());
 	std::string baseName = info.baseName().toStdString();
@@ -72,7 +72,7 @@ void CSSHHandler::Update(CLaunchConfig& oldConfig)
 	}
 
 	// Get local .feb file name
-	std::string localFile = FSDir::toAbsolutePath(m_data->job->GetFileName());
+	std::string localFile = FSDir::expandMacros(m_data->job->GetFEBFileName());
 
 	QFileInfo info(localFile.c_str());
 	std::string baseName = info.baseName().toStdString();
@@ -87,7 +87,7 @@ void CSSHHandler::StartRemoteJob()
 	m_data->code = DONE;
 
 	// Get local .feb file name
-	std::string localFile = FSDir::toAbsolutePath(m_data->job->GetFileName());
+	std::string localFile = FSDir::expandMacros(m_data->job->GetFEBFileName());
 
 	// Get remote .feb file name
 	std::string remoteFile = m_data->remoteFileBase + ".feb";
@@ -184,7 +184,7 @@ void CSSHHandler::GetJobFiles()
 	m_data->code = DONE;
 
 	// Get local .xplt file name
-	std::string localFile = FSDir::toAbsolutePath(m_data->job->GetPlotFileName());
+	std::string localFile = FSDir::expandMacros(m_data->job->GetPlotFileName());
 
 	// Get remote .xplt file name
 	std::string remoteFile = m_data->remoteFileBase + ".xplt";

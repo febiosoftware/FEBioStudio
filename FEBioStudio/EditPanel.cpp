@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ui_editpanel.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include "ObjectProps.h"
 #include "GLHighlighter.h"
 #include "CurveIntersectProps.h"
@@ -144,7 +144,7 @@ void CEditPanel::on_apply_clicked(bool b)
 	{
 		if (ui->m_mod)
 		{
-			CDocument* doc = GetDocument();
+			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 			FESelection* sel = doc->GetCurrentSelection();
 			FEItemListBuilder* list = sel->CreateItemList();
 			FEGroup* g = 0;
@@ -184,7 +184,7 @@ void CEditPanel::on_apply_clicked(bool b)
 
 void CEditPanel::on_menu_triggered(QAction* pa)
 {
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* po = pdoc->GetActiveObject();
 
 	if (pa->objectName() == "convert1")
@@ -199,7 +199,7 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 		// convert to editable surface
 		if (dynamic_cast<GSurfaceMeshObject*>(po) == 0)
 		{
-			CCmdConvertToEditableSurface* pcmd = new CCmdConvertToEditableSurface(po);
+			CCmdConvertToEditableSurface* pcmd = new CCmdConvertToEditableSurface(pdoc->GetGModel(), po);
 			pdoc->DoCommand(pcmd);
 
 			// update the modify panel
@@ -219,7 +219,7 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 				// for editable surfaces, we'll use the surface mesh for converting
 				if (dynamic_cast<GSurfaceMeshObject*>(po))
 				{
-					CCmdConvertSurfaceToEditableMesh* pcmd = new CCmdConvertSurfaceToEditableMesh(po);
+					CCmdConvertSurfaceToEditableMesh* pcmd = new CCmdConvertSurfaceToEditableMesh(pdoc->GetGModel(), po);
 					pdoc->DoCommand(pcmd);
 
 					// update the modify panel
@@ -231,7 +231,7 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 			}
 			else
 			{
-				CCmdConvertToEditableMesh* pcmd = new CCmdConvertToEditableMesh(po);
+				CCmdConvertToEditableMesh* pcmd = new CCmdConvertToEditableMesh(pdoc->GetGModel(), po);
 				pdoc->DoCommand(pcmd);
 
 				// update the modify panel
@@ -259,7 +259,9 @@ void CEditPanel::on_buttons_buttonSelected(int id)
 		{
 			ui->m_mod = static_cast<FESurfaceModifier*>(pcd->Create()); assert(ui->m_mod);
 
-			GModel* geo = &GetDocument()->GetFEModel()->GetModel();
+			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+
+			GModel* geo = &doc->GetFEModel()->GetModel();
 
 			CPropertyList* pl = 0;
 			if (dynamic_cast<FECurveIntersect*>(ui->m_mod)) pl = new CCurveIntersectProps(geo, dynamic_cast<FECurveIntersect*>(ui->m_mod));

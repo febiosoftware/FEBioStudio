@@ -10,9 +10,9 @@ class FENIKEImport : public FEFileImport
 	enum {MAXLINE = 256};
 
 public:
-	FENIKEImport();
+	FENIKEImport(FEProject& prj);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	void UpdateFEModel(FEModel& fem);

@@ -5,8 +5,8 @@
 class FESTLExport : public FEFileExport
 {
 public:
-	FESTLExport(void);
+	FESTLExport(FEProject& prj);
 	~FESTLExport(void);
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile) override;
 };

@@ -8,7 +8,7 @@
 #include <QToolButton>
 #include "MainWindow.h"
 #include "Document.h"
-#include "PostDoc.h"
+#include "PostDocument.h"
 #include "PropertyListView.h"
 #include <PostLib/FEPostModel.h>
 #include <PostLib/FEMaterial.h>
@@ -179,11 +179,9 @@ CMaterialPanel::CMaterialPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPan
 	m_pmat = new MaterialProps;
 }
 
-CPostDoc* CMaterialPanel::GetActiveDocument()
+CPostDocument* CMaterialPanel::GetActiveDocument()
 {
-	CDocument* doc = GetMainWindow()->GetDocument();
-	if (doc->FEBioJobs() == 0) return nullptr;
-	return GetMainWindow()->GetActiveDocument();
+	return GetMainWindow()->GetPostDocument();
 }
 
 void CMaterialPanel::Update(bool breset)
@@ -194,7 +192,7 @@ void CMaterialPanel::Update(bool breset)
 	ui->m_prop->Update(0);
 	m_pmat->SetMaterial(0);
 
-	CPostDoc* pdoc = GetActiveDocument();
+	CPostDocument* pdoc = GetActiveDocument();
 	if (pdoc == nullptr) return;
 
 	Post::FEPostModel* fem = pdoc->GetFEModel();
@@ -220,7 +218,7 @@ void CMaterialPanel::Update(bool breset)
 
 void CMaterialPanel::UpdateStates()
 {
-	CPostDoc* pdoc = GetActiveDocument();
+	CPostDocument* pdoc = GetActiveDocument();
 	Post::FEPostModel* fem = pdoc->GetFEModel();
 	if (fem == 0) return;
 
@@ -249,7 +247,7 @@ void CMaterialPanel::UpdateStates()
 
 void CMaterialPanel::on_materialList_currentRowChanged(int nrow)
 {
-	CPostDoc* doc = GetActiveDocument();
+	CPostDocument* doc = GetActiveDocument();
 	if (doc && doc->IsValid())
 	{
 		Post::FEPostModel& fem = *doc->GetFEModel();
@@ -272,7 +270,7 @@ void CMaterialPanel::on_showButton_toggled(bool b)
 {
 	if (ui->update == false) return;
 
-	CPostDoc& doc = *GetActiveDocument();
+	CPostDocument& doc = *GetActiveDocument();
 	if (doc.IsValid() == false) return;
 
 	Post::CGLModel& mdl = *doc.GetGLModel();
@@ -308,7 +306,7 @@ void CMaterialPanel::on_enableButton_toggled(bool b)
 {
 	if (ui->update == false) return;
 
-	CPostDoc& doc = *GetActiveDocument();
+	CPostDocument& doc = *GetActiveDocument();
 	if (doc.IsValid() == false) return;
 
 	Post::CGLModel& mdl = *doc.GetGLModel();
@@ -337,7 +335,7 @@ void CMaterialPanel::on_enableButton_toggled(bool b)
 
 void CMaterialPanel::on_editName_editingFinished()
 {
-	CPostDoc& doc = *GetActiveDocument();
+	CPostDocument& doc = *GetActiveDocument();
 	QModelIndex n = ui->m_list->currentIndex();
 	if (n.isValid())
 	{
@@ -362,7 +360,7 @@ void CMaterialPanel::SetItemColor(int nmat, GLColor c)
 void CMaterialPanel::on_matprops_dataChanged(int nprop)
 {
 	// Get the model
-	CPostDoc& doc = *GetActiveDocument();
+	CPostDocument& doc = *GetActiveDocument();
 	Post::CGLModel& mdl = *doc.GetGLModel();
 	Post::FEPostModel& fem = *doc.GetFEModel();
 

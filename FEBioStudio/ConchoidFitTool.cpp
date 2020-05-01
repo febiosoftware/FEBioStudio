@@ -6,7 +6,7 @@
 #include <QPushButton>
 #include <QFormLayout>
 #include <QLineEdit>
-#include "Document.h"
+#include "ModelDocument.h"
 #include <MeshTools/ConchoidFit.h>
 #include <GeomLib/GObject.h>
 
@@ -32,7 +32,7 @@ CConchoidFitTool::CConchoidFitTool(CMainWindow* wnd) : CBasicTool(wnd, "Conchoid
 bool CConchoidFitTool::OnApply()
 {
 	// get the nodal coordinates (surface only)
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc && doc->IsValid())
 	{
 		GObject* po = doc->GetActiveObject();

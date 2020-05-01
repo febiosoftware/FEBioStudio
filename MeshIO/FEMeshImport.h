@@ -18,10 +18,10 @@ protected:
 	};
 
 public:
-	FEMeshImport();
+	FEMeshImport(FEProject& prj);
 	~FEMeshImport();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 	//! Set the read surface flag
 	void ReadSurface(bool b);

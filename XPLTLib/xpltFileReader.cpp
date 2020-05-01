@@ -24,7 +24,7 @@ void xpltParser::addWarning(int n)
 	m_wrng.push_back(n); 
 }
 
-xpltFileReader::xpltFileReader() : FEFileReader("FEBio plot")
+xpltFileReader::xpltFileReader(Post::FEPostModel* fem) : FEFileReader(fem)
 {
 	m_xplt = 0;
 	m_read_state_flag = XPLT_READ_ALL_STATES;
@@ -34,7 +34,7 @@ xpltFileReader::~xpltFileReader()
 {
 }
 
-bool xpltFileReader::Load(Post::FEPostModel& fem, const char* szfile)
+bool xpltFileReader::Load(const char* szfile)
 {
 	// open the file
 	if (Open(szfile, "rb") == false) return errf("Failed opening file.");
@@ -59,7 +59,7 @@ bool xpltFileReader::Load(Post::FEPostModel& fem, const char* szfile)
 	}
 
 	// set the model's meta data
-	Post::MetaData& meta = fem.GetMetaData();
+	Post::MetaData& meta = m_fem->GetMetaData();
 	meta.author = m_hdr.author;
 	meta.software = m_hdr.software;
 
@@ -69,7 +69,7 @@ bool xpltFileReader::Load(Post::FEPostModel& fem, const char* szfile)
 	else m_xplt = new XpltReader2(this);
 
 	// load the rest of the file
-	bool bret = m_xplt->Load(fem);
+	bool bret = m_xplt->Load(*m_fem);
 
 	// clean up
 	m_ar.Close();

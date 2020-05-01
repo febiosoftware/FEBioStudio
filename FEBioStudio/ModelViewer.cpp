@@ -2,7 +2,7 @@
 #include "ModelViewer.h"
 #include "ui_modelviewer.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <QMessageBox>
@@ -33,7 +33,7 @@ void CModelViewer::Update(bool breset)
 {
 	if (ui->m_blockUpdate) return;
 
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 
 //	FSObject* po = m_currentObject;
 
@@ -112,7 +112,11 @@ void CModelViewer::on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int col
 	CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
 	if (job == nullptr) return;
 
-	GetMainWindow()->OpenPlotFile(job);
+	CModelDocument* doc = job->GetDocument();
+	assert(doc);
+	QString plotFile = doc->ToAbsolutePath(job->GetPlotFileName());
+
+	GetMainWindow()->OpenFile(plotFile, false);
 }
 
 void CModelViewer::SetCurrentItem(int item)
@@ -147,7 +151,7 @@ void CModelViewer::on_searchButton_toggled(bool b)
 
 void CModelViewer::on_syncButton_clicked()
 {
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& mdl = *pdoc->GetGModel();
 	FESelection* sel = pdoc->GetCurrentSelection();
 	if (sel) 
@@ -261,13 +265,13 @@ void CModelViewer::on_selectButton_clicked()
 	if (m_currentObject == 0) return;
 	FSObject* po = m_currentObject;
 
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 
 	CCommand* pcmd = 0;
 	if (dynamic_cast<GObject*>(po))
 	{
 		GObject* pm = dynamic_cast<GObject*>(po);
-		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pm, false);
+		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pdoc->GetGModel(), pm, false);
 	}
 	else if (dynamic_cast<FEModelComponent*>(po))
 	{
@@ -334,12 +338,12 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<GMaterial*>(po))
 	{
 		GMaterial* mat = dynamic_cast<GMaterial*>(po);
-		FEModel* fem = pdoc->GetFEModel();
-		list<GPart*> partList = fem->GetModel().FindPartsFromMaterial(mat->GetID());
+		GModel* mdl = pdoc->GetGModel();
+		list<GPart*> partList = mdl->FindPartsFromMaterial(mat->GetID());
 
 		vector<int> partIdList;
 		for (GPart* pg : partList) partIdList.push_back(pg->GetID());
-		pcmd = new CCmdSelectPart(fem, partIdList, false);
+		pcmd = new CCmdSelectPart(mdl, partIdList, false);
 	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
@@ -357,21 +361,22 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	FEItemListBuilder::Iterator it = pitem->begin();
 	for (int i = 0; i<n; ++i, ++it) pi[i] = *it;
 
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* ps = pdoc->GetFEModel();
+	GModel* mdl = pdoc->GetGModel();
 
 	switch (pitem->Type())
 	{
-	case GO_PART: pcmd = new CCmdSelectPart(ps, pi, n, badd); break;
-	case GO_FACE: pcmd = new CCmdSelectSurface(ps, pi, n, badd); break;
-	case GO_EDGE: pcmd = new CCmdSelectEdge(ps, pi, n, badd); break;
-	case GO_NODE: pcmd = new CCmdSelectNode(ps, pi, n, badd); break;
+	case GO_PART: pcmd = new CCmdSelectPart(mdl, pi, n, badd); break;
+	case GO_FACE: pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
+	case GO_EDGE: pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
+	case GO_NODE: pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
 	case FE_PART:
 		{
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Elements"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
-			pcg->AddCommand(new CCmdSelectObject(pg->GetGObject(), badd));
+			pcg->AddCommand(new CCmdSelectObject(mdl, pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectElements(pm, pi, n, badd));
 		}
 		break;
@@ -380,7 +385,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Faces"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
-			pcg->AddCommand(new CCmdSelectObject(pg->GetGObject(), badd));
+			pcg->AddCommand(new CCmdSelectObject(mdl, pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectFaces(pm, pi, n, badd));
 		}
 		break;
@@ -389,7 +394,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Nodes"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
-			pcg->AddCommand(new CCmdSelectObject(pg->GetGObject(), badd));
+			pcg->AddCommand(new CCmdSelectObject(mdl, pg->GetGObject(), badd));
 			pcg->AddCommand(new CCmdSelectFENodes(pm, pi, n, badd));
 		}
 		break;
@@ -471,7 +476,7 @@ void CModelViewer::OnDeleteItem()
 {
 	UpdateSelection();
 
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	for (int i=0; i<(int)m_selection.size(); ++i)
 	{
 		doc->DeleteObject(m_selection[i]);
@@ -489,7 +494,7 @@ void CModelViewer::OnAddMaterial()
 
 void CModelViewer::OnUnhideAllObjects()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* m = doc->GetGModel();
 	m->ShowAllObjects();
 	Update();
@@ -498,7 +503,7 @@ void CModelViewer::OnUnhideAllObjects()
 
 void CModelViewer::OnCreateNewMeshLayer()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* gm = doc->GetGModel();
 	int layers = gm->MeshLayers();
 	QString s = QString("Layer") + QString::number(layers + 1);
@@ -525,7 +530,7 @@ void CModelViewer::OnCreateNewMeshLayer()
 
 void CModelViewer::OnDeleteMeshLayer()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* gm = doc->GetGModel();
 	int layers = gm->MeshLayers();
 	int activeLayer = gm->GetActiveMeshLayer();
@@ -554,7 +559,7 @@ void CModelViewer::OnUnhideAllParts()
 	GObject* po = dynamic_cast<GObject*>(m_currentObject);
 	if (po)
 	{
-		CDocument* doc = GetDocument();
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 		GModel* m = doc->GetGModel();
 		m->ShowAllParts(po);
 		Update();
@@ -618,7 +623,7 @@ void CModelViewer::OnAddStep()
 
 void CModelViewer::OnHideObject()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFEModel()->GetModel();
 
 	for (int i=0; i<m_selection.size(); ++i)
@@ -639,7 +644,7 @@ void CModelViewer::OnHideObject()
 
 void CModelViewer::OnShowObject()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFEModel()->GetModel();
 
 	for (int i=0; i<(int)m_selection.size(); ++i)
@@ -659,7 +664,7 @@ void CModelViewer::OnShowObject()
 
 void CModelViewer::OnSelectObject()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFEModel()->GetModel();
 
 	CMainWindow* wnd = GetMainWindow();
@@ -674,14 +679,14 @@ void CModelViewer::OnSelectObject()
 
 	if (sel.empty() == false)
 	{
-		doc->DoCommand(new CCmdSelectObject(sel, true));
+		doc->DoCommand(new CCmdSelectObject(&m, sel, true));
 		wnd->RedrawGL();
 	}
 }
 
 void CModelViewer::OnSelectDiscreteObject()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFEModel()->GetModel();
 
 	CMainWindow* wnd = GetMainWindow();
@@ -707,7 +712,7 @@ void CModelViewer::OnDetachDiscreteObject()
 	if (set == 0) return;
 
 	CMainWindow* wnd = GetMainWindow();
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFEModel()->GetModel();
 
 	GObject* po = m.DetachDiscreteSet(set);
@@ -715,7 +720,7 @@ void CModelViewer::OnDetachDiscreteObject()
 	{
 		const std::string& name = "Detached_" + set->GetName();
 		po->SetName(name);
-		doc->DoCommand(new CCmdAddAndSelectObject(po));
+		doc->DoCommand(new CCmdAddAndSelectObject(&m, po));
 		Update();
 		Select(po);
 		wnd->RedrawGL();
@@ -724,7 +729,7 @@ void CModelViewer::OnDetachDiscreteObject()
 
 void CModelViewer::OnHidePart()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFEModel()->GetModel();
 
 	for (int i=0; i<(int)m_selection.size(); ++i)
@@ -745,7 +750,7 @@ void CModelViewer::OnHidePart()
 
 void CModelViewer::OnShowPart()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& m = doc->GetFEModel()->GetModel();
 
 	for (int i = 0; i<(int)m_selection.size(); ++i)
@@ -776,8 +781,8 @@ void CModelViewer::OnSelectPart()
 		GPart* pg = dynamic_cast<GPart*>(m_selection[i]); assert(pg);
 		if (pg && pg->IsVisible()) part.push_back(pg->GetID());
 	}
-	CDocument* doc = GetDocument();
-	CCmdSelectPart* cmd = new CCmdSelectPart(doc->GetFEModel(), part, false);
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CCmdSelectPart* cmd = new CCmdSelectPart(doc->GetGModel(), part, false);
 	doc->DoCommand(cmd);
 	wnd->RedrawGL();
 }
@@ -795,8 +800,8 @@ void CModelViewer::OnSelectSurface()
 		GFace* pg = dynamic_cast<GFace*>(m_selection[i]); assert(pg);
 		if (pg && pg->IsVisible()) surf.push_back(pg->GetID());
 	}
-	CDocument* doc = GetDocument();
-	CCmdSelectSurface* cmd = new CCmdSelectSurface(doc->GetFEModel(), surf, false);
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CCmdSelectSurface* cmd = new CCmdSelectSurface(doc->GetGModel(), surf, false);
 	doc->DoCommand(cmd);
 	wnd->RedrawGL();
 }
@@ -815,8 +820,8 @@ void CModelViewer::OnSelectCurve()
 		if (pg && pg->IsVisible()) edge.push_back(pg->GetID());
 	}
 
-	CDocument* doc = GetDocument();
-	CCmdSelectEdge* cmd = new CCmdSelectEdge(doc->GetFEModel(), edge, false);
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CCmdSelectEdge* cmd = new CCmdSelectEdge(doc->GetGModel(), edge, false);
 	doc->DoCommand(cmd);
 	wnd->RedrawGL();
 }
@@ -835,8 +840,8 @@ void CModelViewer::OnSelectNode()
 		if (pg && pg->IsVisible()) node.push_back(pg->GetID());
 	}
 
-	CDocument* doc = GetDocument();
-	CCmdSelectNode* cmd = new CCmdSelectNode(doc->GetFEModel(), node, false);
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CCmdSelectNode* cmd = new CCmdSelectNode(doc->GetGModel(), node, false);
 	doc->DoCommand(cmd);
 	wnd->RedrawGL();
 }
@@ -860,8 +865,8 @@ void CModelViewer::OnCopyMaterial()
 	int nid = pmat2->GetID();
 
 	// add the material to the material deck
-	CDocument* pdoc = GetMainWindow()->GetDocument();
-	pdoc->DoCommand(new CCmdAddMaterial(pmat2));
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	doc->DoCommand(new CCmdAddMaterial(doc->GetFEModel(), pmat2));
 
 	// update the model viewer
 	Update();
@@ -873,7 +878,7 @@ void CModelViewer::OnChangeMaterial()
 	GMaterial* gmat = dynamic_cast<GMaterial*>(m_currentObject); assert(gmat);
 	if (gmat == 0) return;
 
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEProject& prj = doc->GetProject();
 
 	CMaterialEditor dlg(this);
@@ -891,7 +896,7 @@ void CModelViewer::OnChangeMaterial()
 
 void CModelViewer::OnMaterialHideParts()
 {
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList;
@@ -910,14 +915,14 @@ void CModelViewer::OnMaterialHideParts()
 	}
 	if (partList.empty() == false)
 	{
-		pdoc->DoCommand(new CCmdHideParts(partList));
+		pdoc->DoCommand(new CCmdHideParts(&mdl, partList));
 		GetMainWindow()->RedrawGL();
 	}
 }
 
 void CModelViewer::OnMaterialShowParts()
 {
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList;
@@ -936,7 +941,7 @@ void CModelViewer::OnMaterialShowParts()
 	}
 	if (partList.empty() == false)
 	{
-		pdoc->DoCommand(new CCmdShowParts(partList));
+		pdoc->DoCommand(new CCmdShowParts(&mdl, partList));
 		GetMainWindow()->RedrawGL();
 	}
 }
@@ -947,12 +952,12 @@ void CModelViewer::OnMaterialHideOtherParts()
 	GMaterial* mat = dynamic_cast<GMaterial*>(m_currentObject); assert(mat);
 	if (mat == 0) return;
 
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 	GModel& mdl = fem->GetModel();
 	list<GPart*> partList = mdl.FindPartsFromMaterial(mat->GetID(), false);
 
-	pdoc->DoCommand(new CCmdHideParts(partList));
+	pdoc->DoCommand(new CCmdHideParts(&mdl, partList));
 	GetMainWindow()->RedrawGL();
 }
 
@@ -961,7 +966,7 @@ void CModelViewer::OnCopyInterface()
 	FEInterface* pic = dynamic_cast<FEInterface*>(m_currentObject); assert(pic);
 	if (pic == 0) return;
 
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 
 	// copy the interface
@@ -990,7 +995,7 @@ void CModelViewer::OnCopyBC()
 	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject); assert(pbc);
 	if (pbc == 0) return;
 
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 
 	// copy the bc
@@ -1019,7 +1024,7 @@ void CModelViewer::OnCopyIC()
 	FEInitialCondition* pic = dynamic_cast<FEInitialCondition*>(m_currentObject); assert(pic);
 	if (pic == 0) return;
 
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 
 	// copy the ic
@@ -1048,7 +1053,7 @@ void CModelViewer::OnCopyRigidConnector()
 	FERigidConnector* pc = dynamic_cast<FERigidConnector*>(m_currentObject); assert(pc);
 	if (pc == 0) return;
 
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 
 	// copy the load
@@ -1077,7 +1082,7 @@ void CModelViewer::OnCopyLoad()
 	FELoad* pl = dynamic_cast<FELoad*>(m_currentObject); assert(pl);
 	if (pl == 0) return;
 
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 
 	// copy the load
@@ -1110,7 +1115,7 @@ void CModelViewer::OnCopyRigidConstraint()
 	FERigidConstraint* pc = dynamic_cast<FERigidConstraint*>(m_currentObject); assert(pc);
 	if (pc == 0) return;
 
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 
 	// copy the load
@@ -1139,7 +1144,7 @@ void CModelViewer::OnCopyStep()
 	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEModel* fem = pdoc->GetFEModel();
 
 	// copy the step
@@ -1155,7 +1160,7 @@ void CModelViewer::OnCopyStep()
 	psCopy->GetParamBlock() = ps->GetParamBlock();
 
 	// add the step to the doc
-	pdoc->DoCommand(new CCmdAddStep(psCopy));
+	pdoc->DoCommand(new CCmdAddStep(fem, psCopy));
 
 	// update the model viewer
 	Update();
@@ -1173,7 +1178,7 @@ void CModelViewer::OnRerunJob()
 
 void CModelViewer::OnEditOutput()
 {
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEProject& prj = pdoc->GetProject();
 
 	CDlgEditOutput dlg(prj, this);
@@ -1183,7 +1188,7 @@ void CModelViewer::OnEditOutput()
 
 void CModelViewer::OnEditOutputLog()
 {
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEProject& prj = pdoc->GetProject();
 
 	CDlgEditOutput dlg(prj, this, 1);
@@ -1193,7 +1198,7 @@ void CModelViewer::OnEditOutputLog()
 
 void CModelViewer::OnRemoveEmptySelections()
 {
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& mdl = pdoc->GetFEModel()->GetModel();
 	mdl.RemoveEmptySelections();
 	Update();
@@ -1201,7 +1206,7 @@ void CModelViewer::OnRemoveEmptySelections()
 
 void CModelViewer::OnRemoveAllSelections()
 {
-	CDocument* pdoc = GetMainWindow()->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& mdl = pdoc->GetFEModel()->GetModel();
 	mdl.RemoveNamedSelections();
 	Update();
@@ -1235,7 +1240,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	// add delete action
 	bool del = false;
 
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* gm = doc->GetGModel();
 
 	switch (data->type)

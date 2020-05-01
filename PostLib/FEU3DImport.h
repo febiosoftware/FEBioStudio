@@ -6,9 +6,9 @@ namespace Post {
 class FEU3DImport : public FEFileReader
 {
 public:
-	FEU3DImport();
+	FEU3DImport(FEPostModel* fem);
 
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 };
 
 }

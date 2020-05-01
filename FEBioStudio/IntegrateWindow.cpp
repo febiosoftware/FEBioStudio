@@ -15,9 +15,9 @@
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
-#include "PostDoc.h"
+#include "PostDocument.h"
 
-CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc, 0)
+CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
 	QString title = "FEBio Studio: Integrate";
 	setWindowTitle(title);
@@ -50,7 +50,7 @@ void CIntegrateWindow::UpdateIntegral()
 	ClearPlots();
 
 	// get the source object
-	CPostDoc* pdoc = GetPostDoc();
+	CPostDocument* pdoc = GetPostDoc();
 
 	Post::CGLModel* model = pdoc->GetGLModel();
 	
@@ -91,7 +91,7 @@ void CIntegrateWindow::UpdateSourceOptions()
 	m_src.push_back((Post::CGLPlaneCutPlot*) 0);
 
 	// get the document
-	CPostDoc* pdoc = GetPostDoc();
+	CPostDocument* pdoc = GetPostDoc();
 
 	// add all plane cuts to the source options
 	Post::GPlotList& plt = pdoc->GetGLModel()->GetPlotList();
@@ -114,7 +114,7 @@ void CIntegrateWindow::UpdateSourceOptions()
 void CIntegrateWindow::IntegrateSelection(CLineChartData& data)
 {
 	// get the document
-	CPostDoc* pdoc = GetPostDoc();
+	CPostDocument* pdoc = GetPostDoc();
 	Post::FEPostModel& fem = *pdoc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	Post::CGLModel* po = pdoc->GetGLModel();
@@ -155,7 +155,7 @@ void CIntegrateWindow::IntegrateSelection(CLineChartData& data)
 void CIntegrateWindow::IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CLineChartData& data)
 {
 	// get the document
-	CPostDoc* pdoc = GetPostDoc();
+	CPostDocument* pdoc = GetPostDoc();
 	Post::FEPostModel& fem = *pdoc->GetFEModel();
 	Post::CGLModel* po = pdoc->GetGLModel();
 

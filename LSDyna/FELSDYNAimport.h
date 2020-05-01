@@ -34,10 +34,10 @@ protected:
 	};
 
 public:
-	FELSDYNAimport();
+	FELSDYNAimport(FEProject& prj);
 	virtual ~FELSDYNAimport();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	bool ReadCard(CARD& c);

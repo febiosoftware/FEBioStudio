@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "3PointAngleTool.h"
-#include "Document.h"
-#include "PostDoc.h"
 #include <PostGL/GLModel.h>
 using namespace Post;
 

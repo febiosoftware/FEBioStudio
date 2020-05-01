@@ -1,8 +1,9 @@
 #include "FETetGenExport.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 
-FETetGenExport::FETetGenExport()
+FETetGenExport::FETetGenExport(FEProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -10,10 +11,10 @@ FETetGenExport::~FETetGenExport()
 {
 }
 
-bool FETetGenExport::Export(FEProject &prj, const char *szfile)
+bool FETetGenExport::Write(const char *szfile)
 {
 	// get the model
-	FEModel* ps = &prj.GetFEModel();
+	FEModel* ps = &m_prj.GetFEModel();
 	GModel& model = ps->GetModel();
 
 	char sznode[256] = {0};

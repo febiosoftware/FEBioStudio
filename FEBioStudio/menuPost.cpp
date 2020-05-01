@@ -16,18 +16,21 @@
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <QMessageBox>
-#include "PostDoc.h"
+#include <QTimer>
+#include "PostDocument.h"
 #include "GraphWindow.h"
 #include "SummaryWindow.h"
 #include "StatsWindow.h"
 #include "IntegrateWindow.h"
 #include "DlgImportLines.h"
+#include "DlgTimeSettings.h"
+#include "PostDocument.h"
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
-	CPostDoc* doc = ui->tab->getActiveDoc();
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(ui->tab->getActiveDoc());
 	if (doc== nullptr) return nullptr;
 	return doc->GetGLModel();
 }
@@ -249,7 +252,7 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 
 void CMainWindow::on_actionGraph_triggered()
 {
-	CPostDoc* postDoc = GetActiveDocument();
+	CPostDocument* postDoc = GetPostDocument();
 	if (postDoc == nullptr) return;
 
 	CGraphWindow* pg = new CModelGraphWindow(this, postDoc);
@@ -263,7 +266,7 @@ void CMainWindow::on_actionGraph_triggered()
 
 void CMainWindow::on_actionSummary_triggered()
 {
-	CPostDoc* postDoc = GetActiveDocument();
+	CPostDocument* postDoc = GetPostDocument();
 	if (postDoc == nullptr) return;
 
 	CSummaryWindow* summaryWindow = new CSummaryWindow(this, postDoc);
@@ -278,7 +281,7 @@ void CMainWindow::on_actionSummary_triggered()
 
 void CMainWindow::on_actionStats_triggered()
 {
-	CPostDoc* postDoc = GetActiveDocument();
+	CPostDocument* postDoc = GetPostDocument();
 	if (postDoc == nullptr) return;
 
 	CStatsWindow* statsWindow = new CStatsWindow(this, postDoc);
@@ -292,7 +295,7 @@ void CMainWindow::on_actionStats_triggered()
 
 void CMainWindow::on_actionIntegrate_triggered()
 {
-	CPostDoc* postDoc = GetActiveDocument();
+	CPostDocument* postDoc = GetPostDocument();
 	if (postDoc == nullptr) return;
 
 	CIntegrateWindow* integrateWindow = new CIntegrateWindow(this, postDoc);
@@ -314,4 +317,309 @@ void CMainWindow::on_actionImportLines_triggered()
 {
 	CDlgImportLines dlg(this);
 	dlg.exec();
+}
+
+//-----------------------------------------------------------------------------
+// set the current time value
+void CMainWindow::SetCurrentTimeValue(float ftime)
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+
+	int n0 = doc->GetActiveState();
+	doc->SetCurrentTimeValue(ftime);
+	int n1 = doc->GetActiveState();
+
+	if (n0 != n1)
+	{
+		ui->postToolBar->SetSpinValue(n1 + 1, true);
+	}
+
+	// update the rest
+	//	UpdateTools(false);
+	//	UpdateGraphs(false);
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::onTimer()
+{
+	if (ui->m_isAnimating == false) return;
+
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+
+	TIMESETTINGS& time = doc->GetTimeSettings();
+
+	int N = doc->GetFEModel()->GetStates();
+	int N0 = time.m_start;
+	int N1 = time.m_end;
+
+	int nstep = doc->GetActiveState();
+
+	if (time.m_bfix)
+	{
+		float f0 = doc->GetTimeValue(N0);
+		float f1 = doc->GetTimeValue(N1);
+
+		float ftime = doc->GetTimeValue();
+
+		if (time.m_mode == MODE_FORWARD)
+		{
+			ftime += time.m_dt;
+			if (ftime > f1)
+			{
+				if (time.m_bloop) ftime = f0;
+				else { ftime = f1; StopAnimation(); }
+			}
+		}
+		else if (time.m_mode == MODE_REVERSE)
+		{
+			ftime -= time.m_dt;
+			if (ftime < f0)
+			{
+				if (time.m_bloop) ftime = f1;
+				else { ftime = f0; StopAnimation(); }
+			}
+		}
+		else if (time.m_mode == MODE_CYLCE)
+		{
+			ftime += time.m_dt*time.m_inc;
+			if (ftime > f1)
+			{
+				time.m_inc = -1;
+				ftime = f1;
+				if (time.m_bloop == false) StopAnimation();
+			}
+			else if (ftime < f0)
+			{
+				time.m_inc = 1;
+				ftime = f0;
+				if (time.m_bloop == false) StopAnimation();
+			}
+		}
+
+		SetCurrentTimeValue(ftime);
+	}
+	else
+	{
+		if (time.m_mode == MODE_FORWARD)
+		{
+			nstep++;
+			if (nstep > N1)
+			{
+				if (time.m_bloop) nstep = N0;
+				else { nstep = N1; StopAnimation(); }
+			}
+		}
+		else if (time.m_mode == MODE_REVERSE)
+		{
+			nstep--;
+			if (nstep < N0)
+			{
+				if (time.m_bloop) nstep = N1;
+				else { nstep = N0; StopAnimation(); }
+			}
+		}
+		else if (time.m_mode == MODE_CYLCE)
+		{
+			nstep += time.m_inc;
+			if (nstep > N1)
+			{
+				time.m_inc = -1;
+				nstep = N1;
+				if (time.m_bloop == false) StopAnimation();
+			}
+			else if (nstep < N0)
+			{
+				time.m_inc = 1;
+				nstep = N0;
+				if (time.m_bloop == false) StopAnimation();
+			}
+		}
+		ui->postToolBar->SetSpinValue(nstep + 1);
+	}
+
+	// TODO: Should I start the event before or after the view is redrawn?
+	if (ui->m_isAnimating)
+	{
+		if (doc == nullptr) return;
+		if (doc->IsValid())
+		{
+			TIMESETTINGS& time = doc->GetTimeSettings();
+			double fps = time.m_fps;
+			if (fps < 1.0) fps = 1.0;
+			double msec_per_frame = 1000.0 / fps;
+			QTimer::singleShot(msec_per_frame, this, SLOT(onTimer()));
+		}
+	}
+}
+
+void CMainWindow::on_selectData_currentValueChanged(int index)
+{
+	//	if (index == -1)
+	//		ui->actionColorMap->setDisabled(true);
+	//	else
+	{
+		//		if (ui->actionColorMap->isEnabled() == false)
+		//			ui->actionColorMap->setEnabled(true);
+
+		int nfield = ui->postToolBar->GetDataField();
+		CPostDocument* doc = GetPostDocument();
+		if (doc == nullptr) return;
+		doc->SetDataField(nfield);
+
+		// turn on the colormap
+		if (ui->postToolBar->IsColorMapActive() == false)
+		{
+			ui->postToolBar->ToggleColorMap();
+		}
+
+		ui->postPanel->SelectObject(doc->GetGLModel()->GetColorMap());
+
+		ui->glview->UpdateWidgets(false);
+		RedrawGL();
+	}
+
+	//	UpdateGraphs(false);
+
+	//	if (ui->modelViewer->isVisible()) ui->modelViewer->Update(false);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionPlay_toggled(bool bchecked)
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc && doc->IsValid())
+	{
+		if (bchecked)
+		{
+			TIMESETTINGS& time = doc->GetTimeSettings();
+			double fps = time.m_fps;
+			if (fps < 1.0) fps = 1.0;
+			double msec_per_frame = 1000.0 / fps;
+
+			ui->m_isAnimating = true;
+			QTimer::singleShot(msec_per_frame, this, SLOT(onTimer()));
+		}
+		else ui->m_isAnimating = false;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionRefresh_triggered()
+{
+	ui->postToolBar->setDisabled(true);
+
+	CDocument* doc = GetDocument();
+	if (doc->GetFileReader() && (doc->GetDocFilePath().empty() == false))
+	{
+		OpenFile(QString::fromStdString(doc->GetDocFilePath()), false);
+	}
+	else
+	{
+		QMessageBox::critical(this, "ERROR", "Can't refresh.");
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionFirst_triggered()
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+	ui->postToolBar->SetSpinValue(time.m_start + 1);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionPrev_triggered()
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+	int nstep = doc->GetActiveState();
+	nstep--;
+	if (nstep < time.m_start) nstep = time.m_start;
+	ui->postToolBar->SetSpinValue(nstep + 1);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionNext_triggered()
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+	int nstep = doc->GetActiveState();
+	nstep++;
+	if (nstep > time.m_end) nstep = time.m_end;
+	ui->postToolBar->SetSpinValue(nstep + 1);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionLast_triggered()
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+	TIMESETTINGS& time = doc->GetTimeSettings();
+	ui->postToolBar->SetSpinValue(time.m_end + 1);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionTimeSettings_triggered()
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+
+	CDlgTimeSettings dlg(doc, this);
+	if (dlg.exec())
+	{
+		TIMESETTINGS& time = doc->GetTimeSettings();
+		//		ui->timePanel->SetRange(time.m_start, time.m_end);
+
+		int ntime = doc->GetActiveState();
+		if ((ntime < time.m_start) || (ntime > time.m_end))
+		{
+			if (ntime < time.m_start) ntime = time.m_start;
+			if (ntime > time.m_end) ntime = time.m_end;
+		}
+
+		ui->postToolBar->SetSpinValue(ntime + 1);
+		RedrawGL();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_selectTime_valueChanged(int n)
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+	doc->SetActiveState(n - 1);
+	RedrawGL();
+	ui->modelViewer->RefreshProperties();
+
+	int graphs = ui->graphList.size();
+	QList<CGraphWindow*>::iterator it = ui->graphList.begin();
+	for (int i = 0; i < graphs; ++i, ++it)
+	{
+		CGraphWindow* w = *it;
+		w->Update(false);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::SetCurrentState(int n)
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+	ui->postToolBar->SetSpinValue(n + 1);
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_actionColorMap_toggled(bool bchecked)
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+	doc->ActivateColormap(bchecked);
+	ui->postPanel->SelectObject(doc->GetGLModel()->GetColorMap());
+	RedrawGL();
 }

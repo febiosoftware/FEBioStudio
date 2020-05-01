@@ -4,9 +4,8 @@
 #include "FEPostMesh.h"
 using namespace Post;
 
-FEBioImport::FEBioImport(void) : FEFileReader("FEBio input")
+FEBioImport::FEBioImport(FEPostModel* fem) : FEFileReader(fem)
 {
-	m_pfem = 0;
 	m_pm = 0;
 	m_nversion = 0;
 }
@@ -35,14 +34,13 @@ bool FEBioImport::ParseVersion(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioImport::Load(FEPostModel& fem, const char* szfile)
+bool FEBioImport::Load(const char* szfile)
 {
 	if (Open(szfile, "rt") == false) return errf("Failed opening FEBio input file.");
 
-	fem.Clear();
-	m_pfem = &fem;
+	m_fem->Clear();
 	m_pm = new FEPostMesh;
-	fem.AddMesh(m_pm);
+	m_fem->AddMesh(m_pm);
 
 	// Attach the XML reader to the stream
 	if (m_xml.Attach(m_fp) == false) return false;
@@ -60,11 +58,11 @@ bool FEBioImport::Load(FEPostModel& fem, const char* szfile)
 		m_xml.NextTag(tag);
 		do
 		{
-			if      (tag == "Material") ParseMaterialSection(fem, tag);
+			if      (tag == "Material") ParseMaterialSection(*m_fem, tag);
 			else if (tag == "Geometry") 
 			{
-				if (m_nversion >= 0x0200) ParseGeometrySection2(fem, tag);
-				else ParseGeometrySection(fem, tag);
+				if (m_nversion >= 0x0200) ParseGeometrySection2(*m_fem, tag);
+				else ParseGeometrySection(*m_fem, tag);
 			}
 			else m_xml.SkipTag(tag);
 	
@@ -114,11 +112,11 @@ bool FEBioImport::Load(FEPostModel& fem, const char* szfile)
 
 	// update the mesh
 	m_pm->Update();
-	fem.UpdateBoundingBox();
+	m_fem->UpdateBoundingBox();
 
 	// we need a single state
-	FEState* ps = new FEState(0.f, &fem, fem.GetFEMesh(0));
-	fem.AddState(ps);
+	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));
+	m_fem->AddState(ps);
 
 	return true;
 }
@@ -146,7 +144,7 @@ void FEBioImport::ParseMaterialSection(FEPostModel& fem, XMLTag& tag)
 	{
 		// add a material to the scene
 		FEMaterial mat;
-		m_pfem->AddMaterial(mat);
+		m_fem->AddMaterial(mat);
 	}
 }
 

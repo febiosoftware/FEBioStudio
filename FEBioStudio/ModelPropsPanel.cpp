@@ -11,7 +11,7 @@
 #include <QMessageBox>
 #include <QFormLayout>
 #include <QTabWidget>
-#include "Document.h"
+#include "ModelDocument.h"
 #include "MainWindow.h"
 #include "ObjectProps.h"
 #include <GeomLib/GPrimitive.h>
@@ -401,8 +401,11 @@ CModelPropsPanel::CModelPropsPanel(CMainWindow* wnd, QWidget* parent) : QWidget(
 
 void CModelPropsPanel::Update()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
+	if (doc == nullptr) return;
+
 	// rebuild the step list
-	FEModel* fem = m_wnd->GetDocument()->GetFEModel();
+	FEModel* fem = doc->GetFEModel();
 	int N = fem->Steps();
 	vector<pair<QString,int> > steps(N);
 	for (int i=0; i<N; ++i)
@@ -675,8 +678,8 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 void CModelPropsPanel::SetSelection(GMaterial* pmat)
 {
 	// get the document
-	CDocument* pdoc = m_wnd->GetDocument();
-	FEModel& fem = *pdoc->GetFEModel();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
+	FEModel& fem = *doc->GetFEModel();
 	GModel& mdl = fem.GetModel();
 
 	// clear the name
@@ -704,11 +707,6 @@ void CModelPropsPanel::SetSelection(GMaterial* pmat)
 
 void CModelPropsPanel::SetSelection(GDiscreteElementSet* set)
 {
-	// get the document
-	CDocument* pdoc = m_wnd->GetDocument();
-	FEModel& fem = *pdoc->GetFEModel();
-	GModel& mdl = fem.GetModel();
-
 	// clear the name
 	::CSelectionBox* sel = ui->selectionPanel(0);
 	sel->showNameType(false);
@@ -736,7 +734,7 @@ void CModelPropsPanel::on_select2_addButtonClicked() { addSelection(1); }
 void CModelPropsPanel::addSelection(int n)
 {
 	// get the document
-	CDocument* pdoc = m_wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
 	// get the current selection
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -905,7 +903,7 @@ void CModelPropsPanel::addSelection(int n)
 			vector<int> p(N);
 			GPartSelection::Iterator it(pps);
 			for (int i = 0; i<N; ++i, ++it) p[i] = it->GetID();
-			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetFEModel(), p, pmat->GetID()));
+			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetGModel(), p, pmat->GetID()));
 		}
 		else
 		{
@@ -950,7 +948,7 @@ void CModelPropsPanel::on_select2_subButtonClicked() { subSelection(1); }
 void CModelPropsPanel::subSelection(int n)
 {
 	// get the document
-	CDocument* pdoc = m_wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
 	// get the current selection
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -1082,7 +1080,7 @@ void CModelPropsPanel::subSelection(int n)
 			vector<int> p(N);
 			GPartSelection::Iterator it(pps);
 			for (int i = 0; i<N; ++i, ++it) p[i] = it->GetID();
-			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetFEModel(), p, 0));
+			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetGModel(), p, 0));
 		}
 		else
 		{
@@ -1119,7 +1117,7 @@ void CModelPropsPanel::on_select2_delButtonClicked() { delSelection(1); }
 
 void CModelPropsPanel::delSelection(int n)
 {
-	CDocument* pdoc = m_wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
 	FEItemListBuilder* pl = 0;
 
@@ -1161,7 +1159,7 @@ void CModelPropsPanel::delSelection(int n)
 		{
 			vector<int> items;
 			sel->getSelectedItems(items);
-			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetFEModel(), items, 0));
+			pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetGModel(), items, 0));
 			SetSelection(dynamic_cast<GMaterial*>(m_currentObject));
 			m_wnd->RedrawGL();
 			emit selectionChanged();
@@ -1205,7 +1203,7 @@ void CModelPropsPanel::on_select2_clearButtonClicked() { clearSelection(1); }
 
 void CModelPropsPanel::clearSelection(int n)
 {
-	CDocument* pdoc = m_wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
 	FEItemListBuilder* pl = 0;
 
@@ -1247,7 +1245,7 @@ void CModelPropsPanel::clearSelection(int n)
 		vector<int> items;
 		CSelectionBox* sel = ui->selectionPanel(n);
 		sel->getAllItems(items);
-		pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetFEModel(), items, 0));
+		pdoc->DoCommand(new CCmdAssignPartMaterial(pdoc->GetGModel(), items, 0));
 		SetSelection(dynamic_cast<GMaterial*>(m_currentObject));
 		m_wnd->RedrawGL();
 		emit selectionChanged();
@@ -1275,7 +1273,8 @@ void CModelPropsPanel::on_select2_nameChanged(const QString& t)
 
 void CModelPropsPanel::selSelection(int n)
 {
-	CDocument* pdoc = m_wnd->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
+	GModel* mdl = pdoc->GetGModel();
 	FEModel* ps = pdoc->GetFEModel();
 
 	assert(m_currentObject);
@@ -1318,10 +1317,10 @@ void CModelPropsPanel::selSelection(int n)
 	{
 		switch (pl->Type())
 		{
-		case GO_NODE: pcmd = new CCmdSelectNode(ps, &l[0], (int)l.size(), false); break;
-		case GO_EDGE: pcmd = new CCmdSelectEdge(ps, &l[0], (int)l.size(), false); break;
-		case GO_FACE: pcmd = new CCmdSelectSurface(ps, &l[0], (int)l.size(), false); break;
-		case GO_PART: pcmd = new CCmdSelectPart(ps, &l[0], (int)l.size(), false); break;
+		case GO_NODE: pcmd = new CCmdSelectNode(mdl, &l[0], (int)l.size(), false); break;
+		case GO_EDGE: pcmd = new CCmdSelectEdge(mdl, &l[0], (int)l.size(), false); break;
+		case GO_FACE: pcmd = new CCmdSelectSurface(mdl, &l[0], (int)l.size(), false); break;
+		case GO_PART: pcmd = new CCmdSelectPart(mdl, &l[0], (int)l.size(), false); break;
 		default:
 			if (dynamic_cast<FEGroup*>(pl))
 			{
@@ -1344,7 +1343,7 @@ void CModelPropsPanel::selSelection(int n)
 				if (po && !po->IsSelected())
 				{
 					CCmdGroup* pgc = new CCmdGroup("Select");
-					pgc->AddCommand(new CCmdSelectObject(po, false));
+					pgc->AddCommand(new CCmdSelectObject(mdl, po, false));
 					pgc->AddCommand(pcmd);
 					pcmd = pgc;
 				}
@@ -1353,7 +1352,7 @@ void CModelPropsPanel::selSelection(int n)
 	}
 	else if (dynamic_cast<GMaterial*>(m_currentObject))
 	{
-		pcmd = new CCmdSelectPart(ps, &l[0], (int)l.size(), false);
+		pcmd = new CCmdSelectPart(mdl, &l[0], (int)l.size(), false);
 	}
 	else if (dynamic_cast<GDiscreteElementSet*>(m_currentObject))
 	{
@@ -1437,7 +1436,9 @@ void CModelPropsPanel::on_bcobject_stepChanged(int n)
 	int stepId = ui->current_bcobject_value();
 	if ((stepId !=-1) && (pc->GetStep() != stepId))
 	{
-		FEModel* fem = m_wnd->GetDocument()->GetFEModel();
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
+
+		FEModel* fem = doc->GetFEModel();
 
 		fem->AssignComponentToStep(pc, fem->GetStep(n));
 

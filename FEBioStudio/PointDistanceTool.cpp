@@ -1,10 +1,7 @@
 #include "stdafx.h"
 #include "PointDistanceTool.h"
 #include <GLLib/GDecoration.h>
-#include "Document.h"
-#include <PostGL/GLModel.h>
-#include "PostDoc.h"
-using namespace Post;
+#include <MeshLib/FEMesh.h>
 
 QVariant CPointDistanceTool::GetPropertyValue(int i)
 {

@@ -7,6 +7,8 @@
 
 class FSObject;
 class CDocument;
+class CModelDocument;
+class CPostDocument;
 class CFileThread;
 class CPostFileThread;
 class FileReader;
@@ -15,10 +17,12 @@ class CCreatePanel;
 class CBuildPanel;
 class QMenu;
 class CGraphWindow;
-class CPostDoc;
+class CPostDocument;
 class CFEBioJob;
 class CSSHHandler;
 class xpltFileReader;
+class CDocManager;
+class QueuedFile;
 
 namespace Ui {
 	class CMainWindow;
@@ -40,19 +44,27 @@ public:
 	//! reset window data
 	void Reset();
 
-	//! Get the main document
-	CDocument* GetDocument() { return m_doc; }
+	//! close the current open project
+	void CloseProject();
 
-	//! Open a document
-	void OpenDocument(const QString& fileName);
+	//! Get the active document
+	CDocument* GetDocument();
+	CModelDocument* GetModelDocument();
+	CPostDocument* GetPostDocument();
 
-	//! Open an FE model
-	void OpenFEModel(const QString& fileName);
+	// get the document manager
+	CDocManager* GetDocManager();
+
+	// Open a project folder
+	bool OpenProject(const QString& projectPath);
+
+	//! add a document 
+	void AddDocument(CDocument* doc);
 
 	//! import a list of files
 	void ImportFiles(const QStringList& fileNames);
 
-	void ImportProject(const QString& fileName);
+	void ImportProjectArchive(const QString& fileName);
 
 	// open the object in the curve editor
 	void OpenInCurveEditor(FSObject* po);
@@ -83,6 +95,7 @@ public:
 
 	// see if user wants to save doc
 	bool maybeSave();
+	bool maybeSave(CDocument* doc);
 
 	// write some useful info to the log regarding the selection
 	void ReportSelection();
@@ -93,11 +106,13 @@ public:
 	// set the current theme
 	void setCurrentTheme(int n);
 
-	//! Open a plot file
-	void OpenPlotFile(const QString& fileName, bool showLoadOptions = true);
-	void OpenPlotFile(CFEBioJob* job, xpltFileReader* xplt = nullptr);
-    
-    //! Process drag event
+	// clear command stack on save
+	bool clearCommandStackOnSave() const;
+
+	// set clear command stack on save
+	void setClearCommandStackOnSave(bool b);
+
+	//! Process drag event
     void dragEnterEvent(QDragEnterEvent *e);
     
     //! Process drop event
@@ -117,6 +132,9 @@ public:
 	//! Update the window title.
 	void UpdateTitle();
 
+	//! update the tab's text
+	void UpdateTab(CDocument* doc);
+
 	//! Update the window content
 	void Update(QWidget* psend = 0, bool breset = false);
 
@@ -130,7 +148,7 @@ public:
 	void UpdateUIConfig();
 
 	//! set the post doc that will be rendered in the GL view
-	void SetActivePostDoc(CPostDoc* postDoc);
+	void SetActiveDocument(CDocument* doc);
 
 	//! Update the post panel
 	void UpdatePostPanel(bool braise = false, Post::CGLObject* po = nullptr);
@@ -191,26 +209,38 @@ private:
 	void readThemeSetting();
     
 public:
+	// Read a file
+	void ReadFile(CDocument* doc, const QString& fileName, FileReader* fileReader, int flags);
+
 	FileReader* CreateFileReader(const QString& fileName);
-	void ReadFile(const QString& fileName, FileReader* fileReader, bool clearDoc);
 
 	void OpenFile(const QString& fileName, bool showLoadOptions = true);
 
-	bool SaveProject(const QString& fileName);
+	bool SaveDocument(const QString& fileName);
 
 	void ExportGeometry();
 	void ExportPostGeometry();
 
 	void SaveImage(QImage& image);
 
+	CDocument* FindDocument(const std::string& filePath);
+
+private:
+	void ReadFile(QueuedFile& qfile);
+
+	void OpenDocument(const QString& fileName);
+	void OpenPlotFile(const QString& fileName, bool showLoadOptions = true);
+	void OpenFEModel(const QString& fileName);
+
 public slots:
-	void on_actionNew_triggered();
+	void on_actionNewProject_triggered();
+	void on_actionNewModel_triggered();
+	void on_actionOpenProject_triggered();
 	void on_actionOpen_triggered();
 	void on_actionSave_triggered();
 	void on_actionSaveAs_triggered();
+	void on_actionSaveAll_triggered();
 	void on_actionSnapShot_triggered();
-	void on_actionInfo_triggered();
-	void on_actionImportFEModel_triggered();
 	void on_actionExportFEModel_triggered();
 	void on_actionImportGeometry_triggered();
 	void on_actionExportGeometry_triggered();
@@ -355,8 +385,12 @@ public slots:
 	void on_selectRect_toggled(bool b);
 	void on_selectCircle_toggled(bool b);
 	void on_selectFree_toggled(bool b);
-
 	void on_actionMeasureTool_triggered();
+
+	void on_postSelectRect_toggled(bool b);
+	void on_postSelectCircle_toggled(bool b);
+	void on_postSelectFree_toggled(bool b);
+	void on_postActionMeasureTool_triggered();
 
 	// Post toolbar
 	void on_selectData_currentValueChanged(int i);
@@ -382,7 +416,7 @@ public slots:
 
 	// slots from Post panel
 	void OnPostObjectStateChanged();
-	void OnPostObjectPropsChanged(Post::CGLObject* po);
+	void OnPostObjectPropsChanged(FSObject* po);
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
@@ -390,17 +424,16 @@ public slots:
 	void OnSelectObjectTransparencyMode(QAction* ac);
 
 	void CloseView(int n);
-	void CloseView(CPostDoc* postDoc);
+	void CloseView(CDocument* doc);
 
 	void SetCurrentState(int n);
 
 	void closeEvent(QCloseEvent* ev);
 	void keyPressEvent(QKeyEvent* ev);
 
-	void finishedReadingFile(bool success, const QString& errorString);
-	void finishedReadingPostFile(bool success, const QString& errorString);
+	void on_finishedReadingFile(bool success, const QString& errorString);
+	void finishedReadingFile(bool success, QueuedFile& qfile, const QString& errorString);
 	void checkFileProgress();
-	void checkPostFileProgress();
 
 	void StopAnimation();
 
@@ -444,10 +477,13 @@ public slots:
 	void ShowIndeterminateProgress(bool show, QString message = "");
 	void UpdateProgress(int);
 
-	bool DoModelCheck();
+	bool DoModelCheck(CModelDocument* doc);
 
 public:
 	QStringList GetRecentFileList();
+
+	QString ProjectFolder();
+	QString ProjectName();
 
 private:
 	void ReadNextFileInQueue();
@@ -456,17 +492,18 @@ private:
 public:
 	int Views();
 	void SetActiveView(int n);
-	void AddView(const std::string& viewName, CPostDoc* doc = nullptr, bool makeActive = true);
-	CPostDoc* GetActiveDocument();
-	int FindView(CPostDoc* postDoc);
+	void AddView(const std::string& viewName, CDocument* doc, bool makeActive = true);
+	int FindView(CDocument* doc);
 	GObject* GetActiveObject();
 
 private:
 	Ui::CMainWindow*	ui;
-	CDocument*			m_doc;
+
+	CDocManager*		m_DocManager;
+	QString				m_projectFolder;
+
 	CFileThread*		m_fileThread;
-	CPostFileThread*	m_postFileThread;
-	QStringList			m_fileQueue;
+	vector<QueuedFile>	m_fileQueue;
 };
 
 class CResource

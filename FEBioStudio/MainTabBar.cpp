@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "MainTabBar.h"
 #include "MainWindow.h"
-#include "PostDoc.h"
 
 CMainTabBar::CMainTabBar(CMainWindow* wnd, QWidget* parent) : QTabBar(parent)
 {
@@ -24,10 +23,10 @@ void CMainTabBar::setActiveView(int n)
 	setCurrentIndex(n);
 }
 
-void CMainTabBar::addView(const std::string& name, CPostDoc* postDoc, bool makeActive)
+void CMainTabBar::addView(const std::string& name, CDocument* doc, bool makeActive)
 {
+	m_docs.push_back(doc);
 	addTab(QString::fromStdString(name));
-	m_docs.push_back(postDoc);
 	assert(m_docs.size() == count());
 
 	if (makeActive)
@@ -36,7 +35,7 @@ void CMainTabBar::addView(const std::string& name, CPostDoc* postDoc, bool makeA
 	}
 }
 
-int CMainTabBar::findView(CPostDoc* doc)
+int CMainTabBar::findView(CDocument* doc)
 {
 	for (int i = 0; i < (int)m_docs.size(); ++i)
 	{
@@ -45,21 +44,19 @@ int CMainTabBar::findView(CPostDoc* doc)
 	return -1;
 }
 
-CPostDoc* CMainTabBar::getActiveDoc()
+CDocument* CMainTabBar::getActiveDoc()
 {
 	int n = currentIndex();
-	return m_docs[n];
+	return ((n >= 0) && (n < m_docs.size()) ? m_docs[n] : nullptr);
+}
+
+CDocument* CMainTabBar::getDocument(int n)
+{
+	return ((n >= 0) && (n < m_docs.size()) ? m_docs[n] : nullptr);
 }
 
 void CMainTabBar::closeView(int n)
 {
-	assert(n != 0);
-	assert(count() > 1);
 	m_docs.erase(m_docs.begin() + n);
 	removeTab(n);
-}
-
-CPostDoc* CMainTabBar::getPostDoc(int i)
-{
-	return m_docs[i];
 }

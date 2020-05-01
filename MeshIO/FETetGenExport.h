@@ -4,8 +4,8 @@
 class FETetGenExport : public FEFileExport
 {
 public:
-	FETetGenExport(void);
+	FETetGenExport(FEProject& prj);
 	~FETetGenExport(void);
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile) override;
 };

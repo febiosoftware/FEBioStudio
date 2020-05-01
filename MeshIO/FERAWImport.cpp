@@ -3,7 +3,7 @@
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FERAWImport::FERAWImport()
+FERAWImport::FERAWImport(FEProject& prj) : FEFileImport(prj)
 {
 	m_nx = 0;
 	m_ny = 0;
@@ -40,7 +40,7 @@ void FERAWImport::SetBoxSize(double x0, double y0, double z0, double w, double h
 }
 
 //-----------------------------------------------------------------------------
-bool FERAWImport::Load(FEProject& prj, const char* szfile)
+bool FERAWImport::Load(const char* szfile)
 {
 	// open and read file
 	if (Open(szfile, "rb") == false) return false;
@@ -57,7 +57,7 @@ bool FERAWImport::Load(FEProject& prj, const char* szfile)
 	for (int i=0; i<N; ++i) { pb[i] = bin[pb[i]]; assert(pb[i] >= 0); }
 
 	// get the FE Model
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 
 	// create a new mesh
 	int nodes = (m_nx+1)*(m_ny+1)*(m_nz+1);

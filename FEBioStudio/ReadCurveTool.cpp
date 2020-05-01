@@ -10,7 +10,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include <GeomLib/GCurveMeshObject.h>
-#include "Document.h"
+#include "ModelDocument.h"
 #include "MainWindow.h"
 
 CReadCurveTool::CReadCurveTool(CMainWindow* wnd) : CBasicTool(wnd, "Read Curve", HAS_APPLY_BUTTON)
@@ -72,7 +72,7 @@ bool CReadCurveTool::OnApply()
 			GCurveMeshObject* po = new GCurveMeshObject(pm);
 			po->SetName(sz);
 
-			CDocument* doc = GetDocument();
+			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 			doc->AddObject(po);
 		}
 	}

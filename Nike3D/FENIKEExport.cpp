@@ -3,12 +3,13 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "FENIKEExport.h"
+#include <MeshTools/FEProject.h>
 
 //-----------------------------------------------------------------------------
 // FENIKEExport
 //-----------------------------------------------------------------------------
 
-FENIKEExport::FENIKEExport()
+FENIKEExport::FENIKEExport(FEProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -19,11 +20,11 @@ FENIKEExport::~FENIKEExport()
 
 //-----------------------------------------------------------------------------
 
-bool FENIKEExport::Export(FEProject& prj, const char* szfile)
+bool FENIKEExport::Write(const char* szfile)
 {
 	// try to create a NIKE project
 	FENikeProject nike; 
-	if (nike.Create(prj) == false) return errf("Failed creating NIKE project.");
+	if (nike.Create(m_prj) == false) return errf("Failed creating NIKE project.");
 
 	// open the file
 	FILE* fp = m_fp = fopen(szfile, "wt");

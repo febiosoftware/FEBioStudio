@@ -13,12 +13,12 @@ struct LSDYNAEXPORT
 class FELSDYNAexport : public FEFileExport
 {
 public:
-	FELSDYNAexport(void);
+	FELSDYNAexport(FEProject& prj);
 	~FELSDYNAexport(void);
 
 	void SetOptions(LSDYNAEXPORT o) { m_ops = o; }
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile);
 
 protected:
 	bool write_NODE();
@@ -32,6 +32,5 @@ protected:
 
 protected:
 	FILE*			m_fp;
-	FEProject*		m_pprj;
 	LSDYNAEXPORT	m_ops;
 };

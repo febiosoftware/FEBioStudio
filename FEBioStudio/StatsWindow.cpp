@@ -15,9 +15,9 @@
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
-#include "PostDoc.h"
+#include "PostDocument.h"
 
-CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc, 0)
+CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
 	QString title = "FEBioStudio: Statistics";
 	setWindowTitle(title);
@@ -27,7 +27,7 @@ CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(w
 
 void CStatsWindow::Update(bool breset, bool bfit)
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	if (doc->IsValid() == false) return;
 
 	Post::FEPostMesh* pm = doc->GetFEModel()->GetFEMesh(0);

@@ -679,7 +679,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_physics->m_showHiddenFibers = view.m_showHiddenFibers;
 
 	ui->m_ui->m_apply = (view.m_apply == 1);
-	ui->m_ui->m_bcmd = view.m_clearUndoOnSave;
+	ui->m_ui->m_bcmd = pwnd->clearCommandStackOnSave();
 	ui->m_ui->m_theme = pwnd->currentTheme();
 
 	ui->m_select->m_bconnect = view.m_bconn;
@@ -761,7 +761,6 @@ void CDlgSettings::apply()
 	view.m_showHiddenFibers = ui->m_physics->m_showHiddenFibers;
 
 	view.m_apply = (ui->m_ui->m_apply ? 1 : 0);
-	view.m_clearUndoOnSave = ui->m_ui->m_bcmd;
 	
 	view.m_bconn = ui->m_select->m_bconnect;
 	view.m_ntagInfo = ui->m_select->m_ntagInfo;
@@ -779,6 +778,7 @@ void CDlgSettings::apply()
 	cam.SetCameraBias(ui->m_cam->m_bias);
 	cam.SetCameraSpeed(ui->m_cam->m_speed);
 
+	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
 	m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
 
 	m_pwnd->RedrawGL();

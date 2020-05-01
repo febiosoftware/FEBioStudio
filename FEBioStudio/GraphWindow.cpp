@@ -30,7 +30,7 @@
 #include <MathLib/LinearRegression.h>
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
-#include "PostDoc.h"
+#include "PostDocument.h"
 
 class GraphOptionsUI
 {
@@ -590,7 +590,7 @@ public:
 	GraphOptions*	ops;
 	DataOptions*	data;
 
-	CPostDoc*	doc;
+	CPostDocument*	doc;
 
 	QAction* actionType;
 	QAction* actionPlot;
@@ -698,7 +698,7 @@ public:
 
 QRect CGraphWindow::m_preferredSize;
 
-CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDoc* postDoc, int flags) : m_wnd(pwnd), QDockWidget(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
+CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags) : m_wnd(pwnd), QDockWidget(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
 {
 	m_nTrackTime = TRACK_TIME;
 	m_nUserMin = 1;
@@ -757,7 +757,7 @@ CPlotWidget* CGraphWindow::GetPlotWidget()
 
 //-----------------------------------------------------------------------------
 // get the post doc
-CPostDoc* CGraphWindow::GetPostDoc()
+CPostDocument* CGraphWindow::GetPostDoc()
 {
 	return ui->doc;
 }
@@ -778,7 +778,7 @@ void CGraphWindow::GetUserTimeRange(int& minTime, int& maxTime)
 //-----------------------------------------------------------------------------
 void CGraphWindow::GetTimeRange(int& minTime, int& maxTime)
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	if (doc == nullptr) return;
 
 	// get the document and current time point and time steps
@@ -1037,7 +1037,7 @@ void CGraphWindow::on_options_optionsChanged()
 		{
 			ui->ops->getUserTimeRange(m_nUserMin, m_nUserMax);
 
-			CPostDoc* doc = GetPostDoc();
+			CPostDocument* doc = GetPostDoc();
 			if (doc)
 			{
 				// check the range. Note that user min and max are one-based!
@@ -1080,7 +1080,7 @@ void CGraphWindow::on_options_optionsChanged()
 }
 
 //=============================================================================
-CDataGraphWindow::CDataGraphWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc)
+CDataGraphWindow::CDataGraphWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc)
 {
 
 }
@@ -1095,7 +1095,7 @@ void CDataGraphWindow::SetData(const std::vector<double>& data, QString title)
 void CDataGraphWindow::Update(bool breset, bool bfit)
 {
 	ClearPlots();
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	if (doc)
 	{
 		Post::FEPostModel* fem = doc->GetFEModel();
@@ -1117,7 +1117,7 @@ void CDataGraphWindow::Update(bool breset, bool bfit)
 
 
 //=============================================================================
-CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGraphWindow(wnd, postDoc)
+CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc)
 {
 	m_firstState = -1;
 	m_lastState = -1;
@@ -1135,7 +1135,7 @@ CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDoc* postDoc) : CGra
 // If breset==false, the selection has changed
 void CModelGraphWindow::Update(bool breset, bool bfit)
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	if (doc==nullptr) return;
 
 	if (breset)
@@ -1277,7 +1277,7 @@ CLineChartData* CModelGraphWindow::nextData()
 //-----------------------------------------------------------------------------
 void CModelGraphWindow::addSelectedNodes()
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
@@ -1418,7 +1418,7 @@ void CModelGraphWindow::addSelectedNodes()
 //-----------------------------------------------------------------------------
 void CModelGraphWindow::addSelectedEdges()
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
@@ -1459,7 +1459,7 @@ void CModelGraphWindow::addSelectedEdges()
 //-----------------------------------------------------------------------------
 void CModelGraphWindow::addSelectedFaces()
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
@@ -1500,7 +1500,7 @@ void CModelGraphWindow::addSelectedFaces()
 //-----------------------------------------------------------------------------
 void CModelGraphWindow::addSelectedElems()
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
@@ -1625,7 +1625,7 @@ void CModelGraphWindow::addSelectedElems()
 // Calculate time history of a node
 void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int nmin, int nmax)
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	int nsteps = fem.GetStates();
@@ -1647,7 +1647,7 @@ void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int 
 // Calculate time history of a edge
 void CModelGraphWindow::TrackEdgeHistory(int edge, float* pval, int nfield, int nmin, int nmax)
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	int nsteps = fem.GetStates();
@@ -1669,7 +1669,7 @@ void CModelGraphWindow::TrackEdgeHistory(int edge, float* pval, int nfield, int 
 // Calculate time history of a face
 void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int nmin, int nmax)
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	int nsteps = fem.GetStates();
@@ -1691,7 +1691,7 @@ void CModelGraphWindow::TrackFaceHistory(int nface, float* pval, int nfield, int
 // Calculate time history of an element
 void CModelGraphWindow::TrackElementHistory(int nelem, float* pval, int nfield, int nmin, int nmax)
 {
-	CPostDoc* doc = GetPostDoc();
+	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
 
 	int nsteps = fem.GetStates();

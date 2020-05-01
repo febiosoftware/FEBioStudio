@@ -1,23 +1,16 @@
 #pragma once
-#include <string>
-#include <GeomLib/GObject.h>
-#include <GeomLib/GMeshObject.h>
-#include <FSCore/FSObject.h>
+#include "Document.h"
+#include "GView.h"
+#include <PostLib/FEMaterial.h>
 
-class CGLView;
+class CModelDocument;
+class CPostObject;
 
 namespace Post {
 	class FEPostModel;
-	class CGLModel;
-	class FEDataField;
 	class CPalette;
-	class CGView;
-	class CGLObject;
 	class FEFileReader;
-	class FEMaterial;
 }
-
-class CPostObject;
 
 // Timer modes
 #define MODE_FORWARD	0
@@ -46,6 +39,7 @@ class ModelData
 private:
 	struct MODEL
 	{
+		int		m_ntime;
 		bool	m_bnorm;	// calculate normals or not
 		bool	m_boutline;	// render as outline
 		bool	m_bghost;	// render ghost
@@ -77,10 +71,14 @@ private:
 	};
 
 public:
-	ModelData(Post::CGLModel* po);
-	void SetData(Post::CGLModel* po);
+	ModelData();
+	void ReadData(Post::CGLModel* po);
+	void WriteData(Post::CGLModel* po);
+
+	bool IsValid() const;
 
 protected:
+	bool		m_isValid;
 	MODEL						m_mdl;	// CGLModel data
 	COLORMAP					m_cmap;	// CColorMap data
 	DISPLACEMENTMAP				m_dmap;	// DisplacementMap data
@@ -88,25 +86,18 @@ protected:
 	std::vector<std::string>	m_data;	// data field strings
 };
 
-//-----------------------------------------------------------------------------
-class xpltFileReader;
 
-//-----------------------------------------------------------------------------
-class CPostDoc : public FSObject
+class CPostDocument : public CDocument
 {
-	class Imp;
+public:
+	CPostDocument(CMainWindow* wnd, CModelDocument* parent = nullptr);
+	~CPostDocument();
 
-public:	
-	CPostDoc();
-	~CPostDoc();
+	void Clear() override;
 
-	bool LoadPlotfile(const std::string& fileName, xpltFileReader* xplt);
+	bool Initialize() override;
 
-	bool ReloadPlotfile(xpltFileReader* xplt);
-
-	bool LoadFEModel(Post::FEFileReader* fileReader, const char* szfile);
-
-	void Render(CGLView* view);
+	GObject* GetActiveObject() override;
 
 	bool IsValid();
 
@@ -141,13 +132,11 @@ public:
 
 	int GetEvalField();
 
-	std::string GetTitle();
-
 	void ActivateColormap(bool bchecked);
 
 	void DeleteObject(Post::CGLObject* po);
 
-	Post::CGView* GetView();
+	CGView* GetView();
 
 	std::string GetFileName();
 
@@ -161,22 +150,17 @@ private:
 	void ApplyPalette(const Post::CPalette& pal);
 
 private:
-	Imp*	imp;
-};
-
-class CPostObject : public GMeshObject
-{
-public:
-	CPostObject(Post::CGLModel* glm);
-	~CPostObject();
-
-	// is called whenever the selection has changed
-	void UpdateSelection() override;
-
-	void UpdateMesh() override;
-
-	BOX GetBoundingBox();
+	CModelDocument*	m_doc;
 
 private:
-	Post::CGLModel* m_glm;
+	Post::CGLModel*		m_glm;
+	Post::FEPostModel*	m_fem;
+	CGView				m_view;
+	std::string			m_fileName;
+
+	ModelData	m_MD;
+
+	CPostObject*	m_postObj;
+
+	TIMESETTINGS m_timeSettings;
 };

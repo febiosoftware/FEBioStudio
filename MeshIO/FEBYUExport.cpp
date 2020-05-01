@@ -1,8 +1,9 @@
 #include "FEBYUExport.h"
+#include <MeshTools/FEProject.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
 
-FEBYUExport::FEBYUExport(void)
+FEBYUExport::FEBYUExport(FEProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -10,14 +11,14 @@ FEBYUExport::~FEBYUExport(void)
 {
 }
 
-bool FEBYUExport::Export(FEProject& prj, const char* szfile)
+bool FEBYUExport::Write(const char* szfile)
 {
 	int i, j, k, n;
 
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
-	FEModel* ps = &prj.GetFEModel();
+	FEModel* ps = &m_prj.GetFEModel();
 	GModel& model = ps->GetModel();
 
 	// for now we put everything in one part

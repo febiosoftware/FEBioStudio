@@ -6,9 +6,9 @@ class OArchive;
 class PRVObjectExport : public FEFileExport
 {
 public:
-	PRVObjectExport();
+	PRVObjectExport(FEProject& prj);
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile) override;
 
 private:
 	bool SaveObjects(OArchive& ar, FEProject& prj);

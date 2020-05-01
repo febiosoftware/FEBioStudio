@@ -34,10 +34,10 @@ protected:
 	};
 
 public:
-	FEDXFimport();
+	FEDXFimport(FEProject& prj);
 	virtual ~FEDXFimport();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile) override;
 
 protected:
 	bool SearchFor(const char* sz);

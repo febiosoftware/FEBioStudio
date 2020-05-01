@@ -53,10 +53,10 @@ class FELSDYNAPlotImport : public FEFileReader
 	};
 
 public:
-	FELSDYNAPlotImport();
+	FELSDYNAPlotImport(FEPostModel* fem);
 	~FELSDYNAPlotImport();
 
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 
 protected:
 	bool ReadHeader   (FEPostModel& fem);

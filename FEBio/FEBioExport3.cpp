@@ -13,6 +13,7 @@
 #include <MeshTools/GModel.h>
 #include <FEBioStudio/version.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 #include <memory>
 #include <sstream>
 using namespace std;
@@ -29,7 +30,7 @@ const char* ElementTypeString(int ntype);
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEBioExport3::FEBioExport3()
+FEBioExport3::FEBioExport3(FEProject& prj) : FEBioExport(prj)
 {
 	m_exportParts = true;
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
@@ -640,7 +641,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 GPartList* FEBioExport3::BuildPartList(GMaterial* mat)
 {
 	// get the document
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
 
 	GPartList* pl = new GPartList(&fem);
@@ -661,18 +662,17 @@ GPartList* FEBioExport3::BuildPartList(GMaterial* mat)
 }
 
 //-----------------------------------------------------------------------------
-bool FEBioExport3::Export(FEProject& prj, const char* szfile)
+bool FEBioExport3::Write(const char* szfile)
 {
 	// get the project and model
-	m_pprj = &prj;
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
 	m_pfem = &fem;
 
 	// prepare for export
 	try
 	{
-		if (PrepareExport(prj) == false) return false;
+		if (PrepareExport(m_prj) == false) return false;
 
 		// get the initial step
 		FEStep* pstep = fem.GetStep(0);
@@ -3671,7 +3671,7 @@ void FEBioExport3::WriteConstraints(FEStep& s)
 // Write the fixed boundary conditions
 void FEBioExport3::WriteBCFixed(FEStep &s)
 {
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 
 	for (int i = 0; i<s.BCs(); ++i)
 	{
@@ -3726,7 +3726,7 @@ void FEBioExport3::WriteBCFixed(FEStep &s)
 // Export prescribed boundary conditions
 void FEBioExport3::WriteBCPrescribed(FEStep &s)
 {
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	for (int i = 0; i<s.BCs(); ++i)
 	{
 		FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(s.BC(i));
@@ -3853,7 +3853,7 @@ void FEBioExport3::WriteSurfaceLoad(FEStep& s, FESurfaceLoad* psl, const char* s
 //
 void FEBioExport3::WriteInitialSection()
 {
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	FEStep& s = *fem.GetStep(0);
 
 	// initial velocities
@@ -4240,7 +4240,7 @@ void FEBioExport3::WriteElementList(FEElemList& el)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteOutputSection()
 {
-	CPlotDataSettings& plt = m_pprj->GetPlotDataSettings();
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	int N = plt.PlotVariables();
 	if (N > 0)
 	{
@@ -4300,9 +4300,9 @@ void FEBioExport3::WriteOutputSection()
 		else m_xml.add_empty(p);
 	}
 
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
-	CLogDataSettings& log = m_pprj->GetLogDataSettings();
+	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	N = log.LogDataSize();
 	if (N > 0)
 	{

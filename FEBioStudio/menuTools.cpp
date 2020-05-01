@@ -16,6 +16,7 @@
 #include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
+#include "ModelDocument.h"
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
@@ -55,10 +56,11 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	}
 
 	// get the document
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
 
-	QString projectName = QString::fromStdString(doc->GetDocFileBase());
-	QString projectFolder = QString::fromStdString(doc->GetDocFolder());
+	QString docName = QString::fromStdString(doc->GetDocFileBase());
+	QString docFolder = QString::fromStdString(doc->GetDocFolder());
 
 	// get the list of all the job names so far
 	QStringList jobList;
@@ -68,25 +70,18 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		jobList.append(QString::fromStdString(job->GetName()));
 	}
 
-	// get the project folder and name
+	// get the job name
 	static QString jobName;
 	if (jobName.isEmpty() && jobList.isEmpty())
 	{
 		// create a name for this job
-		jobName = projectName;
-		jobName += QString("_job");
+		jobName = docName + QString("_job");
 	}
 
 	// By default, the job path will be the project folder
 	// unless the project folder is not defined, in which case we'll reuse the last path
-	static QString lastPath;
-	QString jobPath;
-	if (projectFolder.isEmpty()) jobPath = lastPath;
-#ifdef WIN32
-	else jobPath = "$(ProjectDir)\\jobs";
-#else
-	else jobPath = "$(ProjectDir)/jobs";
-#endif
+	static QString jobPath;
+	if (docFolder.isEmpty() == false) jobPath = docFolder + "/jobs";
 
 	// this keeps track of the FEBio selection that was used last
 	static int lastLaunchConfigIndex = 0;
@@ -117,23 +112,23 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		jobPath = dlg.GetWorkingDirectory();
 		jobName = dlg.GetJobName();
 
-		// store the last path
-		lastPath = jobPath;
-
 		// do string replacement
-		FSDir dir(jobPath.toStdString());
-		QString realPath = QString::fromStdString((dir.toAbsolutePath()));
+		QString absDir = QString::fromStdString(FSDir::expandMacros(jobPath.toStdString()));
 
 		// create job directory if it doesn't exist.
-		if(!QFile(realPath).exists())
+		if(!QFile(absDir).exists())
 		{
-			bool b = QDir(realPath).mkpath(realPath);
+			bool b = QDir(absDir).mkpath(absDir);
 			if (b == false)
 			{
 				QMessageBox::critical(this, "FEBioStudio", "Failed creating working directory.\nCannot run job.");
 				return;
 			}
 		}
+
+		// find the relative path with respect to the model's folder
+		QDir modelDir(QString::fromStdString(doc->GetDocFolder()));
+		string relPath = modelDir.relativeFilePath(jobPath).toStdString();
 
 		// see if a job with this name already exists
 		CFEBioJob* job = doc->FindFEBioJob(jobName.toStdString());
@@ -145,7 +140,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		if (job == nullptr)
 		{
 			// create a new new job
-			job = new CFEBioJob(doc, jobName.toStdString(), jobPath.toStdString(), ui->m_launch_configs.at(lastLaunchConfigIndex));
+			job = new CFEBioJob(doc, jobName.toStdString(), relPath, ui->m_launch_configs.at(lastLaunchConfigIndex));
 			doc->AddFEbioJob(job);
 
 			// show it in the model viewer
@@ -153,7 +148,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		}
 		else
 		{
-			job->UpdateWorkingDirectory(jobPath.toStdString());
+			job->UpdateWorkingDirectory(relPath);
 			job->UpdateLaunchConfig(ui->m_launch_configs.at(lastLaunchConfigIndex));
 
 			// show it in the model viewer
@@ -180,11 +175,11 @@ void CMainWindow::on_actionFEBioStop_triggered()
 		ui->m_bkillProcess = true;
 		ui->m_process->kill();
 
-		CFEBioJob* job = GetDocument()->GetActiveJob();
+		CFEBioJob* job = CFEBioJob::GetActiveJob();
 		if (job)
 		{
 			job->SetStatus(CFEBioJob::CANCELLED);
-			GetDocument()->SetActiveJob(nullptr);
+			CFEBioJob::SetActiveJob(nullptr);
 			ShowInModelViewer(job);
 		}
 	}
@@ -193,6 +188,9 @@ void CMainWindow::on_actionFEBioStop_triggered()
 
 void CMainWindow::on_actionFEBioOptimize_triggered()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	CDlgFEBioOptimize dlg(this);
 	if (dlg.exec() == QDialog::Accepted)
 	{
@@ -200,7 +198,7 @@ void CMainWindow::on_actionFEBioOptimize_triggered()
 		if (fileName.isEmpty() == false)
 		{
 			FEBioOpt opt = dlg.GetFEBioOpt();
-			if (GetDocument()->GenerateFEBioOptimizationFile(fileName.toStdString(), opt) == false)
+			if (doc->GenerateFEBioOptimizationFile(fileName.toStdString(), opt) == false)
 			{
 				QMessageBox::critical(this, "Generate FEBio Optimization file", "Something went terribly wrong!");
 			}
@@ -220,9 +218,12 @@ void CMainWindow::on_actionOptions_triggered()
 
 void CMainWindow::on_actionLayerInfo_triggered()
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	CLogPanel* log = ui->logPanel;
 	log->AddText("\nMesh Layer Info:\n===================\n");
-	GModel* gm = GetDocument()->GetGModel();
+	GModel* gm = doc->GetGModel();
 	int nobjs = gm->Objects();
 	int layers = gm->MeshLayers();
 	MeshLayerManager* mlm = gm->GetMeshLayerManager();
@@ -288,12 +289,12 @@ void CMainWindow::on_actionLayerInfo_triggered()
 
 void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
 {
-	CFEBioJob* job = GetDocument()->GetActiveJob();
+	CFEBioJob* job = CFEBioJob::GetActiveJob();
 	if (job)
 	{
 		job->SetStatus(exitCode == 0 ? CFEBioJob::COMPLETED : CFEBioJob::FAILED);
 		ShowInModelViewer(job);
-		GetDocument()->SetActiveJob(nullptr);
+		CFEBioJob::SetActiveJob(nullptr);
 
 		QString sret = (exitCode == 0 ? "NORMAL TERMINATION" : "ERROR TERMINATION");
 		QString jobName = QString::fromStdString(job->GetName());
@@ -317,7 +318,7 @@ void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		// Not sure if we should ever get here.
 		QMessageBox::information(this, "FEBio Studio", "FEBio is done.");
 	}
-	GetDocument()->SetActiveJob(nullptr);
+	CFEBioJob::SetActiveJob(nullptr);
 
 	delete ui->m_process;
 	ui->m_process = 0;
@@ -335,7 +336,7 @@ void CMainWindow::onReadyRead()
 void CMainWindow::onErrorOccurred(QProcess::ProcessError err)
 {
 	// make sure we don't have an active job since onRunFinished will not be called!
-	GetDocument()->SetActiveJob(nullptr);
+	CFEBioJob::SetActiveJob(nullptr);
 
 	// suppress an error if user stopped FEBio job
 	if (ui->m_bkillProcess && (err==QProcess::Crashed))

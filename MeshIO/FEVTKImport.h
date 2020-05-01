@@ -9,8 +9,8 @@ class FEVTKimport :	public FEFileImport
 {
 
 public:
-	FEVTKimport();
+	FEVTKimport(FEProject& prj);
 	~FEVTKimport(void);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 };

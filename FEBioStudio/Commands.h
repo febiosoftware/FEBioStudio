@@ -18,19 +18,21 @@
 
 class ObjectMeshList;
 class MeshLayer;
+class CModelDocument;
 
 //-----------------------------------------------------------------------------
 
 class CCmdAddObject : public CCommand
 {
 public:
-	CCmdAddObject(GObject* po);
+	CCmdAddObject(GModel* model, GObject* po);
 	~CCmdAddObject();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	GObject*	m_pobj;
 	bool		m_bdel;
 };
@@ -40,13 +42,14 @@ protected:
 class CCmdAddDiscreteObject : public CCommand
 {
 public:
-	CCmdAddDiscreteObject(GDiscreteObject* po) : CCommand("Add discrete object") { m_pobj = po; m_bdel = true; }
-	~CCmdAddDiscreteObject() { if (m_bdel) delete m_pobj; }
+	CCmdAddDiscreteObject(GModel* model, GDiscreteObject* po);
+	~CCmdAddDiscreteObject();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*				m_model;
 	GDiscreteObject*	m_pobj;
 	bool				m_bdel;
 };
@@ -156,13 +159,14 @@ protected:
 class CCmdAddGPartGroup : public CCommand
 {
 public:
-	CCmdAddGPartGroup(GPartList* pg) : CCommand("Add Part") { m_pg = pg; m_bdel = true; }
-	~CCmdAddGPartGroup() { if (m_bdel) delete m_pg; }
+	CCmdAddGPartGroup(GModel* model, GPartList* pg);
+	~CCmdAddGPartGroup();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*			m_model;
 	GPartList*		m_pg;
 	bool			m_bdel;
 };
@@ -171,13 +175,14 @@ protected:
 class CCmdAddGFaceGroup : public CCommand
 {
 public:
-	CCmdAddGFaceGroup(GFaceList* pg) : CCommand("Add Surface") { m_pg = pg; m_bdel = true; }
-	~CCmdAddGFaceGroup() { if (m_bdel) delete m_pg; }
+	CCmdAddGFaceGroup(GModel* model, GFaceList* pg);
+	~CCmdAddGFaceGroup();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*			m_model;
 	GFaceList*		m_pg;
 	bool			m_bdel;
 };
@@ -186,13 +191,14 @@ protected:
 class CCmdAddGEdgeGroup : public CCommand
 {
 public:
-	CCmdAddGEdgeGroup(GEdgeList* pg) : CCommand("Add Edge") { m_pg = pg; m_bdel = true; }
-	~CCmdAddGEdgeGroup() { if (m_bdel) delete m_pg; }
+	CCmdAddGEdgeGroup(GModel* model, GEdgeList* pg);
+	~CCmdAddGEdgeGroup();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*			m_model;
 	GEdgeList*		m_pg;
 	bool			m_bdel;
 };
@@ -201,13 +207,14 @@ protected:
 class CCmdAddGNodeGroup : public CCommand
 {
 public:
-	CCmdAddGNodeGroup(GNodeList* pg) : CCommand("Add Nodeset") { m_pg = pg; m_bdel = true; }
-	~CCmdAddGNodeGroup() { if (m_bdel) delete m_pg; }
+	CCmdAddGNodeGroup(GModel* model, GNodeList* pg);
+	~CCmdAddGNodeGroup();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*			m_model;
 	GNodeList*		m_pg;
 	bool			m_bdel;
 };
@@ -280,13 +287,14 @@ protected:
 class CCmdDeleteDiscreteObject : public CCommand
 {
 public:
-	CCmdDeleteDiscreteObject(GDiscreteObject* po) : CCommand("Remove discrete object") { m_pobj = po; m_bdel = false; }
-	~CCmdDeleteDiscreteObject() { if (m_bdel) delete m_pobj; }
+	CCmdDeleteDiscreteObject(GModel* model, GDiscreteObject* po);
+	~CCmdDeleteDiscreteObject();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*				m_model;
 	GDiscreteObject*	m_pobj;
 	bool	m_bdel;
 	int		m_npos;
@@ -297,12 +305,13 @@ protected:
 class CCmdTranslateSelection : public CCommand
 {
 public:
-	CCmdTranslateSelection(vec3d dr);
+	CCmdTranslateSelection(CModelDocument* doc, vec3d dr);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	CModelDocument* m_doc;
 	vec3d	m_dr;
 	int		m_item;	// item mode
 };
@@ -312,12 +321,13 @@ protected:
 class CCmdRotateSelection : public CCommand
 {
 public:
-	CCmdRotateSelection(quatd q, vec3d rc);
+	CCmdRotateSelection(CModelDocument* doc, quatd q, vec3d rc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	CModelDocument*	m_doc;
 	quatd	m_q;
 	vec3d	m_rc;
 	int		m_item;	// item mode
@@ -328,12 +338,13 @@ protected:
 class CCmdScaleSelection : public CCommand
 {
 public:
-	CCmdScaleSelection(double s, vec3d dr, vec3d rc);
+	CCmdScaleSelection(CModelDocument* doc, double s, vec3d dr, vec3d rc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	CModelDocument*	m_doc;
 	double	m_s;
 	vec3d	m_dr;
 	vec3d	m_rc;
@@ -344,50 +355,65 @@ protected:
 class CCmdToggleObjectVisibility : public CCommand
 {
 public:
-	CCmdToggleObjectVisibility();
+	CCmdToggleObjectVisibility(GModel* model);
 
 	void Execute();
 	void UnExecute();
+
+private:
+	GModel*	m_model;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdTogglePartVisibility : public CCommand
 {
 public:
-	CCmdTogglePartVisibility();
+	CCmdTogglePartVisibility(GModel* model);
 
 	void Execute();
 	void UnExecute();
+
+private:
+	GModel*	m_model;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdToggleDiscreteVisibility : public CCommand
 {
 public:
-	CCmdToggleDiscreteVisibility();
+	CCmdToggleDiscreteVisibility(GModel* model);
 
 	void Execute();
 	void UnExecute();
+
+private:
+	GModel*	m_model;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdToggleElementVisibility : public CCommand
 {
 public:
-	CCmdToggleElementVisibility();
+	CCmdToggleElementVisibility(FEMesh* fem);
 
 	void Execute();
 	void UnExecute();
+
+private:
+	FEMesh*	m_mesh;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdToggleFEFaceVisibility : public CCommand
 {
 public:
-	CCmdToggleFEFaceVisibility();
+	CCmdToggleFEFaceVisibility(FEMeshBase* mesh);
 
 	void Execute();
 	void UnExecute();
+
+private:
+	FEMeshBase*	m_mesh;
 };
 
 //-----------------------------------------------------------------------------
@@ -395,15 +421,16 @@ public:
 class CCmdSelectObject : public CCommand
 {
 public:
-	CCmdSelectObject(GObject* po, bool badd);
-	CCmdSelectObject(GObject** ppo, int n, bool badd);
-	CCmdSelectObject(const vector<GObject*>& po, bool badd);
+	CCmdSelectObject(GModel* model, GObject* po, bool badd);
+	CCmdSelectObject(GModel* model, GObject** ppo, int n, bool badd);
+	CCmdSelectObject(GModel* model, const vector<GObject*>& po, bool badd);
 	~CCmdSelectObject() { delete[] m_ptag; delete[] m_ppo; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	bool*		m_ptag;	// old selection state of meshes
 	GObject**	m_ppo;	// pointers to objects we need to select
 	bool		m_badd; // add meshes to selection or not
@@ -415,15 +442,16 @@ protected:
 class CCmdUnselectObject : public CCommand
 {
 public:
-	CCmdUnselectObject(GObject* po);
-	CCmdUnselectObject(GObject** ppo, int n);
-	CCmdUnselectObject(const vector<GObject*>& po);
+	CCmdUnselectObject(GModel* model, GObject* po);
+	CCmdUnselectObject(GModel* model, GObject** ppo, int n);
+	CCmdUnselectObject(GModel* model, const vector<GObject*>& po);
 	~CCmdUnselectObject() { delete[] m_ptag; delete[] m_ppo; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	bool*		m_ptag;	// old selection state of meshes
 	GObject**	m_ppo;	// pointers to meshes we need to unselect
 	int			m_N;	// Nr of meshes to select
@@ -435,14 +463,14 @@ protected:
 class CCmdSelectPart : public CCommand
 {
 public:
-	CCmdSelectPart(FEModel* ps, int* npart, int n, bool badd);
-	CCmdSelectPart(FEModel* ps, const vector<int>& part, bool badd);
+	CCmdSelectPart(GModel* model, int* npart, int n, bool badd);
+	CCmdSelectPart(GModel* model, const vector<int>& part, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_npart;	// list of parts to select
 	vector<bool>	m_bold;		// old selection state of parts
 	bool			m_badd;		// add to current selection
@@ -453,14 +481,14 @@ protected:
 class CCmdUnSelectPart : public CCommand
 {
 public:
-	CCmdUnSelectPart(FEModel* ps, int* npart, int n);
-	CCmdUnSelectPart(FEModel* ps, const vector<int>& part);
+	CCmdUnSelectPart(GModel* model, int* npart, int n);
+	CCmdUnSelectPart(GModel* model, const vector<int>& part);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_npart;	// list of parts to select
 	vector<bool>	m_bold;		// old selection state of parts
 };
@@ -470,14 +498,14 @@ protected:
 class CCmdSelectSurface : public CCommand
 {
 public:
-	CCmdSelectSurface(FEModel* ps, int* nsurf, int n, bool badd);
-	CCmdSelectSurface(FEModel* ps, const vector<int>& surf, bool badd);
+	CCmdSelectSurface(GModel* model, int* nsurf, int n, bool badd);
+	CCmdSelectSurface(GModel* model, const vector<int>& surf, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_nsurf;	// list of surfaces to select
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
@@ -488,14 +516,14 @@ protected:
 class CCmdUnSelectSurface : public CCommand
 {
 public:
-	CCmdUnSelectSurface(FEModel* ps, int* nsurf, int n);
-	CCmdUnSelectSurface(FEModel* ps, const vector<int>& surf);
+	CCmdUnSelectSurface(GModel* ps, int* nsurf, int n);
+	CCmdUnSelectSurface(GModel* ps, const vector<int>& surf);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_nsurf;	// list of surfaces to select
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
@@ -506,14 +534,14 @@ protected:
 class CCmdSelectEdge : public CCommand
 {
 public:
-	CCmdSelectEdge(FEModel* ps, int* nedge, int n, bool badd);
-	CCmdSelectEdge(FEModel* ps, const vector<int>& edge, bool badd);
+	CCmdSelectEdge(GModel* ps, int* nedge, int n, bool badd);
+	CCmdSelectEdge(GModel* ps, const vector<int>& edge, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_nedge;	// list of edges to select
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
@@ -524,14 +552,14 @@ protected:
 class CCmdUnSelectEdge : public CCommand
 {
 public:
-	CCmdUnSelectEdge(FEModel* ps, int* nedge, int n);
-	CCmdUnSelectEdge(FEModel* ps, const vector<int>& edge);
+	CCmdUnSelectEdge(GModel* model, int* nedge, int n);
+	CCmdUnSelectEdge(GModel* model, const vector<int>& edge);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_nedge;	// list of edges to select
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
@@ -542,14 +570,14 @@ protected:
 class CCmdSelectNode : public CCommand
 {
 public:
-	CCmdSelectNode(FEModel* ps, int* node, int n, bool badd);
-	CCmdSelectNode(FEModel* ps, const vector<int>& node, bool badd);
+	CCmdSelectNode(GModel* model, int* node, int n, bool badd);
+	CCmdSelectNode(GModel* model, const vector<int>& node, bool badd);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_node;		// list of edges to select
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
@@ -560,14 +588,14 @@ protected:
 class CCmdUnSelectNode : public CCommand
 {
 public:
-	CCmdUnSelectNode(FEModel* ps, int* node, int n);
-	CCmdUnSelectNode(FEModel* ps, const vector<int>& node);
+	CCmdUnSelectNode(GModel* model, int* node, int n);
+	CCmdUnSelectNode(GModel* model, const vector<int>& node);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_node;		// list of edges to select
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
@@ -613,14 +641,14 @@ protected:
 class CCmdUnSelectDiscrete : public CCommand
 {
 public:
-	CCmdUnSelectDiscrete(FEModel* ps, int* pobj, int n);
-	CCmdUnSelectDiscrete(FEModel* ps, const vector<int>& obj);
+	CCmdUnSelectDiscrete(GModel* ps, int* pobj, int n);
+	CCmdUnSelectDiscrete(GModel* ps, const vector<int>& obj);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*		m_ps;		// pointer to model
+	GModel*			m_model;	// pointer to model
 	vector<int>		m_obj;		// list of discrete objects to select
 	vector<bool>	m_bold;		// old selection state of surfaces
 	bool			m_badd;		// add to current selection
@@ -632,10 +660,10 @@ protected:
 class CCmdAddAndSelectObject : public CCmdGroup
 {
 public:
-	CCmdAddAndSelectObject(GObject* po) : CCmdGroup("Add object")
+	CCmdAddAndSelectObject(GModel* model, GObject* po) : CCmdGroup("Add object")
 	{
-		AddCommand(new CCmdAddObject(po));
-		AddCommand(new CCmdSelectObject(po, false));
+		AddCommand(new CCmdAddObject(model, po));
+		AddCommand(new CCmdSelectObject(model, po, false));
 	}
 };
 
@@ -644,12 +672,13 @@ public:
 class CCmdInvertSelection : public CCommand
 {
 public:
-	CCmdInvertSelection();
+	CCmdInvertSelection(CModelDocument* doc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	CModelDocument*	m_doc;
 	int	m_item;
 };
 
@@ -818,13 +847,13 @@ protected:
 class CCmdAssignPartMaterial : public CCommand
 {
 public:
-	CCmdAssignPartMaterial(FEModel* po, vector<int> npart, int nmat);
+	CCmdAssignPartMaterial(GModel* model, vector<int> npart, int nmat);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*	m_ps;
+	GModel*		m_model;
 	vector<int>	m_part;
 
 	vector<int>	m_old;	// old materials
@@ -935,12 +964,13 @@ protected:
 class CCmdHideParts : public CCommand
 {
 public:
-	CCmdHideParts(std::list<GPart*> partList);
+	CCmdHideParts(GModel* model, std::list<GPart*> partList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	std::list<GPart*>	m_partList;
 };
 
@@ -948,12 +978,13 @@ protected:
 class CCmdShowParts : public CCommand
 {
 public:
-	CCmdShowParts(std::list<GPart*> partList);
+	CCmdShowParts(GModel* model, std::list<GPart*> partList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	std::list<GPart*>	m_partList;
 };
 
@@ -990,12 +1021,13 @@ protected:
 class CCmdHideSelection : public CCommand
 {
 public:
-	CCmdHideSelection();
+	CCmdHideSelection(CModelDocument* doc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	CModelDocument*	m_doc;
 	vector<int>	m_item;
 	int		m_nitem;
 };
@@ -1005,12 +1037,13 @@ protected:
 class CCmdHideUnselected : public CCommand
 {
 public:
-	CCmdHideUnselected();
+	CCmdHideUnselected(CModelDocument* doc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	CModelDocument*	m_doc;
 	int			m_nitem;
 	vector<int>	m_item;
 };
@@ -1020,12 +1053,13 @@ protected:
 class CCmdUnhideAll : public CCommand
 {
 public:
-	CCmdUnhideAll();
+	CCmdUnhideAll(CModelDocument* doc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	CModelDocument*	m_doc;
 	vector<int>	m_item;
 	int			m_nitem;
 	bool		m_bunhide;
@@ -1165,13 +1199,14 @@ protected:
 class CCmdConvertToEditableMesh : public CCommand
 {
 public:
-	CCmdConvertToEditableMesh(GObject* po);
+	CCmdConvertToEditableMesh(GModel* fem, GObject* po);
 	~CCmdConvertToEditableMesh();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	GObject*	m_pold;	// the old object
 	GObject*	m_pnew;	// the new object
 	ObjectMeshList*	m_oml;	// old object list
@@ -1182,13 +1217,14 @@ protected:
 class CCmdConvertSurfaceToEditableMesh : public CCommand
 {
 public:
-	CCmdConvertSurfaceToEditableMesh(GObject* po);
+	CCmdConvertSurfaceToEditableMesh(GModel* model, GObject* po);
 	~CCmdConvertSurfaceToEditableMesh();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	GObject*	m_pold;	// the original object
 	GObject*	m_pnew;	// the new mesh object
 };
@@ -1199,13 +1235,14 @@ protected:
 class CCmdConvertToEditableSurface : public CCommand
 {
 public:
-	CCmdConvertToEditableSurface(GObject* po);
+	CCmdConvertToEditableSurface(GModel* model, GObject* po);
 	~CCmdConvertToEditableSurface();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	GObject*	m_pold;	// the original object
 	GObject*	m_pnew;	// the new mesh object
 };
@@ -1215,13 +1252,14 @@ protected:
 class CCmdConvertToMultiBlock : public CCommand
 {
 public:
-	CCmdConvertToMultiBlock(GObject* po);
+	CCmdConvertToMultiBlock(GModel* model, GObject* po);
 	~CCmdConvertToMultiBlock();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	GModel*		m_model;
 	GObject*	m_pold;	// the original object
 	GObject*	m_pnew;	// the new object
 };
@@ -1246,13 +1284,14 @@ protected:
 class CCmdAddStep : public CCommand
 {
 public:
-	CCmdAddStep(FEStep* ps);
+	CCmdAddStep(FEModel* fem, FEStep* ps);
 	~CCmdAddStep();
 
 	void Execute();
 	void UnExecute();
 
 protected:
+	FEModel*	m_fem;
 	FEStep*	m_pstep;
 };
 
@@ -1260,14 +1299,15 @@ protected:
 class CCmdAddMaterial : public CCommand
 {
 public:
-	CCmdAddMaterial(GMaterial* pm);
+	CCmdAddMaterial(FEModel* fem, GMaterial* pm);
 	~CCmdAddMaterial();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	GMaterial* m_pm;
+	FEModel*	m_fem;
+	GMaterial*	m_pm;
 };
 
 //-----------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QMessageBox>
-#include "Document.h"
+#include "ModelDocument.h"
 #include "MainWindow.h"
 #include "SelectionBox.h"
 #include <MeshTools/SpringGenerator.h>
@@ -99,7 +99,7 @@ CCreateSpringPane::CCreateSpringPane(CCreatePanel* parent) : CCreatePane(parent)
 
 void CCreateSpringPane::showEvent(QShowEvent* ev)
 {
-	CDocument* doc = m_parent->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 	GModel& geom = doc->GetFEModel()->GetModel();
 
 	ui->m_type[0] = ui->m_type[1] = -1;
@@ -142,7 +142,7 @@ void CCreateSpringPane::on_newSet_clicked()
 	CNewDiscreteSetDlg dlg;
 	if (dlg.exec())
 	{
-		CDocument* doc = m_parent->GetDocument();
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 		GModel& geom = doc->GetFEModel()->GetModel();
 
 		QString name = dlg.m_name;
@@ -193,7 +193,7 @@ bool CCreateSpringPane::updateTempObject()
 {
 	ui->m_curves->ClearMesh();
 
-	CDocument* doc = m_parent->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 	GModel& geom = doc->GetFEModel()->GetModel();
 
 	if (ui->m_list->count() == 0) return true;
@@ -297,7 +297,7 @@ bool CCreateSpringPane::getNodeSelection(vector<int>& nodeList, int n)
 	nodeList.clear();
 
 	// get the document
-	CDocument* pdoc = m_parent->GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 
 	// get the current selection and make sure it's not empty
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -398,10 +398,10 @@ void CCreateSpringPane::on_node1_selButtonClicked()
 
 	for (int i = 0; i<(int)items.size(); ++i) items[i]--;
 
-	CDocument* doc = m_parent->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 	if (ui->m_type[0] == SELECT_NODES)
 	{
-		doc->DoCommand(new CCmdSelectNode(doc->GetFEModel(), items, false));
+		doc->DoCommand(new CCmdSelectNode(doc->GetGModel(), items, false));
 	}
 	else if (ui->m_type[0] == SELECT_FE_NODES)
 	{
@@ -449,10 +449,10 @@ void CCreateSpringPane::on_node2_selButtonClicked()
 
 	for (int i=0; i<(int)items.size(); ++i) items[i]--;
 
-	CDocument* doc = m_parent->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 	if (ui->m_type[1] == SELECT_NODES)
 	{
-		doc->DoCommand(new CCmdSelectNode(doc->GetFEModel(), items, false));
+		doc->DoCommand(new CCmdSelectNode(doc->GetGModel(), items, false));
 	}
 	else if (ui->m_type[1] == SELECT_FE_NODES)
 	{
@@ -463,7 +463,7 @@ void CCreateSpringPane::on_node2_selButtonClicked()
 
 FSObject* CCreateSpringPane::Create()
 {
-	CDocument* doc = m_parent->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 	GModel& geom = doc->GetFEModel()->GetModel();
 
 	if (ui->m_list->count() == 0)

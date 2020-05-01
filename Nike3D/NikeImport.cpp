@@ -61,7 +61,7 @@ const char szerr[][256] = {
 //-----------------------------------------------------------------------------
 // Constructor
 //
-FENIKEImport::FENIKEImport()
+FENIKEImport::FENIKEImport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -91,16 +91,16 @@ char* FENIKEImport::read_line(FILE* fp, char* szline, int n, bool bskiptxt)
 // Imports a NIKE input deck
 //
 
-bool FENIKEImport::Load(FEProject& prj, const char* szfile)
+bool FENIKEImport::Load(const char* szfile)
 {
 	m_nmat = 0;
 
 	// store a pointer to the project
 	m_po = 0;
-	m_fem = &prj.GetFEModel();
+	m_fem = &m_prj.GetFEModel();
 
 	// get the model
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = *m_fem;
 
 	// create a nike project
 	FENikeProject nike;
@@ -832,12 +832,15 @@ bool FENIKEImport::ReadControlDeck(FENikeProject& prj)
 
 	FENikeProject::CONTROL& c = prj.m_Ctrl;
 
+	string fileName = GetFileName();
+
+
 	// -------- control card 1 --------
-	if (read_line(m_fp, szline, MAX_LINE, false) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE, false) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	strcpy(c.sztitle, szline);
 
 	// -------- control card 2 --------
-	if (read_line(m_fp, szline, MAX_LINE, false) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE, false) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	char szf[5] = {0};
 	nread = sscanf(szline, "%2s%3d%10d%10d%10d%10d%5d%5d%5d%5d%5d", szf, &c.nmmat, &c.numnp, &c.numelh, &c.numelb, &c.numels, &c.num1d, &c.numsi, &c.nrwsp, &c.inpde, &c.numrnf);
 	if (nread < 6) return errf(szerr[ERR_CC], 2);
@@ -846,7 +849,7 @@ bool FENIKEImport::ReadControlDeck(FENikeProject& prj)
 	if (strcmp(szf,"FL") != 0) return errf(szerr[ERR_FORMAT]);
 
 	// -------- control card 3 --------
-	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	char szauto[5] = {0};
 	nread = sscanf(szline, "%10d%10lg %4s%5d%5d%10lg%10lg%5d%5d%5d%5d%5d%5d", &c.ntime, &c.dt, szauto, &c.mxback, &c.iteopt, &c.dtmin, &c.dtmax, &c.irfwin, &c.spf, &c.linearb, &c.linears, &c.linearbm, &c.linearpr);
 	if (nread < 7) return errf(szerr[ERR_CC], 3);
@@ -855,12 +858,12 @@ bool FENIKEImport::ReadControlDeck(FENikeProject& prj)
 		(strcmp(szauto, "AUTO") == 0)) c.nauto = 1;
 
 	// -------- control card 4 --------
-	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	nread = sscanf(szline, "%5d%5d%5d%5d%5d%5d%5d%5d%5d%5d%5d%5d%5d%5d%5d", &c.numlc, &c.nptm, &c.numcnl, &c.numpr, &c.numdis, &c.numadl, &c.nrcc, &c.bfa[0], &c.bfa[1], &c.bfa[2], &c.bfav[0], &c.bfav[1], &c.bfav[2], &c.nsteer, &c.nfnbc);
 	if (nread < 2) return errf(szerr[ERR_CC], 4);
 
 	// -------- control card 5 --------
-	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	char sw[6] = {0};
 	nread = sscanf(szline, "%5d%5d%5d%5d%5d%5d%5d%5d%5d%5s%5d%5d%5d", &c.ipri, &c.jpri, &c.nnpb, &c.nhpb, &c.nbpb, &c.nspb, &c.jrfreq, &c.irfreq, &c.istrn, sw, &c.iacflg, &c.maxaug, &c.ingap);
 //	if (nread != 13) return errf(szerr[ERR_CC], 5);
@@ -871,27 +874,27 @@ bool FENIKEImport::ReadControlDeck(FENikeProject& prj)
 	c.sw[4] = (int) (sw[4] - '0');
 
 	// -------- control card 6 --------
-	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	nread = sscanf(szline, "%5d%5d%10d%10d%5d%5d%10lg%10lg%10lg%10lg%10lg", &c.mthsol, &c.sflag, &c.icnt1, &c.icnt2, &c.ilimit, &c.maxref, &c.dtol, &c.ectl, &c.rctl, &c.tolls, &c.inref);
 	if (nread < 10) return errf(szerr[ERR_CC], 6);
 
 	// -------- control card 7 --------
-	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	nread  = sscanf(szline, "%5d%5d%5d%5d%5d%10lg%10lg%10lg%10lg%10lg%5d%5d", &c.imass, &c.intvel, &c.iteo, &c.itpro, &c.neig, &c.eshift, &c.fnip, &c.snip, &c.alpha, &c.etol, &c.ieigit, &c.ieigens);
 //	if (nread != 12) return errf(szerr[ERR_CC], 7);
 
 	// -------- control card 8 --------
-	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	nread = sscanf(szline, "%5d%10d%5d%5d%5d%5d%5d%10lg%5d%5d%5d%5d%5d%5d", &c.iunsym, &c.nwebin, &c.ifiss, &c.ioroin, &c.ibrfor, &c.igsoin, &c.ishfin, &c.qhg, &c.isgsin, &c.ibmfin, &c.ibgsin, &c.istold, &c.irotary, &c.geotol);
 //	if (nread != 14) return errf(szerr[ERR_CC], 8);
 
 	// -------- control card 9 --------
-	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	nread = sscanf(szline, "%*20s%10lg%5d%5d%5d%5d%5d", &c.dsx, &c.irco, &c.nusbir, &c.mpubr, &c.nussir, &c.mpusr);
 //	if (nread != 6) return errf(szerr[ERR_CC], 9);
 
 	// -------- control card 10 --------
-	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	nread = sscanf(szline, "%5d%5d%10lg%5d%5d%5d", &c.itrsol, &c.itrlmt, &c.tollin, &c.lbuf, &c.itrpnt, &c.iebeoc);
 //	if (nread != 6) return errf(szerr[ERR_CC], 10);
 
@@ -909,6 +912,8 @@ bool FENIKEImport::ReadMaterialDeck(FENikeProject& prj)
 	char szline[MAX_LINE];
 	int nread;
 
+	string fileName = GetFileName();
+
 	// see if there are any materials in the file
 	FENikeProject::CONTROL& c = prj.m_Ctrl;
 	if (c.nmmat == 0) return true;
@@ -922,13 +927,13 @@ bool FENIKEImport::ReadMaterialDeck(FENikeProject& prj)
 		FENikeProject::MATERIAL& m = prj.m_Mat[i];
 
 		// -------- material card 1 --------
-		if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		nread = sscanf(szline, "%*5d%5d%10lg%5d%10lg%10lg%10lg%10lg%10lg", &m.ntype, &m.dens, &m.nelem, &m.Tref, &m.rda, &m.rdb, &m.hrgl, &m.flag);
 		if (nread < 3) return errf(szerr[ERR_MAT], 1, i);
 
 		// -------- material card 2 --------
-		if (read_line(m_fp, szline, MAX_LINE, false) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAX_LINE, false) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 		// remove trailing whitepsace
 		l = (int)strlen(szline);
 		while ((l>0) && isspace(szline[l-1])) --l;
@@ -942,7 +947,7 @@ bool FENIKEImport::ReadMaterialDeck(FENikeProject& prj)
 		int n = (m.nelem == 2? 8 : 6);
 		for (j=0; j<n; j++)
 		{
-			if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+			if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 			double* mp = m.m[j];
 			for (l=0; l<8; ++l) mp[l] = 0;
 			nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg", mp, mp+1, mp+2, mp+3, mp+4, mp+5, mp+6, mp+7);
@@ -965,12 +970,14 @@ bool FENIKEImport::ReadNodes(FENikeProject& prj)
 	// allocate storage
 	prj.m_Node.resize(nn);
 
+	string fileName = GetFileName();
+
 	// read nodes
 	char szline[MAXLINE];
 	int nread;
 	for (int i=0; i<nn; ++i)
 	{
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		FENikeProject::NODE& n = prj.m_Node[i];
 
@@ -995,12 +1002,14 @@ bool FENIKEImport::ReadBricks(FENikeProject& prj)
 	// allocate storage
 	prj.m_Brick.resize(nelh);
 
+	string fileName = GetFileName();
+
 	// read elements
 	char szline[MAXLINE];
 	int nread;
 	for (int i=0; i<nelh; ++i)
 	{
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		FENikeProject::BRICK& e = prj.m_Brick[i];
 		int* n = e.n;
@@ -1024,6 +1033,8 @@ bool FENIKEImport::ReadShells(FENikeProject &prj)
 	// allocate storage
 	prj.m_Shell.resize(nels);
 
+	string fileName = GetFileName();
+
 	// read shell data
 	char szline[MAXLINE];
 	int nread, i;
@@ -1032,13 +1043,13 @@ bool FENIKEImport::ReadShells(FENikeProject &prj)
 		FENikeProject::SHELL& s = prj.m_Shell[i];
 
 		// read the first shell card
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		nread = sscanf(szline,"%*8d%5d%8d%8d%8d%8d", &s.nmat, s.n,s.n+1,s.n+2,s.n+3);
 		if (nread != 5) return errf(szerr[ERR_SHELL], i+1);
 
 		// read the second shell card
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		nread = sscanf(szline,"%10lg%10lg%10lg%10lg", s.h, s.h+1, s.h+2, s.h+3);
 		if (nread != 4) return errf(szerr[ERR_SHELL], i+1);
@@ -1075,6 +1086,8 @@ bool FENIKEImport::ReadRigidFacets(FENikeProject &prj)
 	int nrf = c.numrnf;
 	if (nrf == 0) return true;
 
+	string fileName = GetFileName();
+
 	// read data
 	char szline[MAXLINE];
 	int nread;
@@ -1082,7 +1095,7 @@ bool FENIKEImport::ReadRigidFacets(FENikeProject &prj)
 	{
 		FENikeProject::RIGID_FACET f;
 
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 		nread = sscanf(szline, "%5d%8d%8d%8d%8d", &f.nrb, f.node,f.node+1, f.node+2,f.node+3);
 		f.nsize = nread-1;
 
@@ -1102,14 +1115,16 @@ bool FENIKEImport::ReadDiscreteElements(FENikeProject& prj)
 	FENikeProject::CONTROL& c = prj.m_Ctrl;
 	if (c.inpde == 0) return true;
 
+	string fileName = GetFileName();
+
 	int ndemat, numdel, nummas;
 	char szline[MAXLINE];
 	int i, nread;
 
 	// read the control card
-	if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+	if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	nread = sscanf(szline, "%5d%5d%5d", &ndemat, &numdel, &nummas);
-	if (nread != 3) return errf(szerr[ERR_DEC], m_fileName.c_str());
+	if (nread != 3) return errf(szerr[ERR_DEC], fileName.c_str());
 
 	// read the materials
 	prj.m_DMA.resize(ndemat);
@@ -1118,11 +1133,11 @@ bool FENIKEImport::ReadDiscreteElements(FENikeProject& prj)
 		FENikeProject::DISCRETE_MATERIAL& m = prj.m_DMA[i];
 
 		// material card 1
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 		sscanf(szline, "%5d%5d", &m.nid, &m.ntype);
 
 		// material card 2
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 		sscanf(szline, "%10lg%10lg%10lg%10lg%10lg", m.m, m.m+1, m.m+2, m.m+3, m.m+4);
 	}
 
@@ -1131,14 +1146,14 @@ bool FENIKEImport::ReadDiscreteElements(FENikeProject& prj)
 	for (i=0; i<numdel; ++i)
 	{
 		FENikeProject::DISCRETE_SPRING& s = prj.m_DSP[i];
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 		sscanf(szline, "%5d%8d%8d%5d%10lg", &s.nid, &s.n1, &s.n2, &s.nmat, &s.s);
 	}
 
 	// read the discrete masses
 	for (i=0; i<nummas; ++i)
 	{
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 	}
 
 	return true;
@@ -1207,6 +1222,8 @@ bool FENIKEImport::ReadLoadCurves(FENikeProject& prj)
 	int nlc = c.numlc;
 	if (nlc == 0) return true;
 
+	string fileName = GetFileName();
+
 	// read load curves
 	char szline[MAXLINE];
 	int nread, np;
@@ -1215,7 +1232,7 @@ bool FENIKEImport::ReadLoadCurves(FENikeProject& prj)
 		FELoadCurve lc;
 
 		// -------- load card 1 --------
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		nread = sscanf(szline, "%*5d%5d", &np);
 		if (nread != 1) return errf(szerr[ERR_LC], i+1);
@@ -1225,7 +1242,7 @@ bool FENIKEImport::ReadLoadCurves(FENikeProject& prj)
 		for (int j=0; j<np; ++j)
 		{
 			LOADPOINT& pt = lc[j];
-			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 			nread = sscanf(szline, "%10lg%10lg", &pt.time, &pt.load);
 			if (nread != 2) return errf(szerr[ERR_LC], i+1);
@@ -1248,12 +1265,14 @@ bool FENIKEImport::ReadNodalForces(FENikeProject &prj)
 	int ncnf = c.numcnl;
 	if (ncnf == 0) return true;
 
+	string fileName = GetFileName();
+
 	// read data
 	char szline[MAXLINE];
 	int nread;
 	for (int i=0; i<ncnf; ++i)
 	{
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		FENikeProject::NODAL_LOAD nl;
 
@@ -1278,12 +1297,14 @@ bool FENIKEImport::ReadPressureFacets(FENikeProject& prj)
 	int npl = c.numpr;
 	if (npl == 0) return true;
 
+	string fileName = GetFileName();
+
 	// read data
 	char szline[MAXLINE];
 	int nread;
 	for (int i=0; i<npl; ++i)
 	{
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		FENikeProject::PRESSURE_LOAD pl;
 		int* n = pl.n;
@@ -1308,12 +1329,14 @@ bool FENIKEImport::ReadDisplacements(FENikeProject &prj)
 	int ndc = c.numdis;
 	if (ndc == 0) return true;
 
+	string fileName = GetFileName();
+
 	// read data
 	char szline[MAXLINE];
 	int nread;
 	for (int i=0; i<ndc; ++i)
 	{
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		FENikeProject::NODAL_DISPLACEMENT dc;
 
@@ -1336,13 +1359,15 @@ bool FENIKEImport::ReadBodyForce(FENikeProject &prj)
 
 	FENikeProject::CONTROL& c = prj.m_Ctrl;
 
+	string fileName = GetFileName();
+
 	// read body force
 	for (i=0; i<3; ++i)
 	{
 		FENikeProject::BODY_FORCE bf;
 		if (c.bfa[i] != 0)
 		{
-			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 			nread = sscanf(szline, "%5d%10lg", &bf.lc, &bf.s);
 			if (nread != 2) return errf(szerr[ERR_BFORCE]);
@@ -1357,7 +1382,7 @@ bool FENIKEImport::ReadBodyForce(FENikeProject &prj)
 		FENikeProject::BODY_FORCE bf;
 		if (c.bfav[i] != 0)
 		{
-			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+			if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 			nread = sscanf(szline, "%5d%10lg", &bf.lc, &bf.s);
 			if (nread != 2) return errf(szerr[ERR_BFORCE]);
@@ -1382,6 +1407,8 @@ bool FENIKEImport::ReadVelocities(FENikeProject &prj)
 	// allocate storage
 	prj.m_Vel.resize(nvel);
 
+	string fileName = GetFileName();
+
 	// read data
 	char szline[MAXLINE];
 	int nread;
@@ -1389,7 +1416,7 @@ bool FENIKEImport::ReadVelocities(FENikeProject &prj)
 	{
 		FENikeProject::NODAL_VELOCITY& v = prj.m_Vel[i];
 
-		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], m_fileName.c_str());
+		if (read_line(m_fp, szline, MAXLINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
 		nread = sscanf(szline, "%8d%10lg%10lg%10lg%5d", &v.node, &v.vx, &v.vy, &v.vz, &v.ninc);
 		if (nread != 5) return errf(szerr[ERR_VEL]);
@@ -1508,7 +1535,8 @@ void FENIKEImport::UpdateFEModel(FEModel& fem)
 	// set geometry
 //	if (m_io.bgeom && m_po)
 	{
-		m_po->SetName(m_fileName.c_str());
+		string fileName = GetFileName();
+		m_po->SetName(fileName.c_str());
 		fem.GetModel().AddObject(m_po);
 	}
 }

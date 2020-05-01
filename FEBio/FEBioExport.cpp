@@ -6,8 +6,9 @@
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 
-FEBioExport::FEBioExport()
+FEBioExport::FEBioExport(FEProject& prj) : FEFileExport(prj)
 {
 	m_compress = false;
 	m_exportSelections = false;

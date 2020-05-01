@@ -14,7 +14,7 @@
 #include "CIntInput.h"
 #include <PostLib/FEKinemat.h>
 #include <PostLib/FELSDYNAimport.h>
-#include "PostDoc.h"
+#include "PostDocument.h"
 #include "MainWindow.h"
 
 class CDlgPlotMixUI

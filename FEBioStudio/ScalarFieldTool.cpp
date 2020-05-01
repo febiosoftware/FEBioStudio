@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ScalarFieldTool.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GGroup.h>
@@ -30,7 +30,7 @@ CScalarFieldTool::CScalarFieldTool(CMainWindow* wnd) : CBasicTool(wnd, "Scalar F
 bool CScalarFieldTool::OnApply()
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 
 	// get the currently selected object
 	GObject* po = pdoc->GetActiveObject();

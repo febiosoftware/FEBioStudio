@@ -3,7 +3,7 @@
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FEBinarySTLimport::FEBinarySTLimport()
+FEBinarySTLimport::FEBinarySTLimport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -27,9 +27,9 @@ bool FEBinarySTLimport::read_facet(FEBinarySTLimport::FACET& f)
 
 //-----------------------------------------------------------------------------
 // Load an STL model
-bool FEBinarySTLimport::Load(FEProject& prj, const char* szfile)
+bool FEBinarySTLimport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 
 	// try to open the file

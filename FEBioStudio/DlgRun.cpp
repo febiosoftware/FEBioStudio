@@ -202,15 +202,8 @@ void CDlgRun::on_setCWDBtn_Clicked()
 
 void CDlgRun::SetWorkingDirectory(const QString& wd)
 {
-	QString workingDir(wd);
-#ifdef WIN32
-	workingDir.replace("/", "\\");
-#endif
+	QString workingDir = QDir::toNativeSeparators(wd);
 	ui->cwd->setText(workingDir);
-
-	// show the absolute path as a tool tip
-	std::string absPath = FSDir::toAbsolutePath(wd.toStdString());
-	ui->cwd->setToolTip(QString::fromStdString(absPath));
 }
 
 void CDlgRun::SetJobName(const QString& fn)
@@ -324,7 +317,7 @@ void CDlgRun::accept()
 	// convert to an absolute path
 	std::string spath = path.toStdString();
 	FSDir dir(spath);
-	spath = dir.toAbsolutePath();
+	spath = dir.expandMacros();
 
 	// check if it exists
 	// TODO: Commenting this out since it was annoying to see this question every time. 

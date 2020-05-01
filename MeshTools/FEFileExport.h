@@ -1,16 +1,16 @@
 #pragma once
-#include "FEProject.h"
+#include <MeshIO/FileWriter.h>
 #include <string>
 
-class FEFileExport  
+class FEProject;
+
+class FEFileExport : public FileWriter
 {
 public:
-	FEFileExport();
+	FEFileExport(FEProject& prj);
 	virtual ~FEFileExport();
 
 	void ClearLog();
-
-	virtual bool Export(FEProject& prj, const char* szfile) = 0;
 
 	// return the error message
 	std::string GetErrorMessage() { return m_err; }
@@ -20,4 +20,5 @@ protected:
 
 protected:
 	std::string	m_err;	// error message
+	FEProject&	m_prj;
 };

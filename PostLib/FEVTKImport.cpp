@@ -5,7 +5,7 @@
 
 using namespace Post;
 
-FEVTKimport::FEVTKimport() : FEFileReader("VTK")
+FEVTKimport::FEVTKimport(FEPostModel* fem) : FEFileReader(fem)
 {
 }
 
@@ -13,14 +13,14 @@ FEVTKimport::~FEVTKimport(void)
 {
 }
 
-bool FEVTKimport::Load(FEPostModel& fem, const char* szfile)
+bool FEVTKimport::Load(const char* szfile)
 {
+	FEPostModel& fem = *m_fem;
 	fem.Clear();
-	m_pfem = &fem;
 
 	// add one material to the scene
 	FEMaterial mat;
-	m_pfem->AddMaterial(mat);
+	fem.AddMaterial(mat);
 
 	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
 
@@ -154,12 +154,12 @@ bool FEVTKimport::Load(FEPostModel& fem, const char* szfile)
 	// update the mesh
 	fem.AddMesh(pm);
 	pm->Update();
-	m_pfem->UpdateBoundingBox();
+	fem.UpdateBoundingBox();
 
 	// add a state
-	FEState* ps = new FEState(0.f, m_pfem, m_pfem->GetFEMesh(0));
+	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));
 	m_ps = ps;
-	m_pfem->AddState(ps);
+	fem.AddState(ps);
 
 	while (ch != NULL) //making sure the file doesn't ends here
 	{
@@ -262,7 +262,7 @@ bool FEVTKimport::readPointData(char* szline)
 
 	if (bVectors)
 	{
-		m_pfem->AddDataField(new FEDataField_T<FENodeData<vec3f> >(buf[1], EXPORT_DATA));
+		m_fem->AddDataField(new FEDataField_T<FENodeData<vec3f> >(buf[1], EXPORT_DATA));
 
 		FENodeData<vec3f>& df = dynamic_cast<FENodeData<vec3f>&>(m_ps->m_Data[  m_ps->m_Data.size() - 1 ]);
 

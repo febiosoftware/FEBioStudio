@@ -41,10 +41,10 @@ class FEBinarySTLimport : public FEFileImport
 	};
 
 public:
-	FEBinarySTLimport();
+	FEBinarySTLimport(FEProject& prj);
 	virtual ~FEBinarySTLimport(void);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	bool read_facet(FACET& f);

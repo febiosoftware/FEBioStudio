@@ -3,7 +3,7 @@
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FETetGenImport::FETetGenImport()
+FETetGenImport::FETetGenImport(FEProject& prj) : FEFileImport(prj)
 {
 	m_offset = 0;
 }
@@ -14,7 +14,7 @@ FETetGenImport::~FETetGenImport()
 }
 
 //-----------------------------------------------------------------------------
-bool FETetGenImport::Load(FEProject& prj, const char* szfile)
+bool FETetGenImport::Load(const char* szfile)
 {
 	m_Node.clear();
 	m_Elem.clear();
@@ -109,7 +109,7 @@ bool FETetGenImport::Load(FEProject& prj, const char* szfile)
 
 	Close();
 
-	return BuildMesh(prj.GetFEModel());
+	return BuildMesh(m_prj.GetFEModel());
 }
 
 //-----------------------------------------------------------------------------

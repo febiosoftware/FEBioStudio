@@ -3,7 +3,7 @@
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FESTLimport::FESTLimport()
+FESTLimport::FESTLimport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -38,9 +38,9 @@ bool FESTLimport::read_line(char* szline, const char* sz)
 
 //-----------------------------------------------------------------------------
 // Load an STL model
-bool FESTLimport::Load(FEProject& prj, const char* szfile)
+bool FESTLimport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 	m_nline = 0;
 

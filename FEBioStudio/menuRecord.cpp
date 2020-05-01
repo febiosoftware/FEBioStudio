@@ -3,7 +3,6 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include "PostDoc.h"
 #include <PostLib/ImgAnimation.h>
 #include <PostLib/AVIAnimation.h>
 #include <PostLib/MPEGAnimation.h>

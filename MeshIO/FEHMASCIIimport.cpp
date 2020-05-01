@@ -2,7 +2,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEHMASCIIimport::FEHMASCIIimport()
+FEHMASCIIimport::FEHMASCIIimport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -38,8 +38,10 @@ int parse_line(char* szline, char* argv[])
 	return nargs;	
 }
 
-bool FEHMASCIIimport::Load(FEProject& prj, const char* szfile)
+bool FEHMASCIIimport::Load(const char* szfile)
 {
+	FEProject& prj = m_prj;
+
 	char szline[256] = {0};
 
 	// try to open the file

@@ -4,9 +4,10 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include "MainWindow.h"
-#include "PostDoc.h"
+#include "PostDocument.h"
 #include "Document.h"
 #include <PostGL/GLModel.h>
+#include <GeomLib/GObject.h>
 
 //-----------------------------------------------------------------------------
 CAbstractTool::CAbstractTool(CMainWindow* wnd, const QString& s) : m_name(s)
@@ -21,10 +22,10 @@ CDocument* CAbstractTool::GetDocument()
 	return m_wnd->GetDocument(); 
 }
 
-CPostDoc* CAbstractTool::GetPostDoc()
+CPostDocument* CAbstractTool::GetPostDoc()
 {
 	if (m_wnd == nullptr) return nullptr;
-	return m_wnd->GetActiveDocument();
+	return m_wnd->GetPostDocument();
 }
 
 // get the main window
@@ -70,21 +71,7 @@ void CAbstractTool::SetDecoration(GDecoration* deco)
 // get the active mesh
 FEMesh* CAbstractTool::GetActiveMesh()
 {
-	GObject* po = nullptr;
-	CPostDoc* postDoc = m_wnd->GetActiveDocument();
-	if (postDoc)
-	{
-		if (postDoc->IsValid())
-		{
-			po = postDoc->GetPostObject();
-		}
-	}
-	else
-	{
-		CDocument* doc = m_wnd->GetDocument();
-		po = doc->GetActiveObject();
-	}
-
+	GObject* po = GetActiveObject();
 	if (po) return po->GetFEMesh();
 	else return nullptr;
 }
@@ -92,16 +79,7 @@ FEMesh* CAbstractTool::GetActiveMesh()
 GObject* CAbstractTool::GetActiveObject()
 {
 	CMainWindow* wnd = GetMainWindow();
-	CPostDoc* postDoc = wnd->GetActiveDocument();
-	if (postDoc)
-	{
-		return postDoc->GetPostObject();
-	}
-	else
-	{
-		CDocument* doc = GetDocument();
-		return doc->GetActiveObject();
-	}
+	return wnd->GetActiveObject();
 }
 
 //-----------------------------------------------------------------------------

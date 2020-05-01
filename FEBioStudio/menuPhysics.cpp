@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include "DlgAddBC.h"
 #include "DlgAddNodalLoad.h"
 #include "DlgAddSurfaceLoad.h"
@@ -27,7 +27,10 @@
 
 void CMainWindow::on_actionAddBC_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
 	FEModel& fem = prj.GetFEModel();
 	CDlgAddBC dlg(prj, this);
 	if (dlg.exec())
@@ -44,7 +47,7 @@ void CMainWindow::on_actionAddBC_triggered()
 			pbc->SetName(name);
 
 			// figure out the selection
-			FESelection* psel = m_doc->GetCurrentSelection();
+			FESelection* psel = doc->GetCurrentSelection();
 			if (psel && psel->Size())
 			{
 				int ntype = psel->Type();
@@ -72,7 +75,10 @@ void CMainWindow::on_actionAddBC_triggered()
 
 void CMainWindow::on_actionAddNodalLoad_triggered()
 {
-	FEModel& fem = *m_doc->GetFEModel();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEModel& fem = *doc->GetFEModel();
 	CDlgAddNodalLoad dlg(fem, this);
 	if (dlg.exec())
 	{
@@ -84,7 +90,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 		FEStep* step = fem.GetStep(dlg.m_nstep);
 
 		// figure out the selection
-		FESelection* psel = m_doc->GetCurrentSelection();
+		FESelection* psel = doc->GetCurrentSelection();
 		if (psel && psel->Size())
 		{
 			int ntype = psel->Type();
@@ -111,7 +117,10 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 
 void CMainWindow::on_actionAddSurfLoad_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
 	FEModel& fem = prj.GetFEModel();
 	CDlgAddSurfaceLoad dlg(prj, this);
 	if (dlg.exec())
@@ -124,7 +133,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 			psl->SetName(name);
 
 			// figure out the selection
-			FESelection* psel = m_doc->GetCurrentSelection();
+			FESelection* psel = doc->GetCurrentSelection();
 			if (psel && psel->Size())
 			{
 				int ntype = psel->Type();
@@ -150,8 +159,11 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 void CMainWindow::on_actionAddBodyLoad_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
-	FEModel& fem = *m_doc->GetFEModel();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
+	FEModel& fem = *doc->GetFEModel();
 	CDlgAddBodyLoad dlg(prj, this);
 	if (dlg.exec())
 	{
@@ -172,8 +184,11 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 
 void CMainWindow::on_actionAddIC_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
-	FEModel& fem = *m_doc->GetFEModel();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
+	FEModel& fem = *doc->GetFEModel();
 	CDlgAddIC dlg(prj, this);
 	if (dlg.exec())
 	{
@@ -185,7 +200,7 @@ void CMainWindow::on_actionAddIC_triggered()
 			pic->SetName(name);
 
 			// figure out the selection
-			FESelection* psel = m_doc->GetCurrentSelection();
+			FESelection* psel = doc->GetCurrentSelection();
 			if (psel && psel->Size())
 			{
 				int ntype = psel->Type();
@@ -217,8 +232,11 @@ void CMainWindow::on_actionAddIC_triggered()
 
 void CMainWindow::on_actionAddContact_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
-	FEModel& fem = *m_doc->GetFEModel();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
+	FEModel& fem = *doc->GetFEModel();
 	CDlgAddContact dlg(prj, this);
 	if (dlg.exec())
 	{
@@ -236,7 +254,7 @@ void CMainWindow::on_actionAddContact_triggered()
 				FESoloInterface& si = dynamic_cast<FESoloInterface&>(*pi);
 
 				// figure out the selection
-				FESelection* psel = m_doc->GetCurrentSelection();
+				FESelection* psel = doc->GetCurrentSelection();
 				if (psel && psel->Size())
 				{
 					int ntype = psel->Type();
@@ -264,8 +282,11 @@ void CMainWindow::on_actionAddContact_triggered()
 
 void CMainWindow::on_actionAddConstraint_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
-	FEModel& fem = *m_doc->GetFEModel();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
+	FEModel& fem = *doc->GetFEModel();
 	CDlgAddConstraint dlg(prj, this);
 	if (dlg.exec())
 	{
@@ -281,7 +302,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 			if (psc)
 			{
 				// figure out the selection
-				FESelection* psel = m_doc->GetCurrentSelection();
+				FESelection* psel = doc->GetCurrentSelection();
 				if (psel && psel->Size())
 				{
 					int ntype = psel->Type();
@@ -309,7 +330,10 @@ void CMainWindow::on_actionAddConstraint_triggered()
 
 void CMainWindow::on_actionAddRigidConstraint_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
 	CDlgAddRigidConstraint dlg(prj, this);
 	if (dlg.exec())
 	{
@@ -336,16 +360,19 @@ void CMainWindow::on_actionAddRigidConstraint_triggered()
 
 void CMainWindow::on_actionAddRigidConnector_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
 	CDlgAddRigidConnector dlg(prj, this);
 	if (dlg.exec())
 	{
-		FEModel* fem = m_doc->GetFEModel();
+		FEModel* fem = doc->GetFEModel();
 		FERigidConnector* pc = fecore_new<FERigidConnector>(fem, FE_RIGID_CONNECTOR, dlg.GetType());
 		assert(pc);
 		if (pc)
 		{
-			pc->SetPosition(m_doc->Get3DCursor());
+			pc->SetPosition(doc->Get3DCursor());
 			pc->m_rbA = dlg.GetMaterialA();
 			pc->m_rbB = dlg.GetMaterialB();
 
@@ -365,7 +392,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 
 void CMainWindow::on_actionAddMaterial_triggered()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEProject& prj = doc->GetProject();
 
 	CMaterialEditor dlg(this);
@@ -387,7 +414,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 			if (sz && (strlen(sz) > 0)) gmat->SetName(sz);
 
 			// add the material
-			doc->DoCommand(new CCmdAddMaterial(gmat));
+			doc->DoCommand(new CCmdAddMaterial(&fem, gmat));
 
 			UpdateModel(gmat);
 		}
@@ -396,8 +423,11 @@ void CMainWindow::on_actionAddMaterial_triggered()
 
 void CMainWindow::on_actionAddStep_triggered()
 {
-	FEProject& prj = m_doc->GetProject();
-	FEModel* fem = m_doc->GetFEModel();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FEProject& prj = doc->GetProject();
+	FEModel* fem = doc->GetFEModel();
 	CDlgAddStep dlg(prj, this);
 	if (dlg.exec())
 	{
@@ -409,7 +439,7 @@ void CMainWindow::on_actionAddStep_triggered()
 			if (name.empty()) name = defaultStepName(fem, ps);
 
 			ps->SetName(name);
-			m_doc->DoCommand(new CCmdAddStep(ps));
+			doc->DoCommand(new CCmdAddStep(fem, ps));
 			prj.ActivatePlotVariables(ps);
 			UpdateModel(ps);
 		}

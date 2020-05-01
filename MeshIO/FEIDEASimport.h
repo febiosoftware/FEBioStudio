@@ -22,10 +22,10 @@ protected:
 	};
 
 public:
-	FEIDEASimport();
+	FEIDEASimport(FEProject& prj);
 	virtual ~FEIDEASimport();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	bool BuildMesh(FEModel& fem);

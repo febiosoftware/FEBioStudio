@@ -9,10 +9,10 @@
 class FENIKEExport : public FEFileExport
 {
 public:
-	FENIKEExport();
+	FENIKEExport(FEProject& prj);
 	virtual ~FENIKEExport();
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile);
 
 protected:
 	bool ExportControl      (FENikeProject& prj);

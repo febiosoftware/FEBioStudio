@@ -5,14 +5,15 @@
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 
-PRVObjectExport::PRVObjectExport()
+PRVObjectExport::PRVObjectExport(FEProject& prj) : FEFileExport(prj)
 {
 	m_selectedObjectsOnly = true;
 	m_exportDiscrete = true;
 }
 
-bool PRVObjectExport::Export(FEProject& prj, const char* szfile)
+bool PRVObjectExport::Write(const char* szfile)
 {
 	OArchive ar;
 	if (ar.Create(szfile, 0x0050564F) == false) return false;
@@ -20,7 +21,7 @@ bool PRVObjectExport::Export(FEProject& prj, const char* szfile)
 	bool ret = true;
 	try
 	{
-		ret = SaveObjects(ar, prj);
+		ret = SaveObjects(ar, m_prj);
 	}
 	catch (...)
 	{

@@ -4,7 +4,7 @@
 #include <vector>
 using namespace std;
 
-COMSOLimport::COMSOLimport()
+COMSOLimport::COMSOLimport(FEProject& prj) : FEFileImport(prj)
 {
 	m_domainstosets = false;
 	m_bautopart = true;
@@ -16,17 +16,16 @@ COMSOLimport::COMSOLimport()
 	m_addprisms = true;
 	m_pyrstotets = false;
     m_totalelems = 0;
-    m_node0 = 0;
-	
+    m_node0 = 0;	
 }
 
 COMSOLimport::~COMSOLimport()
 {
 }
 
-bool COMSOLimport::Load(FEProject& prj, const char* szfile)
+bool COMSOLimport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 	
 	char szline[256] = {0};

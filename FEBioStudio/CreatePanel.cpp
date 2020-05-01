@@ -133,8 +133,8 @@ void CCreatePanel::on_create_clicked()
 				return;
 			}
 
-			CDocument* doc = GetDocument();
-			doc->DoCommand(new CCmdAddAndSelectObject(go), go->GetName());
+			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+			doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), go), go->GetName());
 			CMainWindow* wnd = GetMainWindow();
 			wnd->UpdateModel(go);
 			wnd->Update(this);
@@ -151,7 +151,7 @@ void CCreatePanel::on_create_clicked()
 		{
 			GDiscreteObject* go = dynamic_cast<GDiscreteObject*>(po);
 
-			CDocument* doc = GetDocument();
+			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 			GModel& geo = doc->GetFEModel()->GetModel();
 			geo.AddDiscreteObject(go);
 			GetMainWindow()->UpdateModel(go);

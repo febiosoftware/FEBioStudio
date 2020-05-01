@@ -18,10 +18,10 @@ class GMeshImport : public FEFileReader
 	};
 
 public:
-	GMeshImport(void);
+	GMeshImport(FEPostModel* fem);
 	~GMeshImport(void);
 
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 
 protected:
 	bool ReadNodes();

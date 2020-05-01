@@ -2,7 +2,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEVTKimport::FEVTKimport()
+FEVTKimport::FEVTKimport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -10,9 +10,9 @@ FEVTKimport::~FEVTKimport(void)
 {
 }
 
-bool FEVTKimport::Load(FEProject& prj, const char* szfile)
+bool FEVTKimport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 
 	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
 

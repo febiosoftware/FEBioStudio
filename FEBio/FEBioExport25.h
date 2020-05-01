@@ -2,6 +2,7 @@
 
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
+#include <MeshTools/FEProject.h>
 #include "FEBioExport.h"
 
 //-----------------------------------------------------------------------------
@@ -94,12 +95,12 @@ private:
 	};
 
 public:
-	FEBioExport25();
+	FEBioExport25(FEProject& prj);
 	virtual ~FEBioExport25();
 
 	void Clear();
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile) override;
 
 public: // set export attributes
 	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
@@ -221,7 +222,6 @@ protected:
 
 protected:
 	FEModel*		m_pfem;
-	FEProject*		m_pprj;
 
 	bool	m_useReactionMaterial2;
 	bool	m_writeNotes;

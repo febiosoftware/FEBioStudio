@@ -13,6 +13,8 @@ enum XPLT_READ_WARNING {
 	XPLT_READ_DUPLICATE_FACES			// warning issued when surface values are overwritten
 };
 
+class xpltParser;
+
 class xpltFileReader;
 
 class xpltParser
@@ -65,10 +67,11 @@ public:
 	};
 
 public:
-	xpltFileReader();
+	xpltFileReader(Post::FEPostModel* fem);
 	~xpltFileReader();
 
-	bool Load(Post::FEPostModel& fem, const char* szfile);
+	using FEFileReader::Load;
+	bool Load(const char* szfile) override;
 
 	void SetReadStateFlag(int n) { m_read_state_flag = n; }
 	void SetReadStatesList(const vector<int>& l) { m_state_list = l; }
@@ -92,4 +95,6 @@ private:
 	// Options
 	int			m_read_state_flag;	//!< flag setting option for reading states
 	vector<int>	m_state_list;		//!< list of states to read (only when m_read_state_flag == XPLT_READ_STATES_FROM_LIST)
+
+	friend class xpltParser;
 };

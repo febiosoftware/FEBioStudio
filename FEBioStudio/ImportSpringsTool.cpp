@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ImportSpringsTool.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModel.h>
@@ -16,7 +16,7 @@ CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Impo
 
 bool CImportSpringsTool::OnApply()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return false;
 
 	// get the current object

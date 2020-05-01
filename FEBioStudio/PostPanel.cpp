@@ -70,7 +70,7 @@ void CPostPanel::Apply()
 	if (p) p->Apply();
 }
 
-void CPostPanel::SelectObject(Post::CGLObject* po)
+void CPostPanel::SelectObject(FSObject* po)
 {
 	ui->mdl->selectObject(po);
 }

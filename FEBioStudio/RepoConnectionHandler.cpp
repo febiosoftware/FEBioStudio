@@ -446,7 +446,7 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 
 //	if(IDType == GLOBAL)
 //	{
-//		imp->m_wnd->ImportProject(filename);
+//		imp->m_wnd->ImportZippedProject(filename);
 //	}
 //	else
 //	{
@@ -472,7 +472,7 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 //
 ////		imp->m_wnd->OpenFEModel("/home/sci/mherron/Desktop/test.zip");
 //
-//		imp->m_wnd->ImportProject(sfile.c_str());
+//		imp->m_wnd->ImportZippedProject(sfile.c_str());
 //
 //	}
 

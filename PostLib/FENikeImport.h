@@ -8,10 +8,10 @@ class FEPostMesh;
 class FENikeImport : public FEFileReader
 {
 public:
-	FENikeImport();
+	FENikeImport(FEPostModel* fem);
 	~FENikeImport();
 
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 
 protected:
 	char* get_line(char* szline);
@@ -26,8 +26,6 @@ protected:
 	int m_nhel;	// nr of solid elements
 	int	m_nbel;	// nr of beam elements
 	int	m_nsel;	// nr of shell elements
-
-	FEPostModel*	m_pfem;
 
 	FEPostMesh*	m_pm;
 };

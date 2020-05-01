@@ -6,7 +6,7 @@
 using namespace Post;
 
 //-----------------------------------------------------------------------------
-FERAWImageReader::FERAWImageReader() : FEFileReader("RAW")
+FERAWImageReader::FERAWImageReader(FEPostModel* fem) : FEFileReader(fem)
 {
 	m_ops.nx = 0;
 	m_ops.ny = 0;
@@ -15,7 +15,7 @@ FERAWImageReader::FERAWImageReader() : FEFileReader("RAW")
 }
 
 //-----------------------------------------------------------------------------
-bool FERAWImageReader::Load(FEPostModel& fem, const char* szfile)
+bool FERAWImageReader::Load(const char* szfile)
 {
 	if ((m_ops.nx <= 0) || (m_ops.ny <= 0) || (m_ops.nz <= 0)) return errf("Invalid image dimensions");
 	if (m_ops.nformat != 0) return errf("Invalid image format");
@@ -25,7 +25,7 @@ bool FERAWImageReader::Load(FEPostModel& fem, const char* szfile)
 
 	// add one material to the scene
 	FEMaterial mat;
-	fem.AddMaterial(mat);
+	m_fem->AddMaterial(mat);
 
 	// figure out the mesh dimensions
 	int NN = m_ops.nx * m_ops.ny * m_ops.nz;
@@ -49,7 +49,7 @@ bool FERAWImageReader::Load(FEPostModel& fem, const char* szfile)
 	{
 		return errf("Unkwown exception in FERAWImageReader::Load");
 	}
-	fem.AddMesh(pm);
+	m_fem->AddMesh(pm);
 
 	// scale parameters
 	double dx = m_ops.wx / (float) m_ops.nx;
@@ -106,14 +106,14 @@ bool FERAWImageReader::Load(FEPostModel& fem, const char* szfile)
 
 	// update the mesh
 	pm->Update();
-	fem.UpdateBoundingBox();
+	m_fem->UpdateBoundingBox();
 
 	// Add a data field
-	fem.AddDataField(new FEDataField_T<FENodeData<float> >("Image", EXPORT_DATA));
+	m_fem->AddDataField(new FEDataField_T<FENodeData<float> >("Image", EXPORT_DATA));
 
 	// we need a single state
-	FEState* ps = new FEState(0.f, &fem, fem.GetFEMesh(0));
-	fem.AddState(ps);
+	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));
+	m_fem->AddState(ps);
 
 	// add the image data
 	FENodeData<float>& d = dynamic_cast<FENodeData<float>&>(ps->m_Data[0]);

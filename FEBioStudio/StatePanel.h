@@ -2,7 +2,7 @@
 #include "CommandPanel.h"
 #include <QDialog>
 
-class CPostDoc;
+class CPostDocument;
 
 namespace Ui{
 	class CStatePanel;
@@ -20,7 +20,7 @@ public:
 
 	void Update(bool breset) override;
 
-	CPostDoc* GetActiveDocument();
+	CPostDocument* GetActiveDocument();
 
 private slots:
 	void on_stateList_doubleClicked(const QModelIndex& index);

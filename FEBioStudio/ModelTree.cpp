@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ModelTree.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <MeshTools/FEModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
@@ -11,7 +11,8 @@
 #include "ObjectProps.h"
 #include "FEObjectProps.h"
 #include "ModelViewer.h"
-#include "PostDoc.h"
+#include "PostDocument.h"
+#include <GeomLib/GObject.h>
 #include <PostGL/GLModel.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
@@ -23,7 +24,6 @@
 #include <MeshTools/GModel.h>
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"
-#include <FSCore/FSDir.h>
 #include "SSHThread.h"
 #include "SSHHandler.h"
 #include "Logger.h"
@@ -219,7 +219,7 @@ private:
 class CFEBioJobProps : public CPropertyList
 {
 public:
-	CFEBioJobProps(CMainWindow* wnd, CFEBioJob* job) : m_wnd(wnd), m_job(job)
+	CFEBioJobProps(CMainWindow* wnd, CModelViewer* tree, CFEBioJob* job) : m_wnd(wnd), m_tree(tree), m_job(job)
 	{
 		addProperty("FEBio File", CProperty::String)->setFlags(CProperty::Visible);
 		addProperty("Status", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
@@ -246,7 +246,7 @@ public:
 		{
 		case 0: 
 		{
-			QString s = QString::fromStdString(m_job->GetFileName());
+			QString s = QString::fromStdString(m_job->GetFEBFileName());
 			if (s.isEmpty()) return "(none)";
 			else return s;
 		}
@@ -267,21 +267,21 @@ public:
 	{
 		if (i == 3)
 		{
-			m_wnd->OpenPlotFile(m_job);
+			CModelDocument* doc = m_job->GetDocument(); assert(doc);
+			QString plotFile = doc->ToAbsolutePath(m_job->GetPlotFileName());
+			m_tree->blockUpdate(true);
+			m_wnd->OpenFile(plotFile, false);
 			SetModified(true);
+			m_tree->blockUpdate(false);
 		}
 		else if (i == 4)
 		{
-			std::string plotFile = m_job->GetPlotFileName();
-
-			// do string replacement
-			FSDir dir(plotFile);
-			plotFile = dir.toAbsolutePath();
-
+			CModelDocument* doc = m_job->GetDocument(); assert(doc);
+			QString plotFile = doc->ToAbsolutePath(m_job->GetPlotFileName());
 			plotFile = "file:///" + plotFile;
 
 			// try to open the file
-			QDesktopServices::openUrl(QUrl(QString::fromStdString(plotFile)));
+			QDesktopServices::openUrl(QUrl(plotFile));
 		}
 		else if (i == 5)
 		{
@@ -315,6 +315,7 @@ public:
 	}
 
 private:
+	CModelViewer*	m_tree;
 	CMainWindow*	m_wnd;
 	CFEBioJob*		m_job;
 };
@@ -739,11 +740,13 @@ void CModelTree::Select(const std::vector<FSObject*>& objList)
 	}
 }
 
-void CModelTree::Build(CDocument* doc)
+void CModelTree::Build(CModelDocument* doc)
 {
 	// clear the tree
 	clear();
 	ClearData();
+
+	if (doc == nullptr) return;
 
 	// get the model
 	FEProject& prj = doc->GetProject();
@@ -863,12 +866,12 @@ void CModelTree::Build(CDocument* doc)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
+void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CModelDocument* doc)
 {
 	for (int i=0; i<doc->FEBioJobs(); ++i)
 	{
 		CFEBioJob* job = doc->GetFEBioJob(i);
-		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(job->GetName()), MT_JOB, 0, job, new CFEBioJobProps(m_view->GetMainWindow(), job), 0, SHOW_PROPERTY_FORM);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(job->GetName()), MT_JOB, 0, job, new CFEBioJobProps(m_view->GetMainWindow(), m_view, job), 0, SHOW_PROPERTY_FORM);
 /*
 		CPostDoc* doc = job->GetPostDoc();
 		if (doc)
@@ -910,7 +913,7 @@ void CModelTree::UpdateJobs(QTreeWidgetItem* t1, CDocument* doc)
 }
 
 //-----------------------------------------------------------------------------
-void CModelTree::UpdateImages(QTreeWidgetItem* t1, CDocument* doc)
+void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 {
 	for (int i = 0; i < doc->ImageModels(); ++i)
 	{

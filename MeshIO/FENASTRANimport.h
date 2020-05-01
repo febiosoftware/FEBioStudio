@@ -41,8 +41,8 @@ protected:
 	};
 
 public:
-	FENASTRANimport(){}
-	bool Load(FEProject& prj, const char* szfile);
+	FENASTRANimport(FEProject& prj) : FEFileImport(prj) {}
+	bool Load(const char* szfile);
 
 protected:
 	bool ParseFile();

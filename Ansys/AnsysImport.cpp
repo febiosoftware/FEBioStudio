@@ -2,9 +2,8 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-AnsysImport::AnsysImport()
+AnsysImport::AnsysImport(FEProject& prj) : FEFileImport(prj)
 {
-	m_pprj = 0;
 }
 
 AnsysImport::~AnsysImport(void)
@@ -12,10 +11,8 @@ AnsysImport::~AnsysImport(void)
 }
 
 //-----------------------------------------------------------------------------
-bool AnsysImport::Load(FEProject& prj, const char* szfile)
+bool AnsysImport::Load(const char* szfile)
 {
-	m_pprj = &prj;
-
 	m_szline[0] = 0;
 
 	// open the file
@@ -42,7 +39,7 @@ bool AnsysImport::Load(FEProject& prj, const char* szfile)
 	Close();
 
 	// build the mesh
-	return BuildMesh(prj.GetFEModel());
+	return BuildMesh(m_prj.GetFEModel());
 }
 
 //-----------------------------------------------------------------------------

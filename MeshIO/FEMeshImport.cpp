@@ -2,7 +2,7 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEMeshImport::FEMeshImport()
+FEMeshImport::FEMeshImport(FEProject& prj) : FEFileImport(prj)
 {
 	m_bread_surface = false;
 }
@@ -16,7 +16,7 @@ void FEMeshImport::ReadSurface(bool b)
 	m_bread_surface = b;
 }
 
-bool FEMeshImport::Load(FEProject& prj, const char* szfile)
+bool FEMeshImport::Load(const char* szfile)
 {
 	if (Open(szfile, "rt") == false) return false;
 	char szline[256] = {0};
@@ -31,7 +31,7 @@ bool FEMeshImport::Load(FEProject& prj, const char* szfile)
 
 	Close();
 
-	BuildMesh(prj);
+	BuildMesh(m_prj);
 
 	return true;
 }

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GView.h"
 #include <stdio.h>
-using namespace Post;
+
 CGView::CGView()
 { 
 	SetName("View"); 

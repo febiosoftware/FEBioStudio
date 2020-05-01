@@ -5,9 +5,7 @@ namespace Ui {
 	class CPostPanel;
 }
 
-namespace Post {
-	class CGLObject;
-}
+class FSObject;
 
 class CPostPanel : public CCommandPanel
 {
@@ -22,7 +20,7 @@ public:
 
 	void Apply();
 
-	void SelectObject(Post::CGLObject* po);
+	void SelectObject(FSObject* po);
 
 	void OnViewChanged();
 

@@ -1,12 +1,9 @@
 #pragma once
-
-#include "GLObject.h"
 #include <GLLib/GLCamera.h>
 
-namespace Post {
 //-----------------------------------------------------------------------------
 // This class stores viewing information
-class CGView : public CGLObject
+class CGView : public FSObject
 {
 public:
 	CGView();
@@ -38,4 +35,3 @@ protected:
 	vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
 	int							m_nkey;	//!< current key
 };
-}

@@ -11,10 +11,10 @@ class GDiscreteObject;
 class PRVObjectImport : public FEFileImport
 {
 public:
-	PRVObjectImport();
+	PRVObjectImport(FEProject& prj);
 
 	// read the file
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 	// close the file
 	void Close();

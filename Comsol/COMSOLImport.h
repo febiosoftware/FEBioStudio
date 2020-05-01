@@ -16,9 +16,9 @@ class COMSOLimport : public FEFileImport
 {
 
 public:
-	COMSOLimport();
+	COMSOLimport(FEProject& prj);
 	virtual ~COMSOLimport();
-	bool	Load(FEProject& prj, const char* szfile);
+	bool	Load(const char* szfile);
 	bool	m_domainstosets;	// create element sets by comsol domain
 	bool	m_bautopart;	// create parts out of sets	
 	bool	m_addtris;	    // add triangle planar elements

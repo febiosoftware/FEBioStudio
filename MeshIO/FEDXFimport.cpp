@@ -12,7 +12,7 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEDXFimport::FEDXFimport()
+FEDXFimport::FEDXFimport(FEProject& prj) : FEFileImport(prj)
 {	
 }
 
@@ -40,9 +40,9 @@ bool FEDXFimport::SearchFor(const char* sz)
 }
 
 //-----------------------------------------------------------------------------
-bool FEDXFimport::Load(FEProject& prj, const char* szfile)
+bool FEDXFimport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 
 	// open the file

@@ -7,7 +7,7 @@
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QLineEdit>
-#include "PostDoc.h"
+#include "PostDocument.h"
 
 class Ui::CDlgTimeSettings
 {
@@ -58,7 +58,7 @@ public:
 	}
 };
 
-CDlgTimeSettings::CDlgTimeSettings(CPostDoc* doc, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgTimeSettings), m_doc(doc)
+CDlgTimeSettings::CDlgTimeSettings(CPostDocument* doc, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgTimeSettings), m_doc(doc)
 {
 	ui->setupUi(this);
 

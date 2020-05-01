@@ -5,8 +5,8 @@
 class FEBYUExport : public FEFileExport
 {
 public:
-	FEBYUExport(void);
+	FEBYUExport(FEProject& prj);
 	~FEBYUExport(void);
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile) override;
 };

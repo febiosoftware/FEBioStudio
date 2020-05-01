@@ -1,8 +1,3 @@
-//
-//  AreaCalculatorTool.cpp
-//  FEBioStudio
-//
-
 #include "stdafx.h"
 #include "AreaCalculatorTool.h"
 #include <QWidget>
@@ -11,7 +6,7 @@
 #include <QPushButton>
 #include <QFormLayout>
 #include <QLineEdit>
-#include "Document.h"
+#include "ModelDocument.h"
 #include <GeomLib/GObject.h>
 
 // constructor
@@ -30,8 +25,8 @@ CAreaCalculatorTool::CAreaCalculatorTool(CMainWindow* wnd) : CBasicTool(wnd, "Ar
 bool CAreaCalculatorTool::OnApply()
 {
     // get the nodal coordinates (surface only)
-    CDocument* doc = GetDocument();
-    if (doc && doc->IsValid())
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc && doc->IsValid())
     {
         GObject* po = doc->GetActiveObject();
         if ((po == 0) || (po->GetFEMesh() == 0))

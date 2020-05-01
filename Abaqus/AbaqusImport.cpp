@@ -13,7 +13,7 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-AbaqusImport::AbaqusImport()
+AbaqusImport::AbaqusImport(FEProject& prj) : FEFileImport(prj)
 {
 	// default options
 	m_bnodesets = true;
@@ -86,10 +86,10 @@ bool szicmp(const char* sz1, const char* sz2)
 
 //-----------------------------------------------------------------------------
 //! Load an Abaqus model file
-bool AbaqusImport::Load(FEProject& prj, const char* szfile)
+bool AbaqusImport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
-	m_pprj = &prj;
+	FEModel& fem = m_prj.GetFEModel();
+	m_pprj = &m_prj;
 	m_pfem = &fem;
 
 	m_nline = 0;

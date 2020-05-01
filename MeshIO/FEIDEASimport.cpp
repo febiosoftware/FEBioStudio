@@ -4,7 +4,7 @@
 #include <vector>
 using namespace std;
 
-FEIDEASimport::FEIDEASimport()
+FEIDEASimport::FEIDEASimport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -12,9 +12,9 @@ FEIDEASimport::~FEIDEASimport()
 {
 }
 
-bool FEIDEASimport::Load(FEProject& prj, const char* szfile)
+bool FEIDEASimport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 
 	// open the file 

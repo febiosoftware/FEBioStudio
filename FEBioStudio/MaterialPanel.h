@@ -1,7 +1,7 @@
 #pragma once
 #include "CommandPanel.h"
 #include <FSCore/color.h>
-class CPostDoc;
+class CPostDocument;
 
 namespace Ui {
 	class CMaterialPanel;
@@ -21,7 +21,7 @@ public:
 	void UpdateStates();
 
 private:
-	CPostDoc* GetActiveDocument();
+	CPostDocument* GetActiveDocument();
 
 private:
 	void SetItemColor(int item, GLColor c);

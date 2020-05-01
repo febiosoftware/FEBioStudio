@@ -11,6 +11,7 @@
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/FEElementData.h>
+#include <MeshTools/FEProject.h>
 #include <MeshTools/GModel.h>
 #include <GeomLib/GObject.h>
 #include <memory>
@@ -20,7 +21,7 @@ using namespace std;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FEBioExport2::FEBioExport2()
+FEBioExport2::FEBioExport2(FEProject& prj) : FEBioExport(prj)
 {
 }
 
@@ -232,15 +233,14 @@ bool FEBioExport2::PrepareExport(FEProject& prj)
 
 //-----------------------------------------------------------------------------
 
-bool FEBioExport2::Export(FEProject& prj, const char* szfile)
+bool FEBioExport2::Write(const char* szfile)
 {
 	// get the project and model
-	m_pprj = &prj;
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 
 	// prepare for export
-	if (PrepareExport(prj) == false) return errf("Not all objects are meshed.");
+	if (PrepareExport(m_prj) == false) return errf("Not all objects are meshed.");
 
 	// get the initial step
 	FEStep* pstep = fem.GetStep(0);
@@ -4406,7 +4406,7 @@ void FEBioExport2::WriteFSITraction(FEStep& s)
 //
 void FEBioExport2::WriteInitialSection()
 {
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	FEStep& s = *fem.GetStep(0);
 
 	vector<int> VC; VC.resize(m_nodes);
@@ -4820,7 +4820,7 @@ void FEBioExport2::WriteSurface(XMLElement& el, FEItemListBuilder* pl)
 
 void FEBioExport2::WriteOutputSection()
 {
-	CPlotDataSettings& plt = m_pprj->GetPlotDataSettings();
+	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
 	int N = plt.PlotVariables();
 	if (N > 0)
 	{
@@ -4880,9 +4880,9 @@ void FEBioExport2::WriteOutputSection()
 		else m_xml.add_empty(p);
 	}
 
-	FEModel& fem = m_pprj->GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& mdl = fem.GetModel();
-	CLogDataSettings& log = m_pprj->GetLogDataSettings();
+	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	N = log.LogDataSize();
 	if (N > 0)
 	{

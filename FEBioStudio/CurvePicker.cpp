@@ -7,7 +7,7 @@
 #include "GLHighlighter.h"
 #include "SelectionBox.h"
 #include "FEBioStudio.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include "Commands.h"
 #include <MeshTools/GModel.h>
 
@@ -128,7 +128,7 @@ CCurveListPicker::~CCurveListPicker()
 void CCurveListPicker::onAddButtonClicked()
 {
 	// get the document
-	CDocument* pdoc = PRV::getDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(PRV::getDocument());
 
 	// get the current selection and make sure it's not empty
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -153,7 +153,7 @@ void CCurveListPicker::onAddButtonClicked()
 void CCurveListPicker::onSubButtonClicked()
 {
 	// get the document
-	CDocument* pdoc = PRV::getDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(PRV::getDocument());
 
 	// get the current selection and make sure it's not empty
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -185,7 +185,7 @@ void CCurveListPicker::onDelButtonClicked()
 void CCurveListPicker::onSelButtonClicked()
 {
 	// get the document
-	CDocument* pdoc = PRV::getDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(PRV::getDocument());
 
 	// get the current selection and make sure it's not empty
 	FESelection* ps = pdoc->GetCurrentSelection();
@@ -207,14 +207,14 @@ void CCurveListPicker::onSelButtonClicked()
 
 	if (edges.empty() == false)
 	{
-		pdoc->DoCommand(new CCmdSelectEdge(pdoc->GetFEModel(), edges, false));
+		pdoc->DoCommand(new CCmdSelectEdge(pdoc->GetGModel(), edges, false));
 	}
 }
 
 //-----------------------------------------------------------------------------
 void CCurveListPicker::setCurves(const QStringList& curves)
 {
-	CDocument* doc = PRV::getDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(PRV::getDocument());
 	GModel& m = *doc->GetGModel();
 
 	ui->m_list->clearData();

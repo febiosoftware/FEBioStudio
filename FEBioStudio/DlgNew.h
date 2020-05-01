@@ -33,8 +33,6 @@ public:
 
 	void setProjectFolder(const QString& projectFolder);
 
-	bool createProjectFolder();
-
 	void showEvent(QShowEvent* ev);
 
 public slots:

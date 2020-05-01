@@ -16,7 +16,7 @@
 class CMainWindow;
 class CDocument;
 class GCurveMeshObject;
-class CPostDoc;
+class CPostDocument;
 class GMaterial;
 class GDecoration;
 
@@ -315,7 +315,7 @@ public:
 	void Render3DCursor(const vec3d& r, double R);
 	void RenderSelectionBox();
 	void RenderModelView();
-	void RenderPostView(CPostDoc* postDoc);
+	void RenderPostView(CPostDocument* postDoc);
 	void RenderTags();
 	void RenderImageData();
 	void RenderTrack();
@@ -393,9 +393,9 @@ protected:
 
 	void AddRegionPoint(int x, int y);
 
-	void RenderGLProgress(CPostDoc* postDoc);
+	void RenderGLProgress(CPostDocument* postDoc);
 
-	bool TrackGLProgress(int x, CPostDoc* postDoc);
+	bool TrackGLProgress(int x, CPostDocument* postDoc);
 
 protected:
 	void SetTrackingData(int n[3]);

@@ -2,7 +2,7 @@
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEHyperSurfImport::FEHyperSurfImport()
+FEHyperSurfImport::FEHyperSurfImport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -10,9 +10,9 @@ FEHyperSurfImport::~FEHyperSurfImport(void)
 {
 }
 
-bool FEHyperSurfImport::Load(FEProject& prj, const char* szfile)
+bool FEHyperSurfImport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 
 	// open the file
 	if (Open(szfile, "rt") == false) return errf("Failed opening file %s", szfile);

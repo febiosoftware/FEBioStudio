@@ -112,8 +112,6 @@ const char* CBasicCmdManager::GetRedoCmdName() { return (m_Redo.size() ? m_Redo.
 CCommandManager::CCommandManager(CDocument* pdoc)
 {
 	m_pDoc = pdoc;
-
-	if (pdoc) CCommand::m_pDoc = pdoc;
 }
 
 CCommandManager::~CCommandManager()
@@ -175,7 +173,7 @@ void CCommandManager::UndoCommand()
 	CCommand* pcmd = m_Undo.top(); m_Undo.pop();
 
 	// reset the view state
-	if (m_pDoc) m_pDoc->SetViewState(pcmd->GetViewState());
+	m_pDoc->SetViewState(pcmd->GetViewState());
 
 	// unexecute it
 	pcmd->UnExecute();
@@ -190,7 +188,7 @@ void CCommandManager::RedoCommand()
 	CCommand* pcmd = m_Redo.top(); m_Redo.pop();
 
 	// reset the view state
-	if (m_pDoc) m_pDoc->SetViewState(pcmd->GetViewState());
+	m_pDoc->SetViewState(pcmd->GetViewState());
 
 	// execute it
 	pcmd->Execute();

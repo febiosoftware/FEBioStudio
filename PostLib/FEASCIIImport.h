@@ -48,10 +48,10 @@ private:
 	};
 
 public:
-	FEASCIIImport(void);
+	FEASCIIImport(FEPostModel* fem);
 	~FEASCIIImport(void);
 
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 
 protected:
 	bool ReadTitle    ();

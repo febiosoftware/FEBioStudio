@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FoamGeneratorTool.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <GeomLib/GMeshObject.h>
 #include <QMessageBox>
 
@@ -19,7 +19,9 @@ bool CFoamGeneratorTool::OnApply()
 	static int n = 1;
 
 	// get the document
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return false;
+
 	FEModel* ps = doc->GetFEModel();
 
 	// create the foam mesh

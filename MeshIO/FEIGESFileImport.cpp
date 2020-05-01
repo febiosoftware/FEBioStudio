@@ -2,7 +2,7 @@
 
 //-----------------------------------------------------------------------------
 
-FEIGESFileImport::FEIGESFileImport()
+FEIGESFileImport::FEIGESFileImport(FEProject& prj) : FEFileImport(prj)
 {
 }
 
@@ -48,9 +48,9 @@ bool FEIGESFileImport::read_record(FEIGESFileImport::RECORD& rec)
 
 //-----------------------------------------------------------------------------
 
-bool FEIGESFileImport::Load(FEProject& prj, const char *szfile)
+bool FEIGESFileImport::Load(const char *szfile)
 {
-	FEModel &fem = prj.GetFEModel();
+	FEModel &fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 
 	// open the file

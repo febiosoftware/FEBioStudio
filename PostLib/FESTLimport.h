@@ -15,10 +15,10 @@ class FESTLimport : public FEFileReader
 	};
 
 public:
-	FESTLimport(void);
+	FESTLimport(FEPostModel* fem);
 	virtual ~FESTLimport(void);
 
-	bool Load(FEPostModel& fem, const char* szfile);
+	bool Load(const char* szfile) override;
 
 protected:
 	bool read_line(char* szline, const char* sz);
@@ -27,7 +27,6 @@ protected:
 	int find_node(vec3f& r, const double eps = 1e-12);
 
 protected:
-	FEPostModel*		m_pfem;
 	std::list<FACET>	m_Face;
 	std::vector<vec3f>	m_Node;
 	int					m_nline;	// line counter

@@ -3,7 +3,7 @@
 #include <string>
 
 class CMainWindow;
-class CPostDoc;
+class CDocument;
 
 class CMainTabBar : public QTabBar
 {
@@ -15,12 +15,12 @@ public:
 	int views();
 	int getActiveView();
 	void setActiveView(int n);
-	void addView(const std::string& name, CPostDoc* postDoc = nullptr, bool makeActive = true);
-	int findView(CPostDoc* doc);
-	CPostDoc* getActiveDoc();
+	void addView(const std::string& name, CDocument* doc = nullptr, bool makeActive = true);
+	int findView(CDocument* doc);
+	CDocument* getActiveDoc();
+	CDocument* getDocument(int n);
 	void closeView(int n);
-	CPostDoc* getPostDoc(int i);
 
 private:
-	std::vector<CPostDoc*>	m_docs;
+	std::vector<CDocument*>	m_docs;
 };

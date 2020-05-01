@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "DlgSoluteTable.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <QBoxLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
@@ -64,7 +64,7 @@ CDlgSoluteTable::CDlgSoluteTable(int mode, CMainWindow* wnd) : m_wnd(wnd), QDial
 
 void CDlgSoluteTable::Update()
 {
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FEModel* fem = doc->GetFEModel();
 
 	switch (m_mode)
@@ -108,7 +108,7 @@ void CDlgSoluteTable::Update()
 
 void CDlgSoluteTable::on_addButton_clicked()
 {
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FEModel* fem = doc->GetFEModel();
 
 	switch (m_mode)
@@ -140,7 +140,7 @@ void CDlgSoluteTable::on_table_itemChanged(QTableWidgetItem* item)
 	int nrow = item->row();
 	int ncol = item->column();
 
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FEModel* fem = doc->GetFEModel();
 
 	QString txt = item->text();
@@ -191,7 +191,7 @@ void CDlgSoluteTable::on_table_itemChanged(QTableWidgetItem* item)
 
 void CDlgSoluteTable::on_removeButton_clicked()
 {
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FEModel* fem = doc->GetFEModel();
 	QItemSelectionModel* mdl = ui->table->selectionModel();
 	QModelIndexList selRows = mdl->selectedRows();

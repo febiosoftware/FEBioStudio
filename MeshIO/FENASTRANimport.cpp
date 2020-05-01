@@ -6,9 +6,9 @@
 extern GLColor col[];
 
 //-----------------------------------------------------------------------------
-bool FENASTRANimport::Load(FEProject& prj, const char* szfile)
+bool FENASTRANimport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 
 	// clear all data
 	m_Node.clear();

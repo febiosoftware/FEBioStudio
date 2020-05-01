@@ -38,10 +38,10 @@ class FESTLimport : public FEFileImport
 	};
 
 public:
-	FESTLimport();
+	FESTLimport(FEProject& prj);
 	virtual ~FESTLimport(void);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	bool read_line(char* szline, const char* sz);

@@ -1,8 +1,9 @@
 #include "FESTLExport.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 
-FESTLExport::FESTLExport(void)
+FESTLExport::FESTLExport(FEProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -10,14 +11,14 @@ FESTLExport::~FESTLExport(void)
 {
 }
 
-bool FESTLExport::Export(FEProject& prj, const char* szfile)
+bool FESTLExport::Write(const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
 	int i, j, n;
 
-	FEModel* ps = &prj.GetFEModel();
+	FEModel* ps = &m_prj.GetFEModel();
 	GModel& model = ps->GetModel();
 
 	// only the selected object is exported, unless no object is selected, 

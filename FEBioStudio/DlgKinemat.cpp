@@ -10,9 +10,10 @@
 #include <QDialogButtonBox>
 #include "MainWindow.h"
 #include "Document.h"
-#include "PostDoc.h"
+#include "PostDocument.h"
 #include <PostLib/FEKinemat.h>
 #include <PostLib/FELSDYNAimport.h>
+#include "PostDocument.h"
 
 class CDlgKinematUI
 {
@@ -96,12 +97,9 @@ void CDlgKinemat::OnApply()
 	int n1 = ui->end->value();
 	int ni = ui->stride->value();
 
-	// create a new job
+	// create a new document
 	CMainWindow* wnd = ui->m_wnd;
-	CDocument* doc = wnd->GetDocument();
-	CFEBioJob* job = new CFEBioJob(wnd->GetDocument());
-	job->SetName("Kinemat");
-	doc->AddFEbioJob(job);
+	CPostDocument* doc = new CPostDocument(wnd);
 
 	FEKinemat kine;
 	kine.SetRange(n0, n1, ni);
@@ -110,23 +108,25 @@ void CDlgKinemat::OnApply()
 	string kineFile = ui->kineFile->text().toStdString();
 
 	// load the file
-	Post::FELSDYNAimport* preader = new Post::FELSDYNAimport;
+	Post::FELSDYNAimport* preader = new Post::FELSDYNAimport(nullptr);
 	preader->read_displacements(true);
-	if (job->LoadFEModel(preader, modelFile.c_str()) == false)
-	{
-		QMessageBox::critical(wnd, "PostView2", "Failed to load model file");
-		return;
-	}
+//	if (wnd->LoadFEModel(preader, modelFile.c_str()) == false)
+//	{
+		//QMessageBox::critical(wnd, "PostView2", "Failed to load model file");
+		//return;
+	//}
 
-	CPostDoc* postDoc = job->GetPostDoc();
-	if (kine.Apply(postDoc->GetGLModel(), kineFile.c_str()) == false)
+	if (kine.Apply(doc->GetGLModel(), kineFile.c_str()) == false)
 	{
 		QMessageBox::critical(0, "Kinemat", "Failed applying Kinemat tool");
 	}
 
+	// create new post document
+	CPostDocument* postDocument = new CPostDocument(wnd);
+
 	wnd->UpdateModel();
 	wnd->Update();
-	wnd->SetActivePostDoc(postDoc);
+	wnd->SetActiveDocument(postDocument);
 
 	accept();
 }

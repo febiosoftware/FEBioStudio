@@ -13,10 +13,10 @@ struct VTKEXPORT
 class FEVTKExport : public FEFileExport
 {
 public:
-	FEVTKExport(void);
+	FEVTKExport(FEProject& prj);
 	~FEVTKExport(void);
 
-	bool Export(FEProject& prj, const char* szfile);
+	bool Write(const char* szfile) override;
 	void SetOptions(VTKEXPORT o) { m_ops = o; }
 protected:
 	VTKEXPORT m_ops;

@@ -30,10 +30,10 @@ protected:
 	};
 
 public:
-	FEHMASCIIimport();
+	FEHMASCIIimport(FEProject& prj);
 	~FEHMASCIIimport(void);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 	void Clear();
 

@@ -1,8 +1,9 @@
 #include "FEVTKExport.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 
-FEVTKExport::FEVTKExport(void)
+FEVTKExport::FEVTKExport(FEProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -10,7 +11,7 @@ FEVTKExport::~FEVTKExport(void)
 {
 }
 
-bool FEVTKExport::Export(FEProject& prj, const char* szfile)
+bool FEVTKExport::Write(const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -23,7 +24,7 @@ bool FEVTKExport::Export(FEProject& prj, const char* szfile)
 	bool isTet4 = false;
 	bool isTet10 = false;
 
-	FEModel* ps = &prj.GetFEModel();
+	FEModel* ps = &m_prj.GetFEModel();
 	GModel& model = ps->GetModel();
 
 	int totElems = 0;

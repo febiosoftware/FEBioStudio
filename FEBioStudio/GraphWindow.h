@@ -14,7 +14,7 @@ class QComboBox;
 class QStackedWidget;
 class QLabel;
 class CDataSelector;
-class CPostDoc;
+class CPostDocument;
 class CColorButton;
 
 namespace Ui {
@@ -196,7 +196,7 @@ public:
 	};
 
 public:
-	CGraphWindow(CMainWindow* wnd, CPostDoc* postDoc, int flags = SHOW_ALL_OPTIONS);
+	CGraphWindow(CMainWindow* wnd, CPostDocument* postDoc, int flags = SHOW_ALL_OPTIONS);
 
 	virtual void Update(bool breset = true, bool bfit = false) = 0;
 
@@ -209,7 +209,7 @@ public:
 	CPlotWidget* GetPlotWidget();
 
 	// get the post doc
-	CPostDoc* GetPostDoc();
+	CPostDocument* GetPostDoc();
 
 public:
 	int GetTimeTrackOption();
@@ -303,7 +303,7 @@ private:
 class CDataGraphWindow : public CGraphWindow
 {
 public:
-	CDataGraphWindow(CMainWindow* wnd, CPostDoc* postDoc);
+	CDataGraphWindow(CMainWindow* wnd, CPostDocument* postDoc);
 
 	void SetData(const std::vector<double>& data, QString title);
 
@@ -319,7 +319,7 @@ private:
 class CModelGraphWindow : public CGraphWindow
 {
 public:
-	CModelGraphWindow(CMainWindow* wnd, CPostDoc* postDoc);
+	CModelGraphWindow(CMainWindow* wnd, CPostDocument* postDoc);
 
 	void Update(bool breset = true, bool bfit = false);
 

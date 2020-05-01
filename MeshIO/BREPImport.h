@@ -6,18 +6,18 @@
 class BREPImport : public FEFileImport
 {
 public:
-	BREPImport();
+	BREPImport(FEProject& prj);
 	~BREPImport();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 };
 
 // NOTE: There is already an IGES file reader in FEIGESFileImport.h
 class IGESImport : public FEFileImport
 {
 public:
-	IGESImport();
+	IGESImport(FEProject& prj);
 	~IGESImport();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 };

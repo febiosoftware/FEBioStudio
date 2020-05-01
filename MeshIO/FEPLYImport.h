@@ -5,8 +5,8 @@
 class FEPLYImport : public FEFileImport
 {
 public:
-	FEPLYImport();
+	FEPLYImport(FEProject& prj);
 	~FEPLYImport();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 };

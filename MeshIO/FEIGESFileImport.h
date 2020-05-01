@@ -41,10 +41,10 @@ protected:
 	};
 
 public:
-	FEIGESFileImport();
+	FEIGESFileImport(FEProject& prj);
 	~FEIGESFileImport(void);
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 
 protected:
 	bool read_record(RECORD& rec);

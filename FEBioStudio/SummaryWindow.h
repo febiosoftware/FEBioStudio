@@ -4,7 +4,7 @@
 #include "Document.h"
 
 class CMainWindow;
-class CPostDoc;
+class CPostDocument;
 
 namespace Post {
 	class FEPostModel;
@@ -21,7 +21,7 @@ public:
 	};
 
 public:
-	CSummaryWindow(CMainWindow* wnd, CPostDoc* postDoc);
+	CSummaryWindow(CMainWindow* wnd, CPostDocument* postDoc);
 
 	void Update(bool breset, bool bfit = false) override;
 

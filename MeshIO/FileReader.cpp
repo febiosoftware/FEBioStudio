@@ -21,6 +21,7 @@ FileReader::FileReader()
 {
 	m_fp = 0;
 	m_nfilesize = 0;
+	m_cancelled = false;
 }
 
 FileReader::~FileReader()
@@ -28,8 +29,20 @@ FileReader::~FileReader()
 	Close();
 }
 
+void FileReader::Cancel()
+{
+	m_cancelled = true;
+}
+
+bool FileReader::IsCancelled() const
+{
+	return m_cancelled;
+}
+
 bool FileReader::Open(const char* szfile, const char* szmode)
 {
+	m_cancelled = false;
+
 	m_err.clear();
 	if (m_fp) Close();
 
@@ -58,6 +71,11 @@ void FileReader::Close()
 		fclose(fp);
 	}
 	m_nfilesize = 0;
+}
+
+FILE* FileReader::FilePtr()
+{
+	return m_fp;
 }
 
 const std::string& FileReader::GetErrorMessage()
@@ -143,3 +161,10 @@ void FileReader::SetFileName(const std::string& fileName)
 {
 	m_fileName = fileName;
 }
+
+// get the file name
+std::string FileReader::GetFileName() const
+{
+	return m_fileName;
+}
+

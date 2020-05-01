@@ -13,7 +13,7 @@
 #include <QTreeWidget>
 #include <QMessageBox>
 #include <FEMLib/FEMaterial.h>
-#include "Document.h"
+#include "ModelDocument.h"
 #include "DlgFormula.h"
 #include <QClipboard>
 #include <QApplication>
@@ -415,9 +415,11 @@ public:
 
 CDlgFEBioOptimize::CDlgFEBioOptimize(CMainWindow* parent) : QWizard(parent), ui(new Ui::CDlgFEBioOptimize)
 {
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(parent->GetDocument());
+
 	setWindowTitle("Generate FEBio optimization");
 	ui->m_theme = parent->currentTheme();
-	ui->m_fem = parent->GetDocument()->GetFEModel();
+	ui->m_fem = doc->GetFEModel();
 	ui->setup(this);
 
 	QMetaObject::connectSlotsByName(this);

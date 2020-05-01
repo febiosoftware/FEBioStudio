@@ -6,16 +6,16 @@ using namespace std;
 
 //! \todo PreView has trouble with reading surface elements and volume elements since
 //! the surface elements are not shell elements.
-FEGMshImport::FEGMshImport()
+FEGMshImport::FEGMshImport(FEProject& prj) : FEFileImport(prj)
 {
 	m_szline[0] = 0;
 	m_pm = 0;
 	m_pfem = 0;
 }
 
-bool FEGMshImport::Load(FEProject& prj, const char* szfile)
+bool FEGMshImport::Load(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
 
 	// open the file

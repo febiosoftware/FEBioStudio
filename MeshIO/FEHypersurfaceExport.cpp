@@ -1,8 +1,9 @@
 #include "FEHypersurfaceExport.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 
-FEHypersurfaceExport::FEHypersurfaceExport(void)
+FEHypersurfaceExport::FEHypersurfaceExport(FEProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -10,7 +11,7 @@ FEHypersurfaceExport::~FEHypersurfaceExport(void)
 {
 }
 
-bool FEHypersurfaceExport::Export(FEProject& prj, const char* szfile)
+bool FEHypersurfaceExport::Write(const char* szfile)
 {
 	int i, j, k;
 
@@ -28,7 +29,7 @@ bool FEHypersurfaceExport::Export(FEProject& prj, const char* szfile)
 	fprintf(fp, "\t}\n");
 	fprintf(fp, "}\n\n");
 
-	FEModel* ps = &prj.GetFEModel();
+	FEModel* ps = &m_prj.GetFEModel();
 	GModel& model = ps->GetModel();
 
 	// count total nr of faces

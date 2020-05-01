@@ -52,7 +52,7 @@ void FEASCIIImport::ZONE::operator = (const FEASCIIImport::ZONE& z)
 }
 
 //-----------------------------------------------------------------------------
-FEASCIIImport::FEASCIIImport(void) : FEFileReader("ASCII Data")
+FEASCIIImport::FEASCIIImport(FEPostModel* fem) : FEFileReader(fem)
 {
 	m_sztitle[0] = 0;
 	m_szline[0] = 0;
@@ -62,10 +62,12 @@ FEASCIIImport::~FEASCIIImport(void)
 {
 }
 
-bool FEASCIIImport::Load(FEPostModel &fem, const char *szfile)
+bool FEASCIIImport::Load(const char *szfile)
 {
 	// open the text file
 	if (Open(szfile, "rt") == false) return false;
+
+	FILE* fp = FilePtr();
 
 	// get the first line
 	if (getline(m_szline, 255) == false) return errf("Error reading file.");
@@ -94,7 +96,7 @@ bool FEASCIIImport::Load(FEPostModel &fem, const char *szfile)
 		// get the next line
 		getline(m_szline, 255);
 	}
-	while (!feof(m_fp)&&!ferror(m_fp));
+	while (!feof(fp)&&!ferror(fp));
 
 	// close the file
 	Close();
@@ -113,20 +115,21 @@ bool FEASCIIImport::Load(FEPostModel &fem, const char *szfile)
 		else ch++;
 		sztitle = ch;
 	}
-	fem.SetTitle(m_sztitle);
+	m_fem->SetTitle(m_sztitle);
 
 	// build the mesh
-	return BuildMesh(fem);
+	return BuildMesh(*m_fem);
 }
 
 //-----------------------------------------------------------------------------
 // Reads a line from the file, skipping comment lines
 bool FEASCIIImport::getline(char* szline, int nmax)
 {
+	FILE* fp = FilePtr();
 	do
 	{
-		fgets(szline, nmax, m_fp);
-		if (ferror(m_fp) || feof(m_fp)) return false;
+		fgets(szline, nmax, fp);
+		if (ferror(fp) || feof(fp)) return false;
 	}
 	while (szline[0] == '#');
 

@@ -1,10 +1,11 @@
 #include "FEMeshExport.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FEProject.h>
 #include <memory>
 using namespace std;
 
-FEMeshExport::FEMeshExport(void)
+FEMeshExport::FEMeshExport(FEProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -12,9 +13,9 @@ FEMeshExport::~FEMeshExport(void)
 {
 }
 
-bool FEMeshExport::Export(FEProject& prj, const char* szfile)
+bool FEMeshExport::Write(const char* szfile)
 {
-	FEModel& fem = prj.GetFEModel();
+	FEModel& fem = m_prj.GetFEModel();
 	GModel& model = fem.GetModel();
 
 	FILE* fp = fopen(szfile, "wt");

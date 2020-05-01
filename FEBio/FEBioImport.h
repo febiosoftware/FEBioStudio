@@ -13,9 +13,9 @@
 class FEBioImport : public FEFileImport
 {
 public:
-	FEBioImport();
+	FEBioImport(FEProject& prj);
 	~FEBioImport();
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile) override;
 
 	const char* GetLog() { return m_szlog; }
 	void ClearLog();
@@ -39,7 +39,6 @@ protected:
 	FEBioFormat*	m_fmt;
 	FEBioModel*		m_febio;
 	int				m_nversion;
-	FEProject*		m_pprj;
 	char			m_szpath[1024];
 
 protected:

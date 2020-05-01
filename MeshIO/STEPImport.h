@@ -5,9 +5,9 @@
 class STEPImport : public FEFileImport
 {
 public:
-	STEPImport();
+	STEPImport(FEProject& prj);
 	~STEPImport();
 
-	bool Load(FEProject& prj, const char* szfile);
+	bool Load(const char* szfile);
 };
 

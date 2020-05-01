@@ -2,7 +2,7 @@
 #include "PostToolBar.h"
 #include "MainWindow.h"
 #include "Document.h"
-#include "PostDoc.h"
+#include "PostDocument.h"
 #include "DataFieldSelector.h"
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
@@ -55,6 +55,18 @@ public:
 		m_actionColorMap->setCheckable(true);
 		m_actionColorMap->setWhatsThis("<font color=\"black\">Click this to turn on the color map on the model.");
 
+		QAction* selectRect = addAction("Rectangle", "postSelectRect", "selectRect", true);
+		QAction* selectCircle = addAction("Circle", "postSelectCircle", "selectCircle", true);
+		QAction* selectFree = addAction("Freehand", "postSelectFree", "selectFree", true);
+		QAction* actionMeasureTool = addAction("Measure tool", "postActionMeasureTool", "measure");
+
+		tb->addAction(selectRect);
+		tb->addAction(selectCircle);
+		tb->addAction(selectFree);
+		tb->addSeparator();
+		tb->addAction(actionMeasureTool);
+		tb->addSeparator();
+
 		tb->addAction(actionRefresh);
 		tb->addSeparator();
 		tb->addAction(actionFirst);
@@ -91,7 +103,7 @@ CPostToolBar::CPostToolBar(CMainWindow* wnd) : QToolBar(wnd), ui(new UIPostToolB
 
 void CPostToolBar::Update()
 {
-	CPostDoc* doc = ui->m_wnd->GetActiveDocument();
+	CPostDocument* doc = ui->m_wnd->GetPostDocument();
 	if ((doc == nullptr) || (doc->IsValid() == false))
 	{
 		setDisabled(true);

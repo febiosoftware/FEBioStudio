@@ -3,8 +3,8 @@
 #include <PostLib/FEFileReader.h>
 #include "LaunchConfig.h"
 
-class CPostDoc;
-class CDocument;
+class CPostDocument;
+class CModelDocument;
 #ifdef HAS_SSH
 class CSSHHandler;
 #endif
@@ -23,15 +23,15 @@ public:
 	};
 
 public:
-	CFEBioJob(CDocument* doc);
+	CFEBioJob(CModelDocument* doc);
 	~CFEBioJob();
-	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig);
+	CFEBioJob(CModelDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig);
 
 	void SetStatus(JOB_STATUS status);
 	int GetStatus();
 
-	void SetFileName(const std::string& fileName);
-	std::string GetFileName() const;
+	void SetFEBFileName(const std::string& fileName);
+	std::string GetFEBFileName() const;
 
 	void SetPlotFileName(const std::string& plotFile);
 	std::string GetPlotFileName() const;
@@ -48,23 +48,13 @@ public:
 	CSSHHandler* GetSSHHandler();
 #endif
 
-	bool OpenPlotFile(xpltFileReader* xplt);
-
-	// load a project from file
-	bool LoadFEModel(Post::FEFileReader* preader, const char* szfile);
-
-	bool HasPostDoc();
-
-	CPostDoc* GetPostDoc();
-
 	void Load(IArchive& ar) override;
 	void Save(OArchive& ar) override;
 
-protected:
-	size_t RemoveChild(FSObject* po) override;
+	CModelDocument* GetDocument();
 
 private:
-	std::string		m_fileName;	// the .feb file name
+	std::string		m_febFile;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name
 	std::string		m_logFile;	// the .log file name
 	std::string		m_cnfFile;	// the config file
@@ -83,8 +73,11 @@ public:
 	std::string	m_cmd;			// command line options
 
 public:
-	CDocument*	m_doc;
-	CPostDoc*	m_postDoc;
+	CModelDocument*	m_doc;
+
+	static CFEBioJob*	m_activeJob;
+	static void SetActiveJob(CFEBioJob* activeJob);
+	static CFEBioJob* GetActiveJob();
 
 	static int	m_count;
 };

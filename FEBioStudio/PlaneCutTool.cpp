@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "PlaneCutTool.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/FEModifier.h>
 
@@ -21,7 +21,7 @@ CPlaneCutTool::CPlaneCutTool(CMainWindow* wnd) : CBasicTool(wnd, "Plane cut", HA
 
 bool CPlaneCutTool::OnApply()
 {
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 
 	// get the currently selected object
 	GObject* po = pdoc->GetActiveObject();

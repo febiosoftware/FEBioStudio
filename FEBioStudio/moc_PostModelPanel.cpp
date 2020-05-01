@@ -23,7 +23,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CPostModelPanel_t {
     QByteArrayData data[18];
-    char stringdata0[292];
+    char stringdata0[285];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -36,25 +36,25 @@ QT_MOC_LITERAL(0, 0, 15), // "CPostModelPanel"
 QT_MOC_LITERAL(1, 16, 22), // "postObjectStateChanged"
 QT_MOC_LITERAL(2, 39, 0), // ""
 QT_MOC_LITERAL(3, 40, 22), // "postObjectPropsChanged"
-QT_MOC_LITERAL(4, 63, 16), // "Post::CGLObject*"
-QT_MOC_LITERAL(5, 80, 2), // "po"
-QT_MOC_LITERAL(6, 83, 31), // "on_postModel_currentItemChanged"
-QT_MOC_LITERAL(7, 115, 16), // "QTreeWidgetItem*"
-QT_MOC_LITERAL(8, 132, 7), // "current"
-QT_MOC_LITERAL(9, 140, 4), // "prev"
-QT_MOC_LITERAL(10, 145, 30), // "on_postModel_itemDoubleClicked"
-QT_MOC_LITERAL(11, 176, 4), // "item"
-QT_MOC_LITERAL(12, 181, 6), // "column"
-QT_MOC_LITERAL(13, 188, 27), // "on_nameEdit_editingFinished"
-QT_MOC_LITERAL(14, 216, 23), // "on_deleteButton_clicked"
-QT_MOC_LITERAL(15, 240, 20), // "on_props_dataChanged"
-QT_MOC_LITERAL(16, 261, 23), // "on_enabled_stateChanged"
-QT_MOC_LITERAL(17, 285, 6) // "nstate"
+QT_MOC_LITERAL(4, 63, 9), // "FSObject*"
+QT_MOC_LITERAL(5, 73, 2), // "po"
+QT_MOC_LITERAL(6, 76, 31), // "on_postModel_currentItemChanged"
+QT_MOC_LITERAL(7, 108, 16), // "QTreeWidgetItem*"
+QT_MOC_LITERAL(8, 125, 7), // "current"
+QT_MOC_LITERAL(9, 133, 4), // "prev"
+QT_MOC_LITERAL(10, 138, 30), // "on_postModel_itemDoubleClicked"
+QT_MOC_LITERAL(11, 169, 4), // "item"
+QT_MOC_LITERAL(12, 174, 6), // "column"
+QT_MOC_LITERAL(13, 181, 27), // "on_nameEdit_editingFinished"
+QT_MOC_LITERAL(14, 209, 23), // "on_deleteButton_clicked"
+QT_MOC_LITERAL(15, 233, 20), // "on_props_dataChanged"
+QT_MOC_LITERAL(16, 254, 23), // "on_enabled_stateChanged"
+QT_MOC_LITERAL(17, 278, 6) // "nstate"
 
     },
     "CPostModelPanel\0postObjectStateChanged\0"
-    "\0postObjectPropsChanged\0Post::CGLObject*\0"
-    "po\0on_postModel_currentItemChanged\0"
+    "\0postObjectPropsChanged\0FSObject*\0po\0"
+    "on_postModel_currentItemChanged\0"
     "QTreeWidgetItem*\0current\0prev\0"
     "on_postModel_itemDoubleClicked\0item\0"
     "column\0on_nameEdit_editingFinished\0"
@@ -110,7 +110,7 @@ void CPostModelPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->postObjectStateChanged(); break;
-        case 1: _t->postObjectPropsChanged((*reinterpret_cast< Post::CGLObject*(*)>(_a[1]))); break;
+        case 1: _t->postObjectPropsChanged((*reinterpret_cast< FSObject*(*)>(_a[1]))); break;
         case 2: _t->on_postModel_currentItemChanged((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< QTreeWidgetItem*(*)>(_a[2]))); break;
         case 3: _t->on_postModel_itemDoubleClicked((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
         case 4: _t->on_nameEdit_editingFinished(); break;
@@ -129,7 +129,7 @@ void CPostModelPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
             }
         }
         {
-            using _t = void (CPostModelPanel::*)(Post::CGLObject * );
+            using _t = void (CPostModelPanel::*)(FSObject * );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CPostModelPanel::postObjectPropsChanged)) {
                 *result = 1;
                 return;
@@ -185,7 +185,7 @@ void CPostModelPanel::postObjectStateChanged()
 }
 
 // SIGNAL 1
-void CPostModelPanel::postObjectPropsChanged(Post::CGLObject * _t1)
+void CPostModelPanel::postObjectPropsChanged(FSObject * _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
     QMetaObject::activate(this, &staticMetaObject, 1, _a);

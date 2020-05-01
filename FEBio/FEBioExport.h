@@ -2,6 +2,7 @@
 #include <MeshTools/FEFileExport.h>
 #include <XML/XMLWriter.h>
 #include "FEBioException.h"
+#include <MeshTools/FEProject.h>
 
 // export sections
 enum FEBioExportSections
@@ -27,7 +28,7 @@ enum FEBioExportSections
 class FEBioExport : public FEFileExport
 {
 public:
-	FEBioExport();
+	FEBioExport(FEProject& prj);
 
 	void SetPlotfileCompressionFlag(bool b);
 	void SetExportSelectionsFlag(bool b);

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <MeshTools/FEProject.h>
 #include <MeshTools/FESelection.h>
 #include <FSCore/LoadCurve.h>
@@ -8,11 +7,11 @@
 #include <FEMLib/FEDataMap.h>
 #include "CommandManager.h"
 #include "FEBioOpt.h"
-#include "FEBioJob.h"
 #include <PostLib/ImageModel.h>
 #include <FSCore/FSObjectList.h>
 #include "ViewSettings.h"
 #include "modelcheck.h"
+#include <QtCore/QString>
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -58,8 +57,8 @@
 
 //-----------------------------------------------------------------------------
 // render mode
-#define RENDER_SOLID		0
 #define RENDER_WIREFRAME	1
+#define RENDER_SOLID		0
 
 //-----------------------------------------------------------------------------
 class CMainWindow;
@@ -68,6 +67,8 @@ class CDocument;
 class FEModifier;
 class FESurfaceModifier;
 class GSurfaceMeshObject;
+class FileReader;
+class FileWriter;
 
 namespace Post {
 	class CImageModel;
@@ -95,9 +96,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-typedef FSObjectList<CFEBioJob> CFEBioJobList;
-
-//-----------------------------------------------------------------------------
 // Document class which stores all the data
 //
 class CDocument : public CSerializable
@@ -107,27 +105,25 @@ public:
 	CDocument(CMainWindow* wnd);
 	virtual ~CDocument();
 
-	void NewDocument();
-	bool LoadTemplate(int n);
+	virtual void Clear();
 
-	void Clear();
+	// initialize the model
+	// this is called after a document was loaded
+	virtual bool Initialize();
 
 	// --- I/O-routines ---
-	// Save the document to PRV file
+	// Save the document
 	bool SaveDocument(const std::string& fileName);
-
-	// import model (will clear current project)
-	bool ImportModel(FEFileImport* preader, const char* szfile);
-
-	// import geometry (geometry is added to current project)
-	bool ImportGeometry(FEFileImport* preader, const char* szfile);
+	bool SaveDocument();
 
 	// import image data
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
-	// save/load project
-	void Load(IArchive& ar);
-	void Save(OArchive& ar);
+	// set the document's title
+	void SetDocTitle(const std::string& t);
+
+	// get the document's title
+	std::string GetDocTitle();
 
 	// get the complete file path
 	std::string GetDocFilePath();
@@ -144,8 +140,13 @@ public:
 	// get the base of the file name
 	std::string GetDocFileBase();
 
-	// convert a file between formats
-	bool Convert(const std::string& inFileName, const std::string& outFileName, FEFileImport* reader, FEFileExport* writer);
+	// set/get the file reader
+	void SetFileReader(FileReader* fileReader);
+	FileReader* GetFileReader();
+
+	// set/get the file writer
+	void SetFileWriter(FileWriter* fileWriter);
+	FileWriter* GetFileWriter();
 
 	// --- Document validation ---
 	bool IsModified();
@@ -165,22 +166,6 @@ public:
 	const char* GetRedoCmdName();
 	void ClearCommandStack();
 	const std::string& GetCommandErrorString() const;
-
-	// --- Data ---
-	FESelection* GetCurrentSelection();
-	void UpdateSelection(bool report = true);
-
-	FEModel* GetFEModel();
-
-	GModel* GetGModel();
-
-	BOX GetModelBox();
-
-	// return the active object
-	GObject* GetActiveObject();
-
-	//! Get the project
-	FEProject& GetProject() { return m_Project; }
 
 	// --- view settings ---
 	VIEW_SETTINGS& GetViewSettings() { return m_view; }
@@ -208,55 +193,17 @@ public:
 
 	CMainWindow* GetMainWindow() { return m_wnd; }
 
-	void DeleteObject(FSObject* po);
+	virtual void UpdateSelection(bool breport = true);
 
-	bool ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList);
-	bool ImportMaterials(const std::string& fileName);
+	virtual GObject* GetActiveObject();
 
-public:
-	// helper function for applying a modifier
-	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup* sel = 0, bool clearSel = true);
-	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FEGroup* sel = 0);
-
-public:
-	void GrowNodeSelection(FEMeshBase* pm);
-	void GrowFaceSelection(FEMeshBase* pm);
-	void GrowEdgeSelection(FEMeshBase* pm);
-	void GrowElementSelection(FEMesh* pm);
-	void ShrinkNodeSelection(FEMeshBase* pm);
-	void ShrinkFaceSelection(FEMeshBase* pm);
-	void ShrinkEdgeSelection(FEMeshBase* pm);
-	void ShrinkElementSelection(FEMesh* pm);
-
-	void HideCurrentSelection();
-	void HideUnselected();
-
-public:
-	void AddObject(GObject* po);
-
-public:
-	FEDataMap* CreateDataMap(FSObject* po, std::string& mapName, std::string& paramName, Param_Type type);
+	// return the absolute path from the relative path w.r.t. to the model's folder
+	QString ToAbsolutePath(const QString& relativePath);
+	QString ToAbsolutePath(const std::string& relativePath);
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }
-
-public:
-	bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt);
-
-public:
-	int FEBioJobs() const;
-	void AddFEbioJob(CFEBioJob* job);
-	CFEBioJob* GetFEBioJob(int i);
-
-	void SetActiveJob(CFEBioJob* job);
-	CFEBioJob* GetActiveJob();
-	
-	CFEBioJob* FindFEBioJob(const std::string& s);
-	CFEBioJob* FindFEBioJob(CPostDoc* postDoc);
-
-	// checks the model for issues and returns the warnings as a string array
-	std::vector<MODEL_ERROR>	CheckModel();
 
 public:
 	int ImageModels() const;
@@ -274,18 +221,16 @@ protected:
 	void LoadResources(IArchive& ar);
 
 protected:
+	std::string		m_title;
+
 	// Modified flag
 	bool	m_bModified;	// is document modified since last saved ?
 	bool	m_bValid;		// is the current document in a valid state for rendering
 
-	// the FE Project
-	FEProject	m_Project;
-
-	// Binary file path
+	// file path
 	std::string		m_filePath;
-
-	// current selection
-	FESelection*	m_psel;
+	FileReader*		m_fileReader;
+	FileWriter*		m_fileWriter;
 
 	// The command manager
 	CCommandManager*	m_pCmd;		// the command manager
@@ -298,9 +243,6 @@ protected:
 	CMainWindow*	m_wnd;
 
 	std::string		m_info;
-
-	CFEBioJobList		m_JobList;
-	CFEBioJob*			m_activeJob;
 
 	FSObjectList<Post::CImageModel>	m_img;
 

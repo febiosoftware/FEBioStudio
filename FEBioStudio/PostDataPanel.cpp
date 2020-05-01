@@ -27,7 +27,7 @@
 #include "PropertyListForm.h"
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEMathData.h>
-#include "PostDoc.h"
+#include "PostDocument.h"
 #include <PostLib/FEDataField.h>
 #include <PostLib/FEDistanceMap.h>
 #include <PostLib/FEAreaCoverage.h>
@@ -672,16 +672,14 @@ CPostDataPanel::CPostDataPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPan
 	ui->setupUi(this);
 }
 
-CPostDoc* CPostDataPanel::GetActiveDocument()
+CPostDocument* CPostDataPanel::GetActiveDocument()
 {
-	CDocument* doc = GetMainWindow()->GetDocument();
-	if (doc->FEBioJobs() == 0) return nullptr;
-	return GetMainWindow()->GetActiveDocument();
+	return GetMainWindow()->GetPostDocument();
 }
 
 void CPostDataPanel::Update(bool breset)
 {
-	CPostDoc* pdoc = GetActiveDocument();
+	CPostDocument* pdoc = GetActiveDocument();
 	if (pdoc)
 	{
 		Post::FEPostModel* oldFem = ui->data->GetFEModel();
@@ -750,7 +748,7 @@ void CPostDataPanel::on_AddStandard_triggered()
 
 void CPostDataPanel::on_AddFromFile_triggered()
 {
-	CPostDoc* doc = GetActiveDocument();
+	CPostDocument* doc = GetActiveDocument();
 	if (doc->IsValid() == false)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "No model data loaded");
@@ -783,7 +781,7 @@ void CPostDataPanel::on_AddFromFile_triggered()
 
 void CPostDataPanel::on_AddEquation_triggered()
 {
-	CPostDoc& doc = *GetActiveDocument();
+	CPostDocument& doc = *GetActiveDocument();
 	if (doc.IsValid() == false) return;
 
 	CDlgAddEquation dlg(this);
@@ -858,7 +856,7 @@ void CPostDataPanel::on_CopyButton_clicked()
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDoc& doc = *GetMainWindow()->GetActiveDocument();
+		CPostDocument& doc = *GetActiveDocument();
 		Post::FEPostModel& fem = *doc.GetFEModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::FEDataField* pdf = *dm.DataField(nsel);
@@ -884,7 +882,7 @@ void CPostDataPanel::on_DeleteButton_clicked()
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDoc& doc = *GetActiveDocument();
+		CPostDocument& doc = *GetActiveDocument();
 		Post::FEPostModel& fem = *doc.GetFEModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::FEDataField* pdf = *dm.DataField(nsel);
@@ -909,7 +907,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDoc& doc = *GetActiveDocument();
+		CPostDocument& doc = *GetActiveDocument();
 		Post::FEPostModel& fem = *doc.GetFEModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::FEDataField* pdf = *dm.DataField(nsel);
@@ -1024,7 +1022,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDoc& doc = *GetActiveDocument();
+		CPostDocument& doc = *GetActiveDocument();
 		Post::FEPostModel& fem = *doc.GetFEModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::FEDataField* pdf = *dm.DataField(nsel);
@@ -1098,14 +1096,14 @@ void CPostDataPanel::on_fieldName_editingFinished()
 	{
 		ui->m_activeField->SetName(t.toStdString());
 		Update(true);
-		CPostDoc& doc = *GetActiveDocument();
+		CPostDocument& doc = *GetActiveDocument();
 //		doc.GetFEModel()->UpdateDependants();
 	}
 }
 
 void CPostDataPanel::on_props_dataChanged(bool b)
 {
-	CPostDoc* doc = GetActiveDocument();
+	CPostDocument* doc = GetActiveDocument();
 	doc->GetGLModel()->ResetAllStates();
 	doc->UpdateFEModel(true);
 	GetMainWindow()->RedrawGL();

@@ -16,7 +16,7 @@
 #include "ui_meshpanel.h"
 #include "ObjectProps.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include "CurveIntersectProps.h"
 #include "GLHighlighter.h"
 #include <GeomLib/GPrimitive.h>
@@ -218,7 +218,7 @@ CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, p
 
 void CMeshPanel::Update(bool breset)
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* gm = doc->GetGModel();
 	GObject* activeObject = doc->GetActiveObject();
 
@@ -285,7 +285,9 @@ void CMeshPanel::on_buttons_buttonSelected(int id)
 		{
 			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
 
-			GModel* geo = &GetDocument()->GetFEModel()->GetModel();
+			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+
+			GModel* geo = &doc->GetFEModel()->GetModel();
 
 			CPropertyList* pl = new CObjectProps(m_mod);
 
@@ -312,7 +314,9 @@ void CMeshPanel::on_buttons2_buttonSelected(int id)
 		{
 			m_mod = static_cast<FEModifier*>(pcd->Create()); assert(m_mod);
 
-			GModel* geo = &GetDocument()->GetFEModel()->GetModel();
+			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+
+			GModel* geo = &doc->GetFEModel()->GetModel();
 
 			CPropertyList* pl = new CObjectProps(m_mod);
 
@@ -331,7 +335,7 @@ void CMeshPanel::Apply()
 
 void CMeshPanel::on_apply_clicked(bool b)
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* activeObject = doc->GetActiveObject();
 	if (activeObject == 0) return;
 
@@ -355,7 +359,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 void CMeshPanel::on_apply2_clicked(bool b)
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* activeObject = doc->GetActiveObject();
 	if (activeObject == 0) return;
 
@@ -388,8 +392,9 @@ void CMeshPanel::on_apply2_clicked(bool b)
 
 void CMeshPanel::on_menu_triggered(QAction* pa)
 {
-	CDocument* pdoc = GetDocument();
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* po = pdoc->GetActiveObject();
+	GModel* mdl = pdoc->GetGModel();
 
 	if (pa->objectName() == "convert1")
 	{
@@ -403,7 +408,7 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 		// convert to editable surface
 		if (dynamic_cast<GSurfaceMeshObject*>(po) == 0)
 		{
-			CCmdConvertToEditableSurface* pcmd = new CCmdConvertToEditableSurface(po);
+			CCmdConvertToEditableSurface* pcmd = new CCmdConvertToEditableSurface(mdl, po);
 			pdoc->DoCommand(pcmd);
 
 			// update the modify panel
@@ -423,7 +428,7 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 				// for editable surfaces, we'll use the surface mesh for converting
 				if (dynamic_cast<GSurfaceMeshObject*>(po))
 				{
-					CCmdConvertSurfaceToEditableMesh* pcmd = new CCmdConvertSurfaceToEditableMesh(po);
+					CCmdConvertSurfaceToEditableMesh* pcmd = new CCmdConvertSurfaceToEditableMesh(mdl, po);
 					pdoc->DoCommand(pcmd);
 
 					// update the modify panel
@@ -435,7 +440,7 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 			}
 			else
 			{
-				CCmdConvertToEditableMesh* pcmd = new CCmdConvertToEditableMesh(po);
+				CCmdConvertToEditableMesh* pcmd = new CCmdConvertToEditableMesh(mdl, po);
 				pdoc->DoCommand(pcmd);
 
 				// update the modify panel

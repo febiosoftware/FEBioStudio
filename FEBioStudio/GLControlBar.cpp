@@ -217,6 +217,7 @@ void CGLControlBar::Update()
 	ui->z->setReadOnly(!pivotMode);
 
 	CDocument* pdoc = ui->m_wnd->GetDocument();
+	if (pdoc == nullptr) return;
 
 	VIEW_SETTINGS& vs = pdoc->GetViewSettings();
 

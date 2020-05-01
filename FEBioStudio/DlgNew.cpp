@@ -35,7 +35,6 @@ public:
 	QListWidget*	recentFilesList;
 	QLineEdit*		projectFolder;
 	QLineEdit*		projectName;
-	QCheckBox*		createFolder;
 	QCheckBox*		showOnStart;
 
 public:
@@ -92,10 +91,6 @@ public:
 		QVBoxLayout* v = new QVBoxLayout;
 		v->addLayout(h);
 		v->addLayout(f);
-
-		createFolder = new QCheckBox("Create project folder");
-		v->addWidget(createFolder);
-		createFolder->setChecked(true);
 
 		newProject->setLayout(v);
 
@@ -263,9 +258,4 @@ void CDlgNew::onProjectFolder()
 
 		setProjectFolder(path);
 	}
-}
-
-bool CDlgNew::createProjectFolder()
-{
-	return ui->createFolder->isChecked();
 }

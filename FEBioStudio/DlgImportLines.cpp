@@ -17,7 +17,7 @@
 #include <QDialogButtonBox>
 #include <PostGL/GLLinePlot.h>
 #include "MainWindow.h"
-#include "PostDoc.h"
+#include "PostDocument.h"
 #include <PostGL/GLModel.h>
 
 class CDlgImportLinesUI
@@ -70,7 +70,7 @@ CDlgImportLines::CDlgImportLines(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgIm
 
 void CDlgImportLines::OnApply()
 {
-	CPostDoc* doc = ui->m_wnd->GetActiveDocument();
+	CPostDocument* doc = ui->m_wnd->GetPostDocument();
 	if (doc && doc->IsValid())
 	{
 		string fileName = ui->fileName->text().toStdString();
@@ -127,7 +127,7 @@ void CDlgImportLines::OnBrowse()
 
 bool CDlgImportLines::ReadOldFormat(const char* szfile)
 {
-	CPostDoc* doc = ui->m_wnd->GetActiveDocument();
+	CPostDocument* doc = ui->m_wnd->GetPostDocument();
 	if (doc == nullptr) return false;
 
 	FILE* fp = fopen(szfile, "rt");
@@ -190,7 +190,7 @@ vec3f GetCoordinatesFromFrag(Post::FEPostModel& fem, int nstate, FRAG& a)
 // 2 = EOF reached before all states were read in
 int CDlgImportLines::ReadAng2Format(const char* szfile)
 {
-	CPostDoc* doc = ui->m_wnd->GetActiveDocument();
+	CPostDocument* doc = ui->m_wnd->GetPostDocument();
 	if (doc == nullptr) return false;
 
 	FILE* fp = fopen(szfile, "rb");
@@ -402,7 +402,7 @@ void CDlgImportPoints::OnBrowse()
 
 void CDlgImportPoints::OnApply()
 {
-	CPostDoc* doc = ui->m_wnd->GetActiveDocument();
+	CPostDocument* doc = ui->m_wnd->GetPostDocument();
 	if (doc && doc->IsValid())
 	{
 		string fileName = ui->fileName->text().toStdString();

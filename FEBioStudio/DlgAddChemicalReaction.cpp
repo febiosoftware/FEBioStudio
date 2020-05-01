@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "DlgAddChemicalReaction.h"
 #include "MainWindow.h"
-#include "Document.h"
+#include "ModelDocument.h"
 #include <QBoxLayout>
 #include <QLineEdit>
 #include <QComboBox>
@@ -337,7 +337,7 @@ CDlgAddChemicalReaction::CDlgAddChemicalReaction(CMainWindow* wnd) : m_wnd(wnd),
 
 void CDlgAddChemicalReaction::InitDialog()
 {
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FEModel& fem = *doc->GetFEModel();
 
 	// fill in the reactions
@@ -397,7 +397,7 @@ void CDlgAddChemicalReaction::onClicked(QAbstractButton* button)
 
 void CDlgAddChemicalReaction::onMaterialChanged(int n)
 {
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FEModel& fem = *doc->GetFEModel();
 
 	int nmat = ui->mat->currentData().toInt();
@@ -504,7 +504,7 @@ void CDlgAddChemicalReaction::onRemoveReaction()
 	// remove the reaction
 	react->RemoveMaterial(m_reaction);
 
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FEModel& fem = *doc->GetFEModel();
 
 	// update the list
@@ -694,7 +694,7 @@ bool CDlgAddChemicalReaction::hasChanged()
 
 void CDlgAddChemicalReaction::apply()
 {
-	CDocument* doc = m_wnd->GetDocument();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	FEModel& fem = *doc->GetFEModel();
 
 	// make sure we have something to do

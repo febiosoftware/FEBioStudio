@@ -33,8 +33,8 @@
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
-#include <PostLib/GView.h>
-#include "PostDoc.h"
+#include "GView.h"
+#include "PostDocument.h"
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -327,15 +327,15 @@ private:
 class CModelTreeItem : public QTreeWidgetItem
 {
 public:
-	CModelTreeItem(Post::CGLObject* po, QTreeWidget* tree) : QTreeWidgetItem(tree), m_po(po) {}
-	CModelTreeItem(Post::CGLObject* po, QTreeWidgetItem* item) : QTreeWidgetItem(item), m_po(po) {}
+	CModelTreeItem(FSObject* po, QTreeWidget* tree) : QTreeWidgetItem(tree), m_po(po) {}
+	CModelTreeItem(FSObject* po, QTreeWidgetItem* item) : QTreeWidgetItem(item), m_po(po) {}
 
-	Post::CGLObject* Object() { return m_po; }
+	FSObject* Object() { return m_po; }
 
-	void SetObject(Post::CGLObject* po) { m_po = po; }
+	void SetObject(FSObject* po) { m_po = po; }
 
 private:
-	Post::CGLObject* m_po;
+	FSObject* m_po;
 };
 
 //-----------------------------------------------------------------------------
@@ -429,13 +429,13 @@ public:
 		QMetaObject::connectSlotsByName(parent);
 	}
 
-	Post::CGLObject* currentObject()
+	FSObject* currentObject()
 	{
 		QTreeWidgetItem* current = m_tree->currentItem();
 		CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(current);
 		if (item == 0) return 0;
 
-		Post::CGLObject* po = item->Object();
+		FSObject* po = item->Object();
 		return po;
 	}
 
@@ -467,17 +467,15 @@ CPostModelPanel::CPostModelPanel(CMainWindow* pwnd, QWidget* parent) : CCommandP
 	ui->setupUi(this);
 
 	QObject::connect(this, SIGNAL(postObjectStateChanged()), pwnd, SLOT(OnPostObjectStateChanged()));
-	QObject::connect(this, SIGNAL(postObjectPropsChanged(Post::CGLObject*)), pwnd, SLOT(OnPostObjectPropsChanged(Post::CGLObject*)));
+	QObject::connect(this, SIGNAL(postObjectPropsChanged(FSObject*)), pwnd, SLOT(OnPostObjectPropsChanged(FSObject*)));
 }
 
-CPostDoc* CPostModelPanel::GetActiveDocument()
+CPostDocument* CPostModelPanel::GetActiveDocument()
 {
-	CDocument* doc = GetMainWindow()->GetDocument();
-	if (doc->FEBioJobs() == 0) return nullptr;
-	return GetMainWindow()->GetActiveDocument();
+	return GetMainWindow()->GetPostDocument();
 }
 
-void CPostModelPanel::selectObject(Post::CGLObject* po)
+void CPostModelPanel::selectObject(FSObject* po)
 {
 	if (po == 0) ui->m_tree->clearSelection();
 	else
@@ -501,7 +499,7 @@ void CPostModelPanel::selectObject(Post::CGLObject* po)
 	}
 }
 
-Post::CGLObject* CPostModelPanel::selectedObject()
+FSObject* CPostModelPanel::selectedObject()
 {
 	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(ui->m_tree->currentItem());
 	if (item == nullptr) return nullptr;
@@ -545,7 +543,7 @@ void CPostModelPanel::Update(bool breset)
 		ui->name->clear();
 
 		// rebuild the tree
-		CPostDoc* pdoc = GetActiveDocument();
+		CPostDocument* pdoc = GetActiveDocument();
 		ui->m_props->Update(0);
 		ui->m_tree->clear();
 		if (pdoc && pdoc->IsValid())
@@ -557,7 +555,7 @@ void CPostModelPanel::Update(bool breset)
 			if (mdl)
 			{
 				pi1 = new CModelTreeItem(0, ui->m_tree);
-				pi1->setText(0, QString::fromStdString(pdoc->GetTitle()));
+				pi1->setText(0, QString::fromStdString(pdoc->GetDocFileName()));
 				pi1->setIcon(0, QIcon(QString(":/icons/postview.png")));
 				ui->m_list.push_back(new CModelProps(mdl));
 				pi1->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
@@ -678,7 +676,7 @@ void CPostModelPanel::Update(bool breset)
 				}
 			}
 */	
-			Post::CGView& view = *pdoc->GetView();
+			CGView& view = *pdoc->GetView();
 			pi1 = new CModelTreeItem(&view, ui->m_tree);
 			pi1->setText(0, "View");
 			pi1->setIcon(0, QIcon(QString(":/icons/view.png")));
@@ -718,11 +716,11 @@ void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, 
 		CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(current);
 		if (item)
 		{
-			Post::CGLObject* po = item->Object();
+			FSObject* po = item->Object();
 			if (po)
 			{
 				ui->enabled->setEnabled(true);
-				ui->enabled->setChecked(po->IsActive());
+//				ui->enabled->setChecked(po->IsActive());
 
 				if (dynamic_cast<Post::CImageModel*>(po))
 				{
@@ -762,7 +760,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int 
 	GLCameraTransform* pkey = dynamic_cast<GLCameraTransform*>(m_obj[n]);
 	if (pkey)
 	{
-		Post::CGView* view = GetActiveDocument()->GetView();
+		CGView* view = GetActiveDocument()->GetView();
 		view->SetCurrentKey(pkey);
 		GetMainWindow()->GetGLView()->GetCamera().SetTransform(*pkey);
 		GetMainWindow()->RedrawGL();
@@ -775,10 +773,10 @@ void CPostModelPanel::on_nameEdit_editingFinished()
 	QTreeWidgetItem* item = ui->m_tree->currentItem();
 	if (item) item->setText(0, name);
 
-	Post::CGLObject* po = selectedObject();
+	FSObject* po = selectedObject();
 	if (po)
 	{
-		po->ChangeName(name.toStdString());
+		po->SetName(name.toStdString());
 		GetMainWindow()->RedrawGL();
 	}
 }
@@ -790,7 +788,7 @@ void CPostModelPanel::on_deleteButton_clicked()
 	{
 		QVariant v = item->data(0, Qt::UserRole);
 		int n = v.toInt();
-		Post::CGLObject* po = m_obj[n];
+		Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(m_obj[n]);
 		if (po)
 		{
 			GetActiveDocument()->DeleteObject(po);
@@ -804,7 +802,7 @@ void CPostModelPanel::on_deleteButton_clicked()
 
 void CPostModelPanel::on_props_dataChanged()
 {
-	Post::CGLObject* po = selectedObject();
+	FSObject* po = selectedObject();
 	if (po) po->Update();
 
 	emit postObjectPropsChanged(po);
@@ -816,7 +814,7 @@ void CPostModelPanel::on_enabled_stateChanged(int nstate)
 	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(current);
 	if (item == 0) return;
 
-	Post::CGLObject* po = item->Object();
+	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(item->Object());
 	if (po == 0) return;
 
 	if (nstate == Qt::Unchecked)

@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "4PointAngleTool.h"
-#include "PostDoc.h"
-#include <PostGL/GLModel.h>
-using namespace Post;
+#include <GLLib/GDecoration.h>
+#include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
 class C4PointAngleDecoration : public GDecoration
