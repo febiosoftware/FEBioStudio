@@ -18,26 +18,7 @@ public:
 
 	int getTemplate();
 
-	bool createNew();
-
-	bool openRecentFile();
-
-	bool showOnStart();
-	void setShowOnStart(bool b);
-
-	QString getRecentFileName();
-
-	QString getProjectName();
-
-	QString getProjectFolder();
-
-	void setProjectFolder(const QString& projectFolder);
-
 	void showEvent(QShowEvent* ev);
-
-public slots:
-	void onProjectFolder();
-	void onOpenClicked();
 
 public:
 	Ui::CDlgNew*	ui;

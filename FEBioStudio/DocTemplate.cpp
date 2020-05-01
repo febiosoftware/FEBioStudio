@@ -72,6 +72,11 @@ void TemplateManager::Init()
 	doc.module = MODULE_REACTIONS | MODULE_SOLUTES | MODULE_REACTION_DIFFUSION;
 	AddTemplate(doc);
 
+	doc.title = "All physics";
+	doc.description = "Enable all physics modules.";
+	doc.module = MODULE_ALL;
+	AddTemplate(doc);
+
 /*	// load all doc templates
 	QStringList filters;
 	filters << "*.prvtmp";

@@ -242,6 +242,7 @@
     <ClCompile Include="..\..\FEBioStudio\Encrypter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioJob.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioStudio.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\FEBioStudioProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEObjectProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FiberGeneratorTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FileThread.cpp" />
@@ -508,6 +509,7 @@
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h" />
     <ClInclude Include="..\..\FEBioStudio\Encrypter.h" />
+    <ClInclude Include="..\..\FEBioStudio\FEBioStudioProject.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />
     <CustomBuild Include="..\..\FEBioStudio\MainTabBar.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

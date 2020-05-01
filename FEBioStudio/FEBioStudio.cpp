@@ -114,10 +114,6 @@ int main(int argc, char* argv[])
 	{
 		wnd.OpenFile(argv[1], false);
 	}
-	else
-	{
-		wnd.NewSession();
-	}
 
 	return app.exec();
 

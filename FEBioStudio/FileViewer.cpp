@@ -4,6 +4,8 @@
 #include "DocManager.h"
 #include "Document.h"
 #include "ModelDocument.h"
+#include "PostDocument.h"
+#include "FEBioStudioProject.h"
 #include <QTreeWidget>
 #include <QFileSystemModel>
 #include <QBoxLayout>
@@ -95,15 +97,29 @@ void CFileViewer::Update()
 	}
 
 	// Project list
-	it = new QTreeWidgetItem(QStringList("PROJECT (unsaved)"));
+	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	QString prjFile = prj->GetProjectFileName();
+
+	QString prjName = "unsaved";
+	if (prjFile.isEmpty() == false)
+	{
+		QFileInfo fi(prjFile);
+		prjName = fi.fileName();
+	}
+
+	it = new QTreeWidgetItem(ui->m_tree);
+	it->setText(0, QString("PROJECT (%1)").arg(prjName));
 	it->setFont(0, f);
 	ui->m_tree->addTopLevelItem(it);
 	it->setExpanded(true);
 	it->setSizeHint(0, QSize(0, px));
+	if (prjFile.isEmpty() == false) it->setToolTip(0, prjFile);
 
-	for (int i = 0; i < dm->Documents(); ++i)
+	for (int i = 0; i < prj->Files(); ++i)
 	{
-		CModelDocument* doc = dynamic_cast<CModelDocument*>(dm->GetDocument(i));
+		QString file_i = prj->GetFileName(i);
+
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(ui->m_wnd->FindDocument(file_i.toStdString()));
 		if (doc && (doc->GetDocFilePath().empty() == false))
 		{
 			QString docFile = QString::fromStdString(doc->GetDocFileName());
@@ -115,6 +131,8 @@ void CFileViewer::Update()
 			t2->setData(0, Qt::UserRole, docPath);
 			t2->setSizeHint(0, QSize(100, px));
 
+			if (doc->FEBioJobs()) t2->setExpanded(true);
+
 			for (int n = 0; n < doc->FEBioJobs(); ++n)
 			{
 				CFEBioJob* job = doc->GetFEBioJob(n);
@@ -124,13 +142,41 @@ void CFileViewer::Update()
 
 				QFileInfo xpltFile(xpltPath);
 
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(ui->m_wnd->FindDocument(xpltPath.toStdString()));
+
 				QTreeWidgetItem* t3 = new QTreeWidgetItem(t2);
 				t3->setText(0, xpltFile.fileName());
 				t3->setToolTip(0, xpltPath);
 				t3->setData(0, Qt::UserRole, xpltPath);
 				t3->setSizeHint(0, QSize(100, px));
+
+				if (postDoc == nullptr)
+				{
+					QFont f = t3->font(0);
+					f.setItalic(true);
+					t3->setFont(0, f);
+					t3->setForeground(0, Qt::gray);
+				}
 			}
 			it->addChild(t2);
+		}
+		else
+		{
+			QFileInfo fi(file_i);
+			QString fileName = fi.fileName();
+
+			QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
+			t2->setText(0, fileName);
+
+			QFont f = t2->font(0);
+			f.setItalic(true);
+			t2->setFont(0, f);
+			t2->setForeground(0, Qt::gray);
+
+			t2->setSizeHint(0, QSize(100, 50));
+			t2->setToolTip(0, file_i);
+			t2->setData(0, Qt::UserRole, file_i);
+			t2->setSizeHint(0, QSize(100, px));
 		}
 	}
 }

@@ -239,12 +239,12 @@ bool FEGMshImport::ReadElements()
 		case 6: // pentahedron
 			if (nread != 3 + ntags + 6) return errf("Invalid number of entries when reading element %d", n[0]);
 			el.ntype = FE_PENTA6;
-			el.node[0] = n[0] - 1;
-			el.node[1] = n[1] - 1;
-			el.node[2] = n[2] - 1;
-			el.node[3] = n[3] - 1;
-			el.node[4] = n[4] - 1;
-			el.node[5] = n[5] - 1;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
 			Elem.push_back(el);
 			break;
         case 11: // 10-node tetrahedron
@@ -266,8 +266,6 @@ bool FEGMshImport::ReadElements()
 			{
 				if (nread != 3 + ntags + 20) return errf("Invalid number of entries when reading element %d", n[0]);
 				el.ntype = FE_TET20;
-
-// 1 2 3 4 5 6 7 8 10 9 12 11 16 15 14 13 18 20 19 17
 				el.node[ 0] = m[ 0] - 1;
 				el.node[ 1] = m[ 1] - 1;
 				el.node[ 2] = m[ 2] - 1;

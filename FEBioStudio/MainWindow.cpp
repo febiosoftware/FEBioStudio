@@ -80,7 +80,6 @@ void darkStyle()
 	palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
 	qApp->setPalette(palette);
 
-	QCoreApplication::setAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles, true);
 	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
 }
 
@@ -298,6 +297,10 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions)
 		// Extract the project archive and open it
 		ImportProjectArchive(fileName);
 	}
+	else if (ext.compare("fsp", Qt::CaseInsensitive) == 0)
+	{
+		OpenProject(fileName);
+	}
 	else
 	{
 		// Open any other files (e.g. log files) with the system's associated program
@@ -372,6 +375,11 @@ void CMainWindow::ImportFiles(const QStringList& files)
 		else
 		{
 			AddLogEntry(QString("Don't know how to read: %1\n").arg(fileName));
+			if (files.size() == 1)
+			{
+				QMessageBox::critical(this, "Import Geometry", "Don't know how to read this file.");
+				return;
+			}
 		}
 	}
 
@@ -450,24 +458,26 @@ void CMainWindow::ReadNextFileInQueue()
 
 //-----------------------------------------------------------------------------
 // Open a project
-bool CMainWindow::OpenProject(const QString& projectPath)
+bool CMainWindow::OpenProject(const QString& projectFile)
 {
-	// loop over all files in project folder
-	int filesRead = 0;
-	QDirIterator it(projectPath, QStringList() << "*.fsm", QDir::Files);
-	while (it.hasNext())
+	bool b = ui->m_project.Open(projectFile);
+	if (b == false)
 	{
-		QString fileName = it.next();
-		OpenDocument(fileName);
-		filesRead++;
+		QMessageBox::critical(this, "ERROR", "Failed to open the project file.");
+		return false;
 	}
 
-	return (filesRead != 0);
+	ui->fileViewer->Update();
+	ui->addToRecentFiles(projectFile);
+
+	return b;
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::OpenDocument(const QString& fileName)
 {
+	QString filePath = QDir::toNativeSeparators(QDir::cleanPath(fileName));
+
 	// Stop the timer if it's running
 	if (ui->m_isAnimating) ui->m_isAnimating = false;
 
@@ -478,7 +488,7 @@ void CMainWindow::OpenDocument(const QString& fileName)
 		CDocument* doc = m_DocManager->GetDocument(i);
 		std::string sfile = doc->GetDocFilePath();
 		QString fileName_i = QString::fromStdString(sfile);
-		if (fileName == fileName_i)
+		if (filePath == fileName_i)
 		{
 			ui->tab->setCurrentIndex(i);
 			on_actionRefresh_triggered();
@@ -489,13 +499,13 @@ void CMainWindow::OpenDocument(const QString& fileName)
 
 	// create a new document
 	CModelDocument* doc = new CModelDocument(this);
-	doc->SetDocFilePath(fileName.toStdString());
+	doc->SetDocFilePath(filePath.toStdString());
 
 	// start reading the file
-	ReadFile(doc, fileName, new ModelFileReader(doc), QueuedFile::NEW_DOCUMENT);
+	ReadFile(doc, filePath, new ModelFileReader(doc), QueuedFile::NEW_DOCUMENT);
 
 	// add file to recent list
-	ui->addToRecentFiles(fileName);
+	ui->addToRecentFiles(filePath);
 }
 
 //! add a document 
@@ -605,10 +615,7 @@ void CMainWindow::dropEvent(QDropEvent *e)
 				ReadFile(doc, fileName, fileReader, 0);
 		}
 		else {
-			QString ext = QFileInfo(fileName).suffix();
-			if ((ext.compare("prv", Qt::CaseInsensitive) == 0) ||
-					(ext.compare("fsprj", Qt::CaseInsensitive) == 0))
-				OpenDocument(fileName);
+			OpenFile(fileName, false);
 		}
 	}
 }
@@ -690,6 +697,11 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 				AddLogEntry("Document initialization failed!\n");
 			}
 			AddDocument(doc);
+
+			// add it to the project
+			CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+			if (modelDoc)
+				ui->m_project.AddFile(file.m_fileName);
 
 			// for fsprj files we set the "project" directory. 
 			FSDir path(file.m_fileName.toStdString());
@@ -795,10 +807,7 @@ void CMainWindow::CloseProject()
 {
 	// close all views first
 	int n = ui->tab->count();
-	for (int i = 1; i < n; ++i) ui->tab->closeView(1);
-
-	// clear project folder
-	m_projectFolder.clear();
+	for (int i = 0; i < n; ++i) ui->tab->closeView(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -1139,14 +1148,15 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 	}
 }
 
-void CMainWindow::NewSession()
-{
-//	if (ui->m_showNewOnStartup) on_actionNewProject_triggered();
-}
-
 void CMainWindow::SetCurrentFolder(const QString& folder)
 {
 	ui->currentPath = folder;
+}
+
+// get the current project
+const FEBioStudioProject* CMainWindow::GetProject()
+{
+	return &ui->m_project;
 }
 
 void CMainWindow::writeSettings()
@@ -2438,13 +2448,13 @@ QStringList CMainWindow::GetRecentFileList()
 
 QString CMainWindow::ProjectFolder()
 {
-	return m_projectFolder;
+	return "";// m_projectFolder;
 }
 
 QString CMainWindow::ProjectName()
 {
-	if (m_projectFolder.isEmpty()) return QString();
-	QDir dir(m_projectFolder);
-	QStringList l = QDir::toNativeSeparators(dir.path()).split(dir.separator(), Qt::SkipEmptyParts);
-	return l.last();
+//	if (m_projectFolder.isEmpty()) return QString();
+	//QDir dir(m_projectFolder);
+	//QStringList l = QDir::toNativeSeparators(dir.path()).split(dir.separator(), Qt::SkipEmptyParts);
+	return "";// l.last();
 }

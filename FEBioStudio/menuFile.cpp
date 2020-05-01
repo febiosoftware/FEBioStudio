@@ -83,165 +83,28 @@
 #include "ZipFiles.h"
 #endif
 
-void CMainWindow::on_actionNewProject_triggered()
-{
-	// close current project first
-	CloseProject();
-
-	// ask the user for a new project template
-	bool btemplate = false;
-	CDlgNew dlg(this);
-
-	dlg.setShowOnStart(ui->m_showNewOnStartup);
-
-	if (ui->m_defaultProjectParent.isEmpty() == false)
-	{
-		dlg.setProjectFolder(ui->m_defaultProjectParent);
-	}
-
-	bool projectAccepted = false;
-	while (projectAccepted == false)
-	{
-		projectAccepted = true;
-		if (dlg.exec())
-		{
-			if (dlg.createNew())
-			{
-				// get the project name and folder
-				QString projectName = dlg.getProjectName();
-				QString projectParent = dlg.getProjectFolder();
-
-				QDir dir(projectParent);
-
-				// try to create a new folder
-				if (dir.mkdir(projectName) == false)
-				{
-					QMessageBox::critical(this, "FEBio Studio", QString("The folder \"%1\" already exists in the selected project folder.\nPlease choose a different project name or folder.").arg(projectName));
-					projectAccepted = false;
-				}
-				else
-				{
-					// make the selected folder the default project folder
-					ui->m_defaultProjectParent = projectParent;
-
-					// cd into this directory
-					dir.cd(projectName);
-
-					// store the project folder
-					m_projectFolder = dir.absolutePath();
-
-					// setup model file name and path
-					QString modelFileName = projectName + ".fsm";
-					QString modelFilePath = dir.absoluteFilePath(modelFileName);
-
-					// create the new document
-					CDocument* doc = new CModelDocument(this);
-
-					// save the empty model
-					doc->SaveDocument(modelFilePath.toStdString());
-
-					// add the new document to the doc manager
-					AddDocument(doc);
-
-					// TODO: load the template
-					int nchoice = dlg.getTemplate();
-
-					// reset all UI elements
-					UpdatePhysicsUi();
-					Reset();
-					UpdateTitle();
-					UpdateModel();
-					Update();
-					ClearLog();
-					ClearOutput();
-				}
-			}
-			else
-			{
-				if (dlg.openRecentFile())
-				{
-					QString fileName = dlg.getRecentFileName();
-
-					// read the file
-					std::string sfile = fileName.toStdString();
-					OpenDocument(sfile.c_str());
-				}
-				else
-				{
-					// Open a file
-					on_actionOpen_triggered();
-					return;
-				}
-			}
-		}
-		else
-		{
-			UpdatePhysicsUi();
-			Reset();
-			UpdateTitle();
-			UpdateModel();
-			Update();
-			ClearLog();
-			ClearOutput();
-		}
-	}
-
-	ui->m_showNewOnStartup = dlg.showOnStart();
-
-	ui->glview->Reset();
-	if (ui->modelViewer && btemplate) ui->modelViewer->Show();
-}
 
 void CMainWindow::on_actionOpenProject_triggered()
 {
-	CloseProject();
-
-	while (true)
+	QString projectFile = QFileDialog::getOpenFileName(this, "Open Project", "", QString("FEBioStudio Projects (*.fsp)"));
+	if (projectFile.isEmpty() == false)
 	{
-		QString projectFolder = QFileDialog::getExistingDirectory(this, "Open Project");
-		if (projectFolder.isEmpty() == false)
-		{
-			if (OpenProject(projectFolder) == false)
-			{
-				QMessageBox::critical(this, "ERROR", "This does not appear to be a valid project folder. Please select a different one.");
-			}
-			else
-			{
-				m_projectFolder = projectFolder;
-				break;
-			}
-		}
-		else break;
+		OpenProject(projectFile);
 	}
-
-	UpdateTitle();
 }
 
 void CMainWindow::on_actionNewModel_triggered()
 {
-	CDocument* doc = nullptr;
+	CModelDocument* doc = nullptr;
 
-	QString modelName;
-	if (m_projectFolder.isEmpty() == false)
+	// choose a template
+	CDlgNew dlg(this);
+	if (dlg.exec())
 	{
-		QString modelName = QInputDialog::getText(this, "New Model", "Model name:");
-		if (modelName.isEmpty() == false) return;
-
-		// create new document
 		doc = new CModelDocument(this);
-
-		QDir dir(m_projectFolder);
-		if (dir.exists())
-		{
-			QString modelFile = dir.absoluteFilePath(modelName + ".fsm");
-			doc->SaveDocument(modelFile.toStdString());
-		}
-		else
-		{
-			QMessageBox::critical(this, "ERROR", QString("Current project folder is invalid!\n%1").arg(m_projectFolder));
-		}
+		doc->LoadTemplate(dlg.getTemplate());
 	}
-	else doc = new CModelDocument(this);
+	else return;
 
 	if (doc)
 	{
@@ -909,7 +772,7 @@ void CMainWindow::ExportGeometry()
 void CMainWindow::on_recentFiles_triggered(QAction* action)
 {
 	QString fileName = action->text();
-	OpenDocument(fileName);
+	OpenFile(fileName);
 }
 
 //-----------------------------------------------------------------------------
@@ -967,6 +830,20 @@ void CMainWindow::on_actionSnapShot_triggered()
 {
 	QImage img = ui->glview->CaptureScreen();
 	SaveImage(img);
+}
+
+void CMainWindow::on_actionSaveProject_triggered()
+{
+	QString fileName = QFileDialog::getSaveFileName(this, "Save Project As", "", QString("FEBioStudio Projects (*.fsp)"));
+	if (fileName.isEmpty() == false)
+	{
+		bool b = ui->m_project.Save(fileName);
+		if (b == false)
+		{
+			QMessageBox::critical(this, "ERROR", "Failed saving the project file.");
+			ui->fileViewer->Update();
+		}
+	}
 }
 
 void CMainWindow::on_actionExportFEModel_triggered()

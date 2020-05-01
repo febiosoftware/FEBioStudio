@@ -31,6 +31,7 @@
 #include "MainTabBar.h"
 #include "DlgMeasure.h"
 #include "PostToolBar.h"
+#include "FEBioStudioProject.h"
 
 class QProcess;
 
@@ -149,6 +150,8 @@ public:
 	QAction* selectRect;
 	QAction* selectCircle;
 	QAction* selectFree;
+
+	FEBioStudioProject	m_project;
 
 public:
 	vector<CLaunchConfig>		m_launch_configs;
@@ -287,6 +290,7 @@ public:
 		QAction* actionSaveAs     = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
 		QAction* actionSaveAll    = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_S);
 		QAction* actionSnapShot   = addAction("Snapshot ...", "actionSnapShot", "snapshot");
+		QAction* actionSaveProject = addAction("Save Project As ...", "actionSaveProject");
 		QAction* actionExportFE   = addAction("Export FE model ..." , "actionExportFEModel");
 		QAction* actionImportGeom = addAction("Import Geometry ...", "actionImportGeometry");
 		QAction* actionExportGeom = addAction("Export Geometry ...", "actionExportGeometry");
@@ -510,15 +514,16 @@ public:
 
 		menuFile->addAction(actionNewModel);
 		menuFile->addSeparator();
-		menuFile->addAction(actionOpenProject);
 		menuFile->addAction(actionOpen);
 		menuFile->addAction(menuRecentFiles->menuAction());
+		menuFile->addAction(actionOpenProject);
 		menuFile->addAction(actionImportGeom);
 		menuFile->addAction(menuRecentGeomFiles->menuAction());
 		menuFile->addSeparator();
 		menuFile->addAction(actionSave);
 		menuFile->addAction(actionSaveAs);
 		menuFile->addAction(actionSaveAll);
+		menuFile->addAction(actionSaveProject);
 		menuFile->addAction(actionExportFE);
 		menuFile->addAction(actionExportGeom);
 #ifdef HAS_QUAZIP

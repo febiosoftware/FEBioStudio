@@ -23,6 +23,7 @@ class CSSHHandler;
 class xpltFileReader;
 class CDocManager;
 class QueuedFile;
+class FEBioStudioProject;
 
 namespace Ui {
 	class CMainWindow;
@@ -124,8 +125,8 @@ public:
 	// set the current time value
 	void SetCurrentTimeValue(float ftime);
 
-	// start new session
-	void NewSession();
+	// get the current project
+	const FEBioStudioProject* GetProject();
 
 	// --- WINDOW UPDATE ---
 
@@ -233,7 +234,6 @@ private:
 	void OpenFEModel(const QString& fileName);
 
 public slots:
-	void on_actionNewProject_triggered();
 	void on_actionNewModel_triggered();
 	void on_actionOpenProject_triggered();
 	void on_actionOpen_triggered();
@@ -241,6 +241,7 @@ public slots:
 	void on_actionSaveAs_triggered();
 	void on_actionSaveAll_triggered();
 	void on_actionSnapShot_triggered();
+	void on_actionSaveProject_triggered();
 	void on_actionExportFEModel_triggered();
 	void on_actionImportGeometry_triggered();
 	void on_actionExportGeometry_triggered();
@@ -500,7 +501,6 @@ private:
 	Ui::CMainWindow*	ui;
 
 	CDocManager*		m_DocManager;
-	QString				m_projectFolder;
 
 	CFileThread*		m_fileThread;
 	vector<QueuedFile>	m_fileQueue;

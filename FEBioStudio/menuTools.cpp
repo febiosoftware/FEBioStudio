@@ -62,6 +62,13 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	QString docName = QString::fromStdString(doc->GetDocFileBase());
 	QString docFolder = QString::fromStdString(doc->GetDocFolder());
 
+	// make sure that docFolder is valid
+	if (docFolder.isEmpty())
+	{
+		QMessageBox::warning(this, "Run FEBio", "You have to save the model before you can run it in FEBio.");
+		return;
+	}
+
 	// get the list of all the job names so far
 	QStringList jobList;
 	for (int i = 0; i < doc->FEBioJobs(); ++i)
