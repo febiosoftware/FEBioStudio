@@ -403,12 +403,15 @@
     <ClCompile Include="..\..\FEBioStudio\SSHThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\StatePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\StatsWindow.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\stdafx.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\SummaryWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\TetOverlapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\welcomPage.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ZipFiles.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -595,6 +598,7 @@
     <ClInclude Include="..\..\FEBioStudio\RepoProject.h" />
     <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
+    <ClInclude Include="..\..\FEBioStudio\welcomePage.h" />
     <ClInclude Include="..\..\FEBioStudio\ZipFiles.h" />
     <ClInclude Include="resource.h" />
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">

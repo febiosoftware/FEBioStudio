@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ui_curveeditor.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"

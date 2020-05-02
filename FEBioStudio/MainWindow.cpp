@@ -42,10 +42,10 @@
 #include "DocManager.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
-
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
+#include "welcomePage.h"
 
 extern GLColor col[];
 
@@ -105,6 +105,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	{
 		readSettings();
 	}
+
+	// get the welcome page
+	ui->setWelcomPage(getWelcomePage(this));
 
 	// activate dark style
 	if (ui->m_theme == 1)
@@ -250,6 +253,29 @@ void CMainWindow::UpdateTab(CDocument* doc)
 	}
 
 	ui->fileViewer->Update();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_welcome_anchorClicked(const QUrl& link)
+{
+	QString ref = link.toString();
+	if      (ref == "#new") on_actionNewModel_triggered();
+	else if (ref == "#open") on_actionOpen_triggered();
+	else if (ref == "#openproject") on_actionOpenProject_triggered();
+	else if (ref == "#febio") on_actionFEBioURL_triggered();
+	else if (ref == "#help") on_actionFEBioResources_triggered();
+	else
+	{
+		string s = ref.toStdString();
+		const char* sz = s.c_str();
+		if (strncmp(sz, "#recent_", 8) == 0)
+		{
+			int n = atoi(sz + 8);
+
+			QStringList recentFiles = GetRecentFileList();
+			OpenFile(recentFiles.at(n));
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -469,6 +495,8 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 
 	ui->fileViewer->Update();
 	ui->addToRecentFiles(projectFile);
+	ui->fileViewer->parentWidget()->show();
+	ui->fileViewer->parentWidget()->raise();
 
 	return b;
 }
@@ -1387,6 +1415,9 @@ void CMainWindow::UpdateUIConfig()
 		else
 		{
 			// no open docs
+			// we need to update the welcome page since the recent
+			// file list might have changed
+			ui->setWelcomPage(getWelcomePage(this));
 			ui->setUIConfig(0);
 		}
 		return;

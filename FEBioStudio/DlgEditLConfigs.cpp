@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <QAbstractItemView>
 #include <QAction>
 #include <QFileDialog>
@@ -732,16 +733,3 @@ void CDlgEditPath::accept()
 
 	QDialog::accept();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "StatePanel.h"
 #include "MainWindow.h"
 #include "Document.h"

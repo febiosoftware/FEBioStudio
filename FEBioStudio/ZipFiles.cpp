@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ZipFiles.h"
 #ifdef HAS_QUAZIP
 #include <JlCompress.h>

@@ -11,7 +11,11 @@
 #include <QBoxLayout>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QLabel>
+#include <QTextBrowser>
+#include <QStackedWidget>
 #include <QtCore/QDir>
+#include <QtCore/QStandardPaths>
 #include "FileViewer.h"
 #include "ModelViewer.h"
 #include "CurveEditor.h"
@@ -27,7 +31,6 @@
 #include <QFontComboBox>
 #include <vector>
 #include "LaunchConfig.h"
-#include <QtCore/QStandardPaths>
 #include "MainTabBar.h"
 #include "DlgMeasure.h"
 #include "PostToolBar.h"
@@ -47,6 +50,8 @@ public:
 	CGLView*	glview;
 	CGLControlBar* glc;
 	::CMainWindow*	m_wnd;
+	QStackedWidget*	stack;
+	QTextBrowser*	welcome;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -221,6 +226,14 @@ public:
 		tab = new CMainTabBar(wnd);
 		tab->setObjectName("tab");
 
+		stack = new QStackedWidget;
+
+		welcome = new QTextBrowser;
+		welcome->setObjectName("welcome");
+		welcome->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+
+		stack->addWidget(welcome);
+
 		// create the central widget
 		QWidget* w = new QWidget;
 
@@ -244,8 +257,10 @@ public:
 
 		glc->hide();
 
+		stack->addWidget(w);
+
 		// set the central widget
-		wnd->setCentralWidget(w);
+		wnd->setCentralWidget(stack);
 
 		// build the menu
 		buildMenu(wnd);
@@ -1019,6 +1034,8 @@ public:
 	{
 		if (config == 0)
 		{
+			stack->setCurrentIndex(0);
+
 			// no open documents
 			menuEdit->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
@@ -1034,9 +1051,13 @@ public:
 			modelViewer->parentWidget()->hide();
 			buildPanel->parentWidget()->hide();
 			postPanel->parentWidget()->hide();
+			logPanel->parentWidget()->hide();
+			infoPanel->parentWidget()->hide();
 		}
 		else if (config == 1)
 		{
+			stack->setCurrentIndex(1);
+
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
 			menuPhysics->menuAction()->setVisible(true);
@@ -1052,9 +1073,13 @@ public:
 			modelViewer->parentWidget()->show();
 			buildPanel->parentWidget()->show();
 			postPanel->parentWidget()->hide();
+			logPanel->parentWidget()->show();
+			infoPanel->parentWidget()->show();
 		}
 		else if (config == 2)
 		{
+			stack->setCurrentIndex(1);
+
 			// post mode
 			menuEdit->menuAction()->setVisible(true);
 			menuPhysics->menuAction()->setVisible(false);
@@ -1070,6 +1095,13 @@ public:
 			modelViewer->parentWidget()->hide();
 			buildPanel->parentWidget()->hide();
 			postPanel->parentWidget()->show();
+			logPanel->parentWidget()->show();
+			infoPanel->parentWidget()->show();
 		}
+	}
+
+	void setWelcomPage(const QString& t)
+	{
+		welcome->setHtml(t);
 	}
 };

@@ -415,6 +415,8 @@ public slots:
 	void on_tab_currentChanged(int n);
 	void on_tab_tabCloseRequested(int n);
 
+	void on_welcome_anchorClicked(const QUrl& link);
+
 	// slots from Post panel
 	void OnPostObjectStateChanged();
 	void OnPostObjectPropsChanged(FSObject* po);

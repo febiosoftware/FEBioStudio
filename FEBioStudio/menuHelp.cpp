@@ -22,7 +22,7 @@ void CMainWindow::on_actionFEBioForum_triggered()
 
 void CMainWindow::on_actionFEBioResources_triggered()
 {
-	QDesktopServices::openUrl(QUrl("https://febio.org/teaching-hub/"));
+	QDesktopServices::openUrl(QUrl("https://febio.org/knowledgebase/"));
 }
 
 void CMainWindow::on_actionFEBioPubs_triggered()

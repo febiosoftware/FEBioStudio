@@ -765,6 +765,9 @@
     <ClCompile Include="..\..\FEBioStudio\FEBioStudioProject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\welcomPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -1084,6 +1087,9 @@
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\FEBioStudioProject.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\welcomePage.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

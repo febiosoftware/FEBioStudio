@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "DataFieldSelector.h"
 #include <PostLib/constants.h>
 #include <PostLib/ColorMap.h>

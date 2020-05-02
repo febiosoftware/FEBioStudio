@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "RepoProject.h"
 
 CRepoProject::CRepoProject(int columns, char** data)
