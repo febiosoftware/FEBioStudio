@@ -417,6 +417,8 @@ public slots:
 
 	void on_welcome_anchorClicked(const QUrl& link);
 
+	void on_clearProject();
+
 	// slots from Post panel
 	void OnPostObjectStateChanged();
 	void OnPostObjectPropsChanged(FSObject* po);

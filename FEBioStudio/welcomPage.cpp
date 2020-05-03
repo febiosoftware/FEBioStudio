@@ -1,17 +1,19 @@
 #include "welcomePage.h"
 #include "MainWindow.h"
+#include "version.h"
 
 const char* welcome = \
 "<html>\
 <head>\
 <style>\
 h1{ color: gray; }\
-a { color: DodgerBlue; font-size: 12pt; }\
-ul { line-height: 200% }\
+a { color: DodgerBlue; font-size: 11pt; }\
+ul { line-height: 150%; list-style-type: none; }\
 </style>\
 </head>\
 <body>\
-<p style=\"font-size: 36pt\"><b>FEBio Studio</b></p>\
+<p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
+<p style=\"font-size: 14pt\">version VERSION</p>\
 <h1>Start</h1>\
 <ul>\
 <li><a href=\"#new\">New Model ... </a></li>\
@@ -31,15 +33,29 @@ RECENT_FILES\
 </html>"
 ;
 
-QString getWelcomePage(CMainWindow* wnd)
+QString elide(const QString& s, int l)
 {
-	QStringList files = wnd->GetRecentFileList();
+	if (s.length() <= l) return s;
+//	int n1 = l / 2 - 2;
+//	int n2 = l - 3 - n1;
+//	return (s.left(n1) + "..." + s.right(n2));
+	return s.left(3) + "..." + s.right(l - 6);
+}
+
+CWelcomePage::CWelcomePage(CMainWindow* wnd) : QTextBrowser(wnd)
+{
+	m_wnd = wnd;
+}
+
+void CWelcomePage::Refresh()
+{
+	QStringList files = m_wnd->GetRecentFileList();
 
 	QString links;
 
 	for (int i = 0; i < files.size(); ++i)
 	{
-		QString file = files[i];
+		QString file = elide(files[i], 70);
 
 		QString ref = QString("\"#recent_%1\"").arg(i);
 
@@ -48,8 +64,11 @@ QString getWelcomePage(CMainWindow* wnd)
 		links += link;
 	}
 
+	QString version = QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+
 	QString page(welcome);
+	page.replace("VERSION", version);
 	page.replace("RECENT_FILES", links);
 
-	return page;
+	setHtml(page);
 }

@@ -107,7 +107,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	}
 
 	// get the welcome page
-	ui->setWelcomPage(getWelcomePage(this));
+	ui->welcome->Refresh();
 
 	// activate dark style
 	if (ui->m_theme == 1)
@@ -253,6 +253,19 @@ void CMainWindow::UpdateTab(CDocument* doc)
 	}
 
 	ui->fileViewer->Update();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_clearProject()
+{
+	if (ui->m_project.Files() == 0) return;
+
+	if (QMessageBox::question(this, "Clear Project", "Are you sure you want to clear the current project?\nThis cannot be undone.") == QMessageBox::Yes)
+	{
+		ui->m_project.Clear();
+		ui->fileViewer->Update();
+		UpdateTitle();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -544,6 +557,14 @@ void CMainWindow::AddDocument(CDocument* doc)
 
 	// make it the active one
 	SetActiveDocument(doc);
+
+	// add it to the project
+	CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+	if (modelDoc)
+	{
+		ui->m_project.AddFile(QString::fromStdString(modelDoc->GetDocFilePath()));
+		ui->fileViewer->Update();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -725,11 +746,6 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 				AddLogEntry("Document initialization failed!\n");
 			}
 			AddDocument(doc);
-
-			// add it to the project
-			CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
-			if (modelDoc)
-				ui->m_project.AddFile(file.m_fileName);
 
 			// for fsprj files we set the "project" directory. 
 			FSDir path(file.m_fileName.toStdString());
@@ -1417,7 +1433,7 @@ void CMainWindow::UpdateUIConfig()
 			// no open docs
 			// we need to update the welcome page since the recent
 			// file list might have changed
-			ui->setWelcomPage(getWelcomePage(this));
+			ui->welcome->Refresh();
 			ui->setUIConfig(0);
 		}
 		return;

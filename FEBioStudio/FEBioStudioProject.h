@@ -17,8 +17,11 @@ public:
 	void AddFile(const QString& fileName);
 
 	bool Save(const QString& file);
+	bool Save();
 
 	bool Open(const QString& file);
+
+	void Clear();
 
 private:
 	QString			m_projectFile;

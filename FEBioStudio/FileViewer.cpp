@@ -10,6 +10,7 @@
 #include <QFileSystemModel>
 #include <QBoxLayout>
 #include <QHeaderView>
+#include <QMenu>
 
 class Ui::CFileViewer
 {
@@ -57,8 +58,25 @@ void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int colum
 		if (doc)
 			ui->m_wnd->SetActiveDocument(doc);
 		else
-			ui->m_wnd->OpenFile(filePath, true);
+			ui->m_wnd->OpenFile(filePath, false);
 	}
+}
+
+void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
+{
+	QList<QTreeWidgetItem*> sel = ui->m_tree->selectedItems();
+	if (sel.size() != 1) return;
+
+	QVariant v = sel[0]->data(0, Qt::UserRole);
+	int n = (v.type() == QVariant::Int ? v.toInt() : 0);
+	if (n == -2)
+	{
+		QMenu menu(this);
+		menu.addAction("Save Project As ...", ui->m_wnd, SLOT(on_actionSaveProject_triggered()));
+		menu.addAction("Clear project", ui->m_wnd, SLOT(on_clearProject()));
+
+		menu.exec(ev->globalPos());
+	}	
 }
 
 void CFileViewer::Update()
@@ -69,6 +87,7 @@ void CFileViewer::Update()
 
 	// Open files list
 	QTreeWidgetItem* it = new QTreeWidgetItem(QStringList("OPEN FILES"));
+	it->setData(0, Qt::UserRole, -1);
 	QFont f = it->font(0);
 	f.setBold(true);
 	it->setFont(0, f);
@@ -113,6 +132,7 @@ void CFileViewer::Update()
 	ui->m_tree->addTopLevelItem(it);
 	it->setExpanded(true);
 	it->setSizeHint(0, QSize(0, px));
+	it->setData(0, Qt::UserRole, -2);
 	if (prjFile.isEmpty() == false) it->setToolTip(0, prjFile);
 
 	for (int i = 0; i < prj->Files(); ++i)

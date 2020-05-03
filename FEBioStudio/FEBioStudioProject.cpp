@@ -28,8 +28,19 @@ void FEBioStudioProject::AddFile(const QString& fileName)
 {
 	for each (QString s in m_fileList) { if (s == fileName) return; }
 	m_fileList.push_back(fileName);
+	Save();
+}
 
-	if (m_projectFile.isEmpty() == false) Save(m_projectFile);
+void FEBioStudioProject::Clear()
+{
+	m_fileList.clear();
+	Save();
+}
+
+bool FEBioStudioProject::Save()
+{
+	if (m_projectFile.isEmpty() == false) return Save(m_projectFile);
+	else return false;
 }
 
 bool FEBioStudioProject::Save(const QString& file)

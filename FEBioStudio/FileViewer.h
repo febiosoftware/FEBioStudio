@@ -19,6 +19,8 @@ public:
 
 	void Update();
 
+	void contextMenuEvent(QContextMenuEvent* ev) override;
+
 private slots:
 	void on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column);
 

@@ -20,6 +20,14 @@ public:
 
 	void showEvent(QShowEvent* ev);
 
+	QString GetModelName();
+
+	void SetModelFolder(const QString& modelPath);
+	QString GetModelFolder();
+
+private slots:
+	void OnFolderName();
+
 public:
 	Ui::CDlgNew*	ui;
 };

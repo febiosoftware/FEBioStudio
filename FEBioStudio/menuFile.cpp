@@ -95,42 +95,11 @@ void CMainWindow::on_actionOpenProject_triggered()
 
 void CMainWindow::on_actionNewModel_triggered()
 {
-	CModelDocument* doc = nullptr;
-
-	// choose a template
 	CDlgNew dlg(this);
+	dlg.SetModelFolder(ui->m_defaultProjectParent);
 	if (dlg.exec())
 	{
-		doc = new CModelDocument(this);
-		doc->LoadTemplate(dlg.getTemplate());
-	}
-	else return;
-
-	if (doc)
-	{
-		// generate a unique doc title
-		string docTitle;
-		int n = 1;
-		bool bvalid = false;
-		do
-		{
-			std::stringstream ss;
-			ss << "Untitled-" << n++;
-			docTitle = ss.str();
-			bvalid = true;
-			for (int i = 0; i < m_DocManager->Documents(); ++i)
-			{
-				std::string s = m_DocManager->GetDocument(i)->GetDocTitle();
-				if (s == docTitle)
-				{
-					bvalid = false;
-					break;
-				}
-			}
-		} while (bvalid == false);
-
-		doc->SetDocTitle(docTitle);
-		AddDocument(doc);
+		ui->m_defaultProjectParent = dlg.GetModelFolder();
 	}
 }
 

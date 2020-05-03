@@ -35,6 +35,7 @@
 #include "DlgMeasure.h"
 #include "PostToolBar.h"
 #include "FEBioStudioProject.h"
+#include "welcomePage.h"
 
 class QProcess;
 
@@ -51,7 +52,7 @@ public:
 	CGLControlBar* glc;
 	::CMainWindow*	m_wnd;
 	QStackedWidget*	stack;
-	QTextBrowser*	welcome;
+	CWelcomePage*	welcome;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -228,7 +229,7 @@ public:
 
 		stack = new QStackedWidget;
 
-		welcome = new QTextBrowser;
+		welcome = new CWelcomePage(wnd);
 		welcome->setObjectName("welcome");
 		welcome->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
@@ -1098,10 +1099,5 @@ public:
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
 		}
-	}
-
-	void setWelcomPage(const QString& t)
-	{
-		welcome->setHtml(t);
 	}
 };
