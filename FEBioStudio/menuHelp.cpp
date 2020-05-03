@@ -5,11 +5,6 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 
-void CMainWindow::on_actionOnlineHelp_triggered()
-{
-	QDesktopServices::openUrl(QUrl("https://febio.org/support/"));
-}
-
 void CMainWindow::on_actionFEBioURL_triggered()
 {
 	QDesktopServices::openUrl(QUrl("https://febio.org/"));

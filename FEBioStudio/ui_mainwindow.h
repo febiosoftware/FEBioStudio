@@ -454,9 +454,8 @@ public:
 
 		// --- Help menu ---
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
-		QAction* actionOnlineHelp = addAction("Online Manuals", "actionOnlineHelp");
+		QAction* actionFEBioResources = addAction("FEBio Knowledgebase", "actionFEBioResources");
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
-		QAction* actionFEBioResources = addAction("Learning Resources", "actionFEBioResources");
 		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
 		QAction* actionAbout = addAction("About FEBio Studio", "actionAbout");
 	
@@ -703,9 +702,8 @@ public:
 		// Help menu
 		menuBar->addAction(menuHelp->menuAction());
 		menuHelp->addAction(actionFEBioURL);
-		menuHelp->addAction(actionOnlineHelp);
-		menuHelp->addAction(actionFEBioForum);
 		menuHelp->addAction(actionFEBioResources);
+		menuHelp->addAction(actionFEBioForum);
 		menuHelp->addAction(actionFEBioPubs);
 		menuHelp->addSeparator();
 		menuHelp->addAction(actionAbout);

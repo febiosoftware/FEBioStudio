@@ -363,7 +363,6 @@ public slots:
 	void on_actionViewVPNext_triggered();
 	void on_actionSyncViews_triggered();
 
-	void on_actionOnlineHelp_triggered();
 	void on_actionFEBioURL_triggered();
 	void on_actionFEBioForum_triggered();
 	void on_actionFEBioResources_triggered();
