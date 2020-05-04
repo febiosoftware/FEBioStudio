@@ -23,6 +23,12 @@ public:
 
 	void Clear();
 
+	void Close();
+
+	void Remove(const QString& file);
+
+	bool Contains(const QString& file) const;
+
 private:
 	QString			m_projectFile;
 	QStringList		m_fileList;

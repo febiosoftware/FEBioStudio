@@ -24,9 +24,15 @@ QString FEBioStudioProject::GetFileName(int n) const
 	return m_fileList[n];
 }
 
+bool FEBioStudioProject::Contains(const QString& fileName) const
+{
+	for each (QString s in m_fileList) { if (s == fileName) return true; }
+	return false;
+}
+
 void FEBioStudioProject::AddFile(const QString& fileName)
 {
-	for each (QString s in m_fileList) { if (s == fileName) return; }
+	if (Contains(fileName)) return;
 	m_fileList.push_back(fileName);
 	Save();
 }
@@ -35,6 +41,27 @@ void FEBioStudioProject::Clear()
 {
 	m_fileList.clear();
 	Save();
+}
+
+void FEBioStudioProject::Close()
+{
+	m_projectFile.clear();
+	m_fileList.clear();
+}
+
+void FEBioStudioProject::Remove(const QString& file)
+{
+	QStringList::iterator it = m_fileList.begin();
+	int n = m_fileList.size();
+	for (int i = 0; i < m_fileList.size(); ++i, ++it)
+	{
+		if (file == *it) 
+		{
+			m_fileList.erase(it);
+			Save();
+			break;
+		}
+	}
 }
 
 bool FEBioStudioProject::Save()

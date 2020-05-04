@@ -269,6 +269,44 @@ void CMainWindow::on_clearProject()
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::on_closeProject()
+{
+	if (ui->m_project.Files() == 0) return;
+
+	ui->m_project.Close();
+	ui->fileViewer->Update();
+	UpdateTitle();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_removeFromProject(const QString& file)
+{
+	ui->m_project.Remove(file);
+	ui->fileViewer->Update();
+	UpdateTitle();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_closeFile(const QString& file)
+{
+	CDocument* doc = FindDocument(file.toStdString());
+	if (doc)
+	{
+		CloseView(doc);
+		ui->fileViewer->Update();
+		UpdateTitle();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_addToProject(const QString& file)
+{
+	ui->m_project.AddFile(file);
+	ui->fileViewer->Update();
+	UpdateTitle();
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::on_welcome_anchorClicked(const QUrl& link)
 {
 	QString ref = link.toString();

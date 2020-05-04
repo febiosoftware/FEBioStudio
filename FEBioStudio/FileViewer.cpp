@@ -11,6 +11,7 @@
 #include <QBoxLayout>
 #include <QHeaderView>
 #include <QMenu>
+#include <QSignalMapper>
 
 class Ui::CFileViewer
 {
@@ -46,19 +47,27 @@ CFileViewer::CFileViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), 
 
 void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column)
 {
-	QVariant v = item->data(0, Qt::UserRole);
-	if (v.type() == QVariant::Int)
+	int ntype = item->data(0, Qt::UserRole).toInt();
+
+	switch (ntype)
 	{
-		ui->m_wnd->SetActiveView(v.toInt());
+	case 1:
+	{
+		int nview = item->data(0, Qt::UserRole + 1).toInt();
+		ui->m_wnd->SetActiveView(nview);
 	}
-	else if (v.type() == QVariant::String)
+	break;
+	case 3:
+	case 4:
 	{
-		QString filePath = v.toString();
+		QString filePath = item->data(0, Qt::UserRole + 1).toString();
 		CDocument* doc = ui->m_wnd->FindDocument(filePath.toStdString());
 		if (doc)
 			ui->m_wnd->SetActiveDocument(doc);
 		else
 			ui->m_wnd->OpenFile(filePath, false);
+	}
+	break;
 	}
 }
 
@@ -67,16 +76,49 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 	QList<QTreeWidgetItem*> sel = ui->m_tree->selectedItems();
 	if (sel.size() != 1) return;
 
-	QVariant v = sel[0]->data(0, Qt::UserRole);
-	int n = (v.type() == QVariant::Int ? v.toInt() : 0);
-	if (n == -2)
+	int ntype = sel[0]->data(0, Qt::UserRole).toInt();
+	if (ntype == 1)
+	{
+		const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+		CDocManager* dm = ui->m_wnd->GetDocManager();
+		int n = sel[0]->data(0, Qt::UserRole + 1).toInt();
+		QString file = QString::fromStdString(dm->GetDocument(n)->GetDocFilePath());
+
+		QMenu menu(this);
+
+		QSignalMapper* closeMap = new QSignalMapper(&menu);
+		QAction* ac = menu.addAction("Close", closeMap, SLOT(map())); closeMap->setMapping(ac, file);
+		connect(closeMap, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_closeFile(const QString&)));
+
+		if (prj->Contains(file) == false)
+		{
+			QSignalMapper* addMap = new QSignalMapper(&menu);
+			QAction* ac = menu.addAction("Add to project", addMap, SLOT(map())); addMap->setMapping(ac, file);
+			connect(addMap, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_addToProject(const QString&)));
+		}
+
+		menu.exec(ev->globalPos());
+	}
+	if (ntype == 2)
 	{
 		QMenu menu(this);
 		menu.addAction("Save Project As ...", ui->m_wnd, SLOT(on_actionSaveProject_triggered()));
+		menu.addAction("Close project", ui->m_wnd, SLOT(on_closeProject()));
 		menu.addAction("Clear project", ui->m_wnd, SLOT(on_clearProject()));
 
+	}
+	else if (ntype == 3)
+	{
+		QMenu menu(this);
+		QString file = sel[0]->data(0, Qt::UserRole + 1).toString();
+
+		QSignalMapper* map = new QSignalMapper;
+		QAction* ac = menu.addAction("Remove from project", map, SLOT(map())); map->setMapping(ac, file);
+
+		connect(map, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_removeFromProject(const QString&)));
+
 		menu.exec(ev->globalPos());
-	}	
+	}
 }
 
 void CFileViewer::Update()
@@ -87,7 +129,7 @@ void CFileViewer::Update()
 
 	// Open files list
 	QTreeWidgetItem* it = new QTreeWidgetItem(QStringList("OPEN FILES"));
-	it->setData(0, Qt::UserRole, -1);
+	it->setData(0, Qt::UserRole, 0);
 	QFont f = it->font(0);
 	f.setBold(true);
 	it->setFont(0, f);
@@ -107,7 +149,8 @@ void CFileViewer::Update()
 
 		QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
 		t2->setText(0, QString::fromStdString(doc->GetDocTitle()));
-		t2->setData(0, Qt::UserRole, i);
+		t2->setData(0, Qt::UserRole  , 1);
+		t2->setData(0, Qt::UserRole+1, i);
 		if (docPath.isEmpty() == false)
 		{
 			t2->setToolTip(0, docPath);
@@ -132,7 +175,7 @@ void CFileViewer::Update()
 	ui->m_tree->addTopLevelItem(it);
 	it->setExpanded(true);
 	it->setSizeHint(0, QSize(0, px));
-	it->setData(0, Qt::UserRole, -2);
+	it->setData(0, Qt::UserRole, 2);
 	if (prjFile.isEmpty() == false) it->setToolTip(0, prjFile);
 
 	for (int i = 0; i < prj->Files(); ++i)
@@ -148,7 +191,8 @@ void CFileViewer::Update()
 			QTreeWidgetItem* t2 = new QTreeWidgetItem(QStringList(docFile));
 			t2->setSizeHint(0, QSize(100, 50));
 			t2->setToolTip(0, docPath);
-			t2->setData(0, Qt::UserRole, docPath);
+			t2->setData(0, Qt::UserRole, 3);
+			t2->setData(0, Qt::UserRole+1, docPath);
 			t2->setSizeHint(0, QSize(100, px));
 
 			if (doc->FEBioJobs()) t2->setExpanded(true);
@@ -167,7 +211,8 @@ void CFileViewer::Update()
 				QTreeWidgetItem* t3 = new QTreeWidgetItem(t2);
 				t3->setText(0, xpltFile.fileName());
 				t3->setToolTip(0, xpltPath);
-				t3->setData(0, Qt::UserRole, xpltPath);
+				t3->setData(0, Qt::UserRole, 4);
+				t3->setData(0, Qt::UserRole+1, xpltPath);
 				t3->setSizeHint(0, QSize(100, px));
 
 				if (postDoc == nullptr)
@@ -195,7 +240,8 @@ void CFileViewer::Update()
 
 			t2->setSizeHint(0, QSize(100, 50));
 			t2->setToolTip(0, file_i);
-			t2->setData(0, Qt::UserRole, file_i);
+			t2->setData(0, Qt::UserRole, 3);
+			t2->setData(0, Qt::UserRole + 1, file_i);
 			t2->setSizeHint(0, QSize(100, px));
 		}
 	}

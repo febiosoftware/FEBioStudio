@@ -417,6 +417,10 @@ public slots:
 	void on_welcome_anchorClicked(const QUrl& link);
 
 	void on_clearProject();
+	void on_closeProject();
+	void on_removeFromProject(const QString& file);
+	void on_closeFile(const QString& file);
+	void on_addToProject(const QString& file);
 
 	// slots from Post panel
 	void OnPostObjectStateChanged();
