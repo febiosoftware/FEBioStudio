@@ -140,6 +140,8 @@ public:
 		addProperty("Y-target", CProperty::Float);
 		addProperty("Z-target", CProperty::Float);
 		addProperty("Target distance", CProperty::Float);
+		addProperty("Show title", CProperty::Bool);
+		addProperty("Show subtitle", CProperty::Bool);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -161,6 +163,8 @@ public:
 		case 4: return r.y; break;
 		case 5: return r.z; break;
 		case 6: return d; break;
+		case 7: return m_view.isTitleVisible(); break;
+		case 8: return m_view.isSubtitleVisible(); break;
 		}
 
 		return QVariant();
@@ -185,6 +189,8 @@ public:
 		case 4: r.y = val.toFloat(); break;
 		case 5: r.z = val.toFloat(); break;
 		case 6: d = val.toFloat(); break;
+		case 7: m_view.showTitle(val.toBool()); break;
+		case 8: m_view.showSubtitle(val.toBool()); break;
 		}
 
 		w = PI*v.Length()/180.f; v.Normalize();

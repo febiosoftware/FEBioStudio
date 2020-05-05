@@ -380,6 +380,12 @@ public:
 
 	void UpdateWidgets(bool bposition = true);
 
+	bool isTitleVisible() const;
+	void showTitle(bool b);
+
+	bool isSubtitleVisible() const;
+	void showSubtitle(bool b);
+
 	// get/set light position
 	vec3f GetLightPosition() { return m_light; }
 	void SetLightPosition(vec3f lp) { m_light = lp; }

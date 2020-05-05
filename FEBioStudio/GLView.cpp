@@ -1279,6 +1279,29 @@ void CGLView::UpdateWidgets(bool bposition)
 }
 
 //-----------------------------------------------------------------------------
+bool CGLView::isTitleVisible() const
+{
+	return m_ptitle->visible();
+}
+
+void CGLView::showTitle(bool b)
+{
+	if (b) m_ptitle->show(); else m_ptitle->hide();
+	repaint();
+}
+
+bool CGLView::isSubtitleVisible() const
+{
+	return m_psubtitle->visible();
+}
+
+void CGLView::showSubtitle(bool b)
+{
+	if (b) m_psubtitle->show(); else m_psubtitle->hide();
+	repaint();
+}
+
+//-----------------------------------------------------------------------------
 QImage CGLView::CaptureScreen()
 {
 	if (m_pframe && m_pframe->visible())
@@ -1482,20 +1505,7 @@ void CGLView::paintGL()
 
 			sprintf(m_szsubtitle, "%s\nTime = %.4g", postDoc->GetFieldString().c_str(), postDoc->GetTimeValue());
 			m_psubtitle->set_label(m_szsubtitle);
-
-			m_ptitle->show();
-			m_psubtitle->show();
 		}
-		else
-		{
-			m_ptitle->hide();
-			m_psubtitle->hide();
-		}
-	}
-	else
-	{
-		m_ptitle->hide();
-		m_psubtitle->hide();
 	}
 
 	// update the triad
