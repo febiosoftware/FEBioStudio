@@ -922,7 +922,6 @@ protected:
 	GMeshObject*	m_pobj;
 	FEMesh*			m_pold;
 	FEMesh*			m_pnew;
-	int				m_item;
 };
 
 //-----------------------------------------------------------------------------

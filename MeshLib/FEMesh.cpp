@@ -1554,24 +1554,30 @@ void FEMesh::UpdateFaceNeighbors()
 void FEMesh::UpdateEdgeNeighbors()
 {
 	// build the node-edge table
-	FENodeEdgeList NET; NET.Build(this);
+	FENodeEdgeList NET; NET.Build(this, true);
 
 	// find neighbours
 	int NE = Edges();
 	for (int i=0; i<NE; ++i)
 	{
 		FEEdge* pe = EdgePtr(i);
-		for (int j=0; j<2; ++j)
+		pe->m_nbr[0] = -1;
+		pe->m_nbr[1] = -1;
+
+		if (pe->m_gid >= 0)
 		{
-			pe->m_nbr[j] = -1;
-			int n = pe->n[j];
-			int nval = NET.Edges(n);
-			if (nval == 2)
+			for (int j = 0; j < 2; ++j)
 			{
-				for (int k=0; k<2; ++k)
+				pe->m_nbr[j] = -1;
+				int n = pe->n[j];
+				int nval = NET.Edges(n);
+				if (nval == 2)
 				{
-					const FEEdge* pen = NET.Edge(n, k);
-					if ((pen != pe)&&(pen->m_gid == pe->m_gid)) pe->m_nbr[j] = NET.EdgeIndex(n, k);
+					for (int k = 0; k < 2; ++k)
+					{
+						const FEEdge* pen = NET.Edge(n, k);
+						if ((pen != pe) && (pen->m_gid == pe->m_gid)) pe->m_nbr[j] = NET.EdgeIndex(n, k);
+					}
 				}
 			}
 		}
@@ -3264,7 +3270,7 @@ void FEMesh::BuildEdges()
 					e.n[1] = n[1]; assert((n[1] >= 0) && (n[1]<NN));
 					e.n[2] = n[2];
 					e.n[3] = n[3];
-					e.m_gid = -1;
+					e.m_gid = (pfn == 0 ? 0 : -1);
 
 					// try to insert it
 					bool bexist = false;

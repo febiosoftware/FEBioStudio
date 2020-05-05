@@ -146,12 +146,19 @@ void CBasicTool::on_button_clicked()
 {
 	SetErrorString("");
 	bool ret = OnApply();
+	QString err = GetErrorString();
+	CMainWindow* wnd = GetMainWindow();
+	QString toolName = name();
 	if (ret == false)
 	{
-		CMainWindow* wnd = GetMainWindow();
-		QString err = GetErrorString();
 		if (err.isEmpty()) err = "An unknown error has occurred";
-		QMessageBox::critical(wnd, "Error", err);
+		if (toolName.isEmpty()) toolName = "ERROR";
+		QMessageBox::critical(wnd, toolName, err);
+	}
+	else if (err.isEmpty() == false)
+	{
+		if (toolName.isEmpty()) toolName = "WARNING";
+		QMessageBox::warning(wnd, toolName, err);
 	}
 	updateUi();
 	GetMainWindow()->UpdateModel();

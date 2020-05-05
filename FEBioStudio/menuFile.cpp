@@ -767,7 +767,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 	if (fileName.isEmpty() == false)
 	{
 		doc->SetFileWriter(new CModelFileWriter(doc));
-		SaveDocument(fileName);
+		SaveDocument(QDir::toNativeSeparators(fileName));
 	}
 }
 

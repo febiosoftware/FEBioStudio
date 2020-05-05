@@ -2063,19 +2063,20 @@ CCmdDeleteFESelection::CCmdDeleteFESelection(GMeshObject* po) : CCommand("Delete
 	m_pnew = 0;
 	m_pobj = po;
 	m_pold = po->GetFEMesh();
-	m_item = m_state.nitem;
 }
 
 void CCmdDeleteFESelection::Execute()
 {
+	int item = m_state.nitem;
+
 	// create a copy of the old mesh
 	if (m_pnew == 0)
 	{
 		m_pnew = new FEMesh(*m_pold);
 
-		if (m_item == ITEM_ELEM) m_pnew->DeleteSelectedElements();
-		else if (m_item == ITEM_FACE) m_pnew->DeleteSelectedFaces();
-		else if (m_item == ITEM_NODE) m_pnew->DeleteSelectedNodes();
+		if      (item == ITEM_ELEM) m_pnew->DeleteSelectedElements();
+		else if (item == ITEM_FACE) m_pnew->DeleteSelectedFaces();
+		else if (item == ITEM_NODE) m_pnew->DeleteSelectedNodes();
 
 		// make sure you select the object
 		m_pobj->Select();

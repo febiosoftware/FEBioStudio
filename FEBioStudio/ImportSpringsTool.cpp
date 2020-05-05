@@ -17,18 +17,18 @@ CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Impo
 bool CImportSpringsTool::OnApply()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return false;
+	if (doc == nullptr) return SetErrorString("No document open");
 
 	// get the current object
 	GObject* po = doc->GetActiveObject();
-	if (po == nullptr) return false;
+	if (po == nullptr) return SetErrorString("You need to select the object where the springs will be added.");
 
 	// Make sure it is a GMeshObject
 	GMeshObject* mo = dynamic_cast<GMeshObject*>(po);
-	if (mo == nullptr) return false;
+	if (mo == nullptr) return SetErrorString("This tool only works with editable meshes.");
 
 	// read the file
-	if (ReadFile() == false) return false;
+	if (ReadFile() == false) return SetErrorString("There was a problem reading the file.");
 
 	// apply the springs
 	if (mo) return AddSprings(doc->GetGModel(), mo);
@@ -113,18 +113,24 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 	// add the discrete set to the model
 	fem->AddDiscreteObject(dset);
 
+	int notFound = 0;
 	for (size_t i = 0; i < m_springs.size(); ++i)
 	{
 		SPRING& spring = m_springs[i];
 
 		// see if the node exists
 		int na = findNode(po, spring.r0, m_tol);
-		if (na == -1) na = po->AddNode(spring.r0);
+		if (na == -1) { notFound++;  na = po->AddNode(spring.r0); }
 		int nb = findNode(po, spring.r1, m_tol);
-		if (nb == -1) nb = po->AddNode(spring.r1);
+		if (nb == -1) { notFound++; nb = po->AddNode(spring.r1); }
 
 		// add it to the discrete element set
 		dset->AddElement(na, nb);
+	}
+
+	if (notFound > 0)
+	{
+		SetErrorString(QString("%1 new vertices were added to the mesh.").arg(notFound));
 	}
 
 	return true;

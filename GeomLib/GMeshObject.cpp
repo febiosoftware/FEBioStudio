@@ -4,6 +4,7 @@
 #include <MeshTools/GLMesh.h>
 #include <list>
 #include <stack>
+#include <sstream>
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -287,24 +288,27 @@ void GMeshObject::UpdateEdges()
 			{
 				if (e.m_nbr[j] == -1)
 				{
-					GEdge& ge = *m_Edge[e.m_gid];
-					if (ge.m_node[0] == -1)
+					if (e.m_gid >= 0)
 					{
-						FENode& nj = m.Node(e.n[j]);
-						if ((nj.m_gid < 0) || (nj.m_gid >= NN)) 
+						GEdge& ge = *m_Edge[e.m_gid];
+						if (ge.m_node[0] == -1)
 						{
-							throw GObjectException(this, "GMeshObject::UpdateEdges\n(invalid node ID)");
+							FENode& nj = m.Node(e.n[j]);
+							if ((nj.m_gid < 0) || (nj.m_gid >= NN))
+							{
+								throw GObjectException(this, "GMeshObject::UpdateEdges\n(invalid node ID)");
+							}
+							ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
 						}
-						ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
-					}
-					else if (ge.m_node[1] == -1)
-					{
-						FENode& nj = m.Node(e.n[j]);
-						if ((nj.m_gid < 0) || (nj.m_gid >= NN)) 
+						else if (ge.m_node[1] == -1)
 						{
-							throw GObjectException(this, "GMeshObject::UpdateEdges\n(invalid node ID)");
+							FENode& nj = m.Node(e.n[j]);
+							if ((nj.m_gid < 0) || (nj.m_gid >= NN))
+							{
+								throw GObjectException(this, "GMeshObject::UpdateEdges\n(invalid node ID)");
+							}
+							ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
 						}
-						ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
 					}
 				}
 			}
@@ -396,6 +400,10 @@ int GMeshObject::MakeGNode(int n)
 		node->LocalPosition() = fen.r;
 		m_Node.push_back(node);
 
+		stringstream ss;
+		ss << "Node" << node->GetID();
+		node->SetName(ss.str());
+
 		fen.m_gid = N;
 		return node->GetID();
 	}
@@ -428,6 +436,10 @@ int GMeshObject::AddNode(vec3d r)
 	gn->SetLocalID((int)m_Node.size());
 	gn->LocalPosition() = r;
 	m_Node.push_back(gn);
+
+	stringstream ss;
+	ss << "Node" << gn->GetID();
+	gn->SetName(ss.str());
 
 	m.UpdateBox();
 	BuildGMesh();

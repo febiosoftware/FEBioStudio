@@ -16,7 +16,7 @@ bool FENodeEdgeList::IsEmpty() const
 	return m_edge.empty();
 }
 
-void FENodeEdgeList::Build(FELineMesh* pmesh)
+void FENodeEdgeList::Build(FELineMesh* pmesh, bool segsOnly)
 {
 	m_mesh = pmesh;
 	assert(pmesh);
@@ -32,14 +32,17 @@ void FENodeEdgeList::Build(FELineMesh* pmesh)
 	for (int i=0; i<NE; ++i)
 	{
 		const FEEdge& edge = mesh.Edge(i);
-		int n0 = edge.n[0];
-		int n1 = edge.n[1];
+		if ((segsOnly == false) || (edge.m_gid >= 0))
+		{
+			int n0 = edge.n[0];
+			int n1 = edge.n[1];
 
-		vector<int>& l0 = m_edge[n0];
-		vector<int>& l1 = m_edge[n1];
+			vector<int>& l0 = m_edge[n0];
+			vector<int>& l1 = m_edge[n1];
 
-		l0.push_back(i);
-		l1.push_back(i);
+			l0.push_back(i);
+			l1.push_back(i);
+		}
 	}
 }
 

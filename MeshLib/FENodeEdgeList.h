@@ -9,7 +9,7 @@ class FENodeEdgeList
 public:
 	FENodeEdgeList(FELineMesh* mesh = nullptr);
 
-	void Build(FELineMesh* mesh);
+	void Build(FELineMesh* mesh, bool segsOnly = false);
 
 	void Clear();
 

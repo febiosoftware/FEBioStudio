@@ -442,7 +442,7 @@ void GMesh::Update()
 			for (int i=0; i<NE; ++i)
 			{
 				EDGE& e = m_Edge[i];
-				m_EIL[e.pid].second += 1;
+				if (e.pid >= 0) m_EIL[e.pid].second += 1;
 			}
 			m_EIL[0].first = 0;
 			for (int i=1; i<EID; ++i) m_EIL[i].first = m_EIL[i-1].first + m_EIL[i-1].second;

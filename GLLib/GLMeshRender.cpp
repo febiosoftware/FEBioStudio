@@ -1024,7 +1024,7 @@ void GLMeshRender::RenderGLEdges(GLMesh* pm, int nid)
 			for (int i = 0; i<N; ++i)
 			{
 				GMesh::EDGE& e = pm->Edge(i);
-				if ((e.n[0] != -1) && (e.n[1] != -1))
+				if ((e.pid >= 0) && (e.n[0] != -1) && (e.n[1] != -1))
 				{
 					r0 = pm->Node(e.n[0]).r;
 					r1 = pm->Node(e.n[1]).r;
