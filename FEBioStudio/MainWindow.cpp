@@ -1398,7 +1398,7 @@ void CMainWindow::UpdateToolbar()
 
 	if (doc->IsValid() == false) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	if (view.m_bfiber != ui->actionShowFibers->isChecked()) ui->actionShowFibers->trigger();
 	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
@@ -1827,7 +1827,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		menu.addSeparator();
 
 		// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
-		VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+		VIEW_SETTINGS& vs = ui->glview->GetViewSettings();
 		QMenu* display = new QMenu("Object transparency mode");
 		QAction* a;
 		a = display->addAction("None"); a->setCheckable(true); if (vs.m_transparencyMode == 0) a->setChecked(true);
@@ -1894,7 +1894,7 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 {
-	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+	VIEW_SETTINGS& vs = ui->glview->GetViewSettings();
 
 	if      (ac->text() == "None"           ) vs.m_transparencyMode = 0;
 	else if (ac->text() == "Selected only"  ) vs.m_transparencyMode = 1;

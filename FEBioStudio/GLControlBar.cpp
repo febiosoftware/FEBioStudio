@@ -219,7 +219,7 @@ void CGLControlBar::Update()
 	CDocument* pdoc = ui->m_wnd->GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& vs = pdoc->GetViewSettings();
+	VIEW_SETTINGS& vs = ui->m_wnd->GetGLView()->GetViewSettings();
 
 	ui->showMesh->setChecked(vs.m_bmesh);
 
@@ -243,12 +243,11 @@ void CGLControlBar::Update()
 			case ITEM_NODE: ui->checkButton(3); break;
 			}
 
-			VIEW_SETTINGS& view = pdoc->GetViewSettings();
-			ui->selConnect->setChecked(view.m_bconn);
-			ui->selPath->setChecked(view.m_bselpath);
-			ui->maxAngle->setValue(view.m_fconn);
-			ui->cull->setChecked(!view.m_bcullSel);
-			ui->noint->setChecked(view.m_bext);
+			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selPath->setChecked(vs.m_bselpath);
+			ui->maxAngle->setValue(vs.m_fconn);
+			ui->cull->setChecked(!vs.m_bcullSel);
+			ui->noint->setChecked(vs.m_bext);
 
 			return;
 		}
@@ -270,12 +269,11 @@ void CGLControlBar::Update()
 			case ITEM_NODE: ui->checkButton(3); break;
 			}
 
-			VIEW_SETTINGS& view = pdoc->GetViewSettings();
-			ui->selConnect->setChecked(view.m_bconn);
-			ui->selPath->setChecked(view.m_bselpath);
-			ui->maxAngle->setValue(view.m_fconn);
-			ui->cull->setChecked(!view.m_bcullSel);
-			ui->noint->setChecked(view.m_bext);
+			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selPath->setChecked(vs.m_bselpath);
+			ui->maxAngle->setValue(vs.m_fconn);
+			ui->cull->setChecked(!vs.m_bcullSel);
+			ui->noint->setChecked(vs.m_bext);
 
 			return;
 		}
@@ -289,18 +287,17 @@ void CGLControlBar::Update()
 			switch (item)
 			{
 			case ITEM_MESH: ui->checkButton(-1); break;
-				//		case ITEM_ELEM: ui->checkButton(0); break;
-				//		case ITEM_FACE: ui->checkButton(1); break;
+	//		case ITEM_ELEM: ui->checkButton(0); break;
+	//		case ITEM_FACE: ui->checkButton(1); break;
 			case ITEM_EDGE: ui->checkButton(2); break;
 			case ITEM_NODE: ui->checkButton(3); break;
 			}
 
-			VIEW_SETTINGS& view = pdoc->GetViewSettings();
-			ui->selConnect->setChecked(view.m_bconn);
-			ui->selPath->setChecked(view.m_bselpath);
-			ui->maxAngle->setValue(view.m_fconn);
-			ui->cull->setChecked(!view.m_bcullSel);
-			ui->noint->setChecked(view.m_bext);
+			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selPath->setChecked(vs.m_bselpath);
+			ui->maxAngle->setValue(vs.m_fconn);
+			ui->cull->setChecked(!vs.m_bcullSel);
+			ui->noint->setChecked(vs.m_bext);
 
 			return;
 		}
@@ -325,15 +322,13 @@ void CGLControlBar::onPivotClicked(bool b)
 
 void CGLControlBar::onSnapToGridClicked(bool b)
 {
-	CDocument* doc = ui->m_wnd->GetDocument();
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_snapToGrid = b;
 }
 
 void CGLControlBar::onSnapToNodeClicked(bool b)
 {
-	CDocument* doc = ui->m_wnd->GetDocument();
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_snapToNode = b;
 }
 
@@ -392,35 +387,30 @@ void CGLControlBar::onMeshButtonClicked(int id)
 
 void CGLControlBar::onSelectConnected(bool b)
 {
-	CDocument* pdoc = ui->m_wnd->GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bconn = b;
 }
 
 void CGLControlBar::onSelectClosestPath(bool b)
 {
-	CDocument* pdoc = ui->m_wnd->GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bselpath = b;
 }
 
 void CGLControlBar::onMaxAngleChanged(double v)
 {
-	CDocument* pdoc = ui->m_wnd->GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_fconn = v;
 }
 
 void CGLControlBar::onSelectBackfacing(bool b)
 {
-	CDocument* pdoc = ui->m_wnd->GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bcullSel = !b;
 }
 
 void CGLControlBar::onIgnoreInterior(bool b)
 {
-	CDocument* pdoc = ui->m_wnd->GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bext = b;
 }

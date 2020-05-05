@@ -12,6 +12,7 @@
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
 #include <GLLib/GLContext.h>
+#include "ViewSettings.h"
 
 class CMainWindow;
 class CDocument;
@@ -220,6 +221,12 @@ public:
 		vp[2] = m_viewport[2];
 		vp[3] = m_viewport[3];
 	}
+
+	// --- view settings ---
+	VIEW_SETTINGS& GetViewSettings() { return m_view; }
+
+	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
+	vec3d Get3DCursor() const { return m_view.m_pos3d; }
 
 protected:
 	void mousePressEvent  (QMouseEvent* ev);
@@ -507,6 +514,7 @@ public:
 	CGLContext	m_rc;
 
 private:
+	VIEW_SETTINGS	m_view;
 	int	m_viewport[4];		//!< store viewport coordinates
 	int m_dpr;				//!< device pixel ratio for converting from physical to device-independent pixels
 };

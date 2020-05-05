@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "MainWindow.h"
+#include "ui_mainwindow.h"
 #include "ModelDocument.h"
 #include "DlgAddBC.h"
 #include "DlgAddNodalLoad.h"
@@ -372,7 +373,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 		assert(pc);
 		if (pc)
 		{
-			pc->SetPosition(doc->Get3DCursor());
+			pc->SetPosition(ui->glview->Get3DCursor());
 			pc->m_rbA = dlg.GetMaterialA();
 			pc->m_rbB = dlg.GetMaterialB();
 

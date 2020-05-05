@@ -42,7 +42,7 @@ void CMainWindow::on_actionShowGrid_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_bgrid = b;
 	RedrawGL();
 }
@@ -52,7 +52,7 @@ void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_bmesh = b;
 	Update(this);
 }
@@ -62,7 +62,7 @@ void CMainWindow::on_actionShowEdgeLines_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_bfeat = b;
 	Update(this);
 }
@@ -72,7 +72,7 @@ void CMainWindow::on_actionBackfaceCulling_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_bcull = b;
 	Update(this);
 }
@@ -99,7 +99,7 @@ void CMainWindow::on_actionShowNormals_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_bnorm = b;
 	RedrawGL();
 }
@@ -109,7 +109,7 @@ void CMainWindow::on_actionShowFibers_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_bfiber = b;
 	RedrawGL();
 }
@@ -119,7 +119,7 @@ void CMainWindow::on_actionShowMatAxes_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_blma = b;
 	RedrawGL();
 }
@@ -129,7 +129,7 @@ void CMainWindow::on_actionShowDiscrete_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_showDiscrete = b;
 	RedrawGL();
 }
@@ -139,7 +139,7 @@ void CMainWindow::on_actionToggleLight_triggered()
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_bLighting = !view.m_bLighting;
 	RedrawGL();
 }
@@ -179,7 +179,7 @@ void CMainWindow::on_actionWireframe_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
 	view.m_nrender = (b ? RENDER_WIREFRAME : RENDER_SOLID);
 	RedrawGL();
 }
@@ -187,7 +187,7 @@ void CMainWindow::on_actionWireframe_toggled(bool b)
 void CMainWindow::on_actionSnap3D_triggered()
 {
 	vec3d r = GetGLView()->GetPivotPosition();
-	GetDocument()->Set3DCursor(r);
+	ui->glview->Set3DCursor(r);
 	RedrawGL();
 }
 

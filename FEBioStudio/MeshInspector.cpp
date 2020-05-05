@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ui_meshinspector.h"
 #include "MainWindow.h"
+#include "GLView.h"
 #include "Document.h"
 #include <MeshTools/FEMeshValuator.h>
 #include "Commands.h"
@@ -21,13 +22,13 @@ void CMeshInspector::Update()
 
 void CMeshInspector::showEvent(QShowEvent* ev)
 {
-	m_wnd->GetDocument()->GetViewSettings().m_bcontour = true;
+	m_wnd->GetGLView()->GetViewSettings().m_bcontour = true;
 	m_wnd->RedrawGL();
 }
 
 void CMeshInspector::hideEvent(QHideEvent* ev)
 {
-	m_wnd->GetDocument()->GetViewSettings().m_bcontour = false;
+	m_wnd->GetGLView()->GetViewSettings().m_bcontour = false;
 	m_wnd->RedrawGL();
 }
 

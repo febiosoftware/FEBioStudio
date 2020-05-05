@@ -192,44 +192,6 @@ void CModelDocument::Save(OArchive& ar)
 	}
 	ar.EndChunk();
 
-	// save view settings
-	ar.BeginChunk(CID_VIEW_SETTINGS);
-	{
-		ar.WriteChunk(CID_VIEW_CULL, m_view.m_bcull);
-		ar.WriteChunk(CID_VIEW_CONNECTED, m_view.m_bconn);
-		ar.WriteChunk(CID_VIEW_ANGLE_CONSTRAINT, m_view.m_bmax);
-		ar.WriteChunk(CID_VIEW_CONN_ANGLE, m_view.m_fconn);
-		ar.WriteChunk(CID_VIEW_PARTBOUNDS, m_view.m_bpart);
-		ar.WriteChunk(CID_VIEW_AUTOHIDE, m_view.m_bhide);
-		ar.WriteChunk(CID_VIEW_EXTONLY, m_view.m_bext);
-		ar.WriteChunk(CID_VIEW_SOFTSELECT, m_view.m_bsoft);
-		ar.WriteChunk(CID_VIEW_GRID, m_view.m_bgrid);
-		ar.WriteChunk(CID_VIEW_MESH, m_view.m_bmesh);
-		ar.WriteChunk(CID_VIEW_FEATURES, m_view.m_bfeat);
-		ar.WriteChunk(CID_VIEW_NORMALS, m_view.m_bnorm);
-		ar.WriteChunk(CID_VIEW_JOINTS, m_view.m_bjoint);
-		ar.WriteChunk(CID_VIEW_RIGID_WALL, m_view.m_bwall);
-		ar.WriteChunk(CID_VIEW_RIGID, m_view.m_brigid);
-		ar.WriteChunk(CID_VIEW_FIBERS, m_view.m_bfiber);
-		ar.WriteChunk(CID_VIEW_FIBER_SCALE, m_view.m_fiber_scale);
-		ar.WriteChunk(CID_VIEW_CONTOUR, m_view.m_bcontour);
-		ar.WriteChunk(CID_VIEW_LMA, m_view.m_blma);
-		ar.WriteChunk(CID_VIEW_BGCOL1, m_view.m_col1);
-		ar.WriteChunk(CID_VIEW_BGCOL2, m_view.m_col2);
-		ar.WriteChunk(CID_VIEW_FGCOL, m_view.m_fgcol);
-		ar.WriteChunk(CID_VIEW_MESH_COLOR, m_view.m_mcol);
-		ar.WriteChunk(CID_VIEW_BGSTYLE, m_view.m_nbgstyle);
-		ar.WriteChunk(CID_VIEW_NODESIZE, m_view.m_node_size);
-		ar.WriteChunk(CID_VIEW_LINEWIDTH, m_view.m_line_size);
-		ar.WriteChunk(CID_VIEW_RENDER, m_view.m_nrender);
-		ar.WriteChunk(CID_VIEW_LINE_SMOOTH, m_view.m_bline_smooth);
-		ar.WriteChunk(CID_VIEW_POINT_SMOOTH, m_view.m_bpoint_smooth);
-		ar.WriteChunk(CID_VIEW_EMULATE_APPLY, m_view.m_apply);
-		ar.WriteChunk(CID_VIEW_SHOW_HIDDEN_FIBERS, m_view.m_showHiddenFibers);
-        ar.WriteChunk(CID_VIEW_MULTIVIEW_CONV, m_view.m_nconv);
-	}
-	ar.EndChunk(); // CID_VIEW_SETTINGS
-
 	// save resources
 	if (ImageModels() > 0)
 	{
@@ -304,50 +266,6 @@ void CModelDocument::Load(IArchive& ar)
 					nret = ar.read(m_info);
 				}
 				ar.CloseChunk();
-			}
-		}
-		else if (nid == CID_VIEW_SETTINGS)
-		{
-			while (ar.OpenChunk() == IArchive::IO_OK)
-			{
-				int nid = ar.GetChunkID();
-				switch (nid)
-				{
-				case CID_VIEW_CULL            : nret = ar.read(m_view.m_bcull); break;
-//				case CID_VIEW_CONNECTED       : nret = ar.read(m_view.m_bconn); break;
-				case CID_VIEW_ANGLE_CONSTRAINT: nret = ar.read(m_view.m_bmax); break;
-				case CID_VIEW_CONN_ANGLE      : nret = ar.read(m_view.m_fconn); break;
-//				case CID_VIEW_PARTBOUNDS      : nret = ar.read(m_view.m_bpart); break;
-				case CID_VIEW_AUTOHIDE        : nret = ar.read(m_view.m_bhide); break;
-				case CID_VIEW_EXTONLY         : nret = ar.read(m_view.m_bext); break;
-				case CID_VIEW_SOFTSELECT      : nret = ar.read(m_view.m_bsoft); break;
-				case CID_VIEW_GRID            : nret = ar.read(m_view.m_bgrid); break;
-				case CID_VIEW_MESH            : nret = ar.read(m_view.m_bmesh); break;
-				case CID_VIEW_FEATURES        : nret = ar.read(m_view.m_bfeat); break;
-				case CID_VIEW_NORMALS         : nret = ar.read(m_view.m_bnorm); break;
-				case CID_VIEW_JOINTS          : nret = ar.read(m_view.m_bjoint); break;
-				case CID_VIEW_RIGID_WALL      : nret = ar.read(m_view.m_bwall); break;
-				case CID_VIEW_RIGID           : nret = ar.read(m_view.m_brigid); break;
-				case CID_VIEW_FIBERS          : nret = ar.read(m_view.m_bfiber); break;
-				case CID_VIEW_FIBER_SCALE     : nret = ar.read(m_view.m_fiber_scale); break;
-				case CID_VIEW_CONTOUR         : nret = ar.read(m_view.m_bcontour); break;
-				case CID_VIEW_LMA             : nret = ar.read(m_view.m_blma); break;
-//				case CID_VIEW_BGCOL1          : nret = ar.read(m_view.m_col1); break;
-//				case CID_VIEW_BGCOL2          : nret = ar.read(m_view.m_col2); break;
-				case CID_VIEW_FGCOL           : nret = ar.read(m_view.m_fgcol); break;
-				case CID_VIEW_MESH_COLOR      : nret = ar.read(m_view.m_mcol); break;
-//				case CID_VIEW_BGSTYLE         : nret = ar.read(m_view.m_nbgstyle); break;
-				case CID_VIEW_NODESIZE        : nret = ar.read(m_view.m_node_size); break;
-				case CID_VIEW_LINEWIDTH       : nret = ar.read(m_view.m_line_size); break;
-				case CID_VIEW_RENDER          : nret = ar.read(m_view.m_nrender); break;
-				case CID_VIEW_LINE_SMOOTH     : nret = ar.read(m_view.m_bline_smooth); break;
-				case CID_VIEW_POINT_SMOOTH    : nret = ar.read(m_view.m_bpoint_smooth); break;
-				case CID_VIEW_EMULATE_APPLY   : nret = ar.read(m_view.m_apply); break;
-				case CID_VIEW_SHOW_HIDDEN_FIBERS: nret = ar.read(m_view.m_showHiddenFibers); break;
-                case CID_VIEW_MULTIVIEW_CONV  : nret = ar.read(m_view.m_nconv); break;
-				}
-				ar.CloseChunk();
-				if (nret != IArchive::IO_OK) throw ReadError("Error occurred when parsing CID_VIEW_SETTINGS (CDocument::Load)");
 			}
 		}
 		else if (nid == CID_RESOURCE_SECTION)

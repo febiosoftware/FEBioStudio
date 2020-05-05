@@ -866,7 +866,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	CDocument* pdoc = m_pWnd->GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	int ntrans = pdoc->GetTransformMode();
 	int item = pdoc->GetItemMode();
@@ -934,7 +934,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 					if (bok)
 					{
 						m_bpick = true;
-						GetDocument()->Set3DCursor(r);
+						Set3DCursor(r);
 
 						emit pointPicked(r);
 					}
@@ -1253,6 +1253,24 @@ void CGLView::initializeGL()
 
 void CGLView::Reset()
 {
+	// default display properties
+	m_view.Defaults();
+
+	// set some theme dependant settings
+	int ntheme = m_pWnd->currentTheme();
+	if (ntheme == 0)
+	{
+		m_view.m_col1 = GLColor(255, 255, 255);
+		m_view.m_col2 = GLColor(128, 128, 255);
+		m_view.m_nbgstyle = BG_HORIZONTAL;
+	}
+	else
+	{
+		m_view.m_col1 = GLColor(83, 83, 83);
+		m_view.m_col2 = GLColor(128, 128, 128);
+		m_view.m_nbgstyle = BG_HORIZONTAL;
+	}
+
 	m_Cam.SetTargetDistance(4.0);
 	m_Cam.Reset();
 	GLHighlighter::ClearHighlights();
@@ -1442,7 +1460,7 @@ void CGLView::paintGL()
 		return;
 	}
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	int nitem = pdoc->GetItemMode();
 
@@ -1486,7 +1504,7 @@ void CGLView::paintGL()
 
 		if (m_bpick && (nitem == ITEM_MESH))
 		{
-			Render3DCursor(pdoc->Get3DCursor(), 10.0);
+			Render3DCursor(Get3DCursor(), 10.0);
 		}
 
 		// render the pivot
@@ -1637,7 +1655,7 @@ void CGLView::RenderGLProgress(CPostDocument* postDoc)
 void CGLView::RenderModelView()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nitem = pdoc->GetItemMode();
 
 	// render the model
@@ -1738,7 +1756,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 
 		CGLCamera& cam = GetCamera();
 
-		VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+		VIEW_SETTINGS& vs = GetViewSettings();
 
 		glm->m_nrender = vs.m_nrender + 1;
 
@@ -1845,8 +1863,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 		if (m_btrack) RenderTrack();
 
 		// render the tags
-		CDocument* doc = GetDocument();
-		VIEW_SETTINGS& view = doc->GetViewSettings();
+		VIEW_SETTINGS& view = GetViewSettings();
 		if (view.m_bTags) RenderTags();
 	}
 
@@ -1957,7 +1974,7 @@ void CGLView::SetupProjection()
 	}
 
 	double R = box.Radius();
-	VIEW_SETTINGS& vs = doc->GetViewSettings();
+	VIEW_SETTINGS& vs = GetViewSettings();
 
 	vec3d p = m_Cam.GlobalPosition();
 	vec3d c = box.Center();
@@ -2173,7 +2190,7 @@ void CGLView::PrepModel()
 	CDocument* pdoc = GetDocument();
 	if (pdoc && pdoc->IsValid())
 	{
-		VIEW_SETTINGS& view = pdoc->GetViewSettings();
+		VIEW_SETTINGS& view = GetViewSettings();
 
 		// set the line width
 		glLineWidth(view.m_line_size);
@@ -2323,7 +2340,7 @@ void CGLView::RenderModel()
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the model
 	FEModel* ps = pdoc->GetFEModel();
@@ -2474,7 +2491,7 @@ void CGLView::RenderSelectionBox()
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the model
 	FEModel* ps = pdoc->GetFEModel();
@@ -2631,7 +2648,7 @@ void CGLView::RenderBackground()
 	glDisable(GL_LIGHTING);
 	glDisable(GL_CULL_FACE);
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	GLColor c[4];
 
@@ -2720,7 +2737,7 @@ void CGLView::RenderImageData()
 
 	CGLCamera& cam = GetCamera();
 
-	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+	VIEW_SETTINGS& vs = GetViewSettings();
 
 	CGLContext& rc = m_rc;
 	rc.m_cam = &cam;
@@ -2753,7 +2770,7 @@ void CGLView::RenderMaterialFibers()
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the model
 	FEModel* ps = pdoc->GetFEModel();
@@ -2836,7 +2853,7 @@ void CGLView::RenderLocalMaterialAxes()
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	BOX box = model.GetBoundingBox();
 	double h = 0.05*box.GetMaxExtent()*view.m_fiber_scale;
 
@@ -3651,7 +3668,7 @@ void CGLView::SetViewMode(View_Mode n)
 
     // Get the document
     CDocument* pdoc = GetDocument();
-    VIEW_SETTINGS& view = pdoc->GetViewSettings();
+    VIEW_SETTINGS& view = GetViewSettings();
     int c = view.m_nconv;
     
     switch (c) {
@@ -3769,7 +3786,7 @@ void CGLView::TogglePerspective(bool b)
 
 void CGLView::ToggleDisplayNormals()
 {
-	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	view.m_bnorm = !view.m_bnorm;
 	repaint();
 }
@@ -3944,7 +3961,7 @@ void CGLView::SelectParts(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the model
 	FEModel* ps = pdoc->GetFEModel();
@@ -4033,7 +4050,7 @@ void CGLView::SelectSurfaces(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
 	FEModel* ps = pdoc->GetFEModel();
@@ -4111,7 +4128,7 @@ void CGLView::SelectEdges(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
 	FEModel* ps = pdoc->GetFEModel();
@@ -4185,7 +4202,7 @@ void CGLView::HighlightEdge(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
 	FEModel* ps = pdoc->GetFEModel();
@@ -4251,7 +4268,7 @@ void CGLView::SelectNodes(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
 	FEModel* ps = pdoc->GetFEModel();
@@ -4322,7 +4339,7 @@ void CGLView::SelectDiscrete(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
 	FEModel* ps = pdoc->GetFEModel();
@@ -4462,7 +4479,7 @@ void CGLView::SelectFEElements(int x, int y)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the mesh
 	GObject* po = GetActiveObject();
@@ -4598,7 +4615,7 @@ void CGLView::SelectFEFaces(int x, int y)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the active object
 	GObject* po = GetActiveObject();
@@ -4646,7 +4663,7 @@ void CGLView::SelectFEEdges(int x, int y)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the mesh
 	GObject* po = GetActiveObject();
@@ -4771,7 +4788,7 @@ void CGLView::SelectSurfaceFaces(int x, int y)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the active object
 	GSurfaceMeshObject* po = dynamic_cast<GSurfaceMeshObject*>(GetActiveObject());
@@ -4819,7 +4836,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the mesh
 	GObject* po = GetActiveObject();
@@ -4945,7 +4962,7 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -5046,7 +5063,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	if (success) *success = false;
 	CDocument* doc = GetDocument();
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// if a temp object is available, see if we can pick a point
 	GObject* ptmp = m_pWnd->GetCreatePanel()->GetTempObject();
@@ -5110,7 +5127,7 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 	if (pdoc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
@@ -5182,7 +5199,7 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 	if (pdoc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
@@ -5250,7 +5267,7 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 	if (pdoc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
@@ -5316,7 +5333,7 @@ void CGLView::RegionSelectEdges(const SelectRegion& region)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
@@ -5373,7 +5390,7 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 	if (doc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
@@ -5421,7 +5438,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 	if (doc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
@@ -5491,7 +5508,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -5626,7 +5643,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -5792,7 +5809,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -5858,7 +5875,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -5913,7 +5930,7 @@ void CGLView::SelectFENodes(int x, int y)
 
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -6011,7 +6028,7 @@ void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
 {
 	// get the document
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// clear all tags
 	for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
@@ -6277,7 +6294,7 @@ vec3d CGLView::GetPickPosition()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return vec3d(0, 0, 0);
-	return doc->Get3DCursor();
+	return Get3DCursor();
 }
 
 //-----------------------------------------------------------------------------
@@ -6497,7 +6514,7 @@ void CGLView::RenderSurfaces(GObject* po)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& vs = doc->GetViewSettings();
+	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
 	FEModel& fem = *doc->GetFEModel();
@@ -6731,7 +6748,7 @@ void CGLView::RenderParts(GObject* po)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& vs = doc->GetViewSettings();
+	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
 	FEModel& fem = *doc->GetFEModel();
@@ -6842,7 +6859,7 @@ void CGLView::RenderObject(GObject* po)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& vs = doc->GetViewSettings();
+	VIEW_SETTINGS& vs = GetViewSettings();
 
 	// get the GLMesh
 	FEModel& fem = *doc->GetFEModel();
@@ -6936,11 +6953,11 @@ void CGLView::RenderObject(GObject* po)
 void CGLView::RenderFENodes(GObject* po)
 {
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	quatd q = m_Cam.GetOrientation();
 
 	// set the point size
-	float fsize = pdoc->GetViewSettings().m_node_size;
+	float fsize = GetViewSettings().m_node_size;
 	m_renderer.SetPointSize(fsize);
 
 	FEMesh* pm = po->GetFEMesh();
@@ -7066,7 +7083,7 @@ void CGLView::RenderFEFaces(GObject* po)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	FEModel& fem = *doc->GetFEModel();
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
@@ -7194,7 +7211,7 @@ void CGLView::RenderSurfaceMeshFaces(GObject* po)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	FEModel& fem = *doc->GetFEModel();
 
 	GLColor col = po->GetColor();
@@ -7230,7 +7247,7 @@ void CGLView::RenderSurfaceMeshEdges(GObject* po)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	FEModel& fem = *doc->GetFEModel();
 	FELineMesh* pm = po->GetEditableLineMesh();
 	assert(pm);
@@ -7256,11 +7273,11 @@ void CGLView::RenderSurfaceMeshEdges(GObject* po)
 void CGLView::RenderSurfaceMeshNodes(GObject* po)
 {
 	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	quatd q = m_Cam.GetOrientation();
 
 	// set the point size
-	float fsize = pdoc->GetViewSettings().m_node_size;
+	float fsize = GetViewSettings().m_node_size;
 	m_renderer.SetPointSize(fsize);
 
 	FEMeshBase* mesh = po->GetEditableMesh();
@@ -7326,7 +7343,7 @@ void CGLView::RenderFEEdges(GObject* po)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	FEModel& fem = *doc->GetFEModel();
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
@@ -7359,7 +7376,7 @@ void CGLView::RenderFEElements(GObject* po)
 	assert(pm);
 	if (pm == 0) return;
 
-	VIEW_SETTINGS& view = GetDocument()->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 	GLColor dif;
 
 	GLColor col = po->GetColor();
@@ -7539,7 +7556,7 @@ void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	bool bcull = view.m_bcull;
 	bool bok;
@@ -7875,7 +7892,7 @@ void CGLView::RenderMeshLines()
 	GModel& model = *pdoc->GetGModel();
 	int nitem = pdoc->GetItemMode();
 
-	VIEW_SETTINGS& vs = GetDocument()->GetViewSettings();
+	VIEW_SETTINGS& vs = GetViewSettings();
 	GLColor c = vs.m_mcol;
 	glColor3ub(c.r, c.g, c.b);
 
@@ -8312,7 +8329,7 @@ void CGLView::RenderTags()
 	if (fem == nullptr) return;
 	BOX box = fem->GetBoundingBox();
 
-	VIEW_SETTINGS& view = doc->GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the mesh
 	Post::FEPostMesh& mesh = *model->GetActiveMesh();

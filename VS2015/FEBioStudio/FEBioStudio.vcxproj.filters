@@ -246,9 +246,6 @@
     <ClCompile Include="..\..\FEBioStudio\MeshPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\MeshSelectionBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\moc_BuildPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -349,9 +346,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\moc_MeshPanel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\moc_MeshSelectionBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\moc_ModelPropsPanel.cpp">
@@ -1283,9 +1277,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\MeshPanel.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\MeshSelectionBox.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\ModelSearch.h">

@@ -285,7 +285,6 @@
     <ClCompile Include="..\..\FEBioStudio\MeshInfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshInspector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeshPanel.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\MeshSelectionBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_BuildPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_CColorButton.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_CreateP2PlinePane.cpp" />
@@ -338,7 +337,6 @@
     <ClCompile Include="..\..\FEBioStudio\moc_MeshButtonBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MeshInspector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MeshPanel.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\moc_MeshSelectionBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ModelPropsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ModelSearch.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ModelTree.cpp" />
@@ -805,11 +803,6 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
-    </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\MeshSelectionBox.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\ModelPropsPanel.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

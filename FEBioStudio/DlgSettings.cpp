@@ -652,8 +652,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	m_pwnd = pwnd;
 	setWindowTitle("Options");
 
-	CDocument* pdoc = m_pwnd->GetDocument();
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
+	VIEW_SETTINGS& view = pwnd->GetGLView()->GetViewSettings();
 	CGLView* glview = pwnd->GetGLView();
 
 	CGLCamera& cam = glview->GetCamera();
@@ -735,8 +734,8 @@ void CDlgSettings::apply()
 {
 	CDocument* pdoc = m_pwnd->GetDocument();
 
-	VIEW_SETTINGS& view = pdoc->GetViewSettings();
 	CGLView* glview = m_pwnd->GetGLView();
+	VIEW_SETTINGS& view = glview->GetViewSettings();
 
 	CGLCamera& cam = glview->GetCamera();
 

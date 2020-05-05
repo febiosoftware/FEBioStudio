@@ -9,9 +9,9 @@
 #include "FEBioOpt.h"
 #include <PostLib/ImageModel.h>
 #include <FSCore/FSObjectList.h>
-#include "ViewSettings.h"
 #include "modelcheck.h"
 #include <QtCore/QString>
+#include "ViewSettings.h"
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -167,12 +167,6 @@ public:
 	void ClearCommandStack();
 	const std::string& GetCommandErrorString() const;
 
-	// --- view settings ---
-	VIEW_SETTINGS& GetViewSettings() { return m_view; }
-
-	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
-	vec3d Get3DCursor() const { return m_view.m_pos3d; }
-
 	// --- view state ---
 	VIEW_STATE GetViewState() { return m_vs; }
 	void SetViewState(VIEW_STATE vs);
@@ -234,9 +228,6 @@ protected:
 
 	// The command manager
 	CCommandManager*	m_pCmd;		// the command manager
-
-	// display properties
-	VIEW_SETTINGS	m_view;
 
 	VIEW_STATE	m_vs;	// the view state
 
