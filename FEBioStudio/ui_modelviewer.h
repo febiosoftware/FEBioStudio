@@ -8,6 +8,7 @@
 #include <QToolButton>
 #include <QScrollArea>
 #include <QComboBox>
+#include <QLabel>
 #include "ModelTree.h"
 #include "ModelPropsPanel.h"
 #include "ModelSearch.h"
@@ -60,8 +61,16 @@ public:
 
 		// filter box
 		m_filter = new QComboBox;
-		m_filter->addItems(QStringList() << "All items" << "Materials" << "Physics" << "Steps");
+		m_filter->addItems(QStringList() << "All items" << "Geometry" << "Materials" << "Physics" << "Steps");
 		m_filter->setObjectName("filter");
+		m_filter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+		QHBoxLayout* hf = new QHBoxLayout;
+		hf->setMargin(0);
+		QLabel* l = new QLabel("Filter:");
+		l->setBuddy(m_filter);
+		hf->addWidget(l);
+		hf->addWidget(m_filter);
 
 		// model tree
 		tree = new CModelTree(wnd);
@@ -75,7 +84,7 @@ public:
 
 		QVBoxLayout* th = new QVBoxLayout;
 		th->setMargin(0);
-		th->addWidget(m_filter);
+		th->addLayout(hf);
 		th->addWidget(tree);
 
 		QWidget* dummy = new QWidget;

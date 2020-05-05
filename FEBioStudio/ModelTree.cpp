@@ -793,12 +793,16 @@ void CModelTree::Build(CModelDocument* doc)
 	std::string modelName = doc->GetDocFileBase();
 	if (modelName.empty()) modelName = "Model";
 
-	if      (m_nfilter == ModelTreeFilter::FILTER_MATERIALS) modelName += " > Materials";
+	if      (m_nfilter == ModelTreeFilter::FILTER_GEOMETRY ) modelName += " > Geometry";
+	else if (m_nfilter == ModelTreeFilter::FILTER_MATERIALS) modelName += " > Materials";
 	else if (m_nfilter == ModelTreeFilter::FILTER_PHYSICS  ) modelName += " > Physics";
 	else if (m_nfilter == ModelTreeFilter::FILTER_STEPS    ) modelName += " > Steps";
 
 	QTreeWidgetItem* t1 = AddTreeItem(nullptr, QString::fromStdString(modelName), 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
 	t1->setExpanded(true);
+	QFont f = t1->font(0);
+	f.setBold(true);
+	t1->setFont(0, f);
 
 	// add data variables
 	QTreeWidgetItem* t2;
@@ -809,10 +813,14 @@ void CModelTree::Build(CModelDocument* doc)
 	}
 
 	// add the objects
-	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_GEOMETRY))
 	{
-		t2 = AddTreeItem(t1, "Geometry", MT_OBJECT_LIST, mdl.Objects());
-		UpdateObjects(t2, fem);
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Geometry", MT_OBJECT_LIST, mdl.Objects());
+			UpdateObjects(t2, fem);
+		}
+		else UpdateObjects(t1, fem);
 	}
 
 	// add the groups
