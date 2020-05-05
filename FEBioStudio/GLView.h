@@ -343,6 +343,8 @@ public:
 
 	GLMeshRender& GetMeshRenderer() { return m_renderer; }
 
+	void changeViewMode(View_Mode vm);
+
 protected:
 	void initializeGL();
 	void resizeGL(int w, int h);
@@ -415,7 +417,7 @@ protected:
 	CGLCamera		m_oldCam;	// the previous camera position
 	GLMeshRender	m_renderer; // the renderer for this view
 
-	CCommandManager	m_Cmd;	// view command history
+	CBasicCmdManager m_Cmd;	// view command history
 
 	GGrid		m_grid;		// the grid object
 

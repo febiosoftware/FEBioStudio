@@ -146,32 +146,32 @@ void CMainWindow::on_actionToggleLight_triggered()
 
 void CMainWindow::on_actionFront_triggered()
 {
-	changeViewMode(VIEW_FRONT);
+	ui->glview->changeViewMode(VIEW_FRONT);
 }
 
 void CMainWindow::on_actionBack_triggered()
 {
-	changeViewMode(VIEW_BACK);
+	ui->glview->changeViewMode(VIEW_BACK);
 }
 
 void CMainWindow::on_actionLeft_triggered()
 {
-	changeViewMode(VIEW_LEFT);
+	ui->glview->changeViewMode(VIEW_LEFT);
 }
 
 void CMainWindow::on_actionRight_triggered()
 {
-	changeViewMode(VIEW_RIGHT);
+	ui->glview->changeViewMode(VIEW_RIGHT);
 }
 
 void CMainWindow::on_actionTop_triggered()
 {
-	changeViewMode(VIEW_TOP);
+	ui->glview->changeViewMode(VIEW_TOP);
 }
 
 void CMainWindow::on_actionBottom_triggered()
 {
-	changeViewMode(VIEW_BOTTOM);
+	ui->glview->changeViewMode(VIEW_BOTTOM);
 }
 
 void CMainWindow::on_actionWireframe_toggled(bool b)

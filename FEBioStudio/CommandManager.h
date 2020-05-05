@@ -16,7 +16,7 @@ public:
 	bool CanUndo() { return (m_Undo.size() > 0); }
 	bool CanRedo() { return (m_Redo.size() > 0); }
 
-	void AddCommand(CCommand* pcmd);
+	virtual void AddCommand(CCommand* pcmd);
 
 	virtual bool DoCommand(CCommand* pcmd);
 
@@ -44,6 +44,8 @@ class CCommandManager  : public CBasicCmdManager
 public:
 	CCommandManager(CDocument* pdoc);
 	virtual ~CCommandManager();
+
+	void AddCommand(CCommand* pcmd) override;
 
 	bool DoCommand(CCommand* pcmd) override;
 

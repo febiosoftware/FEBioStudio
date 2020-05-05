@@ -271,7 +271,6 @@ bool CDocument::DoCommand(CCommand* pcmd)
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-	pcmd->SetViewState(GetViewState());
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
 	UpdateSelection();
@@ -288,7 +287,6 @@ bool CDocument::DoCommand(CCommand* pcmd, const std::string& s)
 	}
 	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
 
-	pcmd->SetViewState(GetViewState());
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
 	UpdateSelection();

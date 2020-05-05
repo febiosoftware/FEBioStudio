@@ -6,6 +6,7 @@
 #include "MainWindow.h"
 #include "PostDocument.h"
 #include "Document.h"
+#include "GLView.h"
 #include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
 

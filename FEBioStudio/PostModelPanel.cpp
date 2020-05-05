@@ -34,6 +34,7 @@
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
 #include "GView.h"
+#include "GLView.h"
 #include "PostDocument.h"
 
 //-----------------------------------------------------------------------------

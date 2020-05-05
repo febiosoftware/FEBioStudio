@@ -2,6 +2,7 @@
 #include "DlgSettings.h"
 #include "MainWindow.h"
 #include "Document.h"
+#include "GLView.h"
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QTabWidget>

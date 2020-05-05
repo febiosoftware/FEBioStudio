@@ -342,7 +342,7 @@ void RenderBox(const BOX& bbox, bool partial = true, double scale = 1.0)
 	glPopAttrib();
 }
 
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_pWnd(pwnd), m_Cmd(0), m_Ttor(this), m_Rtor(this), m_Stor(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_pWnd(pwnd), m_Ttor(this), m_Rtor(this), m_Stor(this)
 {
 	QSurfaceFormat fmt = format();
 //	fmt.setSamples(4);
@@ -436,6 +436,18 @@ void CGLView::resizeGL(int w, int h)
 {
 	QOpenGLWidget::resizeGL(w, h);
 	m_Widget->CheckWidgetBounds();
+}
+
+void CGLView::changeViewMode(View_Mode vm)
+{
+	SetViewMode(vm);
+
+	// switch to ortho view if we're not in it
+	bool bortho = OrhographicProjection();
+	if (bortho == false)
+	{
+		m_pWnd->toggleOrtho();
+	}
 }
 
 void CGLView::mousePressEvent(QMouseEvent* ev)

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
+#include "GLView.h"
 #include "ModelDocument.h"
 #include "ModelFileReader.h"
 #include <QApplication>
@@ -2517,16 +2518,9 @@ void CMainWindow::on_modelViewer_currentObjectChanged(FSObject* po)
 	ui->infoPanel->SetObject(po);
 }
 
-void CMainWindow::changeViewMode(View_Mode vm)
+void CMainWindow::toggleOrtho()
 {
-	ui->glview->SetViewMode(vm);
-
-	// switch to ortho view if we're not in it
-	bool bortho = ui->glview->OrhographicProjection();
-	if (bortho == false)
-	{
-		ui->actionOrtho->trigger();
-	}
+	ui->actionOrtho->trigger();
 }
 
 QStringList CMainWindow::GetRecentFileList()

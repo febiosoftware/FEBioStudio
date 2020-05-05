@@ -119,8 +119,16 @@ CCommandManager::~CCommandManager()
 	m_pDoc = 0;
 }
 
+void CCommandManager::AddCommand(CCommand* pcmd)
+{
+	pcmd->SetViewState(m_pDoc->GetViewState());
+	CBasicCmdManager::AddCommand(pcmd);
+}
+
 bool CCommandManager::DoCommand(CCommand* pcmd)
 {
+	pcmd->SetViewState(m_pDoc->GetViewState());
+
 	m_err.clear();
 
 	// execute the command

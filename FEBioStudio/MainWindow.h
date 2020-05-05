@@ -3,7 +3,7 @@
 #include <QCloseEvent>
 #include <MathLib/math3d.h>
 #include <QtCore/QProcess>
-#include "GLView.h"
+#include <FSCore/box.h>
 
 class FSObject;
 class CDocument;
@@ -24,6 +24,8 @@ class xpltFileReader;
 class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
+class CGLView;
+class GObject;
 
 namespace Ui {
 	class CMainWindow;
@@ -31,6 +33,7 @@ namespace Ui {
 
 namespace Post {
 	class CGLModel;
+	class CGLObject;
 }
 
 class CMainWindow : public QMainWindow
@@ -470,8 +473,6 @@ public slots:
 
 	CGLView* GetGLView();
 
-	void changeViewMode(View_Mode vm);
-
 	Post::CGLModel* GetCurrentModel();
 
 	// update the font toolbar
@@ -486,6 +487,8 @@ public slots:
 	void UpdateProgress(int);
 
 	bool DoModelCheck(CModelDocument* doc);
+
+	void toggleOrtho();
 
 public:
 	QStringList GetRecentFileList();

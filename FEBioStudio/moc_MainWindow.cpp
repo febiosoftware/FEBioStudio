@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[250];
-    char stringdata0[5836];
+    QByteArrayData data[248];
+    char stringdata0[5820];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -264,24 +264,22 @@ QT_MOC_LITERAL(228, 5547, 24), // "DeleteAllRigidConnectors"
 QT_MOC_LITERAL(229, 5572, 14), // "DeleteAllSteps"
 QT_MOC_LITERAL(230, 5587, 9), // "GetGLView"
 QT_MOC_LITERAL(231, 5597, 8), // "CGLView*"
-QT_MOC_LITERAL(232, 5606, 14), // "changeViewMode"
-QT_MOC_LITERAL(233, 5621, 9), // "View_Mode"
-QT_MOC_LITERAL(234, 5631, 2), // "vm"
-QT_MOC_LITERAL(235, 5634, 15), // "GetCurrentModel"
-QT_MOC_LITERAL(236, 5650, 15), // "Post::CGLModel*"
-QT_MOC_LITERAL(237, 5666, 17), // "UpdateFontToolbar"
-QT_MOC_LITERAL(238, 5684, 11), // "RunFEBioJob"
-QT_MOC_LITERAL(239, 5696, 10), // "CFEBioJob*"
-QT_MOC_LITERAL(240, 5707, 3), // "job"
-QT_MOC_LITERAL(241, 5711, 15), // "NextSSHFunction"
-QT_MOC_LITERAL(242, 5727, 12), // "CSSHHandler*"
-QT_MOC_LITERAL(243, 5740, 12), // "ShowProgress"
-QT_MOC_LITERAL(244, 5753, 4), // "show"
-QT_MOC_LITERAL(245, 5758, 7), // "message"
-QT_MOC_LITERAL(246, 5766, 25), // "ShowIndeterminateProgress"
-QT_MOC_LITERAL(247, 5792, 14), // "UpdateProgress"
-QT_MOC_LITERAL(248, 5807, 12), // "DoModelCheck"
-QT_MOC_LITERAL(249, 5820, 15) // "CModelDocument*"
+QT_MOC_LITERAL(232, 5606, 15), // "GetCurrentModel"
+QT_MOC_LITERAL(233, 5622, 15), // "Post::CGLModel*"
+QT_MOC_LITERAL(234, 5638, 17), // "UpdateFontToolbar"
+QT_MOC_LITERAL(235, 5656, 11), // "RunFEBioJob"
+QT_MOC_LITERAL(236, 5668, 10), // "CFEBioJob*"
+QT_MOC_LITERAL(237, 5679, 3), // "job"
+QT_MOC_LITERAL(238, 5683, 15), // "NextSSHFunction"
+QT_MOC_LITERAL(239, 5699, 12), // "CSSHHandler*"
+QT_MOC_LITERAL(240, 5712, 12), // "ShowProgress"
+QT_MOC_LITERAL(241, 5725, 4), // "show"
+QT_MOC_LITERAL(242, 5730, 7), // "message"
+QT_MOC_LITERAL(243, 5738, 25), // "ShowIndeterminateProgress"
+QT_MOC_LITERAL(244, 5764, 14), // "UpdateProgress"
+QT_MOC_LITERAL(245, 5779, 12), // "DoModelCheck"
+QT_MOC_LITERAL(246, 5792, 15), // "CModelDocument*"
+QT_MOC_LITERAL(247, 5808, 11) // "toggleOrtho"
 
     },
     "CMainWindow\0on_actionNewModel_triggered\0"
@@ -458,13 +456,12 @@ QT_MOC_LITERAL(249, 5820, 15) // "CModelDocument*"
     "DeleteAllLoads\0DeleteAllIC\0DeleteAllContact\0"
     "DeleteAllConstraints\0DeleteAllRigidConstraints\0"
     "DeleteAllRigidConnectors\0DeleteAllSteps\0"
-    "GetGLView\0CGLView*\0changeViewMode\0"
-    "View_Mode\0vm\0GetCurrentModel\0"
+    "GetGLView\0CGLView*\0GetCurrentModel\0"
     "Post::CGLModel*\0UpdateFontToolbar\0"
     "RunFEBioJob\0CFEBioJob*\0job\0NextSSHFunction\0"
     "CSSHHandler*\0ShowProgress\0show\0message\0"
     "ShowIndeterminateProgress\0UpdateProgress\0"
-    "DoModelCheck\0CModelDocument*"
+    "DoModelCheck\0CModelDocument*\0toggleOrtho"
 };
 #undef QT_MOC_LITERAL
 
@@ -681,17 +678,17 @@ static const uint qt_meta_data_CMainWindow[] = {
      228,    0, 1392,    2, 0x0a /* Public */,
      229,    0, 1393,    2, 0x0a /* Public */,
      230,    0, 1394,    2, 0x0a /* Public */,
-     232,    1, 1395,    2, 0x0a /* Public */,
-     235,    0, 1398,    2, 0x0a /* Public */,
-     237,    0, 1399,    2, 0x0a /* Public */,
+     232,    0, 1395,    2, 0x0a /* Public */,
+     234,    0, 1396,    2, 0x0a /* Public */,
+     235,    1, 1397,    2, 0x0a /* Public */,
      238,    1, 1400,    2, 0x0a /* Public */,
-     241,    1, 1403,    2, 0x0a /* Public */,
-     243,    2, 1406,    2, 0x0a /* Public */,
-     243,    1, 1411,    2, 0x2a /* Public | MethodCloned */,
-     246,    2, 1414,    2, 0x0a /* Public */,
-     246,    1, 1419,    2, 0x2a /* Public | MethodCloned */,
-     247,    1, 1422,    2, 0x0a /* Public */,
-     248,    1, 1425,    2, 0x0a /* Public */,
+     240,    2, 1403,    2, 0x0a /* Public */,
+     240,    1, 1408,    2, 0x2a /* Public | MethodCloned */,
+     243,    2, 1411,    2, 0x0a /* Public */,
+     243,    1, 1416,    2, 0x2a /* Public | MethodCloned */,
+     244,    1, 1419,    2, 0x0a /* Public */,
+     245,    1, 1422,    2, 0x0a /* Public */,
+     247,    0, 1425,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -893,17 +890,17 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     0x80000000 | 231,
-    QMetaType::Void, 0x80000000 | 233,  234,
-    0x80000000 | 236,
+    0x80000000 | 233,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 239,  240,
-    QMetaType::Void, 0x80000000 | 242,    2,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  244,  245,
-    QMetaType::Void, QMetaType::Bool,  244,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  244,  245,
-    QMetaType::Void, QMetaType::Bool,  244,
+    QMetaType::Void, 0x80000000 | 236,  237,
+    QMetaType::Void, 0x80000000 | 239,    2,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  241,  242,
+    QMetaType::Void, QMetaType::Bool,  241,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  241,  242,
+    QMetaType::Void, QMetaType::Bool,  241,
     QMetaType::Void, QMetaType::Int,    2,
-    QMetaType::Bool, 0x80000000 | 249,  188,
+    QMetaType::Bool, 0x80000000 | 246,  188,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -1114,19 +1111,19 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 197: _t->DeleteAllSteps(); break;
         case 198: { CGLView* _r = _t->GetGLView();
             if (_a[0]) *reinterpret_cast< CGLView**>(_a[0]) = std::move(_r); }  break;
-        case 199: _t->changeViewMode((*reinterpret_cast< View_Mode(*)>(_a[1]))); break;
-        case 200: { Post::CGLModel* _r = _t->GetCurrentModel();
+        case 199: { Post::CGLModel* _r = _t->GetCurrentModel();
             if (_a[0]) *reinterpret_cast< Post::CGLModel**>(_a[0]) = std::move(_r); }  break;
-        case 201: _t->UpdateFontToolbar(); break;
-        case 202: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
-        case 203: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
-        case 204: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 205: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 206: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 207: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 208: _t->UpdateProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 209: { bool _r = _t->DoModelCheck((*reinterpret_cast< CModelDocument*(*)>(_a[1])));
+        case 200: _t->UpdateFontToolbar(); break;
+        case 201: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
+        case 202: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
+        case 203: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 204: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 205: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 206: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 207: _t->UpdateProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 208: { bool _r = _t->DoModelCheck((*reinterpret_cast< CModelDocument*(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
+        case 209: _t->toggleOrtho(); break;
         default: ;
         }
     }

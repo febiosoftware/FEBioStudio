@@ -9,6 +9,7 @@
 #include <PostGL/GLModel.h>
 #include <PostLib/FEPostMesh.h>
 #include "MainWindow.h"
+#include "GLView.h"
 using namespace Post;
 
 //-----------------------------------------------------------------------------

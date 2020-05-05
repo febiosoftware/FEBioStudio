@@ -40,7 +40,7 @@ public:
 	const char* GetName() const;
 	void SetName(const std::string& name);
 
-	void SetViewState(VIEW_STATE state);
+	virtual void SetViewState(VIEW_STATE state);
 	VIEW_STATE GetViewState();
 
 protected:
@@ -61,25 +61,19 @@ typedef vector<CCommand*> CCmdPtrArray;
 class CCmdGroup : public CCommand
 {
 public:
-	CCmdGroup() : CCommand("Group") {}
-	CCmdGroup(const std::string& cmd) : CCommand(cmd) {}
-	virtual ~CCmdGroup() { for (int i=0; i<(int) m_Cmd.size(); ++i) delete m_Cmd[i]; }
+	CCmdGroup();
+	CCmdGroup(const std::string& cmd);
+	virtual ~CCmdGroup();
 
-	void AddCommand(CCommand* pcmd) { m_Cmd.push_back(pcmd); }
+	void AddCommand(CCommand* pcmd);
 
-	virtual void Execute()
-	{
-		int N = (int) m_Cmd.size();
-		for (int i=0; i<N; i++) m_Cmd[i]->Execute();
-	}
+	void Execute() override;
 
-	virtual void UnExecute()
-	{
-		int N = (int)m_Cmd.size();
-		for (int i=N-1; i>=0; i--) m_Cmd[i]->UnExecute();
-	}
+	void UnExecute() override;
 
-	int GetCount() { return (int)m_Cmd.size(); }
+	int GetCount() const;
+
+	void SetViewState(VIEW_STATE state) override;
 
 protected:
 	CCmdPtrArray	m_Cmd;	// array of pointer to commands
