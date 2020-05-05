@@ -230,6 +230,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgSoluteTable.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTimeSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTransform.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgUnitConverter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgUpload.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgVTKExport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgWidgetProps.cpp" />
@@ -317,6 +318,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgRun.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSoluteTable.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgUnitConverter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgUpload.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgWidgetProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_EditPanel.cpp" />
@@ -506,6 +508,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgSelectRange.h" />
+    <CustomBuild Include="..\..\FEBioStudio\DlgUnitConverter.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DocManager.h" />
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h" />

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MainWindow.h"
 #include "DlgLameConvertor.h"
+#include "DlgUnitConverter.h"
 #include "DlgKinemat.h"
 #include "DlgPlotMix.h"
 #include "DlgSettings.h"
@@ -31,6 +32,12 @@ void CMainWindow::on_actionMeshInspector_triggered()
 void CMainWindow::on_actionElasticityConvertor_triggered()
 {
 	CDlgLameConvertor dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionUnitConverter_triggered()
+{
+	CDlgUnitConverter dlg(this);
 	dlg.exec();
 }
 

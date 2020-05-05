@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[248];
-    char stringdata0[5820];
+    QByteArrayData data[249];
+    char stringdata0[5853];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -96,190 +96,191 @@ QT_MOC_LITERAL(60, 1698, 27), // "on_actionSBMTable_triggered"
 QT_MOC_LITERAL(61, 1726, 30), // "on_actionCurveEditor_triggered"
 QT_MOC_LITERAL(62, 1757, 32), // "on_actionMeshInspector_triggered"
 QT_MOC_LITERAL(63, 1790, 38), // "on_actionElasticityConvertor_..."
-QT_MOC_LITERAL(64, 1829, 26), // "on_actionKinemat_triggered"
-QT_MOC_LITERAL(65, 1856, 26), // "on_actionPlotMix_triggered"
-QT_MOC_LITERAL(66, 1883, 27), // "on_actionFEBioRun_triggered"
-QT_MOC_LITERAL(67, 1911, 28), // "on_actionFEBioStop_triggered"
-QT_MOC_LITERAL(68, 1940, 32), // "on_actionFEBioOptimize_triggered"
-QT_MOC_LITERAL(69, 1973, 26), // "on_actionOptions_triggered"
-QT_MOC_LITERAL(70, 2000, 28), // "on_actionLayerInfo_triggered"
-QT_MOC_LITERAL(71, 2029, 27), // "on_actionPlaneCut_triggered"
-QT_MOC_LITERAL(72, 2057, 30), // "on_actionMirrorPlane_triggered"
-QT_MOC_LITERAL(73, 2088, 29), // "on_actionVectorPlot_triggered"
-QT_MOC_LITERAL(74, 2118, 29), // "on_actionTensorPlot_triggered"
-QT_MOC_LITERAL(75, 2148, 33), // "on_actionIsosurfacePlot_trigg..."
-QT_MOC_LITERAL(76, 2182, 28), // "on_actionSlicePlot_triggered"
-QT_MOC_LITERAL(77, 2211, 34), // "on_actionDisplacementMap_trig..."
-QT_MOC_LITERAL(78, 2246, 33), // "on_actionStreamLinePlot_trigg..."
-QT_MOC_LITERAL(79, 2280, 35), // "on_actionParticleFlowPlot_tri..."
-QT_MOC_LITERAL(80, 2316, 33), // "on_actionVolumeFlowPlot_trigg..."
-QT_MOC_LITERAL(81, 2350, 30), // "on_actionImageSlicer_triggered"
-QT_MOC_LITERAL(82, 2381, 31), // "on_actionVolumeRender_triggered"
-QT_MOC_LITERAL(83, 2413, 32), // "on_actionMarchingCubes_triggered"
-QT_MOC_LITERAL(84, 2446, 24), // "on_actionGraph_triggered"
-QT_MOC_LITERAL(85, 2471, 26), // "on_actionSummary_triggered"
-QT_MOC_LITERAL(86, 2498, 24), // "on_actionStats_triggered"
-QT_MOC_LITERAL(87, 2523, 28), // "on_actionIntegrate_triggered"
-QT_MOC_LITERAL(88, 2552, 31), // "on_actionImportPoints_triggered"
-QT_MOC_LITERAL(89, 2584, 30), // "on_actionImportLines_triggered"
-QT_MOC_LITERAL(90, 2615, 28), // "on_actionRecordNew_triggered"
-QT_MOC_LITERAL(91, 2644, 30), // "on_actionRecordStart_triggered"
-QT_MOC_LITERAL(92, 2675, 30), // "on_actionRecordPause_triggered"
-QT_MOC_LITERAL(93, 2706, 29), // "on_actionRecordStop_triggered"
-QT_MOC_LITERAL(94, 2736, 33), // "on_actionUndoViewChange_trigg..."
-QT_MOC_LITERAL(95, 2770, 33), // "on_actionRedoViewChange_trigg..."
-QT_MOC_LITERAL(96, 2804, 29), // "on_actionZoomSelect_triggered"
-QT_MOC_LITERAL(97, 2834, 30), // "on_actionZoomExtents_triggered"
-QT_MOC_LITERAL(98, 2865, 28), // "on_actionViewCapture_toggled"
-QT_MOC_LITERAL(99, 2894, 8), // "bchecked"
-QT_MOC_LITERAL(100, 2903, 22), // "on_actionOrtho_toggled"
-QT_MOC_LITERAL(101, 2926, 1), // "b"
-QT_MOC_LITERAL(102, 2928, 25), // "on_actionShowGrid_toggled"
-QT_MOC_LITERAL(103, 2954, 30), // "on_actionShowMeshLines_toggled"
-QT_MOC_LITERAL(104, 2985, 30), // "on_actionShowEdgeLines_toggled"
-QT_MOC_LITERAL(105, 3016, 32), // "on_actionBackfaceCulling_toggled"
-QT_MOC_LITERAL(106, 3049, 27), // "on_actionViewSmooth_toggled"
-QT_MOC_LITERAL(107, 3077, 28), // "on_actionShowNormals_toggled"
-QT_MOC_LITERAL(108, 3106, 27), // "on_actionShowFibers_toggled"
-QT_MOC_LITERAL(109, 3134, 28), // "on_actionShowMatAxes_toggled"
-QT_MOC_LITERAL(110, 3163, 29), // "on_actionShowDiscrete_toggled"
-QT_MOC_LITERAL(111, 3193, 30), // "on_actionToggleLight_triggered"
-QT_MOC_LITERAL(112, 3224, 24), // "on_actionFront_triggered"
-QT_MOC_LITERAL(113, 3249, 23), // "on_actionBack_triggered"
-QT_MOC_LITERAL(114, 3273, 23), // "on_actionLeft_triggered"
-QT_MOC_LITERAL(115, 3297, 24), // "on_actionRight_triggered"
-QT_MOC_LITERAL(116, 3322, 22), // "on_actionTop_triggered"
-QT_MOC_LITERAL(117, 3345, 25), // "on_actionBottom_triggered"
-QT_MOC_LITERAL(118, 3371, 26), // "on_actionWireframe_toggled"
-QT_MOC_LITERAL(119, 3398, 25), // "on_actionSnap3D_triggered"
-QT_MOC_LITERAL(120, 3424, 22), // "on_actionTrack_toggled"
-QT_MOC_LITERAL(121, 3447, 29), // "on_actionViewVPSave_triggered"
-QT_MOC_LITERAL(122, 3477, 29), // "on_actionViewVPPrev_triggered"
-QT_MOC_LITERAL(123, 3507, 29), // "on_actionViewVPNext_triggered"
-QT_MOC_LITERAL(124, 3537, 28), // "on_actionSyncViews_triggered"
-QT_MOC_LITERAL(125, 3566, 27), // "on_actionFEBioURL_triggered"
-QT_MOC_LITERAL(126, 3594, 29), // "on_actionFEBioForum_triggered"
-QT_MOC_LITERAL(127, 3624, 33), // "on_actionFEBioResources_trigg..."
-QT_MOC_LITERAL(128, 3658, 28), // "on_actionFEBioPubs_triggered"
-QT_MOC_LITERAL(129, 3687, 24), // "on_actionAbout_triggered"
-QT_MOC_LITERAL(130, 3712, 23), // "on_actionSelect_toggled"
-QT_MOC_LITERAL(131, 3736, 26), // "on_actionTranslate_toggled"
-QT_MOC_LITERAL(132, 3763, 23), // "on_actionRotate_toggled"
-QT_MOC_LITERAL(133, 3787, 22), // "on_actionScale_toggled"
-QT_MOC_LITERAL(134, 3810, 34), // "on_selectCoord_currentIndexCh..."
-QT_MOC_LITERAL(135, 3845, 1), // "n"
-QT_MOC_LITERAL(136, 3847, 30), // "on_actionSelectObjects_toggled"
-QT_MOC_LITERAL(137, 3878, 28), // "on_actionSelectParts_toggled"
-QT_MOC_LITERAL(138, 3907, 31), // "on_actionSelectSurfaces_toggled"
-QT_MOC_LITERAL(139, 3939, 29), // "on_actionSelectCurves_toggled"
-QT_MOC_LITERAL(140, 3969, 28), // "on_actionSelectNodes_toggled"
-QT_MOC_LITERAL(141, 3998, 31), // "on_actionSelectDiscrete_toggled"
-QT_MOC_LITERAL(142, 4030, 21), // "on_selectRect_toggled"
-QT_MOC_LITERAL(143, 4052, 23), // "on_selectCircle_toggled"
-QT_MOC_LITERAL(144, 4076, 21), // "on_selectFree_toggled"
-QT_MOC_LITERAL(145, 4098, 30), // "on_actionMeasureTool_triggered"
-QT_MOC_LITERAL(146, 4129, 25), // "on_postSelectRect_toggled"
-QT_MOC_LITERAL(147, 4155, 27), // "on_postSelectCircle_toggled"
-QT_MOC_LITERAL(148, 4183, 25), // "on_postSelectFree_toggled"
-QT_MOC_LITERAL(149, 4209, 34), // "on_postActionMeasureTool_trig..."
-QT_MOC_LITERAL(150, 4244, 33), // "on_selectData_currentValueCha..."
-QT_MOC_LITERAL(151, 4278, 1), // "i"
-QT_MOC_LITERAL(152, 4280, 21), // "on_actionPlay_toggled"
-QT_MOC_LITERAL(153, 4302, 26), // "on_actionRefresh_triggered"
-QT_MOC_LITERAL(154, 4329, 24), // "on_actionFirst_triggered"
-QT_MOC_LITERAL(155, 4354, 23), // "on_actionPrev_triggered"
-QT_MOC_LITERAL(156, 4378, 23), // "on_actionNext_triggered"
-QT_MOC_LITERAL(157, 4402, 23), // "on_actionLast_triggered"
-QT_MOC_LITERAL(158, 4426, 31), // "on_actionTimeSettings_triggered"
-QT_MOC_LITERAL(159, 4458, 25), // "on_actionColorMap_toggled"
-QT_MOC_LITERAL(160, 4484, 26), // "on_selectTime_valueChanged"
-QT_MOC_LITERAL(161, 4511, 31), // "on_fontStyle_currentFontChanged"
-QT_MOC_LITERAL(162, 4543, 4), // "font"
-QT_MOC_LITERAL(163, 4548, 24), // "on_fontSize_valueChanged"
-QT_MOC_LITERAL(164, 4573, 19), // "on_fontBold_toggled"
-QT_MOC_LITERAL(165, 4593, 7), // "checked"
-QT_MOC_LITERAL(166, 4601, 21), // "on_fontItalic_toggled"
-QT_MOC_LITERAL(167, 4623, 29), // "on_actionProperties_triggered"
-QT_MOC_LITERAL(168, 4653, 21), // "on_tab_currentChanged"
-QT_MOC_LITERAL(169, 4675, 24), // "on_tab_tabCloseRequested"
-QT_MOC_LITERAL(170, 4700, 24), // "on_welcome_anchorClicked"
-QT_MOC_LITERAL(171, 4725, 4), // "link"
-QT_MOC_LITERAL(172, 4730, 15), // "on_clearProject"
-QT_MOC_LITERAL(173, 4746, 15), // "on_closeProject"
-QT_MOC_LITERAL(174, 4762, 20), // "on_removeFromProject"
-QT_MOC_LITERAL(175, 4783, 4), // "file"
-QT_MOC_LITERAL(176, 4788, 12), // "on_closeFile"
-QT_MOC_LITERAL(177, 4801, 15), // "on_addToProject"
-QT_MOC_LITERAL(178, 4817, 24), // "OnPostObjectStateChanged"
-QT_MOC_LITERAL(179, 4842, 24), // "OnPostObjectPropsChanged"
-QT_MOC_LITERAL(180, 4867, 9), // "FSObject*"
-QT_MOC_LITERAL(181, 4877, 2), // "po"
-QT_MOC_LITERAL(182, 4880, 35), // "on_modelViewer_currentObjectC..."
-QT_MOC_LITERAL(183, 4916, 17), // "OnSelectMeshLayer"
-QT_MOC_LITERAL(184, 4934, 2), // "ac"
-QT_MOC_LITERAL(185, 4937, 30), // "OnSelectObjectTransparencyMode"
-QT_MOC_LITERAL(186, 4968, 9), // "CloseView"
-QT_MOC_LITERAL(187, 4978, 10), // "CDocument*"
-QT_MOC_LITERAL(188, 4989, 3), // "doc"
-QT_MOC_LITERAL(189, 4993, 15), // "SetCurrentState"
-QT_MOC_LITERAL(190, 5009, 10), // "closeEvent"
-QT_MOC_LITERAL(191, 5020, 12), // "QCloseEvent*"
-QT_MOC_LITERAL(192, 5033, 2), // "ev"
-QT_MOC_LITERAL(193, 5036, 13), // "keyPressEvent"
-QT_MOC_LITERAL(194, 5050, 10), // "QKeyEvent*"
-QT_MOC_LITERAL(195, 5061, 22), // "on_finishedReadingFile"
-QT_MOC_LITERAL(196, 5084, 7), // "success"
-QT_MOC_LITERAL(197, 5092, 11), // "errorString"
-QT_MOC_LITERAL(198, 5104, 19), // "finishedReadingFile"
-QT_MOC_LITERAL(199, 5124, 11), // "QueuedFile&"
-QT_MOC_LITERAL(200, 5136, 5), // "qfile"
-QT_MOC_LITERAL(201, 5142, 17), // "checkFileProgress"
-QT_MOC_LITERAL(202, 5160, 13), // "StopAnimation"
-QT_MOC_LITERAL(203, 5174, 7), // "onTimer"
-QT_MOC_LITERAL(204, 5182, 21), // "on_glview_pointPicked"
-QT_MOC_LITERAL(205, 5204, 5), // "vec3d"
-QT_MOC_LITERAL(206, 5210, 1), // "r"
-QT_MOC_LITERAL(207, 5212, 26), // "on_glview_selectionChanged"
-QT_MOC_LITERAL(208, 5239, 13), // "onRunFinished"
-QT_MOC_LITERAL(209, 5253, 8), // "exitCode"
-QT_MOC_LITERAL(210, 5262, 20), // "QProcess::ExitStatus"
-QT_MOC_LITERAL(211, 5283, 2), // "es"
-QT_MOC_LITERAL(212, 5286, 11), // "onReadyRead"
-QT_MOC_LITERAL(213, 5298, 15), // "onErrorOccurred"
-QT_MOC_LITERAL(214, 5314, 22), // "QProcess::ProcessError"
-QT_MOC_LITERAL(215, 5337, 3), // "err"
-QT_MOC_LITERAL(216, 5341, 17), // "onExportMaterials"
-QT_MOC_LITERAL(217, 5359, 18), // "vector<GMaterial*>"
-QT_MOC_LITERAL(218, 5378, 7), // "matList"
-QT_MOC_LITERAL(219, 5386, 20), // "onExportAllMaterials"
-QT_MOC_LITERAL(220, 5407, 17), // "onImportMaterials"
-QT_MOC_LITERAL(221, 5425, 18), // "DeleteAllMaterials"
-QT_MOC_LITERAL(222, 5444, 11), // "DeleteAllBC"
-QT_MOC_LITERAL(223, 5456, 14), // "DeleteAllLoads"
-QT_MOC_LITERAL(224, 5471, 11), // "DeleteAllIC"
-QT_MOC_LITERAL(225, 5483, 16), // "DeleteAllContact"
-QT_MOC_LITERAL(226, 5500, 20), // "DeleteAllConstraints"
-QT_MOC_LITERAL(227, 5521, 25), // "DeleteAllRigidConstraints"
-QT_MOC_LITERAL(228, 5547, 24), // "DeleteAllRigidConnectors"
-QT_MOC_LITERAL(229, 5572, 14), // "DeleteAllSteps"
-QT_MOC_LITERAL(230, 5587, 9), // "GetGLView"
-QT_MOC_LITERAL(231, 5597, 8), // "CGLView*"
-QT_MOC_LITERAL(232, 5606, 15), // "GetCurrentModel"
-QT_MOC_LITERAL(233, 5622, 15), // "Post::CGLModel*"
-QT_MOC_LITERAL(234, 5638, 17), // "UpdateFontToolbar"
-QT_MOC_LITERAL(235, 5656, 11), // "RunFEBioJob"
-QT_MOC_LITERAL(236, 5668, 10), // "CFEBioJob*"
-QT_MOC_LITERAL(237, 5679, 3), // "job"
-QT_MOC_LITERAL(238, 5683, 15), // "NextSSHFunction"
-QT_MOC_LITERAL(239, 5699, 12), // "CSSHHandler*"
-QT_MOC_LITERAL(240, 5712, 12), // "ShowProgress"
-QT_MOC_LITERAL(241, 5725, 4), // "show"
-QT_MOC_LITERAL(242, 5730, 7), // "message"
-QT_MOC_LITERAL(243, 5738, 25), // "ShowIndeterminateProgress"
-QT_MOC_LITERAL(244, 5764, 14), // "UpdateProgress"
-QT_MOC_LITERAL(245, 5779, 12), // "DoModelCheck"
-QT_MOC_LITERAL(246, 5792, 15), // "CModelDocument*"
-QT_MOC_LITERAL(247, 5808, 11) // "toggleOrtho"
+QT_MOC_LITERAL(64, 1829, 32), // "on_actionUnitConverter_triggered"
+QT_MOC_LITERAL(65, 1862, 26), // "on_actionKinemat_triggered"
+QT_MOC_LITERAL(66, 1889, 26), // "on_actionPlotMix_triggered"
+QT_MOC_LITERAL(67, 1916, 27), // "on_actionFEBioRun_triggered"
+QT_MOC_LITERAL(68, 1944, 28), // "on_actionFEBioStop_triggered"
+QT_MOC_LITERAL(69, 1973, 32), // "on_actionFEBioOptimize_triggered"
+QT_MOC_LITERAL(70, 2006, 26), // "on_actionOptions_triggered"
+QT_MOC_LITERAL(71, 2033, 28), // "on_actionLayerInfo_triggered"
+QT_MOC_LITERAL(72, 2062, 27), // "on_actionPlaneCut_triggered"
+QT_MOC_LITERAL(73, 2090, 30), // "on_actionMirrorPlane_triggered"
+QT_MOC_LITERAL(74, 2121, 29), // "on_actionVectorPlot_triggered"
+QT_MOC_LITERAL(75, 2151, 29), // "on_actionTensorPlot_triggered"
+QT_MOC_LITERAL(76, 2181, 33), // "on_actionIsosurfacePlot_trigg..."
+QT_MOC_LITERAL(77, 2215, 28), // "on_actionSlicePlot_triggered"
+QT_MOC_LITERAL(78, 2244, 34), // "on_actionDisplacementMap_trig..."
+QT_MOC_LITERAL(79, 2279, 33), // "on_actionStreamLinePlot_trigg..."
+QT_MOC_LITERAL(80, 2313, 35), // "on_actionParticleFlowPlot_tri..."
+QT_MOC_LITERAL(81, 2349, 33), // "on_actionVolumeFlowPlot_trigg..."
+QT_MOC_LITERAL(82, 2383, 30), // "on_actionImageSlicer_triggered"
+QT_MOC_LITERAL(83, 2414, 31), // "on_actionVolumeRender_triggered"
+QT_MOC_LITERAL(84, 2446, 32), // "on_actionMarchingCubes_triggered"
+QT_MOC_LITERAL(85, 2479, 24), // "on_actionGraph_triggered"
+QT_MOC_LITERAL(86, 2504, 26), // "on_actionSummary_triggered"
+QT_MOC_LITERAL(87, 2531, 24), // "on_actionStats_triggered"
+QT_MOC_LITERAL(88, 2556, 28), // "on_actionIntegrate_triggered"
+QT_MOC_LITERAL(89, 2585, 31), // "on_actionImportPoints_triggered"
+QT_MOC_LITERAL(90, 2617, 30), // "on_actionImportLines_triggered"
+QT_MOC_LITERAL(91, 2648, 28), // "on_actionRecordNew_triggered"
+QT_MOC_LITERAL(92, 2677, 30), // "on_actionRecordStart_triggered"
+QT_MOC_LITERAL(93, 2708, 30), // "on_actionRecordPause_triggered"
+QT_MOC_LITERAL(94, 2739, 29), // "on_actionRecordStop_triggered"
+QT_MOC_LITERAL(95, 2769, 33), // "on_actionUndoViewChange_trigg..."
+QT_MOC_LITERAL(96, 2803, 33), // "on_actionRedoViewChange_trigg..."
+QT_MOC_LITERAL(97, 2837, 29), // "on_actionZoomSelect_triggered"
+QT_MOC_LITERAL(98, 2867, 30), // "on_actionZoomExtents_triggered"
+QT_MOC_LITERAL(99, 2898, 28), // "on_actionViewCapture_toggled"
+QT_MOC_LITERAL(100, 2927, 8), // "bchecked"
+QT_MOC_LITERAL(101, 2936, 22), // "on_actionOrtho_toggled"
+QT_MOC_LITERAL(102, 2959, 1), // "b"
+QT_MOC_LITERAL(103, 2961, 25), // "on_actionShowGrid_toggled"
+QT_MOC_LITERAL(104, 2987, 30), // "on_actionShowMeshLines_toggled"
+QT_MOC_LITERAL(105, 3018, 30), // "on_actionShowEdgeLines_toggled"
+QT_MOC_LITERAL(106, 3049, 32), // "on_actionBackfaceCulling_toggled"
+QT_MOC_LITERAL(107, 3082, 27), // "on_actionViewSmooth_toggled"
+QT_MOC_LITERAL(108, 3110, 28), // "on_actionShowNormals_toggled"
+QT_MOC_LITERAL(109, 3139, 27), // "on_actionShowFibers_toggled"
+QT_MOC_LITERAL(110, 3167, 28), // "on_actionShowMatAxes_toggled"
+QT_MOC_LITERAL(111, 3196, 29), // "on_actionShowDiscrete_toggled"
+QT_MOC_LITERAL(112, 3226, 30), // "on_actionToggleLight_triggered"
+QT_MOC_LITERAL(113, 3257, 24), // "on_actionFront_triggered"
+QT_MOC_LITERAL(114, 3282, 23), // "on_actionBack_triggered"
+QT_MOC_LITERAL(115, 3306, 23), // "on_actionLeft_triggered"
+QT_MOC_LITERAL(116, 3330, 24), // "on_actionRight_triggered"
+QT_MOC_LITERAL(117, 3355, 22), // "on_actionTop_triggered"
+QT_MOC_LITERAL(118, 3378, 25), // "on_actionBottom_triggered"
+QT_MOC_LITERAL(119, 3404, 26), // "on_actionWireframe_toggled"
+QT_MOC_LITERAL(120, 3431, 25), // "on_actionSnap3D_triggered"
+QT_MOC_LITERAL(121, 3457, 22), // "on_actionTrack_toggled"
+QT_MOC_LITERAL(122, 3480, 29), // "on_actionViewVPSave_triggered"
+QT_MOC_LITERAL(123, 3510, 29), // "on_actionViewVPPrev_triggered"
+QT_MOC_LITERAL(124, 3540, 29), // "on_actionViewVPNext_triggered"
+QT_MOC_LITERAL(125, 3570, 28), // "on_actionSyncViews_triggered"
+QT_MOC_LITERAL(126, 3599, 27), // "on_actionFEBioURL_triggered"
+QT_MOC_LITERAL(127, 3627, 29), // "on_actionFEBioForum_triggered"
+QT_MOC_LITERAL(128, 3657, 33), // "on_actionFEBioResources_trigg..."
+QT_MOC_LITERAL(129, 3691, 28), // "on_actionFEBioPubs_triggered"
+QT_MOC_LITERAL(130, 3720, 24), // "on_actionAbout_triggered"
+QT_MOC_LITERAL(131, 3745, 23), // "on_actionSelect_toggled"
+QT_MOC_LITERAL(132, 3769, 26), // "on_actionTranslate_toggled"
+QT_MOC_LITERAL(133, 3796, 23), // "on_actionRotate_toggled"
+QT_MOC_LITERAL(134, 3820, 22), // "on_actionScale_toggled"
+QT_MOC_LITERAL(135, 3843, 34), // "on_selectCoord_currentIndexCh..."
+QT_MOC_LITERAL(136, 3878, 1), // "n"
+QT_MOC_LITERAL(137, 3880, 30), // "on_actionSelectObjects_toggled"
+QT_MOC_LITERAL(138, 3911, 28), // "on_actionSelectParts_toggled"
+QT_MOC_LITERAL(139, 3940, 31), // "on_actionSelectSurfaces_toggled"
+QT_MOC_LITERAL(140, 3972, 29), // "on_actionSelectCurves_toggled"
+QT_MOC_LITERAL(141, 4002, 28), // "on_actionSelectNodes_toggled"
+QT_MOC_LITERAL(142, 4031, 31), // "on_actionSelectDiscrete_toggled"
+QT_MOC_LITERAL(143, 4063, 21), // "on_selectRect_toggled"
+QT_MOC_LITERAL(144, 4085, 23), // "on_selectCircle_toggled"
+QT_MOC_LITERAL(145, 4109, 21), // "on_selectFree_toggled"
+QT_MOC_LITERAL(146, 4131, 30), // "on_actionMeasureTool_triggered"
+QT_MOC_LITERAL(147, 4162, 25), // "on_postSelectRect_toggled"
+QT_MOC_LITERAL(148, 4188, 27), // "on_postSelectCircle_toggled"
+QT_MOC_LITERAL(149, 4216, 25), // "on_postSelectFree_toggled"
+QT_MOC_LITERAL(150, 4242, 34), // "on_postActionMeasureTool_trig..."
+QT_MOC_LITERAL(151, 4277, 33), // "on_selectData_currentValueCha..."
+QT_MOC_LITERAL(152, 4311, 1), // "i"
+QT_MOC_LITERAL(153, 4313, 21), // "on_actionPlay_toggled"
+QT_MOC_LITERAL(154, 4335, 26), // "on_actionRefresh_triggered"
+QT_MOC_LITERAL(155, 4362, 24), // "on_actionFirst_triggered"
+QT_MOC_LITERAL(156, 4387, 23), // "on_actionPrev_triggered"
+QT_MOC_LITERAL(157, 4411, 23), // "on_actionNext_triggered"
+QT_MOC_LITERAL(158, 4435, 23), // "on_actionLast_triggered"
+QT_MOC_LITERAL(159, 4459, 31), // "on_actionTimeSettings_triggered"
+QT_MOC_LITERAL(160, 4491, 25), // "on_actionColorMap_toggled"
+QT_MOC_LITERAL(161, 4517, 26), // "on_selectTime_valueChanged"
+QT_MOC_LITERAL(162, 4544, 31), // "on_fontStyle_currentFontChanged"
+QT_MOC_LITERAL(163, 4576, 4), // "font"
+QT_MOC_LITERAL(164, 4581, 24), // "on_fontSize_valueChanged"
+QT_MOC_LITERAL(165, 4606, 19), // "on_fontBold_toggled"
+QT_MOC_LITERAL(166, 4626, 7), // "checked"
+QT_MOC_LITERAL(167, 4634, 21), // "on_fontItalic_toggled"
+QT_MOC_LITERAL(168, 4656, 29), // "on_actionProperties_triggered"
+QT_MOC_LITERAL(169, 4686, 21), // "on_tab_currentChanged"
+QT_MOC_LITERAL(170, 4708, 24), // "on_tab_tabCloseRequested"
+QT_MOC_LITERAL(171, 4733, 24), // "on_welcome_anchorClicked"
+QT_MOC_LITERAL(172, 4758, 4), // "link"
+QT_MOC_LITERAL(173, 4763, 15), // "on_clearProject"
+QT_MOC_LITERAL(174, 4779, 15), // "on_closeProject"
+QT_MOC_LITERAL(175, 4795, 20), // "on_removeFromProject"
+QT_MOC_LITERAL(176, 4816, 4), // "file"
+QT_MOC_LITERAL(177, 4821, 12), // "on_closeFile"
+QT_MOC_LITERAL(178, 4834, 15), // "on_addToProject"
+QT_MOC_LITERAL(179, 4850, 24), // "OnPostObjectStateChanged"
+QT_MOC_LITERAL(180, 4875, 24), // "OnPostObjectPropsChanged"
+QT_MOC_LITERAL(181, 4900, 9), // "FSObject*"
+QT_MOC_LITERAL(182, 4910, 2), // "po"
+QT_MOC_LITERAL(183, 4913, 35), // "on_modelViewer_currentObjectC..."
+QT_MOC_LITERAL(184, 4949, 17), // "OnSelectMeshLayer"
+QT_MOC_LITERAL(185, 4967, 2), // "ac"
+QT_MOC_LITERAL(186, 4970, 30), // "OnSelectObjectTransparencyMode"
+QT_MOC_LITERAL(187, 5001, 9), // "CloseView"
+QT_MOC_LITERAL(188, 5011, 10), // "CDocument*"
+QT_MOC_LITERAL(189, 5022, 3), // "doc"
+QT_MOC_LITERAL(190, 5026, 15), // "SetCurrentState"
+QT_MOC_LITERAL(191, 5042, 10), // "closeEvent"
+QT_MOC_LITERAL(192, 5053, 12), // "QCloseEvent*"
+QT_MOC_LITERAL(193, 5066, 2), // "ev"
+QT_MOC_LITERAL(194, 5069, 13), // "keyPressEvent"
+QT_MOC_LITERAL(195, 5083, 10), // "QKeyEvent*"
+QT_MOC_LITERAL(196, 5094, 22), // "on_finishedReadingFile"
+QT_MOC_LITERAL(197, 5117, 7), // "success"
+QT_MOC_LITERAL(198, 5125, 11), // "errorString"
+QT_MOC_LITERAL(199, 5137, 19), // "finishedReadingFile"
+QT_MOC_LITERAL(200, 5157, 11), // "QueuedFile&"
+QT_MOC_LITERAL(201, 5169, 5), // "qfile"
+QT_MOC_LITERAL(202, 5175, 17), // "checkFileProgress"
+QT_MOC_LITERAL(203, 5193, 13), // "StopAnimation"
+QT_MOC_LITERAL(204, 5207, 7), // "onTimer"
+QT_MOC_LITERAL(205, 5215, 21), // "on_glview_pointPicked"
+QT_MOC_LITERAL(206, 5237, 5), // "vec3d"
+QT_MOC_LITERAL(207, 5243, 1), // "r"
+QT_MOC_LITERAL(208, 5245, 26), // "on_glview_selectionChanged"
+QT_MOC_LITERAL(209, 5272, 13), // "onRunFinished"
+QT_MOC_LITERAL(210, 5286, 8), // "exitCode"
+QT_MOC_LITERAL(211, 5295, 20), // "QProcess::ExitStatus"
+QT_MOC_LITERAL(212, 5316, 2), // "es"
+QT_MOC_LITERAL(213, 5319, 11), // "onReadyRead"
+QT_MOC_LITERAL(214, 5331, 15), // "onErrorOccurred"
+QT_MOC_LITERAL(215, 5347, 22), // "QProcess::ProcessError"
+QT_MOC_LITERAL(216, 5370, 3), // "err"
+QT_MOC_LITERAL(217, 5374, 17), // "onExportMaterials"
+QT_MOC_LITERAL(218, 5392, 18), // "vector<GMaterial*>"
+QT_MOC_LITERAL(219, 5411, 7), // "matList"
+QT_MOC_LITERAL(220, 5419, 20), // "onExportAllMaterials"
+QT_MOC_LITERAL(221, 5440, 17), // "onImportMaterials"
+QT_MOC_LITERAL(222, 5458, 18), // "DeleteAllMaterials"
+QT_MOC_LITERAL(223, 5477, 11), // "DeleteAllBC"
+QT_MOC_LITERAL(224, 5489, 14), // "DeleteAllLoads"
+QT_MOC_LITERAL(225, 5504, 11), // "DeleteAllIC"
+QT_MOC_LITERAL(226, 5516, 16), // "DeleteAllContact"
+QT_MOC_LITERAL(227, 5533, 20), // "DeleteAllConstraints"
+QT_MOC_LITERAL(228, 5554, 25), // "DeleteAllRigidConstraints"
+QT_MOC_LITERAL(229, 5580, 24), // "DeleteAllRigidConnectors"
+QT_MOC_LITERAL(230, 5605, 14), // "DeleteAllSteps"
+QT_MOC_LITERAL(231, 5620, 9), // "GetGLView"
+QT_MOC_LITERAL(232, 5630, 8), // "CGLView*"
+QT_MOC_LITERAL(233, 5639, 15), // "GetCurrentModel"
+QT_MOC_LITERAL(234, 5655, 15), // "Post::CGLModel*"
+QT_MOC_LITERAL(235, 5671, 17), // "UpdateFontToolbar"
+QT_MOC_LITERAL(236, 5689, 11), // "RunFEBioJob"
+QT_MOC_LITERAL(237, 5701, 10), // "CFEBioJob*"
+QT_MOC_LITERAL(238, 5712, 3), // "job"
+QT_MOC_LITERAL(239, 5716, 15), // "NextSSHFunction"
+QT_MOC_LITERAL(240, 5732, 12), // "CSSHHandler*"
+QT_MOC_LITERAL(241, 5745, 12), // "ShowProgress"
+QT_MOC_LITERAL(242, 5758, 4), // "show"
+QT_MOC_LITERAL(243, 5763, 7), // "message"
+QT_MOC_LITERAL(244, 5771, 25), // "ShowIndeterminateProgress"
+QT_MOC_LITERAL(245, 5797, 14), // "UpdateProgress"
+QT_MOC_LITERAL(246, 5812, 12), // "DoModelCheck"
+QT_MOC_LITERAL(247, 5825, 15), // "CModelDocument*"
+QT_MOC_LITERAL(248, 5841, 11) // "toggleOrtho"
 
     },
     "CMainWindow\0on_actionNewModel_triggered\0"
@@ -340,6 +341,7 @@ QT_MOC_LITERAL(247, 5808, 11) // "toggleOrtho"
     "on_actionCurveEditor_triggered\0"
     "on_actionMeshInspector_triggered\0"
     "on_actionElasticityConvertor_triggered\0"
+    "on_actionUnitConverter_triggered\0"
     "on_actionKinemat_triggered\0"
     "on_actionPlotMix_triggered\0"
     "on_actionFEBioRun_triggered\0"
@@ -471,7 +473,7 @@ static const uint qt_meta_data_CMainWindow[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-     210,   14, // methods
+     211,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -479,216 +481,217 @@ static const uint qt_meta_data_CMainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0, 1064,    2, 0x0a /* Public */,
-       3,    0, 1065,    2, 0x0a /* Public */,
-       4,    0, 1066,    2, 0x0a /* Public */,
-       5,    0, 1067,    2, 0x0a /* Public */,
-       6,    0, 1068,    2, 0x0a /* Public */,
-       7,    0, 1069,    2, 0x0a /* Public */,
-       8,    0, 1070,    2, 0x0a /* Public */,
-       9,    0, 1071,    2, 0x0a /* Public */,
-      10,    0, 1072,    2, 0x0a /* Public */,
-      11,    0, 1073,    2, 0x0a /* Public */,
-      12,    0, 1074,    2, 0x0a /* Public */,
-      13,    0, 1075,    2, 0x0a /* Public */,
-      14,    0, 1076,    2, 0x0a /* Public */,
-      15,    0, 1077,    2, 0x0a /* Public */,
-      16,    0, 1078,    2, 0x0a /* Public */,
-      17,    0, 1079,    2, 0x0a /* Public */,
-      18,    0, 1080,    2, 0x0a /* Public */,
-      19,    1, 1081,    2, 0x0a /* Public */,
-      22,    1, 1084,    2, 0x0a /* Public */,
-      23,    1, 1087,    2, 0x0a /* Public */,
-      24,    0, 1090,    2, 0x0a /* Public */,
-      25,    0, 1091,    2, 0x0a /* Public */,
-      26,    0, 1092,    2, 0x0a /* Public */,
-      27,    0, 1093,    2, 0x0a /* Public */,
-      28,    0, 1094,    2, 0x0a /* Public */,
-      29,    0, 1095,    2, 0x0a /* Public */,
-      30,    0, 1096,    2, 0x0a /* Public */,
-      31,    0, 1097,    2, 0x0a /* Public */,
-      32,    0, 1098,    2, 0x0a /* Public */,
-      33,    0, 1099,    2, 0x0a /* Public */,
-      34,    0, 1100,    2, 0x0a /* Public */,
-      35,    0, 1101,    2, 0x0a /* Public */,
-      36,    0, 1102,    2, 0x0a /* Public */,
-      37,    0, 1103,    2, 0x0a /* Public */,
-      38,    0, 1104,    2, 0x0a /* Public */,
-      39,    0, 1105,    2, 0x0a /* Public */,
-      40,    0, 1106,    2, 0x0a /* Public */,
-      41,    0, 1107,    2, 0x0a /* Public */,
-      42,    0, 1108,    2, 0x0a /* Public */,
-      43,    0, 1109,    2, 0x0a /* Public */,
-      44,    0, 1110,    2, 0x0a /* Public */,
-      45,    0, 1111,    2, 0x0a /* Public */,
-      46,    0, 1112,    2, 0x0a /* Public */,
-      47,    0, 1113,    2, 0x0a /* Public */,
-      48,    0, 1114,    2, 0x0a /* Public */,
-      49,    0, 1115,    2, 0x0a /* Public */,
-      50,    0, 1116,    2, 0x0a /* Public */,
-      51,    0, 1117,    2, 0x0a /* Public */,
-      52,    0, 1118,    2, 0x0a /* Public */,
-      53,    0, 1119,    2, 0x0a /* Public */,
-      54,    0, 1120,    2, 0x0a /* Public */,
-      55,    0, 1121,    2, 0x0a /* Public */,
-      56,    0, 1122,    2, 0x0a /* Public */,
-      57,    0, 1123,    2, 0x0a /* Public */,
-      58,    0, 1124,    2, 0x0a /* Public */,
-      59,    0, 1125,    2, 0x0a /* Public */,
-      60,    0, 1126,    2, 0x0a /* Public */,
-      61,    0, 1127,    2, 0x0a /* Public */,
-      62,    0, 1128,    2, 0x0a /* Public */,
-      63,    0, 1129,    2, 0x0a /* Public */,
-      64,    0, 1130,    2, 0x0a /* Public */,
-      65,    0, 1131,    2, 0x0a /* Public */,
-      66,    0, 1132,    2, 0x0a /* Public */,
-      67,    0, 1133,    2, 0x0a /* Public */,
-      68,    0, 1134,    2, 0x0a /* Public */,
-      69,    0, 1135,    2, 0x0a /* Public */,
-      70,    0, 1136,    2, 0x0a /* Public */,
-      71,    0, 1137,    2, 0x0a /* Public */,
-      72,    0, 1138,    2, 0x0a /* Public */,
-      73,    0, 1139,    2, 0x0a /* Public */,
-      74,    0, 1140,    2, 0x0a /* Public */,
-      75,    0, 1141,    2, 0x0a /* Public */,
-      76,    0, 1142,    2, 0x0a /* Public */,
-      77,    0, 1143,    2, 0x0a /* Public */,
-      78,    0, 1144,    2, 0x0a /* Public */,
-      79,    0, 1145,    2, 0x0a /* Public */,
-      80,    0, 1146,    2, 0x0a /* Public */,
-      81,    0, 1147,    2, 0x0a /* Public */,
-      82,    0, 1148,    2, 0x0a /* Public */,
-      83,    0, 1149,    2, 0x0a /* Public */,
-      84,    0, 1150,    2, 0x0a /* Public */,
-      85,    0, 1151,    2, 0x0a /* Public */,
-      86,    0, 1152,    2, 0x0a /* Public */,
-      87,    0, 1153,    2, 0x0a /* Public */,
-      88,    0, 1154,    2, 0x0a /* Public */,
-      89,    0, 1155,    2, 0x0a /* Public */,
-      90,    0, 1156,    2, 0x0a /* Public */,
-      91,    0, 1157,    2, 0x0a /* Public */,
-      92,    0, 1158,    2, 0x0a /* Public */,
-      93,    0, 1159,    2, 0x0a /* Public */,
-      94,    0, 1160,    2, 0x0a /* Public */,
-      95,    0, 1161,    2, 0x0a /* Public */,
-      96,    0, 1162,    2, 0x0a /* Public */,
-      97,    0, 1163,    2, 0x0a /* Public */,
-      98,    1, 1164,    2, 0x0a /* Public */,
-     100,    1, 1167,    2, 0x0a /* Public */,
-     102,    1, 1170,    2, 0x0a /* Public */,
-     103,    1, 1173,    2, 0x0a /* Public */,
-     104,    1, 1176,    2, 0x0a /* Public */,
-     105,    1, 1179,    2, 0x0a /* Public */,
-     106,    1, 1182,    2, 0x0a /* Public */,
-     107,    1, 1185,    2, 0x0a /* Public */,
-     108,    1, 1188,    2, 0x0a /* Public */,
-     109,    1, 1191,    2, 0x0a /* Public */,
-     110,    1, 1194,    2, 0x0a /* Public */,
-     111,    0, 1197,    2, 0x0a /* Public */,
-     112,    0, 1198,    2, 0x0a /* Public */,
-     113,    0, 1199,    2, 0x0a /* Public */,
-     114,    0, 1200,    2, 0x0a /* Public */,
-     115,    0, 1201,    2, 0x0a /* Public */,
-     116,    0, 1202,    2, 0x0a /* Public */,
-     117,    0, 1203,    2, 0x0a /* Public */,
-     118,    1, 1204,    2, 0x0a /* Public */,
-     119,    0, 1207,    2, 0x0a /* Public */,
-     120,    1, 1208,    2, 0x0a /* Public */,
-     121,    0, 1211,    2, 0x0a /* Public */,
-     122,    0, 1212,    2, 0x0a /* Public */,
-     123,    0, 1213,    2, 0x0a /* Public */,
-     124,    0, 1214,    2, 0x0a /* Public */,
-     125,    0, 1215,    2, 0x0a /* Public */,
-     126,    0, 1216,    2, 0x0a /* Public */,
-     127,    0, 1217,    2, 0x0a /* Public */,
-     128,    0, 1218,    2, 0x0a /* Public */,
-     129,    0, 1219,    2, 0x0a /* Public */,
-     130,    1, 1220,    2, 0x0a /* Public */,
-     131,    1, 1223,    2, 0x0a /* Public */,
-     132,    1, 1226,    2, 0x0a /* Public */,
-     133,    1, 1229,    2, 0x0a /* Public */,
-     134,    1, 1232,    2, 0x0a /* Public */,
-     136,    1, 1235,    2, 0x0a /* Public */,
-     137,    1, 1238,    2, 0x0a /* Public */,
-     138,    1, 1241,    2, 0x0a /* Public */,
-     139,    1, 1244,    2, 0x0a /* Public */,
-     140,    1, 1247,    2, 0x0a /* Public */,
-     141,    1, 1250,    2, 0x0a /* Public */,
-     142,    1, 1253,    2, 0x0a /* Public */,
-     143,    1, 1256,    2, 0x0a /* Public */,
-     144,    1, 1259,    2, 0x0a /* Public */,
-     145,    0, 1262,    2, 0x0a /* Public */,
-     146,    1, 1263,    2, 0x0a /* Public */,
-     147,    1, 1266,    2, 0x0a /* Public */,
-     148,    1, 1269,    2, 0x0a /* Public */,
-     149,    0, 1272,    2, 0x0a /* Public */,
-     150,    1, 1273,    2, 0x0a /* Public */,
-     152,    1, 1276,    2, 0x0a /* Public */,
-     153,    0, 1279,    2, 0x0a /* Public */,
-     154,    0, 1280,    2, 0x0a /* Public */,
-     155,    0, 1281,    2, 0x0a /* Public */,
-     156,    0, 1282,    2, 0x0a /* Public */,
-     157,    0, 1283,    2, 0x0a /* Public */,
-     158,    0, 1284,    2, 0x0a /* Public */,
-     159,    1, 1285,    2, 0x0a /* Public */,
-     160,    1, 1288,    2, 0x0a /* Public */,
-     161,    1, 1291,    2, 0x0a /* Public */,
-     163,    1, 1294,    2, 0x0a /* Public */,
-     164,    1, 1297,    2, 0x0a /* Public */,
-     166,    1, 1300,    2, 0x0a /* Public */,
-     167,    0, 1303,    2, 0x0a /* Public */,
-     168,    1, 1304,    2, 0x0a /* Public */,
-     169,    1, 1307,    2, 0x0a /* Public */,
-     170,    1, 1310,    2, 0x0a /* Public */,
-     172,    0, 1313,    2, 0x0a /* Public */,
-     173,    0, 1314,    2, 0x0a /* Public */,
-     174,    1, 1315,    2, 0x0a /* Public */,
-     176,    1, 1318,    2, 0x0a /* Public */,
-     177,    1, 1321,    2, 0x0a /* Public */,
-     178,    0, 1324,    2, 0x0a /* Public */,
-     179,    1, 1325,    2, 0x0a /* Public */,
-     182,    1, 1328,    2, 0x0a /* Public */,
-     183,    1, 1331,    2, 0x0a /* Public */,
-     185,    1, 1334,    2, 0x0a /* Public */,
-     186,    1, 1337,    2, 0x0a /* Public */,
+       1,    0, 1069,    2, 0x0a /* Public */,
+       3,    0, 1070,    2, 0x0a /* Public */,
+       4,    0, 1071,    2, 0x0a /* Public */,
+       5,    0, 1072,    2, 0x0a /* Public */,
+       6,    0, 1073,    2, 0x0a /* Public */,
+       7,    0, 1074,    2, 0x0a /* Public */,
+       8,    0, 1075,    2, 0x0a /* Public */,
+       9,    0, 1076,    2, 0x0a /* Public */,
+      10,    0, 1077,    2, 0x0a /* Public */,
+      11,    0, 1078,    2, 0x0a /* Public */,
+      12,    0, 1079,    2, 0x0a /* Public */,
+      13,    0, 1080,    2, 0x0a /* Public */,
+      14,    0, 1081,    2, 0x0a /* Public */,
+      15,    0, 1082,    2, 0x0a /* Public */,
+      16,    0, 1083,    2, 0x0a /* Public */,
+      17,    0, 1084,    2, 0x0a /* Public */,
+      18,    0, 1085,    2, 0x0a /* Public */,
+      19,    1, 1086,    2, 0x0a /* Public */,
+      22,    1, 1089,    2, 0x0a /* Public */,
+      23,    1, 1092,    2, 0x0a /* Public */,
+      24,    0, 1095,    2, 0x0a /* Public */,
+      25,    0, 1096,    2, 0x0a /* Public */,
+      26,    0, 1097,    2, 0x0a /* Public */,
+      27,    0, 1098,    2, 0x0a /* Public */,
+      28,    0, 1099,    2, 0x0a /* Public */,
+      29,    0, 1100,    2, 0x0a /* Public */,
+      30,    0, 1101,    2, 0x0a /* Public */,
+      31,    0, 1102,    2, 0x0a /* Public */,
+      32,    0, 1103,    2, 0x0a /* Public */,
+      33,    0, 1104,    2, 0x0a /* Public */,
+      34,    0, 1105,    2, 0x0a /* Public */,
+      35,    0, 1106,    2, 0x0a /* Public */,
+      36,    0, 1107,    2, 0x0a /* Public */,
+      37,    0, 1108,    2, 0x0a /* Public */,
+      38,    0, 1109,    2, 0x0a /* Public */,
+      39,    0, 1110,    2, 0x0a /* Public */,
+      40,    0, 1111,    2, 0x0a /* Public */,
+      41,    0, 1112,    2, 0x0a /* Public */,
+      42,    0, 1113,    2, 0x0a /* Public */,
+      43,    0, 1114,    2, 0x0a /* Public */,
+      44,    0, 1115,    2, 0x0a /* Public */,
+      45,    0, 1116,    2, 0x0a /* Public */,
+      46,    0, 1117,    2, 0x0a /* Public */,
+      47,    0, 1118,    2, 0x0a /* Public */,
+      48,    0, 1119,    2, 0x0a /* Public */,
+      49,    0, 1120,    2, 0x0a /* Public */,
+      50,    0, 1121,    2, 0x0a /* Public */,
+      51,    0, 1122,    2, 0x0a /* Public */,
+      52,    0, 1123,    2, 0x0a /* Public */,
+      53,    0, 1124,    2, 0x0a /* Public */,
+      54,    0, 1125,    2, 0x0a /* Public */,
+      55,    0, 1126,    2, 0x0a /* Public */,
+      56,    0, 1127,    2, 0x0a /* Public */,
+      57,    0, 1128,    2, 0x0a /* Public */,
+      58,    0, 1129,    2, 0x0a /* Public */,
+      59,    0, 1130,    2, 0x0a /* Public */,
+      60,    0, 1131,    2, 0x0a /* Public */,
+      61,    0, 1132,    2, 0x0a /* Public */,
+      62,    0, 1133,    2, 0x0a /* Public */,
+      63,    0, 1134,    2, 0x0a /* Public */,
+      64,    0, 1135,    2, 0x0a /* Public */,
+      65,    0, 1136,    2, 0x0a /* Public */,
+      66,    0, 1137,    2, 0x0a /* Public */,
+      67,    0, 1138,    2, 0x0a /* Public */,
+      68,    0, 1139,    2, 0x0a /* Public */,
+      69,    0, 1140,    2, 0x0a /* Public */,
+      70,    0, 1141,    2, 0x0a /* Public */,
+      71,    0, 1142,    2, 0x0a /* Public */,
+      72,    0, 1143,    2, 0x0a /* Public */,
+      73,    0, 1144,    2, 0x0a /* Public */,
+      74,    0, 1145,    2, 0x0a /* Public */,
+      75,    0, 1146,    2, 0x0a /* Public */,
+      76,    0, 1147,    2, 0x0a /* Public */,
+      77,    0, 1148,    2, 0x0a /* Public */,
+      78,    0, 1149,    2, 0x0a /* Public */,
+      79,    0, 1150,    2, 0x0a /* Public */,
+      80,    0, 1151,    2, 0x0a /* Public */,
+      81,    0, 1152,    2, 0x0a /* Public */,
+      82,    0, 1153,    2, 0x0a /* Public */,
+      83,    0, 1154,    2, 0x0a /* Public */,
+      84,    0, 1155,    2, 0x0a /* Public */,
+      85,    0, 1156,    2, 0x0a /* Public */,
+      86,    0, 1157,    2, 0x0a /* Public */,
+      87,    0, 1158,    2, 0x0a /* Public */,
+      88,    0, 1159,    2, 0x0a /* Public */,
+      89,    0, 1160,    2, 0x0a /* Public */,
+      90,    0, 1161,    2, 0x0a /* Public */,
+      91,    0, 1162,    2, 0x0a /* Public */,
+      92,    0, 1163,    2, 0x0a /* Public */,
+      93,    0, 1164,    2, 0x0a /* Public */,
+      94,    0, 1165,    2, 0x0a /* Public */,
+      95,    0, 1166,    2, 0x0a /* Public */,
+      96,    0, 1167,    2, 0x0a /* Public */,
+      97,    0, 1168,    2, 0x0a /* Public */,
+      98,    0, 1169,    2, 0x0a /* Public */,
+      99,    1, 1170,    2, 0x0a /* Public */,
+     101,    1, 1173,    2, 0x0a /* Public */,
+     103,    1, 1176,    2, 0x0a /* Public */,
+     104,    1, 1179,    2, 0x0a /* Public */,
+     105,    1, 1182,    2, 0x0a /* Public */,
+     106,    1, 1185,    2, 0x0a /* Public */,
+     107,    1, 1188,    2, 0x0a /* Public */,
+     108,    1, 1191,    2, 0x0a /* Public */,
+     109,    1, 1194,    2, 0x0a /* Public */,
+     110,    1, 1197,    2, 0x0a /* Public */,
+     111,    1, 1200,    2, 0x0a /* Public */,
+     112,    0, 1203,    2, 0x0a /* Public */,
+     113,    0, 1204,    2, 0x0a /* Public */,
+     114,    0, 1205,    2, 0x0a /* Public */,
+     115,    0, 1206,    2, 0x0a /* Public */,
+     116,    0, 1207,    2, 0x0a /* Public */,
+     117,    0, 1208,    2, 0x0a /* Public */,
+     118,    0, 1209,    2, 0x0a /* Public */,
+     119,    1, 1210,    2, 0x0a /* Public */,
+     120,    0, 1213,    2, 0x0a /* Public */,
+     121,    1, 1214,    2, 0x0a /* Public */,
+     122,    0, 1217,    2, 0x0a /* Public */,
+     123,    0, 1218,    2, 0x0a /* Public */,
+     124,    0, 1219,    2, 0x0a /* Public */,
+     125,    0, 1220,    2, 0x0a /* Public */,
+     126,    0, 1221,    2, 0x0a /* Public */,
+     127,    0, 1222,    2, 0x0a /* Public */,
+     128,    0, 1223,    2, 0x0a /* Public */,
+     129,    0, 1224,    2, 0x0a /* Public */,
+     130,    0, 1225,    2, 0x0a /* Public */,
+     131,    1, 1226,    2, 0x0a /* Public */,
+     132,    1, 1229,    2, 0x0a /* Public */,
+     133,    1, 1232,    2, 0x0a /* Public */,
+     134,    1, 1235,    2, 0x0a /* Public */,
+     135,    1, 1238,    2, 0x0a /* Public */,
+     137,    1, 1241,    2, 0x0a /* Public */,
+     138,    1, 1244,    2, 0x0a /* Public */,
+     139,    1, 1247,    2, 0x0a /* Public */,
+     140,    1, 1250,    2, 0x0a /* Public */,
+     141,    1, 1253,    2, 0x0a /* Public */,
+     142,    1, 1256,    2, 0x0a /* Public */,
+     143,    1, 1259,    2, 0x0a /* Public */,
+     144,    1, 1262,    2, 0x0a /* Public */,
+     145,    1, 1265,    2, 0x0a /* Public */,
+     146,    0, 1268,    2, 0x0a /* Public */,
+     147,    1, 1269,    2, 0x0a /* Public */,
+     148,    1, 1272,    2, 0x0a /* Public */,
+     149,    1, 1275,    2, 0x0a /* Public */,
+     150,    0, 1278,    2, 0x0a /* Public */,
+     151,    1, 1279,    2, 0x0a /* Public */,
+     153,    1, 1282,    2, 0x0a /* Public */,
+     154,    0, 1285,    2, 0x0a /* Public */,
+     155,    0, 1286,    2, 0x0a /* Public */,
+     156,    0, 1287,    2, 0x0a /* Public */,
+     157,    0, 1288,    2, 0x0a /* Public */,
+     158,    0, 1289,    2, 0x0a /* Public */,
+     159,    0, 1290,    2, 0x0a /* Public */,
+     160,    1, 1291,    2, 0x0a /* Public */,
+     161,    1, 1294,    2, 0x0a /* Public */,
+     162,    1, 1297,    2, 0x0a /* Public */,
+     164,    1, 1300,    2, 0x0a /* Public */,
+     165,    1, 1303,    2, 0x0a /* Public */,
+     167,    1, 1306,    2, 0x0a /* Public */,
+     168,    0, 1309,    2, 0x0a /* Public */,
+     169,    1, 1310,    2, 0x0a /* Public */,
+     170,    1, 1313,    2, 0x0a /* Public */,
+     171,    1, 1316,    2, 0x0a /* Public */,
+     173,    0, 1319,    2, 0x0a /* Public */,
+     174,    0, 1320,    2, 0x0a /* Public */,
+     175,    1, 1321,    2, 0x0a /* Public */,
+     177,    1, 1324,    2, 0x0a /* Public */,
+     178,    1, 1327,    2, 0x0a /* Public */,
+     179,    0, 1330,    2, 0x0a /* Public */,
+     180,    1, 1331,    2, 0x0a /* Public */,
+     183,    1, 1334,    2, 0x0a /* Public */,
+     184,    1, 1337,    2, 0x0a /* Public */,
      186,    1, 1340,    2, 0x0a /* Public */,
-     189,    1, 1343,    2, 0x0a /* Public */,
-     190,    1, 1346,    2, 0x0a /* Public */,
-     193,    1, 1349,    2, 0x0a /* Public */,
-     195,    2, 1352,    2, 0x0a /* Public */,
-     198,    3, 1357,    2, 0x0a /* Public */,
-     201,    0, 1364,    2, 0x0a /* Public */,
-     202,    0, 1365,    2, 0x0a /* Public */,
-     203,    0, 1366,    2, 0x0a /* Public */,
-     204,    1, 1367,    2, 0x0a /* Public */,
-     207,    0, 1370,    2, 0x0a /* Public */,
-     208,    2, 1371,    2, 0x0a /* Public */,
-     212,    0, 1376,    2, 0x0a /* Public */,
-     213,    1, 1377,    2, 0x0a /* Public */,
-     216,    1, 1380,    2, 0x0a /* Public */,
-     219,    0, 1383,    2, 0x0a /* Public */,
-     220,    0, 1384,    2, 0x0a /* Public */,
-     221,    0, 1385,    2, 0x0a /* Public */,
-     222,    0, 1386,    2, 0x0a /* Public */,
-     223,    0, 1387,    2, 0x0a /* Public */,
-     224,    0, 1388,    2, 0x0a /* Public */,
-     225,    0, 1389,    2, 0x0a /* Public */,
-     226,    0, 1390,    2, 0x0a /* Public */,
-     227,    0, 1391,    2, 0x0a /* Public */,
-     228,    0, 1392,    2, 0x0a /* Public */,
-     229,    0, 1393,    2, 0x0a /* Public */,
-     230,    0, 1394,    2, 0x0a /* Public */,
-     232,    0, 1395,    2, 0x0a /* Public */,
-     234,    0, 1396,    2, 0x0a /* Public */,
-     235,    1, 1397,    2, 0x0a /* Public */,
-     238,    1, 1400,    2, 0x0a /* Public */,
-     240,    2, 1403,    2, 0x0a /* Public */,
-     240,    1, 1408,    2, 0x2a /* Public | MethodCloned */,
-     243,    2, 1411,    2, 0x0a /* Public */,
-     243,    1, 1416,    2, 0x2a /* Public | MethodCloned */,
-     244,    1, 1419,    2, 0x0a /* Public */,
-     245,    1, 1422,    2, 0x0a /* Public */,
-     247,    0, 1425,    2, 0x0a /* Public */,
+     187,    1, 1343,    2, 0x0a /* Public */,
+     187,    1, 1346,    2, 0x0a /* Public */,
+     190,    1, 1349,    2, 0x0a /* Public */,
+     191,    1, 1352,    2, 0x0a /* Public */,
+     194,    1, 1355,    2, 0x0a /* Public */,
+     196,    2, 1358,    2, 0x0a /* Public */,
+     199,    3, 1363,    2, 0x0a /* Public */,
+     202,    0, 1370,    2, 0x0a /* Public */,
+     203,    0, 1371,    2, 0x0a /* Public */,
+     204,    0, 1372,    2, 0x0a /* Public */,
+     205,    1, 1373,    2, 0x0a /* Public */,
+     208,    0, 1376,    2, 0x0a /* Public */,
+     209,    2, 1377,    2, 0x0a /* Public */,
+     213,    0, 1382,    2, 0x0a /* Public */,
+     214,    1, 1383,    2, 0x0a /* Public */,
+     217,    1, 1386,    2, 0x0a /* Public */,
+     220,    0, 1389,    2, 0x0a /* Public */,
+     221,    0, 1390,    2, 0x0a /* Public */,
+     222,    0, 1391,    2, 0x0a /* Public */,
+     223,    0, 1392,    2, 0x0a /* Public */,
+     224,    0, 1393,    2, 0x0a /* Public */,
+     225,    0, 1394,    2, 0x0a /* Public */,
+     226,    0, 1395,    2, 0x0a /* Public */,
+     227,    0, 1396,    2, 0x0a /* Public */,
+     228,    0, 1397,    2, 0x0a /* Public */,
+     229,    0, 1398,    2, 0x0a /* Public */,
+     230,    0, 1399,    2, 0x0a /* Public */,
+     231,    0, 1400,    2, 0x0a /* Public */,
+     233,    0, 1401,    2, 0x0a /* Public */,
+     235,    0, 1402,    2, 0x0a /* Public */,
+     236,    1, 1403,    2, 0x0a /* Public */,
+     239,    1, 1406,    2, 0x0a /* Public */,
+     241,    2, 1409,    2, 0x0a /* Public */,
+     241,    1, 1414,    2, 0x2a /* Public | MethodCloned */,
+     244,    2, 1417,    2, 0x0a /* Public */,
+     244,    1, 1422,    2, 0x2a /* Public | MethodCloned */,
+     245,    1, 1425,    2, 0x0a /* Public */,
+     246,    1, 1428,    2, 0x0a /* Public */,
+     248,    0, 1431,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -785,17 +788,18 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,   99,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,   99,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Bool,  100,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  100,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -803,81 +807,9 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,  101,
+    QMetaType::Void, QMetaType::Bool,  102,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Int,  135,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void, QMetaType::Bool,  101,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,  151,
-    QMetaType::Void, QMetaType::Bool,   99,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,   99,
-    QMetaType::Void, QMetaType::Int,  135,
-    QMetaType::Void, QMetaType::QFont,  162,
-    QMetaType::Void, QMetaType::Int,  151,
-    QMetaType::Void, QMetaType::Bool,  165,
-    QMetaType::Void, QMetaType::Bool,   99,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,  135,
-    QMetaType::Void, QMetaType::Int,  135,
-    QMetaType::Void, QMetaType::QUrl,  171,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::QString,  175,
-    QMetaType::Void, QMetaType::QString,  175,
-    QMetaType::Void, QMetaType::QString,  175,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 180,  181,
-    QMetaType::Void, 0x80000000 | 180,  181,
-    QMetaType::Void, 0x80000000 | 20,  184,
-    QMetaType::Void, 0x80000000 | 20,  184,
-    QMetaType::Void, QMetaType::Int,  135,
-    QMetaType::Void, 0x80000000 | 187,  188,
-    QMetaType::Void, QMetaType::Int,  135,
-    QMetaType::Void, 0x80000000 | 191,  192,
-    QMetaType::Void, 0x80000000 | 194,  192,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  196,  197,
-    QMetaType::Void, QMetaType::Bool, 0x80000000 | 199, QMetaType::QString,  196,  200,  197,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 205,  206,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::Int, 0x80000000 | 210,  209,  211,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 214,  215,
-    QMetaType::Void, 0x80000000 | 217,  218,
+    QMetaType::Void, QMetaType::Bool,  102,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -887,19 +819,91 @@ static const uint qt_meta_data_CMainWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Int,  136,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void, QMetaType::Bool,  102,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Int,  152,
+    QMetaType::Void, QMetaType::Bool,  100,
     QMetaType::Void,
     QMetaType::Void,
-    0x80000000 | 231,
-    0x80000000 | 233,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 236,  237,
-    QMetaType::Void, 0x80000000 | 239,    2,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  241,  242,
-    QMetaType::Void, QMetaType::Bool,  241,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  241,  242,
-    QMetaType::Void, QMetaType::Bool,  241,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Bool,  100,
+    QMetaType::Void, QMetaType::Int,  136,
+    QMetaType::Void, QMetaType::QFont,  163,
+    QMetaType::Void, QMetaType::Int,  152,
+    QMetaType::Void, QMetaType::Bool,  166,
+    QMetaType::Void, QMetaType::Bool,  100,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Int,  136,
+    QMetaType::Void, QMetaType::Int,  136,
+    QMetaType::Void, QMetaType::QUrl,  172,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::QString,  176,
+    QMetaType::Void, QMetaType::QString,  176,
+    QMetaType::Void, QMetaType::QString,  176,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 181,  182,
+    QMetaType::Void, 0x80000000 | 181,  182,
+    QMetaType::Void, 0x80000000 | 20,  185,
+    QMetaType::Void, 0x80000000 | 20,  185,
+    QMetaType::Void, QMetaType::Int,  136,
+    QMetaType::Void, 0x80000000 | 188,  189,
+    QMetaType::Void, QMetaType::Int,  136,
+    QMetaType::Void, 0x80000000 | 192,  193,
+    QMetaType::Void, 0x80000000 | 195,  193,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  197,  198,
+    QMetaType::Void, QMetaType::Bool, 0x80000000 | 200, QMetaType::QString,  197,  201,  198,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 206,  207,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Int, 0x80000000 | 211,  210,  212,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 215,  216,
+    QMetaType::Void, 0x80000000 | 218,  219,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    0x80000000 | 232,
+    0x80000000 | 234,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 237,  238,
+    QMetaType::Void, 0x80000000 | 240,    2,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  242,  243,
+    QMetaType::Void, QMetaType::Bool,  242,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  242,  243,
+    QMetaType::Void, QMetaType::Bool,  242,
     QMetaType::Void, QMetaType::Int,    2,
-    QMetaType::Bool, 0x80000000 | 246,  188,
+    QMetaType::Bool, 0x80000000 | 247,  189,
     QMetaType::Void,
 
        0        // eod
@@ -971,159 +975,160 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 57: _t->on_actionCurveEditor_triggered(); break;
         case 58: _t->on_actionMeshInspector_triggered(); break;
         case 59: _t->on_actionElasticityConvertor_triggered(); break;
-        case 60: _t->on_actionKinemat_triggered(); break;
-        case 61: _t->on_actionPlotMix_triggered(); break;
-        case 62: _t->on_actionFEBioRun_triggered(); break;
-        case 63: _t->on_actionFEBioStop_triggered(); break;
-        case 64: _t->on_actionFEBioOptimize_triggered(); break;
-        case 65: _t->on_actionOptions_triggered(); break;
-        case 66: _t->on_actionLayerInfo_triggered(); break;
-        case 67: _t->on_actionPlaneCut_triggered(); break;
-        case 68: _t->on_actionMirrorPlane_triggered(); break;
-        case 69: _t->on_actionVectorPlot_triggered(); break;
-        case 70: _t->on_actionTensorPlot_triggered(); break;
-        case 71: _t->on_actionIsosurfacePlot_triggered(); break;
-        case 72: _t->on_actionSlicePlot_triggered(); break;
-        case 73: _t->on_actionDisplacementMap_triggered(); break;
-        case 74: _t->on_actionStreamLinePlot_triggered(); break;
-        case 75: _t->on_actionParticleFlowPlot_triggered(); break;
-        case 76: _t->on_actionVolumeFlowPlot_triggered(); break;
-        case 77: _t->on_actionImageSlicer_triggered(); break;
-        case 78: _t->on_actionVolumeRender_triggered(); break;
-        case 79: _t->on_actionMarchingCubes_triggered(); break;
-        case 80: _t->on_actionGraph_triggered(); break;
-        case 81: _t->on_actionSummary_triggered(); break;
-        case 82: _t->on_actionStats_triggered(); break;
-        case 83: _t->on_actionIntegrate_triggered(); break;
-        case 84: _t->on_actionImportPoints_triggered(); break;
-        case 85: _t->on_actionImportLines_triggered(); break;
-        case 86: _t->on_actionRecordNew_triggered(); break;
-        case 87: _t->on_actionRecordStart_triggered(); break;
-        case 88: _t->on_actionRecordPause_triggered(); break;
-        case 89: _t->on_actionRecordStop_triggered(); break;
-        case 90: _t->on_actionUndoViewChange_triggered(); break;
-        case 91: _t->on_actionRedoViewChange_triggered(); break;
-        case 92: _t->on_actionZoomSelect_triggered(); break;
-        case 93: _t->on_actionZoomExtents_triggered(); break;
-        case 94: _t->on_actionViewCapture_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 95: _t->on_actionOrtho_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 96: _t->on_actionShowGrid_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 97: _t->on_actionShowMeshLines_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 98: _t->on_actionShowEdgeLines_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 99: _t->on_actionBackfaceCulling_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 100: _t->on_actionViewSmooth_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 101: _t->on_actionShowNormals_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 102: _t->on_actionShowFibers_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 103: _t->on_actionShowMatAxes_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 104: _t->on_actionShowDiscrete_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 105: _t->on_actionToggleLight_triggered(); break;
-        case 106: _t->on_actionFront_triggered(); break;
-        case 107: _t->on_actionBack_triggered(); break;
-        case 108: _t->on_actionLeft_triggered(); break;
-        case 109: _t->on_actionRight_triggered(); break;
-        case 110: _t->on_actionTop_triggered(); break;
-        case 111: _t->on_actionBottom_triggered(); break;
-        case 112: _t->on_actionWireframe_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 113: _t->on_actionSnap3D_triggered(); break;
-        case 114: _t->on_actionTrack_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 115: _t->on_actionViewVPSave_triggered(); break;
-        case 116: _t->on_actionViewVPPrev_triggered(); break;
-        case 117: _t->on_actionViewVPNext_triggered(); break;
-        case 118: _t->on_actionSyncViews_triggered(); break;
-        case 119: _t->on_actionFEBioURL_triggered(); break;
-        case 120: _t->on_actionFEBioForum_triggered(); break;
-        case 121: _t->on_actionFEBioResources_triggered(); break;
-        case 122: _t->on_actionFEBioPubs_triggered(); break;
-        case 123: _t->on_actionAbout_triggered(); break;
-        case 124: _t->on_actionSelect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 125: _t->on_actionTranslate_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 126: _t->on_actionRotate_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 127: _t->on_actionScale_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 128: _t->on_selectCoord_currentIndexChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 129: _t->on_actionSelectObjects_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 130: _t->on_actionSelectParts_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 131: _t->on_actionSelectSurfaces_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 132: _t->on_actionSelectCurves_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 133: _t->on_actionSelectNodes_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 134: _t->on_actionSelectDiscrete_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 135: _t->on_selectRect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 136: _t->on_selectCircle_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 137: _t->on_selectFree_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 138: _t->on_actionMeasureTool_triggered(); break;
-        case 139: _t->on_postSelectRect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 140: _t->on_postSelectCircle_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 141: _t->on_postSelectFree_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 142: _t->on_postActionMeasureTool_triggered(); break;
-        case 143: _t->on_selectData_currentValueChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 144: _t->on_actionPlay_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 145: _t->on_actionRefresh_triggered(); break;
-        case 146: _t->on_actionFirst_triggered(); break;
-        case 147: _t->on_actionPrev_triggered(); break;
-        case 148: _t->on_actionNext_triggered(); break;
-        case 149: _t->on_actionLast_triggered(); break;
-        case 150: _t->on_actionTimeSettings_triggered(); break;
-        case 151: _t->on_actionColorMap_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 152: _t->on_selectTime_valueChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 153: _t->on_fontStyle_currentFontChanged((*reinterpret_cast< const QFont(*)>(_a[1]))); break;
-        case 154: _t->on_fontSize_valueChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 155: _t->on_fontBold_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 156: _t->on_fontItalic_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 157: _t->on_actionProperties_triggered(); break;
-        case 158: _t->on_tab_currentChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 159: _t->on_tab_tabCloseRequested((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 160: _t->on_welcome_anchorClicked((*reinterpret_cast< const QUrl(*)>(_a[1]))); break;
-        case 161: _t->on_clearProject(); break;
-        case 162: _t->on_closeProject(); break;
-        case 163: _t->on_removeFromProject((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 164: _t->on_closeFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 165: _t->on_addToProject((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 166: _t->OnPostObjectStateChanged(); break;
-        case 167: _t->OnPostObjectPropsChanged((*reinterpret_cast< FSObject*(*)>(_a[1]))); break;
-        case 168: _t->on_modelViewer_currentObjectChanged((*reinterpret_cast< FSObject*(*)>(_a[1]))); break;
-        case 169: _t->OnSelectMeshLayer((*reinterpret_cast< QAction*(*)>(_a[1]))); break;
-        case 170: _t->OnSelectObjectTransparencyMode((*reinterpret_cast< QAction*(*)>(_a[1]))); break;
-        case 171: _t->CloseView((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 172: _t->CloseView((*reinterpret_cast< CDocument*(*)>(_a[1]))); break;
-        case 173: _t->SetCurrentState((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 174: _t->closeEvent((*reinterpret_cast< QCloseEvent*(*)>(_a[1]))); break;
-        case 175: _t->keyPressEvent((*reinterpret_cast< QKeyEvent*(*)>(_a[1]))); break;
-        case 176: _t->on_finishedReadingFile((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
-        case 177: _t->finishedReadingFile((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QueuedFile(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3]))); break;
-        case 178: _t->checkFileProgress(); break;
-        case 179: _t->StopAnimation(); break;
-        case 180: _t->onTimer(); break;
-        case 181: _t->on_glview_pointPicked((*reinterpret_cast< const vec3d(*)>(_a[1]))); break;
-        case 182: _t->on_glview_selectionChanged(); break;
-        case 183: _t->onRunFinished((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QProcess::ExitStatus(*)>(_a[2]))); break;
-        case 184: _t->onReadyRead(); break;
-        case 185: _t->onErrorOccurred((*reinterpret_cast< QProcess::ProcessError(*)>(_a[1]))); break;
-        case 186: _t->onExportMaterials((*reinterpret_cast< const vector<GMaterial*>(*)>(_a[1]))); break;
-        case 187: _t->onExportAllMaterials(); break;
-        case 188: _t->onImportMaterials(); break;
-        case 189: _t->DeleteAllMaterials(); break;
-        case 190: _t->DeleteAllBC(); break;
-        case 191: _t->DeleteAllLoads(); break;
-        case 192: _t->DeleteAllIC(); break;
-        case 193: _t->DeleteAllContact(); break;
-        case 194: _t->DeleteAllConstraints(); break;
-        case 195: _t->DeleteAllRigidConstraints(); break;
-        case 196: _t->DeleteAllRigidConnectors(); break;
-        case 197: _t->DeleteAllSteps(); break;
-        case 198: { CGLView* _r = _t->GetGLView();
+        case 60: _t->on_actionUnitConverter_triggered(); break;
+        case 61: _t->on_actionKinemat_triggered(); break;
+        case 62: _t->on_actionPlotMix_triggered(); break;
+        case 63: _t->on_actionFEBioRun_triggered(); break;
+        case 64: _t->on_actionFEBioStop_triggered(); break;
+        case 65: _t->on_actionFEBioOptimize_triggered(); break;
+        case 66: _t->on_actionOptions_triggered(); break;
+        case 67: _t->on_actionLayerInfo_triggered(); break;
+        case 68: _t->on_actionPlaneCut_triggered(); break;
+        case 69: _t->on_actionMirrorPlane_triggered(); break;
+        case 70: _t->on_actionVectorPlot_triggered(); break;
+        case 71: _t->on_actionTensorPlot_triggered(); break;
+        case 72: _t->on_actionIsosurfacePlot_triggered(); break;
+        case 73: _t->on_actionSlicePlot_triggered(); break;
+        case 74: _t->on_actionDisplacementMap_triggered(); break;
+        case 75: _t->on_actionStreamLinePlot_triggered(); break;
+        case 76: _t->on_actionParticleFlowPlot_triggered(); break;
+        case 77: _t->on_actionVolumeFlowPlot_triggered(); break;
+        case 78: _t->on_actionImageSlicer_triggered(); break;
+        case 79: _t->on_actionVolumeRender_triggered(); break;
+        case 80: _t->on_actionMarchingCubes_triggered(); break;
+        case 81: _t->on_actionGraph_triggered(); break;
+        case 82: _t->on_actionSummary_triggered(); break;
+        case 83: _t->on_actionStats_triggered(); break;
+        case 84: _t->on_actionIntegrate_triggered(); break;
+        case 85: _t->on_actionImportPoints_triggered(); break;
+        case 86: _t->on_actionImportLines_triggered(); break;
+        case 87: _t->on_actionRecordNew_triggered(); break;
+        case 88: _t->on_actionRecordStart_triggered(); break;
+        case 89: _t->on_actionRecordPause_triggered(); break;
+        case 90: _t->on_actionRecordStop_triggered(); break;
+        case 91: _t->on_actionUndoViewChange_triggered(); break;
+        case 92: _t->on_actionRedoViewChange_triggered(); break;
+        case 93: _t->on_actionZoomSelect_triggered(); break;
+        case 94: _t->on_actionZoomExtents_triggered(); break;
+        case 95: _t->on_actionViewCapture_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 96: _t->on_actionOrtho_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 97: _t->on_actionShowGrid_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 98: _t->on_actionShowMeshLines_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 99: _t->on_actionShowEdgeLines_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 100: _t->on_actionBackfaceCulling_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 101: _t->on_actionViewSmooth_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 102: _t->on_actionShowNormals_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 103: _t->on_actionShowFibers_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 104: _t->on_actionShowMatAxes_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 105: _t->on_actionShowDiscrete_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 106: _t->on_actionToggleLight_triggered(); break;
+        case 107: _t->on_actionFront_triggered(); break;
+        case 108: _t->on_actionBack_triggered(); break;
+        case 109: _t->on_actionLeft_triggered(); break;
+        case 110: _t->on_actionRight_triggered(); break;
+        case 111: _t->on_actionTop_triggered(); break;
+        case 112: _t->on_actionBottom_triggered(); break;
+        case 113: _t->on_actionWireframe_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 114: _t->on_actionSnap3D_triggered(); break;
+        case 115: _t->on_actionTrack_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 116: _t->on_actionViewVPSave_triggered(); break;
+        case 117: _t->on_actionViewVPPrev_triggered(); break;
+        case 118: _t->on_actionViewVPNext_triggered(); break;
+        case 119: _t->on_actionSyncViews_triggered(); break;
+        case 120: _t->on_actionFEBioURL_triggered(); break;
+        case 121: _t->on_actionFEBioForum_triggered(); break;
+        case 122: _t->on_actionFEBioResources_triggered(); break;
+        case 123: _t->on_actionFEBioPubs_triggered(); break;
+        case 124: _t->on_actionAbout_triggered(); break;
+        case 125: _t->on_actionSelect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 126: _t->on_actionTranslate_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 127: _t->on_actionRotate_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 128: _t->on_actionScale_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 129: _t->on_selectCoord_currentIndexChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 130: _t->on_actionSelectObjects_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 131: _t->on_actionSelectParts_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 132: _t->on_actionSelectSurfaces_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 133: _t->on_actionSelectCurves_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 134: _t->on_actionSelectNodes_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 135: _t->on_actionSelectDiscrete_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 136: _t->on_selectRect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 137: _t->on_selectCircle_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 138: _t->on_selectFree_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 139: _t->on_actionMeasureTool_triggered(); break;
+        case 140: _t->on_postSelectRect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 141: _t->on_postSelectCircle_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 142: _t->on_postSelectFree_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 143: _t->on_postActionMeasureTool_triggered(); break;
+        case 144: _t->on_selectData_currentValueChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 145: _t->on_actionPlay_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 146: _t->on_actionRefresh_triggered(); break;
+        case 147: _t->on_actionFirst_triggered(); break;
+        case 148: _t->on_actionPrev_triggered(); break;
+        case 149: _t->on_actionNext_triggered(); break;
+        case 150: _t->on_actionLast_triggered(); break;
+        case 151: _t->on_actionTimeSettings_triggered(); break;
+        case 152: _t->on_actionColorMap_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 153: _t->on_selectTime_valueChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 154: _t->on_fontStyle_currentFontChanged((*reinterpret_cast< const QFont(*)>(_a[1]))); break;
+        case 155: _t->on_fontSize_valueChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 156: _t->on_fontBold_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 157: _t->on_fontItalic_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 158: _t->on_actionProperties_triggered(); break;
+        case 159: _t->on_tab_currentChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 160: _t->on_tab_tabCloseRequested((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 161: _t->on_welcome_anchorClicked((*reinterpret_cast< const QUrl(*)>(_a[1]))); break;
+        case 162: _t->on_clearProject(); break;
+        case 163: _t->on_closeProject(); break;
+        case 164: _t->on_removeFromProject((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 165: _t->on_closeFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 166: _t->on_addToProject((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 167: _t->OnPostObjectStateChanged(); break;
+        case 168: _t->OnPostObjectPropsChanged((*reinterpret_cast< FSObject*(*)>(_a[1]))); break;
+        case 169: _t->on_modelViewer_currentObjectChanged((*reinterpret_cast< FSObject*(*)>(_a[1]))); break;
+        case 170: _t->OnSelectMeshLayer((*reinterpret_cast< QAction*(*)>(_a[1]))); break;
+        case 171: _t->OnSelectObjectTransparencyMode((*reinterpret_cast< QAction*(*)>(_a[1]))); break;
+        case 172: _t->CloseView((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 173: _t->CloseView((*reinterpret_cast< CDocument*(*)>(_a[1]))); break;
+        case 174: _t->SetCurrentState((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 175: _t->closeEvent((*reinterpret_cast< QCloseEvent*(*)>(_a[1]))); break;
+        case 176: _t->keyPressEvent((*reinterpret_cast< QKeyEvent*(*)>(_a[1]))); break;
+        case 177: _t->on_finishedReadingFile((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 178: _t->finishedReadingFile((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QueuedFile(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3]))); break;
+        case 179: _t->checkFileProgress(); break;
+        case 180: _t->StopAnimation(); break;
+        case 181: _t->onTimer(); break;
+        case 182: _t->on_glview_pointPicked((*reinterpret_cast< const vec3d(*)>(_a[1]))); break;
+        case 183: _t->on_glview_selectionChanged(); break;
+        case 184: _t->onRunFinished((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QProcess::ExitStatus(*)>(_a[2]))); break;
+        case 185: _t->onReadyRead(); break;
+        case 186: _t->onErrorOccurred((*reinterpret_cast< QProcess::ProcessError(*)>(_a[1]))); break;
+        case 187: _t->onExportMaterials((*reinterpret_cast< const vector<GMaterial*>(*)>(_a[1]))); break;
+        case 188: _t->onExportAllMaterials(); break;
+        case 189: _t->onImportMaterials(); break;
+        case 190: _t->DeleteAllMaterials(); break;
+        case 191: _t->DeleteAllBC(); break;
+        case 192: _t->DeleteAllLoads(); break;
+        case 193: _t->DeleteAllIC(); break;
+        case 194: _t->DeleteAllContact(); break;
+        case 195: _t->DeleteAllConstraints(); break;
+        case 196: _t->DeleteAllRigidConstraints(); break;
+        case 197: _t->DeleteAllRigidConnectors(); break;
+        case 198: _t->DeleteAllSteps(); break;
+        case 199: { CGLView* _r = _t->GetGLView();
             if (_a[0]) *reinterpret_cast< CGLView**>(_a[0]) = std::move(_r); }  break;
-        case 199: { Post::CGLModel* _r = _t->GetCurrentModel();
+        case 200: { Post::CGLModel* _r = _t->GetCurrentModel();
             if (_a[0]) *reinterpret_cast< Post::CGLModel**>(_a[0]) = std::move(_r); }  break;
-        case 200: _t->UpdateFontToolbar(); break;
-        case 201: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
-        case 202: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
-        case 203: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 204: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 205: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 206: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 207: _t->UpdateProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 208: { bool _r = _t->DoModelCheck((*reinterpret_cast< CModelDocument*(*)>(_a[1])));
+        case 201: _t->UpdateFontToolbar(); break;
+        case 202: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
+        case 203: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
+        case 204: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 205: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 206: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 207: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 208: _t->UpdateProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 209: { bool _r = _t->DoModelCheck((*reinterpret_cast< CModelDocument*(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 209: _t->toggleOrtho(); break;
+        case 210: _t->toggleOrtho(); break;
         default: ;
         }
     }
@@ -1158,13 +1163,13 @@ int CMainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 210)
+        if (_id < 211)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 210;
+        _id -= 211;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 210)
+        if (_id < 211)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 210;
+        _id -= 211;
     }
     return _id;
 }

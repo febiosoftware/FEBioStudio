@@ -364,6 +364,7 @@ public:
 		QAction* actionCurveEditor = addAction("Curve Editor ...", "actionCurveEditor", "curves"); actionCurveEditor->setShortcut(Qt::Key_F9);
 		QAction* actionMeshInspector = addAction("Mesh Inspector ...", "actionMeshInspector", "inspect");
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
+		QAction* actionUnitConverter = addAction("Unit Converter ...", "actionUnitConverter");
 		QAction* actionKinemat = addAction("Kinemat ...", "actionKinemat");
 		QAction* actionPlotMix = addAction("Plotmix ...", "actionPlotMix");
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
@@ -651,6 +652,7 @@ public:
 		menuBar->addAction(menuTools->menuAction());
 		menuTools->addAction(actionCurveEditor);
 		menuTools->addAction(actionMeshInspector);
+		menuTools->addAction(actionUnitConverter);
 		menuTools->addAction(actionElasticityConvertor);
 		menuTools->addAction(actionKinemat);
 		menuTools->addAction(actionPlotMix);
