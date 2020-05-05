@@ -4,9 +4,17 @@
 #include <FEMLib/FEMaterialFactory.h>
 #include <assert.h>
 
+struct MATERIAL_ENTRY
+{
+	const char*	mat_name;
+	int	mat_typeid;
+};
+
 void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly)
 {
 	FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
+
+	std::vector<MATERIAL_ENTRY> matList;
 
 	FEMatDescIter it = MF.FirstMaterial();
 	int NMAT = MF.Materials();
@@ -24,7 +32,7 @@ void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly)
 					if ((*it)->GetClassID() & nclass)
 					{
 						const char* szname = (*it)->GetTypeString();
-						pc->addItem(QString(szname), (*it)->GetTypeID());
+						matList.push_back({ szname, (*it)->GetTypeID() });
 					}
 				}
 				else
@@ -32,11 +40,20 @@ void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly)
 					if ((*it)->GetClassID() == nclass)
 					{
 						const char* szname = (*it)->GetTypeString();
-						pc->addItem(QString(szname), (*it)->GetTypeID());
+						matList.push_back({ szname, (*it)->GetTypeID() });
 					}
 				}
 			}
 		}
+	}
+
+	// sort the list alphabetically
+	std::sort(matList.begin(), matList.end(), [](MATERIAL_ENTRY a, MATERIAL_ENTRY b) { return _stricmp(a.mat_name, b.mat_name)<0; });
+
+	// add it all to the combobox
+	for (std::vector<MATERIAL_ENTRY>::iterator it = matList.begin(); it != matList.end(); ++it)
+	{
+		pc->addItem(it->mat_name, it->mat_typeid);
 	}
 }
 
