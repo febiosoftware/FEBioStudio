@@ -7,6 +7,7 @@
 #include <QListWidget>
 #include <QToolButton>
 #include <QScrollArea>
+#include <QComboBox>
 #include "ModelTree.h"
 #include "ModelPropsPanel.h"
 #include "ModelSearch.h"
@@ -20,6 +21,8 @@ public:
 
 	CModelTree*			tree;
 	::CModelPropsPanel*	props;
+
+	QComboBox*	m_filter;
 
 	QToolButton* srcButton;
 
@@ -55,6 +58,11 @@ public:
 		syncButton->setAutoRaise(true);
 		syncButton->setToolTip("<font color=\"black\">Sync selection");
 
+		// filter box
+		m_filter = new QComboBox;
+		m_filter->addItems(QStringList() << "All items" << "Materials" << "Physics" << "Steps");
+		m_filter->setObjectName("filter");
+
 		// model tree
 		tree = new CModelTree(wnd);
 		tree->setObjectName("modelTree");
@@ -65,7 +73,15 @@ public:
 		// stacked widget
 		m_stack = new QStackedWidget;
 
-		m_stack->addWidget(tree);
+		QVBoxLayout* th = new QVBoxLayout;
+		th->setMargin(0);
+		th->addWidget(m_filter);
+		th->addWidget(tree);
+
+		QWidget* dummy = new QWidget;
+		dummy->setLayout(th);
+
+		m_stack->addWidget(dummy);
 		m_stack->addWidget(m_search);
 
 		// props panel

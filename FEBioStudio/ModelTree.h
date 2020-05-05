@@ -72,6 +72,14 @@ enum ModelTreeType
 	MT_MESH_DATA
 };
 
+enum ModelTreeFilter
+{
+	FILTER_NONE,
+	FILTER_MATERIALS,
+	FILTER_PHYSICS,
+	FILTER_STEPS
+};
+
 struct CModelTreeItem
 {
 	FSObject*			obj;	// the object
@@ -96,6 +104,8 @@ public:
 
 public:
 	CModelTree(CModelViewer* view, QWidget* parent = 0);
+
+	void SetFilter(int n);
 
 	// build the model tree from the document
 	void Build(CModelDocument* doc);
@@ -150,6 +160,7 @@ protected:
 private:
 	std::vector<CModelTreeItem>	m_data;
 	CModelViewer*				m_view;
+	int							m_nfilter;
 
 	friend class CModelViewer;
 };

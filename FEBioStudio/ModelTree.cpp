@@ -428,6 +428,11 @@ CModelTree::CModelTree(CModelViewer* view, QWidget* parent) : QTreeWidget(parent
 	setHeaderHidden(true);
 }
 
+void CModelTree::SetFilter(int n)
+{
+	m_nfilter = n;
+}
+
 CModelTreeItem* CModelTree::GetCurrentData()
 {
 	QTreeWidgetItem* item = currentItem();
@@ -709,7 +714,7 @@ void CModelTree::Select(FSObject* po)
 		++it;
 	}
 
-	assert(false);
+	assert((false) || (m_nfilter != 0));
 }
 
 void CModelTree::Select(const std::vector<FSObject*>& objList)
@@ -756,110 +761,216 @@ void CModelTree::Build(CModelDocument* doc)
 	std::string modelName = doc->GetDocFileBase();
 	if (modelName.empty()) modelName = "Model";
 
+	if      (m_nfilter == ModelTreeFilter::FILTER_MATERIALS) modelName += " > Materials";
+	else if (m_nfilter == ModelTreeFilter::FILTER_PHYSICS  ) modelName += " > Physics";
+	else if (m_nfilter == ModelTreeFilter::FILTER_STEPS    ) modelName += " > Steps";
+
 	QTreeWidgetItem* t1 = AddTreeItem(nullptr, QString::fromStdString(modelName), 0, 0, &mdl, 0, 0, OBJECT_NOT_EDITABLE);
 	t1->setExpanded(true);
 
 	// add data variables
-	QTreeWidgetItem* t2 = AddTreeItem(t1, "Model Data", 0, 0, 0, new CObjectProps(&fem));
-	UpdateModelData(t2, fem);
-
-	// add the objects
-	t2 = AddTreeItem(t1, "Geometry", MT_OBJECT_LIST, mdl.Objects());
-	UpdateObjects(t2, fem);
-
-	// add the groups
-	int nsel = mdl.CountNamedSelections();
-	t2 = AddTreeItem(t1, "Named Selections", MT_NAMED_SELECTION, nsel);
-	UpdateGroups(t2, fem);
-
-	// Mesh data
-	t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA);
-	UpdateMeshData(t2, fem);
-
-	// add the materials
-	t2 = AddTreeItem(t1, "Materials", MT_MATERIAL_LIST, fem.Materials());
-	UpdateMaterials(t2,fem);
-
-	// add the boundary conditions
-	int nbc = 0;
-	for (int i=0; i<fem.Steps(); ++i) nbc += fem.GetStep(i)->BCs();
-	t2 = AddTreeItem(t1, "Boundary Conditions", MT_BC_LIST, nbc);
-	UpdateBC(t2, fem, 0);
-
-	// add the boundary loads
-	int nload = 0;
-	for (int i=0; i<fem.Steps(); ++i) nload += fem.GetStep(i)->Loads();
-	t2 = AddTreeItem(t1, "Loads", MT_LOAD_LIST, nload);
-	UpdateLoads(t2, fem, 0);
-
-	// add the initial conditions
-	int nic = 0;
-	for (int i = 0; i<fem.Steps(); ++i) nic += fem.GetStep(i)->ICs();
-	t2 = AddTreeItem(t1, "Initial Conditions", MT_IC_LIST, nic);
-	UpdateICs(t2, fem, 0);
-
-	// add the interfaces
-	int nint = 0;
-	for (int i=0; i<fem.Steps(); ++i) nint += fem.GetStep(i)->Interfaces();
-	t2 = AddTreeItem(t1, "Contact", MT_CONTACT_LIST, nint);
-	UpdateContact(t2, fem, 0);
-
-	// add the nonlinear constraints
-	int nlc = 0;
-	for (int i = 0; i<fem.Steps(); ++i) nlc += fem.GetStep(i)->Constraints();
-	t2 = AddTreeItem(t1, "Constraints", MT_CONSTRAINT_LIST, nlc);
-	UpdateConstraints(t2, fem, 0);
-
-	// add the constraints
-	int nnlc = 0;
-	for (int i=0; i<fem.Steps(); ++i) nnlc += fem.GetStep(i)->RigidConstraints();
-	t2 = AddTreeItem(t1, "Rigid Constraints", MT_RIGID_CONSTRAINT_LIST, nnlc);
-	UpdateRC(t2, fem, 0);
-
-	// add the connectors
-	int nrc = 0;
-	for (int i=0; i<fem.Steps(); ++i) nrc += fem.GetStep(i)->RigidConnectors();
-	t2 = AddTreeItem(t1, "Rigid Connectors", MT_RIGID_CONNECTOR_LIST, nrc);
-	UpdateConnectors(t2, fem, 0);
-
-	// add the discrete objects
-	t2 = AddTreeItem(t1, "Discrete", MT_DISCRETE_LIST, mdl.DiscreteObjects());
-	UpdateDiscrete(t2, fem);
-
-	// add the steps
-	t2 = AddTreeItem(t1, "Steps", MT_STEP_LIST, fem.Steps() - 1, 0, 0, new CStepValidator(&fem));
-	UpdateSteps(t2, fem);
-
-	// add the output
-	t2 = AddTreeItem(t1, "Output", MT_PROJECT_OUTPUT);
-	UpdateOutput(t2, prj);
-
-	// add the jobs
-	if (doc->FEBioJobs())
+	QTreeWidgetItem* t2;
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
-		QTreeWidgetItem* t1 = new QTreeWidgetItem(this);
-		t1->setText(0, "Jobs");
-		t1->setExpanded(true);
-		t1->setData(0, Qt::UserRole, (int)m_data.size());
-
-		CModelTreeItem it = { 0, 0 };
-		m_data.push_back(it);
-
-		UpdateJobs(t1, doc);
+		t2 = AddTreeItem(t1, "Model Data", 0, 0, 0, new CObjectProps(&fem));
+		UpdateModelData(t2, fem);
 	}
 
-	// add the image stacks
-	if (doc->ImageModels())
+	// add the objects
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
-		QTreeWidgetItem* t1 = new QTreeWidgetItem(this);
-		t1->setText(0, "3D Images");
-		t1->setExpanded(true);
-		t1->setData(0, Qt::UserRole, (int)m_data.size());
+		t2 = AddTreeItem(t1, "Geometry", MT_OBJECT_LIST, mdl.Objects());
+		UpdateObjects(t2, fem);
+	}
 
-		CModelTreeItem it = { 0, 0 };
-		m_data.push_back(it);
+	// add the groups
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		int nsel = mdl.CountNamedSelections();
+		t2 = AddTreeItem(t1, "Named Selections", MT_NAMED_SELECTION, nsel);
+		UpdateGroups(t2, fem);
+	}
 
-		UpdateImages(t1, doc);
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		// Mesh data
+		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA);
+		UpdateMeshData(t2, fem);
+	}
+
+	// add the materials
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE)||(m_nfilter == ModelTreeFilter::FILTER_MATERIALS))
+	{
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Materials", MT_MATERIAL_LIST, fem.Materials());
+			UpdateMaterials(t2, fem);
+		}
+		else UpdateMaterials(t1, fem);
+	}
+
+	// add the boundary conditions
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
+		int nbc = 0;
+		for (int i = 0; i < fem.Steps(); ++i) nbc += fem.GetStep(i)->BCs();
+
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Boundary Conditions", MT_BC_LIST, nbc);
+			UpdateBC(t2, fem, 0);
+		}
+		else if (nbc)
+		{
+			UpdateBC(t1, fem, 0);
+		}
+	}
+
+	// add the boundary loads
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
+		int nload = 0;
+		for (int i = 0; i < fem.Steps(); ++i) nload += fem.GetStep(i)->Loads();
+
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Loads", MT_LOAD_LIST, nload);
+			UpdateLoads(t2, fem, 0);
+		}
+		else if (nload > 0) UpdateLoads(t1, fem, 0);
+	}
+
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
+		// add the initial conditions
+		int nic = 0;
+		for (int i = 0; i < fem.Steps(); ++i) nic += fem.GetStep(i)->ICs();
+
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Initial Conditions", MT_IC_LIST, nic);
+			UpdateICs(t2, fem, 0);
+		}
+		else if (nic) UpdateICs(t1, fem, 0);
+	}
+
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
+		// add the interfaces
+		int nint = 0;
+		for (int i = 0; i < fem.Steps(); ++i) nint += fem.GetStep(i)->Interfaces();
+
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Contact", MT_CONTACT_LIST, nint);
+			UpdateContact(t2, fem, 0);
+		}
+		else if (nint) UpdateContact(t1, fem, 0);
+	}
+
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
+		// add the nonlinear constraints
+		int nlc = 0;
+		for (int i = 0; i < fem.Steps(); ++i) nlc += fem.GetStep(i)->Constraints();
+
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Constraints", MT_CONSTRAINT_LIST, nlc);
+			UpdateConstraints(t2, fem, 0);
+		}
+		else if (nlc) UpdateConstraints(t1, fem, 0);
+	}
+
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
+		// add the constraints
+		int nnlc = 0;
+		for (int i = 0; i < fem.Steps(); ++i) nnlc += fem.GetStep(i)->RigidConstraints();
+
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Rigid Constraints", MT_RIGID_CONSTRAINT_LIST, nnlc);
+			UpdateRC(t2, fem, 0);
+		}
+		else if (nnlc) UpdateRC(t1, fem, 0);
+	}
+
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
+		// add the connectors
+		int nrc = 0;
+		for (int i = 0; i < fem.Steps(); ++i) nrc += fem.GetStep(i)->RigidConnectors();
+
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Rigid Connectors", MT_RIGID_CONNECTOR_LIST, nrc);
+			UpdateConnectors(t2, fem, 0);
+		}
+		else if (nrc) UpdateConnectors(t1, fem, 0);
+	}
+
+	// add the discrete objects
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_PHYSICS))
+	{
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Discrete", MT_DISCRETE_LIST, mdl.DiscreteObjects());
+			UpdateDiscrete(t2, fem);
+		}
+		else if (mdl.DiscreteObjects()) UpdateDiscrete(t1, fem);
+	}
+
+	// add the steps
+	if ((m_nfilter == ModelTreeFilter::FILTER_NONE) || (m_nfilter == ModelTreeFilter::FILTER_STEPS))
+	{
+		if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+		{
+			t2 = AddTreeItem(t1, "Steps", MT_STEP_LIST, fem.Steps() - 1, 0, 0, new CStepValidator(&fem));
+			UpdateSteps(t2, fem);
+		}
+		else if (fem.Steps()) UpdateSteps(t1, fem);
+	}
+
+	// add the output
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		t2 = AddTreeItem(t1, "Output", MT_PROJECT_OUTPUT);
+		UpdateOutput(t2, prj);
+	}
+
+	// add the jobs
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		if (doc->FEBioJobs())
+		{
+			QTreeWidgetItem* t1 = new QTreeWidgetItem(this);
+			t1->setText(0, "Jobs");
+			t1->setExpanded(true);
+			t1->setData(0, Qt::UserRole, (int)m_data.size());
+
+			CModelTreeItem it = { 0, 0 };
+			m_data.push_back(it);
+
+			UpdateJobs(t1, doc);
+		}
+	}
+
+	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
+	{
+		// add the image stacks
+		if (doc->ImageModels())
+		{
+			QTreeWidgetItem* t1 = new QTreeWidgetItem(this);
+			t1->setText(0, "3D Images");
+			t1->setExpanded(true);
+			t1->setData(0, Qt::UserRole, (int)m_data.size());
+
+			CModelTreeItem it = { 0, 0 };
+			m_data.push_back(it);
+
+			UpdateImages(t1, doc);
+		}
 	}
 
 //	resizeColumnToContents(0);

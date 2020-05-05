@@ -472,6 +472,14 @@ void CModelViewer::on_props_dataChanged(bool b)
 	}
 }
 
+void CModelViewer::on_filter_currentIndexChanged(int n)
+{
+	FSObject* po = GetCurrentObject();
+	ui->tree->SetFilter(n);
+	Update(true);
+	Select(po);
+}
+
 void CModelViewer::OnDeleteItem()
 {
 	UpdateSelection();
