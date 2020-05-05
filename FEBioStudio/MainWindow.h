@@ -126,7 +126,7 @@ public:
 	void SetCurrentTimeValue(float ftime);
 
 	// get the current project
-	const FEBioStudioProject* GetProject();
+	FEBioStudioProject* GetProject();
 
 	// --- WINDOW UPDATE ---
 

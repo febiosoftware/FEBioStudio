@@ -496,7 +496,7 @@ FSObject* CCreateSpringPane::Create()
 			GMeshObject* po = dynamic_cast<GMeshObject*>(ui->m_mesh[0]->GetGObject());
 			if (po == 0) 
 			{
-				QMessageBox::critical(this, "FEBio Studio", "Unable to generate springs.");
+				QMessageBox::critical(this, "FEBio Studio", "The object of nodeset1 must be an editable mesh.");
 				return 0;
 			}
 
@@ -521,7 +521,7 @@ FSObject* CCreateSpringPane::Create()
 			GMeshObject* po = dynamic_cast<GMeshObject*>(ui->m_mesh[1]->GetGObject());
 			if (po == 0)
 			{
-				QMessageBox::critical(this, "FEBio Studio", "Unable to generate springs.");
+				QMessageBox::critical(this, "FEBio Studio", "The object of nodeset2 must be an editable mesh.");
 				return 0;
 			}
 

@@ -12,12 +12,25 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <QSignalMapper>
+#include <QInputDialog>
+#include <QMessageBox>
+
+enum FileItemType {
+	OPEN_FILES,
+	OPEN_FILE,
+	PROJECT,
+	PROJECT_FOLDER,
+	PROJECT_FILE,
+	EXTERNAL_FILE
+};
 
 class Ui::CFileViewer
 {
 public:
 	::CMainWindow*	m_wnd;
 	QTreeWidget*	m_tree;
+
+	QString	m_activeFile;
 
 public:
 	void setupUi(QWidget* parent)
@@ -51,14 +64,14 @@ void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int colum
 
 	switch (ntype)
 	{
-	case 1:
+	case FileItemType::OPEN_FILE:
 	{
 		int nview = item->data(0, Qt::UserRole + 1).toInt();
 		ui->m_wnd->SetActiveView(nview);
 	}
 	break;
-	case 3:
-	case 4:
+	case FileItemType::PROJECT_FILE:
+	case FileItemType::EXTERNAL_FILE:
 	{
 		QString filePath = item->data(0, Qt::UserRole + 1).toString();
 		CDocument* doc = ui->m_wnd->FindDocument(filePath.toStdString());
@@ -73,13 +86,16 @@ void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int colum
 
 void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 {
+	ui->m_activeFile.clear();
+
 	QList<QTreeWidgetItem*> sel = ui->m_tree->selectedItems();
 	if (sel.size() != 1) return;
 
+	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+
 	int ntype = sel[0]->data(0, Qt::UserRole).toInt();
-	if (ntype == 1)
+	if (ntype == FileItemType::OPEN_FILE)
 	{
-		const FEBioStudioProject* prj = ui->m_wnd->GetProject();
 		CDocManager* dm = ui->m_wnd->GetDocManager();
 		int n = sel[0]->data(0, Qt::UserRole + 1).toInt();
 		QString file = QString::fromStdString(dm->GetDocument(n)->GetDocFilePath());
@@ -99,15 +115,24 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 
 		menu.exec(ev->globalPos());
 	}
-	if (ntype == 2)
+	if (ntype == FileItemType::PROJECT)
 	{
 		QMenu menu(this);
 		menu.addAction("Save Project As ...", ui->m_wnd, SLOT(on_actionSaveProject_triggered()));
+		menu.addAction("Create Folder ...", this, SLOT(onCreateFolder()));
 		menu.addAction("Close project", ui->m_wnd, SLOT(on_closeProject()));
 		menu.addAction("Clear project", ui->m_wnd, SLOT(on_clearProject()));
-
+		menu.exec(ev->globalPos());
 	}
-	else if (ntype == 3)
+	else if (ntype == FileItemType::PROJECT_FOLDER)
+	{
+		ui->m_activeFile = sel[0]->text(0);
+		QMenu menu(this);
+		menu.addAction("Remove Folder", this, SLOT(onRemoveFolder()));
+		menu.addAction("Rename Folder ...", this, SLOT(onRenameFolder()));
+		menu.exec(ev->globalPos());
+	}
+	else if (ntype == FileItemType::PROJECT_FILE)
 	{
 		QMenu menu(this);
 		QString file = sel[0]->data(0, Qt::UserRole + 1).toString();
@@ -115,8 +140,21 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		QSignalMapper* map = new QSignalMapper;
 		QAction* ac = menu.addAction("Remove from project", map, SLOT(map())); map->setMapping(ac, file);
 
-		connect(map, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_removeFromProject(const QString&)));
+		if (prj->Folders())
+		{
+			ui->m_activeFile = file;
+			QSignalMapper* foldermap = new QSignalMapper;
+			QMenu* folderMenu = new QMenu("Move to folder");
+			for (int i = 0; i < prj->Folders(); ++i)
+			{
+				QAction* aci = folderMenu->addAction(prj->GetFolder(i), foldermap, SLOT(map())); foldermap->setMapping(aci, i);
+			}
+			QAction* aci = folderMenu->addAction("(none)", foldermap, SLOT(map())); foldermap->setMapping(aci, -1);
+			menu.addAction(folderMenu->menuAction());
+			connect(foldermap, SIGNAL(mapped(int)), this, SLOT(onMoveToFolder(int)));
+		}
 
+		connect(map, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_removeFromProject(const QString&)));
 		menu.exec(ev->globalPos());
 	}
 }
@@ -129,7 +167,7 @@ void CFileViewer::Update()
 
 	// Open files list
 	QTreeWidgetItem* it = new QTreeWidgetItem(QStringList("OPEN FILES"));
-	it->setData(0, Qt::UserRole, 0);
+	it->setData(0, Qt::UserRole, FileItemType::OPEN_FILES);
 	QFont f = it->font(0);
 	f.setBold(true);
 	it->setFont(0, f);
@@ -149,7 +187,7 @@ void CFileViewer::Update()
 
 		QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
 		t2->setText(0, QString::fromStdString(doc->GetDocTitle()));
-		t2->setData(0, Qt::UserRole  , 1);
+		t2->setData(0, Qt::UserRole  , FileItemType::OPEN_FILE);
 		t2->setData(0, Qt::UserRole+1, i);
 		if (docPath.isEmpty() == false)
 		{
@@ -175,75 +213,147 @@ void CFileViewer::Update()
 	ui->m_tree->addTopLevelItem(it);
 	it->setExpanded(true);
 	it->setSizeHint(0, QSize(0, px));
-	it->setData(0, Qt::UserRole, 2);
+	it->setData(0, Qt::UserRole, FileItemType::PROJECT);
 	if (prjFile.isEmpty() == false) it->setToolTip(0, prjFile);
 
-	for (int i = 0; i < prj->Files(); ++i)
+	for (int n = 0; n <= prj->Folders(); ++n)
 	{
-		QString file_i = prj->GetFileName(i);
-
-		CModelDocument* doc = dynamic_cast<CModelDocument*>(ui->m_wnd->FindDocument(file_i.toStdString()));
-		if (doc && (doc->GetDocFilePath().empty() == false))
+		QTreeWidgetItem* parent = it;
+		int folder = (n < prj->Folders() ? n : -1);
+		if (folder >= 0)
 		{
-			QString docFile = QString::fromStdString(doc->GetDocFileName());
-			QString docPath = QString::fromStdString(doc->GetDocFilePath());
+			QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
+			t2->setText(0, prj->GetFolder(folder));
+			t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FOLDER);
+			QFont f = t2->font(0);
+			f.setBold(true);
+			t2->setFont(0, f);
+			parent = t2;
+		}
 
-			QTreeWidgetItem* t2 = new QTreeWidgetItem(QStringList(docFile));
-			t2->setSizeHint(0, QSize(100, 50));
-			t2->setToolTip(0, docPath);
-			t2->setData(0, Qt::UserRole, 3);
-			t2->setData(0, Qt::UserRole+1, docPath);
-			t2->setSizeHint(0, QSize(100, px));
-
-			if (doc->FEBioJobs()) t2->setExpanded(true);
-
-			for (int n = 0; n < doc->FEBioJobs(); ++n)
+		for (int i = 0; i < prj->Files(); ++i)
+		{
+			FEBioStudioProject::File file_i = prj->GetFile(i);
+			if (file_i.m_folder == folder)
 			{
-				CFEBioJob* job = doc->GetFEBioJob(n);
+				QString filename_i = file_i.m_fileName;
 
-				std::string plotFile = job->GetPlotFileName();
-				QString xpltPath(doc->ToAbsolutePath(plotFile));
+				CDocument* doc = ui->m_wnd->FindDocument(filename_i.toStdString());
 
-				QFileInfo xpltFile(xpltPath);
-
-				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(ui->m_wnd->FindDocument(xpltPath.toStdString()));
-
-				QTreeWidgetItem* t3 = new QTreeWidgetItem(t2);
-				t3->setText(0, xpltFile.fileName());
-				t3->setToolTip(0, xpltPath);
-				t3->setData(0, Qt::UserRole, 4);
-				t3->setData(0, Qt::UserRole+1, xpltPath);
-				t3->setSizeHint(0, QSize(100, px));
-
-				if (postDoc == nullptr)
+				if (doc && (doc->GetDocFilePath().empty() == false))
 				{
-					QFont f = t3->font(0);
+					QString docFile = QString::fromStdString(doc->GetDocFileName());
+					QString docPath = QString::fromStdString(doc->GetDocFilePath());
+
+					QTreeWidgetItem* t2 = new QTreeWidgetItem(parent);
+					t2->setText(0, docFile);
+					t2->setSizeHint(0, QSize(100, 50));
+					t2->setToolTip(0, docPath);
+					t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
+					t2->setData(0, Qt::UserRole + 1, docPath);
+					t2->setSizeHint(0, QSize(100, px));
+
+					CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+					if (modelDoc && modelDoc->FEBioJobs())
+					{
+						t2->setExpanded(true);
+						for (int n = 0; n < modelDoc->FEBioJobs(); ++n)
+						{
+							CFEBioJob* job = modelDoc->GetFEBioJob(n);
+
+							std::string plotFile = job->GetPlotFileName();
+							QString xpltPath(doc->ToAbsolutePath(plotFile));
+
+							QFileInfo xpltFile(xpltPath);
+
+							CPostDocument* postDoc = dynamic_cast<CPostDocument*>(ui->m_wnd->FindDocument(xpltPath.toStdString()));
+
+							QTreeWidgetItem* t3 = new QTreeWidgetItem(t2);
+							t3->setText(0, xpltFile.fileName());
+							t3->setToolTip(0, xpltPath);
+							t3->setData(0, Qt::UserRole, FileItemType::EXTERNAL_FILE);
+							t3->setData(0, Qt::UserRole + 1, xpltPath);
+							t3->setSizeHint(0, QSize(100, px));
+
+							if (postDoc == nullptr)
+							{
+								QFont f = t3->font(0);
+								f.setItalic(true);
+								t3->setFont(0, f);
+								t3->setForeground(0, Qt::gray);
+							}
+						}
+					}
+				}
+				else
+				{
+					QFileInfo fi(filename_i);
+					QString fileName = fi.fileName();
+
+					QTreeWidgetItem* t2 = new QTreeWidgetItem(parent);
+					t2->setText(0, fileName);
+
+					QFont f = t2->font(0);
 					f.setItalic(true);
-					t3->setFont(0, f);
-					t3->setForeground(0, Qt::gray);
+					t2->setFont(0, f);
+					t2->setForeground(0, Qt::gray);
+
+					t2->setSizeHint(0, QSize(100, 50));
+					t2->setToolTip(0, filename_i);
+					t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
+					t2->setData(0, Qt::UserRole + 1, filename_i);
+					t2->setSizeHint(0, QSize(100, px));
 				}
 			}
-			it->addChild(t2);
-		}
-		else
-		{
-			QFileInfo fi(file_i);
-			QString fileName = fi.fileName();
-
-			QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
-			t2->setText(0, fileName);
-
-			QFont f = t2->font(0);
-			f.setItalic(true);
-			t2->setFont(0, f);
-			t2->setForeground(0, Qt::gray);
-
-			t2->setSizeHint(0, QSize(100, 50));
-			t2->setToolTip(0, file_i);
-			t2->setData(0, Qt::UserRole, 3);
-			t2->setData(0, Qt::UserRole + 1, file_i);
-			t2->setSizeHint(0, QSize(100, px));
 		}
 	}
 }
 
+void CFileViewer::onCreateFolder()
+{
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+
+	QString folderName = QInputDialog::getText(this, "Create Folder", "Folder name:");
+	if (folderName.isEmpty() == false)
+	{
+		prj->AddFolder(folderName);
+		Update();
+	}
+}
+
+void CFileViewer::onMoveToFolder(int i)
+{
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (ui->m_activeFile.isEmpty() == false)
+	{
+		prj->MoveToFolder(ui->m_activeFile, i);
+		Update();
+	}
+}
+
+void CFileViewer::onRemoveFolder()
+{
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (ui->m_activeFile.isEmpty() == false)
+	{
+		if (QMessageBox::question(this, "Remove Folder", "Are you sure you want to remove this folder?\nThis cannot be undone!") == QMessageBox::Yes)
+		{
+			prj->RemoveFolder(ui->m_activeFile);
+			Update();
+		}
+	}
+}
+
+void CFileViewer::onRenameFolder()
+{
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (ui->m_activeFile.isEmpty() == false)
+	{
+		QString newName = QInputDialog::getText(this, "Rename Folder", "New name:");
+		if (newName.isEmpty() == false)
+		{
+			prj->RenameFolder(ui->m_activeFile, newName);
+			Update();
+		}
+	}
+}

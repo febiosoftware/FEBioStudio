@@ -232,6 +232,7 @@ void CMainWindow::UpdateTitle()
 	{
 		setWindowTitle(projectName);
 	}
+	else setWindowTitle("");
 }
 
 //-----------------------------------------------------------------------------
@@ -548,6 +549,7 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 	ui->addToRecentFiles(projectFile);
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
+	UpdateTitle();
 
 	return b;
 }
@@ -1236,7 +1238,7 @@ void CMainWindow::SetCurrentFolder(const QString& folder)
 }
 
 // get the current project
-const FEBioStudioProject* CMainWindow::GetProject()
+FEBioStudioProject* CMainWindow::GetProject()
 {
 	return &ui->m_project;
 }
@@ -1473,6 +1475,7 @@ void CMainWindow::UpdateUIConfig()
 			// file list might have changed
 			ui->welcome->Refresh();
 			ui->setUIConfig(0);
+			ui->fileViewer->parentWidget()->raise();
 		}
 		return;
 	}
@@ -2538,8 +2541,8 @@ QString CMainWindow::ProjectFolder()
 
 QString CMainWindow::ProjectName()
 {
-//	if (m_projectFolder.isEmpty()) return QString();
-	//QDir dir(m_projectFolder);
-	//QStringList l = QDir::toNativeSeparators(dir.path()).split(dir.separator(), Qt::SkipEmptyParts);
-	return "";// l.last();
+	QString projectFile = ui->m_project.GetProjectFileName();
+	if (projectFile.isEmpty()) return "";
+	QFileInfo fi(projectFile);
+	return fi.fileName();
 }

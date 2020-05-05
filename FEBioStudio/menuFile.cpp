@@ -810,8 +810,9 @@ void CMainWindow::on_actionSaveProject_triggered()
 		if (b == false)
 		{
 			QMessageBox::critical(this, "ERROR", "Failed saving the project file.");
-			ui->fileViewer->Update();
 		}
+		ui->fileViewer->Update();
+		UpdateTitle();
 	}
 }
 
