@@ -166,6 +166,8 @@ void ModelData::WriteData(Post::CGLModel* po)
 CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CDocument(wnd), m_doc(doc)
 {
 	m_fem = new Post::FEPostModel;
+	m_postObj = nullptr;
+	m_glm = nullptr;
 }
 
 CPostDocument::~CPostDocument()
