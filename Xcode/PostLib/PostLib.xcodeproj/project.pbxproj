@@ -17,7 +17,6 @@
 		D58A0B452452406E0084A352 /* GIFAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = D58A0B3F2452406D0084A352 /* GIFAnimation.h */; };
 		D5ED297423198B1E00C16BF7 /* FEDataManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24C62319797000C16BF7 /* FEDataManager.cpp */; };
 		D5ED297523198B1E00C16BF7 /* GLImageRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24AB2319797000C16BF7 /* GLImageRenderer.cpp */; };
-		D5ED297623198B1E00C16BF7 /* GView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24BA2319797000C16BF7 /* GView.cpp */; };
 		D5ED297723198B1E00C16BF7 /* FEFEBioExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24F62319797000C16BF7 /* FEFEBioExport.cpp */; };
 		D5ED297823198B1E00C16BF7 /* FENikeImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24B82319797000C16BF7 /* FENikeImport.cpp */; };
 		D5ED297923198B1E00C16BF7 /* VolRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED24E62319797000C16BF7 /* VolRender.cpp */; };
@@ -119,7 +118,6 @@
 		D5ED29EC23198B1E00C16BF7 /* ColorMap.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25032319797000C16BF7 /* ColorMap.h */; };
 		D5ED29ED23198B1E00C16BF7 /* FEFEBioExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24D62319797000C16BF7 /* FEFEBioExport.h */; };
 		D5ED29EE23198B1E00C16BF7 /* FEDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED24C42319797000C16BF7 /* FEDataManager.h */; };
-		D5ED29EF23198B1E00C16BF7 /* GView.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25102319797000C16BF7 /* GView.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -154,7 +152,6 @@
 		D5ED24B72319797000C16BF7 /* MarchingCubes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MarchingCubes.h; sourceTree = "<group>"; };
 		D5ED24B82319797000C16BF7 /* FENikeImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FENikeImport.cpp; sourceTree = "<group>"; };
 		D5ED24B92319797000C16BF7 /* ImageModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageModel.h; sourceTree = "<group>"; };
-		D5ED24BA2319797000C16BF7 /* GView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GView.cpp; sourceTree = "<group>"; };
 		D5ED24BB2319797000C16BF7 /* FEMathData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMathData.cpp; sourceTree = "<group>"; };
 		D5ED24BD2319797000C16BF7 /* FEGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEGroup.cpp; sourceTree = "<group>"; };
 		D5ED24BE2319797000C16BF7 /* AVIAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVIAnimation.h; sourceTree = "<group>"; };
@@ -227,7 +224,6 @@
 		D5ED250B2319797000C16BF7 /* FERAWImageReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERAWImageReader.cpp; sourceTree = "<group>"; };
 		D5ED250E2319797000C16BF7 /* FEAreaCoverage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEAreaCoverage.h; sourceTree = "<group>"; };
 		D5ED250F2319797000C16BF7 /* FEFileReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFileReader.h; sourceTree = "<group>"; };
-		D5ED25102319797000C16BF7 /* GView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GView.h; sourceTree = "<group>"; };
 		D5ED25112319797000C16BF7 /* FEMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMaterial.cpp; sourceTree = "<group>"; };
 		D5ED25122319797000C16BF7 /* FEVTKImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEVTKImport.h; sourceTree = "<group>"; };
 		D5ED25132319797000C16BF7 /* VRMLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VRMLExporter.h; sourceTree = "<group>"; };
@@ -339,8 +335,6 @@
 				D5ED24D02319797000C16BF7 /* GLObject.h */,
 				D5ED24F52319797000C16BF7 /* GMeshImport.cpp */,
 				D5ED24DD2319797000C16BF7 /* GMeshImport.h */,
-				D5ED24BA2319797000C16BF7 /* GView.cpp */,
-				D5ED25102319797000C16BF7 /* GView.h */,
 				D5ED24CA2319797000C16BF7 /* ImageModel.cpp */,
 				D5ED24B92319797000C16BF7 /* ImageModel.h */,
 				D5ED24CD2319797000C16BF7 /* ImageSlicer.cpp */,
@@ -451,7 +445,6 @@
 				D5ED29EC23198B1E00C16BF7 /* ColorMap.h in Headers */,
 				D5ED29ED23198B1E00C16BF7 /* FEFEBioExport.h in Headers */,
 				D5ED29EE23198B1E00C16BF7 /* FEDataManager.h in Headers */,
-				D5ED29EF23198B1E00C16BF7 /* GView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -509,7 +502,6 @@
 			files = (
 				D5ED297423198B1E00C16BF7 /* FEDataManager.cpp in Sources */,
 				D5ED297523198B1E00C16BF7 /* GLImageRenderer.cpp in Sources */,
-				D5ED297623198B1E00C16BF7 /* GView.cpp in Sources */,
 				D5ED297723198B1E00C16BF7 /* FEFEBioExport.cpp in Sources */,
 				D5ED297823198B1E00C16BF7 /* FENikeImport.cpp in Sources */,
 				D5ED297923198B1E00C16BF7 /* VolRender.cpp in Sources */,

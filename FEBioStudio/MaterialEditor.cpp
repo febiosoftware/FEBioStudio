@@ -4,6 +4,10 @@
 #include <FEMLib/FEMaterialFactory.h>
 #include <assert.h>
 
+#ifndef WIN32
+#define _stricmp strcasecmp
+#endif
+
 struct MATERIAL_ENTRY
 {
 	const char*	mat_name;

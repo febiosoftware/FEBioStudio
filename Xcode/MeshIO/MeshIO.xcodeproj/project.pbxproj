@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		D5508F8E242D4F630077F3E6 /* STEPImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5508F8C242D4F630077F3E6 /* STEPImport.h */; };
 		D5508F8F242D4F630077F3E6 /* STEPImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5508F8D242D4F630077F3E6 /* STEPImport.cpp */; };
+		D5992F2F2461E4470054F9DA /* FileWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = D5992F2E2461E4470054F9DA /* FileWriter.h */; };
 		D5ED26D823197D9500C16BF7 /* FEViewpointExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26A023197D9500C16BF7 /* FEViewpointExport.h */; };
 		D5ED26D923197D9500C16BF7 /* FESTLimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26A123197D9500C16BF7 /* FESTLimport.cpp */; };
 		D5ED26DA23197D9500C16BF7 /* BREPImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26A223197D9500C16BF7 /* BREPImport.cpp */; };
@@ -70,6 +71,7 @@
 /* Begin PBXFileReference section */
 		D5508F8C242D4F630077F3E6 /* STEPImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STEPImport.h; sourceTree = "<group>"; };
 		D5508F8D242D4F630077F3E6 /* STEPImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STEPImport.cpp; sourceTree = "<group>"; };
+		D5992F2E2461E4470054F9DA /* FileWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileWriter.h; sourceTree = "<group>"; };
 		D5ED269123197D8200C16BF7 /* libMeshIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED26A023197D9500C16BF7 /* FEViewpointExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEViewpointExport.h; sourceTree = "<group>"; };
 		D5ED26A123197D9500C16BF7 /* FESTLimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FESTLimport.cpp; sourceTree = "<group>"; };
@@ -209,6 +211,7 @@
 				D5ED26D423197D9500C16BF7 /* FEVTKImport.h */,
 				D5ED26BA23197D9500C16BF7 /* FileReader.cpp */,
 				D5ED26D023197D9500C16BF7 /* FileReader.h */,
+				D5992F2E2461E4470054F9DA /* FileWriter.h */,
 				D5ED26C923197D9500C16BF7 /* PRVObjectExport.cpp */,
 				D5ED26CA23197D9500C16BF7 /* PRVObjectExport.h */,
 				D5ED26AC23197D9500C16BF7 /* PRVObjectFormat.h */,
@@ -236,6 +239,7 @@
 				D5ED26F323197D9600C16BF7 /* FEHyperSurfImport.h in Headers */,
 				D5ED26E623197D9600C16BF7 /* FEMeshImport.h in Headers */,
 				D5ED26E123197D9600C16BF7 /* stdafx.h in Headers */,
+				D5992F2F2461E4470054F9DA /* FileWriter.h in Headers */,
 				D5ED26F023197D9600C16BF7 /* FESTLimport.h in Headers */,
 				D5ED270D23197D9600C16BF7 /* FEBinarySTLimport.h in Headers */,
 				D5ED270823197D9600C16BF7 /* FileReader.h in Headers */,

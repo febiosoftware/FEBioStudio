@@ -55,6 +55,18 @@
 		D57C2A78240F1F990043C2A7 /* moc_PublicationWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57C2A73240F1F990043C2A7 /* moc_PublicationWidget.cpp */; };
 		D57C2A79240F1F990043C2A7 /* moc_PublicationWidgetView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57C2A74240F1F990043C2A7 /* moc_PublicationWidgetView.cpp */; };
 		D57C2A7A240F1F990043C2A7 /* PublicationWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57C2A75240F1F990043C2A7 /* PublicationWidget.cpp */; };
+		D5992F222461E4320054F9DA /* DocManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0E2461E4300054F9DA /* DocManager.cpp */; };
+		D5992F232461E4320054F9DA /* GView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0F2461E4310054F9DA /* GView.cpp */; };
+		D5992F242461E4320054F9DA /* menuHelp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F102461E4310054F9DA /* menuHelp.cpp */; };
+		D5992F252461E4320054F9DA /* PostDocument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F122461E4310054F9DA /* PostDocument.cpp */; };
+		D5992F262461E4320054F9DA /* menuView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F142461E4310054F9DA /* menuView.cpp */; };
+		D5992F272461E4320054F9DA /* PostObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F152461E4310054F9DA /* PostObject.cpp */; };
+		D5992F282461E4320054F9DA /* FEBioStudioProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F162461E4310054F9DA /* FEBioStudioProject.cpp */; };
+		D5992F292461E4320054F9DA /* ModelFileReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F172461E4310054F9DA /* ModelFileReader.cpp */; };
+		D5992F2A2461E4320054F9DA /* ModelDocument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F192461E4310054F9DA /* ModelDocument.cpp */; };
+		D5992F2B2461E4320054F9DA /* menuEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F1A2461E4310054F9DA /* menuEdit.cpp */; };
+		D5992F2C2461E4320054F9DA /* ModelFileWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F1F2461E4320054F9DA /* ModelFileWriter.cpp */; };
+		D5992F2D2461E4320054F9DA /* welcomPage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F202461E4320054F9DA /* welcomPage.cpp */; };
 		D5BA5337240D5470001A5C0F /* DlgSelectRange.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */; };
 		D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5334240D5470001A5C0F /* CIntInput.cpp */; };
 		D5BA5339240D5470001A5C0F /* DlgFind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5335240D5470001A5C0F /* DlgFind.cpp */; };
@@ -188,7 +200,6 @@
 		D5F7D82A22FA37C40089B08E /* DlgImportCOMSOL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70522FA37C40089B08E /* DlgImportCOMSOL.cpp */; };
 		D5F7D82B22FA37C40089B08E /* moc_GLHighlighter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70822FA37C40089B08E /* moc_GLHighlighter.cpp */; };
 		D5F7D82C22FA37C40089B08E /* moc_BuildPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70922FA37C40089B08E /* moc_BuildPanel.cpp */; };
-		D5F7D82D22FA37C40089B08E /* template.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70A22FA37C40089B08E /* template.cpp */; };
 		D5F7D82E22FA37C40089B08E /* moc_DlgCloneObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */; };
 		D5F7D82F22FA37C40089B08E /* DlgAddRigidConnector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70C22FA37C40089B08E /* DlgAddRigidConnector.cpp */; };
 		D5F7D83022FA37C40089B08E /* moc_MaterialEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D70F22FA37C40089B08E /* moc_MaterialEditor.cpp */; };
@@ -320,7 +331,6 @@
 		D5F7D8B322FA37C40089B08E /* moc_DlgFormula.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7F822FA37C40089B08E /* moc_DlgFormula.cpp */; };
 		D5F7D8B422FA37C40089B08E /* MeshButtonBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7F922FA37C40089B08E /* MeshButtonBox.cpp */; };
 		D5F7D8B522FA37C40089B08E /* moc_MeshSelectionBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7FA22FA37C40089B08E /* moc_MeshSelectionBox.cpp */; };
-		D5F7D8B622FA37C40089B08E /* PostDoc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7FC22FA37C40089B08E /* PostDoc.cpp */; };
 		D5F7D8B722FA37C40089B08E /* DlgMergeObjects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7FE22FA37C40089B08E /* DlgMergeObjects.cpp */; };
 		D5F7D8B822FA37C40089B08E /* moc_GLControlBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7FF22FA37C40089B08E /* moc_GLControlBar.cpp */; };
 		D5F7D8B922FA37C40089B08E /* PlotWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D80222FA37C40089B08E /* PlotWidget.cpp */; };
@@ -483,6 +493,27 @@
 		D57C2A74240F1F990043C2A7 /* moc_PublicationWidgetView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PublicationWidgetView.cpp; sourceTree = "<group>"; };
 		D57C2A75240F1F990043C2A7 /* PublicationWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PublicationWidget.cpp; sourceTree = "<group>"; };
 		D57C2A76240F1F990043C2A7 /* PublicationWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PublicationWidget.h; sourceTree = "<group>"; };
+		D5992F0D2461E4300054F9DA /* ModelFileWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelFileWriter.h; sourceTree = "<group>"; };
+		D5992F0E2461E4300054F9DA /* DocManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DocManager.cpp; sourceTree = "<group>"; };
+		D5992F0F2461E4310054F9DA /* GView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GView.cpp; sourceTree = "<group>"; };
+		D5992F102461E4310054F9DA /* menuHelp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuHelp.cpp; sourceTree = "<group>"; };
+		D5992F112461E4310054F9DA /* GView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GView.h; sourceTree = "<group>"; };
+		D5992F122461E4310054F9DA /* PostDocument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostDocument.cpp; sourceTree = "<group>"; };
+		D5992F132461E4310054F9DA /* PostDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostDocument.h; sourceTree = "<group>"; };
+		D5992F142461E4310054F9DA /* menuView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuView.cpp; sourceTree = "<group>"; };
+		D5992F152461E4310054F9DA /* PostObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostObject.cpp; sourceTree = "<group>"; };
+		D5992F162461E4310054F9DA /* FEBioStudioProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBioStudioProject.cpp; sourceTree = "<group>"; };
+		D5992F172461E4310054F9DA /* ModelFileReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelFileReader.cpp; sourceTree = "<group>"; };
+		D5992F182461E4310054F9DA /* ModelDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelDocument.h; sourceTree = "<group>"; };
+		D5992F192461E4310054F9DA /* ModelDocument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelDocument.cpp; sourceTree = "<group>"; };
+		D5992F1A2461E4310054F9DA /* menuEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuEdit.cpp; sourceTree = "<group>"; };
+		D5992F1B2461E4320054F9DA /* FEBioStudioProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBioStudioProject.h; sourceTree = "<group>"; };
+		D5992F1C2461E4320054F9DA /* ModelFileReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelFileReader.h; sourceTree = "<group>"; };
+		D5992F1D2461E4320054F9DA /* welcomePage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = welcomePage.h; sourceTree = "<group>"; };
+		D5992F1E2461E4320054F9DA /* DocManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DocManager.h; sourceTree = "<group>"; };
+		D5992F1F2461E4320054F9DA /* ModelFileWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelFileWriter.cpp; sourceTree = "<group>"; };
+		D5992F202461E4320054F9DA /* welcomPage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = welcomPage.cpp; sourceTree = "<group>"; };
+		D5992F212461E4320054F9DA /* PostObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostObject.h; sourceTree = "<group>"; };
 		D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgSelectRange.cpp; sourceTree = "<group>"; };
 		D5BA5333240D5470001A5C0F /* DlgSelectRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSelectRange.h; sourceTree = "<group>"; };
 		D5BA5334240D5470001A5C0F /* CIntInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CIntInput.cpp; sourceTree = "<group>"; };
@@ -624,7 +655,6 @@
 		D5F7D70722FA37C40089B08E /* DlgEditProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditProject.h; sourceTree = "<group>"; };
 		D5F7D70822FA37C40089B08E /* moc_GLHighlighter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_GLHighlighter.cpp; sourceTree = "<group>"; };
 		D5F7D70922FA37C40089B08E /* moc_BuildPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_BuildPanel.cpp; sourceTree = "<group>"; };
-		D5F7D70A22FA37C40089B08E /* template.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = template.cpp; sourceTree = "<group>"; };
 		D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgCloneObject.cpp; sourceTree = "<group>"; };
 		D5F7D70C22FA37C40089B08E /* DlgAddRigidConnector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddRigidConnector.cpp; sourceTree = "<group>"; };
 		D5F7D70D22FA37C40089B08E /* MeshSelectionBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshSelectionBox.h; sourceTree = "<group>"; };
@@ -680,7 +710,6 @@
 		D5F7D74022FA37C40089B08E /* EditPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditPanel.cpp; sourceTree = "<group>"; };
 		D5F7D74122FA37C40089B08E /* DlgAddStep.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddStep.cpp; sourceTree = "<group>"; };
 		D5F7D74222FA37C40089B08E /* menuPhysics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuPhysics.cpp; sourceTree = "<group>"; };
-		D5F7D74322FA37C40089B08E /* PostDoc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostDoc.h; sourceTree = "<group>"; };
 		D5F7D74422FA37C40089B08E /* CreateP2PLinePane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CreateP2PLinePane.cpp; sourceTree = "<group>"; };
 		D5F7D74522FA37C40089B08E /* FiberGeneratorTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FiberGeneratorTool.h; sourceTree = "<group>"; };
 		D5F7D74622FA37C40089B08E /* DlgLameConvertor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgLameConvertor.cpp; sourceTree = "<group>"; };
@@ -855,7 +884,6 @@
 		D5F7D7F922FA37C40089B08E /* MeshButtonBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshButtonBox.cpp; sourceTree = "<group>"; };
 		D5F7D7FA22FA37C40089B08E /* moc_MeshSelectionBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_MeshSelectionBox.cpp; sourceTree = "<group>"; };
 		D5F7D7FB22FA37C40089B08E /* DlgTransform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgTransform.h; sourceTree = "<group>"; };
-		D5F7D7FC22FA37C40089B08E /* PostDoc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostDoc.cpp; sourceTree = "<group>"; };
 		D5F7D7FD22FA37C40089B08E /* CurveIntersectProps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CurveIntersectProps.h; sourceTree = "<group>"; };
 		D5F7D7FE22FA37C40089B08E /* DlgMergeObjects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgMergeObjects.cpp; sourceTree = "<group>"; };
 		D5F7D7FF22FA37C40089B08E /* moc_GLControlBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_GLControlBar.cpp; sourceTree = "<group>"; };
@@ -1187,6 +1215,8 @@
 				D5F7D72322FA37C40089B08E /* DlgVTKExport.h */,
 				D516317F2300979E002B01C3 /* DlgWidgetProps.cpp */,
 				D516317E2300979D002B01C3 /* DlgWidgetProps.h */,
+				D5992F0E2461E4300054F9DA /* DocManager.cpp */,
+				D5992F1E2461E4320054F9DA /* DocManager.h */,
 				D5F7D73B22FA37C40089B08E /* DocTemplate.cpp */,
 				D5F7D77322FA37C40089B08E /* DocTemplate.h */,
 				D5F7D7EC22FA37C40089B08E /* Document.cpp */,
@@ -1204,6 +1234,8 @@
 				D5F7D76922FA37C40089B08E /* FEBioOpt.h */,
 				D5F7D7A222FA37C40089B08E /* FEBioStudio.cpp */,
 				D5F7D72A22FA37C40089B08E /* FEBioStudio.h */,
+				D5992F162461E4310054F9DA /* FEBioStudioProject.cpp */,
+				D5992F1B2461E4320054F9DA /* FEBioStudioProject.h */,
 				D5ED2A0723198CD800C16BF7 /* FEObjectProps.cpp */,
 				D5ED2A0523198CD800C16BF7 /* FEObjectProps.h */,
 				D5F7D78022FA37C40089B08E /* FiberGeneratorTool.cpp */,
@@ -1234,6 +1266,8 @@
 				D5F7D76822FA37C40089B08E /* GraphWindow.h */,
 				D5F7D7CD22FA37C40089B08E /* GTriad.cpp */,
 				D5F7D7F122FA37C40089B08E /* GTriad.h */,
+				D5992F0F2461E4310054F9DA /* GView.cpp */,
+				D5992F112461E4310054F9DA /* GView.h */,
 				D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */,
 				D54D2CE22444A7DE00146123 /* ImportSpringsTool.h */,
 				D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */,
@@ -1262,11 +1296,14 @@
 				D579B672239F04E200278644 /* MeasureAreaTool.h */,
 				D579B667239F04E100278644 /* MeasureVolumeTool.cpp */,
 				D579B669239F04E100278644 /* MeasureVolumeTool.h */,
+				D5992F1A2461E4310054F9DA /* menuEdit.cpp */,
 				D5CC3A5B245B4CD700311F48 /* menuFile.cpp */,
+				D5992F102461E4310054F9DA /* menuHelp.cpp */,
 				D5F7D74222FA37C40089B08E /* menuPhysics.cpp */,
 				D5F7D81822FA37C40089B08E /* menuPost.cpp */,
 				D5F7D73022FA37C40089B08E /* menuRecord.cpp */,
 				D5F7D81222FA37C40089B08E /* menuTools.cpp */,
+				D5992F142461E4310054F9DA /* menuView.cpp */,
 				D5F7D7F922FA37C40089B08E /* MeshButtonBox.cpp */,
 				D5F7D7B222FA37C40089B08E /* MeshButtonBox.h */,
 				D5F7D81B22FA37C40089B08E /* MeshInfoPanel.cpp */,
@@ -1358,6 +1395,12 @@
 				D5F7D7EB22FA37C40089B08E /* moc_ToolsPanel.cpp */,
 				D5248DD7231C114D00691871 /* modelcheck.cpp */,
 				D5248DD8231C114D00691871 /* modelcheck.h */,
+				D5992F192461E4310054F9DA /* ModelDocument.cpp */,
+				D5992F182461E4310054F9DA /* ModelDocument.h */,
+				D5992F172461E4310054F9DA /* ModelFileReader.cpp */,
+				D5992F1C2461E4320054F9DA /* ModelFileReader.h */,
+				D5992F1F2461E4320054F9DA /* ModelFileWriter.cpp */,
+				D5992F0D2461E4300054F9DA /* ModelFileWriter.h */,
 				D5F7D77722FA37C40089B08E /* ModelPropsPanel.cpp */,
 				D5F7D71622FA37C40089B08E /* ModelPropsPanel.h */,
 				D5F7D73C22FA37C40089B08E /* ModelSearch.cpp */,
@@ -1382,10 +1425,12 @@
 				D579B674239F04E200278644 /* PointDistanceTool.h */,
 				D5ED2A0923198CD800C16BF7 /* PostDataPanel.cpp */,
 				D5ED29FC23198CD700C16BF7 /* PostDataPanel.h */,
-				D5F7D7FC22FA37C40089B08E /* PostDoc.cpp */,
-				D5F7D74322FA37C40089B08E /* PostDoc.h */,
+				D5992F122461E4310054F9DA /* PostDocument.cpp */,
+				D5992F132461E4310054F9DA /* PostDocument.h */,
 				D5C13EDA24047890005897E1 /* PostModelPanel.cpp */,
 				D5C13ED824047890005897E1 /* PostModelPanel.h */,
+				D5992F152461E4310054F9DA /* PostObject.cpp */,
+				D5992F212461E4320054F9DA /* PostObject.h */,
 				D5F7D78622FA37C40089B08E /* PostPanel.cpp */,
 				D5F7D7B422FA37C40089B08E /* PostPanel.h */,
 				D5CC3A67245B4CD800311F48 /* PostToolBar.cpp */,
@@ -1430,7 +1475,6 @@
 				D5F7D75D22FA37C40089B08E /* SummaryWindow.cpp */,
 				D5F7D71E22FA37C40089B08E /* SummaryWindow.h */,
 				D5F7D79A22FA37C40089B08E /* targetver.h */,
-				D5F7D70A22FA37C40089B08E /* template.cpp */,
 				D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */,
 				D5606C86238DAAD1002B037E /* TetOverlapTool.h */,
 				D5F7D7E722FA37C40089B08E /* Tool.cpp */,
@@ -1452,6 +1496,8 @@
 				D5F7D76722FA37C40089B08E /* ui_toolspanel.h */,
 				D5F7D71922FA37C40089B08E /* version.h */,
 				D5ED29F823198CD600C16BF7 /* ViewSettings.h */,
+				D5992F1D2461E4320054F9DA /* welcomePage.h */,
+				D5992F202461E4320054F9DA /* welcomPage.cpp */,
 				D5CA211023EF7025001AE230 /* ZipFiles.cpp */,
 				D5ED2A0823198CD800C16BF7 /* ZipFiles.h */,
 			);
@@ -1620,6 +1666,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5992F232461E4320054F9DA /* GView.cpp in Sources */,
 				D5F7D83322FA37C40089B08E /* DlgExportFEBio.cpp in Sources */,
 				D576570423E32E6900E4F70F /* RepoConnectionHandler.cpp in Sources */,
 				D57C2A77240F1F990043C2A7 /* PublicationWidgetView.cpp in Sources */,
@@ -1635,6 +1682,7 @@
 				D5F7D83622FA37C40089B08E /* moc_IntegrateWindow.cpp in Sources */,
 				D5F7D88F22FA37C40089B08E /* moc_LogPanel.cpp in Sources */,
 				D5F7D83922FA37C40089B08E /* moc_FileViewer.cpp in Sources */,
+				D5992F292461E4320054F9DA /* ModelFileReader.cpp in Sources */,
 				D5F7D87D22FA37C40089B08E /* moc_DlgEditOutput.cpp in Sources */,
 				D5F7D8BB22FA37C40089B08E /* CommandPanel.cpp in Sources */,
 				D5F7D83822FA37C40089B08E /* CreateSpringPane.cpp in Sources */,
@@ -1677,8 +1725,11 @@
 				D5F7D87322FA37C40089B08E /* moc_Tool.cpp in Sources */,
 				D5F7D8C222FA37C40089B08E /* DlgCloneObject.cpp in Sources */,
 				D579B67C239F04E300278644 /* 3PointAngleTool.cpp in Sources */,
+				D5992F2A2461E4320054F9DA /* ModelDocument.cpp in Sources */,
+				D5992F242461E4320054F9DA /* menuHelp.cpp in Sources */,
 				D5F7D85122FA37C40089B08E /* DlgLameConvertor.cpp in Sources */,
 				D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */,
+				D5992F2D2461E4320054F9DA /* welcomPage.cpp in Sources */,
 				D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */,
 				D57C2A7A240F1F990043C2A7 /* PublicationWidget.cpp in Sources */,
 				D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */,
@@ -1697,7 +1748,7 @@
 				D579B678239F04E300278644 /* moc_DatabasePanel.cpp in Sources */,
 				D5F7D83422FA37C40089B08E /* moc_CurvePicker.cpp in Sources */,
 				D5CC3A6E245B4CD800311F48 /* menuFile.cpp in Sources */,
-				D5F7D8B622FA37C40089B08E /* PostDoc.cpp in Sources */,
+				D5992F272461E4320054F9DA /* PostObject.cpp in Sources */,
 				D5F7D86822FA37C40089B08E /* moc_CColorButton.cpp in Sources */,
 				D5F7D83722FA37C40089B08E /* FileThread.cpp in Sources */,
 				D5D5B6C92335128E00D388FA /* SSHThread.cpp in Sources */,
@@ -1775,9 +1826,11 @@
 				D5F7D86522FA37C40089B08E /* DlgTransform.cpp in Sources */,
 				D5F7D86922FA37C40089B08E /* GLCanvas.cpp in Sources */,
 				D5CA211723EF7025001AE230 /* DlgAddPublication.cpp in Sources */,
+				D5992F2B2461E4320054F9DA /* menuEdit.cpp in Sources */,
 				D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */,
 				D5CC3A75245B4CD800311F48 /* moc_DlgMeasure.cpp in Sources */,
 				D5F7D8C122FA37C40089B08E /* DlgCloneGrid.cpp in Sources */,
+				D5992F222461E4320054F9DA /* DocManager.cpp in Sources */,
 				D5F7D83F22FA37C40089B08E /* moc_ModelPropsPanel.cpp in Sources */,
 				D576570523E32E6900E4F70F /* DlgAddConstraint.cpp in Sources */,
 				D5F7D8AE22FA37C40089B08E /* GLControlBar.cpp in Sources */,
@@ -1794,7 +1847,6 @@
 				D5F7D84322FA37C40089B08E /* DlgAddContact.cpp in Sources */,
 				D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */,
 				D5F7D8AB22FA37C40089B08E /* stdafx.cpp in Sources */,
-				D5F7D82D22FA37C40089B08E /* template.cpp in Sources */,
 				D5F7D8A322FA37C40089B08E /* moc_GraphWindow.cpp in Sources */,
 				D5C13EDB24047890005897E1 /* moc_PostModelPanel.cpp in Sources */,
 				D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */,
@@ -1803,6 +1855,7 @@
 				D5F7D8C422FA37C40089B08E /* menuTools.cpp in Sources */,
 				D5F7D89F22FA37C40089B08E /* moc_PlotWidget.cpp in Sources */,
 				D5ED2A1223198CD900C16BF7 /* MaterialPanel.cpp in Sources */,
+				D5992F252461E4320054F9DA /* PostDocument.cpp in Sources */,
 				D5F7D84622FA37C40089B08E /* ConchoidFitTool.cpp in Sources */,
 				D5F7D85422FA37C40089B08E /* DlgAddBodyLoad.cpp in Sources */,
 				D5F7D88522FA37C40089B08E /* DlgFEBioOptimize.cpp in Sources */,
@@ -1825,8 +1878,10 @@
 				D5F7D8BE22FA37C40089B08E /* StatsWindow.cpp in Sources */,
 				D576570223E32E6900E4F70F /* DlgUpload.cpp in Sources */,
 				D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */,
+				D5992F2C2461E4320054F9DA /* ModelFileWriter.cpp in Sources */,
 				D5F7D85A22FA37C40089B08E /* moc_PostPanel.cpp in Sources */,
 				D5CC3A6D245B4CD800311F48 /* DlgImportLines.cpp in Sources */,
+				D5992F282461E4320054F9DA /* FEBioStudioProject.cpp in Sources */,
 				D5F7D87C22FA37C40089B08E /* MainWindow.cpp in Sources */,
 				D5F7D84922FA37C40089B08E /* ModelSearch.cpp in Sources */,
 				D5F7D89222FA37C40089B08E /* ReadCurveTool.cpp in Sources */,
@@ -1857,6 +1912,7 @@
 				D5F7D85D22FA37C40089B08E /* moc_ObjectPanel.cpp in Sources */,
 				D5F7D89322FA37C40089B08E /* CurvePicker.cpp in Sources */,
 				D5CC3A77245B4CD800311F48 /* PostToolBar.cpp in Sources */,
+				D5992F262461E4320054F9DA /* menuView.cpp in Sources */,
 				D5CC3A78245B4CD800311F48 /* DlgMeasure.cpp in Sources */,
 				D5F7D8BA22FA37C40089B08E /* DlgImportSTL.cpp in Sources */,
 				D5F7D84E22FA37C40089B08E /* DlgAddStep.cpp in Sources */,
