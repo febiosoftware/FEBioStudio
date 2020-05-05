@@ -32,11 +32,9 @@ FEBioStudioProject::File FEBioStudioProject::GetFile(int n) const
 
 bool FEBioStudioProject::Contains(const QString& fileName) const
 {
-	std::string sfile = fileName.toStdString();
-	for each (File f in m_fileList) 
+	for (QList<File>::const_iterator it = m_fileList.begin(); it != m_fileList.end(); ++it)
 	{
-		string sfile_i = f.m_fileName.toStdString();
-		if (f.m_fileName == fileName) return true; 
+		if (it->m_fileName == fileName) return true; 
 	}
 	return false;
 }
