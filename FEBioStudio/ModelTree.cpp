@@ -416,6 +416,30 @@ private:
 	Post::CGLModel*	m_fem;
 };
 
+//-----------------------------------------------------------------------------
+QIcon createIcon(GLColor c)
+{
+	QColor c2 = QColor::fromRgb(c.r, c.g, c.b);
+	QColor c1 = c2.lighter();
+	QColor c3 = c2.darker();
+
+	QRadialGradient g(QPointF(8, 8), 12);
+	g.setColorAt(0.0, c1);
+	g.setColorAt(0.2, c2);
+	g.setColorAt(1.0, c3);
+
+	QPixmap pix(24, 24);
+	pix.fill(Qt::transparent);
+	QPainter p(&pix);
+	p.setRenderHint(QPainter::Antialiasing);
+	p.setPen(Qt::PenStyle::NoPen);
+	p.setBrush(QBrush(g));
+	p.drawEllipse(2, 2, 20, 20);
+	p.end();
+
+	return QIcon(pix);
+}
+
 //=============================================================================
 
 CModelTree::CModelTree(CModelViewer* view, QWidget* parent) : QTreeWidget(parent), m_view(view)
@@ -665,8 +689,16 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 	}
 	else
 	{
-		item->setIcon(0, QIcon());
-		item->setToolTip(0, QString());
+		if (dynamic_cast<GMaterial*>(po))
+		{
+			GMaterial* m = dynamic_cast<GMaterial*>(po);
+			item->setIcon(0, createIcon(m->Diffuse()));
+		}
+		else
+		{
+			item->setIcon(0, QIcon());
+			item->setToolTip(0, QString());
+		}
 	}
 }
 
@@ -1577,7 +1609,10 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 	// create the tree widget item
 	QTreeWidgetItem* t2 = 0;
 	if (topLevel)
+	{
 		t2 = AddTreeItem(item, name, MT_MATERIAL, 0, gmat, new CMaterialProps(fem, gmat->GetMaterialProperties()), new CMaterialValidator(&fem, gmat));
+		t2->setIcon(0, createIcon(gmat->Diffuse()));
+	}
 	else
 		t2 = AddTreeItem(item, name, 0, 0, pmat, new CMaterialProps(fem, pmat));
 
