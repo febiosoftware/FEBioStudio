@@ -216,7 +216,7 @@ void CFEBioJob::Load(IArchive& ar)
 		case CID_FEBIOJOB_FILENAME:
 			ar.read(m_febFile);
 #ifndef WIN32
-			m_fileName = QString::fromStdString(m_fileName).replace("\\","/").toStdString();
+			m_febFile = QString::fromStdString(m_febFile).replace("\\","/").toStdString();
 #endif
 			break;
 		case CID_FEBIOJOB_PLOTFILE:
