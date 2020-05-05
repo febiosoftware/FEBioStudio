@@ -229,7 +229,6 @@
 		D5F7D84922FA37C40089B08E /* ModelSearch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73C22FA37C40089B08E /* ModelSearch.cpp */; };
 		D5F7D84A22FA37C40089B08E /* FEBioJob.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73D22FA37C40089B08E /* FEBioJob.cpp */; };
 		D5F7D84B22FA37C40089B08E /* GLHighLighter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73E22FA37C40089B08E /* GLHighLighter.cpp */; };
-		D5F7D84C22FA37C40089B08E /* MeshSelectionBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D73F22FA37C40089B08E /* MeshSelectionBox.cpp */; };
 		D5F7D84D22FA37C40089B08E /* EditPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D74022FA37C40089B08E /* EditPanel.cpp */; };
 		D5F7D84E22FA37C40089B08E /* DlgAddStep.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D74122FA37C40089B08E /* DlgAddStep.cpp */; };
 		D5F7D84F22FA37C40089B08E /* menuPhysics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D74222FA37C40089B08E /* menuPhysics.cpp */; };
@@ -330,7 +329,6 @@
 		D5F7D8B222FA37C40089B08E /* moc_DlgLameConvertor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7F722FA37C40089B08E /* moc_DlgLameConvertor.cpp */; };
 		D5F7D8B322FA37C40089B08E /* moc_DlgFormula.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7F822FA37C40089B08E /* moc_DlgFormula.cpp */; };
 		D5F7D8B422FA37C40089B08E /* MeshButtonBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7F922FA37C40089B08E /* MeshButtonBox.cpp */; };
-		D5F7D8B522FA37C40089B08E /* moc_MeshSelectionBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7FA22FA37C40089B08E /* moc_MeshSelectionBox.cpp */; };
 		D5F7D8B722FA37C40089B08E /* DlgMergeObjects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7FE22FA37C40089B08E /* DlgMergeObjects.cpp */; };
 		D5F7D8B822FA37C40089B08E /* moc_GLControlBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D7FF22FA37C40089B08E /* moc_GLControlBar.cpp */; };
 		D5F7D8B922FA37C40089B08E /* PlotWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5F7D80222FA37C40089B08E /* PlotWidget.cpp */; };
@@ -657,7 +655,6 @@
 		D5F7D70922FA37C40089B08E /* moc_BuildPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_BuildPanel.cpp; sourceTree = "<group>"; };
 		D5F7D70B22FA37C40089B08E /* moc_DlgCloneObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgCloneObject.cpp; sourceTree = "<group>"; };
 		D5F7D70C22FA37C40089B08E /* DlgAddRigidConnector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddRigidConnector.cpp; sourceTree = "<group>"; };
-		D5F7D70D22FA37C40089B08E /* MeshSelectionBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshSelectionBox.h; sourceTree = "<group>"; };
 		D5F7D70E22FA37C40089B08E /* ui_materialeditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_materialeditor.h; sourceTree = "<group>"; };
 		D5F7D70F22FA37C40089B08E /* moc_MaterialEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_MaterialEditor.cpp; sourceTree = "<group>"; };
 		D5F7D71022FA37C40089B08E /* moc_PropertyListForm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PropertyListForm.cpp; sourceTree = "<group>"; };
@@ -706,7 +703,6 @@
 		D5F7D73C22FA37C40089B08E /* ModelSearch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelSearch.cpp; sourceTree = "<group>"; };
 		D5F7D73D22FA37C40089B08E /* FEBioJob.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBioJob.cpp; sourceTree = "<group>"; };
 		D5F7D73E22FA37C40089B08E /* GLHighLighter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLHighLighter.cpp; sourceTree = "<group>"; };
-		D5F7D73F22FA37C40089B08E /* MeshSelectionBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshSelectionBox.cpp; sourceTree = "<group>"; };
 		D5F7D74022FA37C40089B08E /* EditPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditPanel.cpp; sourceTree = "<group>"; };
 		D5F7D74122FA37C40089B08E /* DlgAddStep.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddStep.cpp; sourceTree = "<group>"; };
 		D5F7D74222FA37C40089B08E /* menuPhysics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuPhysics.cpp; sourceTree = "<group>"; };
@@ -882,7 +878,6 @@
 		D5F7D7F722FA37C40089B08E /* moc_DlgLameConvertor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgLameConvertor.cpp; sourceTree = "<group>"; };
 		D5F7D7F822FA37C40089B08E /* moc_DlgFormula.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgFormula.cpp; sourceTree = "<group>"; };
 		D5F7D7F922FA37C40089B08E /* MeshButtonBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshButtonBox.cpp; sourceTree = "<group>"; };
-		D5F7D7FA22FA37C40089B08E /* moc_MeshSelectionBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_MeshSelectionBox.cpp; sourceTree = "<group>"; };
 		D5F7D7FB22FA37C40089B08E /* DlgTransform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgTransform.h; sourceTree = "<group>"; };
 		D5F7D7FD22FA37C40089B08E /* CurveIntersectProps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CurveIntersectProps.h; sourceTree = "<group>"; };
 		D5F7D7FE22FA37C40089B08E /* DlgMergeObjects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgMergeObjects.cpp; sourceTree = "<group>"; };
@@ -1312,8 +1307,6 @@
 				D5F7D78D22FA37C40089B08E /* MeshInspector.h */,
 				D5F7D76022FA37C40089B08E /* MeshPanel.cpp */,
 				D5F7D72122FA37C40089B08E /* MeshPanel.h */,
-				D5F7D73F22FA37C40089B08E /* MeshSelectionBox.cpp */,
-				D5F7D70D22FA37C40089B08E /* MeshSelectionBox.h */,
 				D5F7D70922FA37C40089B08E /* moc_BuildPanel.cpp */,
 				D5F7D77222FA37C40089B08E /* moc_CColorButton.cpp */,
 				D5F7D7A822FA37C40089B08E /* moc_CreateP2PlinePane.cpp */,
@@ -1366,7 +1359,6 @@
 				D5F7D7A122FA37C40089B08E /* moc_MeshButtonBox.cpp */,
 				D5F7D76C22FA37C40089B08E /* moc_MeshInspector.cpp */,
 				D5F7D78B22FA37C40089B08E /* moc_MeshPanel.cpp */,
-				D5F7D7FA22FA37C40089B08E /* moc_MeshSelectionBox.cpp */,
 				D5F7D72D22FA37C40089B08E /* moc_ModelPropsPanel.cpp */,
 				D5F7D81622FA37C40089B08E /* moc_ModelSearch.cpp */,
 				D5F7D7E822FA37C40089B08E /* moc_ModelTree.cpp */,
@@ -1673,7 +1665,6 @@
 				D5F7D85522FA37C40089B08E /* DlgTimeSettings.cpp in Sources */,
 				D5ED2A1723198CD900C16BF7 /* moc_DlgNew.cpp in Sources */,
 				D5F7D86C22FA37C40089B08E /* Sketcher.cpp in Sources */,
-				D5F7D84C22FA37C40089B08E /* MeshSelectionBox.cpp in Sources */,
 				D5F7D87222FA37C40089B08E /* CreatePanel.cpp in Sources */,
 				D5F7D86022FA37C40089B08E /* DlgImportAbaqus.cpp in Sources */,
 				D5F7D88722FA37C40089B08E /* FEBioStudio.cpp in Sources */,
@@ -1816,7 +1807,6 @@
 				D5F7D82A22FA37C40089B08E /* DlgImportCOMSOL.cpp in Sources */,
 				D5F7D82422FA37C40089B08E /* moc_FileThread.cpp in Sources */,
 				D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */,
-				D5F7D8B522FA37C40089B08E /* moc_MeshSelectionBox.cpp in Sources */,
 				D5F7D89D22FA37C40089B08E /* moc_CreateSpringPane.cpp in Sources */,
 				D5F7D8B822FA37C40089B08E /* moc_GLControlBar.cpp in Sources */,
 				D5F7D86D22FA37C40089B08E /* moc_EditPanel.cpp in Sources */,
