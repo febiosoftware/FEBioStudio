@@ -110,7 +110,8 @@ public:
 		addEnumProperty(&m_theme, "Theme")->setEnumValues(themes);
 		addProperty("Recent projects list", CProperty::Action)->info = QString("Clear");
 
-		addEnumProperty(&m_unit, "Unit System")->setEnumValues(Units::SupportedUnitSystems());
+		QStringList units = Units::SupportedUnitSystems();
+		addEnumProperty(&m_unit, "Unit System")->setEnumValues(units);
 	}
 
 	void SetPropertyValue(int i, const QVariant& v) override

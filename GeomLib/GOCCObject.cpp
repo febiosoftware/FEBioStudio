@@ -249,6 +249,7 @@ void GOCCObject::BuildGMesh()
 
 void GOCCObject::Save(OArchive& ar)
 {
+#ifdef HAS_OCC
 	ar.BeginChunk(0);
 	{
 		GObject::Save(ar);
@@ -258,10 +259,12 @@ void GOCCObject::Save(OArchive& ar)
 	std::stringstream ss;
 	BRepTools::Write(m_occ->m_shape, ss);
 	ar.WriteChunk(1, ss.str());
+#endif
 }
 
 void GOCCObject::Load(IArchive& ar)
 {
+#ifdef HAS_OCC
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -281,14 +284,17 @@ void GOCCObject::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+#endif
 }
 
 //===================================================================
 GOCCBottle::GOCCBottle() : GOCCObject(GOCC_BOTTLE)
 {
+#ifdef HAS_OCC
 	AddDoubleParam(1.0, "width");
 	AddDoubleParam(1.5, "height");
 	AddDoubleParam(0.5, "thickness");
+#endif
 }
 
 bool GOCCBottle::Update(bool b)

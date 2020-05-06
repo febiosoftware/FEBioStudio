@@ -61,6 +61,18 @@ CFEBioJob::CFEBioJob(CModelDocument* doc, const std::string& jobName, const std:
 	// add the xplt extension
 	m_plotFile += "xplt";
 
+	// set default log file name
+	m_logFile = m_febFile;
+	pos = m_logFile.rfind(".");
+	if (pos != std::string::npos)
+	{
+		// remove extension
+		m_logFile.erase(pos + 1);
+	}
+
+	// add the log extension
+	m_logFile += "log";
+
 #ifdef HAS_SSH
 	if(launchConfig.type == LOCAL)
 	{
@@ -165,9 +177,10 @@ void CFEBioJob::SetFEBFileName(const std::string& fileName)
 	m_febFile = fileName;
 }
 
-std::string CFEBioJob::GetFEBFileName() const
+std::string CFEBioJob::GetFEBFileName(bool relative) const
 {
-	return m_febFile;
+	if(relative) return m_febFile;
+	else return m_doc->ToAbsolutePath(m_febFile).toStdString();
 }
 
 void CFEBioJob::SetPlotFileName(const std::string& plotFile)
@@ -175,9 +188,21 @@ void CFEBioJob::SetPlotFileName(const std::string& plotFile)
 	m_plotFile = plotFile;
 }
 
-std::string CFEBioJob::GetPlotFileName() const
+std::string CFEBioJob::GetPlotFileName(bool relative) const
 {
-	return m_plotFile;
+	if(relative) return m_plotFile;
+	else return m_doc->ToAbsolutePath(m_plotFile).toStdString();
+}
+
+void CFEBioJob::SetLogFileName(const std::string& logFile)
+{
+	m_logFile = logFile;
+}
+
+std::string CFEBioJob::GetLogFileName(bool relative) const
+{
+	if(relative) return m_logFile;
+	else return m_doc->ToAbsolutePath(m_logFile).toStdString();
 }
 
 void CFEBioJob::SetConfigFileName(const std::string& configFile)
@@ -196,6 +221,7 @@ void CFEBioJob::Save(OArchive& ar)
 	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
 	ar.WriteChunk(CID_FEBIOJOB_FILENAME, m_febFile);
 	ar.WriteChunk(CID_FEBIOJOB_PLOTFILE, m_plotFile);
+	ar.WriteChunk(CID_FEBIOJOB_LOGFILE, m_logFile);
 
 	ar.BeginChunk(CID_FEBIOJOB_LCONFIG);
 	m_launchConfig.Save(ar);
@@ -223,6 +249,12 @@ void CFEBioJob::Load(IArchive& ar)
 			ar.read(m_plotFile);
 #ifndef WIN32
 			m_plotFile = QString::fromStdString(m_plotFile).replace("\\","/").toStdString();
+#endif
+			break;
+		case CID_FEBIOJOB_LOGFILE:
+			ar.read(m_logFile);
+#ifndef WIN32
+			m_logFile = QString::fromStdString(m_logFile).replace("\\","/").toStdString();
 #endif
 			break;
 		case CID_FEBIOJOB_LCONFIG: {CLaunchConfig lConfig; lConfig.Load(ar); m_sshHandler = nullptr; UpdateLaunchConfig(lConfig); } break;

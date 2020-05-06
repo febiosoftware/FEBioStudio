@@ -221,11 +221,13 @@ class CFEBioJobProps : public CPropertyList
 public:
 	CFEBioJobProps(CMainWindow* wnd, CModelViewer* tree, CFEBioJob* job) : m_wnd(wnd), m_tree(tree), m_job(job)
 	{
-		addProperty("FEBio File", CProperty::String)->setFlags(CProperty::Visible);
+		addProperty("FEBio File", CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 		addProperty("Status", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
-		addProperty("Plot File" , CProperty::String)->setFlags(CProperty::Visible);
-		addProperty("", CProperty::Action)->info = QString("Open in FEBio Studio");
+		addProperty("Plot File" , CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
+//		addProperty("", CProperty::Action)->info = QString("Open in FEBio Studio");
 		addProperty("", CProperty::Action)->info = QString("Open in PostView");
+		addProperty("Log File" , CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
+
 
 		if(job->GetLaunchConfig()->type != LOCAL)
 		{
@@ -246,17 +248,26 @@ public:
 		{
 		case 0: 
 		{
-			QString s = QString::fromStdString(m_job->GetFEBFileName());
-			if (s.isEmpty()) return "(none)";
-			else return s;
+			QStringList fileNames;
+			fileNames.append(QString(m_job->GetFEBFileName().c_str()));
+			fileNames.append(QString(m_job->GetFEBFileName(true).c_str()));
+			return fileNames;
 		}
 		break;
 		case 1: return m_job->GetStatus(); break;
 		case 2:
 		{
-			QString s = QString::fromStdString(m_job->GetPlotFileName());
-			if (s.isEmpty()) return "(none)";
-			else return s;
+			QStringList fileNames;
+			fileNames.append(QString(m_job->GetPlotFileName().c_str()));
+			fileNames.append(QString(m_job->GetPlotFileName(true).c_str()));
+			return fileNames;
+		}
+		case 4:
+		{
+			QStringList fileNames;
+			fileNames.append(QString(m_job->GetLogFileName().c_str()));
+			fileNames.append(QString(m_job->GetLogFileName(true).c_str()));
+			return fileNames;
 		}
 		}
 
@@ -266,15 +277,6 @@ public:
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
 		if (i == 3)
-		{
-			CModelDocument* doc = m_job->GetDocument(); assert(doc);
-			QString plotFile = doc->ToAbsolutePath(m_job->GetPlotFileName());
-			m_tree->blockUpdate(true);
-			m_wnd->OpenFile(plotFile, false);
-			SetModified(true);
-			m_tree->blockUpdate(false);
-		}
-		else if (i == 4)
 		{
 			CModelDocument* doc = m_job->GetDocument(); assert(doc);
 			QString plotFile = doc->ToAbsolutePath(m_job->GetPlotFileName());
@@ -442,7 +444,7 @@ QIcon createIcon(GLColor c)
 
 //=============================================================================
 
-CModelTree::CModelTree(CModelViewer* view, QWidget* parent) : QTreeWidget(parent), m_view(view)
+CModelTree::CModelTree(CModelViewer* view, QWidget* parent) : QTreeWidget(parent), m_view(view), m_nfilter(0)
 {
 //	setAlternatingRowColors(true);
 	setSelectionMode(QAbstractItemView::ExtendedSelection);

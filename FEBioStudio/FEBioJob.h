@@ -31,10 +31,13 @@ public:
 	int GetStatus();
 
 	void SetFEBFileName(const std::string& fileName);
-	std::string GetFEBFileName() const;
+	std::string GetFEBFileName(bool relative = false) const;
 
 	void SetPlotFileName(const std::string& plotFile);
-	std::string GetPlotFileName() const;
+	std::string GetPlotFileName(bool relative = false) const;
+
+	void SetLogFileName(const std::string& logFile);
+	std::string GetLogFileName(bool relative = false) const;
 
 	void SetConfigFileName(const std::string& configFile);
 	std::string GetConfigFileName() const;

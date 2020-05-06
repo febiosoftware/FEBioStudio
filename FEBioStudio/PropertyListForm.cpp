@@ -10,6 +10,7 @@
 #include "CIntInput.h"
 #include "GLHighlighter.h"
 #include "ResourceEdit.h"
+#include "ExternalLinkEdit.h"
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QLabel>
@@ -273,11 +274,23 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		}
 		break;
 	case CProperty::Resource:
+			{
+				CResourceEdit* edit = new CResourceEdit;
+				edit->setResourceName(v.toString());
+				if (pi.values.isEmpty() == false) edit->setResourceFilter(pi.values);
+				connect(edit, SIGNAL(resourceChanged()), this, SLOT(onDataChanged()));
+				return edit;
+			}
+			break;
+	case CProperty::ExternalLink:
 		{
-			CResourceEdit* edit = new CResourceEdit;
-			edit->setResourceName(v.toString());
-			if (pi.values.isEmpty() == false) edit->setResourceFilter(pi.values);
-			connect(edit, SIGNAL(resourceChanged()), this, SLOT(onDataChanged()));
+			QStringList fileNames = v.toStringList();
+			if(fileNames.empty())
+			{
+				fileNames.append("(none)");
+				fileNames.append("(none)");
+			}
+			CExternalLinkEdit* edit = new CExternalLinkEdit(fileNames);
 			return edit;
 		}
 		break;

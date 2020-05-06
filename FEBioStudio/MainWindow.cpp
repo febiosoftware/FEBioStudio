@@ -10,7 +10,7 @@
 #include <QtCore/QStandardPaths>
 #include <QMessageBox>
 #include <QDirIterator>
-#include <QDeskTopServices>
+#include <QDesktopServices>
 #include <QtCore/QMimeData>
 #include <FSCore/FSObject.h>
 #include <QtCore/QTimer>
@@ -134,10 +134,10 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	{
 		qApp->setStyle(QStyleFactory::create("adwaita-dark"));
 
-		VIEW_SETTINGS& v = m_doc->GetViewSettings();
-		v.m_col1 = GLColor(83, 83, 83);
-		v.m_col2 = GLColor(128, 128, 128);
-		v.m_nbgstyle = BG_HORIZONTAL;
+//		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+//		v.m_col1 = GLColor(83, 83, 83);
+//		v.m_col2 = GLColor(128, 128, 128);
+//		v.m_nbgstyle = BG_HORIZONTAL;
 
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
@@ -164,15 +164,17 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 QIcon CMainWindow::GetResourceIcon(const QString& iconName)
 {
+
+
 	QString rs(iconName);
-	if (ui->m_theme == 1)
+	if (ui->m_theme == 1 | ui->m_theme == 3)
 	{
 		rs += "_neg";
 	}
 	QString url = ":/icons/" + rs + ".png";
 
 	// make sure the icon exists
-	if (ui->m_theme == 1)
+	if (ui->m_theme == 1 | ui->m_theme == 3)
 	{
 		QFile f(url);
 		if (!f.exists())

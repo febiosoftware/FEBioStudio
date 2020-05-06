@@ -66,6 +66,7 @@
 		<file>icons/pivot.png</file>
 		<file>icons/material.png</file>
 		<file>icons/delete.png</file>
+        <file>icons/deleteRemote.png</file>
 		<file>icons/search.png</file>
 		<file>icons/sync.png</file>
 		<file>icons/zoom_fit.png</file>

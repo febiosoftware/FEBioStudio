@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "StepImport.h"
+#include "STEPImport.h"
 #include <GeomLib/GOCCObject.h>
 #include <MeshTools/GModel.h>
 #ifdef HAS_OCC
