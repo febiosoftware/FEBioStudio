@@ -29,6 +29,7 @@ public:
 	QLineEdit*	configFile;
 	QLineEdit*	taskName;
 	QLineEdit*	taskFile;
+	QCheckBox*	autoSave;
 
 	QComboBox*	febioFile;
 	
@@ -70,6 +71,9 @@ public:
 		febioFile->addItem("FEBio 3.0 format");
 #endif
 
+		autoSave = new QCheckBox("Save document before running FEBio");
+		autoSave->setChecked(true);
+
 		configFile = new QLineEdit;
 		configFile->setWhatsThis("Specify the location of an FEBio configuration file. (Optional)");
 		QToolButton* selectConfigFile = new QToolButton;
@@ -87,6 +91,7 @@ public:
 		form->addRow("Launch Configuration:", launchConfigLayout);
 		form->addRow("Working directory:", cwdLayout);
 		form->addRow("FEBio file format:", febioFile);
+		form->addRow("", autoSave);
 
 		QFormLayout* ext = new QFormLayout;
 		ext->setLabelAlignment(Qt::AlignRight);
@@ -263,6 +268,11 @@ QString CDlgRun::GetConfigFileName()
 void CDlgRun::SetConfigFileName(const QString& configFile)
 {
 	ui->configFile->setText(configFile);
+}
+
+bool CDlgRun::DoAutoSave()
+{
+	return ui->autoSave->isChecked();
 }
 
 int CDlgRun::GetLaunchConfig()

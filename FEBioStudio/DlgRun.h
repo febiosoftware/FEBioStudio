@@ -28,6 +28,7 @@ public:
 	bool WriteNotes();
 	bool UseSubDir();
 	void SetConfigFileName(const QString& configFile);
+	bool DoAutoSave();
 
 	QString CommandLine();
 

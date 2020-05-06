@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CMainWindow_t {
-    QByteArrayData data[249];
-    char stringdata0[5853];
+    QByteArrayData data[250];
+    char stringdata0[5862];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -271,16 +271,17 @@ QT_MOC_LITERAL(235, 5671, 17), // "UpdateFontToolbar"
 QT_MOC_LITERAL(236, 5689, 11), // "RunFEBioJob"
 QT_MOC_LITERAL(237, 5701, 10), // "CFEBioJob*"
 QT_MOC_LITERAL(238, 5712, 3), // "job"
-QT_MOC_LITERAL(239, 5716, 15), // "NextSSHFunction"
-QT_MOC_LITERAL(240, 5732, 12), // "CSSHHandler*"
-QT_MOC_LITERAL(241, 5745, 12), // "ShowProgress"
-QT_MOC_LITERAL(242, 5758, 4), // "show"
-QT_MOC_LITERAL(243, 5763, 7), // "message"
-QT_MOC_LITERAL(244, 5771, 25), // "ShowIndeterminateProgress"
-QT_MOC_LITERAL(245, 5797, 14), // "UpdateProgress"
-QT_MOC_LITERAL(246, 5812, 12), // "DoModelCheck"
-QT_MOC_LITERAL(247, 5825, 15), // "CModelDocument*"
-QT_MOC_LITERAL(248, 5841, 11) // "toggleOrtho"
+QT_MOC_LITERAL(239, 5716, 8), // "autoSave"
+QT_MOC_LITERAL(240, 5725, 15), // "NextSSHFunction"
+QT_MOC_LITERAL(241, 5741, 12), // "CSSHHandler*"
+QT_MOC_LITERAL(242, 5754, 12), // "ShowProgress"
+QT_MOC_LITERAL(243, 5767, 4), // "show"
+QT_MOC_LITERAL(244, 5772, 7), // "message"
+QT_MOC_LITERAL(245, 5780, 25), // "ShowIndeterminateProgress"
+QT_MOC_LITERAL(246, 5806, 14), // "UpdateProgress"
+QT_MOC_LITERAL(247, 5821, 12), // "DoModelCheck"
+QT_MOC_LITERAL(248, 5834, 15), // "CModelDocument*"
+QT_MOC_LITERAL(249, 5850, 11) // "toggleOrtho"
 
     },
     "CMainWindow\0on_actionNewModel_triggered\0"
@@ -460,10 +461,11 @@ QT_MOC_LITERAL(248, 5841, 11) // "toggleOrtho"
     "DeleteAllRigidConnectors\0DeleteAllSteps\0"
     "GetGLView\0CGLView*\0GetCurrentModel\0"
     "Post::CGLModel*\0UpdateFontToolbar\0"
-    "RunFEBioJob\0CFEBioJob*\0job\0NextSSHFunction\0"
-    "CSSHHandler*\0ShowProgress\0show\0message\0"
-    "ShowIndeterminateProgress\0UpdateProgress\0"
-    "DoModelCheck\0CModelDocument*\0toggleOrtho"
+    "RunFEBioJob\0CFEBioJob*\0job\0autoSave\0"
+    "NextSSHFunction\0CSSHHandler*\0ShowProgress\0"
+    "show\0message\0ShowIndeterminateProgress\0"
+    "UpdateProgress\0DoModelCheck\0CModelDocument*\0"
+    "toggleOrtho"
 };
 #undef QT_MOC_LITERAL
 
@@ -473,7 +475,7 @@ static const uint qt_meta_data_CMainWindow[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-     211,   14, // methods
+     212,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -481,217 +483,218 @@ static const uint qt_meta_data_CMainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0, 1069,    2, 0x0a /* Public */,
-       3,    0, 1070,    2, 0x0a /* Public */,
-       4,    0, 1071,    2, 0x0a /* Public */,
-       5,    0, 1072,    2, 0x0a /* Public */,
-       6,    0, 1073,    2, 0x0a /* Public */,
-       7,    0, 1074,    2, 0x0a /* Public */,
-       8,    0, 1075,    2, 0x0a /* Public */,
-       9,    0, 1076,    2, 0x0a /* Public */,
-      10,    0, 1077,    2, 0x0a /* Public */,
-      11,    0, 1078,    2, 0x0a /* Public */,
-      12,    0, 1079,    2, 0x0a /* Public */,
-      13,    0, 1080,    2, 0x0a /* Public */,
-      14,    0, 1081,    2, 0x0a /* Public */,
-      15,    0, 1082,    2, 0x0a /* Public */,
-      16,    0, 1083,    2, 0x0a /* Public */,
-      17,    0, 1084,    2, 0x0a /* Public */,
-      18,    0, 1085,    2, 0x0a /* Public */,
-      19,    1, 1086,    2, 0x0a /* Public */,
-      22,    1, 1089,    2, 0x0a /* Public */,
-      23,    1, 1092,    2, 0x0a /* Public */,
-      24,    0, 1095,    2, 0x0a /* Public */,
-      25,    0, 1096,    2, 0x0a /* Public */,
-      26,    0, 1097,    2, 0x0a /* Public */,
-      27,    0, 1098,    2, 0x0a /* Public */,
-      28,    0, 1099,    2, 0x0a /* Public */,
-      29,    0, 1100,    2, 0x0a /* Public */,
-      30,    0, 1101,    2, 0x0a /* Public */,
-      31,    0, 1102,    2, 0x0a /* Public */,
-      32,    0, 1103,    2, 0x0a /* Public */,
-      33,    0, 1104,    2, 0x0a /* Public */,
-      34,    0, 1105,    2, 0x0a /* Public */,
-      35,    0, 1106,    2, 0x0a /* Public */,
-      36,    0, 1107,    2, 0x0a /* Public */,
-      37,    0, 1108,    2, 0x0a /* Public */,
-      38,    0, 1109,    2, 0x0a /* Public */,
-      39,    0, 1110,    2, 0x0a /* Public */,
-      40,    0, 1111,    2, 0x0a /* Public */,
-      41,    0, 1112,    2, 0x0a /* Public */,
-      42,    0, 1113,    2, 0x0a /* Public */,
-      43,    0, 1114,    2, 0x0a /* Public */,
-      44,    0, 1115,    2, 0x0a /* Public */,
-      45,    0, 1116,    2, 0x0a /* Public */,
-      46,    0, 1117,    2, 0x0a /* Public */,
-      47,    0, 1118,    2, 0x0a /* Public */,
-      48,    0, 1119,    2, 0x0a /* Public */,
-      49,    0, 1120,    2, 0x0a /* Public */,
-      50,    0, 1121,    2, 0x0a /* Public */,
-      51,    0, 1122,    2, 0x0a /* Public */,
-      52,    0, 1123,    2, 0x0a /* Public */,
-      53,    0, 1124,    2, 0x0a /* Public */,
-      54,    0, 1125,    2, 0x0a /* Public */,
-      55,    0, 1126,    2, 0x0a /* Public */,
-      56,    0, 1127,    2, 0x0a /* Public */,
-      57,    0, 1128,    2, 0x0a /* Public */,
-      58,    0, 1129,    2, 0x0a /* Public */,
-      59,    0, 1130,    2, 0x0a /* Public */,
-      60,    0, 1131,    2, 0x0a /* Public */,
-      61,    0, 1132,    2, 0x0a /* Public */,
-      62,    0, 1133,    2, 0x0a /* Public */,
-      63,    0, 1134,    2, 0x0a /* Public */,
-      64,    0, 1135,    2, 0x0a /* Public */,
-      65,    0, 1136,    2, 0x0a /* Public */,
-      66,    0, 1137,    2, 0x0a /* Public */,
-      67,    0, 1138,    2, 0x0a /* Public */,
-      68,    0, 1139,    2, 0x0a /* Public */,
-      69,    0, 1140,    2, 0x0a /* Public */,
-      70,    0, 1141,    2, 0x0a /* Public */,
-      71,    0, 1142,    2, 0x0a /* Public */,
-      72,    0, 1143,    2, 0x0a /* Public */,
-      73,    0, 1144,    2, 0x0a /* Public */,
-      74,    0, 1145,    2, 0x0a /* Public */,
-      75,    0, 1146,    2, 0x0a /* Public */,
-      76,    0, 1147,    2, 0x0a /* Public */,
-      77,    0, 1148,    2, 0x0a /* Public */,
-      78,    0, 1149,    2, 0x0a /* Public */,
-      79,    0, 1150,    2, 0x0a /* Public */,
-      80,    0, 1151,    2, 0x0a /* Public */,
-      81,    0, 1152,    2, 0x0a /* Public */,
-      82,    0, 1153,    2, 0x0a /* Public */,
-      83,    0, 1154,    2, 0x0a /* Public */,
-      84,    0, 1155,    2, 0x0a /* Public */,
-      85,    0, 1156,    2, 0x0a /* Public */,
-      86,    0, 1157,    2, 0x0a /* Public */,
-      87,    0, 1158,    2, 0x0a /* Public */,
-      88,    0, 1159,    2, 0x0a /* Public */,
-      89,    0, 1160,    2, 0x0a /* Public */,
-      90,    0, 1161,    2, 0x0a /* Public */,
-      91,    0, 1162,    2, 0x0a /* Public */,
-      92,    0, 1163,    2, 0x0a /* Public */,
-      93,    0, 1164,    2, 0x0a /* Public */,
-      94,    0, 1165,    2, 0x0a /* Public */,
-      95,    0, 1166,    2, 0x0a /* Public */,
-      96,    0, 1167,    2, 0x0a /* Public */,
-      97,    0, 1168,    2, 0x0a /* Public */,
-      98,    0, 1169,    2, 0x0a /* Public */,
-      99,    1, 1170,    2, 0x0a /* Public */,
-     101,    1, 1173,    2, 0x0a /* Public */,
-     103,    1, 1176,    2, 0x0a /* Public */,
-     104,    1, 1179,    2, 0x0a /* Public */,
-     105,    1, 1182,    2, 0x0a /* Public */,
-     106,    1, 1185,    2, 0x0a /* Public */,
-     107,    1, 1188,    2, 0x0a /* Public */,
-     108,    1, 1191,    2, 0x0a /* Public */,
-     109,    1, 1194,    2, 0x0a /* Public */,
-     110,    1, 1197,    2, 0x0a /* Public */,
-     111,    1, 1200,    2, 0x0a /* Public */,
-     112,    0, 1203,    2, 0x0a /* Public */,
-     113,    0, 1204,    2, 0x0a /* Public */,
-     114,    0, 1205,    2, 0x0a /* Public */,
-     115,    0, 1206,    2, 0x0a /* Public */,
-     116,    0, 1207,    2, 0x0a /* Public */,
-     117,    0, 1208,    2, 0x0a /* Public */,
-     118,    0, 1209,    2, 0x0a /* Public */,
-     119,    1, 1210,    2, 0x0a /* Public */,
-     120,    0, 1213,    2, 0x0a /* Public */,
-     121,    1, 1214,    2, 0x0a /* Public */,
-     122,    0, 1217,    2, 0x0a /* Public */,
-     123,    0, 1218,    2, 0x0a /* Public */,
-     124,    0, 1219,    2, 0x0a /* Public */,
-     125,    0, 1220,    2, 0x0a /* Public */,
-     126,    0, 1221,    2, 0x0a /* Public */,
-     127,    0, 1222,    2, 0x0a /* Public */,
-     128,    0, 1223,    2, 0x0a /* Public */,
-     129,    0, 1224,    2, 0x0a /* Public */,
-     130,    0, 1225,    2, 0x0a /* Public */,
-     131,    1, 1226,    2, 0x0a /* Public */,
-     132,    1, 1229,    2, 0x0a /* Public */,
-     133,    1, 1232,    2, 0x0a /* Public */,
-     134,    1, 1235,    2, 0x0a /* Public */,
-     135,    1, 1238,    2, 0x0a /* Public */,
-     137,    1, 1241,    2, 0x0a /* Public */,
-     138,    1, 1244,    2, 0x0a /* Public */,
-     139,    1, 1247,    2, 0x0a /* Public */,
-     140,    1, 1250,    2, 0x0a /* Public */,
-     141,    1, 1253,    2, 0x0a /* Public */,
-     142,    1, 1256,    2, 0x0a /* Public */,
-     143,    1, 1259,    2, 0x0a /* Public */,
-     144,    1, 1262,    2, 0x0a /* Public */,
-     145,    1, 1265,    2, 0x0a /* Public */,
-     146,    0, 1268,    2, 0x0a /* Public */,
-     147,    1, 1269,    2, 0x0a /* Public */,
-     148,    1, 1272,    2, 0x0a /* Public */,
-     149,    1, 1275,    2, 0x0a /* Public */,
-     150,    0, 1278,    2, 0x0a /* Public */,
-     151,    1, 1279,    2, 0x0a /* Public */,
-     153,    1, 1282,    2, 0x0a /* Public */,
-     154,    0, 1285,    2, 0x0a /* Public */,
-     155,    0, 1286,    2, 0x0a /* Public */,
-     156,    0, 1287,    2, 0x0a /* Public */,
-     157,    0, 1288,    2, 0x0a /* Public */,
-     158,    0, 1289,    2, 0x0a /* Public */,
-     159,    0, 1290,    2, 0x0a /* Public */,
-     160,    1, 1291,    2, 0x0a /* Public */,
-     161,    1, 1294,    2, 0x0a /* Public */,
-     162,    1, 1297,    2, 0x0a /* Public */,
-     164,    1, 1300,    2, 0x0a /* Public */,
-     165,    1, 1303,    2, 0x0a /* Public */,
-     167,    1, 1306,    2, 0x0a /* Public */,
-     168,    0, 1309,    2, 0x0a /* Public */,
-     169,    1, 1310,    2, 0x0a /* Public */,
-     170,    1, 1313,    2, 0x0a /* Public */,
-     171,    1, 1316,    2, 0x0a /* Public */,
-     173,    0, 1319,    2, 0x0a /* Public */,
-     174,    0, 1320,    2, 0x0a /* Public */,
-     175,    1, 1321,    2, 0x0a /* Public */,
-     177,    1, 1324,    2, 0x0a /* Public */,
-     178,    1, 1327,    2, 0x0a /* Public */,
-     179,    0, 1330,    2, 0x0a /* Public */,
-     180,    1, 1331,    2, 0x0a /* Public */,
-     183,    1, 1334,    2, 0x0a /* Public */,
-     184,    1, 1337,    2, 0x0a /* Public */,
-     186,    1, 1340,    2, 0x0a /* Public */,
-     187,    1, 1343,    2, 0x0a /* Public */,
-     187,    1, 1346,    2, 0x0a /* Public */,
-     190,    1, 1349,    2, 0x0a /* Public */,
-     191,    1, 1352,    2, 0x0a /* Public */,
-     194,    1, 1355,    2, 0x0a /* Public */,
-     196,    2, 1358,    2, 0x0a /* Public */,
-     199,    3, 1363,    2, 0x0a /* Public */,
-     202,    0, 1370,    2, 0x0a /* Public */,
-     203,    0, 1371,    2, 0x0a /* Public */,
-     204,    0, 1372,    2, 0x0a /* Public */,
-     205,    1, 1373,    2, 0x0a /* Public */,
-     208,    0, 1376,    2, 0x0a /* Public */,
-     209,    2, 1377,    2, 0x0a /* Public */,
-     213,    0, 1382,    2, 0x0a /* Public */,
-     214,    1, 1383,    2, 0x0a /* Public */,
-     217,    1, 1386,    2, 0x0a /* Public */,
-     220,    0, 1389,    2, 0x0a /* Public */,
-     221,    0, 1390,    2, 0x0a /* Public */,
-     222,    0, 1391,    2, 0x0a /* Public */,
-     223,    0, 1392,    2, 0x0a /* Public */,
-     224,    0, 1393,    2, 0x0a /* Public */,
-     225,    0, 1394,    2, 0x0a /* Public */,
-     226,    0, 1395,    2, 0x0a /* Public */,
-     227,    0, 1396,    2, 0x0a /* Public */,
-     228,    0, 1397,    2, 0x0a /* Public */,
-     229,    0, 1398,    2, 0x0a /* Public */,
-     230,    0, 1399,    2, 0x0a /* Public */,
-     231,    0, 1400,    2, 0x0a /* Public */,
-     233,    0, 1401,    2, 0x0a /* Public */,
-     235,    0, 1402,    2, 0x0a /* Public */,
-     236,    1, 1403,    2, 0x0a /* Public */,
-     239,    1, 1406,    2, 0x0a /* Public */,
-     241,    2, 1409,    2, 0x0a /* Public */,
-     241,    1, 1414,    2, 0x2a /* Public | MethodCloned */,
-     244,    2, 1417,    2, 0x0a /* Public */,
-     244,    1, 1422,    2, 0x2a /* Public | MethodCloned */,
-     245,    1, 1425,    2, 0x0a /* Public */,
-     246,    1, 1428,    2, 0x0a /* Public */,
-     248,    0, 1431,    2, 0x0a /* Public */,
+       1,    0, 1074,    2, 0x0a /* Public */,
+       3,    0, 1075,    2, 0x0a /* Public */,
+       4,    0, 1076,    2, 0x0a /* Public */,
+       5,    0, 1077,    2, 0x0a /* Public */,
+       6,    0, 1078,    2, 0x0a /* Public */,
+       7,    0, 1079,    2, 0x0a /* Public */,
+       8,    0, 1080,    2, 0x0a /* Public */,
+       9,    0, 1081,    2, 0x0a /* Public */,
+      10,    0, 1082,    2, 0x0a /* Public */,
+      11,    0, 1083,    2, 0x0a /* Public */,
+      12,    0, 1084,    2, 0x0a /* Public */,
+      13,    0, 1085,    2, 0x0a /* Public */,
+      14,    0, 1086,    2, 0x0a /* Public */,
+      15,    0, 1087,    2, 0x0a /* Public */,
+      16,    0, 1088,    2, 0x0a /* Public */,
+      17,    0, 1089,    2, 0x0a /* Public */,
+      18,    0, 1090,    2, 0x0a /* Public */,
+      19,    1, 1091,    2, 0x0a /* Public */,
+      22,    1, 1094,    2, 0x0a /* Public */,
+      23,    1, 1097,    2, 0x0a /* Public */,
+      24,    0, 1100,    2, 0x0a /* Public */,
+      25,    0, 1101,    2, 0x0a /* Public */,
+      26,    0, 1102,    2, 0x0a /* Public */,
+      27,    0, 1103,    2, 0x0a /* Public */,
+      28,    0, 1104,    2, 0x0a /* Public */,
+      29,    0, 1105,    2, 0x0a /* Public */,
+      30,    0, 1106,    2, 0x0a /* Public */,
+      31,    0, 1107,    2, 0x0a /* Public */,
+      32,    0, 1108,    2, 0x0a /* Public */,
+      33,    0, 1109,    2, 0x0a /* Public */,
+      34,    0, 1110,    2, 0x0a /* Public */,
+      35,    0, 1111,    2, 0x0a /* Public */,
+      36,    0, 1112,    2, 0x0a /* Public */,
+      37,    0, 1113,    2, 0x0a /* Public */,
+      38,    0, 1114,    2, 0x0a /* Public */,
+      39,    0, 1115,    2, 0x0a /* Public */,
+      40,    0, 1116,    2, 0x0a /* Public */,
+      41,    0, 1117,    2, 0x0a /* Public */,
+      42,    0, 1118,    2, 0x0a /* Public */,
+      43,    0, 1119,    2, 0x0a /* Public */,
+      44,    0, 1120,    2, 0x0a /* Public */,
+      45,    0, 1121,    2, 0x0a /* Public */,
+      46,    0, 1122,    2, 0x0a /* Public */,
+      47,    0, 1123,    2, 0x0a /* Public */,
+      48,    0, 1124,    2, 0x0a /* Public */,
+      49,    0, 1125,    2, 0x0a /* Public */,
+      50,    0, 1126,    2, 0x0a /* Public */,
+      51,    0, 1127,    2, 0x0a /* Public */,
+      52,    0, 1128,    2, 0x0a /* Public */,
+      53,    0, 1129,    2, 0x0a /* Public */,
+      54,    0, 1130,    2, 0x0a /* Public */,
+      55,    0, 1131,    2, 0x0a /* Public */,
+      56,    0, 1132,    2, 0x0a /* Public */,
+      57,    0, 1133,    2, 0x0a /* Public */,
+      58,    0, 1134,    2, 0x0a /* Public */,
+      59,    0, 1135,    2, 0x0a /* Public */,
+      60,    0, 1136,    2, 0x0a /* Public */,
+      61,    0, 1137,    2, 0x0a /* Public */,
+      62,    0, 1138,    2, 0x0a /* Public */,
+      63,    0, 1139,    2, 0x0a /* Public */,
+      64,    0, 1140,    2, 0x0a /* Public */,
+      65,    0, 1141,    2, 0x0a /* Public */,
+      66,    0, 1142,    2, 0x0a /* Public */,
+      67,    0, 1143,    2, 0x0a /* Public */,
+      68,    0, 1144,    2, 0x0a /* Public */,
+      69,    0, 1145,    2, 0x0a /* Public */,
+      70,    0, 1146,    2, 0x0a /* Public */,
+      71,    0, 1147,    2, 0x0a /* Public */,
+      72,    0, 1148,    2, 0x0a /* Public */,
+      73,    0, 1149,    2, 0x0a /* Public */,
+      74,    0, 1150,    2, 0x0a /* Public */,
+      75,    0, 1151,    2, 0x0a /* Public */,
+      76,    0, 1152,    2, 0x0a /* Public */,
+      77,    0, 1153,    2, 0x0a /* Public */,
+      78,    0, 1154,    2, 0x0a /* Public */,
+      79,    0, 1155,    2, 0x0a /* Public */,
+      80,    0, 1156,    2, 0x0a /* Public */,
+      81,    0, 1157,    2, 0x0a /* Public */,
+      82,    0, 1158,    2, 0x0a /* Public */,
+      83,    0, 1159,    2, 0x0a /* Public */,
+      84,    0, 1160,    2, 0x0a /* Public */,
+      85,    0, 1161,    2, 0x0a /* Public */,
+      86,    0, 1162,    2, 0x0a /* Public */,
+      87,    0, 1163,    2, 0x0a /* Public */,
+      88,    0, 1164,    2, 0x0a /* Public */,
+      89,    0, 1165,    2, 0x0a /* Public */,
+      90,    0, 1166,    2, 0x0a /* Public */,
+      91,    0, 1167,    2, 0x0a /* Public */,
+      92,    0, 1168,    2, 0x0a /* Public */,
+      93,    0, 1169,    2, 0x0a /* Public */,
+      94,    0, 1170,    2, 0x0a /* Public */,
+      95,    0, 1171,    2, 0x0a /* Public */,
+      96,    0, 1172,    2, 0x0a /* Public */,
+      97,    0, 1173,    2, 0x0a /* Public */,
+      98,    0, 1174,    2, 0x0a /* Public */,
+      99,    1, 1175,    2, 0x0a /* Public */,
+     101,    1, 1178,    2, 0x0a /* Public */,
+     103,    1, 1181,    2, 0x0a /* Public */,
+     104,    1, 1184,    2, 0x0a /* Public */,
+     105,    1, 1187,    2, 0x0a /* Public */,
+     106,    1, 1190,    2, 0x0a /* Public */,
+     107,    1, 1193,    2, 0x0a /* Public */,
+     108,    1, 1196,    2, 0x0a /* Public */,
+     109,    1, 1199,    2, 0x0a /* Public */,
+     110,    1, 1202,    2, 0x0a /* Public */,
+     111,    1, 1205,    2, 0x0a /* Public */,
+     112,    0, 1208,    2, 0x0a /* Public */,
+     113,    0, 1209,    2, 0x0a /* Public */,
+     114,    0, 1210,    2, 0x0a /* Public */,
+     115,    0, 1211,    2, 0x0a /* Public */,
+     116,    0, 1212,    2, 0x0a /* Public */,
+     117,    0, 1213,    2, 0x0a /* Public */,
+     118,    0, 1214,    2, 0x0a /* Public */,
+     119,    1, 1215,    2, 0x0a /* Public */,
+     120,    0, 1218,    2, 0x0a /* Public */,
+     121,    1, 1219,    2, 0x0a /* Public */,
+     122,    0, 1222,    2, 0x0a /* Public */,
+     123,    0, 1223,    2, 0x0a /* Public */,
+     124,    0, 1224,    2, 0x0a /* Public */,
+     125,    0, 1225,    2, 0x0a /* Public */,
+     126,    0, 1226,    2, 0x0a /* Public */,
+     127,    0, 1227,    2, 0x0a /* Public */,
+     128,    0, 1228,    2, 0x0a /* Public */,
+     129,    0, 1229,    2, 0x0a /* Public */,
+     130,    0, 1230,    2, 0x0a /* Public */,
+     131,    1, 1231,    2, 0x0a /* Public */,
+     132,    1, 1234,    2, 0x0a /* Public */,
+     133,    1, 1237,    2, 0x0a /* Public */,
+     134,    1, 1240,    2, 0x0a /* Public */,
+     135,    1, 1243,    2, 0x0a /* Public */,
+     137,    1, 1246,    2, 0x0a /* Public */,
+     138,    1, 1249,    2, 0x0a /* Public */,
+     139,    1, 1252,    2, 0x0a /* Public */,
+     140,    1, 1255,    2, 0x0a /* Public */,
+     141,    1, 1258,    2, 0x0a /* Public */,
+     142,    1, 1261,    2, 0x0a /* Public */,
+     143,    1, 1264,    2, 0x0a /* Public */,
+     144,    1, 1267,    2, 0x0a /* Public */,
+     145,    1, 1270,    2, 0x0a /* Public */,
+     146,    0, 1273,    2, 0x0a /* Public */,
+     147,    1, 1274,    2, 0x0a /* Public */,
+     148,    1, 1277,    2, 0x0a /* Public */,
+     149,    1, 1280,    2, 0x0a /* Public */,
+     150,    0, 1283,    2, 0x0a /* Public */,
+     151,    1, 1284,    2, 0x0a /* Public */,
+     153,    1, 1287,    2, 0x0a /* Public */,
+     154,    0, 1290,    2, 0x0a /* Public */,
+     155,    0, 1291,    2, 0x0a /* Public */,
+     156,    0, 1292,    2, 0x0a /* Public */,
+     157,    0, 1293,    2, 0x0a /* Public */,
+     158,    0, 1294,    2, 0x0a /* Public */,
+     159,    0, 1295,    2, 0x0a /* Public */,
+     160,    1, 1296,    2, 0x0a /* Public */,
+     161,    1, 1299,    2, 0x0a /* Public */,
+     162,    1, 1302,    2, 0x0a /* Public */,
+     164,    1, 1305,    2, 0x0a /* Public */,
+     165,    1, 1308,    2, 0x0a /* Public */,
+     167,    1, 1311,    2, 0x0a /* Public */,
+     168,    0, 1314,    2, 0x0a /* Public */,
+     169,    1, 1315,    2, 0x0a /* Public */,
+     170,    1, 1318,    2, 0x0a /* Public */,
+     171,    1, 1321,    2, 0x0a /* Public */,
+     173,    0, 1324,    2, 0x0a /* Public */,
+     174,    0, 1325,    2, 0x0a /* Public */,
+     175,    1, 1326,    2, 0x0a /* Public */,
+     177,    1, 1329,    2, 0x0a /* Public */,
+     178,    1, 1332,    2, 0x0a /* Public */,
+     179,    0, 1335,    2, 0x0a /* Public */,
+     180,    1, 1336,    2, 0x0a /* Public */,
+     183,    1, 1339,    2, 0x0a /* Public */,
+     184,    1, 1342,    2, 0x0a /* Public */,
+     186,    1, 1345,    2, 0x0a /* Public */,
+     187,    1, 1348,    2, 0x0a /* Public */,
+     187,    1, 1351,    2, 0x0a /* Public */,
+     190,    1, 1354,    2, 0x0a /* Public */,
+     191,    1, 1357,    2, 0x0a /* Public */,
+     194,    1, 1360,    2, 0x0a /* Public */,
+     196,    2, 1363,    2, 0x0a /* Public */,
+     199,    3, 1368,    2, 0x0a /* Public */,
+     202,    0, 1375,    2, 0x0a /* Public */,
+     203,    0, 1376,    2, 0x0a /* Public */,
+     204,    0, 1377,    2, 0x0a /* Public */,
+     205,    1, 1378,    2, 0x0a /* Public */,
+     208,    0, 1381,    2, 0x0a /* Public */,
+     209,    2, 1382,    2, 0x0a /* Public */,
+     213,    0, 1387,    2, 0x0a /* Public */,
+     214,    1, 1388,    2, 0x0a /* Public */,
+     217,    1, 1391,    2, 0x0a /* Public */,
+     220,    0, 1394,    2, 0x0a /* Public */,
+     221,    0, 1395,    2, 0x0a /* Public */,
+     222,    0, 1396,    2, 0x0a /* Public */,
+     223,    0, 1397,    2, 0x0a /* Public */,
+     224,    0, 1398,    2, 0x0a /* Public */,
+     225,    0, 1399,    2, 0x0a /* Public */,
+     226,    0, 1400,    2, 0x0a /* Public */,
+     227,    0, 1401,    2, 0x0a /* Public */,
+     228,    0, 1402,    2, 0x0a /* Public */,
+     229,    0, 1403,    2, 0x0a /* Public */,
+     230,    0, 1404,    2, 0x0a /* Public */,
+     231,    0, 1405,    2, 0x0a /* Public */,
+     233,    0, 1406,    2, 0x0a /* Public */,
+     235,    0, 1407,    2, 0x0a /* Public */,
+     236,    2, 1408,    2, 0x0a /* Public */,
+     236,    1, 1413,    2, 0x2a /* Public | MethodCloned */,
+     240,    1, 1416,    2, 0x0a /* Public */,
+     242,    2, 1419,    2, 0x0a /* Public */,
+     242,    1, 1424,    2, 0x2a /* Public | MethodCloned */,
+     245,    2, 1427,    2, 0x0a /* Public */,
+     245,    1, 1432,    2, 0x2a /* Public | MethodCloned */,
+     246,    1, 1435,    2, 0x0a /* Public */,
+     247,    1, 1438,    2, 0x0a /* Public */,
+     249,    0, 1441,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -896,14 +899,15 @@ static const uint qt_meta_data_CMainWindow[] = {
     0x80000000 | 232,
     0x80000000 | 234,
     QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 237, QMetaType::Bool,  238,  239,
     QMetaType::Void, 0x80000000 | 237,  238,
-    QMetaType::Void, 0x80000000 | 240,    2,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  242,  243,
-    QMetaType::Void, QMetaType::Bool,  242,
-    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  242,  243,
-    QMetaType::Void, QMetaType::Bool,  242,
+    QMetaType::Void, 0x80000000 | 241,    2,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  243,  244,
+    QMetaType::Void, QMetaType::Bool,  243,
+    QMetaType::Void, QMetaType::Bool, QMetaType::QString,  243,  244,
+    QMetaType::Void, QMetaType::Bool,  243,
     QMetaType::Void, QMetaType::Int,    2,
-    QMetaType::Bool, 0x80000000 | 247,  189,
+    QMetaType::Bool, 0x80000000 | 248,  189,
     QMetaType::Void,
 
        0        // eod
@@ -1119,16 +1123,17 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 200: { Post::CGLModel* _r = _t->GetCurrentModel();
             if (_a[0]) *reinterpret_cast< Post::CGLModel**>(_a[0]) = std::move(_r); }  break;
         case 201: _t->UpdateFontToolbar(); break;
-        case 202: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
-        case 203: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
-        case 204: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 205: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 206: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 207: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 208: _t->UpdateProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 209: { bool _r = _t->DoModelCheck((*reinterpret_cast< CModelDocument*(*)>(_a[1])));
+        case 202: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1])),(*reinterpret_cast< bool(*)>(_a[2]))); break;
+        case 203: _t->RunFEBioJob((*reinterpret_cast< CFEBioJob*(*)>(_a[1]))); break;
+        case 204: _t->NextSSHFunction((*reinterpret_cast< CSSHHandler*(*)>(_a[1]))); break;
+        case 205: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 206: _t->ShowProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 207: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 208: _t->ShowIndeterminateProgress((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 209: _t->UpdateProgress((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 210: { bool _r = _t->DoModelCheck((*reinterpret_cast< CModelDocument*(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 210: _t->toggleOrtho(); break;
+        case 211: _t->toggleOrtho(); break;
         default: ;
         }
     }
@@ -1163,13 +1168,13 @@ int CMainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 211)
+        if (_id < 212)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 211;
+        _id -= 212;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 211)
+        if (_id < 212)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 211;
+        _id -= 212;
     }
     return _id;
 }

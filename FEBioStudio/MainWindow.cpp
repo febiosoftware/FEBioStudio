@@ -2287,7 +2287,7 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc)
 	return true;
 }
 
-void CMainWindow::RunFEBioJob(CFEBioJob* job)
+void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 {
 	CModelDocument* doc = job->GetDocument();
 	assert(doc);
@@ -2306,6 +2306,14 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 
 	// check the model first for issues
 	if (DoModelCheck(doc) == false) return;
+
+	// auto-save the document
+	if (autoSave && doc->IsModified())
+	{
+		AddLogEntry(QString("saving %1 ...").arg(QString::fromStdString(doc->GetDocFilePath())));
+		bool b = doc->SaveDocument();
+		AddLogEntry(b ? "success\n" : "FAILED\n");
+	}
 
 	// get the FEBio job (relative) file path
 	string febFile = job->GetFEBFileName();

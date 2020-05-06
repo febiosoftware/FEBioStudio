@@ -178,7 +178,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		job->m_febVersion = lastFEBioFileVersion;
 		job->m_writeNotes = dlg.WriteNotes();
 		job->m_cmd = dlg.CommandLine().toStdString();
-		RunFEBioJob(job);
+		RunFEBioJob(job, dlg.DoAutoSave());
 	}
 }
 

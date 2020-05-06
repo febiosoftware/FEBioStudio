@@ -480,7 +480,7 @@ public slots:
 	// (e.g. when a GL widget gets selected)
 	void UpdateFontToolbar();
 
-	void RunFEBioJob(CFEBioJob* job);
+	void RunFEBioJob(CFEBioJob* job, bool autoSave = false);
 
 	void NextSSHFunction(CSSHHandler*);
 	void ShowProgress(bool show, QString message = "");

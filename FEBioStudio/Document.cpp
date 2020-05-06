@@ -555,7 +555,10 @@ bool CDocument::SaveDocument(const std::string& fileName)
 //-----------------------------------------------------------------------------
 bool CDocument::SaveDocument()
 {
-	return m_fileWriter->Write(m_filePath.c_str());
+	if (m_fileWriter && (m_filePath.empty() == false))
+		return m_fileWriter->Write(m_filePath.c_str());
+	else
+		return false;
 }
 
 //-----------------------------------------------------------------------------
