@@ -164,10 +164,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 QIcon CMainWindow::GetResourceIcon(const QString& iconName)
 {
-
-
 	QString rs(iconName);
-	if (ui->m_theme == 1 | ui->m_theme == 3)
+	if ((ui->m_theme == 1) || (ui->m_theme == 3))
 	{
 		rs += "_neg";
 	}

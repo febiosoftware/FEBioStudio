@@ -241,6 +241,7 @@
     <ClCompile Include="..\..\FEBioStudio\EditPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ElementVolumeTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Encrypter.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ExternalLinkEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioJob.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioStudio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioStudioProject.cpp" />
@@ -322,6 +323,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgUpload.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgWidgetProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_EditPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ExternalLinkEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_FileThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_FileViewer.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLControlBar.cpp" />
@@ -518,6 +520,11 @@
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h" />
     <ClInclude Include="..\..\FEBioStudio\Encrypter.h" />
+    <CustomBuild Include="..\..\FEBioStudio\ExternalLinkEdit.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\FEBioStudioProject.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />
     <CustomBuild Include="..\..\FEBioStudio\MainTabBar.h">
