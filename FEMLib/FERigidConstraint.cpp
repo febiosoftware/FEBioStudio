@@ -138,7 +138,7 @@ FERigidDisplacement::FERigidDisplacement(FEModel* fem, int nstep) : FERigidPresc
 	SetTypeString("Rigid displacement/rotation");
 
 	AddIntParam(0, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
-	AddDoubleParam(0.0, "val", "value")->SetLoadCurve();
+	AddScienceParam(0.0, UNIT_LENGTH, "val", "value")->SetLoadCurve();
 }
 
 FERigidDisplacement::FERigidDisplacement(int bc, int matid, double v, int nstep) : FERigidPrescribed(FE_RIGID_DISPLACEMENT, nstep)
@@ -146,7 +146,7 @@ FERigidDisplacement::FERigidDisplacement(int bc, int matid, double v, int nstep)
 	SetTypeString("Rigid displacement/rotation");
 
 	AddIntParam(bc, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
-	AddDoubleParam(v, "val", "value")->SetLoadCurve();
+	AddScienceParam(v, UNIT_LENGTH, "val", "value")->SetLoadCurve();
 	SetMaterialID(matid);
 }
 
@@ -156,7 +156,7 @@ FERigidForce::FERigidForce(FEModel* fem, int nstep) : FERigidPrescribed(FE_RIGID
 	SetTypeString("Rigid force");
 
 	AddIntParam(0, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
-	AddDoubleParam(0.0, "val", "value")->SetLoadCurve();
+	AddScienceParam(0.0, UNIT_FORCE, "val", "value")->SetLoadCurve();
 }
 
 FERigidForce::FERigidForce(int bc, int matid, double v, int nstep) : FERigidPrescribed(FE_RIGID_FORCE, nstep)
@@ -164,7 +164,7 @@ FERigidForce::FERigidForce(int bc, int matid, double v, int nstep) : FERigidPres
 	SetTypeString("Rigid force");
 
 	AddIntParam(bc, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
-	AddDoubleParam(v, "val", "value")->SetLoadCurve();
+	AddScienceParam(v, UNIT_FORCE, "val", "value")->SetLoadCurve();
 	SetMaterialID(matid);
 }
 
@@ -172,16 +172,15 @@ FERigidVelocity::FERigidVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE
 {
 	SetTypeString("Rigid velocity");
 
-	AddVecParam(vec3d(0,0,0), "value", "velocity");
+	AddVecParam(vec3d(0, 0, 0), "value", "velocity")->SetUnit(UNIT_VELOCITY);
 }
 
 FERigidAngularVelocity::FERigidAngularVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep)
 {
 	SetTypeString("Rigid angular velocity");
 
-	AddVecParam(vec3d(0, 0, 0), "value", "angular velocity");
+	AddVecParam(vec3d(0, 0, 0), "value", "angular velocity")->SetUnit(UNIT_ANGULAR_VELOCITY);
 }
-
 
 vector<FERigidConstraint*> convertOldToNewRigidConstraint(FEModel* fem, FERigidConstraintOld* rc)
 {

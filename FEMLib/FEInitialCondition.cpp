@@ -4,26 +4,26 @@
 FENodalVelocities::FENodalVelocities(FEModel* ps) : FEInitialCondition(FE_NODAL_VELOCITIES, ps)
 {
 	SetTypeString("Nodal Velocities");
-	AddVecParam(vec3d(0, 0, 0), "vel", "Velocity");
+	AddVecParam(vec3d(0, 0, 0), "vel", "Velocity")->SetUnit(UNIT_VELOCITY);
 }
 
 FENodalVelocities::FENodalVelocities(FEModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep) : FEInitialCondition(FE_NODAL_VELOCITIES, ps, pi, nstep)
 {
 	SetTypeString("Nodal Velocities");
-	AddVecParam(vel, "vel", "Velocity");
+	AddVecParam(vel, "vel", "Velocity")->SetUnit(UNIT_VELOCITY);;
 }
 
 //-----------------------------------------------------------------------------
 FENodalShellVelocities::FENodalShellVelocities(FEModel* ps) : FEInitialCondition(FE_NODAL_SHELL_VELOCITIES, ps)
 {
 	SetTypeString("Shell Nodal Velocities");
-	AddVecParam(vec3d(0, 0, 0), "vel", "Velocity");
+	AddVecParam(vec3d(0, 0, 0), "vel", "Velocity")->SetUnit(UNIT_VELOCITY);
 }
 
 FENodalShellVelocities::FENodalShellVelocities(FEModel* ps, FEItemListBuilder* pi, vec3d vel, int nstep) : FEInitialCondition(FE_NODAL_SHELL_VELOCITIES, ps, pi, nstep)
 {
 	SetTypeString("Shell Nodal Velocities");
-	AddVecParam(vel, "vel", "Velocity");
+	AddVecParam(vel, "vel", "Velocity")->SetUnit(UNIT_VELOCITY);
 }
 
 //-----------------------------------------------------------------------------
@@ -60,13 +60,13 @@ FEInitShellConcentration::FEInitShellConcentration(FEModel* ps, FEItemListBuilde
 FEInitFluidPressure::FEInitFluidPressure(FEModel* ps) : FEInitialCondition(FE_INIT_FLUID_PRESSURE, ps)
 {
 	SetTypeString("Initial Fluid Pressure");
-	AddDoubleParam(0, "Fluid pressure");
+	AddDoubleParam(0, "Fluid pressure")->SetUnit(UNIT_PRESSURE);
 }
 
 FEInitFluidPressure::FEInitFluidPressure(FEModel* ps, FEItemListBuilder* pi, double val, int nstep) : FEInitialCondition(FE_INIT_FLUID_PRESSURE, ps, pi, nstep)
 {
 	SetTypeString("Initial Fluid Pressure");
-	AddDoubleParam(val, "Fluid pressure");
+	AddDoubleParam(val, "Fluid pressure")->SetUnit(UNIT_PRESSURE);
 }
 
 //-----------------------------------------------------------------------------
@@ -86,11 +86,11 @@ FEInitShellFluidPressure::FEInitShellFluidPressure(FEModel* ps, FEItemListBuilde
 FEInitTemperature::FEInitTemperature(FEModel* ps) : FEInitialCondition(FE_INIT_TEMPERATURE, ps)
 {
 	SetTypeString("Initial Temperature");
-	AddDoubleParam(0, "Temperature");
+	AddDoubleParam(0, "Temperature")->SetUnit(UNIT_TEMPERATURE);
 }
 
 FEInitTemperature::FEInitTemperature(FEModel* ps, FEItemListBuilder* pi, double val, int nstep) : FEInitialCondition(FE_INIT_TEMPERATURE, ps, pi, nstep)
 {
 	SetTypeString("Initial Temperature");
-	AddDoubleParam(val, "Temperature");
+	AddDoubleParam(val, "Temperature")->SetUnit(UNIT_TEMPERATURE);
 }

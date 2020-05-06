@@ -5,6 +5,7 @@
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GObject.h>
+#include "units.h"
 
 CMeshInfoPanel::CMeshInfoPanel(QWidget* parent) : QWidget(parent)
 {
@@ -43,9 +44,10 @@ void CMeshInfoPanel::setMeshInfo(int nodes, int faces, int elems)
 
 void CMeshInfoPanel::setDimensions(double dx, double dy, double dz)
 {
-	m_Dx->setNum(dx);
-	m_Dy->setNum(dy);
-	m_Dz->setNum(dz);
+	QString unit = Units::GetUnitString(UNIT_LENGTH);
+	m_Dx->setText(QString("%1 %2").arg(dx).arg(unit));
+	m_Dy->setText(QString("%1 %2").arg(dy).arg(unit));
+	m_Dz->setText(QString("%1 %2").arg(dz).arg(unit));
 }
 
 void CMeshInfoPanel::setInfo(GObject* po)

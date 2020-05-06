@@ -65,8 +65,8 @@ REGISTER_MATERIAL(FEBiphasic, MODULE_BIPHASIC, FE_BIPHASIC_MATERIAL, FE_MAT_MULT
 FEBiphasic::FEBiphasic() : FEMaterial(FE_BIPHASIC_MATERIAL)
 {
 	// add parameters
-	AddScienceParam(0, Param_NONE, "phi0", "solid volume fraction");
-    AddScienceParam(1.0, Param_DENSITY, "fluid_density", "fluid density");
+	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
+    AddScienceParam(1.0, UNIT_DENSITY, "fluid_density", "fluid density");
 
 	// Add elastic component
 	AddProperty("solid", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);
@@ -193,8 +193,8 @@ REGISTER_MATERIAL(FEUncoupledSolidMixture, MODULE_MECH, FE_UNCOUPLED_SOLID_MIXTU
 
 FEUncoupledSolidMixture::FEUncoupledSolidMixture() : FEMaterial(FE_UNCOUPLED_SOLID_MIXTURE) 
 {
-	AddScienceParam(1, Param_DENSITY, "density", "density")->SetPersistent(false);
-	AddScienceParam(0, Param_STRESS , "k", "bulk modulus" )->SetPersistent(false);
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus" )->SetPersistent(false);
 
 	AddProperty("solid", FE_MAT_ELASTIC_UNCOUPLED, FEMaterialProperty::NO_FIXED_SIZE);
 }
@@ -675,10 +675,10 @@ REGISTER_MATERIAL(FEFluidMaterial, MODULE_FLUID, FE_FLUID_MATERIAL, FE_MAT_FLUID
 FEFluidMaterial::FEFluidMaterial() : FEMaterial(FE_FLUID_MATERIAL)
 {
     // add parameters
-    AddScienceParam(1.0, Param_DENSITY, "density", "density");
+    AddScienceParam(1.0, UNIT_DENSITY, "density", "density");
     
     // add parameters
-    AddScienceParam(1.0, Param_STRESS, "k", "bulk modulus");
+    AddScienceParam(1.0, UNIT_PRESSURE, "k", "bulk modulus");
     
     // Add viscous component
 	AddProperty("viscous", FE_MAT_FLUID_VISCOSITY);
@@ -786,7 +786,7 @@ REGISTER_MATERIAL(FEGeneration, MODULE_MECH, FE_GENERATION, FE_MAT_GENERATION, "
 FEGeneration::FEGeneration() : FEMaterial(FE_GENERATION)
 {
     // add parameters
-    AddScienceParam(0, Param_TIME, "start_time", "generation start time");
+    AddScienceParam(0, UNIT_TIME, "start_time", "generation start time");
     
     // Add solid component
     AddProperty("solid", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);

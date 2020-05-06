@@ -5,7 +5,7 @@
 FEPressureLoad::FEPressureLoad(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_PRESSURE_LOAD, ps, pi, nstep)
 {
 	SetTypeString("Pressure Load");
-	Param* p = AddScienceParam(1, Param_STRESS, "pressure", "pressure");
+	Param* p = AddScienceParam(1, UNIT_PRESSURE, "pressure", "pressure");
 	p->SetLoadCurve();
 	p->MakeVariable(true);
 	AddBoolParam(false, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");

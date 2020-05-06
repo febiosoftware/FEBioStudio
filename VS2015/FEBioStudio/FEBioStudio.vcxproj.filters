@@ -768,6 +768,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgUnitConverter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\units.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -1092,6 +1095,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\DlgUnitConverter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\units.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -16,6 +16,7 @@
 #include "CurvePicker.h"
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
+#include "units.h"
 
 //=================================================================================================
 
@@ -64,6 +65,17 @@ public:
 	int	m_data;
 };
 
+QString unitString(CProperty& p)
+{
+	QString s;
+	if (p.param && p.param->GetUnit())
+	{
+		QString us = Units::GetUnitString(p.param->GetUnit());
+		if (us.isEmpty() == false) s = QString(" (%1)").arg(us);
+	}
+	return s;
+}
+
 //-----------------------------------------------------------------------------
 // attach a property list to this form
 void CPropertyListForm::setPropertyList(CPropertyList* pl)
@@ -86,6 +98,9 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 		QVariant v = pl->GetPropertyValue(i);
 		QWidget* pw = 0;
 		QString label = pi.name;
+
+		label += unitString(pi);
+
 		if (label.isEmpty() == false) label += ":";
 
 		// see if we need to create a group
@@ -200,7 +215,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 */
 			QLineEdit* edit = new QLineEdit;
 			edit->setValidator(new QDoubleValidator);
-			edit->setText(QString::number(v.toDouble(),'g', 3));
+			edit->setText(QString::number(v.toDouble(), 'g', 3));
 			connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(onDataChanged()));
 			return edit;
 		}

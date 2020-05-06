@@ -327,6 +327,7 @@ FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps) : FEPrescribedDO
 {
 	SetTypeString("Prescribed Displacement");
 	SetVarID(ps->GetVariableIndex("Displacement"));
+	SetScaleUnit(UNIT_LENGTH);
 }
 
 //-----------------------------------------------------------------------------
@@ -334,6 +335,7 @@ FEPrescribedDisplacement::FEPrescribedDisplacement(FEModel* ps, FEItemListBuilde
 {
 	SetTypeString("Prescribed Displacement");
 	SetVarID(ps->GetVariableIndex("Displacement"));
+	SetScaleUnit(UNIT_LENGTH);
 }
 
 //=============================================================================
@@ -343,6 +345,7 @@ FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps) : FEPr
 {
 	SetTypeString("Prescribed Shell Displacement");
 	SetVarID(ps->GetVariableIndex("Shell Displacement"));
+	SetScaleUnit(UNIT_LENGTH);
 }
 
 //-----------------------------------------------------------------------------
@@ -350,6 +353,7 @@ FEPrescribedShellDisplacement::FEPrescribedShellDisplacement(FEModel* ps, FEItem
 {
 	SetTypeString("Prescribed Shell Displacement");
 	SetVarID(ps->GetVariableIndex("Shell Displacement"));
+	SetScaleUnit(UNIT_LENGTH);
 }
 
 //=============================================================================
@@ -359,6 +363,7 @@ FEPrescribedRotation::FEPrescribedRotation(FEModel* ps) : FEPrescribedDOF(FE_PRE
 {
 	SetTypeString("Prescribed Rotation");
 	SetVarID(ps->GetVariableIndex("Rotation"));
+	SetScaleUnit(UNIT_CONCENTRATION);
 }
 
 //-----------------------------------------------------------------------------
@@ -366,6 +371,7 @@ FEPrescribedRotation::FEPrescribedRotation(FEModel* ps, FEItemListBuilder* pi, i
 {
 	SetTypeString("Prescribed Rotation");
 	SetVarID(ps->GetVariableIndex("Rotation"));
+	SetScaleUnit(UNIT_CONCENTRATION);
 }
 
 //=============================================================================
@@ -375,6 +381,7 @@ FEPrescribedFluidPressure::FEPrescribedFluidPressure(FEModel* ps) : FEPrescribed
 {
 	SetTypeString("Prescribed Effective Fluid Pressure");
 	SetVarID(ps->GetVariableIndex("Effective Fluid Pressure"));
+	SetScaleUnit(UNIT_PRESSURE);
 }
 
 //-----------------------------------------------------------------------------
@@ -382,6 +389,7 @@ FEPrescribedFluidPressure::FEPrescribedFluidPressure(FEModel* ps, FEItemListBuil
 {
 	SetTypeString("Prescribed Effective Fluid Pressure");
 	SetVarID(ps->GetVariableIndex("Effective Fluid Pressure"));
+	SetScaleUnit(UNIT_PRESSURE);
 }
 
 //=============================================================================
@@ -391,6 +399,7 @@ FEPrescribedTemperature::FEPrescribedTemperature(FEModel* ps) : FEPrescribedDOF(
 {
 	SetTypeString("Prescribed Temperature");
 	SetVarID(ps->GetVariableIndex("Temperature"));
+	SetScaleUnit(UNIT_TEMPERATURE);
 }
 
 //-----------------------------------------------------------------------------
@@ -398,6 +407,7 @@ FEPrescribedTemperature::FEPrescribedTemperature(FEModel* ps, FEItemListBuilder*
 {
 	SetTypeString("Prescribed Temperature");
 	SetVarID(ps->GetVariableIndex("Temperature"));
+	SetScaleUnit(UNIT_TEMPERATURE);
 }
 
 //=============================================================================
@@ -423,6 +433,7 @@ FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps) : FEPrescribed
 {
     SetTypeString("Prescribed Fluid Velocity");
     SetVarID(ps->GetVariableIndex("Fluid Velocity"));
+	SetScaleUnit(UNIT_VELOCITY);
 }
 
 //-----------------------------------------------------------------------------
@@ -430,6 +441,7 @@ FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps, FEItemListBuil
 {
     SetTypeString("Prescribed Fluid Velocity");
     SetVarID(ps->GetVariableIndex("Fluid Velocity"));
+	SetScaleUnit(UNIT_VELOCITY);
 }
 
 //=============================================================================

@@ -8,7 +8,7 @@ FENodalLoad::FENodalLoad(FEModel* ps) : FELoad(FE_NODAL_LOAD, ps)
 {
 	SetTypeString("Nodal Load");
 	AddIntParam(0, "bc", "bc")->SetEnumNames("x-force\0y-force\0z-force\0");
-	AddDoubleParam(1, "load", "load")->SetLoadCurve();
+	AddScienceParam(1.0, UNIT_FORCE, "load", "load")->SetLoadCurve();
 }
 
 //-----------------------------------------------------------------------------
@@ -16,5 +16,5 @@ FENodalLoad::FENodalLoad(FEModel* ps, FEItemListBuilder* pi, int bc, double f, i
 {
 	SetTypeString("Nodal Load");
 	AddIntParam(bc, "bc", "bc")->SetEnumNames("x-force\0y-force\0z-force\0");
-	AddDoubleParam(f, "load", "load")->SetLoadCurve();
+	AddScienceParam(f, UNIT_FORCE, "load", "load")->SetLoadCurve();
 }

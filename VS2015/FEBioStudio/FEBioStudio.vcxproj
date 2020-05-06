@@ -411,6 +411,7 @@
     <ClCompile Include="..\..\FEBioStudio\Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\units.cpp" />
     <ClCompile Include="..\..\FEBioStudio\welcomPage.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ZipFiles.cpp" />
   </ItemGroup>
@@ -602,6 +603,7 @@
     <ClInclude Include="..\..\FEBioStudio\PostToolBar.h" />
     <ClInclude Include="..\..\FEBioStudio\RepoProject.h" />
     <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h" />
+    <ClInclude Include="..\..\FEBioStudio\units.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\welcomePage.h" />
     <ClInclude Include="..\..\FEBioStudio\ZipFiles.h" />

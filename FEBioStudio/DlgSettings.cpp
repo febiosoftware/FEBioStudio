@@ -18,6 +18,7 @@
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include <PostLib/Palette.h>
+#include "units.h"
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList
@@ -108,6 +109,8 @@ public:
 #endif
 		addEnumProperty(&m_theme, "Theme")->setEnumValues(themes);
 		addProperty("Recent projects list", CProperty::Action)->info = QString("Clear");
+
+		addEnumProperty(&m_unit, "Unit System")->setEnumValues(Units::SupportedUnitSystems());
 	}
 
 	void SetPropertyValue(int i, const QVariant& v) override
@@ -128,6 +131,7 @@ public:
 	bool	m_apply;
 	bool	m_bcmd;
 	int		m_theme;
+	int		m_unit;
 };
 
 //-----------------------------------------------------------------------------
@@ -681,6 +685,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_ui->m_apply = (view.m_apply == 1);
 	ui->m_ui->m_bcmd = pwnd->clearCommandStackOnSave();
 	ui->m_ui->m_theme = pwnd->currentTheme();
+	ui->m_ui->m_unit = Units::GetUnitSystem();
 
 	ui->m_select->m_bconnect = view.m_bconn;
 	ui->m_select->m_ntagInfo = view.m_ntagInfo;
@@ -780,6 +785,8 @@ void CDlgSettings::apply()
 
 	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
 	m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
+
+	Units::SetUnitSystem(ui->m_ui->m_unit);
 
 	m_pwnd->RedrawGL();
 }

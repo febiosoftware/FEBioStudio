@@ -7,6 +7,45 @@
 #include <string.h>
 using namespace std;
 
+// unit string constants
+// use the following symbols for composing unit strings:
+//
+// L = length
+// M = mass
+// t = time
+// T = temperature
+// F = force
+// P = pressure
+// J = energy
+// W = power
+// C = concentration
+// d = angles in degrees
+// r = angles in radians
+//
+// or use one of these predefined constants
+#define UNIT_NONE	""
+#define UNIT_LENGTH "L"
+#define UNIT_MASS   "M"
+#define UNIT_TIME   "t"
+#define UNIT_TEMPERATURE "t"
+#define UNIT_FORCE "F"
+#define UNIT_PRESSURE "P"
+#define UNIT_ENERGY	"J"
+#define UNIT_POWER "W"
+#define UNIT_CONCENTRATION	"C"
+
+#define UNIT_DEGREE "d"
+#define UNIT_RADIAN	"r"
+
+#define UNIT_AREA   "L^2"
+#define UNIT_VOLUME "L^3"
+#define UNIT_VELOCITY "L/t"
+#define UNIT_ACCELERATION "L/t^2"
+#define UNIT_ANGULAR_VELOCITY "r/t"
+#define UNIT_DENSITY "M/L^3"
+#define UNIT_PERMEABILITY	"L^4/F.t"
+#define UNIT_DIFFUSIVITY  "L^2/t"
+
 // parameter types
 enum Param_Type {
 	Param_UNDEF,
@@ -24,23 +63,6 @@ enum Param_Type {
 
 // obsolete parameter types
 #define Param_CURVE_OBSOLETE		0x0010		//-> obsolete
-
-// unit types for double params
-enum Param_Unit
-{
-	Param_NONE,
-	Param_LENGTH,
-	Param_MASS,
-	Param_TIME,
-	Param_STRESS,
-	Param_DENSITY,
-    Param_ANGLE,
-	Param_PERMEABILITY,
-	Param_DIFFUSIVITY,
-	Param_CONDUCTIVITY,
-	Param_CAPACITY,
-	Param_NOUNIT = 0xffff
-};
 
 // parameter states
 // (Note that the paramete state is not serialized, so it can be modified without affecting compatibility)
@@ -82,14 +104,14 @@ public:
 	explicit Param(int n, Param_Type ntype, const char* szb, const char* szn);
 	explicit Param(int n, const char* szb, const char* szn = 0);
 	explicit Param(double d, const char* szb, const char* szn = 0);
-	explicit Param(double d, Param_Unit nunit = Param_NOUNIT, const char* szb = 0, const char* szn = 0);
+	explicit Param(double d, const char* szunit = 0, const char* szb = 0, const char* szn = 0);
 	explicit Param(bool b, const char* szb, const char* szn = 0);
 	explicit Param(vec2i v, const char* szb, const char* szn = 0);
 	explicit Param(vec3d v, const char* szb, const char* szn = 0);
 	explicit Param(mat3d v, const char* szb, const char* szn = 0);
 	explicit Param(int n, const char* szi, int idx, const char* szb, const char* szn = 0);
 	explicit Param(double d, const char* szi, int idx, const char* szb, const char* szn = 0);
-	explicit Param(double d, const char* szi, int idx, Param_Unit nunit = Param_NOUNIT, const char* szb = 0, const char* szn = 0);
+	explicit Param(double d, const char* szi, int idx, const char* szunit = 0, const char* szb = 0, const char* szn = 0);
 	explicit Param(GLColor c, const char* szb, const char* szn = 0);
 	Param(const std::string& val, const char* szb, const char* szn = 0);
 
@@ -140,7 +162,8 @@ public:
 	std::string GetMathString() const { assert(m_ntype == Param_MATH); return val<std::string>(); }
 	GLColor GetColorValue() const { assert(m_ntype == Param_COLOR); return val<GLColor>(); }
 
-	Param_Unit GetUnit() const { return m_nunit; }
+	const char* GetUnit() const { return m_nunit; }
+	void SetUnit(const char* szunit) { m_nunit = szunit; }
 
 	int GetState() const { return m_nstate; }
 	Param* SetState(int s) { m_nstate = s; return this; }
@@ -179,7 +202,7 @@ public:
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
-	Param_Unit		m_nunit;	// scientific unit
+	const char*		m_nunit;	// scientific unit
 	int				m_nstate;	// parameter state
 	
 	bool			m_checkable;
@@ -238,16 +261,16 @@ public:
 	Param* AddDoubleParam(double d, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(d, szb, szn);
+		Param p(d, 0, szb, szn);
 		p.m_nID = ns;
 		m_Param.push_back(p);
 		return LastParam();
 	}
 
-	Param* AddScienceParam(double d, Param_Unit nunit, const char* szb, const char* szn = 0)
+	Param* AddScienceParam(double d, const char* szunit, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(d, nunit, szb, szn);
+		Param p(d, szunit, szb, szn);
 		p.m_nID = ns;
 		m_Param.push_back(p);
 		return LastParam();
@@ -301,7 +324,7 @@ public:
 	Param* AddIndxDoubleParam(double d, const char* szi, int idx, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
-		Param p(d, szi, idx, szb, szn);
+		Param p(d, szi, idx, 0, szb, szn);
 		p.m_nID = ns;
 		m_Param.push_back(p);
 		return LastParam();
@@ -415,7 +438,7 @@ public:
 	Param* AddIntParam   (int    n, const char* szb = 0, const char* szn = 0) { return m_Param.AddIntParam   (n, szb, szn); }
 	Param* AddChoiceParam(int    n, const char* szb = 0, const char* szn = 0) { return m_Param.AddChoiceParam(n, szb, szn); }
 	Param* AddDoubleParam(double d, const char* szb = 0, const char* szn = 0) { return m_Param.AddDoubleParam(d, szb, szn); }
-	Param* AddScienceParam(double d, Param_Unit nunit, const char* szb, const char* szn = 0) { return m_Param.AddScienceParam(d, nunit, szb, szn); }
+	Param* AddScienceParam(double d, const char* szunit, const char* szb, const char* szn = 0) { return m_Param.AddScienceParam(d, szunit, szb, szn); }
 	Param* AddBoolParam(bool   b, const char* szb = 0, const char* szn = 0) { return m_Param.AddBoolParam(b, szb, szn); }
 	Param* AddVecParam(vec3d  v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVecParam(v, szb, szn); }
 	Param* AddVec2iParam(vec2i  v, const char* szb = 0, const char* szn = 0) { return m_Param.AddVec2iParam(v, szb, szn); }

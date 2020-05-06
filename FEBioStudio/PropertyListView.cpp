@@ -19,6 +19,7 @@
 #include <PostLib/FEMeshData.h>
 #include <PostLib/ColorMap.h>
 #include "DragBox.h"
+#include "units.h"
 
 //-----------------------------------------------------------------------------
 CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent)
@@ -216,6 +217,16 @@ public:
 					int n = v.value<int>();
 					if (n >= 0) return prop.values.at(n);
 					else return "(none)";
+				}
+				else if (prop.type == CProperty::Float)
+				{
+					Param* p = prop.param;
+					if (p && p->GetUnit())
+					{
+						QString unitString = Units::GetUnitString(p->GetUnit());
+						if (unitString.isEmpty() == false)
+							v = v.toString() + QString(" %1").arg(unitString);
+					}
 				}
 				return v;
 			}

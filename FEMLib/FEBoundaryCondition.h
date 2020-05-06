@@ -172,6 +172,8 @@ public:
 	void SetScaleFactor(double s) { SetFloatValue(SCALE, s); }
 	double GetScaleFactor() { return GetFloatValue(SCALE); }
 
+	void SetScaleUnit(const char* szunit) { GetParam(SCALE).SetUnit(szunit); }
+
 	// used only for reading parameters for old file formats
 	void LoadParam(const Param& p);
 

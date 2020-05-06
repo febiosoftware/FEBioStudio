@@ -1250,6 +1250,8 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	// add delete action
 	bool del = false;
 
+	CMainWindow* wnd = GetMainWindow();
+
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* gm = doc->GetGModel();
 
@@ -1298,6 +1300,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllBC()));
 		break;
 	case MT_LOAD_LIST:
+		menu.addAction("Add Nodal Load ...", wnd, SLOT(on_actionAddNodalLoad_triggered()));
 		menu.addAction("Add Surface Load ...", this, SLOT(OnAddSurfaceLoad()));
 		menu.addAction("Add Body Load ...", this, SLOT(OnAddBodyLoad()));
 		menu.addSeparator();
