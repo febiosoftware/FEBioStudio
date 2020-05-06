@@ -9,15 +9,47 @@
 using namespace std;
 
 enum Quantities {
+	ANGLE,
+	FORCE,
 	LENGTH,
-	TEMPERATURE
+	MASS,
+	PRESSURE,
+	TEMPERATURE,
+	TIME
+};
+
+enum ANGLE_UNITS {
+	DEGREE,
+	RADIAN
+};
+
+enum FORCE_UNITS {
+	NEWTON,
+	KILONEWTON,
+	DYNE
 };
 
 enum LENGTH_UNITS {
 	METER,
 	CENTIMETER,
 	MILLIMETER,
-	INCH
+	INCH,
+	FOOT
+};
+
+enum MASS_UNITS {
+	KILOGRAM,
+	POUND,
+	STONE
+};
+
+enum PRESSURE_UNITS {
+	PASCAL,
+	KILOPASCAL,
+	MEGAPASCAL,
+	ATMOSPHERE,
+	MMHG,
+	PSI
 };
 
 enum TEMPERATURE_UNITS {
@@ -26,12 +58,24 @@ enum TEMPERATURE_UNITS {
 	KELVIN
 };
 
+enum TIME_UNITS {
+	SECOND,
+	MINUTE,
+	HOUR,
+	DAY
+};
+
 typedef double (*CONVERT_FUNC)(int from, int to, double fromVal);
 
 static vector<CONVERT_FUNC> convert_table;
 
+double convert_angle(int nfrom, int nto, double v);
+double convert_force(int nfrom, int nto, double v);
 double convert_length(int nfrom, int nto, double v);
+double convert_mass(int nfrom, int nto, double v);
+double convert_pressure(int nfrom, int nto, double v);
 double convert_temperature(int nfrom, int nto, double v);
+double convert_time(int nfrom, int nto, double v);
 
 class Ui::CDlgUnitConverter
 {
@@ -51,8 +95,6 @@ public:
 		hfrom->addWidget(fromVal = new QLineEdit);
 		hfrom->addWidget(from = new QComboBox);
 
-		from->addItem("a very long item");
-
 		fromVal->setValidator(new QDoubleValidator);
 		fromVal->setText(QString::number(0.0));
 
@@ -62,15 +104,21 @@ public:
 		hto->addWidget(to = new QComboBox);
 		toVal->setReadOnly(true);
 
-		to->addItem("a very long item");
-
 		QFormLayout* fl = new QFormLayout;
+		fl->setLabelAlignment(Qt::AlignRight);
 		fl->addRow("Quantity:", quantity = new QComboBox);
 		fl->addRow("From:", hfrom);
 		fl->addRow("To:", hto);
 
+		// NOTE: Make sure the order here is the same as in enum Quantities
+		//       (should be alphabetical)
+		quantity->addItem("Angle");
+		quantity->addItem("Force");
 		quantity->addItem("Length");
+		quantity->addItem("Mass");
+		quantity->addItem("Pressure");
 		quantity->addItem("Temperature");
+		quantity->addItem("Time");
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
 
@@ -90,8 +138,13 @@ public:
 
 CDlgUnitConverter::CDlgUnitConverter(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgUnitConverter)
 {
+	convert_table.push_back(convert_angle);
+	convert_table.push_back(convert_force);
 	convert_table.push_back(convert_length);
+	convert_table.push_back(convert_mass);
+	convert_table.push_back(convert_pressure);
 	convert_table.push_back(convert_temperature);
+	convert_table.push_back(convert_time);
 
 	setWindowTitle("Unit Converter");
 	ui->setup(this);
@@ -107,11 +160,28 @@ void CDlgUnitConverter::on_quantity_changed()
 
 	switch (n)
 	{
-	case LENGTH: 
-		units << "meter" << "cm" << "mm" << "inch";
+	case ANGLE:
+		// NOTE: the extra spaces is to make sure
+		//       that the combo box is large enough to fit the other units.
+		units << "Degree         " << "Radian";
+		break;
+	case FORCE:
+		units << "Newton" << "Kilonewton" << "Dyne";
+		break;
+	case LENGTH:
+		units << "Meter" << "Centimeter" << "Millimeter" << "Inch" << "Foot";
+		break;
+	case MASS:
+		units << "Kilogram" << "Pound" << "Stone";
+		break;
+	case PRESSURE:
+		units << "Pascal" << "Kilopascal" << "Megapascal" << "Atmosphere" << "mmHg" << "PSI";
 		break;
 	case TEMPERATURE:
 		units << "Celsius" << "Fahrenheit" << "Kelvin";
+		break;
+	case TIME:
+		units << "Second" << "Minute" << "Hour" << "Day";
 		break;
 	}
 
@@ -127,7 +197,10 @@ void CDlgUnitConverter::on_quantity_changed()
 	ui->to->setCurrentIndex(1);
 	ui->to->blockSignals(false);
 
-	ui->fromVal->setText(QString::number(0.0));
+	if (n == TEMPERATURE)
+		ui->fromVal->setText(QString::number(0.0));
+	else 
+		ui->fromVal->setText(QString::number(1.0));
 
 	update();
 }
@@ -163,6 +236,60 @@ void CDlgUnitConverter::update()
 	ui->toVal->setText(QString::number(toVal));
 }
 
+
+double convert_angle(int nfrom, int nto, double v)
+{
+	// convert to degree
+	double d = 0.0;
+	switch (nfrom)
+	{
+	case ANGLE_UNITS::DEGREE : d = v; break;
+	case ANGLE_UNITS::RADIAN : d = v * 57.2957795; break;
+	default:
+		assert(false);
+	}
+
+	// convert to target unit
+	double to = 0.0;
+	switch (nto)
+	{
+	case ANGLE_UNITS::DEGREE: to = d; break;
+	case ANGLE_UNITS::RADIAN: to = d / 57.2957795; break;
+	default:
+		assert(false);
+	}
+
+	return to;
+}
+
+
+double convert_force(int nfrom, int nto, double v)
+{
+	// convert to Newton
+	double N = 0.0;
+	switch (nfrom)
+	{
+	case FORCE_UNITS::NEWTON    : N = v; break;
+	case FORCE_UNITS::KILONEWTON: N = v * 1000.0; break;
+	case FORCE_UNITS::DYNE      : N = v * 1e-5; break;
+	default:
+		assert(false);
+	}
+
+	// convert to target unit
+	double to = 0.0;
+	switch (nto)
+	{
+	case FORCE_UNITS::NEWTON    : to = N; break;
+	case FORCE_UNITS::KILONEWTON: to = N / 1000.0; break;
+	case FORCE_UNITS::DYNE      : to = N / 1e-5; break;
+	default:
+		assert(false);
+	}
+
+	return to;
+}
+
 double convert_length(int nfrom, int nto, double v)
 {
 	// convert to meter
@@ -173,6 +300,7 @@ double convert_length(int nfrom, int nto, double v)
 	case LENGTH_UNITS::CENTIMETER: m = v * 0.01; break;
 	case LENGTH_UNITS::MILLIMETER: m = v * 0.001; break;
 	case LENGTH_UNITS::INCH      : m = v * 0.0254; break;
+	case LENGTH_UNITS::FOOT      : m = v * 0.3048; break;
 	default:
 		assert(false);
 	}
@@ -185,6 +313,7 @@ double convert_length(int nfrom, int nto, double v)
 	case LENGTH_UNITS::CENTIMETER: to = m / 0.01; break;
 	case LENGTH_UNITS::MILLIMETER: to = m / 0.001; break;
 	case LENGTH_UNITS::INCH      : to = m / 0.0254; break;
+	case LENGTH_UNITS::FOOT      : to = v / 0.3048; break;
 	default:
 		assert(false);
 	}
@@ -192,6 +321,63 @@ double convert_length(int nfrom, int nto, double v)
 	return to;
 }
 
+
+double convert_mass(int nfrom, int nto, double v)
+{
+	// convert to kilogram
+	double kg = 0.0;
+	switch (nfrom)
+	{
+	case MASS_UNITS::KILOGRAM: kg = v; break;
+	case MASS_UNITS::POUND   : kg = v * 0.45359237; break;
+	case MASS_UNITS::STONE   : kg = v * 6.35029317; break;
+	default:
+		assert(false);
+	}
+
+	// convert kg to target unit
+	double to = 0.0;
+	switch (nto)
+	{
+	case MASS_UNITS::KILOGRAM: to = kg; break;
+	case MASS_UNITS::POUND   : to = kg / 0.45359237; break;
+	case MASS_UNITS::STONE   : to = kg / 6.35029317; break;
+	default:
+		assert(false);
+	}
+
+	return to;
+}
+
+double convert_pressure(int nfrom, int nto, double v)
+{
+	// convert to Pascal
+	double P = 0.0;
+	switch (nfrom)
+	{
+	case PRESSURE_UNITS::PASCAL    : P = v; break;
+	case PRESSURE_UNITS::KILOPASCAL: P = v * 1.0e3; break;
+	case PRESSURE_UNITS::MEGAPASCAL: P = v * 1.0e6; break;
+	case PRESSURE_UNITS::ATMOSPHERE: P = v * 101325.0; break;
+	case PRESSURE_UNITS::MMHG      : P = v * 133.322368; break;
+	case PRESSURE_UNITS::PSI       : P = v * 6894.757; break;
+	default: assert(false);
+	}
+
+	// convert Pa to target unit
+	double to = 0.0;
+	switch (nto)
+	{
+	case PRESSURE_UNITS::PASCAL    : to = P; break;
+	case PRESSURE_UNITS::KILOPASCAL: to = P / 1.0e3; break;
+	case PRESSURE_UNITS::MEGAPASCAL: to = P / 1.0e6; break;
+	case PRESSURE_UNITS::ATMOSPHERE: to = P / 101325.0; break;
+	case PRESSURE_UNITS::MMHG      : to = P / 133.322368; break;
+	case PRESSURE_UNITS::PSI       : to = P / 6894.757; break;
+	default: assert(false);
+	}
+	return to;
+}
 
 double convert_temperature(int nfrom, int nto, double v)
 {
@@ -217,5 +403,31 @@ double convert_temperature(int nfrom, int nto, double v)
 		assert(false);
 	}
 
+	return to;
+}
+
+double convert_time(int nfrom, int nto, double v)
+{
+	// convert to sec
+	double s = 0.0;
+	switch (nfrom)
+	{
+	case TIME_UNITS::SECOND: s = v; break;
+	case TIME_UNITS::MINUTE: s = v * 60.0; break;
+	case TIME_UNITS::HOUR  : s = v * 3600.0; break;
+	case TIME_UNITS::DAY   : s = v * 86400.0; break;
+	default: assert(false);
+	}
+
+	// convert second to target unit
+	double to = 0.0;
+	switch (nto)
+	{
+	case TIME_UNITS::SECOND: to = s; break;
+	case TIME_UNITS::MINUTE: to = s / 60.0; break;
+	case TIME_UNITS::HOUR  : to = s / 3600.0; break;
+	case TIME_UNITS::DAY   : to = s / 86400.0; break;
+	default: assert(false);
+	}
 	return to;
 }
