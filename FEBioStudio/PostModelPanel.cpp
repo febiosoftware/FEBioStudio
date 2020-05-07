@@ -36,6 +36,7 @@
 #include "GView.h"
 #include "GLView.h"
 #include "PostDocument.h"
+#include "GraphWindow.h"
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -683,6 +684,7 @@ void CPostModelPanel::Update(bool breset)
 				}
 			}
 */	
+			// view settings
 			CGView& view = *pdoc->GetView();
 			pi1 = new CModelTreeItem(&view, ui->m_tree);
 			pi1->setText(0, "View");
@@ -704,6 +706,30 @@ void CPostModelPanel::Update(bool breset)
 				ui->m_list.push_back(new CCameraTransformProps(key));
 				pi2->setData(0, Qt::UserRole, (int) (ui->m_list.size() - 1));
 				m_obj.push_back(&key);
+			}
+
+			// saved graphs
+			int n = pdoc->Graphs();
+			if (n > 0)
+			{
+				pi1 = new CModelTreeItem(nullptr, ui->m_tree);
+				pi1->setText(0, "Saved Graphs");
+				pi1->setIcon(0, QIcon(QString(":/icons/chart.png")));
+				ui->m_list.push_back(nullptr);
+				m_obj.push_back(0);
+				pi1->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
+				for (int i = 0; i < n; ++i)
+				{
+					CGraphData* gd = const_cast<CGraphData*>(pdoc->GetGraphData(i));
+
+					CModelTreeItem* pi2 = new CModelTreeItem(nullptr, pi1);
+
+					string name = gd->GetName();
+					pi2->setText(0, name.c_str());
+					ui->m_list.push_back(nullptr);
+					pi2->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
+					m_obj.push_back(gd);
+				}
 			}
 		}
 
@@ -772,6 +798,16 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int 
 		GetMainWindow()->GetGLView()->GetCamera().SetTransform(*pkey);
 		GetMainWindow()->RedrawGL();
 	}
+
+	CGraphData* graph = dynamic_cast<CGraphData*>(m_obj[n]);
+	if (graph)
+	{
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		w->SetData(graph);
+		GetMainWindow()->AddGraph(w);
+		w->setWindowTitle(QString::fromStdString(graph->GetName()));
+		w->show();
+	}
 }
 
 void CPostModelPanel::on_nameEdit_editingFinished()
@@ -796,9 +832,17 @@ void CPostModelPanel::on_deleteButton_clicked()
 		QVariant v = item->data(0, Qt::UserRole);
 		int n = v.toInt();
 		Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(m_obj[n]);
+		CGraphData* graph = dynamic_cast<CGraphData*>(m_obj[n]);
 		if (po)
 		{
 			GetActiveDocument()->DeleteObject(po);
+			item->SetObject(0);
+			Update(true);
+			GetMainWindow()->RedrawGL();
+		}
+		else if (graph)
+		{
+			GetActiveDocument()->DeleteGraph(graph);
 			item->SetObject(0);
 			Update(true);
 			GetMainWindow()->RedrawGL();

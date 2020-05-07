@@ -172,7 +172,7 @@ QIcon CMainWindow::GetResourceIcon(const QString& iconName)
 	QString url = ":/icons/" + rs + ".png";
 
 	// make sure the icon exists
-	if (ui->m_theme == 1 | ui->m_theme == 3)
+	if ((ui->m_theme == 1) || (ui->m_theme == 3))
 	{
 		QFile f(url);
 		if (!f.exists())

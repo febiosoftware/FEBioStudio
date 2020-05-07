@@ -80,9 +80,9 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	// add the data series
 	for (int i=0; i<nsteps; i++) x[i] = pfem->GetState(i)->m_time;
 
-	CLineChartData* dataMax = new CLineChartData;
-	CLineChartData* dataMin = new CLineChartData;
-	CLineChartData* dataAvg = new CLineChartData;
+	CPlotData* dataMax = new CPlotData;
+	CPlotData* dataMin = new CPlotData;
+	CPlotData* dataAvg = new CPlotData;
 	dataMax->setLabel("Max");
 	dataAvg->setLabel("Avg");
 	dataMin->setLabel("Min");

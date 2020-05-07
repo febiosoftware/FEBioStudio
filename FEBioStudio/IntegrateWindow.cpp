@@ -58,7 +58,7 @@ void CIntegrateWindow::UpdateIntegral()
 	if (nsrc < 0) return;
 
 	char sztitle[256] = {0};
-	CLineChartData* data = new CLineChartData;
+	CPlotData* data = new CPlotData;
 	Post::CGLPlaneCutPlot* pp = m_src[nsrc];
 	if (pp == 0) 
 	{
@@ -111,7 +111,7 @@ void CIntegrateWindow::UpdateSourceOptions()
 }
 
 //-----------------------------------------------------------------------------
-void CIntegrateWindow::IntegrateSelection(CLineChartData& data)
+void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 {
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
@@ -152,7 +152,7 @@ void CIntegrateWindow::IntegrateSelection(CLineChartData& data)
 }
 
 //-----------------------------------------------------------------------------
-void CIntegrateWindow::IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CLineChartData& data)
+void CIntegrateWindow::IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& data)
 {
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();

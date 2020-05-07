@@ -771,10 +771,13 @@
     <ClCompile Include="..\..\FEBioStudio\units.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\ExternalLinkEdit.cpp">
+    <ClCompile Include="..\..\FEBioStudio\GraphData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\moc_ExternalLinkEdit.cpp">
+    <ClCompile Include="..\..\FEBioStudio\LinkPropertyEdit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_LinkPropertyEdit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1106,7 +1109,10 @@
     <ClInclude Include="..\..\FEBioStudio\units.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\ExternalLinkEdit.h">
+    <ClInclude Include="..\..\FEBioStudio\GraphData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\LinkPropertyEdit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

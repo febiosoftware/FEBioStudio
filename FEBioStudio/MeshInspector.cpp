@@ -10,6 +10,7 @@ CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd),
 {
 	m_po = 0;
 	ui->setupUi(this);
+	ui->plot->setChartStyle(ChartStyle::BARCHART_PLOT);
 }
 
 void CMeshInspector::Update()
@@ -115,7 +116,7 @@ void CMeshInspector::UpdateData(int ndata)
 		if (bin[n] > ymax) ymax = bin[n];
 	}
 
-	CPlotData* pltData = new CBarChartData;
+	CPlotData* pltData = new CPlotData;
 	for (int i=0; i<M; ++i)
 	{
 		double v = vmin + i*(vmax - vmin)/(M-1);

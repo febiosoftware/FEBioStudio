@@ -32,15 +32,14 @@
 #include <GLWLib/convert.h>
 #include "PostDocument.h"
 
-class GraphOptionsUI
+class TimeRangeOptionsUI
 {
 public:
 	QRadioButton*	timeOption[3];
 	QLineEdit*		timeRange;
-	QCheckBox*		smoothLines;
 	QCheckBox*		autoRange;
-	QCheckBox*		drawGrid;
 
+public:
 	void setup(QWidget* w)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
@@ -48,25 +47,93 @@ public:
 		l->addWidget(timeOption[1] = new QRadioButton("Current time step"));
 		l->addWidget(timeOption[2] = new QRadioButton("User range:"));
 		l->addWidget(timeRange = new QLineEdit);
-		l->addWidget(smoothLines = new QCheckBox("Smooth lines"));
 		l->addWidget(autoRange = new QCheckBox("auto update plot range"));
-		l->addWidget(drawGrid = new QCheckBox("Draw grid lines"));
 		l->addStretch();
 		w->setLayout(l);
 
-		smoothLines->setChecked(true);
 		autoRange->setChecked(true);
-		drawGrid->setChecked(true);
-
 		timeOption[0]->setChecked(true);
 
 		QObject::connect(timeOption[0], SIGNAL(clicked()), w, SLOT(onOptionsChanged()));
 		QObject::connect(timeOption[1], SIGNAL(clicked()), w, SLOT(onOptionsChanged()));
 		QObject::connect(timeOption[2], SIGNAL(clicked()), w, SLOT(onOptionsChanged()));
-		QObject::connect(drawGrid, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 		QObject::connect(timeRange, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
-		QObject::connect(smoothLines, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 		QObject::connect(autoRange, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+	}
+};
+
+
+TimeRangeOptions::TimeRangeOptions(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent), ui(new TimeRangeOptionsUI)
+{
+	ui->setup(this);
+}
+
+void TimeRangeOptions::onOptionsChanged()
+{
+	emit optionsChanged();
+}
+
+int TimeRangeOptions::currentOption()
+{
+	if (ui->timeOption[0]->isChecked()) return 0;
+	if (ui->timeOption[1]->isChecked()) return 1;
+	if (ui->timeOption[2]->isChecked()) return 2;
+	return -1;
+}
+
+bool TimeRangeOptions::autoRangeUpdate()
+{
+	return ui->autoRange->isChecked();
+}
+
+void TimeRangeOptions::setUserTimeRange(int imin, int imax)
+{
+	ui->timeRange->setText(QString("%1:%2").arg(imin).arg(imax));
+}
+
+void TimeRangeOptions::getUserTimeRange(int& imin, int& imax)
+{
+	QStringList l = ui->timeRange->text().split(':');
+	imin = imax = 0;
+	if (l.size() == 1)
+	{
+		imin = imax = l.at(0).toInt();
+	}
+	else if (l.size() > 1)
+	{
+		imin = l.at(0).toInt();
+		imax = l.at(1).toInt();
+	}
+}
+
+//=============================================================================
+class GraphOptionsUI
+{
+public:
+	QCheckBox*		smoothLines;
+	QCheckBox*		drawGrid;
+	QCheckBox*		drawLegend;
+	QCheckBox*		drawTitle;
+
+	void setup(QWidget* w)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(smoothLines = new QCheckBox("Smooth lines"));
+		l->addWidget(drawGrid = new QCheckBox("Draw grid lines"));
+		l->addWidget(drawLegend = new QCheckBox("Draw legend"));
+		l->addWidget(drawTitle = new QCheckBox("Draw title"));
+		l->addStretch();
+		w->setLayout(l);
+
+		smoothLines->setChecked(true);
+		drawGrid->setChecked(true);
+		drawLegend->setChecked(true);
+		drawTitle->setChecked(true);
+
+		QObject::connect(drawGrid, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+		QObject::connect(drawLegend, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+		QObject::connect(drawTitle, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+		QObject::connect(smoothLines, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 	}
 };
 
@@ -80,22 +147,9 @@ void GraphOptions::onOptionsChanged()
 	emit optionsChanged();
 }
 
-int GraphOptions::currentOption()
-{
-	if (ui->timeOption[0]->isChecked()) return 0;
-	if (ui->timeOption[1]->isChecked()) return 1;
-	if (ui->timeOption[2]->isChecked()) return 2;
-	return -1;
-}
-
 bool GraphOptions::lineSmoothing()
 {
 	return ui->smoothLines->isChecked();
-}
-
-bool GraphOptions::autoRangeUpdate()
-{
-	return ui->autoRange->isChecked();
 }
 
 bool GraphOptions::drawGrid()
@@ -103,24 +157,14 @@ bool GraphOptions::drawGrid()
 	return ui->drawGrid->isChecked();
 }
 
-void GraphOptions::setUserTimeRange(int imin, int imax)
+bool GraphOptions::drawTitle()
 {
-	ui->timeRange->setText(QString("%1:%2").arg(imin).arg(imax));
+	return ui->drawTitle->isChecked();
 }
 
-void GraphOptions::getUserTimeRange(int& imin, int& imax)
+bool GraphOptions::drawLegend()
 {
-	QStringList l = ui->timeRange->text().split(':');
-	imin = imax = 0;
-	if (l.size() == 1)
-	{
-		imin = imax = l.at(0).toInt();
-	}
-	else if (l.size() > 1)
-	{
-		imin = l.at(0).toInt();
-		imax = l.at(1).toInt();
-	}
+	return ui->drawLegend->isChecked();
 }
 
 //=================================================================================================
@@ -579,6 +623,7 @@ public:
 	QToolBox*				tools;			// the tools panel
 
 	QAction* actionSave;
+	QAction* actionAddToModel;
 	QAction* actionClipboard;
 	QAction* actionSnapshot;
 	QAction* actionProps;
@@ -587,8 +632,9 @@ public:
 	QAction* actionSelectX;
 	QAction* actionSelectY;
 
-	GraphOptions*	ops;
-	DataOptions*	data;
+	TimeRangeOptions*	range;
+	GraphOptions*		ops;
+	DataOptions*		data;
 
 	CPostDocument*	doc;
 
@@ -596,7 +642,7 @@ public:
 	QAction* actionPlot;
 
 public:
-	void setupUi(::CGraphWindow* parent)
+	void setupUi(::CGraphWindow* parent, int flags)
 	{
 		QSplitter* centralWidget = new QSplitter;
 
@@ -607,6 +653,14 @@ public:
 		centralWidget->addWidget(tools = new QToolBox);
 		centralWidget->setStretchFactor(0, 4);
 		tools->hide();
+
+		range = nullptr;
+		if (flags & ::CGraphWindow::SHOW_TIME_RANGE)
+		{
+			range = new TimeRangeOptions(plot); range->setObjectName("range");
+			tools->addItem(range, "Time Range");
+			plot->addTool(range);
+		}
 
 		ops = new GraphOptions(plot); ops->setObjectName("options");
 		tools->addItem(ops, "Options");
@@ -656,9 +710,10 @@ public:
 		y->setLayout(hy);
 
 		toolBar = new QToolBar(parent);
-		actionSave = toolBar->addAction(QIcon(QString(":/icons/save.png")), "Save"); actionSave->setObjectName("actionSave");
+		actionSave = toolBar->addAction(QIcon(QString(":/icons/save.png")), "Save to file"); actionSave->setObjectName("actionSave");
 		actionClipboard = toolBar->addAction(QIcon(QString(":/icons/clipboard.png")), "Copy to clipboard"); actionClipboard->setObjectName("actionClipboard");
 		actionSnapshot = toolBar->addAction(QIcon(QString(":/icons/bgimage.png")), "Save picture"); actionSnapshot->setObjectName("actionSnapshot");
+		actionAddToModel = toolBar->addAction(QIcon(":/icons/addtomodel.png"), "Add to model tree"); actionAddToModel->setObjectName("actionAddToModel");
 
 		actionType = toolBar->addWidget(new QLabel("Type: "));
 		actionPlot = toolBar->addWidget(selectPlot);
@@ -686,9 +741,7 @@ public:
 
 		mainWidget->setLayout(layout);
 
-		parent->setWidget(mainWidget);
-
-		parent->setFloating(true);
+		parent->setCentralWidget(mainWidget);
 
 		QObject::connect(showTools, SIGNAL(clicked(bool)), tools, SLOT(setVisible(bool)));
 
@@ -698,7 +751,7 @@ public:
 
 QRect CGraphWindow::m_preferredSize;
 
-CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags) : m_wnd(pwnd), QDockWidget(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
+CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags) : m_wnd(pwnd), QMainWindow(pwnd), ui(new Ui::CGraphWindow), CDocObserver(pwnd->GetDocument())
 {
 	m_nTrackTime = TRACK_TIME;
 	m_nUserMin = 1;
@@ -707,7 +760,7 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 	// delete the window when it's closed
 	setAttribute(Qt::WA_DeleteOnClose);
 
-	ui->setupUi(this);
+	ui->setupUi(this, flags);
 	ui->doc = postDoc;
 
 	if ((flags & SHOW_TYPE_OPTIONS) == 0)
@@ -720,7 +773,10 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 	ui->actionSelectX->setVisible(false);
 	ui->actionSelectY->setVisible(false);
 
-	ui->ops->setUserTimeRange(m_nUserMin, m_nUserMax);
+	if (ui->range)
+	{
+		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax);
+	}
 	setMinimumWidth(500);
 
 	if (m_preferredSize.isValid())
@@ -933,6 +989,12 @@ int CGraphWindow::GetCurrentPlotType()
 }
 
 //-----------------------------------------------------------------------------
+void CGraphWindow::ShowAddToModelButton(bool b)
+{
+	ui->actionAddToModel->setVisible(b);
+}
+
+//-----------------------------------------------------------------------------
 void CGraphWindow::DocumentDelete()
 {
 	CDocObserver::DocumentDelete();
@@ -972,6 +1034,17 @@ void CGraphWindow::on_actionSave_triggered()
 		if (ui->plot->Save(fileName) == false)
 			QMessageBox::critical(this, "Save Graph Data", "A problem occurred saving the data.");
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::on_actionAddToModel_triggered()
+{
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	const CGraphData& data = GetPlotWidget()->GetGraphData();
+	doc->AddGraph(data);
+	m_wnd->Update(0, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -1026,95 +1099,106 @@ void CGraphWindow::on_plot_doneZoomToRect()
 }
 
 //-----------------------------------------------------------------------------
-void CGraphWindow::on_options_optionsChanged()
+void CGraphWindow::on_range_optionsChanged()
 {
-	int a = ui->ops->currentOption();
+	if (ui->range == nullptr) return;
+
+	int a = ui->range->currentOption();
 	switch (a)
 	{
 	case 0: m_nTrackTime = TRACK_TIME; break;
 	case 1: m_nTrackTime = TRACK_CURRENT_TIME; break;
-	case 2: m_nTrackTime = TRACK_USER_RANGE; 
+	case 2: m_nTrackTime = TRACK_USER_RANGE;
+	{
+		ui->range->getUserTimeRange(m_nUserMin, m_nUserMax);
+
+		CPostDocument* doc = GetPostDoc();
+		if (doc)
 		{
-			ui->ops->getUserTimeRange(m_nUserMin, m_nUserMax);
+			// check the range. Note that user min and max are one-based!
+			Post::FEPostModel* fem = doc->GetFEModel();
+			int N = fem->GetStates();
+			if (m_nUserMin < 1) m_nUserMin = 1;
+			if (m_nUserMin > N) m_nUserMin = N;
 
-			CPostDocument* doc = GetPostDoc();
-			if (doc)
+			if (m_nUserMax != -1)
 			{
-				// check the range. Note that user min and max are one-based!
-				Post::FEPostModel* fem = doc->GetFEModel();
-				int N = fem->GetStates();
-				if (m_nUserMin < 1) m_nUserMin = 1;
-				if (m_nUserMin > N) m_nUserMin = N;
-
-				if (m_nUserMax != -1)
+				if (m_nUserMax < 1) m_nUserMax = 1;
+				if (m_nUserMax > N) m_nUserMax = N;
+				if (m_nUserMax < m_nUserMin)
 				{
-					if (m_nUserMax < 1) m_nUserMax = 1;
-					if (m_nUserMax > N) m_nUserMax = N;
-					if (m_nUserMax < m_nUserMin)
-					{
-						int tmp = m_nUserMin;
-						m_nUserMin = m_nUserMax;
-						m_nUserMax = tmp;
-					}
+					int tmp = m_nUserMin;
+					m_nUserMin = m_nUserMax;
+					m_nUserMax = tmp;
 				}
 			}
-
-			ui->ops->setUserTimeRange(m_nUserMin, m_nUserMax);
 		}
-		break;
+
+		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax);
+	}
+	break;
 	default:
 		assert(false);
 		m_nTrackTime = TRACK_TIME;
 	}
 
+	bool autoRng = ui->range->autoRangeUpdate();
+	ui->plot->setAutoRangeUpdate(autoRng);
+
+	Update(false);
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::on_options_optionsChanged()
+{
 	bool smooth = ui->ops->lineSmoothing();
 	ui->plot->setLineSmoothing(smooth);
 
-	bool autoRng = ui->ops->autoRangeUpdate();
-	ui->plot->setAutoRangeUpdate(autoRng);
-
 	bool bshowGrid = ui->ops->drawGrid();
 	ui->plot->setDrawGrid(bshowGrid);
+
+	bool bshowLegend = ui->ops->drawLegend();
+	ui->plot->showLegend(bshowLegend);
+
+	bool bshowTitle = ui->ops->drawTitle();
+	ui->plot->setDrawTitle(bshowTitle);
 
 	Update(false);
 }
 
 //=============================================================================
-CDataGraphWindow::CDataGraphWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc)
+CDataGraphWindow::CDataGraphWindow(CMainWindow* wnd, CPostDocument* doc) : CGraphWindow(wnd, doc, 0)
 {
-
+	ShowAddToModelButton(false);
+	m_data = nullptr;
 }
 
-void CDataGraphWindow::SetData(const std::vector<double>& data, QString title)
+void CDataGraphWindow::SetData(const CGraphData* data)
 {
-	m_title = title;
 	m_data = data;
-	Update(true, true);
+	GetPlotWidget()->SetGraphData(*data);
+	UpdatePlots();
+	FitPlotsToData();
 }
 
 void CDataGraphWindow::Update(bool breset, bool bfit)
 {
-	ClearPlots();
-	CPostDocument* doc = GetPostDoc();
-	if (doc)
-	{
-		Post::FEPostModel* fem = doc->GetFEModel();
-		int nsteps = fem->GetStates();
-		CLineChartData* plot = new CLineChartData;
-		for (int j = 0; j < nsteps; ++j)
-		{
-			Post::FEState* ps = fem->GetState(j);
-			double yj = 0.0;
-			if (j < m_data.size()) yj = m_data[j];
-			plot->addPoint(ps->m_time, yj);
-		}
-		plot->setLabel(m_title);
-		AddPlotData(plot);
-		FitPlotsToData();
-	}
 	UpdatePlots();
 }
 
+void CDataGraphWindow::closeEvent(QCloseEvent* ev)
+{
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if ((doc == nullptr) || (m_data == nullptr)) return;
+
+	int n = doc->FindGraphData(m_data);
+	if (n >= 0)
+	{
+		doc->ReplaceGraphData(n, GetPlotWidget()->GetGraphData());
+	}
+
+	CGraphWindow::closeEvent(ev);
+}
 
 //=============================================================================
 CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc)
@@ -1259,18 +1343,18 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 }
 
 //-----------------------------------------------------------------------------
-CLineChartData* CModelGraphWindow::nextData()
+CPlotData* CModelGraphWindow::nextData()
 {
 	if (m_pltCounter >= Plots())
 	{
 		m_pltCounter++;
-		CLineChartData* data = new CLineChartData();
+		CPlotData* data = new CPlotData();
 		AddPlotData(data);
 		return data;
 	}
 	else
 	{
-		return dynamic_cast<CLineChartData*>(GetPlotData(m_pltCounter++));
+		return dynamic_cast<CPlotData*>(GetPlotData(m_pltCounter++));
 	}
 }
 
@@ -1301,7 +1385,7 @@ void CModelGraphWindow::addSelectedNodes()
 				// evaluate y-field
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = nextData();
+				CPlotData* plot = nextData();
 				plot->setLabel(QString("N%1").arg(i + 1));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 			}
@@ -1320,7 +1404,7 @@ void CModelGraphWindow::addSelectedNodes()
 				// evaluate y-field
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = nextData();
+				CPlotData* plot = nextData();
 				plot->setLabel(QString("N%1").arg(i + 1));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 			}
@@ -1339,7 +1423,7 @@ void CModelGraphWindow::addSelectedNodes()
 				// evaluate y-field
 				TrackNodeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = nextData();
+				CPlotData* plot = nextData();
 				plot->setLabel(QString("N%1").arg(i + 1));
 				for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 			}
@@ -1379,7 +1463,7 @@ void CModelGraphWindow::addSelectedNodes()
 			if (nsteps > 32) nsteps = 32;
 			for (int i = state0; i < state0 + nsteps; ++i)
 			{
-				CLineChartData* plot = nextData();
+				CPlotData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
 			}
 
@@ -1449,7 +1533,7 @@ void CModelGraphWindow::addSelectedEdges()
 			// evaluate y-field
 			TrackEdgeHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-			CLineChartData* plot = nextData();
+			CPlotData* plot = nextData();
 			plot->setLabel(QString("L%1").arg(i + 1));
 			for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 		}
@@ -1490,7 +1574,7 @@ void CModelGraphWindow::addSelectedFaces()
 			// evaluate y-field
 			TrackFaceHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-			CLineChartData* plot = nextData();
+			CPlotData* plot = nextData();
 			plot->setLabel(QString("F%1").arg(i + 1));
 			for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 		}
@@ -1524,7 +1608,7 @@ void CModelGraphWindow::addSelectedElems()
 				// evaluate y-field
 				TrackElementHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = nextData();
+				CPlotData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 				plot->setLabel(QString("E%1").arg(i + 1));
 			}
@@ -1542,7 +1626,7 @@ void CModelGraphWindow::addSelectedElems()
 				// evaluate y-field
 				TrackElementHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = nextData();
+				CPlotData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 				plot->setLabel(QString("E%1").arg(i + 1));
 			}
@@ -1560,7 +1644,7 @@ void CModelGraphWindow::addSelectedElems()
 				// evaluate y-field
 				TrackElementHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
 
-				CLineChartData* plot = nextData();
+				CPlotData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 				plot->setLabel(QString("E%1").arg(i + 1));
 			}
@@ -1581,7 +1665,7 @@ void CModelGraphWindow::addSelectedElems()
 			if (nsteps > 32) nsteps = 32;
 			for (int i = m_firstState; i < m_firstState + nsteps; ++i)
 			{
-				CLineChartData* plot = nextData();
+				CPlotData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
 			}
 

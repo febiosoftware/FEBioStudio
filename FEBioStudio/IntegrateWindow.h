@@ -5,7 +5,7 @@
 #include "GraphWindow.h"
 
 class CMainWindow;
-class CLineChartData;
+class CPlotData;
 
 namespace Post {
 	class FEPostMesh;
@@ -26,8 +26,8 @@ private:
 	void UpdateSourceOptions();
 
 	void UpdateIntegral();
-	void IntegrateSelection(CLineChartData& data);
-	void IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CLineChartData& data);
+	void IntegrateSelection(CPlotData& data);
+	void IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& data);
 
 private:
 	std::vector<Post::CGLPlaneCutPlot*>	m_src;

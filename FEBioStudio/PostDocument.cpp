@@ -183,6 +183,9 @@ void CPostDocument::Clear()
 
 	m_MD.ReadData(m_glm);
 
+	for (int i = 0; i < m_graphs.size(); ++i) delete m_graphs[i];
+	m_graphs.clear();
+
 	delete m_glm; m_glm = nullptr;
 	delete m_postObj; m_postObj = nullptr;
 }
@@ -505,4 +508,45 @@ void CPostDocument::ApplyPalette(const Post::CPalette& pal)
 CPostObject* CPostDocument::GetPostObject()
 {
 	return m_postObj;
+}
+
+int CPostDocument::Graphs() const
+{
+	return (int)m_graphs.size();
+}
+
+void CPostDocument::AddGraph(const CGraphData& data)
+{
+	CGraphData* newData = new CGraphData(data);
+	if (newData->GetName().empty()) newData->SetName(newData->m_title.toStdString());
+	m_graphs.push_back(newData);
+}
+
+const CGraphData* CPostDocument::GetGraphData(int i)
+{
+	return m_graphs[i];
+}
+
+int CPostDocument::FindGraphData(const CGraphData* data)
+{
+	for (int i = 0; i < m_graphs.size(); ++i)
+	{
+		if (m_graphs[i] == data) return i;
+	}
+	return -1;
+}
+
+void CPostDocument::ReplaceGraphData(int n, const CGraphData& data)
+{
+	if ((n >= 0) && (n < m_graphs.size()))
+	{
+		*m_graphs[n] = data;
+	}
+}
+
+void CPostDocument::DeleteGraph(const CGraphData* data)
+{
+	int n = FindGraphData(data);
+	delete m_graphs[n];
+	m_graphs.erase(m_graphs.begin() + n);
 }

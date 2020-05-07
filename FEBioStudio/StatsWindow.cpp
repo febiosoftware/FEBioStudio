@@ -23,6 +23,7 @@ CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWin
 	setWindowTitle(title);
 	setMinimumWidth(500);
 	resize(600, 500);
+	GetPlotWidget()->setChartStyle(ChartStyle::BARCHART_PLOT);
 }
 
 void CStatsWindow::Update(bool breset, bool bfit)
@@ -116,7 +117,7 @@ void CStatsWindow::Update(bool breset, bool bfit)
 	
 	if (bin.empty() == false)
 	{
-		CBarChartData* data = new CBarChartData;
+		CPlotData* data = new CPlotData;
 		data->setLabel("data");
 		for (int i=0; i<(int)bin.size(); ++i)
 		{

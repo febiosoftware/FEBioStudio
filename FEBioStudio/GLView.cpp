@@ -988,9 +988,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 							pdoc->DoCommand(new CCmdHideSelection(mdoc));
 						}
 					}
-					m_pWnd->Update(0, false);
 					emit selectionChanged();
 				}
+				m_pWnd->Update(0, false);
 
 				repaint();
 			}

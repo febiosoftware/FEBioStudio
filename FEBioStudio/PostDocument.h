@@ -2,6 +2,7 @@
 #include "Document.h"
 #include "GView.h"
 #include <PostLib/FEMaterial.h>
+#include "GraphData.h"
 
 class CModelDocument;
 class CPostObject;
@@ -146,6 +147,14 @@ public:
 	// get the selection bounding box
 	BOX GetSelectionBox();
 
+public:
+	int Graphs() const;
+	void AddGraph(const CGraphData& data);
+	const CGraphData* GetGraphData(int i);
+	int FindGraphData(const CGraphData* data);
+	void ReplaceGraphData(int n, const CGraphData& data);
+	void DeleteGraph(const CGraphData* data);
+
 private:
 	void ApplyPalette(const Post::CPalette& pal);
 
@@ -157,6 +166,8 @@ private:
 	Post::FEPostModel*	m_fem;
 	CGView				m_view;
 	std::string			m_fileName;
+
+	std::vector<CGraphData*>	m_graphs;
 
 	ModelData	m_MD;
 

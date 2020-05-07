@@ -2,6 +2,7 @@
 #include <QWidget>
 #include <vector>
 #include <QDialog>
+#include "GraphData.h"
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -11,92 +12,10 @@ class CPlotWidget;
 class QImage;
 
 //-----------------------------------------------------------------------------
-// Manages a set of (x,y) value pairs
-// Derived classes must implement drawing function.
-class CPlotData
+enum ChartStyle
 {
-public:
-	CPlotData();
-	CPlotData(const CPlotData& d);
-	CPlotData& operator = (const CPlotData& d);
-
-	virtual ~CPlotData();
-
-	//! clear data
-	void clear();
-
-	// add a point to the data
-	void addPoint(double x, double y);
-
-	// number of points
-	int size() const { return (int) m_data.size(); }
-
-	// get a data point
-	QPointF& Point(int i) { return m_data[i]; }
-
-	// get the bounding rectangle
-	QRectF boundRect() const;
-
-	// set/get the label
-	const QString& label() const { return m_label; }
-	void setLabel(const QString& label) { m_label = label; }
-
-	// sort the data
-	void sort();
-
-public:
-	QColor lineColor() const { return m_lineColor; }
-	void setLineColor(const QColor& col) { m_lineColor = col; }
-
-	QColor fillColor() const { return m_fillColor; }
-	void setFillColor(const QColor& col) { m_fillColor = col; }
-
-	int lineWidth() const { return m_lineWidth; }
-	void setLineWidth(int n) { m_lineWidth = (n > 1 ? n : 1); }
-
-	void setMarkerSize(int n) { m_markerSize = n; }
-	int markerSize() const { return m_markerSize; }
-
-	void setMarkerType(int n) { m_markerType = n; }
-	int markerType() const { return m_markerType; }
-
-public:
-	virtual	void draw(QPainter& painter, CPlotWidget& plt) = 0;
-
-protected:
-	vector<QPointF>	m_data;
-	QString			m_label;
-
-protected:
-	QColor	m_lineColor;
-	int		m_lineWidth;
-
-	QColor	m_fillColor;
-
-	int		m_markerType;
-	int		m_markerSize;
-};
-
-//-----------------------------------------------------------------------------
-class CLineChartData : public CPlotData
-{
-public:
-	void draw(QPainter& painter, CPlotWidget& plt);
-};
-
-//-----------------------------------------------------------------------------
-class CBarChartData : public CPlotData
-{
-public:
-	void draw(QPainter& painter, CPlotWidget& plt);
-};
-
-//-----------------------------------------------------------------------------
-struct CAxisFormat
-{
-	bool	visible;
-	int		labelPosition;
-	int		labelAlignment;
+	LINECHART_PLOT,
+	BARCHART_PLOT
 };
 
 //-----------------------------------------------------------------------------
@@ -104,23 +23,6 @@ struct CAxisFormat
 class CPlotWidget : public QWidget
 {
 	Q_OBJECT
-
-public:
-	enum AxisLabelPosition
-	{
-		NEXT_TO_AXIS,
-		HIGH,
-		LOW,
-		NONE
-	};
-
-	enum AxisLabelAlignment
-	{
-		ALIGN_LABEL_LEFT,
-		ALIGN_LABEL_RIGHT,
-		ALIGN_LABEL_TOP,
-		ALIGN_LABEL_BOTTOM
-	};
 
 public:
 	struct Selection
@@ -135,7 +37,7 @@ public:
 
 	//! Set the plot title
 	void setTitle(const QString& s);
-	QString title() const { return m_title; }
+	QString title() const { return m_data.m_title; }
 
 	// size hint
 	QSize sizeHint() const { return m_sizeHint; }
@@ -146,14 +48,20 @@ public:
 	// but does not delete the plots
 	void clearData();
 
+	// get the graph data
+	const CGraphData& GetGraphData() const;
+
+	// set the data
+	void SetGraphData(const CGraphData& data);
+
 	// clears everything
 	void clear();
 
 	void Resize(int n);
 
 	// get/set show legend
-	bool showLegend() const { return m_bshowLegend; }
-	void showLegend(bool b) { m_bshowLegend = b; }
+	bool showLegend() const { return m_data.m_bshowLegend; }
+	void showLegend(bool b) { m_data.m_bshowLegend = b; }
 
 	// change the view so that it fits the data
 	void fitWidthToData();
@@ -167,8 +75,8 @@ public:
 	void addPlotData(CPlotData* p);
 
 	// get a data field
-	int plots() { return (int) m_data.size(); }
-	CPlotData& getPlotData(int i) { return *m_data[i]; }
+	int plots() { return (int)m_data.m_data.size(); }
+	CPlotData& getPlotData(int i) { return *m_data.m_data[i]; }
 
 	// turn on/off zoom-to-rect mode
 	void ZoomToRect(bool b = true);
@@ -189,17 +97,20 @@ public:
 	// set the chart style
 	void setChartStyle(int chartStyle);
 
-	void showHorizontalGridLines(bool b) { m_bdrawYLines = b; }
-	void showVerticalGridLines(bool b) { m_bdrawXLines = b; }
+	void showHorizontalGridLines(bool b) { m_data.m_bdrawYLines = b; }
+	void showVerticalGridLines(bool b) { m_data.m_bdrawXLines = b; }
 
-	void showXAxis(bool b) { m_xAxis.visible = b; }
-	void ShowYAxis(bool b) { m_yAxis.visible = b; }
+	void showXAxis(bool b) { m_data.m_xAxis.visible = b; }
+	void ShowYAxis(bool b) { m_data.m_yAxis.visible = b; }
 
-	bool lineSmoothing() const { return m_bsmoothLines; }
-	void setLineSmoothing(bool b) { m_bsmoothLines = b; }
+	bool lineSmoothing() const { return m_data.m_bsmoothLines; }
+	void setLineSmoothing(bool b) { m_data.m_bsmoothLines = b; }
 
-	bool drawGrid() const { return m_bdrawGrid; }
-	void setDrawGrid(bool b) { m_bdrawGrid = b; }
+	bool drawGrid() const { return m_data.m_bdrawGrid; }
+	void setDrawGrid(bool b) { m_data.m_bdrawGrid = b; }
+
+	bool drawTitle() const { return m_data.m_bdrawTitle; }
+	void setDrawTitle(bool b) { m_data.m_bdrawTitle = b; }
 
 	void scaleAxisLabels(bool b) { m_bscaleAxisLabels = b; }
 
@@ -215,10 +126,10 @@ public:
 	void setXAxisLabelAlignment(AxisLabelAlignment a);
 	void setYAxisLabelAlignment(AxisLabelAlignment a);
 
-	void setBackgroundColor(const QColor& c) { m_bgCol = c; }
-	void setGridColor(const QColor& c) { m_gridCol = c; }
-	void setXAxisColor(const QColor& c) { m_xCol = c; }
-	void setYAxisColor(const QColor& c) { m_yCol = c; }
+	void setBackgroundColor(const QColor& c) { m_data.m_bgCol = c; }
+	void setGridColor(const QColor& c) { m_data.m_gridCol = c; }
+	void setXAxisColor(const QColor& c) { m_data.m_xCol = c; }
+	void setYAxisColor(const QColor& c) { m_data.m_yCol = c; }
 	void setSelectionColor(const QColor& c) { m_selCol = c; }
 
 	void selectPoint(int ndata, int npoint);
@@ -256,28 +167,6 @@ protected:
 	void addToSelection(int ndata, int npoint);
 
 public:
-	QString	m_title;
-	QRectF	m_viewRect;
-	QRect	m_screenRect, m_titleRect;
-	QPoint	m_mousePos, m_mouseInitPos;
-	QColor	m_bgCol;
-	QColor	m_gridCol;
-	QColor	m_xCol;
-	QColor	m_yCol;
-	QColor	m_selCol;
-	double	m_xscale, m_yscale;
-
-	bool		m_bzoomRect;
-	bool		m_bvalidRect;
-	bool		m_mapToRect;
-	bool		m_newSelect;
-	bool		m_bdragging;
-	bool		m_bregionSelect;
-	bool		m_bsmoothLines;
-	bool		m_bdrawGrid;
-
-	vector<Selection>	m_selection;
-
 	QPointF ScreenToView(const QPoint& p);
 	QRectF ScreenToView(const QRect& rt);
 	QPoint ViewToScreen(const QPointF& p);
@@ -287,6 +176,9 @@ public:
 protected:
 	//! render the plot
 	void paintEvent(QPaintEvent* pe);
+
+	void draw_linechart(QPainter& p, CPlotData& data);
+	void draw_barchart(QPainter& p, CPlotData& data);
 
 public slots:
 	void OnZoomToWidth();
@@ -308,20 +200,31 @@ private: // drawing helper functions
 	void drawLegend(QPainter& p);
 
 private:
-	vector<CPlotData*>	m_data;
-	bool				m_bshowLegend;
-	bool				m_bviewLocked;
-	bool				m_bshowPopup;
-	bool				m_bshowToolTip;
-	bool				m_bdrawXLines;
-	bool				m_bdrawYLines;
-	bool				m_bscaleAxisLabels;
-	bool				m_bfullScreenMode;
-	bool				m_bautoRngUpdate;
+	CGraphData		m_data;
 
 	int		m_chartStyle;
-	CAxisFormat		m_xAxis;
-	CAxisFormat		m_yAxis;
+
+public:
+	QRectF	m_viewRect;
+	QRect	m_screenRect, m_titleRect;
+	QPoint	m_mousePos, m_mouseInitPos;
+	QColor	m_selCol;
+	double	m_xscale, m_yscale;
+
+	bool		m_bviewLocked;
+	bool		m_bshowPopup;
+	bool		m_bshowToolTip;
+	bool		m_bscaleAxisLabels;
+	bool		m_bfullScreenMode;
+	bool		m_bautoRngUpdate;
+	bool		m_bzoomRect;
+	bool		m_bvalidRect;
+	bool		m_mapToRect;
+	bool		m_newSelect;
+	bool		m_bdragging;
+	bool		m_bregionSelect;
+
+	vector<Selection>	m_selection;
 
 private:
 	QAction*	m_pZoomToFit;

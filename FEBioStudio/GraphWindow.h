@@ -1,6 +1,5 @@
 #pragma once
 #include <QMainWindow>
-#include <QDockWidget>
 #include <MathLib/MathParser.h>
 #include "PlotWidget.h"
 #include "Document.h"
@@ -35,6 +34,33 @@ public:
 };
 
 //=================================================================================================
+// Time range options
+class TimeRangeOptionsUI;
+
+class TimeRangeOptions : public CPlotTool
+{
+	Q_OBJECT
+
+public:
+	int currentOption();
+	void setUserTimeRange(int imin, int imax);
+	void getUserTimeRange(int& imin, int& imax);
+	bool autoRangeUpdate();
+
+public slots:
+	void onOptionsChanged();
+
+signals:
+	void optionsChanged();
+
+public:
+	TimeRangeOptions(CGraphWidget* graph, QWidget* parent = 0);
+
+private:
+	TimeRangeOptionsUI*	ui;
+};
+
+//=================================================================================================
 // Graph options
 class GraphOptionsUI;
 
@@ -43,15 +69,10 @@ class GraphOptions : public CPlotTool
 	Q_OBJECT
 
 public:
-	int currentOption();
-	void setUserTimeRange(int imin, int imax);
-	void getUserTimeRange(int& imin, int& imax);
-
 	bool lineSmoothing();
-
-	bool autoRangeUpdate();
-
 	bool drawGrid();
+	bool drawTitle();
+	bool drawLegend();
 
 public slots:
 	void onOptionsChanged();
@@ -170,7 +191,7 @@ public:
 };
 
 //=================================================================================================
-class CGraphWindow : public QDockWidget, public CDocObserver
+class CGraphWindow : public QMainWindow, public CDocObserver
 {
 	Q_OBJECT
 
@@ -191,7 +212,8 @@ public:
 
 	enum GraphOptions
 	{
-		SHOW_TYPE_OPTIONS = 1,
+		SHOW_TYPE_OPTIONS = 0x01,
+		SHOW_TIME_RANGE = 0x02,
 		SHOW_ALL_OPTIONS = 0xFF
 	};
 
@@ -269,6 +291,9 @@ public:
 	// get the current plot type
 	int GetCurrentPlotType();
 
+public:
+	void ShowAddToModelButton(bool b);
+
 private:
 	// from CDocObserver
 	void DocumentUpdate(bool newDoc) override;
@@ -279,6 +304,7 @@ private slots:
 	void on_selectY_currentValueChanged(int);
 	void on_selectPlot_currentIndexChanged(int);
 	void on_actionSave_triggered();
+	void on_actionAddToModel_triggered();
 	void on_actionClipboard_triggered();
 	void on_actionSnapshot_triggered();
 	void on_actionProps_triggered();
@@ -288,6 +314,7 @@ private slots:
 	void on_actionZoomSelect_toggled(bool bchecked);
 	void on_plot_doneZoomToRect();
 	void on_options_optionsChanged();
+	void on_range_optionsChanged();
 
 private:
 	CMainWindow*		m_wnd;
@@ -303,15 +330,16 @@ private:
 class CDataGraphWindow : public CGraphWindow
 {
 public:
-	CDataGraphWindow(CMainWindow* wnd, CPostDocument* postDoc);
+	CDataGraphWindow(CMainWindow* wnd, CPostDocument* doc);
 
-	void SetData(const std::vector<double>& data, QString title);
+	void SetData(const CGraphData* data);
 
 	void Update(bool breset = true, bool bfit = false);
 
+	void closeEvent(QCloseEvent* ev);
+
 private:
-	QString				m_title;
-	std::vector<double>	m_data;
+	const CGraphData*	m_data;
 };
 
 //=================================================================================================
@@ -336,7 +364,7 @@ private:
 	void addSelectedFaces();
 	void addSelectedElems();
 
-	CLineChartData* nextData();
+	CPlotData* nextData();
 
 private: // temporary variables used during update
 	int	m_xtype, m_xtypeprev;			// x-plot field option (0=time, 1=steps, 2=data field)

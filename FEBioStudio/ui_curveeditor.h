@@ -96,8 +96,8 @@ public:
 		plot->showToolTip(false);
 		plot->scaleAxisLabels(false);
 		plot->setFullScreenMode(true);
-		plot->setXAxisLabelAlignment(CPlotWidget::ALIGN_LABEL_TOP);
-		plot->setYAxisLabelAlignment(CPlotWidget::ALIGN_LABEL_RIGHT);
+		plot->setXAxisLabelAlignment(ALIGN_LABEL_TOP);
+		plot->setYAxisLabelAlignment(ALIGN_LABEL_RIGHT);
 		plot->setBackgroundColor(QColor(48, 48, 48));
 		plot->setGridColor(QColor(128, 128, 128));
 		plot->setXAxisColor(QColor(255, 255, 255));
