@@ -113,6 +113,7 @@ public slots:
 	void OnCopyRigidConstraint();
 	void OnCopyStep();
 	void OnRerunJob();
+	void OnOpenJob();
 	void OnEditOutput();
 	void OnEditOutputLog();
 	void OnRemoveEmptySelections();

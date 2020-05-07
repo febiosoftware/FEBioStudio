@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CModelViewer_t {
-    QByteArrayData data[80];
-    char stringdata0[1312];
+    QByteArrayData data[81];
+    char stringdata0[1322];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -90,28 +90,29 @@ QT_MOC_LITERAL(54, 831, 10), // "OnCopyLoad"
 QT_MOC_LITERAL(55, 842, 21), // "OnCopyRigidConstraint"
 QT_MOC_LITERAL(56, 864, 10), // "OnCopyStep"
 QT_MOC_LITERAL(57, 875, 10), // "OnRerunJob"
-QT_MOC_LITERAL(58, 886, 12), // "OnEditOutput"
-QT_MOC_LITERAL(59, 899, 15), // "OnEditOutputLog"
-QT_MOC_LITERAL(60, 915, 23), // "OnRemoveEmptySelections"
-QT_MOC_LITERAL(61, 939, 21), // "OnRemoveAllSelections"
-QT_MOC_LITERAL(62, 961, 16), // "OnChangeMaterial"
-QT_MOC_LITERAL(63, 978, 19), // "OnMaterialHideParts"
-QT_MOC_LITERAL(64, 998, 19), // "OnMaterialShowParts"
-QT_MOC_LITERAL(65, 1018, 24), // "OnMaterialHideOtherParts"
-QT_MOC_LITERAL(66, 1043, 17), // "OnExportMaterials"
-QT_MOC_LITERAL(67, 1061, 20), // "OnExportAllMaterials"
-QT_MOC_LITERAL(68, 1082, 17), // "OnImportMaterials"
-QT_MOC_LITERAL(69, 1100, 20), // "OnDeleteAllMaterials"
-QT_MOC_LITERAL(70, 1121, 17), // "OnSwapMasterSlave"
-QT_MOC_LITERAL(71, 1139, 13), // "OnGenerateMap"
-QT_MOC_LITERAL(72, 1153, 13), // "OnDeleteAllBC"
-QT_MOC_LITERAL(73, 1167, 16), // "OnDeleteAllLoads"
-QT_MOC_LITERAL(74, 1184, 13), // "OnDeleteAllIC"
-QT_MOC_LITERAL(75, 1198, 18), // "OnDeleteAllContact"
-QT_MOC_LITERAL(76, 1217, 22), // "OnDeleteAllConstraints"
-QT_MOC_LITERAL(77, 1240, 27), // "OnDeleteAllRigidConstraints"
-QT_MOC_LITERAL(78, 1268, 26), // "OnDeleteAllRigidConnectors"
-QT_MOC_LITERAL(79, 1295, 16) // "OnDeleteAllSteps"
+QT_MOC_LITERAL(58, 886, 9), // "OnOpenJob"
+QT_MOC_LITERAL(59, 896, 12), // "OnEditOutput"
+QT_MOC_LITERAL(60, 909, 15), // "OnEditOutputLog"
+QT_MOC_LITERAL(61, 925, 23), // "OnRemoveEmptySelections"
+QT_MOC_LITERAL(62, 949, 21), // "OnRemoveAllSelections"
+QT_MOC_LITERAL(63, 971, 16), // "OnChangeMaterial"
+QT_MOC_LITERAL(64, 988, 19), // "OnMaterialHideParts"
+QT_MOC_LITERAL(65, 1008, 19), // "OnMaterialShowParts"
+QT_MOC_LITERAL(66, 1028, 24), // "OnMaterialHideOtherParts"
+QT_MOC_LITERAL(67, 1053, 17), // "OnExportMaterials"
+QT_MOC_LITERAL(68, 1071, 20), // "OnExportAllMaterials"
+QT_MOC_LITERAL(69, 1092, 17), // "OnImportMaterials"
+QT_MOC_LITERAL(70, 1110, 20), // "OnDeleteAllMaterials"
+QT_MOC_LITERAL(71, 1131, 17), // "OnSwapMasterSlave"
+QT_MOC_LITERAL(72, 1149, 13), // "OnGenerateMap"
+QT_MOC_LITERAL(73, 1163, 13), // "OnDeleteAllBC"
+QT_MOC_LITERAL(74, 1177, 16), // "OnDeleteAllLoads"
+QT_MOC_LITERAL(75, 1194, 13), // "OnDeleteAllIC"
+QT_MOC_LITERAL(76, 1208, 18), // "OnDeleteAllContact"
+QT_MOC_LITERAL(77, 1227, 22), // "OnDeleteAllConstraints"
+QT_MOC_LITERAL(78, 1250, 27), // "OnDeleteAllRigidConstraints"
+QT_MOC_LITERAL(79, 1278, 26), // "OnDeleteAllRigidConnectors"
+QT_MOC_LITERAL(80, 1305, 16) // "OnDeleteAllSteps"
 
     },
     "CModelViewer\0currentObjectChanged\0\0"
@@ -137,16 +138,17 @@ QT_MOC_LITERAL(79, 1295, 16) // "OnDeleteAllSteps"
     "OnSelectNode\0OnCopyMaterial\0OnCopyInterface\0"
     "OnCopyBC\0OnCopyIC\0OnCopyRigidConnector\0"
     "OnCopyLoad\0OnCopyRigidConstraint\0"
-    "OnCopyStep\0OnRerunJob\0OnEditOutput\0"
-    "OnEditOutputLog\0OnRemoveEmptySelections\0"
-    "OnRemoveAllSelections\0OnChangeMaterial\0"
-    "OnMaterialHideParts\0OnMaterialShowParts\0"
-    "OnMaterialHideOtherParts\0OnExportMaterials\0"
-    "OnExportAllMaterials\0OnImportMaterials\0"
-    "OnDeleteAllMaterials\0OnSwapMasterSlave\0"
-    "OnGenerateMap\0OnDeleteAllBC\0"
-    "OnDeleteAllLoads\0OnDeleteAllIC\0"
-    "OnDeleteAllContact\0OnDeleteAllConstraints\0"
+    "OnCopyStep\0OnRerunJob\0OnOpenJob\0"
+    "OnEditOutput\0OnEditOutputLog\0"
+    "OnRemoveEmptySelections\0OnRemoveAllSelections\0"
+    "OnChangeMaterial\0OnMaterialHideParts\0"
+    "OnMaterialShowParts\0OnMaterialHideOtherParts\0"
+    "OnExportMaterials\0OnExportAllMaterials\0"
+    "OnImportMaterials\0OnDeleteAllMaterials\0"
+    "OnSwapMasterSlave\0OnGenerateMap\0"
+    "OnDeleteAllBC\0OnDeleteAllLoads\0"
+    "OnDeleteAllIC\0OnDeleteAllContact\0"
+    "OnDeleteAllConstraints\0"
     "OnDeleteAllRigidConstraints\0"
     "OnDeleteAllRigidConnectors\0OnDeleteAllSteps"
 };
@@ -158,7 +160,7 @@ static const uint qt_meta_data_CModelViewer[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      68,   14, // methods
+      69,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -166,76 +168,77 @@ static const uint qt_meta_data_CModelViewer[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,  354,    2, 0x06 /* Public */,
+       1,    1,  359,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       5,    2,  357,    2, 0x08 /* Private */,
-       9,    2,  362,    2, 0x08 /* Private */,
-      12,    0,  367,    2, 0x08 /* Private */,
-      13,    0,  368,    2, 0x08 /* Private */,
-      14,    1,  369,    2, 0x08 /* Private */,
-      16,    0,  372,    2, 0x08 /* Private */,
-      17,    1,  373,    2, 0x08 /* Private */,
-      19,    0,  376,    2, 0x08 /* Private */,
-      20,    1,  377,    2, 0x08 /* Private */,
-      21,    1,  380,    2, 0x08 /* Private */,
-      23,    0,  383,    2, 0x0a /* Public */,
-      24,    0,  384,    2, 0x0a /* Public */,
-      25,    0,  385,    2, 0x0a /* Public */,
-      26,    0,  386,    2, 0x0a /* Public */,
-      27,    0,  387,    2, 0x0a /* Public */,
-      28,    0,  388,    2, 0x0a /* Public */,
-      29,    0,  389,    2, 0x0a /* Public */,
-      30,    0,  390,    2, 0x0a /* Public */,
-      31,    0,  391,    2, 0x0a /* Public */,
-      32,    0,  392,    2, 0x0a /* Public */,
-      33,    0,  393,    2, 0x0a /* Public */,
-      34,    0,  394,    2, 0x0a /* Public */,
-      35,    0,  395,    2, 0x0a /* Public */,
-      36,    0,  396,    2, 0x0a /* Public */,
-      37,    0,  397,    2, 0x0a /* Public */,
-      38,    0,  398,    2, 0x0a /* Public */,
-      39,    0,  399,    2, 0x0a /* Public */,
-      40,    0,  400,    2, 0x0a /* Public */,
-      41,    0,  401,    2, 0x0a /* Public */,
-      42,    0,  402,    2, 0x0a /* Public */,
-      43,    0,  403,    2, 0x0a /* Public */,
-      44,    0,  404,    2, 0x0a /* Public */,
-      45,    0,  405,    2, 0x0a /* Public */,
-      46,    0,  406,    2, 0x0a /* Public */,
-      47,    0,  407,    2, 0x0a /* Public */,
-      48,    0,  408,    2, 0x0a /* Public */,
-      49,    0,  409,    2, 0x0a /* Public */,
-      50,    0,  410,    2, 0x0a /* Public */,
-      51,    0,  411,    2, 0x0a /* Public */,
-      52,    0,  412,    2, 0x0a /* Public */,
-      53,    0,  413,    2, 0x0a /* Public */,
-      54,    0,  414,    2, 0x0a /* Public */,
-      55,    0,  415,    2, 0x0a /* Public */,
-      56,    0,  416,    2, 0x0a /* Public */,
-      57,    0,  417,    2, 0x0a /* Public */,
-      58,    0,  418,    2, 0x0a /* Public */,
-      59,    0,  419,    2, 0x0a /* Public */,
-      60,    0,  420,    2, 0x0a /* Public */,
-      61,    0,  421,    2, 0x0a /* Public */,
-      62,    0,  422,    2, 0x0a /* Public */,
-      63,    0,  423,    2, 0x0a /* Public */,
-      64,    0,  424,    2, 0x0a /* Public */,
-      65,    0,  425,    2, 0x0a /* Public */,
-      66,    0,  426,    2, 0x0a /* Public */,
-      67,    0,  427,    2, 0x0a /* Public */,
-      68,    0,  428,    2, 0x0a /* Public */,
-      69,    0,  429,    2, 0x0a /* Public */,
-      70,    0,  430,    2, 0x0a /* Public */,
-      71,    0,  431,    2, 0x0a /* Public */,
-      72,    0,  432,    2, 0x0a /* Public */,
-      73,    0,  433,    2, 0x0a /* Public */,
-      74,    0,  434,    2, 0x0a /* Public */,
-      75,    0,  435,    2, 0x0a /* Public */,
-      76,    0,  436,    2, 0x0a /* Public */,
-      77,    0,  437,    2, 0x0a /* Public */,
-      78,    0,  438,    2, 0x0a /* Public */,
-      79,    0,  439,    2, 0x0a /* Public */,
+       5,    2,  362,    2, 0x08 /* Private */,
+       9,    2,  367,    2, 0x08 /* Private */,
+      12,    0,  372,    2, 0x08 /* Private */,
+      13,    0,  373,    2, 0x08 /* Private */,
+      14,    1,  374,    2, 0x08 /* Private */,
+      16,    0,  377,    2, 0x08 /* Private */,
+      17,    1,  378,    2, 0x08 /* Private */,
+      19,    0,  381,    2, 0x08 /* Private */,
+      20,    1,  382,    2, 0x08 /* Private */,
+      21,    1,  385,    2, 0x08 /* Private */,
+      23,    0,  388,    2, 0x0a /* Public */,
+      24,    0,  389,    2, 0x0a /* Public */,
+      25,    0,  390,    2, 0x0a /* Public */,
+      26,    0,  391,    2, 0x0a /* Public */,
+      27,    0,  392,    2, 0x0a /* Public */,
+      28,    0,  393,    2, 0x0a /* Public */,
+      29,    0,  394,    2, 0x0a /* Public */,
+      30,    0,  395,    2, 0x0a /* Public */,
+      31,    0,  396,    2, 0x0a /* Public */,
+      32,    0,  397,    2, 0x0a /* Public */,
+      33,    0,  398,    2, 0x0a /* Public */,
+      34,    0,  399,    2, 0x0a /* Public */,
+      35,    0,  400,    2, 0x0a /* Public */,
+      36,    0,  401,    2, 0x0a /* Public */,
+      37,    0,  402,    2, 0x0a /* Public */,
+      38,    0,  403,    2, 0x0a /* Public */,
+      39,    0,  404,    2, 0x0a /* Public */,
+      40,    0,  405,    2, 0x0a /* Public */,
+      41,    0,  406,    2, 0x0a /* Public */,
+      42,    0,  407,    2, 0x0a /* Public */,
+      43,    0,  408,    2, 0x0a /* Public */,
+      44,    0,  409,    2, 0x0a /* Public */,
+      45,    0,  410,    2, 0x0a /* Public */,
+      46,    0,  411,    2, 0x0a /* Public */,
+      47,    0,  412,    2, 0x0a /* Public */,
+      48,    0,  413,    2, 0x0a /* Public */,
+      49,    0,  414,    2, 0x0a /* Public */,
+      50,    0,  415,    2, 0x0a /* Public */,
+      51,    0,  416,    2, 0x0a /* Public */,
+      52,    0,  417,    2, 0x0a /* Public */,
+      53,    0,  418,    2, 0x0a /* Public */,
+      54,    0,  419,    2, 0x0a /* Public */,
+      55,    0,  420,    2, 0x0a /* Public */,
+      56,    0,  421,    2, 0x0a /* Public */,
+      57,    0,  422,    2, 0x0a /* Public */,
+      58,    0,  423,    2, 0x0a /* Public */,
+      59,    0,  424,    2, 0x0a /* Public */,
+      60,    0,  425,    2, 0x0a /* Public */,
+      61,    0,  426,    2, 0x0a /* Public */,
+      62,    0,  427,    2, 0x0a /* Public */,
+      63,    0,  428,    2, 0x0a /* Public */,
+      64,    0,  429,    2, 0x0a /* Public */,
+      65,    0,  430,    2, 0x0a /* Public */,
+      66,    0,  431,    2, 0x0a /* Public */,
+      67,    0,  432,    2, 0x0a /* Public */,
+      68,    0,  433,    2, 0x0a /* Public */,
+      69,    0,  434,    2, 0x0a /* Public */,
+      70,    0,  435,    2, 0x0a /* Public */,
+      71,    0,  436,    2, 0x0a /* Public */,
+      72,    0,  437,    2, 0x0a /* Public */,
+      73,    0,  438,    2, 0x0a /* Public */,
+      74,    0,  439,    2, 0x0a /* Public */,
+      75,    0,  440,    2, 0x0a /* Public */,
+      76,    0,  441,    2, 0x0a /* Public */,
+      77,    0,  442,    2, 0x0a /* Public */,
+      78,    0,  443,    2, 0x0a /* Public */,
+      79,    0,  444,    2, 0x0a /* Public */,
+      80,    0,  445,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, 0x80000000 | 3,    4,
@@ -251,6 +254,7 @@ static const uint qt_meta_data_CModelViewer[] = {
     QMetaType::Void,
     QMetaType::Void, QMetaType::Bool,   15,
     QMetaType::Void, QMetaType::Int,   22,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -364,28 +368,29 @@ void CModelViewer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 43: _t->OnCopyRigidConstraint(); break;
         case 44: _t->OnCopyStep(); break;
         case 45: _t->OnRerunJob(); break;
-        case 46: _t->OnEditOutput(); break;
-        case 47: _t->OnEditOutputLog(); break;
-        case 48: _t->OnRemoveEmptySelections(); break;
-        case 49: _t->OnRemoveAllSelections(); break;
-        case 50: _t->OnChangeMaterial(); break;
-        case 51: _t->OnMaterialHideParts(); break;
-        case 52: _t->OnMaterialShowParts(); break;
-        case 53: _t->OnMaterialHideOtherParts(); break;
-        case 54: _t->OnExportMaterials(); break;
-        case 55: _t->OnExportAllMaterials(); break;
-        case 56: _t->OnImportMaterials(); break;
-        case 57: _t->OnDeleteAllMaterials(); break;
-        case 58: _t->OnSwapMasterSlave(); break;
-        case 59: _t->OnGenerateMap(); break;
-        case 60: _t->OnDeleteAllBC(); break;
-        case 61: _t->OnDeleteAllLoads(); break;
-        case 62: _t->OnDeleteAllIC(); break;
-        case 63: _t->OnDeleteAllContact(); break;
-        case 64: _t->OnDeleteAllConstraints(); break;
-        case 65: _t->OnDeleteAllRigidConstraints(); break;
-        case 66: _t->OnDeleteAllRigidConnectors(); break;
-        case 67: _t->OnDeleteAllSteps(); break;
+        case 46: _t->OnOpenJob(); break;
+        case 47: _t->OnEditOutput(); break;
+        case 48: _t->OnEditOutputLog(); break;
+        case 49: _t->OnRemoveEmptySelections(); break;
+        case 50: _t->OnRemoveAllSelections(); break;
+        case 51: _t->OnChangeMaterial(); break;
+        case 52: _t->OnMaterialHideParts(); break;
+        case 53: _t->OnMaterialShowParts(); break;
+        case 54: _t->OnMaterialHideOtherParts(); break;
+        case 55: _t->OnExportMaterials(); break;
+        case 56: _t->OnExportAllMaterials(); break;
+        case 57: _t->OnImportMaterials(); break;
+        case 58: _t->OnDeleteAllMaterials(); break;
+        case 59: _t->OnSwapMasterSlave(); break;
+        case 60: _t->OnGenerateMap(); break;
+        case 61: _t->OnDeleteAllBC(); break;
+        case 62: _t->OnDeleteAllLoads(); break;
+        case 63: _t->OnDeleteAllIC(); break;
+        case 64: _t->OnDeleteAllContact(); break;
+        case 65: _t->OnDeleteAllConstraints(); break;
+        case 66: _t->OnDeleteAllRigidConstraints(); break;
+        case 67: _t->OnDeleteAllRigidConnectors(); break;
+        case 68: _t->OnDeleteAllSteps(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -429,13 +434,13 @@ int CModelViewer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 68)
+        if (_id < 69)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 68;
+        _id -= 69;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 68)
+        if (_id < 69)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 68;
+        _id -= 69;
     }
     return _id;
 }

@@ -106,17 +106,7 @@ void CModelViewer::on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTr
 
 void CModelViewer::on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column)
 {
-	FSObject* po = GetCurrentObject();
-	if (po == nullptr) return;
-
-	CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
-	if (job == nullptr) return;
-
-	CModelDocument* doc = job->GetDocument();
-	assert(doc);
-	QString plotFile = doc->ToAbsolutePath(job->GetPlotFileName());
-
-	GetMainWindow()->OpenFile(plotFile, false);
+	OnOpenJob();
 }
 
 void CModelViewer::SetCurrentItem(int item)
@@ -1186,6 +1176,21 @@ void CModelViewer::OnRerunJob()
 	wnd->RunFEBioJob(job);
 }
 
+void CModelViewer::OnOpenJob()
+{
+	FSObject* po = GetCurrentObject();
+	if (po == nullptr) return;
+
+	CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
+	if (job == nullptr) return;
+
+	CModelDocument* doc = job->GetDocument();
+	assert(doc);
+	QString plotFile = doc->ToAbsolutePath(job->GetPlotFileName());
+
+	GetMainWindow()->OpenFile(plotFile, false);
+}
+
 void CModelViewer::OnEditOutput()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1447,6 +1452,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_JOB:
+		menu.addAction("Open", this, SLOT(OnOpenJob()));
 		menu.addAction("Rerun job", this, SLOT(OnRerunJob()));
 		del = true;
 		break;
