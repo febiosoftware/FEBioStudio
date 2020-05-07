@@ -221,13 +221,10 @@ class CFEBioJobProps : public CPropertyList
 public:
 	CFEBioJobProps(CMainWindow* wnd, CModelViewer* tree, CFEBioJob* job) : m_wnd(wnd), m_tree(tree), m_job(job)
 	{
-		addProperty("FEBio File", CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 		addProperty("Status", CProperty::Enum)->setEnumValues(QStringList() << "NONE" << "NORMAL TERMINATION" << "ERROR TERMINATION" << "CANCELLED" << "RUNNING").setFlags(CProperty::Visible);
-		addProperty("Plot File" , CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
-//		addProperty("", CProperty::Action)->info = QString("Open in FEBio Studio");
-		addProperty("", CProperty::Action)->info = QString("Open in PostView");
+		addProperty("FEBio File", CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
+		addProperty("Plot File" , CProperty::InternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
 		addProperty("Log File" , CProperty::ExternalLink)->setFlags(CProperty::Editable|CProperty::Visible);
-
 
 		if(job->GetLaunchConfig()->type != LOCAL)
 		{
@@ -246,15 +243,14 @@ public:
 	{
 		switch (i)
 		{
-		case 0: 
+		case 0: return m_job->GetStatus();
+		case 1:
 		{
 			QStringList fileNames;
 			fileNames.append(QString(m_job->GetFEBFileName().c_str()));
 			fileNames.append(QString(m_job->GetFEBFileName(true).c_str()));
 			return fileNames;
 		}
-		break;
-		case 1: return m_job->GetStatus(); break;
 		case 2:
 		{
 			QStringList fileNames;
@@ -262,7 +258,7 @@ public:
 			fileNames.append(QString(m_job->GetPlotFileName(true).c_str()));
 			return fileNames;
 		}
-		case 4:
+		case 3:
 		{
 			QStringList fileNames;
 			fileNames.append(QString(m_job->GetLogFileName().c_str()));
@@ -276,16 +272,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-		if (i == 3)
-		{
-			CModelDocument* doc = m_job->GetDocument(); assert(doc);
-			QString plotFile = doc->ToAbsolutePath(m_job->GetPlotFileName());
-			plotFile = "file:///" + plotFile;
-
-			// try to open the file
-			QDesktopServices::openUrl(QUrl(plotFile));
-		}
-		else if (i == 5)
+		if (i == 4)
 		{
 			if(!m_job->GetSSHHandler()->IsBusy())
 			{
@@ -301,7 +288,7 @@ public:
 //		{
 //			m_job->GetSSHHandler()->Orphan();
 //		}
-		else if (i == 6)
+		else if (i == 5)
 		{
 			if(!m_job->GetSSHHandler()->IsBusy())
 			{

@@ -3,21 +3,21 @@
 #include <QString>
 
 namespace Ui {
-	class CExternalLinkEdit;
+	class CLinkPropertyEdit;
 }
 
 //-----------------------------------------------------------------------------
 // This class can be used to access a resource (e.g. file)
-class CExternalLinkEdit : public QWidget
+class CLinkPropertyEdit : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CExternalLinkEdit(QStringList& paths, QWidget* parent = 0);
+	CLinkPropertyEdit(QStringList& paths, bool internal=false, QWidget* parent = 0);
 
 private slots:
 	void buttonPressed();
 
 private:
-	Ui::CExternalLinkEdit*	ui;
+	Ui::CLinkPropertyEdit*	ui;
 };

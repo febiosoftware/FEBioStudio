@@ -152,6 +152,11 @@ CProperty* CDataPropertyList::addResourceProperty(QString* pd, const QString& na
 	return addProperty(name, CProperty::Resource)->setData(pd);
 }
 
+CProperty* CDataPropertyList::addInternalLinkProperty(QStringList* pd, const QString& name)
+{
+	return addProperty(name, CProperty::InternalLink)->setData(pd);
+}
+
 CProperty* CDataPropertyList::addExternalLinkProperty(QStringList* pd, const QString& name)
 {
 	return addProperty(name, CProperty::ExternalLink)->setData(pd);

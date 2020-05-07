@@ -18,6 +18,7 @@ public:
 		Enum,
 		Color,
 		Resource,	// external resource (e.g. file)
+		InternalLink,
 		ExternalLink,
 		Group,
 		MathString,
@@ -137,6 +138,7 @@ public:
 	CProperty* addCurveProperty    (QString* pd, const QString& name);
 	CProperty* addCurveListProperty(QStringList* pd, const QString& name);
 	CProperty* addResourceProperty (QString* pd, const QString& name);
+	CProperty* addInternalLinkProperty (QStringList* pd, const QString& name);
 	CProperty* addExternalLinkProperty (QStringList* pd, const QString& name);
 	CProperty* addVec3Property     (vec3d* pd, const QString& name);
 	CProperty* addVec2iProperty    (vec2i* pd, const QString& name);

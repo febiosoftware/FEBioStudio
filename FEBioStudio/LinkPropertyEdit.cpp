@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ExternalLinkEdit.h"
+#include "LinkPropertyEdit.h"
 #include <QDesktopServices>
 #include <QLineEdit>
 #include <QToolButton>
@@ -11,7 +11,7 @@
 #include <FSCore/FSDir.h>
 #include "MainWindow.h"
 
-class Ui::CExternalLinkEdit
+class Ui::CLinkPropertyEdit
 {
 public:
 	QLineEdit*		m_relativePathEdit;
@@ -19,19 +19,27 @@ public:
 
 	QString fullPath;
 	QString relativePath;
+	bool internal;
 
 public:
-	void setup(QWidget* w, QStringList& paths)
+	CLinkPropertyEdit(QStringList& paths, bool internal)
+		: internal(internal)
 	{
 		fullPath = paths[0];
 		relativePath = paths[1];
+	}
 
+	void setup(QWidget* w)
+	{
 		m_relativePathEdit = new QLineEdit(relativePath);
 		m_relativePathEdit->setDisabled(true);
 		m_relativePathEdit->setToolTip(fullPath);
 
 		m_open = new QToolButton;
 		m_open->setIcon(QIcon(":/icons/open.png"));
+
+		if(internal) m_open->setToolTip("Open file");
+		else m_open->setToolTip("Open in external editor");
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(m_relativePathEdit);
@@ -47,12 +55,13 @@ public:
 
 //=================================================================================================
 
-CExternalLinkEdit::CExternalLinkEdit(QStringList& paths, QWidget* parent) : QWidget(parent), ui(new Ui::CExternalLinkEdit)
+CLinkPropertyEdit::CLinkPropertyEdit(QStringList& paths, bool internal, QWidget* parent)
+	: QWidget(parent), ui(new Ui::CLinkPropertyEdit(paths, internal))
 {
-	ui->setup(this, paths);
+	ui->setup(this);
 }
 
-void CExternalLinkEdit::buttonPressed()
+void CLinkPropertyEdit::buttonPressed()
 {
 	QFileInfo info = QFileInfo(ui->fullPath);
 
@@ -65,8 +74,7 @@ void CExternalLinkEdit::buttonPressed()
 		return;
 	}
 
-	// Open xplt files internally. TODO: do we want this special case here?
-	if(info.suffix().compare("xplt") == 0)
+	if(ui->internal)
 	{
 		CMainWindow* wnd = dynamic_cast<CMainWindow*>(QApplication::activeWindow()); assert(wnd);
 
