@@ -17,6 +17,8 @@ public:
 	CLocalDatabaseHandler(std::string dbPath, CDatabasePanel* dbPanel);
 	~CLocalDatabaseHandler();
 
+	void init(std::string schema);
+
 	void update(QJsonDocument& jsonDoc);
 
 	void GetCategories();

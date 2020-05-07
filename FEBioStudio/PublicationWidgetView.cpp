@@ -175,6 +175,18 @@ CPublicationWidget* CPublicationWidgetView::addPublication(QString title, QStrin
 	return pub;
 }
 
+CPublicationWidget* CPublicationWidgetView::addPublicationCopy(CPublicationWidget& oldPub)
+{
+	CPublicationWidget* pub = new CPublicationWidget(oldPub);
+
+	pubs.push_back(pub);
+	ui->addPublication(pub);
+
+	QObject::connect(pub, &CPublicationWidget::chosen_publication, this, &CPublicationWidgetView::chosen_publication);
+
+	return pub;
+}
+
 void CPublicationWidgetView::on_addPub_triggered()
 {
 	CDlgAddPublication dlg(this);
@@ -268,4 +280,9 @@ QList<QVariant> CPublicationWidgetView::getPublicationInfo()
 	}
 
 	return pubInfo;
+}
+
+const std::vector<CPublicationWidget*>& CPublicationWidgetView::getPublications()
+{
+	return pubs;
 }

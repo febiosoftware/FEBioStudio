@@ -103,6 +103,25 @@ void CRepoConnectionHandler::authenticate(QString userName, QString password)
 
 }
 
+void CRepoConnectionHandler::getSchema()
+{
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost("omen.sci.utah.edu");
+	myurl.setPort(4433);
+	myurl.setPath("/modelRepo/api/v1.0/schema");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+
+	if(NetworkAccessibleCheck())
+	{
+		imp->restclient->get(request);
+	}
+}
+
 void CRepoConnectionHandler::getTables()
 {
 	QUrl myurl;
@@ -217,6 +236,46 @@ void CRepoConnectionHandler::uploadFile(QString fileToken)
 
 }
 
+void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
+{
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost("omen.sci.utah.edu");
+	myurl.setPort(4433);
+	myurl.setPath(QString("/modelRepo/api/v1.0/projects/%1").arg(id));
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+	if(NetworkAccessibleCheck())
+	{
+		imp->restclient->put(request, projectInfo);
+	}
+}
+
+void CRepoConnectionHandler::deleteProject(int id)
+{
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost("omen.sci.utah.edu");
+	myurl.setPort(4433);
+	myurl.setPath(QString("/modelRepo/api/v1.0/projects/%1").arg(id));
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+	if(NetworkAccessibleCheck())
+	{
+		imp->restclient->deleteResource(request);
+	}
+}
+
 void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 {
 	QString URL = r->request().url().toString();
@@ -233,6 +292,10 @@ void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 //	{
 //		modelListReply(r);
 //	}
+	else if(URL.contains("schema"))
+	{
+		getSchemaReply(r);
+	}
 	else if(URL.contains("files/"))
 	{
 		getFileReply(r);
@@ -252,6 +315,17 @@ void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 	else if(URL.contains("tables"))
 	{
 		getTablesReply(r);
+	}
+	else if(URL.contains("projects"))
+	{
+		if(r->operation() == QNetworkAccessManager::PutOperation)
+		{
+			modifyProjectRepy(r);
+		}
+		else if(r->operation() == QNetworkAccessManager::DeleteOperation)
+		{
+			deleteProjectRepy(r);
+		}
 	}
 
 }
@@ -330,8 +404,8 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 		// Store the authentication token
 //		imp->token = (QString)r->readAll();
 
-		// Send a requst to get the repository data
-		getTables();
+		// Send a request to get the repository schema
+		getSchema();
 	}
 	else if(statusCode == 403)
 	{
@@ -339,14 +413,14 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 		QJsonObject obj = jsonDoc.object();
 		QString message = obj.value("message").toString();
 
-		imp->dbPanel->FailedLogin(message);
+		imp->dbPanel->ShowMessage(message);
 	}
 	else
 	{
 		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
 		message += std::to_string(statusCode).c_str();
 
-		imp->dbPanel->FailedLogin(message);
+		imp->dbPanel->ShowMessage(message);
 	}
 
 }
@@ -377,6 +451,31 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 //
 //}
 
+void CRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
+{
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	if(statusCode == 200)
+	{
+		std::string schema = QString(r->readAll()).toStdString();
+
+		imp->dbHandler->init(schema);
+
+		getTables();
+	}
+	else if(statusCode == 403)
+	{
+		imp->dbPanel->LoginTimeout();
+	}
+	else
+	{
+		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		message += std::to_string(statusCode).c_str();
+
+		imp->dbPanel->ShowMessage(message);
+	}
+}
+
 void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -398,7 +497,7 @@ void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
 		message += std::to_string(statusCode).c_str();
 
-		imp->dbPanel->FailedLogin(message);
+		imp->dbPanel->ShowMessage(message);
 	}
 }
 
@@ -441,7 +540,7 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
 		message += std::to_string(statusCode).c_str();
 
-		imp->dbPanel->FailedLogin(message);
+		imp->dbPanel->ShowMessage(message);
 	}
 
 
@@ -527,7 +626,7 @@ void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
 		message += std::to_string(statusCode).c_str();
 
-		imp->dbPanel->FailedLogin(message);
+		imp->dbPanel->ShowMessage(message);
 	}
 
 }
@@ -537,9 +636,39 @@ void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
 	string fileName = imp->m_wnd->GetDocument()->GetDocFolder() + "/.projOutForUpload.prj";
 	QFile::remove(fileName.c_str());
 
-	getTables();
+	getSchema();
 
 	imp->dbPanel->SetModelList();
+}
+
+void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
+{
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	if(statusCode == 200)
+	{
+		getSchema();
+
+		imp->dbPanel->SetModelList();
+	}
+
+	imp->dbPanel->ShowMessage(r->readAll());
+
+}
+
+void CRepoConnectionHandler::deleteProjectRepy(QNetworkReply *r)
+{
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	if(statusCode == 200)
+	{
+		getSchema();
+
+		imp->dbPanel->SetModelList();
+	}
+
+	imp->dbPanel->ShowMessage(r->readAll());
+
 }
 
 //void CRepoConnectionHandler::TCPUpload(QString fileToken)

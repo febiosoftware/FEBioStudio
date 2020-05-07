@@ -24,12 +24,15 @@ public:
 			QString volume, QString issue, QString pages, QString DOI,
 			QStringList authorGiven, QStringList authorFamily);
 
+	CPublicationWidget* addPublicationCopy(CPublicationWidget& oldPub);
+
 	void clear();
 	int count();
 
 	int getType() const;
 
 	QList<QVariant> getPublicationInfo();
+	const std::vector<CPublicationWidget*>& getPublications();
 
 public slots:
 	void on_addPub_triggered();

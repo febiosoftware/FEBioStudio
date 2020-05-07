@@ -29,7 +29,7 @@ public:
 	void Init(QString repositoryFolder);
 
 	void SetModelList();
-	void FailedLogin(QString message);
+	void ShowMessage(QString message);
 	void LoginTimeout();
 	void NetworkInaccessible();
 	void DownloadFinished(int fileID, int fileType);
@@ -42,7 +42,6 @@ public:
 	void SetFileData(char **argv);
 	void AddCurrentTag(char **argv);
 	void AddPublication(QVariantMap data);
-	void PrintModel(char **argv);
 
 	QString RepositoryFolder();
 
@@ -56,6 +55,8 @@ private slots:
 	void on_actionUpload_triggered();
 	void on_actionSearch_triggered();
 	void on_actionClearSearch_triggered();
+	void on_actionDeleteRemote_triggered();
+	void on_actionModify_triggered();
 	void on_treeWidget_itemSelectionChanged();
 	void on_treeWidget_customContextMenuRequested(const QPoint &pos);
 

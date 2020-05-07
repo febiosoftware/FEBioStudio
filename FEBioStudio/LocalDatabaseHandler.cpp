@@ -15,17 +15,6 @@
 #include "RepoProject.h"
 #include "DatabasePanel.h"
 
-#include <iostream>
-
-//static int callback(void *NotUsed, int argc, char **argv, char **azColName){
-//int i;
-//for(i=0; i<argc; i++){
-//printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-//}
-//printf("\n");
-//return 0;
-//}
-
 static int addCategoryCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
 	((CDatabasePanel*) dbPanel)->AddCategory(argv);
@@ -71,14 +60,21 @@ static int addCurrentTagCallback(void *dbPanel, int argc, char **argv, char **az
 class CLocalDatabaseHandler::Imp
 {
 public:
-	Imp(std::string& dbPath, CDatabasePanel* dbPanel) : dbPanel(dbPanel)
+	Imp(std::string& dbPath, CDatabasePanel* dbPanel)
+		: dbPanel(dbPanel), dbPath(dbPath), db(NULL)
 	{
-		openDatabase(dbPath);
 	}
 
-	void openDatabase(std::string& dbPath)
+	void openDatabase(std::string schema)
 	{
 		char *zErrMsg = 0;
+
+		// When the repository is refreshed, this is called again, and the current db needs to be closed
+		// before it is deleted.
+		if(db) sqlite3_close(db);
+
+		// Delete local copy of the model database in order to write a new one.
+		QFile::remove(dbPath.c_str());
 
 		int rc = sqlite3_open(dbPath.c_str(), &db);
 
@@ -89,60 +85,7 @@ public:
 			return;
 		}
 
-		rc = sqlite3_exec(
-				db,
-				"CREATE TABLE IF NOT EXISTS 'users' ("
-				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-				"	'username'	TEXT NOT NULL UNIQUE);"
-				"CREATE TABLE IF NOT EXISTS 'authors' ("
-				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-				"	'firstName'	TEXT NOT NULL,"
-				"	'lastName'	TEXT NOT NULL);"
-				"CREATE TABLE IF NOT EXISTS 'categories' ("
-				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-				"	'category'	TEXT NOT NULL);"
-				"CREATE TABLE IF NOT EXISTS 'projects' ("
-				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-				"	'owner'	INTEGER NOT NULL,"
-				"	'name'	TEXT NOT NULL,"
-				"	'description'	TEXT NOT NULL,"
-				"	'version'	INTEGER NOT NULL,"
-				"	'category'	INTEGER NOT NULL);"
-				"CREATE TABLE IF NOT EXISTS 'tags' ("
-				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-				"	'tag'	TEXT NOT NULL);"
-				"CREATE TABLE IF NOT EXISTS 'projectTags' ("
-				"	'project'	INTEGER NOT NULL,"
-				"	'tag'	INTEGER NOT NULL);"
-				"CREATE TABLE IF NOT EXISTS 'publications' ("
-				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-				"	'title'	TEXT NOT NULL,"
-				"	'year'	TEXT NOT NULL,"
-				"	'journal'	TEXT NOT NULL,"
-				"	'volume'	TEXT NOT NULL,"
-				"	'issue'	TEXT NOT NULL,"
-				"	'pages'	TEXT NOT NULL,"
-				"   'DOI'	TEXT);"
-				"CREATE TABLE IF NOT EXISTS 'publicationAuthors' ("
-				"	'author'	INTEGER NOT NULL,"
-				"	'ordering'	INTEGER NOT NULL,"
-				"	'publication'	INTEGER NOT NULL);"
-				"CREATE TABLE IF NOT EXISTS 'filenames' ("
-				"	'ID'	INTEGER NOT NULL PRIMARY KEY UNIQUE,"
-				"	'project'	INTEGER NOT NULL,"
-				"	'filename'	TEXT NOT NULL,"
-				"   'description'   TEXT,"
-				"	'localCopy'	INTEGER DEFAULT 0);"
-				"CREATE TABLE IF NOT EXISTS 'fileTags' ("
-				"	'file'	INTEGER NOT NULL,"
-				"	'tag'	INTEGER NOT NULL);"
-				"CREATE TABLE IF NOT EXISTS 'projectPubs' ("
-				"	'project'	INTEGER NOT NULL,"
-				"	'publication'	INTEGER NOT NULL);",
-				NULL,
-				NULL,
-				&zErrMsg
-		);
+		rc = sqlite3_exec(db,schema.c_str(), NULL, NULL, &zErrMsg);
 
 		if( rc!=SQLITE_OK )
 		{
@@ -150,9 +93,6 @@ public:
 			sqlite3_free(zErrMsg);
 		}
 
-//		std::string temp = ("SELECT sqlite_version();");
-//
-//		execute(temp, callback);
 	}
 
 	void execute(std::string& query, int (*callback)(void*,int,char**,char**)=NULL, void* arg = NULL)
@@ -206,8 +146,6 @@ public:
 		}
 		query += ";";
 
-		std::cout << query << std::endl;
-
 		execute(query);
 	}
 
@@ -255,9 +193,6 @@ public:
 
 		hasCopy += ");";
 		noCopy += ");";
-
-		cout << hasCopy << endl;
-		cout << noCopy << endl;
 
 		sqlite3_free_table(table);
 
@@ -389,6 +324,7 @@ public:
 public:
 	sqlite3* db;
 	CDatabasePanel* dbPanel;
+	std::string dbPath;
 
 };
 
@@ -399,18 +335,27 @@ CLocalDatabaseHandler::CLocalDatabaseHandler(std::string dbPath, CDatabasePanel*
 
 CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
 
+void CLocalDatabaseHandler::init(std::string schema)
+{
+	imp->openDatabase(schema);
+}
+
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
 {
-	// Empty tables for which upsert would not work
-	std::string query("DELETE FROM projectTags");
-	imp->execute(query);
-	query = "DELETE FROM projectPubs";
-	imp->execute(query);
-	query = "DELETE FROM fileTags";
-	imp->execute(query);
-	query = "DELETE FROM publicationAuthors";
-	imp->execute(query);
+	// No longer necessary
+//	// Empty tables for which upsert would not work
+//	std::string query("DELETE FROM projectTags");
+//	imp->execute(query);
+//	query = "DELETE FROM projectPubs";
+//	imp->execute(query);
+//	query = "DELETE FROM fileTags";
+//	imp->execute(query);
+//	query = "DELETE FROM publicationAuthors";
+//	imp->execute(query);
 
+
+	// TODO: We no longer need to upsert at all since we're deleting the database each time
+	// simplify code.
 	QJsonArray jsonProjects = jsonDoc.array();
 	for(QJsonValueRef jsonProject : jsonProjects)
 	{

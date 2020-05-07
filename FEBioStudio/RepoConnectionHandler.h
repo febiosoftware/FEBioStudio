@@ -1,4 +1,4 @@
-#include <QtCore/QObject>
+#include <QObject>
 #include <QList>
 
 class QNetworkReply;
@@ -19,11 +19,15 @@ public:
 
 	void authenticate(QString userName, QString password);
 //	void getModelList();
+	void getSchema();
 	void getTables();
 	void getFile(int id, int type);
 //	void upload(QByteArray projectInfo);
 	void uploadFileRequest(QByteArray projectInfo);
 	void uploadFile(QString fileToken);
+
+	void modifyProject(int id, QByteArray projectInfo);
+	void deleteProject(int id);
 
 	QString getUsername();
 	int getUploadPermission();
@@ -40,11 +44,15 @@ private:
 	void authReply(QNetworkReply *r);
 //	void authCheckReply(QNetworkReply *r);
 //	void modelListReply(QNetworkReply *r);
+	void getSchemaReply(QNetworkReply *r);
 	void getTablesReply(QNetworkReply *r);
 	void getFileReply(QNetworkReply *r);
 //	void uploadReply(QNetworkReply *r);
 	void uploadFileRequestReply(QNetworkReply *r);
 	void uploadFileReply(QNetworkReply *r);
+
+	void modifyProjectRepy(QNetworkReply *r);
+	void deleteProjectRepy(QNetworkReply *r);
 
 //	void TCPUpload(QString fileToken);
 

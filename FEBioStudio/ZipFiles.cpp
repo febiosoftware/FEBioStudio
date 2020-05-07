@@ -101,6 +101,7 @@ bool archive(const QString & filePath, const QDir & dir, const QString & comment
 
 		while (inFile.getChar(&c) && outFile.putChar(c));
 
+
 		if (outFile.getZipError() != UNZ_OK) {
 			return false;
 		}

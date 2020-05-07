@@ -8,6 +8,7 @@ namespace Ui {
 }
 
 class QStringList;
+class CPublicationWidget;
 
 //class ClickableLabel : public QLabel {
 //    Q_OBJECT
@@ -63,6 +64,9 @@ public:
 	void setOwner(QString owner);
 	void setVersion(QString version);
 	void setTags(QStringList& tags);
+	void setPublications(const std::vector<CPublicationWidget*>& pub);
+
+	void setTagList(QStringList& tags);
 
 
 	QString getName();

@@ -9,6 +9,7 @@
 #include <QPalette>
 #include <QMenu>
 #include <QAction>
+#include <QMessageBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QToolButton>
@@ -37,8 +38,6 @@
 #include "RepoProject.h"
 #include "ToolBox.h"
 #include "PublicationWidgetView.h"
-
-#include <iostream>
 
 enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
 
@@ -156,8 +155,8 @@ protected:
 class ProjectItem : public CustomTreeWidgetItem
 {
 public:
-	ProjectItem(QString name, int projectID)
-		: CustomTreeWidgetItem(name, PROJECTITEM), m_projectID(projectID)
+	ProjectItem(QString name, int projectID, bool owned)
+		: CustomTreeWidgetItem(name, PROJECTITEM), m_projectID(projectID), m_ownedByUser(owned)
 	{
 		setIcon(0, QIcon(":/icons/folder.png"));
 	}
@@ -169,9 +168,11 @@ public:
 
 	void setProjectID(int project) {m_projectID = project;}
 	int getProjectID() {return m_projectID;}
+	bool ownedByUser() {return m_ownedByUser;}
 
 private:
 	int m_projectID;
+	bool m_ownedByUser;
 };
 
 class FolderItem : public CustomTreeWidgetItem
@@ -276,6 +277,9 @@ public:
 	QAction* actionDelete;
 	QAction* actionUpload;
 
+	QAction* actionDeleteRemote;
+	QAction* actionModify;
+
 	QLineEdit* searchLineEdit;
 	QAction* actionSearch;
 	QAction* actionClearSearch;
@@ -312,6 +316,8 @@ public:
 		loginButtonLayout->addStretch();
 		loginVBLayout->addLayout(loginButtonLayout);
 
+		QObject::connect(password, &QLineEdit::returnPressed, loginButton, &QPushButton::click);
+
 		loginPage = new QWidget;
 		loginPage->setLayout(loginVBLayout);
 
@@ -341,6 +347,16 @@ public:
 		actionDelete->setObjectName("actionDelete");
 		actionDelete->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDelete);
+
+		actionDeleteRemote = new QAction(QIcon(":/icons/deleteRemote.png"), "Delete From Repository", parent);
+		actionDeleteRemote->setObjectName("actionDeleteRemote");
+		actionDeleteRemote->setIconVisibleInMenu(false);
+		toolbar->addAction(actionDeleteRemote);
+
+		actionModify = new QAction(QIcon(":/icons/edit.png"), "Modify Project Metadata", parent);
+		actionModify->setObjectName("actionModify");
+		actionModify->setIconVisibleInMenu(false);
+		toolbar->addAction(actionModify);
 
 		toolbar->addSeparator();
 		QWidget* empty = new QWidget();
@@ -540,7 +556,7 @@ void CDatabasePanel::SetModelList()
 	ui->stack->setCurrentIndex(1);
 }
 
-void CDatabasePanel::FailedLogin(QString message)
+void CDatabasePanel::ShowMessage(QString message)
 {
 	QDialog *dlg = new QDialog(this);
 	QVBoxLayout* l = new QVBoxLayout;
@@ -640,12 +656,15 @@ void CDatabasePanel::AddProject(char **data)
 	QString owner(data[2]);
 	QString category(data[3]);
 
+	bool owned = false;
+
 	if(repoHandler->getUsername().compare(owner) == 0)
 	{
 		category = "My Projects";
+		owned = true;
 	}
 
-	ProjectItem* projectItem = new ProjectItem(name, ID);
+	ProjectItem* projectItem = new ProjectItem(name, ID, owned);
 	ui->projectItemsByID[ID] = projectItem;
 
 
@@ -733,7 +752,7 @@ void CDatabasePanel::on_actionUpload_triggered()
 		dlg.setOwner(repoHandler->getUsername());
 		dlg.setVersion("1");
 		QStringList tags = dbHandler->GetTags();
-		dlg.setTags(tags);
+		dlg.setTagList(tags);
 
 
 		if (dlg.exec())
@@ -753,8 +772,6 @@ void CDatabasePanel::on_actionUpload_triggered()
 			projectInfo.insert("publications", dlg.getPublicationInfo());
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
-
-			std::cout << payload.toStdString() << std::endl;
 
 			repoHandler->uploadFileRequest(payload);
 		}
@@ -806,6 +823,68 @@ void CDatabasePanel::on_actionClearSearch_triggered()
 	{
 		current.second->setHidden(false);
 	}
+}
+
+void CDatabasePanel::on_actionDeleteRemote_triggered()
+{
+	if(repoHandler->getUploadPermission())
+	{
+		int projID = static_cast<ProjectItem*>(ui->treeWidget->selectedItems()[0])->getProjectID();
+
+		repoHandler->deleteProject(projID);
+	}
+	else
+	{
+		QMessageBox box;
+		box.setText("You do not have permission to modify the repository.");
+	}
+
+}
+
+void CDatabasePanel::on_actionModify_triggered()
+{
+	if(repoHandler->getUploadPermission())
+	{
+		CDlgUpload dlg(this);
+		dlg.setName(ui->projectName->text());
+		dlg.setOwner(repoHandler->getUsername());
+		dlg.setVersion(QString("%1").arg(stoi(ui->projectVersion->text().toStdString()) + 1));
+		dlg.setDescription(ui->projectDesc->text());
+		dlg.setTags(ui->currentTags);
+		dlg.setPublications(ui->projectPubs->getPublications());
+
+		QStringList tags = dbHandler->GetTags();
+		dlg.setTagList(tags);
+
+
+		int projID = static_cast<ProjectItem*>(ui->treeWidget->selectedItems()[0])->getProjectID();
+
+		if (dlg.exec())
+		{
+			QVariantMap projectInfo;
+			projectInfo.insert("name", dlg.getName());
+			projectInfo.insert("description", dlg.getDescription());
+
+			QList<QVariant> tags;
+			for(QString tag : dlg.getTags())
+			{
+				tags.append(tag);
+			}
+			projectInfo.insert("tags", tags);
+
+			projectInfo.insert("publications", dlg.getPublicationInfo());
+
+			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
+
+			repoHandler->modifyProject(projID, payload);
+		}
+	}
+	else
+	{
+		QMessageBox box;
+		box.setText("You do not have permission to modify the repository.");
+	}
+
 }
 
 void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item)
@@ -933,10 +1012,12 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 		ui->projectInfoBox->getToolItem(1)->hide();
 		ui->projectInfoBox->getToolItem(2)->hide();
 
-		ui->actionDownload->setEnabled(false);
-		ui->actionOpen->setEnabled(false);
-		ui->actionOpenFileLocation->setEnabled(false);
-		ui->actionDelete->setEnabled(false);
+		ui->actionDownload->setVisible(false);
+		ui->actionOpen->setVisible(false);
+		ui->actionOpenFileLocation->setVisible(false);
+		ui->actionDelete->setVisible(false);
+		ui->actionDeleteRemote->setVisible(false);
+		ui->actionModify->setVisible(false);
 
 		return;
 	}
@@ -993,19 +1074,33 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	}
 
 
-	ui->actionDownload->setEnabled(true);
+	ui->actionDownload->setVisible(true);
 	if(item->LocalCopy())
 	{
-		ui->actionOpen->setEnabled(true);
-		ui->actionOpenFileLocation->setEnabled(true);
-		ui->actionDelete->setEnabled(true);
+		ui->actionOpen->setVisible(true);
+		ui->actionOpenFileLocation->setVisible(true);
+		ui->actionDelete->setVisible(true);
 	}
 	else
 	{
-		ui->actionOpen->setEnabled(false);
-		ui->actionOpenFileLocation->setEnabled(false);
-		ui->actionDelete->setEnabled(false);
+		ui->actionOpen->setVisible(false);
+		ui->actionOpenFileLocation->setVisible(false);
+		ui->actionDelete->setVisible(false);
 	}
+
+	ui->actionDeleteRemote->setVisible(false);
+	ui->actionModify->setVisible(false);
+
+	if(item->type() == PROJECTITEM)
+	{
+		if(static_cast<ProjectItem*>(item)->ownedByUser())
+		{
+			ui->actionDeleteRemote->setVisible(true);
+			ui->actionModify->setVisible(true);
+		}
+	}
+
+
 }
 
 void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
@@ -1017,24 +1112,40 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 
 	QMenu menu(this);
 
-	switch(item->type())
-	{
-	case PROJECTITEM:
-	case FILEITEM:
-	{
-		menu.addAction(ui->actionDownload);
+	menu.addAction(ui->actionDownload);
 
-		if(item->LocalCopy())
-		{
-			menu.addAction(ui->actionDelete);
-			menu.addAction(ui->actionOpen);
-			menu.addAction(ui->actionOpenFileLocation);
-		}
-		break;
-	}
-	default:
+	if(item->LocalCopy())
+	{
 		menu.addAction(ui->actionDelete);
+		menu.addAction(ui->actionOpen);
+		menu.addAction(ui->actionOpenFileLocation);
 	}
+
+	if(item->type() == PROJECTITEM)
+	{
+		if(static_cast<ProjectItem*>(item)->ownedByUser())
+			{
+				menu.addSeparator();
+				menu.addAction(ui->actionDeleteRemote);
+				menu.addAction(ui->actionModify);
+			}
+	}
+
+
+//	switch(item->type())
+//	{
+//	case FILEITEM:
+//	case PROJECTITEM:
+//		if(static_cast<ProjectItem*>(item)->ownedByUser())
+//		{
+//			menu.addSeparator();
+//			menu.addAction(ui->actionDeleteRemote);
+//			menu.addAction(ui->actionModify);
+//		}
+//		break;
+//	default:
+//		menu.addAction(ui->actionDelete);
+//	}
 
 	menu.exec(ui->treeWidget->viewport()->mapToGlobal(pos));
 }
@@ -1061,14 +1172,6 @@ void CDatabasePanel::AddCurrentTag(char **data)
 void CDatabasePanel::AddPublication(QVariantMap data)
 {
 	ui->projectPubs->addPublication(data);
-}
-
-void CDatabasePanel::PrintModel(char **argv)
-{
-	cout << argv[0] << endl;
-	cout << argv[1] << endl;
-	cout << argv[2] << endl;
-	cout << argv[3] << endl;
 }
 
 QString CDatabasePanel::RepositoryFolder()

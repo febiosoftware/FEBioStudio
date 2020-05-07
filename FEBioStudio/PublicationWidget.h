@@ -25,6 +25,8 @@ public:
 			QString issue, QString pages, QString DOI, QStringList authorGiven,
 			QStringList authorFamily, Selection selection = NONE, bool expandable = true);
 
+	CPublicationWidget(const CPublicationWidget& obj);
+
 	void init();
 
 	QString ShortText();

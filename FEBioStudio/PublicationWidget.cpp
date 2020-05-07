@@ -256,6 +256,28 @@ CPublicationWidget::CPublicationWidget(QString title, QString year, QString jour
 	QMetaObject::connectSlotsByName(this);
 }
 
+CPublicationWidget::CPublicationWidget(const CPublicationWidget& obj)
+{
+	title = obj.title;
+	year = obj.year;
+	journal = obj.journal;
+	volume = obj.volume;
+	issue = obj.issue;
+	pages = obj.pages;
+	DOI = obj.DOI;
+	authorGiven = obj.authorGiven;
+	authorFamily = obj.authorFamily;
+
+	expandable = obj.expandable;
+	selection = obj.selection;
+
+	ui = new Ui::CPublicationWidget;
+
+	ui->setup(this);
+
+	QMetaObject::connectSlotsByName(this);
+}
+
 void CPublicationWidget::init()
 {
 	ui->setup(this);

@@ -165,6 +165,22 @@ void CDlgUpload::setVersion(QString version)
 
 void CDlgUpload::setTags(QStringList& tags)
 {
+	for(auto tag : tags)
+	{
+		ui->tags->addItem(tag);
+	}
+}
+
+void CDlgUpload::setPublications(const std::vector<CPublicationWidget*>& pubs)
+{
+	for(auto pub : pubs)
+	{
+		ui->pubs->addPublicationCopy(*pub);
+	}
+}
+
+void CDlgUpload::setTagList(QStringList& tags)
+{
 	delete ui->completer;
 	ui->completer = new QCompleter(tags);
 	ui->completer->setCaseSensitivity(Qt::CaseInsensitive);
