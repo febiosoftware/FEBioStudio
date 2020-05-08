@@ -23,7 +23,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CFileViewer_t {
     QByteArrayData data[11];
-    char stringdata0[134];
+    char stringdata0[130];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -38,17 +38,17 @@ QT_MOC_LITERAL(2, 42, 0), // ""
 QT_MOC_LITERAL(3, 43, 16), // "QTreeWidgetItem*"
 QT_MOC_LITERAL(4, 60, 4), // "item"
 QT_MOC_LITERAL(5, 65, 6), // "column"
-QT_MOC_LITERAL(6, 72, 14), // "onCreateFolder"
-QT_MOC_LITERAL(7, 87, 14), // "onMoveToFolder"
-QT_MOC_LITERAL(8, 102, 1), // "i"
-QT_MOC_LITERAL(9, 104, 14), // "onRemoveFolder"
-QT_MOC_LITERAL(10, 119, 14) // "onRenameFolder"
+QT_MOC_LITERAL(6, 72, 13), // "onCreateGroup"
+QT_MOC_LITERAL(7, 86, 13), // "onMoveToGroup"
+QT_MOC_LITERAL(8, 100, 1), // "i"
+QT_MOC_LITERAL(9, 102, 13), // "onRemoveGroup"
+QT_MOC_LITERAL(10, 116, 13) // "onRenameGroup"
 
     },
     "CFileViewer\0on_fileList_itemDoubleClicked\0"
     "\0QTreeWidgetItem*\0item\0column\0"
-    "onCreateFolder\0onMoveToFolder\0i\0"
-    "onRemoveFolder\0onRenameFolder"
+    "onCreateGroup\0onMoveToGroup\0i\0"
+    "onRemoveGroup\0onRenameGroup"
 };
 #undef QT_MOC_LITERAL
 
@@ -89,10 +89,10 @@ void CFileViewer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->on_fileList_itemDoubleClicked((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
-        case 1: _t->onCreateFolder(); break;
-        case 2: _t->onMoveToFolder((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 3: _t->onRemoveFolder(); break;
-        case 4: _t->onRenameFolder(); break;
+        case 1: _t->onCreateGroup(); break;
+        case 2: _t->onMoveToGroup((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 3: _t->onRemoveGroup(); break;
+        case 4: _t->onRenameGroup(); break;
         default: ;
         }
     }

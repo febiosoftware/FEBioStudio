@@ -177,6 +177,8 @@ protected:
 	//! render the plot
 	void paintEvent(QPaintEvent* pe);
 
+	virtual void DrawPlotData(QPainter& p, CPlotData& data);
+
 	void draw_linechart(QPainter& p, CPlotData& data);
 	void draw_barchart(QPainter& p, CPlotData& data);
 

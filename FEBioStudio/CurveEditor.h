@@ -146,14 +146,3 @@ private:
 	FELoadCurve*	m_plc;
 	Param*			m_pp;
 };
-
-class CLoadCurveData : public CPlotData
-{
-public:
-	CLoadCurveData(FELoadCurve* lc) : m_lc(lc) {}
-
-	void draw(QPainter& painter, CPlotWidget& plt);
-
-private:
-	FELoadCurve*	m_lc;
-};

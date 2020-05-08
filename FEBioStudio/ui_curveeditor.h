@@ -13,6 +13,23 @@
 #include <QSplitter>
 #include "MainWindow.h"
 
+class CCurvePlotWidget : public CPlotWidget
+{
+public:
+	CCurvePlotWidget(QWidget* parent = nullptr) : CPlotWidget(parent) 
+	{ 
+		m_lc = nullptr; 
+		setLineSmoothing(true);
+	}
+
+	void DrawPlotData(QPainter& p, CPlotData& data) override;
+
+	void SetLoadCurve(FELoadCurve* lc) { m_lc = lc; }
+
+private:
+	FELoadCurve*	m_lc;
+};
+
 class CCurveEditorItem : public QTreeWidgetItem
 {
 public:
@@ -35,7 +52,7 @@ class Ui::CCurveEdior
 public:
 	QComboBox*		filter;
 	QTreeWidget*	tree;
-	CPlotWidget*	plot;
+	CCurvePlotWidget*	plot;
 	QLineEdit*		xval;
 	QLineEdit*		yval;
 	QToolButton*	addPoint;
@@ -90,7 +107,7 @@ public:
 		curveLayout->addStretch();
 //		curveLayout->setSpacing(2);
 
-		plot = new CPlotWidget;
+		plot = new CCurvePlotWidget();
 		plot->setObjectName("plot");
 		plot->showLegend(false);
 		plot->showToolTip(false);

@@ -19,7 +19,7 @@ enum FileItemType {
 	OPEN_FILES,
 	OPEN_FILE,
 	PROJECT,
-	PROJECT_FOLDER,
+	PROJECT_GROUP,
 	PROJECT_FILE,
 	EXTERNAL_FILE
 };
@@ -119,17 +119,17 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 	{
 		QMenu menu(this);
 		menu.addAction("Save Project As ...", ui->m_wnd, SLOT(on_actionSaveProject_triggered()));
-		menu.addAction("Create Folder ...", this, SLOT(onCreateFolder()));
+		menu.addAction("Create Group ...", this, SLOT(onCreateGroup()));
 		menu.addAction("Close project", ui->m_wnd, SLOT(on_closeProject()));
 		menu.addAction("Clear project", ui->m_wnd, SLOT(on_clearProject()));
 		menu.exec(ev->globalPos());
 	}
-	else if (ntype == FileItemType::PROJECT_FOLDER)
+	else if (ntype == FileItemType::PROJECT_GROUP)
 	{
 		ui->m_activeFile = sel[0]->text(0);
 		QMenu menu(this);
-		menu.addAction("Remove Folder", this, SLOT(onRemoveFolder()));
-		menu.addAction("Rename Folder ...", this, SLOT(onRenameFolder()));
+		menu.addAction("Remove Group", this, SLOT(onRemoveGroup()));
+		menu.addAction("Rename Group ...", this, SLOT(onRenameGroup()));
 		menu.exec(ev->globalPos());
 	}
 	else if (ntype == FileItemType::PROJECT_FILE)
@@ -140,18 +140,18 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		QSignalMapper* map = new QSignalMapper;
 		QAction* ac = menu.addAction("Remove from project", map, SLOT(map())); map->setMapping(ac, file);
 
-		if (prj->Folders())
+		if (prj->Groups())
 		{
 			ui->m_activeFile = file;
-			QSignalMapper* foldermap = new QSignalMapper;
-			QMenu* folderMenu = new QMenu("Move to folder");
-			for (int i = 0; i < prj->Folders(); ++i)
+			QSignalMapper* groupmap = new QSignalMapper;
+			QMenu* groupMenu = new QMenu("Move to group");
+			for (int i = 0; i < prj->Groups(); ++i)
 			{
-				QAction* aci = folderMenu->addAction(prj->GetFolder(i), foldermap, SLOT(map())); foldermap->setMapping(aci, i);
+				QAction* aci = groupMenu->addAction(prj->GetGroupName(i), groupmap, SLOT(map())); groupmap->setMapping(aci, i);
 			}
-			QAction* aci = folderMenu->addAction("(none)", foldermap, SLOT(map())); foldermap->setMapping(aci, -1);
-			menu.addAction(folderMenu->menuAction());
-			connect(foldermap, SIGNAL(mapped(int)), this, SLOT(onMoveToFolder(int)));
+			QAction* aci = groupMenu->addAction("(none)", groupmap, SLOT(map())); groupmap->setMapping(aci, -1);
+			menu.addAction(groupMenu->menuAction());
+			connect(groupmap, SIGNAL(mapped(int)), this, SLOT(onMoveToGroup(int)));
 		}
 
 		connect(map, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_removeFromProject(const QString&)));
@@ -216,15 +216,15 @@ void CFileViewer::Update()
 	it->setData(0, Qt::UserRole, FileItemType::PROJECT);
 	if (prjFile.isEmpty() == false) it->setToolTip(0, prjFile);
 
-	for (int n = 0; n <= prj->Folders(); ++n)
+	for (int n = 0; n <= prj->Groups(); ++n)
 	{
 		QTreeWidgetItem* parent = it;
-		int folder = (n < prj->Folders() ? n : -1);
-		if (folder >= 0)
+		int group = (n < prj->Groups() ? n : -1);
+		if (group >= 0)
 		{
 			QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
-			t2->setText(0, prj->GetFolder(folder));
-			t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FOLDER);
+			t2->setText(0, prj->GetGroupName(group));
+			t2->setData(0, Qt::UserRole, FileItemType::PROJECT_GROUP);
 			QFont f = t2->font(0);
 			f.setBold(true);
 			t2->setFont(0, f);
@@ -234,7 +234,7 @@ void CFileViewer::Update()
 		for (int i = 0; i < prj->Files(); ++i)
 		{
 			FEBioStudioProject::File file_i = prj->GetFile(i);
-			if (file_i.m_folder == folder)
+			if (file_i.m_group == group)
 			{
 				QString filename_i = file_i.m_fileName;
 
@@ -309,50 +309,50 @@ void CFileViewer::Update()
 	}
 }
 
-void CFileViewer::onCreateFolder()
+void CFileViewer::onCreateGroup()
 {
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
 
-	QString folderName = QInputDialog::getText(this, "Create Folder", "Folder name:");
-	if (folderName.isEmpty() == false)
+	QString groupName = QInputDialog::getText(this, "Create Group", "Group name:");
+	if (groupName.isEmpty() == false)
 	{
-		prj->AddFolder(folderName);
+		prj->AddGroup(groupName);
 		Update();
 	}
 }
 
-void CFileViewer::onMoveToFolder(int i)
+void CFileViewer::onMoveToGroup(int i)
 {
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
 	if (ui->m_activeFile.isEmpty() == false)
 	{
-		prj->MoveToFolder(ui->m_activeFile, i);
+		prj->MoveToGroup(ui->m_activeFile, i);
 		Update();
 	}
 }
 
-void CFileViewer::onRemoveFolder()
+void CFileViewer::onRemoveGroup()
 {
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
 	if (ui->m_activeFile.isEmpty() == false)
 	{
-		if (QMessageBox::question(this, "Remove Folder", "Are you sure you want to remove this folder?\nThis cannot be undone!") == QMessageBox::Yes)
+		if (QMessageBox::question(this, "Remove Group", "Are you sure you want to remove this group?\nThis cannot be undone!") == QMessageBox::Yes)
 		{
-			prj->RemoveFolder(ui->m_activeFile);
+			prj->RemoveGroup(ui->m_activeFile);
 			Update();
 		}
 	}
 }
 
-void CFileViewer::onRenameFolder()
+void CFileViewer::onRenameGroup()
 {
 	FEBioStudioProject* prj = ui->m_wnd->GetProject();
 	if (ui->m_activeFile.isEmpty() == false)
 	{
-		QString newName = QInputDialog::getText(this, "Rename Folder", "New name:");
+		QString newName = QInputDialog::getText(this, "Rename Group", "New name:");
 		if (newName.isEmpty() == false)
 		{
-			prj->RenameFolder(ui->m_activeFile, newName);
+			prj->RenameGroup(ui->m_activeFile, newName);
 			Update();
 		}
 	}

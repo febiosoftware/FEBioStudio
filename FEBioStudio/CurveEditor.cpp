@@ -674,17 +674,22 @@ void CCurveEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWid
 void CCurveEditor::SetLoadCurve(FELoadCurve* plc)
 {
 	ui->plot->clear();
+	ui->plot->SetLoadCurve(plc);
 
 	if (plc)
 	{
-		CPlotData* data = new CLoadCurveData(plc);
+		CPlotData* data = new CPlotData;
 		for (int i=0; i<plc->Size(); ++i)
 		{
 			LOADPOINT pt = plc->Item(i);
 			data->addPoint(pt.time, pt.load);
 		}
 		ui->plot->addPlotData(data);
-		data->setLineColor(QColor(64, 192, 128));
+
+		data->setLineColor(QColor(92, 255, 164));
+		data->setFillColor(QColor(92, 255, 164));
+		data->setLineWidth(2);
+		data->setMarkerSize(5);
 
 		ui->setCurveType(plc->GetType(), plc->GetExtend());
 	}
@@ -1111,24 +1116,22 @@ void CCurveEditor::on_extendMode_currentIndexChanged(int n)
 }
 
 //=======================================================================================
-void CLoadCurveData::draw(QPainter& painter, CPlotWidget& plt)
+void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 {
 	if (m_lc == 0) return;
 
-	QBrush b = painter.brush();
-	painter.setBrush(Qt::NoBrush);
-
-	int N = size();
+	int N = data.size();
 
 	// draw the line
-	QRect rt = plt.ScreenRect();
+	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
+	QRect rt = ScreenRect();
 	QPoint p0, p1;
 	for (int i=rt.left(); i<rt.right(); i += 2)
 	{
 		p1.setX(i);
-		QPointF p = plt.ScreenToView(p1);
+		QPointF p = ScreenToView(p1);
 		p.setY(m_lc->Value(p.x()));
-		p1 = plt.ViewToScreen(p);
+		p1 = ViewToScreen(p);
 
 		if (i != rt.left())
 		{
@@ -1139,12 +1142,12 @@ void CLoadCurveData::draw(QPainter& painter, CPlotWidget& plt)
 	}
 
 	// draw the marks
-	if (m_markerType > 0)
+	if (data.markerType() > 0)
 	{
-		painter.setBrush(b);
+		painter.setBrush(data.fillColor());
 		for (int i = 0; i<N; ++i)
 		{
-			p1 = plt.ViewToScreen(Point(i));
+			p1 = ViewToScreen(data.Point(i));
 			QRect r(p1.x() - 2, p1.y() - 2, 5, 5);
 			painter.drawRect(r);
 		}

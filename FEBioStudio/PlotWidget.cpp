@@ -1352,14 +1352,19 @@ void CPlotWidget::drawAllData(QPainter& p)
 	int N = (int)m_data.m_data.size();
 	for (int i=0; i<N; ++i)
 	{
-		switch (m_chartStyle)
-		{
-		case LINECHART_PLOT:  draw_linechart(p, *m_data.m_data[i]); break;
-		case BARCHART_PLOT: draw_barchart(p, *m_data.m_data[i]); break;
-		}
+		DrawPlotData(p, *m_data.m_data[i]);
 	}
 
 	p.setRenderHint(QPainter::Antialiasing, true);
+}
+
+void CPlotWidget::DrawPlotData(QPainter& p, CPlotData& data)
+{
+	switch (m_chartStyle)
+	{
+	case LINECHART_PLOT:  draw_linechart(p, data); break;
+	case BARCHART_PLOT: draw_barchart(p, data); break;
+	}
 }
 
 //=============================================================================

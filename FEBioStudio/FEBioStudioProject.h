@@ -9,27 +9,27 @@ public:
 	class File
 	{
 	public:
-		File(const QString& fileName, int folder = -1)
+		File(const QString& fileName, int group = -1)
 		{
 			m_fileName = fileName;
-			m_folder = folder;
+			m_group = group;
 		}
 
 		File(const File& f)
 		{
 			m_fileName = f.m_fileName;
-			m_folder = f.m_folder;
+			m_group = f.m_group;
 		}
 
 		void operator = (const File& f)
 		{
 			m_fileName = f.m_fileName;
-			m_folder = f.m_folder;
+			m_group = f.m_group;
 		}
 
 	public:
 		QString	m_fileName;
-		int		m_folder;
+		int		m_group;
 	};
 
 public:
@@ -44,15 +44,15 @@ public:
 
 	void AddFile(const QString& fileName, int folder = -1);
 
-	int Folders() const;
-	QString GetFolder(int n) const;
-	int AddFolder(const QString& folderName);
+	int Groups() const;
+	QString GetGroupName(int n) const;
+	int AddGroup(const QString& groupName);
 
-	void MoveToFolder(const QString& file, int folderIndex);
+	void MoveToGroup(const QString& file, int groupIndex);
 
-	bool RemoveFolder(const QString& folderName);
+	bool RemoveGroup(const QString& groupName);
 
-	bool RenameFolder(const QString& folderName, const QString& newName);
+	bool RenameGroup(const QString& groupName, const QString& newName);
 
 	bool Save(const QString& file);
 	bool Save();
@@ -70,5 +70,5 @@ public:
 private:
 	QString			m_projectFile;
 	QList<File>		m_fileList;
-	QStringList		m_folderList;
+	QStringList		m_groupList;
 };

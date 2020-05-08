@@ -51,35 +51,35 @@ void FEBioStudioProject::AddFile(const QString& fileName, int folder)
 void FEBioStudioProject::Clear()
 {
 	m_fileList.clear();
-	m_folderList.clear();
+	m_groupList.clear();
 	Save();
 }
 
-int FEBioStudioProject::Folders() const
+int FEBioStudioProject::Groups() const
 {
-	return m_folderList.size();
+	return m_groupList.size();
 }
 
-QString FEBioStudioProject::GetFolder(int n) const
+QString FEBioStudioProject::GetGroupName(int n) const
 {
-	return m_folderList.at(n);
+	return m_groupList.at(n);
 }
 
-int FEBioStudioProject::AddFolder(const QString& folderName)
+int FEBioStudioProject::AddGroup(const QString& groupName)
 {
-	for (int i = 0; i < Folders(); ++i) {
-		if (m_folderList[i] == folderName) return i;
+	for (int i = 0; i < Groups(); ++i) {
+		if (m_groupList[i] == groupName) return i;
 	}
-	m_folderList.push_back(folderName);
+	m_groupList.push_back(groupName);
 	Save();
-	return Folders() - 1;
+	return Groups() - 1;
 }
 
 void FEBioStudioProject::Close()
 {
 	m_projectFile.clear();
 	m_fileList.clear();
-	m_folderList.clear();
+	m_groupList.clear();
 }
 
 void FEBioStudioProject::Remove(const QString& file)
@@ -97,48 +97,48 @@ void FEBioStudioProject::Remove(const QString& file)
 	}
 }
 
-void FEBioStudioProject::MoveToFolder(const QString& file, int folderIndex)
+void FEBioStudioProject::MoveToGroup(const QString& file, int groupIndex)
 {
-	assert((folderIndex >= -1) && (folderIndex < Folders()));
+	assert((groupIndex >= -1) && (groupIndex < Groups()));
 	QList<File>::iterator it = m_fileList.begin();
 	int n = m_fileList.size();
 	for (int i = 0; i < m_fileList.size(); ++i, ++it)
 	{
 		if (file == it->m_fileName)
 		{
-			it->m_folder = folderIndex;
+			it->m_group = groupIndex;
 			Save();
 			break;
 		}
 	}
 }
 
-bool FEBioStudioProject::RemoveFolder(const QString& folderName)
+bool FEBioStudioProject::RemoveGroup(const QString& groupName)
 {
-	int nfolder = -1;
-	for (int i = 0; i < m_folderList.size(); ++i)
+	int ngroup = -1;
+	for (int i = 0; i < m_groupList.size(); ++i)
 	{
-		if (m_folderList[i] == folderName)
+		if (m_groupList[i] == groupName)
 		{
-			nfolder = i;
+			ngroup = i;
 			break;
 		}
 	}
 
-	if (nfolder == -1) return false;
+	if (ngroup == -1) return false;
 
-	m_folderList.removeAt(nfolder);
+	m_groupList.removeAt(ngroup);
 
 	for (int i = 0; i < m_fileList.size(); ++i)
 	{
 		File& file = m_fileList[i];
-		if (file.m_folder == nfolder)
+		if (file.m_group == ngroup)
 		{
-			file.m_folder = -1;
+			file.m_group = -1;
 		}
-		else if (file.m_folder > nfolder)
+		else if (file.m_group > ngroup)
 		{
-			file.m_folder--;
+			file.m_group--;
 		}
 	}
 
@@ -147,23 +147,23 @@ bool FEBioStudioProject::RemoveFolder(const QString& folderName)
 	return true;
 }
 
-bool FEBioStudioProject::RenameFolder(const QString& folderName, const QString& newName)
+bool FEBioStudioProject::RenameGroup(const QString& groupName, const QString& newName)
 {
 	if (newName.isEmpty()) return false;
 
-	int nfolder = -1;
-	for (int i = 0; i < m_folderList.size(); ++i)
+	int ngroup = -1;
+	for (int i = 0; i < m_groupList.size(); ++i)
 	{
-		if (m_folderList[i] == folderName)
+		if (m_groupList[i] == groupName)
 		{
-			nfolder = i;
+			ngroup = i;
 			break;
 		}
 	}
 
-	if (nfolder == -1) return false;
+	if (ngroup == -1) return false;
 
-	m_folderList[nfolder] = newName;
+	m_groupList[ngroup] = newName;
 
 	Save();
 	return true;
@@ -187,23 +187,23 @@ bool FEBioStudioProject::Save(const QString& file)
 	XMLElement root("FEBioStudioProject");
 	root.add_attribute("version", "1.0");
 	xml.add_branch(root);
-	for (int n = 0; n <= Folders(); ++n)
+	for (int n = 0; n <= Groups(); ++n)
 	{
-		if (n < Folders())
+		if (n < Groups())
 		{
-			string folderName = GetFolder(n).toStdString();
-			XMLElement folder("folder");
-			folder.add_attribute("name", folderName);
+			string groupName = GetGroupName(n).toStdString();
+			XMLElement folder("group");
+			folder.add_attribute("name", groupName);
 			xml.add_branch(folder);
 		}
 
-		int folder = (n < Folders() ? n : -1);
+		int group = (n < Groups() ? n : -1);
 
 		for (int i = 0; i < Files(); ++i)
 		{
 			FEBioStudioProject::File file = GetFile(i);
 
-			if (file.m_folder == folder)
+			if (file.m_group == group)
 			{
 				QString relPath = dir.relativeFilePath(file.m_fileName);
 
@@ -215,7 +215,7 @@ bool FEBioStudioProject::Save(const QString& file)
 			}
 		}
 
-		if (n < Folders())
+		if (n < Groups())
 		{
 			xml.close_branch();
 		}
@@ -239,26 +239,26 @@ bool FEBioStudioProject::Open(const QString& file)
 
 	QDir dir(file);
 	m_fileList.clear();
-	m_folderList.clear();
+	m_groupList.clear();
 
 	try {
 		++tag;
 		do
 		{
-			if (tag == "folder")
+			if (tag == "group")
 			{
-				string folderName;
+				string groupName;
 				const char* sz = tag.AttributeValue("name", true);
-				if (sz) folderName = sz;
+				if (sz) groupName = sz;
 				else
 				{
-					int n = Folders();
+					int n = Groups();
 					stringstream ss;
-					ss << "Folder" << n + 1;
-					folderName = ss.str();
+					ss << "group" << n + 1;
+					groupName = ss.str();
 				}
 
-				int folder = AddFolder(QString::fromStdString(folderName));
+				int group = AddGroup(QString::fromStdString(groupName));
 
 				if ((tag.isempty() == false) && (tag.isleaf() == false))
 				{
@@ -273,7 +273,7 @@ bool FEBioStudioProject::Open(const QString& file)
 							QString absPath = dir.absoluteFilePath(QString::fromStdString(relPath));
 							absPath = QDir::toNativeSeparators(dir.cleanPath(absPath));
 
-							AddFile(absPath, folder);
+							AddFile(absPath, group);
 						}
 						else return false;
 						++tag;

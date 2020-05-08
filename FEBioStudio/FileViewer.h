@@ -23,10 +23,10 @@ public:
 
 private slots:
 	void on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column);
-	void onCreateFolder();
-	void onMoveToFolder(int i);
-	void onRemoveFolder();
-	void onRenameFolder();
+	void onCreateGroup();
+	void onMoveToGroup(int i);
+	void onRemoveGroup();
+	void onRenameGroup();
 
 private:
 	Ui::CFileViewer*	ui;
