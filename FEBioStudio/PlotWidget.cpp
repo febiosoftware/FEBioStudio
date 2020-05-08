@@ -914,8 +914,8 @@ void CPlotWidget::regionSelect(QRect rt)
 //-----------------------------------------------------------------------------
 QPointF CPlotWidget::ScreenToView(const QPoint& p)
 {
-	qreal x = m_viewRect.left  () + (m_viewRect.width ()*(p.x() - m_screenRect.left())/(m_screenRect.width ()));
-	qreal y = m_viewRect.bottom() + (m_viewRect.height()*(m_screenRect.top() - p.y() )/(m_screenRect.height()));
+	qreal x = m_viewRect.left  () + (m_viewRect.width ()*(p.x() - m_plotRect.left())/(m_plotRect.width ()));
+	qreal y = m_viewRect.bottom() + (m_viewRect.height()*(m_plotRect.top() - p.y() )/(m_plotRect.height()));
 	return QPointF(x, y);
 }
 
@@ -934,8 +934,8 @@ QRectF CPlotWidget::ScreenToView(const QRect& rt)
 //-----------------------------------------------------------------------------
 QPoint CPlotWidget::ViewToScreen(const QPointF& p)
 {
-	int x = m_screenRect.left() + (int)(m_screenRect.width ()*(p.x() - m_viewRect.left  ())/(m_viewRect.width ()));
-	int y = m_screenRect.top () - (int)(m_screenRect.height()*(p.y() - m_viewRect.bottom())/(m_viewRect.height()));
+	int x = m_plotRect.left() + (int)(m_plotRect.width ()*(p.x() - m_viewRect.left  ())/(m_viewRect.width ()));
+	int y = m_plotRect.top () - (int)(m_plotRect.height()*(p.y() - m_viewRect.bottom())/(m_viewRect.height()));
 	return QPoint(x, y);
 }
 
@@ -967,39 +967,27 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 		// clear the background
 		p.fillRect(m_screenRect, m_data.m_bgCol);
 
-/*	int W = rect().width();
-	int H = rect().height();
-	int NX = 10;
-	QStringList colorNames = QColor::colorNames();
-	int colors = colorNames.size();
-	for (int i=0; i<colors; ++i)
-	{
-		int X = rect().x() + ((i%10)*(rect().width()))/NX;
-		int Y = rect().y() + ((i/10)*(rect().width()))/NX;
-		int w = rect().width()/NX, h = w;
-		QColor col(colorNames[i]);
-		p.fillRect(X, Y, w, h, col);
-		QString s = QString("%1").arg(i);
-		p.drawText(X, Y, w, h, Qt::AlignCenter, s);
-	}
-	return;
-*/
-
 	// render the title
+	QFont f("Times", 12, QFont::Bold);
+	p.setFont(f);
+	QFontMetrics fm(f);
+	m_titleRect = m_screenRect;
+	m_titleRect.setHeight(fm.height() + 10);
 	if (m_data.m_bdrawTitle) drawTitle(p);
 
 	// figure out some metrics
-	QFontMetrics fm = p.fontMetrics();
+	fm = p.fontMetrics();
 	int fontHeight = fm.height(); // height in pixels
 
 	// adjust the screen rectangle where the data will be drawn
+	m_plotRect = m_screenRect;
 	if (m_bfullScreenMode == false)
 	{
-		m_screenRect.setTop(m_titleRect.bottom());
-		m_screenRect.adjust(50, 0, -90, -fontHeight - 2);
+		m_plotRect.setTop(m_titleRect.bottom());
+		m_plotRect.adjust(50, 0, -90, -2*fontHeight - 2);
 		p.setPen(QPen(Qt::black));
 		p.setBrush(Qt::NoBrush);
-		p.drawRect(m_screenRect);
+		p.drawRect(m_plotRect);
 	}
 
 	// draw the grid
@@ -1008,14 +996,17 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	// draw the grid axes
 	drawAxes(p);
 
+	// draw the axes tick marks
+	drawAxesTicks(p);
+
 	// draw the axes labels
-	drawAxesLabels(p);
+	if (m_data.m_bdrawAxesLabels) drawAxesLabels(p);
 
 	// draw the legend
 	if (m_data.m_bshowLegend) drawLegend(p);
 
 	// render the data
-	p.setClipRect(m_screenRect);
+	p.setClipRect(m_plotRect);
 	drawAllData(p);
 
 	if ((m_bzoomRect && m_bvalidRect) || m_bregionSelect)
@@ -1037,11 +1028,14 @@ void CPlotWidget::drawLegend(QPainter& p)
 	int N = (int)m_data.m_data.size();
 	if (N == 0) return;
 
-	QRect legendRect = m_screenRect;
-	legendRect.setLeft(m_screenRect.right());
+	QRect legendRect = m_plotRect;
+	legendRect.setLeft(m_plotRect.right());
 	legendRect.setRight(rect().right());
 
-	QFontMetrics fm(p.font());
+	QFont f("Arial", 10);
+	QFontMetrics fm(f);
+	p.setFont(f);
+
 	int fh = fm.height();
 	int fa = fm.ascent();
 
@@ -1080,7 +1074,7 @@ void CPlotWidget::drawSelection(QPainter& p)
 
 		QPointF pf = dataPoint(si.ndataIndex, si.npointIndex);
 		QPoint pt = ViewToScreen(pf);
-		if (m_screenRect.contains(pt, true))
+		if (m_plotRect.contains(pt, true))
 		{
 			if ((si.ndataIndex < 0) || (si.ndataIndex >= m_data.m_data.size())) return;
 
@@ -1106,8 +1100,8 @@ void CPlotWidget::drawSelection(QPainter& p)
 				if (W < H) W = H;
 				int X = pt.x();
 				int Y = pt.y();
-				if (X + W > m_screenRect.right()) X = m_screenRect.right() - W;
-				if (Y + H > m_screenRect.bottom()) Y = m_screenRect.bottom() - H;
+				if (X + W > m_plotRect.right()) X = m_plotRect.right() - W;
+				if (Y + H > m_plotRect.bottom()) Y = m_plotRect.bottom() - H;
 
 				p.setBrush(Qt::yellow);
 				p.drawRect(X, Y, W, H);
@@ -1130,23 +1124,43 @@ void CPlotWidget::drawTitle(QPainter& p)
 	QFont f("Times", 12, QFont::Bold);
 	p.setFont(f);
 	QFontMetrics fm(f);
-	m_titleRect = m_screenRect;
-	m_titleRect.setHeight(fm.height() + 10);
 	p.drawText(m_titleRect, Qt::AlignCenter, m_data.m_title);
 }
 
 //-----------------------------------------------------------------------------
 void CPlotWidget::drawAxesLabels(QPainter& p)
 {
+	QFont f("Arial", 12);
+	f.setBold(true);
+	p.setFont(f);
+
+	if (m_data.m_xAxis.labelVisible && (m_data.m_xAxis.label.isEmpty() == false))
+	{
+		p.drawText(m_screenRect, Qt::AlignHCenter | Qt::AlignBottom, m_data.m_xAxis.label);
+	}
+
+	if (m_data.m_yAxis.labelVisible && (m_data.m_yAxis.label.isEmpty() == false))
+	{
+		QRect rt(-m_screenRect.height(), 0, m_screenRect.height(), m_screenRect.width());
+		p.save();
+		p.rotate(-90);
+		p.drawText(rt, Qt::AlignHCenter | Qt::AlignTop, m_data.m_yAxis.label);
+		p.restore();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::drawAxesTicks(QPainter& p)
+{
 	char sz[256] = { 0 };
 	QFont f("Arial", 10);
 	QFontMetrics fm(f);
 	p.setFont(f);
 
-	int x0 = m_screenRect.left();
-	int x1 = m_screenRect.right();
-	int y0 = m_screenRect.top();
-	int y1 = m_screenRect.bottom();
+	int x0 = m_plotRect.left();
+	int x1 = m_plotRect.right();
+	int y0 = m_plotRect.top();
+	int y1 = m_plotRect.bottom();
 
 	double xscale = m_xscale;
 	double yscale = m_yscale;
@@ -1261,10 +1275,10 @@ void CPlotWidget::drawGrid(QPainter& p)
 	QFontMetrics fm(f);
 	p.setFont(f);
 
-	int x0 = m_screenRect.left();
-	int x1 = m_screenRect.right();
-	int y0 = m_screenRect.top();
-	int y1 = m_screenRect.bottom();
+	int x0 = m_plotRect.left();
+	int x1 = m_plotRect.right();
+	int y0 = m_plotRect.top();
+	int y1 = m_plotRect.bottom();
 
 	double xscale = m_xscale;
 	double yscale = m_yscale;
@@ -1320,12 +1334,12 @@ void CPlotWidget::drawAxes(QPainter& p)
 	// render the X-axis
 	if (m_data.m_xAxis.visible)
 	{
-		if ((c.y() > m_screenRect.top   ()) && (c.y() < m_screenRect.bottom()))
+		if ((c.y() > m_plotRect.top   ()) && (c.y() < m_plotRect.bottom()))
 		{
 			p.setPen(QPen(m_data.m_xCol, 2));
 			QPainterPath xaxis;
-			xaxis.moveTo(m_screenRect.left (), c.y());
-			xaxis.lineTo(m_screenRect.right(), c.y());
+			xaxis.moveTo(m_plotRect.left (), c.y());
+			xaxis.lineTo(m_plotRect.right(), c.y());
 			p.drawPath(xaxis);
 		}
 	}
@@ -1333,12 +1347,12 @@ void CPlotWidget::drawAxes(QPainter& p)
 	// render the Y-axis
 	if (m_data.m_yAxis.visible)
 	{
-		if ((c.x() > m_screenRect.left ()) && (c.x() < m_screenRect.right()))
+		if ((c.x() > m_plotRect.left ()) && (c.x() < m_plotRect.right()))
 		{
 			p.setPen(QPen(m_data.m_yCol, 2));
 			QPainterPath yaxis;
-			yaxis.moveTo(c.x(), m_screenRect.top   ());
-			yaxis.lineTo(c.x(), m_screenRect.bottom());
+			yaxis.moveTo(c.x(), m_plotRect.top   ());
+			yaxis.lineTo(c.x(), m_plotRect.bottom());
 			p.drawPath(yaxis);
 		}
 	}

@@ -86,11 +86,40 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-struct CAxisFormat
+class CPlotAxis
 {
+public:
 	bool	visible;
+	bool	labelVisible;
 	int		labelPosition;
 	int		labelAlignment;
+	QString	label;
+
+	CPlotAxis() 
+	{
+		visible = true; 
+		labelVisible = true;
+		labelPosition = LOW; 
+		labelAlignment = ALIGN_LABEL_LEFT;
+	}
+
+	CPlotAxis(const CPlotAxis& a)
+	{
+		visible = a.visible;
+		labelVisible = a.labelVisible;
+		labelPosition = a.labelPosition;
+		labelAlignment = a.labelAlignment;
+		label = a.label;
+	}
+
+	void operator = (const CPlotAxis& a)
+	{
+		visible = a.visible;
+		labelVisible = a.labelVisible;
+		labelPosition = a.labelPosition;
+		labelAlignment = a.labelAlignment;
+		label = a.label;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -115,13 +144,14 @@ public:
 	bool				m_bsmoothLines;
 	bool				m_bdrawGrid;
 	bool				m_bdrawTitle;
+	bool				m_bdrawAxesLabels;
 
 	QColor	m_bgCol;
 	QColor	m_gridCol;
 	QColor	m_xCol;
 	QColor	m_yCol;
 
-	CAxisFormat			m_xAxis;
-	CAxisFormat			m_yAxis;
+	CPlotAxis			m_xAxis;
+	CPlotAxis			m_yAxis;
 };
 

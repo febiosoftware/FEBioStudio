@@ -112,6 +112,9 @@ public:
 	bool drawTitle() const { return m_data.m_bdrawTitle; }
 	void setDrawTitle(bool b) { m_data.m_bdrawTitle = b; }
 
+	bool drawAxesLabels() const { return m_data.m_bdrawAxesLabels; }
+	void setDrawAxesLabels(bool b) { m_data.m_bdrawAxesLabels = b; }
+
 	void scaleAxisLabels(bool b) { m_bscaleAxisLabels = b; }
 
 	bool autoRangeUpdate() const { return m_bautoRngUpdate; }
@@ -126,11 +129,16 @@ public:
 	void setXAxisLabelAlignment(AxisLabelAlignment a);
 	void setYAxisLabelAlignment(AxisLabelAlignment a);
 
+	QColor backgroundColor() { return m_data.m_bgCol; }
+
 	void setBackgroundColor(const QColor& c) { m_data.m_bgCol = c; }
 	void setGridColor(const QColor& c) { m_data.m_gridCol = c; }
 	void setXAxisColor(const QColor& c) { m_data.m_xCol = c; }
 	void setYAxisColor(const QColor& c) { m_data.m_yCol = c; }
 	void setSelectionColor(const QColor& c) { m_selCol = c; }
+
+	void setXAxisLabel(const QString& label) { m_data.m_xAxis.label = label; }
+	void setYAxisLabel(const QString& label) { m_data.m_yAxis.label = label; }
 
 	void selectPoint(int ndata, int npoint);
 
@@ -196,6 +204,7 @@ private: // drawing helper functions
 	void drawAllData(QPainter& p);
 	void drawData(QPainter& p, CPlotData& data);
 	void drawGrid(QPainter& p);
+	void drawAxesTicks(QPainter& p);
 	void drawAxesLabels(QPainter& p);
 	void drawTitle(QPainter& p);
 	void drawSelection(QPainter& p);
@@ -208,7 +217,7 @@ private:
 
 public:
 	QRectF	m_viewRect;
-	QRect	m_screenRect, m_titleRect;
+	QRect	m_screenRect, m_titleRect, m_plotRect;
 	QPoint	m_mousePos, m_mouseInitPos;
 	QColor	m_selCol;
 	double	m_xscale, m_yscale;

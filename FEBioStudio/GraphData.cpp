@@ -9,6 +9,7 @@ CGraphData::CGraphData()
 	m_bsmoothLines = true;
 	m_bdrawGrid = true;
 	m_bdrawTitle = true;
+	m_bdrawAxesLabels = false;
 
 	m_bgCol = QColor(255, 255, 255);
 	m_gridCol = QColor(192, 192, 192);
@@ -43,6 +44,7 @@ CGraphData::CGraphData(const CGraphData& data)
 	m_bsmoothLines = data.m_bsmoothLines;
 	m_bdrawGrid = data.m_bdrawGrid;
 	m_bdrawTitle = data.m_bdrawTitle;
+	m_bdrawAxesLabels = data.m_bdrawAxesLabels;
 	m_bgCol = data.m_bgCol;
 	m_gridCol = data.m_gridCol;
 	m_xCol = data.m_xCol;
@@ -71,6 +73,7 @@ void CGraphData::operator = (const CGraphData& data)
 	m_bsmoothLines = data.m_bsmoothLines;
 	m_bdrawGrid = data.m_bdrawGrid;
 	m_bdrawTitle = data.m_bdrawTitle;
+	m_bdrawAxesLabels = data.m_bdrawAxesLabels;
 	m_bgCol = data.m_bgCol;
 	m_gridCol = data.m_gridCol;
 	m_xCol = data.m_xCol;

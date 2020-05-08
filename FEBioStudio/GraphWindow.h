@@ -72,7 +72,9 @@ public:
 	bool lineSmoothing();
 	bool drawGrid();
 	bool drawTitle();
+	bool drawAxesLabels();
 	bool drawLegend();
+	QColor backgroundColor();
 
 public slots:
 	void onOptionsChanged();
@@ -268,6 +270,10 @@ public: // convenience functions for modifying the plot widget
 
 	// set the title of the plot widget
 	void SetPlotTitle(const QString& title);
+
+	// set the axis labels
+	void SetXAxisLabel(const QString& label);
+	void SetYAxisLabel(const QString& label);
 
 public:
 	// set the data selector for the X field

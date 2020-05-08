@@ -114,6 +114,8 @@ public:
 	QCheckBox*		drawGrid;
 	QCheckBox*		drawLegend;
 	QCheckBox*		drawTitle;
+	QCheckBox*		drawAxes;
+	CColorButton*	bgcol;
 
 	void setup(QWidget* w)
 	{
@@ -122,6 +124,13 @@ public:
 		l->addWidget(drawGrid = new QCheckBox("Draw grid lines"));
 		l->addWidget(drawLegend = new QCheckBox("Draw legend"));
 		l->addWidget(drawTitle = new QCheckBox("Draw title"));
+		l->addWidget(drawAxes = new QCheckBox("Draw axes labels"));
+
+		QHBoxLayout* h = new QHBoxLayout;
+		h->setMargin(0);
+		h->addWidget(new QLabel("Background color"));
+		h->addWidget(bgcol = new CColorButton());
+		l->addLayout(h);
 		l->addStretch();
 		w->setLayout(l);
 
@@ -134,12 +143,15 @@ public:
 		QObject::connect(drawLegend, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 		QObject::connect(drawTitle, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 		QObject::connect(smoothLines, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+		QObject::connect(drawAxes, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
+		QObject::connect(bgcol, SIGNAL(colorChanged(QColor)), w, SLOT(onOptionsChanged()));
 	}
 };
 
 GraphOptions::GraphOptions(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent), ui(new GraphOptionsUI)
 {
 	ui->setup(this);
+	ui->bgcol->setColor(graph->backgroundColor());
 }
 
 void GraphOptions::onOptionsChanged()
@@ -162,9 +174,19 @@ bool GraphOptions::drawTitle()
 	return ui->drawTitle->isChecked();
 }
 
+bool GraphOptions::drawAxesLabels()
+{
+	return ui->drawAxes->isChecked();
+}
+
 bool GraphOptions::drawLegend()
 {
 	return ui->drawLegend->isChecked();
+}
+
+QColor GraphOptions::backgroundColor()
+{
+	return ui->bgcol->color();
 }
 
 //=================================================================================================
@@ -663,7 +685,7 @@ public:
 		}
 
 		ops = new GraphOptions(plot); ops->setObjectName("options");
-		tools->addItem(ops, "Options");
+		tools->addItem(ops, "Graph options");
 		plot->addTool(ops);
 
 		data = new DataOptions(plot); data->setObjectName("data");
@@ -930,6 +952,11 @@ void CGraphWindow::SetPlotTitle(const QString& title)
 }
 
 //-----------------------------------------------------------------------------
+// set the axis labels
+void CGraphWindow::SetXAxisLabel(const QString& label) { ui->plot->setXAxisLabel(label); }
+void CGraphWindow::SetYAxisLabel(const QString& label) { ui->plot->setYAxisLabel(label); }
+
+//-----------------------------------------------------------------------------
 void CGraphWindow::SetXDataSelector(CDataSelector* sel, int nval)
 {
 	ui->selectX->SetDataSelector(sel);
@@ -1163,6 +1190,12 @@ void CGraphWindow::on_options_optionsChanged()
 	bool bshowTitle = ui->ops->drawTitle();
 	ui->plot->setDrawTitle(bshowTitle);
 
+	bool bshowAxes = ui->ops->drawAxesLabels();
+	ui->plot->setDrawAxesLabels(bshowAxes);
+
+	QColor col = ui->ops->backgroundColor();
+	ui->plot->setBackgroundColor(col);
+
 	Update(false);
 }
 
@@ -1293,15 +1326,16 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	// get the title
+	QString xtext = GetCurrentXText();
+	QString ytext = GetCurrentYText();
+	SetXAxisLabel(xtext);
+	SetYAxisLabel(ytext);
 	if (nplotType == LINE_PLOT)
 	{
-		SetPlotTitle(GetCurrentYText());
+		SetPlotTitle(ytext);
 	}
 	else
 	{
-		QString xtext = GetCurrentXText();
-		QString ytext = GetCurrentYText();
-
 		SetPlotTitle(QString("%1 --- %2").arg(xtext).arg(ytext));
 	}
 
