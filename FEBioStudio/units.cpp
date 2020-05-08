@@ -13,7 +13,7 @@ unsigned int Units::GetUnitSystem() { return unit_system; }
 QStringList Units::SupportedUnitSystems()
 {
 	QStringList s;
-	s << "None" << "Dimensions only" << "SI";
+	s << "None" << "Dimensions only" << "SI" << "CGS";
 	return s;
 }
 
@@ -37,6 +37,9 @@ static const char* unit_table[][9] = {
 
 	// SI units
 	{ "m", "kg", "s", "K", "N", "Pa", "J", "W", "mol"},
+
+	// CGS units
+	{ "cm", "g", "s", "K", "dyn", "Ba", "erg", "erg/s", "mol" },
 };
 
 // turn this off to use non-unicode representation of symbols
@@ -118,15 +121,3 @@ QString Units::GetUnitString(const char* szunit)
 
 	return s;
 }
-
-/*
-case Unit_PERMEABILITY: s = L POW_4 DIV F DOT t; break;
-case Unit_DIFFUSIVITY: s = L POW_2 DIV t; break;
-case Unit_THERMAL_CONDUCTIVITY: s = W DIV L DOT T; break;
-case Unit_HEAT_CAPACITY: s = J DIV T; break;
-case Unit_TEMPERATURE: s = T; break;
-case Unit_VELOCITY: s = L DIV  t; break;
-case Unit_ANGULAR_VELOCITY: s = RAD DIV t; break;
-case Unit_ACCELERATION: s = L DIV t POW_2; break;
-
-*/

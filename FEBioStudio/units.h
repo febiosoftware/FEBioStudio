@@ -10,6 +10,7 @@ namespace Units {
 		NONE,
 		DIMENSIONAL,
 		SI,
+		CGS
 	};
 
 	QStringList SupportedUnitSystems();

@@ -10,6 +10,7 @@ using namespace std;
 
 enum Quantities {
 	ANGLE,
+	ENERGY,
 	FORCE,
 	LENGTH,
 	MASS,
@@ -21,6 +22,11 @@ enum Quantities {
 enum ANGLE_UNITS {
 	DEGREE,
 	RADIAN
+};
+
+enum ENERGY_UNITS {
+	JOULE,
+	ERG
 };
 
 enum FORCE_UNITS {
@@ -70,6 +76,7 @@ typedef double (*CONVERT_FUNC)(int from, int to, double fromVal);
 static vector<CONVERT_FUNC> convert_table;
 
 double convert_angle(int nfrom, int nto, double v);
+double convert_energy(int nfrom, int nto, double v);
 double convert_force(int nfrom, int nto, double v);
 double convert_length(int nfrom, int nto, double v);
 double convert_mass(int nfrom, int nto, double v);
@@ -113,6 +120,7 @@ public:
 		// NOTE: Make sure the order here is the same as in enum Quantities
 		//       (should be alphabetical)
 		quantity->addItem("Angle");
+		quantity->addItem("Energy");
 		quantity->addItem("Force");
 		quantity->addItem("Length");
 		quantity->addItem("Mass");
@@ -139,6 +147,7 @@ public:
 CDlgUnitConverter::CDlgUnitConverter(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgUnitConverter)
 {
 	convert_table.push_back(convert_angle);
+	convert_table.push_back(convert_energy);
 	convert_table.push_back(convert_force);
 	convert_table.push_back(convert_length);
 	convert_table.push_back(convert_mass);
@@ -164,6 +173,9 @@ void CDlgUnitConverter::on_quantity_changed()
 		// NOTE: the extra spaces is to make sure
 		//       that the combo box is large enough to fit the other units.
 		units << "Degree         " << "Radian";
+		break;
+	case ENERGY:
+		units << "Joule" << "Erg";
 		break;
 	case FORCE:
 		units << "Newton" << "Kilonewton" << "Dyne";
@@ -255,6 +267,32 @@ double convert_angle(int nfrom, int nto, double v)
 	{
 	case ANGLE_UNITS::DEGREE: to = d; break;
 	case ANGLE_UNITS::RADIAN: to = d / 57.2957795; break;
+	default:
+		assert(false);
+	}
+
+	return to;
+}
+
+
+double convert_energy(int nfrom, int nto, double v)
+{
+	// convert to joule
+	double J = 0.0;
+	switch (nfrom)
+	{
+	case ENERGY_UNITS::JOULE: J = v; break;
+	case ENERGY_UNITS::ERG  : J = v * 1.0e-7; break;
+	default:
+		assert(false);
+	}
+
+	// convert to target unit
+	double to = 0.0;
+	switch (nto)
+	{
+	case ENERGY_UNITS::JOULE: to = J; break;
+	case ENERGY_UNITS::ERG  : to = J / 1.0e-7; break;
 	default:
 		assert(false);
 	}
