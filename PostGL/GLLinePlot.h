@@ -35,7 +35,7 @@ public:
 
 	void Update(int ntime, float dt, bool breset) override;
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 protected:
 	void RenderLines(FEState& s);
@@ -89,7 +89,7 @@ public:
 	int GetVisible(int n = 0) { return m_set[n].nvisible; }
 	void SetVisible(int nvis, int n = 0) { m_set[n].nvisible = nvis; }
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 private:
 	SETTINGS	m_set[MAX_SETTINGS];

@@ -24,7 +24,7 @@ CGLMirrorPlane::CGLMirrorPlane(CGLModel* fem) : CGLPlot(fem)
 	UpdateData(false);
 }
 
-void CGLMirrorPlane::UpdateData(bool bsave)
+bool CGLMirrorPlane::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -40,6 +40,8 @@ void CGLMirrorPlane::UpdateData(bool bsave)
 		SetFloatValue(TRANSPARENCY, m_transparency);
 		SetFloatValue(OFFSET, m_offset);
 	}
+
+	return false;
 }
 
 void CGLMirrorPlane::Render(CGLContext& rc)

@@ -108,7 +108,7 @@ CImageModel::~CImageModel()
 	delete m_img;
 }
 
-void CImageModel::UpdateData(bool bsave)
+bool CImageModel::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -131,6 +131,8 @@ void CImageModel::UpdateData(bool bsave)
 		SetFloatValue(5, m_box.y1);
 		SetFloatValue(6, m_box.z1);
 	}
+
+	return false;
 }
 
 bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box)

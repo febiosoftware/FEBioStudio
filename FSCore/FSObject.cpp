@@ -99,7 +99,7 @@ bool FSObject::Update(bool b)
 }
 
 // update parameters
-void FSObject::UpdateData(bool bsave)
+bool FSObject::UpdateData(bool bsave)
 {
-
+	return false;
 }

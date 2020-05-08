@@ -31,7 +31,7 @@ CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*
 	UpdateData(false);
 }
 
-void CGLParticleFlowPlot::UpdateData(bool bsave)
+bool CGLParticleFlowPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -55,6 +55,8 @@ void CGLParticleFlowPlot::UpdateData(bool bsave)
 		SetFloatValue(STEP_SIZE, m_dt);
 		SetBoolValue(PATH_LINES, m_showPath);
 	}
+
+	return false;
 }
 
 void CGLParticleFlowPlot::SetVectorType(int ntype)

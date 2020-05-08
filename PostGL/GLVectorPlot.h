@@ -80,7 +80,7 @@ public:
 
 	void UpdateTexture() override { m_Col.UpdateTexture(); }
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 	void Update() override;
 

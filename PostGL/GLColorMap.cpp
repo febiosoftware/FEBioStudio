@@ -50,7 +50,7 @@ CGLColorMap::~CGLColorMap()
 }
 
 //-----------------------------------------------------------------------------
-void CGLColorMap::UpdateData(bool bsave)
+bool CGLColorMap::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -86,6 +86,8 @@ void CGLColorMap::UpdateData(bool bsave)
 		SetFloatValue(USER_MAX, m_range.max);
 		SetFloatValue(USER_MIN, m_range.min);
 	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------

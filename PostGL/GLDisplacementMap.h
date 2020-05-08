@@ -22,7 +22,7 @@ public:
 	void SetScale(float f) { m_scl = f; }
 
 public:
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 	void UpdateNodes();
 

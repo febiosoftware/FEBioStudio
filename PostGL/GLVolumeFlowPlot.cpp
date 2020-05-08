@@ -27,7 +27,7 @@ GLVolumeFlowPlot::GLVolumeFlowPlot(CGLModel* mdl) : CGLPlot(mdl)
 	UpdateData(false);
 }
 
-void GLVolumeFlowPlot::UpdateData(bool bsave)
+bool GLVolumeFlowPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -42,6 +42,8 @@ void GLVolumeFlowPlot::UpdateData(bool bsave)
 		SetIntValue(1, m_Col.GetColorMap());
 		SetFloatValue(2, m_alpha);
 	}
+
+	return false;
 }
 
 void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)

@@ -72,7 +72,7 @@ CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLLegendPlot(po)
 	UpdateData(false);
 }
 
-void CGLVectorPlot::UpdateData(bool bsave)
+bool CGLVectorPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -116,6 +116,8 @@ void CGLVectorPlot::UpdateData(bool bsave)
 		SetFloatValue(USER_MAX, m_usr[1]);
 		SetFloatValue(USER_MIN, m_usr[0]);
 	}
+
+	return false;
 }
 
 static double frand() { return (double) rand() / (double) RAND_MAX; }

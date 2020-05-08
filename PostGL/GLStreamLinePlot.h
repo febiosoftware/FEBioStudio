@@ -80,7 +80,7 @@ public:
 	void SetUserRangeMax(double rangeMax) { m_userMax = rangeMax; }
 	double GetUserRangeMax() const { return m_userMax; }
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 protected:
 

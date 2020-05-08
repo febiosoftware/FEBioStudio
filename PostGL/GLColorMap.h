@@ -47,7 +47,7 @@ public:
 private:
 	void UpdateState(int ntime, bool breset);
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 	void Update() override;
 

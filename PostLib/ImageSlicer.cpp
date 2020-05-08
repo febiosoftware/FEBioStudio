@@ -41,7 +41,7 @@ CImageSlicer::~CImageSlicer()
 {
 }
 
-void CImageSlicer::UpdateData(bool bsave)
+bool CImageSlicer::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -56,6 +56,8 @@ void CImageSlicer::UpdateData(bool bsave)
 		SetFloatValue(OFFSET, m_off);
 		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
 	}
+
+	return false;
 }
 
 void CImageSlicer::Create()

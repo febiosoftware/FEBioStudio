@@ -50,7 +50,7 @@ public:
 
 	void Render(CGLContext& rc) override;
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 public:
 	int GetVectorType() { return m_nvec; }

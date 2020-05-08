@@ -235,5 +235,10 @@ void CObjectProps::SetPropertyValue(int i, const QVariant& v)
 {
 	Param& p = *m_params[i];
 	SetPropertyValue(p, v);
-	m_po->UpdateData();
+	if (m_po && m_po->UpdateData())
+	{
+		Clear();
+		BuildParamList(m_po);
+		SetModified(true);
+	}
 }

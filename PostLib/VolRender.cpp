@@ -76,7 +76,7 @@ CVolRender::~CVolRender()
 	Clear();
 }
 
-void CVolRender::UpdateData(bool bsave)
+bool CVolRender::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -112,6 +112,8 @@ void CVolRender::UpdateData(bool bsave)
 		SetColorValue(SPECULAR, m_spc);
 		SetVecValue(LIGHT_POS, m_light);
 	}
+
+	return false;
 }
 
 vec3d CVolRender::GetLightPosition()

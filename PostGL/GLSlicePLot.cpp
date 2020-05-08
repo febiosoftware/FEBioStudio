@@ -55,7 +55,7 @@ CGLSlicePlot::CGLSlicePlot(CGLModel* po) : CGLLegendPlot(po)
 int CGLSlicePlot::GetSlices() { return m_nslices; }
 void CGLSlicePlot::SetSlices(int nslices) { m_nslices = nslices; m_Col.SetDivisions(nslices); }
 
-void CGLSlicePlot::UpdateData(bool bsave)
+bool CGLSlicePlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -86,6 +86,8 @@ void CGLSlicePlot::UpdateData(bool bsave)
 		SetFloatValue(NORMAL_Y, m_norm.y);
 		SetFloatValue(NORMAL_Z, m_norm.z);
 	}
+
+	return false;
 }
 
 void CGLSlicePlot::SetSliceOffset(float f) 

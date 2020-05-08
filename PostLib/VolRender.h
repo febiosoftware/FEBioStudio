@@ -33,7 +33,7 @@ public:
 	int GetColorMap() const { return m_Col.GetColorMap(); }
 	void SetColorMap(int n) { m_Col.SetColorMap(n); }
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 protected:
 	void RenderX(int inc);

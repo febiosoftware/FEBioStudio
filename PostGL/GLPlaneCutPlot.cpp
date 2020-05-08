@@ -64,7 +64,7 @@ CGLPlaneCutPlot::~CGLPlaneCutPlot()
 	ReleasePlane();
 }
 
-void CGLPlaneCutPlot::UpdateData(bool bsave)
+bool CGLPlaneCutPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -90,6 +90,8 @@ void CGLPlaneCutPlot::UpdateData(bool bsave)
 		SetFloatValue(NORMAL_Z, m_normal.z);
 		SetFloatValue(OFFSET  , m_offset);
 	}
+
+	return false;
 }
 
 void CGLPlaneCutPlot::DisableClipPlanes()

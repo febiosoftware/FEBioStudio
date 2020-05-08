@@ -13,7 +13,7 @@ public:
 	// render the object to the 3D view
 	void Render(CGLContext& rc) override;
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 private:
 	void RenderPlane();

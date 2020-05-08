@@ -66,7 +66,7 @@ public:
 
 	void Update() override;
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 private:
 	void AddSurfaceTris(byte val[4], vec3f r[4], const vec3f& faceNormal);

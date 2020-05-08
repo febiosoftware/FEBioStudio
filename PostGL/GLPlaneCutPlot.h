@@ -73,7 +73,7 @@ public:
 
 	void Update(int ntime, float dt, bool breset) override;
 
-	void UpdateData(bool bsave = true) override;
+	bool UpdateData(bool bsave = true) override;
 
 protected:
 	void RenderSlice();

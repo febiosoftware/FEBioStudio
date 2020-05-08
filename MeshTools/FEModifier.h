@@ -121,6 +121,8 @@ public:
 	FESetAxesOrientation();
 	
 	FEMesh* Apply(FEMesh* pm);
+
+	bool UpdateData(bool bsave);
 	
 protected:
 	bool SetAxesVectors(FEMesh* pm);

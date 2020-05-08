@@ -65,7 +65,7 @@ void CGLIsoSurfacePlot::SetSlices(int nslices)
 	m_Col.SetDivisions(nslices); 
 }
 
-void CGLIsoSurfacePlot::UpdateData(bool bsave)
+bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 {
 	GLLegendBar* bar = GetLegendBar();
 
@@ -97,6 +97,8 @@ void CGLIsoSurfacePlot::UpdateData(bool bsave)
 		SetFloatValue(USER_MAX, m_userMax);
 		SetFloatValue(USER_MIN, m_userMin);
 	}
+
+	return false;
 }
 
 void CGLIsoSurfacePlot::Render(CGLContext& rc)

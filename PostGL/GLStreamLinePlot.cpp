@@ -56,7 +56,7 @@ void CGLStreamLinePlot::Update()
 	Update(m_lastTime, m_lastdt, true);
 }
 
-void CGLStreamLinePlot::UpdateData(bool bsave)
+bool CGLStreamLinePlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -84,6 +84,8 @@ void CGLStreamLinePlot::UpdateData(bool bsave)
 		SetFloatValue(USER_MAX, m_userMax);
 		SetFloatValue(USER_MIN, m_userMin);
 	}
+
+	return false;
 }
 
 void CGLStreamLinePlot::SetVectorType(int ntype)

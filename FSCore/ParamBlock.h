@@ -70,12 +70,12 @@ enum Param_Type {
 enum Param_State {
 	Param_HIDDEN    = 0,
 
-	Param_EDITABLE   = 1,	// Parameter will be shown and edited in standard GUI components
-	Param_READWRITE  = 2,	// Parameter will be imported/exported from FEBio files
-	Param_VISIBLE    = 4,	// Parameter will be displayed in model tree
-	Param_PERSISTENT = 8,	// if false, parameter will only be shown in top-level (only for materials)
+	Param_EDITABLE   = 0x01,	// Parameter will be shown and edited in standard GUI components
+	Param_READWRITE  = 0x02,	// Parameter will be imported/exported from FEBio files
+	Param_VISIBLE    = 0x04,	// Parameter will be displayed in model tree
+	Param_PERSISTENT = 0x08,	// if false, parameter will only be shown in top-level (only for materials)
 
-	Param_ALLFLAGS  = 0xF
+	Param_ALLFLAGS = 0x0F
 };
 
 class ParamBlock;

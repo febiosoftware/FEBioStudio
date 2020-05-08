@@ -438,9 +438,38 @@ FESetAxesOrientation::FESetAxesOrientation() : FEModifier("Set axes orientation"
 	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0");
 	AddVecParam(vec3d(1, 0, 0), "a");
 	AddVecParam(vec3d(0, 1, 0), "d");
-	AddIntParam(0, "n0");
-	AddIntParam(1, "n1");
-	AddIntParam(2, "n2");
+	AddIntParam(1, "n0")->SetState(0);
+	AddIntParam(2, "n1")->SetState(0);
+	AddIntParam(4, "n2")->SetState(0);
+}
+
+bool FESetAxesOrientation::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		int n = GetIntValue(0);
+
+		switch (n)
+		{
+		case 0: 
+			GetParam(1).SetState(Param_ALLFLAGS);
+			GetParam(2).SetState(Param_ALLFLAGS);
+			GetParam(3).SetState(0);
+			GetParam(4).SetState(0);
+			GetParam(5).SetState(0);
+			break;
+		case 1:
+			GetParam(1).SetState(0);
+			GetParam(2).SetState(0);
+			GetParam(3).SetState(Param_ALLFLAGS);
+			GetParam(4).SetState(Param_ALLFLAGS);
+			GetParam(5).SetState(Param_ALLFLAGS);
+			break;
+		}
+
+		return true;
+	}
+	else return false;
 }
 
 FEMesh* FESetAxesOrientation::Apply(FEMesh *pm)
@@ -510,9 +539,9 @@ bool FESetAxesOrientation::SetAxesVectors(FEMesh *pm)
 bool FESetAxesOrientation::SetAxesNodes(FEMesh *pm)
 {
 	int node[3] = {0, 1, 2};
-	node[0] = GetIntValue(3);
-	node[1] = GetIntValue(4);
-	node[2] = GetIntValue(5);
+	node[0] = GetIntValue(3)-1;
+	node[1] = GetIntValue(4)-1;
+	node[2] = GetIntValue(5)-1;
 
 	vec3d r1, r2, r3, a, b, c, d;
 	for (int i=0; i<pm->Elements(); ++i)

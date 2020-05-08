@@ -24,7 +24,8 @@ public:
 	virtual bool Update(bool b = true);
 
 	// update parameters
-	virtual void UpdateData(bool bsave = true);
+	// return true if parameter list was modified
+	virtual bool UpdateData(bool bsave = true);
 
 public:
 	void SetParent(FSObject* parent);

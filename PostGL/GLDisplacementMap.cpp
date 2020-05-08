@@ -18,7 +18,7 @@ CGLDisplacementMap::CGLDisplacementMap(CGLModel* po) : CGLDataMap(po)
 }
 
 //-----------------------------------------------------------------------------
-void CGLDisplacementMap::UpdateData(bool bsave)
+bool CGLDisplacementMap::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -47,6 +47,8 @@ void CGLDisplacementMap::UpdateData(bool bsave)
 		if (pfem) SetIntValue(DATA_FIELD, pfem->GetDisplacementField());
 		SetFloatValue(SCALE, m_scl);
 	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------

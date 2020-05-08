@@ -38,7 +38,7 @@ CGLLinePlot::~CGLLinePlot()
 {
 }
 
-void CGLLinePlot::UpdateData(bool bsave)
+bool CGLLinePlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -59,6 +59,8 @@ void CGLLinePlot::UpdateData(bool bsave)
 		SetFloatValue(LINE_WIDTH, m_line);
 		SetBoolValue(SHOW_ALWAYS, m_show);
 	}
+
+	return false;
 }
 
 void CGLLinePlot::SetColorMode(int m) 
@@ -370,7 +372,7 @@ CGLPointPlot::~CGLPointPlot()
 }
 
 //-----------------------------------------------------------------------------
-void CGLPointPlot::UpdateData(bool bsave)
+bool CGLPointPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -380,6 +382,8 @@ void CGLPointPlot::UpdateData(bool bsave)
 	{
 
 	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------

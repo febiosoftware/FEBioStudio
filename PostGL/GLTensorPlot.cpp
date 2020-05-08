@@ -68,7 +68,7 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLLegendPlot(po)
 	UpdateData(false);
 }
 
-void GLTensorPlot::UpdateData(bool bsave)
+bool GLTensorPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -123,6 +123,8 @@ void GLTensorPlot::UpdateData(bool bsave)
 		SetBoolValue(AUTO_SCALE, m_bautoscale);
 		SetBoolValue(NORMALIZE, m_bnormalize);
 	}
+
+	return false;
 }
 
 void GLTensorPlot::SetTensorField(int nfield)

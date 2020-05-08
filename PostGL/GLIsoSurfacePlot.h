@@ -50,7 +50,7 @@ public:
 
 	void Update();
 
-	void UpdateData(bool bsave = true);
+	bool UpdateData(bool bsave = true);
 
 protected:
 	void RenderSlice(float ref, GLColor col);

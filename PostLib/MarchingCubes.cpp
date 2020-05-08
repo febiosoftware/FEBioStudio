@@ -81,7 +81,7 @@ CMarchingCubes::~CMarchingCubes()
 
 }
 
-void CMarchingCubes::UpdateData(bool bsave)
+bool CMarchingCubes::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -103,6 +103,8 @@ void CMarchingCubes::UpdateData(bool bsave)
 		SetBoolValue(INVERT_SPACE, m_binvertSpace);
 		SetBoolValue(CLIP, AllowClipping());
 	}
+
+	return false;
 }
 
 void CMarchingCubes::SetSmooth(bool b)
