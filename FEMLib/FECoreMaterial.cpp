@@ -135,7 +135,7 @@ int FEMaterialProperty::GetMaterialIndex(FEMaterial* mat)
 FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
 {
 	m_naopt = -1;
-	m_n[0] = m_n[1] = m_n[2];
+	m_n[0] = 0; m_n[1] = 1; m_n[2] = 2;
 	m_parent = 0;
 	m_owner = 0;
 	m_hasMatAxes = false;

@@ -1476,6 +1476,8 @@ REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELA
 
 FEFiberExpPow::FEFiberExpPow() : FEMaterial(FE_FIBEREXPPOW_COUPLED)
 {
+	m_hasMatAxes = true;
+
 	AddDoubleParam(0, "alpha", "alpha");
 	AddDoubleParam(0, "beta" , "beta" );
 	AddDoubleParam(0, "ksi"  , "ksi"  );
@@ -1494,6 +1496,8 @@ REGISTER_MATERIAL(FEFiberExpLinear, MODULE_MECH, FE_FIBEREXPLIN_COUPLED, FE_MAT_
 
 FEFiberExpLinear::FEFiberExpLinear() : FEMaterial(FE_FIBEREXPLIN_COUPLED)
 {
+	m_hasMatAxes = true;
+
 	AddDoubleParam(0.0, "c3", "c3");
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
@@ -1508,6 +1512,8 @@ REGISTER_MATERIAL(FEFiberExpLinearUncoupled, MODULE_MECH, FE_FIBEREXPLIN_UNCOUPL
 
 FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEMaterial(FE_FIBEREXPLIN_UNCOUPLED)
 {
+	m_hasMatAxes = true;
+
 	AddDoubleParam(0.0, "c3", "c3");
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
@@ -1522,6 +1528,8 @@ REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED,
 
 FEFiberExpPowUncoupled::FEFiberExpPowUncoupled() : FEMaterial(FE_FIBEREXPPOW_UNCOUPLED)
 {
+	m_hasMatAxes = true;
+
 	AddDoubleParam(0, "alpha", "alpha");
 	AddDoubleParam(0, "beta" , "beta" );
 	AddDoubleParam(0, "ksi"  , "ksi"  );
@@ -1538,6 +1546,8 @@ REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELA
 
 FEFiberPowLin::FEFiberPowLin() : FEMaterial(FE_FIBERPOWLIN_COUPLED)
 {
+	m_hasMatAxes = true;
+
     AddDoubleParam(0, "E", "E");
     AddDoubleParam(2, "beta" , "beta");
     AddDoubleParam(1, "lam0"  , "lam0");
@@ -1553,6 +1563,8 @@ REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED,
 
 FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEMaterial(FE_FIBERPOWLIN_UNCOUPLED)
 {
+	m_hasMatAxes = true;
+
     AddDoubleParam(0, "E", "E");
     AddDoubleParam(2, "beta" , "beta");
     AddDoubleParam(1, "lam0"  , "lam0");

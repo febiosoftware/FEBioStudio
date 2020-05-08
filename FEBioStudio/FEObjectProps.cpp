@@ -441,9 +441,9 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 		switch (fiber->m_naopt)
 		{
 		case FE_FIBER_LOCAL:
-			if (i == 1) return fiber->m_n[0];
-			if (i == 2) return fiber->m_n[1];
-			if (i == 3) return fiber->m_n[2];
+			if (i == 1) return fiber->m_n[0] + 1;
+			if (i == 2) return fiber->m_n[1] + 1;
+			if (i == 3) return fiber->m_n[2] + 1;
 			break;
 		case FE_FIBER_CYLINDRICAL:
 			if (i == 1) return Vec3dToString(fiber->m_r);
@@ -480,9 +480,9 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 		switch (m_mat->m_naopt)
 		{
 		case FE_AXES_LOCAL:
-			if (i == 1) return m_mat->m_n[0];
-			if (i == 2) return m_mat->m_n[1];
-			if (i == 3) return m_mat->m_n[2];
+			if (i == 1) return m_mat->m_n[0] + 1;
+			if (i == 2) return m_mat->m_n[1] + 1;
+			if (i == 3) return m_mat->m_n[2] + 1;
 			break;
 		case FE_AXES_VECTOR:
 			if (i == 1) return Vec3dToString(m_mat->m_a);
@@ -522,8 +522,8 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 		switch (fiber->m_naopt)
 		{
 		case FE_FIBER_LOCAL:
-			if (i == 1) { fiber->m_n[0] = v.toInt(); return; }
-			if (i == 2) { fiber->m_n[1] = v.toInt(); return; }
+			if (i == 1) { fiber->m_n[0] = v.toInt() - 1; return; }
+			if (i == 2) { fiber->m_n[1] = v.toInt() - 1; return; }
 			break;
 		case FE_FIBER_CYLINDRICAL:
 			if (i == 1) { fiber->m_r = StringToVec3d(v.toString()); return; }
@@ -574,8 +574,9 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 		switch (m_mat->m_naopt)
 		{
 		case FE_AXES_LOCAL:
-			if (i == 1) { m_mat->m_n[0] = v.toInt(); return; }
-			if (i == 2) { m_mat->m_n[1] = v.toInt(); return; }
+			if (i == 1) { m_mat->m_n[0] = v.toInt() - 1; return; }
+			if (i == 2) { m_mat->m_n[1] = v.toInt() - 1; return; }
+			if (i == 3) { m_mat->m_n[2] = v.toInt() - 1; return; }
 			break;
 		case FE_AXES_VECTOR:
 			if (i == 1) { m_mat->m_a = StringToVec3d(v.toString()); return; }
