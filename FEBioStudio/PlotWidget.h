@@ -137,6 +137,8 @@ public:
 	void setYAxisColor(const QColor& c) { m_data.m_yCol = c; }
 	void setSelectionColor(const QColor& c) { m_selCol = c; }
 
+	QString XAxisLabel() { return m_data.m_xAxis.label; }
+	QString YAxisLabel() { return m_data.m_yAxis.label; }
 	void setXAxisLabel(const QString& label) { m_data.m_xAxis.label = label; }
 	void setYAxisLabel(const QString& label) { m_data.m_yAxis.label = label; }
 

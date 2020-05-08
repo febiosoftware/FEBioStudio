@@ -116,6 +116,11 @@ public:
 	QCheckBox*		drawTitle;
 	QCheckBox*		drawAxes;
 	CColorButton*	bgcol;
+	QLineEdit*		title;
+	QLineEdit*		xlabel;
+	QLineEdit*		ylabel;
+
+	CGraphWidget*	m_graph;
 
 	void setup(QWidget* w)
 	{
@@ -131,6 +136,25 @@ public:
 		h->addWidget(new QLabel("Background color"));
 		h->addWidget(bgcol = new CColorButton());
 		l->addLayout(h);
+
+		h = new QHBoxLayout;
+		h->setMargin(0);
+		h->addWidget(new QLabel("Title"));
+		h->addWidget(title = new QLineEdit());
+		l->addLayout(h);
+
+		h = new QHBoxLayout;
+		h->setMargin(0);
+		h->addWidget(new QLabel("X-label"));
+		h->addWidget(xlabel = new QLineEdit());
+		l->addLayout(h);
+
+		h = new QHBoxLayout;
+		h->setMargin(0);
+		h->addWidget(new QLabel("Y-label"));
+		h->addWidget(ylabel = new QLineEdit());
+		l->addLayout(h);
+
 		l->addStretch();
 		w->setLayout(l);
 
@@ -145,18 +169,107 @@ public:
 		QObject::connect(smoothLines, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 		QObject::connect(drawAxes, SIGNAL(stateChanged(int)), w, SLOT(onOptionsChanged()));
 		QObject::connect(bgcol, SIGNAL(colorChanged(QColor)), w, SLOT(onOptionsChanged()));
+		QObject::connect(title, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
+		QObject::connect(xlabel, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
+		QObject::connect(ylabel, SIGNAL(editingFinished()), w, SLOT(onOptionsChanged()));
+	}
+
+	void setDrawGrid(bool b)
+	{
+		drawGrid->blockSignals(true);
+		drawGrid->setChecked(b);
+		drawGrid->blockSignals(false);
+	}
+
+	void setDrawLegend(bool b)
+	{
+		drawLegend->blockSignals(true);
+		drawLegend->setChecked(b);
+		drawLegend->blockSignals(false);
+	}
+
+	void setDrawTitle(bool b)
+	{
+		drawTitle->blockSignals(true);
+		drawTitle->setChecked(b);
+		drawTitle->blockSignals(false);
+	}
+
+	void setLineSmoothing(bool b)
+	{
+		smoothLines->blockSignals(true);
+		smoothLines->setChecked(b);
+		smoothLines->blockSignals(false);
+	}
+
+	void setDrawAxes(bool b)
+	{
+		drawAxes->blockSignals(true);
+		drawAxes->setChecked(b);
+		drawAxes->blockSignals(false);
+	}
+
+	void setBGColor(QColor c)
+	{
+		bgcol->blockSignals(true);
+		bgcol->setColor(c);
+		bgcol->blockSignals(false);
+	}
+
+	void setTitle(const QString& t)
+	{
+		title->blockSignals(true);
+		title->setText(t);
+		title->blockSignals(false);
+	}
+
+	void setXLabel(const QString& t)
+	{
+		xlabel->blockSignals(true);
+		xlabel->setText(t);
+		xlabel->blockSignals(false);
+	}
+
+	void setYLabel(const QString& t)
+	{
+		ylabel->blockSignals(true);
+		ylabel->setText(t);
+		ylabel->blockSignals(false);
 	}
 };
 
 GraphOptions::GraphOptions(CGraphWidget* graph, QWidget* parent) : CPlotTool(parent), ui(new GraphOptionsUI)
 {
+	ui->m_graph = graph;
 	ui->setup(this);
-	ui->bgcol->setColor(graph->backgroundColor());
 }
 
 void GraphOptions::onOptionsChanged()
 {
-	emit optionsChanged();
+	if (ui->m_graph == nullptr) return;
+	ui->m_graph->setLineSmoothing(lineSmoothing());
+	ui->m_graph->setDrawGrid(drawGrid());
+	ui->m_graph->showLegend(drawLegend());
+	ui->m_graph->setDrawTitle(drawTitle());
+	ui->m_graph->setDrawAxesLabels(drawAxesLabels());
+	ui->m_graph->setBackgroundColor(backgroundColor());
+	ui->m_graph->setTitle(ui->title->text());
+	ui->m_graph->setXAxisLabel(ui->xlabel->text());
+	ui->m_graph->setYAxisLabel(ui->ylabel->text());
+	ui->m_graph->repaint();
+}
+
+void GraphOptions::Update()
+{
+	ui->setLineSmoothing(ui->m_graph->lineSmoothing());
+	ui->setDrawGrid(ui->m_graph->drawGrid());
+	ui->setDrawLegend(ui->m_graph->showLegend());
+	ui->setDrawTitle(ui->m_graph->drawTitle());
+	ui->setDrawAxes(ui->m_graph->drawAxesLabels());
+	ui->setBGColor(ui->m_graph->backgroundColor());
+	ui->setTitle(ui->m_graph->title());
+	ui->setXLabel(ui->m_graph->XAxisLabel());
+	ui->setYLabel(ui->m_graph->YAxisLabel());
 }
 
 bool GraphOptions::lineSmoothing()
@@ -513,6 +626,7 @@ public:
 	QStackedWidget*	m_stack;
 	CGraphWidget*	m_graph;
 
+	QLineEdit*		m_label;
 	CColorButton*	m_lineCol;
 	QSpinBox*		m_lineWidth;
 	QSpinBox*		m_markerSize;
@@ -530,6 +644,7 @@ public:
 		markersTypes << "None" << "Square" << "Circle" << "Diamond" << "Triangle" << "Cross" << "Plus";
 
 		QFormLayout* l = new QFormLayout;
+		l->addRow("label", m_label = new QLineEdit);
 		l->addRow("color", m_lineCol = new CColorButton);
 		l->addRow("line width", m_lineWidth = new QSpinBox); m_lineWidth->setRange(1, 15);
 		l->addRow("marker type", m_markerType = new QComboBox); m_markerType->addItems(markersTypes);
@@ -545,6 +660,7 @@ public:
 		w->setLayout(mainLayout);
 
 		QObject::connect(m_data, SIGNAL(currentIndexChanged(int)), w, SLOT(onIndexChange(int)));
+		QObject::connect(m_label, SIGNAL(editingFinished()), w, SLOT(onLabelChanged()));
 
 		QSignalMapper* mapper = new QSignalMapper;
 
@@ -563,6 +679,15 @@ DataOptions::DataOptions(CGraphWidget* graph, QWidget* parent) : CPlotTool(paren
 	ui->setup(this);
 }
 
+void DataOptions::onLabelChanged()
+{
+	QString t = ui->m_label->text();
+	int n = ui->m_data->currentIndex();
+	ui->m_data->setItemText(n, t);
+	ui->m_graph->getPlotData(n).setLabel(t);
+	ui->m_graph->repaint();
+}
+
 void DataOptions::onIndexChange(int n)
 {
 	if (n < 0) ui->m_stack->setCurrentIndex(0);
@@ -570,6 +695,7 @@ void DataOptions::onIndexChange(int n)
 	{
 		blockSignals(true);
 		CPlotData& p = ui->m_graph->getPlotData(n);
+		ui->m_label->setText(p.label());
 		ui->m_lineCol->setColor(p.lineColor());
 		ui->m_lineWidth->setValue(p.lineWidth());
 		ui->m_markerType->setCurrentIndex(p.markerType());
@@ -956,6 +1082,9 @@ void CGraphWindow::SetPlotTitle(const QString& title)
 void CGraphWindow::SetXAxisLabel(const QString& label) { ui->plot->setXAxisLabel(label); }
 void CGraphWindow::SetYAxisLabel(const QString& label) { ui->plot->setYAxisLabel(label); }
 
+QString CGraphWindow::XAxisLabel() { return ui->plot->XAxisLabel(); }
+QString CGraphWindow::YAxisLabel() { return ui->plot->YAxisLabel(); }
+
 //-----------------------------------------------------------------------------
 void CGraphWindow::SetXDataSelector(CDataSelector* sel, int nval)
 {
@@ -1175,30 +1304,6 @@ void CGraphWindow::on_range_optionsChanged()
 	Update(false);
 }
 
-//-----------------------------------------------------------------------------
-void CGraphWindow::on_options_optionsChanged()
-{
-	bool smooth = ui->ops->lineSmoothing();
-	ui->plot->setLineSmoothing(smooth);
-
-	bool bshowGrid = ui->ops->drawGrid();
-	ui->plot->setDrawGrid(bshowGrid);
-
-	bool bshowLegend = ui->ops->drawLegend();
-	ui->plot->showLegend(bshowLegend);
-
-	bool bshowTitle = ui->ops->drawTitle();
-	ui->plot->setDrawTitle(bshowTitle);
-
-	bool bshowAxes = ui->ops->drawAxesLabels();
-	ui->plot->setDrawAxesLabels(bshowAxes);
-
-	QColor col = ui->ops->backgroundColor();
-	ui->plot->setBackgroundColor(col);
-
-	Update(false);
-}
-
 //=============================================================================
 CDataGraphWindow::CDataGraphWindow(CMainWindow* wnd, CPostDocument* doc) : CGraphWindow(wnd, doc, 0)
 {
@@ -1254,6 +1359,9 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 {
 	CPostDocument* doc = GetPostDoc();
 	if (doc==nullptr) return;
+
+	SetXAxisLabel("");
+	SetYAxisLabel("");
 
 	if (breset)
 	{

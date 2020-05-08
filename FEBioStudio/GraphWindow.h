@@ -76,11 +76,10 @@ public:
 	bool drawLegend();
 	QColor backgroundColor();
 
+	void Update();
+
 public slots:
 	void onOptionsChanged();
-
-signals:
-	void optionsChanged();
 
 public:
 	GraphOptions(CGraphWidget* graph, QWidget* parent = 0);
@@ -99,6 +98,7 @@ class DataOptions : public CPlotTool
 public slots:
 	void onIndexChange(int n);
 	void onDataChange(int n);
+	void onLabelChanged();
 
 public:
 	DataOptions(CGraphWidget* graph, QWidget* parent = 0);
@@ -275,6 +275,9 @@ public: // convenience functions for modifying the plot widget
 	void SetXAxisLabel(const QString& label);
 	void SetYAxisLabel(const QString& label);
 
+	QString XAxisLabel();
+	QString YAxisLabel();
+
 public:
 	// set the data selector for the X field
 	void SetXDataSelector(CDataSelector* sel, int nval = -1);
@@ -319,7 +322,6 @@ private slots:
 	void on_actionZoomFit_triggered();
 	void on_actionZoomSelect_toggled(bool bchecked);
 	void on_plot_doneZoomToRect();
-	void on_options_optionsChanged();
 	void on_range_optionsChanged();
 
 private:

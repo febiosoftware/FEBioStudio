@@ -140,8 +140,8 @@ void TimeRangeOptions::optionsChanged()
     QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
 }
 struct qt_meta_stringdata_GraphOptions_t {
-    QByteArrayData data[4];
-    char stringdata0[46];
+    QByteArrayData data[3];
+    char stringdata0[31];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -151,13 +151,11 @@ struct qt_meta_stringdata_GraphOptions_t {
 static const qt_meta_stringdata_GraphOptions_t qt_meta_stringdata_GraphOptions = {
     {
 QT_MOC_LITERAL(0, 0, 12), // "GraphOptions"
-QT_MOC_LITERAL(1, 13, 14), // "optionsChanged"
-QT_MOC_LITERAL(2, 28, 0), // ""
-QT_MOC_LITERAL(3, 29, 16) // "onOptionsChanged"
+QT_MOC_LITERAL(1, 13, 16), // "onOptionsChanged"
+QT_MOC_LITERAL(2, 30, 0) // ""
 
     },
-    "GraphOptions\0optionsChanged\0\0"
-    "onOptionsChanged"
+    "GraphOptions\0onOptionsChanged\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -167,21 +165,15 @@ static const uint qt_meta_data_GraphOptions[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       1,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       1,       // signalCount
-
- // signals: name, argc, parameters, tag, flags
-       1,    0,   24,    2, 0x06 /* Public */,
+       0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       3,    0,   25,    2, 0x0a /* Public */,
-
- // signals: parameters
-    QMetaType::Void,
+       1,    0,   19,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -195,18 +187,8 @@ void GraphOptions::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         auto *_t = static_cast<GraphOptions *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->optionsChanged(); break;
-        case 1: _t->onOptionsChanged(); break;
+        case 0: _t->onOptionsChanged(); break;
         default: ;
-        }
-    } else if (_c == QMetaObject::IndexOfMethod) {
-        int *result = reinterpret_cast<int *>(_a[0]);
-        {
-            using _t = void (GraphOptions::*)();
-            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&GraphOptions::optionsChanged)) {
-                *result = 0;
-                return;
-            }
         }
     }
     Q_UNUSED(_a);
@@ -241,25 +223,19 @@ int GraphOptions::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 1)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 1;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 1)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 2;
+        _id -= 1;
     }
     return _id;
 }
-
-// SIGNAL 0
-void GraphOptions::optionsChanged()
-{
-    QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
-}
 struct qt_meta_stringdata_DataOptions_t {
-    QByteArrayData data[5];
-    char stringdata0[42];
+    QByteArrayData data[6];
+    char stringdata0[57];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -272,10 +248,12 @@ QT_MOC_LITERAL(0, 0, 11), // "DataOptions"
 QT_MOC_LITERAL(1, 12, 13), // "onIndexChange"
 QT_MOC_LITERAL(2, 26, 0), // ""
 QT_MOC_LITERAL(3, 27, 1), // "n"
-QT_MOC_LITERAL(4, 29, 12) // "onDataChange"
+QT_MOC_LITERAL(4, 29, 12), // "onDataChange"
+QT_MOC_LITERAL(5, 42, 14) // "onLabelChanged"
 
     },
-    "DataOptions\0onIndexChange\0\0n\0onDataChange"
+    "DataOptions\0onIndexChange\0\0n\0onDataChange\0"
+    "onLabelChanged"
 };
 #undef QT_MOC_LITERAL
 
@@ -285,7 +263,7 @@ static const uint qt_meta_data_DataOptions[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -293,12 +271,14 @@ static const uint qt_meta_data_DataOptions[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   24,    2, 0x0a /* Public */,
-       4,    1,   27,    2, 0x0a /* Public */,
+       1,    1,   29,    2, 0x0a /* Public */,
+       4,    1,   32,    2, 0x0a /* Public */,
+       5,    0,   35,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int,    3,
     QMetaType::Void, QMetaType::Int,    3,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -311,6 +291,7 @@ void DataOptions::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         switch (_id) {
         case 0: _t->onIndexChange((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 1: _t->onDataChange((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 2: _t->onLabelChanged(); break;
         default: ;
         }
     }
@@ -345,13 +326,13 @@ int DataOptions::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 3;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 3)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }
@@ -559,8 +540,8 @@ int MathPlot::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     return _id;
 }
 struct qt_meta_stringdata_CGraphWindow_t {
-    QByteArrayData data[18];
-    char stringdata0[442];
+    QByteArrayData data[17];
+    char stringdata0[416];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -585,8 +566,7 @@ QT_MOC_LITERAL(12, 305, 26), // "on_actionZoomFit_triggered"
 QT_MOC_LITERAL(13, 332, 27), // "on_actionZoomSelect_toggled"
 QT_MOC_LITERAL(14, 360, 8), // "bchecked"
 QT_MOC_LITERAL(15, 369, 22), // "on_plot_doneZoomToRect"
-QT_MOC_LITERAL(16, 392, 25), // "on_options_optionsChanged"
-QT_MOC_LITERAL(17, 418, 23) // "on_range_optionsChanged"
+QT_MOC_LITERAL(16, 392, 23) // "on_range_optionsChanged"
 
     },
     "CGraphWindow\0on_selectX_currentValueChanged\0"
@@ -601,8 +581,7 @@ QT_MOC_LITERAL(17, 418, 23) // "on_range_optionsChanged"
     "on_actionZoomHeight_triggered\0"
     "on_actionZoomFit_triggered\0"
     "on_actionZoomSelect_toggled\0bchecked\0"
-    "on_plot_doneZoomToRect\0on_options_optionsChanged\0"
-    "on_range_optionsChanged"
+    "on_plot_doneZoomToRect\0on_range_optionsChanged"
 };
 #undef QT_MOC_LITERAL
 
@@ -612,7 +591,7 @@ static const uint qt_meta_data_CGraphWindow[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      15,   14, // methods
+      14,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -620,21 +599,20 @@ static const uint qt_meta_data_CGraphWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   89,    2, 0x08 /* Private */,
-       3,    1,   92,    2, 0x08 /* Private */,
-       4,    1,   95,    2, 0x08 /* Private */,
-       5,    0,   98,    2, 0x08 /* Private */,
-       6,    0,   99,    2, 0x08 /* Private */,
-       7,    0,  100,    2, 0x08 /* Private */,
-       8,    0,  101,    2, 0x08 /* Private */,
-       9,    0,  102,    2, 0x08 /* Private */,
-      10,    0,  103,    2, 0x08 /* Private */,
-      11,    0,  104,    2, 0x08 /* Private */,
-      12,    0,  105,    2, 0x08 /* Private */,
-      13,    1,  106,    2, 0x08 /* Private */,
-      15,    0,  109,    2, 0x08 /* Private */,
-      16,    0,  110,    2, 0x08 /* Private */,
-      17,    0,  111,    2, 0x08 /* Private */,
+       1,    1,   84,    2, 0x08 /* Private */,
+       3,    1,   87,    2, 0x08 /* Private */,
+       4,    1,   90,    2, 0x08 /* Private */,
+       5,    0,   93,    2, 0x08 /* Private */,
+       6,    0,   94,    2, 0x08 /* Private */,
+       7,    0,   95,    2, 0x08 /* Private */,
+       8,    0,   96,    2, 0x08 /* Private */,
+       9,    0,   97,    2, 0x08 /* Private */,
+      10,    0,   98,    2, 0x08 /* Private */,
+      11,    0,   99,    2, 0x08 /* Private */,
+      12,    0,  100,    2, 0x08 /* Private */,
+      13,    1,  101,    2, 0x08 /* Private */,
+      15,    0,  104,    2, 0x08 /* Private */,
+      16,    0,  105,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int,    2,
@@ -649,7 +627,6 @@ static const uint qt_meta_data_CGraphWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::Bool,   14,
-    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
 
@@ -675,8 +652,7 @@ void CGraphWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 10: _t->on_actionZoomFit_triggered(); break;
         case 11: _t->on_actionZoomSelect_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
         case 12: _t->on_plot_doneZoomToRect(); break;
-        case 13: _t->on_options_optionsChanged(); break;
-        case 14: _t->on_range_optionsChanged(); break;
+        case 13: _t->on_range_optionsChanged(); break;
         default: ;
         }
     }
@@ -713,13 +689,13 @@ int CGraphWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 15)
+        if (_id < 14)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 15;
+        _id -= 14;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 15)
+        if (_id < 14)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 15;
+        _id -= 14;
     }
     return _id;
 }
