@@ -108,6 +108,8 @@ public:
 
 	FEMesh* Apply(FEMesh* pm);
 
+	bool UpdateData(bool bsave);
+
 protected:
 	void SetFiberVector(FEMesh* pm);
 	void SetFiberNodes (FEMesh* pm);

@@ -367,8 +367,32 @@ FESetFiberOrientation::FESetFiberOrientation() : FEModifier("Set fiber orientati
 {
 	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0");
 	AddVecParam(vec3d(1,0,0), "vector");
-	AddIntParam(0, "n0");
-	AddIntParam(1, "n1");
+	AddIntParam(0, "n0")->SetState(0);
+	AddIntParam(1, "n1")->SetState(0);
+}
+
+bool FESetFiberOrientation::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		int n = GetIntValue(0);
+		switch (n)
+		{
+		case 0:
+			GetParam(1).SetState(Param_ALLFLAGS);
+			GetParam(2).SetState(0);
+			GetParam(3).SetState(0);
+			break;
+		case 1:
+			GetParam(1).SetState(0);
+			GetParam(2).SetState(Param_ALLFLAGS);
+			GetParam(3).SetState(Param_ALLFLAGS);
+			break;
+		}
+		return true;
+	}
+
+	return false;
 }
 
 FEMesh* FESetFiberOrientation::Apply(FEMesh *pm)
