@@ -94,3 +94,16 @@ FEInitTemperature::FEInitTemperature(FEModel* ps, FEItemListBuilder* pi, double 
 	SetTypeString("Initial Temperature");
 	AddDoubleParam(val, "Temperature")->SetUnit(UNIT_TEMPERATURE);
 }
+
+//-----------------------------------------------------------------------------
+FEInitFluidDilatation::FEInitFluidDilatation(FEModel* ps) : FEInitialCondition(FE_INIT_FLUID_DILATATION, ps)
+{
+    SetTypeString("Initial Fluid Dilatation");
+    AddDoubleParam(0, "Fluid dilatation")->SetUnit(UNIT_NONE);
+}
+
+FEInitFluidDilatation::FEInitFluidDilatation(FEModel* ps, FEItemListBuilder* pi, double val, int nstep) : FEInitialCondition(FE_INIT_FLUID_DILATATION, ps, pi, nstep)
+{
+    SetTypeString("Initial Fluid Dilatation");
+    AddDoubleParam(val, "Fluid dilatation")->SetUnit(UNIT_NONE);
+}

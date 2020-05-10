@@ -205,6 +205,7 @@ protected:
 	void WriteInitFluidPressure(FEInitFluidPressure&      ip);
 	void WriteInitShellFluidPressure(FEInitShellFluidPressure& iq);
 	void WriteInitTemperature(FEInitTemperature&        it);
+    void WriteInitFluidDilatation(FEInitFluidDilatation&  it);
 
 	void WriteLoadNodal(FEStep& s);
 

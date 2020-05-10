@@ -1940,6 +1940,7 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 			else if (abc == "svx") bc = 22;
 			else if (abc == "svy") bc = 23;
 			else if (abc == "svz") bc = 24;
+            else if (abc == "ef") bc = 25;
 			else throw XMLReader::InvalidAttributeValue(tag, "bc", abc.cvalue());
 
 			double val = 0.0;
@@ -1998,6 +1999,10 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 				pic = new FENodalShellVelocities(&fem, pg, vec3d(0, 0, val), m_pBCStep->GetID());
 				sprintf(szname, "InitShellVelocity%02d", CountICs<FENodalShellVelocities>(fem) +1);
 				break;
+            case 25:
+                pic = new FEInitFluidDilatation(&fem, pg, val, m_pBCStep->GetID());
+                sprintf(szname, "InitialFluidDilatation%02d", CountICs<FEInitFluidDilatation>(fem)+1);
+                break;
 			default:
 				if ((bc >= 9) && (bc <= 14))
 				{

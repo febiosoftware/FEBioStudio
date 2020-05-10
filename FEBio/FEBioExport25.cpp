@@ -4224,6 +4224,7 @@ void FEBioExport25::WriteInitialSection()
 			case FE_INIT_CONCENTRATION :        WriteInitConcentration      (dynamic_cast<FEInitConcentration&>(*pi)); break;
             case FE_INIT_SHELL_CONCENTRATION :  WriteInitShellConcentration (dynamic_cast<FEInitShellConcentration&>(*pi)); break;
 			case FE_INIT_TEMPERATURE :          WriteInitTemperature        (dynamic_cast<FEInitTemperature  &>(*pi)); break;
+            case FE_INIT_FLUID_DILATATION :     WriteInitFluidDilatation    (dynamic_cast<FEInitFluidDilatation&>(*pi)); break;
 			}
 		}
 	}
@@ -4403,6 +4404,19 @@ void FEBioExport25::WriteInitTemperature(FEInitTemperature&   it)
 		m_xml.add_leaf("value", it.GetValue());
 	}
 	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport25::WriteInitFluidDilatation(FEInitFluidDilatation&   it)
+{
+    XMLElement el("init");
+    el.add_attribute("bc", "ef");
+    el.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
+    m_xml.add_branch(el);
+    {
+        m_xml.add_leaf("value", it.GetValue());
+    }
+    m_xml.close_branch();
 }
 
 //-----------------------------------------------------------------------------

@@ -702,6 +702,7 @@ void FEStep::Load(IArchive &ar)
 					case FE_INIT_TEMPERATURE         : pi = new FEInitTemperature       (m_pfem); break;
 					case FE_NODAL_VELOCITIES         : pi = new FENodalVelocities       (m_pfem); break;
 					case FE_NODAL_SHELL_VELOCITIES   : pi = new FENodalShellVelocities  (m_pfem); break;
+                    case FE_INIT_FLUID_DILATATION    : pi = new FEInitFluidDilatation   (m_pfem); break;
 					default:
 						throw ReadError("error parsing CID_IC_SECTION FEStep::Load");
 					}

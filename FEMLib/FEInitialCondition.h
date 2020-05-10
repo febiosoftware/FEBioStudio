@@ -113,3 +113,17 @@ public:
 	double GetValue() { return GetFloatValue(VALUE); }
 	void SetValue(double v) { SetFloatValue(VALUE, v); }
 };
+
+//-----------------------------------------------------------------------------
+class FEInitFluidDilatation : public FEInitialCondition
+{
+public:
+    enum { VALUE };
+
+public:
+    FEInitFluidDilatation(FEModel* ps);
+    FEInitFluidDilatation(FEModel* ps, FEItemListBuilder* pi, double val, int nstep = 0);
+
+    double GetValue() { return GetFloatValue(VALUE); }
+    void SetValue(double v) { SetFloatValue(VALUE, v); }
+};
