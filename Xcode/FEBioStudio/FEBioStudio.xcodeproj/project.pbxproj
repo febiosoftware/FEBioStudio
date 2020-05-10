@@ -55,11 +55,9 @@
 		D57C2A78240F1F990043C2A7 /* moc_PublicationWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57C2A73240F1F990043C2A7 /* moc_PublicationWidget.cpp */; };
 		D57C2A79240F1F990043C2A7 /* moc_PublicationWidgetView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57C2A74240F1F990043C2A7 /* moc_PublicationWidgetView.cpp */; };
 		D57C2A7A240F1F990043C2A7 /* PublicationWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57C2A75240F1F990043C2A7 /* PublicationWidget.cpp */; };
-		D5828D0B246465DB00FD7FF2 /* ExternalLinkEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D03246465DB00FD7FF2 /* ExternalLinkEdit.cpp */; };
 		D5828D0C246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D05246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp */; };
 		D5828D0D246465DB00FD7FF2 /* units.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D06246465DB00FD7FF2 /* units.cpp */; };
 		D5828D0E246465DB00FD7FF2 /* DlgUnitConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D09246465DB00FD7FF2 /* DlgUnitConverter.cpp */; };
-		D5828D0F246465DB00FD7FF2 /* moc_ExternalLinkEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D0A246465DB00FD7FF2 /* moc_ExternalLinkEdit.cpp */; };
 		D5992F222461E4320054F9DA /* DocManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0E2461E4300054F9DA /* DocManager.cpp */; };
 		D5992F232461E4320054F9DA /* GView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0F2461E4310054F9DA /* GView.cpp */; };
 		D5992F242461E4320054F9DA /* menuHelp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F102461E4310054F9DA /* menuHelp.cpp */; };
@@ -72,6 +70,9 @@
 		D5992F2B2461E4320054F9DA /* menuEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F1A2461E4310054F9DA /* menuEdit.cpp */; };
 		D5992F2C2461E4320054F9DA /* ModelFileWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F1F2461E4320054F9DA /* ModelFileWriter.cpp */; };
 		D5992F2D2461E4320054F9DA /* welcomPage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F202461E4320054F9DA /* welcomPage.cpp */; };
+		D5A96F29246892A10026BFE0 /* GraphData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F24246892A10026BFE0 /* GraphData.cpp */; };
+		D5A96F2A246892A10026BFE0 /* moc_LinkPropertyEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F25246892A10026BFE0 /* moc_LinkPropertyEdit.cpp */; };
+		D5A96F2B246892A10026BFE0 /* LinkPropertyEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F26246892A10026BFE0 /* LinkPropertyEdit.cpp */; };
 		D5BA5337240D5470001A5C0F /* DlgSelectRange.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */; };
 		D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5334240D5470001A5C0F /* CIntInput.cpp */; };
 		D5BA5339240D5470001A5C0F /* DlgFind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5335240D5470001A5C0F /* DlgFind.cpp */; };
@@ -466,7 +467,6 @@
 		D57656FB23E32E6800E4F70F /* RepoProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoProject.h; sourceTree = "<group>"; };
 		D57656FC23E32E6900E4F70F /* DlgAddConstraint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgAddConstraint.cpp; sourceTree = "<group>"; };
 		D57656FD23E32E6900E4F70F /* DlgUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgUpload.h; sourceTree = "<group>"; };
-		D57656FE23E32E6900E4F70F /* moc_predefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moc_predefs.h; sourceTree = "<group>"; };
 		D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_RepoConnectionHandler.cpp; sourceTree = "<group>"; };
 		D576571523E32F7E00E4F70F /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.14.1/lib/QtNetwork.framework; sourceTree = "<group>"; };
 		D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquazip.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/quazip/0.8.1/lib/libquazip.1.0.0.dylib; sourceTree = "<group>"; };
@@ -496,14 +496,11 @@
 		D57C2A74240F1F990043C2A7 /* moc_PublicationWidgetView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PublicationWidgetView.cpp; sourceTree = "<group>"; };
 		D57C2A75240F1F990043C2A7 /* PublicationWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PublicationWidget.cpp; sourceTree = "<group>"; };
 		D57C2A76240F1F990043C2A7 /* PublicationWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PublicationWidget.h; sourceTree = "<group>"; };
-		D5828D03246465DB00FD7FF2 /* ExternalLinkEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExternalLinkEdit.cpp; sourceTree = "<group>"; };
 		D5828D04246465DB00FD7FF2 /* units.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = units.h; sourceTree = "<group>"; };
 		D5828D05246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgUnitConverter.cpp; sourceTree = "<group>"; };
 		D5828D06246465DB00FD7FF2 /* units.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = units.cpp; sourceTree = "<group>"; };
-		D5828D07246465DB00FD7FF2 /* ExternalLinkEdit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExternalLinkEdit.h; sourceTree = "<group>"; };
 		D5828D08246465DB00FD7FF2 /* DlgUnitConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgUnitConverter.h; sourceTree = "<group>"; };
 		D5828D09246465DB00FD7FF2 /* DlgUnitConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgUnitConverter.cpp; sourceTree = "<group>"; };
-		D5828D0A246465DB00FD7FF2 /* moc_ExternalLinkEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ExternalLinkEdit.cpp; sourceTree = "<group>"; };
 		D5992F0D2461E4300054F9DA /* ModelFileWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelFileWriter.h; sourceTree = "<group>"; };
 		D5992F0E2461E4300054F9DA /* DocManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DocManager.cpp; sourceTree = "<group>"; };
 		D5992F0F2461E4310054F9DA /* GView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GView.cpp; sourceTree = "<group>"; };
@@ -525,6 +522,11 @@
 		D5992F1F2461E4320054F9DA /* ModelFileWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelFileWriter.cpp; sourceTree = "<group>"; };
 		D5992F202461E4320054F9DA /* welcomPage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = welcomPage.cpp; sourceTree = "<group>"; };
 		D5992F212461E4320054F9DA /* PostObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostObject.h; sourceTree = "<group>"; };
+		D5A96F24246892A10026BFE0 /* GraphData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphData.cpp; sourceTree = "<group>"; };
+		D5A96F25246892A10026BFE0 /* moc_LinkPropertyEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_LinkPropertyEdit.cpp; sourceTree = "<group>"; };
+		D5A96F26246892A10026BFE0 /* LinkPropertyEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LinkPropertyEdit.cpp; sourceTree = "<group>"; };
+		D5A96F27246892A10026BFE0 /* LinkPropertyEdit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinkPropertyEdit.h; sourceTree = "<group>"; };
+		D5A96F28246892A10026BFE0 /* GraphData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphData.h; sourceTree = "<group>"; };
 		D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgSelectRange.cpp; sourceTree = "<group>"; };
 		D5BA5333240D5470001A5C0F /* DlgSelectRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSelectRange.h; sourceTree = "<group>"; };
 		D5BA5334240D5470001A5C0F /* CIntInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CIntInput.cpp; sourceTree = "<group>"; };
@@ -1239,8 +1241,6 @@
 				D5CC3A64245B4CD700311F48 /* ElementVolumeTool.h */,
 				D5D5B6BD2335128D00D388FA /* Encrypter.cpp */,
 				D5D5B6C12335128D00D388FA /* Encrypter.h */,
-				D5828D03246465DB00FD7FF2 /* ExternalLinkEdit.cpp */,
-				D5828D07246465DB00FD7FF2 /* ExternalLinkEdit.h */,
 				D5F7D73D22FA37C40089B08E /* FEBioJob.cpp */,
 				D5F7D7A522FA37C40089B08E /* FEBioJob.h */,
 				D5F7D76922FA37C40089B08E /* FEBioOpt.h */,
@@ -1274,6 +1274,8 @@
 				D5F7D7C922FA37C40089B08E /* GLViewTransform.h */,
 				D5F7D77122FA37C40089B08E /* GManipulator.cpp */,
 				D5F7D7A022FA37C40089B08E /* GManipulator.h */,
+				D5A96F24246892A10026BFE0 /* GraphData.cpp */,
+				D5A96F28246892A10026BFE0 /* GraphData.h */,
 				D5F7D78C22FA37C40089B08E /* GraphWindow.cpp */,
 				D5F7D76822FA37C40089B08E /* GraphWindow.h */,
 				D5F7D7CD22FA37C40089B08E /* GTriad.cpp */,
@@ -1288,6 +1290,8 @@
 				D5F7D78A22FA37C40089B08E /* IntegrateWindow.h */,
 				D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */,
 				D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */,
+				D5A96F26246892A10026BFE0 /* LinkPropertyEdit.cpp */,
+				D5A96F27246892A10026BFE0 /* LinkPropertyEdit.h */,
 				D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */,
 				D57656F723E32E6800E4F70F /* LocalDatabaseHandler.h */,
 				D5EBB7A6232AEAED00EED2BE /* Logger.cpp */,
@@ -1360,7 +1364,6 @@
 				D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */,
 				D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */,
 				D5F7D77A22FA37C40089B08E /* moc_EditPanel.cpp */,
-				D5828D0A246465DB00FD7FF2 /* moc_ExternalLinkEdit.cpp */,
 				D5F7D6F922FA37C30089B08E /* moc_FileThread.cpp */,
 				D5F7D71F22FA37C40089B08E /* moc_FileViewer.cpp */,
 				D5F7D7FF22FA37C40089B08E /* moc_GLControlBar.cpp */,
@@ -1369,6 +1372,7 @@
 				D5F7D7DF22FA37C40089B08E /* moc_GraphWindow.cpp */,
 				D5ED29FB23198CD700C16BF7 /* moc_InfoPanel.cpp */,
 				D5F7D71822FA37C40089B08E /* moc_IntegrateWindow.cpp */,
+				D5A96F25246892A10026BFE0 /* moc_LinkPropertyEdit.cpp */,
 				D5D5B6C02335128D00D388FA /* moc_Logger.cpp */,
 				D5F7D7B922FA37C40089B08E /* moc_LogPanel.cpp */,
 				D5ED2A0B23198CD900C16BF7 /* moc_MainTabBar.cpp */,
@@ -1388,7 +1392,6 @@
 				D5ED29FD23198CD700C16BF7 /* moc_PostDataPanel.cpp */,
 				D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */,
 				D5F7D75A22FA37C40089B08E /* moc_PostPanel.cpp */,
-				D57656FE23E32E6900E4F70F /* moc_predefs.h */,
 				D5F7D71022FA37C40089B08E /* moc_PropertyListForm.cpp */,
 				D5F7D77022FA37C40089B08E /* moc_PropertyListView.cpp */,
 				D57C2A73240F1F990043C2A7 /* moc_PublicationWidget.cpp */,
@@ -1688,7 +1691,6 @@
 				D5F7D86C22FA37C40089B08E /* Sketcher.cpp in Sources */,
 				D5F7D87222FA37C40089B08E /* CreatePanel.cpp in Sources */,
 				D5F7D86022FA37C40089B08E /* DlgImportAbaqus.cpp in Sources */,
-				D5828D0B246465DB00FD7FF2 /* ExternalLinkEdit.cpp in Sources */,
 				D5F7D88722FA37C40089B08E /* FEBioStudio.cpp in Sources */,
 				D5F7D83E22FA37C40089B08E /* DlgRAWImport.cpp in Sources */,
 				D5F7D88322FA37C40089B08E /* moc_DlgModelInfo.cpp in Sources */,
@@ -1749,6 +1751,7 @@
 				D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */,
 				D5F7D82C22FA37C40089B08E /* moc_BuildPanel.cpp in Sources */,
 				D5F7D83C22FA37C40089B08E /* DlgEditProject.cpp in Sources */,
+				D5A96F29246892A10026BFE0 /* GraphData.cpp in Sources */,
 				D5ED2A1423198CD900C16BF7 /* moc_StatePanel.cpp in Sources */,
 				D5F7D84B22FA37C40089B08E /* GLHighLighter.cpp in Sources */,
 				D5F7D86122FA37C40089B08E /* moc_DlgAddChemicalReaction.cpp in Sources */,
@@ -1796,7 +1799,6 @@
 				D5F7D83B22FA37C40089B08E /* MeshInspector.cpp in Sources */,
 				D5F7D89622FA37C40089B08E /* DlgRun.cpp in Sources */,
 				D5C13EDC24047890005897E1 /* PostModelPanel.cpp in Sources */,
-				D5828D0F246465DB00FD7FF2 /* moc_ExternalLinkEdit.cpp in Sources */,
 				D5F7D8A022FA37C40089B08E /* moc_CreatePanel.cpp in Sources */,
 				D576570023E32E6900E4F70F /* moc_DlgUpload.cpp in Sources */,
 				D5F7D8A722FA37C40089B08E /* moc_DlgEditProject.cpp in Sources */,
@@ -1873,6 +1875,7 @@
 				D5F7D84622FA37C40089B08E /* ConchoidFitTool.cpp in Sources */,
 				D5F7D85422FA37C40089B08E /* DlgAddBodyLoad.cpp in Sources */,
 				D5F7D88522FA37C40089B08E /* DlgFEBioOptimize.cpp in Sources */,
+				D5A96F2A246892A10026BFE0 /* moc_LinkPropertyEdit.cpp in Sources */,
 				D5F7D85E22FA37C40089B08E /* MeshPanel.cpp in Sources */,
 				D57C2A78240F1F990043C2A7 /* moc_PublicationWidget.cpp in Sources */,
 				D5F7D85922FA37C40089B08E /* moc_StatsWindow.cpp in Sources */,
@@ -1931,6 +1934,7 @@
 				D5992F262461E4320054F9DA /* menuView.cpp in Sources */,
 				D5CC3A78245B4CD800311F48 /* DlgMeasure.cpp in Sources */,
 				D5F7D8BA22FA37C40089B08E /* DlgImportSTL.cpp in Sources */,
+				D5A96F2B246892A10026BFE0 /* LinkPropertyEdit.cpp in Sources */,
 				D5F7D84E22FA37C40089B08E /* DlgAddStep.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
