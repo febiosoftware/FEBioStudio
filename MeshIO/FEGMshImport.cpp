@@ -247,6 +247,16 @@ bool FEGMshImport::ReadElements()
 			el.node[5] = m[5] - 1;
 			Elem.push_back(el);
 			break;
+		case 7: // 5-node pyramid
+			if (nread != 3 + ntags + 5) return errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_PYRA5;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			Elem.push_back(el);
+			break;
         case 11: // 10-node tetrahedron
             if (nread != 3 + ntags + 10) return errf("Invalid number of entries when reading element %d", n[0]);
             el.ntype = FE_TET10;
@@ -349,6 +359,13 @@ bool FEGMshImport::ReadElements()
 				el.m_node[5] = e.node[5];
 				el.m_node[6] = e.node[6];
 				el.m_node[7] = e.node[7];
+				break;
+			case FE_PYRA5:
+				el.m_node[0] = e.node[0];
+				el.m_node[1] = e.node[1];
+				el.m_node[2] = e.node[2];
+				el.m_node[3] = e.node[3];
+				el.m_node[4] = e.node[4];
 				break;
 			case FE_PENTA6:
 				el.m_node[0] = e.node[0];
