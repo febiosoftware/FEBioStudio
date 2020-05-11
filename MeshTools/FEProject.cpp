@@ -333,6 +333,7 @@ void FEProject::InitModules()
     REGISTER_FE_CLASS(FEFluidNormalVelocity     , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_NORMAL_VELOCITY       , "Fluid normal velocity");
     REGISTER_FE_CLASS(FEFluidRotationalVelocity , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_ROTATIONAL_VELOCITY   , "Fluid rotational velocity");
     REGISTER_FE_CLASS(FEFluidFlowResistance     , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_FLOW_RESISTANCE       , "Fluid flow resistance");
+    REGISTER_FE_CLASS(FEFluidFlowRCR            , MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_FLOW_RCR              , "Fluid RCR");
     REGISTER_FE_CLASS(FEFluidBackflowStabilization, MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_BACKFLOW_STABIL     , "Fluid back flow stabilization");
     REGISTER_FE_CLASS(FEFluidTangentialStabilization, MODULE_FLUID, FE_SURFACE_LOAD, FE_FLUID_TANGENTIAL_STABIL , "Fluid tangential stabilization");
     REGISTER_FE_CLASS(FEInitFluidDilatation     , MODULE_FLUID, FE_INITIAL_CONDITION, FE_INIT_FLUID_DILATATION  , "Fluid dilatation");

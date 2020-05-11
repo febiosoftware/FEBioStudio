@@ -429,9 +429,17 @@ void CCurveEditor::BuildModelTree()
 				FELoad* plj = pstep->Load(j);
 
                 FEFluidFlowResistance* pfr = dynamic_cast<FEFluidFlowResistance*>(pstep->Load(j));
+                FEFluidFlowRCR* prcr = dynamic_cast<FEFluidFlowRCR*>(pstep->Load(j));
                 if (pfr) {
                     ui->addTreeItem(t2, QString::fromStdString("R"), pfr->GetLoadCurve());
                     ui->addTreeItem(t2, QString::fromStdString("pressure_offset"), pfr->GetPOLoadCurve());
+                }
+                else if (prcr) {
+                    ui->addTreeItem(t2, QString::fromStdString("R"), prcr->GetLoadCurve());
+                    ui->addTreeItem(t2, QString::fromStdString("Rd"), prcr->GetRDLoadCurve());
+                    ui->addTreeItem(t2, QString::fromStdString("capacitance"), prcr->GetCOLoadCurve());
+                    ui->addTreeItem(t2, QString::fromStdString("pressure_offset"), prcr->GetPOLoadCurve());
+                    ui->addTreeItem(t2, QString::fromStdString("initial_pressure"), prcr->GetIPLoadCurve());
                 }
 				else {
 					FEBodyForce* pbl = dynamic_cast<FEBodyForce*>(pstep->Load(j));

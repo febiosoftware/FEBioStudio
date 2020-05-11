@@ -83,6 +83,7 @@ private:
     FESurfaceLoad* ParseLoadFluidNormalVelocity         (XMLTag& tag);
     FESurfaceLoad* ParseLoadFluidRotationalVelocity     (XMLTag& tag);
     FESurfaceLoad* ParseLoadFluidFlowResistance         (XMLTag& tag);
+    FESurfaceLoad* ParseLoadFluidFlowRCR                (XMLTag& tag);
     FESurfaceLoad* ParseLoadFluidBackFlowStabilization  (XMLTag& tag);
     FESurfaceLoad* ParseLoadFluidTangentialStabilization(XMLTag& tag);
     FESurfaceLoad* ParseLoadFSITraction       (XMLTag& tag);

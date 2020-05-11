@@ -191,6 +191,7 @@ protected:
     void WriteFluidNormalVelocity         (FEStep& s);
     void WriteFluidRotationalVelocity     (FEStep& s);
     void WriteFluidFlowResistance         (FEStep& s);
+    void WriteFluidFlowRCR                (FEStep& s);
     void WriteFluidBackflowStabilization  (FEStep& s);
     void WriteFluidTangentialStabilization(FEStep& s);
     void WriteFSITraction                 (FEStep& s);

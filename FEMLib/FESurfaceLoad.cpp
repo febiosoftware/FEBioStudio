@@ -248,6 +248,31 @@ FEFluidFlowResistance::FEFluidFlowResistance(FEModel* ps, FEItemListBuilder* pi,
 
 //-----------------------------------------------------------------------------
 
+FEFluidFlowRCR::FEFluidFlowRCR(FEModel* ps) : FESurfaceLoad(FE_FLUID_FLOW_RCR, ps)
+{
+    SetTypeString("Fluid RCR");
+    AddDoubleParam(0, "R", "proximal resistance")->SetLoadCurve();
+    AddDoubleParam(0, "Rd", "distal resistance")->SetLoadCurve();
+    AddDoubleParam(0, "capacitance", "compliance")->SetLoadCurve();
+    AddDoubleParam(0, "pressure_offset", "pressure offset")->SetLoadCurve();
+    AddDoubleParam(0, "initial_pressure", "initial pressure")->SetLoadCurve();
+    AddBoolParam(true, "Bernoulli", "Bernoulli");
+
+}
+
+FEFluidFlowRCR::FEFluidFlowRCR(FEModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, bool be, int nstep) : FESurfaceLoad(FE_FLUID_FLOW_RCR, ps, pi, nstep)
+{
+    SetTypeString("Fluid RCR");
+    AddDoubleParam(rp, "R", "resistance")->SetLoadCurve();
+    AddDoubleParam(rd, "Rd", "distal resistance")->SetLoadCurve();
+    AddDoubleParam(co, "capacitance", "compliance")->SetLoadCurve();
+    AddDoubleParam(po, "pressure_offset", "pressure offset")->SetLoadCurve();
+    AddDoubleParam(ip, "initial_pressure", "initial pressure")->SetLoadCurve();
+    AddBoolParam(be, "Bernoulli", "Bernoulli");
+}
+
+//-----------------------------------------------------------------------------
+
 FEFluidBackflowStabilization::FEFluidBackflowStabilization(FEModel* ps) : FESurfaceLoad(FE_FLUID_BACKFLOW_STABIL, ps)
 {
     SetTypeString("Fluid Backflow Stabilization");

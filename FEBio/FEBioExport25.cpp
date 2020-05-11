@@ -3165,6 +3165,9 @@ void FEBioExport25::WriteLoadsSection(FEStep& s)
     // fluid flow resistance
     WriteFluidFlowResistance(s);
     
+    // fluid flow RCR
+    WriteFluidFlowRCR(s);
+    
     // fluid backflow stabilization
     WriteFluidBackflowStabilization(s);
     
@@ -4100,6 +4103,75 @@ void FEBioExport25::WriteFluidFlowResistance(FEStep& s)
                 po.add_attribute("lc", lcpo);
                 po.value(ptc->GetPO());
                 m_xml.add_leaf(po);
+            }
+            m_xml.close_branch(); // surface_load
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+// Export fluid flow RCR
+//
+void FEBioExport25::WriteFluidFlowRCR(FEStep& s)
+{
+    for (int j=0; j<s.Loads(); ++j)
+    {
+        FEFluidFlowRCR* ptc = dynamic_cast<FEFluidFlowRCR*>(s.Load(j));
+        if (ptc && ptc->IsActive())
+        {
+            if (m_writeNotes) m_xml.add_comment(ptc->GetInfo());
+
+            FEItemListBuilder* pitem = ptc->GetItemList();
+            if (pitem == 0) throw InvalidItemListBuilder(ptc);
+            
+            XMLElement flux("surface_load");
+            flux.add_attribute("type", "fluid RCR");
+            flux.add_attribute("surface", GetSurfaceName(pitem));
+            m_xml.add_branch(flux);
+            {
+                FELoadCurve* plc = ptc->GetLoadCurve();
+                int lc = plc->GetID();
+                
+                XMLElement load("R");
+                load.add_attribute("lc", lc);
+                load.value(ptc->GetLoad());
+                m_xml.add_leaf(load);
+                
+                FELoadCurve* rdlc = ptc->GetRDLoadCurve();
+                int lcrd = rdlc->GetID();
+                
+                XMLElement rd("Rd");
+                rd.add_attribute("lc", lcrd);
+                rd.value(ptc->GetRD());
+                m_xml.add_leaf(rd);
+                
+                FELoadCurve* colc = ptc->GetCOLoadCurve();
+                int lcco = colc->GetID();
+                
+                XMLElement co("capacitance");
+                co.add_attribute("lc", lcco);
+                co.value(ptc->GetCO());
+                m_xml.add_leaf(co);
+                
+                FELoadCurve* polc = ptc->GetPOLoadCurve();
+                int lcpo = polc->GetID();
+                
+                XMLElement po("pressure_offset");
+                po.add_attribute("lc", lcpo);
+                po.value(ptc->GetPO());
+                m_xml.add_leaf(po);
+
+                FELoadCurve* iplc = ptc->GetIPLoadCurve();
+                int lcip = iplc->GetID();
+                
+                XMLElement ip("initial_pressure");
+                ip.add_attribute("lc", lcip);
+                ip.value(ptc->GetIP());
+                m_xml.add_leaf(ip);
+                
+                XMLElement be("Bernoulli");
+                be.value(ptc->GetBE());
+                m_xml.add_leaf(be);
             }
             m_xml.close_branch(); // surface_load
         }

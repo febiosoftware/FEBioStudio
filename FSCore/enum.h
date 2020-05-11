@@ -590,6 +590,7 @@
 #define FE_CONCENTRATION_FLUX				0x002C	// added in 2.0
 #define FE_SBM_POINT_SOURCE					0x002D
 #define FE_INIT_FLUID_DILATATION            0x002E
+#define FE_FLUID_FLOW_RCR                   0x002F
 
 //--------------------------------------------------------
 // Interface types
