@@ -25,6 +25,9 @@ public:
 	void SetModelFolder(const QString& modelPath);
 	QString GetModelFolder();
 
+	void setShowDialogOption(bool b);
+	bool showDialogOption();
+
 private slots:
 	void OnFolderName();
 

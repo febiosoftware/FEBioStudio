@@ -539,6 +539,9 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
 		if (pbc) { SetSelection(0, pbc->GetItemList()); return; }
 
+		FEInitialCondition* pic = dynamic_cast<FEInitialCondition*>(m_currentObject);
+		if (pic) { SetSelection(0, pic->GetItemList()); return; }
+
 		FELoad* pbl = dynamic_cast<FELoad*>(m_currentObject);
 		if (pbl) { SetSelection(0, pbl->GetItemList()); return; }
 

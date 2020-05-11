@@ -363,7 +363,7 @@ FEPrescribedRotation::FEPrescribedRotation(FEModel* ps) : FEPrescribedDOF(FE_PRE
 {
 	SetTypeString("Prescribed Rotation");
 	SetVarID(ps->GetVariableIndex("Rotation"));
-	SetScaleUnit(UNIT_CONCENTRATION);
+	SetScaleUnit(UNIT_SUBSTANCE);
 }
 
 //-----------------------------------------------------------------------------
@@ -371,7 +371,7 @@ FEPrescribedRotation::FEPrescribedRotation(FEModel* ps, FEItemListBuilder* pi, i
 {
 	SetTypeString("Prescribed Rotation");
 	SetVarID(ps->GetVariableIndex("Rotation"));
-	SetScaleUnit(UNIT_CONCENTRATION);
+	SetScaleUnit(UNIT_SUBSTANCE);
 }
 
 //=============================================================================

@@ -4,6 +4,8 @@
 #include <QGridLayout>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QFormLayout>
+#include <QLabel>
 #include <PostLib/ColorMap.h>
 
 class CMainWindow;
@@ -59,6 +61,25 @@ private:
 	ColorGradient*	m_grad;
 	QCheckBox*		m_default;
 	int				m_currentMap;
+};
+
+class CUnitWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CUnitWidget(QWidget* parent = nullptr);
+
+private slots:
+	void OnUnitSystemChanged(int n);
+
+public:
+	int		m_unit;
+
+private:
+	QComboBox*		m_us;
+	QWidget*		m_edit;
+	QLabel*			m_name[10];
 };
 
 class CDlgSettings : public QDialog

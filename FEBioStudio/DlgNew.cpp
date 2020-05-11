@@ -29,6 +29,7 @@ public:
 	QLineEdit*		m_modelName;
 	QLineEdit*		m_modelFolder;
 	QCheckBox*		m_createSubFolder;
+	QCheckBox*		m_showDialog;
 
 public:
 	void setup(::CMainWindow* wnd, QDialog* dlg)
@@ -81,7 +82,13 @@ public:
 		v->addWidget(m_createSubFolder);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-		v->addWidget(bb);
+
+		QHBoxLayout* hb = new  QHBoxLayout;
+		hb->setMargin(0);
+		m_showDialog = new QCheckBox("Don't show this dialog box again");
+		hb->addWidget(m_showDialog);
+		hb->addWidget(bb);
+		v->addLayout(hb);
 
 		dlg->setLayout(v);
 
@@ -103,6 +110,16 @@ CDlgNew::CDlgNew(CMainWindow* parent ) : QDialog(parent), ui(new Ui::CDlgNew)
 {
 	setWindowTitle("New Model");
 	ui->setup(parent, this);
+}
+
+void CDlgNew::setShowDialogOption(bool b)
+{
+	ui->m_showDialog->setChecked(b);
+}
+
+bool CDlgNew::showDialogOption()
+{
+	return ui->m_showDialog->isChecked();
 }
 
 void CDlgNew::SetModelFolder(const QString& modelPath)
@@ -173,12 +190,8 @@ void CDlgNew::accept()
 		return;
 	}
 
-	// try to create the subfolder
-	if (dir.mkdir(modelName) == false)
-	{
-		QMessageBox::critical(this, "New Model", QString("The folder %1 already exists. Please choose a different model name or model folder.").arg(modelName));
-		return;
-	}
+	// create the subfolder
+	dir.mkdir(modelName);
 
 	// cd into this folder
 	if (dir.cd(modelName) == false)
@@ -188,11 +201,21 @@ void CDlgNew::accept()
 	}
 
 	// compose the model filename
-	QString fileName = dir.absoluteFilePath(modelName + ".fsm");
+	QString fileName = QDir::toNativeSeparators(dir.absoluteFilePath(modelName + ".fsm"));
+
+	// see if this file already exists
+	QFile file(fileName);
+	if (file.exists())
+	{
+		if (QMessageBox::question(this, "New Model", QString("This file already exists:\n%1\nDo you want to overwrite it?").arg(fileName)) != QMessageBox::Yes)
+		{ 
+			return;
+		}
+	}
 
 	// create a new model
 	CModelDocument * doc = new CModelDocument(ui->m_wnd);
-	doc->SetDocFilePath(QDir::toNativeSeparators(fileName).toStdString());
+	doc->SetDocFilePath(fileName.toStdString());
 	doc->LoadTemplate(ntemplate);
 	if (doc->SaveDocument() == false)
 	{

@@ -173,7 +173,7 @@ public:
 
 	QString	m_old_title;
 
-	bool	m_showNewOnStartup;
+	bool	m_showNewDialog;
 
 	bool	m_isAnimating;
 
@@ -187,7 +187,7 @@ public:
 
 		measureTool = nullptr;
 
-		m_showNewOnStartup = true;
+		m_showNewDialog = true;
 	}
 
 	void setupUi(::CMainWindow* wnd)

@@ -226,14 +226,14 @@ int FEProject::Validate(std::string &szerr)
 void FEProject::InitModules()
 {
 	// register material categories
-	FEMaterialFactory::AddCategory("elastic"           , MODULE_MECH     , FE_MAT_ELASTIC);
-	FEMaterialFactory::AddCategory("uncoupled elastic" , MODULE_MECH     , FE_MAT_ELASTIC_UNCOUPLED);
-	FEMaterialFactory::AddCategory("multiphasic"       , MODULE_BIPHASIC , FE_MAT_MULTIPHASIC);
-	FEMaterialFactory::AddCategory("heat transfer"     , MODULE_HEAT     , FE_MAT_HEAT_TRANSFER);
-	FEMaterialFactory::AddCategory("fluid"             , MODULE_FLUID    , FE_MAT_FLUID);
-    FEMaterialFactory::AddCategory("fluid-FSI"         , MODULE_FLUID_FSI, FE_MAT_FLUID_FSI);
-	FEMaterialFactory::AddCategory("reaction-diffusion", MODULE_REACTION_DIFFUSION	, FE_MAT_REACTION_DIFFUSION);
-	FEMaterialFactory::AddCategory("other"             , MODULE_MECH				, FE_MAT_RIGID);
+	FEMaterialFactory::AddCategory("elastic"             , MODULE_MECH     , FE_MAT_ELASTIC);
+	FEMaterialFactory::AddCategory("uncoupled elastic"   , MODULE_MECH     , FE_MAT_ELASTIC_UNCOUPLED);
+	FEMaterialFactory::AddCategory("bi-/tri-/multiphasic", MODULE_BIPHASIC , FE_MAT_MULTIPHASIC);
+	FEMaterialFactory::AddCategory("heat transfer"       , MODULE_HEAT     , FE_MAT_HEAT_TRANSFER);
+	FEMaterialFactory::AddCategory("fluid"               , MODULE_FLUID    , FE_MAT_FLUID);
+    FEMaterialFactory::AddCategory("fluid-FSI"           , MODULE_FLUID_FSI, FE_MAT_FLUID_FSI);
+	FEMaterialFactory::AddCategory("reaction-diffusion"  , MODULE_REACTION_DIFFUSION	, FE_MAT_REACTION_DIFFUSION);
+	FEMaterialFactory::AddCategory("other"               , MODULE_MECH				, FE_MAT_RIGID);
 
 	// --- MECH MODULE ---
 	REGISTER_FE_CLASS(FENonLinearMechanics         , MODULE_MECH, FE_ANALYSIS         , FE_STEP_MECHANICS               , "Structural Mechanics");

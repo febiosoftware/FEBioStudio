@@ -4,6 +4,7 @@
 #include "Document.h"
 #include "GLView.h"
 #include <QBoxLayout>
+#include <QFormLayout>
 #include <QPushButton>
 #include <QTabWidget>
 #include <QListWidget>
@@ -12,6 +13,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QStackedWidget>
+#include <QGroupBox>
 #include "PropertyList.h"
 #include "PropertyListForm.h"
 #include "PropertyListView.h"
@@ -108,15 +110,13 @@ public:
 		themes << "Adwaita" << "Adwaita Dark";
 #endif
 		addEnumProperty(&m_theme, "Theme")->setEnumValues(themes);
+		addBoolProperty(&m_showNewDialog, "Show New dialog box");
 		addProperty("Recent projects list", CProperty::Action)->info = QString("Clear");
-
-		QStringList units = Units::SupportedUnitSystems();
-		addEnumProperty(&m_unit, "Unit System")->setEnumValues(units);
 	}
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-		if (i == 3)
+		if (i == 4)
 		{
 			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear the recent project list.\nThis can not be undone!"))
 			{
@@ -132,7 +132,7 @@ public:
 	bool	m_apply;
 	bool	m_bcmd;
 	int		m_theme;
-	int		m_unit;
+	bool	m_showNewDialog;
 };
 
 //-----------------------------------------------------------------------------
@@ -573,6 +573,80 @@ void CColormapWidget::onSpinValueChanged(int n)
 }
 
 //-----------------------------------------------------------------------------
+CUnitWidget::CUnitWidget(QWidget* parent) : QWidget(parent)
+{
+	QStringList units = Units::SupportedUnitSystems();
+	m_us = new QComboBox();
+	m_us->addItems(units);
+
+	m_unit = Units::GetUnitSystem();
+	m_us->setCurrentIndex(m_unit);
+
+	QFormLayout* f = new QFormLayout();
+	f->setMargin(0);
+	f->addRow("Unit system", m_us);
+
+	QGroupBox* bu = new QGroupBox("Base units");
+	QFormLayout* fb = new QFormLayout;
+	fb->setLabelAlignment(Qt::AlignRight);
+	fb->addRow("Length:"     , m_name[0] = new QLabel);
+	fb->addRow("Mass:"       , m_name[1] = new QLabel);
+	fb->addRow("Time:"       , m_name[2] = new QLabel);
+	fb->addRow("Temperature:", m_name[3] = new QLabel);
+	fb->addRow("Current:"    , m_name[4] = new QLabel);
+	fb->addRow("Substance:"  , m_name[5] = new QLabel);
+	bu->setLayout(fb);
+
+	QGroupBox* bd = new QGroupBox("Derived units");
+	QFormLayout* fd = new QFormLayout;
+	fd->setLabelAlignment(Qt::AlignRight);
+	fd->addRow("Force:"      , m_name[6] = new QLabel);
+	fd->addRow("Pressure:"   , m_name[7] = new QLabel);
+	fd->addRow("Energy:"     , m_name[8] = new QLabel);
+	fd->addRow("Power:"      , m_name[9] = new QLabel);
+	bd->setLayout(fd);
+
+	QVBoxLayout* el = new QVBoxLayout;
+	el->setMargin(0);
+	el->addWidget(bu);
+	el->addWidget(bd);
+
+	m_edit = new QWidget;
+	m_edit->setLayout(el);
+
+	QVBoxLayout* l = new QVBoxLayout;
+	l->addLayout(f);
+	l->addWidget(m_edit);
+	l->addStretch();
+	setLayout(l);
+
+	if (m_unit == 0) m_edit->hide();
+
+	QObject::connect(m_us, SIGNAL(currentIndexChanged(int)), this, SLOT(OnUnitSystemChanged(int)));
+
+	OnUnitSystemChanged(m_unit);
+}
+
+void CUnitWidget::OnUnitSystemChanged(int n)
+{
+	m_unit = n;
+
+	if (n == 0) m_edit->hide();
+	else m_edit->show();
+
+	m_name[0]->setText(Units::unitSymbol(n, Units::LENGTH));
+	m_name[1]->setText(Units::unitSymbol(n, Units::MASS));
+	m_name[2]->setText(Units::unitSymbol(n, Units::TIME));
+	m_name[3]->setText(Units::unitSymbol(n, Units::TEMPERATURE));
+	m_name[4]->setText(Units::unitSymbol(n, Units::CURRENT));
+	m_name[5]->setText(Units::unitSymbol(n, Units::SUBSTANCE));
+	m_name[6]->setText(Units::unitSymbol(n, Units::FORCE));
+	m_name[7]->setText(Units::unitSymbol(n, Units::PRESSURE));
+	m_name[8]->setText(Units::unitSymbol(n, Units::ENERGY));
+	m_name[9]->setText(Units::unitSymbol(n, Units::POWER));
+}
+
+//-----------------------------------------------------------------------------
 class Ui::CDlgSettings
 {
 public:
@@ -586,6 +660,7 @@ public:
 	CSelectionProps*	m_select;
 	CLightingProps*		m_light;
 	CCameraProps*		m_cam;
+	CUnitWidget*		m_unit;
 
 	::CPropertyListView*	bg_panel;
 	::CPropertyListView*	di_panel;
@@ -607,6 +682,7 @@ public:
 		m_select = new CSelectionProps;
 		m_light = new CLightingProps;
 		m_cam = new CCameraProps;
+		m_unit = new CUnitWidget;
 	}
 
 	void setupUi(::CDlgSettings* pwnd)
@@ -631,6 +707,7 @@ public:
 		stack->addWidget(ph_panel); list->addItem("Physics");
 		stack->addWidget(se_panel); list->addItem("Selection");
 		stack->addWidget(ui_panel); list->addItem("UI");
+		stack->addWidget(m_unit); list->addItem("Units");
 		list->setResizeMode(QListView::ResizeMode::Adjust);
 
 		QHBoxLayout* hl = new QHBoxLayout;
@@ -686,7 +763,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_ui->m_apply = (view.m_apply == 1);
 	ui->m_ui->m_bcmd = pwnd->clearCommandStackOnSave();
 	ui->m_ui->m_theme = pwnd->currentTheme();
-	ui->m_ui->m_unit = Units::GetUnitSystem();
+	ui->m_ui->m_showNewDialog = pwnd->showNewDialog();
 
 	ui->m_select->m_bconnect = view.m_bconn;
 	ui->m_select->m_ntagInfo = view.m_ntagInfo;
@@ -704,6 +781,8 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_cam->m_banim = true;
 	ui->m_cam->m_bias = cam.GetCameraBias();
 	ui->m_cam->m_speed = cam.GetCameraSpeed();
+
+	ui->m_unit->m_unit = Units::GetUnitSystem();
 
 	ui->setupUi(this);
 
@@ -786,8 +865,9 @@ void CDlgSettings::apply()
 
 	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
 	m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
+	m_pwnd->setShowNewDialog(ui->m_ui->m_showNewDialog);
 
-	Units::SetUnitSystem(ui->m_ui->m_unit);
+	Units::SetUnitSystem(ui->m_unit->m_unit);
 
 	m_pwnd->RedrawGL();
 }

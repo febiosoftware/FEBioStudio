@@ -10,7 +10,22 @@ namespace Units {
 		NONE,
 		DIMENSIONAL,
 		SI,
-		CGS
+		MMTS,
+		CGS,
+	};
+
+	enum Unit_Symbol
+	{
+		LENGTH,
+		MASS,
+		TIME,
+		TEMPERATURE,
+		CURRENT,
+		SUBSTANCE,
+		FORCE,
+		PRESSURE,
+		ENERGY,
+		POWER
 	};
 
 	QStringList SupportedUnitSystems();
@@ -19,4 +34,6 @@ namespace Units {
 	unsigned int GetUnitSystem();
 
 	QString GetUnitString(const char* sz);
+
+	QString unitSymbol(int us , Unit_Symbol sym);
 }

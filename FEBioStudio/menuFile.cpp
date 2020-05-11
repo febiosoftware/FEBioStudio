@@ -95,11 +95,46 @@ void CMainWindow::on_actionOpenProject_triggered()
 
 void CMainWindow::on_actionNewModel_triggered()
 {
-	CDlgNew dlg(this);
-	dlg.SetModelFolder(ui->m_defaultProjectParent);
-	if (dlg.exec())
+	if (ui->m_showNewDialog)
 	{
-		ui->m_defaultProjectParent = dlg.GetModelFolder();
+		CDlgNew dlg(this);
+		dlg.SetModelFolder(ui->m_defaultProjectParent);
+		if (dlg.exec())
+		{
+			ui->m_defaultProjectParent = dlg.GetModelFolder();
+		}
+		ui->m_showNewDialog = !(dlg.showDialogOption());
+	}
+	else
+	{
+		// create a new model doc
+		CModelDocument* doc = new CModelDocument(this);
+
+		// create a unique name for this
+		int n = 1;
+		string docTitle;
+		CDocManager* dm = m_DocManager;
+		bool bok = true;
+		do
+		{
+			stringstream ss;
+			ss << "Untitled-" << n++;
+			docTitle = ss.str();
+			bok = true;
+			for (int i = 0; i < dm->Documents(); ++i)
+			{
+				CDocument* doci = dm->GetDocument(i);
+				if (doci->GetDocTitle() == docTitle)
+				{
+					bok = false;
+					break;
+				}
+			}
+		} while (bok == false);
+
+		doc->SetDocTitle(docTitle);
+
+		AddDocument(doc);
 	}
 }
 
@@ -243,6 +278,8 @@ bool CMainWindow::SaveDocument(const QString& fileName)
 	{
 		UpdateTab(doc);
 		ui->addToRecentFiles(fileName);
+		ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
+		ui->fileViewer->Update();
 	}
 	else
 	{

@@ -601,7 +601,7 @@ void CMainWindow::AddDocument(CDocument* doc)
 
 	// add it to the project
 	CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
-	if (modelDoc)
+	if (modelDoc && (modelDoc->GetDocFilePath().empty() == false))
 	{
 		ui->m_project.AddFile(QString::fromStdString(modelDoc->GetDocFilePath()));
 		ui->fileViewer->Update();
@@ -1244,6 +1244,16 @@ FEBioStudioProject* CMainWindow::GetProject()
 	return &ui->m_project;
 }
 
+void CMainWindow::setShowNewDialog(bool b)
+{
+	ui->m_showNewDialog = b;
+}
+
+bool CMainWindow::showNewDialog()
+{
+	return ui->m_showNewDialog;
+}
+
 void CMainWindow::writeSettings()
 {
 	QSettings settings("MRLSoftware", "FEBio Studio");
@@ -1251,7 +1261,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("geometry", saveGeometry());
 	settings.setValue("state", saveState());
 	settings.setValue("theme", ui->m_theme);
-	settings.setValue("showProjectManangerOnStart", ui->m_showNewOnStartup);
+	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1318,7 +1328,7 @@ void CMainWindow::readSettings()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 	ui->m_theme = settings.value("theme", 0).toInt();
-	ui->m_showNewOnStartup = settings.value("showProjectManangerOnStart", true).toBool();
+	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
 
 	QRect rt;
 	rt = settings.value("curveEditorSize", QRect()).toRect();

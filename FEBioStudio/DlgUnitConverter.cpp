@@ -55,7 +55,8 @@ enum PRESSURE_UNITS {
 	MEGAPASCAL,
 	ATMOSPHERE,
 	MMHG,
-	PSI
+	PSI,
+	BARYE
 };
 
 enum TEMPERATURE_UNITS {
@@ -187,7 +188,7 @@ void CDlgUnitConverter::on_quantity_changed()
 		units << "Kilogram" << "Pound" << "Stone";
 		break;
 	case PRESSURE:
-		units << "Pascal" << "Kilopascal" << "Megapascal" << "Atmosphere" << "mmHg" << "PSI";
+		units << "Pascal" << "Kilopascal" << "Megapascal" << "Atmosphere" << "mmHg" << "PSI" << "Barye";
 		break;
 	case TEMPERATURE:
 		units << "Celsius" << "Fahrenheit" << "Kelvin";
@@ -399,6 +400,7 @@ double convert_pressure(int nfrom, int nto, double v)
 	case PRESSURE_UNITS::ATMOSPHERE: P = v * 101325.0; break;
 	case PRESSURE_UNITS::MMHG      : P = v * 133.322368; break;
 	case PRESSURE_UNITS::PSI       : P = v * 6894.757; break;
+	case PRESSURE_UNITS::BARYE     : P = v * 0.1; break;
 	default: assert(false);
 	}
 
@@ -412,6 +414,7 @@ double convert_pressure(int nfrom, int nto, double v)
 	case PRESSURE_UNITS::ATMOSPHERE: to = P / 101325.0; break;
 	case PRESSURE_UNITS::MMHG      : to = P / 133.322368; break;
 	case PRESSURE_UNITS::PSI       : to = P / 6894.757; break;
+	case PRESSURE_UNITS::BARYE     : to = P / 0.1; break;
 	default: assert(false);
 	}
 	return to;

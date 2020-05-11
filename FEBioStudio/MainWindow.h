@@ -131,6 +131,10 @@ public:
 	// get the current project
 	FEBioStudioProject* GetProject();
 
+	// show New dialog box option
+	void setShowNewDialog(bool b);
+	bool showNewDialog();
+
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.
