@@ -222,7 +222,7 @@ public:
 
 	FileReader* CreateFileReader(const QString& fileName);
 
-	void OpenFile(const QString& fileName, bool showLoadOptions = true);
+	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true);
 
 	bool SaveDocument(const QString& fileName);
 

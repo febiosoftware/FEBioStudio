@@ -342,7 +342,7 @@ void CMainWindow::ReadFile(CDocument* doc, const QString& fileName, FileReader* 
 	ReadNextFileInQueue();
 }
 
-void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions)
+void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool openExternal)
 {
 	// stop any animation
 	if (ui->m_isAnimating) ui->postToolBar->CheckPlayButton(false);
@@ -379,7 +379,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions)
 	{
 		OpenProject(fileName);
 	}
-	else
+	else if (openExternal)
 	{
 		// Open any other files (e.g. log files) with the system's associated program
 		QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
@@ -721,7 +721,7 @@ void CMainWindow::dropEvent(QDropEvent *e)
 				ReadFile(doc, fileName, fileReader, 0);
 		}
 		else {
-			OpenFile(fileName, false);
+			OpenFile(fileName, false, false);
 		}
 	}
 }
