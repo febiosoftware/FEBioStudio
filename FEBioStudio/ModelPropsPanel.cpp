@@ -1320,22 +1320,23 @@ void CModelPropsPanel::selSelection(int n)
 	{
 		switch (pl->Type())
 		{
-		case GO_NODE: pcmd = new CCmdSelectNode(mdl, &l[0], (int)l.size(), false); break;
-		case GO_EDGE: pcmd = new CCmdSelectEdge(mdl, &l[0], (int)l.size(), false); break;
-		case GO_FACE: pcmd = new CCmdSelectSurface(mdl, &l[0], (int)l.size(), false); break;
-		case GO_PART: pcmd = new CCmdSelectPart(mdl, &l[0], (int)l.size(), false); break;
+		case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, &l[0], (int)l.size(), false); break;
+		case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, &l[0], (int)l.size(), false); break;
+		case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, &l[0], (int)l.size(), false); break;
+		case GO_PART: pdoc->SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, &l[0], (int)l.size(), false); break;
 		default:
 			if (dynamic_cast<FEGroup*>(pl))
 			{
+				pdoc->SetSelectionMode(SELECT_OBJECT);
 				FEGroup* pg = dynamic_cast<FEGroup*>(pl);
 				FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
 				assert(pm);
 				switch (pg->Type())
 				{
-				case FE_NODESET: pcmd = new CCmdSelectFENodes(pm, &l[0], (int)l.size(), false); break;
-				case FE_EDGESET: pcmd = new CCmdSelectFEEdges(pm, &l[0], (int)l.size(), false); break;
-				case FE_SURFACE: pcmd = new CCmdSelectFaces(pm, &l[0], (int)l.size(), false); break;
-				case FE_PART: pcmd = new CCmdSelectElements(pm, &l[0], (int)l.size(), false); break;
+				case FE_NODESET: pdoc->SetItemMode(ITEM_NODE); pcmd = new CCmdSelectFENodes(pm, &l[0], (int)l.size(), false); break;
+				case FE_EDGESET: pdoc->SetItemMode(ITEM_EDGE); pcmd = new CCmdSelectFEEdges(pm, &l[0], (int)l.size(), false); break;
+				case FE_SURFACE: pdoc->SetItemMode(ITEM_FACE); pcmd = new CCmdSelectFaces(pm, &l[0], (int)l.size(), false); break;
+				case FE_PART   : pdoc->SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, &l[0], (int)l.size(), false); break;
 				default:
 					assert(false);
 				}
@@ -1367,6 +1368,7 @@ void CModelPropsPanel::selSelection(int n)
 	if (pcmd)
 	{
 		pdoc->DoCommand(pcmd);
+		m_wnd->UpdateToolbar();
 		m_wnd->Update();
 	}
 }

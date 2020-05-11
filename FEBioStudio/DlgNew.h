@@ -20,16 +20,11 @@ public:
 
 	void showEvent(QShowEvent* ev);
 
+	void SetModelName(const QString& name);
 	QString GetModelName();
-
-	void SetModelFolder(const QString& modelPath);
-	QString GetModelFolder();
 
 	void setShowDialogOption(bool b);
 	bool showDialogOption();
-
-private slots:
-	void OnFolderName();
 
 public:
 	Ui::CDlgNew*	ui;

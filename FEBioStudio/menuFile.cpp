@@ -57,6 +57,7 @@
 #include "DlgVTKExport.h"
 #include "DlgExportFEBio.h"
 #include "DlgNew.h"
+#include "DlgNewProject.h"
 #include "DlgImportSTL.h"
 #include "DlgModelInfo.h"
 #include "DlgExportLSDYNA.h"
@@ -95,46 +96,59 @@ void CMainWindow::on_actionOpenProject_triggered()
 
 void CMainWindow::on_actionNewModel_triggered()
 {
+	// create a unique name for this model
+	int n = 1;
+	string docTitle;
+	CDocManager* dm = m_DocManager;
+	bool bok = true;
+	do
+	{
+		stringstream ss;
+		ss << "Untitled-" << n++;
+		docTitle = ss.str();
+		bok = true;
+		for (int i = 0; i < dm->Documents(); ++i)
+		{
+			CDocument* doci = dm->GetDocument(i);
+			if (doci->GetDocTitle() == docTitle)
+			{
+				bok = false;
+				break;
+			}
+		}
+	} while (bok == false);
+
+	// show the dialog box
+	int ntemplate = -1;
 	if (ui->m_showNewDialog)
 	{
 		CDlgNew dlg(this);
-		dlg.SetModelFolder(ui->m_defaultProjectParent);
+		dlg.SetModelName(QString::fromStdString(docTitle));
 		if (dlg.exec())
 		{
-			ui->m_defaultProjectParent = dlg.GetModelFolder();
+			ntemplate = dlg.getTemplate();
+			docTitle = dlg.GetModelName().toStdString();
 		}
+		else return;
+
 		ui->m_showNewDialog = !(dlg.showDialogOption());
 	}
-	else
+
+	// create a new model doc
+	CModelDocument* doc = new CModelDocument(this);
+	if (ntemplate != -1) doc->LoadTemplate(ntemplate);
+	doc->SetDocTitle(docTitle);
+	AddDocument(doc);
+}
+
+void CMainWindow::on_actionNewProject_triggered()
+{
+	CDlgNewProject dlg(this);
+	dlg.SetProjectFolder(ui->m_defaultProjectParent);
+	if (dlg.exec())
 	{
-		// create a new model doc
-		CModelDocument* doc = new CModelDocument(this);
-
-		// create a unique name for this
-		int n = 1;
-		string docTitle;
-		CDocManager* dm = m_DocManager;
-		bool bok = true;
-		do
-		{
-			stringstream ss;
-			ss << "Untitled-" << n++;
-			docTitle = ss.str();
-			bok = true;
-			for (int i = 0; i < dm->Documents(); ++i)
-			{
-				CDocument* doci = dm->GetDocument(i);
-				if (doci->GetDocTitle() == docTitle)
-				{
-					bok = false;
-					break;
-				}
-			}
-		} while (bok == false);
-
-		doc->SetDocTitle(docTitle);
-
-		AddDocument(doc);
+		ui->fileViewer->Update();
+		ui->m_defaultProjectParent = dlg.GetProjectFolder();
 	}
 }
 
@@ -800,6 +814,13 @@ void CMainWindow::on_actionSaveAs_triggered()
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return;
 
+	QString currentPath = ui->currentPath;
+	if (ui->m_project.GetProjectFileName().isEmpty() == false)
+	{
+		QFileInfo fi(ui->m_project.GetProjectFileName());
+		currentPath = fi.absolutePath();
+	}
+
 	QString fileName = QFileDialog::getSaveFileName(this, "Save", ui->currentPath, "FEBio Studio Model (*.fsm)");
 	if (fileName.isEmpty() == false)
 	{
@@ -830,6 +851,31 @@ void CMainWindow::on_actionSaveAll_triggered()
 	{
 		QMessageBox::critical(this, "ERROR", "Not all files could be saved.");
 	}
+}
+
+void CMainWindow::on_actionCloseAll_triggered()
+{
+	// see if any files are not save
+	int unsaved = 0;
+	int docs = m_DocManager->Documents();
+	for (int i = 0; i < docs; ++i)
+	{
+		CDocument* doc = m_DocManager->GetDocument(i);
+		if (doc->IsModified())
+		{
+			unsaved++;
+		}
+	}
+
+	if (unsaved > 0)
+	{
+		if (QMessageBox::question(this, "Close All", "There are modified files that have not been saved.\nAre you sure you want to close all files?") == QMessageBox::No)
+		{
+			return;
+		}
+	}
+
+	while (m_DocManager->Documents()) CloseView(0, true);
 }
 
 void CMainWindow::on_actionSnapShot_triggered()
@@ -869,26 +915,29 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		".n",
 	};
 
-	// file name
-	std::string sfile = GetDocument()->GetDocFilePath();
+	QString path = ui->currentPath;
+	QString fileName = QString::fromStdString(GetDocument()->GetDocFilePath());
 
-	// get rid of the extension
-	size_t ext = sfile.rfind(".");
-	if (ext != std::string::npos) sfile.erase(ext);
+	if (fileName.isEmpty() == false)
+	{
+		QFileInfo fi(fileName);
+		path = fi.absolutePath();
+		fileName = fi.baseName() + QString(".feb");
+	}
 
 	// present file save dialog
 	QFileDialog dlg(this);
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
-	dlg.setDirectory(ui->currentPath);
+	dlg.setDirectory(path);
 	dlg.setNameFilters(filters);
-	dlg.selectFile(QString(sfile.c_str()));
+	dlg.selectFile(fileName);
 	if (dlg.exec())
 	{
 		// get the file name
 		QStringList files = dlg.selectedFiles();
 		QString fileName = files.at(0);
-		sfile = fileName.toStdString();
+		std::string sfile = QDir::toNativeSeparators(fileName).toStdString();
 
 		// get the filter
 		QString flt = dlg.selectedNameFilter();

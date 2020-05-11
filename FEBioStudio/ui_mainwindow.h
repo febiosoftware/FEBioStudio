@@ -301,10 +301,12 @@ public:
 	{
 		// --- File menu ---
 		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
+		QAction* actionNewProject = addAction("New Project ...", "actionNewProject");
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
 		QAction* actionSaveAs     = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
 		QAction* actionSaveAll    = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_S);
+		QAction* actionCloseAll   = addAction("Close All", "actionCloseAll");
 		QAction* actionSnapShot   = addAction("Snapshot ...", "actionSnapShot", "snapshot");
 		QAction* actionSaveProject = addAction("Save Project As ...", "actionSaveProject");
 		QAction* actionExportFE   = addAction("Export FE model ..." , "actionExportFEModel");
@@ -529,12 +531,14 @@ public:
 		menuBar->addAction(menuFile->menuAction());
 
 		menuFile->addAction(actionNewModel);
+		menuFile->addAction(actionNewProject);
 		menuFile->addSeparator();
 		menuFile->addAction(actionOpen);
 		menuFile->addAction(menuRecentFiles->menuAction());
 		menuFile->addAction(actionOpenProject);
 		menuFile->addAction(actionImportGeom);
 		menuFile->addAction(menuRecentGeomFiles->menuAction());
+		menuFile->addAction(actionCloseAll);
 		menuFile->addSeparator();
 		menuFile->addAction(actionSave);
 		menuFile->addAction(actionSaveAs);

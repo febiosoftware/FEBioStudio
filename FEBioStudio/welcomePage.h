@@ -11,6 +11,8 @@ public:
 
 	void Refresh();
 
+	void Close();
+
 private:
 	CMainWindow*	m_wnd;
 };

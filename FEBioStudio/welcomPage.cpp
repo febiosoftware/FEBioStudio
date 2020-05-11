@@ -18,6 +18,7 @@ ul { line-height: 150%; list-style-type: none; }\
 <ul>\
 <li><a href=\"#new\">New Model ... </a></li>\
 <li><a href=\"#open\">Open Model ...</a></li>\
+<li><a href=\"#newproject\">New Project ... </a></li>\
 <li><a href=\"#openproject\">Open Project ...</a></li>\
 </ul>\
 <h1>Recent</h1>\
@@ -71,4 +72,9 @@ void CWelcomePage::Refresh()
 	page.replace("RECENT_FILES", links);
 
 	setHtml(page);
+}
+
+void CWelcomePage::Close()
+{
+	setText("");
 }

@@ -78,7 +78,7 @@ void CLinkPropertyEdit::buttonPressed()
 	{
 		CMainWindow* wnd = dynamic_cast<CMainWindow*>(QApplication::activeWindow()); assert(wnd);
 
-		wnd->OpenFile(ui->fullPath);
+		wnd->OpenFile(ui->fullPath, false);
 	}
 	else
 	{

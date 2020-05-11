@@ -233,6 +233,8 @@ public:
 
 	CDocument* FindDocument(const std::string& filePath);
 
+	bool CreateNewProject(QString fileName);
+
 private:
 	void ReadFile(QueuedFile& qfile);
 
@@ -242,11 +244,13 @@ private:
 
 public slots:
 	void on_actionNewModel_triggered();
+	void on_actionNewProject_triggered();
 	void on_actionOpenProject_triggered();
 	void on_actionOpen_triggered();
 	void on_actionSave_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionSaveAll_triggered();
+	void on_actionCloseAll_triggered();
 	void on_actionSnapShot_triggered();
 	void on_actionSaveProject_triggered();
 	void on_actionExportFEModel_triggered();
@@ -439,7 +443,7 @@ public slots:
 	void OnSelectMeshLayer(QAction* ac);
 	void OnSelectObjectTransparencyMode(QAction* ac);
 
-	void CloseView(int n);
+	void CloseView(int n, bool forceClose = false);
 	void CloseView(CDocument* doc);
 
 	void SetCurrentState(int n);

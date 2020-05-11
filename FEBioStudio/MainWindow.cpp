@@ -273,8 +273,6 @@ void CMainWindow::on_clearProject()
 //-----------------------------------------------------------------------------
 void CMainWindow::on_closeProject()
 {
-	if (ui->m_project.Files() == 0) return;
-
 	ui->m_project.Close();
 	ui->fileViewer->Update();
 	UpdateTitle();
@@ -313,6 +311,7 @@ void CMainWindow::on_welcome_anchorClicked(const QUrl& link)
 {
 	QString ref = link.toString();
 	if      (ref == "#new") on_actionNewModel_triggered();
+	else if (ref == "#newproject") on_actionNewProject_triggered();
 	else if (ref == "#open") on_actionOpen_triggered();
 	else if (ref == "#openproject") on_actionOpenProject_triggered();
 	else if (ref == "#febio") on_actionFEBioURL_triggered();
@@ -551,6 +550,7 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
 	UpdateTitle();
+	ui->welcome->Close();
 
 	return b;
 }
@@ -639,6 +639,22 @@ CDocument* CMainWindow::FindDocument(const std::string& filePath)
 		if (compare_filename(filePath, file_i)) return doc;
 	}
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+bool CMainWindow::CreateNewProject(QString fileName)
+{
+	// close the existing project
+	ui->m_project.Close();
+
+	// try to create a new project
+	bool ret = ui->m_project.Save(fileName);
+
+	ui->welcome->Close();
+	ui->fileViewer->parentWidget()->show();
+	ui->fileViewer->parentWidget()->raise();
+
+	return ret;
 }
 
 //-----------------------------------------------------------------------------
@@ -1413,6 +1429,11 @@ void CMainWindow::UpdateToolbar()
 	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();
+
+	if (ui->buildToolBar->isVisible())
+	{
+		ui->SetSelectionMode(doc->GetSelectionMode());
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1609,11 +1630,11 @@ void CMainWindow::OnPostObjectPropsChanged(FSObject* po)
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::CloseView(int n)
+void CMainWindow::CloseView(int n, bool forceClose)
 {
 	CDocument* doc = ui->tab->getDocument(n);
 
-	if (doc->IsModified())
+	if (doc->IsModified() && (forceClose == false))
 	{
 		if (maybeSave(doc) == false) return;
 	}
