@@ -58,6 +58,8 @@
 		D5828D0C246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D05246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp */; };
 		D5828D0D246465DB00FD7FF2 /* units.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D06246465DB00FD7FF2 /* units.cpp */; };
 		D5828D0E246465DB00FD7FF2 /* DlgUnitConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D09246465DB00FD7FF2 /* DlgUnitConverter.cpp */; };
+		D593905C246A0DD200122209 /* DlgNewProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5939059246A0DD200122209 /* DlgNewProject.cpp */; };
+		D593905D246A0DD200122209 /* moc_DlgNewProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */; };
 		D5992F222461E4320054F9DA /* DocManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0E2461E4300054F9DA /* DocManager.cpp */; };
 		D5992F232461E4320054F9DA /* GView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0F2461E4310054F9DA /* GView.cpp */; };
 		D5992F242461E4320054F9DA /* menuHelp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F102461E4310054F9DA /* menuHelp.cpp */; };
@@ -501,6 +503,9 @@
 		D5828D06246465DB00FD7FF2 /* units.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = units.cpp; sourceTree = "<group>"; };
 		D5828D08246465DB00FD7FF2 /* DlgUnitConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgUnitConverter.h; sourceTree = "<group>"; };
 		D5828D09246465DB00FD7FF2 /* DlgUnitConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgUnitConverter.cpp; sourceTree = "<group>"; };
+		D5939059246A0DD200122209 /* DlgNewProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgNewProject.cpp; sourceTree = "<group>"; };
+		D593905A246A0DD200122209 /* DlgNewProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgNewProject.h; sourceTree = "<group>"; };
+		D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgNewProject.cpp; sourceTree = "<group>"; };
 		D5992F0D2461E4300054F9DA /* ModelFileWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelFileWriter.h; sourceTree = "<group>"; };
 		D5992F0E2461E4300054F9DA /* DocManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DocManager.cpp; sourceTree = "<group>"; };
 		D5992F0F2461E4310054F9DA /* GView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GView.cpp; sourceTree = "<group>"; };
@@ -1201,6 +1206,8 @@
 				D5F7D80522FA37C40089B08E /* DlgModelInfo.h */,
 				D5F7D7AC22FA37C40089B08E /* DlgNew.cpp */,
 				D5F7D80122FA37C40089B08E /* DlgNew.h */,
+				D5939059246A0DD200122209 /* DlgNewProject.cpp */,
+				D593905A246A0DD200122209 /* DlgNewProject.h */,
 				D5CC3A63245B4CD700311F48 /* DlgPlotMix.cpp */,
 				D5CC3A58245B4CD700311F48 /* DlgPlotMix.h */,
 				D5F7D75B22FA37C40089B08E /* DlgPurge.cpp */,
@@ -1356,6 +1363,7 @@
 				D5CC3A65245B4CD700311F48 /* moc_DlgMeasure.cpp */,
 				D5F7D79C22FA37C40089B08E /* moc_DlgModelInfo.cpp */,
 				D5ED2A0A23198CD900C16BF7 /* moc_DlgNew.cpp */,
+				D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */,
 				D5CC3A61245B4CD700311F48 /* moc_DlgPlotMix.cpp */,
 				D5F7D79D22FA37C40089B08E /* moc_DlgRun.cpp */,
 				D5F7D74D22FA37C40089B08E /* moc_DlgSettings.cpp */,
@@ -1742,6 +1750,7 @@
 				D579B67C239F04E300278644 /* 3PointAngleTool.cpp in Sources */,
 				D5992F2A2461E4320054F9DA /* ModelDocument.cpp in Sources */,
 				D5992F242461E4320054F9DA /* menuHelp.cpp in Sources */,
+				D593905D246A0DD200122209 /* moc_DlgNewProject.cpp in Sources */,
 				D5828D0D246465DB00FD7FF2 /* units.cpp in Sources */,
 				D5F7D85122FA37C40089B08E /* DlgLameConvertor.cpp in Sources */,
 				D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */,
@@ -1794,6 +1803,7 @@
 				D5F7D88822FA37C40089B08E /* moc_GLView.cpp in Sources */,
 				D5F7D89922FA37C40089B08E /* GTriad.cpp in Sources */,
 				D5F7D8B422FA37C40089B08E /* MeshButtonBox.cpp in Sources */,
+				D593905C246A0DD200122209 /* DlgNewProject.cpp in Sources */,
 				D5F7D82822FA37C40089B08E /* ResourceEdit.cpp in Sources */,
 				D5F7D86E22FA37C40089B08E /* moc_SelectionBox.cpp in Sources */,
 				D5F7D83B22FA37C40089B08E /* MeshInspector.cpp in Sources */,
