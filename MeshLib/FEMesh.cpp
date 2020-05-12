@@ -3304,7 +3304,34 @@ void FEMesh::BuildEdges()
 		edge = e;
 	}
 
-	UpdateEdgeNeighbors();
+	// TODO: We can't call UpdateNeighbors because it depends on the edge partitioning
+	// which in turn depends on the neighbors. I'll need to look into fixing this 
+	// circular dependency, but for now, a simple implementation. 
+	for (int i = 0; i < Edges(); ++i)
+	{
+		Edge(i).m_nbr[0] = -1;
+		Edge(i).m_nbr[1] = -1;
+	}
+	FENodeEdgeList NEL;
+	NEL.Build(this, false);
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		int ne = NEL.Edges(i);
+		if (ne == 2)
+		{
+			int ne0 = NEL.EdgeIndex(i, 0);
+			int ne1 = NEL.EdgeIndex(i, 1);
+
+			FEEdge& e0 = Edge(ne0);
+			FEEdge& e1 = Edge(ne1);
+
+			if (e0.n[0] == i) e0.m_nbr[0] = ne1;
+			if (e0.n[1] == i) e0.m_nbr[1] = ne1;
+
+			if (e1.n[0] == i) e1.m_nbr[0] = ne0;
+			if (e1.n[1] == i) e1.m_nbr[1] = ne0;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -3519,7 +3546,6 @@ void FEMesh::AutoPartitionEdges()
 
 	// get the edge pointer
 	FEEdge* pe = EdgePtr();
-	UpdateEdgeNeighbors();
 
 	// intialize all group ID's
 	int i, j;
