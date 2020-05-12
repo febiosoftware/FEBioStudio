@@ -11,7 +11,7 @@ Param::Param()
 	m_pd = 0;
 	m_plc = 0; 
 	m_szbrev = m_szname = m_szenum = 0; 
-	m_nunit = 0; 
+	m_szunit = 0; 
 	m_nstate = Param_ALLFLAGS; 
 	m_szindx = 0;
 	m_nindx = -1;
@@ -203,7 +203,7 @@ Param::Param(const Param& p)
 	m_szbrev = p.m_szbrev;
 	m_szname = p.m_szname;
 	m_szenum = p.m_szenum;
-	m_nunit = p.m_nunit;
+	m_szunit = p.m_szunit;
 	m_nstate = p.m_nstate;
     m_szindx = p.m_szindx;
     m_nindx = p.m_nindx;
@@ -243,7 +243,7 @@ Param& Param::operator = (const Param& p)
 //	m_szbrev = p.m_szbrev;
 //	m_szname = p.m_szname;
 //	m_szenum = p.m_szenum;
-//	m_nunit = p.m_nunit;
+//	m_szunit = p.m_szunit;
 //	m_nstate = p.m_nstate;
 //  m_szindx = p.m_szindx;
 //  m_nindx = p.m_nindx;
@@ -285,7 +285,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -309,7 +309,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -333,7 +333,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -357,7 +357,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = szunit;
+	m_szunit = szunit;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -381,7 +381,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -405,7 +405,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -430,7 +430,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -454,7 +454,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -477,7 +477,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -500,7 +500,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_szbrev = szb;
 	m_szname = (szn == 0 ? szb : szn);
 	m_szenum = 0;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_szindx = 0;
 	m_nindx = -1;
@@ -526,7 +526,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szindx = szi;
     m_nindx = idx;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_plc = 0;
 	m_bcopy = false;
@@ -550,7 +550,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_szenum = 0;
 	m_szindx = szi;
     m_nindx = idx;
-	m_nunit = 0;
+	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
 	m_plc = 0;
 	m_bcopy = false;
@@ -573,7 +573,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_szenum = 0;
 	m_szindx = szi;
     m_nindx = idx;
-	m_nunit = szunit;
+	m_szunit = szunit;
 	m_nstate = Param_ALLFLAGS;
 	m_plc = 0;
 	m_bcopy = false;

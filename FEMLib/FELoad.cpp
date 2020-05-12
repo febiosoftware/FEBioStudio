@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FELoad.h"
+#include <FSCore/paramunit.h>
 
 //=============================================================================
 // NODAL LOAD

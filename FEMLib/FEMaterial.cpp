@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FEMaterial.h"
 #include <MeshTools/FEProject.h>
+#include <FSCore/paramunit.h>
 
 //////////////////////////////////////////////////////////////////////
 // FEFiberGeneratorLocal

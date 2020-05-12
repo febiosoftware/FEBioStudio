@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FERigidConstraint.h"
+#include <FSCore/paramunit.h>
 
 FERigidConstraintOld::FERigidConstraintOld(int ntype, int nstep)
 {

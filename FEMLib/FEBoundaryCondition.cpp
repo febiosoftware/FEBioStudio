@@ -2,6 +2,7 @@
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/FEModel.h>
 #include <MeshTools/GGroup.h>
+#include <FSCore/paramunit.h>
 
 //-----------------------------------------------------------------------------
 // FEModelComponent

@@ -13,7 +13,7 @@ unsigned int Units::GetUnitSystem() { return unit_system; }
 QStringList Units::SupportedUnitSystems()
 {
 	QStringList s;
-	s << "None" << "Dimensions only" << "SI" << "MMTS" << "CGS";
+	s << "None" << "Dimensions only" << "SI" << "mm-Newton-second" << "CGS";
 
 	return s;
 }
@@ -26,7 +26,7 @@ static const char* unit_table[][10] = {
 	{"m","kg","s","K","A","mol","N","Pa","J","W"},
 
 	// MMTS units
-	{"mm","ton","s","K","A","mol","N","MPa","mJ","mW"},
+	{"mm","tonne","s","K","A","mol","N","MPa","mJ","mW"},
 
 	// CGS units
 	{"cm","g","s","K","A","mol","dyn","Ba","erg","erg/s"}

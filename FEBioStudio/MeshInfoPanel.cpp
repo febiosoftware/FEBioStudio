@@ -6,6 +6,7 @@
 #include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GObject.h>
 #include "units.h"
+#include <FSCore/paramunit.h>
 
 CMeshInfoPanel::CMeshInfoPanel(QWidget* parent) : QWidget(parent)
 {

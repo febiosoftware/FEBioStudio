@@ -166,6 +166,7 @@
     <ClInclude Include="..\..\FSCore\LoadCurve.h" />
     <ClInclude Include="..\..\FSCore\memtool.h" />
     <ClInclude Include="..\..\FSCore\ParamBlock.h" />
+    <ClInclude Include="..\..\FSCore\paramunit.h" />
     <ClInclude Include="..\..\FSCore\Serializable.h" />
     <ClInclude Include="..\..\FSCore\stdafx.h" />
     <ClInclude Include="..\..\FSCore\enum.h" />

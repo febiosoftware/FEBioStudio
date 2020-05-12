@@ -7,53 +7,6 @@
 #include <string.h>
 using namespace std;
 
-// units are defined as strings that use the following
-// characters to represent the physical quantities that
-// define the SI base units.
-// (Note that the symbols for time and temperature differ
-// from the conventional SI dimension symbols)
-//
-// L = length
-// M = mass
-// t = time
-// T = temperature
-// l = electric current
-// n = substance
-//
-// In addition, the following symbols for derived units are also defined:
-//
-// F = force
-// P = pressure
-// E = energy
-// W = power
-// d = angles in degrees
-// r = angles in radians
-//
-// or use one of these predefined constants
-#define UNIT_NONE	""
-#define UNIT_LENGTH "L"
-#define UNIT_MASS   "M"
-#define UNIT_TIME   "t"
-#define UNIT_TEMPERATURE "T"
-#define UNIT_CURRENT "l"
-#define UNIT_SUBSTANCE	"n"
-#define UNIT_FORCE "F"
-#define UNIT_PRESSURE "P"
-#define UNIT_ENERGY	"E"
-#define UNIT_POWER "W"
-
-#define UNIT_DEGREE "d"
-#define UNIT_RADIAN	"r"
-
-#define UNIT_AREA   "L^2"
-#define UNIT_VOLUME "L^3"
-#define UNIT_VELOCITY "L/t"
-#define UNIT_ACCELERATION "L/t^2"
-#define UNIT_ANGULAR_VELOCITY "r/t"
-#define UNIT_DENSITY "M/L^3"
-#define UNIT_PERMEABILITY	"L^4/F.t"
-#define UNIT_DIFFUSIVITY  "L^2/t"
-
 // parameter types
 enum Param_Type {
 	Param_UNDEF,
@@ -170,8 +123,8 @@ public:
 	std::string GetMathString() const { assert(m_ntype == Param_MATH); return val<std::string>(); }
 	GLColor GetColorValue() const { assert(m_ntype == Param_COLOR); return val<GLColor>(); }
 
-	const char* GetUnit() const { return m_nunit; }
-	void SetUnit(const char* szunit) { m_nunit = szunit; }
+	const char* GetUnit() const { return m_szunit; }
+	void SetUnit(const char* szunit) { m_szunit = szunit; }
 
 	int GetState() const { return m_nstate; }
 	Param* SetState(int s) { m_nstate = s; return this; }
@@ -210,7 +163,7 @@ public:
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
-	const char*		m_nunit;	// scientific unit
+	const char*		m_szunit;	// scientific unit (see paramunit.h)
 	int				m_nstate;	// parameter state
 	
 	bool			m_checkable;

@@ -1,4 +1,5 @@
 #include "FEInitialCondition.h"
+#include <FSCore/paramunit.h>
 
 //-----------------------------------------------------------------------------
 FENodalVelocities::FENodalVelocities(FEModel* ps) : FEInitialCondition(FE_NODAL_VELOCITIES, ps)
