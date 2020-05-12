@@ -34,17 +34,19 @@ public:
 	FEMeshData* CreateData(FEState* pstate) override;
 
 	void Apply();
+	void Apply(FEPostModel* fem);
 
 	void InitSurface(int n);
 
 	int GetSurfaceSize(int i);
 
-protected:
+public:
 	// assign selections
 	void SetSelection1(vector<int>& s) { m_surf1.m_face = s; }
 
 	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
 
+protected:
 	// build node normal list
 	void BuildNormalList(FEDistanceMap::Surface& s);
 

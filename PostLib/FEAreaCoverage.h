@@ -45,12 +45,13 @@ public:
 
 	// apply the map
 	void Apply();
+	void Apply(FEPostModel* fem);
 
-protected:
 	// assign selections
 	void SetSelection1(vector<int>& s) { m_surf1.m_face = s; }
 	void SetSelection2(vector<int>& s) { m_surf2.m_face = s; }
 
+protected:
 	// build node normal list
 	void UpdateSurface(FEAreaCoverage::Surface& s, int nstate);
 

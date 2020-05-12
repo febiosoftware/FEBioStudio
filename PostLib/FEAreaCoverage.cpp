@@ -102,6 +102,13 @@ Post::FEMeshData* Post::FEAreaCoverage::CreateData(Post::FEState* pstate)
 }
 
 //-----------------------------------------------------------------------------
+void FEAreaCoverage::Apply(Post::FEPostModel* fem)
+{
+	m_fem = fem;
+	Apply();
+}
+
+//-----------------------------------------------------------------------------
 void FEAreaCoverage::Apply()
 {
 	FEPostModel& fem = *m_fem;

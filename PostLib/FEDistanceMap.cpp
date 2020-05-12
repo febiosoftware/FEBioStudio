@@ -122,6 +122,13 @@ Post::FEMeshData* Post::FEDistanceMap::CreateData(Post::FEState* pstate)
 }
 
 //-----------------------------------------------------------------------------
+void Post::FEDistanceMap::Apply(Post::FEPostModel* fem)
+{
+	m_pfem = fem;
+	Apply();
+}
+
+//-----------------------------------------------------------------------------
 void Post::FEDistanceMap::Apply()
 {
 	// store the model
