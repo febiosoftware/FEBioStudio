@@ -1,5 +1,5 @@
 #pragma once
-#include <GLLib/GLCamera.h>
+#include "GLCamera.h"
 
 //-----------------------------------------------------------------------------
 // This class stores viewing information

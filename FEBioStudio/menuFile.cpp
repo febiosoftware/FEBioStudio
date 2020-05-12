@@ -70,7 +70,6 @@
 #include <PostGL/GLModel.h>
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
-#include "GView.h"
 #include <PostLib/FELSDYNAExport.h>
 #include <MeshTools/GModel.h>
 #include "DlgExportXPLT.h"

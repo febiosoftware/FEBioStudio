@@ -3,7 +3,6 @@
 #include "ui_mainwindow.h"
 #include "Document.h"
 #include "PostDocument.h"
-#include "GView.h"
 #include <PostGL/GLModel.h>
 
 void CMainWindow::on_actionUndoViewChange_triggered()

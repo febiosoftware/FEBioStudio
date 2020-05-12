@@ -149,6 +149,7 @@
     <ClCompile Include="..\..\GLLib\GLMeshRender.cpp" />
     <ClCompile Include="..\..\GLLib\GLTexture1D.cpp" />
     <ClCompile Include="..\..\GLLib\glx.cpp" />
+    <ClCompile Include="..\..\GLLib\GView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\GLLib\GDecoration.h" />
@@ -157,6 +158,7 @@
     <ClInclude Include="..\..\GLLib\GLMeshRender.h" />
     <ClInclude Include="..\..\GLLib\GLTexture1D.h" />
     <ClInclude Include="..\..\GLLib\glx.h" />
+    <ClInclude Include="..\..\GLLib\GView.h" />
     <ClInclude Include="..\..\GLLib\stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -36,6 +36,9 @@
     <ClCompile Include="..\..\GLLib\GDecoration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\GLLib\GView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\GLLib\GLCamera.h">
@@ -57,6 +60,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\GLLib\GDecoration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GLLib\GView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

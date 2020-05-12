@@ -1,6 +1,6 @@
 #pragma once
 #include "Document.h"
-#include "GView.h"
+#include <GLLib/GView.h>
 #include <PostLib/FEMaterial.h>
 #include "GraphData.h"
 

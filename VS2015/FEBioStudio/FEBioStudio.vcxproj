@@ -261,7 +261,6 @@
     <ClCompile Include="..\..\FEBioStudio\GraphData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\GView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ImportSpringsTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
@@ -556,7 +555,6 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\GraphData.h" />
-    <ClInclude Include="..\..\FEBioStudio\GView.h" />
     <ClInclude Include="..\..\FEBioStudio\ImportSpringsTool.h" />
     <ClInclude Include="..\..\FEBioStudio\LaunchConfig.h" />
     <CustomBuild Include="..\..\FEBioStudio\Logger.h">
