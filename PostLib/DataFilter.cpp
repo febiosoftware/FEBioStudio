@@ -1115,3 +1115,127 @@ bool Post::DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tens
 
 	return true;
 }
+
+//-----------------------------------------------------------------------------
+// convert between formats
+FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int newFormat, const std::string& name)
+{
+	if (dataField == nullptr) return nullptr;
+
+	int nclass = dataField->DataClass();
+	Data_Type ntype = dataField->Type();
+	int nfmt = dataField->Format();
+	if (ntype != DATA_FLOAT) return nullptr;
+
+	if (newFormat == nfmt) return nullptr;
+
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+
+	FEDataField* newField = nullptr;
+	if (nclass == CLASS_ELEM)
+	{
+		if (nfmt == DATA_ITEM)
+		{
+			if (newFormat == DATA_NODE)
+			{
+				newField = new FEDataField_T<FEElementData<float, DATA_NODE> >(name);
+				fem.AddDataField(newField);
+
+				int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+				int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+				int NN = mesh.Nodes();
+				int NE = mesh.Elements();
+
+				for (int n = 0; n < fem.GetStates(); ++n)
+				{
+					FEState* state = fem.GetState(n);
+
+					vector<float> data(NN, 0.f);
+					vector<int> tag(NN, 0);
+
+					FEElemData_T<float, DATA_ITEM>* pold = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&state->m_Data[nold]);
+					FEElementData<float, DATA_NODE>* pnew = dynamic_cast<FEElementData<float, DATA_NODE>*>(&state->m_Data[nnew]);
+
+					for (int i = 0; i < NE; ++i)
+					{
+						if (pold->active(i))
+						{
+							float v = 0.0;
+							pold->eval(i, &v);
+
+							FEElement& el = mesh.Element(i);
+							int ne = el.Nodes();
+							for (int j = 0; j < ne; ++j)
+							{
+								data[el.m_node[j]] += v;
+								tag[el.m_node[j]]++;
+							}
+						}
+					}
+
+					for (int i = 0; i < NN; ++i) if (tag[i] != 0) data[i] /= (float)tag[i];
+
+					vector<float> d;
+					vector<int> e(1);
+					vector<int> l;
+					for (int i = 0; i < NE; ++i)
+					{
+						FEElement& el = mesh.Element(i);
+						e[0] = i;
+						l.resize(el.Nodes());
+						d.resize(el.Nodes());
+						for (int j = 0; j < el.Nodes(); ++j)
+						{
+							d[j] = data[el.m_node[j]];
+							l[j] = j;
+						}
+						pnew->add(d, e, l, el.Nodes());
+					}
+				}
+			}
+		}
+		else if (nfmt == DATA_NODE)
+		{
+			if (newFormat == DATA_ITEM)
+			{
+				newField = new FEDataField_T<FEElementData<float, DATA_ITEM> >(name);
+				fem.AddDataField(newField);
+
+				int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+				int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+				int NN = mesh.Nodes();
+				int NE = mesh.Elements();
+
+				for (int n = 0; n < fem.GetStates(); ++n)
+				{
+					FEState* state = fem.GetState(n);
+
+					FEElemData_T<float, DATA_NODE>* pold = dynamic_cast<FEElemData_T<float, DATA_NODE>*>(&state->m_Data[nold]);
+					FEElementData<float, DATA_ITEM>* pnew = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&state->m_Data[nnew]);
+
+					for (int i = 0; i < NE; ++i)
+					{
+						if (pold->active(i))
+						{
+							FEElement& el = mesh.Element(i);
+							int ne = el.Nodes();
+
+							float v[FEElement::MAX_NODES] = { 0.f };
+							pold->eval(i, v);
+
+							float avg = 0.f;
+							for (int j = 0; j < ne; ++j) avg += v[j];
+							avg /= (float)ne;
+
+							pnew->add(i, avg);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return newField;
+}

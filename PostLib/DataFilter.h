@@ -33,4 +33,8 @@ bool DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tensorFiel
 // Extract a component from a data field
 FEDataField* DataComponent(FEPostModel& fem, FEDataField* dataField, int ncomp, const std::string& sname);
 
+//-----------------------------------------------------------------------------
+// convert between formats
+FEDataField* DataConvert(FEPostModel& fem, FEDataField* dataField, int newFormat, const std::string& name);
+
 }

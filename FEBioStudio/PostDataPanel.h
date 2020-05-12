@@ -84,6 +84,8 @@ public:
 
 	QString getNewName();
 
+	int getNewFormat();
+
 public:
 	int	m_nflt;
 

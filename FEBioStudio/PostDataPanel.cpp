@@ -516,6 +516,8 @@ public:
 
 	QComboBox*	comp;
 
+	QComboBox*	conv;
+
 public:
 	void setupUi(QDialog* parent)
 	{
@@ -531,7 +533,8 @@ public:
 		pselect->addItem("Arithmetic");
 		pselect->addItem("Gradient");
 		pselect->addItem("Component");
-		pselect->addItem("Fraction anisotropy");
+		pselect->addItem("Fraction Anisotropy");
+		pselect->addItem("Convert Format");
 
 		QLabel* label;
 		label = new QLabel("Filter:");
@@ -565,6 +568,12 @@ public:
 		pform->addRow("Operand:", poperand = new QComboBox);
 		mathPage->setLayout(pform);
 
+		poperation->addItem("add");
+		poperation->addItem("subtract");
+		poperation->addItem("multiply");
+		poperation->addItem("divide");
+		poperation->addItem("least-square difference");
+
 		// gradient page (doesn't need options)
 		QWidget* gradPage = new QLabel("");
 
@@ -577,11 +586,11 @@ public:
 		pform->addRow("Component:", comp = new QComboBox);
 		compPage->setLayout(pform);
 
-		poperation->addItem("add");
-		poperation->addItem("subtract");
-		poperation->addItem("multiply");
-		poperation->addItem("divide");
-		poperation->addItem("least-square difference");
+		// format conversion
+		QWidget* convPage = new QWidget;
+		pform = new QFormLayout;
+		pform->addRow("Format:", conv = new QComboBox);
+		convPage->setLayout(pform);
 
 		QStackedWidget* stack = new QStackedWidget;
 		stack->addWidget(scalePage);
@@ -590,6 +599,7 @@ public:
 		stack->addWidget(gradPage);
 		stack->addWidget(compPage);
 		stack->addWidget(faPage);
+		stack->addWidget(convPage);
 
 		pvl->addWidget(stack);
 
@@ -630,6 +640,11 @@ void CDlgFilter::setDataField(Post::FEDataField* pdf)
 		std::string cname = pdf->componentName(i, Post::DATA_SCALAR);
 		ui->comp->addItem(QString::fromStdString(cname));
 	}
+
+	Post::Data_Format frm = pdf->Format();
+	ui->conv->clear();
+	if (frm != Post::DATA_ITEM) ui->conv->addItem("ITEM", (int)Post::DATA_ITEM);
+	if (frm != Post::DATA_NODE) ui->conv->addItem("NODE", (int)Post::DATA_NODE);
 }
 
 int CDlgFilter::getArrayComponent()
@@ -645,6 +660,11 @@ void CDlgFilter::setDefaultName(const QString& name)
 QString CDlgFilter::getNewName()
 {
 	return ui->name->text();
+}
+
+int CDlgFilter::getNewFormat()
+{
+	return ui->conv->currentData().toInt();
 }
 
 void CDlgFilter::accept()
@@ -981,10 +1001,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				{
 					// create new field for storing the component
 					newData = DataComponent(fem, pdf, dlg.getArrayComponent(), sname);
-					if (newData == 0)
-					{
-						QMessageBox::critical(this, "Data Filter", "Failed to extract component.");
-					}
+					bret = (newData != nullptr);
 				}
 				break;
 				case 5:
@@ -994,6 +1011,13 @@ void CPostDataPanel::on_AddFilter_triggered()
 
 					// calculate fractional anisotropy
 					bret = DataFractionalAnsisotropy(fem, newData->GetFieldID(), nfield);
+				}
+				break;
+				case 6:
+				{
+					int newformat = dlg.getNewFormat();
+					newData = DataConvert(fem, pdf, newformat, sname);
+					bret = (newData != nullptr);
 				}
 				break;
 				default:
