@@ -61,7 +61,6 @@
 		D593905C246A0DD200122209 /* DlgNewProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5939059246A0DD200122209 /* DlgNewProject.cpp */; };
 		D593905D246A0DD200122209 /* moc_DlgNewProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */; };
 		D5992F222461E4320054F9DA /* DocManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0E2461E4300054F9DA /* DocManager.cpp */; };
-		D5992F232461E4320054F9DA /* GView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0F2461E4310054F9DA /* GView.cpp */; };
 		D5992F242461E4320054F9DA /* menuHelp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F102461E4310054F9DA /* menuHelp.cpp */; };
 		D5992F252461E4320054F9DA /* PostDocument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F122461E4310054F9DA /* PostDocument.cpp */; };
 		D5992F262461E4320054F9DA /* menuView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F142461E4310054F9DA /* menuView.cpp */; };
@@ -508,9 +507,7 @@
 		D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgNewProject.cpp; sourceTree = "<group>"; };
 		D5992F0D2461E4300054F9DA /* ModelFileWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelFileWriter.h; sourceTree = "<group>"; };
 		D5992F0E2461E4300054F9DA /* DocManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DocManager.cpp; sourceTree = "<group>"; };
-		D5992F0F2461E4310054F9DA /* GView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GView.cpp; sourceTree = "<group>"; };
 		D5992F102461E4310054F9DA /* menuHelp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuHelp.cpp; sourceTree = "<group>"; };
-		D5992F112461E4310054F9DA /* GView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GView.h; sourceTree = "<group>"; };
 		D5992F122461E4310054F9DA /* PostDocument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostDocument.cpp; sourceTree = "<group>"; };
 		D5992F132461E4310054F9DA /* PostDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostDocument.h; sourceTree = "<group>"; };
 		D5992F142461E4310054F9DA /* menuView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuView.cpp; sourceTree = "<group>"; };
@@ -1287,8 +1284,6 @@
 				D5F7D76822FA37C40089B08E /* GraphWindow.h */,
 				D5F7D7CD22FA37C40089B08E /* GTriad.cpp */,
 				D5F7D7F122FA37C40089B08E /* GTriad.h */,
-				D5992F0F2461E4310054F9DA /* GView.cpp */,
-				D5992F112461E4310054F9DA /* GView.h */,
 				D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */,
 				D54D2CE22444A7DE00146123 /* ImportSpringsTool.h */,
 				D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */,
@@ -1690,7 +1685,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D5992F232461E4320054F9DA /* GView.cpp in Sources */,
 				D5F7D83322FA37C40089B08E /* DlgExportFEBio.cpp in Sources */,
 				D576570423E32E6900E4F70F /* RepoConnectionHandler.cpp in Sources */,
 				D57C2A77240F1F990043C2A7 /* PublicationWidgetView.cpp in Sources */,
