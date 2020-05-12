@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D50EB7B6246B6E7800E016F1 /* paramunit.h in Headers */ = {isa = PBXBuildFile; fileRef = D50EB7B5246B6E7800E016F1 /* paramunit.h */; };
 		D58A0B482452419A0084A352 /* LoadCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = D58A0B46245241990084A352 /* LoadCurve.h */; };
 		D58A0B492452419A0084A352 /* LoadCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D58A0B472452419A0084A352 /* LoadCurve.cpp */; };
 		D58D432023E32BF000DB8BE7 /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D58D431F23E32BF000DB8BE7 /* QtCore.framework */; };
@@ -34,6 +35,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D50EB7B5246B6E7800E016F1 /* paramunit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = paramunit.h; sourceTree = "<group>"; };
 		D58A0B46245241990084A352 /* LoadCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoadCurve.h; sourceTree = "<group>"; };
 		D58A0B472452419A0084A352 /* LoadCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LoadCurve.cpp; sourceTree = "<group>"; };
 		D58D431F23E32BF000DB8BE7 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCore.framework; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 				D5ED261A23197ADA00C16BF7 /* memtool.h */,
 				D5ED261923197ADA00C16BF7 /* ParamBlock.cpp */,
 				D5ED261F23197ADA00C16BF7 /* ParamBlock.h */,
+				D50EB7B5246B6E7800E016F1 /* paramunit.h */,
 				D5ED262023197ADA00C16BF7 /* Serializable.cpp */,
 				D5ED261C23197ADA00C16BF7 /* Serializable.h */,
 				D5ED262223197ADA00C16BF7 /* stdafx.cpp */,
@@ -142,6 +145,7 @@
 				D5ED262D23197ADA00C16BF7 /* enum.h in Headers */,
 				D5ED263323197ADA00C16BF7 /* CallTracer.h in Headers */,
 				D5ED263123197ADA00C16BF7 /* Serializable.h in Headers */,
+				D50EB7B6246B6E7800E016F1 /* paramunit.h in Headers */,
 				D5ED262523197ADA00C16BF7 /* box.h in Headers */,
 				D5ED263023197ADA00C16BF7 /* color.h in Headers */,
 				D5ED262A23197ADA00C16BF7 /* FSObject.h in Headers */,

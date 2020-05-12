@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D50EB7B2246B6E6900E016F1 /* IconProvider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7AD246B6E6800E016F1 /* IconProvider.cpp */; };
+		D50EB7B3246B6E6900E016F1 /* DlgSetRepoFolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7AE246B6E6800E016F1 /* DlgSetRepoFolder.cpp */; };
+		D50EB7B4246B6E6900E016F1 /* moc_DlgSetRepoFolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7B1246B6E6800E016F1 /* moc_DlgSetRepoFolder.cpp */; };
 		D5163181230097A2002B01C3 /* DlgWidgetProps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D516317F2300979E002B01C3 /* DlgWidgetProps.cpp */; };
 		D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */; };
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
@@ -428,6 +431,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D50EB7AD246B6E6800E016F1 /* IconProvider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IconProvider.cpp; sourceTree = "<group>"; };
+		D50EB7AE246B6E6800E016F1 /* DlgSetRepoFolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgSetRepoFolder.cpp; sourceTree = "<group>"; };
+		D50EB7AF246B6E6800E016F1 /* DlgSetRepoFolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSetRepoFolder.h; sourceTree = "<group>"; };
+		D50EB7B0246B6E6800E016F1 /* IconProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IconProvider.h; sourceTree = "<group>"; };
+		D50EB7B1246B6E6800E016F1 /* moc_DlgSetRepoFolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgSetRepoFolder.cpp; sourceTree = "<group>"; };
 		D516317E2300979D002B01C3 /* DlgWidgetProps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgWidgetProps.h; sourceTree = "<group>"; };
 		D516317F2300979E002B01C3 /* DlgWidgetProps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgWidgetProps.cpp; sourceTree = "<group>"; };
 		D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgWidgetProps.cpp; sourceTree = "<group>"; };
@@ -1215,6 +1223,8 @@
 				D5F7D75522FA37C40089B08E /* DlgRun.h */,
 				D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */,
 				D5BA5333240D5470001A5C0F /* DlgSelectRange.h */,
+				D50EB7AE246B6E6800E016F1 /* DlgSetRepoFolder.cpp */,
+				D50EB7AF246B6E6800E016F1 /* DlgSetRepoFolder.h */,
 				D5F7D82222FA37C40089B08E /* DlgSettings.cpp */,
 				D5F7D80C22FA37C40089B08E /* DlgSettings.h */,
 				D5F7D6F822FA37C30089B08E /* DlgSoluteTable.cpp */,
@@ -1284,6 +1294,8 @@
 				D5F7D76822FA37C40089B08E /* GraphWindow.h */,
 				D5F7D7CD22FA37C40089B08E /* GTriad.cpp */,
 				D5F7D7F122FA37C40089B08E /* GTriad.h */,
+				D50EB7AD246B6E6800E016F1 /* IconProvider.cpp */,
+				D50EB7B0246B6E6800E016F1 /* IconProvider.h */,
 				D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */,
 				D54D2CE22444A7DE00146123 /* ImportSpringsTool.h */,
 				D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */,
@@ -1361,6 +1373,7 @@
 				D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */,
 				D5CC3A61245B4CD700311F48 /* moc_DlgPlotMix.cpp */,
 				D5F7D79D22FA37C40089B08E /* moc_DlgRun.cpp */,
+				D50EB7B1246B6E6800E016F1 /* moc_DlgSetRepoFolder.cpp */,
 				D5F7D74D22FA37C40089B08E /* moc_DlgSettings.cpp */,
 				D5F7D82122FA37C40089B08E /* moc_DlgSoluteTable.cpp */,
 				D5828D05246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp */,
@@ -1730,6 +1743,7 @@
 				D5F7D88A22FA37C40089B08E /* DlgNew.cpp in Sources */,
 				D5F7D88222FA37C40089B08E /* moc_DlgCloneRevolve.cpp in Sources */,
 				D5F7D89A22FA37C40089B08E /* DlgVTKExport.cpp in Sources */,
+				D50EB7B3246B6E6900E016F1 /* DlgSetRepoFolder.cpp in Sources */,
 				D5F7D8B922FA37C40089B08E /* PlotWidget.cpp in Sources */,
 				D5F7D82B22FA37C40089B08E /* moc_GLHighlighter.cpp in Sources */,
 				D5ED2A0F23198CD900C16BF7 /* moc_InfoPanel.cpp in Sources */,
@@ -1770,6 +1784,7 @@
 				D5CC3A6E245B4CD800311F48 /* menuFile.cpp in Sources */,
 				D5992F272461E4320054F9DA /* PostObject.cpp in Sources */,
 				D5F7D86822FA37C40089B08E /* moc_CColorButton.cpp in Sources */,
+				D50EB7B2246B6E6900E016F1 /* IconProvider.cpp in Sources */,
 				D5F7D83722FA37C40089B08E /* FileThread.cpp in Sources */,
 				D5D5B6C92335128E00D388FA /* SSHThread.cpp in Sources */,
 				D5ED2A1923198CD900C16BF7 /* InfoPanel.cpp in Sources */,
@@ -1907,6 +1922,7 @@
 				D5F7D84922FA37C40089B08E /* ModelSearch.cpp in Sources */,
 				D5F7D89222FA37C40089B08E /* ReadCurveTool.cpp in Sources */,
 				D5F7D8A222FA37C40089B08E /* DlgCloneRevolve.cpp in Sources */,
+				D50EB7B4246B6E6900E016F1 /* moc_DlgSetRepoFolder.cpp in Sources */,
 				D5F7D82F22FA37C40089B08E /* DlgAddRigidConnector.cpp in Sources */,
 				D5F7D8CB22FA37C40089B08E /* ModelTree.cpp in Sources */,
 				D5F7D85822FA37C40089B08E /* CColorButton.cpp in Sources */,
