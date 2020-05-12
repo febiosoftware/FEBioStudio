@@ -357,12 +357,15 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 
 	switch (pitem->Type())
 	{
-	case GO_PART: pcmd = new CCmdSelectPart(mdl, pi, n, badd); break;
-	case GO_FACE: pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
-	case GO_EDGE: pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
-	case GO_NODE: pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
+	case GO_PART: pdoc->SetSelectionMode(SELECT_PART); pcmd = new CCmdSelectPart(mdl, pi, n, badd); break;
+	case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
+	case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
+	case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
 	case FE_PART:
 		{
+			pdoc->SetSelectionMode(SELECT_OBJECT);
+			pdoc->SetItemMode(ITEM_ELEM);
+
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Elements"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
@@ -372,6 +375,9 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 		break;
 	case FE_SURFACE:
 		{
+			pdoc->SetSelectionMode(SELECT_OBJECT);
+			pdoc->SetItemMode(ITEM_FACE);
+
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Faces"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
@@ -381,6 +387,9 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 		break;
 	case FE_NODESET:
 		{
+			pdoc->SetSelectionMode(SELECT_OBJECT);
+			pdoc->SetItemMode(ITEM_NODE);
+
 			FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 			CCmdGroup* pcg = new CCmdGroup("Select Nodes"); pcmd = pcg;
 			FEMesh* pm = dynamic_cast<FEMesh*>(pg->GetMesh());
@@ -393,7 +402,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	if (pcmd)
 	{
 		pdoc->DoCommand(pcmd);
-		//		m_pWnd->Update(this);
+		GetMainWindow()->UpdateToolbar();
 		GetMainWindow()->RedrawGL();
 	}
 

@@ -1297,14 +1297,11 @@ void CModelPropsPanel::selSelection(int n)
 	// create the selection command
 	FEItemListBuilder* pl = 0;
 
-	FEBoundaryCondition* pbc = dynamic_cast<FEBoundaryCondition*>(m_currentObject);
-	if (pbc) pl = pbc->GetItemList();
-
 	FESoloInterface* psi = dynamic_cast<FESoloInterface*>(m_currentObject);
 	if (psi) pl = psi->GetItemList();
 
-	FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(m_currentObject);
-	if (psl) pl = psl->GetItemList();
+	FEModelComponent* pmc = dynamic_cast<FEModelComponent*>(m_currentObject);
+	if (pmc) pl = pmc->GetItemList();
 
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
 	if (pi) pl = (n==0? pi->GetSlaveSurfaceList() : pi->GetMasterSurfaceList());

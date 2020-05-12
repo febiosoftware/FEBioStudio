@@ -1485,7 +1485,7 @@ void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* ps
 				FEModelConstraint* pc = ps->Constraint(i);
 				if (pc)
 				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pc->GetName()), MT_CONSTRAINT, 0, pc, new CObjectProps(pc), 0, flags);
+					t2 = AddTreeItem(t1, QString::fromStdString(pc->GetName()), MT_CONSTRAINT, 0, pc, new CObjectProps(pc), new CBCValidator(pc), flags);
 					if (pc->IsActive() == false) setInactive(t2);
 				}
 			}

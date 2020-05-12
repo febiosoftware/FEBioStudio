@@ -1114,6 +1114,12 @@ void FEModel::ClearSelections()
 				delete pc->GetSlaveSurfaceList(); pc->SetSlave(0);
 			}
 		}
+
+		for (int i = 0; i < step->Constraints(); ++i)
+		{
+			FEModelConstraint* mc = step->Constraint(i);
+			delete mc->GetItemList(); mc->SetItemList(0);
+		}
 	}
 }
 

@@ -877,6 +877,7 @@ void CMainWindow::on_actionPurge_triggered()
 		FEModel* ps = doc->GetFEModel();
 		ps->Purge(dlg.getOption());
 		doc->ClearCommandStack();
+		doc->SetModifiedFlag(true);
 		UpdateModel();
 		Update();
 	}
