@@ -34,10 +34,13 @@
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "DlgUpload.h"
+#include "DlgSetRepoFolder.h"
 #include "LocalDatabaseHandler.h"
 #include "RepoProject.h"
 #include "ToolBox.h"
 #include "PublicationWidgetView.h"
+#include "IconProvider.h"
+#include "FSCore/FSDir.h"
 
 enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
 
@@ -240,7 +243,6 @@ private:
 
 };
 
-
 class Ui::CDatabasePanel
 {
 public:
@@ -328,32 +330,32 @@ public:
 
 		toolbar = new QToolBar();
 
-		actionDownload = new QAction(QIcon(":/icons/download.png"), "Download", parent);
+		actionDownload = new QAction(CIconProvider::GetIcon("download"), "Download", parent);
 		actionDownload->setObjectName("actionDownload");
 		actionDownload->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDownload);
 
-		actionOpen = new QAction(QIcon(":/icons/open.png"), "Open Local Copy", parent);
+		actionOpen = new QAction(CIconProvider::GetIcon("open"), "Open Local Copy", parent);
 		actionOpen->setObjectName("actionOpen");
 		actionOpen->setIconVisibleInMenu(false);
 		toolbar->addAction(actionOpen);
 
-		actionOpenFileLocation = new QAction(QIcon(":/icons/openContaining.png"), "Open File Location", parent);
+		actionOpenFileLocation = new QAction(CIconProvider::GetIcon("openContaining"), "Open File Location", parent);
 		actionOpenFileLocation->setObjectName("actionOpenFileLocation");
 		actionOpenFileLocation->setIconVisibleInMenu(false);
 		toolbar->addAction(actionOpenFileLocation);
 
-		actionDelete = new QAction(QIcon(":/icons/delete.png"), "Delete Local Copy", parent);
+		actionDelete = new QAction(CIconProvider::GetIcon("delete"), "Delete Local Copy", parent);
 		actionDelete->setObjectName("actionDelete");
 		actionDelete->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDelete);
 
-		actionDeleteRemote = new QAction(QIcon(":/icons/deleteRemote.png"), "Delete From Repository", parent);
+		actionDeleteRemote = new QAction(CIconProvider::GetIcon("deleteRemote"), "Delete From Repository", parent);
 		actionDeleteRemote->setObjectName("actionDeleteRemote");
 		actionDeleteRemote->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDeleteRemote);
 
-		actionModify = new QAction(QIcon(":/icons/edit.png"), "Modify Project Metadata", parent);
+		actionModify = new QAction(CIconProvider::GetIcon("edit"), "Modify Project Metadata", parent);
 		actionModify->setObjectName("actionModify");
 		actionModify->setIconVisibleInMenu(false);
 		toolbar->addAction(actionModify);
@@ -363,7 +365,7 @@ public:
 		empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
 		toolbar->addWidget(empty);
 
-		actionUpload = new QAction(QIcon(":/icons/upload.png"), "Upload", parent);
+		actionUpload = new QAction(CIconProvider::GetIcon("upload"), "Upload", parent);
 		actionUpload->setObjectName("actionUpload");
 		actionUpload->setIconVisibleInMenu(false);
 		toolbar->addAction(actionUpload);
@@ -372,10 +374,10 @@ public:
 
 		QToolBar* searchBar = new QToolBar;
 		searchBar->addWidget(searchLineEdit = new QLineEdit);
-		actionSearch = new QAction(QIcon(":/icons/search.png"), "Search", parent);
+		actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search", parent);
 		actionSearch->setObjectName("actionSearch");
 		searchBar->addAction(actionSearch);
-		actionClearSearch = new QAction(QIcon(":/icons/clear.png"), "Clear", parent);
+		actionClearSearch = new QAction(CIconProvider::GetIcon("clear"), "Clear", parent);
 		actionClearSearch->setObjectName("actionClearSearch");
 		searchBar->addAction(actionClearSearch);
 
@@ -508,22 +510,10 @@ CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent)
 	// build Ui
 	ui->setupUi(this);
 
-	// Init must be called after the main window has read in the settings
-	dbHandler = NULL;
-	repoHandler = NULL;
+	dbHandler = new CLocalDatabaseHandler(this);
+	repoHandler = new CRepoConnectionHandler(this, dbHandler, m_wnd);
 
 	QMetaObject::connectSlotsByName(this);
-}
-
-void CDatabasePanel::Init(QString repositoryFolder)
-{
-	m_repositoryFolder = repositoryFolder;
-
-	QDir dir;
-	dir.mkpath(m_repositoryFolder);
-
-	dbHandler = new CLocalDatabaseHandler(m_repositoryFolder.toStdString() + "/localdb.db ", this);
-	repoHandler = new CRepoConnectionHandler(this, dbHandler, m_wnd);
 }
 
 CDatabasePanel::~CDatabasePanel()
@@ -701,6 +691,26 @@ void CDatabasePanel::AddProjectFile(char **data)
 
 void CDatabasePanel::on_loginButton_clicked()
 {
+	if(m_repositoryFolder.isEmpty())
+	{
+		QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+		defaultPath += "/FEBio Studio Repo Files";
+
+		// set proper separators.
+		std::string sPath = FSDir::filePath(defaultPath.toStdString());
+
+		CDlgSetRepoFolder dlg(sPath.c_str(), this);
+
+		if(dlg.exec())
+		{
+			SetRepositoryFolder(dlg.GetRepoFolder());
+		}
+		else
+		{
+			return;
+		}
+	}
+
 	ui->setLoginDisabled(true);
 	repoHandler->authenticate(ui->userName->text(), ui->password->text());
 }
@@ -1174,9 +1184,14 @@ void CDatabasePanel::AddPublication(QVariantMap data)
 	ui->projectPubs->addPublication(data);
 }
 
-QString CDatabasePanel::RepositoryFolder()
+QString CDatabasePanel::GetRepositoryFolder()
 {
 	return m_repositoryFolder;
+}
+
+void CDatabasePanel::SetRepositoryFolder(QString folder)
+{
+	m_repositoryFolder = folder;
 }
 
 #else

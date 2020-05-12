@@ -4,16 +4,20 @@
 #include <sqlite3.h>
 #include <vector>
 #include <string>
-#include <QFile>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QStandardPaths>
+#include <QDir>
+#include <QFile>
 #include <QStringList>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
 #include "RepoProject.h"
 #include "DatabasePanel.h"
+
+#include <iostream>
 
 static int addCategoryCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
@@ -60,9 +64,14 @@ static int addCurrentTagCallback(void *dbPanel, int argc, char **argv, char **az
 class CLocalDatabaseHandler::Imp
 {
 public:
-	Imp(std::string& dbPath, CDatabasePanel* dbPanel)
-		: dbPanel(dbPanel), dbPath(dbPath), db(NULL)
+	Imp(CDatabasePanel* dbPanel)
+		: dbPanel(dbPanel), db(NULL)
 	{
+		QDir dir;
+		dir.mkpath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+
+		dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+		dbPath += "/localdb.db";
 	}
 
 	void openDatabase(std::string schema)
@@ -74,13 +83,13 @@ public:
 		if(db) sqlite3_close(db);
 
 		// Delete local copy of the model database in order to write a new one.
-		QFile::remove(dbPath.c_str());
+		QFile::remove(dbPath);
 
-		int rc = sqlite3_open(dbPath.c_str(), &db);
+		int rc = sqlite3_open(dbPath.toStdString().c_str(), &db);
 
 		if( rc )
 		{
-			fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+			fprintf(stderr, "Can't open database: %s\nError: %s\n", dbPath.toStdString().c_str(), sqlite3_errmsg(db));
 			sqlite3_close(db);
 			return;
 		}
@@ -280,7 +289,7 @@ public:
 
 	QString GetFullFilename(int ID, int type)
 	{
-		QString filename = dbPanel->RepositoryFolder();
+		QString filename = dbPanel->GetRepositoryFolder();
 		filename += "/";
 		filename += GetFilePath(ID, type);
 		filename += "/";
@@ -291,11 +300,10 @@ public:
 
 	QString GetFullPath(int ID, int type)
 	{
-		QString filename = dbPanel->RepositoryFolder();
+		QString filename = dbPanel->GetRepositoryFolder();
 		filename += "/";
 		filename += GetFilePath(ID, type);
 		filename += "/";
-		filename += GetFileName(ID, type);
 
 		return filename;
 	}
@@ -324,13 +332,12 @@ public:
 public:
 	sqlite3* db;
 	CDatabasePanel* dbPanel;
-	std::string dbPath;
-
+	QString dbPath;
 };
 
-CLocalDatabaseHandler::CLocalDatabaseHandler(std::string dbPath, CDatabasePanel* dbPanel)
+CLocalDatabaseHandler::CLocalDatabaseHandler(CDatabasePanel* dbPanel)
 {
-	imp = new Imp(dbPath, dbPanel);
+	imp = new Imp(dbPanel);
 }
 
 CLocalDatabaseHandler::~CLocalDatabaseHandler(){}

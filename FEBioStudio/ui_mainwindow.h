@@ -36,6 +36,7 @@
 #include "PostToolBar.h"
 #include "FEBioStudioProject.h"
 #include "welcomePage.h"
+#include "IconProvider.h"
 
 class QProcess;
 
@@ -163,7 +164,6 @@ public:
 	vector<CLaunchConfig>		m_launch_configs;
 
 	QString		m_defaultProjectParent;
-	QString		m_repositoryFolder;
 
 	QProcess*	m_process;
 	bool		m_bkillProcess;
@@ -291,7 +291,7 @@ public:
 	{
 		QAction* pa = new QAction(title, m_wnd);
 		pa->setObjectName(name);
-		if (iconFile.isEmpty() == false) pa->setIcon( m_wnd->GetResourceIcon(iconFile));
+		if (iconFile.isEmpty() == false) pa->setIcon(CIconProvider::GetIcon(iconFile));
 		if (bcheckable) pa->setCheckable(true);
 		return pa;
 	}

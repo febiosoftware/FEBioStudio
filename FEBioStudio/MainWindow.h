@@ -15,6 +15,7 @@ class FileReader;
 class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
+class CDatabasePanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -93,6 +94,9 @@ public:
 
 	// get the create panel
 	CCreatePanel* GetCreatePanel();
+
+	// get the database panel
+	CDatabasePanel* GetDatabasePanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
@@ -207,9 +211,6 @@ public:
 
 	// camera was changed
 	void OnCameraChanged();
-
-public:
-	QIcon GetResourceIcon(const QString& iconName);
 
 private:
 	void writeSettings();

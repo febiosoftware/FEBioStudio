@@ -10,6 +10,7 @@
 
 class CMainWindow;
 class QAbstractButton;
+class QLabel;
 
 namespace Ui {
 	class CDlgSettings;
@@ -80,6 +81,23 @@ private:
 	QComboBox*		m_us;
 	QWidget*		m_edit;
 	QLabel*			m_name[10];
+};
+
+class CRepoSettingsWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CRepoSettingsWidget(QWidget* parent = 0);
+
+	void setupUi();
+
+public:
+	QString repoPath;
+	QLineEdit* repoPathEdit;
+
+protected slots:
+	void pathButton_clicked();
 };
 
 class CDlgSettings : public QDialog

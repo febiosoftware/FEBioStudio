@@ -4,6 +4,7 @@
 #include "Document.h"
 #include "PostDocument.h"
 #include "DataFieldSelector.h"
+#include "IconProvider.h"
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
 #include <QSpinBox>
@@ -88,7 +89,7 @@ public:
 	{
 		QAction* pa = new QAction(title, m_wnd);
 		pa->setObjectName(name);
-		if (iconFile.isEmpty() == false) pa->setIcon(m_wnd->GetResourceIcon(iconFile));
+		if (iconFile.isEmpty() == false) pa->setIcon(CIconProvider::GetIcon(iconFile));
 		if (bcheckable) pa->setCheckable(true);
 		return pa;
 	}

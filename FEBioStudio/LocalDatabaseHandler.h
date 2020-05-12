@@ -14,7 +14,7 @@ class CLocalDatabaseHandler
 	class Imp;
 
 public:
-	CLocalDatabaseHandler(std::string dbPath, CDatabasePanel* dbPanel);
+	CLocalDatabaseHandler(CDatabasePanel* dbPanel);
 	~CLocalDatabaseHandler();
 
 	void init(std::string schema);

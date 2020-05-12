@@ -26,8 +26,6 @@ public:
 	CDatabasePanel(CMainWindow* pwnd, QWidget* parent = 0);
 	~CDatabasePanel();
 
-	void Init(QString repositoryFolder);
-
 	void SetModelList();
 	void ShowMessage(QString message);
 	void LoginTimeout();
@@ -43,7 +41,8 @@ public:
 	void AddCurrentTag(char **argv);
 	void AddPublication(QVariantMap data);
 
-	QString RepositoryFolder();
+	QString GetRepositoryFolder();
+	void SetRepositoryFolder(QString folder);
 
 private slots:
 	void on_loginButton_clicked();

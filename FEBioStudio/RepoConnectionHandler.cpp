@@ -512,7 +512,7 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 		int fileID = r->rawHeader(QByteArray("fileID")).toInt();
 		int IDType = r->rawHeader(QByteArray("IDType")).toInt();
 
-		QString path = imp->dbPanel->RepositoryFolder() + "/";
+		QString path = imp->dbPanel->GetRepositoryFolder() + "/";
 		path += imp->dbHandler->FilePathFromID(fileID, IDType);
 
 		QDir dir;

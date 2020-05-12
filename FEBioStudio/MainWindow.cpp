@@ -32,6 +32,7 @@
 #include <FSCore/FSDir.h>
 #include <QInputDialog>
 #include "DlgCheck.h"
+#include "IconProvider.h"
 #include "Logger.h"
 #include "SSHHandler.h"
 #include "SSHThread.h"
@@ -57,7 +58,7 @@ void CResource::Init(CMainWindow* wnd) { m_wnd = wnd; }
 QIcon CResource::Icon(const QString& iconName)
 {
 	assert(m_wnd);
-	return m_wnd->GetResourceIcon(iconName);
+	return CIconProvider::GetIcon(iconName);
 }
 
 // create a dark style theme (work in progress)
@@ -97,6 +98,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// read the theme option, before we build the UI
 	readThemeSetting();
+
+	// Instantiate IconProvider singleton
+	CIconProvider::Instantiate(ui->m_theme, devicePixelRatio());
 
 	// setup the GUI
 	ui->setupUi(this);
@@ -157,37 +161,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// Instantiate Logger singleton
 	CLogger::Instantiate(this);
-
-	//Initialize the DatabasePanel. This requires information read in from the settings
-	ui->databasePanel->Init(ui->m_repositoryFolder);
-}
-
-QIcon CMainWindow::GetResourceIcon(const QString& iconName)
-{
-	QString rs(iconName);
-	if ((ui->m_theme == 1) || (ui->m_theme == 3))
-	{
-		rs += "_neg";
-	}
-	QString url = ":/icons/" + rs + ".png";
-
-	// make sure the icon exists
-	if ((ui->m_theme == 1) || (ui->m_theme == 3))
-	{
-		QFile f(url);
-		if (!f.exists())
-		{
-			// use the regular version instead
-			url = ":/icons/" + iconName + ".png";
-		}
-	}
-
-	int dpr = devicePixelRatio();
-	QPixmap pixmap(url);
-//	pixmap.setDevicePixelRatio(dpr);
-	QIcon icon;
-	icon.addPixmap(pixmap);
-	return icon;
 }
 
 //-----------------------------------------------------------------------------
@@ -902,6 +875,11 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 	return ui->buildPanel->CreatePanel();
 }
 
+CDatabasePanel* CMainWindow::GetDatabasePanel()
+{
+	return ui->databasePanel;
+}
+
 //-----------------------------------------------------------------------------
 //! close the current open project
 void CMainWindow::CloseProject()
@@ -1291,7 +1269,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("currentPath", ui->currentPath);
 
 	settings.setValue("defaultProjectFolder", ui->m_defaultProjectParent);
-	settings.setValue("repositoryFolder", ui->m_repositoryFolder);
+	settings.setValue("repositoryFolder", ui->databasePanel->GetRepositoryFolder());
 
 	settings.setValue("recentFiles", ui->m_recentFiles);
 	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
@@ -1361,8 +1339,9 @@ void CMainWindow::readSettings()
 	settings.beginGroup("FolderSettings");
 	ui->currentPath = settings.value("currentPath", QDir::homePath()).toString();
 
-	ui->m_defaultProjectParent = settings.value("defaultProjectFolder", ui->m_defaultProjectParent).toString();
-	ui->m_repositoryFolder = settings.value("repositoryFolder", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/modelRepo").toString();
+	ui->m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+	QString repositoryFolder = settings.value("repositoryFolder").toString();
+	ui->databasePanel->SetRepositoryFolder(repositoryFolder);
 
 	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
 	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);

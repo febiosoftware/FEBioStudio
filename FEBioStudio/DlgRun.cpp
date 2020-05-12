@@ -193,10 +193,10 @@ void CDlgRun::on_setCWDBtn_Clicked()
 	QFileDialog dlg(this, "Working Directory",GetWorkingDirectory());
 	dlg.setFileMode(QFileDialog::Directory);
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	dlg.setDirectory(GetWorkingDirectory());
+
 	if (dlg.exec())
 	{
-		dlg.setDirectory(GetWorkingDirectory());
-
 		// get the file name
 		QStringList files = dlg.selectedFiles();
 		QString fileName = files.first();

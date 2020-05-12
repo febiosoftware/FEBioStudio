@@ -5,15 +5,18 @@
 #include "GLView.h"
 #include <QBoxLayout>
 #include <QFormLayout>
+#include <QToolButton>
 #include <QPushButton>
 #include <QTabWidget>
 #include <QListWidget>
+#include <QAction>
 #include <QLabel>
 #include <QDialogButtonBox>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QStackedWidget>
 #include <QGroupBox>
+#include <QFileDialog>
 #include "PropertyList.h"
 #include "PropertyListForm.h"
 #include "PropertyListView.h"
@@ -21,6 +24,9 @@
 #include <GLWLib/convert.h>
 #include <PostLib/Palette.h>
 #include "units.h"
+#include "DlgSetRepoFolder.h"
+#include "DatabasePanel.h"
+#include "IconProvider.h"
 
 //-----------------------------------------------------------------------------
 class CBackgroundProps : public CDataPropertyList
@@ -647,6 +653,51 @@ void CUnitWidget::OnUnitSystemChanged(int n)
 }
 
 //-----------------------------------------------------------------------------
+CRepoSettingsWidget::CRepoSettingsWidget(QWidget* parent) : QWidget(parent)
+{
+}
+
+void CRepoSettingsWidget::setupUi()
+{
+	QVBoxLayout* layout = new QVBoxLayout;
+	layout->setAlignment(Qt::AlignTop);
+
+	QHBoxLayout* pathLayout = new QHBoxLayout;
+	pathLayout->addWidget(new QLabel("Repository Folder:"));
+	pathLayout->addWidget(repoPathEdit = new QLineEdit(repoPath));
+
+	QAction* openFileDialog = new QAction;
+	openFileDialog->setObjectName("openFileDialog");
+	openFileDialog->setIcon(CIconProvider::GetIcon("open"));
+
+	QToolButton* pathButton = new QToolButton;
+	pathButton->setDefaultAction(openFileDialog);
+	pathLayout->addWidget(pathButton);
+
+	layout->addLayout(pathLayout);
+
+	this->setLayout(layout);
+
+	QObject::connect(openFileDialog, &QAction::triggered, this, &CRepoSettingsWidget::pathButton_clicked);
+}
+
+void CRepoSettingsWidget::pathButton_clicked()
+{
+	QFileDialog dlg(this);
+	dlg.setFileMode(QFileDialog::Directory);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	dlg.setDirectory(repoPathEdit->text());
+
+	if(dlg.exec())
+	{
+		QStringList files = dlg.selectedFiles();
+		QString fileName = files.first();
+
+		repoPathEdit->setText(fileName);
+	}
+}
+
+//-----------------------------------------------------------------------------
 class Ui::CDlgSettings
 {
 public:
@@ -661,6 +712,7 @@ public:
 	CLightingProps*		m_light;
 	CCameraProps*		m_cam;
 	CUnitWidget*		m_unit;
+	CRepoSettingsWidget*	m_repo;
 
 	::CPropertyListView*	bg_panel;
 	::CPropertyListView*	di_panel;
@@ -683,6 +735,7 @@ public:
 		m_light = new CLightingProps;
 		m_cam = new CCameraProps;
 		m_unit = new CUnitWidget;
+		m_repo = new CRepoSettingsWidget;
 	}
 
 	void setupUi(::CDlgSettings* pwnd)
@@ -694,6 +747,7 @@ public:
 		se_panel = new ::CPropertyListView;
 		li_panel = new ::CPropertyListView;
 		ca_panel = new ::CPropertyListView;
+		m_repo->setupUi();
 
 		QStackedWidget* stack = new QStackedWidget;
 		QListWidget* list = new QListWidget;
@@ -708,6 +762,7 @@ public:
 		stack->addWidget(se_panel); list->addItem("Selection");
 		stack->addWidget(ui_panel); list->addItem("UI");
 		stack->addWidget(m_unit); list->addItem("Units");
+		stack->addWidget(m_repo); list->addItem("Model Repository");
 		list->setResizeMode(QListView::ResizeMode::Adjust);
 
 		QHBoxLayout* hl = new QHBoxLayout;
@@ -784,10 +839,14 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 	ui->m_unit->m_unit = Units::GetUnitSystem();
 
+	ui->m_repo->repoPath = pwnd->GetDatabasePanel()->GetRepositoryFolder();
+
 	ui->setupUi(this);
 
 	// fill the palette list
 	UpdatePalettes();
+
+	pwnd->GetDatabasePanel()->GetRepositoryFolder();
 }
 
 void CDlgSettings::UpdatePalettes()
@@ -868,6 +927,8 @@ void CDlgSettings::apply()
 	m_pwnd->setShowNewDialog(ui->m_ui->m_showNewDialog);
 
 	Units::SetUnitSystem(ui->m_unit->m_unit);
+
+	m_pwnd->GetDatabasePanel()->SetRepositoryFolder(ui->m_repo->repoPathEdit->text());
 
 	m_pwnd->RedrawGL();
 }
