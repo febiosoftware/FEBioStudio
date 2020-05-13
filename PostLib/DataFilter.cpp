@@ -621,6 +621,31 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 					}
 					else return false;
 				}
+				else if (fmt == DATA_NODE)
+				{
+					FEElementData<float, DATA_NODE>* pd = dynamic_cast<FEElementData<float, DATA_NODE>*>(&d);
+					FEElemData_T<float, DATA_NODE>* ps = dynamic_cast<FEElemData_T<float, DATA_NODE>*>(&s);
+					if (pd && ps)
+					{
+						int N = mesh.Elements();
+						float vs[FEElement::MAX_NODES], vd[FEElement::MAX_NODES];
+						for (int i = 0; i<N; ++i)
+						{
+							FEElement& el = mesh.Element(i);
+							if (pd->active(i) && ps->active(i))
+							{
+								pd->eval(i, vd);
+								ps->eval(i, vs);
+								for (int j = 0; j < el.Nodes(); ++j)
+								{
+									float r = (float)f(vd[j], vs[j]);
+									pd->set(i, j, r);
+								}
+							}
+						}
+					}
+					else return false;
+				}
 				else
 				{
 					return false;

@@ -551,6 +551,11 @@ public:
 		int m = m_elem[2*i+1];	// size of elem data (should be nr. of nodes)
 		for (int j=0; j<m; ++j) pv[j] = m_data[ m_indx[n + j] ];
 	}
+	void set(int i, int j, T& v)
+	{
+		int n = m_elem[2 * i];	// start index in data array
+		m_data[m_indx[n + j]] = v;
+	}
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[2 * n] >= 0); }
 	void copy(FEElementData<T,DATA_NODE>& d) { m_data = d.m_data; m_indx = d.m_indx; }
 	void add(vector<T>& d, vector<int>& e, vector<int>& l, int ne) 
