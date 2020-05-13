@@ -149,6 +149,7 @@
 		<file>icons/pause.png</file>
 		<file>icons/measure.png</file>
 		<file>icons/addtomodel.png</file>
+        <file>icons/deleteRemote.png</file>
         <file>icons/emblems/caution.png</file>
         <file>icons/emblems/check.png</file>
         <file>icons/emblems/error.png</file>
