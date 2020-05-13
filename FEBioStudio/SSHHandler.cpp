@@ -159,7 +159,7 @@ void CSSHHandler::StartRemoteJob()
 	}
 	else if(m_data->job->GetLaunchConfig()->type == CUSTOM)
 	{
-		std:vector<std::string> commands;
+		std::vector<std::string> commands;
 		if(ParseCustomFile(commands) != SSH_OK) return;
 
 		if(commands.empty())

@@ -29,7 +29,7 @@ static const char* unit_table[][12] = {
 	{"mm","tonne","s","K","A","nmol","N","MPa","mJ","mW","mV","mM"},
 
 	// CGS units
-	{"cm","g","s","K","cA","µmol","dyn","dyn/cm2","erg","erg/s","mV","mM"},
+	{"cm","g","s","K","cA","µmol","dyn","Ba","erg","erg/s","mV","mM"},
     
     // UMNNS units
     {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM"}

@@ -227,6 +227,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgRAWImport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgRun.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSelectRange.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgSetRepoFolder.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSoluteTable.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgTimeSettings.cpp" />
@@ -261,6 +262,7 @@
     <ClCompile Include="..\..\FEBioStudio\GraphData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\IconProvider.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ImportSpringsTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IntegrateWindow.cpp" />
@@ -319,6 +321,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgNewProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgPlotMix.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgRun.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgSetRepoFolder.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSettings.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSoluteTable.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgUnitConverter.cpp" />
@@ -523,6 +526,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgSetRepoFolder.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DocManager.h" />
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h" />
@@ -555,6 +563,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\GraphData.h" />
+    <ClInclude Include="..\..\FEBioStudio\IconProvider.h" />
     <ClInclude Include="..\..\FEBioStudio\ImportSpringsTool.h" />
     <ClInclude Include="..\..\FEBioStudio\LaunchConfig.h" />
     <CustomBuild Include="..\..\FEBioStudio\Logger.h">
