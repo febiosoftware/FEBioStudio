@@ -806,7 +806,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	}
 	else
 	{
-		Reset();
+		if ((file.m_flags & QueuedFile::RELOAD_DOCUMENT) == 0) Reset();
 		UpdatePhysicsUi();
 		UpdateModel();
 		UpdateToolbar();
