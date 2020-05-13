@@ -1250,7 +1250,7 @@ FEIsotropicFourier::FEIsotropicFourier() : FEMaterial(FE_ISOTROPIC_FOURIER)
 {
 	AddScienceParam(1, UNIT_DENSITY, "density", "density");
 	AddScienceParam(0, "W/L.T", "k"      , "heat conductivity");
-	AddScienceParam(0, "J/T"  , "c"      , "heat capacity");
+	AddScienceParam(0, "E/T"  , "c"      , "heat capacity");
 }
 
 //=============================================================================

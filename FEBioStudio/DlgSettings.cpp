@@ -642,18 +642,18 @@ void CUnitWidget::OnUnitSystemChanged(int n)
 	if (n == 0) m_edit->hide();
 	else m_edit->show();
 
-	m_name[ 0]->setText(Units::unitSymbol(n, Units::LENGTH));
-	m_name[ 1]->setText(Units::unitSymbol(n, Units::MASS));
-	m_name[ 2]->setText(Units::unitSymbol(n, Units::TIME));
-	m_name[ 3]->setText(Units::unitSymbol(n, Units::TEMPERATURE));
-	m_name[ 4]->setText(Units::unitSymbol(n, Units::CURRENT));
-	m_name[ 5]->setText(Units::unitSymbol(n, Units::SUBSTANCE));
-	m_name[ 6]->setText(Units::unitSymbol(n, Units::FORCE));
-	m_name[ 7]->setText(Units::unitSymbol(n, Units::PRESSURE));
-	m_name[ 8]->setText(Units::unitSymbol(n, Units::ENERGY));
-	m_name[ 9]->setText(Units::unitSymbol(n, Units::POWER));
-    m_name[10]->setText(Units::unitSymbol(n, Units::VOLTAGE));
-    m_name[11]->setText(Units::unitSymbol(n, Units::CONCENTRATION));
+	m_name[ 0]->setText(Units::GetUnitString(n, Units::LENGTH));
+	m_name[ 1]->setText(Units::GetUnitString(n, Units::MASS));
+	m_name[ 2]->setText(Units::GetUnitString(n, Units::TIME));
+	m_name[ 3]->setText(Units::GetUnitString(n, Units::TEMPERATURE));
+	m_name[ 4]->setText(Units::GetUnitString(n, Units::CURRENT));
+	m_name[ 5]->setText(Units::GetUnitString(n, Units::SUBSTANCE));
+	m_name[ 6]->setText(Units::GetUnitString(n, Units::FORCE));
+	m_name[ 7]->setText(Units::GetUnitString(n, Units::PRESSURE));
+	m_name[ 8]->setText(Units::GetUnitString(n, Units::ENERGY));
+	m_name[ 9]->setText(Units::GetUnitString(n, Units::POWER));
+    m_name[10]->setText(Units::GetUnitString(n, Units::VOLTAGE));
+    m_name[11]->setText(Units::GetUnitString(n, Units::CONCENTRATION));
 }
 
 //-----------------------------------------------------------------------------
