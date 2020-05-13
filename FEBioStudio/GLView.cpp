@@ -1232,16 +1232,16 @@ void CGLView::initializeGL()
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
 	int Y = 0;
-	m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""));
+	m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""), 0);
 	m_ptitle->set_font_size(30);
 	m_ptitle->fit_to_size();
 	Y += m_ptitle->h();
 
-	m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""));
+	m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""), 0);
 	m_psubtitle->set_font_size(15);
 	m_psubtitle->fit_to_size();
 
-	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150));
+	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
 	m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
 	m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);

@@ -18,7 +18,7 @@ public:
 
 	static CGLWidgetManager* GetInstance();
 
-	void AddWidget(GLWidget* pw);
+	void AddWidget(GLWidget* pw, int layer = -1);
 	void RemoveWidget(GLWidget* pw);
 	int Widgets() { return (int)m_Widget.size(); }
 

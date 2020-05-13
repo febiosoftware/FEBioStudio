@@ -68,9 +68,9 @@ void CGLWidgetManager::CheckWidgetBounds()
 	}
 }
 
-void CGLWidgetManager::AddWidget(GLWidget* pw)
+void CGLWidgetManager::AddWidget(GLWidget* pw, int layer)
 {
-	pw->set_layer(m_layer);
+	pw->set_layer((layer < 0 ? m_layer : layer));
 	m_Widget.push_back(pw);
 }
 
