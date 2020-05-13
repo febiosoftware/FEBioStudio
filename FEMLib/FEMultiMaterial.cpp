@@ -13,19 +13,19 @@ REGISTER_MATERIAL(FEViscoElastic, MODULE_MECH, FE_VISCO_ELASTIC, FE_MAT_ELASTIC,
 
 FEViscoElastic::FEViscoElastic() : FEMaterial(FE_VISCO_ELASTIC)
 {
-	AddDoubleParam(0, "g1", "coeffient G1");
-	AddDoubleParam(0, "g2", "coeffient G2");
-	AddDoubleParam(0, "g3", "coeffient G3");
-	AddDoubleParam(0, "g4", "coeffient G4");
-	AddDoubleParam(0, "g5", "coeffient G5");
-	AddDoubleParam(0, "g6", "coeffient G6");
+	AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
+	AddScienceParam(0, UNIT_NONE, "g2", "coeffient G2");
+	AddScienceParam(0, UNIT_NONE, "g3", "coeffient G3");
+	AddScienceParam(0, UNIT_NONE, "g4", "coeffient G4");
+	AddScienceParam(0, UNIT_NONE, "g5", "coeffient G5");
+	AddScienceParam(0, UNIT_NONE, "g6", "coeffient G6");
 
-	AddDoubleParam(1, "t1", "relaxation time t1");
-	AddDoubleParam(1, "t2", "relaxation time t2");
-	AddDoubleParam(1, "t3", "relaxation time t3");
-	AddDoubleParam(1, "t4", "relaxation time t4");
-	AddDoubleParam(1, "t5", "relaxation time t5");
-	AddDoubleParam(1, "t6", "relaxation time t6");
+	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time t1");
+	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time t2");
+	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time t3");
+	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time t4");
+	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time t5");
+	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time t6");
 
 	// Add one component for the elastic material
 	AddProperty("elastic", FE_MAT_ELASTIC);
@@ -39,19 +39,19 @@ REGISTER_MATERIAL(FEUncoupledViscoElastic, MODULE_MECH, FE_UNCOUPLED_VISCO_ELAST
 
 FEUncoupledViscoElastic::FEUncoupledViscoElastic() : FEMaterial(FE_UNCOUPLED_VISCO_ELASTIC)
 {
-	AddDoubleParam(0, "g1", "coeffient G1");
-	AddDoubleParam(0, "g2", "coeffient G2");
-	AddDoubleParam(0, "g3", "coeffient G3");
-	AddDoubleParam(0, "g4", "coeffient G4");
-	AddDoubleParam(0, "g5", "coeffient G5");
-	AddDoubleParam(0, "g6", "coeffient G6");
+	AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
+	AddScienceParam(0, UNIT_NONE, "g2", "coeffient G2");
+	AddScienceParam(0, UNIT_NONE, "g3", "coeffient G3");
+	AddScienceParam(0, UNIT_NONE, "g4", "coeffient G4");
+	AddScienceParam(0, UNIT_NONE, "g5", "coeffient G5");
+	AddScienceParam(0, UNIT_NONE, "g6", "coeffient G6");
 
-	AddDoubleParam(1, "t1", "relaxation time t1");
-	AddDoubleParam(1, "t2", "relaxation time t2");
-	AddDoubleParam(1, "t3", "relaxation time t3");
-	AddDoubleParam(1, "t4", "relaxation time t4");
-	AddDoubleParam(1, "t5", "relaxation time t5");
-	AddDoubleParam(1, "t6", "relaxation time t6");
+	AddScienceParam(1, UNIT_TIME, "t1", "relaxation time t1");
+	AddScienceParam(1, UNIT_TIME, "t2", "relaxation time t2");
+	AddScienceParam(1, UNIT_TIME, "t3", "relaxation time t3");
+	AddScienceParam(1, UNIT_TIME, "t4", "relaxation time t4");
+	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time t5");
+	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time t6");
 
 	// Add the elastic material property
 	AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
@@ -109,9 +109,9 @@ FESBMMaterial::FESBMMaterial() : FEMaterial(FE_SBM_MATERIAL)
 	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT);
     
 	// add parameters
-	AddDoubleParam(0, "rho0", "apparent density");
-	AddDoubleParam(0, "rhomin", "min density");
-	AddDoubleParam(0, "rhomax", "max density");
+	AddScienceParam(0, UNIT_DENSITY, "rho0", "apparent density");
+	AddScienceParam(0, UNIT_DENSITY, "rhomin", "min density");
+	AddScienceParam(0, UNIT_DENSITY, "rhomax", "max density");
 }
 
 //=============================================================================
@@ -123,7 +123,7 @@ REGISTER_MATERIAL(FEBiphasicSolute, MODULE_MULTIPHASIC, FE_BIPHASIC_SOLUTE, FE_M
 FEBiphasicSolute::FEBiphasicSolute() : FEMaterial(FE_BIPHASIC_SOLUTE)
 {
 	// add parameters
-	AddDoubleParam(0, "phi0", "solid volume fraction");
+	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
 
 	// Add elastic component
 	AddProperty("solid", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);
@@ -147,8 +147,8 @@ REGISTER_MATERIAL(FETriphasicMaterial, MODULE_MULTIPHASIC, FE_TRIPHASIC_MATERIAL
 FETriphasicMaterial::FETriphasicMaterial() : FEMaterial(FE_TRIPHASIC_MATERIAL)
 {
 	// add parameters
-	AddDoubleParam(0, "phi0", "solid volume fraction");
-	AddDoubleParam(0, "fixed_charge_density", "fixed charge density");
+	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
+	AddScienceParam(0, UNIT_CONCENTRATION, "fixed_charge_density", "fixed charge density");
 
 	// Add elastic component
 	AddProperty("solid", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);
@@ -327,7 +327,7 @@ FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMateria
 FEReactionMaterial::FEReactionMaterial(int ntype) : FEMaterial(ntype)
 {
 	// the optional Vbar parameter is hidden by default.
-	AddDoubleParam(0, "Vbar", "Vbar")->SetState(Param_HIDDEN);
+	AddScienceParam(0, UNIT_MOLAR_VOLUME, "Vbar", "Vbar")->SetState(Param_HIDDEN);
 	AddBoolParam(false, 0, 0)->SetState(Param_HIDDEN);
     
 	// Add reaction rate properties
@@ -490,8 +490,8 @@ REGISTER_MATERIAL(FEMultiphasicMaterial, MODULE_MULTIPHASIC, FE_MULTIPHASIC_MATE
 FEMultiphasicMaterial::FEMultiphasicMaterial() : FEMaterial(FE_MULTIPHASIC_MATERIAL)
 {
 	// add parameters
-	AddDoubleParam(0, "phi0", "solid volume fraction");
-	AddDoubleParam(0, "fixed_charge_density", "fixed charge density");
+	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
+	AddScienceParam(0, UNIT_CONCENTRATION, "fixed_charge_density", "fixed charge density");
 
 	// Add elastic component
 	AddProperty("solid", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);
@@ -664,8 +664,8 @@ REGISTER_MATERIAL(FEMichaelisMenten, MODULE_REACTIONS, FE_MICHAELIS_MENTEN, FE_M
 
 FEMichaelisMenten::FEMichaelisMenten() : FEReactionMaterial(FE_MICHAELIS_MENTEN)
 {
-	AddDoubleParam(0, "Km", "Km"); // concentration at half-maximum rate
-	AddDoubleParam(0, "c0", "c0"); // substrate trigger concentration
+	AddScienceParam(0, UNIT_CONCENTRATION, "Km", "Km"); // concentration at half-maximum rate
+	AddScienceParam(0, UNIT_CONCENTRATION, "c0", "c0"); // substrate trigger concentration
 }
 
 //=============================================================================
@@ -712,7 +712,7 @@ FESpeciesMaterial::FESpeciesMaterial() : FEMaterial(FE_SPECIES_MATERIAL)
 	AddChoiceParam(0, "sol", "Solute")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 
 	// add the solute material index
-	AddDoubleParam(0, "diffusivity", "diffusivity");
+	AddScienceParam(0, UNIT_DIFFUSIVITY, "diffusivity", "diffusivity");
 }
 
 int FESpeciesMaterial::GetSpeciesIndex()
@@ -737,9 +737,9 @@ FESolidSpeciesMaterial::FESolidSpeciesMaterial() : FEMaterial(FE_SOLID_SPECIES_M
 	AddIntParam(0, "sbm", "Solid-bound molecule")->SetEnumNames("$(SBMs)")->SetState(Param_EDITABLE | Param_PERSISTENT);
 
 	// add parameters
-	AddDoubleParam(0, "rho0", "apparent density");
-	AddDoubleParam(0, "rhomin", "min density");
-	AddDoubleParam(0, "rhomax", "max density");
+	AddScienceParam(0, UNIT_DENSITY, "rho0", "apparent density");
+	AddScienceParam(0, UNIT_DENSITY, "rhomin", "min density");
+	AddScienceParam(0, UNIT_DENSITY, "rhomax", "max density");
 }
 
 //=============================================================================
@@ -751,7 +751,7 @@ REGISTER_MATERIAL(FEReactionDiffusionMaterial, MODULE_REACTION_DIFFUSION, FE_REA
 FEReactionDiffusionMaterial::FEReactionDiffusionMaterial() : FEMaterial(FE_REACTION_DIFFUSION_MATERIAL)
 {
 	// add parameters
-	AddDoubleParam(0.0, "solid_volume_fraction", "solid_volume_fraction");
+	AddScienceParam(0.0, UNIT_NONE, "solid_volume_fraction", "solid_volume_fraction");
 
 	// Add solute property
 	AddProperty("species", FE_MAT_SPECIES, FEMaterialProperty::NO_FIXED_SIZE);

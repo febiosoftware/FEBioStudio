@@ -595,21 +595,23 @@ CUnitWidget::CUnitWidget(QWidget* parent) : QWidget(parent)
 	QGroupBox* bu = new QGroupBox("Base units");
 	QFormLayout* fb = new QFormLayout;
 	fb->setLabelAlignment(Qt::AlignRight);
-	fb->addRow("Length:"     , m_name[0] = new QLabel);
-	fb->addRow("Mass:"       , m_name[1] = new QLabel);
-	fb->addRow("Time:"       , m_name[2] = new QLabel);
-	fb->addRow("Temperature:", m_name[3] = new QLabel);
-	fb->addRow("Current:"    , m_name[4] = new QLabel);
-	fb->addRow("Substance:"  , m_name[5] = new QLabel);
+	fb->addRow("Length:"       , m_name[ 0] = new QLabel);
+	fb->addRow("Mass:"         , m_name[ 1] = new QLabel);
+	fb->addRow("Time:"         , m_name[ 2] = new QLabel);
+	fb->addRow("Temperature:"  , m_name[ 3] = new QLabel);
+	fb->addRow("Current:"      , m_name[ 4] = new QLabel);
+	fb->addRow("Substance:"    , m_name[ 5] = new QLabel);
 	bu->setLayout(fb);
 
 	QGroupBox* bd = new QGroupBox("Derived units");
 	QFormLayout* fd = new QFormLayout;
 	fd->setLabelAlignment(Qt::AlignRight);
-	fd->addRow("Force:"      , m_name[6] = new QLabel);
-	fd->addRow("Pressure:"   , m_name[7] = new QLabel);
-	fd->addRow("Energy:"     , m_name[8] = new QLabel);
-	fd->addRow("Power:"      , m_name[9] = new QLabel);
+	fd->addRow("Force:"        , m_name[ 6] = new QLabel);
+	fd->addRow("Pressure:"     , m_name[ 7] = new QLabel);
+	fd->addRow("Energy:"       , m_name[ 8] = new QLabel);
+	fd->addRow("Power:"        , m_name[ 9] = new QLabel);
+    fd->addRow("Voltage:"      , m_name[10] = new QLabel);
+    fd->addRow("Concentration:", m_name[11] = new QLabel);
 	bd->setLayout(fd);
 
 	QVBoxLayout* el = new QVBoxLayout;
@@ -640,16 +642,18 @@ void CUnitWidget::OnUnitSystemChanged(int n)
 	if (n == 0) m_edit->hide();
 	else m_edit->show();
 
-	m_name[0]->setText(Units::unitSymbol(n, Units::LENGTH));
-	m_name[1]->setText(Units::unitSymbol(n, Units::MASS));
-	m_name[2]->setText(Units::unitSymbol(n, Units::TIME));
-	m_name[3]->setText(Units::unitSymbol(n, Units::TEMPERATURE));
-	m_name[4]->setText(Units::unitSymbol(n, Units::CURRENT));
-	m_name[5]->setText(Units::unitSymbol(n, Units::SUBSTANCE));
-	m_name[6]->setText(Units::unitSymbol(n, Units::FORCE));
-	m_name[7]->setText(Units::unitSymbol(n, Units::PRESSURE));
-	m_name[8]->setText(Units::unitSymbol(n, Units::ENERGY));
-	m_name[9]->setText(Units::unitSymbol(n, Units::POWER));
+	m_name[ 0]->setText(Units::unitSymbol(n, Units::LENGTH));
+	m_name[ 1]->setText(Units::unitSymbol(n, Units::MASS));
+	m_name[ 2]->setText(Units::unitSymbol(n, Units::TIME));
+	m_name[ 3]->setText(Units::unitSymbol(n, Units::TEMPERATURE));
+	m_name[ 4]->setText(Units::unitSymbol(n, Units::CURRENT));
+	m_name[ 5]->setText(Units::unitSymbol(n, Units::SUBSTANCE));
+	m_name[ 6]->setText(Units::unitSymbol(n, Units::FORCE));
+	m_name[ 7]->setText(Units::unitSymbol(n, Units::PRESSURE));
+	m_name[ 8]->setText(Units::unitSymbol(n, Units::ENERGY));
+	m_name[ 9]->setText(Units::unitSymbol(n, Units::POWER));
+    m_name[10]->setText(Units::unitSymbol(n, Units::VOLTAGE));
+    m_name[11]->setText(Units::unitSymbol(n, Units::CONCENTRATION));
 }
 
 //-----------------------------------------------------------------------------

@@ -80,7 +80,7 @@ public:
 private:
 	QComboBox*		m_us;
 	QWidget*		m_edit;
-	QLabel*			m_name[10];
+	QLabel*			m_name[12];
 };
 
 class CRepoSettingsWidget : public QWidget

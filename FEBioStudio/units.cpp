@@ -13,23 +13,26 @@ unsigned int Units::GetUnitSystem() { return unit_system; }
 QStringList Units::SupportedUnitSystems()
 {
 	QStringList s;
-	s << "None" << "Dimensions only" << "SI" << "mm-Newton-second" << "CGS";
+	s << "None" << "Dimensions only" << "SI" << "mm-Newton-second" << "CGS" << "µm-nN-second";
 
 	return s;
 }
 
-static const char* unit_table[][10] = {
+static const char* unit_table[][12] = {
 	// dimensions
-	{"L","M","t","T","l","n","F","P","E","W"},
+	{"L","M","t","T","I","n","F","P","E","W","V","c"},
 
 	// SI units
-	{"m","kg","s","K","A","mol","N","Pa","J","W"},
+	{"m","kg","s","K","A","mol","N","Pa","J","W","V","mM"},
 
 	// MMTS units
-	{"mm","tonne","s","K","A","mol","N","MPa","mJ","mW"},
+	{"mm","tonne","s","K","A","nmol","N","MPa","mJ","mW","mV","mM"},
 
 	// CGS units
-	{"cm","g","s","K","A","mol","dyn","Ba","erg","erg/s"}
+	{"cm","g","s","K","cA","µmol","dyn","dyn/cm2","erg","erg/s","mV","mM"},
+    
+    // UMNNS units
+    {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM"}
 };
 
 QString Units::unitSymbol(int us, Unit_Symbol sym)
@@ -49,6 +52,9 @@ QString Units::unitSymbol(int us, Unit_Symbol sym)
 #define MILLI "m"	// 10^-3
 #define MICRO "mu"	// 10^-6
 #define NANO  "n"	// 10^-9
+#define PICO  "p"   // 10^-12
+#define FEMTO "f"   // 10^-15
+#define ATTO  "a"   // 10^-18
 
 // turn this off to use non-unicode representation of symbols
 #define USE_UNICODE
@@ -69,12 +75,14 @@ QString Units::unitSymbol(int us, Unit_Symbol sym)
 #define M u[MASS]
 #define t u[TIME]
 #define T u[TEMPERATURE]
-#define l u[CURRENT]
+#define I u[CURRENT]
 #define n u[SUBSTANCE]
 #define F u[FORCE]
 #define P u[PRESSURE]
 #define E u[ENERGY]
 #define W u[POWER]
+#define V u[VOLTAGE]
+#define c u[CONCENTRATION]
 #define RAD QString("rad")
 
 QString Units::GetUnitString(const char* szunit)
@@ -86,30 +94,32 @@ QString Units::GetUnitString(const char* szunit)
 
 	// parse unit string
 	QString s;
-	const char* c = szunit;
-	while (*c)
+	const char* ch = szunit;
+	while (*ch)
 	{
-		switch (*c)
+		switch (*ch)
 		{
 		case 'L': s += L; break;
 		case 'M': s += M; break;
 		case 't': s += t; break;
 		case 'T': s += T; break;
-		case 'l': s += l; break;
+		case 'I': s += I; break;
 		case 'n': s += n; break;
 		case 'F': s += F; break;
 		case 'P': s += P; break;
 		case 'E': s += E; break;
 		case 'W': s += W; break;
+        case 'V': s += V; break;
+        case 'c': s += c; break;
 		case 'd': s += DEG; break;
 		case 'r': s += RAD; break;
 		case '/': s += '/'; break;
 		case '.': s += '.'; break;
 		case '^':
 		{
-			c++;
-			if (*c == 0) { assert(false); return "?"; }
-			int i = *c - '0';
+			ch++;
+			if (*ch == 0) { assert(false); return "?"; }
+			int i = *ch - '0';
 			switch (i)
 			{
 			case 2: s += POW_2; break;
@@ -124,7 +134,7 @@ QString Units::GetUnitString(const char* szunit)
 			assert(false);
 		}
 
-		c++;
+		ch++;
 	}
 
 	if (unit_system == Units::DIMENSIONAL) s = QString("[") + s + QString("]");

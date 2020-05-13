@@ -11,6 +11,8 @@
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
+#include <FSCore/paramunit.h>
+#include <FSCore/ParamBlock.h>
 #include "GGroup.h"
 #include "GModel.h"
 #include <vector>
@@ -169,9 +171,9 @@ FEModel::FEModel()
 	varSDisp->AddDOF("Shell Z-displacement", "sz");
 
 	// define model parameters
-	AddDoubleParam(0, "T", "Absolute temperature");
-	AddDoubleParam(0, "R", "Gas constant");
-	AddDoubleParam(0, "Fc", "Faraday's constant");
+	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Absolute temperature");
+	AddScienceParam(0, UNIT_GAS_CONSTANT, "R", "Gas constant");
+	AddScienceParam(0, UNIT_FARADAY_CONSTANT, "Fc", "Faraday's constant");
 }
 
 //-----------------------------------------------------------------------------

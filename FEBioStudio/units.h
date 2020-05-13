@@ -12,6 +12,7 @@ namespace Units {
 		SI,
 		MMTS,
 		CGS,
+        UMNNS,
 	};
 
 	enum Unit_Symbol
@@ -25,7 +26,9 @@ namespace Units {
 		FORCE,
 		PRESSURE,
 		ENERGY,
-		POWER
+		POWER,
+        VOLTAGE,
+        CONCENTRATION
 	};
 
 	QStringList SupportedUnitSystems();

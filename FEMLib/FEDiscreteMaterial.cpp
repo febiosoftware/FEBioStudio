@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "FEDiscreteMaterial.h"
 #include <MeshTools/FEProject.h>
+#include <FSCore/ParamBlock.h>
+#include <FSCore/paramunit.h>
 
 //===================================================================
 FEDiscreteMaterial::FEDiscreteMaterial(int ntype) : FEMaterial(ntype)
@@ -13,7 +15,7 @@ REGISTER_MATERIAL(FELinearSpringMaterial, MODULE_MECH, FE_DISCRETE_LINEAR_SPRING
 
 FELinearSpringMaterial::FELinearSpringMaterial() : FEDiscreteMaterial(FE_DISCRETE_LINEAR_SPRING)
 {
-	AddDoubleParam(1, "E", "spring constant");
+	AddScienceParam(1, UNIT_STIFFNESS, "E", "spring constant");
 }
 
 void FELinearSpringMaterial::SetSpringConstant(double E)
@@ -27,7 +29,7 @@ REGISTER_MATERIAL(FENonLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_NONLINEAR_
 
 FENonLinearSpringMaterial::FENonLinearSpringMaterial() : FEDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING)
 {
-	AddDoubleParam(1, "force", "spring force")->SetLoadCurve();
+	AddScienceParam(1, UNIT_FORCE, "force", "spring force")->SetLoadCurve();
 
 	// create an initial linear ramp
 	LOADPOINT p0(0, 0), p1(1, 1);
@@ -42,9 +44,9 @@ REGISTER_MATERIAL(FEHillContractileMaterial, MODULE_MECH, FE_DISCRETE_HILL, FE_M
 
 FEHillContractileMaterial::FEHillContractileMaterial() : FEDiscreteMaterial(FE_DISCRETE_HILL)
 {
-	AddDoubleParam(0, "Fmax", "Max force");
-	AddDoubleParam(1, "Lmax", "Max length");
-	AddDoubleParam(1, "L0"  , "Initial length");
+	AddScienceParam(0, UNIT_FORCE, "Fmax", "Max force");
+	AddScienceParam(1, UNIT_LENGTH, "Lmax", "Max length");
+	AddScienceParam(1, UNIT_LENGTH, "L0"  , "Initial length");
 	AddDoubleParam(1, "Ksh" , "Shape parameter");
 	AddDoubleParam(0, "ac"  , "Activation");
 //	AddDoubleParam(1, "Vmax", "Max velocity scale");
