@@ -101,6 +101,7 @@
 		D5CC3A78245B4CD800311F48 /* DlgMeasure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CC3A68245B4CD800311F48 /* DlgMeasure.cpp */; };
 		D5CC3A79245B4CD800311F48 /* moc_DlgKinemat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CC3A6B245B4CD800311F48 /* moc_DlgKinemat.cpp */; };
 		D5D161A824218339000F8544 /* DlgExportLSDYNA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D161A724218338000F8544 /* DlgExportLSDYNA.cpp */; };
+		D5D27485246D9D0100B1AA9D /* UnitParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D27484246D9D0100B1AA9D /* UnitParser.cpp */; };
 		D5D5B6C42335128E00D388FA /* LaunchConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */; };
 		D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BD2335128D00D388FA /* Encrypter.cpp */; };
 		D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */; };
@@ -575,6 +576,8 @@
 		D5CC3A6B245B4CD800311F48 /* moc_DlgKinemat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgKinemat.cpp; sourceTree = "<group>"; };
 		D5D161A624218338000F8544 /* DlgExportLSDYNA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgExportLSDYNA.h; sourceTree = "<group>"; };
 		D5D161A724218338000F8544 /* DlgExportLSDYNA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgExportLSDYNA.cpp; sourceTree = "<group>"; };
+		D5D27483246D9D0100B1AA9D /* UnitParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitParser.h; sourceTree = "<group>"; };
+		D5D27484246D9D0100B1AA9D /* UnitParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnitParser.cpp; sourceTree = "<group>"; };
 		D5D5B6BC2335128D00D388FA /* LaunchConfig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LaunchConfig.cpp; sourceTree = "<group>"; };
 		D5D5B6BD2335128D00D388FA /* Encrypter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encrypter.cpp; sourceTree = "<group>"; };
 		D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_SSHHandler.cpp; sourceTree = "<group>"; };
@@ -1524,6 +1527,8 @@
 				D5F7D74722FA37C40089B08E /* ui_meshpanel.h */,
 				D5F7D7A422FA37C40089B08E /* ui_modelviewer.h */,
 				D5F7D76722FA37C40089B08E /* ui_toolspanel.h */,
+				D5D27484246D9D0100B1AA9D /* UnitParser.cpp */,
+				D5D27483246D9D0100B1AA9D /* UnitParser.h */,
 				D5828D06246465DB00FD7FF2 /* units.cpp */,
 				D5828D04246465DB00FD7FF2 /* units.h */,
 				D5F7D71922FA37C40089B08E /* version.h */,
@@ -1887,6 +1892,7 @@
 				D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */,
 				D5ED2A1123198CD900C16BF7 /* StatePanel.cpp in Sources */,
 				D5F7D85722FA37C40089B08E /* ClassDescriptor.cpp in Sources */,
+				D5D27485246D9D0100B1AA9D /* UnitParser.cpp in Sources */,
 				D5F7D8C422FA37C40089B08E /* menuTools.cpp in Sources */,
 				D5F7D89F22FA37C40089B08E /* moc_PlotWidget.cpp in Sources */,
 				D5ED2A1223198CD900C16BF7 /* MaterialPanel.cpp in Sources */,
