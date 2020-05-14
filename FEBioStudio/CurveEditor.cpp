@@ -929,10 +929,13 @@ void CCurveEditor::on_paste_triggered()
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 	if (m_currentItem->GetLoadCurve() == 0)
 	{
-		// TODO: I don't think this works because the load curve is not assigned to the 
-		// corresponding parameter.
-		m_currentItem->SetLoadCurve(new FELoadCurve);
-		plc = m_currentItem->GetLoadCurve();
+		Param* p = m_currentItem->GetParam();
+		if (p)
+		{
+			p->SetLoadCurve();
+			plc = p->GetLoadCurve();
+			m_currentItem->SetLoadCurve(plc);
+		}
 	}
 
 	if (plc)
