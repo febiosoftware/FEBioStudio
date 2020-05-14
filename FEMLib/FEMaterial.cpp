@@ -257,7 +257,7 @@ FEPRLig::FEPRLig() : FEMaterial(FE_PRLIG)
 // FEOldFiberMaterial - material for fibers
 //////////////////////////////////////////////////////////////////////
 
-FEOldFiberMaterial::FEOldFiberMaterial()
+FEOldFiberMaterial::FEOldFiberMaterial() : FEMaterial(0)
 {
 	m_naopt = FE_FIBER_LOCAL;
 	m_nuser = 0;
@@ -271,7 +271,7 @@ FEOldFiberMaterial::FEOldFiberMaterial()
 	m_R0 = 0; m_R1 = 1;
 }
 
-FEOldFiberMaterial::FEOldFiberMaterial(const FEOldFiberMaterial& m) {}
+FEOldFiberMaterial::FEOldFiberMaterial(const FEOldFiberMaterial& m) : FEMaterial(0) {}
 FEOldFiberMaterial& FEOldFiberMaterial::operator = (const FEOldFiberMaterial& m) { return (*this); }
 
 void FEOldFiberMaterial::copy(FEOldFiberMaterial* pm)
@@ -631,7 +631,7 @@ FETransMooneyRivlin::FETransMooneyRivlin() : FETransverselyIsotropic(FE_TRANS_IS
 	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "c3", "c3");
@@ -672,7 +672,7 @@ FETransVerondaWestmann::FETransVerondaWestmann() : FETransverselyIsotropic(FE_TR
 	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "c3", "c3");

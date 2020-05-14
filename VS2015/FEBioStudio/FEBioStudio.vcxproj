@@ -276,6 +276,7 @@
     <ClCompile Include="..\..\FEBioStudio\MaterialEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MaterialMapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MaterialPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MaterialPropsView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeasureAreaTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeasureVolumeTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuEdit.cpp" />
@@ -343,6 +344,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_MainWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MaterialEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MaterialPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_MaterialPropsView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MeshButtonBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MeshInspector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_MeshPanel.cpp" />
@@ -578,6 +580,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\LocalDatabaseHandler.h" />
+    <CustomBuild Include="..\..\FEBioStudio\MaterialPropsView.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\MeasureAreaTool.h" />
     <ClInclude Include="..\..\FEBioStudio\MeasureVolumeTool.h" />
     <ClInclude Include="..\..\FEBioStudio\modelcheck.h" />

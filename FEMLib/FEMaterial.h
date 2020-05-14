@@ -497,7 +497,7 @@ public:
 //-----------------------------------------------------------------------------
 // material class for fibers
 //
-class FEOldFiberMaterial : public ParamContainer
+class FEOldFiberMaterial : public FEMaterial
 {
 private:
 	enum {

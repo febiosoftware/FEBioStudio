@@ -25,6 +25,7 @@ public:
 	FEMaterial* GetMaterialProperties();
 
 	void SetModel(FEModel* ps) { m_ps = ps; }
+	FEModel* GetModel() { return m_ps; }
 
 	int GetID() { return m_nID; }
 	void SetID(int nid)

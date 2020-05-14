@@ -277,6 +277,34 @@ void FEModel::GetVariableNames(const char* szvar, char* szbuf)
 	assert(false);
 }
 
+
+//-----------------------------------------------------------------------------
+const char* FEModel::GetVariableName(const char* szvar, int n)
+{
+	if (strcmp(szvar, "$(Solutes)") == 0) return m_Sol[n]->GetName().c_str(); 
+	else if (strcmp(szvar, "$(SBMs)") == 0) return m_SBM[n]->GetName().c_str();
+	assert(false);
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+const char* FEModel::GetEnumValue(const char* szenum, int n)
+{
+	if (szenum == nullptr) return nullptr;
+
+	if (szenum[0] == '$') return GetVariableName(szenum, n);
+	
+	const char* ch = szenum;
+	int i = 0;
+	while (*ch && (i < n))
+	{
+		ch = ch + strlen(ch) + 1;
+		i++;
+	}
+
+	return ch;
+}
+
 //-----------------------------------------------------------------------------
 void FEModel::GetDOFNames(FEDOFVariable& var, char* szbuf)
 {

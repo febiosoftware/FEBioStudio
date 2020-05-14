@@ -33,6 +33,7 @@
 #include <PostGL/GLPlot.h>
 #include <MeshTools/GModel.h>
 #include "Commands.h"
+#include "MaterialPropsView.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -209,6 +210,8 @@ public:
 	::CSelectionBox* sel2;
 	::CPropertyListView* props;
 	::CPropertyListForm* form;
+	CMaterialPropsView*	mat;
+
 	CToolBox* tool;
 	CObjectPropsPanel*	obj;
 	CBCObjectPropsPanel*	bcobj;
@@ -227,6 +230,7 @@ public:
 
 		props = new ::CPropertyListView; props->setObjectName("props");
 		form  = new ::CPropertyListForm; form->setObjectName("form");
+		mat   = new CMaterialPropsView; mat->setObjectName("mat");
 
 		obj = new CObjectPropsPanel;
 		obj->setObjectName("object");
@@ -237,6 +241,7 @@ public:
 		propStack = new QStackedWidget;
 		propStack->addWidget(props);
 		propStack->addWidget(form);
+		propStack->addWidget(mat);
 
 		sel1 = new ::CSelectionBox;
 		sel1->setObjectName("select1");
@@ -319,6 +324,7 @@ public:
 		propStack->setCurrentIndex(0);
 		props->Update(pl);
 		form->setPropertyList(0);
+		mat->SetMaterial(nullptr);
 	}
 
 	void setPropertyForm(CPropertyList* pl)
@@ -326,6 +332,15 @@ public:
 		propStack->setCurrentIndex(1);
 		props->Update(0);
 		form->setPropertyList(pl);
+		mat->SetMaterial(nullptr);
+	}
+
+	void setMaterialData(GMaterial* pm)
+	{
+		propStack->setCurrentIndex(2);
+		props->Update(0);
+		form->setPropertyList(0);
+		mat->SetMaterial(pm);
 	}
 
 	void showImagePanel(bool b, Post::CImageModel* img = nullptr)
@@ -523,7 +538,13 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		}
 
 		// show the property list
-		if (props)
+		if (dynamic_cast<GMaterial*>(po))
+		{
+			GMaterial* mo = dynamic_cast<GMaterial*>(po);
+			ui->setMaterialData(mo);
+			ui->showPropsPanel(true);
+		}
+		else if (props)
 		{
 			if (flags & 1)
 				ui->setPropertyForm(props);

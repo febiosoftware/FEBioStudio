@@ -129,6 +129,9 @@ public:
 	void GetRigidMaterialNames(char* szbuf);
 	void GetDOFNames(FEDOFVariable& var, char* szbuf);
 	void GetVariableNames(const char* szvar, char* szbuf);
+	
+	const char* GetVariableName(const char* szvar, int n);
+	const char* GetEnumValue(const char* szenum, int n);
 
 	FESoluteData& GetSBMData(int i);
 	int SBMs();
