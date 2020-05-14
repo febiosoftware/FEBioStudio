@@ -85,8 +85,11 @@ void FEPostModel::SetTimeValue(float ftime)
 //
 int FEPostModel::GetClosestTime(double t)
 {
-	FEState& s = *GetState(0);
-	if (s.m_time >= t) return 0;
+	FEState& s0 = *GetState(0);
+	if (s0.m_time >= t) return 0;
+
+	FEState& s1 = *GetState(GetStates() - 1);
+	if (s1.m_time <= t) return GetStates() - 1;
 
 	for (int i = 1; i<GetStates(); ++i)
 	{
