@@ -2813,7 +2813,7 @@ void CGLView::RenderMaterialFibers()
 
 							// This vector is defined in global coordinates, except for user-defined fibers, which
 							// are assumed to be in local coordinates
-							if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
+							if (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
 							{
 								q = po->GetTransform().LocalToGlobalNormal(q);
 							}

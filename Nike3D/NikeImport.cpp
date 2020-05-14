@@ -604,7 +604,7 @@ void FENIKEImport::build_materials(FENikeProject& nike)
 					pm->SetFloatValue(FETransMooneyRivlin::MP_K, m.m[1][0]);
 
 					// read fiber parameters
-					FEOldFiberMaterial* pf = pm->GetFiberMaterial();
+					FEFiberGeneratorMaterial* pf = &pm->GetFiberMaterial()->m_fiber;
 					int naopt = (int) m.m[3][0];
 					switch (naopt)
 					{

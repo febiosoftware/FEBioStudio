@@ -1199,9 +1199,9 @@ void FEModel::UpdateData()
 				GPart& p = *po->Part(j);
 				GMaterial* pgm = GetMaterialFromID(p.GetMaterialID());
 				FETransverselyIsotropic* pmat = (pgm?dynamic_cast<FETransverselyIsotropic*>(pgm->GetMaterialProperties()):0);
-				if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
+				if (pmat && (pmat->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
 				{
-					FEDataVariable* pv = FindDataVariable(pmat->GetFiberMaterial()->m_nuser);
+					FEDataVariable* pv = FindDataVariable(pmat->GetFiberMaterial()->m_fiber.m_nuser);
 					int NE = pm->Elements();
 					if (pv)
 					{

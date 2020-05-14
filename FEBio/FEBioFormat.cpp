@@ -683,8 +683,9 @@ FEMaterial* FEBioFormat::ParseRigidBody(XMLTag &tag)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioFormat::ParseFiberMaterial(FEOldFiberMaterial& fiber, XMLTag& tag)
+void FEBioFormat::ParseFiberMaterial(FEOldFiberMaterial& fibermat, XMLTag& tag)
 {
+	FEFiberGeneratorMaterial& fiber = fibermat.m_fiber;
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
@@ -776,7 +777,7 @@ FEMaterial* FEBioFormat::ParseTransIsoMR(FEMaterial* pmat, XMLTag& tag)
 
 	FETransMooneyRivlinOld::Fiber& f = dynamic_cast<FETransMooneyRivlinOld::Fiber&>(*pm->GetFiberMaterial());
 
-	f.m_naopt = -1;
+	f.m_fiber.m_naopt = -1;
 
 	FELoadCurve& ac = *f.GetParam(FETransMooneyRivlinOld::Fiber::MP_AC).GetLoadCurve();
 	ac.SetID(-1);
@@ -835,7 +836,7 @@ FEMaterial* FEBioFormat::ParseTransIsoVW(FEMaterial* pmat, XMLTag& tag)
 
 	FETransVerondaWestmannOld::Fiber& f = dynamic_cast<FETransVerondaWestmannOld::Fiber&>(*pm->GetFiberMaterial());
 
-	f.m_naopt = -1;
+	f.m_fiber.m_naopt = -1;
 
 	FELoadCurve& ac = *f.GetParam(FETransVerondaWestmannOld::Fiber::MP_AC).GetLoadCurve();
 

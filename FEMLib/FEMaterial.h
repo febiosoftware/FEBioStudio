@@ -497,12 +497,18 @@ public:
 //-----------------------------------------------------------------------------
 // material class for fibers
 //
-class FEOldFiberMaterial : public FEMaterial
+
+// We needed to put the fiber generation options into a class derived from
+// FEMaterial, so it can be displayed in the FEMaterialPropsView.
+// TODO: Find a better implementation for this!
+class FEFiberGeneratorMaterial : public FEMaterial
 {
-private:
-	enum {
-		MP_AOPT, MP_N, 
-		MP_R, MP_A,	MP_D, MP_PARAMS, MP_NUSER, MP_THETA, MP_PHI, MP_D0, MP_D1, MP_R0, MP_R1 };
+public:
+	FEFiberGeneratorMaterial();
+
+	vec3d GetFiberVector(FEElementRef& el);
+
+	bool UpdateData(bool bsave) override;
 
 public:
 	int		m_naopt;	// fiber option
@@ -514,9 +520,20 @@ public:
 	double	m_theta, m_phi;	// spherical angles
 
 	// used by POLAR method
-	vec3d	m_d0,m_d1;
-	double	m_R0,m_R1;
-	
+	vec3d	m_d0, m_d1;
+	double	m_R0, m_R1;
+};
+
+class FEOldFiberMaterial : public ParamContainer
+{
+private:
+	enum {
+		MP_AOPT, MP_N, 
+		MP_R, MP_A,	MP_D, MP_PARAMS, MP_NUSER, MP_THETA, MP_PHI, MP_D0, MP_D1, MP_R0, MP_R1 };
+
+public:
+	FEFiberGeneratorMaterial	m_fiber;
+
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);

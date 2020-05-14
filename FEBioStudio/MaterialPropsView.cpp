@@ -3,7 +3,6 @@
 #include <MeshTools/GMaterial.h>
 #include <FEMLib/FEMaterial.h>
 #include <QPainter>
-#include <QStyledItemDelegate>
 #include <QLineEdit>
 #include <QComboBox>
 #include "units.h"
@@ -84,6 +83,7 @@ public:
 
 		void addParameters(FEMaterial* pm)
 		{
+			pm->UpdateData(false);
 			for (int i = 0; i < pm->Parameters(); ++i)
 			{
 				Param& p = pm->GetParam(i);
@@ -99,7 +99,7 @@ public:
 			if (dynamic_cast<FETransverselyIsotropic*>(pm))
 			{
 				FETransverselyIsotropic* tiso = dynamic_cast<FETransverselyIsotropic*>(pm);
-				addParameters(tiso->GetFiberMaterial());
+				addParameters(&tiso->GetFiberMaterial()->m_fiber);
 			}
 
 			for (int i = 0; i < pm->Properties(); ++i)
@@ -188,9 +188,9 @@ public:
 			else return "No data";
 		}
 
-		void setData(int column, const QVariant& value)
+		bool setData(int column, const QVariant& value)
 		{
-			if (column != 1) return;
+			if (column != 1) return false;
 
 			if (m_paramId >= 0)
 			{
@@ -207,7 +207,10 @@ public:
 				break;
 				case Param_VEC3D: p.SetVec3dValue(StringToVec3d(value.toString())); break;
 				}
+
+				return m_pm->UpdateData(true);
 			}
+			return false;
 		}
 
 		Item* parent() { return m_parent; }
@@ -223,12 +226,14 @@ public:
 	explicit CMaterialPropsModel(QObject* parent = nullptr) : QAbstractItemModel(parent)
 	{
 		m_root = nullptr;
+		m_valid = true;
 	}
 
 	~CMaterialPropsModel() { delete m_root; }
 
 	void SetMaterial(GMaterial* mat)
 	{
+		m_valid = true;
 		beginResetModel();
 		delete m_root;
 		m_root = nullptr;
@@ -292,12 +297,16 @@ public:
 		return QAbstractItemModel::flags(index);
 	}
 
-	bool setData(const QModelIndex& index, const QVariant& value, int role)
+	bool setData(const QModelIndex& index, const QVariant& value, int role) override
 	{
 		if (index.isValid() && (role == Qt::EditRole))
 		{
 			Item* item = static_cast<Item*>(index.internalPointer());
-			item->setData(index.column(), value);
+			if (item->setData(index.column(), value))
+			{
+				m_valid = false;
+			}
+			emit dataChanged(index, index);
 			return true;
 		}
 		return false;
@@ -345,9 +354,17 @@ public:
 		return 2;
 	}
 
+	bool IsValid() const { return m_valid; }
+
+	void ResetModel()
+	{
+		SetMaterial(m_mat);
+	}
+
 private:
 	GMaterial*		m_mat;
 	Item*			m_root;
+	bool		m_valid;
 };
 
 FEModel* CMaterialPropsModel::Item::GetFEModel()
@@ -356,52 +373,68 @@ FEModel* CMaterialPropsModel::Item::GetFEModel()
 }
 
 //=================================================================================================
-class CMaterialPropsDelegate : public QStyledItemDelegate
+CMaterialPropsDelegate::CMaterialPropsDelegate(QObject* parent) : QStyledItemDelegate(parent) {}
+
+QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-public:
-	explicit CMaterialPropsDelegate(QObject* parent = nullptr) : QStyledItemDelegate(parent) {}
-
-	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+	if (index.isValid())
 	{
-		if (index.isValid())
-		{
-			CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
+		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
 
-			if (item->isParameter())
+		if (item->isParameter())
+		{
+			Param* p = item->parameter();
+			if (p->GetParamType() == Param_FLOAT)
 			{
-				Param* p = item->parameter();
-				if (p->GetParamType() == Param_FLOAT)
+				QLineEdit* pw = new QLineEdit(parent);
+				pw->setValidator(new QDoubleValidator);
+				return pw;
+			}
+			if ((p->GetParamType() == Param_INT) || (p->GetParamType() == Param_CHOICE))
+			{
+				if (p->GetEnumNames())
 				{
-					QLineEdit* pw = new QLineEdit(parent);
-					pw->setValidator(new QDoubleValidator);
-					return pw;
-				}
-				if ((p->GetParamType() == Param_INT) || (p->GetParamType() == Param_CHOICE))
-				{
-					if (p->GetEnumNames())
-					{
-						QComboBox* box = new QComboBox(parent);
-						QStringList enumValues = GetEnumValues(item->GetFEModel(), p->GetEnumNames());
-						box->addItems(enumValues);
-						return box;
-					}
+					QComboBox* box = new QComboBox(parent);
+					QStringList enumValues = GetEnumValues(item->GetFEModel(), p->GetEnumNames());
+					box->addItems(enumValues);
+					QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+					return box;
 				}
 			}
 		}
-		return QStyledItemDelegate::createEditor(parent, option, index);
 	}
+	return QStyledItemDelegate::createEditor(parent, option, index);
+}
 
-	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
+void CMaterialPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+	if (!index.isValid()) return;
+	if (dynamic_cast<QComboBox*>(editor))
 	{
-		if (!index.isValid()) return;
-		if (dynamic_cast<QComboBox*>(editor))
-		{
-			QComboBox* pw = dynamic_cast<QComboBox*>(editor);
-			model->setData(index, pw->currentIndex());
-		}
-		else QStyledItemDelegate::setModelData(editor, model, index);
+		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
+		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
+		QVariant v = item->data(1, Qt::EditRole);
+		pw->setCurrentIndex(v.toInt());
 	}
-};
+	else QStyledItemDelegate::setEditorData(editor, index);
+}
+
+void CMaterialPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+{
+	if (!index.isValid()) return;
+	if (dynamic_cast<QComboBox*>(editor))
+	{
+		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
+		model->setData(index, pw->currentIndex());
+	}
+	else QStyledItemDelegate::setModelData(editor, model, index);
+}
+
+void CMaterialPropsDelegate::OnEditorSignal()
+{
+	QWidget* sender = dynamic_cast<QWidget*>(QObject::sender());
+	emit commitData(sender);
+}
 
 //=================================================================================================
 CMaterialPropsView::CMaterialPropsView(QWidget* parent) : QTreeView(parent)
@@ -414,6 +447,8 @@ CMaterialPropsView::CMaterialPropsView(QWidget* parent) : QTreeView(parent)
 	setItemDelegate(new CMaterialPropsDelegate);
 	m_model = new CMaterialPropsModel;
 	setModel(m_model);
+
+	QObject::connect(m_model, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)), this, SLOT(onModelDataChanged()));
 }
 
 void CMaterialPropsView::SetMaterial(GMaterial* mat)
@@ -432,4 +467,12 @@ void CMaterialPropsView::drawBranches(QPainter* painter, const QRect& rect, cons
 		}
 	}
 */	QTreeView::drawBranches(painter, rect, index);
+}
+
+void CMaterialPropsView::onModelDataChanged()
+{
+	if (m_model->IsValid() == false)
+	{
+		m_model->ResetModel();
+	}
 }
