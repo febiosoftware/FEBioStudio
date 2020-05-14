@@ -30,7 +30,7 @@
 #define POW_4 QString("^4")
 #endif
 
-#define DEG "°"
+#define DEG "_deg"
 #define RAD "rad"
 
 Unit UnitParser::parseUnitString(const char* szunit)
@@ -170,7 +170,8 @@ QString Unit::toString()
 		if (f.p > 0)
 		{
 			if (m != 0) s += ".";
-			s += f.s;
+			if (strcmp(f.s, DEG) == 0) s += QString(QChar(0x00B0));
+			else s += f.s;
 			if (f.p > 1)
 			{
 				switch (f.p)
@@ -197,7 +198,8 @@ QString Unit::toString()
 			if (f.p < 0)
 			{
 				if (m != 0) s += ".";
-				s += f.s;
+				if (strcmp(f.s, DEG) == 0) s += QString(QChar(0x00B0));
+				else s += f.s;
 				int p = -f.p;
 				if (p > 1)
 				{
