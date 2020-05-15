@@ -410,30 +410,33 @@ void FEBioFormat25::ParseGeometrySurface(FEBioModel::Part* part, XMLTag& tag)
 	FEBioModel::Surface s;
 	s.m_name = szname;
 
-	// read the surface data
-	int nf[FEElement::MAX_NODES], N;
-	++tag;
-	do
+	if (tag.isleaf() == false)
 	{
-		// read the facet
-		if      (tag == "quad4") N = 4;
-		else if (tag == "quad8") N = 8;
-		else if (tag == "quad9") N = 9;
-		else if (tag == "tri3") N = 3;
-		else if (tag == "tri6") N = 6;
-		else if (tag == "tri7") N = 7;
-		else throw XMLReader::InvalidTag(tag);
-
-		// read the node numbers
-		tag.value(nf, N);
-
-		// make zero-based
-		vector<int> node(N);
-		for (int j = 0; j<N; ++j) node[j] = nf[j] - 1;
-		s.m_face.push_back(node);
-
+		// read the surface data
+		int nf[FEElement::MAX_NODES], N;
 		++tag;
-	} while (!tag.isend());
+		do
+		{
+			// read the facet
+			if (tag == "quad4") N = 4;
+			else if (tag == "quad8") N = 8;
+			else if (tag == "quad9") N = 9;
+			else if (tag == "tri3") N = 3;
+			else if (tag == "tri6") N = 6;
+			else if (tag == "tri7") N = 7;
+			else throw XMLReader::InvalidTag(tag);
+
+			// read the node numbers
+			tag.value(nf, N);
+
+			// make zero-based
+			vector<int> node(N);
+			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			s.m_face.push_back(node);
+
+			++tag;
+		} while (!tag.isend());
+	}
 
 	part->AddSurface(s);
 }
