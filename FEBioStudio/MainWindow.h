@@ -105,6 +105,8 @@ public:
 	bool maybeSave();
 	bool maybeSave(CDocument* doc);
 
+	void deleteAutoSaves();
+
 	// write some useful info to the log regarding the selection
 	void ReportSelection();
 
@@ -138,6 +140,10 @@ public:
 	// show New dialog box option
 	void setShowNewDialog(bool b);
 	bool showNewDialog();
+
+	// autoSave Interval
+	void setAutoSaveInterval(int interval);
+	int autoSaveInterval();
 
 	// --- WINDOW UPDATE ---
 
@@ -503,6 +509,8 @@ public slots:
 	bool DoModelCheck(CModelDocument* doc);
 
 	void toggleOrtho();
+
+	void autosave();
 
 public:
 	QStringList GetRecentFileList();

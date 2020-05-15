@@ -11,7 +11,8 @@ public:
 	enum Flags {
 		NO_THREAD = 0x01,
 		NEW_DOCUMENT = 0x02,
-		RELOAD_DOCUMENT = 0x04
+		RELOAD_DOCUMENT = 0x04,
+		AUTO_SAVE_RECOVERY = 0x08
 	};
 
 public:

@@ -25,8 +25,11 @@
 #include <MeshTools/GModel.h>
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
+#include <QFileInfo>
+#include <QDateTime>
 #include "Commands.h"
 #include "FEBioJob.h"
+#include "Logger.h"
 #include <sstream>
 
 // defined in MeshTools\GMaterial.cpp
@@ -138,6 +141,7 @@ CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 
 	// reset the filename
 	m_filePath.clear();
+	m_autoSaveFilePath.clear();
 
 	// reset the counters
 	GModel::Reset();
@@ -174,6 +178,7 @@ void CDocument::Clear()
 {
 	// reset the filename
 	m_filePath.clear();
+	m_autoSaveFilePath.clear();
 
 	// set document as not modified
 	m_bModified = false;
@@ -486,6 +491,38 @@ void CDocument::SetDocFilePath(const std::string& filePath)
 { 
 	m_filePath = FSDir::filePath(filePath);
 	m_title = GetDocFileName();
+
+	SetAutoSaveFilePath();
+}
+
+//-----------------------------------------------------------------------------
+std::string CDocument::GetAutoSaveFilePath()
+{
+	return m_autoSaveFilePath;
+}
+
+//-----------------------------------------------------------------------------
+void CDocument::SetAutoSaveFilePath()
+{
+	//Construct the new autosave file path
+	FSDir fsDir(m_filePath);
+	QString newAutoSave = QString("%1/~%2_auto.%3").arg(fsDir.fileDir().c_str()).arg(fsDir.fileBase().c_str()).arg(fsDir.fileExt().c_str());
+
+	// If an old autosave file exists, rename it
+	QFile oldAutoSaveFile(m_autoSaveFilePath.c_str());
+	if(oldAutoSaveFile.exists()) oldAutoSaveFile.rename(newAutoSave);
+
+	// Set new autosave file path
+	m_autoSaveFilePath = newAutoSave.toStdString();
+
+}
+
+void CDocument::SetUnsaved()
+{
+	m_filePath.clear();
+	m_autoSaveFilePath.clear();
+
+	SetModifiedFlag(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -545,9 +582,15 @@ bool CDocument::SaveDocument(const std::string& fileName)
 {
 	if (m_fileWriter)
 	{
-		bool b = m_fileWriter->Write(fileName.c_str());
-		if (b) SetDocFilePath(fileName);
-		return b;
+		bool success = m_fileWriter->Write(fileName.c_str());
+
+		if (success)
+		{
+			SetModifiedFlag(false);
+			SetDocFilePath(fileName);
+		}
+
+		return success;
 	}
 	else return false;
 }
@@ -556,9 +599,50 @@ bool CDocument::SaveDocument(const std::string& fileName)
 bool CDocument::SaveDocument()
 {
 	if (m_fileWriter && (m_filePath.empty() == false))
-		return m_fileWriter->Write(m_filePath.c_str());
+	{
+		bool success =  m_fileWriter->Write(m_filePath.c_str());
+
+		if(success)
+		{
+			SetModifiedFlag(false);
+		}
+
+		return success;
+	}
 	else
 		return false;
+}
+
+//-----------------------------------------------------------------------------
+bool CDocument::AutoSaveDocument()
+{
+	if (m_fileWriter && (m_autoSaveFilePath.empty() == false))
+	{
+		CLogger::AddLogEntry(QString("Autosaving file: %1 ...").arg(m_title.c_str()));
+
+		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
+
+		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
+
+		return success;
+	}
+	else
+		return false;
+}
+
+bool CDocument::loadPriorAutoSave()
+{
+	QFileInfo autoSaveInfo(m_autoSaveFilePath.c_str());
+
+	if(autoSaveInfo.exists())
+	{
+		QFileInfo fileInfo(m_filePath.c_str());
+
+		if(autoSaveInfo.lastModified() > fileInfo.lastModified()) return true;
+	}
+
+	return false;
+
 }
 
 //-----------------------------------------------------------------------------

@@ -15,6 +15,7 @@
 #include <FSCore/FSObject.h>
 #include <QtCore/QTimer>
 #include <QFileDialog>
+#include <QTimer>
 #include "DocTemplate.h"
 #include "CreatePanel.h"
 #include "FileThread.h"
@@ -161,6 +162,11 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// Instantiate Logger singleton
 	CLogger::Instantiate(this);
+
+	// Start AutoSave Timer
+	ui->m_autoSaveTimer = new QTimer(this);
+	QObject::connect(ui->m_autoSaveTimer, &QTimer::timeout, this, &CMainWindow::autosave);
+	ui->m_autoSaveTimer->start(ui->m_autoSaveInterval*1000);
 }
 
 //-----------------------------------------------------------------------------
@@ -561,6 +567,33 @@ void CMainWindow::OpenDocument(const QString& fileName)
 
 	// add file to recent list
 	ui->addToRecentFiles(filePath);
+
+	// Check if there is a more recent autosave of this file
+	if(doc->loadPriorAutoSave())
+	{
+		int answer = QMessageBox::question(this, "FEBio Studio",
+				"An autosave more recent than this file was found.\n\nWould you like to load it?",
+				QMessageBox::Yes | QMessageBox::No);
+
+		if(answer == QMessageBox::Yes)
+		{
+			CModelDocument* docAutoSave = new CModelDocument(this);
+			ReadFile(docAutoSave, doc->GetAutoSaveFilePath().c_str(), new ModelFileReader(docAutoSave), QueuedFile::AUTO_SAVE_RECOVERY);
+		}
+		else
+		{
+			int answer2 = QMessageBox::question(this, "FEBio Studio",
+					"Would you like to delete this autosave?",
+					QMessageBox::Yes | QMessageBox::No);
+
+			if(answer2 == QMessageBox::Yes)
+			{
+				QFile autoSave(doc->GetAutoSaveFilePath().c_str());
+
+				if(autoSave.exists()) autoSave.remove();
+			}
+		}
+	}
 }
 
 //! add a document 
@@ -794,6 +827,27 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 			}
 			SetActiveDocument(file.m_doc);
 		}
+		else if (file.m_flags & QueuedFile::AUTO_SAVE_RECOVERY)
+		{
+			CDocument* doc = file.m_doc; assert(doc);
+			doc->SetFileReader(file.m_fileReader);
+			bool b = doc->Initialize();
+			if (b == false)
+			{
+				AddLogEntry("Document initialization failed!\n");
+			}
+			AddDocument(doc);
+
+			// for fsprj files we set the "project" directory.
+			FSDir path(file.m_fileName.toStdString());
+			if (path.fileExt() == "fsprj")
+			{
+				FSDir::setMacro("ProjectDir", ".");
+			}
+
+			doc->SetDocTitle(doc->GetDocTitle() + " - Recovered");
+			doc->SetUnsaved();
+		}
 		else
 		{
 			SetActiveDocument(file.m_doc);
@@ -950,6 +1004,35 @@ bool CMainWindow::maybeSave(CDocument* doc)
 		return true;
 	}
 	else return true;
+}
+
+void CMainWindow::autosave()
+{
+	for(int i = 0; i < m_DocManager->Documents(); i++)
+	{
+		CDocument* doc = m_DocManager->GetDocument(i);
+
+		if (doc && doc->IsModified())
+		{
+			doc->AutoSaveDocument();
+		}
+	}
+}
+
+void CMainWindow::deleteAutoSaves()
+{
+	ui->m_autoSaveTimer->stop();
+
+	for(int i = 0; i < m_DocManager->Documents(); i++)
+	{
+		CDocument* doc = m_DocManager->GetDocument(i);
+
+		if(doc)
+		{
+			QFile autoSave(doc->GetAutoSaveFilePath().c_str());
+			if(autoSave.exists()) autoSave.remove();
+		}
+	}
 }
 
 void CMainWindow::ReportSelection()
@@ -1146,6 +1229,7 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 {
 	if (maybeSave())
 	{
+		deleteAutoSaves();
 		writeSettings();
 		ev->accept();
 	}
@@ -1248,6 +1332,19 @@ bool CMainWindow::showNewDialog()
 	return ui->m_showNewDialog;
 }
 
+void CMainWindow::setAutoSaveInterval(int interval)
+{
+	ui->m_autoSaveInterval = interval;
+
+	ui->m_autoSaveTimer->stop();
+	ui->m_autoSaveTimer->start(ui->m_autoSaveInterval*1000);
+}
+
+int CMainWindow::autoSaveInterval()
+{
+	return ui->m_autoSaveInterval;
+}
+
 void CMainWindow::writeSettings()
 {
 	QSettings settings("MRLSoftware", "FEBio Studio");
@@ -1256,6 +1353,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("state", saveState());
 	settings.setValue("theme", ui->m_theme);
 	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
+	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1323,6 +1421,7 @@ void CMainWindow::readSettings()
 	restoreState(settings.value("state").toByteArray());
 	ui->m_theme = settings.value("theme", 0).toInt();
 	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
+	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 
 	QRect rt;
 	rt = settings.value("curveEditorSize", QRect()).toRect();

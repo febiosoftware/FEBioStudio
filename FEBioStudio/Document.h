@@ -116,6 +116,10 @@ public:
 	bool SaveDocument(const std::string& fileName);
 	bool SaveDocument();
 
+	// Autosave
+	bool AutoSaveDocument();
+	bool loadPriorAutoSave();
+
 	// import image data
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
@@ -130,6 +134,12 @@ public:
 
 	// set the document file path
 	void SetDocFilePath(const std::string& fileName);
+
+	// get and set the document autosave path
+	std::string GetAutoSaveFilePath();
+	void SetAutoSaveFilePath();
+
+	void SetUnsaved();
 
 	// get just the file name
 	std::string GetDocFileName();
@@ -223,6 +233,7 @@ protected:
 
 	// file path
 	std::string		m_filePath;
+	std::string		m_autoSaveFilePath;
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;
 

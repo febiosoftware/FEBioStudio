@@ -158,8 +158,6 @@ public:
 	QAction* selectCircle;
 	QAction* selectFree;
 
-	FEBioStudioProject	m_project;
-
 public:
 	vector<CLaunchConfig>		m_launch_configs;
 
@@ -178,6 +176,11 @@ public:
 	bool	m_isAnimating;
 
 	QList<::CGraphWindow*>	graphList;
+
+	FEBioStudioProject	m_project;
+
+	QTimer* m_autoSaveTimer;
+	int m_autoSaveInterval;
 
 public:
 	CMainWindow()
