@@ -13,6 +13,12 @@ int CDocManager::Documents() const
 	return (int)m_docList.size();
 }
 
+CDocManager::~CDocManager()
+{
+	for (int i = 0; i < m_docList.size(); ++i) delete m_docList[i];
+	m_docList.clear();
+}
+
 // add a document
 bool CDocManager::AddDocument(CDocument* doc)
 {

@@ -11,6 +11,8 @@ class CDocManager
 public:
 	CDocManager(CMainWindow* wnd);
 
+	~CDocManager();
+
 	// return the number of documents
 	int Documents() const;
 
