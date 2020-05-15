@@ -182,10 +182,13 @@ public:
 	QTimer* m_autoSaveTimer;
 	int m_autoSaveInterval;
 
+	int		m_defaultUnits;
+
 public:
 	CMainWindow()
 	{
 		m_theme = 0;
+		m_defaultUnits = 0;
 		m_clearUndoOnSave = true;
 
 		measureTool = nullptr;

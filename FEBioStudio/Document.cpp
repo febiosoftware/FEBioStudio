@@ -159,6 +159,9 @@ CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 	m_vs.ntrans = TRANSFORM_NONE;
 	m_vs.nitem = ITEM_MESH;
 	m_vs.nstyle = REGION_SELECT_BOX;
+
+	// set default unit system (0 == no unit system)
+	m_units = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -212,6 +215,18 @@ void CDocument::SetModifiedFlag(bool bset)
 
 //-----------------------------------------------------------------------------
 bool CDocument::IsValid() { return m_bValid; }
+
+//-----------------------------------------------------------------------------
+void CDocument::SetUnitSystem(int unitSystem)
+{
+	m_units = unitSystem;
+}
+
+//-----------------------------------------------------------------------------
+int CDocument::GetUnitSystem() const
+{
+	return m_units;
+}
 
 //-----------------------------------------------------------------------------
 // COMMAND FUNCTIONS

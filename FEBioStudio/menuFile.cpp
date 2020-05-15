@@ -134,7 +134,7 @@ void CMainWindow::on_actionNewModel_triggered()
 	}
 
 	// create a new model doc
-	CModelDocument* doc = new CModelDocument(this);
+	CModelDocument* doc = CreateNewDocument();
 	if (ntemplate != -1) doc->LoadTemplate(ntemplate);
 	doc->SetDocTitle(docTitle);
 	AddDocument(doc);

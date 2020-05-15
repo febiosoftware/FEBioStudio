@@ -145,6 +145,10 @@ public:
 	void setAutoSaveInterval(int interval);
 	int autoSaveInterval();
 
+	// set/get default unit system for new models
+	void SetDefaultUnitSystem(int n);
+	int GetDefaultUnitSystem() const;
+
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.
@@ -244,6 +248,8 @@ public:
 	CDocument* FindDocument(const std::string& filePath);
 
 	bool CreateNewProject(QString fileName);
+
+	CModelDocument* CreateNewDocument();
 
 private:
 	void ReadFile(QueuedFile& qfile);

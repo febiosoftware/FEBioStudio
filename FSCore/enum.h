@@ -102,6 +102,7 @@
 // Model user info
 #define CID_MODELINFO				0x00030000
 #define CID_MODELINFO_COMMENT		0x00030001
+#define CID_MODELINFO_UNITS			0x00030002
 
 // FEModel Data
 #define CID_FEM						0x00040000

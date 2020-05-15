@@ -45,6 +45,7 @@
 #include "DocManager.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
+#include "units.h"
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
@@ -661,6 +662,14 @@ bool CMainWindow::CreateNewProject(QString fileName)
 	ui->fileViewer->parentWidget()->raise();
 
 	return ret;
+}
+
+//-----------------------------------------------------------------------------
+CModelDocument* CMainWindow::CreateNewDocument()
+{
+	CModelDocument* doc = new CModelDocument(this);
+	doc->SetUnitSystem(ui->m_defaultUnits);
+	return doc;
 }
 
 //-----------------------------------------------------------------------------
@@ -1345,6 +1354,17 @@ int CMainWindow::autoSaveInterval()
 	return ui->m_autoSaveInterval;
 }
 
+// set/get default unit system for new models
+void CMainWindow::SetDefaultUnitSystem(int n)
+{
+	ui->m_defaultUnits = n;
+}
+
+int CMainWindow::GetDefaultUnitSystem() const
+{
+	return ui->m_defaultUnits;
+}
+
 void CMainWindow::writeSettings()
 {
 	QSettings settings("MRLSoftware", "FEBio Studio");
@@ -1354,6 +1374,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("theme", ui->m_theme);
 	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
+	settings.setValue("defaultUnits", ui->m_defaultUnits);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1422,6 +1443,9 @@ void CMainWindow::readSettings()
 	ui->m_theme = settings.value("theme", 0).toInt();
 	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
+
+	Units::SetUnitSystem(ui->m_defaultUnits);
 
 	QRect rt;
 	rt = settings.value("curveEditorSize", QRect()).toRect();
@@ -1638,6 +1662,8 @@ void CMainWindow::SetActiveDocument(CDocument* doc)
 	{
 		SetActiveView(view);
 	}
+
+	if (doc) Units::SetUnitSystem(doc->GetUnitSystem());
 }
 
 //-----------------------------------------------------------------

@@ -189,6 +189,7 @@ void CModelDocument::Save(OArchive& ar)
 	ar.BeginChunk(CID_MODELINFO);
 	{
 		ar.WriteChunk(CID_MODELINFO_COMMENT, m_info);
+		ar.WriteChunk(CID_MODELINFO_UNITS  , m_units);
 	}
 	ar.EndChunk();
 
@@ -264,6 +265,10 @@ void CModelDocument::Load(IArchive& ar)
 				if (nid == CID_MODELINFO_COMMENT)
 				{
 					nret = ar.read(m_info);
+				}
+				else if (nid == CID_MODELINFO_UNITS)
+				{
+					nret = ar.read(m_units);
 				}
 				ar.CloseChunk();
 			}

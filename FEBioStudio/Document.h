@@ -224,6 +224,10 @@ protected:
 	void SaveResources(OArchive& ar);
 	void LoadResources(IArchive& ar);
 
+public:
+	void SetUnitSystem(int unitSystem);
+	int GetUnitSystem() const;
+
 protected:
 	std::string		m_title;
 
@@ -245,6 +249,7 @@ protected:
 	CMainWindow*	m_wnd;
 
 	std::string		m_info;
+	int				m_units;
 
 	FSObjectList<Post::CImageModel>	m_img;
 

@@ -2,6 +2,7 @@
 #include "DlgSettings.h"
 #include "MainWindow.h"
 #include "Document.h"
+#include "DocManager.h"
 #include "GLView.h"
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -581,8 +582,10 @@ void CColormapWidget::onSpinValueChanged(int n)
 }
 
 //-----------------------------------------------------------------------------
-CUnitWidget::CUnitWidget(QWidget* parent) : QWidget(parent)
+CUnitWidget::CUnitWidget(CMainWindow* wnd, QWidget* parent) : QWidget(parent), m_wnd(wnd)
 {
+	m_ops = new QComboBox;
+
 	QStringList units = Units::SupportedUnitSystems();
 	m_us = new QComboBox();
 	m_us->addItems(units);
@@ -592,7 +595,8 @@ CUnitWidget::CUnitWidget(QWidget* parent) : QWidget(parent)
 
 	QFormLayout* f = new QFormLayout();
 	f->setMargin(0);
-	f->addRow("Unit system", m_us);
+	f->addRow("Change for:", m_ops);
+	f->addRow("Unit system:", m_us);
 
 	QGroupBox* bu = new QGroupBox("Base units");
 	QFormLayout* fb = new QFormLayout;
@@ -633,8 +637,32 @@ CUnitWidget::CUnitWidget(QWidget* parent) : QWidget(parent)
 	if (m_unit == 0) m_edit->hide();
 
 	QObject::connect(m_us, SIGNAL(currentIndexChanged(int)), this, SLOT(OnUnitSystemChanged(int)));
+	QObject::connect(m_ops, SIGNAL(currentIndexChanged(int)), this, SLOT(OnUnitOptionChanged(int)));
 
 	OnUnitSystemChanged(m_unit);
+}
+
+void CUnitWidget::showAllOptions(bool b)
+{
+	m_ops->clear();
+	if (b)
+	{
+		m_ops->addItems(QStringList() << "New models" << "Current model" << "All open models");
+		m_ops->setCurrentIndex(1);
+	}
+	else
+		m_ops->addItems(QStringList() << "New models");
+}
+
+int CUnitWidget::getOption()
+{
+	return m_ops->currentIndex();
+}
+
+void CUnitWidget::setUnit(int n)
+{
+	m_unit = n;
+	m_us->setCurrentIndex(n);
 }
 
 void CUnitWidget::OnUnitSystemChanged(int n)
@@ -656,6 +684,17 @@ void CUnitWidget::OnUnitSystemChanged(int n)
 	m_name[ 9]->setText(Units::GetUnitString(n, Units::POWER));
     m_name[10]->setText(Units::GetUnitString(n, Units::VOLTAGE));
     m_name[11]->setText(Units::GetUnitString(n, Units::CONCENTRATION));
+}
+
+//-----------------------------------------------------------------------------
+void CUnitWidget::OnUnitOptionChanged(int n)
+{
+	if (n == 0) m_us->setCurrentIndex(m_wnd->GetDefaultUnitSystem());
+	else if (n == 1)
+	{
+		CDocument* doc = m_wnd->GetDocument();
+		if (doc) m_us->setCurrentIndex(doc->GetUnitSystem());
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -740,7 +779,7 @@ public:
 		m_select = new CSelectionProps;
 		m_light = new CLightingProps;
 		m_cam = new CCameraProps;
-		m_unit = new CUnitWidget;
+		m_unit = new CUnitWidget(wnd);
 		m_repo = new CRepoSettingsWidget;
 	}
 
@@ -846,6 +885,18 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 	ui->m_unit->m_unit = Units::GetUnitSystem();
 
+	if (pwnd->GetDocManager()->Documents())
+	{
+		CDocument* doc = pwnd->GetDocument();
+		ui->m_unit->showAllOptions(true);
+		if (doc) ui->m_unit->setUnit(doc->GetUnitSystem());
+	}
+	else
+	{
+		ui->m_unit->showAllOptions(false);
+		ui->m_unit->setUnit(pwnd->GetDefaultUnitSystem());
+	}
+
 	ui->m_repo->repoPath = pwnd->GetDatabasePanel()->GetRepositoryFolder();
 
 	ui->setupUi(this);
@@ -934,7 +985,27 @@ void CDlgSettings::apply()
 	m_pwnd->setShowNewDialog(ui->m_ui->m_showNewDialog);
 	m_pwnd->setAutoSaveInterval(ui->m_ui->m_autoSaveInterval);
 
-	Units::SetUnitSystem(ui->m_unit->m_unit);
+	// update units
+	int newUnit = ui->m_unit->m_unit;
+	int nops = ui->m_unit->getOption();
+	if (nops == 0) m_pwnd->SetDefaultUnitSystem(newUnit);
+	else if (nops == 1)
+	{
+		Units::SetUnitSystem(newUnit);
+		if (pdoc) {
+			pdoc->SetUnitSystem(newUnit); pdoc->SetModifiedFlag(true);
+		}
+	}
+	else
+	{
+		Units::SetUnitSystem(newUnit);
+		CDocManager* dm = m_pwnd->GetDocManager();
+		for (int i = 0; i < dm->Documents(); ++i)
+		{
+			dm->GetDocument(i)->SetUnitSystem(newUnit);
+			dm->GetDocument(i)->SetModifiedFlag(true);
+		}
+	}
 
 	m_pwnd->GetDatabasePanel()->SetRepositoryFolder(ui->m_repo->repoPathEdit->text());
 

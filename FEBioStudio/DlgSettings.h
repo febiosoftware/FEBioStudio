@@ -69,15 +69,24 @@ class CUnitWidget : public QWidget
 	Q_OBJECT
 
 public:
-	CUnitWidget(QWidget* parent = nullptr);
+	CUnitWidget(CMainWindow* wnd, QWidget* parent = nullptr);
+
+	void showAllOptions(bool b);
+
+	int getOption();
+
+	void setUnit(int n);
 
 private slots:
 	void OnUnitSystemChanged(int n);
+	void OnUnitOptionChanged(int n);
 
 public:
 	int		m_unit;
 
 private:
+	CMainWindow*	m_wnd;
+	QComboBox*		m_ops;
 	QComboBox*		m_us;
 	QWidget*		m_edit;
 	QLabel*			m_name[12];
