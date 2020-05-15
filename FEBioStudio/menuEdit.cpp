@@ -199,10 +199,10 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			if (po == 0) return;
 
 			GMeshObject* pgo = dynamic_cast<GMeshObject*>(po);
-			if (pgo && pgo->GetFEMesh()) doc->DoCommand(new CCmdDeleteFESelection(pgo));
+			if (pgo && pgo->GetFEMesh()) doc->DoCommand(new CCmdDeleteFESelection(pgo, doc->GetItemMode()));
 
 			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
-			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso));
+			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()));
 
 			GPrimitive* pp = dynamic_cast<GPrimitive*>(po);
 			if (pp)

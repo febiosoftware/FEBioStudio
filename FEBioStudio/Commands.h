@@ -912,7 +912,7 @@ FEMaterial**	m_ppmat;
 class CCmdDeleteFESelection : public CCommand
 {
 public:
-	CCmdDeleteFESelection(GMeshObject* po);
+	CCmdDeleteFESelection(GMeshObject* po, int nitem);
 	~CCmdDeleteFESelection() { delete m_pnew; }
 
 	void Execute();
@@ -922,6 +922,7 @@ protected:
 	GMeshObject*	m_pobj;
 	FEMesh*			m_pold;
 	FEMesh*			m_pnew;
+	int		m_nitem;
 };
 
 //-----------------------------------------------------------------------------
@@ -929,7 +930,7 @@ protected:
 class CCmdDeleteFESurfaceSelection : public CCommand
 {
 public:
-	CCmdDeleteFESurfaceSelection(GSurfaceMeshObject* po);
+	CCmdDeleteFESurfaceSelection(GSurfaceMeshObject* po, int nitem);
 	~CCmdDeleteFESurfaceSelection() { delete m_pnew; }
 
 	void Execute();
@@ -1029,6 +1030,7 @@ protected:
 	CModelDocument*	m_doc;
 	vector<int>	m_item;
 	int		m_nitem;
+	int		m_nselect;
 };
 
 //-----------------------------------------------------------------------------
@@ -1044,6 +1046,7 @@ public:
 protected:
 	CModelDocument*	m_doc;
 	int			m_nitem;
+	int			m_nselect;
 	vector<int>	m_item;
 };
 
@@ -1061,6 +1064,7 @@ protected:
 	CModelDocument*	m_doc;
 	vector<int>	m_item;
 	int			m_nitem;
+	int			m_nselect;
 	bool		m_bunhide;
 };
 

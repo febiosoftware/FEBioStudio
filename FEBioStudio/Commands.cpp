@@ -2058,8 +2058,9 @@ CCmdAssignObjectListMaterial::CCmdAssignObjectListMaterial(vector<GObject*> o, i
 // CCmdDeleteFESelection
 //-----------------------------------------------------------------------------
 
-CCmdDeleteFESelection::CCmdDeleteFESelection(GMeshObject* po) : CCommand("Delete")
+CCmdDeleteFESelection::CCmdDeleteFESelection(GMeshObject* po, int nitem) : CCommand("Delete")
 {
+	m_nitem = nitem;
 	m_pnew = 0;
 	m_pobj = po;
 	m_pold = po->GetFEMesh();
@@ -2067,16 +2068,14 @@ CCmdDeleteFESelection::CCmdDeleteFESelection(GMeshObject* po) : CCommand("Delete
 
 void CCmdDeleteFESelection::Execute()
 {
-	int item = m_state.nitem;
-
 	// create a copy of the old mesh
 	if (m_pnew == 0)
 	{
 		m_pnew = new FEMesh(*m_pold);
 
-		if      (item == ITEM_ELEM) m_pnew->DeleteSelectedElements();
-		else if (item == ITEM_FACE) m_pnew->DeleteSelectedFaces();
-		else if (item == ITEM_NODE) m_pnew->DeleteSelectedNodes();
+		if      (m_nitem == ITEM_ELEM) m_pnew->DeleteSelectedElements();
+		else if (m_nitem == ITEM_FACE) m_pnew->DeleteSelectedFaces();
+		else if (m_nitem == ITEM_NODE) m_pnew->DeleteSelectedNodes();
 
 		// make sure you select the object
 		m_pobj->Select();
@@ -2105,12 +2104,12 @@ void CCmdDeleteFESelection::UnExecute()
 // CCmdDeleteFESurfaceSelection
 //-----------------------------------------------------------------------------
 
-CCmdDeleteFESurfaceSelection::CCmdDeleteFESurfaceSelection(GSurfaceMeshObject* po) : CCommand("Delete")
+CCmdDeleteFESurfaceSelection::CCmdDeleteFESurfaceSelection(GSurfaceMeshObject* po, int nitem) : CCommand("Delete")
 {
 	m_pnew = 0;
 	m_pobj = po;
 	m_pold = po->GetSurfaceMesh();
-	m_item = m_state.nitem;
+	m_item = nitem;
 }
 
 void CCmdDeleteFESurfaceSelection::Execute()
@@ -2271,17 +2270,18 @@ CCmdHideSelection::CCmdHideSelection(CModelDocument* doc) : CCommand("Hide")
 	GModel& model = m_doc->GetFEModel()->GetModel();
 	GObject* po = m_doc->GetActiveObject();
 
-	m_nitem = m_state.nitem;
+	m_nitem = doc->GetItemMode();
+	m_nselect = doc->GetSelectionMode();
 
 	switch (m_nitem)
 	{
 	case ITEM_MESH:
-		if (m_state.nselect == SELECT_OBJECT)
+		if (m_nselect == SELECT_OBJECT)
 		{
 			for (int i = 0; i<model.Objects(); ++i)
 				if (model.Object(i)->IsSelected()) m_item[m++] = i;
 		}
-		else if (m_state.nselect == SELECT_PART)
+		else if (m_nselect == SELECT_PART)
 		{
 			GPartSelection* pgs = dynamic_cast<GPartSelection*>(ps);
 			assert(pgs);
@@ -2326,14 +2326,13 @@ void CCmdHideSelection::Execute()
 	// get the model
 	GModel& m = m_doc->GetFEModel()->GetModel();
 	GObject* po = m_doc->GetActiveObject();
-	m_doc->SetItemMode(m_nitem);
 	int N = m_item.size();
 	switch (m_nitem)
 	{
 	case ITEM_MESH:
-		if (m_state.nselect == SELECT_OBJECT)
+		if (m_nselect == SELECT_OBJECT)
 			m.ShowObjects(m_item, false);
-		else if (m_state.nselect == SELECT_PART)
+		else if (m_nselect == SELECT_PART)
 			m.ShowParts(m_item, false);
 		break;
 	case ITEM_ELEM:
@@ -2360,12 +2359,12 @@ void CCmdHideSelection::UnExecute()
 	switch (m_nitem)
 	{
 	case ITEM_MESH:
-		if (m_state.nselect == SELECT_OBJECT)
+		if (m_nselect == SELECT_OBJECT)
 		{
 			m.ShowObjects(m_item);
 			m.SelectObjects(m_item);
 		}
-		else if (m_state.nselect == SELECT_PART)
+		else if (m_nselect == SELECT_PART)
 		{
 			m.ShowParts(m_item, true, true);
 		}
@@ -2407,12 +2406,13 @@ CCmdHideUnselected::CCmdHideUnselected(CModelDocument* doc) : CCommand("Hide")
 
 	GObject* po = m_doc->GetActiveObject();
 	GModel& model = m_doc->GetFEModel()->GetModel();
-	m_nitem = m_state.nitem;
+	m_nitem = doc->GetItemMode();
+	m_nselect = doc->GetSelectionMode();
 
 	switch (m_nitem)
 	{
 	case ITEM_MESH:
-		if (m_state.nselect == SELECT_OBJECT)
+		if (m_nselect == SELECT_OBJECT)
 		{
 			for (int i = 0; i<model.Objects(); ++i)
 			{
@@ -2420,7 +2420,7 @@ CCmdHideUnselected::CCmdHideUnselected(CModelDocument* doc) : CCommand("Hide")
 				if (!po->IsSelected()) m_item[m++] = i;
 			}
 		}
-		else if (m_state.nselect == SELECT_PART)
+		else if (m_nselect == SELECT_PART)
 		{
 			GPartSelection* pgs = dynamic_cast<GPartSelection*>(ps);
 			assert(pgs);
@@ -2456,15 +2456,14 @@ void CCmdHideUnselected::Execute()
 {
 	GObject* po = m_doc->GetActiveObject();
 	GModel& m = m_doc->GetFEModel()->GetModel();
-	m_doc->SetItemMode(m_nitem);
 	int N = m_item.size();
 	if (N == 0) return;
 	switch (m_nitem)
 	{
 	case ITEM_MESH:
-		if (m_state.nselect == SELECT_OBJECT)
+		if (m_nselect == SELECT_OBJECT)
 			m.ShowObjects(m_item, false);
-		else if (m_state.nselect == SELECT_PART)
+		else if (m_nselect == SELECT_PART)
 			m.ShowParts(m_item, false);
 		break;
 	case ITEM_ELEM:
@@ -2486,15 +2485,14 @@ void CCmdHideUnselected::UnExecute()
 {
 	GObject* po = m_doc->GetActiveObject();
 	GModel& m = m_doc->GetFEModel()->GetModel();
-	m_doc->SetItemMode(m_nitem);
 	int N = m_item.size();
 	if (N == 0) return;
 	switch (m_nitem)
 	{
 	case ITEM_MESH:
-		if (m_state.nselect == SELECT_OBJECT)
+		if (m_nselect == SELECT_OBJECT)
 			m.ShowObjects(m_item, true);
-		else if (m_state.nselect == SELECT_PART)
+		else if (m_nselect == SELECT_PART)
 			m.ShowParts(m_item, true);
 		break;
 	case ITEM_ELEM:
@@ -2519,13 +2517,14 @@ void CCmdHideUnselected::UnExecute()
 CCmdUnhideAll::CCmdUnhideAll(CModelDocument* doc) : CCommand("Unhide all")
 {
 	m_doc = doc;
-	m_nitem = m_state.nitem;
+	m_nitem = doc->GetItemMode();
+	m_nselect = doc->GetSelectionMode();
 	GModel& model = m_doc->GetFEModel()->GetModel();
 	m_bunhide = true;
 
 	if (m_nitem == ITEM_MESH)
 	{
-		switch (m_state.nselect)
+		switch (m_nselect)
 		{
 		case SELECT_OBJECT:
 		{
@@ -2589,14 +2588,13 @@ CCmdUnhideAll::CCmdUnhideAll(CModelDocument* doc) : CCommand("Unhide all")
 
 void CCmdUnhideAll::Execute()
 {
-	m_doc->SetItemMode(m_nitem);
 	if (m_item.empty()) return;
 
 	GModel& model = m_doc->GetFEModel()->GetModel();
 	int N = m_item.size();
 	if (m_nitem == ITEM_MESH)
 	{
-		switch (m_state.nselect)
+		switch (m_nselect)
 		{
 		case SELECT_OBJECT:
 		{
