@@ -411,7 +411,7 @@ void CMaterialProps::BuildPropertyList()
 			val << "vector";
 			addProperty("Material axes", CProperty::Enum)->setEnumValues(val);
 
-			switch (pm->m_naopt)
+			switch (pm->m_axes->m_naopt)
 			{
 			case FE_AXES_LOCAL:
 				addProperty("n0", CProperty::Int);
@@ -475,18 +475,18 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 	}
 	else
 	{
-		if (i == 0) return m_mat->m_naopt + 1;
+		if (i == 0) return m_mat->m_axes->m_naopt + 1;
 
-		switch (m_mat->m_naopt)
+		switch (m_mat->m_axes->m_naopt)
 		{
 		case FE_AXES_LOCAL:
-			if (i == 1) return m_mat->m_n[0] + 1;
-			if (i == 2) return m_mat->m_n[1] + 1;
-			if (i == 3) return m_mat->m_n[2] + 1;
+			if (i == 1) return m_mat->m_axes->m_n[0] + 1;
+			if (i == 2) return m_mat->m_axes->m_n[1] + 1;
+			if (i == 3) return m_mat->m_axes->m_n[2] + 1;
 			break;
 		case FE_AXES_VECTOR:
-			if (i == 1) return Vec3dToString(m_mat->m_a);
-			if (i == 2) return Vec3dToString(m_mat->m_d);
+			if (i == 1) return Vec3dToString(m_mat->m_axes->m_a);
+			if (i == 2) return Vec3dToString(m_mat->m_axes->m_d);
 			break;
 		}
 	}
@@ -558,9 +558,9 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 		if (i == 0)
 		{
 			int naopt = v.toInt() - 1;
-			if (naopt != m_mat->m_naopt)
+			if (naopt != m_mat->m_axes->m_naopt)
 			{
-				m_mat->m_naopt = naopt;
+				m_mat->m_axes->m_naopt = naopt;
 
 				// rebuild the property list
 				BuildPropertyList();
@@ -571,16 +571,16 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 			return;
 		}
 
-		switch (m_mat->m_naopt)
+		switch (m_mat->m_axes->m_naopt)
 		{
 		case FE_AXES_LOCAL:
-			if (i == 1) { m_mat->m_n[0] = v.toInt() - 1; return; }
-			if (i == 2) { m_mat->m_n[1] = v.toInt() - 1; return; }
-			if (i == 3) { m_mat->m_n[2] = v.toInt() - 1; return; }
+			if (i == 1) { m_mat->m_axes->m_n[0] = v.toInt() - 1; return; }
+			if (i == 2) { m_mat->m_axes->m_n[1] = v.toInt() - 1; return; }
+			if (i == 3) { m_mat->m_axes->m_n[2] = v.toInt() - 1; return; }
 			break;
 		case FE_AXES_VECTOR:
-			if (i == 1) { m_mat->m_a = StringToVec3d(v.toString()); return; }
-			if (i == 2) { m_mat->m_d = StringToVec3d(v.toString()); return; }
+			if (i == 1) { m_mat->m_axes->m_a = StringToVec3d(v.toString()); return; }
+			if (i == 2) { m_mat->m_axes->m_d = StringToVec3d(v.toString()); return; }
 			break;
 		}
 	}

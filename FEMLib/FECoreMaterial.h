@@ -86,6 +86,11 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// TODO: I had to wrap this in a material so that I can show it in the 
+// MaterialPropsView
+class FEAxisMaterial;
+
+//-----------------------------------------------------------------------------
 //! FEMaterial is the base class for all materials
 //! It essentially collects material parameters (via the FEParamContainer base class) and
 //! contains a list of material properties. 
@@ -165,12 +170,28 @@ protected:
 	
 public:
 	// local material axes
-	bool	m_hasMatAxes;		// flag whether this material needs mat axes (default false)
+	bool			m_hasMatAxes;		// flag whether this material needs mat axes (default false)
+	FEAxisMaterial*	m_axes;
+
+protected:
+	vector<FEMaterialProperty*>	m_Mat;	//!< list of material properties
+};
+
+//-----------------------------------------------------------------------------
+// TODO: I had to wrap this in a material so that I can show it in the 
+// MaterialPropsView
+class FEAxisMaterial : public FEMaterial
+{
+public:
 	int		m_naopt;		// axes option
 	int		m_n[3];			// local node numbering
 	vec3d	m_a;			// axes vector a
 	vec3d	m_d;			// axes vector d
 
-protected:
-	vector<FEMaterialProperty*>	m_Mat;	//!< list of material properties
+public:
+	FEAxisMaterial();
+
+	bool UpdateData(bool bsave) override;
+
+	mat3d GetMatAxes(FEElementRef& el);
 };

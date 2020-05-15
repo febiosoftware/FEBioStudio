@@ -528,18 +528,18 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		pm->m_naopt = FE_AXES_LOCAL;
-		tag.value(pm->m_n, 3);
+		pm->m_axes->m_naopt = FE_AXES_LOCAL;
+		tag.value(pm->m_axes->m_n, 3);
 	}
 	else if (atype == "vector")
 	{
-		pm->m_naopt = FE_AXES_VECTOR;
+		pm->m_axes->m_naopt = FE_AXES_VECTOR;
 		vec3d a(1, 0, 0), d(0, 1, 0);
 		++tag;
 		do
 		{
-			if      (tag == "a") tag.value(pm->m_a);
-			else if (tag == "d") tag.value(pm->m_d);
+			if      (tag == "a") tag.value(pm->m_axes->m_a);
+			else if (tag == "d") tag.value(pm->m_axes->m_d);
 			else ParseUnknownTag(tag);
 
 			++tag;
@@ -557,8 +557,8 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FEMaterial* pm)
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		pm->m_naopt = FE_AXES_LOCAL;
-		tag.value(pm->m_n, 3);
+		pm->m_axes->m_naopt = FE_AXES_LOCAL;
+		tag.value(pm->m_axes->m_n, 3);
 	}
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
@@ -589,7 +589,7 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 	}
 
 	// parse the material parameters
-	pm->m_naopt = -1;
+	pm->m_axes->m_naopt = -1;
 	if (!tag.isleaf())
 	{
 		++tag;

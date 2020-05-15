@@ -1056,21 +1056,21 @@ void FEBioExport2::WriteMaterial(FEMaterial *pm, XMLElement& el)
 	el.add_attribute("type", sztype);
 	m_xml.add_branch(el);
 	{
-		if (pm->m_naopt > -1) {
+		if (pm->m_axes->m_naopt > -1) {
 			el.name("mat_axis");
-			if (pm->m_naopt == FE_AXES_LOCAL) 
+			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
 			{
 				el.add_attribute("type", "local");
-				el.value(pm->m_n,3);
+				el.value(pm->m_axes->m_n,3);
 				m_xml.add_leaf(el);
 			}
-			else if (pm->m_naopt == FE_AXES_VECTOR)
+			else if (pm->m_axes->m_naopt == FE_AXES_VECTOR)
 			{
 				el.add_attribute("type", "vector");
 				m_xml.add_branch(el);
 				{
-					m_xml.add_leaf("a", pm->m_a);
-					m_xml.add_leaf("d", pm->m_d);
+					m_xml.add_leaf("a", pm->m_axes->m_a);
+					m_xml.add_leaf("d", pm->m_axes->m_d);
 				}
 				m_xml.close_branch();
 			}
@@ -1255,21 +1255,21 @@ void FEBioExport2::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 	m_xml.add_branch(el);
 	{
 		// write the material axes (if any)
-		if (pm->m_naopt > -1) {
+		if (pm->m_axes->m_naopt > -1) {
 			el.name("mat_axis");
-			if (pm->m_naopt == FE_AXES_LOCAL) 
+			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
 			{
 				el.add_attribute("type", "local");
-				el.value(pm->m_n,3);
+				el.value(pm->m_axes->m_n,3);
 				m_xml.add_leaf(el);
 			}
-			else if (pm->m_naopt == FE_AXES_VECTOR)
+			else if (pm->m_axes->m_naopt == FE_AXES_VECTOR)
 			{
 				el.add_attribute("type", "vector");
 				m_xml.add_branch(el);
 				{
-					m_xml.add_leaf("a", pm->m_a);
-					m_xml.add_leaf("d", pm->m_d);
+					m_xml.add_leaf("a", pm->m_axes->m_a);
+					m_xml.add_leaf("d", pm->m_axes->m_d);
 				}
 				m_xml.close_branch();
 			}

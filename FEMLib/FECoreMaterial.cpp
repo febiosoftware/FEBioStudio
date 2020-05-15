@@ -128,14 +128,125 @@ int FEMaterialProperty::GetMaterialIndex(FEMaterial* mat)
 }
 
 //=============================================================================
+// FEAxisMaterial
+//=============================================================================
+
+FEAxisMaterial::FEAxisMaterial() : FEMaterial(0)
+{
+	m_naopt = -1;
+	m_n[0] = 0; m_n[1] = 1; m_n[2] = 2;
+	m_a = vec3d(1, 0, 0);
+	m_d = vec3d(0, 1, 0);
+
+	AddIntParam(0, "Axes")->SetEnumNames("(none)\0local\0vector\0\0");
+	AddIntParam(0, "n0");
+	AddIntParam(0, "n1");
+	AddIntParam(0, "n2");
+	AddVecParam(vec3d(1,0,0), "a");
+	AddVecParam(vec3d(0,1,0), "d");
+
+	for (int i = 1; i < Parameters(); ++i) GetParam(i).SetState(0);
+}
+
+bool FEAxisMaterial::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		int oldopt = m_naopt;
+
+		for (int i = 1; i < Parameters(); ++i) GetParam(i).SetState(0);
+
+		m_naopt = GetIntValue(0) - 1;
+		switch (m_naopt)
+		{
+		case -1: break;
+		case 0: 
+			GetParam(1).SetState(Param_ALLFLAGS);
+			GetParam(2).SetState(Param_ALLFLAGS);
+			GetParam(3).SetState(Param_ALLFLAGS);
+			m_n[0] = GetIntValue(1);
+			m_n[1] = GetIntValue(2);
+			m_n[2] = GetIntValue(3);
+			break;
+		case 1:
+			GetParam(4).SetState(Param_ALLFLAGS);
+			GetParam(5).SetState(Param_ALLFLAGS);
+			m_a = GetVecValue(4);
+			m_d = GetVecValue(5);
+			break;
+		}
+
+		return (oldopt != m_naopt);
+	}
+	else
+	{
+		SetIntValue(0, m_naopt + 1);
+		SetIntValue(1, m_n[0]);
+		SetIntValue(2, m_n[1]);
+		SetIntValue(3, m_n[2]);
+		SetVecValue(4, m_a);
+		SetVecValue(5, m_d);
+	}
+	return false;
+}
+
+mat3d FEAxisMaterial::GetMatAxes(FEElementRef& el)
+{
+	switch (m_naopt)
+	{
+	case FE_AXES_LOCAL:
+	{
+		FECoreMesh* pm = el.m_pmesh;
+		vec3d r1 = pm->Node(el->m_node[m_n[0] - 1]).r;
+		vec3d r2 = pm->Node(el->m_node[m_n[1] - 1]).r;
+		vec3d r3 = pm->Node(el->m_node[m_n[2] - 1]).r;
+		vec3d a = r2 - r1;
+		vec3d d = r3 - r1;
+		vec3d c = a^d;
+		vec3d b = c^a;
+		a.Normalize();
+		b.Normalize();
+		c.Normalize();
+		mat3d Q;
+		Q.zero();
+		Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
+		Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
+		Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
+
+		return Q;
+	}
+	break;
+	case FE_AXES_VECTOR:
+	{
+		vec3d a = m_a;
+		vec3d d = m_d;
+		vec3d c = a^d;
+		vec3d b = c^a;
+		a.Normalize();
+		b.Normalize();
+		c.Normalize();
+		mat3d Q;
+		Q.zero();
+		Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
+		Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
+		Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
+
+		return Q;
+	}
+	}
+
+	mat3d Q;
+	Q.unit();
+	return Q;
+}
+
+//=============================================================================
 // FEMaterial
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
+FEMaterial::FEMaterial(int ntype) : m_ntype(ntype), m_axes(ntype != 0 ? new FEAxisMaterial : nullptr)
 {
-	m_naopt = -1;
-	m_n[0] = 0; m_n[1] = 1; m_n[2] = 2;
 	m_parent = 0;
 	m_owner = 0;
 	m_hasMatAxes = false;
@@ -145,6 +256,7 @@ FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
 FEMaterial::~FEMaterial()
 {
 	ClearProperties();
+	delete m_axes;
 }
 
 //-----------------------------------------------------------------------------
@@ -323,52 +435,7 @@ bool FEMaterial::HasMaterialAxes() const
 //-----------------------------------------------------------------------------
 mat3d FEMaterial::GetMatAxes(FEElementRef& el)
 {
-	switch (m_naopt)
-	{
-		case FE_AXES_LOCAL:
-		{
-			FECoreMesh* pm = el.m_pmesh;
-			vec3d r1 = pm->Node(el->m_node[ m_n[0]-1 ]).r;
-			vec3d r2 = pm->Node(el->m_node[ m_n[1]-1 ]).r;
-			vec3d r3 = pm->Node(el->m_node[ m_n[2]-1 ]).r;
-			vec3d a = r2 - r1;
-			vec3d d = r3 - r1;
-			vec3d c = a^d;
-			vec3d b = c^a;
-			a.Normalize();
-			b.Normalize();
-			c.Normalize();
-			mat3d Q;
-			Q.zero();
-			Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
-			Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
-			Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
-			
-			return Q;
-		}
-		break;
-		case FE_AXES_VECTOR:
-		{
-			vec3d a = m_a;
-			vec3d d = m_d;
-			vec3d c = a^d;
-			vec3d b = c^a;
-			a.Normalize();
-			b.Normalize();
-			c.Normalize();
-			mat3d Q;
-			Q.zero();
-			Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
-			Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
-			Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
-			
-			return Q;
-		}
-	}
-	
-	mat3d Q;
-	Q.unit();
-	return Q;
+	return (m_axes ? m_axes->GetMatAxes(el) : mat3d(1,0,0, 0,1,0, 0,0,1));
 }
 
 //-----------------------------------------------------------------------------
@@ -427,14 +494,17 @@ void FEMaterial::Save(OArchive& ar)
 		ar.EndChunk();
 	}
 
-	ar.BeginChunk(CID_MAT_AXES);
+	if (m_axes)
 	{
-		ar.WriteChunk(0, m_naopt);
-		ar.WriteChunk(1, m_n, 3);
-		ar.WriteChunk(2, m_a);
-		ar.WriteChunk(3, m_d);
+		ar.BeginChunk(CID_MAT_AXES);
+		{
+			ar.WriteChunk(0, m_axes->m_naopt);
+			ar.WriteChunk(1, m_axes->m_n, 3);
+			ar.WriteChunk(2, m_axes->m_a);
+			ar.WriteChunk(3, m_axes->m_d);
+		}
+		ar.EndChunk();
 	}
-	ar.EndChunk();
 }
 
 //-----------------------------------------------------------------------------
@@ -453,18 +523,23 @@ void FEMaterial::Load(IArchive &ar)
 		case CID_MAT_PARAMS: ParamContainer::Load(ar); break;
 		case CID_MAT_AXES:
 			{
+			if (m_axes)
+			{
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = (int)ar.GetChunkID();
 					switch (nid)
 					{
-					case 0: ar.read(m_naopt); break;
-					case 1: ar.read(m_n, 3); break;
-					case 2: ar.read(m_a); break;
-					case 3: ar.read(m_d); break;
+					case 0: ar.read(m_axes->m_naopt); break;
+					case 1: ar.read(m_axes->m_n, 3); break;
+					case 2: ar.read(m_axes->m_a); break;
+					case 3: ar.read(m_axes->m_d); break;
 					}
 					ar.CloseChunk();
 				}
+				m_axes->UpdateData(false);
+				m_axes->UpdateData(true);
+			}
 			}
 			break;
         case CID_MAT_PROPERTY:

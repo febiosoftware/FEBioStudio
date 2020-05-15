@@ -552,6 +552,7 @@ void FEOldFiberMaterial::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+	m_fiber.UpdateData(false);
 	m_fiber.UpdateData(true);
 }
 
