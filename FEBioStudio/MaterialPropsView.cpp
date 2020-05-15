@@ -459,6 +459,7 @@ void CMaterialPropsView::SetMaterial(GMaterial* mat)
 {
 	m_model->SetMaterial(mat);
 	expandAll();
+	setColumnWidth(0, width() / 2);
 }
 
 void CMaterialPropsView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
@@ -478,5 +479,6 @@ void CMaterialPropsView::onModelDataChanged()
 	if (m_model->IsValid() == false)
 	{
 		m_model->ResetModel();
+		expandAll();
 	}
 }

@@ -50,7 +50,7 @@ Unit UnitParser::expr()
 			left *= term();
 			break;
 		case DIV:
-			left /= term();
+			left /= expr();
 			break;
 		case END:
 			return left;
