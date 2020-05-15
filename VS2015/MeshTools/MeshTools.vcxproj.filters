@@ -373,6 +373,9 @@
     <ClCompile Include="..\..\MeshTools\FEShellMesher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshTools\FEMeshOverlap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h">
@@ -670,6 +673,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FEShellMesher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshTools\FEMeshOverlap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

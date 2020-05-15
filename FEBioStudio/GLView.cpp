@@ -1563,6 +1563,7 @@ void CGLView::paintGL()
 			const std::string& s = model.GetMeshLayerName(activeLayer);
 			painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
 			m_Widget->DrawWidget(m_ptriad, &painter);
+			if (m_pframe->visible()) m_Widget->DrawWidget(m_pframe, &painter);
 		}
 	}
 	else
@@ -7425,8 +7426,8 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_HEX27 : m_renderer.RenderHEX27(&el, pm, true); break;
 					case FE_PENTA6: m_renderer.RenderPENTA(&el, pm, true); break;
 					case FE_PENTA15: m_renderer.RenderPENTA15(&el, pm, true); break;
-					case FE_TET4  : m_renderer.RenderTET4(&el, pm, true); break;
-					case FE_TET5  : m_renderer.RenderTET4(&el, pm, true); break;
+					case FE_TET4  : m_renderer.RenderTET4(&el, pm, c); break;
+					case FE_TET5  : m_renderer.RenderTET4(&el, pm, c); break;
 					case FE_TET10 : m_renderer.RenderTET10(&el, pm, true); break;
 					case FE_TET15 : m_renderer.RenderTET15(&el, pm, true); break;
 					case FE_TET20 : m_renderer.RenderTET20(&el, pm, true); break;

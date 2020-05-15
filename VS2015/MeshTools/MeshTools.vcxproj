@@ -180,6 +180,7 @@
     <ClCompile Include="..\..\MeshTools\FELoftMesher.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMeshData.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMesher.cpp" />
+    <ClCompile Include="..\..\MeshTools\FEMeshOverlap.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMeshSmoothingModifier.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMeshValuator.cpp" />
     <ClCompile Include="..\..\MeshTools\FEMMGRemesh.cpp" />
@@ -299,6 +300,7 @@
     <ClInclude Include="..\..\MeshTools\FELoftMesher.h" />
     <ClInclude Include="..\..\MeshTools\FEMeshData.h" />
     <ClInclude Include="..\..\MeshTools\FEMesher.h" />
+    <ClInclude Include="..\..\MeshTools\FEMeshOverlap.h" />
     <ClInclude Include="..\..\MeshTools\FEMeshSmoothingModifier.h" />
     <ClInclude Include="..\..\MeshTools\FEMeshValuator.h" />
     <ClInclude Include="..\..\MeshTools\FEMMGRemesh.h" />

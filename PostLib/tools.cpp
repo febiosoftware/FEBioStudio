@@ -2,6 +2,21 @@
 #include "tools.h"
 
 //-----------------------------------------------------------------------------
+bool ProjectToFacet(vec3f* y, int nf, vec3f& x, vec3f& t, vec3f& q, double tol)
+{
+	// calculate normal projection of x onto element
+	switch (nf)
+	{
+	case 3: return ProjectToTriangle(y, x, t, q, tol); break;
+	case 4: return ProjectToQuad(y, x, t, q, tol); break;
+	default:
+		assert(false);
+	}
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------
 // project point x onto the triangle defined by y
 bool ProjectToTriangle(vec3f* y, vec3f& x, vec3f& q, double tol)
 {

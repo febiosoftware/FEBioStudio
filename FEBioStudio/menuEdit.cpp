@@ -19,6 +19,7 @@
 #include <QInputDialog>
 #include <GeomLib/GPrimitive.h>
 #include <PostGL/GLModel.h>
+#include <MeshTools/FEMeshOverlap.h>
 
 void CMainWindow::on_actionUndo_triggered()
 {
@@ -914,6 +915,47 @@ void CMainWindow::on_actionFaceToElem_triggered()
 		}
 	}
 }
+
+void CMainWindow::on_actionSelectOverlap_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr) return;
+	if (po->GetFEMesh() == nullptr)
+	{
+		QMessageBox::critical(this, "Select Overlap", "You need to select an object that has a mesh.");
+		return;
+	}
+
+	GModel& mdl = *doc->GetGModel();
+	QStringList objects;
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* poi = mdl.Object(i);
+		if (poi->GetEditableMesh())
+			if (poi != po) objects.push_back(QString::fromStdString(poi->GetName()));
+	}
+	if (objects.isEmpty())
+	{
+		QMessageBox::critical(this, "Select Overlap", "No suitable target objects available. Valid target objects must have a mesh.");
+		return;
+	}
+
+	QString select = QInputDialog::getItem(this, "Select Overlap", "Pick object:", objects, 0, false);
+	if (select.isEmpty() == false)
+	{
+		GObject* trg = mdl.FindObject(select.toStdString());
+		FEMesh* mesh = po->GetFEMesh();
+		std::vector<int> faceList = MeshTools::FindSurfaceOverlap(mesh, trg->GetEditableMesh());
+		
+		SetItemSelectionMode(SELECT_OBJECT, ITEM_FACE);
+		doc->DoCommand(new CCmdSelectFaces(mesh, faceList, false));
+		RedrawGL();
+	}
+}
+
 
 void CMainWindow::on_actionSelect_toggled(bool b)
 {

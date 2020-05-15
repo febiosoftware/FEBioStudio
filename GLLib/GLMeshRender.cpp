@@ -606,6 +606,57 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 	glEnd();
 }
 
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderTET4(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
+{
+	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
+	FEElement_& e = *pe;
+	vec3d r1, r2, r3;
+	vec3d n1, n2, n3;
+	GLColor c[3];
+	glBegin(GL_TRIANGLES);
+	{
+		for (int i = 0; i<4; ++i)
+		{
+			bool bdraw = true;
+			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			if ((pen == 0) || (!pen->IsVisible()))
+			{
+				if (e.m_face[i] >= 0)
+				{
+					FEFace* pf = pm->FacePtr(e.m_face[i]);
+					r1 = pm->Node(pf->n[0]).r;
+					r2 = pm->Node(pf->n[1]).r;
+					r3 = pm->Node(pf->n[2]).r;
+
+					n1 = pf->m_nn[0];
+					n2 = pf->m_nn[1];
+					n3 = pf->m_nn[2];
+				}
+				else
+				{
+					r1 = pm->Node(e.m_node[FTTET[i][0]]).r;
+					r2 = pm->Node(e.m_node[FTTET[i][1]]).r;
+					r3 = pm->Node(e.m_node[FTTET[i][2]]).r;
+
+					vec3d n = (r2 - r1) ^ (r3 - r1);
+					n.Normalize();
+					n1 = n2 = n3 = n;
+				}
+
+				c[0] = col[FTTET[i][0]];
+				c[1] = col[FTTET[i][1]];
+				c[2] = col[FTTET[i][2]];
+
+				glNormal3d(n1.x, n1.y, n1.z); glxColor(c[0]); glVertex3d(r1.x, r1.y, r1.z);
+				glNormal3d(n2.x, n2.y, n2.z); glxColor(c[1]); glVertex3d(r2.x, r2.y, r2.z);
+				glNormal3d(n3.x, n3.y, n3.z); glxColor(c[2]); glVertex3d(r3.x, r3.y, r3.z);
+			}
+		}
+	}
+	glEnd();
+}
+
 
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderTET10(FEElement_ *pe, FECoreMesh *pm, bool bsel)

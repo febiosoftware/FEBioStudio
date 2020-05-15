@@ -177,6 +177,9 @@ public:
 	//! set the selection mode
 	void SetSelectionMode(int nselect);
 
+	//! set item selection mode
+	void SetItemSelectionMode(int nselect, int nitem);
+
 	// ----------------------
 
 	//! redraw the GLView
@@ -290,6 +293,7 @@ public slots:
 	void on_actionExtract_triggered();
 	void on_actionEditProject_triggered();
 	void on_actionFaceToElem_triggered();
+	void on_actionSelectOverlap_triggered();
 
 	void on_actionAddBC_triggered();
 	void on_actionAddNodalLoad_triggered();

@@ -1438,6 +1438,21 @@ void CMainWindow::SetSelectionMode(int nselect)
 }
 
 //-----------------------------------------------------------------------------
+//! set item selection mode
+void CMainWindow::SetItemSelectionMode(int nselect, int nitem)
+{
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+
+	doc->SetSelectionMode(nselect);
+	if (nselect == SELECT_OBJECT) doc->SetItemMode(nitem);
+
+	UpdateToolbar();
+	UpdateGLControlBar();
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
 //! Updates the model editor and selects object po.
 //! \param po pointer to object that will be selected in the model editor
 void CMainWindow::UpdateModel(FSObject* po, bool bupdate)

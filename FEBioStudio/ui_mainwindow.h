@@ -344,6 +344,7 @@ public:
 		QAction* actionPurge             = addAction("Purge ..."         , "actionPurge"            );
 
 		QAction* actionFace2Elems        = addAction("Face to Element Selection", "actionFaceToElem");
+		QAction* actionSelectOverlap     = addAction("Select surface overlap ...", "actionSelectOverlap");
 
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
@@ -564,7 +565,7 @@ public:
 
 		QMenu* moreSelection = new QMenu("More selection options");
 		moreSelection->addAction(actionFace2Elems);
-
+		moreSelection->addAction(actionSelectOverlap);
 
 		// Edit menu
 		menuBar->addAction(menuEdit->menuAction());
