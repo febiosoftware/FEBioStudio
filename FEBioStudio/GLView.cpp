@@ -8489,8 +8489,8 @@ void CGLView::RenderTags()
 	for (int i = 0; i<nsel; ++i)
 		if (vtag[i].bvis)
 		{
-			int x = vtag[i].wx / m_dpr;
-			int y = height() - vtag[i].wy / m_dpr;
+            int x = vtag[i].wx;
+            int y = height()*m_dpr - vtag[i].wy;
 			painter.setPen(Qt::black);
 
 			painter.drawText(x + 3, y - 2, vtag[i].sztag);
