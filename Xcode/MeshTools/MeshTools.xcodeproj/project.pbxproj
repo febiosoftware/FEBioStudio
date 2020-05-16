@@ -10,6 +10,8 @@
 		D50C858623A283F400E42D37 /* FETet4ToHex8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */; };
 		D5173D042421ABA400462BAF /* FEShellMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5173D022421ABA400462BAF /* FEShellMesher.cpp */; };
 		D5173D052421ABA400462BAF /* FEShellMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5173D032421ABA400462BAF /* FEShellMesher.h */; };
+		D550436E24705E12007DCB29 /* FEMeshOverlap.h in Headers */ = {isa = PBXBuildFile; fileRef = D550436C24705E12007DCB29 /* FEMeshOverlap.h */; };
+		D550436F24705E12007DCB29 /* FEMeshOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */; };
 		D5606C83238DA8FA002B037E /* TetOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C81238DA8FA002B037E /* TetOverlap.cpp */; };
 		D5606C84238DA8FA002B037E /* TetOverlap.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C82238DA8FA002B037E /* TetOverlap.h */; };
 		D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */; };
@@ -230,6 +232,8 @@
 		D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToHex8.cpp; sourceTree = "<group>"; };
 		D5173D022421ABA400462BAF /* FEShellMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellMesher.cpp; sourceTree = "<group>"; };
 		D5173D032421ABA400462BAF /* FEShellMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellMesher.h; sourceTree = "<group>"; };
+		D550436C24705E12007DCB29 /* FEMeshOverlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshOverlap.h; sourceTree = "<group>"; };
+		D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshOverlap.cpp; sourceTree = "<group>"; };
 		D5606C81238DA8FA002B037E /* TetOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlap.cpp; sourceTree = "<group>"; };
 		D5606C82238DA8FA002B037E /* TetOverlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlap.h; sourceTree = "<group>"; };
 		D5ED271923197DD200C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -548,6 +552,8 @@
 				D5ED277223197DE300C16BF7 /* FEMeshData.h */,
 				D5ED278123197DE300C16BF7 /* FEMesher.cpp */,
 				D5ED279123197DE300C16BF7 /* FEMesher.h */,
+				D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */,
+				D550436C24705E12007DCB29 /* FEMeshOverlap.h */,
 				D5ED27C323197DE400C16BF7 /* FEMeshSmoothingModifier.cpp */,
 				D5ED27BA23197DE300C16BF7 /* FEMeshSmoothingModifier.h */,
 				D5ED27F923197DE400C16BF7 /* FEMeshValuator.cpp */,
@@ -772,6 +778,7 @@
 				D5ED28A023197DE400C16BF7 /* FERevolveFaces.h in Headers */,
 				D5ED28B323197DE400C16BF7 /* FEBoundaryLayerMesher.h in Headers */,
 				D5ED281D23197DE400C16BF7 /* GModel.h in Headers */,
+				D550436E24705E12007DCB29 /* FEMeshOverlap.h in Headers */,
 				D5ED28BD23197DE400C16BF7 /* FETruncatedEllipsoid.h in Headers */,
 				D5ED28AF23197DE400C16BF7 /* FEAutoPartition.h in Headers */,
 				D5ED280723197DE400C16BF7 /* PlotDataSettings.h in Headers */,
@@ -873,6 +880,7 @@
 				D5ED28C023197DE400C16BF7 /* FEWeldModifier.cpp in Sources */,
 				D5ED283C23197DE400C16BF7 /* FEEdgeFlip.cpp in Sources */,
 				D5ED282D23197DE400C16BF7 /* FETetGenMesher.cpp in Sources */,
+				D550436F24705E12007DCB29 /* FEMeshOverlap.cpp in Sources */,
 				D5ED280823197DE400C16BF7 /* FETet15ToTet4.cpp in Sources */,
 				D5ED286123197DE400C16BF7 /* FESurfaceIntersect.cpp in Sources */,
 				D5ED288A23197DE400C16BF7 /* BivariatePolynomialSpline.cpp in Sources */,
