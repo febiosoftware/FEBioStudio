@@ -173,6 +173,11 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CDocument(
 CPostDocument::~CPostDocument()
 {
 	Clear();
+
+	for (int i = 0; i < m_graphs.size(); ++i) delete m_graphs[i];
+	m_graphs.clear();
+
+	delete m_glm; m_glm = nullptr;
 	delete m_fem;
 }
 
@@ -183,10 +188,8 @@ void CPostDocument::Clear()
 
 	m_MD.ReadData(m_glm);
 
-	for (int i = 0; i < m_graphs.size(); ++i) delete m_graphs[i];
-	m_graphs.clear();
+	if (m_glm) m_glm->SetFEModel(nullptr);
 
-	delete m_glm; m_glm = nullptr;
 	delete m_postObj; m_postObj = nullptr;
 }
 
@@ -199,7 +202,7 @@ bool CPostDocument::Initialize()
 	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
 	ApplyPalette(pal);
 
-	if (m_glm) delete m_glm; m_glm = new Post::CGLModel(m_fem);
+	if (m_glm == nullptr) m_glm = new Post::CGLModel(m_fem); else m_glm->SetFEModel(m_fem);
 	if (m_postObj) delete m_postObj; m_postObj = new CPostObject(m_glm);
 
 	m_timeSettings.Defaults();

@@ -48,6 +48,9 @@ void FEPostModel::DeleteMeshes()
 	// delete all meshes
 	for (size_t i = 0; i<m_mesh.size(); ++i) delete m_mesh[i];
 	m_mesh.clear();
+
+	for (size_t i = 0; i < m_RefState.size(); ++i) delete m_RefState[i];
+	m_RefState.clear();
 }
 
 void FEPostModel::SetInstance(FEPostModel* fem)
@@ -135,7 +138,6 @@ FEPostMesh* FEPostModel::GetFEMesh(int n)
 
 //-----------------------------------------------------------------------------
 // Clear the data of the model
-// TODO: This does not delete the mesh. Should I?
 void FEPostModel::Clear()
 {
 	DeleteMeshes();

@@ -961,6 +961,7 @@ bool XpltReader::BuildMesh(FEPostModel &fem)
 {
 	// clear the state data
 	fem.ClearStates();
+	fem.DeleteMeshes();
 
 	// count all nodes
 	const xpltFileReader::HEADER& hdr = m_xplt->GetHeader();

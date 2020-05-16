@@ -982,6 +982,10 @@ bool XpltReader2::ReadNodeSetSection(FEPostModel& fem)
 //-----------------------------------------------------------------------------
 bool XpltReader2::BuildMesh(FEPostModel &fem)
 {
+	// clear the state data
+	fem.ClearStates();
+	fem.DeleteMeshes();
+
 	// count all nodes
 	int NN = m_xmesh.nodes();
 
