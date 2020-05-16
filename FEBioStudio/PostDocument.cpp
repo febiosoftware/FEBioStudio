@@ -172,6 +172,7 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CDocument(
 
 CPostDocument::~CPostDocument()
 {
+	m_bModified = false;
 	Clear();
 
 	for (int i = 0; i < m_graphs.size(); ++i) delete m_graphs[i];
