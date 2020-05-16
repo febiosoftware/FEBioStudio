@@ -128,7 +128,7 @@ public:
 				{
 					switch (p.GetParamType())
 					{
-					case Param_FLOAT: 
+					case Param_FLOAT:
 					{
 						QString v = QString::number(p.val<double>());
 						const char* szunit = p.GetUnit();
@@ -142,7 +142,7 @@ public:
 					}
 					break;
 					case Param_CHOICE:
-					case Param_INT: 
+					case Param_INT:
 					{
 						int n = p.val<int>();
 						if (p.GetEnumNames())
@@ -152,7 +152,19 @@ public:
 						return n;
 					}
 					break;
-					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
+					case Param_VEC3D:
+					{
+						QString v = Vec3dToString(p.val<vec3d>());
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
 					default:
 						return "in progress";
 					}
