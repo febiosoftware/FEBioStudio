@@ -364,7 +364,7 @@ FEPrescribedRotation::FEPrescribedRotation(FEModel* ps) : FEPrescribedDOF(FE_PRE
 {
 	SetTypeString("Prescribed Rotation");
 	SetVarID(ps->GetVariableIndex("Rotation"));
-	SetScaleUnit(UNIT_SUBSTANCE);
+	SetScaleUnit(UNIT_RADIAN);
 }
 
 //-----------------------------------------------------------------------------
@@ -372,7 +372,7 @@ FEPrescribedRotation::FEPrescribedRotation(FEModel* ps, FEItemListBuilder* pi, i
 {
 	SetTypeString("Prescribed Rotation");
 	SetVarID(ps->GetVariableIndex("Rotation"));
-	SetScaleUnit(UNIT_SUBSTANCE);
+	SetScaleUnit(UNIT_RADIAN);
 }
 
 //=============================================================================
@@ -418,6 +418,7 @@ FEPrescribedConcentration::FEPrescribedConcentration(FEModel* ps) : FEPrescribed
 {
 	SetTypeString("Prescribed Effective Concentration");
 	SetVarID(ps->GetVariableIndex("Effective Solute Concentration"));
+    SetScaleUnit(UNIT_CONCENTRATION);
 }
 
 //-----------------------------------------------------------------------------
@@ -425,6 +426,7 @@ FEPrescribedConcentration::FEPrescribedConcentration(FEModel* ps, FEItemListBuil
 {
 	SetTypeString("Prescribed Effective Concentration");
 	SetVarID(ps->GetVariableIndex("Effective Solute Concentration"));
+    SetScaleUnit(UNIT_CONCENTRATION);
 }
 
 //=============================================================================
