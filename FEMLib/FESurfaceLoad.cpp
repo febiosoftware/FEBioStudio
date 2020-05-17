@@ -133,7 +133,7 @@ FESurfaceTraction::FESurfaceTraction(FEModel* ps, FEItemListBuilder* pi, int nst
 {
 	SetTypeString("Surface Traction");
 	AddDoubleParam(1.0, "scale")->SetLoadCurve();
-	AddVecParam(vec3d(0,0,1), "traction");
+	AddVecParam(vec3d(0,0,1), "traction")->SetUnit(UNIT_PRESSURE);
 }
 
 // used only for reading parameters for old file formats
@@ -152,7 +152,7 @@ FEFluidTraction::FEFluidTraction(FEModel* ps, FEItemListBuilder* pi, int nstep) 
 {
 	SetTypeString("Fluid viscous traction");
 	AddDoubleParam(1.0, "scale")->SetLoadCurve();
-	AddVecParam(vec3d(0, 0, 0), "traction");
+	AddVecParam(vec3d(0, 0, 0), "traction")->SetUnit(UNIT_PRESSURE);
 }
 
 FELoadCurve* FEFluidTraction::GetLoadCurve() { return GetParamLC(LOAD); }
@@ -219,7 +219,7 @@ FEFluidRotationalVelocity::FEFluidRotationalVelocity(FEModel* ps) : FESurfaceLoa
     SetTypeString("Fluid Rotational Velocity");
     AddDoubleParam(1, "angular_speed", "angular speed")->SetLoadCurve();
     AddVecParam(vec3d(0,0,1), "axis", "axis");
-    AddVecParam(vec3d(0,0,0), "origin", "origin");
+    AddVecParam(vec3d(0,0,0), "origin", "origin")->SetUnit(UNIT_LENGTH);
 }
 
 FEFluidRotationalVelocity::FEFluidRotationalVelocity(FEModel* ps, FEItemListBuilder* pi, double w, vec3d n, vec3d p, int nstep) : FESurfaceLoad(FE_FLUID_ROTATIONAL_VELOCITY, ps, pi, nstep)
@@ -227,7 +227,7 @@ FEFluidRotationalVelocity::FEFluidRotationalVelocity(FEModel* ps, FEItemListBuil
     SetTypeString("Fluid Normal Velocity");
     AddDoubleParam(w, "angular_speed", "angular_speed")->SetLoadCurve();
     AddVecParam(n, "axis", "axis");
-    AddVecParam(p, "origin", "origin");
+    AddVecParam(p, "origin", "origin")->SetUnit(UNIT_LENGTH);
 }
 
 //-----------------------------------------------------------------------------

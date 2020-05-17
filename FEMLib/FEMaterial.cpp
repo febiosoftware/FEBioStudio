@@ -981,7 +981,7 @@ FETCNonlinearOrthotropic::FETCNonlinearOrthotropic() : FEMaterial(FE_TCNL_ORTHO)
 	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
 
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
-	AddVecParam(vec3d(0,0,0), "ksi", "ksi");
+	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1154,7 +1154,7 @@ FEEFDMooneyRivlin::FEEFDMooneyRivlin() : FEMaterial(FE_EFD_MOONEY_RIVLIN)
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
-	AddVecParam(vec3d(0,0,0), "ksi", "ksi");
+	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1168,7 +1168,7 @@ FEEFDNeoHookean::FEEFDNeoHookean() : FEMaterial(FE_EFD_NEO_HOOKEAN)
 	AddScienceParam(0, UNIT_PRESSURE, "E", "Young's modulus");
 	AddScienceParam(0, UNIT_NONE  , "v", "Poisson's ratio");
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
-	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  );
+	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  )->SetUnit(UNIT_PRESSURE);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1186,7 +1186,7 @@ FEEFDDonnan::FEEFDDonnan() : FEMaterial(FE_EFD_DONNAN)
 	AddScienceParam(0, UNIT_CONCENTRATION, "bosm", "bosm");
     AddScienceParam(1, UNIT_NONE, "Phi", "Phi");
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
-	AddVecParam(vec3d(0,0,0), "ksi", "ksi");
+	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1203,7 +1203,7 @@ FEEFDVerondaWestmann::FEEFDVerondaWestmann() : FEMaterial(FE_EFD_VERONDA_WESTMAN
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
-	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  );
+	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  )->SetUnit(UNIT_PRESSURE);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1408,8 +1408,8 @@ FEPermAteshianWeissOrtho::FEPermAteshianWeissOrtho() : FEMaterial(FE_PERM_REF_OR
 	m_hasMatAxes = true;
 
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm0" , "perm0");
-	AddVecParam(vec3d(0,0,0), "perm1" , "perm1");
-	AddVecParam(vec3d(0,0,0), "perm2" , "perm2");
+	AddVecParam(vec3d(0,0,0), "perm1" , "perm1")->SetUnit(UNIT_PERMEABILITY);
+	AddVecParam(vec3d(0,0,0), "perm2" , "perm2")->SetUnit(UNIT_PERMEABILITY);
 	AddScienceParam(0, UNIT_NONE        , "M0"    , "M0");
 	AddScienceParam(0, UNIT_NONE        , "alpha0", "alpha0");
 	AddVecParam(vec3d(0,0,0), "M"     , "M");
@@ -1437,7 +1437,7 @@ REGISTER_MATERIAL(FEDiffOrtho, MODULE_BIPHASIC, FE_DIFF_CONST_ORTHO, FE_MAT_DIFF
 FEDiffOrtho::FEDiffOrtho() : FEMaterial(FE_DIFF_CONST_ORTHO)
 {
 	AddScienceParam(0, UNIT_DIFFUSIVITY, "free_diff", "free diffusivity");
-	AddVecParam(vec3d(0,0,0), "diff", "diffusivity");
+	AddVecParam(vec3d(0,0,0), "diff", "diffusivity")->SetUnit(UNIT_DIFFUSIVITY);
 }
 
 //=============================================================================
@@ -1501,7 +1501,7 @@ FESFDCoupled::FESFDCoupled() : FEMaterial(FE_SFD_COUPLED)
 {
 	AddScienceParam(0, UNIT_NONE        , "alpha", "alpha");
 	AddScienceParam(0, UNIT_NONE        , "beta", "beta");
-	AddScienceParam(0, UNIT_NONE        , "ksi" , "ksi" );
+	AddScienceParam(0, UNIT_PRESSURE    , "ksi" , "ksi" );
 }
 
 //=============================================================================
@@ -1533,7 +1533,7 @@ FEEFDCoupled::FEEFDCoupled() : FEMaterial(FE_EFD_COUPLED)
 	m_hasMatAxes = true;
 
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
-	AddVecParam(vec3d(0,0,0), "ksi" , "ksi" );
+	AddVecParam(vec3d(0,0,0), "ksi" , "ksi" )->SetUnit(UNIT_PRESSURE);
 }
 
 //=============================================================================
@@ -1547,7 +1547,7 @@ FEEFDUncoupled::FEEFDUncoupled() : FEMaterial(FE_EFD_UNCOUPLED)
 	m_hasMatAxes = true;
 
 	AddVecParam(vec3d(0,0,0), "beta" , "beta");
-	AddVecParam(vec3d(0,0,0), "ksi" , "ksi");
+	AddVecParam(vec3d(0,0,0), "ksi" , "ksi")->SetUnit(UNIT_PRESSURE);
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
 }
 
