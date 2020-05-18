@@ -536,8 +536,16 @@ void CCurveEditor::BuildModelTree()
 				FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
 				if (pc)
 				{
-					t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-					ui->addTreeItem(t3, "value", pc->GetLoadCurve());
+					for (int n = 0; n < pc->Parameters(); ++n)
+					{
+						Param& p = pc->GetParam(n);
+						if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
+						{
+							FELoadCurve* plc = p.GetLoadCurve();
+							t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
+							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
+						}
+					}
 				}
 			}
 		}
@@ -949,7 +957,7 @@ void CCurveEditor::on_delete_triggered()
 {
 	if (m_currentItem == nullptr) return;
 	Param* p = m_currentItem->GetParam();
-	if (p->GetLoadCurve())
+	if (p && p->GetLoadCurve())
 	{
 		m_cmd.DoCommand(new CCmdDeleteCurve(p));
 		m_currentItem->SetLoadCurve(0);

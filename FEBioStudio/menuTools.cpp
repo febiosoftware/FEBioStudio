@@ -93,7 +93,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	if (jobList.empty())
 	{
 		// create a name for this job
-		jobName = docName + QString("_job");
+		jobName = docName;
 	}
 	else
 	{
