@@ -291,14 +291,15 @@ void WriteProjectGroup(XMLWriter& xml, FEBioStudioProject& prj, FEBioStudioProje
 
 bool FEBioStudioProject::Save(const QString& file)
 {
-	std::string fileName = file.toStdString();
-
 	QFileInfo fi(file);
 
 	QDir dir = fi.absoluteDir();
 
 	XMLWriter xml;
+	std::string fileName = file.toStdString();
 	if (xml.open(fileName.c_str()) == false) return false;
+
+	m_projectFile = file;
 
 	XMLElement root("FEBioStudioProject");
 	root.add_attribute("version", "1.0");
@@ -307,8 +308,6 @@ bool FEBioStudioProject::Save(const QString& file)
 		WriteProjectGroup(xml, *this, *m_rootItem);
 	}
 	xml.close_branch();
-
-	m_projectFile = file;
 
 	return true;
 }

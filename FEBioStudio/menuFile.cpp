@@ -103,13 +103,13 @@ void CMainWindow::on_actionNewModel_triggered()
 	do
 	{
 		stringstream ss;
-		ss << "Untitled-" << n++;
+		ss << "Model" << n++;
 		docTitle = ss.str();
 		bok = true;
 		for (int i = 0; i < dm->Documents(); ++i)
 		{
 			CDocument* doci = dm->GetDocument(i);
-			if (doci->GetDocTitle() == docTitle)
+			if ((doci->GetDocTitle() == docTitle) || (doci->GetDocFileBase() == docTitle))
 			{
 				bok = false;
 				break;
@@ -820,11 +820,17 @@ void CMainWindow::on_actionSaveAs_triggered()
 		currentPath = fi.absolutePath();
 	}
 
-	QString fileName = QFileDialog::getSaveFileName(this, "Save", currentPath, "FEBio Studio Model (*.fsm)");
-	if (fileName.isEmpty() == false)
+	QFileDialog dlg;
+	dlg.setDirectory(currentPath);
+	dlg.setFileMode(QFileDialog::ExistingFile);
+	dlg.setNameFilter("FEBio Studio Model (*.fsm)");
+	dlg.selectFile(QString::fromStdString(doc->GetDocTitle()));
+	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	if (dlg.exec())
 	{
+		QStringList fileNames = dlg.selectedFiles();
 		doc->SetFileWriter(new CModelFileWriter(doc));
-		SaveDocument(QDir::toNativeSeparators(fileName));
+		SaveDocument(QDir::toNativeSeparators(fileNames[0]));
 	}
 }
 
@@ -888,11 +894,13 @@ void CMainWindow::on_actionSaveProject_triggered()
 	QString fileName = QFileDialog::getSaveFileName(this, "Save Project As", "", QString("FEBioStudio Projects (*.fsp)"));
 	if (fileName.isEmpty() == false)
 	{
+		fileName = QDir::toNativeSeparators(fileName);
 		bool b = ui->m_project.Save(fileName);
 		if (b == false)
 		{
 			QMessageBox::critical(this, "ERROR", "Failed saving the project file.");
 		}
+		else ui->addToRecentFiles(fileName);
 		ui->fileViewer->Update();
 		UpdateTitle();
 	}

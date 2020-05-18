@@ -84,22 +84,24 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		jobList.append(QString::fromStdString(job->GetName()));
 	}
 
-	// get the job name
-	static QString jobName;
-	if (jobName.isEmpty() && jobList.isEmpty())
+	// By default, the job path will be the project folder
+	// unless the project folder is not defined, in which case we'll reuse the last path
+	QString jobPath = docFolder + "/jobs";
+
+	// we'll take the last job's name or create a new one if the job list is empty
+	QString jobName;
+	if (jobList.empty())
 	{
 		// create a name for this job
 		jobName = docName + QString("_job");
 	}
-
-	// By default, the job path will be the project folder
-	// unless the project folder is not defined, in which case we'll reuse the last path
-	static QString jobPath;
-	if (docFolder.isEmpty() == false) jobPath = docFolder + "/jobs";
+	else
+	{
+		jobName = jobList.last();
+	}
 
 	// this keeps track of the FEBio selection that was used last
 	static int lastLaunchConfigIndex = 0;
-
 	static int lastFEBioFileVersion = 0;
 
 	// setup the run dialog
