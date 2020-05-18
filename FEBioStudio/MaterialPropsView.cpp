@@ -165,6 +165,12 @@ public:
 						return v;
 					}
 					break;
+					case Param_BOOL:
+					{
+						bool b = p.val<bool>();
+						return (b ? "Yes" : "No");
+					}
+					break;
 					default:
 						return "in progress";
 					}
@@ -178,6 +184,7 @@ public:
 					case Param_CHOICE:
 						return p.val<int>(); break;
 					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
+					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
 					default:
 						return "in progress";
 					}
@@ -222,6 +229,12 @@ public:
 				}
 				break;
 				case Param_VEC3D: p.SetVec3dValue(StringToVec3d(value.toString())); break;
+				case Param_BOOL:
+				{
+					int n = value.toInt();
+					p.SetBoolValue(n != 0);
+				}
+				break;
 				}
 
 				return m_pm->UpdateData(true);
@@ -416,6 +429,12 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 					QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 					return box;
 				}
+			}
+			if (p->GetParamType() == Param_BOOL)
+			{ 
+				QComboBox* pw = new QComboBox(parent);
+				pw->addItems(QStringList() << "No" << "Yes");
+				return pw;
 			}
 		}
 	}
