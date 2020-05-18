@@ -15,7 +15,7 @@ unsigned int Units::GetUnitSystem() { return unit_system; }
 QStringList Units::SupportedUnitSystems()
 {
 	QStringList s;
-	s << "None" << "Dimensions only" << "SI" << "mm-Newton-second" << "CGS" << "µm-nN-second";
+	s << "None" << "Dimensions only" << "SI" << "mm-N-s" << "mm-kg-s" << "µm-nN-s" << "CGS";
 
 	return s;
 }
@@ -29,12 +29,16 @@ static const char* unit_table[][12] = {
 
 	// MMTS units
 	{"mm","tonne","s","K","A","nmol","N","MPa","mJ","mW","mV","mM"},
-
-	// CGS units
-	{"cm","g","s","K","cA","µmol","dyn","[F/L^2]","erg","[E/t]","mV","mM"},
+    
+    // MMKS units
+    {"mm","kg","s","K","mA","nmol","mN","kPa","µJ","µW","mV","mM"},
     
     // UMNNS units
-    {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM"}
+    {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM"},
+
+	// CGS units
+	{"cm","g","s","K","cA","µmol","dyn","[F/L^2]","erg","[E/t]","mV","mM"}
+
 };
 
 QString Units::GetUnitString(const char* szunit)

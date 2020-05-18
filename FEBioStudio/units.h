@@ -11,8 +11,9 @@ namespace Units {
 		DIMENSIONAL,
 		SI,
 		MMTS,
-		CGS,
+        MMKS,
         UMNNS,
+        CGS,
 	};
 
 	enum Unit_Symbol
