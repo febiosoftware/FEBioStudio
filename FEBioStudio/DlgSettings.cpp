@@ -126,7 +126,7 @@ public:
 	{
 		if (i == 4)
 		{
-			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear the recent project list.\nThis can not be undone!"))
+			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear the recent project list.\nThis can not be undone!") == QMessageBox::Yes)
 			{
 				m_wnd->ClearRecentProjectsList();
 			}

@@ -6,14 +6,15 @@ const char* welcome = \
 "<html>\
 <head>\
 <style>\
+body { background-color: _BGCOLOR_; }\
 h1{ color: gray; }\
-a { color: DodgerBlue; font-size: 11pt; }\
+a { color: _FGCOLOR_; font-size: 11pt; }\
 ul { line-height: 150%; list-style-type: none; }\
 </style>\
 </head>\
 <body>\
 <p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
-<p style=\"font-size: 14pt\">version VERSION</p>\
+<p style=\"font-size: 14pt\">version _VERSION_</p>\
 <h1>Start</h1>\
 <ul>\
 <li><a href=\"#new\">New Model ... </a></li>\
@@ -23,7 +24,7 @@ ul { line-height: 150%; list-style-type: none; }\
 </ul>\
 <h1>Recent</h1>\
 <ul>\
-RECENT_FILES\
+_RECENT_FILES_\
 </ul>\
 <h1>Online Resources</h1>\
 <ul>\
@@ -68,8 +69,19 @@ void CWelcomePage::Refresh()
 	QString version = QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
 
 	QString page(welcome);
-	page.replace("VERSION", version);
-	page.replace("RECENT_FILES", links);
+	page.replace("_VERSION_", version);
+	page.replace("_RECENT_FILES_", links);
+
+	if (m_wnd->currentTheme() == 0)
+	{
+		page.replace("_FGCOLOR_", "#0000ff");
+		page.replace("_BGCOLOR_", "#ffe6b3");
+	}
+	else
+	{
+		page.replace("_FGCOLOR_", "Dodgerblue");
+		page.replace("_BGCOLOR_", "#202020");
+	}
 
 	setHtml(page);
 }

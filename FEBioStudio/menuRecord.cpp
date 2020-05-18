@@ -90,8 +90,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 
 		if (bret)
 		{
-			ui->m_old_title = windowTitle();
-			setWindowTitle(ui->m_old_title + "   (RECORDING PAUSED)");
+			UpdateTitle();
 		}
 		else bret = QMessageBox::critical(this, "FEBio Studio", "Failed creating animation stream.");
 
@@ -103,11 +102,8 @@ void CMainWindow::on_actionRecordStart_triggered()
 {
 	if (ui->glview->HasRecording())
 	{
-		if (ui->m_old_title.isEmpty()) ui->m_old_title = windowTitle();
-
-		setWindowTitle(ui->m_old_title + "   (RECORDING)");
-
 		ui->glview->StartAnimation();
+		UpdateTitle();
 	}
 	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file before you can start recording");
 }
@@ -119,7 +115,7 @@ void CMainWindow::on_actionRecordPause_triggered()
 		if (ui->glview->AnimationMode() == ANIM_RECORDING)
 		{
 			ui->glview->PauseAnimation();
-			setWindowTitle(ui->m_old_title + "   (RECORDING PAUSED)");
+			UpdateTitle();
 		}
 	}
 	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
@@ -132,10 +128,8 @@ void CMainWindow::on_actionRecordStop_triggered()
 		if (ui->glview->AnimationMode() != ANIM_STOPPED)
 		{
 			ui->glview->StopAnimation();
-			setWindowTitle(ui->m_old_title);
+			UpdateTitle();
 		}
-
-		ui->m_old_title.clear();
 	}
 	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
 }

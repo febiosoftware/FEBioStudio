@@ -820,7 +820,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 		currentPath = fi.absolutePath();
 	}
 
-	QString fileName = QFileDialog::getSaveFileName(this, "Save", ui->currentPath, "FEBio Studio Model (*.fsm)");
+	QString fileName = QFileDialog::getSaveFileName(this, "Save", currentPath, "FEBio Studio Model (*.fsm)");
 	if (fileName.isEmpty() == false)
 	{
 		doc->SetFileWriter(new CModelFileWriter(doc));

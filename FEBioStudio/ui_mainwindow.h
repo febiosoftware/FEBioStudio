@@ -169,8 +169,6 @@ public:
 	int			m_theme;	// 0 = default, 1 = dark
 	bool		m_clearUndoOnSave;
 
-	QString	m_old_title;
-
 	bool	m_showNewDialog;
 
 	bool	m_isAnimating;

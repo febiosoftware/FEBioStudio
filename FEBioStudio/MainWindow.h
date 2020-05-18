@@ -447,7 +447,6 @@ public slots:
 
 	void on_clearProject();
 	void on_closeProject();
-	void on_removeFromProject(const QString& file);
 	void on_closeFile(const QString& file);
 	void on_addToProject(const QString& file);
 

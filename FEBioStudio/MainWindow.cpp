@@ -208,12 +208,25 @@ void CMainWindow::setCurrentTheme(int n)
 //-----------------------------------------------------------------------------
 void CMainWindow::UpdateTitle()
 {
+	QString title;
 	QString projectName = ProjectName();
 	if (projectName.isEmpty() == false)
 	{
-		setWindowTitle(projectName);
+		title = projectName;
 	}
-	else setWindowTitle("");
+
+	if (ui->glview->HasRecording())
+	{
+		int nrecord = ui->glview->AnimationMode();
+		switch (nrecord)
+		{
+		case ANIMATION_MODE::ANIM_PAUSED   : title += " (RECORDING PAUSED)"; break;
+		case ANIMATION_MODE::ANIM_RECORDING: title += " (RECORDING)"; break;
+		case ANIMATION_MODE::ANIM_STOPPED  : title += " (RECORDING STOPPED)"; break;
+		}
+	}
+	
+	setWindowTitle(title);
 }
 
 //-----------------------------------------------------------------------------
@@ -240,7 +253,7 @@ void CMainWindow::UpdateTab(CDocument* doc)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_clearProject()
 {
-	if (ui->m_project.Files() == 0) return;
+	if (ui->m_project.IsEmpty() == false) return;
 
 	if (QMessageBox::question(this, "Clear Project", "Are you sure you want to clear the current project?\nThis cannot be undone.") == QMessageBox::Yes)
 	{
@@ -254,14 +267,6 @@ void CMainWindow::on_clearProject()
 void CMainWindow::on_closeProject()
 {
 	ui->m_project.Close();
-	ui->fileViewer->Update();
-	UpdateTitle();
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::on_removeFromProject(const QString& file)
-{
-	ui->m_project.Remove(file);
 	ui->fileViewer->Update();
 	UpdateTitle();
 }
@@ -656,6 +661,8 @@ bool CMainWindow::CreateNewProject(QString fileName)
 
 	// try to create a new project
 	bool ret = ui->m_project.Save(fileName);
+
+	if (ret) ui->addToRecentFiles(fileName);
 
 	ui->welcome->Close();
 	ui->fileViewer->parentWidget()->show();

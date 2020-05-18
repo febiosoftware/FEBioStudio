@@ -30,8 +30,6 @@ public:
 	::CMainWindow*	m_wnd;
 	QTreeWidget*	m_tree;
 
-	QString	m_activeFile;
-
 public:
 	void setupUi(QWidget* parent)
 	{
@@ -42,6 +40,7 @@ public:
 		m_tree->setColumnCount(1);
 		m_tree->header()->hide();
 		m_tree->setObjectName("fileList");
+		m_tree->setUniformRowHeights(true);
 		
 		l->addWidget(m_tree);
 
@@ -71,6 +70,18 @@ void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int colum
 	}
 	break;
 	case FileItemType::PROJECT_FILE:
+	{
+		int itemId = item->data(0, Qt::UserRole + 1).toInt();
+		const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+		const FEBioStudioProject::ProjectItem* file = prj->FindFile(itemId); assert(file);
+		QString filePath = file->Name();
+		CDocument* doc = ui->m_wnd->FindDocument(filePath.toStdString());
+		if (doc)
+			ui->m_wnd->SetActiveDocument(doc);
+		else
+			ui->m_wnd->OpenFile(filePath, false);
+	}
+	break;
 	case FileItemType::EXTERNAL_FILE:
 	{
 		QString filePath = item->data(0, Qt::UserRole + 1).toString();
@@ -86,8 +97,6 @@ void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int colum
 
 void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 {
-	ui->m_activeFile.clear();
-
 	QList<QTreeWidgetItem*> sel = ui->m_tree->selectedItems();
 	if (sel.size() != 1) return;
 
@@ -106,12 +115,16 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		QAction* ac = menu.addAction("Close", closeMap, SLOT(map())); closeMap->setMapping(ac, file);
 		connect(closeMap, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_closeFile(const QString&)));
 
-		if (prj->Contains(file) == false)
+		if (prj->ContainsFile(file) == false)
 		{
 			QSignalMapper* addMap = new QSignalMapper(&menu);
 			QAction* ac = menu.addAction("Add to project", addMap, SLOT(map())); addMap->setMapping(ac, file);
 			connect(addMap, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_addToProject(const QString&)));
 		}
+
+#ifdef _WIN32
+		menu.addAction("Show in Explorer", this, SLOT(onShowInExplorer()));
+#endif
 
 		menu.exec(ev->globalPos());
 	}
@@ -122,40 +135,185 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		menu.addAction("Create Group ...", this, SLOT(onCreateGroup()));
 		menu.addAction("Close project", ui->m_wnd, SLOT(on_closeProject()));
 		menu.addAction("Clear project", ui->m_wnd, SLOT(on_clearProject()));
+
+#ifdef _WIN32
+		const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+		if (prj->GetProjectFileName().isEmpty() == false)
+		{
+			menu.addAction("Show in Explorer", this, SLOT(onShowInExplorer()));
+		}
+#endif
+
 		menu.exec(ev->globalPos());
 	}
 	else if (ntype == FileItemType::PROJECT_GROUP)
 	{
-		ui->m_activeFile = sel[0]->text(0);
 		QMenu menu(this);
 		menu.addAction("Remove Group", this, SLOT(onRemoveGroup()));
 		menu.addAction("Rename Group ...", this, SLOT(onRenameGroup()));
+		menu.addAction("Add Group ...", this, SLOT(onCreateGroup()));
 		menu.exec(ev->globalPos());
 	}
 	else if (ntype == FileItemType::PROJECT_FILE)
 	{
 		QMenu menu(this);
-		QString file = sel[0]->data(0, Qt::UserRole + 1).toString();
+		int fileId = sel[0]->data(0, Qt::UserRole + 1).toInt();
 
-		QSignalMapper* map = new QSignalMapper;
-		QAction* ac = menu.addAction("Remove from project", map, SLOT(map())); map->setMapping(ac, file);
 
-		if (prj->Groups())
+		QAction* ac = menu.addAction("Remove from project", this, SLOT(onRemoveFromProject()));
+
+		const FEBioStudioProject::ProjectItem* prjItem = prj->FindFile(fileId);
+		if (prjItem && (prjItem->Parent()))
 		{
-			ui->m_activeFile = file;
 			QSignalMapper* groupmap = new QSignalMapper;
 			QMenu* groupMenu = new QMenu("Move to group");
-			for (int i = 0; i < prj->Groups(); ++i)
+			std::vector<int> groups = prjItem->Parent()->AllGroups();
+			for (int i = 0; i < groups.size(); ++i)
 			{
-				QAction* aci = groupMenu->addAction(prj->GetGroupName(i), groupmap, SLOT(map())); groupmap->setMapping(aci, i);
+				const FEBioStudioProject::ProjectItem* group_i = prj->FindGroup(groups[i]);
+				QAction* aci = groupMenu->addAction(group_i->Name(), groupmap, SLOT(map())); groupmap->setMapping(aci, group_i->Id());
 			}
 			QAction* aci = groupMenu->addAction("(none)", groupmap, SLOT(map())); groupmap->setMapping(aci, -1);
 			menu.addAction(groupMenu->menuAction());
 			connect(groupmap, SIGNAL(mapped(int)), this, SLOT(onMoveToGroup(int)));
 		}
 
-		connect(map, SIGNAL(mapped(QString)), ui->m_wnd, SLOT(on_removeFromProject(const QString&)));
+
+#ifdef _WIN32
+		menu.addAction("Show in Explorer", this, SLOT(onShowInExplorer()));
+#endif
 		menu.exec(ev->globalPos());
+	}
+}
+
+void CFileViewer::onShowInExplorer()
+{
+#ifdef WIN32
+	QList<QTreeWidgetItem*> itemList = ui->m_tree->selectedItems();
+	if (itemList.size() != 1) return;
+
+	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	QString file;
+	int ntype = itemList[0]->data(0, Qt::UserRole).toInt();
+	if (ntype == FileItemType::OPEN_FILE)
+	{
+		CDocManager* dm = ui->m_wnd->GetDocManager();
+		int n = itemList[0]->data(0, Qt::UserRole + 1).toInt();
+		file = QString::fromStdString(dm->GetDocument(n)->GetDocFilePath());
+	}
+	else if (ntype == FileItemType::PROJECT_FILE)
+	{
+		int id = itemList[0]->data(0, Qt::UserRole + 1).toInt();
+		file = prj->FindFile(id)->Name();
+	}
+	else if (ntype == FileItemType::EXTERNAL_FILE)
+	{
+		file = itemList[0]->data(0, Qt::UserRole + 1).toString();
+	}
+	else if (ntype == FileItemType::PROJECT)
+	{
+		file = prj->GetProjectFileName();
+	}
+
+	if (file.isEmpty() == false)
+	{
+		QProcess::startDetached("explorer.exe", { "/select,", QDir::toNativeSeparators(file) });
+	}
+#endif
+}
+
+void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetItem* treeItem, CMainWindow* wnd)
+{
+	// add groups first
+	for (int n = 0; n < parent.Items(); ++n)
+	{
+		const FEBioStudioProject::ProjectItem& item = parent.Item(n);
+
+		if (item.IsGroup())
+		{
+			QTreeWidgetItem* t2 = new QTreeWidgetItem(treeItem);
+			t2->setText(0, item.Name());
+			t2->setData(0, Qt::UserRole, FileItemType::PROJECT_GROUP);
+			t2->setData(0, Qt::UserRole + 1, item.Id());
+			QFont f = t2->font(0);
+			f.setBold(true);
+			t2->setFont(0, f);
+			addProjectGroup(item, t2, wnd);
+		}
+	}
+
+	// add files next
+	for (int n = 0; n < parent.Items(); ++n)
+	{
+		const FEBioStudioProject::ProjectItem& item = parent.Item(n);
+
+		if (item.IsFile())
+		{
+			QString filename_i = item.Name();
+
+			CDocument* doc = wnd->FindDocument(filename_i.toStdString());
+
+			if (doc && (doc->GetDocFilePath().empty() == false))
+			{
+				QString docFile = QString::fromStdString(doc->GetDocFileName());
+				QString docPath = QString::fromStdString(doc->GetDocFilePath());
+
+				QTreeWidgetItem* t2 = new QTreeWidgetItem(treeItem);
+				t2->setText(0, docFile);
+				t2->setToolTip(0, docPath);
+				t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
+				t2->setData(0, Qt::UserRole + 1, item.Id());
+
+				CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+				if (modelDoc && modelDoc->FEBioJobs())
+				{
+					t2->setExpanded(true);
+					for (int n = 0; n < modelDoc->FEBioJobs(); ++n)
+					{
+						CFEBioJob* job = modelDoc->GetFEBioJob(n);
+
+						std::string plotFile = job->GetPlotFileName();
+						QString xpltPath(doc->ToAbsolutePath(plotFile));
+
+						QFileInfo xpltFile(xpltPath);
+
+						CPostDocument* postDoc = dynamic_cast<CPostDocument*>(wnd->FindDocument(xpltPath.toStdString()));
+
+						QTreeWidgetItem* t3 = new QTreeWidgetItem(t2);
+						t3->setText(0, xpltFile.fileName());
+						t3->setToolTip(0, xpltPath);
+						t3->setData(0, Qt::UserRole, FileItemType::EXTERNAL_FILE);
+						t3->setData(0, Qt::UserRole + 1, xpltPath);
+
+						if (postDoc == nullptr)
+						{
+							QFont f = t3->font(0);
+							f.setItalic(true);
+							t3->setFont(0, f);
+							t3->setForeground(0, Qt::gray);
+						}
+					}
+				}
+			}
+			else
+			{
+				QFileInfo fi(filename_i);
+				QString fileName = fi.fileName();
+
+				QTreeWidgetItem* t2 = new QTreeWidgetItem(treeItem);
+				t2->setText(0, fileName);
+
+				QFont f = t2->font(0);
+				f.setItalic(true);
+				t2->setFont(0, f);
+				t2->setForeground(0, Qt::gray);
+
+				t2->setSizeHint(0, QSize(100, 50));
+				t2->setToolTip(0, filename_i);
+				t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
+				t2->setData(0, Qt::UserRole + 1, item.Id());
+			}
+		}
 	}
 }
 
@@ -216,129 +374,81 @@ void CFileViewer::Update()
 	it->setData(0, Qt::UserRole, FileItemType::PROJECT);
 	if (prjFile.isEmpty() == false) it->setToolTip(0, prjFile);
 
-	for (int n = 0; n <= prj->Groups(); ++n)
+	const FEBioStudioProject::ProjectItem& root = prj->RootItem();
+	addProjectGroup(root, it, ui->m_wnd);
+
+	ui->m_tree->expandAll();
+}
+
+QTreeWidgetItem* CFileViewer::currentItem()
+{
+	QList<QTreeWidgetItem*> sel = ui->m_tree->selectedItems();
+	if (sel.size() != 1) return nullptr;
+	return sel[0];
+}
+
+void CFileViewer::onCreateGroup()
+{
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	if (item == nullptr) return;
+
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	if ((ntype == FileItemType::PROJECT) || ( ntype == FileItemType::PROJECT_GROUP))
 	{
-		QTreeWidgetItem* parent = it;
-		int group = (n < prj->Groups() ? n : -1);
-		if (group >= 0)
+		QString groupName = QInputDialog::getText(this, "Create Group", "Group name:");
+		if (groupName.isEmpty() == false)
 		{
-			QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
-			t2->setText(0, prj->GetGroupName(group));
-			t2->setData(0, Qt::UserRole, FileItemType::PROJECT_GROUP);
-			QFont f = t2->font(0);
-			f.setBold(true);
-			t2->setFont(0, f);
-			parent = t2;
-		}
+			FEBioStudioProject* prj = ui->m_wnd->GetProject();
+			int groupId = item->data(0, Qt::UserRole + 1).toInt();
+			prj->AddGroup(groupName, groupId);
 
-		for (int i = 0; i < prj->Files(); ++i)
-		{
-			FEBioStudioProject::File file_i = prj->GetFile(i);
-			if (file_i.m_group == group)
+			Update();
+			QList<QTreeWidgetItem*> itemList = ui->m_tree->findItems(groupName, Qt::MatchExactly | Qt::MatchRecursive);
+			if (itemList.empty() == false)
 			{
-				QString filename_i = file_i.m_fileName;
-
-				CDocument* doc = ui->m_wnd->FindDocument(filename_i.toStdString());
-
-				if (doc && (doc->GetDocFilePath().empty() == false))
-				{
-					QString docFile = QString::fromStdString(doc->GetDocFileName());
-					QString docPath = QString::fromStdString(doc->GetDocFilePath());
-
-					QTreeWidgetItem* t2 = new QTreeWidgetItem(parent);
-					t2->setText(0, docFile);
-					t2->setSizeHint(0, QSize(100, 50));
-					t2->setToolTip(0, docPath);
-					t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
-					t2->setData(0, Qt::UserRole + 1, docPath);
-					t2->setSizeHint(0, QSize(100, px));
-
-					CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
-					if (modelDoc && modelDoc->FEBioJobs())
-					{
-						t2->setExpanded(true);
-						for (int n = 0; n < modelDoc->FEBioJobs(); ++n)
-						{
-							CFEBioJob* job = modelDoc->GetFEBioJob(n);
-
-							std::string plotFile = job->GetPlotFileName();
-							QString xpltPath(doc->ToAbsolutePath(plotFile));
-
-							QFileInfo xpltFile(xpltPath);
-
-							CPostDocument* postDoc = dynamic_cast<CPostDocument*>(ui->m_wnd->FindDocument(xpltPath.toStdString()));
-
-							QTreeWidgetItem* t3 = new QTreeWidgetItem(t2);
-							t3->setText(0, xpltFile.fileName());
-							t3->setToolTip(0, xpltPath);
-							t3->setData(0, Qt::UserRole, FileItemType::EXTERNAL_FILE);
-							t3->setData(0, Qt::UserRole + 1, xpltPath);
-							t3->setSizeHint(0, QSize(100, px));
-
-							if (postDoc == nullptr)
-							{
-								QFont f = t3->font(0);
-								f.setItalic(true);
-								t3->setFont(0, f);
-								t3->setForeground(0, Qt::gray);
-							}
-						}
-					}
-				}
-				else
-				{
-					QFileInfo fi(filename_i);
-					QString fileName = fi.fileName();
-
-					QTreeWidgetItem* t2 = new QTreeWidgetItem(parent);
-					t2->setText(0, fileName);
-
-					QFont f = t2->font(0);
-					f.setItalic(true);
-					t2->setFont(0, f);
-					t2->setForeground(0, Qt::gray);
-
-					t2->setSizeHint(0, QSize(100, 50));
-					t2->setToolTip(0, filename_i);
-					t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
-					t2->setData(0, Qt::UserRole + 1, filename_i);
-					t2->setSizeHint(0, QSize(100, px));
-				}
+				QTreeWidgetItem* it = itemList[0];
+				it->setSelected(true);
+				it = it->parent();
+				while (it) { it->setExpanded(true); it = it->parent(); }
 			}
 		}
 	}
 }
 
-void CFileViewer::onCreateGroup()
-{
-	FEBioStudioProject* prj = ui->m_wnd->GetProject();
-
-	QString groupName = QInputDialog::getText(this, "Create Group", "Group name:");
-	if (groupName.isEmpty() == false)
-	{
-		prj->AddGroup(groupName);
-		Update();
-	}
-}
-
 void CFileViewer::onMoveToGroup(int i)
 {
-	FEBioStudioProject* prj = ui->m_wnd->GetProject();
-	if (ui->m_activeFile.isEmpty() == false)
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	if (ntype == PROJECT_FILE)
 	{
-		prj->MoveToGroup(ui->m_activeFile, i);
+		int itemId = item->data(0, Qt::UserRole + 1).toInt();
+		FEBioStudioProject* prj = ui->m_wnd->GetProject();
+		prj->MoveToGroup(itemId, i);
+
+		QString txt = item->text(0);
 		Update();
+		QList<QTreeWidgetItem*> itemList = ui->m_tree->findItems(txt, Qt::MatchExactly | Qt::MatchRecursive);
+		if (itemList.empty() == false)
+		{
+			QTreeWidgetItem* it = itemList[0];
+			it->setSelected(true);
+			it = it->parent();
+			while (it) { it->setExpanded(true); it = it->parent(); }
+		}
 	}
 }
 
 void CFileViewer::onRemoveGroup()
 {
-	FEBioStudioProject* prj = ui->m_wnd->GetProject();
-	if (ui->m_activeFile.isEmpty() == false)
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	if (ntype == PROJECT_GROUP)
 	{
 		if (QMessageBox::question(this, "Remove Group", "Are you sure you want to remove this group?\nThis cannot be undone!") == QMessageBox::Yes)
 		{
-			prj->RemoveGroup(ui->m_activeFile);
+			int itemId = item->data(0, Qt::UserRole + 1).toInt();
+			FEBioStudioProject* prj = ui->m_wnd->GetProject();
+			prj->RemoveGroup(itemId);
 			Update();
 		}
 	}
@@ -346,13 +456,32 @@ void CFileViewer::onRemoveGroup()
 
 void CFileViewer::onRenameGroup()
 {
-	FEBioStudioProject* prj = ui->m_wnd->GetProject();
-	if (ui->m_activeFile.isEmpty() == false)
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	if (ntype == PROJECT_GROUP)
 	{
 		QString newName = QInputDialog::getText(this, "Rename Group", "New name:");
 		if (newName.isEmpty() == false)
 		{
-			prj->RenameGroup(ui->m_activeFile, newName);
+			int itemId = item->data(0, Qt::UserRole + 1).toInt();
+			FEBioStudioProject* prj = ui->m_wnd->GetProject();
+			prj->RenameGroup(itemId, newName);
+			item->setText(0, newName);
+		}
+	}
+}
+
+void CFileViewer::onRemoveFromProject()
+{
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	if (ntype == PROJECT_FILE)
+	{
+		if (QMessageBox::question(this, "Remove", "Are you sure you want to remove this file from the project?\nThis cannot be undone.") == QMessageBox::Yes)
+		{
+			FEBioStudioProject* prj = ui->m_wnd->GetProject();
+			int itemId = item->data(0, Qt::UserRole + 1).toInt();
+			prj->RemoveFile(itemId);
 			Update();
 		}
 	}

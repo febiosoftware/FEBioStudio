@@ -21,12 +21,17 @@ public:
 
 	void contextMenuEvent(QContextMenuEvent* ev) override;
 
+private:
+	QTreeWidgetItem* currentItem();
+
 private slots:
 	void on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column);
 	void onCreateGroup();
 	void onMoveToGroup(int i);
 	void onRemoveGroup();
 	void onRenameGroup();
+	void onShowInExplorer();
+	void onRemoveFromProject();
 
 private:
 	Ui::CFileViewer*	ui;
