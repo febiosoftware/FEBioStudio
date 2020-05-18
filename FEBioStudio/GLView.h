@@ -27,11 +27,11 @@ class GDecoration;
 #define COORD_SCREEN	2
 
 //-----------------------------------------------------------------------------
-// Animation modes
-enum ANIMATION_MODE {
-	ANIM_RECORDING,
-	ANIM_PAUSED,
-	ANIM_STOPPED
+// Video recording modes
+enum VIDEO_MODE {
+	VIDEO_RECORDING,
+	VIDEO_PAUSED,
+	VIDEO_STOPPED
 };
 
 // preset views
@@ -382,9 +382,9 @@ public:
 	void StartAnimation();
 	void StopAnimation();
 	void PauseAnimation();
-	void SetVideoFormat(GLenum fmt) { m_video_fmt = fmt; }
+	void SetVideoFormat(GLenum fmt) { m_videoFormat = fmt; }
 
-	ANIMATION_MODE AnimationMode() const;
+	VIDEO_MODE RecordingMode() const;
 	bool HasRecording() const;
 
 	void UpdateWidgets(bool bposition = true);
@@ -498,10 +498,10 @@ protected:
 	bool	m_trackGLProgress;
 
 private:
-	GLenum	m_video_fmt;
+	GLenum	m_videoFormat;
 
-	ANIMATION_MODE	m_nanim;	// the animation mode
-	CAnimation*		m_panim;	// animation object
+	VIDEO_MODE		m_videoMode;	// the current video mode
+	CAnimation*		m_video;		// video object
 
 	// tracking
 	bool	m_btrack;

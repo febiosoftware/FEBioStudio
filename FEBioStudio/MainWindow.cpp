@@ -217,12 +217,12 @@ void CMainWindow::UpdateTitle()
 
 	if (ui->glview->HasRecording())
 	{
-		int nrecord = ui->glview->AnimationMode();
+		int nrecord = ui->glview->RecordingMode();
 		switch (nrecord)
 		{
-		case ANIMATION_MODE::ANIM_PAUSED   : title += " (RECORDING PAUSED)"; break;
-		case ANIMATION_MODE::ANIM_RECORDING: title += " (RECORDING)"; break;
-		case ANIMATION_MODE::ANIM_STOPPED  : title += " (RECORDING STOPPED)"; break;
+		case VIDEO_MODE::VIDEO_PAUSED   : title += " (RECORDING PAUSED)"; break;
+		case VIDEO_MODE::VIDEO_RECORDING: title += " (RECORDING)"; break;
+		case VIDEO_MODE::VIDEO_STOPPED  : title += " (RECORDING STOPPED)"; break;
 		}
 	}
 	

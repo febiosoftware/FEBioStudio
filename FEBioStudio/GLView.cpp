@@ -409,9 +409,9 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_Widget = CGLWidgetManager::GetInstance();
 	m_Widget->AttachToView(this);
 
-	m_panim = 0;
-	m_nanim = ANIM_STOPPED;
-	m_video_fmt = GL_RGB;
+	m_video       = nullptr;
+	m_videoMode   = VIDEO_STOPPED;
+	m_videoFormat = GL_RGB;
 }
 
 CGLView::~CGLView()
@@ -1345,9 +1345,9 @@ QImage CGLView::CaptureScreen()
 }
 
 
-bool CGLView::NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt)
+bool CGLView::NewAnimation(const char* szfile, CAnimation* video, GLenum fmt)
 {
-	m_panim = panim;
+	m_video = video;
 	SetVideoFormat(fmt);
 
 	// get the width/height of the animation
@@ -1365,11 +1365,11 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt)
 	if (fps == 0.f) fps = 10.f;
 
 	// create the animation
-	if (m_panim->Create(szfile, cx, cy, fps) == false)
+	if (m_video->Create(szfile, cx, cy, fps) == false)
 	{
-		delete m_panim;
-		m_panim = 0;
-		m_nanim = ANIM_STOPPED;
+		delete m_video;
+		m_video = nullptr;
+		m_videoMode = VIDEO_STOPPED;
 	}
 	else
 	{
@@ -1377,28 +1377,28 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt)
 		m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
 
 		// set the animation mode to paused
-		m_nanim = ANIM_PAUSED;
+		m_videoMode = VIDEO_STOPPED;
 	}
 
-	return (m_panim != 0);
+	return (m_video != 0);
 }
 
 bool CGLView::HasRecording() const
 {
-	return (m_panim != 0);
+	return (m_video != 0);
 }
 
-ANIMATION_MODE CGLView::AnimationMode() const
+VIDEO_MODE CGLView::RecordingMode() const
 {
-	return m_nanim;
+	return m_videoMode;
 }
 
 void CGLView::StartAnimation()
 {
-	if (m_panim)
+	if (m_video)
 	{
 		// set the animation mode to recording
-		m_nanim = ANIM_RECORDING;
+		m_videoMode = VIDEO_RECORDING;
 
 		// lock the frame
 		m_pframe->SetState(GLSafeFrame::LOCKED);
@@ -1408,22 +1408,22 @@ void CGLView::StartAnimation()
 
 void CGLView::StopAnimation()
 {
-	if (m_panim)
+	if (m_video)
 	{
 		// stop the animation
-		m_nanim = ANIM_STOPPED;
+		m_videoMode = VIDEO_STOPPED;
 
-		if (m_panim->Frames() == 0)
+		if (m_video->Frames() == 0)
 		{
 			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
 		}
 
 		// close the stream
-		m_panim->Close();
+		m_video->Close();
 
 		// delete the object
-		delete m_panim;
-		m_panim = 0;
+		delete m_video;
+		m_video = 0;
 
 		// unlock the frame
 		m_pframe->SetState(GLSafeFrame::FREE);
@@ -1434,10 +1434,10 @@ void CGLView::StopAnimation()
 
 void CGLView::PauseAnimation()
 {
-	if (m_panim)
+	if (m_video)
 	{
 		// pause the recording
-		m_nanim = ANIM_PAUSED;
+		m_videoMode = VIDEO_PAUSED;
 		m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
 		repaint();
 	}
@@ -1578,7 +1578,7 @@ void CGLView::paintGL()
 
 	painter.end();
 
-	if (m_nanim != ANIM_STOPPED)
+	if (m_videoMode != VIDEO_STOPPED)
 	{
 		glPushAttrib(GL_ENABLE_BIT);
 		glDisable(GL_DEPTH_TEST);
@@ -1594,18 +1594,18 @@ void CGLView::paintGL()
 		RenderGLProgress(postDoc);
 	}
 
-	if ((m_nanim == ANIM_RECORDING) && (m_panim != 0))
+	if ((m_videoMode == VIDEO_RECORDING) && (m_video != 0))
 	{
 		glFlush();
 		QImage im = CaptureScreen();
-		if (m_panim->Write(im) == false)
+		if (m_video->Write(im) == false)
 		{
 			StopAnimation();
 			QMessageBox::critical(this, "FEBio Studio", "An error occurred while recording.");
 		}
 	}
 
-	if ((m_nanim == ANIM_PAUSED) && (m_panim != 0))
+	if ((m_videoMode == VIDEO_PAUSED) && (m_video != 0))
 	{
 		QPainter painter(this);
 		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);

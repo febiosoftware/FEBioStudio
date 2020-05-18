@@ -112,7 +112,7 @@ void CMainWindow::on_actionRecordPause_triggered()
 {
 	if (ui->glview->HasRecording())
 	{
-		if (ui->glview->AnimationMode() == ANIM_RECORDING)
+		if (ui->glview->RecordingMode() == VIDEO_RECORDING)
 		{
 			ui->glview->PauseAnimation();
 			UpdateTitle();
@@ -125,7 +125,7 @@ void CMainWindow::on_actionRecordStop_triggered()
 {
 	if (ui->glview->HasRecording())
 	{
-		if (ui->glview->AnimationMode() != ANIM_STOPPED)
+		if (ui->glview->RecordingMode() != VIDEO_STOPPED)
 		{
 			ui->glview->StopAnimation();
 			UpdateTitle();
