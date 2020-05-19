@@ -455,6 +455,7 @@ void CCmdScaleSelection::UnExecute()
 //=============================================================================
 CCmdToggleObjectVisibility::CCmdToggleObjectVisibility(GModel* model) : CCommand("Toggle visibility")
 {
+	m_model = model;
 }
 
 void CCmdToggleObjectVisibility::Execute()

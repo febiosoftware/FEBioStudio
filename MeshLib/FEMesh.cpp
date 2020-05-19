@@ -2734,7 +2734,12 @@ void FEMesh::Load(IArchive& ar)
 	}
 
 	// rebuild mesh' data
-	Update();
+	UpdateElementNeighbors();
+	UpdateFaces();
+	UpdateEdgeNeighbors();
+	UpdateNormals();
+	MarkExteriorNodes();
+	UpdateBox(); 
 }
 
 //-----------------------------------------------------------------------------

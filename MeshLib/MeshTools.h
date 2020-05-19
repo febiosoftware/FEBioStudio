@@ -51,6 +51,8 @@ bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q);
 bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap = false);
 bool FindIntersection(FEMeshBase& mesh, FEFace& f, const vec3d& x, const vec3d& n, vec3d& q, double& g);
 
+std::vector<vec3d> FindAllIntersections(FEMeshBase& mesh, const vec3d& x, const vec3d& n, bool forwardOnly = true);
+
 // calculate edge intersection
 int edgeIntersect(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d& r3, vec3d N, vec3d& q, double& L, const double eps);
 

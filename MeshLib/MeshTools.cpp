@@ -358,6 +358,26 @@ vec3d ProjectToEdge(vec3d e1, vec3d e2, vec3d p, double& r)
 	return e1 + t*r;
 }
 
+//-----------------------------------------------------------------------------
+std::vector<vec3d> FindAllIntersections(FEMeshBase& mesh, const vec3d& x, const vec3d& n, bool forwardOnly)
+{
+	vector<vec3d> q;
+	int NF = mesh.Faces();
+	vec3d r;
+	double g;
+	for (int i = 0; i<NF; ++i)
+	{
+		FEFace& f = mesh.Face(i);
+		if (FindIntersection(mesh, f, x, n, r, g))
+		{
+			if ((forwardOnly == false) || (g > 0.0))
+			{
+				q.push_back(r);
+			}
+		}
+	}
+	return q;
+}
 
 //-----------------------------------------------------------------------------
 bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap)

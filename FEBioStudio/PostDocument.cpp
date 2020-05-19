@@ -6,6 +6,7 @@
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Palette.h>
 #include <PostGL/GLModel.h>
+#include <MeshTools/GModel.h>
 
 void TIMESETTINGS::Defaults()
 {
@@ -231,6 +232,35 @@ bool CPostDocument::Initialize()
 		// set the current time
 		// this will also update the scene
 		SetActiveState(0);
+
+		// map colors from modeldoc
+		if (m_doc)
+		{
+			::FEModel& docfem = *m_doc->GetFEModel();
+			GModel* mdl = m_doc->GetGModel();
+
+			int mats = docfem.Materials();
+			int dmats = mdl->DiscreteObjects();
+			if (mats + dmats == m_fem->Materials())
+			{
+				for (int i = 0; i < mats; ++i)
+				{
+					GLColor c = docfem.GetMaterial(i)->Diffuse();
+
+					Post::FEMaterial* mat = m_fem->GetMaterial(i);
+					mat->ambient = c;
+					mat->diffuse = c;
+				}
+
+				for (int i = 0; i < dmats; ++i)
+				{
+					GLColor c = mdl->DiscreteObject(i)->GetColor();
+					Post::FEMaterial* mat = m_fem->GetMaterial(i + mats);
+					mat->ambient = c;
+					mat->diffuse = c;
+				}
+			}
+		}
 	}
 
 	UpdateFEModel(true);

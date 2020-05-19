@@ -346,7 +346,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	else if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
 	{
 		// load the plot file
-		OpenPlotFile(fileName, showLoadOptions);
+		OpenPlotFile(fileName, nullptr, showLoadOptions);
 	}
 	else if ((ext.compare("feb", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("inp", Qt::CaseInsensitive) == 0) ||
@@ -681,13 +681,13 @@ CModelDocument* CMainWindow::CreateNewDocument()
 
 //-----------------------------------------------------------------------------
 //! Open a plot file
-void CMainWindow::OpenPlotFile(const QString& fileName, bool showLoadOptions)
+void CMainWindow::OpenPlotFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions)
 {
 	// see if this file is already open
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(FindDocument(fileName.toStdString()));
 	if (doc == nullptr)
 	{
-		doc = new CPostDocument(this);
+		doc = new CPostDocument(this, modelDoc);
 		xpltFileReader* xplt = new xpltFileReader(doc->GetFEModel());
 		doc->SetFileReader(xplt);
 		if (showLoadOptions)

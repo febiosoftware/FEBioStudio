@@ -20,10 +20,12 @@ public:
 private:
 	bool ReadFile();
 	bool AddSprings(GModel* fem, GMeshObject* po);
+	void Intersect(GMeshObject* po, SPRING& s);
 
 private:
 	QString	m_fileName;
 	double	m_tol;
+	bool	m_bintersect;
 
 	std::vector<SPRING>	m_springs;
 };

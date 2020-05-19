@@ -4,14 +4,17 @@
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModel.h>
+#include <MeshLib/MeshTools.h>
 #include <QDir>
 
 CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
 {
 	addResourceProperty(&m_fileName, "Filename");
 	addDoubleProperty(&m_tol, "Snap tolerance");
+	addBoolProperty(&m_bintersect, "Check for intersections");
 
 	m_tol = 1e-6;
+	m_bintersect = true;
 }
 
 bool CImportSpringsTool::OnApply()
@@ -116,7 +119,13 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 	int notFound = 0;
 	for (size_t i = 0; i < m_springs.size(); ++i)
 	{
-		SPRING& spring = m_springs[i];
+		SPRING spring = m_springs[i];
+
+		// check for intersections first
+		if (m_bintersect)
+		{
+			Intersect(po, spring);
+		}
 
 		// see if the node exists
 		int na = findNode(po, spring.r0, m_tol);
@@ -134,4 +143,45 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 	}
 
 	return true;
+}
+
+void CImportSpringsTool::Intersect(GMeshObject* po, CImportSpringsTool::SPRING& spring)
+{
+	FEMesh* mesh = po->GetFEMesh();
+
+	vec3d n = spring.r1 - spring.r0; n.Normalize();
+
+	vector<vec3d> intersections = FindAllIntersections(*mesh, spring.r0, n);
+	for (int i=0; i<intersections.size(); ++i)
+	{
+		vec3d q = intersections[i];
+
+		// does the projection lie within tolerance
+		double d = (q - spring.r0).Length();
+		if (d < m_tol)
+		{
+			// does it decrease the distance
+			if ((spring.r1 - q).Length() < (spring.r1 - spring.r0).Length())
+			{
+				spring.r0 = q;
+			}
+		}
+	}
+
+	intersections = FindAllIntersections(*mesh, spring.r1, -n);
+	for (int i = 0; i<intersections.size(); ++i)
+	{
+		vec3d q = intersections[i];
+
+		// does the projection lie within tolerance
+		double d = (q - spring.r1).Length();
+		if (d < m_tol)
+		{
+			// does it decrease the distance
+			if ((q - spring.r0).Length() < (spring.r1 - spring.r0).Length())
+			{
+				spring.r1 = q;
+			}
+		}
+	}
 }

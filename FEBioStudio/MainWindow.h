@@ -237,6 +237,7 @@ public:
 	FileReader* CreateFileReader(const QString& fileName);
 
 	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true);
+	void OpenPlotFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true);
 
 	bool SaveDocument(const QString& fileName);
 
@@ -255,7 +256,6 @@ private:
 	void ReadFile(QueuedFile& qfile);
 
 	void OpenDocument(const QString& fileName);
-	void OpenPlotFile(const QString& fileName, bool showLoadOptions = true);
 	void OpenFEModel(const QString& fileName);
 
 public slots:
