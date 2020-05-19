@@ -135,7 +135,7 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 // function will also rebuild the GMesh for rendering.
 bool GMeshObject::Update(bool b)
 {
-	if (b) UpdateParts();
+	UpdateParts();
 	UpdateSurfaces();
 	UpdateNodes();
 	UpdateEdges();

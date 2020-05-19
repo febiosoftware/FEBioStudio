@@ -2287,8 +2287,7 @@ void CGLModel::SelectConnectedFaces(FEFace &f, double angleTol)
 	while (!S.empty())
 	{
 		FEFace* pf = S.top(); S.pop();
-		FEElement_& el = mesh.ElementRef(pf->m_elem[0].eid);
-		if (el.IsVisible())
+		if (pf->IsVisible())
 		{
 			pf->Select();
 			for (int j=0; j<pf->Edges(); ++j)
