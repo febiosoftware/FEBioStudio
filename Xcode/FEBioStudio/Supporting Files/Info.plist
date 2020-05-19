@@ -12,6 +12,19 @@
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>fsprj</string>
+				<string>fsp</string>
+			</array>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>FEBioStudio Model File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>fsm</string>
 			</array>
 			<key>LSHandlerRank</key>
 			<string>Default</string>
