@@ -617,8 +617,8 @@ FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int ns
 	AddDoubleParam(0    , "fric_coeff"         , "friction coefficient"  );
 	AddBoolParam  (false, "smooth_aug"         , "Augmentation smoothing");
 	AddBoolParam  (false, "node_reloc"         , "Relocated nodes"       );
-    AddBoolParam  (false, "flip_master"        , "flip normal on master" );
-    AddBoolParam  (false, "flip_slave"         , "flip normal on slave"  );
+    AddBoolParam  (false, "flip_slave"         , "flip normal on primary"  );
+    AddBoolParam  (false, "flip_master"        , "flip normal on secondary");
 }
 
 //=============================================================================
