@@ -801,6 +801,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_MaterialPropsView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\DocResourceTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -1121,9 +1124,6 @@
     <ClInclude Include="..\..\FEBioStudio\UnitParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\MaterialPropsView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
@@ -1364,6 +1364,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\DlgSetRepoFolder.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\MaterialPropsView.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
