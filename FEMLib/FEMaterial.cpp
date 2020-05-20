@@ -117,25 +117,6 @@ FEPorousNeoHookean::FEPorousNeoHookean() : FEMaterial(FE_POROUS_NEO_HOOKEAN)
 }
 
 //////////////////////////////////////////////////////////////////////
-// FEGasserOgdenHolzapfelUC - Gasser-Ogden-Holzapfel uncoupled
-//////////////////////////////////////////////////////////////////////
-
-REGISTER_MATERIAL(FEGasserOgdenHolzapfelUC, MODULE_MECH, FE_HOLZAPFEL_UC, FE_MAT_ELASTIC_UNCOUPLED, "Gasser-Ogden-Holzapfel-uncoupled", MaterialFlags::TOPLEVEL);
-
-FEGasserOgdenHolzapfelUC::FEGasserOgdenHolzapfelUC() : FEMaterial(FE_HOLZAPFEL_UC)
-{
-	m_hasMatAxes = true;
-
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
-	AddScienceParam(0, UNIT_PRESSURE, "c", "c");
-	AddScienceParam(0, UNIT_PRESSURE, "k1", "k1");
-	AddScienceParam(0, UNIT_NONE, "k2", "k2");
-	AddScienceParam(0, UNIT_NONE, "kappa", "kappa");
-	AddScienceParam(0, UNIT_RADIAN, "gamma", "gamma");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "Bulk modulus");
-}
-
-//////////////////////////////////////////////////////////////////////
 // FEMooneyRivlin - Mooney-Rivlin rubber
 //////////////////////////////////////////////////////////////////////
 

@@ -372,17 +372,6 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEGasserOgdenHolzapfelUC : public FEMaterial
-{
-public:
-	enum { MP_DENSITY, MP_C10, MP_K1, MP_K2, MP_KAPPA, MP_GAMMA, MP_K };
-
-public:
-	FEGasserOgdenHolzapfelUC();
-	DECLARE_REGISTERED(FEGasserOgdenHolzapfelUC);
-};
-
-//-----------------------------------------------------------------------------
 // Mooney-Rivlin
 //
 class FEMooneyRivlin : public FEMaterial

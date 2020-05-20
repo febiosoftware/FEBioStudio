@@ -1488,18 +1488,6 @@ bool AbaqusImport::build_physics()
 				pmat->SetFloatValue(FEIncompNeoHookean::MP_K, 1.0 / pm->d[1]);
 			}
 			break;
-		case AbaqusModel::ANI_HYPERELASTIC:
-			if (pm->ntype == 1)
-			{
-				pmat = new FEGasserOgdenHolzapfelUC;
-				pmat->SetFloatValue(FEGasserOgdenHolzapfelUC::MP_DENSITY, pm->dens);
-				pmat->SetFloatValue(FEGasserOgdenHolzapfelUC::MP_C10, pm->d[0]);
-				pmat->SetFloatValue(FEGasserOgdenHolzapfelUC::MP_K, 1.0 / pm->d[1]);
-				pmat->SetFloatValue(FEGasserOgdenHolzapfelUC::MP_K1, pm->d[2]);
-				pmat->SetFloatValue(FEGasserOgdenHolzapfelUC::MP_K2, pm->d[3]);
-				pmat->SetFloatValue(FEGasserOgdenHolzapfelUC::MP_KAPPA, pm->d[4]);
-			}
-			break;
 		}
 
 		if (pmat)
