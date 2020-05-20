@@ -66,7 +66,7 @@ void CIntegrateWindow::UpdateIntegral()
 		IntegrateSelection(*data);
 
 		int nview = model->GetSelectionMode();
-		sprintf(sztitle, "%s of %s", (nview == SELECT_NODES? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
+		sprintf(sztitle, "%s of %s", (nview == Post::SELECT_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
 	}
 	else 
 	{

@@ -2961,7 +2961,7 @@ void CGLModel::BuildInternalSurfaces()
 				for (int j = 0; j<el.Faces(); ++j)
 				{
 					FEElement_* pen = mesh.ElementPtr(el.m_nbr[j]);
-					if (pen)
+					if (pen && (pen->m_MatID == el.m_MatID))
 					{
 						bool badd = (pen->IsSelected() != el.IsSelected()) || !pen->IsVisible();
 
