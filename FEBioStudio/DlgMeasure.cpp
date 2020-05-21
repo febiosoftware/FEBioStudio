@@ -118,6 +118,7 @@ CDlgMeasure::~CDlgMeasure()
 
 void CDlgMeasure::showEvent(QShowEvent* ev)
 {
+	ui->m_list->setCurrentRow(0);
 	Update();
 	if (ui->m_rt.isValid()) setGeometry(ui->m_rt);
 }

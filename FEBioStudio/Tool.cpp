@@ -49,6 +49,7 @@ void CAbstractTool::Update()
 void CAbstractTool::Activate()
 {
 	Update();
+	updateUi();
 }
 
 void CAbstractTool::Deactivate()
