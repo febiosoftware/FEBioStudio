@@ -1374,6 +1374,8 @@ int CMainWindow::GetDefaultUnitSystem() const
 
 void CMainWindow::writeSettings()
 {
+	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	settings.beginGroup("MainWindow");
 	settings.setValue("geometry", saveGeometry());
@@ -1382,6 +1384,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
+	settings.setValue("multiViewProjection", vs.m_nconv);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1443,6 +1446,7 @@ void CMainWindow::readThemeSetting()
 
 void CMainWindow::readSettings()
 {
+	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	settings.beginGroup("MainWindow");
 	restoreGeometry(settings.value("geometry").toByteArray());
@@ -1451,7 +1455,7 @@ void CMainWindow::readSettings()
 	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
-
+	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
 	Units::SetUnitSystem(ui->m_defaultUnits);
 
 	QRect rt;
