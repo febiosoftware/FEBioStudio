@@ -1374,10 +1374,12 @@ void CModelPropsPanel::selSelection(int n)
 	}
 	else if (dynamic_cast<GMaterial*>(m_currentObject))
 	{
+		pdoc->SetSelectionMode(SELECT_PART);
 		pcmd = new CCmdSelectPart(mdl, &l[0], (int)l.size(), false);
 	}
 	else if (dynamic_cast<GDiscreteElementSet*>(m_currentObject))
 	{
+		pdoc->SetSelectionMode(SELECT_DISCRETE);
 		GDiscreteElementSet* ds = dynamic_cast<GDiscreteElementSet*>(m_currentObject);
 		pcmd = new CCmdSelectDiscreteElements(ds, l, false);
 	}

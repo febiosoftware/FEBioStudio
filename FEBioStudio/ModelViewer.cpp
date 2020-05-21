@@ -333,10 +333,12 @@ void CModelViewer::on_selectButton_clicked()
 
 		vector<int> partIdList;
 		for (GPart* pg : partList) partIdList.push_back(pg->GetID());
+		pdoc->SetSelectionMode(SELECT_PART);
 		pcmd = new CCmdSelectPart(mdl, partIdList, false);
 	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
+	GetMainWindow()->UpdateToolbar();
 	GetMainWindow()->Update(this);
 }
 
