@@ -2,251 +2,423 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
+enum VTK_DATASET_TYPE {
+	VTK_INVALID,
+	VTK_POLYDATA,
+	VTK_UNSTRUCTURED_GRID
+};
+enum VTK_CELL_TYPE {
+	VTK_VERTEX = 1,
+	VTK_POLY_VERTEX = 2,
+	VTK_LINE = 3,
+	VTK_POLY_LINE = 4,
+	VTK_TRIANGLE = 5,
+	VTK_TRIANGLE_STRIP = 6,
+	VTK_POLYGON = 7,
+	VTK_PIXEL = 8,
+	VTK_QUAD = 9,
+	VTK_TETRA = 10,
+	VTK_VOXEL = 11,
+	VTK_HEXAHEDRON = 12,
+	VTK_WEDGE = 13,
+	VTK_PYRAMID = 14
+};
+
+class VTKMesh
+{
+public:
+	struct NODE {
+		double r[3];
+	};
+
+	struct CELL
+	{
+		int	label;
+		int	numNodes;
+		int cellType;
+		int	node[FEElement::MAX_NODES];
+	};
+
+public:
+	VTKMesh() {}
+
+	int nodes() { return (int)m_nodeList.size(); }
+	int cells() { return (int)m_cellList.size(); }
+
+public:
+	vector<NODE>	m_nodeList;
+	vector<CELL>	m_cellList;
+};
+
 FEVTKimport::FEVTKimport(FEProject& prj) : FEFileImport(prj)
 {
+	m_szline[0] = 0;
 }
 
 FEVTKimport::~FEVTKimport(void)
 {
 }
 
-bool FEVTKimport::Load(const char* szfile)
+bool FEVTKimport::nextLine()
 {
-	FEModel& fem = m_prj.GetFEModel();
-
-	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
-
-	char szline[256] = {0}, *ch;
-	int nread, i,j,k;
-	char type[256];
-	double temp[9];
-	bool isASCII=false, isPOLYDATA = false, isUnstructuredGrid = false, isCellData = false,isScalar=false,isShellThickness=false;
-	// read the header
+	const char* ch = nullptr;
 	do
 	{
-		ch = fgets(szline, 255, m_fp);
-		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-		if (strstr(ch, "ASCII") != 0) isASCII = true;
-		if (strstr(ch, "POLYDATA") != 0) isPOLYDATA = true;
-		if (strstr(ch, "UNSTRUCTURED_GRID") != 0) isUnstructuredGrid = true;
+		ch = fgets(m_szline, 255, m_fp);
 	}
-	while(strstr(ch, "POINTS") == 0);
-	if (!isASCII)
-		return errf("Only ASCII files are read");
+	while (ch && ((*ch == 0) || (*ch == '\n') || (*ch == '\r')));
+	return (ch != nullptr);
+}
+
+bool FEVTKimport::checkLine(const char* sz)
+{
+	if (sz == nullptr) return false;
+	return (strncmp(m_szline, sz, strlen(sz)) == 0);
+}
+
+int FEVTKimport::parseLine(std::vector<std::string>& str)
+{
+	str.clear();
+	const char* ch = m_szline;
+
+	// skip initial whitspace
+	while (iswspace(*ch)) ch++;
+
+	string tmp;
+	while (*ch)
+	{
+		if (*ch == ' ')
+		{
+			str.push_back(tmp);
+			tmp.clear();
+			while (iswspace(*ch)) ch++;
+		}
+		else
+		{
+			if (iswspace(*ch) == 0) tmp.push_back(*ch);
+			ch++;
+		}
+	}
+	if (tmp.empty() == false) str.push_back(tmp);
+
+	return str.size();
+}
+
+bool FEVTKimport::Load(const char* szfile)
+{
+	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
+
+	// read the first line 
+	if (nextLine() == false) return errf("Unexpected end of file.");
+	if (checkLine("# vtk DataFile") == false) return errf("This is not a valid VTK file.");
+
+	// next line is info, so can be skipped
+	if (nextLine() == false) return errf("Unexpected end of file.");
+
+	// next line must be ASCII
+	if (nextLine() == false) return errf("Unexpected end of file.");
+	if (checkLine("ASCII") == false) return errf("Only ASCII VTK files are supported.");
+
+	// read the DATASET line
+	if (nextLine() == false) return errf("Unexpected end of file.");
+	if (checkLine("DATASET") == false) return errf("Error looking for DATASET keyword.");
+	m_dataSetType = VTK_INVALID;
+	if (strstr(m_szline, "POLYDATA") != nullptr) m_dataSetType = VTK_POLYDATA;
+	if (strstr(m_szline, "UNSTRUCTURED_GRID") != nullptr) m_dataSetType = VTK_UNSTRUCTURED_GRID;
+	if (m_dataSetType == VTK_INVALID) return errf("Only POLYDATA and UNSTRUCTURED_GRID dataset types are supported.");
+
+	// VTK mesh data
+	VTKMesh vtk;
+
+	// start parsing keywords
+	if (nextLine() == false) return errf("Unexpected end of file.");
+	do
+	{
+		if (checkLine("POINTS"))
+		{
+			if (read_POINTS(vtk) == false) return false;
+		}
+		else if (checkLine("POLYGONS"))
+		{
+			if (read_POLYGONS(vtk) == false)  return false;
+		}
+		else if (checkLine("CELLS"))
+		{
+			if (read_CELLS(vtk) == false)  return false;
+		}
+		else if (checkLine("CELL_TYPES"))
+		{
+			if (read_CELL_TYPES(vtk) == false)  return false;
+		}
+		else if (checkLine("POINT_DATA"))
+		{
+			if (read_POINT_DATA(vtk) == false)  return false;
+		}
+		else if (checkLine("NORMALS"))
+		{
+			if (read_NORMALS(vtk) == false)  return false;
+		}
+		else if (checkLine("CELL_DATA"))
+		{
+			if (read_CELL_DATA(vtk) == false)  return false;
+		}
+		else if (checkLine("FIELD"))
+		{
+			if (read_FIELD(vtk) == false)  return false;
+		}
+	}
+	while (nextLine());
+
+	Close();
+
+	return BuildMesh(vtk);
+}
+
+bool FEVTKimport::read_POINTS(VTKMesh& vtk)
+{
+	if (checkLine("POINTS") == false) errf("Error looking for POINTS keyword.");
+	if (strstr(m_szline, "float") == nullptr) return errf("Only float data type is supported for POINTS section.");
 
 	//get number of nodes
-	int nodes = atoi(ch+6);
-	
-	int size = 0;
-	int nparts = 0;
-	int edges = 0;
-	int elems = 0;
-	if (nodes <= 0) return errf("Invalid number of nodes.");
-	
+	int nodes = atoi(m_szline + 6);
+	if (nodes <= 0) return errf("Invalid number of nodes in POINTS section.");
 
-	// create a new mesh
-	FEMesh* pm = new FEMesh();
-	pm->Create(nodes, 0);
-	
+	vtk.m_nodeList.resize(nodes);
+
 	// read the nodes
-	//Check how many nodes are there in each line
+	double temp[9];
 	int nodesRead = 0;
 	while (nodesRead < nodes)
 	{
-		ch = fgets(szline, 255, m_fp);
-		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
+		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
 
-		nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7], &temp[8]);
+		// There can be up to three nodes defined per line
+		int nread = sscanf(m_szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7], &temp[8]);
 		if (nread % 3 != 0 && nread > 9)
 			return errf("An error occured while reading the nodal coordinates.");
 
 		int nodes_in_row = nread / 3;
 
-		k = 0;
-		for (j=0; j<nodes_in_row; ++j)
+		for (int j = 0, k = 0; j < nodes_in_row; ++j)
 		{
-			FENode& n = pm->Node(nodesRead++);
-			vec3d& r = n.r;
-			r.x = temp[k    ];
-			r.y = temp[k + 1];
-			r.z = temp[k + 2];
+			VTKMesh::NODE& node = vtk.m_nodeList[nodesRead++];
+			node.r[0] = temp[k];
+			node.r[1] = temp[k + 1];
+			node.r[2] = temp[k + 2];
 			k += 3;
 		}
 	}
 	assert(nodesRead == nodes);
 
-	//Reading element data
-	while(1)
-	{		
-		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-		if (strstr(ch, "POLYGONS") != 0 || strstr(ch, "CELLS") != 0 ) 
-		{
-			sscanf(szline, "%s %d %d",type,&elems,&size);
-			break;
-		}
-		ch = fgets(szline, 255, m_fp);
+	return true;
+}
+
+bool FEVTKimport::read_POLYGONS(VTKMesh& vtk)
+{
+	if (m_dataSetType != VTK_POLYDATA) return errf("Invalid section POLYDATA.");
+
+	if (checkLine("POLYGONS") == false) errf("Cannot find POLYGON keyword.");
+
+	int elems = 0;
+	int size = 0;
+	sscanf(m_szline + 8, "%d %d", &elems, &size);
+	vtk.m_cellList.resize(elems);
+
+	for (int i = 0; i < elems; ++i)
+	{
+		VTKMesh::CELL& cell = vtk.m_cellList[i];
+		int* n = cell.node;
+		int numNodes;
+		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+
+		int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d%d%d", &numNodes, &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6], &n[7], &n[8], &n[9]);
+		cell.numNodes = numNodes;
+		if (numNodes == 3) cell.cellType = VTK_TRIANGLE;
+		else if (numNodes == 4) cell.cellType = VTK_QUAD;
+		else return errf("Invalid polygon type.");
 	}
 
-	if(elems == 0||size == 0)
-		return errf("Only POLYGON/CELL dataset format is supported.");
+	return true;
+}
 
-	pm->Create(0, elems);
+bool FEVTKimport::read_CELLS(VTKMesh& vtk)
+{
+	if (m_dataSetType != VTK_UNSTRUCTURED_GRID) return errf("Invalid section CELLS");
 
-	// read the elements
-	int n[FEElement::MAX_NODES + 1];
-	for (i=0; i<elems; ++i)
-	{	
-		FEElement& el = pm->Element(i);
-		el.m_gid = 0;
-		ch = fgets(szline, 255, m_fp);
-		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-		nread = sscanf(szline, "%d%d%d%d%d%d%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4],&n[5],&n[6],&n[7],&n[8], &n[9], &n[10]);
-		int min = 0;
-		switch (n[0])
+	int elems = 0;
+	int size = 0;
+	sscanf(m_szline + 5, "%d %d", &elems, &size);
+	if (elems == 0) return errf("Invalid number of cells in CELLS section.");
+	vtk.m_cellList.resize(elems);
+
+	for (int i = 0; i < elems; ++i)
+	{
+		VTKMesh::CELL& cell = vtk.m_cellList[i];
+		int* n = cell.node;
+		int numNodes;
+		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+		int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d%d%d", &numNodes, &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6], &n[7], &n[8], &n[9]);
+		cell.numNodes = numNodes;
+		cell.cellType = VTK_INVALID;
+		cell.label = 1;
+	}
+
+	return true;
+}
+
+bool FEVTKimport::read_CELL_TYPES(VTKMesh& vtk)
+{
+	if (m_dataSetType != VTK_UNSTRUCTURED_GRID) return errf("Invalid section CELLS");
+	if (checkLine("CELL_TYPES") == false) return errf("Cannot find CELL_TYPES keyword.");
+
+	int elems = atoi(m_szline + 10);
+	if (elems != vtk.m_cellList.size()) return errf("Incorrect number of cells in CELL_TYPES.");
+
+	for (int i = 0; i < elems; ++i)
+	{
+		VTKMesh::CELL& cell = vtk.m_cellList[i];
+		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+		int n = atoi(m_szline);
+		switch (n)
 		{
-		case 3: 
-			el.SetType(FE_TRI3);
-			el.m_node[0] = n[1]-min;
-			el.m_node[1] = n[2]-min;
-			el.m_node[2] = n[3]-min;
-			break;
-		case 4:			
-			if(isPOLYDATA)
-				el.SetType(FE_QUAD4);
-			if(isUnstructuredGrid)
-				el.SetType(FE_TET4);
-			el.m_node[0] = n[1]-min;
-			el.m_node[1] = n[2]-min;
-			el.m_node[2] = n[3]-min;
-			el.m_node[3] = n[4]-min;
-			break;
-		case 8:
-			el.SetType(FE_HEX8);
-			el.m_node[0] = n[1]-min;
-			el.m_node[1] = n[2]-min;
-			el.m_node[2] = n[3]-min;
-			el.m_node[3] = n[4]-min;
-			el.m_node[4] = n[5]-min;
-			el.m_node[5] = n[6]-min;
-			el.m_node[6] = n[7]-min;
-			el.m_node[7] = n[8]-min;
-			break;
-		case 10:
-			el.SetType(FE_TET10);
-			el.m_node[0] = n[ 1] - min;
-			el.m_node[1] = n[ 2] - min;
-			el.m_node[2] = n[ 3] - min;
-			el.m_node[3] = n[ 4] - min;
-			el.m_node[4] = n[ 5] - min;
-			el.m_node[5] = n[ 6] - min;
-			el.m_node[6] = n[ 7] - min;
-			el.m_node[7] = n[ 8] - min;
-			el.m_node[8] = n[ 9] - min;
-			el.m_node[9] = n[10] - min;
-			break;
+		case VTK_TETRA     : cell.cellType = VTK_TETRA; break;
+		case VTK_HEXAHEDRON: cell.cellType = VTK_HEXAHEDRON; break;
+		case VTK_WEDGE     : cell.cellType = VTK_WEDGE; break;
+		case VTK_PYRAMID   : cell.cellType = VTK_PYRAMID; break;
+		default:
+			return errf("Unsupported cell type foudn in CELL_TYPES");
+		}
+	}
+	return true;
+}
+
+bool FEVTKimport::read_POINT_DATA(VTKMesh& vtkMesh)
+{
+	if (checkLine("POINT_DATA") == false) return errf("Cannot find POINT_DATA keyword.");
+
+	int nodes = atoi(m_szline + 10);
+	if (nodes != vtkMesh.nodes()) return errf("Incorrect number of nodes specified in POINT_DATA.");
+
+	return true;
+}
+
+bool FEVTKimport::read_CELL_DATA(VTKMesh& vtkMesh)
+{
+	if (checkLine("CELL_DATA") == false) return errf("Cannot find POINT_DATA keyword.");
+
+	int cells = atoi(m_szline + 10);
+	if (cells != vtkMesh.cells()) return errf("Incorrect number of nodes specified in CELL_DATA.");
+
+	return true;
+}
+
+bool FEVTKimport::read_NORMALS(VTKMesh& vtkMesh)
+{
+	vector<string> att;
+	int nread = parseLine(att);
+	if (att[0] != "NORMALS") return errf("Cannot find NORMALS keyword.");
+
+	if ((nread == 3) && (att[2] != "float")) return errf("Only floats supported in NORMALS");
+
+	int nodes = vtkMesh.nodes();
+	int lines = nodes / 3;
+	if ((nodes % 3) != 0) lines++;
+	for (int i = 0; i < lines; ++i)
+	{
+		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+
+		// TODO: Do something with this data
+	}
+
+	return true;
+}
+
+bool FEVTKimport::read_FIELD(VTKMesh& vtkMesh)
+{
+	vector<string> att;
+	int nread = parseLine(att);
+	if (att[0] != "FIELD") return errf("Cannot find FIELD keyword.");
+	int numArrays = atoi(att[2].c_str());
+
+	for (int n = 0; n < numArrays; ++n)
+	{
+		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+		vector<string> att;
+		int nread = parseLine(att);
+		if (nread < 3) return errf("Invalid number of attributes in field definition.");
+
+		int numComp = atoi(att[1].c_str());
+		int numTuples = atoi(att[2].c_str());
+
+		bool isLabels = ((att[0] == "labels") && (numComp == 1) && (numTuples == vtkMesh.cells()));
+
+		double v[9];
+		int nsize = numComp*numTuples;
+		int nreadTotal = 0;
+		while (nreadTotal < nsize)
+		{
+			if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+
+			int nread = sscanf(m_szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", v, v+1, v+2, v+3, v+4, v+5, v+6, v+7, v+8);
+
+			// TODO: Do something with this data
+			if (isLabels)
+			{
+				for (int i = 0; i < nread; ++i) vtkMesh.m_cellList[nreadTotal + i].label = (int)v[i];
+			}
+			nreadTotal += nread;
+		}
+		assert(nreadTotal == nsize);
+	}
+}
+
+bool FEVTKimport::BuildMesh(VTKMesh& vtk)
+{
+	FEModel& fem = m_prj.GetFEModel();
+
+	// get the number of nodes and elements
+	int nodes = vtk.nodes();
+	int elems = vtk.cells();
+
+	// create a new mesh
+	FEMesh* pm = new FEMesh();
+	pm->Create(nodes, elems);
+
+	// copy nodal data
+	for (int i = 0; i < nodes; ++i)
+	{
+		FENode& node = pm->Node(i);
+		VTKMesh::NODE& vtkNode = vtk.m_nodeList[i];
+		node.r = vec3d(vtkNode.r[0], vtkNode.r[1], vtkNode.r[2]);
+	}
+
+	// copy element data
+	for (int i = 0; i < elems; ++i)
+	{
+		FEElement& el = pm->Element(i);
+		VTKMesh::CELL& cell = vtk.m_cellList[i];
+
+		el.m_gid = cell.label - 1;
+
+		switch (cell.cellType)
+		{
+		case VTK_TRIANGLE  : el.SetType(FE_TRI3  ); break;
+		case VTK_QUAD      : el.SetType(FE_QUAD4 ); break;
+		case VTK_TETRA     : el.SetType(FE_TET4  ); break;
+		case VTK_HEXAHEDRON: el.SetType(FE_HEX8  ); break;
+		case VTK_WEDGE     : el.SetType(FE_PENTA6); break;
+		case VTK_PYRAMID   : el.SetType(FE_PYRA5 ); break;
 		default:
 			delete pm;
-			return errf("Only triangular, quadrilateral and hexahedron polygons are supported.");
+			return errf("Error trying to build mesh");
 		}
-	}
-	ch = fgets(szline, 255, m_fp);
 
-	while (ch != NULL) //making sure the file doesn't ends here
-	{
-		//reading the point data
-		do
-		{	
-			if (ch == NULL) break;
-			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-			if (strstr(ch, "POINT_DATA") != 0)
-				size = atoi(ch+10);
-			if(strstr(ch,"CELL_DATA")!=0)
-			{
-				size = atoi(ch + 9);
-				isCellData = true;
-			}
-			if (strstr(ch, "SCALARS") != 0) isScalar = true;
-			if (strstr(ch, "ShellThickness") != 0) isShellThickness = true;
-			ch = fgets(szline, 255, m_fp);
-		}
-		while(ch == NULL || strstr(ch, "LOOKUP_TABLE") == 0);
-
-		if(!isScalar && ch !=NULL)
-			return errf("Only scalar data is supported.");	
-		vector<double> data; 
-		//reading shell thickness
-		if(isShellThickness)
-		{			
-			data.reserve(size);
-			//Check how many nodes are there in each line
-			ch = fgets(szline, 255, m_fp);
-			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-
-			int nodes_each_row = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
-			if (nodes_each_row>9) 
-				return errf("An error occured while reading the nodal coordinates.");
-			double temp2 = double(size)/nodes_each_row;
-			int rows = ceil(temp2);
-			for (i=0; i<rows; ++i)
-			{	
-				for (j=0;j<nodes_each_row && i*nodes_each_row+j <size;j++)
-				{
-					data.push_back(temp[j]);
-				}
-				ch = fgets(szline, 255, m_fp);
-				if (ch == 0 && i+1 != rows) 
-					return errf("An unexpected error occured while reading the scalar data.");
-
-				nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0],&temp[1],&temp[2], &temp[3],&temp[4],&temp[5], &temp[6],&temp[7],&temp[8]);
-				if (nread > 9 && nread != -1)
-				{ 			
-					if (i+1 != rows)
-						return errf("An error occured while reading the scalar.");
-				}
-			}
-			//Assigning the scalar feild to the mesh
-			//if scalar feild is shell thickness
-			int nn[8];
-			for (i=0; i<elems; ++i)
-			{
-				FEElement& el = pm->Element(i);
-				for (int k=0; k<el.Nodes(); ++k) 
-					nn[k] = el.m_node[k];
-				double	h[4];
-				for(int k =0;k<3;k++)
-					h[k] = data[nn[k]];
-				if(el.IsType(FE_QUAD4))
-					h[3] = data[nn[3]];
-
-				el.m_h[0] = h[0];
-				el.m_h[1] = h[1];
-				el.m_h[2] = h[2];
-				if(el.IsType(FE_QUAD4))
-					el.m_h[3] = h[3];				
-			}
-		}
-		//reading cell data
-		if(isCellData)
-		{
-			for (i = 0; i<size;)
-			{
-				ch = fgets(szline, 255, m_fp);
-				if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-				nread = sscanf(szline, "%lg%lg%lg%lg%lg%lg%lg%lg%lg", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7], &temp[8]);
-				for (int j = 0; j<nread; ++j, ++i)
-				{
-					FEElement& el = pm->Element(i);
-					el.m_gid = (int)temp[j];
-				}
-			}
-		}
-		break;
+		int nn = el.Nodes();
+		assert(nn == cell.numNodes);
+		for (int j = 0; j < nn; ++j) el.m_node[j] = cell.node[j];
 	}
 
-	Close();
-
-	pm->RebuildMesh(60.0, true, true);
-
+	pm->RebuildMesh(60.0, true, false);
 	GMeshObject* po = new GMeshObject(pm);
 	po->Update();
 
