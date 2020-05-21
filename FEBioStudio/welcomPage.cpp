@@ -31,6 +31,8 @@ _RECENT_FILES_\
 <li><a href=\"#febio\">FEBio Website</li>\
 <li><a href=\"#help\">FEBio Knowledgebase</li>\
 </ul>\
+<p style=\"text-align:right; font-size:14pt\">Weiss Lab, University of Utah</p>\
+<p style=\"text-align:right; font-size:14pt\">Ateshian Lab, Columbia University</p>\
 </body>\
 </html>"
 ;
