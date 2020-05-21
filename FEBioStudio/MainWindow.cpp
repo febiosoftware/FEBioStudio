@@ -253,7 +253,7 @@ void CMainWindow::UpdateTab(CDocument* doc)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_clearProject()
 {
-	if (ui->m_project.IsEmpty() == false) return;
+	if (ui->m_project.IsEmpty()) return;
 
 	if (QMessageBox::question(this, "Clear Project", "Are you sure you want to clear the current project?\nThis cannot be undone.") == QMessageBox::Yes)
 	{
