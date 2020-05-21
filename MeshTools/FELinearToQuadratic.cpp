@@ -846,7 +846,7 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
         }
         
         for (int j=0; j<e1.Nodes(); ++j)
-            e1.m_node[j] = e0.m_node[j];
+            e1.m_node[j] = pm->Node(e0.m_node[j]).m_ntag;
     }
     
     // create the new faces
@@ -863,7 +863,7 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
         f1.m_gid = f0.m_gid;
         f1.m_sid = f0.m_sid;
         for (int j=0; j<f1.Nodes(); ++j) {
-            f1.n[j] = f0.n[j];
+            f1.n[j] = pm->Node(f0.n[j]).m_ntag;
             f1.m_nbr[j] = f0.m_nbr[j];
         }
         f1.m_elem[0] = f0.m_elem[0];
@@ -877,8 +877,8 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
         FEEdge& e1 = pnew->Edge(i);
 
 		e1.SetType(FE_EDGE2);        
-        e1.n[0] = e0.n[0];
-        e1.n[1] = e0.n[1];
+        e1.n[0] = pm->Node(e0.n[0]).m_ntag;
+        e1.n[1] = pm->Node(e0.n[1]).m_ntag;
         e1.n[2] = -1;
         e1.m_gid = e0.m_gid;
         e1.m_nbr[0] = e0.m_nbr[0];
