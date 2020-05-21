@@ -22,7 +22,18 @@ CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGrap
 	QString title = "FEBio Studio: Summary";
 	setWindowTitle(title);
 
+	QCheckBox* selectionOnly = new QCheckBox("Selection only");
+	AddToolBarWidget(selectionOnly);
+	QObject::connect(selectionOnly, SIGNAL(stateChanged(int)), this, SLOT(onSelectionOnlyChanged(int)));
+
+	m_bselectionOnly = false;
 	m_ncurrentData = -1;
+}
+
+void CSummaryWindow::onSelectionOnlyChanged(int n)
+{
+	m_bselectionOnly = (n == Qt::Checked);
+	Update(false, true);
 }
 
 void CSummaryWindow::Update(bool breset, bool bfit)
@@ -56,7 +67,7 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	SetPlotTitle("Summary of " + GetCurrentYText());
 
 	// see if selection only box is checked
-	bool bsel = false; // ui->selectionOnly->isChecked();
+	bool bsel = m_bselectionOnly;
 
 	// see if volume average is checked
 	bool bvol = true; // ui->volumeAverage->isChecked();

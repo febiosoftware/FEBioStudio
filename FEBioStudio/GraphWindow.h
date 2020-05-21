@@ -303,6 +303,9 @@ public:
 public:
 	void ShowAddToModelButton(bool b);
 
+protected:
+	void AddToolBarWidget(QWidget* w);
+
 private:
 	// from CDocObserver
 	void DocumentUpdate(bool newDoc) override;

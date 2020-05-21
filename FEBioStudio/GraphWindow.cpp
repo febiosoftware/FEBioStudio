@@ -1145,6 +1145,12 @@ int CGraphWindow::GetCurrentPlotType()
 }
 
 //-----------------------------------------------------------------------------
+void CGraphWindow::AddToolBarWidget(QWidget* w)
+{
+	ui->toolBar->addWidget(w);
+}
+
+//-----------------------------------------------------------------------------
 void CGraphWindow::ShowAddToModelButton(bool b)
 {
 	ui->actionAddToModel->setVisible(b);
