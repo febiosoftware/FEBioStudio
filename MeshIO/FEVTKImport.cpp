@@ -370,6 +370,7 @@ bool FEVTKimport::read_FIELD(VTKMesh& vtkMesh)
 		}
 		assert(nreadTotal == nsize);
 	}
+    return true;
 }
 
 bool FEVTKimport::BuildMesh(VTKMesh& vtk)
