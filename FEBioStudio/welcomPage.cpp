@@ -7,7 +7,7 @@ const char* welcome = \
 <head>\
 <style>\
 body { background-color: _BGCOLOR_; }\
-h1{ color: gray; }\
+h1 { color: gray; }\
 a { color: _FGCOLOR_; font-size: 11pt; }\
 ul { line-height: 150%; list-style-type: none; }\
 </style>\
@@ -16,6 +16,9 @@ ul { line-height: 150%; list-style-type: none; }\
 <p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
 <p style=\"font-size: 14pt\">version _VERSION_</p>\
 <h1>Start</h1>\
+<table width=100%>\
+<tr>\
+<td>\
 <ul>\
 <li><a href=\"#new\">New Model ... </a></li>\
 <li><a href=\"#open\">Open Model ...</a></li>\
@@ -31,6 +34,15 @@ _RECENT_FILES_\
 <li><a href=\"#febio\">FEBio Website</li>\
 <li><a href=\"#help\">FEBio Knowledgebase</li>\
 </ul>\
+</td>\
+<td>\
+<p style=\"font-size: 14pt\"><b>Welcome to FEBio Studio!</b></p>\
+<p style=\"font-size: 12pt\">Click one of the links to the left to get started.</p>\
+<p style=\"font-size: 12pt\">Select <b>New or Open Model</b> if you want to create or open a single model and run it in FEBio.</p>\
+<p style=\"font-size: 12pt\">Select <b>New or Open Project</b> if you want to create and manage multiple FEBio models.</p>\
+</td>\
+</tr>\
+</table>\
 <p style=\"text-align:right; font-size:14pt\">Weiss Lab, University of Utah</p>\
 <p style=\"text-align:right; font-size:14pt\">Ateshian Lab, Columbia University</p>\
 </body>\
