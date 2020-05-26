@@ -1389,7 +1389,7 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm, GLColor c[4], int nd
 
 	vec3f& fn = face.m_fn;
 
-	float t[4];
+	float t[FEFace::MAX_NODES];
 	pm->FaceNodeTexCoords(face, t);
 
 	switch (face.m_type)
