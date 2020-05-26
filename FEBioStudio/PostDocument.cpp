@@ -156,7 +156,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		// If not, try to add it
 		if (bfound == false) Post::AddStandardDataField(*po, si);
 	}
-
+	po->UpdateMeshState();
 	int ntime = m_mdl.m_ntime;
 	if (ntime >= ps->GetStates() - 1) ntime = ps->GetStates() - 1;
 	po->SetCurrentTimeIndex(ntime);
