@@ -546,6 +546,20 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
 		}
 		while (!tag.isend());
 	}
+    else if (atype == "angles")
+    {
+        pm->m_axes->m_naopt = FE_AXES_ANGLES;
+        ++tag;
+        do
+        {
+            if      (tag == "theta") tag.value(pm->m_axes->m_theta);
+            else if (tag == "phi") tag.value(pm->m_axes->m_phi);
+            else ParseUnknownTag(tag);
+
+            ++tag;
+        }
+        while (!tag.isend());
+    }
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
 }

@@ -409,6 +409,7 @@ void CMaterialProps::BuildPropertyList()
 			val << "(none)";
 			val << "local node numbering";
 			val << "vector";
+            val << "angles";
 			addProperty("Material axes", CProperty::Enum)->setEnumValues(val);
 
 			switch (pm->m_axes->m_naopt)
@@ -422,6 +423,10 @@ void CMaterialProps::BuildPropertyList()
 				addProperty("a", CProperty::String);
 				addProperty("d", CProperty::String);
 				break;
+            case FE_AXES_ANGLES:
+                addProperty("theta", CProperty::String);
+                addProperty("phi", CProperty::String);
+                    break;
 			}
 		}
 	}
@@ -488,6 +493,10 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 			if (i == 1) return Vec3dToString(m_mat->m_axes->m_a);
 			if (i == 2) return Vec3dToString(m_mat->m_axes->m_d);
 			break;
+        case FE_AXES_ANGLES:
+            if (i == 1) return m_mat->m_axes->m_theta;
+            if (i == 2) return m_mat->m_axes->m_phi;
+            break;
 		}
 	}
 
@@ -582,6 +591,10 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 			if (i == 1) { m_mat->m_axes->m_a = StringToVec3d(v.toString()); return; }
 			if (i == 2) { m_mat->m_axes->m_d = StringToVec3d(v.toString()); return; }
 			break;
+        case FE_AXES_ANGLES:
+            if (i == 1) { m_mat->m_axes->m_theta = v.toFloat(); return; }
+            if (i == 2) { m_mat->m_axes->m_phi   = v.toFloat(); return; }
+            break;
 		}
 	}
 }

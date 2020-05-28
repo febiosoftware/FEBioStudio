@@ -6,6 +6,7 @@
 // material axes generators
 #define FE_AXES_LOCAL			0
 #define FE_AXES_VECTOR			1
+#define FE_AXES_ANGLES          2
 
 //-----------------------------------------------------------------------------
 //! Reference to an element of a mesh
@@ -187,6 +188,8 @@ public:
 	int		m_n[3];			// local node numbering
 	vec3d	m_a;			// axes vector a
 	vec3d	m_d;			// axes vector d
+    double  m_theta;        // axes angle theta
+    double  m_phi;          // axes angle phi
 
 public:
 	FEAxisMaterial();

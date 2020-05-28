@@ -1,6 +1,7 @@
 #include "FECoreMaterial.h"
 #include "FEMaterialFactory.h"
 #include "FEMaterial.h"
+#include <FSCore/paramunit.h>
 
 //=============================================================================
 // FEMaterialProperty
@@ -137,13 +138,17 @@ FEAxisMaterial::FEAxisMaterial() : FEMaterial(0)
 	m_n[0] = 0; m_n[1] = 1; m_n[2] = 2;
 	m_a = vec3d(1, 0, 0);
 	m_d = vec3d(0, 1, 0);
+    m_theta = 0;
+    m_phi = 90;
 
-	AddIntParam(0, "Axes")->SetEnumNames("(none)\0local\0vector\0\0");
+	AddIntParam(0, "Axes")->SetEnumNames("(none)\0local\0vector\0angles\0\0");
 	AddIntParam(0, "n0");
 	AddIntParam(0, "n1");
 	AddIntParam(0, "n2");
 	AddVecParam(vec3d(1,0,0), "a");
 	AddVecParam(vec3d(0,1,0), "d");
+    AddScienceParam(0 , UNIT_DEGREE, "theta");
+    AddScienceParam(90, UNIT_DEGREE, "phi");
 
 	for (int i = 1; i < Parameters(); ++i) GetParam(i).SetState(0);
 }
@@ -174,6 +179,12 @@ bool FEAxisMaterial::UpdateData(bool bsave)
 			m_a = GetVecValue(4);
 			m_d = GetVecValue(5);
 			break;
+        case 2:
+            GetParam(6).SetState(Param_ALLFLAGS);
+            GetParam(7).SetState(Param_ALLFLAGS);
+            m_theta = GetFloatValue(6);
+            m_phi = GetFloatValue(7);
+            break;
 		}
 
 		return (oldopt != m_naopt);
@@ -186,54 +197,70 @@ bool FEAxisMaterial::UpdateData(bool bsave)
 		SetIntValue(3, m_n[2]);
 		SetVecValue(4, m_a);
 		SetVecValue(5, m_d);
+        SetFloatValue(6, m_theta);
+        SetFloatValue(7, m_phi);
 	}
 	return false;
 }
 
 mat3d FEAxisMaterial::GetMatAxes(FEElementRef& el)
 {
-	switch (m_naopt)
-	{
-	case FE_AXES_LOCAL:
-	{
-		FECoreMesh* pm = el.m_pmesh;
-		vec3d r1 = pm->Node(el->m_node[m_n[0] - 1]).r;
-		vec3d r2 = pm->Node(el->m_node[m_n[1] - 1]).r;
-		vec3d r3 = pm->Node(el->m_node[m_n[2] - 1]).r;
-		vec3d a = r2 - r1;
-		vec3d d = r3 - r1;
-		vec3d c = a^d;
-		vec3d b = c^a;
-		a.Normalize();
-		b.Normalize();
-		c.Normalize();
-		mat3d Q;
-		Q.zero();
-		Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
-		Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
-		Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
-
-		return Q;
-	}
-	break;
-	case FE_AXES_VECTOR:
-	{
-		vec3d a = m_a;
-		vec3d d = m_d;
-		vec3d c = a^d;
-		vec3d b = c^a;
-		a.Normalize();
-		b.Normalize();
-		c.Normalize();
-		mat3d Q;
-		Q.zero();
-		Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
-		Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
-		Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
-
-		return Q;
-	}
-	}
+    switch (m_naopt)
+    {
+        case FE_AXES_LOCAL:
+        {
+            FECoreMesh* pm = el.m_pmesh;
+            vec3d r1 = pm->Node(el->m_node[m_n[0] - 1]).r;
+            vec3d r2 = pm->Node(el->m_node[m_n[1] - 1]).r;
+            vec3d r3 = pm->Node(el->m_node[m_n[2] - 1]).r;
+            vec3d a = r2 - r1;
+            vec3d d = r3 - r1;
+            vec3d c = a^d;
+            vec3d b = c^a;
+            a.Normalize();
+            b.Normalize();
+            c.Normalize();
+            mat3d Q;
+            Q.zero();
+            Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
+            Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
+            Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
+            
+            return Q;
+        }
+            break;
+        case FE_AXES_VECTOR:
+        {
+            vec3d a = m_a;
+            vec3d d = m_d;
+            vec3d c = a^d;
+            vec3d b = c^a;
+            a.Normalize();
+            b.Normalize();
+            c.Normalize();
+            mat3d Q;
+            Q.zero();
+            Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
+            Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
+            Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
+            
+            return Q;
+        }
+            break;
+        case FE_AXES_ANGLES:
+        {
+            double theta = m_theta*PI/180;
+            double phi = m_phi*PI/180;
+            mat3d Q;
+            Q.zero();
+            Q[0][0] = sin(phi)*cos(theta); Q[0][1] = -sin(theta); Q[0][2] = -cos(phi)*cos(theta);
+            Q[1][0] = sin(phi)*sin(theta); Q[1][1] = cos(theta);  Q[1][2] = -cos(phi)*sin(theta);
+            Q[2][0] = cos(phi);            Q[2][1] = 0;           Q[2][2] = sin(phi);
+            
+            return Q;
+        }
+            break;
+    }
 
 	mat3d Q;
 	Q.unit();
@@ -502,6 +529,8 @@ void FEMaterial::Save(OArchive& ar)
 			ar.WriteChunk(1, m_axes->m_n, 3);
 			ar.WriteChunk(2, m_axes->m_a);
 			ar.WriteChunk(3, m_axes->m_d);
+            ar.WriteChunk(4, m_axes->m_theta);
+            ar.WriteChunk(5, m_axes->m_phi);
 		}
 		ar.EndChunk();
 	}
@@ -534,6 +563,8 @@ void FEMaterial::Load(IArchive &ar)
 					case 1: ar.read(m_axes->m_n, 3); break;
 					case 2: ar.read(m_axes->m_a); break;
 					case 3: ar.read(m_axes->m_d); break;
+                    case 4: ar.read(m_axes->m_theta); break;
+                    case 5: ar.read(m_axes->m_phi); break;
 					}
 					ar.CloseChunk();
 				}

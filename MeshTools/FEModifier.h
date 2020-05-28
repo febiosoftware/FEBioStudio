@@ -129,6 +129,7 @@ public:
 protected:
 	bool SetAxesVectors(FEMesh* pm);
 	bool SetAxesNodes (FEMesh* pm);
+    bool SetAxesAngles(FEMesh* pm);
 	bool SetAxesCopy  (FEMesh* pm);
 };
 

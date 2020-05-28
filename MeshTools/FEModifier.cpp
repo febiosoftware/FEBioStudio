@@ -11,6 +11,7 @@
 #include "FESplitModifier.h"
 #include <GeomLib/GObject.h>
 #include <stdarg.h>
+#include <FSCore/paramunit.h>
 
 std::string FEModifier::m_error;
 
@@ -459,12 +460,14 @@ void FESetFiberOrientation::SetFiberNodes(FEMesh *pm)
 
 FESetAxesOrientation::FESetAxesOrientation() : FEModifier("Set axes orientation")
 {
-	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0");
+	AddChoiceParam(0, "generator")->SetEnumNames("vector\0node numbering\0angles\0");
 	AddVecParam(vec3d(1, 0, 0), "a");
 	AddVecParam(vec3d(0, 1, 0), "d");
 	AddIntParam(1, "n0")->SetState(0);
 	AddIntParam(2, "n1")->SetState(0);
 	AddIntParam(4, "n2")->SetState(0);
+    AddScienceParam(0, UNIT_DEGREE, "theta");
+    AddScienceParam(90, UNIT_DEGREE, "phi");
 }
 
 bool FESetAxesOrientation::UpdateData(bool bsave)
@@ -481,6 +484,8 @@ bool FESetAxesOrientation::UpdateData(bool bsave)
 			GetParam(3).SetState(0);
 			GetParam(4).SetState(0);
 			GetParam(5).SetState(0);
+            GetParam(6).SetState(0);
+            GetParam(7).SetState(0);
 			break;
 		case 1:
 			GetParam(1).SetState(0);
@@ -488,7 +493,18 @@ bool FESetAxesOrientation::UpdateData(bool bsave)
 			GetParam(3).SetState(Param_ALLFLAGS);
 			GetParam(4).SetState(Param_ALLFLAGS);
 			GetParam(5).SetState(Param_ALLFLAGS);
+            GetParam(6).SetState(0);
+            GetParam(7).SetState(0);
 			break;
+        case 2:
+            GetParam(1).SetState(0);
+            GetParam(2).SetState(0);
+            GetParam(3).SetState(0);
+            GetParam(4).SetState(0);
+            GetParam(5).SetState(0);
+            GetParam(6).SetState(Param_ALLFLAGS);
+            GetParam(7).SetState(Param_ALLFLAGS);
+            break;
 		}
 
 		return true;
@@ -519,6 +535,7 @@ FEMesh* FESetAxesOrientation::Apply(FEMesh *pm)
 	{
 		case 0: bret = SetAxesVectors(pnm); break;
 		case 1: bret = SetAxesNodes(pnm); break;
+        case 2: bret = SetAxesAngles(pnm); break;
 //		case 2: SetAxesCopy  (pnm); break;
 		default:
 			assert(false);
@@ -598,6 +615,28 @@ bool FESetAxesOrientation::SetAxesNodes(FEMesh *pm)
 	}
 
 	return true;
+}
+
+bool FESetAxesOrientation::SetAxesAngles(FEMesh *pm)
+{
+    double theta = GetFloatValue(6)*PI/180;
+    double phi = GetFloatValue(7)*PI/180;
+
+    for (int i=0; i<pm->Elements(); ++i)
+    {
+        FEElement& el = pm->Element(i);
+        if (el.m_ntag == 1)
+        {
+            mat3d& m = el.m_Q;
+            m.zero();
+            m[0][0] = sin(phi)*cos(theta); m[0][1] = -sin(theta); m[0][2] = -cos(phi)*cos(theta);
+            m[1][0] = sin(phi)*sin(theta); m[1][1] = cos(theta);  m[1][2] = -cos(phi)*sin(theta);
+            m[2][0] = cos(phi);            m[2][1] = 0;           m[2][2] = sin(phi);
+            el.m_Qactive = true;
+        }
+    }
+
+    return true;
 }
 
 bool FESetAxesOrientation::SetAxesCopy(FEMesh *pm)

@@ -1503,6 +1503,16 @@ void FEBioExport25::WriteMaterialParams(FEMaterial* pm)
 			}
 			m_xml.close_branch();
 		}
+        else if (pm->m_axes->m_naopt == FE_AXES_ANGLES)
+        {
+            el.add_attribute("type", "angles");
+            m_xml.add_branch(el);
+            {
+                m_xml.add_leaf("theta", pm->m_axes->m_theta);
+                m_xml.add_leaf("phi", pm->m_axes->m_phi);
+            }
+            m_xml.close_branch();
+        }
 		XMLElement::setDefautlFormats();
 	}
 }
