@@ -1,3 +1,4 @@
+#include <QApplication>
 #include "welcomePage.h"
 #include "MainWindow.h"
 #include "version.h"
@@ -86,15 +87,15 @@ void CWelcomePage::Refresh()
 	page.replace("_VERSION_", version);
 	page.replace("_RECENT_FILES_", links);
 
-	if (m_wnd->currentTheme() == 0)
+	page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
+
+	if (m_wnd->currentTheme() == 1 || m_wnd->currentTheme() == 3)
 	{
-		page.replace("_FGCOLOR_", "#0000ff");
-		page.replace("_BGCOLOR_", "#ffe6b3");
+		page.replace("_FGCOLOR_", "Dodgerblue");
 	}
 	else
 	{
-		page.replace("_FGCOLOR_", "Dodgerblue");
-		page.replace("_BGCOLOR_", "#202020");
+		page.replace("_FGCOLOR_", "#0000ff");
 	}
 
 	setHtml(page);
