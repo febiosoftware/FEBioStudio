@@ -1,6 +1,8 @@
 #pragma once
-#include <QDialog>
+
 #include <vector>
+#include <HelpDialog.h>
+
 using namespace std;
 
 namespace Ui {
@@ -8,15 +10,16 @@ namespace Ui {
 }
 
 class QTreeWidgetItem;
+class FEProject;
 class FEMaterial;
 class GMaterial;
 
-class CMaterialEditor : public QDialog
+class CMaterialEditor : public CHelpDialog
 {
 	Q_OBJECT
 
 public:
-	CMaterialEditor(QWidget* parent);
+	CMaterialEditor(FEProject& prj, QWidget* parent);
 
 	void SetInitMaterial(GMaterial* mat);
 
@@ -24,11 +27,10 @@ public:
 
 	QString GetMaterialName() const;
 
-	void SetModules(int module);
-
 protected:
 	void showEvent(QShowEvent* ev);
 	void SetMaterial(FEMaterial* mat);
+	void SetURL();
 
 private slots:
 	void on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);

@@ -1,11 +1,12 @@
 #include "FEMKernel.h"
 
-FEClassFactory::FEClassFactory(int module, int superID, int classID, const char* sztype)
+FEClassFactory::FEClassFactory(int module, int superID, int classID, const char* sztype, const char* helpURL)
 {
 	m_Module = module;
 	m_SuperID = superID;
 	m_ClassID = classID;
 	m_szType = sztype;
+	m_helpURL = helpURL;
 }
 
 FEClassFactory::~FEClassFactory()
@@ -52,4 +53,17 @@ vector<FEClassFactory*> FEMKernel::FindAllClasses(int module, int superID)
 		}
 	}
 	return l;
+}
+
+FEClassFactory* FEMKernel::FindClass(int module, int superID, int classID)
+{
+	for(FEClassFactory* fac : m_This->m_Class)
+	{
+		if((fac->GetModule() & module) && (fac->GetSuperID() == superID) && ((fac->GetClassID() == classID)))
+		{
+			return fac;
+		}
+	}
+
+	return nullptr;
 }

@@ -148,9 +148,7 @@ private:
 class Ui::CMaterialEditor
 {
 public:
-	int	m_module;
-
-public:
+	QVBoxLayout* mainLayout;
 	QLineEdit*	name;
 	QComboBox*	matClass;
 	QTreeWidget* tree;
@@ -164,39 +162,27 @@ public:
 	{
 		mat = 0;
 		matList = 0;
-		m_module = 0xFFFF;	// activate all modules by defauld
 
 		name = new QLineEdit;
 		name->setPlaceholderText("(Leave blank for default)");
 
 		matClass = new QComboBox;
-		matClass->setObjectName("matClass");
 
 		QFormLayout* matForm = new QFormLayout;
 		matForm->addRow("Name:", name);
 		matForm->addRow("Category:", matClass);
 
 		tree = new QTreeWidget;
-		tree->setObjectName("tree");
+		tree->setMinimumWidth(400);
 		tree->setColumnCount(2);
 		QStringList labels;
 		labels << "Property" << "Type";
 		tree->setHeaderLabels(labels);
 		ClearTree();
 
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
-		QVBoxLayout* pl = new QVBoxLayout;
-		pl->addLayout(matForm);
-		pl->addWidget(tree);
-		pl->addWidget(bb);
-
-		parent->setLayout(pl);
-
-		QObject::connect(bb, SIGNAL(accepted()), parent, SLOT(accept()));
-		QObject::connect(bb, SIGNAL(rejected()), parent, SLOT(reject()));
-
-		QMetaObject::connectSlotsByName(parent);
+		mainLayout = new QVBoxLayout;
+		mainLayout->addLayout(matForm);
+		mainLayout->addWidget(tree);
 	}
 
 	void ClearTree()

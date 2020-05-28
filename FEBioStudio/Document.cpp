@@ -167,6 +167,10 @@ CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 //-----------------------------------------------------------------------------
 CDocument::~CDocument()
 {
+	// remove autosave
+	QFile autoSave(m_autoSaveFilePath.c_str());
+	if(autoSave.exists()) autoSave.remove();
+
 	// remove all observers
 	for (int i = 0; i < m_Observers.size(); ++i)
 		m_Observers[i]->DocumentDelete();

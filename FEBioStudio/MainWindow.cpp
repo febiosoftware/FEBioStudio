@@ -1035,22 +1035,6 @@ void CMainWindow::autosave()
 	}
 }
 
-void CMainWindow::deleteAutoSaves()
-{
-	ui->m_autoSaveTimer->stop();
-
-	for(int i = 0; i < m_DocManager->Documents(); i++)
-	{
-		CDocument* doc = m_DocManager->GetDocument(i);
-
-		if(doc)
-		{
-			QFile autoSave(doc->GetAutoSaveFilePath().c_str());
-			if(autoSave.exists()) autoSave.remove();
-		}
-	}
-}
-
 void CMainWindow::ReportSelection()
 {
 	CModelDocument* doc = GetModelDocument();
@@ -1245,7 +1229,6 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 {
 	if (maybeSave())
 	{
-		deleteAutoSaves();
 		writeSettings();
 		ev->accept();
 	}

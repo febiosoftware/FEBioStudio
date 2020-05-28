@@ -17,6 +17,7 @@
 class Ui::CDlgAddRigidConstraint
 {
 public:
+	QVBoxLayout* mainLayout;
 	QLineEdit* name;
 	QComboBox* step;
 	QComboBox* mat;
@@ -33,32 +34,27 @@ public:
 
 		list = new QListWidget;
 
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
 		form->addRow("Name:", name);
 		form->addRow("Step:", step);
 		form->addRow("Rigid material:", mat);
 
-		QVBoxLayout* mainLayout = new QVBoxLayout;
+		mainLayout = new QVBoxLayout;
 		mainLayout->addLayout(form);
 		mainLayout->addWidget(list);
-		mainLayout->addWidget(bb);
 
-		QObject::connect(bb, SIGNAL(accepted()), parent, SLOT(accept()));
-		QObject::connect(bb, SIGNAL(rejected()), parent, SLOT(reject()));
 		QObject::connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), parent, SLOT(accept()));
-
-		parent->setLayout(mainLayout);
 	}
 };
 
-CDlgAddRigidConstraint::CDlgAddRigidConstraint(FEProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddRigidConstraint)
+CDlgAddRigidConstraint::CDlgAddRigidConstraint(FEProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CDlgAddRigidConstraint)
 {
 	setWindowTitle("Add Rigid Constraint");
 
 	ui->setupUi(this);
+
+	SetLeftSideLayout(ui->mainLayout);
 
 	// add the steps
 	FEModel& fem = prj.GetFEModel();
@@ -91,6 +87,17 @@ CDlgAddRigidConstraint::CDlgAddRigidConstraint(FEProject& prj, QWidget* parent) 
 		item->setText(QString::fromStdString(fac->GetTypeStr()));
 		item->setData(Qt::UserRole, fac->GetClassID());
 	}
+
+	ui->list->setCurrentRow(0);
+
+	QObject::connect(ui->list, &QListWidget::currentRowChanged, this, &CHelpDialog::LoadPage);
+}
+
+void CDlgAddRigidConstraint::SetURL()
+{
+	int classID = ui->list->currentItem()->data(Qt::UserRole).toInt();
+
+	m_url = FEMKernel::FindClass(m_module, FE_RIGID_CONSTRAINT, classID)->GetHelpURL();
 }
 
 void CDlgAddRigidConstraint::accept()

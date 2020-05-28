@@ -1,8 +1,9 @@
 #pragma once
 
-#include <QDialog>
 #include <string>
 #include <vector>
+#include "HelpDialog.h"
+
 using namespace std;
 
 class FEProject;
@@ -11,7 +12,7 @@ namespace Ui {
 	class CDlgAddRigidConnector;
 };
 
-class CDlgAddRigidConnector : public QDialog
+class CDlgAddRigidConnector : public CHelpDialog
 {
 public:
 	CDlgAddRigidConnector(FEProject& prj, QWidget* parent);
@@ -25,6 +26,7 @@ public:
 
 protected:
 	void accept();
+	void SetURL();
 
 private:
 	Ui::CDlgAddRigidConnector*		ui;

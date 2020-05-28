@@ -61,11 +61,6 @@ void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly)
 	}
 }
 
-void CMaterialEditor::SetModules(int module)
-{
-	ui->m_module = module;
-}
-
 void CMaterialEditor::SetMaterial(FEMaterial* mat)
 {
 	ui->ClearTree();
@@ -88,11 +83,19 @@ FEMaterial* CMaterialEditor::GetMaterial()
 	return it->GetMaterial();
 }
 
-CMaterialEditor::CMaterialEditor(QWidget* parent) : QDialog(parent), ui(new Ui::CMaterialEditor)
+CMaterialEditor::CMaterialEditor(FEProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CMaterialEditor)
 {
-	setMinimumSize(400, 400);
+//	setMinimumSize(400, 400);
 	setWindowTitle("Add Material");
 	ui->setupUi(this);
+
+	SetLeftSideLayout(ui->mainLayout);
+
+	//String to be displayed by the help dialog when no material is selected
+	m_unselectedHelp = "Please select a material to view its help page.";
+
+	QObject::connect(ui->matClass, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged, this, &CMaterialEditor::on_matClass_currentIndexChanged);
+	QObject::connect(ui->tree, &QTreeWidget::currentItemChanged, this, &CMaterialEditor::on_tree_currentItemChanged);
 }
 
 void CMaterialEditor::showEvent(QShowEvent* ev)
@@ -103,7 +106,7 @@ void CMaterialEditor::showEvent(QShowEvent* ev)
 	{
 		FEMatCategory& mc = FEMaterialFactory::GetCategory(i);
 
-		if (mc.GetModule() & ui->m_module)
+		if (mc.GetModule() & m_module)
 		{
 			ui->addMaterialCategory(mc.GetName(), mc.GetID());
 		}
@@ -125,6 +128,21 @@ void CMaterialEditor::showEvent(QShowEvent* ev)
 			ui->mat = 0;
 		}
 	}
+}
+
+void CMaterialEditor::SetURL()
+{
+	if(ui->matList)
+	{
+		if(ui->matList->currentIndex() != -1)
+		{
+			int ntype = ui->matList->currentData().toInt();
+			m_url = FEMaterialFactory::GetInstance()->Find(ntype)->GetHelpURL();
+			return;
+		}
+	}
+
+	m_url = UNSELECTED_HELP;
 }
 
 void CMaterialEditor::SetInitMaterial(GMaterial* pm)
@@ -155,7 +173,7 @@ void CMaterialEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTree
 		int nclass = item->GetClassID();
 
 		ui->matList = new QComboBox;
-		FillComboBox(ui->matList, nclass, ui->m_module, (item->ParentMaterial() == 0));
+		FillComboBox(ui->matList, nclass, m_module, (item->ParentMaterial() == 0));
 
 		int index = -1;
 		FEMaterial* pm = item->GetMaterial();
@@ -169,6 +187,8 @@ void CMaterialEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTree
 		QObject::connect(ui->matList, SIGNAL(currentIndexChanged(int)), this, SLOT(materialChanged(int)));
 		ui->tree->setItemWidget(current, 1, ui->matList);
 	}
+
+	LoadPage();
 }
 
 void CMaterialEditor::materialChanged(int n)
@@ -180,6 +200,8 @@ void CMaterialEditor::materialChanged(int n)
 	FEMaterial* pmat = MF.Create(ntype); assert(pmat);
 
 	it->SetMaterial(pmat);
+
+	LoadPage();
 }
 
 void CMaterialEditor::accept()

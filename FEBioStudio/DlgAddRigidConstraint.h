@@ -1,7 +1,9 @@
 #pragma once
-#include <QDialog>
 #include <string>
 #include <vector>
+
+#include "HelpDialog.h"
+
 using namespace std;
 
 class FEProject;
@@ -11,10 +13,10 @@ namespace Ui {
 	class CDlgAddRigidConstraint;
 };
 
-class CDlgAddRigidConstraint : public QDialog
+class CDlgAddRigidConstraint : public CHelpDialog
 {
 public:
-	CDlgAddRigidConstraint(FEProject& fem, QWidget* parent);
+	CDlgAddRigidConstraint(FEProject& prj, QWidget* parent);
 
 	void accept();
 
@@ -24,6 +26,9 @@ public:
 	std::string	m_name;
 	int		m_nstep;
 	int		m_type;
+
+protected:
+	void SetURL();
 
 private:
 	Ui::CDlgAddRigidConstraint* ui;

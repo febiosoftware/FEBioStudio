@@ -2,6 +2,10 @@
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
+#ifdef LINUX
+#include <wctype.h>
+#endif
+
 enum VTK_DATASET_TYPE {
 	VTK_INVALID,
 	VTK_POLYDATA,

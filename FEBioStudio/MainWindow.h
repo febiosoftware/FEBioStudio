@@ -105,8 +105,6 @@ public:
 	bool maybeSave();
 	bool maybeSave(CDocument* doc);
 
-	void deleteAutoSaves();
-
 	// write some useful info to the log regarding the selection
 	void ReportSelection();
 

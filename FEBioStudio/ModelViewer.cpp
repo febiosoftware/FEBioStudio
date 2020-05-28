@@ -890,8 +890,7 @@ void CModelViewer::OnChangeMaterial()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEProject& prj = doc->GetProject();
 
-	CMaterialEditor dlg(this);
-	dlg.SetModules(prj.GetModule());
+	CMaterialEditor dlg(prj, this);
 	dlg.SetInitMaterial(gmat);
 	if (dlg.exec())
 	{

@@ -2,13 +2,8 @@
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "ModelDocument.h"
-#include "DlgAddBC.h"
+#include "DlgAddPhysicsItem.h"
 #include "DlgAddNodalLoad.h"
-#include "DlgAddSurfaceLoad.h"
-#include "DlgAddBodyLoad.h"
-#include "DlgAddIC.h"
-#include "DlgAddContact.h"
-#include "DlgAddConstraint.h"
 #include "DlgAddStep.h"
 #include "DlgSoluteTable.h"
 #include "DlgAddChemicalReaction.h"
@@ -33,17 +28,17 @@ void CMainWindow::on_actionAddBC_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = prj.GetFEModel();
-	CDlgAddBC dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Boundary Condition", FE_ESSENTIAL_BC, prj, this);
 	if (dlg.exec())
 	{
-		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, dlg.m_bctype); assert(pbc);
+		FEBoundaryCondition* pbc = fecore_new<FEBoundaryCondition>(&fem, FE_ESSENTIAL_BC, dlg.GetClassID()); assert(pbc);
 		if (pbc)
 		{
-			FEStep* step = fem.GetStep(dlg.m_nstep);
+			FEStep* step = fem.GetStep(dlg.GetStep());
 
 			pbc->SetStep(step->GetID());
 
-			std::string name = dlg.m_name;
+			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultBCName(&fem, pbc);
 			pbc->SetName(name);
 
@@ -123,13 +118,13 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = prj.GetFEModel();
-	CDlgAddSurfaceLoad dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Surface Load", FE_SURFACE_LOAD, prj, this);
 	if (dlg.exec())
 	{
-		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, dlg.m_ntype); assert(psl);
+		FESurfaceLoad* psl = fecore_new<FESurfaceLoad>(&fem, FE_SURFACE_LOAD, dlg.GetClassID()); assert(psl);
 		if (psl)
 		{
-			string name = dlg.m_name;
+			string name = dlg.GetName();
 			if (name.empty()) name = defaultLoadName(&fem, psl);
 			psl->SetName(name);
 
@@ -150,7 +145,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 				}
 			}
 
-			FEStep* step = fem.GetStep(dlg.m_nstep);
+			FEStep* step = fem.GetStep(dlg.GetStep());
 			psl->SetStep(step->GetID());
 			step->AddLoad(psl);
 			UpdateModel(psl);
@@ -165,17 +160,17 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddBodyLoad dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Body Load", FE_BODY_LOAD, prj, this);
 	if (dlg.exec())
 	{
-		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, dlg.m_ntype);
+		FEBodyLoad* pbl = fecore_new<FEBodyLoad>(&fem, FE_BODY_LOAD, dlg.GetClassID());
 		if (pbl)
 		{
-			std::string name = dlg.m_name;
+			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultLoadName(&fem, pbl);
 			pbl->SetName(name);
 
-			FEStep* step = fem.GetStep(dlg.m_nstep);
+			FEStep* step = fem.GetStep(dlg.GetStep());
 			pbl->SetStep(step->GetID());
 			step->AddLoad(pbl);
 			UpdateModel(pbl);
@@ -190,13 +185,13 @@ void CMainWindow::on_actionAddIC_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddIC dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Initial Condition", FE_INITIAL_CONDITION, prj, this);
 	if (dlg.exec())
 	{
-		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.m_ntype); assert(pic);
+		FEInitialCondition* pic = fecore_new<FEInitialCondition>(&fem, FE_INITIAL_CONDITION, dlg.GetClassID()); assert(pic);
 		if (pic)
 		{
-			std::string name = dlg.m_name;
+			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultICName(&fem, pic);
 			pic->SetName(name);
 
@@ -223,7 +218,7 @@ void CMainWindow::on_actionAddIC_triggered()
 				}
 			}
 
-			FEStep* step = fem.GetStep(dlg.m_nstep);
+			FEStep* step = fem.GetStep(dlg.GetStep());
 			pic->SetStep(step->GetID());
 			step->AddIC(pic);
 			UpdateModel(pic);
@@ -238,14 +233,14 @@ void CMainWindow::on_actionAddContact_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddContact dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Contact Interface", FE_INTERFACE, prj, this);
 	if (dlg.exec())
 	{
-		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.m_ntype); assert(pi);
+		FEInterface* pi = fecore_new<FEInterface>(&fem, FE_INTERFACE, dlg.GetClassID()); assert(pi);
 		if (pi)
 		{
 			// create a name
-			std::string name = dlg.m_name;
+			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultInterfaceName(&fem, pi);
 			pi->SetName(name);
 
@@ -273,7 +268,7 @@ void CMainWindow::on_actionAddContact_triggered()
 			}
 
 			// assign it to the correct step
-			FEStep* step = fem.GetStep(dlg.m_nstep);
+			FEStep* step = fem.GetStep(dlg.GetStep());
 			pi->SetStep(step->GetID());
 			step->AddInterface(pi);
 			UpdateModel(pi);
@@ -288,14 +283,14 @@ void CMainWindow::on_actionAddConstraint_triggered()
 
 	FEProject& prj = doc->GetProject();
 	FEModel& fem = *doc->GetFEModel();
-	CDlgAddConstraint dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Constraint", FE_CONSTRAINT, prj, this);
 	if (dlg.exec())
 	{
-		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.m_ntype); assert(pi);
+		FEModelConstraint* pi = fecore_new<FEModelConstraint>(&fem, FE_CONSTRAINT, dlg.GetClassID()); assert(pi);
 		if (pi)
 		{
 			// create a name
-			std::string name = dlg.m_name;
+			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
 			pi->SetName(name);
 
@@ -321,7 +316,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 			}
 
 			// assign it to the correct step
-			FEStep* step = fem.GetStep(dlg.m_nstep);
+			FEStep* step = fem.GetStep(dlg.GetStep());
 			pi->SetStep(step->GetID());
 			step->AddConstraint(pi);
 			UpdateModel(pi);
@@ -396,8 +391,8 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	FEProject& prj = doc->GetProject();
 
-	CMaterialEditor dlg(this);
-	dlg.SetModules(prj.GetModule());
+	CMaterialEditor dlg(prj, this);
+//	dlg.SetModules(prj.GetModule());
 	if (dlg.exec())
 	{
 		FEMaterial* pmat = dlg.GetMaterial();

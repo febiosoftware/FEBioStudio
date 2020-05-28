@@ -15,6 +15,7 @@
 class Ui::CDlgAddRigidConnector
 {
 public:
+	QVBoxLayout* mainLayout;
 	QLineEdit* name;
 	QComboBox* step;
 	QComboBox* matA;
@@ -46,26 +47,20 @@ public:
 		form->addRow("Rigid material A:", matA);
 		form->addRow("Rigid material B:", matB);
 
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
-		QVBoxLayout* mainLayout = new QVBoxLayout;
+		mainLayout = new QVBoxLayout;
 		mainLayout->addLayout(form);
 		mainLayout->addWidget(list);
-		mainLayout->addWidget(bb);
 
-		dlg->setLayout(mainLayout);
-
-		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
-		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));		
 		QObject::connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), dlg, SLOT(accept()));
 	}
 };
 
-CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddRigidConnector)
+CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CDlgAddRigidConnector)
 {
 	setWindowTitle("Add Rigid Connector");
 
 	ui->setup(this);
+	SetLeftSideLayout(ui->mainLayout);
 
 	// add the steps
 	FEModel& fem = prj.GetFEModel();
@@ -98,6 +93,17 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : 
 
 		ui->list->addItem(item);
 	}
+
+	ui->list->setCurrentRow(0);
+
+	QObject::connect(ui->list, &QListWidget::currentRowChanged, this, &CHelpDialog::LoadPage);
+}
+
+void CDlgAddRigidConnector::SetURL()
+{
+	int classID = ui->list->currentItem()->data(Qt::UserRole).toInt();
+
+	m_url = FEMKernel::FindClass(m_module, FE_RIGID_CONNECTOR, classID)->GetHelpURL();
 }
 
 void CDlgAddRigidConnector::accept()

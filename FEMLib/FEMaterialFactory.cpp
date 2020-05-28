@@ -7,13 +7,15 @@ FEMatDescriptor::FEMatDescriptor(
 	int ntype,
 	int nclass,
 	const char* szname,
-	unsigned int flags)
+	unsigned int flags,
+	const char* helpURL)
 {
 	m_nModule = module;
 	m_nType = ntype; 
 	m_nClass = nclass;
-	m_szname = szname; 
+	m_szname = szname;
 	m_flags = flags;
+	m_helpURL = helpURL;
 }
 
 FEMaterialFactory* FEMaterialFactory::m_pFac = 0;
