@@ -910,6 +910,27 @@ template <typename T> void extractElemDataComponentITEM_T(Post::FEMeshData& dst,
 	}
 }
 
+void extractElemDataComponentITEM_ARRAY(Post::FEMeshData& dst, Post::FEMeshData& src, int ncomp, Post::FEPostMesh& mesh)
+{
+	FEElemArrayDataItem& vec = dynamic_cast<FEElemArrayDataItem&>(src);
+	Post::FEElementData<float, DATA_ITEM>& scl = dynamic_cast<Post::FEElementData<float, DATA_ITEM>&>(dst);
+
+	int NE = mesh.Elements();
+	vector<float> data;
+	vector<int> elem(1);
+	vector<int> l;
+	for (int i = 0; i<NE; ++i)
+	{
+		FEElement_& el = mesh.ElementRef(i);
+		int ne = el.Nodes();
+		if (vec.active(i))
+		{
+			float f = vec.eval(i, ncomp);
+			scl.add(i, f);
+		}
+	}
+}
+
 void extractElemDataComponentITEM_ARRAY_VEC3F(Post::FEMeshData& dst, Post::FEMeshData& src, int ncomp, Post::FEPostMesh& mesh)
 {
 	FEElemArrayVec3Data& vec = dynamic_cast<FEElemArrayVec3Data&>(src);
@@ -945,6 +966,7 @@ void extractElemDataComponentITEM(Data_Type ntype, Post::FEMeshData& dst, Post::
 	case DATA_TENS4FS: extractElemDataComponentITEM_T<tens4fs>(dst, src, ncomp, mesh); break;
 	case DATA_MAT3D  : extractElemDataComponentITEM_T<Mat3d  >(dst, src, ncomp, mesh); break;
 	case DATA_MAT3F  : extractElemDataComponentITEM_T<mat3f  >(dst, src, ncomp, mesh); break;
+	case DATA_ARRAY      : extractElemDataComponentITEM_ARRAY(dst, src, ncomp, mesh); break;
 	case DATA_ARRAY_VEC3F: extractElemDataComponentITEM_ARRAY_VEC3F(dst, src, ncomp, mesh); break;
 	}
 }
