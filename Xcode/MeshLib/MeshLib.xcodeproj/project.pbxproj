@@ -56,6 +56,10 @@
 		D5B42D711FA1017100C56FCE /* FEFaceEdgeList.h in Headers */ = {isa = PBXBuildFile; fileRef = D5B42D6F1FA1017100C56FCE /* FEFaceEdgeList.h */; };
 		D5C7710A232BCC0A00700B70 /* Intersect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5C77108232BCC0A00700B70 /* Intersect.cpp */; };
 		D5C7710B232BCC0A00700B70 /* Intersect.h in Headers */ = {isa = PBXBuildFile; fileRef = D5C77109232BCC0A00700B70 /* Intersect.h */; };
+		D5CB0B192481A564004702B2 /* FEMeshBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = D5CB0B152481A563004702B2 /* FEMeshBuilder.h */; };
+		D5CB0B1A2481A564004702B2 /* FEFindElement.h in Headers */ = {isa = PBXBuildFile; fileRef = D5CB0B162481A564004702B2 /* FEFindElement.h */; };
+		D5CB0B1B2481A564004702B2 /* FEMeshBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CB0B172481A564004702B2 /* FEMeshBuilder.cpp */; };
+		D5CB0B1C2481A564004702B2 /* FEFindElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CB0B182481A564004702B2 /* FEFindElement.cpp */; };
 		D5EBB7AA232AEB7E00EED2BE /* integrate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A9232AEB7E00EED2BE /* integrate.cpp */; };
 		D5ED25E323197A1F00C16BF7 /* penta15.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D623197A1D00C16BF7 /* penta15.h */; };
 		D5ED25E423197A1F00C16BF7 /* tet10.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED25D723197A1D00C16BF7 /* tet10.h */; };
@@ -123,6 +127,10 @@
 		D5B42D6F1FA1017100C56FCE /* FEFaceEdgeList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFaceEdgeList.h; sourceTree = "<group>"; };
 		D5C77108232BCC0A00700B70 /* Intersect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Intersect.cpp; sourceTree = "<group>"; };
 		D5C77109232BCC0A00700B70 /* Intersect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Intersect.h; sourceTree = "<group>"; };
+		D5CB0B152481A563004702B2 /* FEMeshBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEMeshBuilder.h; sourceTree = "<group>"; };
+		D5CB0B162481A564004702B2 /* FEFindElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEFindElement.h; sourceTree = "<group>"; };
+		D5CB0B172481A564004702B2 /* FEMeshBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshBuilder.cpp; sourceTree = "<group>"; };
+		D5CB0B182481A564004702B2 /* FEFindElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEFindElement.cpp; sourceTree = "<group>"; };
 		D5EBB7A9232AEB7E00EED2BE /* integrate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = integrate.cpp; sourceTree = "<group>"; };
 		D5ED25D623197A1D00C16BF7 /* penta15.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = penta15.h; sourceTree = "<group>"; };
 		D5ED25D723197A1D00C16BF7 /* tet10.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tet10.h; sourceTree = "<group>"; };
@@ -183,6 +191,8 @@
 				D53293A11E4A8454002798B3 /* FEFace.h */,
 				D5B42D6E1FA1017100C56FCE /* FEFaceEdgeList.cpp */,
 				D5B42D6F1FA1017100C56FCE /* FEFaceEdgeList.h */,
+				D5CB0B182481A564004702B2 /* FEFindElement.cpp */,
+				D5CB0B162481A564004702B2 /* FEFindElement.h */,
 				D53293A21E4A8454002798B3 /* FEItem.h */,
 				D570C91B204A301400E2A1B9 /* FELineMesh.cpp */,
 				D570C91C204A301400E2A1B9 /* FELineMesh.h */,
@@ -190,6 +200,8 @@
 				D5215EDD1F018C3300838680 /* FEMesh.h */,
 				D54DD62E1F8D46B70083D517 /* FEMeshBase.cpp */,
 				D54DD62D1F8D46B70083D517 /* FEMeshBase.h */,
+				D5CB0B172481A564004702B2 /* FEMeshBuilder.cpp */,
+				D5CB0B152481A563004702B2 /* FEMeshBuilder.h */,
 				D53293A31E4A8454002798B3 /* FENode.cpp */,
 				D53293A41E4A8454002798B3 /* FENode.h */,
 				D5B42D5F1FA1004500C56FCE /* FENodeEdgeList.cpp */,
@@ -255,6 +267,7 @@
 				D5215EE91F018C3300838680 /* FEMesh.h in Headers */,
 				D5215EF01F018C3300838680 /* MeshTools.h in Headers */,
 				D5C7710B232BCC0A00700B70 /* Intersect.h in Headers */,
+				D5CB0B1A2481A564004702B2 /* FEFindElement.h in Headers */,
 				D5B42D711FA1017100C56FCE /* FEFaceEdgeList.h in Headers */,
 				D5A49E451FD74D4F0083510E /* insertCurve2.h in Headers */,
 				D5A49E441FD74D4F0083510E /* insertCurve.h in Headers */,
@@ -269,6 +282,7 @@
 				D5ED25E523197A1F00C16BF7 /* penta6.h in Headers */,
 				D5B42D691FA1004600C56FCE /* FENodeFaceList.h in Headers */,
 				D5ED25EB23197A1F00C16BF7 /* hex8.h in Headers */,
+				D5CB0B192481A564004702B2 /* FEMeshBuilder.h in Headers */,
 				D5ED25EE23197A1F00C16BF7 /* hex20.h in Headers */,
 				D54DD6311F8D46B70083D517 /* FEMeshBase.h in Headers */,
 				D53293B01E4A8454002798B3 /* FEEdge.h in Headers */,
@@ -363,7 +377,9 @@
 				D53293AD1E4A8454002798B3 /* FECurveMesh.cpp in Sources */,
 				D5215EED1F018C3300838680 /* MeshMetrics.cpp in Sources */,
 				D5215EF11F018C3300838680 /* triangulate.cpp in Sources */,
+				D5CB0B1C2481A564004702B2 /* FEFindElement.cpp in Sources */,
 				D5B42D6B1FA1004600C56FCE /* FENodeNodeList.cpp in Sources */,
+				D5CB0B1B2481A564004702B2 /* FEMeshBuilder.cpp in Sources */,
 				D54DD6321F8D46B70083D517 /* FEMeshBase.cpp in Sources */,
 				D5B42D671FA1004600C56FCE /* FENodeEdgeList.cpp in Sources */,
 				D53293B11E4A8454002798B3 /* FEElement.cpp in Sources */,
