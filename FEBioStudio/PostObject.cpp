@@ -36,7 +36,7 @@ void CPostObject::UpdateSelection()
 void CPostObject::UpdateMesh()
 {
 	Post::FEPostMesh* postMesh = m_glm->GetActiveState()->GetFEMesh();
-	postMesh->UpdateBox();
+	postMesh->UpdateBoundingBox();
 
 	if (GetFEMesh() != postMesh)
 	{

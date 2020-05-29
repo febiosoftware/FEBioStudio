@@ -180,20 +180,15 @@
     <ClCompile Include="..\..\FEBioStudio\CurvePicker.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DataFieldSelector.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DlgAddBC.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DlgAddBodyLoad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddChemicalReaction.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DlgAddConstraint.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DlgAddContact.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddEquation.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DlgAddIC.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddMeshData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddNodalLoad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgAddPhysicsItem.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddPublication.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddRigidConnector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddRigidConstraint.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddStep.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DlgAddSurfaceLoad.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgBatchConvert.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgCheck.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgCloneGrid.cpp" />
@@ -263,6 +258,7 @@
     <ClCompile Include="..\..\FEBioStudio\GraphData.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GraphWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\GTriad.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\HelpDialog.cpp" />
     <ClCompile Include="..\..\FEBioStudio\IconProvider.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ImportSpringsTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\InfoPanel.cpp" />
@@ -336,6 +332,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_GLHighlighter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GraphWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_HelpDialog.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_InfoPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_IntegrateWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_LinkPropertyEdit.cpp" />
@@ -478,12 +475,12 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\DlgAddConstraint.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgAddPublication.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\DlgAddPhysicsItem.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgCheck.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgEditLConfigs.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -567,6 +564,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\GraphData.h" />
+    <CustomBuild Include="..\..\FEBioStudio\HelpDialog.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\IconProvider.h" />
     <ClInclude Include="..\..\FEBioStudio\ImportSpringsTool.h" />
     <ClInclude Include="..\..\FEBioStudio\LaunchConfig.h" />
@@ -638,6 +640,7 @@
     <ClInclude Include="..\..\FEBioStudio\UnitParser.h" />
     <ClInclude Include="..\..\FEBioStudio\units.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
+    <ClInclude Include="..\..\FEBioStudio\WebDefines.h" />
     <ClInclude Include="..\..\FEBioStudio\welcomePage.h" />
     <ClInclude Include="..\..\FEBioStudio\ZipFiles.h" />
     <ClInclude Include="resource.h" />
@@ -646,20 +649,16 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\DlgAddBC.h" />
-    <ClInclude Include="..\..\FEBioStudio\DlgAddBodyLoad.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgAddChemicalReaction.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\DlgAddContact.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgAddEquation.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\DlgAddIC.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgAddMeshData.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
@@ -669,7 +668,6 @@
     <ClInclude Include="..\..\FEBioStudio\DlgAddRigidConnector.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgAddRigidConstraint.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgAddStep.h" />
-    <ClInclude Include="..\..\FEBioStudio\DlgAddSurfaceLoad.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgBatchConvert.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgCloneGrid.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

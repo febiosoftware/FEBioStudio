@@ -268,6 +268,14 @@ FEItemListBuilder* FEEdgeSet::Copy()
 	return pg;
 }
 
+FEEdge* FEEdgeSet::Edge(FEItemListBuilder::Iterator it)
+{
+	FEMesh* pm = m_pObj->GetFEMesh();
+	if (pm == 0) return 0;
+	FEEdge& e = pm->Edge(*it);
+	return &e;
+}
+
 FENodeList* FEEdgeSet::BuildNodeList()
 {	
 	FEMesh* pm = m_pObj->GetFEMesh();

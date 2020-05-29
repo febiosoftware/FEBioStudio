@@ -32,7 +32,7 @@ void FENodeEdgeList::Build(FELineMesh* pmesh, bool segsOnly)
 	for (int i=0; i<NE; ++i)
 	{
 		const FEEdge& edge = mesh.Edge(i);
-		if ((segsOnly == false) || (edge.m_gid >= 0))
+		if ((segsOnly == false) || (edge.IsExterior()))
 		{
 			int n0 = edge.n[0];
 			int n1 = edge.n[1];

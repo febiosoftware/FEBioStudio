@@ -7087,7 +7087,11 @@ void CGLView::RenderFEFaces(GObject* po)
 	VIEW_SETTINGS& view = GetViewSettings();
 	FEModel& fem = *doc->GetFEModel();
 	FEMesh* pm = po->GetFEMesh();
-	if (pm == 0) return;
+	if (pm == 0)
+	{
+		RenderObject(po);
+		return;
+	}
 
 	GLColor col = po->GetColor();
 	GLColor dif = col;
@@ -7203,7 +7207,12 @@ void CGLView::RenderFEFaces(GObject* po)
 void CGLView::RenderSurfaceMeshFaces(GObject* po)
 {
 	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po);
-	if (surfaceObject == 0) return;
+	if (surfaceObject == 0)
+	{
+		// just render something, otherwise nothing will show up
+		RenderObject(po);
+		return;
+	}
 
 	FESurfaceMesh* surfaceMesh = surfaceObject->GetSurfaceMesh();
 	assert(surfaceMesh);

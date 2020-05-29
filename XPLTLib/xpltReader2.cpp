@@ -1085,7 +1085,7 @@ bool XpltReader2::BuildMesh(FEPostModel &fem)
 
 	// Update the mesh
 	// This will also build the faces
-	pmesh->Update();
+	pmesh->BuildMesh();
 
 	// Next, we'll build a Node-Face lookup table
 	FENodeFaceList NFT; NFT.Build(pmesh);

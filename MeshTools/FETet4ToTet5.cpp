@@ -48,6 +48,7 @@ FEMesh* FETet4ToTet5::Apply(FEMesh* pm)
 
 		FENode& n1 = pnew->Node(i + NN);
 		n1.r = (r0 + r1 + r2 + r3)*0.25;
+		n1.SetExterior(false);
 	}
 
 	// create the elements
@@ -82,11 +83,6 @@ FEMesh* FETet4ToTet5::Apply(FEMesh* pm)
 		FEEdge& e1 = pnew->Edge(i);
 		e1 = e0;
 	}
-
-	//	pnew->UpdateElementNeighbors();
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
 
 	return pnew;
 }
@@ -167,11 +163,6 @@ FEMesh* FETet5ToTet4::Apply(FEMesh* pm)
 		FEEdge& e1 = pnew->Edge(i);
 		e1 = e0;
 	}
-
-	//	pnew->UpdateElementNeighbors();
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
 
 	return pnew;
 }

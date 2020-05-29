@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FECylinder.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 
 extern double gain2(double x, double r, double n);
 
@@ -321,7 +322,7 @@ FEMesh* FECylinder::BuildButterfly()
 	}
 
 	// update the mesh
-	pm->Update();
+	pm->UpdateMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 
@@ -614,7 +615,7 @@ FEMesh* FECylinder::BuildWedged()
 		}
 	}
 
-	pm->Update();
+	pm->UpdateMesh();
 
 	return pm;
 }
@@ -913,7 +914,7 @@ FEMesh* FECylinder2::BuildButterfly()
 	}
 
 	// update the mesh
-	pm->Update();
+	pm->UpdateMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 
@@ -1207,7 +1208,7 @@ FEMesh* FECylinder2::BuildWedged()
 		}
 	}
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

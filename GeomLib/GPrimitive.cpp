@@ -1,6 +1,7 @@
 #include "GPrimitive.h"
 #include <MeshTools/FEGregoryPatch.h>
 #include <MeshTools/FETetGenMesher.h>
+#include <MeshLib/FEMesh.h>
 
 //=============================================================================
 // GPrimitive

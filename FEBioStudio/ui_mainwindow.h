@@ -448,6 +448,7 @@ public:
 		actionShowDiscrete    = addAction("Show Discrete Sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
 		QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
+		QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);
 		actionToggleLight     = addAction("Toggle Lighting", "actionToggleLight");
 		actionFront           = addAction("Front", "actionFront");
 		actionBack            = addAction("Back" , "actionBack");
@@ -691,6 +692,7 @@ public:
 		menuView->addAction(actionSnap3D);
 		menuView->addAction(actionTrack);
 		menuView->addAction(actionToggleLight);
+		menuView->addAction(actionToggleConnected);
 		menuView->addSeparator();
 
 		menuViews = menuView->addMenu("Standard views");

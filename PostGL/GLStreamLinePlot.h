@@ -2,6 +2,7 @@
 #include "GLPlot.h"
 #include "GLWLib/GLWidget.h"
 #include <PostLib/FEPostMesh.h>
+#include <MeshLib/FEFindElement.h>
 
 namespace Post {
 

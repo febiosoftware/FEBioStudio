@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FESolidArc.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -183,7 +184,7 @@ FEMesh* FESolidArc::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

@@ -2,6 +2,7 @@
 #include "FEMortarProjection.h"
 #include <GeomLib/geomlib.h>
 #include <MeshLib/MeshTools.h>
+#include <MeshLib/FEMeshBuilder.h>
 
 //-----------------------------------------------------------------------------
 FEMortarProjection::FEMortarProjection()
@@ -161,7 +162,8 @@ FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 				ptri->RebuildMesh();
 
 				// add the triangle to the mesh
-				pnew->Attach(*ptri);
+				FEMeshBuilder meshBuilder(*pnew);
+				meshBuilder.Attach(*ptri);
 			}
 		}
 	}

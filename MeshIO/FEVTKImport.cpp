@@ -237,6 +237,7 @@ bool FEVTKimport::read_POLYGONS(VTKMesh& vtk)
 
 		int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d%d%d", &numNodes, &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6], &n[7], &n[8], &n[9]);
 		cell.numNodes = numNodes;
+		cell.label = 1;
 		if (numNodes == 3) cell.cellType = VTK_TRIANGLE;
 		else if (numNodes == 4) cell.cellType = VTK_QUAD;
 		else return errf("Invalid polygon type.");
@@ -263,7 +264,7 @@ bool FEVTKimport::read_CELLS(VTKMesh& vtk)
 		if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
 		int nread = sscanf(m_szline, "%d%d%d%d%d%d%d%d%d%d%d", &numNodes, &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6], &n[7], &n[8], &n[9]);
 		cell.numNodes = numNodes;
-		cell.cellType = VTK_INVALID;
+		cell.cellType = VTK_INVALID; // must be determined by CELL_TYPES
 		cell.label = 1;
 	}
 
@@ -403,7 +404,8 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 		FEElement& el = pm->Element(i);
 		VTKMesh::CELL& cell = vtk.m_cellList[i];
 
-		el.m_gid = cell.label - 1;
+		el.m_gid = cell.label - 1; assert(el.m_gid >= 0);
+		if (el.m_gid < 0) el.m_gid = 0;
 
 		switch (cell.cellType)
 		{
@@ -423,7 +425,7 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 		for (int j = 0; j < nn; ++j) el.m_node[j] = cell.node[j];
 	}
 
-	pm->RebuildMesh(60.0, true, false);
+	pm->RebuildMesh();
 	GMeshObject* po = new GMeshObject(pm);
 	po->Update();
 

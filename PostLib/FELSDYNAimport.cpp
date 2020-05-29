@@ -344,7 +344,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	}
 
 	// update the mesh
-	m_pm->Update();
+	m_pm->BuildMesh();
 	fem.UpdateBoundingBox();
 
 	// add some data

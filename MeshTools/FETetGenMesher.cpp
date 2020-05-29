@@ -434,24 +434,17 @@ FEMesh* FETetGenMesher::build_tet_mesh(tetgenio& out)
 	else if (GetIntValue(ELTYPE) == 2)
 	{
 		FETet4ToTet15 mod;
-		pmesh->Update();
+		pmesh->BuildMesh();
 		FEMesh* pold = pmesh;
 		pmesh = mod.Apply(pold);
 		delete pold;
 	}
 
 	// update the element neighbours
-	pmesh->UpdateElementNeighbors();
+	pmesh->BuildMesh();
 
 	// update faces
-	pmesh->UpdateFaces();
-	pmesh->AutoSmooth(60.0);
-
-	pmesh->UpdateEdgeNeighbors();
-
-	// update the mesh
-	pmesh->MarkExteriorNodes();
-	pmesh->UpdateBox();
+	pmesh->SmoothByPartition();
 
 	// associate the FE nodes with the GNodes
 	double R2 = pmesh->GetBoundingBox().GetMaxExtent();
@@ -1228,18 +1221,11 @@ FEMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 	}
 	assert(n == pmesh->Edges());
 
-	// update the element neighbours
-	pmesh->UpdateElementNeighbors();
+	// update the internal mesh data
+	pmesh->BuildMesh();
 
 	// update faces
-	pmesh->UpdateFaces();
-	pmesh->AutoSmooth(60.0);
-
-	pmesh->UpdateEdgeNeighbors();
-
-	// update the mesh
-	pmesh->MarkExteriorNodes();
-	pmesh->UpdateBox();
+	pmesh->SmoothByPartition();
 
 	// associate the FE nodes with the GNodes
 	/*	GObject* po = pm->GetGObject();

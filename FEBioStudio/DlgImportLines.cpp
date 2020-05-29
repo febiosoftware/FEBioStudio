@@ -18,6 +18,7 @@
 #include <PostGL/GLLinePlot.h>
 #include "MainWindow.h"
 #include "PostDocument.h"
+#include <MeshLib/FEFindElement.h>
 #include <PostGL/GLModel.h>
 
 class CDlgImportLinesUI
@@ -258,7 +259,7 @@ int CDlgImportLines::ReadAng2Format(const char* szfile)
 	}
 
 	// build search tool
-	Post::FEFindElement find(mesh);
+	FEFindElement find(mesh);
 	find.Init(flags);
 
 	int nret = 1;

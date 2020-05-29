@@ -198,7 +198,7 @@ FEMesh* FEShellSphere::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

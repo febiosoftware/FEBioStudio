@@ -35,7 +35,7 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 	FEFaceFaceList FFT(*pm, FT);
 
 	// build the edge-edge table
-	FEEdgeEdgeList CET(*pm, ET);
+	FEEdgeIndexList CET(*pm, ET);
 
 	// the new number of nodes is given by the number of nodes, 2*edges, faces
 	int NN = pm->Nodes();
@@ -175,10 +175,7 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 		e1.m_elem = e1.m_elem;
 	}
 
-	//	pnew->UpdateElementNeighbors();
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
+	pnew->UpdateMesh();
 
 	return pnew;
 }

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEShellMesher.h"
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshLib/FEMesh.h>
 
 FEShellMesher::FEShellMesher()
 {
@@ -88,7 +89,7 @@ FEMesh*	FEShellMesher::BuildMesh()
 		for (int j = 0; j < nn; ++j) el.m_h[j] = h0;
 	}
 
-	mesh->Update();
+	mesh->BuildMesh();
 
 	return mesh;
 }

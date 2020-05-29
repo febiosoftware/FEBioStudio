@@ -44,11 +44,11 @@ bool ModelFileReader::Load(const char* szfile)
 		}
 		catch (GObjectException e)
 		{
-			return errf("An error occurred processing model:\n\s", e.ErrorMsg());
+			return errf("An error occurred processing model:\n%s", e.ErrorMsg());
 		}
 		catch (...)
 		{
-			return errf("Failed opening file \s1.", szfile);
+			return errf("Failed opening file %s", szfile);
 		}
 	}
 

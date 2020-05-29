@@ -233,10 +233,8 @@ FEMesh* FETri3ToTri6::Apply(FEMesh* pm)
         mod.Apply(pnew);
     }
     
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-    pnew->UpdateNormals();
-    
+	pnew->UpdateMesh();
+
     return pnew;
 }
 
@@ -560,9 +558,7 @@ FEMesh* FETri6ToTri3::Apply(FEMesh* pm)
         e1.m_elem = e1.m_elem;
     }
     
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-    pnew->UpdateNormals();
-    
+	pnew->UpdateMesh();
+
     return pnew;
 }

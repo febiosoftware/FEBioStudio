@@ -352,7 +352,7 @@ FEFaceFaceList::FEFaceFaceList(const FEMesh& mesh, const FEFaceTable& FT)
 	}
 }
 
-FEEdgeEdgeList::FEEdgeEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
+FEEdgeIndexList::FEEdgeIndexList(const FEMesh& mesh, const FEEdgeList& ET)
 {
 	// build a node-edge table for ET to facilitate searching
 	vector<vector<int> > NET; NET.resize(mesh.Nodes());
@@ -382,6 +382,48 @@ FEEdgeEdgeList::FEEdgeEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 		assert(EET[i] != -1);
 	}
 }
+
+FEEdgeEdgeList::FEEdgeEdgeList(const FEMesh& mesh, int edgeId)
+{
+	// build a node-edge table to facilitate searching
+	vector<vector<int> > NET; NET.resize(mesh.Nodes());
+	for (int i = 0; i<mesh.Edges(); ++i)
+	{
+		const FEEdge& edge = mesh.Edge(i);
+		NET[edge.n[0]].push_back(i);
+		NET[edge.n[1]].push_back(i);
+	}
+
+	EEL.resize(mesh.Edges());
+	for (int i = 0; i<mesh.Edges(); ++i)
+	{
+		const FEEdge& ei = mesh.Edge(i);
+		if ((edgeId == -1) || (ei.m_gid == edgeId))
+		{
+			for (int j = 0; j < 2; ++j)
+			{
+				vector<int>& nei = NET[ei.n[j]];
+				for (int k = 0; k < (int)nei.size(); ++k)
+				{
+					if (nei[k] != i)
+					{
+						const FEEdge& ek = mesh.Edge(nei[k]);
+						if ((edgeId == -1) || (ek.m_gid == edgeId))
+						{
+							if ((ek.n[0] == ei.n[0]) || (ek.n[0] == ei.n[1]) ||
+								(ek.n[1] == ei.n[0]) || (ek.n[1] == ei.n[1]))
+							{
+								EEL[i].push_back(nei[k]);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 
 FEEdgeFaceList::FEEdgeFaceList(const FEMesh& mesh)
 {

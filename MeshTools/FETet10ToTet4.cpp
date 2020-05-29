@@ -99,9 +99,7 @@ FEMesh* FETet10ToTet4::Apply(FEMesh* pm)
 		e1.m_elem = e1.m_elem;
 	}
 
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
+	pnew->UpdateMesh();
 
 	return pnew;
 }

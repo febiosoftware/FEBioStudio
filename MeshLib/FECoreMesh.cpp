@@ -669,20 +669,24 @@ void FECoreMesh::SelectElements(const vector<int>& elem)
 // This function finds the interior and exterior nodes.
 void FECoreMesh::MarkExteriorNodes()
 {
+	// assume all nodes interior
 	int nodes = Nodes();
-	int faces = Faces();
-	int elems = Elements();
-
 	for (int i = 0; i<nodes; ++i) Node(i).SetExterior(false);
 
+	// mark (exterior) face nodes as exterior
+	int faces = Faces();
 	for (int i = 0; i<faces; ++i)
 	{
 		FEFace& face = Face(i);
-		for (int j = 0; j<face.Nodes(); ++j)
-			m_Node[face.n[j]].SetExterior(true);
+		if (face.IsExterior())
+		{
+			for (int j = 0; j < face.Nodes(); ++j)
+				m_Node[face.n[j]].SetExterior(true);
+		}
 	}
 
 	// mark all nodes attached to beams as exterior
+	int elems = Elements();
 	for (int i = 0; i<elems; ++i)
 	{
 		FEElement_& el = ElementRef(i);
@@ -840,68 +844,4 @@ int FECoreMesh::CountSmoothingGroups() const
 		if (face.m_sid > max_sg) max_sg = face.m_sid;
 	}
 	return max_sg + 1;
-}
-
-//-----------------------------------------------------------------------------
-void FECoreMesh::AutoPartitionSurface()
-{
-	// Get the mesh and number of faces
-	int NF = Faces();
-
-	// face that still require processing 
-	// will be placed on a stack
-	// The partitioning is done when the stack is empty
-	vector<FEFace*> stack(NF);
-	int ns = 0;
-
-	// reset face ID's 
-	for (int i = 0; i<NF; ++i) Face(i).m_gid = -1;
-
-	// let's get to work
-	int ngid = 0;
-	for (int i = 0; i<NF; ++i)
-	{
-		FEFace* pf = FacePtr(i);
-		if (pf->m_gid == -1)
-		{
-			stack[ns++] = pf;
-			while (ns > 0)
-			{
-				// pop a face
-				pf = stack[--ns];
-
-				// mark as processed
-				pf->m_gid = ngid;
-
-				// get the element part ID's
-				assert(pf->m_elem[0].eid >= 0);
-				FEElement_* pe11 = ElementPtr(pf->m_elem[0].eid);
-				FEElement_* pe12 = ElementPtr(pf->m_elem[1].eid);
-				int gid11 = (pe11 ? pe11->m_gid : -1);
-				int gid12 = (pe12 ? pe12->m_gid : -1);
-
-				int n = pf->Edges();
-				for (int j = 0; j<n; ++j)
-				{
-					FEFace* pf2 = FacePtr(pf->m_nbr[j]);
-					if (pf2)
-					{
-						assert(pf2->m_elem[0].eid >= 0);
-						FEElement_* pe21 = ElementPtr(pf2->m_elem[0].eid);
-						FEElement_* pe22 = ElementPtr(pf2->m_elem[1].eid);
-
-						int gid21 = (pe21 ? pe21->m_gid : -1);
-						int gid22 = (pe22 ? pe22->m_gid : -1);
-
-						if ((pf2->m_gid == -1) && (pf->m_sid == pf2->m_sid) && (gid11 == gid21) && (gid12 == gid22))
-						{
-							pf2->m_gid = -2;
-							stack[ns++] = pf2;
-						}
-					}
-				}
-			}
-			++ngid;
-		}
-	}
 }

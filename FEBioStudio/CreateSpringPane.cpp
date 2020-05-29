@@ -281,7 +281,7 @@ bool CCreateSpringPane::updateTempObject()
 		{
 			cm->AddEdge(s.first, s.second + n1);
 		}
-		cm->Update();
+		cm->BuildMesh();
 		ui->m_curves->Update();
 
 		m_parent->SetTempObject(ui->m_curves);

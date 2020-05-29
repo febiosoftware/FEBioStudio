@@ -239,9 +239,7 @@ FEMesh* FEQuad4ToQuad8::Apply(FEMesh* pm)
         mod.Apply(pnew);
     }
     
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-    pnew->UpdateNormals();
+	pnew->UpdateMesh();
     
     return pnew;
 }
@@ -570,9 +568,7 @@ FEMesh* FEQuad8ToQuad4::Apply(FEMesh* pm)
         e1.m_elem = e0.m_elem;
     }
     
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-    pnew->UpdateNormals();
-    
+	pnew->UpdateMesh();
+
     return pnew;
 }

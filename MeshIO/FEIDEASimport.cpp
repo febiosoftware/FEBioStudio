@@ -148,7 +148,6 @@ bool FEIDEASimport::BuildMesh(FEModel& fem)
 	}
 
 	// update the mesh
-	pm->RemoveIsolatedNodes();
 	pm->RebuildMesh();
 
 	// if we get here we are good to go!

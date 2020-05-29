@@ -3,6 +3,7 @@
 #include "FEItemListBuilder.h"
 
 class FENode;
+class FEEdge;
 class FEFace;
 class FEElement;
 class FEMesh;
@@ -97,6 +98,8 @@ public:
 	~FEEdgeSet(){}
 
 	FENodeList* BuildNodeList();
+
+	FEEdge* Edge(FEItemListBuilder::Iterator it);
 
 	FEItemListBuilder* Copy();
 	void Copy(FEEdgeSet* pg);

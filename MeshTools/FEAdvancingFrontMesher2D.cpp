@@ -364,8 +364,6 @@ FEMesh* FEAdvancingFrontMesher2D::BuildMesh()
 		el.m_node[2] = f.node[2];
 	}
 
-	mesh->Update();
-
 	mesh->RebuildMesh();
 
 	// clean up

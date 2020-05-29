@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FETruncatedEllipsoid.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 
 FETruncatedEllipsoid::FETruncatedEllipsoid(GTruncatedEllipsoid* po)
 {
@@ -272,10 +273,7 @@ FEMesh* FETruncatedEllipsoid::BuildMesh()
 	}
 
 	// update the mesh
-	pm->Update();
-
-	// finally, we update the normals and we are good to go
-	pm->UpdateNormals();
+	pm->UpdateMesh();
 
 	return pm;
 }

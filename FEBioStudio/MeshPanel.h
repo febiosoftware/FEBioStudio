@@ -46,6 +46,7 @@ private slots:
 private:
 	int					m_nid;	// current button selected
 	FEModifier*			m_mod;	// temporary modifier
+	GObject*			m_currentObject;
 	Ui::CMeshPanel*		ui;
 };
 

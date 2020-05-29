@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FESlice.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 
 FESlice::FESlice(GSlice* po)
 {
@@ -376,7 +377,7 @@ FEMesh* FESlice::BuildMesh()
 		}
 	}
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

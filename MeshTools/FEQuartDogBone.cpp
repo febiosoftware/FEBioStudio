@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEQuartDogBone.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
 FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)
@@ -184,7 +185,7 @@ FEMesh* FEQuartDogBone::BuildMesh()
 	for (int i=0; i<pm->Elements(); ++i) pm->Element(i).m_gid = 0;
 
 	// update the mesh
-	pm->Update();
+	pm->BuildMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 

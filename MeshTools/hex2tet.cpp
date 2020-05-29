@@ -273,7 +273,7 @@ FEMesh* FEHex2Tet::Apply(FEMesh* pm)
 		}
 	}
 
-	mesh-> Update();
+	mesh->BuildMesh();
 
 	return mesh;
 }

@@ -115,9 +115,6 @@ public:
 	//! Get the edge
 	FEEdge GetEdge(int i);
 
-	//! Is this an exterior element
-	bool IsExterior();
-
 	//! get the index into the element's node array (or -1 of the element does not have this node)
 	int FindNodeIndex(int nid);
 

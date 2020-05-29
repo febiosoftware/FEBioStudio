@@ -184,7 +184,7 @@ bool GMeshImport::BuildMesh(FEPostModel& fem)
 
 	// update the mesh
 	fem.AddMesh(pm);
-	pm->Update();
+	pm->BuildMesh();
 	fem.UpdateBoundingBox();
 
 	// we need a single state

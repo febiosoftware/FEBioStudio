@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FEExtrudeFaces.h"
+#include <MeshLib/FEMeshBuilder.h>
 
 FEExtrudeFaces::FEExtrudeFaces() : FEModifier("Extrude faces")
 {
@@ -392,5 +393,6 @@ void FEExtrudeFaces::Extrude(FEMesh* pm, vector<int>& faceList)
 	}
 
 	// delete extraneous nodes (if any)
-	pm->RemoveIsolatedNodes();
+	FEMeshBuilder meshBuilder(*pm);
+	meshBuilder.RemoveIsolatedNodes();
 }

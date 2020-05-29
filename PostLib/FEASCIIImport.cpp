@@ -433,7 +433,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 		int* n = zone.m_Elem[i].node;
 		for (int j=0; j<e.Nodes(); ++j) e.m_node[j] = n[j]-1;
 	}
-	pm->Update();
+	pm->BuildMesh();
 	fem.UpdateBoundingBox();
 
 	// create a single material

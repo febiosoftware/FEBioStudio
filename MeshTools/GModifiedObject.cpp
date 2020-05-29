@@ -117,8 +117,7 @@ FEMesh* GModifiedObject::BuildMesh()
 	// Make sure the normals and the bounding box are up to date.
 	if (newMesh)
 	{
-		newMesh->UpdateNormals();
-		newMesh->UpdateBox();
+		newMesh->UpdateMesh();
 	}
 	return newMesh;
 }

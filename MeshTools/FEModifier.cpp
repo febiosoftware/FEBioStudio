@@ -12,6 +12,7 @@
 #include <GeomLib/GObject.h>
 #include <stdarg.h>
 #include <FSCore/paramunit.h>
+#include <MeshLib/FEMeshBuilder.h>
 
 std::string FEModifier::m_error;
 
@@ -41,47 +42,71 @@ std::string FEModifier::GetErrorString()
 
 FEPartitionSelection::FEPartitionSelection() : FEModifier("Partition")
 {
-	
+	AddBoolParam(true, "Create new Partition");
+	AddIntParam(1, "Assign to partition")->SetState(Param_VISIBLE | Param_PERSISTENT);
+}
+
+bool FEPartitionSelection::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		bool newPartition = GetBoolValue(0);
+		if (newPartition)
+			GetParam(1).SetState(Param_VISIBLE | Param_PERSISTENT);
+		else
+			GetParam(1).SetState(Param_VISIBLE | Param_EDITABLE | Param_PERSISTENT);
+		return true;
+	}
+	return false;
 }
 
 FEMesh* FEPartitionSelection::Apply(FEMesh* pm)
 {
+	bool newPartition = GetBoolValue(0);
+	int gid = GetIntValue(1) - 1;
+	if (newPartition) gid = -1;
 	FEMesh* newMesh = new FEMesh(*pm);
 
-	newMesh->PartitionElementSelection();
+	FEMeshBuilder meshBuilder(*newMesh);
+	meshBuilder.PartitionElementSelection(gid);
 
 	return newMesh;
 }
 
 FEMesh* FEPartitionSelection::Apply(FEGroup* pg)
 {
+	bool newPartition = GetBoolValue(0);
+	int gid = GetIntValue(1) - 1;
+	if (newPartition) gid = -1;
+
 	FEMesh* oldMesh = pg->GetMesh();
 	if (oldMesh == 0) return 0;
 
 	FEMesh* newMesh = new FEMesh(*oldMesh);
+	FEMeshBuilder meshBuilder(*newMesh);
 
 	FESurface* s = dynamic_cast<FESurface*>(pg);
 	if (s)
 	{
-		newMesh->PartitionFaceSelection();
+		meshBuilder.PartitionFaceSelection(gid);
 	}
 
 	FEPart* p = dynamic_cast<FEPart*>(pg);
 	if (p)
 	{
-		newMesh->PartitionElementSelection();
+		meshBuilder.PartitionElementSelection(gid);
 	}
 
 	FENodeSet* n = dynamic_cast<FENodeSet*>(pg);
 	if (n)
 	{
-		newMesh->PartitionNodeSet(n);
+		meshBuilder.PartitionNodeSet(n);
 	}
 
 	FEEdgeSet* e = dynamic_cast<FEEdgeSet*>(pg);
 	if (e)
 	{
-		newMesh->PartitionEdgeSelection();
+		meshBuilder.PartitionEdgeSelection(gid);
 	}
 
 	return newMesh;
@@ -126,7 +151,8 @@ FEMesh* FERemoveDuplicateElements::Apply(FEMesh* pm)
 	}
 
 	// delete tagged elements
-	m.DeleteTaggedElements(-1);
+	FEMeshBuilder meshBuilder(m);
+	meshBuilder.DeleteTaggedElements(-1);
 
 	return pnm;
 }
@@ -239,8 +265,7 @@ FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
 	}
 
 	// update geometry
-	m.UpdateNormals();
-	m.UpdateBox();
+	m.UpdateMesh();
 
 	return pnm;
 }
@@ -736,7 +761,8 @@ FEMesh* FEMirrorMesh::Apply(FEMesh *pm)
 	}
 
 	// invert elements
-	pmn->InvertSelectedElements();
+	FEMeshBuilder meshBuilder(*pmn);
+	meshBuilder.InvertSelectedElements();
 
 	return pmn;
 }
@@ -844,7 +870,7 @@ FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
 		}
 	}
 
-	pnew->Update();
+	pnew->BuildMesh();
 
 	return pnew;
 }
@@ -1027,17 +1053,8 @@ FEMesh* FEAddNode::Apply(FEMesh* pm)
 	GObject* po = pm->GetGObject();
 	if (po) r = po->GetTransform().GlobalToLocal(r);
 
-	FENode node;
-	node.SetExterior(true);
-	node.r = r;
-
-	// let's partition the node
-	int ng = newMesh->CountNodePartitions();
-	node.m_gid = ng;
-
-	newMesh->AddNode(node);
-
-	newMesh->UpdateBox();
+	FEMeshBuilder meshBuilder(*newMesh);
+	meshBuilder.AddNode(r);
 
 	return newMesh;
 }
@@ -1059,14 +1076,15 @@ FEMesh* FEInvertMesh::Apply(FEMesh* pm)
 	bool invertFaces = GetBoolValue(1);
 
 	FEMesh* newMesh = new FEMesh(*pm);
+	FEMeshBuilder meshBuilder(*newMesh);
 
 	if (invertElems)
 	{
-		newMesh->InvertSelectedElements();
+		meshBuilder.InvertSelectedElements();
 	}
 	else if (invertFaces)
 	{
-		newMesh->InvertSelectedFaces();
+		meshBuilder.InvertSelectedFaces();
 	}
 	else
 	{
@@ -1196,7 +1214,6 @@ FEMesh* FEDetachElements::Apply(FEMesh* pm)
 				di.m_gid += ng;
 			}
 		}
-		newMesh->UpdateElementPartitions();
 	}
 
 	// update the mesh

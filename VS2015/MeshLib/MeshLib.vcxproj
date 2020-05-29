@@ -149,9 +149,11 @@
     <ClCompile Include="..\..\MeshLib\FEElement.cpp" />
     <ClCompile Include="..\..\MeshLib\FEFace.cpp" />
     <ClCompile Include="..\..\MeshLib\FEFaceEdgeList.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEFindElement.cpp" />
     <ClCompile Include="..\..\MeshLib\FELineMesh.cpp" />
     <ClCompile Include="..\..\MeshLib\FEMesh.cpp" />
     <ClCompile Include="..\..\MeshLib\FEMeshBase.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEMeshBuilder.cpp" />
     <ClCompile Include="..\..\MeshLib\FENode.cpp" />
     <ClCompile Include="..\..\MeshLib\FENodeEdgeList.cpp" />
     <ClCompile Include="..\..\MeshLib\FENodeElementList.cpp" />
@@ -177,10 +179,12 @@
     <ClInclude Include="..\..\MeshLib\FEElementLibrary.h" />
     <ClInclude Include="..\..\MeshLib\FEFace.h" />
     <ClInclude Include="..\..\MeshLib\FEFaceEdgeList.h" />
+    <ClInclude Include="..\..\MeshLib\FEFindElement.h" />
     <ClInclude Include="..\..\MeshLib\FEItem.h" />
     <ClInclude Include="..\..\MeshLib\FELineMesh.h" />
     <ClInclude Include="..\..\MeshLib\FEMesh.h" />
     <ClInclude Include="..\..\MeshLib\FEMeshBase.h" />
+    <ClInclude Include="..\..\MeshLib\FEMeshBuilder.h" />
     <ClInclude Include="..\..\MeshLib\FENode.h" />
     <ClInclude Include="..\..\MeshLib\FENodeEdgeList.h" />
     <ClInclude Include="..\..\MeshLib\FENodeElementList.h" />

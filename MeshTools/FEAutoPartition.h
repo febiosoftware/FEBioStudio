@@ -8,10 +8,13 @@ class FEAutoPartition : public FEModifier
 {
 public:
 	FEAutoPartition();
+	FEMesh* Apply(FEGroup* pg);
+	FEMesh* Apply(FEMesh* pm);
+};
 
-	// set/get smoothing angle
-	void SetSmoothingAngle(double w);
-	double GetSmoothingAngle();
-
+class FERebuildMesh : public FEModifier
+{
+public:
+	FERebuildMesh();
 	FEMesh* Apply(FEMesh* pm);
 };

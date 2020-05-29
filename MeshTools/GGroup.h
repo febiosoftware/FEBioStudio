@@ -73,6 +73,8 @@ public:
 
 	vector<GEdge*>	GetEdgeList();
 
+	GEdge* GetEdge(int n);
+
 	FEItemListBuilder* Copy() override;
 
 	FENodeList* BuildNodeList() override;

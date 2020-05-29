@@ -160,6 +160,17 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 				// add the widget (if defined)
 				if (pw) form->addRow(label, tmp);
 			}
+			else if (pi.param && pw)
+			{
+				if (pi.param->IsEditable())
+					form->addRow(label, pw);
+				else
+				{
+					QLabel* l = new QLabel(label);
+					l->setStyleSheet("QLabel {color: gray;}");
+					form->addRow(l, pw);
+				}
+			}
 			else
 			{
 				// add the widget (if defined)
@@ -190,19 +201,11 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 	{
 	case CProperty::Int:
 		{
-			if (pi.isEditable())
-			{
-				QSpinBox* spin = new QSpinBox;
-				spin->setRange(pi.imin, pi.imax);
-				spin->setValue(v.toInt());
-				connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
-				return spin;
-			}
-			else
-			{
-				QLineEdit* edit = new QLineEdit;
-				return edit;
-			}
+			QSpinBox* spin = new QSpinBox;
+			spin->setRange(pi.imin, pi.imax);
+			spin->setValue(v.toInt());
+			connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
+			return spin;
 		}
 		break;
 	case CProperty::Float:

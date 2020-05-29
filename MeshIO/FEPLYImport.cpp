@@ -66,7 +66,7 @@ bool FEPLYImport::Load(const char* szfile)
 
 	Close();
 
-	pm->Update();
+	pm->BuildMesh();
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(pm);
 
 	char szname[256];

@@ -63,3 +63,30 @@ vec3d FELineMesh::NodeLocalPosition(int i) const
 {
 	return Node(i).r;
 }
+
+//-----------------------------------------------------------------------------
+// Updates the bounding box (in local coordinates)
+void FELineMesh::UpdateBoundingBox()
+{
+	FENode* pn = NodePtr();
+	if (pn == 0)
+	{
+		m_box.x0 = m_box.y0 = m_box.z0 = 0;
+		m_box.x1 = m_box.y1 = m_box.z1 = 0;
+		return;
+	}
+
+	m_box.x0 = m_box.x1 = pn->r.x;
+	m_box.y0 = m_box.y1 = pn->r.y;
+	m_box.z0 = m_box.z1 = pn->r.z;
+	for (int i = 0; i<Nodes(); i++, pn++)
+	{
+		vec3d& r = pn->r;
+		if (r.x < m_box.x0) m_box.x0 = r.x;
+		if (r.y < m_box.y0) m_box.y0 = r.y;
+		if (r.z < m_box.z0) m_box.z0 = r.z;
+		if (r.x > m_box.x1) m_box.x1 = r.x;
+		if (r.y > m_box.y1) m_box.y1 = r.y;
+		if (r.z > m_box.z1) m_box.z1 = r.z;
+	}
+}

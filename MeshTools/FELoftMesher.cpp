@@ -190,10 +190,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 	}
 
 	// update the mesh
-	mesh->UpdateFaces();
-	mesh->AutoPartitionNodes();
-	mesh->UpdateNormals();
-	mesh->UpdateBox();
+	mesh->BuildMesh();
 
 	return mesh;
 }
@@ -715,10 +712,7 @@ FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 	}
 
 	// update mesh data
-	mesh->UpdateFaces();
-	mesh->AutoPartitionNodes();
-	mesh->UpdateNormals();
-	mesh->UpdateBox();
+	mesh->BuildMesh();
 
 	return mesh;
 }

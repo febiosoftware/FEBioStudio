@@ -111,7 +111,7 @@ bool FEBioImport::Load(const char* szfile)
 	Close();
 
 	// update the mesh
-	m_pm->Update();
+	m_pm->BuildMesh();
 	m_fem->UpdateBoundingBox();
 
 	// we need a single state

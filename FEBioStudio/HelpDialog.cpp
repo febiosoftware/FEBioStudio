@@ -60,6 +60,7 @@ CHelpDialog::CHelpDialog(FEProject& prj, QWidget* parent) : QDialog(parent), ui(
 	m_module = prj.GetModule();
 }
 
+CHelpDialog::~CHelpDialog() { delete ui; }
 
 void CHelpDialog::on_help_clicked()
 {

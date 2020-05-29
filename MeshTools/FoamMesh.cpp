@@ -688,7 +688,7 @@ FEMesh* FoamGen::CreateMesh()
 		s.m_sid = f.nid;
 	}
 
-	pm->Update();
+	pm->BuildMesh();
 	
 	return pm;
 }

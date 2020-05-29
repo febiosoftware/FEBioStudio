@@ -277,7 +277,6 @@ bool AnsysImport::BuildMesh(FEModel &fem)
 	}
 
 	// update the mesh
-	pm->RemoveIsolatedNodes();
 	pm->RebuildMesh();
 	GObject* po = new GMeshObject(pm);
 

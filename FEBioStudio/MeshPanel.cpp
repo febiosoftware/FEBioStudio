@@ -184,6 +184,7 @@ void CDlgStartThread::threadFinished()
 
 //=============================================================================
 
+REGISTER_CLASS(FERebuildMesh          , CLASS_FEMODIFIER, "Rebuild Mesh"   , EDIT_MESH);
 REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
 REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
 REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
@@ -206,13 +207,14 @@ REGISTER_CLASS(FEAxesCurvature        , CLASS_FEMODIFIER, "Set Axes from Curvatu
 REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
 REGISTER_CLASS(FECreateShells         , CLASS_FEMODIFIER, "Create Shells from Faces"  , EDIT_FACE | EDIT_MESH);
 #ifdef HAS_MMG
-REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Refine", EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(FEMMGRemesh, CLASS_FEMODIFIER, "Tet Remesh", EDIT_MESH | EDIT_SAFE);
 #endif
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
 	m_mod = 0;
 	m_nid = -1;
+	m_currentObject = nullptr;
 	ui->setupUi(this, wnd);
 }
 
@@ -221,6 +223,12 @@ void CMeshPanel::Update(bool breset)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel* gm = doc->GetGModel();
 	GObject* activeObject = doc->GetActiveObject();
+
+	// only update if reset is true or the active object changed
+	if ((breset == false) && (activeObject == m_currentObject)) return;
+
+	// keep track of the object
+	m_currentObject = activeObject;
 
 	ui->obj->Update();
 
@@ -300,13 +308,21 @@ void CMeshPanel::on_buttons_buttonSelected(int id)
 
 void CMeshPanel::on_buttons2_buttonSelected(int id)
 {
+	// If the ID is the same and we already have a modifier 
+	// allocated, then return.
+	if ((id == m_nid) && m_mod) return;
+
+	// delete modifier
+	if (m_mod) delete m_mod;
+	m_mod = nullptr;
+
+	// store button id
 	m_nid = id;
+
+	// update modifier and panel
 	if (id == -1) ui->showModifierParametersPanel(false);
 	else
 	{
-		if (m_mod) delete m_mod;
-		m_mod = 0;
-
 		ui->setModifierPropertyList(0);
 
 		ClassDescriptor* pcd = ui->buttons2->GetClassDescriptor(id);
@@ -369,7 +385,16 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	FESelection* sel = doc->GetCurrentSelection();
 	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
 	FEGroup* g = dynamic_cast<FEGroup*>(list);
-	if (g == 0) { delete list; list = 0; }
+	if (g == 0) 
+	{ 
+		if (dynamic_cast<GEdgeList*>(list) && (list->size() == 1))
+		{
+			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
+			GEdge* ge = dynamic_cast<GEdgeList*>(list)->GetEdge(0);
+			g = ge->GetFEEdgeSet();
+		}
+		else { delete list; list = 0; }
+	}
 
 	bool bsuccess = doc->ApplyFEModifier(*m_mod, activeObject, g);
 	if (bsuccess == false)

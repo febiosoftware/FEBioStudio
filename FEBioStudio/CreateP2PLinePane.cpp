@@ -250,7 +250,7 @@ FSObject* CCreateP2PLinePane::Create()
 	}
 	else
 	{
-		m_tmp->GetCurveMesh()->Update();
+		m_tmp->GetCurveMesh()->BuildMesh();
 		m_tmp->Update();
 
 		newObject = m_tmp;

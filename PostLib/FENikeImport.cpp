@@ -36,7 +36,7 @@ bool FENikeImport::Load(const char *szfile)
 	Close();
 
 	// update the mesh
-	if (m_pm) m_pm->Update(); else return false;
+	if (m_pm) m_pm->BuildMesh(); else return false;
 	m_fem->UpdateBoundingBox();
 
 	// we need a single state

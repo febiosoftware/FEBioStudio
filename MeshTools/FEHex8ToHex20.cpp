@@ -240,9 +240,7 @@ FEMesh* FEHex8ToHex20::Apply(FEMesh* pm)
 		mod.Apply(pnew);
 	}
 
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
+	pnew->BuildMesh();
 
 	return pnew;
 }
@@ -494,7 +492,7 @@ void FEHex20Smooth::Apply(FEMesh* pmesh)
 //! Convert a hex20 to a hex8 mesh by eliminating all the center edge nodes
 FEMesh* FEHex20ToHex8::Apply(FEMesh* pm)
 {
-	// make sure the mesh is a tet10 mesh
+	// make sure the mesh is a hex20 mesh
 	if (pm->IsType(FE_HEX20) == false) return 0;
 
 	// get the number of items
@@ -594,9 +592,7 @@ FEMesh* FEHex20ToHex8::Apply(FEMesh* pm)
 		e1.m_elem = e1.m_elem;
 	}
 
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
+	pnew->UpdateMesh();
 
 	return pnew;
 }

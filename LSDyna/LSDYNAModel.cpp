@@ -249,10 +249,8 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 			p.lid = PLT[p.pid - minpid];
 		}
 	}
-	pm->UpdateElementPartitions();
 
 	// update the mesh
-//	pm->RemoveIsolatedNodes();
 	pm->RebuildMesh();
 
 	m_po = new GMeshObject(pm);

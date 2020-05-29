@@ -426,18 +426,6 @@ void FEElement_::GetShellFace(FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-//! Is this an exterior element (i.e. an element that is on the outside of the mesh).
-//! shells and beams are alwasy exterior. Solids are exterior if they have at least one
-//! null neighbor.
-bool FEElement_::IsExterior()
-{
-	if (!IsSolid()) return true;
-	int n = Faces();
-	for (int i=0; i<n; ++i) if (m_nbr[i] < 0) return true;
-	return false;
-}
-
-//-----------------------------------------------------------------------------
 int FEElement_::FindNodeIndex(int nid)
 {
 	int n = Nodes();

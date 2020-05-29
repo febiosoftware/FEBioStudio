@@ -1,6 +1,8 @@
 #pragma once
 #include <FSCore/FSObject.h>
 
+class FEEdgeSet;
+
 //-----------------------------------------------------------------------------
 // State values for GItem state
 enum {
@@ -61,7 +63,7 @@ public:
 
 	// get/set local ID
 	void SetLocalID(int n) { m_lid = n; }
-	int GetLocalID() { return m_lid; }
+	int GetLocalID() const { return m_lid; }
 
 	// get the parent object
 	GBaseObject* Object() { return m_po; }
@@ -186,6 +188,8 @@ public:
 	bool HasNode(int n) { return ((m_node[0]==n)||(m_node[1]==n)); }
 
 	int Type() const { return m_ntype; }
+
+	FEEdgeSet* GetFEEdgeSet() const;
 
 public:
 	int		m_node[2];	// indices of GNodes

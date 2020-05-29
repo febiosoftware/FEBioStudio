@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FEShellDisc.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -156,7 +157,7 @@ FEMesh* FEShellDisc::BuildMesh()
 	BuildEdges(pm);
 
 	// update the mesh
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

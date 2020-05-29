@@ -15,6 +15,8 @@ public:
 
 	void SetMeshItem(int n);
 
+	void toggleSelectConnected();
+
 private slots:
 	void onPivotChanged();
 	void onPivotClicked(bool b);

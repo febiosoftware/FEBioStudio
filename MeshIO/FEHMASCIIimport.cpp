@@ -215,7 +215,7 @@ bool FEHMASCIIimport::BuildMesh(FEModel &fem)
 	}
 
 	// update the mesh
-	pm->RemoveIsolatedNodes();
+	pm->RebuildMesh();
 
 	// create the geometry
 	GMeshObject* po = new GMeshObject(pm);

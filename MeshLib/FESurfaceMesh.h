@@ -19,22 +19,24 @@ public:
 
 	FESurfaceMesh& operator = (const FESurfaceMesh& mesh);
 
+public:
+	// allocate mesh data structures
 	void Create(unsigned int nodes, unsigned int edges, unsigned int faces);
+
+	// Build the mesh data structures
+	void BuildMesh() override;
 
 	void RebuildMesh(double smoothingAngle = 60.0);
 
 	void AutoPartition(double smoothingAngle);
 
+public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	void Update();
-
-	void BuildNodeFaceTable(vector< vector<int> >& NFT);
-
+public:
 	bool IsType(FEFaceType type);
 
-public:
 	// remove duplicate edges
 	void RemoveDuplicateEdges();
 
@@ -50,9 +52,6 @@ public:
 public:
 	void PartitionEdgeSelection(int partition = -1);
 	void PartitionNodeSelection();
-
-	void AutoPartitionEdges();
-	void AutoPartitionNodes();
 
 public:
 	void ShowFaces(const vector<int>& face, bool bshow = true);
@@ -95,6 +94,10 @@ public:
 	void ResizeNodes(int newSize);
 	void ResizeEdges(int newSize);
 	void ResizeFaces(int newSize);
+
+private:
+	void AutoPartitionEdges();
+	void AutoPartitionNodes();
 };
 
 // Create a TriMesh from a surface mesh

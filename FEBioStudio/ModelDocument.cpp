@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <MeshTools/GModel.h>
 #include <PostGL/GLPlot.h>
+#include <MeshLib/FENodeFaceList.h>
 
 CModelDocument::CModelDocument(CMainWindow* wnd) : CDocument(wnd)
 {
@@ -571,8 +572,8 @@ FESelection* CModelDocument::GetCurrentSelection() { return m_psel; }
 //-----------------------------------------------------------------------------
 void CModelDocument::GrowNodeSelection(FEMeshBase* pm)
 {
-	vector<vector<int> > NFT;
-	pm->BuildNodeFaceTable(NFT);
+	FENodeFaceList NFT;
+	NFT.Build(pm);
 
 	int i;
 	int NN = pm->Nodes();
@@ -583,9 +584,8 @@ void CModelDocument::GrowNodeSelection(FEMeshBase* pm)
 	{
 		if (pm->Node(i).IsSelected())
 		{
-			vector<int>& FT = NFT[i];
-			int nf = (int)FT.size();
-			for (int j = 0; j<nf; ++j) pm->Face(FT[j]).m_ntag = 1;
+			int nf = NFT.Valence(i);
+			for (int j = 0; j<nf; ++j) NFT.Face(i, j)->m_ntag = 1;
 		}
 	}
 
@@ -681,8 +681,8 @@ void CModelDocument::GrowEdgeSelection(FEMeshBase* pm)
 //-----------------------------------------------------------------------------
 void CModelDocument::ShrinkNodeSelection(FEMeshBase* pm)
 {
-	vector<vector<int> > NFT;
-	pm->BuildNodeFaceTable(NFT);
+	FENodeFaceList NFT;
+	NFT.Build(pm);
 
 	int i;
 	int NN = pm->Nodes();
@@ -693,9 +693,8 @@ void CModelDocument::ShrinkNodeSelection(FEMeshBase* pm)
 	{
 		if (pm->Node(i).IsSelected() == false)
 		{
-			vector<int>& FT = NFT[i];
-			int nf = (int)FT.size();
-			for (int j = 0; j<nf; ++j) pm->Face(FT[j]).m_ntag = 1;
+			int nf = NFT.Valence(i);
+			for (int j = 0; j<nf; ++j) NFT.Face(i, j)->m_ntag = 1;
 		}
 	}
 

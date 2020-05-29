@@ -55,26 +55,37 @@ void FESmoothMesh::SmoothMesh(FEMesh& mesh)
 
 	// smooth node positions
 	int N = mesh.Nodes();
-	for (int n = 0; n<niter; ++n)
+	for (int n = 0; n < niter; ++n)
 	{
-		for (int i = 0; i<N; ++i)
+		vector<vec3d> r(N, vec3d(0, 0, 0));
+		for (int i = 0; i < N; ++i)
 		{
 			FENode& ni = mesh.Node(i);
 			int nn = NNL.Valence(i);
 			if ((ni.m_ntag == 1) && (nn > 0))
 			{
-				vec3d v;
-				for (int j = 0; j<nn; ++j)
+				vec3d v(0,0,0);
+				for (int j = 0; j < nn; ++j)
 				{
 					FENode& nj = mesh.Node(NNL.Node(i, j));
 					v += nj.r;
 				}
 				v /= (double)nn;
 
-				ni.r = ni.r*w + v*(1.0 - w);
+				r[i] = ni.r*w + v*(1.0 - w);
+			}
+		}
+		for (int i = 0; i < N; ++i)
+		{
+			FENode& ni = mesh.Node(i);
+			int nn = NNL.Valence(i);
+			if ((ni.m_ntag == 1) && (nn > 0))
+			{
+				ni.r = r[i];
 			}
 		}
 	}
+	mesh.UpdateMesh();
 }
 /*
 void FESmoothMesh::ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh)

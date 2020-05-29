@@ -9,6 +9,7 @@
 #include "MeshTools/FENodeData.h"
 #include "MeshTools/FESurfaceData.h"
 #include "MeshTools/FEElementData.h"
+#include "FEMeshBuilder.h"
 #include <algorithm>
 #include <unordered_set>
 #include <map>
@@ -201,12 +202,6 @@ void FEMesh::ClearMeshData()
 }
 
 //-----------------------------------------------------------------------------
-void FEMesh::ClearElements() { m_Elem.clear(); }
-
-//-----------------------------------------------------------------------------
-void FEMesh::CreateElements(int elems) { m_Elem.resize(elems); }
-
-//-----------------------------------------------------------------------------
 // Allocate storage for the mesh data. If bclear is true (default = true) all 
 // existing groups are deleted.
 void FEMesh::Create(int nodes, int elems, int faces, int edges)
@@ -219,156 +214,6 @@ void FEMesh::Create(int nodes, int elems, int faces, int edges)
 
 	// clear mesh data
 	ClearMeshData();
-}
-
-//-----------------------------------------------------------------------------
-// Detach the selection and return it as a new object
-// TODO: I want to remove this function and replace it with a modifier who
-// does all the work.
-FEMesh* FEMesh::DetachSelectedMesh()
-{
-	int i, j, n;
-
-	// count selected elements
-	int elems = 0;
-	for (i=0; i<Elements(); ++i) if (ElementPtr(i)->IsSelected()) ++elems;
-
-	// make sure there is a selection
-	if (elems == 0) return 0;
-
-	// make sure there are fewer selected elements than elements
-	// otherwise we don't have anything left.
-	if (elems == Elements()) return 0;
-
-	// tag nodes that will be moved to the new mesh
-	FENode* pn = NodePtr();
-	for (i=0; i<Nodes(); ++i, ++pn) pn->m_ntag = -1;
-
-	for (i=0; i<Elements(); ++i)
-	{
-		FEElement_* pe = ElementPtr(i);
-		if (pe->IsSelected())
-		{
-			n = pe->Nodes();
-			for (j=0; j<n; ++j) Node(pe->m_node[j]).m_ntag = 1;
-		}
-	}
-
-	// count nodes
-	int nodes = 0;
-	pn = NodePtr();
-	for (i=0; i<Nodes(); ++i, ++pn) if (pn->m_ntag > 0) ++nodes;
-
-	// create a new mesh
-	FEMesh* pm = new FEMesh();
-	pm->Create(nodes, elems);
-
-	// create the new nodes
-	pn = NodePtr();
-	n = 0;
-	for (i=0; i<Nodes(); ++i, ++pn)
-	{
-		if (pn->m_ntag > 0)
-		{
-			FENode& node = pm->Node(n);
-			node.r  = pn->r;
-			pn->m_ntag = n++;
-		}
-	}
-	assert(n == nodes);
-
-	// create the new elements
-	n = 0;
-	for (i=0; i<Elements(); ++i)
-	{
-		FEElement_* pe = ElementPtr(i);
-
-		if (pe->IsSelected())
-		{
-			FEElement& el = pm->Element(n);
-			el.SetType(pe->Type());
-			
-			for (j=0; j<pe->Nodes(); ++j)
-			{
-                el.m_h[j] = pe->m_h[j];
-				el.m_node[j] = Node(pe->m_node[j]).m_ntag;
-				assert(el.m_node[j] >= 0);
-			}
-			++n;
-		}
-	}
-	assert(n==elems);
-
-	// update the new mesh (is done later)
-//	pm->Update();
-
-	vector<int> ELT;
-	ELT.assign(Elements(), -1);
-
-	// the new mesh is created, so let's clean up this mesh
-	// delete selected elements
-	n = 0;
-	for (i=0; i<Elements(); ++i)
-	{
-		FEElement& e0 = Element(i);
-		FEElement& e1 = Element(n);
-
-		if (!e0.IsSelected())
-		{
-			e1 = e0;
-			ELT[i] = n;
-			++n;
-		}
-	}
-	m_Elem.resize(n);
-	m_data.Clear();
-
-	// tag nodes which will be kept
-	pn = NodePtr();
-	for (i=0; i<Nodes(); ++i, ++pn) pn->m_ntag = -1;
-
-	for (i=0; i<Elements(); ++i)
-	{
-		FEElement_* pe = ElementPtr(i);
-		n = pe->Nodes();
-		for (j=0; j<n; ++j) Node(pe->m_node[j]).m_ntag = 1;
-	}
-
-	// reindex the nodes
-	n = 0;
-	pn = NodePtr();
-	for (i=0; i<Nodes(); ++i, ++pn) if (pn->m_ntag > 0) pn->m_ntag = n++;
-
-	for (i=0; i<Elements(); ++i)
-	{
-		FEElement_* pe = ElementPtr(i);
-		n = pe->Nodes();
-		for (j=0; j<n; ++j)	pe->m_node[j] = Node(pe->m_node[j]).m_ntag;
-	}
-
-	// delete untagged nodes
-	n = 0;
-	for (i=0; i<Nodes(); ++i)
-	{
-		FENode& n0 = Node(i);
-		FENode& n1 = Node(n);
-
-		if (n0.m_ntag >= 0)
-		{
-			n1 = n0;
-			++n;
-		}
-	}
-	m_Node.resize(n);
-
-	// update the mesh (is done later)
-///	Update();
-
-	RebuildMesh();
-	pm->RebuildMesh();
-
-	// Done!
-	return pm;
 }
 
 //-----------------------------------------------------------------------------
@@ -393,72 +238,6 @@ void FEMesh::ResizeFaces(int newSize)
 void FEMesh::ResizeElems(int newSize)
 {
 	m_Elem.resize(newSize);
-}
-
-//-----------------------------------------------------------------------------
-// Remove nodes that are not referenced by any elements.
-void FEMesh::RemoveIsolatedNodes()
-{
-	// find the isolated nodes
-	TagAllNodes(-1);
-	for (int i=0; i<Elements(); ++i)
-	{
-		FEElement& el = Element(i);
-		int n = el.Nodes();
-		for (int j=0; j<n; ++j) Node(el.m_node[j]).m_ntag = 1;
-	}
-
-	// reindex the nodes
-	int n = 0;
-	for (int i=0; i<Nodes(); ++i)
-	{
-		FENode& node = Node(i);
-		if (node.m_ntag == 1) node.m_ntag = n++;
-	}
-
-	// fix element node numbering
-	for (int i=0; i<Elements(); ++i)
-	{
-		FEElement& el = Element(i);
-		int n = el.Nodes();
-		for (int j=0; j<n; ++j) el.m_node[j] = Node(el.m_node[j]).m_ntag;
-	}
-
-	// fix face node numbering
-	for (int i=0; i<Faces(); ++i)
-	{
-		FEFace& face = Face(i);
-		int n = face.Nodes();
-		for (int j=0; j<n; ++j) face.n[j] = Node(face.n[j]).m_ntag;
-	}
-
-	// fix edge node numbering
-	for (int i=0; i<Edges(); ++i)
-	{
-		FEEdge& edge = Edge(i);
-		int n = edge.Nodes();
-		for (int j=0; j<n; ++j) edge.n[j] = Node(edge.n[j]).m_ntag;
-	}
-
-	// remove the isolated nodes
-	n = 0;
-	for (int i=0; i<Nodes(); ++i)
-	{
-		FENode& n1 = Node(i);
-		FENode& n2 = Node(n);
-
-		if (n1.m_ntag >= 0)
-		{
-			n2 = n1;
-			++n;
-		}
-	}
-
-	// adjust the node container size
-	m_Node.resize(n);
-
-	// If the deleted nodes had GIDs set, we need to readjust the GIDs.
-	UpdateNodePartitions();
 }
 
 //-----------------------------------------------------------------------------
@@ -672,304 +451,6 @@ void FEMesh::UpdateElementPartitions()
 }
 
 //-----------------------------------------------------------------------------
-// Delete selected elements
-void FEMesh::DeleteSelectedElements()
-{
-	// tag all selected elements
-	TagAllElements(0);
-	for (int i=0; i<Elements(); ++i)
-		if (Element(i).IsSelected()) Element(i).m_ntag = 1;
-
-	// delete tagged elements
-	DeleteTaggedElements(1);
-}
-
-//-----------------------------------------------------------------------------
-// Delete tagged elements
-void FEMesh::DeleteTaggedElements(int tag)
-{
-	// Let's go ahead and remove all tagged elements
-	RemoveElements(tag);
-	UpdateElementPartitions();
-
-	// remove isolated nodes
-	RemoveIsolatedNodes();
-
-	// rebuild mesh
-	RebuildMesh();
-}
-
-/*
- TODO: This doesn't seem to work when there are shells on top of solids. Need to revisit.
-//-----------------------------------------------------------------------------
-// Delete tagged elements
-void FEMesh::DeleteTaggedElements(int tag)
-{
-	// first figure out which nodes will be deleted
-	TagAllNodes(1);
-	for (int i=0; i<Elements(); ++i)
-	{
-		FEElement& el = Element(i);
-		if (el.m_ntag != tag)
-		{
-			int ne = el.Nodes();
-			for (int j=0; j<ne; ++j) Node(el.m_node[j]).m_ntag = 0;
-		}
-	}
-
-	// remove all edges that reference a node tagged for removal
-	for (int i=0; i<Edges(); ++i)
-	{
-		FEEdge& edge = Edge(i);
-		edge.m_ntag = 0;
-		if ((Node(edge.n[0]).m_ntag == 1) || (Node(edge.n[1]).m_ntag == 1))
-		{
-			edge.m_ntag = 1;
-		}
-	}
-	RemoveEdges(1);
-	UpdateEdgePartitions();
-
-	// tag all faces for removal
-	TagAllFaces(0);
-	for (int i=0; i<Faces(); ++i)
-	{
-		FEFace& face = Face(i);
-		
-		if (face.m_elem[0] >= 0)
-		{
-			FEElement& el = Element(face.m_elem[0]);
-			if (el.m_ntag == tag) face.m_ntag = 1;
-		}
-
-		if (face.m_elem[1] >= 0)
-		{
-			FEElement& el = Element(face.m_elem[1]);
-			if (el.m_ntag == tag) face.m_ntag = 1;
-		}
-	}
-	RemoveFaces(1);
-	UpdateFacePartitions();
-	UpdateSmoothingGroups();
-
-	// Removing elements may expose new faces, so we need to add those new faces first, before deleting any elements
-	// For now, all these faces will be given a new GID
-	int faceGID = CountFacePartitions();
-	int faceSG = CountSmoothingGroups();
-	for (int i=0; i<Elements(); ++i)
-	{
-		FEElement& el = Element(i);
-		if (el.m_ntag != tag)
-		{
-			int nf = el.Faces();
-			for (int j=0; j<nf; ++j)
-			{
-				int neighbor = el.m_nbr[j];
-				if (neighbor >= 0)
-				{
-					FEElement& elj = Element(neighbor);
-					if (elj.m_ntag == tag)
-					{
-						FEFace facej = el.GetFace(j);
-						facej.m_gid = faceGID;
-						facej.m_sid = faceSG;
-						facej.m_elem[0] = i;
-						AddFace(facej);
-					}
-				}
-			}
-		}
-	}
-
-	// Let's go ahead and remove all tagged elements
-	RemoveElements(tag);
-	UpdateElementPartitions();
-
-	// remove isolated nodes
-	RemoveIsolatedNodes();
-
-	// At this point, the mesh is almost back in order.
-	// Just need to update a few more things
-	// First restore all element neighbors
-	UpdateElementNeighbors();
-
-	// Then, restore all face neighbors
-	UpdateFaces();
-
-	// now we insert new edges where a new face meets an old face
-	int edgeID = CountEdgePartitions();
-	for (int i=0; i<Faces(); ++i)
-	{
-		FEFace& face = Face(i);
-		if (face.m_gid == faceGID)
-		{
-			int ne = face.Edges();
-			for (int j=0; j<ne; ++j)
-			{
-				if ((face.m_nbr[j] == -1) || (Face(face.m_nbr[j]).m_gid != faceGID))
-				{
-					FEEdge ej = face.GetEdge(j);
-					ej.m_gid = edgeID;
-					AddEdge(ej);
-				}
-			}
-		}
-	}
-
-	// if the new faces defines a multiple connected region, a different GID is needed for each region.
-	SplitFacePartition(faceGID);
-
-	// update the edge neighbors
-	UpdateEdgeNeighbors();
-
-	// it is required that node partitions are placed at all edge end points.
-	int nodeID = CountNodePartitions();
-	for (int i=0; i<Edges(); ++i)
-	{
-		FEEdge& edge = Edge(i);
-		if (edge.m_nbr[0] == -1)
-		{
-			FENode& n0 = Node(edge.n[0]);
-			if (n0.m_gid == -1) n0.m_gid = nodeID++;
-		}
-		if (edge.m_nbr[1] == -1)
-		{
-			FENode& n1 = Node(edge.n[1]);
-			if (n1.m_gid == -1) n1.m_gid = nodeID++;
-		}
-	}
-
-	// okay, but now the edge neighbors need to be fixed.
-	for (int i=0; i<Edges(); ++i)
-	{
-		FEEdge& edge = Edge(i);
-		if (Node(edge.n[0]).m_gid != -1)
-		{
-			edge.m_nbr[0] = -1;
-		}
-		if (Node(edge.n[1]).m_gid != -1)
-		{
-			edge.m_nbr[1] = -1;
-		}
-	}
-
-	// Great, now split the edges into multiple components
-	SplitEdgePartition(edgeID);
-
-	// let's update the normals
-	UpdateNormals();
-
-	// recalculate the box
-	UpdateBox();
-
-	// and we're done!
-}
-*/
-
-//-----------------------------------------------------------------------------
-// Splits edge partitions so that each edge curve has only two ends.
-// Assumes that edge neighbors are correct
-void FEMesh::SplitEdgePartition(int edgeID)
-{
-	// tag all edges that we'll be updating
-	TagAllEdges(0);
-	for (int i=0; i<Edges(); ++i)
-		if (Edge(i).m_gid == edgeID) Edge(i).m_ntag = 1;
-
-	stack<int> s;
-	int i0 = 0;
-	do
-	{
-		// find an edge
-		for (int i=i0; i<Edges(); ++i, ++i0)
-		{
-			FEEdge& edge = Edge(i);
-			if (edge.m_ntag == 1)
-			{
-				s.push(i);
-				break;	
-			}
-		}
-
-		// if we didn't find anything, we're done
-		if (s.empty()) break;
-
-		// process edge curve
-		while (s.empty() == false)
-		{
-			int eid = s.top(); s.pop();
-			FEEdge& edge = Edge(eid);
-			edge.m_gid = edgeID;
-			edge.m_ntag = 0;
-
-			if (edge.m_nbr[0] >= 0)
-			{
-				if (Edge(edge.m_nbr[0]).m_ntag == 1) s.push(edge.m_nbr[0]);
-			}
-			if (edge.m_nbr[1] >= 0)
-			{
-				if (Edge(edge.m_nbr[1]).m_ntag == 1) s.push(edge.m_nbr[1]);
-			}
-		}
-
-		// increase edge ID
-		edgeID++;
-	}
-	while (true);
-}
-
-//-----------------------------------------------------------------------------
-// Splits face partitions based on connectivity. This splits disconnected partitions
-// Assumes that face neighbors are correct
-void FEMesh::SplitFacePartition(int faceID)
-{
-	// tag all faces that we'll be updating
-	TagAllFaces(0);
-	for (int i = 0; i<Faces(); ++i)
-		if (Face(i).m_gid == faceID) Face(i).m_ntag = 1;
-
-	stack<int> s;
-	int i0 = 0;
-	do
-	{
-		// find a face
-		for (int i = i0; i<Faces(); ++i, ++i0)
-		{
-			FEFace& face = Face(i);
-			if (face.m_ntag == 1)
-			{
-				s.push(i);
-				break;
-			}
-		}
-
-		// if we didn't find anything, we're done
-		if (s.empty()) break;
-
-		// process surface
-		while (s.empty() == false)
-		{
-			int fid = s.top(); s.pop();
-			FEFace& face = Face(fid);
-			face.m_gid = faceID;
-			face.m_ntag = 0;
-
-			for (int i=0; i<face.Edges(); ++i)
-			{
-				if (face.m_nbr[i] >= 0)
-				{
-					if (Face(face.m_nbr[i]).m_ntag == 1) s.push(face.m_nbr[i]);
-				}
-			}
-		}
-
-		// increase face ID
-		faceID++;
-	}
-	while (true);
-}
-
-//-----------------------------------------------------------------------------
 // Remove elements with tag ntag
 void FEMesh::RemoveElements(int ntag)
 {
@@ -993,40 +474,6 @@ void FEMesh::RemoveElements(int ntag)
 
 	m_Elem.resize(n);
 	m_data.Clear();
-}
-
-//-----------------------------------------------------------------------------
-// Delete tagged faces
-void FEMesh::DeleteTaggedFaces(int tag)
-{
-	TagAllElements(0);
-	for (int i=0; i<Faces(); ++i)
-	{
-		FEFace& face = Face(i);
-		if (face.m_ntag == tag)
-		{
-			if (face.m_elem[0].eid >= 0)
-			{
-				Element(face.m_elem[0].eid).m_ntag = 1;
-			}
-			if (face.m_elem[1].eid >= 0)
-			{
-				Element(face.m_elem[1].eid).m_ntag = 1;
-			}
-		}
-	}
-
-	DeleteTaggedElements(1);
-}
-
-//-----------------------------------------------------------------------------
-// Delete tagged edges
-void FEMesh::DeleteTaggedEdges(int ntag)
-{
-	// TODO: identify elements which should be deleted instead.
-	assert(false);
-
-	DeleteTaggedElements(1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1063,61 +510,6 @@ void FEMesh::FindDuplicateEdges(vector<int>& l)
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-// Delete selected faces
-void FEMesh::DeleteSelectedFaces()
-{
-	// tag all selected faces
-	for (int i=0; i<Faces(); ++i)
-	{
-		FEFace& face = Face(i);
-		face.m_ntag = (face.IsSelected() ? 1 : 0);
-	}
-
-	// delete tagged faces
-	DeleteTaggedFaces(1);
-}
-
-//-----------------------------------------------------------------------------
-// Delete selected nodes
-void FEMesh::DeleteSelectedNodes()
-{
-	// tag all selected nodes
-	for (int i=0; i<Nodes(); ++i)
-	{
-		FENode& node = Node(i);
-		node.m_ntag = (node.IsSelected() ? 1 : 0);
-	}
-
-	// delete tagged nodes
-	DeleteTaggedNodes(1);
-}
-
-//-----------------------------------------------------------------------------
-// This function deletes tagged nodes by deleting all the elements that contain this node
-void FEMesh::DeleteTaggedNodes(int tag)
-{
-	// tag all the elements that has this node
-	for (int i=0; i<Elements(); ++i)
-	{
-		FEElement& el = Element(i);
-		el.m_ntag = 0;
-		int ne = el.Nodes();
-		for (int j=0; j<ne; ++j)
-		{
-			if (Node(el.m_node[j]).m_ntag == tag)
-			{
-				el.m_ntag = 1;
-				break;
-			}
-		}
-	}
-
-	// now delete all the tagged elements
-	DeleteTaggedElements(1);
-}
-
 //-----------------------------------------------------------------------------
 // Build the node-node table for surface nodes only. That is table of node indices that each node
 // connects to.
@@ -1147,32 +539,161 @@ void FEMesh::BuildSurfaceNodeNodeTable(vector<set<int> >& NNT)
 }
 
 //-----------------------------------------------------------------------------
-// Update mesh data
-void FEMesh::Update()
+// Build mesh data structures
+// This assumes that at all nodes, edges, faces, and elements are created and partitioned.
+void FEMesh::BuildMesh()
 {
-	// update the element neighbours
+	// rebuild element data
+	RebuildElementData();
+
+	// rebuild face data
+	RebuildFaceData();
+
+	// rebuild edge data
+	RebuildEdgeData();
+
+	// rebuild node data
+	RebuildNodeData();
+
+	// for good measure, let's also update the mesh
+	UpdateMesh();
+}
+
+//-----------------------------------------------------------------------------
+// Convenience function that calls the mesh builder to do all the work
+void FEMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
+{
+	FEMeshBuilder meshBuilder(*this);
+	meshBuilder.RebuildMesh(smoothingAngle, partitionMesh);
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::RebuildElementData()
+{
+#ifdef _DEBUG
+	// make sure element data is valid
+	assert(ValidateElements());
+#endif
+
+	// Make sure all gids are sequential
+	UpdateElementPartitions();
+
+	// Update the element neighbours
+	// (Depends on element connectivity)
 	UpdateElementNeighbors();
 
+	// mark exterior elements 
+	// (Depends on element neighbors)
+	MarkExteriorElements();
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::RebuildFaceData()
+{
+#ifdef _DEBUG
+	assert(ValidateFaces());
+#endif
+
+	// update the face-element connectivity data
+	// (Depends on element neighbors)
+	UpdateFaceElementTable();
+
 	// update face neighbours
-	UpdateFaces();
+	// (Depends on element neighbors)
+	UpdateFaceNeighbors();
+}
 
-	// update the edges
-	if (Edges() == 0)
-	{
-		BuildEdges();
-		AutoPartitionEdges();
-		AutoPartitionNodes();
-	}
-	else UpdateEdgeNeighbors();
+//-----------------------------------------------------------------------------
+void FEMesh::RebuildEdgeData()
+{
+#ifdef _DEBUG
+	assert(ValidateEdges());
+#endif
+	// mark the exterior edges
+	MarkExteriorEdges();
 
-	// update normals
-	UpdateNormals();
+	// Build the edge neighbors (Only applies to exterior edges)
+	UpdateEdgeNeighbors();
+}
 
-	// now we can figure out which nodes are interior and which are exterior
+//-----------------------------------------------------------------------------
+void FEMesh::RebuildNodeData()
+{
+	// Figure out which nodes are interior and which are exterior
 	MarkExteriorNodes();
+}
 
-	// update the bounding box
-	UpdateBox();
+//-----------------------------------------------------------------------------
+// mesh validation
+bool FEMesh::ValidateElements() const
+{
+	// loop over all elements
+	int NN = Nodes();
+	int NE = Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		const FEElement& el = m_Elem[i];
+
+		// see if all elements have IDs assigned
+		if (el.m_gid < 0) return false;
+
+		// make sure all node Ids are valid
+		int nn = el.Nodes();
+		if (nn <= 0) return false;
+		for (int j = 0; j < nn; ++j)
+		{
+			int nj = el.m_node[j];
+			if ((nj < 0) || (nj >= NN)) return false;
+		}
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool FEMesh::ValidateFaces() const
+{
+	// loop over all faces
+	int NN = Nodes();
+	int NF = Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		const FEFace& face = m_Face[i];
+
+		// see if all faces have IDs assigned
+		if (face.m_gid < 0) return false;
+
+		// make sure all node Ids are valid
+		int nn = face.Nodes();
+		if (nn <= 0) return false;
+		for (int j = 0; j < nn; ++j)
+		{
+			int nj = face.n[j];
+			if ((nj < 0) || (nj >= NN)) return false;
+		}
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool FEMesh::ValidateEdges() const
+{
+	// loop over all edges
+	int NN = Nodes();
+	int NE = Edges();
+	for (int i = 0; i < NE; ++i)
+	{
+		const FEEdge& edge = m_Edge[i];
+
+		// make sure all node Ids are valid
+		int nn = edge.Nodes();
+		if (nn <= 0) return false;
+		for (int j = 0; j < nn; ++j)
+		{
+			int nj = edge.n[j];
+			if ((nj < 0) || (nj >= NN)) return false;
+		}
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1184,11 +705,11 @@ void FEMesh::UpdateElementNeighbors()
 	int elems = Elements();
 
 	// reset all element neighbor and face ptrs
-	for (int i=0; i<elems; i++)
+	for (int i = 0; i < elems; i++)
 	{
 		FEElement_& el = ElementRef(i);
 		el.m_ntag = i;
-		for (int j=0; j<6; ++j) 
+		for (int j = 0; j < 6; ++j)
 		{
 			el.m_nbr[j] = -1;
 			el.m_face[j] = -1;
@@ -1205,12 +726,12 @@ void FEMesh::UpdateElementNeighbors()
 	FEFace f1, f2, f3;
 
 	// assign neighbor elements
-	for (int i = 0; i<elems; i++)
+	for (int i = 0; i < elems; i++)
 	{
 		FEElement_* pe = ElementPtr(i);
 		// do the solid elements
 		int n = pe->Faces();
-		for (int j = 0; j<n; j++)
+		for (int j = 0; j < n; j++)
 		{
 			if (pe->m_nbr[j] == -1)
 			{
@@ -1220,7 +741,7 @@ void FEMesh::UpdateElementNeighbors()
 				int inode = f1.n[0];
 				int nval = NET.Valence(inode);
 				bool bfound = false;
-				for (int k=0; k < nval; k++)
+				for (int k = 0; k < nval; k++)
 				{
 					int nbe = NET.ElementIndex(inode, k);
 					FEElement_* pne = ElementPtr(nbe);
@@ -1228,7 +749,7 @@ void FEMesh::UpdateElementNeighbors()
 					{
 						nbrf = pne->Faces();
 						int l;
-						for (l = 0; l<nbrf; l++)
+						for (l = 0; l < nbrf; l++)
 						{
 							pne->GetFace(l, f2);
 							if (f1 == f2)
@@ -1251,7 +772,7 @@ void FEMesh::UpdateElementNeighbors()
 
 		// do the shell elements
 		n = pe->Edges();
-		for (int j=0; j<n; j++)
+		for (int j = 0; j < n; j++)
 		{
 			if (pe->m_nbr[j] == -1)
 			{
@@ -1261,13 +782,13 @@ void FEMesh::UpdateElementNeighbors()
 				int inode = edge.n[0];
 				int nval = NET.Valence(inode);
 				bool bfound = false;
-				for (int k=0; k < nval; k++)
+				for (int k = 0; k < nval; k++)
 				{
 					FEElement_* pne = NET.Element(inode, k);
 					if ((pne != pe) && (pe->is_equal(*pne) == false))
 					{
 						nbre = pne->Edges();
-						for (int l=0; l<nbre; l++) 
+						for (int l = 0; l < nbre; l++)
 							if (edge == pne->GetEdge(l))
 							{
 								pe->m_nbr[j] = NET.ElementIndex(inode, k);
@@ -1282,13 +803,13 @@ void FEMesh::UpdateElementNeighbors()
 		// do the beam elements
 		if (pe->IsType(FE_BEAM2))
 		{
-			for (int j = 0; j<2; ++j)
-			{				
+			for (int j = 0; j < 2; ++j)
+			{
 				pe->m_nbr[j] = -1;
 				pe->m_face[j] = -1;
 				int inode = pe->m_node[j];
 				int nval = NET.Valence(inode);
-				for (int k=0; k<nval; ++k)
+				for (int k = 0; k < nval; ++k)
 				{
 					FEElement_* pne = NET.Element(inode, k);
 					if (pne != pe)
@@ -1302,6 +823,50 @@ void FEMesh::UpdateElementNeighbors()
 				}
 			}
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::MarkExteriorElements()
+{
+	// set exterior flags
+	for (int i = 0; i < Elements(); ++i)
+	{
+		FEElement& el = Element(i);
+		if (el.IsSolid())
+		{
+			el.SetExterior(false);
+			int nn = el.Faces();
+			for (int j = 0; j < nn; ++j)
+			{
+				if (el.m_nbr[j] < 0)
+				{
+					el.SetExterior(true);
+					break;
+				}
+			}
+		}
+		else el.SetExterior(true);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::MarkExteriorFaces()
+{
+	for (int i = 0; i < Faces(); ++i)
+	{
+		FEFace& face = Face(i);
+		face.SetExterior(face.m_elem[1].eid == -1);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEMesh::MarkExteriorEdges()
+{
+	for (int i = 0; i < Edges(); ++i)
+	{
+		FEEdge& edge = Edge(i);
+		edge.SetExterior(edge.m_gid >= 0);
 	}
 }
 
@@ -1550,426 +1115,41 @@ void FEMesh::UpdateFaceNeighbors()
 
 //-----------------------------------------------------------------------------
 // This function finds the edge neighbours.
-// An edge can only have a neighbor that has the same group ID.
 void FEMesh::UpdateEdgeNeighbors()
 {
-	// build the node-edge table
-	FENodeEdgeList NET; NET.Build(this, true);
+	FENodeEdgeList NET;
+	NET.Build(this, true);
 
-	// find neighbours
-	int NE = Edges();
-	for (int i=0; i<NE; ++i)
+	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge* pe = EdgePtr(i);
-		pe->m_nbr[0] = -1;
-		pe->m_nbr[1] = -1;
+		FEEdge& edge = Edge(i);
+		edge.m_nbr[0] = -1;
+		edge.m_nbr[1] = -1;
+	}
 
-		if (pe->m_gid >= 0)
+	for (int i = 0; i<Edges(); ++i)
+	{
+		FEEdge& edge = Edge(i);
+		if (edge.IsExterior())
 		{
-			for (int j = 0; j < 2; ++j)
+			for (int j = 0; j<2; ++j)
 			{
-				pe->m_nbr[j] = -1;
-				int n = pe->n[j];
-				int nval = NET.Edges(n);
-				if (nval == 2)
+				int nj = edge.n[j]; assert(nj != -1);
+				int val = NET.Edges(nj);
+				if (val == 2)
 				{
-					for (int k = 0; k < 2; ++k)
+					assert((NET.EdgeIndex(nj, 0) == i) || (NET.EdgeIndex(nj, 1) == i));
+					int nk = NET.EdgeIndex(nj, 0);
+					if (nk == i) nk = NET.EdgeIndex(nj, 1); assert(nk != i);
+					assert(Edge(nk).IsExterior());
+					if (Edge(nk).m_gid == edge.m_gid)
 					{
-						const FEEdge* pen = NET.Edge(n, k);
-						if ((pen != pe) && (pen->m_gid == pe->m_gid)) pe->m_nbr[j] = NET.EdgeIndex(n, k);
+						edge.m_nbr[j] = nk;
 					}
 				}
 			}
 		}
 	}
-}
-
-//-----------------------------------------------------------------------------
-// Attach another to this mesh.
-//
-void FEMesh::Attach(FEMesh& fem)
-{
-	int i, j, n;
-
-	int nn0 = Nodes();
-	int nn1 = fem.Nodes();
-
-	int ne0 = Elements();
-	int ne1 = fem.Elements();
-
-	int nf0 = Faces();
-	int nf1 = fem.Faces();
-
-	int nl0 = Edges();
-	int nl1 = fem.Edges();
-
-	int nodes = nn0 + nn1;
-	int elems = ne0 + ne1;
-	int faces = nf0 + nf1;
-	int edges = nl0 + nl1;
-
-	GObject* po1 = m_pobj;
-	GObject* po2 = fem.m_pobj;
-
-	// create the nodes
-	if (nodes > 0)
-	{
-		// find the largest GID
-		int ng = -1;
-		for (i=0; i<nn0; ++i)
-		{
-			FENode& n = m_Node[i];
-			if (n.m_gid > ng) ng = n.m_gid;
-		}
-		++ng;
-
-		m_Node.resize(nodes);
-		for (i=0; i<nn1; ++i)
-		{
-			FENode& n0 = m_Node[nn0 + i];
-			FENode& n1 = fem.m_Node[i];
-			n0 = n1;
-			if (n0.m_gid >= 0) n0.m_gid = n1.m_gid + ng;
-			assert(po2);
-			if (po2) n0.r = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(n1.r));
-			else n0.r = n1.r;
-		}
-	}
-
-	// create the faces
-	if (faces > 0)
-	{
-		// find the largest GID
-		int ng = -1, sg = -1;
-		for (i=0; i<nf0; ++i)
-		{
-			FEFace& f = m_Face[i];
-			if (f.m_gid > ng) ng = f.m_gid;
-			if (f.m_sid > sg) sg = f.m_gid;
-		}
-		++ng; ++sg;
-
-		m_Face.resize(faces);
-		for (i=0; i<nf1; ++i)
-		{
-			FEFace& f0 = m_Face[nf0 + i];
-			FEFace& f1 = fem.m_Face[i];
-			f0 = f1;
-			f0.m_gid = f1.m_gid + ng;
-			f0.m_sid = f1.m_sid + sg;
-
-			f0.m_elem[0].eid = f1.m_elem[0].eid + ne0;
-			f0.m_elem[1].eid = -1;
-
-			for (int j=0; j<f0.Nodes(); ++j) f0.n[j] = f1.n[j] + nn0;
-
-			f0.m_nbr[0] = f1.m_nbr[0] + nf0;
-			f0.m_nbr[1] = f1.m_nbr[1] + nf0;
-			f0.m_nbr[2] = f1.m_nbr[2] + nf0;
-			if (f0.Nodes() == 4) f0.m_nbr[3] = f1.m_nbr[3] + nf0; else f0.m_nbr[3] = -1;
-		}
-	}
-
-	// create the solid elements
-	if (elems > 0)
-	{
-		// find the largest GID
-		int ng = -1;
-		for (i=0; i<ne0; ++i)
-		{
-			FEElement& e = m_Elem[i];
-			if (e.m_gid > ng) ng = e.m_gid;
-		}
-		++ng;
-
-		m_Elem.resize(elems);
-		m_data.Clear();
-		for (i=0; i<ne1; ++i) 
-		{
-			FEElement& e0 = m_Elem[ne0 + i];
-			FEElement& e1 = fem.m_Elem[i];
-			e0 = e1;
-			e0.m_gid = e1.m_gid + ng;
-
-			for (j=0; j<6; ++j)
-			{
-				e0.m_nbr[j] = (e1.m_nbr[j] >= 0 ? e1.m_nbr[j] + ne0 : -1);
-			}
-
-			n = e1.Nodes();
-			for (j=0; j<n; ++j) e0.m_node[j] = nn0 + e1.m_node[j];
-
-			int nf = e1.Faces();
-			for (j=0; j<nf; ++j) e0.m_face[j] = nf0 + e1.m_face[j];
-
-			if (e1.IsShell())
-			{
-				e0.m_face[0] = nf0 + e1.m_face[0];
-			}
-		}
-	}
-
-	// create the edges
-	if (edges > 0)
-	{
-		// find the largest GID
-		int ng = -1;
-		for (i=0; i<nl0; ++i)
-		{
-			FEEdge& e = m_Edge[i];
-			if (e.m_gid > ng) ng = e.m_gid;
-		}
-		++ng;
-
-		m_Edge.resize(edges);
-		for (i=0; i<nl1; ++i)
-		{
-			FEEdge& l0 = m_Edge[nl0 + i];
-			FEEdge& l1 = fem.m_Edge[i];
-
-			l0 = l1;
-			l0.m_gid = l1.m_gid + ng;
-
-			int ne = l1.Nodes();
-			for (int j=0; j<ne; ++j) l0.n[j] = nn0 + l1.n[j];
-
-			l0.m_nbr[0] = (l1.m_nbr[0] >= 0 ? l1.m_nbr[0] + nl0 : -1);
-			l0.m_nbr[1] = (l1.m_nbr[1] >= 0 ? l1.m_nbr[1] + nl0 : -1);
-		}
-	}
-
-	// update the mesh
-	UpdateNormals();
-	UpdateBox();
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::AddNode(const vec3d& r)
-{
-	// create a new node
-	FENode node;
-	node.r = r;
-	node.SetExterior(true);	// we'll assume this node is not attached to anything
-
-	AddNode(node);
-}
-
-//-----------------------------------------------------------------------------
-// Attach another mesh to this mesh and weld the nodes
-void FEMesh::AttachAndWeld(FEMesh& mesh, double tol)
-{
-	// get the number of nodes
-	int nn0 = Nodes();
-	int nn1 = mesh.Nodes();
-
-	// get the number of elements
-	int ne0 = Elements();
-	int ne1 = mesh.Elements();
-
-	// get the number of faces
-	int nf0 = Faces();
-	int nf1 = mesh.Faces();
-
-	// get the number of edges
-	int nl0 = Edges();
-	int nl1 = mesh.Edges();
-
-	// calculate new counts (before welding)
-	int nodes = nn0 + nn1;
-	int elems = ne0 + ne1;
-	int faces = nf0 + nf1;
-	int edges = nl0 + nl1;
-
-	// attach the two parts
-	Attach(mesh);
-
-	// do the weld only if tolerance is positive
-	if (tol <= 0.0) return;
-
-	// Okay, do the weld. We only weld nodes from the outer surface of one mesh
-	// to the outer surface of the other mesh
-
-	// First, build the target node list
-	for (int i=0; i<nn0; ++i) Node(i).m_ntag = 0;
-	for (int i=0; i<nf0; ++i)
-	{
-		FEFace& face = Face(i);
-		int nf = face.Nodes();
-		for (int j=0; j<nf; ++j) Node(face.n[j]).m_ntag = 1;
-	}
-	int ntag = 0;
-	for (int i=0; i<nn0; ++i) if (Node(i).m_ntag == 1) ntag++;
-	vector<int> trg(ntag); ntag=0;
-	for (int i=0; i<nn0; ++i) if (Node(i).m_ntag == 1) trg[ntag++] = i;
-
-	// Next, build the source node list
-	for (int i=nn0; i<nodes; ++i) Node(i).m_ntag = 0;
-	for (int i=nf0; i<faces; ++i)
-	{
-		FEFace& face = Face(i);
-		int nf = face.Nodes();
-		for (int j=0; j<nf; ++j) Node(face.n[j]).m_ntag = 1;
-	}
-	ntag = 0;
-	for (int i=nn0; i<nodes; ++i) if (Node(i).m_ntag == 1) ntag++;
-	vector<int> src(ntag); ntag=0;
-	for (int i=nn0; i<nodes; ++i)
-		if (Node(i).m_ntag == 1) src[ntag++] = i;
-
-
-	// create the nodal reorder list
-	vector<int> order(nodes);
-	for (int i=0; i<nodes; ++i) order[i] = i;
-
-	// sqr distance treshold
-	double tol2 = tol*tol;
-
-	// loop over the selected nodes
-	int nsrc = (int) src.size();
-	int ntrg = (int) trg.size();
-	for (int i=0; i<nsrc; ++i)
-		for (int j=0; j<ntrg; ++j)
-		{
-			FENode& ni = Node(src[i]);
-			FENode& nj = Node(trg[j]);
-
-			// calculate (squared) distance between nodes
-			vec3d& ri = ni.r;
-			vec3d& rj = nj.r;
-
-			int gi = ni.m_gid;
-			int gj = nj.m_gid;
-
-			double d2 = (ri - rj).SqrLength();
-			if (d2 <= tol2)
-			{
-				// nodes coindice, so weld.
-				// If one of the nodes has a gid, we don't want to loose it.
-				if (gi >= 0) order[trg[j]] = src[i];
-				else order[src[i]] = trg[j];
-			}
-		}
-
-	// update element numbers
-	for (int i=0; i<elems; ++i)
-	{
-		FEElement& el = Element(i);
-		int ne = el.Nodes();
-		int* en = el.m_node;
-
-		// reassign node numbers
-		for (int j=0; j<ne; ++j) en[j] = order[en[j]];
-	}
-
-	// update face numbers
-	for (int i=0; i<faces; ++i)
-	{
-		FEFace& face = Face(i);
-		int nf = face.Nodes();
-		for (int j=0; j<nf; ++j) face.n[j] = order[face.n[j]];
-	}
-
-	// update edge numbers
-	for (int i = 0; i<edges; ++i)
-	{
-		FEEdge& edge = Edge(i);
-		int ne = edge.Nodes();
-		for (int j = 0; j<ne; ++j) edge.n[j] = order[edge.n[j]];
-	}
-
-	// remove isolated vertices
-	RemoveIsolatedNodes();
-
-	// At this point, the welding is done but there may be several issues with the mesh
-	// so, let's clean up
-	RebuildMesh();
-/*
-	// update element and face neighbors
-	UpdateElementNeighbors();
-	UpdateFaces();
-
-
-	// Remove all duplicate edges
-	RemoveDuplicateEdges();
-	AutoPartitionNodes();
-
-	// Remove all duplicate faces
-	RemoveDuplicateFaces();
-*/
-	// TODO: I can still have duplicate shells
-	return;
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::RemoveDuplicateEdges()
-{
-	// clear tags
-	TagAllEdges(0);
-
-	int ng = CountEdgePartitions();
-
-	// loop over all edges
-	int NE = Edges();
-	for (int i = 0; i<NE; ++i)
-	{
-		FEEdge& ei = Edge(i);
-		for (int j = i + 1; j<NE; ++j)
-		{
-			FEEdge& ej = Edge(j);
-			if (ei == ej) 
-			{
-				if (ei.m_gid == -1)
-				{
-					ei.m_ntag = 1;
-					ej.m_gid += ng;
-				}
-				else if (ej.m_gid == -1)
-				{
-					ej.m_ntag = 1;
-					ei.m_gid += ng;
-				}
-				else
-				{
-					ei.m_ntag = 1;
-					ej.m_gid = (ei.m_gid * ng + ej.m_gid);
-				}
-			}
-		}
-	}
-
-	RemoveEdges(1);
-	UpdateEdgeNeighbors();
-	UpdateEdgePartitions();
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::RemoveDuplicateFaces()
-{
-	// clear tags
-	TagAllFaces(0);
-
-	// loop over all faces
-	int NF = Faces();
-	for (int i = 0; i<NF; ++i)
-	{
-		FEFace& fi = Face(i);
-		for (int j = i + 1; j<NF; ++j)
-		{
-			FEFace& fj = Face(j);
-			if (fi == fj) 
-			{
-				fi.m_ntag = 1;
-
-				// we set the element indices to 0 to avoid deleting these elements
-				fi.m_elem[0].eid = fi.m_elem[1].eid = -1;
-			}
-		}
-	}
-
-	// delete tagged faces
-	RemoveFaces(1);
-	UpdateFaces();
-	UpdateFacePartitions();
 }
 
 //-----------------------------------------------------------------------------
@@ -2734,111 +1914,7 @@ void FEMesh::Load(IArchive& ar)
 	}
 
 	// rebuild mesh' data
-	UpdateElementNeighbors();
-	UpdateFaces();
-	UpdateEdgeNeighbors();
-	UpdateNormals();
-	MarkExteriorNodes();
-	UpdateBox(); 
-}
-
-//-----------------------------------------------------------------------------
-// Partition the selected faces
-//
-void FEMesh::PartitionFaceSelection()
-{
-	int i;
-	int N = Faces();
-
-	int nsg = 0;
-
-	// tag all selected faces
-	for (i=0; i<N; ++i)
-	{
-		FEFace& f = Face(i);
-		if (f.IsSelected()) 
-		{
-			f.m_ntag = 1; 
-			f.m_gid = -1;
-		}
-		else 
-		{
-			f.m_ntag = 0;
-			if (f.m_gid > nsg) nsg = f.m_gid;
-		}
-	}
-
-	// reassign smoothing groups
-	++nsg;
-	for (i=0; i<N; ++i)
-	{
-		FEFace& f = Face(i);
-		if (f.m_ntag == 1) f.m_gid = nsg;
-	}
-
-	UpdateNormals();
-
-	// rebuild the edges
-	BuildEdges();
-
-	// partition the edges
-	AutoPartitionEdges();
-
-	// partition the nodes
-	AutoPartitionNodes();
-
-	// update the nodes
-	MarkExteriorNodes();
-}
-
-//-----------------------------------------------------------------------------
-// Partition the selected edges
-//
-void FEMesh::PartitionEdgeSelection()
-{
-	int i;
-	int N = Edges();
-
-	int nsg = 0;
-
-	// tag all selected edges
-	for (i=0; i<N; ++i)
-	{
-		FEEdge& e = Edge(i);
-		if (e.IsSelected()) 
-		{
-			e.m_ntag = 1; 
-		}
-		else 
-		{
-			e.m_ntag = 0;
-			if (e.m_gid > nsg) nsg = e.m_gid;
-		}
-	}
-
-	// table of new indices
-	++nsg;
-	vector<int> T(nsg, -1);
-
-	// reassign smoothing groups
-	for (i=0; i<N; ++i)
-	{
-		FEEdge& e = Edge(i);
-		if (e.m_ntag == 1)
-		{
-			if (T[e.m_gid] == -1) T[e.m_gid] = nsg++;
-			e.m_gid = T[e.m_gid];
-		}
-	}
-
-	// recalculate edge neighbors
-	UpdateEdgeNeighbors();
-
-	// partition the nodes
-	AutoPartitionNodes();
-
-	// update the nodes
-	MarkExteriorNodes();
+	BuildMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -2853,177 +1929,6 @@ void FEMesh::ShallowCopy(FEMesh* pm)
 	m_data = pm->m_data;
 
 	m_box = pm->m_box;
-}
-
-//-----------------------------------------------------------------------------
-// Invert selected elements (or all if none are selected)
-void FEMesh::InvertSelectedElements()
-{
-	// tag all selected elements
-	int nsel = 0;
-	for (int i=0; i<Elements(); ++i)
-	{
-		FEElement& e = Element(i);
-		if (e.IsSelected()) { e.m_ntag = 1; nsel++; }
-		else e.m_ntag = 0;
-	}
-	if (nsel == 0) TagAllElements(1);
-
-	// invert the tagged elements
-	InvertTaggedElements(1);
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::InvertSelectedFaces()
-{
-	// tag all selected faces
-	int nsel = 0;
-	for (int i = 0; i<Faces(); ++i)
-	{
-		FEFace& f = Face(i);
-		if (f.IsSelected()) { f.m_ntag = 1; nsel++; }
-		else f.m_ntag = 0;
-	}
-	if (nsel == 0) TagAllFaces(1);
-
-	// invert the tagged elements
-	InvertTaggedFaces(1);
-}
-
-//-----------------------------------------------------------------------------
-// Invert selected faces
-void FEMesh::InvertTaggedFaces(int ntag)
-{
-	// invert tagged elements
-	for (int i = 0; i<Faces(); ++i)
-	{
-		FEFace& f = Face(i);
-		if (f.m_ntag == ntag)
-		{
-			int n = f.Nodes(), m;
-
-			switch (f.Type())
-			{
-			case FE_FACE_QUAD4:
-			case FE_FACE_TRI3:
-			{
-				m = f.n[0]; f.n[0] = f.n[2]; f.n[2] = m;
-			}
-			break;
-			default:
-				assert(false);
-			}
-		}
-	}
-
-	UpdateElementNeighbors();
-	UpdateFaces();
-	UpdateNormals();
-}
-
-//-----------------------------------------------------------------------------
-// Invert selected elements.
-void FEMesh::InvertTaggedElements(int ntag)
-{
-	// invert tagged elements
-	for (int i=0; i<Elements(); ++i)
-	{
-		FEElement& e = Element(i);
-		if (e.m_ntag == ntag)
-		{
-			int n = e.Nodes(), m;
-
-			switch (e.Type())
-			{
-			case FE_QUAD4:
-			case FE_TRI3:
-				{
-					for (int j=0; j<n/2; ++j) 
-					{
-						m = e.m_node[j];
-						e.m_node[j] = e.m_node[n-j-1];
-						e.m_node[n-j-1] = m;
-					}
-				}
-				break;
-			case FE_TET4:
-			case FE_TET5:
-				{
-					m = e.m_node[0]; e.m_node[0] = e.m_node[3]; e.m_node[3] = m;
-				}
-				break;
-            case FE_TET10:
-                {
-                    m = e.m_node[1]; e.m_node[1] = e.m_node[2]; e.m_node[2] = m;
-                    m = e.m_node[4]; e.m_node[4] = e.m_node[6]; e.m_node[6] = m;
-                    m = e.m_node[8]; e.m_node[8] = e.m_node[9]; e.m_node[9] = m;
-                }
-                break;
-			case FE_PENTA6:
-				{
-					m = e.m_node[0]; e.m_node[0] = e.m_node[2]; e.m_node[2] = m;
-					m = e.m_node[3]; e.m_node[3] = e.m_node[5]; e.m_node[5] = m;
-				}
-				break;
-            case FE_PENTA15:
-                {
-                    m = e.m_node[1]; e.m_node[1] = e.m_node[2]; e.m_node[2] = m;
-                    m = e.m_node[4]; e.m_node[4] = e.m_node[5]; e.m_node[5] = m;
-                    m = e.m_node[6]; e.m_node[6] = e.m_node[8]; e.m_node[8] = m;
-                    m = e.m_node[9]; e.m_node[9] = e.m_node[11]; e.m_node[11] = m;
-                    m = e.m_node[13]; e.m_node[13] = e.m_node[14]; e.m_node[14] = m;
-                }
-                    break;
-			case FE_HEX8:
-				{
-					m = e.m_node[0]; e.m_node[0] = e.m_node[4]; e.m_node[4] = m;
-					m = e.m_node[1]; e.m_node[1] = e.m_node[5]; e.m_node[5] = m;
-					m = e.m_node[2]; e.m_node[2] = e.m_node[6]; e.m_node[6] = m;
-					m = e.m_node[3]; e.m_node[3] = e.m_node[7]; e.m_node[7] = m;
-				}
-				break;
-            case FE_HEX20:
-                {
-                    m = e.m_node[1]; e.m_node[1] = e.m_node[3]; e.m_node[3] = m;
-                    m = e.m_node[5]; e.m_node[5] = e.m_node[7]; e.m_node[7] = m;
-                    m = e.m_node[8]; e.m_node[8] = e.m_node[11]; e.m_node[11] = m;
-                    m = e.m_node[9]; e.m_node[9] = e.m_node[10]; e.m_node[10] = m;
-                    m = e.m_node[12]; e.m_node[12] = e.m_node[15]; e.m_node[15] = m;
-                    m = e.m_node[13]; e.m_node[13] = e.m_node[14]; e.m_node[14] = m;
-                    m = e.m_node[17]; e.m_node[17] = e.m_node[19]; e.m_node[19] = m;
-                }
-                    break;
-            case FE_PYRA5:
-                {
-                    m = e.m_node[1]; e.m_node[1] = e.m_node[3]; e.m_node[3] = m;
-                }
-                    break;
-			default:
-				assert(false);
-			}
-		}
-	}
-
-	// mirror the faces
-	for (int i=0; i<Faces(); ++i)
-	{
-		FEFace& f = Face(i);
-		FEElement_* pe = ElementPtr(f.m_elem[0].eid);
-
-		if (pe->m_ntag == ntag)
-		{
-			FEFace g;
-			FindFace(pe, f, g);
-
-            for (int j=0; j<FEElement::MAX_NODES; ++j)
-                f.n[j] = g.n[j];
-		}
-	}
-
-	UpdateElementNeighbors();
-	UpdateFaces();
-	UpdateNormals();
-	UpdateBox();
 }
 
 //-----------------------------------------------------------------------------
@@ -3145,749 +2050,4 @@ FEMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh)
 	mesh->RebuildMesh();
 
 	return mesh;
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::BuildFaces()
-{
-	// let's count them first
-	int faces = 0;
-	int elems = Elements();
-	for (int i = 0; i<elems; i++)
-	{
-		FEElement& el = Element(i);
-
-		// solid elements
-		// we create a face if an element does not have a neighbor
-		// or if the neighbor has a different gid and is not a shell.
-		// Note that we need to make sure we don't double-count.
-		int n = el.Faces();
-		for (int j = 0; j<n; ++j)
-		{
-			if (el.m_nbr[j] == -1) ++faces;
-			else
-			{
-				FEElement_* pen = ElementPtr(el.m_nbr[j]);
-				if (el.m_gid < pen->m_gid)
-				{
-					++faces;
-				}
-			}
-		}
-
-		// shell elements always add a face
-		if (el.IsShell())
-		{
-			++faces;
-		}
-	}
-
-	// make sure we have faces
-	if (faces == 0) 
-	{
-		m_Face.clear();
-		return;
-	}
-
-	// allocate storage
-	Create(0, 0, faces);
-
-	// create the faces
-	FEFace* pf = FacePtr();
-	int nf = 0;
-
-	// solid elements
-	for (int i = 0; i<elems; i++)
-	{
-		FEElement& el = Element(i);
-
-		int n = el.Faces();
-		for (int j = 0; j<n; j++)
-		{
-			el.m_face[j] = -1;
-			int nbid = el.m_nbr[j];
-			FEElement_* pen = (nbid == -1 ? 0 : ElementPtr(nbid));
-			if (pen == 0)
-			{
-				el.GetFace(j, *pf);
-				++pf; ++nf;
-			}
-			else if (el.m_gid < pen->m_gid)
-			{
-				*pf = el.GetFace(j);
-				++pf; ++nf;
-			}
-		}
-	}
-
-	// shell elements
-	for (int i = 0; i<elems; i++)
-	{
-		FEElement& el = Element(i);
-
-		// shell elements
-		int n = el.Edges();
-		if (n>0)
-		{
-			el.GetShellFace(*pf);
-			++pf; ++nf;
-		}
-	}
-
-	// update faces
-	UpdateFaces();
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::BuildEdges()
-{
-	// let's create a set of edges 
-	vector<FEEdge> edgeSet;
-
-	// assign edges
-	int n[FEEdge::MAX_NODES];
-	int NF = Faces();
-	int NN = Nodes();
-	for (int i = 0; i<NF; ++i)
-	{
-		FEFace& f = Face(i);
-		if (f.IsExternal())
-		{
-			f.m_ntag = 1;
-			int ne = f.Edges();
-			for (int j = 0; j<ne; ++j)
-			{
-				FEFace* pfn = FacePtr(f.m_nbr[j]);
-				if ((pfn == 0) || (f.m_gid < pfn->m_gid))
-				{
-					int en = f.GetEdgeNodes(j, n);
-					FEEdge e;
-					switch (en)
-					{
-					case 2: e.SetType(FE_EDGE2); break;
-					case 3: e.SetType(FE_EDGE3); break;
-					case 4: e.SetType(FE_EDGE4); break;
-					default:
-						assert(false);
-					}
-
-					e.n[0] = n[0]; assert((n[0] >= 0) && (n[0]<NN));
-					e.n[1] = n[1]; assert((n[1] >= 0) && (n[1]<NN));
-					e.n[2] = n[2];
-					e.n[3] = n[3];
-					e.m_gid = (pfn == 0 ? 0 : -1);
-
-					// try to insert it
-					bool bexist = false;
-					for (int k=0; k<(int)edgeSet.size(); ++k)
-					{
-						if (edgeSet[k] == e)
-						{
-							bexist = true;
-							break;
-						}
-					}
-
-					if (bexist == false) edgeSet.push_back(e);					
-				}
-			}
-		}
-	}
-
-	// delete current edges
-	DeleteEdges();
-
-	// allocate edges
-	int nedges = (int) edgeSet.size();
-	if (nedges == 0) return;
-	Create(0, 0, 0, nedges);
-
-	nedges = 0;
-	for (auto e:edgeSet)
-	{
-		FEEdge& edge = Edge(nedges++);
-		edge = e;
-	}
-
-	// TODO: We can't call UpdateNeighbors because it depends on the edge partitioning
-	// which in turn depends on the neighbors. I'll need to look into fixing this 
-	// circular dependency, but for now, a simple implementation. 
-	for (int i = 0; i < Edges(); ++i)
-	{
-		Edge(i).m_nbr[0] = -1;
-		Edge(i).m_nbr[1] = -1;
-	}
-	FENodeEdgeList NEL;
-	NEL.Build(this, false);
-	for (int i = 0; i < Nodes(); ++i)
-	{
-		int ne = NEL.Edges(i);
-		if (ne == 2)
-		{
-			int ne0 = NEL.EdgeIndex(i, 0);
-			int ne1 = NEL.EdgeIndex(i, 1);
-
-			FEEdge& e0 = Edge(ne0);
-			FEEdge& e1 = Edge(ne1);
-
-			if (e0.n[0] == i) e0.m_nbr[0] = ne1;
-			if (e0.n[1] == i) e0.m_nbr[1] = ne1;
-
-			if (e1.n[0] == i) e1.m_nbr[0] = ne0;
-			if (e1.n[1] == i) e1.m_nbr[1] = ne0;
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// This functions evaluates the FEFace::m_elem members and FEElement::m_face members
-void FEMesh::UpdateFaces()
-{
-	// update the face-element connectivity data
-	UpdateFaceElementTable();
-
-	// update face neighbours
-	UpdateFaceNeighbors();
-}
-
-//-----------------------------------------------------------------------------
-// This function builds the surface, edges and node of the mesh
-void FEMesh::RebuildMesh(double smoothingAngle, bool autoSurface, bool partitionMesh)
-{
-	// update the element neighbours
-	UpdateElementNeighbors();
-
-	// partition the elements based on element connectivity
-	if (partitionMesh)
-	{
-		AutoPartitionElements();
-	}
-
-	// build the faces
-	BuildFaces();
-
-	// calculate auto GID's
-	AutoSmooth(smoothingAngle);
-
-	// partition the surface
-	if (autoSurface) AutoPartitionSurface();
-	else AutoPartitionSurfaceQuick();
-
-	// build the edges
-	BuildEdges();
-
-	// partition the edges
-	AutoPartitionEdges();
-
-	// partition the nodes
-	AutoPartitionNodes();
-
-	// update the mesh
-	MarkExteriorNodes();
-	UpdateBox();
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::AutoPartition(double smoothingAngle)
-{
-	// calculate auto GID's
-	AutoSmooth(smoothingAngle);
-
-	// partition the surface
-	AutoPartitionSurface();
-
-	// build the edges
-	BuildEdges();
-
-	// partition the edges
-	AutoPartitionEdges();
-
-	// partition the nodes
-	AutoPartitionNodes();
-}
-
-//-----------------------------------------------------------------------------
-// This partitions elements based on connectivity
-void FEMesh::AutoPartitionElements()
-{
-	int NE = Elements();
-	for (int i=0; i<NE; ++i) Element(i).m_gid = -1;
-	TagAllElements(0);
-
-	int i0 = 0;
-	int np = 0;
-	while (true)
-	{
-		// find an unprocessed element
-		int n = -1;
-		for (int i=i0; i<NE; ++i)
-		{
-			FEElement& el = Element(i);
-			if (el.m_gid == -1)
-			{
-				i0 = i + 1;
-				n = i;
-				break;
-			}
-		}
-		if (n == -1) break;
-
-		// find all connected elements
-		stack<int> s;
-		s.push(n);
-		while (s.empty() == false)
-		{
-			n = s.top(); s.pop();
-
-			FEElement& el = Element(n);
-			el.m_ntag = 1;
-			el.m_gid = np;
-
-			// solid elements
-			int nf = el.Faces();
-			for (int i=0; i<nf; ++i)
-			{
-				FEElement* pj = (el.m_nbr[i] == -1 ? 0 : &Element(el.m_nbr[i]));
-				if (pj && (pj->m_ntag == 0))
-				{
-					pj->m_ntag = 1;
-					s.push(el.m_nbr[i]);
-				}
-			}
-
-			// shells
-			int ne = el.Edges();
-			for (int i=0; i<ne; ++i)
-			{
-				FEElement* pj = (el.m_nbr[i] == -1 ? 0 : &Element(el.m_nbr[i]));
-				if (pj && (pj->m_ntag == 0))
-				{
-					pj->m_ntag = 1;
-					s.push(el.m_nbr[i]);
-				}
-			}
-		}
-		++np;
-	}
-
-#ifdef _DEBUG
-	for (int i=0; i<NE; ++i)
-	{
-		FEElement& el = Element(i);
-		assert(el.m_gid >= 0);
-	}
-#endif
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::AutoPartitionSurfaceQuick()
-{
-	// Get the mesh and number of faces
-	int NF = Faces();
-
-	// face that still require processing 
-	// will be placed on a stack
-	// The partitioning is done when the stack is empty
-	vector<FEFace*> stack(NF);
-	int ns = 0;
-
-	// reset face ID's 
-	for (int i = 0; i<NF; ++i) Face(i).m_gid = -1;
-
-	// let's get to work
-	int ngid = 0;
-	for (int i = 0; i<NF; ++i)
-	{
-		FEFace* pf = FacePtr(i);
-		if (pf->m_gid == -1)
-		{
-			stack[ns++] = pf;
-			while (ns > 0)
-			{
-				// pop a face
-				pf = stack[--ns];
-
-				// mark as processed
-				pf->m_gid = ngid;
-
-				// get the element part ID's
-				assert(pf->m_elem[0].eid >= 0);
-				FEElement_* pe11 = ElementPtr(pf->m_elem[0].eid);
-				FEElement_* pe12 = ElementPtr(pf->m_elem[1].eid);
-				int gid11 = (pe11 ? pe11->m_gid : -1);
-				int gid12 = (pe12 ? pe12->m_gid : -1);
-
-				int n = pf->Edges();
-				for (int j = 0; j<n; ++j)
-				{
-					FEFace* pf2 = FacePtr(pf->m_nbr[j]);
-					if (pf2)
-					{
-						assert(pf2->m_elem[0].eid >= 0);
-						FEElement_* pe21 = ElementPtr(pf2->m_elem[0].eid);
-						FEElement_* pe22 = ElementPtr(pf2->m_elem[1].eid);
-
-						int gid21 = (pe21 ? pe21->m_gid : -1);
-						int gid22 = (pe22 ? pe22->m_gid : -1);
-
-						if ((pf2->m_gid == -1) && (gid11 == gid21) && (gid12 == gid22))
-						{
-							pf2->m_gid = -2;
-							stack[ns++] = pf2;
-						}
-					}
-				}
-			}
-			++ngid;
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::AutoPartitionEdges()
-{
-	// get the number of edges
-	int NE = Edges();
-
-	// get the edge pointer
-	FEEdge* pe = EdgePtr();
-
-	// intialize all group ID's
-	int i, j;
-	for (i = 0; i<NE; ++i, ++pe) pe->m_gid = -1;
-
-	// build a stack
-	stack<FEEdge*> se;
-
-	int ue = 0;
-	int ng = 0;
-	vec3d n1, n2;
-	while (true)
-	{
-		// find an unassigned edge
-		if (se.empty())
-		{
-			pe = 0;
-			for (i = ue; i<NE; ++i, ++ue)
-			{
-				pe = EdgePtr(i);
-				if (pe->m_gid == -1)
-				{
-					ng++;
-					se.push(pe);
-					break;
-				}
-				else pe = 0;
-			}
-
-			if (pe == 0) break;
-		}
-		else
-		{
-			pe = se.top(); se.pop();
-			pe->m_gid = ng - 1;
-
-			// assign all unassigned neighbours
-			for (j = 0; j<2; ++j)
-			{
-				FEEdge* pnb = EdgePtr(pe->m_nbr[j]);
-				if (pnb && (pnb->m_gid == -1))
-				{
-					pnb->m_gid = -2;
-					se.push(pnb);
-				}
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Assign gids to the nodes based on the edge gids.
-void FEMesh::AutoPartitionNodes()
-{
-	// get the mesh
-	int NE = Edges();
-
-	// reset node tags
-	int nn = 0;
-	for (int i = 0; i<Nodes(); ++i) Node(i).m_gid = -1;
-
-	// find the largest node tag
-	/*	for (int i=0; i<m.Nodes(); ++i)
-	{
-	int gid = m.Node(i).m_gid;
-	if (gid+1 > nn) nn = gid+1;
-	}
-	*/
-	// get the edge pointer
-	FEEdge* pe = EdgePtr();
-
-	// loop over all edges
-	for (int i = 0; i<NE; ++i, ++pe)
-	{
-		if ((pe->m_nbr[0] == -1) || (EdgePtr(pe->m_nbr[0])->m_gid != pe->m_gid))
-		{
-			FENode& node = Node(pe->n[0]);
-			if (node.m_gid == -1) { node.m_gid = nn++; }
-		}
-		if ((pe->m_nbr[1] == -1) || (EdgePtr(pe->m_nbr[1])->m_gid != pe->m_gid))
-		{
-			FENode& node = Node(pe->n[1]);
-			if (node.m_gid == -1) { node.m_gid = nn++; }
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// This function is called when element ID's were reassigned (e.g. after loading
-// the mesh or after the user created a new partition. This requires that we rebuild the faces
-void FEMesh::Repartition()
-{
-	BuildFaces();
-
-	// repartition the surface
-	AutoPartitionSurface();
-	UpdateNormals();
-
-	// rebuild the edges since the number of edges may have changed
-	BuildEdges();
-
-	// partition the edges
-	AutoPartitionEdges();
-
-	// partition the nodes
-	AutoPartitionNodes();
-
-	// update the mesh
-	MarkExteriorNodes();
-}
-
-//-----------------------------------------------------------------------------
-
-void FEMesh::PartitionElementSelection()
-{
-	int NE = Elements();
-
-	// first see how many parts we already have
-	int np = CountElementPartitions();
-
-	// now, assign a new part ID to the selected elements
-	for (int i = 0; i<NE; ++i)
-	{
-		FEElement& el = Element(i);
-		if (el.IsSelected()) el.m_ntag = 1; else el.m_ntag = 0;
-	}
-
-	vector<int> s(NE, -1); int ne = 0;
-	for (int i = 0; i<NE; ++i)
-	{
-		FEElement& el = Element(i);
-		if (el.m_ntag == 1)
-		{
-			el.m_ntag = 0;
-			s[ne++] = i;
-			while (ne > 0)
-			{
-				FEElement& el = Element(s[--ne]);
-				int nbr = (el.IsSolid() ? el.Faces() : el.Edges());
-				for (int j = 0; j < nbr; ++j)
-				{
-					FEElement_* pe = ElementPtr(el.m_nbr[j]);
-					if (pe && (pe->m_gid == el.m_gid) && (pe->m_ntag == 1))
-					{
-						s[ne++] = el.m_nbr[j];
-						pe->m_ntag = 0;
-					}
-				}
-				el.m_gid = np;
-			}
-			np++;
-		}
-	}
-
-	// since we may have lost a partition, reindex the partitions
-	UpdateElementPartitions();
-
-	// add new faces, if found
-	int nfp = CountFacePartitions();
-	int newFaces = 0;
-	for (int i=0; i<NE; ++i)
-	{
-		FEElement& el = Element(i);
-		if (el.IsSelected())
-		{
-			// solid elements
-			int nf = el.Faces();
-			for (int j=0; j<nf; ++j)
-			{
-				if (el.m_face[j] == -1)
-				{
-					assert(el.m_nbr[j] >= 0);
-					if (el.m_nbr[j] >= 0)
-					{
-						FEElement& ej = Element(el.m_nbr[j]);
-						if (ej.m_gid != el.m_gid)
-						{
-							FEFace fj = el.GetFace(j);
-							fj.m_gid = -1;
-							AddFace(fj);
-							newFaces++;
-						}
-					}
-				}
-				else
-				{
-					FEFace& face = Face(el.m_face[j]);
-					face.m_gid += nfp + 1;
-				}
-			}
-
-			// shell elements
-			int ne = el.Edges();
-			if (ne > 0)
-			{
-				assert(el.m_face[0] != -1);
-				Face(el.m_face[0]).m_gid += nfp + 1;
-			}
-		}
-	}
-	// we need to update all the face neighbors
-	// This updates also the element's face indices
-	UpdateFacePartitions();
-	UpdateFaces();
-
-	// assign new face partitions where necessary
-	nfp = CountFacePartitions();
-	for (int i=0; i<Faces(); ++i)
-	{
-		FEFace& face = Face(i);
-		if (face.m_gid == -1)
-		{
-			stack<int> s; s.push(i);
-			face.m_gid = nfp;
-			while (s.empty() == false)
-			{
-				FEFace& face = Face(s.top()); s.pop();
-				for (int j=0; j<face.Edges(); ++j)
-				{
-					if (face.m_nbr[j] >= 0)
-					{
-						FEFace& fj = Face(face.m_nbr[j]);
-						if (fj.m_gid == -1)
-						{
-							fj.m_gid = nfp;
-							s.push(face.m_nbr[j]);
-						}
-					}
-				}
-			}
-			nfp++;
-		}
-	}
-	UpdateFacePartitions();
-
-	// repartition the edges and nodes
-	BuildEdges();
-	AutoPartitionEdges();
-	AutoPartitionNodes();
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::PartitionNodeSet(FENodeSet* pg)
-{
-	if ((pg == 0) || (pg->size() == 0)) return;
-
-	FEItemListBuilder::Iterator it = pg->begin();
-	for (; it != pg->end(); ++it)
-	{
-		PartitionNode(*it);
-	}
-}
-
-//-----------------------------------------------------------------------------
-
-void FEMesh::AssignElementsToPartition(int lid)
-{
-	int NE = Elements();
-
-	// assign the selected elements to the part
-	for (int i = 0; i<NE; ++i)
-	{
-		FEElement& el = Element(i);
-		if (el.IsSelected()) el.m_gid = lid;
-	}
-
-	// repartition the surface
-	Repartition();
-}
-
-//-----------------------------------------------------------------------------
-void FEMesh::PartitionNode(int nodeIndex)
-{
-	// get the node
-	FENode& node = Node(nodeIndex);
-
-	// see if this node is already partitioned or not
-	// If it is, we don't need to do anything
-	if (node.m_gid >= 0) return;
-
-	// okay, partition the node then
-	int ng = CountNodePartitions();
-	node.m_gid = ng;
-
-	// It's possible this node splits an edge, so let's check for that
-	ng = CountEdgePartitions();
-	for (int i=0; i<Edges(); ++i)
-	{
-		FEEdge& edge = Edge(i);
-		if (edge.m_gid >= 0)
-		{
-			if (edge.n[0] == nodeIndex)
-			{
-				FEEdge* pe = EdgePtr(edge.m_nbr[0]);
-				edge.m_nbr[0] = -1;
-				if (pe)
-				{
-					if      (pe->n[0] == nodeIndex) pe->m_nbr[0] = -1;
-					else if (pe->n[1] == nodeIndex) pe->m_nbr[1] = -1;
-					else assert(false);
-				}
-
-				int m = edge.n[1];
-				edge.m_gid = ng;
-				FEEdge* e = EdgePtr(edge.m_nbr[1]);
-				while (e)
-				{
-					e->m_gid = ng;
-					if (e->n[0] == m) { e = EdgePtr(e->m_nbr[1]); m = e->n[1]; }
-					else { e = EdgePtr(e->m_nbr[0]); m = e->n[0]; }
-				}
-
-				break;
-			}
-			else if (edge.n[1] == nodeIndex)
-			{
-				FEEdge* pe = EdgePtr(edge.m_nbr[1]);
-				edge.m_nbr[1] = -1;
-				if (pe)
-				{
-					if      (pe->n[0] == nodeIndex) pe->m_nbr[0] = -1;
-					else if (pe->n[1] == nodeIndex) pe->m_nbr[1] = -1;
-					else assert(false);
-				}
-
-				int m = edge.n[0];
-				edge.m_gid = ng;
-				FEEdge* e = EdgePtr(edge.m_nbr[0]);
-				while (e)
-				{
-					e->m_gid = ng;
-					if (e->n[0] == m) { m = e->n[1]; e = EdgePtr(e->m_nbr[1]); }
-					else { m = e->n[0]; e = EdgePtr(e->m_nbr[0]); }
-				}
-
-				break;
-			}
-		}
-	}
 }

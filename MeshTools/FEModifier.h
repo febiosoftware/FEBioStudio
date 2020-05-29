@@ -30,6 +30,8 @@ public:
 	FEPartitionSelection();
 	FEMesh* Apply(FEMesh* pm);	
 	FEMesh* Apply(FEGroup* pg);
+
+	bool UpdateData(bool bsave) override;
 };
 
 //-----------------------------------------------------------------------------

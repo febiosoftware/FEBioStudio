@@ -2,6 +2,7 @@
 #include "GLStreamLinePlot.h"
 #include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
+#include <MeshLib/MeshTools.h>
 using namespace Post;
 
 //=================================================================================================

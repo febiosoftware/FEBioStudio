@@ -3,6 +3,7 @@
 #include "FEFillHole.h"
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FENodeFaceList.h>
 
 //-----------------------------------------------------------------------------
 FEFixMesh::FEFixMesh() : FESurfaceModifier("Fix mesh")
@@ -45,22 +46,21 @@ bool FEFixMesh::RemoveDuplicateFaces(FESurfaceMesh* pm)
 	pm->TagAllFaces(0);
 
 	// build the node-face table
-	vector<vector<int> > NFT;
-	pm->BuildNodeFaceTable(NFT);
+	FENodeFaceList NFT;
+	NFT.Build(pm);
 
 	// loop over all elements
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
-		vector<int>& NFi = NFT[i];
-		int n = (int)NFi.size();
+		int n = NFT.Valence(i);
 		for (int j = 0; j<n - 1; ++j)
 		{
-			FEFace& fj = pm->Face(NFi[j]);
+			FEFace& fj = *NFT.Face(i, j);
 			if (fj.m_ntag == 0)
 			{
 				for (int k = j + 1; k<n; ++k)
 				{
-					FEFace& fk = pm->Face(NFi[k]);
+					FEFace& fk = *NFT.Face(i, k);
 					if (fj == fk)
 					{
 						fk.m_ntag = 1;

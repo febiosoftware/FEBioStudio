@@ -1,6 +1,7 @@
 #include "MeshLayer.h"
 #include <assert.h>
 #include <GeomLib/GObject.h>
+#include <MeshLib/FEMesh.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FETetGenMesher.h>

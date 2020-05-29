@@ -98,7 +98,7 @@ bool FEDXFimport::Load(const char* szfile)
 		}
 
 		// update the mesh
-		pm->RemoveIsolatedNodes();
+		pm->RebuildMesh();
 		GMeshObject* po = new GMeshObject(pm);
 
 		char sz[256];

@@ -6,6 +6,7 @@
 #include "FEShellPatch.h"
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/geom.h>
+#include <MeshLib/FEMesh.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -104,7 +105,7 @@ FEMesh* FEShellPatch::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }
@@ -245,7 +246,7 @@ FEMesh* FECylndricalPatch::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

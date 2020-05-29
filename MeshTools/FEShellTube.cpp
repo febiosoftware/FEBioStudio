@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FEShellTube.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -108,7 +109,7 @@ FEMesh* FEShellTube::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 	
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

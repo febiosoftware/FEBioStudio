@@ -1,9 +1,8 @@
 #pragma once
-
 #include <FSCore/FSObject.h>
-#include <MeshLib/FEMesh.h>
 
 class GObject;
+class FEMesh;
 
 struct MeshingProgress
 {

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NetGenMesher.h"
 #include <GeomLib/GOCCObject.h>
+#include <MeshLib/FEMesh.h>
 
 #ifdef HAS_NETGEN
 
@@ -286,18 +287,7 @@ FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 	}
 
 	// update the element neighbours
-	mesh->UpdateElementNeighbors();
-
-	// update faces
-	mesh->UpdateFaces();
-
-	// build the edges
-	mesh->BuildEdges();
-
-	// update the mesh
-	mesh->MarkExteriorNodes();
-	mesh->UpdateNormals();
-	mesh->UpdateBox();
+	mesh->BuildMesh();
 
 	// associate the FE nodes with the GNodes
 /*	double R2 = mesh->GetBoundingBox().GetMaxExtent();

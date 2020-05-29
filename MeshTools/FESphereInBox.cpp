@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FESphereInBox.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
 FESphereInBox::FESphereInBox()
@@ -181,7 +182,7 @@ FEMesh* FESphereInBox::BuildMesh()
 	}
 
 	// update the mesh
-	pm->Update();
+	pm->UpdateMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 

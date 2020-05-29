@@ -1,6 +1,7 @@
 #pragma once
 #include "FENode.h"
 #include "FEEdge.h"
+#include <FSCore/box.h>
 
 class GObject;
 
@@ -11,8 +12,14 @@ class FELineMesh
 public:
 	FELineMesh();
 
-	virtual void UpdateMeshData() = 0;
+	// Should be called when mesh needs to be updated (but not reconstructred)
+	// E.g. for surface meshes, this will update face normals, etc.
+	virtual void UpdateMesh() = 0;
 
+	// Should be called when mesh needs to be reconstructed
+	virtual void BuildMesh() = 0;
+
+	// updates selection state (just call's owning object's UpdateSelection())
 	virtual void UpdateSelection();
 
 public: // node interface
@@ -54,8 +61,12 @@ public:
 	// get the local node position
 	vec3d NodeLocalPosition(int i) const;
 
+	// update the bounding box
+	void UpdateBoundingBox();
+
 protected:
-	GObject*	m_pobj;
+	GObject*	m_pobj;		//!< owning object
+	BOX			m_box;		//!< bounding box
 
 	vector<FENode>	m_Node;		//!< Node list
 	vector<FEEdge>	m_Edge;		//!< Edge list

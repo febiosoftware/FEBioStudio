@@ -109,7 +109,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 
 		// next, we use the auto-mesher to reconstruct all faces, edges and nodes
 		pnew->RebuildMesh();
-		pnew->Update();
+
 		// done
 		return pnew;
 	}

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FEGregoryPatch.h"
+#include <MeshLib/FEMesh.h>
 
 FEGregoryPatch::FEGregoryPatch(void)
 {
@@ -99,7 +100,7 @@ FEMesh* FEGregoryPatch::BuildFEMesh()
 
 	BuildFaces(pm);
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

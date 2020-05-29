@@ -140,7 +140,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 	m_surfmesh->UpdateFacePartitions();
 	m_surfmesh->UpdateFaceNeighbors();
 	m_surfmesh->UpdateNormals();
-	m_surfmesh->UpdateBox();
+	m_surfmesh->UpdateBoundingBox();
 
 	// copy edges
 	m_surfmesh->BuildEdges();
@@ -433,7 +433,7 @@ FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 		}
 	}
 
-	curve->Update();
+	curve->BuildMesh();
 
 	return curve;
 }
@@ -940,8 +940,7 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 		newMesh->Attach(*oldMesh);
 	}
 
-	newMesh->UpdateBox();
-	newMesh->UpdateNormals();
+	newMesh->UpdateMesh();
 
 	BuildGMesh();
 }

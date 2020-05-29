@@ -780,7 +780,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	{
 		if (m_fileQueue.empty())
 		{
-			QString err = QString("Failed reading file :\n%1").arg(errorString);
+			QString err = QString("Failed reading file :\n%1\nERROR: %2").arg(file.m_fileName).arg(errorString);
 			QMessageBox::critical(this, "FEBio Studio", err);
 		}
 

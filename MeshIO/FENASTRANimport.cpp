@@ -288,7 +288,6 @@ bool FENASTRANimport::BuildMesh(FEModel &fem)
 	}
 
 	// update the mesh
-	pm->RemoveIsolatedNodes();
 	pm->RebuildMesh();
 
 	GMeshObject* po = new GMeshObject(pm);

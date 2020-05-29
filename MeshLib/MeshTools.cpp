@@ -1072,3 +1072,16 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 		++n;
 	} while ((u2 > tol*tol) && (n < nmax));
 }
+
+//-----------------------------------------------------------------------------
+bool ProjectInsideReferenceElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
+{
+	r[0] = r[1] = r[2] = 0.f;
+	int ne = el.Nodes();
+	vec3f x[FEElement::MAX_NODES];
+	for (int i = 0; i<ne; ++i) x[i] = to_vec3f(m.Node(el.m_node[i]).r);
+
+	project_inside_element(el, p, r, x);
+
+	return IsInsideElement(el, r, 0.001);
+}

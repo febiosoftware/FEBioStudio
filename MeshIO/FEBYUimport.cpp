@@ -92,7 +92,7 @@ bool FEBYUimport::Load(const char* szfile)
 
 	Close();
 
-	pm->Update();
+	pm->RebuildMesh();
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(pm);
 
 	char szname[256];

@@ -1,6 +1,7 @@
 #include "GMeshObject.h"
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
+#include <MeshLib/FEMeshBuilder.h>
 #include <MeshTools/GLMesh.h>
 #include <list>
 #include <stack>
@@ -418,17 +419,15 @@ int GMeshObject::MakeGNode(int n)
 
 int GMeshObject::AddNode(vec3d r)
 {
-	FEMesh& m = *GetFEMesh();
-	FENode n;
-	n.SetExterior(true);
-	n.m_gid = (int)m_Node.size();
-
 	// convert from global to local
 	r = GetTransform().GlobalToLocal(r);
 
-	// add the node to the mesh
-	n.r = r;
-	m.AddNode(n);
+	// get the mesh
+	FEMesh& m = *GetFEMesh();
+
+	// add the node
+	FEMeshBuilder meshBuilder(m);
+	FENode* newNode = meshBuilder.AddNode(r);
 
 	// create a geometry node for this
 	GNode* gn = new GNode(this);
@@ -436,12 +435,12 @@ int GMeshObject::AddNode(vec3d r)
 	gn->SetLocalID((int)m_Node.size());
 	gn->LocalPosition() = r;
 	m_Node.push_back(gn);
+	assert(gn->GetLocalID() == newNode->m_gid);
 
 	stringstream ss;
 	ss << "Node" << gn->GetID();
 	gn->SetName(ss.str());
 
-	m.UpdateBox();
 	BuildGMesh();
 
 	return gn->GetID();
@@ -500,11 +499,15 @@ void GMeshObject::BuildGMesh()
 	for (int i=0; i<pm->Edges(); ++i)
 	{
 		FEEdge& es = pm->Edge(i);
-		n[0] = pm->Node(es.n[0]).m_ntag; assert(n[0] >= 0);
-		n[1] = pm->Node(es.n[1]).m_ntag; assert(n[1] >= 0);
-		if (es.n[2] != -1) { n[2] = pm->Node(es.n[2]).m_ntag; assert(n[2] >= 0); }
-		if (es.n[3] != -1) { n[3] = pm->Node(es.n[3]).m_ntag; assert(n[3] >= 0); }
-		gmesh->AddEdge(n, es.Nodes(), es.m_gid);
+		if (es.IsExterior())
+		{
+			n[0] = pm->Node(es.n[0]).m_ntag; assert(n[0] >= 0);
+			n[1] = pm->Node(es.n[1]).m_ntag; assert(n[1] >= 0);
+			if (es.n[2] != -1) { n[2] = pm->Node(es.n[2]).m_ntag; assert(n[2] >= 0); }
+			if (es.n[3] != -1) { n[3] = pm->Node(es.n[3]).m_ntag; assert(n[3] >= 0); }
+			assert(es.m_gid >= 0);
+			gmesh->AddEdge(n, es.Nodes(), es.m_gid);
+		}
 	}
 
 	// create face data
@@ -972,18 +975,18 @@ void GMeshObject::Attach(GObject* po, bool bweld, double tol)
 
 	// attach to the new mesh
 	FEMesh* pm = po->GetFEMesh();
+	FEMeshBuilder meshBuilder(*GetFEMesh());
 	if (bweld)
 	{
-		GetFEMesh()->AttachAndWeld(*pm, tol);
+		meshBuilder.AttachAndWeld(*pm, tol);
 		Update(false);
 	}
 	else
 	{
-		GetFEMesh()->Attach(*pm);
+		meshBuilder.Attach(*pm);
 	}
 
-	GetFEMesh()->UpdateBox();
-	GetFEMesh()->UpdateNormals();
+	GetFEMesh()->UpdateMesh();
 
 	BuildGMesh();
 }
@@ -1029,7 +1032,9 @@ void GMeshObject::DeletePart(GPart* pg)
 		FEElement& el = pm->Element(i);
 		if (el.m_gid == npart) el.m_ntag = 1;
 	}
-	pm->DeleteTaggedElements(1);
+
+	FEMeshBuilder meshBuilder(*pm);
+	meshBuilder.DeleteTaggedElements(1);
 
 	// update the rest
 	Update();
@@ -1040,7 +1045,8 @@ GMeshObject* GMeshObject::DetachSelection()
 {
 	FEMesh* pm = GetFEMesh();
 
-	FEMesh* newMesh = pm->DetachSelectedMesh();
+	FEMeshBuilder meshBuilder(*pm);
+	FEMesh* newMesh = meshBuilder.DetachSelectedMesh();
 	Update(true);
 
 	// create a new object for this mesh

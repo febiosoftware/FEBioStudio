@@ -18,6 +18,9 @@ public:
 
 	BOX GetBoundingBox() const { return m_box; }
 
+	// from FELineMesh
+	void UpdateMesh() override;
+
 public:
 	// get the local positions of a face
 	void FaceNodeLocalPositions(const FEFace& f, vec3d* r) const;
@@ -34,8 +37,6 @@ public:
 
 	// update item visibility
 	virtual void UpdateItemVisibility() {}
-
-	void UpdateMeshData() override;
 
 	vec3d FaceCenter(FEFace& f) const;
 
@@ -76,19 +77,12 @@ public:
 
 	bool IsCreaseEdge(int n0, int n1);
 
-	void UpdateBox();
-
-public:
-	void BuildNodeFaceTable(vector< vector<int> >& NFT);
-	void BuildNodeEdgeTable(vector< vector<int> >& NET);
-
 protected:
 	void RemoveEdges(int ntag);
 	void RemoveFaces(int ntag);
 
 protected:
 	std::vector<FEFace>		m_Face;	//!< FE faces
-	BOX	m_box;		// bounding box
 };
 
 //-------------------------------------------------------------------

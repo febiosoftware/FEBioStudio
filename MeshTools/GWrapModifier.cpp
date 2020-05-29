@@ -121,7 +121,7 @@ void GWrapModifier::Apply(GObject* po)
 	}
 
 	// update the mesh
-	pm->Update();
+	pm->BuildMesh();
 }
 
 //-----------------------------------------------------------------------------

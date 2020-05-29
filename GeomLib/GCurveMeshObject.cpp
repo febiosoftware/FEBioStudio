@@ -1,5 +1,6 @@
 #include "GCurveMeshObject.h"
 #include <MeshLib/FECurveMesh.h>
+#include <MeshLib/FEMesh.h>
 #include <MeshTools/FEAdvancingFrontMesher2D.h>
 
 GCurveMeshObject::GCurveMeshObject(FECurveMesh* pm) : m_curve(pm), GObject(GCURVEMESH_OBJECT)
@@ -166,7 +167,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 	}
 
 	// update the curve
-	curve->Update();
+	curve->BuildMesh();
 
 	return curve;
 }

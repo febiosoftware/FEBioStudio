@@ -267,3 +267,8 @@ void CMainWindow::on_actionSyncViews_triggered()
 	}
 	*/
 }
+
+void CMainWindow::on_actionToggleConnected_triggered()
+{
+	ui->glc->toggleSelectConnected();
+}

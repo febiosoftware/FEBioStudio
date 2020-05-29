@@ -128,7 +128,7 @@ public:
 		QObject::connect(b7, SIGNAL(clicked(bool)), bar, SLOT(onZoomAllClicked(bool)));
 		QObject::connect(showMesh, SIGNAL(clicked(bool)), bar, SLOT(onToggleMesh(bool)));
 		QObject::connect(bg, SIGNAL(buttonClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
-		QObject::connect(selConnect, SIGNAL(clicked(bool)), bar, SLOT(onSelectConnected(bool)));
+		QObject::connect(selConnect, SIGNAL(toggled(bool)), bar, SLOT(onSelectConnected(bool)));
 		QObject::connect(selPath, SIGNAL(clicked(bool)), bar, SLOT(onSelectClosestPath(bool)));
 		QObject::connect(maxAngle, SIGNAL(valueChanged(double)), bar, SLOT(onMaxAngleChanged(double)));
 		QObject::connect(cull, SIGNAL(clicked(bool)), bar, SLOT(onSelectBackfacing(bool)));
@@ -389,6 +389,11 @@ void CGLControlBar::onSelectConnected(bool b)
 {
 	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bconn = b;
+}
+
+void CGLControlBar::toggleSelectConnected()
+{
+	ui->selConnect->toggle();
 }
 
 void CGLControlBar::onSelectClosestPath(bool b)

@@ -1049,8 +1049,7 @@ void FEElementSelection::Translate(vec3d dr)
 			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
-	m_pMesh->UpdateNormals();
-	m_pMesh->UpdateBox();
+	m_pMesh->UpdateMesh();
 
 	// update the box
 	m_box.x0 += dr.x;
@@ -1100,8 +1099,8 @@ void FEElementSelection::Rotate(quatd q, vec3d rc)
 			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
-	m_pMesh->UpdateNormals();
-	m_pMesh->Update();
+	m_pMesh->UpdateMesh();
+
 	Update();
 	// update the geometry nodes
 	po->UpdateGNodes();
@@ -1148,9 +1147,10 @@ void FEElementSelection::Scale(double s, vec3d dr, vec3d c)
 			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
-	m_pMesh->UpdateNormals();
-	m_pMesh->Update();
+	m_pMesh->UpdateMesh();
+
 	Update();
+
 	// update the geometry nodes
 	po->UpdateGNodes();
 
@@ -1280,8 +1280,7 @@ void FEFaceSelection::Translate(vec3d dr)
 		}
 	}
 
-	m_pMesh->UpdateNormals();
-	m_pMesh->UpdateBox();
+	m_pMesh->UpdateMesh();
 
 	// update the box
 	m_box.x0 += dr.x;
@@ -1328,8 +1327,8 @@ void FEFaceSelection::Rotate(quatd q, vec3d rc)
 			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
-	m_pMesh->UpdateNormals();
-	m_pMesh->UpdateBox();
+	m_pMesh->UpdateMesh();
+
 	Update();
 
 	// update the geometry nodes
@@ -1374,8 +1373,8 @@ void FEFaceSelection::Scale(double s, vec3d dr, vec3d c)
 			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
-	m_pMesh->UpdateNormals();
-	m_pMesh->UpdateBox();
+	m_pMesh->UpdateMesh();
+
 	Update();
 
 	// update the geometry nodes
@@ -1521,7 +1520,7 @@ void FEEdgeSelection::Translate(vec3d dr)
 		}
 	}
 
-	m_pMesh->UpdateMeshData();
+	m_pMesh->UpdateMesh();
 
 	// update the box
 	m_box.x0 += dr.x;
@@ -1568,7 +1567,8 @@ void FEEdgeSelection::Rotate(quatd q, vec3d rc)
 			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
-	m_pMesh->UpdateMeshData();
+	m_pMesh->UpdateMesh();
+
 	Update();
 
 	// update the geometry nodes
@@ -1612,7 +1612,8 @@ void FEEdgeSelection::Scale(double s, vec3d dr, vec3d c)
 			pn[i].r = po->GetTransform().GlobalToLocal(r);
 		}
 
-	m_pMesh->UpdateMeshData();
+	m_pMesh->UpdateMesh();
+
 	Update();
 
 	// update the geometry nodes
@@ -1734,7 +1735,7 @@ void FENodeSelection::Translate(vec3d dr)
 		++pn;
 	}
 
-	m_pMesh->UpdateMeshData();
+	m_pMesh->UpdateMesh();
 
 	// update the box
 	m_box.x0 += drf.x;
@@ -1769,7 +1770,7 @@ void FENodeSelection::Rotate(quatd q, vec3d rc)
 		++pn;
 	}
 
-	m_pMesh->UpdateMeshData();
+	m_pMesh->UpdateMesh();
 
 	Update();
 
@@ -1799,7 +1800,7 @@ void FENodeSelection::Scale(double s, vec3d dr, vec3d c)
 		++pn;
 	}
 
-	m_pMesh->UpdateMeshData();
+	m_pMesh->UpdateMesh();
 
 	Update();
 

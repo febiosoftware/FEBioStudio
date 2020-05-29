@@ -1,6 +1,7 @@
 #include "GOCCObject.h"
 #include <MeshTools/NetGenMesher.h>
 #include <MeshTools/GLMesh.h>
+#include <MeshLib/FEMesh.h>
 
 #ifdef HAS_OCC
 #include <gp_Pnt.hxx>

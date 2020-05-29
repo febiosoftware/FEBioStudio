@@ -68,6 +68,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEMeshBuilder;
+
+//-----------------------------------------------------------------------------
 // This class describes a finite element mesh. Every FEMesh must be owned by a
 // GObject class. 
 class FEMesh : public FECoreMesh
@@ -87,9 +90,8 @@ public:
 	//! clear this mesh
 	void Clear();
 
-	void ClearElements();
-
-	void CreateElements(int elems);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 
 public: // from FECoreMesh
 
@@ -105,98 +107,52 @@ public: // from FECoreMesh
 	const FEElement_& ElementRef(int n) const override { return m_Elem[n]; }
 
 public:
-	// --- S U B M E S H ---
+	// Build all mesh data structures
+	// This assumes that all mesh items are created and partitioned!
+	void BuildMesh() override;
 
-	FEMesh* ExtractFaces(bool selectedOnly);
+	// reconstruct the mesh
+	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
 
-public: // --- S E R I A L I Z A T I O N ---
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
+protected: // Helper functions for updating mesh data structures
+	void RebuildElementData();
+	void RebuildFaceData();
+	void RebuildEdgeData();
+	void RebuildNodeData();
 
-public:
-	// --- U P D A T E ---
-	void Update();
 	void UpdateElementNeighbors();
 	void UpdateFaceNeighbors();
 	void UpdateEdgeNeighbors();
 	void UpdateFaceElementTable();
 
-	void BuildFaces();
-	void BuildEdges();
-	void UpdateFaces();
+	void UpdateNodePartitions();
+	void UpdateEdgePartitions();
+	void UpdateFacePartitions();
+	void UpdateElementPartitions();
+	void UpdateSmoothingGroups();
 
-	// reconstruct the mesh
-	void RebuildMesh(double smoothingAngle = 60.0, bool autoSurface = true, bool partitionMesh = false);
+	void RemoveElements(int ntag);
 
-public:
-	void AutoPartitionElements();
-	void AutoPartitionSurfaceQuick();
-	void AutoPartitionEdges();
-	void AutoPartitionNodes();
+	void MarkExteriorElements();
+	void MarkExteriorFaces();
+	void MarkExteriorEdges();
 
-	void PartitionFaceSelection();
-	void PartitionEdgeSelection();
-	void PartitionElementSelection();
+	// mesh validation
+	bool ValidateElements() const;
+	bool ValidateFaces() const;
+	bool ValidateEdges() const;
 
-	void AssignElementsToPartition(int lid);
-
-	void PartitionNodeSet(FENodeSet* pg);
-
-	void Repartition();
-
-	void AutoPartition(double smoothingAngle);
-
-	void PartitionNode(int node);
-
-public: // --- M E S H   M A N I P U L A T I O N ---
-
-	void RemoveIsolatedNodes();
-	void Attach(FEMesh& fem);
-	void AttachAndWeld(FEMesh& mesh, double tol);
-
-	void AddNode(const vec3d& r);
-
-	void AddNode(FENode& n) { m_Node.push_back(n); }
-	void AddEdge(FEEdge& e) { m_Edge.push_back(e); }
-	void AddFace(FEFace& f) { m_Face.push_back(f); }
-	void AddElement(FEElement& e) { m_Elem.push_back(e); }
-
-	void DeleteTaggedElements(int tag);
-	void DeleteTaggedFaces   (int tag);
-	void DeleteTaggedEdges   (int tag);
-	void DeleteTaggedNodes   (int tag);
-
-	void FindDuplicateFaces(vector<int>& l);
-	void FindDuplicateEdges(vector<int>& l);
-
-	void DeleteSelectedElements();
-	void DeleteSelectedFaces();
-	void DeleteSelectedNodes();
-
-	void InvertTaggedElements(int ntag);
-	void InvertSelectedElements();
-
-	void InvertTaggedFaces(int ntag);
-	void InvertSelectedFaces();
-
-	// detach the selected elements and create a new mesh
-	FEMesh* DetachSelectedMesh();
-
-	// remove duplicate edges
-	void RemoveDuplicateEdges();
-
-	// remove duplicate edges
-	void RemoveDuplicateFaces();
-
-	// select elements based on face selection
-	vector<int> GetElementsFromSelectedFaces();
-
+	// The following functions may leave the mesh in an invalid state.
+	// As a result, these functions should be used with care. 
 public:
 	// resize arrays
 	void ResizeNodes(int newSize);
 	void ResizeEdges(int newSize);
 	void ResizeFaces(int newSize);
 	void ResizeElems(int newSize);
+
+	// extract faces and return as new mesh
+	FEMesh* ExtractFaces(bool selectedOnly);
 
 public:
 	int MeshDataFields() const;
@@ -214,19 +170,14 @@ public:
 
 	Mesh_Data& GetMeshData();
 
-public:
+public: // --- M E S H   Q U E R I E S ---
 	void BuildSurfaceNodeNodeTable(vector< set<int> >& NNT);
 
-public: // The following functions may leave the mesh in an invalid state or try to restore (part) of the mesh' state.
-		 // As a result, these functions should be used with care. 
-	void UpdateNodePartitions();
-	void UpdateEdgePartitions();
-	void UpdateFacePartitions();
-	void UpdateSmoothingGroups();
-	void UpdateElementPartitions();
-	void RemoveElements(int ntag);
-	void SplitEdgePartition(int edgeID);
-	void SplitFacePartition(int faceID);
+	void FindDuplicateFaces(vector<int>& l);
+	void FindDuplicateEdges(vector<int>& l);
+
+	// select elements based on face selection
+	vector<int> GetElementsFromSelectedFaces();
 
 protected:
 	// elements
@@ -237,6 +188,8 @@ protected:
 
 	// data fields
 	vector<FEMeshData*>		m_meshData;
+
+	friend class FEMeshBuilder;
 };
 
 double bias(double b, double x);

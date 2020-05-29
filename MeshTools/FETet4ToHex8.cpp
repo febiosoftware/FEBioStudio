@@ -104,11 +104,7 @@ FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
 	}
 
 	// build the other mesh structures
-	pnew->UpdateElementNeighbors();
-	pnew->UpdateFaces();
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
+	pnew->BuildMesh();
 
 	// don't forget to clean up
 	delete tet15;

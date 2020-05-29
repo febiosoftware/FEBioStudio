@@ -86,16 +86,13 @@ void FESurfacePartitionSelection::PartitionSelectedFaces(FESurfaceMesh* mesh)
 			f.m_gid = ng;
 		}
 	}
-	mesh->UpdateFacePartitions();
-	mesh->BuildEdges();
-	mesh->AutoPartitionEdges();
-	mesh->AutoPartitionNodes();
+	mesh->BuildMesh();
 }
 
 //=============================================================================
 FESurfaceAutoPartition::FESurfaceAutoPartition() : FESurfaceModifier("Auto Partition")
 {
-	AddDoubleParam(30.0, "Crease angle:", "Crease angle (degrees):");
+	AddDoubleParam(30.0, "Crease angle", "Crease angle (degrees)");
 }
 
 //-----------------------------------------------------------------------------

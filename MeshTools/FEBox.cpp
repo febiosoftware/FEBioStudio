@@ -544,7 +544,7 @@ FEMesh* FEBox::CreateRegularHEX8()
 	BuildEdges(pm);
 
 	// update mesh
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }
@@ -731,7 +731,7 @@ FEMesh* FEBox::CreateRegularTET4()
 	BuildEdges(pm);
 
 	// update the mesh
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }
@@ -950,7 +950,7 @@ FEMesh* FEBox::CreateRegularHEX20()
 	BuildHex20Edges(pm, LUT);
 
 	// update mesh
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }
@@ -1149,7 +1149,7 @@ FEMesh* FEBox::CreateRegularHEX27()
 	BuildHex27Edges(pm);
 
 	// update mesh
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

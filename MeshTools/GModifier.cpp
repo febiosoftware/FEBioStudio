@@ -455,8 +455,7 @@ FEMesh* GTwistModifier::BuildFEMesh(GObject* po)
 		assert(false);
 	}
 
-	pm->UpdateNormals();
-	pm->UpdateBox();
+	pm->UpdateMesh();
 
 	return 0;
 }
@@ -575,8 +574,7 @@ FEMesh* GPinchModifier::BuildFEMesh(GObject* po)
 		node.r = c + r;
 	}
 
-	pm->UpdateNormals();
-	pm->UpdateBox();
+	pm->UpdateMesh();
 
 	return 0;
 }
@@ -725,7 +723,8 @@ FEMesh* GBendModifier::BuildFEMesh(GObject* po)
 	}
 	vec3d dr = m_box.Center() - m_rc;
 	for (int i=0; i<N; ++i) pm->Node(i).r -= dr;
-	pm->UpdateBox();
+
+	pm->UpdateMesh();
 
 	return 0;
 }
@@ -888,7 +887,8 @@ FEMesh* GSkewModifier::BuildFEMesh(GObject* po)
 		r.*pl += a*(r.*pr)*d;
 		node.r = r + rc;
 	}
-	pm->Update();
+
+	pm->UpdateMesh();
 
 	return 0;
 }

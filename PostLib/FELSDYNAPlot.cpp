@@ -321,7 +321,7 @@ bool FELSDYNAPlotImport::ReadMesh(FEPostModel &fem)
 	}
 
 	// update the mesh
-	mesh.Update();
+	mesh.BuildMesh();
 
 	// set the enabled-ness of the elements and the nodes
 	for (i=0; i<mesh.Faces(); ++i)

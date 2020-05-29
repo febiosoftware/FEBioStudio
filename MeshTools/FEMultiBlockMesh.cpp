@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FEMultiBlockMesh.h"
+#include <MeshLib/FEMesh.h>
 
 void MBBlock::SetNodes(int n1,int n2,int n3,int n4,int n5,int n6,int n7,int n8)
 {
@@ -51,7 +52,7 @@ FEMesh* FEMultiBlockMesh::BuildMesh()
 	BuildEdges(pm);
 
 	// update the mesh
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

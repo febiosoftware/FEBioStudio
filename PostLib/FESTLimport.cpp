@@ -147,7 +147,7 @@ void FESTLimport::build_mesh()
 	}
 
 	// update the mesh
-	pm->Update();
+	pm->BuildMesh();
 	m_fem->UpdateBoundingBox();
 
 	// we need a single state

@@ -4,6 +4,7 @@
 #include <GeomLib/GObject.h>
 #include "FEFaceEdgeList.h"
 #include "FENodeEdgeList.h"
+#include "FENodeFaceList.h"
 
 FESurfaceMesh::FESurfaceMesh()
 {
@@ -86,7 +87,7 @@ FESurfaceMesh::FESurfaceMesh(TriMesh& dyna)
 	UpdateEdgeNeighbors();
 	UpdateFaceEdges();
 	UpdateNormals();
-	UpdateBox();
+	UpdateBoundingBox();
 
 	// let's update the new nodes
 	AutoPartitionNodes();
@@ -115,56 +116,71 @@ void FESurfaceMesh::Create(unsigned int nodes, unsigned int edges, unsigned int 
 {
 	if (nodes) m_Node.resize(nodes);
 	if (edges) m_Edge.resize(edges);
-	if (faces) m_Face.resize(faces);
+	if (faces)
+	{
+		m_Face.resize(faces);
+		for (unsigned int i = 0; i < faces; ++i)
+		{
+			m_Face[i].m_gid = 0;
+			m_Face[i].m_sid = 0;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
-// Update the face neighbors
-void FESurfaceMesh::Update()
+// Build the mesh data structures
+// It is assumed that all faces have been assigned to a partition
+void FESurfaceMesh::BuildMesh()
 {
+#ifdef _DEBUG
+	// Make sure all faces are partitioned
+	for (int i = 0; i < Faces(); ++i) assert(m_Face[i].m_gid >= 0);
+#endif
+
+	// -- Build face data ---
 	// find all the face neighbors
 	UpdateFaceNeighbors();
 
-	// partition
-	int NF = Faces();
-	for (int i=0; i<NF; ++i)
-	{
-		FEFace& face = Face(i);
-		face.m_gid = 0;
-	}
-
-	// update normals
-	UpdateNormals();
-
-	// build edges
+	// -- Build edge data ---
+	// Build edges (Depends on face partitioning!)
 	BuildEdges();
 
-	// partition edges
+	// update edge neighbors (requires initial edge partitioning!)
+	UpdateEdgeNeighbors();
+
+	// partition edges (Depends on edge neighbors!)
 	AutoPartitionEdges();
 
-	// update bounding box
-	UpdateBox();
+	// -- Build node data ---
+	// partition the nodes (Depends on edge partitioning)
+	AutoPartitionNodes();
+
+	// update other mesh data
+	UpdateNormals();
+	UpdateBoundingBox();
 }
 
 //-----------------------------------------------------------------------------
 void FESurfaceMesh::RebuildMesh(double smoothingAngle)
 {
-	// find all the face neighbors
+	// We need to build the neighbors before we can call autopartition
 	UpdateFaceNeighbors();
 
 	// partition
 	AutoPartition(smoothingAngle);
 
-	UpdateBox();
+	// update the bounding box
+	UpdateBoundingBox();
 }
 
 //-----------------------------------------------------------------------------
+// This assumes that face neighbors are determined.
 void FESurfaceMesh::AutoPartition(double smoothingAngle)
 {
 	// auto-smooth the surface
 	AutoSmooth(smoothingAngle);
 
-	// now, assign face groupd IDs
+	// now, assign face groupd IDs from the smoothing IDs
 	int NF = Faces();
 	for (int i = 0; i<NF; ++i)
 	{
@@ -172,61 +188,40 @@ void FESurfaceMesh::AutoPartition(double smoothingAngle)
 		face.m_gid = face.m_sid;
 	}
 
-	// update normals
-	UpdateNormals();
-
-	// build edges
+	// -- Build edge data ---
+	// Build edges (Depends on face partitioning!)
 	BuildEdges();
 
-	// partition edges
+	// update edge neighbors (requires initial edge partitioning! This is done in BuildEdges.)
+	UpdateEdgeNeighbors();
+
+	// partition edges (Depends on edge neighbors!)
 	AutoPartitionEdges();
 
-	// partition nodes
+	// -- Build node data ---
+	// partitioned the nodes (Depends on edge partitioning)
 	AutoPartitionNodes();
+
+	// update other mesh data
+	UpdateNormals();
 }
 
 //-----------------------------------------------------------------------------
+// This partitions the edges. 
+// It is assumed that all edge neighbors have been identified and that all edges 
+// that are part of the contour are identified with a gid >= 0.
+// Note that any preexisting partitioning will be overwritten.
 void FESurfaceMesh::AutoPartitionEdges()
 {
-	// clear partitioning
-	for (int i=0; i<Edges(); ++i) Edge(i).m_gid = -1;
-
-	// assign initial partition
-	for (int i = 0; i<Faces(); ++i)
+	// Tag candidate edges
+	for (int i = 0; i < Edges(); ++i)
 	{
-		FEFace& face = Face(i);
-		int nn = face.Nodes();
-		for (int j = 0; j<face.Edges(); ++j)
-		{
-			if (face.m_nbr[j] == -1)
-			{
-				int n0 = face.n[j];
-				int n1 = face.n[(j + 1) % nn];
-
-				FEEdge* edge = FindEdge(n0, n1); assert(edge);
-				if (edge) edge->m_gid = 0;
-			}
-			else
-			{
-				FEFace& f2 = Face(face.m_nbr[j]);
-				if (face.m_gid < f2.m_gid)
-				{
-					int n0 = face.n[j];
-					int n1 = face.n[(j + 1) % nn];
-
-					FEEdge* edge = FindEdge(n0, n1); assert(edge);
-					if (edge) edge->m_gid = 0;
-				}
-			}
-		}
+		FEEdge& edge = Edge(i);
+		if (edge.m_gid >= 0) edge.m_ntag = 0;
+		else edge.m_ntag = -1;
 	}
 
-	// update edge neighbors
-	UpdateEdgeNeighbors();
-
-	// repartition based on connectivity
-	TagAllEdges(0);
-	for (int i=0; i<Edges(); ++i) if (Edge(i).m_gid == -1) Edge(i).m_ntag = 1;
+	// loop over candidate edges
 	int ng = 0, n0 = 0;
 	stack<int> s;
 	do
@@ -270,11 +265,13 @@ void FESurfaceMesh::AutoPartitionEdges()
 
 //-----------------------------------------------------------------------------
 // Update the edge neighbors
-// This can only be done after edge partitions are assigned
+// Only edges that have a non-negative gid are considered. The actual 
+// gid values are not used. Edges are connected if they share a node that
+// has a valence of exactly two. 
 void FESurfaceMesh::UpdateEdgeNeighbors()
 {
-	vector< vector<int> > NET;
-	BuildNodeEdgeTable(NET);
+	FENodeEdgeList NET;
+	NET.Build(this, true);
 
 	for (int i=0; i<Edges(); ++i)
 	{
@@ -290,27 +287,15 @@ void FESurfaceMesh::UpdateEdgeNeighbors()
 		{
 			for (int j=0; j<2; ++j)
 			{
-				int nj = edge.n[j];
-
-				if (nj != -1)
+				int nj = edge.n[j]; assert(nj != -1);
+				int val = NET.Edges(nj);
+				if (val == 2)
 				{
-					int val = NET[nj].size();
-					for (int k=0; k<val; ++k)
-					{
-						int nk = NET[nj][k];
-						if (nk != i)
-						{
-							FEEdge& ek = Edge(nk);
-							if (ek.m_gid == edge.m_gid)
-							{
-								if ((ek.n[0] == nj) || (ek.n[1] == nj))
-								{
-									edge.m_nbr[j] = nk;
-									break;
-								}
-							}
-						}
-					}
+					assert((NET.EdgeIndex(nj, 0) == i) || (NET.EdgeIndex(nj, 1) == i));
+					int nk = NET.EdgeIndex(nj, 0);
+					if (nk == i) nk = NET.EdgeIndex(nj, 1); assert(nk != i);
+					assert(Edge(nk).m_gid >= 0);
+					edge.m_nbr[j] = nk;
 				}
 			}
 		}
@@ -321,8 +306,8 @@ void FESurfaceMesh::UpdateEdgeNeighbors()
 void FESurfaceMesh::UpdateFaceNeighbors()
 {
 	// build the node-face table
-	vector< vector<int> > NFT;
-	BuildNodeFaceTable(NFT);
+	FENodeFaceList NFT;
+	NFT.Build(this);
 
 	// find all face neighbours
 	int NF = Faces();
@@ -336,16 +321,16 @@ void FESurfaceMesh::UpdateFaceNeighbors()
 		{
 			int n1 = f.n[j];
 			int n2 = f.n[(j + 1) % n];
-			int nval = (int)NFT[n1].size();
+			int nval = NFT.Valence(n1);
 			f.m_nbr[j] = -1;
 			for (int k = 0; k<nval; ++k)
 			{
-				if (i != NFT[n1][k])
+				if (i != NFT.FaceIndex(n1, k))
 				{
-					FEFace& f2 = Face(NFT[n1][k]);
+					FEFace& f2 = *NFT.Face(n1, k);
 					if (f2.HasEdge(n1, n2))
 					{
-						f.m_nbr[j] = NFT[n1][k];
+						f.m_nbr[j] = NFT.FaceIndex(n1, k);
 						break;
 					}
 				}
@@ -359,8 +344,7 @@ void FESurfaceMesh::UpdateFaceNeighbors()
 void FESurfaceMesh::UpdateFaceEdges()
 {
 	// build the node edge table
-	vector< vector<int> > NET;
-	BuildNodeEdgeTable(NET);
+	FENodeEdgeList NET(this);
 
 	// loop over all faces
 	for (int i=0; i<Faces(); ++i)
@@ -376,10 +360,10 @@ void FESurfaceMesh::UpdateFaceEdges()
 		{
 			FEEdge ej = face.GetEdge(j);
 
-			int val = NET[ej.n[0]].size();
+			int val = NET.Edges(ej.n[0]);
 			for (int k=0; k<val; ++k)
 			{
-				int ek = NET[ej.n[0]][k];
+				int ek = NET.EdgeIndex(ej.n[0], k);
 				FEEdge* pek = EdgePtr(ek);
 
 				if (ej == *pek)
@@ -405,38 +389,8 @@ void FESurfaceMesh::UpdateFaces()
 }
 
 //-----------------------------------------------------------------------------
-// Build the node-face table
-void FESurfaceMesh::BuildNodeFaceTable(vector< vector<int> >& NFT)
-{
-	int i, j, n;
-	int NN = Nodes();
-	int NF = Faces();
-
-	// zero nodal valences
-	for (i = 0; i<NN; ++i) m_Node[i].m_ntag = 0;
-
-	// calculate nodal valences
-	for (i = 0; i<NF; ++i)
-	{
-		FEFace& f = m_Face[i];
-		n = f.Nodes();
-		for (j = 0; j<n; ++j) m_Node[f.n[j]].m_ntag++;
-	}
-
-	// allocate node-face-table
-	NFT.resize(NN);
-	for (i = 0; i<NN; ++i) NFT[i].reserve(m_Node[i].m_ntag);
-
-	// fill node element table
-	for (i = 0; i<NF; ++i)
-	{
-		FEFace& f = m_Face[i];
-		n = f.Nodes();
-		for (j = 0; j<n; ++j) NFT[f.n[j]].push_back(i);
-	}
-}
-
-//-----------------------------------------------------------------------------
+// Builds the edges of the mesh.
+// This also creates an initial partition
 void FESurfaceMesh::BuildEdges()
 {
 	// clear all edges
@@ -473,6 +427,7 @@ void FESurfaceMesh::BuildEdges()
 			if ((fj == 0) || (fj->m_ntag > face.m_ntag))
 			{
 				FEEdge edge = face.GetEdge(j);
+				edge.m_gid = (fj == 0 ? 0 : (fj->m_gid != face.m_gid ? 0 : -1));
 				edge.m_face[0] = i;
 				face.m_edge[j] = nedges;
 				m_Edge[nedges++] = edge;
@@ -966,7 +921,7 @@ void FESurfaceMesh::DeleteTaggedFaces(int tag)
 	AutoPartitionNodes();
 
 	// recalculate the box
-	UpdateBox();
+	UpdateBoundingBox();
 
 	// and we're done!	
 }
@@ -1090,9 +1045,6 @@ void FESurfaceMesh::RemoveIsolatedEdges()
 // Assign gids to the nodes based on the edge gids.
 void FESurfaceMesh::AutoPartitionNodes()
 {
-	// reset node tags
-	for (int i = 0; i<Nodes(); ++i) Node(i).m_gid = -1;
-
 	// loop over all edges
 	vector<int> tag(Nodes(), -1);
 	for (int i = 0; i<Edges(); ++i)
@@ -1100,20 +1052,8 @@ void FESurfaceMesh::AutoPartitionNodes()
 		FEEdge& edge = Edge(i);
 		if (edge.m_gid >= 0)
 		{
-			int n0 = edge.n[0];
-			int n1 = edge.n[1];
-
-			if (n0 != -1)
-			{
-				if (tag[n0] == -1) tag[n0] = edge.m_gid;
-				else if (tag[n0] == edge.m_gid) tag[n0] = -1;
-			}
-
-			if (n1 != -1)
-			{
-				if (tag[n1] == -1) tag[n1] = edge.m_gid;
-				else if (tag[n1] == edge.m_gid) tag[n1] = -1;
-			}
+			if (edge.m_nbr[0] == -1) tag[edge.n[0]] = 1;
+			if (edge.m_nbr[1] == -1) tag[edge.n[1]] = 1;
 		}
 	}
 
@@ -1125,6 +1065,7 @@ void FESurfaceMesh::AutoPartitionNodes()
 		{
 			node.m_gid = ng++;
 		}
+		else node.m_gid = -1;
 	}
 }
 
@@ -1285,8 +1226,7 @@ void FESurfaceMesh::Attach(const FESurfaceMesh& mesh)
 	}
 
 	// update the mesh
-	UpdateNormals();
-	UpdateBox();
+	UpdateMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -1335,7 +1275,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	// now we need to figure out which nodes will get welded
 	// first, we tag all the edge nodes (only edge nodes will be welded)
 	tag.resize(NN1, 0);
-	for (size_t i=0; i<mesh.Edges(); ++i)
+	for (int i=0; i<mesh.Edges(); ++i)
 	{
 		const FEEdge& edge = mesh.Edge(i);
 		if (edge.m_gid >= 0)
@@ -1347,12 +1287,12 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 
 	// if a node must be welded, we'll set their index in the tag list to the welded node index
 	int newNodes = NN0;
-	for (size_t i = 0; i<NN1; ++i)
+	for (int i = 0; i<NN1; ++i)
 	{
 		if (tag[i] == 1)
 		{
 			double Dmin = 1e99;
-			size_t jmin = -1;
+			int jmin = -1;
 			const FENode& nodei = mesh.Node(i);
 			vec3d ri;
 			if (po2) ri = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(nodei.r));
@@ -1549,8 +1489,8 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	// update additional data structures
 	UpdateFaceNeighbors();
 //	UpdateEdgeNeighbors();
-	UpdateNormals();
-	UpdateBox();
+
+	UpdateMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -1804,8 +1744,8 @@ void FESurfaceMesh::Load(IArchive& ar)
 	// rebuild mesh' data
 	UpdateFaceNeighbors();
 	UpdateEdgeNeighbors();
-	UpdateNormals();
-	UpdateBox();
+
+	UpdateMesh();
 }
 
 // Create a TriMesh from a surface mesh

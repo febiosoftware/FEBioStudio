@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FERevolveFaces.h"
 #include <MeshLib/MeshMetrics.h>
+#include <MeshLib/FEMeshBuilder.h>
 
 FERevolveFaces::FERevolveFaces() : FEModifier("Revolve faces")
 {
@@ -423,10 +424,11 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     pmnew->ClearFaceSelection();
     
     // gets rid of nodes that are not used in any elements (mainly for quadratic meshes)
-    pmnew->RemoveIsolatedNodes();
+	FEMeshBuilder meshBuilder(*pmnew);
+	meshBuilder.RemoveIsolatedNodes();
     
     // rebuild the object
-    pmnew->RebuildMesh();
+	meshBuilder.RebuildMesh();
     
     // ensures all element have positive volume
     for (int i = 0; i<pmnew->Elements(); ++i) {
@@ -436,7 +438,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
         else
             pmnew->Element(i).m_ntag = 1;
     }
-    pmnew->InvertTaggedElements(-1);
+	meshBuilder.InvertTaggedElements(-1);
     
     return pmnew;
 }
@@ -601,9 +603,9 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
     }
     
     // rebuild the object
-    pmnew->RebuildMesh();
-    pmnew->RemoveIsolatedNodes();
-    
+	FEMeshBuilder meshBuilder(*pmnew);
+	meshBuilder.RebuildMesh();
+	meshBuilder.RemoveIsolatedNodes();
     
     return pmnew;
 }

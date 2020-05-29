@@ -81,7 +81,7 @@ bool FEHyperSurfImport::Load(const char* szfile)
 	Close();
 
 	// create a new object
-	pm->Update();
+	pm->RebuildMesh();
 	GObject* po = new GSurfaceMeshObject(pm);
 
 	// add the object to the model

@@ -153,7 +153,7 @@ bool FEVTKimport::Load(const char* szfile)
 
 	// update the mesh
 	fem.AddMesh(pm);
-	pm->Update();
+	pm->BuildMesh();
 	fem.UpdateBoundingBox();
 
 	// add a state

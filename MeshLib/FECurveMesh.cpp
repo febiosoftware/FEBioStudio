@@ -104,14 +104,8 @@ int FECurveMesh::AddEdge(int n0, int n1)
 // This currently updates all edge neighbors, edge IDs, and node IDs
 // Edge IDs are based on connectivity. Node IDs are assigned to all nodes
 // that define end points of edges
-void FECurveMesh::Update()
+void FECurveMesh::BuildMesh()
 {
-	int NN = Nodes();
-	int NE = Edges();
-
-	// make sure there is anything to do
-	if ((NN == 0) || (NE == 0)) return;
-
 	// first assign node IDs
 	// This is used by the update neighbors and therefore must be done first
 	UpdateNodeIDs();
@@ -682,7 +676,7 @@ void FECurveMesh::Attach(const FECurveMesh& curve)
 	}
 
 	// update data structures
-	Update();
+	BuildMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -866,7 +860,7 @@ void FECurveMesh::Load(IArchive& ar)
 	UpdateEdgeNeighbors();
 }
 
-void FECurveMesh::UpdateMeshData()
+void FECurveMesh::UpdateMesh()
 {
 	
 }

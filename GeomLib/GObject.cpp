@@ -330,7 +330,7 @@ void GObject::CollapseTransform()
 	// reset the transform info
 	GetTransform().Reset();
 
-	if (imp->m_pmesh) imp->m_pmesh->Update();
+	if (imp->m_pmesh) imp->m_pmesh->UpdateMesh();
 	Update();
 }
 
@@ -1608,7 +1608,7 @@ FECurveMesh* GObject::GetFECurveMesh(int edgeId)
 		}
 	}
 
-	curve->Update();
+	curve->BuildMesh();
 
 	return curve;
 }

@@ -248,17 +248,10 @@ FEMesh* FETetGenModifier::CreateMesh(FEMesh* pm)
 	assert(n==pmesh->Edges());
 
 	// update the element neighbours
-	pmesh->UpdateElementNeighbors();
+	pmesh->BuildMesh();
 
 	// update faces
-	pmesh->UpdateFaces();
-	pmesh->AutoSmooth(60.0);
-
-	pmesh->UpdateEdgeNeighbors();
-
-	// update the mesh
-	pmesh->MarkExteriorNodes();
-	pmesh->UpdateBox();
+	pmesh->SmoothByPartition();
 
 	// associate the FE nodes with the GNodes
 	GObject* po = pm->GetGObject();

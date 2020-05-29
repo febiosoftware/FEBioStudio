@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FEHollowSphere.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 #include <math.h>
 
 //////////////////////////////////////////////////////////////////////
@@ -323,7 +324,7 @@ FEMesh* FEHollowSphere::BuildMesh()
 	}
 
 	// update the mesh
-	pm->Update();
+	pm->UpdateMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 

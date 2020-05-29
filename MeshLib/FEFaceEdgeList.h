@@ -93,15 +93,28 @@ private:
 	std::vector<int> FFT;
 };
 
-class FEEdgeEdgeList
+class FEEdgeIndexList
 {
 public:
-	FEEdgeEdgeList(const FEMesh& mesh, const FEEdgeList& ET);
+	FEEdgeIndexList(const FEMesh& mesh, const FEEdgeList& ET);
 
 	int operator [] (int i) { return EET[i]; }
 
 private:
 	std::vector<int> EET;
+};
+
+class FEEdgeEdgeList
+{
+public:
+	FEEdgeEdgeList(const FEMesh& mesh, int edgeId = -1);
+
+	int size() { return (int)EEL.size(); }
+
+	std::vector<int>& operator [] (int i) { return EEL[i]; }
+
+private:
+	std::vector< std::vector<int> > EEL;
 };
 
 class FEEdgeFaceList

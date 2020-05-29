@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <HelpDialog.h>
+#include "HelpDialog.h"
 
 using namespace std;
 

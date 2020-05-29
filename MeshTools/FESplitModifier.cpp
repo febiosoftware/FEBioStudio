@@ -439,7 +439,7 @@ FEMesh* FEQuadSplitModifier::Apply(FEMesh* pm)
 	m_Data.clear();
 
 	// update the new mesh
-	pnew->Update();
+	pnew->BuildMesh();
 
 	// All done
 	return pnew;

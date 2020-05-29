@@ -8,6 +8,7 @@
 #include <GeomLib/GMultiBox.h>
 #include <MeshTools/GModel.h>
 #include <GeomLib/MeshLayer.h>
+#include <MeshLib/FEMeshBuilder.h>
 
 //////////////////////////////////////////////////////////////////////
 // CCmdAddObject
@@ -2073,10 +2074,11 @@ void CCmdDeleteFESelection::Execute()
 	if (m_pnew == 0)
 	{
 		m_pnew = new FEMesh(*m_pold);
+		FEMeshBuilder meshBuilder(*m_pnew);
 
-		if      (m_nitem == ITEM_ELEM) m_pnew->DeleteSelectedElements();
-		else if (m_nitem == ITEM_FACE) m_pnew->DeleteSelectedFaces();
-		else if (m_nitem == ITEM_NODE) m_pnew->DeleteSelectedNodes();
+		if      (m_nitem == ITEM_ELEM) meshBuilder.DeleteSelectedElements();
+		else if (m_nitem == ITEM_FACE) meshBuilder.DeleteSelectedFaces();
+		else if (m_nitem == ITEM_NODE) meshBuilder.DeleteSelectedNodes();
 
 		// make sure you select the object
 		m_pobj->Select();
@@ -2901,7 +2903,8 @@ CCmdInvertElements::CCmdInvertElements(GMeshObject* po) : CCommand("Invert")
 void CCmdInvertElements::Execute()
 {
 	FEMesh* pm = m_po->GetFEMesh();
-	pm->InvertSelectedElements();
+	FEMeshBuilder meshBuilder(*pm);
+	meshBuilder.InvertSelectedElements();
 	m_po->Update(false);
 }
 

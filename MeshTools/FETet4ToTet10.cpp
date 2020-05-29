@@ -230,10 +230,7 @@ FEMesh* FETet4ToTet10::Apply(FEMesh* pm)
 		mod.Apply(pnew);
 	}
 
-//	pnew->UpdateElementNeighbors();
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
+	pnew->UpdateMesh();
 
 	return pnew;
 }

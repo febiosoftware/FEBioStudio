@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FEWeldModifier.h"
+#include <MeshLib/FEMeshBuilder.h>
 
 //! constructor
 FEWeldNodes::FEWeldNodes() : FEModifier("Weld nodes")
@@ -28,11 +29,9 @@ FEMesh* FEWeldNodes::Apply(FEMesh* pm)
 	// now we modify the element node numbers
 	UpdateElements(pnm);
 
-	pnm->DeleteTaggedElements(1);
+	FEMeshBuilder meshBuilder(*pnm);
 
-	pnm->RemoveIsolatedNodes();
-
-	pnm->RebuildMesh();
+	meshBuilder.DeleteTaggedElements(1);
 
 	return pnm;
 }

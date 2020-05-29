@@ -34,7 +34,11 @@ public:
 	// clear curve data
 	void Clear();
 
-	void UpdateMeshData() override;
+	// update mesh data
+	void UpdateMesh() override;
+
+	// rebuild mesh data
+	void BuildMesh() override;
 
 public:
 	// Add a node to the mesh. Returns the index of the newly added node
@@ -48,9 +52,6 @@ public:
 	// Note that this will set the type to INVALID_CURVE
 	// Call Update to reevaluate the curve mesh
 	int AddEdge(int n0, int n1);
-
-	// Update the mesh
-	void Update();
 
 	// tag all the nodes of this mesh
 	void TagAllNodes(int ntag);

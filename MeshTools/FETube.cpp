@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "FETube.h"
+#include <MeshLib/FEMesh.h>
 #include <GeomLib/GPrimitive.h>
 
 //////////////////////////////////////////////////////////////////////
@@ -198,7 +199,7 @@ FEMesh* FETube::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }
@@ -534,7 +535,7 @@ FEMesh* FETube2::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

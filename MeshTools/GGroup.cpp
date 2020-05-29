@@ -184,6 +184,19 @@ vector<GEdge*> GEdgeList::GetEdgeList()
 }
 
 //-----------------------------------------------------------------------------
+GEdge* GEdgeList::GetEdge(int n)
+{
+	GModel& model = m_ps->GetModel();
+	int N = m_Item.size();
+	if ((n < 0) || (n >= N)) return nullptr;
+
+	FEItemListBuilder::Iterator it = m_Item.begin();
+	for (int i = 0; i < n; ++i) ++it;
+	GEdge* pg = model.FindEdge(*it);
+	return pg;
+}
+
+//-----------------------------------------------------------------------------
 FEItemListBuilder* GEdgeList::Copy()
 {
 	GEdgeList* pg = new GEdgeList(m_ps);

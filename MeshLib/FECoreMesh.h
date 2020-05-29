@@ -8,7 +8,7 @@
 //! This class defines a simple mesh structure that provides basic container
 //! services for storing mesh data. It only stores nodes, edges, faces. It implements 
 //! an interface for accessing element data, but derived classes need to implement this. 
-class FECoreMesh : public ::FEMeshBase
+class FECoreMesh : public FEMeshBase
 {
 public:
 	//! constructor
@@ -93,9 +93,6 @@ public:
 	int CountFacePartitions() const;
 	int CountElementPartitions() const;
 	int CountSmoothingGroups() const;
-
-public:
-	void AutoPartitionSurface();
 };
 
 inline FEElement_* FECoreMesh::ElementPtr(int n) { return ((n >= 0) && (n<Elements()) ? &ElementRef(n) : 0); }

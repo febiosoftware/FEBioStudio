@@ -16,7 +16,7 @@ class CHelpDialog : public QDialog
 
 public:
 	CHelpDialog(FEProject& prj, QWidget* parent);
-	virtual ~CHelpDialog() {delete ui;}
+	virtual ~CHelpDialog();
 
 public slots:
 	void LoadPage();

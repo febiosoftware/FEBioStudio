@@ -18,8 +18,8 @@ FEMMGRemesh::FEMMGRemesh() : FEModifier("Tet Refine")
 FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 {
 #ifdef HAS_MMG
-	if (pm == nullptr) return nullptr;
-	if (pm->IsType(FE_TET4) == false) return nullptr;
+	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
+	if (pm->IsType(FE_TET4) == false) { SetError("This is not a TET4 mesh"); return 0; }
 
 	int NE = pm->Elements();
 	int NN = pm->Nodes();
@@ -39,6 +39,7 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 	if (MMG3D_Set_meshSize(mmgMesh, NN, NE, 0, NF, 0, 0) != 1)
 	{
 		assert(false);
+		SetError("Error in MMG3D_Set_meshSize");
 		return nullptr;
 	}
 
@@ -84,6 +85,7 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 	if (MMG3D_Set_solSize(mmgMesh, mmgSol, MMG5_Vertex, NN, MMG5_Scalar) != 1)
 	{
 		assert(false);
+		SetError("Error in MMG3D_Set_solSize");
 		return nullptr;
 	}
 
@@ -207,7 +209,7 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 		f.n[1]--;
 		f.n[2]--;
 	}
-	newMesh->Update();
+	newMesh->BuildMesh();
 
 	// Clean up
 	MMG3D_Free_all(MMG5_ARG_start,
@@ -217,6 +219,7 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 	return newMesh;
 
 #else
+	SetError("This version does not have MMG support");
 	return nullptr;
 #endif
 }

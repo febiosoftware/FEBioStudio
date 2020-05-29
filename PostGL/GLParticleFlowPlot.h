@@ -1,6 +1,7 @@
 #pragma once
 #include "GLPlot.h"
 #include <PostLib/FEPostMesh.h>
+#include <MeshLib/FEFindElement.h>
 
 namespace Post {
 

@@ -1,6 +1,9 @@
 #include "GItem.h"
 #include "GBaseObject.h"
+#include "GObject.h"
 #include "geom.h"
+#include <MeshTools/FEGroup.h>
+#include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
 // initialize static variables
@@ -280,6 +283,27 @@ vec2d GEdge::Tangent(double l)
 
 	return t;
 }
+
+//-----------------------------------------------------------------------------
+FEEdgeSet* GEdge::GetFEEdgeSet() const
+{
+	GObject* po = dynamic_cast<GObject*>(m_po);
+	if (m_po == nullptr) return nullptr;
+
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return nullptr;
+
+	FEEdgeSet* edge = new FEEdgeSet(po);
+	int eid = GetLocalID();
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		const FEEdge& ei = pm->Edge(i);
+		if (ei.m_gid == eid) edge->add(i);
+	}
+
+	return edge;
+}
+
 
 //=============================================================================
 // GFace

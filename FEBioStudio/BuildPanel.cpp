@@ -17,7 +17,7 @@ CCreatePanel* CBuildPanel::CreatePanel()
 void CBuildPanel::Update(bool breset)
 {
 	CCommandPanel* p = ui->currentPanel();
-	if (p) p->Update();
+	if (p) p->Update(breset);
 	ui->mainWindow->UpdateGLControlBar();
 	ui->mainWindow->GetDocument()->UpdateSelection(false);
 	ui->mainWindow->RedrawGL();

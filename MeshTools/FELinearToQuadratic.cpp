@@ -524,9 +524,7 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
         mod.Apply(pnew);
     }
     
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
+	pnew->UpdateMesh();
     
     return pnew;
 }
@@ -886,9 +884,7 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
         e1.m_elem = e1.m_elem;
     }
     
-	pnew->MarkExteriorNodes();
-	pnew->UpdateEdgeNeighbors();
-	pnew->UpdateNormals();
+	pnew->UpdateMesh();
     
     return pnew;
 }

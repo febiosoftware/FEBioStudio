@@ -66,94 +66,6 @@ bool FEMeshBase::IsCreaseEdge(int n0, int n1)
 	return false;
 }
 
-
-//-----------------------------------------------------------------------------
-// Build the node-face table
-void FEMeshBase::BuildNodeFaceTable(vector< vector<int> >& NFT)
-{
-	int NN = Nodes();
-	int NF = Faces();
-
-	// zero nodal valences
-	for (int i = 0; i<NN; ++i) m_Node[i].m_ntag = 0;
-
-	// calculate nodal valences
-	for (int i = 0; i<NF; ++i)
-	{
-		FEFace& f = m_Face[i];
-		int n = f.Nodes();
-		for (int j = 0; j<n; ++j) m_Node[f.n[j]].m_ntag++;
-	}
-
-	// allocate node-face-table
-	NFT.resize(NN);
-	for (int i = 0; i<NN; ++i) NFT[i].reserve(m_Node[i].m_ntag);
-
-	// fill node element table
-	for (int i = 0; i<NF; ++i)
-	{
-		FEFace& f = m_Face[i];
-		int n = f.Nodes();
-		for (int j = 0; j<n; ++j) NFT[f.n[j]].push_back(i);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Build the node-edge table
-void FEMeshBase::BuildNodeEdgeTable(vector< vector<int> >& NET)
-{
-	int NN = Nodes();
-	int NE = Edges();
-	for (int i = 0; i<NN; ++i) m_Node[i].m_ntag = 0;
-	for (int i = 0; i<NE; ++i)
-	{
-		FEEdge& e = Edge(i);
-		if (e.n[0] != -1) m_Node[e.n[0]].m_ntag++;
-		if (e.n[1] != -1) m_Node[e.n[1]].m_ntag++;
-		if (e.n[2] != -1) m_Node[e.n[2]].m_ntag++;
-		if (e.n[3] != -1) m_Node[e.n[3]].m_ntag++;
-	}
-
-	NET.resize(NN);
-	for (int i = 0; i<NN; ++i) NET[i].reserve(m_Node[i].m_ntag);
-
-	for (int i = 0; i<NE; ++i)
-	{
-		FEEdge& e = Edge(i);
-		if (e.n[0] != -1) NET[e.n[0]].push_back(i);
-		if (e.n[1] != -1) NET[e.n[1]].push_back(i);
-		if (e.n[2] != -1) NET[e.n[2]].push_back(i);
-		if (e.n[3] != -1) NET[e.n[3]].push_back(i);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Updates the bounding box (in local coordinates)
-void FEMeshBase::UpdateBox()
-{
-	FENode* pn = NodePtr();
-	if (pn == 0)
-	{
-		m_box.x0 = m_box.y0 = m_box.z0 = 0;
-		m_box.x1 = m_box.y1 = m_box.z1 = 0;
-		return;
-	}
-
-	m_box.x0 = m_box.x1 = pn->r.x;
-	m_box.y0 = m_box.y1 = pn->r.y;
-	m_box.z0 = m_box.z1 = pn->r.z;
-	for (int i = 0; i<Nodes(); i++, pn++)
-	{
-		vec3d& r = pn->r;
-		if (r.x < m_box.x0) m_box.x0 = r.x;
-		if (r.y < m_box.y0) m_box.y0 = r.y;
-		if (r.z < m_box.z0) m_box.z0 = r.z;
-		if (r.x > m_box.x1) m_box.x1 = r.x;
-		if (r.y > m_box.y1) m_box.y1 = r.y;
-		if (r.z > m_box.z1) m_box.z1 = r.z;
-	}
-}
-
 //-----------------------------------------------------------------------------
 // Remove faces with tag ntag
 void FEMeshBase::RemoveFaces(int ntag)
@@ -388,10 +300,10 @@ void FEMeshBase::SmoothByPartition()
 }
 
 //-----------------------------------------------------------------------------
-void FEMeshBase::UpdateMeshData()
+void FEMeshBase::UpdateMesh()
 {
 	UpdateNormals();
-	UpdateBox();
+	UpdateBoundingBox();
 }
 
 //-----------------------------------------------------------------------------

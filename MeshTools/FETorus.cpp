@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FETorus.h"
 #include <GeomLib/GPrimitive.h>
+#include <MeshLib/FEMesh.h>
 #include <vector>
 using namespace std;
 
@@ -197,7 +198,7 @@ FEMesh* FETorus::BuildMesh()
 	BuildFaces(pm);
 	BuildEdges(pm);
 
-	pm->Update();
+	pm->BuildMesh();
 
 	return pm;
 }

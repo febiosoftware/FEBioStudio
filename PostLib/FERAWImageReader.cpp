@@ -105,7 +105,7 @@ bool FERAWImageReader::Load(const char* szfile)
 	}
 
 	// update the mesh
-	pm->Update();
+	pm->BuildMesh();
 	m_fem->UpdateBoundingBox();
 
 	// Add a data field

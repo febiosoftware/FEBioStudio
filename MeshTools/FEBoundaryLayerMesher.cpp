@@ -2,6 +2,7 @@
 #include "FEBoundaryLayerMesher.h"
 #include "FEDomain.h"
 #include <MeshLib/MeshMetrics.h>
+#include <MeshLib/FEMeshBuilder.h>
 #include <map>
 
 FEBoundaryLayerMesher::FEBoundaryLayerMesher() : FEModifier("PostBL")
@@ -320,10 +321,12 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 		pm->Element(i).m_ntag = 1;
 	for (int i = 0; i<ne0; ++i)
 		if (delem[i]) pm->Element(i).m_ntag = -1;
-	pm->DeleteTaggedElements(-1);
+
+	FEMeshBuilder meshBuilder(*pm);
+	meshBuilder.DeleteTaggedElements(-1);
 
 	// rebuild the object
-	pm->RebuildMesh();
+	meshBuilder.RebuildMesh();
 
 	// check for inverted elements
 	for (int i = 0; i<pm->Elements(); ++i) {
@@ -333,5 +336,5 @@ void FEBoundaryLayerMesher::BoundaryLayer(FEMesh* pm)
 		else
 			pm->Element(i).m_ntag = 1;
 	}
-	pm->InvertTaggedElements(-1);
+	meshBuilder.InvertTaggedElements(-1);
 }
