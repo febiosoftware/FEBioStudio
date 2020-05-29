@@ -657,6 +657,65 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
 	glEnd();
 }
 
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderTRI3(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
+{
+	assert(pe->IsType(FE_TRI3));
+	FEElement_& e = *pe;
+	FEFace* pf = pm->FacePtr(e.m_face[0]);
+	if (pf == 0) return;
+	vec3d r[3];
+	vec3d n[3];
+
+	r[0] = pm->Node(e.m_node[0]).r;
+	r[1] = pm->Node(e.m_node[1]).r;
+	r[2] = pm->Node(e.m_node[2]).r;
+
+	n[0] = pf->m_nn[0];
+	n[1] = pf->m_nn[1];
+	n[2] = pf->m_nn[2];
+
+	glBegin(GL_TRIANGLES);
+	{
+		glx::vertex3d(r[0], n[0], col[0]);
+		glx::vertex3d(r[1], n[1], col[1]);
+		glx::vertex3d(r[2], n[2], col[2]);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderQUAD(FEElement_ *pe, FECoreMesh *pm, GLColor* col)
+{
+	assert(pe->IsType(FE_QUAD4));
+	FEElement_& e = *pe;
+	FEFace* pf = pm->FacePtr(e.m_face[0]);
+	if (pf == 0) return;
+	vec3d r[4];
+	vec3d n[4];
+
+	r[0] = pm->Node(e.m_node[0]).r;
+	r[1] = pm->Node(e.m_node[1]).r;
+	r[2] = pm->Node(e.m_node[2]).r;
+	r[3] = pm->Node(e.m_node[3]).r;
+
+	n[0] = pf->m_nn[0];
+	n[1] = pf->m_nn[1];
+	n[2] = pf->m_nn[2];
+	n[3] = pf->m_nn[3];
+
+	glBegin(GL_TRIANGLES);
+	{
+		glx::vertex3d(r[0], n[0], col[0]);
+		glx::vertex3d(r[1], n[1], col[1]);
+		glx::vertex3d(r[2], n[2], col[2]);
+
+		glx::vertex3d(r[2], n[2], col[2]);
+		glx::vertex3d(r[3], n[3], col[3]);
+		glx::vertex3d(r[0], n[0], col[0]);
+	}
+	glEnd();
+}
 
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderTET10(FEElement_ *pe, FECoreMesh *pm, bool bsel)

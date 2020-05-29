@@ -51,6 +51,7 @@ inline void vertex3d(const vec3d& r) { glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, double t) { glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
+inline void vertex3d(const vec3d& r, const vec3d& n, const GLColor& c) { glNormal3d(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
 
 void smoothQUAD4(vec3d r[ 4], vec3f n[ 4], float t[ 4], int ndivs);
 void smoothQUAD8(vec3d r[ 8], vec3f n[ 8], float t[ 8], int ndivs);

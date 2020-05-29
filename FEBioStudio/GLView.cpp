@@ -7440,10 +7440,10 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_TET10 : m_renderer.RenderTET10(&el, pm, true); break;
 					case FE_TET15 : m_renderer.RenderTET15(&el, pm, true); break;
 					case FE_TET20 : m_renderer.RenderTET20(&el, pm, true); break;
-					case FE_QUAD4 : m_renderer.RenderQUAD(&el, pm, true); break;
+					case FE_QUAD4 : m_renderer.RenderQUAD(&el, pm, c); break;
 					case FE_QUAD8 : m_renderer.RenderQUAD8(&el, pm, true); break;
 					case FE_QUAD9 : m_renderer.RenderQUAD9(&el, pm, true); break;
-					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, true); break;
+					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, c); break;
 					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
 					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
 					case FE_BEAM2 : break;

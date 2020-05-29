@@ -61,6 +61,8 @@ public:
 
 	void RenderHEX8(FEElement_ *pe, FECoreMesh *pm, GLColor* col);
 	void RenderTET4(FEElement_ *pe, FECoreMesh *pm, GLColor* col);
+	void RenderTRI3(FEElement_* pe, FECoreMesh* pm, GLColor* col);
+	void RenderQUAD(FEElement_* pe, FECoreMesh* pm, GLColor* col);
 
 public:
 	// drawing routines for faces
