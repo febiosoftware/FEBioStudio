@@ -155,11 +155,11 @@ FEAxisMaterial::FEAxisMaterial() : FEMaterial(0)
 
 bool FEAxisMaterial::UpdateData(bool bsave)
 {
+	for (int i = 1; i < Parameters(); ++i) GetParam(i).SetState(0);
+
 	if (bsave)
 	{
 		int oldopt = m_naopt;
-
-		for (int i = 1; i < Parameters(); ++i) GetParam(i).SetState(0);
 
 		m_naopt = GetIntValue(0) - 1;
 		switch (m_naopt)
@@ -192,13 +192,13 @@ bool FEAxisMaterial::UpdateData(bool bsave)
 	else
 	{
 		SetIntValue(0, m_naopt + 1);
-		SetIntValue(1, m_n[0]);
-		SetIntValue(2, m_n[1]);
-		SetIntValue(3, m_n[2]);
-		SetVecValue(4, m_a);
-		SetVecValue(5, m_d);
-        SetFloatValue(6, m_theta);
-        SetFloatValue(7, m_phi);
+		SetIntValue(1, m_n[0]); if (m_naopt == 0) GetParam(1).SetState(Param_ALLFLAGS);
+		SetIntValue(2, m_n[1]); if (m_naopt == 0) GetParam(2).SetState(Param_ALLFLAGS);
+		SetIntValue(3, m_n[2]); if (m_naopt == 0) GetParam(3).SetState(Param_ALLFLAGS);
+		SetVecValue(4, m_a); if (m_naopt == 1) GetParam(4).SetState(Param_ALLFLAGS);
+		SetVecValue(5, m_d); if (m_naopt == 1) GetParam(5).SetState(Param_ALLFLAGS);
+        SetFloatValue(6, m_theta); if (m_naopt == 2) GetParam(6).SetState(Param_ALLFLAGS);
+        SetFloatValue(7, m_phi); if (m_naopt == 2) GetParam(7).SetState(Param_ALLFLAGS);
 	}
 	return false;
 }
