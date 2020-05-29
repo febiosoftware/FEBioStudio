@@ -35,6 +35,7 @@ void CLogDataSettings::Save(OArchive& ar)
 			ar.WriteChunk(CID_PRJ_LOGDATA_DATA, v.sdata);
 			ar.WriteChunk(CID_PRJ_LOGDATA_MID , v.matID);
 			ar.WriteChunk(CID_PRJ_LOGDATA_GID , v.groupID);
+            ar.WriteChunk(CID_PRJ_LOGDATA_CID , v.rcID);
 		}
 		ar.EndChunk();
 	}
@@ -48,7 +49,7 @@ void CLogDataSettings::Load(IArchive& ar)
 		{
 			string tmp;
 			int ntype;
-			int mid = -1, gid = -1;
+			int mid = -1, gid = -1, cid = -1;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				switch (ar.GetChunkID())
@@ -57,6 +58,7 @@ void CLogDataSettings::Load(IArchive& ar)
 				case CID_PRJ_LOGDATA_DATA: ar.read(tmp); break;
 				case CID_PRJ_LOGDATA_MID : ar.read(mid); break;
 				case CID_PRJ_LOGDATA_GID : ar.read(gid); break;
+                case CID_PRJ_LOGDATA_CID : ar.read(cid); break;
 				}
 				ar.CloseChunk();
 			}
@@ -66,6 +68,7 @@ void CLogDataSettings::Load(IArchive& ar)
 			d.sdata = tmp;
 			d.matID = mid;
 			d.groupID = gid;
+            d.rcID = cid;
 			AddLogData(d);
 		}
 		ar.CloseChunk();

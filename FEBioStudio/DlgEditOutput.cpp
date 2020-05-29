@@ -130,6 +130,7 @@ public:
 		logType->addItem("Node");
 		logType->addItem("Element");
 		logType->addItem("Rigid body");
+        logType->addItem("Rigid connector");
 
 		logList = new QComboBox;
 
@@ -418,6 +419,7 @@ void CDlgEditOutput::UpdateLogTable()
 		case FELogData::LD_NODE : type = "Node"; break;
 		case FELogData::LD_ELEM : type = "Element"; break;
 		case FELogData::LD_RIGID: type = "Rigid body"; break;
+        case FELogData::LD_CNCTR: type = "Rigid connector"; break;
 		}
 
 		QString data = QString::fromStdString(logi.sdata);
@@ -428,6 +430,11 @@ void CDlgEditOutput::UpdateLogTable()
 			if (logi.matID == -1) list = "(all rigid bodies)";
 			else list = QString::fromStdString(fem.GetMaterialFromID(logi.matID)->GetName());
 		}
+        else if (logi.type == FELogData::LD_CNCTR)
+        {
+            if (logi.rcID == -1) list = "(all rigid connectors)";
+            else list = QString::fromStdString(fem.GetRigidConnectorFromID(logi.rcID)->GetName());
+        }
 		else
 		{
 			if (logi.groupID == -1)
@@ -461,6 +468,7 @@ void CDlgEditOutput::UpdateLogItemList()
 	if (ntype == FELogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
 	if (ntype == FELogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
 	if (ntype == FELogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
+    if (ntype == FELogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
 
 	if ((ntype == FELogData::LD_NODE) || (ntype == FELogData::LD_ELEM))
 	{
@@ -532,6 +540,19 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 	}
+    else if (ntype == FELogData::LD_CNCTR)
+    {
+        int lid = -1;
+        for (int i = 0; i<fem.Steps(); ++i)
+        {
+            FEStep* pstep = fem.GetStep(i);
+            for (int j = 0; j<pstep->RigidConnectors(); ++j)
+            {
+                FERigidConnector* pc = pstep->RigidConnector(j);
+                ui->logList->addItem(QString::fromStdString(pc->GetName()), ++lid);
+            }
+        }
+    }
 }
 
 void CDlgEditOutput::onLogAdd()
@@ -556,6 +577,7 @@ void CDlgEditOutput::onLogAdd()
 	ld.type = ntype;
 	ld.sdata = data.toStdString();
 	if (ld.type == FELogData::LD_RIGID) ld.matID = nlist;
+    else if (ld.type == FELogData::LD_CNCTR) ld.rcID = nlist;
 	else ld.groupID = nlist;
 
 	// add it to the list

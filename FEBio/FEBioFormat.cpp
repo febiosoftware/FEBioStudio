@@ -4,6 +4,7 @@
 #include "FEBioImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
+#include <MeshTools/FEProject.h>
 
 #ifndef WIN32
 #define stricmp strcmp
@@ -1558,7 +1559,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
 
-			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(0, szdata);
+			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(FELogData::LD_NODE, szdata);
 
 			const char* szset = tag.AttributeValue("node_set", true);
 			if (szset)
@@ -1598,7 +1599,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
 
-			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(1, szdata);
+			FEBioModel::LogVariable logVar = FEBioModel::LogVariable(FELogData::LD_ELEM, szdata);
 
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)
@@ -1637,8 +1638,14 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 		{
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
-			fem.AddLogVariable(FEBioModel::LogVariable(2, szdata));
+			fem.AddLogVariable(FEBioModel::LogVariable(FELogData::LD_RIGID, szdata));
 		}
+        else if (tag == "rigid_connector_data")
+        {
+            const char* szdata = tag.AttributeValue("data", true);
+            if (szdata == 0) szdata = "";
+            fem.AddLogVariable(FEBioModel::LogVariable(FELogData::LD_CNCTR, szdata));
+        }
 		else ParseUnknownTag(tag);
 		++tag;
 	}

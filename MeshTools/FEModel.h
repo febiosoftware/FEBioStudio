@@ -89,6 +89,9 @@ public:
 	// find a material from its name
 	GMaterial* FindMaterial(const char* szname);
 
+    // find a rigid connector from its ID
+    FERigidConnector* GetRigidConnectorFromID(int id);
+
 	// --- serialization ---
 
 	// load FE data from the archive

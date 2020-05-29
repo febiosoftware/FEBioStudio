@@ -54,16 +54,17 @@ enum MODULE_FLAG
 class FELogData
 {
 public:
-	enum { LD_NODE, LD_ELEM, LD_RIGID };
+	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR };
 
 public:
-	FELogData(){ matID = -1; groupID = -1; }
+    FELogData(){ matID = -1; groupID = -1; rcID = -1; }
 	FELogData(const FELogData& d)
 	{
 		type = d.type;
 		sdata = d.sdata;
 		matID = d.matID;
 		groupID = d.groupID;
+        rcID = d.rcID;
 	}
 
 public:
@@ -71,6 +72,7 @@ public:
 	string		sdata;			// data string
 	int			matID;			// for LD_RIGID
 	int			groupID;		// for LD_NODE, LD_ELEM
+    int         rcID;           // for LD_CNCTR
 };
 
 //-----------------------------------------------------------------------------

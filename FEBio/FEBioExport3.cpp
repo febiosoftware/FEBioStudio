@@ -4381,6 +4381,21 @@ void FEBioExport3::WriteOutputSection()
 					else m_xml.add_empty(e);
 				}
 				break;
+                case FELogData::LD_CNCTR:
+                {
+                    XMLElement e;
+                    e.name("rigid_connector_data");
+                    e.add_attribute("data", d.sdata);
+
+                    FERigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
+                    if (rc)
+                    {
+                        e.value(d.rcID);
+                        m_xml.add_leaf(e);
+                    }
+                    else m_xml.add_empty(e);
+                }
+                break;
 				}
 			}
 		}

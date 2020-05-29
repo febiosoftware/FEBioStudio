@@ -583,6 +583,23 @@ GMaterial* FEModel::FindMaterial(const char* szname)
 }
 
 //-----------------------------------------------------------------------------
+FERigidConnector* FEModel::GetRigidConnectorFromID(int id)
+{
+    // don't bother looking of ID is invalid
+    if (id < 0) return 0;
+
+    int lid = -1;
+    for (int n = 0; n<Steps(); ++n)
+    {
+        FEStep& s = *GetStep(n);
+        for (int i = 0; i<s.RigidConnectors(); ++i)
+            if (++lid == id) return s.RigidConnector(i);
+    }
+
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
 
 void FEModel::Clear()
 {
