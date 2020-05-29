@@ -36,7 +36,7 @@ int CMPEGAnimation::Create(const char *szfile, int cx, int cy, float fps)
         return false;
     }
     
-    av_codec_context->bit_rate = 400000;
+    av_codec_context->bit_rate = 40000000;
     
     // resolution must be a multiple of 2
     av_codec_context->width = cx;
@@ -47,12 +47,13 @@ int CMPEGAnimation::Create(const char *szfile, int cx, int cy, float fps)
     // In order to provide some sort of FPS control, we choose the a video framerate based on the user-
     // specified fps. We then add in dubplicate frames in order to allow
 
-    if(fps > 60) fps = 60;
-    m_repeatFrames = round(60/fps);
-
-    int videoFPS;
-    if(fps <= 25) videoFPS = 25;
-    else videoFPS = 60;
+//    if(fps > 60) fps = 60;
+//    m_repeatFrames = round(60/fps);
+//
+//    int videoFPS;
+//    if(fps <= 25) videoFPS = 25;
+//    else videoFPS = 60;
+    int videoFPS = 25;
 
     av_codec_context->time_base = av_make_q(1,videoFPS);
 	av_codec_context->framerate = av_make_q(videoFPS, 1);
@@ -100,35 +101,36 @@ int CMPEGAnimation::Write(QImage &im)
         return false;
     }
     
-    for(int index = 0; index < m_repeatFrames; index++)
-    {
+    // Commenting out repeat frames as they result in choppy video in some cases
+//    for(int index = 0; index < m_repeatFrames; index++)
+//    {
     
-		int ret;
-		int got_packet = 0;
-		av_init_packet(&av_packet);
-		av_packet.data = NULL;
-		av_packet.size = 0;
+	int ret;
+	int got_packet = 0;
+	av_init_packet(&av_packet);
+	av_packet.data = NULL;
+	av_packet.size = 0;
 
-		fflush(stdout);
+	fflush(stdout);
 
-		yuv_frame->pts = m_nframe++;
+	yuv_frame->pts = m_nframe++;
 
-		// encode the pix
-		ret = avcodec_encode_video2(av_codec_context, &av_packet, yuv_frame, &got_packet);
+	// encode the pix
+	ret = avcodec_encode_video2(av_codec_context, &av_packet, yuv_frame, &got_packet);
 
-		if (ret < 0)
-		{
-			return false;
-		}
-
-		if (got_packet)
-		{
-
-			fwrite(av_packet.data, 1, av_packet.size, file);
-
-			av_free_packet(&av_packet);
-		}
+	if (ret < 0)
+	{
+		return false;
 	}
+
+	if (got_packet)
+	{
+
+		fwrite(av_packet.data, 1, av_packet.size, file);
+
+		av_free_packet(&av_packet);
+	}
+//	}
 
     return true;
 }
