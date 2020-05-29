@@ -1,7 +1,7 @@
 #pragma once
 #include <QWidget>
+#include <QVariantMap>
 #include <vector>
-
 using namespace std;
 
 namespace Ui {

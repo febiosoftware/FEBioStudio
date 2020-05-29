@@ -272,6 +272,7 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
+#ifdef HAS_SSH
 		if (i == 4)
 		{
 			if(!m_job->GetSSHHandler()->IsBusy())
@@ -301,6 +302,7 @@ public:
 				sshThread->start();
 			}
 		}
+#endif // HAS_SSH
 	}
 
 private:

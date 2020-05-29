@@ -1,4 +1,5 @@
 #include "Encrypter.h"
+#ifdef HAS_SSH
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,3 +70,4 @@ std::string CEncrypter::Decrypt(std::vector<unsigned char> in, size_t length)
 
 	return std::string(&out[0]);
 }
+#endif // HAS_SSH

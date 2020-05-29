@@ -334,7 +334,7 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 			// change font size and draw superscript
 			sprintf(pstr, "%d", ipow);
 			QFontMetrics fm = painter->fontMetrics();
-			int l = fm.width(QString("x10"));
+			int l = fm.horizontalAdvance(QString("x10"));
 			QFont f = m_font;
 			f.setPointSize(m_font.pointSize() - 2);
 			painter->setFont(f);
@@ -358,7 +358,7 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 
 			if (m_labelPos == 0)
 			{
-				int w = fm.width(s);
+				int w = fm.horizontalAdvance(s);
 				int h = fm.ascent()/2;
 		
 				painter->drawText(x0-w-5, yt + h, s);
@@ -467,7 +467,7 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 			// change font size and draw superscript
 			sprintf(pstr, "%d", ipow);
 			QFontMetrics fm = painter->fontMetrics();
-			int l = fm.width(QString("x10"));
+			int l = fm.horizontalAdvance(QString("x10"));
 			QFont f = m_font;
 			f.setPointSize(m_font.pointSize() - 2);
 			painter->setFont(f);
@@ -491,14 +491,14 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 
 			if (m_labelPos == 0)
 			{
-				int w = fm.width(s);
+				int w = fm.horizontalAdvance(s);
 				int h = fm.ascent() / 2;
 
 				painter->drawText(xt - w/2, y0 - h - 5, s);
 			}
 			else
 			{
-				int w = fm.width(s);
+				int w = fm.horizontalAdvance(s);
 				int h = fm.ascent() / 2;
 				painter->drawText(xt - w / 2, y1 + h + 10, s);
 			}
@@ -686,7 +686,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 
 				sprintf(str, szfmt, (fabs(f/p) < 1e-5 ? 0 : f/p));
 
-				int fw = fm.width(str);
+				int fw = fm.horizontalAdvance(str);
 				painter->drawText(xt - fw/2, y1 + fh + 5, str);
 			}
 		}

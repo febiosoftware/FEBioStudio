@@ -25,7 +25,6 @@
 #include <QPushButton>
 #include <QTreeWidget>
 #include <QJsonDocument>
-#include <QVariantMap>
 #include <QByteArray>
 #include <QDir>
 #include <QFileIconProvider>
@@ -1198,18 +1197,35 @@ void CDatabasePanel::SetRepositoryFolder(QString folder)
 
 CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent){}
 CDatabasePanel::~CDatabasePanel(){}
-void CDatabasePanel::Init(QString repositoryFolder) {}
 void CDatabasePanel::SetModelList(){}
-void CDatabasePanel::on_loginButton_clicked(){}
+void CDatabasePanel::ShowMessage(QString message) {}
+void CDatabasePanel::LoginTimeout() {}
+void CDatabasePanel::NetworkInaccessible() {}
+void CDatabasePanel::DownloadFinished(int fileID, int fileType) {}
+void CDatabasePanel::AddCategory(char **argv) {}
+void CDatabasePanel::AddProject(char **argv) {}
+void CDatabasePanel::AddProjectFile(char **argv) {}
+void CDatabasePanel::SetProjectData(char **argv) {}
+void CDatabasePanel::SetFileData(char **argv) {}
+void CDatabasePanel::AddCurrentTag(char **argv) {}
+void CDatabasePanel::AddPublication(QVariantMap data) {}
+QString CDatabasePanel::GetRepositoryFolder() { return QString(); }
+void CDatabasePanel::SetRepositoryFolder(QString folder) {}
+void CDatabasePanel::on_loginButton_clicked() {}
 void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column){}
 void CDatabasePanel::on_actionDownload_triggered() {}
 void CDatabasePanel::on_actionOpen_triggered() {}
 void CDatabasePanel::on_actionOpenFileLocation_triggered() {}
 void CDatabasePanel::on_actionDelete_triggered() {}
 void CDatabasePanel::on_actionUpload_triggered() {}
-void CDatabasePanel::on_treeWidget_itemSelectionChanged() {}
-void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos) {}
 void CDatabasePanel::on_actionSearch_triggered() {}
 void CDatabasePanel::on_actionClearSearch_triggered() {}
-
+void CDatabasePanel::on_actionDeleteRemote_triggered() {}
+void CDatabasePanel::on_actionModify_triggered() {}
+void CDatabasePanel::on_treeWidget_itemSelectionChanged() {}
+void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos) {}
+void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item) {}
+void CDatabasePanel::OpenItem(CustomTreeWidgetItem *item) {}
+void CDatabasePanel::DeleteItem(CustomTreeWidgetItem *item) {}
+void CDatabasePanel::ShowItemInBrowser(CustomTreeWidgetItem *item) {}
 #endif

@@ -2579,6 +2579,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 
 void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)
 {
+#ifdef HAS_SSH
 	if(!HandleSSHMessage(sshHandler))
 	{
 		sshHandler->EndSSHSession();
@@ -2589,11 +2590,13 @@ void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)
 	CSSHThread* sshThread = new CSSHThread(sshHandler, sshHandler->GetNextFunction());
 	QObject::connect(sshThread, &CSSHThread::FinishedPart, this, &CMainWindow::NextSSHFunction);
 	sshThread->start();
+#endif// HAS_SSH
 }
 
 
 bool CMainWindow::HandleSSHMessage(CSSHHandler* sshHandler)
 {
+#ifdef HAS_SSH
 	QString QPasswd;
 	QMessageBox::StandardButton reply;
 
@@ -2627,6 +2630,9 @@ bool CMainWindow::HandleSSHMessage(CSSHHandler* sshHandler)
 	}
 
 	return true;
+#else
+	return false;
+#endif // HAS_SSH
 }
 
 void CMainWindow::ShowProgress(bool show, QString message)

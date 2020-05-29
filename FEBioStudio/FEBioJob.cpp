@@ -257,7 +257,15 @@ void CFEBioJob::Load(IArchive& ar)
 			m_logFile = QString::fromStdString(m_logFile).replace("\\","/").toStdString();
 #endif
 			break;
-		case CID_FEBIOJOB_LCONFIG: {CLaunchConfig lConfig; lConfig.Load(ar); m_sshHandler = nullptr; UpdateLaunchConfig(lConfig); } break;
+		case CID_FEBIOJOB_LCONFIG: 
+		{
+			CLaunchConfig lConfig; lConfig.Load(ar); 
+#ifdef HAS_SSH
+			m_sshHandler = nullptr; 
+#endif
+			UpdateLaunchConfig(lConfig); 
+		} 
+		break;
 		}
 		ar.CloseChunk();
 	}

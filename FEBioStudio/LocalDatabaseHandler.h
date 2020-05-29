@@ -42,6 +42,4 @@ public:
 
 private:
 	Imp* imp;
-
-
 };

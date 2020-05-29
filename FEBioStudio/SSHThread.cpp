@@ -3,7 +3,7 @@
 #include "Logger.h"
 #include "SSHHandler.h"
 
-
+#ifdef HAS_SSH
 CSSHThread::CSSHThread(CSSHHandler* sshHandler, int func) : sshHandler(sshHandler), func(func)
 {
 	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
@@ -63,3 +63,4 @@ void CSSHThread::SendFinishedPart()
 {
 	emit FinishedPart(sshHandler);
 }
+#endif // HAS_SSH
