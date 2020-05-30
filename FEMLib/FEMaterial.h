@@ -82,10 +82,10 @@
 #define FE_OGDEN_UNCONSTRAINED			28
 #define FE_EFD_COUPLED					29
 #define FE_EFD_UNCOUPLED				30
-#define FE_FIBEREXPPOW_COUPLED			31
-#define FE_FIBEREXPPOW_UNCOUPLED		32
-#define FE_FIBERPOWLIN_COUPLED			33
-#define FE_FIBERPOWLIN_UNCOUPLED		34
+#define FE_FIBEREXPPOW_COUPLED_OLD      31
+#define FE_FIBEREXPPOW_UNCOUPLED_OLD    32
+#define FE_FIBERPOWLIN_COUPLED_OLD      33
+#define FE_FIBERPOWLIN_UNCOUPLED_OLD    34
 #define FE_DONNAN_SWELLING				35
 #define FE_PERFECT_OSMOMETER			36
 #define FE_CELL_GROWTH					37
@@ -97,12 +97,12 @@
 #define FE_OSMOTIC_VIRIAL				43
 #define FE_CLE_CUBIC					44
 #define FE_CLE_ORTHOTROPIC				45
-#define FE_ACTIVE_CONTRACT_UNI			46
-#define FE_ACTIVE_CONTRACT_TISO			47
-#define FE_ACTIVE_CONTRACT_ISO			48
-#define FE_ACTIVE_CONTRACT_UNI_UC		49
-#define FE_ACTIVE_CONTRACT_TISO_UC		50
-#define FE_ACTIVE_CONTRACT_ISO_UC		51
+#define FE_ACTIVE_CONTRACT_UNI_OLD      46
+#define FE_ACTIVE_CONTRACT_TISO_OLD     47
+#define FE_ACTIVE_CONTRACT_ISO          48
+#define FE_ACTIVE_CONTRACT_UNI_UC_OLD   49
+#define FE_ACTIVE_CONTRACT_TISO_UC_OLD  50
+#define FE_ACTIVE_CONTRACT_ISO_UC       51
 #define FE_FIBEREXPLIN_COUPLED			52
 #define FE_COUPLED_TRANS_ISO_MR_OLD		53	//---> obsolete in 2.1
 #define FE_TRANS_ISO_MOONEY_RIVLIN		54	// new in 2.0 (replaces old implementation)
@@ -121,6 +121,14 @@
 #define FE_COUPLED_VERONDA_WESTMANN		67  // added in FS 1.0
 #define FE_FIBEREXPLIN_UNCOUPLED		68  // added in FS 1.0
 #define FE_COUPLED_TRANS_ISO_VW			69  // added in FS 1.0
+#define FE_ACTIVE_CONTRACT_UNI          70
+#define FE_ACTIVE_CONTRACT_TISO         71
+#define FE_ACTIVE_CONTRACT_UNI_UC       72
+#define FE_ACTIVE_CONTRACT_TISO_UC      73
+#define FE_FIBEREXPPOW_COUPLED          74
+#define FE_FIBEREXPPOW_UNCOUPLED        75
+#define FE_FIBERPOWLIN_COUPLED          76
+#define FE_FIBERPOWLIN_UNCOUPLED        77
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -1141,32 +1149,84 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpPow : public FEMaterial
+class FEFiberExpPowOld : public FEMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
 public:
-	FEFiberExpPow();
-	DECLARE_REGISTERED(FEFiberExpPow);
+	FEFiberExpPowOld();
+//	DECLARE_REGISTERED(FEFiberExpPow);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberExpPowUncoupledOld : public FEMaterial
+{
+public:
+	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_K, MP_THETA, MP_PHI };
+public:
+	FEFiberExpPowUncoupledOld();
+//	DECLARE_REGISTERED(FEFiberExpPowUncoupled);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberPowLinOld : public FEMaterial
+{
+public:
+    enum { MP_E, MP_BETA, MP_LAM0, MP_THETA, MP_PHI };
+public:
+    FEFiberPowLinOld();
+//    DECLARE_REGISTERED(FEFiberPowLin);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberPowLinUncoupledOld : public FEMaterial
+{
+public:
+    enum { MP_E, MP_BETA, MP_LAM0, MP_K, MP_THETA, MP_PHI };
+public:
+    FEFiberPowLinUncoupledOld();
+//    DECLARE_REGISTERED(FEFiberPowLinUncoupled);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberExpPow : public FEMaterial
+{
+public:
+    enum { MP_ALPHA, MP_BETA, MP_KSI };
+public:
+    FEFiberExpPow();
+    
+    // convert from the old to the new format
+    void Convert(FEFiberExpPowOld* mat);
+    
+    DECLARE_REGISTERED(FEFiberExpPow);
 };
 
 //-----------------------------------------------------------------------------
 class FEFiberExpPowUncoupled : public FEMaterial
 {
 public:
-	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_K, MP_THETA, MP_PHI };
+    enum { MP_ALPHA, MP_BETA, MP_KSI, MP_K };
 public:
-	FEFiberExpPowUncoupled();
-	DECLARE_REGISTERED(FEFiberExpPowUncoupled);
+    FEFiberExpPowUncoupled();
+    
+    // convert from the old to the new format
+    void Convert(FEFiberExpPowUncoupledOld* mat);
+    
+    DECLARE_REGISTERED(FEFiberExpPowUncoupled);
 };
 
 //-----------------------------------------------------------------------------
 class FEFiberPowLin : public FEMaterial
 {
 public:
-    enum { MP_E, MP_BETA, MP_LAM0, MP_THETA, MP_PHI };
+    enum { MP_E, MP_BETA, MP_LAM0 };
 public:
     FEFiberPowLin();
+    
+    // convert from the old to the new format
+    void Convert(FEFiberPowLinOld* mat);
+    
     DECLARE_REGISTERED(FEFiberPowLin);
 };
 
@@ -1174,9 +1234,13 @@ public:
 class FEFiberPowLinUncoupled : public FEMaterial
 {
 public:
-    enum { MP_E, MP_BETA, MP_LAM0, MP_K, MP_THETA, MP_PHI };
+    enum { MP_E, MP_BETA, MP_LAM0, MP_K };
 public:
     FEFiberPowLinUncoupled();
+    
+    // convert from the old to the new format
+    void Convert(FEFiberPowLinUncoupledOld* mat);
+    
     DECLARE_REGISTERED(FEFiberPowLinUncoupled);
 };
 
@@ -1236,14 +1300,45 @@ public:
 //-----------------------------------------------------------------------------
 // Prescribed uniaxial active contraction
 //
-class FEPrescribedActiveContractionUniaxial : public FEMaterial
+class FEPrescribedActiveContractionUniaxialOld : public FEMaterial
 {
 public:
     enum { MP_T0, MP_TH, MP_PH };
     
 public:
+    FEPrescribedActiveContractionUniaxialOld();
+    
+//    DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxial);
+};
+
+//-----------------------------------------------------------------------------
+// Prescribed transversely isotropic active contraction
+//
+class FEPrescribedActiveContractionTransIsoOld : public FEMaterial
+{
+public:
+    enum { MP_T0, MP_TH, MP_PH };
+    
+public:
+    FEPrescribedActiveContractionTransIsoOld();
+    
+//    DECLARE_REGISTERED(FEPrescribedActiveContractionTransIso);
+};
+
+//-----------------------------------------------------------------------------
+// Prescribed uniaxial active contraction
+//
+class FEPrescribedActiveContractionUniaxial : public FEMaterial
+{
+public:
+    enum { MP_T0 };
+    
+public:
     FEPrescribedActiveContractionUniaxial();
     
+    // convert from the old to the new format
+    void Convert(FEPrescribedActiveContractionUniaxialOld* mat);
+
     DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxial);
 };
 
@@ -1253,11 +1348,14 @@ public:
 class FEPrescribedActiveContractionTransIso : public FEMaterial
 {
 public:
-    enum { MP_T0, MP_TH, MP_PH };
+    enum { MP_T0 };
     
 public:
     FEPrescribedActiveContractionTransIso();
     
+    // convert from the old to the new format
+    void Convert(FEPrescribedActiveContractionTransIsoOld* mat);
+
     DECLARE_REGISTERED(FEPrescribedActiveContractionTransIso);
 };
 
@@ -1278,14 +1376,45 @@ public:
 //-----------------------------------------------------------------------------
 // Prescribed uniaxial active contraction uncoupled
 //
-class FEPrescribedActiveContractionUniaxialUC : public FEMaterial
+class FEPrescribedActiveContractionUniaxialUCOld : public FEMaterial
 {
 public:
     enum { MP_T0, MP_TH, MP_PH };
     
 public:
+    FEPrescribedActiveContractionUniaxialUCOld();
+    
+//    DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxialUC);
+};
+
+//-----------------------------------------------------------------------------
+// Prescribed transversely isotropic active contraction uncoupled
+//
+class FEPrescribedActiveContractionTransIsoUCOld : public FEMaterial
+{
+public:
+    enum { MP_T0, MP_TH, MP_PH };
+    
+public:
+    FEPrescribedActiveContractionTransIsoUCOld();
+    
+//    DECLARE_REGISTERED(FEPrescribedActiveContractionTransIsoUC);
+};
+
+//-----------------------------------------------------------------------------
+// Prescribed uniaxial active contraction uncoupled
+//
+class FEPrescribedActiveContractionUniaxialUC : public FEMaterial
+{
+public:
+    enum { MP_T0 };
+    
+public:
     FEPrescribedActiveContractionUniaxialUC();
     
+    // convert from the old to the new format
+    void Convert(FEPrescribedActiveContractionUniaxialUCOld* mat);
+
     DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxialUC);
 };
 
@@ -1295,11 +1424,14 @@ public:
 class FEPrescribedActiveContractionTransIsoUC : public FEMaterial
 {
 public:
-    enum { MP_T0, MP_TH, MP_PH };
+    enum { MP_T0 };
     
 public:
     FEPrescribedActiveContractionTransIsoUC();
     
+    // convert from the old to the new format
+    void Convert(FEPrescribedActiveContractionTransIsoUCOld* mat);
+
     DECLARE_REGISTERED(FEPrescribedActiveContractionTransIsoUC);
 };
 

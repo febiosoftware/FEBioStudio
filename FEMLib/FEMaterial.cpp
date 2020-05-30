@@ -1234,13 +1234,50 @@ FEOrthotropicCLE::FEOrthotropicCLE() : FEMaterial(FE_CLE_ORTHOTROPIC)
 // FEPrescribedActiveContractionUniaxial - Prescribed uniaxial active contraction
 ////////////////////////////////////////////////////////////////////////
 
+//REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI, FE_MAT_ELASTIC, "prescribed uniaxial active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Compressible_Materials_Prescribed_Uniaxial_Active_Contraction);
+
+FEPrescribedActiveContractionUniaxialOld::FEPrescribedActiveContractionUniaxialOld() : FEMaterial(FE_ACTIVE_CONTRACT_UNI_OLD)
+{
+    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+    AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
+    AddScienceParam(90, UNIT_DEGREE, "phi"  , "phi" );
+}
+
+////////////////////////////////////////////////////////////////////////
+// FEPrescribedActiveContractionTransIso - Prescribed trans iso active contraction
+////////////////////////////////////////////////////////////////////////
+
+//REGISTER_MATERIAL(FEPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO, FE_MAT_ELASTIC, "prescribed trans iso active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Compressible_Materials_Prescribed_Transversely_Isotropic_Active_Contraction);
+
+FEPrescribedActiveContractionTransIsoOld::FEPrescribedActiveContractionTransIsoOld() : FEMaterial(FE_ACTIVE_CONTRACT_TISO_OLD)
+{
+    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+    AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
+    AddScienceParam(90, UNIT_DEGREE, "phi"  , "phi" );
+}
+
+////////////////////////////////////////////////////////////////////////
+// FEPrescribedActiveContractionUniaxial - Prescribed uniaxial active contraction
+////////////////////////////////////////////////////////////////////////
+
 REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI, FE_MAT_ELASTIC, "prescribed uniaxial active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Compressible_Materials_Prescribed_Uniaxial_Active_Contraction);
 
 FEPrescribedActiveContractionUniaxial::FEPrescribedActiveContractionUniaxial() : FEMaterial(FE_ACTIVE_CONTRACT_UNI)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-    AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
-    AddScienceParam(90, UNIT_DEGREE, "phi"  , "phi" );
+    m_hasMatAxes = true;
+}
+
+void FEPrescribedActiveContractionUniaxial::Convert(FEPrescribedActiveContractionUniaxialOld* pold)
+{
+    if (pold == 0) return;
+
+    SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_T0));
+    
+    m_hasMatAxes = true;
+    m_axes->m_naopt = FE_AXES_ANGLES;
+    m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_TH);
+    m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_PH);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1252,8 +1289,19 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_
 FEPrescribedActiveContractionTransIso::FEPrescribedActiveContractionTransIso() : FEMaterial(FE_ACTIVE_CONTRACT_TISO)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-    AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
-    AddScienceParam(90, UNIT_DEGREE, "phi"  , "phi" );
+    m_hasMatAxes = true;
+}
+
+void FEPrescribedActiveContractionTransIso::Convert(FEPrescribedActiveContractionTransIsoOld* pold)
+{
+    if (pold == 0) return;
+
+    SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_T0));
+    
+    m_hasMatAxes = true;
+    m_axes->m_naopt = FE_AXES_ANGLES;
+    m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_TH);
+    m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_PH);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1271,13 +1319,50 @@ FEPrescribedActiveContractionIsotropic::FEPrescribedActiveContractionIsotropic()
 // FEPrescribedActiveContractionUniaxialUC - Prescribed uniaxial active contraction
 ////////////////////////////////////////////////////////////////////////
 
+//REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed uniaxial active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Uncoupled_Materials_Uncoupled_Prescribed_Uniaxial_Active_Contraction);
+
+FEPrescribedActiveContractionUniaxialUCOld::FEPrescribedActiveContractionUniaxialUCOld() : FEMaterial(FE_ACTIVE_CONTRACT_UNI_UC_OLD)
+{
+    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+    AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
+    AddScienceParam(90, UNIT_DEGREE, "phi"  , "phi" );
+}
+
+////////////////////////////////////////////////////////////////////////
+// FEPrescribedActiveContractionTransIsoUC - Prescribed trans iso active contraction
+////////////////////////////////////////////////////////////////////////
+
+//REGISTER_MATERIAL(FEPrescribedActiveContractionTransIsoUC, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed trans iso active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Uncoupled_Materials_Uncoupled_Prescribed_Transversely_Isotropic_Active_Contraction);
+
+FEPrescribedActiveContractionTransIsoUCOld::FEPrescribedActiveContractionTransIsoUCOld() : FEMaterial(FE_ACTIVE_CONTRACT_TISO_UC_OLD)
+{
+    AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
+    AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
+    AddScienceParam(90, UNIT_DEGREE, "phi"  , "phi" );
+}
+
+////////////////////////////////////////////////////////////////////////
+// FEPrescribedActiveContractionUniaxialUC - Prescribed uniaxial active contraction
+////////////////////////////////////////////////////////////////////////
+
 REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed uniaxial active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Uncoupled_Materials_Uncoupled_Prescribed_Uniaxial_Active_Contraction);
 
 FEPrescribedActiveContractionUniaxialUC::FEPrescribedActiveContractionUniaxialUC() : FEMaterial(FE_ACTIVE_CONTRACT_UNI_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-    AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
-    AddScienceParam(90, UNIT_DEGREE, "phi"  , "phi" );
+    m_hasMatAxes = true;
+}
+
+void FEPrescribedActiveContractionUniaxialUC::Convert(FEPrescribedActiveContractionUniaxialUCOld* pold)
+{
+    if (pold == 0) return;
+
+    SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_T0));
+    
+    m_hasMatAxes = true;
+    m_axes->m_naopt = FE_AXES_ANGLES;
+    m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_TH);
+    m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_PH);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1289,8 +1374,19 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionTransIsoUC, MODULE_MECH, FE_ACTIV
 FEPrescribedActiveContractionTransIsoUC::FEPrescribedActiveContractionTransIsoUC() : FEMaterial(FE_ACTIVE_CONTRACT_TISO_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-    AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
-    AddScienceParam(90, UNIT_DEGREE, "phi"  , "phi" );
+    m_hasMatAxes = true;
+}
+
+void FEPrescribedActiveContractionTransIsoUC::Convert(FEPrescribedActiveContractionTransIsoUCOld* pold)
+{
+    if (pold == 0) return;
+
+    SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_T0));
+    
+    m_hasMatAxes = true;
+    m_axes->m_naopt = FE_AXES_ANGLES;
+    m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_TH);
+    m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_PH);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1537,9 +1633,9 @@ FEEFDUncoupled::FEEFDUncoupled() : FEMaterial(FE_EFD_UNCOUPLED)
 // Fiber-Exp-Pow
 //=============================================================================
 
-REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Exponential_Power_Law);
+//REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Exponential_Power_Law);
 
-FEFiberExpPow::FEFiberExpPow() : FEMaterial(FE_FIBEREXPPOW_COUPLED)
+FEFiberExpPowOld::FEFiberExpPowOld() : FEMaterial(FE_FIBEREXPPOW_COUPLED_OLD)
 {
 	m_hasMatAxes = true;
 
@@ -1551,6 +1647,34 @@ FEFiberExpPow::FEFiberExpPow() : FEMaterial(FE_FIBEREXPPOW_COUPLED)
 
 //	AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
 //	GetProperty(0).SetMaterial(new FEFiberGeneratorLocal);
+}
+
+
+REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Exponential_Power_Law);
+
+FEFiberExpPow::FEFiberExpPow() : FEMaterial(FE_FIBEREXPPOW_COUPLED)
+{
+    m_hasMatAxes = true;
+
+    AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
+    AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
+    AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
+
+//    AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
+//    GetProperty(0).SetMaterial(new FEFiberGeneratorLocal);
+}
+
+void FEFiberExpPow::Convert(FEFiberExpPowOld* pold)
+{
+    if (pold == 0) return;
+
+    SetFloatValue(MP_ALPHA, pold->GetFloatValue(FEFiberExpPowOld::MP_ALPHA));
+    SetFloatValue(MP_BETA , pold->GetFloatValue(FEFiberExpPowOld::MP_BETA ));
+    SetFloatValue(MP_KSI  , pold->GetFloatValue(FEFiberExpPowOld::MP_KSI  ));
+
+    m_axes->m_naopt = FE_AXES_ANGLES;
+    m_axes->m_theta = pold->GetFloatValue(FEFiberExpPowOld::MP_THETA);
+    m_axes->m_phi = pold->GetFloatValue(FEFiberExpPowOld::MP_PHI);
 }
 
 //=============================================================================
@@ -1589,9 +1713,9 @@ FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEMaterial(FE_FIBEREXPL
 // Fiber-Exp-Pow Uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Exponential_Power_Law_Uncoupled_Formulation);
+//REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Exponential_Power_Law_Uncoupled_Formulation);
 
-FEFiberExpPowUncoupled::FEFiberExpPowUncoupled() : FEMaterial(FE_FIBEREXPPOW_UNCOUPLED)
+FEFiberExpPowUncoupledOld::FEFiberExpPowUncoupledOld() : FEMaterial(FE_FIBEREXPPOW_UNCOUPLED_OLD)
 {
 	m_hasMatAxes = true;
 
@@ -1603,13 +1727,39 @@ FEFiberExpPowUncoupled::FEFiberExpPowUncoupled() : FEMaterial(FE_FIBEREXPPOW_UNC
 	AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
 }
 
+REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Exponential_Power_Law_Uncoupled_Formulation);
+
+FEFiberExpPowUncoupled::FEFiberExpPowUncoupled() : FEMaterial(FE_FIBEREXPPOW_UNCOUPLED)
+{
+    m_hasMatAxes = true;
+
+    AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
+    AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
+    AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
+    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
+}
+
+void FEFiberExpPowUncoupled::Convert(FEFiberExpPowUncoupledOld* pold)
+{
+    if (pold == 0) return;
+
+    SetFloatValue(MP_ALPHA, pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_ALPHA));
+    SetFloatValue(MP_BETA , pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_BETA ));
+    SetFloatValue(MP_KSI  , pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_KSI  ));
+    SetFloatValue(MP_K    , pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_K    ));
+
+    m_axes->m_naopt = FE_AXES_ANGLES;
+    m_axes->m_theta = pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_THETA);
+    m_axes->m_phi = pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_PHI);
+}
+
 //=============================================================================
 // Fiber-Pow-Linear
 //=============================================================================
 
-REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Toe_Linear_Response);
+//REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Toe_Linear_Response);
 
-FEFiberPowLin::FEFiberPowLin() : FEMaterial(FE_FIBERPOWLIN_COUPLED)
+FEFiberPowLinOld::FEFiberPowLinOld() : FEMaterial(FE_FIBERPOWLIN_COUPLED_OLD)
 {
 	m_hasMatAxes = true;
 
@@ -1620,13 +1770,37 @@ FEFiberPowLin::FEFiberPowLin() : FEMaterial(FE_FIBERPOWLIN_COUPLED)
     AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
 }
 
+REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Toe_Linear_Response);
+
+FEFiberPowLin::FEFiberPowLin() : FEMaterial(FE_FIBERPOWLIN_COUPLED)
+{
+    m_hasMatAxes = true;
+
+    AddScienceParam(0, UNIT_PRESSURE, "E", "E");
+    AddScienceParam(2, UNIT_NONE, "beta" , "beta");
+    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
+}
+
+void FEFiberPowLin::Convert(FEFiberPowLinOld* pold)
+{
+    if (pold == 0) return;
+
+    SetFloatValue(MP_E    , pold->GetFloatValue(FEFiberPowLinOld::MP_E   ));
+    SetFloatValue(MP_BETA , pold->GetFloatValue(FEFiberPowLinOld::MP_BETA));
+    SetFloatValue(MP_LAM0 , pold->GetFloatValue(FEFiberPowLinOld::MP_LAM0));
+
+    m_axes->m_naopt = FE_AXES_ANGLES;
+    m_axes->m_theta = pold->GetFloatValue(FEFiberPowLinOld::MP_THETA);
+    m_axes->m_phi = pold->GetFloatValue(FEFiberPowLinOld::MP_PHI);
+}
+
 //=============================================================================
 // Fiber-Pow-Linear Uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Toe_Linear_Response_Uncoupled_Formulation);
+//REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Toe_Linear_Response_Uncoupled_Formulation);
 
-FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEMaterial(FE_FIBERPOWLIN_UNCOUPLED)
+FEFiberPowLinUncoupledOld::FEFiberPowLinUncoupledOld() : FEMaterial(FE_FIBERPOWLIN_UNCOUPLED_OLD)
 {
 	m_hasMatAxes = true;
 
@@ -1636,6 +1810,32 @@ FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEMaterial(FE_FIBERPOWLIN_UNC
     AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
     AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
     AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
+}
+
+REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Toe_Linear_Response_Uncoupled_Formulation);
+
+FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEMaterial(FE_FIBERPOWLIN_UNCOUPLED)
+{
+    m_hasMatAxes = true;
+
+    AddScienceParam(0, UNIT_PRESSURE, "E", "E");
+    AddScienceParam(2, UNIT_NONE, "beta" , "beta");
+    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
+    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
+}
+
+void FEFiberPowLinUncoupled::Convert(FEFiberPowLinUncoupledOld* pold)
+{
+    if (pold == 0) return;
+
+    SetFloatValue(MP_E    , pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_E   ));
+    SetFloatValue(MP_BETA , pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_BETA));
+    SetFloatValue(MP_LAM0 , pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_LAM0));
+    SetFloatValue(MP_K    , pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_K   ));
+
+    m_axes->m_naopt = FE_AXES_ANGLES;
+    m_axes->m_theta = pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_THETA);
+    m_axes->m_phi = pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_PHI);
 }
 
 //=============================================================================
