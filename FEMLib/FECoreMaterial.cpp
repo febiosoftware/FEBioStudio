@@ -592,8 +592,21 @@ void FEMaterial::Load(IArchive &ar)
 						while (IArchive::IO_OK == ar.OpenChunk())
 						{
 							int nid = ar.GetChunkID();
+                            FEMaterial* pm = 0;
 
-							FEMaterial* pm = FEMaterialFactory::Create(nid);
+                            switch (nid)
+                            {
+                            case FE_FIBEREXPPOW_COUPLED_OLD     : pm = new FEFiberExpPowOld; break;
+                            case FE_FIBEREXPPOW_UNCOUPLED_OLD   : pm = new FEFiberExpPowUncoupledOld; break;
+                            case FE_FIBERPOWLIN_COUPLED_OLD     : pm = new FEFiberPowLinOld; break;
+                            case FE_FIBERPOWLIN_UNCOUPLED_OLD   : pm = new FEFiberPowLinUncoupledOld; break;
+                            case FE_ACTIVE_CONTRACT_UNI_OLD     : pm = new FEPrescribedActiveContractionUniaxialOld; break;
+                            case FE_ACTIVE_CONTRACT_TISO_OLD    : pm = new FEPrescribedActiveContractionTransIsoOld; break;
+                            case FE_ACTIVE_CONTRACT_UNI_UC_OLD  : pm = new FEPrescribedActiveContractionUniaxialUCOld; break;
+                            case FE_ACTIVE_CONTRACT_TISO_UC_OLD : pm = new FEPrescribedActiveContractionTransIsoUCOld; break;
+                            default:
+                                pm = FEMaterialFactory::Create(nid);
+                            }
 							assert(pm);
 							pm->Load(ar);
 							if (prop)
