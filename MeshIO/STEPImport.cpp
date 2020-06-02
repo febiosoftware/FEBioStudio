@@ -27,9 +27,8 @@ bool STEPImport::Load(const char* szfile)
 {
 #ifdef HAS_OCC
 	SetFileName(szfile);
-	TCollection_AsciiString  aFilePath = szfile;
 	STEPControl_Reader aReader;
-	IFSelect_ReturnStatus status = aReader.ReadFile(aFilePath.ToCString());
+	IFSelect_ReturnStatus status = aReader.ReadFile(szfile);
 	if (status != IFSelect_RetDone)
 	{
 		return false;

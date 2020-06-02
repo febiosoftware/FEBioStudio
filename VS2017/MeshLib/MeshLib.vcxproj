@@ -1,0 +1,219 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EE48B71D-E2DD-424E-85FF-B4E1570EDCD5}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>MeshLib</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir)..;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)..;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BrowseInformation>true</BrowseInformation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BrowseInformation>true</BrowseInformation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\MeshLib\FECoreMesh.cpp" />
+    <ClCompile Include="..\..\MeshLib\FECurveMesh.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEEdge.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEElement.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEFace.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEFaceEdgeList.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEFindElement.cpp" />
+    <ClCompile Include="..\..\MeshLib\FELineMesh.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEMesh.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEMeshBase.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEMeshBuilder.cpp" />
+    <ClCompile Include="..\..\MeshLib\FENode.cpp" />
+    <ClCompile Include="..\..\MeshLib\FENodeEdgeList.cpp" />
+    <ClCompile Include="..\..\MeshLib\FENodeElementList.cpp" />
+    <ClCompile Include="..\..\MeshLib\FENodeFaceList.cpp" />
+    <ClCompile Include="..\..\MeshLib\FENodeNodeList.cpp" />
+    <ClCompile Include="..\..\MeshLib\FESurfaceMesh.cpp" />
+    <ClCompile Include="..\..\MeshLib\insertCurve.cpp" />
+    <ClCompile Include="..\..\MeshLib\insertCurve2.cpp" />
+    <ClCompile Include="..\..\MeshLib\integrate.cpp" />
+    <ClCompile Include="..\..\MeshLib\Intersect.cpp" />
+    <ClCompile Include="..\..\MeshLib\LineMesh2D.cpp" />
+    <ClCompile Include="..\..\MeshLib\MeshMetrics.cpp" />
+    <ClCompile Include="..\..\MeshLib\MeshTools.cpp" />
+    <ClCompile Include="..\..\MeshLib\FEElementLibrary.cpp" />
+    <ClCompile Include="..\..\MeshLib\triangulate.cpp" />
+    <ClCompile Include="..\..\MeshLib\TriMesh.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\MeshLib\FECoreMesh.h" />
+    <ClInclude Include="..\..\MeshLib\FECurveMesh.h" />
+    <ClInclude Include="..\..\MeshLib\FEEdge.h" />
+    <ClInclude Include="..\..\MeshLib\FEElement.h" />
+    <ClInclude Include="..\..\MeshLib\FEElementLibrary.h" />
+    <ClInclude Include="..\..\MeshLib\FEFace.h" />
+    <ClInclude Include="..\..\MeshLib\FEFaceEdgeList.h" />
+    <ClInclude Include="..\..\MeshLib\FEFindElement.h" />
+    <ClInclude Include="..\..\MeshLib\FEItem.h" />
+    <ClInclude Include="..\..\MeshLib\FELineMesh.h" />
+    <ClInclude Include="..\..\MeshLib\FEMesh.h" />
+    <ClInclude Include="..\..\MeshLib\FEMeshBase.h" />
+    <ClInclude Include="..\..\MeshLib\FEMeshBuilder.h" />
+    <ClInclude Include="..\..\MeshLib\FENode.h" />
+    <ClInclude Include="..\..\MeshLib\FENodeEdgeList.h" />
+    <ClInclude Include="..\..\MeshLib\FENodeElementList.h" />
+    <ClInclude Include="..\..\MeshLib\FENodeFaceList.h" />
+    <ClInclude Include="..\..\MeshLib\FENodeNodeList.h" />
+    <ClInclude Include="..\..\MeshLib\FESurfaceMesh.h" />
+    <ClInclude Include="..\..\MeshLib\hex20.h" />
+    <ClInclude Include="..\..\MeshLib\hex27.h" />
+    <ClInclude Include="..\..\MeshLib\hex8.h" />
+    <ClInclude Include="..\..\MeshLib\insertCurve.h" />
+    <ClInclude Include="..\..\MeshLib\insertCurve2.h" />
+    <ClInclude Include="..\..\MeshLib\Intersect.h" />
+    <ClInclude Include="..\..\MeshLib\LineMesh2D.h" />
+    <ClInclude Include="..\..\MeshLib\MeshItem2D.h" />
+    <ClInclude Include="..\..\MeshLib\MeshMetrics.h" />
+    <ClInclude Include="..\..\MeshLib\MeshTools.h" />
+    <ClInclude Include="..\..\MeshLib\penta15.h" />
+    <ClInclude Include="..\..\MeshLib\penta6.h" />
+    <ClInclude Include="..\..\MeshLib\pyra5.h" />
+    <ClInclude Include="..\..\MeshLib\quad8.h" />
+    <ClInclude Include="..\..\MeshLib\tet10.h" />
+    <ClInclude Include="..\..\MeshLib\tet15.h" />
+    <ClInclude Include="..\..\MeshLib\tet20.h" />
+    <ClInclude Include="..\..\MeshLib\tet4.h" />
+    <ClInclude Include="..\..\MeshLib\triangulate.h" />
+    <ClInclude Include="..\..\MeshLib\TriMesh.h" />
+    <ClInclude Include="..\..\MeshLib\TriMesh2D.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

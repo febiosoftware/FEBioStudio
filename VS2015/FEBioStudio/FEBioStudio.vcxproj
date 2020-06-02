@@ -75,7 +75,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtNetwork;$(SolutionDir)..;$(GLEWDIR)\include\GL;$(TetgenDir);$(ZLIBDIR);$(FFMPEGDIR)\include;$(LIBSSH)\include;$(OPENSSLLIB)\include;$(QUAZIPDir);$(SQLITEDir);$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)x64\Debug;$(QTDIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2015\netgen\nglib\Debug;$(MMGLIB)\lib\Debug;$(FFMPEGDIR)\lib;$(LIBSSH)\VS2015\src\Debug;$(OPENSSLLIB)\lib\;$(QUAZIPDir)\x64\Debug;$(SQLITEDir);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)x64\Debug;$(QTDIR)\lib;$(GLEWDIR)\lib\Release\x64;$(TetgenDir)\vs2015\lib;$(OCCDir)\vs2015\win64\vc14\libd;$(NETGENLIB)\vs2017\netgen\nglib\Debug;$(MMGLIB)\lib\Debug;$(FFMPEGDIR)\lib;$(LIBSSH)\VS2015\src\Debug;$(OPENSSLLIB)\lib\;$(QUAZIPDir)\x64\Debug;$(SQLITEDir);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -110,7 +110,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;nike3d.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;gllib.lib;cuilib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;Qt5Chartsd.lib;Qt5Networkd.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Debug\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Debug\zlibstaticd.lib;postlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;ssh.lib;libcrypto.lib;quazip.lib;sqlite3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fscore.lib;mathlib.lib;meshlib.lib;tetgend.lib;xml.lib;femlib.lib;comsol.lib;febio.lib;abaqus.lib;ansys.lib;lsdyna.lib;nike3d.lib;geomlib.lib;meshio.lib;meshtools.lib;imagelib.lib;gllib.lib;cuilib.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;Qt5Chartsd.lib;Qt5Networkd.lib;glew32.lib;opengl32.lib;glu32.lib;nglib.lib;C:\Users\steve\Documents\netgen-master\vs2015\netgen\libsrc\csg\csg.dir\Debug\csg.lib;TKernel.lib;TKGeomBase.lib;TKTopAlgo.lib;TKPrim.lib;TKMesh.lib;TKMath.lib;TKBRep.lib;TKSTL.lib;TKFillet.lib;TKBO.lib;TKIGES.lib;TKSTEP.lib;TKSTEPBase.lib;TKXSBase.lib;TKG3d.lib;TKLCAF.lib;mmg3d.lib;postlib.lib;xpltlib.lib;postgl.lib;glwlib.lib;vfw32.lib;avcodec.lib;avutil.lib;swscale.lib;ssh.lib;libcrypto.lib;quazip.lib;sqlite3.lib;$(ZLIBDIR)\contrib\vstudio\vc14\Debug\zlibstaticd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>

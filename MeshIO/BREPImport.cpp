@@ -28,8 +28,7 @@ bool BREPImport::Load(const char* szfile)
 	SetFileName(szfile);
 	TopoDS_Shape aShape;
 	BRep_Builder aBuilder;
-	TCollection_AsciiString  aFilePath = szfile;
-	Standard_Boolean result = BRepTools::Read(aShape, aFilePath.ToCString(), aBuilder);
+	Standard_Boolean result = BRepTools::Read(aShape, szfile, aBuilder);
 	if (result)
 	{
 		GOCCObject* occ = new GOCCObject;
@@ -64,10 +63,9 @@ bool IGESImport::Load( const char* szfile)
 	FEProject& prj = m_prj;
 
 	SetFileName(szfile);
-	TCollection_AsciiString  aFilePath = szfile;
 
 	IGESControl_Reader Reader;
-	int status = Reader.ReadFile(aFilePath.ToCString());
+	int status = Reader.ReadFile(szfile);
 
 	if (status == IFSelect_RetDone)
 	{

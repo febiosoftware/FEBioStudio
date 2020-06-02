@@ -56,9 +56,10 @@ FEMesh*	NetGenMesher::BuildMesh()
 #ifdef HAS_NETGEN
 	using namespace nglib;
 	using namespace netgen;
+	using namespace std;
 
 	// Initialise the Netgen Core library
-	cout << "Calling Netgen" << endl;
+	cout << "Calling Netgen" << std::endl;
 	Ng_Init();
 
 	multithread.terminate = 0;
