@@ -140,7 +140,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_FEBIO3;HAS_OCC;HAS_MMG;FFMPEG;HAS_SSH;HAS_QUAZIP;MODEL_REPO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_FEBIO3;HAS_OCC;HAS_MMG;FFMPEG;HAS_SSH;HAS_QUAZIP;MODEL_REPO;WEBHELP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <BrowseInformation>false</BrowseInformation>
       <OpenMPSupport>true</OpenMPSupport>

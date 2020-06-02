@@ -73,7 +73,7 @@
     <IncludePath>$(SolutionDir)..;$(QTVS2017)\include;$(QTVS2017)\include\QtWidgets;$(QTVS2017)\include\QtGui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)..;$(QTDIR)\include;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtGui;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..;$(QTVS2017)\include;$(QTVS2017)\include\QtWidgets;$(QTVS2017)\include\QtGui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
