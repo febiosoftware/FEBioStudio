@@ -235,10 +235,12 @@ void CMainWindow::on_actionHideSelection_triggered()
 	else
 	{
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-
-		doc->HideCurrentSelection();
-		UpdateModel();
-		Update();
+		if (doc)
+		{
+			doc->HideCurrentSelection();
+			UpdateModel();
+			Update();
+		}
 	}
 }
 

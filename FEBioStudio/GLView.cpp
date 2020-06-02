@@ -8206,6 +8206,7 @@ void CGLView::ZoomSelection(bool forceZoom)
 	{
 		// get the current selection
 		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (mdoc == nullptr) return;
 
 		FESelection* ps = mdoc->GetCurrentSelection();
 

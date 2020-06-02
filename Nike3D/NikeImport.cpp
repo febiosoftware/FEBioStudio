@@ -682,7 +682,6 @@ void FENIKEImport::build_rigidfacets(FENikeProject& nike)
 		// create the interface
 		if (pn)
 		{
-			m_po->AddFENodeSet(pn);
 			FERigidInterface* pi = new FERigidInterface(ps, pgm, pn, ps->GetStep(0)->GetID());
 			sprintf(szname, "RigidInterface%02d", nrns);
 			pi->SetName(szname);
@@ -753,15 +752,12 @@ void FENIKEImport::build_interfaces(FENikeProject& nike)
 		for (j=0; j<si.nns; ++j, ++pf) pss->add(FindFace(pf->n, 1));
 		sprintf(szname, "SlaveSurface%02d", i+1);
 		pss->SetName(szname);
-		m_po->AddFESurface(pss);
 
 		// create the master surface
 		FESurface* pms = new FESurface(m_po);
 		for (j=0; j<si.nms; ++j, ++pf) pms->add(FindFace(pf->n, 1));
 		sprintf(szname, "MasterSurface%02d", i+1);
 		pms->SetName(szname);
-		m_po->AddFESurface(pms);
-
 
 		// create the contact interface
 		switch (si.itype)

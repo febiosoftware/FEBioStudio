@@ -182,9 +182,6 @@
     <ClInclude Include="..\..\PostGL\GLVectorPlot.h" />
     <ClInclude Include="..\..\PostGL\stdafx.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\PostGL\PostGL.pro" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

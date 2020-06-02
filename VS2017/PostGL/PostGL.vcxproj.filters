@@ -126,7 +126,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\PostGL\PostGL.pro" />
-  </ItemGroup>
 </Project>
