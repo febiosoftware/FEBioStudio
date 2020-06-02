@@ -284,6 +284,7 @@ void FENIKEImport::build_mesh(FENikeProject &nike)
 	}
 
 	// create a new object from this mesh
+	pm->RebuildMesh();
 	m_po = new GMeshObject(pm);
 
 	// assign the materials to the parts
