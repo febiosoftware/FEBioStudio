@@ -1570,6 +1570,18 @@ FEOsmoConst::FEOsmoConst() : FEMaterial(FE_OSMO_CONST)
 }
 
 //=============================================================================
+// Wells-Manning osmotic coefficient
+//=============================================================================
+
+REGISTER_MATERIAL(FEOsmoWellsManning, MODULE_BIPHASIC, FE_OSMO_WM, FE_MAT_OSMOTIC_COEFFICIENT, "osm-coef-Manning", 0, Materials_Biphasic_Solute_Materials_Osmotic_Coefficient_Materials_Wells_Manning_Osmotic_Coefficient);
+
+FEOsmoWellsManning::FEOsmoWellsManning() : FEMaterial(FE_OSMO_WM)
+{
+    AddScienceParam(1, UNIT_NONE, "ksi", "ksi");
+    AddChoiceParam(0, "co_ion", "co-ion")->SetEnumNames("$(Solutes)")->SetState(Param_EDITABLE | Param_PERSISTENT);
+}
+
+//=============================================================================
 // SFD compressible
 //=============================================================================
 

@@ -173,6 +173,7 @@
 
 // osmotic coefficient
 #define FE_OSMO_CONST				500
+#define FE_OSMO_WM                  501
 
 // chemical reactions
 #define FE_REACTANT_MATERIAL        600
@@ -1102,6 +1103,23 @@ public:
 public:
 	FEOsmoConst();
 	DECLARE_REGISTERED(FEOsmoConst);
+};
+
+//-----------------------------------------------------------------------------
+// Wells-Manning osmotic coefficient
+class FEOsmoWellsManning : public FEMaterial
+{
+public:
+    enum { MP_KSI, MP_COION };
+
+public:
+    FEOsmoWellsManning();
+
+    // get/set co-ion index
+    void SetCoIonIndex(int i) { SetIntValue(MP_COION, i); }
+    int GetCoIonIndex() { return GetIntValue(MP_COION); }
+    
+    DECLARE_REGISTERED(FEOsmoWellsManning);
 };
 
 //-----------------------------------------------------------------------------

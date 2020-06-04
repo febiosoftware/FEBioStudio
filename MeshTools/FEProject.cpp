@@ -321,6 +321,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FEMultiphasicContact      , MODULE_MULTIPHASIC, FE_INTERFACE        , FE_MULTIPHASIC_INTERFACE    , "Multiphasic contact", Contact_Section_Biphasic_Solute_and_Multiphasic_Contact);
 	REGISTER_FE_CLASS(FETiedMultiphasicInterface, MODULE_MULTIPHASIC, FE_INTERFACE        , FE_TIEDMULTIPHASIC_INTERFACE, "Tied multiphasic contact", Contact_Section_Tied_Multiphasic_Interfaces);
 	REGISTER_FE_CLASS(FESoluteFlux              , MODULE_MULTIPHASIC, FE_SURFACE_LOAD     , FE_SOLUTE_FLUX              , "Solute flux", Loads_Section_Surface_Loads_Solute_Flux);
+    REGISTER_FE_CLASS(FEMatchingOsmoticCoefficient, MODULE_MULTIPHASIC, FE_SURFACE_LOAD   , FE_MATCHING_OSM_COEF        , "Matching osmotic coefficient", Loads_Section_Surface_Loads_Fluid_Normal_Traction);
 
 #ifdef _DEBUG
 	REGISTER_FE_CLASS(FESBMPointSource, MODULE_MULTIPHASIC, FE_BODY_LOAD, FE_SBM_POINT_SOURCE, "SBM point source");

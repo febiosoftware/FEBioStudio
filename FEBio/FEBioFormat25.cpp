@@ -1242,6 +1242,7 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	else if (att == "soluteflux"         ) psl = ParseLoadSoluteFlux        (tag);
 	else if (att == "concentration flux" ) psl = ParseConcentrationFlux     (tag);
 	else if (att == "normal_traction"    ) psl = ParseLoadNormalTraction    (tag);
+    else if (att == "matching_osm_coef"             ) psl = ParseLoadMatchingOsmoticCoefficient(tag);
 	else if (att == "heatflux"           ) psl = ParseLoadHeatFlux          (tag);
 	else if (att == "convective_heatflux") psl = ParseLoadConvectiveHeatFlux(tag);
 	else if (att == "fluid viscous traction") psl = ParseLoadFluidTraction     (tag);
@@ -1836,6 +1837,50 @@ FESurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
 	while (!tag.isend());
 
 	return pbc;
+}
+
+//-----------------------------------------------------------------------------
+FESurfaceLoad* FEBioFormat25::ParseLoadMatchingOsmoticCoefficient(XMLTag& tag)
+{
+    FEBioModel& febio = GetFEBioModel();
+    FEModel& fem = GetFEModel();
+
+    // create a new surface load
+    FEMatchingOsmoticCoefficient* pbc = new FEMatchingOsmoticCoefficient(&fem);
+
+    // set the name
+    char szname[256] = { 0 };
+    sprintf(szname, "MatchingOsmCoef%d", CountLoads<FEMatchingOsmoticCoefficient>(fem));
+    pbc->SetName(szname);
+
+    // read the parameters
+    ++tag;
+    do
+    {
+        if (tag == "shell_bottom")
+        {
+            bool b; tag.value(b);
+            pbc->SetShellBottomFlag(b);
+        }
+        else if (tag == "ambient_pressure")
+        {
+            int lc = tag.Attribute("lc").value<int>() - 1;
+            febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+            double s; tag.value(s);
+            pbc->SetLoadP(s);
+        }
+        else if (tag == "ambient_osmolarity")
+        {
+            int lc = tag.Attribute("lc").value<int>() - 1;
+            febio.AddParamCurve(pbc->GetLoadCurveC(), lc);
+            double s; tag.value(s);
+            pbc->SetLoadC(s);
+        }
+        ++tag;
+    }
+    while (!tag.isend());
+
+    return pbc;
 }
 
 //-----------------------------------------------------------------------------

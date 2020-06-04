@@ -1627,6 +1627,20 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
         m_xml.add_leaf(el);
         return;
     }
+    else if (pm->Type() == FE_OSMO_WM)
+    {
+        FEOsmoWellsManning* pwm = dynamic_cast<FEOsmoWellsManning*>(pm); assert(pwm);
+        el.add_attribute("type", sztype);
+        m_xml.add_branch(el);
+        {
+            if (pm->Parameters()) WriteMaterialParams(pm);
+            XMLElement cel("co_ion");
+            cel.value(pwm->GetCoIonIndex()+1);
+            m_xml.add_leaf(cel);
+        }
+        m_xml.close_branch();
+        return;
+    }
     else
         el.add_attribute("type", sztype);
 
@@ -1665,6 +1679,7 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
 					case FE_PRODUCT_MATERIAL: is_multi = true; break;
 					case FE_SPECIES_MATERIAL: is_multi = true; break;
 					case FE_SOLID_SPECIES_MATERIAL: is_multi = true; break;
+                    case FE_OSMO_WM: is_multi = true; break;
 					}
 
 					if (pc->ClassID() == FE_MAT_1DFUNC)
@@ -3149,6 +3164,9 @@ void FEBioExport25::WriteLoadsSection(FEStep& s)
 	// solute flux
 	WriteSoluteFlux(s);
 
+    // matching osmotic coefficient
+    WriteMatchingOsmoticCoefficient(s);
+
 	// concentration flux
 	WriteConcentrationFlux(s);
 
@@ -3821,6 +3839,34 @@ void FEBioExport25::WriteHeatFlux(FEStep& s)
 			m_xml.close_branch(); // surface_load
 		}
 	}
+}
+
+//----------------------------------------------------------------------------
+// Export matching osmotic coefficieny
+//
+void FEBioExport25::WriteMatchingOsmoticCoefficient(FEStep& s)
+{
+    for (int j=0; j<s.Loads(); ++j)
+    {
+        FEMatchingOsmoticCoefficient* pbc = dynamic_cast<FEMatchingOsmoticCoefficient*>(s.Load(j));
+        if (pbc && pbc->IsActive())
+        {
+            if (m_writeNotes) m_xml.add_comment(pbc->GetInfo());
+
+            FEItemListBuilder* pitem = pbc->GetItemList();
+            if (pitem == 0) throw InvalidItemListBuilder(pbc);
+
+            XMLElement moc;
+            moc.name("surface_load");
+            moc.add_attribute("type", "matching_osm_coef");
+            moc.add_attribute("surface", GetSurfaceName(pitem));
+            m_xml.add_branch(moc);
+            {
+                WriteParamList(*pbc);
+            }
+            m_xml.close_branch(); // normal_traction
+        }
+    }
 }
 
 //----------------------------------------------------------------------------

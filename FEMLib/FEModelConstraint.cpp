@@ -46,7 +46,7 @@ FEWarpingConstraint::FEWarpingConstraint(FEModel* fem) : FEModelConstraint(FE_WA
 
 FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESurfaceConstraint(FE_NORMAL_FLUID_FLOW, ps, nstep)
 {
-	SetTypeString("Normal flow constraint");
+	SetTypeString("normal fluid flow");
 
 	AddBoolParam(false, "laugon", "augmented lagrangian");
 	AddDoubleParam(0.2, "tol", "augmentation tolerance");

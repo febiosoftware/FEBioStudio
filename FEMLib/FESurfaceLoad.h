@@ -118,6 +118,31 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Matching osmotic coefficient surface boundary load
+//
+class FEMatchingOsmoticCoefficient : public FESurfaceLoad
+{
+public:
+    enum { AMBP, AMBC, BSHL };
+
+public:
+    FEMatchingOsmoticCoefficient(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+
+    FELoadCurve* GetLoadCurve() override { return GetParamLC(AMBP); }
+    FELoadCurve* GetLoadCurveC() { return GetParamLC(AMBC); }
+
+    void SetLoadP(double f) { SetFloatValue(AMBP, f); }
+    double GetLoadP() { return GetFloatValue(AMBP); }
+
+    void SetLoadC(double f) { SetFloatValue(AMBC, f); }
+    double GetLoadC() { return GetFloatValue(AMBC); }
+
+    void SetShellBottomFlag(bool b) { SetBoolValue(BSHL, b); }
+    bool GetShellBottomFlag() { return GetBoolValue(BSHL); }
+
+};
+
+//-----------------------------------------------------------------------------
 // Heat flux surface boundary load
 //
 class FEHeatFlux : public FESurfaceLoad

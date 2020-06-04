@@ -50,7 +50,7 @@ void FEFluidFlux::LoadParam(const Param& p)
 FEBPNormalTraction::FEBPNormalTraction(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_BP_NORMAL_TRACTION, ps, pi, nstep)
 {
 	SetTypeString("Mixture normal traction");
-	AddDoubleParam(1, "traction", "traction")->SetLoadCurve();
+	AddScienceParam(0, "P", "traction")->SetLoadCurve();
 	AddBoolParam(0, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
 	AddBoolParam(0, "effective", "Traction")->SetEnumNames("Mixture\0Effective\0");
 }
@@ -86,6 +86,16 @@ void FESoluteFlux::LoadParam(const Param& p)
 	case 2: *GetLoadCurve() = *p.GetLoadCurve(); break;
 	case 3: SetBC(p.GetIntValue()); break;
 	}
+}
+
+//-----------------------------------------------------------------------------
+
+FEMatchingOsmoticCoefficient::FEMatchingOsmoticCoefficient(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_MATCHING_OSM_COEF, ps, pi, nstep)
+{
+    SetTypeString("Matching osmotic coefficient");
+    AddScienceParam(0, "P", "ambient_pressure")->SetLoadCurve();
+    AddScienceParam(0, "c", "ambient_osmolarity")->SetLoadCurve();
+    AddBoolParam(0, "shell_bottom", "Apply to shell bottom")->SetCheckable(false);
 }
 
 //-----------------------------------------------------------------------------

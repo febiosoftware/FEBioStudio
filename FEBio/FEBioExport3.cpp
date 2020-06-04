@@ -1594,6 +1594,13 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 		m_xml.add_leaf(el);
 		return;
 	}
+    else if (pm->Type() == FE_OSMO_WM)
+    {
+        FEOsmoWellsManning* pwm = dynamic_cast<FEOsmoWellsManning*>(pm); assert(pwm);
+        el.add_attribute("co_ion", pwm->GetCoIonIndex()+1);
+        m_xml.add_leaf(el);
+        return;
+    }
 	else
 		el.add_attribute("type", sztype);
 
@@ -3821,6 +3828,7 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			case FE_SURFACE_TRACTION         : WriteSurfaceLoad(s, pbc, "traction"); break;
 			case FE_FLUID_FLUX               : WriteSurfaceLoad(s, pbc, "fluidflux"); break;
 			case FE_BP_NORMAL_TRACTION       : WriteSurfaceLoad(s, pbc, "normal_traction"); break;
+            case FE_MATCHING_OSM_COEF        : WriteSurfaceLoad(s, pbc, "matching_osm_coef"); break;
 			case FE_HEAT_FLUX                : WriteSurfaceLoad(s, pbc, "heatflux"); break;
 			case FE_CONV_HEAT_FLUX           : WriteSurfaceLoad(s, pbc, "convective_heatflux"); break;
 			case FE_FLUID_TRACTION           : WriteSurfaceLoad(s, pbc, "fluid viscous traction"); break;

@@ -601,6 +601,7 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 	case FE_MULTIPHASIC_MATERIAL       : return ParseMultiphasic      (pm, tag); break;
 	case FE_REACTION_DIFFUSION_MATERIAL: return ParseReactionDiffusion(pm, tag); break;
 	case FE_FNC1D_POINT                : return Parse1DFunction       (pm, tag); break;
+    case FE_OSMO_WM                    : return ParseOsmoManning      (pm, tag); break;
 	}
 
 	// parse the material parameters
@@ -1350,6 +1351,30 @@ FEReactionMaterial* FEBioFormat::ParseReaction(XMLTag &tag)
 	while (!tag.isend());
 
 	return pm;
+}
+
+//-----------------------------------------------------------------------------
+FEMaterial* FEBioFormat::ParseOsmoManning(FEMaterial* pmat, XMLTag& tag)
+{
+    FEOsmoWellsManning* pm = dynamic_cast<FEOsmoWellsManning*>(pmat);
+    if (pm == 0) return 0;
+    
+    double ksi = 0;
+    int coion = -1;
+    
+    ++tag;
+    do
+    {
+        if (tag == "ksi") tag.value(ksi);
+        else if (tag == "co_ion") tag.value(coion);
+        else ParseUnknownTag(tag);
+        ++tag;
+    } while (!tag.isend());
+    
+    pm->GetParam(FEOsmoWellsManning::MP_KSI).SetFloatValue(ksi);
+    pm->SetCoIonIndex(coion-1);
+
+    return pm;
 }
 
 //-----------------------------------------------------------------------------

@@ -95,7 +95,8 @@ void CWelcomePage::Refresh()
 	}
 	else
 	{
-		page.replace("_FGCOLOR_", "#0000ff");
+//		page.replace("_FGCOLOR_", "#0000ff");
+        page.replace("_FGCOLOR_", "gold");
 	}
 
 	setHtml(page);

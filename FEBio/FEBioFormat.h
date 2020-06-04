@@ -60,6 +60,7 @@ protected:
 	FEMaterial* ParseMultiphasic   (FEMaterial* pm, XMLTag& tag);
 	FEMaterial* ParseReactionDiffusion(FEMaterial* pm, XMLTag& tag);
 	FEMaterial* Parse1DFunction(FEMaterial* pm, XMLTag& tag);
+    FEMaterial* ParseOsmoManning   (FEMaterial* pm, XMLTag& tag);
 	void ParseMatAxis(XMLTag& tag, FEMaterial* mat);
 	void ParseFiber(XMLTag& tag, FEMaterial* mat);
 

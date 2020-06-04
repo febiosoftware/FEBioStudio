@@ -90,6 +90,7 @@ private:
 	FESurfaceLoad* ParseLoadFluidFlux         (XMLTag& tag);
 	FESurfaceLoad* ParseLoadSoluteFlux        (XMLTag& tag);
 	FESurfaceLoad* ParseLoadNormalTraction    (XMLTag& tag);
+    FESurfaceLoad* ParseLoadMatchingOsmoticCoefficient  (XMLTag& tag);
 	FESurfaceLoad* ParseLoadHeatFlux          (XMLTag& tag);
 	FESurfaceLoad* ParseLoadConvectiveHeatFlux(XMLTag& tag);
 	FESurfaceLoad* ParseConcentrationFlux     (XMLTag& tag);

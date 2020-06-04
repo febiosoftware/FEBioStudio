@@ -200,7 +200,8 @@ protected:
 	void WriteConvectiveHeatFlux(FEStep& s);
 	void WriteSoluteFlux        (FEStep& s);
 	void WriteBPNormalTraction  (FEStep& s);
-	void WriteConcentrationFlux(FEStep& s);
+	void WriteConcentrationFlux (FEStep& s);
+    void WriteMatchingOsmoticCoefficient  (FEStep& s);
 
 	void WriteContactInterface  (FEStep& s, const char* sztype, FEPairedInterface* pi);
 	void WriteContactWall       (FEStep& s);
