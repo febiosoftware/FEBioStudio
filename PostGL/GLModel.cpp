@@ -527,21 +527,85 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 	Post::FEPostMesh& mesh = *GetActiveMesh();
 	int curMat = -1;
 	bool bvisible = true;
+
+	// render un-selected, active elements
+	if (m_pcol->IsActive())
+	{
+		glEnable(GL_TEXTURE_1D);
+
+		glColor3ub(255, 255, 255);
+		glBegin(GL_LINES);
+		for (int i = 0; i < m_edge.Edges(); ++i)
+		{
+			GLEdge::EDGE& edge = m_edge.Edge(i);
+			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			if (pe && !pe->IsSelected())
+			{
+				int mat = edge.mat;
+				if (mat != curMat)
+				{
+					FEMaterial* pmat = m_ps->GetMaterial(mat);
+					curMat = mat;
+					bvisible = pmat->bvisible;
+					if (!pmat->benable) bvisible = false;
+				}
+
+				if (bvisible)
+				{
+					vec3d r0 = mesh.Node(edge.n0).r;
+					vec3d r1 = mesh.Node(edge.n1).r;
+
+					glTexCoord1d(pe->m_tex);
+					glVertex3d(r0.x, r0.y, r0.z);
+					glVertex3d(r1.x, r1.y, r1.z);
+				}
+			}
+		}
+		glEnd();
+	}
+
+	// turn-off texturing for the rest
+	glDisable(GL_TEXTURE_1D);
+
+	// loop over un-selected, inactive elements
+	curMat = -1;
 	glBegin(GL_LINES);
 	for (int i=0; i<m_edge.Edges(); ++i)
 	{
 		GLEdge::EDGE& edge = m_edge.Edge(i);
-		int mat = edge.mat;
-		if (mat != curMat)
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe && !pe->IsSelected())
 		{
-			FEMaterial* pmat = m_ps->GetMaterial(mat);
-			GLColor c = pmat->diffuse;
-			curMat = mat;
-			bvisible = pmat->bvisible;
-			glColor3ub(c.r, c.g, c.b);
-		}
+			int mat = edge.mat;
+			if (mat != curMat)
+			{
+				FEMaterial* pmat = m_ps->GetMaterial(mat);
+				GLColor c = pmat->diffuse;
+				glColor3ub(c.r, c.g, c.b);
+				curMat = mat;
+				bvisible = pmat->bvisible;
+				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
+			}
 
-		if (bvisible)
+			if (bvisible)
+			{
+				vec3d r0 = mesh.Node(edge.n0).r;
+				vec3d r1 = mesh.Node(edge.n1).r;
+				glVertex3d(r0.x, r0.y, r0.z);
+				glVertex3d(r1.x, r1.y, r1.z);
+			}
+		}
+	}
+	glEnd();
+
+	// loop over selected elements
+	glColor3ub(255, 0, 0);
+	glBegin(GL_LINES);
+	for (int i = 0; i < m_edge.Edges(); ++i)
+	{
+		GLEdge::EDGE& edge = m_edge.Edge(i);
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe && pe->IsSelected() && pe->IsVisible())
 		{
 			vec3d r0 = mesh.Node(edge.n0).r;
 			vec3d r1 = mesh.Node(edge.n1).r;
@@ -551,6 +615,7 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 		}
 	}
 	glEnd();
+
 	glPopAttrib();
 }
 
@@ -2923,6 +2988,7 @@ void CGLModel::UpdateEdge()
 			edge.n0 = el.m_node[0];
 			edge.n1 = el.m_node[1];
 			edge.mat = el.m_MatID;
+			edge.elem = i;
 			m_edge.AddEdge(edge);
 		}
 	}

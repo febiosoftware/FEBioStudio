@@ -113,10 +113,12 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "density"                           );
     AddPlotVariable(MODULE_MECH, "deviatoric fiber stretch"          );
 	AddPlotVariable(MODULE_MECH, "deviatoric strain energy density"  );
+	AddPlotVariable(MODULE_MECH, "discrete element stretch"          );
+	AddPlotVariable(MODULE_MECH, "discrete element force"            );
 	AddPlotVariable(MODULE_MECH, "displacement"                      );
 	AddPlotVariable(MODULE_MECH, "effective elasticity"              );
     AddPlotVariable(MODULE_MECH, "elasticity"                        );
-    AddPlotVariable(MODULE_MECH, "element angular momentum"           );
+    AddPlotVariable(MODULE_MECH, "element angular momentum"          );
     AddPlotVariable(MODULE_MECH, "element center of mass"            );
     AddPlotVariable(MODULE_MECH, "element kinetic energy"            );
     AddPlotVariable(MODULE_MECH, "element linear momentum"           );

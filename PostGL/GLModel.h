@@ -62,6 +62,7 @@ public:
 	{
 		int n0, n1;
 		int mat;
+		int	elem;
 	};
 
 	void AddEdge(const EDGE& e) { m_Edge.push_back(e); }

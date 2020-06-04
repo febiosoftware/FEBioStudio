@@ -1758,7 +1758,7 @@ void CModelGraphWindow::addSelectedElems()
 
 				CPlotData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
-				plot->setLabel(QString("E%1").arg(i + 1));
+				plot->setLabel(QString("E%1").arg(e.GetID()));
 			}
 		}
 		break;
@@ -1776,7 +1776,7 @@ void CModelGraphWindow::addSelectedElems()
 
 				CPlotData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
-				plot->setLabel(QString("E%1").arg(i + 1));
+				plot->setLabel(QString("E%1").arg(e.GetID()));
 			}
 		}
 		break;
@@ -1794,7 +1794,7 @@ void CModelGraphWindow::addSelectedElems()
 
 				CPlotData* plot = nextData();
 				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
-				plot->setLabel(QString("E%1").arg(i + 1));
+				plot->setLabel(QString("E%1").arg(e.GetID()));
 			}
 		}
 		break;

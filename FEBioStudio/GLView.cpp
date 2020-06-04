@@ -4604,9 +4604,56 @@ void CGLView::SelectFEElements(int x, int y)
 				pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
 		}
 	}
-	else if (!m_bshift)
+	else
 	{
-		pcmd = new CCmdSelectElements(pm, 0, 0, false);
+		int X = x;
+		int Y = y;
+		int S = 6;
+		QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+		// try to select discrete elements
+		vec3d o(0, 0, 0);
+		vec3d O = transform.WorldToScreen(o);
+
+		int index = -1;
+		float zmin = 0.f;
+		int NE = pm->Elements();
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement& del = pm->Element(i);
+			if (del.IsBeam())
+			{
+				vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[0]).r);
+				vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[1]).r);
+
+				vec3d p0 = transform.WorldToScreen(r0);
+				vec3d p1 = transform.WorldToScreen(r1);
+
+				// make sure p0, p1 are in front of the camera
+				if (((p0.x >= 0) || (p1.x >= 0)) && ((p0.y >= 0) || (p1.y >= 0)) &&
+					(p0.z > -1) && (p0.z < 1) && (p1.z > -1) && (p1.z < 1))
+				{
+					// see if the edge intersects
+					if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+					{
+						if ((index == -1) || (p0.z < zmin))
+						{
+							index = i;
+							zmin = p0.z;
+						}
+					}
+				}
+			}
+		}
+
+		if (index >= 0)
+		{
+			pcmd = new CCmdSelectElements(pm, &index, 1, m_bshift);
+		}
+		else if (!m_bshift)
+		{
+			pcmd = new CCmdSelectElements(pm, 0, 0, false);
+		}
 	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
