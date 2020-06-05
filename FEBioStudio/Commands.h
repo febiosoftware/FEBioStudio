@@ -1198,56 +1198,21 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-// Convert an object to an editable mesh
-class CCmdConvertToEditableMesh : public CCommand
+// swap two objects in the model
+class CCmdSwapObjects : public CCommand
 {
 public:
-	CCmdConvertToEditableMesh(GModel* fem, GObject* po);
-	~CCmdConvertToEditableMesh();
+	CCmdSwapObjects(GModel* model, GObject* pold, GObject* pnew);
+	~CCmdSwapObjects();
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	GModel*		m_model;
-	GObject*	m_pold;	// the old object
-	GObject*	m_pnew;	// the new object
+	GObject*	m_pold;	// the original object
+	GObject*	m_pnew;	// the new mesh object
 	ObjectMeshList*	m_oml;	// old object list
-};
-
-//-----------------------------------------------------------------------------
-// Convert a surface mesh to an editable mesh
-class CCmdConvertSurfaceToEditableMesh : public CCommand
-{
-public:
-	CCmdConvertSurfaceToEditableMesh(GModel* model, GObject* po);
-	~CCmdConvertSurfaceToEditableMesh();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*		m_model;
-	GObject*	m_pold;	// the original object
-	GObject*	m_pnew;	// the new mesh object
-};
-
-
-//-----------------------------------------------------------------------------
-// Convert an object to an editable surface
-class CCmdConvertToEditableSurface : public CCommand
-{
-public:
-	CCmdConvertToEditableSurface(GModel* model, GObject* po);
-	~CCmdConvertToEditableSurface();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	GModel*		m_model;
-	GObject*	m_pold;	// the original object
-	GObject*	m_pnew;	// the new mesh object
 };
 
 //-----------------------------------------------------------------------------

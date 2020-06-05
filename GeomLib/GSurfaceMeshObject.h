@@ -3,6 +3,7 @@
 #include <MeshLib/FESurfaceMesh.h>
 
 class tetgenio;
+class GOCCObject;
 
 class GSurfaceMeshObject : public GObject
 {
@@ -57,3 +58,7 @@ private:
 private:
 	FESurfaceMesh*	m_surfmesh;
 };
+
+// Helper function for converting an object to an editable surface.
+// This assumes that the object has a mesh.
+GSurfaceMeshObject* ConvertToEditableSurface(GObject* po);

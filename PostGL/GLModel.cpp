@@ -1137,8 +1137,6 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 	{
 		if ((pmat->transparency >= 0.99f) || (pmat->m_ntransmode == RENDER_TRANS_CONSTANT)) RenderSolidMaterial(ps, mat);
 		else RenderTransparentMaterial(rc, ps, mat);
-
-		RenderSolidMaterial(ps, mat);
 	}
 	else
 	{
@@ -1907,6 +1905,15 @@ void CGLModel::RemoveDecoration(GDecoration* pd)
 			m_decor.erase(it);
 			return;
 		}
+	}
+}
+
+void CGLModel::SetSubDivisions(int ndivs)
+{ 
+	if (ndivs != m_nDivs)
+	{
+		m_nDivs = ndivs;
+		Update(true);
 	}
 }
 

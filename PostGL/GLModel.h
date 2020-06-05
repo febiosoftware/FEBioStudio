@@ -137,7 +137,7 @@ public:
 	int ShellReferenceSurface() const;
 	void ShellReferenceSurface(int n);
 
-	void SetSubDivisions(int ndivs) { m_nDivs = ndivs; }
+	void SetSubDivisions(int ndivs);
 	int GetSubDivisions();
 
 	int GetRenderMode() { return m_nrender; }

@@ -95,7 +95,6 @@ public:
 	void ResizeEdges(int newSize);
 	void ResizeFaces(int newSize);
 
-private:
 	void AutoPartitionEdges();
 	void AutoPartitionNodes();
 };

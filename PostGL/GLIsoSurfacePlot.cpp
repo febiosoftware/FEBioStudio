@@ -33,7 +33,7 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot(CGLModel* po) : CGLLegendPlot(po)
 	m_nslices = 5;
 	m_bsmooth = true;
 	m_bcut_hidden = false;
-	m_nfield = 0;
+	m_nfield = -1;
 
 	m_rangeType = RNG_DYNAMIC;
 	m_rngMin = 0.;
@@ -71,6 +71,7 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 
 	if (bsave)
 	{
+		int oldField = m_nfield;
 		m_nfield = GetIntValue(DATA_FIELD);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		AllowClipping(GetBoolValue(CLIP));
@@ -83,6 +84,8 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 		m_userMin = GetFloatValue(USER_MIN);
 
 		m_Col.SetDivisions(m_nslices);
+
+		if (oldField != m_nfield) Update();
 	}
 	else
 	{

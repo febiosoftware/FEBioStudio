@@ -69,3 +69,5 @@ protected:
 };
 
 GMeshObject* ExtractSelection(GObject* po);
+
+GMeshObject* ConvertToEditableMesh(GObject* po);

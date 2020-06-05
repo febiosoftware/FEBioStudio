@@ -76,7 +76,7 @@ public:
 	{
 		switch (i)
 		{
-		case 0: m_fem->m_nDivs    = v.toInt(); break;
+		case 0: m_fem->SetSubDivisions(v.toInt()); break;
 		case 1: m_fem->m_nrender  = v.toInt(); break;
 		case 2: m_fem->m_bghost   = v.toBool(); break;
 		case 3: m_fem->m_line_col = toGLColor(v.value<QColor>());

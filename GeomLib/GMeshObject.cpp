@@ -1,4 +1,5 @@
 #include "GMeshObject.h"
+#include "GSurfaceMeshObject.h"
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
@@ -36,18 +37,8 @@ GMeshObject::GMeshObject(FESurfaceMesh* pm) : GObject(GMESH_OBJECT)
 
 //-----------------------------------------------------------------------------
 // This function creates a new GMeshObject from an existing GObject
-// The new GMeshObject will have the same ID as the existing GObject
-// This is used in the CCmdConvertObject command that converts a GPrimitve
-// a GMeshObject
 GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 {
-	// copy to old object's ID
-	SetID(po->GetID());
-
-	// creating a new object has increased the object counter
-	// so we need to decrease it again
-	GItem_T<GBaseObject>::DecreaseCounter();
-
 	// next, we copy the geometry info
 	// --- Nodes ---
 	int NN = po->Nodes();
@@ -116,15 +107,6 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 	// copy the mesh from the original object
 	FEMesh* pm = new FEMesh(*po->GetFEMesh());
 	SetFEMesh(pm);
-
-	SetName(po->GetName());
-
-	// copy data
-	CopyTransform(po);
-	SetColor(po->GetColor());
-
-	// copy the selection state
-	if (po->IsSelected()) Select();
 
 	// rebuild the GMesh
 	BuildGMesh();
@@ -1067,4 +1049,49 @@ GMeshObject* ExtractSelection(GObject* po)
 	newObject->CopyTransform(po);
 
 	return newObject;
+}
+
+GMeshObject* ConvertToEditableMesh(GObject* po)
+{
+	if (po == nullptr) return nullptr;
+
+	GMeshObject* pnew = nullptr;
+
+	FEMesh* mesh = po->GetFEMesh();
+	if (mesh == 0)
+	{
+		// for editable surfaces, we'll use the surface mesh for converting
+		if (dynamic_cast<GSurfaceMeshObject*>(po))
+		{
+			// get the surface
+			FESurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
+
+			// create a new gmeshobject
+			pnew = new GMeshObject(surfaceMesh);
+		}
+		else return nullptr;
+	}
+	else
+	{
+		// create a new gmeshobject
+		pnew = new GMeshObject(po);
+	}
+	assert(pnew);
+
+	// copy to old object's ID
+	pnew->SetID(po->GetID());
+
+	// creating a new object has increased the object counter
+	// so we need to decrease it again
+	GItem_T<GBaseObject>::DecreaseCounter();
+	pnew->SetName(po->GetName());
+
+	// copy data
+	pnew->CopyTransform(po);
+	pnew->SetColor(po->GetColor());
+
+	// copy the selection state
+	if (po->IsSelected()) pnew->Select();
+
+	return pnew;
 }

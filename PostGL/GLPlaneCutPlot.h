@@ -85,6 +85,9 @@ protected:
 	static int GetFreePlane();
 	void UpdateSlice();
 
+	void AddDomain(FEPostMesh* pm, int n);
+	void AddFaces(FEPostMesh* pm);
+
 public:
 	static int ClipPlanes();
 	static CGLPlaneCutPlot* GetClipPlane(int i);

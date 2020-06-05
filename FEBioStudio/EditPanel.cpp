@@ -12,8 +12,10 @@
 #include <MeshTools/FECVDDecimationModifier.h>
 #include <MeshTools/FEEdgeFlip.h>
 #include <MeshTools/FERefineSurface.h>
+#include <MeshTools/FEWeldModifier.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMeshObject.h>
+#include <GeomLib/GOCCObject.h>
 #include <QMessageBox>
 #include "Commands.h"
 
@@ -26,6 +28,7 @@ REGISTER_CLASS(FECVDDecimationModifier    , CLASS_SURFACE_MODIFIER, "Decimate"  
 REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"   , 0xFF);
 REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);
 REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
+REGISTER_CLASS(FEWeldSurfaceNodes         , CLASS_SURFACE_MODIFIER, "Weld Nodes"   , 0xFF);
 
 class CPartitionProps : public CDataPropertyList
 {
@@ -189,23 +192,18 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 
 	if (pa->objectName() == "convert1")
 	{
-		FEMesh* mesh = po->GetFEMesh();
-		if (mesh == 0)
+		if (dynamic_cast<GSurfaceMeshObject*>(po) == nullptr)
 		{
-			QMessageBox::critical(this, "Convert", "This object does not have a mesh and cannot be converted to an editable mesh.");
-			return;
-		}
-
-		// convert to editable surface
-		if (dynamic_cast<GSurfaceMeshObject*>(po) == 0)
-		{
-			CCmdConvertToEditableSurface* pcmd = new CCmdConvertToEditableSurface(pdoc->GetGModel(), po);
-			pdoc->DoCommand(pcmd);
-
-			// update the modify panel
-			Update();
-
-			GetMainWindow()->Update(this, true);
+			GSurfaceMeshObject* pnew = ConvertToEditableSurface(po);
+			if (pnew)
+			{
+				pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, pnew));
+			}
+			else
+			{
+				QMessageBox::critical(this, "Convert", "Unable to convert to editable surface.");
+				return;
+			}
 		}
 	}
 	else
@@ -213,34 +211,20 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 		// convert to editable mesh
 		if (dynamic_cast<GMeshObject*>(po) == 0)
 		{
-			FEMesh* mesh = po->GetFEMesh();
-			if (mesh == 0)
+			GMeshObject* pnew = ConvertToEditableMesh(po);
+			if (pnew)
 			{
-				// for editable surfaces, we'll use the surface mesh for converting
-				if (dynamic_cast<GSurfaceMeshObject*>(po))
-				{
-					CCmdConvertSurfaceToEditableMesh* pcmd = new CCmdConvertSurfaceToEditableMesh(pdoc->GetGModel(), po);
-					pdoc->DoCommand(pcmd);
-
-					// update the modify panel
-					Update();
-
-					GetMainWindow()->Update(this, true);
-				}
-				else QMessageBox::critical(this, "Convert", "This object does not have a mesh and cannot be converted to an editable mesh.");
+				pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, pnew));
 			}
 			else
 			{
-				CCmdConvertToEditableMesh* pcmd = new CCmdConvertToEditableMesh(pdoc->GetGModel(), po);
-				pdoc->DoCommand(pcmd);
-
-				// update the modify panel
-				Update();
-
-				GetMainWindow()->Update(this, true);
+				QMessageBox::critical(this, "Convert", "Unable to convert to editable mesh.");
+				return;
 			}
 		}
 	}
+	Update();
+	GetMainWindow()->Update(this, true);
 }
 
 void CEditPanel::on_buttons_buttonSelected(int id)

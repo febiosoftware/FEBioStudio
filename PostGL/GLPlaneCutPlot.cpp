@@ -3,6 +3,7 @@
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 #include "GLModel.h"
+#include <MeshLib/hex8.h>
 using namespace Post;
 
 extern int LUT[256][15];
@@ -558,13 +559,6 @@ void CGLPlaneCutPlot::RenderOutline()
 //-----------------------------------------------------------------------------
 void CGLPlaneCutPlot::UpdateSlice()
 {
-	float ev[8];
-	vec3d ex[8];
-	int	nf[8];
-	EDGE edge[15];
-	int en[8];
-	int	rf[3];
-
 	// Get the bounding box. We need it for determining the scale
 	CGLModel* mdl = GetModel();
 	BOX box = GetModel()->GetFEModel()->GetBoundingBox();
@@ -576,7 +570,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 	GetNormalizedEquations(a);
 
 	// set the plane normal
-	vec3d norm((float) a[0], (float) a[1], (float) a[2]);
+	vec3d norm((float)a[0], (float)a[1], (float)a[2]);
 
 	double ref = -a[3];
 
@@ -588,7 +582,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 	Post::FEState& state = *ps->CurrentState();
 
 	// loop over all domains
-	for (int n=0; n<pm->Domains(); ++n)
+	for (int n = 0; n < pm->Domains(); ++n)
 	{
 		FEDomain& dom = pm->Domain(n);
 		int matId = dom.GetMatID();
@@ -597,80 +591,199 @@ void CGLPlaneCutPlot::UpdateSlice()
 			FEMaterial* pmat = ps->GetMaterial(matId);
 			if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 			{
-				// repeat over all elements
-				for (int i=0; i<dom.Elements(); ++i)
+				AddDomain(pm, n);
+			}
+		}
+	}
+
+	AddFaces(pm);
+}
+
+void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
+{
+	float ev[8];
+	vec3d ex[8];
+	int	nf[8];
+	EDGE edge[15];
+	int en[8];
+	int	rf[3];
+
+	FEDomain& dom = pm->Domain(n);
+
+	// get the plane equations
+	GLdouble a[4];
+	GetNormalizedEquations(a);
+
+	// set the plane normal
+	vec3d norm((float)a[0], (float)a[1], (float)a[2]);
+
+	double ref = -a[3];
+
+	CGLModel* mdl = GetModel();
+	int ndivs = mdl->GetSubDivisions();
+
+	FEPostModel* ps = mdl->GetFEModel();
+	Post::FEState& state = *ps->CurrentState();
+
+	// repeat over all elements
+	for (int i = 0; i < dom.Elements(); ++i)
+	{
+		// render only when visible
+		FEElement_& el = dom.Element(i);
+		if ((el.IsVisible() || m_bcut_hidden) && el.IsSolid())
+		{
+			const int *nt;
+			switch (el.Type())
+			{
+			case FE_HEX8: nt = HEX_NT; break;
+			case FE_HEX20: nt = HEX_NT; break;
+			case FE_HEX27: nt = HEX_NT; break;
+			case FE_PENTA6: nt = PEN_NT; break;
+			case FE_PENTA15: nt = PEN_NT; break;
+			case FE_TET4: nt = TET_NT; break;
+			case FE_TET5: nt = TET_NT; break;
+			case FE_TET10: nt = TET_NT; break;
+			case FE_TET15: nt = TET_NT; break;
+			case FE_TET20: nt = TET_NT; break;
+			case FE_PYRA5: nt = PYR_NT; break;
+			}
+
+			// get the nodal values
+			for (int k = 0; k < 8; ++k)
+			{
+				FENode& node = pm->Node(el.m_node[nt[k]]);
+				nf[k] = (node.IsExterior() ? 1 : 0);
+				ex[k] = to_vec3f(node.r);
+				en[k] = el.m_node[nt[k]];
+				ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
+			}
+
+			// calculate the case of the element
+			int ncase = 0;
+			for (int k = 0; k < 8; ++k)
+				if (norm*ex[k] >= ref) ncase |= (1 << k);
+
+			el.m_ntag = ncase;
+
+			if (ndivs <= 1)
+			{
+				// loop over faces
+				int* pf = LUT[ncase];
+				int ne = 0;
+				for (int l = 0; l < 5; l++)
 				{
-					// render only when visible
-					FEElement_& el = dom.Element(i);
-					if (el.IsVisible() || m_bcut_hidden)
+					if (*pf == -1) break;
+
+					// calculate nodal positions
+					vec3d r[3];
+					float tex[3], w1, w2, w;
+					for (int k = 0; k < 3; k++)
 					{
-						if (el.IsSolid())
+						int n1 = ET_HEX[pf[k]][0];
+						int n2 = ET_HEX[pf[k]][1];
+
+						w1 = norm * ex[n1];
+						w2 = norm * ex[n2];
+
+						if (w2 != w1)
+							w = (ref - w1) / (w2 - w1);
+						else
+							w = 0.f;
+
+						float v = ev[n1] * (1 - w) + ev[n2] * w;
+
+						r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+						tex[k] = v;
+						rf[k] = ((nf[n1] == 1) && (nf[n2] == 1) ? 1 : 0);
+					}
+
+					GLSlice::FACE face;
+					face.mat = n;
+					face.norm = norm;
+					face.r[0] = r[0];
+					face.r[1] = r[1];
+					face.r[2] = r[2];
+					face.tex[0] = tex[0];
+					face.tex[1] = tex[1];
+					face.tex[2] = tex[2];
+					face.bactive = el.IsActive();
+
+					m_slice.AddFace(face);
+
+					pf += 3;
+				}
+			}
+			else
+			{
+				for (int ix = 0; ix < ndivs; ++ix)
+				{
+					double wr0 = -1.0 + 2.0*ix / ndivs;
+					double wr1 = -1.0 + 2.0*(ix + 1) / ndivs;
+					for (int iy = 0; iy < ndivs; ++iy)
+					{
+						double ws0 = -1.0 + 2.0*iy / ndivs;
+						double ws1 = -1.0 + 2.0*(iy + 1) / ndivs;
+						for (int iz = 0; iz < ndivs; ++iz)
 						{
-							const int *nt;
-							switch (el.Type())
+							double wt0 = -1.0 + 2.0*iz / ndivs;
+							double wt1 = -1.0 + 2.0*(iz + 1) / ndivs;
+
+							double H[8][8];
+							HEX8::shape(H[0], wr0, ws0, wt0);
+							HEX8::shape(H[1], wr1, ws0, wt0);
+							HEX8::shape(H[2], wr1, ws1, wt0);
+							HEX8::shape(H[3], wr0, ws1, wt0);
+							HEX8::shape(H[4], wr0, ws0, wt1);
+							HEX8::shape(H[5], wr1, ws0, wt1);
+							HEX8::shape(H[6], wr1, ws1, wt1);
+							HEX8::shape(H[7], wr0, ws1, wt1);
+
+							vec3d x[8];
+							float v[8];
+							for (int kk = 0; kk < 8; ++kk)
 							{
-							case FE_HEX8   : nt = HEX_NT; break;
-							case FE_HEX20  : nt = HEX_NT; break;
-							case FE_HEX27  : nt = HEX_NT; break;
-							case FE_PENTA6 : nt = PEN_NT; break;
-                            case FE_PENTA15: nt = PEN_NT; break;
-                            case FE_TET4   : nt = TET_NT; break;
-                            case FE_TET5   : nt = TET_NT; break;
-							case FE_TET10  : nt = TET_NT; break;
-							case FE_TET15  : nt = TET_NT; break;
-							case FE_TET20  : nt = TET_NT; break;
-							case FE_PYRA5  : nt = PYR_NT; break;
-							}
-	
-							// get the nodal values
-							for (int k=0; k<8; ++k)
-							{
-								FENode& node = pm->Node(el.m_node[nt[k]]);
-								nf[k] = (node.IsExterior()?1:0);
-								ex[k] = to_vec3f(node.r);
-								en[k] = el.m_node[nt[k]];
-								ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
-							}
+								double* h = H[kk];
+								x[kk] = vec3d(0, 0, 0);
+								v[kk] = 0.0;
+								for (int jj = 0; jj < 8; ++jj)
+								{
+									x[kk] += ex[jj] * h[jj];
+									v[kk] += ev[jj] * h[jj];
+								}
+							}																					
 
 							// calculate the case of the element
 							int ncase = 0;
-							for (int k=0; k<8; ++k) 
-							if (norm*ex[k] >= ref) ncase |= (1 << k);
-
-							// store the case for this element
-							// so we don't have to calculate it again when
-							// we draw the mesh
-							el.m_ntag = 0;
-							if ((ncase > 0) && (ncase < 255)) el.m_ntag = ncase;
+							for (int k = 0; k < 8; ++k)
+								if (norm*ex[k] >= ref) ncase |= (1 << k);
 
 							// loop over faces
 							int* pf = LUT[ncase];
 							int ne = 0;
-							for (int l=0; l<5; l++)
+							for (int l = 0; l < 5; l++)
 							{
 								if (*pf == -1) break;
 
 								// calculate nodal positions
 								vec3d r[3];
 								float tex[3], w1, w2, w;
-								for (int k=0; k<3; k++)
+								for (int k = 0; k < 3; k++)
 								{
 									int n1 = ET_HEX[pf[k]][0];
 									int n2 = ET_HEX[pf[k]][1];
 
-									w1 = norm*ex[n1];
-									w2 = norm*ex[n2];
-			
+									w1 = norm * x[n1];
+									w2 = norm * x[n2];
+
 									if (w2 != w1)
-										w = (ref - w1)/(w2 - w1);
-									else 
+										w = (ref - w1) / (w2 - w1);
+									else
 										w = 0.f;
 
-									float v = ev[n1] * (1 - w) + ev[n2] * w;
+									float f = v[n1] * (1 - w) + v[n2] * w;
 
-									r[k] = ex[n1]*(1-w) + ex[n2]*w;
-									tex[k] = v;
-									rf[k] = ((nf[n1]==1)&&(nf[n2]==1)?1:0);
+									r[k] = x[n1] * (1 - w) + x[n2] * w;
+									tex[k] = f;
 								}
 
 								GLSlice::FACE face;
@@ -686,7 +799,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 
 								m_slice.AddFace(face);
 
-								pf+=3;
+								pf += 3;
 							}
 						}
 					}
@@ -694,7 +807,28 @@ void CGLPlaneCutPlot::UpdateSlice()
 			}
 		}
 	}
+}
 
+void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
+{
+	float ev[8];
+	vec3d ex[8];
+	int	nf[8];
+	EDGE edge[15];
+	int en[8];
+	int	rf[3];
+	CGLModel* mdl = GetModel();
+	FEPostModel* ps = mdl->GetFEModel();
+	Post::FEState& state = *ps->CurrentState();
+
+	// get the plane equations
+	GLdouble a[4];
+	GetNormalizedEquations(a);
+
+	// set the plane normal
+	vec3d norm((float)a[0], (float)a[1], (float)a[2]);
+
+	double ref = -a[3];
 	// loop over faces to determine edges
 	for (int i = 0; i < pm->Faces(); ++i)
 	{

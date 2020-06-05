@@ -339,9 +339,22 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 
 						float tex = (v - min) / (max - min);
 
-						int nf = face.Nodes();
 						face.m_texe = tex;
-						for (int k = 0; k < nf; ++k) face.m_tex[k] = tex;
+
+						int nf = face.Nodes();
+						for (int k = 0; k < nf; ++k)
+						{
+							NODEDATA& d0 = s0.m_NODE[face.n[k]];
+							NODEDATA& d1 = s1.m_NODE[face.n[k]];
+
+							float v0 = d0.m_val;
+							float v1 = d1.m_val;
+							float v = v0 + (v1 - v0)*w;
+
+							float tex = (v - min) / (max - min);
+
+							face.m_tex[k] = tex;
+						}
 					}
 				}
 			}

@@ -2966,18 +2966,18 @@ void CCmdChangeMesherParams::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdConvertToEditableMesh
+// CCmdSwapObjects
 //-----------------------------------------------------------------------------
 
-CCmdConvertToEditableMesh::CCmdConvertToEditableMesh(GModel* model, GObject* po) : CCommand("Convert")
+CCmdSwapObjects::CCmdSwapObjects(GModel* model, GObject* pold, GObject* pnew) : CCommand("Convert")
 {
 	m_model = model;
-	m_pold = po;
-	m_pnew = nullptr;
+	m_pold = pold;
+	m_pnew = pnew;
 	m_oml = nullptr;
 }
 
-CCmdConvertToEditableMesh::~CCmdConvertToEditableMesh()
+CCmdSwapObjects::~CCmdSwapObjects()
 {
 	if (m_oml)
 	{
@@ -2987,21 +2987,8 @@ CCmdConvertToEditableMesh::~CCmdConvertToEditableMesh()
 	else delete m_pnew;
 }
 
-void CCmdConvertToEditableMesh::Execute()
+void CCmdSwapObjects::Execute()
 {
-	if (m_pnew == 0)
-	{
-		// make sure the old object has a mesh
-		if (m_pold->GetFEMesh() == 0)
-		{
-			assert(false);
-			return;
-		}
-
-		// create a new gmeshobject
-		m_pnew = new GMeshObject(m_pold);
-	}
-
 	// get the old object's meshlist
 	m_oml = m_model->GetObjectMeshList(m_pold);
 
@@ -3009,7 +2996,7 @@ void CCmdConvertToEditableMesh::Execute()
 	m_model->ReplaceObject(m_pold, m_pnew);
 }
 
-void CCmdConvertToEditableMesh::UnExecute()
+void CCmdSwapObjects::UnExecute()
 {
 	// remove the new object
 	m_model->RemoveObject(m_pnew, true);
@@ -3017,109 +3004,6 @@ void CCmdConvertToEditableMesh::UnExecute()
 	// add the oml back
 	m_model->InsertObjectMeshList(m_oml);
 	m_oml = nullptr;
-}
-
-//-----------------------------------------------------------------------------
-// CCmdConvertSurfaceToEditableMesh
-//-----------------------------------------------------------------------------
-
-CCmdConvertSurfaceToEditableMesh::CCmdConvertSurfaceToEditableMesh(GModel* model, GObject* po) : CCommand("Convert")
-{
-	m_model = model;
-	m_pold = po;
-	m_pnew = 0;
-}
-
-CCmdConvertSurfaceToEditableMesh::~CCmdConvertSurfaceToEditableMesh()
-{
-	if (m_pnew) delete m_pnew;
-}
-
-void CCmdConvertSurfaceToEditableMesh::Execute()
-{
-	if (m_pnew == 0)
-	{
-		// get the surface
-		FESurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(m_pold)->GetSurfaceMesh();
-
-		// create a new gmeshobject
-		m_pnew = new GMeshObject(surfaceMesh);
-		m_pnew->SetName(m_pold->GetName());
-
-		// copy data
-		m_pnew->CopyTransform(m_pold);
-		m_pnew->SetColor(m_pold->GetColor());
-
-		// copy the selection state
-		if (m_pold->IsSelected()) m_pnew->Select();
-	}
-
-	// replace the old object with the new one
-	m_model->ReplaceObject(m_pold, m_pnew);
-
-	// swap old and new
-	GObject* po = m_pold;
-	m_pold = m_pnew;
-	m_pnew = po;
-}
-
-void CCmdConvertSurfaceToEditableMesh::UnExecute()
-{
-	Execute();
-}
-
-
-
-//-----------------------------------------------------------------------------
-// CCmdConvertToEditableSurface
-//-----------------------------------------------------------------------------
-
-CCmdConvertToEditableSurface::CCmdConvertToEditableSurface(GModel* model, GObject* po) : CCommand("Convert")
-{
-	m_model = model;
-	m_pold = po;
-	m_pnew = 0;
-}
-
-CCmdConvertToEditableSurface::~CCmdConvertToEditableSurface()
-{
-	if (m_pnew) delete m_pnew;
-}
-
-void CCmdConvertToEditableSurface::Execute()
-{
-	if (m_pnew == 0)
-	{
-		// make sure the old object has a mesh
-		if (m_pold->GetFEMesh() == 0)
-		{
-			return;
-		}
-
-		// create a new surface mesh object
-		m_pnew = new GSurfaceMeshObject(m_pold);
-		m_pnew->SetName(m_pold->GetName());
-
-		// copy data
-		m_pnew->CopyTransform(m_pold);
-		m_pnew->SetColor(m_pold->GetColor());
-
-		// copy the selection state
-		if (m_pold->IsSelected()) m_pnew->Select();
-	}
-
-	// replace the old object with the new one
-	m_model->ReplaceObject(m_pold, m_pnew);
-
-	// swap old and new
-	GObject* po = m_pold;
-	m_pold = m_pnew;
-	m_pnew = po;
-}
-
-void CCmdConvertToEditableSurface::UnExecute()
-{
-	Execute();
 }
 
 //-----------------------------------------------------------------------------

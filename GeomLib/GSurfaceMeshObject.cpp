@@ -4,6 +4,7 @@
 #include <MeshTools/FEModifier.h>
 #include <MeshLib/FECurveMesh.h>
 #include <MeshTools/GLMesh.h>
+#include "GOCCObject.h"
 
 GSurfaceMeshObject::GSurfaceMeshObject(FESurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
 {
@@ -18,13 +19,6 @@ GSurfaceMeshObject::GSurfaceMeshObject(FESurfaceMesh* pm) : GObject(GSURFACEMESH
 GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJECT)
 {
 	SetFEMesher(new FETetGenMesher(this));
-
-	// copy to old object's ID
-	SetID(po->GetID());
-
-	// creating a new object has increased the object counter
-	// so we need to decrease it again
-	GItem_T<GBaseObject>::DecreaseCounter();
 
 	// next, we copy the geometry info
 	// --- Nodes ---
@@ -158,6 +152,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 	}
 	m_surfmesh->UpdateEdgePartitions();
 	m_surfmesh->UpdateEdgeNeighbors();
+	m_surfmesh->AutoPartitionNodes();
 
 	// update the object
 	Update();
@@ -943,4 +938,83 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 	newMesh->UpdateMesh();
 
 	BuildGMesh();
+}
+
+FESurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
+{
+	if (glmesh == nullptr) return nullptr;
+
+	int NN = glmesh->Nodes();
+	int NF = glmesh->Faces();
+
+	FESurfaceMesh* pm = new FESurfaceMesh;
+	pm->Create(NN, 0, NF);
+
+	for (int i = 0; i < NN; ++i)
+	{
+		FENode& nodei = pm->Node(i);
+		const GMesh::NODE& glnode = glmesh->Node(i);
+		nodei.r = glnode.r;
+	}
+
+	for (int i = 0; i < NF; ++i)
+	{
+		FEFace& facei = pm->Face(i);
+		const GMesh::FACE& glface = glmesh->Face(i);
+		facei.SetType(FE_FACE_TRI3);
+		facei.m_gid = glface.pid;
+		facei.n[0] = glface.n[0];
+		facei.n[1] = glface.n[1];
+		facei.n[2] = glface.n[2];
+	}
+	pm->BuildMesh();
+
+	return pm;
+}
+
+// Helper function for converting an object to an editable surface.
+// This assumes that the object has a mesh.
+GSurfaceMeshObject* ConvertToEditableSurface(GObject* po)
+{
+	// make sure there is something to do
+	if (po == nullptr) return nullptr;
+
+	// If the object has a mesh, we'll use that 
+	GSurfaceMeshObject* pnew = nullptr;
+	if (po->GetFEMesh())
+	{
+		pnew = new GSurfaceMeshObject(po);
+	}
+	else if (dynamic_cast<GOCCObject*>(po))
+	{
+		// If this is an OCC, we'll use the render mesh
+		GLMesh* glmesh = po->GetRenderMesh();
+		if (glmesh == nullptr) return nullptr;
+
+		// create FESurfaceMesh from GLMesh
+		FESurfaceMesh* surfMesh = createSurfaceMesh(glmesh);
+
+		// create the surface mesh object
+		pnew = new GSurfaceMeshObject(surfMesh);
+	}
+	else return nullptr;
+
+	// copy data 
+	pnew->SetName(po->GetName());
+
+	// copy to old object's ID
+	pnew->SetID(po->GetID());
+
+	// creating a new object has increased the object counter
+	// so we need to decrease it again
+	GItem_T<GBaseObject>::DecreaseCounter();
+
+	// copy data
+	pnew->CopyTransform(po);
+	pnew->SetColor(po->GetColor());
+
+	// copy the selection state
+	if (po->IsSelected()) pnew->Select();
+
+	return pnew;
 }
