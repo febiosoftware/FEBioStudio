@@ -161,6 +161,7 @@
 #define FE_PERM_REF_ISO				202
 #define FE_PERM_REF_TRANS_ISO		203
 #define FE_PERM_REF_ORTHO			204
+#define FE_PERM_EXP_ISO             205
 
 // diffusivity materials
 #define FE_DIFF_CONST				300
@@ -1031,6 +1032,17 @@ public:
 public:
 	FEPermAteshianWeissOrtho();
 	DECLARE_REGISTERED(FEPermAteshianWeissOrtho);
+};
+
+//-----------------------------------------------------------------------------
+// exponential isotropic permeability
+class FEPermExpIso : public FEMaterial
+{
+public:
+    enum { MP_PERM, MP_M };
+public:
+    FEPermExpIso();
+    DECLARE_REGISTERED(FEPermExpIso);
 };
 
 //-----------------------------------------------------------------------------

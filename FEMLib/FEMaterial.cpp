@@ -1495,6 +1495,18 @@ FEPermAteshianWeissOrtho::FEPermAteshianWeissOrtho() : FEMaterial(FE_PERM_REF_OR
 }
 
 //=============================================================================
+// Exponential Isotropic Permeability
+//=============================================================================
+
+REGISTER_MATERIAL(FEPermExpIso, MODULE_BIPHASIC, FE_PERM_EXP_ISO, FE_MAT_PERMEABILITY, "perm-exp-iso", 0, Materials_Biphasic_Materials_Permeability_Materials_Exp_Iso);
+
+FEPermExpIso::FEPermExpIso() : FEMaterial(FE_PERM_EXP_ISO)
+{
+    AddScienceParam(0, UNIT_PERMEABILITY, "perm" , "permeability");
+    AddScienceParam(0, UNIT_NONE        , "M"    , "M");
+}
+
+//=============================================================================
 // constant diffusivity
 //=============================================================================
 

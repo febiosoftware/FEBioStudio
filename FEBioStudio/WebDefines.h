@@ -226,6 +226,7 @@
 #define Materials_Biphasic_Materials_Permeability_Materials "FEBio_um_2-9-Subsection-4.7.2.html"
 #define Materials_Biphasic_Materials_Permeability_Materials_Constant_Isotropic_Permeability "FEBio_um_2-9-4.7.2.1.html"
 #define Materials_Biphasic_Materials_Permeability_Materials_Holmes_Mow "FEBio_um_2-9-4.7.2.2.html"
+#define Materials_Biphasic_Materials_Permeability_Materials_Exp_Iso "index.html"
 #define Materials_Biphasic_Materials_Permeability_Materials_Referentially_Isotropic_Permeability "FEBio_um_2-9-4.7.2.3.html"
 #define Materials_Biphasic_Materials_Permeability_Materials_Referentially_Orthotropic_Permeability "FEBio_um_2-9-4.7.2.4.html"
 #define Materials_Biphasic_Materials_Permeability_Materials_Referentially_Transversely_Isotropic_Permeability "FEBio_um_2-9-4.7.2.5.html"
