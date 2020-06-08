@@ -1441,7 +1441,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_RIGID_CONNECTOR:
-		menu.addAction("Copy", this, SLOT(OnCopyConnector()));
+		menu.addAction("Copy", this, SLOT(OnCopyRigidConnector()));
 		del = true;
 		break;
 	case MT_IC:
@@ -1454,7 +1454,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_RIGID_CONSTRAINT:
-		menu.addAction("Copy", this, SLOT(OnCopyConstraint()));
+		menu.addAction("Copy", this, SLOT(OnCopyRigidConstraint()));
 		del = true;
 		break;
 	case MT_STEP:
