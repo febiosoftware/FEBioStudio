@@ -1168,6 +1168,7 @@ void CModelViewer::OnCopyStep()
 
 	// copy parameters
 	psCopy->GetParamBlock() = ps->GetParamBlock();
+	psCopy->GetSettings() = ps->GetSettings();
 
 	// add the step to the doc
 	pdoc->DoCommand(new CCmdAddStep(fem, psCopy));
