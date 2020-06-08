@@ -1140,12 +1140,11 @@ void GLMeshRender::RenderGLMesh(GLMesh* pm, int nid)
 		}
 		glEnd();
 	}
-	else
+	else if (nid < (int) pm->m_FIL.size())
 	{
 		assert(pm->m_FIL.size() > 0);
 		glBegin(GL_TRIANGLES);
 		{
-			assert((nid >= 0) && (nid < (int)pm->m_FIL.size()));
 			pair<int, int> fil = pm->m_FIL[nid];
 			for (int i = 0; i<fil.second; ++i)
 			{

@@ -33,6 +33,7 @@
 #include "LaunchConfig.h"
 #include "MainTabBar.h"
 #include "DlgMeasure.h"
+#include "DlgPlaneCut.h"
 #include "PostToolBar.h"
 #include "FEBioStudioProject.h"
 #include "welcomePage.h"
@@ -83,6 +84,7 @@ public:
 	::CInfoPanel*	infoPanel;
 	::CDatabasePanel*	databasePanel;
 	::CDlgMeasure*	measureTool;
+	::CDlgPlaneCut*	planeCutTool;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -105,6 +107,7 @@ public:
 	QAction* actionSelectNodes;
 	QAction* actionSelectDiscrete;
 	QAction* actionMeasureTool;
+	QAction* actionPlaneCutTool;
 
 	QAction* actionAddBC;
 	QAction* actionAddNodalLoad;
@@ -190,6 +193,7 @@ public:
 		m_clearUndoOnSave = true;
 
 		measureTool = nullptr;
+		planeCutTool = nullptr;
 
 		m_showNewDialog = true;
 	}
@@ -486,6 +490,7 @@ public:
 		selectFree   = addAction("Freehand" , "selectFree"  , "selectFree"  , true);
 
 		actionMeasureTool = addAction("Measure Tool", "actionMeasureTool", "measure"); actionMeasureTool->setShortcut(Qt::Key_F2);
+		actionPlaneCutTool = addAction("Plane Cut", "actionPlaneCutTool", "cut"); 
 
 		QActionGroup* pag = new QActionGroup(mainWindow);
 		pag->addAction(actionSelectObjects);
@@ -748,6 +753,7 @@ public:
 		buildToolBar->addAction(selectFree);
 		buildToolBar->addSeparator();
 		buildToolBar->addAction(actionMeasureTool);
+		buildToolBar->addAction(actionPlaneCutTool);
 		buildToolBar->addSeparator();
 		buildToolBar->addAction(actionSelect);
 		buildToolBar->addAction(actionTranslate);

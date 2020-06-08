@@ -74,6 +74,7 @@ public:
 	void AddEdge(int* n, int nodes, int groupID = 0);
 	int AddFace(int n0, int n1, int n2, int groupID = 0, int smoothID = 0, bool bext = true);
 	void AddFace(int* n, int nodes, int gid = 0, int smoothID = 0, bool bext = true);
+	void AddFace(vec3d* r, int gid = 0, int smoothId = 0, bool bext = true);
 
 protected:
 	void FindNeighbors();

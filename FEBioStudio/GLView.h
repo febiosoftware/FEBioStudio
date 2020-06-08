@@ -403,6 +403,10 @@ public:
 	void AddDecoration(GDecoration* deco);
 	void RemoveDecoration(GDecoration* deco);
 
+	void ShowPlaneCut(bool b);
+	void SetPlaneCut(double d[4]);
+	void UpdatePlaneCut();
+
 protected:
 	void PanView(vec3d r);
 
@@ -411,6 +415,8 @@ protected:
 	void RenderGLProgress(CPostDocument* postDoc);
 
 	bool TrackGLProgress(int x, CPostDocument* postDoc);
+
+	void RenderPlaneCut();
 
 protected:
 	void SetTrackingData(int n[3]);
@@ -517,6 +523,10 @@ private:
 	VIEW_SETTINGS	m_view;
 	int	m_viewport[4];		//!< store viewport coordinates
 	int m_dpr;				//!< device pixel ratio for converting from physical to device-independent pixels
+
+	bool		m_showPlaneCut;
+	double		m_plane[4];
+	GLMesh*		m_planeCut;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);

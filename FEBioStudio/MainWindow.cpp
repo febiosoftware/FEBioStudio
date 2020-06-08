@@ -919,6 +919,7 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
 
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
+	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 
 	// update graph windows
 	QList<::CGraphWindow*>::iterator it = ui->graphList.begin();

@@ -1012,3 +1012,9 @@ void CMainWindow::on_actionMeasureTool_triggered()
 	if (ui->measureTool == nullptr) ui->measureTool = new CDlgMeasure(this);
 	ui->measureTool->show();
 }
+
+void CMainWindow::on_actionPlaneCutTool_triggered()
+{
+	if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
+	ui->planeCutTool->show();
+}

@@ -189,6 +189,17 @@ void GMesh::AddFace(int* n, int nodes, int groupID, int smoothID, bool bext)
 }
 
 //-----------------------------------------------------------------------------
+void GMesh::AddFace(vec3d* r, int gid, int smoothId, bool bext)
+{
+	int n[3];
+	n[0] = AddNode(r[0]);
+	n[1] = AddNode(r[1]);
+	n[2] = AddNode(r[2]);
+
+	AddFace(n, 3, gid, smoothId, bext);
+}
+
+//-----------------------------------------------------------------------------
 // Update normals for specific faces that have a pid that is inside gid
 //
 void GMesh::UpdateNormals(int* pid, int nsize)

@@ -400,6 +400,13 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	m_szsubtitle[0] = 0;
 
+	m_showPlaneCut = false;
+	m_plane[0] = 1.0;
+	m_plane[1] = 0.0;
+	m_plane[2] = 0.0;
+	m_plane[3] = 0.0;
+	m_planeCut = nullptr;
+
 	// attach the highlighter to this view
 	GLHighlighter::AttachToView(this);
 
@@ -1659,6 +1666,13 @@ void CGLView::RenderModelView()
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nitem = pdoc->GetItemMode();
 
+	if (m_showPlaneCut)
+	{
+		if (m_planeCut == nullptr) UpdatePlaneCut();
+		glClipPlane(GL_CLIP_PLANE0, m_plane);
+		glEnable(GL_CLIP_PLANE0);
+	}
+
 	// render the model
 	if (pdoc->IsValid())
 	{
@@ -1745,6 +1759,13 @@ void CGLView::RenderModelView()
 				glPopMatrix();
 			}
 		}
+	}
+
+	glDisable(GL_CLIP_PLANE0);
+
+	if (m_showPlaneCut && m_planeCut)
+	{
+		RenderPlaneCut();
 	}
 }
 
@@ -3829,6 +3850,32 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 			return;
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::ShowPlaneCut(bool b)
+{
+	m_showPlaneCut = b;
+	delete m_planeCut; m_planeCut = nullptr;
+	update();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::SetPlaneCut(double d[4])
+{
+	CModelDocument* doc = m_pWnd->GetModelDocument();
+	if (doc == nullptr) return;
+
+	BOX box = doc->GetGModel()->GetBoundingBox();
+	double R = box.GetMaxExtent();
+	if (R < 1e-12) R = 1.0;
+
+	m_plane[0] = d[0];
+	m_plane[1] = d[1];
+	m_plane[2] = d[2];
+	m_plane[3] = d[3]*R;
+	delete m_planeCut; m_planeCut = nullptr;
+	update();
 }
 
 //-----------------------------------------------------------------------------
@@ -8570,4 +8617,203 @@ void CGLView::RenderTags()
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
+}
+
+const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
+const int TET_NT[8] = { 0, 1, 2, 2, 3, 3, 3, 3 };
+const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
+extern int LUT[256][15]; // in MeshTools\lut.cpp
+extern int ET_HEX[12][2];// in MeshTools\lut.cpp
+
+void CGLView::UpdatePlaneCut()
+{
+	if (m_planeCut) delete m_planeCut;
+
+	CModelDocument* doc = m_pWnd->GetModelDocument();
+	if (doc == nullptr) return;
+
+	GModel& mdl = *doc->GetGModel();
+	if (mdl.Objects() == 0) return;
+
+	// set the plane normal
+	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
+	double ref = -m_plane[3];
+
+	int edge[15][2], edgeNode[15][2], etag[15];
+
+	m_planeCut = new GLMesh;
+
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		if (po->GetFEMesh())
+		{
+			FEMesh* mesh = po->GetFEMesh();
+
+			vec3d ex[8];
+			int en[8];
+
+			// repeat over all elements
+			int NE = mesh->Elements();
+			for (int i = 0; i < NE; ++i)
+			{
+				// render only when visible
+				FEElement& el = mesh->Element(i);
+				if (el.IsVisible() && el.IsSolid())
+				{
+					GPart* pg = po->Part(el.m_gid);
+					int mid = pg->GetMaterialID();
+					if (mid < 0) mid = 0;
+
+					const int *nt = nullptr;
+					switch (el.Type())
+					{
+					case FE_HEX8   : nt = HEX_NT; break;
+					case FE_HEX20  : nt = HEX_NT; break;
+					case FE_HEX27  : nt = HEX_NT; break;
+					case FE_PENTA6 : nt = PEN_NT; break;
+					case FE_PENTA15: nt = PEN_NT; break;
+					case FE_TET4   : nt = TET_NT; break;
+					case FE_TET5   : nt = TET_NT; break;
+					case FE_TET10  : nt = TET_NT; break;
+					case FE_TET15  : nt = TET_NT; break;
+					case FE_TET20  : nt = TET_NT; break;
+					case FE_PYRA5  : nt = PYR_NT; break;
+					default:
+						assert(false);
+					}
+
+					// get the nodal values
+					for (int k = 0; k < 8; ++k)
+					{
+						FENode& node = mesh->Node(el.m_node[nt[k]]);
+						ex[k] = to_vec3f(node.r);
+						en[k] = el.m_node[nt[k]];
+					}
+
+					// calculate the case of the element
+					int ncase = 0;
+					for (int k = 0; k < 8; ++k)
+						if (norm*ex[k] >= ref) ncase |= (1 << k);
+
+					// loop over faces
+					int* pf = LUT[ncase];
+					int ne = 0;
+					for (int l = 0; l < 5; l++)
+					{
+						if (*pf == -1) break;
+
+						// calculate nodal positions
+						vec3d r[3];
+						float w1, w2, w;
+						for (int k = 0; k < 3; k++)
+						{
+							int n1 = ET_HEX[pf[k]][0];
+							int n2 = ET_HEX[pf[k]][1];
+
+							w1 = norm * ex[n1];
+							w2 = norm * ex[n2];
+
+							if (w2 != w1)
+								w = (ref - w1) / (w2 - w1);
+							else
+								w = 0.f;
+
+							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+						}
+
+						m_planeCut->AddFace(r, mid);
+
+						// add edges (for mesh rendering)
+						for (int k = 0; k < 3; ++k)
+						{
+							int n1 = pf[k];
+							int n2 = pf[(k + 1) % 3];
+
+							bool badd = true;
+							for (int m = 0; m < ne; ++m)
+							{
+								int m1 = edge[m][0];
+								int m2 = edge[m][1];
+								if (((n1 == m1) && (n2 == m2)) ||
+									((n1 == m2) && (n2 == m1)))
+								{
+									badd = false;
+									etag[m]++;
+									break;
+								}
+							}
+
+							if (badd)
+							{
+								edge[ne][0] = n1;
+								edge[ne][1] = n2;
+								etag[ne] = 0;
+
+								GMesh::FACE& face = m_planeCut->Face(m_planeCut->Faces() - 1);
+								edgeNode[ne][0] = face.n[k];
+								edgeNode[ne][1] = face.n[(k+1)%3];
+								++ne;
+							}
+						}
+						pf += 3;
+					}
+
+					for (int k = 0; k < ne; ++k)
+					{
+						if (etag[k] == 0)
+						{
+							m_planeCut->AddEdge(edgeNode[k], 2);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	m_planeCut->Update();
+}
+
+void CGLView::RenderPlaneCut()
+{
+	if (m_planeCut == nullptr) return;
+
+	CModelDocument* doc = m_pWnd->GetModelDocument();
+	if (doc == nullptr) return;
+
+	FEModel& fem = *doc->GetFEModel();
+	int MAT = fem.Materials();
+
+	glColor3ub(255, 255, 255);
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_COLOR_MATERIAL);
+	for (int i = 0; i <= MAT; ++i)
+	{
+		if (i == 0)
+		{
+			SetMatProps(nullptr);
+		}
+		else
+		{
+			SetMatProps(fem.GetMaterial(i - 1));
+		}
+		GetMeshRenderer().RenderGLMesh(m_planeCut, i);
+	}
+
+	if (GetViewSettings().m_bmesh)
+	{
+		glDisable(GL_LIGHTING);
+		glEnable(GL_COLOR_MATERIAL);
+		glColor3ub(0, 0, 0);
+		GetCamera().LineDrawMode(true);
+		GetCamera().Transform();
+		
+		GetMeshRenderer().RenderGLEdges(m_planeCut);
+
+		GetCamera().LineDrawMode(false);
+		GetCamera().Transform();
+
+	}
+	glPopAttrib();
 }
