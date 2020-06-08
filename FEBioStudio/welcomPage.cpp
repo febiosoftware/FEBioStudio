@@ -34,6 +34,7 @@ _RECENT_FILES_\
 <ul>\
 <li><a href=\"#febio\">FEBio Website</li>\
 <li><a href=\"#help\">FEBio Knowledgebase</li>\
+<li><a href=\"#forum\">FEBio Forum</li>\
 </ul>\
 </td>\
 <td>\

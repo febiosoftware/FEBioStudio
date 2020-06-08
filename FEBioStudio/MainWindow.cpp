@@ -301,6 +301,7 @@ void CMainWindow::on_welcome_anchorClicked(const QUrl& link)
 	else if (ref == "#openproject") on_actionOpenProject_triggered();
 	else if (ref == "#febio") on_actionFEBioURL_triggered();
 	else if (ref == "#help") on_actionFEBioResources_triggered();
+	else if (ref == "#forum") on_actionFEBioForum_triggered();
 	else
 	{
 		string s = ref.toStdString();
