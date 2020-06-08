@@ -435,7 +435,7 @@ void CMainWindow::on_actionAddStep_triggered()
 			if (name.empty()) name = defaultStepName(fem, ps);
 
 			ps->SetName(name);
-			doc->DoCommand(new CCmdAddStep(fem, ps));
+			doc->DoCommand(new CCmdAddStep(fem, ps, dlg.insertPosition()));
 			prj.ActivatePlotVariables(ps);
 			UpdateModel(ps);
 		}

@@ -16,6 +16,8 @@ public:
 
 	void accept();
 
+	int insertPosition() const;
+
 public:
 	std::string	m_name;
 	int		m_ntype;

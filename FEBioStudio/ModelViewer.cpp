@@ -1177,6 +1177,40 @@ void CModelViewer::OnCopyStep()
 	Select(psCopy);
 }
 
+void CModelViewer::OnStepMoveUp()
+{
+	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
+	if (ps == 0) return;
+
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FEModel* fem = pdoc->GetFEModel();
+
+	int n = fem->GetStepIndex(ps); assert(n >= 1);
+	if (n > 1)
+	{
+		pdoc->DoCommand(new CCmdSwapSteps(fem, ps, fem->GetStep(n - 1)));
+		Update();
+		Select(ps);
+	}
+}
+
+void CModelViewer::OnStepMoveDown()
+{
+	FEAnalysisStep* ps = dynamic_cast<FEAnalysisStep*>(m_currentObject); assert(ps);
+	if (ps == 0) return;
+
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FEModel* fem = pdoc->GetFEModel();
+
+	int n = fem->GetStepIndex(ps); assert(n >= 1);
+	if (n < fem->Steps() - 1)
+	{
+		pdoc->DoCommand(new CCmdSwapSteps(fem, ps, fem->GetStep(n + 1)));
+		Update();
+		Select(ps);
+	}
+}
+
 void CModelViewer::OnRerunJob()
 {
 	CFEBioJob* job = dynamic_cast<CFEBioJob*>(m_currentObject); assert(job);
@@ -1273,32 +1307,32 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	switch (data->type)
 	{
 	case MT_OBJECT_LIST:
+	{
+		menu.addAction("Show All Objects", this, SLOT(OnUnhideAllObjects()));
+		menu.addSeparator();
+
+		QMenu* sub = new QMenu("Set Active Mesh Layer");
+		int layers = gm->MeshLayers();
+		int activeLayer = gm->GetActiveMeshLayer();
+		for (int i = 0; i < layers; ++i)
 		{
-			menu.addAction("Show All Objects", this, SLOT(OnUnhideAllObjects()));
-			menu.addSeparator();
-
-			QMenu* sub = new QMenu("Set Active Mesh Layer");
-			int layers = gm->MeshLayers();
-			int activeLayer = gm->GetActiveMeshLayer();
-			for (int i = 0; i < layers; ++i)
-			{
-				string s = gm->GetMeshLayerName(i);
-				QAction* a = sub->addAction(QString::fromStdString(s));
-				a->setCheckable(true);
-				if (i == activeLayer) a->setChecked(true);
-			}
-
-			QObject::connect(sub, SIGNAL(triggered(QAction*)), GetMainWindow(), SLOT(OnSelectMeshLayer(QAction*)));
-
-			menu.addAction(sub->menuAction());
-			menu.addAction("New Mesh Layer ...", this, SLOT(OnCreateNewMeshLayer()));
-
-			if (layers > 1)
-			{
-				menu.addAction("Delete Active Mesh Layer", this, SLOT(OnDeleteMeshLayer()));
-			}
+			string s = gm->GetMeshLayerName(i);
+			QAction* a = sub->addAction(QString::fromStdString(s));
+			a->setCheckable(true);
+			if (i == activeLayer) a->setChecked(true);
 		}
-		break;
+
+		QObject::connect(sub, SIGNAL(triggered(QAction*)), GetMainWindow(), SLOT(OnSelectMeshLayer(QAction*)));
+
+		menu.addAction(sub->menuAction());
+		menu.addAction("New Mesh Layer ...", this, SLOT(OnCreateNewMeshLayer()));
+
+		if (layers > 1)
+		{
+			menu.addAction("Delete Active Mesh Layer", this, SLOT(OnDeleteMeshLayer()));
+		}
+	}
+	break;
 	case MT_PART_LIST:
 		menu.addAction("Show All Parts", this, SLOT(OnUnhideAllParts()));
 		break;
@@ -1362,41 +1396,41 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
 		break;
 	case MT_OBJECT:
+	{
+		GObject* po = dynamic_cast<GObject*>(data->obj);
+		if (po)
 		{
-			GObject* po = dynamic_cast<GObject*>(data->obj);
-			if (po)
+			if (po->IsVisible())
 			{
-				if (po->IsVisible())
-				{
-					menu.addAction("Select", this, SLOT(OnSelectObject()));
-					menu.addAction("Hide", this, SLOT(OnHideObject()));
-				}
-				else
-					menu.addAction("Show", this, SLOT(OnShowObject()));
-
-				del = true;
+				menu.addAction("Select", this, SLOT(OnSelectObject()));
+				menu.addAction("Hide", this, SLOT(OnHideObject()));
 			}
+			else
+				menu.addAction("Show", this, SLOT(OnShowObject()));
+
+			del = true;
 		}
-		break;
+	}
+	break;
 	case MT_PART:
+	{
+		GPart* pg = dynamic_cast<GPart*>(data->obj);
+		if (pg)
 		{
-			GPart* pg = dynamic_cast<GPart*>(data->obj);
-			if (pg)
+			if (pg->IsVisible())
 			{
-				if (pg->IsVisible())
-				{
-					menu.addAction("Select", this, SLOT(OnSelectPart()));
-					menu.addAction("Hide", this, SLOT(OnHidePart()));
-				}
-				else
-					menu.addAction("Show", this, SLOT(OnShowPart()));
-
-				// only parts of a GMeshObject can be deleted
-				if (dynamic_cast<GMeshObject*>(pg->Object()))
-					del = true;
+				menu.addAction("Select", this, SLOT(OnSelectPart()));
+				menu.addAction("Hide", this, SLOT(OnHidePart()));
 			}
+			else
+				menu.addAction("Show", this, SLOT(OnShowPart()));
+
+			// only parts of a GMeshObject can be deleted
+			if (dynamic_cast<GMeshObject*>(pg->Object()))
+				del = true;
 		}
-		break;
+	}
+	break;
 	case MT_SURFACE:
 		menu.addAction("Select", this, SLOT(OnSelectSurface()));
 		break;
@@ -1426,16 +1460,16 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_CONTACT:
+	{
+		menu.addAction("Copy", this, SLOT(OnCopyInterface()));
+		FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(data->obj);
+		if (pci)
 		{
-			menu.addAction("Copy", this, SLOT(OnCopyInterface()));
-			FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(data->obj);
-			if (pci)
-			{
-				menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
-			}
-			del = true;
+			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
 		}
-		break;
+		del = true;
+	}
+	break;
 	case MT_BC:
 		menu.addAction("Copy", this, SLOT(OnCopyBC()));
 		del = true;
@@ -1458,8 +1492,16 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_STEP:
-		menu.addAction("Copy", this, SLOT(OnCopyStep()));
-		del = true;
+		{
+			menu.addAction("Copy", this, SLOT(OnCopyStep()));
+			FEAnalysisStep* step = dynamic_cast<FEAnalysisStep*>(data->obj);
+			if (step)
+			{
+				menu.addAction("Move Up", this, SLOT(OnStepMoveUp()));
+				menu.addAction("Move Down", this, SLOT(OnStepMoveDown()));
+			}
+			del = true;
+		}
 		break;
 	case MT_JOB:
 		menu.addAction("Open", this, SLOT(OnOpenJob()));

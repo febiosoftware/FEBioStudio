@@ -70,6 +70,11 @@ public:
 	T* operator [] (size_t i) { return dynamic_cast<T*>(m_obs[i]); }
 	const T* operator [] (size_t i) const { return dynamic_cast<T*>(m_obs[i]); }
 
+	void Set(size_t pos, T* obj)
+	{
+		m_obs[pos] = obj;
+	}
+
 protected:
 	size_t RemoveChild(FSObject* po) override
 	{

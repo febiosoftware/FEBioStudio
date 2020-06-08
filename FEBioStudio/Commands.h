@@ -1252,7 +1252,7 @@ protected:
 class CCmdAddStep : public CCommand
 {
 public:
-	CCmdAddStep(FEModel* fem, FEStep* ps);
+	CCmdAddStep(FEModel* fem, FEStep* ps, int insertAfter = -1);
 	~CCmdAddStep();
 
 	void Execute();
@@ -1260,7 +1260,23 @@ public:
 
 protected:
 	FEModel*	m_fem;
-	FEStep*	m_pstep;
+	FEStep*		m_pstep;
+	int			m_pos;
+};
+
+//----------------------------------------------------------------
+class CCmdSwapSteps : public CCommand
+{
+public:
+	CCmdSwapSteps(FEModel* fem, FEStep* step0, FEStep* step1);
+
+	void Execute();
+	void UnExecute();
+
+private:
+	FEModel*	m_fem;
+	FEStep*		m_step0;
+	FEStep*		m_step1;
 };
 
 //----------------------------------------------------------------

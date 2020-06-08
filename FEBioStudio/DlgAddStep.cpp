@@ -18,6 +18,7 @@ class Ui::CDlgAddStep
 public:
 	QLineEdit* name;
 	QListWidget* type;
+	QComboBox*	steps;
 
 public:
 	void setupUi(QWidget* parent)
@@ -31,6 +32,9 @@ public:
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
 		form->addRow("Name:", name);
+
+		steps = new QComboBox;
+		form->addRow("Insert after:", steps);
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addLayout(form);
@@ -50,6 +54,13 @@ CDlgAddStep::CDlgAddStep(FEProject& prj, QWidget* parent) : QDialog(parent), ui(
 	setWindowTitle("Add Analysis Step");
 
 	ui->setupUi(this);
+
+	FEModel& fem = prj.GetFEModel();
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		ui->steps->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
+	}
+	ui->steps->setCurrentIndex(fem.Steps() - 1);
 
 	// set the types
 	vector<FEClassFactory*> l = FEMKernel::FindAllClasses(prj.GetModule(), FE_ANALYSIS);
@@ -81,4 +92,9 @@ void CDlgAddStep::accept()
 	}
 
 	QDialog::accept();
+}
+
+int CDlgAddStep::insertPosition() const
+{
+	return ui->steps->currentIndex();
 }

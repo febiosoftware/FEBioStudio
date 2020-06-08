@@ -1037,6 +1037,23 @@ void FEModel::InsertStep(int n, FEStep* ps)
 }
 
 //-----------------------------------------------------------------------------
+void FEModel::SwapSteps(FEStep* ps0, FEStep* ps1)
+{
+	int n0 = GetStepIndex(ps0);
+	assert(n0 >= 0);
+
+	int n1 = GetStepIndex(ps1);
+	assert(n1 >= 0);
+
+	if ((n0 >= 0) && (n1 >= 0))
+	{
+		FEStep* tmp = m_pStep[n0];
+		m_pStep.Set(n0, m_pStep[n1]);
+		m_pStep.Set(n1, tmp);
+	}
+}
+
+//-----------------------------------------------------------------------------
 FEStep* FEModel::FindStep(int nid)
 {
 	for (int i=0; i<(int) m_pStep.Size(); ++i)
@@ -1045,6 +1062,16 @@ FEStep* FEModel::FindStep(int nid)
 	}
 	assert(false);
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+int FEModel::GetStepIndex(FEStep* ps)
+{
+	for (int i = 0; i < (int)m_pStep.Size(); ++i)
+	{
+		if (m_pStep[i] == ps) return i;
+	}
+	return -1;
 }
 
 //-----------------------------------------------------------------------------

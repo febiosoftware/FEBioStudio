@@ -3101,10 +3101,11 @@ void CCmdAddModifier::UnExecute()
 // CCmdAddStep
 //-----------------------------------------------------------------------------
 
-CCmdAddStep::CCmdAddStep(FEModel* fem, FEStep* pstep) : CCommand("Add step")
+CCmdAddStep::CCmdAddStep(FEModel* fem, FEStep* pstep, int insertAfter) : CCommand("Add step")
 {
 	m_fem = fem;
 	m_pstep = pstep;
+	m_pos = insertAfter;
 }
 
 CCmdAddStep::~CCmdAddStep()
@@ -3114,18 +3115,38 @@ CCmdAddStep::~CCmdAddStep()
 
 void CCmdAddStep::Execute()
 {
-	m_fem->AddStep(m_pstep);
+	if (m_pos == -1) m_pos = m_fem->Steps() - 1;
+	m_fem->InsertStep(m_pos + 1, m_pstep);
 	m_pstep = 0;
 }
 
 void CCmdAddStep::UnExecute()
 {
-	// remove the last step
-	int N = m_fem->Steps();
-	assert(N>0);
-	m_pstep = m_fem->GetStep(N - 1);
+	m_pstep = m_fem->GetStep(m_pos + 1);
 	m_fem->DeleteStep(m_pstep);
 }
+
+//-----------------------------------------------------------------------------
+// CCmdSwapSteps
+//-----------------------------------------------------------------------------
+
+CCmdSwapSteps::CCmdSwapSteps(FEModel* fem, FEStep* step0, FEStep* step1) : CCommand("Swap steps")
+{
+	m_fem = fem;
+	m_step0 = step0;
+	m_step1 = step1;
+}
+
+void CCmdSwapSteps::Execute() 
+{
+	m_fem->SwapSteps(m_step0, m_step1);
+}
+
+void CCmdSwapSteps::UnExecute()
+{
+	Execute();
+}
+
 
 //-----------------------------------------------------------------------------
 // CCmdAddMaterial

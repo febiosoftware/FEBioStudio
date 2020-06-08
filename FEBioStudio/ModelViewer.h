@@ -112,6 +112,8 @@ public slots:
 	void OnCopyLoad();
 	void OnCopyRigidConstraint();
 	void OnCopyStep();
+	void OnStepMoveUp();
+	void OnStepMoveDown();
 	void OnRerunJob();
 	void OnOpenJob();
 	void OnEditOutput();

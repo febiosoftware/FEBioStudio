@@ -104,10 +104,12 @@ public:
 	int Steps();
 	FEStep* GetStep(int i);
 	FEStep* FindStep(int nid);
+	int GetStepIndex(FEStep* ps);
 
 	void AddStep(FEStep* ps);
 	int DeleteStep(FEStep* ps);
 	void InsertStep(int n, FEStep* ps);
+	void SwapSteps(FEStep* ps0, FEStep* ps1);
 
 	void AssignComponentToStep(FEStepComponent* pc, FEStep* ps);
 
