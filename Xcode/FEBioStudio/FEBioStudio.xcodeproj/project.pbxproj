@@ -119,6 +119,7 @@
 		D5DFB17D248F24750006DB45 /* DlgPlaneCut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DFB17A248F24750006DB45 /* DlgPlaneCut.cpp */; };
 		D5E04A4A2357BD1B006AC137 /* moc_DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */; };
 		D5E04A4B2357BD1B006AC137 /* DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */; };
+		D5E73B8824902EB80091806F /* QtWebEngineWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */; };
 		D5EBB7A8232AEAED00EED2BE /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5EBB7A6232AEAED00EED2BE /* Logger.cpp */; };
 		D5ED290123197E8500C16BF7 /* libFSCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290023197E8500C16BF7 /* libFSCore.a */; };
 		D5ED290323197E8500C16BF7 /* libGLLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ED290223197E8500C16BF7 /* libGLLib.a */; };
@@ -606,6 +607,7 @@
 		D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditLConfigs.cpp; sourceTree = "<group>"; };
 		D5E04A482357BD1B006AC137 /* DlgEditLConfigs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditLConfigs.h; sourceTree = "<group>"; };
 		D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgEditLConfigs.cpp; sourceTree = "<group>"; };
+		D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWebEngineWidgets.framework; path = ../../../../../../../usr/local/Cellar/qt/5.14.1/lib/QtWebEngineWidgets.framework; sourceTree = "<group>"; };
 		D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchConfig.h; sourceTree = "<group>"; };
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
 		D5EBB7A6232AEAED00EED2BE /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
@@ -981,6 +983,7 @@
 				D576571823E3345500E4F70F /* libquazip.1.0.0.dylib in Frameworks */,
 				D5EF347623A03C1A00BF4D56 /* libssh.4.8.3.dylib in Frameworks */,
 				D5EF347323A03BA500BF4D56 /* libxvidcore.4.dylib in Frameworks */,
+				D5E73B8824902EB80091806F /* QtWebEngineWidgets.framework in Frameworks */,
 				D548546B23749F2100BE1731 /* QtGui.framework in Frameworks */,
 				D548546C23749F2100BE1731 /* QtCore.framework in Frameworks */,
 				D548546D23749F2100BE1731 /* QtCharts.framework in Frameworks */,
@@ -1557,6 +1560,7 @@
 				D5EF347523A03C1900BF4D56 /* libssh.4.8.3.dylib */,
 				D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */,
 				D5606C7F238DA80C002B037E /* libCUILib.a */,
+				D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */,
 				D548546923749F2000BE1731 /* QtCharts.framework */,
 				D548546823749F2000BE1731 /* QtCore.framework */,
 				D548546723749F2000BE1731 /* QtGui.framework */,
@@ -2040,6 +2044,7 @@
 					"-DHAS_NETGEN",
 					"-DHAS_QUAZIP",
 					"-DMODEL_REPO",
+					"-DWEBHELP",
 				);
 				SDKROOT = macosx;
 			};
@@ -2102,6 +2107,7 @@
 					"-DHAS_NETGEN",
 					"-DHAS_QUAZIP",
 					"-DMODEL_REPO",
+					"-DWEBHELP",
 				);
 				SDKROOT = macosx;
 			};
@@ -2125,6 +2131,7 @@
 					/usr/local/opt/qt/include/QtWidgets,
 					/usr/local/opt/qt/include/QtCharts,
 					/usr/local/opt/qt/include/QtNetwork,
+					/usr/local/opt/qt/include/QtWebEngineWidgets,
 					/usr/local/opt/libssh/include,
 					/usr/local/opt/openssl/include,
 					/usr/local/opt/quazip/include/quazip,
@@ -2181,6 +2188,7 @@
 					/usr/local/opt/qt/include/QtWidgets,
 					/usr/local/opt/qt/include/QtCharts,
 					/usr/local/opt/qt/include/QtNetwork,
+					/usr/local/opt/qt/include/QtWebEngineWidgets,
 					/usr/local/opt/libssh/include,
 					/usr/local/opt/openssl/include,
 					/usr/local/opt/quazip/include/quazip,
