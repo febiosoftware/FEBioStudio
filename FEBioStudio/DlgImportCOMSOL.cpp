@@ -7,7 +7,7 @@
 class Ui::CDlgImportCOMSOL
 {
 public:
-	QCheckBox* pc[9];
+	QCheckBox* pc[10];
 
 public:
 	void setupUi(QWidget* parent)
@@ -23,8 +23,9 @@ public:
 		pc[6] = new QCheckBox("Import PRISM elements");
 		pc[7] = new QCheckBox("Import HEX elements");
 		pc[8] = new QCheckBox("Import PYR elements (as 2 TETS each)");
+        pc[9] = new QCheckBox("Import PYR elements");
 
-		for (int i=0; i<9; ++i) lo->addWidget(pc[i]);
+		for (int i=0; i<10; ++i) lo->addWidget(pc[i]);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		lo->addWidget(bb);
@@ -51,6 +52,7 @@ CDlgImportCOMSOL::CDlgImportCOMSOL(COMSOLimport* fileReader, QWidget* parent) : 
 	ui->pc[6]->setChecked(m_fileReader->m_addprisms    );
 	ui->pc[7]->setChecked(m_fileReader->m_addhexes     );
 	ui->pc[8]->setChecked(m_fileReader->m_pyrstotets   );
+    ui->pc[9]->setChecked(m_fileReader->m_addpyrs      );
 }
 
 void CDlgImportCOMSOL::accept()
@@ -64,6 +66,7 @@ void CDlgImportCOMSOL::accept()
 	m_fileReader->m_addprisms     = (ui->pc[6]->isChecked());
 	m_fileReader->m_addhexes      = (ui->pc[7]->isChecked());
 	m_fileReader->m_pyrstotets    = (ui->pc[8]->isChecked());
+    m_fileReader->m_addpyrs       = (ui->pc[9]->isChecked());
 
 	QDialog::accept();
 }

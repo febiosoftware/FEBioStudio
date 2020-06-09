@@ -27,6 +27,7 @@ public:
 	bool	m_addhexes;	    // add hex elements
 	bool	m_addprisms;	// add prism elements (5 sided/pentahedral)
 	bool	m_pyrstotets;	// convert pyramid elements to two tets by splitting
+    bool    m_addpyrs;      // add pyramid elements
 	bool	m_eltypeseg;	// segregate element types in partitioning and set generation
 	
 

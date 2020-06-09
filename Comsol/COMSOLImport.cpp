@@ -15,6 +15,7 @@ COMSOLimport::COMSOLimport(FEProject& prj) : FEFileImport(prj)
 	m_addhexes = true;
 	m_addprisms = true;
 	m_pyrstotets = false;
+    m_addpyrs = true;
     m_totalelems = 0;
     m_node0 = 0;	
 }
@@ -128,29 +129,33 @@ bool COMSOLimport::ReadElementType(char* szline)
 	bool import_this_type;
 	bool is_pyramid = false;
 	
-	if ((eltype[1]=='e') && (nodesperel==4)) {
-                // detect the 'e' in tet (3D)
-                el.ntype = 100;
+    if ((eltype[1]=='e') && (nodesperel==4)) {
+        // detect the 'e' in tet (3D)
+        el.ntype = 100;
     } else if ((eltype[0]=='p') && (nodesperel==5)) {
-                // detect the 'p' in pyr (pyramid element to be split into 2 tets)
-               el.ntype = 100;      // tet here as final element type for pyr
-			   is_pyramid = true;
-			   newelems=2*newelems; // each pyr => two tets
+        // detect the 'p' in pyr (pyramid element to be split into 2 tets)
+        if (m_pyrstotets) {
+            el.ntype = 100;      // tet here as final element type for pyr
+            is_pyramid = true;
+            newelems=2*newelems; // each pyr => two tets
+        }
+        else
+            el.ntype = 200;
     } else if ((eltype[0]=='p') && (nodesperel==6)) {
-                // detect the 'p' in prism (pentahedral 3D)
-               el.ntype = 112;
+        // detect the 'p' in prism (pentahedral 3D)
+        el.ntype = 112;
     } else if ((eltype[2]=='x') && (nodesperel==8)) {
-                // detect the 'x' in hex (3D)
-               el.ntype = 101;
+        // detect the 'x' in hex (3D)
+        el.ntype = 101;
     } else if ((eltype[1]=='r') && (nodesperel==3)) {
-                // detect the 'r' in tri (2D)
-               el.ntype = 91;
+        // detect the 'r' in tri (2D)
+        el.ntype = 91;
     } else if ((eltype[1]=='u') && (nodesperel==4)) {
-                // detect the 'u' in quad (2D)
-               el.ntype = 94;
+        // detect the 'u' in quad (2D)
+        el.ntype = 94;
     } else {
-               import_this_type = false;
-			   //return errf("Unsupported node type. (not tet, tri, or hex)");
+        import_this_type = false;
+        //return errf("Unsupported node type. (not tet, tri, or hex)");
     }
 
 	switch(el.ntype) {
@@ -172,6 +177,9 @@ bool COMSOLimport::ReadElementType(char* szline)
 	case 94: 
 		import_this_type = m_addquads;
 		break;
+    case 200:
+        import_this_type = m_addpyrs;
+        break;
 	default:
 		import_this_type = false;
 	}
@@ -209,13 +217,18 @@ bool COMSOLimport::ReadElementType(char* szline)
 			} else { // all other elements
 				el.id = m_totalelems+i;
 				// convert line to node coordinates!
-				if (el.ntype == 101) { // comsol uses different node numbering than febio for hexes
-					if (!sscanf(szline, "%d %d %d %d %d %d %d %d", &n[0], &n[1], &n[3], &n[2], &n[4], &n[5], &n[7], &n[6]))
-						return false; 
-				} else {
-					if (!sscanf(szline, "%d %d %d %d %d %d %d %d", &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6], &n[7]))
-						return false; 
-				}
+                if (el.ntype == 101) { // comsol uses different node numbering than febio for hexes
+                    if (!sscanf(szline, "%d %d %d %d %d %d %d %d", &n[0], &n[1], &n[3], &n[2], &n[4], &n[5], &n[7], &n[6]))
+                        return false;
+                }
+                else if (el.ntype == 200) { // comsol uses different node numbering than febio for pyramids
+                    if (!sscanf(szline, "%d %d %d %d %d %d %d %d", &n[0], &n[1], &n[3], &n[2], &n[4], &n[5], &n[6], &n[7]))
+                        return false;
+                }
+                else {
+                    if (!sscanf(szline, "%d %d %d %d %d %d %d %d", &n[0], &n[1], &n[2], &n[3], &n[4], &n[5], &n[6], &n[7]))
+                        return false;
+                }
 				// add the node to the list
 				m_Elem.push_back(el);
 			}
@@ -343,6 +356,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
             case 100: pe->SetType(FE_TET4  ); break;
             case 112: pe->SetType(FE_PENTA6); break;
             case 101: pe->SetType(FE_HEX8  ); break;
+            case 200: pe->SetType(FE_PYRA5 ); break;
             default:
                 delete pm;
                 return false;
