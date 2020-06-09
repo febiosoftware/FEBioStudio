@@ -734,14 +734,22 @@ void CMainWindow::dropEvent(QDropEvent *e)
 {
 	foreach (const QUrl &url, e->mimeData()->urls()) {
 		QString fileName = url.toLocalFile();
-		// create a file reader
-		FileReader* fileReader = CreateFileReader(fileName);
+
+		FileReader* fileReader = nullptr;
+
+		QFileInfo file(fileName);
+
+		// Create a file reader
+		// NOTE: For FEB files I prefer to open the file as a separate model,
+		// so I need this hack. 
+		if (file.suffix() != "feb") fileReader = CreateFileReader(fileName);
+
+		CDocument* doc = GetDocument();
+
 		// make sure we have one
-		if (fileReader)
+		if (fileReader && doc)
 		{
-			CDocument* doc = GetDocument();
-			if (doc)
-				ReadFile(doc, fileName, fileReader, 0);
+			ReadFile(doc, fileName, fileReader, 0);
 		}
 		else {
 			OpenFile(fileName, false, false);

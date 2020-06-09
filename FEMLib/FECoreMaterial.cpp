@@ -609,6 +609,74 @@ void FEMaterial::Load(IArchive &ar)
                             }
 							assert(pm);
 							pm->Load(ar);
+
+							if (nid == FE_TRANS_MOONEY_RIVLIN_OLD)
+							{
+								FETransMooneyRivlin* pnewMat = new FETransMooneyRivlin;
+								pnewMat->Convert(dynamic_cast<FETransMooneyRivlinOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_TRANS_VERONDA_WESTMANN_OLD)
+							{
+								FETransVerondaWestmann* pnewMat = new FETransVerondaWestmann;
+								pnewMat->Convert(dynamic_cast<FETransVerondaWestmannOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_COUPLED_TRANS_ISO_MR_OLD)
+							{
+								FECoupledTransIsoMooneyRivlin* pnewMat = new FECoupledTransIsoMooneyRivlin;
+								pnewMat->Convert(dynamic_cast<FECoupledTransIsoMooneyRivlinOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_ACTIVE_CONTRACT_UNI_OLD)
+							{
+								FEPrescribedActiveContractionUniaxial* pnewMat = new FEPrescribedActiveContractionUniaxial;
+								pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionUniaxialOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_ACTIVE_CONTRACT_TISO_OLD)
+							{
+								FEPrescribedActiveContractionTransIso* pnewMat = new FEPrescribedActiveContractionTransIso;
+								pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionTransIsoOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_ACTIVE_CONTRACT_UNI_UC_OLD)
+							{
+								FEPrescribedActiveContractionUniaxialUC* pnewMat = new FEPrescribedActiveContractionUniaxialUC;
+								pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionUniaxialUCOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_ACTIVE_CONTRACT_TISO_UC_OLD)
+							{
+								FEPrescribedActiveContractionTransIsoUC* pnewMat = new FEPrescribedActiveContractionTransIsoUC;
+								pnewMat->Convert(dynamic_cast<FEPrescribedActiveContractionTransIsoUCOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_FIBEREXPPOW_COUPLED_OLD)
+							{
+								FEFiberExpPow* pnewMat = new FEFiberExpPow;
+								pnewMat->Convert(dynamic_cast<FEFiberExpPowOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_FIBEREXPPOW_UNCOUPLED_OLD)
+							{
+								FEFiberExpPowUncoupled* pnewMat = new FEFiberExpPowUncoupled;
+								pnewMat->Convert(dynamic_cast<FEFiberExpPowUncoupledOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_FIBERPOWLIN_COUPLED_OLD)
+							{
+								FEFiberPowLin* pnewMat = new FEFiberPowLin;
+								pnewMat->Convert(dynamic_cast<FEFiberPowLinOld*>(pm));
+								pm = pnewMat;
+							}
+							else if (nid == FE_FIBERPOWLIN_UNCOUPLED_OLD)
+							{
+								FEFiberPowLinUncoupled* pnewMat = new FEFiberPowLinUncoupled;
+								pnewMat->Convert(dynamic_cast<FEFiberPowLinUncoupledOld*>(pm));
+								pm = pnewMat;
+							}
+
 							if (prop)
 							{
 								if (prop->maxSize() == FEMaterialProperty::NO_FIXED_SIZE)
