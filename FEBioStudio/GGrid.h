@@ -1,6 +1,6 @@
 #pragma once
 #include <MathLib/math3d.h>
-
+#include <GLLib/GLContext.h>
 class CGLView;
 
 class GGrid
@@ -14,7 +14,7 @@ public:
 
 	double GetScale() { return m_scale; }
 
-	void Render();
+	void Render(CGLContext& rc);
 
 protected:
 	vec3d Snap(vec3d r);

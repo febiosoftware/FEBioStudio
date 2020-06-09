@@ -837,8 +837,6 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	VIEW_SETTINGS& view = pwnd->GetGLView()->GetViewSettings();
 	CGLView* glview = pwnd->GetGLView();
 
-	CGLCamera& cam = glview->GetCamera();
-
 	ui->m_bg->m_bg1 = toQColor(view.m_col1);
 	ui->m_bg->m_bg2 = toQColor(view.m_col2);
 	ui->m_bg->m_fg = toQColor(view.m_fgcol);
@@ -879,9 +877,10 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_light->m_shadow = view.m_shadow_intensity;
 	if (glview) ui->m_light->m_pos = glview->GetLightPosition();
 
+	CGLCamera* cam = glview->GetCamera();
 	ui->m_cam->m_banim = true;
-	ui->m_cam->m_bias = cam.GetCameraBias();
-	ui->m_cam->m_speed = cam.GetCameraSpeed();
+	ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
+	ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
 
 	ui->m_unit->m_unit = Units::GetUnitSystem();
 
@@ -939,8 +938,6 @@ void CDlgSettings::apply()
 	CGLView* glview = m_pwnd->GetGLView();
 	VIEW_SETTINGS& view = glview->GetViewSettings();
 
-	CGLCamera& cam = glview->GetCamera();
-
 	view.m_col1 = toGLColor(ui->m_bg->m_bg1);
 	view.m_col2 = toGLColor(ui->m_bg->m_bg2);
 	view.m_fgcol = toGLColor(ui->m_bg->m_fg);
@@ -977,8 +974,9 @@ void CDlgSettings::apply()
 	view.m_shadow_intensity = ui->m_light->m_shadow;
 	if (glview) glview->SetLightPosition(ui->m_light->m_pos);
 
-	cam.SetCameraBias(ui->m_cam->m_bias);
-	cam.SetCameraSpeed(ui->m_cam->m_speed);
+	CGLCamera* cam = glview->GetCamera();
+	if (cam) cam->SetCameraBias(ui->m_cam->m_bias);
+	if (cam) cam->SetCameraSpeed(ui->m_cam->m_speed);
 
 	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
 	m_pwnd->setCurrentTheme(ui->m_ui->m_theme);

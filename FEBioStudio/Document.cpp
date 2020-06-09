@@ -395,6 +395,12 @@ GObject* CDocument::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
+CGView* CDocument::GetView()
+{
+	return &m_view;
+}
+
+//-----------------------------------------------------------------------------
 QString CDocument::ToAbsolutePath(const QString& relativePath)
 {
 	return ToAbsolutePath(relativePath.toStdString());

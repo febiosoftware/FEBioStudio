@@ -199,14 +199,15 @@ void CPlaneTool::UpdateNormal()
 
 void CPlaneTool::onAlignView()
 {
+	CDocument* doc = GetMainWindow()->GetDocument();
+	if (doc == nullptr) return;
+
 	int* node = ui->m_node;
 	if ((node[0] > 0) && (node[1] > 0) && (node[2] > 0))
 	{
-		CGLView* view = GetMainWindow()->GetGLView();
-
 		vec3f r(ui->normx->value(), ui->normy->value(), ui->normz->value());
 
-		CGLCamera& cam = view->GetCamera();
+		CGLCamera& cam = doc->GetView()->GetCamera();
 		cam.SetViewDirection(r);
 
 		GetMainWindow()->RedrawGL();

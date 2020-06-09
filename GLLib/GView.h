@@ -29,6 +29,20 @@ public:
 	void PrevKey();
 	void NextKey();
 
+	bool OrhographicProjection() { return m_bortho; }
+
+	double GetFOV() { return m_fov; }
+	double GetAspectRatio() { return m_ar; }
+	double GetNearPlane() { return m_fnear; }
+	double GetFarPlane() { return m_ffar; }
+
+public:
+	bool	m_bortho;		// orthographic mode
+	double	m_fnear;
+	double	m_ffar;
+	double	m_fov;
+	double	m_ar;
+
 protected:
 	CGLCamera m_cam;	//!< current camera
 

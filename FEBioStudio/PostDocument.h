@@ -1,6 +1,5 @@
 #pragma once
 #include "Document.h"
-#include <GLLib/GView.h>
 #include <PostLib/FEMaterial.h>
 #include "GraphData.h"
 
@@ -137,8 +136,6 @@ public:
 
 	void DeleteObject(Post::CGLObject* po);
 
-	CGView* GetView();
-
 	std::string GetFileName();
 
 	// get the model's bounding box
@@ -164,7 +161,6 @@ private:
 private:
 	Post::CGLModel*		m_glm;
 	Post::FEPostModel*	m_fem;
-	CGView				m_view;
 	std::string			m_fileName;
 
 	std::vector<CGraphData*>	m_graphs;

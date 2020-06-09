@@ -361,9 +361,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	Reset();
 
-	m_fnear = 1.f;
-	m_ffar = 50000.f;
-	m_fov = 45.f;
 	m_ox = m_oy = 1;
 
 	m_wa = 0;
@@ -385,8 +382,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	m_bshift = false;
 	m_bctrl = false;
-
-	m_bortho = false;
 
 	m_btooltip = false;
 
@@ -435,7 +430,8 @@ void CGLView::UpdateCamera(bool hitCameraTarget)
 	CPostDocument* doc = m_pWnd->GetPostDocument();
 	if (doc && doc->IsValid())
 	{
-		GetCamera().Update(hitCameraTarget);
+		CGLCamera& cam = doc->GetView()->GetCamera();
+		cam.Update(hitCameraTarget);
 	}
 }
 
@@ -447,10 +443,13 @@ void CGLView::resizeGL(int w, int h)
 
 void CGLView::changeViewMode(View_Mode vm)
 {
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
 	SetViewMode(vm);
 
 	// switch to ortho view if we're not in it
-	bool bortho = OrhographicProjection();
+	bool bortho = doc->GetView()->OrhographicProjection();
 	if (bortho == false)
 	{
 		m_pWnd->toggleOrtho();
@@ -568,9 +567,6 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		m_st = m_sa = 1;
 	}
 
-	// store the current camera positions
-	m_oldCam = m_Cam;
-
 	ev->accept();
 }
 
@@ -646,7 +642,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	AddRegionPoint(x, y);
 
-	CGLCamera* pcam = &m_Cam;
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+
 
 	if (m_pivot == PIVOT_NONE)
 	{
@@ -657,15 +654,15 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (balt)
 				{
 					quatd qz = quatd((y - m_y1)*0.01f, vec3d(0, 0, 1));
-					pcam->Orbit(qz);
+					cam.Orbit(qz);
 				}
 				else
 				{
 					quatd qx = quatd((y - m_y1)*0.01f, vec3d(1, 0, 0));
 					quatd qy = quatd((x - m_x1)*0.01f, vec3d(0, 1, 0));
 
-					pcam->Orbit(qx);
-					pcam->Orbit(qy);
+					cam.Orbit(qx);
+					cam.Orbit(qy);
 				}
 
 				repaint();
@@ -683,8 +680,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			if (bshift)
 			{
 				double D = (double) m_y1 - y;
-				double s = D*m_Cam.GetFinalTargetDistance()*1e-5;
-				pcam->Dolly(s);
+				double s = D*cam.GetFinalTargetDistance()*1e-5;
+				cam.Dolly(s);
 			}
 			else if (bctrl)
 			{
@@ -692,12 +689,12 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				quatd qy = quatd((m_x1 - x)*0.001f, vec3d(0, 1, 0));
 				quatd q = qy*qx;
 
-				pcam->Pan(q);
+				cam.Pan(q);
 			}
 			else
 			{
-				if (m_y1 > y) pcam->Zoom(0.95f);
-				if (m_y1 < y) pcam->Zoom(1.0f / 0.95f);
+				if (m_y1 > y) cam.Zoom(0.95f);
+				if (m_y1 < y) cam.Zoom(1.0f / 0.95f);
 			}
 
 			repaint();
@@ -723,11 +720,11 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				m_bextrude = false;
 			}
 
-			double f = 0.0012f*(double)m_Cam.GetFinalTargetDistance();
+			double f = 0.0012f*(double) cam.GetFinalTargetDistance();
 
 			vec3d dr = vec3d(f*(x - m_x1), f*(m_y1 - y), 0);
 
-			quatd q = m_Cam.GetOrientation();
+			quatd q = cam.GetOrientation();
 
 			q.Inverse().RotateVector(dr);
 			FESelection* ps = mdoc->GetCurrentSelection();
@@ -831,7 +828,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	m_x1 = x;
 	m_y1 = y;
 
-	m_Cam.Update(true);
+	cam.Update(true);
 
 	m_pWnd->OnCameraChanged();
 
@@ -893,6 +890,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	m_bextrude = false;
 
 	AddRegionPoint(x, y);
+
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
 	if (m_pivot == PIVOT_NONE)
 	{
@@ -1003,8 +1002,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(this, m_Cam);
-				m_Cam = m_oldCam;
+				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 				repaint();
 			}
@@ -1021,8 +1020,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(this, m_Cam);
-				m_Cam = m_oldCam;
+				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 				repaint();
 			}
@@ -1037,8 +1036,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			}
 			else
 			{
-				CCmdChangeView* pcmd = new CCmdChangeView(this, m_Cam);
-				m_Cam = m_oldCam;
+				CCmdChangeView* pcmd = new CCmdChangeView(pdoc->GetView(), cam);
+				cam = m_oldCam;
 				m_Cmd.DoCommand(pcmd);
 				repaint();
 			}
@@ -1107,15 +1106,19 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 void CGLView::wheelEvent(QWheelEvent* ev)
 {
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	CGLCamera& cam = doc->GetView()->GetCamera();
+
     Qt::KeyboardModifiers key = ev->modifiers();
     bool balt   = (key & Qt::AltModifier);
-	CGLCamera* pcam = &m_Cam;
 	Qt::MouseEventSource eventSource = ev->source();
 	if (eventSource == Qt::MouseEventSource::MouseEventNotSynthesized)
 	{
 		int y = ev->angleDelta().y();
-		if (y > 0) pcam->Zoom(0.95f);
-		if (y < 0) pcam->Zoom(1.0f / 0.95f);
+		if (y > 0) cam.Zoom(0.95f);
+		if (y < 0) cam.Zoom(1.0f / 0.95f);
 		repaint();
 		m_pWnd->UpdateGLControlBar();
 	}
@@ -1125,8 +1128,8 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 			if (m_pivot == PIVOT_NONE)
 			{
 				int y = ev->angleDelta().y();
-				if (y > 0) pcam->Zoom(0.95f);
-				if (y < 0) pcam->Zoom(1.0f / 0.95f);
+				if (y > 0) cam.Zoom(0.95f);
+				if (y < 0) cam.Zoom(1.0f / 0.95f);
 
 				repaint();
 
@@ -1148,14 +1151,17 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 		}
 	}
 
-	m_Cam.Update(true);
+	cam.Update(true);
 	ev->accept();
 }
 
 bool CGLView::gestureEvent(QNativeGestureEvent* ev)
 {
-    CGLCamera& cam = GetCamera();
-    
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return true;
+
+	CGLCamera& cam = doc->GetView()->GetCamera();
+
     if (ev->gestureType() == Qt::ZoomNativeGesture) {
         if (ev->value() < 0) {
             cam.Zoom(1./(1.0f+(float)ev->value()));
@@ -1278,8 +1284,6 @@ void CGLView::Reset()
 		m_view.m_nbgstyle = BG_HORIZONTAL;
 	}
 
-	m_Cam.SetTargetDistance(4.0);
-	m_Cam.Reset();
 	GLHighlighter::ClearHighlights();
 	repaint();
 }
@@ -1471,6 +1475,14 @@ void CGLView::paintGL()
 
 	int nitem = pdoc->GetItemMode();
 
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+
+	CGLContext& rc = m_rc;
+	rc.m_cam = &cam;
+	rc.m_showOutline = view.m_bfeat;
+	rc.m_showMesh = view.m_bmesh;
+	rc.m_q = cam.GetOrientation();
+
 	// prepare for rendering
 	PrepModel();
 
@@ -1484,7 +1496,7 @@ void CGLView::paintGL()
 	else RenderPostView(postDoc);
 
 	// render the grid
-	if (view.m_bgrid) m_grid.Render();
+	if (view.m_bgrid) m_grid.Render(m_rc);
 
 	// render the image data
 	RenderImageData();
@@ -1546,7 +1558,6 @@ void CGLView::paintGL()
 	}
 
 	// update the triad
-	CGLCamera& cam = GetCamera();
 	m_ptriad->setOrientation(cam.GetOrientation());
 
 	// We must turn off culling before we use the QPainter, otherwise
@@ -1627,9 +1638,9 @@ void CGLView::paintGL()
 	}
 
 	// if the camera is animating, we need to redraw
-	if (GetCamera().IsAnimating())
+	if (cam.IsAnimating())
 	{
-		GetCamera().Update();
+		cam.Update();
 		QTimer::singleShot(50, this, SLOT(repaintEvent()));
 	}
 }
@@ -1666,6 +1677,8 @@ void CGLView::RenderModelView()
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nitem = pdoc->GetItemMode();
 
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+
 	if (m_showPlaneCut)
 	{
 		if (m_planeCut == nullptr) UpdatePlaneCut();
@@ -1688,8 +1701,8 @@ void CGLView::RenderModelView()
 		// render selected box
 		RenderSelectionBox();
 
-		m_Cam.LineDrawMode(true);
-		m_Cam.Transform();
+		cam.LineDrawMode(true);
+		cam.Transform();
 
 		// Render mesh lines
 		//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
@@ -1703,8 +1716,8 @@ void CGLView::RenderModelView()
 			if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE)) RenderFeatureEdges();
 		}
 
-		m_Cam.LineDrawMode(false);
-		m_Cam.Transform();
+		cam.LineDrawMode(false);
+		cam.Transform();
 	}
 
 	// render the temp object
@@ -1776,17 +1789,11 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 	{
 		Post::CGLModel* glm = postDoc->GetGLModel();
 
-		CGLCamera& cam = GetCamera();
+		CGLCamera& cam = postDoc->GetView()->GetCamera();
 
 		VIEW_SETTINGS& vs = GetViewSettings();
 
 		glm->m_nrender = vs.m_nrender + 1;
-
-		CGLContext& rc = m_rc;
-		rc.m_cam = &cam;
-		rc.m_showOutline = vs.m_bfeat;
-		rc.m_showMesh = vs.m_bmesh;
-		rc.m_q = cam.GetOrientation();
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
@@ -1840,7 +1847,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 			glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
 
 			// render the scene
-			glm->Render(rc);
+			glm->Render(m_rc);
 
 			// Create mask in stencil buffer
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -1876,7 +1883,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 			glClear(GL_DEPTH_BUFFER_BIT);
 		}
 
-		glm->Render(rc);
+		glm->Render(m_rc);
 
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
@@ -1979,8 +1986,6 @@ void CGLView::SetupProjection()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	if (height() == 0) m_ar = 1; m_ar = (GLfloat)width() / (GLfloat)height();
-
 	CDocument* doc = GetDocument();
 
 	BOX box;
@@ -1995,27 +2000,31 @@ void CGLView::SetupProjection()
 		box = postDoc->GetPostObject()->GetBoundingBox();
 	}
 
+	CGView& view = *doc->GetView();
+	CGLCamera& cam = view.GetCamera();
+
 	double R = box.Radius();
 	VIEW_SETTINGS& vs = GetViewSettings();
 
-	vec3d p = m_Cam.GlobalPosition();
+	vec3d p = cam.GlobalPosition();
 	vec3d c = box.Center();
 	double L = (c - p).Length();
 
-	m_ffar = (L + R) * 2;
-	m_fnear = 0.01f*m_ffar;
+	view.m_ffar = (L + R) * 2;
+	view.m_fnear = 0.01f*view.m_ffar;
+	if (height() == 0) view.m_ar = 1; view.m_ar = (GLfloat)width() / (GLfloat)height();
 
 	// set up projection matrix
-	if (m_bortho)
+	if (view.m_bortho)
 	{
-		GLdouble f = 0.35*m_Cam.GetTargetDistance();
-		m_ox = f*m_ar;
+		GLdouble f = 0.35*cam.GetTargetDistance();
+		m_ox = f*view.m_ar;
 		m_oy = f;
-		glOrtho(-m_ox, m_ox, -m_oy, m_oy, m_fnear, m_ffar);
+		glOrtho(-m_ox, m_ox, -m_oy, m_oy, view.m_fnear, view.m_ffar);
 	}
 	else
 	{
-		gluPerspective(m_fov, m_ar, m_fnear, m_ffar);
+		gluPerspective(view.m_fov, view.m_ar, view.m_fnear, view.m_ffar);
 	}
 }
 
@@ -2032,9 +2041,11 @@ inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
 //-----------------------------------------------------------------------------
 void CGLView::PositionCamera()
 {
-	CGLCamera& cam = GetCamera();
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
 
 	// position the camera
+	CGLCamera& cam = doc->GetView()->GetCamera();
 	cam.Transform();
 
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
@@ -2061,7 +2072,7 @@ void CGLView::PositionCamera()
 		e2.Normalize();
 		e3.Normalize();
 
-		vec3d r0 = GetCamera().GetPosition();
+		vec3d r0 = cam.GetPosition();
 		vec3d r1 = a;
 
 		// undo camera translation
@@ -2243,6 +2254,20 @@ void CGLView::PrepModel()
 	PositionCamera();
 }
 
+CGView* CGLView::GetView()
+{
+	CDocument* doc = GetDocument();
+	if (doc) return doc->GetView();
+	return nullptr;
+}
+
+CGLCamera* CGLView::GetCamera()
+{
+	CDocument* doc = GetDocument();
+	if (doc) return &doc->GetView()->GetCamera();
+	return nullptr;
+}
+
 void CGLView::RenderTooltip(int x, int y)
 {
 /*	glMatrixMode(GL_PROJECTION);
@@ -2307,6 +2332,28 @@ void CGLView::SetModelView(GObject* po)
 	glScaled(s.x, s.y, s.z);
 }
 
+void CGLView::SetCoordinateSystem(int nmode)
+{
+	m_coord = nmode;
+}
+
+void CGLView::UndoViewChange()
+{
+	if (m_Cmd.CanUndo()) m_Cmd.UndoCommand();
+	repaint();
+}
+
+void CGLView::RedoViewChange()
+{
+	if (m_Cmd.CanRedo()) m_Cmd.RedoCommand();
+	repaint();
+}
+
+void CGLView::ClearCommandStack()
+{
+	m_Cmd.Clear();
+}
+
 void CGLView::RenderNormals(GObject* po, double scale)
 {
 	if (po->IsVisible() == false) return;
@@ -2364,6 +2411,8 @@ void CGLView::RenderModel()
 
 	VIEW_SETTINGS& view = GetViewSettings();
 
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+
 	// get the model
 	FEModel* ps = pdoc->GetFEModel();
 	GModel& model = ps->GetModel();
@@ -2408,24 +2457,24 @@ void CGLView::RenderModel()
 				case SELECT_EDGE:
 					{
 						RenderObject(po);
-						m_Cam.LineDrawMode(true);
-						m_Cam.Transform();
+						cam.LineDrawMode(true);
+						cam.Transform();
 						SetModelView(po);
 						RenderEdges(po);
-						m_Cam.LineDrawMode(false);
-						m_Cam.Transform();
+						cam.LineDrawMode(false);
+						cam.Transform();
 						SetModelView(po);
 					}
 					break;
 				case SELECT_NODE:
 					{
 						RenderObject(po);
-						m_Cam.LineDrawMode(true);
-						m_Cam.Transform();
+						cam.LineDrawMode(true);
+						cam.Transform();
 						SetModelView(po);
 						RenderNodes(po);
-						m_Cam.LineDrawMode(false);
-						m_Cam.Transform();
+						cam.LineDrawMode(false);
+						cam.Transform();
 						SetModelView(po);
 					}
 					break;
@@ -2463,12 +2512,12 @@ void CGLView::RenderModel()
 						else if (item == ITEM_EDGE)
 						{
 							RenderFEFaces(po);
-							m_Cam.LineDrawMode(true);
-							m_Cam.Transform();
+							cam.LineDrawMode(true);
+							cam.Transform();
 							SetModelView(po);
 							RenderFEEdges(po);
-							m_Cam.LineDrawMode(false);
-							m_Cam.Transform();
+							cam.LineDrawMode(false);
+							cam.Transform();
 						}
 						else if (item == ITEM_NODE)
 						{
@@ -2486,12 +2535,12 @@ void CGLView::RenderModel()
 						else if (item == ITEM_EDGE)
 						{
 							RenderSurfaceMeshFaces(po);
-							m_Cam.LineDrawMode(true);
-							m_Cam.Transform();
+							cam.LineDrawMode(true);
+							cam.Transform();
 							SetModelView(po);
 							RenderSurfaceMeshEdges(po);
-							m_Cam.LineDrawMode(false);
-							m_Cam.Transform();
+							cam.LineDrawMode(false);
+							cam.Transform();
 						}
 						else if (item == ITEM_NODE)
 						{
@@ -2757,15 +2806,9 @@ void CGLView::RenderImageData()
 	CDocument* doc = GetDocument();
 	if (doc->IsValid() == false) return;
 
-	CGLCamera& cam = GetCamera();
+	CGLCamera& cam = doc->GetView()->GetCamera();
 
 	VIEW_SETTINGS& vs = GetViewSettings();
-
-	CGLContext& rc = m_rc;
-	rc.m_cam = &cam;
-	rc.m_showOutline = vs.m_bfeat;
-	rc.m_showMesh = vs.m_bmesh;
-	rc.m_q = cam.GetOrientation();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -2780,7 +2823,7 @@ void CGLView::RenderImageData()
 		GLColor c(255, 128, 128);
 		glColor3ub(c.r, c.g, c.b);
 		if (img->ShowBox()) RenderBox(box, false);
-		img->Render(rc);
+		img->Render(m_rc);
 	}
 
 	glMatrixMode(GL_MODELVIEW);
@@ -2962,10 +3005,12 @@ void CGLView::RenderPivot(bool bpick)
 	// this is where we place the manipulator
 	vec3d rp = GetPivotPosition();
 
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+
 	// determine the scale of the manipulator
 	// we make it depend on the target distanceso that the 
 	// manipulator will look about the same size regardless the zoom
-	double d = 0.1*m_Cam.GetTargetDistance();
+	double d = 0.1*cam.GetTargetDistance();
 
 	// push the modelview matrix
 	glPushMatrix();
@@ -3142,9 +3187,11 @@ void CGLView::RenderRigidJoints()
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+
 	FEModel* ps = pdoc->GetFEModel();
 
-	double scale = 0.05*(double)m_Cam.GetTargetDistance();
+	double scale = 0.05*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -3196,9 +3243,11 @@ void CGLView::RenderRigidConnectors()
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+
 	FEModel* ps = pdoc->GetFEModel();
 
-	double scale = 0.05*(double)m_Cam.GetTargetDistance();
+	double scale = 0.05*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -3514,12 +3563,14 @@ void CGLView::RenderRigidBodies()
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
+	CGLCamera& cam = pdoc->GetView()->GetCamera();
+
 	FEModel* ps = pdoc->GetFEModel();
 
-	double scale = 0.03*(double)m_Cam.GetTargetDistance();
+	double scale = 0.03*(double)cam.GetTargetDistance();
 	double R = 0.5*scale;
 
-	quatd qi = m_Cam.GetOrientation().Inverse();
+	quatd qi = cam.GetOrientation().Inverse();
 
 	glPushAttrib(GL_ENABLE_BIT);
 
@@ -3617,46 +3668,23 @@ void CGLView::RenderRigidBodies()
 
 void CGLView::ScreenToView(int x, int y, double& fx, double& fy)
 {
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
 	double W = (double)width();
 	double H = (double)height();
 
 	if (H == 0.f) H = 0.001f;
 
+	CGView& view = *doc->GetView();
+
 	double ar = W / H;
 
-	double fh = 2.f*m_fnear*(double)tan(0.5*m_fov*PI / 180);
+	double fh = 2.f*view.m_fnear*(double)tan(0.5*view.m_fov*PI / 180);
 	double fw = fh * ar;
 
 	fx = -fw / 2 + x*fw / W;
 	fy = fh / 2 - y*fh / H;
-}
-
-vec3d CGLView::ScreenToGrid(int x, int y)
-{
-	double fx, fy;
-	ScreenToView(x, y, fx, fy);
-	return ViewToGrid(fx, fy);
-}
-
-vec3d CGLView::ViewToWorld(double fx, double fy)
-{
-	vec3d r(fx, fy, -m_fnear);
-	r = m_Cam.WorldToCam(r);
-	return r;
-}
-
-vec3d CGLView::ViewToGrid(double fx, double fy)
-{
-	vec3d r1(fx, fy, -m_fnear);
-	vec3d r0(0.f, 0.f, 0.f);
-
-	r0 = m_Cam.WorldToCam(r0);
-	r1 = m_Cam.WorldToCam(r1);
-
-	vec3d n = r1 - r0;
-	n.Normalize();
-
-	return m_grid.Intersect(r1, n, (m_nsnap == SNAP_GRID));
 }
 
 vec3d CGLView::WorldToPlane(vec3d r)
@@ -3670,29 +3698,16 @@ void CGLView::showSafeFrame(bool b)
 	else m_pframe->hide();
 }
 
-vec3d CGLView::GetViewDirection(double fx, double fy)
-{
-	vec3d r1(fx, fy, -m_fnear);
-	vec3d r0(0.f, 0.f, 0.f);
-
-	r0 = m_Cam.WorldToCam(r0);
-	r1 = m_Cam.WorldToCam(r1);
-
-	vec3d n = r1 - r0;
-	n.Normalize();
-
-	return n;
-}
-
 void CGLView::SetViewMode(View_Mode n)
 {
-	quatd q;
-
     // Get the document
     CDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
     VIEW_SETTINGS& view = GetViewSettings();
     int c = view.m_nconv;
-    
+	quatd q;
+
     switch (c) {
         case CONV_FR_XZ:
         {
@@ -3791,7 +3806,8 @@ void CGLView::SetViewMode(View_Mode n)
         }
             break;
     }
-	m_Cam.SetOrientation(q);
+
+	pdoc->GetView()->GetCamera().SetOrientation(q);
 
 	// set the camera target
 	//	m_Cam.SetTarget(vec3d(0,0,0));
@@ -3801,8 +3817,11 @@ void CGLView::SetViewMode(View_Mode n)
 
 void CGLView::TogglePerspective(bool b)
 {
-	//	if (m_nview == VIEW_USER) m_bortho = !m_bortho;
-	m_bortho = b;
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	CGView& view = *doc->GetView();
+	view.m_bortho = b;
 	repaint();
 }
 
@@ -3881,11 +3900,16 @@ void CGLView::SetPlaneCut(double d[4])
 //-----------------------------------------------------------------------------
 void CGLView::PanView(vec3d r)
 {
-	double f = 0.001f*(double)m_Cam.GetFinalTargetDistance();
+	CModelDocument* doc = m_pWnd->GetModelDocument();
+	if (doc == nullptr) return;
+
+	CGLCamera& cam = doc->GetView()->GetCamera();
+
+	double f = 0.001f*(double)cam.GetFinalTargetDistance();
 	r.x *= f;
 	r.y *= f;
 
-	m_Cam.Truck(r);
+	cam.Truck(r);
 }
 
 
@@ -7048,8 +7072,11 @@ void CGLView::RenderObject(GObject* po)
 void CGLView::RenderFENodes(GObject* po)
 {
 	CDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
+
 	VIEW_SETTINGS& view = GetViewSettings();
-	quatd q = m_Cam.GetOrientation();
+	quatd q = pdoc->GetView()->GetCamera().GetOrientation();
 
 	// set the point size
 	float fsize = GetViewSettings().m_node_size;
@@ -7377,8 +7404,9 @@ void CGLView::RenderSurfaceMeshEdges(GObject* po)
 void CGLView::RenderSurfaceMeshNodes(GObject* po)
 {
 	CDocument* pdoc = GetDocument();
+
 	VIEW_SETTINGS& view = GetViewSettings();
-	quatd q = m_Cam.GetOrientation();
+	quatd q = pdoc->GetView()->GetCamera().GetOrientation();
 
 	// set the point size
 	float fsize = GetViewSettings().m_node_size;
@@ -8313,7 +8341,7 @@ void CGLView::ZoomSelection(bool forceZoom)
 			double f = box.GetMaxExtent();
 			if (f == 0) f = 1;
 
-			CGLCamera& cam = GetCamera();
+			CGLCamera& cam = mdoc->GetView()->GetCamera();
 
 			double g = cam.GetFinalTargetDistance();
 			if ((forceZoom == true) || (g < 2.0*f))
@@ -8347,9 +8375,9 @@ void CGLView::ZoomSelection(bool forceZoom)
 					box.InflateTo(L, L, L);
 				}
 
-				CGLCamera* pcam = &GetCamera();
-				pcam->SetTarget(box.Center());
-				pcam->SetTargetDistance(3.f*box.Radius());
+				CGLCamera& cam = postDoc->GetView()->GetCamera();
+				cam.SetTarget(box.Center());
+				cam.SetTargetDistance(3.f*box.Radius());
 
 				repaint();
 			}
@@ -8360,12 +8388,15 @@ void CGLView::ZoomSelection(bool forceZoom)
 //-----------------------------------------------------------------
 void CGLView::ZoomToObject(GObject *po)
 {
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
 	BOX box = po->GetGlobalBox();
 
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = GetCamera();
+	CGLCamera& cam = doc->GetView()->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -8378,10 +8409,13 @@ void CGLView::ZoomToObject(GObject *po)
 //! zoom in on a box
 void CGLView::ZoomTo(const BOX& box)
 {
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = GetCamera();
+	CGLCamera& cam = doc->GetView()->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -8392,6 +8426,9 @@ void CGLView::ZoomTo(const BOX& box)
 //-----------------------------------------------------------------
 void CGLView::ZoomExtents(bool banimate)
 {
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
 	BOX box;
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc == nullptr)
@@ -8411,7 +8448,7 @@ void CGLView::ZoomExtents(bool banimate)
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = GetCamera();
+	CGLCamera& cam = doc->GetView()->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -8806,14 +8843,15 @@ void CGLView::RenderPlaneCut()
 		glDisable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
 		glColor3ub(0, 0, 0);
-		GetCamera().LineDrawMode(true);
-		GetCamera().Transform();
+
+		CGLCamera& cam = doc->GetView()->GetCamera();
+		cam.LineDrawMode(true);
+		cam.Transform();
 		
 		GetMeshRenderer().RenderGLEdges(m_planeCut);
 
-		GetCamera().LineDrawMode(false);
-		GetCamera().Transform();
-
+		cam.LineDrawMode(false);
+		cam.Transform();
 	}
 	glPopAttrib();
 }

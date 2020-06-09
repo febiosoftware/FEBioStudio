@@ -20,6 +20,7 @@ class GCurveMeshObject;
 class CPostDocument;
 class GMaterial;
 class GDecoration;
+class CGView;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -134,8 +135,6 @@ public:
 	double GetGridScale() { return m_grid.GetScale(); }
 	quatd GetGridOrientation() { return m_grid.m_q; }
 
-	CGLCamera& GetCamera() { return m_Cam; }
-
 	CDocument* GetDocument();
 
 	GObject* GetActiveObject();
@@ -180,22 +179,13 @@ public:
 
 	void SetModelView(GObject* po);
 
-	void SetCoordinateSystem(int nmode)
-	{
-		m_coord = nmode;
-	}
+	void SetCoordinateSystem(int nmode);
+	
+	void UndoViewChange();
 
-	void UndoViewChange()
-	{
-		if (m_Cmd.CanUndo()) m_Cmd.UndoCommand();
-		repaint();
-	}
+	void RedoViewChange();
 
-	void RedoViewChange()
-	{
-		if (m_Cmd.CanRedo()) m_Cmd.RedoCommand();
-		repaint();
-	}
+	void ClearCommandStack();
 
 	void RenderTooltip(int x, int y);
 
@@ -207,13 +197,6 @@ public:
 	void TogglePerspective(bool b);
 	void ToggleDisplayNormals();
 
-	bool OrhographicProjection() { return m_bortho; }
-
-	double GetFOV() { return m_fov; }
-	double GetAspectRatio() { return m_ar; }
-	double GetNearPlane() { return m_fnear; }
-	double GetFarPlane() { return m_ffar; }
-
 	void GetViewport(int vp[4])
 	{
 		vp[0] = m_viewport[0];
@@ -224,6 +207,9 @@ public:
 
 	// --- view settings ---
 	VIEW_SETTINGS& GetViewSettings() { return m_view; }
+
+	CGView* GetView();
+	CGLCamera* GetCamera();
 
 	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
@@ -328,13 +314,8 @@ public:
 	void RenderTrack();
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
-	vec3d ScreenToGrid(int x, int y);
-	vec3d GetViewDirection(double fx, double fy);
 
 	void showSafeFrame(bool b);
-
-	vec3d ViewToWorld(double fx, double fy);
-	vec3d ViewToGrid(double fx, double fy);
 
 	vec3d WorldToPlane(vec3d r);
 
@@ -426,8 +407,6 @@ protected slots:
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window
-	CGLCamera		m_Cam;		// the camera
-	CGLCamera		m_oldCam;	// the previous camera position
 	GLMeshRender	m_renderer; // the renderer for this view
 
 	CBasicCmdManager m_Cmd;	// view command history
@@ -460,8 +439,6 @@ protected:
 
 	bool	m_btooltip;	// show tooltips
 
-	bool	m_bortho;
-
 	int		m_pivot;	// pivot selection mode
 
 public:
@@ -469,11 +446,6 @@ public:
 
 protected:
 	FEExtrudeFaces*	m_pmod;
-
-	double	m_fnear;
-	double	m_ffar;
-	double	m_fov;
-	double	m_ar;
 
 	double	m_ox;
 	double	m_oy;
@@ -523,6 +495,8 @@ private:
 	VIEW_SETTINGS	m_view;
 	int	m_viewport[4];		//!< store viewport coordinates
 	int m_dpr;				//!< device pixel ratio for converting from physical to device-independent pixels
+
+	CGLCamera	m_oldCam;
 
 	bool		m_showPlaneCut;
 	double		m_plane[4];

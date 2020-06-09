@@ -19,6 +19,7 @@
 class ObjectMeshList;
 class MeshLayer;
 class CModelDocument;
+class CGView;
 
 //-----------------------------------------------------------------------------
 
@@ -1144,14 +1145,14 @@ protected:
 class CCmdChangeView : public CCommand
 {
 public:
-	CCmdChangeView(CGLView* pview, CGLCamera cam);
+	CCmdChangeView(CGView* pview, CGLCamera cam);
 	~CCmdChangeView();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CGLView*	m_pview;
+	CGView*		m_pview;
 	CGLCamera	m_cam;
 };
 

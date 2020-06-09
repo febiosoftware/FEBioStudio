@@ -6,6 +6,11 @@ CGView::CGView()
 { 
 	SetName("View"); 
 	m_nkey = -1;
+
+	m_bortho = false;
+	m_fnear = 1.f;
+	m_ffar = 50000.f;
+	m_fov = 45.f;
 }
 
 CGView::~CGView()

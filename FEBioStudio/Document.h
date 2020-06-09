@@ -12,6 +12,7 @@
 #include "modelcheck.h"
 #include <QtCore/QString>
 #include "ViewSettings.h"
+#include <GLLib/GView.h>
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -201,6 +202,8 @@ public:
 
 	virtual GObject* GetActiveObject();
 
+	CGView* GetView();
+
 	// return the absolute path from the relative path w.r.t. to the model's folder
 	QString ToAbsolutePath(const QString& relativePath);
 	QString ToAbsolutePath(const std::string& relativePath);
@@ -243,6 +246,8 @@ protected:
 
 	// The command manager
 	CCommandManager*	m_pCmd;		// the command manager
+
+	CGView				m_view;
 
 	VIEW_STATE	m_vs;	// the view state
 

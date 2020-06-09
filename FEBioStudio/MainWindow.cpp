@@ -1702,6 +1702,9 @@ void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool make
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_currentChanged(int n)
 {
+	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->hide();
+	ui->glview->ClearCommandStack();
+
 	UpdateUIConfig();
 	UpdateGLControlBar();
 	ui->updateMeshInspector();

@@ -201,11 +201,11 @@ void CMainWindow::on_actionViewVPSave_triggered()
 	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 
-	CGLCamera& cam = ui->glview->GetCamera();
+	CGView& view = *doc->GetView();
+	CGLCamera& cam = view.GetCamera();
 	GLCameraTransform t;
 	cam.GetTransform(t);
 
-	CGView& view = *doc->GetView();
 	static int n = 0; n++;
 	char szname[64] = { 0 };
 	sprintf(szname, "key%02d", n);
@@ -223,7 +223,7 @@ void CMainWindow::on_actionViewVPPrev_triggered()
 	if (view.CameraKeys() > 0)
 	{
 		view.PrevKey();
-		ui->glview->GetCamera().SetTransform(view.GetCurrentKey());
+		view.GetCamera().SetTransform(view.GetCurrentKey());
 		RedrawGL();
 	}
 }
@@ -237,7 +237,7 @@ void CMainWindow::on_actionViewVPNext_triggered()
 	if (view.CameraKeys() > 0)
 	{
 		view.NextKey();
-		ui->glview->GetCamera().SetTransform(view.GetCurrentKey());
+		view.GetCamera().SetTransform(view.GetCurrentKey());
 		RedrawGL();
 	}
 }
@@ -247,7 +247,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
-	/*
+
 	CGView& view = *doc->GetView();
 	CGLCamera& cam = view.GetCamera();
 	GLCameraTransform transform;
@@ -255,17 +255,16 @@ void CMainWindow::on_actionSyncViews_triggered()
 	int views = ui->tab->views();
 	for (int i = 1; i < views; ++i)
 	{
-	CDocument* doci = ui->tab->getDocument(i);
-	if (doci != doc)
-	{
-	CGLCamera& cami = doci->GetView()->GetCamera();
+		CDocument* doci = ui->tab->getDocument(i);
+		if (doci != doc)
+		{
+			CGLCamera& cami = doci->GetView()->GetCamera();
 
-	// copy the transforms
-	cami.SetTransform(transform);
-	cami.Update(true);
+			// copy the transforms
+			cami.SetTransform(transform);
+			cami.Update(true);
+		}
 	}
-	}
-	*/
 }
 
 void CMainWindow::on_actionToggleConnected_triggered()

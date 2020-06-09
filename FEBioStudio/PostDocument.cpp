@@ -291,11 +291,6 @@ Post::CGLModel* CPostDocument::GetGLModel()
 	return m_glm;
 }
 
-CGView* CPostDocument::GetView()
-{
-	return &m_view;
-}
-
 void CPostDocument::SetActiveState(int n)
 {
 	assert(m_glm);

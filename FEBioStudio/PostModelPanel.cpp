@@ -147,13 +147,15 @@ public:
 
 	QVariant GetPropertyValue(int i)
 	{
-		CGLCamera& cam = m_view.GetCamera();
-		quatd q = cam.GetOrientation();
+		CGLCamera* cam = m_view.GetCamera();
+		if (cam == nullptr) return QVariant();
+
+		quatd q = cam->GetOrientation();
 		float w = q.GetAngle()*180.f/PI;
 		vec3d v = q.GetVector()*w;
 
-		vec3d r = cam.GetPosition();
-		float d = cam.GetTargetDistance();
+		vec3d r = cam->GetPosition();
+		float d = cam->GetTargetDistance();
 
 		switch (i)
 		{
@@ -173,13 +175,15 @@ public:
 
 	void SetPropertyValue(int i, const QVariant& val)
 	{
-		CGLCamera& cam = m_view.GetCamera();
-		quatd q = cam.GetOrientation();
+		CGLCamera* cam = m_view.GetCamera();
+		if (cam == nullptr) return;
+
+		quatd q = cam->GetOrientation();
 		float w = q.GetAngle()*180.f/PI;
 		vec3d v = q.GetVector()*w;
 
-		vec3d r = cam.GetPosition();
-		float d = cam.GetTargetDistance();
+		vec3d r = cam->GetPosition();
+		float d = cam->GetTargetDistance();
 
 		switch (i)
 		{
@@ -196,12 +200,12 @@ public:
 
 		w = PI*v.Length()/180.f; v.Normalize();
 		q = quatd(w, v);
-		cam.SetOrientation(q);
+		cam->SetOrientation(q);
 
-		cam.SetTarget(r);
-		cam.SetTargetDistance(d);
+		cam->SetTarget(r);
+		cam->SetTargetDistance(d);
 
-		cam.Update(true);
+		cam->Update(true);
 	}
 
 private:
@@ -794,7 +798,6 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* item, int 
 	{
 		CGView* view = GetActiveDocument()->GetView();
 		view->SetCurrentKey(pkey);
-		GetMainWindow()->GetGLView()->GetCamera().SetTransform(*pkey);
 		GetMainWindow()->RedrawGL();
 	}
 

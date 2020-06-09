@@ -41,7 +41,7 @@ vec3d GGrid::Snap(vec3d r)
 	return r;
 }
 
-void GGrid::Render()
+void GGrid::Render(CGLContext& renderContext)
 {
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
@@ -50,7 +50,7 @@ void GGrid::Render()
 	glDisable(GL_LIGHTING);
 
 	// get the camera
-	CGLCamera& cam = m_pview->GetCamera();
+	CGLCamera& cam = *renderContext.m_cam;
 
 	// store modelview matrix
 	glPushMatrix();

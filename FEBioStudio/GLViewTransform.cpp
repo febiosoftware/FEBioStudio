@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GLViewTransform.h"
 #include "GLView.h"
+#include <GLLib/GView.h>
 
 GLViewTransform::GLViewTransform(CGLView* view) : m_view(view), m_PM(4, 4), m_PMi(4, 4), q(4, 0.0), c(4, 0.0)
 {
@@ -77,11 +78,14 @@ Ray GLViewTransform::PointToRay(int x, int y)
 	double xd = 2.0* x / W - 1.0;
 	double yd = 2.0* y / H - 1.0;
 
-	// get the projection mode
-	bool ortho = m_view->OrhographicProjection();
+	CGView* view = m_view->GetView();
+	if (view == nullptr) return Ray();
 
-	double fnear = m_view->GetNearPlane();
-	double ffar = m_view->GetFarPlane();
+	// get the projection mode
+	bool ortho = view->OrhographicProjection();
+
+	double fnear = view->GetNearPlane();
+	double ffar = view->GetFarPlane();
 
 	// convert to clip coordinates
 	vector<double> c(4);
