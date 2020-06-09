@@ -226,53 +226,63 @@ bool COMSOLimport::ReadElementType(char* szline)
 	// ignore element parameters
 	// note that if this section is ever implemented, pyramid element conversion must be handled
 	// which means parameters should be duplicated for the two tet elements formed from each pyr
+    bool oldformat = true;
 	int paramperel = GetSingleIntLine(szline);
-	int newparams = GetSingleIntLine(szline);
-	for (int i=m_totalelems;i<newparams+m_totalelems;i++){
-		if (!NextGoodLine(szline)) 
-			return errf("Error encountered trying to parse element parameters.");
-	}
-
-
-	// Read element domains and treat them like element sets by adding them to the map.
-	// We will name element sets according to element type and domain ID.
-	// The map we're creating now is used for "create element sets" and "auto partition."
-	int domains = GetSingleIntLine(szline);
-	if (is_pyramid==true) domains=domains*2;
-	if (domains==newelems) {
-//		for (int i=1;i<(1+domains);++i){
-		for (int i=m_node0;i<domains+m_node0;++i){
-			if (NextGoodLine(szline)){
-				if (import_this_type==true) {
-					if (!sscanf(szline, "%s", domain_id))
-						return false;
-					strcpy(elset,"dom_"); // begin element set with dom_
-					if (m_eltypeseg==true) { // add tet/tri to element set string
-						strcat(elset,eltype);
-						strcat(elset,"_");
-					}
-					strcat(elset,domain_id); // add domain ID to element set string
-					map_ElSet[m_totalelems+i]=elset; // this is the map containing id/set pairs.
-					//        ^ i is an int, elset is a string.
-					if (is_pyramid==true) { // pyramid elements // add set info for second half of a split pyramid
-						++i;
-						map_ElSet[m_totalelems+i]=elset;
-					}
-				}
-			} else {
-				return false;
-			}
-		}
-
-	}
-	
-	// skip up/down pairs
-	// 
-	int updowns = GetSingleIntLine(szline);
-	for (int i=1;i<=updowns;i++){
-		if (!NextGoodLine(szline)) 
-			return errf("Error encountered trying to skip up/down pairs.");
-	}
+    if (strstr(szline,"geometric entity indices")) oldformat = false;
+    if (oldformat) {
+        int newparams = GetSingleIntLine(szline);
+        for (int i=m_totalelems;i<newparams+m_totalelems;i++){
+            if (!NextGoodLine(szline))
+                return errf("Error encountered trying to parse element parameters.");
+        }
+        
+        // Read element domains and treat them like element sets by adding them to the map.
+        // We will name element sets according to element type and domain ID.
+        // The map we're creating now is used for "create element sets" and "auto partition."
+        int domains = GetSingleIntLine(szline);
+        if (is_pyramid==true) domains=domains*2;
+        if (domains==newelems) {
+            //        for (int i=1;i<(1+domains);++i){
+            for (int i=m_node0;i<domains+m_node0;++i){
+                if (NextGoodLine(szline)){
+                    if (import_this_type==true) {
+                        if (!sscanf(szline, "%s", domain_id))
+                            return false;
+                        strcpy(elset,"dom_"); // begin element set with dom_
+                        if (m_eltypeseg==true) { // add tet/tri to element set string
+                            strcat(elset,eltype);
+                            strcat(elset,"_");
+                        }
+                        strcat(elset,domain_id); // add domain ID to element set string
+                        map_ElSet[m_totalelems+i]=elset; // this is the map containing id/set pairs.
+                        //        ^ i is an int, elset is a string.
+                        if (is_pyramid==true) { // pyramid elements // add set info for second half of a split pyramid
+                            ++i;
+                            map_ElSet[m_totalelems+i]=elset;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            }
+            
+        }
+        
+        // skip up/down pairs
+        //
+        int updowns = GetSingleIntLine(szline);
+        for (int i=1;i<=updowns;i++){
+            if (!NextGoodLine(szline))
+                return errf("Error encountered trying to skip up/down pairs.");
+        }
+    }
+    else {
+        // ignore geometric entity indices
+        for (int i=0;i<paramperel;i++) {
+            if (!NextGoodLine(szline))
+                return errf("Error encountered trying to parse element parameters.");
+        }
+    }
 
 	if (import_this_type==true)
 		m_totalelems += newelems;
