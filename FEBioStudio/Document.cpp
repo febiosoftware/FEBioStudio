@@ -43,7 +43,7 @@ void VIEW_SETTINGS::Defaults()
 	m_bnorm = false;
 	m_nrender = RENDER_SOLID;
 	m_scaleNormals = 1.0;
-	m_nconv = 0;
+//	m_nconv = 0; // Don't reset this, since this is read from settings file. TODO: Put this option elsewhere. 
 
 	m_bjoint = true;
 	m_bwall = true;
