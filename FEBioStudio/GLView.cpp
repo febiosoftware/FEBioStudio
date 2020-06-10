@@ -3900,7 +3900,7 @@ void CGLView::SetPlaneCut(double d[4])
 //-----------------------------------------------------------------------------
 void CGLView::PanView(vec3d r)
 {
-	CModelDocument* doc = m_pWnd->GetModelDocument();
+	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	CGLCamera& cam = doc->GetView()->GetCamera();
