@@ -95,7 +95,7 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 			}
 		}
 	}
-	if (l2min < tol*tol)
+	if ((imin!=-1) && (l2min < tol*tol))
 	{
 		return po->MakeGNode(imin);
 	}

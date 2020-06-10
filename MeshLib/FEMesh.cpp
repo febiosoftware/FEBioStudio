@@ -1015,6 +1015,8 @@ void FEMesh::UpdateFaceElementTable()
 
 		assert(face.m_elem[0].eid != -1);
 	}
+
+	MarkExteriorFaces();
 }
 
 //-----------------------------------------------------------------------------
