@@ -783,9 +783,6 @@
     <ClCompile Include="..\..\FEBioStudio\moc_MaterialPropsView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\DocResourceTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\HelpDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1109,9 +1106,6 @@
     <ClInclude Include="..\..\FEBioStudio\WebDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\DlgPlaneCut.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
@@ -1358,6 +1352,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\HelpDialog.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgPlaneCut.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

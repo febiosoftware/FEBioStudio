@@ -233,7 +233,6 @@
     <ClCompile Include="..\..\FEBioStudio\DlgVTKExport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgWidgetProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DocManager.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DocResourceTable.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DocTemplate.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Document.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DragBox.cpp" />
