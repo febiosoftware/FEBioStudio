@@ -1,4 +1,4 @@
-QMAKE = /home/sci/mherron/Resources/Qt/5.13.2/gcc_64/bin/qmake
+QMAKE = /home/mherron/Resources/Qt/5.14.1/gcc_64/bin/qmake
 
 LIBS = Ansys Abaqus Comsol FEBio FEMLib GeomLib ImageLib LSDyna MathLib MeshIO MeshLib Nike3D XML XPLTLib
 

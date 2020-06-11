@@ -3,7 +3,7 @@ CCFLAGS += -I../
 CCFLAGS += -I/opt/netgen/include
 CCFLAGS += -I/opt/netgen/include/include
 CCFLAGS += -I/usr/local/include/opencascade/
-DEF = -DLINUX -DHAS_NETGEN -DHAS_OCC -DTETLIBRARY -DHAS_QUAZIP -DHAS_SSH
+DEF = -DLINUX -DHAS_QUAZIP -DHAS_SSH -DHAS_NETGEN -DHAS_OCC -DTETLIBRARY
 LIBDIR = $(notdir $(CURDIR))
 CURLIB = $(shell echo $(LIBDIR) | tr A-Z a-z)
 

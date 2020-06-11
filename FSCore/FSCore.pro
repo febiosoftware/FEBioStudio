@@ -1,12 +1,14 @@
 TEMPLATE = lib
-TARGET = cuilib
+TARGET = fscore
 DESTDIR = ../build/lib
-CONFIG += debug c++14 staticlib warn_off 
+CONFIG += debug qt qwidgets opengl staticlib warn_off c++14
 QMAKE_CXX = g++
 QMAKE_CXXFLAGS += -std=c++14 -O0
-DEFINES += LINUX HAS_QUAZIP HAS_SSH HAS_OCC TETLIBRARY HAS_NETGEN FFMPEG
+DEFINES += LINUX HAS_QUAZIP HAS_SSH #HAS_OCC TETLIBRARY HAS_NETGEN FFMPEG
 INCLUDEPATH += ../
-QT += widgets
+
+#QT += widgets opengl
+
 
 # Input
 HEADERS += *.h
