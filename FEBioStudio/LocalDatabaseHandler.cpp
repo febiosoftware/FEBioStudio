@@ -347,13 +347,35 @@ public:
 		int projID = 0;
 		if(rows == 1)
 		{
-			projID += stoi(table[1]);
+			projID = stoi(table[1]);
 		}
 
 		sqlite3_free_table(table);
 
 		return projID;
 	}
+
+	int CategoryIDFromName(std::string name)
+		{
+			char **table;
+			int rows, cols;
+
+			std::string query("SELECT ID FROM categories WHERE category = '");
+			query += name;
+			query += "'";
+
+			getTable(query, &table, &rows, &cols);
+
+			int catID = 1;
+			if(rows == 1)
+			{
+				catID = stoi(table[1]);
+			}
+
+			sqlite3_free_table(table);
+
+			return catID;
+		}
 
 public:
 	sqlite3* db;
@@ -474,6 +496,26 @@ void CLocalDatabaseHandler::GetFileData(int ID)
 	query += std::to_string(ID);
 
 	imp->execute(query, setFileDataCallback, imp->dbPanel);
+}
+
+void CLocalDatabaseHandler::GetCategoryMap(std::map<int, std::string>& categoryMap)
+{
+	char **table;
+	int rows, cols;
+
+	std::string query = "SELECT * FROM categories";
+
+	imp->getTable(query, &table, &rows, &cols);
+
+	// Extract information about each project
+	for(int row = 1; row <= rows; row++)
+	{
+		int rowStart = row*cols;
+
+		categoryMap[stoi(table[rowStart])] = std::string(table[rowStart + 1]);
+	}
+
+	sqlite3_free_table(table);
 }
 
 void CLocalDatabaseHandler::GetProjectTags(int ID)
@@ -613,6 +655,11 @@ QString CLocalDatabaseHandler::FullFileNameFromID(int ID, int type)
 int CLocalDatabaseHandler::ProjectIDFromFileID(int ID)
 {
 	return imp->ProjectIDFromFileID(ID);
+}
+
+int CLocalDatabaseHandler::CategoryIDFromName(std::string name)
+{
+	return imp->CategoryIDFromName(name);
 }
 
 

@@ -24,52 +24,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <string>
-#include <string.h>
-#include <vector>
-#include <unordered_set>
-#include <map>
+#include <QWidget>
 
-class QJsonDocument;
-class QString;
-class QStringList;
-class CRepoProject;
-class CDatabasePanel;
-
-class CLocalDatabaseHandler
+namespace Ui
 {
-	class Imp;
+	class CExportProjectWidget;
+}
+
+class FEBioStudioProject;
+
+class CExportProjectWidget : public QWidget
+{
+	Q_OBJECT
 
 public:
-	CLocalDatabaseHandler(CDatabasePanel* dbPanel);
-	~CLocalDatabaseHandler();
+	CExportProjectWidget(FEBioStudioProject* project, bool description, QWidget* parent = 0);
+	~CExportProjectWidget() {};
 
-	void init(std::string schema);
-
-	void update(QJsonDocument& jsonDoc);
-
-	void GetCategories();
-	void GetProjects();
-	QStringList GetTags();
-	void GetProjectFiles(int ID);
-
-	void GetProjectData(int ID);
-	void GetProjectTags(int ID);
-	void GetProjectPubs(int ID);
-	void GetFileData(int ID);
-
-	void GetCategoryMap(std::map<int, std::string>& categoryMap);
-
-
-	std::unordered_set<int> FullTextSearch(QString term);
-
-	QString FilePathFromID(int ID, int type);
-	QString FileNameFromID(int ID, int type);
-	QString FullFileNameFromID(int ID, int type);
-	int ProjectIDFromFileID(int ID);
-	int CategoryIDFromName(std::string name);
-
+public slots:
+	void on_addFile_triggered();
+	void on_removeFile_triggered();
 
 private:
-	Imp* imp;
+	Ui::CExportProjectWidget* ui;
+
+
 };

@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <map>
 #include <QApplication>
 #include <QPalette>
 #include <QMenu>
@@ -66,6 +67,8 @@ SOFTWARE.*/
 #include "PublicationWidgetView.h"
 #include "IconProvider.h"
 #include "FSCore/FSDir.h"
+
+#include <iostream>
 
 enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
 
@@ -782,10 +785,16 @@ void CDatabasePanel::on_actionUpload_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
-		CDlgUpload dlg(this);
+		if(!m_wnd->GetDocument()) return;
+
+		CDlgUpload dlg(this,repoHandler->getUploadPermission(), m_wnd->GetProject());
 		dlg.setName(m_wnd->GetDocument()->GetDocFileBase().c_str());
 		dlg.setOwner(repoHandler->getUsername());
 		dlg.setVersion("1");
+
+		QStringList categories = GetCategories();
+		dlg.setCategories(categories);
+
 		QStringList tags = dbHandler->GetTags();
 		dlg.setTagList(tags);
 
@@ -796,6 +805,9 @@ void CDatabasePanel::on_actionUpload_triggered()
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
 			projectInfo.insert("version", dlg.getVersion());
+			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
+
+			cout << dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()) << endl;
 
 			QList<QVariant> tags;
 			for(QString tag : dlg.getTags())
@@ -880,10 +892,16 @@ void CDatabasePanel::on_actionModify_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
-		CDlgUpload dlg(this);
+		if(!m_wnd->GetDocument()) return;
+
+		CDlgUpload dlg(this, repoHandler->getUploadPermission(), m_wnd->GetProject());
 		dlg.setName(ui->projectName->text());
 		dlg.setOwner(repoHandler->getUsername());
 		dlg.setVersion(QString("%1").arg(stoi(ui->projectVersion->text().toStdString()) + 1));
+
+		QStringList categories = GetCategories();
+		dlg.setCategories(categories);
+
 		dlg.setDescription(ui->projectDesc->text());
 		dlg.setTags(ui->currentTags);
 		dlg.setPublications(ui->projectPubs->getPublications());
@@ -899,6 +917,9 @@ void CDatabasePanel::on_actionModify_triggered()
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
+			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
+
+			cout << dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()) << endl;
 
 			QList<QVariant> tags;
 			for(QString tag : dlg.getTags())
@@ -1185,6 +1206,28 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 	menu.exec(ui->treeWidget->viewport()->mapToGlobal(pos));
 }
 
+QStringList CDatabasePanel::GetCategories()
+{
+	int permission = repoHandler->getUploadPermission();
+
+	std::map<int, std::string> categoryMap;
+
+	dbHandler->GetCategoryMap(categoryMap);
+
+	QStringList categories;
+
+
+	for(auto it : categoryMap)
+	{
+		if(permission & it.first)
+		{
+			categories.append(it.second.c_str());
+		}
+	}
+
+	return categories;
+}
+
 void CDatabasePanel::SetProjectData(char **data)
 {
 	ui->projectName->setText(data[0]);
@@ -1212,6 +1255,9 @@ void CDatabasePanel::AddPublication(QVariantMap data)
 QString CDatabasePanel::GetRepositoryFolder()
 {
 	return m_repositoryFolder;
+
+	QDir dir(m_repositoryFolder);
+	if(!dir.exists()) dir.mkpath(m_repositoryFolder);
 }
 
 void CDatabasePanel::SetRepositoryFolder(QString folder)

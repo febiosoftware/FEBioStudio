@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QFrame>
 #include <QAction>
 #include <QLineEdit>
+#include <QComboBox>
 #include <QCompleter>
 #include <QPlainTextEdit>
 #include <QFormLayout>
@@ -40,6 +41,7 @@ SOFTWARE.*/
 #include <QFrame>
 #include "DlgUpload.h"
 #include "PublicationWidgetView.h"
+#include "ExportProjectWidget.h"
 
 //ClickableLabel::ClickableLabel(QWidget* parent, Qt::WindowFlags f)
 //    : QLabel(parent) {
@@ -91,20 +93,37 @@ public:
 	QLabel* owner;
 	QLabel* version;
 	
+	QLabel* categoryLabel;
+	QComboBox* categoryBox;
+
 	QLineEdit* newTag;
 	QCompleter* completer;
 	QListWidget* tags;
 	::CPublicationWidgetView* pubs;
+	::CExportProjectWidget* files;
 
 public:
-	void setup(QDialog* dlg)
+	void setup(QDialog* dlg, int uploadPermissions, FEBioStudioProject* project)
 	{
+		QHBoxLayout* outerLayout = new QHBoxLayout;
+
 		QFormLayout* form = new QFormLayout;
 		form->addRow("Name: ", name = new QLineEdit);
 		form->addRow("Description: ", description = new QPlainTextEdit);
+
+		if(uploadPermissions == 1)
+		{
+			form->addRow("Category: ", categoryLabel = new QLabel);
+			categoryBox = NULL;
+		}
+		else
+		{
+			form->addRow("Category: ", categoryBox = new QComboBox);
+			categoryLabel = NULL;
+		}
+
 		form->addRow("Owner: ", owner = new QLabel);
 		form->addRow("Version: ", version = new QLabel);
-
 
 		QHBoxLayout* tagLayout = new QHBoxLayout;
 		QVBoxLayout* v1 = new QVBoxLayout;
@@ -149,11 +168,18 @@ public:
 		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::EDITABLE);
 		layout->addWidget(pubs);
 
-
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
 
-		dlg->setLayout(layout);
+		outerLayout->addLayout(layout);
+
+		if(project)
+		{
+			files = new ::CExportProjectWidget(project, true);
+			outerLayout->addWidget(files);
+		}
+
+		dlg->setLayout(outerLayout);
 
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
@@ -161,9 +187,10 @@ public:
 	}
 };
 
-CDlgUpload::CDlgUpload(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgUpload)
+CDlgUpload::CDlgUpload(QWidget* parent, int uploadPermissions, FEBioStudioProject* project)
+	: QDialog(parent), ui(new Ui::CDlgUpload)
 {
-	ui->setup(this);
+	ui->setup(this, uploadPermissions, project);
 	setWindowTitle("Upload Project");
 
 	QMetaObject::connectSlotsByName(this);
@@ -177,6 +204,18 @@ void CDlgUpload::setName(QString name)
 void CDlgUpload::setDescription(QString desc)
 {
 	ui->description->document()->setPlainText(desc);
+}
+
+void CDlgUpload::setCategories(QStringList& categories)
+{
+	if(ui->categoryLabel)
+	{
+		ui->categoryLabel->setText(categories[0]);
+	}
+	else
+	{
+		ui->categoryBox->addItems(categories);
+	}
 }
 
 void CDlgUpload::setOwner(QString owner)
@@ -222,6 +261,18 @@ QString CDlgUpload::getName()
 QString CDlgUpload::getDescription()
 {
 	return ui->description->document()->toPlainText();
+}
+
+QString CDlgUpload::getCategory()
+{
+	if(ui->categoryLabel)
+	{
+		return ui->categoryLabel->text();
+	}
+	else
+	{
+		return ui->categoryBox->currentText();
+	}
 }
 
 QString CDlgUpload::getOwner()

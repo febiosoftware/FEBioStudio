@@ -91,6 +91,8 @@ private:
 	void DeleteItem(CustomTreeWidgetItem *item);
 	void ShowItemInBrowser(CustomTreeWidgetItem *item);
 
+	QStringList GetCategories();
+
 private:
 	CMainWindow*		m_wnd;
 	CRepoConnectionHandler*	repoHandler;
