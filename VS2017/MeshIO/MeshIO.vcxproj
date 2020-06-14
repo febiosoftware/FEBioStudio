@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)..;$(OCCDir)\vs2017\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..;$(OCCDir)\inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)..;$(OCCDir)\inc;$(IncludePath)</IncludePath>
