@@ -47,8 +47,8 @@ public:
 private:
 	void initTools();
 
-	void hideEvent(QHideEvent* event);
-	void showEvent(QShowEvent* event);
+	void hideEvent(QHideEvent* event) override;
+	void showEvent(QShowEvent* event) override;
 
 private slots:
 	void on_buttons_buttonClicked(int id);

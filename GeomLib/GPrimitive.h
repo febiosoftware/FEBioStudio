@@ -66,11 +66,11 @@ public:
 
 public:
 	GBox();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
 	FEMesher* CreateDefaultMesher() override;
-	void Create();
+	void Create() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -83,12 +83,12 @@ public:
 
 public:
 	GCone();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
 	FEMesher* CreateDefaultMesher() override;
-	void Create();
-	void BuildGMesh();
+	void Create() override;
+	void BuildGMesh() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -101,11 +101,11 @@ public:
 
 public:
 	GCylinder();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
 	FEMesher* CreateDefaultMesher() override;
-	void Create();
+	void Create() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -118,11 +118,11 @@ public:
 
 public:
 	GCylinder2();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
 	FEMesher* CreateDefaultMesher() override;
-	void Create();
+	void Create() override;
 };
 
 //-----------------------------------------------------------------------------
@@ -135,11 +135,11 @@ public:
 
 public:
 	GHollowSphere();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
-	void BuildGMesh();
+	void Create() override;
+	void BuildGMesh() override;
 	int NodeIndex(int i, int j, int ND, int NZ);
 	FEMesher* CreateDefaultMesher() override;
 };
@@ -156,11 +156,11 @@ public:
 
 public:
 	GTruncatedEllipsoid();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
-	void BuildGMesh();
+	void Create() override;
+	void BuildGMesh() override;
 	int NodeIndex(int i, int j, int NS);
 	FEMesher* CreateDefaultMesher() override;
 };
@@ -175,11 +175,11 @@ public:
 
 public:
 	GSphere();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
-	void BuildGMesh();
+	void Create() override;
+	void BuildGMesh() override;
 	int NodeIndex(int i, int j, int ND, int NZ);
 	FEMesher* CreateDefaultMesher() override;
 };
@@ -194,10 +194,10 @@ public:
 
 public:
 	GTorus();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -211,10 +211,10 @@ public:
 
 public:
 	GCylinderInBox();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -227,10 +227,10 @@ public:
 
 public:
 	GSphereInBox();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -244,10 +244,10 @@ public:
 
 public:
 	GTube();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -261,10 +261,10 @@ public:
 
 public:
 	GTube2();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -278,10 +278,10 @@ public:
 
 public:
 	GSlice();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -294,10 +294,10 @@ public:
 
 public:
 	GQuartDogBone();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 protected:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -310,10 +310,10 @@ public:
 
 public:
 	GSolidArc();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 protected:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -340,10 +340,10 @@ public:
 
 public:
 	GDisc();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 protected:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -357,10 +357,10 @@ public:
 
 public:
 	GPatch();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -374,10 +374,10 @@ public:
 
 public:
 	GRing();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -391,10 +391,10 @@ public:
 
 public:
 	GThinTube();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 
@@ -410,10 +410,10 @@ public:
 
 public:
 	GCylindricalPatch();
-	bool Update(bool b = true);
+	bool Update(bool b = true) override;
 
 private:
-	void Create();
+	void Create() override;
 	FEMesher* CreateDefaultMesher() override;
 };
 

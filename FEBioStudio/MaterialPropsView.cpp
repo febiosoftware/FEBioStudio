@@ -340,7 +340,7 @@ public:
 		return item->data(index.column(), role);
 	}
 
-	Qt::ItemFlags flags(const QModelIndex& index) const
+	Qt::ItemFlags flags(const QModelIndex& index) const override
 	{
 		if (!index.isValid()) return Qt::ItemIsEnabled;
 		if (index.column() == 1)

@@ -42,8 +42,8 @@ public:
 	void Clear() override;
 
 	// save/load project
-	void Load(IArchive& ar);
-	void Save(OArchive& ar);
+	void Load(IArchive& ar) override;
+	void Save(OArchive& ar) override;
 
 public:
 	//! Get the project

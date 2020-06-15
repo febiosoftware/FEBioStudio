@@ -42,8 +42,8 @@ public:
 	void Update() override;
 
 private:
-	QVariant GetPropertyValue(int i);
-	void SetPropertyValue(int i, const QVariant& v);
+	QVariant GetPropertyValue(int i) override;
+	void SetPropertyValue(int i, const QVariant& v) override;
 
 	void addPoint(int n);
 

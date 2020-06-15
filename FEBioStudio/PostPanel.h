@@ -44,7 +44,7 @@ public:
 
 	void Reset();
 
-	void Apply();
+	void Apply() override;
 
 	void SelectObject(FSObject* po);
 
