@@ -1085,9 +1085,6 @@
     <ClInclude Include="..\..\FEBioStudio\FEBioStudioProject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\welcomePage.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\units.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1104,6 +1101,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\WebDefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\welcomePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

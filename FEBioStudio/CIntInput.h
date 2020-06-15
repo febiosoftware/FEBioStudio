@@ -49,7 +49,6 @@ public:
 	CFloatInput(QWidget* parent = 0) : QLineEdit(parent)
 	{
 		QDoubleValidator* pv = new QDoubleValidator;
-		pv->setRange(-1e99, 1e99, 3);
 		setValidator(pv);
 	}
 
