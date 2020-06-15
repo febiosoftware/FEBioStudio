@@ -39,7 +39,7 @@ public:
 	FEBioFormat3(FEBioImport* fileReader, FEBioModel& febio);
 	~FEBioFormat3();
 
-	bool ParseSection(XMLTag& tag);
+	bool ParseSection(XMLTag& tag) override;
 
 private:
 	// parsers for parent sections

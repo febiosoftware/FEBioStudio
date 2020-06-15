@@ -1324,22 +1324,22 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 			GLHighlighter::setTracking(false);
 		}
 	}
-	else if ((ev->key() == Qt::Key_1) && (ev->modifiers() && Qt::CTRL)) 
+	else if ((ev->key() == Qt::Key_1) && (ev->modifiers() & Qt::CTRL))
 	{
 		ui->showFileViewer();
 		ev->accept();
 	}
-	else if ((ev->key() == Qt::Key_2) && (ev->modifiers() && Qt::CTRL))
+	else if ((ev->key() == Qt::Key_2) && (ev->modifiers() & Qt::CTRL))
 	{
 		ui->showModelViewer();
 		ev->accept();
 	}
-	else if ((ev->key() == Qt::Key_3) && (ev->modifiers() && Qt::CTRL))
+	else if ((ev->key() == Qt::Key_3) && (ev->modifiers() & Qt::CTRL))
 	{
 		ui->showBuildPanel();
 		ev->accept();
 	}
-	else if ((ev->key() == Qt::Key_4) && (ev->modifiers() && Qt::CTRL))
+	else if ((ev->key() == Qt::Key_4) && (ev->modifiers() & Qt::CTRL))
 	{
 		ui->showPostPanel();
 		ev->accept();

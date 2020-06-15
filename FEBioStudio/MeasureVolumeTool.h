@@ -39,8 +39,8 @@ public:
 	// Apply button
 	bool OnApply() override;
 
-	QVariant GetPropertyValue(int i);
-	void SetPropertyValue(int i, const QVariant& v);
+	QVariant GetPropertyValue(int i) override;
+	void SetPropertyValue(int i, const QVariant& v) override;
 
 private:
 	double	m_vol;		// volume of selection

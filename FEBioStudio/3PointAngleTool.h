@@ -39,7 +39,7 @@ public:
 	C3PointAngleTool(CMainWindow* wnd);
 
 	// update
-	void Update();
+	void Update() override;
 
 private:
 	QVariant GetPropertyValue(int i) override;
