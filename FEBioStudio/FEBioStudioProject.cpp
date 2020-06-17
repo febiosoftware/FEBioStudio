@@ -118,6 +118,37 @@ void FEBioStudioProject::ProjectItem::AddItem(ProjectItem* item)
 	m_items.push_back(item);
 }
 
+FEBioStudioProject::ProjectItem& FEBioStudioProject::ProjectItem::AddFile(const QString& filePath) 
+{ 
+	// see if this file already exists
+	QList<ProjectItem*>::iterator it;
+	for (it = m_items.begin(); it != m_items.end(); ++it)
+	{
+		ProjectItem& item = *(*it);
+		if (item.IsFile() && (item.Name() == filePath))
+		{
+			return item;
+		}
+	}
+	m_items.push_back(new ProjectItem(PROJECT_FILE, filePath, this)); return *m_items.last(); 
+}
+
+FEBioStudioProject::ProjectItem& FEBioStudioProject::ProjectItem::AddGroup(const QString& name) 
+{ 
+	// see if this item already exists
+	QList<ProjectItem*>::iterator it;
+	for (it = m_items.begin(); it != m_items.end(); ++it)
+	{
+		ProjectItem& item = *(*it);
+		if (item.IsGroup() && (item.Name() == name))
+		{
+			return item;
+		}
+	}
+	m_items.push_back(new ProjectItem(PROJECT_GROUP, name, this)); return *m_items.last(); 
+}
+
+
 void FEBioStudioProject::ProjectItem::RemoveSelf()
 {
 	assert(m_parent);
@@ -151,6 +182,16 @@ FEBioStudioProject::FEBioStudioProject()
 QString FEBioStudioProject::GetProjectFileName() const
 {
 	return m_projectFile;
+}
+
+QString FEBioStudioProject::GetProjectPath() const
+{
+	if (m_projectFile.isEmpty() == false)
+	{
+		QFileInfo fi(m_projectFile);
+		return fi.absolutePath();
+	}
+	else return QString("");
 }
 
 const FEBioStudioProject::ProjectItem& FEBioStudioProject::RootItem() const
@@ -414,7 +455,8 @@ QString FEBioStudioProject::ToAbsolutePath(const QString& relativePath)
 {
 	QFileInfo fi(m_projectFile);
 	QDir dir = fi.absoluteDir();
-	return QDir::toNativeSeparators(dir.absoluteFilePath(relativePath));
+	
+	return QDir::toNativeSeparators(QDir::cleanPath(dir.absoluteFilePath(relativePath)));
 }
 
 QString FEBioStudioProject::ToRelativePath(const QString& absolutePath)

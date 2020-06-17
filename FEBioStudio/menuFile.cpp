@@ -917,7 +917,8 @@ void CMainWindow::on_actionSnapShot_triggered()
 
 void CMainWindow::on_actionSaveProject_triggered()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, "Save Project As", "", QString("FEBioStudio Projects (*.fsp)"));
+	QString prjPath = ui->m_project.GetProjectPath();
+	QString fileName = QFileDialog::getSaveFileName(this, "Save Project As", prjPath, QString("FEBioStudio Projects (*.fsp)"));
 	if (fileName.isEmpty() == false)
 	{
 		fileName = QDir::toNativeSeparators(fileName);
