@@ -1108,7 +1108,7 @@ void FEBioExport2::WriteMaterial(FEMaterial *pm, XMLElement& el)
 
 void FEBioExport2::WriteFiberMaterial(FEOldFiberMaterial& fiber)
 {
-	FEFiberGeneratorMaterial& f = fiber.m_fiber;
+	FEOldFiberMaterial& f = fiber;
 	XMLElement el;
 	el.name("fiber");
 	if (f.m_naopt == FE_FIBER_LOCAL) 
@@ -1368,7 +1368,7 @@ void FEBioExport2::WriteGeometrySection()
 	for (int i=0; i<s.Materials(); ++i)
 	{
 		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(s.GetMaterial(i)->GetMaterialProperties());
-		if (pmat && (pmat->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER)) bdata = true;
+		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) bdata = true;
 	}
 	for (int i=0; i<model.Objects(); ++i)
 	{
@@ -1667,13 +1667,13 @@ void FEBioExport2::WriteGeometryElementData()
 			if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
 
 			elem.set_attribute(nid, e.m_nid);
-			if (e.IsShell() || e.m_Qactive || (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER)) || (ND > 0))
+			if (e.IsShell() || e.m_Qactive || (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) || (ND > 0))
 			{
 				m_xml.add_branch(elem, false);
 				if (e.IsShell()) m_xml.add_leaf("thickness", e.m_h, e.Nodes());
 				// if material is transversely isotropic with user-defined fibers,
 				// export fiber direction, otherwise export local material orientation
-				if (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
+				if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 				{
 					vec3d a = T.LocalToGlobalNormal(e.m_fiber);
 					m_xml.add_leaf("fiber", a);

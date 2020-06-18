@@ -2898,28 +2898,52 @@ void CGLView::RenderMaterialFibers()
 						FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat);
 
 						rel.m_nelem = j;
-						if (pmat && pmat->HasFibers())
+						if (pmat)
 						{
-							vec3d q = pmat->GetFiber(rel);
-
-							// This vector is defined in global coordinates, except for user-defined fibers, which
-							// are assumed to be in local coordinates
-							if (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
-							{
-								q = po->GetTransform().LocalToGlobalNormal(q);
-							}
-
 							vec3d c(0, 0, 0);
-							for (int k = 0; k<el.Nodes(); ++k) c += po->GetTransform().LocalToGlobal(pm->Node(el.m_node[k]).r);
+							for (int k = 0; k < el.Nodes(); ++k) c += po->GetTransform().LocalToGlobal(pm->Node(el.m_node[k]).r);
 							c /= el.Nodes();
 
-							r = fabs(q.x);
-							g = fabs(q.y);
-							b = fabs(q.z);
+							if (pmat->HasFibers())
+							{
+								vec3d q = pmat->GetFiber(rel);
 
-							glColor3d(r, g, b);
+								// This vector is defined in global coordinates, except for user-defined fibers, which
+								// are assumed to be in local coordinates
+								if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
+								{
+									q = po->GetTransform().LocalToGlobalNormal(q);
+								}
 
-							glx::drawLine(c, c + q*h);
+								r = fabs(q.x);
+								g = fabs(q.y);
+								b = fabs(q.z);
+
+								glColor3d(r, g, b);
+
+								glx::drawLine(c - q*(h*0.5), c + q * (h*0.5));
+							}
+
+							for (int i = 0; i < pmat->Properties(); ++i)
+							{
+								FEMaterialProperty& prop = pmat->GetProperty(i);
+								for (int j = 0; j < prop.Size(); ++j)
+								{
+									FEMaterial* matj = prop.GetMaterial(j);
+									if (matj && matj->HasFibers())
+									{
+										vec3d q = matj->GetFiber(rel);
+
+										r = fabs(q.x);
+										g = fabs(q.y);
+										b = fabs(q.z);
+
+										glColor3d(r, g, b);
+
+										glx::drawLine(c - q * (h*0.5), c + q * (h*0.5));
+									}
+								}
+							}
 						}
 					}
 				}

@@ -45,6 +45,22 @@ FEFiberGeneratorLocal::FEFiberGeneratorLocal() : FEFiberGenerator(FE_FIBER_GENER
 	AddVec2iParam(vec2i(), "local", "local");
 }
 
+vec3d FEFiberGeneratorLocal::GetFiber(FEElementRef& el)
+{
+	vec2i v = GetVec2iValue(0);
+
+	FECoreMesh* pm = el.m_pmesh;
+	int n[2] = { v.x, v.y };
+	if ((n[0] == 0) && (n[1] == 0)) { n[0] = 1; n[1] = 2; }
+	vec3d a = pm->Node(el->m_node[n[0] - 1]).r;
+	vec3d b = pm->Node(el->m_node[n[1] - 1]).r;
+
+	b -= a;
+	b.Normalize();
+
+	return b;
+}
+
 //////////////////////////////////////////////////////////////////////
 // FEFiberGeneratorVector
 //////////////////////////////////////////////////////////////////////
@@ -54,6 +70,86 @@ REGISTER_MATERIAL(FEFiberGeneratorVector, MODULE_MECH, FE_FIBER_GENERATOR_VECTOR
 FEFiberGeneratorVector::FEFiberGeneratorVector() : FEFiberGenerator(FE_FIBER_GENERATOR_VECTOR)
 {
 	AddVecParam(vec3d(1, 0, 0), "vector", "vector");
+}
+
+vec3d FEFiberGeneratorVector::GetFiber(FEElementRef& el)
+{
+	return GetVecValue(0);
+}
+
+//////////////////////////////////////////////////////////////////////
+// FECylindricalVectorGenerator
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FECylindricalVectorGenerator, MODULE_MECH, FE_FIBER_GENERATOR_CYLINDRICAL, FE_MAT_FIBER_GENERATOR, "cylindrical", 0);
+
+FECylindricalVectorGenerator::FECylindricalVectorGenerator() : FEFiberGenerator(FE_FIBER_GENERATOR_CYLINDRICAL)
+{
+	AddVecParam(vec3d(0, 0, 0), "center", "center");
+	AddVecParam(vec3d(0, 0, 1), "axis"  , "axis"  );
+	AddVecParam(vec3d(1, 0, 0), "vector", "vector");
+}
+
+vec3d FECylindricalVectorGenerator::GetFiber(FEElementRef& el)
+{
+	vec3d r = GetVecValue(0);
+	vec3d a = GetVecValue(1);
+	vec3d v = GetVecValue(2);
+
+	// we'll use the element center as the reference point
+	FECoreMesh* pm = el.m_pmesh;
+	int n = el->Nodes();
+	vec3d c(0, 0, 0);
+	for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
+	c /= (double)n;
+
+	// find the vector to the axis
+	vec3d b = (c - r) - a * (a*(c - r)); b.Normalize();
+
+	// setup the rotation vector
+	vec3d x_unit(vec3d(1, 0, 0));
+	quatd q(x_unit, b);
+
+	// rotate the reference vector
+	v.Normalize();
+	q.RotateVector(v);
+
+	return v;
+}
+
+//////////////////////////////////////////////////////////////////////
+// FESphericalVectorGenerator
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FESphericalVectorGenerator, MODULE_MECH, FE_FIBER_GENERATOR_SPHERICAL, FE_MAT_FIBER_GENERATOR, "spherical", 0);
+
+FESphericalVectorGenerator::FESphericalVectorGenerator() : FEFiberGenerator(FE_FIBER_GENERATOR_SPHERICAL)
+{
+	AddVecParam(vec3d(0, 0, 0), "center", "center");
+	AddVecParam(vec3d(1, 0, 0), "vector", "vector");
+}
+
+vec3d FESphericalVectorGenerator::GetFiber(FEElementRef& el)
+{
+	vec3d o = GetVecValue(0);
+	vec3d v = GetVecValue(1);
+
+	FECoreMesh* pm = el.m_pmesh;
+	int n = el->Nodes();
+	vec3d c(0, 0, 0);
+	for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
+	c /= (double)n;
+	c -= o;
+	c.Normalize();
+
+	// setup the rotation vector
+	vec3d x_unit(vec3d(1, 0, 0));
+	quatd q(x_unit, c);
+
+	v.Normalize();
+	q.RotateVector(v);
+
+	return v;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -265,7 +361,7 @@ FEPRLig::FEPRLig() : FEMaterial(FE_PRLIG)
 // FEOldFiberMaterial - material for fibers
 //////////////////////////////////////////////////////////////////////
 
-FEFiberGeneratorMaterial::FEFiberGeneratorMaterial() : FEMaterial(0)
+FEOldFiberMaterial::FEOldFiberMaterial() : FEMaterial(0)
 {
 	AddIntParam(0, "fiber", "fiber")->SetEnumNames("local\0cylindrical\0spherical\0vector\0user\0angles\0polar\0\0");
 	AddIntParam(0, "n0", "n0");
@@ -275,9 +371,23 @@ FEFiberGeneratorMaterial::FEFiberGeneratorMaterial() : FEMaterial(0)
 	AddVecParam(vec3d(1, 0, 0), "d");
 	AddDoubleParam(0, "theta");
 	AddDoubleParam(0, "phi");
+
+	m_naopt = FE_FIBER_VECTOR;
+	m_nuser = 0;
+	m_n[0] = m_n[1] = 0;
+	m_r = vec3d(0,0,0);
+	m_a = vec3d(0,0,1);
+	m_d = vec3d(1,0,0);
+	m_theta = 0.0;
+	m_phi = 90.0;
+	m_d0 = m_d1 = vec3d(0,0,1);
+	m_R0 = 0; m_R1 = 1;
+
+	UpdateData(false);
+	UpdateData(true);
 }
 
-bool FEFiberGeneratorMaterial::UpdateData(bool bsave)
+bool FEOldFiberMaterial::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -341,7 +451,7 @@ bool FEFiberGeneratorMaterial::UpdateData(bool bsave)
 	return false;
 }
 
-vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
+vec3d FEOldFiberMaterial::GetFiberVector(FEElementRef& el)
 {
 	switch (m_naopt)
 	{
@@ -365,14 +475,14 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 		FECoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
-		for (int i = 0; i<n; ++i) c += pm->NodePosition(el->m_node[i]);
+		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
 		c /= (double)n;
 
 		// find the vector to the axis
 		vec3d r = m_r;
 		vec3d a = m_a;
 		vec3d v = m_d;
-		vec3d b = (c - r) - a*(a*(c - r)); b.Normalize();
+		vec3d b = (c - r) - a * (a*(c - r)); b.Normalize();
 
 		// setup the rotation vector
 		vec3d x_unit(vec3d(1, 0, 0));
@@ -390,7 +500,7 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 		FECoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
-		for (int i = 0; i<n; ++i) c += pm->NodePosition(el->m_node[i]);
+		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
 		c /= (double)n;
 		c -= m_r;
 		c.Normalize();
@@ -420,8 +530,8 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 	{
 		// convert from degress to radians
 		const double pi = 4 * atan(1.0);
-		const double the = m_theta*pi / 180.;
-		const double phi = m_phi*pi / 180.;
+		const double the = m_theta * pi / 180.;
+		const double phi = m_phi * pi / 180.;
 
 		// define the first axis (i.e. the fiber vector)
 		vec3d a;
@@ -437,14 +547,14 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 		FECoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
-		for (int i = 0; i<n; ++i) c += pm->NodePosition(el->m_node[i]);
+		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
 		c /= (double)n;
 
 		// find the vector to the axis
 		vec3d r = m_r;
 		vec3d a = m_a;
 
-		vec3d b = (c - r) - a*(a*(c - r));
+		vec3d b = (c - r) - a * (a*(c - r));
 		double R = b.Length(); b.Normalize();
 
 		double R0 = m_R0;
@@ -476,56 +586,42 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 	return vec3d(0, 0, 0);
 }
 
-FEOldFiberMaterial::FEOldFiberMaterial()
-{
-	m_fiber.m_naopt = FE_FIBER_LOCAL;
-	m_fiber.m_nuser = 0;
-	m_fiber.m_n[0] = m_fiber.m_n[1] = 0;
-	m_fiber.m_r = vec3d(0,0,0);
-	m_fiber.m_a = vec3d(0,0,1);
-	m_fiber.m_d = vec3d(1,0,0);
-	m_fiber.m_theta = 0.0;
-	m_fiber.m_phi = 90.0;
-	m_fiber.m_d0 = m_fiber.m_d1 = vec3d(0,0,1);
-	m_fiber.m_R0 = 0; m_fiber.m_R1 = 1;
-}
-
-FEOldFiberMaterial::FEOldFiberMaterial(const FEOldFiberMaterial& m) {}
+FEOldFiberMaterial::FEOldFiberMaterial(const FEOldFiberMaterial& m) : FEMaterial(0) {}
 FEOldFiberMaterial& FEOldFiberMaterial::operator = (const FEOldFiberMaterial& m) { return (*this); }
 
 void FEOldFiberMaterial::copy(FEOldFiberMaterial* pm)
 {
-	m_fiber.m_naopt = pm->m_fiber.m_naopt;
-	m_fiber.m_nuser = pm->m_fiber.m_nuser;
-	m_fiber.m_n[0] = pm->m_fiber.m_n[0];
-	m_fiber.m_n[1] = pm->m_fiber.m_n[1];
-	m_fiber.m_r = pm->m_fiber.m_r;
-	m_fiber.m_a = pm->m_fiber.m_a;
-	m_fiber.m_d = pm->m_fiber.m_d;
-	m_fiber.m_theta = pm->m_fiber.m_theta;
-	m_fiber.m_phi = pm->m_fiber.m_phi;
-	m_fiber.m_d0 = pm->m_fiber.m_d0;
-	m_fiber.m_d1 = pm->m_fiber.m_d1;
-	m_fiber.m_R0 = pm->m_fiber.m_R0;
-	m_fiber.m_R1 = pm->m_fiber.m_R1;
+	m_naopt = pm->m_naopt;
+	m_nuser = pm->m_nuser;
+	m_n[0] = pm->m_n[0];
+	m_n[1] = pm->m_n[1];
+	m_r = pm->m_r;
+	m_a = pm->m_a;
+	m_d = pm->m_d;
+	m_theta = pm->m_theta;
+	m_phi = pm->m_phi;
+	m_d0 = pm->m_d0;
+	m_d1 = pm->m_d1;
+	m_R0 = pm->m_R0;
+	m_R1 = pm->m_R1;
 
 //	GetParamBlock() = pm->GetParamBlock();
 }
 
 void FEOldFiberMaterial::Save(OArchive &ar)
 {
-	ar.WriteChunk(MP_AOPT, m_fiber.m_naopt);
-	ar.WriteChunk(MP_N, m_fiber.m_n, 2);
-	ar.WriteChunk(MP_R, m_fiber.m_r);
-	ar.WriteChunk(MP_A, m_fiber.m_a);
-	ar.WriteChunk(MP_D, m_fiber.m_d);
-	ar.WriteChunk(MP_NUSER, m_fiber.m_nuser);
-	ar.WriteChunk(MP_THETA, m_fiber.m_theta);
-	ar.WriteChunk(MP_PHI, m_fiber.m_phi);
-	ar.WriteChunk(MP_D0, m_fiber.m_d0);
-	ar.WriteChunk(MP_D1, m_fiber.m_d1);
-	ar.WriteChunk(MP_R0, m_fiber.m_R0);
-	ar.WriteChunk(MP_R1, m_fiber.m_R1);
+	ar.WriteChunk(MP_AOPT, m_naopt);
+	ar.WriteChunk(MP_N, m_n, 2);
+	ar.WriteChunk(MP_R, m_r);
+	ar.WriteChunk(MP_A, m_a);
+	ar.WriteChunk(MP_D, m_d);
+	ar.WriteChunk(MP_NUSER, m_nuser);
+	ar.WriteChunk(MP_THETA, m_theta);
+	ar.WriteChunk(MP_PHI, m_phi);
+	ar.WriteChunk(MP_D0, m_d0);
+	ar.WriteChunk(MP_D1, m_d1);
+	ar.WriteChunk(MP_R0, m_R0);
+	ar.WriteChunk(MP_R1, m_R1);
 	ar.BeginChunk(MP_PARAMS);
 	{
 		ParamContainer::Save(ar);
@@ -542,26 +638,26 @@ void FEOldFiberMaterial::Load(IArchive& ar)
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case MP_AOPT: ar.read(m_fiber.m_naopt); break;
-		case MP_N: ar.read(m_fiber.m_n, 2); break;
-		case MP_R: ar.read(m_fiber.m_r); break;
-		case MP_A: ar.read(m_fiber.m_a); break;
-		case MP_D: ar.read(m_fiber.m_d); break;
-		case MP_NUSER: ar.read(m_fiber.m_nuser); break;
-		case MP_THETA: ar.read(m_fiber.m_theta); break;
-		case MP_PHI: ar.read(m_fiber.m_phi); break;
-		case MP_D0: ar.read(m_fiber.m_d0); break;
-		case MP_D1: ar.read(m_fiber.m_d1); break;
-		case MP_R0: ar.read(m_fiber.m_R0); break;
-		case MP_R1: ar.read(m_fiber.m_R1); break;
+		case MP_AOPT: ar.read(m_naopt); break;
+		case MP_N: ar.read(m_n, 2); break;
+		case MP_R: ar.read(m_r); break;
+		case MP_A: ar.read(m_a); break;
+		case MP_D: ar.read(m_d); break;
+		case MP_NUSER: ar.read(m_nuser); break;
+		case MP_THETA: ar.read(m_theta); break;
+		case MP_PHI: ar.read(m_phi); break;
+		case MP_D0: ar.read(m_d0); break;
+		case MP_D1: ar.read(m_d1); break;
+		case MP_R0: ar.read(m_R0); break;
+		case MP_R1: ar.read(m_R1); break;
 		case MP_PARAMS: 
 			ParamContainer::Load(ar);
 			break;
 		}
 		ar.CloseChunk();
 	}
-	m_fiber.UpdateData(false);
-	m_fiber.UpdateData(true);
+	UpdateData(false);
+	UpdateData(true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -586,7 +682,7 @@ void FETransverselyIsotropic::SetFiberMaterial(FEOldFiberMaterial* fiber)
 vec3d FETransverselyIsotropic::GetFiber(FEElementRef& el)
 {
 	FEOldFiberMaterial& fiber = *m_pfiber;
-	return fiber.m_fiber.GetFiberVector(el);
+	return fiber.GetFiberVector(el);
 }
 
 void FETransverselyIsotropic::copy(FEMaterial *pmat)
@@ -1680,6 +1776,24 @@ FEEFDUncoupled::FEEFDUncoupled() : FEMaterial(FE_EFD_UNCOUPLED)
 }
 
 //=============================================================================
+// FEFiberMaterial
+//=============================================================================
+
+FEFiberMaterial::FEFiberMaterial(int ntype) : FEMaterial(ntype)
+{
+	AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
+	GetProperty(0).SetMaterial(new FEFiberGeneratorLocal);
+}
+
+bool FEFiberMaterial::HasFibers() { return true; }
+
+vec3d FEFiberMaterial::GetFiber(FEElementRef& el)
+{
+	FEFiberGenerator* fiber = dynamic_cast<FEFiberGenerator*>(GetProperty(0).GetMaterial());
+	return (fiber ? fiber->GetFiber(el) : vec3d(1, 0, 0));
+}
+
+//=============================================================================
 // Fiber-Exp-Pow
 //=============================================================================
 
@@ -1694,24 +1808,17 @@ FEFiberExpPowOld::FEFiberExpPowOld() : FEMaterial(FE_FIBEREXPPOW_COUPLED_OLD)
 	AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
 	AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
 	AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
-
-//	AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
-//	GetProperty(0).SetMaterial(new FEFiberGeneratorLocal);
 }
-
 
 REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Exponential_Power_Law);
 
 FEFiberExpPow::FEFiberExpPow() : FEMaterial(FE_FIBEREXPPOW_COUPLED)
 {
-    m_hasMatAxes = true;
+	m_hasMatAxes = true;
 
     AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
     AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
     AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
-
-//    AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
-//    GetProperty(0).SetMaterial(new FEFiberGeneratorLocal);
 }
 
 void FEFiberExpPow::Convert(FEFiberExpPowOld* pold)

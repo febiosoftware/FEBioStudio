@@ -125,7 +125,7 @@ public:
 			if (dynamic_cast<FETransverselyIsotropic*>(pm))
 			{
 				FETransverselyIsotropic* tiso = dynamic_cast<FETransverselyIsotropic*>(pm);
-				addParameters(&tiso->GetFiberMaterial()->m_fiber);
+				addParameters(tiso->GetFiberMaterial());
 			}
 			else if (pm->HasMaterialAxes())
 			{
@@ -197,6 +197,7 @@ public:
 						return (b ? "Yes" : "No");
 					}
 					break;
+					case Param_VEC2I: return Vec2iToString(p.val<vec2i>()); break;
 					default:
 						return "in progress";
 					}
@@ -211,6 +212,7 @@ public:
 						return p.val<int>(); break;
 					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
+					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
 					default:
 						return "in progress";
 					}
@@ -255,6 +257,7 @@ public:
 				}
 				break;
 				case Param_VEC3D: p.SetVec3dValue(StringToVec3d(value.toString())); break;
+				case Param_VEC2I: p.SetVec2iValue(StringToVec2i(value.toString())); break;
 				case Param_BOOL:
 				{
 					int n = value.toInt();

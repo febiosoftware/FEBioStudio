@@ -344,7 +344,7 @@ bool FEBioExport25::PrepareExport(FEProject& prj)
 	for (int i=0; i<fem.Materials(); ++i)
 	{
 		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
-		if (pmat && (pmat->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER)) m_bdata = true;
+		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) m_bdata = true;
 	}
 	for (int i=0; i<model.Objects(); ++i)
 	{
@@ -1425,7 +1425,7 @@ void FEBioExport25::WriteMaterialSection()
 
 void FEBioExport25::WriteFiberMaterial(FEOldFiberMaterial& fiber)
 {
-	FEFiberGeneratorMaterial& f = fiber.m_fiber;
+	FEOldFiberMaterial& f = fiber;
 	XMLElement el;
 	el.name("fiber");
 	if (f.m_naopt == FE_FIBER_LOCAL) 
@@ -2965,7 +2965,7 @@ void FEBioExport25::WriteMeshDataMaterialFibers()
 		FETransverselyIsotropic* ptiso = 0;
 		if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
 
-		if (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
+		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 		{
 			int NE = (int) elSet.elem.size();
 			XMLElement tag("ElementData");

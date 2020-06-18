@@ -455,6 +455,7 @@ public:
 	double GetFloatValue(int n) const { return m_Param[n].GetFloatValue(); }
 	bool GetBoolValue(int n)const  { return m_Param[n].GetBoolValue(); }
 	vec3d GetVecValue(int n) const { return m_Param[n].GetVec3dValue(); }
+	vec2i GetVec2iValue(int n) const { return m_Param[n].GetVec2iValue(); }
 	FELoadCurve* GetParamLC(int n) { return m_Param[n].GetLoadCurve(); }
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }

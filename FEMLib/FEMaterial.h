@@ -264,6 +264,8 @@
 // fiber generators
 #define FE_FIBER_GENERATOR_LOCAL		1301
 #define FE_FIBER_GENERATOR_VECTOR		1302
+#define FE_FIBER_GENERATOR_SPHERICAL	1303
+#define FE_FIBER_GENERATOR_CYLINDRICAL	1304
 
 // discrete materials
 #define FE_DISCRETE_LINEAR_SPRING		1401
@@ -285,6 +287,7 @@ class FEFiberGeneratorLocal : public FEFiberGenerator
 {
 public:
 	FEFiberGeneratorLocal();
+	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FEFiberGeneratorLocal);
 };
 
@@ -293,7 +296,26 @@ class FEFiberGeneratorVector : public FEFiberGenerator
 {
 public:
 	FEFiberGeneratorVector();
+	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FEFiberGeneratorVector);
+};
+
+//-----------------------------------------------------------------------------
+class FECylindricalVectorGenerator : public FEFiberGenerator
+{
+public:
+	FECylindricalVectorGenerator();
+	vec3d GetFiber(FEElementRef& el) override;
+	DECLARE_REGISTERED(FECylindricalVectorGenerator);
+};
+
+//-----------------------------------------------------------------------------
+class FESphericalVectorGenerator : public FEFiberGenerator
+{
+public:
+	FESphericalVectorGenerator();
+	vec3d GetFiber(FEElementRef& el) override;
+	DECLARE_REGISTERED(FESphericalVectorGenerator);
 };
 
 //-----------------------------------------------------------------------------
@@ -493,21 +515,12 @@ public:
 	DECLARE_REGISTERED(FEPRLig);
 };
 
-//-----------------------------------------------------------------------------
-// material class for fibers
-//
-
-// We needed to put the fiber generation options into a class derived from
-// FEMaterial, so it can be displayed in the FEMaterialPropsView.
-// TODO: Find a better implementation for this!
-class FEFiberGeneratorMaterial : public FEMaterial
+class FEOldFiberMaterial : public FEMaterial
 {
-public:
-	FEFiberGeneratorMaterial();
-
-	vec3d GetFiberVector(FEElementRef& el);
-
-	bool UpdateData(bool bsave) override;
+private:
+	enum {
+		MP_AOPT, MP_N, 
+		MP_R, MP_A,	MP_D, MP_PARAMS, MP_NUSER, MP_THETA, MP_PHI, MP_D0, MP_D1, MP_R0, MP_R1 };
 
 public:
 	int		m_naopt;	// fiber option
@@ -521,17 +534,6 @@ public:
 	// used by POLAR method
 	vec3d	m_d0, m_d1;
 	double	m_R0, m_R1;
-};
-
-class FEOldFiberMaterial : public ParamContainer
-{
-private:
-	enum {
-		MP_AOPT, MP_N, 
-		MP_R, MP_A,	MP_D, MP_PARAMS, MP_NUSER, MP_THETA, MP_PHI, MP_D0, MP_D1, MP_R0, MP_R1 };
-
-public:
-	FEFiberGeneratorMaterial	m_fiber;
 
 public:
 	void Save(OArchive& ar);
@@ -541,6 +543,10 @@ public:
 
 public:
 	FEOldFiberMaterial();
+
+	vec3d GetFiberVector(FEElementRef& el);
+
+	bool UpdateData(bool bsave) override;
 
 private:
 	FEOldFiberMaterial(const FEOldFiberMaterial& m);
@@ -1219,10 +1225,22 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEFiberMaterial : public FEMaterial
+{
+public:
+	FEFiberMaterial(int ntype);
+
+	bool HasFibers() override;
+
+	vec3d GetFiber(FEElementRef& el) override;
+};
+
+//-----------------------------------------------------------------------------
 class FEFiberExpPow : public FEMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI };
+
 public:
     FEFiberExpPow();
     
