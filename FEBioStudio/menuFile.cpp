@@ -845,6 +845,15 @@ void CMainWindow::on_actionSaveAs_triggered()
 		QFileInfo fi(ui->m_project.GetProjectFileName());
 		currentPath = fi.absolutePath();
 	}
+	else
+	{
+		string docfile = doc->GetDocFilePath();
+		if (docfile.empty() == false)
+		{
+			QFileInfo fi(QString::fromStdString(docfile));
+			currentPath = fi.absolutePath();
+		}
+	}
 
 	QFileDialog dlg;
 	dlg.setDirectory(currentPath);
