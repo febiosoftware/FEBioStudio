@@ -100,7 +100,6 @@ public:
 
 			if (propId >= 0)
 			{
-				assert(matIndex >= 0);
 				FEMaterialProperty& p = pm->GetProperty(propId);
 				FEMaterial* pm = p.GetMaterial(matIndex);
 				if (pm) item->addChildren(pm);
@@ -136,8 +135,12 @@ public:
 			{
 				FEMaterialProperty& p = pm->GetProperty(i);
 				int nc = p.Size();
-				for (int j = 0; j < nc; ++j) 
-					if (p.GetMaterial(j)) addChild(pm, -1, i, j);
+				for (int j = 0; j < nc; ++j) addChild(pm, -1, i, j);
+
+				if (p.maxSize() == FEMaterialProperty::NO_FIXED_SIZE)
+				{
+					addChild(pm, -1, i, -1);
+				}
 			}
 		}
 
@@ -226,14 +229,18 @@ public:
 					QString s = QString::fromStdString(p.GetName());
 					if (p.maxSize() != 1)
 					{
-						s += QString(" - %1").arg(m_matIndex + 1);
+						if (m_matIndex >= 0)
+							s += QString(" - %1").arg(m_matIndex + 1);
+						else 
+							s = QString("(add %1)").arg(s);
 					}
 					return s;
 				}
 				else
 				{
-					FEMaterial* pm = p.GetMaterial(m_matIndex);
-					return pm->TypeStr();
+					FEMaterial* pm = (m_matIndex >= 0 ? p.GetMaterial(m_matIndex) : nullptr);
+					if (pm == nullptr) return QString("(select)");
+					else return pm->TypeStr();
 				}
 			}
 			else return "No data";
@@ -267,6 +274,30 @@ public:
 				}
 
 				return m_pm->UpdateData(true);
+			}
+			else if (isProperty())
+			{
+				int matId = value.toInt();
+
+				FEMaterialProperty& matProp = m_pm->GetProperty(m_propId);
+
+				if (matId == -2)
+				{
+					FEMaterial* pm = matProp.GetMaterial(m_matIndex);
+					if (pm) matProp.RemoveMaterial(pm);
+				}
+				else
+				{
+					FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
+					FEMaterial* pmat = MF.Create(value.toInt()); assert(pmat);
+					if (m_matIndex >= 0)
+						m_pm->GetProperty(m_propId).SetMaterial(pmat, m_matIndex);
+					else
+					{
+						m_pm->GetProperty(m_propId).AddMaterial(pmat);
+					}
+				}
+				return true;
 			}
 			return false;
 		}
@@ -351,6 +382,9 @@ public:
 			Item* item = static_cast<Item*>(index.internalPointer());
 			if (item->isParameter())
 				return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+
+			if (item->isProperty())
+				return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 		}
 		return QAbstractItemModel::flags(index);
 	}
@@ -433,6 +467,9 @@ FEModel* CMaterialPropsModel::Item::GetFEModel()
 //=================================================================================================
 CMaterialPropsDelegate::CMaterialPropsDelegate(QObject* parent) : QStyledItemDelegate(parent) {}
 
+// in MaterialEditor.cpp
+void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly);
+
 QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	if (index.isValid())
@@ -466,6 +503,36 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				return pw;
 			}
 		}
+		else if (item->isProperty())
+		{
+			FEMaterial* pm = item->m_pm;
+			FEMaterialProperty& matProp = pm->GetProperty(item->m_propId);
+
+			QComboBox* pc = new QComboBox(parent);
+			FillComboBox(pc, matProp.GetClassID(), 0xFFFF, false);
+
+			FEMaterial* pmat = pm->GetProperty(item->m_propId).GetMaterial(item->m_matIndex);
+			if (pmat)
+			{
+				int index = pmat->Type();
+				for (int i = 0; i < pc->count(); ++i)
+				{
+					int matid = pc->itemData(i, Qt::UserRole).toInt();
+					if (matid == index)
+					{
+						pc->setCurrentIndex(i);
+						break;
+					}
+				}
+			}
+
+			pc->insertSeparator(pc->count());
+			pc->addItem("(remove)", -2);
+
+			QObject::connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+
+			return pc;
+		}
 	}
 	return QStyledItemDelegate::createEditor(parent, option, index);
 }
@@ -477,8 +544,11 @@ void CMaterialPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& i
 	{
 		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
 		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
-		QVariant v = item->data(1, Qt::EditRole);
-		pw->setCurrentIndex(v.toInt());
+		if (item->isParameter())
+		{
+			QVariant v = item->data(1, Qt::EditRole);
+			pw->setCurrentIndex(v.toInt());
+		}
 	}
 	else QStyledItemDelegate::setEditorData(editor, index);
 }
@@ -489,7 +559,16 @@ void CMaterialPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 	if (dynamic_cast<QComboBox*>(editor))
 	{
 		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
-		model->setData(index, pw->currentIndex());
+		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
+		if (item->isParameter())
+		{
+			model->setData(index, pw->currentIndex());
+		}
+		else if (item->isProperty())
+		{
+			int matId = pw->currentData(Qt::UserRole).toInt();
+			model->setData(index, matId);
+		}
 	}
 	else QStyledItemDelegate::setModelData(editor, model, index);
 }
