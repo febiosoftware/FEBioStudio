@@ -266,6 +266,7 @@
 #define FE_FIBER_GENERATOR_VECTOR		1302
 #define FE_FIBER_GENERATOR_SPHERICAL	1303
 #define FE_FIBER_GENERATOR_CYLINDRICAL	1304
+#define FE_FIBER_GENERATOR_ANGLES		1305
 
 // discrete materials
 #define FE_DISCRETE_LINEAR_SPRING		1401
@@ -286,7 +287,7 @@ public:
 class FEFiberGeneratorLocal : public FEFiberGenerator
 {
 public:
-	FEFiberGeneratorLocal();
+	FEFiberGeneratorLocal(int n0 = 0, int n1 = 0);
 	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FEFiberGeneratorLocal);
 };
@@ -295,7 +296,7 @@ public:
 class FEFiberGeneratorVector : public FEFiberGenerator
 {
 public:
-	FEFiberGeneratorVector();
+	FEFiberGeneratorVector(const vec3d& v = vec3d(1,0,0));
 	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FEFiberGeneratorVector);
 };
@@ -316,6 +317,15 @@ public:
 	FESphericalVectorGenerator();
 	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FESphericalVectorGenerator);
+};
+
+//-----------------------------------------------------------------------------
+class FEAnglesVectorGenerator : public FEFiberGenerator
+{
+public:
+	FEAnglesVectorGenerator(double theta = 0.0, double phi = 90.0);
+	vec3d GetFiber(FEElementRef& el) override;
+	DECLARE_REGISTERED(FEAnglesVectorGenerator);
 };
 
 //-----------------------------------------------------------------------------
@@ -1184,6 +1194,10 @@ public:
 	DECLARE_REGISTERED(FEEFDUncoupled);
 };
 
+//=============================================================================
+// Obsolete Fiber materials. Retained for backward compatibility.
+//=============================================================================
+
 //-----------------------------------------------------------------------------
 class FEFiberExpPowOld : public FEMaterial
 {
@@ -1224,7 +1238,12 @@ public:
 //    DECLARE_REGISTERED(FEFiberPowLinUncoupled);
 };
 
+//=============================================================================
+// Fiber materials
+//=============================================================================
+
 //-----------------------------------------------------------------------------
+// Base class manages the fiber generator
 class FEFiberMaterial : public FEMaterial
 {
 public:
@@ -1233,10 +1252,14 @@ public:
 	bool HasFibers() override;
 
 	vec3d GetFiber(FEElementRef& el) override;
+
+	void SetFiberGenerator(FEFiberGenerator* v);
+
+	void SetAxisMaterial(FEAxisMaterial* Q) override;
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpPow : public FEMaterial
+class FEFiberExpPow : public FEFiberMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI };
@@ -1251,7 +1274,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpPowUncoupled : public FEMaterial
+class FEFiberExpPowUncoupled : public FEFiberMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI, MP_K };
@@ -1265,7 +1288,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberPowLin : public FEMaterial
+class FEFiberPowLin : public FEFiberMaterial
 {
 public:
     enum { MP_E, MP_BETA, MP_LAM0 };
@@ -1279,7 +1302,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberPowLinUncoupled : public FEMaterial
+class FEFiberPowLinUncoupled : public FEFiberMaterial
 {
 public:
     enum { MP_E, MP_BETA, MP_LAM0, MP_K };
@@ -1293,7 +1316,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpLinear : public FEMaterial
+class FEFiberExpLinear : public FEFiberMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
@@ -1303,7 +1326,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpLinearUncoupled : public FEMaterial
+class FEFiberExpLinearUncoupled : public FEFiberMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
@@ -1311,6 +1334,8 @@ public:
 	FEFiberExpLinearUncoupled();
 	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
 };
+
+//=============================================================================
 
 //-----------------------------------------------------------------------------
 // CLE cubic

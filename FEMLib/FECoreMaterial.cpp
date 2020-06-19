@@ -298,11 +298,11 @@ mat3d FEAxisMaterial::GetMatAxes(FEElementRef& el)
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-FEMaterial::FEMaterial(int ntype) : m_ntype(ntype), m_axes(ntype != 0 ? new FEAxisMaterial : nullptr)
+FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
 {
 	m_parent = 0;
 	m_owner = 0;
-	m_hasMatAxes = false;
+	m_axes = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -482,13 +482,21 @@ void FEMaterial::copy(FEMaterial* pm)
 //-----------------------------------------------------------------------------
 bool FEMaterial::HasMaterialAxes() const
 {
-	return m_hasMatAxes;
+	return (m_axes != nullptr);
 }
 
 //-----------------------------------------------------------------------------
 mat3d FEMaterial::GetMatAxes(FEElementRef& el)
 {
 	return (m_axes ? m_axes->GetMatAxes(el) : mat3d(1,0,0, 0,1,0, 0,0,1));
+}
+
+//-----------------------------------------------------------------------------
+// set the axis material
+void FEMaterial::SetAxisMaterial(FEAxisMaterial* Q)
+{
+	if (m_axes) delete m_axes;
+	m_axes = Q;
 }
 
 //-----------------------------------------------------------------------------
@@ -578,25 +586,25 @@ void FEMaterial::Load(IArchive &ar)
 		case CID_MAT_PARAMS: ParamContainer::Load(ar); break;
 		case CID_MAT_AXES:
 			{
-			if (m_axes)
-			{
+				FEAxisMaterial* axes = new FEAxisMaterial;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = (int)ar.GetChunkID();
 					switch (nid)
 					{
-					case 0: ar.read(m_axes->m_naopt); break;
-					case 1: ar.read(m_axes->m_n, 3); break;
-					case 2: ar.read(m_axes->m_a); break;
-					case 3: ar.read(m_axes->m_d); break;
-                    case 4: ar.read(m_axes->m_theta); break;
-                    case 5: ar.read(m_axes->m_phi); break;
+					case 0: ar.read(axes->m_naopt); break;
+					case 1: ar.read(axes->m_n, 3); break;
+					case 2: ar.read(axes->m_a); break;
+					case 3: ar.read(axes->m_d); break;
+                    case 4: ar.read(axes->m_theta); break;
+                    case 5: ar.read(axes->m_phi); break;
 					}
 					ar.CloseChunk();
 				}
-				m_axes->UpdateData(false);
-				m_axes->UpdateData(true);
-			}
+				axes->UpdateData(false);
+				axes->UpdateData(true);
+
+				SetAxisMaterial(axes);
 			}
 			break;
         case CID_MAT_PROPERTY:

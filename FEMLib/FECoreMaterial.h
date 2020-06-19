@@ -121,6 +121,9 @@ public:
 	bool HasMaterialAxes() const;
 	mat3d GetMatAxes(FEElementRef& el);
 
+	// set the axis material
+	virtual void SetAxisMaterial(FEAxisMaterial* Q);
+
 public:
 	// get the number of properties of this material
 	int Properties() { return (int) m_Mat.size(); }
@@ -171,7 +174,6 @@ protected:
 	
 public:
 	// local material axes
-	bool			m_hasMatAxes;		// flag whether this material needs mat axes (default false)
 	FEAxisMaterial*	m_axes;
 
 protected:

@@ -234,7 +234,7 @@ REGISTER_MATERIAL(FECFDMaterial, MODULE_MECH, FE_CFD_MATERIAL, FE_MAT_ELASTIC, "
 
 FECFDMaterial::FECFDMaterial() : FEMaterial(FE_CFD_MATERIAL)
 {
-	m_hasMatAxes = true;
+	SetAxisMaterial(new FEAxisMaterial);
 
     // Add fiber component
 	AddProperty("fibers", FE_MAT_CFD_FIBER);
@@ -254,7 +254,7 @@ REGISTER_MATERIAL(FECFDUCMaterial, MODULE_MECH, FE_CFD_MATERIAL_UC, FE_MAT_ELAST
 
 FECFDUCMaterial::FECFDUCMaterial() : FEMaterial(FE_CFD_MATERIAL_UC)
 {
-	m_hasMatAxes = true;
+	SetAxisMaterial(new FEAxisMaterial);
 
     // Add fiber component
 	AddProperty("fibers", FE_MAT_CFD_FIBER_UC);
