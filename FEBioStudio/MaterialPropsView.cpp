@@ -289,12 +289,15 @@ public:
 				else
 				{
 					FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-					FEMaterial* pmat = MF.Create(value.toInt()); assert(pmat);
-					if (m_matIndex >= 0)
-						m_pm->GetProperty(m_propId).SetMaterial(pmat, m_matIndex);
-					else
+					FEMaterial* pmat = MF.Create(value.toInt());
+					if (pmat)
 					{
-						m_pm->GetProperty(m_propId).AddMaterial(pmat);
+						if (m_matIndex >= 0)
+							m_pm->GetProperty(m_propId).SetMaterial(pmat, m_matIndex);
+						else
+						{
+							m_pm->GetProperty(m_propId).AddMaterial(pmat);
+						}
 					}
 				}
 				return true;
@@ -511,6 +514,9 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 			QComboBox* pc = new QComboBox(parent);
 			FillComboBox(pc, matProp.GetClassID(), 0xFFFF, false);
 
+			pc->insertSeparator(pc->count());
+			pc->addItem("(remove)", -2);
+
 			FEMaterial* pmat = pm->GetProperty(item->m_propId).GetMaterial(item->m_matIndex);
 			if (pmat)
 			{
@@ -525,9 +531,7 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 					}
 				}
 			}
-
-			pc->insertSeparator(pc->count());
-			pc->addItem("(remove)", -2);
+			else pc->setCurrentIndex(-1);
 
 			QObject::connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 
