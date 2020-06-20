@@ -2856,6 +2856,43 @@ void CGLView::RenderImageData()
 	glPopMatrix();
 }
 
+void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
+{
+	if (pmat->HasFibers())
+	{
+		vec3d q = pmat->GetFiber(rel);
+
+		// This vector is defined in global coordinates, except for user-defined fibers, which
+		// are assumed to be in local coordinates
+		FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat);
+		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
+		{
+			q = po->GetTransform().LocalToGlobalNormal(q);
+		}
+
+		double r = fabs(q.x);
+		double g = fabs(q.y);
+		double b = fabs(q.z);
+
+		glColor3d(r, g, b);
+
+		vec3d p0 = c - q * (h*0.5);
+		vec3d p1 = c + q * (h*0.5);
+		glVertex3d(p0.x, p0.y, p0.z);
+		glVertex3d(p1.x, p1.y, p1.z);
+	}
+
+	for (int i = 0; i < pmat->Properties(); ++i)
+	{
+		FEMaterialProperty& prop = pmat->GetProperty(i);
+		for (int j = 0; j < prop.Size(); ++j)
+		{
+			FEMaterial* matj = prop.GetMaterial(j);
+			if (matj) RenderFiber(po, matj, rel, c, h);
+		}
+	}
+}
+
 void CGLView::RenderMaterialFibers()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -2875,8 +2912,7 @@ void CGLView::RenderMaterialFibers()
 	BOX box = model.GetBoundingBox();
 	double h = 0.05*box.GetMaxExtent()*view.m_fiber_scale;
 
-	double r, g, b;
-
+	glBegin(GL_LINES);
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -2895,61 +2931,26 @@ void CGLView::RenderMaterialFibers()
 						FEMaterial* pmat = 0;
 						if (pgm) pmat = pgm->GetMaterialProperties();
 
-						FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat);
-
 						rel.m_nelem = j;
 						if (pmat)
 						{
+							// element center
 							vec3d c(0, 0, 0);
-							for (int k = 0; k < el.Nodes(); ++k) c += po->GetTransform().LocalToGlobal(pm->Node(el.m_node[k]).r);
+							for (int k = 0; k < el.Nodes(); ++k) c += pm->Node(el.m_node[k]).r;
 							c /= el.Nodes();
 
-							if (pmat->HasFibers())
-							{
-								vec3d q = pmat->GetFiber(rel);
+							// to global coordinates
+							c = po->GetTransform().LocalToGlobal(c);
 
-								// This vector is defined in global coordinates, except for user-defined fibers, which
-								// are assumed to be in local coordinates
-								if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
-								{
-									q = po->GetTransform().LocalToGlobalNormal(q);
-								}
-
-								r = fabs(q.x);
-								g = fabs(q.y);
-								b = fabs(q.z);
-
-								glColor3d(r, g, b);
-
-								glx::drawLine(c - q*(h*0.5), c + q * (h*0.5));
-							}
-
-							for (int i = 0; i < pmat->Properties(); ++i)
-							{
-								FEMaterialProperty& prop = pmat->GetProperty(i);
-								for (int j = 0; j < prop.Size(); ++j)
-								{
-									FEMaterial* matj = prop.GetMaterial(j);
-									if (matj && matj->HasFibers())
-									{
-										vec3d q = matj->GetFiber(rel);
-
-										r = fabs(q.x);
-										g = fabs(q.y);
-										b = fabs(q.z);
-
-										glColor3d(r, g, b);
-
-										glx::drawLine(c - q * (h*0.5), c + q * (h*0.5));
-									}
-								}
-							}
+							// render the fiber
+							RenderFiber(po, pmat, rel, c, h);
 						}
 					}
 				}
 			}
 		}
 	}
+	glEnd(); // GL_LINES
 
 	glPopAttrib();
 }
