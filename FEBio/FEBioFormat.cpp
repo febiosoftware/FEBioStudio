@@ -551,22 +551,24 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
 {
+	FEAxisMaterial* axes = new FEAxisMaterial;
+
 	// allow all materials to define mat_axis, even if not required for that material
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		pm->m_axes->m_naopt = FE_AXES_LOCAL;
-		tag.value(pm->m_axes->m_n, 3);
+		axes->m_naopt = FE_AXES_LOCAL;
+		tag.value(axes->m_n, 3);
 	}
 	else if (atype == "vector")
 	{
-		pm->m_axes->m_naopt = FE_AXES_VECTOR;
+		axes->m_naopt = FE_AXES_VECTOR;
 		vec3d a(1, 0, 0), d(0, 1, 0);
 		++tag;
 		do
 		{
-			if      (tag == "a") tag.value(pm->m_axes->m_a);
-			else if (tag == "d") tag.value(pm->m_axes->m_d);
+			if      (tag == "a") tag.value(axes->m_a);
+			else if (tag == "d") tag.value(axes->m_d);
 			else ParseUnknownTag(tag);
 
 			++tag;
@@ -575,12 +577,12 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
 	}
     else if (atype == "angles")
     {
-        pm->m_axes->m_naopt = FE_AXES_ANGLES;
+        axes->m_naopt = FE_AXES_ANGLES;
         ++tag;
         do
         {
-            if      (tag == "theta") tag.value(pm->m_axes->m_theta);
-            else if (tag == "phi") tag.value(pm->m_axes->m_phi);
+            if      (tag == "theta") tag.value(axes->m_theta);
+            else if (tag == "phi") tag.value(axes->m_phi);
             else ParseUnknownTag(tag);
 
             ++tag;
@@ -589,6 +591,8 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
     }
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
+
+	pm->SetAxisMaterial(axes);
 }
 
 //-----------------------------------------------------------------------------
@@ -598,8 +602,10 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FEMaterial* pm)
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		pm->m_axes->m_naopt = FE_AXES_LOCAL;
-		tag.value(pm->m_axes->m_n, 3);
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_LOCAL;
+		tag.value(axes->m_n, 3);
+		pm->SetAxisMaterial(axes);
 	}
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
@@ -631,7 +637,7 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 	}
 
 	// parse the material parameters
-	pm->m_axes->m_naopt = -1;
+	if (pm->m_axes) pm->m_axes->m_naopt = -1;
 	if (!tag.isleaf())
 	{
 		++tag;

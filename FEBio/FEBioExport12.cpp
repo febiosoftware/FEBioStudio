@@ -892,7 +892,7 @@ void FEBioExport12::WriteMaterial(FEMaterial *pm, XMLElement& el)
 	el.add_attribute("type", sztype);
 	m_xml.add_branch(el);
 	{
-		if (pm->m_axes->m_naopt > -1) {
+		if (pm->m_axes && (pm->m_axes->m_naopt > -1)) {
 			el.name("mat_axis");
 			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
 			{
@@ -1085,7 +1085,7 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 	m_xml.add_branch(el);
 	{
 		// write the material axes (if any)
-		if (pm->m_axes->m_naopt > -1) {
+		if (pm->m_axes && (pm->m_axes->m_naopt > -1)) {
 			el.name("mat_axis");
 			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
 			{

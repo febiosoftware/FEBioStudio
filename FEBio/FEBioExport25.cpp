@@ -1509,7 +1509,7 @@ void FEBioExport25::WriteMaterialParams(FEMaterial* pm)
 	}
 
 	// write the material axes (if any)
-	if (pm->m_axes->m_naopt > -1)
+	if (pm->m_axes && (pm->m_axes->m_naopt > -1))
 	{
 		XMLElement el("mat_axis");
 		XMLElement::intFormat = "%d";
