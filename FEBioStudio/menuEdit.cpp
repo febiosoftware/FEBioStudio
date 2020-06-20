@@ -937,6 +937,7 @@ void CMainWindow::on_actionFaceToElem_triggered()
 			vector<int> selectedElems = mesh->GetElementsFromSelectedFaces();
 			if (selectedElems.empty() == false)
 			{
+				SetItemSelectionMode(SELECT_OBJECT, ITEM_ELEM);
 				CCmdSelectElements* cmd = new CCmdSelectElements(mesh, selectedElems, false);
 				doc->DoCommand(cmd);
 			}
