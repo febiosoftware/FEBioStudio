@@ -857,7 +857,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 
 	QFileDialog dlg;
 	dlg.setDirectory(currentPath);
-	dlg.setFileMode(QFileDialog::ExistingFile);
+	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setNameFilter("FEBio Studio Model (*.fsm)");
 	dlg.selectFile(QString::fromStdString(doc->GetDocTitle()));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
