@@ -90,6 +90,13 @@ FECylindricalVectorGenerator::FECylindricalVectorGenerator() : FEFiberGenerator(
 	AddVecParam(vec3d(1, 0, 0), "vector", "vector");
 }
 
+FECylindricalVectorGenerator::FECylindricalVectorGenerator(const vec3d& center, const vec3d& axis, const vec3d& vector) : FEFiberGenerator(FE_FIBER_GENERATOR_CYLINDRICAL)
+{
+	AddVecParam(center, "center", "center");
+	AddVecParam(axis  , "axis", "axis");
+	AddVecParam(vector, "vector", "vector");
+}
+
 vec3d FECylindricalVectorGenerator::GetFiber(FEElementRef& el)
 {
 	vec3d r = GetVecValue(0);
@@ -127,6 +134,12 @@ FESphericalVectorGenerator::FESphericalVectorGenerator() : FEFiberGenerator(FE_F
 {
 	AddVecParam(vec3d(0, 0, 0), "center", "center");
 	AddVecParam(vec3d(1, 0, 0), "vector", "vector");
+}
+
+FESphericalVectorGenerator::FESphericalVectorGenerator(const vec3d& center, const vec3d& vector) : FEFiberGenerator(FE_FIBER_GENERATOR_SPHERICAL)
+{
+	AddVecParam(center, "center", "center");
+	AddVecParam(vector, "vector", "vector");
 }
 
 vec3d FESphericalVectorGenerator::GetFiber(FEElementRef& el)
@@ -1834,6 +1847,14 @@ void FEFiberMaterial::SetAxisMaterial(FEAxisMaterial* Q)
 		case FE_AXES_ANGLES:
 			SetFiberGenerator(new FEAnglesVectorGenerator(Q->m_theta, Q->m_phi));
 			break;
+		case FE_AXES_CYLINDRICAL:
+			SetFiberGenerator(new FECylindricalVectorGenerator(Q->m_center, Q->m_axis, Q->m_vec));
+			break;
+		case FE_AXES_SPHERICAL:
+			SetFiberGenerator(new FESphericalVectorGenerator(Q->m_center, Q->m_vec));
+			break;
+		default:
+			assert(false);
 		}
 		delete Q;
 	}

@@ -589,6 +589,33 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
         }
         while (!tag.isend());
     }
+	else if (atype == "cylindrical")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_CYLINDRICAL;
+		++tag;
+		do {
+			if      (tag == "center") tag.value(axes->m_center);
+			else if (tag == "axis") tag.value(axes->m_axis);
+			else if (tag == "vector") tag.value(axes->m_vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "spherical")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_SPHERICAL;
+		++tag;
+		do {
+			if      (tag == "center") tag.value(axes->m_center);
+			else if (tag == "vector") tag.value(axes->m_vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetAxisMaterial(axes);
+	}
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
 
@@ -629,6 +656,33 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FEMaterial* pm)
 		} 
 		while (!tag.isend());
 		
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "cylindrical")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_CYLINDRICAL;
+		++tag;
+		do {
+			if (tag == "center") tag.value(axes->m_center);
+			else if (tag == "axis") tag.value(axes->m_axis);
+			else if (tag == "vector") tag.value(axes->m_vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "spherical")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_SPHERICAL;
+		++tag;
+		do {
+			if      (tag == "center") tag.value(axes->m_center);
+			else if (tag == "vector") tag.value(axes->m_vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
 		pm->SetAxisMaterial(axes);
 	}
 	else ParseUnknownAttribute(tag, "type");

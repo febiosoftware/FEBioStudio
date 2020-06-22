@@ -1539,6 +1539,27 @@ void FEBioExport25::WriteMaterialParams(FEMaterial* pm)
             }
             m_xml.close_branch();
         }
+		else if (pm->m_axes->m_naopt == FE_AXES_CYLINDRICAL)
+		{
+			el.add_attribute("type", "cylindrical");
+			m_xml.add_branch(el);
+			{
+				m_xml.add_leaf("center", pm->m_axes->m_center);
+				m_xml.add_leaf("axis", pm->m_axes->m_axis);
+				m_xml.add_leaf("vector", pm->m_axes->m_vec);
+			}
+			m_xml.close_branch();
+		}
+		else if (pm->m_axes->m_naopt == FE_AXES_SPHERICAL)
+		{
+			el.add_attribute("type", "spherical");
+			m_xml.add_branch(el);
+			{
+				m_xml.add_leaf("center", pm->m_axes->m_center);
+				m_xml.add_leaf("vector", pm->m_axes->m_vec);
+			}
+			m_xml.close_branch();
+		}
 		XMLElement::setDefautlFormats();
 	}
 }

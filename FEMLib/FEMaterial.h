@@ -306,6 +306,7 @@ class FECylindricalVectorGenerator : public FEFiberGenerator
 {
 public:
 	FECylindricalVectorGenerator();
+	FECylindricalVectorGenerator(const vec3d& center, const vec3d& axis, const vec3d& vector);
 	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FECylindricalVectorGenerator);
 };
@@ -315,6 +316,7 @@ class FESphericalVectorGenerator : public FEFiberGenerator
 {
 public:
 	FESphericalVectorGenerator();
+	FESphericalVectorGenerator(const vec3d& center, const vec3d& vector);
 	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FESphericalVectorGenerator);
 };
