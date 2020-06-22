@@ -3373,24 +3373,11 @@ void FEBioExport3::WriteDiscreteSection(FEStep& s)
 		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
 		if (pds && (pds->size()))
 		{
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, pds->GetName().c_str());
-
+			XMLElement dmat("discrete_material");
+			dmat.add_attribute("id", n++);
+			dmat.add_attribute("name", pds->GetName().c_str());
 			FEDiscreteMaterial* dm = pds->GetMaterial();
-			switch (dm->Type())
-			{
-			case FE_LINEAR_SPRING_SET   : dmat.set_attribute(n3, "linear spring"); break;
-			case FE_NONLINEAR_SPRING_SET: dmat.set_attribute(n3, "nonlinear spring"); break;
-			case FE_DISCRETE_HILL       : dmat.set_attribute(n3, "Hill"); break;
-			default:
-				assert(false);
-			}
-			
-			m_xml.add_branch(dmat, false);
-			{
-				WriteParamList(*dm);
-			}
-			m_xml.close_branch();
+			WriteMaterial(dm, dmat);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
 		if (ds)
