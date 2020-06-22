@@ -1929,6 +1929,14 @@ void CMainWindow::StopAnimation()
 }
 
 //-----------------------------------------------------------------------------
+// show the log panel
+void CMainWindow::ShowLogPanel()
+{
+	ui->logPanel->parentWidget()->raise();
+	ui->logPanel->parentWidget()->show();
+}
+
+//-----------------------------------------------------------------------------
 // add to the log 
 void CMainWindow::AddLogEntry(const QString& txt)
 {
