@@ -592,6 +592,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 Param::Param(double d, const char* szi, int idx, const char* szunit, const char* szb, const char* szn)
 {
 	double* pd = new double;
+	m_pd = pd;
 	*pd = d;
 	m_ntype = Param_FLOAT;
 	m_szbrev = szb;
