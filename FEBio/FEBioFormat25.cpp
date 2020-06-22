@@ -2536,8 +2536,15 @@ void FEBioFormat25::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	if (szn) strcpy(szname, szn);
 	pci->SetName(szname);
 
-	FESurface *pms = 0, *pss = 0;
+	// assign surface
+	const char* szsurf = tag.AttributeValue("surface", true);
+	if (szsurf)
+	{
+		FESurface* surface = febio.BuildFESurface(szsurf);
+		if (surface) pci->SetItemList(surface);
+	}
 
+	// read parameters
 	++tag;
 	do
 	{
@@ -2954,6 +2961,8 @@ bool FEBioFormat25::ParseConstraintSection(XMLTag& tag)
 			else if (strcmp(sztype, "rigid angular damper"   ) == 0) ParseConnector(pstep, tag, 8);
 			else if (strcmp(sztype, "rigid contractile force") == 0) ParseConnector(pstep, tag, 9);
 			else if (strcmp(sztype, "generic rigid joint"    ) == 0) ParseConnector(pstep, tag, 10);
+			else if (strcmp(sztype, "rigid joint") == 0) ParseContactJoint(pstep, tag);
+			else ParseUnknownAttribute(tag, "type");
 		}
 		else ParseUnknownTag(tag);
 		++tag;
