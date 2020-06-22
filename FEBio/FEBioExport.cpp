@@ -88,7 +88,7 @@ void FEBioExport::WriteParam(Param &p)
 	{
 	case Param_CHOICE: 
 		{
-			if (m_exportEnumStrings)
+			if (m_exportEnumStrings && (p.GetEnumNames()))
 			{
 				const char* sz = p.GetEnumName(p.GetIntValue());
 				e.value(sz);

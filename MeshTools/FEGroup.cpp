@@ -169,7 +169,11 @@ FEElemList* FEPart::BuildElemList()
 	FEElemList* pg = new FEElemList();
 
 	FEItemListBuilder::Iterator it;
-	for (it = m_Item.begin(); it != m_Item.end(); ++it) pg->Add(pm, pm->ElementPtr(*it));
+	for (it = m_Item.begin(); it != m_Item.end(); ++it)
+	{
+		FEElement_* pe = pm->ElementPtr(*it); assert(pe);
+		pg->Add(pm, pe);
+	}
 
 	return pg;
 }
