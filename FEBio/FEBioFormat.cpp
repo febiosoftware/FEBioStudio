@@ -607,6 +607,30 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FEMaterial* pm)
 		tag.value(axes->m_n, 3);
 		pm->SetAxisMaterial(axes);
 	}
+	else if (atype == "vector")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_VECTOR;
+		tag.value(axes->m_a);
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "angles")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_ANGLES;
+
+		++tag;
+		do
+		{
+			if      (tag == "theta") tag.value(axes->m_theta);
+			else if (tag == "phi"  ) tag.value(axes->m_phi);
+			else ParseUnknownAttribute(tag, "type");
+			++tag;
+		} 
+		while (!tag.isend());
+		
+		pm->SetAxisMaterial(axes);
+	}
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
 }
