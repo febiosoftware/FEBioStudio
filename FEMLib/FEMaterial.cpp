@@ -199,7 +199,7 @@ REGISTER_MATERIAL(FEIsotropicElastic, MODULE_MECH, FE_ISOTROPIC_ELASTIC, FE_MAT_
 
 FEIsotropicElastic::FEIsotropicElastic() : FEMaterial(FE_ISOTROPIC_ELASTIC)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density"        );
+	AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus");
 	AddScienceParam(0, UNIT_NONE   ,       "v", "Poisson's ratio");
 }
@@ -212,7 +212,7 @@ REGISTER_MATERIAL(FEOrthoElastic, MODULE_MECH, FE_ORTHO_ELASTIC, FE_MAT_ELASTIC,
 
 FEOrthoElastic::FEOrthoElastic() : FEMaterial(FE_ORTHO_ELASTIC)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density"    );
+	AddScienceParam(1, UNIT_DENSITY, "density", "density"    )->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE ,       "E1", "E1 modulus");
 	AddScienceParam(0, UNIT_PRESSURE ,       "E2", "E2 modulus");
 	AddScienceParam(0, UNIT_PRESSURE ,       "E3", "E3 modulus");
@@ -247,9 +247,9 @@ REGISTER_MATERIAL(FENaturalNeoHookean, MODULE_MECH, FE_NATURAL_NEO_HOOKEAN, FE_M
 
 FENaturalNeoHookean::FENaturalNeoHookean() : FEMaterial(FE_NATURAL_NEO_HOOKEAN)
 {
-    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->MakeVariable(true);
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->MakeVariable(true)->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE ,       "G", "shear modulus"  )->MakeVariable(true);
-    AddScienceParam(0, UNIT_PRESSURE ,       "k", "bulk modulus"   )->MakeVariable(true);
+    AddScienceParam(0, UNIT_PRESSURE ,       "k", "bulk modulus"   )->MakeVariable(true)->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -260,9 +260,9 @@ REGISTER_MATERIAL(FEIncompNeoHookean, MODULE_MECH, FE_INCOMP_NEO_HOOKEAN, FE_MAT
 
 FEIncompNeoHookean::FEIncompNeoHookean() : FEMaterial(FE_INCOMP_NEO_HOOKEAN)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "G", "shear modulus");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -273,7 +273,7 @@ REGISTER_MATERIAL(FEPorousNeoHookean, MODULE_MECH, FE_POROUS_NEO_HOOKEAN, FE_MAT
 
 FEPorousNeoHookean::FEPorousNeoHookean() : FEMaterial(FE_POROUS_NEO_HOOKEAN)
 {
-    AddScienceParam(1, UNIT_DENSITY, "density", "density"        );
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus");
     AddScienceParam(0, UNIT_NONE   ,    "phi0", "solid volume fraction");
 }
@@ -300,10 +300,10 @@ REGISTER_MATERIAL(FEVerondaWestmann, MODULE_MECH, FE_VERONDA_WESTMANN, FE_MAT_EL
 
 FEVerondaWestmann::FEVerondaWestmann() : FEMaterial(FE_VERONDA_WESTMANN)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density"     );
+	AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1"     , "c1"          );
 	AddScienceParam(0, UNIT_NONE   , "c2"     , "c2"          );
-	AddScienceParam(0, UNIT_PRESSURE , "k"      , "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k"      , "bulk modulus")->SetPersistent(false);
 }
 
 
@@ -318,7 +318,7 @@ FECoupledMooneyRivlin::FECoupledMooneyRivlin() : FEMaterial(FE_COUPLED_MOONEY_RI
 	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -332,7 +332,7 @@ FECoupledVerondaWestmann::FECoupledVerondaWestmann() : FEMaterial(FE_COUPLED_VER
 	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_NONE, "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -343,7 +343,7 @@ REGISTER_MATERIAL(FEHolmesMow, MODULE_MECH, FE_HOLMES_MOW, FE_MAT_ELASTIC, "Holm
 
 FEHolmesMow::FEHolmesMow() : FEMaterial(FE_HOLMES_MOW)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "Material density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "Material density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "E", "Young's modulus");
 	AddScienceParam(0, UNIT_NONE   , "v", "Poisson's ratio");
 	AddScienceParam(0, UNIT_NONE   , "beta", "beta"        );
@@ -357,10 +357,10 @@ REGISTER_MATERIAL(FEArrudaBoyce, MODULE_MECH, FE_ARRUDA_BOYCE, FE_MAT_ELASTIC_UN
 
 FEArrudaBoyce::FEArrudaBoyce() : FEMaterial(FE_ARRUDA_BOYCE)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "Material density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "Material density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "mu", "Initial modulus");
 	AddScienceParam(0, UNIT_NONE   , "N", "links");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "Bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "Bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -387,13 +387,13 @@ REGISTER_MATERIAL(FEPRLig, MODULE_MECH, FE_PRLIG, FE_MAT_ELASTIC_UNCOUPLED, "PRL
 
 FEPRLig::FEPRLig() : FEMaterial(FE_PRLIG)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE   , "c1"     , "c1");
 	AddScienceParam(1, UNIT_NONE   , "c2"     , "c2");
 	AddScienceParam(0, UNIT_NONE   , "v0"     , "v0");
 	AddScienceParam(0, UNIT_NONE   , "m"      , "m" );
 	AddScienceParam(0, UNIT_NONE   , "mu"     , "mu");
-	AddScienceParam(0, UNIT_NONE   , "k"      , "k" );
+	AddScienceParam(0, UNIT_NONE   , "k"      , "k" )->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -792,10 +792,10 @@ FETransMooneyRivlinOld::FETransMooneyRivlinOld() : FETransverselyIsotropic(FE_TR
 	SetFiberMaterial(new Fiber);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -823,10 +823,10 @@ FETransVerondaWestmannOld::FETransVerondaWestmannOld() : FETransverselyIsotropic
 	SetFiberMaterial(new Fiber);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_NONE   , "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus")->SetPersistent(false);
 }
 
 
@@ -863,7 +863,7 @@ FETransMooneyRivlin::FETransMooneyRivlin() : FETransverselyIsotropic(FE_TRANS_IS
 	AddScienceParam(0, UNIT_PRESSURE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
 	AddScienceParam(0, UNIT_NONE, "lam_max", "lam_max");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 
 	AddProperty("active_contraction", FE_MAT_ACTIVE_CONTRACTION_CLASS);
 }
@@ -904,7 +904,7 @@ FETransVerondaWestmann::FETransVerondaWestmann() : FETransverselyIsotropic(FE_TR
 	AddScienceParam(0, UNIT_PRESSURE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
 	AddScienceParam(0, UNIT_NONE, "lam_max", "lam_max");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 
 	AddProperty("active_contraction", FE_MAT_ACTIVE_CONTRACTION_CLASS);
 }
@@ -945,7 +945,7 @@ FECoupledTransIsoVerondaWestmann::FECoupledTransIsoVerondaWestmann() : FETransve
 	AddScienceParam(0, UNIT_PRESSURE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
 	AddScienceParam(0, UNIT_NONE, "lambda", "lambda");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //=============================================================================
@@ -957,13 +957,13 @@ FECoupledTransIsoVerondaWestmann::FECoupledTransIsoVerondaWestmann() : FETransve
 FECoupledTransIsoMooneyRivlinOld::FECoupledTransIsoMooneyRivlinOld() : FEMaterial(FE_COUPLED_TRANS_ISO_MR)
 {
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE , "c3", "c3");
 	AddScienceParam(0, UNIT_NONE   , "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE , "c5", "c5");
-	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE   , "lambda", "lambda");
 }
 
@@ -978,13 +978,13 @@ FECoupledTransIsoMooneyRivlin::FECoupledTransIsoMooneyRivlin() : FETransverselyI
 	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "c3", "c3");
 	AddScienceParam(0, UNIT_NONE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE, "lambda", "lambda");
 }
 
@@ -1011,13 +1011,13 @@ REGISTER_MATERIAL(FEMooneyRivlinVonMisesFibers, MODULE_MECH, FE_MAT_MR_VON_MISES
 FEMooneyRivlinVonMisesFibers::FEMooneyRivlinVonMisesFibers() : FEMaterial(FE_MAT_MR_VON_MISES_FIBERS)
 {
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "c3");
 	AddScienceParam(0, UNIT_NONE, "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE, "lam_max");
 	AddDoubleParam(0, "kf");
 	AddDoubleParam(0, "vmc");
@@ -1039,13 +1039,13 @@ FE2DTransIsoMooneyRivlin::FE2DTransIsoMooneyRivlin() : FETransverselyIsotropic(F
 	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "c3");
 	AddScienceParam(0, UNIT_NONE, "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE, "lam_max");
 }
 
@@ -1116,10 +1116,10 @@ REGISTER_MATERIAL(FETCNonlinearOrthotropic, MODULE_MECH, FE_TCNL_ORTHO, FE_MAT_E
 
 FETCNonlinearOrthotropic::FETCNonlinearOrthotropic() : FEMaterial(FE_TCNL_ORTHO)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
@@ -1135,7 +1135,7 @@ REGISTER_MATERIAL(FEFungOrthotropic, MODULE_MECH, FE_FUNG_ORTHO, FE_MAT_ELASTIC_
 
 FEFungOrthotropic::FEFungOrthotropic() : FEMaterial(FE_FUNG_ORTHO)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "E1", "E1");
 	AddScienceParam(0, UNIT_PRESSURE , "E2", "E2");
 	AddScienceParam(0, UNIT_PRESSURE , "E3", "E3");
@@ -1146,7 +1146,7 @@ FEFungOrthotropic::FEFungOrthotropic() : FEMaterial(FE_FUNG_ORTHO)
 	AddScienceParam(0, UNIT_NONE   , "v23", "v23");
 	AddScienceParam(0, UNIT_NONE   , "v31", "v31");
 	AddScienceParam(0, UNIT_PRESSURE , "c", "c");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 
 	SetAxisMaterial(new FEAxisMaterial);
 }
@@ -1159,7 +1159,7 @@ REGISTER_MATERIAL(FEFungOrthoCompressible, MODULE_MECH, FE_FUNG_ORTHO_COUPLED, F
 
 FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_COUPLED)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "E1", "E1");
 	AddScienceParam(0, UNIT_PRESSURE , "E2", "E2");
 	AddScienceParam(0, UNIT_PRESSURE , "E3", "E3");
@@ -1170,7 +1170,7 @@ FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_CO
 	AddScienceParam(0, UNIT_NONE   , "v23", "v23");
 	AddScienceParam(0, UNIT_NONE   , "v31", "v31");
 	AddScienceParam(0, UNIT_PRESSURE , "c", "c");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 
 	SetAxisMaterial(new FEAxisMaterial);
 }
@@ -1183,7 +1183,7 @@ REGISTER_MATERIAL(FELinearOrthotropic, MODULE_MECH, FE_LINEAR_ORTHO, FE_MAT_ELAS
 
 FELinearOrthotropic::FELinearOrthotropic() : FEMaterial(FE_LINEAR_ORTHO)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "E1", "E1");
 	AddScienceParam(0, UNIT_PRESSURE , "E2", "E2");
 	AddScienceParam(0, UNIT_PRESSURE , "E3", "E3");
@@ -1207,10 +1207,10 @@ FEMuscleMaterial::FEMuscleMaterial() : FETransverselyIsotropic(FE_MUSCLE_MATERIA
 {
 	SetFiberMaterial(new FEOldFiberMaterial);
 
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "g1");
 	AddScienceParam(0, UNIT_PRESSURE , "g2");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 	AddDoubleParam(0, "p1");
 	AddDoubleParam(0, "p2");
 	AddDoubleParam(0, "Lofl");
@@ -1228,10 +1228,10 @@ FETendonMaterial::FETendonMaterial() : FETransverselyIsotropic(FE_TENDON_MATERIA
 {
 	SetFiberMaterial(new FEOldFiberMaterial);
 
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "g1");
 	AddScienceParam(0, UNIT_PRESSURE , "g2");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 	AddDoubleParam(0, "l1");
 	AddDoubleParam(0, "l2");
 	AddDoubleParam(0, "lam_max");
@@ -1245,8 +1245,8 @@ REGISTER_MATERIAL(FEOgdenMaterial, MODULE_MECH, FE_OGDEN_MATERIAL, FE_MAT_ELASTI
 
 FEOgdenMaterial::FEOgdenMaterial() : FEMaterial(FE_OGDEN_MATERIAL)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE , "c3", "c3");
@@ -1269,7 +1269,7 @@ REGISTER_MATERIAL(FEOgdenUnconstrained, MODULE_MECH, FE_OGDEN_UNCONSTRAINED, FE_
 
 FEOgdenUnconstrained::FEOgdenUnconstrained() : FEMaterial(FE_OGDEN_UNCONSTRAINED)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "cp", "cp");
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2", "c2");
@@ -1357,7 +1357,7 @@ REGISTER_MATERIAL(FECubicCLE, MODULE_MECH, FE_CLE_CUBIC, FE_MAT_ELASTIC, "cubic 
 
 FECubicCLE::FECubicCLE() : FEMaterial(FE_CLE_CUBIC)
 {
-    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE , "lp1", "lambda_+1");
     AddScienceParam(0, UNIT_PRESSURE , "lm1", "lambda_-1");
     AddScienceParam(0, UNIT_PRESSURE , "l2" , "lambda_2" );
@@ -1374,7 +1374,7 @@ REGISTER_MATERIAL(FEOrthotropicCLE, MODULE_MECH, FE_CLE_ORTHOTROPIC, FE_MAT_ELAS
 
 FEOrthotropicCLE::FEOrthotropicCLE() : FEMaterial(FE_CLE_ORTHOTROPIC)
 {
-    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE , "lp11", "lambda_+11");
     AddScienceParam(0, UNIT_PRESSURE , "lp22", "lambda_+22");
     AddScienceParam(0, UNIT_PRESSURE , "lp33", "lambda_+33");
