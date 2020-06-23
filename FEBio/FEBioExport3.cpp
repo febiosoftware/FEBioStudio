@@ -1116,15 +1116,31 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
-	m_xml.add_leaf("diverge_reform", ops.bdivref);
-	m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("diverge_reform", ops.bdivref);
+		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.bminbw)
+		{
+			m_xml.add_leaf("optimize_bw", 1);
+		}
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
 
 	if (ops.bauto)
 	{
@@ -1146,24 +1162,6 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1173,15 +1171,31 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "DYNAMIC"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
-	m_xml.add_leaf("diverge_reform", ops.bdivref);
-	m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("diverge_reform", ops.bdivref);
+		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.bminbw)
+		{
+			m_xml.add_leaf("optimize_bw", 1);
+		}
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
 
 	if (ops.bauto)
 	{
@@ -1203,31 +1217,6 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-	else
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "dynamic");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1237,15 +1226,31 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "DYNAMIC"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
-	m_xml.add_leaf("diverge_reform", ops.bdivref);
-	m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("diverge_reform", ops.bdivref);
+		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.bminbw)
+		{
+			m_xml.add_leaf("optimize_bw", 1);
+		}
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
 
 	if (ops.bauto)
 	{
@@ -1267,31 +1272,6 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-	else
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "dynamic");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1301,13 +1281,25 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
+
 
 	if (ops.bauto)
 	{
@@ -1329,26 +1321,6 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-	else
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "transient");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
