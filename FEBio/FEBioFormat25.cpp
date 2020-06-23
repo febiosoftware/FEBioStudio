@@ -1853,16 +1853,16 @@ FESurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
 		}
 		else if (tag == "mixture")
 		{
-			bool b; tag.value(b);
-			pbc->SetMixtureFlag(b);
-		}
-		else if (tag == "effective")
-		{
 			// I initially called the "mixture" flag the "effective" flag
 			// but I had the values swapped.
 			// Whence this little hack
 			bool b; tag.value(b);
 			pbc->SetMixtureFlag(!b);
+		}
+		else if (tag == "effective")
+		{
+			bool b; tag.value(b);
+			pbc->SetMixtureFlag(b);
 		}
 		else if (tag == "traction")
 		{

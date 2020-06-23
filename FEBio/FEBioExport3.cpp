@@ -2583,6 +2583,7 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames
 			ElementSet es;
 			es.m_mesh = pm;
 			es.m_name = szname;
+			if (m_exportParts) es.m_name = po->GetName() + "." + szname;
 			es.m_matID = pg->GetMaterialID();
 
 			xe.add_attribute("name", szname);

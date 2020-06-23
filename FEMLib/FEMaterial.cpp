@@ -275,7 +275,7 @@ FEPorousNeoHookean::FEPorousNeoHookean() : FEMaterial(FE_POROUS_NEO_HOOKEAN)
 {
     AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus");
-    AddScienceParam(0, UNIT_NONE   ,    "phi0", "solid volume fraction");
+    AddScienceParam(1, UNIT_NONE   ,    "phi0", "solid volume fraction");
 }
 
 //////////////////////////////////////////////////////////////////////
