@@ -3964,11 +3964,12 @@ void FEBioExport3::WriteInitConcentration(FEInitConcentration& ic)
 {
 	char szbc[6][3] = { "c1", "c2", "c3", "c4", "c5", "c6" };
 	int bc = ic.GetBC();
-	XMLElement ec("init");
-	ec.add_attribute("bc", szbc[bc]);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
 	ec.add_attribute("node_set", GetNodeSetName(ic.GetItemList()));
 	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", szbc[bc]);
 		m_xml.add_leaf("value", ic.GetValue());
 	}
 	m_xml.close_branch();
@@ -3979,11 +3980,12 @@ void FEBioExport3::WriteInitShellConcentration(FEInitShellConcentration& ic)
 {
 	char szbc[6][3] = { "d1", "d2", "d3", "d4", "d5", "d6" };
 	int bc = ic.GetBC();
-	XMLElement ec("init");
-	ec.add_attribute("bc", szbc[bc]);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
 	ec.add_attribute("node_set", GetNodeSetName(ic.GetItemList()));
 	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", szbc[bc]);
 		m_xml.add_leaf("value", ic.GetValue());
 	}
 	m_xml.close_branch();
@@ -3992,11 +3994,12 @@ void FEBioExport3::WriteInitShellConcentration(FEInitShellConcentration& ic)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitFluidPressure(FEInitFluidPressure& ip)
 {
-	XMLElement el("init");
-	el.add_attribute("bc", "p");
-	el.add_attribute("node_set", GetNodeSetName(ip.GetItemList()));
-	m_xml.add_branch(el);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
+	ec.add_attribute("node_set", GetNodeSetName(ip.GetItemList()));
+	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", "p");
 		m_xml.add_leaf("value", ip.GetValue());
 	}
 	m_xml.close_branch();
@@ -4005,11 +4008,12 @@ void FEBioExport3::WriteInitFluidPressure(FEInitFluidPressure& ip)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitShellFluidPressure(FEInitShellFluidPressure& ip)
 {
-	XMLElement el("init");
-	el.add_attribute("bc", "q");
-	el.add_attribute("node_set", GetNodeSetName(ip.GetItemList()));
-	m_xml.add_branch(el);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
+	ec.add_attribute("node_set", GetNodeSetName(ip.GetItemList()));
+	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", "q");
 		m_xml.add_leaf("value", ip.GetValue());
 	}
 	m_xml.close_branch();
@@ -4017,11 +4021,12 @@ void FEBioExport3::WriteInitShellFluidPressure(FEInitShellFluidPressure& ip)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitTemperature(FEInitTemperature&   it)
 {
-	XMLElement el("init");
-	el.add_attribute("bc", "T");
-	el.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
-	m_xml.add_branch(el);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
+	ec.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
+	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", "T");
 		m_xml.add_leaf("value", it.GetValue());
 	}
 	m_xml.close_branch();
@@ -4030,12 +4035,13 @@ void FEBioExport3::WriteInitTemperature(FEInitTemperature&   it)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitFluidDilatation(FEInitFluidDilatation&   it)
 {
-    XMLElement el("init");
-    el.add_attribute("bc", "ef");
-    el.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
-    m_xml.add_branch(el);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
+	ec.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
+    m_xml.add_branch(ec);
     {
-        m_xml.add_leaf("value", it.GetValue());
+		m_xml.add_leaf("dof", "ef");
+		m_xml.add_leaf("value", it.GetValue());
     }
     m_xml.close_branch();
 }
