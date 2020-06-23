@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/GModel.h>
 #include <assert.h>
+#include <sstream>
 
 FEBioFormat25::FEBioFormat25(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {
@@ -269,8 +270,20 @@ void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	if (szname == 0) szname = tag.AttributeValue("elset", true);
 	if (szname == 0) szname = "_no_name";
 
+	// make sure no parts have the same name
+	string name = szname;
+	int n = 2;
+	while (part->FindDomain(name))
+	{
+		if (n == 2) FileReader()->AddLogEntry("Part with name \"%s\" already defined.", szname);
+
+		stringstream ss;
+		ss << szname << "(" << n++ << ")";
+		name = ss.str();
+	}
+
 	// add domain to list
-	FEBioModel::Domain* dom = part->AddDomain(szname, matID);
+	FEBioModel::Domain* dom = part->AddDomain(name, matID);
 
 	// read the elements
 	vector<FEBioModel::ELEM> elem;
