@@ -102,6 +102,16 @@ static GLubyte poly_mask[128] = {
 	170, 170, 170, 170
 };
 
+const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
+const int TET_NT[8] = { 0, 1, 2, 2, 3, 3, 3, 3 };
+const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
+
+// in MeshTools\lut.cpp
+extern int LUT[256][15]; 
+extern int ET_HEX[12][2];
+extern int ET_TET[6][2];
+
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
 	// see if either point lies inside the rectangle
@@ -7726,6 +7736,58 @@ void CGLView::RenderFEElements(GObject* po)
 				}
 			}
 		}
+
+		// render a yellow highlight around selected elements
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		glColor3ub(255, 255, 0);
+
+
+		glBegin(GL_LINES);
+		for (i = 0; i < NE; ++i)
+		{
+			FEElement_& el = *psel->Element(i);
+			if (el.IsVisible())
+			{
+				switch (el.Type())
+				{
+				case FE_HEX8:
+				case FE_HEX20:
+				case FE_HEX27:
+					for (int j = 0; j < 12; ++j)
+					{
+						int n0 = el.m_node[ET_HEX[j][0]];
+						int n1 = el.m_node[ET_HEX[j][1]];
+
+						vec3d r0 = pm->Node(n0).pos();
+						vec3d r1 = pm->Node(n1).pos();
+
+						glx::vertex3d(r0);
+						glx::vertex3d(r1);
+					}
+					break;
+				case FE_TET4:
+				case FE_TET10:
+				case FE_TET15:
+					for (int j = 0; j < 6; ++j)
+					{
+						int n0 = el.m_node[ET_TET[j][0]];
+						int n1 = el.m_node[ET_TET[j][1]];
+
+						vec3d r0 = pm->Node(n0).pos();
+						vec3d r1 = pm->Node(n1).pos();
+
+						glx::vertex3d(r0);
+						glx::vertex3d(r1);
+					}
+					break;
+				}
+			}
+		}
+		glEnd();
+
+		glPopAttrib();
 	}
 
 	glPopAttrib();
@@ -8706,13 +8768,6 @@ void CGLView::RenderTags()
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 }
-
-const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
-const int TET_NT[8] = { 0, 1, 2, 2, 3, 3, 3, 3 };
-const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
-extern int LUT[256][15]; // in MeshTools\lut.cpp
-extern int ET_HEX[12][2];// in MeshTools\lut.cpp
 
 void CGLView::UpdatePlaneCut()
 {

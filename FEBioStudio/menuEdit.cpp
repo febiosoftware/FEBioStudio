@@ -310,41 +310,48 @@ void CMainWindow::on_actionUnhideAll_triggered()
 
 void CMainWindow::on_actionFind_triggered()
 {
-	CPostDocument* doc = GetPostDocument();
+	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 	if (doc->IsValid() == false) return;
 
-	Post::CGLModel* model = doc->GetGLModel(); assert(model);
-	if (model == 0) return;
+	GObject* po = GetActiveObject();
+	if (po == nullptr) return;
 
-	int nview = model->GetSelectionMode();
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	int nitem = doc->GetItemMode();
 	int nsel = 0;
-	if (nview == Post::SELECT_NODES) nsel = 0;
-	if (nview == Post::SELECT_EDGES) nsel = 1;
-	if (nview == Post::SELECT_FACES) nsel = 2;
-	if (nview == Post::SELECT_ELEMS) nsel = 3;
+	if (nitem == ITEM_NODE) nsel = 0;
+	if (nitem == ITEM_EDGE) nsel = 1;
+	if (nitem == ITEM_FACE) nsel = 2;
+	if (nitem == ITEM_ELEM) nsel = 3;
 
 	CDlgFind dlg(this, nsel);
 
 	if (dlg.exec())
 	{
-		Post::CGLModel* pm = doc->GetGLModel();
+		if (dlg.m_bsel[0]) nitem = ITEM_NODE;
+		if (dlg.m_bsel[1]) nitem = ITEM_EDGE;
+		if (dlg.m_bsel[2]) nitem = ITEM_FACE;
+		if (dlg.m_bsel[3]) nitem = ITEM_ELEM;
 
-		if (dlg.m_bsel[0]) nview = Post::SELECT_NODES;
-		if (dlg.m_bsel[1]) nview = Post::SELECT_EDGES;
-		if (dlg.m_bsel[2]) nview = Post::SELECT_FACES;
-		if (dlg.m_bsel[3]) nview = Post::SELECT_ELEMS;
+		SetItemSelectionMode(SELECT_OBJECT, nitem);
+
+		vector<int> items = dlg.m_item;
 
 		CGLControlBar* pb = ui->glc;
-		switch (nview)
+		switch (nitem)
 		{
-		case Post::SELECT_NODES: pb->SetMeshItem(ITEM_NODE); pm->SelectNodes(dlg.m_item, dlg.m_bclear); break;
-		case Post::SELECT_EDGES: pb->SetMeshItem(ITEM_EDGE); pm->SelectEdges(dlg.m_item, dlg.m_bclear); break;
-		case Post::SELECT_FACES: pb->SetMeshItem(ITEM_FACE); pm->SelectFaces(dlg.m_item, dlg.m_bclear); break;
-		case Post::SELECT_ELEMS: pb->SetMeshItem(ITEM_ELEM); pm->SelectElements(dlg.m_item, dlg.m_bclear); break;
+		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pm, items, !dlg.m_bclear)); break;
+		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pm, items, !dlg.m_bclear)); break;
+		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces(pm, items, !dlg.m_bclear)); break;
+		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm, items, !dlg.m_bclear)); break;
 		}
 
-		doc->GetGLModel()->UpdateSelectionLists();
+		CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+		if (postDoc) postDoc->GetGLModel()->UpdateSelectionLists();
+
 		ReportSelection();
 		RedrawGL();
 	}
