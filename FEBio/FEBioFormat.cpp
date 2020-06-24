@@ -1747,24 +1747,28 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					logVar.SetGroupID(pg->GetID());
 				}
 			}
-			else
+			else if (tag.isempty() == false)
 			{
 				// read the element list
 				vector<int> l;
 				tag.value(l);
-				for (int i = 0; i<l.size(); ++i) l[i] -= 1;
 
-				// create a new element set for this
-				FEBioModel::PartInstance* inst = fem.GetInstance(0);
-				GMeshObject* po = inst->GetGObject();
+				if (l.empty() == false)
+				{
+					for (int i = 0; i < l.size(); ++i) l[i] -= 1;
 
-				char sz[32] = { 0 };
-				sprintf(sz, "elementset%02d", po->FEParts() + 1);
-				FEPart* ps = new FEPart(po, l);
-				ps->SetName(sz);
-				po->AddFEPart(ps);
+					// create a new element set for this
+					FEBioModel::PartInstance* inst = fem.GetInstance(0);
+					GMeshObject* po = inst->GetGObject();
 
-				logVar.SetGroupID(ps->GetID());
+					char sz[32] = { 0 };
+					sprintf(sz, "elementset%02d", po->FEParts() + 1);
+					FEPart* ps = new FEPart(po, l);
+					ps->SetName(sz);
+					po->AddFEPart(ps);
+
+					logVar.SetGroupID(ps->GetID());
+				}
 			}
 
 			fem.AddLogVariable(logVar);

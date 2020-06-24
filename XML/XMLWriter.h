@@ -60,7 +60,7 @@ public:
 	void value(int    n) { sprintf(m_szval, "%d" , n); }
 	void value(int* pi, int n);
 	void value(bool   b) { sprintf(m_szval, "%d" , (int) b); }
-	void value(double g) { sprintf(m_szval, "%lg", g); }
+	void value(double g) { sprintf(m_szval, "%.9lg", g); }
 	void value(double* pg, int n);
 	void value(const vec3d& r);
 	void value(const mat3d& a);
