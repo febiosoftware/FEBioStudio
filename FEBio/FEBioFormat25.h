@@ -55,6 +55,11 @@ private:
 	bool ParseStepSection      (XMLTag& tag);
 
 private:
+	// mesh data section parsers
+	bool ParseElementData(XMLTag& tag);
+	bool ParseSurfaceData(XMLTag& tag);
+
+private:
 	// geometry parsing functions (version 2.0 and up)
 	void ParseGeometryNodes      (FEBioModel::Part* part, XMLTag& tag);
 	void ParseGeometryElements   (FEBioModel::Part* part, XMLTag& tag);
