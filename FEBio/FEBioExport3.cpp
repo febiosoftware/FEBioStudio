@@ -1949,6 +1949,9 @@ void FEBioExport3::WriteGeometrySectionNew()
 
 	// write the surface pairs
 	WriteGeometrySurfacePairs();
+
+	// write discrete sets
+	WriteGeometryDiscreteSets();
 }
 
 //-----------------------------------------------------------------------------
