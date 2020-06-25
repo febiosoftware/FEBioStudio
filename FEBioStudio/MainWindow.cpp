@@ -270,7 +270,7 @@ void CMainWindow::UpdateTab(CDocument* doc)
 		ui->tab->setTabText(n, file);
 
 		QString path = QString::fromStdString(doc->GetDocFilePath());
-		if (path.isEmpty() == false) ui->tab->setToolTip(path); else ui->tab->setToolTip("");
+		if (path.isEmpty() == false) ui->tab->setTabToolTip(n, path); else ui->tab->setTabToolTip(n, "");
 	}
 
 	ui->fileViewer->Update();
