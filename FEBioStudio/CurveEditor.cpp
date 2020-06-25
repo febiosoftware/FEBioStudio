@@ -468,7 +468,7 @@ void CCurveEditor::BuildModelTree()
                     ui->addTreeItem(t2, QString::fromStdString("initial_pressure"), prcr->GetIPLoadCurve());
                 }
 				else {
-					FEBodyForce* pbl = dynamic_cast<FEBodyForce*>(pstep->Load(j));
+					FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(pstep->Load(j));
 					if (pbl)
 					{
 						t3 = ui->addTreeItem(t2, QString::fromStdString(pbl->GetName()));

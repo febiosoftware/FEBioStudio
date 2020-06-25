@@ -1695,7 +1695,7 @@ void FEBioFormat3::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	// create new body load
 	FEBodyLoad* pbl = nullptr;
 	XMLAtt& att = tag.Attribute("type");
-	if      (att == "const"      ) pbl = CREATE_BODY_LOAD(FEBodyForce);
+	if      (att == "const"      ) pbl = CREATE_BODY_LOAD(FEConstBodyForce);
 	else if (att == "heat_source") pbl = CREATE_BODY_LOAD(FEHeatSource);
 	else ParseUnknownAttribute(tag, "type");
 

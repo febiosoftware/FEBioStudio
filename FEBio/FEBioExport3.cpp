@@ -4049,65 +4049,19 @@ void FEBioExport3::WriteBodyLoads(FEStep& s)
 		if (pbl && pbl->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pbl);
-			WriteBodyLoad(pbl);
+
+			FEItemListBuilder* pitem = pbl->GetItemList();
+
+			XMLElement el("body_load");
+			el.add_attribute("type", pbl->GetTypeString());
+			if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
+			m_xml.add_branch(el);
+			{
+				WriteParamList(*pbl);
+			}
+			m_xml.close_branch();
 		}
 	}
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport3::WriteBodyLoad(FEBodyLoad* pbl)
-{
-	FEBodyForce* pbf = dynamic_cast<FEBodyForce*>(pbl);
-	if (pbf) WriteBodyForce(pbf);
-
-	FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pbl);
-	if (phs) WriteHeatSource(phs);
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport3::WriteBodyForce(FEBodyForce* pbf)
-{
-	FEItemListBuilder* pitem = pbf->GetItemList();
-
-	XMLElement el("body_load");
-	el.add_attribute("type", "body force");
-	if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
-	m_xml.add_branch(el);
-	{
-		double x = pbf->GetLoad(0);
-		double y = pbf->GetLoad(1);
-		double z = pbf->GetLoad(2);
-
-		stringstream s;
-		s << x << ", " << y << ", " << z;
-		m_xml.add_leaf("force", s.str());
-/*		char sz[3][2] = { "x", "y", "z" };
-		XMLElement el;
-		for (int i = 0; i<3; ++i)
-		{
-			el.name(sz[i]);
-			FELoadCurve* plc = pbf->GetLoadCurve(i);
-			if (plc) el.add_attribute("lc", plc->GetID());
-			el.value(pbf->GetLoad(i));
-			m_xml.add_leaf(el);
-		}
-*/	}
-	m_xml.close_branch();
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport3::WriteHeatSource(FEHeatSource* phs)
-{
-	FEItemListBuilder* pitem = phs->GetItemList();
-
-	XMLElement el("body_load");
-	el.add_attribute("type", "heat_source");
-	if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
-	m_xml.add_branch(el);
-	{
-		WriteParamList(*phs);
-	}
-	m_xml.close_branch();
 }
 
 //-----------------------------------------------------------------------------

@@ -292,7 +292,7 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<FEModelComponent*>(po))
 	{
 		FEModelComponent* pbc = dynamic_cast<FEModelComponent*>(po);
-		if (dynamic_cast<FEBodyForce*>(pbc) == 0)
+		if (dynamic_cast<FEConstBodyForce*>(pbc) == 0)
 		{
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");

@@ -4622,7 +4622,7 @@ void FEBioExport25::WriteBodyLoads(FEStep& s)
 //-----------------------------------------------------------------------------
 void FEBioExport25::WriteBodyLoad(FEBodyLoad* pbl, GPart* pg)
 {
-	FEBodyForce* pbf = dynamic_cast<FEBodyForce*>(pbl);
+	FEConstBodyForce* pbf = dynamic_cast<FEConstBodyForce*>(pbl);
 	if (pbf) WriteBodyForce(pbf, pg);
 
 	FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pbl);
@@ -4643,7 +4643,7 @@ void FEBioExport25::WriteBodyLoad(FEBodyLoad* pbl, GPart* pg)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteBodyForce(FEBodyForce* pbf, GPart* pg)
+void FEBioExport25::WriteBodyForce(FEConstBodyForce* pbf, GPart* pg)
 {
 	XMLElement el("body_load");
 	el.add_attribute("type", "const");

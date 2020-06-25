@@ -294,6 +294,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		}
 		break;
 	case CProperty::String:
+	case CProperty::MathString:
 		{
 			QLineEdit* edit = new QLineEdit;
 			edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -647,6 +648,11 @@ void CPropertyListForm::onDataChanged()
 					{
 						CEditVariableProperty* e = qobject_cast<CEditVariableProperty*>(pw);
 						if (e) m_list->SetPropertyValue(i, e->currentText());
+						else
+						{
+							QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+							if (edit) m_list->SetPropertyValue(i, edit->text());
+						}
 					}
 					break;
 				case CProperty::Vec3:

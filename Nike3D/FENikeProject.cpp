@@ -1212,7 +1212,7 @@ bool FENikeProject::BuildBodyForce(FEProject& prj)
 
 	for (int i=0; i<s.Loads(); ++i)
 	{
-		FEBodyForce* pbl = dynamic_cast<FEBodyForce*>(s.Load(i));
+		FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(s.Load(i));
 		if (pbl)
 		{
 			for (int j=0; j<3; ++j)

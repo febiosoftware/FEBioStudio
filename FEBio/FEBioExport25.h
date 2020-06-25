@@ -170,7 +170,7 @@ protected:
 
 	void WriteBodyLoads(FEStep& s);
 	void WriteBodyLoad(FEBodyLoad* pbl, GPart* pg);
-	void WriteBodyForce(FEBodyForce* pbf, GPart* pg);
+	void WriteBodyForce(FEConstBodyForce* pbf, GPart* pg);
 	void WriteHeatSource(FEHeatSource* phs, GPart* pg);
 
 	// Used by new Part export feature

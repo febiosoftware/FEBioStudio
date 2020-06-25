@@ -191,9 +191,6 @@ protected:
 	void WriteRigidConstraints(FEStep& s);
 
 	void WriteBodyLoads(FEStep& s);
-	void WriteBodyLoad(FEBodyLoad* pbl);
-	void WriteBodyForce(FEBodyForce* pbf);
-	void WriteHeatSource(FEHeatSource* phs);
 
 	// Used by new Part export feature
 	void WriteGeometryObject(Part* po);
