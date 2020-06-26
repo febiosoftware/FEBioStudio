@@ -252,29 +252,20 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 		break;
 	case CProperty::Enum:
 		{
-			if (pi.values.isEmpty() == false)
+			if (pi.isEditable())
 			{
-				if (pi.isEditable())
-				{
-					QComboBox* pc = new QComboBox;
-					pc->setMinimumWidth(100);
-					pc->addItems(pi.values);
-					pc->setCurrentIndex(v.toInt());
-					connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
-					return pc;
-				}
-				else
-				{
-					QLabel* l = new QLabel(pi.values.at(v.toInt()));
-					return l;
-				}
+				QComboBox* pc = new QComboBox;
+				pc->setMinimumWidth(100);
+				pc->addItems(pi.values);
+				pc->setCurrentIndex(v.toInt());
+				connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
+				return pc;
 			}
 			else
 			{
-				QLineEdit* pc = new QLineEdit;
-				pc->setText("(undefined)");
-				pc->setReadOnly(true);
-				return pc;
+				QLabel* l = new QLabel("(none)");
+				if (pi.values.empty() == false){ l->setText(pi.values.at(v.toInt())); }
+				return l;
 			}
 		}
 		break;

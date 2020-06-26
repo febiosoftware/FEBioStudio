@@ -2918,6 +2918,7 @@ void CGLView::RenderMaterialFibers()
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
 
 	BOX box = model.GetBoundingBox();
 	double h = 0.05*box.GetMaxExtent()*view.m_fiber_scale;

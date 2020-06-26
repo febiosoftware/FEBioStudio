@@ -36,8 +36,41 @@ CFiberGeneratorTool::CFiberGeneratorTool(CMainWindow* wnd) : CBasicTool(wnd, "Fi
 	m_niter = 0;
 	m_ndata = 0;
 
-	addIntProperty(&m_ndata, "Data field");
+	addEnumProperty(&m_ndata, "Data field");
 	addIntProperty(&m_niter, "smoothing iterations");
+}
+
+void CFiberGeneratorTool::Activate()
+{
+	m_data.clear();
+	CProperty& prop = Property(0);
+	prop.setEnumValues(QStringList());
+
+	CDocument* pdoc = GetDocument();
+	GObject* po = pdoc->GetActiveObject();
+
+	if (po)
+	{
+		FEMesh* mesh = po->GetFEMesh();
+		if (mesh)
+		{
+			QStringList names;
+			int N = mesh->MeshDataFields();
+			for (int i = 0; i < N; ++i)
+			{
+				FENodeData* data = dynamic_cast<FENodeData*>(mesh->GetMeshDataField(i));
+				if (data)
+				{
+					names.push_back(QString::fromStdString(data->GetName()));
+					m_data.push_back(data);
+				}
+			}
+
+			prop.setEnumValues(names);
+		}
+	}
+
+	CBasicTool::Activate();
 }
 
 bool CFiberGeneratorTool::OnApply()
@@ -57,25 +90,20 @@ bool CFiberGeneratorTool::OnApply()
 		return false;
 	}
 
-	int N = pm->MeshDataFields();
-	if ((m_ndata >= 0) && (m_ndata < N))
+	FENodeData& nodeData = *m_data[m_ndata];
+
+	// calculate gradient and assign to element fiber
+	vector<vec3d> grad;
+	GradientMap G;
+	G.Apply(nodeData, grad, m_niter);
+
+	// assign to element fibers
+	int NE = pm->Elements();
+	for (int i = 0; i<NE; ++i)
 	{
-		// get node data field
-		FENodeData& D = dynamic_cast<FENodeData&>(*pm->GetMeshDataField(m_ndata));
-
-		// calculate gradient and assign to element fiber
-		vector<vec3d> grad;
-		GradientMap G;
-		G.Apply(D, grad, m_niter);
-
-		// assign to element fibers
-		int NE = pm->Elements();
-		for (int i = 0; i<NE; ++i)
-		{
-			FEElement& el = pm->Element(i);
-			el.m_fiber = grad[i];
-		}
+		FEElement& el = pm->Element(i);
+		el.m_fiber = grad[i];
 	}
-
+	
 	return true;
 }

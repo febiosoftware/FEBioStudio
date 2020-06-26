@@ -27,14 +27,20 @@ SOFTWARE.*/
 #pragma once
 #include "Tool.h"
 
+class FENodeData;
+
 class CFiberGeneratorTool : public CBasicTool
 {
 public:
 	CFiberGeneratorTool(CMainWindow* wnd);
 
-	bool OnApply();
+	bool OnApply() override;
+
+	void Activate() override;
 
 private:
 	int	m_ndata;
 	int	m_niter;
+
+	vector<FENodeData*>	m_data;
 };
