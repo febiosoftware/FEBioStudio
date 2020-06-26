@@ -363,6 +363,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PublicationWidgetView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_RepoConnectionHandler.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ScalarFieldTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SelectionBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SSHHandler.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SSHThread.cpp" />
@@ -899,7 +900,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
     </CustomBuild>
-    <ClInclude Include="..\..\FEBioStudio\ScalarFieldTool.h" />
+    <CustomBuild Include="..\..\FEBioStudio\ScalarFieldTool.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\SelectionBox.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
