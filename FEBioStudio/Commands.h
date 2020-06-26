@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEConnector.h>
 #include <FEMLib/FELoad.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <FSCore/ParamBlock.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/GDiscreteObject.h>
@@ -113,6 +114,23 @@ protected:
 	FERigidConnector*	m_pint;
 	bool			m_bdel;
 };
+
+//-----------------------------------------------------------------------------
+class CCmdAddConstraint : public CCommand
+{
+public:
+	CCmdAddConstraint(FEStep* ps, FEModelConstraint* pmc);
+	~CCmdAddConstraint();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FEStep*				m_ps;
+	FEModelConstraint*	m_pmc;
+	bool				m_bdel;
+};
+
 
 //-----------------------------------------------------------------------------
 class CCmdAddPart : public CCommand
