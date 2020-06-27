@@ -801,6 +801,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_ScalarFieldTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_FiberGeneratorTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -887,9 +890,6 @@
     <ClInclude Include="..\..\FEBioStudio\FEBioStudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\FiberGeneratorTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\FoamGeneratorTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -927,9 +927,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\ReadCurveTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\ScalarFieldTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\Sketcher.h">
@@ -1358,6 +1355,12 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\DlgPlaneCut.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\ScalarFieldTool.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\FiberGeneratorTool.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

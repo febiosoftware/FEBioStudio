@@ -27,20 +27,30 @@ SOFTWARE.*/
 #pragma once
 #include "Tool.h"
 
-class FENodeData;
+class UIFiberGeneratorTool;
+class FEItemListBuilder;
 
-class CFiberGeneratorTool : public CBasicTool
+class CFiberGeneratorTool : public CAbstractTool
 {
+	Q_OBJECT
+
 public:
 	CFiberGeneratorTool(CMainWindow* wnd);
 
-	bool OnApply() override;
+	QWidget* createUi() override;
 
 	void Activate() override;
 
 private:
-	int	m_ndata;
-	int	m_niter;
+	void Clear();
 
-	vector<FENodeData*>	m_data;
+private slots:
+	void OnAddClicked();
+	void OnApply();
+
+private:
+	int	m_niter;
+	UIFiberGeneratorTool*	ui;
+	GObject*	m_po;
+	std::vector<FEItemListBuilder*>	m_data;
 };

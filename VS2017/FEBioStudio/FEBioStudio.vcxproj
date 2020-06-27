@@ -327,6 +327,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgUpload.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgWidgetProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_EditPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_FiberGeneratorTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_FileThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_FileViewer.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLControlBar.cpp" />
@@ -776,7 +777,11 @@
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\FEBioOpt.h" />
     <ClInclude Include="..\..\FEBioStudio\FEBioStudio.h" />
-    <ClInclude Include="..\..\FEBioStudio\FiberGeneratorTool.h" />
+    <CustomBuild Include="..\..\FEBioStudio\FiberGeneratorTool.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\FileThread.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>

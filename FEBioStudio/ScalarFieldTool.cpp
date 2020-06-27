@@ -139,6 +139,7 @@ void CScalarFieldTool::OnAddClicked()
 void CScalarFieldTool::Activate()
 {
 	Clear();
+	CAbstractTool::Activate();
 }
 
 void CScalarFieldTool::Clear()
