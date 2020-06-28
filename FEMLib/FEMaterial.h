@@ -548,8 +548,8 @@ public:
 	double	m_R0, m_R1;
 
 public:
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 	void copy(FEOldFiberMaterial* pm);
 
