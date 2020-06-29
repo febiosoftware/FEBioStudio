@@ -2568,10 +2568,7 @@ void FEBioFormat25::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	do
 	{
 		// read parameters
-		if      (tag == "laugon"   ) { int n; tag.value(n); pci->SetBoolValue(FERigidWallInterface::LAUGON, (n == 0 ? false : true)); }
-		else if (tag == "tolerance") { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::ALTOL, f); }
-		else if (tag == "penalty"  ) { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::PENALTY, f); }
-		if      (tag == "plane"    )
+		if (tag == "plane"    )
 		{
 			double n[4];
 			tag.value(n, 4);
@@ -2583,6 +2580,7 @@ void FEBioFormat25::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 			const char* szlc = tag.AttributeValue("lc", true);
 			if (szlc) febio.AddParamCurve(&pci->GetParam(FERigidWallInterface::OFFSET), atoi(szlc) - 1);
 		}
+		else ReadParam(*pci, tag);
 		++tag;
 	}
 	while (!tag.isend());

@@ -3481,15 +3481,10 @@ void FEBioExport3::WriteContactWall(FEStep& s)
 			ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
 			m_xml.add_branch(ec);
 			{
-				m_xml.add_leaf("laugon", (pw->GetBoolValue(FERigidWallInterface::LAUGON) ? 1 : 0));
-				m_xml.add_leaf("tolerance", pw->GetFloatValue(FERigidWallInterface::ALTOL));
-				m_xml.add_leaf("penalty", pw->GetFloatValue(FERigidWallInterface::PENALTY));
-
-				FELoadCurve* plc = pw->GetLoadCurve();
-				XMLElement offset("offset");
-				if (plc) offset.add_attribute("lc", plc->GetID());
-				offset.value(pw->GetFloatValue(FERigidWallInterface::OFFSET));
-				m_xml.add_leaf(offset);
+				WriteParam(pw->GetParam(FERigidWallInterface::LAUGON));
+				WriteParam(pw->GetParam(FERigidWallInterface::ALTOL));
+				WriteParam(pw->GetParam(FERigidWallInterface::PENALTY));
+				WriteParam(pw->GetParam(FERigidWallInterface::OFFSET));
 
 				XMLElement plane("plane");
 				double a[4];

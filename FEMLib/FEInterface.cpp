@@ -341,14 +341,7 @@ FERigidWallInterface::FERigidWallInterface(FEModel* ps, int nstep) : FESoloInter
 	AddDoubleParam(0    , "b"        , "b"                     );
 	AddDoubleParam(0    , "c"        , "c"                     );
 	AddDoubleParam(0    , "d"        , "d"                     );
-	
-	// the default load curve defines a linear ramp
-	// we don't want that here. By default, the plane should not move
-	FELoadCurve LC;
-	LC.Clear();
-	LC.Add(LOADPOINT(0,0));
-	LC.Add(LOADPOINT(1,0));
-	AddDoubleParam(0.0, "offset", "plane displacment")->SetLoadCurve(LC);
+	AddDoubleParam(0.0  , "offset"   , "plane displacment"     );
 }
 
 //-----------------------------------------------------------------------------
@@ -645,6 +638,7 @@ FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int ns
 	AddBoolParam  (false, "node_reloc"         , "Relocated nodes"       );
     AddBoolParam  (false, "flip_slave"         , "flip normal on primary"  );
     AddBoolParam  (false, "flip_master"        , "flip normal on secondary");
+	AddIntParam   (0    , "knmult"             , "higher-order stiffness");
 }
 
 //=============================================================================

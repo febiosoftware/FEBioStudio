@@ -1727,20 +1727,24 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 				// read the node list
 				vector<int> l;
 				tag.value(l);
-				for (int i = 0; i<l.size(); ++i) l[i] -= 1;
 
-				// create a new node set for this
-				FEBioModel::PartInstance* inst = fem.GetInstance(0);
-				GMeshObject* po = inst->GetGObject();
-				FEMesh* pm = po->GetFEMesh();
+				if (l.empty() == false)
+				{
+					for (int i = 0; i < l.size(); ++i) l[i] -= 1;
 
-				char sz[32] = { 0 };
-				sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);
-				FENodeSet* ps = new FENodeSet(po, l);
-				ps->SetName(sz);
-				po->AddFENodeSet(ps);
+					// create a new node set for this
+					FEBioModel::PartInstance* inst = fem.GetInstance(0);
+					GMeshObject* po = inst->GetGObject();
+					FEMesh* pm = po->GetFEMesh();
 
-				logVar.SetGroupID(ps->GetID());
+					char sz[32] = { 0 };
+					sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);
+					FENodeSet* ps = new FENodeSet(po, l);
+					ps->SetName(sz);
+					po->AddFENodeSet(ps);
+
+					logVar.SetGroupID(ps->GetID());
+				}
 			}
 			fem.AddLogVariable(logVar);
 		}

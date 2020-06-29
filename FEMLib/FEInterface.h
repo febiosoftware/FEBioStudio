@@ -244,7 +244,27 @@ public:
 class FETensionCompressionInterface : public FEPairedInterface
 {
 public:
-	enum {LAUGON, ALTOL, GAPTOL, PENALTY, AUTOPEN, TWOPASS, KNMULT, SEARCHTOL, SYMMETRIC, SEARCHRAD, NSEGUP, BTENSION, BFLIPMASTER, BFLIPSLAVE};
+	enum {
+		LAUGON, 
+		ALTOL, 
+		GAPTOL, 
+		PENALTY, 
+		AUTOPEN, 
+		TWOPASS, 
+		SEARCHTOL, 
+		SYMMETRIC, 
+		SEARCHRAD, 
+		NSEGUP, 
+		BTENSION, 
+		MINAUG,
+		MAXAUG,
+		FRICCOEFF,
+		AUGSMOOTH,
+		BNODERELOC,
+		BFLIPMASTER, 
+		BFLIPSLAVE, 
+		KNMULT
+	};
 
 public:
 	FETensionCompressionInterface(FEModel* ps, int nstep = 0);

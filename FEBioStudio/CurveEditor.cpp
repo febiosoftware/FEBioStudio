@@ -515,7 +515,9 @@ void CCurveEditor::BuildModelTree()
 				if (pw) 
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(pw->GetName()));
-					ui->addTreeItem(t3, "displacement", pw->GetLoadCurve());
+					ui->addTreeItem(t3, "tolerance", pw->GetParamLC(FERigidWallInterface::ALTOL));
+					ui->addTreeItem(t3, "penalty"  , pw->GetParamLC(FERigidWallInterface::PENALTY));
+					ui->addTreeItem(t3, "offset"   , pw->GetParamLC(FERigidWallInterface::OFFSET));
 				}
 				else
 				{
