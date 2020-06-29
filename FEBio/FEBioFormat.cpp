@@ -285,6 +285,13 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(m_pstep);
 	assert(pstep);
 
+	// The default in FEBio3 for rhoi is -2, for solid mechanics models
+	if (pstep->GetType() == FE_STEP_MECHANICS)
+	{
+		Param* p = pstep->GetParam("rhoi"); assert(p);
+		if (p) p->SetFloatValue(-2.0);
+	}
+
 	// parse the settings
 	++tag;
 	do
@@ -541,6 +548,21 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 		// allocate a new material
 		FEMaterial* pmat = 0;
 
+		// see if a material already exists with this name
+		GMaterial* gmat = fem.FindMaterial(szname);
+		if (gmat)
+		{
+			FileReader()->AddLogEntry("Material with name \"%s\" already exists.", szname);
+
+			string oldName = szname;
+			int n = 2;
+			while (gmat)
+			{
+				sprintf(szname, "%s(%d)", oldName.c_str(), n++);
+				gmat = fem.FindMaterial(szname);
+			}
+		}
+
 		// first check special cases
 		if (mtype == "rigid body") pmat = ParseRigidBody(tag);
 		else
@@ -550,7 +572,7 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 		}
 
 		// if pmat is set we need to add the material to the list
-		GMaterial* gmat = new GMaterial(pmat);
+		gmat = new GMaterial(pmat);
 		gmat->SetName(szname);
 		gmat->SetInfo(comment);
 		febio.AddMaterial(gmat);

@@ -227,7 +227,7 @@ FERigidPrismaticJoint::FERigidPrismaticJoint(FEModel* ps, int nstep) : FERigidCo
     AddDoubleParam(0           , "angtol"               , "angular tolerance");
     AddDoubleParam(1           , "force_penalty"        , "force penalty factor");
     AddDoubleParam(0           , "moment_penalty"       , "moment penalty factor");
-    AddIntParam   (1           , "auto_penalty"         , "auto penalty"         );
+    AddIntParam   (0           , "auto_penalty"         , "auto penalty"         );
     AddVecParam   (vec3d(0,0,0), "joint_origin"         , "joint origin"       );
     AddVecParam   (vec3d(0,0,0), "translation_axis"     , "translation axis"   );
     AddVecParam   (vec3d(0,0,0), "transverse_axis"      , "transverse axis"    );
