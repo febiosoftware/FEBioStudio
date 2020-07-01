@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <QTextEdit>
 #include <QTreeWidget>
 #include <QToolButton>
-#include <QAction>
+#include <QPushButton>
 #include <QFileDialog>
 #include <QFileInfo>
 #include "FEBioStudioProject.h"
@@ -42,7 +42,7 @@ class Ui::CExportProjectWidget
 {
 public:
 	QTreeWidget* fileTree;
-	QAction* addFile;
+	QPushButton* addFile;
 	QTextEdit* description;
 
 	void setupUI(QWidget* parent, FEBioStudioProject* project, bool hasDescription)
@@ -63,12 +63,12 @@ public:
 
 		layout->addWidget(fileTree);
 
-		addFile = new QAction;
-		addFile->setIcon(CIconProvider::GetIcon("selectAdd"));
-		QToolButton* addButton = new QToolButton;
-		addButton->setDefaultAction(addFile);
+		addFile = new QPushButton("Add Files");
+//		addFile->setIcon(CIconProvider::GetIcon("selectAdd"));
+//		QToolButton* addButton = new QToolButton;
+//		addButton->setDefaultAction(addFile);
 
-		layout->addWidget(addButton);
+		layout->addWidget(addFile);
 
 		if(hasDescription)
 		{
@@ -102,7 +102,7 @@ CExportProjectWidget::CExportProjectWidget(FEBioStudioProject* project, bool des
 {
 	ui->setupUI(this, project, description);
 
-	QObject::connect(ui->addFile, &QAction::triggered, this, &CExportProjectWidget::on_addFile_triggered);
+	QObject::connect(ui->addFile, &QPushButton::clicked, this, &CExportProjectWidget::on_addFile_triggered);
 	QObject::connect(ui->fileTree, &QTreeWidget::currentItemChanged, this, &CExportProjectWidget::on_tree_item_changed);
 	QObject::connect(new FocusWatcher(ui->description), &FocusWatcher::focusChanged, this, &CExportProjectWidget::descriptionChanged);
 }

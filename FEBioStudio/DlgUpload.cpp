@@ -110,6 +110,8 @@ public:
 public:
 	void setup(QDialog* dlg, int uploadPermissions, FEBioStudioProject* project)
 	{
+		QVBoxLayout* fullLayout = new QVBoxLayout;
+
 		QHBoxLayout* outerLayout = new QHBoxLayout;
 
 		QFormLayout* form = new QFormLayout;
@@ -173,9 +175,6 @@ public:
 		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::EDITABLE);
 		layout->addWidget(pubs);
 
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-		layout->addWidget(bb);
-
 		outerLayout->addLayout(layout);
 
 		if(project)
@@ -184,7 +183,12 @@ public:
 			outerLayout->addWidget(files);
 		}
 
-		dlg->setLayout(outerLayout);
+		fullLayout->addLayout(outerLayout);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		fullLayout->addWidget(bb);
+
+		dlg->setLayout(fullLayout);
 
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
