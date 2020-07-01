@@ -1212,12 +1212,14 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	QString tagString;
 	if(ui->currentTags.size() > 0)
 	{
-		tagString = ui->currentTags[0];
+		QString base("<a href=\"%1\">%1</a>");
+
+		tagString = base.arg(ui->currentTags[0]);
 
 		for(int tag = 1; tag < ui->currentTags.size(); tag++)
 		{
 			tagString += ", ";
-			tagString += ui->currentTags[tag];
+			tagString += base.arg(ui->currentTags[tag]);
 		}
 	}
 	ui->projectTags->setText(tagString);
@@ -1381,8 +1383,7 @@ void CDatabasePanel::SetFileData(char **data)
 
 void CDatabasePanel::AddCurrentTag(char **data)
 {
-	QString tag("<a href=\"%1\">%1</a>");
-	ui->currentTags.append(tag.arg(data[0]));
+	ui->currentTags.append(data[0]);
 }
 
 void CDatabasePanel::AddPublication(QVariantMap data)
