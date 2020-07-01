@@ -71,7 +71,7 @@ void XMLElement::value(const vec3d& r)
 	if (XMLWriter::GetFloatFormat() == XMLWriter::ScientificFormat)
 		sprintf(m_szval, "%15.7e,%15.7e,%15.7e", r.x, r.y, r.z); 
 	else
-		sprintf(m_szval, "%lg,%lg,%lg", r.x, r.y, r.z);
+		sprintf(m_szval, "%.9lg,%.9lg,%.9lg", r.x, r.y, r.z);
 }
 
 void XMLElement::value(const vec2i& r)

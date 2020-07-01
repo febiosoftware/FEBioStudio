@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "MaterialPropsView.h"
 #include <MeshTools/GMaterial.h>
 #include <FEMLib/FEMaterial.h>
+#include <FEMLib/FEMultiMaterial.h>
 #include <QPainter>
 #include <QLineEdit>
 #include <QComboBox>
@@ -114,6 +115,14 @@ public:
 				Param& p = pm->GetParam(i);
 				if ((p.IsVisible() || p.IsEditable()) && (p.IsPersistent() || (m_pm == nullptr)))
 					addChild(pm, i, -1, 0);
+				else if (p.IsPersistent() == false)
+				{
+					const FEMultiMaterial* mmat = dynamic_cast<const FEMultiMaterial*>(pm->GetParentMaterial());
+					if (mmat)
+					{
+						addChild(pm, i, -1, 0);
+					}
+				}
 			}
 		}
 

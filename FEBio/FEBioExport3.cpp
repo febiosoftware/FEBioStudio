@@ -1612,7 +1612,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 	m_xml.add_branch(el);
 	{
 		// write the material parameters (if any)
-		if (pm->Parameters()) WriteMaterialParams(pm, true);
+		if ((pm->Parameters() || (pm->m_axes != nullptr))) WriteMaterialParams(pm, true);
 
 		// write the components
 		int NC = pm->Properties();
@@ -1669,11 +1669,15 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 
 						if (bdone == false)
 						{
-							if (pc->Parameters() > 0)
+							if ((pc->Parameters() > 0) || (pc->m_axes != nullptr))
 							{
 								m_xml.add_branch(el);
 								{
-									WriteMaterialParams(pc);
+									// NOTE: This is a little hack, but if the parent material is 
+									// a multi-material then we treat this property as top-level
+									// so that non-persistent properties are written
+									bool topLevel = (dynamic_cast<FEMultiMaterial*>(pm) != nullptr);
+									WriteMaterialParams(pc, topLevel);
 								}
 								m_xml.close_branch();
 							}
@@ -3740,7 +3744,7 @@ void FEBioExport3::WriteBCFixed(FEStep &s)
 void FEBioExport3::WriteBCPrescribed(FEStep &s)
 {
 	FEModel& fem = m_prj.GetFEModel();
-	for (int i = 0; i<s.BCs(); ++i)
+	for (int i = 0; i < s.BCs(); ++i)
 	{
 		FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(s.BC(i));
 		if (pbc && pbc->IsActive())
@@ -3761,6 +3765,31 @@ void FEBioExport3::WriteBCPrescribed(FEStep &s)
 			{
 				m_xml.add_leaf("dof", szbc);
 				WriteParamList(*pbc);
+			}
+			m_xml.close_branch();
+		}
+	}
+
+	// The fluid-rotational-velocity is a boundary condition in FEBio3
+	for (int j = 0; j < s.Loads(); ++j)
+	{
+		FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(s.Load(j));
+		if (psl && psl->IsActive() && (psl->Type() == FE_FLUID_ROTATIONAL_VELOCITY))
+		{
+			FEItemListBuilder* pitem = psl->GetItemList();
+			if (pitem == 0) throw InvalidItemListBuilder(psl);
+
+			stringstream ss;
+			ss << "@surface:" << GetSurfaceName(pitem);
+			string nodeSetName = ss.str();
+
+			XMLElement e("bc");
+			e.add_attribute("name", psl->GetName());
+			e.add_attribute("type", "fluid rotational velocity");
+			e.add_attribute("node_set", nodeSetName.c_str());
+			m_xml.add_branch(e);
+			{
+				WriteParamList(*psl);
 			}
 			m_xml.close_branch();
 		}
@@ -3833,7 +3862,8 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			case FE_FLUID_BACKFLOW_STABIL    : WriteSurfaceLoad(s, pbc, "fluid backflow stabilization"); break;
 			case FE_FSI_TRACTION             : WriteSurfaceLoad(s, pbc, "fluid-FSI traction"); break;
 			case FE_FLUID_NORMAL_VELOCITY    : WriteSurfaceLoad(s, pbc, "fluid normal velocity"); break;
-			case FE_FLUID_ROTATIONAL_VELOCITY: WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
+			// NOTE: Fluid rotational velocity is a boundary condition in FEBio3!
+//			case FE_FLUID_ROTATIONAL_VELOCITY: WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
 			case FE_FLUID_VELOCITY           : WriteSurfaceLoad(s, pbc, "fluid velocity"); break;
 			case FE_SOLUTE_FLUX              : WriteSurfaceLoad(s, pbc, "soluteflux"); break;
 			case FE_CONCENTRATION_FLUX       : WriteSurfaceLoad(s, pbc, "concentration flux"); break;
@@ -4532,7 +4562,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				FERigidVelocity* rv = dynamic_cast<FERigidVelocity*>(ps);
 				XMLElement el("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "rigid_velocity");
+				el.add_attribute("type", "initial_rigid_velocity");
 				m_xml.add_branch(el);
 				{
 					m_xml.add_leaf("rb", pgm->m_ntag);
@@ -4545,7 +4575,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				FERigidAngularVelocity* rv = dynamic_cast<FERigidAngularVelocity*>(ps);
 				XMLElement el("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "rigid_angular_velocity");
+				el.add_attribute("type", "initial_rigid_angular_velocity");
 				m_xml.add_branch(el);
 				{
 					m_xml.add_leaf("rb", pgm->m_ntag);

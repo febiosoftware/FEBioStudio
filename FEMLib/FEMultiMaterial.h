@@ -58,10 +58,18 @@ public:
 	DECLARE_REGISTERED(FEUncoupledViscoElastic);
 };
 
+//-----------------------------------------------------------------------------
+// The FEMultiMaterial class is used as a base class for materials that define
+// material properties for multi-physics problems. 
+class FEMultiMaterial : public FEMaterial
+{
+public:
+	FEMultiMaterial(int ntype);
+};
 
 //-----------------------------------------------------------------------------
 // biphasic
-class FEBiphasic : public FEMaterial
+class FEBiphasic : public FEMultiMaterial
 {
 public:
 	// material parameters
@@ -129,7 +137,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // biphasic-solute
-class FEBiphasicSolute : public FEMaterial
+class FEBiphasicSolute : public FEMultiMaterial
 {
 public:
 	// material parameters
@@ -161,7 +169,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // triphasic
-class FETriphasicMaterial : public FEMaterial
+class FETriphasicMaterial : public FEMultiMaterial
 {
 public:
 	// material parameters
@@ -468,7 +476,7 @@ string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem);
 
 //-----------------------------------------------------------------------------
 // multiphasic
-class FEMultiphasicMaterial : public FEMaterial
+class FEMultiphasicMaterial : public FEMultiMaterial
 {
 public:
 	// material parameters
@@ -577,7 +585,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // fluid FSI
-class FEFluidFSIMaterial : public FEMaterial
+class FEFluidFSIMaterial : public FEMultiMaterial
 {
 public:
     // constructor

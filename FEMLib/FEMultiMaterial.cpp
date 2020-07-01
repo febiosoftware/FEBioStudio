@@ -90,12 +90,18 @@ FEUncoupledViscoElastic::FEUncoupledViscoElastic() : FEMaterial(FE_UNCOUPLED_VIS
 }
 
 //=============================================================================
+FEMultiMaterial::FEMultiMaterial(int ntype) : FEMaterial(ntype)
+{
+
+}
+
+//=============================================================================
 //									BIPHASIC
 //=============================================================================
 
 REGISTER_MATERIAL(FEBiphasic, MODULE_BIPHASIC, FE_BIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "biphasic", MaterialFlags::TOPLEVEL);
 
-FEBiphasic::FEBiphasic() : FEMaterial(FE_BIPHASIC_MATERIAL)
+FEBiphasic::FEBiphasic() : FEMultiMaterial(FE_BIPHASIC_MATERIAL)
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -152,7 +158,7 @@ FESBMMaterial::FESBMMaterial() : FEMaterial(FE_SBM_MATERIAL)
 
 REGISTER_MATERIAL(FEBiphasicSolute, MODULE_MULTIPHASIC, FE_BIPHASIC_SOLUTE, FE_MAT_MULTIPHASIC, "biphasic-solute", MaterialFlags::TOPLEVEL);
 
-FEBiphasicSolute::FEBiphasicSolute() : FEMaterial(FE_BIPHASIC_SOLUTE)
+FEBiphasicSolute::FEBiphasicSolute() : FEMultiMaterial(FE_BIPHASIC_SOLUTE)
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -176,7 +182,7 @@ FEBiphasicSolute::FEBiphasicSolute() : FEMaterial(FE_BIPHASIC_SOLUTE)
 
 REGISTER_MATERIAL(FETriphasicMaterial, MODULE_MULTIPHASIC, FE_TRIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "triphasic", MaterialFlags::TOPLEVEL);
 
-FETriphasicMaterial::FETriphasicMaterial() : FEMaterial(FE_TRIPHASIC_MATERIAL)
+FETriphasicMaterial::FETriphasicMaterial() : FEMultiMaterial(FE_TRIPHASIC_MATERIAL)
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -343,6 +349,7 @@ FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMateria
     // add parameters
     AddIntParam(1, "kinetics", "kinetics"); // "bond kinetics type (1 or 2)");
     AddIntParam(0, "trigger" , "trigger" ); // "bond breaking trigger (0=any, 1=distortion, or 2=dilatation)");
+	AddDoubleParam(0, "k", "bulk modulus");
     
     // Add elastic material component
     AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
@@ -521,7 +528,7 @@ string buildReactionEquation(FEReactionMaterial* mat, FEModel& fem)
 
 REGISTER_MATERIAL(FEMultiphasicMaterial, MODULE_MULTIPHASIC, FE_MULTIPHASIC_MATERIAL, FE_MAT_MULTIPHASIC, "multiphasic", MaterialFlags::TOPLEVEL);
 
-FEMultiphasicMaterial::FEMultiphasicMaterial() : FEMaterial(FE_MULTIPHASIC_MATERIAL)
+FEMultiphasicMaterial::FEMultiphasicMaterial() : FEMultiMaterial(FE_MULTIPHASIC_MATERIAL)
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
@@ -725,7 +732,7 @@ FEFluidMaterial::FEFluidMaterial() : FEMaterial(FE_FLUID_MATERIAL)
 
 REGISTER_MATERIAL(FEFluidFSIMaterial, MODULE_FLUID_FSI, FE_FLUID_FSI_MATERIAL, FE_MAT_FLUID_FSI, "fluid-FSI", MaterialFlags::TOPLEVEL);
 
-FEFluidFSIMaterial::FEFluidFSIMaterial() : FEMaterial(FE_FLUID_FSI_MATERIAL)
+FEFluidFSIMaterial::FEFluidFSIMaterial() : FEMultiMaterial(FE_FLUID_FSI_MATERIAL)
 {
     // Add fluid component
     AddProperty("fluid", FE_MAT_FLUID);

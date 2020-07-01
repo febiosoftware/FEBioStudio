@@ -1333,21 +1333,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadPressure(XMLTag& tag)
 	pbc->SetName(szname);
 
 	// read the parameters
-	++tag;
-	do
-	{
-		if (tag == "linear")
-		{
-			bool n; tag.value(n);
-			pbc->SetBoolValue(FEPressureLoad::NTYPE, n);
-		}
-		else if (tag == "pressure")
-		{
-			ReadParam(*pbc, tag);
-		}
-		++tag;
-	}
-	while (!tag.isend());
+	ReadParameters(*pbc, tag);
 
 	return pbc;
 }
@@ -1440,22 +1426,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidVelocity(XMLTag& tag)
     sprintf(szname, "FluidVelocity%02d", CountLoads<FEFluidVelocity>(fem)+1);
     psl->SetName(szname);
     
-    ++tag;
-    do
-    {
-        if (tag == "scale")
-        {
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
-        }
-        else if (tag == "velocity") {
-            vec3d t; tag.value(t);
-            psl->SetLoad(t);
-        }
-        else ParseUnknownTag(tag);
-        ++tag;
-    }
-    while (!tag.isend());
+	ReadParameters(*psl, tag);
     
     return psl;
 }
@@ -2690,6 +2661,10 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
 	pstep->AddRigidConnector(pi);
+
+	// NOTE: In febio3, the default value is false, but in FEBioStudio it is true
+	Param* autoPenalty = pi->GetParam("auto_penalty");
+	if (autoPenalty) autoPenalty->SetBoolValue(false);
 
 	int na = -1, nb = -1;
 

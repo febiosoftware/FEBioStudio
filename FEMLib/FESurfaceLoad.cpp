@@ -221,13 +221,15 @@ void FEFluidTraction::LoadParam(const Param& p)
 FEFluidVelocity::FEFluidVelocity(FEModel* ps) : FESurfaceLoad(FE_FLUID_VELOCITY, ps)
 {
     SetTypeString("Fluid Velocity Vector");
-    AddVecParam(vec3d(0,0,0), "velocity", "fluid velocity")->SetLoadCurve();
+    AddVecParam(vec3d(0,0,0), "velocity", "fluid velocity");
+	AddDoubleParam(1, "scale", "scale");
 }
 
 FEFluidVelocity::FEFluidVelocity(FEModel* ps, FEItemListBuilder* pi, vec3d t, int nstep) : FESurfaceLoad(FE_FLUID_VELOCITY, ps, pi, nstep)
 {
     SetTypeString("Fluid Velocity Vector");
     AddVecParam(t, "velocity", "fluid velocity")->SetLoadCurve();
+	AddDoubleParam(1, "scale", "scale");
 }
 
 //-----------------------------------------------------------------------------
