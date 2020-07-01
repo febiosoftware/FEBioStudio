@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QLabel>
 #include <vector>
 
 class QVBoxLayout;

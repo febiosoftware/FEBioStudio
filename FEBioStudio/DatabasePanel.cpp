@@ -1486,4 +1486,7 @@ void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item) {}
 void CDatabasePanel::OpenItem(CustomTreeWidgetItem *item) {}
 void CDatabasePanel::DeleteItem(CustomTreeWidgetItem *item) {}
 void CDatabasePanel::ShowItemInBrowser(CustomTreeWidgetItem *item) {}
+void CDatabasePanel::on_connectButton_clicked() {}
+void CDatabasePanel::on_actionRefresh_triggered() {}
+void CDatabasePanel::on_projectTags_linkActivated(const QString& link) {}
 #endif

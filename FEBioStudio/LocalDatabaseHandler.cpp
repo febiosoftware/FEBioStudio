@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "LocalDatabaseHandler.h"
+#include <QString>
 
 #ifdef MODEL_REPO
 #include <sqlite3.h>
@@ -37,7 +38,6 @@ SOFTWARE.*/
 #include <QDir>
 #include <QFile>
 #include <QStringList>
-#include <QString>
 #include <QStringList>
 #include <QVariantMap>
 #include "RepoProject.h"
@@ -716,5 +716,6 @@ long long int CLocalDatabaseHandler::currentProjectsSize(QString username)
 CLocalDatabaseHandler::CLocalDatabaseHandler(CDatabasePanel* dbPanel) {}
 CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc){}
-
+bool CLocalDatabaseHandler::isValidUpload(QString& username, QString& projectName, QString& category) { return false;  }
+long long int CLocalDatabaseHandler::currentProjectsSize(QString username) { return 0; }
 #endif

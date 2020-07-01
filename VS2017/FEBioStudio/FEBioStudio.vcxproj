@@ -221,6 +221,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgPlotMix.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgPurge.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgRAWImport.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgRequestUploadPerm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgRun.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSelectRange.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgSetRepoFolder.cpp" />
@@ -239,6 +240,7 @@
     <ClCompile Include="..\..\FEBioStudio\EditPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ElementVolumeTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Encrypter.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\ExportProjectWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioJob.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioStudio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\FEBioStudioProject.cpp" />
@@ -319,6 +321,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgNewProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgPlaneCut.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgPlotMix.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_DlgRequestUploadPerm.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgRun.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSetRepoFolder.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgSettings.cpp" />
@@ -327,9 +330,11 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DlgUpload.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgWidgetProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_EditPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_ExportProjectWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_FiberGeneratorTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_FileThread.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_FileViewer.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_FocusWatcher.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLControlBar.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLHighlighter.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_GLView.cpp" />
@@ -424,6 +429,7 @@
     <ClCompile Include="..\..\FEBioStudio\UnitParser.cpp" />
     <ClCompile Include="..\..\FEBioStudio\units.cpp" />
     <ClCompile Include="..\..\FEBioStudio\welcomPage.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\WrapLabel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ZipFiles.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -529,6 +535,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgRequestUploadPerm.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\DlgSelectRange.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUnitConverter.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
@@ -544,6 +555,11 @@
     <ClInclude Include="..\..\FEBioStudio\DragBox.h" />
     <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h" />
     <ClInclude Include="..\..\FEBioStudio\Encrypter.h" />
+    <CustomBuild Include="..\..\FEBioStudio\ExportProjectWidget.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\FEBioStudioProject.h" />
     <ClInclude Include="..\..\FEBioStudio\FEObjectProps.h" />
     <CustomBuild Include="..\..\FEBioStudio\MainTabBar.h">
@@ -567,6 +583,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\InfoPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\FocusWatcher.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
@@ -650,6 +671,7 @@
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\WebDefines.h" />
     <ClInclude Include="..\..\FEBioStudio\welcomePage.h" />
+    <ClInclude Include="..\..\FEBioStudio\WrapLabel.h" />
     <ClInclude Include="..\..\FEBioStudio\ZipFiles.h" />
     <ClInclude Include="resource.h" />
     <CustomBuild Include="..\..\FEBioStudio\DataFieldSelector.h">
