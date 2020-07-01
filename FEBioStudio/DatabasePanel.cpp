@@ -56,10 +56,13 @@ SOFTWARE.*/
 #include <QDir>
 #include <QFileIconProvider>
 #include <JlCompress.h>
+#include <QStandardPaths>
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "DlgUpload.h"
+#include "DlgRequestUploadPerm.h"
+#include "ExportProjectWidget.h"
 #include "DlgSetRepoFolder.h"
 #include "LocalDatabaseHandler.h"
 #include "RepoProject.h"
@@ -67,6 +70,8 @@ SOFTWARE.*/
 #include "PublicationWidgetView.h"
 #include "IconProvider.h"
 #include "FSCore/FSDir.h"
+#include "WrapLabel.h"
+#include "ZipFiles.h"
 
 #include <iostream>
 
@@ -186,8 +191,8 @@ protected:
 class ProjectItem : public CustomTreeWidgetItem
 {
 public:
-	ProjectItem(QString name, int projectID, bool owned)
-		: CustomTreeWidgetItem(name, PROJECTITEM), m_projectID(projectID), m_ownedByUser(owned)
+	ProjectItem(QString name, int projectID, bool owned, bool authorized)
+		: CustomTreeWidgetItem(name, PROJECTITEM), m_projectID(projectID), m_ownedByUser(owned), m_authorized(authorized)
 	{
 		setIcon(0, QIcon(":/icons/folder.png"));
 	}
@@ -200,10 +205,12 @@ public:
 	void setProjectID(int project) {m_projectID = project;}
 	int getProjectID() {return m_projectID;}
 	bool ownedByUser() {return m_ownedByUser;}
+	bool isAuthorized() {return m_authorized;}
 
 private:
 	int m_projectID;
 	bool m_ownedByUser;
+	bool m_authorized;
 };
 
 class FolderItem : public CustomTreeWidgetItem
@@ -276,24 +283,26 @@ class Ui::CDatabasePanel
 public:
 	QStackedLayout* stack;
 
-	QWidget* loginPage;
-	QLabel* loginLabel;
-	QFormLayout* loginForm;
-	QLineEdit*	userName;
-	QLineEdit*	password;
+	QWidget* welcomePage;
+	QPushButton* connectButton;
+
 	QPushButton* loginButton;
+	QAction* loginAction;
 
 	QWidget* modelPage;
 	QTreeWidget* treeWidget;
 
 	CToolBox* projectInfoBox;
 
+	QLabel* unauthorized;
+
 	QLabel* projectName;
-	QLabel* projectDesc;
+	WrapLabel* projectDesc;
 	QLabel* projectOwner;
 	QLabel* projectVersion;
 	QLabel* projectTags;
 
+	QFormLayout* fileInfoForm;
 	QLabel* filenameLabel;
 	QLabel* fileDescLabel;
 
@@ -301,10 +310,14 @@ public:
 
 	QToolBar* toolbar;
 
+	QAction* actionRefresh;
 	QAction* actionDownload;
 	QAction* actionOpen;
 	QAction* actionOpenFileLocation;
 	QAction* actionDelete;
+
+	QAction* actionManage;
+
 	QAction* actionUpload;
 
 	QAction* actionDeleteRemote;
@@ -313,6 +326,11 @@ public:
 	QLineEdit* searchLineEdit;
 	QAction* actionSearch;
 	QAction* actionClearSearch;
+
+	QWidget* loadingPage;
+	QLabel* loadingLabel;
+
+//	QWidget* uploadingPage;
 
 
 
@@ -323,40 +341,37 @@ public:
 	{
 		stack = new QStackedLayout(parent);
 
-		// Login Page
-		QVBoxLayout* loginVBLayout = new QVBoxLayout;
-		loginVBLayout->setAlignment(Qt::AlignCenter);
 
-		loginLabel = new QLabel("To access the model database, please login with your FEBio.org username and password.");
-		loginLabel->setWordWrap(true);
-		loginLabel->setAlignment(Qt::AlignHCenter);
-		loginVBLayout->addWidget(loginLabel);
+		// Weclome Page
+		QVBoxLayout* welcomeVBLayout = new QVBoxLayout;
+		welcomeVBLayout->setAlignment(Qt::AlignCenter);
+		QLabel* welcomeLabel = new QLabel("To access the project repository, please click the Connect button below.");
+		welcomeLabel->setWordWrap(true);
+		welcomeLabel->setAlignment(Qt::AlignCenter);
+		welcomeVBLayout->addWidget(welcomeLabel);
 
-		loginForm = new QFormLayout;
-		loginForm->addRow("Username:", userName = new QLineEdit);
-		loginForm->addRow("Password:", password = new QLineEdit);
-		password->setEchoMode(QLineEdit::Password);
-		loginVBLayout->addLayout(loginForm);
+		QHBoxLayout* connectButtonLayout = new QHBoxLayout;
+		connectButtonLayout->addStretch();
+		connectButton = new QPushButton("Connect");
+		connectButton->setObjectName("connectButton");
+		connectButtonLayout->addWidget(connectButton);
+		connectButtonLayout->addStretch();
+		welcomeVBLayout->addLayout(connectButtonLayout);
 
-		QHBoxLayout* loginButtonLayout = new QHBoxLayout;
-		loginButtonLayout->addStretch();
-		loginButton = new QPushButton("Login");
-		loginButton->setObjectName("loginButton");
-		loginButtonLayout->addWidget(loginButton);
-		loginButtonLayout->addStretch();
-		loginVBLayout->addLayout(loginButtonLayout);
+		welcomePage = new QWidget;
+		welcomePage->setLayout(welcomeVBLayout);
 
-		QObject::connect(password, &QLineEdit::returnPressed, loginButton, &QPushButton::click);
-
-		loginPage = new QWidget;
-		loginPage->setLayout(loginVBLayout);
-
-		stack->addWidget(loginPage);
+		stack->addWidget(welcomePage);
 
 		// Model view page
 		QVBoxLayout* modelVBLayout = new QVBoxLayout;
 
 		toolbar = new QToolBar();
+
+		actionRefresh = new QAction(CIconProvider::GetIcon("refresh"), "Refresh", parent);
+		actionRefresh->setObjectName("actionRefresh");
+		actionRefresh->setIconVisibleInMenu(false);
+		toolbar->addAction(actionRefresh);
 
 		actionDownload = new QAction(CIconProvider::GetIcon("download"), "Download", parent);
 		actionDownload->setObjectName("actionDownload");
@@ -378,6 +393,11 @@ public:
 		actionDelete->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDelete);
 
+		toolbar->addSeparator();
+		QWidget* empty = new QWidget();
+		empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+		toolbar->addWidget(empty);
+
 		actionDeleteRemote = new QAction(CIconProvider::GetIcon("deleteRemote"), "Delete From Repository", parent);
 		actionDeleteRemote->setObjectName("actionDeleteRemote");
 		actionDeleteRemote->setIconVisibleInMenu(false);
@@ -388,10 +408,9 @@ public:
 		actionModify->setIconVisibleInMenu(false);
 		toolbar->addAction(actionModify);
 
-		toolbar->addSeparator();
-		QWidget* empty = new QWidget();
-		empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-		toolbar->addWidget(empty);
+		loginButton = new QPushButton("Login");
+		loginButton->setObjectName("loginButton");
+		loginAction = toolbar->addWidget(loginButton);
 
 		actionUpload = new QAction(CIconProvider::GetIcon("upload"), "Upload", parent);
 		actionUpload->setObjectName("actionUpload");
@@ -427,6 +446,12 @@ public:
 		QVBoxLayout* modelInfoLayout = new QVBoxLayout;
 		projectDummy->setLayout(modelInfoLayout);
 
+		modelInfoLayout->addWidget(unauthorized = new QLabel("<font color='red'>This project has not yet been approved by our "
+				"reviewers. It is visible only to you. For now, you may only modify the metadata or delete the project. Once "
+				"approved, it will available for all users.</font>"));
+		unauthorized->setWordWrap(true);
+		unauthorized->hide();
+
 		QHBoxLayout* centerName = new QHBoxLayout;
 		centerName->addStretch();
 		centerName->addWidget(projectName = new QLabel);
@@ -439,14 +464,19 @@ public:
 		font.setPointSize(14);
 		projectName->setFont(font);
 
-		modelInfoLayout->addWidget(projectDesc = new QLabel);
-		projectDesc->setWordWrap(true);
+		modelInfoLayout->addWidget(projectDesc = new WrapLabel);
+
+		QFrame* line = new QFrame();
+		line->setFrameShape(QFrame::HLine);
+		modelInfoLayout->addWidget(line);
 
 		QFormLayout* modelInfoForm = new QFormLayout;
 		modelInfoForm->setHorizontalSpacing(10);
 		modelInfoForm->addRow("Owner:", projectOwner = new QLabel);
 		modelInfoForm->addRow("Version:", projectVersion = new QLabel);
 		modelInfoForm->addRow("Tags:", projectTags = new QLabel);
+		projectTags->setTextInteractionFlags(Qt::TextBrowserInteraction);
+		projectTags->setObjectName("projectTags");
 
 		modelInfoLayout->addLayout(modelInfoForm);
 
@@ -459,7 +489,7 @@ public:
 		QVBoxLayout* fileInfoLayout = new QVBoxLayout;
 		fileDummy->setLayout(fileInfoLayout);
 
-		QFormLayout* fileInfoForm = new QFormLayout;
+		fileInfoForm = new QFormLayout;
 		fileInfoForm->setHorizontalSpacing(10);
 		fileInfoForm->addRow("Filename:", filenameLabel = new QLabel);
 		fileInfoForm->addRow("Description:", fileDescLabel = new QLabel);
@@ -479,6 +509,27 @@ public:
 
 		stack->addWidget(modelPage);
 
+		// Loading Page
+		loadingPage = new QWidget;
+		QVBoxLayout* loadingLayout = new QVBoxLayout;
+		loadingLayout->setAlignment(Qt::AlignCenter);
+
+		loadingLayout->addWidget(loadingLabel = new QLabel);
+
+		loadingPage->setLayout(loadingLayout);
+		stack->addWidget(loadingPage);
+
+		// Upload Page
+//		uploadingPage = new QWidget;
+//		QVBoxLayout* uploadLayout = new QVBoxLayout;
+//		uploadLayout->setAlignment(Qt::AlignCenter);
+//
+//		uploadLayout->addWidget(new QLabel("Uploading..."));
+//
+//		uploadingPage->setLayout(uploadLayout);
+//		stack->addWidget(uploadingPage);
+
+		setLoginVisible(true);
 	}
 
 	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, std::unordered_map<std::string, CustomTreeWidgetItem*>* folders)
@@ -513,11 +564,20 @@ public:
 		return parent;
 	}
 
-	void setLoginDisabled(bool disabled)
+	void setLoginVisible(bool visible)
 	{
-		userName->setDisabled(disabled);
-		password->setDisabled(disabled);
-		loginButton->setDisabled(disabled);
+		loginAction->setVisible(visible);
+		actionUpload->setVisible(!visible);
+
+		actionDeleteRemote->setVisible(!visible);
+		actionModify->setVisible(!visible);
+	}
+
+	void showLoadingPage(QString message)
+	{
+		loadingLabel->setText(message);
+
+		stack->setCurrentIndex(2);
 	}
 
 public:
@@ -528,8 +588,6 @@ public:
 	std::unordered_map<int, FileItem*> fileItemsByID;
 
 	CustomTreeWidgetItem* openAfterDownload;
-
-
 };
 
 CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent)
@@ -537,6 +595,7 @@ CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent)
 {
 	// build Ui
 	ui->setupUi(this);
+	QObject::connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CDatabasePanel::on_actionSearch_triggered);
 
 	dbHandler = new CLocalDatabaseHandler(this);
 	repoHandler = new CRepoConnectionHandler(this, dbHandler, m_wnd);
@@ -559,10 +618,15 @@ void CDatabasePanel::SetModelList()
 
 	dbHandler->GetCategories();
 
-	QString category("My Projects");
-	QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
-	item->setIcon(0, QIcon(":/icons/folder.png"));
-	ui->treeWidget->addTopLevelItem(item);
+	if(repoHandler->isAuthenticated())
+	{
+		ui->setLoginVisible(false);
+
+		QString category("My Projects");
+		QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
+		item->setIcon(0, QIcon(":/icons/folder.png"));
+		ui->treeWidget->addTopLevelItem(item);
+	}
 
 	dbHandler->GetProjects();
 
@@ -588,41 +652,18 @@ void CDatabasePanel::ShowMessage(QString message)
 	QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 
 	dlg->exec();
-
-	ui->setLoginDisabled(false);
 }
 
 void CDatabasePanel::LoginTimeout()
 {
-	QDialog *dlg = new QDialog(this);
-	QVBoxLayout* l = new QVBoxLayout;
-	dlg->setLayout(l);
-	QLabel *msg = new QLabel("Your login to the model repository has timed out.");
-	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok);
-	l->addWidget(msg);
-	l->addWidget(bb);
+	ShowMessage("Your login to the model repository has timed out.");
 
-	QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
-
-	dlg->exec();
-
-	ui->stack->setCurrentIndex(0);
-	ui->setLoginDisabled(false);
+	ui->setLoginVisible(true);
 }
 
 void CDatabasePanel::NetworkInaccessible()
 {
-	QDialog *dlg = new QDialog(this);
-	QVBoxLayout* l = new QVBoxLayout;
-	dlg->setLayout(l);
-	QLabel *msg = new QLabel("FEBio Studio cannot connect to the network.");
-	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok);
-	l->addWidget(msg);
-	l->addWidget(bb);
-
-	QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
-
-	dlg->exec();
+	ShowMessage("FEBio Studio cannot connect to the network.");
 }
 
 void CDatabasePanel::DownloadFinished(int fileID, int fileType)
@@ -635,9 +676,9 @@ void CDatabasePanel::DownloadFinished(int fileID, int fileType)
 		QString dir = fileInfo.path() + "/";
 		dir += fileInfo.baseName();
 
-//		m_wnd->ShowIndeterminateProgress(true, "Unzipping...");
+		m_wnd->ShowIndeterminateProgress(true, "Unzipping...");
 		JlCompress::extractFiles(filename, JlCompress::getFileList(filename), dir);
-//		m_wnd->ShowIndeterminateProgress(false);
+		m_wnd->ShowIndeterminateProgress(false);
 
 		// Set the appropriate local copy flags
 		ui->projectItemsByID[fileID]->setLocalCopyRecursive(true);
@@ -673,38 +714,48 @@ void CDatabasePanel::AddProject(char **data)
 	QString name(data[1]);
 	QString owner(data[2]);
 	QString category(data[3]);
+	bool authorized = stoi(data[4]);
+	bool cont = authorized;
 
 	bool owned = false;
 
-	if(repoHandler->getUsername().compare(owner) == 0)
+	if(repoHandler->isAuthenticated())
 	{
-		category = "My Projects";
-		owned = true;
-	}
-
-	ProjectItem* projectItem = new ProjectItem(name, ID, owned);
-	ui->projectItemsByID[ID] = projectItem;
-
-
-	QTreeWidgetItem* categoryItem = nullptr;
-	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
-	{
-		QTreeWidgetItem* current = ui->treeWidget->topLevelItem(item);
-		if(current->text(0).compare(category) == 0)
+		if(repoHandler->getUsername().compare(owner) == 0)
 		{
-			categoryItem = current;
-			break;
+			category = "My Projects";
+			owned = true;
+
+			cont = true;
 		}
 	}
-	assert(categoryItem);
-	categoryItem->addChild(projectItem);
 
-	ui->currentProject = projectItem;
-	ui->currentProjectFolders.clear();
+	if(cont)
+	{
+		ProjectItem* projectItem = new ProjectItem(name, ID, owned, authorized);
+		ui->projectItemsByID[ID] = projectItem;
 
-	dbHandler->GetProjectFiles(ID);
 
-	ui->currentProject->UpdateCopies();
+		QTreeWidgetItem* categoryItem = nullptr;
+		for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+		{
+			QTreeWidgetItem* current = ui->treeWidget->topLevelItem(item);
+			if(current->text(0).compare(category) == 0)
+			{
+				categoryItem = current;
+				break;
+			}
+		}
+		assert(categoryItem);
+		categoryItem->addChild(projectItem);
+
+		ui->currentProject = projectItem;
+		ui->currentProjectFolders.clear();
+
+		dbHandler->GetProjectFiles(ID);
+
+		ui->currentProject->UpdateCopies();
+	}
 }
 
 void CDatabasePanel::AddProjectFile(char **data)
@@ -718,6 +769,38 @@ void CDatabasePanel::AddProjectFile(char **data)
 
 
 void CDatabasePanel::on_loginButton_clicked()
+{
+	QDialog dlg;
+
+	QLineEdit* userName;
+	QLineEdit* password;
+
+	QFormLayout* loginForm = new QFormLayout;
+	loginForm->addRow("Username:",  userName= new QLineEdit);
+	loginForm->addRow("Password:", password = new QLineEdit);
+	password->setEchoMode(QLineEdit::Password);
+
+	QDialogButtonBox* box = new QDialogButtonBox(QDialogButtonBox::Ok
+            | QDialogButtonBox::Cancel);
+
+	QObject::connect(box, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+	QObject::connect(box, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+	loginForm->addWidget(box);
+
+	QObject::connect(password, &QLineEdit::returnPressed, &dlg, &QDialog::accept);
+
+	dlg.setLayout(loginForm);
+
+	if(dlg.exec())
+	{
+		repoHandler->authenticate(userName->text(), password->text());
+
+		ui->showLoadingPage("Logging in...");
+//		ui->stack->setCurrentIndex(2);
+	}
+}
+
+void CDatabasePanel::on_connectButton_clicked()
 {
 	if(m_repositoryFolder.isEmpty())
 	{
@@ -739,8 +822,7 @@ void CDatabasePanel::on_loginButton_clicked()
 		}
 	}
 
-	ui->setLoginDisabled(true);
-	repoHandler->authenticate(ui->userName->text(), ui->password->text());
+	repoHandler->getSchema();
 }
 
 void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column)
@@ -757,6 +839,12 @@ void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int 
 	{
 		OpenItem(customItem);
 	}
+}
+
+void CDatabasePanel::on_actionRefresh_triggered()
+{
+	ui->showLoadingPage("Refreshing...");
+	repoHandler->getSchema();
 }
 
 void CDatabasePanel::on_actionDownload_triggered()
@@ -787,7 +875,7 @@ void CDatabasePanel::on_actionUpload_triggered()
 	{
 		if(!m_wnd->GetDocument()) return;
 
-		CDlgUpload dlg(this,repoHandler->getUploadPermission(), m_wnd->GetProject());
+		CDlgUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler, m_wnd->GetProject());
 		dlg.setName(m_wnd->GetDocument()->GetDocFileBase().c_str());
 		dlg.setOwner(repoHandler->getUsername());
 		dlg.setVersion("1");
@@ -801,6 +889,9 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 		if (dlg.exec())
 		{
+//			ui->stack->setCurrentIndex(3);
+			ui->showLoadingPage("Uploading...");
+
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
@@ -818,24 +909,51 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 			projectInfo.insert("publications", dlg.getPublicationInfo());
 
+			QStringList filePaths = dlg.exportProjectWidget()->GetFilePaths();
+			QStringList localFilePaths = dlg.exportProjectWidget()->GetLocalFilePaths();
+			QStringList descriptions = dlg.exportProjectWidget()->GetFileDescriptions();
+
+			QList<QVariant> files;
+			for(int index = 0; index < filePaths.size(); index++)
+			{
+				QVariantMap file;
+				file.insert("filename", localFilePaths.at(index));
+				file.insert("description", descriptions.at(index));
+				files.push_back(file);
+			}
+
+			projectInfo.insert("files", files);
+
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
 
 			repoHandler->uploadFileRequest(payload);
+
+			QString archiveName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
+
+			archive(archiveName, filePaths, localFilePaths);
+
+			if(repoHandler->isUploadReady()) repoHandler->uploadFile();
+
+			repoHandler->setUploadReady(true);
 		}
 	}
 	else
 	{
-		QDialog *dlg = new QDialog(this);
-		QVBoxLayout* l = new QVBoxLayout;
-		dlg->setLayout(l);
-		QLabel *msg = new QLabel("You do not have permission to upload models to the model repository.");
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok);
-		l->addWidget(msg);
-		l->addWidget(bb);
+		CDlgRequestUploadPerm dlg;
 
-		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		if(dlg.exec())
+		{
+			QVariantMap userInfo;
 
-		dlg->exec();
+			userInfo.insert("email", dlg.getEmail());
+			userInfo.insert("org", dlg.getOrg());
+			userInfo.insert("description", dlg.getDescription());
+
+			QByteArray payload=QJsonDocument::fromVariant(userInfo).toJson();
+
+			repoHandler->requestUploadPermissions(payload);
+		}
+
 	}
 
 }
@@ -894,7 +1012,7 @@ void CDatabasePanel::on_actionModify_triggered()
 	{
 		if(!m_wnd->GetDocument()) return;
 
-		CDlgUpload dlg(this, repoHandler->getUploadPermission(), m_wnd->GetProject());
+		CDlgUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, m_wnd->GetProject());
 		dlg.setName(ui->projectName->text());
 		dlg.setOwner(repoHandler->getUsername());
 		dlg.setVersion(QString("%1").arg(stoi(ui->projectVersion->text().toStdString()) + 1));
@@ -1068,12 +1186,12 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 		ui->projectInfoBox->getToolItem(1)->hide();
 		ui->projectInfoBox->getToolItem(2)->hide();
 
-		ui->actionDownload->setVisible(false);
-		ui->actionOpen->setVisible(false);
-		ui->actionOpenFileLocation->setVisible(false);
-		ui->actionDelete->setVisible(false);
-		ui->actionDeleteRemote->setVisible(false);
-		ui->actionModify->setVisible(false);
+		ui->actionDownload->setDisabled(true);
+		ui->actionOpen->setDisabled(true);
+		ui->actionOpenFileLocation->setDisabled(true);
+		ui->actionDelete->setDisabled(true);
+		ui->actionDeleteRemote->setDisabled(true);
+		ui->actionModify->setDisabled(true);
 
 		return;
 	}
@@ -1081,6 +1199,8 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	// Find the project item
 	CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(ui->treeWidget->selectedItems()[0]);
 	ProjectItem* projItem = static_cast<ProjectItem*>(item->getProjectItem());
+
+	ui->unauthorized->setHidden(projItem->isAuthorized());
 
 	// Display the project info
 	dbHandler->GetProjectData(projItem->getProjectID());
@@ -1130,33 +1250,31 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	}
 
 
-	ui->actionDownload->setVisible(true);
+	ui->actionDownload->setDisabled(false);
 	if(item->LocalCopy())
 	{
-		ui->actionOpen->setVisible(true);
-		ui->actionOpenFileLocation->setVisible(true);
-		ui->actionDelete->setVisible(true);
+		ui->actionOpen->setDisabled(false);
+		ui->actionOpenFileLocation->setDisabled(false);
+		ui->actionDelete->setDisabled(false);
 	}
 	else
 	{
-		ui->actionOpen->setVisible(false);
-		ui->actionOpenFileLocation->setVisible(false);
-		ui->actionDelete->setVisible(false);
+		ui->actionOpen->setDisabled(true);
+		ui->actionOpenFileLocation->setDisabled(true);
+		ui->actionDelete->setDisabled(true);
 	}
 
-	ui->actionDeleteRemote->setVisible(false);
-	ui->actionModify->setVisible(false);
+	ui->actionDeleteRemote->setDisabled(true);
+	ui->actionModify->setDisabled(true);
 
 	if(item->type() == PROJECTITEM)
 	{
 		if(static_cast<ProjectItem*>(item)->ownedByUser())
 		{
-			ui->actionDeleteRemote->setVisible(true);
-			ui->actionModify->setVisible(true);
+			ui->actionDeleteRemote->setDisabled(false);
+			ui->actionModify->setDisabled(false);
 		}
 	}
-
-
 }
 
 void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
@@ -1167,6 +1285,8 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 	item->setSelected(true);
 
 	QMenu menu(this);
+
+	menu.addAction(ui->actionRefresh);
 
 	menu.addAction(ui->actionDownload);
 
@@ -1187,23 +1307,14 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 			}
 	}
 
-
-//	switch(item->type())
-//	{
-//	case FILEITEM:
-//	case PROJECTITEM:
-//		if(static_cast<ProjectItem*>(item)->ownedByUser())
-//		{
-//			menu.addSeparator();
-//			menu.addAction(ui->actionDeleteRemote);
-//			menu.addAction(ui->actionModify);
-//		}
-//		break;
-//	default:
-//		menu.addAction(ui->actionDelete);
-//	}
-
 	menu.exec(ui->treeWidget->viewport()->mapToGlobal(pos));
+}
+
+void CDatabasePanel::on_projectTags_linkActivated(const QString& link)
+{
+	ui->searchLineEdit->setText(link);
+	on_actionSearch_triggered();
+
 }
 
 QStringList CDatabasePanel::GetCategories()
@@ -1231,20 +1342,47 @@ QStringList CDatabasePanel::GetCategories()
 void CDatabasePanel::SetProjectData(char **data)
 {
 	ui->projectName->setText(data[0]);
-	ui->projectDesc->setText(data[1]);
 	ui->projectOwner->setText(data[2]);
 	ui->projectVersion->setText(data[3]);
+
+	// Fix new lines
+	QString desc(data[1]);
+	desc.replace("\\n", "\n");
+	ui->projectDesc->setText(desc);
 }
 
 void CDatabasePanel::SetFileData(char **data)
 {
 	ui->filenameLabel->setText(data[0]);
-	ui->fileDescLabel->setText(data[1]);
+
+	QString description(data[1]);
+
+	// Don't show file description if the file doesn't have one
+	if(description.isEmpty())
+	{
+		if(ui->fileInfoForm->rowCount() > 1)
+		{
+			ui->fileInfoForm->removeRow(1);
+		}
+	}
+	else
+	{
+		if(ui->fileInfoForm->rowCount() == 1)
+		{
+			ui->fileInfoForm->addRow("Description:", ui->fileDescLabel = new QLabel(description));
+		}
+		else
+		{
+			ui->fileDescLabel->setText(description);
+		}
+
+	}
 }
 
 void CDatabasePanel::AddCurrentTag(char **data)
 {
-	ui->currentTags.append(data[0]);
+	QString tag("<a href=\"%1\">%1</a>");
+	ui->currentTags.append(tag.arg(data[0]));
 }
 
 void CDatabasePanel::AddPublication(QVariantMap data)

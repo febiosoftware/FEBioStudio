@@ -7,26 +7,95 @@
 
 WrapLabel::WrapLabel(QString text, QWidget* parent)
 		: QWidget(parent), processEvent(true)
-	{
-		words = text.split(" ");
+{
 
-		QLabel temp;
-		for(QString word : words)
+	layout = new QVBoxLayout;
+	layout->setContentsMargins(0, 0, 0, 0);
+	setLayout(layout);
+
+	setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
+
+	setContentsMargins(0, 0, 0, 0);
+
+
+	setText(text);
+}
+
+void WrapLabel::setText(QString text)
+{
+	fullString = text;
+	lengths.clear();
+	words.clear();
+
+	// Create separate word lists for each new line
+	// This forces the end to a label before the new line.
+	for(auto line : text.split("\n"))
+	{
+		words.push_back(line.split(" "));
+	}
+
+	QLabel temp;
+	for(auto line : words)
+	{
+		lengths.push_back(std::vector<int>());
+
+		for(QString word : line)
 		{
-			lengths.push_back(temp.fontMetrics().horizontalAdvance(word));
+			lengths.back().push_back(temp.fontMetrics().horizontalAdvance(word));
+		}
+	}
+
+
+	spaceSize = temp.fontMetrics().horizontalAdvance(" ");
+
+	reflow(geometry().width());
+}
+
+QString WrapLabel::text()
+{
+	return fullString;
+}
+
+void WrapLabel::reflow(int width)
+{
+	for(auto label : labels)
+	{
+		delete label;
+	}
+
+	labels.clear();
+
+	for(int line = 0; line < words.size(); line++)
+	{
+		int index, currentWidth = 0;
+		QString currentString;
+		for(index = 0; index < words[line].size(); index++)
+		{
+			if(currentWidth + lengths[line][index] > width)
+			{
+				addLabel(currentString);
+
+				currentString.clear();
+				currentWidth = 0;
+			}
+
+			currentString += words[line][index] + " ";
+
+			currentWidth += lengths[line][index] + spaceSize;
+
 		}
 
-		spaceSize = temp.fontMetrics().horizontalAdvance(" ");
-
-		layout = new QVBoxLayout;
-		layout->setContentsMargins(0, 0, 0, 0);
-		setLayout(layout);
-
-		setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
-
-		setContentsMargins(0, 0, 0, 0);
-
+		addLabel(currentString);
 	}
+}
+
+void WrapLabel::addLabel(QString& text)
+{
+	QLabel* next = new QLabel(text);
+	next->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+	layout->addWidget(next);
+	labels.push_back(next);
+}
 
 
 void WrapLabel::resizeEvent(QResizeEvent *event)
@@ -34,44 +103,7 @@ void WrapLabel::resizeEvent(QResizeEvent *event)
 
 	if(event->oldSize().width() != event->size().width())
 	{
-
-		for(auto label : labels)
-		{
-			delete label;
-		}
-
-		labels.clear();
-
-		int width = event->size().width();
-
-		int index, currentWidth = 0;
-		QString currentString;
-		for(index = 0; index < lengths.size(); index++)
-		{
-
-
-			if(currentWidth + lengths[index] > width)
-			{
-				QLabel* next = new QLabel(currentString);
-				next->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-				layout->addWidget(next);
-				labels.push_back(next);
-
-				currentString.clear();
-				currentWidth = 0;
-
-			}
-
-			currentString += words[index] + " ";
-
-			currentWidth += lengths[index] + spaceSize;
-
-		}
-
-		QLabel* next = new QLabel(currentString);
-		next->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-		layout->addWidget(next);
-		labels.push_back(next);
+		reflow(event->size().width());
 	}
 
 	QWidget::resizeEvent(event);

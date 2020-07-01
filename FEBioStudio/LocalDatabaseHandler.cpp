@@ -356,26 +356,63 @@ public:
 	}
 
 	int CategoryIDFromName(std::string name)
+	{
+		char **table;
+		int rows, cols;
+
+		std::string query("SELECT ID FROM categories WHERE category = '");
+		query += name;
+		query += "'";
+
+		getTable(query, &table, &rows, &cols);
+
+		int catID = 1;
+		if(rows == 1)
 		{
-			char **table;
-			int rows, cols;
-
-			std::string query("SELECT ID FROM categories WHERE category = '");
-			query += name;
-			query += "'";
-
-			getTable(query, &table, &rows, &cols);
-
-			int catID = 1;
-			if(rows == 1)
-			{
-				catID = stoi(table[1]);
-			}
-
-			sqlite3_free_table(table);
-
-			return catID;
+			catID = stoi(table[1]);
 		}
+
+		sqlite3_free_table(table);
+
+		return catID;
+	}
+
+	bool isValidUpload(QString& username, QString& projectName, QString& category)
+	{
+		char **table;
+		int rows, cols;
+
+		std::string query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner = users.ID JOIN "
+				"categories ON projects.category = categories.ID WHERE users.username = '%1' AND projects.name = '%2' "
+				"AND categories.category = '%3'").arg(username).arg(projectName).arg(category).toStdString();
+
+		getTable(query, &table, &rows, &cols);
+
+		sqlite3_free_table(table);
+
+		return rows == 0;
+	}
+
+	long long int currentProjectsSize(QString& username)
+	{
+		char **table;
+		int rows, cols;
+
+		std::string query = QString("SELECT filenames.size FROM filenames JOIN projects ON filenames.project = projects.ID "
+				"JOIN users ON users.ID = projects.owner WHERE users.username = '%1'").arg(username).toStdString();
+
+		getTable(query, &table, &rows, &cols);
+
+		long long int totalSize = 0;
+		for(int row = 1; row < rows + 1; row++)
+		{
+			totalSize += QString(table[row]).toLongLong();
+		}
+
+		sqlite3_free_table(table);
+
+		return totalSize;
+	}
 
 public:
 	sqlite3* db;
@@ -446,7 +483,7 @@ void CLocalDatabaseHandler::GetCategories()
 
 void CLocalDatabaseHandler::GetProjects()
 {
-	std::string query("SELECT projects.ID, projects.name, users.username, categories.category FROM projects JOIN categories ON projects.category = categories.ID JOIN users ON projects.owner = users.ID");
+	std::string query("SELECT projects.ID, projects.name, users.username, categories.category, projects.authorized FROM projects JOIN categories ON projects.category = categories.ID JOIN users ON projects.owner = users.ID");
 
 	imp->execute(query, addProjectCallback, imp->dbPanel);
 }
@@ -660,6 +697,16 @@ int CLocalDatabaseHandler::ProjectIDFromFileID(int ID)
 int CLocalDatabaseHandler::CategoryIDFromName(std::string name)
 {
 	return imp->CategoryIDFromName(name);
+}
+
+bool CLocalDatabaseHandler::isValidUpload(QString& username, QString& projectName, QString& category)
+{
+	return imp->isValidUpload(username, projectName, category);
+}
+
+long long int CLocalDatabaseHandler::currentProjectsSize(QString username)
+{
+	return imp->currentProjectsSize(username);
 }
 
 

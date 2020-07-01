@@ -31,6 +31,7 @@ namespace Ui
 	class CExportProjectWidget;
 }
 
+class QTreeWidgetItem;
 class FEBioStudioProject;
 
 class CExportProjectWidget : public QWidget
@@ -41,9 +42,14 @@ public:
 	CExportProjectWidget(FEBioStudioProject* project, bool description, QWidget* parent = 0);
 	~CExportProjectWidget() {};
 
+	QStringList GetFilePaths();
+	QStringList GetLocalFilePaths();
+	QStringList GetFileDescriptions();
+
 public slots:
 	void on_addFile_triggered();
-	void on_removeFile_triggered();
+	void on_tree_item_changed(QTreeWidgetItem *current);
+	void descriptionChanged();
 
 private:
 	Ui::CExportProjectWidget* ui;

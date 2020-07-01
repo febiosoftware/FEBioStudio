@@ -69,6 +69,16 @@ FEBioStudioProject::ProjectItem* FEBioStudioProject::ProjectItem::FindItem(int i
 	return nullptr;
 }
 
+void FEBioStudioProject::ProjectItem::GetFilePaths(QStringList& filePaths)
+{
+	for(auto item : m_items)
+	{
+		if(item->IsFile()) filePaths.append(item->Name());
+
+		item->GetFilePaths(filePaths);
+	}
+}
+
 FEBioStudioProject::ProjectItem::~ProjectItem()
 {
 	QList<ProjectItem*>::iterator it;
@@ -186,6 +196,15 @@ FEBioStudioProject::ProjectItem* FEBioStudioProject::FindFile(int fileId)
 	ProjectItem* item = m_rootItem->FindItem(fileId);
 	if (item->IsFile()) return item;
 	else return nullptr;
+}
+
+QStringList FEBioStudioProject::GetFilePaths()
+{
+	QStringList filePaths;
+
+	m_rootItem->GetFilePaths(filePaths);
+
+	return filePaths;
 }
 
 void FEBioStudioProject::AddGroup(const QString& groupName, int parentId)

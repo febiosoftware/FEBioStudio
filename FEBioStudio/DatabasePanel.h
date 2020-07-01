@@ -72,7 +72,9 @@ public:
 
 private slots:
 	void on_loginButton_clicked();
+	void on_connectButton_clicked();
 	void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
+	void on_actionRefresh_triggered();
 	void on_actionDownload_triggered();
 	void on_actionOpen_triggered();
 	void on_actionOpenFileLocation_triggered();
@@ -84,6 +86,7 @@ private slots:
 	void on_actionModify_triggered();
 	void on_treeWidget_itemSelectionChanged();
 	void on_treeWidget_customContextMenuRequested(const QPoint &pos);
+	void on_projectTags_linkActivated(const QString& link);
 
 private:
 	void DownloadItem(CustomTreeWidgetItem *item);

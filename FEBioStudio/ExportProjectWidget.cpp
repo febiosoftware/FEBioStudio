@@ -28,69 +28,71 @@ SOFTWARE.*/
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QLineEdit>
+#include <QTextEdit>
 #include <QTreeWidget>
 #include <QToolButton>
 #include <QAction>
 #include <QFileDialog>
+#include <QFileInfo>
 #include "FEBioStudioProject.h"
 #include "IconProvider.h"
+#include "FocusWatcher.h"
 
 class Ui::CExportProjectWidget
 {
 public:
 	QTreeWidget* fileTree;
 	QAction* addFile;
-	QAction* removeFile;
+	QTextEdit* description;
 
-	void setupUI(QWidget* parent, FEBioStudioProject* project, bool description)
+	void setupUI(QWidget* parent, FEBioStudioProject* project, bool hasDescription)
 	{
-		QHBoxLayout* layout = new QHBoxLayout;
+		QVBoxLayout* layout = new QVBoxLayout;
 
 		fileTree = new QTreeWidget;
-		fileTree->setColumnCount(description ? 1 : 2);
+		fileTree->setColumnCount(1);
 
-		if(description)
-		{
-			QStringList labels = {"Files", "Description"};
-			fileTree->setHeaderLabels(labels);
-		}
-		else
-		{
-			fileTree->setHeaderLabel("Files");
-		}
+		fileTree->setHeaderLabel("Files");
 
-//		for(int i = 0; i < project->Files(); i++)
-//		{
-//			QTreeWidgetItem* fileItem = new QTreeWidgetItem(fileTree);
-//			fileItem->setText(0, project->GetFileName(i));
-//
-//			if(description) fileItem->setText(1, "");
-//		}
+		QStringList filePaths = project->GetFilePaths();
+
+		for(auto path : filePaths)
+		{
+			AddFile(path);
+		}
 
 		layout->addWidget(fileTree);
-
-		QVBoxLayout* buttonLayout = new QVBoxLayout;
-		buttonLayout->setAlignment(Qt::AlignTop);
 
 		addFile = new QAction;
 		addFile->setIcon(CIconProvider::GetIcon("selectAdd"));
 		QToolButton* addButton = new QToolButton;
 		addButton->setDefaultAction(addFile);
 
-		buttonLayout->addWidget(addButton);
+		layout->addWidget(addButton);
 
-		removeFile = new QAction;
-		removeFile->setIcon(CIconProvider::GetIcon("selectSub"));
-		QToolButton* removeButton = new QToolButton;
-		removeButton->setDefaultAction(removeFile);
-
-		buttonLayout->addWidget(removeButton);
-
-		layout->addLayout(buttonLayout);
+		if(hasDescription)
+		{
+			layout->addWidget(new QLabel("Description:"));
+			layout->addWidget(description = new QTextEdit);
+		}
 
 		parent->setLayout(layout);
 
+	}
+
+	void AddFile(QString& path)
+	{
+		for(int item = 0; item < fileTree->topLevelItemCount(); item++)
+		{
+			if(path == fileTree->topLevelItem(item)->text(0)) return;
+		}
+
+		QTreeWidgetItem* fileItem = new QTreeWidgetItem(fileTree);
+		fileItem->setText(0, path);
+		fileItem->setCheckState(0,Qt::Checked);
+		fileItem->setData(0, QTreeWidgetItem::UserType, "");
+
+		fileTree->setCurrentItem(fileItem);
 	}
 
 };
@@ -101,12 +103,69 @@ CExportProjectWidget::CExportProjectWidget(FEBioStudioProject* project, bool des
 	ui->setupUI(this, project, description);
 
 	QObject::connect(ui->addFile, &QAction::triggered, this, &CExportProjectWidget::on_addFile_triggered);
-	QObject::connect(ui->removeFile, &QAction::triggered, this, &CExportProjectWidget::on_removeFile_triggered);
+	QObject::connect(ui->fileTree, &QTreeWidget::currentItemChanged, this, &CExportProjectWidget::on_tree_item_changed);
+	QObject::connect(new FocusWatcher(ui->description), &FocusWatcher::focusChanged, this, &CExportProjectWidget::descriptionChanged);
+}
+
+QStringList CExportProjectWidget::GetFilePaths()
+{
+	QStringList filePaths;
+
+	for(int item = 0; item < ui->fileTree->topLevelItemCount(); item++)
+	{
+		if(ui->fileTree->topLevelItem(item)->checkState(0) == Qt::Checked)
+		{
+			filePaths.append(ui->fileTree->topLevelItem(item)->text(0));
+		}
+	}
+
+	return filePaths;
+}
+
+QStringList CExportProjectWidget::GetLocalFilePaths()
+{
+	QStringList localPaths;
+
+	for(int item = 0; item < ui->fileTree->topLevelItemCount(); item++)
+	{
+		if(ui->fileTree->topLevelItem(item)->checkState(0) == Qt::Checked)
+		{
+			QFileInfo info(ui->fileTree->topLevelItem(item)->text(0));
+			QString current = info.fileName();
+
+			int n = 0;
+			while(localPaths.contains(current))
+			{
+				current = info.baseName() + QString(++n) + info.suffix();
+			}
+
+			localPaths.append(current);
+		}
+	}
+
+	return localPaths;
+}
+
+QStringList CExportProjectWidget::GetFileDescriptions()
+{
+	QStringList descriptions;
+
+	for(int item = 0; item < ui->fileTree->topLevelItemCount(); item++)
+	{
+		if(ui->fileTree->topLevelItem(item)->checkState(0) == Qt::Checked)
+		{
+			descriptions.append(ui->fileTree->topLevelItem(item)->data(0, QTreeWidgetItem::UserType).toString());
+		}
+	}
+
+	return descriptions;
 }
 
 void CExportProjectWidget::on_addFile_triggered()
 {
 	QFileDialog dlg(this, "Add File");
+	dlg.setFileMode(QFileDialog::ExistingFiles);
+
 
 	if (dlg.exec())
 	{
@@ -114,20 +173,21 @@ void CExportProjectWidget::on_addFile_triggered()
 
 		for(auto file : files)
 		{
-			QTreeWidgetItem* fileItem = new QTreeWidgetItem(ui->fileTree);
-			fileItem->setText(0, file);
+			ui->AddFile(file);
 		}
 	}
-
 }
 
-void CExportProjectWidget::on_removeFile_triggered()
+void CExportProjectWidget::on_tree_item_changed(QTreeWidgetItem *current)
 {
-	for(auto item : ui->fileTree->selectedItems())
-	{
-		delete item;
-	}
+	ui->description->setText(current->data(0, QTreeWidgetItem::UserType).toString());
 }
+
+void CExportProjectWidget::descriptionChanged()
+{
+	ui->fileTree->currentItem()->setData(0, QTreeWidgetItem::UserType, ui->description->toPlainText());
+}
+
 
 
 

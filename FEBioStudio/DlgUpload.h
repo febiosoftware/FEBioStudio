@@ -35,7 +35,10 @@ namespace Ui {
 
 class QStringList;
 class CPublicationWidget;
+class CLocalDatabaseHandler;
+class CRepoConnectionHandler;
 class FEBioStudioProject;
+class CExportProjectWidget;
 
 //class ClickableLabel : public QLabel {
 //    Q_OBJECT
@@ -84,7 +87,7 @@ class CDlgUpload : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgUpload(QWidget* parent, int uploadPermissions = 1, FEBioStudioProject* project = nullptr);
+	CDlgUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, FEBioStudioProject* project = nullptr);
 
 	void setName(QString name);
 	void setDescription(QString desc);
@@ -104,6 +107,10 @@ public:
 	QStringList getTags();
 	QList<QVariant> getPublicationInfo();
 
+	CExportProjectWidget* exportProjectWidget();
+
+	void accept() override;
+
 
 public slots:
 	void on_addTagBtn_clicked();
@@ -111,5 +118,7 @@ public slots:
 
 private:
 	Ui::CDlgUpload*	ui;
+	CLocalDatabaseHandler* dbHandler;
+	CRepoConnectionHandler* repoHandler;
 	void UpdateLaunchConfigBox(int index);
 };

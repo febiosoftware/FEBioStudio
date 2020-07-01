@@ -909,7 +909,7 @@ public:
 		m_wnd->tabifyDockWidget(dock4, dock6);
 
 #ifdef MODEL_REPO
-		QDockWidget* dock7 = new QDockWidget("Model DB", m_wnd); dock7->setObjectName("dockDatabase");
+		QDockWidget* dock7 = new QDockWidget("Repository", m_wnd); dock7->setObjectName("dockDatabase");
 		databasePanel = new ::CDatabasePanel(wnd, dock7);
 		dock7->setWidget(databasePanel);
 		menuWindows->addAction(dock7->toggleViewAction());

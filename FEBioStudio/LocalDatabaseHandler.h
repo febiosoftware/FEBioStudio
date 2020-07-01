@@ -69,6 +69,9 @@ public:
 	int ProjectIDFromFileID(int ID);
 	int CategoryIDFromName(std::string name);
 
+	bool isValidUpload(QString& username, QString& projectName, QString& category);
+	long long int currentProjectsSize(QString username);
+
 
 private:
 	Imp* imp;
