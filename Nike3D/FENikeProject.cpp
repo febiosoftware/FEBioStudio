@@ -366,32 +366,32 @@ bool FENikeProject::BuildMaterials(FEProject& prj)
 
 				mat.dens = pm->GetParam(FETransMooneyRivlin::MP_DENSITY).GetFloatValue();
 					
-				if (f.m_fiber.m_naopt == FE_FIBER_LOCAL) 
+				if (f.m_naopt == FE_FIBER_LOCAL) 
 				{
 					mat.m[3][0] = 0;
-					mat.m[4][0] = f.m_fiber.m_n[0];
-					mat.m[4][1] = f.m_fiber.m_n[1];
+					mat.m[4][0] = f.m_n[0];
+					mat.m[4][1] = f.m_n[1];
 					mat.m[4][2] = 4;
 				}
-				if (f.m_fiber.m_naopt == FE_FIBER_SPHERICAL)
+				if (f.m_naopt == FE_FIBER_SPHERICAL)
 				{
 					mat.m[3][0] = 1;
 
-					mat.m[4][0] = f.m_fiber.m_r.x;
-					mat.m[4][1] = f.m_fiber.m_r.y;
-					mat.m[4][2] = f.m_fiber.m_r.z;
+					mat.m[4][0] = f.m_r.x;
+					mat.m[4][1] = f.m_r.y;
+					mat.m[4][2] = f.m_r.z;
 				}
-				if (f.m_fiber.m_naopt == FE_FIBER_VECTOR)
+				if (f.m_naopt == FE_FIBER_VECTOR)
 				{
 					mat.m[3][0] = 2;
 
-					mat.m[4][0] = f.m_fiber.m_a.x;
-					mat.m[4][1] = f.m_fiber.m_a.y;
-					mat.m[4][2] = f.m_fiber.m_a.z;
+					mat.m[4][0] = f.m_a.x;
+					mat.m[4][1] = f.m_a.y;
+					mat.m[4][2] = f.m_a.z;
 							
-					mat.m[5][0] = f.m_fiber.m_d.x;
-					mat.m[5][1] = f.m_fiber.m_d.y;
-					mat.m[5][2] = f.m_fiber.m_d.z;
+					mat.m[5][0] = f.m_d.x;
+					mat.m[5][1] = f.m_d.y;
+					mat.m[5][2] = f.m_d.z;
 				}
 
 //				FELoadCurve& ac = f.GetParam(FETransMooneyRivlin::Fiber::MP_AC).GetLoadCurve();
@@ -1212,7 +1212,7 @@ bool FENikeProject::BuildBodyForce(FEProject& prj)
 
 	for (int i=0; i<s.Loads(); ++i)
 	{
-		FEBodyForce* pbl = dynamic_cast<FEBodyForce*>(s.Load(i));
+		FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(s.Load(i));
 		if (pbl)
 		{
 			for (int j=0; j<3; ++j)

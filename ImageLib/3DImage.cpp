@@ -390,6 +390,6 @@ void C3DImage::FlipZ()
 		memcpy(slice0, slice1, nsize);
 		memcpy(slice1, buf, nsize);
 	}
-	delete buf;
+    delete[] buf;
 }
 

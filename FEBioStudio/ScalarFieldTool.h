@@ -26,17 +26,34 @@ SOFTWARE.*/
 
 #pragma once
 #include "Tool.h"
+#include <vector>
 
-class CScalarFieldTool : public CBasicTool
+class UIScalarFieldTool;
+class FEItemListBuilder;
+
+class CScalarFieldTool : public CAbstractTool
 {
+	Q_OBJECT
+
 public:
 	CScalarFieldTool(CMainWindow* wnd);
 
-	bool OnApply();
+	QWidget* createUi() override;
+
+	void Activate() override;
+
+private slots:
+	void OnAddClicked();
+	void OnApply();
 
 private:
-	QString		m_name;
+	void Clear();
+
+private:
+	UIScalarFieldTool*	ui;
+
 	int			m_ntype;
-	int			m_ngen[2];
-	double		m_weight[2];
+
+	GObject*	m_po;
+	std::vector<FEItemListBuilder*>	m_data;
 };

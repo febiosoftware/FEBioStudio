@@ -39,7 +39,9 @@ REGISTER_MATERIAL(FEViscoElastic, MODULE_MECH, FE_VISCO_ELASTIC, FE_MAT_ELASTIC,
 
 FEViscoElastic::FEViscoElastic() : FEMaterial(FE_VISCO_ELASTIC)
 {
-	AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
+
+    AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
 	AddScienceParam(0, UNIT_NONE, "g2", "coeffient G2");
 	AddScienceParam(0, UNIT_NONE, "g3", "coeffient G3");
 	AddScienceParam(0, UNIT_NONE, "g4", "coeffient G4");
@@ -65,6 +67,8 @@ REGISTER_MATERIAL(FEUncoupledViscoElastic, MODULE_MECH, FE_UNCOUPLED_VISCO_ELAST
 
 FEUncoupledViscoElastic::FEUncoupledViscoElastic() : FEMaterial(FE_UNCOUPLED_VISCO_ELASTIC)
 {
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
+    
 	AddScienceParam(0, UNIT_NONE, "g1", "coeffient G1");
 	AddScienceParam(0, UNIT_NONE, "g2", "coeffient G2");
 	AddScienceParam(0, UNIT_NONE, "g3", "coeffient G3");
@@ -79,6 +83,8 @@ FEUncoupledViscoElastic::FEUncoupledViscoElastic() : FEMaterial(FE_UNCOUPLED_VIS
 	AddScienceParam(1, UNIT_TIME, "t5", "relaxation time t5");
 	AddScienceParam(1, UNIT_TIME, "t6", "relaxation time t6");
 
+    AddScienceParam(0, UNIT_PRESSURE , "k"      , "bulk modulus")->SetPersistent(false);
+    
 	// Add the elastic material property
 	AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
 }
@@ -209,6 +215,8 @@ REGISTER_MATERIAL(FESolidMixture, MODULE_MECH, FE_SOLID_MIXTURE, FE_MAT_ELASTIC,
 //-----------------------------------------------------------------------------
 FESolidMixture::FESolidMixture() : FEMaterial(FE_SOLID_MIXTURE)
 {
+    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    
 	AddProperty("solid", FE_MAT_ELASTIC, FEMaterialProperty::NO_FIXED_SIZE);
 }
 
@@ -220,8 +228,8 @@ REGISTER_MATERIAL(FEUncoupledSolidMixture, MODULE_MECH, FE_UNCOUPLED_SOLID_MIXTU
 
 FEUncoupledSolidMixture::FEUncoupledSolidMixture() : FEMaterial(FE_UNCOUPLED_SOLID_MIXTURE) 
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus" )->SetPersistent(false);
+	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus" );
 
 	AddProperty("solid", FE_MAT_ELASTIC_UNCOUPLED, FEMaterialProperty::NO_FIXED_SIZE);
 }
@@ -234,7 +242,7 @@ REGISTER_MATERIAL(FECFDMaterial, MODULE_MECH, FE_CFD_MATERIAL, FE_MAT_ELASTIC, "
 
 FECFDMaterial::FECFDMaterial() : FEMaterial(FE_CFD_MATERIAL)
 {
-	m_hasMatAxes = true;
+	SetAxisMaterial(new FEAxisMaterial);
 
     // Add fiber component
 	AddProperty("fibers", FE_MAT_CFD_FIBER);
@@ -254,7 +262,7 @@ REGISTER_MATERIAL(FECFDUCMaterial, MODULE_MECH, FE_CFD_MATERIAL_UC, FE_MAT_ELAST
 
 FECFDUCMaterial::FECFDUCMaterial() : FEMaterial(FE_CFD_MATERIAL_UC)
 {
-	m_hasMatAxes = true;
+	SetAxisMaterial(new FEAxisMaterial);
 
     // Add fiber component
 	AddProperty("fibers", FE_MAT_CFD_FIBER_UC);

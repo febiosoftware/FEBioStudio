@@ -783,9 +783,6 @@
     <ClCompile Include="..\..\FEBioStudio\moc_MaterialPropsView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\DocResourceTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\HelpDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -799,6 +796,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\moc_DlgPlaneCut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_ScalarFieldTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_FiberGeneratorTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -887,9 +890,6 @@
     <ClInclude Include="..\..\FEBioStudio\FEBioStudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\FiberGeneratorTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\FoamGeneratorTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -927,9 +927,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\ReadCurveTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\ScalarFieldTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\Sketcher.h">
@@ -1088,9 +1085,6 @@
     <ClInclude Include="..\..\FEBioStudio\FEBioStudioProject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\welcomePage.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\units.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1109,7 +1103,7 @@
     <ClInclude Include="..\..\FEBioStudio\WebDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\DlgPlaneCut.h">
+    <ClInclude Include="..\..\FEBioStudio\welcomePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1358,6 +1352,15 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\HelpDialog.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgPlaneCut.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\ScalarFieldTool.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\FiberGeneratorTool.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

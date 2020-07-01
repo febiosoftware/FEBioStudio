@@ -7,6 +7,8 @@
 #define FE_AXES_LOCAL			0
 #define FE_AXES_VECTOR			1
 #define FE_AXES_ANGLES          2
+#define FE_AXES_CYLINDRICAL		3
+#define FE_AXES_SPHERICAL		4
 
 //-----------------------------------------------------------------------------
 //! Reference to an element of a mesh
@@ -121,6 +123,9 @@ public:
 	bool HasMaterialAxes() const;
 	mat3d GetMatAxes(FEElementRef& el);
 
+	// set the axis material
+	virtual void SetAxisMaterial(FEAxisMaterial* Q);
+
 public:
 	// get the number of properties of this material
 	int Properties() { return (int) m_Mat.size(); }
@@ -171,7 +176,6 @@ protected:
 	
 public:
 	// local material axes
-	bool			m_hasMatAxes;		// flag whether this material needs mat axes (default false)
 	FEAxisMaterial*	m_axes;
 
 protected:
@@ -190,6 +194,11 @@ public:
 	vec3d	m_d;			// axes vector d
     double  m_theta;        // axes angle theta
     double  m_phi;          // axes angle phi
+
+	// cylindrical/spherical options
+	vec3d	m_center;
+	vec3d	m_axis;
+	vec3d	m_vec;
 
 public:
 	FEAxisMaterial();

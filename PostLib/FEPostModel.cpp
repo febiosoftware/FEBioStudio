@@ -222,6 +222,7 @@ void FEPostModel::ClearStates()
 {
 	for (int i=0; i<(int) m_State.size(); i++) delete m_State[i];
 	m_State.clear();
+	m_nTime = 0;
 }
 
 //-----------------------------------------------------------------------------

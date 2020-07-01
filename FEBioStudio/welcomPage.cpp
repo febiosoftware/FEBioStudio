@@ -122,8 +122,11 @@ void CWelcomePage::Refresh()
 	}
 	else
 	{
-//		page.replace("_FGCOLOR_", "#0000ff");
+#ifdef WIN32
+		page.replace("_FGCOLOR_", "#0000ff");
+#else
         page.replace("_FGCOLOR_", "gold");
+#endif
 	}
 
 	setHtml(page);

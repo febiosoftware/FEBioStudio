@@ -103,6 +103,9 @@ public:
 	// open the object in the model viewer
 	void ShowInModelViewer(FSObject* po);
 
+	// show the log panel
+	void ShowLogPanel();
+
 	// add to the log 
 	void AddLogEntry(const QString& txt);
 

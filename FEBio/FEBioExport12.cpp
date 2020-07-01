@@ -646,7 +646,7 @@ void FEBioExport12::WriteMaterialSection()
 			case FE_MUSCLE_MATERIAL:
 			{
 									   FEMuscleMaterial* pm = dynamic_cast<FEMuscleMaterial*> (pmat);
-									   FEFiberGeneratorMaterial& f = pm->GetFiberMaterial()->m_fiber;
+									   FEOldFiberMaterial& f = *pm->GetFiberMaterial();
 									   el.add_attribute("type", "muscle material");
 									   m_xml.add_branch(el);
 									   {
@@ -726,7 +726,7 @@ void FEBioExport12::WriteMaterialSection()
 			case FE_TENDON_MATERIAL:
 			{
 									   FETendonMaterial* pm = dynamic_cast<FETendonMaterial*> (pmat);
-									   FEFiberGeneratorMaterial& f = pm->GetFiberMaterial()->m_fiber;
+									   FEOldFiberMaterial& f = *pm->GetFiberMaterial();
 									   el.add_attribute("type", "tendon material");
 									   m_xml.add_branch(el);
 									   {
@@ -892,7 +892,7 @@ void FEBioExport12::WriteMaterial(FEMaterial *pm, XMLElement& el)
 	el.add_attribute("type", sztype);
 	m_xml.add_branch(el);
 	{
-		if (pm->m_axes->m_naopt > -1) {
+		if (pm->m_axes && (pm->m_axes->m_naopt > -1)) {
 			el.name("mat_axis");
 			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
 			{
@@ -928,54 +928,54 @@ void FEBioExport12::WriteFiberMaterial(FEOldFiberMaterial& f)
 
 	XMLElement el;
 	el.name("fiber");
-	if (f.m_fiber.m_naopt == FE_FIBER_LOCAL)
+	if (f.m_naopt == FE_FIBER_LOCAL)
 	{
 		el.add_attribute("type", "local");
-		el.value(f.m_fiber.m_n, 2);
+		el.value(f.m_n, 2);
 		m_xml.add_leaf(el);
 	}
-	else if (f.m_fiber.m_naopt == FE_FIBER_CYLINDRICAL)
+	else if (f.m_naopt == FE_FIBER_CYLINDRICAL)
 	{
 		el.add_attribute("type", "cylindrical");
 		m_xml.add_branch(el);
 		{
-			m_xml.add_leaf("center", f.m_fiber.m_r);
-			m_xml.add_leaf("axis", f.m_fiber.m_a);
-			m_xml.add_leaf("vector", f.m_fiber.m_d);
+			m_xml.add_leaf("center", f.m_r);
+			m_xml.add_leaf("axis", f.m_a);
+			m_xml.add_leaf("vector", f.m_d);
 		}
 		m_xml.close_branch();
 	}
-	else if (f.m_fiber.m_naopt == FE_FIBER_POLAR)
+	else if (f.m_naopt == FE_FIBER_POLAR)
 	{
 		el.add_attribute("type", "polar");
 		m_xml.add_branch(el);
 		{
-			m_xml.add_leaf("center", f.m_fiber.m_r);
-			m_xml.add_leaf("axis", f.m_fiber.m_a);
-			m_xml.add_leaf("radius1", f.m_fiber.m_R0);
-			m_xml.add_leaf("vector1", f.m_fiber.m_d0);
-			m_xml.add_leaf("radius2", f.m_fiber.m_R1);
-			m_xml.add_leaf("vector2", f.m_fiber.m_d1);
+			m_xml.add_leaf("center", f.m_r);
+			m_xml.add_leaf("axis", f.m_a);
+			m_xml.add_leaf("radius1", f.m_R0);
+			m_xml.add_leaf("vector1", f.m_d0);
+			m_xml.add_leaf("radius2", f.m_R1);
+			m_xml.add_leaf("vector2", f.m_d1);
 		}
 		m_xml.close_branch();
 	}
-	else if (f.m_fiber.m_naopt == FE_FIBER_SPHERICAL)
+	else if (f.m_naopt == FE_FIBER_SPHERICAL)
 	{
 		el.add_attribute("type", "spherical");
 		m_xml.add_branch(el);
 		{
-			m_xml.add_leaf("center", f.m_fiber.m_r);
-			m_xml.add_leaf("vector", f.m_fiber.m_d);
+			m_xml.add_leaf("center", f.m_r);
+			m_xml.add_leaf("vector", f.m_d);
 		}
 		m_xml.close_branch();
 	}
-	else if (f.m_fiber.m_naopt == FE_FIBER_VECTOR)
+	else if (f.m_naopt == FE_FIBER_VECTOR)
 	{
 		el.add_attribute("type", "vector");
-		el.value(f.m_fiber.m_a);
+		el.value(f.m_a);
 		m_xml.add_leaf(el);
 	}
-	else if (f.m_fiber.m_naopt == FE_FIBER_USER)
+	else if (f.m_naopt == FE_FIBER_USER)
 	{
 		el.add_attribute("type", "user");
 		m_xml.add_leaf(el);
@@ -1085,7 +1085,7 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 	m_xml.add_branch(el);
 	{
 		// write the material axes (if any)
-		if (pm->m_axes->m_naopt > -1) {
+		if (pm->m_axes && (pm->m_axes->m_naopt > -1)) {
 			el.name("mat_axis");
 			if (pm->m_axes->m_naopt == FE_AXES_LOCAL)
 			{
@@ -1171,7 +1171,7 @@ void FEBioExport12::WriteGeometrySection()
 	for (int i = 0; i<s.Materials(); ++i)
 	{
 		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(s.GetMaterial(i)->GetMaterialProperties());
-		if (pmat && (pmat->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER)) bdata = true;
+		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) bdata = true;
 	}
 	for (int i = 0; i<model.Objects(); ++i)
 	{
@@ -1455,7 +1455,7 @@ void FEBioExport12::WriteGeometryElementData()
 			if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
 
 			elem.set_attribute(nid, e.m_nid);
-			if (e.IsShell() || e.m_Qactive || (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER)))
+			if (e.IsShell() || e.m_Qactive || (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER)))
 			{
 				m_xml.add_branch(elem, false);
 				if (e.IsShell()) m_xml.add_leaf("thickness", e.m_h, e.Nodes());
@@ -3835,7 +3835,7 @@ void FEBioExport12::WriteBodyForces(FEStep &s)
 {
 	for (int i = 0; i<s.Loads(); ++i)
 	{
-		FEBodyForce* pbl = dynamic_cast<FEBodyForce*>(s.Load(i));
+		FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(s.Load(i));
 		if (pbl && pbl->IsActive())
 		{
 			m_xml.add_branch("body_force");

@@ -15,7 +15,7 @@ public:
 	enum { MAX_TERMS = 6 };
 
 	// material parameters
-	enum { 
+	enum { MP_DENSITY, 
 		MP_G1, MP_G2, MP_G3, MP_G4, MP_G5, MP_G6, 
 		MP_T1, MP_T2, MP_T3, MP_T4, MP_T5, MP_T6
 	};
@@ -41,9 +41,10 @@ public:
 	enum { MAX_TERMS = 6 };
 
 	// material parameters
-	enum { 
+	enum { MP_DENSITY,
 		MP_G1, MP_G2, MP_G3, MP_G4, MP_G5, MP_G6, 
-		MP_T1, MP_T2, MP_T3, MP_T4, MP_T5, MP_T6
+		MP_T1, MP_T2, MP_T3, MP_T4, MP_T5, MP_T6,
+        MP_K
 	};
 
 public:

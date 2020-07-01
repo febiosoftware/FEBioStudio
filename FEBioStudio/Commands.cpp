@@ -135,6 +135,36 @@ void CCmdAddRigidConnector::UnExecute()
 }
 
 //////////////////////////////////////////////////////////////////////
+// CCmdAddConstraint
+//////////////////////////////////////////////////////////////////////
+
+CCmdAddConstraint::CCmdAddConstraint(FEStep* ps, FEModelConstraint* pmc) : CCommand("Add constraint") 
+{ 
+	m_ps = ps; 
+	m_pmc = pmc;
+	m_bdel = true; 
+}
+
+CCmdAddConstraint::~CCmdAddConstraint() 
+{ 
+	if (m_bdel) delete m_pmc; 
+}
+
+void CCmdAddConstraint::Execute()
+{
+	// add the connector to the step
+	m_ps->AddConstraint(m_pmc);
+	m_bdel = false;
+}
+
+void CCmdAddConstraint::UnExecute()
+{
+	// remove the connector from the step
+	m_ps->RemoveConstraint(m_pmc);
+	m_bdel = true;
+}
+
+//////////////////////////////////////////////////////////////////////
 // CCmdAddPart
 //////////////////////////////////////////////////////////////////////
 

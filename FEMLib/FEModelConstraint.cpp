@@ -43,7 +43,7 @@ FESurfaceConstraint::FESurfaceConstraint(int ntype, FEModel* fem, int nstep) : F
 
 FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FESurfaceConstraint(FE_VOLUME_CONSTRAINT, ps, nstep)
 {
-	SetTypeString("Volume Constraint");
+	SetTypeString("volume");
 
 	AddBoolParam(false, "laugon", "augmented lagrangian");
 	AddDoubleParam(0.2, "augtol", "augmentation tolerance");

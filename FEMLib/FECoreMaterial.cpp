@@ -167,6 +167,9 @@ FEAxisMaterial::FEAxisMaterial() : FEMaterial(0)
     m_theta = 0;
     m_phi = 90;
 
+	m_center = vec3d(0, 0, 0);
+	m_axis = vec3d(0, 0, 1);
+
 	AddIntParam(0, "Axes")->SetEnumNames("(none)\0local\0vector\0angles\0\0");
 	AddIntParam(0, "n0");
 	AddIntParam(0, "n1");
@@ -175,6 +178,10 @@ FEAxisMaterial::FEAxisMaterial() : FEMaterial(0)
 	AddVecParam(vec3d(0,1,0), "d");
     AddScienceParam(0 , UNIT_DEGREE, "theta");
     AddScienceParam(90, UNIT_DEGREE, "phi");
+
+	AddVecParam(m_center, "center");
+	AddVecParam(m_axis, "axis");
+	AddVecParam(m_vec, "vector");
 
 	for (int i = 1; i < Parameters(); ++i) GetParam(i).SetState(0);
 }
@@ -191,7 +198,7 @@ bool FEAxisMaterial::UpdateData(bool bsave)
 		switch (m_naopt)
 		{
 		case -1: break;
-		case 0: 
+		case FE_AXES_LOCAL: 
 			GetParam(1).SetState(Param_ALLFLAGS);
 			GetParam(2).SetState(Param_ALLFLAGS);
 			GetParam(3).SetState(Param_ALLFLAGS);
@@ -199,18 +206,32 @@ bool FEAxisMaterial::UpdateData(bool bsave)
 			m_n[1] = GetIntValue(2);
 			m_n[2] = GetIntValue(3);
 			break;
-		case 1:
+		case FE_AXES_VECTOR:
 			GetParam(4).SetState(Param_ALLFLAGS);
 			GetParam(5).SetState(Param_ALLFLAGS);
 			m_a = GetVecValue(4);
 			m_d = GetVecValue(5);
 			break;
-        case 2:
+        case FE_AXES_ANGLES:
             GetParam(6).SetState(Param_ALLFLAGS);
             GetParam(7).SetState(Param_ALLFLAGS);
             m_theta = GetFloatValue(6);
             m_phi = GetFloatValue(7);
             break;
+		case FE_AXES_CYLINDRICAL:
+			GetParam(8).SetState(Param_ALLFLAGS);
+			GetParam(9).SetState(Param_ALLFLAGS);
+			GetParam(10).SetState(Param_ALLFLAGS);
+			m_center = GetVecValue(8);
+			m_axis   = GetVecValue(9);
+			m_vec    = GetVecValue(10);
+			break;
+		case FE_AXES_SPHERICAL:
+			GetParam(8).SetState(Param_ALLFLAGS);
+			GetParam(10).SetState(Param_ALLFLAGS);
+			m_center = GetVecValue(8);
+			m_vec = GetVecValue(10);			
+			break;
 		}
 
 		return (oldopt != m_naopt);
@@ -218,13 +239,26 @@ bool FEAxisMaterial::UpdateData(bool bsave)
 	else
 	{
 		SetIntValue(0, m_naopt + 1);
+		
 		SetIntValue(1, m_n[0]); if (m_naopt == 0) GetParam(1).SetState(Param_ALLFLAGS);
 		SetIntValue(2, m_n[1]); if (m_naopt == 0) GetParam(2).SetState(Param_ALLFLAGS);
 		SetIntValue(3, m_n[2]); if (m_naopt == 0) GetParam(3).SetState(Param_ALLFLAGS);
+		
 		SetVecValue(4, m_a); if (m_naopt == 1) GetParam(4).SetState(Param_ALLFLAGS);
 		SetVecValue(5, m_d); if (m_naopt == 1) GetParam(5).SetState(Param_ALLFLAGS);
+
         SetFloatValue(6, m_theta); if (m_naopt == 2) GetParam(6).SetState(Param_ALLFLAGS);
         SetFloatValue(7, m_phi); if (m_naopt == 2) GetParam(7).SetState(Param_ALLFLAGS);
+
+		// cylindrical
+		SetVecValue(8, m_center); if (m_naopt == FE_AXES_CYLINDRICAL) GetParam(8).SetState(Param_ALLFLAGS);
+		SetVecValue(9, m_axis); if (m_naopt == FE_AXES_CYLINDRICAL) GetParam(9).SetState(Param_ALLFLAGS);
+		SetVecValue(10, m_vec); if (m_naopt == FE_AXES_CYLINDRICAL) GetParam(10).SetState(Param_ALLFLAGS);
+
+		// spherical
+		SetVecValue(8, m_center); if (m_naopt == FE_AXES_SPHERICAL) GetParam(8).SetState(Param_ALLFLAGS);
+		SetVecValue(10, m_vec); if (m_naopt == FE_AXES_SPHERICAL) GetParam(10).SetState(Param_ALLFLAGS);
+
 	}
 	return false;
 }
@@ -285,7 +319,94 @@ mat3d FEAxisMaterial::GetMatAxes(FEElementRef& el)
             
             return Q;
         }
-            break;
+		break;
+		case FE_AXES_CYLINDRICAL:
+		{
+			// we'll use the element center as the reference point
+			FECoreMesh* pm = el.m_pmesh;
+			int n = el->Nodes();
+			vec3d p(0, 0, 0);
+			for (int i = 0; i < n; ++i) p += pm->NodePosition(el->m_node[i]);
+			p /= (double)n;
+
+			// find the vector to the axis
+			vec3d b = (p - m_center) - m_axis * (m_axis*(p - m_center)); b.Normalize();
+
+			// setup the rotation vector
+			vec3d x_unit(vec3d(1, 0, 0));
+			quatd q(x_unit, b);
+
+			// rotate the reference vector
+			vec3d r(m_vec); r.Normalize();
+			q.RotateVector(r);
+
+			// setup a local coordinate system with r as the x-axis
+			vec3d d(0, 1, 0);
+			q.RotateVector(d);
+			if (fabs(d*r) > 0.99)
+			{
+				d = vec3d(0, 0, 1);
+				q.RotateVector(d);
+			}
+
+			// find basis vectors
+			vec3d e1 = r;
+			vec3d e3 = (e1 ^ d); e3.Normalize();
+			vec3d e2 = e3 ^ e1;
+
+			// setup rotation matrix
+			mat3d Q;
+			Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
+			Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
+			Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
+
+			return Q;
+		}
+		break;
+		case FE_AXES_SPHERICAL:
+		{
+			// we'll use the element center as the reference point
+			FECoreMesh* pm = el.m_pmesh;
+			int n = el->Nodes();
+			vec3d a(0, 0, 0);
+			for (int i = 0; i < n; ++i) a += pm->NodePosition(el->m_node[i]);
+			a /= (double)n;
+
+			a -= m_center;
+			a.Normalize();
+
+			// setup the rotation vector
+			vec3d x_unit(1, 0, 0);
+			quatd q(x_unit, a);
+
+			vec3d v = m_vec;
+			v.Normalize();
+			q.RotateVector(v);
+			a = v;
+
+			vec3d d(0, 1, 0);
+			d.Normalize();
+			if (fabs(a*d) > .99)
+			{
+				d = vec3d(0, 0, 1);
+				d.Normalize();
+			}
+
+			vec3d c = a ^ d;
+			vec3d b = c ^ a;
+
+			a.Normalize();
+			b.Normalize();
+			c.Normalize();
+
+			mat3d Q;
+			Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
+			Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
+			Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
+
+			return Q;
+		}
+		break;
     }
 
 	mat3d Q;
@@ -298,11 +419,11 @@ mat3d FEAxisMaterial::GetMatAxes(FEElementRef& el)
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-FEMaterial::FEMaterial(int ntype) : m_ntype(ntype), m_axes(ntype != 0 ? new FEAxisMaterial : nullptr)
+FEMaterial::FEMaterial(int ntype) : m_ntype(ntype)
 {
 	m_parent = 0;
 	m_owner = 0;
-	m_hasMatAxes = false;
+	m_axes = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -482,13 +603,21 @@ void FEMaterial::copy(FEMaterial* pm)
 //-----------------------------------------------------------------------------
 bool FEMaterial::HasMaterialAxes() const
 {
-	return m_hasMatAxes;
+	return (m_axes != nullptr);
 }
 
 //-----------------------------------------------------------------------------
 mat3d FEMaterial::GetMatAxes(FEElementRef& el)
 {
 	return (m_axes ? m_axes->GetMatAxes(el) : mat3d(1,0,0, 0,1,0, 0,0,1));
+}
+
+//-----------------------------------------------------------------------------
+// set the axis material
+void FEMaterial::SetAxisMaterial(FEAxisMaterial* Q)
+{
+	if (m_axes) delete m_axes;
+	m_axes = Q;
 }
 
 //-----------------------------------------------------------------------------
@@ -578,25 +707,25 @@ void FEMaterial::Load(IArchive &ar)
 		case CID_MAT_PARAMS: ParamContainer::Load(ar); break;
 		case CID_MAT_AXES:
 			{
-			if (m_axes)
-			{
+				FEAxisMaterial* axes = new FEAxisMaterial;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = (int)ar.GetChunkID();
 					switch (nid)
 					{
-					case 0: ar.read(m_axes->m_naopt); break;
-					case 1: ar.read(m_axes->m_n, 3); break;
-					case 2: ar.read(m_axes->m_a); break;
-					case 3: ar.read(m_axes->m_d); break;
-                    case 4: ar.read(m_axes->m_theta); break;
-                    case 5: ar.read(m_axes->m_phi); break;
+					case 0: ar.read(axes->m_naopt); break;
+					case 1: ar.read(axes->m_n, 3); break;
+					case 2: ar.read(axes->m_a); break;
+					case 3: ar.read(axes->m_d); break;
+                    case 4: ar.read(axes->m_theta); break;
+                    case 5: ar.read(axes->m_phi); break;
 					}
 					ar.CloseChunk();
 				}
-				m_axes->UpdateData(false);
-				m_axes->UpdateData(true);
-			}
+				axes->UpdateData(false);
+				axes->UpdateData(true);
+
+				SetAxisMaterial(axes);
 			}
 			break;
         case CID_MAT_PROPERTY:

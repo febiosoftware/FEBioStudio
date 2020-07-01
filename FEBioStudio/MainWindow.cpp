@@ -270,7 +270,7 @@ void CMainWindow::UpdateTab(CDocument* doc)
 		ui->tab->setTabText(n, file);
 
 		QString path = QString::fromStdString(doc->GetDocFilePath());
-		if (path.isEmpty() == false) ui->tab->setToolTip(path); else ui->tab->setToolTip("");
+		if (path.isEmpty() == false) ui->tab->setTabToolTip(n, path); else ui->tab->setTabToolTip(n, "");
 	}
 
 	ui->fileViewer->Update();
@@ -1324,22 +1324,22 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 			GLHighlighter::setTracking(false);
 		}
 	}
-	else if ((ev->key() == Qt::Key_1) && (ev->modifiers() && Qt::CTRL)) 
+	else if ((ev->key() == Qt::Key_1) && (ev->modifiers() & Qt::CTRL))
 	{
 		ui->showFileViewer();
 		ev->accept();
 	}
-	else if ((ev->key() == Qt::Key_2) && (ev->modifiers() && Qt::CTRL))
+	else if ((ev->key() == Qt::Key_2) && (ev->modifiers() & Qt::CTRL))
 	{
 		ui->showModelViewer();
 		ev->accept();
 	}
-	else if ((ev->key() == Qt::Key_3) && (ev->modifiers() && Qt::CTRL))
+	else if ((ev->key() == Qt::Key_3) && (ev->modifiers() & Qt::CTRL))
 	{
 		ui->showBuildPanel();
 		ev->accept();
 	}
-	else if ((ev->key() == Qt::Key_4) && (ev->modifiers() && Qt::CTRL))
+	else if ((ev->key() == Qt::Key_4) && (ev->modifiers() & Qt::CTRL))
 	{
 		ui->showPostPanel();
 		ev->accept();
@@ -1926,6 +1926,14 @@ void CMainWindow::on_postActionMeasureTool_triggered() { on_actionMeasureTool_tr
 void CMainWindow::StopAnimation()
 {
 	ui->stopAnimation();
+}
+
+//-----------------------------------------------------------------------------
+// show the log panel
+void CMainWindow::ShowLogPanel()
+{
+	ui->logPanel->parentWidget()->raise();
+	ui->logPanel->parentWidget()->show();
 }
 
 //-----------------------------------------------------------------------------

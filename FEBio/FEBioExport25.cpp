@@ -344,7 +344,7 @@ bool FEBioExport25::PrepareExport(FEProject& prj)
 	for (int i=0; i<fem.Materials(); ++i)
 	{
 		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
-		if (pmat && (pmat->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER)) m_bdata = true;
+		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) m_bdata = true;
 	}
 	for (int i=0; i<model.Objects(); ++i)
 	{
@@ -1425,7 +1425,7 @@ void FEBioExport25::WriteMaterialSection()
 
 void FEBioExport25::WriteFiberMaterial(FEOldFiberMaterial& fiber)
 {
-	FEFiberGeneratorMaterial& f = fiber.m_fiber;
+	FEOldFiberMaterial& f = fiber;
 	XMLElement el;
 	el.name("fiber");
 	if (f.m_naopt == FE_FIBER_LOCAL) 
@@ -1509,7 +1509,7 @@ void FEBioExport25::WriteMaterialParams(FEMaterial* pm)
 	}
 
 	// write the material axes (if any)
-	if (pm->m_axes->m_naopt > -1)
+	if (pm->m_axes && (pm->m_axes->m_naopt > -1))
 	{
 		XMLElement el("mat_axis");
 		XMLElement::intFormat = "%d";
@@ -1539,6 +1539,27 @@ void FEBioExport25::WriteMaterialParams(FEMaterial* pm)
             }
             m_xml.close_branch();
         }
+		else if (pm->m_axes->m_naopt == FE_AXES_CYLINDRICAL)
+		{
+			el.add_attribute("type", "cylindrical");
+			m_xml.add_branch(el);
+			{
+				m_xml.add_leaf("center", pm->m_axes->m_center);
+				m_xml.add_leaf("axis", pm->m_axes->m_axis);
+				m_xml.add_leaf("vector", pm->m_axes->m_vec);
+			}
+			m_xml.close_branch();
+		}
+		else if (pm->m_axes->m_naopt == FE_AXES_SPHERICAL)
+		{
+			el.add_attribute("type", "spherical");
+			m_xml.add_branch(el);
+			{
+				m_xml.add_leaf("center", pm->m_axes->m_center);
+				m_xml.add_leaf("vector", pm->m_axes->m_vec);
+			}
+			m_xml.close_branch();
+		}
 		XMLElement::setDefautlFormats();
 	}
 }
@@ -2965,7 +2986,7 @@ void FEBioExport25::WriteMeshDataMaterialFibers()
 		FETransverselyIsotropic* ptiso = 0;
 		if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
 
-		if (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
+		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 		{
 			int NE = (int) elSet.elem.size();
 			XMLElement tag("ElementData");
@@ -4601,7 +4622,7 @@ void FEBioExport25::WriteBodyLoads(FEStep& s)
 //-----------------------------------------------------------------------------
 void FEBioExport25::WriteBodyLoad(FEBodyLoad* pbl, GPart* pg)
 {
-	FEBodyForce* pbf = dynamic_cast<FEBodyForce*>(pbl);
+	FEConstBodyForce* pbf = dynamic_cast<FEConstBodyForce*>(pbl);
 	if (pbf) WriteBodyForce(pbf, pg);
 
 	FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pbl);
@@ -4622,7 +4643,7 @@ void FEBioExport25::WriteBodyLoad(FEBodyLoad* pbl, GPart* pg)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteBodyForce(FEBodyForce* pbf, GPart* pg)
+void FEBioExport25::WriteBodyForce(FEConstBodyForce* pbf, GPart* pg)
 {
 	XMLElement el("body_load");
 	el.add_attribute("type", "const");

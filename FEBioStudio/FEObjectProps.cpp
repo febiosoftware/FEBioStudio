@@ -392,7 +392,7 @@ void CMaterialProps::BuildPropertyList()
 		val << "polar";
 		addProperty("Fiber generator", CProperty::Enum)->setEnumValues(val);
 
-		switch (fiber->m_fiber.m_naopt)
+		switch (fiber->m_naopt)
 		{
 		case FE_FIBER_LOCAL:
 			addProperty("n0", CProperty::Int);
@@ -466,7 +466,7 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(m_mat);
 	if (ptiso)
 	{
-		FEFiberGeneratorMaterial* fiber = &ptiso->GetFiberMaterial()->m_fiber;
+		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 		if (i == 0) return fiber->m_naopt;
 
 		switch (fiber->m_naopt)
@@ -537,7 +537,7 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(m_mat);
 	if (ptiso)
 	{
-		FEFiberGeneratorMaterial* fiber = &ptiso->GetFiberMaterial()->m_fiber;
+		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 		if (i == 0)
 		{
 			int naopt = v.toInt();

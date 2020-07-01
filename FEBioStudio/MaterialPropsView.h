@@ -39,7 +39,7 @@ class CMaterialPropsDelegate : public QStyledItemDelegate
 public:
 	explicit CMaterialPropsDelegate(QObject* parent = nullptr);
 
-	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 	void setEditorData(QWidget* editor, const QModelIndex& index) const override;
 

@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/MeshLayer.h>
 #include <MeshTools/GModel.h>
@@ -292,7 +293,7 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<FEModelComponent*>(po))
 	{
 		FEModelComponent* pbc = dynamic_cast<FEModelComponent*>(po);
-		if (dynamic_cast<FEBodyForce*>(pbc) == 0)
+		if (dynamic_cast<FEConstBodyForce*>(pbc) == 0)
 		{
 			FEItemListBuilder* pitem = pbc->GetItemList();
 			if (pitem == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
@@ -1111,6 +1112,34 @@ void CModelViewer::OnCopyRigidConnector()
 	Select(pcCopy);
 }
 
+void CModelViewer::OnCopyConstraint()
+{
+	FEModelConstraint* pc = dynamic_cast<FEModelConstraint*>(m_currentObject); assert(pc);
+
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FEModel* fem = pdoc->GetFEModel();
+
+	// copy the load
+	FEMKernel* fecore = FEMKernel::Instance();
+	FEModelConstraint* pcCopy = dynamic_cast<FEModelConstraint*>(fecore->Create(fem, FE_CONSTRAINT, pc->Type()));
+	assert(pcCopy);
+
+	// create a name
+	string name = defaultConstraintName(fem, pc);
+	pcCopy->SetName(name);
+
+	// copy parameters
+	pcCopy->GetParamBlock() = pc->GetParamBlock();
+
+	// add the constraint to the doc
+	FEStep* step = fem->GetStep(pc->GetStep());
+	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy));
+
+	// update the model viewer
+	Update();
+	Select(pcCopy);
+}
+
 void CModelViewer::OnCopyLoad()
 {
 	FELoad* pl = dynamic_cast<FELoad*>(m_currentObject); assert(pl);
@@ -1516,6 +1545,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_RIGID_CONSTRAINT:
 		menu.addAction("Copy", this, SLOT(OnCopyRigidConstraint()));
+		del = true;
+		break;
+	case MT_CONSTRAINT:
+		menu.addAction("Copy", this, SLOT(OnCopyConstraint()));
 		del = true;
 		break;
 	case MT_STEP:

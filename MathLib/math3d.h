@@ -64,6 +64,7 @@ class vec2i
 {
 public:
 	vec2i() { x = y = 0; }
+	vec2i(int X, int Y) { x = X; y = Y; }
 	int		x, y;
 };
 

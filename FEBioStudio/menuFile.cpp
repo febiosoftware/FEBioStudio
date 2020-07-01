@@ -845,10 +845,19 @@ void CMainWindow::on_actionSaveAs_triggered()
 		QFileInfo fi(ui->m_project.GetProjectFileName());
 		currentPath = fi.absolutePath();
 	}
+	else
+	{
+		string docfile = doc->GetDocFilePath();
+		if (docfile.empty() == false)
+		{
+			QFileInfo fi(QString::fromStdString(docfile));
+			currentPath = fi.absolutePath();
+		}
+	}
 
 	QFileDialog dlg;
 	dlg.setDirectory(currentPath);
-	dlg.setFileMode(QFileDialog::ExistingFile);
+	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setNameFilter("FEBio Studio Model (*.fsm)");
 	dlg.selectFile(QString::fromStdString(doc->GetDocTitle()));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
@@ -917,7 +926,8 @@ void CMainWindow::on_actionSnapShot_triggered()
 
 void CMainWindow::on_actionSaveProject_triggered()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, "Save Project As", "", QString("FEBioStudio Projects (*.fsp)"));
+	QString prjPath = ui->m_project.GetProjectPath();
+	QString fileName = QFileDialog::getSaveFileName(this, "Save Project As", prjPath, QString("FEBioStudio Projects (*.fsp)"));
 	if (fileName.isEmpty() == false)
 	{
 		fileName = QDir::toNativeSeparators(fileName);
@@ -1209,35 +1219,48 @@ void CMainWindow::on_actionConvertFeb_triggered()
 			CDlgExportFEBio dlg(this);
 			if (dlg.exec())
 			{
-				FEProject prj;
-				FEBioImport reader(prj);
-
-				FEFileExport* exporter = 0;			
-				if (dlg.m_nversion == 0)
-				{
-					// Write version 1.x
-					FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
-					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-				}
-				else if (dlg.m_nversion == 1)
-				{
-					// Write version 2.0
-					FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
-					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-				}
-				else if (dlg.m_nversion == 2)
-				{
-					// write version 2.5
-					FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
-					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-				}
-
 				QStringList::iterator it;
+
+				ShowLogPanel();
 
 				AddLogEntry("Starting batch conversion ...\n");
 				int nsuccess = 0, nfails = 0, nwarnings = 0;
 				for (it = fileNames.begin(); it != fileNames.end(); ++it)
 				{
+					FEProject prj;
+					FEBioImport reader(prj);
+
+					FEFileExport* exporter = 0;
+					if (dlg.m_nversion == 0)
+					{
+						// Write version 1.x
+						FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+					}
+					else if (dlg.m_nversion == 1)
+					{
+						// Write version 2.0
+						FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+					}
+					else if (dlg.m_nversion == 2)
+					{
+						// write version 2.5
+						FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+					}
+					else if (dlg.m_nversion == 3)
+					{
+						// write version 3
+						FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+					}
+					else
+					{
+						QMessageBox::critical(this, "Convert", "Cannot convert to this file format.");
+						return;
+					}
+
 					std::string inFile = it->toStdString();
 					AddLogEntry(QString("Converting %1 ... ").arg(*it));
 					QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
@@ -1261,6 +1284,8 @@ void CMainWindow::on_actionConvertFeb_triggered()
 					
 					if (bret) nsuccess++; else nfails++;
 					QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+					delete exporter;
 				}
 
 				AddLogEntry("Batch conversion completed:\n");
@@ -1268,8 +1293,6 @@ void CMainWindow::on_actionConvertFeb_triggered()
 					AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
 				else
 					AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
-
-				delete exporter;
 			}
 		}
 	}

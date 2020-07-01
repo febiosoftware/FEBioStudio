@@ -66,8 +66,8 @@ public:
 		ProjectItem& Item(int i) { return *m_items[i]; }
 		const ProjectItem& Item(int i) const { return *m_items[i]; }
 
-		ProjectItem& AddFile(const QString& filePath) { m_items.push_back(new ProjectItem(PROJECT_FILE, filePath, this)); return *m_items.last(); }
-		ProjectItem& AddGroup(const QString& name) { m_items.push_back(new ProjectItem(PROJECT_GROUP, name, this)); return *m_items.last(); }
+		ProjectItem& AddFile(const QString& filePath);
+		ProjectItem& AddGroup(const QString& name);
 
 		bool ContainsFile(const QString& fileName) const;
 
@@ -101,6 +101,7 @@ public:
 	FEBioStudioProject();
 
 	QString GetProjectFileName() const;
+	QString GetProjectPath() const;
 
 	bool Save(const QString& file);
 	bool Save();

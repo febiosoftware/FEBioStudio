@@ -44,11 +44,11 @@ public:
 
 	void Update(bool breset) override;
 
-	void Apply();
+	void Apply() override;
 
 	//! Process Esc key event (return true if processed)
-	bool OnEscapeEvent();
-	bool OnDeleteEvent();
+	bool OnEscapeEvent() override;
+	bool OnDeleteEvent() override;
 
 	bool IsEditPanelVisible();
 	bool IsMeshPanelVisible();

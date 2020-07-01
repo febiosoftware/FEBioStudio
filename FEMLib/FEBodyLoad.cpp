@@ -28,17 +28,35 @@ SOFTWARE.*/
 #include "FEBodyLoad.h"
 
 //-----------------------------------------------------------------------------
-FEBodyForce::FEBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_BODY_FORCE, ps, nstep)
+FEConstBodyForce::FEConstBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_CONST_BODY_FORCE, ps, nstep)
 {
-	SetTypeString("Body Force");
-	AddDoubleParam(0, "x", "x")->SetLoadCurve();
-	AddDoubleParam(0, "y", "y")->SetLoadCurve();
-	AddDoubleParam(0, "z", "z")->SetLoadCurve();
+	SetTypeString("const");
+	AddDoubleParam(0, "x")->SetLoadCurve();
+	AddDoubleParam(0, "y")->SetLoadCurve();
+	AddDoubleParam(0, "z")->SetLoadCurve();
 }
 
-FELoadCurve* FEBodyForce::GetLoadCurve(int n)
+FELoadCurve* FEConstBodyForce::GetLoadCurve(int n)
 {
-	return GetParamLC(LOAD1 + n);
+	return GetParamLC(FORCE_X + n);
+}
+
+double FEConstBodyForce::GetLoad(int n) { return GetFloatValue(FORCE_X + n); }
+
+void FEConstBodyForce::SetLoad(int n, double v) { SetFloatValue(FORCE_X + n, v); }
+
+//-----------------------------------------------------------------------------
+FENonConstBodyForce::FENonConstBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
+{
+	SetTypeString("non-const");
+	AddMathParam("0", "x")->SetLoadCurve();
+	AddMathParam("0", "y")->SetLoadCurve();
+	AddMathParam("0", "z")->SetLoadCurve();
+}
+
+FELoadCurve* FENonConstBodyForce::GetLoadCurve(int n)
+{
+	return GetParamLC(FORCE_X + n);
 }
 
 //-----------------------------------------------------------------------------

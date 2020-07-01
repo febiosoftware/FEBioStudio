@@ -578,7 +578,7 @@ SOFTWARE.*/
 #define FE_PRESSURE_LOAD					0x0004
 #define FE_NODAL_VELOCITIES					0x0005
 #define FE_SURFACE_TRACTION					0x0006
-#define FE_BODY_FORCE						0x0007
+#define FE_CONST_BODY_FORCE					0x0007
 #define FE_FLUID_FLUX						0x0008
 #define FE_FIXED_FLUID_PRESSURE				0x0009
 #define FE_PRESCRIBED_FLUID_PRESSURE		0x000A
@@ -620,6 +620,7 @@ SOFTWARE.*/
 #define FE_INIT_FLUID_DILATATION            0x002E
 #define FE_FLUID_FLOW_RCR                   0x002F
 #define FE_MATCHING_OSM_COEF                0x0030
+#define FE_NON_CONST_BODY_FORCE				0x0031
 
 //--------------------------------------------------------
 // Interface types

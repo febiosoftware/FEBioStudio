@@ -325,7 +325,17 @@ public:
 		m_Param.push_back(p);
 		return LastParam();
 	}
-    
+
+	Param* AddMathParam(const std::string& s, const char* szb, const char* szn = 0)
+	{
+		int np = (int)m_Param.size();
+		Param p(s, szb, szn);
+		p.m_ntype = Param_MATH;
+		p.m_nID = np;
+		m_Param.push_back(p);
+		return LastParam();
+	}
+
 	Param* AddColorParam(GLColor c, const char* szb, const char* szn = 0)
 	{
 		int ns = (int)m_Param.size();
@@ -434,6 +444,7 @@ public:
 	Param* AddStringParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddStringParam(s, szb, szn); }
 	Param* AddColorParam(GLColor c, const char* szb = 0, const char* szn = 0) { return m_Param.AddColorParam(c, szb, szn); }
 	Param* AddMat3dParam(mat3d v, const char* szb = 0, const char* szn = 0) { return m_Param.AddMat3dParam(v, szb, szn); }
+	Param* AddMathParam(const std::string& s, const char* szb = 0, const char* szn = 0) { return m_Param.AddMathParam(s, szb, szn); }
 
 	// get a parameter from its name
 	Param* GetParam(const char* sz) { return m_Param.Find(sz); }
@@ -455,6 +466,7 @@ public:
 	double GetFloatValue(int n) const { return m_Param[n].GetFloatValue(); }
 	bool GetBoolValue(int n)const  { return m_Param[n].GetBoolValue(); }
 	vec3d GetVecValue(int n) const { return m_Param[n].GetVec3dValue(); }
+	vec2i GetVec2iValue(int n) const { return m_Param[n].GetVec2iValue(); }
 	FELoadCurve* GetParamLC(int n) { return m_Param[n].GetLoadCurve(); }
 	int GetIndexValue(int n) const { return m_Param[n].GetIndexValue(); }
 	std::string GetStringValue(int n) const { return m_Param[n].GetStringValue(); }

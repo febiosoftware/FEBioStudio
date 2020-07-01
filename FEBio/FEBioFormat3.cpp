@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/GModel.h>
 #include <assert.h>
+#include <sstream>
 
 FEBioFormat3::FEBioFormat3(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {
@@ -399,8 +400,20 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	if (szname == 0) szname = tag.AttributeValue("elset", true);
 	if (szname == 0) szname = "_no_name";
 
+	// make sure no parts have the same name
+	string name = szname;
+	int n = 2;
+	while (part->FindDomain(name))
+	{
+		if (n == 2) FileReader()->AddLogEntry("Part with name \"%s\" already defined.", szname);
+
+		stringstream ss;
+		ss << szname << "(" << n++ << ")";
+		name = ss.str();
+	}
+
 	// add domain to list
-	FEBioModel::Domain* dom = part->AddDomain(szname, matID);
+	FEBioModel::Domain* dom = part->AddDomain(name, matID);
 
 	// create elements
 	FEMesh& mesh = *part->GetFEMesh();
@@ -1566,9 +1579,9 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	{
 		if (tag == "scale")
 		{
-			int lc = tag.AttributeValue<int>("lc", -1);
+			int lc = tag.Attribute("lc").value<int>() - 1;
 			if (lc == -1) throw XMLReader::InvalidAttributeValue(tag, "lc", 0);
-			pbc->GetLoadCurve()->SetID(lc);
+			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
 
 			double val;
 			tag.value(val);
@@ -1682,7 +1695,7 @@ void FEBioFormat3::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	// create new body load
 	FEBodyLoad* pbl = nullptr;
 	XMLAtt& att = tag.Attribute("type");
-	if      (att == "const"      ) pbl = CREATE_BODY_LOAD(FEBodyForce);
+	if      (att == "const"      ) pbl = CREATE_BODY_LOAD(FEConstBodyForce);
 	else if (att == "heat_source") pbl = CREATE_BODY_LOAD(FEHeatSource);
 	else ParseUnknownAttribute(tag, "type");
 

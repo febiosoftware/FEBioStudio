@@ -322,7 +322,7 @@ bool FEBioExport3::PrepareExport(FEProject& prj)
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(fem.GetMaterial(i)->GetMaterialProperties());
-		if (pmat && (pmat->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER)) m_bdata = true;
+		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) m_bdata = true;
 	}
 	for (int i = 0; i<model.Objects(); ++i)
 	{
@@ -430,23 +430,6 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 			}
 		}
 	}
-
-	/*	// Node sets are already written in WriteGeometryNodeSets
-	GModel& model = fem.GetModel();
-	CLogDataSettings& log = prj.GetLogDataSettings();
-	for (int i=0; i<log.LogDataSize(); ++i)
-	{
-	FELogData& di = log.LogData(i);
-	if ((di.type == FELogData::LD_NODE) && (di.groupID != -1))
-	{
-	FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
-	if (pg)
-	{
-	AddNodeSet(pg->GetName(), pg);
-	}
-	}
-	}
-	*/
 
 	// get the named surfaces (loads)
 	for (int i = 0; i<fem.Steps(); ++i)
@@ -615,6 +598,14 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 			if (pg)
 			{
 				AddElemSet(pg->GetName(), pg);
+			}
+		}
+		if ((di.type == FELogData::LD_NODE) && (di.groupID != -1))
+		{
+			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
+			if (pg)
+			{
+				AddNodeSet(pg->GetName(), pg);
 			}
 		}
 	}
@@ -970,9 +961,20 @@ void FEBioExport3::WriteSolidControlParams(FEAnalysisStep* pstep)
 		// write the parameters
 		WriteParamList(*pstep);
 
+		if ((ops.nanalysis != 0) && ops.override_rhoi) {
+			m_xml.add_leaf("alpha", ops.alpha);
+			m_xml.add_leaf("beta", ops.beta);
+			m_xml.add_leaf("gamma", ops.gamma);
+		}
+
 		if (ops.nmatfmt != 0)
 		{
 			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+
+		if (ops.bminbw)
+		{
+			m_xml.add_leaf("optimize_bw", 1);
 		}
 	}
 	m_xml.close_branch();
@@ -997,17 +999,6 @@ void FEBioExport3::WriteSolidControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if ((ops.nanalysis != 0) && ops.override_rhoi) {
-		m_xml.add_leaf("alpha", ops.alpha);
-		m_xml.add_leaf("beta", ops.beta);
-		m_xml.add_leaf("gamma", ops.gamma);
-	}
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
 	}
 }
 
@@ -1046,11 +1037,6 @@ void FEBioExport3::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 	el.name("analysis");
 	el.add_attribute("type", (ops.nanalysis == 0 ? "static" : "transient"));
 	m_xml.add_empty(el);
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
-	}
 }
 
 
@@ -1116,15 +1102,31 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
-	m_xml.add_leaf("diverge_reform", ops.bdivref);
-	m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("diverge_reform", ops.bdivref);
+		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.bminbw)
+		{
+			m_xml.add_leaf("optimize_bw", 1);
+		}
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
 
 	if (ops.bauto)
 	{
@@ -1146,24 +1148,6 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1173,15 +1157,31 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "DYNAMIC"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
-	m_xml.add_leaf("diverge_reform", ops.bdivref);
-	m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("diverge_reform", ops.bdivref);
+		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.bminbw)
+		{
+			m_xml.add_leaf("optimize_bw", 1);
+		}
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
 
 	if (ops.bauto)
 	{
@@ -1203,31 +1203,6 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-	else
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "dynamic");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1237,15 +1212,31 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "DYNAMIC"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
-	m_xml.add_leaf("diverge_reform", ops.bdivref);
-	m_xml.add_leaf("reform_each_time_step", ops.brefstep);
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+		m_xml.add_leaf("diverge_reform", ops.bdivref);
+		m_xml.add_leaf("reform_each_time_step", ops.brefstep);
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.bminbw)
+		{
+			m_xml.add_leaf("optimize_bw", 1);
+		}
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
 
 	if (ops.bauto)
 	{
@@ -1267,31 +1258,6 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-	else
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "dynamic");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.bminbw)
-	{
-		m_xml.add_leaf("optimize_bw", 1);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1301,13 +1267,25 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
-	m_xml.add_leaf("max_refs", ops.maxref);
-	m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
 
-	// write the parameters
-	WriteParamList(*pstep);
+	m_xml.add_branch("solver");
+	{
+		m_xml.add_leaf("max_refs", ops.maxref);
+		m_xml.add_leaf("max_ups", (ops.mthsol == 0 ? ops.ilimit : 0));
+
+		// write the parameters
+		WriteParamList(*pstep);
+
+		if (ops.nmatfmt != 0)
+		{
+			m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		}
+	}
+	m_xml.close_branch();
+
 
 	if (ops.bauto)
 	{
@@ -1329,26 +1307,6 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
-	}
-
-	if (ops.nanalysis == 0)
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "steady-state");
-		m_xml.add_empty(el);
-	}
-	else
-	{
-		XMLElement el;
-		el.name("analysis");
-		el.add_attribute("type", "transient");
-		m_xml.add_empty(el);
-	}
-
-	if (ops.nmatfmt != 0)
-	{
-		m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 	}
 }
 
@@ -1388,7 +1346,7 @@ void FEBioExport3::WriteMaterialSection()
 
 void FEBioExport3::WriteFiberMaterial(FEOldFiberMaterial& fiber)
 {
-	FEFiberGeneratorMaterial& f = fiber.m_fiber;
+	FEOldFiberMaterial& f = fiber;
 	XMLElement el;
 	el.name("fiber");
 	if (f.m_naopt == FE_FIBER_LOCAL)
@@ -1476,7 +1434,7 @@ void FEBioExport3::WriteMaterialParams(FEMaterial* pm, bool isTopLevel)
 	}
 
 	// write the material axes (if any)
-	if (pm->m_axes->m_naopt > -1)
+	if (pm->m_axes && (pm->m_axes->m_naopt > -1))
 	{
 		XMLElement el("mat_axis");
 		XMLElement::intFormat = "%d";
@@ -1506,6 +1464,27 @@ void FEBioExport3::WriteMaterialParams(FEMaterial* pm, bool isTopLevel)
             }
             m_xml.close_branch();
         }
+		else if (pm->m_axes->m_naopt == FE_AXES_CYLINDRICAL)
+		{
+			el.add_attribute("type", "cylindrical");
+			m_xml.add_branch(el);
+			{
+				m_xml.add_leaf("center", pm->m_axes->m_center);
+				m_xml.add_leaf("axis", pm->m_axes->m_axis);
+				m_xml.add_leaf("vector", pm->m_axes->m_vec);
+			}
+			m_xml.close_branch();
+		}
+		else if (pm->m_axes->m_naopt == FE_AXES_SPHERICAL)
+		{
+			el.add_attribute("type", "spherical");
+			m_xml.add_branch(el);
+			{
+				m_xml.add_leaf("center", pm->m_axes->m_center);
+				m_xml.add_leaf("vector", pm->m_axes->m_vec);
+			}
+			m_xml.close_branch();
+		}
 		XMLElement::setDefautlFormats();
 	}
 }
@@ -1690,11 +1669,15 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 
 						if (bdone == false)
 						{
-							m_xml.add_branch(el);
+							if (pc->Parameters() > 0)
 							{
-								WriteMaterialParams(pc);
+								m_xml.add_branch(el);
+								{
+									WriteMaterialParams(pc);
+								}
+								m_xml.close_branch();
 							}
-							m_xml.close_branch();
+							else m_xml.add_empty(el);
 						}
 					}
 				}
@@ -1966,6 +1949,9 @@ void FEBioExport3::WriteGeometrySectionNew()
 
 	// write the surface pairs
 	WriteGeometrySurfacePairs();
+
+	// write discrete sets
+	WriteGeometryDiscreteSets();
 }
 
 //-----------------------------------------------------------------------------
@@ -2562,6 +2548,7 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames
 			ElementSet es;
 			es.m_mesh = pm;
 			es.m_name = szname;
+			if (m_exportParts) es.m_name = po->GetName() + "." + szname;
 			es.m_matID = pg->GetMaterialID();
 
 			xe.add_attribute("name", szname);
@@ -2963,7 +2950,7 @@ void FEBioExport3::WriteMeshDataMaterialFibers()
 		FETransverselyIsotropic* ptiso = 0;
 		if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
 
-		if (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
+		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 		{
 			int NE = (int)elSet.m_elem.size();
 			XMLElement tag("ElementData");
@@ -3352,24 +3339,11 @@ void FEBioExport3::WriteDiscreteSection(FEStep& s)
 		GDiscreteSpringSet* pds = dynamic_cast<GDiscreteSpringSet*>(model.DiscreteObject(i));
 		if (pds && (pds->size()))
 		{
-			dmat.set_attribute(n1, n++);
-			dmat.set_attribute(n2, pds->GetName().c_str());
-
+			XMLElement dmat("discrete_material");
+			dmat.add_attribute("id", n++);
+			dmat.add_attribute("name", pds->GetName().c_str());
 			FEDiscreteMaterial* dm = pds->GetMaterial();
-			switch (dm->Type())
-			{
-			case FE_LINEAR_SPRING_SET   : dmat.set_attribute(n3, "linear spring"); break;
-			case FE_NONLINEAR_SPRING_SET: dmat.set_attribute(n3, "nonlinear spring"); break;
-			case FE_DISCRETE_HILL       : dmat.set_attribute(n3, "Hill"); break;
-			default:
-				assert(false);
-			}
-			
-			m_xml.add_branch(dmat, false);
-			{
-				WriteParamList(*dm);
-			}
-			m_xml.close_branch();
+			WriteMaterial(dm, dmat);
 		}
 		GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(model.DiscreteObject(i));
 		if (ds)
@@ -3507,15 +3481,10 @@ void FEBioExport3::WriteContactWall(FEStep& s)
 			ec.add_attribute("surface", GetSurfaceName(pw->GetItemList()));
 			m_xml.add_branch(ec);
 			{
-				m_xml.add_leaf("laugon", (pw->GetBoolValue(FERigidWallInterface::LAUGON) ? 1 : 0));
-				m_xml.add_leaf("tolerance", pw->GetFloatValue(FERigidWallInterface::ALTOL));
-				m_xml.add_leaf("penalty", pw->GetFloatValue(FERigidWallInterface::PENALTY));
-
-				FELoadCurve* plc = pw->GetLoadCurve();
-				XMLElement offset("offset");
-				if (plc) offset.add_attribute("lc", plc->GetID());
-				offset.value(pw->GetFloatValue(FERigidWallInterface::OFFSET));
-				m_xml.add_leaf(offset);
+				WriteParam(pw->GetParam(FERigidWallInterface::LAUGON));
+				WriteParam(pw->GetParam(FERigidWallInterface::ALTOL));
+				WriteParam(pw->GetParam(FERigidWallInterface::PENALTY));
+				WriteParam(pw->GetParam(FERigidWallInterface::OFFSET));
 
 				XMLElement plane("plane");
 				double a[4];
@@ -3662,7 +3631,7 @@ void FEBioExport3::WriteLinearConstraints(FEStep& s)
 				m_xml.add_branch("linear_constraint");
 				{
 					int ND = (int)LC.m_dof.size();
-					XMLElement ed("n");
+					XMLElement ed("node");
 					int n1 = ed.add_attribute("id", 0);
 					int n2 = ed.add_attribute("bc", 0);
 					for (int n = 0; n<ND; ++n)
@@ -3820,11 +3789,12 @@ void FEBioExport3::WriteLoadNodal(FEStep& s)
 
 			XMLElement load("nodal_load");
 			load.add_attribute("name", pbc->GetName());
+			load.add_attribute("type", "nodal_load");
 			load.add_attribute("node_set", GetNodeSetName(pitem));
 
 			m_xml.add_branch(load);
 			{
-				m_xml.add_leaf("bc", bc[l]);
+				m_xml.add_leaf("dof", bc[l]);
 
 				XMLElement scale("scale");
 				if (plc) scale.add_attribute("lc", plc->GetID());
@@ -3983,11 +3953,12 @@ void FEBioExport3::WriteInitConcentration(FEInitConcentration& ic)
 {
 	char szbc[6][3] = { "c1", "c2", "c3", "c4", "c5", "c6" };
 	int bc = ic.GetBC();
-	XMLElement ec("init");
-	ec.add_attribute("bc", szbc[bc]);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
 	ec.add_attribute("node_set", GetNodeSetName(ic.GetItemList()));
 	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", szbc[bc]);
 		m_xml.add_leaf("value", ic.GetValue());
 	}
 	m_xml.close_branch();
@@ -3998,11 +3969,12 @@ void FEBioExport3::WriteInitShellConcentration(FEInitShellConcentration& ic)
 {
 	char szbc[6][3] = { "d1", "d2", "d3", "d4", "d5", "d6" };
 	int bc = ic.GetBC();
-	XMLElement ec("init");
-	ec.add_attribute("bc", szbc[bc]);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
 	ec.add_attribute("node_set", GetNodeSetName(ic.GetItemList()));
 	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", szbc[bc]);
 		m_xml.add_leaf("value", ic.GetValue());
 	}
 	m_xml.close_branch();
@@ -4011,11 +3983,12 @@ void FEBioExport3::WriteInitShellConcentration(FEInitShellConcentration& ic)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitFluidPressure(FEInitFluidPressure& ip)
 {
-	XMLElement el("init");
-	el.add_attribute("bc", "p");
-	el.add_attribute("node_set", GetNodeSetName(ip.GetItemList()));
-	m_xml.add_branch(el);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
+	ec.add_attribute("node_set", GetNodeSetName(ip.GetItemList()));
+	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", "p");
 		m_xml.add_leaf("value", ip.GetValue());
 	}
 	m_xml.close_branch();
@@ -4024,11 +3997,12 @@ void FEBioExport3::WriteInitFluidPressure(FEInitFluidPressure& ip)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitShellFluidPressure(FEInitShellFluidPressure& ip)
 {
-	XMLElement el("init");
-	el.add_attribute("bc", "q");
-	el.add_attribute("node_set", GetNodeSetName(ip.GetItemList()));
-	m_xml.add_branch(el);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
+	ec.add_attribute("node_set", GetNodeSetName(ip.GetItemList()));
+	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", "q");
 		m_xml.add_leaf("value", ip.GetValue());
 	}
 	m_xml.close_branch();
@@ -4036,11 +4010,12 @@ void FEBioExport3::WriteInitShellFluidPressure(FEInitShellFluidPressure& ip)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitTemperature(FEInitTemperature&   it)
 {
-	XMLElement el("init");
-	el.add_attribute("bc", "T");
-	el.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
-	m_xml.add_branch(el);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
+	ec.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
+	m_xml.add_branch(ec);
 	{
+		m_xml.add_leaf("dof", "T");
 		m_xml.add_leaf("value", it.GetValue());
 	}
 	m_xml.close_branch();
@@ -4049,12 +4024,13 @@ void FEBioExport3::WriteInitTemperature(FEInitTemperature&   it)
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteInitFluidDilatation(FEInitFluidDilatation&   it)
 {
-    XMLElement el("init");
-    el.add_attribute("bc", "ef");
-    el.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
-    m_xml.add_branch(el);
+	XMLElement ec("ic");
+	ec.add_attribute("type", "init_dof");
+	ec.add_attribute("node_set", GetNodeSetName(it.GetItemList()));
+    m_xml.add_branch(ec);
     {
-        m_xml.add_leaf("value", it.GetValue());
+		m_xml.add_leaf("dof", "ef");
+		m_xml.add_leaf("value", it.GetValue());
     }
     m_xml.close_branch();
 }
@@ -4068,65 +4044,19 @@ void FEBioExport3::WriteBodyLoads(FEStep& s)
 		if (pbl && pbl->IsActive())
 		{
 			if (m_writeNotes) WriteNote(pbl);
-			WriteBodyLoad(pbl);
+
+			FEItemListBuilder* pitem = pbl->GetItemList();
+
+			XMLElement el("body_load");
+			el.add_attribute("type", pbl->GetTypeString());
+			if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
+			m_xml.add_branch(el);
+			{
+				WriteParamList(*pbl);
+			}
+			m_xml.close_branch();
 		}
 	}
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport3::WriteBodyLoad(FEBodyLoad* pbl)
-{
-	FEBodyForce* pbf = dynamic_cast<FEBodyForce*>(pbl);
-	if (pbf) WriteBodyForce(pbf);
-
-	FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pbl);
-	if (phs) WriteHeatSource(phs);
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport3::WriteBodyForce(FEBodyForce* pbf)
-{
-	FEItemListBuilder* pitem = pbf->GetItemList();
-
-	XMLElement el("body_load");
-	el.add_attribute("type", "body force");
-	if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
-	m_xml.add_branch(el);
-	{
-		double x = pbf->GetLoad(0);
-		double y = pbf->GetLoad(1);
-		double z = pbf->GetLoad(2);
-
-		stringstream s;
-		s << x << ", " << y << ", " << z;
-		m_xml.add_leaf("force", s.str());
-/*		char sz[3][2] = { "x", "y", "z" };
-		XMLElement el;
-		for (int i = 0; i<3; ++i)
-		{
-			el.name(sz[i]);
-			FELoadCurve* plc = pbf->GetLoadCurve(i);
-			if (plc) el.add_attribute("lc", plc->GetID());
-			el.value(pbf->GetLoad(i));
-			m_xml.add_leaf(el);
-		}
-*/	}
-	m_xml.close_branch();
-}
-
-//-----------------------------------------------------------------------------
-void FEBioExport3::WriteHeatSource(FEHeatSource* phs)
-{
-	FEItemListBuilder* pitem = phs->GetItemList();
-
-	XMLElement el("body_load");
-	el.add_attribute("type", "heat_source");
-	if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
-	m_xml.add_branch(el);
-	{
-		WriteParamList(*phs);
-	}
-	m_xml.close_branch();
 }
 
 //-----------------------------------------------------------------------------

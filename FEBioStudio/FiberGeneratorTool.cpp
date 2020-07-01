@@ -26,56 +26,188 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FiberGeneratorTool.h"
-#include "Document.h"
+#include "ModelDocument.h"
+#include "MainWindow.h"
 #include <MeshTools/GradientMap.h>
+#include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/FENodeData.h>
+#include <QLineEdit>
+#include <QBoxLayout>
+#include <QTableWidget>
+#include <QPushButton>
+#include <QValidator>
+#include <QMessageBox>
+#include <QLabel>
+#include <QHeaderView>
+#include <QMessageBox>
 
-CFiberGeneratorTool::CFiberGeneratorTool(CMainWindow* wnd) : CBasicTool(wnd, "Fiber generator", HAS_APPLY_BUTTON)
+class UIFiberGeneratorTool : public QWidget
+{
+public:
+	QPushButton*	m_add;
+	QPushButton*	m_apply;
+	QTableWidget*	m_table;
+	QLineEdit*		m_val;
+
+public:
+	UIFiberGeneratorTool(CFiberGeneratorTool* w)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+
+		m_add = new QPushButton("Add");
+		m_val = new QLineEdit; m_val->setValidator(new QDoubleValidator);
+		m_val->setText("0");
+
+		QHBoxLayout* h2 = new QHBoxLayout;
+		h2->addWidget(new QLabel("Value"));
+		h2->addWidget(m_val);
+		h2->addWidget(m_add);
+
+		l->addLayout(h2);
+		l->addWidget(m_table = new QTableWidget);
+		m_table->setColumnCount(2);
+		m_table->horizontalHeader()->setStretchLastSection(true);
+		m_table->setHorizontalHeaderLabels(QStringList() << "selection" << "value");
+
+		l->addWidget(m_apply = new QPushButton("Apply"));
+
+		l->addStretch();
+
+		setLayout(l);
+
+		QObject::connect(m_add, SIGNAL(clicked()), w, SLOT(OnAddClicked()));
+		QObject::connect(m_apply, SIGNAL(clicked()), w, SLOT(OnApply()));
+	}
+};
+
+
+CFiberGeneratorTool::CFiberGeneratorTool(CMainWindow* wnd) : CAbstractTool(wnd, "Fiber generator")
 {
 	m_niter = 0;
-	m_ndata = 0;
-
-	addIntProperty(&m_ndata, "Data field");
-	addIntProperty(&m_niter, "smoothing iterations");
+	m_po = nullptr;
+	ui = nullptr;
 }
 
-bool CFiberGeneratorTool::OnApply()
+QWidget* CFiberGeneratorTool::createUi()
+{
+	if (ui == nullptr) ui = new UIFiberGeneratorTool(this);
+	return ui;
+}
+
+void CFiberGeneratorTool::Activate()
+{
+	Clear();
+	CAbstractTool::Activate();
+}
+
+void CFiberGeneratorTool::Clear()
+{
+	m_po = nullptr;
+	for (int i = 0; i < m_data.size(); ++i) delete m_data[i];
+	m_data.clear();
+	ui->m_table->clear();
+	ui->m_table->setRowCount(0);
+}
+
+void CFiberGeneratorTool::OnAddClicked()
+{
+	double v = ui->m_val->text().toDouble();
+
+	GObject* po = GetMainWindow()->GetActiveObject();
+	if (m_po == nullptr) m_po = po;
+	if (m_po == po)
+	{
+		CModelDocument* doc = GetMainWindow()->GetModelDocument();
+		FESelection* sel = doc->GetCurrentSelection();
+		if (sel)
+		{
+			FEItemListBuilder* items = sel->CreateItemList();
+			if (items)
+			{
+				m_data.push_back(items);
+
+				int n = ui->m_table->rowCount();
+				ui->m_table->insertRow(n);
+
+				QTableWidgetItem* it0 = new QTableWidgetItem;
+				it0->setText(QString("selection%1").arg(n));
+				it0->setFlags(Qt::ItemIsSelectable);
+				ui->m_table->setItem(n, 0, it0);
+
+				QTableWidgetItem* it1 = new QTableWidgetItem;
+				it1->setText(QString::number(v));
+				ui->m_table->setItem(n, 1, it1);
+			}
+		}
+	}
+}
+
+void CFiberGeneratorTool::OnApply()
 {
 	CDocument* pdoc = GetDocument();
 	GObject* po = pdoc->GetActiveObject();
 	if (po == 0) 
 	{
-		SetErrorString("You must select an object first.");
-		return false;
+		QMessageBox::critical(GetMainWindow(), "Tool", "You must select an object first.");
+		return;
 	}
 
 	FEMesh* pm = po->GetFEMesh();
 	if (pm == 0) 
 	{
-		SetErrorString("The selected object does not have a mesh.");
-		return false;
+		QMessageBox::critical(GetMainWindow(), "Tool", "The selected object does not have a mesh.");
+		return;
 	}
 
-	int N = pm->MeshDataFields();
-	if ((m_ndata >= 0) && (m_ndata < N))
+	int NN = pm->Nodes();
+	vector<int> bn(NN, 0);
+	vector<double> val(NN, 0.0);
+
+	for (int i = 0; i < m_data.size(); ++i)
 	{
-		// get node data field
-		FENodeData& D = dynamic_cast<FENodeData&>(*pm->GetMeshDataField(m_ndata));
+		FEItemListBuilder* item = m_data[i];
+		double v = ui->m_table->item(i, 1)->text().toDouble();
 
-		// calculate gradient and assign to element fiber
-		vector<vec3d> grad;
-		GradientMap G;
-		G.Apply(D, grad, m_niter);
-
-		// assign to element fibers
-		int NE = pm->Elements();
-		for (int i = 0; i<NE; ++i)
+		FENodeList* node = item->BuildNodeList(); assert(node);
+		if (node)
 		{
-			FEElement& el = pm->Element(i);
-			el.m_fiber = grad[i];
+			for (int i = 0; i < NN; ++i) pm->Node(i).m_ntag = i;
+
+			FENodeList::Iterator it = node->First();
+			int nn = node->Size();
+			for (int j = 0; j < nn; ++j, it++)
+			{
+				assert(it->m_pm == pm);
+				int nid = it->m_pi->m_ntag;
+				assert((nid >= 0) && (nid < NN));
+				val[nid] = v;
+				bn[nid] = 1;
+			}
 		}
 	}
 
-	return true;
+	// solve Laplace equation
+	LaplaceSolver L;
+	L.Solve(pm, val, bn);
+
+	// create node data
+	FENodeData data(m_po);
+	data.Create(0.0);
+	for (int i = 0; i < NN; i++) data.set(i, val[i]);
+
+	// calculate gradient and assign to element fiber
+	vector<vec3d> grad;
+	GradientMap G;
+	G.Apply(data, grad, m_niter);
+
+	// assign to element fibers
+	int NE = pm->Elements();
+	for (int i = 0; i<NE; ++i)
+	{
+		FEElement& el = pm->Element(i);
+		el.m_fiber = grad[i];
+	}
+
+	GetMainWindow()->RedrawGL();
 }

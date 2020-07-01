@@ -102,6 +102,16 @@ static GLubyte poly_mask[128] = {
 	170, 170, 170, 170
 };
 
+const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
+const int TET_NT[8] = { 0, 1, 2, 2, 3, 3, 3, 3 };
+const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
+
+// in MeshTools\lut.cpp
+extern int LUT[256][15]; 
+extern int ET_HEX[12][2];
+extern int ET_TET[6][2];
+
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
 	// see if either point lies inside the rectangle
@@ -2856,6 +2866,43 @@ void CGLView::RenderImageData()
 	glPopMatrix();
 }
 
+void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
+{
+	if (pmat->HasFibers())
+	{
+		vec3d q = pmat->GetFiber(rel);
+
+		// This vector is defined in global coordinates, except for user-defined fibers, which
+		// are assumed to be in local coordinates
+		FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat);
+		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
+		{
+			q = po->GetTransform().LocalToGlobalNormal(q);
+		}
+
+		double r = fabs(q.x);
+		double g = fabs(q.y);
+		double b = fabs(q.z);
+
+		glColor3d(r, g, b);
+
+		vec3d p0 = c - q * (h*0.5);
+		vec3d p1 = c + q * (h*0.5);
+		glVertex3d(p0.x, p0.y, p0.z);
+		glVertex3d(p1.x, p1.y, p1.z);
+	}
+
+	for (int i = 0; i < pmat->Properties(); ++i)
+	{
+		FEMaterialProperty& prop = pmat->GetProperty(i);
+		for (int j = 0; j < prop.Size(); ++j)
+		{
+			FEMaterial* matj = prop.GetMaterial(j);
+			if (matj) RenderFiber(po, matj, rel, c, h);
+		}
+	}
+}
+
 void CGLView::RenderMaterialFibers()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -2871,12 +2918,12 @@ void CGLView::RenderMaterialFibers()
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
 
 	BOX box = model.GetBoundingBox();
 	double h = 0.05*box.GetMaxExtent()*view.m_fiber_scale;
 
-	double r, g, b;
-
+	glBegin(GL_LINES);
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -2895,37 +2942,26 @@ void CGLView::RenderMaterialFibers()
 						FEMaterial* pmat = 0;
 						if (pgm) pmat = pgm->GetMaterialProperties();
 
-						FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat);
-
 						rel.m_nelem = j;
-						if (pmat && pmat->HasFibers())
+						if (pmat)
 						{
-							vec3d q = pmat->GetFiber(rel);
-
-							// This vector is defined in global coordinates, except for user-defined fibers, which
-							// are assumed to be in local coordinates
-							if (ptiso && (ptiso->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
-							{
-								q = po->GetTransform().LocalToGlobalNormal(q);
-							}
-
+							// element center
 							vec3d c(0, 0, 0);
-							for (int k = 0; k<el.Nodes(); ++k) c += po->GetTransform().LocalToGlobal(pm->Node(el.m_node[k]).r);
+							for (int k = 0; k < el.Nodes(); ++k) c += pm->Node(el.m_node[k]).r;
 							c /= el.Nodes();
 
-							r = fabs(q.x);
-							g = fabs(q.y);
-							b = fabs(q.z);
+							// to global coordinates
+							c = po->GetTransform().LocalToGlobal(c);
 
-							glColor3d(r, g, b);
-
-							glx::drawLine(c, c + q*h);
+							// render the fiber
+							RenderFiber(po, pmat, rel, c, h);
 						}
 					}
 				}
 			}
 		}
 	}
+	glEnd(); // GL_LINES
 
 	glPopAttrib();
 }
@@ -7701,6 +7737,58 @@ void CGLView::RenderFEElements(GObject* po)
 				}
 			}
 		}
+
+		// render a yellow highlight around selected elements
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		glColor3ub(255, 255, 0);
+
+
+		glBegin(GL_LINES);
+		for (i = 0; i < NE; ++i)
+		{
+			FEElement_& el = *psel->Element(i);
+			if (el.IsVisible())
+			{
+				switch (el.Type())
+				{
+				case FE_HEX8:
+				case FE_HEX20:
+				case FE_HEX27:
+					for (int j = 0; j < 12; ++j)
+					{
+						int n0 = el.m_node[ET_HEX[j][0]];
+						int n1 = el.m_node[ET_HEX[j][1]];
+
+						vec3d r0 = pm->Node(n0).pos();
+						vec3d r1 = pm->Node(n1).pos();
+
+						glx::vertex3d(r0);
+						glx::vertex3d(r1);
+					}
+					break;
+				case FE_TET4:
+				case FE_TET10:
+				case FE_TET15:
+					for (int j = 0; j < 6; ++j)
+					{
+						int n0 = el.m_node[ET_TET[j][0]];
+						int n1 = el.m_node[ET_TET[j][1]];
+
+						vec3d r0 = pm->Node(n0).pos();
+						vec3d r1 = pm->Node(n1).pos();
+
+						glx::vertex3d(r0);
+						glx::vertex3d(r1);
+					}
+					break;
+				}
+			}
+		}
+		glEnd();
+
+		glPopAttrib();
 	}
 
 	glPopAttrib();
@@ -8681,13 +8769,6 @@ void CGLView::RenderTags()
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 }
-
-const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
-const int TET_NT[8] = { 0, 1, 2, 2, 3, 3, 3, 3 };
-const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
-extern int LUT[256][15]; // in MeshTools\lut.cpp
-extern int ET_HEX[12][2];// in MeshTools\lut.cpp
 
 void CGLView::UpdatePlaneCut()
 {

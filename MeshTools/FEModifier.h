@@ -54,8 +54,8 @@ class FEPartitionSelection : public FEModifier
 {
 public:
 	FEPartitionSelection();
-	FEMesh* Apply(FEMesh* pm);	
-	FEMesh* Apply(FEGroup* pg);
+	FEMesh* Apply(FEMesh* pm) override;
+	FEMesh* Apply(FEGroup* pg) override;
 
 	bool UpdateData(bool bsave) override;
 };

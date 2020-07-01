@@ -264,6 +264,9 @@
 // fiber generators
 #define FE_FIBER_GENERATOR_LOCAL		1301
 #define FE_FIBER_GENERATOR_VECTOR		1302
+#define FE_FIBER_GENERATOR_SPHERICAL	1303
+#define FE_FIBER_GENERATOR_CYLINDRICAL	1304
+#define FE_FIBER_GENERATOR_ANGLES		1305
 
 // discrete materials
 #define FE_DISCRETE_LINEAR_SPRING		1401
@@ -284,7 +287,8 @@ public:
 class FEFiberGeneratorLocal : public FEFiberGenerator
 {
 public:
-	FEFiberGeneratorLocal();
+	FEFiberGeneratorLocal(int n0 = 0, int n1 = 0);
+	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FEFiberGeneratorLocal);
 };
 
@@ -292,8 +296,38 @@ public:
 class FEFiberGeneratorVector : public FEFiberGenerator
 {
 public:
-	FEFiberGeneratorVector();
+	FEFiberGeneratorVector(const vec3d& v = vec3d(1,0,0));
+	vec3d GetFiber(FEElementRef& el) override;
 	DECLARE_REGISTERED(FEFiberGeneratorVector);
+};
+
+//-----------------------------------------------------------------------------
+class FECylindricalVectorGenerator : public FEFiberGenerator
+{
+public:
+	FECylindricalVectorGenerator();
+	FECylindricalVectorGenerator(const vec3d& center, const vec3d& axis, const vec3d& vector);
+	vec3d GetFiber(FEElementRef& el) override;
+	DECLARE_REGISTERED(FECylindricalVectorGenerator);
+};
+
+//-----------------------------------------------------------------------------
+class FESphericalVectorGenerator : public FEFiberGenerator
+{
+public:
+	FESphericalVectorGenerator();
+	FESphericalVectorGenerator(const vec3d& center, const vec3d& vector);
+	vec3d GetFiber(FEElementRef& el) override;
+	DECLARE_REGISTERED(FESphericalVectorGenerator);
+};
+
+//-----------------------------------------------------------------------------
+class FEAnglesVectorGenerator : public FEFiberGenerator
+{
+public:
+	FEAnglesVectorGenerator(double theta = 0.0, double phi = 90.0);
+	vec3d GetFiber(FEElementRef& el) override;
+	DECLARE_REGISTERED(FEAnglesVectorGenerator);
 };
 
 //-----------------------------------------------------------------------------
@@ -493,21 +527,12 @@ public:
 	DECLARE_REGISTERED(FEPRLig);
 };
 
-//-----------------------------------------------------------------------------
-// material class for fibers
-//
-
-// We needed to put the fiber generation options into a class derived from
-// FEMaterial, so it can be displayed in the FEMaterialPropsView.
-// TODO: Find a better implementation for this!
-class FEFiberGeneratorMaterial : public FEMaterial
+class FEOldFiberMaterial : public FEMaterial
 {
-public:
-	FEFiberGeneratorMaterial();
-
-	vec3d GetFiberVector(FEElementRef& el);
-
-	bool UpdateData(bool bsave) override;
+private:
+	enum {
+		MP_AOPT, MP_N, 
+		MP_R, MP_A,	MP_D, MP_PARAMS, MP_NUSER, MP_THETA, MP_PHI, MP_D0, MP_D1, MP_R0, MP_R1 };
 
 public:
 	int		m_naopt;	// fiber option
@@ -521,26 +546,19 @@ public:
 	// used by POLAR method
 	vec3d	m_d0, m_d1;
 	double	m_R0, m_R1;
-};
-
-class FEOldFiberMaterial : public ParamContainer
-{
-private:
-	enum {
-		MP_AOPT, MP_N, 
-		MP_R, MP_A,	MP_D, MP_PARAMS, MP_NUSER, MP_THETA, MP_PHI, MP_D0, MP_D1, MP_R0, MP_R1 };
 
 public:
-	FEFiberGeneratorMaterial	m_fiber;
-
-public:
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 	void copy(FEOldFiberMaterial* pm);
 
 public:
 	FEOldFiberMaterial();
+
+	vec3d GetFiberVector(FEElementRef& el);
+
+	bool UpdateData(bool bsave) override;
 
 private:
 	FEOldFiberMaterial(const FEOldFiberMaterial& m);
@@ -1178,6 +1196,10 @@ public:
 	DECLARE_REGISTERED(FEEFDUncoupled);
 };
 
+//=============================================================================
+// Obsolete Fiber materials. Retained for backward compatibility.
+//=============================================================================
+
 //-----------------------------------------------------------------------------
 class FEFiberExpPowOld : public FEMaterial
 {
@@ -1218,11 +1240,32 @@ public:
 //    DECLARE_REGISTERED(FEFiberPowLinUncoupled);
 };
 
+//=============================================================================
+// Fiber materials
+//=============================================================================
+
 //-----------------------------------------------------------------------------
-class FEFiberExpPow : public FEMaterial
+// Base class manages the fiber generator
+class FEFiberMaterial : public FEMaterial
+{
+public:
+	FEFiberMaterial(int ntype);
+
+	bool HasFibers() override;
+
+	vec3d GetFiber(FEElementRef& el) override;
+
+	void SetFiberGenerator(FEFiberGenerator* v);
+
+	void SetAxisMaterial(FEAxisMaterial* Q) override;
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberExpPow : public FEFiberMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI };
+
 public:
     FEFiberExpPow();
     
@@ -1233,7 +1276,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpPowUncoupled : public FEMaterial
+class FEFiberExpPowUncoupled : public FEFiberMaterial
 {
 public:
     enum { MP_ALPHA, MP_BETA, MP_KSI, MP_K };
@@ -1247,7 +1290,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberPowLin : public FEMaterial
+class FEFiberPowLin : public FEFiberMaterial
 {
 public:
     enum { MP_E, MP_BETA, MP_LAM0 };
@@ -1261,7 +1304,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberPowLinUncoupled : public FEMaterial
+class FEFiberPowLinUncoupled : public FEFiberMaterial
 {
 public:
     enum { MP_E, MP_BETA, MP_LAM0, MP_K };
@@ -1275,7 +1318,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpLinear : public FEMaterial
+class FEFiberExpLinear : public FEFiberMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
@@ -1285,7 +1328,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEFiberExpLinearUncoupled : public FEMaterial
+class FEFiberExpLinearUncoupled : public FEFiberMaterial
 {
 public:
 	enum { MP_ALPHA, MP_BETA, MP_KSI, MP_THETA, MP_PHI };
@@ -1293,6 +1336,8 @@ public:
 	FEFiberExpLinearUncoupled();
 	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
 };
+
+//=============================================================================
 
 //-----------------------------------------------------------------------------
 // CLE cubic

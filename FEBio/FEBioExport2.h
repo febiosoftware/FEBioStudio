@@ -40,7 +40,7 @@ public:
 	FEBioExport2(FEProject& prj);
 	virtual ~FEBioExport2();
 
-	void Clear();
+	void Clear() override;
 
 	bool Write(const char* szfile) override;
 
@@ -48,7 +48,7 @@ public: // set export attributes
 	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
 
 protected:
-	bool PrepareExport(FEProject& prj);
+	bool PrepareExport(FEProject& prj) override;
 
 	void WriteModuleSection    (FEAnalysisStep* pstep);
 	void WriteControlSection   (FEAnalysisStep* pstep);

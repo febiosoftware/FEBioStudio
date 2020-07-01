@@ -124,7 +124,7 @@ std::string defaultConstraintName(FEModel* fem, FEModelConstraint* pi)
 	const char* ch = pi->GetTypeString();
 	string type = Namify(ch);
 
-	int n = fem->CountConstraints(pi->Type());
+	int n = CountConstraints<FEModelConstraint>(*fem);
 
 	stringstream ss;
 	ss << type << n + 1;
@@ -1325,9 +1325,9 @@ void FEModel::UpdateData()
 				GPart& p = *po->Part(j);
 				GMaterial* pgm = GetMaterialFromID(p.GetMaterialID());
 				FETransverselyIsotropic* pmat = (pgm?dynamic_cast<FETransverselyIsotropic*>(pgm->GetMaterialProperties()):0);
-				if (pmat && (pmat->GetFiberMaterial()->m_fiber.m_naopt == FE_FIBER_USER))
+				if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
 				{
-					FEDataVariable* pv = FindDataVariable(pmat->GetFiberMaterial()->m_fiber.m_nuser);
+					FEDataVariable* pv = FindDataVariable(pmat->GetFiberMaterial()->m_nuser);
 					int NE = pm->Elements();
 					if (pv)
 					{
@@ -1487,7 +1487,7 @@ int FEModel::CountInterfaces(int type)
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::CountConstraints(int type)
+int FEModel::CountRigidConstraints(int type)
 {
 	int n = 0;
 	int NSTEPS = Steps();
@@ -1499,6 +1499,25 @@ int FEModel::CountConstraints(int type)
 		for (int j = 0; j<NRC; ++j)
 		{
 			FERigidConstraint* prc = step->RigidConstraint(j);
+			if (prc->Type() == type) n++;
+		}
+	}
+	return n;
+}
+
+//-----------------------------------------------------------------------------
+int FEModel::CountRigidConnectors(int type)
+{
+	int n = 0;
+	int NSTEPS = Steps();
+	for (int i = 0; i < NSTEPS; ++i)
+	{
+		FEStep* step = GetStep(i);
+
+		int NRC = step->RigidConnectors();
+		for (int j = 0; j < NRC; ++j)
+		{
+			FERigidConnector* prc = step->RigidConnector(j);
 			if (prc->Type() == type) n++;
 		}
 	}

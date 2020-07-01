@@ -2582,7 +2582,7 @@ void FEBioFormatOld::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 {
 	FEModel& fem = GetFEModel();
 
-	FEBodyForce* pbl = new FEBodyForce(&fem, pstep->GetID());
+	FEConstBodyForce* pbl = new FEConstBodyForce(&fem, pstep->GetID());
 	pstep->AddComponent(pbl);
 
 	++tag;
@@ -2594,7 +2594,7 @@ void FEBioFormatOld::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 	while (!tag.isend());
 
 	char szname[256] = { 0 };
-	sprintf(szname, "BodyForce%02d", CountLoads<FEBodyForce>(fem));
+	sprintf(szname, "BodyForce%02d", CountLoads<FEConstBodyForce>(fem));
 	pbl->SetName(szname);
 }
 

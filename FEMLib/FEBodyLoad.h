@@ -12,20 +12,33 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-// Body Force
-class FEBodyForce : public FEBodyLoad
+// Constant Body Force (Obsolete)
+class FEConstBodyForce : public FEBodyLoad
 {
 public:
-	enum { LOAD1, LOAD2, LOAD3 };
+	enum { FORCE_X, FORCE_Y, FORCE_Z };
 
 	FELoadCurve* GetLoadCurve(int n);
 
-	double GetLoad(int n) { return GetFloatValue(LOAD1 + n); }
+	double GetLoad(int n);
 
-	void SetLoad(int n, double v) { SetFloatValue(LOAD1 + n, v); }
+	void SetLoad(int n, double v);
 
 public:
-	FEBodyForce(FEModel* ps, int nstep = 0);
+	FEConstBodyForce(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+// Non-constant Body Force (Obsolete)
+class FENonConstBodyForce : public FEBodyLoad
+{
+public:
+	enum { FORCE_X, FORCE_Y, FORCE_Z };
+
+	FELoadCurve* GetLoadCurve(int n);
+
+public:
+	FENonConstBodyForce(FEModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------

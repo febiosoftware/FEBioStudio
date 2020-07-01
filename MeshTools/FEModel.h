@@ -195,8 +195,8 @@ public:
 	int CountLoads(int type);
 	int CountICs(int type);
 	int CountInterfaces(int type);
-	int CountConstraints(int type);
-	int CountConnectors(int type);
+	int CountRigidConstraints(int type);
+	int CountRigidConnectors(int type);
 
 protected:
 	// I/O helper functions

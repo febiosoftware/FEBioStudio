@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/GModel.h>
 #include <assert.h>
+#include <sstream>
 
 FEBioFormat25::FEBioFormat25(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {
@@ -269,8 +270,20 @@ void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	if (szname == 0) szname = tag.AttributeValue("elset", true);
 	if (szname == 0) szname = "_no_name";
 
+	// make sure no parts have the same name
+	string name = szname;
+	int n = 2;
+	while (part->FindDomain(name))
+	{
+		if (n == 2) FileReader()->AddLogEntry("Part with name \"%s\" already defined.", szname);
+
+		stringstream ss;
+		ss << szname << "(" << n++ << ")";
+		name = ss.str();
+	}
+
 	// add domain to list
-	FEBioModel::Domain* dom = part->AddDomain(szname, matID);
+	FEBioModel::Domain* dom = part->AddDomain(name, matID);
 
 	// read the elements
 	vector<FEBioModel::ELEM> elem;
@@ -621,186 +634,12 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
 	{
 		if (tag == "ElementData")
 		{
-			XMLAtt* var = tag.AttributePtr("var");
-			if (var && (*var == "shell thickness"))
-			{
-				const char* szset = tag.AttributeValue("elem_set");
-				FEBioModel& feb = GetFEBioModel();
-
-				FEBioModel::Domain* dom = feb.FindDomain(szset);
-				if (dom)
-				{
-					FEMesh* mesh = dom->GetPart()->GetFEMesh();
-					
-					double h[FEElement::MAX_NODES] = {0};
-					++tag;
-					do
-					{
-						int m = tag.value(h, FEElement::MAX_NODES);
-						int lid = tag.AttributeValue<int>("lid", 0) - 1;
-						if (lid >= 0)
-						{
-							int id = dom->ElementID(lid);
-							FEElement& el = mesh->Element(id);
-
-							assert(m == el.Nodes());
-							for (int i=0; i<m; ++i) el.m_h[i] = h[i];
-						}
-						++tag;
-					}
-					while (!tag.isend());
-				}
-				else ParseUnknownTag(tag);
-			}
-            else if (var && (*var == "fiber"))
-            {
-                const char* szset = tag.AttributeValue("elem_set");
-                FEBioModel& feb = GetFEBioModel();
-                
-                FEBioModel::Domain* dom = feb.FindDomain(szset);
-                if (dom)
-                {
-                    FEMesh* mesh = dom->GetPart()->GetFEMesh();
-                    
-                    vec3d a;
-                    ++tag;
-                    do
-                    {
-                        int lid = tag.AttributeValue<int>("lid", 0) - 1;
-                        if (lid >= 0)
-                        {
-                            int id = dom->ElementID(lid);
-                            FEElement& el = mesh->Element(id);
-                            tag.value(a);
-                            a.Normalize();
-                            // set up a orthonormal coordinate system
-                            vec3d b(0, 1, 0);
-                            if (fabs(fabs(a*b) - 1) < 1e-7) b = vec3d(0, 0, 1);
-                            vec3d c = a^b;
-                            b = c^a;
-                            // make sure they are unit vectors
-                            b.Normalize();
-                            c.Normalize();
-                            el.m_Q = mat3d(a.x, b.x, c.x,
-                                           a.y, b.y, c.y,
-                                           a.z, b.z, c.z);
-                            el.m_fiber = a;
-                        }
-                        ++tag;
-                    }
-                    while (!tag.isend());
-                }
-                else ParseUnknownTag(tag);
-            }
-            else if (var && (*var == "mat_axis"))
-            {
-                const char* szset = tag.AttributeValue("elem_set");
-                FEBioModel& feb = GetFEBioModel();
-                
-                FEBioModel::Domain* dom = feb.FindDomain(szset);
-                if (dom)
-                {
-                    FEMesh* mesh = dom->GetPart()->GetFEMesh();
-                    
-                    vec3d a, b, c, d;
-                    ++tag;
-                    do
-                    {
-                        int lid = tag.AttributeValue<int>("lid", 0) - 1;
-                        if (lid >= 0)
-                        {
-                            int id = dom->ElementID(lid);
-                            FEElement& el = mesh->Element(id);
-                            
-                            ++tag;
-                            do
-                            {
-                                if (tag == "a") tag.value(a);
-                                else if (tag == "d") tag.value(d);
-                                ++tag;
-                            }
-                            while (!tag.isend());
-                            a.Normalize();
-                            c = a ^ d; c.Normalize();
-                            b = c ^ a; b.Normalize();
-                            el.m_Q = mat3d(a.x, b.x, c.x,
-                                           a.y, b.y, c.y,
-                                           a.z, b.z, c.z);
-                            el.m_Qactive = true;
-                        }
-                        ++tag;
-                    }
-                    while (!tag.isend());
-                }
-                else ParseUnknownTag(tag);
-            }
-			else
-			{
-				// Read the data and store it as a mesh data section
-				FEBioModel& feb = GetFEBioModel();
-
-				const char* szset = tag.AttributeValue("elem_set");
-				FEBioModel::Domain* dom = feb.FindDomain(szset);
-				if (dom)
-				{
-					FEPart* pg = feb.BuildFEPart(dom);
-					if (pg)
-					{
-						FEMesh* mesh = pg->GetMesh();
-						FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
-
-						double scale = tag.AttributeValue("scale", 1.0);
-						pd->SetScaleFactor(scale);
-
-						double val;
-						int lid;
-						++tag;
-						do
-						{
-							tag.AttributePtr("lid")->value(lid);
-							tag.value(val);
-
-							(*pd)[lid - 1] = val;
-
-							++tag;
-						} while (!tag.isend());
-					}
-					else ParseUnknownTag(tag);
-				}
-				else ParseUnknownTag(tag);
-			}
+			ParseElementData(tag);
         }
 		else if (tag == "SurfaceData")
 		{
-			FEBioModel& feb = GetFEBioModel();
-
-			XMLAtt* name = tag.AttributePtr("name");
-			XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
-			XMLAtt* surf = tag.AttributePtr("surface");
-
-			FEMeshData::DATA_TYPE dataType;
-			if(*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-			else if(*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
-			else return false;
-
-			FESurface* feSurf = feb.BuildFESurface(surf->cvalue());
-			FEMesh* feMesh = feSurf->GetMesh();
-
-			FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
-
-			double val;
-			int lid;
-			++tag;
-			do
-			{
-				tag.AttributePtr("lid")->value(lid);
-				tag.value(val);
-
-				(*sd)[lid - 1] = val;
-
-				++tag;
-			}while (!tag.isend());
-
+			ParseSurfaceData(tag);
+	
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -832,6 +671,190 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
             e0.m_fiber = e1.m_fiber;
 		}
 	}
+
+	return true;
+}
+
+bool FEBioFormat25::ParseElementData(XMLTag& tag)
+{
+	XMLAtt* var = tag.AttributePtr("var");
+	if (var && (*var == "shell thickness"))
+	{
+		const char* szset = tag.AttributeValue("elem_set");
+		FEBioModel& feb = GetFEBioModel();
+
+		FEBioModel::Domain* dom = feb.FindDomain(szset);
+		if (dom)
+		{
+			FEMesh* mesh = dom->GetPart()->GetFEMesh();
+
+			double h[FEElement::MAX_NODES] = { 0 };
+			++tag;
+			do
+			{
+				int m = tag.value(h, FEElement::MAX_NODES);
+				int lid = tag.AttributeValue<int>("lid", 0) - 1;
+				if (lid >= 0)
+				{
+					int id = dom->ElementID(lid);
+					FEElement& el = mesh->Element(id);
+
+					assert(m == el.Nodes());
+					for (int i = 0; i < m; ++i) el.m_h[i] = h[i];
+				}
+				++tag;
+			} while (!tag.isend());
+		}
+		else ParseUnknownTag(tag);
+	}
+	else if (var && (*var == "fiber"))
+	{
+		const char* szset = tag.AttributeValue("elem_set");
+		FEBioModel& feb = GetFEBioModel();
+
+		FEBioModel::Domain* dom = feb.FindDomain(szset);
+		if (dom)
+		{
+			FEMesh* mesh = dom->GetPart()->GetFEMesh();
+
+			vec3d a;
+			++tag;
+			do
+			{
+				int lid = tag.AttributeValue<int>("lid", 0) - 1;
+				if (lid >= 0)
+				{
+					int id = dom->ElementID(lid);
+					FEElement& el = mesh->Element(id);
+					tag.value(a);
+					a.Normalize();
+					// set up a orthonormal coordinate system
+					vec3d b(0, 1, 0);
+					if (fabs(fabs(a*b) - 1) < 1e-7) b = vec3d(0, 0, 1);
+					vec3d c = a ^ b;
+					b = c ^ a;
+					// make sure they are unit vectors
+					b.Normalize();
+					c.Normalize();
+					el.m_Q = mat3d(a.x, b.x, c.x,
+						a.y, b.y, c.y,
+						a.z, b.z, c.z);
+					el.m_fiber = a;
+				}
+				++tag;
+			} while (!tag.isend());
+		}
+		else ParseUnknownTag(tag);
+	}
+	else if (var && (*var == "mat_axis"))
+	{
+		const char* szset = tag.AttributeValue("elem_set");
+		FEBioModel& feb = GetFEBioModel();
+
+		FEBioModel::Domain* dom = feb.FindDomain(szset);
+		if (dom)
+		{
+			FEMesh* mesh = dom->GetPart()->GetFEMesh();
+
+			vec3d a, b, c, d;
+			++tag;
+			do
+			{
+				int lid = tag.AttributeValue<int>("lid", 0) - 1;
+				if (lid >= 0)
+				{
+					int id = dom->ElementID(lid);
+					FEElement& el = mesh->Element(id);
+
+					++tag;
+					do
+					{
+						if (tag == "a") tag.value(a);
+						else if (tag == "d") tag.value(d);
+						++tag;
+					} while (!tag.isend());
+					a.Normalize();
+					c = a ^ d; c.Normalize();
+					b = c ^ a; b.Normalize();
+					el.m_Q = mat3d(a.x, b.x, c.x,
+						a.y, b.y, c.y,
+						a.z, b.z, c.z);
+					el.m_Qactive = true;
+				}
+				++tag;
+			} while (!tag.isend());
+		}
+		else ParseUnknownTag(tag);
+	}
+	else
+	{
+		// Read the data and store it as a mesh data section
+		FEBioModel& feb = GetFEBioModel();
+
+		const char* szset = tag.AttributeValue("elem_set");
+		FEBioModel::Domain* dom = feb.FindDomain(szset);
+		if (dom)
+		{
+			FEPart* pg = feb.BuildFEPart(dom);
+			if (pg)
+			{
+				FEMesh* mesh = pg->GetMesh();
+				FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
+
+				double scale = tag.AttributeValue("scale", 1.0);
+				pd->SetScaleFactor(scale);
+
+				double val;
+				int lid;
+				++tag;
+				do
+				{
+					tag.AttributePtr("lid")->value(lid);
+					tag.value(val);
+
+					(*pd)[lid - 1] = val;
+
+					++tag;
+				} while (!tag.isend());
+			}
+			else ParseUnknownTag(tag);
+		}
+		else ParseUnknownTag(tag);
+	}
+
+	return true;
+}
+
+bool FEBioFormat25::ParseSurfaceData(XMLTag& tag)
+{
+	FEBioModel& feb = GetFEBioModel();
+
+	XMLAtt* name = tag.AttributePtr("name");
+	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+	XMLAtt* surf = tag.AttributePtr("surface");
+
+	FEMeshData::DATA_TYPE dataType;
+	if ((dataTypeAtt == nullptr) || (*dataTypeAtt == "scalar")) dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+	else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+	else return false;
+
+	FESurface* feSurf = feb.BuildFESurface(surf->cvalue());
+	FEMesh* feMesh = feSurf->GetMesh();
+
+	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
+
+	double val;
+	int lid;
+	++tag;
+	do
+	{
+		tag.AttributePtr("lid")->value(lid);
+		tag.value(val);
+
+		(*sd)[lid - 1] = val;
+
+		++tag;
+	} while (!tag.isend());
 
 	return true;
 }
@@ -1234,9 +1257,9 @@ void FEBioFormat25::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	{
 		if (tag == "scale")
 		{
-			int lc = tag.AttributeValue<int>("lc", -1);
+			int lc = tag.Attribute("lc").value<int>() - 1;
 			if (lc == -1) throw XMLReader::InvalidAttributeValue(tag, "lc", 0);
-			pbc->GetLoadCurve()->SetID(lc);
+			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
 
 			double val;
 			tag.value(val);
@@ -1320,11 +1343,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadPressure(XMLTag& tag)
 		}
 		else if (tag == "pressure")
 		{
-			double s; tag.value(s);
-			pbc->SetLoad(s);
-
-			int lc = tag.Attribute("lc").value<int>() - 1;
-			febio.AddParamCurve(pbc->GetLoadCurve(), lc);
+			ReadParam(*pbc, tag);
 		}
 		++tag;
 	}
@@ -1840,16 +1859,16 @@ FESurfaceLoad* FEBioFormat25::ParseLoadNormalTraction(XMLTag& tag)
 		}
 		else if (tag == "mixture")
 		{
-			bool b; tag.value(b);
-			pbc->SetMixtureFlag(b);
-		}
-		else if (tag == "effective")
-		{
 			// I initially called the "mixture" flag the "effective" flag
 			// but I had the values swapped.
 			// Whence this little hack
 			bool b; tag.value(b);
 			pbc->SetMixtureFlag(!b);
+		}
+		else if (tag == "effective")
+		{
+			bool b; tag.value(b);
+			pbc->SetMixtureFlag(b);
 		}
 		else if (tag == "traction")
 		{
@@ -2536,16 +2555,20 @@ void FEBioFormat25::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 	if (szn) strcpy(szname, szn);
 	pci->SetName(szname);
 
-	FESurface *pms = 0, *pss = 0;
+	// assign surface
+	const char* szsurf = tag.AttributeValue("surface", true);
+	if (szsurf)
+	{
+		FESurface* surface = febio.BuildFESurface(szsurf);
+		if (surface) pci->SetItemList(surface);
+	}
 
+	// read parameters
 	++tag;
 	do
 	{
 		// read parameters
-		if      (tag == "laugon"   ) { int n; tag.value(n); pci->SetBoolValue(FERigidWallInterface::LAUGON, (n == 0 ? false : true)); }
-		else if (tag == "tolerance") { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::ALTOL, f); }
-		else if (tag == "penalty"  ) { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::PENALTY, f); }
-		if      (tag == "plane"    )
+		if (tag == "plane"    )
 		{
 			double n[4];
 			tag.value(n, 4);
@@ -2557,6 +2580,7 @@ void FEBioFormat25::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 			const char* szlc = tag.AttributeValue("lc", true);
 			if (szlc) febio.AddParamCurve(&pci->GetParam(FERigidWallInterface::OFFSET), atoi(szlc) - 1);
 		}
+		else ReadParam(*pci, tag);
 		++tag;
 	}
 	while (!tag.isend());
@@ -2854,7 +2878,7 @@ void FEBioFormat25::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 {
 	FEModel& fem = GetFEModel();
 
-	FEBodyForce* pbl = new FEBodyForce(&fem, pstep->GetID());
+	FEConstBodyForce* pbl = new FEConstBodyForce(&fem, pstep->GetID());
 	pstep->AddComponent(pbl);
 
 	++tag;
@@ -2866,7 +2890,7 @@ void FEBioFormat25::ParseBodyForce(FEStep *pstep, XMLTag &tag)
 	while (!tag.isend());
 
 	char szname[256] = { 0 };
-	sprintf(szname, "BodyForce%02d", CountLoads<FEBodyForce>(fem));
+	sprintf(szname, "BodyForce%02d", CountLoads<FEConstBodyForce>(fem));
 	pbl->SetName(szname);
 }
 
@@ -2875,7 +2899,7 @@ void FEBioFormat25::ParseNonConstBodyForce(FEStep *pstep, XMLTag &tag)
 {
 	FEModel& fem = GetFEModel();
 
-	FEBodyForce* pbl = new FEBodyForce(&fem, pstep->GetID());
+	FENonConstBodyForce* pbl = new FENonConstBodyForce(&fem, pstep->GetID());
 	pstep->AddComponent(pbl);
 
 	++tag;
@@ -2887,7 +2911,7 @@ void FEBioFormat25::ParseNonConstBodyForce(FEStep *pstep, XMLTag &tag)
 	while (!tag.isend());
 
 	char szname[256] = { 0 };
-	sprintf(szname, "BodyForce%02d", CountLoads<FEBodyForce>(fem));
+	sprintf(szname, "BodyForce%02d", CountLoads<FEConstBodyForce>(fem));
 	pbl->SetName(szname);
 }
 
@@ -2954,6 +2978,8 @@ bool FEBioFormat25::ParseConstraintSection(XMLTag& tag)
 			else if (strcmp(sztype, "rigid angular damper"   ) == 0) ParseConnector(pstep, tag, 8);
 			else if (strcmp(sztype, "rigid contractile force") == 0) ParseConnector(pstep, tag, 9);
 			else if (strcmp(sztype, "generic rigid joint"    ) == 0) ParseConnector(pstep, tag, 10);
+			else if (strcmp(sztype, "rigid joint") == 0) ParseContactJoint(pstep, tag);
+			else ParseUnknownAttribute(tag, "type");
 		}
 		else ParseUnknownTag(tag);
 		++tag;

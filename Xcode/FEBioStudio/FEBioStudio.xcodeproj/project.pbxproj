@@ -16,6 +16,8 @@
 		D5248DDC231C114D00691871 /* DlgCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DDA231C114D00691871 /* DlgCheck.cpp */; };
 		D532E2AA24747D8000826447 /* libTKVCAF.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */; };
 		D532E2AB24747D8000826447 /* libTKVCAF.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D5460FF324A936E3008C8024 /* moc_FiberGeneratorTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5460FF124A936E3008C8024 /* moc_FiberGeneratorTool.cpp */; };
+		D5460FF424A936E3008C8024 /* moc_ScalarFieldTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5460FF224A936E3008C8024 /* moc_ScalarFieldTool.cpp */; };
 		D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */; };
 		D548545823749CCF00BE1731 /* libssl.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */; };
 		D548545C23749D1100BE1731 /* libx265.179.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545B23749D1100BE1731 /* libx265.179.dylib */; };
@@ -450,6 +452,8 @@
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
 		D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKVCAF.7.3.0.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKVCAF.7.3.0.dylib; sourceTree = "<group>"; };
+		D5460FF124A936E3008C8024 /* moc_FiberGeneratorTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_FiberGeneratorTool.cpp; sourceTree = "<group>"; };
+		D5460FF224A936E3008C8024 /* moc_ScalarFieldTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ScalarFieldTool.cpp; sourceTree = "<group>"; };
 		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
 		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
 		D548545B23749D1100BE1731 /* libx265.179.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.179.dylib; path = ../../../../../../../../../../usr/local/Cellar/x265/3.2.1/lib/libx265.179.dylib; sourceTree = "<group>"; };
@@ -1389,6 +1393,7 @@
 				D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */,
 				D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */,
 				D5F7D77A22FA37C40089B08E /* moc_EditPanel.cpp */,
+				D5460FF124A936E3008C8024 /* moc_FiberGeneratorTool.cpp */,
 				D5F7D6F922FA37C30089B08E /* moc_FileThread.cpp */,
 				D5F7D71F22FA37C40089B08E /* moc_FileViewer.cpp */,
 				D5F7D7FF22FA37C40089B08E /* moc_GLControlBar.cpp */,
@@ -1425,6 +1430,7 @@
 				D57C2A74240F1F990043C2A7 /* moc_PublicationWidgetView.cpp */,
 				D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */,
 				D5F7D73822FA37C40089B08E /* moc_ResourceEdit.cpp */,
+				D5460FF224A936E3008C8024 /* moc_ScalarFieldTool.cpp */,
 				D5F7D77B22FA37C40089B08E /* moc_SelectionBox.cpp */,
 				D5D5B6BE2335128D00D388FA /* moc_SSHHandler.cpp */,
 				D5D5B6C22335128E00D388FA /* moc_SSHThread.cpp */,
@@ -1950,9 +1956,11 @@
 				D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */,
 				D5CA211523EF7025001AE230 /* moc_DlgAddPublication.cpp in Sources */,
 				D5CC3A72245B4CD800311F48 /* moc_DlgPlotMix.cpp in Sources */,
+				D5460FF324A936E3008C8024 /* moc_FiberGeneratorTool.cpp in Sources */,
 				D5F7D84222FA37C40089B08E /* DlgBatchConvert.cpp in Sources */,
 				D5CA211823EF7025001AE230 /* Commands.cpp in Sources */,
 				D5F7D89022FA37C40089B08E /* PropertyList.cpp in Sources */,
+				D5460FF424A936E3008C8024 /* moc_ScalarFieldTool.cpp in Sources */,
 				D5F7D86222FA37C40089B08E /* Command.cpp in Sources */,
 				D5828D0C246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp in Sources */,
 				D5F7D8C622FA37C40089B08E /* moc_ModelSearch.cpp in Sources */,
@@ -1993,7 +2001,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_COMMA = NO;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -2063,7 +2071,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_COMMA = NO;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -2151,18 +2159,10 @@
 					/usr/local/opt/lame/lib,
 					/usr/local/opt/x265/lib,
 					/usr/local/opt/quazip/lib,
-					/usr/local/opt/sqlite/3.30.1/lib,
+					/usr/local/opt/sqlite/lib,
+					/usr/local/opt/libssh/lib,
+					/usr/local/opt/openssl/lib,
 					/usr/local/lib,
-					/usr/local/Cellar/libssh/0.9.0_1/lib,
-					/usr/local/Cellar/openssl/1.0.2s/lib,
-					/usr/local/Cellar/openssl/1.0.2t/lib,
-					/usr/local/Cellar/libssh/0.9.1/lib,
-					/usr/local/Cellar/x265/3.2.1/lib,
-					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
-					/usr/local/Cellar/libssh/0.9.2/lib,
-					/usr/local/Cellar/xvid/1.3.6/lib,
-					/usr/local/Cellar/quazip/0.8.1/lib,
-					/usr/local/Cellar/opencascade/7.3.0p3/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2208,18 +2208,10 @@
 					/usr/local/opt/lame/lib,
 					/usr/local/opt/x265/lib,
 					/usr/local/opt/quazip/lib,
-					/usr/local/opt/sqlite/3.30.1/lib,
+					/usr/local/opt/sqlite/lib,
+					/usr/local/opt/libssh/lib,
+					/usr/local/opt/openssl/lib,
 					/usr/local/lib,
-					/usr/local/Cellar/libssh/0.9.0_1/lib,
-					/usr/local/Cellar/openssl/1.0.2s/lib,
-					/usr/local/Cellar/openssl/1.0.2t/lib,
-					/usr/local/Cellar/libssh/0.9.1/lib,
-					/usr/local/Cellar/x265/3.2.1/lib,
-					/usr/local/Cellar/ffmpeg/4.2.1_2/lib,
-					/usr/local/Cellar/libssh/0.9.2/lib,
-					/usr/local/Cellar/xvid/1.3.6/lib,
-					/usr/local/Cellar/quazip/0.8.1/lib,
-					/usr/local/Cellar/opencascade/7.3.0p3/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";

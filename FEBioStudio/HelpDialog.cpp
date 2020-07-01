@@ -96,8 +96,8 @@ void CHelpDialog::on_help_clicked()
 		m_withoutHelp = size();
 		// reset min size
 		setMinimumSize(0,0);
-		LoadPage();
 		ui->helpView->setVisible(true);
+		LoadPage();
 		resize(m_withHelp);
 	}
 	else
@@ -119,6 +119,9 @@ void CHelpDialog::SetLeftSideLayout(QLayout* layout)
 void CHelpDialog::LoadPage()
 {
 #ifdef WEBHELP
+	// Make sure the help view is actually visible
+	if (ui->helpView->isVisible() == false) return;
+
 	QString oldURL = m_url;
 
 	SetURL();

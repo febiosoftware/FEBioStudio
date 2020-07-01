@@ -449,8 +449,15 @@ FEPart* FEBioModel::PartInstance::BuildFEPart(const char* szname)
 	ElementSet* set = m_part->FindElementSet(szname);
 	if (set == 0) return 0;
 
+	// get the element list
+	vector<int> elemList = set->elemList();
+
+	// these are element IDs. we need to convert them to indices
+	// TODO: implement this!
+	for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
+
 	// create the part
-	FEPart* pg = new FEPart(m_po, set->elemList());
+	FEPart* pg = new FEPart(m_po, elemList);
 
 	// copy the name
 	std::string name = set->name();

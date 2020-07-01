@@ -40,9 +40,25 @@ SOFTWARE.*/
 
 REGISTER_MATERIAL(FEFiberGeneratorLocal, MODULE_MECH, FE_FIBER_GENERATOR_LOCAL, FE_MAT_FIBER_GENERATOR, "local", 0);
 
-FEFiberGeneratorLocal::FEFiberGeneratorLocal() : FEFiberGenerator(FE_FIBER_GENERATOR_LOCAL)
+FEFiberGeneratorLocal::FEFiberGeneratorLocal(int n0, int n1) : FEFiberGenerator(FE_FIBER_GENERATOR_LOCAL)
 {
-	AddVec2iParam(vec2i(), "local", "local");
+	AddVec2iParam(vec2i(n0, n1), "local", "local");
+}
+
+vec3d FEFiberGeneratorLocal::GetFiber(FEElementRef& el)
+{
+	vec2i v = GetVec2iValue(0);
+
+	FECoreMesh* pm = el.m_pmesh;
+	int n[2] = { v.x, v.y };
+	if ((n[0] == 0) && (n[1] == 0)) { n[0] = 1; n[1] = 2; }
+	vec3d a = pm->Node(el->m_node[n[0] - 1]).r;
+	vec3d b = pm->Node(el->m_node[n[1] - 1]).r;
+
+	b -= a;
+	b.Normalize();
+
+	return b;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -51,9 +67,128 @@ FEFiberGeneratorLocal::FEFiberGeneratorLocal() : FEFiberGenerator(FE_FIBER_GENER
 
 REGISTER_MATERIAL(FEFiberGeneratorVector, MODULE_MECH, FE_FIBER_GENERATOR_VECTOR, FE_MAT_FIBER_GENERATOR, "vector", 0);
 
-FEFiberGeneratorVector::FEFiberGeneratorVector() : FEFiberGenerator(FE_FIBER_GENERATOR_VECTOR)
+FEFiberGeneratorVector::FEFiberGeneratorVector(const vec3d& v) : FEFiberGenerator(FE_FIBER_GENERATOR_VECTOR)
 {
+	AddVecParam(v, "vector", "vector");
+}
+
+vec3d FEFiberGeneratorVector::GetFiber(FEElementRef& el)
+{
+	return GetVecValue(0);
+}
+
+//////////////////////////////////////////////////////////////////////
+// FECylindricalVectorGenerator
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FECylindricalVectorGenerator, MODULE_MECH, FE_FIBER_GENERATOR_CYLINDRICAL, FE_MAT_FIBER_GENERATOR, "cylindrical", 0);
+
+FECylindricalVectorGenerator::FECylindricalVectorGenerator() : FEFiberGenerator(FE_FIBER_GENERATOR_CYLINDRICAL)
+{
+	AddVecParam(vec3d(0, 0, 0), "center", "center");
+	AddVecParam(vec3d(0, 0, 1), "axis"  , "axis"  );
 	AddVecParam(vec3d(1, 0, 0), "vector", "vector");
+}
+
+FECylindricalVectorGenerator::FECylindricalVectorGenerator(const vec3d& center, const vec3d& axis, const vec3d& vector) : FEFiberGenerator(FE_FIBER_GENERATOR_CYLINDRICAL)
+{
+	AddVecParam(center, "center", "center");
+	AddVecParam(axis  , "axis", "axis");
+	AddVecParam(vector, "vector", "vector");
+}
+
+vec3d FECylindricalVectorGenerator::GetFiber(FEElementRef& el)
+{
+	vec3d r = GetVecValue(0);
+	vec3d a = GetVecValue(1);
+	vec3d v = GetVecValue(2);
+
+	// we'll use the element center as the reference point
+	FECoreMesh* pm = el.m_pmesh;
+	int n = el->Nodes();
+	vec3d c(0, 0, 0);
+	for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
+	c /= (double)n;
+
+	// find the vector to the axis
+	vec3d b = (c - r) - a * (a*(c - r)); b.Normalize();
+
+	// setup the rotation vector
+	vec3d x_unit(vec3d(1, 0, 0));
+	quatd q(x_unit, b);
+
+	// rotate the reference vector
+	v.Normalize();
+	q.RotateVector(v);
+
+	return v;
+}
+
+//////////////////////////////////////////////////////////////////////
+// FESphericalVectorGenerator
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FESphericalVectorGenerator, MODULE_MECH, FE_FIBER_GENERATOR_SPHERICAL, FE_MAT_FIBER_GENERATOR, "spherical", 0);
+
+FESphericalVectorGenerator::FESphericalVectorGenerator() : FEFiberGenerator(FE_FIBER_GENERATOR_SPHERICAL)
+{
+	AddVecParam(vec3d(0, 0, 0), "center", "center");
+	AddVecParam(vec3d(1, 0, 0), "vector", "vector");
+}
+
+FESphericalVectorGenerator::FESphericalVectorGenerator(const vec3d& center, const vec3d& vector) : FEFiberGenerator(FE_FIBER_GENERATOR_SPHERICAL)
+{
+	AddVecParam(center, "center", "center");
+	AddVecParam(vector, "vector", "vector");
+}
+
+vec3d FESphericalVectorGenerator::GetFiber(FEElementRef& el)
+{
+	vec3d o = GetVecValue(0);
+	vec3d v = GetVecValue(1);
+
+	FECoreMesh* pm = el.m_pmesh;
+	int n = el->Nodes();
+	vec3d c(0, 0, 0);
+	for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
+	c /= (double)n;
+	c -= o;
+	c.Normalize();
+
+	// setup the rotation vector
+	vec3d x_unit(vec3d(1, 0, 0));
+	quatd q(x_unit, c);
+
+	v.Normalize();
+	q.RotateVector(v);
+
+	return v;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// FESphericalVectorGenerator
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEAnglesVectorGenerator, MODULE_MECH, FE_FIBER_GENERATOR_ANGLES, FE_MAT_FIBER_GENERATOR, "angles", 0);
+
+FEAnglesVectorGenerator::FEAnglesVectorGenerator(double theta, double phi) : FEFiberGenerator(FE_FIBER_GENERATOR_ANGLES)
+{
+	AddScienceParam(theta, UNIT_DEGREE, "theta");
+	AddScienceParam(phi, UNIT_DEGREE, "phi");
+}
+
+vec3d FEAnglesVectorGenerator::GetFiber(FEElementRef& el)
+{
+	double the = GetFloatValue(0) * DEG2RAD;
+	double phi = GetFloatValue(1) * DEG2RAD;
+
+	vec3d a;
+	a.x = cos(the)*sin(phi);
+	a.y = sin(the)*sin(phi);
+	a.z = cos(phi);
+
+	return a;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -64,7 +199,7 @@ REGISTER_MATERIAL(FEIsotropicElastic, MODULE_MECH, FE_ISOTROPIC_ELASTIC, FE_MAT_
 
 FEIsotropicElastic::FEIsotropicElastic() : FEMaterial(FE_ISOTROPIC_ELASTIC)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density"        );
+	AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus");
 	AddScienceParam(0, UNIT_NONE   ,       "v", "Poisson's ratio");
 }
@@ -77,9 +212,7 @@ REGISTER_MATERIAL(FEOrthoElastic, MODULE_MECH, FE_ORTHO_ELASTIC, FE_MAT_ELASTIC,
 
 FEOrthoElastic::FEOrthoElastic() : FEMaterial(FE_ORTHO_ELASTIC)
 {
-	m_hasMatAxes = true;
-
-	AddScienceParam(1, UNIT_DENSITY, "density", "density"    );
+	AddScienceParam(1, UNIT_DENSITY, "density", "density"    )->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE ,       "E1", "E1 modulus");
 	AddScienceParam(0, UNIT_PRESSURE ,       "E2", "E2 modulus");
 	AddScienceParam(0, UNIT_PRESSURE ,       "E3", "E3 modulus");
@@ -89,6 +222,8 @@ FEOrthoElastic::FEOrthoElastic() : FEMaterial(FE_ORTHO_ELASTIC)
 	AddScienceParam(0, UNIT_NONE   ,       "v12", "Poisson's ratio v12");
 	AddScienceParam(0, UNIT_NONE   ,       "v23", "Poisson's ratio v23");
 	AddScienceParam(0, UNIT_NONE   ,       "v31", "Poisson's ratio v31");
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -112,9 +247,9 @@ REGISTER_MATERIAL(FENaturalNeoHookean, MODULE_MECH, FE_NATURAL_NEO_HOOKEAN, FE_M
 
 FENaturalNeoHookean::FENaturalNeoHookean() : FEMaterial(FE_NATURAL_NEO_HOOKEAN)
 {
-    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->MakeVariable(true);
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->MakeVariable(true)->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE ,       "G", "shear modulus"  )->MakeVariable(true);
-    AddScienceParam(0, UNIT_PRESSURE ,       "k", "bulk modulus"   )->MakeVariable(true);
+    AddScienceParam(0, UNIT_PRESSURE ,       "k", "bulk modulus"   )->MakeVariable(true)->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -125,9 +260,9 @@ REGISTER_MATERIAL(FEIncompNeoHookean, MODULE_MECH, FE_INCOMP_NEO_HOOKEAN, FE_MAT
 
 FEIncompNeoHookean::FEIncompNeoHookean() : FEMaterial(FE_INCOMP_NEO_HOOKEAN)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "G", "shear modulus");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -138,9 +273,9 @@ REGISTER_MATERIAL(FEPorousNeoHookean, MODULE_MECH, FE_POROUS_NEO_HOOKEAN, FE_MAT
 
 FEPorousNeoHookean::FEPorousNeoHookean() : FEMaterial(FE_POROUS_NEO_HOOKEAN)
 {
-    AddScienceParam(1, UNIT_DENSITY, "density", "density"        );
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus");
-    AddScienceParam(0, UNIT_NONE   ,    "phi0", "solid volume fraction");
+    AddScienceParam(1, UNIT_NONE   ,    "phi0", "solid volume fraction");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -165,10 +300,10 @@ REGISTER_MATERIAL(FEVerondaWestmann, MODULE_MECH, FE_VERONDA_WESTMANN, FE_MAT_EL
 
 FEVerondaWestmann::FEVerondaWestmann() : FEMaterial(FE_VERONDA_WESTMANN)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density"     );
+	AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1"     , "c1"          );
 	AddScienceParam(0, UNIT_NONE   , "c2"     , "c2"          );
-	AddScienceParam(0, UNIT_PRESSURE , "k"      , "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k"      , "bulk modulus")->SetPersistent(false);
 }
 
 
@@ -183,7 +318,7 @@ FECoupledMooneyRivlin::FECoupledMooneyRivlin() : FEMaterial(FE_COUPLED_MOONEY_RI
 	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -197,7 +332,7 @@ FECoupledVerondaWestmann::FECoupledVerondaWestmann() : FEMaterial(FE_COUPLED_VER
 	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_NONE, "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -208,7 +343,7 @@ REGISTER_MATERIAL(FEHolmesMow, MODULE_MECH, FE_HOLMES_MOW, FE_MAT_ELASTIC, "Holm
 
 FEHolmesMow::FEHolmesMow() : FEMaterial(FE_HOLMES_MOW)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "Material density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "Material density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "E", "Young's modulus");
 	AddScienceParam(0, UNIT_NONE   , "v", "Poisson's ratio");
 	AddScienceParam(0, UNIT_NONE   , "beta", "beta"        );
@@ -222,10 +357,10 @@ REGISTER_MATERIAL(FEArrudaBoyce, MODULE_MECH, FE_ARRUDA_BOYCE, FE_MAT_ELASTIC_UN
 
 FEArrudaBoyce::FEArrudaBoyce() : FEMaterial(FE_ARRUDA_BOYCE)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "Material density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "Material density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "mu", "Initial modulus");
 	AddScienceParam(0, UNIT_NONE   , "N", "links");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "Bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "Bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -252,20 +387,20 @@ REGISTER_MATERIAL(FEPRLig, MODULE_MECH, FE_PRLIG, FE_MAT_ELASTIC_UNCOUPLED, "PRL
 
 FEPRLig::FEPRLig() : FEMaterial(FE_PRLIG)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE   , "c1"     , "c1");
 	AddScienceParam(1, UNIT_NONE   , "c2"     , "c2");
 	AddScienceParam(0, UNIT_NONE   , "v0"     , "v0");
 	AddScienceParam(0, UNIT_NONE   , "m"      , "m" );
 	AddScienceParam(0, UNIT_NONE   , "mu"     , "mu");
-	AddScienceParam(0, UNIT_NONE   , "k"      , "k" );
+	AddScienceParam(0, UNIT_NONE   , "k"      , "k" )->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
 // FEOldFiberMaterial - material for fibers
 //////////////////////////////////////////////////////////////////////
 
-FEFiberGeneratorMaterial::FEFiberGeneratorMaterial() : FEMaterial(0)
+FEOldFiberMaterial::FEOldFiberMaterial() : FEMaterial(0)
 {
 	AddIntParam(0, "fiber", "fiber")->SetEnumNames("local\0cylindrical\0spherical\0vector\0user\0angles\0polar\0\0");
 	AddIntParam(0, "n0", "n0");
@@ -275,9 +410,23 @@ FEFiberGeneratorMaterial::FEFiberGeneratorMaterial() : FEMaterial(0)
 	AddVecParam(vec3d(1, 0, 0), "d");
 	AddDoubleParam(0, "theta");
 	AddDoubleParam(0, "phi");
+
+	m_naopt = FE_FIBER_VECTOR;
+	m_nuser = 0;
+	m_n[0] = m_n[1] = 0;
+	m_r = vec3d(0,0,0);
+	m_a = vec3d(0,0,1);
+	m_d = vec3d(1,0,0);
+	m_theta = 0.0;
+	m_phi = 90.0;
+	m_d0 = m_d1 = vec3d(0,0,1);
+	m_R0 = 0; m_R1 = 1;
+
+	UpdateData(false);
+	UpdateData(true);
 }
 
-bool FEFiberGeneratorMaterial::UpdateData(bool bsave)
+bool FEOldFiberMaterial::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -341,7 +490,7 @@ bool FEFiberGeneratorMaterial::UpdateData(bool bsave)
 	return false;
 }
 
-vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
+vec3d FEOldFiberMaterial::GetFiberVector(FEElementRef& el)
 {
 	switch (m_naopt)
 	{
@@ -365,14 +514,14 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 		FECoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
-		for (int i = 0; i<n; ++i) c += pm->NodePosition(el->m_node[i]);
+		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
 		c /= (double)n;
 
 		// find the vector to the axis
 		vec3d r = m_r;
 		vec3d a = m_a;
 		vec3d v = m_d;
-		vec3d b = (c - r) - a*(a*(c - r)); b.Normalize();
+		vec3d b = (c - r) - a * (a*(c - r)); b.Normalize();
 
 		// setup the rotation vector
 		vec3d x_unit(vec3d(1, 0, 0));
@@ -390,7 +539,7 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 		FECoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
-		for (int i = 0; i<n; ++i) c += pm->NodePosition(el->m_node[i]);
+		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
 		c /= (double)n;
 		c -= m_r;
 		c.Normalize();
@@ -420,8 +569,8 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 	{
 		// convert from degress to radians
 		const double pi = 4 * atan(1.0);
-		const double the = m_theta*pi / 180.;
-		const double phi = m_phi*pi / 180.;
+		const double the = m_theta * pi / 180.;
+		const double phi = m_phi * pi / 180.;
 
 		// define the first axis (i.e. the fiber vector)
 		vec3d a;
@@ -437,14 +586,14 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 		FECoreMesh* pm = el.m_pmesh;
 		int n = el->Nodes();
 		vec3d c(0, 0, 0);
-		for (int i = 0; i<n; ++i) c += pm->NodePosition(el->m_node[i]);
+		for (int i = 0; i < n; ++i) c += pm->NodePosition(el->m_node[i]);
 		c /= (double)n;
 
 		// find the vector to the axis
 		vec3d r = m_r;
 		vec3d a = m_a;
 
-		vec3d b = (c - r) - a*(a*(c - r));
+		vec3d b = (c - r) - a * (a*(c - r));
 		double R = b.Length(); b.Normalize();
 
 		double R0 = m_R0;
@@ -476,56 +625,42 @@ vec3d FEFiberGeneratorMaterial::GetFiberVector(FEElementRef& el)
 	return vec3d(0, 0, 0);
 }
 
-FEOldFiberMaterial::FEOldFiberMaterial()
-{
-	m_fiber.m_naopt = FE_FIBER_LOCAL;
-	m_fiber.m_nuser = 0;
-	m_fiber.m_n[0] = m_fiber.m_n[1] = 0;
-	m_fiber.m_r = vec3d(0,0,0);
-	m_fiber.m_a = vec3d(0,0,1);
-	m_fiber.m_d = vec3d(1,0,0);
-	m_fiber.m_theta = 0.0;
-	m_fiber.m_phi = 90.0;
-	m_fiber.m_d0 = m_fiber.m_d1 = vec3d(0,0,1);
-	m_fiber.m_R0 = 0; m_fiber.m_R1 = 1;
-}
-
-FEOldFiberMaterial::FEOldFiberMaterial(const FEOldFiberMaterial& m) {}
+FEOldFiberMaterial::FEOldFiberMaterial(const FEOldFiberMaterial& m) : FEMaterial(0) {}
 FEOldFiberMaterial& FEOldFiberMaterial::operator = (const FEOldFiberMaterial& m) { return (*this); }
 
 void FEOldFiberMaterial::copy(FEOldFiberMaterial* pm)
 {
-	m_fiber.m_naopt = pm->m_fiber.m_naopt;
-	m_fiber.m_nuser = pm->m_fiber.m_nuser;
-	m_fiber.m_n[0] = pm->m_fiber.m_n[0];
-	m_fiber.m_n[1] = pm->m_fiber.m_n[1];
-	m_fiber.m_r = pm->m_fiber.m_r;
-	m_fiber.m_a = pm->m_fiber.m_a;
-	m_fiber.m_d = pm->m_fiber.m_d;
-	m_fiber.m_theta = pm->m_fiber.m_theta;
-	m_fiber.m_phi = pm->m_fiber.m_phi;
-	m_fiber.m_d0 = pm->m_fiber.m_d0;
-	m_fiber.m_d1 = pm->m_fiber.m_d1;
-	m_fiber.m_R0 = pm->m_fiber.m_R0;
-	m_fiber.m_R1 = pm->m_fiber.m_R1;
+	m_naopt = pm->m_naopt;
+	m_nuser = pm->m_nuser;
+	m_n[0] = pm->m_n[0];
+	m_n[1] = pm->m_n[1];
+	m_r = pm->m_r;
+	m_a = pm->m_a;
+	m_d = pm->m_d;
+	m_theta = pm->m_theta;
+	m_phi = pm->m_phi;
+	m_d0 = pm->m_d0;
+	m_d1 = pm->m_d1;
+	m_R0 = pm->m_R0;
+	m_R1 = pm->m_R1;
 
 //	GetParamBlock() = pm->GetParamBlock();
 }
 
 void FEOldFiberMaterial::Save(OArchive &ar)
 {
-	ar.WriteChunk(MP_AOPT, m_fiber.m_naopt);
-	ar.WriteChunk(MP_N, m_fiber.m_n, 2);
-	ar.WriteChunk(MP_R, m_fiber.m_r);
-	ar.WriteChunk(MP_A, m_fiber.m_a);
-	ar.WriteChunk(MP_D, m_fiber.m_d);
-	ar.WriteChunk(MP_NUSER, m_fiber.m_nuser);
-	ar.WriteChunk(MP_THETA, m_fiber.m_theta);
-	ar.WriteChunk(MP_PHI, m_fiber.m_phi);
-	ar.WriteChunk(MP_D0, m_fiber.m_d0);
-	ar.WriteChunk(MP_D1, m_fiber.m_d1);
-	ar.WriteChunk(MP_R0, m_fiber.m_R0);
-	ar.WriteChunk(MP_R1, m_fiber.m_R1);
+	ar.WriteChunk(MP_AOPT, m_naopt);
+	ar.WriteChunk(MP_N, m_n, 2);
+	ar.WriteChunk(MP_R, m_r);
+	ar.WriteChunk(MP_A, m_a);
+	ar.WriteChunk(MP_D, m_d);
+	ar.WriteChunk(MP_NUSER, m_nuser);
+	ar.WriteChunk(MP_THETA, m_theta);
+	ar.WriteChunk(MP_PHI, m_phi);
+	ar.WriteChunk(MP_D0, m_d0);
+	ar.WriteChunk(MP_D1, m_d1);
+	ar.WriteChunk(MP_R0, m_R0);
+	ar.WriteChunk(MP_R1, m_R1);
 	ar.BeginChunk(MP_PARAMS);
 	{
 		ParamContainer::Save(ar);
@@ -542,26 +677,26 @@ void FEOldFiberMaterial::Load(IArchive& ar)
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case MP_AOPT: ar.read(m_fiber.m_naopt); break;
-		case MP_N: ar.read(m_fiber.m_n, 2); break;
-		case MP_R: ar.read(m_fiber.m_r); break;
-		case MP_A: ar.read(m_fiber.m_a); break;
-		case MP_D: ar.read(m_fiber.m_d); break;
-		case MP_NUSER: ar.read(m_fiber.m_nuser); break;
-		case MP_THETA: ar.read(m_fiber.m_theta); break;
-		case MP_PHI: ar.read(m_fiber.m_phi); break;
-		case MP_D0: ar.read(m_fiber.m_d0); break;
-		case MP_D1: ar.read(m_fiber.m_d1); break;
-		case MP_R0: ar.read(m_fiber.m_R0); break;
-		case MP_R1: ar.read(m_fiber.m_R1); break;
+		case MP_AOPT: ar.read(m_naopt); break;
+		case MP_N: ar.read(m_n, 2); break;
+		case MP_R: ar.read(m_r); break;
+		case MP_A: ar.read(m_a); break;
+		case MP_D: ar.read(m_d); break;
+		case MP_NUSER: ar.read(m_nuser); break;
+		case MP_THETA: ar.read(m_theta); break;
+		case MP_PHI: ar.read(m_phi); break;
+		case MP_D0: ar.read(m_d0); break;
+		case MP_D1: ar.read(m_d1); break;
+		case MP_R0: ar.read(m_R0); break;
+		case MP_R1: ar.read(m_R1); break;
 		case MP_PARAMS: 
 			ParamContainer::Load(ar);
 			break;
 		}
 		ar.CloseChunk();
 	}
-	m_fiber.UpdateData(false);
-	m_fiber.UpdateData(true);
+	UpdateData(false);
+	UpdateData(true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -586,7 +721,7 @@ void FETransverselyIsotropic::SetFiberMaterial(FEOldFiberMaterial* fiber)
 vec3d FETransverselyIsotropic::GetFiber(FEElementRef& el)
 {
 	FEOldFiberMaterial& fiber = *m_pfiber;
-	return fiber.m_fiber.GetFiberVector(el);
+	return fiber.GetFiberVector(el);
 }
 
 void FETransverselyIsotropic::copy(FEMaterial *pmat)
@@ -657,10 +792,10 @@ FETransMooneyRivlinOld::FETransMooneyRivlinOld() : FETransverselyIsotropic(FE_TR
 	SetFiberMaterial(new Fiber);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus")->SetPersistent(false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -688,10 +823,10 @@ FETransVerondaWestmannOld::FETransVerondaWestmannOld() : FETransverselyIsotropic
 	SetFiberMaterial(new Fiber);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_NONE   , "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus")->SetPersistent(false);
 }
 
 
@@ -728,7 +863,7 @@ FETransMooneyRivlin::FETransMooneyRivlin() : FETransverselyIsotropic(FE_TRANS_IS
 	AddScienceParam(0, UNIT_PRESSURE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
 	AddScienceParam(0, UNIT_NONE, "lam_max", "lam_max");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 
 	AddProperty("active_contraction", FE_MAT_ACTIVE_CONTRACTION_CLASS);
 }
@@ -769,7 +904,7 @@ FETransVerondaWestmann::FETransVerondaWestmann() : FETransverselyIsotropic(FE_TR
 	AddScienceParam(0, UNIT_PRESSURE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
 	AddScienceParam(0, UNIT_NONE, "lam_max", "lam_max");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 
 	AddProperty("active_contraction", FE_MAT_ACTIVE_CONTRACTION_CLASS);
 }
@@ -810,7 +945,7 @@ FECoupledTransIsoVerondaWestmann::FECoupledTransIsoVerondaWestmann() : FETransve
 	AddScienceParam(0, UNIT_PRESSURE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
 	AddScienceParam(0, UNIT_NONE, "lambda", "lambda");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //=============================================================================
@@ -822,13 +957,13 @@ FECoupledTransIsoVerondaWestmann::FECoupledTransIsoVerondaWestmann() : FETransve
 FECoupledTransIsoMooneyRivlinOld::FECoupledTransIsoMooneyRivlinOld() : FEMaterial(FE_COUPLED_TRANS_ISO_MR)
 {
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE , "c3", "c3");
 	AddScienceParam(0, UNIT_NONE   , "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE , "c5", "c5");
-	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k" , "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE   , "lambda", "lambda");
 }
 
@@ -843,13 +978,13 @@ FECoupledTransIsoMooneyRivlin::FECoupledTransIsoMooneyRivlin() : FETransverselyI
 	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "c3", "c3");
 	AddScienceParam(0, UNIT_NONE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE, "lambda", "lambda");
 }
 
@@ -875,22 +1010,22 @@ REGISTER_MATERIAL(FEMooneyRivlinVonMisesFibers, MODULE_MECH, FE_MAT_MR_VON_MISES
 
 FEMooneyRivlinVonMisesFibers::FEMooneyRivlinVonMisesFibers() : FEMaterial(FE_MAT_MR_VON_MISES_FIBERS)
 {
-	m_hasMatAxes = true;
-
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "c3");
 	AddScienceParam(0, UNIT_NONE, "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE, "lam_max");
 	AddDoubleParam(0, "kf");
 	AddDoubleParam(0, "vmc");
 	AddDoubleParam(0, "var_n");
 	AddDoubleParam(0, "tp");
 	AddIntParam(0, "gipt");
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 //=============================================================================
@@ -904,13 +1039,13 @@ FE2DTransIsoMooneyRivlin::FE2DTransIsoMooneyRivlin() : FETransverselyIsotropic(F
 	SetFiberMaterial(new FEOldFiberMaterial);
 
 	// define material parameters
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "c3");
 	AddScienceParam(0, UNIT_NONE, "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_NONE, "lam_max");
 }
 
@@ -981,15 +1116,15 @@ REGISTER_MATERIAL(FETCNonlinearOrthotropic, MODULE_MECH, FE_TCNL_ORTHO, FE_MAT_E
 
 FETCNonlinearOrthotropic::FETCNonlinearOrthotropic() : FEMaterial(FE_TCNL_ORTHO)
 {
-	m_hasMatAxes = true;
-
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1000,9 +1135,7 @@ REGISTER_MATERIAL(FEFungOrthotropic, MODULE_MECH, FE_FUNG_ORTHO, FE_MAT_ELASTIC_
 
 FEFungOrthotropic::FEFungOrthotropic() : FEMaterial(FE_FUNG_ORTHO)
 {
-	m_hasMatAxes = true;
-
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "E1", "E1");
 	AddScienceParam(0, UNIT_PRESSURE , "E2", "E2");
 	AddScienceParam(0, UNIT_PRESSURE , "E3", "E3");
@@ -1013,7 +1146,9 @@ FEFungOrthotropic::FEFungOrthotropic() : FEMaterial(FE_FUNG_ORTHO)
 	AddScienceParam(0, UNIT_NONE   , "v23", "v23");
 	AddScienceParam(0, UNIT_NONE   , "v31", "v31");
 	AddScienceParam(0, UNIT_PRESSURE , "c", "c");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1024,9 +1159,7 @@ REGISTER_MATERIAL(FEFungOrthoCompressible, MODULE_MECH, FE_FUNG_ORTHO_COUPLED, F
 
 FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_COUPLED)
 {
-	m_hasMatAxes = true;
-
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "E1", "E1");
 	AddScienceParam(0, UNIT_PRESSURE , "E2", "E2");
 	AddScienceParam(0, UNIT_PRESSURE , "E3", "E3");
@@ -1037,7 +1170,9 @@ FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_CO
 	AddScienceParam(0, UNIT_NONE   , "v23", "v23");
 	AddScienceParam(0, UNIT_NONE   , "v31", "v31");
 	AddScienceParam(0, UNIT_PRESSURE , "c", "c");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1048,9 +1183,7 @@ REGISTER_MATERIAL(FELinearOrthotropic, MODULE_MECH, FE_LINEAR_ORTHO, FE_MAT_ELAS
 
 FELinearOrthotropic::FELinearOrthotropic() : FEMaterial(FE_LINEAR_ORTHO)
 {
-	m_hasMatAxes = true;
-
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "E1", "E1");
 	AddScienceParam(0, UNIT_PRESSURE , "E2", "E2");
 	AddScienceParam(0, UNIT_PRESSURE , "E3", "E3");
@@ -1060,6 +1193,8 @@ FELinearOrthotropic::FELinearOrthotropic() : FEMaterial(FE_LINEAR_ORTHO)
 	AddScienceParam(0, UNIT_NONE   , "v12", "v12");
 	AddScienceParam(0, UNIT_NONE   , "v23", "v23");
 	AddScienceParam(0, UNIT_NONE   , "v31", "v31");
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1072,10 +1207,10 @@ FEMuscleMaterial::FEMuscleMaterial() : FETransverselyIsotropic(FE_MUSCLE_MATERIA
 {
 	SetFiberMaterial(new FEOldFiberMaterial);
 
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "g1");
 	AddScienceParam(0, UNIT_PRESSURE , "g2");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 	AddDoubleParam(0, "p1");
 	AddDoubleParam(0, "p2");
 	AddDoubleParam(0, "Lofl");
@@ -1093,10 +1228,10 @@ FETendonMaterial::FETendonMaterial() : FETransverselyIsotropic(FE_TENDON_MATERIA
 {
 	SetFiberMaterial(new FEOldFiberMaterial);
 
-	AddScienceParam(1, UNIT_DENSITY, "density");
+	AddScienceParam(1, UNIT_DENSITY, "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "g1");
 	AddScienceParam(0, UNIT_PRESSURE , "g2");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 	AddDoubleParam(0, "l1");
 	AddDoubleParam(0, "l2");
 	AddDoubleParam(0, "lam_max");
@@ -1110,8 +1245,8 @@ REGISTER_MATERIAL(FEOgdenMaterial, MODULE_MECH, FE_OGDEN_MATERIAL, FE_MAT_ELASTI
 
 FEOgdenMaterial::FEOgdenMaterial() : FEMaterial(FE_OGDEN_MATERIAL)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
-	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE , "c3", "c3");
@@ -1134,7 +1269,7 @@ REGISTER_MATERIAL(FEOgdenUnconstrained, MODULE_MECH, FE_OGDEN_UNCONSTRAINED, FE_
 
 FEOgdenUnconstrained::FEOgdenUnconstrained() : FEMaterial(FE_OGDEN_UNCONSTRAINED)
 {
-	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE , "cp", "cp");
 	AddScienceParam(0, UNIT_PRESSURE , "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE , "c2", "c2");
@@ -1187,14 +1322,14 @@ REGISTER_MATERIAL(FEEFDDonnan, MODULE_MECH, FE_EFD_DONNAN, FE_MAT_ELASTIC, "EFD 
 
 FEEFDDonnan::FEEFDDonnan() : FEMaterial(FE_EFD_DONNAN)
 {
-	m_hasMatAxes = true;
-
 	AddScienceParam(0, UNIT_NONE, "phiw0", "phiw0");
 	AddScienceParam(0, UNIT_CONCENTRATION, "cF0", "cF0");
 	AddScienceParam(0, UNIT_CONCENTRATION, "bosm", "bosm");
     AddScienceParam(1, UNIT_NONE, "Phi", "Phi");
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1205,13 +1340,13 @@ REGISTER_MATERIAL(FEEFDVerondaWestmann, MODULE_MECH, FE_EFD_VERONDA_WESTMANN, FE
 
 FEEFDVerondaWestmann::FEEFDVerondaWestmann() : FEMaterial(FE_EFD_VERONDA_WESTMANN)
 {
-	m_hasMatAxes = true;
-
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  )->SetUnit(UNIT_PRESSURE);
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1222,13 +1357,13 @@ REGISTER_MATERIAL(FECubicCLE, MODULE_MECH, FE_CLE_CUBIC, FE_MAT_ELASTIC, "cubic 
 
 FECubicCLE::FECubicCLE() : FEMaterial(FE_CLE_CUBIC)
 {
-	m_hasMatAxes = true;
-
-    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE , "lp1", "lambda_+1");
     AddScienceParam(0, UNIT_PRESSURE , "lm1", "lambda_-1");
     AddScienceParam(0, UNIT_PRESSURE , "l2" , "lambda_2" );
     AddScienceParam(0, UNIT_PRESSURE , "mu" , "mu"       );
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1239,9 +1374,7 @@ REGISTER_MATERIAL(FEOrthotropicCLE, MODULE_MECH, FE_CLE_ORTHOTROPIC, FE_MAT_ELAS
 
 FEOrthotropicCLE::FEOrthotropicCLE() : FEMaterial(FE_CLE_ORTHOTROPIC)
 {
-	m_hasMatAxes = true;
-
-    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
     AddScienceParam(0, UNIT_PRESSURE , "lp11", "lambda_+11");
     AddScienceParam(0, UNIT_PRESSURE , "lp22", "lambda_+22");
     AddScienceParam(0, UNIT_PRESSURE , "lp33", "lambda_+33");
@@ -1254,6 +1387,8 @@ FEOrthotropicCLE::FEOrthotropicCLE() : FEMaterial(FE_CLE_ORTHOTROPIC)
     AddScienceParam(0, UNIT_PRESSURE , "mu1" , "mu1"       );
     AddScienceParam(0, UNIT_PRESSURE , "mu2" , "mu2"       );
     AddScienceParam(0, UNIT_PRESSURE , "mu3" , "mu3"       );
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1291,7 +1426,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_
 FEPrescribedActiveContractionUniaxial::FEPrescribedActiveContractionUniaxial() : FEMaterial(FE_ACTIVE_CONTRACT_UNI)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-    m_hasMatAxes = true;
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 void FEPrescribedActiveContractionUniaxial::Convert(FEPrescribedActiveContractionUniaxialOld* pold)
@@ -1300,8 +1435,8 @@ void FEPrescribedActiveContractionUniaxial::Convert(FEPrescribedActiveContractio
 
     SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_T0));
     
-    m_hasMatAxes = true;
-    m_axes->m_naopt = FE_AXES_ANGLES;
+	SetAxisMaterial(new FEAxisMaterial);
+	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialOld::MP_PH);
 }
@@ -1315,7 +1450,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_
 FEPrescribedActiveContractionTransIso::FEPrescribedActiveContractionTransIso() : FEMaterial(FE_ACTIVE_CONTRACT_TISO)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-    m_hasMatAxes = true;
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 void FEPrescribedActiveContractionTransIso::Convert(FEPrescribedActiveContractionTransIsoOld* pold)
@@ -1324,8 +1459,8 @@ void FEPrescribedActiveContractionTransIso::Convert(FEPrescribedActiveContractio
 
     SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_T0));
     
-    m_hasMatAxes = true;
-    m_axes->m_naopt = FE_AXES_ANGLES;
+	SetAxisMaterial(new FEAxisMaterial);
+	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoOld::MP_PH);
 }
@@ -1376,7 +1511,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIV
 FEPrescribedActiveContractionUniaxialUC::FEPrescribedActiveContractionUniaxialUC() : FEMaterial(FE_ACTIVE_CONTRACT_UNI_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-    m_hasMatAxes = true;
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 void FEPrescribedActiveContractionUniaxialUC::Convert(FEPrescribedActiveContractionUniaxialUCOld* pold)
@@ -1385,8 +1520,8 @@ void FEPrescribedActiveContractionUniaxialUC::Convert(FEPrescribedActiveContract
 
     SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_T0));
     
-    m_hasMatAxes = true;
-    m_axes->m_naopt = FE_AXES_ANGLES;
+	SetAxisMaterial(new FEAxisMaterial);
+	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_PH);
 }
@@ -1400,7 +1535,7 @@ REGISTER_MATERIAL(FEPrescribedActiveContractionTransIsoUC, MODULE_MECH, FE_ACTIV
 FEPrescribedActiveContractionTransIsoUC::FEPrescribedActiveContractionTransIsoUC() : FEMaterial(FE_ACTIVE_CONTRACT_TISO_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE , "T0", "T0");
-    m_hasMatAxes = true;
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 void FEPrescribedActiveContractionTransIsoUC::Convert(FEPrescribedActiveContractionTransIsoUCOld* pold)
@@ -1409,8 +1544,8 @@ void FEPrescribedActiveContractionTransIsoUC::Convert(FEPrescribedActiveContract
 
     SetFloatValue(MP_T0, pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_T0));
     
-    m_hasMatAxes = true;
-    m_axes->m_naopt = FE_AXES_ANGLES;
+	SetAxisMaterial(new FEAxisMaterial);
+	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionTransIsoUCOld::MP_PH);
 }
@@ -1486,8 +1621,6 @@ REGISTER_MATERIAL(FEPermAteshianWeissTransIso, MODULE_BIPHASIC, FE_PERM_REF_TRAN
 
 FEPermAteshianWeissTransIso::FEPermAteshianWeissTransIso() : FEMaterial(FE_PERM_REF_TRANS_ISO)
 {
-	m_hasMatAxes = true;
-
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm0" , "perm0" );
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm1T", "perm1T");
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm1A", "perm1A");
@@ -1499,6 +1632,8 @@ FEPermAteshianWeissTransIso::FEPermAteshianWeissTransIso() : FEMaterial(FE_PERM_
 	AddScienceParam(0, UNIT_NONE        , "alpha0", "alpha0");
 	AddScienceParam(0, UNIT_NONE        , "alphaA", "alphaA");
 	AddScienceParam(0, UNIT_NONE        , "alphaT", "alphaT");
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 //=============================================================================
@@ -1509,8 +1644,6 @@ REGISTER_MATERIAL(FEPermAteshianWeissOrtho, MODULE_BIPHASIC, FE_PERM_REF_ORTHO, 
 
 FEPermAteshianWeissOrtho::FEPermAteshianWeissOrtho() : FEMaterial(FE_PERM_REF_ORTHO)
 {
-	m_hasMatAxes = true;
-
 	AddScienceParam(0, UNIT_PERMEABILITY, "perm0" , "perm0");
 	AddVecParam(vec3d(0,0,0), "perm1" , "perm1")->SetUnit(UNIT_PERMEABILITY);
 	AddVecParam(vec3d(0,0,0), "perm2" , "perm2")->SetUnit(UNIT_PERMEABILITY);
@@ -1518,6 +1651,8 @@ FEPermAteshianWeissOrtho::FEPermAteshianWeissOrtho() : FEMaterial(FE_PERM_REF_OR
 	AddScienceParam(0, UNIT_NONE        , "alpha0", "alpha0");
 	AddVecParam(vec3d(0,0,0), "M"     , "M");
 	AddVecParam(vec3d(0,0,0), "alpha" , "alpha");
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 //=============================================================================
@@ -1640,14 +1775,14 @@ REGISTER_MATERIAL(FESFDSBM, MODULE_MECH, FE_SFD_SBM, FE_MAT_ELASTIC, "spherical 
 
 FESFDSBM::FESFDSBM() : FEMaterial(FE_SFD_SBM)
 {
-	m_hasMatAxes = true;
-
 	AddScienceParam(0, UNIT_NONE        , "alpha", "alpha" );
 	AddScienceParam(0, UNIT_NONE        , "beta", "beta"   );
 	AddScienceParam(0, UNIT_NONE        , "ksi0" , "ksi0"  );
 	AddScienceParam(1, UNIT_NONE        , "rho0" , "rho0"  );
 	AddScienceParam(0, UNIT_NONE        , "gamma" , "gamma");
 	AddIntParam    (-1                   , "sbm"   , "sbm"  );
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 //=============================================================================
@@ -1658,10 +1793,10 @@ REGISTER_MATERIAL(FEEFDCoupled, MODULE_MECH, FE_EFD_COUPLED, FE_MAT_ELASTIC, "el
 
 FEEFDCoupled::FEEFDCoupled() : FEMaterial(FE_EFD_COUPLED)
 {
-	m_hasMatAxes = true;
-
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi" , "ksi" )->SetUnit(UNIT_PRESSURE);
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 //=============================================================================
@@ -1672,11 +1807,71 @@ REGISTER_MATERIAL(FEEFDUncoupled, MODULE_MECH, FE_EFD_UNCOUPLED, FE_MAT_ELASTIC_
 
 FEEFDUncoupled::FEEFDUncoupled() : FEMaterial(FE_EFD_UNCOUPLED)
 {
-	m_hasMatAxes = true;
-
 	AddVecParam(vec3d(0,0,0), "beta" , "beta");
 	AddVecParam(vec3d(0,0,0), "ksi" , "ksi")->SetUnit(UNIT_PRESSURE);
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+
+	SetAxisMaterial(new FEAxisMaterial);
+}
+
+//=============================================================================
+// FEFiberMaterial
+//=============================================================================
+
+FEFiberMaterial::FEFiberMaterial(int ntype) : FEMaterial(ntype)
+{
+	AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
+}
+
+bool FEFiberMaterial::HasFibers() { return true; }
+
+void FEFiberMaterial::SetFiberGenerator(FEFiberGenerator* v)
+{
+	GetProperty(0).SetMaterial(v);
+}
+
+void FEFiberMaterial::SetAxisMaterial(FEAxisMaterial* Q)
+{
+	// If the fiber generator was not set we'll create a fiber generator from the mat axes
+	FEFiberGenerator* v = dynamic_cast<FEFiberGenerator*>(GetProperty(0).GetMaterial());
+	if (v == nullptr)
+	{
+		switch (Q->m_naopt)
+		{
+		case FE_AXES_LOCAL:
+			SetFiberGenerator(new FEFiberGeneratorLocal(Q->m_n[0], Q->m_n[1]));
+			break;
+		case FE_AXES_VECTOR:
+			SetFiberGenerator(new FEFiberGeneratorVector(Q->m_a));
+			break;
+		case FE_AXES_ANGLES:
+			SetFiberGenerator(new FEAnglesVectorGenerator(Q->m_theta, Q->m_phi));
+			break;
+		case FE_AXES_CYLINDRICAL:
+			SetFiberGenerator(new FECylindricalVectorGenerator(Q->m_center, Q->m_axis, Q->m_vec));
+			break;
+		case FE_AXES_SPHERICAL:
+			SetFiberGenerator(new FESphericalVectorGenerator(Q->m_center, Q->m_vec));
+			break;
+		default:
+			assert(false);
+		}
+		delete Q;
+	}
+	else FEMaterial::SetAxisMaterial(Q);
+}
+
+vec3d FEFiberMaterial::GetFiber(FEElementRef& el)
+{
+	FEFiberGenerator* fiber = dynamic_cast<FEFiberGenerator*>(GetProperty(0).GetMaterial());
+	vec3d v(1, 0, 0);
+	if (fiber) v = fiber->GetFiber(el);
+	if (m_axes)
+	{
+		mat3d Q = m_axes->GetMatAxes(el);
+		v = Q * v;
+	}
+	return v;
 }
 
 //=============================================================================
@@ -1687,31 +1882,22 @@ FEEFDUncoupled::FEEFDUncoupled() : FEMaterial(FE_EFD_UNCOUPLED)
 
 FEFiberExpPowOld::FEFiberExpPowOld() : FEMaterial(FE_FIBEREXPPOW_COUPLED_OLD)
 {
-	m_hasMatAxes = true;
-
 	AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
 	AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
 	AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
 	AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
 	AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
 
-//	AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
-//	GetProperty(0).SetMaterial(new FEFiberGeneratorLocal);
+	SetAxisMaterial(new FEAxisMaterial);
 }
-
 
 REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Exponential_Power_Law);
 
-FEFiberExpPow::FEFiberExpPow() : FEMaterial(FE_FIBEREXPPOW_COUPLED)
+FEFiberExpPow::FEFiberExpPow() : FEFiberMaterial(FE_FIBEREXPPOW_COUPLED)
 {
-    m_hasMatAxes = true;
-
     AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
     AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
     AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
-
-//    AddProperty("fiber", FE_MAT_FIBER_GENERATOR);
-//    GetProperty(0).SetMaterial(new FEFiberGeneratorLocal);
 }
 
 void FEFiberExpPow::Convert(FEFiberExpPowOld* pold)
@@ -1722,9 +1908,9 @@ void FEFiberExpPow::Convert(FEFiberExpPowOld* pold)
     SetFloatValue(MP_BETA , pold->GetFloatValue(FEFiberExpPowOld::MP_BETA ));
     SetFloatValue(MP_KSI  , pold->GetFloatValue(FEFiberExpPowOld::MP_KSI  ));
 
-    m_axes->m_naopt = FE_AXES_ANGLES;
-    m_axes->m_theta = pold->GetFloatValue(FEFiberExpPowOld::MP_THETA);
-    m_axes->m_phi = pold->GetFloatValue(FEFiberExpPowOld::MP_PHI);
+	double the = pold->GetFloatValue(FEFiberExpPowOld::MP_THETA);
+	double phi = pold->GetFloatValue(FEFiberExpPowOld::MP_PHI);
+	SetFiberGenerator(new FEAnglesVectorGenerator(the, phi));
 }
 
 //=============================================================================
@@ -1733,10 +1919,8 @@ void FEFiberExpPow::Convert(FEFiberExpPowOld* pold)
 
 REGISTER_MATERIAL(FEFiberExpLinear, MODULE_MECH, FE_FIBEREXPLIN_COUPLED, FE_MAT_ELASTIC, "fiber-exp-linear", 0);
 
-FEFiberExpLinear::FEFiberExpLinear() : FEMaterial(FE_FIBEREXPLIN_COUPLED)
+FEFiberExpLinear::FEFiberExpLinear() : FEFiberMaterial(FE_FIBEREXPLIN_COUPLED)
 {
-	m_hasMatAxes = true;
-
 	AddDoubleParam(0.0, "c3", "c3");
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
@@ -1749,10 +1933,8 @@ FEFiberExpLinear::FEFiberExpLinear() : FEMaterial(FE_FIBEREXPLIN_COUPLED)
 
 REGISTER_MATERIAL(FEFiberExpLinearUncoupled, MODULE_MECH, FE_FIBEREXPLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled fiber-exp-linear", 0);
 
-FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEMaterial(FE_FIBEREXPLIN_UNCOUPLED)
+FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEFiberMaterial(FE_FIBEREXPLIN_UNCOUPLED)
 {
-	m_hasMatAxes = true;
-
 	AddDoubleParam(0.0, "c3", "c3");
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
@@ -1767,22 +1949,20 @@ FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEMaterial(FE_FIBEREXPL
 
 FEFiberExpPowUncoupledOld::FEFiberExpPowUncoupledOld() : FEMaterial(FE_FIBEREXPPOW_UNCOUPLED_OLD)
 {
-	m_hasMatAxes = true;
-
 	AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
 	AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
 	AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
     AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
 	AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Exponential_Power_Law_Uncoupled_Formulation);
 
-FEFiberExpPowUncoupled::FEFiberExpPowUncoupled() : FEMaterial(FE_FIBEREXPPOW_UNCOUPLED)
+FEFiberExpPowUncoupled::FEFiberExpPowUncoupled() : FEFiberMaterial(FE_FIBEREXPPOW_UNCOUPLED)
 {
-    m_hasMatAxes = true;
-
     AddScienceParam(0, UNIT_NONE, "alpha", "alpha");
     AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
     AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
@@ -1798,9 +1978,9 @@ void FEFiberExpPowUncoupled::Convert(FEFiberExpPowUncoupledOld* pold)
     SetFloatValue(MP_KSI  , pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_KSI  ));
     SetFloatValue(MP_K    , pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_K    ));
 
-    m_axes->m_naopt = FE_AXES_ANGLES;
-    m_axes->m_theta = pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_THETA);
-    m_axes->m_phi = pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_PHI);
+	double the = pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_THETA);
+	double phi = pold->GetFloatValue(FEFiberExpPowUncoupledOld::MP_PHI);
+	SetFiberGenerator(new FEAnglesVectorGenerator(the, phi));
 }
 
 //=============================================================================
@@ -1811,21 +1991,19 @@ void FEFiberExpPowUncoupled::Convert(FEFiberExpPowUncoupledOld* pold)
 
 FEFiberPowLinOld::FEFiberPowLinOld() : FEMaterial(FE_FIBERPOWLIN_COUPLED_OLD)
 {
-	m_hasMatAxes = true;
-
     AddScienceParam(0, UNIT_PRESSURE, "E", "E");
     AddScienceParam(2, UNIT_NONE, "beta" , "beta");
     AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
     AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
     AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Toe_Linear_Response);
 
-FEFiberPowLin::FEFiberPowLin() : FEMaterial(FE_FIBERPOWLIN_COUPLED)
+FEFiberPowLin::FEFiberPowLin() : FEFiberMaterial(FE_FIBERPOWLIN_COUPLED)
 {
-    m_hasMatAxes = true;
-
     AddScienceParam(0, UNIT_PRESSURE, "E", "E");
     AddScienceParam(2, UNIT_NONE, "beta" , "beta");
     AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
@@ -1839,9 +2017,9 @@ void FEFiberPowLin::Convert(FEFiberPowLinOld* pold)
     SetFloatValue(MP_BETA , pold->GetFloatValue(FEFiberPowLinOld::MP_BETA));
     SetFloatValue(MP_LAM0 , pold->GetFloatValue(FEFiberPowLinOld::MP_LAM0));
 
-    m_axes->m_naopt = FE_AXES_ANGLES;
-    m_axes->m_theta = pold->GetFloatValue(FEFiberPowLinOld::MP_THETA);
-    m_axes->m_phi = pold->GetFloatValue(FEFiberPowLinOld::MP_PHI);
+	double the = pold->GetFloatValue(FEFiberPowLinOld::MP_THETA);
+	double phi = pold->GetFloatValue(FEFiberPowLinOld::MP_PHI);
+	SetFiberGenerator(new FEAnglesVectorGenerator(the, phi));
 }
 
 //=============================================================================
@@ -1852,22 +2030,20 @@ void FEFiberPowLin::Convert(FEFiberPowLinOld* pold)
 
 FEFiberPowLinUncoupledOld::FEFiberPowLinUncoupledOld() : FEMaterial(FE_FIBERPOWLIN_UNCOUPLED_OLD)
 {
-	m_hasMatAxes = true;
-
     AddScienceParam(0, UNIT_PRESSURE, "E", "E");
     AddScienceParam(2, UNIT_NONE, "beta" , "beta");
     AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
     AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
     AddScienceParam(0, UNIT_DEGREE, "theta", "theta");
     AddScienceParam(0, UNIT_DEGREE, "phi"  , "phi"  );
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Toe_Linear_Response_Uncoupled_Formulation);
 
-FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEMaterial(FE_FIBERPOWLIN_UNCOUPLED)
+FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEFiberMaterial(FE_FIBERPOWLIN_UNCOUPLED)
 {
-    m_hasMatAxes = true;
-
     AddScienceParam(0, UNIT_PRESSURE, "E", "E");
     AddScienceParam(2, UNIT_NONE, "beta" , "beta");
     AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
@@ -1883,9 +2059,9 @@ void FEFiberPowLinUncoupled::Convert(FEFiberPowLinUncoupledOld* pold)
     SetFloatValue(MP_LAM0 , pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_LAM0));
     SetFloatValue(MP_K    , pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_K   ));
 
-    m_axes->m_naopt = FE_AXES_ANGLES;
-    m_axes->m_theta = pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_THETA);
-    m_axes->m_phi = pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_PHI);
+	double the = pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_THETA);
+	double phi = pold->GetFloatValue(FEFiberPowLinUncoupledOld::MP_PHI);
+	SetFiberGenerator(new FEAnglesVectorGenerator(the, phi));
 }
 
 //=============================================================================

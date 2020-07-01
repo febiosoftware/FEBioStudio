@@ -69,6 +69,8 @@ protected:
 
 	void WriteNote(FSObject* po);
 
+	const char* GetEnumValue(Param& p);
+
 private:
 	void AddLoadCurve(FELoadCurve* plc);
 	void AddLoadCurves(ParamContainer& PC);

@@ -207,19 +207,34 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		febio.AddParamCurve(pp, lc - 1);
 	}
 
-	// read parameter value
-	switch (pp->GetParamType())
+	// check for type attribute
+	XMLAtt* atype = tag.AttributePtr("type");
+	if (atype == nullptr)
 	{
-	case Param_INT   : { int n; tag.value(n); pp->SetIntValue(n   ); } break;
-	case Param_CHOICE: ReadChoiceParam(*pp, tag); break;
-	case Param_BOOL  : { int n; tag.value(n); pp->SetBoolValue  (n==1); } break;
-	case Param_VEC3D : { vec3d v; tag.value(v); pp->SetVec3dValue (v); } break;
-	case Param_VEC2I : { vec2i v; tag.value(v); pp->SetVec2iValue(v); } break;
-	case Param_MAT3D : { mat3d v; tag.value(v); pp->SetMat3dValue(v); } break;
-	case Param_FLOAT : { double d; tag.value(d); pp->SetFloatValue(d); } break;
-	default:
-		assert(false);
-		return false;
+		// read parameter value
+		switch (pp->GetParamType())
+		{
+		case Param_INT: { int n; tag.value(n); pp->SetIntValue(n); } break;
+		case Param_CHOICE: ReadChoiceParam(*pp, tag); break;
+		case Param_BOOL: { int n; tag.value(n); pp->SetBoolValue(n == 1); } break;
+		case Param_VEC3D: { vec3d v; tag.value(v); pp->SetVec3dValue(v); } break;
+		case Param_VEC2I: { vec2i v; tag.value(v); pp->SetVec2iValue(v); } break;
+		case Param_MAT3D: { mat3d v; tag.value(v); pp->SetMat3dValue(v); } break;
+		case Param_FLOAT: { double d; tag.value(d); pp->SetFloatValue(d); } break;
+		case Param_MATH: { string s; tag.value(s); pp->SetMathString(s); } break;
+		case Param_STRING: { string s; tag.value(s); pp->SetStringValue(s); } break;
+		default:
+			assert(false);
+			return false;
+		}
+	}
+	else if (*atype == "map")
+	{
+		if (pp->IsVariable())
+		{
+			pp->SetParamType(Param_STRING);
+			pp->SetStringValue(tag.szvalue());
+		}
 	}
 
 	// if parameter is checkable, mark it as checked
@@ -269,6 +284,13 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
 	FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(m_pstep);
 	assert(pstep);
+
+	// The default in FEBio3 for rhoi is -2, for solid mechanics models
+	if (pstep->GetType() == FE_STEP_MECHANICS)
+	{
+		Param* p = pstep->GetParam("rhoi"); assert(p);
+		if (p) p->SetFloatValue(-2.0);
+	}
 
 	// parse the settings
 	++tag;
@@ -526,6 +548,21 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 		// allocate a new material
 		FEMaterial* pmat = 0;
 
+		// see if a material already exists with this name
+		GMaterial* gmat = fem.FindMaterial(szname);
+		if (gmat)
+		{
+			FileReader()->AddLogEntry("Material with name \"%s\" already exists.", szname);
+
+			string oldName = szname;
+			int n = 2;
+			while (gmat)
+			{
+				sprintf(szname, "%s(%d)", oldName.c_str(), n++);
+				gmat = fem.FindMaterial(szname);
+			}
+		}
+
 		// first check special cases
 		if (mtype == "rigid body") pmat = ParseRigidBody(tag);
 		else
@@ -535,7 +572,7 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 		}
 
 		// if pmat is set we need to add the material to the list
-		GMaterial* gmat = new GMaterial(pmat);
+		gmat = new GMaterial(pmat);
 		gmat->SetName(szname);
 		gmat->SetInfo(comment);
 		febio.AddMaterial(gmat);
@@ -551,22 +588,24 @@ bool FEBioFormat::ParseMaterialSection(XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
 {
+	FEAxisMaterial* axes = new FEAxisMaterial;
+
 	// allow all materials to define mat_axis, even if not required for that material
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		pm->m_axes->m_naopt = FE_AXES_LOCAL;
-		tag.value(pm->m_axes->m_n, 3);
+		axes->m_naopt = FE_AXES_LOCAL;
+		tag.value(axes->m_n, 3);
 	}
 	else if (atype == "vector")
 	{
-		pm->m_axes->m_naopt = FE_AXES_VECTOR;
+		axes->m_naopt = FE_AXES_VECTOR;
 		vec3d a(1, 0, 0), d(0, 1, 0);
 		++tag;
 		do
 		{
-			if      (tag == "a") tag.value(pm->m_axes->m_a);
-			else if (tag == "d") tag.value(pm->m_axes->m_d);
+			if      (tag == "a") tag.value(axes->m_a);
+			else if (tag == "d") tag.value(axes->m_d);
 			else ParseUnknownTag(tag);
 
 			++tag;
@@ -575,20 +614,49 @@ void FEBioFormat::ParseMatAxis(XMLTag& tag, FEMaterial* pm)
 	}
     else if (atype == "angles")
     {
-        pm->m_axes->m_naopt = FE_AXES_ANGLES;
+        axes->m_naopt = FE_AXES_ANGLES;
         ++tag;
         do
         {
-            if      (tag == "theta") tag.value(pm->m_axes->m_theta);
-            else if (tag == "phi") tag.value(pm->m_axes->m_phi);
+            if      (tag == "theta") tag.value(axes->m_theta);
+            else if (tag == "phi") tag.value(axes->m_phi);
             else ParseUnknownTag(tag);
 
             ++tag;
         }
         while (!tag.isend());
     }
+	else if (atype == "cylindrical")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_CYLINDRICAL;
+		++tag;
+		do {
+			if      (tag == "center") tag.value(axes->m_center);
+			else if (tag == "axis") tag.value(axes->m_axis);
+			else if (tag == "vector") tag.value(axes->m_vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "spherical")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_SPHERICAL;
+		++tag;
+		do {
+			if      (tag == "center") tag.value(axes->m_center);
+			else if (tag == "vector") tag.value(axes->m_vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetAxisMaterial(axes);
+	}
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
+
+	pm->SetAxisMaterial(axes);
 }
 
 //-----------------------------------------------------------------------------
@@ -598,8 +666,61 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FEMaterial* pm)
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
-		pm->m_axes->m_naopt = FE_AXES_LOCAL;
-		tag.value(pm->m_axes->m_n, 3);
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_LOCAL;
+		tag.value(axes->m_n, 3);
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "vector")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_VECTOR;
+		tag.value(axes->m_a);
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "angles")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_ANGLES;
+
+		++tag;
+		do
+		{
+			if      (tag == "theta") tag.value(axes->m_theta);
+			else if (tag == "phi"  ) tag.value(axes->m_phi);
+			else ParseUnknownAttribute(tag, "type");
+			++tag;
+		} 
+		while (!tag.isend());
+		
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "cylindrical")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_CYLINDRICAL;
+		++tag;
+		do {
+			if (tag == "center") tag.value(axes->m_center);
+			else if (tag == "axis") tag.value(axes->m_axis);
+			else if (tag == "vector") tag.value(axes->m_vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetAxisMaterial(axes);
+	}
+	else if (atype == "spherical")
+	{
+		FEAxisMaterial* axes = new FEAxisMaterial;
+		axes->m_naopt = FE_AXES_SPHERICAL;
+		++tag;
+		do {
+			if      (tag == "center") tag.value(axes->m_center);
+			else if (tag == "vector") tag.value(axes->m_vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetAxisMaterial(axes);
 	}
 	else ParseUnknownAttribute(tag, "type");
 	++tag;
@@ -631,7 +752,7 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 	}
 
 	// parse the material parameters
-	pm->m_axes->m_naopt = -1;
+	if (pm->m_axes) pm->m_axes->m_naopt = -1;
 	if (!tag.isleaf())
 	{
 		++tag;
@@ -727,7 +848,7 @@ FEMaterial* FEBioFormat::ParseRigidBody(XMLTag &tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat::ParseFiberMaterial(FEOldFiberMaterial& fibermat, XMLTag& tag)
 {
-	FEFiberGeneratorMaterial& fiber = fibermat.m_fiber;
+	FEOldFiberMaterial& fiber = fibermat;
 	XMLAtt& atype = tag.Attribute("type");
 	if (atype == "local")
 	{
@@ -819,7 +940,7 @@ FEMaterial* FEBioFormat::ParseTransIsoMR(FEMaterial* pmat, XMLTag& tag)
 
 	FETransMooneyRivlinOld::Fiber& f = dynamic_cast<FETransMooneyRivlinOld::Fiber&>(*pm->GetFiberMaterial());
 
-	f.m_fiber.m_naopt = -1;
+	f.m_naopt = -1;
 
 	FELoadCurve& ac = *f.GetParam(FETransMooneyRivlinOld::Fiber::MP_AC).GetLoadCurve();
 	ac.SetID(-1);
@@ -878,7 +999,7 @@ FEMaterial* FEBioFormat::ParseTransIsoVW(FEMaterial* pmat, XMLTag& tag)
 
 	FETransVerondaWestmannOld::Fiber& f = dynamic_cast<FETransVerondaWestmannOld::Fiber&>(*pm->GetFiberMaterial());
 
-	f.m_fiber.m_naopt = -1;
+	f.m_naopt = -1;
 
 	FELoadCurve& ac = *f.GetParam(FETransVerondaWestmannOld::Fiber::MP_AC).GetLoadCurve();
 
@@ -1628,20 +1749,24 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 				// read the node list
 				vector<int> l;
 				tag.value(l);
-				for (int i = 0; i<l.size(); ++i) l[i] -= 1;
 
-				// create a new node set for this
-				FEBioModel::PartInstance* inst = fem.GetInstance(0);
-				GMeshObject* po = inst->GetGObject();
-				FEMesh* pm = po->GetFEMesh();
+				if (l.empty() == false)
+				{
+					for (int i = 0; i < l.size(); ++i) l[i] -= 1;
 
-				char sz[32] = { 0 };
-				sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);
-				FENodeSet* ps = new FENodeSet(po, l);
-				ps->SetName(sz);
-				po->AddFENodeSet(ps);
+					// create a new node set for this
+					FEBioModel::PartInstance* inst = fem.GetInstance(0);
+					GMeshObject* po = inst->GetGObject();
+					FEMesh* pm = po->GetFEMesh();
 
-				logVar.SetGroupID(ps->GetID());
+					char sz[32] = { 0 };
+					sprintf(sz, "nodeset%02d", po->FENodeSets() + 1);
+					FENodeSet* ps = new FENodeSet(po, l);
+					ps->SetName(sz);
+					po->AddFENodeSet(ps);
+
+					logVar.SetGroupID(ps->GetID());
+				}
 			}
 			fem.AddLogVariable(logVar);
 		}
@@ -1663,24 +1788,28 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					logVar.SetGroupID(pg->GetID());
 				}
 			}
-			else
+			else if (tag.isempty() == false)
 			{
 				// read the element list
 				vector<int> l;
 				tag.value(l);
-				for (int i = 0; i<l.size(); ++i) l[i] -= 1;
 
-				// create a new element set for this
-				FEBioModel::PartInstance* inst = fem.GetInstance(0);
-				GMeshObject* po = inst->GetGObject();
+				if (l.empty() == false)
+				{
+					for (int i = 0; i < l.size(); ++i) l[i] -= 1;
 
-				char sz[32] = { 0 };
-				sprintf(sz, "elementset%02d", po->FEParts() + 1);
-				FEPart* ps = new FEPart(po, l);
-				ps->SetName(sz);
-				po->AddFEPart(ps);
+					// create a new element set for this
+					FEBioModel::PartInstance* inst = fem.GetInstance(0);
+					GMeshObject* po = inst->GetGObject();
 
-				logVar.SetGroupID(ps->GetID());
+					char sz[32] = { 0 };
+					sprintf(sz, "elementset%02d", po->FEParts() + 1);
+					FEPart* ps = new FEPart(po, l);
+					ps->SetName(sz);
+					po->AddFEPart(ps);
+
+					logVar.SetGroupID(ps->GetID());
+				}
 			}
 
 			fem.AddLogVariable(logVar);

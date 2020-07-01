@@ -1232,7 +1232,11 @@ FEMultiphasicAnalysis::FEMultiphasicAnalysis(FEModel* ps) : FEAnalysisStep(ps, F
 	AddDoubleParam(0.9  , "lstol", "Line search tolerance");
 	AddDoubleParam(1e-20, "min_residual", "Minumum residual");
 	AddChoiceParam(0, "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
-	AddBoolParam(true, "shell_normal_nodal", "Shell normal nodal");
+
+	// NOTE: This parameter cannot be written to febio3 files so we are hiding this for now. 
+	//       In FEBio3, domain parameters are written to the "domain" tags of the "instance", 
+	//       but this is not yet supported in FEBioStudio. 
+	AddBoolParam(true, "shell_normal_nodal", "Shell normal nodal")->SetState(0);
 
 	m_ops.nanalysis = 1; // set transient analysis
     m_ops.nmatfmt = 0;   // set non-symmetric flag

@@ -56,6 +56,14 @@ void FEBioExport::SetExportSelectionsFlag(bool b)
 }
 
 //-----------------------------------------------------------------------------
+const char* FEBioExport::GetEnumValue(Param& p)
+{
+	assert(p.GetParamType() == Param_CHOICE);
+	FEModel& fem = m_prj.GetFEModel();
+	return fem.GetEnumValue(p.GetEnumNames(), p.GetIntValue());
+}
+
+//-----------------------------------------------------------------------------
 void FEBioExport::WriteParam(Param &p)
 {
 	// don't export hidden parameters
@@ -88,9 +96,9 @@ void FEBioExport::WriteParam(Param &p)
 	{
 	case Param_CHOICE: 
 		{
-			if (m_exportEnumStrings)
+			if (m_exportEnumStrings && (p.GetEnumNames()) && (p.GetEnumNames()[0] != '$'))
 			{
-				const char* sz = p.GetEnumName(p.GetIntValue());
+				const char* sz = GetEnumValue(p);
 				e.value(sz);
 			}
 			else
