@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <unordered_map>
 #include <map>
 #include <QApplication>
+#include <QLocale>
 #include <QPalette>
 #include <QMenu>
 #include <QAction>
@@ -81,7 +82,7 @@ class CustomTreeWidgetItem : public QTreeWidgetItem
 {
 public:
 	CustomTreeWidgetItem(QString name, int type)
-		: QTreeWidgetItem(QStringList(name), type), localCopy(0), totalCopies(0)
+		: QTreeWidgetItem(QStringList(name), type), localCopy(0), totalCopies(0), m_size(0)
 	{
 
 	}
@@ -107,10 +108,12 @@ public:
 		if(LocalCopy())
 		{
 			setForeground(0, qApp->palette().color(QPalette::Active, QPalette::Text));
+			setForeground(1, qApp->palette().color(QPalette::Active, QPalette::Text));
 		}
 		else
 		{
 			setForeground(0, qApp->palette().color(QPalette::Disabled, QPalette::Text));
+			setForeground(1, qApp->palette().color(QPalette::Disabled, QPalette::Text));
 		}
 	}
 
@@ -182,9 +185,28 @@ public:
 		UpdateLocalCopyColor();
 	}
 
+	void UpdateSize()
+	{
+		int currentSize = 0;
+
+		for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+			current->UpdateSize();
+
+			currentSize += current->m_size;
+		}
+
+		m_size += currentSize;
+
+		setText(1, qApp->topLevelWidgets()[0]->locale().formattedDataSize(m_size));
+	}
+
 protected:
 	int localCopy;
 	int totalCopies;
+
+	qint64 m_size;
 
 };
 
@@ -226,12 +248,13 @@ public:
 	{
 		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
 	}
+
 };
 
 class FileItem : public CustomTreeWidgetItem
 {
 public:
-	FileItem(QString name, int fileID, bool lc)
+	FileItem(QString name, int fileID, bool lc, qint64 size)
 		: CustomTreeWidgetItem(name, FILEITEM), m_fileID(fileID)
 	{
 		if(name.endsWith(".fsprj"))
@@ -261,6 +284,8 @@ public:
 		totalCopies = 1;
 
 		UpdateLocalCopyColor();
+
+		m_size = size;
 	}
 
 	CustomTreeWidgetItem* getProjectItem()
@@ -435,8 +460,8 @@ public:
 
 		treeWidget = new QTreeWidget;
 		treeWidget->setObjectName("treeWidget");
-		treeWidget->setColumnCount(1);
-		treeWidget->setHeaderLabel("Project Database");
+		treeWidget->setColumnCount(2);
+		treeWidget->setHeaderLabels(QStringList() << "Projects" << "Size");
 		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 		treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 		splitter->addWidget(treeWidget);
@@ -532,31 +557,31 @@ public:
 		setLoginVisible(true);
 	}
 
-	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, std::unordered_map<std::string, CustomTreeWidgetItem*>* folders)
+	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, qint64 size)
 	{
 		int pos = path.right(index).lastIndexOf("/");
 
 		if(pos == -1)
 		{
-			FileItem* child = new FileItem(path.right(index), fileID, localCopy);
+			FileItem* child = new FileItem(path.right(index), fileID, localCopy, size);
 
 			fileItemsByID[fileID] = child;
 
 			return child;
 		}
 
-		CustomTreeWidgetItem* child = addFile(path, index - (pos + 1), fileID, localCopy, folders);
+		CustomTreeWidgetItem* child = addFile(path, index - (pos + 1), fileID, localCopy, size);
 		CustomTreeWidgetItem* parent;
 
 		try
 		{
-			parent = folders->at(path.left(pos).toStdString());
+			parent = currentProjectFolders.at(path.left(pos).toStdString());
 		}
 		catch(out_of_range& e)
 		{
 			parent = new FolderItem(path.left(pos));
 
-			(*folders)[path.left(pos).toStdString()] = parent;
+			currentProjectFolders[path.left(pos).toStdString()] = parent;
 		}
 
 		parent->addChild(child);
@@ -630,6 +655,26 @@ void CDatabasePanel::SetModelList()
 
 	dbHandler->GetProjects();
 
+	// Delete empty categories.
+	vector<int> empty;
+	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+	{
+		if(ui->treeWidget->topLevelItem(item)->childCount() == 0)
+		{
+			empty.push_back(item);
+		}
+	}
+
+	for(int item : empty)
+	{
+		delete ui->treeWidget->topLevelItem(item);
+	}
+
+	// Resize columns
+	ui->treeWidget->resizeColumnToContents(0);
+	ui->treeWidget->setColumnWidth(0, ui->treeWidget->columnWidth(0)*2.2);
+
+	// Select the first category
 	if(ui->treeWidget->topLevelItemCount() > 0)
 	{
 		ui->treeWidget->topLevelItem(0)->setSelected(true);
@@ -755,6 +800,7 @@ void CDatabasePanel::AddProject(char **data)
 		dbHandler->GetProjectFiles(ID);
 
 		ui->currentProject->UpdateCopies();
+		ui->currentProject->UpdateSize();
 	}
 }
 
@@ -763,8 +809,9 @@ void CDatabasePanel::AddProjectFile(char **data)
 	int ID = std::stoi(data[0]);
 	QString filename(data[1]);
 	bool localCopy = std::stoi(data[2]);
+	qint64 size = QString(data[3]).toLongLong();
 
-	ui->currentProject->addChild(ui->addFile(filename, filename.size(), ID, localCopy, &ui->currentProjectFolders));
+	ui->currentProject->addChild(ui->addFile(filename, filename.size(), ID, localCopy, size));
 }
 
 

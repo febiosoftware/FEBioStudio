@@ -513,7 +513,7 @@ QStringList CLocalDatabaseHandler::GetTags()
 
 void CLocalDatabaseHandler::GetProjectFiles(int ID)
 {
-	std::string query("SELECT ID, filename, localCopy from filenames where project = ");
+	std::string query("SELECT ID, filename, localCopy, size from filenames where project = ");
 	query += std::to_string(ID);
 
 	imp->execute(query, addProjectFilesCallback, imp->dbPanel);
