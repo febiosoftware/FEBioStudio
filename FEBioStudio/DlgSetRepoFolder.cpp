@@ -138,7 +138,7 @@ void CDlgSetRepoFolder::accept()
 		reply = QMessageBox::question(this, "FEBio Studio", "The directory you specified does not exist. Create it?",
 				QMessageBox::Yes|QMessageBox::No);
 
-		if(reply == QMessageBox::Yes) dir.mkdir(path);
+		if(reply == QMessageBox::Yes) dir.mkpath(path);
 		else return;
 	}
 

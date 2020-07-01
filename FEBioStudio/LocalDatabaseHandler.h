@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <string.h>
 #include <vector>
 #include <unordered_set>
+#include <map>
 
 class QJsonDocument;
 class QString;
@@ -57,6 +58,8 @@ public:
 	void GetProjectPubs(int ID);
 	void GetFileData(int ID);
 
+	void GetCategoryMap(std::map<int, std::string>& categoryMap);
+
 
 	std::unordered_set<int> FullTextSearch(QString term);
 
@@ -64,6 +67,10 @@ public:
 	QString FileNameFromID(int ID, int type);
 	QString FullFileNameFromID(int ID, int type);
 	int ProjectIDFromFileID(int ID);
+	int CategoryIDFromName(std::string name);
+
+	bool isValidUpload(QString& username, QString& projectName, QString& category);
+	long long int currentProjectsSize(QString username);
 
 
 private:

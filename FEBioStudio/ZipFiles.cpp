@@ -155,6 +155,68 @@ QStringList extractAllFiles(QString fileName, QString destDir)
 	return JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
 }
 
+
+bool archive(const QString & filePath, const QStringList & filePaths, const QStringList & localFilePaths)
+{
+	QuaZip zip(filePath);
+	zip.setFileNameCodec("IBM866");
+
+	if (!zip.open(QuaZip::mdCreate)) {
+		return false;
+	}
+
+	QFile inFile;
+
+	QuaZipFile outFile(&zip);
+
+	char c;
+	for(int index = 0; index < filePaths.size(); index++)
+	{
+		QFileInfo fileInfo(filePaths.at(index));
+
+
+		if (!fileInfo.isFile())
+					continue;
+
+		QString fileNameWithRelativePath = localFilePaths.at(index);
+
+		inFile.setFileName(fileInfo.filePath());
+
+		if (!inFile.open(QIODevice::ReadOnly)) {
+			return false;
+		}
+
+		QuaZipNewInfo zipFileInfo(fileNameWithRelativePath, filePaths.at(index));
+
+		if (!outFile.open(QIODevice::WriteOnly, zipFileInfo)) {
+			return false;
+		}
+
+		while (inFile.getChar(&c) && outFile.putChar(c));
+
+
+		if (outFile.getZipError() != UNZ_OK) {
+			return false;
+		}
+
+		outFile.close();
+
+		if (outFile.getZipError() != UNZ_OK) {
+			return false;
+		}
+
+		inFile.close();
+	}
+
+	zip.close();
+
+	if (zip.getZipError() != 0) {
+		return false;
+	}
+
+	return true;
+}
+
 #else
 void recurseAddDir(QDir d, QStringList & list) {}
 bool archive(const QString & filePath, const QDir & dir, const QString & comment) { return false; }

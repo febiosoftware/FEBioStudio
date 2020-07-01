@@ -1,0 +1,1 @@
+../FSCore/FSCore.pro

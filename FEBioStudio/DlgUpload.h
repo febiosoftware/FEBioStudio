@@ -35,6 +35,10 @@ namespace Ui {
 
 class QStringList;
 class CPublicationWidget;
+class CLocalDatabaseHandler;
+class CRepoConnectionHandler;
+class FEBioStudioProject;
+class CExportProjectWidget;
 
 //class ClickableLabel : public QLabel {
 //    Q_OBJECT
@@ -83,10 +87,11 @@ class CDlgUpload : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgUpload(QWidget* parent);
+	CDlgUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, FEBioStudioProject* project = nullptr);
 
 	void setName(QString name);
 	void setDescription(QString desc);
+	void setCategories(QStringList& categories);
 	void setOwner(QString owner);
 	void setVersion(QString version);
 	void setTags(QStringList& tags);
@@ -94,13 +99,17 @@ public:
 
 	void setTagList(QStringList& tags);
 
-
 	QString getName();
 	QString getDescription();
+	QString getCategory();
 	QString getOwner();
 	QString getVersion();
 	QStringList getTags();
 	QList<QVariant> getPublicationInfo();
+
+	CExportProjectWidget* exportProjectWidget();
+
+	void accept() override;
 
 
 public slots:
@@ -109,5 +118,7 @@ public slots:
 
 private:
 	Ui::CDlgUpload*	ui;
+	CLocalDatabaseHandler* dbHandler;
+	CRepoConnectionHandler* repoHandler;
 	void UpdateLaunchConfigBox(int index);
 };

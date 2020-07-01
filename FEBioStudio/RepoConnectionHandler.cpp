@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <QVariantMap>
 #include <QUrl>
 #include <QDir>
+#include <QStandardPaths>
 #include <QList>
 #include <QSaveFile>
 #include <QFileDialog>
@@ -54,19 +55,15 @@ SOFTWARE.*/
 #include "ZipFiles.h"
 #include <iostream>
 
+#define REPO_URL "repo.febio.org"
+
 class CRepoConnectionHandler::Imp
 {
 public:
 	Imp(CDatabasePanel* dbPanel, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* handler, CMainWindow* wnd)
-		: dbPanel(dbPanel), dbHandler(dbHandler), m_wnd(wnd), uploadPermission(0)
+		: dbPanel(dbPanel), dbHandler(dbHandler), m_wnd(wnd), uploadPermission(0), sizeLimit(0), authenticated(false), uploadReady(false)
 	{
 		restclient = new QNetworkAccessManager(handler);
-
-//		QSslSocket *socket = new QSslSocket;
-//		socket->addCaCertificates( "/home/sci/mherron/Desktop/pythonDaemon/cert.pem" );
-//
-//		conf = new QSslConfiguration;
-//		conf->setCaCertificates( socket->caCertificates() );
 	}
 
 	~Imp()
@@ -78,12 +75,16 @@ public:
 	CLocalDatabaseHandler* dbHandler;
 	CMainWindow* m_wnd;
 
-//	QSslConfiguration* conf;
 	QNetworkAccessManager* restclient;
 
 	QString username;
 	QString token;
 	int uploadPermission;
+	int sizeLimit;
+	bool authenticated;
+
+	QString fileToken;
+	bool uploadReady;
 
 };
 
@@ -101,23 +102,24 @@ CRepoConnectionHandler::~CRepoConnectionHandler()
 	delete imp;
 }
 
-void CRepoConnectionHandler::authenticate(QString userName, QString password)
+void CRepoConnectionHandler::authenticate(QString username, QString password)
 {
-	imp->username = userName;
+	imp->username = username;
 
 	QVariantMap feed;
-	feed.insert("username", userName);
+	feed.insert("username", username);
 	feed.insert("password", password);
 	QByteArray payload=QJsonDocument::fromVariant(feed).toJson();
 
 	QUrl myurl;
 	myurl.setScheme("https");
-	myurl.setHost("omen.sci.utah.edu");
+	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
 	myurl.setPath("/modelRepo/api/v1.0/authenticate");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
 	imp->restclient->setNetworkAccessible(QNetworkAccessManager::Accessible);
@@ -133,14 +135,13 @@ void CRepoConnectionHandler::getSchema()
 {
 	QUrl myurl;
 	myurl.setScheme("https");
-	myurl.setHost("omen.sci.utah.edu");
+	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
 	myurl.setPath("/modelRepo/api/v1.0/schema");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
-	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
-	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 
 	if(NetworkAccessibleCheck())
 	{
@@ -152,14 +153,13 @@ void CRepoConnectionHandler::getTables()
 {
 	QUrl myurl;
 	myurl.setScheme("https");
-	myurl.setHost("omen.sci.utah.edu");
+	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
 	myurl.setPath("/modelRepo/api/v1.0/tables");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
-	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
-	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 
 	if(NetworkAccessibleCheck())
 	{
@@ -172,14 +172,13 @@ void CRepoConnectionHandler::getFile(int id, int type)
 {
 	QUrl myurl;
 	myurl.setScheme("https");
-	myurl.setHost("omen.sci.utah.edu");
+	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
 	myurl.setPath(QString("/modelRepo/api/v1.0/files/%1/%2").arg(type).arg(id));
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
-	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
-	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 
 	if(NetworkAccessibleCheck())
 	{
@@ -192,38 +191,18 @@ void CRepoConnectionHandler::getFile(int id, int type)
 
 }
 
-//void CRepoConnectionHandler::upload(QByteArray projectInfo)
-//{
-//	QUrl myurl;
-//	myurl.setScheme("https");
-//	myurl.setHost("omen.sci.utah.edu");
-//	myurl.setPort(4433);
-//	myurl.setPath("/modelRepo/api/v1.0/upload");
-//
-//	QNetworkRequest request;
-//	request.setUrl(myurl);
-//	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
-//	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
-//	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-//
-//	if(NetworkAccessibleCheck())
-//	{
-//		imp->restclient->post(request, projectInfo);
-//	}
-//
-//}
-
 void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 {
 	QUrl myurl;
 	myurl.setScheme("https");
-	myurl.setHost("omen.sci.utah.edu");
+	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
 	myurl.setPath("/modelRepo/api/v1.0/uploadFileRequest");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
-	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
 	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -233,46 +212,67 @@ void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 	}
 }
 
-void CRepoConnectionHandler::uploadFile(QString fileToken)
+void CRepoConnectionHandler::uploadFile()
 {
 	QUrl myurl;
 	myurl.setScheme("https");
-	myurl.setHost("omen.sci.utah.edu");
+	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
 	myurl.setPath("/modelRepo/api/v1.0/uploadFile");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
-	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
 	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
-	request.setRawHeader(QByteArray("fileToken"), fileToken.toUtf8());
+	request.setRawHeader(QByteArray("fileToken"), imp->fileToken.toUtf8());
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/zip");
 
-	string fileName = imp->m_wnd->GetDocument()->GetDocFolder() + "/.projOutForUpload.prj";
+	QString fileName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
 
 	if(NetworkAccessibleCheck())
 	{
-		archive(fileName.c_str(), QDir(imp->m_wnd->GetDocument()->GetDocFolder().c_str()));
-
-		QFile* arch = new QFile(fileName.c_str());
+		QFile* arch = new QFile(fileName);
 		arch->open(QIODevice::ReadOnly);
 
 		QNetworkReply* reply = imp->restclient->post(request, arch);
 		arch->setParent(reply);
 	}
+}
 
+void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
+{
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost(REPO_URL);
+	myurl.setPort(4433);
+	myurl.setPath("/modelRepo/api/v1.0/requestUploaderPermissions");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
+	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+	if(NetworkAccessibleCheck())
+	{
+		imp->restclient->post(request, userInfo);
+	}
 }
 
 void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 {
 	QUrl myurl;
 	myurl.setScheme("https");
-	myurl.setHost("omen.sci.utah.edu");
+	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
 	myurl.setPath(QString("/modelRepo/api/v1.0/projects/%1").arg(id));
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
-	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
 	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -286,13 +286,14 @@ void CRepoConnectionHandler::deleteProject(int id)
 {
 	QUrl myurl;
 	myurl.setScheme("https");
-	myurl.setHost("omen.sci.utah.edu");
+	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
 	myurl.setPath(QString("/modelRepo/api/v1.0/projects/%1").arg(id));
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
-	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
 	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -304,20 +305,22 @@ void CRepoConnectionHandler::deleteProject(int id)
 
 void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 {
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	// If this version of FEBioStudio is too old, send message and prevent further interaction.
+	if(statusCode == 426)
+	{
+		imp->dbPanel->ShowMessage("This version of FEBio Studio is too old to connect to the project "
+				"repository.\n\nPlease update FEBio Studio in order to connect to the repository.");
+		return;
+	}
+
 	QString URL = r->request().url().toString();
 
 	if(URL.contains("authenticate"))
 	{
 		authReply(r);
 	}
-//	else if(URL.contains("authCheck"))
-//	{
-//		authReply(r);
-//	}
-	//	else if(URL.contains("models"))
-//	{
-//		modelListReply(r);
-//	}
 	else if(URL.contains("schema"))
 	{
 		getSchemaReply(r);
@@ -334,10 +337,10 @@ void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 	{
 		uploadFileReply(r);
 	}
-//	else if(URL.contains("upload"))
-//	{
-//		uploadReply(r);
-//	}
+	else if(URL.contains("requestUploaderPermissions"))
+	{
+		requestUploadPermissionsReply(r);
+	}
 	else if(URL.contains("tables"))
 	{
 		getTablesReply(r);
@@ -378,7 +381,7 @@ void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal)
 
 bool CRepoConnectionHandler::NetworkAccessibleCheck()
 {
-/*	if(imp->restclient->networkAccessible() == QNetworkAccessManager::Accessible)
+	if(imp->restclient->networkAccessible() == QNetworkAccessManager::Accessible)
 	{
 		return true;
 	}
@@ -388,21 +391,19 @@ bool CRepoConnectionHandler::NetworkAccessibleCheck()
 
 		return false;
 	}
-*/
-	return true;
 }
 
 //bool CRepoConnectionHandler::AuthCheck()
 //{
 //	QUrl myurl;
 //	myurl.setScheme("https");
-//	myurl.setHost("omen.sci.utah.edu");
+//	myurl.setHost(REPO_URL);
 //	myurl.setPort(4433);
 //	myurl.setPath("/modelRepo/api/v1.0/authCheck");
 //
 //	QNetworkRequest request;
 //	request.setUrl(myurl);
-//	request.setRawHeader(QByteArray("userName"), imp->username.toUtf8());
+//	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
 //	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
 //	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 //
@@ -424,11 +425,11 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 		QJsonDocument jsonDoc = QJsonDocument::fromJson(r->readAll());
 		QJsonObject obj = jsonDoc.object();
 
+
+		imp->authenticated = true;
 		imp->token = obj.value("authToken").toString();
 		imp->uploadPermission = obj.value("uploader").toInt();
-
-		// Store the authentication token
-//		imp->token = (QString)r->readAll();
+		imp->sizeLimit = obj.value("sizeLimit").toInt();
 
 		// Send a request to get the repository schema
 		getSchema();
@@ -439,12 +440,24 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 		QJsonObject obj = jsonDoc.object();
 		QString message = obj.value("message").toString();
 
+		imp->authenticated = false;
+		imp->token = "";
+		imp->uploadPermission = 0;
+
+		getTables();
+
 		imp->dbPanel->ShowMessage(message);
 	}
 	else
 	{
 		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
 		message += std::to_string(statusCode).c_str();
+
+		imp->authenticated = false;
+		imp->token = "";
+		imp->uploadPermission = 0;
+
+		getTables();
 
 		imp->dbPanel->ShowMessage(message);
 	}
@@ -460,21 +473,6 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 //	cout << "authCheck response code: " << statusCode << endl;
 //
 //	emit authCheckDone();
-//}
-
-
-//void CRepoConnectionHandler::modelListReply(QNetworkReply *r)
-//{
-//	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//
-//	std::cout << statusCode << std::endl;
-////	std::cout << ((QString)r->readAll()).toStdString() << std::endl;
-////	std::cout << ((QString)r->readAll()).toStdString() << std::endl;
-//
-//	QJsonDocument jsonDoc = QJsonDocument::fromJson(r->readAll());
-//
-////	imp->dbPanel->SetModelList(jsonDoc);
-//
 //}
 
 void CRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
@@ -520,7 +518,7 @@ void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 	}
 	else
 	{
-		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		QString message = "An unknown server error has occurred.\nHTTP Status Code: ";
 		message += std::to_string(statusCode).c_str();
 
 		imp->dbPanel->ShowMessage(message);
@@ -541,11 +539,13 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 		QString path = imp->dbPanel->GetRepositoryFolder() + "/";
 		path += imp->dbHandler->FilePathFromID(fileID, IDType);
 
-		QDir dir;
-		dir.mkpath(path);
-
 		QString filename = path + "/";
 		filename += imp->dbHandler->FileNameFromID(fileID, IDType);
+
+		QFileInfo info(filename);
+
+		QDir dir;
+		dir.mkpath(info.path());
 
 		QByteArray data = r->readAll();
 
@@ -560,6 +560,10 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 	else if(statusCode == 403)
 	{
 		imp->dbPanel->LoginTimeout();
+	}
+	else if(statusCode == 404)
+	{
+		imp->dbPanel->ShowMessage(r->readAll());
 	}
 	else
 	{
@@ -604,43 +608,17 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 
 }
 
-//void CRepoConnectionHandler::uploadReply(QNetworkReply *r)
-//{
-//	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//
-//	if(statusCode == 200)
-//	{
-//		QString fileToken = r->readAll();
-//
-//		TCPUpload(fileToken);
-//
-//		getTables();
-//
-//		imp->dbPanel->SetModelList();
-//	}
-//	else if(statusCode == 403)
-//	{
-//		imp->dbPanel->LoginTimeout();
-//	}
-//	else
-//	{
-//		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
-//		message += std::to_string(statusCode).c_str();
-//
-//		imp->dbPanel->FailedLogin(message);
-//	}
-//
-//}
-
 void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
 	if(statusCode == 200)
 	{
-		QString fileToken = r->readAll();
+		imp->fileToken = r->readAll();
 
-		uploadFile(fileToken);
+		if(imp->uploadReady) uploadFile();
+
+		imp->uploadReady = true;
 
 	}
 	else if(statusCode == 403)
@@ -659,12 +637,15 @@ void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 
 void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
 {
-	string fileName = imp->m_wnd->GetDocument()->GetDocFolder() + "/.projOutForUpload.prj";
-	QFile::remove(fileName.c_str());
+	QString fileName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
+	QFile::remove(fileName);
+
+	imp->uploadReady = false;
+	imp->fileToken = "";
+
+	imp->dbPanel->ShowMessage(r->readAll());
 
 	getSchema();
-
-	imp->dbPanel->SetModelList();
 }
 
 void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
@@ -674,8 +655,6 @@ void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
 	if(statusCode == 200)
 	{
 		getSchema();
-
-		imp->dbPanel->SetModelList();
 	}
 
 	imp->dbPanel->ShowMessage(r->readAll());
@@ -689,152 +668,30 @@ void CRepoConnectionHandler::deleteProjectRepy(QNetworkReply *r)
 	if(statusCode == 200)
 	{
 		getSchema();
-
-		imp->dbPanel->SetModelList();
 	}
 
 	imp->dbPanel->ShowMessage(r->readAll());
 
 }
 
-//void CRepoConnectionHandler::TCPUpload(QString fileToken)
-//{
-//	QTcpSocket socket;
-//	socket.connectToHost("omen.sci.utah.edu", 50000);
-//
-//	socket.waitForReadyRead(5000);
-//
-//	QByteArray message = socket.readAll();
-//
-////	cout << message.toStdString() << endl;
-//
-//	socket.write(imp->token.toUtf8());
-//
-//	socket.waitForReadyRead(5000);
-//
-//	message = socket.readAll();
-//
-////	cout << message.toStdString() << endl;
-//
-//	socket.write(fileToken.toUtf8());
-//
-//	socket.waitForReadyRead(5000);
-//
-//	message = socket.readAll();
-//
-////	cout << message.toStdString() << endl;
-//
-//	string fileName = imp->m_wnd->GetDocument()->GetDocFolder() + "/.projOutForUpload.prj";
-//
-//	cout << "FileName: " << fileName << endl;
-//
-//	archive(fileName.c_str(), QDir(imp->m_wnd->GetDocument()->GetDocFolder().c_str()));
-//
-//	QFile arch(fileName.c_str());
-//	arch.open(QIODevice::ReadOnly);
-//
-//	while(socket.write(arch.read(1024)))
-//	{
-//		socket.flush();
-//	}
-//
-//	arch.close();
-//
-//	arch.remove();
+void CRepoConnectionHandler::requestUploadPermissionsReply(QNetworkReply *r)
+{
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
+	if(statusCode == 200)
+	{
+		imp->dbPanel->ShowMessage("Your request for uploader permissions will be reviewed. You should "
+				"recieve an email when your request has been granted.");
+	}
+	else
+	{
+		QString message = "An unknown server error has occurred.\nHTTP Staus Code: ";
+		message += std::to_string(statusCode).c_str();
 
-//	QBuffer buff;
-//	buff.open(QBuffer::ReadWrite);
+		imp->dbPanel->ShowMessage(message);
+	}
+}
 
-//	QuaZip zip(&socket);
-//	if (zip.getZipError() != 0) {
-//			cout << "Zip error: " << zip.getZipError() << endl;
-//		}
-//
-//	zip.setFileNameCodec("IBM866");
-//	if (!zip.open(QuaZip::mdCreate)) {
-//		cout << "Open Failed." << endl;
-//		return;
-//	}
-//
-//	QFile inFile;
-//	QuaZipFile outFile(&zip);
-//
-//	QStringList sl;
-//	QDir dir(imp->m_wnd->GetDocument()->GetDocFolder().c_str());
-//	cout << "Dir: "<< imp->m_wnd->GetDocument()->GetDocFolder().c_str() << endl;
-//
-//	recurseAddDir(dir, sl);
-//
-//	QFileInfoList files;
-//	foreach (QString fn, sl) files << QFileInfo(fn);
-//
-//	foreach(QFileInfo fileInfo, files) {
-//
-//		if (!fileInfo.isFile())
-//			continue;
-//
-//		QString fileNameWithRelativePath = fileInfo.filePath().remove(0, dir.absolutePath().length() + 1);
-//		cout << fileNameWithRelativePath.toStdString() << endl;
-//
-//		inFile.setFileName(fileInfo.filePath());
-//
-//		if (!inFile.open(QIODevice::ReadOnly)) {
-//			cout << "Failed to open inFile" << endl;
-//			return;
-//		}
-//
-//		if(fileInfo.isSymLink())
-//		{
-//			if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.symLinkTarget()))) {
-//				return;
-//			}
-//		}
-//		else
-//		{
-//			if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.filePath()))) {
-//				return;
-//			}
-//		}
-//
-//		while(outFile.write(inFile.read(1024)))
-//		{
-//				socket.flush();
-//		}
-//
-//
-//
-////		while (inFile.getChar(&c) && outFile.putChar(c));
-//
-////		socket.write(buff.readAll());
-////		socket.flush();
-//
-//		if (outFile.getZipError() != UNZ_OK) {
-//			cout << "Out error: " << outFile.getZipError() << endl;
-//		}
-////
-////		if (outFile.getZipError() != UNZ_OK) {
-////			return;
-////		}
-//
-//		outFile.close();
-//
-//		inFile.close();
-//	}
-//
-////	while(socket.write(buff.read(1024)))
-////	{
-////		socket.flush();
-////	}
-//
-//	zip.close();
-//
-//	if (zip.getZipError() != 0) {
-//		cout << "Zip error: " << zip.getZipError() << endl;
-//	}
-
-
-//}
 
 QString CRepoConnectionHandler::getUsername()
 {
@@ -844,6 +701,26 @@ QString CRepoConnectionHandler::getUsername()
 int CRepoConnectionHandler::getUploadPermission()
 {
 	return imp->uploadPermission;
+}
+
+int CRepoConnectionHandler::getSizeLimit()
+{
+	return imp->sizeLimit;
+}
+
+bool CRepoConnectionHandler::isAuthenticated()
+{
+	return imp->authenticated;
+}
+
+void CRepoConnectionHandler::setUploadReady(bool ready)
+{
+	imp->uploadReady = ready;
+}
+
+bool CRepoConnectionHandler::isUploadReady()
+{
+	return imp->uploadReady;
 }
 
 #else

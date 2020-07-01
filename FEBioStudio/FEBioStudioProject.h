@@ -58,6 +58,8 @@ public:
 
 		ProjectItem* FindItem(int id);
 
+		void GetFilePaths(QStringList& filePaths);
+
 		ProjectItem* Parent() { return m_parent; }
 		const ProjectItem* Parent() const { return m_parent; }
 
@@ -122,6 +124,8 @@ public:
 
 	ProjectItem* FindFile(int fileId);
 	const ProjectItem* FindFile(int fileId) const;
+
+	QStringList GetFilePaths();
 
 	void AddGroup(const QString& groupName, int parentId);
 

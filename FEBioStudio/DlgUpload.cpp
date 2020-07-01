@@ -26,9 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include <QWidget>
+#include <QMessageBox>
 #include <QFrame>
 #include <QAction>
 #include <QLineEdit>
+#include <QComboBox>
 #include <QCompleter>
 #include <QPlainTextEdit>
 #include <QFormLayout>
@@ -38,8 +40,13 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QFrame>
+#include <QFileInfo>
+#include <QLocale>
 #include "DlgUpload.h"
 #include "PublicationWidgetView.h"
+#include "ExportProjectWidget.h"
+#include "LocalDatabaseHandler.h"
+#include "RepoConnectionHandler.h"
 
 //ClickableLabel::ClickableLabel(QWidget* parent, Qt::WindowFlags f)
 //    : QLabel(parent) {
@@ -91,20 +98,39 @@ public:
 	QLabel* owner;
 	QLabel* version;
 	
+	QLabel* categoryLabel;
+	QComboBox* categoryBox;
+
 	QLineEdit* newTag;
 	QCompleter* completer;
 	QListWidget* tags;
 	::CPublicationWidgetView* pubs;
+	::CExportProjectWidget* files;
 
 public:
-	void setup(QDialog* dlg)
+	void setup(QDialog* dlg, int uploadPermissions, FEBioStudioProject* project)
 	{
+		QVBoxLayout* fullLayout = new QVBoxLayout;
+
+		QHBoxLayout* outerLayout = new QHBoxLayout;
+
 		QFormLayout* form = new QFormLayout;
 		form->addRow("Name: ", name = new QLineEdit);
 		form->addRow("Description: ", description = new QPlainTextEdit);
+
+		if(uploadPermissions == 1)
+		{
+			form->addRow("Category: ", categoryLabel = new QLabel);
+			categoryBox = NULL;
+		}
+		else
+		{
+			form->addRow("Category: ", categoryBox = new QComboBox);
+			categoryLabel = NULL;
+		}
+
 		form->addRow("Owner: ", owner = new QLabel);
 		form->addRow("Version: ", version = new QLabel);
-
 
 		QHBoxLayout* tagLayout = new QHBoxLayout;
 		QVBoxLayout* v1 = new QVBoxLayout;
@@ -149,11 +175,20 @@ public:
 		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::EDITABLE);
 		layout->addWidget(pubs);
 
+		outerLayout->addLayout(layout);
+
+		if(project)
+		{
+			files = new ::CExportProjectWidget(project, true);
+			outerLayout->addWidget(files);
+		}
+
+		fullLayout->addLayout(outerLayout);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-		layout->addWidget(bb);
+		fullLayout->addWidget(bb);
 
-		dlg->setLayout(layout);
+		dlg->setLayout(fullLayout);
 
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
@@ -161,9 +196,10 @@ public:
 	}
 };
 
-CDlgUpload::CDlgUpload(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgUpload)
+CDlgUpload::CDlgUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, FEBioStudioProject* project)
+	: QDialog(parent), ui(new Ui::CDlgUpload), dbHandler(dbHandler), repoHandler(repoHandler)
 {
-	ui->setup(this);
+	ui->setup(this, uploadPermissions, project);
 	setWindowTitle("Upload Project");
 
 	QMetaObject::connectSlotsByName(this);
@@ -177,6 +213,18 @@ void CDlgUpload::setName(QString name)
 void CDlgUpload::setDescription(QString desc)
 {
 	ui->description->document()->setPlainText(desc);
+}
+
+void CDlgUpload::setCategories(QStringList& categories)
+{
+	if(ui->categoryLabel)
+	{
+		ui->categoryLabel->setText(categories[0]);
+	}
+	else
+	{
+		ui->categoryBox->addItems(categories);
+	}
 }
 
 void CDlgUpload::setOwner(QString owner)
@@ -224,6 +272,18 @@ QString CDlgUpload::getDescription()
 	return ui->description->document()->toPlainText();
 }
 
+QString CDlgUpload::getCategory()
+{
+	if(ui->categoryLabel)
+	{
+		return ui->categoryLabel->text();
+	}
+	else
+	{
+		return ui->categoryBox->currentText();
+	}
+}
+
 QString CDlgUpload::getOwner()
 {
 	return ui->owner->text();
@@ -258,6 +318,106 @@ QStringList CDlgUpload::getTags()
 QList<QVariant> CDlgUpload::getPublicationInfo()
 {
 	return ui->pubs->getPublicationInfo();
+}
+
+CExportProjectWidget* CDlgUpload::exportProjectWidget()
+{
+	return ui->files;
+}
+
+void CDlgUpload::accept()
+{
+	if(ui->name->text().isEmpty())
+	{
+		QMessageBox::critical(this, "Upload", "Please enter a name for your project.");
+		return;
+	}
+
+	QString username = getOwner();
+	QString name = getName();
+	QString category = getCategory();
+	if(!dbHandler->isValidUpload(username, name, category))
+	{
+		QMessageBox::critical(this, "Upload", "You already have a project with that name in this category."
+				"\n\nPlease choose a different project name.");
+		return;
+	}
+
+	if(ui->description->toPlainText().isEmpty())
+	{
+		QMessageBox::critical(this, "Upload", "Please enter a description for your project.");
+		return;
+	}
+
+	if(ui->tags->count() == 0)
+	{
+		QMessageBox::critical(this, "Upload", "Please add at least one tag to your project.");
+		return;
+	}
+
+	QStringList filePaths = ui->files->GetFilePaths();
+	if(filePaths.isEmpty())
+	{
+		QMessageBox::critical(this, "Upload", "Please select at least one file to upload.");
+		return;
+	}
+
+	qint64 totalSize = 0;
+	for(auto path : filePaths)
+	{
+		QFileInfo info(path);
+		totalSize += info.size();
+	}
+
+	qint64 currentProjectsSize = dbHandler->currentProjectsSize(repoHandler->getUsername());
+	qint64 sizeLimit = repoHandler->getSizeLimit();
+
+	if(totalSize + currentProjectsSize > sizeLimit)
+	{
+		QLocale locale = this->locale();
+
+		QString message = QString("This upload would exceed your limit of %1 on the repository. Please remove some files "
+				"or delete some projects from the repository.\n\n"
+				"Current Project Size: %2\n"
+				"Total on Repository: %3\n").arg(locale.formattedDataSize(sizeLimit))
+				.arg(locale.formattedDataSize(totalSize))
+				.arg(locale.formattedDataSize(currentProjectsSize));
+
+		QMessageBox::critical(this, "Upload", message);
+		return;
+	}
+
+	QStringList descriptions = ui->files->GetFileDescriptions();
+	for(auto desc : descriptions)
+	{
+		if(desc.isEmpty())
+		{
+			QMessageBox::StandardButton reply = QMessageBox::question(this, "Upload", "Some of your files are missing descriptions."
+					"\n\nWould you like to upload without them?");
+
+			if(reply == QMessageBox::Yes)
+			{
+				break;
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+
+	if(ui->pubs->count() == 0)
+	{
+		QMessageBox::StandardButton reply = QMessageBox::question(this, "Upload", "You have not associated any publications with your project."
+								"\n\nWould you like to upload anyway?");
+
+		if(reply != QMessageBox::Yes)
+		{
+			return;
+		}
+	}
+
+	QDialog::accept();
 }
 
 void CDlgUpload::on_addTagBtn_clicked()
