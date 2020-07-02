@@ -152,9 +152,13 @@ public:
 	CStatsInfo*		stats;
 	CSelectionInfo*	sel;
 
+	FEMesh*		m_pm;
+
 public:
 	void setupUi(QMainWindow* wnd)
 	{
+		m_pm = nullptr;
+
 		info = new CMeshInfo;
 
 		table = new QTableWidget;
@@ -224,6 +228,11 @@ public:
 
 		FEMesh* pm = po->GetFEMesh();
 		if (pm == 0) return;
+
+		// We get ever when the selection has changed, but we don't
+		// want to update when the mesh hasn't changed.
+		if (m_pm == pm) return;
+		m_pm = pm;
 
 		int n[MAX_ELEM + 1] = { 0 };
 		int NE = pm->Elements();
