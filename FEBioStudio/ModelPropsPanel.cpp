@@ -655,11 +655,12 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 			sel->setType("Domains");
 			GPartList& g = dynamic_cast<GPartList&>(*item);
 			vector<GPart*> parts = g.GetPartList();
-			for (int i=0; i<parts.size(); ++i)
+			FEItemListBuilder::Iterator it = item->begin();
+			for (int i=0; i<parts.size(); ++i, ++it)
 			{
 				GPart* pg = parts[i];
 				if (pg) sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
-				else sel->addData(QString("[invalid reference]"), -1, 1);
+				else sel->addData(QString("[invalid reference]"), *it, 1);
 			}
 		}
 		break;
@@ -668,11 +669,12 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 			sel->setType("Surfaces");
 			GFaceList& g = dynamic_cast<GFaceList&>(*item);
 			vector<GFace*> surfs = g.GetFaceList();
-			for (int i=0; i<surfs.size(); ++i)
+			FEItemListBuilder::Iterator it = item->begin();
+			for (int i=0; i<surfs.size(); ++i, ++it)
 			{
 				GFace* pg = surfs[i];
 				if (pg) sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
-				else sel->addData(QString("[invalid reference]"), -1, 1);
+				else sel->addData(QString("[invalid reference]"), *it, 1);
 			}
 		}
 		break;
@@ -681,11 +683,12 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 			sel->setType("Curves");
 			GEdgeList& g = dynamic_cast<GEdgeList&>(*item);
 			vector<GEdge*> edges = g.GetEdgeList();
-			for (int i=0; i<edges.size(); ++i)
+			FEItemListBuilder::Iterator it = item->begin();
+			for (int i=0; i<edges.size(); ++i, ++it)
 			{
 				GEdge* pg = edges[i];
 				if (pg) sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
-				else sel->addData(QString("[invalid reference]"), -1, 1);
+				else sel->addData(QString("[invalid reference]"), *it, 1);
 			}
 		}
 		break;
@@ -694,11 +697,12 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 			sel->setType("Nodes");
 			GNodeList& g = dynamic_cast<GNodeList&>(*item);
 			vector<GNode*> nodes = g.GetNodeList();
-			for (int i=0; i<nodes.size(); ++i)
+			FEItemListBuilder::Iterator it = item->begin();
+			for (int i=0; i<nodes.size(); ++i, ++it)
 			{
 				GNode* pg = nodes[i];
 				if (pg) sel->addData(QString::fromStdString(pg->GetName()), pg->GetID());
-				else sel->addData(QString("[invalid reference]"), -1, 1);
+				else sel->addData(QString("[invalid reference]"), *it, 1);
 			}
 		}
 		break;
