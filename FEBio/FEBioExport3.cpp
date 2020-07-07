@@ -62,6 +62,7 @@ FEBioExport3::FEBioExport3(FEProject& prj) : FEBioExport(prj)
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
+	m_writeControlSection = true;
 }
 
 FEBioExport3::~FEBioExport3()
@@ -720,6 +721,17 @@ bool FEBioExport3::Write(const char* szfile)
 				if (m_section[FEBIO_MODULE]) WriteModuleSection(pstep);
 			}
 
+			// write Control section
+			if (m_writeControlSection && (m_nsteps == 2) && m_section[FEBIO_CONTROL])
+			{
+				m_xml.add_branch("Control");
+				{
+					FEAnalysisStep* step = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+					WriteControlSection(step);
+				}
+				m_xml.close_branch();
+			}
+
 			// global variables
 			int nvar = fem.Parameters();
 			if ((nvar > 0) && m_section[FEBIO_GLOBAL])
@@ -844,11 +856,14 @@ bool FEBioExport3::Write(const char* szfile)
 			// step data
 			if (m_section[FEBIO_STEPS])
 			{
-				m_xml.add_branch("Step");
+				if ((m_writeControlSection == false) || (m_nsteps > 2))
 				{
-					WriteStepSection();
+					m_xml.add_branch("Step");
+					{
+						WriteStepSection();
+					}
+					m_xml.close_branch();
 				}
-				m_xml.close_branch();
 			}
 
 			// loadcurve data
