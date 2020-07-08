@@ -695,6 +695,22 @@ bool FEBioExport3::Write(const char* szfile)
 		// get the initial step
 		FEStep* pstep = fem.GetStep(0);
 
+		// the format for single step versus multi-step
+		// is slightly different, so we need to see if the 
+		// model is single step or not.
+		// The model is single step if it has only one 
+		// analysis-step and if that step does not define
+		// any BCs, Loads, interfaces or RCs.
+		int ntype = -1;
+		bool bsingle_step = (m_nsteps <= 1);
+		if (m_nsteps == 2)
+		{
+			FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+			if (pstep == 0) return errf("Step 1 is not an analysis step.");
+			ntype = pstep->GetType();
+			if (pstep->BCs() + pstep->Loads() + pstep->ICs() + pstep->Interfaces() + pstep->LinearConstraints() + pstep->RigidConstraints() + pstep->RigidConnectors() == 0) bsingle_step = true;
+		}
+
 		// open the file
 		if (!m_xml.open(szfile)) return errf("Failed opening file %s", szfile);
 
@@ -722,14 +738,17 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// write Control section
-			if (m_writeControlSection && (m_nsteps == 2) && m_section[FEBIO_CONTROL])
+			if (m_writeControlSection && (m_nsteps == 2) && bsingle_step)
 			{
-				m_xml.add_branch("Control");
+				if (m_section[FEBIO_CONTROL])
 				{
-					FEAnalysisStep* step = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
-					WriteControlSection(step);
+					m_xml.add_branch("Control");
+					{
+						FEAnalysisStep* step = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+						WriteControlSection(step);
+					}
+					m_xml.close_branch();
 				}
-				m_xml.close_branch();
 			}
 
 			// global variables
@@ -856,7 +875,7 @@ bool FEBioExport3::Write(const char* szfile)
 			// step data
 			if (m_section[FEBIO_STEPS])
 			{
-				if ((m_writeControlSection == false) || (m_nsteps > 2))
+				if ((m_writeControlSection == false) || (m_nsteps > 2) || (bsingle_step == false))
 				{
 					m_xml.add_branch("Step");
 					{
