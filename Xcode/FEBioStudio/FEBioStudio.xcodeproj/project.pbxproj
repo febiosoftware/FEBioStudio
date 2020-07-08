@@ -66,6 +66,12 @@
 		D5828D0E246465DB00FD7FF2 /* DlgUnitConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5828D09246465DB00FD7FF2 /* DlgUnitConverter.cpp */; };
 		D593905C246A0DD200122209 /* DlgNewProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5939059246A0DD200122209 /* DlgNewProject.cpp */; };
 		D593905D246A0DD200122209 /* moc_DlgNewProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */; };
+		D5946E1924B4F5A60009C22F /* moc_DlgRequestUploadPerm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5946E1124B4F5A50009C22F /* moc_DlgRequestUploadPerm.cpp */; };
+		D5946E1A24B4F5A60009C22F /* WrapLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5946E1224B4F5A50009C22F /* WrapLabel.cpp */; };
+		D5946E1B24B4F5A60009C22F /* ExportProjectWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5946E1424B4F5A60009C22F /* ExportProjectWidget.cpp */; };
+		D5946E1C24B4F5A60009C22F /* DlgRequestUploadPerm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5946E1624B4F5A60009C22F /* DlgRequestUploadPerm.cpp */; };
+		D5946E1D24B4F5A60009C22F /* moc_FocusWatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5946E1724B4F5A60009C22F /* moc_FocusWatcher.cpp */; };
+		D5946E1E24B4F5A60009C22F /* moc_ExportProjectWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5946E1824B4F5A60009C22F /* moc_ExportProjectWidget.cpp */; };
 		D5992F222461E4320054F9DA /* DocManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F0E2461E4300054F9DA /* DocManager.cpp */; };
 		D5992F242461E4320054F9DA /* menuHelp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F102461E4310054F9DA /* menuHelp.cpp */; };
 		D5992F252461E4320054F9DA /* PostDocument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F122461E4310054F9DA /* PostDocument.cpp */; };
@@ -522,6 +528,17 @@
 		D5939059246A0DD200122209 /* DlgNewProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgNewProject.cpp; sourceTree = "<group>"; };
 		D593905A246A0DD200122209 /* DlgNewProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgNewProject.h; sourceTree = "<group>"; };
 		D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgNewProject.cpp; sourceTree = "<group>"; };
+		D5946E0E24B4F5A50009C22F /* FocusWatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FocusWatcher.h; sourceTree = "<group>"; };
+		D5946E0F24B4F5A50009C22F /* moc_predefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moc_predefs.h; sourceTree = "<group>"; };
+		D5946E1024B4F5A50009C22F /* ExportProjectWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExportProjectWidget.h; sourceTree = "<group>"; };
+		D5946E1124B4F5A50009C22F /* moc_DlgRequestUploadPerm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgRequestUploadPerm.cpp; sourceTree = "<group>"; };
+		D5946E1224B4F5A50009C22F /* WrapLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WrapLabel.cpp; sourceTree = "<group>"; };
+		D5946E1324B4F5A50009C22F /* WrapLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WrapLabel.h; sourceTree = "<group>"; };
+		D5946E1424B4F5A60009C22F /* ExportProjectWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExportProjectWidget.cpp; sourceTree = "<group>"; };
+		D5946E1524B4F5A60009C22F /* DlgRequestUploadPerm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgRequestUploadPerm.h; sourceTree = "<group>"; };
+		D5946E1624B4F5A60009C22F /* DlgRequestUploadPerm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgRequestUploadPerm.cpp; sourceTree = "<group>"; };
+		D5946E1724B4F5A60009C22F /* moc_FocusWatcher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_FocusWatcher.cpp; sourceTree = "<group>"; };
+		D5946E1824B4F5A60009C22F /* moc_ExportProjectWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ExportProjectWidget.cpp; sourceTree = "<group>"; };
 		D5992F0D2461E4300054F9DA /* ModelFileWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelFileWriter.h; sourceTree = "<group>"; };
 		D5992F0E2461E4300054F9DA /* DocManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DocManager.cpp; sourceTree = "<group>"; };
 		D5992F102461E4310054F9DA /* menuHelp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuHelp.cpp; sourceTree = "<group>"; };
@@ -1227,6 +1244,8 @@
 				D5F7D71422FA37C40089B08E /* DlgPurge.h */,
 				D5F7D72C22FA37C40089B08E /* DlgRAWImport.cpp */,
 				D5F7D75C22FA37C40089B08E /* DlgRAWImport.h */,
+				D5946E1624B4F5A60009C22F /* DlgRequestUploadPerm.cpp */,
+				D5946E1524B4F5A60009C22F /* DlgRequestUploadPerm.h */,
 				D5F7D7C622FA37C40089B08E /* DlgRun.cpp */,
 				D5F7D75522FA37C40089B08E /* DlgRun.h */,
 				D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */,
@@ -1263,6 +1282,8 @@
 				D5CC3A64245B4CD700311F48 /* ElementVolumeTool.h */,
 				D5D5B6BD2335128D00D388FA /* Encrypter.cpp */,
 				D5D5B6C12335128D00D388FA /* Encrypter.h */,
+				D5946E1424B4F5A60009C22F /* ExportProjectWidget.cpp */,
+				D5946E1024B4F5A50009C22F /* ExportProjectWidget.h */,
 				D5F7D73D22FA37C40089B08E /* FEBioJob.cpp */,
 				D5F7D7A522FA37C40089B08E /* FEBioJob.h */,
 				D5F7D76922FA37C40089B08E /* FEBioOpt.h */,
@@ -1280,6 +1301,7 @@
 				D5F7D80A22FA37C40089B08E /* FileViewer.h */,
 				D5F7D7C322FA37C40089B08E /* FoamGeneratorTool.cpp */,
 				D5F7D7B622FA37C40089B08E /* FoamGeneratorTool.h */,
+				D5946E0E24B4F5A50009C22F /* FocusWatcher.h */,
 				D5F7D80B22FA37C40089B08E /* GGrid.cpp */,
 				D5F7D80022FA37C40089B08E /* GGrid.h */,
 				D5F7D77422FA37C40089B08E /* GLCanvas.cpp */,
@@ -1385,6 +1407,7 @@
 				D593905B246A0DD200122209 /* moc_DlgNewProject.cpp */,
 				D5DFB179248F24750006DB45 /* moc_DlgPlaneCut.cpp */,
 				D5CC3A61245B4CD700311F48 /* moc_DlgPlotMix.cpp */,
+				D5946E1124B4F5A50009C22F /* moc_DlgRequestUploadPerm.cpp */,
 				D5F7D79D22FA37C40089B08E /* moc_DlgRun.cpp */,
 				D50EB7B1246B6E6800E016F1 /* moc_DlgSetRepoFolder.cpp */,
 				D5F7D74D22FA37C40089B08E /* moc_DlgSettings.cpp */,
@@ -1393,9 +1416,11 @@
 				D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */,
 				D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */,
 				D5F7D77A22FA37C40089B08E /* moc_EditPanel.cpp */,
+				D5946E1824B4F5A60009C22F /* moc_ExportProjectWidget.cpp */,
 				D5460FF124A936E3008C8024 /* moc_FiberGeneratorTool.cpp */,
 				D5F7D6F922FA37C30089B08E /* moc_FileThread.cpp */,
 				D5F7D71F22FA37C40089B08E /* moc_FileViewer.cpp */,
+				D5946E1724B4F5A60009C22F /* moc_FocusWatcher.cpp */,
 				D5F7D7FF22FA37C40089B08E /* moc_GLControlBar.cpp */,
 				D5F7D70822FA37C40089B08E /* moc_GLHighlighter.cpp */,
 				D5F7D7A322FA37C40089B08E /* moc_GLView.cpp */,
@@ -1424,6 +1449,7 @@
 				D5ED29FD23198CD700C16BF7 /* moc_PostDataPanel.cpp */,
 				D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */,
 				D5F7D75A22FA37C40089B08E /* moc_PostPanel.cpp */,
+				D5946E0F24B4F5A50009C22F /* moc_predefs.h */,
 				D5F7D71022FA37C40089B08E /* moc_PropertyListForm.cpp */,
 				D5F7D77022FA37C40089B08E /* moc_PropertyListView.cpp */,
 				D57C2A73240F1F990043C2A7 /* moc_PublicationWidget.cpp */,
@@ -1550,6 +1576,8 @@
 				D5CB0B212481A5D1004702B2 /* WebDefines.h */,
 				D5992F1D2461E4320054F9DA /* welcomePage.h */,
 				D5992F202461E4320054F9DA /* welcomPage.cpp */,
+				D5946E1224B4F5A50009C22F /* WrapLabel.cpp */,
+				D5946E1324B4F5A50009C22F /* WrapLabel.h */,
 				D5CA211023EF7025001AE230 /* ZipFiles.cpp */,
 				D5ED2A0823198CD800C16BF7 /* ZipFiles.h */,
 			);
@@ -1767,6 +1795,7 @@
 				D5F7D88A22FA37C40089B08E /* DlgNew.cpp in Sources */,
 				D5F7D88222FA37C40089B08E /* moc_DlgCloneRevolve.cpp in Sources */,
 				D5F7D89A22FA37C40089B08E /* DlgVTKExport.cpp in Sources */,
+				D5946E1924B4F5A60009C22F /* moc_DlgRequestUploadPerm.cpp in Sources */,
 				D50EB7B3246B6E6900E016F1 /* DlgSetRepoFolder.cpp in Sources */,
 				D5F7D8B922FA37C40089B08E /* PlotWidget.cpp in Sources */,
 				D5F7D82B22FA37C40089B08E /* moc_GLHighlighter.cpp in Sources */,
@@ -1786,11 +1815,13 @@
 				D5828D0D246465DB00FD7FF2 /* units.cpp in Sources */,
 				D5F7D85122FA37C40089B08E /* DlgLameConvertor.cpp in Sources */,
 				D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */,
+				D5946E1E24B4F5A60009C22F /* moc_ExportProjectWidget.cpp in Sources */,
 				D5992F2D2461E4320054F9DA /* welcomPage.cpp in Sources */,
 				D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */,
 				D57C2A7A240F1F990043C2A7 /* PublicationWidget.cpp in Sources */,
 				D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */,
 				D5F7D82C22FA37C40089B08E /* moc_BuildPanel.cpp in Sources */,
+				D5946E1A24B4F5A60009C22F /* WrapLabel.cpp in Sources */,
 				D5F7D83C22FA37C40089B08E /* DlgEditProject.cpp in Sources */,
 				D5A96F29246892A10026BFE0 /* GraphData.cpp in Sources */,
 				D5ED2A1423198CD900C16BF7 /* moc_StatePanel.cpp in Sources */,
@@ -1850,6 +1881,7 @@
 				D5F7D87922FA37C40089B08E /* CurveEditor.cpp in Sources */,
 				D5F7D87122FA37C40089B08E /* moc_DlgAddMeshData.cpp in Sources */,
 				D5F7D89C22FA37C40089B08E /* ObjectProps.cpp in Sources */,
+				D5946E1C24B4F5A60009C22F /* DlgRequestUploadPerm.cpp in Sources */,
 				D5F7D8A422FA37C40089B08E /* DlgAddRigidConstraint.cpp in Sources */,
 				D5F7D84722FA37C40089B08E /* DlgAddChemicalReaction.cpp in Sources */,
 				D5ED2A0D23198CD900C16BF7 /* DragBox.cpp in Sources */,
@@ -1881,6 +1913,7 @@
 				D5D5B6C52335128E00D388FA /* Encrypter.cpp in Sources */,
 				D5F7D89D22FA37C40089B08E /* moc_CreateSpringPane.cpp in Sources */,
 				D5F7D8B822FA37C40089B08E /* moc_GLControlBar.cpp in Sources */,
+				D5946E1B24B4F5A60009C22F /* ExportProjectWidget.cpp in Sources */,
 				D5F7D86D22FA37C40089B08E /* moc_EditPanel.cpp in Sources */,
 				D5F7D83222FA37C40089B08E /* DlgLSDYNAExport.cpp in Sources */,
 				D5F7D85022FA37C40089B08E /* CreateP2PLinePane.cpp in Sources */,
@@ -1911,6 +1944,7 @@
 				D5C13EDB24047890005897E1 /* moc_PostModelPanel.cpp in Sources */,
 				D5D5B6C62335128E00D388FA /* moc_SSHHandler.cpp in Sources */,
 				D5ED2A1123198CD900C16BF7 /* StatePanel.cpp in Sources */,
+				D5946E1D24B4F5A60009C22F /* moc_FocusWatcher.cpp in Sources */,
 				D5F7D85722FA37C40089B08E /* ClassDescriptor.cpp in Sources */,
 				D5D27485246D9D0100B1AA9D /* UnitParser.cpp in Sources */,
 				D5F7D8C422FA37C40089B08E /* menuTools.cpp in Sources */,
