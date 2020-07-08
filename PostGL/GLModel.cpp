@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeEdgeList.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <GLLib/GLMeshRender.h>
+#include <GLLib/glx.h>
 #include <stack>
 using namespace std;
 using namespace Post;
@@ -519,6 +520,9 @@ void CGLModel::Render(CGLContext& rc)
 
 	// render decorations
 	RenderDecorations();
+
+	// render all the objects
+	RenderObjects(rc);
 }
 
 //-----------------------------------------------------------------------------
@@ -1896,6 +1900,33 @@ void CGLModel::RenderEdges(FEPostModel* ps, CGLContext& rc)
 	// restore attributes
 	glPopAttrib();
 }
+
+// render all the objects
+void CGLModel::RenderObjects(CGLContext& rc)
+{
+	Post::FEPostModel* fem = GetFEModel();
+	if (fem->PlotObjects() == 0) return;
+
+	double scale = 0.03*(double)rc.m_cam->GetTargetDistance();
+	double R = 0.5*scale;
+
+	glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+
+	for (int i = 0; i < fem->PlotObjects(); ++i)
+	{
+		Post::FEPostModel::PlotObject & ob = fem->GetPlotObject(i);
+
+		glPushMatrix();
+		glx::translate(ob.m_pos);
+		glx::rotate(ob.m_rot);
+		glx::renderRigidBody(R);
+		glPopMatrix();
+	}
+	glPopAttrib();
+}
+
 
 void CGLModel::RenderDecorations()
 {

@@ -757,3 +757,194 @@ void glx::smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs)
 		nj -= 1;
 	}
 }
+
+void glx::renderRigidBody(double R)
+{
+	glBegin(GL_LINE_LOOP);
+	{
+		glVertex3d(R, 0, 0);
+		glVertex3d(0, R, 0);
+		glVertex3d(-R, 0, 0);
+		glVertex3d(0, -R, 0);
+	}
+	glEnd();
+
+	glBegin(GL_LINE_LOOP);
+	{
+		glVertex3d(0, R, 0);
+		glVertex3d(0, 0, R);
+		glVertex3d(0, -R, 0);
+		glVertex3d(0, 0, -R);
+	}
+	glEnd();
+
+	glBegin(GL_LINE_LOOP);
+	{
+		glVertex3d(R, 0, 0);
+		glVertex3d(0, 0, R);
+		glVertex3d(-R, 0, 0);
+		glVertex3d(0, 0, -R);
+	}
+	glEnd();
+
+	glBegin(GL_LINES);
+	{
+		glColor3ub(255, 0, 0); glVertex3d(0, 0, 0); glVertex3d(R, 0, 0);
+		glColor3ub(0, 255, 0); glVertex3d(0, 0, 0); glVertex3d(0, R, 0);
+		glColor3ub(0, 0, 255); glVertex3d(0, 0, 0); glVertex3d(0, 0, R);
+	}
+	glEnd();
+}
+
+void glx::renderJoint(double R)
+{
+	glBegin(GL_LINES);
+	{
+		glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
+		glVertex3d(0, -R, 0); glVertex3d(0, +R, 0);
+		glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
+	}
+	glEnd();
+
+	glx::drawCircle(R, 25);
+
+	glRotatef(90.f, 1.f, 0.f, 0.f);
+	glx::drawCircle(R, 25);
+	glRotatef(-90.f, 1.f, 0.f, 0.f);
+
+	glRotatef(90.f, 0.f, 1.f, 0.f);
+	glx::drawCircle(R, 25);
+	glRotatef(-90.f, 0.f, 1.f, 0.f);
+}
+
+void glx::renderRevoluteJoint(double R)
+{
+	// line along rotation axis
+	glBegin(GL_LINES);
+	{
+		glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
+	}
+	glEnd();
+
+	// little circle around origin, in transverse plane
+	glx::drawCircle(R / 5, 25);
+
+	// half-circle with arrow, in transverse plane
+	glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
+	glBegin(GL_LINES);
+	{
+		glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
+		glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-7 * R / 15, +R / 5, 0);
+	}
+	glEnd();
+}
+
+void glx::renderCylindricalJoint(double R)
+{
+	// line with arrow along rotation axis
+	glBegin(GL_LINES);
+	{
+		glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
+		glVertex3d(0, 0, +R); glVertex3d(+R / 5, 0, +4 * R / 5);
+		glVertex3d(0, 0, +R); glVertex3d(-R / 5, 0, +4 * R / 5);
+	}
+	glEnd();
+
+	// little circle around origin, in transverse plane
+	glx::drawCircle(R / 5, 25);
+
+	// half-circle with arrow, in transverse plane
+	glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
+	glBegin(GL_LINES);
+	{
+		glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
+		glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-7 * R / 15, +R / 5, 0);
+	}
+	glEnd();
+}
+
+void glx::renderPlanarJoint(double R)
+{
+	glBegin(GL_LINES);
+	{
+		// line along rotation axis
+		glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
+
+		// line with arrow along translation axis 1
+		glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
+		glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, +R / 5, 0);
+		glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, -R / 5, 0);
+
+		// line with arrow along translation axis 2
+		glVertex3d(0, -R, 0); glVertex3d(0, +R, 0);
+		glVertex3d(0, +R, 0); glVertex3d(+R / 5, +4 * R / 5, 0);
+		glVertex3d(0, +R, 0); glVertex3d(-R / 5, +4 * R / 5, 0);
+
+		// square in the center
+		glVertex3d(-R / 3, +R / 3, 0); glVertex3d(+R / 3, +R / 3, 0);
+		glVertex3d(-R / 3, -R / 3, 0); glVertex3d(+R / 3, -R / 3, 0);
+		glVertex3d(-R / 3, +R / 3, 0); glVertex3d(-R / 3, -R / 3, 0);
+		glVertex3d(+R / 3, +R / 3, 0); glVertex3d(+R / 3, -R / 3, 0);
+	}
+	glEnd();
+
+	// little circle around origin, in transverse plane
+	glx::drawCircle(R / 5, 25);
+
+	// half-circle with arrow, in transverse plane
+	glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
+	glBegin(GL_LINES);
+	{
+		glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
+		glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-7 * R / 15, +R / 5, 0);
+	}
+	glEnd();
+}
+
+void glx::renderPrismaticJoint(double R)
+{
+	glBegin(GL_LINES);
+	{
+		// line with arrow along translation (x-)axis
+		glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
+		glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, +R / 5, 0);
+		glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, -R / 5, 0);
+
+		// parallel lines above and below
+		glVertex3d(-3 * R / 4, +R / 2, 0); glVertex3d(+3 * R / 4, +R / 2, 0);
+		glVertex3d(-3 * R / 4, -R / 2, 0); glVertex3d(+3 * R / 4, -R / 2, 0);
+
+		// rectangle in the center
+		glVertex3d(-R / 2, +R / 3, 0); glVertex3d(+R / 2, +R / 3, 0);
+		glVertex3d(-R / 2, -R / 3, 0); glVertex3d(+R / 2, -R / 3, 0);
+		glVertex3d(-R / 2, +R / 3, 0); glVertex3d(-R / 2, -R / 3, 0);
+		glVertex3d(+R / 2, +R / 3, 0); glVertex3d(+R / 2, -R / 3, 0);
+	}
+	glEnd();
+
+	// little circle around origin, in x-y plane
+	glx::drawCircle(R / 5, 25);
+}
+
+void glx::renderRigidLock(double R)
+{
+	glBegin(GL_LINES);
+	{
+		// line along rotation axis
+		glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
+
+		// line with arrow along first axis
+		glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
+		glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, +R / 5, 0);
+		glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, -R / 5, 0);
+
+		// line with arrow along second axis
+		glVertex3d(0, -R, 0); glVertex3d(0, +R, 0);
+		glVertex3d(0, +R, 0); glVertex3d(+R / 5, +4 * R / 5, 0);
+		glVertex3d(0, +R, 0); glVertex3d(-R / 5, +4 * R / 5, 0);
+	}
+	glEnd();
+
+	// little circle around origin, in transverse plane
+	glx::drawCircle(R / 5, 25);
+}

@@ -64,6 +64,24 @@ public:
 class FEPostModel  
 {
 public:
+	class PlotObject
+	{
+	public:
+		PlotObject() {}
+		PlotObject(const PlotObject & ob)
+		{
+			m_name = ob.m_name;
+			m_pos = ob.m_pos;
+			m_rot = ob.m_rot;
+		}
+
+	public:
+		std::string	m_name;
+		vec3d	m_pos;
+		quatd	m_rot;
+	};
+
+public:
 	// con-/destructor
 	FEPostModel();
 	virtual ~FEPostModel();
@@ -216,6 +234,12 @@ public:
 
 	MetaData& GetMetaData() { return m_meta; }
 
+public:
+	int PlotObjects() const;
+	void AddPlotObject(PlotObject ob);
+	PlotObject & GetPlotObject(int i);
+	void ClearObjects();
+
 protected:
 	// Helper functions for data evaluation
 	void EvalNodeField(int ntime, int nfield);
@@ -239,6 +263,9 @@ protected:
 
 	// --- M A T E R I A L S ---
 	vector<FEMaterial>	m_Mat;		// array of materials
+
+	// --- O B J E C T S ---
+	vector<PlotObject >	m_Obj;
 
 	// --- S T A T E ---
 	vector<FEState*>	m_State;	// array of pointers to FE-state structures

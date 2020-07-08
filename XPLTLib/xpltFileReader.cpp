@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "xpltFileReader.h"
 #include "xpltReader.h"
 #include "xpltReader2.h"
+#include "xpltReader3.h"
 #include <PostLib/FEPostModel.h>
 
 xpltParser::xpltParser(xpltFileReader* xplt) : m_xplt(xplt), m_ar(xplt->GetArchive())
@@ -92,7 +93,12 @@ bool xpltFileReader::Load(const char* szfile)
 	// create a file parser
 	if (m_xplt) { delete m_xplt; m_xplt = 0; }
 	if (m_hdr.nversion <= 5) m_xplt = new XpltReader(this);
-	else m_xplt = new XpltReader2(this);
+	else if (m_hdr.nversion < 0x08) m_xplt = new XpltReader2(this);
+	else
+	{
+		assert(m_hdr.nversion == 0x0030);
+		m_xplt = new XpltReader3(this);
+	}
 
 	// load the rest of the file
 	bool bret = m_xplt->Load(*m_fem);

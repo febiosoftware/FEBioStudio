@@ -84,6 +84,17 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		m_ELEM[i].m_h[3] = 0.f;
 	}
 
+	int objs = fem->PlotObjects();
+	m_obj.resize(objs);
+	for (int i = 0; i < objs; ++i)
+	{
+		OBJECTDATA& di = m_obj[i];
+		Post::FEPostModel::PlotObject& po = fem->GetPlotObject(i);
+
+		di.m_pos = po.m_pos;
+		di.m_rot = po.m_rot;
+	}
+
 	m_time = time;
 	m_nField = -1;
 
@@ -172,6 +183,18 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 		m_ELEM[i].m_h[1] = 0.f;
 		m_ELEM[i].m_h[2] = 0.f;
 		m_ELEM[i].m_h[3] = 0.f;
+	}
+
+	// initialize object data
+	int objs = pfem->PlotObjects();
+	m_obj.resize(objs);
+	for (int i = 0; i < objs; ++i)
+	{
+		OBJECTDATA& di = m_obj[i];
+		Post::FEPostModel::PlotObject& po = pfem->GetPlotObject(i);
+
+		di.m_pos = po.m_pos;
+		di.m_rot = po.m_rot;
 	}
 
 	m_time = time;

@@ -1022,5 +1022,37 @@ void FEPostModel::UpdateMeshState(int ntime)
 		}
 		else el.SetEroded(false);
 	}
+
+	// update plot objects
+	for (int i = 0; i < PlotObjects(); ++i)
+	{
+		Post::FEPostModel::PlotObject& po = GetPlotObject(i);
+		OBJECTDATA& di = state.m_obj[i];
+
+		po.m_pos = di.m_pos;
+		po.m_rot = di.m_rot;
+	}
 }
+
+//-----------------------------------------------------------------------------
+int FEPostModel::PlotObjects() const
+{
+	return m_Obj.size();
+}
+
+void FEPostModel::AddPlotObject(FEPostModel::PlotObject ob)
+{
+	m_Obj.push_back(ob);
+}
+
+FEPostModel::PlotObject& FEPostModel::GetPlotObject(int i)
+{
+	return m_Obj[i];
+}
+
+void FEPostModel::ClearObjects()
+{
+	m_Obj.clear();
+}
+
 }
