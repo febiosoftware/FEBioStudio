@@ -87,6 +87,13 @@ static int addCurrentTagCallback(void *dbPanel, int argc, char **argv, char **az
 	return 0;
 }
 
+static int addCurrentFileTagCallback(void *dbPanel, int argc, char **argv, char **azColName)
+{
+	((CDatabasePanel*) dbPanel)->AddCurrentFileTag(argv);
+
+	return 0;
+}
+
 class CLocalDatabaseHandler::Imp
 {
 public:
@@ -535,6 +542,14 @@ void CLocalDatabaseHandler::GetFileData(int ID)
 	imp->execute(query, setFileDataCallback, imp->dbPanel);
 }
 
+void CLocalDatabaseHandler::GetFileTags(int ID)
+{
+	std::string query("SELECT tags.tag FROM tags JOIN fileTags on tags.id = fileTags.tag WHERE fileTags.file = ");
+	query += std::to_string(ID);
+
+	imp->execute(query, addCurrentFileTagCallback, imp->dbPanel);
+}
+
 void CLocalDatabaseHandler::GetCategoryMap(std::map<int, std::string>& categoryMap)
 {
 	char **table;
@@ -625,6 +640,10 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 
 std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 {
+	cout << term.toStdString() << endl;
+
+	if(term.isEmpty()) return unordered_set<int>();
+
 	char **table;
 	int rows, cols;
 
@@ -669,7 +688,58 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 
 	sqlite3_free_table(table);
 
+	// Matches file tags
+//	query = QString("SELECT filenames.project FROM tags JOIN fileTags ON tags.ID = fileTags.tag JOIN filenames ON fileNames.ID = fileTags.file WHERE tags.tag LIKE '%%1%'").arg(term);
+//	queryStd = query.toStdString();
+//
+//	imp->getTable(queryStd, &table, &rows, &cols);
+//
+//	for(int row = 1; row <= rows; row++)
+//	{
+//		projects.insert(stoi(table[row]));
+//	}
+//
+//	sqlite3_free_table(table);
+
 	return projects;
+}
+
+std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
+{
+	cout << term.toStdString() << endl;
+
+	char **table;
+	int rows, cols;
+
+	std::unordered_set<int> files;
+
+	// Matches filenames and descriptions
+	QString query = QString("SELECT ID FROM filenames WHERE filename LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+	std::string queryStd = query.toStdString();
+
+	imp->getTable(queryStd, &table, &rows, &cols);
+
+	for(int row = 1; row <= rows; row++)
+	{
+		files.insert(stoi(table[row]));
+	}
+
+	sqlite3_free_table(table);
+
+	// Matches file tags
+	query = QString("SELECT fileTags.file FROM tags JOIN fileTags ON tags.ID = fileTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
+	queryStd = query.toStdString();
+
+	imp->getTable(queryStd, &table, &rows, &cols);
+
+	for(int row = 1; row <= rows; row++)
+	{
+		files.insert(stoi(table[row]));
+	}
+
+	sqlite3_free_table(table);
+
+	return files;
 }
 
 

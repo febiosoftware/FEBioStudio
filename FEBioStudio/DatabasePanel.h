@@ -66,6 +66,7 @@ public:
 	void SetFileData(char **argv);
 	void AddCurrentTag(char **argv);
 	void AddPublication(QVariantMap data);
+	void AddCurrentFileTag(char **argv);
 
 	QString GetRepositoryFolder();
 	void SetRepositoryFolder(QString folder);
@@ -87,6 +88,7 @@ private slots:
 	void on_treeWidget_itemSelectionChanged();
 	void on_treeWidget_customContextMenuRequested(const QPoint &pos);
 	void on_projectTags_linkActivated(const QString& link);
+	void on_fileTags_linkActivated(const QString& link);
 
 private:
 	void DownloadItem(CustomTreeWidgetItem *item);
