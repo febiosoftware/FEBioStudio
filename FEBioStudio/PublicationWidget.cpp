@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QAction>
 #include "PublicationWidget.h"
 #include "WrapLabel.h"
+#include "IconProvider.h"
 
 #include <iostream>
 
@@ -65,7 +66,7 @@ public:
 		layout->setSizeConstraint(QLayout::SetMinimumSize);
 
 		QAction* select = new QAction(parent);
-		select->setIcon(QIcon(":/icons/check.png"));
+		select->setIcon(CIconProvider::GetIcon("check"));
 		select->setObjectName("select");
 
 		if(parent->isExpandable())
@@ -78,7 +79,7 @@ public:
 			shortLayout->addWidget(shortLabel);
 
 			expand = new QAction(parent);
-			expand->setIcon(QIcon(":/icons/selectAdd.png"));
+			expand->setIcon(CIconProvider::GetIcon("expand"));
 			expand->setObjectName("expand");
 			QToolButton* expandBtn = new QToolButton;
 			expandBtn->setDefaultAction(expand);
@@ -124,7 +125,7 @@ public:
 		if(parent->isExpandable())
 		{
 			shrink = new QAction(parent);
-			shrink->setIcon(QIcon(":/icons/selectSub.png"));
+			shrink->setIcon(CIconProvider::GetIcon("collapse"));
 			shrink->setObjectName("shrink");
 			QToolButton* shrinkBtn = new QToolButton;
 			shrinkBtn->setDefaultAction(shrink);

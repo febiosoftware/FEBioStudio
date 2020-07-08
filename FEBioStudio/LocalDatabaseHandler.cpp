@@ -640,8 +640,6 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 
 std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 {
-	cout << term.toStdString() << endl;
-
 	if(term.isEmpty()) return unordered_set<int>();
 
 	char **table;
@@ -706,8 +704,6 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 
 std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
 {
-	cout << term.toStdString() << endl;
-
 	char **table;
 	int rows, cols;
 

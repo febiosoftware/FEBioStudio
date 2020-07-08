@@ -508,7 +508,7 @@ public:
 
 		projectInfoBox->addTool("Project Info", projectDummy);
 
-		projectInfoBox->addTool("Publications", projectPubs = new ::CPublicationWidgetView);
+		projectInfoBox->addTool("Publications", projectPubs = new ::CPublicationWidgetView(::CPublicationWidgetView::LIST, false));
 		projectInfoBox->getToolItem(1)->hide();
 
 		QWidget* fileDummy = new QWidget;
@@ -611,16 +611,18 @@ public:
 		stack->setCurrentIndex(2);
 	}
 
-//	void setTagLabel(QString tagString)
-//	{
-//		projectInfoForm->removeRow(projectTags);
-//
-//		if(!tagString.isEmpty())
-//		{
-//			projectInfoForm->addRow("Tags:", projectTags = new QLabel(tagString));
-////			projectTags->setWordWrap(true);
-//		}
-//	}
+	void setProjectTags()
+	{
+		if(currentTags.isEmpty())
+		{
+			projectTags->hide();
+		}
+		else
+		{
+			projectTags->show();
+			projectTags->setTagList(currentTags);
+		}
+	}
 
 	void setFileDescription(QString description)
 	{
@@ -886,7 +888,6 @@ void CDatabasePanel::on_loginButton_clicked()
 		repoHandler->authenticate(userName->text(), password->text());
 
 		ui->showLoadingPage("Logging in...");
-//		ui->stack->setCurrentIndex(2);
 	}
 }
 
@@ -979,7 +980,6 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 		if (dlg.exec())
 		{
-//			ui->stack->setCurrentIndex(3);
 			ui->showLoadingPage("Uploading...");
 
 			QVariantMap projectInfo;
@@ -1327,7 +1327,7 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	// Get the project tags
 	ui->currentTags.clear();
 	dbHandler->GetProjectTags(projItem->getProjectID());
-	ui->projectTags->setTagList(ui->currentTags);
+	ui->setProjectTags();
 
 	ui->projectInfoBox->getToolItem(0)->show();
 
@@ -1473,27 +1473,6 @@ void CDatabasePanel::SetFileData(char **data)
 {
 	ui->filenameLabel->setText(data[0]);
 	ui->setFileDescription(data[1]);
-
-//	QString description(data[1]);
-//
-//	// Don't show file description if the file doesn't have one
-//	if(description.isEmpty())
-//	{
-//		ui->fileInfoForm->removeRow(ui->fileDescLabel);
-//		ui->fileDescLabel = nullptr;
-//	}
-//	else
-//	{
-//		if(ui->fileDescLabel)
-//		{
-//			ui->fileDescLabel->setText(description);
-//		}
-//		else
-//		{
-//			ui->fileInfoForm->insertRow(1, "Description:", ui->fileDescLabel = new QLabel(description));
-//			ui->fileDescLabel->setWordWrap(true);
-//		}
-//	}
 }
 
 void CDatabasePanel::AddCurrentTag(char **data)

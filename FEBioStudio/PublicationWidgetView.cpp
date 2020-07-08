@@ -67,19 +67,17 @@ public:
 class Ui::CPublicationWidgetView
 {
 public:
-	 QWidget* pubs;
-	 QVBoxLayout* pubsLayout;
+	QWidget* pubs;
+	QVBoxLayout* pubsLayout;
 
-	 QAction* addPub;
-	 QAction* delPub;
+	QAction* addPub;
+	QAction* delPub;
 
 public:
-	void setup(::CPublicationWidgetView* parent)
+	void setup(::CPublicationWidgetView* parent, bool scroll)
 	{
 		QHBoxLayout* layout = new QHBoxLayout;
 //		layout->setContentsMargins(0, 5, 0, 0);
-		VerticalScrollArea* scrollArea = new VerticalScrollArea;
-		scrollArea->setFrameStyle(QFrame::NoFrame);
 
 		pubs = new QWidget;
 		pubs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
@@ -87,9 +85,19 @@ public:
 		pubsLayout->setContentsMargins(0, 0, 0, 0);
 		pubs->setLayout(pubsLayout);
 
-		scrollArea->setWidget(pubs);
+		if(scroll)
+		{
+			VerticalScrollArea* scrollArea = new VerticalScrollArea;
+			scrollArea->setFrameStyle(QFrame::NoFrame);
 
-		layout->addWidget(scrollArea);
+			scrollArea->setWidget(pubs);
+
+			layout->addWidget(scrollArea);
+		}
+		else
+		{
+			layout->addWidget(pubs);
+		}
 
 		if(parent->getType() == ::CPublicationWidgetView::EDITABLE)
 		{
@@ -125,10 +133,10 @@ public:
 
 
 
-CPublicationWidgetView::CPublicationWidgetView(Type type)
+CPublicationWidgetView::CPublicationWidgetView(Type type, bool scroll)
 	: type(type), ui(new Ui::CPublicationWidgetView)
 {
-	ui->setup(this);
+	ui->setup(this, scroll);
 }
 
 int CPublicationWidgetView::getType() const {
@@ -312,3 +320,4 @@ const std::vector<CPublicationWidget*>& CPublicationWidgetView::getPublications(
 {
 	return pubs;
 }
+
