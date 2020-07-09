@@ -60,7 +60,7 @@ SOFTWARE.*/
 //}
 //
 //
-//TagLabel::TagLabel(QString text, QWidget* parent)
+//TagLabel2::TagLabel2(QString text, QWidget* parent)
 //	: QFrame(parent)
 //{
 //	QHBoxLayout* layout = new QHBoxLayout;
@@ -85,7 +85,7 @@ SOFTWARE.*/
 //	QObject::connect(remove, SIGNAL(clicked()), this, SLOT(deleteThis()));
 //}
 //
-//void TagLabel::deleteThis()
+//void TagLabel2::deleteThis()
 //{
 //	delete this;
 //}
@@ -132,7 +132,7 @@ public:
 		form->addRow("Owner: ", owner = new QLabel);
 		form->addRow("Version: ", version = new QLabel);
 
-		QHBoxLayout* tagLayout = new QHBoxLayout;
+		QHBoxLayout* tagsLayout = new QHBoxLayout;
 		QVBoxLayout* v1 = new QVBoxLayout;
 		QVBoxLayout* v2 = new QVBoxLayout;
 		v2->setAlignment(Qt::AlignTop);
@@ -161,14 +161,14 @@ public:
 		delTagBtn->setObjectName("delTagBtn");
 		v2->addWidget(delTagBtn);
 
-		tagLayout->addLayout(v1);
-		tagLayout->addLayout(v2);
+		tagsLayout->addLayout(v1);
+		tagsLayout->addLayout(v2);
 
 		QVBoxLayout* layout = new QVBoxLayout;
 
 		layout->addLayout(form);
 		layout->addWidget(new QLabel("Tags:"));
-		layout->addLayout(tagLayout);
+		layout->addLayout(tagsLayout);
 
 		layout->addWidget(new QLabel("Publications:"));
 

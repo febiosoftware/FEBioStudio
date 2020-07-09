@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'DatabasePanel.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.2)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -13,7 +13,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'DatabasePanel.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.14.2. It"
+#error "This file was generated using the moc from 5.14.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CDatabasePanel_t {
-    QByteArrayData data[23];
-    char stringdata0[521];
+    QByteArrayData data[24];
+    char stringdata0[547];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -54,7 +54,8 @@ QT_MOC_LITERAL(18, 407, 34), // "on_treeWidget_itemSelectionCh..."
 QT_MOC_LITERAL(19, 442, 40), // "on_treeWidget_customContextMe..."
 QT_MOC_LITERAL(20, 483, 3), // "pos"
 QT_MOC_LITERAL(21, 487, 28), // "on_projectTags_linkActivated"
-QT_MOC_LITERAL(22, 516, 4) // "link"
+QT_MOC_LITERAL(22, 516, 4), // "link"
+QT_MOC_LITERAL(23, 521, 25) // "on_fileTags_linkActivated"
 
     },
     "CDatabasePanel\0on_loginButton_clicked\0"
@@ -73,7 +74,8 @@ QT_MOC_LITERAL(22, 516, 4) // "link"
     "on_actionModify_triggered\0"
     "on_treeWidget_itemSelectionChanged\0"
     "on_treeWidget_customContextMenuRequested\0"
-    "pos\0on_projectTags_linkActivated\0link"
+    "pos\0on_projectTags_linkActivated\0link\0"
+    "on_fileTags_linkActivated"
 };
 #undef QT_MOC_LITERAL
 
@@ -83,7 +85,7 @@ static const uint qt_meta_data_CDatabasePanel[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      16,   14, // methods
+      17,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -91,22 +93,23 @@ static const uint qt_meta_data_CDatabasePanel[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   94,    2, 0x08 /* Private */,
-       3,    0,   95,    2, 0x08 /* Private */,
-       4,    2,   96,    2, 0x08 /* Private */,
-       8,    0,  101,    2, 0x08 /* Private */,
-       9,    0,  102,    2, 0x08 /* Private */,
-      10,    0,  103,    2, 0x08 /* Private */,
-      11,    0,  104,    2, 0x08 /* Private */,
-      12,    0,  105,    2, 0x08 /* Private */,
-      13,    0,  106,    2, 0x08 /* Private */,
-      14,    0,  107,    2, 0x08 /* Private */,
-      15,    0,  108,    2, 0x08 /* Private */,
-      16,    0,  109,    2, 0x08 /* Private */,
-      17,    0,  110,    2, 0x08 /* Private */,
-      18,    0,  111,    2, 0x08 /* Private */,
-      19,    1,  112,    2, 0x08 /* Private */,
-      21,    1,  115,    2, 0x08 /* Private */,
+       1,    0,   99,    2, 0x08 /* Private */,
+       3,    0,  100,    2, 0x08 /* Private */,
+       4,    2,  101,    2, 0x08 /* Private */,
+       8,    0,  106,    2, 0x08 /* Private */,
+       9,    0,  107,    2, 0x08 /* Private */,
+      10,    0,  108,    2, 0x08 /* Private */,
+      11,    0,  109,    2, 0x08 /* Private */,
+      12,    0,  110,    2, 0x08 /* Private */,
+      13,    0,  111,    2, 0x08 /* Private */,
+      14,    0,  112,    2, 0x08 /* Private */,
+      15,    0,  113,    2, 0x08 /* Private */,
+      16,    0,  114,    2, 0x08 /* Private */,
+      17,    0,  115,    2, 0x08 /* Private */,
+      18,    0,  116,    2, 0x08 /* Private */,
+      19,    1,  117,    2, 0x08 /* Private */,
+      21,    1,  120,    2, 0x08 /* Private */,
+      23,    1,  123,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
@@ -124,6 +127,7 @@ static const uint qt_meta_data_CDatabasePanel[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::QPoint,   20,
+    QMetaType::Void, QMetaType::QString,   22,
     QMetaType::Void, QMetaType::QString,   22,
 
        0        // eod
@@ -151,6 +155,7 @@ void CDatabasePanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 13: _t->on_treeWidget_itemSelectionChanged(); break;
         case 14: _t->on_treeWidget_customContextMenuRequested((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
         case 15: _t->on_projectTags_linkActivated((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 16: _t->on_fileTags_linkActivated((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -185,13 +190,13 @@ int CDatabasePanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 16)
+        if (_id < 17)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 16;
+        _id -= 17;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 16)
+        if (_id < 17)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 16;
+        _id -= 17;
     }
     return _id;
 }

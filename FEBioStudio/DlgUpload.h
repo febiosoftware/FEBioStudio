@@ -62,12 +62,13 @@ class CExportProjectWidget;
 //    void leaveEvent(QEvent *ev) override
 //    {
 ////    	setCursor(Qt::ArrowCursor);
-//    	setStyleSheet("QLabel { color : black; }");
+////    	setStyleSheet("QLabel { color : black; }");
+//    	setStyleSheet("");
 //    }
 //
 //};
-//
-//class TagLabel : public QFrame
+
+//class TagLabel2 : public QFrame
 //{
 //	Q_OBJECT
 //
@@ -75,7 +76,7 @@ class CExportProjectWidget;
 //	QLabel* label;
 //	ClickableLabel* remove;
 //
-//	TagLabel(QString text, QWidget* parent = NULL);
+//	TagLabel2(QString text, QWidget* parent = NULL);
 //public slots:
 //	void deleteThis();
 //

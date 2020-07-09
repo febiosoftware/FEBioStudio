@@ -17,14 +17,12 @@ WrapLabel::WrapLabel(QString text, QWidget* parent)
 
 	setContentsMargins(0, 0, 0, 0);
 
-
 	setText(text);
 }
 
 void WrapLabel::setText(QString text)
 {
 	fullString = text;
-	lengths.clear();
 	words.clear();
 
 	// Create separate word lists for each new line
@@ -33,6 +31,18 @@ void WrapLabel::setText(QString text)
 	{
 		words.push_back(line.split(" "));
 	}
+
+	setLengths();
+}
+
+QString WrapLabel::text()
+{
+	return fullString;
+}
+
+void WrapLabel::setLengths()
+{
+	lengths.clear();
 
 	QLabel temp;
 	for(auto line : words)
@@ -49,11 +59,6 @@ void WrapLabel::setText(QString text)
 	spaceSize = temp.fontMetrics().horizontalAdvance(" ");
 
 	reflow(geometry().width());
-}
-
-QString WrapLabel::text()
-{
-	return fullString;
 }
 
 void WrapLabel::reflow(int width)

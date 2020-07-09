@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <QStackedLayout>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QTextBrowser>
 #include <QLabel>
 #include <QFont>
 #include <QPushButton>
@@ -72,6 +73,7 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "FSCore/FSDir.h"
 #include "WrapLabel.h"
+#include "TagLabel.h"
 #include "ZipFiles.h"
 
 #include <iostream>
@@ -321,15 +323,17 @@ public:
 
 	QLabel* unauthorized;
 
+	QFormLayout* projectInfoForm;
 	QLabel* projectName;
 	WrapLabel* projectDesc;
 	QLabel* projectOwner;
 	QLabel* projectVersion;
-	QLabel* projectTags;
+	TagLabel* projectTags;
 
 	QFormLayout* fileInfoForm;
 	QLabel* filenameLabel;
 	QLabel* fileDescLabel;
+	TagLabel* fileTags;
 
 	::CPublicationWidgetView* projectPubs;
 
@@ -354,10 +358,6 @@ public:
 
 	QWidget* loadingPage;
 	QLabel* loadingLabel;
-
-//	QWidget* uploadingPage;
-
-
 
 public:
 	CDatabasePanel() : currentProject(nullptr), openAfterDownload(nullptr){}
@@ -495,19 +495,20 @@ public:
 		line->setFrameShape(QFrame::HLine);
 		modelInfoLayout->addWidget(line);
 
-		QFormLayout* modelInfoForm = new QFormLayout;
-		modelInfoForm->setHorizontalSpacing(10);
-		modelInfoForm->addRow("Owner:", projectOwner = new QLabel);
-		modelInfoForm->addRow("Version:", projectVersion = new QLabel);
-		modelInfoForm->addRow("Tags:", projectTags = new QLabel);
-		projectTags->setTextInteractionFlags(Qt::TextBrowserInteraction);
-		projectTags->setObjectName("projectTags");
+		projectInfoForm = new QFormLayout;
+		projectInfoForm->setHorizontalSpacing(10);
+		projectInfoForm->addRow("Owner:", projectOwner = new QLabel);
+		projectInfoForm->addRow("Version:", projectVersion = new QLabel);
 
-		modelInfoLayout->addLayout(modelInfoForm);
+
+		modelInfoLayout->addLayout(projectInfoForm);
+
+		modelInfoLayout->addWidget(projectTags = new TagLabel);
+		projectTags->setObjectName("projectTags");
 
 		projectInfoBox->addTool("Project Info", projectDummy);
 
-		projectInfoBox->addTool("Publications", projectPubs = new ::CPublicationWidgetView);
+		projectInfoBox->addTool("Publications", projectPubs = new ::CPublicationWidgetView(::CPublicationWidgetView::LIST, false));
 		projectInfoBox->getToolItem(1)->hide();
 
 		QWidget* fileDummy = new QWidget;
@@ -518,8 +519,11 @@ public:
 		fileInfoForm->setHorizontalSpacing(10);
 		fileInfoForm->addRow("Filename:", filenameLabel = new QLabel);
 		fileInfoForm->addRow("Description:", fileDescLabel = new QLabel);
-
+		fileDescLabel->setWordWrap(true);
 		fileInfoLayout->addLayout(fileInfoForm);
+
+		fileInfoLayout->addWidget(fileTags = new TagLabel);
+		fileTags->setObjectName("fileTags");
 
 		projectInfoBox->addTool("File Info", fileDummy);
 		projectInfoBox->getToolItem(2)->hide();
@@ -527,7 +531,6 @@ public:
 		splitter->addWidget(projectInfoBox);
 
 		modelVBLayout->addWidget(splitter);
-
 
 		modelPage = new QWidget;
 		modelPage->setLayout(modelVBLayout);
@@ -543,16 +546,6 @@ public:
 
 		loadingPage->setLayout(loadingLayout);
 		stack->addWidget(loadingPage);
-
-		// Upload Page
-//		uploadingPage = new QWidget;
-//		QVBoxLayout* uploadLayout = new QVBoxLayout;
-//		uploadLayout->setAlignment(Qt::AlignCenter);
-//
-//		uploadLayout->addWidget(new QLabel("Uploading..."));
-//
-//		uploadingPage->setLayout(uploadLayout);
-//		stack->addWidget(uploadingPage);
 
 		setLoginVisible(true);
 	}
@@ -589,6 +582,19 @@ public:
 		return parent;
 	}
 
+	void unhideAll()
+	{
+		for(auto current : projectItemsByID)
+		{
+			current.second->setHidden(false);
+		}
+
+		for(auto current : fileItemsByID)
+		{
+			current.second->setHidden(false);
+		}
+	}
+
 	void setLoginVisible(bool visible)
 	{
 		loginAction->setVisible(visible);
@@ -605,10 +611,50 @@ public:
 		stack->setCurrentIndex(2);
 	}
 
+	void setProjectTags()
+	{
+		if(currentTags.isEmpty())
+		{
+			projectTags->hide();
+		}
+		else
+		{
+			projectTags->show();
+			projectTags->setTagList(currentTags);
+		}
+	}
+
+	void setFileDescription(QString description)
+	{
+		fileInfoForm->removeRow(fileDescLabel);
+
+		if(!description.isEmpty())
+		{
+			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new QLabel(description));
+			fileDescLabel->setWordWrap(true);
+		}
+
+	}
+
+	void setFileTags()
+	{
+		if(currentFileTags.isEmpty())
+		{
+			fileTags->hide();
+		}
+		else
+		{
+			fileTags->show();
+			fileTags->setTagList(currentFileTags);
+		}
+	}
+
+
 public:
 	ProjectItem* currentProject;
 	std::unordered_map<std::string, CustomTreeWidgetItem*> currentProjectFolders;
 	QStringList currentTags;
+	QStringList currentFileTags;
 	std::unordered_map<int, ProjectItem*> projectItemsByID;
 	std::unordered_map<int, FileItem*> fileItemsByID;
 
@@ -750,7 +796,6 @@ void CDatabasePanel::AddCategory(char **data)
 	item->setIcon(0, QIcon(":/icons/folder.png"));
 
 	ui->treeWidget->addTopLevelItem(item);
-
 }
 
 void CDatabasePanel::AddProject(char **data)
@@ -843,7 +888,6 @@ void CDatabasePanel::on_loginButton_clicked()
 		repoHandler->authenticate(userName->text(), password->text());
 
 		ui->showLoadingPage("Logging in...");
-//		ui->stack->setCurrentIndex(2);
 	}
 }
 
@@ -936,7 +980,6 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 		if (dlg.exec())
 		{
-//			ui->stack->setCurrentIndex(3);
 			ui->showLoadingPage("Uploading...");
 
 			QVariantMap projectInfo;
@@ -1007,20 +1050,52 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 void CDatabasePanel::on_actionSearch_triggered()
 {
-	std::unordered_set<int> projIDs = dbHandler->FullTextSearch(ui->searchLineEdit->text());
+	ui->unhideAll();
+
+	QString searchTerm = ui->searchLineEdit->text();
+	if(searchTerm.isEmpty()) return;
+
+	QString projectSearch;
+	QString fileSearch;
+	if(searchTerm.contains("files:"))
+	{
+		QStringList parts = searchTerm.split("files:");
+		projectSearch = parts[0];
+		fileSearch = parts[1];
+	}
+	else
+	{
+		projectSearch = searchTerm;
+	}
+
+	std::unordered_set<int> projIDs = dbHandler->FullTextSearch(projectSearch);
 
 	ui->treeWidget->blockSignals(true);
 
-	for(std::pair<int, ProjectItem*> current : ui->projectItemsByID)
+	for(auto current : ui->projectItemsByID)
 	{
-		if(projIDs.count(current.second->getProjectID()) > 0)
-		{
-			current.second->setHidden(false);
-		}
-		else
+		if(projIDs.count(current.first) == 0)
 		{
 			current.second->setHidden(true);
 		}
+	}
+
+	if(!fileSearch.isEmpty())
+	{
+		std::unordered_set<int> fileIDs = dbHandler->FileSearch(fileSearch);
+
+			for(auto current : ui->fileItemsByID)
+			{
+				if(fileIDs.count(current.first) > 0)
+				{
+					current.second->setHidden(false);
+					current.second->getProjectItem()->setHidden(false);
+				}
+				else
+				{
+					current.second->setHidden(true);
+				}
+			}
 	}
 
 	ui->treeWidget->blockSignals(false);
@@ -1031,10 +1106,7 @@ void CDatabasePanel::on_actionClearSearch_triggered()
 {
 	ui->searchLineEdit->clear();
 
-	for(std::pair<int, ProjectItem*> current : ui->projectItemsByID)
-	{
-		current.second->setHidden(false);
-	}
+	ui->unhideAll();
 }
 
 void CDatabasePanel::on_actionDeleteRemote_triggered()
@@ -1255,21 +1327,7 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	// Get the project tags
 	ui->currentTags.clear();
 	dbHandler->GetProjectTags(projItem->getProjectID());
-
-	QString tagString;
-	if(ui->currentTags.size() > 0)
-	{
-		QString base("<a href=\"%1\">%1</a>");
-
-		tagString = base.arg(ui->currentTags[0]);
-
-		for(int tag = 1; tag < ui->currentTags.size(); tag++)
-		{
-			tagString += ", ";
-			tagString += base.arg(ui->currentTags[tag]);
-		}
-	}
-	ui->projectTags->setText(tagString);
+	ui->setProjectTags();
 
 	ui->projectInfoBox->getToolItem(0)->show();
 
@@ -1291,6 +1349,12 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	if(item->type() == FILEITEM)
 	{
 		dbHandler->GetFileData(static_cast<FileItem*>(item)->getFileID());
+
+		// Get the file tags
+		ui->currentFileTags.clear();
+		dbHandler->GetFileTags(static_cast<FileItem*>(item)->getFileID());
+		ui->setFileTags();
+
 		ui->projectInfoBox->getToolItem(2)->show();
 	}
 	else
@@ -1363,7 +1427,12 @@ void CDatabasePanel::on_projectTags_linkActivated(const QString& link)
 {
 	ui->searchLineEdit->setText(link);
 	on_actionSearch_triggered();
+}
 
+void CDatabasePanel::on_fileTags_linkActivated(const QString& link)
+{
+	ui->searchLineEdit->setText(QString("files:") + link);
+	on_actionSearch_triggered();
 }
 
 QStringList CDatabasePanel::GetCategories()
@@ -1403,29 +1472,7 @@ void CDatabasePanel::SetProjectData(char **data)
 void CDatabasePanel::SetFileData(char **data)
 {
 	ui->filenameLabel->setText(data[0]);
-
-	QString description(data[1]);
-
-	// Don't show file description if the file doesn't have one
-	if(description.isEmpty())
-	{
-		if(ui->fileInfoForm->rowCount() > 1)
-		{
-			ui->fileInfoForm->removeRow(1);
-		}
-	}
-	else
-	{
-		if(ui->fileInfoForm->rowCount() == 1)
-		{
-			ui->fileInfoForm->addRow("Description:", ui->fileDescLabel = new QLabel(description));
-		}
-		else
-		{
-			ui->fileDescLabel->setText(description);
-		}
-
-	}
+	ui->setFileDescription(data[1]);
 }
 
 void CDatabasePanel::AddCurrentTag(char **data)
@@ -1436,6 +1483,11 @@ void CDatabasePanel::AddCurrentTag(char **data)
 void CDatabasePanel::AddPublication(QVariantMap data)
 {
 	ui->projectPubs->addPublication(data);
+}
+
+void CDatabasePanel::AddCurrentFileTag(char **data)
+{
+	ui->currentFileTags.append(data[0]);
 }
 
 QString CDatabasePanel::GetRepositoryFolder()

@@ -11,18 +11,15 @@ class WrapLabel : public QWidget
 public:
 	WrapLabel(QString text = "", QWidget* parent = nullptr);
 
-	void setText(QString text);
+	virtual void setText(QString text);
 
-	QString text();
+	virtual QString text();
 
 protected:
 	void resizeEvent(QResizeEvent *event) override;
+	void setLengths();
 
-private:
-	void reflow(int width);
-	void addLabel(QString& text);
-
-private:
+protected:
 	QVBoxLayout* layout;
 
 	QString fullString;
@@ -31,4 +28,8 @@ private:
 	std::vector<QLabel*> labels;
 	int spaceSize;
 	bool processEvent;
+
+private:
+	virtual void reflow(int width);
+	virtual void addLabel(QString& text);
 };

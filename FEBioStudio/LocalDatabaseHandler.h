@@ -57,11 +57,13 @@ public:
 	void GetProjectTags(int ID);
 	void GetProjectPubs(int ID);
 	void GetFileData(int ID);
+	void GetFileTags(int ID);
 
 	void GetCategoryMap(std::map<int, std::string>& categoryMap);
 
 
 	std::unordered_set<int> FullTextSearch(QString term);
+	std::unordered_set<int> FileSearch(QString term);
 
 	QString FilePathFromID(int ID, int type);
 	QString FileNameFromID(int ID, int type);
