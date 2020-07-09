@@ -697,26 +697,52 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
-		if (nid == PLT_OBJECT)
+		if (nid == PLT_POINT_OBJECT)
 		{
 			char sz[DI_NAME_SIZE] = { 0 };
 			float r[3], q[4];
+			int ntag = 0;
 			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
 				switch (m_ar.GetChunkID())
 				{
-				case PLT_OBJECT_NAME: m_ar.read(sz, DI_NAME_SIZE); break;
-				case PLT_OBJECT_POS : m_ar.read(r, 3); break;
-				case PLT_OBJECT_ROT : m_ar.read(q, 4); break;
+				case PLT_POINT_NAME: m_ar.read(sz, DI_NAME_SIZE); break;
+				case PLT_POINT_TAG : m_ar.read(ntag); break;
+				case PLT_POINT_POS : m_ar.read(r, 3); break;
+				case PLT_POINT_ROT : m_ar.read(q, 4); break;
 				}
 				m_ar.CloseChunk();
 			}
 
-			Post::FEPostModel::PlotObject  ob;
+			Post::FEPostModel::PointObject  ob;
 			ob.m_name = sz;
+			ob.m_tag = ntag;
 			ob.m_pos = vec3d(r[0], r[1], r[2]);
 			ob.m_rot = quatd(q[0], q[1], q[2], q[3]);
-			fem.AddPlotObject(ob);
+			fem.AddPointObject(ob);
+		}
+		else if (nid == PLT_LINE_OBJECT)
+		{
+			char sz[DI_NAME_SIZE] = { 0 };
+			float r[6];
+			int ntag = 0;
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+			{
+				switch (m_ar.GetChunkID())
+				{
+				case PLT_LINE_NAME: m_ar.read(sz, DI_NAME_SIZE); break;
+				case PLT_LINE_TAG: m_ar.read(ntag); break;
+				case PLT_LINE_COORDS: m_ar.read(r, 6); break;
+				}
+				m_ar.CloseChunk();
+			}
+
+			Post::FEPostModel::LineObject  ob;
+			ob.m_name = sz;
+			ob.m_tag = ntag;
+			ob.m_pos1 = vec3d(r[0], r[1], r[2]);
+			ob.m_pos2 = vec3d(r[3], r[4], r[5]);
+			fem.AddLineObject(ob);
 		}
 		m_ar.CloseChunk();
 	}
@@ -1294,7 +1320,8 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 		{
 			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
-				if (m_ar.GetChunkID() == PLT_OBJECT)
+				int chunkId = m_ar.GetChunkID();
+				if (chunkId == PLT_POINT_OBJECT)
 				{
 					int objId = -1;
 
@@ -1302,24 +1329,49 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 					{
 						int nid = m_ar.GetChunkID();
 
-						if (nid == PLT_OBJECT_ID)
+						if (nid == PLT_POINT_ID)
 						{
 							m_ar.read(objId);
 							objId -= 1;
 						}
-						else if (nid == PLT_OBJECT_POS)
+						else if (nid == PLT_POINT_POS)
 						{
 							assert(objId != -1);
 							float r[3];
 							m_ar.read(r, 3);
-							ps->m_obj[objId].m_pos = vec3d(r[0], r[1], r[2]);
+							ps->m_objPt[objId].m_pos = vec3d(r[0], r[1], r[2]);
 						}
-						else if (nid == PLT_OBJECT_ROT)
+						else if (nid == PLT_POINT_ROT)
 						{
 							assert(objId != -1);
 							float q[4];
 							m_ar.read(q, 4);
-							ps->m_obj[objId].m_rot = quatd(q[0], q[1], q[2], q[3]);
+							ps->m_objPt[objId].m_rot = quatd(q[0], q[1], q[2], q[3]);
+						}
+
+						m_ar.CloseChunk();
+					}
+				}
+				else if (chunkId == PLT_LINE_OBJECT)
+				{
+					int objId = -1;
+
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						int nid = m_ar.GetChunkID();
+
+						if (nid == PLT_LINE_ID)
+						{
+							m_ar.read(objId);
+							objId -= 1;
+						}
+						else if (nid == PLT_LINE_COORDS)
+						{
+							assert(objId != -1);
+							float r[6];
+							m_ar.read(r, 6);
+							ps->m_objLn[objId].m_r1 = vec3d(r[0], r[1], r[2]);
+							ps->m_objLn[objId].m_r2 = vec3d(r[3], r[4], r[5]);
 						}
 
 						m_ar.CloseChunk();

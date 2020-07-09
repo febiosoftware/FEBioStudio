@@ -796,6 +796,17 @@ void glx::renderRigidBody(double R)
 	glEnd();
 }
 
+void glx::renderAxis(double R)
+{
+	glBegin(GL_LINES);
+	{
+		glColor3ub(255, 0, 0); glVertex3d(0, 0, 0); glVertex3d(R, 0, 0);
+		glColor3ub(0, 255, 0); glVertex3d(0, 0, 0); glVertex3d(0, R, 0);
+		glColor3ub(0, 0, 255); glVertex3d(0, 0, 0); glVertex3d(0, 0, R);
+	}
+	glEnd();
+}
+
 void glx::renderJoint(double R)
 {
 	glBegin(GL_LINES);
@@ -819,6 +830,7 @@ void glx::renderJoint(double R)
 
 void glx::renderRevoluteJoint(double R)
 {
+	glColor3ub(0, 0, 255);
 	// line along rotation axis
 	glBegin(GL_LINES);
 	{
@@ -841,6 +853,8 @@ void glx::renderRevoluteJoint(double R)
 
 void glx::renderCylindricalJoint(double R)
 {
+	glColor3ub(255, 0, 255);
+
 	// line with arrow along rotation axis
 	glBegin(GL_LINES);
 	{
@@ -865,6 +879,8 @@ void glx::renderCylindricalJoint(double R)
 
 void glx::renderPlanarJoint(double R)
 {
+	glColor3ub(0, 255, 255);
+
 	glBegin(GL_LINES);
 	{
 		// line along rotation axis
@@ -903,6 +919,7 @@ void glx::renderPlanarJoint(double R)
 
 void glx::renderPrismaticJoint(double R)
 {
+	glColor3ub(0, 255, 0);
 	glBegin(GL_LINES);
 	{
 		// line with arrow along translation (x-)axis
@@ -928,6 +945,8 @@ void glx::renderPrismaticJoint(double R)
 
 void glx::renderRigidLock(double R)
 {
+	glColor3ub(255, 127, 0);
+
 	glBegin(GL_LINES);
 	{
 		// line along rotation axis
@@ -947,4 +966,22 @@ void glx::renderRigidLock(double R)
 
 	// little circle around origin, in transverse plane
 	glx::drawCircle(R / 5, 25);
+}
+
+void glx::renderSpring(const vec3d& a, const vec3d& b, double R)
+{
+	glColor3ub(255, 0, 0);
+	glx::drawHelix(a, b, R / 2, R / 2, 25);
+}
+
+void glx::renderDamper(const vec3d& a, const vec3d& b, double R)
+{
+	glColor3ub(255, 0, 0);
+	glx::drawLine(a, b);
+}
+
+void glx::renderContractileForce(const vec3d& a, const vec3d& b, double R)
+{
+	glColor3ub(255, 0, 0);
+	glx::drawLine(a, b);
 }

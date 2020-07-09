@@ -84,15 +84,26 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		m_ELEM[i].m_h[3] = 0.f;
 	}
 
-	int objs = fem->PlotObjects();
-	m_obj.resize(objs);
-	for (int i = 0; i < objs; ++i)
+	int ptObjs = fem->PointObjects();
+	m_objPt.resize(ptObjs);
+	for (int i = 0; i < ptObjs; ++i)
 	{
-		OBJECTDATA& di = m_obj[i];
-		Post::FEPostModel::PlotObject& po = fem->GetPlotObject(i);
+		OBJ_POINT_DATA& di = m_objPt[i];
+		Post::FEPostModel::PointObject& po = fem->GetPointObject(i);
 
 		di.m_pos = po.m_pos;
 		di.m_rot = po.m_rot;
+	}
+
+	int lnObjs = fem->LineObjects();
+	m_objLn.resize(lnObjs);
+	for (int i = 0; i < lnObjs; ++i)
+	{
+		OBJ_LINE_DATA& di = m_objLn[i];
+		Post::FEPostModel::LineObject& po = fem->GetLineObject(i);
+
+		di.m_r1 = po.m_pos1;
+		di.m_r2 = po.m_pos2;
 	}
 
 	m_time = time;
@@ -185,16 +196,26 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 		m_ELEM[i].m_h[3] = 0.f;
 	}
 
-	// initialize object data
-	int objs = pfem->PlotObjects();
-	m_obj.resize(objs);
-	for (int i = 0; i < objs; ++i)
+	int ptObjs = pfem->PointObjects();
+	m_objPt.resize(ptObjs);
+	for (int i = 0; i < ptObjs; ++i)
 	{
-		OBJECTDATA& di = m_obj[i];
-		Post::FEPostModel::PlotObject& po = pfem->GetPlotObject(i);
+		OBJ_POINT_DATA& di = m_objPt[i];
+		Post::FEPostModel::PointObject& po = pfem->GetPointObject(i);
 
 		di.m_pos = po.m_pos;
 		di.m_rot = po.m_rot;
+	}
+
+	int lnObjs = pfem->LineObjects();
+	m_objLn.resize(lnObjs);
+	for (int i = 0; i < lnObjs; ++i)
+	{
+		OBJ_LINE_DATA& di = m_objLn[i];
+		Post::FEPostModel::LineObject& po = pfem->GetLineObject(i);
+
+		di.m_r1 = po.m_pos1;
+		di.m_r2 = po.m_pos2;
 	}
 
 	m_time = time;

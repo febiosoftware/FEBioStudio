@@ -1024,35 +1024,62 @@ void FEPostModel::UpdateMeshState(int ntime)
 	}
 
 	// update plot objects
-	for (int i = 0; i < PlotObjects(); ++i)
+	for (int i = 0; i < PointObjects(); ++i)
 	{
-		Post::FEPostModel::PlotObject& po = GetPlotObject(i);
-		OBJECTDATA& di = state.m_obj[i];
+		Post::FEPostModel::PointObject& po = GetPointObject(i);
+		OBJ_POINT_DATA& di = state.m_objPt[i];
 
 		po.m_pos = di.m_pos;
 		po.m_rot = di.m_rot;
 	}
+
+	for (int i = 0; i < LineObjects(); ++i)
+	{
+		Post::FEPostModel::LineObject& po = GetLineObject(i);
+		OBJ_LINE_DATA& di = state.m_objLn[i];
+
+		po.m_pos1 = di.m_r1;
+		po.m_pos2 = di.m_r2;
+	}
 }
 
 //-----------------------------------------------------------------------------
-int FEPostModel::PlotObjects() const
+int FEPostModel::PointObjects() const
 {
-	return m_Obj.size();
+	return m_Points.size();
 }
 
-void FEPostModel::AddPlotObject(FEPostModel::PlotObject ob)
+void FEPostModel::AddPointObject(FEPostModel::PointObject ob)
 {
-	m_Obj.push_back(ob);
+	m_Points.push_back(ob);
 }
 
-FEPostModel::PlotObject& FEPostModel::GetPlotObject(int i)
+FEPostModel::PointObject& FEPostModel::GetPointObject(int i)
 {
-	return m_Obj[i];
+	return m_Points[i];
 }
 
+//-----------------------------------------------------------------------------
+int FEPostModel::LineObjects() const
+{
+	return (int)m_Lines.size();
+}
+
+void FEPostModel::AddLineObject(LineObject ob)
+{
+	m_Lines.push_back(ob);
+}
+
+FEPostModel::LineObject & FEPostModel::GetLineObject(int i)
+{
+	return m_Lines[i];
+}
+
+//-----------------------------------------------------------------------------
 void FEPostModel::ClearObjects()
 {
-	m_Obj.clear();
+	m_Points.clear();
+	m_Lines.clear();
 }
 
 }

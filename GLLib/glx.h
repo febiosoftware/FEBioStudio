@@ -93,5 +93,8 @@ void renderCylindricalJoint(double R);
 void renderPlanarJoint(double R);
 void renderPrismaticJoint(double R);
 void renderRigidLock(double R);
-
+void renderAxis(double R);
+void renderSpring(const vec3d& a, const vec3d& b, double R);
+void renderDamper(const vec3d& a, const vec3d& b, double R);
+void renderContractileForce(const vec3d& a, const vec3d& b, double R);
 }

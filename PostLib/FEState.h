@@ -87,10 +87,16 @@ struct POINTDATA
 	vec3f	m_r;
 };
 
-struct OBJECTDATA
+struct OBJ_POINT_DATA
 {
 	vec3d	m_pos;
 	quatd	m_rot;
+};
+
+struct OBJ_LINE_DATA
+{
+	vec3d	m_r1;
+	vec3d	m_r2;
 };
 
 //-----------------------------------------------------------------------------
@@ -144,7 +150,9 @@ public:
 	vector<ELEMDATA>	m_ELEM;		// element data
 	vector<LINEDATA>	m_Line;		// line data
 	vector<POINTDATA>	m_Point;	// point data
-	vector<OBJECTDATA>	m_obj;		// object data
+
+	vector<OBJ_POINT_DATA>	m_objPt;		// object data
+	vector<OBJ_LINE_DATA>	m_objLn;		// object data
 
 	ValArray	m_ElemData;	// element data
 	ValArray	m_FaceData;	// face data
