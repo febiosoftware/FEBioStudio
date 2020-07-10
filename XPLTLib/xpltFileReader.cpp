@@ -93,7 +93,7 @@ bool xpltFileReader::Load(const char* szfile)
 	// create a file parser
 	if (m_xplt) { delete m_xplt; m_xplt = 0; }
 	if (m_hdr.nversion <= 5) m_xplt = new XpltReader(this);
-	else if (m_hdr.nversion < 0x08) m_xplt = new XpltReader2(this);
+	else if (m_hdr.nversion <= 0x08) m_xplt = new XpltReader2(this);
 	else
 	{
 		assert(m_hdr.nversion == 0x0030);
