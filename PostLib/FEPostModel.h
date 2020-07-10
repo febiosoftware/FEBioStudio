@@ -64,42 +64,38 @@ public:
 class FEPostModel  
 {
 public:
-	class PointObject
+	class PlotObject
 	{
 	public:
-		PointObject() { m_tag = 0; }
-		PointObject(const PointObject & ob)
-		{
-			m_tag = ob.m_tag;
-			m_name = ob.m_name;
-			m_pos = ob.m_pos;
-			m_rot = ob.m_rot;
-		}
+		PlotObject() { m_tag = 0; m_id = -1; }
 
 	public:
-		int		m_tag;
-		std::string	m_name;
-		vec3d	m_pos;
-		quatd	m_rot;
+		int				m_id;
+		int				m_tag;
+		std::string		m_name;
+		vec3d			m_pos;
+		quatd			m_rot;
+
+		vector<FEPlotObjectData*>	m_data;
 	};
 
-	class LineObject
+	class PointObject : public PlotObject
 	{
 	public:
-		LineObject() { m_tag = 0; }
-		LineObject(const LineObject & ob)
-		{
-			m_tag = ob.m_tag;
-			m_name = ob.m_name;
-			m_pos1 = ob.m_pos1;
-			m_pos2 = ob.m_pos2;
-		}
+		PointObject() {}
 
 	public:
-		int		m_tag;
-		std::string	m_name;
-		vec3d	m_pos1;
-		vec3d	m_pos2;
+		vec3d	m_rt;
+	};
+
+	class LineObject : public PlotObject
+	{
+	public:
+		LineObject() {}
+
+	public:
+		vec3d	m_r1;
+		vec3d	m_r2;
 	};
 
 public:
@@ -257,12 +253,12 @@ public:
 
 public:
 	int PointObjects() const;
-	void AddPointObject(PointObject ob);
-	PointObject & GetPointObject(int i);
+	void AddPointObject(PointObject* ob);
+	PointObject* GetPointObject(int i);
 
 	int LineObjects() const;
-	void AddLineObject(LineObject ob);
-	LineObject & GetLineObject(int i);
+	void AddLineObject(LineObject* ob);
+	LineObject* GetLineObject(int i);
 
 	void ClearObjects();
 
@@ -291,8 +287,8 @@ protected:
 	vector<FEMaterial>	m_Mat;		// array of materials
 
 	// --- O B J E C T S ---
-	vector<PointObject>	m_Points;
-	vector<LineObject >	m_Lines;
+	vector<PointObject*>	m_Points;
+	vector<LineObject *>	m_Lines;
 
 	// --- S T A T E ---
 	vector<FEState*>	m_State;	// array of pointers to FE-state structures

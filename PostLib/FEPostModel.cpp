@@ -1026,20 +1026,25 @@ void FEPostModel::UpdateMeshState(int ntime)
 	// update plot objects
 	for (int i = 0; i < PointObjects(); ++i)
 	{
-		Post::FEPostModel::PointObject& po = GetPointObject(i);
+		Post::FEPostModel::PointObject& po = *GetPointObject(i);
 		OBJ_POINT_DATA& di = state.m_objPt[i];
 
-		po.m_pos = di.m_pos;
-		po.m_rot = di.m_rot;
+		po.m_pos = di.pos;
+		po.m_rot = di.rot;
+
+		po.m_rt = di.m_rt;
 	}
 
 	for (int i = 0; i < LineObjects(); ++i)
 	{
-		Post::FEPostModel::LineObject& po = GetLineObject(i);
+		Post::FEPostModel::LineObject& po = *GetLineObject(i);
 		OBJ_LINE_DATA& di = state.m_objLn[i];
 
-		po.m_pos1 = di.m_r1;
-		po.m_pos2 = di.m_r2;
+		po.m_pos = di.pos;
+		po.m_rot = di.rot;
+
+		po.m_r1 = di.m_r1;
+		po.m_r2 = di.m_r2;
 	}
 }
 
@@ -1049,12 +1054,12 @@ int FEPostModel::PointObjects() const
 	return m_Points.size();
 }
 
-void FEPostModel::AddPointObject(FEPostModel::PointObject ob)
+void FEPostModel::AddPointObject(FEPostModel::PointObject* ob)
 {
 	m_Points.push_back(ob);
 }
 
-FEPostModel::PointObject& FEPostModel::GetPointObject(int i)
+FEPostModel::PointObject* FEPostModel::GetPointObject(int i)
 {
 	return m_Points[i];
 }
@@ -1065,12 +1070,12 @@ int FEPostModel::LineObjects() const
 	return (int)m_Lines.size();
 }
 
-void FEPostModel::AddLineObject(LineObject ob)
+void FEPostModel::AddLineObject(LineObject* ob)
 {
 	m_Lines.push_back(ob);
 }
 
-FEPostModel::LineObject & FEPostModel::GetLineObject(int i)
+FEPostModel::LineObject* FEPostModel::GetLineObject(int i)
 {
 	return m_Lines[i];
 }

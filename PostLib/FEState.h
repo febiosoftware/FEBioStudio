@@ -87,14 +87,22 @@ struct POINTDATA
 	vec3f	m_r;
 };
 
-struct OBJ_POINT_DATA
+class OBJECT_DATA
 {
-	vec3d	m_pos;
-	quatd	m_rot;
+public:
+	vec3d	pos;
+	quatd	rot;
 };
 
-struct OBJ_LINE_DATA
+class OBJ_POINT_DATA : public OBJECT_DATA
 {
+public:
+	vec3d	m_rt;
+};
+
+struct OBJ_LINE_DATA : public OBJECT_DATA
+{
+public:
 	vec3d	m_r1;
 	vec3d	m_r2;
 };

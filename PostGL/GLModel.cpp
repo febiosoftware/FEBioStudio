@@ -1916,11 +1916,13 @@ void CGLModel::RenderObjects(CGLContext& rc)
 
 	for (int i = 0; i < fem->PointObjects(); ++i)
 	{
-		Post::FEPostModel::PointObject & ob = fem->GetPointObject(i);
+		Post::FEPostModel::PointObject & ob = *fem->GetPointObject(i);
 
 		glPushMatrix();
 		glx::translate(ob.m_pos);
 		glx::rotate(ob.m_rot);
+
+		glx::translate(ob.m_rt);
 
 		glColor3ub(255, 255, 0);
 		switch (ob.m_tag)
@@ -1938,21 +1940,26 @@ void CGLModel::RenderObjects(CGLContext& rc)
 
 	for (int i = 0; i < fem->LineObjects(); ++i)
 	{
-		Post::FEPostModel::LineObject & ob = fem->GetLineObject(i);
+		Post::FEPostModel::LineObject & ob = *fem->GetLineObject(i);
 
-		vec3d a = ob.m_pos1;
-		vec3d b = ob.m_pos2;
+		glPushMatrix();
+		glx::translate(ob.m_pos);
+		glx::rotate(ob.m_rot);
+
+		vec3d a = ob.m_r1;
+		vec3d b = ob.m_r2;
 
 		glColor3ub(255, 255, 0);
 		switch (ob.m_tag)
 		{
 		case 1: glx::renderSpring(a, b, R); break;
-		case 2: glx::renderDamper(a,b, R); break;
+		case 2: glx::renderDamper(a, b, R); break;
 		case 3: glx::renderContractileForce(a, b, R); break;
 		default:
 			glColor3ub(200, 200, 200);
 			glx::drawLine(a, b);
 		}
+		glPopMatrix();
 	}
 
 	glPopAttrib();
