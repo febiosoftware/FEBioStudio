@@ -128,11 +128,24 @@ Mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 	// get the nodal positions
 	const int MN = FEElement::MAX_NODES;
 	vec3f X[MN], x[MN];
-	for (int i=0; i<N; i++) 
-	{ 
-		int node = el.m_node[i];
-		X[i] = fem.NodePosition(node, nref);
-		x[i] = fem.NodePosition(node, nstate);
+	if (nref < 0)
+	{
+		Post::FERefState* ref = state.m_ref;
+		for (int i = 0; i < N; i++)
+		{
+			int node = el.m_node[i];
+			X[i] = ref->m_Node[node].m_rt;
+			x[i] = fem.NodePosition(node, nstate);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < N; i++)
+		{
+			int node = el.m_node[i];
+			X[i] = fem.NodePosition(node, nref);
+			x[i] = fem.NodePosition(node, nstate);
+		}
 	}
 
 	// get the shape function derivatives

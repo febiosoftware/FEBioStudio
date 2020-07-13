@@ -42,6 +42,7 @@ protected:
 	struct ELEMENT
 	{
 		int id;		// element ID
+		int	pid;	// part ID
 		int ntype;	// element type
 		int	n[8];	// node labels
 	};

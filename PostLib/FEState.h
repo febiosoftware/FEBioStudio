@@ -87,6 +87,26 @@ struct POINTDATA
 	vec3f	m_r;
 };
 
+class OBJECT_DATA
+{
+public:
+	vec3d	pos;
+	quatd	rot;
+};
+
+class OBJ_POINT_DATA : public OBJECT_DATA
+{
+public:
+	vec3d	m_rt;
+};
+
+struct OBJ_LINE_DATA : public OBJECT_DATA
+{
+public:
+	vec3d	m_r1;
+	vec3d	m_r2;
+};
+
 //-----------------------------------------------------------------------------
 // class for storing reference state
 class FERefState
@@ -138,6 +158,9 @@ public:
 	vector<ELEMDATA>	m_ELEM;		// element data
 	vector<LINEDATA>	m_Line;		// line data
 	vector<POINTDATA>	m_Point;	// point data
+
+	vector<OBJ_POINT_DATA>	m_objPt;		// object data
+	vector<OBJ_LINE_DATA>	m_objLn;		// object data
 
 	ValArray	m_ElemData;	// element data
 	ValArray	m_FaceData;	// face data

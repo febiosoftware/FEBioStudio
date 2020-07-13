@@ -376,6 +376,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_StatePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_StatsWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SummaryWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_TagLabel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolsPanel.cpp" />
@@ -422,6 +423,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\SummaryWindow.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\TagLabel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\TetOverlapTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolBox.cpp" />
@@ -665,6 +667,11 @@
     <ClInclude Include="..\..\FEBioStudio\PostPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\PostToolBar.h" />
     <ClInclude Include="..\..\FEBioStudio\RepoProject.h" />
+    <CustomBuild Include="..\..\FEBioStudio\TagLabel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h" />
     <ClInclude Include="..\..\FEBioStudio\UnitParser.h" />
     <ClInclude Include="..\..\FEBioStudio\units.h" />

@@ -86,4 +86,15 @@ void smoothTRI6 (vec3d r[ 6], vec3f n[ 6], float t[ 6], int ndivs);
 void smoothTRI7 (vec3d r[ 7], vec3f n[ 7], float t[ 7], int ndivs);
 void smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs);
 
+void renderRigidBody(double R);
+void renderJoint(double R);
+void renderRevoluteJoint(double R);
+void renderCylindricalJoint(double R);
+void renderPlanarJoint(double R);
+void renderPrismaticJoint(double R);
+void renderRigidLock(double R);
+void renderAxis(double R);
+void renderSpring(const vec3d& a, const vec3d& b, double R);
+void renderDamper(const vec3d& a, const vec3d& b, double R);
+void renderContractileForce(const vec3d& a, const vec3d& b, double R);
 }

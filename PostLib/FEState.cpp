@@ -84,6 +84,33 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		m_ELEM[i].m_h[3] = 0.f;
 	}
 
+	int ptObjs = fem->PointObjects();
+	m_objPt.resize(ptObjs);
+	for (int i = 0; i < ptObjs; ++i)
+	{
+		OBJ_POINT_DATA& di = m_objPt[i];
+		Post::FEPostModel::PointObject& po = *fem->GetPointObject(i);
+
+		di.pos = po.m_pos;
+		di.rot = po.m_rot;
+
+		di.m_rt = po.m_rt;
+	}
+
+	int lnObjs = fem->LineObjects();
+	m_objLn.resize(lnObjs);
+	for (int i = 0; i < lnObjs; ++i)
+	{
+		OBJ_LINE_DATA& di = m_objLn[i];
+		Post::FEPostModel::LineObject& po = *fem->GetLineObject(i);
+
+		di.pos = po.m_pos;
+		di.rot = po.m_rot;
+
+		di.m_r1 = po.m_r1;
+		di.m_r2 = po.m_r2;
+	}
+
 	m_time = time;
 	m_nField = -1;
 
@@ -172,6 +199,33 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 		m_ELEM[i].m_h[1] = 0.f;
 		m_ELEM[i].m_h[2] = 0.f;
 		m_ELEM[i].m_h[3] = 0.f;
+	}
+
+	int ptObjs = pfem->PointObjects();
+	m_objPt.resize(ptObjs);
+	for (int i = 0; i < ptObjs; ++i)
+	{
+		OBJ_POINT_DATA& di = m_objPt[i];
+		Post::FEPostModel::PointObject& po = *pfem->GetPointObject(i);
+
+		di.pos = po.m_pos;
+		di.rot = po.m_rot;
+
+		di.m_rt = po.m_rt;
+	}
+
+	int lnObjs = pfem->LineObjects();
+	m_objLn.resize(lnObjs);
+	for (int i = 0; i < lnObjs; ++i)
+	{
+		OBJ_LINE_DATA& di = m_objLn[i];
+		Post::FEPostModel::LineObject& po = *pfem->GetLineObject(i);
+
+		di.pos = po.m_pos;
+		di.rot = po.m_rot;
+
+		di.m_r1 = po.m_r1;
+		di.m_r2 = po.m_r2;
 	}
 
 	m_time = time;

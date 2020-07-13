@@ -3271,27 +3271,10 @@ void CGLView::RenderRigidJoints()
 			{
 				vec3d r = pj->GetVecValue(FERigidJoint::RJ);
 
+				glColor3ub(255, 0, 0);
 				glPushMatrix();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-
-				glBegin(GL_LINES);
-				{
-					glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
-					glVertex3d(0, -R, 0); glVertex3d(0, +R, 0);
-					glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
-				}
-				glEnd();
-
-				glx::drawCircle(R, 25);
-
-				glRotatef(90.f, 1.f, 0.f, 0.f);
-				glx::drawCircle(R, 25);
-				glRotatef(-90.f, 1.f, 0.f, 0.f);
-
-				glRotatef(90.f, 0.f, 1.f, 0.f);
-				glx::drawCircle(R, 25);
-				glRotatef(-90.f, 0.f, 1.f, 0.f);
-
+				glx::renderJoint(R);
 				glPopMatrix();
 			}
 		}
@@ -3331,25 +3314,7 @@ void CGLView::RenderRigidConnectors()
 				glColor3ub(255, 0, 0);
 				glPushMatrix();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-
-				glBegin(GL_LINES);
-				{
-					glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
-					glVertex3d(0, -R, 0); glVertex3d(0, +R, 0);
-					glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
-				}
-				glEnd();
-
-				glx::drawCircle(R, 25);
-
-				glRotatef(90.f, 1.f, 0.f, 0.f);
-				glx::drawCircle(R, 25);
-				glRotatef(-90.f, 1.f, 0.f, 0.f);
-
-				glRotatef(90.f, 0.f, 1.f, 0.f);
-				glx::drawCircle(R, 25);
-				glRotatef(-90.f, 0.f, 1.f, 0.f);
-
+				glx::renderJoint(R);
 				glPopMatrix();
 			}
 			else if (dynamic_cast<FERigidRevoluteJoint*> (rci))
@@ -3366,29 +3331,11 @@ void CGLView::RenderRigidConnectors()
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glColor3ub(0, 0, 255);
 				glPushMatrix();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				// line along rotation axis
-				glBegin(GL_LINES);
-				{
-					glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
-				}
-				glEnd();
-
-				// little circle around origin, in transverse plane
-				glx::drawCircle(R / 5, 25);
-
-				// half-circle with arrow, in transverse plane
-				glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
-				glBegin(GL_LINES);
-				{
-					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
-					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-7 * R / 15, +R / 5, 0);
-				}
-				glEnd();
+				glx::renderRevoluteJoint(R);
 
 				glPopMatrix();
 			}
@@ -3406,32 +3353,11 @@ void CGLView::RenderRigidConnectors()
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glColor3ub(0, 255, 0);
 				glPushMatrix();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glBegin(GL_LINES);
-				{
-					// line with arrow along translation (x-)axis
-					glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
-					glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, +R / 5, 0);
-					glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, -R / 5, 0);
-
-					// parallel lines above and below
-					glVertex3d(-3 * R / 4, +R / 2, 0); glVertex3d(+3 * R / 4, +R / 2, 0);
-					glVertex3d(-3 * R / 4, -R / 2, 0); glVertex3d(+3 * R / 4, -R / 2, 0);
-
-					// rectangle in the center
-					glVertex3d(-R / 2, +R / 3, 0); glVertex3d(+R / 2, +R / 3, 0);
-					glVertex3d(-R / 2, -R / 3, 0); glVertex3d(+R / 2, -R / 3, 0);
-					glVertex3d(-R / 2, +R / 3, 0); glVertex3d(-R / 2, -R / 3, 0);
-					glVertex3d(+R / 2, +R / 3, 0); glVertex3d(+R / 2, -R / 3, 0);
-				}
-				glEnd();
-
-				// little circle around origin, in x-y plane
-				glx::drawCircle(R / 5, 25);
+				glx::renderPrismaticJoint(R);
 
 				glPopMatrix();
 			}
@@ -3449,31 +3375,11 @@ void CGLView::RenderRigidConnectors()
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glColor3ub(255, 0, 255);
 				glPushMatrix();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				// line with arrow along rotation axis
-				glBegin(GL_LINES);
-				{
-					glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
-					glVertex3d(0, 0, +R); glVertex3d(+R / 5, 0, +4 * R / 5);
-					glVertex3d(0, 0, +R); glVertex3d(-R / 5, 0, +4 * R / 5);
-				}
-				glEnd();
-
-				// little circle around origin, in transverse plane
-				glx::drawCircle(R / 5, 25);
-
-				// half-circle with arrow, in transverse plane
-				glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
-				glBegin(GL_LINES);
-				{
-					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
-					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-7 * R / 15, +R / 5, 0);
-				}
-				glEnd();
+				glx::renderCylindricalJoint(R);
 
 				glPopMatrix();
 			}
@@ -3491,45 +3397,11 @@ void CGLView::RenderRigidConnectors()
 					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
 					0.f, 0.f, 0.f, 1.f };
 
-				glColor3ub(0, 255, 255);
 				glPushMatrix();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glBegin(GL_LINES);
-				{
-					// line along rotation axis
-					glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
-
-					// line with arrow along translation axis 1
-					glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
-					glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, +R / 5, 0);
-					glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, -R / 5, 0);
-
-					// line with arrow along translation axis 2
-					glVertex3d(0, -R, 0); glVertex3d(0, +R, 0);
-					glVertex3d(0, +R, 0); glVertex3d(+R / 5, +4 * R / 5, 0);
-					glVertex3d(0, +R, 0); glVertex3d(-R / 5, +4 * R / 5, 0);
-
-					// square in the center
-					glVertex3d(-R / 3, +R / 3, 0); glVertex3d(+R / 3, +R / 3, 0);
-					glVertex3d(-R / 3, -R / 3, 0); glVertex3d(+R / 3, -R / 3, 0);
-					glVertex3d(-R / 3, +R / 3, 0); glVertex3d(-R / 3, -R / 3, 0);
-					glVertex3d(+R / 3, +R / 3, 0); glVertex3d(+R / 3, -R / 3, 0);
-				}
-				glEnd();
-
-				// little circle around origin, in transverse plane
-				glx::drawCircle(R / 5, 25);
-
-				// half-circle with arrow, in transverse plane
-				glx::drawArc(vec3d(0, 0, 0), 2 * R / 3, 0, PI, 12);
-				glBegin(GL_LINES);
-				{
-					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-13 * R / 15, +R / 5, 0);
-					glVertex3d(-2 * R / 3, 0, 0); glVertex3d(-7 * R / 15, +R / 5, 0);
-				}
-				glEnd();
+				glx::renderPlanarJoint(R);
 
 				glPopMatrix();
 			}
@@ -3547,30 +3419,11 @@ void CGLView::RenderRigidConnectors()
                     (GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
                     0.f, 0.f, 0.f, 1.f };
                 
-                glColor3ub(255, 127, 0);
                 glPushMatrix();
                 glTranslatef((float)r.x, (float)r.y, (float)r.z);
                 glMultMatrixf(Q4);
                 
-                glBegin(GL_LINES);
-                {
-                    // line along rotation axis
-                    glVertex3d(0, 0, -R); glVertex3d(0, 0, +R);
-                    
-                    // line with arrow along first axis
-                    glVertex3d(-R, 0, 0); glVertex3d(+R, 0, 0);
-                    glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, +R / 5, 0);
-                    glVertex3d(+R, 0, 0); glVertex3d(+4 * R / 5, -R / 5, 0);
-                    
-                    // line with arrow along second axis
-                    glVertex3d(0, -R, 0); glVertex3d(0, +R, 0);
-                    glVertex3d(0, +R, 0); glVertex3d(+R / 5, +4 * R / 5, 0);
-                    glVertex3d(0, +R, 0); glVertex3d(-R / 5, +4 * R / 5, 0);
-                }
-                glEnd();
-                
-                // little circle around origin, in transverse plane
-                glx::drawCircle(R / 5, 25);
+				glx::renderRigidLock(R);
                 
                 glPopMatrix();
             }
@@ -3580,11 +3433,8 @@ void CGLView::RenderRigidConnectors()
 				vec3d xa = pj->GetVecValue(FERigidSpring::XA);
 				vec3d xb = pj->GetVecValue(FERigidSpring::XB);
 
-				glColor3ub(255, 0, 0);
 				glPushMatrix();
-
-				glx::drawHelix(xa, xb, R / 2, R / 2, 25);
-
+				glx::renderSpring(xa, xb, R);
 				glPopMatrix();
 			}
 			else if (dynamic_cast<FERigidDamper*> (rci))
@@ -3593,10 +3443,9 @@ void CGLView::RenderRigidConnectors()
 				vec3d xa = pj->GetVecValue(FERigidDamper::XA);
 				vec3d xb = pj->GetVecValue(FERigidDamper::XB);
 
-				glColor3ub(255, 0, 0);
 				glPushMatrix();
 
-				glx::drawLine(xa, xb);
+				glx::renderDamper(xa, xb, R);
 
 				glPopMatrix();
 			}
@@ -3606,10 +3455,9 @@ void CGLView::RenderRigidConnectors()
 				vec3d xa = pj->GetVecValue(FERigidContractileForce::XA);
 				vec3d xb = pj->GetVecValue(FERigidContractileForce::XB);
 
-				glColor3ub(255, 0, 0);
 				glPushMatrix();
 
-				glx::drawLine(xa, xb);
+				glx::renderContractileForce(xa, xb, R);
 
 				glPopMatrix();
 			}
@@ -3654,35 +3502,9 @@ void CGLView::RenderRigidBodies()
 			glPushMatrix();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
 
-			glBegin(GL_LINE_LOOP);
-			{
-				glVertex3d(R, 0, 0);
-				glVertex3d(0, R, 0);
-				glVertex3d(-R, 0, 0);
-				glVertex3d(0, -R, 0);
-			}
-			glEnd();
-
-			glBegin(GL_LINE_LOOP);
-			{
-				glVertex3d(0, R, 0);
-				glVertex3d(0, 0, R);
-				glVertex3d(0, -R, 0);
-				glVertex3d(0, 0, -R);
-			}
-			glEnd();
-
-			glBegin(GL_LINE_LOOP);
-			{
-				glVertex3d(R, 0, 0);
-				glVertex3d(0, 0, R);
-				glVertex3d(-R, 0, 0);
-				glVertex3d(0, 0, -R);
-			}
-			glEnd();
+			glx::renderRigidBody(R);
 
 			glPopMatrix();
-
 
 			// get the parent
 			if (pb->m_pid != -1)

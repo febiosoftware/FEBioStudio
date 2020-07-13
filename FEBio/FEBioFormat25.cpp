@@ -2664,7 +2664,7 @@ void FEBioFormat25::ParseConnector(FEStep *pstep, XMLTag &tag, const int rc)
 
 	// NOTE: In febio3, the default value is false, but in FEBioStudio it is true
 	Param* autoPenalty = pi->GetParam("auto_penalty");
-	if (autoPenalty) autoPenalty->SetBoolValue(false);
+	if (autoPenalty) autoPenalty->SetIntValue(0);
 
 	int na = -1, nb = -1;
 

@@ -792,7 +792,7 @@ public:
 public:
 	FEStrainDataField(const std::string& name, int measure) : FEDataField(name, DATA_MAT3FS, DATA_ITEM, CLASS_ELEM, 0)
 	{ 
-		m_nref = 0; 
+		m_nref = -1; 
 		m_measure = measure; 
 	}
 

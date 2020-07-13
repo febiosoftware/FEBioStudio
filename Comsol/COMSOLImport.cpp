@@ -210,6 +210,7 @@ bool COMSOLimport::ReadElementType(char* szline)
 		import_this_type = false;
 	}
 
+	vector< list<ELEMENT>::iterator > newElems;
 
 	for (int i=0;i<newelems;++i){
 		if (!NextGoodLine(szline)) 
@@ -221,6 +222,7 @@ bool COMSOLimport::ReadElementType(char* szline)
 					return false; 
 				// first tet element from single pyr
 				el.id = m_totalelems+i;
+				el.pid = 0;
 				// convert line to node coordinates!
 				//                        pyr numbering:    1     2      3       4       5
 				n[0]=pyr[0];
@@ -233,6 +235,7 @@ bool COMSOLimport::ReadElementType(char* szline)
 				// second tet element from single pyr
 				++i;
 				el.id = m_totalelems+i;
+				el.pid = 0;
 				n[0]=pyr[1];
 				n[1]=pyr[3];
 				n[2]=pyr[2];
@@ -242,6 +245,7 @@ bool COMSOLimport::ReadElementType(char* szline)
 
 			} else { // all other elements
 				el.id = m_totalelems+i;
+				el.pid = 0;
 				// convert line to node coordinates!
                 if (el.ntype == 101) { // comsol uses different node numbering than febio for hexes
                     if (!sscanf(szline, "%d %d %d %d %d %d %d %d", &n[0], &n[1], &n[3], &n[2], &n[4], &n[5], &n[7], &n[6]))
@@ -257,6 +261,8 @@ bool COMSOLimport::ReadElementType(char* szline)
                 }
 				// add the node to the list
 				m_Elem.push_back(el);
+
+				newElems.push_back(--m_Elem.end());
 			}
 		}
 	}
@@ -320,6 +326,21 @@ bool COMSOLimport::ReadElementType(char* szline)
         for (int i=0;i<paramperel;i++) {
             if (!NextGoodLine(szline))
                 return errf("Error encountered trying to parse element parameters.");
+
+			if (import_this_type)
+			{
+				int domain_id = -1;
+				if (!sscanf(szline, "%d", &domain_id))
+					return false;
+
+				if (is_pyramid)
+				{
+					newElems[2 * i]->pid = domain_id;
+					newElems[2 * i + 1]->pid = domain_id;
+				}
+				else
+					newElems[i]->pid = domain_id;
+			}
         }
     }
 
@@ -388,8 +409,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
                 return false;
 		}
         
-		// all elements are assigned to the same group
-		pe->m_gid = 0;
+		pe->m_gid = ie->pid;
         
 		// read the nodes
 		ne = pe->Nodes();

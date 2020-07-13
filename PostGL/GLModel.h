@@ -181,6 +181,8 @@ public:
 
 	void RenderPlots(CGLContext& rc, int renderOrder = 0);
 
+	void RenderObjects(CGLContext& rc);
+
 public:
 	void RenderNodes(FEPostModel* ps, CGLContext& rc);
 	void RenderEdges(FEPostModel* ps, CGLContext& rc);

@@ -170,4 +170,13 @@ bool AddStandardDataField(CGLModel& glm, const std::string& dataField, bool bsel
 bool AddNodeDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);
 bool AddFaceDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);
 bool AddElemDataFromFile(CGLModel& glm, const char* szfile, const char* szname, int ntype);
+
+class FEPlotObjectData : public FEDataField
+{
+public:
+	FEPlotObjectData(const std::string& name, Data_Type ntype) : FEDataField(name, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
+
+	FEDataField* Clone() const override { assert(false); return nullptr; };
+	FEMeshData* CreateData(FEState* pstate) override { assert(false); return nullptr; }
+};
 }

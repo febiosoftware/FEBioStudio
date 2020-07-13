@@ -36,6 +36,9 @@
     <ClInclude Include="..\..\XPLTLib\xpltArchive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\XPLTLib\xpltReader3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\XPLTLib\xpltFileReader.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\XPLTLib\xpltArchive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\XPLTLib\xpltReader3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

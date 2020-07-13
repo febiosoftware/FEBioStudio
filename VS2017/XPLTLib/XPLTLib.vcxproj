@@ -149,6 +149,7 @@
     <ClInclude Include="..\..\XPLTLib\xpltFileReader.h" />
     <ClInclude Include="..\..\XPLTLib\xpltReader.h" />
     <ClInclude Include="..\..\XPLTLib\xpltReader2.h" />
+    <ClInclude Include="..\..\XPLTLib\xpltReader3.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\XPLTLib\xpltFileExport.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="..\..\XPLTLib\xpltFileReader.cpp" />
     <ClCompile Include="..\..\XPLTLib\xpltReader.cpp" />
     <ClCompile Include="..\..\XPLTLib\xpltReader2.cpp" />
+    <ClCompile Include="..\..\XPLTLib\xpltReader3.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
