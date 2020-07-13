@@ -33,9 +33,9 @@ struct qt_meta_stringdata_CDatabasePanel_t {
 static const qt_meta_stringdata_CDatabasePanel_t qt_meta_stringdata_CDatabasePanel = {
     {
 QT_MOC_LITERAL(0, 0, 14), // "CDatabasePanel"
-QT_MOC_LITERAL(1, 15, 22), // "on_loginButton_clicked"
-QT_MOC_LITERAL(2, 38, 0), // ""
-QT_MOC_LITERAL(3, 39, 24), // "on_connectButton_clicked"
+QT_MOC_LITERAL(1, 15, 24), // "on_connectButton_clicked"
+QT_MOC_LITERAL(2, 40, 0), // ""
+QT_MOC_LITERAL(3, 41, 22), // "on_loginButton_clicked"
 QT_MOC_LITERAL(4, 64, 31), // "on_treeWidget_itemDoubleClicked"
 QT_MOC_LITERAL(5, 96, 16), // "QTreeWidgetItem*"
 QT_MOC_LITERAL(6, 113, 4), // "item"
@@ -58,8 +58,8 @@ QT_MOC_LITERAL(22, 516, 4), // "link"
 QT_MOC_LITERAL(23, 521, 25) // "on_fileTags_linkActivated"
 
     },
-    "CDatabasePanel\0on_loginButton_clicked\0"
-    "\0on_connectButton_clicked\0"
+    "CDatabasePanel\0on_connectButton_clicked\0"
+    "\0on_loginButton_clicked\0"
     "on_treeWidget_itemDoubleClicked\0"
     "QTreeWidgetItem*\0item\0column\0"
     "on_actionRefresh_triggered\0"
@@ -139,8 +139,8 @@ void CDatabasePanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         auto *_t = static_cast<CDatabasePanel *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->on_loginButton_clicked(); break;
-        case 1: _t->on_connectButton_clicked(); break;
+        case 0: _t->on_connectButton_clicked(); break;
+        case 1: _t->on_loginButton_clicked(); break;
         case 2: _t->on_treeWidget_itemDoubleClicked((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
         case 3: _t->on_actionRefresh_triggered(); break;
         case 4: _t->on_actionDownload_triggered(); break;

@@ -62,9 +62,9 @@ SOFTWARE.*/
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
-#include "DlgUpload.h"
+#include <WzdUpload.h>
 #include "DlgRequestUploadPerm.h"
-#include "ExportProjectWidget.h"
+//#include "ExportProjectWidget.h"
 #include "DlgSetRepoFolder.h"
 #include "LocalDatabaseHandler.h"
 #include "RepoProject.h"
@@ -500,7 +500,6 @@ public:
 		projectInfoForm->addRow("Owner:", projectOwner = new QLabel);
 		projectInfoForm->addRow("Version:", projectVersion = new QLabel);
 
-
 		modelInfoLayout->addLayout(projectInfoForm);
 
 		modelInfoLayout->addWidget(projectTags = new TagLabel);
@@ -552,29 +551,29 @@ public:
 
 	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, qint64 size)
 	{
-		int pos = path.right(index).lastIndexOf("/");
+		int pos = path.right(path.length() - index).indexOf("/");
 
 		if(pos == -1)
 		{
-			FileItem* child = new FileItem(path.right(index), fileID, localCopy, size);
+			FileItem* child = new FileItem(path.right(path.length() - index), fileID, localCopy, size);
 
 			fileItemsByID[fileID] = child;
 
 			return child;
 		}
 
-		CustomTreeWidgetItem* child = addFile(path, index - (pos + 1), fileID, localCopy, size);
+		CustomTreeWidgetItem* child = addFile(path, index + (pos + 1), fileID, localCopy, size);
 		CustomTreeWidgetItem* parent;
 
 		try
 		{
-			parent = currentProjectFolders.at(path.left(pos).toStdString());
+			parent = currentProjectFolders.at(path.right(path.length() - index).left(pos).toStdString());
 		}
 		catch(out_of_range& e)
 		{
-			parent = new FolderItem(path.left(pos));
+			parent = new FolderItem(path.right(path.length() - index).left(pos));
 
-			currentProjectFolders[path.left(pos).toStdString()] = parent;
+			currentProjectFolders[path.right(path.length() - index).left(pos).toStdString()] = parent;
 		}
 
 		parent->addChild(child);
@@ -856,9 +855,59 @@ void CDatabasePanel::AddProjectFile(char **data)
 	bool localCopy = std::stoi(data[2]);
 	qint64 size = QString(data[3]).toLongLong();
 
-	ui->currentProject->addChild(ui->addFile(filename, filename.size(), ID, localCopy, size));
+	ui->currentProject->addChild(ui->addFile(filename, 0, ID, localCopy, size));
 }
 
+void CDatabasePanel::on_connectButton_clicked()
+{
+//	CDlgUpload dlg(this, 1, dbHandler, repoHandler);
+//
+//	dlg.setTagList(QStringList() << "test" << "Test3" << "test again" << "Contact");
+//
+//	if(dlg.exec())
+//	{
+//		QStringList paths = dlg.GetFilePaths();
+//		QStringList localPaths = dlg.GetLocalFilePaths();
+//		QList<QVariant> info = dlg.getFileInfo();
+//
+//		for(auto path : paths)
+//		{
+//			cout << path.toStdString() << endl;
+//		}
+//
+//		for(auto path : localPaths)
+//		{
+//			cout << path.toStdString() << endl;
+//		}
+//
+//		cout << QJsonDocument::fromVariant(info).toJson().toStdString() << endl;
+//
+//		cout << archive("/home/mherron/Desktop/test.zip", paths, localPaths) << endl;
+//
+//
+//	}
+	if(m_repositoryFolder.isEmpty())
+	{
+		QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+		defaultPath += "/FEBio Studio Repo Files";
+
+		// set proper separators.
+		std::string sPath = FSDir::filePath(defaultPath.toStdString());
+
+		CDlgSetRepoFolder dlg(sPath.c_str(), this);
+
+		if(dlg.exec())
+		{
+			SetRepositoryFolder(dlg.GetRepoFolder());
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	repoHandler->getSchema();
+}
 
 void CDatabasePanel::on_loginButton_clicked()
 {
@@ -889,31 +938,6 @@ void CDatabasePanel::on_loginButton_clicked()
 
 		ui->showLoadingPage("Logging in...");
 	}
-}
-
-void CDatabasePanel::on_connectButton_clicked()
-{
-	if(m_repositoryFolder.isEmpty())
-	{
-		QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-		defaultPath += "/FEBio Studio Repo Files";
-
-		// set proper separators.
-		std::string sPath = FSDir::filePath(defaultPath.toStdString());
-
-		CDlgSetRepoFolder dlg(sPath.c_str(), this);
-
-		if(dlg.exec())
-		{
-			SetRepositoryFolder(dlg.GetRepoFolder());
-		}
-		else
-		{
-			return;
-		}
-	}
-
-	repoHandler->getSchema();
 }
 
 void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column)
@@ -964,10 +988,10 @@ void CDatabasePanel::on_actionUpload_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
-		if(!m_wnd->GetDocument()) return;
+//		if(!m_wnd->GetDocument()) return;
 
-		CDlgUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler, m_wnd->GetProject());
-		dlg.setName(m_wnd->GetDocument()->GetDocFileBase().c_str());
+		CWzdUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler); //, m_wnd->GetProject());
+//		dlg.setName(m_wnd->GetDocument()->GetDocFileBase().c_str());
 		dlg.setOwner(repoHandler->getUsername());
 		dlg.setVersion("1");
 
@@ -999,22 +1023,14 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 			projectInfo.insert("publications", dlg.getPublicationInfo());
 
-			QStringList filePaths = dlg.exportProjectWidget()->GetFilePaths();
-			QStringList localFilePaths = dlg.exportProjectWidget()->GetLocalFilePaths();
-			QStringList descriptions = dlg.exportProjectWidget()->GetFileDescriptions();
+			QStringList filePaths = dlg.GetFilePaths();
+			QStringList localFilePaths = dlg.GetLocalFilePaths();
 
-			QList<QVariant> files;
-			for(int index = 0; index < filePaths.size(); index++)
-			{
-				QVariantMap file;
-				file.insert("filename", localFilePaths.at(index));
-				file.insert("description", descriptions.at(index));
-				files.push_back(file);
-			}
-
-			projectInfo.insert("files", files);
+			projectInfo.insert("files", dlg.getFileInfo());
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
+
+			cout << payload.toStdString() << endl;
 
 			repoHandler->uploadFileRequest(payload);
 
@@ -1131,7 +1147,7 @@ void CDatabasePanel::on_actionModify_triggered()
 	{
 		if(!m_wnd->GetDocument()) return;
 
-		CDlgUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, m_wnd->GetProject());
+		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler); //, m_wnd->GetProject());
 		dlg.setName(ui->projectName->text());
 		dlg.setOwner(repoHandler->getUsername());
 		dlg.setVersion(QString("%1").arg(stoi(ui->projectVersion->text().toStdString()) + 1));
