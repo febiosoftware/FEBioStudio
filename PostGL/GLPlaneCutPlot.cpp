@@ -691,7 +691,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 
 			el.m_ntag = ncase;
 
-			if (ndivs <= 1)
+			if ((ndivs <= 1) || (el.Shape() != ELEM_HEX))
 			{
 				// loop over faces
 				int* pf = LUT[ncase];

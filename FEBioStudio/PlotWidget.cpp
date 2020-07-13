@@ -700,8 +700,8 @@ void CPlotWidget::fitToData(bool downSize)
 		r = rectUnion(r, ri);
 	}
 
-	if (r.height() == 0.0) r.setBottom(0.0);
-	if (r.height() == 0.0) r.setTop(1.0);
+	if (r.height() == 0.0) r.setBottom(1.0);
+	if (r.height() == 0.0) r.setTop(0.0);
 
 	if (downSize == false)
 	{

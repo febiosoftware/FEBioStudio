@@ -292,7 +292,7 @@ void glx::tri7(vec3d r[7], vec3f n[7], float t[7])
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[3], n[3], t[3]); vertex3d(r[6], n[6], t[6]);
 	vertex3d(r[1], n[1], t[1]); vertex3d(r[6], n[6], t[6]); vertex3d(r[3], n[3], t[3]);
 	vertex3d(r[1], n[1], t[1]); vertex3d(r[4], n[4], t[4]); vertex3d(r[6], n[6], t[6]);
-	vertex3d(r[2], n[2], t[6]); vertex3d(r[6], n[6], t[6]); vertex3d(r[4], n[4], t[4]);
+	vertex3d(r[2], n[2], t[2]); vertex3d(r[6], n[6], t[6]); vertex3d(r[4], n[4], t[4]);
 	vertex3d(r[2], n[2], t[2]); vertex3d(r[5], n[5], t[5]); vertex3d(r[6], n[6], t[6]);
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[6], n[6], t[6]); vertex3d(r[5], n[5], t[5]);
 }
