@@ -600,9 +600,6 @@
     <ClCompile Include="..\..\FEBioStudio\moc_DatabasePanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\DlgUpload.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\LocalDatabaseHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -610,9 +607,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\RepoProject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\FEBioStudio\moc_DlgUpload.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\moc_RepoConnectionHandler.cpp">
@@ -826,6 +820,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FEBioStudio\moc_TagLabel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\WzdUpload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\moc_WzdUpload.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1228,9 +1228,6 @@
     <CustomBuild Include="..\..\FEBioStudio\PlotWidget.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\DlgUpload.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\RepoConnectionHandler.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -1400,6 +1397,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\TagLabel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\WzdUpload.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

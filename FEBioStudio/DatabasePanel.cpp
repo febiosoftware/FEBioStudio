@@ -62,7 +62,7 @@ SOFTWARE.*/
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
-#include <WzdUpload.h>
+#include "WzdUpload.h"
 #include "DlgRequestUploadPerm.h"
 //#include "ExportProjectWidget.h"
 #include "DlgSetRepoFolder.h"
