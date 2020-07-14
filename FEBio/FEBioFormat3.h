@@ -111,6 +111,8 @@ private:
 	void ParseSymmetryPlane        (FEStep* pstep, XMLTag& tag);
     void ParseNrmlFldVlctSrf       (FEStep* pstep, XMLTag& tag);
     void ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag);
+	void ParseInSituStretchConstraint(FEStep* pstep, XMLTag& tag);
+	void ParsePrestrainConstraint    (FEStep* pste, XMLTag& tag);
 
 private:
 	// connector input functions

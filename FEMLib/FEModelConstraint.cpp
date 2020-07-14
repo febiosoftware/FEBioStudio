@@ -111,3 +111,27 @@ FEFrictionlessFluidWall::FEFrictionlessFluidWall(FEModel* ps, int nstep) : FESur
     AddDoubleParam(0  , "minaug", "min. augmentations");
     AddDoubleParam(10 , "maxaug", "max. augmentations");
 }
+
+//=============================================================================
+FEPrestrainConstraint::FEPrestrainConstraint(FEModel* ps, int nstep) : FEModelConstraint(FE_PRESTRAIN_CONSTRAINT, ps, nstep)
+{
+	SetTypeString("prestrain");
+
+	AddBoolParam(true, "update");
+	AddDoubleParam(0.0, "tolerance");
+	AddIntParam(0, "min_iters");
+	AddIntParam(-1, "max_iters");
+}
+
+//=============================================================================
+FEInSituStretchConstraint::FEInSituStretchConstraint(FEModel* ps, int nstep) : FEModelConstraint(FE_INSITUSTRETCH_CONSTRAINT, ps, nstep)
+{
+	SetTypeString("in-situ stretch");
+
+	AddBoolParam(true, "update");
+	AddDoubleParam(0.0, "tolerance");
+	AddIntParam(0, "min_iters");
+	AddIntParam(-1, "max_iters");
+	AddDoubleParam(0.0, "max_stretch");
+	AddBoolParam(true, "isochoric");
+}

@@ -160,7 +160,7 @@ protected:
 	void WriteLoadsSection     (FEStep& s);
 	void WriteContactSection   (FEStep& s);
 	void WriteDiscreteSection  (FEStep& s);
-	void WriteInitialSection   ();
+	void WriteInitialSection   (FEStep& s);
 	void WriteGlobalsSection   ();
 	void WriteLoadDataSection  ();
 	void WriteOutputSection    ();
@@ -208,6 +208,7 @@ protected:
     void WriteInitShellFluidPressure(FEInitShellFluidPressure& iq);
 	void WriteInitTemperature       (FEInitTemperature&        it);
     void WriteInitFluidDilatation   (FEInitFluidDilatation&    it);
+	void WriteInitPrestrain         (FEInitPrestrain&          ip);
 
 	void WriteLoadNodal         (FEStep& s);
 	void WriteLoadPressure      (FEStep& s);

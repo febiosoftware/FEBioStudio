@@ -3943,8 +3943,13 @@ void FEBioExport3::WriteInitialSection()
 		{
 			if (m_writeNotes) WriteNote(pi);
 
-			FEItemListBuilder* pitem = pi->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pi);
+			FEItemListBuilder* pitem = nullptr;
+
+			if (dynamic_cast<FEInitialNodalDOF*>(pi))
+			{
+				pitem = pi->GetItemList();
+				if (pitem == 0) throw InvalidItemListBuilder(pi);
+			}
 
 			switch (pi->Type())
 			{
@@ -3956,6 +3961,7 @@ void FEBioExport3::WriteInitialSection()
 			case FE_INIT_SHELL_CONCENTRATION:  WriteInitShellConcentration(dynamic_cast<FEInitShellConcentration&>(*pi)); break;
 			case FE_INIT_TEMPERATURE:          WriteInitTemperature(dynamic_cast<FEInitTemperature  &>(*pi)); break;
             case FE_INIT_FLUID_DILATATION:     WriteInitFluidDilatation(dynamic_cast<FEInitFluidDilatation  &>(*pi)); break;
+			case FE_INIT_PRESTRAIN           : WriteInitPrestrain(dynamic_cast<FEInitPrestrain&>(*pi)); break;
 			}
 		}
 	}
@@ -4097,6 +4103,19 @@ void FEBioExport3::WriteInitFluidDilatation(FEInitFluidDilatation&   it)
 		m_xml.add_leaf("value", it.GetValue());
     }
     m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteInitPrestrain(FEInitPrestrain& ip)
+{
+	XMLElement el("ic");
+	el.add_attribute("name", ip.GetName().c_str());
+	el.add_attribute("type", "prestrain");
+	m_xml.add_branch(el);
+	{
+		WriteParamList(ip);
+	}
+	m_xml.close_branch();
 }
 
 //-----------------------------------------------------------------------------

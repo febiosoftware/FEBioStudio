@@ -65,3 +65,16 @@ public:
     FEFrictionlessFluidWall(FEModel* ps, int nstep = 0);
 };
 
+//-----------------------------------------------------------------------------
+class FEPrestrainConstraint : public FEModelConstraint
+{
+public:
+	FEPrestrainConstraint(FEModel* ps, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FEInSituStretchConstraint : public FEModelConstraint
+{
+public:
+	FEInSituStretchConstraint(FEModel* ps, int nstep = 0);
+};

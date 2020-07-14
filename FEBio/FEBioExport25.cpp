@@ -563,7 +563,7 @@ void FEBioExport25::BuildNodeSetList(FEProject& prj)
 		for (int j = 0; j<pstep->ICs(); ++j)
 		{
 			// this is only for nodal loads
-			FEInitialCondition* pi = pstep->IC(j);
+			FEInitialNodalDOF* pi = dynamic_cast<FEInitialNodalDOF*>(pstep->IC(j));
 			if (pi && pi->IsActive())
 			{
 				FEItemListBuilder* ps = pi->GetItemList();
@@ -849,7 +849,7 @@ bool FEBioExport25::Write(const char* szfile)
 			{
 				m_xml.add_branch("Initial");
 				{
-					WriteInitialSection();
+					WriteInitialSection(*pstep);
 				}
 				m_xml.close_branch(); // Initial
 			}
@@ -4375,10 +4375,9 @@ void FEBioExport25::WriteFSITraction(FEStep& s)
 //-----------------------------------------------------------------------------
 // Export initial conditions
 //
-void FEBioExport25::WriteInitialSection()
+void FEBioExport25::WriteInitialSection(FEStep& s)
 {
 	FEModel& fem = m_prj.GetFEModel();
-	FEStep& s = *fem.GetStep(0);
 
 	// initial velocities
 	for (int j=0; j<s.ICs(); ++j)
@@ -4388,19 +4387,25 @@ void FEBioExport25::WriteInitialSection()
 		{
 			if (m_writeNotes) m_xml.add_comment(pi->GetInfo());
 
-			FEItemListBuilder* pitem = pi->GetItemList();
-			if (pitem == 0) throw InvalidItemListBuilder(pi);
+			FEItemListBuilder* pitem = nullptr;
+			
+			if (dynamic_cast<FEInitialNodalDOF*>(pi))
+			{
+				pitem = pi->GetItemList();
+				if (pitem == 0) throw InvalidItemListBuilder(pi);
+			}
 
 			switch (pi->Type())
 			{
-			case FE_NODAL_VELOCITIES :          WriteInitVelocity           (dynamic_cast<FENodalVelocities  &>(*pi)); break;
-			case FE_NODAL_SHELL_VELOCITIES :    WriteInitShellVelocity      (dynamic_cast<FENodalShellVelocities&>(*pi)); break;
-            case FE_INIT_FLUID_PRESSURE :       WriteInitFluidPressure      (dynamic_cast<FEInitFluidPressure&>(*pi)); break;
-            case FE_INIT_SHELL_FLUID_PRESSURE:  WriteInitShellFluidPressure (dynamic_cast<FEInitShellFluidPressure&>(*pi)); break;
-			case FE_INIT_CONCENTRATION :        WriteInitConcentration      (dynamic_cast<FEInitConcentration&>(*pi)); break;
-            case FE_INIT_SHELL_CONCENTRATION :  WriteInitShellConcentration (dynamic_cast<FEInitShellConcentration&>(*pi)); break;
-			case FE_INIT_TEMPERATURE :          WriteInitTemperature        (dynamic_cast<FEInitTemperature  &>(*pi)); break;
-            case FE_INIT_FLUID_DILATATION :     WriteInitFluidDilatation    (dynamic_cast<FEInitFluidDilatation&>(*pi)); break;
+			case FE_NODAL_VELOCITIES         : WriteInitVelocity           (dynamic_cast<FENodalVelocities  &>(*pi)); break;
+			case FE_NODAL_SHELL_VELOCITIES   : WriteInitShellVelocity      (dynamic_cast<FENodalShellVelocities&>(*pi)); break;
+            case FE_INIT_FLUID_PRESSURE      : WriteInitFluidPressure      (dynamic_cast<FEInitFluidPressure&>(*pi)); break;
+            case FE_INIT_SHELL_FLUID_PRESSURE: WriteInitShellFluidPressure (dynamic_cast<FEInitShellFluidPressure&>(*pi)); break;
+			case FE_INIT_CONCENTRATION       : WriteInitConcentration      (dynamic_cast<FEInitConcentration&>(*pi)); break;
+            case FE_INIT_SHELL_CONCENTRATION : WriteInitShellConcentration (dynamic_cast<FEInitShellConcentration&>(*pi)); break;
+			case FE_INIT_TEMPERATURE         : WriteInitTemperature        (dynamic_cast<FEInitTemperature  &>(*pi)); break;
+            case FE_INIT_FLUID_DILATATION    : WriteInitFluidDilatation    (dynamic_cast<FEInitFluidDilatation&>(*pi)); break;
+			case FE_INIT_PRESTRAIN           : WriteInitPrestrain          (dynamic_cast<FEInitPrestrain&>(*pi)); break;
 			}
 		}
 	}
@@ -4593,6 +4598,19 @@ void FEBioExport25::WriteInitFluidDilatation(FEInitFluidDilatation&   it)
         m_xml.add_leaf("value", it.GetValue());
     }
     m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport25::WriteInitPrestrain(FEInitPrestrain& ip)
+{
+	XMLElement el("ic");
+	el.add_attribute("name", ip.GetName().c_str());
+	el.add_attribute("type", "prestrain");
+	m_xml.add_branch(el);
+	{
+		WriteParamList(ip);
+	}
+	m_xml.close_branch();
 }
 
 //-----------------------------------------------------------------------------
@@ -5027,6 +5045,17 @@ void FEBioExport25::WriteStepSection()
 				WriteControlSection(&s);
 			}
 			m_xml.close_branch(); // Control
+
+			// initial conditions
+			int nic = s.ICs();
+			if (nic > 0)
+			{
+				m_xml.add_branch("Initial");
+				{
+					WriteInitialSection(s);
+				}
+				m_xml.close_branch(); // Initial
+			}
 
 			// output boundary section
 			int nbc = s.BCs() + s.Interfaces() + s.RigidConstraints();

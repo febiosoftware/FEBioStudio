@@ -11,8 +11,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEInitialNodalDOF : public FEInitialCondition
+{
+public:
+	FEInitialNodalDOF(int ntype, FEModel* ps) : FEInitialCondition(ntype, ps) {}
+	FEInitialNodalDOF(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep = 0) : FEInitialCondition(ntype, ps, pi, nstep) {}
+};
 
-class FENodalVelocities : public FEInitialCondition
+//-----------------------------------------------------------------------------
+
+class FENodalVelocities : public FEInitialNodalDOF
 {
 public:
 	enum { VEL };
@@ -26,7 +34,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FENodalShellVelocities : public FEInitialCondition
+class FENodalShellVelocities : public FEInitialNodalDOF
 {
 public:
 	enum { VEL };
@@ -40,7 +48,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEInitConcentration : public FEInitialCondition
+class FEInitConcentration : public FEInitialNodalDOF
 {
 public:
 	enum { VALUE, BC };
@@ -57,7 +65,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEInitShellConcentration : public FEInitialCondition
+class FEInitShellConcentration : public FEInitialNodalDOF
 {
 public:
     enum { VALUE, BC };
@@ -73,7 +81,7 @@ public:
     void SetBC(int n) { SetIntValue(BC, n); }
 };
 //-----------------------------------------------------------------------------
-class FEInitFluidPressure : public FEInitialCondition
+class FEInitFluidPressure : public FEInitialNodalDOF
 {
 public:
 	enum { VALUE };
@@ -87,7 +95,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEInitShellFluidPressure : public FEInitialCondition
+class FEInitShellFluidPressure : public FEInitialNodalDOF
 {
 public:
     enum { VALUE };
@@ -101,7 +109,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEInitTemperature : public FEInitialCondition
+class FEInitTemperature : public FEInitialNodalDOF
 {
 public:
 	enum { VALUE };
@@ -115,7 +123,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class FEInitFluidDilatation : public FEInitialCondition
+class FEInitFluidDilatation : public FEInitialNodalDOF
 {
 public:
     enum { VALUE };
@@ -126,4 +134,11 @@ public:
 
     double GetValue() { return GetFloatValue(VALUE); }
     void SetValue(double v) { SetFloatValue(VALUE, v); }
+};
+
+//-----------------------------------------------------------------------------
+class FEInitPrestrain : public FEInitialCondition
+{
+public:
+	FEInitPrestrain(FEModel* ps);
 };

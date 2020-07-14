@@ -415,8 +415,8 @@ void check_011(FEProject& prj, std::vector<FSObject*>& objList)
 		FEStep* step = fem.GetStep(i);
 		for (int j = 0; j < step->ICs(); ++j)
 		{
-			FEInitialCondition* pl = step->IC(j);
-			if (pl->GetItemList() == nullptr)
+			FEInitialNodalDOF* pl = dynamic_cast<FEInitialNodalDOF*>(step->IC(j));
+			if (pl && pl->GetItemList() == nullptr)
 			{
 				objList.push_back(pl);
 			}
