@@ -98,13 +98,11 @@ class CLocalDatabaseHandler::Imp
 {
 public:
 	Imp(CDatabasePanel* dbPanel)
-		: dbPanel(dbPanel), db(NULL)
-	{
-		QDir dir;
-		dir.mkpath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+		: dbPanel(dbPanel), db(NULL)	{}
 
-		dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-		dbPath += "/localdb.db";
+	void updateDBPath()
+	{
+		dbPath = dbPanel->GetRepositoryFolder() += "/localdb.db";
 	}
 
 	void openDatabase(std::string schema)
@@ -436,6 +434,8 @@ CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
 
 void CLocalDatabaseHandler::init(std::string schema)
 {
+	imp->updateDBPath();
+
 	imp->openDatabase(schema);
 }
 

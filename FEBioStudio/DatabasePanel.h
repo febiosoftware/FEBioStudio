@@ -72,8 +72,8 @@ public:
 	void SetRepositoryFolder(QString folder);
 
 private slots:
-	void on_loginButton_clicked();
 	void on_connectButton_clicked();
+	void on_loginButton_clicked();
 	void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 	void on_actionRefresh_triggered();
 	void on_actionDownload_triggered();
