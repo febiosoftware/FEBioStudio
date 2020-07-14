@@ -277,6 +277,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FESurfaceTraction            , MODULE_MECH, FE_SURFACE_LOAD     , FE_SURFACE_TRACTION             , "Surface traction", Loads_Section_Surface_Loads_Traction_Load);
 	REGISTER_FE_CLASS(FENodalVelocities            , MODULE_MECH, FE_INITIAL_CONDITION, FE_NODAL_VELOCITIES             , "Velocity");
 	REGISTER_FE_CLASS(FENodalShellVelocities       , MODULE_MECH, FE_INITIAL_CONDITION, FE_NODAL_SHELL_VELOCITIES       , "Shell velocity");
+	REGISTER_FE_CLASS(FEInitPrestrain              , MODULE_MECH, FE_INITIAL_CONDITION, FE_INIT_PRESTRAIN               , "Initialize Prestrain");
 	REGISTER_FE_CLASS(FERigidInterface             , MODULE_MECH, FE_INTERFACE        , FE_RIGID_INTERFACE              , "Rigid", Boundary_Section_Rigid_Nodes);
 	REGISTER_FE_CLASS(FESlidingWithGapsInterface   , MODULE_MECH, FE_INTERFACE        , FE_SLIDING_WITH_GAPS            , "Sliding node-on-facet", Contact_Section_Sliding_Interfaces);
 	REGISTER_FE_CLASS(FEFacetOnFacetInterface      , MODULE_MECH, FE_INTERFACE        , FE_FACET_ON_FACET_SLIDING       , "Sliding facet-on-facet", Contact_Section_Sliding_Interfaces);
