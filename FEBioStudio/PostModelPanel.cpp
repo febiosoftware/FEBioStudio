@@ -600,38 +600,54 @@ void CPostModelPanel::Update(bool breset)
 				pi1->setExpanded(true);
 
 				// add the mesh
+				CModelTreeItem* pi2 = new CModelTreeItem(0, pi1);
 				if (fem)
 				{
-					CModelTreeItem* pi2 = new CModelTreeItem(0, pi1);
 					pi2->setText(0, "Mesh");
 					pi2->setIcon(0, QIcon(QString(":/icons/mesh.png")));
 					ui->m_list.push_back(new CMeshProps(fem));
 					pi2->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
 					m_obj.push_back(0);
 				}
+				pi2->setExpanded(true);
 
 				Post::CGLDisplacementMap* map = mdl->GetDisplacementMap();
 				if (map)
 				{
-					CModelTreeItem* pi2 = new CModelTreeItem(map, pi1);
-					pi2->setText(0, QString::fromStdString(map->GetName()));
-					//				pi2->setTextColor(0, map && map->IsActive() ? Qt::black : Qt::gray);
-					pi2->setIcon(0, QIcon(QString(":/icons/distort.png")));
+					CModelTreeItem* pi3 = new CModelTreeItem(map, pi2);
+					pi3->setText(0, QString::fromStdString(map->GetName()));
+//					pi3->setTextColor(0, map && map->IsActive() ? Qt::black : Qt::gray);
+					pi3->setIcon(0, QIcon(QString(":/icons/distort.png")));
 					ui->m_list.push_back(new CObjectProps(map));
-					pi2->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
+					pi3->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
 					m_obj.push_back(map);
 				}
 
 				Post::CGLColorMap* col = mdl->GetColorMap();
 				if (col)
 				{
-					CModelTreeItem* pi2 = new CModelTreeItem(col, pi1);
-					pi2->setText(0, QString::fromStdString(col->GetName()));
-					//			pi2->setTextColor(0, col->IsActive() ? Qt::black : Qt::gray);
-					pi2->setIcon(0, QIcon(QString(":/icons/colormap.png")));
+					CModelTreeItem* pi3 = new CModelTreeItem(col, pi2);
+					pi3->setText(0, QString::fromStdString(col->GetName()));
+//					pi3->setTextColor(0, col->IsActive() ? Qt::black : Qt::gray);
+					pi3->setIcon(0, QIcon(QString(":/icons/colormap.png")));
 					ui->m_list.push_back(new CObjectProps(col));
-					pi2->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
+					pi3->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
 					m_obj.push_back(0);
+				}
+
+				if (fem && fem->PlotObjects())
+				{
+					int npo = fem->PlotObjects();
+					for (int i = 0; i < npo; ++i)
+					{
+						Post::FEPostModel::PlotObject* po = fem->GetPlotObject(i);
+
+						CModelTreeItem* pi = new CModelTreeItem(po, pi1);
+						pi->setText(0, QString::fromStdString(po->GetName()));
+						ui->m_list.push_back(new CObjectProps(po));
+						pi->setData(0, Qt::UserRole, (int)(ui->m_list.size() - 1));
+						m_obj.push_back(0);
+					}
 				}
 
 				Post::GPlotList& pl = mdl->GetPlotList();

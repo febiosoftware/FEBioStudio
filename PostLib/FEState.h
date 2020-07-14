@@ -87,11 +87,37 @@ struct POINTDATA
 	vec3f	m_r;
 };
 
+class ObjectData
+{
+public:
+	ObjectData();
+	~ObjectData();
+
+	void push_back(float f);
+	void push_back(vec3f f);
+
+	template <class T> T get(int n) { return *((T*)(data + off[n])); }
+
+	template <class T> void set(int n, const T& v) { *((T*)(data + off[n])) = v; }
+
+private:
+	void append(int n);
+
+private:
+	float*	data;
+	int		nsize;
+	vector<int>	off;
+};
+
 class OBJECT_DATA
 {
 public:
+	OBJECT_DATA() { data = nullptr; }
+
+public:
 	vec3d	pos;
 	quatd	rot;
+	ObjectData*		data;
 };
 
 class OBJ_POINT_DATA : public OBJECT_DATA

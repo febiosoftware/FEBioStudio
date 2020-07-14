@@ -32,6 +32,53 @@ SOFTWARE.*/
 
 using namespace Post;
 
+ObjectData::ObjectData()
+{
+	data = nullptr;
+	nsize = 0;
+}
+
+ObjectData::~ObjectData()
+{
+	delete [] data;
+	nsize = 0;
+}
+
+void ObjectData::append(int n)
+{
+	off.push_back(nsize);
+	if (data == nullptr)
+	{
+		data = new float[n];
+		nsize = n;
+	}
+	else
+	{
+		int newSize = nsize + n;
+		float* tmp = new float[newSize];
+		memcpy(tmp, data, sizeof(float)*nsize);
+		delete data;
+		data = tmp;
+		nsize = newSize;
+	}
+}
+
+void ObjectData::push_back(float f)
+{
+	int n = nsize;
+	append(1);
+	data[n] = f;
+}
+
+void ObjectData::push_back(vec3f f)
+{
+	int n = nsize;
+	append(3);
+	data[n  ] = f.x;
+	data[n+1] = f.y;
+	data[n+2] = f.z;
+}
+
 FERefState::FERefState(FEPostModel* fem)
 {
 
@@ -95,6 +142,21 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		di.rot = po.m_rot;
 
 		di.m_rt = po.m_rt;
+
+		int ndata = po.m_data.size();
+		di.data = new ObjectData;
+		for (int j = 0; j < ndata; ++j)
+		{
+			Post::FEPlotObjectData& dj = *po.m_data[j];
+
+			switch (dj.Type())
+			{
+			case DATA_FLOAT: di.data->push_back(0.f); break;
+			case DATA_VEC3F: di.data->push_back(vec3f(0.f, 0.f, 0.f)); break;
+			default:
+				assert(false);
+			}
+		}
 	}
 
 	int lnObjs = fem->LineObjects();

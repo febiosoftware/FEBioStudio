@@ -708,7 +708,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 			{
 				switch (m_ar.GetChunkID())
 				{
-				case PLT_OBJECT_NAME: m_ar.read(sz, DI_NAME_SIZE); break;
+				case PLT_OBJECT_NAME: m_ar.read(sz); break;
 				case PLT_OBJECT_TAG : m_ar.read(ntag); break;
 				case PLT_OBJECT_POS : m_ar.read(r, 3); break;
 				case PLT_OBJECT_ROT : m_ar.read(q, 4); break;
@@ -741,10 +741,19 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 				m_ar.CloseChunk();
 			}
 
-			ob->m_name = sz;
+			GLColor c(255, 255, 0);
+			switch (ntag)
+			{
+			case 3: c = GLColor(0, 255, 0); break;
+			case 4: c = GLColor(0, 0, 255); break;
+			case 5: c = GLColor(255, 0, 255); break;
+			}
+
+			ob->SetName(sz);
 			ob->m_tag = ntag;
 			ob->m_pos = vec3d(r[0], r[1], r[2]);
 			ob->m_rot = quatd(q[0], q[1], q[2], q[3]);
+			ob->SetColor(c);
 			fem.AddPointObject(ob);
 		}
 		else if (nid == PLT_LINE_OBJECT)
@@ -758,7 +767,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 			{
 				switch (m_ar.GetChunkID())
 				{
-				case PLT_OBJECT_NAME: m_ar.read(sz, DI_NAME_SIZE); break;
+				case PLT_OBJECT_NAME: m_ar.read(sz); break;
 				case PLT_OBJECT_TAG: m_ar.read(ntag); break;
 				case PLT_LINE_COORDS: m_ar.read(r, 6); break;
 				case PLT_OBJECT_DATA:
@@ -790,10 +799,11 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 				m_ar.CloseChunk();
 			}
 
-			ob->m_name = sz;
+			ob->SetName(sz);
 			ob->m_tag = ntag;
 			ob->m_r1 = vec3d(r[0], r[1], r[2]);
 			ob->m_r2 = vec3d(r[3], r[4], r[5]);
+			ob->SetColor(GLColor(255, 0, 0));
 			fem.AddLineObject(ob);
 		}
 		m_ar.CloseChunk();
@@ -1418,6 +1428,14 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 								int nv = m_ar.GetChunkID();
 
 								assert((nv >= 0) && (nv < po->m_data.size()));
+
+								ObjectData* pd = m_pstate->m_objPt[objId].data;
+
+								switch (po->m_data[nv]->Type())
+								{
+								case DATA_FLOAT: { float v; m_ar.read(v); pd->set(nv, v); } break;
+								case DATA_VEC3F: { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+								}
 
 								m_ar.CloseChunk();
 							}
