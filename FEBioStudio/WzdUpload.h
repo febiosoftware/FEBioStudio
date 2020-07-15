@@ -90,7 +90,7 @@ class CWzdUpload : public QWizard
 	Q_OBJECT
 
 public:
-	CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler); //, FEBioStudioProject* project = nullptr);
+	CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, int modify = 0); //, FEBioStudioProject* project = nullptr);
 
 	void setName(QString name);
 	void setDescription(QString desc);
@@ -99,6 +99,8 @@ public:
 	void setVersion(QString version);
 	void setTags(QStringList& tags);
 	void setPublications(const std::vector<CPublicationWidget*>& pub);
+
+	void setFileInfo(QList<QList<QVariant>>& fileinfo);
 
 	void setTagList(QStringList& tags);
 
@@ -124,12 +126,12 @@ public slots:
 	void on_delTagBtn_clicked();
 
 	void on_addFolder_triggered();
-//	void on_delFolder_triggered();
 	void on_addFiles_triggered();
 	void on_rename_triggered();
 	void on_fileTree_currentItemChanged(QTreeWidgetItem *current);
 	void on_fileTree_itemChanged(QTreeWidgetItem *item, int column);
 	void on_fileTree_itemDoubleClicked(QTreeWidgetItem * item, int column);
+	void on_fileTree_itemClicked(QTreeWidgetItem * item, int column);
 	void fileDescriptionChanged();
 
 	void on_addFileTagBtn_clicked();

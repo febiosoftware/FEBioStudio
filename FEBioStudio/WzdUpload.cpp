@@ -24,7 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <WzdUpload.h>
 #include "stdafx.h"
 #include <QWidget>
 #include <QKeyEvent>
@@ -46,7 +45,11 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QFrame>
 #include <QFileInfo>
+#include <QApplication>
 #include <QLocale>
+#include <QPalette>
+#include <unordered_map>
+#include "WzdUpload.h"
 #include "IconProvider.h"
 #include "FocusWatcher.h"
 #include "PublicationWidgetView.h"
@@ -97,7 +100,7 @@ SOFTWARE.*/
 //}
 
 enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
-enum DATATYPES {DESCRIPTION = 1001, TAGS = 1002};
+enum DATATYPES {DESCRIPTION = 1001, TAGS = 1002, SIZE = 1003};
 
 
 class Ui::CWzdUpload
@@ -118,7 +121,6 @@ public:
 	QWizardPage* filesPage;
 
 	QAction* addFolder;
-//	QAction* delFolder;
 	QAction* addFiles;
 	QAction* rename;
 
@@ -133,9 +135,18 @@ public:
 	QToolButton* addFileTagBtn;
 	QToolButton* delFileTagBtn;
 
+	// ID of project being modified. Since project indices start at 1, this is also
+	// used as a boolean e.g. if(m_modify)
+	int m_modify;
+	unordered_map<QString, QTreeWidgetItem*> currentFolders;
+	::CWzdUpload* m_wzd;
+
 public:
-	void setup(QWizard* wzd, int uploadPermissions) //, FEBioStudioProject* project)
+	void setup(::CWzdUpload* wzd, int uploadPermissions, int modify) //, FEBioStudioProject* project)
 	{
+		m_wzd = wzd;
+		m_modify = modify;
+
 		// Project info page
 		infoPage = new QWizardPage;
 		QHBoxLayout* infoLayout = new QHBoxLayout;
@@ -161,7 +172,6 @@ public:
 		infoLayout->addLayout(leftLayout);
 
 		QVBoxLayout* rightLayout = new QVBoxLayout;
-
 
 		QHBoxLayout* tagsLayout = new QHBoxLayout;
 		QVBoxLayout* tagsV1 = new QVBoxLayout;
@@ -212,8 +222,6 @@ public:
 		QToolBar* toolbar = new QToolBar;
 		toolbar->addAction(addFolder = new QAction(CIconProvider::GetIcon("folder", Emblem::Plus), "New Folder", wzd));
 		addFolder->setObjectName("addFolder");
-//		toolbar->addAction(delFolder = new QAction(CIconProvider::GetIcon("folder", Emblem::Missing), "Delete Folder", wzd));
-//		delFolder->setObjectName("delFolder");
 		toolbar->addAction(addFiles = new QAction(CIconProvider::GetIcon("new"), "Add Files", wzd));
 		addFiles->setObjectName("addFiles");
 		toolbar->addAction(rename = new QAction(CIconProvider::GetIcon("rename"), "Rename", wzd));
@@ -222,8 +230,8 @@ public:
 
 		fileTree = new QTreeWidget;
 		fileTree->setObjectName("fileTree");
-		fileTree->setColumnCount(2);
-		fileTree->setHeaderLabels(QStringList() << "Project Files" << "Location");
+		fileTree->setColumnCount(3);
+		fileTree->setHeaderLabels(QStringList() << "Project Files" << "Location" << "Size");
 		fileTree->setDragDropMode(QAbstractItemView::InternalMove);
 		fileTree->setDragEnabled(true);
 		fileTree->setDropIndicatorShown(true);
@@ -238,6 +246,8 @@ public:
 		projectItem->setText(0, "Project");
 		projectItem->setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
 		projectItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDropEnabled);
+		qint64 size = 0;
+		projectItem->setData(2, SIZE, size);
 		fileTree->addTopLevelItem(projectItem);
 		fileTree->setCurrentItem(projectItem);
 
@@ -294,36 +304,48 @@ public:
 		wzd->setWindowTitle("Upload Project");
 		wzd->resize(800, 600);
 
-		fileTree->setColumnWidth(0, fileTree->width()/2);
+		fileTree->setColumnWidth(0, 350);
+		fileTree->setColumnWidth(1, 310);
 	}
 
-	void AddFile(QString& path)
+	QTreeWidgetItem* NewFile(QString path, QString description = "", qint64 size = -1, QStringList tags = QStringList())
 	{
+		QFileInfo info(path);
+
 		QTreeWidgetItem* fileItem = new QTreeWidgetItem(FILEITEM);
 		fileItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEditable);
-		fileItem->setText(0, QFileInfo(path).fileName());
+		fileItem->setText(0, info.fileName());
 		fileItem->setCheckState(0,Qt::Checked);
-		fileItem->setData(0, DESCRIPTION, "");
-		fileItem->setData(0, TAGS, QStringList());
+		fileItem->setData(0, DESCRIPTION, description);
+		fileItem->setData(0, TAGS, tags);
 
-		fileItem->setText(1, path);
-
-		QTreeWidgetItem* current = fileTree->currentItem();
-		if(!current)
+		if(size == -1)
 		{
-			current = projectItem;
-		}
-
-		if(current->type() == FILEITEM)
-		{
-			current->parent()->addChild(fileItem);
+			fileItem->setData(2, SIZE, info.size());
 		}
 		else
 		{
-			current->addChild(fileItem);
+			fileItem->setData(2, SIZE, size);
 		}
 
-		fileTree->setCurrentItem(fileItem);
+		fileItem->setText(1, path);
+
+		return fileItem;
+	}
+
+	QTreeWidgetItem* NewFolder(QString name, QString location = "")
+	{
+		QTreeWidgetItem* child = new QTreeWidgetItem(FOLDERITEM);
+		child->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsAutoTristate | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable);
+		child->setCheckState(0,Qt::Checked);
+		child->setText(0, name);
+		child->setIcon(0, CIconProvider::GetIcon("folder"));
+		quint64 size = 0;
+		child->setData(2, SIZE, size);
+
+		child->setText(1, location);
+
+		return child;
 	}
 
 	void fileInfoEnabled(bool enabled)
@@ -338,8 +360,10 @@ public:
 		delFileTagBtn->setEnabled(enabled);
 	}
 
-	bool hasDuplicateNames(QTreeWidgetItem* item)
+	bool hasDuplicateNames(QTreeWidgetItem* item = nullptr)
 	{
+		if(!item) item = projectItem;
+
 		for(int child = 0; child < item->childCount(); child++)
 		{
 			if(item->child(child)->checkState(0) == Qt::Unchecked) continue;
@@ -365,8 +389,10 @@ public:
 		return false;
 	}
 
-	void getFileItems(QList<QTreeWidgetItem*>& items, QTreeWidgetItem* item)
+	void getFileItems(QList<QTreeWidgetItem*>& items, QTreeWidgetItem* item = nullptr)
 	{
+		if(!item) item = projectItem;
+
 		for(int child = 0; child < item->childCount(); child++)
 		{
 			if(item->child(child)->checkState(0) == Qt::Unchecked) continue;
@@ -382,8 +408,10 @@ public:
 		}
 	}
 
-	void getFilePaths(QStringList& paths, QTreeWidgetItem* item)
+	void getFilePaths(QStringList& paths, QTreeWidgetItem* item = nullptr)
 	{
+		if(!item) item = projectItem;
+
 		for(int child = 0; child < item->childCount(); child++)
 		{
 			if(item->child(child)->checkState(0) == Qt::Unchecked) continue;
@@ -399,42 +427,10 @@ public:
 		}
 	}
 
-//	void getLocalFilePaths(QStringList& paths, QStringList& currentPath, QTreeWidgetItem* item)
-//	{
-//		for(int child = 0; child < item->childCount(); child++)
-//		{
-//			if(item->child(child)->type() == FILEITEM)
-//			{
-//				QString path;
-//				for(auto str : currentPath)
-//				{
-//					path.append(str).append("/");
-//				}
-//
-//				path.append(item->child(child)->text(0));
-//
-//				paths.append(path);
-//			}
-//			else if(item->child(child)->type() == FOLDERITEM)
-//			{
-//				currentPath.append(item->child(child)->text(0));
-//
-//				getLocalFilePaths(paths, currentPath, item->child(child));
-//			}
-//			else
-//			{
-//				getLocalFilePaths(paths, currentPath, item->child(child));
-//			}
-//		}
-//
-//		if(!currentPath.isEmpty())
-//		{
-//			currentPath.removeLast();
-//		}
-//	}
-
-	void getLocalFilePath(QString& path, QTreeWidgetItem* item)
+	void getLocalFilePath(QString& path, QTreeWidgetItem* item = nullptr)
 	{
+		if(!item) item = projectItem;
+
 		if(item->type() == FILEITEM)
 		{
 			path = item->text(0);
@@ -449,12 +445,115 @@ public:
 		}
 	}
 
+	QTreeWidgetItem* addRepoFile(QString& path, int index, QString& description, qint64 size, QStringList& tags)
+	{
+		int pos = path.right(path.length() - index).indexOf("/");
+
+		if(pos == -1)
+		{
+			QTreeWidgetItem* child = NewFile(path, description, size, tags);
+
+			child->setText(1, QString("{Repository}/") + path);
+
+			return child;
+		}
+
+		QTreeWidgetItem* child = addRepoFile(path, index + (pos + 1), description, size, tags);
+		QTreeWidgetItem* parent;
+
+		try
+		{
+			parent = currentFolders.at(path.right(path.length() - index).left(pos));
+		}
+		catch(out_of_range& e)
+		{
+			parent = NewFolder(path.right(path.length() - index).left(pos), QString("{Repository}/") + path.left(index + pos));
+
+			currentFolders[path.right(path.length() - index).left(pos)] = parent;
+		}
+
+		parent->addChild(child);
+
+		return parent;
+	}
+
+	void updateColor(QTreeWidgetItem* item = nullptr)
+	{
+		if(!item) item = projectItem;
+
+		if(item->type() != PROJECTITEM)
+		{
+			if(item->checkState(0) == Qt::Unchecked)
+			{
+				item->setForeground(0, qApp->palette().color(QPalette::Disabled, QPalette::Text));
+				item->setForeground(1, qApp->palette().color(QPalette::Disabled, QPalette::Text));
+				item->setForeground(2, qApp->palette().color(QPalette::Disabled, QPalette::Text));
+			}
+			else
+			{
+				item->setForeground(0, qApp->palette().color(QPalette::Active, QPalette::Text));
+				item->setForeground(1, qApp->palette().color(QPalette::Active, QPalette::Text));
+				item->setForeground(2, qApp->palette().color(QPalette::Active, QPalette::Text));
+			}
+		}
+
+		for(int child = 0; child < item->childCount(); child++)
+		{
+			updateColor(item->child(child));
+		}
+	}
+
+	void updateSizes(QTreeWidgetItem* item = nullptr)
+	{
+		if(!item) item = projectItem;
+
+		if(item->type() == FILEITEM)
+		{
+			item->setText(2, m_wzd->locale().formattedDataSize(item->data(2, SIZE).toLongLong()));
+			return;
+		}
+
+		qint64 size = 0;
+		for(int child = 0; child < item->childCount(); child++)
+		{
+			updateSizes(item->child(child));
+
+			if(item->child(child)->checkState(0) != Qt::Unchecked)
+			{
+				size += item->child(child)->data(2, SIZE).toLongLong();
+			}
+		}
+
+		item->setData(2, SIZE, size);
+		item->setText(2, m_wzd->locale().formattedDataSize(size));
+	}
+
+	bool isDeleting(QTreeWidgetItem* item = nullptr)
+	{
+		if(!item) item = projectItem;
+
+		if(item->type() == FILEITEM && item->checkState(0) == Qt::Unchecked && item->text(1).startsWith("{Repository}/"))
+		{
+			return true;
+		}
+
+		for(int child = 0; child < item->childCount(); child++)
+		{
+			if(isDeleting(item->child(child)))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 };
 
-CWzdUpload::CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler)//, FEBioStudioProject* project)
+CWzdUpload::CWzdUpload(QWidget* parent, int uploadPermissions, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* repoHandler, int modify)//, FEBioStudioProject* project)
 	: QWizard(parent), ui(new Ui::CWzdUpload), dbHandler(dbHandler), repoHandler(repoHandler)
 {
-	ui->setup(this, uploadPermissions); //, project);
+	ui->setup(this, uploadPermissions, modify); //, project);
 
 	QObject::connect(new FocusWatcher(ui->fileDescription), &FocusWatcher::focusChanged, this, &CWzdUpload::fileDescriptionChanged);
 
@@ -507,6 +606,24 @@ void CWzdUpload::setPublications(const std::vector<CPublicationWidget*>& pubs)
 	{
 		ui->pubs->addPublicationCopy(*pub);
 	}
+}
+
+void CWzdUpload::setFileInfo(QList<QList<QVariant>>& fileinfo)
+{
+	for(auto info : fileinfo)
+	{
+		QString filename = info[0].toString();
+		QString desc = info[1].toString();
+		qint64 size = info[2].toLongLong();
+		QStringList tags = info[3].toStringList();
+
+
+		ui->projectItem->addChild(ui->addRepoFile(filename, 0, desc, size, tags));
+	}
+
+	ui->fileTree->expandAll();
+
+	ui->updateSizes();
 }
 
 void CWzdUpload::setTagList(QStringList& tags)
@@ -581,9 +698,22 @@ QList<QVariant> CWzdUpload::getPublicationInfo()
 
 QStringList CWzdUpload::GetFilePaths()
 {
-	QStringList paths;
+	QList<QTreeWidgetItem*> items;
+	ui->getFileItems(items);
 
-	ui->getFilePaths(paths, ui->projectItem);
+	QStringList paths;
+	for(auto item : items)
+	{
+		QString path = item->text(1);
+
+		// Skip this item if we're modifying and it was already in the project
+		if(ui->m_modify && path.startsWith("{Repository}/"))
+		{
+			continue;
+		}
+
+		paths.push_back(path);
+	}
 
 	return paths;
 }
@@ -591,11 +721,17 @@ QStringList CWzdUpload::GetFilePaths()
 QStringList CWzdUpload::GetLocalFilePaths()
 {
 	QList<QTreeWidgetItem*> items;
-	ui->getFileItems(items, ui->projectItem);
+	ui->getFileItems(items);
 
 	QStringList paths;
 	for(auto item : items)
 	{
+		// Skip this item if we're modifying and it was already in the project
+		if(ui->m_modify && item->text(1).startsWith("{Repository}/"))
+		{
+			continue;
+		}
+
 		QString path;
 		ui->getLocalFilePath(path, item);
 		paths.push_back(path);
@@ -609,7 +745,7 @@ QList<QVariant> CWzdUpload::getFileInfo()
 	QList<QVariant> info;
 	QList<QTreeWidgetItem*> items;
 
-	ui->getFileItems(items, ui->projectItem);
+	ui->getFileItems(items);
 
 	for(auto item : items)
 	{
@@ -621,6 +757,21 @@ QList<QVariant> CWzdUpload::getFileInfo()
 		fileInfo["filename"] = path;
 		fileInfo["description"] = item->data(0, DESCRIPTION);
 		fileInfo["tags"] = item->data(0, TAGS);
+
+		// Add in the old name if we're modifying
+		if(ui->m_modify)
+		{
+			QString repoString = "{Repository}/";
+			QString oldPath = item->text(1);
+			if(oldPath.startsWith(repoString))
+			{
+				fileInfo["oldFilename"] = oldPath.right(oldPath.length() - repoString.length());
+			}
+			else
+			{
+				fileInfo["oldFilename"] = "";
+			}
+		}
 
 		info.append(fileInfo);
 	}
@@ -647,15 +798,19 @@ void CWzdUpload::accept()
 	QString category = getCategory();
 	if(!dbHandler->isValidUpload(username, name, category))
 	{
-		QMessageBox::critical(this, "Upload", "You already have a project with that name in this category."
-				"\n\nPlease choose a different project name.");
-
-		while(currentId() != 0)
+		if(!ui->m_modify || dbHandler->ProjectNameFromID(ui->m_modify) != name)
 		{
-			back();
+			QMessageBox::critical(this, "Upload", "You already have a project with that name in this category."
+					"\n\nPlease choose a different project name.");
+
+			while(currentId() != 0)
+			{
+				back();
+			}
+
+			return;
 		}
 
-		return;
 	}
 
 	if(ui->description->toPlainText().isEmpty())
@@ -682,7 +837,7 @@ void CWzdUpload::accept()
 		return;
 	}
 
-	if(ui->hasDuplicateNames(ui->projectItem))
+	if(ui->hasDuplicateNames())
 	{
 		QMessageBox::critical(this, "Upload", "You cannot have to files with the same name in the same folder.");
 		return;
@@ -690,10 +845,10 @@ void CWzdUpload::accept()
 
 	QStringList filePaths;
 
-	ui->getFilePaths(filePaths, ui->projectItem);
+	ui->getFilePaths(filePaths);
 	if(filePaths.isEmpty())
 	{
-		QMessageBox::critical(this, "Upload", "Please select at least one file to upload.");
+		QMessageBox::critical(this, "Upload", "Please select at least one file to include in your project.");
 		return;
 	}
 
@@ -706,24 +861,35 @@ void CWzdUpload::accept()
 
 	qint64 currentProjectsSize = dbHandler->currentProjectsSize(repoHandler->getUsername());
 	qint64 sizeLimit = repoHandler->getSizeLimit();
+	qint64 modifiedProjectSize = 0;
 
-	if(totalSize + currentProjectsSize > sizeLimit)
+	if(ui->m_modify)
+	{
+		modifiedProjectSize = dbHandler->projectsSize(ui->m_modify);
+	}
+
+	if(totalSize + currentProjectsSize - modifiedProjectSize > sizeLimit)
 	{
 		QLocale locale = this->locale();
 
 		QString message = QString("This upload would exceed your limit of %1 on the repository. Please remove some files "
 				"or delete some projects from the repository.\n\n"
 				"Current Project Size: %2\n"
-				"Total on Repository: %3\n").arg(locale.formattedDataSize(sizeLimit))
+				"Total on Repository: %3").arg(locale.formattedDataSize(sizeLimit))
 									.arg(locale.formattedDataSize(totalSize))
 									.arg(locale.formattedDataSize(currentProjectsSize));
+
+		if(ui->m_modify)
+		{
+			message += QString("\nOld Project Size: %1").arg(locale.formattedDataSize(modifiedProjectSize));
+		}
 
 		QMessageBox::critical(this, "Upload", message);
 		return;
 	}
 
 	QList<QTreeWidgetItem*> items;
-	ui->getFileItems(items, ui->projectItem);
+	ui->getFileItems(items);
 	for(auto item : items)
 	{
 		if(item->data(0, DESCRIPTION).toString().isEmpty())
@@ -774,6 +940,18 @@ void CWzdUpload::accept()
 		}
 	}
 
+	if(ui->m_modify && ui->isDeleting())
+	{
+		QMessageBox::StandardButton reply = QMessageBox::question(this, "Upload", "You have unchecked some files that are currently part of "
+				"this project. Continuing will PERMANENTLY DELETE these files from the repository."
+				"\n\nWould you like to continue?");
+
+		if(reply != QMessageBox::Yes)
+		{
+			return;
+		}
+	}
+
 	QWizard::accept();
 }
 
@@ -810,14 +988,6 @@ void CWzdUpload::on_delTagBtn_clicked()
 
 void CWzdUpload::on_addFolder_triggered()
 {
-	QTreeWidgetItem* child = new QTreeWidgetItem(FOLDERITEM);
-	child->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsAutoTristate | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable);
-	child->setCheckState(0,Qt::Checked);
-	child->setFirstColumnSpanned(true);
-	child->setText(0, "New Folder");
-	child->setIcon(0, CIconProvider::GetIcon("folder"));
-
-
 	QTreeWidgetItem* current = ui->fileTree->currentItem();
 
 	if(!current)
@@ -835,31 +1005,22 @@ void CWzdUpload::on_addFolder_triggered()
 		parent = current;
 	}
 
+	QTreeWidgetItem* child = ui->NewFolder("New Folder");
+
 	parent->addChild(child);
+
+	ui->fileTree->expandAll();
+
 	ui->fileTree->setCurrentItem(child);
 	ui->fileTree->editItem(child);
-}
 
-//void CDlgUpload::on_delFolder_triggered()
-//{
-//	QTreeWidgetItem* current = ui->fileTree->currentItem();
-//
-//	if(current)
-//	{
-//		if(current->type() == FOLDERITEM)
-//		{
-//			QList<QTreeWidgetItem*> children = current->takeChildren();
-//
-//			current->parent()->addChildren(children);
-//
-//			delete current;
-//		}
-//	}
-//}
+	ui->updateSizes();
+
+}
 
 void CWzdUpload::on_addFiles_triggered()
 {
-	QFileDialog dlg(this, "Add File");
+	QFileDialog dlg(this, "Add Files");
 	dlg.setFileMode(QFileDialog::ExistingFiles);
 
 
@@ -869,8 +1030,26 @@ void CWzdUpload::on_addFiles_triggered()
 
 		for(auto file : files)
 		{
-			ui->AddFile(file);
+			QTreeWidgetItem* child = ui->NewFile(file);
+
+			QTreeWidgetItem* parent = ui->fileTree->currentItem();
+			if(!parent)
+			{
+				parent = ui->projectItem;
+			}
+			else if(parent->type() == FILEITEM)
+			{
+				parent = parent->parent();
+			}
+
+			parent->addChild(child);
+
+			ui->fileTree->setCurrentItem(child);
 		}
+
+		ui->updateSizes();
+
+		ui->fileTree->expandAll();
 	}
 }
 
@@ -925,6 +1104,17 @@ void CWzdUpload::on_fileTree_itemDoubleClicked(QTreeWidgetItem * item, int colum
 	{
 		ui->fileTree->editItem(item, column);
 	}
+}
+
+void CWzdUpload::on_fileTree_itemClicked(QTreeWidgetItem * item, int column)
+{
+	// I can't find a way to call these functions when a checkbox state is changed
+	// this will do for now.
+	ui->updateColor();
+
+	// I can't find a way to update sizes after a user reorders the files.
+	// This will sort of work for that sometimes
+	ui->updateSizes();
 }
 
 void CWzdUpload::fileDescriptionChanged()

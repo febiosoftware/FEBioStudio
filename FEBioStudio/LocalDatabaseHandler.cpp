@@ -240,6 +240,26 @@ public:
 		if(updateNoCopy) execute(noCopy);
 	}
 
+	QString ProjectNameFromID(int ID)
+	{
+		char **table;
+		int rows, cols;
+
+		std::string query = "SELECT name FROM projects WHERE ID = " + std::to_string(ID);
+
+		getTable(query, &table, &rows, &cols);
+
+		QString name;
+		if(rows == 1)
+		{
+			name = table[1];
+		}
+
+		sqlite3_free_table(table);
+
+		return name;
+	}
+
 	QString GetFilePath(int ID, int type)
 	{
 		char **table;
@@ -398,7 +418,7 @@ public:
 		return rows == 0;
 	}
 
-	long long int currentProjectsSize(QString& username)
+	qint64 currentProjectsSize(QString& username)
 	{
 		char **table;
 		int rows, cols;
@@ -408,7 +428,27 @@ public:
 
 		getTable(query, &table, &rows, &cols);
 
-		long long int totalSize = 0;
+		qint64 totalSize = 0;
+		for(int row = 1; row < rows + 1; row++)
+		{
+			totalSize += QString(table[row]).toLongLong();
+		}
+
+		sqlite3_free_table(table);
+
+		return totalSize;
+	}
+
+	qint64 projectSize(int ID)
+	{
+		char **table;
+		int rows, cols;
+
+		std::string query = QString("SELECT size FROM filenames WHERE project = '%1'").arg(ID).toStdString();
+
+		getTable(query, &table, &rows, &cols);
+
+		qint64 totalSize = 0;
 		for(int row = 1; row < rows + 1; row++)
 		{
 			totalSize += QString(table[row]).toLongLong();
@@ -568,6 +608,56 @@ void CLocalDatabaseHandler::GetCategoryMap(std::map<int, std::string>& categoryM
 	}
 
 	sqlite3_free_table(table);
+}
+
+QList<QList<QVariant>> CLocalDatabaseHandler::GetProjectFileInfo(int projID)
+{
+	QList<QList<QVariant>> fileInfo;
+
+	char **table;
+	int rows, cols;
+
+	QString query = QString("SELECT ID, filename, description, size FROM filenames WHERE project = %1").arg(projID);
+	std::string queryStd = query.toStdString();
+
+	imp->getTable(queryStd, &table, &rows, &cols);
+
+	for(int row = 1; row <= rows; row++)
+	{
+		QList<QVariant> currentInfo;
+
+		int rowStart = row*cols;
+
+		currentInfo.push_back(QString(table[rowStart + 1]));
+		currentInfo.push_back(QString(table[rowStart + 2]));
+		currentInfo.push_back(QString(table[rowStart + 3]).toLongLong());
+
+		char **table2;
+		int rows2, cols2;
+
+		int fileID = stoi(table[rowStart]);
+		QString query2 = QString("SELECT tags.tag FROM fileTags JOIN tags ON fileTags.tag = tags.ID WHERE fileTags.file = %1").arg(fileID);
+		std::string queryStd2 = query2.toStdString();
+
+		imp->getTable(queryStd2, &table2, &rows2, &cols2);
+
+		QStringList tags;
+		for(int row2 = 1; row2 <= rows2; row2++)
+		{
+			tags.push_back(QString(table2[row2]));
+		}
+
+		currentInfo.push_back(tags);
+
+		sqlite3_free_table(table2);
+
+		fileInfo.push_back(currentInfo);
+	}
+
+	sqlite3_free_table(table);
+
+
+	return fileInfo;
 }
 
 void CLocalDatabaseHandler::GetProjectTags(int ID)
@@ -738,7 +828,10 @@ std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
 	return files;
 }
 
-
+QString CLocalDatabaseHandler::ProjectNameFromID(int ID)
+{
+	return imp->ProjectNameFromID(ID);
+}
 
 QString CLocalDatabaseHandler::FilePathFromID(int ID, int type)
 {
@@ -770,9 +863,14 @@ bool CLocalDatabaseHandler::isValidUpload(QString& username, QString& projectNam
 	return imp->isValidUpload(username, projectName, category);
 }
 
-long long int CLocalDatabaseHandler::currentProjectsSize(QString username)
+qint64 CLocalDatabaseHandler::currentProjectsSize(QString username)
 {
 	return imp->currentProjectsSize(username);
+}
+
+qint64 CLocalDatabaseHandler::projectsSize(int ID)
+{
+	return imp->projectSize(ID);
 }
 
 

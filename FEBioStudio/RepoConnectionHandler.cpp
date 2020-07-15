@@ -282,6 +282,34 @@ void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 	}
 }
 
+void CRepoConnectionHandler::modifyProjectUpload()
+{
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost(REPO_URL);
+	myurl.setPort(4433);
+	myurl.setPath("/modelRepo/api/v1.0/modifyProjectUpload");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
+	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setRawHeader(QByteArray("fileToken"), imp->fileToken.toUtf8());
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/zip");
+
+	QString fileName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
+
+	if(NetworkAccessibleCheck())
+	{
+		QFile* arch = new QFile(fileName);
+		arch->open(QIODevice::ReadOnly);
+
+		QNetworkReply* reply = imp->restclient->post(request, arch);
+		arch->setParent(reply);
+	}
+}
+
 void CRepoConnectionHandler::deleteProject(int id)
 {
 	QUrl myurl;
@@ -355,6 +383,10 @@ void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 		{
 			deleteProjectRepy(r);
 		}
+	}
+	else if(URL.contains("modifyProjectUpload"))
+	{
+		modifyProjectUploadReply(r);
 	}
 
 }
@@ -652,6 +684,17 @@ void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
+	if(statusCode == 202)
+	{
+		imp->fileToken = r->readAll();
+
+		if(imp->uploadReady) modifyProjectUpload();
+
+		imp->uploadReady = true;
+
+		return;
+	}
+
 	if(statusCode == 200)
 	{
 		getSchema();
@@ -659,6 +702,19 @@ void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
 
 	imp->dbPanel->ShowMessage(r->readAll());
 
+}
+
+void CRepoConnectionHandler::modifyProjectUploadReply(QNetworkReply *r)
+{
+	QString fileName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
+	QFile::remove(fileName);
+
+	imp->uploadReady = false;
+	imp->fileToken = "";
+
+	imp->dbPanel->ShowMessage(r->readAll());
+
+	getSchema();
 }
 
 void CRepoConnectionHandler::deleteProjectRepy(QNetworkReply *r)

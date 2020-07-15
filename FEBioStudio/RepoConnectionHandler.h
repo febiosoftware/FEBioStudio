@@ -52,6 +52,7 @@ public:
 	void requestUploadPermissions(QByteArray userInfo);
 
 	void modifyProject(int id, QByteArray projectInfo);
+	void modifyProjectUpload();
 	void deleteProject(int id);
 
 	QString getUsername();
@@ -81,6 +82,7 @@ private:
 	void requestUploadPermissionsReply(QNetworkReply *r);
 
 	void modifyProjectRepy(QNetworkReply *r);
+	void modifyProjectUploadReply(QNetworkReply *r);
 	void deleteProjectRepy(QNetworkReply *r);
 
 	Imp* imp;

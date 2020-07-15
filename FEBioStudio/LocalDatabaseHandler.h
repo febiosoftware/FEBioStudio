@@ -29,9 +29,12 @@ SOFTWARE.*/
 #include <vector>
 #include <unordered_set>
 #include <map>
+#include <QList>
+#include <QtGlobal>
 
 class QJsonDocument;
 class QString;
+class QVariant;
 class QStringList;
 class CRepoProject;
 class CDatabasePanel;
@@ -61,10 +64,13 @@ public:
 
 	void GetCategoryMap(std::map<int, std::string>& categoryMap);
 
+	QList<QList<QVariant>> GetProjectFileInfo(int projID);
+
 
 	std::unordered_set<int> FullTextSearch(QString term);
 	std::unordered_set<int> FileSearch(QString term);
 
+	QString ProjectNameFromID(int ID);
 	QString FilePathFromID(int ID, int type);
 	QString FileNameFromID(int ID, int type);
 	QString FullFileNameFromID(int ID, int type);
@@ -72,7 +78,8 @@ public:
 	int CategoryIDFromName(std::string name);
 
 	bool isValidUpload(QString& username, QString& projectName, QString& category);
-	long long int currentProjectsSize(QString username);
+	qint64 currentProjectsSize(QString username);
+	qint64 projectsSize(int ID);
 
 
 private:

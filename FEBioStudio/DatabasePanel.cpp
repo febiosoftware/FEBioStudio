@@ -1145,9 +1145,9 @@ void CDatabasePanel::on_actionModify_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
-		if(!m_wnd->GetDocument()) return;
+		int projID = static_cast<ProjectItem*>(ui->treeWidget->selectedItems()[0])->getProjectID();
 
-		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler); //, m_wnd->GetProject());
+		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID); //, m_wnd->GetProject());
 		dlg.setName(ui->projectName->text());
 		dlg.setOwner(repoHandler->getUsername());
 		dlg.setVersion(QString("%1").arg(stoi(ui->projectVersion->text().toStdString()) + 1));
@@ -1162,14 +1162,17 @@ void CDatabasePanel::on_actionModify_triggered()
 		QStringList tags = dbHandler->GetTags();
 		dlg.setTagList(tags);
 
-
-		int projID = static_cast<ProjectItem*>(ui->treeWidget->selectedItems()[0])->getProjectID();
+		QList<QList<QVariant>> fileInfo = dbHandler->GetProjectFileInfo(projID);
+		dlg.setFileInfo(fileInfo);
 
 		if (dlg.exec())
 		{
+			ui->showLoadingPage("Modifying Project...");
+
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
+			projectInfo.insert("version", dlg.getVersion());
 			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
 
 			cout << dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()) << endl;
@@ -1183,9 +1186,36 @@ void CDatabasePanel::on_actionModify_triggered()
 
 			projectInfo.insert("publications", dlg.getPublicationInfo());
 
+			projectInfo.insert("files", dlg.getFileInfo());
+
+			QStringList filePaths = dlg.GetFilePaths();
+			QStringList localFilePaths = dlg.GetLocalFilePaths();
+
+			if(filePaths.size() > 0)
+			{
+				projectInfo.insert("uploadRequired", true);
+			}
+			else
+			{
+				projectInfo.insert("uploadRequired", false);
+			}
+
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
 
+			cout << payload.toStdString() << endl;
+
 			repoHandler->modifyProject(projID, payload);
+
+			if(filePaths.size() > 0)
+			{
+				QString archiveName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
+
+				archive(archiveName, filePaths, localFilePaths);
+
+				if(repoHandler->isUploadReady()) repoHandler->modifyProjectUpload();
+
+				repoHandler->setUploadReady(true);
+			}
 		}
 	}
 	else
