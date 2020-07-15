@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D509D42224BF9A4C0064160E /* xpltReader3.h in Headers */ = {isa = PBXBuildFile; fileRef = D509D42024BF9A4C0064160E /* xpltReader3.h */; };
+		D509D42324BF9A4C0064160E /* xpltReader3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D42124BF9A4C0064160E /* xpltReader3.cpp */; };
 		D552473222E5F44A00935C9C /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D552472B22E5F44A00935C9C /* stdafx.h */; };
 		D552473322E5F44A00935C9C /* xpltReader.h in Headers */ = {isa = PBXBuildFile; fileRef = D552472C22E5F44A00935C9C /* xpltReader.h */; };
 		D552473422E5F44A00935C9C /* xpltReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D552472D22E5F44A00935C9C /* xpltReader.cpp */; };
@@ -21,6 +23,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D509D42024BF9A4C0064160E /* xpltReader3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpltReader3.h; sourceTree = "<group>"; };
+		D509D42124BF9A4C0064160E /* xpltReader3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xpltReader3.cpp; sourceTree = "<group>"; };
 		D552471C22E5F42400935C9C /* libXPLTLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libXPLTLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D552472B22E5F44A00935C9C /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		D552472C22E5F44A00935C9C /* xpltReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpltReader.h; sourceTree = "<group>"; };
@@ -76,6 +80,8 @@
 				D552472C22E5F44A00935C9C /* xpltReader.h */,
 				D552472F22E5F44A00935C9C /* xpltReader2.cpp */,
 				D552473022E5F44A00935C9C /* xpltReader2.h */,
+				D509D42124BF9A4C0064160E /* xpltReader3.cpp */,
+				D509D42024BF9A4C0064160E /* xpltReader3.h */,
 			);
 			name = XPLTLib;
 			path = ../../XPLTLib;
@@ -93,6 +99,7 @@
 				D552473222E5F44A00935C9C /* stdafx.h in Headers */,
 				D5ED25F423197A4800C16BF7 /* xpltFileExport.h in Headers */,
 				D552473322E5F44A00935C9C /* xpltReader.h in Headers */,
+				D509D42224BF9A4C0064160E /* xpltReader3.h in Headers */,
 				D5ED25F623197A4800C16BF7 /* xpltArchive.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -154,6 +161,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D509D42324BF9A4C0064160E /* xpltReader3.cpp in Sources */,
 				D552473622E5F44A00935C9C /* xpltReader2.cpp in Sources */,
 				D552473522E5F44A00935C9C /* xpltFileReader.cpp in Sources */,
 				D5ED25F523197A4800C16BF7 /* xpltArchive.cpp in Sources */,

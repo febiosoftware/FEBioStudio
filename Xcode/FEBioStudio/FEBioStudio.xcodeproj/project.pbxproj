@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D509D41C24BF9A1D0064160E /* moc_WzdUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41624BF9A1C0064160E /* moc_WzdUpload.cpp */; };
+		D509D41D24BF9A1D0064160E /* TagLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41724BF9A1C0064160E /* TagLabel.cpp */; };
+		D509D41E24BF9A1D0064160E /* WzdUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41A24BF9A1D0064160E /* WzdUpload.cpp */; };
+		D509D41F24BF9A1D0064160E /* moc_TagLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41B24BF9A1D0064160E /* moc_TagLabel.cpp */; };
 		D50EB7B2246B6E6900E016F1 /* IconProvider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7AD246B6E6800E016F1 /* IconProvider.cpp */; };
 		D50EB7B3246B6E6900E016F1 /* DlgSetRepoFolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7AE246B6E6800E016F1 /* DlgSetRepoFolder.cpp */; };
 		D50EB7B4246B6E6900E016F1 /* moc_DlgSetRepoFolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7B1246B6E6800E016F1 /* moc_DlgSetRepoFolder.cpp */; };
@@ -36,9 +40,7 @@
 		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
 		D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
-		D576570023E32E6900E4F70F /* moc_DlgUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */; };
 		D576570123E32E6900E4F70F /* LocalDatabaseHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */; };
-		D576570223E32E6900E4F70F /* DlgUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F523E32E6800E4F70F /* DlgUpload.cpp */; };
 		D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F823E32E6800E4F70F /* RepoProject.cpp */; };
 		D576570423E32E6900E4F70F /* RepoConnectionHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */; };
 		D576570623E32E6900E4F70F /* moc_RepoConnectionHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */; };
@@ -445,6 +447,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D509D41624BF9A1C0064160E /* moc_WzdUpload.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_WzdUpload.cpp; sourceTree = "<group>"; };
+		D509D41724BF9A1C0064160E /* TagLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TagLabel.cpp; sourceTree = "<group>"; };
+		D509D41824BF9A1C0064160E /* WzdUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WzdUpload.h; sourceTree = "<group>"; };
+		D509D41924BF9A1D0064160E /* TagLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TagLabel.h; sourceTree = "<group>"; };
+		D509D41A24BF9A1D0064160E /* WzdUpload.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WzdUpload.cpp; sourceTree = "<group>"; };
+		D509D41B24BF9A1D0064160E /* moc_TagLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_TagLabel.cpp; sourceTree = "<group>"; };
 		D50EB7AD246B6E6800E016F1 /* IconProvider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IconProvider.cpp; sourceTree = "<group>"; };
 		D50EB7AE246B6E6800E016F1 /* DlgSetRepoFolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgSetRepoFolder.cpp; sourceTree = "<group>"; };
 		D50EB7AF246B6E6800E016F1 /* DlgSetRepoFolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSetRepoFolder.h; sourceTree = "<group>"; };
@@ -457,21 +465,21 @@
 		D5248DD8231C114D00691871 /* modelcheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelcheck.h; sourceTree = "<group>"; };
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
-		D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKVCAF.7.3.0.dylib; path = ../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKVCAF.7.3.0.dylib; sourceTree = "<group>"; };
+		D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKVCAF.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKVCAF.7.3.0.dylib; sourceTree = "<absolute>"; };
 		D5460FF124A936E3008C8024 /* moc_FiberGeneratorTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_FiberGeneratorTool.cpp; sourceTree = "<group>"; };
 		D5460FF224A936E3008C8024 /* moc_ScalarFieldTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ScalarFieldTool.cpp; sourceTree = "<group>"; };
-		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
-		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<group>"; };
-		D548545B23749D1100BE1731 /* libx265.179.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.179.dylib; path = ../../../../../../../../../../usr/local/Cellar/x265/3.2.1/lib/libx265.179.dylib; sourceTree = "<group>"; };
-		D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.29.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavformat.58.29.100.dylib; sourceTree = "<group>"; };
-		D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.31.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavutil.56.31.100.dylib; sourceTree = "<group>"; };
-		D548545F23749D4700BE1731 /* libavcodec.58.54.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.58.54.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavcodec.58.54.100.dylib; sourceTree = "<group>"; };
-		D548546023749D4700BE1731 /* libswresample.3.5.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.3.5.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libswresample.3.5.100.dylib; sourceTree = "<group>"; };
-		D548546523749EA500BE1731 /* libswscale.5.5.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswscale.5.5.100.dylib; path = ../../../../../../../../../../usr/local/Cellar/ffmpeg/4.2.1_2/lib/libswscale.5.5.100.dylib; sourceTree = "<group>"; };
-		D548546723749F2000BE1731 /* QtGui.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtGui.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtGui.framework; sourceTree = "<group>"; };
-		D548546823749F2000BE1731 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCore.framework; sourceTree = "<group>"; };
-		D548546923749F2000BE1731 /* QtCharts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCharts.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCharts.framework; sourceTree = "<group>"; };
-		D548546A23749F2100BE1731 /* QtWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWidgets.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtWidgets.framework; sourceTree = "<group>"; };
+		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = /usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<absolute>"; };
+		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = /usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<absolute>"; };
+		D548545B23749D1100BE1731 /* libx265.179.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libx265.179.dylib; path = /usr/local/Cellar/x265/3.2.1/lib/libx265.179.dylib; sourceTree = "<absolute>"; };
+		D548545D23749D4700BE1731 /* libavformat.58.29.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.58.29.100.dylib; path = /usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavformat.58.29.100.dylib; sourceTree = "<absolute>"; };
+		D548545E23749D4700BE1731 /* libavutil.56.31.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.56.31.100.dylib; path = /usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavutil.56.31.100.dylib; sourceTree = "<absolute>"; };
+		D548545F23749D4700BE1731 /* libavcodec.58.54.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.58.54.100.dylib; path = /usr/local/Cellar/ffmpeg/4.2.1_2/lib/libavcodec.58.54.100.dylib; sourceTree = "<absolute>"; };
+		D548546023749D4700BE1731 /* libswresample.3.5.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswresample.3.5.100.dylib; path = /usr/local/Cellar/ffmpeg/4.2.1_2/lib/libswresample.3.5.100.dylib; sourceTree = "<absolute>"; };
+		D548546523749EA500BE1731 /* libswscale.5.5.100.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswscale.5.5.100.dylib; path = /usr/local/Cellar/ffmpeg/4.2.1_2/lib/libswscale.5.5.100.dylib; sourceTree = "<absolute>"; };
+		D548546723749F2000BE1731 /* QtGui.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtGui.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtGui.framework; sourceTree = "<absolute>"; };
+		D548546823749F2000BE1731 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtCore.framework; sourceTree = "<absolute>"; };
+		D548546923749F2000BE1731 /* QtCharts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCharts.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtCharts.framework; sourceTree = "<absolute>"; };
+		D548546A23749F2100BE1731 /* QtWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWidgets.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtWidgets.framework; sourceTree = "<absolute>"; };
 		D54879BD234B77D700D0E506 /* AreaCalculatorTool.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AreaCalculatorTool.cpp; sourceTree = "<group>"; };
 		D54879BE234B77D700D0E506 /* AreaCalculatorTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AreaCalculatorTool.h; sourceTree = "<group>"; };
 		D54D2CE22444A7DE00146123 /* ImportSpringsTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImportSpringsTool.h; sourceTree = "<group>"; };
@@ -482,19 +490,16 @@
 		D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlapTool.cpp; sourceTree = "<group>"; };
 		D5606C86238DAAD1002B037E /* TetOverlapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlapTool.h; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgUpload.cpp; sourceTree = "<group>"; };
 		D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalDatabaseHandler.cpp; sourceTree = "<group>"; };
-		D57656F523E32E6800E4F70F /* DlgUpload.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgUpload.cpp; sourceTree = "<group>"; };
 		D57656F623E32E6800E4F70F /* RepoConnectionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoConnectionHandler.h; sourceTree = "<group>"; };
 		D57656F723E32E6800E4F70F /* LocalDatabaseHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalDatabaseHandler.h; sourceTree = "<group>"; };
 		D57656F823E32E6800E4F70F /* RepoProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RepoProject.cpp; sourceTree = "<group>"; };
 		D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RepoConnectionHandler.cpp; sourceTree = "<group>"; };
 		D57656FB23E32E6800E4F70F /* RepoProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoProject.h; sourceTree = "<group>"; };
-		D57656FD23E32E6900E4F70F /* DlgUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgUpload.h; sourceTree = "<group>"; };
 		D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_RepoConnectionHandler.cpp; sourceTree = "<group>"; };
-		D576571523E32F7E00E4F70F /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = ../../../../../../../../../../usr/local/Cellar/qt/5.14.1/lib/QtNetwork.framework; sourceTree = "<group>"; };
-		D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquazip.1.0.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/quazip/0.8.1/lib/libquazip.1.0.0.dylib; sourceTree = "<group>"; };
-		D576571923E3347D00E4F70F /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = ../../../../../../../../../../usr/local/Cellar/sqlite/3.30.1/lib/libsqlite3.0.dylib; sourceTree = "<group>"; };
+		D576571523E32F7E00E4F70F /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtNetwork.framework; sourceTree = "<absolute>"; };
+		D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquazip.1.0.0.dylib; path = /usr/local/Cellar/quazip/0.8.1/lib/libquazip.1.0.0.dylib; sourceTree = "<absolute>"; };
+		D576571923E3347D00E4F70F /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = /usr/local/Cellar/sqlite/3.30.1/lib/libsqlite3.0.dylib; sourceTree = "<absolute>"; };
 		D579B663239F04E100278644 /* moc_DatabasePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DatabasePanel.cpp; sourceTree = "<group>"; };
 		D579B664239F04E100278644 /* MeasureAreaTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureAreaTool.cpp; sourceTree = "<group>"; };
 		D579B665239F04E100278644 /* DatabasePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DatabasePanel.cpp; sourceTree = "<group>"; };
@@ -508,10 +513,10 @@
 		D579B672239F04E200278644 /* MeasureAreaTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureAreaTool.h; sourceTree = "<group>"; };
 		D579B674239F04E200278644 /* PointDistanceTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointDistanceTool.h; sourceTree = "<group>"; };
 		D579B675239F04E200278644 /* 4PointAngleTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = 4PointAngleTool.cpp; sourceTree = "<group>"; };
-		D57A0AFF234653F700B7C0B8 /* libmmg3d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg3d.a; path = ../../../../../../../../../../usr/local/lib/libmmg3d.a; sourceTree = "<group>"; };
-		D57A0B00234653F700B7C0B8 /* libmmg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg.a; path = ../../../../../../../../../../usr/local/lib/libmmg.a; sourceTree = "<group>"; };
-		D57A0B01234653F700B7C0B8 /* libmmg2d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg2d.a; path = ../../../../../../../../../../usr/local/lib/libmmg2d.a; sourceTree = "<group>"; };
-		D57A0B02234653F700B7C0B8 /* libmmgs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmgs.a; path = ../../../../../../../../../../usr/local/lib/libmmgs.a; sourceTree = "<group>"; };
+		D57A0AFF234653F700B7C0B8 /* libmmg3d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg3d.a; path = /usr/local/lib/libmmg3d.a; sourceTree = "<absolute>"; };
+		D57A0B00234653F700B7C0B8 /* libmmg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg.a; path = /usr/local/lib/libmmg.a; sourceTree = "<absolute>"; };
+		D57A0B01234653F700B7C0B8 /* libmmg2d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmg2d.a; path = /usr/local/lib/libmmg2d.a; sourceTree = "<absolute>"; };
+		D57A0B02234653F700B7C0B8 /* libmmgs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmmgs.a; path = /usr/local/lib/libmmgs.a; sourceTree = "<absolute>"; };
 		D57A0B072346719D00B7C0B8 /* DlgImportXPLT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgImportXPLT.cpp; sourceTree = "<group>"; };
 		D57A0B082346719D00B7C0B8 /* DlgImportXPLT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgImportXPLT.h; sourceTree = "<group>"; };
 		D57C2A71240F1F990043C2A7 /* PublicationWidgetView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PublicationWidgetView.cpp; sourceTree = "<group>"; };
@@ -628,7 +633,7 @@
 		D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgEditLConfigs.cpp; sourceTree = "<group>"; };
 		D5E04A482357BD1B006AC137 /* DlgEditLConfigs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgEditLConfigs.h; sourceTree = "<group>"; };
 		D5E04A492357BD1B006AC137 /* DlgEditLConfigs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgEditLConfigs.cpp; sourceTree = "<group>"; };
-		D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWebEngineWidgets.framework; path = ../../../../../../../usr/local/Cellar/qt/5.14.1/lib/QtWebEngineWidgets.framework; sourceTree = "<group>"; };
+		D5E73B8724902EB80091806F /* QtWebEngineWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWebEngineWidgets.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtWebEngineWidgets.framework; sourceTree = "<absolute>"; };
 		D5EBB7A4232AEAEC00EED2BE /* LaunchConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchConfig.h; sourceTree = "<group>"; };
 		D5EBB7A5232AEAEC00EED2BE /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
 		D5EBB7A6232AEAED00EED2BE /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
@@ -638,41 +643,41 @@
 		D5ED290623197E8500C16BF7 /* libMeshIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMeshIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290823197E8500C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED290A23197E8500C16BF7 /* libNike3D.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libNike3D.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D5ED291D2319858900C16BF7 /* libcsgvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcsgvis.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libcsgvis.dylib; sourceTree = "<group>"; };
-		D5ED291E2319858A00C16BF7 /* liboccvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liboccvis.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/liboccvis.dylib; sourceTree = "<group>"; };
-		D5ED291F2319858A00C16BF7 /* libstl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libstl.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libstl.dylib; sourceTree = "<group>"; };
-		D5ED29202319858A00C16BF7 /* libstlvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libstlvis.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libstlvis.dylib; sourceTree = "<group>"; };
-		D5ED29212319858B00C16BF7 /* libinterface.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libinterface.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libinterface.dylib; sourceTree = "<group>"; };
-		D5ED29222319858B00C16BF7 /* libcsg.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcsg.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libcsg.dylib; sourceTree = "<group>"; };
-		D5ED29232319858B00C16BF7 /* libngcore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libngcore.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libngcore.dylib; sourceTree = "<group>"; };
-		D5ED29242319858B00C16BF7 /* libmesh.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmesh.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libmesh.dylib; sourceTree = "<group>"; };
-		D5ED29252319858B00C16BF7 /* libgeom2dvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgeom2dvis.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libgeom2dvis.dylib; sourceTree = "<group>"; };
-		D5ED29262319858C00C16BF7 /* libgeom2d.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgeom2d.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libgeom2d.dylib; sourceTree = "<group>"; };
-		D5ED29272319858C00C16BF7 /* libocc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libocc.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libocc.dylib; sourceTree = "<group>"; };
-		D5ED29282319858C00C16BF7 /* libgui.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgui.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libgui.dylib; sourceTree = "<group>"; };
-		D5ED29292319858C00C16BF7 /* libvisual.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvisual.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libvisual.dylib; sourceTree = "<group>"; };
-		D5ED292A2319858D00C16BF7 /* libnglib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libnglib.dylib; path = ../../../../../../../../../../../Applications/Netgen.app/Contents/MacOS/libnglib.dylib; sourceTree = "<group>"; };
-		D5ED2939231987CB00C16BF7 /* libTKernel.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKernel.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKernel.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED293A231987CB00C16BF7 /* libTKSTEPBase.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTEPBase.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKSTEPBase.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED293B231987CC00C16BF7 /* libTKSTEP.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTEP.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKSTEP.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED293C231987CC00C16BF7 /* libTKTopAlgo.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKTopAlgo.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKTopAlgo.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED293D231987CC00C16BF7 /* libTKXMesh.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKXMesh.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKXMesh.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED293E231987CC00C16BF7 /* libTKBO.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKBO.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKBO.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED293F231987CD00C16BF7 /* libTKXSBase.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKXSBase.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKXSBase.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2940231987CD00C16BF7 /* libTKGeomBase.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomBase.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKGeomBase.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2941231987CD00C16BF7 /* libTKBRep.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKBRep.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKBRep.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2942231987CD00C16BF7 /* libTKFillet.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKFillet.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKFillet.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2943231987CD00C16BF7 /* libTKG3d.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKG3d.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKG3d.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2944231987CE00C16BF7 /* libTKMesh.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMesh.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKMesh.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2945231987CE00C16BF7 /* libTKSTL.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTL.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKSTL.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2946231987CE00C16BF7 /* libTKIGES.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKIGES.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKIGES.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2947231987CE00C16BF7 /* libTKPrim.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKPrim.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKPrim.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2948231987CF00C16BF7 /* libTKMath.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMath.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKMath.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED2949231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomAlgo.7.3.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/opencascade/7.3.0p3/lib/libTKGeomAlgo.7.3.0.dylib; sourceTree = "<group>"; };
-		D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmp3lame.0.dylib; path = ../../../../../../../../../../../usr/local/Cellar/lame/3.100/lib/libmp3lame.0.dylib; sourceTree = "<group>"; };
-		D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = ../../../../../../../../../../../usr/lib/libiconv.2.dylib; sourceTree = "<group>"; };
-		D5ED296C231988CA00C16BF7 /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
-		D5ED296F231988E500C16BF7 /* libtet.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtet.a; path = ../../../../../../../../../../../usr/local/lib/libtet.a; sourceTree = "<group>"; };
+		D5ED291D2319858900C16BF7 /* libcsgvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcsgvis.dylib; path = /Applications/Netgen.app/Contents/MacOS/libcsgvis.dylib; sourceTree = "<absolute>"; };
+		D5ED291E2319858A00C16BF7 /* liboccvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liboccvis.dylib; path = /Applications/Netgen.app/Contents/MacOS/liboccvis.dylib; sourceTree = "<absolute>"; };
+		D5ED291F2319858A00C16BF7 /* libstl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libstl.dylib; path = /Applications/Netgen.app/Contents/MacOS/libstl.dylib; sourceTree = "<absolute>"; };
+		D5ED29202319858A00C16BF7 /* libstlvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libstlvis.dylib; path = /Applications/Netgen.app/Contents/MacOS/libstlvis.dylib; sourceTree = "<absolute>"; };
+		D5ED29212319858B00C16BF7 /* libinterface.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libinterface.dylib; path = /Applications/Netgen.app/Contents/MacOS/libinterface.dylib; sourceTree = "<absolute>"; };
+		D5ED29222319858B00C16BF7 /* libcsg.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcsg.dylib; path = /Applications/Netgen.app/Contents/MacOS/libcsg.dylib; sourceTree = "<absolute>"; };
+		D5ED29232319858B00C16BF7 /* libngcore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libngcore.dylib; path = /Applications/Netgen.app/Contents/MacOS/libngcore.dylib; sourceTree = "<absolute>"; };
+		D5ED29242319858B00C16BF7 /* libmesh.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmesh.dylib; path = /Applications/Netgen.app/Contents/MacOS/libmesh.dylib; sourceTree = "<absolute>"; };
+		D5ED29252319858B00C16BF7 /* libgeom2dvis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgeom2dvis.dylib; path = /Applications/Netgen.app/Contents/MacOS/libgeom2dvis.dylib; sourceTree = "<absolute>"; };
+		D5ED29262319858C00C16BF7 /* libgeom2d.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgeom2d.dylib; path = /Applications/Netgen.app/Contents/MacOS/libgeom2d.dylib; sourceTree = "<absolute>"; };
+		D5ED29272319858C00C16BF7 /* libocc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libocc.dylib; path = /Applications/Netgen.app/Contents/MacOS/libocc.dylib; sourceTree = "<absolute>"; };
+		D5ED29282319858C00C16BF7 /* libgui.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgui.dylib; path = /Applications/Netgen.app/Contents/MacOS/libgui.dylib; sourceTree = "<absolute>"; };
+		D5ED29292319858C00C16BF7 /* libvisual.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvisual.dylib; path = /Applications/Netgen.app/Contents/MacOS/libvisual.dylib; sourceTree = "<absolute>"; };
+		D5ED292A2319858D00C16BF7 /* libnglib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libnglib.dylib; path = /Applications/Netgen.app/Contents/MacOS/libnglib.dylib; sourceTree = "<absolute>"; };
+		D5ED2939231987CB00C16BF7 /* libTKernel.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKernel.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKernel.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED293A231987CB00C16BF7 /* libTKSTEPBase.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTEPBase.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKSTEPBase.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED293B231987CC00C16BF7 /* libTKSTEP.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTEP.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKSTEP.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED293C231987CC00C16BF7 /* libTKTopAlgo.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKTopAlgo.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKTopAlgo.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED293D231987CC00C16BF7 /* libTKXMesh.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKXMesh.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKXMesh.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED293E231987CC00C16BF7 /* libTKBO.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKBO.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKBO.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED293F231987CD00C16BF7 /* libTKXSBase.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKXSBase.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKXSBase.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2940231987CD00C16BF7 /* libTKGeomBase.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomBase.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKGeomBase.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2941231987CD00C16BF7 /* libTKBRep.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKBRep.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKBRep.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2942231987CD00C16BF7 /* libTKFillet.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKFillet.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKFillet.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2943231987CD00C16BF7 /* libTKG3d.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKG3d.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKG3d.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2944231987CE00C16BF7 /* libTKMesh.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMesh.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKMesh.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2945231987CE00C16BF7 /* libTKSTL.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKSTL.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKSTL.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2946231987CE00C16BF7 /* libTKIGES.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKIGES.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKIGES.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2947231987CE00C16BF7 /* libTKPrim.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKPrim.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKPrim.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2948231987CF00C16BF7 /* libTKMath.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKMath.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKMath.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED2949231987CF00C16BF7 /* libTKGeomAlgo.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKGeomAlgo.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKGeomAlgo.7.3.0.dylib; sourceTree = "<absolute>"; };
+		D5ED29672319887700C16BF7 /* libmp3lame.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmp3lame.0.dylib; path = /usr/local/Cellar/lame/3.100/lib/libmp3lame.0.dylib; sourceTree = "<absolute>"; };
+		D5ED296B231988CA00C16BF7 /* libiconv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.2.dylib; path = /usr/lib/libiconv.2.dylib; sourceTree = "<absolute>"; };
+		D5ED296C231988CA00C16BF7 /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = /usr/lib/libz.1.dylib; sourceTree = "<absolute>"; };
+		D5ED296F231988E500C16BF7 /* libtet.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtet.a; path = /usr/local/lib/libtet.a; sourceTree = "<absolute>"; };
 		D5ED29F523198B5900C16BF7 /* libPostLib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libPostLib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED29F723198CD600C16BF7 /* DragBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DragBox.cpp; sourceTree = "<group>"; };
 		D5ED29F823198CD600C16BF7 /* ViewSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewSettings.h; sourceTree = "<group>"; };
@@ -697,8 +702,8 @@
 		D5ED2A0B23198CD900C16BF7 /* moc_MainTabBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_MainTabBar.cpp; sourceTree = "<group>"; };
 		D5ED2A0C23198CD900C16BF7 /* InfoPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InfoPanel.cpp; sourceTree = "<group>"; };
 		D5ED2A1E23198DAD00C16BF7 /* FEBioStudio.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = FEBioStudio.entitlements; sourceTree = "<group>"; };
-		D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxvidcore.4.dylib; path = ../../../../../../../../../../usr/local/Cellar/xvid/1.3.6/lib/libxvidcore.4.dylib; sourceTree = "<group>"; };
-		D5EF347523A03C1900BF4D56 /* libssh.4.8.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.3.dylib; path = ../../../../../../../../../../usr/local/Cellar/libssh/0.9.2/lib/libssh.4.8.3.dylib; sourceTree = "<group>"; };
+		D5EF347223A03BA500BF4D56 /* libxvidcore.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxvidcore.4.dylib; path = /usr/local/Cellar/xvid/1.3.6/lib/libxvidcore.4.dylib; sourceTree = "<absolute>"; };
+		D5EF347523A03C1900BF4D56 /* libssh.4.8.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh.4.8.3.dylib; path = /usr/local/Cellar/libssh/0.9.2/lib/libssh.4.8.3.dylib; sourceTree = "<absolute>"; };
 		D5F7D6E222FA37670089B08E /* FEBioStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FEBioStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5F7D6ED22FA37680089B08E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D5F7D6F722FA37C30089B08E /* EditPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditPanel.h; sourceTree = "<group>"; };
@@ -1262,8 +1267,6 @@
 				D5F7D7FB22FA37C40089B08E /* DlgTransform.h */,
 				D5828D09246465DB00FD7FF2 /* DlgUnitConverter.cpp */,
 				D5828D08246465DB00FD7FF2 /* DlgUnitConverter.h */,
-				D57656F523E32E6800E4F70F /* DlgUpload.cpp */,
-				D57656FD23E32E6900E4F70F /* DlgUpload.h */,
 				D5F7D7CE22FA37C40089B08E /* DlgVTKExport.cpp */,
 				D5F7D72322FA37C40089B08E /* DlgVTKExport.h */,
 				D516317F2300979E002B01C3 /* DlgWidgetProps.cpp */,
@@ -1413,7 +1416,6 @@
 				D5F7D74D22FA37C40089B08E /* moc_DlgSettings.cpp */,
 				D5F7D82122FA37C40089B08E /* moc_DlgSoluteTable.cpp */,
 				D5828D05246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp */,
-				D57656F323E32E6800E4F70F /* moc_DlgUpload.cpp */,
 				D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */,
 				D5F7D77A22FA37C40089B08E /* moc_EditPanel.cpp */,
 				D5946E1824B4F5A60009C22F /* moc_ExportProjectWidget.cpp */,
@@ -1463,9 +1465,11 @@
 				D5ED2A0623198CD800C16BF7 /* moc_StatePanel.cpp */,
 				D5F7D75922FA37C40089B08E /* moc_StatsWindow.cpp */,
 				D5F7D71722FA37C40089B08E /* moc_SummaryWindow.cpp */,
+				D509D41B24BF9A1D0064160E /* moc_TagLabel.cpp */,
 				D5F7D78522FA37C40089B08E /* moc_Tool.cpp */,
 				D5F7D79922FA37C40089B08E /* moc_ToolBox.cpp */,
 				D5F7D7EB22FA37C40089B08E /* moc_ToolsPanel.cpp */,
+				D509D41624BF9A1C0064160E /* moc_WzdUpload.cpp */,
 				D5248DD7231C114D00691871 /* modelcheck.cpp */,
 				D5248DD8231C114D00691871 /* modelcheck.h */,
 				D5992F192461E4310054F9DA /* ModelDocument.cpp */,
@@ -1547,6 +1551,8 @@
 				D5F7D71A22FA37C40089B08E /* stdafx.h */,
 				D5F7D75D22FA37C40089B08E /* SummaryWindow.cpp */,
 				D5F7D71E22FA37C40089B08E /* SummaryWindow.h */,
+				D509D41724BF9A1C0064160E /* TagLabel.cpp */,
+				D509D41924BF9A1D0064160E /* TagLabel.h */,
 				D5F7D79A22FA37C40089B08E /* targetver.h */,
 				D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */,
 				D5606C86238DAAD1002B037E /* TetOverlapTool.h */,
@@ -1578,6 +1584,8 @@
 				D5992F202461E4320054F9DA /* welcomPage.cpp */,
 				D5946E1224B4F5A50009C22F /* WrapLabel.cpp */,
 				D5946E1324B4F5A50009C22F /* WrapLabel.h */,
+				D509D41A24BF9A1D0064160E /* WzdUpload.cpp */,
+				D509D41824BF9A1C0064160E /* WzdUpload.h */,
 				D5CA211023EF7025001AE230 /* ZipFiles.cpp */,
 				D5ED2A0823198CD800C16BF7 /* ZipFiles.h */,
 			);
@@ -1766,6 +1774,7 @@
 				D5992F292461E4320054F9DA /* ModelFileReader.cpp in Sources */,
 				D5F7D87D22FA37C40089B08E /* moc_DlgEditOutput.cpp in Sources */,
 				D5F7D8BB22FA37C40089B08E /* CommandPanel.cpp in Sources */,
+				D509D41E24BF9A1D0064160E /* WzdUpload.cpp in Sources */,
 				D5F7D83822FA37C40089B08E /* CreateSpringPane.cpp in Sources */,
 				D5F7D8C822FA37C40089B08E /* PropertyListView.cpp in Sources */,
 				D5F7D84A22FA37C40089B08E /* FEBioJob.cpp in Sources */,
@@ -1837,6 +1846,7 @@
 				D579B678239F04E300278644 /* moc_DatabasePanel.cpp in Sources */,
 				D5CB0B242481A5D1004702B2 /* HelpDialog.cpp in Sources */,
 				D5F7D83422FA37C40089B08E /* moc_CurvePicker.cpp in Sources */,
+				D509D41D24BF9A1D0064160E /* TagLabel.cpp in Sources */,
 				D5CC3A6E245B4CD800311F48 /* menuFile.cpp in Sources */,
 				D5992F272461E4320054F9DA /* PostObject.cpp in Sources */,
 				D5F7D86822FA37C40089B08E /* moc_CColorButton.cpp in Sources */,
@@ -1876,7 +1886,6 @@
 				D5F7D89622FA37C40089B08E /* DlgRun.cpp in Sources */,
 				D5C13EDC24047890005897E1 /* PostModelPanel.cpp in Sources */,
 				D5F7D8A022FA37C40089B08E /* moc_CreatePanel.cpp in Sources */,
-				D576570023E32E6900E4F70F /* moc_DlgUpload.cpp in Sources */,
 				D5F7D8A722FA37C40089B08E /* moc_DlgEditProject.cpp in Sources */,
 				D5F7D87922FA37C40089B08E /* CurveEditor.cpp in Sources */,
 				D5F7D87122FA37C40089B08E /* moc_DlgAddMeshData.cpp in Sources */,
@@ -1962,6 +1971,7 @@
 				D5BA5337240D5470001A5C0F /* DlgSelectRange.cpp in Sources */,
 				D579B680239F04E300278644 /* PointDistanceTool.cpp in Sources */,
 				D5F7D82922FA37C40089B08E /* moc_DlgFEBioOptimize.cpp in Sources */,
+				D509D41C24BF9A1D0064160E /* moc_WzdUpload.cpp in Sources */,
 				D5F7D88B22FA37C40089B08E /* GLView.cpp in Sources */,
 				D5F7D82722FA37C40089B08E /* FileViewer.cpp in Sources */,
 				D5F7D8CE22FA37C40089B08E /* DlgSettings.cpp in Sources */,
@@ -1970,10 +1980,10 @@
 				D5F7D8AD22FA37C40089B08E /* Document.cpp in Sources */,
 				D5F7D8B122FA37C40089B08E /* moc_DlgCloneGrid.cpp in Sources */,
 				D5F7D8BE22FA37C40089B08E /* StatsWindow.cpp in Sources */,
-				D576570223E32E6900E4F70F /* DlgUpload.cpp in Sources */,
 				D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */,
 				D5992F2C2461E4320054F9DA /* ModelFileWriter.cpp in Sources */,
 				D5F7D85A22FA37C40089B08E /* moc_PostPanel.cpp in Sources */,
+				D509D41F24BF9A1D0064160E /* moc_TagLabel.cpp in Sources */,
 				D5CC3A6D245B4CD800311F48 /* DlgImportLines.cpp in Sources */,
 				D5992F282461E4320054F9DA /* FEBioStudioProject.cpp in Sources */,
 				D5F7D87C22FA37C40089B08E /* MainWindow.cpp in Sources */,
