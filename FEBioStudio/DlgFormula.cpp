@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QGridLayout>
 #include <QValidator>
 #include <QMessageBox>
+#include <QCheckBox>
 #include <MathLib/MathParser.h>
 
 CDlgFormula::CDlgFormula(QWidget* parent) : QDialog(parent)
@@ -63,6 +64,9 @@ CDlgFormula::CDlgFormula(QWidget* parent) : QDialog(parent)
 	m_samples = new QLineEdit; m_samples->setValidator(new QIntValidator(2, 10000));
 	m_samples->setText("11");
 	g->addWidget(m_samples, 2, 1);
+
+	m_insert = new QCheckBox("Insert into curve");
+	g->addWidget(m_insert, 3, 1);
 
 	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
@@ -98,6 +102,11 @@ double CDlgFormula::GetMax()
 int CDlgFormula::GetSamples()
 {
 	return m_samples->text().toInt();
+}
+
+bool CDlgFormula::Insert()
+{
+	return m_insert->isChecked();
 }
 
 void CDlgFormula::accept()

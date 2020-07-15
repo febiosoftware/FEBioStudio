@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <FSCore/LoadCurve.h>
 
 class QLineEdit;
+class QCheckBox;
 
 class CDlgFormula : public QDialog
 {
@@ -43,6 +44,7 @@ public:
 	double GetMin();
 	double GetMax();
 	int GetSamples();
+	bool Insert();
 
 	std::vector<LOADPOINT> GetPoints();
 
@@ -54,4 +56,5 @@ private:
 	QLineEdit*	m_min;
 	QLineEdit*	m_max;
 	QLineEdit*	m_samples;
+	QCheckBox*	m_insert;
 };

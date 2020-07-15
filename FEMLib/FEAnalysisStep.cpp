@@ -729,6 +729,7 @@ void FEStep::Load(IArchive &ar)
 					case FE_NODAL_VELOCITIES         : pi = new FENodalVelocities       (m_pfem); break;
 					case FE_NODAL_SHELL_VELOCITIES   : pi = new FENodalShellVelocities  (m_pfem); break;
                     case FE_INIT_FLUID_DILATATION    : pi = new FEInitFluidDilatation   (m_pfem); break;
+					case FE_INIT_PRESTRAIN           : pi = new FEInitPrestrain         (m_pfem); break;
 					default:
 						throw ReadError("error parsing CID_IC_SECTION FEStep::Load");
 					}
@@ -967,6 +968,7 @@ void STEP_SETTINGS::Defaults()
     gamma = 0.50;
 
 	// output optios
+	plot_level = 1; // Major iterations
 	plot_stride = 1;
 
 	// constants
@@ -1030,6 +1032,7 @@ void FEAnalysisStep::Save(OArchive &ar)
 		ar.WriteChunk(CID_STEP_CUTBACK   , o.ncut);
 //		ar.WriteChunk(CID_STEP_MINRES    , o.minres);
 		ar.WriteChunk(CID_STEP_PLOTSTRIDE, o.plot_stride);
+		ar.WriteChunk(CID_STEP_PLOTLEVEL , o.plot_level);
 	}
 	ar.EndChunk();
 
@@ -1107,7 +1110,7 @@ void FEAnalysisStep::Load(IArchive &ar)
 					case CID_STEP_CUTBACK   : ar.read(o.ncut     ); break;
 //					case CID_STEP_MINRES    : ar.read(o.minres   ); break;
 					case CID_STEP_PLOTSTRIDE: ar.read(o.plot_stride); break;
-
+					case CID_STEP_PLOTLEVEL : ar.read(o.plot_level); break;
 					}
 					ar.CloseChunk();
 

@@ -64,15 +64,18 @@ public:
 class FEPostModel  
 {
 public:
-	class PlotObject
+	class PlotObject : public FSObject
 	{
 	public:
-		PlotObject() { m_tag = 0; m_id = -1; }
+		PlotObject();
+
+		GLColor	Color();
+
+		void SetColor(const GLColor& c);
 
 	public:
 		int				m_id;
 		int				m_tag;
-		std::string		m_name;
 		vec3d			m_pos;
 		quatd			m_rot;
 
@@ -252,6 +255,9 @@ public:
 	MetaData& GetMetaData() { return m_meta; }
 
 public:
+	int PlotObjects() const;
+	PlotObject* GetPlotObject(int n);
+
 	int PointObjects() const;
 	void AddPointObject(PointObject* ob);
 	PointObject* GetPointObject(int i);

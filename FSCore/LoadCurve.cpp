@@ -109,6 +109,16 @@ int FELoadCurve::Add(const LOADPOINT& pt)
 	// find where to insert this point
 	while ((it != m_Pt.end()) && (it->time < pt.time)) { it++; n++; }
 
+	// if the new point coincides with the current point, just replace the value
+	if (it != m_Pt.end())
+	{
+		if (fabs(it->time - pt.time) < 1e-12)
+		{
+			it->load = pt.load;
+			return n;
+		}
+	}
+
 	// insert the point
 	m_Pt.insert(it, pt);
 

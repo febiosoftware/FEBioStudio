@@ -41,6 +41,22 @@ namespace Post {
 
 FEPostModel* FEPostModel::m_pThis = 0;
 
+FEPostModel::PlotObject::PlotObject() 
+{ 
+	AddColorParam(GLColor::White(), "Color");
+	m_tag = 0; m_id = -1; 
+}
+
+GLColor	FEPostModel::PlotObject::Color()
+{
+	return GetColorValue(0);
+}
+
+void FEPostModel::PlotObject::SetColor(const GLColor& c)
+{
+	SetColorValue(0, c);
+}
+
 //=============================================================================
 //								F E P O S T M O D E L
 //=============================================================================
@@ -1046,6 +1062,19 @@ void FEPostModel::UpdateMeshState(int ntime)
 		po.m_r1 = di.m_r1;
 		po.m_r2 = di.m_r2;
 	}
+}
+
+//-----------------------------------------------------------------------------
+int FEPostModel::PlotObjects() const
+{
+	return PointObjects() + LineObjects();
+}
+
+//-----------------------------------------------------------------------------
+FEPostModel::PlotObject* FEPostModel::GetPlotObject(int n)
+{
+	if (n < PointObjects()) return GetPointObject(n);
+	else return GetLineObject(n - PointObjects());
 }
 
 //-----------------------------------------------------------------------------

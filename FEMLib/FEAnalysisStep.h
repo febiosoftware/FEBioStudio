@@ -199,6 +199,7 @@ struct STEP_SETTINGS
     double  gamma;          // gamma parameter Hilber-Hughes-Taylor method
 
 	// output options
+	int	plot_level;		// plot level
 	int	plot_stride;	// plot stride parameter
 
 	// solute constants

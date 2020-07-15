@@ -3335,6 +3335,7 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
+				glColor3ub(0, 0, 255);
 				glx::renderRevoluteJoint(R);
 
 				glPopMatrix();
@@ -3357,6 +3358,7 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
+				glColor3ub(0, 255, 0);
 				glx::renderPrismaticJoint(R);
 
 				glPopMatrix();
@@ -3379,6 +3381,7 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
+				glColor3ub(255, 0, 255);
 				glx::renderCylindricalJoint(R);
 
 				glPopMatrix();
@@ -3401,6 +3404,7 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
+				glColor3ub(0, 255, 255);
 				glx::renderPlanarJoint(R);
 
 				glPopMatrix();
@@ -3423,6 +3427,8 @@ void CGLView::RenderRigidConnectors()
                 glTranslatef((float)r.x, (float)r.y, (float)r.z);
                 glMultMatrixf(Q4);
                 
+				glColor3ub(255, 127, 0);
+
 				glx::renderRigidLock(R);
                 
                 glPopMatrix();
@@ -3434,6 +3440,7 @@ void CGLView::RenderRigidConnectors()
 				vec3d xb = pj->GetVecValue(FERigidSpring::XB);
 
 				glPushMatrix();
+				glColor3ub(255, 0, 0);
 				glx::renderSpring(xa, xb, R);
 				glPopMatrix();
 			}
@@ -3445,6 +3452,7 @@ void CGLView::RenderRigidConnectors()
 
 				glPushMatrix();
 
+				glColor3ub(255, 0, 0);
 				glx::renderDamper(xa, xb, R);
 
 				glPopMatrix();
@@ -3457,6 +3465,7 @@ void CGLView::RenderRigidConnectors()
 
 				glPushMatrix();
 
+				glColor3ub(255, 0, 0);
 				glx::renderContractileForce(xa, xb, R);
 
 				glPopMatrix();

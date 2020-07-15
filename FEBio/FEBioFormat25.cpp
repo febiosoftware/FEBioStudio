@@ -2154,6 +2154,28 @@ bool FEBioFormat25::ParseInitialSection(XMLTag& tag)
 				m_pBCStep->AddComponent(pic);
 			}
 		}
+		else if (tag == "ic")
+		{
+			const char* sztype = tag.AttributeValue("type");
+
+			char szbuf[64] = { 0 };
+			const char* szname = tag.AttributeValue("name", true);
+
+			if (strcmp(sztype, "prestrain") == 0)
+			{
+				FEInitPrestrain* pip = new FEInitPrestrain(&fem);
+
+				if (szname == nullptr)
+				{
+					sprintf(szbuf, "InitPrestrain%d", CountConstraints<FEInitPrestrain>(fem) + 1);
+					szname = szbuf;
+				}
+				pip->SetName(szname);
+				m_pBCStep->AddComponent(pip);
+
+				ReadParameters(*pip, tag);
+			}
+		}
 		else ParseUnknownTag(tag);
 		++tag;
 	} while (!tag.isend());
@@ -2940,6 +2962,8 @@ bool FEBioFormat25::ParseConstraintSection(XMLTag& tag)
 			const char* sztype = tag.AttributeValue("type");
 			if      (strcmp(sztype, "volume"                 ) == 0) ParseVolumeConstraint(pstep, tag);
 			else if (strcmp(sztype, "symmetry plane"         ) == 0) ParseSymmetryPlane(pstep, tag);
+			else if (strcmp(sztype, "in-situ stretch"        ) == 0) ParseInSituStretchConstraint(pstep, tag);
+			else if (strcmp(sztype, "prestrain"              ) == 0) ParsePrestrainConstraint(pstep, tag);
             else if (strcmp(sztype, "normal fluid flow"      ) == 0) ParseNrmlFldVlctSrf(pstep, tag);
             else if (strcmp(sztype, "frictionless fluid wall") == 0) ParseFrictionlessFluidWall(pstep, tag);
 			else if (strcmp(sztype, "rigid spherical joint"  ) == 0) ParseConnector(pstep, tag, 0);
@@ -3096,6 +3120,60 @@ void FEBioFormat25::ParseFrictionlessFluidWall(FEStep* pstep, XMLTag& tag)
     ReadParameters(*pi, tag);
 }
 
+//-----------------------------------------------------------------------------
+void FEBioFormat25::ParseInSituStretchConstraint(FEStep* pstep, XMLTag& tag)
+{
+	FEBioModel& febio = GetFEBioModel();
+	FEModel& fem = GetFEModel();
+
+	// make sure there is something to read
+	if (tag.isempty()) return;
+
+	// get the name
+	char szbuf[256];
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname == 0)
+	{
+		sprintf(szbuf, "InSituStretch%02d", CountConstraints<FEInSituStretchConstraint>(fem) + 1);
+		szname = szbuf;
+	}
+
+	// create a new constraint
+	FEInSituStretchConstraint* pi = new FEInSituStretchConstraint(&fem);
+	pi->SetName(szname);
+	pstep->AddComponent(pi);
+
+	// read parameters
+	ReadParameters(*pi, tag);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat25::ParsePrestrainConstraint(FEStep* pstep, XMLTag& tag)
+{
+	FEBioModel& febio = GetFEBioModel();
+	FEModel& fem = GetFEModel();
+
+	// make sure there is something to read
+	if (tag.isempty()) return;
+
+	// get the name
+	char szbuf[256];
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname == 0)
+	{
+		sprintf(szbuf, "PrestrainConstraint%02d", CountConstraints<FEPrestrainConstraint>(fem) + 1);
+		szname = szbuf;
+	}
+
+	// create a new constraint
+	FEPrestrainConstraint* pi = new FEPrestrainConstraint(&fem);
+	pi->SetName(szname);
+	pstep->AddComponent(pi);
+
+	// read parameters
+	ReadParameters(*pi, tag);
+}
+
 //=============================================================================
 //
 //                                S T E P
@@ -3125,6 +3203,7 @@ bool FEBioFormat25::ParseStepSection(XMLTag &tag)
 	do
 	{
 		if      (tag == "Control"    ) ParseControlSection   (tag);
+		else if (tag == "Initial"    ) ParseInitialSection   (tag);
 		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
 		else if (tag == "Constraints") ParseConstraintSection(tag);
 		else if (tag == "Loads"      ) ParseLoadsSection     (tag);

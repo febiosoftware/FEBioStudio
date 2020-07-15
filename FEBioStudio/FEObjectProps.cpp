@@ -122,6 +122,7 @@ CAnalysisTimeSettings::CAnalysisTimeSettings(FEAnalysisStep* step) : CObjectProp
 	addProperty("Reform each timestep", CProperty::Bool);
 
 	addProperty("Output options", CProperty::Group);
+	addProperty("plot level", CProperty::Enum)->setEnumValues(QStringList() << "Never" << "Major iterations" << "Minor iterations" << "Must points" << "Final" << "Augmentations" << "Step final");
 	addProperty("plot stride", CProperty::Int);
 }
 
@@ -163,7 +164,8 @@ QVariant CAnalysisTimeSettings::GetPropertyValue(int i)
 			case 2: return set.bdivref; break;
 			case 3: return set.brefstep; break;
 			case 4: return 0; break;
-			case 5: return set.plot_stride; break;
+			case 5: return set.plot_level; break;
+			case 6: return set.plot_stride; break;
 			}
 		}
 	}
@@ -211,7 +213,8 @@ void CAnalysisTimeSettings::SetPropertyValue(int i, const QVariant& v)
 			case 2: set.bdivref = v.toBool(); break;
 			case 3: set.brefstep = v.toBool(); break;
 			case 4: break;
-			case 5: set.plot_stride = v.toInt(); break;
+			case 5: set.plot_level = v.toInt(); break;
+			case 6: set.plot_stride = v.toInt(); break;
 			}
 		}
 	}

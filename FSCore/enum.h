@@ -437,6 +437,7 @@ SOFTWARE.*/
 #define CID_STEP_DIVREF				0x0010001C
 #define CID_STEP_REFSTEP			0x0010001D
 #define CID_STEP_PLOTSTRIDE			0x0010001E
+#define CID_STEP_PLOTLEVEL			0x0010001F
 
 // --- loads ---
 #define CID_FC_SECTION				0x00110000
@@ -621,6 +622,7 @@ SOFTWARE.*/
 #define FE_FLUID_FLOW_RCR                   0x002F
 #define FE_MATCHING_OSM_COEF                0x0030
 #define FE_NON_CONST_BODY_FORCE				0x0031
+#define FE_INIT_PRESTRAIN					0x0032
 
 //--------------------------------------------------------
 // Interface types
@@ -666,3 +668,5 @@ SOFTWARE.*/
 #define FE_VOLUME_CONSTRAINT			0x000E	// added in 1.17
 #define FE_WARP_CONSTRAINT				0x002E
 #define FE_FRICTIONLESS_FLUID_WALL      0x002F  // added in 2.0
+#define FE_INSITUSTRETCH_CONSTRAINT		0x0030	// added in FS 1.0
+#define FE_PRESTRAIN_CONSTRAINT		    0x0031	// added in FS 1.0

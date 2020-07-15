@@ -829,24 +829,38 @@ void CCurveEditor::on_plot_pointDragged(QPoint p)
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
 	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+	if (sel.size() == 0) return;
 
-	if (sel.size() == 1)
+	QPointF pf = ui->plot->ScreenToView(p);
+	double dx = pf.x() - ui->m_dragPt.x();
+	double dy = pf.y() - ui->m_dragPt.y();
+
+	if ((ui->m_dragIndex >= 0) && (ui->isSnapToGrid()))
 	{
-		int n = sel[0].npointIndex;
-
-		QPointF pf = ui->plot->ScreenToView(p);
-		if (ui->isSnapToGrid()) pf = ui->plot->SnapToGrid(pf);
-
-		LOADPOINT& lp = plc->Item(n);
-		lp.time = pf.x();
-		lp.load = pf.y();
-
-		ui->plot->getPlotData(0).Point(n) = pf;
-
-		ui->setPointValues(pf.x(), pf.y());
-
-		ui->plot->repaint();
+		LOADPOINT& lp = plc->Item(ui->m_dragIndex);
+		QPointF p0 = ui->m_p0[ui->m_dragIndex];
+		QPointF pi(p0.x() + dx, p0.y() + dy);
+		pi = ui->plot->SnapToGrid(pi);
+		dx = pi.x() - p0.x();
+		dy = pi.y() - p0.y();
 	}
+
+	for (int i=0; i<sel.size(); ++i)
+	{
+		int n = sel[i].npointIndex;
+		LOADPOINT& lp = plc->Item(n);
+
+		QPointF p0 = ui->m_p0[i];
+		QPointF pi(p0.x() +dx, p0.y() + dy);
+
+		lp.time = pi.x();
+		lp.load = pi.y();
+
+		ui->plot->getPlotData(0).Point(n) = pi;
+
+		if (sel.size() == 1) ui->setPointValues(pi.x(), pi.y());
+	}
+	ui->plot->repaint();
 }
 
 void CCurveEditor::on_plot_draggingStart(QPoint p)
@@ -854,13 +868,27 @@ void CCurveEditor::on_plot_draggingStart(QPoint p)
 	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
 	FELoadCurve* plc = m_currentItem->GetLoadCurve();
 
-	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+	ui->m_dragPt = ui->plot->ScreenToView(p);
 
-	if (sel.size() == 1)
+	vector<CPlotWidget::Selection> sel = ui->plot->selection();
+	ui->m_dragIndex = -1;
+	ui->m_p0.clear();
+	if (sel.size() > 0)
 	{
-		LOADPOINT& lp = plc->Item(sel[0].npointIndex);
-		ui->m_p0.setX(lp.time);
-		ui->m_p0.setY(lp.load);
+		ui->m_p0.resize(sel.size());
+		for (int i = 0; i < sel.size(); ++i)
+		{
+			LOADPOINT& lp = plc->Item(sel[i].npointIndex);
+			ui->m_p0[i].setX(lp.time);
+			ui->m_p0[i].setY(lp.load);
+
+			QPointF pf(lp.time, lp.load);
+			QPoint pi = ui->plot->ViewToScreen(pf);
+
+			double dx = fabs(pi.x() - p.x());
+			double dy = fabs(pi.y() - p.y());
+			if ((dx <= 5) && (dy <= 5)) ui->m_dragIndex = i;
+		}
 	}
 }
 
@@ -876,8 +904,8 @@ void CCurveEditor::on_plot_draggingEnd(QPoint p)
 		int n = sel[0].npointIndex;
 
 		LOADPOINT lp0;
-		lp0.time = ui->m_p0.x();
-		lp0.load = ui->m_p0.y();
+		lp0.time = ui->m_p0[0].x();
+		lp0.load = ui->m_p0[0].y();
 
 		LOADPOINT lp = plc->Item(n);
 		plc->Item(n) = lp0;
@@ -1124,9 +1152,10 @@ void CCurveEditor::on_math_triggered()
 		std::string smath = math.toStdString();
 
 		CMathParser m;
-		plc->Clear();
+		bool insertMode = dlg.Insert();
+		if (insertMode == false) plc->Clear();
 		plc->SetName(smath.c_str());
-		if (pts.empty())
+		if (pts.empty() && (insertMode == false))
 		{
 			LOADPOINT p0(0, 0), p1(0, 0);
 			plc->Add(p0);

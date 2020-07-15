@@ -1408,9 +1408,15 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				assert(pic->GetStep() == i);
 				CPropertyList* pl = new FEObjectProps(pic, &fem);
 
+				CObjectValidator* val = nullptr;
+				if (dynamic_cast<FEInitialNodalDOF*>(pic))
+				{
+					val = new CBCValidator(pic);
+				}
+
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep == 0) flags |= DUPLICATE_ITEM;
-				t2 = AddTreeItem(t1, QString::fromStdString(pic->GetName()), MT_IC, 0, pic, pl, new CBCValidator(pic), flags);
+				t2 = AddTreeItem(t1, QString::fromStdString(pic->GetName()), MT_IC, 0, pic, pl, val, flags);
 			}
 		}
 	}
@@ -1513,7 +1519,9 @@ void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* ps
 				FEModelConstraint* pc = ps->Constraint(i);
 				if (pc)
 				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pc->GetName()), MT_CONSTRAINT, 0, pc, new CObjectProps(pc), new CBCValidator(pc), flags);
+					CObjectValidator* val = nullptr;
+					if (dynamic_cast<FESurfaceConstraint*>(pc)) val = new CBCValidator(pc);
+					t2 = AddTreeItem(t1, QString::fromStdString(pc->GetName()), MT_CONSTRAINT, 0, pc, new CObjectProps(pc), val, flags);
 					if (pc->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1541,12 +1549,16 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEModel& fem)
 		else t2 = AddTreeItem(t1, name, 0, 0, pstep);
 
 		// add the boundary conditions
-		t3 = AddTreeItem(t2, "BCs", MT_BC_LIST, pstep->BCs());
+		t3 = AddTreeItem(t2, "Boundary Conditions", MT_BC_LIST, pstep->BCs());
 		UpdateBC(t3, fem, pstep);
 
 		// add the loads
 		t3 = AddTreeItem(t2, "Loads", MT_LOAD_LIST, pstep->Loads());
 		UpdateLoads(t3, fem, pstep);
+
+		// add the initial conditions
+		t3 = AddTreeItem(t2, "Initial Conditions", MT_IC_LIST, pstep->ICs());
+		UpdateICs(t3, fem, pstep);
 
 		// add the interfaces
 		t3 = AddTreeItem(t2, "Contact", MT_CONTACT_LIST, pstep->Interfaces());

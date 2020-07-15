@@ -1924,7 +1924,8 @@ void CGLModel::RenderObjects(CGLContext& rc)
 
 		glx::translate(ob.m_rt);
 
-		glColor3ub(255, 255, 0);
+		GLColor c = ob.Color();
+		glColor3ub(c.r, c.g, c.b);
 		switch (ob.m_tag)
 		{
 		case 1: glx::renderRigidBody(R); break;
@@ -1949,14 +1950,14 @@ void CGLModel::RenderObjects(CGLContext& rc)
 		vec3d a = ob.m_r1;
 		vec3d b = ob.m_r2;
 
-		glColor3ub(255, 255, 0);
+		GLColor c = ob.Color();
+		glColor3ub(c.r, c.g, c.b);
 		switch (ob.m_tag)
 		{
 		case 1: glx::renderSpring(a, b, R); break;
 		case 2: glx::renderDamper(a, b, R); break;
 		case 3: glx::renderContractileForce(a, b, R); break;
 		default:
-			glColor3ub(200, 200, 200);
 			glx::drawLine(a, b);
 		}
 		glPopMatrix();

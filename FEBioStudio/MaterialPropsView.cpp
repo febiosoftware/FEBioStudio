@@ -210,6 +210,19 @@ public:
 					}
 					break;
 					case Param_VEC2I: return Vec2iToString(p.val<vec2i>()); break;
+					case Param_MAT3D:
+					{
+						QString v = Mat3dToString(p.val<mat3d>());
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
 					default:
 						return "in progress";
 					}
@@ -225,6 +238,7 @@ public:
 					case Param_VEC3D: return Vec3dToString(p.val<vec3d>()); break;
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
 					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
+					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
 					default:
 						return "in progress";
 					}
@@ -274,6 +288,7 @@ public:
 				break;
 				case Param_VEC3D: p.SetVec3dValue(StringToVec3d(value.toString())); break;
 				case Param_VEC2I: p.SetVec2iValue(StringToVec2i(value.toString())); break;
+				case Param_MAT3D: p.SetMat3dValue(StringToMat3d(value.toString())); break;
 				case Param_BOOL:
 				{
 					int n = value.toInt();

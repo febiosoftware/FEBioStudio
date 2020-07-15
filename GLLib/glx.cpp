@@ -830,7 +830,6 @@ void glx::renderJoint(double R)
 
 void glx::renderRevoluteJoint(double R)
 {
-	glColor3ub(0, 0, 255);
 	// line along rotation axis
 	glBegin(GL_LINES);
 	{
@@ -853,8 +852,6 @@ void glx::renderRevoluteJoint(double R)
 
 void glx::renderCylindricalJoint(double R)
 {
-	glColor3ub(255, 0, 255);
-
 	// line with arrow along rotation axis
 	glBegin(GL_LINES);
 	{
@@ -879,8 +876,6 @@ void glx::renderCylindricalJoint(double R)
 
 void glx::renderPlanarJoint(double R)
 {
-	glColor3ub(0, 255, 255);
-
 	glBegin(GL_LINES);
 	{
 		// line along rotation axis
@@ -919,7 +914,6 @@ void glx::renderPlanarJoint(double R)
 
 void glx::renderPrismaticJoint(double R)
 {
-	glColor3ub(0, 255, 0);
 	glBegin(GL_LINES);
 	{
 		// line with arrow along translation (x-)axis
@@ -945,8 +939,6 @@ void glx::renderPrismaticJoint(double R)
 
 void glx::renderRigidLock(double R)
 {
-	glColor3ub(255, 127, 0);
-
 	glBegin(GL_LINES);
 	{
 		// line along rotation axis
@@ -970,18 +962,15 @@ void glx::renderRigidLock(double R)
 
 void glx::renderSpring(const vec3d& a, const vec3d& b, double R)
 {
-	glColor3ub(255, 0, 0);
 	glx::drawHelix(a, b, R / 2, R / 2, 25);
 }
 
 void glx::renderDamper(const vec3d& a, const vec3d& b, double R)
 {
-	glColor3ub(255, 0, 0);
 	glx::drawLine(a, b);
 }
 
 void glx::renderContractileForce(const vec3d& a, const vec3d& b, double R)
 {
-	glColor3ub(255, 0, 0);
 	glx::drawLine(a, b);
 }
