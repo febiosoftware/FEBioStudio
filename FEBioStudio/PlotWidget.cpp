@@ -761,7 +761,6 @@ void CPlotWidget::mousePressEvent(QMouseEvent* ev)
 		const int eps = 3;
 
 		m_newSelect = false;
-		if (bshift == false) m_selection.clear();
 		for (int i = 0; i < (int)m_data.m_data.size(); ++i)
 		{
 			CPlotData& plot = *m_data.m_data[i];
@@ -771,9 +770,14 @@ void CPlotWidget::mousePressEvent(QMouseEvent* ev)
 				QPoint p = ViewToScreen(rj);
 				if ((abs(p.x() - pt.x()) <= eps) && (abs(p.y() - pt.y()) <= eps))
 				{
+					// see if this point is selected
+					if (isSelected(i, j) == false)
+					{
+						if (bshift == false) m_selection.clear();
+						addToSelection(i, j);
+						emit pointSelected(j);
+					}
 					m_newSelect = true;
-					addToSelection(i, j);
-					emit pointSelected(j);
 					break;
 				}
 			}
@@ -1523,14 +1527,27 @@ void CPlotWidget::selectPoint(int ndata, int npoint)
 	emit pointSelected(npoint);
 }
 
-void CPlotWidget::addToSelection(int ndata, int npoint)
+bool CPlotWidget::addToSelection(int ndata, int npoint)
 {
 	Selection s{ ndata, npoint };
 	for (int i = 0; i < m_selection.size(); ++i)
 	{
 		Selection& si = m_selection[i];
 		if ((s.ndataIndex == si.ndataIndex) && 
-			(s.npointIndex == si.npointIndex)) return;
+			(s.npointIndex == si.npointIndex)) return false;
 	}
 	m_selection.push_back(s);
+	return true;
+}
+
+// see if a point is selected
+bool CPlotWidget::isSelected(int ndata, int npoint)
+{
+	for (int i = 0; i < m_selection.size(); ++i)
+	{
+		Selection& si = m_selection[i];
+		if ((si.ndataIndex == ndata) &&
+			(si.npointIndex == npoint)) return true;
+	}
+	return false;
 }

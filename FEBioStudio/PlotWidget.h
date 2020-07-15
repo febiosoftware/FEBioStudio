@@ -200,7 +200,11 @@ protected:
 
 	void regionSelect(QRect rt);
 
-	void addToSelection(int ndata, int npoint);
+	// returns false if point is already selected
+	bool addToSelection(int ndata, int npoint);
+
+	// see if a point is selected
+	bool isSelected(int ndata, int npoint);
 
 public:
 	QPointF ScreenToView(const QPoint& p);
