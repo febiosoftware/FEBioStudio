@@ -881,5 +881,8 @@ CLocalDatabaseHandler::CLocalDatabaseHandler(CDatabasePanel* dbPanel) {}
 CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc){}
 bool CLocalDatabaseHandler::isValidUpload(QString& username, QString& projectName, QString& category) { return false;  }
-long long int CLocalDatabaseHandler::currentProjectsSize(QString username) { return 0; }
+qint64 CLocalDatabaseHandler::currentProjectsSize(QString username) { return 0; }
+QString CLocalDatabaseHandler::ProjectNameFromID(int ID) { return ""; }
+qint64 CLocalDatabaseHandler::projectsSize(int ID) { return 0; }
 #endif
+
