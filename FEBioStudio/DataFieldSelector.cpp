@@ -141,6 +141,54 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 	}
 }
 
+CPlotObjectDataSelector::CPlotObjectDataSelector(Post::FEPostModel::PlotObject* po)
+{
+	m_po = po;
+}
+
+void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
+{
+	std::vector<FEPlotObjectData*>& data = m_po->m_data;
+	for (int i = 0; i < (int)data.size(); ++i)
+	{
+		FEDataField& d = *data[i];
+		int dataClass = d.DataClass();
+		int dataComponents = d.components(DATA_SCALAR);
+		if (dataComponents > 0)
+		{
+			if ((dataComponents == 1) && (d.Type() != DATA_ARRAY))
+			{
+				int nfield = BUILD_FIELD(dataClass, i, 0);
+
+				QAction* pa = menu->addAction(QString::fromStdString(d.GetName()));
+				pa->setData(QVariant(nfield));
+			}
+			else
+			{
+				QMenu* sub = new QMenu(QString::fromStdString(d.GetName()), menu);
+				menu->addMenu(sub);
+
+				for (int n = 0; n < dataComponents; ++n)
+				{
+					int nfield = BUILD_FIELD(dataClass, i, n);
+					std::string s = d.componentName(n, DATA_SCALAR);
+
+					QAction* pa = sub->addAction(QString::fromStdString(s));
+					pa->setData(QVariant(nfield));
+
+					if (d.Type() == DATA_ARRAY_VEC3F)
+					{
+						if ((n > 0) && ((n + 1) % 4 == 0))
+						{
+							sub->addSeparator();
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 CDataSelectorButton::CDataSelectorButton(QWidget* parent) : QPushButton(parent)
 {
 	m_src = nullptr;

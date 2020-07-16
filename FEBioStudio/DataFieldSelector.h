@@ -137,3 +137,14 @@ class CColorMapSelector : public QComboBox
 public:
 	CColorMapSelector(QWidget* parent = nullptr);
 };
+
+class CPlotObjectDataSelector : public CDataSelector
+{
+public:
+	CPlotObjectDataSelector(Post::FEPostModel::PlotObject* po);
+
+	void BuildMenu(QMenu* menu) override;
+
+private:
+	Post::FEPostModel::PlotObject*	m_po;
+};

@@ -242,6 +242,7 @@ public:
 	{
 		SHOW_TYPE_OPTIONS = 0x01,
 		SHOW_TIME_RANGE = 0x02,
+		SHOW_DATA_SOURCE = 0x04,
 		SHOW_ALL_OPTIONS = 0xFF
 	};
 
@@ -326,11 +327,18 @@ public:
 	// get the current plot type
 	int GetCurrentPlotType();
 
+	// set source options
+	void SetDataSource(const QStringList& names);
+
 public:
 	void ShowAddToModelButton(bool b);
 
 protected:
 	void AddToolBarWidget(QWidget* w);
+
+	virtual void setDataSource(int n) {}
+
+	int currentDataSource();
 
 private:
 	// from CDocObserver
@@ -352,6 +360,7 @@ private slots:
 	void on_actionZoomSelect_toggled(bool bchecked);
 	void on_plot_doneZoomToRect();
 	void on_range_optionsChanged();
+	void on_dataSource_currentIndexChanged(int);
 
 private:
 	CMainWindow*		m_wnd;
@@ -400,8 +409,11 @@ private:
 	void addSelectedEdges();
 	void addSelectedFaces();
 	void addSelectedElems();
+	void addObjectData(int n);
 
 	CPlotData* nextData();
+
+	void setDataSource(int n) override;
 
 private: // temporary variables used during update
 	int	m_xtype, m_xtypeprev;			// x-plot field option (0=time, 1=steps, 2=data field)

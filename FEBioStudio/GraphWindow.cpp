@@ -57,6 +57,8 @@ SOFTWARE.*/
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include "PostDocument.h"
+#include <PostLib/constants.h>
+#include <PostLib/evaluate.h>
 
 class TimeRangeOptionsUI
 {
@@ -792,6 +794,7 @@ public:
 	QToolBar*				toolBar;		// top tool bar
 	QToolBar*				zoomBar;		// bottom tool bar
 	QComboBox*				selectPlot;		// choose the plot type
+	QComboBox*				dataSource;		// source of data
 	CDataSelectorButton*	selectX;		// select the X data field
 	CDataSelectorButton*	selectY;		// select the Y data field
 	QToolBox*				tools;			// the tools panel
@@ -814,6 +817,7 @@ public:
 
 	QAction* actionType;
 	QAction* actionPlot;
+	QAction* actionSource;
 
 public:
 	void setupUi(::CGraphWindow* parent, int flags)
@@ -859,6 +863,11 @@ public:
 		selectPlot->addItem("Scatter");
 		selectPlot->addItem("Time-Scatter");
 
+		// data source
+		dataSource = new QComboBox;
+		dataSource->setObjectName("dataSource");
+		dataSource->addItem("selection");
+
 		// create X data selection box
 		selectX = new CDataFieldSelector;
 		selectX->setObjectName("selectX");
@@ -889,6 +898,8 @@ public:
 		actionSnapshot = toolBar->addAction(QIcon(QString(":/icons/bgimage.png")), "Save picture"); actionSnapshot->setObjectName("actionSnapshot");
 		actionAddToModel = toolBar->addAction(QIcon(":/icons/addtomodel.png"), "Add to model tree"); actionAddToModel->setObjectName("actionAddToModel");
 
+		toolBar->addWidget(new QLabel("Source:"));
+		actionSource = toolBar->addWidget(dataSource);
 		actionType = toolBar->addWidget(new QLabel("Type: "));
 		actionPlot = toolBar->addWidget(selectPlot);
 		actionSelectX = toolBar->addWidget(x);
@@ -941,6 +952,11 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 	{
 		ui->actionType->setVisible(false);
 		ui->actionPlot->setVisible(false);
+	}
+
+	if ((flags & SHOW_DATA_SOURCE) == 0)
+	{
+		ui->actionSource->setVisible(false);
 	}
 
 	// hide the selectors by default
@@ -1171,6 +1187,16 @@ int CGraphWindow::GetCurrentPlotType()
 }
 
 //-----------------------------------------------------------------------------
+// set source options
+void CGraphWindow::SetDataSource(const QStringList& names)
+{
+	ui->dataSource->blockSignals(true);
+	ui->dataSource->clear();
+	ui->dataSource->addItems(names);
+	ui->dataSource->blockSignals(false);
+}
+
+//-----------------------------------------------------------------------------
 void CGraphWindow::AddToolBarWidget(QWidget* w)
 {
 	ui->toolBar->addWidget(w);
@@ -1336,6 +1362,17 @@ void CGraphWindow::on_range_optionsChanged()
 	Update(false);
 }
 
+void CGraphWindow::on_dataSource_currentIndexChanged(int n)
+{
+	setDataSource(n);
+}
+
+//-----------------------------------------------------------------------------
+int CGraphWindow::currentDataSource()
+{
+	return ui->dataSource->currentIndex();
+}
+
 //=============================================================================
 CDataGraphWindow::CDataGraphWindow(CMainWindow* wnd, CPostDocument* doc) : CGraphWindow(wnd, doc, 0)
 {
@@ -1397,13 +1434,24 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 
 	if (breset)
 	{
+		Post::FEPostModel* fem = doc->GetFEModel();
+
+		// update the data sources
+		QStringList sourceNames;
+		sourceNames << "selection";
+		for (int i = 0; i < fem->PlotObjects(); ++i)
+		{
+			sourceNames << QString::fromStdString(fem->GetPlotObject(i)->GetName());
+		}
+		SetDataSource(sourceNames);
+
 		int plot = GetCurrentPlotType();
 		if (plot == LINE_PLOT)
 			SetXDataSelector(new CTimeStepSelector(), 0);
 		else
-			SetXDataSelector(new CModelDataSelector(doc->GetFEModel(), Post::DATA_SCALAR));
+			SetXDataSelector(new CModelDataSelector(fem, Post::DATA_SCALAR));
 
-		SetYDataSelector(new CModelDataSelector(doc->GetFEModel(), Post::DATA_SCALAR));
+		SetYDataSelector(new CModelDataSelector(fem, Post::DATA_SCALAR));
 
 		m_dataXPrev = -1;
 		m_dataYPrev = -1;
@@ -1495,11 +1543,23 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	ClearPlotsData();
 	m_pltCounter = 0;
 
-	// add selections
-	addSelectedNodes();
-	addSelectedEdges();
-	addSelectedFaces();
-	addSelectedElems();
+	int currentSource = currentDataSource();
+	if (currentSource == 0)
+	{
+		// add selections
+		addSelectedNodes();
+		addSelectedEdges();
+		addSelectedFaces();
+		addSelectedElems();
+	}
+	else
+	{
+		int n = currentSource - 1;
+		if ((n >= 0) && (n < fem.PlotObjects()))
+		{
+			addObjectData(n);
+		}
+	}
 
 	ResizePlots(m_pltCounter);
 
@@ -1517,6 +1577,27 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 }
 
 //-----------------------------------------------------------------------------
+void CModelGraphWindow::setDataSource(int n)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFEModel();
+
+	if (n == 0)
+	{
+		Update(true, true);
+	}
+	else
+	{
+		n--;
+		if ((n >= 0) && (n < fem.PlotObjects()))
+		{
+			SetYDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
+			Update(false, true);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 CPlotData* CModelGraphWindow::nextData()
 {
 	if (m_pltCounter >= Plots())
@@ -1530,6 +1611,63 @@ CPlotData* CModelGraphWindow::nextData()
 	{
 		return dynamic_cast<CPlotData*>(GetPlotData(m_pltCounter++));
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CModelGraphWindow::addObjectData(int n)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFEModel();
+	if ((n < 0) || (n >= fem.PlotObjects())) return;
+
+	int nsteps = m_lastState - m_firstState + 1;
+	vector<float> xdata(nsteps);
+	vector<float> ydata(nsteps);
+
+	Post::FEPostModel::PlotObject* po = fem.GetPlotObject(n);
+
+	for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+
+	for (int j = 0; j < nsteps; ++j)
+	{
+		Post::FEState* state = fem.GetState(j + m_firstState);
+		Post::OBJ_POINT_DATA& pointData = state->m_objPt[n];
+
+		Post::ObjectData* data = pointData.data;
+
+		// get the data ID
+		int ndata = FIELD_CODE(m_dataY);
+
+		// get the component
+		int ncomp = FIELD_COMP(m_dataY);
+
+		Post::FEDataField* dataField = po->m_data[ndata];
+
+		float val = 0.f;
+
+		switch (dataField->Type())
+		{
+		case Post::DATA_FLOAT:
+		{
+			val = data->get<float>(ndata);
+		}
+		break;
+		case Post::DATA_VEC3F:
+		{
+			vec3f v = data->get<vec3f>(ndata);
+			val = component(v, ncomp);
+		}
+		break;
+		default:
+			assert(false);
+		}
+
+		ydata[j] = val;
+	}
+
+	CPlotData* plot = nextData();
+	plot->setLabel(QString::fromStdString((po->GetName())));
+	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 }
 
 //-----------------------------------------------------------------------------
