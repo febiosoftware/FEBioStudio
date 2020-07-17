@@ -100,10 +100,20 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 
 	// decide if we want to find the node/face/elem stat
 	int neval = -1;
-	if ((bsel && (nmode == Post::SELECT_NODES)) || IS_NODE_FIELD(m_ncurrentData)) neval = 0;
-	if ((bsel && (nmode == Post::SELECT_EDGES)) || IS_EDGE_FIELD(m_ncurrentData)) neval = 1;
-	if ((bsel && (nmode == Post::SELECT_FACES)) || IS_FACE_FIELD(m_ncurrentData)) neval = 2;
-	if ((bsel && (nmode == Post::SELECT_ELEMS)) || IS_ELEM_FIELD(m_ncurrentData)) neval = 3;
+	if (bsel)
+	{
+		if (nmode == Post::SELECT_NODES) neval = 0;
+		if (nmode == Post::SELECT_EDGES) neval = 1;
+		if (nmode == Post::SELECT_FACES) neval = 2;
+		if (nmode == Post::SELECT_ELEMS) neval = 3;
+	}
+	else
+	{
+		if (IS_NODE_FIELD(m_ncurrentData)) neval = 0;
+		if (IS_EDGE_FIELD(m_ncurrentData)) neval = 1;
+		if (IS_FACE_FIELD(m_ncurrentData)) neval = 2;
+		if (IS_ELEM_FIELD(m_ncurrentData)) neval = 3;
+	}
 	assert(neval >= 0);
 
 	// clear the graph
