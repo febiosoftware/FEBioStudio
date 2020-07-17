@@ -56,8 +56,8 @@ void CMainWindow::on_actionAbout_triggered()
 	QString txt = QString(\
 		"<h1>FEBio Studio</h1>\
 		<p><b>Version %1.%2.%3</b></p>\
-		<p>Musculoskeletal Research Laboratories, University of Utah</p>\
-		<p>Musculoskeletal Biomechanics Laboratory, Columbia University</p>\
+		<p>Weiss Lab, University of Utah</p>\
+		<p>Ateshian Lab, Columbia University</p>\
 		<p>Copyright (c) 2019 - 2020, All rights reserved</p>\
 		<hr>\
 		<p>When using FEBio or FEBioStudio in your publications, please cite:</p>\

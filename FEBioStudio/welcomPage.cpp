@@ -125,7 +125,7 @@ void CWelcomePage::Refresh()
 #ifdef WIN32
 		page.replace("_FGCOLOR_", "#0000ff");
 #else
-        page.replace("_FGCOLOR_", "gold");
+        page.replace("_FGCOLOR_", "Dodgerblue");
 #endif
 	}
 
