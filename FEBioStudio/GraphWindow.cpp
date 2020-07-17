@@ -1865,31 +1865,111 @@ void CModelGraphWindow::addSelectedFaces()
 
 	// get the selected faces
 	int NF = mesh.Faces();
-	for (int i = 0; i<NF; ++i)
+	switch (m_xtype)
 	{
-		FEFace& f = mesh.Face(i);
-		if (f.IsSelected())
+	case 0:
+		for (int i = 0; i < NF; ++i)
 		{
-			// evaluate x-field
-			switch (m_xtype)
+			FEFace& f = mesh.Face(i);
+			if (f.IsSelected())
 			{
-			case 0:
-				for (int j = 0; j<nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
-				break;
-			case 1:
-				for (int j = 0; j<nsteps; j++) xdata[j] = (float)j + 1.f + m_firstState;
-				break;
-			default:
+				// evaluate x-field
+				for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+
+				// evaluate y-field
+				TrackFaceHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
+
+				CPlotData* plot = nextData();
+				plot->setLabel(QString("F%1").arg(i + 1));
+				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+			}
+		}
+		break;
+	case 1:
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& f = mesh.Face(i);
+			if (f.IsSelected())
+			{
+				for (int j = 0; j < nsteps; j++) xdata[j] = (float)j + 1.f + m_firstState;
+
+				// evaluate y-field
+				TrackFaceHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
+
+				CPlotData* plot = nextData();
+				plot->setLabel(QString("F%1").arg(i + 1));
+				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+			}
+		}
+		break;
+	case 2:
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& f = mesh.Face(i);
+			if (f.IsSelected())
+			{
+				// evaluate x-field
 				TrackFaceHistory(i, &xdata[0], m_dataX, m_firstState, m_lastState);
+
+				// evaluate y-field
+				TrackFaceHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
+
+				CPlotData* plot = nextData();
+				plot->setLabel(QString("F%1").arg(i + 1));
+				for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+			}
+		}
+		break;
+	case 3:	// time-scatter
+	{
+		vector<int> sel;
+		for (int i = 0; i < NF; i++)
+		{
+			FEFace& face = mesh.Face(i);
+			if (face.IsSelected()) sel.push_back(i);
+		}
+
+		if (sel.empty() == false)
+		{
+			int nsteps = m_lastState - m_firstState + 1;
+			if (nsteps > 32) nsteps = 32;
+			for (int i = m_firstState; i < m_firstState + nsteps; ++i)
+			{
+				CPlotData* plot = nextData();
+				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
 			}
 
-			// evaluate y-field
-			TrackFaceHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
+			for (int i = 0; i < (int)sel.size(); i++)
+			{
+				FEFace& face = mesh.Face(sel[i]);
 
-			CPlotData* plot = nextData();
-			plot->setLabel(QString("F%1").arg(i + 1));
-			for (int j = 0; j<nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+				// evaluate x-field
+				TrackFaceHistory(sel[i], &xdata[0], m_dataX, m_firstState, m_lastState);
+
+				// evaluate y-field
+				TrackFaceHistory(sel[i], &ydata[0], m_dataY, m_firstState, m_lastState);
+
+				for (int j = 0; j < nsteps; ++j)
+				{
+					CPlotData& p = GetPlotWidget()->getPlotData(j);
+					p.addPoint(xdata[j], ydata[j]);
+				}
+			}
+
+			// sort the plots 
+			CPlotWidget* w = GetPlotWidget();
+			int nplots = w->plots();
+			for (int i = 0; i < nplots; ++i)
+			{
+				CPlotData& data = GetPlotWidget()->getPlotData(i);
+				data.sort();
+			}
+
+			if (w->autoRangeUpdate())
+				w->fitToData(false);
 		}
+	}
+	break;
 	}
 }
 
@@ -1987,10 +2067,10 @@ void CModelGraphWindow::addSelectedElems()
 				if (e.IsSelected())
 				{
 					// evaluate x-field
-					TrackElementHistory(i, &xdata[0], m_dataX, m_firstState, m_lastState);
+					TrackElementHistory(sel[i], &xdata[0], m_dataX, m_firstState, m_lastState);
 
 					// evaluate y-field
-					TrackElementHistory(i, &ydata[0], m_dataY, m_firstState, m_lastState);
+					TrackElementHistory(sel[i], &ydata[0], m_dataY, m_firstState, m_lastState);
 
 					for (int j = 0; j < nsteps; ++j)
 					{
