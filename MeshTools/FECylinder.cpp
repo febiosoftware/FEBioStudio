@@ -641,7 +641,7 @@ FEMesh* FECylinder::BuildWedged()
 		}
 	}
 
-	pm->UpdateMesh();
+	pm->BuildMesh();
 
 	return pm;
 }
