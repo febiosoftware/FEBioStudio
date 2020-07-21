@@ -1180,7 +1180,28 @@ FEMesh* FETetGenMesher::CreateMesh(FESurfaceMesh* surfMesh)
 	sprintf(ch, "Y"); ++ch;
 
 	// create a tet mesh
-	tetrahedralize(sz, &in, &out);
+	try {
+		tetrahedralize(sz, &in, &out);
+	}
+	catch (int n)
+	{
+		switch (n) {
+		case 1: SetErrorMessage("Out of memory."); break;
+		case 2: SetErrorMessage("Internal error."); break;
+		case 3: SetErrorMessage("A self-intersection was detected. Meshing stopped."); break;
+		case 4: SetErrorMessage("A very small input feature size was detected. Meshing stopped."); break;
+		case 5: SetErrorMessage("Two very close input facets were detected. Meshing stopped."); break;
+		case 10: SetErrorMessage("An input error was detected. Meshing stopped.\n"); break;
+		default:
+			SetErrorMessage("Unknown error."); break;
+		}
+		return nullptr;
+	}
+	catch (...)
+	{
+		SetErrorMessage("Unknown exception.");
+		return nullptr;
+	}
 
 	// create a new mesh
 	FEMesh* pmesh = new FEMesh;

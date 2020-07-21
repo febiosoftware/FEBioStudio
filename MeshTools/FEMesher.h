@@ -69,6 +69,13 @@ public:
 	virtual MeshingProgress Progress();
 	virtual void Terminate();
 
+	// set the error message
+	void SetErrorMessage(const std::string& err);
+	std::string GetErrorMessage() const;
+
 public:
 	static FEMesher* Create(GObject* po, int classType);
+
+protected:
+	std::string		m_error;
 };

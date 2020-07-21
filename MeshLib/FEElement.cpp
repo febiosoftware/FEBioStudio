@@ -247,6 +247,14 @@ int FEElement_::GetLocalFaceIndices(int i, int* n) const
 		}
 		nodes = 10;
 		break;
+	case FE_TRI3:
+		nodes = 3;
+		n[0] = 0; n[1] = 1; n[2] = 2;
+		break;
+	case FE_QUAD4:
+		nodes = 4;
+		n[0] = 0; n[1] = 1; n[2] = 2; n[3] = 3;
+		break;
 	}
 
 	assert(nodes > 0);

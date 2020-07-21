@@ -95,3 +95,13 @@ FEMesher* FEMesher::Create(GObject* po, int classType)
 
 	return mesher;
 }
+
+void FEMesher::SetErrorMessage(const std::string& err)
+{
+	m_error = err;
+}
+
+std::string FEMesher::GetErrorMessage() const
+{
+	return m_error;
+}

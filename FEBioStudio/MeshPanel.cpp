@@ -119,6 +119,7 @@ MeshingThread::MeshingThread(GObject* po)
 void MeshingThread::run()
 {
 	m_mesher = m_po->GetFEMesher();
+	if (m_mesher) m_mesher->SetErrorMessage("");
 	m_po->BuildMesh();
 	emit resultReady();
 }
@@ -388,6 +389,15 @@ void CMeshPanel::on_apply_clicked(bool b)
 	CDlgStartThread dlg(this, thread);
 	if (dlg.exec())
 	{
+		// see if the meshing was successful
+		FEMesh* mesh = activeObject->GetFEMesh();
+		if (mesh == nullptr)
+		{
+			QString errMsg = QString::fromStdString(mesher->GetErrorMessage());
+			QString error = QString("Meshing Failed:\n") + errMsg;
+			QMessageBox::critical(this, "Meshing", error);
+		}
+
 		Update();
 		CMainWindow* w = GetMainWindow();
 		w->UpdateGLControlBar();

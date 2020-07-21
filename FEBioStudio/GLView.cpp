@@ -7580,6 +7580,7 @@ void CGLView::RenderFEElements(GObject* po)
 		for (i = 0; i < NE; ++i)
 		{
 			FEElement_& el = *psel->Element(i);
+			int ne = el.Nodes();
 			if (el.IsVisible())
 			{
 				switch (el.Type())
@@ -7606,6 +7607,20 @@ void CGLView::RenderFEElements(GObject* po)
 					{
 						int n0 = el.m_node[ET_TET[j][0]];
 						int n1 = el.m_node[ET_TET[j][1]];
+
+						vec3d r0 = pm->Node(n0).pos();
+						vec3d r1 = pm->Node(n1).pos();
+
+						glx::vertex3d(r0);
+						glx::vertex3d(r1);
+					}
+					break;
+				case FE_TRI3:
+				case FE_QUAD4:
+					for (int i = 0; i < ne; ++i)
+					{
+						int n0 = el.m_node[i];
+						int n1 = el.m_node[(i + 1) % ne];
 
 						vec3d r0 = pm->Node(n0).pos();
 						vec3d r1 = pm->Node(n1).pos();
