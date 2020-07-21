@@ -568,7 +568,7 @@ void CLocalDatabaseHandler::GetProjectFiles(int ID)
 
 void CLocalDatabaseHandler::GetProjectData(int ID)
 {
-	std::string query("SELECT name, description, username, version FROM projects JOIN users on users.id = projects.owner WHERE projects.id = ");
+	std::string query("SELECT name, description, username FROM projects JOIN users on users.id = projects.owner WHERE projects.id = ");
 	query += std::to_string(ID);
 
 	imp->execute(query, setProjectDataCallback, imp->dbPanel);

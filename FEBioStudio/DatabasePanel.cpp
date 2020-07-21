@@ -327,7 +327,6 @@ public:
 	QLabel* projectName;
 	WrapLabel* projectDesc;
 	QLabel* projectOwner;
-	QLabel* projectVersion;
 	TagLabel* projectTags;
 
 	QFormLayout* fileInfoForm;
@@ -498,7 +497,6 @@ public:
 		projectInfoForm = new QFormLayout;
 		projectInfoForm->setHorizontalSpacing(10);
 		projectInfoForm->addRow("Owner:", projectOwner = new QLabel);
-		projectInfoForm->addRow("Version:", projectVersion = new QLabel);
 
 		modelInfoLayout->addLayout(projectInfoForm);
 
@@ -988,12 +986,8 @@ void CDatabasePanel::on_actionUpload_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
-//		if(!m_wnd->GetDocument()) return;
-
-		CWzdUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler); //, m_wnd->GetProject());
-//		dlg.setName(m_wnd->GetDocument()->GetDocFileBase().c_str());
+		CWzdUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler);
 		dlg.setOwner(repoHandler->getUsername());
-		dlg.setVersion("1");
 
 		QStringList categories = GetCategories();
 		dlg.setCategories(categories);
@@ -1009,7 +1003,6 @@ void CDatabasePanel::on_actionUpload_triggered()
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
-			projectInfo.insert("version", dlg.getVersion());
 			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
 
 			cout << dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()) << endl;
@@ -1150,7 +1143,6 @@ void CDatabasePanel::on_actionModify_triggered()
 		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID); //, m_wnd->GetProject());
 		dlg.setName(ui->projectName->text());
 		dlg.setOwner(repoHandler->getUsername());
-		dlg.setVersion(QString("%1").arg(stoi(ui->projectVersion->text().toStdString()) + 1));
 
 		QStringList categories = GetCategories();
 		dlg.setCategories(categories);
@@ -1172,7 +1164,6 @@ void CDatabasePanel::on_actionModify_triggered()
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
-			projectInfo.insert("version", dlg.getVersion());
 			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
 
 			cout << dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()) << endl;
@@ -1507,7 +1498,6 @@ void CDatabasePanel::SetProjectData(char **data)
 {
 	ui->projectName->setText(data[0]);
 	ui->projectOwner->setText(data[2]);
-	ui->projectVersion->setText(data[3]);
 
 	// Fix new lines
 	QString desc(data[1]);

@@ -53,7 +53,6 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "FocusWatcher.h"
 #include "PublicationWidgetView.h"
-//#include "ExportProjectWidget.h"
 #include "LocalDatabaseHandler.h"
 #include "RepoConnectionHandler.h"
 
@@ -110,7 +109,6 @@ public:
 	QLineEdit* name;
 	QPlainTextEdit* description;
 	QLabel* owner;
-	QLabel* version;
 	QLabel* categoryLabel;
 	QComboBox* categoryBox;
 
@@ -167,7 +165,6 @@ public:
 		}
 
 		leftLayout->addRow("Owner: ", owner = new QLabel);
-		leftLayout->addRow("Version: ", version = new QLabel);
 
 		infoLayout->addLayout(leftLayout);
 
@@ -587,11 +584,6 @@ void CWzdUpload::setOwner(QString owner)
 	ui->owner->setText(owner);
 }
 
-void CWzdUpload::setVersion(QString version)
-{
-	ui->version->setText(version);
-}
-
 void CWzdUpload::setTags(QStringList& tags)
 {
 	for(auto tag : tags)
@@ -664,12 +656,6 @@ QString CWzdUpload::getOwner()
 {
 	return ui->owner->text();
 }
-
-QString CWzdUpload::getVersion()
-{
-	return ui->version->text();
-}
-
 
 QStringList CWzdUpload::getTags()
 {

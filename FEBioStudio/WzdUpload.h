@@ -96,7 +96,6 @@ public:
 	void setDescription(QString desc);
 	void setCategories(QStringList& categories);
 	void setOwner(QString owner);
-	void setVersion(QString version);
 	void setTags(QStringList& tags);
 	void setPublications(const std::vector<CPublicationWidget*>& pub);
 
@@ -108,7 +107,6 @@ public:
 	QString getDescription();
 	QString getCategory();
 	QString getOwner();
-	QString getVersion();
 	QStringList getTags();
 	QList<QVariant> getPublicationInfo();
 
