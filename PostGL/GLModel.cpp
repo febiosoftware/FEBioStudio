@@ -1930,9 +1930,11 @@ void CGLModel::RenderObjects(CGLContext& rc)
 		{
 		case 1: glx::renderRigidBody(R); break;
 		case 2: glx::renderJoint(R); break;
-		case 3: glx::renderPrismaticJoint(R); break;
-		case 4: glx::renderRevoluteJoint(R); break;
-		case 5: glx::renderCylindricalJoint(R); break;
+		case 3: glx::renderJoint(R); break;
+		case 4: glx::renderPrismaticJoint(R); break;
+		case 5: glx::renderRevoluteJoint(R); break;
+		case 6: glx::renderCylindricalJoint(R); break;
+		case 7: glx::renderPlanarJoint(R); break;
 		default:
 			glx::renderAxis(R);
 		}
