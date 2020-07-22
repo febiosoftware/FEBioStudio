@@ -1631,7 +1631,7 @@ void CModelGraphWindow::addObjectData(int n)
 	for (int j = 0; j < nsteps; ++j)
 	{
 		Post::FEState* state = fem.GetState(j + m_firstState);
-		Post::OBJ_POINT_DATA& pointData = state->m_objPt[n];
+		Post::OBJECT_DATA& pointData = state->GetObjectData(n);
 
 		Post::ObjectData* data = pointData.data;
 
