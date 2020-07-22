@@ -172,6 +172,8 @@ public:
 
 	FEPostModel* GetFEModel() { return m_fem; }
 
+	OBJECT_DATA& GetObjectData(int n);
+
 public:
 	float	m_time;		// time value
 	int		m_nField;	// the field whos values are contained in m_pval

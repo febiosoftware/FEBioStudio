@@ -1447,7 +1447,7 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 				else if (chunkId == PLT_LINE_OBJECT)
 				{
 					int objId = -1;
-
+					FEPostModel::PlotObject* po = nullptr;
 					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
 						int nid = m_ar.GetChunkID();
@@ -1456,6 +1456,7 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 						{
 							m_ar.read(objId);
 							objId -= 1;
+							po = fem.GetLineObject(objId);
 						}
 						else if (nid == PLT_OBJECT_POS)
 						{
@@ -1479,7 +1480,25 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 							ps->m_objLn[objId].m_r1 = vec3d(r[0], r[1], r[2]);
 							ps->m_objLn[objId].m_r2 = vec3d(r[3], r[4], r[5]);
 						}
+						else if (nid == PLT_OBJECT_DATA)
+						{
+							while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+							{
+								int nv = m_ar.GetChunkID();
 
+								assert((nv >= 0) && (nv < po->m_data.size()));
+
+								ObjectData* pd = m_pstate->m_objLn[objId].data;
+
+								switch (po->m_data[nv]->Type())
+								{
+								case DATA_FLOAT: { float v; m_ar.read(v); pd->set(nv, v); } break;
+								case DATA_VEC3F: { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+								}
+
+								m_ar.CloseChunk();
+							}
+						}
 						m_ar.CloseChunk();
 					}
 				}
