@@ -45,6 +45,7 @@ class CGLVectorPlot : public CGLLegendPlot
 		NORMALIZE, 
 		AUTO_SCALE, 
 		SCALE,
+		ASPECT_RATIO,
 		RANGE_TYPE,
 		USER_MAX,
 		USER_MIN
@@ -129,6 +130,8 @@ protected:
 
 	int		m_lastTime;
 	float	m_lastDt;
+
+	float	m_ar;
 
 	bool	m_bnorm;		// normalize vectors or not
 	bool	m_bautoscale;	// auto scale the vectors

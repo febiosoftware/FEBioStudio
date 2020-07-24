@@ -54,12 +54,14 @@ CGLVectorPlot::CGLVectorPlot(CGLModel* po) : CGLLegendPlot(po)
 	AddBoolParam(true, "Normalize" );
 	AddBoolParam(true, "Auto-scale");
 	AddDoubleParam(0., "Scale"     );
+	AddDoubleParam(1., "Glyph aspect ratio");
 	AddIntParam(0, "Range type")->SetEnumNames("Dynamic\0Static\0User\0");
 	AddDoubleParam(1., "User Max"  );
 	AddDoubleParam(0., "User Min"  );
 
 	m_scale = 1;
 	m_dens = 1;
+	m_ar = 1;
 
 	m_ntime = -1;
 	m_nvec = -1;
@@ -113,6 +115,7 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 		m_bnorm = GetBoolValue(NORMALIZE);
 		m_bautoscale = GetBoolValue(AUTO_SCALE);
 		m_scale = GetFloatValue(SCALE);
+		m_ar = GetFloatValue(ASPECT_RATIO);
 		m_rngType = GetIntValue(RANGE_TYPE);
 		m_usr[1] = GetFloatValue(USER_MAX);
 		m_usr[0] = GetFloatValue(USER_MIN);
@@ -138,6 +141,7 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 		SetBoolValue(NORMALIZE, m_bnorm);
 		SetBoolValue(AUTO_SCALE, m_bautoscale);
 		SetFloatValue(SCALE, m_scale);
+		SetFloatValue(ASPECT_RATIO, m_ar);
 		SetIntValue(RANGE_TYPE, m_rngType);
 		SetFloatValue(USER_MAX, m_usr[1]);
 		SetFloatValue(USER_MIN, m_usr[0]);
@@ -328,8 +332,8 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 	L *= m_fscale;
 	float l0 = L*.9;
 	float l1 = L*.2;
-	float r0 = L*0.05;
-	float r1 = L*0.15;
+	float r0 = L*0.05*m_ar;
+	float r1 = L*0.15*m_ar;
 
 	glPushMatrix();
 
