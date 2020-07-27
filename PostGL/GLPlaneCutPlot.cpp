@@ -448,9 +448,10 @@ void CGLPlaneCutPlot::RenderMesh()
 			// get the nodal values
 			for (k=0; k<8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
-				en[k] = el.m_node[k];
-				ev[k] = state.m_NODE[el.m_node[k]].m_val;
+				int nk = el.m_node[nt[k]];
+				FENode& node = pm->Node(nk);
+				en[k] = nk;
+				ev[k] = state.m_NODE[nk].m_val;
 				ex[k] = node.r;
 			}
 
