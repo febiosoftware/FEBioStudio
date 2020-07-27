@@ -782,7 +782,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 							// calculate the case of the element
 							int ncase = 0;
 							for (int k = 0; k < 8; ++k)
-								if (norm*ex[k] >= ref) ncase |= (1 << k);
+								if (norm*x[k] >= ref) ncase |= (1 << k);
 
 							// loop over faces
 							int* pf = LUT[ncase];
