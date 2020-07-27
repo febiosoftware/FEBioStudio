@@ -92,10 +92,8 @@ public:
 		cwdLayout->addWidget(setCWDBtn);
 
 		febioFile = new QComboBox;
-		febioFile->addItem("FEBio 2.5 format");
-#ifdef _DEBUG
 		febioFile->addItem("FEBio 3.0 format");
-#endif
+		febioFile->addItem("FEBio 2.5 format");
 
 		autoSave = new QCheckBox("Save document before running FEBio");
 		autoSave->setChecked(true);
