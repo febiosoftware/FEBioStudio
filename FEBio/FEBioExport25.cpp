@@ -130,6 +130,39 @@ FENodeList* BuildNodeList(GNode* pn)
 }
 
 //-----------------------------------------------------------------------------
+FENodeList* BuildNodeList(GEdge* pe)
+{
+	if (pe == 0) return 0;
+	GObject* po = dynamic_cast<GObject*>(pe->Object());
+	FEMesh& m = *po->GetFEMesh();
+
+	// clear the tags
+	for (int i = 0; i < m.Nodes(); ++i) m.Node(i).m_ntag = 0;
+
+	// then we need to identify which nodes are part of the nodelist
+	int gid = pe->GetLocalID();
+
+	// tag the nodes to be added to the list
+	for (int i = 0; i < m.Edges(); ++i)
+	{
+		FEEdge& e = m.Edge(i);
+		if (e.m_gid == gid)
+		{
+			int l = e.Nodes();
+			for (int j = 0; j < l; ++j) m.Node(e.n[j]).m_ntag = 1;
+		}
+	}
+
+	// create a new node list
+	FENodeList* ps = new FENodeList();
+
+	// next we add all the nodes
+	for (int i = 0; i < m.Nodes(); ++i) if (m.Node(i).m_ntag == 1) ps->Add(&m, m.NodePtr(i));
+
+	return ps;
+}
+
+//-----------------------------------------------------------------------------
 FEFaceList* BuildFaceList(GFace* face)
 {
 	FEFaceList* ps = new FEFaceList();

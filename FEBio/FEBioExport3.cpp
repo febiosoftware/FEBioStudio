@@ -49,6 +49,7 @@ using namespace std;
 FENodeList* BuildNodeList(GFace* pf);
 FENodeList* BuildNodeList(GPart* pg);
 FENodeList* BuildNodeList(GNode* pn);
+FENodeList* BuildNodeList(GEdge* pe);
 FEFaceList* BuildFaceList(GFace* face);
 const char* ElementTypeString(int ntype);
 
@@ -158,6 +159,20 @@ void FEBioExport3::AddNodeSet(const std::string& name, FEItemListBuilder* pl)
 				Part* part = FindPart(po);
 				NodeSet* ns = part->FindNodeSet(node->GetName());
 				if (ns == 0) part->m_NSet.push_back(new NodeSet(node->GetName(), BuildNodeList(node)));
+			}
+		}
+		break;
+		case GO_EDGE:
+		{
+			GEdgeList* itemList = dynamic_cast<GEdgeList*>(pl); assert(itemList);
+			vector<GEdge*> edgeList = itemList->GetEdgeList();
+			for (int i = 0; i < edgeList.size(); ++i)
+			{
+				GEdge* edge = edgeList[i];
+				GObject* po = dynamic_cast<GObject*>(edge->Object());
+				Part* part = FindPart(po);
+				NodeSet* ns = part->FindNodeSet(edge->GetName());
+				if (ns == 0) part->m_NSet.push_back(new NodeSet(edge->GetName(), BuildNodeList(edge)));
 			}
 		}
 		break;
@@ -1938,8 +1953,8 @@ void FEBioExport3::WriteGeometrySectionNew()
 	// write all instances
 	for (int i = 0; i<nparts; ++i)
 	{
-		Part* p = m_Part[i];
-		GObject* po = p->m_obj;
+		Part* part = m_Part[i];
+		GObject* po = part->m_obj;
 		const string& name = po->GetName();
 		XMLElement instance("Instance");
 		instance.add_attribute("part", name.c_str());
@@ -1957,20 +1972,15 @@ void FEBioExport3::WriteGeometrySectionNew()
 			m_xml.close_branch();
 
 			// write all material assignments
-			int ndom = po->Parts();
+			int ndom = (int)part->m_Dom.size();
 			for (int j = 0; j < ndom; ++j)
 			{
-				GPart* pg = po->Part(j);
-
+				FEBioExport3::Domain& dom = *part->m_Dom[j];
 				// get the material
-				GMaterial* pmat = m_pfem->GetMaterialFromID(pg->GetMaterialID());
-				if (pmat)
-				{
-					XMLElement domain("domain");
-					domain.add_attribute("name", pg->GetName());
-					domain.add_attribute("mat", pmat->GetName());
-					m_xml.add_empty(domain);
-				}
+				XMLElement domain("domain");
+				domain.add_attribute("name", dom.m_name);
+				domain.add_attribute("mat", dom.m_matName);
+				m_xml.add_empty(domain);
 			}
 		}
 		m_xml.close_branch();
@@ -2024,7 +2034,7 @@ void FEBioExport3::WriteGeometryObject(FEBioExport3::Part* part)
 		GPart* pg = po->Part(p);
 
 		// write this part
-		WriteGeometryPart(pg, false);
+		WriteGeometryPart(part, pg, false);
 	}
 
 	// write all node sets
@@ -2524,13 +2534,13 @@ void FEBioExport3::WriteGeometryElements()
 			GPart* pg = po->Part(p);
 
 			// write this part
-			WriteGeometryPart(pg, true, false);
+			WriteGeometryPart(nullptr, pg, true, false);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames)
+void FEBioExport3::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool useMatNames)
 {
 	FEModel& s = *m_pfem;
 	GModel& model = s.GetModel();
@@ -2555,6 +2565,13 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames
 	int nmat = 0;
 	GMaterial* pmat = s.GetMaterialFromID(pg->GetMaterialID());
 	if (pmat) nmat = pmat->m_ntag;
+
+	// make sure this part does not have any domains yet
+	if (part)
+	{
+		assert(part->m_Dom.empty());
+		part->m_Dom.clear();
+	}
 
 	// loop over unprocessed elements
 	int nset = 0;
@@ -2588,6 +2605,15 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames
 			es.m_name = szname;
 			if (m_exportParts) es.m_name = po->GetName() + "." + szname;
 			es.m_matID = pg->GetMaterialID();
+
+			// add a domain
+			if (part)
+			{
+				FEBioExport3::Domain* dom = new FEBioExport3::Domain;
+				dom->m_name = szname;
+				dom->m_matName = pmat->GetName().c_str();
+				part->m_Dom.push_back(dom);
+			}
 
 			xe.add_attribute("name", szname);
 			m_xml.add_branch(xe);

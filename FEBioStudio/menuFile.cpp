@@ -1015,40 +1015,40 @@ void CMainWindow::on_actionExportFEModel_triggered()
 
 				if (dlg.m_nversion == 0)
 				{
-					// Write version 1.x
-					FEBioExport12 writer(fem);
-					for (int i = 0; i<FEBioExport12::MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					if (!writer.Write(szfile))
-						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
-				}
-				else if (dlg.m_nversion == 1)
-				{
-					// Write version 2.0
-					FEBioExport2 writer(fem);
-					writer.SetPlotfileCompressionFlag(dlg.m_compress);
-					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					if (!writer.Write(szfile))
-						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
-				}
-				else if (dlg.m_nversion == 2)
-				{
-					// write version 2.5
-					FEBioExport25 writer(fem);
-					writer.SetPlotfileCompressionFlag(dlg.m_compress);
-					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
-					writer.SetWriteNotesFlag(dlg.m_writeNotes);
-					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					if (!writer.Write(szfile))
-						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
-				}
-				else if (dlg.m_nversion == 3)
-				{
 					// write version 3.0
 					FEBioExport3 writer(fem);
 					writer.SetPlotfileCompressionFlag(dlg.m_compress);
 					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 					writer.SetWriteNotesFlag(dlg.m_writeNotes);
 					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+					if (!writer.Write(szfile))
+						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+				}
+				else if (dlg.m_nversion == 1)
+				{
+					// write version 2.5
+					FEBioExport25 writer(fem);
+					writer.SetPlotfileCompressionFlag(dlg.m_compress);
+					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
+					writer.SetWriteNotesFlag(dlg.m_writeNotes);
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+					if (!writer.Write(szfile))
+						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+				}
+				else if (dlg.m_nversion == 2)
+				{
+					// Write version 2.0
+					FEBioExport2 writer(fem);
+					writer.SetPlotfileCompressionFlag(dlg.m_compress);
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+					if (!writer.Write(szfile))
+						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+				}
+				else if (dlg.m_nversion == 3)
+				{
+					// Write version 1.x
+					FEBioExport12 writer(fem);
+					for (int i = 0; i < FEBioExport12::MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
 					if (!writer.Write(szfile))
 						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
 				}
