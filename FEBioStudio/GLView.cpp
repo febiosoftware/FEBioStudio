@@ -2202,14 +2202,13 @@ void CGLView::TrackSelection(bool b)
 		if (nmode == Post::SELECT_ELEMS)
 		{
 			const vector<FEElement_*> selElems = pdoc->GetGLModel()->GetElementSelection();
-			for (int i = 0; i<(int)selElems.size(); ++i)
+			if (selElems.size() > 0)
 			{
-				FEElement_& el = *selElems[i];
+				FEElement_& el = *selElems[0];
 				int* n = el.m_node;
 				int m[3] = { n[0], n[1], n[2] };
 				SetTrackingData(m);
 				m_btrack = true;
-				break;
 			}
 		}
 		else if (nmode == Post::SELECT_NODES)
