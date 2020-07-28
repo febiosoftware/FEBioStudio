@@ -1233,26 +1233,26 @@ void CMainWindow::on_actionConvertFeb_triggered()
 					FEFileExport* exporter = 0;
 					if (dlg.m_nversion == 0)
 					{
-						// Write version 1.x
-						FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
+						// write version 3
+						FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
 						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 					}
 					else if (dlg.m_nversion == 1)
-					{
-						// Write version 2.0
-						FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-					}
-					else if (dlg.m_nversion == 2)
 					{
 						// write version 2.5
 						FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
 						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 					}
+					else if (dlg.m_nversion == 2)
+					{
+						// Write version 2.0
+						FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+					}
 					else if (dlg.m_nversion == 3)
 					{
-						// write version 3
-						FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
+						// Write version 1.x
+						FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
 						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 					}
 					else
