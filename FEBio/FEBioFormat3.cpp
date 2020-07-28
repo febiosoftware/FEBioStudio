@@ -470,10 +470,13 @@ void FEBioFormat3::ParseGeometryNodeSet(FEBioModel::Part* part, XMLTag& tag)
 		}
 		else if (tag == "node_set")
 		{
-			const char* szset = tag.AttributeValue("nset");
-			FEBioModel::NodeSet* ps = part->FindNodeSet(szset);
-			if (ps == 0) throw XMLReader::InvalidAttributeValue(tag, "nset", szset);
-			list.insert(list.end(), ps->nodeList().begin(), ps->nodeList().end());
+			const char* szset = tag.szvalue();
+			if (part)
+			{
+				FEBioModel::NodeSet* ps = part->FindNodeSet(szset);
+				if (ps == 0) throw XMLReader::InvalidValue(tag);
+				list.insert(list.end(), ps->nodeList().begin(), ps->nodeList().end());
+			}
 		}
 		else throw XMLReader::InvalidTag(tag);
 		++tag;

@@ -59,7 +59,7 @@ const char* ElementTypeString(int ntype);
 
 FEBioExport3::FEBioExport3(FEProject& prj) : FEBioExport(prj)
 {
-	m_exportParts = true;
+	m_exportParts = false;
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
@@ -1941,6 +1941,9 @@ void FEBioExport3::WriteGeometrySectionNew()
 		Part* p = m_Part[i];
 		const string& name = p->m_obj->GetName();
 
+		// make sure this part does not have any domains yet
+		assert(p->m_Dom.empty());
+
 		XMLElement tag("Part");
 		tag.add_attribute("name", name.c_str());
 		m_xml.add_branch(tag);
@@ -2566,13 +2569,6 @@ void FEBioExport3::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 	GMaterial* pmat = s.GetMaterialFromID(pg->GetMaterialID());
 	if (pmat) nmat = pmat->m_ntag;
 
-	// make sure this part does not have any domains yet
-	if (part)
-	{
-		assert(part->m_Dom.empty());
-		part->m_Dom.clear();
-	}
-
 	// loop over unprocessed elements
 	int nset = 0;
 	int ncount = 0;
@@ -2611,7 +2607,7 @@ void FEBioExport3::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 			{
 				FEBioExport3::Domain* dom = new FEBioExport3::Domain;
 				dom->m_name = szname;
-				dom->m_matName = pmat->GetName().c_str();
+				if (pmat) dom->m_matName = pmat->GetName().c_str();
 				part->m_Dom.push_back(dom);
 			}
 
@@ -3922,11 +3918,11 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			case FE_FLUID_BACKFLOW_STABIL    : WriteSurfaceLoad(s, pbc, "fluid backflow stabilization"); break;
 			case FE_FSI_TRACTION             : WriteSurfaceLoad(s, pbc, "fluid-FSI traction"); break;
 			case FE_FLUID_NORMAL_VELOCITY    : WriteSurfaceLoad(s, pbc, "fluid normal velocity"); break;
-			// NOTE: Fluid rotational velocity is a boundary condition in FEBio3!
-//			case FE_FLUID_ROTATIONAL_VELOCITY: WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
 			case FE_FLUID_VELOCITY           : WriteSurfaceLoad(s, pbc, "fluid velocity"); break;
 			case FE_SOLUTE_FLUX              : WriteSurfaceLoad(s, pbc, "soluteflux"); break;
 			case FE_CONCENTRATION_FLUX       : WriteSurfaceLoad(s, pbc, "concentration flux"); break;
+			// NOTE: Fluid rotational velocity is a boundary condition in FEBio3!
+			case FE_FLUID_ROTATIONAL_VELOCITY: break;// WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
 			default:
 				assert(false);
 			}
