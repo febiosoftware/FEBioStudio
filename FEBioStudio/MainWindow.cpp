@@ -2544,7 +2544,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 
 	if (febioFileVersion == 0)
 	{
-		FEBioExport3 feb(doc->GetProject());
+		FEBioExport25 feb(doc->GetProject());
 		if (feb.Write(febFile.c_str()) == false)
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
@@ -2555,7 +2555,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 	}
 	else if (febioFileVersion == 1)
 	{
-		FEBioExport25 feb(doc->GetProject());
+		FEBioExport3 feb(doc->GetProject());
 		if (feb.Write(febFile.c_str()) == false)
 		{
 			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
