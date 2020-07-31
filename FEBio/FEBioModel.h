@@ -156,6 +156,7 @@ public:
 		void operator = (const Domain& part);
 
 		int MatID() const { return m_matID; }
+		void SetMatID(int i) { m_matID = i; }
 
 		const std::string& name() const { return m_name; }
 

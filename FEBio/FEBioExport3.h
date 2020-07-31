@@ -82,6 +82,7 @@ private:
 	public:
 		string	m_name;
 		string	m_matName;
+		int		m_elemClass;
 	};
 
 	class Part
@@ -176,8 +177,11 @@ protected:
 	void WriteGeometrySection();
 	void WriteGeometrySectionOld();	// old, global node and element list
 	void WriteGeometrySectionNew();	// new, grouped by parts
+	void WriteMeshSection();
+	void WriteMeshElements();
+	void WriteMeshDomainsSection();
 	void WriteGeometryNodes();
-	void WriteGeometryElements();
+	void WriteGeometryElements(bool writeMats = true, bool useMatNames = false);
 	void WriteGeometryPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
 	void WriteGeometrySurfaces();
 	void WriteGeometryElementSets();
@@ -299,5 +303,6 @@ protected:
 	int m_ntotnodes;	// total node counter
 	bool	m_bdata;	// write MeshData section flag
 	bool	m_exportParts;	// write geometry using parts
+	bool	m_exportMesh;	// write new mesh/meshdomains sections
 	bool	m_writeNotes;	// write notes as comments
 };

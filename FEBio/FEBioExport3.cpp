@@ -64,6 +64,12 @@ FEBioExport3::FEBioExport3(FEProject& prj) : FEBioExport(prj)
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
 	m_writeControlSection = true;
+
+#ifdef _DEBUG
+	m_exportMesh = true;
+#else
+	m_exportMesh = false;
+#endif
 }
 
 FEBioExport3::~FEBioExport3()
@@ -327,6 +333,10 @@ bool FEBioExport3::PrepareExport(FEProject& prj)
 		{
 			m_Part.push_back(new Part(model.Object(i)));
 		}
+	}
+	if (m_exportMesh)
+	{
+		m_Part.push_back(new Part(nullptr));
 	}
 
 	// Build the named lists
@@ -788,14 +798,34 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output geometry section
-			if ((fem.GetModel().Objects() > 0) && (m_section[FEBIO_GEOMETRY]))
+			if (m_exportMesh == false)
 			{
-				m_xml.add_branch("Geometry");
+				if ((fem.GetModel().Objects() > 0) && (m_section[FEBIO_GEOMETRY]))
 				{
-					WriteGeometrySection();
-					//					WriteGeometrySection2();
+					m_xml.add_branch("Geometry");
+					{
+						WriteGeometrySection();
+						//					WriteGeometrySection2();
+					}
+					m_xml.close_branch(); // Geometry
 				}
-				m_xml.close_branch(); // Geometry
+			}
+			else
+			{
+				if ((fem.GetModel().Objects() > 0) && (m_section[FEBIO_GEOMETRY]))
+				{
+					m_xml.add_branch("Mesh");
+					{
+						WriteMeshSection();
+					}
+					m_xml.close_branch(); // Mesh
+
+					m_xml.add_branch("MeshDomains");
+					{
+						WriteMeshDomainsSection();
+					}
+					m_xml.close_branch(); // MeshDomains
+				}
 			}
 
 			// output mesh data section
@@ -819,7 +849,7 @@ bool FEBioExport3::Write(const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = pstep->RigidConstraints();
+			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + CountInterfaces<FERigidJoint>(fem);
 			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Rigid");
@@ -841,7 +871,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output contact
-			int nci = pstep->Interfaces();
+			int nci = pstep->Interfaces() - CountInterfaces<FERigidJoint>(fem);
 			int nLC = pstep->LinearConstraints();
 			if (((nci > 0) || (nLC > 0)) && (m_section[FEBIO_CONTACT]))
 			{
@@ -853,9 +883,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output constraints section
-			int nnlc = +CountConnectors<FERigidConnector>(fem)
-				+CountInterfaces<FERigidJoint>(fem)
-				+CountConstraints<FEModelConstraint>(fem);
+			int nnlc = CountConstraints<FEModelConstraint>(fem);
 			if ((nnlc > 0) && (m_section[FEBIO_CONSTRAINTS]))
 			{
 				m_xml.add_branch("Constraints");
@@ -1095,7 +1123,7 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1151,7 +1179,7 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1206,7 +1234,7 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "DYNAMIC"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "DYNAMIC"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1261,7 +1289,7 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "DYNAMIC"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "DYNAMIC"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1316,7 +1344,7 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1925,6 +1953,54 @@ void FEBioExport3::WriteGeometrySectionOld()
 }
 
 //-----------------------------------------------------------------------------
+void FEBioExport3::WriteMeshSection()
+{
+	
+	// export the nodes
+	WriteGeometryNodes();
+
+	// Write the elements
+	WriteMeshElements();
+
+	// write the node sets
+	WriteGeometryNodeSets();
+
+	// write named surfaces
+	WriteGeometrySurfaces();
+
+	// write named element sets
+	WriteGeometryElementSets();
+
+	// write named surfaces pairs
+	WriteGeometrySurfacePairs();
+
+	// write discrete element sets
+	WriteGeometryDiscreteSets();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteMeshDomainsSection()
+{
+	Part* part = m_Part[0];
+	for (int i = 0; i < part->m_Dom.size(); ++i)
+	{
+		Domain* dom = part->m_Dom[i];
+
+		XMLElement el;
+		if      (dom->m_elemClass == ELEM_SOLID) el.name("SolidDomain");
+		else if (dom->m_elemClass == ELEM_SHELL) el.name("ShellDomain");
+		else
+		{
+			assert(false);
+		}		
+
+		el.add_attribute("name", dom->m_name);
+		el.add_attribute("mat", dom->m_matName);
+		m_xml.add_empty(el);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FEBioExport3::WriteGeometrySectionNew()
 {
 	FEModel& fem = *m_pfem;
@@ -2516,7 +2592,36 @@ void FEBioExport3::WriteGeometryNodes()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteGeometryElements()
+void FEBioExport3::WriteMeshElements()
+{
+	FEModel& s = *m_pfem;
+	GModel& model = s.GetModel();
+
+	// reset element counter
+	m_ntotelem = 0;
+
+	Part* part = m_Part[0];
+
+	// loop over all objects
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+
+		// loop over all parts
+		int NP = po->Parts();
+		for (int p = 0; p < NP; ++p)
+		{
+			// get the part
+			GPart* pg = po->Part(p);
+
+			// write this part
+			WriteGeometryPart(part, pg, false, false);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteGeometryElements(bool writeMats, bool useMatNames)
 {
 	FEModel& s = *m_pfem;
 	GModel& model = s.GetModel();
@@ -2537,7 +2642,7 @@ void FEBioExport3::WriteGeometryElements()
 			GPart* pg = po->Part(p);
 
 			// write this part
-			WriteGeometryPart(nullptr, pg, true, false);
+			WriteGeometryPart(nullptr, pg, writeMats, useMatNames);
 		}
 	}
 }
@@ -2609,6 +2714,8 @@ void FEBioExport3::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 				dom->m_name = szname;
 				if (pmat) dom->m_matName = pmat->GetName().c_str();
 				part->m_Dom.push_back(dom);
+
+				dom->m_elemClass = el.Class();
 			}
 
 			xe.add_attribute("name", szname);
@@ -3279,6 +3386,10 @@ void FEBioExport3::WriteRigidSection(FEStep& s)
 {
 	// rigid body constraints
 	WriteRigidConstraints(s);
+
+	// rigid connectors
+	WriteConnectors(s);
+	WriteRigidJoint(s);
 }
 
 //-----------------------------------------------------------------------------
@@ -3500,7 +3611,7 @@ void FEBioExport3::WriteRigidJoint(FEStep& s)
 		{
 			if (m_writeNotes) WriteNote(pj);
 
-			XMLElement ec("constraint");
+			XMLElement ec("rigid_connector");
 			ec.add_attribute("type", "rigid joint");
 			const char* sz = pj->GetName().c_str();
 			ec.add_attribute("name", sz);
@@ -4675,7 +4786,7 @@ void FEBioExport3::WriteConnectors(FEStep& s)
 		{
 			if (m_writeNotes) WriteNote(pj);
 
-			XMLElement ec("constraint");
+			XMLElement ec("rigid_connector");
 			if (dynamic_cast<FERigidSphericalJoint*  >(pj)) ec.add_attribute("type", "rigid spherical joint");
 			else if (dynamic_cast<FERigidRevoluteJoint*   >(pj)) ec.add_attribute("type", "rigid revolute joint");
 			else if (dynamic_cast<FERigidPrismaticJoint*  >(pj)) ec.add_attribute("type", "rigid prismatic joint");
@@ -4722,6 +4833,4 @@ void FEBioExport3::WriteConstraintSection(FEStep &s)
 {
 	// some contact definitions are actually stored in the constraint section
 	WriteConstraints(s);
-	WriteConnectors(s);
-	WriteRigidJoint(s);
 }

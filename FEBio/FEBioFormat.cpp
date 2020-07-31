@@ -246,6 +246,8 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 //-----------------------------------------------------------------------------
 void FEBioFormat::ReadParameters(ParamContainer& PC, XMLTag& tag)
 {
+	if (tag.isleaf()) return;
+
 	// read parameters
 	++tag;
 	do

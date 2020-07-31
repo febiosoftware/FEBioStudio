@@ -45,6 +45,8 @@ private:
 	// parsers for parent sections
 	bool ParseModuleSection    (XMLTag& tag);
 	bool ParseGeometrySection  (XMLTag& tag);
+	bool ParseMeshSection      (XMLTag& tag);
+	bool ParseMeshDomainsSection(XMLTag& tag);
 	bool ParseMeshDataSection  (XMLTag& tag);
 	bool ParseBoundarySection  (XMLTag& tag);
 	bool ParseLoadsSection     (XMLTag& tag);
@@ -115,8 +117,10 @@ private:
 	void ParsePrestrainConstraint    (FEStep* pste, XMLTag& tag);
 
 private:
-	// connector input functions
-	void ParseConnector(FEStep* pstep, XMLTag& tag, const int rc);
+	// rigid input functions
+	void ParseRigidConnector(FEStep* pstep, XMLTag& tag, const int rc);
+	void ParseRigidConstraint(FEStep* pstep, XMLTag& tag);
+	void ParseRigidJoint(FEStep* pstep, XMLTag& tag);
 
 	// helper functions (version 2.5 and up)
 	FEBioModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);
