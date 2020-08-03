@@ -171,6 +171,21 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 
 		di.m_r1 = po.m_r1;
 		di.m_r2 = po.m_r2;
+
+		int ndata = po.m_data.size();
+		di.data = new ObjectData;
+		for (int j = 0; j < ndata; ++j)
+		{
+			Post::FEPlotObjectData& dj = *po.m_data[j];
+
+			switch (dj.Type())
+			{
+			case DATA_FLOAT: di.data->push_back(0.f); break;
+			case DATA_VEC3F: di.data->push_back(vec3f(0.f, 0.f, 0.f)); break;
+			default:
+				assert(false);
+			}
+		}
 	}
 
 	m_time = time;
@@ -378,4 +393,11 @@ void FEState::AddPoint(vec3f a, int nlabel)
 	p.m_r = a;
 	p.nlabel = nlabel;
 	m_Point.push_back(p);
+}
+
+//-----------------------------------------------------------------------------
+OBJECT_DATA& FEState::GetObjectData(int n)
+{
+	if (n < m_objPt.size()) return m_objPt[n];
+	else return m_objLn[n - m_objPt.size()];
 }

@@ -77,6 +77,14 @@ private:
 		~ElementList() { delete m_elemList; }
 	};
 
+	class Domain
+	{
+	public:
+		string	m_name;
+		string	m_matName;
+		int		m_elemClass;
+	};
+
 	class Part
 	{
 	public:
@@ -84,6 +92,7 @@ private:
 		vector<NodeSet*>		m_NSet;
 		vector<Surface*>		m_Surf;
 		vector<ElementList*>	m_ELst;
+		vector<Domain*>			m_Dom;
 
 	public:
 		Part(GObject* po) : m_obj(po){}
@@ -92,6 +101,7 @@ private:
 			for (size_t i = 0; i<m_NSet.size(); ++i) delete m_NSet[i];
 			for (size_t i = 0; i<m_Surf.size(); ++i) delete m_Surf[i];
 			for (size_t i = 0; i<m_ELst.size(); ++i) delete m_ELst[i];
+			for (size_t i = 0; i < m_Dom.size(); ++i) delete m_Dom[i];
 		}
 		NodeSet* FindNodeSet(const string& name)
 		{
@@ -167,9 +177,12 @@ protected:
 	void WriteGeometrySection();
 	void WriteGeometrySectionOld();	// old, global node and element list
 	void WriteGeometrySectionNew();	// new, grouped by parts
+	void WriteMeshSection();
+	void WriteMeshElements();
+	void WriteMeshDomainsSection();
 	void WriteGeometryNodes();
-	void WriteGeometryElements();
-	void WriteGeometryPart(GPart* pg, bool writeMats = true, bool useMatNames = false);
+	void WriteGeometryElements(bool writeMats = true, bool useMatNames = false);
+	void WriteGeometryPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
 	void WriteGeometrySurfaces();
 	void WriteGeometryElementSets();
 	void WriteGeometrySurfacePairs();
@@ -290,5 +303,6 @@ protected:
 	int m_ntotnodes;	// total node counter
 	bool	m_bdata;	// write MeshData section flag
 	bool	m_exportParts;	// write geometry using parts
+	bool	m_exportMesh;	// write new mesh/meshdomains sections
 	bool	m_writeNotes;	// write notes as comments
 };

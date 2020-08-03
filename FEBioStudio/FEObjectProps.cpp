@@ -151,7 +151,7 @@ QVariant CAnalysisTimeSettings::GetPropertyValue(int i)
 	default:
 	{
 		i -= 16;
-		int N = m_step->Parameters();
+		int N = m_params.size();
 		if (i < N)
 			return CObjectProps::GetPropertyValue(i);
 		else

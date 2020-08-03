@@ -1791,8 +1791,30 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		if (maybeSave(doc) == false) return;
 	}
 
+	// close any graph windows that use this document
+	QList<::CGraphWindow*>::iterator it;
+	for (it = ui->graphList.begin(); it != ui->graphList.end();)
+	{
+		CGraphWindow* w = *it;
+		CModelGraphWindow* mgw = dynamic_cast<CModelGraphWindow*>(w);
+		if (mgw)
+		{
+			CDocument* pd = mgw->GetDocument();
+			if (pd == doc)
+			{
+				RemoveGraph(w);
+				delete w;
+				it = ui->graphList.begin();
+			}
+			else it++;
+		}
+		else it++;
+	}
+
+	// now, remove from the doc manager
 	m_DocManager->RemoveDocument(n);
 
+	// close the view and update UI
 	ui->tab->closeView(n);
 	UpdateUIConfig();
 }

@@ -49,6 +49,7 @@ using namespace std;
 FENodeList* BuildNodeList(GFace* pf);
 FENodeList* BuildNodeList(GPart* pg);
 FENodeList* BuildNodeList(GNode* pn);
+FENodeList* BuildNodeList(GEdge* pe);
 FEFaceList* BuildFaceList(GFace* face);
 const char* ElementTypeString(int ntype);
 
@@ -58,11 +59,17 @@ const char* ElementTypeString(int ntype);
 
 FEBioExport3::FEBioExport3(FEProject& prj) : FEBioExport(prj)
 {
-	m_exportParts = true;
+	m_exportParts = false;
 	m_useReactionMaterial2 = false;	// will be set to true for reaction-diffusion problems
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
 	m_writeControlSection = true;
+
+#ifdef _DEBUG
+	m_exportMesh = true;
+#else
+	m_exportMesh = false;
+#endif
 }
 
 FEBioExport3::~FEBioExport3()
@@ -158,6 +165,20 @@ void FEBioExport3::AddNodeSet(const std::string& name, FEItemListBuilder* pl)
 				Part* part = FindPart(po);
 				NodeSet* ns = part->FindNodeSet(node->GetName());
 				if (ns == 0) part->m_NSet.push_back(new NodeSet(node->GetName(), BuildNodeList(node)));
+			}
+		}
+		break;
+		case GO_EDGE:
+		{
+			GEdgeList* itemList = dynamic_cast<GEdgeList*>(pl); assert(itemList);
+			vector<GEdge*> edgeList = itemList->GetEdgeList();
+			for (int i = 0; i < edgeList.size(); ++i)
+			{
+				GEdge* edge = edgeList[i];
+				GObject* po = dynamic_cast<GObject*>(edge->Object());
+				Part* part = FindPart(po);
+				NodeSet* ns = part->FindNodeSet(edge->GetName());
+				if (ns == 0) part->m_NSet.push_back(new NodeSet(edge->GetName(), BuildNodeList(edge)));
 			}
 		}
 		break;
@@ -312,6 +333,10 @@ bool FEBioExport3::PrepareExport(FEProject& prj)
 		{
 			m_Part.push_back(new Part(model.Object(i)));
 		}
+	}
+	if (m_exportMesh)
+	{
+		m_Part.push_back(new Part(nullptr));
 	}
 
 	// Build the named lists
@@ -773,14 +798,34 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output geometry section
-			if ((fem.GetModel().Objects() > 0) && (m_section[FEBIO_GEOMETRY]))
+			if (m_exportMesh == false)
 			{
-				m_xml.add_branch("Geometry");
+				if ((fem.GetModel().Objects() > 0) && (m_section[FEBIO_GEOMETRY]))
 				{
-					WriteGeometrySection();
-					//					WriteGeometrySection2();
+					m_xml.add_branch("Geometry");
+					{
+						WriteGeometrySection();
+						//					WriteGeometrySection2();
+					}
+					m_xml.close_branch(); // Geometry
 				}
-				m_xml.close_branch(); // Geometry
+			}
+			else
+			{
+				if ((fem.GetModel().Objects() > 0) && (m_section[FEBIO_GEOMETRY]))
+				{
+					m_xml.add_branch("Mesh");
+					{
+						WriteMeshSection();
+					}
+					m_xml.close_branch(); // Mesh
+
+					m_xml.add_branch("MeshDomains");
+					{
+						WriteMeshDomainsSection();
+					}
+					m_xml.close_branch(); // MeshDomains
+				}
 			}
 
 			// output mesh data section
@@ -804,7 +849,7 @@ bool FEBioExport3::Write(const char* szfile)
 				m_xml.close_branch(); // Boundary
 			}
 
-			int nrc = pstep->RigidConstraints();
+			int nrc = pstep->RigidConstraints() + pstep->RigidConnectors() + CountInterfaces<FERigidJoint>(fem);
 			if ((nrc > 0) && (m_section[FEBIO_BOUNDARY]))
 			{
 				m_xml.add_branch("Rigid");
@@ -826,7 +871,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output contact
-			int nci = pstep->Interfaces();
+			int nci = pstep->Interfaces() - CountInterfaces<FERigidJoint>(fem);
 			int nLC = pstep->LinearConstraints();
 			if (((nci > 0) || (nLC > 0)) && (m_section[FEBIO_CONTACT]))
 			{
@@ -838,9 +883,7 @@ bool FEBioExport3::Write(const char* szfile)
 			}
 
 			// output constraints section
-			int nnlc = +CountConnectors<FERigidConnector>(fem)
-				+CountInterfaces<FERigidJoint>(fem)
-				+CountConstraints<FEModelConstraint>(fem);
+			int nnlc = CountConstraints<FEModelConstraint>(fem);
 			if ((nnlc > 0) && (m_section[FEBIO_CONSTRAINTS]))
 			{
 				m_xml.add_branch("Constraints");
@@ -1080,7 +1123,7 @@ void FEBioExport3::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1136,7 +1179,7 @@ void FEBioExport3::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1191,7 +1234,7 @@ void FEBioExport3::WriteFluidControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "DYNAMIC"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "DYNAMIC"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1246,7 +1289,7 @@ void FEBioExport3::WriteFluidFSIControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "DYNAMIC"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "DYNAMIC"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1301,7 +1344,7 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FEAnalysisStep* pstep)
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
 
-	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY_STATE" : "TRANSIENT"));
+	m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "TRANSIENT"));
 	m_xml.add_leaf("time_steps", ops.ntime);
 	m_xml.add_leaf("step_size", ops.dt);
 
@@ -1910,6 +1953,54 @@ void FEBioExport3::WriteGeometrySectionOld()
 }
 
 //-----------------------------------------------------------------------------
+void FEBioExport3::WriteMeshSection()
+{
+	
+	// export the nodes
+	WriteGeometryNodes();
+
+	// Write the elements
+	WriteMeshElements();
+
+	// write the node sets
+	WriteGeometryNodeSets();
+
+	// write named surfaces
+	WriteGeometrySurfaces();
+
+	// write named element sets
+	WriteGeometryElementSets();
+
+	// write named surfaces pairs
+	WriteGeometrySurfacePairs();
+
+	// write discrete element sets
+	WriteGeometryDiscreteSets();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteMeshDomainsSection()
+{
+	Part* part = m_Part[0];
+	for (int i = 0; i < part->m_Dom.size(); ++i)
+	{
+		Domain* dom = part->m_Dom[i];
+
+		XMLElement el;
+		if      (dom->m_elemClass == ELEM_SOLID) el.name("SolidDomain");
+		else if (dom->m_elemClass == ELEM_SHELL) el.name("ShellDomain");
+		else
+		{
+			assert(false);
+		}		
+
+		el.add_attribute("name", dom->m_name);
+		el.add_attribute("mat", dom->m_matName);
+		m_xml.add_empty(el);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FEBioExport3::WriteGeometrySectionNew()
 {
 	FEModel& fem = *m_pfem;
@@ -1926,6 +2017,9 @@ void FEBioExport3::WriteGeometrySectionNew()
 		Part* p = m_Part[i];
 		const string& name = p->m_obj->GetName();
 
+		// make sure this part does not have any domains yet
+		assert(p->m_Dom.empty());
+
 		XMLElement tag("Part");
 		tag.add_attribute("name", name.c_str());
 		m_xml.add_branch(tag);
@@ -1938,8 +2032,8 @@ void FEBioExport3::WriteGeometrySectionNew()
 	// write all instances
 	for (int i = 0; i<nparts; ++i)
 	{
-		Part* p = m_Part[i];
-		GObject* po = p->m_obj;
+		Part* part = m_Part[i];
+		GObject* po = part->m_obj;
 		const string& name = po->GetName();
 		XMLElement instance("Instance");
 		instance.add_attribute("part", name.c_str());
@@ -1957,20 +2051,15 @@ void FEBioExport3::WriteGeometrySectionNew()
 			m_xml.close_branch();
 
 			// write all material assignments
-			int ndom = po->Parts();
+			int ndom = (int)part->m_Dom.size();
 			for (int j = 0; j < ndom; ++j)
 			{
-				GPart* pg = po->Part(j);
-
+				FEBioExport3::Domain& dom = *part->m_Dom[j];
 				// get the material
-				GMaterial* pmat = m_pfem->GetMaterialFromID(pg->GetMaterialID());
-				if (pmat)
-				{
-					XMLElement domain("domain");
-					domain.add_attribute("name", pg->GetName());
-					domain.add_attribute("mat", pmat->GetName());
-					m_xml.add_empty(domain);
-				}
+				XMLElement domain("domain");
+				domain.add_attribute("name", dom.m_name);
+				domain.add_attribute("mat", dom.m_matName);
+				m_xml.add_empty(domain);
 			}
 		}
 		m_xml.close_branch();
@@ -2024,7 +2113,7 @@ void FEBioExport3::WriteGeometryObject(FEBioExport3::Part* part)
 		GPart* pg = po->Part(p);
 
 		// write this part
-		WriteGeometryPart(pg, false);
+		WriteGeometryPart(part, pg, false);
 	}
 
 	// write all node sets
@@ -2503,7 +2592,36 @@ void FEBioExport3::WriteGeometryNodes()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteGeometryElements()
+void FEBioExport3::WriteMeshElements()
+{
+	FEModel& s = *m_pfem;
+	GModel& model = s.GetModel();
+
+	// reset element counter
+	m_ntotelem = 0;
+
+	Part* part = m_Part[0];
+
+	// loop over all objects
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+
+		// loop over all parts
+		int NP = po->Parts();
+		for (int p = 0; p < NP; ++p)
+		{
+			// get the part
+			GPart* pg = po->Part(p);
+
+			// write this part
+			WriteGeometryPart(part, pg, false, false);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WriteGeometryElements(bool writeMats, bool useMatNames)
 {
 	FEModel& s = *m_pfem;
 	GModel& model = s.GetModel();
@@ -2524,13 +2642,13 @@ void FEBioExport3::WriteGeometryElements()
 			GPart* pg = po->Part(p);
 
 			// write this part
-			WriteGeometryPart(pg, true, false);
+			WriteGeometryPart(nullptr, pg, writeMats, useMatNames);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames)
+void FEBioExport3::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool useMatNames)
 {
 	FEModel& s = *m_pfem;
 	GModel& model = s.GetModel();
@@ -2588,6 +2706,17 @@ void FEBioExport3::WriteGeometryPart(GPart* pg, bool writeMats, bool useMatNames
 			es.m_name = szname;
 			if (m_exportParts) es.m_name = po->GetName() + "." + szname;
 			es.m_matID = pg->GetMaterialID();
+
+			// add a domain
+			if (part)
+			{
+				FEBioExport3::Domain* dom = new FEBioExport3::Domain;
+				dom->m_name = szname;
+				if (pmat) dom->m_matName = pmat->GetName().c_str();
+				part->m_Dom.push_back(dom);
+
+				dom->m_elemClass = el.Class();
+			}
 
 			xe.add_attribute("name", szname);
 			m_xml.add_branch(xe);
@@ -3257,6 +3386,10 @@ void FEBioExport3::WriteRigidSection(FEStep& s)
 {
 	// rigid body constraints
 	WriteRigidConstraints(s);
+
+	// rigid connectors
+	WriteConnectors(s);
+	WriteRigidJoint(s);
 }
 
 //-----------------------------------------------------------------------------
@@ -3478,7 +3611,7 @@ void FEBioExport3::WriteRigidJoint(FEStep& s)
 		{
 			if (m_writeNotes) WriteNote(pj);
 
-			XMLElement ec("constraint");
+			XMLElement ec("rigid_connector");
 			ec.add_attribute("type", "rigid joint");
 			const char* sz = pj->GetName().c_str();
 			ec.add_attribute("name", sz);
@@ -3896,11 +4029,11 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			case FE_FLUID_BACKFLOW_STABIL    : WriteSurfaceLoad(s, pbc, "fluid backflow stabilization"); break;
 			case FE_FSI_TRACTION             : WriteSurfaceLoad(s, pbc, "fluid-FSI traction"); break;
 			case FE_FLUID_NORMAL_VELOCITY    : WriteSurfaceLoad(s, pbc, "fluid normal velocity"); break;
-			// NOTE: Fluid rotational velocity is a boundary condition in FEBio3!
-//			case FE_FLUID_ROTATIONAL_VELOCITY: WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
 			case FE_FLUID_VELOCITY           : WriteSurfaceLoad(s, pbc, "fluid velocity"); break;
 			case FE_SOLUTE_FLUX              : WriteSurfaceLoad(s, pbc, "soluteflux"); break;
 			case FE_CONCENTRATION_FLUX       : WriteSurfaceLoad(s, pbc, "concentration flux"); break;
+			// NOTE: Fluid rotational velocity is a boundary condition in FEBio3!
+			case FE_FLUID_ROTATIONAL_VELOCITY: break;// WriteSurfaceLoad(s, pbc, "fluid rotational velocity"); break;
 			default:
 				assert(false);
 			}
@@ -4653,7 +4786,7 @@ void FEBioExport3::WriteConnectors(FEStep& s)
 		{
 			if (m_writeNotes) WriteNote(pj);
 
-			XMLElement ec("constraint");
+			XMLElement ec("rigid_connector");
 			if (dynamic_cast<FERigidSphericalJoint*  >(pj)) ec.add_attribute("type", "rigid spherical joint");
 			else if (dynamic_cast<FERigidRevoluteJoint*   >(pj)) ec.add_attribute("type", "rigid revolute joint");
 			else if (dynamic_cast<FERigidPrismaticJoint*  >(pj)) ec.add_attribute("type", "rigid prismatic joint");
@@ -4700,6 +4833,4 @@ void FEBioExport3::WriteConstraintSection(FEStep &s)
 {
 	// some contact definitions are actually stored in the constraint section
 	WriteConstraints(s);
-	WriteConnectors(s);
-	WriteRigidJoint(s);
 }

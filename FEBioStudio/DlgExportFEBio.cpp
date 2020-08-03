@@ -50,10 +50,11 @@ public:
 		// format selector
 		QLabel* l = new QLabel("format:");
 		combo = new QComboBox;
-		combo->addItem("febio_spec 1.2");
-		combo->addItem("febio_spec 2.0");
-		combo->addItem("febio_spec 2.5");
 		combo->addItem("febio_spec 3.0");
+		combo->addItem("febio_spec 2.5");
+		combo->addItem("febio_spec 2.0");
+		combo->addItem("febio_spec 1.2");
+		combo->setCurrentIndex(1);
 		l->setBuddy(combo);
 
 		QHBoxLayout* formatLayout = new QHBoxLayout;
@@ -144,7 +145,7 @@ CDlgExportFEBio::CDlgExportFEBio(QWidget* parent) : QDialog(parent), ui(new Ui::
 	m_compress = false;
 	m_bexportSelections = false;
 
-	if (m_nversion == -1) m_nversion = 2;
+	if (m_nversion == -1) m_nversion = 1;
 	ui->combo->setCurrentIndex(m_nversion);
 
 	for (int i=0; i<MAX_SECTIONS; ++i) 

@@ -1155,7 +1155,7 @@ FEFungOrthotropic::FEFungOrthotropic() : FEMaterial(FE_FUNG_ORTHO)
 // FEFungOrthotropic - Fung Orthotropic
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEFungOrthoCompressible, MODULE_MECH, FE_FUNG_ORTHO_COUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Fung-ortho-compressible", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Fung_Orthotropic_Compressible);
+REGISTER_MATERIAL(FEFungOrthoCompressible, MODULE_MECH, FE_FUNG_ORTHO_COUPLED, FE_MAT_ELASTIC, "Fung-ortho-compressible", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Fung_Orthotropic_Compressible);
 
 FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_COUPLED)
 {

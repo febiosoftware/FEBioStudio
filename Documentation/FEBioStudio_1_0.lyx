@@ -8788,6 +8788,10 @@ name "sec:running"
  
 \end_layout
 
+\begin_layout Section
+Running FEBio
+\end_layout
+
 \begin_layout Standard
 FEBio can be called from within FEBioStudio by selecting the 
 \emph on
@@ -8811,19 +8815,38 @@ Run FEBio
 \end_inset
 
 .
- The Run FEBio dialog box shows up (Figure 45) where users can set the following
- fields.
+ The Run FEBio dialog box shows up (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig116"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) where users can set the following fields.
 \end_layout
 
 \begin_layout Itemize
 
 \series bold
-FEBio path: 
+Job name: 
 \series default
-The path to the FEBio executable.
- If FEBio is setup to run from anywhere on the command line, you can just
- enter the FEBio command here.
- If not, you may need to specify the full path to the FEBio executable here.
+The name of the job.
+ This is used to generate the febio input and output file names.
+ The job name will also appear in the model tree.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Launch Configuration: 
+\series default
+The launch configuration defines the path to the FEBio3 executable and some
+ other data that is needed to locate and run FEBio on your local or a remote
+ system.
  
 \end_layout
 
@@ -8832,33 +8855,32 @@ The path to the FEBio executable.
 \series bold
 Working directory:
 \series default
- Specify the location where FEBioStudio will store the FEBio input file.
+ Specify the location where FEBioStudio will store the FEBio input and output
+ files.
  
 \end_layout
 
 \begin_layout Itemize
 
 \series bold
-Filename:
+FEBio file format:
 \series default
- Enter the name of the FEBio input file here.
- FEBioStudio will automatically export the current project to this file
- before running FEBio.
+ Enter the format for the FEBio input file.
  
 \end_layout
 
 \begin_layout Itemize
 
 \series bold
-Debug mode: 
+Save document before running FEBio: 
 \series default
-Check this to run FEBio in debug mode.
+Check this to save the model file automatically before running FEBio.
  
 \end_layout
 
 \begin_layout Standard
-By pressing OK, FEBioStudio will first export the current project to the
- file and location as specified, then call FEBio.
+By pressing OK, FEBioStudio will first export the current model to the file
+ and location as specified, then call FEBio.
  The FEBio output will be shown in the log panel.
  If this panel is not visible, you can activate it from the 
 \emph on
@@ -8912,6 +8934,105 @@ name "fig116"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+Advanced Settings
+\end_layout
+
+\begin_layout Standard
+Clicking the 
+\emph on
+Advanced 
+\emph default
+button will show additional options for controlling FEBio.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Write Notes: 
+\series default
+Check this option for writing the notes associated with the model components.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Debug Mode:
+\series default
+ Check this option to run FEBio in debug mode.
+ In debug mode, FEBio will write additional information to the log and plot
+ files that can help in debugging a model.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Config File
+\series default
+: The configuration file contains information to configure FEBio before
+ running the model, including linear solver parameters and plugins.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Task name: 
+\series default
+The name of the FEBio task that needs to be executed.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Task control file
+\series default
+: An optional file that provides information to the FEBio task.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+override command
+\series default
+: Check this option to override the FEBio command line that FEBio Studio
+ will use, and specify the command line options directly.
+ 
+\end_layout
+
+\begin_layout Section
+FEBio Launch Configurations
+\end_layout
+
+\begin_layout Standard
+The launch configuration contains the information to run FEBio on your local
+ or on a remote computer.
+ The local configurations, you just need to path to the FEBio executable.
+ For remote configurations, you'll have to provide additional information
+ on the server that you wish to run on.
+ 
+\end_layout
+
+\begin_layout Section
+Using FEBio Plugins
+\end_layout
+
+\begin_layout Standard
+FEBio supports plugins and the plugins are usually listed in the FEBio configura
+tion file.
+ If you wish the use plugins, you need to make a custom configuration file.
+ See the FEBio User's Manual for details about defining plugins in the configura
+tion file.
+ Once you have your custom configuration file, you can enter that configuration
+ file in the Advanced Settings in the Run FEBio dialog.
+ 
 \end_layout
 
 \begin_layout Chapter
