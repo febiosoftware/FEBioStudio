@@ -200,7 +200,7 @@ void CAnalysisTimeSettings::SetPropertyValue(int i, const QVariant& v)
 	default:
 	{
 		i -= 16;
-		int N = m_step->Parameters();
+		int N = m_params.size();
 		if (i < N)
 			CObjectProps::SetPropertyValue(i, v);
 		else
