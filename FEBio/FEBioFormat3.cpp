@@ -362,6 +362,8 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 
 	// don't forget to update the mesh
 	GetFEBioModel().UpdateGeometry();
+    
+    return true;
 }
 
 //-----------------------------------------------------------------------------
