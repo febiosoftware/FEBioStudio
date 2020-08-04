@@ -204,3 +204,102 @@ void CIntegrateWindow::IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& d
 		}
 	}
 }
+
+//=============================================================================
+
+CIntegrateSurfaceWindow::CIntegrateSurfaceWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
+{
+	QString title = "FEBio Studio: Integrate Surface";
+	setWindowTitle(title);
+	m_nsrc = -1;
+}
+
+void CIntegrateSurfaceWindow::Update(bool breset, bool bfit)
+{
+	CDocument* doc = GetDocument();
+	if (doc->IsValid() == false) return;
+
+	// update the source options
+	m_updating = true;
+
+	// Update integral
+	UpdateIntegral();
+
+	m_updating = false;
+
+	// redraw
+	FitPlotsToData();
+	RedrawPlot();
+}
+
+//-----------------------------------------------------------------------------
+void CIntegrateSurfaceWindow::UpdateIntegral()
+{
+	// clear the view
+	ClearPlots();
+
+	// get the source object
+	CPostDocument* pdoc = GetPostDoc();
+
+	Post::CGLModel* model = pdoc->GetGLModel();
+
+	char sztitle[256] = { 0 };
+	CPlotData* dataX = new CPlotData;
+	CPlotData* dataY = new CPlotData;
+	CPlotData* dataZ = new CPlotData;
+
+	IntegrateSelection(*dataX, *dataY, *dataZ);
+
+	int nview = model->GetSelectionMode();
+	sprintf(sztitle, "%s of %s", (nview == Post::SELECT_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
+
+	SetPlotTitle(sztitle);
+	dataX->setLabel("X"); AddPlotData(dataX);
+	dataY->setLabel("Y"); AddPlotData(dataY);
+	dataZ->setLabel("Z"); AddPlotData(dataZ);
+	
+	dataX->setLineColor(Qt::red  ); dataX->setFillColor(Qt::red);
+	dataY->setLineColor(Qt::green); dataY->setFillColor(Qt::green);
+	dataZ->setLineColor(Qt::blue ); dataZ->setFillColor(Qt::blue);
+
+	FitPlotsToData();
+
+	UpdatePlots();
+}
+
+//-----------------------------------------------------------------------------
+void CIntegrateSurfaceWindow::IntegrateSelection(CPlotData& dataX, CPlotData& dataY, CPlotData& dataZ)
+{
+	// get the document
+	CPostDocument* pdoc = GetPostDoc();
+	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	Post::CGLModel* po = pdoc->GetGLModel();
+
+	dataX.clear();
+	dataY.clear();
+	dataZ.clear();
+
+	// make sure the color map is active
+	if (po->GetColorMap()->IsActive())
+	{
+		// get the number of time steps
+		int ntime = pdoc->GetStates();
+
+		// make sure all states are up-to-date
+		pdoc->UpdateAllStates();
+
+		// loop over all steps
+		for (int i = 0; i < ntime; ++i)
+		{
+			Post::FEState* ps = fem.GetState(i);
+
+			// evaluate integration
+			vec3d v = IntegrateSurfaceNormal(mesh, ps);
+
+			dataX.addPoint(ps->m_time, v.x);
+			dataY.addPoint(ps->m_time, v.y);
+			dataZ.addPoint(ps->m_time, v.z);
+		}
+	}
+}

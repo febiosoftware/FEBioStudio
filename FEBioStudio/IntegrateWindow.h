@@ -60,3 +60,21 @@ private:
 	int		m_nsrc;
 	bool	m_updating;
 };
+
+class CIntegrateSurfaceWindow : public CGraphWindow
+{
+	Q_OBJECT
+
+public:
+	CIntegrateSurfaceWindow(CMainWindow* wnd, CPostDocument* postDoc);
+
+	void Update(bool breset = true, bool bfit = false) override;
+
+private:
+	void UpdateIntegral();
+	void IntegrateSelection(CPlotData& dataX, CPlotData& dataY, CPlotData& dataZ);
+
+private:
+	int		m_nsrc;
+	bool	m_updating;
+};

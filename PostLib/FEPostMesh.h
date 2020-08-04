@@ -137,6 +137,9 @@ double IntegrateEdges(Post::FEPostMesh& mesh, Post::FEState* ps);
 // is triangular, then we calculate the integral from a degenerate quad.
 double IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps);
 
+// integrates the surface normal scaled by the data field
+vec3d IntegrateSurfaceNormal(Post::FEPostMesh& mesh, Post::FEState* ps);
+
 // This function calculates the integral over a volume. Note that if the volume
 // is not hexahedral, then we calculate the integral from a degenerate hex.
 double IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps);
