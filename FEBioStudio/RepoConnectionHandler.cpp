@@ -56,6 +56,7 @@ SOFTWARE.*/
 #include <iostream>
 
 #define REPO_URL "repo.febio.org"
+#define API_URL "/modelRepo/api/v1.01/"
 
 class CRepoConnectionHandler::Imp
 {
@@ -115,7 +116,7 @@ void CRepoConnectionHandler::authenticate(QString username, QString password)
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath("/modelRepo/api/v1.0/authenticate");
+	myurl.setPath(QString(API_URL) + "authenticate");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -137,7 +138,7 @@ void CRepoConnectionHandler::getSchema()
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath("/modelRepo/api/v1.0/schema");
+	myurl.setPath(QString(API_URL) + "schema");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -155,7 +156,7 @@ void CRepoConnectionHandler::getTables()
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath("/modelRepo/api/v1.0/tables");
+	myurl.setPath(QString(API_URL) + "tables");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -174,7 +175,7 @@ void CRepoConnectionHandler::getFile(int id, int type)
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath(QString("/modelRepo/api/v1.0/files/%1/%2").arg(type).arg(id));
+	myurl.setPath(QString(API_URL) + QString("files/%1/%2").arg(type).arg(id));
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -197,7 +198,7 @@ void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath("/modelRepo/api/v1.0/uploadFileRequest");
+	myurl.setPath(QString(API_URL) + "uploadFileRequest");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -218,7 +219,7 @@ void CRepoConnectionHandler::uploadFile()
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath("/modelRepo/api/v1.0/uploadFile");
+	myurl.setPath(QString(API_URL) + "uploadFile");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -246,7 +247,7 @@ void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath("/modelRepo/api/v1.0/requestUploaderPermissions");
+	myurl.setPath(QString(API_URL) + "requestUploaderPermissions");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -267,7 +268,7 @@ void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath(QString("/modelRepo/api/v1.0/projects/%1").arg(id));
+	myurl.setPath(QString(API_URL) + QString("projects/%1").arg(id));
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -288,7 +289,7 @@ void CRepoConnectionHandler::modifyProjectUpload()
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath("/modelRepo/api/v1.0/modifyProjectUpload");
+	myurl.setPath(QString(API_URL) + "modifyProjectUpload");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -316,7 +317,7 @@ void CRepoConnectionHandler::deleteProject(int id)
 	myurl.setScheme("https");
 	myurl.setHost(REPO_URL);
 	myurl.setPort(4433);
-	myurl.setPath(QString("/modelRepo/api/v1.0/projects/%1").arg(id));
+	myurl.setPath(QString(API_URL) + QString("projects/%1").arg(id));
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -431,7 +432,7 @@ bool CRepoConnectionHandler::NetworkAccessibleCheck()
 //	myurl.setScheme("https");
 //	myurl.setHost(REPO_URL);
 //	myurl.setPort(4433);
-//	myurl.setPath("/modelRepo/api/v1.0/authCheck");
+//	myurl.setPath(QString(API_URL) + "authCheck");
 //
 //	QNetworkRequest request;
 //	request.setUrl(myurl);

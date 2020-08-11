@@ -1,5 +1,5 @@
-#LyX 2.3 created this file. For more info see http://www.lyx.org/
-\lyxformat 544
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
 \begin_document
 \begin_header
 \save_transient_properties true
@@ -35,8 +35,6 @@ eqs-within-sections
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
-\use_microtype false
-\use_dash_ligatures false
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -75,7 +73,6 @@ eqs-within-sections
 \suppress_date true
 \justification true
 \use_refstyle 0
-\use_minted 0
 \index Index
 \shortcut idx
 \color #008000
@@ -88,10 +85,7 @@ eqs-within-sections
 \tocdepth 3
 \paragraph_separation indent
 \paragraph_indentation default
-\is_math_indent 0
-\math_numbering_side default
-\quotes_style english
-\dynamic_quotes 0
+\quotes_language english
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
@@ -1228,9 +1222,6 @@ When you open a plot file in FEBio Studio you will notice that the UI changes.
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:postui"
-plural "false"
-caps "false"
-noprefix "false"
 
 \end_inset
 
@@ -5488,7 +5479,8 @@ The model repository options controls how FEBio Studio interacts with the
 Repository Folder: 
 \series default
 Sets the location where a local copy of the model repository is saved.
- If empty, a default location is picked which depends on the operating system.
+ If empty, you will be prompted to set a location upon connecting to the
+ model repository.
  
 \end_layout
 
@@ -8819,9 +8811,6 @@ Run FEBio
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig116"
-plural "false"
-caps "false"
-noprefix "false"
 
 \end_inset
 

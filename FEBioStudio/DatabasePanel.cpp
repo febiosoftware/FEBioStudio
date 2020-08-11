@@ -72,6 +72,7 @@ SOFTWARE.*/
 #include "PublicationWidgetView.h"
 #include "IconProvider.h"
 #include "FSCore/FSDir.h"
+#include "DlgLogin.h"
 #include "WrapLabel.h"
 #include "TagLabel.h"
 #include "ZipFiles.h"
@@ -218,7 +219,7 @@ public:
 	ProjectItem(QString name, int projectID, bool owned, bool authorized)
 		: CustomTreeWidgetItem(name, PROJECTITEM), m_projectID(projectID), m_ownedByUser(owned), m_authorized(authorized)
 	{
-		setIcon(0, QIcon(":/icons/folder.png"));
+		setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
 	}
 
 	CustomTreeWidgetItem* getProjectItem()
@@ -243,7 +244,7 @@ public:
 	FolderItem(QString name)
 		: CustomTreeWidgetItem(name, FOLDERITEM)
 	{
-		setIcon(0, QIcon(":/icons/folder.png"));
+		setIcon(0, CIconProvider::GetIcon("folder"));
 	}
 
 	CustomTreeWidgetItem* getProjectItem()
@@ -259,25 +260,25 @@ public:
 	FileItem(QString name, int fileID, bool lc, qint64 size)
 		: CustomTreeWidgetItem(name, FILEITEM), m_fileID(fileID)
 	{
-		if(name.endsWith(".fsprj"))
+		if(name.endsWith(".fsp"))
 		{
-			setIcon(0, QIcon(":/icons/FEBioStudio.png"));
+			setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
+		}
+		else if(name.endsWith(".fsm") || name.endsWith(".fsprj") || name.endsWith(".prv"))
+		{
+			setIcon(0, CIconProvider::GetIcon("PreView"));
 		}
 		else if(name.endsWith(".feb"))
 		{
-			setIcon(0, QIcon(":/icons/febio.png"));
-		}
-		else if(name.endsWith(".prv"))
-		{
-			setIcon(0, QIcon(":/icons/PreView.png"));
+			setIcon(0, CIconProvider::GetIcon("febio"));
 		}
 		else if(name.endsWith(".xplt"))
 		{
-			setIcon(0, QIcon(":/icons/PostView.png"));
+			setIcon(0, CIconProvider::GetIcon("PostView"));
 		}
 		else
 		{
-			setIcon(0, QIcon(":/icons/new.png"));
+			setIcon(0, CIconProvider::GetIcon("new"));
 		}
 
 
@@ -858,32 +859,6 @@ void CDatabasePanel::AddProjectFile(char **data)
 
 void CDatabasePanel::on_connectButton_clicked()
 {
-//	CDlgUpload dlg(this, 1, dbHandler, repoHandler);
-//
-//	dlg.setTagList(QStringList() << "test" << "Test3" << "test again" << "Contact");
-//
-//	if(dlg.exec())
-//	{
-//		QStringList paths = dlg.GetFilePaths();
-//		QStringList localPaths = dlg.GetLocalFilePaths();
-//		QList<QVariant> info = dlg.getFileInfo();
-//
-//		for(auto path : paths)
-//		{
-//			cout << path.toStdString() << endl;
-//		}
-//
-//		for(auto path : localPaths)
-//		{
-//			cout << path.toStdString() << endl;
-//		}
-//
-//		cout << QJsonDocument::fromVariant(info).toJson().toStdString() << endl;
-//
-//		cout << archive("/home/mherron/Desktop/test.zip", paths, localPaths) << endl;
-//
-//
-//	}
 	if(m_repositoryFolder.isEmpty())
 	{
 		QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
@@ -905,34 +880,17 @@ void CDatabasePanel::on_connectButton_clicked()
 	}
 
 	repoHandler->getSchema();
+
+	ui->showLoadingPage("Connecting...");
 }
 
 void CDatabasePanel::on_loginButton_clicked()
 {
-	QDialog dlg;
-
-	QLineEdit* userName;
-	QLineEdit* password;
-
-	QFormLayout* loginForm = new QFormLayout;
-	loginForm->addRow("Username:",  userName= new QLineEdit);
-	loginForm->addRow("Password:", password = new QLineEdit);
-	password->setEchoMode(QLineEdit::Password);
-
-	QDialogButtonBox* box = new QDialogButtonBox(QDialogButtonBox::Ok
-            | QDialogButtonBox::Cancel);
-
-	QObject::connect(box, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
-	QObject::connect(box, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-	loginForm->addWidget(box);
-
-	QObject::connect(password, &QLineEdit::returnPressed, &dlg, &QDialog::accept);
-
-	dlg.setLayout(loginForm);
+	CDlgLogin dlg;
 
 	if(dlg.exec())
 	{
-		repoHandler->authenticate(userName->text(), password->text());
+		repoHandler->authenticate(dlg.username(), dlg.password());
 
 		ui->showLoadingPage("Logging in...");
 	}

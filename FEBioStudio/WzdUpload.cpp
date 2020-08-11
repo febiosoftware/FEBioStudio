@@ -316,6 +316,27 @@ public:
 		fileItem->setData(0, DESCRIPTION, description);
 		fileItem->setData(0, TAGS, tags);
 
+		if(path.endsWith(".fsp"))
+		{
+			fileItem->setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
+		}
+		else if(path.endsWith(".fsm") || path.endsWith(".fsprj") || path.endsWith(".prv"))
+		{
+			fileItem->setIcon(0, CIconProvider::GetIcon("PreView"));
+		}
+		else if(path.endsWith(".feb"))
+		{
+			fileItem->setIcon(0, CIconProvider::GetIcon("febio"));
+		}
+		else if(path.endsWith(".xplt"))
+		{
+			fileItem->setIcon(0, CIconProvider::GetIcon("PostView"));
+		}
+		else
+		{
+			fileItem->setIcon(0, CIconProvider::GetIcon("new"));
+		}
+
 		if(size == -1)
 		{
 			fileItem->setData(2, SIZE, info.size());
