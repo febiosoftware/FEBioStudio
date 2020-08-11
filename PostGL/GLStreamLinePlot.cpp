@@ -313,6 +313,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 	// loop over all the surface facts
 	double q[3];
 	int NF = mesh.Faces();
+#pragma omp parallel for shared (NF)
 	for (int i=0; i<NF; ++i)
 	{
 		FEFace& f = mesh.Face(i);
@@ -399,6 +400,7 @@ void CGLStreamLinePlot::UpdateStreamLines()
 			while (1);
 
 			if (l.Points() > 2)
+#pragma omp critical
 			{
 				m_streamLines.push_back(l);
 			}

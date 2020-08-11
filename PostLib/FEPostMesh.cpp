@@ -339,6 +339,63 @@ double Post::IntegrateFaces(Post::FEPostMesh& mesh, Post::FEState* ps)
 }
 
 //-----------------------------------------------------------------------------
+vec3d Post::IntegrateSurfaceNormal(Post::FEPostMesh& mesh, Post::FEState* ps)
+{
+	vec3d res(0,0,0);
+	float vx[FEFace::MAX_NODES], vy[FEFace::MAX_NODES], vz[FEFace::MAX_NODES];
+	vec3f r[FEFace::MAX_NODES];
+	for (int i = 0; i < mesh.Faces(); ++i)
+	{
+		FEFace& f = mesh.Face(i);
+		vec3d N = f.m_fn;
+
+		if (f.IsSelected() && f.IsActive())
+		{
+			int nn = f.Nodes();
+
+			// get the nodal coordinates
+			for (int j = 0; j < nn; ++j) r[j] = ps->m_NODE[f.n[j]].m_rt;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				r[3] = r[2];
+				break;
+			}
+
+			// get the nodal values
+			for (int j = 0; j < nn; ++j)
+			{
+				double v = ps->m_NODE[f.n[j]].m_val;
+				vx[j] = N.x*v;
+				vy[j] = N.y*v;
+				vz[j] = N.z*v;
+			}
+
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+				vx[3] = vx[2];
+				vy[3] = vy[2];
+				vz[3] = vz[2];
+				break;
+			}
+
+			// add to integral
+			res.x += IntegrateQuad(r, vx);
+			res.y += IntegrateQuad(r, vy);
+			res.z += IntegrateQuad(r, vz);
+		}
+	}
+	return res;
+}
+
+//-----------------------------------------------------------------------------
 // This function calculates the integral over a volume. Note that if the volume
 // is not hexahedral, then we calculate the integral from a degenerate hex.
 double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)

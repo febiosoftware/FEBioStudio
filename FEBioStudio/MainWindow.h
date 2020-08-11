@@ -379,6 +379,7 @@ public slots:
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();
 	void on_actionIntegrate_triggered();
+	void on_actionIntegrateSurface_triggered();
 	void on_actionImportPoints_triggered();
 	void on_actionImportLines_triggered();
 

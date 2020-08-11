@@ -364,6 +364,7 @@ void CGLParticleFlowPlot::AdvanceParticles(int n0, int n1)
 		if (t1 < t0) t1 = t0;
 
 		int NP = (int)m_particles.size();
+#pragma omp parallel for shared (NP)
 		for (int i = 0; i<NP; ++i)
 		{
 			FlowParticle& p = m_particles[i];
@@ -379,6 +380,7 @@ void CGLParticleFlowPlot::AdvanceParticles(int n0, int n1)
 			float w = (t - t0) / (t1 - t0);
 
 			int NP = (int) m_particles.size();
+#pragma omp parallel for shared (NP)
 			for (int i=0; i<NP; ++i)
 			{
 				FlowParticle& p = m_particles[i];
@@ -438,6 +440,7 @@ void CGLParticleFlowPlot::SeedParticles()
 
 	// loop over all the surface facts
 	int NF = mesh.Faces();
+#pragma omp parallel for shared (NF)
 	for (int i = 0; i<NF; ++i)
 	{
 		FEFace& f = mesh.Face(i);
@@ -473,7 +476,10 @@ void CGLParticleFlowPlot::SeedParticles()
 			p.m_vel[m_seedTime] = vf;
 
 			// add it to the pile
-			m_particles.push_back(p);
+#pragma omp critical
+            {
+                m_particles.push_back(p);
+            }
 		}
 	}
 }

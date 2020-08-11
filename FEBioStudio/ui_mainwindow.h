@@ -431,6 +431,7 @@ public:
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
 		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");
+		QAction* actionIntegrateSurface = addAction("Integrate Surface ...", "actionIntegrateSurface");
 		QAction* actionImportPoints = addAction("Import Points ...", "actionImportPoints");
 		QAction* actionImportLines = addAction("Import Lines ...", "actionImportLines");
 
@@ -446,6 +447,7 @@ public:
 		actionSummary->setWhatsThis("<font color=\"black\">Shows the Summary window.The Summary window shows the min, max, and average values of a user-selected data field");
 		actionStats->setWhatsThis("<font color=\"black\">Shows the Statistics window. This window shows the distribution of the current nodal values at the current time step");
 		actionIntegrate->setWhatsThis("<font color=\"black\">Shows a graph that plots the integral of the values of the current selection as a function of time. Note that for a surface select it calculates a surface integral and for an element section, it shows a volume integral. For a node selection, the nodal values are summed.");
+		actionIntegrateSurface->setWhatsThis("<font color=\"black\">Shows a graph of the vector surface integral of the values of the current face selection.");
 
 		// --- Record menu ---
 		QAction* actionRecordNew = addAction("New ...", "actionRecordNew");
@@ -678,6 +680,8 @@ public:
 		menuPost->addAction(actionSummary);
 		menuPost->addAction(actionStats);
 		menuPost->addAction(actionIntegrate);
+		menuPost->addAction(actionIntegrateSurface);
+		menuPost->addSeparator();
 		menuPost->addAction(actionImportPoints);
 		menuPost->addAction(actionImportLines);
 

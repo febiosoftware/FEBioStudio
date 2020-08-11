@@ -333,6 +333,21 @@ void CMainWindow::on_actionIntegrate_triggered()
 	AddGraph(integrateWindow);
 }
 
+void CMainWindow::on_actionIntegrateSurface_triggered()
+{
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc == nullptr) return;
+
+	CIntegrateSurfaceWindow* integrateWindow = new CIntegrateSurfaceWindow(this, postDoc);
+	integrateWindow->Update(true);
+	integrateWindow->show();
+	integrateWindow->raise();
+	integrateWindow->activateWindow();
+
+	AddGraph(integrateWindow);
+}
+
+
 void CMainWindow::on_actionImportPoints_triggered()
 {
 	CDlgImportPoints dlg(this);

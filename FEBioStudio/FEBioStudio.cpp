@@ -134,9 +134,16 @@ int main(int argc, char* argv[])
 
 #else
 	MyApplication app(argc, argv);
-	
+
+    // set the display name (this will be displayed on all windows and dialogs)
+    app.setApplicationVersion("1.0.0");
+    app.setApplicationName("FEBio Studio");
+    app.setApplicationDisplayName("FEBio Studio");
+
 	string appdir = QApplication::applicationDirPath().toStdString();
 	
+    qDebug() << appdir.c_str();
+    
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
 	// show the splash screen
@@ -146,6 +153,9 @@ int main(int argc, char* argv[])
 	QSplashScreen splash(pixmap);
 	splash.show();
 	
+    // see if the reset flag was defined
+    // the reset flag can be used to restore the UI, i.e.
+    // when reset is true, the CMainWindow class will not read the settings.
 	bool breset = false;
 	for (int i = 0; i < argc; ++i)
 	{
@@ -157,15 +167,17 @@ int main(int argc, char* argv[])
 	}
 
 	// create the main window
-	CMainWindow wnd;
+	CMainWindow wnd(breset);
 	app.SetMainWindow(&wnd);
 	wnd.show();	
 
 	splash.finish(&wnd);
 
-	app.setApplicationVersion("1.0.0");
-	app.setApplicationName("FEBio Studio");
-	app.setApplicationDisplayName("FEBio Studio");
+    if ((argc == 2) && (breset == false))
+    {
+        wnd.OpenFile(argv[1], false);
+    }
+    
 	return app.exec();
 
 #endif

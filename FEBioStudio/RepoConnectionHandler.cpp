@@ -738,7 +738,7 @@ void CRepoConnectionHandler::requestUploadPermissionsReply(QNetworkReply *r)
 	if(statusCode == 200)
 	{
 		imp->dbPanel->ShowMessage("Your request for uploader permissions will be reviewed. You should "
-				"recieve an email when your request has been granted.");
+				"receive an email when your request has been granted.");
 	}
 	else
 	{
