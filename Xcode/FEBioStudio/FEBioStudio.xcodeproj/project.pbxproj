@@ -628,7 +628,7 @@
 		D5D5B6C32335128E00D388FA /* SSHThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHThread.cpp; sourceTree = "<group>"; };
 		D5DC346A23233928002D7A13 /* SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHHandler.cpp; sourceTree = "<group>"; };
 		D5DC346B23233928002D7A13 /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
-		D5DE72ED24E3458200752E1D /* libomp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libomp.dylib; path = ../../../../../../../usr/local/Cellar/libomp/9.0.0/lib/libomp.dylib; sourceTree = "<group>"; };
+		D5DE72ED24E3458200752E1D /* libomp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libomp.dylib; path = /usr/local/Cellar/libomp/9.0.0/lib/libomp.dylib; sourceTree = "<absolute>"; };
 		D5DFB179248F24750006DB45 /* moc_DlgPlaneCut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgPlaneCut.cpp; sourceTree = "<group>"; };
 		D5DFB17A248F24750006DB45 /* DlgPlaneCut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgPlaneCut.cpp; sourceTree = "<group>"; };
 		D5DFB17B248F24750006DB45 /* DlgPlaneCut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgPlaneCut.h; sourceTree = "<group>"; };
