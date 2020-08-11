@@ -516,6 +516,7 @@ public:
 		fileInfoForm = new QFormLayout;
 		fileInfoForm->setHorizontalSpacing(10);
 		fileInfoForm->addRow("Filename:", filenameLabel = new QLabel);
+		filenameLabel->setWordWrap(true);
 		fileInfoForm->addRow("Description:", fileDescLabel = new QLabel);
 		fileDescLabel->setWordWrap(true);
 		fileInfoLayout->addLayout(fileInfoForm);
