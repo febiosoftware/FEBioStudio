@@ -409,6 +409,7 @@ FESlidingInterface::FESlidingInterface(FEModel* ps, int nstep) : FEPairedInterfa
 	AddDoubleParam(1.0  , "penalty"     , "penalty"                );
 	AddBoolParam  (false, "two_pass"    , "two pass"               );
 	AddBoolParam  (false, "auto_penalty", "auto-penalty"           );
+    AddBoolParam  (false, "update_penalty", "update-penalty"       );
 	AddDoubleParam(0    , "fric_coeff"  , "friction coefficient"   );
 	AddDoubleParam(0    , "fric_penalty", "friction penalty factor");
 	AddDoubleParam(0.01 , "search_tol"  , "search tolerance"       );
@@ -432,6 +433,7 @@ FESlidingWithGapsInterface::FESlidingWithGapsInterface(FEModel* ps, int nstep) :
 	AddDoubleParam(  1.0, "penalty"     , "penalty");
 	AddBoolParam  (false, "two_pass"    , "two pass");
 	AddBoolParam  (false, "auto_penalty", "auto-penalty");
+    AddBoolParam  (false, "update_penalty", "update-penalty"       );
 	AddDoubleParam(    0, "fric_coeff"  , "friction coefficient");
 	AddDoubleParam(    0, "fric_penalty", "friction penalty factor");
 	AddDoubleParam( 0.01, "search_tol"  , "search tolerance");
@@ -454,6 +456,7 @@ FEFacetOnFacetInterface::FEFacetOnFacetInterface(FEModel* ps, int nstep) : FEPai
 	AddDoubleParam(  1.0, "penalty"     , "penalty");
 	AddBoolParam  (false, "two_pass"    , "two pass");
 	AddBoolParam  (false, "auto_penalty", "auto-penalty");
+    AddBoolParam  (false, "update_penalty", "update-penalty");
 	AddDoubleParam(    0, "fric_coeff"  , "friction coefficient");
 	AddDoubleParam(    0, "fric_penalty", "friction penalty factor");
 	AddDoubleParam( 0.01, "search_tol"  , "search tolerance");
@@ -539,6 +542,7 @@ FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO
 	AddDoubleParam(1.0  , "penalty"            , "penalty factor"        );
 	AddBoolParam  (false, "two_pass"           , "two pass"              );
 	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"          );
+    AddBoolParam  (false, "update_penalty"     , "update-penalty"        );
 	AddDoubleParam(0.0  , "pressure_penalty"   , "pressure penalty"      );
 	AddBoolParam  (false, "symmetric_stiffness", "symmetric stiffness"   );
 	AddDoubleParam(1.0  , "search_radius"      , "search radius"         );
@@ -564,6 +568,7 @@ FEPoroSoluteContact::FEPoroSoluteContact(FEModel* ps, int nstep) : FEPairedInter
 	AddDoubleParam(1.0  , "penalty"              , "penalty factor"         );
 	AddBoolParam  (false, "two_pass"             , "two pass"               );
 	AddBoolParam  (false, "auto_penalty"         , "auto-penalty"           );
+    AddBoolParam  (false, "update_penalty"       , "update-penalty"         );
 	AddDoubleParam(1.0  , "pressure_penalty"     , "pressure penalty"       );
 	AddBoolParam  (false, "symmetric_stiffness"  , "symmetric stiffness"    );
 	AddDoubleParam(1.0  , "concentration_penalty", "concentration penalty"  );
@@ -592,6 +597,7 @@ FEMultiphasicContact::FEMultiphasicContact(FEModel* ps, int nstep) : FEPairedInt
 	AddDoubleParam(1.0  , "penalty"              , "penalty factor"         );
 	AddBoolParam  (false, "two_pass"             , "two pass"               );
 	AddBoolParam  (false, "auto_penalty"         , "auto-penalty"           );
+    AddBoolParam  (false, "update_penalty"       , "update-penalty"         );
 	AddDoubleParam(1.0  , "pressure_penalty"     , "pressure penalty"       );
 	AddBoolParam  (false, "symmetric_stiffness"  , "symmetric stiffness"    );
 	AddDoubleParam(1.0  , "concentration_penalty", "concentration penalty"  );
@@ -625,6 +631,7 @@ FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int ns
 	AddDoubleParam(0.0  , "gaptol"             , "gap tolerance"         );
 	AddDoubleParam(1.0  , "penalty"            , "penalty factor"        );
 	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"          );
+    AddBoolParam  (false, "update_penalty"       , "update-penalty"         );
 	AddBoolParam  (false, "two_pass"           , "two pass"              );
 	AddDoubleParam(0.01 , "search_tol"         , "projection tolerance"  );
 	AddBoolParam  (false, "symmetric_stiffness", "symmetric stiffness"   );
@@ -655,6 +662,7 @@ FETiedBiphasicInterface::FETiedBiphasicInterface(FEModel* ps, int nstep) : FEPai
 	AddDoubleParam(0    , "ptol"               , "pressure tolerance"     );
 	AddDoubleParam(1.0  , "penalty"            , "penalty factor"         );
 	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"           );
+    AddBoolParam  (false, "update_penalty"     , "update-penalty"         );
 	AddBoolParam  (false, "two_pass"           , "two pass"               );
 	AddDoubleParam(0.01 , "search_tol"         , "projection tolerance"   );
 	AddDoubleParam(1.0  , "pressure_penalty"   , "pressure penalty factor");
@@ -678,6 +686,7 @@ FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) :
 	AddDoubleParam(0, "ptol", "pressure tolerance");
 	AddDoubleParam(1.0, "penalty", "penalty factor");
 	AddBoolParam(false, "auto_penalty", "auto-penalty");
+    AddBoolParam(false, "update_penalty", "update-penalty");
 	AddBoolParam(false, "two_pass", "two pass");
 	AddDoubleParam(0.01, "search_tol", "projection tolerance");
 	AddDoubleParam(1.0, "pressure_penalty", "pressure penalty factor");
@@ -701,6 +710,7 @@ FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPaire
 	AddDoubleParam(0, "gaptol", "gap tolerance");
 	AddDoubleParam(1.0, "penalty", "penalty factor");
 	AddBoolParam(false, "auto_penalty", "auto-penalty");
+    AddBoolParam(false, "update_penalty", "update-penalty");
 	AddBoolParam(false, "two_pass", "two pass");
 	AddIntParam(1, "knmult");
 	AddDoubleParam(0.01, "search_tol", "projection tolerance");
