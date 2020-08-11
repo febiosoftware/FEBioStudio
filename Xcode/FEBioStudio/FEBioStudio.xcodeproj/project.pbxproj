@@ -125,6 +125,7 @@
 		D5D5B6C82335128E00D388FA /* moc_SSHThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C22335128E00D388FA /* moc_SSHThread.cpp */; };
 		D5D5B6C92335128E00D388FA /* SSHThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C32335128E00D388FA /* SSHThread.cpp */; };
 		D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346A23233928002D7A13 /* SSHHandler.cpp */; };
+		D5DE72EE24E3458200752E1D /* libomp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5DE72ED24E3458200752E1D /* libomp.dylib */; };
 		D5DFB17C248F24750006DB45 /* moc_DlgPlaneCut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DFB179248F24750006DB45 /* moc_DlgPlaneCut.cpp */; };
 		D5DFB17D248F24750006DB45 /* DlgPlaneCut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DFB17A248F24750006DB45 /* DlgPlaneCut.cpp */; };
 		D5E04A4A2357BD1B006AC137 /* moc_DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */; };
@@ -627,6 +628,7 @@
 		D5D5B6C32335128E00D388FA /* SSHThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHThread.cpp; sourceTree = "<group>"; };
 		D5DC346A23233928002D7A13 /* SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHHandler.cpp; sourceTree = "<group>"; };
 		D5DC346B23233928002D7A13 /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
+		D5DE72ED24E3458200752E1D /* libomp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libomp.dylib; path = ../../../../../../../usr/local/Cellar/libomp/9.0.0/lib/libomp.dylib; sourceTree = "<group>"; };
 		D5DFB179248F24750006DB45 /* moc_DlgPlaneCut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgPlaneCut.cpp; sourceTree = "<group>"; };
 		D5DFB17A248F24750006DB45 /* DlgPlaneCut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgPlaneCut.cpp; sourceTree = "<group>"; };
 		D5DFB17B248F24750006DB45 /* DlgPlaneCut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgPlaneCut.h; sourceTree = "<group>"; };
@@ -1005,6 +1007,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5DE72EE24E3458200752E1D /* libomp.dylib in Frameworks */,
 				D576571A23E3347D00E4F70F /* libsqlite3.0.dylib in Frameworks */,
 				D576571823E3345500E4F70F /* libquazip.1.0.0.dylib in Frameworks */,
 				D5EF347623A03C1A00BF4D56 /* libssh.4.8.3.dylib in Frameworks */,
@@ -1596,6 +1599,7 @@
 		D5F7D8DB22FA38B50089B08E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D5DE72ED24E3458200752E1D /* libomp.dylib */,
 				D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */,
 				D576571923E3347D00E4F70F /* libsqlite3.0.dylib */,
 				D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */,
@@ -2209,6 +2213,7 @@
 					/usr/local/opt/openssl/lib,
 					/usr/local/lib,
 					/usr/local/Cellar/sqlite/3.30.1/lib,
+					/usr/local/Cellar/libomp/9.0.0/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2260,6 +2265,7 @@
 					/usr/local/opt/openssl/lib,
 					/usr/local/lib,
 					/usr/local/Cellar/sqlite/3.30.1/lib,
+					/usr/local/Cellar/libomp/9.0.0/lib,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = FEB.FEBioStudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
