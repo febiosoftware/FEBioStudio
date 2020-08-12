@@ -378,6 +378,30 @@ public:
 		delFileTagBtn->setEnabled(enabled);
 	}
 
+	bool invalidNames(QTreeWidgetItem* item = nullptr)
+	{
+		string dissallowed = "<>:\"\\/|?*";
+
+		if(!item) item = projectItem;
+
+		for(int child = 0; child < item->childCount(); child++)
+		{
+			if(item->child(child)->checkState(0) == Qt::Unchecked) continue;
+
+			for(auto c : dissallowed)
+			{
+				if(item->child(child)->text(0).contains(c)) return true;
+			}
+
+			if(item->child(child)->type() == FOLDERITEM)
+			{
+				return invalidNames(item->child(child));
+			}
+		}
+
+		return false;
+	}
+
 	bool hasDuplicateNames(QTreeWidgetItem* item = nullptr)
 	{
 		if(!item) item = projectItem;
@@ -844,6 +868,12 @@ void CWzdUpload::accept()
 		return;
 	}
 
+	if(ui->invalidNames())
+	{
+		QMessageBox::critical(this, "Upload", "The following characters are not allowed in file or folder names:\n\n< > : \" \\ / | ? *");
+		return;
+	}
+
 	if(ui->hasDuplicateNames())
 	{
 		QMessageBox::critical(this, "Upload", "You cannot have to files with the same name in the same folder.");
@@ -1096,6 +1126,11 @@ void CWzdUpload::on_fileTree_currentItemChanged(QTreeWidgetItem *current)
 
 void CWzdUpload::on_fileTree_itemChanged(QTreeWidgetItem *item, int column)
 {
+	// Prevent files or folders from starting with a '.' to prevent hidden file shenanigans
+	while(item->text(0).startsWith("."))
+	{
+		item->setText(0, item->text(0).remove(0,1));
+	}
 
 	if(item->type() == FILEITEM)
 	{
