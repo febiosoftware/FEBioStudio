@@ -1,0 +1,38 @@
+No corresponding help:
+FEFiberGeneratorLocal
+FEFiberGeneratorVector
+FENaturalNeoHookean
+FEIncompNeoHookean
+FEGasserOgdenHolzapfelUC
+FELinearOrthotropic
+FEIsotropicFourier
+FEFiberExpLinear
+FEFiberExpLinearUncoupled
+FEFDDvonMises3d
+FEDCSimoUC
+FEDCStrainEnergyDensityUC
+FEDCSpecificStrainEnergyUC
+FEDCvonMisesStressUC
+FEDCMaxShearStressUC
+FEDCMaxNormalStressUC
+FEDCMaxNormalLagrangeStrainUC
+FEEPIdealGas
+FEEPIdealFluid
+FEEPNeoHookeanFluid
+FEPrestrainConstGradient
+FEPrestrainInSituGradient
+
+No corresponding material:
+Referentially_Orthotropic_Diffusivity
+Materials_Continuous_Fiber_Distribution_Fibers_Fiber_with_Toe_Linear_Response
+
+Unsure:
+FEPRLig
+FEActiveContraction
+FE2DTransIsoMooneyRivlin
+
+Notes:
+EFD material pages don't have any info on EFD directly.
+CFD schemes point to the same article for both coupled and uncoupled types.
+"CFD" is used to refer to both "Continuous Fiber Distribution" and "Cumulative Distribution Functions"
+

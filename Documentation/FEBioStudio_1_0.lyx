@@ -10013,12 +10013,379 @@ FEBio Launch Configurations
 \end_layout
 
 \begin_layout Standard
-The launch configuration contains the information to run FEBio on your local
- or on a remote computer.
- The local configurations, you just need to path to the FEBio executable.
+Launch configurations contain the information needed to run FEBio on your
+ local machine or on a remote server.
+ For local configurations, you just need define a path to the FEBio executable.
  For remote configurations, you'll have to provide additional information
  on the server that you wish to run on.
  
+\end_layout
+
+\begin_layout Standard
+To edit launch configurations, click the 
+\emph on
+Edit
+\emph default
+ button next to the 
+\emph on
+Launch Configuration
+\emph default
+ field in the 
+\emph on
+Run FEBio
+\emph default
+ dialog.
+ This will launch a new dialog which will allow you to edit launch configuration
+s (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:launch-config-edit"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/launchConfigDlg.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The launch configuration editor, shown editing a remote configuration.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:launch-config-edit"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The left side of the dialog shows your exisiting configurations.
+ To add a new configuration click the plus icon below the list of configurations.
+ To remove a configuration, select it in the list, and then click the minus
+ icon.
+ To rename a configuration, double-click on the configuration name.
+ To reorder the configurations, drag and drop them in the list.
+\end_layout
+
+\begin_layout Standard
+There are several types of launch configurations, each with a different
+ set of fields to edit.
+ With the exception of the 
+\emph on
+Local
+\emph default
+ launch configuration type, all types run your jobs on a remote server.
+\end_layout
+
+\begin_layout Itemize
+The 
+\emph on
+Local
+\emph default
+ launch configuration type will launch the specified FEBio executable to
+ run your job.
+ This will be run on your current machine.
+ The only field required is:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+FEBio Executable
+\emph default
+: The path to the local FEBio executable that you wish to run with this
+ configuration
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+The 
+\emph on
+Remote
+\emph default
+ launch configuration type will copy your job files to a remote server via
+ SFTP into the specified directory, and then run the job via SSH with the
+ specified remote FEBio executable.
+ To use a remote configuration, fill out the following fields:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Remote Executable
+\emph default
+: The remote path to the FEBio executable that you wish to run with this
+ configuration.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Server
+\emph default
+: The domain name or IP address of the server that you wish to connect to
+ via SSH/SFTP.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Port
+\emph default
+: The port on your server on which the SSH service is being hosted.
+ By default, this is set to 22, which is the standard port for the SSH protocol.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Username
+\emph default
+: Your username on the remote machine.
+ Your user account must have permissions to connect to the server via SSH.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Remote Directory
+\emph default
+: The remote directory to which your FEBio input file will be copied, and
+ which will act as the working directory for your FEBio run.
+ Unless otherwise specifed in your input file, your log and plot files will
+ be created here.
+ This directory need not exist, and will be created automatically if it
+ does not.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+The 
+\emph on
+PBS Queue
+\emph default
+ and 
+\emph on
+SLURM Queue
+\emph default
+ launch configuration types will copy your job files to a remote server
+ via SFTP into the specified directory, and then add a new job to a PBS
+ or SLURM queuing system.
+ These launch configuration types each have all of the same fields as the
+ 
+\emph on
+Remote
+\emph default
+ type, along with a text box in which a PBS or SLURM script may be edited.
+ At launch, the contents of this text box are put into a file, transfered
+ via SFTP to the remote server, and run with either the 
+\emph on
+qsub
+\emph default
+ (for PBS) or the 
+\emph on
+sbatch
+\emph default
+ (for SLURM) command.
+ By default, the text box contains a valid PBS or SLURM script with some
+ common options set.
+ For convenience, several macros have been defined, which you may use in
+ your script.
+ Before being written to a file and being copied to the server, these macros
+ are replaced with a string unique to either the launch configuration, or
+ the current job.
+ These macros are:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+${JOB_NAME}
+\emph default
+: This macro will be replaced with the name of the current job as defined
+ in the 
+\emph on
+Run FEBio
+\emph default
+ dialog.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+${REMOTE_DIR}
+\emph default
+: This macro will be replaced with the contents of the 
+\emph on
+Remote Directory
+\emph default
+ field in the launch configuration.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+${FEBIO_PATH}
+\emph default
+: This macro will be replaced with the contents of the 
+\emph on
+Remote Executable
+\emph default
+ field in the launch configuratoin.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+The 
+\emph on
+Custom Remote
+\emph default
+ launch configuration type will copy your job files to a remote server via
+ SFTP into the specified directory, and then run a set of specified commands
+ in series on the remote server via SSH.
+ This launch configuration type has all of the same fields as the 
+\emph on
+Remote
+\emph default
+ type, except for the 
+\emph on
+Remote Executable
+\emph default
+ field.
+ It also has a text box in which a custom series of commands may be written,
+ one on each line.
+ There are a few things to keep in mind when creating a custom script:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The same macros available in the 
+\emph on
+PBS Queue
+\emph default
+ and 
+\emph on
+SLURM Queue
+\emph default
+ launch configuration types are available for use in this script, with the
+ exception of the 
+\emph on
+${FEBIO_PATH}
+\emph default
+ macro.
+\end_layout
+
+\begin_layout Itemize
+Lines starting with the '#' symbol are comments and will be ignored.
+\end_layout
+
+\begin_layout Itemize
+Emtpy lines are ignored.
+\end_layout
+
+\begin_layout Itemize
+The full string of each line will be run as a separate command on the remote
+ system.
+\end_layout
+
+\begin_layout Itemize
+The script written in this field is not a bash script, but rather a set
+ of discrete commands which will be executed in series.
+ It is of course possible to run a bash script with this launch configuration
+ type, by placing the desired script on the remote server, and then running
+ the script by calling it in one of the lines of the text box.
+\end_layout
+
+\begin_layout Itemize
+This launch configuration type allows for great flexability.
+ Using it, you can do pre and post processing of your FEBio jobs on a remote
+ server with the click of a single button.
+ Use this launch configuration type with caution, as it does not have any
+ safety nets; anything you tell the remote server to do, it will do, as
+ long as your user account has permissions to do it.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+When an FEBio job is started using any of the remote launch configuration
+ types, an SSH connection is made to the remote server.
+ This requires authentication.
+ If you have set up private key authentication for the specified server
+ and username, the authentication will happen automatically.
+ Otherwise, you will be prompted for your user account password during the
+ first attempt to connect to the server.
+ This password will be encrypted and stored in RAM for the duration of your
+ FEBio Studio session, and will automatically used for subsequent server
+ interactions until you close FEBio Studio.
+\end_layout
+
+\begin_layout Standard
+In order to retrieve the log and plot files from any of the remote launch
+ configuration types, click the 
+\emph on
+Get Remote Files
+\emph default
+ button under the 
+\emph on
+Job
+\emph default
+ properties in the 
+\emph on
+Model Tree
+\emph default
+.
+ The status of the PBS or SLURM queue may be checked by clicking the 
+\emph on
+Get Queue Status
+\emph default
+ button under the 
+\emph on
+Job
+\emph default
+ properties in the 
+\emph on
+Model Tree
+\emph default
+.
+ The queue status will printed to the 
+\emph on
+Output
+\emph default
+ panel.
 \end_layout
 
 \begin_layout Section
