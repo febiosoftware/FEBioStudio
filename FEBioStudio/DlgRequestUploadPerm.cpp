@@ -1,3 +1,4 @@
+#include <QMessageBox>
 #include <QBoxLayout>
 #include <QFormLayout>
 #include <QLabel>
@@ -18,7 +19,9 @@ public:
 	void setupUI(::CDlgRequestUploadPerm* parent)
 	{
 		QVBoxLayout* layout = new QVBoxLayout;
-		layout->addWidget(new WrapLabel("In order to upload to the repository, you must first request permission. "
+		layout->addWidget(new WrapLabel("In order to upload to the repository, you must first request permission. The repository "
+				"is not meant to be used as cloud storage for in-progress models, but as a means of sharing well-built, "
+				"thoroughly-tested models with the FEBio community.\n\n"
 				"Please fill out this form, and our team will notify you when your account has been given permission to "
 				"upload."));
 
@@ -30,7 +33,7 @@ public:
 
 		layout->addLayout(form);
 
-		layout->addWidget(new QLabel("Why do you want to upload files?"));
+		layout->addWidget(new QLabel("Why do you want to upload projects to the repository?"));
 
 		layout->addWidget(description = new QTextEdit);
 
@@ -41,6 +44,8 @@ public:
 		QObject::connect(bb, &QDialogButtonBox::rejected, parent, &::CDlgRequestUploadPerm::reject);
 
 		parent->setLayout(layout);
+
+		parent->setWindowTitle("Upload Permission Request");
 
 	}
 
@@ -68,7 +73,28 @@ QString CDlgRequestUploadPerm::getDescription()
 }
 
 
+void CDlgRequestUploadPerm::accept()
+{
+	if(ui->email->text().isEmpty() || !ui->email->text().contains("@") || !ui->email->text().contains("."))
+	{
+		QMessageBox::critical(this, "", "Please provide a valid contact email address.");
+		return;
+	}
 
+	if(ui->org->text().isEmpty())
+	{
+		QMessageBox::critical(this, "", "Please provide the name of the organization to which you belong.");
+		return;
+	}
+
+	if(ui->description->toPlainText().isEmpty())
+	{
+		QMessageBox::critical(this, "", "Please provide the reason why you would like to upload projects to the repository.");
+		return;
+	}
+
+	QDialog::accept();
+}
 
 
 

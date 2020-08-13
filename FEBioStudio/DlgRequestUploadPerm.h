@@ -17,6 +17,8 @@ public:
 	QString getOrg();
 	QString getDescription();
 
+	void accept() override;
+
 private:
 	Ui::CDlgRequestUploadPerm* ui;
 };

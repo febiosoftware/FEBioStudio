@@ -27,7 +27,9 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include <QWidget>
 #include <QStringList>
+#include <QKeyEvent>
 #include <QStackedLayout>
+#include <QLabel>
 #include <QAction>
 #include <QLineEdit>
 #include <QTreeWidget>
@@ -47,6 +49,7 @@ SOFTWARE.*/
 #include "DlgAddPublication.h"
 #include "PublicationWidgetView.h"
 #include "PublicationWidget.h"
+#include "IconProvider.h"
 
 
 #include <iostream>
@@ -54,14 +57,15 @@ SOFTWARE.*/
 class AuthorTreeWidget : public QTreeWidget
 {
 public:
-	AuthorTreeWidget() : QTreeWidget()
+	AuthorTreeWidget(QWidget* parent = nullptr) : QTreeWidget(parent)
 	{
-		setAcceptDrops(true);
-		setDragEnabled(true);
-		setDropIndicatorShown(true);
-		setDragDropMode(QAbstractItemView::InternalMove);
 
 		setColumnCount(3);
+
+		setAcceptDrops(true);
+		setDragEnabled(true);
+		setDragDropMode(QAbstractItemView::InternalMove);
+		setDropIndicatorShown(true);
 
 		QStringList headers;
 		headers.append("Order");
@@ -82,15 +86,15 @@ public:
 	}
 
 	QStringList getAuthorFamily()
+	{
+		QStringList authorFamily;
+		for(int item = 0; item < topLevelItemCount(); item++)
 		{
-			QStringList authorFamily;
-			for(int item = 0; item < topLevelItemCount(); item++)
-			{
-				authorFamily.push_back(topLevelItem(item)->text(2));
-			}
-
-			return authorFamily;
+			authorFamily.push_back(topLevelItem(item)->text(2));
 		}
+
+		return authorFamily;
+	}
 
 protected:
 	void dropEvent(QDropEvent *event)
@@ -102,10 +106,6 @@ protected:
 			topLevelItem(item)->setText(0, QString::number(item + 1));
 		}
 	}
-
-
-
-
 };
 
 
@@ -130,9 +130,11 @@ public:
 	QLineEdit* pages;
 	QLineEdit* DOI2;
 	AuthorTreeWidget* authors;
+	QAction* addAuthor;
+	QAction* removeAuthor;
 
 public:
-	void setup(QDialog* dlg)
+	void setup(::CDlgAddPublication* dlg)
 	{
 //		QVBoxLayout* layout = new QVBoxLayout;
 		stack = new QStackedLayout;
@@ -140,6 +142,15 @@ public:
 		// DOI Page
 		queryPage = new QWidget;
 		QVBoxLayout* queryPageLayout = new QVBoxLayout;
+
+		QLabel* instructions = new QLabel("Search for a publication either by DOI or by entering search terms into the search box. "
+				"Click the associated search button or press enter to search. The search will return likely publications. Select the "
+				"desired publication by pressing the check box.\n\nIf absolutely necessary, you may enter a publication manually by "
+				"clicking on the Manual Input button below.");
+		instructions->setWordWrap(true);
+
+		queryPageLayout->addWidget(instructions);
+
 		QFormLayout* queryForm = new QFormLayout;
 		QHBoxLayout* DOILayout = new QHBoxLayout;
 
@@ -147,7 +158,7 @@ public:
 		DOILayout->addWidget(DOI);
 
 		DOILookup = new QAction(dlg);
-		DOILookup->setIcon(QIcon(":/icons/search.png"));
+		DOILookup->setIcon(CIconProvider::GetIcon("search"));
 		DOILookup->setObjectName("DOILookup");
 		QToolButton* DOILookupBtn = new QToolButton;
 		DOILookupBtn->setDefaultAction(DOILookup);
@@ -162,7 +173,7 @@ public:
 		queryLayout->addWidget(query);
 
 		queryLookup = new QAction(dlg);
-		queryLookup->setIcon(QIcon(":/icons/search.png"));
+		queryLookup->setIcon(CIconProvider::GetIcon("search"));
 		queryLookup->setObjectName("queryLookup");
 		QToolButton* queryLookupBtn = new QToolButton;
 		queryLookupBtn->setDefaultAction(queryLookup);
@@ -173,11 +184,14 @@ public:
 
 		queryPageLayout->addLayout(queryForm);
 
+		QObject::connect(DOI, &QLineEdit::returnPressed, dlg, &::CDlgAddPublication::on_DOILookup_triggered);
+		QObject::connect(query, &QLineEdit::returnPressed, dlg, &::CDlgAddPublication::on_queryLookup_triggered);
+
 		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::SELECTABLE);
 		queryPageLayout->addWidget(pubs);
 
 		QDialogButtonBox* querybb = new QDialogButtonBox;
-		QPushButton* manualButton = querybb->addButton("Manual Input", QDialogButtonBox::ActionRole);
+		QPushButton* manualButton = querybb->addButton("Manual Input", QDialogButtonBox::ApplyRole);
 		querybb->addButton(QDialogButtonBox::Cancel);
 
 		QObject::connect(querybb, SIGNAL(rejected()), dlg, SLOT(reject()));
@@ -187,6 +201,7 @@ public:
 
 		queryPage->setLayout(queryPageLayout);
 		stack->addWidget(queryPage);
+
 
 		// Info Page
 		infoPage = new QWidget;
@@ -203,9 +218,37 @@ public:
 
 		infoPageLayout->addLayout(infoForm);
 
-		authors = new AuthorTreeWidget;
+		infoPageLayout->addWidget(new QLabel("Authors:"));
 
-		infoPageLayout->addWidget(authors);
+		QHBoxLayout* authorLayout = new QHBoxLayout;
+
+		authors = new AuthorTreeWidget(dlg);
+		authors->setObjectName("authorTree");
+
+		authorLayout->addWidget(authors);
+
+		QVBoxLayout* authorButtonLayout = new QVBoxLayout;
+		authorButtonLayout->setAlignment(Qt::AlignTop);
+
+		addAuthor = new QAction(dlg);
+		addAuthor->setIcon(CIconProvider::GetIcon("selectAdd"));
+		addAuthor->setObjectName("addAuthor");
+		QToolButton* addAuthorBtn = new QToolButton;
+		addAuthorBtn->setDefaultAction(addAuthor);
+
+		authorButtonLayout->addWidget(addAuthorBtn);
+
+		removeAuthor = new QAction(dlg);
+		removeAuthor->setIcon(CIconProvider::GetIcon("selectSub"));
+		removeAuthor->setObjectName("removeAuthor");
+		QToolButton* removeAuthorBtn = new QToolButton;
+		removeAuthorBtn->setDefaultAction(removeAuthor);
+
+		authorButtonLayout->addWidget(removeAuthorBtn);
+
+		authorLayout->addLayout(authorButtonLayout);
+
+		infoPageLayout->addLayout(authorLayout);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		QPushButton* backButton = bb->addButton("Back", QDialogButtonBox::ActionRole);
@@ -220,12 +263,20 @@ public:
 
 //		layout->addLayout(stack);
 
-
-
 		dlg->setLayout(stack);
+	}
 
+	void AddAuthor(QString given = "Given", QString family = "Family", int order = -1)
+	{
+		if(order == -1)
+		{
+			order = authors->topLevelItemCount() + 1;
+		}
 
+		QTreeWidgetItem* item = new QTreeWidgetItem(QStringList() << QString::number(order) << given << family);
+		item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEditable);
 
+		authors->addTopLevelItem(item);
 	}
 
 	void SetPublicationInfo(::CPublicationWidget* pub)
@@ -246,13 +297,7 @@ public:
 		authors->clear();
 		for(int author = 0; author < pub->getAuthorFamily().size(); author++)
 		{
-			QStringList info;
-			info.push_back(QString::number(author));
-			info.push_back(pub->getAuthorGiven()[author]);
-			info.push_back(pub->getAuthorFamily()[author]);
-
-			QTreeWidgetItem* item = new QTreeWidgetItem(info);
-			authors->addTopLevelItem(item);
+			AddAuthor(pub->getAuthorGiven()[author], pub->getAuthorFamily()[author], author + 1);
 		}
 
 		stack->setCurrentIndex(1);
@@ -300,7 +345,6 @@ public:
 		}
 
 		pubs->addPublication(title, year, journal, volume, issue, pages, DOI, authorGiven, authorFamily);
-
 	}
 
 };
@@ -360,6 +404,27 @@ void CDlgAddPublication::on_queryLookup_triggered()
 	QNetworkRequest request(myurl);
 	restclient->get(request);
 
+}
+
+void CDlgAddPublication::on_addAuthor_triggered()
+{
+	ui->AddAuthor();
+}
+
+void CDlgAddPublication::on_removeAuthor_triggered()
+{
+	for(auto item : ui->authors->selectedItems())
+	{
+		delete item;
+	}
+}
+
+void CDlgAddPublication::on_authorTree_itemDoubleClicked(QTreeWidgetItem * item, int column)
+{
+	if(column != 0)
+	{
+		ui->authors->editItem(item, column);
+	}
 }
 
 void CDlgAddPublication::connFinished(QNetworkReply* r)
@@ -446,7 +511,15 @@ QStringList CDlgAddPublication::getAuthorFamily()
 	return ui->authors->getAuthorFamily();
 }
 
+void CDlgAddPublication::keyPressEvent(QKeyEvent* e)
+{
+	// Prevent the enter key from exiting the dialog.
 
+	if(e->key() != Qt::Key_Enter)
+	{
+		QDialog::keyPressEvent(e);
+	}
+}
 
 
 

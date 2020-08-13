@@ -42,7 +42,7 @@ public:
 
 	enum Type {LIST, EDITABLE, SELECTABLE};
 
-	CPublicationWidgetView(Type type = LIST, bool scroll = true);
+	CPublicationWidgetView(Type type = LIST, bool scroll = true, bool frame = false);
 
 	CPublicationWidget* addPublication(CPublicationWidget* pub);
 	CPublicationWidget* addPublication(QVariantMap& data);

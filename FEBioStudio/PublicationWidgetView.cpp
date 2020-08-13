@@ -74,7 +74,7 @@ public:
 	QAction* delPub;
 
 public:
-	void setup(::CPublicationWidgetView* parent, bool scroll)
+	void setup(::CPublicationWidgetView* parent, bool scroll, bool frame)
 	{
 		QHBoxLayout* layout = new QHBoxLayout;
 //		layout->setContentsMargins(0, 5, 0, 0);
@@ -88,7 +88,8 @@ public:
 		if(scroll)
 		{
 			VerticalScrollArea* scrollArea = new VerticalScrollArea;
-			scrollArea->setFrameStyle(QFrame::NoFrame);
+
+			if(!frame) scrollArea->setFrameStyle(QFrame::NoFrame);
 
 			scrollArea->setWidget(pubs);
 
@@ -133,10 +134,10 @@ public:
 
 
 
-CPublicationWidgetView::CPublicationWidgetView(Type type, bool scroll)
+CPublicationWidgetView::CPublicationWidgetView(Type type, bool scroll, bool frame)
 	: type(type), ui(new Ui::CPublicationWidgetView)
 {
-	ui->setup(this, scroll);
+	ui->setup(this, scroll, frame);
 }
 
 int CPublicationWidgetView::getType() const {
@@ -163,7 +164,7 @@ CPublicationWidget* CPublicationWidgetView::addPublication(QVariantMap &data)
 		pub = new CPublicationWidget(data);
 		break;
 	case EDITABLE:
-		pub = new CPublicationWidget(data, CPublicationWidget::CHECKBOX);
+		pub = new CPublicationWidget(data, CPublicationWidget::CHECKBOX, false);
 		break;
 	case SELECTABLE:
 		pub = new CPublicationWidget(data, CPublicationWidget::BUTTON, false);
@@ -193,7 +194,7 @@ CPublicationWidget* CPublicationWidgetView::addPublication(QString title, QStrin
 		break;
 	case EDITABLE:
 		pub = new CPublicationWidget(title, year, journal, volume, issue, pages,
-				DOI, authorGiven, authorFamily, CPublicationWidget::CHECKBOX);
+				DOI, authorGiven, authorFamily, CPublicationWidget::CHECKBOX, false);
 		break;
 	case SELECTABLE:
 		pub = new CPublicationWidget(title, year, journal, volume, issue, pages,

@@ -428,7 +428,7 @@ public:
 		actionDeleteRemote->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDeleteRemote);
 
-		actionModify = new QAction(CIconProvider::GetIcon("edit"), "Modify Project Metadata", parent);
+		actionModify = new QAction(CIconProvider::GetIcon("edit"), "Modify Project", parent);
 		actionModify->setObjectName("actionModify");
 		actionModify->setIconVisibleInMenu(false);
 		toolbar->addAction(actionModify);

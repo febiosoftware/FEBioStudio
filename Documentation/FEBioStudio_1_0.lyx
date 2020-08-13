@@ -3978,7 +3978,1011 @@ The Repository Panel
 
 \begin_layout Standard
 This panel provides access to the online FEBio model repository.
+ This repository is a way for FEBio users to easily access models created
+ by other users, and to share models of their own from within FEBio Studio
+ itself.
+ The repository is not meant to be used as cloud storage for in-progress
+ models, but as a means of sharing well-built, thoroughly-tested models
+ with the FEBio community.
+\end_layout
+
+\begin_layout Subsection
+Connecting to the Repository
+\end_layout
+
+\begin_layout Standard
+FEBio Studio does not connect to the repository automactially when lauched.
+ In order to connect to the repository, simply select the 
+\emph on
+Repository Panel
+\emph default
+, and click the 
+\emph on
+Connect
+\emph default
+ button.
+ If this is your first time connecting to the repository, a dialog will
+ appear asking you to choose a location for FEBio Studio to store repository
+ files (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:repo"
+
+\end_inset
+
+).
+ This location will be used to store a databse containing metadata about
+ the projects stored on the repository, along with any files that you download
+ from the repository.
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/repoLocationDlg.png
+	scale 50
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+This dialog allows the user to set the location of the model repository
+ files.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:repo"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This setting can be changed at any time in the options (Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Model-Repository-Options"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Subsection
+Browsing and Downloading
+\end_layout
+
+\begin_layout Standard
+Once you have connected to the repository, you will be presented with the
  
+\emph on
+Repository Panel
+\emph default
+ as seen in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:repo-1"
+
+\end_inset
+
+.
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/repoPanel.png
+	scale 50
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Repository Panel allows you to browse and download files from the repository.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:repo-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+Repository Panel
+\emph default
+ shows a list of all projects available on the repository organized into
+ a tree structure.
+ The top-level items are categories of projects, the second-level items
+ are individual projects that are available for download, and all sub-items
+ are part of a given project's file structure containing any arrangement
+ of folders and files.
+ If a copy of a project, file, or folder currently exists on your machine
+ the name the item will be black, otherwise it will appear gray.
+ 
+\end_layout
+
+\begin_layout Standard
+When a project is selected, information about the project will appear below
+ the list of projects, including: the project name, the project's description,
+ the owner of the project, and any tags associated with the project.
+ If there are any publications associated with a project, they will be listed
+ below the project info.
+ Additionally, if a file from a project is selected, information about the
+ selected file will be displayed, including: the file name, a description
+ of the file (if available), and any tags associated with the file.
+\end_layout
+
+\begin_layout Standard
+At the top of the 
+\emph on
+Repository Panel
+\emph default
+, there are several buttons that allow for access to the panel's functions:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/refresh.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Refresh
+\emph default
+ button will connect to the model repository server, and redownload the
+ project tree and metadata, effectively refreshing the panel.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/download.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Download
+\emph default
+ button download the currently selected item, whether that be an entire
+ project or an individual file.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/open.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Open
+\emph default
+ button will open the currently selected project or file.
+ This button will only be enabled if the currently selected item has already
+ been downloaded.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/openContaining.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Open Containing Folder
+\emph default
+ button will open the folder containing the currently selected item in your
+ system's default file browser.
+ This button will only be enabled if the currently selected item has already
+ been downloaded.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/delete.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Delete
+\emph default
+ button will delete the local copy of the currently selected item from your
+ file system.
+ This button will only be enabled if the currently selected item has already
+ been downloaded.
+\end_layout
+
+\begin_layout Standard
+The functionality provided by these buttons can also be access by right-clicking
+ an item in the project list, and selecting the appropriate item from the
+ menu.
+ Additionally, double-clicking a project or file will download the item,
+ and automatically open the file when the download has finished.
+ If the item has already been downloaded, double-clicking the item will
+ open the local copy.
+ 
+\end_layout
+
+\begin_layout Standard
+Below the panel's main toolbar is a second toolbar used to search the repository.
+ To search the repository, enter one or more search terms into the text
+ box, and either click the 
+\emph on
+Search
+\emph default
+ button next to the bar or hit return.
+ All items not matching your search terms will be removed from the project
+ tree.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/search.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Search
+\emph default
+ button removes all items from the project tree that do not match the search
+ terms in the search box.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/clear.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Clear
+\emph default
+ button clears the search box, and restores all items to the project tree.
+ 
+\end_layout
+
+\begin_layout Subsection
+Managinig Your Uploads
+\end_layout
+
+\begin_layout Standard
+In order to upload projects to the repository, or to manage projects that
+ you have already uploaded, you must first log in to the repository by clicking
+ the login button, and entering your febio.org username and password into
+ the dialog that appears.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/repoLogin.png
+	scale 50
+
+\end_inset
+
+This button will allow you to log in to the model repository using your
+ febio.org username and password, in order to manage your own uploads.
+\end_layout
+
+\begin_layout Standard
+If you do not have an febio.org account, you may sign up for one for free
+ by visiting 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://febio.org/register/"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Once you have logged in, the repository will refresh, and a new category
+ of projects will appear in the project list, called 
+\emph on
+My Projects
+\emph default
+.
+ Any projects owned by your account will now appear in this category.
+ The 
+\emph on
+Login
+\emph default
+ button will be replaced with buttons used to manage your uploads.
+ These buttons will only be enabled when you have selected a project that
+ you own.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/deleteRemote.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Delete From Repository
+\emph default
+ button will permanently delete the currently selected project from the
+ model repository.
+ This cannot be undone.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/edit.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Modify Project
+\emph default
+ button will allow you to edit the currently selected project.
+ It will open the 
+\emph on
+Upload/Modfiy Dialog
+\emph default
+ (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:The-Upload/Modify-Dialog"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/upload.png
+	width 0.25in
+
+\end_inset
+
+If you currently have permission to upload projects to the repository, the
+ 
+\emph on
+Upload
+\emph default
+ button will open the 
+\emph on
+Upload/Modfiy Wizard
+\emph default
+ (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:The-Upload/Modify-Dialog"
+
+\end_inset
+
+) to allow you to upload a new project.
+ If you do not currently have permission to upload projects, the 
+\emph on
+Upload
+\emph default
+ button will open the 
+\emph on
+Upload Permission Request Dialog
+\emph default
+ (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Upload-Permission-Request."
+
+\end_inset
+
+).
+ 
+\end_layout
+
+\begin_layout Subsection
+The Upload Permission Request Dialog 
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Upload-Permission-Request."
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/requestUploadPermissions.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+This dialog will allow you to request permission to upload to the repository.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:repo-2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+The repository is meant to be a means whereby users may share well-built,
+ thoroughly-tested models with the FEBio community.
+ In order to ensure the quality of uploads to the repository, users are
+ not given permission to upload projects by default, but must request them.
+ If you do not currently have permission to upload, you may request permission
+ by logging in to the repository and clicking the 
+\emph on
+Upload
+\emph default
+ button.
+ Doing so will cause the 
+\emph on
+Upload Permission Request Dialog
+\emph default
+ to appear.
+\end_layout
+
+\begin_layout Standard
+The fields in this dialog are meant to help our team determine if your account
+ should be given permission to upload, so please be thorough in your responses.
+ Once you fill out these fields and click 
+\emph on
+OK
+\emph default
+, the request will sent to our team.
+ You should recieve an email at the specified address once you have been
+ given permission to upload.
+ 
+\end_layout
+
+\begin_layout Standard
+Please note that this is not an automated process.
+ As such, allow for 1-2 business days for the request to be processed.
+ If you do not recieve a response in that time, please resend the request
+ in the same manner.
+\end_layout
+
+\begin_layout Subsection
+The Upload/Modify Wizard
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:The-Upload/Modify-Dialog"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The repository is meant to be a means whereby users may share well-built,
+ thoroughly-tested models with the FEBio community.
+ If you have a model or set of models that you believe meets these requirements,
+ you may upload them as part of a project to the repository using this wizard.
+\end_layout
+
+\begin_layout Subsubsection
+Adding or Editing Project Details
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Figures/uploadWzd1.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The first page of the Upload/Modify Wizard
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:repo-3"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Each of the fields on the first page of the wizard must be filled out with
+ appropriate information.
+ If you are modifying an existing project, these fields will be filled out
+ with the current project information.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Project Name
+\emph default
+: Provide a unique, descriptive name for your project.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Description
+\emph default
+: Provide a description of your project as a whole (descriptions of individual
+ files can be given on the second page fo the wizard).
+ Please be thorough, providing at least a few sentances.
+ A user should be able to understand the purpose of your project simply
+ by reading the description.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Category
+\emph default
+: By default, users are only given permission to upload to the User Projects
+ category.
+ Unless you have been given special permission, this field will not be editable.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Owner
+\emph default
+: Your username.
+ This field is not editable.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Tags
+\emph default
+: Provide at least one, but preferably several, tags to help categorize
+ your project.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+To add a tag, type into the field next to the 
+\emph on
+Tag
+\emph default
+ label, and click the plus button.
+ This will add the tag to the box below.
+ Suggestions for tags will appear in a drop-down menu as you begin to type.
+\end_layout
+
+\begin_layout Itemize
+To remove a tag, select it from the list in the box, and click the minus
+ button.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\emph on
+Publications
+\emph default
+: If one or more of your models is associated with one or more published
+ papers, you may add details about these publications to your project.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+To add a publication, click the plus button next to the box under the 
+\emph on
+Publications
+\emph default
+ label.
+ This will open the 
+\emph on
+Add Publication Dialog
+\emph default
+ (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Add-Publication-Dialog"
+
+\end_inset
+
+).
+ Once added, the publication will appear in the box.
+\end_layout
+
+\begin_layout Itemize
+To remove a publication, check the checkbox next to the publication and
+ click the minus button located next to the box.
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+The Add Publication Dialog
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Add-Publication-Dialog"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/addPub.png
+	width 6.5in
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+First and second pages of the dialog.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+This dialog allows you to search for publications and add them to your project.
+ You may either search by DOI (the recommened approach), or by search term.
+ Once the dialog has found possible candidates based on your search criteria,
+ it will display them in a list below the search boxes.
+ To select one, click the blue checkbox button.
+ This will take you to the second page of the dialog.
+ On the second page you may review and edit the fields as necessary.
+\end_layout
+
+\begin_layout Standard
+If absolutely necessary, you may enter all of the information of a publication
+ manually by clicking the 
+\emph on
+Manual Input
+\emph default
+ button at the bottom of the dialog.
+ Doing so will take you to the second page where you can manually enter
+ the publication information.
+ 
+\end_layout
+
+\begin_layout Itemize
+To add an author, click the plus button to the right of the list of authors.
+ 
+\end_layout
+
+\begin_layout Itemize
+To remove an author, select the author(s) that you wish to remove and click
+ the minus button.
+\end_layout
+
+\begin_layout Itemize
+To rename an author, double-click on either their given or family name.
+\end_layout
+
+\begin_layout Itemize
+To reorder the authors, drag and drop the authors.
+ The 
+\emph on
+Order
+\emph default
+ field will be updated automatically.
+\end_layout
+
+\begin_layout Standard
+Once all of the information on the second page looks correct, click the
+ 
+\emph on
+OK
+\emph default
+ button.
+\end_layout
+
+\begin_layout Subsubsection
+Adding or Removing Files
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/uploadWzd2.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The first page of the Upload/Modify Wizard
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+The second page of the wizard is used to add or remove files, and add or
+ edit metadata for them.
+ If you are modifying an existing project, the project's current file structure
+ will be displayed here.
+ 
+\end_layout
+
+\begin_layout Standard
+The first column of the file tree contains name of the file or folder as
+ it will appear in your project.
+ The second column shows the location of the file.
+ If the file is to be newly added to a project, its location on your system
+ appears in this column.
+ If the file is part of an existing project that you are modifying, its
+ location relative to the model repository will be displayed in the this
+ column, starting with the text 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+{Repository}
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The third column shows the size of the file or folder.
+\end_layout
+
+\begin_layout Standard
+You may organize the files in your project however you would like, with
+ any arrangement of files, folders, and subfolders.
+ It is best practice to avoid unnecessary subfolders, and to avoid extensive
+ subfolder trees.
+ Please note that empty folders will not be uploaded.
+ 
+\end_layout
+
+\begin_layout Standard
+The buttons on the top of this page provide access to various functions:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/addFolder.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Add Folder
+\emph default
+ button adds a new folder to your project.
+ Upon adding a new folder, the name folder name will become editable.
+ The folder will be added at the level of the currently selected file, or
+ as a subfolder of the currently selected folder.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/new.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Add File
+\emph default
+ button opens a system file dialog which will allow you to select any number
+ of files from your system to include in your project.
+ The files will be added to the file tree at the level of the currently
+ selected file, or inside of the currently selected folder.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Figures/rename.png
+	width 0.25in
+
+\end_inset
+
+The 
+\emph on
+Rename
+\emph default
+ button allows you to rename the currently selected file or folder.
+ You can also rename a file or folder by double-clicking on the desired
+ item.
+\end_layout
+
+\begin_layout Standard
+Other functions of this page are described below:
+\end_layout
+
+\begin_layout Itemize
+To reorder files or folders, drag and drop the files or folders to the desired
+ location.
+\end_layout
+
+\begin_layout Itemize
+To exclude previously added files or folders from the upload, uncheck the
+ check box to the left of the file or folder names.
+\end_layout
+
+\begin_layout Itemize
+To remove a file or folder from an existing project that you are modifying,
+ uncheck the check box to the left of the file or folder names.
+ Please note that unchecking a folder, will uncheck its contents, and will
+ result in their deletion.
+ If you simply want to move files out of a folder, then you must drag them
+ out of the folder.
+\end_layout
+
+\begin_layout Itemize
+To add or edit a file's description, select one or more files and then type
+ a description into the 
+\emph on
+Description
+\emph default
+ box.
+ The description of all selected files will be changed to what you type.
+ Folders cannot be given descriptions.
+\end_layout
+
+\begin_layout Itemize
+To add tags to a file, select one or more files, type a tag into the box
+ next to the 
+\emph on
+Tag
+\emph default
+ label, then click the plus icon.
+ This tag will be added to all selected files.
+ Folders cannot be assinged tags.
+\end_layout
+
+\begin_layout Itemize
+To remove tags from a file, select one or more files, select the tags you
+ wish to remove from the box below the 
+\emph on
+Tag
+\emph default
+ label, then click the minus button.
+ Only tags from the most recently selected file will appear in this list.
+\end_layout
+
+\begin_layout Standard
+When you are happy with the state of your file structure, and your files
+ have been given descriptions and tags, click the 
+\emph on
+Finish
+\emph default
+ button to finalize your project and initiate the upload.
 \end_layout
 
 \begin_layout Section
@@ -5465,6 +6469,13 @@ Selects the unit system that will be used.
 
 \begin_layout Subsection
 Model Repository Options
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Model-Repository-Options"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard

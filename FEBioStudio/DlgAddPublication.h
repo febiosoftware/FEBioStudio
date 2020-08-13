@@ -34,6 +34,7 @@ namespace Ui {
 }
 
 class QStringList;
+class QTreeWidgetItem;
 class QNetworkAccessManager;
 class QNetworkReply;
 class CPublicationWidget;
@@ -60,10 +61,16 @@ public:
 public slots:
 	void on_DOILookup_triggered();
 	void on_queryLookup_triggered();
+	void on_addAuthor_triggered();
+	void on_removeAuthor_triggered();
+	void on_authorTree_itemDoubleClicked(QTreeWidgetItem * item, int column);
 	void publicationChosen(CPublicationWidget* pub);
 	void manualButtonClicked();
 	void backButtonClicked();
 	void connFinished(QNetworkReply* r);
+
+protected:
+	void keyPressEvent(QKeyEvent* e) override;
 
 private:
 	Ui::CDlgAddPublication*	ui;
