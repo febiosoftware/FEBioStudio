@@ -57,7 +57,7 @@ public:
 
 	QString getUsername();
 	int getUploadPermission();
-	int getSizeLimit();
+	qint64 getSizeLimit();
 	bool isAuthenticated();
 
 	void setUploadReady(bool ready);

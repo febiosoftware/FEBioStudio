@@ -56,7 +56,7 @@ SOFTWARE.*/
 #include <iostream>
 
 #define REPO_URL "repo.febio.org"
-#define API_URL "/modelRepo/api/v1.01/"
+#define API_URL "/modelRepo/api/v1.02/"
 
 class CRepoConnectionHandler::Imp
 {
@@ -81,7 +81,7 @@ public:
 	QString username;
 	QString token;
 	int uploadPermission;
-	int sizeLimit;
+	qint64 sizeLimit;
 	bool authenticated;
 
 	QString fileToken;
@@ -458,11 +458,10 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 		QJsonDocument jsonDoc = QJsonDocument::fromJson(r->readAll());
 		QJsonObject obj = jsonDoc.object();
 
-
 		imp->authenticated = true;
 		imp->token = obj.value("authToken").toString();
 		imp->uploadPermission = obj.value("uploader").toInt();
-		imp->sizeLimit = obj.value("sizeLimit").toInt();
+		imp->sizeLimit = obj.value("sizeLimit").toString().toLongLong();
 
 		// Send a request to get the repository schema
 		getSchema();
@@ -476,6 +475,7 @@ void CRepoConnectionHandler::authReply(QNetworkReply *r)
 		imp->authenticated = false;
 		imp->token = "";
 		imp->uploadPermission = 0;
+		imp->sizeLimit = 0;
 
 		getTables();
 
@@ -760,7 +760,7 @@ int CRepoConnectionHandler::getUploadPermission()
 	return imp->uploadPermission;
 }
 
-int CRepoConnectionHandler::getSizeLimit()
+qint64 CRepoConnectionHandler::getSizeLimit()
 {
 	return imp->sizeLimit;
 }
