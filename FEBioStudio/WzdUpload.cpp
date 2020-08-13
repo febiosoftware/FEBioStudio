@@ -205,7 +205,7 @@ public:
 
 		rightLayout->addWidget(new QLabel("Publications:"));
 
-		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::EDITABLE);
+		pubs = new ::CPublicationWidgetView(::CPublicationWidgetView::EDITABLE, true, true);
 		rightLayout->addWidget(pubs);
 
 		infoLayout->addLayout(rightLayout);
@@ -298,7 +298,14 @@ public:
 
 		fileInfoEnabled(false);
 
-		wzd->setWindowTitle("Upload Project");
+		if(modify)
+		{
+			wzd->setWindowTitle("Modify Project");
+		}
+		else
+		{
+			wzd->setWindowTitle("Upload Project");
+		}
 		wzd->resize(800, 600);
 
 		fileTree->setColumnWidth(0, 350);
@@ -1052,7 +1059,6 @@ void CWzdUpload::on_addFolder_triggered()
 	ui->fileTree->editItem(child);
 
 	ui->updateSizes();
-
 }
 
 void CWzdUpload::on_addFiles_triggered()
@@ -1126,17 +1132,19 @@ void CWzdUpload::on_fileTree_currentItemChanged(QTreeWidgetItem *current)
 
 void CWzdUpload::on_fileTree_itemChanged(QTreeWidgetItem *item, int column)
 {
+	QString temp = item->text(0);
+
 	// Prevent files or folders from starting with a '.' to prevent hidden file shenanigans
-	while(item->text(0).startsWith("."))
+	while(temp.startsWith("."))
 	{
-		item->setText(0, item->text(0).remove(0,1));
+		temp.remove(0,1);
 	}
 
 	if(item->type() == FILEITEM)
 	{
 		// Ensure that renaming a file doesn't change its extension
 		QString extension = QFileInfo(item->text(1)).completeSuffix();
-		item->setText(0, QFileInfo(item->text(0)).baseName().append(".").append(extension));
+		item->setText(0, QFileInfo(temp).baseName().append(".").append(extension));
 	}
 }
 
