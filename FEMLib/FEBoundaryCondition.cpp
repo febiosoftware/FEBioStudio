@@ -466,7 +466,7 @@ FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps) : FEPrescribed
 }
 
 //-----------------------------------------------------------------------------
-FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_SOLID_VELOCITY, ps, pi, bc, s, nstep)
+FEPrescribedFluidVelocity::FEPrescribedFluidVelocity(FEModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FEPrescribedDOF(FE_PRESCRIBED_FLUID_VELOCITY, ps, pi, bc, s, nstep)
 {
     SetTypeString("Prescribed Fluid Velocity");
     SetVarID(ps->GetVariableIndex("Fluid Velocity"));
