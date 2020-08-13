@@ -127,9 +127,10 @@ private:
 	FESurfaceLoad* ParseConcentrationFlux     (XMLTag& tag);
 
 	// body loads
-	void ParseBodyForce        (FEStep* pstep, XMLTag& tag);
-	void ParseNonConstBodyForce(FEStep* pstep, XMLTag& tag);
-	void ParseHeatSource       (FEStep* pstep, XMLTag& tag);
+	void ParseBodyForce           (FEStep* pstep, XMLTag& tag);
+	void ParseNonConstBodyForce   (FEStep* pstep, XMLTag& tag);
+	void ParseHeatSource          (FEStep* pstep, XMLTag& tag);
+    void ParseCentrifugalBodyForce(FEStep* pstep, XMLTag& tag);
 
 private:
 	// constraint input functions

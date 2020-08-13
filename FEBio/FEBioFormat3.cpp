@@ -1602,6 +1602,7 @@ void FEBioFormat3::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	if      (att == "const"      ) pbl = CREATE_BODY_LOAD(FEConstBodyForce);
 	else if (att == "heat_source") pbl = CREATE_BODY_LOAD(FEHeatSource);
 	else if (att == "non-const"  ) pbl = CREATE_BODY_LOAD(FENonConstBodyForce);
+    else if (att == "centrifugal") pbl = CREATE_BODY_LOAD(FECentrifugalBodyForce);
 	else ParseUnknownAttribute(tag, "type");
 
 	// process body load

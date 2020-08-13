@@ -172,6 +172,7 @@ protected:
 	void WriteBodyLoad(FEBodyLoad* pbl, GPart* pg);
 	void WriteBodyForce(FEConstBodyForce* pbf, GPart* pg);
 	void WriteHeatSource(FEHeatSource* phs, GPart* pg);
+    void WriteCentrifugalBodyForce(FECentrifugalBodyForce* pbf, GPart* pg);
 
 	// Used by new Part export feature
 	void WriteGeometryObject(Part* po);

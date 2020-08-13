@@ -68,3 +68,19 @@ public:
 	FESBMPointSource(FEModel* ps, int nstep = 0);
 };
 
+//-----------------------------------------------------------------------------
+// Centrifugal body force
+class FECentrifugalBodyForce : public FEBodyLoad
+{
+public:
+    enum { ANGSPD, ROT_AXIS, ROT_CNTR };
+    
+public:
+    FECentrifugalBodyForce(FEModel* ps, int nstep = 0);
+    
+    FELoadCurve* GetLoadCurve() { return GetParamLC(ANGSPD); }
+    
+    double GetLoad() { return GetFloatValue(ANGSPD); }
+    void SetLoad(double v) { SetFloatValue(ANGSPD, v); }
+};
+
