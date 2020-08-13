@@ -4697,6 +4697,9 @@ void FEBioExport25::WriteBodyLoad(FEBodyLoad* pbl, GPart* pg)
 		}
 		m_xml.close_branch();	
 	}
+
+    FECentrifugalBodyForce* pcs = dynamic_cast<FECentrifugalBodyForce*>(pbl);
+    if (pcs) WriteCentrifugalBodyForce(pcs, pg);
 }
 
 //-----------------------------------------------------------------------------
@@ -4732,6 +4735,19 @@ void FEBioExport25::WriteHeatSource(FEHeatSource* phs, GPart* pg)
 		WriteParamList(*phs);
 	}
 	m_xml.close_branch();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport25::WriteCentrifugalBodyForce(FECentrifugalBodyForce* pcs, GPart* pg)
+{
+    XMLElement el("body_load");
+    el.add_attribute("type", "centrifugal");
+    if (pg) el.add_attribute("elem_set", pg->GetName());
+    m_xml.add_branch(el);
+    {
+        WriteParamList(*pcs);
+    }
+    m_xml.close_branch();
 }
 
 //-----------------------------------------------------------------------------

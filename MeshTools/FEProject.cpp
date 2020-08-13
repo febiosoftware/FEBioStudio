@@ -292,6 +292,7 @@ void FEProject::InitModules()
 	REGISTER_FE_CLASS(FERigidJoint                 , MODULE_MECH, FE_INTERFACE        , FE_RIGID_JOINT                  , "Rigid joint");
 	REGISTER_FE_CLASS(FEConstBodyForce             , MODULE_MECH, FE_BODY_LOAD        , FE_CONST_BODY_FORCE             , "Const body force", Loads_Section_Body_Loads_Constant_Body_Force);
 	REGISTER_FE_CLASS(FENonConstBodyForce          , MODULE_MECH, FE_BODY_LOAD        , FE_NON_CONST_BODY_FORCE         , "Non-const body force", Loads_Section_Body_Loads_Non_Constant_Body_Force);
+    REGISTER_FE_CLASS(FECentrifugalBodyForce       , MODULE_MECH, FE_BODY_LOAD        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force", Loads_Section_Body_Loads_Centrifugal_Force);
 
 	REGISTER_FE_CLASS(FERigidFixed			, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation", Boundary_Section_Prescribed_Rigid_Body_Degrees_of_Freedom);
 	REGISTER_FE_CLASS(FERigidDisplacement	, MODULE_MECH, FE_RIGID_CONSTRAINT, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation", Boundary_Section_Prescribed_Rigid_Body_Degrees_of_Freedom);

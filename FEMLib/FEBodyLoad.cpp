@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBodyLoad.h"
+#include <FSCore/paramunit.h>
 
 //-----------------------------------------------------------------------------
 FEConstBodyForce::FEConstBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_CONST_BODY_FORCE, ps, nstep)
@@ -76,4 +77,13 @@ FESBMPointSource::FESBMPointSource(FEModel* ps, int nstep) : FEBodyLoad(FE_SBM_P
 	AddDoubleParam(0, "y", "y");
 	AddDoubleParam(0, "z", "z");
 	AddBoolParam(true, "weigh_volume", "weigh volume");
+}
+
+//-----------------------------------------------------------------------------
+FECentrifugalBodyForce::FECentrifugalBodyForce(FEModel* ps, int nstep) : FEBodyLoad(FE_CENTRIFUGAL_BODY_FORCE, ps, nstep)
+{
+    SetTypeString("centrifugal");
+    AddScienceParam(0, UNIT_RADIAN, "angular_speed", "angular speed")->SetLoadCurve();
+    AddVecParam(vec3d(0,0,1),"rotation_axis", "rotation axis");
+    AddVecParam(vec3d(0,0,0),"rotation_center", "rotation center");
 }

@@ -623,6 +623,7 @@ SOFTWARE.*/
 #define FE_MATCHING_OSM_COEF                0x0030
 #define FE_NON_CONST_BODY_FORCE				0x0031
 #define FE_INIT_PRESTRAIN					0x0032
+#define FE_CENTRIFUGAL_BODY_FORCE           0x0033
 
 //--------------------------------------------------------
 // Interface types

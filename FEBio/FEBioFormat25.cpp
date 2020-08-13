@@ -1976,6 +1976,7 @@ void FEBioFormat25::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	if      (att == "const"      ) ParseBodyForce (pstep, tag);
 	else if (att == "non-const"  ) ParseNonConstBodyForce(pstep, tag);
 	else if (att == "heat_source") ParseHeatSource(pstep, tag);
+    else if (att == "centrifugal") ParseCentrifugalBodyForce(pstep, tag);
 	else ParseUnknownAttribute(tag, "type");
 }
 
@@ -2939,6 +2940,35 @@ void FEBioFormat25::ParseHeatSource(FEStep *pstep, XMLTag &tag)
 	char szname[256] = { 0 };
 	sprintf(szname, "HeatSource%02d", CountLoads<FEHeatSource>(fem));
 	phs->SetName(szname);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat25::ParseCentrifugalBodyForce(FEStep *pstep, XMLTag &tag)
+{
+    FEModel& fem = GetFEModel();
+    
+    FECentrifugalBodyForce* phs = new FECentrifugalBodyForce(&fem, pstep->GetID());
+    pstep->AddComponent(phs);
+    
+    ++tag;
+    const char* szlc;
+    do
+    {
+        if (tag == "angular_speed")
+        {
+            szlc = tag.AttributeValue("lc");
+            double v; tag.value(v);
+            phs->SetLoad(v);
+            phs->GetLoadCurve()->SetID(atoi(szlc) - 1);
+        }
+        else if (ReadParam(*phs, tag) == false) ParseUnknownTag(tag);
+        
+        ++tag;
+    } while (!tag.isend());
+    
+    char szname[256] = { 0 };
+    sprintf(szname, "CentrifugalBodyForce%02d", CountLoads<FECentrifugalBodyForce>(fem));
+    phs->SetName(szname);
 }
 
 //=============================================================================

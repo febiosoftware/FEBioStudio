@@ -126,6 +126,8 @@
 		D5D5B6C92335128E00D388FA /* SSHThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D5B6C32335128E00D388FA /* SSHThread.cpp */; };
 		D5DC346D23233928002D7A13 /* SSHHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DC346A23233928002D7A13 /* SSHHandler.cpp */; };
 		D5DE72EE24E3458200752E1D /* libomp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5DE72ED24E3458200752E1D /* libomp.dylib */; };
+		D5DE72F324E3678B00752E1D /* FlowLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DE72EF24E3678B00752E1D /* FlowLayout.cpp */; };
+		D5DE72F424E3678B00752E1D /* DlgLogin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DE72F124E3678B00752E1D /* DlgLogin.cpp */; };
 		D5DFB17C248F24750006DB45 /* moc_DlgPlaneCut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DFB179248F24750006DB45 /* moc_DlgPlaneCut.cpp */; };
 		D5DFB17D248F24750006DB45 /* DlgPlaneCut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5DFB17A248F24750006DB45 /* DlgPlaneCut.cpp */; };
 		D5E04A4A2357BD1B006AC137 /* moc_DlgEditLConfigs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E04A472357BD1B006AC137 /* moc_DlgEditLConfigs.cpp */; };
@@ -629,6 +631,10 @@
 		D5DC346A23233928002D7A13 /* SSHHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSHHandler.cpp; sourceTree = "<group>"; };
 		D5DC346B23233928002D7A13 /* SSHHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHHandler.h; sourceTree = "<group>"; };
 		D5DE72ED24E3458200752E1D /* libomp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libomp.dylib; path = /usr/local/Cellar/libomp/9.0.0/lib/libomp.dylib; sourceTree = "<absolute>"; };
+		D5DE72EF24E3678B00752E1D /* FlowLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FlowLayout.cpp; sourceTree = "<group>"; };
+		D5DE72F024E3678B00752E1D /* FlowLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlowLayout.h; sourceTree = "<group>"; };
+		D5DE72F124E3678B00752E1D /* DlgLogin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgLogin.cpp; sourceTree = "<group>"; };
+		D5DE72F224E3678B00752E1D /* DlgLogin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgLogin.h; sourceTree = "<group>"; };
 		D5DFB179248F24750006DB45 /* moc_DlgPlaneCut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgPlaneCut.cpp; sourceTree = "<group>"; };
 		D5DFB17A248F24750006DB45 /* DlgPlaneCut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgPlaneCut.cpp; sourceTree = "<group>"; };
 		D5DFB17B248F24750006DB45 /* DlgPlaneCut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgPlaneCut.h; sourceTree = "<group>"; };
@@ -1232,6 +1238,8 @@
 				D5CC3A5D245B4CD700311F48 /* DlgKinemat.h */,
 				D5F7D74622FA37C40089B08E /* DlgLameConvertor.cpp */,
 				D5F7D71D22FA37C40089B08E /* DlgLameConvertor.h */,
+				D5DE72F124E3678B00752E1D /* DlgLogin.cpp */,
+				D5DE72F224E3678B00752E1D /* DlgLogin.h */,
 				D5F7D71122FA37C40089B08E /* DlgLSDYNAExport.cpp */,
 				D5F7D72522FA37C40089B08E /* DlgLSDYNAExport.h */,
 				D5CC3A68245B4CD800311F48 /* DlgMeasure.cpp */,
@@ -1305,6 +1313,8 @@
 				D5F7D76522FA37C40089B08E /* FileThread.h */,
 				D5F7D6FD22FA37C30089B08E /* FileViewer.cpp */,
 				D5F7D80A22FA37C40089B08E /* FileViewer.h */,
+				D5DE72EF24E3678B00752E1D /* FlowLayout.cpp */,
+				D5DE72F024E3678B00752E1D /* FlowLayout.h */,
 				D5F7D7C322FA37C40089B08E /* FoamGeneratorTool.cpp */,
 				D5F7D7B622FA37C40089B08E /* FoamGeneratorTool.h */,
 				D5946E0E24B4F5A50009C22F /* FocusWatcher.h */,
@@ -1834,6 +1844,7 @@
 				D57C2A7A240F1F990043C2A7 /* PublicationWidget.cpp in Sources */,
 				D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */,
 				D5F7D82C22FA37C40089B08E /* moc_BuildPanel.cpp in Sources */,
+				D5DE72F324E3678B00752E1D /* FlowLayout.cpp in Sources */,
 				D5946E1A24B4F5A60009C22F /* WrapLabel.cpp in Sources */,
 				D5F7D83C22FA37C40089B08E /* DlgEditProject.cpp in Sources */,
 				D5A96F29246892A10026BFE0 /* GraphData.cpp in Sources */,
@@ -1868,6 +1879,7 @@
 				D5F7D85C22FA37C40089B08E /* SummaryWindow.cpp in Sources */,
 				D5F7D89B22FA37C40089B08E /* ToolBox.cpp in Sources */,
 				D5D27489246DE1C100B1AA9D /* MaterialPropsView.cpp in Sources */,
+				D5DE72F424E3678B00752E1D /* DlgLogin.cpp in Sources */,
 				D5F7D85322FA37C40089B08E /* moc_DlgSettings.cpp in Sources */,
 				D5DFB17C248F24750006DB45 /* moc_DlgPlaneCut.cpp in Sources */,
 				D5F7D87422FA37C40089B08E /* PostPanel.cpp in Sources */,

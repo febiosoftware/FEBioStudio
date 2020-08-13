@@ -478,10 +478,15 @@ void CCurveEditor::BuildModelTree()
 					}
 					else {
 						FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pstep->Load(j));
+                        FECentrifugalBodyForce* pcs = dynamic_cast<FECentrifugalBodyForce*>(pstep->Load(j));
 						if (phs)
 						{
 							if (phs->GetLoadCurve()) ui->addTreeItem(t2, QString::fromStdString(phs->GetName()), phs->GetLoadCurve());
 						}
+                        else if (pcs)
+                        {
+                            if (pcs->GetLoadCurve()) ui->addTreeItem(t2, QString::fromStdString(pcs->GetName()), pcs->GetLoadCurve());
+                        }
 						else
 						{
 							int N = plj->Parameters();
