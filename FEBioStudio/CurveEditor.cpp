@@ -1024,6 +1024,15 @@ void CCurveEditor::on_delete_triggered()
 		m_currentItem->SetLoadCurve(0);
 		SetLoadCurve(0);
 	}
+	else
+	{
+		FELoadCurve* plc = m_currentItem->GetLoadCurve();
+		if (plc)
+		{
+			plc->Clear();
+			SetLoadCurve(plc);
+		}
+	}
 }
 
 void CCurveEditor::on_xval_textEdited()
