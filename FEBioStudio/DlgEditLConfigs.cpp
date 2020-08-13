@@ -99,10 +99,6 @@ public:
 	QSpinBox*	PBSPort;
 	QLineEdit*	PBSUserName;
 	QLineEdit*	PBSRemoteDir;
-//	QLineEdit*	PBSJobName;
-//	QLineEdit*	PBSWalltime;
-//	QSpinBox*	PBSProcNum;
-//	QSpinBox*	PBSRam;
 	QPlainTextEdit* PBSText;
 	QString DefaultPBSText = "#!/bin/bash\n\n"
 			"#PBS -l nodes=1:ppn=1\n"
@@ -118,10 +114,6 @@ public:
 	QSpinBox*	SlurmPort;
 	QLineEdit*	SlurmUserName;
 	QLineEdit*	SlurmRemoteDir;
-//	QLineEdit*	SlurmJobName;
-//	QLineEdit*	SlurmWalltime;
-//	QSpinBox*	SlurmProcNum;
-//	QSpinBox*	SlurmRam;
 	QPlainTextEdit* SlurmText;
 	QString DefaultSlurmText = "#!/bin/bash\n\n"
 			"#SBATCH -N 1\n"
@@ -133,7 +125,6 @@ public:
 			"${FEBIO_PATH} ${REMOTE_DIR}/${JOB_NAME}.feb";
 
 	// Custom config widgets
-//	QLineEdit*	customFile;
 	QLineEdit*	customServer;
 	QSpinBox*	customPort;
 	QLineEdit*	customUserName;
@@ -166,7 +157,7 @@ public:
 		localForm = new QFormLayout;
 		localForm->setLabelAlignment(Qt::AlignRight);
 		localForm->setContentsMargins(0,0,0,0);
-		localForm->addRow("FEBio executable:", localPath = new QLineEdit);
+		localForm->addRow("FEBio Executable:", localPath = new QLineEdit);
 		localPage->setLayout(localForm);
 
 		stack->addWidget(localPage);
@@ -199,7 +190,7 @@ public:
 		customForm->setContentsMargins(0,0,0,0);
 
 		// Remote config widgets
-		remoteForm->addRow("Remote executable:", remotePath = new QLineEdit);
+		remoteForm->addRow("Remote Executable:", remotePath = new QLineEdit);
 		remoteForm->addRow("Server:", remoteServer = new QLineEdit);
 		remoteForm->addRow("Port:", remotePort = new QSpinBox);
 		remotePort->setValue(22);
@@ -212,25 +203,13 @@ public:
 
 
 		// PBS config widgets
-		PBSForm->addRow("Remote executable:", PBSPath = new QLineEdit);
+		PBSForm->addRow("Remote Executable:", PBSPath = new QLineEdit);
 		PBSForm->addRow("Server:", PBSServer = new QLineEdit);
 		PBSForm->addRow("Port:", PBSPort = new QSpinBox);
 		PBSPort->setValue(22);
 		PBSPort->setMaximum(65535);
 		PBSForm->addRow("Username:", PBSUserName = new QLineEdit);
 		PBSForm->addRow("Remote Directory:", PBSRemoteDir = new QLineEdit);
-//		PBSForm->addRow("Job Name:", PBSJobName = new QLineEdit);
-//		PBSJobName->setPlaceholderText("(optional)");
-//		PBSForm->addRow("Walltime:", PBSWalltime = new QLineEdit);
-//		PBSWalltime->setPlaceholderText("HH:MM:SS");
-//		PBSWalltime->setText("1:00:00");
-//		PBSForm->addRow("Processors:", PBSProcNum = new QSpinBox);
-//		PBSProcNum->setValue(1);
-//		PBSForm->addRow("Ram:", PBSRam = new QSpinBox);
-//		PBSRam->setMaximum(9999999);
-//		PBSRam->setSingleStep(1024);
-//		PBSRam->setValue(0);
-
 		PBSText = new QPlainTextEdit(DefaultPBSText);
 		PBSText->setPlaceholderText(DefaultPBSText);
 
@@ -246,24 +225,13 @@ public:
 		stack->addWidget(PBSPage);
 
 		// Slurm config widgets
-		SlurmForm->addRow("Remote executable:", SlurmPath = new QLineEdit);
+		SlurmForm->addRow("Remote Executable:", SlurmPath = new QLineEdit);
 		SlurmForm->addRow("Server:", SlurmServer = new QLineEdit);
 		SlurmForm->addRow("Port:", SlurmPort = new QSpinBox);
 		SlurmPort->setValue(22);
 		SlurmPort->setMaximum(65535);
 		SlurmForm->addRow("Username:", SlurmUserName = new QLineEdit);
 		SlurmForm->addRow("Remote Directory:", SlurmRemoteDir = new QLineEdit);
-//		SlurmForm->addRow("Job Name:", SlurmJobName = new QLineEdit);
-//		SlurmJobName->setPlaceholderText("(optional)");
-//		SlurmForm->addRow("Walltime:", SlurmWalltime = new QLineEdit);
-//		SlurmWalltime->setPlaceholderText("HH:MM:SS");
-//		SlurmWalltime->setText("1:00:00");
-//		SlurmForm->addRow("Processors:", SlurmProcNum = new QSpinBox);
-//		SlurmProcNum->setValue(1);
-//		SlurmForm->addRow("Ram:", SlurmRam = new QSpinBox);
-//		SlurmRam->setMaximum(9999999);
-//		SlurmRam->setSingleStep(1024);
-//		SlurmRam->setValue(0);
 		SlurmText = new QPlainTextEdit(DefaultSlurmText);
 		SlurmText->setPlaceholderText(DefaultSlurmText);
 
