@@ -795,6 +795,6 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r){}
 void CRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<QSslError> &errors) {}
 void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal) {}
 QString CRepoConnectionHandler::getUsername() {	return ""; }
-int CRepoConnectionHandler::getSizeLimit() { return 0; }
+qint64 CRepoConnectionHandler::getSizeLimit() { return 0; }
 
 #endif
