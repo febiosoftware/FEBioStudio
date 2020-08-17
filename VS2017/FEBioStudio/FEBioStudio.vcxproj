@@ -211,6 +211,7 @@
     <ClCompile Include="..\..\FEBioStudio\DlgImportXPLT.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgKinemat.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgLameConvertor.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\DlgLogin.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgLSDYNAExport.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgMeasure.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgMergeObjects.cpp" />
@@ -537,6 +538,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
+    <ClInclude Include="..\..\FEBioStudio\DlgLogin.h" />
     <ClInclude Include="..\..\FEBioStudio\DlgSelectRange.h" />
     <CustomBuild Include="..\..\FEBioStudio\DlgUnitConverter.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>

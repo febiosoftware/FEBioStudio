@@ -828,6 +828,9 @@
     <ClCompile Include="..\..\FEBioStudio\moc_WzdUpload.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\DlgLogin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -1133,7 +1136,7 @@
     <ClInclude Include="..\..\FEBioStudio\WrapLabel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\DlgRequestUploadPerm.h">
+    <ClInclude Include="..\..\FEBioStudio\DlgLogin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1400,6 +1403,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\WzdUpload.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\DlgRequestUploadPerm.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
