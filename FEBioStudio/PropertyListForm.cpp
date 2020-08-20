@@ -104,6 +104,13 @@ QString unitString(CProperty& p)
 }
 
 //-----------------------------------------------------------------------------
+// get the property list
+CPropertyList* CPropertyListForm::getPropertyList()
+{
+	return m_list;
+}
+
+//-----------------------------------------------------------------------------
 // attach a property list to this form
 void CPropertyListForm::setPropertyList(CPropertyList* pl)
 {
