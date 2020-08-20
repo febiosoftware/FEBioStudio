@@ -376,6 +376,9 @@
     <ClCompile Include="..\..\MeshTools\FEMeshOverlap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshTools\FERezoneMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h">

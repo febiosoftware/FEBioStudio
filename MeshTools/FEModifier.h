@@ -442,3 +442,11 @@ public:
 	FEDetachElements();
 	FEMesh* Apply(FEMesh* pm);
 };
+
+//-----------------------------------------------------------------------------
+class FERezoneMesh : public FEModifier
+{
+public:
+	FERezoneMesh();
+	FEMesh* Apply(FEMesh* pm);
+};

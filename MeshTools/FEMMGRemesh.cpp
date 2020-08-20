@@ -51,6 +51,12 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 	int NN = pm->Nodes();
 	int NF = pm->Faces();
 
+	int NC = 0;
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		if (pm->Edge(i).m_gid >= 0) NC++;
+	}
+
 	// build the MMG mesh
 	MMG5_pMesh mmgMesh;
 	MMG5_pSol  mmgSol;
@@ -62,7 +68,7 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 		MMG5_ARG_end);
 
 	// allocate mesh size
-	if (MMG3D_Set_meshSize(mmgMesh, NN, NE, 0, NF, 0, 0) != 1)
+	if (MMG3D_Set_meshSize(mmgMesh, NN, NE, 0, NF, 0, NC) != 1)
 	{
 		assert(false);
 		SetError("Error in MMG3D_Set_meshSize");
@@ -88,7 +94,7 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 	{
 		FENode& vi = pm->Node(i);
 		vec3d r = vi.pos();
-		MMG3D_Set_vertex(mmgMesh, r.x, r.y, r.z, 0, i + 1);
+		MMG3D_Set_vertex(mmgMesh, r.x, r.y, r.z, vi.m_gid, i + 1);
 	}
 
 	for (int i = 0; i < NE; ++i)
@@ -103,6 +109,15 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 		FEFace& f = pm->Face(i);
 		int* n = f.n;
 		MMG3D_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
+	}
+	for (int i = 0; i < NC; ++i)
+	{
+		FEEdge& e = pm->Edge(i);
+		if (e.m_gid >= 0)
+		{
+			int* n = e.n;
+			MMG3D_Set_edge(mmgMesh, n[0] + 1, n[1] + 1, e.m_gid, i + 1);
+		}
 	}
 
 	// Now, we build the "solution", i.e. the target element size.
@@ -199,15 +214,17 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 	FEMesh* newMesh = new FEMesh();
 
 	// get the new mesh sizes
-	MMG3D_Get_meshSize(mmgMesh, &NN, &NE, NULL, &NF, NULL, NULL);
-	newMesh->Create(NN, NE, NF);
+	MMG3D_Get_meshSize(mmgMesh, &NN, &NE, NULL, &NF, NULL, &NC);
+	newMesh->Create(NN, NE, NF, NC);
 
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
 		FENode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
-		MMG3D_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, NULL, NULL, NULL);
+		int isCorner = 0;
+		MMG3D_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, &vi.m_gid, &isCorner, NULL);
+		if (isCorner == 0) vi.m_gid = -1;
 	}
 
 	// get the tetra
@@ -235,6 +252,18 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 		f.n[1]--;
 		f.n[2]--;
 	}
+	// get the edges
+	for (int i = 0; i < NC; ++i)
+	{
+		FEEdge& e = newMesh->Edge(i);
+		e.SetType(FE_EDGE2);
+		int* n = e.n;
+		MMG3D_Get_edge(mmgMesh, n, n + 1, &e.m_gid, NULL, NULL);
+		e.n[0]--;
+		e.n[1]--;
+		assert(e.m_gid >= 0);
+	}
+
 	newMesh->BuildMesh();
 
 	// Clean up
