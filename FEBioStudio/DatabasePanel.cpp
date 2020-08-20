@@ -1081,14 +1081,19 @@ void CDatabasePanel::on_actionDeleteRemote_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
-		int projID = static_cast<ProjectItem*>(ui->treeWidget->selectedItems()[0])->getProjectID();
+		int response = QMessageBox::question(this, "Delete Project", "Are you sure that you want to permanently "
+				"delete this project from the repository?\n\nThis action cannot be undone.", QMessageBox::Yes | QMessageBox::No);
 
-		repoHandler->deleteProject(projID);
+		if(response == QMessageBox::Yes)
+		{
+			int projID = static_cast<ProjectItem*>(ui->treeWidget->selectedItems()[0])->getProjectID();
+
+			repoHandler->deleteProject(projID);
+		}
 	}
 	else
 	{
-		QMessageBox box;
-		box.setText("You do not have permission to modify the repository.");
+		QMessageBox::information(this, "Permission Denied", "You do not have permission to delete this project.", QMessageBox::Ok);
 	}
 
 }
