@@ -51,7 +51,7 @@ public:
 	{
 		QAction* actionRefresh = addAction("Reload", "actionRefresh", "refresh");
 		QAction* actionFirst = addAction("first", "actionFirst", "back");
-		QAction* actionPrev = addAction("previous", "actionPrev", "prev");
+		QAction* actionPrev = addAction("previous", "actionPrev", "prev"); actionPrev->setShortcut(Qt::Key_Left);
 		m_actionPlay = addAction("Play", "actionPlay", "play"); m_actionPlay->setShortcut(Qt::Key_Space);
 		m_actionPlay->setCheckable(true);
 
@@ -60,7 +60,7 @@ public:
 		icon.addPixmap(pix, QIcon::Mode::Active, QIcon::State::On);
 		m_actionPlay->setIcon(icon);
 
-		QAction* actionNext = addAction("next", "actionNext", "next");
+		QAction* actionNext = addAction("next", "actionNext", "next"); actionNext->setShortcut(Qt::Key_Right);
 		QAction* actionLast = addAction("last", "actionLast", "forward");
 		QAction* actionTime = addAction("Time settings", "actionTimeSettings", "clock");
 
