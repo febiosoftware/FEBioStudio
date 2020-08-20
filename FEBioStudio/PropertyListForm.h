@@ -48,6 +48,9 @@ public:
 	// set the property list
 	void setPropertyList(CPropertyList* pl);
 
+	// get the property list
+	CPropertyList* getPropertyList();
+
 	// update data
 	void updateData();
 

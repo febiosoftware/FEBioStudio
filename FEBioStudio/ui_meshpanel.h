@@ -75,12 +75,12 @@ public:
 	CPropertyListForm*	form2;
 	CToolBox* tool;
 
-	CPropertyList* m_pl;
+//	CPropertyList* m_pl;
 
 public:
 	void setupUi(QWidget* parent, ::CMainWindow* mainWindow)
 	{
-		m_pl = 0;
+//		m_pl = 0;
 
 		obj = new CObjectPanel(mainWindow); obj->setObjectName("objectPanel");
 
@@ -131,18 +131,18 @@ public:
 
 	void setMesherPropertyList(CPropertyList* pl)
 	{
+		CPropertyList* plold = form->getPropertyList();
 		form->setPropertyList(0);
-		if (m_pl) delete m_pl;
-		m_pl = pl;
-		if (m_pl) form->setPropertyList(m_pl);
+		if (plold) delete plold;
+		if (pl) form->setPropertyList(pl);
 	}
 
 	void setModifierPropertyList(CPropertyList* pl)
 	{
+		CPropertyList* plold = form2->getPropertyList();
 		form2->setPropertyList(0);
-		if (m_pl) delete m_pl;
-		m_pl = pl;
-		if (m_pl) form2->setPropertyList(m_pl);
+		if (plold) delete plold;
+		if (pl) form2->setPropertyList(pl);
 	}
 
 	void showMesherParametersPanel(bool b)
