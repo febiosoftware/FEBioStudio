@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <QStackedLayout>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QProgressBar>
 #include <QTextBrowser>
 #include <QLabel>
 #include <QFont>
@@ -358,6 +359,8 @@ public:
 
 	QWidget* loadingPage;
 	QLabel* loadingLabel;
+	QProgressBar* loadingBar;
+	QPushButton* loadingCancel;
 
 public:
 	CDatabasePanel() : currentProject(nullptr), openAfterDownload(nullptr){}
@@ -542,6 +545,11 @@ public:
 		loadingLayout->setAlignment(Qt::AlignCenter);
 
 		loadingLayout->addWidget(loadingLabel = new QLabel);
+		loadingLayout->setAlignment(loadingLabel, Qt::AlignCenter);
+		loadingLayout->addWidget(loadingBar = new QProgressBar);
+		loadingLayout->addWidget(loadingCancel = new QPushButton("Cancel"));
+		loadingCancel->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+		loadingLayout->setAlignment(loadingCancel, Qt::AlignCenter);
 
 		loadingPage->setLayout(loadingLayout);
 		stack->addWidget(loadingPage);
@@ -603,9 +611,12 @@ public:
 		actionModify->setVisible(!visible);
 	}
 
-	void showLoadingPage(QString message)
+	void showLoadingPage(QString message, bool progress = false)
 	{
 		loadingLabel->setText(message);
+
+		loadingBar->setVisible(progress);
+		loadingCancel->setVisible(progress);
 
 		stack->setCurrentIndex(2);
 	}
@@ -666,6 +677,7 @@ CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent)
 	// build Ui
 	ui->setupUi(this);
 	QObject::connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CDatabasePanel::on_actionSearch_triggered);
+	QObject::connect(ui->loadingCancel, SIGNAL(clicked(bool)), this, SIGNAL(cancelClicked()));
 
 	dbHandler = new CLocalDatabaseHandler(this);
 	repoHandler = new CRepoConnectionHandler(this, dbHandler, m_wnd);
@@ -749,6 +761,7 @@ void CDatabasePanel::LoginTimeout()
 	ShowMessage("Your login to the model repository has timed out.");
 
 	ui->setLoginVisible(true);
+	ui->stack->setCurrentIndex(1);
 }
 
 void CDatabasePanel::NetworkInaccessible()
@@ -957,14 +970,10 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 		if (dlg.exec())
 		{
-			ui->showLoadingPage("Uploading...");
-
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
 			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
-
-			cout << dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()) << endl;
 
 			QList<QVariant> tags;
 			for(QString tag : dlg.getTags())
@@ -982,17 +991,20 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
 
-			cout << payload.toStdString() << endl;
+			repoHandler->setUploadReady(false);
 
 			repoHandler->uploadFileRequest(payload);
 
 			QString archiveName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
 
-			archive(archiveName, filePaths, localFilePaths);
+			ui->showLoadingPage("Compressing Files...", true);
 
-			if(repoHandler->isUploadReady()) repoHandler->uploadFile();
-
-			repoHandler->setUploadReady(true);
+			ZipThread* zip = new ZipThread(archiveName, filePaths, localFilePaths);
+			QObject::connect(zip, &ZipThread::resultReady, this, &CDatabasePanel::updateUploadReady);
+			QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
+			QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
+			QObject::connect(zip, &ZipThread::progress, this, &CDatabasePanel::loadingPageProgress);
+			zip->start();
 		}
 	}
 	else
@@ -1123,14 +1135,10 @@ void CDatabasePanel::on_actionModify_triggered()
 
 		if (dlg.exec())
 		{
-			ui->showLoadingPage("Modifying Project...");
-
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
 			projectInfo.insert("category", dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()));
-
-			cout << dbHandler->CategoryIDFromName(dlg.getCategory().toStdString()) << endl;
 
 			QList<QVariant> tags;
 			for(QString tag : dlg.getTags())
@@ -1157,7 +1165,8 @@ void CDatabasePanel::on_actionModify_triggered()
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
 
-			cout << payload.toStdString() << endl;
+			ui->showLoadingPage("Modifying Project...");
+			repoHandler->setUploadReady(false);
 
 			repoHandler->modifyProject(projID, payload);
 
@@ -1165,11 +1174,14 @@ void CDatabasePanel::on_actionModify_triggered()
 			{
 				QString archiveName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
 
-				archive(archiveName, filePaths, localFilePaths);
+				ui->showLoadingPage("Compressing Files...", true);
 
-				if(repoHandler->isUploadReady()) repoHandler->modifyProjectUpload();
-
-				repoHandler->setUploadReady(true);
+				ZipThread* zip = new ZipThread(archiveName, filePaths, localFilePaths);
+				QObject::connect(zip, &ZipThread::resultReady, this, &CDatabasePanel::updateModifyReady);
+				QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
+				QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
+				QObject::connect(zip, &ZipThread::progress, this, &CDatabasePanel::loadingPageProgress);
+				zip->start();
 			}
 		}
 	}
@@ -1436,6 +1448,36 @@ void CDatabasePanel::on_fileTags_linkActivated(const QString& link)
 	on_actionSearch_triggered();
 }
 
+void CDatabasePanel::updateUploadReady(bool ready)
+{
+	if(ready)
+	{
+		if(repoHandler->isUploadReady()) repoHandler->uploadFile();
+
+		repoHandler->setUploadReady(true);
+	}
+	else
+	{
+		repoHandler->cancelUpload();
+		ui->stack->setCurrentIndex(1);
+	}
+}
+
+void CDatabasePanel::updateModifyReady(bool ready)
+{
+	if(ready)
+	{
+		if(repoHandler->isUploadReady()) repoHandler->modifyProjectUpload();
+
+		repoHandler->setUploadReady(true);
+	}
+	else
+	{
+		repoHandler->cancelUpload();
+		ui->stack->setCurrentIndex(1);
+	}
+}
+
 QStringList CDatabasePanel::GetCategories()
 {
 	int permission = repoHandler->getUploadPermission();
@@ -1501,6 +1543,18 @@ QString CDatabasePanel::GetRepositoryFolder()
 void CDatabasePanel::SetRepositoryFolder(QString folder)
 {
 	m_repositoryFolder = folder;
+}
+
+void CDatabasePanel::showLoadingPage(QString message, bool progress)
+{
+	ui->showLoadingPage(message, progress);
+}
+
+void CDatabasePanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
+{
+	ui->loadingBar->setRange(0, bytesTotal);
+
+	ui->loadingBar->setValue(bytesSent);
 }
 
 #else

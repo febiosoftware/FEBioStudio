@@ -24,10 +24,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <QThread>
 #include <QDir>
 #include <QStringList>
+
 void recurseAddDir(QDir d, QStringList & list);
 bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString(""));
 QStringList extractAllFiles(QString fileName, QString destDir);
 
 bool archive(const QString & filePath, const QStringList & filePaths, const QStringList & localFilePaths);
+
+class ZipThread : public QThread
+{
+	Q_OBJECT
+
+public:
+	ZipThread(const QString & zipFile, const QStringList & filePaths, const QStringList & zippedFilePaths);
+
+	void run() override;
+
+public slots:
+	void abort();
+
+signals:
+	void resultReady(bool success);
+	void progress(qint64 bytesSent, qint64 bytesTotal);
+
+private:
+	void failed();
+	bool aborted;
+	QString zipFile;
+	QStringList filePaths;
+	QStringList zippedFilePaths;
+};
+
+
+
+

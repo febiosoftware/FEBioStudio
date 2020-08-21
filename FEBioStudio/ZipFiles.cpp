@@ -217,6 +217,125 @@ bool archive(const QString & filePath, const QStringList & filePaths, const QStr
 	return true;
 }
 
+
+ZipThread::ZipThread(const QString & zipFile, const QStringList & filePaths, const QStringList & zippedFilePaths)
+	: zipFile(zipFile), filePaths(filePaths), zippedFilePaths(zippedFilePaths), aborted(false)
+{
+
+}
+
+void ZipThread::run()
+{
+	qint64 currentSize = 0;
+	qint64 totalSize = 0;
+	for(auto path : filePaths)
+	{
+		totalSize += QFileInfo(path).size();
+	}
+
+	QuaZip zip(zipFile);
+	zip.setFileNameCodec("IBM866");
+
+	if (!zip.open(QuaZip::mdCreate)) {
+		failed();
+		return;
+	}
+
+	QFile inFile;
+
+	QuaZipFile outFile(&zip);
+
+	char c;
+	for(int index = 0; index < filePaths.size(); index++)
+	{
+		QFileInfo fileInfo(filePaths.at(index));
+
+
+		if (!fileInfo.isFile())
+			continue;
+
+		QString fileNameWithRelativePath = zippedFilePaths.at(index);
+
+		inFile.setFileName(fileInfo.filePath());
+
+		if (!inFile.open(QIODevice::ReadOnly)) {
+			zip.close();
+			failed();
+			return;
+		}
+
+		QuaZipNewInfo zipFileInfo(fileNameWithRelativePath, filePaths.at(index));
+
+		if (!outFile.open(QIODevice::WriteOnly, zipFileInfo)) {
+			zip.close();
+			failed();
+			return;
+		}
+
+		while (inFile.getChar(&c) && outFile.putChar(c) && !aborted)
+		{
+			currentSize++;
+
+			if(currentSize % 1024 == 0)
+			{
+				emit progress(currentSize, totalSize);
+			}
+		}
+
+		if(aborted)
+		{
+			zip.close();
+			failed();
+			return;
+		}
+
+
+		if (outFile.getZipError() != UNZ_OK) {
+			zip.close();
+			failed();
+			return;
+		}
+
+		outFile.close();
+
+		if (outFile.getZipError() != UNZ_OK) {
+			zip.close();
+			failed();
+			return;
+		}
+
+		inFile.close();
+	}
+
+	zip.close();
+
+	if (zip.getZipError() != 0) {
+		failed();
+		return;
+	}
+
+	emit resultReady(true);
+}
+
+void ZipThread::abort()
+{
+	aborted = true;
+}
+
+void ZipThread::failed()
+{
+	QFile zip(zipFile);
+
+	if(zip.exists())
+	{
+		zip.remove();
+	}
+
+	emit resultReady(false);
+}
+
+
+
 #else
 void recurseAddDir(QDir d, QStringList & list) {}
 bool archive(const QString & filePath, const QDir & dir, const QString & comment) { return false; }

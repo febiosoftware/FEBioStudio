@@ -40,7 +40,9 @@ class CRepoConnectionHandler;
 class CLocalDatabaseHandler;
 class QTreeWidgetItem;
 class QLabel;
+class QProgressBar;
 class CustomTreeWidgetItem;
+class ZipThread;
 
 enum FILETYPE {FULL=0, PART=1};
 
@@ -70,6 +72,16 @@ public:
 
 	QString GetRepositoryFolder();
 	void SetRepositoryFolder(QString folder);
+
+	void showLoadingPage(QString message, bool progress = false);
+
+public slots:
+	void updateUploadReady(bool ready);
+	void updateModifyReady(bool ready);
+	void loadingPageProgress(qint64 bytesSent, qint64 bytesTotal);
+
+signals:
+	void cancelClicked();
 
 private slots:
 	void on_connectButton_clicked();

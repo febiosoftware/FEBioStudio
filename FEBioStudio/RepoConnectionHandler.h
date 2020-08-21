@@ -55,6 +55,8 @@ public:
 	void modifyProjectUpload();
 	void deleteProject(int id);
 
+	void cancelUpload();
+
 	QString getUsername();
 	int getUploadPermission();
 	qint64 getSizeLimit();
@@ -62,6 +64,8 @@ public:
 
 	void setUploadReady(bool ready);
 	bool isUploadReady();
+
+	void loggedOut();
 
 private slots:
 	void connFinished(QNetworkReply *r);
