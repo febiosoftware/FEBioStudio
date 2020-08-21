@@ -409,7 +409,6 @@ FESlidingInterface::FESlidingInterface(FEModel* ps, int nstep) : FEPairedInterfa
 	AddDoubleParam(1.0  , "penalty"     , "penalty"                );
 	AddBoolParam  (false, "two_pass"    , "two pass"               );
 	AddBoolParam  (false, "auto_penalty", "auto-penalty"           );
-    AddBoolParam  (false, "update_penalty", "update-penalty"       );
 	AddDoubleParam(0    , "fric_coeff"  , "friction coefficient"   );
 	AddDoubleParam(0    , "fric_penalty", "friction penalty factor");
 	AddDoubleParam(0.01 , "search_tol"  , "search tolerance"       );
@@ -418,6 +417,7 @@ FESlidingInterface::FESlidingInterface(FEModel* ps, int nstep) : FEPairedInterfa
 	AddDoubleParam(10   , "maxaug"      , "max augmentations"      );
 	AddDoubleParam(0.0  , "gaptol"      , "gap tolerance"          );
 	AddIntParam   (0    , "seg_up"      , "max segment updates"    );
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
@@ -433,7 +433,6 @@ FESlidingWithGapsInterface::FESlidingWithGapsInterface(FEModel* ps, int nstep) :
 	AddDoubleParam(  1.0, "penalty"     , "penalty");
 	AddBoolParam  (false, "two_pass"    , "two pass");
 	AddBoolParam  (false, "auto_penalty", "auto-penalty");
-    AddBoolParam  (false, "update_penalty", "update-penalty"       );
 	AddDoubleParam(    0, "fric_coeff"  , "friction coefficient");
 	AddDoubleParam(    0, "fric_penalty", "friction penalty factor");
 	AddDoubleParam( 0.01, "search_tol"  , "search tolerance");
@@ -441,6 +440,7 @@ FESlidingWithGapsInterface::FESlidingWithGapsInterface(FEModel* ps, int nstep) :
 	AddDoubleParam(   10, "maxaug"      , "max augmentations");
 	AddDoubleParam(  0.0, "gaptol"      , "gap tolerance");
 	AddIntParam   (    0, "seg_up"      , "max segment updates");
+    AddBoolParam  (false, "update_penalty", "update-penalty"       );
 }
 
 //=============================================================================
@@ -456,7 +456,6 @@ FEFacetOnFacetInterface::FEFacetOnFacetInterface(FEModel* ps, int nstep) : FEPai
 	AddDoubleParam(  1.0, "penalty"     , "penalty");
 	AddBoolParam  (false, "two_pass"    , "two pass");
 	AddBoolParam  (false, "auto_penalty", "auto-penalty");
-    AddBoolParam  (false, "update_penalty", "update-penalty");
 	AddDoubleParam(    0, "fric_coeff"  , "friction coefficient");
 	AddDoubleParam(    0, "fric_penalty", "friction penalty factor");
 	AddDoubleParam( 0.01, "search_tol"  , "search tolerance");
@@ -464,6 +463,7 @@ FEFacetOnFacetInterface::FEFacetOnFacetInterface(FEModel* ps, int nstep) : FEPai
 	AddDoubleParam(   10, "maxaug"      , "max augmentations");
 	AddDoubleParam(  0.0, "gaptol"      , "gap tolerance");
 	AddIntParam   (    0, "seg_up"      , "max segment updates");
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
@@ -542,7 +542,6 @@ FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO
 	AddDoubleParam(1.0  , "penalty"            , "penalty factor"        );
 	AddBoolParam  (false, "two_pass"           , "two pass"              );
 	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"          );
-    AddBoolParam  (false, "update_penalty"     , "update-penalty"        );
 	AddDoubleParam(0.0  , "pressure_penalty"   , "pressure penalty"      );
 	AddBoolParam  (false, "symmetric_stiffness", "symmetric stiffness"   );
 	AddDoubleParam(1.0  , "search_radius"      , "search radius"         );
@@ -550,6 +549,7 @@ FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO
     AddDoubleParam(0    , "minaug"             , "min augmentations"     );
     AddDoubleParam(10   , "maxaug"             , "max augmentations"     );
 	AddDoubleParam(0.01 , "search_tol"         , "search tolerance"      );
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
@@ -568,7 +568,6 @@ FEPoroSoluteContact::FEPoroSoluteContact(FEModel* ps, int nstep) : FEPairedInter
 	AddDoubleParam(1.0  , "penalty"              , "penalty factor"         );
 	AddBoolParam  (false, "two_pass"             , "two pass"               );
 	AddBoolParam  (false, "auto_penalty"         , "auto-penalty"           );
-    AddBoolParam  (false, "update_penalty"       , "update-penalty"         );
 	AddDoubleParam(1.0  , "pressure_penalty"     , "pressure penalty"       );
 	AddBoolParam  (false, "symmetric_stiffness"  , "symmetric stiffness"    );
 	AddDoubleParam(1.0  , "concentration_penalty", "concentration penalty"  );
@@ -579,6 +578,7 @@ FEPoroSoluteContact::FEPoroSoluteContact(FEModel* ps, int nstep) : FEPairedInter
     AddDoubleParam(0    , "minaug"               , "min augmentations"      );
     AddDoubleParam(10   , "maxaug"               , "max augmentations"      );
 	AddDoubleParam(0.01 , "search_tol"           , "search tolerance"       );
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
@@ -597,7 +597,6 @@ FEMultiphasicContact::FEMultiphasicContact(FEModel* ps, int nstep) : FEPairedInt
 	AddDoubleParam(1.0  , "penalty"              , "penalty factor"         );
 	AddBoolParam  (false, "two_pass"             , "two pass"               );
 	AddBoolParam  (false, "auto_penalty"         , "auto-penalty"           );
-    AddBoolParam  (false, "update_penalty"       , "update-penalty"         );
 	AddDoubleParam(1.0  , "pressure_penalty"     , "pressure penalty"       );
 	AddBoolParam  (false, "symmetric_stiffness"  , "symmetric stiffness"    );
 	AddDoubleParam(1.0  , "concentration_penalty", "concentration penalty"  );
@@ -616,6 +615,7 @@ FEMultiphasicContact::FEMultiphasicContact(FEModel* ps, int nstep) : FEPairedInt
     AddIntParam   (0    , "seg_up"               , "segment updates"        );
     AddDoubleParam(0    , "minaug"               , "min augmentations"      );
     AddDoubleParam(10   , "maxaug"               , "max augmentations"      );
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
@@ -631,7 +631,6 @@ FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int ns
 	AddDoubleParam(0.0  , "gaptol"             , "gap tolerance"         );
 	AddDoubleParam(1.0  , "penalty"            , "penalty factor"        );
 	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"          );
-    AddBoolParam  (false, "update_penalty"       , "update-penalty"         );
 	AddBoolParam  (false, "two_pass"           , "two pass"              );
 	AddDoubleParam(0.01 , "search_tol"         , "projection tolerance"  );
 	AddBoolParam  (false, "symmetric_stiffness", "symmetric stiffness"   );
@@ -646,6 +645,7 @@ FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int ns
     AddBoolParam  (false, "flip_primary"       , "flip normal on primary"  );
     AddBoolParam  (false, "flip_secondary"     , "flip normal on secondary");
 	AddIntParam   (0    , "knmult"             , "higher-order stiffness");
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
@@ -662,7 +662,6 @@ FETiedBiphasicInterface::FETiedBiphasicInterface(FEModel* ps, int nstep) : FEPai
 	AddDoubleParam(0    , "ptol"               , "pressure tolerance"     );
 	AddDoubleParam(1.0  , "penalty"            , "penalty factor"         );
 	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"           );
-    AddBoolParam  (false, "update_penalty"     , "update-penalty"         );
 	AddBoolParam  (false, "two_pass"           , "two pass"               );
 	AddDoubleParam(0.01 , "search_tol"         , "projection tolerance"   );
 	AddDoubleParam(1.0  , "pressure_penalty"   , "pressure penalty factor");
@@ -670,6 +669,7 @@ FETiedBiphasicInterface::FETiedBiphasicInterface(FEModel* ps, int nstep) : FEPai
 	AddDoubleParam(1.0  , "search_radius"      , "search radius"          );
 	AddDoubleParam(0    , "minaug"             , "min augmentations"      );
 	AddDoubleParam(10   , "maxaug"             , "max augmentations"      );
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
@@ -686,7 +686,6 @@ FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) :
 	AddDoubleParam(0, "ptol", "pressure tolerance");
 	AddDoubleParam(1.0, "penalty", "penalty factor");
 	AddBoolParam(false, "auto_penalty", "auto-penalty");
-    AddBoolParam(false, "update_penalty", "update-penalty");
 	AddBoolParam(false, "two_pass", "two pass");
 	AddDoubleParam(0.01, "search_tol", "projection tolerance");
 	AddDoubleParam(1.0, "pressure_penalty", "pressure penalty factor");
@@ -695,6 +694,7 @@ FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) :
 	AddDoubleParam(1.0, "search_radius", "search radius");
 	AddDoubleParam(0, "minaug", "min augmentations");
 	AddDoubleParam(10, "maxaug", "max augmentations");
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
@@ -710,7 +710,6 @@ FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPaire
 	AddDoubleParam(0, "gaptol", "gap tolerance");
 	AddDoubleParam(1.0, "penalty", "penalty factor");
 	AddBoolParam(false, "auto_penalty", "auto-penalty");
-    AddBoolParam(false, "update_penalty", "update-penalty");
 	AddBoolParam(false, "two_pass", "two pass");
 	AddIntParam(1, "knmult");
 	AddDoubleParam(0.01, "search_tol", "projection tolerance");
@@ -718,6 +717,7 @@ FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPaire
 	AddDoubleParam(1.0, "search_radius", "search radius");
 	AddDoubleParam(0, "minaug", "min augmentations");
 	AddDoubleParam(10, "maxaug", "max augmentations");
+	AddBoolParam(false, "update_penalty", "update-penalty");
 }
 
 //=============================================================================
