@@ -72,6 +72,18 @@ public:
 		delete restclient;
 	}
 
+	void loggedOut()
+	{
+		username = "";
+		token = "";
+		int uploadPermission;
+		qint64 sizeLimit = 0;
+		bool authenticated = false;
+
+		QString fileToken = "";
+		bool uploadReady = false;
+	}
+
 	CDatabasePanel* dbPanel;
 	CLocalDatabaseHandler* dbHandler;
 	CMainWindow* m_wnd;
@@ -86,7 +98,6 @@ public:
 
 	QString fileToken;
 	bool uploadReady;
-
 };
 
 
@@ -209,7 +220,8 @@ void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 
 	if(NetworkAccessibleCheck())
 	{
-		imp->restclient->post(request, projectInfo);
+		QNetworkReply* reply = imp->restclient->post(request, projectInfo);
+		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 }
 
@@ -233,11 +245,16 @@ void CRepoConnectionHandler::uploadFile()
 
 	if(NetworkAccessibleCheck())
 	{
+		imp->dbPanel->showLoadingPage("Uploading...", true);
+
 		QFile* arch = new QFile(fileName);
 		arch->open(QIODevice::ReadOnly);
 
 		QNetworkReply* reply = imp->restclient->post(request, arch);
 		arch->setParent(reply);
+
+		QObject::connect(reply, &QNetworkReply::uploadProgress, imp->dbPanel, &CDatabasePanel::loadingPageProgress);
+		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 }
 
@@ -279,7 +296,8 @@ void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 
 	if(NetworkAccessibleCheck())
 	{
-		imp->restclient->put(request, projectInfo);
+		QNetworkReply* reply = imp->restclient->put(request, projectInfo);
+		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 }
 
@@ -303,11 +321,16 @@ void CRepoConnectionHandler::modifyProjectUpload()
 
 	if(NetworkAccessibleCheck())
 	{
+		imp->dbPanel->showLoadingPage("Uploading...", true);
+
 		QFile* arch = new QFile(fileName);
 		arch->open(QIODevice::ReadOnly);
 
 		QNetworkReply* reply = imp->restclient->post(request, arch);
 		arch->setParent(reply);
+
+		QObject::connect(reply, &QNetworkReply::uploadProgress, imp->dbPanel, &CDatabasePanel::loadingPageProgress);
+		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 }
 
@@ -330,6 +353,30 @@ void CRepoConnectionHandler::deleteProject(int id)
 	{
 		imp->restclient->deleteResource(request);
 	}
+}
+
+void CRepoConnectionHandler::cancelUpload()
+{
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost(REPO_URL);
+	myurl.setPort(4433);
+	myurl.setPath(QString(API_URL) + QString("cancelUpload"));
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+	request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
+	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
+	request.setRawHeader(QByteArray("fileToken"), imp->fileToken.toUtf8());
+
+	if(NetworkAccessibleCheck() && !imp->fileToken.isEmpty())
+	{
+		imp->restclient->deleteResource(request);
+	}
+
+	imp->fileToken = "";
+	imp->uploadReady = false;
 }
 
 void CRepoConnectionHandler::connFinished(QNetworkReply *r)
@@ -651,14 +698,18 @@ void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 	{
 		imp->fileToken = r->readAll();
 
-		if(imp->uploadReady) uploadFile();
-
-		imp->uploadReady = true;
+		imp->dbPanel->updateUploadReady(true);
 
 	}
 	else if(statusCode == 403)
 	{
 		imp->dbPanel->LoginTimeout();
+
+		imp->dbPanel->updateUploadReady(false);
+	}
+	else if(statusCode == 0)
+	{
+		imp->fileToken = "";
 	}
 	else
 	{
@@ -666,21 +717,40 @@ void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 		message += std::to_string(statusCode).c_str();
 
 		imp->dbPanel->ShowMessage(message);
+
+		imp->dbPanel->updateUploadReady(false);
 	}
 
 }
 
 void CRepoConnectionHandler::uploadFileReply(QNetworkReply *r)
 {
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	imp->dbPanel->showLoadingPage("Loading...");
+
+	getSchema();
+
+	// HTTP status code will be 0 if the upload was aborted
+	if(statusCode == 0)
+	{
+		cancelUpload();
+	}
+
 	QString fileName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
 	QFile::remove(fileName);
 
 	imp->uploadReady = false;
 	imp->fileToken = "";
 
-	imp->dbPanel->ShowMessage(r->readAll());
-
-	getSchema();
+	if(statusCode)
+	{
+		imp->dbPanel->ShowMessage(r->readAll());
+	}
+	else
+	{
+		imp->dbPanel->ShowMessage("Upload cancelled.");
+	}
 }
 
 void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
@@ -691,9 +761,7 @@ void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
 	{
 		imp->fileToken = r->readAll();
 
-		if(imp->uploadReady) modifyProjectUpload();
-
-		imp->uploadReady = true;
+		imp->dbPanel->updateModifyReady(true);
 
 		return;
 	}
@@ -709,15 +777,32 @@ void CRepoConnectionHandler::modifyProjectRepy(QNetworkReply *r)
 
 void CRepoConnectionHandler::modifyProjectUploadReply(QNetworkReply *r)
 {
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	imp->dbPanel->showLoadingPage("Loading...");
+
+	getSchema();
+
+	// HTTP status code will be 0 if the upload was aborted
+	if(statusCode == 0)
+	{
+		cancelUpload();
+	}
+
 	QString fileName = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/.projOutForUpload.prj";
 	QFile::remove(fileName);
 
 	imp->uploadReady = false;
 	imp->fileToken = "";
 
-	imp->dbPanel->ShowMessage(r->readAll());
-
-	getSchema();
+	if(statusCode)
+	{
+		imp->dbPanel->ShowMessage(r->readAll());
+	}
+	else
+	{
+		imp->dbPanel->ShowMessage("Upload cancelled.");
+	}
 }
 
 void CRepoConnectionHandler::deleteProjectRepy(QNetworkReply *r)
@@ -780,6 +865,11 @@ void CRepoConnectionHandler::setUploadReady(bool ready)
 bool CRepoConnectionHandler::isUploadReady()
 {
 	return imp->uploadReady;
+}
+
+void CRepoConnectionHandler::loggedOut()
+{
+	imp->loggedOut();
 }
 
 #else
