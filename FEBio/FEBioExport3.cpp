@@ -64,12 +64,7 @@ FEBioExport3::FEBioExport3(FEProject& prj) : FEBioExport(prj)
 	m_writeNotes = true;
 	m_exportEnumStrings = true;
 	m_writeControlSection = true;
-
-#ifdef _DEBUG
 	m_exportMesh = true;
-#else
-	m_exportMesh = false;
-#endif
 }
 
 FEBioExport3::~FEBioExport3()
