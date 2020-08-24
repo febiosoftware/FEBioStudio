@@ -2764,7 +2764,7 @@ Save the current FEBioStudio model.
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/snapshot.png
+	filename Figures/snapshot.png
 	lyxscale 50
 	width 0.26in
 	height 0.26in
@@ -2835,7 +2835,7 @@ Freehand Selection Mode
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename C:/Users/Steve/source/repos/FEBioStudio/icons/measure.png
+	filename Figures/measure.png
 	lyxscale 50
 	width 0.33in
 	height 0.37in
@@ -2847,7 +2847,7 @@ The Measure Tool
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename C:/Users/Steve/source/repos/FEBioStudio/icons/cut.png
+	filename Figures/cut.png
 	lyxscale 50
 	width 0.33in
 	height 0.37in
@@ -3025,7 +3025,7 @@ Opens the Run FEBio dialog box.
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename C:/Users/Steve/source/repos/FEBioStudio/icons/merge.png
+	filename Figures/merge.png
 	lyxscale 50
 	width 0.33in
 	height 0.37in
@@ -3037,7 +3037,7 @@ Activates Merge tool
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename C:/Users/Steve/source/repos/FEBioStudio/icons/detach.png
+	filename Figures/detach.png
 	lyxscale 50
 	width 0.33in
 	height 0.37in
@@ -3109,7 +3109,7 @@ The font toolbar allows users to easily modify the font of the selected
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/font_bold.png
+	filename Figures/font_bold.png
 	width 0.27in
 	height 0.27in
 
@@ -3122,7 +3122,7 @@ bold
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/font_italic.png
+	filename Figures/font_italic.png
 	width 0.27in
 	height 0.27in
 
@@ -3135,7 +3135,7 @@ italic
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/properties.png
+	filename Figures/properties.png
 	width 0.27in
 	height 0.27in
 
@@ -10723,7 +10723,7 @@ toolbar offers various shortcuts to the Post menu items.
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/back.png
+	filename Figures/back.png
 	width 0.27in
 	height 0.27in
 
@@ -10734,7 +10734,7 @@ Return to the first time step
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/prev.png
+	filename Figures/prev.png
 	width 0.27in
 	height 0.27in
 
@@ -10745,7 +10745,7 @@ Step back by one step
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/play.png
+	filename Figures/play.png
 	width 0.27in
 	height 0.27in
 
@@ -10756,7 +10756,7 @@ Start (and stop) the animation
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/next.png
+	filename Figures/next.png
 	width 0.27in
 	height 0.27in
 
@@ -10767,7 +10767,7 @@ Step forward by one step
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/forward.png
+	filename Figures/forward.png
 	width 0.27in
 	height 0.27in
 
@@ -10778,7 +10778,7 @@ Go to the last time step
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/properties.png
+	filename Figures/properties.png
 	width 0.45in
 	height 0.38in
 
@@ -10789,7 +10789,7 @@ Open the time dialog box
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/colormap.png
+	filename Figures/colormap.png
 	width 0.25in
 	height 0.23in
 
@@ -10800,7 +10800,7 @@ Activate the contour plot
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/cut.png
+	filename Figures/cut.png
 	width 0.28in
 	height 0.25in
 
@@ -10811,7 +10811,7 @@ Adds a plane cut plot to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/mirror.png
+	filename Figures/mirror.png
 	width 0.28in
 	height 0.25in
 
@@ -10822,7 +10822,7 @@ Adds a mirror plane to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/vectors.png
+	filename Figures/vectors.png
 	width 0.28in
 	height 0.25in
 
@@ -10833,7 +10833,7 @@ Adds a vector plot to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/tensor.png
+	filename Figures/tensor.png
 
 \end_inset
 
@@ -10842,7 +10842,7 @@ Adds a tensor plot to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/isosurface.png
+	filename Figures/isosurface.png
 	width 0.28in
 	height 0.26in
 
@@ -10853,7 +10853,7 @@ Adds a isosurface plot to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/slice.png
+	filename Figures/post_slice.png
 	width 0.3in
 	height 0.27in
 
@@ -10864,7 +10864,7 @@ Adds a slice plot to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/streamlines.png
+	filename Figures/streamlines.png
 
 \end_inset
 
@@ -10873,7 +10873,7 @@ Adds a stream line plot to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/particle.png
+	filename Figures/particle.png
 
 \end_inset
 
@@ -10882,7 +10882,7 @@ Adds a particle flow plot to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/imageslice.png
+	filename Figures/imageslice.png
 
 \end_inset
 
@@ -10891,7 +10891,7 @@ Adds an image slicer to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/volrender.png
+	filename Figures/volrender.png
 
 \end_inset
 
@@ -10900,7 +10900,7 @@ Adds a 3D volume renderer to the model
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/marching_cubes.png
+	filename Figures/marching_cubes.png
 
 \end_inset
 
@@ -10909,7 +10909,7 @@ Adds an isosurface rendering of a 3D image stack.
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/chart.png
+	filename Figures/chart.png
 	width 0.32in
 	height 0.29in
 
@@ -10920,7 +10920,7 @@ Opens a new graph window
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/integrate.png
+	filename Figures/integrate.png
 	width 0.31in
 	height 0.28in
 
@@ -10979,7 +10979,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/Figure5.png
+	filename Figures/Figure5.png
 	width 5in
 
 \end_inset
@@ -12072,7 +12072,7 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/file viewer.png
+	filename Figures/file viewer.png
 	width 1.56in
 	height 3.05in
 
@@ -12158,7 +12158,7 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/Model Viewer.png
+	filename Figures/Model Viewer.png
 	width 1.56in
 	height 3.05in
 
@@ -12247,7 +12247,7 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/Material Viewer.png
+	filename Figures/Material Viewer.png
 	width 1.59in
 	height 3.81in
 
@@ -14666,7 +14666,7 @@ Toolbar
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/node.png
+	filename Figures/node.png
 	width 0.26in
 	height 0.26in
 
@@ -14677,7 +14677,7 @@ Switches to node-selection mode.
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/edge.png
+	filename Figures/edge.png
 	width 0.27in
 	height 0.27in
 
@@ -14688,7 +14688,7 @@ Switches to edge-selection mode.
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/face.png
+	filename Figures/face.png
 	width 0.26in
 	height 0.24in
 
@@ -14699,7 +14699,7 @@ Switches to face-selection mode.
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/element.png
+	filename Figures/element.png
 	width 0.27in
 	height 0.25in
 
@@ -14804,7 +14804,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename Figures/integrate.png
+	filename Figures/integrate_window.png
 	width 5in
 
 \end_inset
@@ -15173,7 +15173,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../../PostView/Documentation/Figures/image_renderers.png
+	filename Figures/image_renderers.png
 	lyxscale 50
 	width 6in
 
