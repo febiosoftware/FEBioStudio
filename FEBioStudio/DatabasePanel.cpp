@@ -1596,4 +1596,7 @@ void CDatabasePanel::on_connectButton_clicked() {}
 void CDatabasePanel::on_actionRefresh_triggered() {}
 void CDatabasePanel::on_projectTags_linkActivated(const QString& link) {}
 void CDatabasePanel::on_fileTags_linkActivated(const QString& link) {}
+void CDatabasePanel::updateUploadReady(bool ready) {}
+void CDatabasePanel::updateModifyReady(bool ready) {}
+void CDatabasePanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal) {}
 #endif

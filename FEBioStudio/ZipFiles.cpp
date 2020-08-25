@@ -337,6 +337,7 @@ void ZipThread::failed()
 
 
 #else
+void ZipThread::abort() {}
 void recurseAddDir(QDir d, QStringList & list) {}
 bool archive(const QString & filePath, const QDir & dir, const QString & comment) { return false; }
 QStringList extractAllFiles(QString fileName, QString destDir) { return QStringList(); }
