@@ -96,6 +96,8 @@ bool CGLColorMap::UpdateData(bool bsave)
 			m_range.max = GetFloatValue(USER_MAX);
 			m_range.min = GetFloatValue(USER_MIN);
 		}
+
+		Update();
 	}
 	else
 	{
