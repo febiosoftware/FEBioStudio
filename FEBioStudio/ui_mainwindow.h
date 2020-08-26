@@ -233,7 +233,7 @@ public:
 		m_launch_configs.back().name = std::string("FEBio 3.0");
 
 #ifdef WIN32
-		m_launch_configs.back().path = std::string("$(FEBioStudioDir)/febio3.exe");
+		m_launch_configs.back().path = std::string("$(FEBioDir)\\febio3.exe");
 #else
 		m_launch_configs.back().path = std::string("$(FEBioStudioDir)/febio3");
 #endif
