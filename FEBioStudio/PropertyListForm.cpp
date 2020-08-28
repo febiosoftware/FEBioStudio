@@ -174,7 +174,12 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 			}
 
 			pw = createPropertyEditor(pi, v);
-			if (pi.isEditable() == false) pw->setDisabled(true);
+			if (pi.isEditable() == false)
+			{
+				QLineEdit* pe = dynamic_cast<QLineEdit*>(pw);
+				if (pe) pe->setReadOnly(true);
+				else pw->setDisabled(true);
+			}
 
 			if (pi.param && pi.param->IsCheckable() && pw)
 			{
