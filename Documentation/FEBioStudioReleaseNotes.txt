@@ -1,0 +1,20 @@
+*****************************************************************
+
+              FEBIO STUDIO - RELEASE NOTES
+
+*****************************************************************
+
+================================================================
+ version 1.0.1
+ release date: 9/1/2020
+-----------------------------------------------------------------
+
+* This patch release fixes an issue with the default FEBio launch configuration on Windows. 
+
+================================================================
+ version 1.0.0
+ release date: 8/24/2020
+-----------------------------------------------------------------
+
+* This is the first official release of FEBio Studio. FEBio Studio integrates PreView, the FEBio pre-processor, and PostView, the FEBio post-processor, in a single unified software package.
+* FEBio Studio can also run FEBio models directly from the UI and will always ship with the most recent version of FEBio. This first release uses FEBio 3.0. 

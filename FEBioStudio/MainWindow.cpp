@@ -72,6 +72,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "ModelDocument.h"
 #include "units.h"
+#include "version.h"
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
@@ -1395,7 +1396,10 @@ void CMainWindow::writeSettings()
 {
 	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
 
+	QString version = QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+
 	QSettings settings("MRLSoftware", "FEBio Studio");
+	settings.setValue("version", version);
 	settings.beginGroup("MainWindow");
 	settings.setValue("geometry", saveGeometry());
 	settings.setValue("state", saveState());
@@ -1467,6 +1471,7 @@ void CMainWindow::readSettings()
 {
 	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
 	QSettings settings("MRLSoftware", "FEBio Studio");
+	QString versionString = settings.value("version", "").toString();
 	settings.beginGroup("MainWindow");
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
@@ -1534,6 +1539,18 @@ void CMainWindow::readSettings()
 
 	}
 	settings.endGroup();
+
+	// This is to fix an issue with the 1.0 installers where the location of the 
+	// FEBio executable was changed. 
+	if (versionString.isEmpty())
+	{
+#ifdef WIN32
+		if (ui->m_launch_configs.size() > 0)
+		{
+			ui->m_launch_configs[0].path = std::string("$(FEBioDir)\\febio3.exe");
+		}
+#endif
+	}
 }
 
 
