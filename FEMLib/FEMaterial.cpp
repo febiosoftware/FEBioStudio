@@ -1295,7 +1295,7 @@ FEEFDMooneyRivlin::FEEFDMooneyRivlin() : FEMaterial(FE_EFD_MOONEY_RIVLIN)
 {
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
 }
@@ -1342,7 +1342,7 @@ FEEFDVerondaWestmann::FEEFDVerondaWestmann() : FEMaterial(FE_EFD_VERONDA_WESTMAN
 {
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  )->SetUnit(UNIT_PRESSURE);
 
@@ -1809,7 +1809,7 @@ FEEFDUncoupled::FEEFDUncoupled() : FEMaterial(FE_EFD_UNCOUPLED)
 {
 	AddVecParam(vec3d(0,0,0), "beta" , "beta");
 	AddVecParam(vec3d(0,0,0), "ksi" , "ksi")->SetUnit(UNIT_PRESSURE);
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 
 	SetAxisMaterial(new FEAxisMaterial);
 }
@@ -2183,7 +2183,7 @@ FECFDFiberExpPowUC::FECFDFiberExpPowUC() : FEMaterial(FE_FIBER_EXP_POW_UC)
     AddScienceParam(0, UNIT_NONE, "beta" , "beta" );
     AddScienceParam(0, UNIT_PRESSURE, "ksi"  , "ksi"  );
     AddScienceParam(0, UNIT_PRESSURE, "mu"   , "mu"   );
-    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //=============================================================================
@@ -2195,7 +2195,7 @@ REGISTER_MATERIAL(FECFDFiberNHUC, MODULE_MECH, FE_FIBER_NH_UC, FE_MAT_CFD_FIBER_
 FECFDFiberNHUC::FECFDFiberNHUC() : FEMaterial(FE_FIBER_NH_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE, "mu"   , "mu"   );
-    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
 //=============================================================================

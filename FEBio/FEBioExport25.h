@@ -241,7 +241,7 @@ protected:
 
 	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteRigidMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMaterialParams(FEMaterial* pm);
+	void WriteMaterialParams(FEMaterial* pm, bool topLevel = true);
 	void WriteFiberMaterial(FEOldFiberMaterial& f);
 	void WriteReactionMaterial(FEMaterial* pmat, XMLElement& el);
 	void WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el);

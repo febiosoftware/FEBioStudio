@@ -1532,10 +1532,16 @@ void FEBioExport25::WriteFiberMaterial(FEOldFiberMaterial& fiber)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport25::WriteMaterialParams(FEMaterial* pm)
+void FEBioExport25::WriteMaterialParams(FEMaterial* pm, bool topLevel)
 {
+	// only export non-persistent parameters for top-level materials
+	m_exportNonPersistentParams = topLevel;
+
 	// Write the parameters first
 	WriteParamList(*pm);
+
+	// reset flag
+	m_exportNonPersistentParams = true;
 
 	// if the material is transversely-isotropic, we need to write the fiber data as well
 	FEOldFiberMaterial* fiber = dynamic_cast<FEOldFiberMaterial*>(pm);
@@ -1739,7 +1745,7 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
 	m_xml.add_branch(el);
 	{
 		// write the material parameters (if any)
-		if (pm->Parameters()) WriteMaterialParams(pm);
+		if (pm->Parameters()) WriteMaterialParams(pm, true);
 
 		// write the components
 		int NC = pm->Properties();
@@ -1814,7 +1820,11 @@ void FEBioExport25::WriteMaterial(FEMaterial* pm, XMLElement& el)
 								{
 									m_xml.add_branch(el);
 									{
-										WriteMaterialParams(pc);
+										// NOTE: This is a little hack, but if the parent material is 
+										// a multi-material then we treat this property as top-level
+										// so that non-persistent properties are written
+										bool topLevel = (dynamic_cast<FEMultiMaterial*>(pm) != nullptr);
+										WriteMaterialParams(pc, topLevel);
 									}
 									m_xml.close_branch();
 								}

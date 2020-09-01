@@ -349,7 +349,7 @@ FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMateria
     // add parameters
     AddIntParam(1, "kinetics", "kinetics"); // "bond kinetics type (1 or 2)");
     AddIntParam(0, "trigger" , "trigger" ); // "bond breaking trigger (0=any, 1=distortion, or 2=dilatation)");
-	AddDoubleParam(0, "k", "bulk modulus");
+	AddDoubleParam(0, "k", "bulk modulus")->SetPersistent(false);
     
     // Add elastic material component
     AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);

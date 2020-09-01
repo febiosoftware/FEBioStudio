@@ -729,6 +729,43 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
+// helper function for updating uncoupled materials to ensure that the bulk modulus
+// is only defined for the top-level uncoupled material
+void FixUncoupledMaterial(FEMaterial* mat)
+{
+	if (mat->ClassID() != FE_MAT_ELASTIC_UNCOUPLED) return;
+
+	// find the bulk-modulus parameter
+	Param* pk = mat->GetParam("k"); assert(pk);
+	if (pk == nullptr) return;
+
+	// loop over all child materials
+	double k = pk->GetFloatValue();
+	for (int i = 0; i < mat->Properties(); ++i)
+	{
+		FEMaterialProperty& prop = mat->GetProperty(i);
+		int n = prop.Size();
+		for (int j = 0; j < n; ++j)
+		{
+			FEMaterial* mat_j =  prop.GetMaterial(j);
+			if (mat_j->ClassID() == FE_MAT_ELASTIC_UNCOUPLED)
+			{
+				Param* pk_j = mat_j->GetParam("k"); assert(pk_j);
+				if (pk_j)
+				{
+					FixUncoupledMaterial(mat_j);
+					k += pk_j->GetFloatValue();
+					pk_j->SetFloatValue(0.0);
+				}
+			}
+		}
+	}
+
+	// assign the sum to the top-level material
+	pk->SetFloatValue(k);
+}
+
+//-----------------------------------------------------------------------------
 FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 {
 	// create a material
@@ -811,6 +848,12 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 		}
 		while (!tag.isend());
 	}
+
+	// NOTE: As of FEBio3, the bulk-modulus of uncoupled materials must be defined at the top-level
+	//       uncoupled material. However, to preserve backward compatibility, we add this little hack
+	//       that sums up all the k values of the child uncoupled materials, and assigns it to the 
+	//       top-level material.
+	if (pm->ClassID() == FE_MAT_ELASTIC_UNCOUPLED) FixUncoupledMaterial(pm);
 
 	return pm;
 }
