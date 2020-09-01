@@ -386,20 +386,28 @@ void CMainWindow::onErrorOccurred(QProcess::ProcessError err)
 		return;
 	}
 
-	QString errString;
-	switch (err)
+	// check for FailedToStart
+	if (err == QProcess::FailedToStart)
 	{
-	case QProcess::FailedToStart: errString = "Failed to start"; break;
-	case QProcess::Crashed      : errString = "Crashed"; break;
-	case QProcess::Timedout     : errString = "Timed out"; break;
-	case QProcess::WriteError   : errString = "Write error"; break;
-	case QProcess::ReadError    : errString = "Read error"; break;
-	case QProcess::UnknownError : errString = "Unknown error"; break;
-	default:
-		errString = QString("Error code = %1").arg(err);
+		QMessageBox::critical(this, "Run FEBio", "FEBio failed to start.\nCheck the launch configuration and make sure that the path to the FEBio executable is correct.");
 	}
+	else
+	{
+		QString errString;
+		switch (err)
+		{
+		case QProcess::FailedToStart: errString = "Failed to start"; break;
+		case QProcess::Crashed: errString = "Crashed"; break;
+		case QProcess::Timedout: errString = "Timed out"; break;
+		case QProcess::WriteError: errString = "Write error"; break;
+		case QProcess::ReadError: errString = "Read error"; break;
+		case QProcess::UnknownError: errString = "Unknown error"; break;
+		default:
+			errString = QString("Error code = %1").arg(err);
+		}
 
-	QString t = "An error has occurred.\nError = " + errString;
-	AddLogEntry(t);
-	QMessageBox::critical(this, "Run FEBio", t);
+		QString t = "An error has occurred.\nError = " + errString;
+		AddLogEntry(t);
+		QMessageBox::critical(this, "Run FEBio", t);
+	}
 }
