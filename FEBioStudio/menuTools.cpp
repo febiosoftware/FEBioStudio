@@ -128,7 +128,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 	// this keeps track of the FEBio selection that was used last
 	static int lastLaunchConfigIndex = 0;
-	static int lastFEBioFileVersion = 0;
+	static int lastFEBioFileVersion = 1;	// default to 3.0
 
 	// setup the run dialog
 	CDlgRun dlg(this);
