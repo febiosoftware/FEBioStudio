@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include "PropertyListView.h"
 #include <PostGL/GLModel.h>
 #include <PostLib/FEPostModel.h>
+#include <PostLib/GLObject.h>
 #include <PostGL/GLPlot.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLVectorPlot.h>
@@ -798,7 +799,11 @@ void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, 
 			if (po)
 			{
 				ui->enabled->setEnabled(true);
-//				ui->enabled->setChecked(po->IsActive());
+				Post::CGLObject* glo = dynamic_cast<Post::CGLObject*>(po);
+				if (glo)
+				{
+					ui->enabled->setChecked(glo->IsActive());
+				}
 
 				if (dynamic_cast<Post::CImageModel*>(po))
 				{
@@ -915,12 +920,12 @@ void CPostModelPanel::on_enabled_stateChanged(int nstate)
 	if (nstate == Qt::Unchecked)
 	{
 		po->Activate(false);
-//		item->setTextColor(0, Qt::gray);
+		item->setForeground(0, Qt::gray);
 	}
 	else if (nstate == Qt::Checked)
 	{
 		po->Activate(true);
-//		item->setTextColor(0, Qt::black);
+		item->setForeground(0, Qt::black);
 	}
 
 	emit postObjectStateChanged();
