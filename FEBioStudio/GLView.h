@@ -419,10 +419,6 @@ protected:
 
 	void AddRegionPoint(int x, int y);
 
-	void RenderGLProgress(CPostDocument* postDoc);
-
-	bool TrackGLProgress(int x, CPostDocument* postDoc);
-
 	void RenderPlaneCut();
 
 protected:
@@ -496,10 +492,6 @@ protected:
 	char			m_szsubtitle[256];
 
 	CGLWidgetManager*	m_Widget;
-
-	bool	m_drawGLProgress;
-	int		m_GLProgressHeight;
-	bool	m_trackGLProgress;
 
 private:
 	GLenum	m_videoFormat;

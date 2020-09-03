@@ -917,7 +917,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		UpdateModel();
 		UpdateToolbar();
 		UpdatePostToolbar();
-		Update();
+		Update(nullptr, true);
 		if (ui->modelViewer) ui->modelViewer->Show();
 
 		// If the main window is not active, this will alert the user that the file has been read. 
@@ -952,6 +952,8 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update();
 
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
+
+	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(breset);
 
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
@@ -1683,6 +1685,8 @@ void CMainWindow::UpdateUIConfig()
 		UpdatePostPanel();
 		if (postDoc->IsValid()) ui->postToolBar->Update();
 		else ui->postToolBar->setDisabled(true);
+
+		if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(true);
 
 		ui->postPanel->parentWidget()->raise();
 	}

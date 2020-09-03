@@ -252,6 +252,9 @@ public:
 	// camera was changed
 	void OnCameraChanged();
 
+	// set the current time of the current post doc
+	void SetCurrentTime(int n);
+
 private:
 	void writeSettings();
 	void readSettings();

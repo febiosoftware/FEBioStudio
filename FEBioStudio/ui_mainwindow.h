@@ -64,6 +64,7 @@ SOFTWARE.*/
 #include "FEBioStudioProject.h"
 #include "welcomePage.h"
 #include "IconProvider.h"
+#include "TimelinePanel.h"
 
 class QProcess;
 
@@ -111,6 +112,7 @@ public:
 	::CDatabasePanel*	databasePanel;
 	::CDlgMeasure*	measureTool;
 	::CDlgPlaneCut*	planeCutTool;
+	::CTimelinePanel*	timePanel;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -919,6 +921,13 @@ public:
 		menuWindows->addAction(dock7->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock1, dock7);
 #endif
+
+		QDockWidget* dock8 = new QDockWidget("Timeline", m_wnd); dock8->setObjectName("dockTime");
+		timePanel = new ::CTimelinePanel(wnd, dock8);
+		dock8->setWidget(timePanel);
+		menuWindows->addAction(dock8->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock4, dock8);
+
 		// make sure the file viewer is the visible tab
 		dock1->raise();
 	}
@@ -996,6 +1005,11 @@ public:
 	void showDatabasePanel()
 	{
 		databasePanel->parentWidget()->raise();
+	}
+
+	void showTimeline()
+	{
+		timePanel->parentWidget()->raise();
 	}
 
 	void stopAnimation()
@@ -1101,6 +1115,7 @@ public:
 			postPanel->parentWidget()->hide();
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
+			timePanel->parentWidget()->hide();
 		}
 		else if (config == 1)
 		{
@@ -1123,6 +1138,7 @@ public:
 			postPanel->parentWidget()->hide();
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
+			timePanel->parentWidget()->hide();
 		}
 		else if (config == 2)
 		{
@@ -1143,8 +1159,11 @@ public:
 			modelViewer->parentWidget()->hide();
 			buildPanel->parentWidget()->hide();
 			postPanel->parentWidget()->show();
+			timePanel->parentWidget()->show();
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
+
+			showTimeline();
 		}
 	}
 };

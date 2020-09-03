@@ -376,6 +376,8 @@
     <ClCompile Include="..\..\FEBioStudio\moc_StatsWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SummaryWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_TagLabel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_TimelinePanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_TimelineWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolsPanel.cpp" />
@@ -426,6 +428,8 @@
     <ClCompile Include="..\..\FEBioStudio\SummaryWindow.cpp" />
     <ClCompile Include="..\..\FEBioStudio\TagLabel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\TetOverlapTool.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\TimelinePanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\TimelineWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
@@ -671,6 +675,16 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\TetOverlapTool.h" />
+    <CustomBuild Include="..\..\FEBioStudio\TimelinePanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\TimelineWidget.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\UnitParser.h" />
     <ClInclude Include="..\..\FEBioStudio\units.h" />
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />

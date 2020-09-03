@@ -564,6 +564,15 @@ void CMainWindow::on_actionRefresh_triggered()
 }
 
 //-----------------------------------------------------------------------------
+// set the current time of the current post doc
+void CMainWindow::SetCurrentTime(int n)
+{
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return;
+	ui->postToolBar->SetSpinValue(n + 1);
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::on_actionFirst_triggered()
 {
 	CPostDocument* doc = GetPostDocument();
@@ -637,6 +646,8 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 	doc->SetActiveState(n - 1);
 	RedrawGL();
 	ui->modelViewer->RefreshProperties();
+
+	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(false);
 
 	int graphs = ui->graphList.size();
 	QList<CGraphWindow*>::iterator it = ui->graphList.begin();
