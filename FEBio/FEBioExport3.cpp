@@ -1684,7 +1684,15 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 	m_xml.add_branch(el);
 	{
 		// write the material parameters (if any)
-		if ((pm->Parameters() || (pm->m_axes != nullptr))) WriteMaterialParams(pm, true);
+		if ((pm->Parameters() || (pm->m_axes != nullptr)))
+		{
+			// NOTE: This is a little hack, but if the parent material is 
+			// a multi-material then we treat this property as top-level
+			// so that non-persistent properties are written
+			const FEMaterial* parentMat = pm->GetParentMaterial();
+			bool topLevel = (parentMat == nullptr) || (dynamic_cast<const FEMultiMaterial*>(parentMat) != nullptr);
+			WriteMaterialParams(pm, topLevel);
+		}
 
 		// write the components
 		int NC = pm->Properties();
