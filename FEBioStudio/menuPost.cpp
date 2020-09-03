@@ -375,6 +375,7 @@ void CMainWindow::SetCurrentTimeValue(float ftime)
 	{
 		ui->postToolBar->SetSpinValue(n1 + 1, true);
 	}
+	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(false);
 
 	// update the rest
 	//	UpdateTools(false);
