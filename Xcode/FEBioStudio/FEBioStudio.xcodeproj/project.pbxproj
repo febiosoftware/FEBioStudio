@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D509D24524F35A8900783F6D /* moc_ZipFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D24424F35A8900783F6D /* moc_ZipFiles.cpp */; };
 		D509D41C24BF9A1D0064160E /* moc_WzdUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41624BF9A1C0064160E /* moc_WzdUpload.cpp */; };
 		D509D41D24BF9A1D0064160E /* TagLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41724BF9A1C0064160E /* TagLabel.cpp */; };
 		D509D41E24BF9A1D0064160E /* WzdUpload.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D509D41A24BF9A1D0064160E /* WzdUpload.cpp */; };
@@ -39,6 +40,8 @@
 		D54D2CEA2444A7DE00146123 /* ImportSpringsTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CE72444A7DE00146123 /* ImportSpringsTool.cpp */; };
 		D5606C80238DA80C002B037E /* libCUILib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7F238DA80C002B037E /* libCUILib.a */; };
 		D5606C87238DAAD1002B037E /* TetOverlapTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */; };
+		D56ADC1E2502879A0097DC8E /* DlgExportAscii.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56ADC1A2502879A0097DC8E /* DlgExportAscii.cpp */; };
+		D56ADC1F2502879A0097DC8E /* DlgExportVTK.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56ADC1D2502879A0097DC8E /* DlgExportVTK.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
 		D576570123E32E6900E4F70F /* LocalDatabaseHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */; };
 		D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F823E32E6800E4F70F /* RepoProject.cpp */; };
@@ -401,6 +404,10 @@
 		D5F7D90722FA39500089B08E /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F7D90322FA39500089B08E /* CoreAudio.framework */; };
 		D5F7D90922FA39740089B08E /* Tcl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F7D90822FA39730089B08E /* Tcl.framework */; };
 		D5F7D90B22FA397D0089B08E /* Tk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5F7D90A22FA397D0089B08E /* Tk.framework */; };
+		D5FF05512501AB2700D768FA /* moc_TimelineWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF054C2501AB2700D768FA /* moc_TimelineWidget.cpp */; };
+		D5FF05522501AB2700D768FA /* TimelinePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF054D2501AB2700D768FA /* TimelinePanel.cpp */; };
+		D5FF05532501AB2700D768FA /* moc_TimelinePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF054E2501AB2700D768FA /* moc_TimelinePanel.cpp */; };
+		D5FF05542501AB2800D768FA /* TimelineWidget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF054F2501AB2700D768FA /* TimelineWidget.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -450,6 +457,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D509D24424F35A8900783F6D /* moc_ZipFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ZipFiles.cpp; sourceTree = "<group>"; };
 		D509D41624BF9A1C0064160E /* moc_WzdUpload.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_WzdUpload.cpp; sourceTree = "<group>"; };
 		D509D41724BF9A1C0064160E /* TagLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TagLabel.cpp; sourceTree = "<group>"; };
 		D509D41824BF9A1C0064160E /* WzdUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WzdUpload.h; sourceTree = "<group>"; };
@@ -492,6 +500,10 @@
 		D5606C7F238DA80C002B037E /* libCUILib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libCUILib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlapTool.cpp; sourceTree = "<group>"; };
 		D5606C86238DAAD1002B037E /* TetOverlapTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlapTool.h; sourceTree = "<group>"; };
+		D56ADC1A2502879A0097DC8E /* DlgExportAscii.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgExportAscii.cpp; sourceTree = "<group>"; };
+		D56ADC1B2502879A0097DC8E /* DlgExportVTK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgExportVTK.h; sourceTree = "<group>"; };
+		D56ADC1C2502879A0097DC8E /* DlgExportAscii.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgExportAscii.h; sourceTree = "<group>"; };
+		D56ADC1D2502879A0097DC8E /* DlgExportVTK.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgExportVTK.cpp; sourceTree = "<group>"; };
 		D575FFC022FB7163007C935F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalDatabaseHandler.cpp; sourceTree = "<group>"; };
 		D57656F623E32E6800E4F70F /* RepoConnectionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoConnectionHandler.h; sourceTree = "<group>"; };
@@ -1006,6 +1018,12 @@
 		D5F7D90322FA39500089B08E /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		D5F7D90822FA39730089B08E /* Tcl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tcl.framework; path = System/Library/Frameworks/Tcl.framework; sourceTree = SDKROOT; };
 		D5F7D90A22FA397D0089B08E /* Tk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tk.framework; path = System/Library/Frameworks/Tk.framework; sourceTree = SDKROOT; };
+		D5FF054B2501AB2700D768FA /* TimelineWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimelineWidget.h; sourceTree = "<group>"; };
+		D5FF054C2501AB2700D768FA /* moc_TimelineWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_TimelineWidget.cpp; sourceTree = "<group>"; };
+		D5FF054D2501AB2700D768FA /* TimelinePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimelinePanel.cpp; sourceTree = "<group>"; };
+		D5FF054E2501AB2700D768FA /* moc_TimelinePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_TimelinePanel.cpp; sourceTree = "<group>"; };
+		D5FF054F2501AB2700D768FA /* TimelineWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimelineWidget.cpp; sourceTree = "<group>"; };
+		D5FF05502501AB2700D768FA /* TimelinePanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimelinePanel.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1212,10 +1230,14 @@
 				D5F7D75F22FA37C40089B08E /* DlgEditOutput.h */,
 				D5F7D72822FA37C40089B08E /* DlgEditProject.cpp */,
 				D5F7D70722FA37C40089B08E /* DlgEditProject.h */,
+				D56ADC1A2502879A0097DC8E /* DlgExportAscii.cpp */,
+				D56ADC1C2502879A0097DC8E /* DlgExportAscii.h */,
 				D5F7D71322FA37C40089B08E /* DlgExportFEBio.cpp */,
 				D5F7D7D222FA37C40089B08E /* DlgExportFEBio.h */,
 				D5D161A724218338000F8544 /* DlgExportLSDYNA.cpp */,
 				D5D161A624218338000F8544 /* DlgExportLSDYNA.h */,
+				D56ADC1D2502879A0097DC8E /* DlgExportVTK.cpp */,
+				D56ADC1B2502879A0097DC8E /* DlgExportVTK.h */,
 				D54D2CE42444A7DE00146123 /* DlgExportXPLT.cpp */,
 				D54D2CE52444A7DE00146123 /* DlgExportXPLT.h */,
 				D5F7D79E22FA37C40089B08E /* DlgFEBioOptimize.cpp */,
@@ -1479,10 +1501,13 @@
 				D5F7D75922FA37C40089B08E /* moc_StatsWindow.cpp */,
 				D5F7D71722FA37C40089B08E /* moc_SummaryWindow.cpp */,
 				D509D41B24BF9A1D0064160E /* moc_TagLabel.cpp */,
+				D5FF054E2501AB2700D768FA /* moc_TimelinePanel.cpp */,
+				D5FF054C2501AB2700D768FA /* moc_TimelineWidget.cpp */,
 				D5F7D78522FA37C40089B08E /* moc_Tool.cpp */,
 				D5F7D79922FA37C40089B08E /* moc_ToolBox.cpp */,
 				D5F7D7EB22FA37C40089B08E /* moc_ToolsPanel.cpp */,
 				D509D41624BF9A1C0064160E /* moc_WzdUpload.cpp */,
+				D509D24424F35A8900783F6D /* moc_ZipFiles.cpp */,
 				D5248DD7231C114D00691871 /* modelcheck.cpp */,
 				D5248DD8231C114D00691871 /* modelcheck.h */,
 				D5992F192461E4310054F9DA /* ModelDocument.cpp */,
@@ -1569,6 +1594,10 @@
 				D5F7D79A22FA37C40089B08E /* targetver.h */,
 				D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */,
 				D5606C86238DAAD1002B037E /* TetOverlapTool.h */,
+				D5FF054D2501AB2700D768FA /* TimelinePanel.cpp */,
+				D5FF05502501AB2700D768FA /* TimelinePanel.h */,
+				D5FF054F2501AB2700D768FA /* TimelineWidget.cpp */,
+				D5FF054B2501AB2700D768FA /* TimelineWidget.h */,
 				D5F7D7E722FA37C40089B08E /* Tool.cpp */,
 				D5F7D7D322FA37C40089B08E /* Tool.h */,
 				D5F7D7CF22FA37C40089B08E /* ToolBox.cpp */,
@@ -1772,6 +1801,7 @@
 			files = (
 				D5D2748A246DE1C100B1AA9D /* moc_MaterialPropsView.cpp in Sources */,
 				D5F7D83322FA37C40089B08E /* DlgExportFEBio.cpp in Sources */,
+				D5FF05542501AB2800D768FA /* TimelineWidget.cpp in Sources */,
 				D576570423E32E6900E4F70F /* RepoConnectionHandler.cpp in Sources */,
 				D57C2A77240F1F990043C2A7 /* PublicationWidgetView.cpp in Sources */,
 				D5F7D85522FA37C40089B08E /* DlgTimeSettings.cpp in Sources */,
@@ -1794,6 +1824,7 @@
 				D5F7D84A22FA37C40089B08E /* FEBioJob.cpp in Sources */,
 				D5ED2A1823198CD900C16BF7 /* moc_MainTabBar.cpp in Sources */,
 				D5F7D88422FA37C40089B08E /* moc_DlgRun.cpp in Sources */,
+				D509D24524F35A8900783F6D /* moc_ZipFiles.cpp in Sources */,
 				D5E04A4A2357BD1B006AC137 /* moc_DlgEditLConfigs.cpp in Sources */,
 				D5CB0B232481A5D1004702B2 /* DlgAddPhysicsItem.cpp in Sources */,
 				D5CC3A6F245B4CD800311F48 /* PointCongruencyTool.cpp in Sources */,
@@ -1802,6 +1833,7 @@
 				D5ED2A1023198CD900C16BF7 /* moc_PostDataPanel.cpp in Sources */,
 				D5F7D8C922FA37C40089B08E /* DlgFormula.cpp in Sources */,
 				D5F7D8C022FA37C40089B08E /* GGrid.cpp in Sources */,
+				D5FF05522501AB2700D768FA /* TimelinePanel.cpp in Sources */,
 				D5DFB17D248F24750006DB45 /* DlgPlaneCut.cpp in Sources */,
 				D5ED2A1323198CD900C16BF7 /* moc_MaterialPanel.cpp in Sources */,
 				D5D5B6C82335128E00D388FA /* moc_SSHThread.cpp in Sources */,
@@ -1840,6 +1872,7 @@
 				D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */,
 				D5946E1E24B4F5A60009C22F /* moc_ExportProjectWidget.cpp in Sources */,
 				D5992F2D2461E4320054F9DA /* welcomPage.cpp in Sources */,
+				D56ADC1E2502879A0097DC8E /* DlgExportAscii.cpp in Sources */,
 				D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */,
 				D57C2A7A240F1F990043C2A7 /* PublicationWidget.cpp in Sources */,
 				D5D5B6C72335128E00D388FA /* moc_Logger.cpp in Sources */,
@@ -1885,6 +1918,7 @@
 				D5F7D87422FA37C40089B08E /* PostPanel.cpp in Sources */,
 				D5F7D84D22FA37C40089B08E /* EditPanel.cpp in Sources */,
 				D5F7D85F22FA37C40089B08E /* SelectionBox.cpp in Sources */,
+				D56ADC1F2502879A0097DC8E /* DlgExportVTK.cpp in Sources */,
 				D5BA5339240D5470001A5C0F /* DlgFind.cpp in Sources */,
 				D5F7D84822FA37C40089B08E /* DocTemplate.cpp in Sources */,
 				D5F7D8BF22FA37C40089B08E /* MaterialEditor.cpp in Sources */,
@@ -2013,6 +2047,7 @@
 				D5F7D8AA22FA37C40089B08E /* moc_ModelTree.cpp in Sources */,
 				D5F7D86622FA37C40089B08E /* moc_PropertyListView.cpp in Sources */,
 				D5F7D8C322FA37C40089B08E /* qrc_febiostudio.cpp in Sources */,
+				D5FF05512501AB2700D768FA /* moc_TimelineWidget.cpp in Sources */,
 				D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */,
 				D5CA211523EF7025001AE230 /* moc_DlgAddPublication.cpp in Sources */,
 				D5CC3A72245B4CD800311F48 /* moc_DlgPlotMix.cpp in Sources */,
@@ -2022,6 +2057,7 @@
 				D5F7D89022FA37C40089B08E /* PropertyList.cpp in Sources */,
 				D5460FF424A936E3008C8024 /* moc_ScalarFieldTool.cpp in Sources */,
 				D5F7D86222FA37C40089B08E /* Command.cpp in Sources */,
+				D5FF05532501AB2700D768FA /* moc_TimelinePanel.cpp in Sources */,
 				D5828D0C246465DB00FD7FF2 /* moc_DlgUnitConverter.cpp in Sources */,
 				D5F7D8C622FA37C40089B08E /* moc_ModelSearch.cpp in Sources */,
 				D5CC3A76245B4CD800311F48 /* moc_PlaneTool.cpp in Sources */,

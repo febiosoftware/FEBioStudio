@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "TimelineWidget.h"
 #include <QMouseEvent>
 #include <QPainter>
+#include <math.h>
 
 CTimelineWidget::CTimelineWidget(QWidget* parent) : QWidget(parent)
 {

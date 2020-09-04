@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D5058A9924EB261000DF1A73 /* FERezoneMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5058A9824EB261000DF1A73 /* FERezoneMesh.cpp */; };
 		D50C858623A283F400E42D37 /* FETet4ToHex8.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */; };
 		D5173D042421ABA400462BAF /* FEShellMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5173D022421ABA400462BAF /* FEShellMesher.cpp */; };
 		D5173D052421ABA400462BAF /* FEShellMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = D5173D032421ABA400462BAF /* FEShellMesher.h */; };
@@ -229,6 +230,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D5058A9824EB261000DF1A73 /* FERezoneMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERezoneMesh.cpp; sourceTree = "<group>"; };
 		D50C858523A283F400E42D37 /* FETet4ToHex8.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FETet4ToHex8.cpp; sourceTree = "<group>"; };
 		D5173D022421ABA400462BAF /* FEShellMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellMesher.cpp; sourceTree = "<group>"; };
 		D5173D032421ABA400462BAF /* FEShellMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEShellMesher.h; sourceTree = "<group>"; };
@@ -582,6 +584,7 @@
 				D5ED276D23197DE300C16BF7 /* FERefineSurface.h */,
 				D5ED27FF23197DE400C16BF7 /* FERevolveFaces.cpp */,
 				D5ED27C823197DE400C16BF7 /* FERevolveFaces.h */,
+				D5058A9824EB261000DF1A73 /* FERezoneMesh.cpp */,
 				D5ED279B23197DE300C16BF7 /* FESelection.cpp */,
 				D5ED27A223197DE300C16BF7 /* FESelection.h */,
 				D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */,
@@ -948,6 +951,7 @@
 				D5ED28AE23197DE400C16BF7 /* FETet4ToTet10.cpp in Sources */,
 				D5ED283223197DE400C16BF7 /* FETet4ToTet20.cpp in Sources */,
 				D5ED28CE23197DE400C16BF7 /* FEMMGRemesh.cpp in Sources */,
+				D5058A9924EB261000DF1A73 /* FERezoneMesh.cpp in Sources */,
 				D5ED285123197DE400C16BF7 /* FEShellPatch.cpp in Sources */,
 				D5ED282823197DE400C16BF7 /* GHollowSphere.cpp in Sources */,
 				D5ED285C23197DE400C16BF7 /* FESurfaceModifier.cpp in Sources */,

@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D54D2CED2444DFA500146123 /* FEKinemat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CEB2444DFA500146123 /* FEKinemat.cpp */; };
 		D54D2CEE2444DFA500146123 /* FEKinemat.h in Headers */ = {isa = PBXBuildFile; fileRef = D54D2CEC2444DFA500146123 /* FEKinemat.h */; };
+		D56ADC22250287A90097DC8E /* BYUExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D56ADC20250287A80097DC8E /* BYUExport.h */; };
+		D56ADC23250287A90097DC8E /* BYUExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56ADC21250287A90097DC8E /* BYUExport.cpp */; };
 		D58A0B402452406E0084A352 /* GIFAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D58A0B3A2452406D0084A352 /* GIFAnimation.cpp */; };
 		D58A0B412452406E0084A352 /* FEPostMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D58A0B3B2452406D0084A352 /* FEPostMesh.cpp */; };
 		D58A0B422452406E0084A352 /* FEPostMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D58A0B3C2452406D0084A352 /* FEPostMesh.h */; };
@@ -123,6 +125,8 @@
 /* Begin PBXFileReference section */
 		D54D2CEB2444DFA500146123 /* FEKinemat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEKinemat.cpp; sourceTree = "<group>"; };
 		D54D2CEC2444DFA500146123 /* FEKinemat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEKinemat.h; sourceTree = "<group>"; };
+		D56ADC20250287A80097DC8E /* BYUExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BYUExport.h; sourceTree = "<group>"; };
+		D56ADC21250287A90097DC8E /* BYUExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BYUExport.cpp; sourceTree = "<group>"; };
 		D58A0B3A2452406D0084A352 /* GIFAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GIFAnimation.cpp; sourceTree = "<group>"; };
 		D58A0B3B2452406D0084A352 /* FEPostMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEPostMesh.cpp; sourceTree = "<group>"; };
 		D58A0B3C2452406D0084A352 /* FEPostMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEPostMesh.h; sourceTree = "<group>"; };
@@ -253,6 +257,8 @@
 				D5ED24AC2319797000C16BF7 /* Animation.h */,
 				D5ED24B52319797000C16BF7 /* AVIAnimation.cpp */,
 				D5ED24BE2319797000C16BF7 /* AVIAnimation.h */,
+				D56ADC21250287A90097DC8E /* BYUExport.cpp */,
+				D56ADC20250287A80097DC8E /* BYUExport.h */,
 				D5ED24A32319797000C16BF7 /* ColorMap.cpp */,
 				D5ED25032319797000C16BF7 /* ColorMap.h */,
 				D5ED24E02319797000C16BF7 /* constants.h */,
@@ -435,6 +441,7 @@
 				D5ED29E323198B1E00C16BF7 /* FEMeshData_T.h in Headers */,
 				D5ED29E423198B1E00C16BF7 /* GMeshImport.h in Headers */,
 				D5ED29E523198B1E00C16BF7 /* constants.h in Headers */,
+				D56ADC22250287A90097DC8E /* BYUExport.h in Headers */,
 				D5ED29E623198B1E00C16BF7 /* FENikeImport.h in Headers */,
 				D5ED29E723198B1E00C16BF7 /* FEVTKExport.h in Headers */,
 				D5ED29E823198B1E00C16BF7 /* Animation.h in Headers */,
@@ -541,6 +548,7 @@
 				D5ED299E23198B1E00C16BF7 /* FEMeshData.cpp in Sources */,
 				D5ED299F23198B1E00C16BF7 /* FENikeExport.cpp in Sources */,
 				D5ED29A023198B1E00C16BF7 /* FECurvatureMap.cpp in Sources */,
+				D56ADC23250287A90097DC8E /* BYUExport.cpp in Sources */,
 				D5ED29A223198B1E00C16BF7 /* MarchingCubes.cpp in Sources */,
 				D5ED29A323198B1E00C16BF7 /* FEVTKExport.cpp in Sources */,
 				D5ED29A423198B1E00C16BF7 /* AVIAnimation.cpp in Sources */,
