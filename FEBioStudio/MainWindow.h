@@ -288,6 +288,8 @@ private:
 	void OpenDocument(const QString& fileName);
 	void OpenFEModel(const QString& fileName);
 
+	void SavePostDoc();
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();

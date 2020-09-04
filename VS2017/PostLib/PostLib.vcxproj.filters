@@ -180,6 +180,9 @@
     <ClCompile Include="..\..\PostLib\GIFAnimation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\PostLib\BYUExport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\PostLib\Animation.h">
@@ -351,6 +354,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostLib\GIFAnimation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PostLib\BYUExport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

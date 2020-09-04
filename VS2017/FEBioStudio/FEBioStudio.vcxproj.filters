@@ -846,6 +846,12 @@
     <ClCompile Include="..\..\FEBioStudio\moc_TimelineWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\DlgExportAscii.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FEBioStudio\DlgExportVTK.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\FEBioStudio\stdafx.h">
@@ -1155,6 +1161,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\TimelinePanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\DlgExportAscii.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FEBioStudio\DlgExportVTK.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

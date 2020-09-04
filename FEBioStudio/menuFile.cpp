@@ -103,6 +103,15 @@ SOFTWARE.*/
 #include <iostream>
 #include "ModelDocument.h"
 #include "FileThread.h"
+#include "DlgExportAscii.h"
+#include "DlgExportVTK.h"
+#include <PostLib/FEFEBioExport.h>
+#include <PostLib/FEAsciiExport.h>
+#include <PostLib/VRMLExporter.h>
+#include <PostLib/FENikeExport.h>
+#include <PostLib/FEVTKExport.h>
+#include <PostLib/FELSDYNAPlot.h>
+#include <PostLib/BYUExport.h>
 #include <sstream>
 
 #ifdef HAS_QUAZIP
@@ -834,10 +843,178 @@ void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
 	ImportFiles(QStringList(fileName));
 }
 
+//-----------------------------------------------------------------------------
+void CMainWindow::SavePostDoc()
+{
+	QStringList filters;
+	filters << "FEBio xplt files (*.xplt)"
+		<< "FEBio files (*.feb)"
+		<< "ASCII files (*.*)"
+		<< "VRML files (*.wrl)"
+		<< "LSDYNA Keyword (*.k)"
+		<< "BYU files(*.byu)"
+		<< "NIKE3D files (*.n)"
+		<< "VTK files (*.vtk)"
+		<< "LSDYNA database (*.d3plot)";
+
+	QFileDialog dlg(this, "Save");
+	dlg.setFileMode(QFileDialog::AnyFile);
+	dlg.setNameFilters(filters);
+	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	if (dlg.exec())
+	{
+		QStringList files = dlg.selectedFiles();
+		QString filter = dlg.selectedNameFilter();
+
+		int nfilter = filters.indexOf(filter);
+
+		QString fileName = files.first();
+		if (fileName.isEmpty()) return;
+		string sfilename = fileName.toStdString();
+		const char* szfilename = sfilename.c_str();
+
+		CPostDocument* doc = GetPostDocument();
+		if ((doc == nullptr) || (doc->IsValid() == false)) return;
+
+		Post::FEPostModel& fem = *doc->GetFEModel();
+
+		bool bret = false;
+		QString error("(unknown)");
+		switch (nfilter)
+		{
+		case 0:
+		{
+			CDlgExportXPLT dlg(this);
+			if (dlg.exec() == QDialog::Accepted)
+			{
+				Post::xpltFileExport ex;
+				ex.SetCompression(dlg.m_bcompress);
+				bret = ex.Save(fem, szfilename);
+				error = ex.GetErrorMessage();
+			}
+		}
+		break;
+		case 1:
+		{
+			Post::FEFEBioExport fr;
+			bret = fr.Save(fem, szfilename);
+		}
+		break;
+		case 2:
+		{
+			CDlgExportAscii dlg(this);
+			if (dlg.exec() == QDialog::Accepted)
+			{
+				// decide which time steps to export
+				int n0, n1;
+				if (dlg.m_nstep == 0) n0 = n1 = doc->GetActiveState();
+				else
+				{
+					n0 = 0;
+					n1 = fem.GetStates() - 1;
+				}
+
+				// export the data
+				Post::FEASCIIExport out;
+				out.m_bcoords = dlg.m_bcoords;
+				out.m_bedata = dlg.m_bedata;
+				out.m_belem = dlg.m_belem;
+				out.m_bface = dlg.m_bface;
+				out.m_bfnormals = dlg.m_bfnormals;
+				out.m_bndata = dlg.m_bndata;
+				out.m_bselonly = dlg.m_bsel;
+
+				bret = out.Save(&fem, n0, n1, szfilename);
+			}
+		}
+		break;
+		case 3:
+		{
+			Post::VRMLExporter exporter;
+			bret = exporter.Save(&fem, szfilename);
+		}
+		break;
+		case 4:
+		{
+			CDlgExportLSDYNA dlg(this);
+			if (dlg.exec())
+			{
+				Post::FELSDYNAExport w;
+				w.m_bsel = dlg.m_bsel;
+				w.m_bsurf = dlg.m_bsurf;
+				w.m_bnode = dlg.m_bnode;
+				bret = w.Save(fem, doc->GetActiveState(), szfilename);
+			}
+		}
+		break;
+		case 5:
+		{
+			Post::BYUExport exporter;
+			bret = exporter.Save(fem, szfilename);
+		}
+		break;
+		case 6:
+		{
+			Post::FENikeExport fr;
+			bret = fr.Save(fem, szfilename);
+		}
+		break;
+		case 7:
+		{
+			CDlgExportVTK dlg(this);
+			if (dlg.exec())
+			{
+				Post::FEVTKExport w;
+				w.ExportAllStates(dlg.m_ops[0]);
+				bret = w.Save(fem, szfilename);
+				error = "Failed writing VTK file";
+			}
+		}
+		break;
+		case 8:
+		{
+			CDlgExportLSDYNAPlot dlg(&fem, this);
+			if (dlg.exec())
+			{
+				Post::FELSDYNAPlotExport ls;
+				bret = ls.Save(fem, szfilename, dlg.m_flag, dlg.m_code);
+				error = "Failed writing LSDYNA database file";
+			}
+		}
+		break;
+		default:
+			assert(false);
+			error = "Unknown file type";
+			break;
+		}
+
+		if (bret == false)
+		{
+			QMessageBox b;
+			b.setText(QString("Failed saving file.\nReason:%1").arg(error));
+			b.setIcon(QMessageBox::Critical);
+			b.exec();
+		}
+		else
+		{
+			QMessageBox::information(this, "PostView2", "Success saving file!");
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::on_actionSaveAs_triggered()
 {
 	CModelDocument* doc = GetModelDocument();
-	if (doc == nullptr) return;
+	if (doc == nullptr)
+	{
+		CPostDocument* postDoc = GetPostDocument();
+		if (postDoc)
+		{
+			SavePostDoc();
+		}
+		return;
+	}
 
 	QString currentPath = ui->currentPath;
 	if (ui->m_project.GetProjectFileName().isEmpty() == false)
