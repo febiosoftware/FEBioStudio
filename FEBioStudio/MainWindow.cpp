@@ -1004,7 +1004,8 @@ void CMainWindow::CloseProject()
 //! \sa CGLView::Reset
 void CMainWindow::Reset()
 {
-	ui->glview->Reset();
+//	ui->glview->Reset();
+	GLHighlighter::ClearHighlights();
 	ui->glview->ZoomExtents(false);
 }
 
