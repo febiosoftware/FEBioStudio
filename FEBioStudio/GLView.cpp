@@ -1492,7 +1492,7 @@ void CGLView::paintGL()
 	else RenderPostView(postDoc);
 
 	// render the grid
-	if (view.m_bgrid) m_grid.Render(m_rc);
+	if (view.m_bgrid && (postDoc == nullptr)) m_grid.Render(m_rc);
 
 	// render the image data
 	RenderImageData();
