@@ -2465,6 +2465,16 @@ FEDCMaxNormalLagrangeStrain::FEDCMaxNormalLagrangeStrain() : FEMaterial(FE_DC_MN
 }
 
 //=============================================================================
+// DC Octahedral Shear Strain
+//=============================================================================
+
+REGISTER_MATERIAL(FEDCOctahedralShearStrain, MODULE_MECH, FE_DC_OSS, FE_MAT_DAMAGE_CRITERION, "DC octahedral shear strain", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Octahedral_Shear_Strain);
+
+FEDCOctahedralShearStrain::FEDCOctahedralShearStrain() : FEMaterial(FE_DC_OSS)
+{
+}
+
+//=============================================================================
 // DC Simo Uncoupled
 //=============================================================================
 

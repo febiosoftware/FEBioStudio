@@ -871,3 +871,66 @@ FEUncoupledPrestrainMaterial::FEUncoupledPrestrainMaterial() : FEMaterial(FE_UNC
 	AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
 	AddProperty("prestrain", FE_MAT_PRESTRAIN_GRADIENT);
 }
+
+//=============================================================================
+//                              REACTIVE PLASTICITY
+//=============================================================================
+
+REGISTER_MATERIAL(FEReactivePlasticity, MODULE_MECH, FE_REACTIVE_PLASTICITY, FE_MAT_ELASTIC, "reactive plasticity", MaterialFlags::TOPLEVEL);
+
+FEReactivePlasticity::FEReactivePlasticity() : FEMaterial(FE_REACTIVE_PLASTICITY)
+{
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
+    
+    AddScienceParam(1, UNIT_NONE    , "nf"  , "no. of bond families");
+    AddScienceParam(0, UNIT_PRESSURE, "Y0"  , "minimum yield threshold");
+    AddScienceParam(0, UNIT_PRESSURE, "Ymax", "maximum yield threshold");
+    AddScienceParam(1, UNIT_NONE    , "w0"  , "initial fraction of yielding bonds");
+    AddScienceParam(0, UNIT_NONE    , "we"  , "fraction of unyielding bonds");
+    AddScienceParam(1, UNIT_NONE    , "r"   , "bias");
+    AddBoolParam   (true,"isochoric", "isochoric plastic flow");
+    
+    // Add one component for the elastic material
+    AddProperty("elastic", FE_MAT_ELASTIC);
+    
+    // Add criterion component
+    AddProperty("yield_criterion", FE_MAT_DAMAGE_CRITERION);
+}
+
+//=============================================================================
+//                            REACTIVE PLASTIC DAMAGE
+//=============================================================================
+
+REGISTER_MATERIAL(FEReactivePlasticDamage, MODULE_MECH, FE_REACTIVE_PLASTIC_DAMAGE, FE_MAT_ELASTIC, "reactive plastic damage", MaterialFlags::TOPLEVEL);
+
+FEReactivePlasticDamage::FEReactivePlasticDamage() : FEMaterial(FE_REACTIVE_PLASTIC_DAMAGE)
+{
+    AddScienceParam(1, UNIT_DENSITY, "density", "density"     )->SetPersistent(false);
+    
+    AddScienceParam(1, UNIT_NONE    , "nf"  , "no. of bond families");
+    AddScienceParam(0, UNIT_PRESSURE, "Y0"  , "minimum yield threshold");
+    AddScienceParam(0, UNIT_PRESSURE, "Ymax", "maximum yield threshold");
+    AddScienceParam(1, UNIT_NONE    , "w0"  , "initial fraction of yielding bonds");
+    AddScienceParam(0, UNIT_NONE    , "we"  , "fraction of unyielding bonds");
+    AddScienceParam(1, UNIT_NONE    , "r"   , "bias");
+    AddBoolParam   (true,"isochoric", "isochoric plastic flow");
+    
+    // Add one component for the elastic material
+    AddProperty("elastic", FE_MAT_ELASTIC);
+    
+    // Add criterion component
+    AddProperty("yield_criterion", FE_MAT_DAMAGE_CRITERION);
+    
+    // Add yield damage material
+    AddProperty("yield_damage", FE_MAT_DAMAGE);
+
+    // Add yield damage criterion component
+    AddProperty("yield_damage_criterion", FE_MAT_DAMAGE_CRITERION);
+    
+    // Add intact damage material
+    AddProperty("intact_damage", FE_MAT_DAMAGE);
+    
+    // Add intact damage criterion component
+    AddProperty("intact_damage_criterion", FE_MAT_DAMAGE_CRITERION);
+    
+}

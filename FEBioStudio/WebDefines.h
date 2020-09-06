@@ -245,6 +245,7 @@ SOFTWARE.*/
 #define Materials_Reactive_Damage_Mechanics_Damage_Criterion_Maximum_Shear_Stress "FEBio_um_2-9-4.5.3.5.html"
 #define Materials_Reactive_Damage_Mechanics_Damage_Criterion_Maximum_Normal_Stress "FEBio_um_2-9-4.5.3.6.html"
 #define Materials_Reactive_Damage_Mechanics_Damage_Criterion_Maximum_Normal_Lagrange_Strain "FEBio_um_2-9-4.5.3.7.html"
+#define Materials_Reactive_Damage_Mechanics_Damage_Criterion_Octahedral_Shear_Strain "FEBio_um_2-9-4.5.3.7.html"
 #define Materials_Multigeneration_Solids "FEBio_um_2-9-Section-4.6.html"
 #define Materials_Multigeneration_Solids_General_Specification_of_Multigeneration_Solids "FEBio_um_2-9-Subsection-4.6.1.html"
 #define Materials_Biphasic_Materials "FEBio_um_2-9-Section-4.7.html"

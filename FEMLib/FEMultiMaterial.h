@@ -714,3 +714,72 @@ public:
 
 	DECLARE_REGISTERED(FEUncoupledPrestrainMaterial);
 };
+
+//-----------------------------------------------------------------------------
+// reactive plasticity
+class FEReactivePlasticity : public FEMaterial
+{
+public:
+    // material parameters
+    enum {
+        MP_NF, MP_Y0, MP_YMAX, MP_W0, MP_WE, MP_R, MP_ISCHRC
+    };
+    
+public:
+    // constructor
+    FEReactivePlasticity();
+    
+    // set the elastic component of the material
+    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
+    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    
+    // set/get yield criterion
+    void SetCriterion(FEMaterial* pm) { ReplaceProperty(1, pm); }
+    FEMaterial* GetCriterion() { return GetProperty(1).GetMaterial(); }
+
+    DECLARE_REGISTERED(FEReactivePlasticity);
+};
+
+
+//-----------------------------------------------------------------------------
+// reactive plastic damage
+class FEReactivePlasticDamage : public FEMaterial
+{
+public:
+    // material parameters
+    enum {
+        MP_NF, MP_Y0, MP_YMAX, MP_W0, MP_WE, MP_R, MP_ISCHRC
+    };
+    
+public:
+    // constructor
+    FEReactivePlasticDamage();
+    
+    // set the elastic component of the material
+    void SetElasticMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
+    FEMaterial* GetElasticMaterial() { return GetProperty(0).GetMaterial(); }
+    
+    // set/get yield criterion
+    void SetYieldCriterion(FEMaterial* pm) { ReplaceProperty(1, pm); }
+    FEMaterial* GetYieldCriterion() { return GetProperty(1).GetMaterial(); }
+    
+    // set/get yield damage material
+    void SetYieldDamageMaterial(FEMaterial* pm) { ReplaceProperty(2, pm); }
+    FEMaterial* GetYieldDamageMaterial() { return GetProperty(2).GetMaterial(); }
+    
+    // set/get yield damage criterion
+    void SetYieldDamageCriterion(FEMaterial* pm) { ReplaceProperty(3, pm); }
+    FEMaterial* GetYieldDamageCriterion() { return GetProperty(3).GetMaterial(); }
+
+    // set/get damage material
+    void SetIntactDamageMaterial(FEMaterial* pm) { ReplaceProperty(4, pm); }
+    FEMaterial* GetIntactDamageMaterial() { return GetProperty(4).GetMaterial(); }
+    
+    // set/get criterion
+    void SetIntactDamageCriterion(FEMaterial* pm) { ReplaceProperty(5, pm); }
+    FEMaterial* GetIntactDamageCriterion() { return GetProperty(5).GetMaterial(); }
+
+    DECLARE_REGISTERED(FEReactivePlasticDamage);
+};
+
+

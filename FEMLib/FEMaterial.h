@@ -154,6 +154,8 @@
 #define FE_MULTI_GENERATION         126
 #define FE_PRESTRAIN_MATERIAL		127
 #define FE_UNCOUPLED_PRESTRAIN_MATERIAL		128
+#define FE_REACTIVE_PLASTICITY      129
+#define FE_REACTIVE_PLASTIC_DAMAGE  130
 
 // permeability materials
 #define FE_PERM_CONST				200
@@ -238,6 +240,7 @@
 #define FE_DC_MSS                   944
 #define FE_DC_MNS                   945
 #define FE_DC_MNLE                  946
+#define FE_DC_OSS                   947
 #define FE_DC_SIMO_UC               960
 #define FE_DC_SED_UC                961
 #define FE_DC_SSE_UC                962
@@ -1848,6 +1851,14 @@ class FEDCMaxNormalLagrangeStrain : public FEMaterial
 public:
     FEDCMaxNormalLagrangeStrain();
     DECLARE_REGISTERED(FEDCMaxNormalLagrangeStrain);
+};
+
+//-----------------------------------------------------------------------------
+class FEDCOctahedralShearStrain : public FEMaterial
+{
+public:
+    FEDCOctahedralShearStrain();
+    DECLARE_REGISTERED(FEDCOctahedralShearStrain);
 };
 
 //-----------------------------------------------------------------------------
