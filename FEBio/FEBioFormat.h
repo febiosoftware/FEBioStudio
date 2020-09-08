@@ -89,6 +89,7 @@ protected:
     FEMaterial* ParseOsmoManning   (FEMaterial* pm, XMLTag& tag);
 	void ParseMatAxis(XMLTag& tag, FEMaterial* mat);
 	void ParseFiber(XMLTag& tag, FEMaterial* mat);
+	void ParseFiberProperty(XMLTag& tag, FEFiberMaterial* mat);
 
 	FEReactionMaterial* ParseReaction(XMLTag& tag);
 	FEReactionMaterial* ParseReaction2(XMLTag& tag);

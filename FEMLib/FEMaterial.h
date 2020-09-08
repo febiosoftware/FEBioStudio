@@ -330,6 +330,8 @@ class FEAnglesVectorGenerator : public FEFiberGenerator
 public:
 	FEAnglesVectorGenerator(double theta = 0.0, double phi = 90.0);
 	vec3d GetFiber(FEElementRef& el) override;
+	void GetAngles(double& theta, double& phi);
+	void SetAngles(double theta, double phi);
 	DECLARE_REGISTERED(FEAnglesVectorGenerator);
 };
 
@@ -1259,6 +1261,8 @@ public:
 	vec3d GetFiber(FEElementRef& el) override;
 
 	void SetFiberGenerator(FEFiberGenerator* v);
+
+	FEFiberGenerator* GetFiberGenerator();
 
 	void SetAxisMaterial(FEAxisMaterial* Q) override;
 };

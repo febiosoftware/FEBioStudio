@@ -191,6 +191,18 @@ vec3d FEAnglesVectorGenerator::GetFiber(FEElementRef& el)
 	return a;
 }
 
+void FEAnglesVectorGenerator::GetAngles(double& theta, double& phi)
+{
+	theta = GetFloatValue(0);
+	phi = GetFloatValue(1);
+}
+
+void FEAnglesVectorGenerator::SetAngles(double theta, double phi)
+{
+	SetFloatValue(0, theta);
+	SetFloatValue(1, phi);
+}
+
 //////////////////////////////////////////////////////////////////////
 // FEIsotropicElastic  - isotropic elasticity
 //////////////////////////////////////////////////////////////////////
@@ -1828,6 +1840,11 @@ bool FEFiberMaterial::HasFibers() { return true; }
 void FEFiberMaterial::SetFiberGenerator(FEFiberGenerator* v)
 {
 	GetProperty(0).SetMaterial(v);
+}
+
+FEFiberGenerator* FEFiberMaterial::GetFiberGenerator()
+{
+	return dynamic_cast<FEFiberGenerator*>(GetProperty(0).GetMaterial());
 }
 
 void FEFiberMaterial::SetAxisMaterial(FEAxisMaterial* Q)

@@ -729,6 +729,66 @@ void FEBioFormat::ParseFiber(XMLTag& tag, FEMaterial* pm)
 }
 
 //-----------------------------------------------------------------------------
+void FEBioFormat::ParseFiberProperty(XMLTag& tag, FEFiberMaterial* pm)
+{
+	// allow all materials to define mat_axis, even if not required for that material
+	XMLAtt& atype = tag.Attribute("type");
+	if (atype == "local")
+	{
+		int n[2] = { 0, 0 };
+		tag.value(n, 2);
+		pm->SetFiberGenerator(new FEFiberGeneratorLocal(n[0], n[1]));
+	}
+	else if (atype == "vector")
+	{
+		vec3d a;
+		tag.value(a);
+		pm->SetFiberGenerator(new FEFiberGeneratorVector(a));
+	}
+	else if (atype == "angles")
+	{
+		double theta = 0, phi = 90;
+		++tag;
+		do
+		{
+			if (tag == "theta") tag.value(theta);
+			else if (tag == "phi") tag.value(phi);
+			else ParseUnknownAttribute(tag, "type");
+			++tag;
+		} while (!tag.isend());
+
+		pm->SetFiberGenerator(new FEAnglesVectorGenerator(theta, phi));
+	}
+	else if (atype == "cylindrical")
+	{
+		vec3d center, axis, vec;
+		++tag;
+		do {
+			if (tag == "center") tag.value(center);
+			else if (tag == "axis") tag.value(axis);
+			else if (tag == "vector") tag.value(vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetFiberGenerator(new FECylindricalVectorGenerator(center, axis, vec));
+	}
+	else if (atype == "spherical")
+	{
+		vec3d center, vec;
+		++tag;
+		do {
+			if (tag == "center") tag.value(center);
+			else if (tag == "vector") tag.value(vec);
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+		pm->SetFiberGenerator(new FESphericalVectorGenerator(center, vec));
+	}
+	else ParseUnknownAttribute(tag, "type");
+	++tag;
+}
+
+//-----------------------------------------------------------------------------
 // helper function for updating uncoupled materials to ensure that the bulk modulus
 // is only defined for the top-level uncoupled material
 void FixUncoupledMaterial(FEMaterial* mat)
@@ -811,13 +871,46 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 						ParseFiberMaterial(*ptiso->GetFiberMaterial(), tag);
 						++tag;
 					}
-					else 
+					else if (dynamic_cast<FEFiberMaterial*>(pm))
+					{
+						FEFiberMaterial* fiberMat = dynamic_cast<FEFiberMaterial*>(pm);
+						ParseFiberProperty(tag, fiberMat);
+					}
+					else
 					{
 						// treat it as mat_axis for now
 						ParseFiber(tag, pm);
 					}
 				}
-				else
+				else if(dynamic_cast<FEFiberMaterial*>(pm))
+				{
+					// Some fiber materials used to define the theta and phi 
+					// parameters, but these are now defined via the "fiber" property. 
+					// This "hack" converts from the old format to the new one. 
+
+					FEFiberMaterial* fiberMat = dynamic_cast<FEFiberMaterial*>(pm);
+					FEAnglesVectorGenerator* fiber = dynamic_cast<FEAnglesVectorGenerator*>(fiberMat->GetFiberGenerator());
+					if (fiber == nullptr)
+					{
+						fiberMat->SetFiberGenerator(fiber = new FEAnglesVectorGenerator(0.0, 90.0));
+					}
+
+					double theta, phi;
+					fiber->GetAngles(theta, phi);
+					if (tag == "theta")
+					{
+						tag.value(theta);
+					}
+					else if (tag == "phi")
+					{ 
+						tag.value(phi);
+					}
+					else ParseUnknownTag(tag);
+					++tag;
+
+					fiber->SetAngles(theta, phi);
+				}
+				else 
 				{
 					if (pm->Properties() > 0)
 					{
