@@ -195,7 +195,7 @@ vec3d FEAnglesVectorGenerator::GetFiber(FEElementRef& el)
 // FEIsotropicElastic  - isotropic elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEIsotropicElastic, MODULE_MECH, FE_ISOTROPIC_ELASTIC, FE_MAT_ELASTIC, "isotropic elastic", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Isotropic_Elastic);
+REGISTER_MATERIAL(FEIsotropicElastic, MODULE_MECH, FE_ISOTROPIC_ELASTIC, FE_MAT_ELASTIC, "isotropic elastic", MaterialFlags::TOPLEVEL, Isotropic_Elastic);
 
 FEIsotropicElastic::FEIsotropicElastic() : FEMaterial(FE_ISOTROPIC_ELASTIC)
 {
@@ -208,7 +208,7 @@ FEIsotropicElastic::FEIsotropicElastic() : FEMaterial(FE_ISOTROPIC_ELASTIC)
 // FEOrthoElastic - orthotropic elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEOrthoElastic, MODULE_MECH, FE_ORTHO_ELASTIC, FE_MAT_ELASTIC, "orthotropic elastic", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Orthotropic_Elastic);
+REGISTER_MATERIAL(FEOrthoElastic, MODULE_MECH, FE_ORTHO_ELASTIC, FE_MAT_ELASTIC, "orthotropic elastic", MaterialFlags::TOPLEVEL, Orthotropic_Elastic);
 
 FEOrthoElastic::FEOrthoElastic() : FEMaterial(FE_ORTHO_ELASTIC)
 {
@@ -230,7 +230,7 @@ FEOrthoElastic::FEOrthoElastic() : FEMaterial(FE_ORTHO_ELASTIC)
 // FENeoHookean - neo-hookean elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FENeoHookean, MODULE_MECH, FE_NEO_HOOKEAN, FE_MAT_ELASTIC, "neo-Hookean", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Neo_Hookean);
+REGISTER_MATERIAL(FENeoHookean, MODULE_MECH, FE_NEO_HOOKEAN, FE_MAT_ELASTIC, "neo-Hookean", MaterialFlags::TOPLEVEL, Neo_Hookean);
 
 FENeoHookean::FENeoHookean() : FEMaterial(FE_NEO_HOOKEAN)
 {
@@ -269,7 +269,7 @@ FEIncompNeoHookean::FEIncompNeoHookean() : FEMaterial(FE_INCOMP_NEO_HOOKEAN)
 // FEPorousNeoHookean - porous neo-hookean elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPorousNeoHookean, MODULE_MECH, FE_POROUS_NEO_HOOKEAN, FE_MAT_ELASTIC, "porous neo-Hookean", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Porous_Neo_Hookean);
+REGISTER_MATERIAL(FEPorousNeoHookean, MODULE_MECH, FE_POROUS_NEO_HOOKEAN, FE_MAT_ELASTIC, "porous neo-Hookean", MaterialFlags::TOPLEVEL, Porous_Neo_Hookean);
 
 FEPorousNeoHookean::FEPorousNeoHookean() : FEMaterial(FE_POROUS_NEO_HOOKEAN)
 {
@@ -282,7 +282,7 @@ FEPorousNeoHookean::FEPorousNeoHookean() : FEMaterial(FE_POROUS_NEO_HOOKEAN)
 // FEMooneyRivlin - Mooney-Rivlin rubber
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEMooneyRivlin, MODULE_MECH, FE_MOONEY_RIVLIN, FE_MAT_ELASTIC_UNCOUPLED, "Mooney-Rivlin", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Mooney_Rivlin);
+REGISTER_MATERIAL(FEMooneyRivlin, MODULE_MECH, FE_MOONEY_RIVLIN, FE_MAT_ELASTIC_UNCOUPLED, "Mooney-Rivlin", MaterialFlags::TOPLEVEL, Mooney_Rivlin);
 
 FEMooneyRivlin::FEMooneyRivlin() : FEMaterial(FE_MOONEY_RIVLIN)
 {
@@ -296,7 +296,7 @@ FEMooneyRivlin::FEMooneyRivlin() : FEMaterial(FE_MOONEY_RIVLIN)
 // FEVerondaWestmann - Veronda-Westmann elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEVerondaWestmann, MODULE_MECH, FE_VERONDA_WESTMANN, FE_MAT_ELASTIC_UNCOUPLED, "Veronda-Westmann", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Veronda_Westmann);
+REGISTER_MATERIAL(FEVerondaWestmann, MODULE_MECH, FE_VERONDA_WESTMANN, FE_MAT_ELASTIC_UNCOUPLED, "Veronda-Westmann", MaterialFlags::TOPLEVEL, Veronda_Westmann);
 
 FEVerondaWestmann::FEVerondaWestmann() : FEMaterial(FE_VERONDA_WESTMANN)
 {
@@ -311,7 +311,7 @@ FEVerondaWestmann::FEVerondaWestmann() : FEMaterial(FE_VERONDA_WESTMANN)
 // FECoupledMooneyRivlin
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FECoupledMooneyRivlin, MODULE_MECH, FE_COUPLED_MOONEY_RIVLIN, FE_MAT_ELASTIC, "coupled Mooney-Rivlin", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Coupled_Mooney_Rivlin);
+REGISTER_MATERIAL(FECoupledMooneyRivlin, MODULE_MECH, FE_COUPLED_MOONEY_RIVLIN, FE_MAT_ELASTIC, "coupled Mooney-Rivlin", MaterialFlags::TOPLEVEL, Coupled_Mooney_Rivlin);
 
 FECoupledMooneyRivlin::FECoupledMooneyRivlin() : FEMaterial(FE_COUPLED_MOONEY_RIVLIN)
 {
@@ -325,7 +325,7 @@ FECoupledMooneyRivlin::FECoupledMooneyRivlin() : FEMaterial(FE_COUPLED_MOONEY_RI
 // FECoupledVerondaWestmann
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FECoupledVerondaWestmann, MODULE_MECH, FE_COUPLED_VERONDA_WESTMANN, FE_MAT_ELASTIC, "coupled Veronda-Westmann", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Coupled_Veronda_Westmann);
+REGISTER_MATERIAL(FECoupledVerondaWestmann, MODULE_MECH, FE_COUPLED_VERONDA_WESTMANN, FE_MAT_ELASTIC, "coupled Veronda-Westmann", MaterialFlags::TOPLEVEL, Coupled_Veronda_Westmann);
 
 FECoupledVerondaWestmann::FECoupledVerondaWestmann() : FEMaterial(FE_COUPLED_VERONDA_WESTMANN)
 {
@@ -339,7 +339,7 @@ FECoupledVerondaWestmann::FECoupledVerondaWestmann() : FEMaterial(FE_COUPLED_VER
 // FEHolmesMow -Holmes-Mow elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEHolmesMow, MODULE_MECH, FE_HOLMES_MOW, FE_MAT_ELASTIC, "Holmes-Mow", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Holmes_Mow);
+REGISTER_MATERIAL(FEHolmesMow, MODULE_MECH, FE_HOLMES_MOW, FE_MAT_ELASTIC, "Holmes-Mow", MaterialFlags::TOPLEVEL, Holmes_Mow);
 
 FEHolmesMow::FEHolmesMow() : FEMaterial(FE_HOLMES_MOW)
 {
@@ -353,7 +353,7 @@ FEHolmesMow::FEHolmesMow() : FEMaterial(FE_HOLMES_MOW)
 // FEArrudaBoyce - Arruda-Boyce elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEArrudaBoyce, MODULE_MECH, FE_ARRUDA_BOYCE, FE_MAT_ELASTIC_UNCOUPLED, "Arruda-Boyce", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Arruda_Boyce);
+REGISTER_MATERIAL(FEArrudaBoyce, MODULE_MECH, FE_ARRUDA_BOYCE, FE_MAT_ELASTIC_UNCOUPLED, "Arruda-Boyce", MaterialFlags::TOPLEVEL, Arruda_Boyce);
 
 FEArrudaBoyce::FEArrudaBoyce() : FEMaterial(FE_ARRUDA_BOYCE)
 {
@@ -367,7 +367,7 @@ FEArrudaBoyce::FEArrudaBoyce() : FEMaterial(FE_ARRUDA_BOYCE)
 // FECarterHayes - Carter-Hayes elasticity
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FECarterHayes, MODULE_MECH, FE_CARTER_HAYES, FE_MAT_ELASTIC, "Carter-Hayes", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Carter_Hayes);
+REGISTER_MATERIAL(FECarterHayes, MODULE_MECH, FE_CARTER_HAYES, FE_MAT_ELASTIC, "Carter-Hayes", MaterialFlags::TOPLEVEL, Carter_Hayes);
 
 FECarterHayes::FECarterHayes() : FEMaterial(FE_CARTER_HAYES)
 {
@@ -849,7 +849,7 @@ FEActiveContraction::FEActiveContraction() : FEMaterial(FE_MAT_ACTIVE_CONTRACTIO
 // FETransMooneyRivlin - transversely isotropic mooney-rivlin
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FETransMooneyRivlin, MODULE_MECH, FE_TRANS_ISO_MOONEY_RIVLIN, FE_MAT_ELASTIC_UNCOUPLED, "trans iso Mooney-Rivlin", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Transversely_Isotropic_Mooney_Rivlin);
+REGISTER_MATERIAL(FETransMooneyRivlin, MODULE_MECH, FE_TRANS_ISO_MOONEY_RIVLIN, FE_MAT_ELASTIC_UNCOUPLED, "trans iso Mooney-Rivlin", MaterialFlags::TOPLEVEL, Transversely_Isotropic_Mooney_Rivlin);
 
 FETransMooneyRivlin::FETransMooneyRivlin() : FETransverselyIsotropic(FE_TRANS_ISO_MOONEY_RIVLIN)
 {
@@ -890,7 +890,7 @@ void FETransMooneyRivlin::Convert(FETransMooneyRivlinOld* pold)
 // FETransVerondaWestmann - transversely isotropic Veronda-Westmann
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FETransVerondaWestmann, MODULE_MECH, FE_TRANS_ISO_VERONDA_WESTMANN, FE_MAT_ELASTIC_UNCOUPLED, "trans iso Veronda-Westmann", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Transversely_Isotropic_Veronda_Westmann);
+REGISTER_MATERIAL(FETransVerondaWestmann, MODULE_MECH, FE_TRANS_ISO_VERONDA_WESTMANN, FE_MAT_ELASTIC_UNCOUPLED, "trans iso Veronda-Westmann", MaterialFlags::TOPLEVEL, Transversely_Isotropic_Veronda_Westmann);
 
 FETransVerondaWestmann::FETransVerondaWestmann() : FETransverselyIsotropic(FE_TRANS_ISO_VERONDA_WESTMANN)
 {
@@ -931,7 +931,7 @@ void FETransVerondaWestmann::Convert(FETransVerondaWestmannOld* pold)
 // FECoupledTransIsoVerondaWestmann
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FECoupledTransIsoVerondaWestmann, MODULE_MECH, FE_COUPLED_TRANS_ISO_VW, FE_MAT_ELASTIC, "coupled trans-iso Veronda-Westmann", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Coupled_Transversely_Isotropic_Veronda_Westmann);
+REGISTER_MATERIAL(FECoupledTransIsoVerondaWestmann, MODULE_MECH, FE_COUPLED_TRANS_ISO_VW, FE_MAT_ELASTIC, "coupled trans-iso Veronda-Westmann", MaterialFlags::TOPLEVEL, Coupled_Transversely_Isotropic_Veronda_Westmann);
 
 FECoupledTransIsoVerondaWestmann::FECoupledTransIsoVerondaWestmann() : FETransverselyIsotropic(FE_COUPLED_TRANS_ISO_VW)
 {
@@ -971,7 +971,7 @@ FECoupledTransIsoMooneyRivlinOld::FECoupledTransIsoMooneyRivlinOld() : FEMateria
 // Coupled Trans-iso Mooney-Rivlin
 //=============================================================================
 
-REGISTER_MATERIAL(FECoupledTransIsoMooneyRivlin, MODULE_MECH, FE_COUPLED_TRANS_ISO_MR, FE_MAT_ELASTIC, "coupled trans-iso Mooney-Rivlin", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Coupled_Transversely_Isotropic_Mooney_Rivlin);
+REGISTER_MATERIAL(FECoupledTransIsoMooneyRivlin, MODULE_MECH, FE_COUPLED_TRANS_ISO_MR, FE_MAT_ELASTIC, "coupled trans-iso Mooney-Rivlin", MaterialFlags::TOPLEVEL, Coupled_Transversely_Isotropic_Mooney_Rivlin);
 
 FECoupledTransIsoMooneyRivlin::FECoupledTransIsoMooneyRivlin() : FETransverselyIsotropic(FE_COUPLED_TRANS_ISO_MR)
 {
@@ -1006,7 +1006,7 @@ void FECoupledTransIsoMooneyRivlin::Convert(FECoupledTransIsoMooneyRivlinOld* po
 // FEMooneyRivlinVonMisesFibers
 //=============================================================================
 
-REGISTER_MATERIAL(FEMooneyRivlinVonMisesFibers, MODULE_MECH, FE_MAT_MR_VON_MISES_FIBERS, FE_MAT_ELASTIC_UNCOUPLED, "Mooney-Rivlin von Mises Fibers", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Mooney_Rivlin_Von_Mises_Distributed_Fibers);
+REGISTER_MATERIAL(FEMooneyRivlinVonMisesFibers, MODULE_MECH, FE_MAT_MR_VON_MISES_FIBERS, FE_MAT_ELASTIC_UNCOUPLED, "Mooney-Rivlin von Mises Fibers", MaterialFlags::TOPLEVEL, Mooney_Rivlin_Von_Mises_Distributed_Fibers);
 
 FEMooneyRivlinVonMisesFibers::FEMooneyRivlinVonMisesFibers() : FEMaterial(FE_MAT_MR_VON_MISES_FIBERS)
 {
@@ -1032,7 +1032,7 @@ FEMooneyRivlinVonMisesFibers::FEMooneyRivlinVonMisesFibers() : FEMaterial(FE_MAT
 // FE2DTransIsoMooneyRivlin
 //=============================================================================
 
-REGISTER_MATERIAL(FE2DTransIsoMooneyRivlin, MODULE_MECH, FE_MAT_2D_TRANS_ISO_MR, FE_MAT_ELASTIC_UNCOUPLED, "2D trans iso Mooney-Rivlin", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Transversely_Isotropic_Mooney_Rivlin);
+REGISTER_MATERIAL(FE2DTransIsoMooneyRivlin, MODULE_MECH, FE_MAT_2D_TRANS_ISO_MR, FE_MAT_ELASTIC_UNCOUPLED, "2D trans iso Mooney-Rivlin", MaterialFlags::TOPLEVEL, Transversely_Isotropic_Mooney_Rivlin);
 
 FE2DTransIsoMooneyRivlin::FE2DTransIsoMooneyRivlin() : FETransverselyIsotropic(FE_MAT_2D_TRANS_ISO_MR)
 {
@@ -1053,7 +1053,7 @@ FE2DTransIsoMooneyRivlin::FE2DTransIsoMooneyRivlin() : FETransverselyIsotropic(F
 // FERigidMaterial - rigid body material
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FERigidMaterial, MODULE_MECH, FE_RIGID_MATERIAL, FE_MAT_RIGID, "Rigid body", MaterialFlags::TOPLEVEL, Materials_Rigid_Body);
+REGISTER_MATERIAL(FERigidMaterial, MODULE_MECH, FE_RIGID_MATERIAL, FE_MAT_RIGID, "Rigid body", MaterialFlags::TOPLEVEL, Rigid_Body);
 
 FERigidMaterial::FERigidMaterial() : FEMaterial(FE_RIGID_MATERIAL)
 {
@@ -1112,7 +1112,7 @@ void FERigidMaterial::copy(FEMaterial* pmat)
 // FETCNonlinearOrthotropic - Tension-Compression Nonlinear Orthotropic
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FETCNonlinearOrthotropic, MODULE_MECH, FE_TCNL_ORTHO, FE_MAT_ELASTIC_UNCOUPLED, "TC nonlinear orthotropic", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Tension_Compression_Nonlinear_Orthotropic);
+REGISTER_MATERIAL(FETCNonlinearOrthotropic, MODULE_MECH, FE_TCNL_ORTHO, FE_MAT_ELASTIC_UNCOUPLED, "TC nonlinear orthotropic", MaterialFlags::TOPLEVEL, Tension_Compression_Nonlinear_Orthotropic);
 
 FETCNonlinearOrthotropic::FETCNonlinearOrthotropic() : FEMaterial(FE_TCNL_ORTHO)
 {
@@ -1131,7 +1131,7 @@ FETCNonlinearOrthotropic::FETCNonlinearOrthotropic() : FEMaterial(FE_TCNL_ORTHO)
 // FEFungOrthotropic - Fung Orthotropic
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEFungOrthotropic, MODULE_MECH, FE_FUNG_ORTHO, FE_MAT_ELASTIC_UNCOUPLED, "Fung orthotropic", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Fung_Orthotropic);
+REGISTER_MATERIAL(FEFungOrthotropic, MODULE_MECH, FE_FUNG_ORTHO, FE_MAT_ELASTIC_UNCOUPLED, "Fung orthotropic", MaterialFlags::TOPLEVEL, Fung_Orthotropic);
 
 FEFungOrthotropic::FEFungOrthotropic() : FEMaterial(FE_FUNG_ORTHO)
 {
@@ -1155,7 +1155,7 @@ FEFungOrthotropic::FEFungOrthotropic() : FEMaterial(FE_FUNG_ORTHO)
 // FEFungOrthotropic - Fung Orthotropic
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEFungOrthoCompressible, MODULE_MECH, FE_FUNG_ORTHO_COUPLED, FE_MAT_ELASTIC, "Fung-ortho-compressible", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Fung_Orthotropic_Compressible);
+REGISTER_MATERIAL(FEFungOrthoCompressible, MODULE_MECH, FE_FUNG_ORTHO_COUPLED, FE_MAT_ELASTIC, "Fung-ortho-compressible", MaterialFlags::TOPLEVEL, Fung_Orthotropic_Compressible);
 
 FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_COUPLED)
 {
@@ -1201,7 +1201,7 @@ FELinearOrthotropic::FELinearOrthotropic() : FEMaterial(FE_LINEAR_ORTHO)
 // FEMuscleMaterial - Silvia Blemker's muscle material
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEMuscleMaterial, MODULE_MECH, FE_MUSCLE_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "muscle material", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Muscle_Material);
+REGISTER_MATERIAL(FEMuscleMaterial, MODULE_MECH, FE_MUSCLE_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "muscle material", MaterialFlags::TOPLEVEL, Muscle_Material);
 
 FEMuscleMaterial::FEMuscleMaterial() : FETransverselyIsotropic(FE_MUSCLE_MATERIAL)
 {
@@ -1222,7 +1222,7 @@ FEMuscleMaterial::FEMuscleMaterial() : FETransverselyIsotropic(FE_MUSCLE_MATERIA
 // FETendonMaterial - Silvia Blemker's tendon material
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FETendonMaterial, MODULE_MECH, FE_TENDON_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "tendon material", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Tendon_Material);
+REGISTER_MATERIAL(FETendonMaterial, MODULE_MECH, FE_TENDON_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "tendon material", MaterialFlags::TOPLEVEL, Tendon_Material);
 
 FETendonMaterial::FETendonMaterial() : FETransverselyIsotropic(FE_TENDON_MATERIAL)
 {
@@ -1241,7 +1241,7 @@ FETendonMaterial::FETendonMaterial() : FETransverselyIsotropic(FE_TENDON_MATERIA
 // Ogden material
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEOgdenMaterial, MODULE_MECH, FE_OGDEN_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "Ogden", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Ogden);
+REGISTER_MATERIAL(FEOgdenMaterial, MODULE_MECH, FE_OGDEN_MATERIAL, FE_MAT_ELASTIC_UNCOUPLED, "Ogden", MaterialFlags::TOPLEVEL, Uncoupled_Materials_Ogden);
 
 FEOgdenMaterial::FEOgdenMaterial() : FEMaterial(FE_OGDEN_MATERIAL)
 {
@@ -1265,7 +1265,7 @@ FEOgdenMaterial::FEOgdenMaterial() : FEMaterial(FE_OGDEN_MATERIAL)
 // Ogden material
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEOgdenUnconstrained, MODULE_MECH, FE_OGDEN_UNCONSTRAINED, FE_MAT_ELASTIC, "Ogden unconstrained", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Ogden_Unconstrained);
+REGISTER_MATERIAL(FEOgdenUnconstrained, MODULE_MECH, FE_OGDEN_UNCONSTRAINED, FE_MAT_ELASTIC, "Ogden unconstrained", MaterialFlags::TOPLEVEL, Ogden_Unconstrained);
 
 FEOgdenUnconstrained::FEOgdenUnconstrained() : FEMaterial(FE_OGDEN_UNCONSTRAINED)
 {
@@ -1289,7 +1289,7 @@ FEOgdenUnconstrained::FEOgdenUnconstrained() : FEMaterial(FE_OGDEN_UNCONSTRAINED
 // FEEFDMooneyRivlin - ellipsoidal fiber distribution model with MR base
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEEFDMooneyRivlin, MODULE_MECH, FE_EFD_MOONEY_RIVLIN, FE_MAT_ELASTIC_UNCOUPLED, "EFD Mooney-Rivlin", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Ellipsoidal_Fiber_Distribution_Mooney_Rivlin);
+REGISTER_MATERIAL(FEEFDMooneyRivlin, MODULE_MECH, FE_EFD_MOONEY_RIVLIN, FE_MAT_ELASTIC_UNCOUPLED, "EFD Mooney-Rivlin", MaterialFlags::TOPLEVEL, Ellipsoidal_Fiber_Distribution_Mooney_Rivlin);
 
 FEEFDMooneyRivlin::FEEFDMooneyRivlin() : FEMaterial(FE_EFD_MOONEY_RIVLIN)
 {
@@ -1304,7 +1304,7 @@ FEEFDMooneyRivlin::FEEFDMooneyRivlin() : FEMaterial(FE_EFD_MOONEY_RIVLIN)
 // FEEFDNeoHookean - ellipsoidal fiber distribution model with MR base
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEEFDNeoHookean, MODULE_MECH, FE_EFD_NEO_HOOKEAN, FE_MAT_ELASTIC, "EFD neo-Hookean", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Ellipsoidal_Fiber_Distribution_Neo_Hookean);
+REGISTER_MATERIAL(FEEFDNeoHookean, MODULE_MECH, FE_EFD_NEO_HOOKEAN, FE_MAT_ELASTIC, "EFD neo-Hookean", MaterialFlags::TOPLEVEL, Ellipsoidal_Fiber_Distribution_Neo_Hookean);
 
 FEEFDNeoHookean::FEEFDNeoHookean() : FEMaterial(FE_EFD_NEO_HOOKEAN)
 {
@@ -1318,7 +1318,7 @@ FEEFDNeoHookean::FEEFDNeoHookean() : FEMaterial(FE_EFD_NEO_HOOKEAN)
 // FEEFDDonnan - ellipsoidal fiber distribution model with Donnan base
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEEFDDonnan, MODULE_MECH, FE_EFD_DONNAN, FE_MAT_ELASTIC, "EFD Donnan equilibrium", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Ellipsoidal_Fiber_Distribution_with_Donnan_Equilibrium_Swelling);
+REGISTER_MATERIAL(FEEFDDonnan, MODULE_MECH, FE_EFD_DONNAN, FE_MAT_ELASTIC, "EFD Donnan equilibrium", MaterialFlags::TOPLEVEL, Ellipsoidal_Fiber_Distribution_with_Donnan_Equilibrium_Swelling);
 
 FEEFDDonnan::FEEFDDonnan() : FEMaterial(FE_EFD_DONNAN)
 {
@@ -1336,7 +1336,7 @@ FEEFDDonnan::FEEFDDonnan() : FEMaterial(FE_EFD_DONNAN)
 // FEEFDVerondaWestmann - ellipsoidal fiber distribution model with Veronda Westmann base
 /////////////////////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEEFDVerondaWestmann, MODULE_MECH, FE_EFD_VERONDA_WESTMANN, FE_MAT_ELASTIC_UNCOUPLED, "EFD Veronda-Westmann", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Uncoupled_Materials_Ellipsoidal_Fiber_Distribution_Veronda_Westmann);
+REGISTER_MATERIAL(FEEFDVerondaWestmann, MODULE_MECH, FE_EFD_VERONDA_WESTMANN, FE_MAT_ELASTIC_UNCOUPLED, "EFD Veronda-Westmann", MaterialFlags::TOPLEVEL, Ellipsoidal_Fiber_Distribution_Veronda_Westmann);
 
 FEEFDVerondaWestmann::FEEFDVerondaWestmann() : FEMaterial(FE_EFD_VERONDA_WESTMANN)
 {
@@ -1353,7 +1353,7 @@ FEEFDVerondaWestmann::FEEFDVerondaWestmann() : FEMaterial(FE_EFD_VERONDA_WESTMAN
 // FECubicCLE - Conewise Linear Elasticity with cubic symmetry
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FECubicCLE, MODULE_MECH, FE_CLE_CUBIC, FE_MAT_ELASTIC, "cubic CLE", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Cubic_CLE);
+REGISTER_MATERIAL(FECubicCLE, MODULE_MECH, FE_CLE_CUBIC, FE_MAT_ELASTIC, "cubic CLE", MaterialFlags::TOPLEVEL, Cubic_CLE);
 
 FECubicCLE::FECubicCLE() : FEMaterial(FE_CLE_CUBIC)
 {
@@ -1370,7 +1370,7 @@ FECubicCLE::FECubicCLE() : FEMaterial(FE_CLE_CUBIC)
 // FECubicCLE - Conewise Linear Elasticity with orthotropic symmetry
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEOrthotropicCLE, MODULE_MECH, FE_CLE_ORTHOTROPIC, FE_MAT_ELASTIC, "orthotropic CLE", MaterialFlags::TOPLEVEL, Materials_Elastic_Solids_Compressible_Materials_Orthotropic_CLE);
+REGISTER_MATERIAL(FEOrthotropicCLE, MODULE_MECH, FE_CLE_ORTHOTROPIC, FE_MAT_ELASTIC, "orthotropic CLE", MaterialFlags::TOPLEVEL, Orthotropic_CLE);
 
 FEOrthotropicCLE::FEOrthotropicCLE() : FEMaterial(FE_CLE_ORTHOTROPIC)
 {
@@ -1395,7 +1395,7 @@ FEOrthotropicCLE::FEOrthotropicCLE() : FEMaterial(FE_CLE_ORTHOTROPIC)
 // FEPrescribedActiveContractionUniaxial - Prescribed uniaxial active contraction
 ////////////////////////////////////////////////////////////////////////
 
-//REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI, FE_MAT_ELASTIC, "prescribed uniaxial active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Compressible_Materials_Prescribed_Uniaxial_Active_Contraction);
+//REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI, FE_MAT_ELASTIC, "prescribed uniaxial active contraction", 0, Prescribed_Uniaxial_Active_Contraction);
 
 FEPrescribedActiveContractionUniaxialOld::FEPrescribedActiveContractionUniaxialOld() : FEMaterial(FE_ACTIVE_CONTRACT_UNI_OLD)
 {
@@ -1408,7 +1408,7 @@ FEPrescribedActiveContractionUniaxialOld::FEPrescribedActiveContractionUniaxialO
 // FEPrescribedActiveContractionTransIso - Prescribed trans iso active contraction
 ////////////////////////////////////////////////////////////////////////
 
-//REGISTER_MATERIAL(FEPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO, FE_MAT_ELASTIC, "prescribed trans iso active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Compressible_Materials_Prescribed_Transversely_Isotropic_Active_Contraction);
+//REGISTER_MATERIAL(FEPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO, FE_MAT_ELASTIC, "prescribed trans iso active contraction", 0, Prescribed_Transversely_Isotropic_Active_Contraction);
 
 FEPrescribedActiveContractionTransIsoOld::FEPrescribedActiveContractionTransIsoOld() : FEMaterial(FE_ACTIVE_CONTRACT_TISO_OLD)
 {
@@ -1421,7 +1421,7 @@ FEPrescribedActiveContractionTransIsoOld::FEPrescribedActiveContractionTransIsoO
 // FEPrescribedActiveContractionUniaxial - Prescribed uniaxial active contraction
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI, FE_MAT_ELASTIC, "prescribed uniaxial active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Compressible_Materials_Prescribed_Uniaxial_Active_Contraction);
+REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxial, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI, FE_MAT_ELASTIC, "prescribed uniaxial active contraction", 0, Prescribed_Uniaxial_Active_Contraction);
 
 FEPrescribedActiveContractionUniaxial::FEPrescribedActiveContractionUniaxial() : FEMaterial(FE_ACTIVE_CONTRACT_UNI)
 {
@@ -1445,7 +1445,7 @@ void FEPrescribedActiveContractionUniaxial::Convert(FEPrescribedActiveContractio
 // FEPrescribedActiveContractionTransIso - Prescribed trans iso active contraction
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO, FE_MAT_ELASTIC, "prescribed trans iso active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Compressible_Materials_Prescribed_Transversely_Isotropic_Active_Contraction);
+REGISTER_MATERIAL(FEPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO, FE_MAT_ELASTIC, "prescribed trans iso active contraction", 0, Prescribed_Transversely_Isotropic_Active_Contraction);
 
 FEPrescribedActiveContractionTransIso::FEPrescribedActiveContractionTransIso() : FEMaterial(FE_ACTIVE_CONTRACT_TISO)
 {
@@ -1469,7 +1469,7 @@ void FEPrescribedActiveContractionTransIso::Convert(FEPrescribedActiveContractio
 // FEPrescribedActiveContractionIsotropic - Prescribed isotropic active contraction
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPrescribedActiveContractionIsotropic, MODULE_MECH, FE_ACTIVE_CONTRACT_ISO, FE_MAT_ELASTIC, "prescribed isotropic active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Compressible_Materials_Prescribed_Isotropic_Active_Contraction);
+REGISTER_MATERIAL(FEPrescribedActiveContractionIsotropic, MODULE_MECH, FE_ACTIVE_CONTRACT_ISO, FE_MAT_ELASTIC, "prescribed isotropic active contraction", 0, Prescribed_Isotropic_Active_Contraction);
 
 FEPrescribedActiveContractionIsotropic::FEPrescribedActiveContractionIsotropic() : FEMaterial(FE_ACTIVE_CONTRACT_ISO)
 {
@@ -1480,7 +1480,7 @@ FEPrescribedActiveContractionIsotropic::FEPrescribedActiveContractionIsotropic()
 // FEPrescribedActiveContractionUniaxialUC - Prescribed uniaxial active contraction
 ////////////////////////////////////////////////////////////////////////
 
-//REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed uniaxial active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Uncoupled_Materials_Uncoupled_Prescribed_Uniaxial_Active_Contraction);
+//REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed uniaxial active contraction", 0, Uncoupled_Prescribed_Uniaxial_Active_Contraction);
 
 FEPrescribedActiveContractionUniaxialUCOld::FEPrescribedActiveContractionUniaxialUCOld() : FEMaterial(FE_ACTIVE_CONTRACT_UNI_UC_OLD)
 {
@@ -1493,7 +1493,7 @@ FEPrescribedActiveContractionUniaxialUCOld::FEPrescribedActiveContractionUniaxia
 // FEPrescribedActiveContractionTransIsoUC - Prescribed trans iso active contraction
 ////////////////////////////////////////////////////////////////////////
 
-//REGISTER_MATERIAL(FEPrescribedActiveContractionTransIsoUC, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed trans iso active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Uncoupled_Materials_Uncoupled_Prescribed_Transversely_Isotropic_Active_Contraction);
+//REGISTER_MATERIAL(FEPrescribedActiveContractionTransIsoUC, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed trans iso active contraction", 0, Uncoupled_Prescribed_Transversely_Isotropic_Active_Contraction);
 
 FEPrescribedActiveContractionTransIsoUCOld::FEPrescribedActiveContractionTransIsoUCOld() : FEMaterial(FE_ACTIVE_CONTRACT_TISO_UC_OLD)
 {
@@ -1506,7 +1506,7 @@ FEPrescribedActiveContractionTransIsoUCOld::FEPrescribedActiveContractionTransIs
 // FEPrescribedActiveContractionUniaxialUC - Prescribed uniaxial active contraction
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed uniaxial active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Uncoupled_Materials_Uncoupled_Prescribed_Uniaxial_Active_Contraction);
+REGISTER_MATERIAL(FEPrescribedActiveContractionUniaxialUC, MODULE_MECH, FE_ACTIVE_CONTRACT_UNI_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed uniaxial active contraction", 0, Uncoupled_Prescribed_Uniaxial_Active_Contraction);
 
 FEPrescribedActiveContractionUniaxialUC::FEPrescribedActiveContractionUniaxialUC() : FEMaterial(FE_ACTIVE_CONTRACT_UNI_UC)
 {
@@ -1530,7 +1530,7 @@ void FEPrescribedActiveContractionUniaxialUC::Convert(FEPrescribedActiveContract
 // FEPrescribedActiveContractionTransIsoUC - Prescribed trans iso active contraction
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPrescribedActiveContractionTransIsoUC, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed trans iso active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Uncoupled_Materials_Uncoupled_Prescribed_Transversely_Isotropic_Active_Contraction);
+REGISTER_MATERIAL(FEPrescribedActiveContractionTransIsoUC, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed trans iso active contraction", 0, Uncoupled_Prescribed_Transversely_Isotropic_Active_Contraction);
 
 FEPrescribedActiveContractionTransIsoUC::FEPrescribedActiveContractionTransIsoUC() : FEMaterial(FE_ACTIVE_CONTRACT_TISO_UC)
 {
@@ -1554,7 +1554,7 @@ void FEPrescribedActiveContractionTransIsoUC::Convert(FEPrescribedActiveContract
 // FEPrescribedActiveContractionIsotropicUC - Prescribed isotropic active contraction
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPrescribedActiveContractionIsotropicUC, MODULE_MECH, FE_ACTIVE_CONTRACT_ISO_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed isotropic active contraction", 0, Materials_Active_Contraction_Contraction_in_Mixtures_of_Uncoupled_Materials_Uncoupled_Prescribed_Isotropic_Active_Contraction);
+REGISTER_MATERIAL(FEPrescribedActiveContractionIsotropicUC, MODULE_MECH, FE_ACTIVE_CONTRACT_ISO_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed isotropic active contraction", 0, Uncoupled_Prescribed_Isotropic_Active_Contraction);
 
 FEPrescribedActiveContractionIsotropicUC::FEPrescribedActiveContractionIsotropicUC() : FEMaterial(FE_ACTIVE_CONTRACT_ISO_UC)
 {
@@ -1578,7 +1578,7 @@ FEIsotropicFourier::FEIsotropicFourier() : FEMaterial(FE_ISOTROPIC_FOURIER)
 // Constant Permeability
 //=============================================================================
 
-REGISTER_MATERIAL(FEPermConst, MODULE_BIPHASIC, FE_PERM_CONST, FE_MAT_PERMEABILITY, "perm-const-iso", 0, Materials_Biphasic_Materials_Permeability_Materials_Constant_Isotropic_Permeability);
+REGISTER_MATERIAL(FEPermConst, MODULE_BIPHASIC, FE_PERM_CONST, FE_MAT_PERMEABILITY, "perm-const-iso", 0, Constant_Isotropic_Permeability);
 
 FEPermConst::FEPermConst() : FEMaterial(FE_PERM_CONST)
 {
@@ -1589,7 +1589,7 @@ FEPermConst::FEPermConst() : FEMaterial(FE_PERM_CONST)
 // Holmes-Mow Permeability
 //=============================================================================
 
-REGISTER_MATERIAL(FEPermHolmesMow, MODULE_BIPHASIC, FE_PERM_HOLMES_MOW, FE_MAT_PERMEABILITY, "perm-Holmes-Mow", 0, Materials_Biphasic_Materials_Permeability_Materials_Holmes_Mow);
+REGISTER_MATERIAL(FEPermHolmesMow, MODULE_BIPHASIC, FE_PERM_HOLMES_MOW, FE_MAT_PERMEABILITY, "perm-Holmes-Mow", 0, Holmes_Mow);
 
 FEPermHolmesMow::FEPermHolmesMow() : FEMaterial(FE_PERM_HOLMES_MOW)
 {
@@ -1602,7 +1602,7 @@ FEPermHolmesMow::FEPermHolmesMow() : FEMaterial(FE_PERM_HOLMES_MOW)
 // Ateshian-Weiss isotropic permeability
 //=============================================================================
 
-REGISTER_MATERIAL(FEPermAteshianWeissIso, MODULE_BIPHASIC, FE_PERM_REF_ISO, FE_MAT_PERMEABILITY, "perm-ref-iso", 0, Materials_Biphasic_Materials_Permeability_Materials_Referentially_Isotropic_Permeability);
+REGISTER_MATERIAL(FEPermAteshianWeissIso, MODULE_BIPHASIC, FE_PERM_REF_ISO, FE_MAT_PERMEABILITY, "perm-ref-iso", 0, Referentially_Isotropic_Permeability);
 
 FEPermAteshianWeissIso::FEPermAteshianWeissIso() : FEMaterial(FE_PERM_REF_ISO)
 {
@@ -1617,7 +1617,7 @@ FEPermAteshianWeissIso::FEPermAteshianWeissIso() : FEMaterial(FE_PERM_REF_ISO)
 // Ateshian-Weiss trans-isotropic permeability
 //=============================================================================
 
-REGISTER_MATERIAL(FEPermAteshianWeissTransIso, MODULE_BIPHASIC, FE_PERM_REF_TRANS_ISO, FE_MAT_PERMEABILITY, "perm-ref-trans-iso", 0, Materials_Biphasic_Materials_Permeability_Materials_Referentially_Transversely_Isotropic_Permeability);
+REGISTER_MATERIAL(FEPermAteshianWeissTransIso, MODULE_BIPHASIC, FE_PERM_REF_TRANS_ISO, FE_MAT_PERMEABILITY, "perm-ref-trans-iso", 0, Referentially_Transversely_Isotropic_Permeability);
 
 FEPermAteshianWeissTransIso::FEPermAteshianWeissTransIso() : FEMaterial(FE_PERM_REF_TRANS_ISO)
 {
@@ -1640,7 +1640,7 @@ FEPermAteshianWeissTransIso::FEPermAteshianWeissTransIso() : FEMaterial(FE_PERM_
 // Ateshian-Weiss orthotropic permeability
 //=============================================================================
 
-REGISTER_MATERIAL(FEPermAteshianWeissOrtho, MODULE_BIPHASIC, FE_PERM_REF_ORTHO, FE_MAT_PERMEABILITY, "perm-ref-ortho", 0, Materials_Biphasic_Materials_Permeability_Materials_Referentially_Orthotropic_Permeability);
+REGISTER_MATERIAL(FEPermAteshianWeissOrtho, MODULE_BIPHASIC, FE_PERM_REF_ORTHO, FE_MAT_PERMEABILITY, "perm-ref-ortho", 0, Referentially_Orthotropic_Permeability);
 
 FEPermAteshianWeissOrtho::FEPermAteshianWeissOrtho() : FEMaterial(FE_PERM_REF_ORTHO)
 {
@@ -1659,7 +1659,7 @@ FEPermAteshianWeissOrtho::FEPermAteshianWeissOrtho() : FEMaterial(FE_PERM_REF_OR
 // Exponential Isotropic Permeability
 //=============================================================================
 
-REGISTER_MATERIAL(FEPermExpIso, MODULE_BIPHASIC, FE_PERM_EXP_ISO, FE_MAT_PERMEABILITY, "perm-exp-iso", 0, Materials_Biphasic_Materials_Permeability_Materials_Exp_Iso);
+REGISTER_MATERIAL(FEPermExpIso, MODULE_BIPHASIC, FE_PERM_EXP_ISO, FE_MAT_PERMEABILITY, "perm-exp-iso", 0, Exponential_Isotropic_Permeability);
 
 FEPermExpIso::FEPermExpIso() : FEMaterial(FE_PERM_EXP_ISO)
 {
@@ -1671,7 +1671,7 @@ FEPermExpIso::FEPermExpIso() : FEMaterial(FE_PERM_EXP_ISO)
 // constant diffusivity
 //=============================================================================
 
-REGISTER_MATERIAL(FEDiffConst, MODULE_BIPHASIC, FE_DIFF_CONST, FE_MAT_DIFFUSIVITY, "diff-const-iso", 0, Materials_Biphasic_Solute_Materials_Diffusivity_Materials_Constant_Isotropic_Diffusivity);
+REGISTER_MATERIAL(FEDiffConst, MODULE_BIPHASIC, FE_DIFF_CONST, FE_MAT_DIFFUSIVITY, "diff-const-iso", 0, Constant_Isotropic_Diffusivity);
 
 FEDiffConst::FEDiffConst() : FEMaterial(FE_DIFF_CONST)
 {
@@ -1683,7 +1683,7 @@ FEDiffConst::FEDiffConst() : FEMaterial(FE_DIFF_CONST)
 // orthotropic diffusivity
 //=============================================================================
 
-REGISTER_MATERIAL(FEDiffOrtho, MODULE_BIPHASIC, FE_DIFF_CONST_ORTHO, FE_MAT_DIFFUSIVITY, "diff-const-ortho", 0, Materials_Biphasic_Solute_Materials_Diffusivity_Materials_Constant_Orthotropic_Diffusivity);
+REGISTER_MATERIAL(FEDiffOrtho, MODULE_BIPHASIC, FE_DIFF_CONST_ORTHO, FE_MAT_DIFFUSIVITY, "diff-const-ortho", 0, Constant_Orthotropic_Diffusivity);
 
 FEDiffOrtho::FEDiffOrtho() : FEMaterial(FE_DIFF_CONST_ORTHO)
 {
@@ -1695,7 +1695,7 @@ FEDiffOrtho::FEDiffOrtho() : FEMaterial(FE_DIFF_CONST_ORTHO)
 // Ateshian-Weiss isotropic diffusivity
 //=============================================================================
 
-REGISTER_MATERIAL(FEDiffAteshianWeissIso, MODULE_BIPHASIC, FE_DIFF_REF_ISO, FE_MAT_DIFFUSIVITY, "diff-ref-iso", 0, Materials_Biphasic_Solute_Materials_Diffusivity_Materials_Referentially_Isotropic_Diffusivity);
+REGISTER_MATERIAL(FEDiffAteshianWeissIso, MODULE_BIPHASIC, FE_DIFF_REF_ISO, FE_MAT_DIFFUSIVITY, "diff-ref-iso", 0, Referentially_Isotropic_Diffusivity);
 
 FEDiffAteshianWeissIso::FEDiffAteshianWeissIso() : FEMaterial(FE_DIFF_REF_ISO)
 {
@@ -1711,7 +1711,7 @@ FEDiffAteshianWeissIso::FEDiffAteshianWeissIso() : FEMaterial(FE_DIFF_REF_ISO)
 // Albro isotropic diffusivity
 //=============================================================================
 
-REGISTER_MATERIAL(FEDiffAlbroIso, MODULE_BIPHASIC, FE_DIFF_ALBRO_ISO, FE_MAT_DIFFUSIVITY, "diff-Albro-iso", 0, Materials_Biphasic_Solute_Materials_Diffusivity_Materials_Albro_Isotropic_Diffusivity);
+REGISTER_MATERIAL(FEDiffAlbroIso, MODULE_BIPHASIC, FE_DIFF_ALBRO_ISO, FE_MAT_DIFFUSIVITY, "diff-Albro-iso", 0, Albro_Isotropic_Diffusivity);
 
 FEDiffAlbroIso::FEDiffAlbroIso() : FEMaterial(FE_DIFF_ALBRO_ISO)
 {
@@ -1724,7 +1724,7 @@ FEDiffAlbroIso::FEDiffAlbroIso() : FEMaterial(FE_DIFF_ALBRO_ISO)
 // constant solubility
 //=============================================================================
 
-REGISTER_MATERIAL(FESolubConst, MODULE_BIPHASIC, FE_SOLUB_CONST, FE_MAT_SOLUBILITY, "solub-const", 0, Materials_Biphasic_Solute_Materials_Solubility_Materials_Constant_Solubility);
+REGISTER_MATERIAL(FESolubConst, MODULE_BIPHASIC, FE_SOLUB_CONST, FE_MAT_SOLUBILITY, "solub-const", 0, Constant_Solubility);
 
 FESolubConst::FESolubConst() : FEMaterial(FE_SOLUB_CONST)
 {
@@ -1735,7 +1735,7 @@ FESolubConst::FESolubConst() : FEMaterial(FE_SOLUB_CONST)
 // constant osmotic coefficient
 //=============================================================================
 
-REGISTER_MATERIAL(FEOsmoConst, MODULE_BIPHASIC, FE_OSMO_CONST, FE_MAT_OSMOTIC_COEFFICIENT, "osm-coef-const", 0, Materials_Biphasic_Solute_Materials_Osmotic_Coefficient_Materials_Constant_Osmotic_Coefficient);
+REGISTER_MATERIAL(FEOsmoConst, MODULE_BIPHASIC, FE_OSMO_CONST, FE_MAT_OSMOTIC_COEFFICIENT, "osm-coef-const", 0, Constant_Osmotic_Coefficient);
 
 FEOsmoConst::FEOsmoConst() : FEMaterial(FE_OSMO_CONST)
 {
@@ -1746,7 +1746,7 @@ FEOsmoConst::FEOsmoConst() : FEMaterial(FE_OSMO_CONST)
 // Wells-Manning osmotic coefficient
 //=============================================================================
 
-REGISTER_MATERIAL(FEOsmoWellsManning, MODULE_BIPHASIC, FE_OSMO_WM, FE_MAT_OSMOTIC_COEFFICIENT, "osm-coef-Manning", 0, Materials_Biphasic_Solute_Materials_Osmotic_Coefficient_Materials_Wells_Manning_Osmotic_Coefficient);
+REGISTER_MATERIAL(FEOsmoWellsManning, MODULE_BIPHASIC, FE_OSMO_WM, FE_MAT_OSMOTIC_COEFFICIENT, "osm-coef-Manning", 0);
 
 FEOsmoWellsManning::FEOsmoWellsManning() : FEMaterial(FE_OSMO_WM)
 {
@@ -1758,7 +1758,7 @@ FEOsmoWellsManning::FEOsmoWellsManning() : FEMaterial(FE_OSMO_WM)
 // SFD compressible
 //=============================================================================
 
-REGISTER_MATERIAL(FESFDCoupled, MODULE_MECH, FE_SFD_COUPLED, FE_MAT_ELASTIC, "spherical fiber distribution", 0, Materials_Elastic_Solids_Compressible_Materials_Spherical_Fiber_Distribution);
+REGISTER_MATERIAL(FESFDCoupled, MODULE_MECH, FE_SFD_COUPLED, FE_MAT_ELASTIC, "spherical fiber distribution", 0, Spherical_Fiber_Distribution);
 
 FESFDCoupled::FESFDCoupled() : FEMaterial(FE_SFD_COUPLED)
 {
@@ -1771,7 +1771,7 @@ FESFDCoupled::FESFDCoupled() : FEMaterial(FE_SFD_COUPLED)
 // SFD SBM
 //=============================================================================
 
-REGISTER_MATERIAL(FESFDSBM, MODULE_MECH, FE_SFD_SBM, FE_MAT_ELASTIC, "spherical fiber distribution sbm", 0, Materials_Elastic_Solids_Compressible_Materials_Spherical_Fiber_Distribution_from_Solid_Bound_Molecule);
+REGISTER_MATERIAL(FESFDSBM, MODULE_MECH, FE_SFD_SBM, FE_MAT_ELASTIC, "spherical fiber distribution sbm", 0, Spherical_Fiber_Distribution_from_Solid_Bound_Molecule);
 
 FESFDSBM::FESFDSBM() : FEMaterial(FE_SFD_SBM)
 {
@@ -1789,7 +1789,7 @@ FESFDSBM::FESFDSBM() : FEMaterial(FE_SFD_SBM)
 // EFD Coupled
 //=============================================================================
 
-REGISTER_MATERIAL(FEEFDCoupled, MODULE_MECH, FE_EFD_COUPLED, FE_MAT_ELASTIC, "ellipsoidal fiber distribution", 0, Materials_Elastic_Solids_Compressible_Materials_Ellipsoidal_Fiber_Distribution);
+REGISTER_MATERIAL(FEEFDCoupled, MODULE_MECH, FE_EFD_COUPLED, FE_MAT_ELASTIC, "ellipsoidal fiber distribution", 0, Ellipsoidal_Fiber_Distribution);
 
 FEEFDCoupled::FEEFDCoupled() : FEMaterial(FE_EFD_COUPLED)
 {
@@ -1803,7 +1803,7 @@ FEEFDCoupled::FEEFDCoupled() : FEMaterial(FE_EFD_COUPLED)
 // EFD Uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FEEFDUncoupled, MODULE_MECH, FE_EFD_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "EFD uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Ellipsoidal_Fiber_Distribution);
+REGISTER_MATERIAL(FEEFDUncoupled, MODULE_MECH, FE_EFD_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "EFD uncoupled", 0, Ellipsoidal_Fiber_Distribution);
 
 FEEFDUncoupled::FEEFDUncoupled() : FEMaterial(FE_EFD_UNCOUPLED)
 {
@@ -1878,7 +1878,7 @@ vec3d FEFiberMaterial::GetFiber(FEElementRef& el)
 // Fiber-Exp-Pow
 //=============================================================================
 
-//REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Exponential_Power_Law);
+//REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Fiber_with_Exponential_Power_Law);
 
 FEFiberExpPowOld::FEFiberExpPowOld() : FEMaterial(FE_FIBEREXPPOW_COUPLED_OLD)
 {
@@ -1891,7 +1891,7 @@ FEFiberExpPowOld::FEFiberExpPowOld() : FEMaterial(FE_FIBEREXPPOW_COUPLED_OLD)
 	SetAxisMaterial(new FEAxisMaterial);
 }
 
-REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Exponential_Power_Law);
+REGISTER_MATERIAL(FEFiberExpPow, MODULE_MECH, FE_FIBEREXPPOW_COUPLED, FE_MAT_ELASTIC, "fiber-exp-pow", 0, Fiber_with_Exponential_Power_Law);
 
 FEFiberExpPow::FEFiberExpPow() : FEFiberMaterial(FE_FIBEREXPPOW_COUPLED)
 {
@@ -1945,7 +1945,7 @@ FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEFiberMaterial(FE_FIBE
 // Fiber-Exp-Pow Uncoupled
 //=============================================================================
 
-//REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Exponential_Power_Law_Uncoupled_Formulation);
+//REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, Fiber_with_Exponential_Power_Law_Uncoupled_Formulation);
 
 FEFiberExpPowUncoupledOld::FEFiberExpPowUncoupledOld() : FEMaterial(FE_FIBEREXPPOW_UNCOUPLED_OLD)
 {
@@ -1959,7 +1959,7 @@ FEFiberExpPowUncoupledOld::FEFiberExpPowUncoupledOld() : FEMaterial(FE_FIBEREXPP
 	SetAxisMaterial(new FEAxisMaterial);
 }
 
-REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Exponential_Power_Law_Uncoupled_Formulation);
+REGISTER_MATERIAL(FEFiberExpPowUncoupled, MODULE_MECH, FE_FIBEREXPPOW_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-exp-pow-uncoupled", 0, Fiber_with_Exponential_Power_Law_Uncoupled_Formulation);
 
 FEFiberExpPowUncoupled::FEFiberExpPowUncoupled() : FEFiberMaterial(FE_FIBEREXPPOW_UNCOUPLED)
 {
@@ -1987,7 +1987,7 @@ void FEFiberExpPowUncoupled::Convert(FEFiberExpPowUncoupledOld* pold)
 // Fiber-Pow-Linear
 //=============================================================================
 
-//REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Toe_Linear_Response);
+//REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, Fiber_with_Toe_Linear_Response);
 
 FEFiberPowLinOld::FEFiberPowLinOld() : FEMaterial(FE_FIBERPOWLIN_COUPLED_OLD)
 {
@@ -2000,7 +2000,7 @@ FEFiberPowLinOld::FEFiberPowLinOld() : FEMaterial(FE_FIBERPOWLIN_COUPLED_OLD)
 	SetAxisMaterial(new FEAxisMaterial);
 }
 
-REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, Materials_Elastic_Solids_Compressible_Materials_Fiber_with_Toe_Linear_Response);
+REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELASTIC, "fiber-pow-linear", 0, Fiber_with_Toe_Linear_Response);
 
 FEFiberPowLin::FEFiberPowLin() : FEFiberMaterial(FE_FIBERPOWLIN_COUPLED)
 {
@@ -2026,7 +2026,7 @@ void FEFiberPowLin::Convert(FEFiberPowLinOld* pold)
 // Fiber-Pow-Linear Uncoupled
 //=============================================================================
 
-//REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Toe_Linear_Response_Uncoupled_Formulation);
+//REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, Fiber_with_Toe_Linear_Response_Uncoupled_Formulation);
 
 FEFiberPowLinUncoupledOld::FEFiberPowLinUncoupledOld() : FEMaterial(FE_FIBERPOWLIN_UNCOUPLED_OLD)
 {
@@ -2040,7 +2040,7 @@ FEFiberPowLinUncoupledOld::FEFiberPowLinUncoupledOld() : FEMaterial(FE_FIBERPOWL
 	SetAxisMaterial(new FEAxisMaterial);
 }
 
-REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, Materials_Elastic_Solids_Uncoupled_Materials_Fiber_with_Toe_Linear_Response_Uncoupled_Formulation);
+REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "fiber-pow-linear-uncoupled", 0, Fiber_with_Toe_Linear_Response_Uncoupled_Formulation);
 
 FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEFiberMaterial(FE_FIBERPOWLIN_UNCOUPLED)
 {
@@ -2068,7 +2068,7 @@ void FEFiberPowLinUncoupled::Convert(FEFiberPowLinUncoupledOld* pold)
 // Donnan swelling
 //=============================================================================
 
-REGISTER_MATERIAL(FEDonnanSwelling, MODULE_MECH, FE_DONNAN_SWELLING, FE_MAT_ELASTIC, "Donnan equilibrium", 0, Materials_Elastic_Solids_Compressible_Materials_Donnan_Equilibrium_Swelling);
+REGISTER_MATERIAL(FEDonnanSwelling, MODULE_MECH, FE_DONNAN_SWELLING, FE_MAT_ELASTIC, "Donnan equilibrium", 0, Donnan_Equilibrium_Swelling);
 
 FEDonnanSwelling::FEDonnanSwelling() : FEMaterial(FE_DONNAN_SWELLING)
 {
@@ -2082,7 +2082,7 @@ FEDonnanSwelling::FEDonnanSwelling() : FEMaterial(FE_DONNAN_SWELLING)
 // Perfect Osmometer
 //=============================================================================
 
-REGISTER_MATERIAL(FEPerfectOsmometer, MODULE_MECH, FE_PERFECT_OSMOMETER, FE_MAT_ELASTIC, "perfect osmometer", 0, Materials_Elastic_Solids_Compressible_Materials_Perfect_Osmometer_Equilibrium_Osmotic_Pressure);
+REGISTER_MATERIAL(FEPerfectOsmometer, MODULE_MECH, FE_PERFECT_OSMOMETER, FE_MAT_ELASTIC, "perfect osmometer", 0, Perfect_Osmometer_Equilibrium_Osmotic_Pressure);
 
 FEPerfectOsmometer::FEPerfectOsmometer() : FEMaterial(FE_PERFECT_OSMOMETER)
 {
@@ -2095,7 +2095,7 @@ FEPerfectOsmometer::FEPerfectOsmometer() : FEMaterial(FE_PERFECT_OSMOMETER)
 // Cell Growth
 //=============================================================================
 
-REGISTER_MATERIAL(FECellGrowth, MODULE_MECH, FE_CELL_GROWTH, FE_MAT_ELASTIC, "cell growth", 0, Materials_Elastic_Solids_Compressible_Materials_Cell_Growth);
+REGISTER_MATERIAL(FECellGrowth, MODULE_MECH, FE_CELL_GROWTH, FE_MAT_ELASTIC, "cell growth", 0, Cell_Growth);
 
 FECellGrowth::FECellGrowth() : FEMaterial(FE_CELL_GROWTH)
 {
@@ -2108,7 +2108,7 @@ FECellGrowth::FECellGrowth() : FEMaterial(FE_CELL_GROWTH)
 // Osmotic pressure using virial coefficients
 //=============================================================================
 
-REGISTER_MATERIAL(FEOsmoticVirial, MODULE_MECH, FE_OSMOTIC_VIRIAL, FE_MAT_ELASTIC, "osmotic virial expansion", 0, Materials_Elastic_Solids_Compressible_Materials_Osmotic_Pressure_from_Virial_Expansion);
+REGISTER_MATERIAL(FEOsmoticVirial, MODULE_MECH, FE_OSMOTIC_VIRIAL, FE_MAT_ELASTIC, "osmotic virial expansion", 0, Osmotic_Pressure_from_Virial_Expansion);
 
 FEOsmoticVirial::FEOsmoticVirial() : FEMaterial(FE_OSMOTIC_VIRIAL)
 {
@@ -2123,7 +2123,7 @@ FEOsmoticVirial::FEOsmoticVirial() : FEMaterial(FE_OSMOTIC_VIRIAL)
 // Constant reaction rate
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactionRateConst, MODULE_REACTIONS, FE_REACTION_RATE_CONST, FE_MAT_REACTION_RATE, "constant reaction rate", 0, Materials_Chemical_Reactions_Specific_Reaction_Rate_Materials_Constant_Reaction_Rate);
+REGISTER_MATERIAL(FEReactionRateConst, MODULE_REACTIONS, FE_REACTION_RATE_CONST, FE_MAT_REACTION_RATE, "constant reaction rate", 0, Constant_Reaction_Rate);
 
 FEReactionRateConst::FEReactionRateConst() : FEMaterial(FE_REACTION_RATE_CONST)
 {
@@ -2138,7 +2138,7 @@ void FEReactionRateConst::SetRateConstant(double K) { SetFloatValue(0, K); }
 // Huiskes reaction rate
 //=============================================================================
 
-REGISTER_MATERIAL(FEReactionRateHuiskes, MODULE_REACTIONS, FE_REACTION_RATE_HUISKES, FE_MAT_REACTION_RATE, "Huiskes reaction rate", 0, Materials_Chemical_Reactions_Specific_Reaction_Rate_Materials_Huiskes_Reaction_Rate);
+REGISTER_MATERIAL(FEReactionRateHuiskes, MODULE_REACTIONS, FE_REACTION_RATE_HUISKES, FE_MAT_REACTION_RATE, "Huiskes reaction rate", 0, Huiskes_Reaction_Rate);
 
 FEReactionRateHuiskes::FEReactionRateHuiskes() : FEMaterial(FE_REACTION_RATE_HUISKES)
 {
@@ -2150,7 +2150,7 @@ FEReactionRateHuiskes::FEReactionRateHuiskes() : FEMaterial(FE_REACTION_RATE_HUI
 // CFD Fiber-Exponential-Power-Law
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDFiberExpPow, MODULE_MECH, FE_FIBER_EXP_POW, FE_MAT_CFD_FIBER, "fiber-exponential-power-law", 0, Materials_Continuous_Fiber_Distribution_Fibers_Fiber_with_Exponential_Power_Law);
+REGISTER_MATERIAL(FECFDFiberExpPow, MODULE_MECH, FE_FIBER_EXP_POW, FE_MAT_CFD_FIBER, "fiber-exponential-power-law", 0, Fibers_Fiber_with_Exponential_Power_Law);
 
 FECFDFiberExpPow::FECFDFiberExpPow() : FEMaterial(FE_FIBER_EXP_POW)
 {
@@ -2164,7 +2164,7 @@ FECFDFiberExpPow::FECFDFiberExpPow() : FEMaterial(FE_FIBER_EXP_POW)
 // CFD Fiber-neo-Hookean
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDFiberNH, MODULE_MECH, FE_FIBER_NH, FE_MAT_CFD_FIBER, "fiber-NH", 0, Materials_Continuous_Fiber_Distribution_Fibers_Fiber_with_Neo_Hookean_Law);
+REGISTER_MATERIAL(FECFDFiberNH, MODULE_MECH, FE_FIBER_NH, FE_MAT_CFD_FIBER, "fiber-NH", 0, Fiber_with_Neo_Hookean_Law);
 
 FECFDFiberNH::FECFDFiberNH() : FEMaterial(FE_FIBER_NH)
 {
@@ -2175,7 +2175,7 @@ FECFDFiberNH::FECFDFiberNH() : FEMaterial(FE_FIBER_NH)
 // CFD Fiber-Exponential-Power-Law uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDFiberExpPowUC, MODULE_MECH, FE_FIBER_EXP_POW_UC, FE_MAT_CFD_FIBER_UC, "fiber-exponential-power-law-uncoupled", 0, Materials_Continuous_Fiber_Distribution_Fibers_Fiber_with_Exponential_Power_Law_Uncoupled);
+REGISTER_MATERIAL(FECFDFiberExpPowUC, MODULE_MECH, FE_FIBER_EXP_POW_UC, FE_MAT_CFD_FIBER_UC, "fiber-exponential-power-law-uncoupled", 0, Fiber_with_Exponential_Power_Law_Uncoupled);
 
 FECFDFiberExpPowUC::FECFDFiberExpPowUC() : FEMaterial(FE_FIBER_EXP_POW_UC)
 {
@@ -2190,7 +2190,7 @@ FECFDFiberExpPowUC::FECFDFiberExpPowUC() : FEMaterial(FE_FIBER_EXP_POW_UC)
 // CFD Fiber-neo-Hookean uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDFiberNHUC, MODULE_MECH, FE_FIBER_NH_UC, FE_MAT_CFD_FIBER_UC, "fiber-NH-uncoupled", 0, Materials_Continuous_Fiber_Distribution_Fibers_Fiber_with_Neo_Hookean_Law_Uncoupled);
+REGISTER_MATERIAL(FECFDFiberNHUC, MODULE_MECH, FE_FIBER_NH_UC, FE_MAT_CFD_FIBER_UC, "fiber-NH-uncoupled", 0, Fiber_with_Neo_Hookean_Law_Uncoupled);
 
 FECFDFiberNHUC::FECFDFiberNHUC() : FEMaterial(FE_FIBER_NH_UC)
 {
@@ -2202,7 +2202,7 @@ FECFDFiberNHUC::FECFDFiberNHUC() : FEMaterial(FE_FIBER_NH_UC)
 // FDD Spherical
 //=============================================================================
 
-REGISTER_MATERIAL(FEFDDSpherical, MODULE_MECH, FE_DSTRB_SFD, FE_MAT_CFD_DIST, "spherical", 0, Materials_Continuous_Fiber_Distribution_Distribution_Spherical);
+REGISTER_MATERIAL(FEFDDSpherical, MODULE_MECH, FE_DSTRB_SFD, FE_MAT_CFD_DIST, "spherical", 0, Distribution_Spherical);
 
 FEFDDSpherical::FEFDDSpherical() : FEMaterial(FE_DSTRB_SFD)
 {
@@ -2212,7 +2212,7 @@ FEFDDSpherical::FEFDDSpherical() : FEMaterial(FE_DSTRB_SFD)
 // FDD Ellipsoidal
 //=============================================================================
 
-REGISTER_MATERIAL(FEFDDEllipsoidal, MODULE_MECH, FE_DSTRB_EFD, FE_MAT_CFD_DIST, "ellipsoidal", 0, Materials_Continuous_Fiber_Distribution_Distribution_Ellipsoidal);
+REGISTER_MATERIAL(FEFDDEllipsoidal, MODULE_MECH, FE_DSTRB_EFD, FE_MAT_CFD_DIST, "ellipsoidal", 0, Distribution_Ellipsoidal);
 
 FEFDDEllipsoidal::FEFDDEllipsoidal() : FEMaterial(FE_DSTRB_EFD)
 {
@@ -2234,7 +2234,7 @@ FEFDDvonMises3d::FEFDDvonMises3d() : FEMaterial(FE_DSTRB_VM3)
 // FDD Circular
 //=============================================================================
 
-REGISTER_MATERIAL(FEFDDCircular, MODULE_MECH, FE_DSTRB_CFD, FE_MAT_CFD_DIST, "circular", 0, Materials_Continuous_Fiber_Distribution_Distribution_Circular);
+REGISTER_MATERIAL(FEFDDCircular, MODULE_MECH, FE_DSTRB_CFD, FE_MAT_CFD_DIST, "circular", 0, Distribution_Circular);
 
 FEFDDCircular::FEFDDCircular() : FEMaterial(FE_DSTRB_CFD)
 {
@@ -2244,7 +2244,7 @@ FEFDDCircular::FEFDDCircular() : FEMaterial(FE_DSTRB_CFD)
 // FDD Elliptical
 //=============================================================================
 
-REGISTER_MATERIAL(FEFDDElliptical, MODULE_MECH, FE_DSTRB_PFD, FE_MAT_CFD_DIST, "elliptical", 0, Materials_Continuous_Fiber_Distribution_Distribution_Elliptical);
+REGISTER_MATERIAL(FEFDDElliptical, MODULE_MECH, FE_DSTRB_PFD, FE_MAT_CFD_DIST, "elliptical", 0, Distribution_Elliptical);
 
 FEFDDElliptical::FEFDDElliptical() : FEMaterial(FE_DSTRB_PFD)
 {
@@ -2256,7 +2256,7 @@ FEFDDElliptical::FEFDDElliptical() : FEMaterial(FE_DSTRB_PFD)
 // FDD von Mises 2d
 //=============================================================================
 
-REGISTER_MATERIAL(FEFDDvonMises2d, MODULE_MECH, FE_DSTRB_VM2, FE_MAT_CFD_DIST, "von-Mises-2d", 0, Materials_Continuous_Fiber_Distribution_Distribution_von_Mises_Distribution);
+REGISTER_MATERIAL(FEFDDvonMises2d, MODULE_MECH, FE_DSTRB_VM2, FE_MAT_CFD_DIST, "von-Mises-2d", 0, von_Mises_Distribution);
 
 FEFDDvonMises2d::FEFDDvonMises2d() : FEMaterial(FE_DSTRB_VM2)
 {
@@ -2267,7 +2267,7 @@ FEFDDvonMises2d::FEFDDvonMises2d() : FEMaterial(FE_DSTRB_VM2)
 // Scheme Gauss-Kronrod Trapezoidal
 //=============================================================================
 
-REGISTER_MATERIAL(FESchemeGKT, MODULE_MECH, FE_SCHM_GKT, FE_MAT_CFD_SCHEME, "fibers-3d-gkt", 0, Materials_Continuous_Fiber_Distribution_Scheme_Gauss_Kronrod_Trapezoidal_Rule);
+REGISTER_MATERIAL(FESchemeGKT, MODULE_MECH, FE_SCHM_GKT, FE_MAT_CFD_SCHEME, "fibers-3d-gkt", 0, Gauss_Kronrod_Trapezoidal_Rule);
 
 FESchemeGKT::FESchemeGKT() : FEMaterial(FE_SCHM_GKT)
 {
@@ -2279,7 +2279,7 @@ FESchemeGKT::FESchemeGKT() : FEMaterial(FE_SCHM_GKT)
 // Scheme Finite Element Integration
 //=============================================================================
 
-REGISTER_MATERIAL(FESchemeFEI, MODULE_MECH, FE_SCHM_FEI, FE_MAT_CFD_SCHEME, "fibers-3d-fei", 0, Materials_Continuous_Fiber_Distribution_Scheme_Finite_Element_Integration_Rule);
+REGISTER_MATERIAL(FESchemeFEI, MODULE_MECH, FE_SCHM_FEI, FE_MAT_CFD_SCHEME, "fibers-3d-fei", 0, Finite_Element_Integration_Rule);
 
 FESchemeFEI::FESchemeFEI() : FEMaterial(FE_SCHM_FEI)
 {
@@ -2290,7 +2290,7 @@ FESchemeFEI::FESchemeFEI() : FEMaterial(FE_SCHM_FEI)
 // Scheme Trapezoidal 2d
 //=============================================================================
 
-REGISTER_MATERIAL(FESchemeT2d, MODULE_MECH, FE_SCHM_T2D, FE_MAT_CFD_SCHEME, "fibers-2d-trapezoidal", 0, Materials_Continuous_Fiber_Distribution_Scheme_Trapezoidal_Rule);
+REGISTER_MATERIAL(FESchemeT2d, MODULE_MECH, FE_SCHM_T2D, FE_MAT_CFD_SCHEME, "fibers-2d-trapezoidal", 0, Trapezoidal_Rule);
 
 FESchemeT2d::FESchemeT2d() : FEMaterial(FE_SCHM_T2D)
 {
@@ -2301,7 +2301,7 @@ FESchemeT2d::FESchemeT2d() : FEMaterial(FE_SCHM_T2D)
 // Scheme Gauss-Kronrod Trapezoidal uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FESchemeGKTUC, MODULE_MECH, FE_SCHM_GKT_UC, FE_MAT_CFD_SCHEME_UC, "fibers-3d-gkt-uncoupled", 0, Materials_Continuous_Fiber_Distribution_Scheme_Gauss_Kronrod_Trapezoidal_Rule);
+REGISTER_MATERIAL(FESchemeGKTUC, MODULE_MECH, FE_SCHM_GKT_UC, FE_MAT_CFD_SCHEME_UC, "fibers-3d-gkt-uncoupled", 0, Gauss_Kronrod_Trapezoidal_Rule);
 
 FESchemeGKTUC::FESchemeGKTUC() : FEMaterial(FE_SCHM_GKT_UC)
 {
@@ -2313,7 +2313,7 @@ FESchemeGKTUC::FESchemeGKTUC() : FEMaterial(FE_SCHM_GKT_UC)
 // Scheme Finite Element Integration uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FESchemeFEIUC, MODULE_MECH, FE_SCHM_FEI_UC, FE_MAT_CFD_SCHEME_UC, "fibers-3d-fei-uncoupled", 0, Materials_Continuous_Fiber_Distribution_Scheme_Finite_Element_Integration_Rule);
+REGISTER_MATERIAL(FESchemeFEIUC, MODULE_MECH, FE_SCHM_FEI_UC, FE_MAT_CFD_SCHEME_UC, "fibers-3d-fei-uncoupled", 0, Finite_Element_Integration_Rule);
 
 FESchemeFEIUC::FESchemeFEIUC() : FEMaterial(FE_SCHM_FEI_UC)
 {
@@ -2324,7 +2324,7 @@ FESchemeFEIUC::FESchemeFEIUC() : FEMaterial(FE_SCHM_FEI_UC)
 // Scheme Trapezoidal 2d uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FESchemeT2dUC, MODULE_MECH, FE_SCHM_T2D_UC, FE_MAT_CFD_SCHEME_UC, "fibers-2d-trapezoidal-uncoupled", 0, Materials_Continuous_Fiber_Distribution_Scheme_Trapezoidal_Rule);
+REGISTER_MATERIAL(FESchemeT2dUC, MODULE_MECH, FE_SCHM_T2D_UC, FE_MAT_CFD_SCHEME_UC, "fibers-2d-trapezoidal-uncoupled", 0, Trapezoidal_Rule);
 
 FESchemeT2dUC::FESchemeT2dUC() : FEMaterial(FE_SCHM_T2D_UC)
 {
@@ -2335,7 +2335,7 @@ FESchemeT2dUC::FESchemeT2dUC() : FEMaterial(FE_SCHM_T2D_UC)
 // CDF Simo
 //=============================================================================
 
-REGISTER_MATERIAL(FECDFSimo, MODULE_MECH, FE_CDF_SIMO, FE_MAT_DAMAGE, "CDF Simo", 0, Materials_Reactive_Damage_Mechanics_Cumulative_Distribution_Functions_Simo);
+REGISTER_MATERIAL(FECDFSimo, MODULE_MECH, FE_CDF_SIMO, FE_MAT_DAMAGE, "CDF Simo", 0, Cumulative_Distribution_Functions_Simo);
 
 FECDFSimo::FECDFSimo() : FEMaterial(FE_CDF_SIMO)
 {
@@ -2347,7 +2347,7 @@ FECDFSimo::FECDFSimo() : FEMaterial(FE_CDF_SIMO)
 // CDF Log Normal
 //=============================================================================
 
-REGISTER_MATERIAL(FECDFLogNormal, MODULE_MECH, FE_CDF_LOG_NORMAL, FE_MAT_DAMAGE, "CDF log-normal", 0, Materials_Reactive_Damage_Mechanics_Cumulative_Distribution_Functions_Log_Normal);
+REGISTER_MATERIAL(FECDFLogNormal, MODULE_MECH, FE_CDF_LOG_NORMAL, FE_MAT_DAMAGE, "CDF log-normal", 0, Log_Normal);
 
 FECDFLogNormal::FECDFLogNormal() : FEMaterial(FE_CDF_LOG_NORMAL)
 {
@@ -2360,7 +2360,7 @@ FECDFLogNormal::FECDFLogNormal() : FEMaterial(FE_CDF_LOG_NORMAL)
 // CDF Weibull
 //=============================================================================
 
-REGISTER_MATERIAL(FECDFWeibull, MODULE_MECH, FE_CDF_WEIBULL, FE_MAT_DAMAGE, "CDF Weibull", 0, Materials_Reactive_Damage_Mechanics_Cumulative_Distribution_Functions_Weibull);
+REGISTER_MATERIAL(FECDFWeibull, MODULE_MECH, FE_CDF_WEIBULL, FE_MAT_DAMAGE, "CDF Weibull", 0, Cumulative_Distribution_Functions_Weibull);
 
 FECDFWeibull::FECDFWeibull() : FEMaterial(FE_CDF_WEIBULL)
 {
@@ -2373,7 +2373,7 @@ FECDFWeibull::FECDFWeibull() : FEMaterial(FE_CDF_WEIBULL)
 // CDF Step
 //=============================================================================
 
-REGISTER_MATERIAL(FECDFStep, MODULE_MECH, FE_CDF_STEP, FE_MAT_DAMAGE, "CDF step", 0, Materials_Reactive_Damage_Mechanics_Cumulative_Distribution_Functions_Step);
+REGISTER_MATERIAL(FECDFStep, MODULE_MECH, FE_CDF_STEP, FE_MAT_DAMAGE, "CDF step", 0, Cumulative_Distribution_Functions_Step);
 
 FECDFStep::FECDFStep() : FEMaterial(FE_CDF_STEP)
 {
@@ -2385,7 +2385,7 @@ FECDFStep::FECDFStep() : FEMaterial(FE_CDF_STEP)
 // CDF Quintic
 //=============================================================================
 
-REGISTER_MATERIAL(FECDFQuintic, MODULE_MECH, FE_CDF_QUINTIC, FE_MAT_DAMAGE, "CDF quintic", 0, Materials_Reactive_Damage_Mechanics_Cumulative_Distribution_Functions_Quintic_Polynomial);
+REGISTER_MATERIAL(FECDFQuintic, MODULE_MECH, FE_CDF_QUINTIC, FE_MAT_DAMAGE, "CDF quintic", 0, Quintic_Polynomial);
 
 FECDFQuintic::FECDFQuintic() : FEMaterial(FE_CDF_QUINTIC)
 {
@@ -2398,7 +2398,7 @@ FECDFQuintic::FECDFQuintic() : FEMaterial(FE_CDF_QUINTIC)
 // DC Simo
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCSimo, MODULE_MECH, FE_DC_SIMO, FE_MAT_DAMAGE_CRITERION, "DC Simo", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Simo);
+REGISTER_MATERIAL(FEDCSimo, MODULE_MECH, FE_DC_SIMO, FE_MAT_DAMAGE_CRITERION, "DC Simo", 0, Damage_Criterion_Simo);
 
 FEDCSimo::FEDCSimo() : FEMaterial(FE_DC_SIMO)
 {
@@ -2408,7 +2408,7 @@ FEDCSimo::FEDCSimo() : FEMaterial(FE_DC_SIMO)
 // DC Strain Energy Density
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCStrainEnergyDensity, MODULE_MECH, FE_DC_SED, FE_MAT_DAMAGE_CRITERION, "DC strain energy density", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Strain_Energy_Density);
+REGISTER_MATERIAL(FEDCStrainEnergyDensity, MODULE_MECH, FE_DC_SED, FE_MAT_DAMAGE_CRITERION, "DC strain energy density", 0, Strain_Energy_Density);
 
 FEDCStrainEnergyDensity::FEDCStrainEnergyDensity() : FEMaterial(FE_DC_SED)
 {
@@ -2418,7 +2418,7 @@ FEDCStrainEnergyDensity::FEDCStrainEnergyDensity() : FEMaterial(FE_DC_SED)
 // DC Specific Strain Energy
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCSpecificStrainEnergy, MODULE_MECH, FE_DC_SSE, FE_MAT_DAMAGE_CRITERION, "DC specific strain energy", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Specific_Strain_Energy);
+REGISTER_MATERIAL(FEDCSpecificStrainEnergy, MODULE_MECH, FE_DC_SSE, FE_MAT_DAMAGE_CRITERION, "DC specific strain energy", 0, Specific_Strain_Energy);
 
 FEDCSpecificStrainEnergy::FEDCSpecificStrainEnergy() : FEMaterial(FE_DC_SSE)
 {
@@ -2428,7 +2428,7 @@ FEDCSpecificStrainEnergy::FEDCSpecificStrainEnergy() : FEMaterial(FE_DC_SSE)
 // DC von Mises Stress
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCvonMisesStress, MODULE_MECH, FE_DC_VMS, FE_MAT_DAMAGE_CRITERION, "DC von Mises stress", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Von_Mises_Stress);
+REGISTER_MATERIAL(FEDCvonMisesStress, MODULE_MECH, FE_DC_VMS, FE_MAT_DAMAGE_CRITERION, "DC von Mises stress", 0, Von_Mises_Stress);
 
 FEDCvonMisesStress::FEDCvonMisesStress() : FEMaterial(FE_DC_VMS)
 {
@@ -2438,7 +2438,7 @@ FEDCvonMisesStress::FEDCvonMisesStress() : FEMaterial(FE_DC_VMS)
 // DC Maximum Shear Stress
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCMaxShearStress, MODULE_MECH, FE_DC_MSS, FE_MAT_DAMAGE_CRITERION, "DC max shear stress", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Maximum_Shear_Stress);
+REGISTER_MATERIAL(FEDCMaxShearStress, MODULE_MECH, FE_DC_MSS, FE_MAT_DAMAGE_CRITERION, "DC max shear stress", 0, Maximum_Shear_Stress);
 
 FEDCMaxShearStress::FEDCMaxShearStress() : FEMaterial(FE_DC_MSS)
 {
@@ -2448,7 +2448,7 @@ FEDCMaxShearStress::FEDCMaxShearStress() : FEMaterial(FE_DC_MSS)
 // DC Maximum Normal Stress
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCMaxNormalStress, MODULE_MECH, FE_DC_MNS, FE_MAT_DAMAGE_CRITERION, "DC max normal stress", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Maximum_Normal_Stress);
+REGISTER_MATERIAL(FEDCMaxNormalStress, MODULE_MECH, FE_DC_MNS, FE_MAT_DAMAGE_CRITERION, "DC max normal stress", 0, Maximum_Normal_Stress);
 
 FEDCMaxNormalStress::FEDCMaxNormalStress() : FEMaterial(FE_DC_MNS)
 {
@@ -2458,7 +2458,7 @@ FEDCMaxNormalStress::FEDCMaxNormalStress() : FEMaterial(FE_DC_MNS)
 // DC Maximum Normal Lagrange Strain
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCMaxNormalLagrangeStrain, MODULE_MECH, FE_DC_MNLE, FE_MAT_DAMAGE_CRITERION, "DC max normal Lagrange strain", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Maximum_Normal_Lagrange_Strain);
+REGISTER_MATERIAL(FEDCMaxNormalLagrangeStrain, MODULE_MECH, FE_DC_MNLE, FE_MAT_DAMAGE_CRITERION, "DC max normal Lagrange strain", 0, Maximum_Normal_Lagrange_Strain);
 
 FEDCMaxNormalLagrangeStrain::FEDCMaxNormalLagrangeStrain() : FEMaterial(FE_DC_MNLE)
 {
@@ -2468,7 +2468,7 @@ FEDCMaxNormalLagrangeStrain::FEDCMaxNormalLagrangeStrain() : FEMaterial(FE_DC_MN
 // DC Octahedral Shear Strain
 //=============================================================================
 
-REGISTER_MATERIAL(FEDCOctahedralShearStrain, MODULE_MECH, FE_DC_OSS, FE_MAT_DAMAGE_CRITERION, "DC octahedral shear strain", 0, Materials_Reactive_Damage_Mechanics_Damage_Criterion_Octahedral_Shear_Strain);
+REGISTER_MATERIAL(FEDCOctahedralShearStrain, MODULE_MECH, FE_DC_OSS, FE_MAT_DAMAGE_CRITERION, "DC octahedral shear strain", 0);
 
 FEDCOctahedralShearStrain::FEDCOctahedralShearStrain() : FEMaterial(FE_DC_OSS)
 {
@@ -2548,7 +2548,7 @@ FEDCMaxNormalLagrangeStrainUC::FEDCMaxNormalLagrangeStrainUC() : FEMaterial(FE_D
 // Relaxation Exponential
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxExp, MODULE_MECH, FE_RELAX_EXP, FE_MAT_RV_RELAX, "relaxation-exponential", 0, Materials_Reactive_Viscoelastic_Solid_Relaxation_Functions_Exponential);
+REGISTER_MATERIAL(FERelaxExp, MODULE_MECH, FE_RELAX_EXP, FE_MAT_RV_RELAX, "relaxation-exponential", 0, Relaxation_Functions_Exponential);
 
 FERelaxExp::FERelaxExp() : FEMaterial(FE_RELAX_EXP)
 {
@@ -2559,7 +2559,7 @@ FERelaxExp::FERelaxExp() : FEMaterial(FE_RELAX_EXP)
 // Relaxation Exponential Distortion
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxExpDistortion, MODULE_MECH, FE_RELAX_EXP_DIST, FE_MAT_RV_RELAX, "relaxation-exp-distortion", 0, Materials_Reactive_Viscoelastic_Solid_Relaxation_Functions_Exponential_Distortional);
+REGISTER_MATERIAL(FERelaxExpDistortion, MODULE_MECH, FE_RELAX_EXP_DIST, FE_MAT_RV_RELAX, "relaxation-exp-distortion", 0, Exponential_Distortional);
 
 FERelaxExpDistortion::FERelaxExpDistortion() : FEMaterial(FE_RELAX_EXP_DIST)
 {
@@ -2572,7 +2572,7 @@ FERelaxExpDistortion::FERelaxExpDistortion() : FEMaterial(FE_RELAX_EXP_DIST)
 // Relaxation Fung
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxFung, MODULE_MECH, FE_RELAX_FUNG, FE_MAT_RV_RELAX, "relaxation-Fung", 0, Materials_Reactive_Viscoelastic_Solid_Relaxation_Functions_Fung);
+REGISTER_MATERIAL(FERelaxFung, MODULE_MECH, FE_RELAX_FUNG, FE_MAT_RV_RELAX, "relaxation-Fung", 0, Relaxation_Functions_Fung);
 
 FERelaxFung::FERelaxFung() : FEMaterial(FE_RELAX_FUNG)
 {
@@ -2584,7 +2584,7 @@ FERelaxFung::FERelaxFung() : FEMaterial(FE_RELAX_FUNG)
 // Relaxation Park
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxPark, MODULE_MECH, FE_RELAX_PARK, FE_MAT_RV_RELAX, "relaxation-Park", 0, Materials_Reactive_Viscoelastic_Solid_Relaxation_Functions_Park);
+REGISTER_MATERIAL(FERelaxPark, MODULE_MECH, FE_RELAX_PARK, FE_MAT_RV_RELAX, "relaxation-Park", 0, Relaxation_Functions_Park);
 
 FERelaxPark::FERelaxPark() : FEMaterial(FE_RELAX_PARK)
 {
@@ -2596,7 +2596,7 @@ FERelaxPark::FERelaxPark() : FEMaterial(FE_RELAX_PARK)
 // Relaxation Park Distortion
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxParkDistortion, MODULE_MECH, FE_RELAX_PARK_DIST, FE_MAT_RV_RELAX, "relaxation-Park-distortion", 0, Materials_Reactive_Viscoelastic_Solid_Relaxation_Functions_Park_Distortional);
+REGISTER_MATERIAL(FERelaxParkDistortion, MODULE_MECH, FE_RELAX_PARK_DIST, FE_MAT_RV_RELAX, "relaxation-Park-distortion", 0, Park_Distortional);
 
 FERelaxParkDistortion::FERelaxParkDistortion() : FEMaterial(FE_RELAX_PARK_DIST)
 {
@@ -2611,7 +2611,7 @@ FERelaxParkDistortion::FERelaxParkDistortion() : FEMaterial(FE_RELAX_PARK_DIST)
 // Relaxation power
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxPow, MODULE_MECH, FE_RELAX_POW, FE_MAT_RV_RELAX, "relaxation-power", 0, Materials_Reactive_Viscoelastic_Solid_Relaxation_Functions_Power);
+REGISTER_MATERIAL(FERelaxPow, MODULE_MECH, FE_RELAX_POW, FE_MAT_RV_RELAX, "relaxation-power", 0, Relaxation_Functions_Power);
 
 FERelaxPow::FERelaxPow() : FEMaterial(FE_RELAX_POW)
 {
@@ -2623,7 +2623,7 @@ FERelaxPow::FERelaxPow() : FEMaterial(FE_RELAX_POW)
 // Relaxation power distortion
 //=============================================================================
 
-REGISTER_MATERIAL(FERelaxPowDistortion, MODULE_MECH, FE_RELAX_POW_DIST, FE_MAT_RV_RELAX, "relaxation-power-distortion", 0, Materials_Reactive_Viscoelastic_Solid_Relaxation_Functions_Power_Distortional);
+REGISTER_MATERIAL(FERelaxPowDistortion, MODULE_MECH, FE_RELAX_POW_DIST, FE_MAT_RV_RELAX, "relaxation-power-distortion", 0, Power_Distortional);
 
 FERelaxPowDistortion::FERelaxPowDistortion() : FEMaterial(FE_RELAX_POW_DIST)
 {
@@ -2671,7 +2671,7 @@ FEEPNeoHookeanFluid::FEEPNeoHookeanFluid() : FEMaterial(FE_EP_NEOHOOKEAN_FLUID)
 // Viscous Newtonian fluid
 //=============================================================================
 
-REGISTER_MATERIAL(FEVFNewtonian, MODULE_FLUID, FE_VF_NEWTONIAN, FE_MAT_FLUID_VISCOSITY, "Newtonian fluid", 0, Materials_Viscous_Fluids_Viscous_Fluid_Materials_Newtonian_Fluid);
+REGISTER_MATERIAL(FEVFNewtonian, MODULE_FLUID, FE_VF_NEWTONIAN, FE_MAT_FLUID_VISCOSITY, "Newtonian fluid", 0, Newtonian_Fluid);
 
 FEVFNewtonian::FEVFNewtonian() : FEMaterial(FE_VF_NEWTONIAN)
 {
@@ -2683,7 +2683,7 @@ FEVFNewtonian::FEVFNewtonian() : FEMaterial(FE_VF_NEWTONIAN)
 // Viscous Carreau fluid
 //=============================================================================
 
-REGISTER_MATERIAL(FEVFCarreau, MODULE_FLUID, FE_VF_CARREAU, FE_MAT_FLUID_VISCOSITY, "Carreau", 0, Materials_Viscous_Fluids_Viscous_Fluid_Materials_Carreau_Model);
+REGISTER_MATERIAL(FEVFCarreau, MODULE_FLUID, FE_VF_CARREAU, FE_MAT_FLUID_VISCOSITY, "Carreau", 0, Carreau_Model);
 
 FEVFCarreau::FEVFCarreau() : FEMaterial(FE_VF_CARREAU)
 {
@@ -2697,7 +2697,7 @@ FEVFCarreau::FEVFCarreau() : FEMaterial(FE_VF_CARREAU)
 // Viscous Carreau-Yasuda fluid
 //=============================================================================
 
-REGISTER_MATERIAL(FEVFCarreauYasuda, MODULE_FLUID, FE_VF_CARREAU_YASUDA, FE_MAT_FLUID_VISCOSITY, "Carreau-Yasuda", 0, Materials_Viscous_Fluids_Viscous_Fluid_Materials_Carreau_Yasuda_Model);
+REGISTER_MATERIAL(FEVFCarreauYasuda, MODULE_FLUID, FE_VF_CARREAU_YASUDA, FE_MAT_FLUID_VISCOSITY, "Carreau-Yasuda", 0, Carreau_Yasuda_Model);
 
 FEVFCarreauYasuda::FEVFCarreauYasuda() : FEMaterial(FE_VF_CARREAU_YASUDA)
 {
@@ -2712,7 +2712,7 @@ FEVFCarreauYasuda::FEVFCarreauYasuda() : FEMaterial(FE_VF_CARREAU_YASUDA)
 // Viscous Powell-Eyring fluid
 //=============================================================================
 
-REGISTER_MATERIAL(FEVFPowellEyring, MODULE_FLUID, FE_VF_POWELL_EYRING, FE_MAT_FLUID_VISCOSITY, "Powell-Eyring", 0, Materials_Viscous_Fluids_Viscous_Fluid_Materials_Powell_Eyring_Model);
+REGISTER_MATERIAL(FEVFPowellEyring, MODULE_FLUID, FE_VF_POWELL_EYRING, FE_MAT_FLUID_VISCOSITY, "Powell-Eyring", 0, Powell_Eyring_Model);
 
 FEVFPowellEyring::FEVFPowellEyring() : FEMaterial(FE_VF_POWELL_EYRING)
 {
@@ -2725,7 +2725,7 @@ FEVFPowellEyring::FEVFPowellEyring() : FEMaterial(FE_VF_POWELL_EYRING)
 // Viscous Cross fluid
 //=============================================================================
 
-REGISTER_MATERIAL(FEVFCross, MODULE_FLUID, FE_VF_CROSS, FE_MAT_FLUID_VISCOSITY, "Cross", 0, Materials_Viscous_Fluids_Viscous_Fluid_Materials_Cross_Model);
+REGISTER_MATERIAL(FEVFCross, MODULE_FLUID, FE_VF_CROSS, FE_MAT_FLUID_VISCOSITY, "Cross", 0, Cross_Model);
 
 FEVFCross::FEVFCross() : FEMaterial(FE_VF_CROSS)
 {
@@ -2739,7 +2739,7 @@ FEVFCross::FEVFCross() : FEMaterial(FE_VF_CROSS)
 // Starling solvent supply
 //=============================================================================
 
-REGISTER_MATERIAL(FEStarlingSupply, MODULE_MULTIPHASIC, FE_STARLING_SUPPLY, FE_MAT_SOLVENT_SUPPLY, "Starling", 0, Materials_Triphasic_and_Multiphasic_Materials_Solvent_Supply_Materials_Starling_Equation);
+REGISTER_MATERIAL(FEStarlingSupply, MODULE_MULTIPHASIC, FE_STARLING_SUPPLY, FE_MAT_SOLVENT_SUPPLY, "Starling", 0, Starling_Equation);
 
 FEStarlingSupply::FEStarlingSupply() : FEMaterial(FE_STARLING_SUPPLY)
 {
