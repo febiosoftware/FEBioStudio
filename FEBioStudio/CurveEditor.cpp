@@ -544,10 +544,10 @@ void CCurveEditor::BuildModelTree()
 							for (int n = 0; n<NP; ++n)
 							{
 								Param& p = pc->GetParam(n);
-								if (p.IsEditable())
+								if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
 								{
 									FELoadCurve* plc = p.GetLoadCurve();
-									if (plc) ui->addTreeItem(t3, p.GetLongName(), plc);
+									ui->addTreeItem(t3, p.GetLongName(), plc, &p);
 								}
 							}
 						}
