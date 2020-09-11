@@ -280,11 +280,14 @@ int GBaseObject::AddNode(vec3d r, int nt, bool bdup)
 // is already defined
 int GBaseObject::AddEdge(GEdge* e)
 {
-	int N = (int) Edges();
-	for (int i=0; i<N; ++i)
+	int N = (int)Edges();
+	if (e->Type() != EDGE_UNKNOWN)
 	{
-		GEdge& s = *Edge(i);
-		if (*e == s) return i;
+		for (int i = 0; i < N; ++i)
+		{
+			GEdge& s = *Edge(i);
+			if (*e == s) return i;
+		}
 	}
 
 	// add the edge
