@@ -84,7 +84,31 @@ void CTimelineWidget::setRange(int nmin, int nmax)
 void CTimelineWidget::setTimePoints(const std::vector<double>& time)
 {
 	// copy data
-	m_data = time;
+	m_data.clear();
+	double l = 0.0;
+	int maxl = 0.0;
+	for (int i = 0; i < time.size(); ++i)
+	{
+		QPointF pt(time[i], 0.0);
+		if ((i > 0) && (time[i] <= time[i - 1]))
+		{
+			pt.setY(++l);
+		}
+		else l = 0.0;
+		if (l > maxl) maxl = l;
+		m_data.push_back(pt);
+	}
+	if (maxl > 0.0)
+	{
+		for (int i = 0; i < time.size(); ++i)
+		{
+			QPointF& pt = m_data[i];
+			double l = pt.y() / maxl;
+			pt.setY(l);
+		}
+	}
+
+	for (int i = 0; i < time.size(); ++i)
 
 	// clear selection
 	m_nselect = -1;
@@ -93,11 +117,11 @@ void CTimelineWidget::setTimePoints(const std::vector<double>& time)
 	// update range
 	if (m_data.empty() == false)
 	{
-		m_dataMin = m_dataMax = m_data[0];
+		m_dataMin = m_dataMax = m_data[0].x();
 		for (int i = 1; i < (int)m_data.size(); ++i)
 		{
-			if (m_data[i] < m_dataMin) m_dataMin = m_data[i];
-			if (m_data[i] > m_dataMax) m_dataMax = m_data[i];
+			if (m_data[i].x() < m_dataMin) m_dataMin = m_data[i].x();
+			if (m_data[i].x() > m_dataMax) m_dataMax = m_data[i].x();
 		}
 
 		if (m_dataMin == m_dataMax) m_dataMax++;
@@ -180,7 +204,7 @@ void CTimelineWidget::mousePressEvent(QMouseEvent* ev)
 		int dmin = 0;
 		for (int i = m_first; i <= m_last; ++i)
 		{
-			double t = m_data[i];
+			double t = m_data[i].x();
 			int xi = x0 + (int)((t - m_min) / (m_max - m_min) * W);
 
 			int d = abs(xp - xi);
@@ -212,7 +236,7 @@ void CTimelineWidget::mouseMoveEvent(QMouseEvent* ev)
 		int dmin = W * 10, imin = -1;
 		for (int i = 0; i < (int)m_data.size(); ++i)
 		{
-			double t = m_data[i];
+			double t = m_data[i].x();
 			int xi = x0 + (int)((t - m_min) / (m_max - m_min) * W);
 			int d = abs(xp - xi);
 			if (d < dmin)
@@ -269,7 +293,7 @@ void CTimelineWidget::mouseMoveEvent(QMouseEvent* ev)
 		int dmin = 0;
 		for (int i = m_first; i <= m_last; ++i)
 		{
-			double t = m_data[i];
+			double t = m_data[i].x();
 			int xi = x0 + (int)((t - m_min) / (m_max - m_min) * W);
 
 			int d = abs(xp - xi);
@@ -373,8 +397,8 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 	int y1 = rt.right();
 	int W = x1 - x0;
 
-	int xf = x0 + (int)((m_data[m_first] - m_min) / (m_max - m_min) * W);
-	int xl = x0 + (int)((m_data[m_last] - m_min) / (m_max - m_min) * W);
+	int xf = x0 + (int)((m_data[m_first].x() - m_min) / (m_max - m_min) * W);
+	int xl = x0 + (int)((m_data[m_last].x() - m_min) / (m_max - m_min) * W);
 
 	QRect rt1 = m_dataRect; rt1.setRight(xf);
 	QRect rt2 = m_dataRect; rt2.setLeft(rt1.right()); rt2.setRight(xl);
@@ -403,39 +427,64 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 	// draw the data
 	const int R = 9;
 	const int R2 = 11;
-	int y = (m_dataRect.top() + m_dataRect.bottom()) / 2;
+	int yc = (m_dataRect.top() + m_dataRect.bottom()) / 2;
+	int Hy = 2*(m_dataRect.bottom() - yc)/3;
 	painter.setPen(Qt::black);
+	int xp, yp;
+	for (int i = 0; i < m_data.size(); ++i)
+	{
+		double t = m_data[i].x();
+		double l = m_data[i].y();
+		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
+		int y = yc + Hy * l;
+		if (i != 0)
+		{
+			painter.drawLine(xp, yp, x, y);
+		}
+		xp = x;
+		yp = y;
+	}
+
 	painter.setBrush(Qt::darkGreen);
 	for (int i = 0; i < m_first; ++i)
 	{
-		double t = m_data[i];
+		double t = m_data[i].x();
+		double l = m_data[i].y();
 		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
-		painter.drawEllipse(x - R / 2, y, R, R);
+		int y = yc + Hy * l;
+		painter.drawEllipse(x - R / 2, y - R / 2, R, R);
 	}
 	painter.setBrush(Qt::green);
+
 	for (int i = m_first; i <= m_last; ++i)
 	{
+		double t = m_data[i].x();
+		double l = m_data[i].y();
+		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
+		int y = yc + Hy * l;
 		if (i != m_nselect)
 		{
-			double t = m_data[i];
-			int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
-			painter.drawEllipse(x - R / 2, y, R, R);
+			painter.drawEllipse(x - R / 2, y - R / 2, R, R);
 		}
 	}
 	painter.setBrush(Qt::darkGreen);
 	for (int i = m_last + 1; i < (int)m_data.size(); ++i)
 	{
-		double t = m_data[i];
+		double t = m_data[i].x();
+		double l = m_data[i].y();
 		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
-		painter.drawEllipse(x - R / 2, y, R, R);
+		int y = yc + Hy * l;
+		painter.drawEllipse(x - R / 2, y - R / 2, R, R);
 	}
 
 	if (m_nselect != -1)
 	{
 		painter.setBrush(Qt::white);
-		double t = m_data[m_nselect];
+		double t = m_data[m_nselect].x();
+		double l = m_data[m_nselect].y();
 		int x = x0 + (int)((t - m_min) / (m_max - m_min) * W);
-		painter.drawEllipse(x - R2 / 2, y, R2, R2);
+		int y = yc + Hy * l;
+		painter.drawEllipse(x - R2 / 2, y - R / 2, R2, R2);
 	}
 
 	// draw the time bar

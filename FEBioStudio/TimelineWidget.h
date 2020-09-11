@@ -59,7 +59,7 @@ signals:
 	void rangeChanged(int nmin, int nmax);
 
 private:
-	std::vector<double>	m_data;
+	std::vector<QPointF>	m_data;
 	double	m_dataMin, m_dataMax;
 	double	m_min, m_max, m_inc;
 	double	m_ftime;
