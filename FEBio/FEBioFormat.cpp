@@ -808,7 +808,7 @@ void FixUncoupledMaterial(FEMaterial* mat)
 		for (int j = 0; j < n; ++j)
 		{
 			FEMaterial* mat_j =  prop.GetMaterial(j);
-			if (mat_j->ClassID() == FE_MAT_ELASTIC_UNCOUPLED)
+			if (mat_j && (mat_j->ClassID() == FE_MAT_ELASTIC_UNCOUPLED))
 			{
 				Param* pk_j = mat_j->GetParam("k"); assert(pk_j);
 				if (pk_j)
