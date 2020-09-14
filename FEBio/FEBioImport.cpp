@@ -264,7 +264,18 @@ bool FEBioImport::ReadFile(XMLTag& tag)
 			if (xml2.FindTag("febio_spec", tag2) == false) return errf("febio_spec tag was not found in included file.");
 
 			// Read the file
-			ReadFile(tag2);
+			try {
+				ReadFile(tag2);
+			}
+			catch (XMLReader::EndOfFile)
+			{
+				// we catch this, since this will always be thrown. 
+				// TODO: I need to fix this. 
+			}
+			catch (...)
+			{
+				throw;
+			}
 
 			// all done
 			++tag;
@@ -272,7 +283,7 @@ bool FEBioImport::ReadFile(XMLTag& tag)
 		else
 		{
 			if (m_fmt->ParseSection(tag) == false) ParseUnknownTag(tag);
-			else ++tag;
+			++tag;
 		}
 	} 
 	while (!tag.isend());
