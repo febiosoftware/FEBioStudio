@@ -128,8 +128,7 @@ bool FileReader::errf(const char* szerr, ...)
 	char* sz = new char[l + 1];
 #ifdef WIN32
 	vsprintf_s(sz, l, szerr, args);
-#endif
-#ifdef __APPLE__
+#else
 	vsnprintf(sz, l, szerr, args);
 #endif
 	sz[l] = 0;
