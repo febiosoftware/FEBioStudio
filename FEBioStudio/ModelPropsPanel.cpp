@@ -217,6 +217,46 @@ void CBCObjectPropsPanel::on_state_toggled(bool b)
 }
 
 //=============================================================================
+CGItemPropsPanel::CGItemPropsPanel(QWidget* parent) : QWidget(parent)
+{
+	QGridLayout* l = new QGridLayout;
+
+	l->addWidget(new QLabel("Name:"), 0, 0, Qt::AlignRight);
+	l->addWidget(m_name = new QLineEdit, 0, 1);
+	m_name->setObjectName("name");
+
+	l->addWidget(new QLabel("Type:"), 1, 0, Qt::AlignRight);
+	l->addWidget(m_type = new QLabel, 1, 1);
+
+	l->addWidget(new QLabel("ID:"), 2, 0, Qt::AlignRight);
+	l->addWidget(m_id = new QLabel, 2, 1);
+
+	setLayout(l);
+
+	QMetaObject::connectSlotsByName(this);
+}
+
+void CGItemPropsPanel::setName(const QString& name)
+{
+	m_name->setText(name);
+}
+
+void CGItemPropsPanel::setType(const QString& name)
+{
+	m_type->setText(name);
+}
+
+void CGItemPropsPanel::setID(int nid)
+{
+	m_id->setText(QString::number(nid));
+}
+
+void CGItemPropsPanel::on_name_textEdited(const QString& t)
+{
+	emit nameChanged(t);
+}
+
+//=============================================================================
 class Ui::CModelPropsPanel
 {
 	enum {
@@ -226,7 +266,8 @@ class Ui::CModelPropsPanel
 		PROPS_PANEL,
 		SELECTION1_PANEL,
 		SELECTION2_PANEL,
-		IMAGE_PANEL
+		IMAGE_PANEL,
+		GITEM_PANEL
 	};
 
 public:
@@ -241,6 +282,7 @@ public:
 	CToolBox* tool;
 	CObjectPropsPanel*	obj;
 	CBCObjectPropsPanel*	bcobj;
+	CGItemPropsPanel*		gitem;
 	CMeshInfoPanel*	mesh;
 	QTabWidget* imageTab;
 
@@ -263,6 +305,9 @@ public:
 
 		bcobj = new CBCObjectPropsPanel;
 		bcobj->setObjectName("bcobject");
+
+		gitem = new CGItemPropsPanel;
+		gitem->setObjectName("gitem");
 
 		propStack = new QStackedWidget;
 		propStack->addWidget(props);
@@ -292,6 +337,7 @@ public:
 		tool->addTool("Selection", sel1);
 		tool->addTool("Selection", sel2);
 		tool->addTool("3D Image", imageTab);
+		tool->addTool("Object", gitem);
 
 		// hide all panels initially
 //		tool->getToolItem(OBJECT_PANEL)->setVisible(false);
@@ -330,6 +376,17 @@ public:
 		tool->getToolItem(BCOBJECT_PANEL)->setVisible(b);
 		if (showActiveState)
 			bcobj->setActiveState(isActive);
+	}
+
+	void showGItemInfo(bool b, const QString& name = "", const QString& type = "", int nid = -1)
+	{
+		if (b)
+		{
+			gitem->setName(name);
+			gitem->setType(type);
+			gitem->setID(nid);
+		}
+		tool->getToolItem(GITEM_PANEL)->setVisible(b);
 	}
 
 	void showPropsPanel(bool b) { tool->getToolItem(PROPS_PANEL)->setVisible(b); }
@@ -498,6 +555,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		SetSelection(1, 0);
 
 		ui->showBCObjectInfo(false);
+		ui->showGItemInfo(false);
 
 		if (dynamic_cast<GObject*>(m_currentObject))
 			ui->showMeshPanel(true);
@@ -557,6 +615,17 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				{
 					Post::CGLObject* plot = dynamic_cast<Post::CGLObject*>(po);
 					ui->showObjectInfo(true, false, nameEditable, QColor(0, 0, 0), true, plot->IsActive());
+				}
+				else if (dynamic_cast<GItem*>(po))
+				{
+					GItem* git = dynamic_cast<GItem*>(po);
+					QString typeStr("unknown");
+					if (dynamic_cast<GPart*>(git)) typeStr = "Part";
+					if (dynamic_cast<GFace*>(git)) typeStr = "Surface";
+					if (dynamic_cast<GEdge*>(git)) typeStr = "Edge";
+					if (dynamic_cast<GNode*>(git)) typeStr = "Node";
+
+					ui->showGItemInfo(true, QString::fromStdString(git->GetName()), typeStr, git->GetID());
 				}
 				else ui->showObjectInfo(true, false, nameEditable);
 			}
@@ -1435,6 +1504,17 @@ void CModelPropsPanel::on_object_nameChanged(const QString& txt)
 }
 
 void CModelPropsPanel::on_bcobject_nameChanged(const QString& txt)
+{
+	if (m_currentObject)
+	{
+		std::string sname = txt.toStdString();
+		m_currentObject->SetName(sname.c_str());
+
+		emit nameChanged(txt);
+	}
+}
+
+void CModelPropsPanel::on_gitem_nameChanged(const QString& txt)
 {
 	if (m_currentObject)
 	{
