@@ -2643,6 +2643,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 		ui->m_process->start(program, args);
 
 		// show the output window
+		ui->logPanel->parentWidget()->raise();
 		ui->logPanel->ShowOutput();
 	}
 	else
@@ -2660,6 +2661,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 		}
 
 		// show the output window
+		ui->logPanel->parentWidget()->raise();
 		ui->logPanel->ShowOutput();
 
 		CFEBioJob::SetActiveJob(nullptr);
