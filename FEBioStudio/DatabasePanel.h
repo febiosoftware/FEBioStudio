@@ -73,6 +73,7 @@ public:
 	QString GetRepositoryFolder();
 	void SetRepositoryFolder(QString folder);
 
+	void showMainPage();
 	void showLoadingPage(QString message, bool progress = false);
 
 public slots:

@@ -616,6 +616,7 @@ public:
 		loadingLabel->setText(message);
 
 		loadingBar->setVisible(progress);
+		loadingBar->setValue(0);
 		loadingCancel->setVisible(progress);
 
 		stack->setCurrentIndex(2);
@@ -1216,6 +1217,9 @@ void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item)
 	}
 
 	QString filename = dbHandler->FullFileNameFromID(ID, type);
+	QFileInfo info(filename);
+
+	ui->showLoadingPage("Downloading " + info.fileName() + "...", true);
 
 	repoHandler->getFile(ID, type);
 }
@@ -1543,6 +1547,11 @@ QString CDatabasePanel::GetRepositoryFolder()
 void CDatabasePanel::SetRepositoryFolder(QString folder)
 {
 	m_repositoryFolder = folder;
+}
+
+void CDatabasePanel::showMainPage()
+{
+	ui->stack->setCurrentIndex(1);
 }
 
 void CDatabasePanel::showLoadingPage(QString message, bool progress)

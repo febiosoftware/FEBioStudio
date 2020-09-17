@@ -196,9 +196,12 @@ void CRepoConnectionHandler::getFile(int id, int type)
 	{
 		QNetworkReply* reply = imp->restclient->get(request);
 
-		QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CRepoConnectionHandler::progress);
+		QObject::connect(reply, &QNetworkReply::downloadProgress, imp->dbPanel, &CDatabasePanel::loadingPageProgress);
+		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
 
-		imp->m_wnd->ShowProgress(true, "Downloading...");
+//		QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CRepoConnectionHandler::progress);
+
+//		imp->m_wnd->ShowProgress(true, "Downloading...");
 	}
 
 }
@@ -613,7 +616,11 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-	if(statusCode == 200)
+	if(r->error() == QNetworkReply::OperationCanceledError)
+	{
+
+	}
+	else if(statusCode == 200)
 	{
 		int fileID = r->rawHeader(QByteArray("fileID")).toInt();
 		int IDType = r->rawHeader(QByteArray("IDType")).toInt();
@@ -655,39 +662,7 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 		imp->dbPanel->ShowMessage(message);
 	}
 
-
-//	if(IDType == GLOBAL)
-//	{
-//		imp->m_wnd->ImportZippedProject(filename);
-//	}
-//	else
-//	{
-//		imp->m_wnd->OpenFEModel(filename);
-//	}
-
-//	QString fileName = QFileDialog::getSaveFileName(NULL, "Export", ".", "FEBio Studio Project (*.prj)");
-//	if (fileName.isEmpty() == false)
-//	{
-//		// make sure the file has an extension
-//		std::string sfile = fileName.toStdString();
-//		std::size_t found = sfile.rfind(".");
-//		if (found == std::string::npos) sfile.append(".prj");
-//
-//
-//		QByteArray data = r->readAll();
-//
-//		QSaveFile file(sfile.c_str());
-//		file.open(QIODevice::WriteOnly);
-//
-//		file.write(data);
-//		file.commit();
-//
-////		imp->m_wnd->OpenFEModel("/home/sci/mherron/Desktop/test.zip");
-//
-//		imp->m_wnd->ImportZippedProject(sfile.c_str());
-//
-//	}
-
+	imp->dbPanel->showMainPage();
 }
 
 void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
