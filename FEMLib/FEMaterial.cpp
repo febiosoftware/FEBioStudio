@@ -427,8 +427,8 @@ FEOldFiberMaterial::FEOldFiberMaterial() : FEMaterial(0)
 	m_nuser = 0;
 	m_n[0] = m_n[1] = 0;
 	m_r = vec3d(0,0,0);
-	m_a = vec3d(0,0,1);
-	m_d = vec3d(1,0,0);
+	m_a = vec3d(1,0,0);
+	m_d = vec3d(0,1,0);
 	m_theta = 0.0;
 	m_phi = 90.0;
 	m_d0 = m_d1 = vec3d(0,0,1);

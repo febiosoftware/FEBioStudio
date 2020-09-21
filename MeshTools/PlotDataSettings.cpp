@@ -129,11 +129,11 @@ void CPlotDataSettings::Init()
 	AddPlotVariable(MODULE_MECH, "acceleration"                      );
 	AddPlotVariable(MODULE_MECH, "contact area"                      );
 	AddPlotVariable(MODULE_MECH, "contact force"                     );
-	AddPlotVariable(MODULE_MECH, "contact gap"                       );
-    AddPlotVariable(MODULE_MECH, "contact penalty"                   );
-	AddPlotVariable(MODULE_MECH, "contact pressure"                  );
+	AddPlotVariable(MODULE_MECH, "contact gap"                       , false, true, DOMAIN_SURFACE);
+    AddPlotVariable(MODULE_MECH, "contact penalty"                   , false, true, DOMAIN_SURFACE);
+	AddPlotVariable(MODULE_MECH, "contact pressure"                  , false, true, DOMAIN_SURFACE);
 	AddPlotVariable(MODULE_MECH, "contact stick"                     );
-	AddPlotVariable(MODULE_MECH, "contact traction"                  );
+	AddPlotVariable(MODULE_MECH, "contact traction"                  , false, true, DOMAIN_SURFACE);
 	AddPlotVariable(MODULE_MECH, "current density"                   );
     AddPlotVariable(MODULE_MECH, "damage"                            );
     AddPlotVariable(MODULE_MECH, "density"                           );
