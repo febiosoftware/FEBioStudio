@@ -1411,6 +1411,10 @@ void CMainWindow::writeSettings()
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
 	settings.setValue("multiViewProjection", vs.m_nconv);
+	settings.setValue("showMaterialFibers", vs.m_bfiber);
+	settings.setValue("showMaterialAxes", vs.m_blma);
+	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
+	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1483,6 +1487,10 @@ void CMainWindow::readSettings()
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
 	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
+	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
+	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
+	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
+	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 	Units::SetUnitSystem(ui->m_defaultUnits);
 
 	QRect rt;
