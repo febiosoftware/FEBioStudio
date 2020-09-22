@@ -2822,7 +2822,8 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 				if (hasName == false) sprintf(szname, "RigidDisplacement%02d", n++);
 				pd->SetName(szname);
 				pstep->AddRC(pd);
-				febio.AddParamCurve(pd->GetLoadCurve(), lc - 1);
+				if (lc > 0) febio.AddParamCurve(pd->GetLoadCurve(), lc - 1);
+				else pd->RemoveLoadcurve();
 			}
 			else if (tag == "force")
 			{
@@ -2830,12 +2831,23 @@ void FEBioFormat2::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 				tag.value(v);
 				FERigidForce* pf = new FERigidForce(nbc, matid, v, pstep->GetID());
 
+				const char* sztype = tag.AttributeValue("type", true);
+				if (sztype)
+				{
+					int ntype = 0;
+					if (strcmp(sztype, "follow") == 0) pf->SetForceType(1);
+					if (strcmp(sztype, "ramp"  ) == 0) pf->SetForceType(2);
+				}
+
 				static int n = 1;
 				if (hasName == false) sprintf(szname, "RigidForce%02d", n++);
 				pf->SetName(szname);
 				pstep->AddRC(pf);
 				if (lc > 0) febio.AddParamCurve(pf->GetLoadCurve(), lc - 1);
-				else pf->GetLoadCurve()->Clear();
+				else
+				{
+					pf->RemoveLoadcurve();
+				}
 			}
 			else ParseUnknownTag(tag);
 		}

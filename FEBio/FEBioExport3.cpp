@@ -4731,18 +4731,19 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 			}
 			else if (ps->Type() == FE_RIGID_FORCE)
 			{
-				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				FERigidForce* rf = dynamic_cast<FERigidForce*>(ps);
 				XMLElement el("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
 				el.add_attribute("type", "force");
 				m_xml.add_branch(el);
 				{
 					m_xml.add_leaf("rb", pgm->m_ntag);
-					m_xml.add_leaf("dof", szbc[rc->GetDOF()]);
+					m_xml.add_leaf("dof", szbc[rf->GetDOF()]);
 					XMLElement val("value");
-					val.add_attribute("lc", rc->GetLoadCurve()->GetID());
-					val.value(rc->GetValue());
+					if (rf->GetLoadCurve()) val.add_attribute("lc", rf->GetLoadCurve()->GetID());
+					val.value(rf->GetValue());
 					m_xml.add_leaf(val);
+					m_xml.add_leaf("load_type", rf->GetForceType());
 				}
 				m_xml.close_branch();
 			}

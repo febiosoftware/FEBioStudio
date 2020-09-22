@@ -277,7 +277,7 @@ void FEBioExport::BuildLoadCurveList(FEModel& fem)
 		for (int j = 0; j<ps->RigidConstraints(); ++j)
 		{
 			FERigidPrescribed* prc = dynamic_cast<FERigidPrescribed*>(ps->RigidConstraint(j));
-			if (prc && prc->IsActive() && (prc->GetDOF() >= 0))
+			if (prc && prc->IsActive() && (prc->GetDOF() >= 0) && (prc->GetLoadCurve()))
 			{
 				AddLoadCurve(prc->GetLoadCurve());
 			}

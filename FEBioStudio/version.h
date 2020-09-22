@@ -33,12 +33,13 @@ SOFTWARE.*/
 #define SUBSUBVERSION	1
 
 //-----------------------------------------------------------------------------
-// FSPRJ FILE VERSION
-// 3.0: first version of .fsprj (same as last prv version)
+// FSM FILE VERSION
+// 3.0: first version of .fsm (same as last prv/fsprj version)
 // 3.1: Added support for mesh layers
 // 3.2: Added support for checkable parameters
 // 3.3: Modified how some discrete element sets are stored
-#define SAVE_VERSION	0x00030003
+// 3.4: Added load_type parameter to FERigidForce
+#define SAVE_VERSION	0x00030004
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D

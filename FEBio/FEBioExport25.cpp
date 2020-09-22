@@ -5222,16 +5222,19 @@ void FEBioExport25::WriteRigidConstraints(FEStep &s)
 			}
 			else if (ps->Type() == FE_RIGID_FORCE)
 			{
-				FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+				FERigidForce* rc = dynamic_cast<FERigidForce*>(ps);
 				XMLElement el;
+				int forceType = rc->GetForceType();
 				el.name("rigid_body");
 				el.add_attribute("mat", pgm->m_ntag);
 				m_xml.add_branch(el);
 				{
 					XMLElement el("force");
 					el.add_attribute("bc", szbc[rc->GetDOF()]);
-					el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+					if (rc->GetLoadCurve()) el.add_attribute("lc", rc->GetLoadCurve()->GetID());
 					el.value(rc->GetValue());
+					if (forceType == 1) el.add_attribute("type", "follow");
+					if (forceType == 2) el.add_attribute("type", "ramp");
 					m_xml.add_leaf(el);
 				}
 				m_xml.close_branch();

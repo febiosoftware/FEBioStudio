@@ -120,6 +120,7 @@ public:
 	public:
 		std::string						m_name;
 		std::vector< std::vector<int> > m_face;
+		int		m_refs;
 	};
 
 	// class for storing element sets
@@ -331,7 +332,7 @@ public:
 
 	public:
 		FENodeSet* BuildFENodeSet(const NodeSet& nset);
-		FESurface* BuildFESurface(const Surface& surf);
+		FESurface* BuildFESurface(Surface& surf);
 
 		FENodeSet* BuildFENodeSet(const char* szname);
 		FESurface* BuildFESurface(const char* szname);
