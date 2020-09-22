@@ -549,7 +549,8 @@ FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO
     AddDoubleParam(0    , "minaug"             , "min augmentations"     );
     AddDoubleParam(10   , "maxaug"             , "max augmentations"     );
 	AddDoubleParam(0.01 , "search_tol"         , "search tolerance"      );
-	AddBoolParam(false, "update_penalty", "update-penalty");
+	AddBoolParam(false  , "update_penalty"     , "update-penalty"        );
+	AddBoolParam(false  , "smooth_aug"         , "Augmentation smoothing");
 }
 
 //=============================================================================
