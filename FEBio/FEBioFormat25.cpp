@@ -791,35 +791,40 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		// Read the data and store it as a mesh data section
 		FEBioModel& feb = GetFEBioModel();
 
-		const char* szset = tag.AttributeValue("elem_set");
-		FEBioModel::Domain* dom = feb.FindDomain(szset);
-		if (dom)
-		{
-			FEPart* pg = feb.BuildFEPart(dom);
-			if (pg)
+		// Make sure to skip generators
+		const char* szgen = tag.AttributeValue("generator");
+		if (szgen) ParseUnknownTag(tag);
+		else {
+			const char* szset = tag.AttributeValue("elem_set");
+			FEBioModel::Domain* dom = feb.FindDomain(szset);
+			if (dom)
 			{
-				FEMesh* mesh = pg->GetMesh();
-				FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
-
-				double scale = tag.AttributeValue("scale", 1.0);
-				pd->SetScaleFactor(scale);
-
-				double val;
-				int lid;
-				++tag;
-				do
+				FEPart* pg = feb.BuildFEPart(dom);
+				if (pg)
 				{
-					tag.AttributePtr("lid")->value(lid);
-					tag.value(val);
+					FEMesh* mesh = pg->GetMesh();
+					FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
 
-					(*pd)[lid - 1] = val;
+					double scale = tag.AttributeValue("scale", 1.0);
+					pd->SetScaleFactor(scale);
 
+					double val;
+					int lid;
 					++tag;
-				} while (!tag.isend());
+					do
+					{
+						tag.AttributePtr("lid")->value(lid);
+						tag.value(val);
+
+						(*pd)[lid - 1] = val;
+
+						++tag;
+					} while (!tag.isend());
+				}
+				else ParseUnknownTag(tag);
 			}
 			else ParseUnknownTag(tag);
 		}
-		else ParseUnknownTag(tag);
 	}
 
 	return true;
