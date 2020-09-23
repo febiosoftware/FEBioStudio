@@ -3224,7 +3224,7 @@ void FEBioExport3::WriteElementDataFields()
 				FEElementData& data = *meshData;
 				const FEPart* pg = data.GetPart();
 
-				XMLElement tag("element_data");
+				XMLElement tag("ElementData");
 				tag.add_attribute("name", data.GetName().c_str());
 				tag.add_attribute("elem_set", data.GetName());
 				m_xml.add_branch(tag);
@@ -3249,7 +3249,7 @@ void FEBioExport3::WriteElementDataFields()
 				FEPartData& data = *partData;
 				FEElemList* pg = data.BuildElemList();
 
-				XMLElement tag("element_data");
+				XMLElement tag("ElementData");
 				tag.add_attribute("name", data.GetName().c_str());
 				tag.add_attribute("elem_set", data.GetName());
 				m_xml.add_branch(tag);
@@ -3341,7 +3341,7 @@ void FEBioExport3::WriteNodeDataSection()
 			{
 				FENodeData& nd = *nodeData;
 
-				XMLElement tag("node_data");
+				XMLElement tag("NodeData");
 				tag.add_attribute("name", nd.GetName().c_str());
 
 				if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
