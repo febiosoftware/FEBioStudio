@@ -133,6 +133,8 @@ public:
 	QToolButton* addFileTagBtn;
 	QToolButton* delFileTagBtn;
 
+	QWizardPage* summaryPage;
+
 	// ID of project being modified. Since project indices start at 1, this is also
 	// used as a boolean e.g. if(m_modify)
 	int m_modify;
@@ -297,6 +299,15 @@ public:
 		wzd->addPage(filesPage);
 
 		fileInfoEnabled(false);
+
+//		if(modify)
+//		{
+//			summaryPage = new QWizardPage();
+//			QVBoxLayout* summaryLayout = new QVBoxLayout;
+//
+//			summaryPage->setLayout(summaryLayout);
+//			wzd->addPage(summaryPage);
+//		}
 
 		if(modify)
 		{
@@ -476,7 +487,7 @@ public:
 		}
 	}
 
-	void getLocalFilePath(QString& path, QTreeWidgetItem* item = nullptr)
+	void getZipFilePath(QString& path, QTreeWidgetItem* item = nullptr)
 	{
 		if(!item) item = projectItem;
 
@@ -484,13 +495,13 @@ public:
 		{
 			path = item->text(0);
 
-			getLocalFilePath(path, item->parent());
+			getZipFilePath(path, item->parent());
 		}
 		else if(item->type() == FOLDERITEM)
 		{
 			path = item->text(0).append("/").append(path);
 
-			getLocalFilePath(path, item->parent());
+			getZipFilePath(path, item->parent());
 		}
 	}
 
@@ -512,13 +523,13 @@ public:
 
 		try
 		{
-			parent = currentFolders.at(path.right(path.length() - index).left(pos));
+			parent = currentFolders.at(path.left(pos + index));
 		}
 		catch(out_of_range& e)
 		{
 			parent = NewFolder(path.right(path.length() - index).left(pos), QString("{Repository}/") + path.left(index + pos));
 
-			currentFolders[path.right(path.length() - index).left(pos)] = parent;
+			currentFolders[path.left(pos + index)] = parent;
 		}
 
 		parent->addChild(child);
@@ -756,7 +767,7 @@ QStringList CWzdUpload::GetFilePaths()
 	return paths;
 }
 
-QStringList CWzdUpload::GetLocalFilePaths()
+QStringList CWzdUpload::GetZipFilePaths()
 {
 	QList<QTreeWidgetItem*> items;
 	ui->getFileItems(items);
@@ -771,7 +782,7 @@ QStringList CWzdUpload::GetLocalFilePaths()
 		}
 
 		QString path;
-		ui->getLocalFilePath(path, item);
+		ui->getZipFilePath(path, item);
 		paths.push_back(path);
 	}
 
@@ -790,7 +801,7 @@ QList<QVariant> CWzdUpload::getFileInfo()
 		QVariantMap fileInfo;
 
 		QString path;
-		ui->getLocalFilePath(path, item);
+		ui->getZipFilePath(path, item);
 
 		fileInfo["filename"] = path;
 		fileInfo["description"] = item->data(0, DESCRIPTION);

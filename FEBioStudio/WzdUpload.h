@@ -111,7 +111,7 @@ public:
 	QList<QVariant> getPublicationInfo();
 
 	QStringList GetFilePaths();
-	QStringList GetLocalFilePaths();
+	QStringList GetZipFilePaths();
 	QList<QVariant> getFileInfo();
 
 	void accept() override;

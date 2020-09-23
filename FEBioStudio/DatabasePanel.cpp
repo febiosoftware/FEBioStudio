@@ -79,6 +79,7 @@ SOFTWARE.*/
 #include "ZipFiles.h"
 
 #include <iostream>
+#include <QDebug>
 
 enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
 
@@ -307,6 +308,42 @@ private:
 
 };
 
+class DisplayTextEdit : public QTextEdit
+{
+public:
+	DisplayTextEdit(QWidget *parent = nullptr) : QTextEdit(parent)
+	{
+		setReadOnly(true);
+		setFrameStyle(QFrame::Plain|QFrame::NoFrame);
+		QPalette qpalette = palette();
+		qpalette.setColor(QPalette::Base, qApp->palette().color(QPalette::Window));
+		setPalette(qpalette);
+	}
+
+	DisplayTextEdit(const QString &text, QWidget *parent = nullptr) : QTextEdit(text, parent)
+	{
+		setReadOnly(true);
+		setFrameStyle(QFrame::Plain|QFrame::NoFrame);
+		QPalette qpalette = palette();
+		qpalette.setColor(QPalette::Base, qApp->palette().color(QPalette::Window));
+		setPalette(qpalette);
+	}
+
+	bool hasHeightForWidth() const override
+	{
+		return true;
+	}
+
+	int heightForWidth(int w) const override
+	{
+		document()->setTextWidth(w);
+
+		return document()->size().height();
+	}
+
+
+};
+
 class Ui::CDatabasePanel
 {
 public:
@@ -333,7 +370,7 @@ public:
 
 	QFormLayout* fileInfoForm;
 	QLabel* filenameLabel;
-	QLabel* fileDescLabel;
+	DisplayTextEdit* fileDescLabel;
 	TagLabel* fileTags;
 
 	::CPublicationWidgetView* projectPubs;
@@ -520,8 +557,7 @@ public:
 		fileInfoForm->setHorizontalSpacing(10);
 		fileInfoForm->addRow("Filename:", filenameLabel = new QLabel);
 		filenameLabel->setWordWrap(true);
-		fileInfoForm->addRow("Description:", fileDescLabel = new QLabel);
-		fileDescLabel->setWordWrap(true);
+		fileInfoForm->addRow("Description:", fileDescLabel = new DisplayTextEdit);
 		fileInfoLayout->addLayout(fileInfoForm);
 
 		fileInfoLayout->addWidget(fileTags = new TagLabel);
@@ -575,13 +611,13 @@ public:
 
 		try
 		{
-			parent = currentProjectFolders.at(path.right(path.length() - index).left(pos).toStdString());
+			parent = currentProjectFolders.at(path.left(pos + index).toStdString());
 		}
 		catch(out_of_range& e)
 		{
 			parent = new FolderItem(path.right(path.length() - index).left(pos));
 
-			currentProjectFolders[path.right(path.length() - index).left(pos).toStdString()] = parent;
+			currentProjectFolders[path.left(pos + index).toStdString()] = parent;
 		}
 
 		parent->addChild(child);
@@ -641,8 +677,7 @@ public:
 
 		if(!description.isEmpty())
 		{
-			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new QLabel(description));
-			fileDescLabel->setWordWrap(true);
+			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new DisplayTextEdit(description));
 		}
 
 	}
@@ -986,11 +1021,13 @@ void CDatabasePanel::on_actionUpload_triggered()
 			projectInfo.insert("publications", dlg.getPublicationInfo());
 
 			QStringList filePaths = dlg.GetFilePaths();
-			QStringList localFilePaths = dlg.GetLocalFilePaths();
+			QStringList zipFilePaths = dlg.GetZipFilePaths();
 
 			projectInfo.insert("files", dlg.getFileInfo());
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
+
+			qDebug() << payload;
 
 			repoHandler->setUploadReady(false);
 
@@ -1000,7 +1037,7 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 			ui->showLoadingPage("Compressing Files...", true);
 
-			ZipThread* zip = new ZipThread(archiveName, filePaths, localFilePaths);
+			ZipThread* zip = new ZipThread(archiveName, filePaths, zipFilePaths);
 			QObject::connect(zip, &ZipThread::resultReady, this, &CDatabasePanel::updateUploadReady);
 			QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
 			QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
@@ -1153,7 +1190,7 @@ void CDatabasePanel::on_actionModify_triggered()
 			projectInfo.insert("files", dlg.getFileInfo());
 
 			QStringList filePaths = dlg.GetFilePaths();
-			QStringList localFilePaths = dlg.GetLocalFilePaths();
+			QStringList zipFilePaths = dlg.GetZipFilePaths();
 
 			if(filePaths.size() > 0)
 			{
@@ -1177,7 +1214,7 @@ void CDatabasePanel::on_actionModify_triggered()
 
 				ui->showLoadingPage("Compressing Files...", true);
 
-				ZipThread* zip = new ZipThread(archiveName, filePaths, localFilePaths);
+				ZipThread* zip = new ZipThread(archiveName, filePaths, zipFilePaths);
 				QObject::connect(zip, &ZipThread::resultReady, this, &CDatabasePanel::updateModifyReady);
 				QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
 				QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
