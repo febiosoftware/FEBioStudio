@@ -32,6 +32,8 @@ SOFTWARE.*/
 using namespace std;
 
 class FEPart;
+class GPartList;
+class FEModel;
 
 //-----------------------------------------------------------------------------
 // Element data field
@@ -97,6 +99,9 @@ public:
 
 	// build the element list
 	FEElemList* BuildElemList();
+
+	// get the partlist
+	GPartList* GetPartList(FEModel* fem);
 
 public:
 	void Save(OArchive& ar);

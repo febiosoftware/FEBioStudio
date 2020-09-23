@@ -464,6 +464,8 @@ bool FEOldFiberMaterial::UpdateData(bool bsave)
 			m_d = GetVecValue(5);
 			break;
 		case FE_FIBER_SPHERICAL:
+			GetParam(3).SetState(Param_ALLFLAGS);
+			m_r = GetVecValue(3);
 			break;
 		case FE_FIBER_VECTOR:
 			GetParam(4).SetState(Param_ALLFLAGS);

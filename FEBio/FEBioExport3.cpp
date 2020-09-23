@@ -294,6 +294,8 @@ void FEBioExport3::AddElemSet(const std::string& name, FEItemListBuilder* pl)
 			if (es == 0) part->m_ELst.push_back(new ElementList(name, pg->BuildElemList()));
 		}
 		break;
+		default:
+			assert(false);
 		}
 	}
 	m_pESet.push_back(NamedList(string(name), pl));
@@ -662,11 +664,8 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				break;
 				case FEMeshData::PART_DATA:
 				{
-					FEPartData* map = dynamic_cast<FEPartData*>(data); assert(map);
-					GPartList* pg = 0;// const_cast<GPartList*>(map->GetPartList());
-					assert(pg);
-					FEItemListBuilder* pil = pg;
-					if (pg) AddElemSet(data->GetName(), pil);
+					// We don't create element sets for part data since we already have the corresponding element sets
+					// in the mesh. 
 				}
 				break;
 				}
@@ -3247,26 +3246,38 @@ void FEBioExport3::WriteElementDataFields()
 			if (partData)
 			{
 				FEPartData& data = *partData;
-				FEElemList* pg = data.BuildElemList();
-
-				XMLElement tag("ElementData");
-				tag.add_attribute("name", data.GetName().c_str());
-				tag.add_attribute("elem_set", data.GetName());
-				m_xml.add_branch(tag);
+				GPartList* partList = data.GetPartList(&fem);
+				std::vector<GPart*> partArray = partList->GetPartList();
+				FEElemList* elemList = data.BuildElemList();
+				for (int np = 0; np < partArray.size(); ++np)
 				{
-					XMLElement el("e");
-					int nid = el.add_attribute("lid", 0);
-					int N = pg->Size();
-					for (int j = 0; j < N; ++j)
-					{
-						el.set_attribute(nid, j + 1);
-						el.value(data[j]);
-						m_xml.add_leaf(el, false);
-					}
-				}
-				m_xml.close_branch();
+					GPart* pg = partArray[np];
+					int pid = pg->GetLocalID();
 
-				delete pg;
+					XMLElement tag("ElementData");
+					tag.add_attribute("name", data.GetName().c_str());
+					tag.add_attribute("elem_set", pg->GetName());
+					m_xml.add_branch(tag);
+					{
+						XMLElement el("e");
+						int nid = el.add_attribute("lid", 0);
+						int N = elemList->Size();
+						FEElemList::Iterator it = elemList->First();
+						int lid = 1;
+						for (int j = 0; j < N; ++j, ++it)
+						{
+							FEElement_* pe = it->m_pi;
+							if (pe->m_gid == pid)
+							{
+								el.set_attribute(nid, lid++);
+								el.value(data[j]);
+								m_xml.add_leaf(el, false);
+							}
+						}
+					}
+					m_xml.close_branch();
+				}
+				delete partList;
 			}
 		}
 	}

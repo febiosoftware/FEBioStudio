@@ -124,6 +124,12 @@ public:
 	class Item
 	{
 	public:
+		enum Flags {
+			Item_Bold = 1,
+			Item_Indented = 2
+		};
+
+	public:
 		CMaterialPropsModel*	m_model;
 
 		FEMaterial*		m_pm;			// material pointer
@@ -133,24 +139,29 @@ public:
 
 		int		m_nrow;	// row index into parent's children array
 
+		int		m_flag;	// used to decided if the item will show up as bold or not. Default: parameters = no, properties = yes. 
+
 	public:
 		Item*			m_parent;		// pointer to parent
 		vector<Item*>	m_children;	// list of children
 
 	public:
-		Item() { m_model = nullptr; m_pm = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_matIndex = 0; m_nrow = -1; }
+		Item() { m_model = nullptr; m_pm = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_matIndex = 0; m_nrow = -1; m_flag = 0;  }
 		Item(FEMaterial* pm, int paramId = -1, int propId = -1, int matIndex = 0, int nrow = -1) {
 			m_model = nullptr;
 			m_pm = pm; m_paramId = paramId; m_propId = propId; m_matIndex = matIndex; m_nrow = nrow;
+			m_flag = (propId != -1 ? 1 : 0);
 		}
 		~Item() { for (int i = 0; i < m_children.size(); ++i) delete m_children[i]; m_children.clear(); }
 
 		bool isParameter() const { return (m_paramId >= 0); }
 		bool isProperty() const { return (m_propId >= 0); }
 
+		int flag() const { return m_flag; }
+
 		Param* parameter() { return (m_paramId >= 0 ? m_pm->GetParamPtr(m_paramId) : nullptr); }
 
-		void addChild(FEMaterial* pm, int paramId, int propId, int matIndex)
+		Item* addChild(FEMaterial* pm, int paramId, int propId, int matIndex)
 		{
 			Item* item = new Item(pm, paramId, propId, matIndex, (int)m_children.size());
 			item->m_model = m_model; assert(m_model);
@@ -162,6 +173,22 @@ public:
 				FEMaterialProperty& p = pm->GetProperty(propId);
 				FEMaterial* pm = p.GetMaterial(matIndex);
 				if (pm) item->addChildren(pm);
+			}
+			return item;
+		}
+
+		void addFiberParameters(FEOldFiberMaterial* pm)
+		{
+			pm->UpdateData(false);
+			for (int i = 0; i < pm->Parameters(); ++i)
+			{
+				Param& p = pm->GetParam(i);
+				if ((p.IsVisible() || p.IsEditable()) && (p.IsPersistent() || (m_pm == nullptr)))
+				{
+					Item* it = addChild(pm, i, -1, 0);
+					if (i == 0) it->m_flag = Item_Bold;
+					else it->m_flag = Item_Indented;
+				}
 			}
 		}
 
@@ -191,7 +218,7 @@ public:
 			if (dynamic_cast<FETransverselyIsotropic*>(pm))
 			{
 				FETransverselyIsotropic* tiso = dynamic_cast<FETransverselyIsotropic*>(pm);
-				addParameters(tiso->GetFiberMaterial());
+				addFiberParameters(tiso->GetFiberMaterial());
 			}
 			else if (pm->HasMaterialAxes())
 			{
@@ -218,7 +245,15 @@ public:
 			if (m_paramId >= 0)
 			{
 				Param& p = m_pm->GetParam(m_paramId);
-				if (column == 0) return p.GetLongName();
+				if (column == 0)
+				{
+					QString name(p.GetLongName());
+					if (m_flag & Item_Indented)
+					{
+						name = "  " + name;
+					}
+					return name;
+				}
 
 				if (role == Qt::DisplayRole)
 				{
@@ -498,7 +533,7 @@ public:
 			if (item->isProperty()) return QColor(Qt::darkGray);
 		}
 */
-		if ((role == Qt::FontRole) && item->isProperty())
+		if ((role == Qt::FontRole) && (item->m_flag & Item::Item_Bold))
 		{
 			QFont font;
 			font.setBold(true);
@@ -631,6 +666,11 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				return pw;
 			}
 			if (p->GetParamType() == Param_VEC2I)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
+			if (p->GetParamType() == Param_VEC3D)
 			{
 				QLineEdit* pw = new QLineEdit(parent);
 				return pw;
