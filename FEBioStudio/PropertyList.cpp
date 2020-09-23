@@ -27,6 +27,9 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include <MathLib/mat3d.h>
 
+#include <QDebug>
+#include <iostream>
+
 vec3d StringToVec3d(const QString& s)
 {
 	string st = s.toStdString();
@@ -47,8 +50,7 @@ mat3d StringToMat3d(const QString& s)
 
 vec2i StringToVec2i(const QString& s)
 {
-	string st = s.toStdString();
-	const char* sz = st.c_str();
+	const char* sz = s.toStdString().c_str();
 	vec2i r;
 	sscanf(sz, "%ld,%ld", &r.x, &r.y);
 	return r;
