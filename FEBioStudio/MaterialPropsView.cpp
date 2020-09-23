@@ -295,6 +295,20 @@ public:
 						return v;
 					}
 					break;
+					case Param_STRING:
+					{
+						string s = p.GetStringValue();
+						QString v = QString::fromStdString(s);
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
 					default:
 						assert(false);
 						return "in progress";
@@ -313,7 +327,9 @@ public:
 					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
 					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
+					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 					default:
+						assert(false);
 						return "in progress";
 					}
 				}
@@ -378,6 +394,12 @@ public:
 				{
 					string s = value.toString().toStdString();
 					p.SetMathString(s);
+				}
+				break;
+				case Param_STRING:
+				{
+					string s = value.toString().toStdString();
+					p.SetStringValue(s);
 				}
 				break;
 				default:
@@ -606,6 +628,11 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 			{
 				QLineEdit* pw = new QLineEdit(parent);
 				pw->setValidator(new QDoubleValidator);
+				return pw;
+			}
+			if (p->GetParamType() == Param_VEC2I)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
 				return pw;
 			}
 			if ((p->GetParamType() == Param_INT) || (p->GetParamType() == Param_CHOICE))
