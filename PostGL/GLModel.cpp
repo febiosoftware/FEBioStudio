@@ -444,13 +444,6 @@ void CGLModel::Render(CGLContext& rc)
 	// activate all clipping planes
 	CGLPlaneCutPlot::EnableClipPlanes();
 
-	if (rc.m_showOutline)
-	{
-		rc.m_cam->LineDrawMode(true);
-		RenderOutline(rc);
-		rc.m_cam->LineDrawMode(false);
-	}
-
 	// first we render all the plots
 	RenderPlots(rc, 0);
 
@@ -511,6 +504,14 @@ void CGLModel::Render(CGLContext& rc)
 	{
 		rc.m_cam->LineDrawMode(true);
 		RenderNodes(fem, rc);
+		rc.m_cam->LineDrawMode(false);
+	}
+
+	// render outline
+	if (rc.m_showOutline)
+	{
+		rc.m_cam->LineDrawMode(true);
+		RenderOutline(rc);
 		rc.m_cam->LineDrawMode(false);
 	}
 
