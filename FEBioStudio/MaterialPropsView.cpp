@@ -60,6 +60,64 @@ QStringList GetEnumValues(FEModel* fem, const char* ch)
 	return ops;
 }
 
+//-----------------------------------------------------------------------------
+CEditVariableParam::CEditVariableParam(QWidget* parent) : QComboBox(parent)
+{
+	addItem("<constant>");
+	addItem("<math>");
+#ifdef _DEBUG
+	addItem("<map>");
+#endif
+	setEditable(true);
+	setInsertPolicy(QComboBox::NoInsert);
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+	m_param = nullptr;
+
+	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
+}
+
+void CEditVariableParam::setParam(Param* p)
+{
+	m_param = p;
+	if (p == nullptr) return;
+
+	blockSignals(true);
+	if (p->GetParamType() == Param_Type::Param_FLOAT)
+	{
+		setCurrentIndex(0);
+		setEditText(QString("%1").arg(p->GetFloatValue()));
+	}
+	else if (p->GetParamType() == Param_Type::Param_MATH)
+	{
+		setCurrentIndex(1);
+		setEditText(QString::fromStdString(p->GetMathString()));
+	}
+	else if (p->GetParamType() == Param_Type::Param_STRING)
+	{
+		setCurrentIndex(2);
+		setEditText(QString::fromStdString(p->GetStringValue()));
+	}
+	else
+	{
+		assert(false);
+	}
+	blockSignals(false);
+}
+
+void CEditVariableParam::onCurrentIndexChanged(int index)
+{
+	if (m_param == nullptr) return;
+
+	if (index == 0) m_param->SetParamType(Param_FLOAT);
+	if (index == 1) m_param->SetParamType(Param_MATH);
+	if (index == 2) m_param->SetParamType(Param_STRING);
+
+	setParam(m_param);
+
+	emit typeChanged();
+}
+
 class CMaterialPropsModel : public QAbstractItemModel
 {
 public:
@@ -223,7 +281,22 @@ public:
 						return v;
 					}
 					break;
+					case Param_MATH:
+					{
+						string s = p.GetMathString();
+						QString v = QString::fromStdString(s);
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
 					default:
+						assert(false);
 						return "in progress";
 					}
 				}
@@ -239,6 +312,7 @@ public:
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
 					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
 					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
+					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					default:
 						return "in progress";
 					}
@@ -278,7 +352,12 @@ public:
 				Param& p = m_pm->GetParam(m_paramId);
 				switch (p.GetParamType())
 				{
-				case Param_FLOAT: p.SetFloatValue(value.toDouble()); break;
+				case Param_FLOAT: 
+				{
+					double f = value.toDouble();
+					p.SetFloatValue(f);
+				}
+				break;
 				case Param_CHOICE:
 				case Param_INT: 
 				{
@@ -295,6 +374,14 @@ public:
 					p.SetBoolValue(n != 0);
 				}
 				break;
+				case Param_MATH:
+				{
+					string s = value.toString().toStdString();
+					p.SetMathString(s);
+				}
+				break;
+				default:
+					assert(false);
 				}
 
 				return m_pm->UpdateData(true);
@@ -506,6 +593,15 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 		if (item->isParameter())
 		{
 			Param* p = item->parameter();
+
+			// check for variable parameters first
+			if (p->IsVariable())
+			{
+				CEditVariableParam* pw = new CEditVariableParam(parent);
+				pw->setParam(p);
+				return pw;
+			}
+
 			if (p->GetParamType() == Param_FLOAT)
 			{
 				QLineEdit* pw = new QLineEdit(parent);
@@ -574,8 +670,13 @@ void CMaterialPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& i
 		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
 		if (item->isParameter())
 		{
-			QVariant v = item->data(1, Qt::EditRole);
-			pw->setCurrentIndex(v.toInt());
+			// We only want to do this for enum parameters
+			Param* p = item->parameter();
+			if (p && (p->GetEnumNames()))
+			{
+				QVariant v = item->data(1, Qt::EditRole);
+				pw->setCurrentIndex(v.toInt());
+			}
 		}
 	}
 	else QStyledItemDelegate::setEditorData(editor, index);
@@ -590,15 +691,21 @@ void CMaterialPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
 		if (item->isParameter())
 		{
-			model->setData(index, pw->currentIndex());
+			Param* p = item->parameter();
+			if (p && p->GetEnumNames())
+			{
+				model->setData(index, pw->currentIndex());
+				return;
+			}
 		}
 		else if (item->isProperty())
 		{
 			int matId = pw->currentData(Qt::UserRole).toInt();
 			model->setData(index, matId);
+			return;
 		}
 	}
-	else QStyledItemDelegate::setModelData(editor, model, index);
+	QStyledItemDelegate::setModelData(editor, model, index);
 }
 
 void CMaterialPropsDelegate::OnEditorSignal()
