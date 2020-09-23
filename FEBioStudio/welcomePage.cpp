@@ -35,7 +35,7 @@ const char* welcome = \
 <style>\
 body { background-color: _BGCOLOR_; }\
 h1 { color: gray; }\
-a { color: _FGCOLOR_; font-size: 11pt; }\
+a { font-size: 11pt; }\
 ul { line-height: 150%; list-style-type: none; }\
 </style>\
 </head>\
@@ -115,19 +115,6 @@ void CWelcomePage::Refresh()
 	page.replace("_RECENT_FILES_", links);
 
 	page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
-
-	if (m_wnd->currentTheme() == 1 || m_wnd->currentTheme() == 3)
-	{
-		page.replace("_FGCOLOR_", "Dodgerblue");
-	}
-	else
-	{
-#ifdef WIN32
-		page.replace("_FGCOLOR_", "#0000ff");
-#else
-        page.replace("_FGCOLOR_", "Dodgerblue");
-#endif
-	}
 
 	setHtml(page);
 }

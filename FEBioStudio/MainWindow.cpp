@@ -109,6 +109,7 @@ void darkStyle()
 	palette.setColor(QPalette::HighlightedText, Qt::white);
 	palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
 	palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
+	palette.setColor(QPalette::Link,  QColor("Dodgerblue"));
 	qApp->setPalette(palette);
 
 	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
