@@ -293,7 +293,7 @@ public:
 		m_size = size;
 	}
 
-	CustomTreeWidgetItem* getProjectItem()
+	virtual CustomTreeWidgetItem* getProjectItem()
 	{
 		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
 	}
@@ -305,6 +305,34 @@ public:
 
 private:
 	int m_fileID;
+
+};
+
+class FileSearchItem : public QTreeWidgetItem
+{
+public:
+	FileSearchItem(FileItem* item)
+		: QTreeWidgetItem(), realItem(item)
+	{
+		setText(0, realItem->text(0));
+		setText(1, realItem->text(1));
+		UpdateColor();
+		setIcon(0,realItem->icon(0));
+	}
+
+	void UpdateColor()
+	{
+		setForeground(0, realItem->foreground(0));
+		setForeground(1, realItem->foreground(1));
+	}
+
+	FileItem* getRealItem()
+	{
+		return realItem;
+	}
+
+private:
+	FileItem* realItem;
 
 };
 
@@ -340,8 +368,6 @@ public:
 
 		return document()->size().height();
 	}
-
-
 };
 
 class Ui::CDatabasePanel
@@ -356,7 +382,9 @@ public:
 	QAction* loginAction;
 
 	QWidget* modelPage;
-	QTreeWidget* treeWidget;
+	QStackedWidget* treeStack;
+	QTreeWidget* projectTree;
+	QTreeWidget* fileSearchTree;
 
 	CToolBox* projectInfoBox;
 
@@ -383,12 +411,12 @@ public:
 	QAction* actionOpenFileLocation;
 	QAction* actionDelete;
 
-	QAction* actionManage;
-
 	QAction* actionUpload;
 
 	QAction* actionDeleteRemote;
 	QAction* actionModify;
+
+	QAction* actionFindInTree;
 
 	QLineEdit* searchLineEdit;
 	QAction* actionSearch;
@@ -495,16 +523,31 @@ public:
 
 		modelVBLayout->addWidget(searchBar);
 
+		actionFindInTree = new QAction("Show in Project Tree", parent);
+		actionFindInTree->setObjectName("actionFindInTree");
+
 		QSplitter* splitter = new QSplitter;
 		splitter->setOrientation(Qt::Vertical);
 
-		treeWidget = new QTreeWidget;
-		treeWidget->setObjectName("treeWidget");
-		treeWidget->setColumnCount(2);
-		treeWidget->setHeaderLabels(QStringList() << "Projects" << "Size");
-		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-		treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-		splitter->addWidget(treeWidget);
+		treeStack = new QStackedWidget;
+
+		projectTree = new QTreeWidget;
+		projectTree->setObjectName("treeWidget");
+		projectTree->setColumnCount(2);
+		projectTree->setHeaderLabels(QStringList() << "Projects" << "Size");
+		projectTree->setSelectionMode(QAbstractItemView::SingleSelection);
+		projectTree->setContextMenuPolicy(Qt::CustomContextMenu);
+		treeStack->addWidget(projectTree);
+
+		fileSearchTree = new QTreeWidget;
+		fileSearchTree->setObjectName("fileSearchTree");
+		fileSearchTree->setColumnCount(2);
+		fileSearchTree->setHeaderLabels(QStringList() << "Files" << "Size");
+		fileSearchTree->setSelectionMode(QAbstractItemView::SingleSelection);
+		fileSearchTree->setContextMenuPolicy(Qt::CustomContextMenu);
+		treeStack->addWidget(fileSearchTree);
+
+		splitter->addWidget(treeStack);
 
 		projectInfoBox = new CToolBox;
 		QWidget* projectDummy = new QWidget;
@@ -730,9 +773,9 @@ CDatabasePanel::~CDatabasePanel()
 
 void CDatabasePanel::SetModelList()
 {
-	ui->treeWidget->blockSignals(true);
-	ui->treeWidget->clear();
-	ui->treeWidget->blockSignals(false);
+	ui->projectTree->blockSignals(true);
+	ui->projectTree->clear();
+	ui->projectTree->blockSignals(false);
 
 	dbHandler->GetCategories();
 
@@ -743,16 +786,16 @@ void CDatabasePanel::SetModelList()
 		QString category("My Projects");
 		QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
 		item->setIcon(0, QIcon(":/icons/folder.png"));
-		ui->treeWidget->addTopLevelItem(item);
+		ui->projectTree->addTopLevelItem(item);
 	}
 
 	dbHandler->GetProjects();
 
 	// Delete empty categories.
 	vector<int> empty;
-	for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+	for(int item = 0; item < ui->projectTree->topLevelItemCount(); item++)
 	{
-		if(ui->treeWidget->topLevelItem(item)->childCount() == 0)
+		if(ui->projectTree->topLevelItem(item)->childCount() == 0)
 		{
 			empty.push_back(item);
 		}
@@ -760,17 +803,17 @@ void CDatabasePanel::SetModelList()
 
 	for(int item : empty)
 	{
-		delete ui->treeWidget->topLevelItem(item);
+		delete ui->projectTree->topLevelItem(item);
 	}
 
 	// Resize columns
-	ui->treeWidget->resizeColumnToContents(0);
-	ui->treeWidget->setColumnWidth(0, ui->treeWidget->columnWidth(0)*2.2);
+	ui->projectTree->resizeColumnToContents(0);
+	ui->projectTree->setColumnWidth(0, ui->projectTree->columnWidth(0)*2.2);
 
 	// Select the first category
-	if(ui->treeWidget->topLevelItemCount() > 0)
+	if(ui->projectTree->topLevelItemCount() > 0)
 	{
-		ui->treeWidget->topLevelItem(0)->setSelected(true);
+		ui->projectTree->topLevelItem(0)->setSelected(true);
 	}
 
 	ui->stack->setCurrentIndex(1);
@@ -828,6 +871,15 @@ void CDatabasePanel::DownloadFinished(int fileID, int fileType)
 		ui->fileItemsByID[fileID]->AddLocalCopy();
 	}
 
+	// Update fileSearchItem's color if there's a current file search
+	if(ui->treeStack->currentIndex() == 1)
+	{
+		if(ui->fileSearchTree->selectedItems().count() > 0)
+		{
+			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->UpdateColor();
+		}
+	}
+
 	if(ui->openAfterDownload)
 	{
 		OpenItem(ui->openAfterDownload);
@@ -843,7 +895,7 @@ void CDatabasePanel::AddCategory(char **data)
 	QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
 	item->setIcon(0, QIcon(":/icons/folder.png"));
 
-	ui->treeWidget->addTopLevelItem(item);
+	ui->projectTree->addTopLevelItem(item);
 }
 
 void CDatabasePanel::AddProject(char **data)
@@ -875,9 +927,9 @@ void CDatabasePanel::AddProject(char **data)
 
 
 		QTreeWidgetItem* categoryItem = nullptr;
-		for(int item = 0; item < ui->treeWidget->topLevelItemCount(); item++)
+		for(int item = 0; item < ui->projectTree->topLevelItemCount(); item++)
 		{
-			QTreeWidgetItem* current = ui->treeWidget->topLevelItem(item);
+			QTreeWidgetItem* current = ui->projectTree->topLevelItem(item);
 			if(current->text(0).compare(category) == 0)
 			{
 				categoryItem = current;
@@ -962,6 +1014,13 @@ void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int 
 	}
 }
 
+void CDatabasePanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
+{
+	FileSearchItem* searchItem = static_cast<FileSearchItem*>(item);
+
+	on_treeWidget_itemDoubleClicked(searchItem->getRealItem(),0);
+}
+
 void CDatabasePanel::on_actionRefresh_triggered()
 {
 	ui->showLoadingPage("Refreshing...");
@@ -970,22 +1029,51 @@ void CDatabasePanel::on_actionRefresh_triggered()
 
 void CDatabasePanel::on_actionDownload_triggered()
 {
-	DownloadItem(static_cast<CustomTreeWidgetItem*>(ui->treeWidget->selectedItems()[0]));
+	if(ui->treeStack->currentIndex() == 0)
+	{
+		DownloadItem(static_cast<CustomTreeWidgetItem*>(ui->projectTree->selectedItems()[0]));
+	}
+	else
+	{
+		DownloadItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+	}
+
 }
 
 void CDatabasePanel::on_actionOpen_triggered()
 {
-	OpenItem(static_cast<CustomTreeWidgetItem*>(ui->treeWidget->selectedItems()[0]));
+	if(ui->treeStack->currentIndex() == 0)
+	{
+		OpenItem(static_cast<CustomTreeWidgetItem*>(ui->projectTree->selectedItems()[0]));
+	}
+	else
+	{
+		OpenItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+	}
 }
 
 void CDatabasePanel::on_actionOpenFileLocation_triggered()
 {
-	ShowItemInBrowser(static_cast<CustomTreeWidgetItem*>(ui->treeWidget->selectedItems()[0]));
+	if(ui->treeStack->currentIndex() == 0)
+	{
+		ShowItemInBrowser(static_cast<CustomTreeWidgetItem*>(ui->projectTree->selectedItems()[0]));
+	}
+	else
+	{
+		ShowItemInBrowser(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+	}
 }
 
 void CDatabasePanel::on_actionDelete_triggered()
 {
-	DeleteItem(static_cast<CustomTreeWidgetItem*>(ui->treeWidget->selectedItems()[0]));
+	if(ui->treeStack->currentIndex() == 0)
+	{
+		DeleteItem(static_cast<CustomTreeWidgetItem*>(ui->projectTree->selectedItems()[0]));
+	}
+	else
+	{
+		DeleteItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+	}
 
 	on_treeWidget_itemSelectionChanged();
 }
@@ -1080,43 +1168,48 @@ void CDatabasePanel::on_actionSearch_triggered()
 		QStringList parts = searchTerm.split("files:");
 		projectSearch = parts[0];
 		fileSearch = parts[1];
+
+		if(!fileSearch.isEmpty())
+		{
+			std::unordered_set<int> fileIDs = dbHandler->FileSearch(fileSearch);
+
+			ui->fileSearchTree->blockSignals(true);
+
+			ui->fileSearchTree->clear();
+			ui->fileSearchTree->setColumnWidth(0, ui->projectTree->columnWidth(0));
+
+			for(int id : fileIDs)
+			{
+				FileSearchItem* item = new FileSearchItem(ui->fileItemsByID[id]);
+
+				ui->fileSearchTree->addTopLevelItem(item);
+			}
+
+			ui->fileSearchTree->blockSignals(false);
+
+			ui->treeStack->setCurrentIndex(1);
+		}
 	}
 	else
 	{
 		projectSearch = searchTerm;
-	}
 
-	std::unordered_set<int> projIDs = dbHandler->FullTextSearch(projectSearch);
+		std::unordered_set<int> projIDs = dbHandler->FullTextSearch(projectSearch);
 
-	ui->treeWidget->blockSignals(true);
+		ui->projectTree->blockSignals(true);
 
-	for(auto current : ui->projectItemsByID)
-	{
-		if(projIDs.count(current.first) == 0)
+		for(auto current : ui->projectItemsByID)
 		{
-			current.second->setHidden(true);
-		}
-	}
-
-	if(!fileSearch.isEmpty())
-	{
-		std::unordered_set<int> fileIDs = dbHandler->FileSearch(fileSearch);
-
-			for(auto current : ui->fileItemsByID)
+			if(projIDs.count(current.first) == 0)
 			{
-				if(fileIDs.count(current.first) > 0)
-				{
-					current.second->setHidden(false);
-					current.second->getProjectItem()->setHidden(false);
-				}
-				else
-				{
-					current.second->setHidden(true);
-				}
+				current.second->setHidden(true);
 			}
+		}
+
+		ui->projectTree->blockSignals(false);
+		ui->treeStack->setCurrentIndex(0);
 	}
 
-	ui->treeWidget->blockSignals(false);
 
 }
 
@@ -1125,6 +1218,8 @@ void CDatabasePanel::on_actionClearSearch_triggered()
 	ui->searchLineEdit->clear();
 
 	ui->unhideAll();
+
+	ui->treeStack->setCurrentIndex(0);
 }
 
 void CDatabasePanel::on_actionDeleteRemote_triggered()
@@ -1136,7 +1231,7 @@ void CDatabasePanel::on_actionDeleteRemote_triggered()
 
 		if(response == QMessageBox::Yes)
 		{
-			int projID = static_cast<ProjectItem*>(ui->treeWidget->selectedItems()[0])->getProjectID();
+			int projID = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0])->getProjectID();
 
 			repoHandler->deleteProject(projID);
 		}
@@ -1152,7 +1247,7 @@ void CDatabasePanel::on_actionModify_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
-		int projID = static_cast<ProjectItem*>(ui->treeWidget->selectedItems()[0])->getProjectID();
+		int projID = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0])->getProjectID();
 
 		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID); //, m_wnd->GetProject());
 		dlg.setName(ui->projectName->text());
@@ -1229,6 +1324,90 @@ void CDatabasePanel::on_actionModify_triggered()
 		box.setText("You do not have permission to modify the repository.");
 	}
 
+}
+
+void CDatabasePanel::on_actionFindInTree_triggered()
+{
+	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0]);
+
+	ui->projectTree->setCurrentItem(item->getRealItem());
+
+	ui->treeStack->setCurrentIndex(0);
+}
+
+void CDatabasePanel::UpdateInfo(CustomTreeWidgetItem *item)
+{
+	ProjectItem* projItem = static_cast<ProjectItem*>(item->getProjectItem());
+
+	ui->unauthorized->setHidden(projItem->isAuthorized());
+
+	// Display the project info
+	dbHandler->GetProjectData(projItem->getProjectID());
+
+	// Get the project tags
+	ui->currentTags.clear();
+	dbHandler->GetProjectTags(projItem->getProjectID());
+	ui->setProjectTags();
+
+	ui->projectInfoBox->getToolItem(0)->show();
+
+	//Get the project publications
+	ui->projectPubs->clear();
+	dbHandler->GetProjectPubs(projItem->getProjectID());
+
+	if(ui->projectPubs->count() == 0)
+	{
+		ui->projectInfoBox->getToolItem(1)->hide();
+	}
+	else
+	{
+		ui->projectInfoBox->getToolItem(1)->show();
+	}
+
+
+	// If a file was selected, show update the file info, otherwise hide it
+	if(item->type() == FILEITEM)
+	{
+		dbHandler->GetFileData(static_cast<FileItem*>(item)->getFileID());
+
+		// Get the file tags
+		ui->currentFileTags.clear();
+		dbHandler->GetFileTags(static_cast<FileItem*>(item)->getFileID());
+		ui->setFileTags();
+
+		ui->projectInfoBox->getToolItem(2)->show();
+	}
+	else
+	{
+		ui->projectInfoBox->getToolItem(2)->hide();
+	}
+
+
+	ui->actionDownload->setDisabled(false);
+	if(item->LocalCopy())
+	{
+		ui->actionOpen->setDisabled(false);
+		ui->actionOpenFileLocation->setDisabled(false);
+		ui->actionDelete->setDisabled(false);
+	}
+	else
+	{
+		ui->actionOpen->setDisabled(true);
+		ui->actionOpenFileLocation->setDisabled(true);
+		ui->actionDelete->setDisabled(true);
+	}
+
+	ui->actionDeleteRemote->setDisabled(true);
+	ui->actionModify->setDisabled(true);
+
+	if(item->type() == PROJECTITEM)
+	{
+		if(static_cast<ProjectItem*>(item)->ownedByUser())
+		{
+			ui->actionDeleteRemote->setDisabled(false);
+			ui->actionModify->setDisabled(false);
+		}
+	}
 }
 
 void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item)
@@ -1318,6 +1497,15 @@ void CDatabasePanel::DeleteItem(CustomTreeWidgetItem *item)
 		return;
 	}
 
+	// Update fileSearchItem's color if there's a current file search
+	if(ui->treeStack->currentIndex() == 1)
+	{
+		if(ui->fileSearchTree->selectedItems().count() > 0)
+		{
+			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->UpdateColor();
+		}
+	}
+
 	QString filename = dbHandler->FullFileNameFromID(ID, type);
 
 	QFile::remove(filename);
@@ -1353,7 +1541,7 @@ void CDatabasePanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 
 void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 {
-	if(ui->treeWidget->selectedItems()[0]->type() == 0)
+	if(ui->projectTree->selectedItems()[0]->type() == 0)
 	{
 		ui->projectInfoBox->getToolItem(0)->hide();
 		ui->projectInfoBox->getToolItem(1)->hide();
@@ -1370,85 +1558,16 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	}
 
 	// Find the project item
-	CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(ui->treeWidget->selectedItems()[0]);
-	ProjectItem* projItem = static_cast<ProjectItem*>(item->getProjectItem());
+	CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(ui->projectTree->selectedItems()[0]);
 
-	ui->unauthorized->setHidden(projItem->isAuthorized());
-
-	// Display the project info
-	dbHandler->GetProjectData(projItem->getProjectID());
-
-	// Get the project tags
-	ui->currentTags.clear();
-	dbHandler->GetProjectTags(projItem->getProjectID());
-	ui->setProjectTags();
-
-	ui->projectInfoBox->getToolItem(0)->show();
-
-	//Get the project publications
-	ui->projectPubs->clear();
-	dbHandler->GetProjectPubs(projItem->getProjectID());
-
-	if(ui->projectPubs->count() == 0)
-	{
-		ui->projectInfoBox->getToolItem(1)->hide();
-	}
-	else
-	{
-		ui->projectInfoBox->getToolItem(1)->show();
-	}
-
-
-	// If a file was selected, show update the file info, otherwise hide it
-	if(item->type() == FILEITEM)
-	{
-		dbHandler->GetFileData(static_cast<FileItem*>(item)->getFileID());
-
-		// Get the file tags
-		ui->currentFileTags.clear();
-		dbHandler->GetFileTags(static_cast<FileItem*>(item)->getFileID());
-		ui->setFileTags();
-
-		ui->projectInfoBox->getToolItem(2)->show();
-	}
-	else
-	{
-		ui->projectInfoBox->getToolItem(2)->hide();
-	}
-
-
-	ui->actionDownload->setDisabled(false);
-	if(item->LocalCopy())
-	{
-		ui->actionOpen->setDisabled(false);
-		ui->actionOpenFileLocation->setDisabled(false);
-		ui->actionDelete->setDisabled(false);
-	}
-	else
-	{
-		ui->actionOpen->setDisabled(true);
-		ui->actionOpenFileLocation->setDisabled(true);
-		ui->actionDelete->setDisabled(true);
-	}
-
-	ui->actionDeleteRemote->setDisabled(true);
-	ui->actionModify->setDisabled(true);
-
-	if(item->type() == PROJECTITEM)
-	{
-		if(static_cast<ProjectItem*>(item)->ownedByUser())
-		{
-			ui->actionDeleteRemote->setDisabled(false);
-			ui->actionModify->setDisabled(false);
-		}
-	}
+	UpdateInfo(item);
 }
 
 void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 {
-	if(ui->treeWidget->itemAt(pos)->type() == 0) return;
+	if(ui->projectTree->itemAt(pos)->type() == 0) return;
 
-	CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(ui->treeWidget->itemAt(pos));
+	CustomTreeWidgetItem* item = static_cast<CustomTreeWidgetItem*>(ui->projectTree->itemAt(pos));
 	item->setSelected(true);
 
 	QMenu menu(this);
@@ -1474,7 +1593,35 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 			}
 	}
 
-	menu.exec(ui->treeWidget->viewport()->mapToGlobal(pos));
+	menu.exec(ui->projectTree->viewport()->mapToGlobal(pos));
+}
+
+void CDatabasePanel::on_fileSearchTree_itemSelectionChanged()
+{
+	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0]);
+
+	UpdateInfo(item->getRealItem());
+}
+
+void CDatabasePanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos)
+{
+	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->itemAt(pos));
+	item->setSelected(true);
+
+	QMenu menu(this);
+
+	menu.addAction(ui->actionFindInTree);
+
+	menu.addAction(ui->actionDownload);
+
+	if(item->getRealItem()->LocalCopy())
+	{
+		menu.addAction(ui->actionDelete);
+		menu.addAction(ui->actionOpen);
+		menu.addAction(ui->actionOpenFileLocation);
+	}
+
+	menu.exec(ui->fileSearchTree->viewport()->mapToGlobal(pos));
 }
 
 void CDatabasePanel::on_projectTags_linkActivated(const QString& link)
