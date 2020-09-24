@@ -842,14 +842,13 @@ void CWzdUpload::accept()
 		return;
 	}
 
-	QString username = getOwner();
 	QString name = getName();
 	QString category = getCategory();
-	if(!dbHandler->isValidUpload(username, name, category))
+	if(!dbHandler->isValidUpload(name, category))
 	{
 		if(!ui->m_modify || dbHandler->ProjectNameFromID(ui->m_modify) != name)
 		{
-			QMessageBox::critical(this, "Upload", "You already have a project with that name in this category."
+			QMessageBox::critical(this, "Upload", "A project with this name already exists in this category."
 					"\n\nPlease choose a different project name.");
 
 			while(currentId() != 0)

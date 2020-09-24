@@ -198,10 +198,6 @@ void CRepoConnectionHandler::getFile(int id, int type)
 
 		QObject::connect(reply, &QNetworkReply::downloadProgress, imp->dbPanel, &CDatabasePanel::loadingPageProgress);
 		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
-
-//		QObject::connect(reply, &QNetworkReply::downloadProgress, this, &CRepoConnectionHandler::progress);
-
-//		imp->m_wnd->ShowProgress(true, "Downloading...");
 	}
 
 }
@@ -625,11 +621,13 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 		int fileID = r->rawHeader(QByteArray("fileID")).toInt();
 		int IDType = r->rawHeader(QByteArray("IDType")).toInt();
 
-		QString path = imp->dbPanel->GetRepositoryFolder() + "/";
-		path += imp->dbHandler->FilePathFromID(fileID, IDType);
+//		QString path = imp->dbPanel->GetRepositoryFolder() + "/";
+//		path += imp->dbHandler->FilePathFromID(fileID, IDType);
+//
+//		QString filename = path + "/";
+//		filename += imp->dbHandler->FileNameFromID(fileID, IDType);
 
-		QString filename = path + "/";
-		filename += imp->dbHandler->FileNameFromID(fileID, IDType);
+		QString filename = imp->dbHandler->FullFileNameFromID(fileID, IDType);
 
 		QFileInfo info(filename);
 
