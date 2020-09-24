@@ -77,7 +77,7 @@ public:
 	int ProjectIDFromFileID(int ID);
 	int CategoryIDFromName(std::string name);
 
-	bool isValidUpload(QString& username, QString& projectName, QString& category);
+	bool isValidUpload(QString& projectName, QString& category);
 	qint64 currentProjectsSize(QString username);
 	qint64 projectsSize(int ID);
 

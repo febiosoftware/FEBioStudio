@@ -271,7 +271,7 @@ public:
 		// If it's an entire project file
 		if(type == FULL)
 		{
-			query += "SELECT users.username FROM projects JOIN users ON projects.owner = users.ID WHERE projects.ID = ";
+			query += "SELECT categories.category, FROM projects JOIN categories ON projects.category = categories.ID WHERE projects.ID = ";
 			query += std::to_string(ID);
 
 			getTable(query, &table, &rows, &cols);
@@ -284,7 +284,7 @@ public:
 		// If it's a single file from a project
 		else
 		{
-			query += "SELECT users.username, projects.name FROM projects JOIN users ON projects.owner = users.ID JOIN filenames ON projects.ID = filenames.project WHERE filenames.ID = ";
+			query += "SELECT categories.category, projects.name FROM projects JOIN categories ON projects.category = categories.ID JOIN filenames ON projects.ID = filenames.project WHERE filenames.ID = ";
 			query += std::to_string(ID);
 
 			getTable(query, &table, &rows, &cols);
@@ -402,14 +402,14 @@ public:
 		return catID;
 	}
 
-	bool isValidUpload(QString& username, QString& projectName, QString& category)
+	bool isValidUpload(QString& projectName, QString& category)
 	{
 		char **table;
 		int rows, cols;
 
-		std::string query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner = users.ID JOIN "
-				"categories ON projects.category = categories.ID WHERE users.username = '%1' AND projects.name = '%2' "
-				"AND categories.category = '%3'").arg(username).arg(projectName).arg(category).toStdString();
+		std::string query = QString("SELECT projects.ID FROM projects JOIN categories ON "
+				"projects.category = categories.ID WHERE projects.name = '%1' "
+				"AND categories.category = '%3'").arg(projectName).arg(category).toStdString();
 
 		getTable(query, &table, &rows, &cols);
 
@@ -858,9 +858,9 @@ int CLocalDatabaseHandler::CategoryIDFromName(std::string name)
 	return imp->CategoryIDFromName(name);
 }
 
-bool CLocalDatabaseHandler::isValidUpload(QString& username, QString& projectName, QString& category)
+bool CLocalDatabaseHandler::isValidUpload(QString& projectName, QString& category)
 {
-	return imp->isValidUpload(username, projectName, category);
+	return imp->isValidUpload(projectName, category);
 }
 
 qint64 CLocalDatabaseHandler::currentProjectsSize(QString username)
