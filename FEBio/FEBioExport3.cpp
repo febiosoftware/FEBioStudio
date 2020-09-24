@@ -590,6 +590,13 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 					FESurface* ps = po->GetFESurface(j);
 					AddSurface(ps->GetName(), ps);
 				}
+
+				int neset = po->FEParts();
+				for (int j = 0; j < neset; ++j)
+				{
+					FEPart* pg = po->GetFEPart(j);
+					AddElemSet(pg->GetName(), pg);
+				}
 			}
 		}
 	}
