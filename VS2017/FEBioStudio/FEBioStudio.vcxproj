@@ -437,7 +437,7 @@
     <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\UnitParser.cpp" />
     <ClCompile Include="..\..\FEBioStudio\units.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\welcomPage.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\welcomePage.cpp" />
     <ClCompile Include="..\..\FEBioStudio\WrapLabel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\WzdUpload.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ZipFiles.cpp" />
