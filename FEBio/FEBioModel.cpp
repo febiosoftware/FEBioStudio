@@ -447,6 +447,9 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 	std::string name = surface->name();
 	ps->SetName(name.c_str());
 
+	// increase ref counter on surface
+	surface->m_refs++;
+
 	// all done
 	return ps;
 }
@@ -723,24 +726,6 @@ void FEBioModel::UpdateGeometry()
 
 			std::string name = elSet.name();
 			gpart.SetName(name.c_str());
-		}
-
-		GModel& mdl = GetFEModel().GetModel();
-
-		// make unused surfaces into named selections.
-		// This can happen when surfaces are used in features that 
-		// are not supported. The features will be skipped, but we may 
-		// want to retain the surfaces.
-		for (int i = 0; i < part->Surfaces(); ++i)
-		{
-			Surface& surf = part->GetSurface(i);
-			if (surf.m_refs == 0)
-			{
-				FESurface* psurf = instance.BuildFESurface(surf.name().c_str());
-				psurf->SetName(surf.name());
-
-				po->AddFESurface(psurf);
-			}
 		}
 	}
 }

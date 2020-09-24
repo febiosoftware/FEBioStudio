@@ -435,6 +435,28 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 		}
 	}
 
+	// make unused surfaces into named selections.
+	// This can happen when surfaces are used in features that 
+	// are not supported. The features will be skipped, but we may 
+	// want to retain the surfaces.
+	for (int i = 0; i < m_febio->Instances(); ++i)
+	{
+		// get the next instance
+		FEBioModel::PartInstance& partInstance = *m_febio->GetInstance(i);
+		FEBioModel::Part* part = partInstance.GetPart();
+		GMeshObject* po = partInstance.GetGObject();
+		for (int j = 0; j < part->Surfaces(); ++j)
+		{
+			FEBioModel::Surface& surf = part->GetSurface(j);
+			if (surf.m_refs == 0)
+			{
+				FESurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
+				psurf->SetName(surf.name());
+				po->AddFESurface(psurf);
+			}
+		}
+	}
+
 	// add all the parts to the model
 	for (int i = 0; i<m_febio->Instances(); ++i)
 	{
