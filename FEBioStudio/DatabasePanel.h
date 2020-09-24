@@ -42,6 +42,8 @@ class QTreeWidgetItem;
 class QLabel;
 class QProgressBar;
 class CustomTreeWidgetItem;
+class ProjectItem;
+class FileItem;
 class ZipThread;
 
 enum FILETYPE {FULL=0, PART=1};
@@ -88,6 +90,7 @@ private slots:
 	void on_connectButton_clicked();
 	void on_loginButton_clicked();
 	void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
+	void on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
 	void on_actionRefresh_triggered();
 	void on_actionDownload_triggered();
 	void on_actionOpen_triggered();
@@ -98,12 +101,16 @@ private slots:
 	void on_actionClearSearch_triggered();
 	void on_actionDeleteRemote_triggered();
 	void on_actionModify_triggered();
+	void on_actionFindInTree_triggered();
 	void on_treeWidget_itemSelectionChanged();
 	void on_treeWidget_customContextMenuRequested(const QPoint &pos);
+	void on_fileSearchTree_itemSelectionChanged();
+	void on_fileSearchTree_customContextMenuRequested(const QPoint &pos);
 	void on_projectTags_linkActivated(const QString& link);
 	void on_fileTags_linkActivated(const QString& link);
 
 private:
+	void UpdateInfo(CustomTreeWidgetItem *item);
 	void DownloadItem(CustomTreeWidgetItem *item);
 	void OpenItem(CustomTreeWidgetItem *item);
 	void DeleteItem(CustomTreeWidgetItem *item);
