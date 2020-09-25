@@ -1797,4 +1797,8 @@ void CDatabasePanel::on_fileTags_linkActivated(const QString& link) {}
 void CDatabasePanel::updateUploadReady(bool ready) {}
 void CDatabasePanel::updateModifyReady(bool ready) {}
 void CDatabasePanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal) {}
+void CDatabasePanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {}
+void CDatabasePanel::on_actionFindInTree_triggered() {}
+void CDatabasePanel::on_fileSearchTree_itemSelectionChanged() {}
+void CDatabasePanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos) {}
 #endif

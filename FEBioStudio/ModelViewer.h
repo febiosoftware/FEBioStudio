@@ -125,6 +125,7 @@ public slots:
 	void OnSelectDiscreteObject();
 	void OnDetachDiscreteObject();
 	void OnHidePart();
+	void OnSelectPartElements();
 	void OnShowPart();
 	void OnSelectPart();
 	void OnSelectSurface();
