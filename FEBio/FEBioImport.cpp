@@ -366,13 +366,15 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 		FEBioModel::PARAM_CURVE pc = m_febio->GetParamCurve(i);
 		assert(pc.m_lc >= 0);
 		assert(pc.m_p || pc.m_plc);
-		if (pc.m_lc >= 0)
+		if ((pc.m_lc >= 0) && (pc.m_lc < m_febio->LoadCurves()))
 		{
-			if (pc.m_p  ) pc.m_p->SetLoadCurve(m_febio->GetLoadCurve(pc.m_lc));
+			if (pc.m_p)
+			{
+				pc.m_p->SetLoadCurve(m_febio->GetLoadCurve(pc.m_lc));
+			}
 			if (pc.m_plc) 
 			{
-				assert(pc.m_lc >= 0);
-				if (pc.m_lc >= 0) *pc.m_plc = m_febio->GetLoadCurve(pc.m_lc);
+				*pc.m_plc = m_febio->GetLoadCurve(pc.m_lc);
 			}
 		}
 	}
@@ -451,8 +453,11 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 			if (surf.m_refs == 0)
 			{
 				FESurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
-				psurf->SetName(surf.name());
-				po->AddFESurface(psurf);
+				if (psurf)
+				{
+					psurf->SetName(surf.name());
+					po->AddFESurface(psurf);
+				}
 			}
 		}
 	}
