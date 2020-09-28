@@ -357,16 +357,20 @@ public:
 		setPalette(qpalette);
 	}
 
-	bool hasHeightForWidth() const override
+	void setText(const QString &text)
 	{
-		return true;
+		QTextEdit::setText(text);
+
+		document()->setTextWidth(size().width());
+
+		setMinimumHeight(document()->size().height());
 	}
 
-	int heightForWidth(int w) const override
+	void resizeEvent(QResizeEvent *event) override
 	{
-		document()->setTextWidth(w);
+		document()->setTextWidth(event->size().width());
 
-		return document()->size().height();
+		setMinimumHeight(document()->size().height());
 	}
 };
 
@@ -392,12 +396,12 @@ public:
 
 	QFormLayout* projectInfoForm;
 	QLabel* projectName;
-	WrapLabel* projectDesc;
+	DisplayTextEdit* projectDesc;
 	QLabel* projectOwner;
 	TagLabel* projectTags;
 
 	QFormLayout* fileInfoForm;
-	QLabel* filenameLabel;
+	DisplayTextEdit* filenameLabel;
 	DisplayTextEdit* fileDescLabel;
 	TagLabel* fileTags;
 
@@ -572,7 +576,7 @@ public:
 		font.setPointSize(14);
 		projectName->setFont(font);
 
-		modelInfoLayout->addWidget(projectDesc = new WrapLabel);
+		modelInfoLayout->addWidget(projectDesc = new DisplayTextEdit);
 
 		QFrame* line = new QFrame();
 		line->setFrameShape(QFrame::HLine);
@@ -598,8 +602,7 @@ public:
 
 		fileInfoForm = new QFormLayout;
 		fileInfoForm->setHorizontalSpacing(10);
-		fileInfoForm->addRow("Filename:", filenameLabel = new QLabel);
-		filenameLabel->setWordWrap(true);
+		fileInfoForm->addRow("Filename:", filenameLabel = new DisplayTextEdit);
 		fileInfoForm->addRow("Description:", fileDescLabel = new DisplayTextEdit);
 		fileInfoLayout->addLayout(fileInfoForm);
 
@@ -1256,7 +1259,7 @@ void CDatabasePanel::on_actionModify_triggered()
 		QStringList categories = GetCategories();
 		dlg.setCategories(categories);
 
-		dlg.setDescription(ui->projectDesc->text());
+		dlg.setDescription(ui->projectDesc->toPlainText());
 		dlg.setTags(ui->currentTags);
 		dlg.setPublications(ui->projectPubs->getPublications());
 
@@ -1333,6 +1336,8 @@ void CDatabasePanel::on_actionFindInTree_triggered()
 	ui->projectTree->setCurrentItem(item->getRealItem());
 
 	ui->treeStack->setCurrentIndex(0);
+
+	ui->searchLineEdit->clear();
 }
 
 void CDatabasePanel::UpdateInfo(CustomTreeWidgetItem *item)

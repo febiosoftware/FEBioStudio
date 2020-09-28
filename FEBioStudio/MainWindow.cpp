@@ -129,21 +129,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// read the theme option, before we build the UI
 	readThemeSetting();
 
-	// Instantiate IconProvider singleton
-	CIconProvider::Instantiate(ui->m_theme, devicePixelRatio());
-
-	// setup the GUI
-	ui->setupUi(this);
-
-	// read the settings
-	if (reset == false)
-	{
-		readSettings();
-	}
-
-	// get the welcome page
-	ui->welcome->Refresh();
-
 	// activate dark style
 	if (ui->m_theme == 1)
 	{
@@ -176,6 +161,21 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
 #endif
+
+	// Instantiate IconProvider singleton
+	CIconProvider::Instantiate(ui->m_theme, devicePixelRatio());
+
+	// setup the GUI
+	ui->setupUi(this);
+
+	// read the settings
+	if (reset == false)
+	{
+		readSettings();
+	}
+
+	// get the welcome page
+	ui->welcome->Refresh();
 
 	// allow drop events
 	setAcceptDrops(true);
