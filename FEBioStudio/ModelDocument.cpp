@@ -638,7 +638,7 @@ void CModelDocument::GrowNodeSelection(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void CModelDocument::GrowFaceSelection(FEMeshBase* pm)
+void CModelDocument::GrowFaceSelection(FEMeshBase* pm, bool respectPartitions)
 {
 	int N = pm->Faces(), i;
 	for (i = 0; i<N; ++i) pm->Face(i).m_ntag = 0;
@@ -651,7 +651,17 @@ void CModelDocument::GrowFaceSelection(FEMeshBase* pm)
 			int n = f.Nodes();
 			if (n == 6) n = 3;
 			if (n == 8) n = 4;
-			for (int j = 0; j<n; ++j) if (f.m_nbr[j] >= 0) pm->Face(f.m_nbr[j]).m_ntag = 1;
+			for (int j = 0; j < n; ++j)
+			{
+				if (f.m_nbr[j] >= 0)
+				{
+					FEFace& fj = pm->Face(f.m_nbr[j]);
+					if ((respectPartitions == false) || (f.m_gid == fj.m_gid))
+					{
+						fj.m_ntag = 1;
+					}
+				}
+			}
 		}
 	}
 
@@ -669,7 +679,7 @@ void CModelDocument::GrowFaceSelection(FEMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void CModelDocument::GrowElementSelection(FEMesh* pm)
+void CModelDocument::GrowElementSelection(FEMesh* pm, bool respectPartitions)
 {
 	int N = pm->Elements(), i;
 	for (i = 0; i<N; ++i) pm->Element(i).m_ntag = 0;
@@ -679,8 +689,19 @@ void CModelDocument::GrowElementSelection(FEMesh* pm)
 		if (e.IsSelected())
 		{
 			e.m_ntag = 1;
-			if (e.IsSolid()) for (int j = 0; j<e.Faces(); ++j) if (e.m_nbr[j] >= 0) pm->Element(e.m_nbr[j]).m_ntag = 1;
-			if (e.IsShell()) for (int j = 0; j<e.Edges(); ++j) if (e.m_nbr[j] >= 0) pm->Element(e.m_nbr[j]).m_ntag = 1;
+			int ne = 0;
+			if (e.IsSolid()) ne = e.Faces();
+			if (e.IsShell()) ne = e.Edges();
+			
+			for (int j = 0; j < ne; ++j) 
+				if (e.m_nbr[j] >= 0)
+				{
+					FEElement& ej = pm->Element(e.m_nbr[j]);
+					if ((respectPartitions == false) || (e.m_gid == ej.m_gid))
+					{
+						ej.m_ntag = 1;
+					}
+				}
 		}
 	}
 

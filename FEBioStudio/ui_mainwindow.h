@@ -381,6 +381,8 @@ public:
 
 		QAction* actionFace2Elems        = addAction("Face to Element Selection", "actionFaceToElem");
 		QAction* actionSelectOverlap     = addAction("Select surface overlap ...", "actionSelectOverlap");
+		QAction* actionGrowSelection     = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier + Qt::Key_Plus);
+		QAction* actionShrinkSelection   = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier + Qt::Key_Minus);
 
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
@@ -606,6 +608,8 @@ public:
 		QMenu* moreSelection = new QMenu("More selection options");
 		moreSelection->addAction(actionFace2Elems);
 		moreSelection->addAction(actionSelectOverlap);
+		moreSelection->addAction(actionGrowSelection);
+		moreSelection->addAction(actionShrinkSelection);
 
 		// Edit menu
 		menuBar->addAction(menuEdit->menuAction());

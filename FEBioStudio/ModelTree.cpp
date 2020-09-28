@@ -1188,7 +1188,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		t3->setExpanded(false);
 
 		t3 = AddTreeItem(t2, "Surfaces", MT_FACE_LIST, po->Faces(), po, 0, 0, OBJECT_NOT_EDITABLE);
-		for (int j = 0; j<po->Faces(); ++j)
+		int NF = po->Faces();
+		if (NF > 1000) NF = 1000;
+		for (int j = 0; j<NF; ++j)
 		{
 			GFace* pg = po->Face(j);
 			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_SURFACE, 0, pg);
@@ -1197,7 +1199,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		t3->setExpanded(false);
 
 		t3 = AddTreeItem(t2, "Edges", MT_EDGE_LIST, po->Edges(), po, 0, 0, OBJECT_NOT_EDITABLE);
-		for (int j=0; j<po->Edges(); ++j)
+		int NE = po->Edges();
+		if (NE > 1000) NE = 1000;
+		for (int j=0; j<NE; ++j)
 		{
 			GEdge* pg = po->Edge(j);
 			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_EDGE, 0, pg);
@@ -1206,7 +1210,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		t3->setExpanded(false);
 
 		t3 = AddTreeItem(t2, "Nodes", MT_NODE_LIST, po->Nodes(), po, 0, 0, OBJECT_NOT_EDITABLE);
-		for (int j = 0; j<po->Nodes(); ++j)
+		int NN = po->Nodes();
+		if (NN > 1000) NN = 1000;
+		for (int j = 0; j<NN; ++j)
 		{
 			GNode* pg = po->Node(j);
 			if ((pg->Type() == 0) || (pg->Type() == NODE_VERTEX))

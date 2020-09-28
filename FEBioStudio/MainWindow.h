@@ -338,6 +338,8 @@ public slots:
 	void on_actionEditProject_triggered();
 	void on_actionFaceToElem_triggered();
 	void on_actionSelectOverlap_triggered();
+	void on_actionGrowSelection_triggered();
+	void on_actionShrinkSelection_triggered();
 
 	void on_actionAddBC_triggered();
 	void on_actionAddNodalLoad_triggered();
