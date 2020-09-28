@@ -794,7 +794,7 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 //		sort(items.begin(), items.end());
 //		unique(items.begin(), items.end());
 
-		for (int i=0; i<(int)items.size();++i) sel->addData(QString::number(items[i]), items[i]);
+		for (int i=0; i<(int)items.size();++i) sel->addData(QString::number(items[i]), items[i], 0, false);
 	}
 }
 

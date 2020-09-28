@@ -193,14 +193,17 @@ void CSelectionBox::clearData()
 	m_data.clear();
 }
 
-void CSelectionBox::addData(const QString& item, int data, int fmt)
+void CSelectionBox::addData(const QString& item, int data, int fmt, bool checkForDuplicates)
 {
 	// make sure the data does not exist yet
-	for (int i=0; i<m_data.size(); ++i)
-		if (m_data[i] == data)
-		{
-			return;
-		}
+	if (checkForDuplicates)
+	{
+		for (int i = 0; i < m_data.size(); ++i)
+			if (m_data[i] == data)
+			{
+				return;
+			}
+	}
 
 	m_data.push_back(data);
 	ui->list->addItem(item);

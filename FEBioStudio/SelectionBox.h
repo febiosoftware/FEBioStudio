@@ -47,7 +47,7 @@ public:
 	void setType(const QString& name);
 
 	void clearData();
-	void addData(const QString& item, int data, int fmt = 0);
+	void addData(const QString& item, int data, int fmt = 0, bool checkForDuplicates = true);
 	void addData(const vector<int>& data);
 
 	void removeData(int ndata);

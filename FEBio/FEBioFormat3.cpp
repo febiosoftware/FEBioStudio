@@ -409,7 +409,7 @@ void FEBioFormat3::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 	if (name.empty() == false)
 	{
 		vector<int> nodeList(nn);
-		for (int i = 0; i < nn; ++i) nodeList[i] = nodes[i].id;
+		for (int i = 0; i < nn; ++i) nodeList[i] = nodes[i].id - 1;
 		FEBioModel::NodeSet nset(name, nodeList);
 		part->AddNodeSet(nset);
 	}
