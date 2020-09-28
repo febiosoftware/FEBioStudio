@@ -40,6 +40,8 @@ public:
 	// create data field
 	void Create(double v = 0.0);
 
+	void Create(FENodeSet* nset, double v = 0.0);
+
 	// size of data field
 	int Size() const { return (int)m_data.size(); }
 

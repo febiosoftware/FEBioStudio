@@ -367,28 +367,51 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-// TODO: Create a node set if the name attribute is defined
 void FEBioFormat3::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
-	// first we need to figure out how many nodes there are
-	int nn = tag.children();
+	vector<FEBioModel::NODE> nodes; nodes.reserve(10000);
+
+	// create a node set if the name is definde
+	const char* szname = tag.AttributeValue("name", true);
+	std::string name;
+	if (szname) name = szname;
+
+	// read nodal coordinates
+	++tag;
+	do
+	{
+		FEBioModel::NODE node;
+		tag.value(node.r);
+		int nid = tag.AttributeValue<int>("id", -1); assert(nid != -1);
+		node.id = nid;
+
+		nodes.push_back(node);
+		++tag;
+	} while (!tag.isend());
 
 	// create nodes
+	int nn = nodes.size();
 	FEMesh& mesh = *part->GetFEMesh();
 	int N0 = mesh.Nodes();
 	mesh.Create(N0 + nn, 0);
 
-	// read nodal coordinates
-	++tag;
-	for (int i = 0; i<nn; ++i)
+	for (int i = 0; i < nn; ++i)
 	{
+		FEBioModel::NODE& nd = nodes[i];
 		FENode& node = mesh.Node(N0 + i);
-		tag.value(node.r);
-		int nid = tag.AttributeValue<int>("id", -1); assert(nid != -1);
-		node.m_ntag = nid;
-		++tag;
+		node.m_ntag = nd.id;
+		node.r = nd.r;
+	}
+
+	// create the nodeset 
+	if (name.empty() == false)
+	{
+		vector<int> nodeList(nn);
+		for (int i = 0; i < nn; ++i) nodeList[i] = nodes[i].id;
+		FEBioModel::NodeSet nset(name, nodeList);
+		part->AddNodeSet(nset);
 	}
 }
 

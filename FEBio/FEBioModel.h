@@ -448,6 +448,7 @@ public:
 
 public:
 	int GetMaterialIndex(const char* szname);
+	FENodeSet* FindNodeSet(const char* szname);
 	Surface* FindSurface(const char* szname);
 	FENodeSet* BuildFENodeSet(const char* szname);
 	FESurface* BuildFESurface(const char* szname);

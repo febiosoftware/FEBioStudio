@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
+#include <MeshTools/FENodeData.h>
 #include <MeshTools/GModel.h>
 #include <assert.h>
 #include <sstream>
@@ -158,12 +159,16 @@ bool FEBioFormat25::ParseGeometrySection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-// TODO: Create a node set if the name attribute is defined
 void FEBioFormat25::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
 	vector<FEBioModel::NODE> nodes; nodes.reserve(10000);
+
+	// create a node set if the name is definde
+	const char* szname = tag.AttributeValue("name", true);
+	std::string name;
+	if (szname) name = szname;
 
 	// read nodal coordinates
 	++tag;
@@ -191,6 +196,15 @@ void FEBioFormat25::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 		FENode& node = mesh.Node(N0 + i);
 		node.m_ntag = nd.id;
 		node.r = nd.r;
+	}
+
+	// create the nodeset 
+	if (name.empty() == false)
+	{
+		vector<int> nodeList(nn);
+		for (int i = 0; i < nn; ++i) nodeList[i] = nodes[i].id;
+		FEBioModel::NodeSet nset(name, nodeList);
+		part->AddNodeSet(nset);
 	}
 }
 
@@ -632,14 +646,17 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
 	++tag;
 	do
 	{
-		if (tag == "ElementData")
+		if (tag == "NodeData")
+		{
+			ParseNodeData(tag);
+		}
+		else if (tag == "ElementData")
 		{
 			ParseElementData(tag);
         }
 		else if (tag == "SurfaceData")
 		{
 			ParseSurfaceData(tag);
-	
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -671,6 +688,44 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
             e0.m_fiber = e1.m_fiber;
 		}
 	}
+
+	return true;
+}
+
+bool FEBioFormat25::ParseNodeData(XMLTag& tag)
+{
+	// Read the data and store it as a mesh data section
+	FEBioModel& feb = GetFEBioModel();
+
+	// Make sure to skip generators
+	const char* szgen = tag.AttributeValue("generator", true);
+	if (szgen) {
+		ParseUnknownTag(tag); return false;
+	}
+
+	// read the nodal data
+	const char* szset = tag.AttributeValue("node_set");
+	FENodeSet* pg = feb.BuildFENodeSet(szset);
+	if (pg == nullptr) { ParseUnknownTag(tag); return false; }
+
+	// get the name
+	const char* szname = tag.AttributeValue("name");
+
+	FEMesh* mesh = pg->GetMesh();
+	FENodeData* pd = mesh->AddNodeDataField(szname, pg, FEMeshData::DATA_SCALAR);
+
+	double val;
+	int lid;
+	++tag;
+	do
+	{
+		tag.AttributePtr("lid")->value(lid);
+		tag.value(val);
+
+		pd->set(lid - 1, val);
+
+		++tag;
+	} while (!tag.isend());
 
 	return true;
 }
@@ -792,7 +847,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		FEBioModel& feb = GetFEBioModel();
 
 		// Make sure to skip generators
-		const char* szgen = tag.AttributeValue("generator");
+		const char* szgen = tag.AttributeValue("generator", true);
 		if (szgen) ParseUnknownTag(tag);
 		else {
 			const char* szset = tag.AttributeValue("elem_set");
@@ -1066,13 +1121,40 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "scale")
 		{
-			double scale;
-			tag.value(scale);
-			pbc->SetScaleFactor(scale);
+			const char* sztype = tag.AttributeValue("type", true);
+			if (sztype && (strcmp(sztype, "map") == 0))
+			{
+				Param* pp = pbc->GetParam("scale"); assert(pp);
+				if (pp && pp->IsVariable())
+				{
+					pp->SetParamType(Param_STRING);
+					pp->SetStringValue(tag.szvalue());
+				}
+			}
+			else
+			{
+				double scale;
+				tag.value(scale);
+				pbc->SetScaleFactor(scale);
+			}
 
 			int lc = tag.AttributeValue<int>("lc", -1);
 			if (lc != -1) febio.AddParamCurve(pbc->GetLoadCurve(), lc-1);
 		}
+		else if (tag == "value")
+		{
+			// NOTE: This parameter is deprecated, but we support it here to assist in 
+			//       converting older files. The map basically gets assigned to the "scale" parameter.
+			const char* sznodedata = tag.AttributeValue("node_data", true);
+			if (sznodedata == nullptr) sznodedata = tag.szvalue();
+			Param* pp = pbc->GetParam("scale"); assert(pp);
+			if (pp && pp->IsVariable())
+			{
+				pp->SetParamType(Param_STRING);
+				pp->SetStringValue(sznodedata);
+			}
+		}
+		else ParseUnknownTag(tag);
 		++tag;
 	}
 	while (!tag.isend());

@@ -56,8 +56,9 @@ private:
 
 private:
 	// mesh data section parsers
-	bool ParseElementData(XMLTag& tag);
+	bool ParseNodeData(XMLTag& tag);
 	bool ParseSurfaceData(XMLTag& tag);
+	bool ParseElementData(XMLTag& tag);
 
 private:
 	// geometry parsing functions (version 2.0 and up)
