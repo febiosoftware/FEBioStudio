@@ -483,6 +483,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 			return;
 		}
 
+		// when reading an Abaqus model, we process the physics
 		abaqusReader->m_breadPhysics = true;
 		reader = abaqusReader;
 	}

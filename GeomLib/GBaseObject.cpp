@@ -218,12 +218,14 @@ void GBaseObject::AddFace(GFace* f)
 //-----------------------------------------------------------------------------
 int GBaseObject::AddNode(GNode* n)
 {
+	/*
 #ifdef _DEBUG
 	for (int i=0; i<m_Node.size(); ++i)
 	{
 		assert(m_Node[i] != n);
 	}
 #endif
+*/
 	n->SetID(GNode::CreateUniqueID());
 	n->SetLocalID(m_Node.size());
 	char sz[256] = {0};
