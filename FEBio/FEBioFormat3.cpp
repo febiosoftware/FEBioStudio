@@ -1273,7 +1273,6 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	++tag;
 	do
 	{
-		++tag;
 		if (tag == "dof")
 		{
 			// determine bc
@@ -1286,6 +1285,7 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 			lc = tag.AttributeValue<int>("lc", -1);
 		}
 		else if (tag == "relative") tag.value(relative);
+		++tag;
 	}
 	while (!tag.isend());
 
