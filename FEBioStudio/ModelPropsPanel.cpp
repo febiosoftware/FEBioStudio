@@ -76,7 +76,7 @@ CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
 	l->addWidget(new QLabel("Type:"), 1, 0, Qt::AlignRight);
 	l->addWidget(m_type = new QLabel, 1, 1);
 
-	l->addWidget(new QLabel("Active:"), 2, 0, Qt::AlignRight);
+	l->addWidget(m_statusLabel = new QLabel("Active:"), 2, 0, Qt::AlignRight);
 	l->addWidget(m_status = new QCheckBox, 2, 1);
 	m_status->setObjectName("status");
 
@@ -108,6 +108,7 @@ void CObjectPropsPanel::showColor(bool b)
 void CObjectPropsPanel::showStatus(bool b)
 {
 	m_status->setVisible(b);
+	m_statusLabel->setVisible(b);
 }
 
 void CObjectPropsPanel::setNameReadOnly(bool b)

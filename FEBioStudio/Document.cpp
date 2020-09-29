@@ -49,6 +49,9 @@ SOFTWARE.*/
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FENodeData.h>
+#include <MeshTools/FESurfaceData.h>
+#include <MeshTools/FEElementData.h>
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
 #include <QFileInfo>
@@ -509,7 +512,23 @@ std::string CDocument::GetTypeString(FSObject* po)
 			return ss.str();
 		}
 	}
-	else if (dynamic_cast<FEMeshData*>(po)) return "Mesh data";
+	else if (dynamic_cast<FEMeshData*>(po))
+	{
+		FENodeData* nodeData = dynamic_cast<FENodeData*>(po);
+		if (nodeData) return "Node data";
+
+		FESurfaceData* surfData = dynamic_cast<FESurfaceData*>(po);
+		if (surfData) return "Surface data";
+
+		FEElementData* elemData = dynamic_cast<FEElementData*>(po);
+		if (elemData) return "Element data";
+
+		FEPartData* partData = dynamic_cast<FEPartData*>(po);
+		if (partData) return "Element data";
+
+		assert(false);
+		return "Mesh data";
+	}
 	else
 	{
 		assert(false);

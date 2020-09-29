@@ -81,6 +81,7 @@ private:
 	QLabel*			m_type;
 	CColorButton*	m_col;
 	QCheckBox*		m_status;
+	QLabel*			m_statusLabel;
 };
 
 class CBCObjectPropsPanel : public QWidget
