@@ -65,9 +65,8 @@ CEditVariableParam::CEditVariableParam(QWidget* parent) : QComboBox(parent)
 {
 	addItem("<constant>");
 	addItem("<math>");
-#ifdef _DEBUG
 	addItem("<map>");
-#endif
+
 	setEditable(true);
 	setInsertPolicy(QComboBox::NoInsert);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
