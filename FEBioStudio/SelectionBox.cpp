@@ -48,11 +48,16 @@ public:
 	QToolButton*	pb4;
 
 	QToolButton*	clr;
+	QToolButton*	collapse;
+
+	bool	m_collapsed;
 
 public:
 	void setupUi(QWidget* parent)
 	{
 		nameType = new QWidget;
+
+		m_collapsed = false;
 
 		QFormLayout* form = new QFormLayout;
 		form->addRow("Name:", name = new QLineEdit); name->setObjectName("name");
@@ -63,6 +68,11 @@ public:
 		h->addWidget(clr = new QToolButton); clr->setIcon(QIcon(":/icons/delete.png"));
 		clr->setToolTip("Clear the selection.");
 		clr->setObjectName("clearSelection");
+		h->addWidget(collapse = new QToolButton); collapse->setIcon(QIcon(":/icons/list.png"));
+		collapse->setToolTip("Toggle collapsed/expanded view");
+		collapse->setObjectName("toggleCollapse");
+		collapse->setCheckable(true);
+		collapse->setChecked(!m_collapsed);
 		form->addRow("Type:", h);
 		
 		nameType->setLayout(form);
@@ -152,6 +162,11 @@ void CSelectionBox::enableAllButtons(bool b)
 	enableSelectButton(b);
 }
 
+void CSelectionBox::setCollapsed(bool b)
+{
+	ui->collapse->setChecked(!b);
+}
+
 void CSelectionBox::on_addButton_clicked()
 {
 	emit addButtonClicked();
@@ -177,6 +192,25 @@ void CSelectionBox::on_clearSelection_clicked()
 	emit clearButtonClicked();
 }
 
+void CSelectionBox::on_toggleCollapse_toggled(bool b)
+{
+	ui->m_collapsed = !b;
+	ui->list->clear();
+	if (ui->m_collapsed)
+	{
+		QListWidgetItem* it = new QListWidgetItem(ui->list);
+		it->setText(QString("[items: %1]").arg(m_items.size()));
+	}
+	else
+	{
+		for (int i = 0; i < m_items.size(); ++i)
+		{
+			QListWidgetItem* it = new QListWidgetItem(ui->list);
+			it->setText(m_items[i].m_label);
+		}
+	}
+}
+
 void CSelectionBox::on_name_textEdited(const QString& t)
 {
 	emit nameChanged(t);
@@ -184,13 +218,17 @@ void CSelectionBox::on_name_textEdited(const QString& t)
 
 void CSelectionBox::on_list_itemDoubleClicked(QListWidgetItem *item)
 {
-	emit selButtonClicked();
+	if (ui->m_collapsed) ui->collapse->setChecked(true);
+	else
+	{
+		emit selButtonClicked();
+	}
 }
 
 void CSelectionBox::clearData()
 {
 	ui->list->clear();
-	m_data.clear();
+	m_items.clear();
 }
 
 void CSelectionBox::addData(const QString& item, int data, int fmt, bool checkForDuplicates)
@@ -198,20 +236,30 @@ void CSelectionBox::addData(const QString& item, int data, int fmt, bool checkFo
 	// make sure the data does not exist yet
 	if (checkForDuplicates)
 	{
-		for (int i = 0; i < m_data.size(); ++i)
-			if (m_data[i] == data)
+		for (int i = 0; i < m_items.size(); ++i)
+			if (m_items[i].m_data == data)
 			{
 				return;
 			}
 	}
 
-	m_data.push_back(data);
-	ui->list->addItem(item);
+	m_items.push_back(Item(item, data));
 
-	if (fmt != 0)
+	if (ui->m_collapsed == false)
 	{
-		QListWidgetItem* w = ui->list->item(ui->list->count() - 1);
-		w->setForeground(Qt::red);
+		ui->list->addItem(item);
+
+		if (fmt != 0)
+		{
+			QListWidgetItem* w = ui->list->item(ui->list->count() - 1);
+			w->setForeground(Qt::red);
+		}
+	}
+	else
+	{
+		if (ui->list->count() == 0) ui->list->addItem("");
+		QListWidgetItem* w = ui->list->item(0); assert(w);
+		w->setText(QString("[items: %1]").arg(m_items.size()));
 	}
 }
 
@@ -226,12 +274,21 @@ void CSelectionBox::addData(const vector<int>& data)
 
 void CSelectionBox::removeData(int ndata)
 {
-	for (int j = 0; j<m_data.size(); ++j)
+	for (int j = 0; j < m_items.size(); ++j)
 	{
-		if (m_data[j] == ndata)
+		if (m_items[j].m_data == ndata)
 		{
-			m_data.erase(m_data.begin() + j);
-			delete ui->list->takeItem(j);
+			m_items.erase(m_items.begin() + j);
+
+			if (ui->m_collapsed)
+			{
+				QListWidgetItem* w = ui->list->item(0);
+				w->setText(QString("[items: %1]").arg(m_items.size()));
+			}
+			else
+			{
+				delete ui->list->takeItem(j);
+			}
 			break;
 		}
 	}
@@ -239,38 +296,53 @@ void CSelectionBox::removeData(int ndata)
 
 void CSelectionBox::removeData(const vector<int>& data)
 {
-	for (int i=0; i<data.size(); ++i)
+	for (int i = 0; i < data.size(); ++i)
 	{
 		int ndata = data[i];
 
-		for (int j=0; j<m_data.size(); ++j)
+		for (int j = 0; j < m_items.size(); ++j)
 		{
-			if (m_data[j] == ndata)
+			if (m_items[j].m_data == ndata)
 			{
-				m_data.erase(m_data.begin() + j);
-				delete ui->list->takeItem(j);
+				m_items.erase(m_items.begin() + j);
+				if (ui->m_collapsed == false) delete ui->list->takeItem(j);
 				break;
 			}
 		}
+	}
+
+	if (ui->m_collapsed)
+	{
+		QListWidgetItem* w = ui->list->item(0);
+		w->setText(QString("[items: %1]").arg(m_items.size()));
 	}
 }
 
 void CSelectionBox::getSelectedItems(vector<int>& sel)
 {
-	QModelIndexList selItems = ui->list->selectionModel()->selectedRows();
-	if (selItems.empty() == false)
+	if (ui->m_collapsed)
 	{
-		for (QModelIndexList::iterator it = selItems.begin(); it != selItems.end(); ++it)
+		QListWidgetItem* w = ui->list->item(0);
+		if (w && w->isSelected()) getAllItems(sel);
+	}
+	else
+	{
+		QModelIndexList selItems = ui->list->selectionModel()->selectedRows();
+		if (selItems.empty() == false)
 		{
-			int row = it->row();
-			sel.push_back(m_data[row]);
+			for (QModelIndexList::iterator it = selItems.begin(); it != selItems.end(); ++it)
+			{
+				int row = it->row();
+				sel.push_back(m_items[row].m_data);
+			}
 		}
 	}
 }
 
 void CSelectionBox::getAllItems(vector<int>& data)
 {
-	data = m_data;
+	data.resize(m_items.size());
+	for (int i=0; i< m_items.size(); ++i) data[i] = m_items[i].m_data;
 }
 
 void CSelectionBox::getAllNames(QStringList& names)
@@ -288,31 +360,45 @@ void CSelectionBox::getAllNames(QStringList& names)
 
 void CSelectionBox::getSelectedItems(list<int>& sel)
 {
-	QModelIndexList selItems = ui->list->selectionModel()->selectedRows();
-	if (selItems.empty() == false)
+	if (ui->m_collapsed)
 	{
-		for (QModelIndexList::iterator it = selItems.begin(); it != selItems.end(); ++it)
+		QListWidgetItem* w = ui->list->item(0);
+		if (w && w->isSelected())
 		{
-			int row = it->row();
-			sel.push_back(m_data[row]);
+			for (int i = 0; i < m_items.size(); ++i) sel.push_back(m_items[i].m_data);
+		}
+	}
+	else
+	{
+		QModelIndexList selItems = ui->list->selectionModel()->selectedRows();
+		if (selItems.empty() == false)
+		{
+			for (QModelIndexList::iterator it = selItems.begin(); it != selItems.end(); ++it)
+			{
+				int row = it->row();
+				sel.push_back(m_items[row].m_data);
+			}
 		}
 	}
 }
 
 void CSelectionBox::removeSelectedItems()
 {
-	int N = ui->list->count();
-	for (int i=0; i<N; ++i)
+	if (ui->m_collapsed == false)
 	{
-		QListWidgetItem* item = ui->list->item(i);
-		if (item->isSelected())
+		int N = ui->list->count();
+		for (int i = 0; i < N; ++i)
 		{
-			item = ui->list->takeItem(i);
-			delete item;
+			QListWidgetItem* item = ui->list->item(i);
+			if (item->isSelected())
+			{
+				item = ui->list->takeItem(i);
+				delete item;
 
-			m_data.erase(m_data.begin() + i);
-			N--;
-			i--;
+				m_items.erase(m_items.begin() + i);
+				N--;
+				i--;
+			}
 		}
 	}
 }

@@ -714,6 +714,7 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 	sel->setName(name);
 	sel->enableAllButtons(true);
 	sel->clearData();
+	sel->setCollapsed(false);
 
 	// set the type
 	QString type("(unknown)");
@@ -794,6 +795,7 @@ void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 //		sort(items.begin(), items.end());
 //		unique(items.begin(), items.end());
 
+		sel->setCollapsed(true);
 		for (int i=0; i<(int)items.size();++i) sel->addData(QString::number(items[i]), items[i], 0, false);
 	}
 }

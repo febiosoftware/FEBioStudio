@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CSelectionBox_t {
-    QByteArrayData data[18];
-    char stringdata0[293];
+    QByteArrayData data[20];
+    char stringdata0[321];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -49,7 +49,9 @@ QT_MOC_LITERAL(13, 200, 18), // "on_name_textEdited"
 QT_MOC_LITERAL(14, 219, 25), // "on_list_itemDoubleClicked"
 QT_MOC_LITERAL(15, 245, 16), // "QListWidgetItem*"
 QT_MOC_LITERAL(16, 262, 4), // "item"
-QT_MOC_LITERAL(17, 267, 25) // "on_clearSelection_clicked"
+QT_MOC_LITERAL(17, 267, 25), // "on_clearSelection_clicked"
+QT_MOC_LITERAL(18, 293, 25), // "on_toggleCollapse_toggled"
+QT_MOC_LITERAL(19, 319, 1) // "b"
 
     },
     "CSelectionBox\0addButtonClicked\0\0"
@@ -59,7 +61,8 @@ QT_MOC_LITERAL(17, 267, 25) // "on_clearSelection_clicked"
     "on_subButton_clicked\0on_delButton_clicked\0"
     "on_selButton_clicked\0on_name_textEdited\0"
     "on_list_itemDoubleClicked\0QListWidgetItem*\0"
-    "item\0on_clearSelection_clicked"
+    "item\0on_clearSelection_clicked\0"
+    "on_toggleCollapse_toggled\0b"
 };
 #undef QT_MOC_LITERAL
 
@@ -69,7 +72,7 @@ static const uint qt_meta_data_CSelectionBox[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      13,   14, // methods
+      14,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -77,21 +80,22 @@ static const uint qt_meta_data_CSelectionBox[] = {
        6,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   79,    2, 0x06 /* Public */,
-       3,    0,   80,    2, 0x06 /* Public */,
-       4,    0,   81,    2, 0x06 /* Public */,
-       5,    0,   82,    2, 0x06 /* Public */,
-       6,    0,   83,    2, 0x06 /* Public */,
-       7,    1,   84,    2, 0x06 /* Public */,
+       1,    0,   84,    2, 0x06 /* Public */,
+       3,    0,   85,    2, 0x06 /* Public */,
+       4,    0,   86,    2, 0x06 /* Public */,
+       5,    0,   87,    2, 0x06 /* Public */,
+       6,    0,   88,    2, 0x06 /* Public */,
+       7,    1,   89,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       9,    0,   87,    2, 0x08 /* Private */,
-      10,    0,   88,    2, 0x08 /* Private */,
-      11,    0,   89,    2, 0x08 /* Private */,
-      12,    0,   90,    2, 0x08 /* Private */,
-      13,    1,   91,    2, 0x08 /* Private */,
-      14,    1,   94,    2, 0x08 /* Private */,
-      17,    0,   97,    2, 0x08 /* Private */,
+       9,    0,   92,    2, 0x08 /* Private */,
+      10,    0,   93,    2, 0x08 /* Private */,
+      11,    0,   94,    2, 0x08 /* Private */,
+      12,    0,   95,    2, 0x08 /* Private */,
+      13,    1,   96,    2, 0x08 /* Private */,
+      14,    1,   99,    2, 0x08 /* Private */,
+      17,    0,  102,    2, 0x08 /* Private */,
+      18,    1,  103,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void,
@@ -109,6 +113,7 @@ static const uint qt_meta_data_CSelectionBox[] = {
     QMetaType::Void, QMetaType::QString,    8,
     QMetaType::Void, 0x80000000 | 15,   16,
     QMetaType::Void,
+    QMetaType::Void, QMetaType::Bool,   19,
 
        0        // eod
 };
@@ -132,6 +137,7 @@ void CSelectionBox::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
         case 10: _t->on_name_textEdited((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         case 11: _t->on_list_itemDoubleClicked((*reinterpret_cast< QListWidgetItem*(*)>(_a[1]))); break;
         case 12: _t->on_clearSelection_clicked(); break;
+        case 13: _t->on_toggleCollapse_toggled((*reinterpret_cast< bool(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -210,13 +216,13 @@ int CSelectionBox::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 13)
+        if (_id < 14)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 13;
+        _id -= 14;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 13)
+        if (_id < 14)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 13;
+        _id -= 14;
     }
     return _id;
 }
