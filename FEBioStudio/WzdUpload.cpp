@@ -523,13 +523,13 @@ public:
 
 		try
 		{
-			parent = currentFolders.at(path.left(pos + index));
+			parent = currentFolders.at(path.right(path.length() - index).left(pos));
 		}
 		catch(out_of_range& e)
 		{
 			parent = NewFolder(path.right(path.length() - index).left(pos), QString("{Repository}/") + path.left(index + pos));
 
-			currentFolders[path.left(pos + index)] = parent;
+			currentFolders[path.right(path.length() - index).left(pos)] = parent;
 		}
 
 		parent->addChild(child);
