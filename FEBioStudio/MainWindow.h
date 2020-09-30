@@ -237,9 +237,6 @@ public:
 	// Update the physics menu based on active modules
 	void UpdatePhysicsUi();
 
-	// Generate a map
-	void GenerateMap(FSObject* po);
-
 	// clear the recent project list
 	void ClearRecentProjectsList();
 

@@ -30,7 +30,6 @@ SOFTWARE.*/
 #include <FSCore/LoadCurve.h>
 #include <FSCore/Serializable.h>
 #include <MeshIO/FileReader.h>
-#include <FEMLib/FEDataMap.h>
 #include "CommandManager.h"
 #include "FEBioOpt.h"
 #include <PostLib/ImageModel.h>

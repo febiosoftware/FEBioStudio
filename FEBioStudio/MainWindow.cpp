@@ -2366,28 +2366,6 @@ void CMainWindow::ClearRecentProjectsList()
 	ui->m_recentFiles.clear();
 }
 
-//-----------------------------------------------------------------------------
-void CMainWindow::GenerateMap(FSObject* po)
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	CDlgAddMeshData dlg(po, this);
-	if (dlg.exec())
-	{
-		std::string mapName = dlg.GetMapName();
-		std::string paramName = dlg.GetParamName();
-		Param_Type paramType = dlg.GetParamType();
-
-		FSObject* data = doc->CreateDataMap(po, mapName, paramName, paramType);
-		if (data == 0)
-		{
-			QMessageBox::critical(this, "FEBio Studio", "It pains me to inform you that your command could not be executed.");
-		}
-		else UpdateModel(data);
-	}
-}
-
 void CMainWindow::OnCameraChanged()
 {
 	if (ui->postPanel->isVisible())

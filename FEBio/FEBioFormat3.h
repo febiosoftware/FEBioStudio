@@ -77,6 +77,11 @@ private:
 	void ParseBCPrescribed(FEStep* pstep, XMLTag& tag);
 	void ParseBCRigid     (FEStep* pstep, XMLTag& tag);
 
+	// mesh data sections
+	bool ParseElementDataSection(XMLTag& tag);
+	bool ParseSurfaceDataSection(XMLTag& tag);
+	bool ParseNodeDataSection(XMLTag& tag);
+
 private:
 	bool ParseStep(XMLTag& tag);
 

@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FEDataMap.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -846,10 +847,60 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		// Read the data and store it as a mesh data section
 		FEBioModel& feb = GetFEBioModel();
 
-		// Make sure to skip generators
 		const char* szgen = tag.AttributeValue("generator", true);
-		if (szgen) ParseUnknownTag(tag);
-		else {
+		if (szgen)
+		{
+			const char* szset = tag.AttributeValue("elem_set");
+			if (strcmp(szgen, "surface-to-surface map") == 0)
+			{
+				FESurfaceToSurfaceMap* s2s = new FESurfaceToSurfaceMap;
+				s2s->m_generator = szgen;
+				s2s->m_var = var->cvalue();
+				s2s->m_elset = szset;
+
+				++tag;
+				do
+				{
+					if      (tag == "bottom_surface") tag.value(s2s->m_bottomSurface);
+					else if (tag == "top_surface"   ) tag.value(s2s->m_topSurface);
+					else if (tag == "function")
+					{
+						FELoadCurve& lc = s2s->m_points;
+
+						++tag;
+						do {
+							if (tag == "points")
+							{
+								// read the points
+								double d[2];
+								++tag;
+								do
+								{
+
+									tag.value(d, 2);
+
+									LOADPOINT pt;
+									pt.time = d[0];
+									pt.load = d[1];
+									lc.Add(pt);
+
+									++tag;
+								} while (!tag.isend());
+							}
+							else ParseUnknownTag(tag);
+							++tag;
+						}
+						while (!tag.isend());
+					}
+					else ParseUnknownTag(tag);
+					++tag;
+				} while (!tag.isend());
+
+				feb.GetFEModel().AddDataMap(s2s);
+			}
+		}
+		else 
+		{
 			const char* szset = tag.AttributeValue("elem_set");
 			FEBioModel::Domain* dom = feb.FindDomain(szset);
 			if (dom)

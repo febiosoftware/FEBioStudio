@@ -1393,8 +1393,6 @@ void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				if (pstep == 0) flags |= DUPLICATE_ITEM;
 				QString name = QString("%1 [%2]").arg(QString::fromStdString(pfc->GetName())).arg(pfc->GetTypeString());
 				QTreeWidgetItem* t2 = AddTreeItem(t1, name, MT_LOAD, 0, pfc, new FEObjectProps(pfc, &fem), new CBCValidator(pfc), flags);
-
-				AddDataMaps(t2, pfc);
 			}
 		}
 	}
@@ -1722,17 +1720,6 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 		AddDataMaps(t2, pmat);
 	}
 */
-}
-
-//-----------------------------------------------------------------------------
-void CModelTree::AddDataMaps(QTreeWidgetItem* t2, FEComponent* pc)
-{
-	int N = pc->DataMaps();
-	for (int n = 0; n<N; ++n)
-	{
-		FEDataMap* map = pc->GetDataMap(n);
-		AddTreeItem(t2, QString::fromStdString(map->GetName()), MT_DATAMAP, 0, map, new CDataMapProps(map), 0, SHOW_PROPERTY_FORM | NAME_NOT_EDITABLE);
-	}
 }
 
 //-----------------------------------------------------------------------------

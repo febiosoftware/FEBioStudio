@@ -86,9 +86,6 @@ public: // selection
 	void HideUnselected();
 
 public:
-	FEDataMap* CreateDataMap(FSObject* po, std::string& mapName, std::string& paramName, Param_Type type);
-
-public:
 	int FEBioJobs() const;
 	void AddFEbioJob(CFEBioJob* job);
 	CFEBioJob* GetFEBioJob(int i);

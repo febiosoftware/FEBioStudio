@@ -180,8 +180,6 @@ protected:
 	void AddMaterial(QTreeWidgetItem* item, const QString& name, GMaterial* gmat, FEMaterial* pmat, FEModel& fem, bool topLevel);
 	void AddReactionMaterial(QTreeWidgetItem* item, FEReactionMaterial* mat, FEModel& fem);
 
-	void AddDataMaps(QTreeWidgetItem* t1, FEComponent* pc);
-
 	CModelTreeItem* GetCurrentData();
 
 private:

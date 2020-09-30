@@ -1393,19 +1393,19 @@ int FEModel::DataMaps() const
 }
 
 //-----------------------------------------------------------------------------
-void FEModel::AddDataMap(FEDataMap* map)
+void FEModel::AddDataMap(FEDataMapGenerator* map)
 {
 	m_Map.Add(map);
 }
 
 //-----------------------------------------------------------------------------
-int FEModel::RemoveMap(FEDataMap* map)
+int FEModel::RemoveMap(FEDataMapGenerator* map)
 {
 	return m_Map.Remove(map);
 }
 
 //-----------------------------------------------------------------------------
-FEDataMap* FEModel::GetDataMap(int i)
+FEDataMapGenerator* FEModel::GetDataMap(int i)
 {
 	return m_Map[i];
 }

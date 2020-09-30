@@ -157,7 +157,6 @@ public slots:
 	void OnImportMaterials();
 	void OnDeleteAllMaterials();
 	void OnSwapMasterSlave();
-	void OnGenerateMap();
 	void OnDeleteAllBC();
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();

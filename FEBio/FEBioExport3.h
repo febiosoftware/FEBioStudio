@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include "FEBioExport.h"
 
-class FEDataMap;
+class FEDataMapGenerator;
 class FESurfaceLoad;
 class GPartList;
 class GMaterial;
@@ -254,7 +254,7 @@ protected:
 	void WriteMeshDataMaterialFibers();
 	void WriteMeshDataMaterialAxes();
 	void WriteElementDataFields();
-	void WriteMeshData(FEDataMap* map);
+	void WriteMeshData(FEDataMapGenerator* map);
 
 	void WriteSolidControlParams(FEAnalysisStep* pstep);
 	void WriteBiphasicControlParams(FEAnalysisStep* pstep);

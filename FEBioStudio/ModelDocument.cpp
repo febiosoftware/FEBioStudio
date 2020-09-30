@@ -518,19 +518,6 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 	return true;
 }
 
-FEDataMap* CModelDocument::CreateDataMap(FSObject* po, std::string& mapName, std::string& paramName, Param_Type type)
-{
-	FEModel& fem = *GetFEModel();
-	FEComponent* pc = dynamic_cast<FEComponent*>(po);
-	if (pc == 0) return 0;
-	FEDataMap* dataMap = pc->CreateMap(paramName, type);
-	dataMap->SetName(mapName);
-
-	fem.AddDataMap(dataMap);
-
-	return dataMap;
-}
-
 //-----------------------------------------------------------------------------
 // SELECTION
 //-----------------------------------------------------------------------------

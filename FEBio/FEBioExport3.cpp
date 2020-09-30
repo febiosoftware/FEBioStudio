@@ -2949,7 +2949,7 @@ void FEBioExport3::WriteMeshDataSection()
 	int N = fem.DataMaps();
 	for (int i=0; i<N; ++i)
 	{
-		FEDataMap* map = fem.GetDataMap(i);
+		FEDataMapGenerator* map = fem.GetDataMap(i);
 		WriteMeshData(map);
 	}
 }
@@ -2967,118 +2967,40 @@ void FEBioExport3::WriteElementDataSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport3::WriteMeshData(FEDataMap* map)
+void FEBioExport3::WriteMeshData(FEDataMapGenerator* map)
 {
-	FEComponent* pc = map->GetParent();
+	XMLElement meshData("ElementData");
+	meshData.add_attribute("var", map->m_var);
+	meshData.add_attribute("generator", map->m_generator);
+	meshData.add_attribute("elem_set", map->m_elset);
 
-	string className = pc->GetName();
-	string paramName = map->GetParamName();
 
-	FEItemListBuilder* pl = 0;
-	string typeName;
-	if (dynamic_cast<FEMaterial*>(pc))
+	m_xml.add_branch(meshData);
 	{
-		const FEMaterial* pm = dynamic_cast<FEMaterial*>(pc)->GetAncestor(); assert(pm);
-		GMaterial* mat = pm->GetOwner(); assert(mat);
-
-		pl = BuildPartList(mat);
-		if (pl == 0) throw InvalidItemListBuilder(0);
-
-		className = mat->GetName();
-		typeName = "material";
-	}
-	else if (dynamic_cast<FESurfaceLoad*>(pc))
-	{
-		FESurfaceLoad* psl = dynamic_cast<FESurfaceLoad*>(pc);
-		pl = psl->GetItemList();
-		typeName = "surface_load";
-	}
-	else
-	{
-		assert(false);
-	}
-
-	char szname[256] = { 0 };
-	sprintf(szname, "fem.%s['%s'].%s", typeName.c_str(), className.c_str(), paramName.c_str());
-
-	XMLElement meshData("mesh_data");
-	meshData.add_attribute("param", szname);
-
-	int generator = map->GetGenerator();
-	const char* szgen = 0;
-	if (generator == 0) 
-	{
-		meshData.add_attribute("generator", "const");
-		m_xml.add_branch(meshData);
-
-		double val = map->GetConstValue();
-		m_xml.add_leaf("value", val);
-	}
-	else if (generator == 1) 
-	{
-		meshData.add_attribute("generator", "math");
-		m_xml.add_branch(meshData);
-
-		std::string s = map->GetMathString();
-		m_xml.add_leaf("math", s.c_str());
-	}
-	else if (generator == 2)
-	{
-		m_xml.add_branch(meshData);
-
-		switch (pl->Type())
+		FESurfaceToSurfaceMap* s2s = dynamic_cast<FESurfaceToSurfaceMap*>(map);
+		if (s2s)
 		{
-		case GO_FACE:
-		case FE_SURFACE:
-		{
-			FEFaceList* faceList = pl->BuildFaceList();
-			if (faceList)
+			m_xml.add_leaf("bottom_surface", s2s->m_bottomSurface);
+			m_xml.add_leaf("top_surface"   , s2s->m_topSurface);
+			
+			XMLElement e("function");
+			e.add_attribute("type", "point");
+			m_xml.add_branch(e);
 			{
-				XMLElement ef;
-				double v[FEFace::MAX_NODES] = {0.0};
-
-				int NF = faceList->Size();
-				FEFaceList::Iterator pf = faceList->First();
-				for (int j = 0; j<NF; ++j, ++pf)
+				FELoadCurve& lc = s2s->m_points;
+				m_xml.add_branch("points");
 				{
-					if (pf->m_pi == 0) throw InvalidItemListBuilder(0);
-					FEFace& face = *(pf->m_pi);
-					FECoreMesh* pm = pf->m_pm;
-					int nfn = face.Nodes();
-					for (int k = 0; k<nfn; ++k) v[k] = 0.0;
-					ef.name("f");
-					ef.add_attribute("lid", j + 1);
-					ef.value(v, nfn);
-					m_xml.add_leaf(ef);
+					for (int i = 0; i < lc.Size(); ++i)
+					{
+						double v[2] = { lc[i].time, lc[i].load };
+						m_xml.add_leaf("point", v, 2);
+					}
 				}
-				delete faceList;
+				m_xml.close_branch();
 			}
-		}
-		break;
-		case GO_PART:
-		{
-			FEElemList* elemList = pl->BuildElemList();
-			double v[FEElement::MAX_NODES] = { 0.0 };
-
-			int NE = elemList->Size();
-			FEElemList::Iterator pe = elemList->First();
-			for (int i = 0; i<NE; ++i, ++pe)
-			{
-				FEElement_& el = *(pe->m_pi);
-				XMLElement e("e");
-				e.add_attribute("lid", i + 1);
-				e.value(v, el.Nodes());
-				m_xml.add_leaf(e);
-			}
-
-			delete elemList;
-		}
-		break;
-		default:
-			break;
+			m_xml.close_branch();
 		}
 	}
-
 	m_xml.close_branch();
 }
 

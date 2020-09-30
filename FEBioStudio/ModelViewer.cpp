@@ -1541,7 +1541,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Show parts", this, SLOT(OnMaterialShowParts()));
 		menu.addAction("Hide other parts", this, SLOT(OnMaterialHideOtherParts()));
 		menu.addAction("Export Material(s) ...", this, SLOT(OnExportMaterials()));
-//		menu.addAction("Generate map...", this, SLOT(OnGenerateMap()));
 		del = true;
 		break;
 	case MT_DISCRETE_SET:
@@ -1578,7 +1577,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_LOAD:
 		menu.addAction("Copy", this, SLOT(OnCopyLoad()));
-//		menu.addAction("Generate map...", this, SLOT(OnGenerateMap()));
 		del = true;
 		break;
 	case MT_RIGID_CONSTRAINT:
@@ -1664,19 +1662,6 @@ void CModelViewer::OnSwapMasterSlave()
 	{
 		pci->SwapMasterSlave();
 		UpdateObject(m_currentObject);
-	}
-}
-
-void CModelViewer::OnGenerateMap()
-{
-	FSObject* po = m_currentObject;
-	if (po)
-	{
-		if (dynamic_cast<GMaterial*>(m_currentObject))
-		{
-			po = dynamic_cast<GMaterial*>(po)->GetMaterialProperties();
-		}
-		GetMainWindow()->GenerateMap(po);
 	}
 }
 
