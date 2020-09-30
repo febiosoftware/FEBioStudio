@@ -104,6 +104,7 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
+		int oldvec = m_nvec;
 		m_nvec = GetIntValue(DATA_FIELD);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		AllowClipping(GetBoolValue(CLIP));
@@ -127,6 +128,8 @@ bool CGLVectorPlot::UpdateData(bool bsave)
 			bar->SetRange(m_crng.x, m_crng.y);
 			bar->show();
 		}
+
+		if (oldvec != m_nvec) Update();
 	}
 	else
 	{
