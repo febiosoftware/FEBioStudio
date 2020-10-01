@@ -1772,7 +1772,7 @@ void FEBioExport3::WriteMaterial(FEMaterial* pm, XMLElement& el)
 
 						if (bdone == false)
 						{
-							if ((pc->Parameters() > 0) || (pc->m_axes != nullptr))
+							if ((pc->Parameters() > 0) || ((pc->m_axes != nullptr) && (pc->m_axes->m_naopt != -1)))
 							{
 								m_xml.add_branch(el);
 								{
