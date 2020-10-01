@@ -791,6 +791,14 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		// Read the data and store it as a mesh data section
 		FEBioModel& feb = GetFEBioModel();
 
+		// ignore generators
+		const char* szgen = tag.AttributeValue("generator", true);
+		if (szgen)
+		{
+			ParseUnknownTag(tag);
+			return true;
+		}
+
 		const char* szset = tag.AttributeValue("elem_set");
 		FEBioModel::Domain* dom = feb.FindDomain(szset);
 		if (dom)
@@ -1163,7 +1171,7 @@ void FEBioFormat25::ParseBCRigidBody(FEStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "force")
 		{
-			int lc = tag.AttributeValue<int>("lc", 0);
+			int lc = tag.AttributeValue<int>("lc", -1);
 			tag.value(v);
 			FERigidForce* pf = new FERigidForce(nbc, matid, v, pstep->GetID());
 
@@ -1171,7 +1179,7 @@ void FEBioFormat25::ParseBCRigidBody(FEStep* pstep, XMLTag& tag)
 			if (hasName == false) sprintf(szname, "RigidForce%02d", n++);
 			pf->SetName(szname);
 			pstep->AddRC(pf);
-			febio.AddParamCurve(pf->GetLoadCurve(), lc - 1);
+			if (lc != -1) febio.AddParamCurve(pf->GetLoadCurve(), lc - 1);
 		}
 		else ParseUnknownTag(tag);
 
