@@ -1890,6 +1890,13 @@ vec3d FEFiberMaterial::GetFiber(FEElementRef& el)
 		mat3d Q = m_axes->GetMatAxes(el);
 		v = Q * v;
 	}
+	const FEMaterial* parentMat = GetParentMaterial();
+	if (parentMat && parentMat->m_axes)
+	{
+		mat3d Q = parentMat->m_axes->GetMatAxes(el);
+		v = Q * v;
+	}
+
 	return v;
 }
 
