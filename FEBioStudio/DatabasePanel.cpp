@@ -575,13 +575,13 @@ public:
 
 		try
 		{
-			parent = currentProjectFolders.at(path.right(path.length() - index).left(pos).toStdString());
+			parent = currentProjectFolders.at(path.left(pos + index).toStdString());
 		}
 		catch(out_of_range& e)
 		{
 			parent = new FolderItem(path.right(path.length() - index).left(pos));
 
-			currentProjectFolders[path.right(path.length() - index).left(pos).toStdString()] = parent;
+			currentProjectFolders[path.left(pos + index).toStdString()] = parent;
 		}
 
 		parent->addChild(child);
