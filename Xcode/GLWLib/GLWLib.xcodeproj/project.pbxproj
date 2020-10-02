@@ -284,6 +284,10 @@
 					/usr/local/opt/qt/include/QtCore,
 					"$(SRCROOT)/../..",
 				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DNDEBUG",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};

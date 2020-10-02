@@ -323,6 +323,10 @@
 					/usr/local/opt/qt/include/QtGui,
 					/usr/local/opt/qt/include/QtWidgets,
 				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DNDEBUG",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
