@@ -1,16 +1,35 @@
 cmake_minimum_required(VERSION 3.1.0)
 
+if(APPLE)
+	set(CMAKE_CXX_STANDARD 14)
+	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 project(FEBioStudio)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_FILES_DIRECTORY /CMakeFiles)
 
 if(NOT Qt5_DIR)
     if(NOT Qt5_ROOT)
         set(Qt5_ROOT "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
     endif()
     
-    find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-		PATHS ${Qt5_ROOT}/* ${Qt5_ROOT}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-		PATH_SUFFIXES "gcc_64/lib"
-		DOC "Qt5 CMake Directory")
+    if(WIN32)
+    
+    elseif(APPLE)
+		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
+			PATHS ${Qt5_ROOT}/* ${Qt5_ROOT}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+			PATH_SUFFIXES "clang_64/lib"
+			DOC "Qt5 CMake Directory")
+    else()
+		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
+			PATHS ${Qt5_ROOT}/* ${Qt5_ROOT}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+			PATH_SUFFIXES "gcc_64/lib"
+			DOC "Qt5 CMake Directory")
+    endif()
         
     if(Qt5_CMAKE)
         get_filename_component(Qt5_TEMP ${Qt5_CMAKE} DIRECTORY)
@@ -36,8 +55,8 @@ endif()
 ##### Search for libaries #####
 
 # Qt
-find_package(Qt5 COMPONENTS Widgets Gui Network OpenGL Charts WebEngineWidgets REQUIRED)
-find_package(Qt5 COMPONENTS WebEngineWidgets)
+find_package(Qt5 COMPONENTS Widgets Gui Network OpenGL Charts REQUIRED)
+find_package(Qt5 COMPONENTS WebEngineWidgets QUIET)
 mark_as_advanced(Qt5Charts_DIR Qt5Core_DIR Qt5Gui_DIR Qt5Network_DIR Qt5OpenGL_DIR Qt5Positioning_DIR 
     Qt5PrintSupport_DIR Qt5QmlModels_DIR Qt5Qml_DIR Qt5Quick_DIR Qt5WebChannel_DIR Qt5WebEngineCore_DIR 
     Qt5WebEngineWidgets_DIR Qt5Widgets_DIR)
@@ -69,7 +88,11 @@ if(MMG_LIB)
     set(MMG_LIB_DIR ${MMG_TEMP} CACHE PATH "Path to the MMG lib directory (e.g. /opt/mmg/lib)")
     unset(MMG_TEMP)
     unset(MMG_LIB CACHE)
+else()
+	set(MMG_LIB_DIR  CACHE PATH "Path to the MMG lib directory (e.g. /opt/mmg/lib)")
+    unset(MMG_LIB CACHE)
 endif()
+
 
 if(MMG_INC AND MMG_LIB_DIR)		
 	option(USE_MMG "Required for MMG use" ON)
@@ -104,6 +127,9 @@ if(TET_LIB)
     get_filename_component(TET_TEMP ${TET_LIB} DIRECTORY)
     set(TET_LIB_DIR ${TET_TEMP} CACHE PATH "Path to the TET lib directory (e.g. /opt/tetgen/lib)")
     unset(TET_TEMP)
+    unset(TET_LIB CACHE)
+else()
+	set(TET_LIB_DIR "TET_LIB_DIR-NOTFOUND" CACHE PATH "Path to the TET lib directory (e.g. /opt/tetgen/lib)")
     unset(TET_LIB CACHE)
 endif()
 
@@ -141,6 +167,9 @@ if(NETGEN_LIB)
     set(NETGEN_LIB_DIR ${NETGEN_TEMP} CACHE PATH "Path to the Netgen lib directory (e.g. /opt/netgen/lib)")
     unset(NETGEN_TEMP)
     unset(NETGEN_LIB CACHE)
+else()
+	set(NETGEN_LIB_DIR "NETGEN_LIB_DIR-NOTFOUND" CACHE PATH "Path to the Netgen lib directory (e.g. /opt/netgen/lib)")
+    unset(NETGEN_LIB CACHE)
 endif()
 
 if(NETGEN_INC AND NETGEN_LIB_DIR)		
@@ -177,6 +206,9 @@ if(OCC_LIB)
     set(OCC_LIB_DIR ${OCC_TEMP} CACHE PATH "Path to the OpenCascade lib directory (e.g. /opt/opencascade/lib)")
     unset(OCC_TEMP)
     unset(OCC_LIB CACHE)
+else()
+	set(OCC_LIB_DIR "OCC_LIB_DIR-NOTFOUND" CACHE PATH "Path to the OpenCascade lib directory (e.g. /opt/opencascade/lib)")
+    unset(OCC_LIB CACHE)
 endif()
 
 if(OCC_INC AND OCC_LIB_DIR)		
@@ -199,11 +231,11 @@ if(WIN32)
 		DOC "LibSSH library path")
 else()
 	find_path(SSH_INC libssh/libssh.h
-        PATHS /opt/libssh $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /opt/libssh /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "libssh/include" "build" "build/include"
 		DOC "LibSSH include directory")
 	find_library(SSH_LIB ssh
-        PATHS /opt/libssh $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /opt/libssh /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "libssh/lib" "build" "build/lib" "Release" "Debug"
 		DOC "LibSSH library path")
 endif()
@@ -212,6 +244,9 @@ if(SSH_LIB)
     get_filename_component(SSH_TEMP ${SSH_LIB} DIRECTORY)
     set(SSH_LIB_DIR ${SSH_TEMP} CACHE PATH "Path to the LibSSH lib directory (e.g. /opt/libssh/lib)")
     unset(SSH_TEMP)
+    unset(SSH_LIB CACHE)
+else()
+	set(SSH_LIB_DIR "SSH_LIB_DIR-NOTFOUND" CACHE PATH "Path to the LibSSH lib directory (e.g. /opt/libssh/lib)")
     unset(SSH_LIB CACHE)
 endif()
 
@@ -235,11 +270,11 @@ if(WIN32)
 		DOC "OpenSSL library path")
 else()
 	find_path(SSL_INC openssl/aes.h
-        PATHS /opt/openssl $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "openssl/include" "build" "build/include"
 		DOC "OpenSSL include directory")
 	find_library(SSL_LIB ssl 
-        PATHS /opt/openssl $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "openssl/lib" "build" "build/lib" "Release" "Debug"
 		DOC "OpenSSL library path")
 endif()
@@ -248,6 +283,9 @@ if(SSL_LIB)
     get_filename_component(SSL_TEMP ${SSL_LIB} DIRECTORY)
     set(SSL_LIB_DIR ${SSL_TEMP} CACHE PATH "Path to the OpenSSL lib directory (e.g. /opt/openssl/lib)")
     unset(SSL_TEMP)
+    unset(SSL_LIB CACHE)
+else()
+	set(SSL_LIB_DIR "SSL_LIB_DIR-NOTFOUND" CACHE PATH "Path to the OpenSSL lib directory (e.g. /opt/openssl/lib)")
     unset(SSL_LIB CACHE)
 endif()
 
@@ -269,6 +307,15 @@ if(WIN32)
         PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "QuaZip library path")
+elseif(APPLE)
+	find_path(QUAZIP_INC quazip.h
+        PATHS /usr/include/* /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "/quazip" "include/quazip" "quazip/include/quazip" "build/quazip" "build/include/quazip"
+		DOC "QuaZip include directory")
+	find_library(QUAZIP_LIB quazip 
+        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "lib" "quazip/lib" "build" "build/lib" "Release" "Debug"
+		DOC "QuaZip library path")
 else()
 	find_path(QUAZIP_INC quazip.h
         PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
@@ -284,6 +331,9 @@ if(QUAZIP_LIB)
     get_filename_component(QUAZIP_TEMP ${QUAZIP_LIB} DIRECTORY)
     set(QUAZIP_LIB_DIR ${QUAZIP_TEMP} CACHE PATH "Path to the QuaZip lib directory (e.g. /opt/quazip/lib)")
     unset(QUAZIP_TEMP)
+    unset(QUAZIP_LIB CACHE)
+else()
+	set(QUAZIP_LIB_DIR "QUAZIP_LIB_DIR-NOTFOUND" CACHE PATH "Path to the QuaZip lib directory (e.g. /opt/quazip/lib)")
     unset(QUAZIP_LIB CACHE)
 endif()
 
@@ -321,6 +371,9 @@ if(SQLITE_LIB)
     set(SQLITE_LIB_DIR ${SQLITE_TEMP} CACHE PATH "Path to the SQLite lib directory (e.g. /opt/sqlite/lib)")
     unset(SQLITE_TEMP)
     unset(SQLITE_LIB CACHE)
+else()
+	set(SQLITE_LIB_DIR "SQLITE_LIB_DIR-NOTFOUND" CACHE PATH "Path to the SQLite lib directory (e.g. /opt/sqlite/lib)")
+    unset(SQLITE_LIB CACHE)
 endif()
 
 if(SQLITE_INC AND SQLITE_LIB_DIR AND USE_QUAZIP)		
@@ -341,9 +394,20 @@ if(WIN32)
         PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "FFMPEG library path")
+elseif(APPLE)
+	find_path(FFMPEG_INC libavformat/avformat.h
+        PATHS /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
+		DOC "FFMPEG include directory"
+		NO_DEFAULT_PATH)
+	find_library(FFMPEG_LIB avformat
+        PATHS  /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "lib" "ffmpeg/lib" "build" "build/lib" "Release" "Debug"
+		DOC "FFMPEG library path"
+		NO_DEFAULT_PATH)
 else()
 	find_path(FFMPEG_INC libavformat/avformat.h
-        PATHS /usr/include/* /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /usr/include/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
 		DOC "FFMPEG include directory")
 	find_library(FFMPEG_LIB avformat
@@ -357,6 +421,9 @@ if(FFMPEG_LIB)
     set(FFMPEG_LIB_DIR ${FFMPEG_TEMP} CACHE PATH "Path to the FFMPEG lib directory (e.g. /opt/ffmpeg/lib)")
     unset(FFMPEG_TEMP)
     unset(FFMPEG_LIB CACHE)
+else()
+	set(FFMPEG_LIB_DIR "FFMPEG_LIB_DIR-NOTFOUND" CACHE PATH "Path to the FFMPEG lib directory (e.g. /opt/ffmpeg/lib)")
+    unset(FFMPEG_LIB CACHE)
 endif()
 
 if(FFMPEG_INC AND FFMPEG_LIB_DIR)		
@@ -366,6 +433,8 @@ else()
 	option(USE_FFMPEG "Required to export mpeg videos." OFF)
     mark_as_advanced(CLEAR FFMPEG_INC FFMPEG_LIB_DIR)
 endif()
+
+include(FindOpenGL)
 
 ##### Set appropriate defines and includes #####
 
@@ -379,6 +448,10 @@ else()
 endif()
 
 include_directories(.)
+
+if(Qt5WebEngineCore_FOUND)
+    include_directories(${Qt5WebEngineWidgets_INCLUDE_DIRS})
+endif()
 
 if(USE_MMG)
 	add_definitions(-DHAS_MMG)
@@ -421,7 +494,7 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
-if(Qt5WebEngineCore_DIR)
+if(Qt5WebEngineWidgets_FOUND)
     add_definitions(-DWEBHELP)
 endif()
 
@@ -480,6 +553,12 @@ list(FILTER SRC_XPLTLib EXCLUDE REGEX "moc_")
 
 ##### Add binaries #####
 
+link_libraries(Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Charts)
+
+if(Qt5WebEngineWidgets_FOUND)
+	link_libraries(Qt5::WebEngineWidgets)
+endif()
+
 add_executable(FEBioStudio ${SRC_FEBioStudio} ${HDR_FEBioStudio} febiostudio.qrc)
 add_library(Abaqus ${SRC_Abaqus})
 add_library(Ansys ${SRC_Ansys})
@@ -505,33 +584,7 @@ add_library(XPLTLib ${SRC_XPLTLib})
 
 ##### Link Libraries #####
 
-target_link_libraries(FEBioStudio Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Charts)
 
-if(Qt5WebEngineCore_DIR)
-    target_link_libraries(FEBioStudio Qt5::WebEngineWidgets)
-endif()
-
-#target_link_libraries(Abaqus )
-#target_link_libraries(Ansys )
-#target_link_libraries(Comsol )
-target_link_libraries(CUILib Qt5::Charts)
-#target_link_libraries(FEBio )
-#target_link_libraries(FEMLib )
-target_link_libraries(FSCore Qt5::Core)
-#target_link_libraries(GeomLib )
-target_link_libraries(GLLib Qt5::OpenGL)
-target_link_libraries(GLWLib Qt5::OpenGL)
-#target_link_libraries(ImageLib )
-#target_link_libraries(LSDyna )
-#target_link_libraries(MathLib )
-#target_link_libraries(MeshIO )
-#target_link_libraries(MeshLib )
-#target_link_libraries(MeshTools )
-#target_link_libraries(Nike3D )
-target_link_libraries(PostGL Qt5::Gui)
-target_link_libraries(PostLib Qt5::Gui)
-#target_link_libraries(XML )
-#target_link_libraries(XPLTLib )
 
 if(WIN32)
     #add_definitions(-DWIN32)
@@ -567,7 +620,11 @@ if(USE_SSH)
 endif()
 
 if(USE_QUAZIP)
-	target_link_libraries(FEBioStudio -L${QUAZIP_LIB_DIR} -lquazip5)
+	if(APPLE)
+		target_link_libraries(FEBioStudio -L${QUAZIP_LIB_DIR} -lquazip)
+	else()
+		target_link_libraries(FEBioStudio -L${QUAZIP_LIB_DIR} -lquazip5)
+	endif()
 endif()
 
 if(MODEL_REPO)
@@ -582,7 +639,8 @@ endif()
 if(WIN32)
     #add_definitions(-DWIN32)
 elseif(APPLE)
-    #add_definitions(-D__APPLE__)
+    target_link_libraries(FEBioStudio Abaqus Ansys GeomLib MathLib XML MeshIO FEBio Comsol LSDyna MeshTools FEMLib MeshLib Nike3D ImageLib  GLLib GLWLib PostGL XPLTLib PostLib CUILib FSCore)
+    target_link_libraries(FEBioStudio ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} -lz)
 else()
     target_compile_options(MeshTools PUBLIC -std=c++17)
     
@@ -592,6 +650,34 @@ else()
     target_link_libraries(FEBioStudio -lGLU -lGL -lz)
     target_link_libraries(FEBioStudio -Wl,-rpath,\'\$ORIGIN/../lib/\')
 endif()
+
+#~ target_link_libraries(FEBioStudio Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Charts)
+
+#~ if(Qt5WebEngineWidgets_FOUND)
+    #~ target_link_libraries(FEBioStudio Qt5::WebEngineWidgets)
+#~ endif()
+
+#~ #target_link_libraries(Abaqus )
+#~ #target_link_libraries(Ansys )
+#~ #target_link_libraries(Comsol )
+#~ target_link_libraries(CUILib Qt5::Charts)
+#~ #target_link_libraries(FEBio )
+#~ #target_link_libraries(FEMLib )
+#~ target_link_libraries(FSCore Qt5::Core)
+#~ #target_link_libraries(GeomLib )
+#~ target_link_libraries(GLLib Qt5::OpenGL)
+#~ #target_link_libraries(GLWLib Qt5::Core Qt5::Widgets Qt5::Gui Qt5::OpenGL)
+#~ #target_link_libraries(ImageLib )
+#~ #target_link_libraries(LSDyna )
+#~ #target_link_libraries(MathLib )
+#~ #target_link_libraries(MeshIO )
+#~ #target_link_libraries(MeshLib )
+#~ #target_link_libraries(MeshTools )
+#~ #target_link_libraries(Nike3D )
+#~ target_link_libraries(PostGL Qt5::Gui)
+#~ target_link_libraries(PostLib Qt5::Gui)
+#~ #target_link_libraries(XML )
+#~ #target_link_libraries(XPLTLib )
 
 ##### Create qt.conf #####
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/qt.conf "[Paths]
