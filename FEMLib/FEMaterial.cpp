@@ -395,7 +395,7 @@ FECarterHayes::FECarterHayes() : FEMaterial(FE_CARTER_HAYES)
 // FEPRLig - Poission-Ratio Ligament
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPRLig, MODULE_MECH, FE_PRLIG, FE_MAT_ELASTIC_UNCOUPLED, "PRLig", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FEPRLig, MODULE_MECH, FE_PRLIG, FE_MAT_ELASTIC, "PRLig", MaterialFlags::TOPLEVEL);
 
 FEPRLig::FEPRLig() : FEMaterial(FE_PRLIG)
 {
