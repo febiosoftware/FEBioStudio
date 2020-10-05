@@ -41,7 +41,7 @@ class FileReader;
 class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
-class CDatabasePanel;
+class CRepositoryPanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -125,7 +125,7 @@ public:
 	CCreatePanel* GetCreatePanel();
 
 	// get the database panel
-	CDatabasePanel* GetDatabasePanel();
+	CRepositoryPanel* GetDatabasePanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);

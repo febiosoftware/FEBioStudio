@@ -48,6 +48,8 @@ public:
 
 	void SelectObject(FSObject* po);
 
+	FSObject* GetSelectedObject();
+
 	void OnViewChanged();
 
 public slots:

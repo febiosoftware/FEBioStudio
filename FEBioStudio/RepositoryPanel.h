@@ -31,7 +31,7 @@ SOFTWARE.*/
 using namespace std;
 
 namespace Ui {
-	class CDatabasePanel;
+	class CRepositoryPanel;
 	class CMainWindow;
 }
 
@@ -48,13 +48,13 @@ class ZipThread;
 
 enum FILETYPE {FULL=0, PART=1};
 
-class CDatabasePanel : public QWidget
+class CRepositoryPanel : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CDatabasePanel(CMainWindow* pwnd, QWidget* parent = 0);
-	~CDatabasePanel();
+	CRepositoryPanel(CMainWindow* pwnd, QWidget* parent = 0);
+	~CRepositoryPanel();
 
 	void SetModelList();
 	void ShowMessage(QString message);
@@ -124,5 +124,5 @@ private:
 	CLocalDatabaseHandler* dbHandler;
 	QString m_repositoryFolder;
 
-	Ui::CDatabasePanel*	ui;
+	Ui::CRepositoryPanel*	ui;
 };

@@ -101,6 +101,15 @@ void CPostPanel::SelectObject(FSObject* po)
 	ui->mdl->selectObject(po);
 }
 
+FSObject* CPostPanel::GetSelectedObject()
+{
+	if (ui->mdl->isVisible())
+	{
+		return ui->mdl->selectedObject();
+	}
+	else return nullptr;
+}
+
 void CPostPanel::OnViewChanged()
 {
 	CPostModelPanel* mdl = ui->mdl;

@@ -1320,7 +1320,7 @@ void CMainWindow::on_actionImportImage_triggered()
 		QString fileName = files.at(0);
 		std::string sfile = fileName.toStdString();
 
-		// create 'resources' subdirectory
+	/*	// create 'resources' subdirectory
 		std::string sPath = doc->GetDocFolder();
 
 		if (!sPath.empty())
@@ -1346,6 +1346,7 @@ void CMainWindow::on_actionImportImage_triggered()
 			// store path to newly created link
 			sfile = linkName.toStdString();
 		}
+*/
 
 		CDlgRAWImport dlg(this);
 		if (dlg.exec())
@@ -1361,7 +1362,12 @@ void CMainWindow::on_actionImportImage_triggered()
 			{
 				Update(0, true);
 				ZoomTo(po->GetBoundingBox());
-				ShowInModelViewer(po);
+
+				// only for model docs
+				if (dynamic_cast<CModelDocument*>(doc))
+				{
+					ShowInModelViewer(po);
+				}
 			}
 		}
 		else return;

@@ -676,7 +676,7 @@ void CPostModelPanel::Update(bool breset)
 				}
 			}
 
-/*			for (int i = 0; i < pdoc->ImageModels(); ++i)
+			for (int i = 0; i < pdoc->ImageModels(); ++i)
 			{
 				Post::CImageModel* img = pdoc->GetImageModel(i);
 
@@ -729,7 +729,7 @@ void CPostModelPanel::Update(bool breset)
 					}
 				}
 			}
-*/	
+	
 			// view settings
 			CGView& view = *pdoc->GetView();
 			pi1 = new CModelTreeItem(&view, ui->m_tree);

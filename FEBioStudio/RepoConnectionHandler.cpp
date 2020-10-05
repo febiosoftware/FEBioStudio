@@ -48,7 +48,7 @@ SOFTWARE.*/
 #include <QSaveFile>
 #include <QFileDialog>
 #include <QTcpSocket>
-#include "DatabasePanel.h"
+#include <RepositoryPanel.h>
 #include "MainWindow.h"
 #include "Document.h"
 #include "LocalDatabaseHandler.h"
@@ -61,7 +61,7 @@ SOFTWARE.*/
 class CRepoConnectionHandler::Imp
 {
 public:
-	Imp(CDatabasePanel* dbPanel, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* handler, CMainWindow* wnd)
+	Imp(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CRepoConnectionHandler* handler, CMainWindow* wnd)
 		: dbPanel(dbPanel), dbHandler(dbHandler), m_wnd(wnd), uploadPermission(0), sizeLimit(0), authenticated(false), uploadReady(false)
 	{
 		restclient = new QNetworkAccessManager(handler);
@@ -84,7 +84,7 @@ public:
 		bool uploadReady = false;
 	}
 
-	CDatabasePanel* dbPanel;
+	CRepositoryPanel* dbPanel;
 	CLocalDatabaseHandler* dbHandler;
 	CMainWindow* m_wnd;
 
@@ -101,7 +101,7 @@ public:
 };
 
 
-CRepoConnectionHandler::CRepoConnectionHandler(CDatabasePanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd)
+CRepoConnectionHandler::CRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd)
 {
 	imp = new Imp(dbPanel, dbHandler, this, wnd);
 
@@ -196,8 +196,8 @@ void CRepoConnectionHandler::getFile(int id, int type)
 	{
 		QNetworkReply* reply = imp->restclient->get(request);
 
-		QObject::connect(reply, &QNetworkReply::downloadProgress, imp->dbPanel, &CDatabasePanel::loadingPageProgress);
-		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
+		QObject::connect(reply, &QNetworkReply::downloadProgress, imp->dbPanel, &CRepositoryPanel::loadingPageProgress);
+		QObject::connect(imp->dbPanel, &CRepositoryPanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 
 }
@@ -220,7 +220,7 @@ void CRepoConnectionHandler::uploadFileRequest(QByteArray projectInfo)
 	if(NetworkAccessibleCheck())
 	{
 		QNetworkReply* reply = imp->restclient->post(request, projectInfo);
-		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
+		QObject::connect(imp->dbPanel, &CRepositoryPanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 }
 
@@ -252,8 +252,8 @@ void CRepoConnectionHandler::uploadFile()
 		QNetworkReply* reply = imp->restclient->post(request, arch);
 		arch->setParent(reply);
 
-		QObject::connect(reply, &QNetworkReply::uploadProgress, imp->dbPanel, &CDatabasePanel::loadingPageProgress);
-		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
+		QObject::connect(reply, &QNetworkReply::uploadProgress, imp->dbPanel, &CRepositoryPanel::loadingPageProgress);
+		QObject::connect(imp->dbPanel, &CRepositoryPanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 }
 
@@ -296,7 +296,7 @@ void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 	if(NetworkAccessibleCheck())
 	{
 		QNetworkReply* reply = imp->restclient->put(request, projectInfo);
-		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
+		QObject::connect(imp->dbPanel, &CRepositoryPanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 }
 
@@ -328,8 +328,8 @@ void CRepoConnectionHandler::modifyProjectUpload()
 		QNetworkReply* reply = imp->restclient->post(request, arch);
 		arch->setParent(reply);
 
-		QObject::connect(reply, &QNetworkReply::uploadProgress, imp->dbPanel, &CDatabasePanel::loadingPageProgress);
-		QObject::connect(imp->dbPanel, &CDatabasePanel::cancelClicked, reply, &QNetworkReply::abort);
+		QObject::connect(reply, &QNetworkReply::uploadProgress, imp->dbPanel, &CRepositoryPanel::loadingPageProgress);
+		QObject::connect(imp->dbPanel, &CRepositoryPanel::cancelClicked, reply, &QNetworkReply::abort);
 	}
 }
 
@@ -847,7 +847,7 @@ void CRepoConnectionHandler::loggedOut()
 
 #else
 
-CRepoConnectionHandler::CRepoConnectionHandler(CDatabasePanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd){}
+CRepoConnectionHandler::CRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd){}
 CRepoConnectionHandler::~CRepoConnectionHandler(){}
 void CRepoConnectionHandler::authenticate(QString userName, QString password){}
 void CRepoConnectionHandler::getFile(int id, int type){}

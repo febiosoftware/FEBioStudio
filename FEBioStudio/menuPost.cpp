@@ -51,6 +51,7 @@ SOFTWARE.*/
 #include "DlgImportLines.h"
 #include "DlgTimeSettings.h"
 #include "PostDocument.h"
+#include "ModelDocument.h"
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
@@ -193,7 +194,20 @@ void CMainWindow::on_actionImageSlicer_triggered()
 
 void CMainWindow::on_actionVolumeRender_triggered()
 {
-	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	// get the document
+	CDocument* modelDoc = GetModelDocument();
+	CDocument* postDoc = GetPostDocument();
+
+	Post::CImageModel* img = nullptr;
+	if (modelDoc)
+	{
+		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	}
+	else if (postDoc)
+	{
+		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+	}
+
 	if (img == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
@@ -203,8 +217,16 @@ void CMainWindow::on_actionVolumeRender_triggered()
 	Post::CVolRender* vr = new Post::CVolRender(img);
 	vr->Create();
 	img->AddImageRenderer(vr);
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(vr);
+
+	if (modelDoc)
+	{
+		ui->modelViewer->Update();
+		ui->modelViewer->Select(vr);
+	}
+	else if (postDoc)
+	{
+		ui->postPanel->Update();
+	}
 	RedrawGL();
 }
 
