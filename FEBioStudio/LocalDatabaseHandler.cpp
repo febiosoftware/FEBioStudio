@@ -41,55 +41,55 @@ SOFTWARE.*/
 #include <QStringList>
 #include <QVariantMap>
 #include "RepoProject.h"
-#include "DatabasePanel.h"
+#include <RepositoryPanel.h>
 
 #include <iostream>
 
 static int addCategoryCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddCategory(argv);
+	((CRepositoryPanel*) dbPanel)->AddCategory(argv);
 
 	return 0;
 }
 
 static int addProjectCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddProject(argv);
+	((CRepositoryPanel*) dbPanel)->AddProject(argv);
 
 	return 0;
 }
 
 static int addProjectFilesCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddProjectFile(argv);
+	((CRepositoryPanel*) dbPanel)->AddProjectFile(argv);
 
 	return 0;
 }
 
 static int setProjectDataCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->SetProjectData(argv);
+	((CRepositoryPanel*) dbPanel)->SetProjectData(argv);
 
 	return 0;
 }
 
 static int setFileDataCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->SetFileData(argv);
+	((CRepositoryPanel*) dbPanel)->SetFileData(argv);
 
 	return 0;
 }
 
 static int addCurrentTagCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddCurrentTag(argv);
+	((CRepositoryPanel*) dbPanel)->AddCurrentTag(argv);
 
 	return 0;
 }
 
 static int addCurrentFileTagCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddCurrentFileTag(argv);
+	((CRepositoryPanel*) dbPanel)->AddCurrentFileTag(argv);
 
 	return 0;
 }
@@ -97,7 +97,7 @@ static int addCurrentFileTagCallback(void *dbPanel, int argc, char **argv, char 
 class CLocalDatabaseHandler::Imp
 {
 public:
-	Imp(CDatabasePanel* dbPanel)
+	Imp(CRepositoryPanel* dbPanel)
 		: dbPanel(dbPanel), db(NULL)	{}
 
 	void updateDBPath()
@@ -461,11 +461,11 @@ public:
 
 public:
 	sqlite3* db;
-	CDatabasePanel* dbPanel;
+	CRepositoryPanel* dbPanel;
 	QString dbPath;
 };
 
-CLocalDatabaseHandler::CLocalDatabaseHandler(CDatabasePanel* dbPanel)
+CLocalDatabaseHandler::CLocalDatabaseHandler(CRepositoryPanel* dbPanel)
 {
 	imp = new Imp(dbPanel);
 }
@@ -877,7 +877,7 @@ qint64 CLocalDatabaseHandler::projectsSize(int ID)
 
 #else
 
-CLocalDatabaseHandler::CLocalDatabaseHandler(CDatabasePanel* dbPanel) {}
+CLocalDatabaseHandler::CLocalDatabaseHandler(CRepositoryPanel* dbPanel) {}
 CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc){}
 bool CLocalDatabaseHandler::isValidUpload(QString& projectName, QString& category) { return false;  }

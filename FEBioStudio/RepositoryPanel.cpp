@@ -24,8 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <RepositoryPanel.h>
 #include "stdafx.h"
-#include "DatabasePanel.h"
 
 #ifdef MODEL_REPO
 #include <vector>
@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <QStackedLayout>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QTextBrowser>
 #include <QProgressBar>
 #include <QTextBrowser>
 #include <QLabel>
@@ -93,15 +94,6 @@ public:
 	}
 
 	virtual CustomTreeWidgetItem* getProjectItem() = 0;
-
-//	void addChild(CustomTreeWidgetItem* child)
-//	{
-//		localCopy += child->GetLocalCopy();
-//		totalCopies += child->GetTotalCopies();
-//		UpdateLocalCopyColor();
-//
-//		QTreeWidgetItem::addChild(child);
-//	}
 
 	bool LocalCopy() { return localCopy >= totalCopies; }
 
@@ -336,34 +328,29 @@ private:
 
 };
 
-class DisplayTextEdit : public QTextEdit
+class DisplayTextEdit : public QTextBrowser
 {
 public:
-	DisplayTextEdit(QWidget *parent = nullptr) : QTextEdit(parent)
+	DisplayTextEdit(QWidget *parent = nullptr) : QTextBrowser(parent)
 	{
-		setReadOnly(true);
-		setFrameStyle(QFrame::Plain|QFrame::NoFrame);
-		QPalette qpalette = palette();
-		qpalette.setColor(QPalette::Base, qApp->palette().color(QPalette::Window));
-		setPalette(qpalette);
+		init();
 	}
 
-	DisplayTextEdit(const QString &text, QWidget *parent = nullptr) : QTextEdit(text, parent)
+	DisplayTextEdit(const QString &text, QWidget *parent = nullptr) : QTextBrowser(parent)
 	{
-		setReadOnly(true);
-		setFrameStyle(QFrame::Plain|QFrame::NoFrame);
-		QPalette qpalette = palette();
-		qpalette.setColor(QPalette::Base, qApp->palette().color(QPalette::Window));
-		setPalette(qpalette);
+		init();
+
+		setText(text);
 	}
 
 	void setText(const QString &text)
 	{
-		QTextEdit::setText(text);
+		QTextBrowser::setText(text);
 
 		document()->setTextWidth(size().width());
 
 		setMinimumHeight(document()->size().height());
+		setMaximumHeight(document()->size().height());
 	}
 
 	void resizeEvent(QResizeEvent *event) override
@@ -371,10 +358,28 @@ public:
 		document()->setTextWidth(event->size().width());
 
 		setMinimumHeight(document()->size().height());
+		setMaximumHeight(document()->size().height());
 	}
+
+private:
+	void init()
+		{
+			// Make this look like a QLabel
+			setFrameStyle(QFrame::Plain|QFrame::NoFrame);
+			QPalette qpalette = palette();
+			qpalette.setColor(QPalette::Base, qApp->palette().color(QPalette::Window));
+			setPalette(qpalette);
+
+			// Make this only take up the necessary size
+			setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+			// Allow hyperlinks to open in a browser
+			setOpenExternalLinks(true);
+			setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+		}
 };
 
-class Ui::CDatabasePanel
+class Ui::CRepositoryPanel
 {
 public:
 	QStackedLayout* stack;
@@ -432,9 +437,9 @@ public:
 	QPushButton* loadingCancel;
 
 public:
-	CDatabasePanel() : currentProject(nullptr), openAfterDownload(nullptr){}
+	CRepositoryPanel() : currentProject(nullptr), openAfterDownload(nullptr){}
 
-	void setupUi(::CDatabasePanel* parent)
+	void setupUi(::CRepositoryPanel* parent)
 	{
 		stack = new QStackedLayout(parent);
 
@@ -753,12 +758,12 @@ public:
 	CustomTreeWidgetItem* openAfterDownload;
 };
 
-CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent)
-	: QWidget(parent), m_wnd(pwnd), ui(new Ui::CDatabasePanel)
+CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent)
+	: QWidget(parent), m_wnd(pwnd), ui(new Ui::CRepositoryPanel)
 {
 	// build Ui
 	ui->setupUi(this);
-	QObject::connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CDatabasePanel::on_actionSearch_triggered);
+	QObject::connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CRepositoryPanel::on_actionSearch_triggered);
 	QObject::connect(ui->loadingCancel, SIGNAL(clicked(bool)), this, SIGNAL(cancelClicked()));
 
 	dbHandler = new CLocalDatabaseHandler(this);
@@ -767,14 +772,14 @@ CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent)
 	QMetaObject::connectSlotsByName(this);
 }
 
-CDatabasePanel::~CDatabasePanel()
+CRepositoryPanel::~CRepositoryPanel()
 {
 	delete repoHandler;
 	delete dbHandler;
 	delete ui;
 }
 
-void CDatabasePanel::SetModelList()
+void CRepositoryPanel::SetModelList()
 {
 	ui->projectTree->blockSignals(true);
 	ui->projectTree->clear();
@@ -822,7 +827,7 @@ void CDatabasePanel::SetModelList()
 	ui->stack->setCurrentIndex(1);
 }
 
-void CDatabasePanel::ShowMessage(QString message)
+void CRepositoryPanel::ShowMessage(QString message)
 {
 	QDialog *dlg = new QDialog(this);
 	QVBoxLayout* l = new QVBoxLayout;
@@ -838,7 +843,7 @@ void CDatabasePanel::ShowMessage(QString message)
 	dlg->exec();
 }
 
-void CDatabasePanel::LoginTimeout()
+void CRepositoryPanel::LoginTimeout()
 {
 	ShowMessage("Your login to the model repository has timed out.");
 
@@ -846,12 +851,12 @@ void CDatabasePanel::LoginTimeout()
 	ui->stack->setCurrentIndex(1);
 }
 
-void CDatabasePanel::NetworkInaccessible()
+void CRepositoryPanel::NetworkInaccessible()
 {
 	ShowMessage("FEBio Studio cannot connect to the network.");
 }
 
-void CDatabasePanel::DownloadFinished(int fileID, int fileType)
+void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 {
 	if(fileType == FULL)
 	{
@@ -892,7 +897,7 @@ void CDatabasePanel::DownloadFinished(int fileID, int fileType)
 	on_treeWidget_itemSelectionChanged();
 }
 
-void CDatabasePanel::AddCategory(char **data)
+void CRepositoryPanel::AddCategory(char **data)
 {
 	QString category(data[0]);
 	QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
@@ -901,7 +906,7 @@ void CDatabasePanel::AddCategory(char **data)
 	ui->projectTree->addTopLevelItem(item);
 }
 
-void CDatabasePanel::AddProject(char **data)
+void CRepositoryPanel::AddProject(char **data)
 {
 	int ID = stoi(data[0]);
 	QString name(data[1]);
@@ -952,7 +957,7 @@ void CDatabasePanel::AddProject(char **data)
 	}
 }
 
-void CDatabasePanel::AddProjectFile(char **data)
+void CRepositoryPanel::AddProjectFile(char **data)
 {
 	int ID = std::stoi(data[0]);
 	QString filename(data[1]);
@@ -962,7 +967,7 @@ void CDatabasePanel::AddProjectFile(char **data)
 	ui->currentProject->addChild(ui->addFile(filename, 0, ID, localCopy, size));
 }
 
-void CDatabasePanel::on_connectButton_clicked()
+void CRepositoryPanel::on_connectButton_clicked()
 {
 	if(m_repositoryFolder.isEmpty())
 	{
@@ -989,7 +994,7 @@ void CDatabasePanel::on_connectButton_clicked()
 	ui->showLoadingPage("Connecting...");
 }
 
-void CDatabasePanel::on_loginButton_clicked()
+void CRepositoryPanel::on_loginButton_clicked()
 {
 	CDlgLogin dlg;
 
@@ -1001,7 +1006,7 @@ void CDatabasePanel::on_loginButton_clicked()
 	}
 }
 
-void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column)
+void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
 	CustomTreeWidgetItem* customItem = static_cast<CustomTreeWidgetItem*>(item);
 
@@ -1017,20 +1022,20 @@ void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int 
 	}
 }
 
-void CDatabasePanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
+void CRepositoryPanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
 	FileSearchItem* searchItem = static_cast<FileSearchItem*>(item);
 
 	on_treeWidget_itemDoubleClicked(searchItem->getRealItem(),0);
 }
 
-void CDatabasePanel::on_actionRefresh_triggered()
+void CRepositoryPanel::on_actionRefresh_triggered()
 {
 	ui->showLoadingPage("Refreshing...");
 	repoHandler->getSchema();
 }
 
-void CDatabasePanel::on_actionDownload_triggered()
+void CRepositoryPanel::on_actionDownload_triggered()
 {
 	if(ui->treeStack->currentIndex() == 0)
 	{
@@ -1043,7 +1048,7 @@ void CDatabasePanel::on_actionDownload_triggered()
 
 }
 
-void CDatabasePanel::on_actionOpen_triggered()
+void CRepositoryPanel::on_actionOpen_triggered()
 {
 	if(ui->treeStack->currentIndex() == 0)
 	{
@@ -1055,7 +1060,7 @@ void CDatabasePanel::on_actionOpen_triggered()
 	}
 }
 
-void CDatabasePanel::on_actionOpenFileLocation_triggered()
+void CRepositoryPanel::on_actionOpenFileLocation_triggered()
 {
 	if(ui->treeStack->currentIndex() == 0)
 	{
@@ -1067,7 +1072,7 @@ void CDatabasePanel::on_actionOpenFileLocation_triggered()
 	}
 }
 
-void CDatabasePanel::on_actionDelete_triggered()
+void CRepositoryPanel::on_actionDelete_triggered()
 {
 	if(ui->treeStack->currentIndex() == 0)
 	{
@@ -1081,7 +1086,7 @@ void CDatabasePanel::on_actionDelete_triggered()
 	on_treeWidget_itemSelectionChanged();
 }
 
-void CDatabasePanel::on_actionUpload_triggered()
+void CRepositoryPanel::on_actionUpload_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
@@ -1129,10 +1134,10 @@ void CDatabasePanel::on_actionUpload_triggered()
 			ui->showLoadingPage("Compressing Files...", true);
 
 			ZipThread* zip = new ZipThread(archiveName, filePaths, zipFilePaths);
-			QObject::connect(zip, &ZipThread::resultReady, this, &CDatabasePanel::updateUploadReady);
+			QObject::connect(zip, &ZipThread::resultReady, this, &CRepositoryPanel::updateUploadReady);
 			QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
 			QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
-			QObject::connect(zip, &ZipThread::progress, this, &CDatabasePanel::loadingPageProgress);
+			QObject::connect(zip, &ZipThread::progress, this, &CRepositoryPanel::loadingPageProgress);
 			zip->start();
 		}
 	}
@@ -1157,7 +1162,7 @@ void CDatabasePanel::on_actionUpload_triggered()
 
 }
 
-void CDatabasePanel::on_actionSearch_triggered()
+void CRepositoryPanel::on_actionSearch_triggered()
 {
 	ui->unhideAll();
 
@@ -1216,7 +1221,7 @@ void CDatabasePanel::on_actionSearch_triggered()
 
 }
 
-void CDatabasePanel::on_actionClearSearch_triggered()
+void CRepositoryPanel::on_actionClearSearch_triggered()
 {
 	ui->searchLineEdit->clear();
 
@@ -1225,7 +1230,7 @@ void CDatabasePanel::on_actionClearSearch_triggered()
 	ui->treeStack->setCurrentIndex(0);
 }
 
-void CDatabasePanel::on_actionDeleteRemote_triggered()
+void CRepositoryPanel::on_actionDeleteRemote_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
@@ -1246,7 +1251,7 @@ void CDatabasePanel::on_actionDeleteRemote_triggered()
 
 }
 
-void CDatabasePanel::on_actionModify_triggered()
+void CRepositoryPanel::on_actionModify_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
@@ -1313,10 +1318,10 @@ void CDatabasePanel::on_actionModify_triggered()
 				ui->showLoadingPage("Compressing Files...", true);
 
 				ZipThread* zip = new ZipThread(archiveName, filePaths, zipFilePaths);
-				QObject::connect(zip, &ZipThread::resultReady, this, &CDatabasePanel::updateModifyReady);
+				QObject::connect(zip, &ZipThread::resultReady, this, &CRepositoryPanel::updateModifyReady);
 				QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
 				QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
-				QObject::connect(zip, &ZipThread::progress, this, &CDatabasePanel::loadingPageProgress);
+				QObject::connect(zip, &ZipThread::progress, this, &CRepositoryPanel::loadingPageProgress);
 				zip->start();
 			}
 		}
@@ -1329,7 +1334,7 @@ void CDatabasePanel::on_actionModify_triggered()
 
 }
 
-void CDatabasePanel::on_actionFindInTree_triggered()
+void CRepositoryPanel::on_actionFindInTree_triggered()
 {
 	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0]);
 
@@ -1340,7 +1345,7 @@ void CDatabasePanel::on_actionFindInTree_triggered()
 	ui->searchLineEdit->clear();
 }
 
-void CDatabasePanel::UpdateInfo(CustomTreeWidgetItem *item)
+void CRepositoryPanel::UpdateInfo(CustomTreeWidgetItem *item)
 {
 	ProjectItem* projItem = static_cast<ProjectItem*>(item->getProjectItem());
 
@@ -1415,7 +1420,7 @@ void CDatabasePanel::UpdateInfo(CustomTreeWidgetItem *item)
 	}
 }
 
-void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item)
+void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item)
 {
 	int ID;
 	int type;
@@ -1445,7 +1450,7 @@ void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item)
 	repoHandler->getFile(ID, type);
 }
 
-void CDatabasePanel::OpenItem(CustomTreeWidgetItem *item)
+void CRepositoryPanel::OpenItem(CustomTreeWidgetItem *item)
 {
 	int ID;
 	int type;
@@ -1472,7 +1477,7 @@ void CDatabasePanel::OpenItem(CustomTreeWidgetItem *item)
 	m_wnd->OpenFile(filename);
 }
 
-void CDatabasePanel::DeleteItem(CustomTreeWidgetItem *item)
+void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item)
 {
 	int children = item->childCount();
 	for(int child = 0; child < children; child++)
@@ -1517,7 +1522,7 @@ void CDatabasePanel::DeleteItem(CustomTreeWidgetItem *item)
 
 }
 
-void CDatabasePanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
+void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 {
 	int ID;
 	int type;
@@ -1544,7 +1549,7 @@ void CDatabasePanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 	m_wnd->OpenFile(fileInfo.absolutePath());
 }
 
-void CDatabasePanel::on_treeWidget_itemSelectionChanged()
+void CRepositoryPanel::on_treeWidget_itemSelectionChanged()
 {
 	if(ui->projectTree->selectedItems()[0]->type() == 0)
 	{
@@ -1568,7 +1573,7 @@ void CDatabasePanel::on_treeWidget_itemSelectionChanged()
 	UpdateInfo(item);
 }
 
-void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
+void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 {
 	if(ui->projectTree->itemAt(pos)->type() == 0) return;
 
@@ -1601,14 +1606,14 @@ void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 	menu.exec(ui->projectTree->viewport()->mapToGlobal(pos));
 }
 
-void CDatabasePanel::on_fileSearchTree_itemSelectionChanged()
+void CRepositoryPanel::on_fileSearchTree_itemSelectionChanged()
 {
 	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0]);
 
 	UpdateInfo(item->getRealItem());
 }
 
-void CDatabasePanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos)
+void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos)
 {
 	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->itemAt(pos));
 	item->setSelected(true);
@@ -1629,19 +1634,19 @@ void CDatabasePanel::on_fileSearchTree_customContextMenuRequested(const QPoint &
 	menu.exec(ui->fileSearchTree->viewport()->mapToGlobal(pos));
 }
 
-void CDatabasePanel::on_projectTags_linkActivated(const QString& link)
+void CRepositoryPanel::on_projectTags_linkActivated(const QString& link)
 {
 	ui->searchLineEdit->setText(link);
 	on_actionSearch_triggered();
 }
 
-void CDatabasePanel::on_fileTags_linkActivated(const QString& link)
+void CRepositoryPanel::on_fileTags_linkActivated(const QString& link)
 {
 	ui->searchLineEdit->setText(QString("files:") + link);
 	on_actionSearch_triggered();
 }
 
-void CDatabasePanel::updateUploadReady(bool ready)
+void CRepositoryPanel::updateUploadReady(bool ready)
 {
 	if(ready)
 	{
@@ -1656,7 +1661,7 @@ void CDatabasePanel::updateUploadReady(bool ready)
 	}
 }
 
-void CDatabasePanel::updateModifyReady(bool ready)
+void CRepositoryPanel::updateModifyReady(bool ready)
 {
 	if(ready)
 	{
@@ -1671,7 +1676,7 @@ void CDatabasePanel::updateModifyReady(bool ready)
 	}
 }
 
-QStringList CDatabasePanel::GetCategories()
+QStringList CRepositoryPanel::GetCategories()
 {
 	int permission = repoHandler->getUploadPermission();
 
@@ -1693,7 +1698,7 @@ QStringList CDatabasePanel::GetCategories()
 	return categories;
 }
 
-void CDatabasePanel::SetProjectData(char **data)
+void CRepositoryPanel::SetProjectData(char **data)
 {
 	ui->projectName->setText(data[0]);
 	ui->projectOwner->setText(data[2]);
@@ -1704,28 +1709,28 @@ void CDatabasePanel::SetProjectData(char **data)
 	ui->projectDesc->setText(desc);
 }
 
-void CDatabasePanel::SetFileData(char **data)
+void CRepositoryPanel::SetFileData(char **data)
 {
 	ui->filenameLabel->setText(data[0]);
 	ui->setFileDescription(data[1]);
 }
 
-void CDatabasePanel::AddCurrentTag(char **data)
+void CRepositoryPanel::AddCurrentTag(char **data)
 {
 	ui->currentTags.append(data[0]);
 }
 
-void CDatabasePanel::AddPublication(QVariantMap data)
+void CRepositoryPanel::AddPublication(QVariantMap data)
 {
 	ui->projectPubs->addPublication(data);
 }
 
-void CDatabasePanel::AddCurrentFileTag(char **data)
+void CRepositoryPanel::AddCurrentFileTag(char **data)
 {
 	ui->currentFileTags.append(data[0]);
 }
 
-QString CDatabasePanel::GetRepositoryFolder()
+QString CRepositoryPanel::GetRepositoryFolder()
 {
 	return m_repositoryFolder;
 
@@ -1733,22 +1738,22 @@ QString CDatabasePanel::GetRepositoryFolder()
 	if(!dir.exists()) dir.mkpath(m_repositoryFolder);
 }
 
-void CDatabasePanel::SetRepositoryFolder(QString folder)
+void CRepositoryPanel::SetRepositoryFolder(QString folder)
 {
 	m_repositoryFolder = folder;
 }
 
-void CDatabasePanel::showMainPage()
+void CRepositoryPanel::showMainPage()
 {
 	ui->stack->setCurrentIndex(1);
 }
 
-void CDatabasePanel::showLoadingPage(QString message, bool progress)
+void CRepositoryPanel::showLoadingPage(QString message, bool progress)
 {
 	ui->showLoadingPage(message, progress);
 }
 
-void CDatabasePanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
+void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
 {
 	ui->loadingBar->setRange(0, bytesTotal);
 
@@ -1757,48 +1762,48 @@ void CDatabasePanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
 
 #else
 
-CDatabasePanel::CDatabasePanel(CMainWindow* pwnd, QWidget* parent){}
-CDatabasePanel::~CDatabasePanel(){}
-void CDatabasePanel::SetModelList(){}
-void CDatabasePanel::ShowMessage(QString message) {}
-void CDatabasePanel::LoginTimeout() {}
-void CDatabasePanel::NetworkInaccessible() {}
-void CDatabasePanel::DownloadFinished(int fileID, int fileType) {}
-void CDatabasePanel::AddCategory(char **argv) {}
-void CDatabasePanel::AddProject(char **argv) {}
-void CDatabasePanel::AddProjectFile(char **argv) {}
-void CDatabasePanel::SetProjectData(char **argv) {}
-void CDatabasePanel::SetFileData(char **argv) {}
-void CDatabasePanel::AddCurrentTag(char **argv) {}
-void CDatabasePanel::AddPublication(QVariantMap data) {}
-QString CDatabasePanel::GetRepositoryFolder() { return QString(); }
-void CDatabasePanel::SetRepositoryFolder(QString folder) {}
-void CDatabasePanel::on_loginButton_clicked() {}
-void CDatabasePanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column){}
-void CDatabasePanel::on_actionDownload_triggered() {}
-void CDatabasePanel::on_actionOpen_triggered() {}
-void CDatabasePanel::on_actionOpenFileLocation_triggered() {}
-void CDatabasePanel::on_actionDelete_triggered() {}
-void CDatabasePanel::on_actionUpload_triggered() {}
-void CDatabasePanel::on_actionSearch_triggered() {}
-void CDatabasePanel::on_actionClearSearch_triggered() {}
-void CDatabasePanel::on_actionDeleteRemote_triggered() {}
-void CDatabasePanel::on_actionModify_triggered() {}
-void CDatabasePanel::on_treeWidget_itemSelectionChanged() {}
-void CDatabasePanel::on_treeWidget_customContextMenuRequested(const QPoint &pos) {}
-void CDatabasePanel::DownloadItem(CustomTreeWidgetItem *item) {}
-void CDatabasePanel::OpenItem(CustomTreeWidgetItem *item) {}
-void CDatabasePanel::DeleteItem(CustomTreeWidgetItem *item) {}
-void CDatabasePanel::ShowItemInBrowser(CustomTreeWidgetItem *item) {}
-void CDatabasePanel::on_connectButton_clicked() {}
-void CDatabasePanel::on_actionRefresh_triggered() {}
-void CDatabasePanel::on_projectTags_linkActivated(const QString& link) {}
-void CDatabasePanel::on_fileTags_linkActivated(const QString& link) {}
-void CDatabasePanel::updateUploadReady(bool ready) {}
-void CDatabasePanel::updateModifyReady(bool ready) {}
-void CDatabasePanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal) {}
-void CDatabasePanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {}
-void CDatabasePanel::on_actionFindInTree_triggered() {}
-void CDatabasePanel::on_fileSearchTree_itemSelectionChanged() {}
-void CDatabasePanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos) {}
+CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent){}
+CRepositoryPanel::~CRepositoryPanel(){}
+void CRepositoryPanel::SetModelList(){}
+void CRepositoryPanel::ShowMessage(QString message) {}
+void CRepositoryPanel::LoginTimeout() {}
+void CRepositoryPanel::NetworkInaccessible() {}
+void CRepositoryPanel::DownloadFinished(int fileID, int fileType) {}
+void CRepositoryPanel::AddCategory(char **argv) {}
+void CRepositoryPanel::AddProject(char **argv) {}
+void CRepositoryPanel::AddProjectFile(char **argv) {}
+void CRepositoryPanel::SetProjectData(char **argv) {}
+void CRepositoryPanel::SetFileData(char **argv) {}
+void CRepositoryPanel::AddCurrentTag(char **argv) {}
+void CRepositoryPanel::AddPublication(QVariantMap data) {}
+QString CRepositoryPanel::GetRepositoryFolder() { return QString(); }
+void CRepositoryPanel::SetRepositoryFolder(QString folder) {}
+void CRepositoryPanel::on_loginButton_clicked() {}
+void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column){}
+void CRepositoryPanel::on_actionDownload_triggered() {}
+void CRepositoryPanel::on_actionOpen_triggered() {}
+void CRepositoryPanel::on_actionOpenFileLocation_triggered() {}
+void CRepositoryPanel::on_actionDelete_triggered() {}
+void CRepositoryPanel::on_actionUpload_triggered() {}
+void CRepositoryPanel::on_actionSearch_triggered() {}
+void CRepositoryPanel::on_actionClearSearch_triggered() {}
+void CRepositoryPanel::on_actionDeleteRemote_triggered() {}
+void CRepositoryPanel::on_actionModify_triggered() {}
+void CRepositoryPanel::on_treeWidget_itemSelectionChanged() {}
+void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &pos) {}
+void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item) {}
+void CRepositoryPanel::OpenItem(CustomTreeWidgetItem *item) {}
+void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item) {}
+void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item) {}
+void CRepositoryPanel::on_connectButton_clicked() {}
+void CRepositoryPanel::on_actionRefresh_triggered() {}
+void CRepositoryPanel::on_projectTags_linkActivated(const QString& link) {}
+void CRepositoryPanel::on_fileTags_linkActivated(const QString& link) {}
+void CRepositoryPanel::updateUploadReady(bool ready) {}
+void CRepositoryPanel::updateModifyReady(bool ready) {}
+void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal) {}
+void CRepositoryPanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {}
+void CRepositoryPanel::on_actionFindInTree_triggered() {}
+void CRepositoryPanel::on_fileSearchTree_itemSelectionChanged() {}
+void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos) {}
 #endif

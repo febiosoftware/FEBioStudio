@@ -985,7 +985,7 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 	return ui->buildPanel->CreatePanel();
 }
 
-CDatabasePanel* CMainWindow::GetDatabasePanel()
+CRepositoryPanel* CMainWindow::GetDatabasePanel()
 {
 	return ui->databasePanel;
 }

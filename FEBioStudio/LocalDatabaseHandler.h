@@ -37,14 +37,14 @@ class QString;
 class QVariant;
 class QStringList;
 class CRepoProject;
-class CDatabasePanel;
+class CRepositoryPanel;
 
 class CLocalDatabaseHandler
 {
 	class Imp;
 
 public:
-	CLocalDatabaseHandler(CDatabasePanel* dbPanel);
+	CLocalDatabaseHandler(CRepositoryPanel* dbPanel);
 	~CLocalDatabaseHandler();
 
 	void init(std::string schema);

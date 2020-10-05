@@ -1,19 +1,19 @@
 /****************************************************************************
-** Meta object code from reading C++ file 'DatabasePanel.h'
+** Meta object code from reading C++ file 'RepositoryPanel.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.2)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.14.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
 #include <memory>
-#include "DatabasePanel.h"
+#include "RepositoryPanel.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
-#error "The header file 'DatabasePanel.h' doesn't include <QObject>."
+#error "The header file 'RepositoryPanel.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.14.2. It"
+#error "This file was generated using the moc from 5.14.1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -21,55 +21,55 @@
 QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-struct qt_meta_stringdata_CDatabasePanel_t {
+struct qt_meta_stringdata_CRepositoryPanel_t {
     QByteArrayData data[35];
-    char stringdata0[794];
+    char stringdata0[796];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_CDatabasePanel_t, stringdata0) + ofs \
+    qptrdiff(offsetof(qt_meta_stringdata_CRepositoryPanel_t, stringdata0) + ofs \
         - idx * sizeof(QByteArrayData)) \
     )
-static const qt_meta_stringdata_CDatabasePanel_t qt_meta_stringdata_CDatabasePanel = {
+static const qt_meta_stringdata_CRepositoryPanel_t qt_meta_stringdata_CRepositoryPanel = {
     {
-QT_MOC_LITERAL(0, 0, 14), // "CDatabasePanel"
-QT_MOC_LITERAL(1, 15, 13), // "cancelClicked"
-QT_MOC_LITERAL(2, 29, 0), // ""
-QT_MOC_LITERAL(3, 30, 17), // "updateUploadReady"
-QT_MOC_LITERAL(4, 48, 5), // "ready"
-QT_MOC_LITERAL(5, 54, 17), // "updateModifyReady"
-QT_MOC_LITERAL(6, 72, 19), // "loadingPageProgress"
-QT_MOC_LITERAL(7, 92, 9), // "bytesSent"
-QT_MOC_LITERAL(8, 102, 10), // "bytesTotal"
-QT_MOC_LITERAL(9, 113, 24), // "on_connectButton_clicked"
-QT_MOC_LITERAL(10, 138, 22), // "on_loginButton_clicked"
-QT_MOC_LITERAL(11, 161, 31), // "on_treeWidget_itemDoubleClicked"
-QT_MOC_LITERAL(12, 193, 16), // "QTreeWidgetItem*"
-QT_MOC_LITERAL(13, 210, 4), // "item"
-QT_MOC_LITERAL(14, 215, 6), // "column"
-QT_MOC_LITERAL(15, 222, 35), // "on_fileSearchTree_itemDoubleC..."
-QT_MOC_LITERAL(16, 258, 26), // "on_actionRefresh_triggered"
-QT_MOC_LITERAL(17, 285, 27), // "on_actionDownload_triggered"
-QT_MOC_LITERAL(18, 313, 23), // "on_actionOpen_triggered"
-QT_MOC_LITERAL(19, 337, 35), // "on_actionOpenFileLocation_tri..."
-QT_MOC_LITERAL(20, 373, 25), // "on_actionDelete_triggered"
-QT_MOC_LITERAL(21, 399, 25), // "on_actionUpload_triggered"
-QT_MOC_LITERAL(22, 425, 25), // "on_actionSearch_triggered"
-QT_MOC_LITERAL(23, 451, 30), // "on_actionClearSearch_triggered"
-QT_MOC_LITERAL(24, 482, 31), // "on_actionDeleteRemote_triggered"
-QT_MOC_LITERAL(25, 514, 25), // "on_actionModify_triggered"
-QT_MOC_LITERAL(26, 540, 29), // "on_actionFindInTree_triggered"
-QT_MOC_LITERAL(27, 570, 34), // "on_treeWidget_itemSelectionCh..."
-QT_MOC_LITERAL(28, 605, 40), // "on_treeWidget_customContextMe..."
-QT_MOC_LITERAL(29, 646, 3), // "pos"
-QT_MOC_LITERAL(30, 650, 38), // "on_fileSearchTree_itemSelecti..."
-QT_MOC_LITERAL(31, 689, 44), // "on_fileSearchTree_customConte..."
-QT_MOC_LITERAL(32, 734, 28), // "on_projectTags_linkActivated"
-QT_MOC_LITERAL(33, 763, 4), // "link"
-QT_MOC_LITERAL(34, 768, 25) // "on_fileTags_linkActivated"
+QT_MOC_LITERAL(0, 0, 16), // "CRepositoryPanel"
+QT_MOC_LITERAL(1, 17, 13), // "cancelClicked"
+QT_MOC_LITERAL(2, 31, 0), // ""
+QT_MOC_LITERAL(3, 32, 17), // "updateUploadReady"
+QT_MOC_LITERAL(4, 50, 5), // "ready"
+QT_MOC_LITERAL(5, 56, 17), // "updateModifyReady"
+QT_MOC_LITERAL(6, 74, 19), // "loadingPageProgress"
+QT_MOC_LITERAL(7, 94, 9), // "bytesSent"
+QT_MOC_LITERAL(8, 104, 10), // "bytesTotal"
+QT_MOC_LITERAL(9, 115, 24), // "on_connectButton_clicked"
+QT_MOC_LITERAL(10, 140, 22), // "on_loginButton_clicked"
+QT_MOC_LITERAL(11, 163, 31), // "on_treeWidget_itemDoubleClicked"
+QT_MOC_LITERAL(12, 195, 16), // "QTreeWidgetItem*"
+QT_MOC_LITERAL(13, 212, 4), // "item"
+QT_MOC_LITERAL(14, 217, 6), // "column"
+QT_MOC_LITERAL(15, 224, 35), // "on_fileSearchTree_itemDoubleC..."
+QT_MOC_LITERAL(16, 260, 26), // "on_actionRefresh_triggered"
+QT_MOC_LITERAL(17, 287, 27), // "on_actionDownload_triggered"
+QT_MOC_LITERAL(18, 315, 23), // "on_actionOpen_triggered"
+QT_MOC_LITERAL(19, 339, 35), // "on_actionOpenFileLocation_tri..."
+QT_MOC_LITERAL(20, 375, 25), // "on_actionDelete_triggered"
+QT_MOC_LITERAL(21, 401, 25), // "on_actionUpload_triggered"
+QT_MOC_LITERAL(22, 427, 25), // "on_actionSearch_triggered"
+QT_MOC_LITERAL(23, 453, 30), // "on_actionClearSearch_triggered"
+QT_MOC_LITERAL(24, 484, 31), // "on_actionDeleteRemote_triggered"
+QT_MOC_LITERAL(25, 516, 25), // "on_actionModify_triggered"
+QT_MOC_LITERAL(26, 542, 29), // "on_actionFindInTree_triggered"
+QT_MOC_LITERAL(27, 572, 34), // "on_treeWidget_itemSelectionCh..."
+QT_MOC_LITERAL(28, 607, 40), // "on_treeWidget_customContextMe..."
+QT_MOC_LITERAL(29, 648, 3), // "pos"
+QT_MOC_LITERAL(30, 652, 38), // "on_fileSearchTree_itemSelecti..."
+QT_MOC_LITERAL(31, 691, 44), // "on_fileSearchTree_customConte..."
+QT_MOC_LITERAL(32, 736, 28), // "on_projectTags_linkActivated"
+QT_MOC_LITERAL(33, 765, 4), // "link"
+QT_MOC_LITERAL(34, 770, 25) // "on_fileTags_linkActivated"
 
     },
-    "CDatabasePanel\0cancelClicked\0\0"
+    "CRepositoryPanel\0cancelClicked\0\0"
     "updateUploadReady\0ready\0updateModifyReady\0"
     "loadingPageProgress\0bytesSent\0bytesTotal\0"
     "on_connectButton_clicked\0"
@@ -97,7 +97,7 @@ QT_MOC_LITERAL(34, 768, 25) // "on_fileTags_linkActivated"
 };
 #undef QT_MOC_LITERAL
 
-static const uint qt_meta_data_CDatabasePanel[] = {
+static const uint qt_meta_data_CRepositoryPanel[] = {
 
  // content:
        8,       // revision
@@ -171,10 +171,10 @@ static const uint qt_meta_data_CDatabasePanel[] = {
        0        // eod
 };
 
-void CDatabasePanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void CRepositoryPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
-        auto *_t = static_cast<CDatabasePanel *>(_o);
+        auto *_t = static_cast<CRepositoryPanel *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->cancelClicked(); break;
@@ -207,8 +207,8 @@ void CDatabasePanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (CDatabasePanel::*)();
-            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CDatabasePanel::cancelClicked)) {
+            using _t = void (CRepositoryPanel::*)();
+            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CRepositoryPanel::cancelClicked)) {
                 *result = 0;
                 return;
             }
@@ -216,30 +216,30 @@ void CDatabasePanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
     }
 }
 
-QT_INIT_METAOBJECT const QMetaObject CDatabasePanel::staticMetaObject = { {
+QT_INIT_METAOBJECT const QMetaObject CRepositoryPanel::staticMetaObject = { {
     QMetaObject::SuperData::link<QWidget::staticMetaObject>(),
-    qt_meta_stringdata_CDatabasePanel.data,
-    qt_meta_data_CDatabasePanel,
+    qt_meta_stringdata_CRepositoryPanel.data,
+    qt_meta_data_CRepositoryPanel,
     qt_static_metacall,
     nullptr,
     nullptr
 } };
 
 
-const QMetaObject *CDatabasePanel::metaObject() const
+const QMetaObject *CRepositoryPanel::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 
-void *CDatabasePanel::qt_metacast(const char *_clname)
+void *CRepositoryPanel::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_CDatabasePanel.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_CRepositoryPanel.stringdata0))
         return static_cast<void*>(this);
     return QWidget::qt_metacast(_clname);
 }
 
-int CDatabasePanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int CRepositoryPanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QWidget::qt_metacall(_c, _id, _a);
     if (_id < 0)
@@ -257,7 +257,7 @@ int CDatabasePanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void CDatabasePanel::cancelClicked()
+void CRepositoryPanel::cancelClicked()
 {
     QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
 }
