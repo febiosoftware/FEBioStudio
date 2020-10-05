@@ -1117,6 +1117,7 @@
 					"-DHAS_MMG",
 					"-DHAS_NETGEN",
 					"-DTETLIBRARY",
+					"-DNDEBUG",
 				);
 				SDKROOT = macosx;
 			};

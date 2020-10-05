@@ -87,7 +87,7 @@
 		D5992F2A2461E4320054F9DA /* ModelDocument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F192461E4310054F9DA /* ModelDocument.cpp */; };
 		D5992F2B2461E4320054F9DA /* menuEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F1A2461E4310054F9DA /* menuEdit.cpp */; };
 		D5992F2C2461E4320054F9DA /* ModelFileWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F1F2461E4320054F9DA /* ModelFileWriter.cpp */; };
-		D5992F2D2461E4320054F9DA /* welcomPage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5992F202461E4320054F9DA /* welcomPage.cpp */; };
+		D59DD2AF25261EE400A1495A /* welcomePage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59DD2AE25261EE400A1495A /* welcomePage.cpp */; };
 		D5A96F29246892A10026BFE0 /* GraphData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F24246892A10026BFE0 /* GraphData.cpp */; };
 		D5A96F2A246892A10026BFE0 /* moc_LinkPropertyEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F25246892A10026BFE0 /* moc_LinkPropertyEdit.cpp */; };
 		D5A96F2B246892A10026BFE0 /* LinkPropertyEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F26246892A10026BFE0 /* LinkPropertyEdit.cpp */; };
@@ -576,8 +576,8 @@
 		D5992F1D2461E4320054F9DA /* welcomePage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = welcomePage.h; sourceTree = "<group>"; };
 		D5992F1E2461E4320054F9DA /* DocManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DocManager.h; sourceTree = "<group>"; };
 		D5992F1F2461E4320054F9DA /* ModelFileWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelFileWriter.cpp; sourceTree = "<group>"; };
-		D5992F202461E4320054F9DA /* welcomPage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = welcomPage.cpp; sourceTree = "<group>"; };
 		D5992F212461E4320054F9DA /* PostObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostObject.h; sourceTree = "<group>"; };
+		D59DD2AE25261EE400A1495A /* welcomePage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = welcomePage.cpp; sourceTree = "<group>"; };
 		D5A96F24246892A10026BFE0 /* GraphData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphData.cpp; sourceTree = "<group>"; };
 		D5A96F25246892A10026BFE0 /* moc_LinkPropertyEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_LinkPropertyEdit.cpp; sourceTree = "<group>"; };
 		D5A96F26246892A10026BFE0 /* LinkPropertyEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LinkPropertyEdit.cpp; sourceTree = "<group>"; };
@@ -1622,8 +1622,8 @@
 				D5F7D71922FA37C40089B08E /* version.h */,
 				D5ED29F823198CD600C16BF7 /* ViewSettings.h */,
 				D5CB0B212481A5D1004702B2 /* WebDefines.h */,
+				D59DD2AE25261EE400A1495A /* welcomePage.cpp */,
 				D5992F1D2461E4320054F9DA /* welcomePage.h */,
-				D5992F202461E4320054F9DA /* welcomPage.cpp */,
 				D5946E1224B4F5A50009C22F /* WrapLabel.cpp */,
 				D5946E1324B4F5A50009C22F /* WrapLabel.h */,
 				D509D41A24BF9A1D0064160E /* WzdUpload.cpp */,
@@ -1871,7 +1871,6 @@
 				D5F7D85122FA37C40089B08E /* DlgLameConvertor.cpp in Sources */,
 				D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */,
 				D5946E1E24B4F5A60009C22F /* moc_ExportProjectWidget.cpp in Sources */,
-				D5992F2D2461E4320054F9DA /* welcomPage.cpp in Sources */,
 				D56ADC1E2502879A0097DC8E /* DlgExportAscii.cpp in Sources */,
 				D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */,
 				D57C2A7A240F1F990043C2A7 /* PublicationWidget.cpp in Sources */,
@@ -1952,6 +1951,7 @@
 				D54D2CE82444A7DE00146123 /* DlgExportXPLT.cpp in Sources */,
 				D5F7D83D22FA37C40089B08E /* BuildPanel.cpp in Sources */,
 				D5F7D87622FA37C40089B08E /* ScalarFieldTool.cpp in Sources */,
+				D59DD2AF25261EE400A1495A /* welcomePage.cpp in Sources */,
 				D576570623E32E6900E4F70F /* moc_RepoConnectionHandler.cpp in Sources */,
 				D5F7D89122FA37C40089B08E /* DlgModelInfo.cpp in Sources */,
 				D5F7D83A22FA37C40089B08E /* PlaneCutTool.cpp in Sources */,
@@ -2212,6 +2212,7 @@
 					"-DHAS_QUAZIP",
 					"-DMODEL_REPO",
 					"-DWEBHELP",
+					"-DNDEBUG",
 				);
 				SDKROOT = macosx;
 			};

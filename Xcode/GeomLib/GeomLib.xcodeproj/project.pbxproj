@@ -432,6 +432,7 @@
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-DHAS_OCC",
+					"-DNDEBUG",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
