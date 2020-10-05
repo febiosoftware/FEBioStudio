@@ -50,11 +50,11 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QTextBrowser>
 #include <QProgressBar>
-#include <QTextBrowser>
 #include <QLabel>
 #include <QFont>
 #include <QPushButton>
 #include <QTreeWidget>
+#include <QHeaderView>
 #include <QJsonDocument>
 #include <QByteArray>
 #include <QDir>
@@ -546,6 +546,9 @@ public:
 		projectTree->setHeaderLabels(QStringList() << "Projects" << "Size");
 		projectTree->setSelectionMode(QAbstractItemView::SingleSelection);
 		projectTree->setContextMenuPolicy(Qt::CustomContextMenu);
+		projectTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+		projectTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+		projectTree->header()->setStretchLastSection(false);
 		treeStack->addWidget(projectTree);
 
 		fileSearchTree = new QTreeWidget;
@@ -554,6 +557,9 @@ public:
 		fileSearchTree->setHeaderLabels(QStringList() << "Files" << "Size");
 		fileSearchTree->setSelectionMode(QAbstractItemView::SingleSelection);
 		fileSearchTree->setContextMenuPolicy(Qt::CustomContextMenu);
+		fileSearchTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+		fileSearchTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+		fileSearchTree->header()->setStretchLastSection(false);
 		treeStack->addWidget(fileSearchTree);
 
 		splitter->addWidget(treeStack);
@@ -813,10 +819,6 @@ void CRepositoryPanel::SetModelList()
 	{
 		delete ui->projectTree->topLevelItem(item);
 	}
-
-	// Resize columns
-	ui->projectTree->resizeColumnToContents(0);
-	ui->projectTree->setColumnWidth(0, ui->projectTree->columnWidth(0)*2.2);
 
 	// Select the first category
 	if(ui->projectTree->topLevelItemCount() > 0)
