@@ -196,7 +196,7 @@ public:
 
 		m_size += currentSize;
 
-		setText(1, qApp->topLevelWidgets()[0]->locale().formattedDataSize(m_size));
+		setText(1, qApp->topLevelWidgets()[0]->locale().formattedDataSize(m_size, 2, QLocale::DataSizeTraditionalFormat));
 	}
 
 protected:
