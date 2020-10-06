@@ -50,7 +50,7 @@ SOFTWARE.*/
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include <PostLib/Palette.h>
-#include <RepositoryPanel.h>
+#include "RepositoryPanel.h"
 #include "units.h"
 #include "DlgSetRepoFolder.h"
 #include "IconProvider.h"

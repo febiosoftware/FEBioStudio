@@ -50,9 +50,7 @@
 		D576571623E32F7E00E4F70F /* QtNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571523E32F7E00E4F70F /* QtNetwork.framework */; };
 		D576571823E3345500E4F70F /* libquazip.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */; };
 		D576571A23E3347D00E4F70F /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571923E3347D00E4F70F /* libsqlite3.0.dylib */; };
-		D579B678239F04E300278644 /* moc_DatabasePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B663239F04E100278644 /* moc_DatabasePanel.cpp */; };
 		D579B679239F04E300278644 /* MeasureAreaTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B664239F04E100278644 /* MeasureAreaTool.cpp */; };
-		D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B665239F04E100278644 /* DatabasePanel.cpp */; };
 		D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B667239F04E100278644 /* MeasureVolumeTool.cpp */; };
 		D579B67C239F04E300278644 /* 3PointAngleTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B668239F04E100278644 /* 3PointAngleTool.cpp */; };
 		D579B680239F04E300278644 /* PointDistanceTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D579B671239F04E200278644 /* PointDistanceTool.cpp */; };
@@ -94,6 +92,8 @@
 		D5BA5337240D5470001A5C0F /* DlgSelectRange.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */; };
 		D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5334240D5470001A5C0F /* CIntInput.cpp */; };
 		D5BA5339240D5470001A5C0F /* DlgFind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5335240D5470001A5C0F /* DlgFind.cpp */; };
+		D5BC0B9B252CCB2800036DD8 /* RepositoryPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BC0B99252CCB2800036DD8 /* RepositoryPanel.cpp */; };
+		D5BC0B9C252CCB2800036DD8 /* moc_RepositoryPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BC0B9A252CCB2800036DD8 /* moc_RepositoryPanel.cpp */; };
 		D5C13EDB24047890005897E1 /* moc_PostModelPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */; };
 		D5C13EDC24047890005897E1 /* PostModelPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5C13EDA24047890005897E1 /* PostModelPanel.cpp */; };
 		D5CA211523EF7025001AE230 /* moc_DlgAddPublication.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5CA210F23EF7025001AE230 /* moc_DlgAddPublication.cpp */; };
@@ -515,15 +515,12 @@
 		D576571523E32F7E00E4F70F /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtNetwork.framework; sourceTree = "<absolute>"; };
 		D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquazip.1.0.0.dylib; path = /usr/local/Cellar/quazip/0.8.1/lib/libquazip.1.0.0.dylib; sourceTree = "<absolute>"; };
 		D576571923E3347D00E4F70F /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = /usr/local/Cellar/sqlite/3.30.1/lib/libsqlite3.0.dylib; sourceTree = "<absolute>"; };
-		D579B663239F04E100278644 /* moc_DatabasePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DatabasePanel.cpp; sourceTree = "<group>"; };
 		D579B664239F04E100278644 /* MeasureAreaTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureAreaTool.cpp; sourceTree = "<group>"; };
-		D579B665239F04E100278644 /* DatabasePanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DatabasePanel.cpp; sourceTree = "<group>"; };
 		D579B667239F04E100278644 /* MeasureVolumeTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureVolumeTool.cpp; sourceTree = "<group>"; };
 		D579B668239F04E100278644 /* 3PointAngleTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = 3PointAngleTool.cpp; sourceTree = "<group>"; };
 		D579B669239F04E100278644 /* MeasureVolumeTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureVolumeTool.h; sourceTree = "<group>"; };
 		D579B66B239F04E200278644 /* 3PointAngleTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = 3PointAngleTool.h; sourceTree = "<group>"; };
 		D579B66C239F04E200278644 /* 4PointAngleTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = 4PointAngleTool.h; sourceTree = "<group>"; };
-		D579B66E239F04E200278644 /* DatabasePanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabasePanel.h; sourceTree = "<group>"; };
 		D579B671239F04E200278644 /* PointDistanceTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PointDistanceTool.cpp; sourceTree = "<group>"; };
 		D579B672239F04E200278644 /* MeasureAreaTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureAreaTool.h; sourceTree = "<group>"; };
 		D579B674239F04E200278644 /* PointDistanceTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointDistanceTool.h; sourceTree = "<group>"; };
@@ -588,6 +585,9 @@
 		D5BA5334240D5470001A5C0F /* CIntInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CIntInput.cpp; sourceTree = "<group>"; };
 		D5BA5335240D5470001A5C0F /* DlgFind.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgFind.cpp; sourceTree = "<group>"; };
 		D5BA5336240D5470001A5C0F /* DlgFind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgFind.h; sourceTree = "<group>"; };
+		D5BC0B98252CCB2700036DD8 /* RepositoryPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepositoryPanel.h; sourceTree = "<group>"; };
+		D5BC0B99252CCB2800036DD8 /* RepositoryPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RepositoryPanel.cpp; sourceTree = "<group>"; };
+		D5BC0B9A252CCB2800036DD8 /* moc_RepositoryPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_RepositoryPanel.cpp; sourceTree = "<group>"; };
 		D5C13ED824047890005897E1 /* PostModelPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostModelPanel.h; sourceTree = "<group>"; };
 		D5C13ED924047890005897E1 /* moc_PostModelPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_PostModelPanel.cpp; sourceTree = "<group>"; };
 		D5C13EDA24047890005897E1 /* PostModelPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostModelPanel.cpp; sourceTree = "<group>"; };
@@ -1190,8 +1190,6 @@
 				D5F7D7FD22FA37C40089B08E /* CurveIntersectProps.h */,
 				D5F7D7C122FA37C40089B08E /* CurvePicker.cpp */,
 				D5F7D7AD22FA37C40089B08E /* CurvePicker.h */,
-				D579B665239F04E100278644 /* DatabasePanel.cpp */,
-				D579B66E239F04E200278644 /* DatabasePanel.h */,
 				D5F7D77F22FA37C40089B08E /* DataFieldSelector.cpp */,
 				D5F7D7BE22FA37C40089B08E /* DataFieldSelector.h */,
 				D5F7D73A22FA37C40089B08E /* DlgAddChemicalReaction.cpp */,
@@ -1421,7 +1419,6 @@
 				D5F7D7D422FA37C40089B08E /* moc_CreateSpringPane.cpp */,
 				D5F7D7DD22FA37C40089B08E /* moc_CurveEditor.cpp */,
 				D5F7D71522FA37C40089B08E /* moc_CurvePicker.cpp */,
-				D579B663239F04E100278644 /* moc_DatabasePanel.cpp */,
 				D5F7D7C822FA37C40089B08E /* moc_DataFieldSelector.cpp */,
 				D5F7D76A22FA37C40089B08E /* moc_DlgAddChemicalReaction.cpp */,
 				D5F7D81E22FA37C40089B08E /* moc_DlgAddEquation.cpp */,
@@ -1492,6 +1489,7 @@
 				D57C2A73240F1F990043C2A7 /* moc_PublicationWidget.cpp */,
 				D57C2A74240F1F990043C2A7 /* moc_PublicationWidgetView.cpp */,
 				D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */,
+				D5BC0B9A252CCB2800036DD8 /* moc_RepositoryPanel.cpp */,
 				D5F7D73822FA37C40089B08E /* moc_ResourceEdit.cpp */,
 				D5460FF224A936E3008C8024 /* moc_ScalarFieldTool.cpp */,
 				D5F7D77B22FA37C40089B08E /* moc_SelectionBox.cpp */,
@@ -1567,6 +1565,8 @@
 				D57656F623E32E6800E4F70F /* RepoConnectionHandler.h */,
 				D57656F823E32E6800E4F70F /* RepoProject.cpp */,
 				D57656FB23E32E6800E4F70F /* RepoProject.h */,
+				D5BC0B99252CCB2800036DD8 /* RepositoryPanel.cpp */,
+				D5BC0B98252CCB2700036DD8 /* RepositoryPanel.h */,
 				D5F7D70122FA37C30089B08E /* ResourceEdit.cpp */,
 				D5F7D70322FA37C40089B08E /* ResourceEdit.h */,
 				D5F7D78922FA37C40089B08E /* ScalarFieldTool.cpp */,
@@ -1869,7 +1869,6 @@
 				D593905D246A0DD200122209 /* moc_DlgNewProject.cpp in Sources */,
 				D5828D0D246465DB00FD7FF2 /* units.cpp in Sources */,
 				D5F7D85122FA37C40089B08E /* DlgLameConvertor.cpp in Sources */,
-				D579B67A239F04E300278644 /* DatabasePanel.cpp in Sources */,
 				D5946E1E24B4F5A60009C22F /* moc_ExportProjectWidget.cpp in Sources */,
 				D56ADC1E2502879A0097DC8E /* DlgExportAscii.cpp in Sources */,
 				D579B67B239F04E300278644 /* MeasureVolumeTool.cpp in Sources */,
@@ -1890,7 +1889,6 @@
 				D5F7D88122FA37C40089B08E /* moc_ToolBox.cpp in Sources */,
 				D5163181230097A2002B01C3 /* DlgWidgetProps.cpp in Sources */,
 				D5F7D88622FA37C40089B08E /* moc_MeshButtonBox.cpp in Sources */,
-				D579B678239F04E300278644 /* moc_DatabasePanel.cpp in Sources */,
 				D5CB0B242481A5D1004702B2 /* HelpDialog.cpp in Sources */,
 				D5F7D83422FA37C40089B08E /* moc_CurvePicker.cpp in Sources */,
 				D509D41D24BF9A1D0064160E /* TagLabel.cpp in Sources */,
@@ -2027,6 +2025,7 @@
 				D5F7D8CE22FA37C40089B08E /* DlgSettings.cpp in Sources */,
 				D5F7D85B22FA37C40089B08E /* DlgPurge.cpp in Sources */,
 				D5ED2A1523198CD900C16BF7 /* FEObjectProps.cpp in Sources */,
+				D5BC0B9B252CCB2800036DD8 /* RepositoryPanel.cpp in Sources */,
 				D5F7D8AD22FA37C40089B08E /* Document.cpp in Sources */,
 				D5F7D8B122FA37C40089B08E /* moc_DlgCloneGrid.cpp in Sources */,
 				D5F7D8BE22FA37C40089B08E /* StatsWindow.cpp in Sources */,
@@ -2037,6 +2036,7 @@
 				D5CC3A6D245B4CD800311F48 /* DlgImportLines.cpp in Sources */,
 				D5992F282461E4320054F9DA /* FEBioStudioProject.cpp in Sources */,
 				D5F7D87C22FA37C40089B08E /* MainWindow.cpp in Sources */,
+				D5BC0B9C252CCB2800036DD8 /* moc_RepositoryPanel.cpp in Sources */,
 				D5F7D84922FA37C40089B08E /* ModelSearch.cpp in Sources */,
 				D5F7D89222FA37C40089B08E /* ReadCurveTool.cpp in Sources */,
 				D5F7D8A222FA37C40089B08E /* DlgCloneRevolve.cpp in Sources */,

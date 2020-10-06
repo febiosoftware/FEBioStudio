@@ -48,7 +48,7 @@ SOFTWARE.*/
 #include <QSaveFile>
 #include <QFileDialog>
 #include <QTcpSocket>
-#include <RepositoryPanel.h>
+#include "RepositoryPanel.h"
 #include "MainWindow.h"
 #include "Document.h"
 #include "LocalDatabaseHandler.h"
