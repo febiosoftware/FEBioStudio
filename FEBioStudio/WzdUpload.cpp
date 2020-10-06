@@ -569,7 +569,7 @@ public:
 
 		if(item->type() == FILEITEM)
 		{
-			item->setText(2, m_wzd->locale().formattedDataSize(item->data(2, SIZE).toLongLong()));
+			item->setText(2, m_wzd->locale().formattedDataSize(item->data(2, SIZE).toLongLong(), 2, QLocale::DataSizeTraditionalFormat));
 			return;
 		}
 
@@ -585,7 +585,7 @@ public:
 		}
 
 		item->setData(2, SIZE, size);
-		item->setText(2, m_wzd->locale().formattedDataSize(size));
+		item->setText(2, m_wzd->locale().formattedDataSize(size, 2, QLocale::DataSizeTraditionalFormat));
 	}
 
 	bool isDeleting(QTreeWidgetItem* item = nullptr)
@@ -935,7 +935,7 @@ void CWzdUpload::accept()
 
 		if(ui->m_modify)
 		{
-			message += QString("\nOld Project Size: %1").arg(locale.formattedDataSize(modifiedProjectSize));
+			message += QString("\nOld Project Size: %1").arg(locale.formattedDataSize(modifiedProjectSize, 2, QLocale::DataSizeTraditionalFormat));
 		}
 
 		QMessageBox::critical(this, "Upload", message);
