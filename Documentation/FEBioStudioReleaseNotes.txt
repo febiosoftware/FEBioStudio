@@ -5,6 +5,13 @@
 *****************************************************************
 
 ================================================================
+ version 1.0.3
+ release date: 10/7/2020
+-----------------------------------------------------------------
+
+* A bug was fixed that was causing some material parameters in a solid mixture (and other nested materials) to be reset when making edits in the material properties list.
+
+================================================================
  version 1.0.2
  release date: 10/2/2020
 -----------------------------------------------------------------
