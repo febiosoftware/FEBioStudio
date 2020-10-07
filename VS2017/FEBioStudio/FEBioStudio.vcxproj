@@ -178,7 +178,6 @@
     <ClCompile Include="..\..\FEBioStudio\CreateSpringPane.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CurveEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\CurvePicker.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DataFieldSelector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\DlgAddEquation.cpp" />
@@ -299,7 +298,6 @@
     <ClCompile Include="..\..\FEBioStudio\moc_CreateSpringPane.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_CurveEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_CurvePicker.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\moc_DatabasePanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DataFieldSelector.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddChemicalReaction.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_DlgAddEquation.cpp" />
@@ -369,6 +367,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_PublicationWidget.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_PublicationWidgetView.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_RepoConnectionHandler.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_RepositoryPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ResourceEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ScalarFieldTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_SelectionBox.cpp" />
@@ -415,6 +414,7 @@
     <ClCompile Include="..\..\FEBioStudio\ReadCurveTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\RepoConnectionHandler.cpp" />
     <ClCompile Include="..\..\FEBioStudio\RepoProject.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\RepositoryPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ResourceEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ScalarFieldTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\SelectionBox.cpp" />
@@ -485,11 +485,6 @@
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\CurveIntersectProps.h" />
     <CustomBuild Include="..\..\FEBioStudio\CurvePicker.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\..\FEBioStudio\DatabasePanel.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
@@ -674,6 +669,11 @@
     <ClInclude Include="..\..\FEBioStudio\PostToolBar.h" />
     <ClInclude Include="..\..\FEBioStudio\RepoProject.h" />
     <CustomBuild Include="..\..\FEBioStudio\TagLabel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\RepositoryPanel.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
