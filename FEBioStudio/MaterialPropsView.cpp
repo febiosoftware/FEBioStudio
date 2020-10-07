@@ -455,6 +455,17 @@ public:
 				}
 				else
 				{
+					// check if this is a different type
+					if (m_matIndex >= 0)
+					{
+						FEMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial();
+						if (oldMat && (oldMat->Type() == matId))
+						{
+							// the type has not changed, so don't replace the material
+							return false;
+						}
+					}
+
 					FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 					FEMaterial* pmat = MF.Create(value.toInt());
 					if (pmat)
