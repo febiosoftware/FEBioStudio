@@ -30,7 +30,7 @@ SOFTWARE.*/
 // VERSION INFORMATION
 #define VERSION			1
 #define SUBVERSION		0
-#define SUBSUBVERSION	2
+#define SUBSUBVERSION	3
 
 //-----------------------------------------------------------------------------
 // FSPRJ FILE VERSION
