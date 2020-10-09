@@ -82,7 +82,8 @@ void ModelData::ReadData(Post::CGLModel* po)
 	if (pglmap)
 	{
 		m_cmap.m_bactive = pglmap->IsActive();
-		m_cmap.m_nRangeType = pglmap->GetRangeType();
+		m_cmap.m_maxRangeType = pglmap->GetMaxRangeType();
+		m_cmap.m_minRangeType = pglmap->GetMinRangeType();
 		m_cmap.m_bDispNodeVals = pglmap->DisplayNodalValues();
 		m_cmap.m_nField = pglmap->GetEvalField();
 		pglmap->GetRange(m_cmap.m_user);
@@ -129,7 +130,8 @@ void ModelData::WriteData(Post::CGLModel* po)
 	Post::CGLColorMap* pglmap = po->GetColorMap();
 	if (pglmap)
 	{
-		pglmap->SetRangeType(m_cmap.m_nRangeType);
+		pglmap->SetMaxRangeType(m_cmap.m_maxRangeType);
+		pglmap->SetMinRangeType(m_cmap.m_minRangeType);
 		pglmap->SetRange(m_cmap.m_user);
 		pglmap->DisplayNodalValues(m_cmap.m_bDispNodeVals);
 		pglmap->SetEvalField(m_cmap.m_nField);

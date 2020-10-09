@@ -51,8 +51,9 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLLegendPlot(po)
 	AddColorParam(GLColor::White(), "Solid Color");
 	AddBoolParam(true, "Auto-scale");
 	AddBoolParam(true, "Normalize" );
-	AddChoiceParam(0, "Range Type")->SetEnumNames("dynamic\0static\0user\0");
+	AddChoiceParam(0, "Max Range Type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(1.0, "User max");
+	AddChoiceParam(0, "Min Range Type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0.0, "User min");
 
 	m_scale = 1;
@@ -82,7 +83,8 @@ GLTensorPlot::GLTensorPlot(CGLModel* po) : CGLLegendPlot(po)
 
 	m_nmethod = VEC_EIGEN;
 
-	m_range.ntype = RANGE_DYNAMIC;
+	m_range.maxtype = RANGE_DYNAMIC;
+	m_range.mintype = RANGE_DYNAMIC;
 	m_range.valid = false;
 
 	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 600, 100, GLLegendBar::HORIZONTAL);
@@ -114,17 +116,26 @@ bool GLTensorPlot::UpdateData(bool bsave)
 		m_bautoscale = GetBoolValue(AUTO_SCALE);
 		m_bnormalize = GetBoolValue(NORMALIZE);
 
-		m_range.ntype = GetIntValue(RANGE_TYPE);
+		m_range.maxtype = GetIntValue(MAX_RANGE_TYPE);
+		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
 
 		if (noldcol != m_ncol)
 		{
 			m_map.SetTags(-1);
 		}
 
-		if (m_range.ntype == RANGE_USER)
+		if(m_range.maxtype == RANGE_USER)
 		{
 			m_range.max = GetFloatValue(USER_MAX);
+		}
+
+		if(m_range.mintype == RANGE_USER)
+		{
 			m_range.min = GetFloatValue(USER_MIN);
+		}
+
+		if (m_range.maxtype == RANGE_USER || m_range.mintype == RANGE_USER)
+		{
 			m_range.valid = true;
 		}
 		else m_range.valid = false;
@@ -377,14 +388,21 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 	}
 	else
 	{
-		if (m_range.ntype == RANGE_DYNAMIC)
+		if (m_range.maxtype == RANGE_DYNAMIC)
 		{
 			m_range.max = fmax;
-			m_range.min = fmin;
 		}
-		else if (m_range.ntype == RANGE_STATIC)
+		else if (m_range.maxtype == RANGE_STATIC)
 		{
 			if (fmax > m_range.max) m_range.max = fmax;
+		}
+
+		if (m_range.mintype == RANGE_DYNAMIC)
+		{
+			m_range.min = fmin;
+		}
+		else if (m_range.mintype == RANGE_STATIC)
+		{
 			if (fmin < m_range.min) m_range.min = fmin;
 		}
 	}
