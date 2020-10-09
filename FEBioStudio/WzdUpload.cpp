@@ -56,51 +56,8 @@ SOFTWARE.*/
 #include "LocalDatabaseHandler.h"
 #include "RepoConnectionHandler.h"
 
-//ClickableLabel::ClickableLabel(QWidget* parent, Qt::WindowFlags f)
-//    : QLabel(parent) {
-//
-//}
-//
-//ClickableLabel::~ClickableLabel() {}
-//
-//void ClickableLabel::mousePressEvent(QMouseEvent* event) {
-//    emit clicked();
-//}
-//
-//
-//TagLabel2::TagLabel2(QString text, QWidget* parent)
-//	: QFrame(parent)
-//{
-//	QHBoxLayout* layout = new QHBoxLayout;
-//	layout->setContentsMargins(3, 0, 3, 0);
-//	layout->setAlignment(Qt::AlignLeft);
-//
-//	layout->addWidget(label = new QLabel(text));
-//
-//	remove = new ClickableLabel;
-//	remove->setText("x");
-//
-//	layout->addWidget(remove);
-//	layout->setSizeConstraint(QLayout::SetFixedSize);
-//
-//	setLayout(layout);
-//	setFrameStyle(QFrame::Box);
-//
-////
-////	setStyleSheet("background-color : white; border: black;");
-//
-//
-//	QObject::connect(remove, SIGNAL(clicked()), this, SLOT(deleteThis()));
-//}
-//
-//void TagLabel2::deleteThis()
-//{
-//	delete this;
-//}
-
 enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
 enum DATATYPES {DESCRIPTION = 1001, TAGS = 1002, SIZE = 1003};
-
 
 class Ui::CWzdUpload
 {

@@ -69,12 +69,12 @@ SOFTWARE.*/
 //#include "ExportProjectWidget.h"
 #include "DlgSetRepoFolder.h"
 #include "LocalDatabaseHandler.h"
-#include "RepoProject.h"
 #include "ToolBox.h"
 #include "PublicationWidgetView.h"
 #include "IconProvider.h"
 #include "FSCore/FSDir.h"
 #include "DlgLogin.h"
+#include "MultiLineLabel.h"
 #include "WrapLabel.h"
 #include "TagLabel.h"
 #include "ZipFiles.h"
@@ -328,57 +328,6 @@ private:
 
 };
 
-class DisplayTextEdit : public QTextBrowser
-{
-public:
-	DisplayTextEdit(QWidget *parent = nullptr) : QTextBrowser(parent)
-	{
-		init();
-	}
-
-	DisplayTextEdit(const QString &text, QWidget *parent = nullptr) : QTextBrowser(parent)
-	{
-		init();
-
-		setText(text);
-	}
-
-	void setText(const QString &text)
-	{
-		QTextBrowser::setText(text);
-
-		document()->setTextWidth(size().width());
-
-		setMinimumHeight(document()->size().height());
-		setMaximumHeight(document()->size().height());
-	}
-
-	void resizeEvent(QResizeEvent *event) override
-	{
-		document()->setTextWidth(event->size().width());
-
-		setMinimumHeight(document()->size().height());
-		setMaximumHeight(document()->size().height());
-	}
-
-private:
-	void init()
-		{
-			// Make this look like a QLabel
-			setFrameStyle(QFrame::Plain|QFrame::NoFrame);
-			QPalette qpalette = palette();
-			qpalette.setColor(QPalette::Base, qApp->palette().color(QPalette::Window));
-			setPalette(qpalette);
-
-			// Make this only take up the necessary size
-			setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-
-			// Allow hyperlinks to open in a browser
-			setOpenExternalLinks(true);
-			setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-		}
-};
-
 class Ui::CRepositoryPanel
 {
 public:
@@ -401,13 +350,13 @@ public:
 
 	QFormLayout* projectInfoForm;
 	QLabel* projectName;
-	DisplayTextEdit* projectDesc;
+	MultiLineLabel* projectDesc;
 	QLabel* projectOwner;
 	TagLabel* projectTags;
 
 	QFormLayout* fileInfoForm;
-	DisplayTextEdit* filenameLabel;
-	DisplayTextEdit* fileDescLabel;
+	MultiLineLabel* filenameLabel;
+	MultiLineLabel* fileDescLabel;
 	TagLabel* fileTags;
 
 	::CPublicationWidgetView* projectPubs;
@@ -587,7 +536,7 @@ public:
 		font.setPointSize(14);
 		projectName->setFont(font);
 
-		modelInfoLayout->addWidget(projectDesc = new DisplayTextEdit);
+		modelInfoLayout->addWidget(projectDesc = new MultiLineLabel);
 
 		QFrame* line = new QFrame();
 		line->setFrameShape(QFrame::HLine);
@@ -613,8 +562,8 @@ public:
 
 		fileInfoForm = new QFormLayout;
 		fileInfoForm->setHorizontalSpacing(10);
-		fileInfoForm->addRow("Filename:", filenameLabel = new DisplayTextEdit);
-		fileInfoForm->addRow("Description:", fileDescLabel = new DisplayTextEdit);
+		fileInfoForm->addRow("Filename:", filenameLabel = new MultiLineLabel);
+		fileInfoForm->addRow("Description:", fileDescLabel = new MultiLineLabel);
 		fileInfoLayout->addLayout(fileInfoForm);
 
 		fileInfoLayout->addWidget(fileTags = new TagLabel);
@@ -734,7 +683,7 @@ public:
 
 		if(!description.isEmpty())
 		{
-			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new DisplayTextEdit(description));
+			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new MultiLineLabel(description));
 		}
 
 	}
