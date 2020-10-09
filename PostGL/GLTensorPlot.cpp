@@ -382,8 +382,8 @@ void GLTensorPlot::Update(int ntime, float dt, bool breset)
 
 	if (m_range.valid == false)
 	{
-		m_range.max = fmax;
-		m_range.min = fmin;
+		if (m_range.maxtype != RANGE_USER) m_range.max = fmax;
+		if (m_range.mintype != RANGE_USER) m_range.min = fmin;
 		m_range.valid = true;
 	}
 	else
