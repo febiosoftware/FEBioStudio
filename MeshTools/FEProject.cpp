@@ -396,6 +396,7 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 	case FE_STEP_MECHANICS:
 		plt.FindVariable("displacement")->setActive(true);
 		plt.FindVariable("stress")->setActive(true);
+        plt.FindVariable("relative volume")->setActive(true);
 		if (pstep->GetSettings().nanalysis == FE_DYNAMIC)
 		{
 			plt.FindVariable("velocity")->setActive(true);
@@ -407,6 +408,7 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 		break;
 	case FE_STEP_BIPHASIC:
 		plt.FindVariable("displacement")->setActive(true);
+        plt.FindVariable("solid stress")->setActive(true);
 		plt.FindVariable("stress")->setActive(true);
 		plt.FindVariable("effective fluid pressure")->setActive(true);
 		plt.FindVariable("fluid flux")->setActive(true);
@@ -414,6 +416,7 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 	case FE_STEP_BIPHASIC_SOLUTE:
 	case FE_STEP_MULTIPHASIC:
 		plt.FindVariable("displacement")->setActive(true);
+        plt.FindVariable("solid stress")->setActive(true);
 		plt.FindVariable("stress")->setActive(true);
 		plt.FindVariable("fluid flux")->setActive(true);
 		plt.FindVariable("effective fluid pressure")->setActive(true);
@@ -487,6 +490,7 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 		plt.FindVariable("fluid density")->setActive(false);
 		plt.FindVariable("fluid dilatation")->setActive(true);
 		plt.FindVariable("fluid volume ratio")->setActive(true);
+        plt.FindVariable("solid stress")->setActive(true);
 		plt.FindVariable("fluid surface force")->setActive(false);
 		plt.FindVariable("fluid surface traction power")->setActive(false);
 		plt.FindVariable("fluid surface energy flux")->setActive(false);
