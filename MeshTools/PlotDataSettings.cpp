@@ -251,7 +251,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_FLUID, "fluid vorticity"                   );
     AddPlotVariable(MODULE_FLUID, "nodal fluid velocity"              );
 
-    AddPlotVariable(MODULE_FLUID_FSI, "nodal relative fluid velocity" );
+    AddPlotVariable(MODULE_FLUID_FSI, "nodal fluid flux"              );
+    AddPlotVariable(MODULE_FLUID_FSI, "fluid flux"                    );
     AddPlotVariable(MODULE_FLUID_FSI, "relative fluid velocity"       );
     AddPlotVariable(MODULE_FLUID_FSI, "solid stress"                  );
 }

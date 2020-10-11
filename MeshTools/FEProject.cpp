@@ -479,7 +479,7 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 		plt.FindVariable("velocity")->setActive(true);
 		plt.FindVariable("acceleration")->setActive(true);
 		plt.FindVariable("fluid pressure", MODULE_FLUID)->setActive(true);
-		plt.FindVariable("nodal fluid velocity")->setActive(true);
+		plt.FindVariable("nodal fluid velocity")->setActive(false);
 		plt.FindVariable("fluid stress")->setActive(true);
 		plt.FindVariable("fluid velocity")->setActive(true);
 		plt.FindVariable("fluid acceleration")->setActive(true);
@@ -490,7 +490,7 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 		plt.FindVariable("fluid density")->setActive(false);
 		plt.FindVariable("fluid dilatation")->setActive(true);
 		plt.FindVariable("fluid volume ratio")->setActive(true);
-        plt.FindVariable("solid stress")->setActive(true);
+        plt.FindVariable("solid stress")->setActive(false);
 		plt.FindVariable("fluid surface force")->setActive(false);
 		plt.FindVariable("fluid surface traction power")->setActive(false);
 		plt.FindVariable("fluid surface energy flux")->setActive(false);
@@ -504,8 +504,8 @@ void FEProject::ActivatePlotVariables(FEAnalysisStep* pstep)
 		plt.FindVariable("fluid element linear momentum")->setActive(false);
 		plt.FindVariable("fluid element angular momentum")->setActive(false);
 		plt.FindVariable("fluid element center of mass")->setActive(false);
-		plt.FindVariable("relative fluid velocity")->setActive(true);
-		plt.FindVariable("nodal relative fluid velocity")->setActive(true);
+        plt.FindVariable("nodal fluid flux")->setActive(true);
+		plt.FindVariable("relative fluid velocity")->setActive(false);
 		break;
 	}
 }
