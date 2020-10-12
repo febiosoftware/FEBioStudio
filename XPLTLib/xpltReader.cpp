@@ -492,16 +492,6 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 	}
 
 	// add additional stress fields
-	if (m_bHasStress)
-	{
-		pdm->AddDataField(new FEDataField_T<FEElemPressure>("pressure"));
-		
-		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<FESolidStress>("solid stress"));
-		}
-	}
-
-	// add additional stress fields
 	if (m_bHasNodalStress)
 	{
 		pdm->AddDataField(new FEDataField_T<FEElemNodalPressure>("nodal pressure"));
