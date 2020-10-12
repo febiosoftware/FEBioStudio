@@ -2361,6 +2361,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			}
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pc);
 	}
 	else if (type == "prescribe")
 	{
@@ -2396,6 +2397,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			else ReadParam(*pc, tag);
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pc);
 	}
 	else if (type == "force")
 	{
@@ -2431,6 +2433,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			else ReadParam(*pc, tag);
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pc);
 	}
 	else if (type == "rigid_velocity")
 	{
@@ -2460,6 +2463,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			}
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pv);
 	}
 	else if (type == "rigid_angular_velocity")
 	{
@@ -2489,6 +2493,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			}
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pv);
 	}
 	else ParseUnknownTag(tag);
 }
