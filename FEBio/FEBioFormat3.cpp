@@ -2394,6 +2394,16 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 				pc->SetMaterialID(matid);
 			}
+            else if (tag == "value")
+            {
+                int lc = tag.Attribute("lc").value<int>() - 1;
+                if (lc == -1) throw XMLReader::InvalidAttributeValue(tag, "lc", 0);
+                febio.AddParamCurve(pc->GetLoadCurve(), lc);
+                
+                double v = 0;
+                tag.value(v);
+                pc->SetValue(v);
+            }
 			else ReadParam(*pc, tag);
 			++tag;
 		} while (!tag.isend());
