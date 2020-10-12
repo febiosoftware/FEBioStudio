@@ -307,7 +307,7 @@ void GMeshObject::UpdateEdges()
 							{
 								throw GObjectException(this, "GMeshObject::UpdateEdges\n(invalid node ID)");
 							}
-							ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
+							else ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
 						}
 						else if (ge.m_node[1] == -1)
 						{
@@ -316,7 +316,7 @@ void GMeshObject::UpdateEdges()
 							{
 								throw GObjectException(this, "GMeshObject::UpdateEdges\n(invalid node ID)");
 							}
-							ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
+							else ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
 						}
 					}
 				}
@@ -350,8 +350,9 @@ void GMeshObject::UpdateNodes()
 			if (n != i)
 			{
 				m_Node[n] = m_Node[i];
-				m.Node(tag[i]).m_gid = n;
+				m_Node[i] = nullptr;
 			}
+			m.Node(tag[i]).m_gid = n;
 			n++;
 		}
 	}
@@ -908,7 +909,9 @@ void GMeshObject::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
-	Update(false);
+//	Update(false);
+	UpdateSurfaces(); // we need to call this to update the Surfaces' part IDs, since they are not stored.
+	BuildGMesh();
 }
 
 //-----------------------------------------------------------------------------
