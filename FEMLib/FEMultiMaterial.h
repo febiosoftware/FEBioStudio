@@ -603,6 +603,33 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// biphasic FSI
+class FEBiphasicFSIMaterial : public FEMultiMaterial
+{
+public:
+    // material parameters
+    enum { MP_PHI0 };
+    
+public:
+    // constructor
+    FEBiphasicFSIMaterial();
+    
+    // set/get fluid component
+    void SetFluidMaterial(FEMaterial* pm) { ReplaceProperty(0, pm); }
+    FEMaterial* GetFluidMaterial() { return GetProperty(0).GetMaterial(); }
+    
+    // set/get solid component
+    void SetSolidMaterial(FEMaterial* pm) { ReplaceProperty(1, pm); }
+    FEMaterial* GetSolidMaterial() { return GetProperty(1).GetMaterial(); }
+    
+    // set/get permeability
+    void SetPermeability(FEMaterial* pm) { ReplaceProperty(2, pm); }
+    FEMaterial* GetPermeability() { return GetProperty(2).GetMaterial(); }
+    
+    DECLARE_REGISTERED(FEBiphasicFSIMaterial);
+};
+
+//-----------------------------------------------------------------------------
 class FESpeciesMaterial : public FEMaterial
 {
 public:

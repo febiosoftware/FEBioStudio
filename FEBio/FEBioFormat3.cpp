@@ -2361,6 +2361,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			}
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pc);
 	}
 	else if (type == "prescribe")
 	{
@@ -2396,6 +2397,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			else ReadParam(*pc, tag);
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pc);
 	}
 	else if (type == "force")
 	{
@@ -2431,6 +2433,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 			else ReadParam(*pc, tag);
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pc);
 	}
 	else if (type == "rigid_velocity")
 	{
@@ -2452,14 +2455,10 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 				pv->SetMaterialID(matid);
 			}
-			else if (tag == "value")
-			{
-				vec3d v(0., 0., 0.);
-				tag.value(v);
-				pv->SetVelocity(v);
-			}
+			else ReadParam(*pv, tag);
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pv);
 	}
 	else if (type == "rigid_angular_velocity")
 	{
@@ -2481,14 +2480,10 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 				pv->SetMaterialID(matid);
 			}
-			else if (tag == "value")
-			{
-				vec3d w(0., 0., 0.);
-				tag.value(w);
-				pv->SetVelocity(w);
-			}
+			else ReadParam(*pv, tag);
 			++tag;
 		} while (!tag.isend());
+        pstep->AddComponent(pv);
 	}
 	else ParseUnknownTag(tag);
 }
