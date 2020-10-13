@@ -4713,7 +4713,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				FERigidVelocity* rv = dynamic_cast<FERigidVelocity*>(ps);
 				XMLElement el("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "initial_rigid_velocity");
+				el.add_attribute("type", "rigid_velocity");
 				m_xml.add_branch(el);
 				{
 					m_xml.add_leaf("rb", pgm->m_ntag);
@@ -4726,7 +4726,7 @@ void FEBioExport3::WriteRigidConstraints(FEStep &s)
 				FERigidAngularVelocity* rv = dynamic_cast<FERigidAngularVelocity*>(ps);
 				XMLElement el("rigid_constraint");
 				el.add_attribute("name", ps->GetName());
-				el.add_attribute("type", "initial_rigid_angular_velocity");
+				el.add_attribute("type", "rigid_angular_velocity");
 				m_xml.add_branch(el);
 				{
 					m_xml.add_leaf("rb", pgm->m_ntag);
