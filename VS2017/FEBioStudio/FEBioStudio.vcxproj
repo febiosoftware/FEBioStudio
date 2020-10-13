@@ -392,6 +392,7 @@
     <ClCompile Include="..\..\FEBioStudio\ModelSearch.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelTree.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelViewer.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\MultiLineLabel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ObjectPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ObjectProps.cpp" />
     <ClCompile Include="..\..\FEBioStudio\PlaneCutTool.cpp" />
@@ -413,7 +414,6 @@
     <ClCompile Include="..\..\FEBioStudio\qrc_febiostudio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ReadCurveTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\RepoConnectionHandler.cpp" />
-    <ClCompile Include="..\..\FEBioStudio\RepoProject.cpp" />
     <ClCompile Include="..\..\FEBioStudio\RepositoryPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ResourceEdit.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ScalarFieldTool.cpp" />
@@ -641,6 +641,7 @@
     <ClInclude Include="..\..\FEBioStudio\ModelDocument.h" />
     <ClInclude Include="..\..\FEBioStudio\ModelFileReader.h" />
     <ClInclude Include="..\..\FEBioStudio\ModelFileWriter.h" />
+    <ClInclude Include="..\..\FEBioStudio\MultiLineLabel.h" />
     <ClInclude Include="..\..\FEBioStudio\PointCongruencyTool.h" />
     <ClInclude Include="..\..\FEBioStudio\PointDistanceTool.h" />
     <CustomBuild Include="..\..\FEBioStudio\RepoConnectionHandler.h">
@@ -667,7 +668,6 @@
     <ClInclude Include="..\..\FEBioStudio\PostObject.h" />
     <ClInclude Include="..\..\FEBioStudio\PostPanel.h" />
     <ClInclude Include="..\..\FEBioStudio\PostToolBar.h" />
-    <ClInclude Include="..\..\FEBioStudio\RepoProject.h" />
     <CustomBuild Include="..\..\FEBioStudio\TagLabel.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>

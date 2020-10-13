@@ -127,6 +127,7 @@ CGLModel::~CGLModel(void)
 //-----------------------------------------------------------------------------
 void CGLModel::SetFEModel(FEPostModel* ps)
 {
+	ClearSelectionLists();
 	ClearInternalSurfaces();
 	m_ps = ps;
 	if (ps) BuildInternalSurfaces();
