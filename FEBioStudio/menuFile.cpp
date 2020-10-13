@@ -97,6 +97,7 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 #include <PostLib/FELSDYNAExport.h>
+#include <PostLib/FEAbaqusExport.h>
 #include <MeshTools/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
@@ -856,7 +857,8 @@ void CMainWindow::SavePostDoc()
 		<< "BYU files(*.byu)"
 		<< "NIKE3D files (*.n)"
 		<< "VTK files (*.vtk)"
-		<< "LSDYNA database (*.d3plot)";
+		<< "LSDYNA database (*.d3plot)"
+		<< "Abaqus files (*.inp)";
 
 	QFileDialog dlg(this, "Save");
 	dlg.setFileMode(QFileDialog::AnyFile);
@@ -981,6 +983,13 @@ void CMainWindow::SavePostDoc()
 				bret = ls.Save(fem, szfilename, dlg.m_flag, dlg.m_code);
 				error = "Failed writing LSDYNA database file";
 			}
+		}
+		break;
+		case 9:
+		{
+			Post::FEAbaqusExport w;
+			bret = w.Save(fem, doc->GetActiveState(), szfilename);
+			error = "Failed writing Abaqus file.";
 		}
 		break;
 		default:
