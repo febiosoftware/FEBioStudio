@@ -2394,16 +2394,6 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 				pc->SetMaterialID(matid);
 			}
-            else if (tag == "value")
-            {
-                int lc = tag.Attribute("lc").value<int>() - 1;
-                if (lc == -1) throw XMLReader::InvalidAttributeValue(tag, "lc", 0);
-                febio.AddParamCurve(pc->GetLoadCurve(), lc);
-                
-                double v = 0;
-                tag.value(v);
-                pc->SetValue(v);
-            }
 			else ReadParam(*pc, tag);
 			++tag;
 		} while (!tag.isend());
@@ -2465,12 +2455,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 				pv->SetMaterialID(matid);
 			}
-			else if (tag == "value")
-			{
-				vec3d v(0., 0., 0.);
-				tag.value(v);
-				pv->SetVelocity(v);
-			}
+			else ReadParam(*pv, tag);
 			++tag;
 		} while (!tag.isend());
         pstep->AddComponent(pv);
@@ -2495,12 +2480,7 @@ void FEBioFormat3::ParseRigidConstraint(FEStep* pstep, XMLTag& tag)
 
 				pv->SetMaterialID(matid);
 			}
-			else if (tag == "value")
-			{
-				vec3d w(0., 0., 0.);
-				tag.value(w);
-				pv->SetVelocity(w);
-			}
+			else ReadParam(*pv, tag);
 			++tag;
 		} while (!tag.isend());
         pstep->AddComponent(pv);
