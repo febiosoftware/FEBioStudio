@@ -40,7 +40,6 @@ class FERigidConnector;
 class FEProject;
 class Param;
 class FEReactionMaterial;
-class FEDataMap;
 class FEMaterial;
 
 class FEObjectProps : public CObjectProps
@@ -179,20 +178,4 @@ public:
 private:
 	FEReactionMaterial*	m_mat;
 	int					m_nsols;
-};
-
-class CDataMapProps : public CObjectProps
-{
-public:
-	CDataMapProps(FEDataMap* map);
-
-	QVariant GetPropertyValue(int i);
-
-	void SetPropertyValue(int i, const QVariant& v);
-
-private:
-	void BuildPropertyList();
-
-private:
-	FEDataMap*	m_map;
 };

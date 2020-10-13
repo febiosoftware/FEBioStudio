@@ -33,7 +33,7 @@ namespace Post {
 
 class CGLParticleFlowPlot : public CGLPlot
 {
-	enum { DATA_FIELD, COLOR_MAP, CLIP, SEED_STEP, THRESHOLD, DENSITY, STEP_SIZE, PATH_LINES };
+	enum { DATA_FIELD, COLOR_MAP, CLIP, SEED_STEP, THRESHOLD, DENSITY, STEP_SIZE, PATH_LINES, PATH_LENGTH };
 
 	class FlowParticle
 	{
@@ -122,6 +122,7 @@ private:
 	CColorTexture	m_Col;	// color map
 
 	bool	m_showPath;
+	int		m_pathLength;
 
 	vector<vec2f>	m_rng;	// nodal ranges
 	DataMap<vec3f>	m_map;	// nodal values map
@@ -129,6 +130,9 @@ private:
 
 	int				m_seedTime;	// time the particles begin to flow
 	int				m_maxtime;	// the time to which we have evaluated the flow field
+
+	float	m_lastTime;
+	float	m_lastDt;
 
 	FEFindElement	m_find;
 

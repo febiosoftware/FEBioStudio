@@ -94,6 +94,7 @@ public:
 
 	FELoadCurve* GetLoadCurve() { return GetParamLC(VALUE); }
 	void SetLoadCurve(const FELoadCurve& lc) { GetParam(VALUE).SetLoadCurve(lc); }
+	void RemoveLoadcurve() { GetParam(VALUE).DeleteLoadCurve(); }
 };
 
 class FERigidDisplacement : public FERigidPrescribed
@@ -108,6 +109,9 @@ class FERigidForce : public FERigidPrescribed
 public:
 	FERigidForce(FEModel* fem, int nstep = 0);
 	FERigidForce(int bc, int matid, double v, int nstep);
+
+	int GetForceType() const;
+	void SetForceType(int n);
 };
 
 class FERigidVelocity : public FERigidConstraint

@@ -1188,7 +1188,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		t3->setExpanded(false);
 
 		t3 = AddTreeItem(t2, "Surfaces", MT_FACE_LIST, po->Faces(), po, 0, 0, OBJECT_NOT_EDITABLE);
-		for (int j = 0; j<po->Faces(); ++j)
+		int NF = po->Faces();
+		if (NF > 1000) NF = 1000;
+		for (int j = 0; j<NF; ++j)
 		{
 			GFace* pg = po->Face(j);
 			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_SURFACE, 0, pg);
@@ -1197,7 +1199,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		t3->setExpanded(false);
 
 		t3 = AddTreeItem(t2, "Edges", MT_EDGE_LIST, po->Edges(), po, 0, 0, OBJECT_NOT_EDITABLE);
-		for (int j=0; j<po->Edges(); ++j)
+		int NE = po->Edges();
+		if (NE > 1000) NE = 1000;
+		for (int j=0; j<NE; ++j)
 		{
 			GEdge* pg = po->Edge(j);
 			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_EDGE, 0, pg);
@@ -1206,7 +1210,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FEModel& fem)
 		t3->setExpanded(false);
 
 		t3 = AddTreeItem(t2, "Nodes", MT_NODE_LIST, po->Nodes(), po, 0, 0, OBJECT_NOT_EDITABLE);
-		for (int j = 0; j<po->Nodes(); ++j)
+		int NN = po->Nodes();
+		if (NN > 1000) NN = 1000;
+		for (int j = 0; j<NN; ++j)
 		{
 			GNode* pg = po->Node(j);
 			if ((pg->Type() == 0) || (pg->Type() == NODE_VERTEX))
@@ -1363,7 +1369,8 @@ void CModelTree::UpdateBC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep == 0) flags |= DUPLICATE_ITEM;
-				t2 = AddTreeItem(t1, QString::fromStdString(pbc->GetName()), MT_BC, 0, pbc, pl, new CBCValidator(pbc), flags);
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(pbc->GetName())).arg(pbc->GetTypeString());
+				t2 = AddTreeItem(t1, name, MT_BC, 0, pbc, pl, new CBCValidator(pbc), flags);
 			}
 		}
 	}
@@ -1384,9 +1391,8 @@ void CModelTree::UpdateLoads(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep == 0) flags |= DUPLICATE_ITEM;
-				QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(pfc->GetName()), MT_LOAD, 0, pfc, new FEObjectProps(pfc, &fem), new CBCValidator(pfc), flags);
-
-				AddDataMaps(t2, pfc);
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(pfc->GetName())).arg(pfc->GetTypeString());
+				QTreeWidgetItem* t2 = AddTreeItem(t1, name, MT_LOAD, 0, pfc, new FEObjectProps(pfc, &fem), new CBCValidator(pfc), flags);
 			}
 		}
 	}
@@ -1416,6 +1422,7 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep == 0) flags |= DUPLICATE_ITEM;
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(pic->GetName())).arg(pic->GetTypeString());
 				t2 = AddTreeItem(t1, QString::fromStdString(pic->GetName()), MT_IC, 0, pic, pl, val, flags);
 			}
 		}
@@ -1449,7 +1456,8 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				FERigidInterface* pi = dynamic_cast<FERigidInterface*>(ps->Interface(i));
 				if (pi)
 				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), new CRigidInterfaceValidator(pi), flags);
+					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
+					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), new CRigidInterfaceValidator(pi), flags);
 					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1460,7 +1468,8 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				FERigidJoint* pi = dynamic_cast<FERigidJoint*>(ps->Interface(i));
 				if (pi)
 				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
+					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
+					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
 					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1471,7 +1480,8 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				FERigidWallInterface* pi = dynamic_cast<FERigidWallInterface*>(ps->Interface(i));
 				if (pi)
 				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
+					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
+					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
 					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1482,7 +1492,8 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				FERigidSphereInterface* pi = dynamic_cast<FERigidSphereInterface*>(ps->Interface(i));
 				if (pi)
 				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
+					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
+					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CObjectProps(pi), 0, flags);
 					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1493,7 +1504,8 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 				FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(ps->Interface(i));
 				if (pi)
 				{
-					t2 = AddTreeItem(t1, QString::fromStdString(pi->GetName()), MT_CONTACT, 0, pi, new CObjectProps(pi), new CContactValidator(pi), flags);
+					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
+					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CObjectProps(pi), new CContactValidator(pi), flags);
 					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1521,7 +1533,8 @@ void CModelTree::UpdateConstraints(QTreeWidgetItem* t1, FEModel& fem, FEStep* ps
 				{
 					CObjectValidator* val = nullptr;
 					if (dynamic_cast<FESurfaceConstraint*>(pc)) val = new CBCValidator(pc);
-					t2 = AddTreeItem(t1, QString::fromStdString(pc->GetName()), MT_CONSTRAINT, 0, pc, new CObjectProps(pc), val, flags);
+					QString name = QString("%1 [%2]").arg(QString::fromStdString(pc->GetName())).arg(pc->GetTypeString());
+					t2 = AddTreeItem(t1, name, MT_CONSTRAINT, 0, pc, new CObjectProps(pc), val, flags);
 					if (pc->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1538,7 +1551,7 @@ void CModelTree::UpdateSteps(QTreeWidgetItem* t1, FEModel& fem)
 	{
 		FEStep* pstep = fem.GetStep(i);
 
-		QString name = QString::fromStdString(pstep->GetName());
+		QString name = (i==0 ? QString::fromStdString(pstep->GetName()) : QString("%1 [%2]").arg(QString::fromStdString(pstep->GetName())).arg(pstep->GetTypeString()));
 
 		// add control settings
 		FEAnalysisStep* analysis = dynamic_cast<FEAnalysisStep*>(pstep);
@@ -1594,7 +1607,8 @@ void CModelTree::UpdateRC(QTreeWidgetItem* t1, FEModel& fem, FEStep* pstep)
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep) flags |= DUPLICATE_ITEM;
-				AddTreeItem(t1, QString::fromStdString(prc->GetName()), MT_RIGID_CONSTRAINT, 0, prc, pl, new CRigidConstraintValidator(prc), flags);
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(prc->GetName())).arg(prc->GetTypeString());
+				AddTreeItem(t1, name, MT_RIGID_CONSTRAINT, 0, prc, pl, new CRigidConstraintValidator(prc), flags);
 			}
 		}
 	}
@@ -1615,7 +1629,8 @@ void CModelTree::UpdateConnectors(QTreeWidgetItem* t1, FEModel& fem, FEStep* pst
 
 				int flags = SHOW_PROPERTY_FORM;
 				if (pstep) flags |= DUPLICATE_ITEM;
-				AddTreeItem(t1, QString::fromStdString(prc->GetName()), MT_RIGID_CONNECTOR, 0, prc, pl, 0, flags);
+				QString name = QString("%1 [%2]").arg(QString::fromStdString(prc->GetName())).arg(prc->GetTypeString());
+				AddTreeItem(t1, name, MT_RIGID_CONNECTOR, 0, prc, pl, 0, flags);
 			}
 		}
 	}
@@ -1705,17 +1720,6 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 		AddDataMaps(t2, pmat);
 	}
 */
-}
-
-//-----------------------------------------------------------------------------
-void CModelTree::AddDataMaps(QTreeWidgetItem* t2, FEComponent* pc)
-{
-	int N = pc->DataMaps();
-	for (int n = 0; n<N; ++n)
-	{
-		FEDataMap* map = pc->GetDataMap(n);
-		AddTreeItem(t2, QString::fromStdString(map->GetName()), MT_DATAMAP, 0, map, new CDataMapProps(map), 0, SHOW_PROPERTY_FORM | NAME_NOT_EDITABLE);
-	}
 }
 
 //-----------------------------------------------------------------------------

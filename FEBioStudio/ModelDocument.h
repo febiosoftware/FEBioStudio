@@ -74,9 +74,9 @@ public: // selection
 	void UpdateSelection(bool report = true) override;
 
 	void GrowNodeSelection(FEMeshBase* pm);
-	void GrowFaceSelection(FEMeshBase* pm);
+	void GrowFaceSelection(FEMeshBase* pm, bool respectPartitions = true);
 	void GrowEdgeSelection(FEMeshBase* pm);
-	void GrowElementSelection(FEMesh* pm);
+	void GrowElementSelection(FEMesh* pm, bool respectPartitions = true);
 	void ShrinkNodeSelection(FEMeshBase* pm);
 	void ShrinkFaceSelection(FEMeshBase* pm);
 	void ShrinkEdgeSelection(FEMeshBase* pm);
@@ -84,9 +84,6 @@ public: // selection
 
 	void HideCurrentSelection();
 	void HideUnselected();
-
-public:
-	FEDataMap* CreateDataMap(FSObject* po, std::string& mapName, std::string& paramName, Param_Type type);
 
 public:
 	int FEBioJobs() const;

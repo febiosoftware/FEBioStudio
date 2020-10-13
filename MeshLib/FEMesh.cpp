@@ -1898,16 +1898,6 @@ void FEMesh::ShallowCopy(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FEMesh::AddElementDataField(const string& sz, FEPart* part, FEMeshData::DATA_TYPE dataType)
-{
-	FEElementData* map = new FEElementData;
-	map->Create(this, part, dataType);
-	map->SetName(sz);
-	m_meshData.push_back(map);
-	return map;
-}
-
-//-----------------------------------------------------------------------------
 int FEMesh::MeshDataFields() const { return (int)m_meshData.size(); }
 
 //-----------------------------------------------------------------------------
@@ -1966,6 +1956,16 @@ FENodeData* FEMesh::AddNodeDataField(const string& sz, double v)
 }
 
 //-----------------------------------------------------------------------------
+FENodeData* FEMesh::AddNodeDataField(const string& name, FENodeSet* nodeset, FEMeshData::DATA_TYPE dataType)
+{
+	FENodeData* data = new FENodeData(GetGObject());
+	data->Create(nodeset, 0.0);
+	data->SetName(name);
+	m_meshData.push_back(data);
+	return data;
+}
+
+//-----------------------------------------------------------------------------
 FESurfaceData* FEMesh::AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
@@ -1973,6 +1973,16 @@ FESurfaceData* FEMesh::AddSurfaceDataField(const string& name, FESurface* surfac
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;
+}
+
+//-----------------------------------------------------------------------------
+FEElementData* FEMesh::AddElementDataField(const string& sz, FEPart* part, FEMeshData::DATA_TYPE dataType)
+{
+	FEElementData* map = new FEElementData;
+	map->Create(this, part, dataType);
+	map->SetName(sz);
+	m_meshData.push_back(map);
+	return map;
 }
 
 //-----------------------------------------------------------------------------

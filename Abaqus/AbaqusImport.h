@@ -53,6 +53,7 @@ public:	// import options
 	bool	m_bfacesets;	// read the surfaces
 	bool	m_bautopart;	// auto-partition parts
 	bool	m_bautosurf;	// auto-partition surfaces
+	bool	m_bssection;	// process solid-sections
 	bool	m_breadPhysics;	// read the physics (i.e. materials, bcs, etc).
 
 public:

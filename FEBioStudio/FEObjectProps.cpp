@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include <MeshTools/GMaterial.h>
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FEMultiMaterial.h>
-#include <FEMLib/FEDataMap.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FEModel* fem) : CObjectProps(nullptr)
@@ -719,73 +718,4 @@ void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 {
 	FEProductMaterial* pr = m_mat->Product(i);
 	pr->SetCoeff(v.toInt());
-}
-
-//=======================================================================================
-CDataMapProps::CDataMapProps(FEDataMap* map) : CObjectProps(0), m_map(map)
-{
-	BuildPropertyList();
-}
-
-void CDataMapProps::BuildPropertyList()
-{
-	Clear();
-
-	QStringList enums;
-	enums << "const" << "math" << "mesh data";
-	addProperty("generator", CProperty::Enum)->setEnumValues(enums);
-
-	if (m_map->GetGenerator() == 0)
-	{
-		addProperty("value", CProperty::Float);
-	}
-	else if (m_map->GetGenerator() == 1)
-	{
-		addProperty("f(X,Y,Z) = ", CProperty::String);
-	}
-}
-
-QVariant CDataMapProps::GetPropertyValue(int i)
-{
-	switch (i)
-	{
-	case 0: return m_map->GetGenerator(); break;
-	case 1:
-		if (m_map->GetGenerator() == 0)
-		{
-			return m_map->GetConstValue();
-		}
-		else if (m_map->GetGenerator() == 1)
-		{
-			return QString::fromStdString(m_map->GetMathString());
-		}
-		break;
-	}
-
-	return QVariant();
-}
-
-void CDataMapProps::SetPropertyValue(int i, const QVariant& v)
-{
-	switch (i)
-	{
-	case 0:
-	{
-		int n = v.toInt();
-		m_map->SetGenerator(n);
-		BuildPropertyList();
-		SetModified(true);
-	}
-	break;
-	case 1:
-		if (m_map->GetGenerator() == 0)
-		{
-			m_map->SetConstValue(v.toDouble());
-		}
-		else if (m_map->GetGenerator() == 1)
-		{
-			m_map->SetMathString(v.toString().toStdString());
-		}
-		break;
-	}
 }

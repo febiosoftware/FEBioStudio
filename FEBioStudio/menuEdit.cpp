@@ -992,6 +992,55 @@ void CMainWindow::on_actionSelectOverlap_triggered()
 	}
 }
 
+void CMainWindow::on_actionGrowSelection_triggered()
+{
+	GObject* po = GetActiveObject();
+	if (po == nullptr) return;
+
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
+
+	VIEW_SETTINGS& vs = ui->glview->GetViewSettings();
+
+	int itemMode = doc->GetItemMode();
+	switch (itemMode)
+	{
+	case ITEM_ELEM: doc->GrowElementSelection(pm, vs.m_bpart); break;
+	case ITEM_FACE: doc->GrowFaceSelection(pm, vs.m_bpart); break;
+	case ITEM_EDGE: doc->GrowEdgeSelection(pm); break;
+	case ITEM_NODE: doc->GrowNodeSelection(pm); break;
+	}
+
+	RedrawGL();
+}
+
+void CMainWindow::on_actionShrinkSelection_triggered()
+{
+	GObject* po = GetActiveObject();
+	if (po == nullptr) return;
+
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr) return;
+	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
+
+	int itemMode = doc->GetItemMode();
+	switch (itemMode)
+	{
+	case ITEM_ELEM: doc->ShrinkElementSelection(pm); break;
+	case ITEM_FACE: doc->ShrinkFaceSelection(pm); break;
+	case ITEM_EDGE: doc->ShrinkEdgeSelection(pm); break;
+	case ITEM_NODE: doc->ShrinkNodeSelection(pm); break;
+	}
+
+	RedrawGL();
+}
 
 void CMainWindow::on_actionSelect_toggled(bool b)
 {

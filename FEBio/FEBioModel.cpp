@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEBioModel.h"
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GDiscreteObject.h>
+#include <MeshTools/GModel.h>
 #include <string.h>
 
 //=============================================================================
@@ -173,18 +174,21 @@ void FEBioModel::NodeSet::operator = (const NodeSet& nodeSet)
 //=============================================================================
 FEBioModel::Surface::Surface()
 {
+	m_refs = 0;
 }
 
 FEBioModel::Surface::Surface(const FEBioModel::Surface& s)
 {
 	m_name = s.m_name;
 	m_face = s.m_face;
+	m_refs = s.m_refs;
 }
 
 void FEBioModel::Surface::operator = (const FEBioModel::Surface& s)
 {
 	m_name = s.m_name;
 	m_face = s.m_face;
+	m_refs = s.m_refs;
 }
 
 //=============================================================================
@@ -380,7 +384,7 @@ FENodeSet* FEBioModel::PartInstance::BuildFENodeSet(const char* szname)
 	return pns;
 }
 
-FESurface* FEBioModel::PartInstance::BuildFESurface(const FEBioModel::Surface& surf)
+FESurface* FEBioModel::PartInstance::BuildFESurface(FEBioModel::Surface& surf)
 {
 	// create face list
 	vector<int> faceList;
@@ -399,6 +403,9 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const FEBioModel::Surface& s
 	// copy the name
 	std::string name = surf.name();
 	ps->SetName(name.c_str());
+
+	// increment surface reference counter
+	surf.m_refs++;
 
 	// all done
 	return ps;
@@ -439,6 +446,9 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 	// copy the name
 	std::string name = surface->name();
 	ps->SetName(name.c_str());
+
+	// increase ref counter on surface
+	surface->m_refs++;
 
 	// all done
 	return ps;

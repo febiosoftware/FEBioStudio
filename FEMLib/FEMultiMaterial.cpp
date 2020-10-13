@@ -742,6 +742,27 @@ FEFluidFSIMaterial::FEFluidFSIMaterial() : FEMultiMaterial(FE_FLUID_FSI_MATERIAL
 }
 
 //=============================================================================
+//                                  BIPHASIC-FSI
+//=============================================================================
+
+REGISTER_MATERIAL(FEBiphasicFSIMaterial, MODULE_FLUID_FSI, FE_BIPHASIC_FSI_MATERIAL, FE_MAT_FLUID_FSI, "biphasic-FSI", MaterialFlags::TOPLEVEL);
+
+FEBiphasicFSIMaterial::FEBiphasicFSIMaterial() : FEMultiMaterial(FE_BIPHASIC_FSI_MATERIAL)
+{
+    // add parameters
+    AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
+    
+    // Add fluid component
+    AddProperty("fluid", FE_MAT_FLUID);
+    
+    // Add solid component
+    AddProperty("solid", FE_MAT_ELASTIC);
+    
+    // Add permeability component
+    AddProperty("permeability", FE_MAT_PERMEABILITY);
+}
+
+//=============================================================================
 //								SPECIES MATERIAL
 //=============================================================================
 

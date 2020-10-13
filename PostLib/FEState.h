@@ -113,6 +113,7 @@ class OBJECT_DATA
 {
 public:
 	OBJECT_DATA() { data = nullptr; }
+	virtual ~OBJECT_DATA() {}
 
 public:
 	vec3d	pos;

@@ -44,15 +44,20 @@ CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*
 	AddDoubleParam(0, "Seeding density")->SetFloatRange(0.0, 1.0, 0.01);
 	AddDoubleParam(0, "Step size");
 	AddBoolParam(false, "Show path lines");
+	AddIntParam(0, "Path line length");
 
 	m_nvec = -1;
 	m_showPath = false;
+	m_pathLength = 0; // 0 means all time steps
 	m_vtol = 1e-5f;
 	m_density = 1.f;
 
 	m_maxtime = -1;
 	m_seedTime = 1;
 	m_dt = 0.01f;
+
+	m_lastTime = 0.f;
+	m_lastDt = 1.f;
 
 	UpdateData(false);
 }
@@ -61,6 +66,13 @@ bool CGLParticleFlowPlot::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
+		// store some parameters that require rebuilding the entire plot
+		int oldvec = m_nvec;
+		int oldSeedtime = m_seedTime;
+		float oldDt = m_dt;
+		float oldVtol = m_vtol;
+		float oldDensity = m_density;
+
 		m_nvec = GetIntValue(DATA_FIELD);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		AllowClipping(GetBoolValue(CLIP));
@@ -69,6 +81,19 @@ bool CGLParticleFlowPlot::UpdateData(bool bsave)
 		m_density = GetFloatValue(DENSITY);
 		m_dt = GetFloatValue(STEP_SIZE);
 		m_showPath = GetBoolValue(PATH_LINES);
+		m_pathLength = GetIntValue(PATH_LENGTH);
+
+		bool update = false;
+		if (oldvec != m_nvec) update = true;
+		if (oldSeedtime != m_seedTime) update = true;
+		if (oldVtol != m_vtol) update = true;
+		if (oldDt != m_dt) update = true;
+		if (oldDensity != m_density) update = true;
+
+		if (update)
+		{
+			Update(m_lastTime, m_lastDt, true);
+		}
 	}
 	else
 	{
@@ -80,6 +105,7 @@ bool CGLParticleFlowPlot::UpdateData(bool bsave)
 		SetFloatValue(DENSITY, m_density);
 		SetFloatValue(STEP_SIZE, m_dt);
 		SetBoolValue(PATH_LINES, m_showPath);
+		SetIntValue(PATH_LENGTH, m_pathLength);
 	}
 
 	return false;
@@ -150,9 +176,17 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 				int tend = ntime;
 				if (tend > p.m_ndeath) tend = p.m_ndeath;
 
+				int n0 = m_seedTime;
+				if (m_pathLength > 0)
+				{
+					n0 = ntime - m_pathLength;
+					if (n0 < m_seedTime) n0 = m_seedTime;
+					if (n0 > tend) n0 = tend;
+				}
+
 				glBegin(GL_LINE_STRIP);
 				{
-					for (int n=m_seedTime; n<=tend; ++n)
+					for (int n=n0; n<=tend; ++n)
 					{
 						vec3f& r = p.m_pos[n];
 						glVertex3f(r.x, r.y, r.z);
@@ -168,6 +202,9 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 
 void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 {
+	m_lastTime = ntime;
+	m_lastDt = dt;
+
 	if (breset) { m_map.Clear(); m_rng.clear(); m_maxtime = -1; m_particles.clear(); }
 	if (m_nvec == -1) return;
 

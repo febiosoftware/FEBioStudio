@@ -1463,14 +1463,14 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 							assert(objId != -1);
 							float r[3];
 							m_ar.read(r, 3);
-							ps->m_objPt[objId].pos = vec3d(r[0], r[1], r[2]);
+							ps->m_objLn[objId].pos = vec3d(r[0], r[1], r[2]);
 						}
 						else if (nid == PLT_OBJECT_ROT)
 						{
 							assert(objId != -1);
 							float q[4];
 							m_ar.read(q, 4);
-							ps->m_objPt[objId].rot = quatd(q[0], q[1], q[2], q[3]);
+							ps->m_objLn[objId].rot = quatd(q[0], q[1], q[2], q[3]);
 						}
 						else if (nid == PLT_LINE_COORDS)
 						{

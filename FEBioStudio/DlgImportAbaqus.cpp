@@ -33,7 +33,7 @@ SOFTWARE.*/
 class Ui::CDlgImportAbaqus
 {
 public:
-	QCheckBox* pc[5];
+	QCheckBox* pc[6];
 
 public:
 	void setupUi(QWidget* parent)
@@ -45,12 +45,14 @@ public:
 		pc[2] = new QCheckBox("Import surface");
 		pc[3] = new QCheckBox("Auto-partition from element sets");
 		pc[4] = new QCheckBox("Auto-partition surface");
+		pc[5] = new QCheckBox("Process solid sections");
 
 		layout->addWidget(pc[0]);
 		layout->addWidget(pc[1]);
 		layout->addWidget(pc[2]);
 		layout->addWidget(pc[3]);
 		layout->addWidget(pc[4]);
+		layout->addWidget(pc[5]);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
@@ -67,19 +69,21 @@ CDlgImportAbaqus::CDlgImportAbaqus(AbaqusImport* fileReader, QWidget* parent) : 
 	m_fileReader = fileReader;
 	ui->setupUi(this);
 
-	ui->pc[0]->setChecked(m_fileReader->m_bnodesets);
-	ui->pc[1]->setChecked(m_fileReader->m_belemsets);
-	ui->pc[2]->setChecked(m_fileReader->m_bfacesets);
-	ui->pc[3]->setChecked(m_fileReader->m_bautopart);
-	ui->pc[4]->setChecked(m_fileReader->m_bautosurf);
+	ui->pc[0]->setChecked(m_fileReader->m_bnodesets   );
+	ui->pc[1]->setChecked(m_fileReader->m_belemsets   );
+	ui->pc[2]->setChecked(m_fileReader->m_bfacesets   );
+	ui->pc[3]->setChecked(m_fileReader->m_bautopart   );
+	ui->pc[4]->setChecked(m_fileReader->m_bautosurf   );
+	ui->pc[5]->setChecked(m_fileReader->m_bssection   );
 }
 
 void CDlgImportAbaqus::accept()
 {
-	m_fileReader->m_bnodesets = ui->pc[0]->isChecked();
-	m_fileReader->m_belemsets = ui->pc[1]->isChecked();
-	m_fileReader->m_bfacesets = ui->pc[2]->isChecked();
-	m_fileReader->m_bautopart = ui->pc[3]->isChecked();
-	m_fileReader->m_bautosurf = ui->pc[4]->isChecked();
+	m_fileReader->m_bnodesets    = ui->pc[0]->isChecked();
+	m_fileReader->m_belemsets    = ui->pc[1]->isChecked();
+	m_fileReader->m_bfacesets    = ui->pc[2]->isChecked();
+	m_fileReader->m_bautopart    = ui->pc[3]->isChecked();
+	m_fileReader->m_bautosurf    = ui->pc[4]->isChecked();
+	m_fileReader->m_bssection    = ui->pc[5]->isChecked();
 	QDialog::accept();
 }

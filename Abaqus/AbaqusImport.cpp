@@ -47,6 +47,8 @@ AbaqusImport::AbaqusImport(FEProject& prj) : FEFileImport(prj)
 	m_bfacesets = true;
 	m_bautopart = false;
 	m_bautosurf = true;
+	m_bssection = true;
+
 	m_breadPhysics = false;
 }
 
@@ -1685,7 +1687,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	vector<int> index; index.assign(elsets, 0);
 
 	int ssections = (int) part.m_Solid.size();
-	if (ssections > 0)
+	if ((ssections > 0) && m_bssection)
 	{
 		list<AbaqusModel::SOLID_SECTION>::iterator pss = part.m_Solid.begin();
 		for (i = 0; i<ssections; ++i, ++pss)
@@ -1784,7 +1786,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 		}
 	}
 
-	pm->RebuildMesh(60.0, m_bautosurf);
+	pm->RebuildMesh(60.0, false);
 
 	// next, we will add the mesh surfaces. Before we 
 	// can do that we need to build and update the mesh.
@@ -1792,7 +1794,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	GMeshObject* po = new GMeshObject(pm);
 
 	// rename the parts to correspond to the element sets
-	if (ssections > 0)
+	if ((ssections > 0) && m_bssection)
 	{
 		list<AbaqusModel::SOLID_SECTION>::iterator pss = part.m_Solid.begin();
 		for (i = 0; i<ssections; ++i, ++pss)

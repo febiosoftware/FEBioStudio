@@ -38,7 +38,7 @@ class CGLModel;
 
 class CGLColorMap : public CGLDataMap
 {
-	enum { DATA_FIELD, DATA_SMOOTH, COLOR_MAP, NODAL_VALS, RANGE_TYPE, RANGE_DIVS, SHOW_LEGEND, USER_MAX, USER_MIN };
+	enum { DATA_FIELD, DATA_SMOOTH, COLOR_MAP, NODAL_VALS, RANGE_DIVS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
 
 public:
 	CGLColorMap(CGLModel* po);
@@ -52,12 +52,15 @@ public:
 	void SetEvalField(int n);
 
 	void GetRange(float* pd) { pd[0] = m_range.min; pd[1] = m_range.max; }
-	int GetRangeType() { return m_range.ntype; }
+	int GetMaxRangeType() { return m_range.maxtype; }
+	int GetMinRangeType() { return m_range.mintype; }
 
 	void SetRange(float* pd) { m_range.min = pd[0]; m_range.max = pd[1]; }
 	void SetRangeMax(float f) { m_range.max = f; }
 	void SetRangeMin(float f) { m_range.min = f; }
-	void SetRangeType(int n) { m_range.ntype = n; m_breset = true; }
+//	void SetRangeType(int n) { m_range.maxtype = m_range.mintype = n; m_breset = true; }
+	void SetMaxRangeType(int n) { m_range.maxtype = n; m_breset = true; }
+	void SetMinRangeType(int n) { m_range.mintype = n; m_breset = true; }
 
 	void DisplayNodalValues(bool b) { m_bDispNodeVals = b; }
 	bool DisplayNodalValues() { return m_bDispNodeVals; }

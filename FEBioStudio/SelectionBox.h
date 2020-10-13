@@ -40,6 +40,19 @@ class CSelectionBox : public QWidget
 {
 	Q_OBJECT
 
+	class Item 
+	{
+	public:
+		QString		m_label;
+		int			m_data;
+
+	public:
+		Item() { m_data = 0; }
+		Item(const QString& s, int data) : m_label(s), m_data(data) {}
+		Item(const Item& it) { m_label = it.m_label; m_data = it.m_data; }
+		void operator = (const Item& it) { m_label = it.m_label; m_data = it.m_data; }
+	};
+
 public:
 	CSelectionBox(QWidget* parent = 0);
 
@@ -47,7 +60,7 @@ public:
 	void setType(const QString& name);
 
 	void clearData();
-	void addData(const QString& item, int data, int fmt = 0);
+	void addData(const QString& item, int data, int fmt = 0, bool checkForDuplicates = true);
 	void addData(const vector<int>& data);
 
 	void removeData(int ndata);
@@ -69,6 +82,8 @@ public:
 	void enableSelectButton(bool b);
 	void enableAllButtons(bool b);
 
+	void setCollapsed(bool b);
+
 signals:
 	void addButtonClicked();
 	void subButtonClicked();
@@ -85,8 +100,9 @@ private slots:
 	void on_name_textEdited(const QString& t);
 	void on_list_itemDoubleClicked(QListWidgetItem *item);
 	void on_clearSelection_clicked();
+	void on_toggleCollapse_toggled(bool b);
 
 private:
 	Ui::CSelectionBox*	ui;
-	vector<int>			m_data;
+	vector<Item>		m_items;
 };

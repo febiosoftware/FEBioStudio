@@ -112,6 +112,7 @@ public:
 			fullWidget->setHidden(true);
 		}
 		QVBoxLayout* fullLayout = new QVBoxLayout;
+		fullLayout->setSpacing(0);
 		QHBoxLayout* hlayout = new QHBoxLayout;
 
 		fullLabel = new WrapLabel(parent->FullText());

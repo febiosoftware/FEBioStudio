@@ -51,9 +51,6 @@ private:
 
 private:
 	UIScalarFieldTool*	ui;
-
-	int			m_ntype;
-
 	GObject*	m_po;
 	std::vector<FEItemListBuilder*>	m_data;
 };

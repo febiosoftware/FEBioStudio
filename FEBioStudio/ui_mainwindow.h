@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <FEBioStudio/RepositoryPanel.h>
 #include "GLView.h"
 #include <QAction>
 #include <QMenuBar>
@@ -53,7 +54,6 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "PostPanel.h"
 #include "InfoPanel.h"
-#include "DatabasePanel.h"
 #include <QFontComboBox>
 #include <vector>
 #include "LaunchConfig.h"
@@ -109,7 +109,7 @@ public:
 	::CMeshInspector* meshWnd;
 	::CPostPanel*	postPanel;
 	::CInfoPanel*	infoPanel;
-	::CDatabasePanel*	databasePanel;
+	::CRepositoryPanel*	databasePanel;
 	::CDlgMeasure*	measureTool;
 	::CDlgPlaneCut*	planeCutTool;
 	::CTimelinePanel*	timePanel;
@@ -381,6 +381,8 @@ public:
 
 		QAction* actionFace2Elems        = addAction("Face to Element Selection", "actionFaceToElem");
 		QAction* actionSelectOverlap     = addAction("Select surface overlap ...", "actionSelectOverlap");
+		QAction* actionGrowSelection     = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier + Qt::Key_Plus);
+		QAction* actionShrinkSelection   = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier + Qt::Key_Minus);
 
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
@@ -606,6 +608,8 @@ public:
 		QMenu* moreSelection = new QMenu("More selection options");
 		moreSelection->addAction(actionFace2Elems);
 		moreSelection->addAction(actionSelectOverlap);
+		moreSelection->addAction(actionGrowSelection);
+		moreSelection->addAction(actionShrinkSelection);
 
 		// Edit menu
 		menuBar->addAction(menuEdit->menuAction());
@@ -916,7 +920,7 @@ public:
 
 #ifdef MODEL_REPO
 		QDockWidget* dock7 = new QDockWidget("Repository", m_wnd); dock7->setObjectName("dockDatabase");
-		databasePanel = new ::CDatabasePanel(wnd, dock7);
+		databasePanel = new ::CRepositoryPanel(wnd, dock7);
 		dock7->setWidget(databasePanel);
 		menuWindows->addAction(dock7->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock1, dock7);

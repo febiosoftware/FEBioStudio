@@ -784,6 +784,43 @@ void CModelViewer::OnHidePart()
 	wnd->RedrawGL();
 }
 
+void CModelViewer::OnSelectPartElements()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	GModel& m = doc->GetFEModel()->GetModel();
+
+	if (m_selection.size() != 1) return;
+	GPart* pg = dynamic_cast<GPart*>(m_selection[0]); assert(pg);
+
+	GObject* po = dynamic_cast<GObject*>(pg->Object());
+	if (po == nullptr) return;
+
+	FEMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	// set the correct selection mode
+	doc->SetSelectionMode(SELECT_OBJECT);
+	doc->SetItemMode(ITEM_ELEM);
+
+	// make sure this object is selected first
+	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+
+	// now, select the elements
+	int lid = pg->GetLocalID();
+	vector<int> elemList;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		if (el.m_gid == lid) elemList.push_back(i);
+	}
+
+	// select elements
+	doc->DoCommand(new CCmdSelectElements(pm, elemList, false));
+
+	CMainWindow* wnd = GetMainWindow();
+	wnd->RedrawGL();
+}
+
 void CModelViewer::OnShowPart()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1477,6 +1514,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			{
 				menu.addAction("Select", this, SLOT(OnSelectPart()));
 				menu.addAction("Hide", this, SLOT(OnHidePart()));
+				menu.addAction("Select elements", this, SLOT(OnSelectPartElements()));
 			}
 			else
 				menu.addAction("Show", this, SLOT(OnShowPart()));
@@ -1503,7 +1541,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Show parts", this, SLOT(OnMaterialShowParts()));
 		menu.addAction("Hide other parts", this, SLOT(OnMaterialHideOtherParts()));
 		menu.addAction("Export Material(s) ...", this, SLOT(OnExportMaterials()));
-		menu.addAction("Generate map...", this, SLOT(OnGenerateMap()));
 		del = true;
 		break;
 	case MT_DISCRETE_SET:
@@ -1540,7 +1577,6 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_LOAD:
 		menu.addAction("Copy", this, SLOT(OnCopyLoad()));
-		menu.addAction("Generate map...", this, SLOT(OnGenerateMap()));
 		del = true;
 		break;
 	case MT_RIGID_CONSTRAINT:
@@ -1626,19 +1662,6 @@ void CModelViewer::OnSwapMasterSlave()
 	{
 		pci->SwapMasterSlave();
 		UpdateObject(m_currentObject);
-	}
-}
-
-void CModelViewer::OnGenerateMap()
-{
-	FSObject* po = m_currentObject;
-	if (po)
-	{
-		if (dynamic_cast<GMaterial*>(m_currentObject))
-		{
-			po = dynamic_cast<GMaterial*>(po)->GetMaterialProperties();
-		}
-		GetMainWindow()->GenerateMap(po);
 	}
 }
 

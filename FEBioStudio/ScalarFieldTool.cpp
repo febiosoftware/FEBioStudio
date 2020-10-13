@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QLabel>
 #include <QHeaderView>
+#include <QComboBox>
 #include "MainWindow.h"
 
 class UIScalarFieldTool : public QWidget
@@ -50,6 +51,7 @@ public:
 	QPushButton*	m_apply;
 	QTableWidget*	m_table;
 	QLineEdit*		m_val;
+	QComboBox*		m_domain;
 
 public:
 	UIScalarFieldTool(CScalarFieldTool* w)
@@ -77,6 +79,15 @@ public:
 		m_table->horizontalHeader()->setStretchLastSection(true);
 		m_table->setHorizontalHeaderLabels(QStringList() << "selection" << "value");
 
+		QHBoxLayout* h3 = new QHBoxLayout;
+		h3->addWidget(new QLabel("Data format:"));
+		m_domain = new QComboBox;
+		m_domain->addItem("Element data");
+		m_domain->addItem("Node data");
+		h3->addWidget(m_domain);
+
+		l->addLayout(h3);
+
 		l->addWidget(m_apply = new QPushButton("Create"));
 
 		l->addStretch();
@@ -91,9 +102,6 @@ public:
 CScalarFieldTool::CScalarFieldTool(CMainWindow* wnd) : CAbstractTool(wnd, "Scalar Field")
 {
 	m_po = nullptr;
-
-	m_ntype = 0;
-
 	ui = nullptr;
 }
 
@@ -215,13 +223,9 @@ void CScalarFieldTool::OnApply()
 	LaplaceSolver L;
 	L.Solve(pm, val, bn);
 
-	if (m_ntype == 0)
-	{
-		// create node data
-		FENodeData* pdata = pm->AddNodeDataField(name.toStdString());
-		for (int i = 0; i<NN; i++) pdata->set(i, val[i]);
-	}
-	else
+	int ntype = ui->m_domain->currentIndex();
+
+	if (ntype == 0)
 	{
 		// create element data
 		int parts = po->Parts();
@@ -248,6 +252,13 @@ void CScalarFieldTool::OnApply()
 		}
 		delete elemList;
 	}
+	else
+	{
+		// create node data
+		FENodeData* pdata = pm->AddNodeDataField(name.toStdString());
+		for (int i = 0; i < NN; i++) pdata->set(i, val[i]);
+	}
+
 	Clear();
 	GetMainWindow()->UpdateModel();
 	QMessageBox::information(GetMainWindow(), "Tool", "Datafield successfully added.");

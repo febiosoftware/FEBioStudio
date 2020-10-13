@@ -97,6 +97,7 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 #include <PostLib/FELSDYNAExport.h>
+#include <PostLib/FEAbaqusExport.h>
 #include <MeshTools/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
@@ -483,6 +484,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 			return;
 		}
 
+		// when reading an Abaqus model, we process the physics
 		abaqusReader->m_breadPhysics = true;
 		reader = abaqusReader;
 	}
@@ -855,7 +857,8 @@ void CMainWindow::SavePostDoc()
 		<< "BYU files(*.byu)"
 		<< "NIKE3D files (*.n)"
 		<< "VTK files (*.vtk)"
-		<< "LSDYNA database (*.d3plot)";
+		<< "LSDYNA database (*.d3plot)"
+		<< "Abaqus files (*.inp)";
 
 	QFileDialog dlg(this, "Save");
 	dlg.setFileMode(QFileDialog::AnyFile);
@@ -980,6 +983,13 @@ void CMainWindow::SavePostDoc()
 				bret = ls.Save(fem, szfilename, dlg.m_flag, dlg.m_code);
 				error = "Failed writing LSDYNA database file";
 			}
+		}
+		break;
+		case 9:
+		{
+			Post::FEAbaqusExport w;
+			bret = w.Save(fem, doc->GetActiveState(), szfilename);
+			error = "Failed writing Abaqus file.";
 		}
 		break;
 		default:
@@ -1319,7 +1329,7 @@ void CMainWindow::on_actionImportImage_triggered()
 		QString fileName = files.at(0);
 		std::string sfile = fileName.toStdString();
 
-		// create 'resources' subdirectory
+	/*	// create 'resources' subdirectory
 		std::string sPath = doc->GetDocFolder();
 
 		if (!sPath.empty())
@@ -1345,6 +1355,7 @@ void CMainWindow::on_actionImportImage_triggered()
 			// store path to newly created link
 			sfile = linkName.toStdString();
 		}
+*/
 
 		CDlgRAWImport dlg(this);
 		if (dlg.exec())
@@ -1360,7 +1371,12 @@ void CMainWindow::on_actionImportImage_triggered()
 			{
 				Update(0, true);
 				ZoomTo(po->GetBoundingBox());
-				ShowInModelViewer(po);
+
+				// only for model docs
+				if (dynamic_cast<CModelDocument*>(doc))
+				{
+					ShowInModelViewer(po);
+				}
 			}
 		}
 		else return;

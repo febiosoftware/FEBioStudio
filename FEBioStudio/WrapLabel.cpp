@@ -11,6 +11,7 @@ WrapLabel::WrapLabel(QString text, QWidget* parent)
 
 	layout = new QVBoxLayout;
 	layout->setContentsMargins(0, 0, 0, 0);
+	layout->setSpacing(0);
 	setLayout(layout);
 
 	setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);

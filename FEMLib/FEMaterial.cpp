@@ -395,7 +395,7 @@ FECarterHayes::FECarterHayes() : FEMaterial(FE_CARTER_HAYES)
 // FEPRLig - Poission-Ratio Ligament
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEPRLig, MODULE_MECH, FE_PRLIG, FE_MAT_ELASTIC_UNCOUPLED, "PRLig", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FEPRLig, MODULE_MECH, FE_PRLIG, FE_MAT_ELASTIC, "PRLig", MaterialFlags::TOPLEVEL);
 
 FEPRLig::FEPRLig() : FEMaterial(FE_PRLIG)
 {
@@ -427,8 +427,8 @@ FEOldFiberMaterial::FEOldFiberMaterial() : FEMaterial(0)
 	m_nuser = 0;
 	m_n[0] = m_n[1] = 0;
 	m_r = vec3d(0,0,0);
-	m_a = vec3d(0,0,1);
-	m_d = vec3d(1,0,0);
+	m_a = vec3d(1,0,0);
+	m_d = vec3d(0,1,0);
 	m_theta = 0.0;
 	m_phi = 90.0;
 	m_d0 = m_d1 = vec3d(0,0,1);
@@ -464,6 +464,8 @@ bool FEOldFiberMaterial::UpdateData(bool bsave)
 			m_d = GetVecValue(5);
 			break;
 		case FE_FIBER_SPHERICAL:
+			GetParam(3).SetState(Param_ALLFLAGS);
+			m_r = GetVecValue(3);
 			break;
 		case FE_FIBER_VECTOR:
 			GetParam(4).SetState(Param_ALLFLAGS);
@@ -1888,6 +1890,13 @@ vec3d FEFiberMaterial::GetFiber(FEElementRef& el)
 		mat3d Q = m_axes->GetMatAxes(el);
 		v = Q * v;
 	}
+	const FEMaterial* parentMat = GetParentMaterial();
+	if (parentMat && parentMat->m_axes)
+	{
+		mat3d Q = parentMat->m_axes->GetMatAxes(el);
+		v = Q * v;
+	}
+
 	return v;
 }
 

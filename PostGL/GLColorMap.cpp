@@ -41,14 +41,15 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddBoolParam(true, "Gradient smoothing");
 	AddIntParam (0, "Color map")->SetEnumNames("@color_map");
 	AddBoolParam(true, "Nodal smoothing");
-	AddIntParam (0, "Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddIntParam (10, "Range divisions")->SetIntRange(1, 100);
 	AddBoolParam(true, "Show Legend");
+	AddIntParam (0, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "User max");
+	AddIntParam (0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "User min");
 
 	m_range.min = m_range.max = 0;
-	m_range.ntype = RANGE_DYNAMIC;
+	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
 
 	m_nfield = 0;
 	m_breset = true;
@@ -84,18 +85,16 @@ bool CGLColorMap::UpdateData(bool bsave)
 		m_Col.SetSmooth(GetBoolValue(DATA_SMOOTH));
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		m_bDispNodeVals = GetBoolValue(NODAL_VALS);
-		m_range.ntype = GetIntValue(RANGE_TYPE);
+		m_range.maxtype = GetIntValue(MAX_RANGE_TYPE);
+		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
 		if (m_pbar)
 		{
 			bool b = GetBoolValue(SHOW_LEGEND);
 			if (b) m_pbar->show(); else m_pbar->hide();
 			m_pbar->SetDivisions(GetIntValue(RANGE_DIVS));
 		}
-		if (m_range.ntype == RANGE_USER)
-		{
-			m_range.max = GetFloatValue(USER_MAX);
-			m_range.min = GetFloatValue(USER_MIN);
-		}
+		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
+		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
 
 		Update();
 	}
@@ -105,7 +104,8 @@ bool CGLColorMap::UpdateData(bool bsave)
 		SetBoolValue(DATA_SMOOTH, m_Col.GetSmooth());
 		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
 		SetBoolValue(NODAL_VALS, m_bDispNodeVals);
-		SetIntValue(RANGE_TYPE, m_range.ntype);
+		SetIntValue(MAX_RANGE_TYPE, m_range.maxtype);
+		SetIntValue(MIN_RANGE_TYPE, m_range.mintype);
 		if (m_pbar)
 		{
 			SetBoolValue(SHOW_LEGEND, m_pbar->visible());
@@ -269,29 +269,59 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		}
 	}
 
-	if (m_range.ntype != RANGE_USER)
+	if (m_breset || breset)
 	{
-		if (m_breset || breset)
+		if (m_range.maxtype != RANGE_USER) m_range.max = fmax;
+		if (m_range.mintype != RANGE_USER) m_range.min = fmin;
+		m_breset = false;
+	}
+	else
+	{
+		switch (m_range.maxtype)
 		{
+		case RANGE_DYNAMIC:
 			m_range.max = fmax;
-			m_range.min = fmin;
-			m_breset = false;
+			break;
+		case RANGE_STATIC:
+			if (fmax > m_range.max) m_range.max = fmax;
+			break;
 		}
-		else
+
+		switch (m_range.mintype)
 		{
-			switch (m_range.ntype)
-			{
-			case RANGE_DYNAMIC:
-				m_range.max = fmax;
-				m_range.min = fmin;
-				break;
-			case RANGE_STATIC:
-				if (fmax > m_range.max) m_range.max = fmax;
-				if (fmin < m_range.min) m_range.min = fmin;
-				break;
-			}
+		case RANGE_DYNAMIC:
+			m_range.min = fmin;
+			break;
+		case RANGE_STATIC:
+			if (fmin < m_range.min) m_range.min = fmin;
+			break;
 		}
 	}
+
+
+//	if (m_range.ntype != RANGE_USER)
+//	{
+//		if (m_breset || breset)
+//		{
+//			m_range.max = fmax;
+//			m_range.min = fmin;
+//			m_breset = false;
+//		}
+//		else
+//		{
+//			switch (m_range.ntype)
+//			{
+//			case RANGE_DYNAMIC:
+//				m_range.max = fmax;
+//				m_range.min = fmin;
+//				break;
+//			case RANGE_STATIC:
+//				if (fmax > m_range.max) m_range.max = fmax;
+//				if (fmin < m_range.min) m_range.min = fmin;
+//				break;
+//			}
+//		}
+//	}
 
 	// set the colormap's range
 	m_pbar->SetRange(m_range.min, m_range.max);

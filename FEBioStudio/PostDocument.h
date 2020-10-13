@@ -86,7 +86,8 @@ private:
 		float	m_max;
 		float	m_user[2];	// user range
 		bool	m_bDispNodeVals;	// render nodal values
-		int		m_nRangeType;	// range type
+		int		m_maxRangeType;	// range type
+		int		m_minRangeType;	// range type
 		int		m_nField;
 	};
 

@@ -30,14 +30,48 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include "FEBioExport.h"
 
-class FEDataMap;
+class FEDataMapGenerator;
 class FESurfaceLoad;
 class GPartList;
 class GMaterial;
 class GPart;
 
 //-----------------------------------------------------------------------------
-typedef std::pair<std::string, FEItemListBuilder*> NamedList;
+class NamedItemList
+{
+public:
+	std::string			m_name;
+	FEItemListBuilder*	m_list;
+	bool				m_duplicate;	// this list is defined more than once, and should not be written to Mesh section.
+
+public:
+	NamedItemList()
+	{
+		m_list = nullptr;
+		m_duplicate = false;
+	}
+
+	NamedItemList(const std::string& name, FEItemListBuilder* itemList, bool duplicate = false)
+	{
+		m_name = name;
+		m_list = itemList;
+		m_duplicate = duplicate;
+	}
+
+	NamedItemList(const NamedItemList& n)
+	{
+		m_name = n.m_name;
+		m_list = n.m_list;
+		m_duplicate = n.m_duplicate;
+	}
+
+	void operator = (const NamedItemList& n)
+	{
+		m_name = n.m_name;
+		m_list = n.m_list;
+		m_duplicate = n.m_duplicate;
+	}
+};
 
 //-----------------------------------------------------------------------------
 //! Exporter for FEBio format specification version 2.5
@@ -220,7 +254,7 @@ protected:
 	void WriteMeshDataMaterialFibers();
 	void WriteMeshDataMaterialAxes();
 	void WriteElementDataFields();
-	void WriteMeshData(FEDataMap* map);
+	void WriteMeshData(FEDataMapGenerator* map);
 
 	void WriteSolidControlParams(FEAnalysisStep* pstep);
 	void WriteBiphasicControlParams(FEAnalysisStep* pstep);
@@ -288,9 +322,9 @@ protected:
 	Part* FindPart(GObject* po);
 
 protected:
-	std::vector<NamedList>		m_pSurf;	//!< list of named surfaces
-	std::vector<NamedList>		m_pNSet;	//!< list of named node sets
-	std::vector<NamedList>		m_pESet;	//!< list of named element sets
+	std::vector<NamedItemList>		m_pSurf;	//!< list of named surfaces
+	std::vector<NamedItemList>		m_pNSet;	//!< list of named node sets
+	std::vector<NamedItemList>		m_pESet;	//!< list of named element sets
 
 	std::vector<ElementSet>		m_ElSet;	//!< the element sets
 

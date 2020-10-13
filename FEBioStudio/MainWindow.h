@@ -41,7 +41,7 @@ class FileReader;
 class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
-class CDatabasePanel;
+class CRepositoryPanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -125,7 +125,7 @@ public:
 	CCreatePanel* GetCreatePanel();
 
 	// get the database panel
-	CDatabasePanel* GetDatabasePanel();
+	CRepositoryPanel* GetDatabasePanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
@@ -237,9 +237,6 @@ public:
 	// Update the physics menu based on active modules
 	void UpdatePhysicsUi();
 
-	// Generate a map
-	void GenerateMap(FSObject* po);
-
 	// clear the recent project list
 	void ClearRecentProjectsList();
 
@@ -338,6 +335,8 @@ public slots:
 	void on_actionEditProject_triggered();
 	void on_actionFaceToElem_triggered();
 	void on_actionSelectOverlap_triggered();
+	void on_actionGrowSelection_triggered();
+	void on_actionShrinkSelection_triggered();
 
 	void on_actionAddBC_triggered();
 	void on_actionAddNodalLoad_triggered();

@@ -264,7 +264,18 @@ bool FEBioImport::ReadFile(XMLTag& tag)
 			if (xml2.FindTag("febio_spec", tag2) == false) return errf("febio_spec tag was not found in included file.");
 
 			// Read the file
-			ReadFile(tag2);
+			try {
+				ReadFile(tag2);
+			}
+			catch (XMLReader::EndOfFile)
+			{
+				// we catch this, since this will always be thrown. 
+				// TODO: I need to fix this. 
+			}
+			catch (...)
+			{
+				throw;
+			}
 
 			// all done
 			++tag;
@@ -272,7 +283,7 @@ bool FEBioImport::ReadFile(XMLTag& tag)
 		else
 		{
 			if (m_fmt->ParseSection(tag) == false) ParseUnknownTag(tag);
-			else ++tag;
+			++tag;
 		}
 	} 
 	while (!tag.isend());
@@ -355,13 +366,15 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 		FEBioModel::PARAM_CURVE pc = m_febio->GetParamCurve(i);
 		assert(pc.m_lc >= 0);
 		assert(pc.m_p || pc.m_plc);
-		if (pc.m_lc >= 0)
+		if ((pc.m_lc >= 0) && (pc.m_lc < m_febio->LoadCurves()))
 		{
-			if (pc.m_p  ) pc.m_p->SetLoadCurve(m_febio->GetLoadCurve(pc.m_lc));
+			if (pc.m_p)
+			{
+				pc.m_p->SetLoadCurve(m_febio->GetLoadCurve(pc.m_lc));
+			}
 			if (pc.m_plc) 
 			{
-				assert(pc.m_lc >= 0);
-				if (pc.m_lc >= 0) *pc.m_plc = m_febio->GetLoadCurve(pc.m_lc);
+				*pc.m_plc = m_febio->GetLoadCurve(pc.m_lc);
 			}
 		}
 	}
@@ -420,6 +433,31 @@ bool FEBioImport::UpdateFEModel(FEModel& fem)
 					}
 				}
 				else AddLogEntry("Could not find surface named %s", domain.c_str());
+			}
+		}
+	}
+
+	// make unused surfaces into named selections.
+	// This can happen when surfaces are used in features that 
+	// are not supported. The features will be skipped, but we may 
+	// want to retain the surfaces.
+	for (int i = 0; i < m_febio->Instances(); ++i)
+	{
+		// get the next instance
+		FEBioModel::PartInstance& partInstance = *m_febio->GetInstance(i);
+		FEBioModel::Part* part = partInstance.GetPart();
+		GMeshObject* po = partInstance.GetGObject();
+		for (int j = 0; j < part->Surfaces(); ++j)
+		{
+			FEBioModel::Surface& surf = part->GetSurface(j);
+			if (surf.m_refs == 0)
+			{
+				FESurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
+				if (psurf)
+				{
+					psurf->SetName(surf.name());
+					po->AddFESurface(psurf);
+				}
 			}
 		}
 	}

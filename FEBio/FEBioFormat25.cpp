@@ -32,9 +32,11 @@ SOFTWARE.*/
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FEDataMap.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
+#include <MeshTools/FENodeData.h>
 #include <MeshTools/GModel.h>
 #include <assert.h>
 #include <sstream>
@@ -158,12 +160,16 @@ bool FEBioFormat25::ParseGeometrySection(XMLTag& tag)
 }
 
 //-----------------------------------------------------------------------------
-// TODO: Create a node set if the name attribute is defined
 void FEBioFormat25::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 {
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
 	vector<FEBioModel::NODE> nodes; nodes.reserve(10000);
+
+	// create a node set if the name is definde
+	const char* szname = tag.AttributeValue("name", true);
+	std::string name;
+	if (szname) name = szname;
 
 	// read nodal coordinates
 	++tag;
@@ -191,6 +197,15 @@ void FEBioFormat25::ParseGeometryNodes(FEBioModel::Part* part, XMLTag& tag)
 		FENode& node = mesh.Node(N0 + i);
 		node.m_ntag = nd.id;
 		node.r = nd.r;
+	}
+
+	// create the nodeset 
+	if (name.empty() == false)
+	{
+		vector<int> nodeList(nn);
+		for (int i = 0; i < nn; ++i) nodeList[i] = nodes[i].id - 1;
+		FEBioModel::NodeSet nset(name, nodeList);
+		part->AddNodeSet(nset);
 	}
 }
 
@@ -632,14 +647,17 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
 	++tag;
 	do
 	{
-		if (tag == "ElementData")
+		if (tag == "NodeData")
+		{
+			ParseNodeData(tag);
+		}
+		else if (tag == "ElementData")
 		{
 			ParseElementData(tag);
         }
 		else if (tag == "SurfaceData")
 		{
 			ParseSurfaceData(tag);
-	
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -671,6 +689,44 @@ bool FEBioFormat25::ParseMeshDataSection(XMLTag& tag)
             e0.m_fiber = e1.m_fiber;
 		}
 	}
+
+	return true;
+}
+
+bool FEBioFormat25::ParseNodeData(XMLTag& tag)
+{
+	// Read the data and store it as a mesh data section
+	FEBioModel& feb = GetFEBioModel();
+
+	// Make sure to skip generators
+	const char* szgen = tag.AttributeValue("generator", true);
+	if (szgen) {
+		ParseUnknownTag(tag); return false;
+	}
+
+	// read the nodal data
+	const char* szset = tag.AttributeValue("node_set");
+	FENodeSet* pg = feb.BuildFENodeSet(szset);
+	if (pg == nullptr) { ParseUnknownTag(tag); return false; }
+
+	// get the name
+	const char* szname = tag.AttributeValue("name");
+
+	FEMesh* mesh = pg->GetMesh();
+	FENodeData* pd = mesh->AddNodeDataField(szname, pg, FEMeshData::DATA_SCALAR);
+
+	double val;
+	int lid;
+	++tag;
+	do
+	{
+		tag.AttributePtr("lid")->value(lid);
+		tag.value(val);
+
+		pd->set(lid - 1, val);
+
+		++tag;
+	} while (!tag.isend());
 
 	return true;
 }
@@ -791,35 +847,90 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		// Read the data and store it as a mesh data section
 		FEBioModel& feb = GetFEBioModel();
 
-		const char* szset = tag.AttributeValue("elem_set");
-		FEBioModel::Domain* dom = feb.FindDomain(szset);
-		if (dom)
+		const char* szgen = tag.AttributeValue("generator", true);
+		if (szgen)
 		{
-			FEPart* pg = feb.BuildFEPart(dom);
-			if (pg)
+			const char* szset = tag.AttributeValue("elem_set");
+			if (strcmp(szgen, "surface-to-surface map") == 0)
 			{
-				FEMesh* mesh = pg->GetMesh();
-				FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
+				FESurfaceToSurfaceMap* s2s = new FESurfaceToSurfaceMap;
+				s2s->m_generator = szgen;
+				s2s->m_var = var->cvalue();
+				s2s->m_elset = szset;
 
-				double scale = tag.AttributeValue("scale", 1.0);
-				pd->SetScaleFactor(scale);
-
-				double val;
-				int lid;
 				++tag;
 				do
 				{
-					tag.AttributePtr("lid")->value(lid);
-					tag.value(val);
+					if      (tag == "bottom_surface") tag.value(s2s->m_bottomSurface);
+					else if (tag == "top_surface"   ) tag.value(s2s->m_topSurface);
+					else if (tag == "function")
+					{
+						FELoadCurve& lc = s2s->m_points;
 
-					(*pd)[lid - 1] = val;
+						++tag;
+						do {
+							if (tag == "points")
+							{
+								// read the points
+								double d[2];
+								++tag;
+								do
+								{
 
+									tag.value(d, 2);
+
+									LOADPOINT pt;
+									pt.time = d[0];
+									pt.load = d[1];
+									lc.Add(pt);
+
+									++tag;
+								} while (!tag.isend());
+							}
+							else ParseUnknownTag(tag);
+							++tag;
+						}
+						while (!tag.isend());
+					}
+					else ParseUnknownTag(tag);
 					++tag;
 				} while (!tag.isend());
+
+				feb.GetFEModel().AddDataMap(s2s);
+			}
+		}
+		else 
+		{
+			const char* szset = tag.AttributeValue("elem_set");
+			FEBioModel::Domain* dom = feb.FindDomain(szset);
+			if (dom)
+			{
+				FEPart* pg = feb.BuildFEPart(dom);
+				if (pg)
+				{
+					FEMesh* mesh = pg->GetMesh();
+					FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
+
+					double scale = tag.AttributeValue("scale", 1.0);
+					pd->SetScaleFactor(scale);
+
+					double val;
+					int lid;
+					++tag;
+					do
+					{
+						tag.AttributePtr("lid")->value(lid);
+						tag.value(val);
+
+						(*pd)[lid - 1] = val;
+
+						++tag;
+					} while (!tag.isend());
+				}
+				else ParseUnknownTag(tag);
 			}
 			else ParseUnknownTag(tag);
 		}
-		else ParseUnknownTag(tag);
 	}
 
 	return true;
@@ -1061,13 +1172,40 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "scale")
 		{
-			double scale;
-			tag.value(scale);
-			pbc->SetScaleFactor(scale);
+			const char* sztype = tag.AttributeValue("type", true);
+			if (sztype && (strcmp(sztype, "map") == 0))
+			{
+				Param* pp = pbc->GetParam("scale"); assert(pp);
+				if (pp && pp->IsVariable())
+				{
+					pp->SetParamType(Param_STRING);
+					pp->SetStringValue(tag.szvalue());
+				}
+			}
+			else
+			{
+				double scale;
+				tag.value(scale);
+				pbc->SetScaleFactor(scale);
+			}
 
 			int lc = tag.AttributeValue<int>("lc", -1);
 			if (lc != -1) febio.AddParamCurve(pbc->GetLoadCurve(), lc-1);
 		}
+		else if (tag == "value")
+		{
+			// NOTE: This parameter is deprecated, but we support it here to assist in 
+			//       converting older files. The map basically gets assigned to the "scale" parameter.
+			const char* sznodedata = tag.AttributeValue("node_data", true);
+			if (sznodedata == nullptr) sznodedata = tag.szvalue();
+			Param* pp = pbc->GetParam("scale"); assert(pp);
+			if (pp && pp->IsVariable())
+			{
+				pp->SetParamType(Param_STRING);
+				pp->SetStringValue(sznodedata);
+			}
+		}
+		else ParseUnknownTag(tag);
 		++tag;
 	}
 	while (!tag.isend());
@@ -1167,11 +1305,20 @@ void FEBioFormat25::ParseBCRigidBody(FEStep* pstep, XMLTag& tag)
 			tag.value(v);
 			FERigidForce* pf = new FERigidForce(nbc, matid, v, pstep->GetID());
 
+			const char* sztype = tag.AttributeValue("type", true);
+			if (sztype)
+			{
+				int ntype = 0;
+				if (strcmp(sztype, "follow") == 0) pf->SetForceType(1);
+				if (strcmp(sztype, "ramp") == 0) pf->SetForceType(2);
+			}
+
 			static int n = 1;
 			if (hasName == false) sprintf(szname, "RigidForce%02d", n++);
 			pf->SetName(szname);
 			pstep->AddRC(pf);
-			febio.AddParamCurve(pf->GetLoadCurve(), lc - 1);
+			if (lc > 0) febio.AddParamCurve(pf->GetLoadCurve(), lc - 1);
+			else pf->RemoveLoadcurve();
 		}
 		else ParseUnknownTag(tag);
 

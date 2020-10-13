@@ -60,11 +60,74 @@ QStringList GetEnumValues(FEModel* fem, const char* ch)
 	return ops;
 }
 
+//-----------------------------------------------------------------------------
+CEditVariableParam::CEditVariableParam(QWidget* parent) : QComboBox(parent)
+{
+	addItem("<constant>");
+	addItem("<math>");
+	addItem("<map>");
+
+	setEditable(true);
+	setInsertPolicy(QComboBox::NoInsert);
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+	m_param = nullptr;
+
+	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
+}
+
+void CEditVariableParam::setParam(Param* p)
+{
+	m_param = p;
+	if (p == nullptr) return;
+
+	blockSignals(true);
+	if (p->GetParamType() == Param_Type::Param_FLOAT)
+	{
+		setCurrentIndex(0);
+		setEditText(QString("%1").arg(p->GetFloatValue()));
+	}
+	else if (p->GetParamType() == Param_Type::Param_MATH)
+	{
+		setCurrentIndex(1);
+		setEditText(QString::fromStdString(p->GetMathString()));
+	}
+	else if (p->GetParamType() == Param_Type::Param_STRING)
+	{
+		setCurrentIndex(2);
+		setEditText(QString::fromStdString(p->GetStringValue()));
+	}
+	else
+	{
+		assert(false);
+	}
+	blockSignals(false);
+}
+
+void CEditVariableParam::onCurrentIndexChanged(int index)
+{
+	if (m_param == nullptr) return;
+
+	if (index == 0) m_param->SetParamType(Param_FLOAT);
+	if (index == 1) m_param->SetParamType(Param_MATH);
+	if (index == 2) m_param->SetParamType(Param_STRING);
+
+	setParam(m_param);
+
+	emit typeChanged();
+}
+
 class CMaterialPropsModel : public QAbstractItemModel
 {
 public:
 	class Item
 	{
+	public:
+		enum Flags {
+			Item_Bold = 1,
+			Item_Indented = 2
+		};
+
 	public:
 		CMaterialPropsModel*	m_model;
 
@@ -75,24 +138,29 @@ public:
 
 		int		m_nrow;	// row index into parent's children array
 
+		int		m_flag;	// used to decided if the item will show up as bold or not. Default: parameters = no, properties = yes. 
+
 	public:
 		Item*			m_parent;		// pointer to parent
 		vector<Item*>	m_children;	// list of children
 
 	public:
-		Item() { m_model = nullptr; m_pm = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_matIndex = 0; m_nrow = -1; }
+		Item() { m_model = nullptr; m_pm = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_matIndex = 0; m_nrow = -1; m_flag = 0;  }
 		Item(FEMaterial* pm, int paramId = -1, int propId = -1, int matIndex = 0, int nrow = -1) {
 			m_model = nullptr;
 			m_pm = pm; m_paramId = paramId; m_propId = propId; m_matIndex = matIndex; m_nrow = nrow;
+			m_flag = (propId != -1 ? 1 : 0);
 		}
 		~Item() { for (int i = 0; i < m_children.size(); ++i) delete m_children[i]; m_children.clear(); }
 
 		bool isParameter() const { return (m_paramId >= 0); }
 		bool isProperty() const { return (m_propId >= 0); }
 
+		int flag() const { return m_flag; }
+
 		Param* parameter() { return (m_paramId >= 0 ? m_pm->GetParamPtr(m_paramId) : nullptr); }
 
-		void addChild(FEMaterial* pm, int paramId, int propId, int matIndex)
+		Item* addChild(FEMaterial* pm, int paramId, int propId, int matIndex)
 		{
 			Item* item = new Item(pm, paramId, propId, matIndex, (int)m_children.size());
 			item->m_model = m_model; assert(m_model);
@@ -104,6 +172,22 @@ public:
 				FEMaterialProperty& p = pm->GetProperty(propId);
 				FEMaterial* pm = p.GetMaterial(matIndex);
 				if (pm) item->addChildren(pm);
+			}
+			return item;
+		}
+
+		void addFiberParameters(FEOldFiberMaterial* pm)
+		{
+			pm->UpdateData(false);
+			for (int i = 0; i < pm->Parameters(); ++i)
+			{
+				Param& p = pm->GetParam(i);
+				if ((p.IsVisible() || p.IsEditable()) && (p.IsPersistent() || (m_pm == nullptr)))
+				{
+					Item* it = addChild(pm, i, -1, 0);
+					if (i == 0) it->m_flag = Item_Bold;
+					else it->m_flag = Item_Indented;
+				}
 			}
 		}
 
@@ -133,7 +217,7 @@ public:
 			if (dynamic_cast<FETransverselyIsotropic*>(pm))
 			{
 				FETransverselyIsotropic* tiso = dynamic_cast<FETransverselyIsotropic*>(pm);
-				addParameters(tiso->GetFiberMaterial());
+				addFiberParameters(tiso->GetFiberMaterial());
 			}
 			else if (pm->HasMaterialAxes())
 			{
@@ -160,7 +244,15 @@ public:
 			if (m_paramId >= 0)
 			{
 				Param& p = m_pm->GetParam(m_paramId);
-				if (column == 0) return p.GetLongName();
+				if (column == 0)
+				{
+					QString name(p.GetLongName());
+					if (m_flag & Item_Indented)
+					{
+						name = "  " + name;
+					}
+					return name;
+				}
 
 				if (role == Qt::DisplayRole)
 				{
@@ -223,7 +315,36 @@ public:
 						return v;
 					}
 					break;
+					case Param_MATH:
+					{
+						string s = p.GetMathString();
+						QString v = QString::fromStdString(s);
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
+					case Param_STRING:
+					{
+						string s = p.GetStringValue();
+						QString v = QString::fromStdString(s);
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
 					default:
+						assert(false);
 						return "in progress";
 					}
 				}
@@ -239,7 +360,10 @@ public:
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
 					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
 					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
+					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
+					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 					default:
+						assert(false);
 						return "in progress";
 					}
 				}
@@ -278,7 +402,12 @@ public:
 				Param& p = m_pm->GetParam(m_paramId);
 				switch (p.GetParamType())
 				{
-				case Param_FLOAT: p.SetFloatValue(value.toDouble()); break;
+				case Param_FLOAT: 
+				{
+					double f = value.toDouble();
+					p.SetFloatValue(f);
+				}
+				break;
 				case Param_CHOICE:
 				case Param_INT: 
 				{
@@ -295,6 +424,20 @@ public:
 					p.SetBoolValue(n != 0);
 				}
 				break;
+				case Param_MATH:
+				{
+					string s = value.toString().toStdString();
+					p.SetMathString(s);
+				}
+				break;
+				case Param_STRING:
+				{
+					string s = value.toString().toStdString();
+					p.SetStringValue(s);
+				}
+				break;
+				default:
+					assert(false);
 				}
 
 				return m_pm->UpdateData(true);
@@ -312,6 +455,17 @@ public:
 				}
 				else
 				{
+					// check if this is a different type
+					if (m_matIndex >= 0)
+					{
+						FEMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial();
+						if (oldMat && (oldMat->Type() == matId))
+						{
+							// the type has not changed, so don't replace the material
+							return false;
+						}
+					}
+
 					FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
 					FEMaterial* pmat = MF.Create(value.toInt());
 					if (pmat)
@@ -389,7 +543,7 @@ public:
 			if (item->isProperty()) return QColor(Qt::darkGray);
 		}
 */
-		if ((role == Qt::FontRole) && item->isProperty())
+		if ((role == Qt::FontRole) && (item->m_flag & Item::Item_Bold))
 		{
 			QFont font;
 			font.setBold(true);
@@ -506,10 +660,29 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 		if (item->isParameter())
 		{
 			Param* p = item->parameter();
+
+			// check for variable parameters first
+			if (p->IsVariable())
+			{
+				CEditVariableParam* pw = new CEditVariableParam(parent);
+				pw->setParam(p);
+				return pw;
+			}
+
 			if (p->GetParamType() == Param_FLOAT)
 			{
 				QLineEdit* pw = new QLineEdit(parent);
 				pw->setValidator(new QDoubleValidator);
+				return pw;
+			}
+			if (p->GetParamType() == Param_VEC2I)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
+			if (p->GetParamType() == Param_VEC3D)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
 				return pw;
 			}
 			if ((p->GetParamType() == Param_INT) || (p->GetParamType() == Param_CHOICE))
@@ -574,8 +747,13 @@ void CMaterialPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& i
 		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
 		if (item->isParameter())
 		{
-			QVariant v = item->data(1, Qt::EditRole);
-			pw->setCurrentIndex(v.toInt());
+			// We only want to do this for enum parameters
+			Param* p = item->parameter();
+			if (p && (p->GetEnumNames()))
+			{
+				QVariant v = item->data(1, Qt::EditRole);
+				pw->setCurrentIndex(v.toInt());
+			}
 		}
 	}
 	else QStyledItemDelegate::setEditorData(editor, index);
@@ -590,15 +768,21 @@ void CMaterialPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 		CMaterialPropsModel::Item* item = static_cast<CMaterialPropsModel::Item*>(index.internalPointer());
 		if (item->isParameter())
 		{
-			model->setData(index, pw->currentIndex());
+			Param* p = item->parameter();
+			if (p && p->GetEnumNames())
+			{
+				model->setData(index, pw->currentIndex());
+				return;
+			}
 		}
 		else if (item->isProperty())
 		{
 			int matId = pw->currentData(Qt::UserRole).toInt();
 			model->setData(index, matId);
+			return;
 		}
 	}
-	else QStyledItemDelegate::setModelData(editor, model, index);
+	QStyledItemDelegate::setModelData(editor, model, index);
 }
 
 void CMaterialPropsDelegate::OnEditorSignal()

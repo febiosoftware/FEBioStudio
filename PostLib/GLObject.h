@@ -44,7 +44,8 @@ struct DATA_RANGE
 {
 	float	min;
 	float	max;
-	int		ntype;
+	int		mintype;
+	int		maxtype;
 	bool	valid;
 };
 

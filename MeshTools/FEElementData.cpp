@@ -27,6 +27,9 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEElementData.h"
 #include <MeshLib/FEMesh.h>
+#include <GeomLib/GObject.h>
+#include "GModel.h"
+#include "GGroup.h"
 
 //-----------------------------------------------------------------------------
 FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
@@ -197,16 +200,28 @@ FEElemList* FEPartData::BuildElemList()
 	for (int i = 0; i < m_part.size(); ++i)
 	{
 		int pid = m_part[i];
-		for (int i = 0; i < NE; ++i)
+		for (int j = 0; j < NE; ++j)
 		{
-			FEElement& el = mesh->Element(i);
+			FEElement& el = mesh->Element(j);
 			if (el.m_gid == pid)
 			{
-				elemList->Add(mesh, &el, i);
+				elemList->Add(mesh, &el, j);
 			}
 		}
 	}
 	return elemList;
+}
+
+GPartList* FEPartData::GetPartList(FEModel* fem)
+{
+	GObject* po = GetMesh()->GetGObject();
+	GPartList* partList = new GPartList(fem);
+	for (int i = 0; i < m_part.size(); ++i)
+	{
+		GPart* pg = po->Part(m_part[i]);
+		partList->add(pg->GetID());
+	}
+	return partList;
 }
 
 // size of data field

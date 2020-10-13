@@ -56,51 +56,8 @@ SOFTWARE.*/
 #include "LocalDatabaseHandler.h"
 #include "RepoConnectionHandler.h"
 
-//ClickableLabel::ClickableLabel(QWidget* parent, Qt::WindowFlags f)
-//    : QLabel(parent) {
-//
-//}
-//
-//ClickableLabel::~ClickableLabel() {}
-//
-//void ClickableLabel::mousePressEvent(QMouseEvent* event) {
-//    emit clicked();
-//}
-//
-//
-//TagLabel2::TagLabel2(QString text, QWidget* parent)
-//	: QFrame(parent)
-//{
-//	QHBoxLayout* layout = new QHBoxLayout;
-//	layout->setContentsMargins(3, 0, 3, 0);
-//	layout->setAlignment(Qt::AlignLeft);
-//
-//	layout->addWidget(label = new QLabel(text));
-//
-//	remove = new ClickableLabel;
-//	remove->setText("x");
-//
-//	layout->addWidget(remove);
-//	layout->setSizeConstraint(QLayout::SetFixedSize);
-//
-//	setLayout(layout);
-//	setFrameStyle(QFrame::Box);
-//
-////
-////	setStyleSheet("background-color : white; border: black;");
-//
-//
-//	QObject::connect(remove, SIGNAL(clicked()), this, SLOT(deleteThis()));
-//}
-//
-//void TagLabel2::deleteThis()
-//{
-//	delete this;
-//}
-
 enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
 enum DATATYPES {DESCRIPTION = 1001, TAGS = 1002, SIZE = 1003};
-
 
 class Ui::CWzdUpload
 {
@@ -132,6 +89,8 @@ public:
 	QLineEdit* newFileTag;
 	QToolButton* addFileTagBtn;
 	QToolButton* delFileTagBtn;
+
+	QWizardPage* summaryPage;
 
 	// ID of project being modified. Since project indices start at 1, this is also
 	// used as a boolean e.g. if(m_modify)
@@ -297,6 +256,15 @@ public:
 		wzd->addPage(filesPage);
 
 		fileInfoEnabled(false);
+
+//		if(modify)
+//		{
+//			summaryPage = new QWizardPage();
+//			QVBoxLayout* summaryLayout = new QVBoxLayout;
+//
+//			summaryPage->setLayout(summaryLayout);
+//			wzd->addPage(summaryPage);
+//		}
 
 		if(modify)
 		{
@@ -476,7 +444,7 @@ public:
 		}
 	}
 
-	void getLocalFilePath(QString& path, QTreeWidgetItem* item = nullptr)
+	void getZipFilePath(QString& path, QTreeWidgetItem* item = nullptr)
 	{
 		if(!item) item = projectItem;
 
@@ -484,13 +452,13 @@ public:
 		{
 			path = item->text(0);
 
-			getLocalFilePath(path, item->parent());
+			getZipFilePath(path, item->parent());
 		}
 		else if(item->type() == FOLDERITEM)
 		{
 			path = item->text(0).append("/").append(path);
 
-			getLocalFilePath(path, item->parent());
+			getZipFilePath(path, item->parent());
 		}
 	}
 
@@ -512,13 +480,13 @@ public:
 
 		try
 		{
-			parent = currentFolders.at(path.right(path.length() - index).left(pos));
+			parent = currentFolders.at(path.left(pos + index));
 		}
 		catch(out_of_range& e)
 		{
 			parent = NewFolder(path.right(path.length() - index).left(pos), QString("{Repository}/") + path.left(index + pos));
 
-			currentFolders[path.right(path.length() - index).left(pos)] = parent;
+			currentFolders[path.left(pos + index)] = parent;
 		}
 
 		parent->addChild(child);
@@ -558,7 +526,7 @@ public:
 
 		if(item->type() == FILEITEM)
 		{
-			item->setText(2, m_wzd->locale().formattedDataSize(item->data(2, SIZE).toLongLong()));
+			item->setText(2, m_wzd->locale().formattedDataSize(item->data(2, SIZE).toLongLong(), 2, QLocale::DataSizeTraditionalFormat));
 			return;
 		}
 
@@ -574,7 +542,7 @@ public:
 		}
 
 		item->setData(2, SIZE, size);
-		item->setText(2, m_wzd->locale().formattedDataSize(size));
+		item->setText(2, m_wzd->locale().formattedDataSize(size, 2, QLocale::DataSizeTraditionalFormat));
 	}
 
 	bool isDeleting(QTreeWidgetItem* item = nullptr)
@@ -756,7 +724,7 @@ QStringList CWzdUpload::GetFilePaths()
 	return paths;
 }
 
-QStringList CWzdUpload::GetLocalFilePaths()
+QStringList CWzdUpload::GetZipFilePaths()
 {
 	QList<QTreeWidgetItem*> items;
 	ui->getFileItems(items);
@@ -771,7 +739,7 @@ QStringList CWzdUpload::GetLocalFilePaths()
 		}
 
 		QString path;
-		ui->getLocalFilePath(path, item);
+		ui->getZipFilePath(path, item);
 		paths.push_back(path);
 	}
 
@@ -790,7 +758,7 @@ QList<QVariant> CWzdUpload::getFileInfo()
 		QVariantMap fileInfo;
 
 		QString path;
-		ui->getLocalFilePath(path, item);
+		ui->getZipFilePath(path, item);
 
 		fileInfo["filename"] = path;
 		fileInfo["description"] = item->data(0, DESCRIPTION);
@@ -831,14 +799,13 @@ void CWzdUpload::accept()
 		return;
 	}
 
-	QString username = getOwner();
 	QString name = getName();
 	QString category = getCategory();
-	if(!dbHandler->isValidUpload(username, name, category))
+	if(!dbHandler->isValidUpload(name, category))
 	{
 		if(!ui->m_modify || dbHandler->ProjectNameFromID(ui->m_modify) != name)
 		{
-			QMessageBox::critical(this, "Upload", "You already have a project with that name in this category."
+			QMessageBox::critical(this, "Upload", "A project with this name already exists in this category."
 					"\n\nPlease choose a different project name.");
 
 			while(currentId() != 0)
@@ -925,7 +892,7 @@ void CWzdUpload::accept()
 
 		if(ui->m_modify)
 		{
-			message += QString("\nOld Project Size: %1").arg(locale.formattedDataSize(modifiedProjectSize));
+			message += QString("\nOld Project Size: %1").arg(locale.formattedDataSize(modifiedProjectSize, 2, QLocale::DataSizeTraditionalFormat));
 		}
 
 		QMessageBox::critical(this, "Upload", message);

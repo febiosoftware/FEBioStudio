@@ -129,11 +129,11 @@ void CPlotDataSettings::Init()
 	AddPlotVariable(MODULE_MECH, "acceleration"                      );
 	AddPlotVariable(MODULE_MECH, "contact area"                      );
 	AddPlotVariable(MODULE_MECH, "contact force"                     );
-	AddPlotVariable(MODULE_MECH, "contact gap"                       );
-    AddPlotVariable(MODULE_MECH, "contact penalty"                   );
-	AddPlotVariable(MODULE_MECH, "contact pressure"                  );
+	AddPlotVariable(MODULE_MECH, "contact gap"                       , false, true, DOMAIN_SURFACE);
+    AddPlotVariable(MODULE_MECH, "contact penalty"                   , false, true, DOMAIN_SURFACE);
+	AddPlotVariable(MODULE_MECH, "contact pressure"                  , false, true, DOMAIN_SURFACE);
 	AddPlotVariable(MODULE_MECH, "contact stick"                     );
-	AddPlotVariable(MODULE_MECH, "contact traction"                  );
+	AddPlotVariable(MODULE_MECH, "contact traction"                  , false, true, DOMAIN_SURFACE);
 	AddPlotVariable(MODULE_MECH, "current density"                   );
     AddPlotVariable(MODULE_MECH, "damage"                            );
     AddPlotVariable(MODULE_MECH, "density"                           );
@@ -200,6 +200,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_BIPHASIC, "porosity"                          );
     AddPlotVariable(MODULE_BIPHASIC, "pressure gap"                      );
     AddPlotVariable(MODULE_BIPHASIC, "referential solid volume fraction" );
+    AddPlotVariable(MODULE_BIPHASIC, "solid stress"                      );
 
 	AddPlotVariable(MODULE_MULTIPHASIC, "effective solute concentration"  );
     AddPlotVariable(MODULE_MULTIPHASIC, "electric potential"              );
@@ -209,6 +210,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MULTIPHASIC, "referential fixed charge density");
 	AddPlotVariable(MODULE_MULTIPHASIC, "sbm referential apparent density");
 	AddPlotVariable(MODULE_MULTIPHASIC, "sbm concentration");
+    AddPlotVariable(MODULE_MULTIPHASIC, "solid stress"                    );
 	AddPlotVariable(MODULE_MULTIPHASIC, "solute concentration");
 	AddPlotVariable(MODULE_MULTIPHASIC, "solute flux");
 
@@ -249,8 +251,10 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_FLUID, "fluid vorticity"                   );
     AddPlotVariable(MODULE_FLUID, "nodal fluid velocity"              );
 
-    AddPlotVariable(MODULE_FLUID_FSI, "nodal relative fluid velocity"     );
-    AddPlotVariable(MODULE_FLUID_FSI, "relative fluid velocity"           );
+    AddPlotVariable(MODULE_FLUID_FSI, "nodal fluid flux"              );
+    AddPlotVariable(MODULE_FLUID_FSI, "fluid flux"                    );
+    AddPlotVariable(MODULE_FLUID_FSI, "relative fluid velocity"       );
+    AddPlotVariable(MODULE_FLUID_FSI, "solid stress"                  );
 }
 
 //-----------------------------------------------------------------------------

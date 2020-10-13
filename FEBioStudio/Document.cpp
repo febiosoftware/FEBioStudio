@@ -49,6 +49,9 @@ SOFTWARE.*/
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/FENodeData.h>
+#include <MeshTools/FESurfaceData.h>
+#include <MeshTools/FEElementData.h>
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
 #include <QFileInfo>
@@ -486,7 +489,7 @@ std::string CDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GGroup*>(po)) return "Named selection";
 	else if (dynamic_cast<FEGroup*>(po)) return "Named selection";
 	else if (dynamic_cast<GObject*>(po)) return "Object";
-	else if (dynamic_cast<FEDataMap*>(po)) return "Data map";
+	else if (dynamic_cast<FEDataMapGenerator*>(po)) return "Data map";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
 	else if (dynamic_cast<Post::CImageModel*>(po)) return "3D Image volume";
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
@@ -509,7 +512,23 @@ std::string CDocument::GetTypeString(FSObject* po)
 			return ss.str();
 		}
 	}
-	else if (dynamic_cast<FEMeshData*>(po)) return "Mesh data";
+	else if (dynamic_cast<FEMeshData*>(po))
+	{
+		FENodeData* nodeData = dynamic_cast<FENodeData*>(po);
+		if (nodeData) return "Node data";
+
+		FESurfaceData* surfData = dynamic_cast<FESurfaceData*>(po);
+		if (surfData) return "Surface data";
+
+		FEElementData* elemData = dynamic_cast<FEElementData*>(po);
+		if (elemData) return "Element data";
+
+		FEPartData* partData = dynamic_cast<FEPartData*>(po);
+		if (partData) return "Element data";
+
+		assert(false);
+		return "Mesh data";
+	}
 	else
 	{
 		assert(false);

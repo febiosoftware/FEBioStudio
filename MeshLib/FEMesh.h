@@ -190,6 +190,7 @@ public:
 	void AddMeshDataField(FEMeshData* data);
 
 	FENodeData* AddNodeDataField(const string& name, double v = 0.0);
+	FENodeData*    AddNodeDataField   (const string& name, FENodeSet* nodeset, FEMeshData::DATA_TYPE dataType);
 	FESurfaceData* AddSurfaceDataField(const string& name, FESurface* surface, FEMeshData::DATA_TYPE dataType);
 	FEElementData* AddElementDataField(const string& name, FEPart* part, FEMeshData::DATA_TYPE dataType);
 	void ClearMeshData();

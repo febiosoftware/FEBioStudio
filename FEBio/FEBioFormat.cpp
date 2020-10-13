@@ -832,8 +832,14 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 	FEMaterial* pm = FEMaterialFactory::Create(szmat);
 	if (pm == 0) 
 	{
-		ParseUnknownAttribute(tag, "type");
-		return 0;
+		// HACK: a little hack to read in the "EFD neo-Hookean2" materials of the old datamap plugin. 
+		if (strcmp(szmat, "EFD neo-Hookean2") == 0) pm = FEMaterialFactory::Create("EFD neo-Hookean");
+
+		if (pm == 0)
+		{
+			ParseUnknownAttribute(tag, "type");
+			return 0;
+		}
 	}
 
 	// some materials still require special handling

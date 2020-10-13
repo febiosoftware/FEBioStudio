@@ -377,6 +377,7 @@
 					"$(OTHER_CFLAGS)",
 					"-Xpreprocessor",
 					"-fopenmp",
+					"-DNDEBUG",
 				);
 				SDKROOT = macosx;
 			};

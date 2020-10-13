@@ -224,10 +224,18 @@ public:
 		table->setRowCount(0);
 
 		info->setMesh(po);
-		if (po == 0) return;
+		if (po == 0) 
+		{
+			m_pm = nullptr; 
+			return;
+		}
 
 		FEMesh* pm = po->GetFEMesh();
-		if (pm == 0) return;
+		if (pm == 0)
+		{
+			m_pm = nullptr;
+			return;
+		}
 
 		// We get ever when the selection has changed, but we don't
 		// want to update when the mesh hasn't changed.

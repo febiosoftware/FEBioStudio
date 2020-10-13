@@ -179,9 +179,9 @@ public:
 
 public:
 	int DataMaps() const;
-	void AddDataMap(FEDataMap* map);
-	int RemoveMap(FEDataMap* map);
-	FEDataMap* GetDataMap(int i);
+	void AddDataMap(FEDataMapGenerator* map);
+	int RemoveMap(FEDataMapGenerator* map);
+	FEDataMapGenerator* GetDataMap(int i);
 
 public:
 	int Variables() const { return (int)m_DOF.size(); }
@@ -215,7 +215,7 @@ protected:
 	FSObjectList<FEDataVariable>	m_Var;		//!< data variables
 	FSObjectList<FESoluteData>		m_Sol;		//!< solute data variables
 	FSObjectList<FESoluteData>		m_SBM;		//!< solid-bound molecule data variables
-	FSObjectList<FEDataMap>			m_Map;		//!< data maps
+	FSObjectList<FEDataMapGenerator>	m_Map;		//!< data maps
 };
 
 //-----------------------------------------------------------------------------

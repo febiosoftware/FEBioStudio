@@ -37,14 +37,14 @@ class QString;
 class QVariant;
 class QStringList;
 class CRepoProject;
-class CDatabasePanel;
+class CRepositoryPanel;
 
 class CLocalDatabaseHandler
 {
 	class Imp;
 
 public:
-	CLocalDatabaseHandler(CDatabasePanel* dbPanel);
+	CLocalDatabaseHandler(CRepositoryPanel* dbPanel);
 	~CLocalDatabaseHandler();
 
 	void init(std::string schema);
@@ -77,7 +77,7 @@ public:
 	int ProjectIDFromFileID(int ID);
 	int CategoryIDFromName(std::string name);
 
-	bool isValidUpload(QString& username, QString& projectName, QString& category);
+	bool isValidUpload(QString& projectName, QString& category);
 	qint64 currentProjectsSize(QString username);
 	qint64 projectsSize(int ID);
 

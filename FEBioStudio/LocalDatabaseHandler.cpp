@@ -41,55 +41,55 @@ SOFTWARE.*/
 #include <QStringList>
 #include <QVariantMap>
 #include "RepoProject.h"
-#include "DatabasePanel.h"
+#include "RepositoryPanel.h"
 
 #include <iostream>
 
 static int addCategoryCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddCategory(argv);
+	((CRepositoryPanel*) dbPanel)->AddCategory(argv);
 
 	return 0;
 }
 
 static int addProjectCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddProject(argv);
+	((CRepositoryPanel*) dbPanel)->AddProject(argv);
 
 	return 0;
 }
 
 static int addProjectFilesCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddProjectFile(argv);
+	((CRepositoryPanel*) dbPanel)->AddProjectFile(argv);
 
 	return 0;
 }
 
 static int setProjectDataCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->SetProjectData(argv);
+	((CRepositoryPanel*) dbPanel)->SetProjectData(argv);
 
 	return 0;
 }
 
 static int setFileDataCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->SetFileData(argv);
+	((CRepositoryPanel*) dbPanel)->SetFileData(argv);
 
 	return 0;
 }
 
 static int addCurrentTagCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddCurrentTag(argv);
+	((CRepositoryPanel*) dbPanel)->AddCurrentTag(argv);
 
 	return 0;
 }
 
 static int addCurrentFileTagCallback(void *dbPanel, int argc, char **argv, char **azColName)
 {
-	((CDatabasePanel*) dbPanel)->AddCurrentFileTag(argv);
+	((CRepositoryPanel*) dbPanel)->AddCurrentFileTag(argv);
 
 	return 0;
 }
@@ -97,7 +97,7 @@ static int addCurrentFileTagCallback(void *dbPanel, int argc, char **argv, char 
 class CLocalDatabaseHandler::Imp
 {
 public:
-	Imp(CDatabasePanel* dbPanel)
+	Imp(CRepositoryPanel* dbPanel)
 		: dbPanel(dbPanel), db(NULL)	{}
 
 	void updateDBPath()
@@ -271,7 +271,7 @@ public:
 		// If it's an entire project file
 		if(type == FULL)
 		{
-			query += "SELECT users.username FROM projects JOIN users ON projects.owner = users.ID WHERE projects.ID = ";
+			query += "SELECT categories.category, FROM projects JOIN categories ON projects.category = categories.ID WHERE projects.ID = ";
 			query += std::to_string(ID);
 
 			getTable(query, &table, &rows, &cols);
@@ -284,7 +284,7 @@ public:
 		// If it's a single file from a project
 		else
 		{
-			query += "SELECT users.username, projects.name FROM projects JOIN users ON projects.owner = users.ID JOIN filenames ON projects.ID = filenames.project WHERE filenames.ID = ";
+			query += "SELECT categories.category, projects.name FROM projects JOIN categories ON projects.category = categories.ID JOIN filenames ON projects.ID = filenames.project WHERE filenames.ID = ";
 			query += std::to_string(ID);
 
 			getTable(query, &table, &rows, &cols);
@@ -402,14 +402,14 @@ public:
 		return catID;
 	}
 
-	bool isValidUpload(QString& username, QString& projectName, QString& category)
+	bool isValidUpload(QString& projectName, QString& category)
 	{
 		char **table;
 		int rows, cols;
 
-		std::string query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner = users.ID JOIN "
-				"categories ON projects.category = categories.ID WHERE users.username = '%1' AND projects.name = '%2' "
-				"AND categories.category = '%3'").arg(username).arg(projectName).arg(category).toStdString();
+		std::string query = QString("SELECT projects.ID FROM projects JOIN categories ON "
+				"projects.category = categories.ID WHERE projects.name = '%1' "
+				"AND categories.category = '%3'").arg(projectName).arg(category).toStdString();
 
 		getTable(query, &table, &rows, &cols);
 
@@ -461,11 +461,11 @@ public:
 
 public:
 	sqlite3* db;
-	CDatabasePanel* dbPanel;
+	CRepositoryPanel* dbPanel;
 	QString dbPath;
 };
 
-CLocalDatabaseHandler::CLocalDatabaseHandler(CDatabasePanel* dbPanel)
+CLocalDatabaseHandler::CLocalDatabaseHandler(CRepositoryPanel* dbPanel)
 {
 	imp = new Imp(dbPanel);
 }
@@ -858,9 +858,9 @@ int CLocalDatabaseHandler::CategoryIDFromName(std::string name)
 	return imp->CategoryIDFromName(name);
 }
 
-bool CLocalDatabaseHandler::isValidUpload(QString& username, QString& projectName, QString& category)
+bool CLocalDatabaseHandler::isValidUpload(QString& projectName, QString& category)
 {
-	return imp->isValidUpload(username, projectName, category);
+	return imp->isValidUpload(projectName, category);
 }
 
 qint64 CLocalDatabaseHandler::currentProjectsSize(QString username)
@@ -877,10 +877,10 @@ qint64 CLocalDatabaseHandler::projectsSize(int ID)
 
 #else
 
-CLocalDatabaseHandler::CLocalDatabaseHandler(CDatabasePanel* dbPanel) {}
+CLocalDatabaseHandler::CLocalDatabaseHandler(CRepositoryPanel* dbPanel) {}
 CLocalDatabaseHandler::~CLocalDatabaseHandler(){}
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc){}
-bool CLocalDatabaseHandler::isValidUpload(QString& username, QString& projectName, QString& category) { return false;  }
+bool CLocalDatabaseHandler::isValidUpload(QString& projectName, QString& category) { return false;  }
 qint64 CLocalDatabaseHandler::currentProjectsSize(QString username) { return 0; }
 QString CLocalDatabaseHandler::ProjectNameFromID(int ID) { return ""; }
 qint64 CLocalDatabaseHandler::projectsSize(int ID) { return 0; }

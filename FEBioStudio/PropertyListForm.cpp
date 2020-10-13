@@ -239,11 +239,21 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 	{
 	case CProperty::Int:
 		{
-			QSpinBox* spin = new QSpinBox;
-			spin->setRange(pi.imin, pi.imax);
-			spin->setValue(v.toInt());
-			connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
-			return spin;
+			if (pi.isEditable())
+			{
+				QSpinBox* spin = new QSpinBox;
+				spin->setRange(pi.imin, pi.imax);
+				spin->setValue(v.toInt());
+				connect(spin, SIGNAL(valueChanged(int)), this, SLOT(onDataChanged()));
+				return spin;
+			}
+			else
+			{
+				QLineEdit* pw = new QLineEdit;
+				pw->setReadOnly(true);
+				pw->setText(QString::number(v.toInt()));
+				return pw;
+			}
 		}
 		break;
 	case CProperty::Float:
@@ -433,6 +443,12 @@ void CPropertyListForm::updateData()
 						{
 							spin->setRange(pi.imin, pi.imax);
 							spin->setValue(v.toInt());
+						}
+
+						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+						if (edit)
+						{
+							edit->setText(QString::number(v.toInt()));
 						}
 					}
 					break;

@@ -125,6 +125,7 @@ public slots:
 	void OnSelectDiscreteObject();
 	void OnDetachDiscreteObject();
 	void OnHidePart();
+	void OnSelectPartElements();
 	void OnShowPart();
 	void OnSelectPart();
 	void OnSelectSurface();
@@ -156,7 +157,6 @@ public slots:
 	void OnImportMaterials();
 	void OnDeleteAllMaterials();
 	void OnSwapMasterSlave();
-	void OnGenerateMap();
 	void OnDeleteAllBC();
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();

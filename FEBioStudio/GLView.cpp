@@ -2864,7 +2864,11 @@ void CGLView::RenderMaterialFibers()
 				for (int j = 0; j<pm->Elements(); ++j)
 				{
 					FEElement& el = pm->Element(j);
-					if (po->Part(el.m_gid)->IsVisible() || view.m_showHiddenFibers)
+					GPart* pg = po->Part(el.m_gid);
+
+					bool showFiber = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
+
+					if (showFiber)
 					{
 						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
 						FEMaterial* pmat = 0;
@@ -2927,7 +2931,12 @@ void CGLView::RenderLocalMaterialAxes()
 				for (int j = 0; j<pm->Elements(); ++j)
 				{
 					FEElement& el = pm->Element(j);
-					if (po->Part(el.m_gid)->IsVisible() || view.m_showHiddenFibers)
+
+					GPart* pg = po->Part(el.m_gid);
+
+					bool showAxes = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
+
+					if (showAxes)
 					{
 						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
 						FEMaterial* pmat = 0;

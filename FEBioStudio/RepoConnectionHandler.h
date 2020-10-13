@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 class QNetworkReply;
 class QSslError;
-class CDatabasePanel;
+class CRepositoryPanel;
 class CLocalDatabaseHandler;
 class CMainWindow;
 
@@ -40,7 +40,7 @@ class CRepoConnectionHandler : public QObject
 	class Imp;
 
 public:
-	CRepoConnectionHandler(CDatabasePanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd);
+	CRepoConnectionHandler(CRepositoryPanel* dbPanel, CLocalDatabaseHandler* dbHandler, CMainWindow* wnd);
 	~CRepoConnectionHandler();
 
 	void authenticate(QString userName, QString password);

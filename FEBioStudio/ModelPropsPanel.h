@@ -81,6 +81,7 @@ private:
 	QLabel*			m_type;
 	CColorButton*	m_col;
 	QCheckBox*		m_status;
+	QLabel*			m_statusLabel;
 };
 
 class CBCObjectPropsPanel : public QWidget
@@ -121,6 +122,32 @@ private:
 	QCheckBox*		m_state;
 };
 
+class CGItemPropsPanel : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CGItemPropsPanel(QWidget* parent = 0);
+
+	void setName(const QString& name);
+
+	void setType(const QString& name);
+
+	void setID(int id);
+
+protected slots:
+	void on_name_textEdited(const QString&);
+
+signals:
+	void nameChanged(const QString& newName);
+
+private:
+	QLineEdit*		m_name;
+	QLabel*			m_type;
+	QLabel*			m_id;
+};
+
+
 class CModelPropsPanel : public QWidget
 {
 	Q_OBJECT
@@ -151,6 +178,7 @@ private slots:
 	void on_select2_nameChanged(const QString& t);
 	void on_object_nameChanged(const QString&);
 	void on_bcobject_nameChanged(const QString&);
+	void on_gitem_nameChanged(const QString&);
 	void on_object_colorChanged(const QColor& col);
 	void on_props_dataChanged(int n);
 	void on_form_dataChanged(bool itemModified);

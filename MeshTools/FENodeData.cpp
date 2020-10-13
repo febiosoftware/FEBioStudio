@@ -54,19 +54,32 @@ void FENodeData::Create(double v)
 	m_data.assign(pm->Nodes(), v);
 }
 
+void FENodeData::Create(FENodeSet* nset, double v)
+{
+	delete m_nodeSet;
+	m_nodeSet = nset;
+	assert(m_po->GetFEMesh() == nset->GetMesh());
+	SetMesh(nset->GetMesh());
+	m_data.assign(nset->size(), v);
+}
+
 void FENodeData::Save(OArchive& ar)
 {
 	int NN = GetMesh()->Nodes();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
+	ar.BeginChunk(CID_MESH_DATA_NODESET);
+	{
+		m_nodeSet->Save(ar);
+	}
+	ar.EndChunk();
 	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NN);
 }
 
 void FENodeData::Load(IArchive& ar)
 {
-	const int NN = GetMesh()->Nodes();
-	Create();
+	GObject* po = GetMesh()->GetGObject();
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -76,8 +89,21 @@ void FENodeData::Load(IArchive& ar)
 			ar.read(szname);
 			SetName(szname);
 		}
+		else if (CID_MESH_DATA_NODESET)
+		{
+			m_nodeSet = new FENodeSet(po);
+			m_nodeSet->Load(ar);
+		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
+			// Older files defined node data on the entire mesh. The node sets were 
+			// not saved.
+			if (m_nodeSet == nullptr)
+			{
+				Create();
+			}
+
+			int NN = m_nodeSet->size();
 			ar.read(&m_data[0], NN);
 		}
 

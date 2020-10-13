@@ -109,6 +109,7 @@ void darkStyle()
 	palette.setColor(QPalette::HighlightedText, Qt::white);
 	palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
 	palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
+	palette.setColor(QPalette::Link,  QColor("Dodgerblue"));
 	qApp->setPalette(palette);
 
 	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
@@ -127,21 +128,6 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// read the theme option, before we build the UI
 	readThemeSetting();
-
-	// Instantiate IconProvider singleton
-	CIconProvider::Instantiate(ui->m_theme, devicePixelRatio());
-
-	// setup the GUI
-	ui->setupUi(this);
-
-	// read the settings
-	if (reset == false)
-	{
-		readSettings();
-	}
-
-	// get the welcome page
-	ui->welcome->Refresh();
 
 	// activate dark style
 	if (ui->m_theme == 1)
@@ -175,6 +161,21 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
 #endif
+
+	// Instantiate IconProvider singleton
+	CIconProvider::Instantiate(ui->m_theme, devicePixelRatio());
+
+	// setup the GUI
+	ui->setupUi(this);
+
+	// read the settings
+	if (reset == false)
+	{
+		readSettings();
+	}
+
+	// get the welcome page
+	ui->welcome->Refresh();
 
 	// allow drop events
 	setAcceptDrops(true);
@@ -984,7 +985,7 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 	return ui->buildPanel->CreatePanel();
 }
 
-CDatabasePanel* CMainWindow::GetDatabasePanel()
+CRepositoryPanel* CMainWindow::GetDatabasePanel()
 {
 	return ui->databasePanel;
 }
@@ -1411,6 +1412,10 @@ void CMainWindow::writeSettings()
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
 	settings.setValue("multiViewProjection", vs.m_nconv);
+	settings.setValue("showMaterialFibers", vs.m_bfiber);
+	settings.setValue("showMaterialAxes", vs.m_blma);
+	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
+	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1483,6 +1488,10 @@ void CMainWindow::readSettings()
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
 	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
+	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
+	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
+	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
+	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 	Units::SetUnitSystem(ui->m_defaultUnits);
 
 	QRect rt;
@@ -2357,28 +2366,6 @@ void CMainWindow::ClearRecentProjectsList()
 	ui->m_recentFiles.clear();
 }
 
-//-----------------------------------------------------------------------------
-void CMainWindow::GenerateMap(FSObject* po)
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	CDlgAddMeshData dlg(po, this);
-	if (dlg.exec())
-	{
-		std::string mapName = dlg.GetMapName();
-		std::string paramName = dlg.GetParamName();
-		Param_Type paramType = dlg.GetParamType();
-
-		FSObject* data = doc->CreateDataMap(po, mapName, paramName, paramType);
-		if (data == 0)
-		{
-			QMessageBox::critical(this, "FEBio Studio", "It pains me to inform you that your command could not be executed.");
-		}
-		else UpdateModel(data);
-	}
-}
-
 void CMainWindow::OnCameraChanged()
 {
 	if (ui->postPanel->isVisible())
@@ -2643,6 +2630,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 		ui->m_process->start(program, args);
 
 		// show the output window
+		ui->logPanel->parentWidget()->raise();
 		ui->logPanel->ShowOutput();
 	}
 	else
@@ -2660,6 +2648,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 		}
 
 		// show the output window
+		ui->logPanel->parentWidget()->raise();
 		ui->logPanel->ShowOutput();
 
 		CFEBioJob::SetActiveJob(nullptr);

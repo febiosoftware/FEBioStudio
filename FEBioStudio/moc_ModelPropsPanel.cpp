@@ -357,9 +357,128 @@ void CBCObjectPropsPanel::stateChanged(bool _t1)
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
     QMetaObject::activate(this, &staticMetaObject, 2, _a);
 }
+struct qt_meta_stringdata_CGItemPropsPanel_t {
+    QByteArrayData data[5];
+    char stringdata0[57];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    qptrdiff(offsetof(qt_meta_stringdata_CGItemPropsPanel_t, stringdata0) + ofs \
+        - idx * sizeof(QByteArrayData)) \
+    )
+static const qt_meta_stringdata_CGItemPropsPanel_t qt_meta_stringdata_CGItemPropsPanel = {
+    {
+QT_MOC_LITERAL(0, 0, 16), // "CGItemPropsPanel"
+QT_MOC_LITERAL(1, 17, 11), // "nameChanged"
+QT_MOC_LITERAL(2, 29, 0), // ""
+QT_MOC_LITERAL(3, 30, 7), // "newName"
+QT_MOC_LITERAL(4, 38, 18) // "on_name_textEdited"
+
+    },
+    "CGItemPropsPanel\0nameChanged\0\0newName\0"
+    "on_name_textEdited"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_CGItemPropsPanel[] = {
+
+ // content:
+       8,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       2,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       1,       // signalCount
+
+ // signals: name, argc, parameters, tag, flags
+       1,    1,   24,    2, 0x06 /* Public */,
+
+ // slots: name, argc, parameters, tag, flags
+       4,    1,   27,    2, 0x09 /* Protected */,
+
+ // signals: parameters
+    QMetaType::Void, QMetaType::QString,    3,
+
+ // slots: parameters
+    QMetaType::Void, QMetaType::QString,    2,
+
+       0        // eod
+};
+
+void CGItemPropsPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<CGItemPropsPanel *>(_o);
+        Q_UNUSED(_t)
+        switch (_id) {
+        case 0: _t->nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 1: _t->on_name_textEdited((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        default: ;
+        }
+    } else if (_c == QMetaObject::IndexOfMethod) {
+        int *result = reinterpret_cast<int *>(_a[0]);
+        {
+            using _t = void (CGItemPropsPanel::*)(const QString & );
+            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&CGItemPropsPanel::nameChanged)) {
+                *result = 0;
+                return;
+            }
+        }
+    }
+}
+
+QT_INIT_METAOBJECT const QMetaObject CGItemPropsPanel::staticMetaObject = { {
+    QMetaObject::SuperData::link<QWidget::staticMetaObject>(),
+    qt_meta_stringdata_CGItemPropsPanel.data,
+    qt_meta_data_CGItemPropsPanel,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+
+const QMetaObject *CGItemPropsPanel::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *CGItemPropsPanel::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CGItemPropsPanel.stringdata0))
+        return static_cast<void*>(this);
+    return QWidget::qt_metacast(_clname);
+}
+
+int CGItemPropsPanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QWidget::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 2)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 2;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 2)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 2;
+    }
+    return _id;
+}
+
+// SIGNAL 0
+void CGItemPropsPanel::nameChanged(const QString & _t1)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
+}
 struct qt_meta_stringdata_CModelPropsPanel_t {
-    QByteArrayData data[32];
-    char stringdata0[608];
+    QByteArrayData data[33];
+    char stringdata0[629];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -390,16 +509,17 @@ QT_MOC_LITERAL(18, 372, 1), // "t"
 QT_MOC_LITERAL(19, 374, 22), // "on_select2_nameChanged"
 QT_MOC_LITERAL(20, 397, 21), // "on_object_nameChanged"
 QT_MOC_LITERAL(21, 419, 23), // "on_bcobject_nameChanged"
-QT_MOC_LITERAL(22, 443, 22), // "on_object_colorChanged"
-QT_MOC_LITERAL(23, 466, 3), // "col"
-QT_MOC_LITERAL(24, 470, 20), // "on_props_dataChanged"
-QT_MOC_LITERAL(25, 491, 1), // "n"
-QT_MOC_LITERAL(26, 493, 19), // "on_form_dataChanged"
-QT_MOC_LITERAL(27, 513, 12), // "itemModified"
-QT_MOC_LITERAL(28, 526, 23), // "on_bcobject_stepChanged"
-QT_MOC_LITERAL(29, 550, 24), // "on_bcobject_stateChanged"
-QT_MOC_LITERAL(30, 575, 8), // "isActive"
-QT_MOC_LITERAL(31, 584, 23) // "on_object_statusChanged"
+QT_MOC_LITERAL(22, 443, 20), // "on_gitem_nameChanged"
+QT_MOC_LITERAL(23, 464, 22), // "on_object_colorChanged"
+QT_MOC_LITERAL(24, 487, 3), // "col"
+QT_MOC_LITERAL(25, 491, 20), // "on_props_dataChanged"
+QT_MOC_LITERAL(26, 512, 1), // "n"
+QT_MOC_LITERAL(27, 514, 19), // "on_form_dataChanged"
+QT_MOC_LITERAL(28, 534, 12), // "itemModified"
+QT_MOC_LITERAL(29, 547, 23), // "on_bcobject_stepChanged"
+QT_MOC_LITERAL(30, 571, 24), // "on_bcobject_stateChanged"
+QT_MOC_LITERAL(31, 596, 8), // "isActive"
+QT_MOC_LITERAL(32, 605, 23) // "on_object_statusChanged"
 
     },
     "CModelPropsPanel\0nameChanged\0\0txt\0"
@@ -416,10 +536,10 @@ QT_MOC_LITERAL(31, 584, 23) // "on_object_statusChanged"
     "on_select2_clearButtonClicked\0"
     "on_select1_nameChanged\0t\0"
     "on_select2_nameChanged\0on_object_nameChanged\0"
-    "on_bcobject_nameChanged\0on_object_colorChanged\0"
-    "col\0on_props_dataChanged\0n\0"
-    "on_form_dataChanged\0itemModified\0"
-    "on_bcobject_stepChanged\0"
+    "on_bcobject_nameChanged\0on_gitem_nameChanged\0"
+    "on_object_colorChanged\0col\0"
+    "on_props_dataChanged\0n\0on_form_dataChanged\0"
+    "itemModified\0on_bcobject_stepChanged\0"
     "on_bcobject_stateChanged\0isActive\0"
     "on_object_statusChanged"
 };
@@ -431,7 +551,7 @@ static const uint qt_meta_data_CModelPropsPanel[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      23,   14, // methods
+      24,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -439,31 +559,32 @@ static const uint qt_meta_data_CModelPropsPanel[] = {
        3,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,  129,    2, 0x06 /* Public */,
-       4,    0,  132,    2, 0x06 /* Public */,
-       5,    1,  133,    2, 0x06 /* Public */,
+       1,    1,  134,    2, 0x06 /* Public */,
+       4,    0,  137,    2, 0x06 /* Public */,
+       5,    1,  138,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       7,    0,  136,    2, 0x08 /* Private */,
-       8,    0,  137,    2, 0x08 /* Private */,
-       9,    0,  138,    2, 0x08 /* Private */,
-      10,    0,  139,    2, 0x08 /* Private */,
-      11,    0,  140,    2, 0x08 /* Private */,
-      12,    0,  141,    2, 0x08 /* Private */,
-      13,    0,  142,    2, 0x08 /* Private */,
-      14,    0,  143,    2, 0x08 /* Private */,
-      15,    0,  144,    2, 0x08 /* Private */,
-      16,    0,  145,    2, 0x08 /* Private */,
-      17,    1,  146,    2, 0x08 /* Private */,
-      19,    1,  149,    2, 0x08 /* Private */,
-      20,    1,  152,    2, 0x08 /* Private */,
-      21,    1,  155,    2, 0x08 /* Private */,
-      22,    1,  158,    2, 0x08 /* Private */,
-      24,    1,  161,    2, 0x08 /* Private */,
-      26,    1,  164,    2, 0x08 /* Private */,
-      28,    1,  167,    2, 0x08 /* Private */,
-      29,    1,  170,    2, 0x08 /* Private */,
-      31,    1,  173,    2, 0x08 /* Private */,
+       7,    0,  141,    2, 0x08 /* Private */,
+       8,    0,  142,    2, 0x08 /* Private */,
+       9,    0,  143,    2, 0x08 /* Private */,
+      10,    0,  144,    2, 0x08 /* Private */,
+      11,    0,  145,    2, 0x08 /* Private */,
+      12,    0,  146,    2, 0x08 /* Private */,
+      13,    0,  147,    2, 0x08 /* Private */,
+      14,    0,  148,    2, 0x08 /* Private */,
+      15,    0,  149,    2, 0x08 /* Private */,
+      16,    0,  150,    2, 0x08 /* Private */,
+      17,    1,  151,    2, 0x08 /* Private */,
+      19,    1,  154,    2, 0x08 /* Private */,
+      20,    1,  157,    2, 0x08 /* Private */,
+      21,    1,  160,    2, 0x08 /* Private */,
+      22,    1,  163,    2, 0x08 /* Private */,
+      23,    1,  166,    2, 0x08 /* Private */,
+      25,    1,  169,    2, 0x08 /* Private */,
+      27,    1,  172,    2, 0x08 /* Private */,
+      29,    1,  175,    2, 0x08 /* Private */,
+      30,    1,  178,    2, 0x08 /* Private */,
+      32,    1,  181,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QString,    3,
@@ -485,11 +606,12 @@ static const uint qt_meta_data_CModelPropsPanel[] = {
     QMetaType::Void, QMetaType::QString,   18,
     QMetaType::Void, QMetaType::QString,    2,
     QMetaType::Void, QMetaType::QString,    2,
-    QMetaType::Void, QMetaType::QColor,   23,
-    QMetaType::Void, QMetaType::Int,   25,
-    QMetaType::Void, QMetaType::Bool,   27,
-    QMetaType::Void, QMetaType::Int,   25,
-    QMetaType::Void, QMetaType::Bool,   30,
+    QMetaType::Void, QMetaType::QString,    2,
+    QMetaType::Void, QMetaType::QColor,   24,
+    QMetaType::Void, QMetaType::Int,   26,
+    QMetaType::Void, QMetaType::Bool,   28,
+    QMetaType::Void, QMetaType::Int,   26,
+    QMetaType::Void, QMetaType::Bool,   31,
     QMetaType::Void, QMetaType::Bool,    6,
 
        0        // eod
@@ -518,12 +640,13 @@ void CModelPropsPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int
         case 14: _t->on_select2_nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         case 15: _t->on_object_nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         case 16: _t->on_bcobject_nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 17: _t->on_object_colorChanged((*reinterpret_cast< const QColor(*)>(_a[1]))); break;
-        case 18: _t->on_props_dataChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 19: _t->on_form_dataChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 20: _t->on_bcobject_stepChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 21: _t->on_bcobject_stateChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 22: _t->on_object_statusChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 17: _t->on_gitem_nameChanged((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 18: _t->on_object_colorChanged((*reinterpret_cast< const QColor(*)>(_a[1]))); break;
+        case 19: _t->on_props_dataChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 20: _t->on_form_dataChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 21: _t->on_bcobject_stepChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 22: _t->on_bcobject_stateChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 23: _t->on_object_statusChanged((*reinterpret_cast< bool(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -581,13 +704,13 @@ int CModelPropsPanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 23)
+        if (_id < 24)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 23;
+        _id -= 24;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 23)
+        if (_id < 24)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 23;
+        _id -= 24;
     }
     return _id;
 }
