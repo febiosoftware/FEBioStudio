@@ -151,6 +151,7 @@
     <ClCompile Include="..\..\PostLib\DataFilter.cpp" />
     <ClCompile Include="..\..\PostLib\DataMap.cpp" />
     <ClCompile Include="..\..\PostLib\evaluate.cpp" />
+    <ClCompile Include="..\..\PostLib\FEAbaqusExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEAreaCoverage.cpp" />
     <ClCompile Include="..\..\PostLib\FEAsciiExport.cpp" />
     <ClCompile Include="..\..\PostLib\FEASCIIImport.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="..\..\PostLib\DataFilter.h" />
     <ClInclude Include="..\..\PostLib\DataMap.h" />
     <ClInclude Include="..\..\PostLib\evaluate.h" />
+    <ClInclude Include="..\..\PostLib\FEAbaqusExport.h" />
     <ClInclude Include="..\..\PostLib\FEAreaCoverage.h" />
     <ClInclude Include="..\..\PostLib\FEAsciiExport.h" />
     <ClInclude Include="..\..\PostLib\FEASCIIImport.h" />
