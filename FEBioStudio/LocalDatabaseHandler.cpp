@@ -40,7 +40,6 @@ SOFTWARE.*/
 #include <QStringList>
 #include <QStringList>
 #include <QVariantMap>
-#include "RepoProject.h"
 #include "RepositoryPanel.h"
 
 #include <iostream>
