@@ -720,6 +720,22 @@ void CModelViewer::OnSelectObject()
 	}
 }
 
+void CModelViewer::OnDeleteAllDiscete()
+{
+	QString q("Are you sure you want to delete all discrete objects? This cannot be undone.");
+	if (QMessageBox::question(this, "Delete All", q) == QMessageBox::Yes)
+	{
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument()); assert(doc);
+		if (doc == nullptr) return;
+		GModel& m = doc->GetFEModel()->GetModel();
+		m.ClearDiscrete();
+
+		Select(nullptr);
+		Update();
+		GetMainWindow()->RedrawGL();
+	}
+}
+
 void CModelViewer::OnSelectDiscreteObject()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1542,6 +1558,9 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Hide other parts", this, SLOT(OnMaterialHideOtherParts()));
 		menu.addAction("Export Material(s) ...", this, SLOT(OnExportMaterials()));
 		del = true;
+		break;
+	case MT_DISCRETE_LIST:
+		menu.addAction("Delete all", this, SLOT(OnDeleteAllDiscete()));
 		break;
 	case MT_DISCRETE_SET:
 		menu.addAction("Select", this, SLOT(OnSelectDiscreteObject()));
