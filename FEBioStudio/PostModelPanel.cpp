@@ -355,6 +355,7 @@ public:
 		case 5: box.y1 = val.toFloat(); break;
 		case 6: box.z1 = val.toFloat(); break;
 		}
+		m_img->SetBoundingBox(box);
 	}
 
 private:
@@ -884,6 +885,10 @@ void CPostModelPanel::on_deleteButton_clicked()
 		CGraphData* graph = dynamic_cast<CGraphData*>(m_obj[n]);
 		if (po)
 		{
+			// TODO: This is a hack to avoid a crash when the image viewer updates itself
+			//       after the image model is deleted. 
+			ui->HideImageViewer();
+
 			GetActiveDocument()->DeleteObject(po);
 			item->SetObject(0);
 			Update(true);

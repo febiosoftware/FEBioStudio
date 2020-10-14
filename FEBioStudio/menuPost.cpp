@@ -177,7 +177,20 @@ void CMainWindow::on_actionVolumeFlowPlot_triggered()
 
 void CMainWindow::on_actionImageSlicer_triggered()
 {
-	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	// get the document
+	CDocument* modelDoc = GetModelDocument();
+	CDocument* postDoc = GetPostDocument();
+
+	Post::CImageModel* img = nullptr;
+	if (modelDoc)
+	{
+		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	}
+	else if (postDoc)
+	{
+		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+	}
+
 	if (img == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
@@ -187,8 +200,16 @@ void CMainWindow::on_actionImageSlicer_triggered()
 	Post::CImageSlicer* slicer = new Post::CImageSlicer(img);
 	slicer->Create();
 	img->AddImageRenderer(slicer);
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(slicer);
+
+	if (modelDoc)
+	{
+		ui->modelViewer->Update();
+		ui->modelViewer->Select(slicer);
+	}
+	else if (postDoc)
+	{
+		ui->postPanel->Update();
+	}
 	RedrawGL();
 }
 
