@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D511EF1A253B565400893F69 /* FEAbaqusExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D511EF18253B565400893F69 /* FEAbaqusExport.cpp */; };
+		D511EF1B253B565400893F69 /* FEAbaqusExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D511EF19253B565400893F69 /* FEAbaqusExport.h */; };
 		D54D2CED2444DFA500146123 /* FEKinemat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54D2CEB2444DFA500146123 /* FEKinemat.cpp */; };
 		D54D2CEE2444DFA500146123 /* FEKinemat.h in Headers */ = {isa = PBXBuildFile; fileRef = D54D2CEC2444DFA500146123 /* FEKinemat.h */; };
 		D56ADC22250287A90097DC8E /* BYUExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D56ADC20250287A80097DC8E /* BYUExport.h */; };
@@ -123,6 +125,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D511EF18253B565400893F69 /* FEAbaqusExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEAbaqusExport.cpp; sourceTree = "<group>"; };
+		D511EF19253B565400893F69 /* FEAbaqusExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEAbaqusExport.h; sourceTree = "<group>"; };
 		D54D2CEB2444DFA500146123 /* FEKinemat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEKinemat.cpp; sourceTree = "<group>"; };
 		D54D2CEC2444DFA500146123 /* FEKinemat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEKinemat.h; sourceTree = "<group>"; };
 		D56ADC20250287A80097DC8E /* BYUExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BYUExport.h; sourceTree = "<group>"; };
@@ -268,6 +272,8 @@
 				D5ED24C52319797000C16BF7 /* DataMap.h */,
 				D5ED24E52319797000C16BF7 /* evaluate.cpp */,
 				D5ED25012319797000C16BF7 /* evaluate.h */,
+				D511EF18253B565400893F69 /* FEAbaqusExport.cpp */,
+				D511EF19253B565400893F69 /* FEAbaqusExport.h */,
 				D5ED24D92319797000C16BF7 /* FEAreaCoverage.cpp */,
 				D5ED250E2319797000C16BF7 /* FEAreaCoverage.h */,
 				D5ED24FA2319797000C16BF7 /* FEAsciiExport.cpp */,
@@ -405,6 +411,7 @@
 				D5ED29BA23198B1E00C16BF7 /* FELSDYNAExport.h in Headers */,
 				D5ED29BB23198B1E00C16BF7 /* GLImageRenderer.h in Headers */,
 				D5ED29BC23198B1E00C16BF7 /* FEMeshData.h in Headers */,
+				D511EF1B253B565400893F69 /* FEAbaqusExport.h in Headers */,
 				D5ED29BD23198B1E00C16BF7 /* FEAreaCoverage.h in Headers */,
 				D5ED29BE23198B1E00C16BF7 /* FEGroup.h in Headers */,
 				D5ED29BF23198B1E00C16BF7 /* FEDataField.h in Headers */,
@@ -560,6 +567,7 @@
 				D5ED29A923198B1E00C16BF7 /* FESTLimport.cpp in Sources */,
 				D5ED29AA23198B1E00C16BF7 /* ImageModel.cpp in Sources */,
 				D5ED29AC23198B1E00C16BF7 /* FEFileExport.cpp in Sources */,
+				D511EF1A253B565400893F69 /* FEAbaqusExport.cpp in Sources */,
 				D5ED29AD23198B1E00C16BF7 /* FEVTKImport.cpp in Sources */,
 				D5ED29AE23198B1E00C16BF7 /* FEASCIIImport.cpp in Sources */,
 			);

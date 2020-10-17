@@ -15,6 +15,7 @@
 		D50EB7B2246B6E6900E016F1 /* IconProvider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7AD246B6E6800E016F1 /* IconProvider.cpp */; };
 		D50EB7B3246B6E6900E016F1 /* DlgSetRepoFolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7AE246B6E6800E016F1 /* DlgSetRepoFolder.cpp */; };
 		D50EB7B4246B6E6900E016F1 /* moc_DlgSetRepoFolder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D50EB7B1246B6E6800E016F1 /* moc_DlgSetRepoFolder.cpp */; };
+		D511EF17253B55DB00893F69 /* MultiLineLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D511EF16253B55DB00893F69 /* MultiLineLabel.cpp */; };
 		D5163181230097A2002B01C3 /* DlgWidgetProps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D516317F2300979E002B01C3 /* DlgWidgetProps.cpp */; };
 		D5163182230097A2002B01C3 /* moc_DlgWidgetProps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */; };
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
@@ -44,7 +45,6 @@
 		D56ADC1F2502879A0097DC8E /* DlgExportVTK.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56ADC1D2502879A0097DC8E /* DlgExportVTK.cpp */; };
 		D575FFC122FB7163007C935F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D575FFC022FB7163007C935F /* Assets.xcassets */; };
 		D576570123E32E6900E4F70F /* LocalDatabaseHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */; };
-		D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656F823E32E6800E4F70F /* RepoProject.cpp */; };
 		D576570423E32E6900E4F70F /* RepoConnectionHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */; };
 		D576570623E32E6900E4F70F /* moc_RepoConnectionHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */; };
 		D576571623E32F7E00E4F70F /* QtNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D576571523E32F7E00E4F70F /* QtNetwork.framework */; };
@@ -469,6 +469,8 @@
 		D50EB7AF246B6E6800E016F1 /* DlgSetRepoFolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSetRepoFolder.h; sourceTree = "<group>"; };
 		D50EB7B0246B6E6800E016F1 /* IconProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IconProvider.h; sourceTree = "<group>"; };
 		D50EB7B1246B6E6800E016F1 /* moc_DlgSetRepoFolder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgSetRepoFolder.cpp; sourceTree = "<group>"; };
+		D511EF15253B55DB00893F69 /* MultiLineLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultiLineLabel.h; sourceTree = "<group>"; };
+		D511EF16253B55DB00893F69 /* MultiLineLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MultiLineLabel.cpp; sourceTree = "<group>"; };
 		D516317E2300979D002B01C3 /* DlgWidgetProps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgWidgetProps.h; sourceTree = "<group>"; };
 		D516317F2300979E002B01C3 /* DlgWidgetProps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgWidgetProps.cpp; sourceTree = "<group>"; };
 		D51631802300979E002B01C3 /* moc_DlgWidgetProps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_DlgWidgetProps.cpp; sourceTree = "<group>"; };
@@ -508,9 +510,7 @@
 		D57656F423E32E6800E4F70F /* LocalDatabaseHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalDatabaseHandler.cpp; sourceTree = "<group>"; };
 		D57656F623E32E6800E4F70F /* RepoConnectionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoConnectionHandler.h; sourceTree = "<group>"; };
 		D57656F723E32E6800E4F70F /* LocalDatabaseHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalDatabaseHandler.h; sourceTree = "<group>"; };
-		D57656F823E32E6800E4F70F /* RepoProject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RepoProject.cpp; sourceTree = "<group>"; };
 		D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RepoConnectionHandler.cpp; sourceTree = "<group>"; };
-		D57656FB23E32E6800E4F70F /* RepoProject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepoProject.h; sourceTree = "<group>"; };
 		D57656FF23E32E6900E4F70F /* moc_RepoConnectionHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_RepoConnectionHandler.cpp; sourceTree = "<group>"; };
 		D576571523E32F7E00E4F70F /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = /usr/local/Cellar/qt/5.14.1/lib/QtNetwork.framework; sourceTree = "<absolute>"; };
 		D576571723E3345500E4F70F /* libquazip.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquazip.1.0.0.dylib; path = /usr/local/Cellar/quazip/0.8.1/lib/libquazip.1.0.0.dylib; sourceTree = "<absolute>"; };
@@ -1522,6 +1522,8 @@
 				D5F7D72922FA37C40089B08E /* ModelTree.h */,
 				D5F7D7E522FA37C40089B08E /* ModelViewer.cpp */,
 				D5F7D7BF22FA37C40089B08E /* ModelViewer.h */,
+				D511EF16253B55DB00893F69 /* MultiLineLabel.cpp */,
+				D511EF15253B55DB00893F69 /* MultiLineLabel.h */,
 				D5F7D80622FA37C40089B08E /* ObjectPanel.cpp */,
 				D5F7D81722FA37C40089B08E /* ObjectPanel.h */,
 				D5F7D7D122FA37C40089B08E /* ObjectProps.cpp */,
@@ -1563,8 +1565,6 @@
 				D5F7D74F22FA37C40089B08E /* ReadCurveTool.h */,
 				D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */,
 				D57656F623E32E6800E4F70F /* RepoConnectionHandler.h */,
-				D57656F823E32E6800E4F70F /* RepoProject.cpp */,
-				D57656FB23E32E6800E4F70F /* RepoProject.h */,
 				D5BC0B99252CCB2800036DD8 /* RepositoryPanel.cpp */,
 				D5BC0B98252CCB2700036DD8 /* RepositoryPanel.h */,
 				D5F7D70122FA37C30089B08E /* ResourceEdit.cpp */,
@@ -1993,6 +1993,7 @@
 				D5F7D88922FA37C40089B08E /* moc_CreateP2PlinePane.cpp in Sources */,
 				D5F7D83122FA37C40089B08E /* moc_PropertyListForm.cpp in Sources */,
 				D5F7D8A122FA37C40089B08E /* moc_CurveEditor.cpp in Sources */,
+				D511EF17253B55DB00893F69 /* MultiLineLabel.cpp in Sources */,
 				D5F7D8BC22FA37C40089B08E /* ObjectPanel.cpp in Sources */,
 				D54D2CEA2444A7DE00146123 /* ImportSpringsTool.cpp in Sources */,
 				D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */,
@@ -2029,7 +2030,6 @@
 				D5F7D8AD22FA37C40089B08E /* Document.cpp in Sources */,
 				D5F7D8B122FA37C40089B08E /* moc_DlgCloneGrid.cpp in Sources */,
 				D5F7D8BE22FA37C40089B08E /* StatsWindow.cpp in Sources */,
-				D576570323E32E6900E4F70F /* RepoProject.cpp in Sources */,
 				D5992F2C2461E4320054F9DA /* ModelFileWriter.cpp in Sources */,
 				D5F7D85A22FA37C40089B08E /* moc_PostPanel.cpp in Sources */,
 				D509D41F24BF9A1D0064160E /* moc_TagLabel.cpp in Sources */,
