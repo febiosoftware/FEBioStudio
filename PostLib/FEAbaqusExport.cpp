@@ -69,8 +69,11 @@ bool FEAbaqusExport::Save(FEPostModel &fem, int ntime, const char *szfile)
 			const char* sztype = "???";
 			switch (ntype)
 			{
-			case FE_TET4: sztype = "C3D4"; break;
-			case FE_HEX8: sztype = "C3D8"; break;
+			case FE_TET4  : sztype = "C3D4"; break;
+			case FE_HEX8  : sztype = "C3D8"; break;
+			case FE_TET10 : sztype = "C3D10"; break;
+			case FE_HEX20 : sztype = "C3D20"; break;
+			case FE_PENTA6: sztype = "C3D6"; break;
 			default:
 				assert(false);
 			}

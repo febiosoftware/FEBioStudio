@@ -1186,6 +1186,8 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		AddLogEntry(QString("Writing file %1 ... ").arg(fileName));
 
 		// export file based on selected filter
+		bool bsuccess = true;
+		QString errMsg = "(unknown)";
 		switch (nflt)
 		{
 		case 0: // FEBio files
@@ -1208,8 +1210,8 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 					writer.SetWriteNotesFlag(dlg.m_writeNotes);
 					for (int i = 0; i<FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					if (!writer.Write(szfile))
-						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+					bsuccess = writer.Write(szfile);
+					if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 				}
 				else if (dlg.m_nversion == 1)
 				{
@@ -1219,8 +1221,8 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
 					writer.SetWriteNotesFlag(dlg.m_writeNotes);
 					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					if (!writer.Write(szfile))
-						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+					bsuccess = writer.Write(szfile);
+					if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 				}
 				else if (dlg.m_nversion == 2)
 				{
@@ -1228,16 +1230,16 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					FEBioExport2 writer(fem);
 					writer.SetPlotfileCompressionFlag(dlg.m_compress);
 					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					if (!writer.Write(szfile))
-						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+					bsuccess = writer.Write(szfile);
+					if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 				}
 				else if (dlg.m_nversion == 3)
 				{
 					// Write version 1.x
 					FEBioExport12 writer(fem);
 					for (int i = 0; i < FEBioExport12::MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
-					if (!writer.Write(szfile))
-						QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
+					bsuccess = writer.Write(szfile);
+					if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 				}
 			}
 		}
@@ -1245,14 +1247,22 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		case 1: // NIKE3D files
 		{
 			FENIKEExport writer(fem);
-			if (!writer.Write(szfile))
-				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to NIKE file."));
+			bsuccess = writer.Write(szfile);
+			if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 		}
 		break;
 		default:
 			QMessageBox::critical(this, "FEBio Studio", "Don't know how to save this file.");
+			AddLogEntry(QString("failed!\n"));
+			return;
 		}
-		AddLogEntry(QString("success!\n"));
+		if (bsuccess)
+			AddLogEntry(QString("success!\n"));
+		else
+		{
+			AddLogEntry(QString("failed!\n"));
+			QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to FEBio file: \n%1").arg(errMsg));
+		}
 	}
 }
 
