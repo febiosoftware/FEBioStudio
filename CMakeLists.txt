@@ -5,10 +5,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(FEBioStudio)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_FILES_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Autogen)
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
@@ -64,11 +67,11 @@ endif()
 #### Check if paths are valid and find libs ####
 
 function(findLib libName libDir libOut)
-    find_library(TEMP ${libName} PATHS ${libDir})
+    find_library(TEMP ${libName} PATHS ${libDir} NO_DEFAULT_PATH)
 
     # Optional argument ARGV3 can be used to pass an alternate name for the library
     if(NOT TEMP AND ${ARGC} GREATER 3)
-        find_library(TEMP ${ARGV3} PATHS ${libDir})
+        find_library(TEMP ${ARGV3} PATHS ${libDir} NO_DEFAULT_PATH)
     endif()
     
     if(TEMP)
@@ -257,11 +260,11 @@ if(WIN32)
 		DOC "Netgen library path")
 else()
 	find_path(NETGEN_INC include/occgeom.hpp
-        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/Resources/include
         PATH_SUFFIXES "include" "netgen/include" "build" "build/include"
 		DOC "Netgen include directory")
 	find_library(NETGEN_LIB nglib 
-        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/MacOS
         PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug"
 		DOC "Netgen library path")
 endif()
@@ -372,6 +375,16 @@ if(WIN32)
         PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "OpenSSL library path")
+elseif(APPLE)
+	find_path(SSL_INC openssl/aes.h
+        PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "include" "openssl/include" "build" "build/include"
+		DOC "OpenSSL include directory")
+	find_library(SSL_LIB ssl 
+        PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
+        PATH_SUFFIXES "lib" "openssl/lib" "build" "build/lib" "Release" "Debug"
+		DOC "OpenSSL library path"
+		NO_DEFAULT_PATH)
 else()
 	find_path(SSL_INC openssl/aes.h
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
@@ -539,10 +552,10 @@ else()
 endif()
 
 # OpenGL
-include(FindOpenGL)
+find_package(OpenGL REQUIRED)
 
 # ZLIB
-include(FindZLIB)
+find_package(ZLIB REQUIRED)
 if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)
     mark_as_advanced(ZLIB_INCLUDE_DIR ZLIB_LIBRARY_RELEASE)
 endif()
@@ -553,6 +566,7 @@ if(WIN32)
     add_definitions(-DWIN32)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-static-libstdc++ -static-libgcc -w -Wall)
@@ -609,56 +623,20 @@ include_directories(${ZLIB_INCLUDE_DIR})
 
 ##### Find Source Files #####
 
-file(GLOB SRC_FEBioStudio "FEBioStudio/*.cpp")
-file(GLOB HDR_FEBioStudio "FEBioStudio/*.h")
-file(GLOB SRC_Abaqus "Abaqus/*.cpp")
-file(GLOB SRC_Ansys "Ansys/*.cpp")
-file(GLOB SRC_Comsol "Comsol/*.cpp")
-file(GLOB SRC_CUILib "CUILib/*.cpp")
-file(GLOB HDR_CUILib "CUILib/*.h")
-file(GLOB SRC_FEBio "FEBio/*.cpp")
-file(GLOB SRC_FEMLib "FEMLib/*.cpp")
-file(GLOB SRC_FSCore "FSCore/*.cpp")
-file(GLOB SRC_GeomLib "GeomLib/*.cpp")
-file(GLOB SRC_GLLib "GLLib/*.cpp")
-file(GLOB SRC_GLWLib "GLWLib/*.cpp")
-file(GLOB SRC_ImageLib "ImageLib/*.cpp")
-file(GLOB SRC_LSDyna "LSDyna/*.cpp")
-file(GLOB SRC_MathLib "MathLib/*.cpp")
-file(GLOB SRC_MeshIO "MeshIO/*.cpp")
-file(GLOB SRC_MeshLib "MeshLib/*.cpp")
-file(GLOB SRC_MeshTools "MeshTools/*.cpp")
-file(GLOB SRC_Nike3D "Nike3D/*.cpp")
-file(GLOB SRC_PostGL "PostGL/*.cpp")
-file(GLOB SRC_PostLib "PostLib/*.cpp")
-file(GLOB SRC_XML "XML/*.cpp")
-file(GLOB SRC_XPLTLib "XPLTLib/*.cpp")
+macro(findHdrSrc name)
+	file(GLOB HDR_${name} "${name}/*.h")
+	file(GLOB SRC_${name} "${name}/*.cpp")
+	list(FILTER SRC_${name} EXCLUDE REGEX "qrc_")
+	list(FILTER SRC_${name} EXCLUDE REGEX "moc_")
+endmacro()
 
-##### Filter out existing moc and qrc files #####
+findHdrSrc(FEBioStudio)
 
-list(FILTER SRC_FEBioStudio EXCLUDE REGEX "qrc_")
-list(FILTER SRC_FEBioStudio EXCLUDE REGEX "moc_")
-list(FILTER SRC_Abaqus EXCLUDE REGEX "moc_")
-list(FILTER SRC_Ansys EXCLUDE REGEX "moc_")
-list(FILTER SRC_Comsol EXCLUDE REGEX "moc_")
-list(FILTER SRC_CUILib EXCLUDE REGEX "moc_")
-list(FILTER SRC_FEBio EXCLUDE REGEX "moc_")
-list(FILTER SRC_FEMLib EXCLUDE REGEX "moc_")
-list(FILTER SRC_FSCore EXCLUDE REGEX "moc_")
-list(FILTER SRC_GeomLib EXCLUDE REGEX "moc_")
-list(FILTER SRC_GLLib EXCLUDE REGEX "moc_")
-list(FILTER SRC_GLWLib EXCLUDE REGEX "moc_")
-list(FILTER SRC_ImageLib EXCLUDE REGEX "moc_")
-list(FILTER SRC_LSDyna EXCLUDE REGEX "moc_")
-list(FILTER SRC_MathLib EXCLUDE REGEX "moc_")
-list(FILTER SRC_MeshIO EXCLUDE REGEX "moc_")
-list(FILTER SRC_MeshLib EXCLUDE REGEX "moc_")
-list(FILTER SRC_MeshTools EXCLUDE REGEX "moc_")
-list(FILTER SRC_Nike3D EXCLUDE REGEX "moc_")
-list(FILTER SRC_PostGL EXCLUDE REGEX "moc_")
-list(FILTER SRC_PostLib EXCLUDE REGEX "moc_")
-list(FILTER SRC_XML EXCLUDE REGEX "moc_")
-list(FILTER SRC_XPLTLib EXCLUDE REGEX "moc_")
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MathLib MeshIO MeshLib MeshTools Nike3D PostGL PostLib XML XPLTLib)
+
+foreach(name IN LISTS FEBIOSTUDIO_LIBS)
+	findHdrSrc(${name})
+endforeach(name)
 
 ##### Add binaries #####
 
@@ -669,28 +647,27 @@ if(Qt5WebEngineWidgets_FOUND)
 	link_libraries(Qt5::WebEngineWidgets)
 endif()
 
-add_executable(FEBioStudio ${SRC_FEBioStudio} ${HDR_FEBioStudio} febiostudio.qrc)
-add_library(Abaqus ${SRC_Abaqus})
-add_library(Ansys ${SRC_Ansys})
-add_library(Comsol ${SRC_Comsol})
-add_library(CUILib ${SRC_CUILib} ${HDR_CUILib})
-add_library(FEBio ${SRC_FEBio})
-add_library(FEMLib ${SRC_FEMLib})
-add_library(FSCore ${SRC_FSCore})
-add_library(GeomLib ${SRC_GeomLib})
-add_library(GLLib ${SRC_GLLib})
-add_library(GLWLib ${SRC_GLWLib})
-add_library(ImageLib ${SRC_ImageLib})
-add_library(LSDyna ${SRC_LSDyna})
-add_library(MathLib ${SRC_MathLib})
-add_library(MeshIO ${SRC_MeshIO})
-add_library(MeshLib ${SRC_MeshLib})
-add_library(MeshTools ${SRC_MeshTools})
-add_library(Nike3D ${SRC_Nike3D})
-add_library(PostGL ${SRC_PostGL})
-add_library(PostLib ${SRC_PostLib})
-add_library(XML ${SRC_XML})
-add_library(XPLTLib ${SRC_XPLTLib})
+if(APPLE)
+	# set bundle icon
+	set(FBS_ICON ${CMAKE_CURRENT_SOURCE_DIR}/icons/FEBioStudio.icns)
+	set(MACOSX_BUNDLE_ICON_FILE FEBioStudio.icns)
+	set_source_files_properties(${FBS_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+	
+	add_executable(FEBioStudio MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+else()
+	add_executable(FEBioStudio ${HDR_FEBioStudio} ${SRC_FEBioStudio}  febiostudio.qrc)
+	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+endif()
+
+macro(addLib name)
+	add_library(${name} ${HDR_${name}} ${SRC_${name}})
+	set_property(TARGET ${name} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/${name}_autogen)
+endmacro()
+
+foreach(name IN LISTS FEBIOSTUDIO_LIBS)
+	addLib(${name})
+endforeach(name)
 
 ##### Link Libraries #####
 
@@ -736,9 +713,9 @@ if(USE_FFMPEG)
 endif()
 
 target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
-target_link_libraries(FEBioStudio ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
+target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
 
-target_link_libraries(FEBioStudio Abaqus Ansys GeomLib MathLib XML MeshIO FEBio Comsol LSDyna MeshTools FEMLib MeshLib Nike3D ImageLib  GLLib GLWLib PostGL XPLTLib PostLib CUILib FSCore)
+target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)
 elseif(APPLE)
