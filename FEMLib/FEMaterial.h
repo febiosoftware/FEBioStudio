@@ -129,6 +129,7 @@
 #define FE_FIBEREXPPOW_UNCOUPLED        75
 #define FE_FIBERPOWLIN_COUPLED          76
 #define FE_FIBERPOWLIN_UNCOUPLED        77
+#define FE_FIBER_DAMAGE_POWER			78	// added in FS 1.1
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -1343,6 +1344,16 @@ public:
 public:
 	FEFiberExpLinearUncoupled();
 	DECLARE_REGISTERED(FEFiberExpLinearUncoupled);
+};
+
+//-----------------------------------------------------------------------------
+class FEFiberDamagePower : public FEFiberMaterial
+{
+public:
+	enum { MP_ALPHA1, MP_ALPHA2, MP_KAPPA, MP_T0, MP_DMAX, MP_BETA_S, MP_GAMMA_MAX };
+public:
+	FEFiberDamagePower();
+	DECLARE_REGISTERED(FEFiberDamagePower);
 };
 
 //=============================================================================

@@ -330,7 +330,7 @@ FECoupledMooneyRivlin::FECoupledMooneyRivlin() : FEMaterial(FE_COUPLED_MOONEY_RI
 	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_PRESSURE, "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -344,7 +344,7 @@ FECoupledVerondaWestmann::FECoupledVerondaWestmann() : FEMaterial(FE_COUPLED_VER
 	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
 	AddScienceParam(0, UNIT_PRESSURE, "c1", "c1");
 	AddScienceParam(0, UNIT_NONE, "c2", "c2");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1965,6 +1965,23 @@ FEFiberExpLinearUncoupled::FEFiberExpLinearUncoupled() : FEFiberMaterial(FE_FIBE
 	AddDoubleParam(0.0, "c4", "c4");
 	AddDoubleParam(0.0, "c5", "c5");
 	AddDoubleParam(0.0, "lambda", "lambda");
+}
+
+//=============================================================================
+// damage fiber power
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberDamagePower, MODULE_MECH, FE_FIBER_DAMAGE_POWER, FE_MAT_ELASTIC, "damage fiber power", 0);
+
+FEFiberDamagePower::FEFiberDamagePower() : FEFiberMaterial(FE_FIBER_DAMAGE_POWER)
+{
+	AddDoubleParam(0.0, "a1", "a1");
+	AddDoubleParam(0.0, "a2", "a2");
+	AddDoubleParam(0.0, "kappa", "kappa");
+	AddDoubleParam(0.0, "t0", "t0");
+	AddDoubleParam(0.0, "Dmax", "Dmax");
+	AddDoubleParam(0.0, "beta_s", "beta_s");
+	AddDoubleParam(0.0, "gamma_max", "gamma_max");
 }
 
 //=============================================================================
