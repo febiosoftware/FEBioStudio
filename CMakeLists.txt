@@ -324,6 +324,7 @@ target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)
+target_link_libraries(FEBioStudio vfw32.lib)
 elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -Wl,--end-group)

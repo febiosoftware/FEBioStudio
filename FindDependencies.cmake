@@ -7,12 +7,12 @@ mark_as_advanced(Qt5Charts_DIR Qt5Core_DIR Qt5Gui_DIR Qt5Network_DIR Qt5OpenGL_D
 
 # MMG
 if(WIN32)
-	find_path(MMG_INC mmg\mmg3d\libmmg3d.h
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+	find_path(MMG_INC mmg/mmg3d/libmmg3d.h
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/mmg*" "src" "build" "build/include"
         DOC "MMG include directory")
 	find_library(MMG_LIB mmg3d 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "MMG library path")
 else()
@@ -48,11 +48,11 @@ endif()
 # TETGEN
 if(WIN32)
 	find_path(TETGEN_INC tetgen.h
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
         DOC "TetGen include directory")
 	find_library(TETGEN_LIB tet 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "TetGen library path")
 else()
@@ -87,11 +87,11 @@ endif()
 # NETGEN
 if(WIN32)
 	find_path(NETGEN_INC include/occgeom.hpp
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "netgen/include" "build" "build/include"
         DOC "Netgen include directory")
 	find_library(NETGEN_LIB nglib 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "Netgen library path")
 else()
@@ -126,11 +126,11 @@ endif()
 # OpenCascade
 if(WIN32)
 	find_path(OCCT_INC gp_Pnt.hxx
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "/opencascade" "include/opencascade" "opencascade/include/opencascade" "build/opencascade" "build/include/opencascade"
         DOC "OpenCascade include directory")
 	find_library(OCCT_LIB TKernel 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "OpenCascade library path")
 else()
@@ -165,11 +165,11 @@ endif()
 # LibSSH
 if(WIN32)
 	find_path(SSH_INC libssh/libssh.h
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "libssh/include" "build" "build/include"
         DOC "LibSSH include directory")
 	find_library(SSH_LIB ssh 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "LibSSH library path")
 else()
@@ -204,11 +204,11 @@ endif()
 # OpenSSL
 if(WIN32)
 	find_path(SSL_INC openssl/aes.h
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "openssl/include" "build" "build/include"
         DOC "OpenSSL include directory")
 	find_library(SSL_LIB ssl 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "OpenSSL library path")
 elseif(APPLE)
@@ -253,11 +253,11 @@ endif()
 # QuaZip
 if(WIN32)
 	find_path(QUAZIP_INC quazip.h
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "/quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
         DOC "QuaZip include directory")
 	find_library(QUAZIP_LIB quazip5 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "QuaZip library path")
 elseif(APPLE)
@@ -301,11 +301,11 @@ endif()
 # SQLite
 if(WIN32)
 	find_path(SQLITE_INC sqlite3.h
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "sqlite/include" "build" "build/include"
         DOC "SQLite include directory")
 	find_library(SQLITE_LIB sqlite3 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "SQLite library path")
 else()
@@ -340,11 +340,11 @@ endif()
 # FFMPEG
 if(WIN32)
 	find_path(FFMPEG_INC libavformat/libavformat.h
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
         DOC "FFMPEG include directory")
 	find_library(FFMPEG_LIB avformat 
-        PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "FFMPEG library path")
 elseif(APPLE)
