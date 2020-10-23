@@ -24,9 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#ifdef WIN32
-#include <glew.h>
-#endif
 #include "stdafx.h"
 #include <QApplication>
 #include <QFileDialog>
@@ -104,11 +101,6 @@ int main(int argc, char* argv[])
     pixmap.setDevicePixelRatio(pixelRatio);
 	QSplashScreen splash(pixmap);
 	splash.show();
-
-	// initialize glew
-#ifdef WIN32
-	glewInit();
-#endif
 
 	// see if the reset flag was defined
 	// the reset flag can be used to restore the UI, i.e.
