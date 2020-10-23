@@ -51,9 +51,9 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
         DOC "TetGen include directory")
-	find_library(TETGEN_LIB tet 
+	find_library(TETGEN_LIB tetgen 
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
+        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "x64/Release" "x64/Debug"
 		DOC "TetGen library path")
 else()
 	find_path(TETGEN_INC tetgen.h
