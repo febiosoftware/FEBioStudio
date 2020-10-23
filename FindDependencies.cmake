@@ -47,41 +47,41 @@ endif()
 
 # TETGEN
 if(WIN32)
-	find_path(TET_INC tetgen.h
+	find_path(TETGEN_INC tetgen.h
         PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
         DOC "TetGen include directory")
-	find_library(TET_LIB tet 
+	find_library(TETGEN_LIB tet 
         PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "TetGen library path")
 else()
-	find_path(TET_INC tetgen.h
+	find_path(TETGEN_INC tetgen.h
         PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
 		DOC "TetGen include directory")
-	find_library(TET_LIB tet 
+	find_library(TETGEN_LIB tet 
         PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "build" "cbuild" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "TetGen library path")
 endif()
 
-if(TET_LIB)
-    get_filename_component(TET_TEMP ${TET_LIB} DIRECTORY)
-    set(TET_LIB_DIR ${TET_TEMP} CACHE PATH "Path to the TET lib directory (e.g. /opt/tetgen/lib)")
-    unset(TET_TEMP)
-    unset(TET_LIB CACHE)
+if(TETGEN_LIB)
+    get_filename_component(TETGEN_TEMP ${TETGEN_LIB} DIRECTORY)
+    set(TETGEN_LIB_DIR ${TETGEN_TEMP} CACHE PATH "Path to the TET lib directory (e.g. /opt/tetgen/lib)")
+    unset(TETGEN_TEMP)
+    unset(TETGEN_LIB CACHE)
 else()
-	set(TET_LIB_DIR "TET_LIB_DIR-NOTFOUND" CACHE PATH "Path to the TET lib directory (e.g. /opt/tetgen/lib)")
-    unset(TET_LIB CACHE)
+	set(TETGEN_LIB_DIR "TETGEN_LIB_DIR-NOTFOUND" CACHE PATH "Path to the TET lib directory (e.g. /opt/tetgen/lib)")
+    unset(TETGEN_LIB CACHE)
 endif()
 
-if(TET_INC AND TET_LIB_DIR)		
+if(TETGEN_INC AND TETGEN_LIB_DIR)		
 	option(USE_TETGEN "Required for adaptive remeshing" ON)
-    mark_as_advanced(TET_INC TET_LIB_DIR)
+    mark_as_advanced(TETGEN_INC TETGEN_LIB_DIR)
 else()
 	option(USE_TETGEN "Required for adaptive remeshing" OFF)
-    mark_as_advanced(CLEAR TET_INC TET_LIB_DIR)
+    mark_as_advanced(CLEAR TETGEN_INC TETGEN_LIB_DIR)
 endif()
 
 # NETGEN
@@ -125,41 +125,41 @@ endif()
 
 # OpenCascade
 if(WIN32)
-	find_path(OCC_INC gp_Pnt.hxx
+	find_path(OCCT_INC gp_Pnt.hxx
         PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "/opencascade" "include/opencascade" "opencascade/include/opencascade" "build/opencascade" "build/include/opencascade"
         DOC "OpenCascade include directory")
-	find_library(OCC_LIB TKernel 
+	find_library(OCCT_LIB TKernel 
         PATHS C::/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "OpenCascade library path")
 else()
-	find_path(OCC_INC gp_Pnt.hxx
+	find_path(OCCT_INC gp_Pnt.hxx
         PATHS /opt/opencascade $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "/opencascade" "include/opencascade" "opencascade/include/opencascade" "build/opencascade" "build/include/opencascade"
 		DOC "OpenCascade include directory")
-	find_library(OCC_LIB TKernel 
+	find_library(OCCT_LIB TKernel 
         PATHS /opt/opencascade $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "opencascade/lib" "build" "build/lib" "Release" "Debug"
 		DOC "OpenCascade library path")
 endif()
 
-if(OCC_LIB)
-    get_filename_component(OCC_TEMP ${OCC_LIB} DIRECTORY)
-    set(OCC_LIB_DIR ${OCC_TEMP} CACHE PATH "Path to the OpenCascade lib directory (e.g. /opt/opencascade/lib)")
-    unset(OCC_TEMP)
-    unset(OCC_LIB CACHE)
+if(OCCT_LIB)
+    get_filename_component(OCCT_TEMP ${OCCT_LIB} DIRECTORY)
+    set(OCCT_LIB_DIR ${OCCT_TEMP} CACHE PATH "Path to the OpenCascade lib directory (e.g. /opt/opencascade/lib)")
+    unset(OCCT_TEMP)
+    unset(OCCT_LIB CACHE)
 else()
-	set(OCC_LIB_DIR "OCC_LIB_DIR-NOTFOUND" CACHE PATH "Path to the OpenCascade lib directory (e.g. /opt/opencascade/lib)")
-    unset(OCC_LIB CACHE)
+	set(OCCT_LIB_DIR "OCCT_LIB_DIR-NOTFOUND" CACHE PATH "Path to the OpenCascade lib directory (e.g. /opt/opencascade/lib)")
+    unset(OCCT_LIB CACHE)
 endif()
 
-if(OCC_INC AND OCC_LIB_DIR)		
-	option(USE_OCC "Required for importing and meshing CAD objects." ON)
-    mark_as_advanced(OCC_INC OCC_LIB_DIR)
+if(OCCT_INC AND OCCT_LIB_DIR)		
+	option(USE_OCCT "Required for importing and meshing CAD objects." ON)
+    mark_as_advanced(OCCT_INC OCCT_LIB_DIR)
 else()
-	option(USE_OCC "Required for importing and meshing CAD objects." OFF)
-    mark_as_advanced(CLEAR OCC_INC OCC_LIB_DIR)
+	option(USE_OCCT "Required for importing and meshing CAD objects." OFF)
+    mark_as_advanced(CLEAR OCCT_INC OCCT_LIB_DIR)
 endif()
 
 # LibSSH
