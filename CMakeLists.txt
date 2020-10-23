@@ -32,8 +32,8 @@ if(NOT Qt5_DIR)
     
     if(WIN32)
         find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_ROOT}/* ${Qt5_ROOT}/*/* C:/Qt/ C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-			PATH_SUFFIXES "clang_64/lib"
+			PATHS ${Qt5_ROOT}/* ${Qt5_ROOT}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+			PATH_SUFFIXES "msvc2015_64/lib" "msvc2017_64/lib" "msvc2019_64/lib"
 			DOC "Qt5 CMake Directory")
     elseif(APPLE)
 		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
