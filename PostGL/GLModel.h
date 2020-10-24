@@ -89,6 +89,7 @@ public:
 		int n0, n1;
 		int mat;
 		int	elem;
+		float tex[2];
 	};
 
 	void AddEdge(const EDGE& e) { m_Edge.push_back(e); }
@@ -321,6 +322,10 @@ public: // Selection
 	void SelectAllEdges();
 	void SelectAllFaces();
 	void SelectAllElements();
+
+public:
+	int DiscreteEdges();
+	GLEdge::EDGE& DiscreteEdge(int i);
 
 public:
 	// edits plots

@@ -587,9 +587,11 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 					vec3d r0 = mesh.Node(edge.n0).r;
 					vec3d r1 = mesh.Node(edge.n1).r;
 
-					glTexCoord1d(pe->m_tex);
-					glVertex3d(r0.x, r0.y, r0.z);
-					glVertex3d(r1.x, r1.y, r1.z);
+					float t0 = edge.tex[0];
+					float t1 = edge.tex[1];
+
+					glTexCoord1d(t0); glVertex3d(r0.x, r0.y, r0.z);
+					glTexCoord1d(t1); glVertex3d(r1.x, r1.y, r1.z);
 				}
 			}
 		}
@@ -3094,6 +3096,7 @@ void CGLModel::UpdateEdge()
 			edge.n0 = el.m_node[0];
 			edge.n1 = el.m_node[1];
 			edge.mat = el.m_MatID;
+			edge.tex[0] = edge.tex[1] = 0.f;
 			edge.elem = i;
 			m_edge.AddEdge(edge);
 		}
@@ -3284,4 +3287,14 @@ void CGLModel::UpdateColorMaps()
 		CGLPlot* p = m_pPlot[i];
 		p->UpdateTexture();
 	}
+}
+
+int CGLModel::DiscreteEdges()
+{
+	return (int)m_edge.Edges();
+}
+
+GLEdge::EDGE& CGLModel::DiscreteEdge(int i)
+{
+	return m_edge.Edge(i);
 }
