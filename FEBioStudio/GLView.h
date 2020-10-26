@@ -276,7 +276,7 @@ public:
 	void SetDefaultMaterial() { SetMatProps(0); }
 
 	// get device pixel ration
-	int GetDevicePixelRatio() { return m_dpr; }
+	int GetDevicePixelRatio();
 
 	// set the GL material properties based on the material
 	void SetMatProps(GMaterial* pm);
@@ -372,10 +372,7 @@ private:
 	Snap_Mode GetSnapMode() { return m_nsnap; }
 
 	// convert from device pixel to physical pixel
-	QPoint DeviceToPhysical(int x, int y)
-	{
-		return QPoint(m_dpr*x, m_viewport[3] - m_dpr*y);
-	}
+	QPoint DeviceToPhysical(int x, int y);
 
 	void TagBackfacingFaces(FEMeshBase& mesh);
 	void TagBackfacingNodes(FEMeshBase& mesh);
@@ -512,7 +509,6 @@ public:
 private:
 	VIEW_SETTINGS	m_view;
 	int	m_viewport[4];		//!< store viewport coordinates
-	int m_dpr;				//!< device pixel ratio for converting from physical to device-independent pixels
 
 	CGLCamera	m_oldCam;
 

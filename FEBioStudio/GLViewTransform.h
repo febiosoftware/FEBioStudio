@@ -53,5 +53,4 @@ private:
 	matrix		m_PM, m_PMi;
 	int			m_vp[4];
 	vector<double>	c, q;
-	int			m_dpr;
 };
