@@ -928,8 +928,18 @@ void CModelPropsPanel::addSelection(int n)
 			}
 			else
 			{
-				list<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+				// for groups, make sure that they are on the same mesh
+				FEGroup* pg_prv = dynamic_cast<FEGroup*>(pl);
+				FEGroup* pg_new = dynamic_cast<FEGroup*>(pg);
+				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
+				}
+				else
+				{
+					list<int> l = pg->CopyItems();
+					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+				}
 			}
 			SetSelection(0, pmc->GetItemList());
 			delete pg;
@@ -964,8 +974,18 @@ void CModelPropsPanel::addSelection(int n)
 			}
 			else
 			{
-				list<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+				// for groups, make sure that they are on the same mesh
+				FEGroup* pg_prv = dynamic_cast<FEGroup*>(pl);
+				FEGroup* pg_new = dynamic_cast<FEGroup*>(pg);
+				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
+				}
+				else
+				{
+					list<int> l = pg->CopyItems();
+					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+				}
 			}
 			SetSelection(n, pl);
 			delete pg;
@@ -1000,8 +1020,18 @@ void CModelPropsPanel::addSelection(int n)
 			}
 			else
 			{
-				list<int> l = pg->CopyItems();
-				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+				// for groups, make sure that they are on the same mesh
+				FEGroup* pg_prv = dynamic_cast<FEGroup*>(pl);
+				FEGroup* pg_new = dynamic_cast<FEGroup*>(pg);
+				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
+				}
+				else
+				{
+					list<int> l = pg->CopyItems();
+					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+				}
 			}
 			SetSelection(0, psolo->GetItemList());
 			delete pg;
@@ -1055,8 +1085,18 @@ void CModelPropsPanel::addSelection(int n)
 		}
 		else
 		{
-			list<int> l = pg->CopyItems();
-			pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+			// for groups, make sure that they are on the same mesh
+			FEGroup* pg_prv = dynamic_cast<FEGroup*>(pl);
+			FEGroup* pg_new = dynamic_cast<FEGroup*>(pg);
+			if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
+			{
+				QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
+			}
+			else
+			{
+				list<int> l = pg->CopyItems();
+				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
+			}
 		}
 		SetSelection(0, pl);
 
