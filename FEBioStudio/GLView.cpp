@@ -384,9 +384,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 //	fmt.setSamples(4);
 //	setFormat(fmt);
 
-	// storethe device pixel ratio
-	m_dpr = pwnd->devicePixelRatio();
-
 	setFocusPolicy(Qt::StrongFocus);
 	setAttribute(Qt::WA_AcceptTouchEvents, true);
 
@@ -1346,7 +1343,8 @@ QImage CGLView::CaptureScreen()
 		QImage im = grabFramebuffer();
 
 		// crop based on the capture frame
-		return im.copy(m_dpr*m_pframe->x(), m_dpr*m_pframe->y(), m_dpr*m_pframe->w(), m_dpr*m_pframe->h());
+		int dpr = m_pWnd->devicePixelRatio();
+		return im.copy(dpr*m_pframe->x(), dpr*m_pframe->y(), dpr*m_pframe->w(), dpr*m_pframe->h());
 	}
 	else return grabFramebuffer();
 }
@@ -1362,8 +1360,9 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* video, GLenum fmt)
 	int cy = height();
 	if (m_pframe && m_pframe->visible())
 	{
-		cx = m_dpr*m_pframe->w();
-		cy = m_dpr*m_pframe->h();
+		int dpr = m_pWnd->devicePixelRatio();
+		cx = dpr*m_pframe->w();
+		cy = dpr*m_pframe->h();
 	}
 
 	// get the frame rate
@@ -1903,6 +1902,16 @@ void CGLView::Render3DCursor(const vec3d& r, double R)
 	glPopMatrix();
 
 	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+// get device pixel ration
+int CGLView::GetDevicePixelRatio() { return m_pWnd->devicePixelRatio(); }
+
+QPoint CGLView::DeviceToPhysical(int x, int y)
+{
+	int dpr = m_pWnd->devicePixelRatio();
+	return QPoint(dpr*x, m_viewport[3] - dpr * y);
 }
 
 //-----------------------------------------------------------------------------
@@ -8528,8 +8537,9 @@ void CGLView::RenderTags()
 	for (int i = 0; i<nsel; ++i)
 		if (vtag[i].bvis)
 		{
+			int dpr = GetDevicePixelRatio();
             int x = vtag[i].wx;
-            int y = height()*m_dpr - vtag[i].wy;
+            int y = height()*dpr - vtag[i].wy;
 			painter.setPen(Qt::black);
 
 			painter.drawText(x + 3, y - 2, vtag[i].sztag);

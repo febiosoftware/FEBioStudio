@@ -242,6 +242,25 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 				}
 			}
 		}
+
+		for (int i = 0; i < po->DiscreteEdges(); ++i)
+		{
+			Post::GLEdge::EDGE& de = po->DiscreteEdge(i);
+			for (int j = 0; j < 2; ++j)
+			{
+				int nj = (j == 0 ? de.n0 : de.n1);
+				FENode& node = pm->Node(nj);
+				NODEDATA& d0 = s0.m_NODE[nj];
+				NODEDATA& d1 = s1.m_NODE[nj];
+				if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
+				{
+					float f0 = d0.m_val;
+					float f1 = d1.m_val;
+					float f = f0 + (f1 - f0)*w;
+					de.tex[j] = f;
+				}
+			}
+		}
 	}
 
 	if (m_bDispNodeVals == false)
@@ -265,6 +284,25 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 					if (f > fmax) fmax = f;
 					if (f < fmin) fmin = f;
 				}
+			}
+		}
+
+		for (int i = 0; i < po->DiscreteEdges(); ++i)
+		{
+			Post::GLEdge::EDGE& de = po->DiscreteEdge(i);
+			int ni = de.elem;
+			if (ni >= 0)
+			{
+				ELEMDATA& d0 = s0.m_ELEM[ni];
+				ELEMDATA& d1 = s1.m_ELEM[ni];
+				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
+				{
+					float f0 = d0.m_val;
+					float f1 = d1.m_val;
+					float f = f0 + (f1 - f0)*w;
+					de.tex[0] = de.tex[1] = f;
+				}
+				else de.tex[0] = de.tex[1] = 0.f;
 			}
 		}
 	}
@@ -365,6 +403,18 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			el.Activate();
 		}
 		else el.Deactivate();
+	}
+
+	// update discrete element texture coordinates
+	for (int i = 0; i < po->DiscreteEdges(); ++i)
+	{
+		Post::GLEdge::EDGE& de = po->DiscreteEdge(i);
+		for (int j = 0; j < 2; ++j)
+		{
+			float f = de.tex[j];
+			float w = (f - min)*dti;
+			de.tex[j] = w;
+		}
 	}
 
 	// update the internal surfaces of the model
