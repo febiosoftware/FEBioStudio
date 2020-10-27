@@ -335,31 +335,32 @@ bool FEBioFormat3::ParseMeshSection(XMLTag& tag)
 bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 {
 	// make sure the section is not empty
-	if (tag.isleaf()) return true;
-
-	FEBioModel::Part* part = DefaultPart();
-
-	// loop over all sections
-	++tag;
-	do
+	if (!tag.isleaf())
 	{
-		if ((tag == "SolidDomain") || (tag == "ShellDomain"))
-		{
-			const char* szname = tag.AttributeValue("name");
-			const char* szmat = tag.AttributeValue("mat", true);
-			if (szmat)
-			{
-				FEBioModel& febio = GetFEBioModel();
-				int matID = febio.GetMaterialIndex(szmat);
-				if (matID == -1) matID = atoi(szmat) - 1;
+		FEBioModel::Part* part = DefaultPart();
 
-				FEBioModel::Domain* dom = part->FindDomain(szname);
-				if (dom) dom->SetMatID(matID);
-			}
-		}
-		else ParseUnknownTag(tag);
+		// loop over all sections
 		++tag;
-	} while (!tag.isend());
+		do
+		{
+			if ((tag == "SolidDomain") || (tag == "ShellDomain"))
+			{
+				const char* szname = tag.AttributeValue("name");
+				const char* szmat = tag.AttributeValue("mat", true);
+				if (szmat)
+				{
+					FEBioModel& febio = GetFEBioModel();
+					int matID = febio.GetMaterialIndex(szmat);
+					if (matID == -1) matID = atoi(szmat) - 1;
+
+					FEBioModel::Domain* dom = part->FindDomain(szname);
+					if (dom) dom->SetMatID(matID);
+				}
+			}
+			else ParseUnknownTag(tag);
+			++tag;
+		} while (!tag.isend());
+	}
 
 	// don't forget to update the mesh
 	GetFEBioModel().UpdateGeometry();
