@@ -162,6 +162,21 @@ public:
 		}
 	}
 
+	void insert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
+		{
+			std::string query("INSERT INTO ");
+			query += tableName;
+			query += "(" + columns[0];
+			for(int index = 1; index < columns.size(); index++)
+			{
+				query += ", " + columns[index];
+			}
+			query += ") ";
+			query += "VALUES " + values;
+
+			execute(query);
+		}
+
 	void upsert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
 	{
 		std::string query("INSERT INTO ");
@@ -480,20 +495,6 @@ void CLocalDatabaseHandler::init(std::string schema)
 
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
 {
-	// No longer necessary
-//	// Empty tables for which upsert would not work
-//	std::string query("DELETE FROM projectTags");
-//	imp->execute(query);
-//	query = "DELETE FROM projectPubs";
-//	imp->execute(query);
-//	query = "DELETE FROM fileTags";
-//	imp->execute(query);
-//	query = "DELETE FROM publicationAuthors";
-//	imp->execute(query);
-
-
-	// TODO: We no longer need to upsert at all since we're deleting the database each time
-	// simplify code.
 	QJsonArray jsonProjects = jsonDoc.array();
 	for(QJsonValueRef jsonProject : jsonProjects)
 	{
@@ -514,7 +515,7 @@ void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
 
 		std::string values = projectObj.value("values").toString().toStdString();
 
-		imp->upsert(name, columnNames, values, conflict);
+		imp->insert(name, columnNames, values, conflict);
 	}
 
 	imp->checkLocalCopies();
