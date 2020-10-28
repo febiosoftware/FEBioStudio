@@ -143,10 +143,12 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Abaqus\AbaqusExport.cpp" />
     <ClCompile Include="..\..\Abaqus\AbaqusImport.cpp" />
     <ClCompile Include="..\..\Abaqus\AbaqusModel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Abaqus\AbaqusExport.h" />
     <ClInclude Include="..\..\Abaqus\AbaqusImport.h" />
     <ClInclude Include="..\..\Abaqus\AbaqusModel.h" />
   </ItemGroup>

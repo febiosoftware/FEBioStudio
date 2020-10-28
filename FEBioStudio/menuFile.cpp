@@ -76,6 +76,7 @@ SOFTWARE.*/
 #include <MeshIO/PRVObjectExport.h>
 #include <MeshIO/BREPImport.h>
 #include <MeshIO/STEPImport.h>
+#include <Abaqus/AbaqusExport.h>
 #include "DlgImportAbaqus.h"
 #include "DlgRAWImport.h"
 #include "DlgImportCOMSOL.h"
@@ -676,6 +677,7 @@ void CMainWindow::ExportGeometry()
 	QStringList filters;
 	filters << "PreView Object File (*.pvo)";
 	filters << "LSDYNA keyword (*.k)";
+	filters << "Abaqus files (*.inp)";
 	filters << "HyperSurface files (*.surf)";
 	filters << "BYU files (*.byu)";
 	filters << "STL-ASCII files (*.stl)";
@@ -688,6 +690,7 @@ void CMainWindow::ExportGeometry()
 	const char* szext[] = {
 		".pvo",
 		".k",
+		".inp",
 		".surf",
 		".byu",
 		".stl",
@@ -756,53 +759,60 @@ void CMainWindow::ExportGeometry()
 				FELSDYNAexport writer(fem);
 				writer.SetOptions(ops);
 				if (!writer.Write(szfile))
-					QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to LSDYNA keyword file."));
+					QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to LSDYNA keyword file."));
 			}
 		}
 		break;
 		case 2:
 		{
-			FEHypersurfaceExport writer(fem);
+			FEAbaqusExport writer(fem);
 			if (!writer.Write(szfile))
-				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to surf file."));
+				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to Abaqus file."));
 		}
 		break;
-		case 3: // BYU files
+		case 3:
+		{
+			FEHypersurfaceExport writer(fem);
+			if (!writer.Write(szfile))
+				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to surf file."));
+		}
+		break;
+		case 4: // BYU files
 		{
 			FEBYUExport writer(fem);
 			if (!writer.Write(szfile))
-				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to byu file."));
+				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to byu file."));
 		}
 		break;
-		case 4: // STL files
+		case 5: // STL files
 		{
 			FESTLExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to STL file:\n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
 		}
 		break;
-		case 5: // ViewPoint files
+		case 6: // ViewPoint files
 		{
 			FEViewpointExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to viewpoint file."));
 		}
 		break;
-		case 6:
+		case 7:
 		{
 			FEMeshExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to Mesh file."));
 		}
 		break;
-		case 7:
+		case 8:
 		{
 			FETetGenExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to TetGen file."));
 		}
 		break;
-		case 8: // VTK files
+		case 9: // VTK files
 		{
 			CDlgVTKExport dlg(this);
 			if (dlg.exec())

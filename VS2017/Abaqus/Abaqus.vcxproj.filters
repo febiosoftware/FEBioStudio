@@ -24,12 +24,18 @@
     <ClCompile Include="..\..\Abaqus\AbaqusModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Abaqus\AbaqusExport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Abaqus\AbaqusImport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Abaqus\AbaqusModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Abaqus\AbaqusExport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
