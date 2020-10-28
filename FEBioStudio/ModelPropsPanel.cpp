@@ -812,6 +812,7 @@ void CModelPropsPanel::SetSelection(GMaterial* pmat)
 	::CSelectionBox* sel = ui->selectionPanel(0);
 	sel->showNameType(false);
 	sel->enableAllButtons(true);
+	sel->setCollapsed(false);
 
 	// set the type
 	sel->setType("Domains");
@@ -839,6 +840,7 @@ void CModelPropsPanel::SetSelection(GDiscreteElementSet* set)
 	sel->enableAddButton(false);
 	sel->enableRemoveButton(false);
 	sel->enableDeleteButton(false);
+	sel->setCollapsed(true);
 
 	// set the type
 	sel->setType("Discrete Elements");
