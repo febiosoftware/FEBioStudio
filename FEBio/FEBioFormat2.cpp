@@ -31,9 +31,11 @@ SOFTWARE.*/
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FEMKernel.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/GModel.h>
+#include <sstream>
 
 FEBioFormat2::FEBioFormat2(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {
@@ -1811,6 +1813,7 @@ void FEBioFormat2::ParseContact(FEStep *pstep, XMLTag &tag)
 	else if (atype == "sliding-biphasic-solute") ParseContactSolute     (pstep, tag);
 	else if (atype == "sliding-multiphasic"    ) ParseContactMultiphasic(pstep, tag);
 	else if (atype == "tied"                   ) ParseContactTied       (pstep, tag);
+	else if (atype == "tied-facet-on-facet"    ) ParseContactTiedF2F    (pstep, tag);
 	else if (atype == "tied-elastic"           ) ParseContactTiedElastic(pstep, tag);
 	else if (atype == "sticky"                 ) ParseContactSticky     (pstep, tag);
 	else if (atype == "periodic boundary"      ) ParseContactPeriodic   (pstep, tag);
@@ -1917,6 +1920,35 @@ FESurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 		FESurface *psurf = part.BuildFESurface(surf);
 		return psurf;
 	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat2::ParseConstraint(FEStep* pstep, XMLTag& tag)
+{
+	FEModel* fem = &GetFEModel();
+
+	const char* sztype = tag.AttributeValue("type");
+
+	FEModelConstraint* plc = fecore_new<FEModelConstraint>(fem, FE_CONSTRAINT, sztype);
+	if (plc == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+	string name;
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname == nullptr)
+	{
+		int n = CountConstraints<FEModelConstraint>(*fem);
+		name = Namify(sztype);
+		stringstream ss; 
+		ss << name << n + 1;
+		name = ss.str();
+	}
+	else name = szname;
+
+	plc->SetName(name);
+
+	ReadParameters(*plc, tag);
+
+	pstep->AddConstraint(plc);
 }
 
 //-----------------------------------------------------------------------------
@@ -2124,6 +2156,28 @@ void FEBioFormat2::ParseContactTied(FEStep *pstep, XMLTag &tag)
 	int nid = CountInterfaces<FETiedInterface>(fem) +1;
 	char szname[256];
 	sprintf(szname, "TiedInterface%02d", nid);
+	const char* szn = tag.AttributeValue("name", true);
+	if (szn) strcpy(szname, szn);
+	pi->SetName(szname);
+
+	ParseContactParams(tag, pi, nid);
+
+	// add interface to step
+	pstep->AddComponent(pi);
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat2::ParseContactTiedF2F(FEStep* pstep, XMLTag& tag)
+{
+	FEModel& fem = GetFEModel();
+
+	// create new interface
+	FEF2FTiedInterface* pi = new FEF2FTiedInterface(&fem, pstep->GetID());
+
+	// set name
+	int nid = CountInterfaces<FEF2FTiedInterface>(fem) + 1;
+	char szname[256];
+	sprintf(szname, "TiedF2FInterface%02d", nid);
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
@@ -2733,6 +2787,7 @@ bool FEBioFormat2::ParseConstraintSection(XMLTag& tag)
 			else if (strcmp(sztype, "rigid angular damper"   ) == 0) ParseConnector(pstep, tag, 8);
 			else if (strcmp(sztype, "rigid contractile force") == 0) ParseConnector(pstep, tag, 9);
 			else if (strcmp(sztype, "rigid joint"            ) == 0) ParseContactJoint(pstep, tag);
+			else if (strcmp(sztype, "warp-image"             ) == 0) ParseConstraint(pstep, tag);
 			else ParseUnknownTag(tag);
 		}
 		else ParseUnknownTag(tag);

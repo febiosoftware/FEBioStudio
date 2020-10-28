@@ -62,6 +62,19 @@ FSObject* FEMKernel::Create(FEModel* fem, int superID, int classID)
 	return 0;
 }
 
+FSObject* FEMKernel::Create(FEModel* fem, int superID, const char* szTypeString)
+{
+	for (size_t i = 0; i < m_Class.size(); ++i)
+	{
+		FEClassFactory* fac = m_Class[i];
+		if ((fac->GetSuperID() == superID) && (strcmp(fac->GetTypeStr(), szTypeString) == 0))
+		{
+			return fac->Create(fem);
+		}
+	}
+	return 0;
+}
+
 void FEMKernel::RegisterClass(FEClassFactory* fac)
 {
 	m_Class.push_back(fac);

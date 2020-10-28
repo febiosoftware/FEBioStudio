@@ -41,6 +41,7 @@ public:
 	static FEMKernel* Instance();
 
 	FSObject* Create(FEModel* fem, int superID, int classID);
+	FSObject* Create(FEModel* fem, int superID, const char* szTypeString);
 
 	void RegisterClass(FEClassFactory* fac);
 
@@ -62,4 +63,9 @@ private:
 template <class T> T* fecore_new(FEModel* fem, int superID, int classID)
 {
 	return dynamic_cast<T*>(FEMKernel::Instance()->Create(fem, superID, classID));
+}
+
+template <class T> T* fecore_new(FEModel* fem, int superID, const char* sztype)
+{
+	return dynamic_cast<T*>(FEMKernel::Instance()->Create(fem, superID, sztype));
 }

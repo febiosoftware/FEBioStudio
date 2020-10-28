@@ -65,7 +65,8 @@ private:
 	void ParseContactSolute     (FEStep* pstep, XMLTag& tag);
 	void ParseContactMultiphasic(FEStep* pstep, XMLTag& tag);
 	void ParseContactTiedMultiphasic(FEStep* pstep, XMLTag& tag);
-	void ParseContactTied(FEStep* pstep, XMLTag& tag);
+	void ParseContactTied       (FEStep* pstep, XMLTag& tag);
+	void ParseContactTiedF2F    (FEStep* pstep, XMLTag& tag);
 	void ParseContactTiedElastic(FEStep* pstep, XMLTag& tag);
 	void ParseContactSticky     (FEStep* pstep, XMLTag& tag);
 	void ParseContactPeriodic   (FEStep* pstep, XMLTag& tag);
@@ -77,6 +78,7 @@ private:
 	void ParseLinearConstraint  (FEStep* pstep, XMLTag& tag);
 	FESurface* ParseContactSurface(XMLTag& tag, int format = 0);
 	void ParseContactParams(XMLTag& tag, FEPairedInterface* pc, int nid);
+	void ParseConstraint(FEStep* pstep, XMLTag& tag);
 
 	// constraint input functions
 	void ParseRigidConstraint      (FEStep* pstep, XMLTag& tag);

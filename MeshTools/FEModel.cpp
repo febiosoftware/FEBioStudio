@@ -54,7 +54,7 @@ std::string Namify(const char* sz)
 	bool cap = true;
 	while (*c)
 	{
-		if (isspace(*c)) cap = true;
+		if (isspace(*c) || (*c=='-')) cap = true;
 		else
 		{
 			if (cap)
