@@ -5,6 +5,50 @@
 *****************************************************************
 
 ================================================================
+ version 1.1
+ release date: 11/2/2020
+-----------------------------------------------------------------
+
+* The FEBio 3.0 format is now the default format used when running FEBio models from within FEBio Studio. (Users can still select other formats.)
+* Support was added for reading tied-facet-to-facet contact in febio2 files. 
+* Abaqus export feature was added. This feature currently only supports writing the model as a single part, and only outputs nodes and elements. It only exports linear and quadratic solid elements. 
+* A bug was fixed in febio3 file reader when MeshDomains section is empty. 
+* Fixed an issue when using FEBioStudio on multiple monitors that have different dpi settings.
+* A bug was fixed when a user tries to assign a mesh selection from another mesh that the model component was already assigned to. 
+* A bug was fixed when rendering color gradients on discrete elements. 
+* An issue was fixed when reloading plot files while graphs were open. This led sometimes to FEBio Studio crashing. 
+* Several issues with visualizing 3D image data in post mode were fixed. 
+* A context menu option was added to the model tree to allow the user to delete all discrete elements. 
+* For colormaps and tensor plots the min/max range options can be set independently. 
+* A couple bugs were fixed related to importing and exporting rigid constraints to febio3 format. 
+* Support for biphasic-FSI material was added. 
+* Support for xplt format 3 was added, which writes rigid bodies and rigid constraints to plot file. 
+* An option was added to set a limit to the path length of a particle flow plot. 
+* The PRLig material was moved to the "elastic" category (it was incorrectly listed under the "uncoupled elastic" category). 
+* The Scalar Field tool can now be used to generate element data, which can then be assigned to a material parameter. 
+* The selection box now supports collapsed view, which is the default for mesh item lists.
+* A feature was added to grow and shrink selections. Use menu "Edit\More Selection Options\Grow (Shrink) Selection", or the corresponding shortcut keys. 
+* An issue with the layout spacing of the description on the repo panel was fixed. 
+* An option was added to the Abaqus importer to ignore the solid sections. 
+* A few feature was added that allows a part selection to be converted to the corresponding element selection. 
+* The febio3 exporter now writes named element selections. 
+* Local repo file structure will now mimic file structure on repo panel. 
+* A bug was fixed that was causing a segmentation fault when users tried to edit vec2i parameters. 
+* Some issues were fixed reading MeshData section from febio 2.5 and 3.0 files.
+* Added support for the "smooth_aug" parameter to the sliding-biphasic contact.
+* Some issues were fixed with "target" rigid forces. 
+* The "show material fiber" options is now stored in settings file. 
+* The option to show fibers on hidden parts was expanded to include hidden elements. 
+* Default material fiber orientation was changed to be consistent with FEBio. 
+* The model tree now shows the type string next to each item. 
+* An issue was fixed with processing mesh edges that was causing slow performance for models with a large number of edges. 
+* The timeline panel was added which shows a time line of the states in the post model. 
+* Support was added fir defining load curves for contact parameters (fixes issue #14). 
+* A fix was added when reading febio2 files that converts the old "theta" and "phi" parameters of some fiber materials to the new format. 
+* New materials were added: reactive plasticity, reactive plastic damage, DC octahedral shear streain. 
+* Ported the old PostView save options to FEBio Studio. 
+
+================================================================
  version 1.0.3
  release date: 10/7/2020
 -----------------------------------------------------------------
