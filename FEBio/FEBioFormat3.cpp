@@ -1406,7 +1406,7 @@ void FEBioFormat3::ParseBCRigid(FEStep* pstep, XMLTag& tag)
 	// read node set
 	const char* szset = tag.AttributeValue("node_set");
 	FEBioModel& febio = GetFEBioModel();
-	FENodeSet* pg = febio.BuildFENodeSet(szset);
+	FEItemListBuilder* pg = febio.BuildItemList(szset);
 
 	GMaterial* pmat = 0;
 	++tag;
@@ -1522,7 +1522,7 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	XMLAtt& aset = tag.Attribute("node_set");
 
 	// create the node set
-	FENodeSet* pg = febio.BuildFENodeSet(aset.cvalue());
+	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 	char szname[256];
 	sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem)+1);
@@ -1716,7 +1716,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			if (strcmp(sztype, "init_dof") == 0)
 			{
 				const char* szset = tag.AttributeValue("node_set");
-				FENodeSet* pg = febio.BuildFENodeSet(szset);
+				FEItemListBuilder* pg = febio.BuildItemList(szset);
 				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
 				double val = 0.0;
@@ -1829,7 +1829,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 			else if (strcmp(sztype, "velocity") == 0)
 			{
 				const char* szset = tag.AttributeValue("node_set");
-				FENodeSet* pg = febio.BuildFENodeSet(szset);
+				FEItemListBuilder* pg = febio.BuildItemList(szset);
 				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
 				vec3d v(0, 0, 0);
