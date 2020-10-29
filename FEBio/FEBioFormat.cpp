@@ -826,10 +826,10 @@ void FixUncoupledMaterial(FEMaterial* mat)
 }
 
 //-----------------------------------------------------------------------------
-FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
+FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int classId)
 {
 	// create a material
-	FEMaterial* pm = FEMaterialFactory::Create(szmat);
+	FEMaterial* pm = FEMaterialFactory::Create(szmat, classId);
 	if (pm == 0) 
 	{
 		// HACK: a little hack to read in the "EFD neo-Hookean2" materials of the old datamap plugin. 
@@ -928,13 +928,18 @@ FEMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat)
 						const char* sztype = tag.AttributeValue("type", true);
 						if (sztype == 0) sztype = tag.Name();
 
-						FEMaterial* pms = ParseMaterial(tag, sztype);
+						const char* sztag = tag.Name();
+						FEMaterialProperty* pmc = pm->FindProperty(sztag);
+
+						int classId = -1;
+						if (pmc) classId = pmc->GetClassID();
+
+						FEMaterial* pms = ParseMaterial(tag, sztype, classId);
 						if (pms)
 						{
 							if (szname) pms->SetName(szbuf);
 
 							szname = tag.Name();
-							FEMaterialProperty* pmc = pm->FindProperty(szname);
 							if (pmc) pmc->AddMaterial(pms);
 						}
 					}

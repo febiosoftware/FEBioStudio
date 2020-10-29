@@ -76,7 +76,7 @@ protected:
 	bool ParseLogfileSection (XMLTag& tag);
 
 	// material section helper functions
-	FEMaterial* ParseMaterial(XMLTag& tag, const char* szmat);
+	FEMaterial* ParseMaterial(XMLTag& tag, const char* szmat, int classId = -1);
 	FEMaterial* ParseRigidBody(XMLTag& tag);
 	void ParseFiberMaterial(FEOldFiberMaterial& fiber, XMLTag& tag);
 	FEMaterial* ParseTransIsoMR    (FEMaterial* pm, XMLTag& tag);

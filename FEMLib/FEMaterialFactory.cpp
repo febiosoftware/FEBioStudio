@@ -74,12 +74,29 @@ FEMatDescriptor* FEMaterialFactory::Find(int nid)
 	return 0;
 }
 
-FEMatDescriptor* FEMaterialFactory::Find(const char* szname)
+FEMatDescriptor* FEMaterialFactory::Find(const char* szname, int classId)
 {
 	list<FEMatDescriptor*>::iterator pd = m_Desc.begin();
 	while (pd != m_Desc.end())
 	{
-		if (strcmp((*pd)->GetTypeString(), szname) == 0) return (*pd);
+		if (strcmp((*pd)->GetTypeString(), szname) == 0)
+		{
+			int pid = (*pd)->GetClassID();
+
+			// if we don't care about classID, return the first match
+			if (classId == -1) return (*pd);
+
+			// There is a difference between class Id's less than 0xFFFF
+			// and larger so we need to handle those differently. 
+			if (classId <= 0x0000FFFF)
+			{
+				if ((pid&0xFFFF)&classId) return (*pd);
+			}
+			else
+			{
+				if (pid == classId) return (*pd);
+			}
+		}
 		++pd;
 	}
 
@@ -104,10 +121,10 @@ FEMaterial* FEMaterialFactory::Create(int nid)
 	return (pd?pd->Create():0);
 }
 
-FEMaterial* FEMaterialFactory::Create(const char *szname)
+FEMaterial* FEMaterialFactory::Create(const char *szname, int classId)
 {
 	assert(m_pFac);
-	FEMatDescriptor* pd = m_pFac->Find(szname);
+	FEMatDescriptor* pd = m_pFac->Find(szname, classId);
 	return (pd?pd->Create():0);
 }
 

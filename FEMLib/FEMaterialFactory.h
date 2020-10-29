@@ -100,7 +100,7 @@ public:
 	static FEMaterial* Create(int nid);
 
 	// create a material from its name
-	static FEMaterial* Create(const char* szname);
+	static FEMaterial* Create(const char* szname, int classId = -1);
 
 	// return the type string of the material
 	static const char* TypeStr(FEMaterial* pm);
@@ -119,7 +119,7 @@ public:
 
 public:
 	FEMatDescriptor* Find(int nid);
-	FEMatDescriptor* Find(const char* szname);
+	FEMatDescriptor* Find(const char* szname, int superClassId = -1);
 	FEMatDescriptor* AtIndex(int index);
 
 private:
