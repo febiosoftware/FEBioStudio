@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <QDialog>
 #include <string>
 #include <vector>
+#include <MathLib/math3d.h>
 
 class CMainWindow;
 class QModelIndex;
@@ -112,16 +113,21 @@ public:
 
 	int getNewFormat();
 
+	double GetScaleFactor();
+	vec3d  GetVecScaleFactor();
+
 public:
 	int	m_nflt;
-
-	double	m_scale;
 
 	double	m_theta;
 	int		m_iters;
 
 	int		m_nop;
 	int		m_ndata;
+
+private:
+	double	m_scale[9];	// scale factors
+	int		m_nsc;		// scale components
 
 private:
 	Ui::CDlgFilter* ui;

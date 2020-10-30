@@ -391,6 +391,173 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 }
 
 //-----------------------------------------------------------------------------
+bool Post::DataScaleVec3(FEPostModel& fem, int nfield, vec3d scale)
+{
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+
+	vec3f fscale = to_vec3f(scale);
+
+	// loop over all states
+	int NN = mesh.Nodes();
+	int ndata = FIELD_CODE(nfield);
+	for (int i = 0; i < fem.GetStates(); ++i)
+	{
+		FEState& s = *fem.GetState(i);
+		FEMeshData& d = s.m_Data[ndata];
+		Data_Type type = d.GetType();
+		Data_Format fmt = d.GetFormat();
+		if (IS_NODE_FIELD(nfield))
+		{
+			switch (type)
+			{
+			case DATA_VEC3F:
+			{
+				FENodeData<vec3f>* pv = dynamic_cast<FENodeData<vec3f>*>(&d);
+				for (int n = 0; n < NN; ++n) 
+				{ 
+					vec3f& v = (*pv)[n]; 
+					v.x *= fscale.x; 
+					v.y *= fscale.y;
+					v.z *= fscale.z;
+				}
+			}
+			break;
+			default:
+				break;
+			}
+		}
+		else if (IS_ELEM_FIELD(nfield))
+		{
+			switch (type)
+			{
+			case DATA_VEC3F:
+			{
+				if (fmt == DATA_NODE)
+				{
+					FEElementData<vec3f, DATA_NODE>* pf = dynamic_cast<FEElementData<vec3f, DATA_NODE>*>(&d);
+					int N = pf->size();
+					for (int n = 0; n < N; ++n)
+					{
+						vec3f& v = (*pf)[n];
+						v.x *= fscale.x;
+						v.y *= fscale.y;
+						v.z *= fscale.z;
+					}
+				}
+				else if (fmt == DATA_ITEM)
+				{
+					FEElementData<vec3f, DATA_ITEM>* pf = dynamic_cast<FEElementData<vec3f, DATA_ITEM>*>(&d);
+					int N = pf->size();
+					for (int n = 0; n < N; ++n)
+					{
+						vec3f& v = (*pf)[n];
+						v.x *= fscale.x;
+						v.y *= fscale.y;
+						v.z *= fscale.z;
+					}
+				}
+				else if (fmt == DATA_COMP)
+				{
+					FEElementData<vec3f, DATA_COMP>* pf = dynamic_cast<FEElementData<vec3f, DATA_COMP>*>(&d);
+					int N = pf->size();
+					for (int n = 0; n < N; ++n)
+					{
+						vec3f& v = (*pf)[n];
+						v.x *= fscale.x;
+						v.y *= fscale.y;
+						v.z *= fscale.z;
+					}
+				}
+				else if (fmt == DATA_REGION)
+				{
+					FEElementData<vec3f, DATA_REGION>* pf = dynamic_cast<FEElementData<vec3f, DATA_REGION>*>(&d);
+					int N = pf->size();
+					for (int n = 0; n < N; ++n)
+					{
+						vec3f& v = (*pf)[n];
+						v.x *= fscale.x;
+						v.y *= fscale.y;
+						v.z *= fscale.z;
+					}
+				}
+			}
+			break;
+			default:
+				return false;
+				break;
+			}
+		}
+		else if (IS_FACE_FIELD(nfield))
+		{
+			switch (type)
+			{
+			case DATA_VEC3F:
+			{
+				if (fmt == DATA_NODE)
+				{
+					FEFaceData<vec3f, DATA_NODE>* pf = dynamic_cast<FEFaceData<vec3f, DATA_NODE>*>(&d);
+					int N = pf->size();
+					for (int n = 0; n < N; ++n)
+					{
+						vec3f& v = (*pf)[n];
+						v.x *= fscale.x;
+						v.y *= fscale.y;
+						v.z *= fscale.z;
+					}
+				}
+				else if (fmt == DATA_ITEM)
+				{
+					FEFaceData<vec3f, DATA_ITEM>* pf = dynamic_cast<FEFaceData<vec3f, DATA_ITEM>*>(&d);
+					int N = pf->size();
+					for (int n = 0; n < N; ++n)
+					{
+						vec3f& v = (*pf)[n];
+						v.x *= fscale.x;
+						v.y *= fscale.y;
+						v.z *= fscale.z;
+					}
+				}
+				else if (fmt == DATA_COMP)
+				{
+					FEFaceData<vec3f, DATA_COMP>* pf = dynamic_cast<FEFaceData<vec3f, DATA_COMP>*>(&d);
+					int N = pf->size();
+					for (int n = 0; n < N; ++n)
+					{
+						vec3f& v = (*pf)[n];
+						v.x *= fscale.x;
+						v.y *= fscale.y;
+						v.z *= fscale.z;
+					}
+				}
+				else if (fmt == DATA_REGION)
+				{
+					FEFaceData<vec3f, DATA_REGION>* pf = dynamic_cast<FEFaceData<vec3f, DATA_REGION>*>(&d);
+					int N = pf->size();
+					for (int n = 0; n < N; ++n)
+					{
+						vec3f& v = (*pf)[n];
+						v.x *= fscale.x;
+						v.y *= fscale.y;
+						v.z *= fscale.z;
+					}
+				}
+			}
+			break;
+			default:
+				return false;
+				break;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 // Apply a smoothing step operation on data
 bool DataSmoothStep(FEPostModel& fem, int nfield, double theta)
 {

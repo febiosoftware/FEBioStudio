@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <string>
+#include <MathLib/math3d.h>
 
 namespace Post {
 
@@ -38,6 +39,7 @@ class FEPostModel;
 //-----------------------------------------------------------------------------
 // Scale data by facor
 bool DataScale(FEPostModel& fem, int nfield, double scale);
+bool DataScaleVec3(FEPostModel& fem, int nfield, vec3d scale);
 
 //-----------------------------------------------------------------------------
 // Apply a smoothing operation on data

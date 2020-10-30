@@ -86,6 +86,9 @@ public:
 	//! number of components
 	int components(Data_Tensor_Type ntype);
 
+	//! number of actual data components
+	int dataComponents(Data_Tensor_Type ntype);
+
 	//! return the name of a component
 	std::string componentName(int ncomp, Data_Tensor_Type ntype);
 

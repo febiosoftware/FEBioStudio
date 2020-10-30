@@ -127,6 +127,56 @@ int FEDataField::components(Data_Tensor_Type ntype)
 	return 0;
 }
 
+int FEDataField::dataComponents(Data_Tensor_Type ntype)
+{
+	if (ntype == DATA_SCALAR)
+	{
+		switch (m_ntype)
+		{
+		case DATA_FLOAT: return 1; break;
+		case DATA_VEC3F: return 3; break;
+		case DATA_MAT3F: return 9; break;
+		case DATA_MAT3D: return 9; break;
+		case DATA_MAT3FS: return 6; break;
+		case DATA_MAT3FD: return 3; break;
+		case DATA_TENS4FS: return 21; break;
+		case DATA_ARRAY: return GetArraySize(); break;
+		case DATA_ARRAY_VEC3F: return GetArraySize() * 3; break;
+		}
+	}
+	else if (ntype == DATA_VECTOR)
+	{
+		switch (m_ntype)
+		{
+		case DATA_FLOAT: return 0; break;
+		case DATA_VEC3F: return 1; break;
+		case DATA_MAT3F: return 3; break;
+		case DATA_MAT3D: return 3; break;
+		case DATA_MAT3FS: return 3; break;
+		case DATA_MAT3FD: return 0; break;
+		case DATA_TENS4FS: return 0; break;
+		case DATA_ARRAY: return 0; break;
+		case DATA_ARRAY_VEC3F: return GetArraySize(); break;
+		}
+	}
+	else if (ntype == DATA_TENSOR2)
+	{
+		switch (m_ntype)
+		{
+		case DATA_FLOAT: return 0; break;
+		case DATA_VEC3F: return 0; break;
+		case DATA_MAT3F: return 1; break;
+		case DATA_MAT3D: return 1; break;
+		case DATA_MAT3FS: return 1; break;
+		case DATA_MAT3FD: return 1; break;
+		case DATA_TENS4FS: return 0; break;
+		case DATA_ARRAY: return 0; break;
+		case DATA_ARRAY_VEC3F: return 0; break;
+		}
+	}
+	return 0;
+}
+
 std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 {
 	const std::string& name = GetName();

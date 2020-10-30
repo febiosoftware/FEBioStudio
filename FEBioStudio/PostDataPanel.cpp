@@ -525,6 +525,7 @@ void CDlgAddDataFile::onBrowse()
 class Ui::CDlgFilter
 {
 public:
+	QLabel*		src;
 	QLineEdit*	name;
 
 	QComboBox* pselect;
@@ -547,6 +548,11 @@ public:
 public:
 	void setupUi(QDialog* parent)
 	{
+		// the source field
+		QHBoxLayout* lsrc = new QHBoxLayout;
+		lsrc->addWidget(new QLabel("Source:"));
+		lsrc->addWidget(src = new QLabel);
+
 		// new name field
 		QHBoxLayout* lname = new QHBoxLayout;
 		lname->addWidget(new QLabel("Name:"));
@@ -571,13 +577,14 @@ public:
 		ph->addWidget(pselect);
 
 		QVBoxLayout* pvl = new QVBoxLayout;
+		pvl->addLayout(lsrc);
 		pvl->addLayout(lname);
 		pvl->addLayout(ph);
 
 		// scale filter
 		QWidget* scalePage = new QWidget;
 		QFormLayout* pform = new QFormLayout;
-		pform->addRow("scale:", pscale = new QLineEdit); pscale->setValidator(new QDoubleValidator(-1e99, 1e99, 6));
+		pform->addRow("scale:", pscale = new QLineEdit);
 		scalePage->setLayout(pform);
 
 		// smooth filter
@@ -659,6 +666,11 @@ void CDlgFilter::setDataOperands(const std::vector<QString>& opNames)
 
 void CDlgFilter::setDataField(Post::FEDataField* pdf)
 {
+	ui->src->setText(QString::fromStdString(pdf->GetName()));
+
+	m_nsc = pdf->dataComponents(Post::DATA_SCALAR);
+	for (int i = 0; i < 9; ++i) m_scale[i] = 1.0;
+
 	ui->comp->clear();
 	int n = pdf->components(Post::DATA_SCALAR);
 	for (int i = 0; i<n; ++i)
@@ -693,11 +705,52 @@ int CDlgFilter::getNewFormat()
 	return ui->conv->currentData().toInt();
 }
 
+double CDlgFilter::GetScaleFactor() { return m_scale[0]; }
+vec3d  CDlgFilter::GetVecScaleFactor() { return vec3d(m_scale[0], m_scale[1], m_scale[2]); }
+
+int processScale(std::string& s, double* a, int maxa)
+{
+	int m = 0;
+	const char* sz = s.c_str();
+	const char* c = sz;
+	while (c && (*c))
+	{
+		if (*c++ == ',')
+		{
+			a[m++] = atof(sz);
+			sz = c;
+		}
+		if (m >= maxa) return -1;
+	}
+	if (sz) a[m++] = atof(sz);
+	if (m > maxa) return -1;
+
+	return m;
+}
+
 void CDlgFilter::accept()
 {
 	m_nflt = ui->pselect->currentIndex();
 
-	m_scale = ui->pscale->text().toDouble();
+	if (m_nflt == 0)
+	{
+		std::string s = ui->pscale->text().toStdString();
+		int m = processScale(s, m_scale, 9);
+		if (m <= 0)
+		{
+			QMessageBox::critical(this, "Data Filter", "Invalid scale factor");
+			return;
+		}
+		if (m == 1)
+		{
+			for (int i = 1; i < 9; ++i) m_scale[i] = m_scale[0];
+		}
+		else if (m != m_nsc)
+		{
+			QMessageBox::critical(this, "Data Filter", "Invalid scale factor");
+			return;
+		}
+	}
 
 	m_theta = ui->ptheta->text().toDouble();
 	m_iters = ui->piters->text().toInt();
@@ -997,7 +1050,10 @@ void CPostDataPanel::on_AddFilter_triggered()
 				case 0:
 				{
 					newData = fem.CreateCachedCopy(pdf, sname.c_str());
-					bret = DataScale(fem, newData->GetFieldID(), dlg.m_scale);
+					if (pdf->Type() == Post::DATA_VEC3F)
+						bret = DataScaleVec3(fem, newData->GetFieldID(), dlg.GetVecScaleFactor());
+					else
+						bret = DataScale(fem, newData->GetFieldID(), dlg.GetScaleFactor());
 				}
 				break;
 				case 1:
