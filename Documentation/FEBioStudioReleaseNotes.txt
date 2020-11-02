@@ -21,7 +21,6 @@
 * A context menu option was added to the model tree to allow the user to delete all discrete elements. 
 * For colormaps and tensor plots the min/max range options can be set independently. 
 * A couple bugs were fixed related to importing and exporting rigid constraints to febio3 format. 
-* Support for biphasic-FSI material was added. 
 * Support for xplt format 3 was added, which writes rigid bodies and rigid constraints to plot file. 
 * An option was added to set a limit to the path length of a particle flow plot. 
 * The PRLig material was moved to the "elastic" category (it was incorrectly listed under the "uncoupled elastic" category). 
@@ -47,6 +46,8 @@
 * A fix was added when reading febio2 files that converts the old "theta" and "phi" parameters of some fiber materials to the new format. 
 * New materials were added: reactive plasticity, reactive plastic damage, DC octahedral shear streain. 
 * Ported the old PostView save options to FEBio Studio. 
+* Users can now set displacement scale factor for x,y,z independently. 
+* The scale filter applied to vector fields now allows users to set the scale factor for x,y,z independently. 
 
 ================================================================
  version 1.0.3
