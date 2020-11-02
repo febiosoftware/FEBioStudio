@@ -33,13 +33,13 @@ using namespace Post;
 CGLDisplacementMap::CGLDisplacementMap(CGLModel* po) : CGLDataMap(po)
 {
 	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
-	AddDoubleParam(1.0, "Scale factor");
+	AddVecParam(vec3d(1,1,1), "Scale factor");
 
 	char szname[128] = { 0 };
 	sprintf(szname, "Displacement Map");
 	SetName(szname);
 
-	m_scl = 1.f;
+	m_scl = vec3d(1,1,1);
 	UpdateData(false);
 }
 
@@ -58,8 +58,8 @@ bool CGLDisplacementMap::UpdateData(bool bsave)
 			bupdate = true;
 		}
 
-		float scl = GetFloatValue(SCALE);
-		if (scl != m_scl)
+		vec3d scl = GetVecValue(SCALE);
+		if (!(scl == m_scl))
 		{
 			m_scl = scl;
 			bupdate = true;
@@ -71,7 +71,7 @@ bool CGLDisplacementMap::UpdateData(bool bsave)
 	{
 		FEPostModel* pfem = GetModel()->GetFEModel();
 		if (pfem) SetIntValue(DATA_FIELD, pfem->GetDisplacementField());
-		SetFloatValue(SCALE, m_scl);
+		SetVecValue(SCALE, m_scl);
 	}
 
 	return false;
@@ -218,11 +218,15 @@ void CGLDisplacementMap::UpdateNodes()
 	// get the reference state
 	Post::FERefState& ref = *po->GetFEModel()->GetState(0)->m_ref;
 
+	vec3d s = m_scl;
+
 	for (int i = 0; i < pm->Nodes(); ++i)
 	{
 		FENode& node = pm->Node(i);
 		vec3d r0 = ref.m_Node[i].m_rt;
-		node.r = r0 + m_du[i] * m_scl;
+		node.r.x = r0.x + m_du[i].x * m_scl.x;
+		node.r.y = r0.y + m_du[i].y * m_scl.y;
+		node.r.z = r0.z + m_du[i].z * m_scl.z;
 	}
 
 	// update the normals

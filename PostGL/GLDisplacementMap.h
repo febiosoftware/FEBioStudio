@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLDataMap.h"
+#include <MathLib/math3d.h>
 #include <vector>
 
 namespace Post {
@@ -44,8 +45,8 @@ public:
 
 	void UpdateState(int ntime, bool breset = false);
 
-	float GetScale() { return m_scl; }
-	void SetScale(float f) { m_scl = f; }
+	vec3d GetScale() { return m_scl; }
+	void SetScale(vec3d f) { m_scl = f; }
 
 public:
 	bool UpdateData(bool bsave = true) override;
@@ -53,7 +54,7 @@ public:
 	void UpdateNodes();
 
 public:
-	float				m_scl;		//!< displacement scale factor
+	vec3d				m_scl;		//!< displacement scale factor
 	std::vector<vec3f>	m_du;		//!< nodal displacements
 	std::vector<int>	m_ntag;
 };
