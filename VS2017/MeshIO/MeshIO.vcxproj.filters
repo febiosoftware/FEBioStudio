@@ -21,9 +21,6 @@
     <ClCompile Include="..\..\MeshIO\BREPImport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MeshIO\FEBinarySTLimport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\MeshIO\FEBYUExport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -105,9 +102,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshIO\BREPImport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\MeshIO\FEBinarySTLimport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshIO\FEBYUExport.h">

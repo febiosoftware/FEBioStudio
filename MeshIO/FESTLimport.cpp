@@ -68,13 +68,49 @@ bool FESTLimport::Load(const char* szfile)
 {
 	FEModel& fem = m_prj.GetFEModel();
 	m_pfem = &fem;
+
+	// try to read ascii STL
+	if (read_ascii(szfile) == false)
+	{
+		// try to read binary STL
+		if (read_binary(szfile) == false)
+		{
+			return false;
+		}
+	}
+
+	// build the nodes
+	GObject* po = build_mesh();
+
+//	static int nc = 1;
+//	char sz[256];
+//	sprintf(sz, "STL-Object%02d", nc++);
+//	po->SetName(sz);
+	const char* szname = strrchr(szfile, '/');
+	if (szname == nullptr)
+	{
+		szname = strrchr(szfile, '\\');
+		if (szname == nullptr) szname = szfile; else szname++;
+	}
+	else szname++;
+	po->SetName(szname);
+
+	// add the object to the model
+	m_pfem->GetModel().AddObject(po);
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool FESTLimport::read_ascii(const char* szfile)
+{
 	m_nline = 0;
 
 	// try to open the file
 	if (Open(szfile, "rt") == false) return errf("Failed opening file %s.", szfile);
 
 	// read the first line
-	char szline[256] = {0};
+	char szline[256] = { 0 };
 	if (read_line(szline, "solid ") == false) return errf("First line must be solid definition.");
 
 	// clear the list
@@ -89,7 +125,7 @@ bool FESTLimport::Load(const char* szfile)
 		if (read_line(szline, "facet normal") == false)
 		{
 			// check for the endsolid tag
-			if (strncmp(szline, "endsolid", 8) == 0) break; 
+			if (strncmp(szline, "endsolid", 8) == 0) break;
 			else return errf("Error encountered at line %d", m_nline);
 		}
 
@@ -98,15 +134,17 @@ bool FESTLimport::Load(const char* szfile)
 
 		// read the vertex data
 		float x, y, z;
-		for (int i=0; i<3; ++i)
-		{
-			if (read_line(szline, "vertex ") == false) return errf("Error encountered at line %d", m_nline);
-			sscanf(szline, "vertex %g%g%g", &x, &y, &z);
+		if (read_line(szline, "vertex ") == false) return errf("Error encountered at line %d", m_nline);
+		sscanf(szline, "vertex %g%g%g", &x, &y, &z);
+		face.v1[0] = x;	face.v1[1] = y; face.v1[2] = z;
 
-			face.r[i].x = x;
-			face.r[i].y = y;
-			face.r[i].z = z;
-		}
+		if (read_line(szline, "vertex ") == false) return errf("Error encountered at line %d", m_nline);
+		sscanf(szline, "vertex %g%g%g", &x, &y, &z);
+		face.v2[0] = x;	face.v2[1] = y; face.v2[2] = z;
+
+		if (read_line(szline, "vertex ") == false) return errf("Error encountered at line %d", m_nline);
+		sscanf(szline, "vertex %g%g%g", &x, &y, &z);
+		face.v3[0] = x;	face.v3[1] = y; face.v3[2] = z;
 
 		// read the endloop tag
 		if (read_line(szline, "endloop") == false) return errf("Error encountered at line %d", m_nline);
@@ -116,21 +154,69 @@ bool FESTLimport::Load(const char* szfile)
 
 		// add the facet to the list
 		m_Face.push_back(face);
-	}
-	while (1);
+	} while (1);
 
 	// close the file
 	Close();
 
-	// build the nodes
-	build_mesh();
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// read a line from the input file
+bool FESTLimport::read_facet(FESTLimport::FACET& f)
+{
+	unsigned short att;
+	if (fread(f.norm, sizeof(float), 3, m_fp) != 3) return false;
+	if (fread(f.v1, sizeof(float), 3, m_fp) != 3) return false;
+	if (fread(f.v2, sizeof(float), 3, m_fp) != 3) return false;
+	if (fread(f.v3, sizeof(float), 3, m_fp) != 3) return false;
+	if (fread(&att, sizeof(att), 1, m_fp) != 1) return false;
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Load an STL model
+bool FESTLimport::read_binary(const char* szfile)
+{
+	FEModel& fem = m_prj.GetFEModel();
+	m_pfem = &fem;
+
+	// try to open the file
+	if (Open(szfile, "rb") == false) return errf("Failed opening file %s.", szfile);
+
+	// read the header
+	char szbuf[80] = { 0 };
+	if (fread(szbuf, 80, 1, m_fp) != 1) return errf("Failed reading header.");
+
+	// clear the list
+	m_Face.clear();
+
+	// read the number of triangles
+	int numtri = 0;
+	fread(&numtri, sizeof(int), 1, m_fp);
+	if (numtri <= 0) return errf("Invalid number of triangles.");
+
+	// read all the triangles
+	FACET face;
+	for (int i = 0; i < numtri; ++i)
+	{
+		// read the facet line
+		if (read_facet(face) == false) return errf("Error encountered reading triangle data.");
+
+		// add the facet to the list
+		m_Face.push_back(face);
+	}
+
+	// close the file
+	Close();
 
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 // Build the FE model
-void FESTLimport::build_mesh()
+GObject* FESTLimport::build_mesh()
 {
 	int i;
 
@@ -171,7 +257,9 @@ void FESTLimport::build_mesh()
 	for (i=0; i<NF; ++i, ++pf)
 	{
 		FACET& f = *pf;
-		for (int j=0; j<3; ++j) f.n[j] = find_node(f.r[j]);
+		f.n[0] = find_node(vec3d(f.v1[0], f.v1[1], f.v1[2]));
+		f.n[1] = find_node(vec3d(f.v2[0], f.v2[1], f.v2[2]));
+		f.n[2] = find_node(vec3d(f.v3[0], f.v3[1], f.v3[2]));
 
 		// make sure all three nodes are distinct
 		int* n = f.n;
@@ -213,13 +301,7 @@ void FESTLimport::build_mesh()
 	pm->RebuildMesh();
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(pm);
 
-	static int nc = 1;
-	char sz[256];
-	sprintf(sz, "STL-Object%02d", nc++);
-	po->SetName(sz);
-
-	// add the object to the model
-	m_pfem->GetModel().AddObject(po);
+	return po;
 }
 
 //-----------------------------------------------------------------------------
@@ -262,14 +344,13 @@ int FESTLimport::find_node(vec3d& r, const double eps)
 BOX FESTLimport::BoundingBox()
 {
 	list<FACET>::iterator pf = m_Face.begin();
-	vec3d r = pf->r[0];
+	vec3d r = vec3d(pf->v1[0], pf->v1[1], pf->v1[2]);
 	BOX b(r, r);
 	for (pf = m_Face.begin(); pf != m_Face.end(); ++pf)
 	{
-		vec3d* r = pf->r;
-		b += r[0];
-		b += r[1];
-		b += r[2];
+		b += vec3d(pf->v1[0], pf->v1[1], pf->v1[2]);
+		b += vec3d(pf->v2[0], pf->v2[1], pf->v2[2]);
+		b += vec3d(pf->v3[0], pf->v3[1], pf->v3[2]);
 	}
 	return b;
 }

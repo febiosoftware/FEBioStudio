@@ -144,7 +144,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\MeshIO\BREPImport.cpp" />
-    <ClCompile Include="..\..\MeshIO\FEBinarySTLimport.cpp" />
     <ClCompile Include="..\..\MeshIO\FEBYUExport.cpp" />
     <ClCompile Include="..\..\MeshIO\FEBYUimport.cpp" />
     <ClCompile Include="..\..\MeshIO\FEDXFimport.cpp" />
@@ -174,7 +173,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshIO\BREPImport.h" />
-    <ClInclude Include="..\..\MeshIO\FEBinarySTLimport.h" />
     <ClInclude Include="..\..\MeshIO\FEBYUExport.h" />
     <ClInclude Include="..\..\MeshIO\FEBYUimport.h" />
     <ClInclude Include="..\..\MeshIO\FEDXFimport.h" />

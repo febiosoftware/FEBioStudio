@@ -54,7 +54,6 @@ SOFTWARE.*/
 #include <FEBio/FEBioImport.h>
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
-#include <MeshIO/FEBinarySTLimport.h>
 #include <MeshIO/FEBYUimport.h>
 #include <Comsol/COMSOLImport.h>
 #include <MeshIO/FEDXFimport.h>
@@ -396,22 +395,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("unv", Qt::CaseInsensitive) == 0) return new FEIDEASimport(prj);
 	if (ext.compare("nas", Qt::CaseInsensitive) == 0) return new FENASTRANimport(prj);
 	if (ext.compare("dxf", Qt::CaseInsensitive) == 0) return new FEDXFimport(prj);
-	if (ext.compare("stl", Qt::CaseInsensitive) == 0)
-	{
-		CDlgImportSTL dlg(this);
-		if (dlg.exec())
-		{
-			switch (dlg.m_nselect)
-			{
-			case 0: return new FESTLimport(prj); break;
-			case 1: return new FEBinarySTLimport(prj); break;
-			default:
-				assert(false);
-				return 0;
-			}
-		}
-		else return 0;
-	}
+	if (ext.compare("stl", Qt::CaseInsensitive) == 0) return new FESTLimport(prj);
 	if (ext.compare("hmascii", Qt::CaseInsensitive) == 0) return new FEHMASCIIimport(prj);
 	if (ext.compare("surf", Qt::CaseInsensitive) == 0) return new FEHyperSurfImport(prj);
 	if (ext.compare("msh", Qt::CaseInsensitive) == 0) return new FEGMshImport(prj);

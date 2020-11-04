@@ -37,7 +37,10 @@ class FESTLimport : public FEFileImport
 {
 	struct FACET
 	{
-		vec3d	r[3];
+		float	norm[3];
+		float	v1[3];
+		float	v2[3];
+		float	v3[3];
 		int		n[3];
 		int		nid;
 	};
@@ -72,11 +75,18 @@ public:
 protected:
 	bool read_line(char* szline, const char* sz);
 
-	void build_mesh();
+	GObject* build_mesh();
 	int find_node(vec3d& r, const double eps = 1e-14);
 	int FindBox(vec3d& r);
 
 	::BOX BoundingBox();
+
+private:
+	bool read_ascii(const char* szfile);
+	bool read_binary(const char* szfile);
+
+private:
+	bool read_facet(FACET& f);
 
 protected:
 	FEModel*		m_pfem;
