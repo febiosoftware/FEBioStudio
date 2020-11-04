@@ -307,8 +307,20 @@ void FEModel::GetVariableNames(const char* szvar, char* szbuf)
 //-----------------------------------------------------------------------------
 const char* FEModel::GetVariableName(const char* szvar, int n)
 {
-	if (strcmp(szvar, "$(Solutes)") == 0) return m_Sol[n]->GetName().c_str(); 
-	else if (strcmp(szvar, "$(SBMs)") == 0) return m_SBM[n]->GetName().c_str();
+	if (strcmp(szvar, "$(Solutes)") == 0)
+	{
+		if ((n >= 0) && (n < m_Sol.Size()))
+			return m_Sol[n]->GetName().c_str();
+		else
+			return "(invalid)";
+	}
+	else if (strcmp(szvar, "$(SBMs)") == 0)
+	{
+		if ((n >= 0) && (n < m_SBM.Size()))
+			return m_SBM[n]->GetName().c_str();
+		else
+			return "(invalid)";
+	}
 	assert(false);
 	return nullptr;
 }
