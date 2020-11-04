@@ -29,7 +29,38 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
+#include "FEBioImport.h"
 #include <string.h>
+#include <stdarg.h>
+#include <sstream>
+
+static FEBioImport* febImport = nullptr;
+
+void InitLog(FEBioImport* im)
+{
+	febImport = im;
+}
+
+void AddLogEntry(const char* sz, ...)
+{
+	if (febImport == nullptr) return;
+
+	if (sz == 0) return;
+
+	// get a pointer to the argument list
+	va_list	args;
+
+	// copy to string
+	char szlog[256] = { 0 };
+	va_start(args, sz);
+	vsprintf(szlog, sz, args);
+	va_end(args);
+
+	int l = (int)strlen(szlog);
+	if (l == 0) return;
+
+	febImport->AddLogEntry(szlog);
+}
 
 //=============================================================================
 FEBioMesh::FEBioMesh()
@@ -393,8 +424,19 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(FEBioModel::Surface& surf)
 	{
 		const vector<int>& face = surf.face(i);
 		int faceID = m_part->m_mesh.FindFace(face);
-		assert(faceID >= 0);
 		if (faceID >= 0) faceList.push_back(faceID);
+		else
+		{
+			stringstream ss;
+			ss << "Cannot find facet: ";
+			for (int j = 0; j < face.size(); ++j)
+			{
+				ss << face[j];
+				if (j != face.size() - 1) ss << ",";
+			}
+			string s = ss.str();
+			AddLogEntry(s.c_str());
+		}
 	}
 
 	// create the surface
@@ -436,8 +478,19 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 	{
 		const vector<int>& face = surface->face(i);
 		int faceID = m_part->m_mesh.FindFace(face);
-		assert(faceID >= 0);
 		if (faceID >= 0) faceList.push_back(faceID);
+		else
+		{
+			stringstream ss;
+			ss << "Cannot find facet: ";
+			for (int j = 0; j < face.size(); ++j)
+			{
+				ss << face[j] + 1;
+				if (j != face.size() - 1) ss << ",";
+			}
+			string s = ss.str();
+			AddLogEntry(s.c_str());
+		}
 	}
 
 	// create the surface

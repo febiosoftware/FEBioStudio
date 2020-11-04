@@ -134,6 +134,7 @@ bool FEBioImport::Load(const char* szfile)
 	GModel& mdl = fem.GetModel();
 
 	// create a new FEBioModel
+	InitLog(this);
 	m_febio = new FEBioModel(fem);
 
 	// loop over all child tags

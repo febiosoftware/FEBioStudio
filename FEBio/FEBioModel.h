@@ -469,3 +469,7 @@ private:
 	vector<PlotVariable>	m_plot;
 	vector<LogVariable>		m_log;
 };
+
+class FEBioImport;
+void AddLogEntry(const char* sz, ...);
+void InitLog(FEBioImport* im);

@@ -838,7 +838,21 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		{
 			if (m_fileQueue.empty())
 			{
-				QMessageBox::information(this, "FEBio Studio", errorString);
+				QStringList stringList = errorString.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+				QString err = QString("Warnings were generated while reading the file:\n%1\n\n").arg(file.m_fileName);
+
+				int n = stringList.size();
+				if (n > 10) n = 10;
+				for (int i=0; i<n; ++i)
+				{
+					err += QString("%1\n").arg(stringList[i]);
+				}
+				if (stringList.size() > n)
+				{
+					err += QString("\n(Additional warnings on Output panel)");
+				} 
+
+				QMessageBox::information(this, "FEBio Studio", err);
 			}
 			AddLogEntry("success!\n");
 			AddLogEntry("Warnings were generated:\n");
