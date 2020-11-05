@@ -204,14 +204,17 @@ void FESurfaceMesh::RebuildMesh(double smoothingAngle)
 void FESurfaceMesh::AutoPartition(double smoothingAngle)
 {
 	// auto-smooth the surface
-	AutoSmooth(smoothingAngle);
-
-	// now, assign face groupd IDs from the smoothing IDs
-	int NF = Faces();
-	for (int i = 0; i<NF; ++i)
+	if (smoothingAngle > 0.0)
 	{
-		FEFace& face = Face(i);
-		face.m_gid = face.m_sid;
+		AutoSmooth(smoothingAngle);
+
+		// now, assign face groupd IDs from the smoothing IDs
+		int NF = Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& face = Face(i);
+			face.m_gid = face.m_sid;
+		}
 	}
 
 	// -- Build edge data ---

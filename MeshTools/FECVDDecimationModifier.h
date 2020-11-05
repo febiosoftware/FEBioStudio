@@ -38,13 +38,26 @@ private:
 	class Cluster
 	{
 	public:
-		Cluster() : m_sgamma(vec3d(0,0,0)), m_srho(0.0) {}
+		Cluster() : m_sgamma(vec3d(0,0,0)), m_srho(0.0), m_val(0) {}
+		Cluster(const Cluster& c)
+		{
+			m_sgamma = c.m_sgamma;
+			m_srho = c.m_srho;
+			m_fid = c.m_fid;
+		}
+		void operator = (const Cluster& c)
+		{
+			m_sgamma = c.m_sgamma;
+			m_srho = c.m_srho;
+			m_fid = c.m_fid;
+		}
 
 		int faces() const { return (int) m_fid.size(); }
 
 	public:
 		vec3d	m_sgamma;	// sum of "gamma's"
 		double	m_srho;		// sum of "rho's"
+		int		m_val;		// valence (i.e. number of cells assigned to this cluster)
 		vector<int> m_fid; //face ids of the faces in this cluster
 		
 	};
@@ -94,7 +107,6 @@ private:
 
 public:
 	bool	m_bcvd;
-	double  m_sel_pct; // percentage of clusters in selected region
 	double	m_gradient; //gradiant for curvature
 
 private:
