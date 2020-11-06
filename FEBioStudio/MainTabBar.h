@@ -43,6 +43,7 @@ public:
 	void setActiveView(int n);
 	void addView(const std::string& name, CDocument* doc = nullptr, bool makeActive = true);
 	int findView(CDocument* doc);
+	int findView(const std::string& title);
 	CDocument* getActiveDoc();
 	CDocument* getDocument(int n);
 	void closeView(int n);

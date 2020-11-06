@@ -77,9 +77,27 @@ _RECENT_FILES_\
 </html>"
 ;
 
+//=======================================================================================
 CTextViewer::CTextViewer(CMainWindow* wnd) : QTextBrowser(wnd)
 {
 	m_wnd = wnd;
+}
+
+void CTextViewer::Close()
+{
+	setText("");
+}
+
+void CTextViewer::Refresh()
+{
+	setText("");
+
+	CTextDocument* doc = dynamic_cast<CTextDocument*>(m_wnd->GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt = doc->GetText();
+
+	setHtml(txt);
 }
 
 QString elide(const QString& s, int l)
@@ -91,12 +109,13 @@ QString elide(const QString& s, int l)
 	return s.left(3) + "..." + s.right(l - 6);
 }
 
-CWelcomePage::CWelcomePage(CMainWindow* wnd) : CTextViewer(wnd)
+//=======================================================================================
+CWelcomePage::CWelcomePage(CMainWindow* wnd) : CTextDocument(wnd)
 {
-
+	SetDocTitle("Welcome");
 }
 
-void CWelcomePage::Refresh()
+QString CWelcomePage::GetText()
 {
 	QStringList files = m_wnd->GetRecentFileList();
 
@@ -121,10 +140,5 @@ void CWelcomePage::Refresh()
 
 	page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
 
-	setHtml(page);
-}
-
-void CWelcomePage::Close()
-{
-	setText("");
+	return page;
 }

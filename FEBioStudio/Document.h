@@ -219,6 +219,16 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// Base class for text documents
+class CTextDocument : public CDocument
+{
+public:
+	CTextDocument(CMainWindow* wnd);
+
+	virtual QString GetText();
+};
+
+//-----------------------------------------------------------------------------
 // Base class for documents that require visualization
 class CGLDocument : public CDocument
 {

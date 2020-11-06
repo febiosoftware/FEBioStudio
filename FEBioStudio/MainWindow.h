@@ -289,6 +289,8 @@ private:
 
 	void SavePostDoc();
 
+	void ShowWelcomePage();
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
@@ -481,7 +483,7 @@ public slots:
 	void on_tab_currentChanged(int n);
 	void on_tab_tabCloseRequested(int n);
 
-	void on_welcome_anchorClicked(const QUrl& link);
+	void on_txtview_anchorClicked(const QUrl& link);
 
 	void on_clearProject();
 	void on_closeProject();

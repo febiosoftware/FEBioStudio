@@ -213,7 +213,7 @@ QT_MOC_LITERAL(177, 4957, 21), // "on_fontItalic_toggled"
 QT_MOC_LITERAL(178, 4979, 29), // "on_actionProperties_triggered"
 QT_MOC_LITERAL(179, 5009, 21), // "on_tab_currentChanged"
 QT_MOC_LITERAL(180, 5031, 24), // "on_tab_tabCloseRequested"
-QT_MOC_LITERAL(181, 5056, 24), // "on_welcome_anchorClicked"
+QT_MOC_LITERAL(181, 5056, 24), // "on_txtview_anchorClicked"
 QT_MOC_LITERAL(182, 5081, 4), // "link"
 QT_MOC_LITERAL(183, 5086, 15), // "on_clearProject"
 QT_MOC_LITERAL(184, 5102, 15), // "on_closeProject"
@@ -456,7 +456,7 @@ QT_MOC_LITERAL(260, 6175, 8) // "autosave"
     "checked\0on_fontItalic_toggled\0"
     "on_actionProperties_triggered\0"
     "on_tab_currentChanged\0on_tab_tabCloseRequested\0"
-    "on_welcome_anchorClicked\0link\0"
+    "on_txtview_anchorClicked\0link\0"
     "on_clearProject\0on_closeProject\0"
     "on_closeFile\0file\0on_addToProject\0"
     "OnPostObjectStateChanged\0"
@@ -1133,7 +1133,7 @@ void CMainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 168: _t->on_actionProperties_triggered(); break;
         case 169: _t->on_tab_currentChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 170: _t->on_tab_tabCloseRequested((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 171: _t->on_welcome_anchorClicked((*reinterpret_cast< const QUrl(*)>(_a[1]))); break;
+        case 171: _t->on_txtview_anchorClicked((*reinterpret_cast< const QUrl(*)>(_a[1]))); break;
         case 172: _t->on_clearProject(); break;
         case 173: _t->on_closeProject(); break;
         case 174: _t->on_closeFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;

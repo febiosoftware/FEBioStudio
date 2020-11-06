@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "MainTabBar.h"
 #include "MainWindow.h"
+#include "Document.h"
 
 CMainTabBar::CMainTabBar(CMainWindow* wnd, QWidget* parent) : QTabBar(parent)
 {
@@ -66,6 +67,16 @@ int CMainTabBar::findView(CDocument* doc)
 	for (int i = 0; i < (int)m_docs.size(); ++i)
 	{
 		if (m_docs[i] == doc) return i;
+	}
+	return -1;
+}
+
+int CMainTabBar::findView(const std::string& title)
+{
+	for (int i = 0; i < (int)m_docs.size(); ++i)
+	{
+		CDocument* doc = m_docs[i];
+		if (doc->GetDocTitle() == title) return i;
 	}
 	return -1;
 }

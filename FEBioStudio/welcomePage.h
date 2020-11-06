@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QString>
 #include <QTextBrowser>
+#include "Document.h"
 
 class CMainWindow;
 
@@ -35,16 +36,18 @@ class CTextViewer : public QTextBrowser
 public:
 	CTextViewer(CMainWindow* wnd);
 
+	void Refresh();
+
+	void Close();
+
 protected:
 	CMainWindow*	m_wnd;
 };
 
-class CWelcomePage : public CTextViewer
+class CWelcomePage : public CTextDocument
 {
 public:
 	CWelcomePage(CMainWindow* wnd);
 
-	void Refresh();
-
-	void Close();
+	QString GetText() override;
 };

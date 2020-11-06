@@ -111,7 +111,7 @@ public:
 
 	QStackedWidget*	stack;
 	CGLViewer*		glw;
-	CWelcomePage*	welcome;
+	CTextViewer*	txtViewer;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -300,11 +300,11 @@ public:
 
 		stack = new QStackedWidget;
 
-		welcome = new CWelcomePage(wnd);
-		welcome->setObjectName("welcome");
-		welcome->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+		txtViewer = new CTextViewer(wnd);
+		txtViewer->setObjectName("txtview");
+		txtViewer->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
-		stack->addWidget(welcome);
+		stack->addWidget(txtViewer);
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
@@ -1143,6 +1143,8 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+
+			txtViewer->Refresh();
 		}
 		else if (config == 1)
 		{

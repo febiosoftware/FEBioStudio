@@ -440,6 +440,20 @@ QString CDocument::ToAbsolutePath(const std::string& relativePath)
 }
 
 //==============================================================================
+// CTextDocument
+//==============================================================================
+
+CTextDocument::CTextDocument(CMainWindow* wnd) : CDocument(wnd)
+{
+
+}
+
+QString CTextDocument::GetText()
+{
+	return QString();
+}
+
+//==============================================================================
 // CGLDocument
 //==============================================================================
 

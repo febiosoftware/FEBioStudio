@@ -174,14 +174,14 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		readSettings();
 	}
 
-	// get the welcome page
-	ui->welcome->Refresh();
-
 	// allow drop events
 	setAcceptDrops(true);
 
 	// make sure the file viewer is visible
 	ui->showFileViewer();
+
+	// show the welcome page
+	ShowWelcomePage();
 
 	// update the UI configuration
 	UpdateUIConfig();
@@ -321,7 +321,7 @@ void CMainWindow::on_addToProject(const QString& file)
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_welcome_anchorClicked(const QUrl& link)
+void CMainWindow::on_txtview_anchorClicked(const QUrl& link)
 {
 	QString ref = link.toString();
 	if      (ref == "#new") on_actionNewModel_triggered();
@@ -565,7 +565,6 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
 	UpdateTitle();
-	ui->welcome->Close();
 
 	return b;
 }
@@ -694,7 +693,6 @@ bool CMainWindow::CreateNewProject(QString fileName)
 
 	if (ret) ui->addToRecentFiles(fileName);
 
-	ui->welcome->Close();
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
 
@@ -1685,19 +1683,20 @@ void CMainWindow::UpdateUIConfig()
 	{
 		Update(0, true);
 
-		CDocument* doc = GetDocument();
-		if (doc)
+		CModelDocument* modelDoc = GetModelDocument();
+		if (modelDoc)
 		{
 			// Build Mode
 			ui->setUIConfig(1);
 			ui->modelViewer->parentWidget()->raise();
+
+			RedrawGL();
 		}
 		else
 		{
 			// no open docs
 			// we need to update the welcome page since the recent
 			// file list might have changed
-			ui->welcome->Refresh();
 			ui->setUIConfig(0);
 			ui->fileViewer->parentWidget()->raise();
 		}
@@ -1715,6 +1714,8 @@ void CMainWindow::UpdateUIConfig()
 		if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(true);
 
 		ui->postPanel->parentWidget()->raise();
+
+		RedrawGL();
 	}
 }
 
@@ -1733,7 +1734,7 @@ void CMainWindow::SetActiveDocument(CDocument* doc)
 	int view = ui->tab->findView(doc);
 	if (view == -1)
 	{
-		AddView(doc->GetDocFileName(), doc);
+		AddView(doc->GetDocTitle(), doc);
 	}
 	else
 	{
@@ -1756,7 +1757,6 @@ void CMainWindow::SetActiveView(int n)
 	ui->tab->setActiveView(n);
 	GetGLView()->UpdateWidgets(false);
 	UpdateUIConfig();
-	RedrawGL();
 }
 
 //-----------------------------------------------------------------
@@ -2795,4 +2795,14 @@ QString CMainWindow::ProjectName()
 	if (projectFile.isEmpty()) return "";
 	QFileInfo fi(projectFile);
 	return fi.fileName();
+}
+
+void CMainWindow::ShowWelcomePage()
+{
+	int n = ui->tab->findView("Welcome");
+	if (n == -1)
+	{
+		AddDocument(new CWelcomePage(this));
+	}
+	else SetActiveView(n);
 }
