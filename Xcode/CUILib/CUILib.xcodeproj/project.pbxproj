@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D50EF90325477A2E00BF1481 /* moc_predefs.h in Headers */ = {isa = PBXBuildFile; fileRef = D50EF90225477A2E00BF1481 /* moc_predefs.h */; };
 		D5606C6F238DA438002B037E /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C68238DA438002B037E /* stdafx.h */; };
 		D5606C70238DA438002B037E /* ImageViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C69238DA438002B037E /* ImageViewer.h */; };
 		D5606C71238DA438002B037E /* moc_ImageViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6A238DA438002B037E /* moc_ImageViewer.cpp */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D50EF90225477A2E00BF1481 /* moc_predefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moc_predefs.h; sourceTree = "<group>"; };
 		D5606C59238DA422002B037E /* libCUILib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCUILib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5606C68238DA438002B037E /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		D5606C69238DA438002B037E /* ImageViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageViewer.h; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				D5606C69238DA438002B037E /* ImageViewer.h */,
 				D5606C6D238DA438002B037E /* moc_HistogramViewer.cpp */,
 				D5606C6A238DA438002B037E /* moc_ImageViewer.cpp */,
+				D50EF90225477A2E00BF1481 /* moc_predefs.h */,
 				D5606C68238DA438002B037E /* stdafx.h */,
 			);
 			name = CUILib;
@@ -102,6 +105,7 @@
 			files = (
 				D5606C70238DA438002B037E /* ImageViewer.h in Headers */,
 				D5606C6F238DA438002B037E /* stdafx.h in Headers */,
+				D50EF90325477A2E00BF1481 /* moc_predefs.h in Headers */,
 				D5606C72238DA438002B037E /* HistogramViewer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

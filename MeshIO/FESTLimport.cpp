@@ -257,9 +257,9 @@ GObject* FESTLimport::build_mesh()
 	for (i=0; i<NF; ++i, ++pf)
 	{
 		FACET& f = *pf;
-		f.n[0] = find_node(vec3d(f.v1[0], f.v1[1], f.v1[2]));
-		f.n[1] = find_node(vec3d(f.v2[0], f.v2[1], f.v2[2]));
-		f.n[2] = find_node(vec3d(f.v3[0], f.v3[1], f.v3[2]));
+        vec3d v1 = vec3d(f.v1[0], f.v1[1], f.v1[2]); f.n[0] = find_node(v1);
+        vec3d v2 = vec3d(f.v2[0], f.v2[1], f.v2[2]); f.n[1] = find_node(v2);
+        vec3d v3 = vec3d(f.v3[0], f.v3[1], f.v3[2]); f.n[2] = find_node(v3);
 
 		// make sure all three nodes are distinct
 		int* n = f.n;

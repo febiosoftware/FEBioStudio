@@ -11,6 +11,8 @@
 		D53292DB1E4A8159002798B3 /* AbaqusImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D53292D91E4A8159002798B3 /* AbaqusImport.h */; };
 		D5453DA5213F5A8E006CBCB8 /* AbaqusModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5453DA3213F5A8E006CBCB8 /* AbaqusModel.cpp */; };
 		D5453DA6213F5A8E006CBCB8 /* AbaqusModel.h in Headers */ = {isa = PBXBuildFile; fileRef = D5453DA4213F5A8E006CBCB8 /* AbaqusModel.h */; };
+		D56DB998255605610072414C /* AbaqusExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D56DB996255605610072414C /* AbaqusExport.h */; };
+		D56DB999255605610072414C /* AbaqusExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D56DB997255605610072414C /* AbaqusExport.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +21,8 @@
 		D53292D91E4A8159002798B3 /* AbaqusImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbaqusImport.h; sourceTree = "<group>"; };
 		D5453DA3213F5A8E006CBCB8 /* AbaqusModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbaqusModel.cpp; sourceTree = "<group>"; };
 		D5453DA4213F5A8E006CBCB8 /* AbaqusModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbaqusModel.h; sourceTree = "<group>"; };
+		D56DB996255605610072414C /* AbaqusExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbaqusExport.h; sourceTree = "<group>"; };
+		D56DB997255605610072414C /* AbaqusExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbaqusExport.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +55,8 @@
 		D53292D71E4A8159002798B3 /* Abaqus */ = {
 			isa = PBXGroup;
 			children = (
+				D56DB997255605610072414C /* AbaqusExport.cpp */,
+				D56DB996255605610072414C /* AbaqusExport.h */,
 				D53292D81E4A8159002798B3 /* AbaqusImport.cpp */,
 				D53292D91E4A8159002798B3 /* AbaqusImport.h */,
 				D5453DA3213F5A8E006CBCB8 /* AbaqusModel.cpp */,
@@ -68,6 +74,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D53292DB1E4A8159002798B3 /* AbaqusImport.h in Headers */,
+				D56DB998255605610072414C /* AbaqusExport.h in Headers */,
 				D5453DA6213F5A8E006CBCB8 /* AbaqusModel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -132,6 +139,7 @@
 			files = (
 				D5453DA5213F5A8E006CBCB8 /* AbaqusModel.cpp in Sources */,
 				D53292DA1E4A8159002798B3 /* AbaqusImport.cpp in Sources */,
+				D56DB999255605610072414C /* AbaqusExport.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
