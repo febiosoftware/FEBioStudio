@@ -111,74 +111,83 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		m_Part.push_back(g);
 	}
 
-	// create the surface mesh
-	m_surfmesh = new FESurfaceMesh;
-	m_surfmesh->SetGObject(this);
-
 	// copy the surface mesh from the original object's mesh
 	FEMeshBase* pm = po->GetEditableMesh(); assert(pm);
-	NN = pm->Nodes();
-	for (int i=0;i <NN; ++i) pm->Node(i).m_ntag = -1;
-	NF = pm->Faces();
-	for (int i=0; i<NF; ++i)
+
+	FESurfaceMesh* psm = dynamic_cast<FESurfaceMesh*>(pm);
+	if (psm)
 	{
-		FEFace& f = pm->Face(i);
-		int nf = f.Nodes();
-		for (int j=0; j<nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
+		m_surfmesh = new FESurfaceMesh(*psm);
+		m_surfmesh->SetGObject(this);
 	}
-
-	int nodes = 0;
-	for (int i=0; i<NN; ++i)
+	else
 	{
-		FENode& node = pm->Node(i);
-		if (node.m_ntag == 1) node.m_ntag = nodes++;
-	}
+		m_surfmesh = new FESurfaceMesh;
+		m_surfmesh->SetGObject(this);
 
-	// create new mesh
-	m_surfmesh->Create(nodes, 0, NF);
-
-	// copy nodes
-	for (int i=0; i<NN; ++i)
-	{
-		FENode& node = pm->Node(i);
-		if (node.m_ntag >= 0)
+		NN = pm->Nodes();
+		for (int i = 0; i < NN; ++i) pm->Node(i).m_ntag = -1;
+		NF = pm->Faces();
+		for (int i = 0; i < NF; ++i)
 		{
-			FENode& snode = m_surfmesh->Node(node.m_ntag);
-			snode = node;
+			FEFace& f = pm->Face(i);
+			int nf = f.Nodes();
+			for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
 		}
-	}
-	m_surfmesh->UpdateNodePartitions();
 
-	// copy faces
-	for (int i=0; i<NF; ++i)
-	{
-		FEFace& f = m_surfmesh->Face(i);
-		f = pm->Face(i);
-		int nf = f.Nodes();
-		for (int j=0; j<nf; ++j) f.n[j] = pm->Node(f.n[j]).m_ntag;
-	}
-	m_surfmesh->UpdateFacePartitions();
-	m_surfmesh->UpdateFaceNeighbors();
-	m_surfmesh->UpdateNormals();
-	m_surfmesh->UpdateBoundingBox();
-
-	// copy edges
-	m_surfmesh->BuildEdges();
-	for (int i=0; i<pm->Edges(); ++i)
-	{
-		FEEdge& src = pm->Edge(i);
-		int n0 = pm->Node(src.n[0]).m_ntag;
-		int n1 = pm->Node(src.n[1]).m_ntag;
-		FEEdge* pe = m_surfmesh->FindEdge(n0, n1);
-		assert(pe);
-		if (pe)
+		int nodes = 0;
+		for (int i = 0; i < NN; ++i)
 		{
-			pe->m_gid = src.m_gid;
+			FENode& node = pm->Node(i);
+			if (node.m_ntag == 1) node.m_ntag = nodes++;
 		}
+
+		// create new mesh
+		m_surfmesh->Create(nodes, 0, NF);
+
+		// copy nodes
+		for (int i = 0; i < NN; ++i)
+		{
+			FENode& node = pm->Node(i);
+			if (node.m_ntag >= 0)
+			{
+				FENode& snode = m_surfmesh->Node(node.m_ntag);
+				snode = node;
+			}
+		}
+		m_surfmesh->UpdateNodePartitions();
+
+		// copy faces
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& f = m_surfmesh->Face(i);
+			f = pm->Face(i);
+			int nf = f.Nodes();
+			for (int j = 0; j < nf; ++j) f.n[j] = pm->Node(f.n[j]).m_ntag;
+		}
+		m_surfmesh->UpdateFacePartitions();
+		m_surfmesh->UpdateFaceNeighbors();
+		m_surfmesh->UpdateNormals();
+		m_surfmesh->UpdateBoundingBox();
+
+		// copy edges
+		m_surfmesh->BuildEdges();
+		for (int i = 0; i < pm->Edges(); ++i)
+		{
+			FEEdge& src = pm->Edge(i);
+			int n0 = pm->Node(src.n[0]).m_ntag;
+			int n1 = pm->Node(src.n[1]).m_ntag;
+			FEEdge* pe = m_surfmesh->FindEdge(n0, n1);
+			assert(pe);
+			if (pe)
+			{
+				pe->m_gid = src.m_gid;
+			}
+		}
+		m_surfmesh->UpdateEdgePartitions();
+		m_surfmesh->UpdateEdgeNeighbors();
+		m_surfmesh->AutoPartitionNodes();
 	}
-	m_surfmesh->UpdateEdgePartitions();
-	m_surfmesh->UpdateEdgeNeighbors();
-	m_surfmesh->AutoPartitionNodes();
 
 	// update the object
 	Update();
@@ -234,6 +243,14 @@ void GSurfaceMeshObject::Update()
 	UpdateEdges();
 
 	BuildGMesh();
+}
+
+//-----------------------------------------------------------------------------
+// clone function
+GObject* GSurfaceMeshObject::Clone()
+{
+	GSurfaceMeshObject* po = new GSurfaceMeshObject(this);
+	return po;
 }
 
 //-----------------------------------------------------------------------------

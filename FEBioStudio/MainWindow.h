@@ -326,6 +326,8 @@ public slots:
 	void on_actionTransform_triggered();
 	void on_actionCollapseTransform_triggered();
 	void on_actionClone_triggered();
+	void on_actionCopyObject_triggered();
+	void on_actionPasteObject_triggered();
 	void on_actionCloneGrid_triggered();
 	void on_actionCloneRevolve_triggered();
 	void on_actionMerge_triggered();

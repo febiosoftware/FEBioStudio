@@ -371,7 +371,9 @@ public:
 		QAction* actionToggleVisible     = addAction("Toggle Visibility" , "actionToggleVisible"    , "toggle_visible");
 		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
 		QAction* actionCollapseTransform = addAction("Collapse Transform", "actionCollapseTransform");
-		QAction* actionClone             = addAction("Clone Object ...", "actionClone"            , "clone"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionCopyObject        = addAction("Copy Object"       , "actionCopyObject");
+		QAction* actionPasteObject       = addAction("Paste Object"      , "actionPasteObject");
 		QAction* actionCloneGrid         = addAction("Clone Grid ..."    , "actionCloneGrid"        , "clonegrid");
 		QAction* actionCloneRevolve      = addAction("Clone Revolve ..." , "actionCloneRevolve"     , "clonerevolve");
 		QAction* actionMerge             = addAction("Merge Objects ..." , "actionMerge"            , "merge");
@@ -635,6 +637,8 @@ public:
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionClone);
 		menuEdit->addAction(actionMerge);
+		menuEdit->addAction(actionCopyObject);
+		menuEdit->addAction(actionPasteObject);
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionPurge);
 

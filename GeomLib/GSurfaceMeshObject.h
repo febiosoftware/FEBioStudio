@@ -50,6 +50,9 @@ public:
 	// update data structures
 	void Update();
 
+	// clone function
+	GObject* Clone() override;
+
 	// default mesher
 	FEMesher* CreateDefaultMesher() override;
 

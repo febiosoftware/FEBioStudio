@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
+#include <sstream>
 
 void CMainWindow::on_actionUndo_triggered()
 {
@@ -713,6 +714,79 @@ void CMainWindow::on_actionClone_triggered()
 		// update windows
 		Update(0, true);
 	}
+}
+
+static GObject* copyObject = nullptr;
+
+void CMainWindow::on_actionCopyObject_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	// get the active object
+	GObject* po = doc->GetActiveObject();
+	if (po == 0)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "You need to select an object first.");
+		return;
+	}
+
+	// get the model
+	GModel& m = *doc->GetGModel();
+
+	// clone the object
+	GObject* pco = m.CloneObject(po);
+	if (pco == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Could not clone this object.");
+		return;
+	}
+
+	// copy the name
+	pco->SetName(po->GetName());
+
+	// store this object
+	copyObject = pco;
+}
+
+void CMainWindow::on_actionPasteObject_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (copyObject == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "No object to paste.");
+		return;
+	}
+
+	// get the model
+	GModel& m = *doc->GetGModel();
+
+	// we need to make sure that the object has a unique name.
+	string nameBase = copyObject->GetName();
+	string name = nameBase;
+	GObject* po = nullptr;
+	do
+	{
+		po = m.FindObject(name);
+		int n = 1;
+		if (po)
+		{
+			stringstream ss;
+			ss << nameBase << "(" << n++ << ")";
+			name = ss.str();
+		}
+	} while (po);
+	copyObject->SetName(name);
+
+	// add and select the new object
+	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
+	ui->glview->ZoomToObject(copyObject);
+	copyObject = nullptr;
+
+	// update windows
+	Update(0, true);
 }
 
 void CMainWindow::on_actionCloneGrid_triggered()
