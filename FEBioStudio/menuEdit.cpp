@@ -341,7 +341,7 @@ void CMainWindow::on_actionFind_triggered()
 
 		vector<int> items = dlg.m_item;
 
-		CGLControlBar* pb = ui->glc;
+		CGLControlBar* pb = ui->glw->glc;
 		switch (nitem)
 		{
 		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pm, items, !dlg.m_bclear)); break;
@@ -641,14 +641,16 @@ void CMainWindow::on_actionTransform_triggered()
 			r.Normalize();
 			rot = quatd(w, r)*rot;
 
-			pcmd->AddCommand(new CCmdRotateSelection(doc, rot, ui->glview->GetPivotPosition()));
+			CGLView* glview = GetGLView();
+
+			pcmd->AddCommand(new CCmdRotateSelection(doc, rot, glview->GetPivotPosition()));
 
 			// scale
 			vec3d s1(1, 0, 0);
 			vec3d s2(0, 1, 0);
 			vec3d s3(0, 0, 1);
 
-			r = ui->glview->GetPivotPosition();
+			r = glview->GetPivotPosition();
 
 			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.x*dlg.m_relScl.x / scl.x, s1, r));
 			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.y*dlg.m_relScl.y / scl.y, s2, r));
@@ -782,7 +784,7 @@ void CMainWindow::on_actionPasteObject_triggered()
 
 	// add and select the new object
 	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
-	ui->glview->ZoomToObject(copyObject);
+	GetGLView()->ZoomToObject(copyObject);
 	copyObject = nullptr;
 
 	// update windows
@@ -1078,7 +1080,7 @@ void CMainWindow::on_actionGrowSelection_triggered()
 	if (doc == nullptr) return;
 	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
 
-	VIEW_SETTINGS& vs = ui->glview->GetViewSettings();
+	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
 
 	int itemMode = doc->GetItemMode();
 	switch (itemMode)
@@ -1154,11 +1156,12 @@ void CMainWindow::on_actionScale_toggled(bool b)
 
 void CMainWindow::on_selectCoord_currentIndexChanged(int n)
 {
+	CGLView* glview = GetGLView();
 	switch (n)
 	{
-	case 0: ui->glview->SetCoordinateSystem(COORD_GLOBAL); break;
-	case 1: ui->glview->SetCoordinateSystem(COORD_LOCAL); break;
-	case 2: ui->glview->SetCoordinateSystem(COORD_SCREEN); break;
+	case 0: glview->SetCoordinateSystem(COORD_GLOBAL); break;
+	case 1: glview->SetCoordinateSystem(COORD_LOCAL); break;
+	case 2: glview->SetCoordinateSystem(COORD_SCREEN); break;
 	}
 	Update();
 }

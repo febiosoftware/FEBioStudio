@@ -66,6 +66,8 @@ void CMainWindow::on_actionRecordNew_triggered()
 
 		int nfilter = filters.indexOf(dlg.selectedNameFilter());
 
+		CGLView* glview = GetGLView();
+
 		bool bret = false;
 		CAnimation* panim = 0;
 #ifdef WIN32
@@ -73,7 +75,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 		{
 			panim = new CAVIAnimation;
 			if (ch == 0) sprintf(szfilename + l, ".avi");
-			bret = ui->glview->NewAnimation(szfilename, panim, GL_BGR_EXT);
+			bret = glview->NewAnimation(szfilename, panim, GL_BGR_EXT);
 		}
 		else if (nfilter == noff)
 #else
@@ -83,7 +85,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 #ifdef FFMPEG
 			panim = new CMPEGAnimation;
 			if (ch == 0) sprintf(szfilename + l, ".mpg");
-			bret = ui->glview->NewAnimation(szfilename, panim);
+			bret = glview->NewAnimation(szfilename, panim);
 #else
 			QMessageBox::critical(this, "FEBio Studio", "This video format is not supported in this version");
 #endif
@@ -92,26 +94,26 @@ void CMainWindow::on_actionRecordNew_triggered()
 		{
 			panim = new CGIFAnimation;
 			if (ch == 0) sprintf(szfilename + l, ".gif");
-			bret = ui->glview->NewAnimation(szfilename, panim);
+			bret = glview->NewAnimation(szfilename, panim);
 		}
 		else if (nfilter == noff + 2)
 		{
 			panim = new CPNGAnimation;
 			if (ch == 0) sprintf(szfilename + l, ".png");
-			bret = ui->glview->NewAnimation(szfilename, panim);
+			bret = glview->NewAnimation(szfilename, panim);
 
 		}
 		else if (nfilter == noff + 3)
 		{
 			panim = new CBmpAnimation;
 			if (ch == 0) sprintf(szfilename + l, ".bmp");
-			bret = ui->glview->NewAnimation(szfilename, panim);
+			bret = glview->NewAnimation(szfilename, panim);
 		}
 		else if (nfilter == noff + 4)
 		{
 			panim = new CJpgAnimation;
 			if (ch == 0) sprintf(szfilename + l, ".jpg");
-			bret = ui->glview->NewAnimation(szfilename, panim);
+			bret = glview->NewAnimation(szfilename, panim);
 		}
 
 		if (bret)
@@ -126,9 +128,9 @@ void CMainWindow::on_actionRecordNew_triggered()
 
 void CMainWindow::on_actionRecordStart_triggered()
 {
-	if (ui->glview->HasRecording())
+	if (GetGLView()->HasRecording())
 	{
-		ui->glview->StartAnimation();
+		GetGLView()->StartAnimation();
 		UpdateTitle();
 	}
 	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file before you can start recording");
@@ -136,11 +138,11 @@ void CMainWindow::on_actionRecordStart_triggered()
 
 void CMainWindow::on_actionRecordPause_triggered()
 {
-	if (ui->glview->HasRecording())
+	if (GetGLView()->HasRecording())
 	{
-		if (ui->glview->RecordingMode() == VIDEO_RECORDING)
+		if (GetGLView()->RecordingMode() == VIDEO_RECORDING)
 		{
-			ui->glview->PauseAnimation();
+			GetGLView()->PauseAnimation();
 			UpdateTitle();
 		}
 	}
@@ -149,11 +151,11 @@ void CMainWindow::on_actionRecordPause_triggered()
 
 void CMainWindow::on_actionRecordStop_triggered()
 {
-	if (ui->glview->HasRecording())
+	if (GetGLView()->HasRecording())
 	{
-		if (ui->glview->RecordingMode() != VIDEO_STOPPED)
+		if (GetGLView()->RecordingMode() != VIDEO_STOPPED)
 		{
-			ui->glview->StopAnimation();
+			GetGLView()->StopAnimation();
 			UpdateTitle();
 		}
 	}

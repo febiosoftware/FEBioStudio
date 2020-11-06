@@ -243,9 +243,10 @@ void CMainWindow::UpdateTitle()
 		title = projectName;
 	}
 
-	if (ui->glview->HasRecording())
+	CGLView* glview = GetGLView();
+	if (glview->HasRecording())
 	{
-		int nrecord = ui->glview->RecordingMode();
+		int nrecord = glview->RecordingMode();
 		switch (nrecord)
 		{
 		case VIDEO_MODE::VIDEO_PAUSED   : title += " (RECORDING PAUSED)"; break;
@@ -984,7 +985,7 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 //-----------------------------------------------------------------------------
 CGLView* CMainWindow::GetGLView()
 {
-	return ui->glview;
+	return ui->glw->glview;
 }
 
 //-----------------------------------------------------------------------------
@@ -1019,9 +1020,9 @@ void CMainWindow::CloseProject()
 //! \sa CGLView::Reset
 void CMainWindow::Reset()
 {
-//	ui->glview->Reset();
+//	GetGLView()->Reset();
 	GLHighlighter::ClearHighlights();
-	ui->glview->ZoomExtents(false);
+	GetGLView()->ZoomExtents(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1587,7 +1588,7 @@ void CMainWindow::UpdateUI()
 	m_pCmdWnd->Update();
 	if (m_pCurveEdit->visible()) m_pCurveEdit->Update();
 	 */
-	ui->glc->Update();
+	ui->glw->glc->Update();
 	RedrawGL();
 }
 
@@ -1599,7 +1600,7 @@ void CMainWindow::UpdateToolbar()
 
 	if (doc->IsValid() == false) return;
 
-	VIEW_SETTINGS& view = ui->glview->GetViewSettings();
+	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
 	if (view.m_bfiber != ui->actionShowFibers->isChecked()) ui->actionShowFibers->trigger();
 	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
@@ -1672,7 +1673,7 @@ void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 //! Updates the GLView control bar
 void CMainWindow::UpdateGLControlBar()
 {
-	ui->glc->Update();
+	ui->glw->glc->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -1751,7 +1752,7 @@ int CMainWindow::Views()
 void CMainWindow::SetActiveView(int n)
 {
 	ui->tab->setActiveView(n);
-	ui->glview->UpdateWidgets(false);
+	GetGLView()->UpdateWidgets(false);
 	UpdateUIConfig();
 	RedrawGL();
 }
@@ -1774,15 +1775,16 @@ GObject* CMainWindow::GetActiveObject()
 void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool makeActive)
 {
 	ui->tab->addView(viewName, doc, makeActive);
-	ui->glview->ZoomExtents(false);
-	ui->glview->UpdateWidgets(false);
+	CGLView* glview = GetGLView();
+	glview->ZoomExtents(false);
+	glview->UpdateWidgets(false);
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_currentChanged(int n)
 {
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->hide();
-	ui->glview->ClearCommandStack();
+	GetGLView()->ClearCommandStack();
 
 	UpdateUIConfig();
 	UpdateGLControlBar();
@@ -1883,14 +1885,14 @@ void CMainWindow::UpdatePostPanel(bool braise, Post::CGLObject* po)
 //-----------------------------------------------------------------------------
 void CMainWindow::RedrawGL()
 {
-	ui->glview->repaint();
+	GetGLView()->repaint();
 }
 
 //-----------------------------------------------------------------------------
 //! Zoom to an FSObject
 void CMainWindow::ZoomTo(const BOX& box)
 {
-	ui->glview->ZoomTo(box);
+	GetGLView()->ZoomTo(box);
 }
 
 //-----------------------------------------------------------------------------
@@ -2085,7 +2087,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		menu.addSeparator();
 
 		// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
-		VIEW_SETTINGS& vs = ui->glview->GetViewSettings();
+		VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
 		QMenu* display = new QMenu("Object transparency mode");
 		QAction* a;
 		a = display->addAction("None"); a->setCheckable(true); if (vs.m_transparencyMode == 0) a->setChecked(true);
@@ -2152,7 +2154,7 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 {
-	VIEW_SETTINGS& vs = ui->glview->GetViewSettings();
+	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
 
 	if      (ac->text() == "None"           ) vs.m_transparencyMode = 0;
 	else if (ac->text() == "Selected only"  ) vs.m_transparencyMode = 1;

@@ -68,6 +68,36 @@ SOFTWARE.*/
 
 class QProcess;
 
+class CGLViewer : public QWidget
+{
+public:
+	CGLViewer(::CMainWindow* wnd)
+	{
+		// create the layout for the central widget
+		QVBoxLayout* l = new QVBoxLayout;
+		l->setMargin(0);
+
+		// create the GL view
+		glview = new CGLView(wnd); glview->setObjectName("glview");
+
+		// create the GL control bar
+		glc = new CGLControlBar(wnd);
+		glc->setObjectName("glbar");
+		glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
+
+		// add it all to the layout
+		l->addWidget(glview);
+		l->addWidget(glc);
+		setLayout(l);
+
+		glc->hide();
+	}
+
+public:
+	CGLView*	glview;
+	CGLControlBar* glc;
+};
+
 class Ui::CMainWindow
 {
 	enum
@@ -77,10 +107,10 @@ class Ui::CMainWindow
 
 public:
 	CMainTabBar*	tab;
-	CGLView*	glview;
-	CGLControlBar* glc;
 	::CMainWindow*	m_wnd;
+
 	QStackedWidget*	stack;
+	CGLViewer*		glw;
 	CWelcomePage*	welcome;
 
 	QMenu* menuFile;
@@ -260,6 +290,11 @@ public:
         //wnd->resize(QSize(screenSize.width() * 1.0f, screenSize.height() * 1.0f));
 //		wnd->resize(800, 600);
 
+		QWidget* centralWidget = new QWidget;
+		QVBoxLayout* centralLayout = new QVBoxLayout;
+		centralLayout->setMargin(0);
+		centralLayout->setSpacing(0);
+
 		tab = new CMainTabBar(wnd);
 		tab->setObjectName("tab");
 
@@ -271,33 +306,17 @@ public:
 
 		stack->addWidget(welcome);
 
-		// create the central widget
-		QWidget* w = new QWidget;
+		// create the GL viewer widget
+		glw = new CGLViewer(wnd);
 
-		// create the layout for the central widget
-		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(0);
+		stack->addWidget(glw);
 
-		// create the GL view
-		glview = new CGLView(wnd); glview->setObjectName("glview");
-
-		// create the GL control bar
-		glc = new CGLControlBar(wnd);
-		glc->setObjectName("glbar");
-		glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
-
-		// add it all to the layout
-		l->addWidget(tab);
-		l->addWidget(glview);
-		l->addWidget(glc);
-		w->setLayout(l);
-
-		glc->hide();
-
-		stack->addWidget(w);
+		centralLayout->addWidget(tab);
+		centralLayout->addWidget(stack);
+		centralWidget->setLayout(centralLayout);
 
 		// set the central widget
-		wnd->setCentralWidget(stack);
+		wnd->setCentralWidget(centralWidget);
 
 		// build the menu
 		buildMenu(wnd);
@@ -1116,7 +1135,7 @@ public:
 			postToolBar->hide();
 			pFontToolBar->hide();
 
-			glc->hide();
+			glw->glc->hide();
 
 			modelViewer->parentWidget()->hide();
 			buildPanel->parentWidget()->hide();
@@ -1139,7 +1158,7 @@ public:
 			postToolBar->hide();
 			pFontToolBar->show();
 
-			glc->show();
+			glw->glc->show();
 
 			modelViewer->parentWidget()->show();
 			buildPanel->parentWidget()->show();
@@ -1162,7 +1181,7 @@ public:
 			postToolBar->show();
 			pFontToolBar->show();
 
-			glc->show();
+			glw->glc->show();
 
 			modelViewer->parentWidget()->hide();
 			buildPanel->parentWidget()->hide();

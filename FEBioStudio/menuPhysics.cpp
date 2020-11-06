@@ -397,7 +397,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 		assert(pc);
 		if (pc)
 		{
-			pc->SetPosition(ui->glview->Get3DCursor());
+			pc->SetPosition(GetGLView()->Get3DCursor());
 			pc->m_rbA = dlg.GetMaterialA();
 			pc->m_rbB = dlg.GetMaterialB();
 

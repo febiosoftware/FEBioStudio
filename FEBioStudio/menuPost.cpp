@@ -562,7 +562,7 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 
 		ui->postPanel->SelectObject(doc->GetGLModel()->GetColorMap());
 
-		ui->glview->UpdateWidgets(false);
+		GetGLView()->UpdateWidgets(false);
 		RedrawGL();
 	}
 
