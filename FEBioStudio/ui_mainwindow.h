@@ -523,6 +523,7 @@ public:
 		QAction* actionFEBioResources = addAction("FEBio Knowledgebase", "actionFEBioResources");
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
 		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
+		QAction* actionWelcome = addAction("Show Welcome Page", "actionWelcome");
 		QAction* actionAbout = addAction("About FEBio Studio", "actionAbout");
 	
 		// other actions
@@ -778,6 +779,8 @@ public:
 
 		// Help menu
 		menuBar->addAction(menuHelp->menuAction());
+		menuHelp->addAction(actionWelcome);
+		menuHelp->addSeparator();
 		menuHelp->addAction(actionFEBioURL);
 		menuHelp->addAction(actionFEBioResources);
 		menuHelp->addAction(actionFEBioForum);

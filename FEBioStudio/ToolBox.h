@@ -41,7 +41,7 @@ private:
 	QPushButton* pb;
 };
 
-class CToolBox : public QScrollArea
+class CToolBox : public QWidget // QScrollArea
 {
 	Q_OBJECT
 

@@ -249,6 +249,8 @@ CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, p
 void CMeshPanel::Update(bool breset)
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
 	GModel* gm = doc->GetGModel();
 	GObject* activeObject = doc->GetActiveObject();
 

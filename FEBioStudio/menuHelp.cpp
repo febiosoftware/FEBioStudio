@@ -70,3 +70,8 @@ void CMainWindow::on_actionAbout_triggered()
 	about.setIconPixmap(QPixmap(":/icons/FEBioStudio_large.png"));
 	about.exec();
 }
+
+void CMainWindow::on_actionWelcome_triggered()
+{
+	ShowWelcomePage();
+}
