@@ -271,7 +271,7 @@ void CMainWindow::on_actionViewVPNext_triggered()
 // sync the views of all documents to the currently active one
 void CMainWindow::on_actionSyncViews_triggered()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	CGView& view = *doc->GetView();
@@ -281,8 +281,8 @@ void CMainWindow::on_actionSyncViews_triggered()
 	int views = ui->tab->views();
 	for (int i = 1; i < views; ++i)
 	{
-		CDocument* doci = ui->tab->getDocument(i);
-		if (doci != doc)
+		CGLDocument* doci = dynamic_cast<CGLDocument*>(ui->tab->getDocument(i));
+		if (doci && (doci != doc))
 		{
 			CGLCamera& cami = doci->GetView()->GetCamera();
 

@@ -306,7 +306,7 @@ void CMainWindow::on_actionExportProject_triggered() {}
 
 bool CMainWindow::SaveDocument(const QString& fileName)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return false;
 
 	// start log message
@@ -1315,7 +1315,7 @@ void CMainWindow::on_actionImportImage_triggered()
 	QStringList filters;
 	filters << "RAW files (*.raw)";
 
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 
 	// present the file selection dialog box
 	QFileDialog filedlg(this);

@@ -107,7 +107,8 @@ CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, p
 
 void CEditPanel::Update(bool breset)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
+	if (doc == nullptr) return;
 
 	// make sure the active object has changed
 	GObject* activeObject = doc->GetActiveObject();

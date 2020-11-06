@@ -44,9 +44,13 @@ void CBuildPanel::Update(bool breset)
 {
 	CCommandPanel* p = ui->currentPanel();
 	if (p) p->Update(breset);
-	ui->mainWindow->UpdateGLControlBar();
-	ui->mainWindow->GetDocument()->UpdateSelection(false);
-	ui->mainWindow->RedrawGL();
+	CGLDocument* doc = ui->mainWindow->GetGLDocument();
+	if (doc)
+	{
+		ui->mainWindow->UpdateGLControlBar();
+		doc->UpdateSelection(false);
+		ui->mainWindow->RedrawGL();
+	}
 }
 
 void CBuildPanel::on_buildTab_currentChanged(int index)

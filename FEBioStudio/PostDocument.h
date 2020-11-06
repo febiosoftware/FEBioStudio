@@ -114,7 +114,7 @@ protected:
 };
 
 
-class CPostDocument : public CDocument
+class CPostDocument : public CGLDocument
 {
 public:
 	CPostDocument(CMainWindow* wnd, CModelDocument* parent = nullptr);

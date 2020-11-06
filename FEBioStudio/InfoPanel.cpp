@@ -99,7 +99,7 @@ void CInfoPanel::SetObject(FSObject* po)
 		ui->po = po;
 
 		QString s = QString::fromStdString(po->GetName());
-		std::string type = ui->m_wnd->GetDocument()->GetTypeString(po);
+		std::string type = CGLDocument::GetTypeString(po);
 		QString t = QString::fromStdString(type);
 
 		s = "Notes for: <b>" + s + " <i>(" + t + ")</i></b>";

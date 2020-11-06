@@ -449,9 +449,9 @@ CGLView::~CGLView()
 {
 }
 
-CDocument* CGLView::GetDocument()
+CGLDocument* CGLView::GetDocument()
 {
-	return m_pWnd->GetDocument();
+	return m_pWnd->GetGLDocument();
 }
 
 void CGLView::UpdateCamera(bool hitCameraTarget)
@@ -472,7 +472,7 @@ void CGLView::resizeGL(int w, int h)
 
 void CGLView::changeViewMode(View_Mode vm)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	SetViewMode(vm);
@@ -487,7 +487,7 @@ void CGLView::changeViewMode(View_Mode vm)
 
 void CGLView::mousePressEvent(QMouseEvent* ev)
 {
-	CDocument* pdoc = m_pWnd->GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
 	int ntrans = pdoc->GetTransformMode();
@@ -590,7 +590,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 void CGLView::mouseMoveEvent(QMouseEvent* ev)
 {
-	CDocument* pdoc = m_pWnd->GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
 	CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
@@ -860,7 +860,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		repaint();
 		return;
 	}
-	CDocument* pdoc = m_pWnd->GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
@@ -1099,7 +1099,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 void CGLView::wheelEvent(QWheelEvent* ev)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	CGLCamera& cam = doc->GetView()->GetCamera();
@@ -1150,7 +1150,7 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 
 bool CGLView::gestureEvent(QNativeGestureEvent* ev)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return true;
 
 	CGLCamera& cam = doc->GetView()->GetCamera();
@@ -1458,7 +1458,7 @@ void CGLView::repaintEvent()
 void CGLView::paintGL()
 {
 	// Get the current document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr)
 	{
 		glClearColor(.2f, .2f, .2f, 1.f);
@@ -1960,7 +1960,8 @@ void CGLView::SetupProjection()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
+	if (doc == nullptr) return;
 
 	BOX box;
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
@@ -2015,7 +2016,7 @@ inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
 //-----------------------------------------------------------------------------
 void CGLView::PositionCamera()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	// position the camera
@@ -2229,14 +2230,14 @@ void CGLView::PrepModel()
 
 CGView* CGLView::GetView()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc) return doc->GetView();
 	return nullptr;
 }
 
 CGLCamera* CGLView::GetCamera()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc) return &doc->GetView()->GetCamera();
 	return nullptr;
 }
@@ -2776,7 +2777,7 @@ void CGLView::RenderTrack()
 
 void CGLView::RenderImageData()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc->IsValid() == false) return;
 
 	CGLCamera& cam = doc->GetView()->GetCamera();
@@ -3055,7 +3056,9 @@ void CGLView::RenderPivot(bool bpick)
 void CGLView::RenderRubberBand()
 {
 	// Get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	int nstyle = pdoc->GetSelectionStyle();
 
 	// set the ortho
@@ -3507,7 +3510,7 @@ void CGLView::RenderRigidBodies()
 
 void CGLView::ScreenToView(int x, int y, double& fx, double& fy)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	double W = (double)width();
@@ -3540,7 +3543,7 @@ void CGLView::showSafeFrame(bool b)
 void CGLView::SetViewMode(View_Mode n)
 {
     // Get the document
-    CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
     VIEW_SETTINGS& view = GetViewSettings();
@@ -3656,7 +3659,7 @@ void CGLView::SetViewMode(View_Mode n)
 
 void CGLView::TogglePerspective(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	CGView& view = *doc->GetView();
@@ -3739,7 +3742,7 @@ void CGLView::SetPlaneCut(double d[4])
 //-----------------------------------------------------------------------------
 void CGLView::PanView(vec3d r)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	CGLCamera& cam = doc->GetView()->GetCamera();
@@ -4389,7 +4392,7 @@ GObject* CGLView::GetActiveObject()
 void CGLView::SelectFEElements(int x, int y)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the mesh
@@ -4572,7 +4575,7 @@ void CGLView::SelectFEElements(int x, int y)
 void CGLView::SelectFEFaces(int x, int y)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the active object
@@ -4620,7 +4623,9 @@ void CGLView::SelectFEFaces(int x, int y)
 void CGLView::SelectFEEdges(int x, int y)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the mesh
@@ -4745,7 +4750,9 @@ void CGLView::SelectFEEdges(int x, int y)
 void CGLView::SelectSurfaceFaces(int x, int y)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the active object
@@ -4793,7 +4800,9 @@ void CGLView::SelectSurfaceFaces(int x, int y)
 void CGLView::SelectSurfaceEdges(int x, int y)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the mesh
@@ -4919,7 +4928,9 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 	static int lastIndex = -1;
 
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5019,7 +5030,8 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	GLViewTransform transform(this);
 
 	if (success) *success = false;
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
+	if (doc == nullptr) return vec3d(0,0,0);
 
 	VIEW_SETTINGS& view = GetViewSettings();
 
@@ -5465,7 +5477,9 @@ void CGLView::TagBackfacingNodes(FEMeshBase& mesh)
 void CGLView::RegionSelectFENodes(const SelectRegion& region)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5600,7 +5614,9 @@ void CGLView::TagBackfacingElements(FEMesh& mesh)
 void CGLView::RegionSelectFEElems(const SelectRegion& region)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5766,7 +5782,9 @@ void CGLView::TagBackfacingFaces(FEMeshBase& mesh)
 void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5832,7 +5850,9 @@ void CGLView::TagBackfacingEdges(FEMeshBase& mesh)
 void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 {
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -5887,7 +5907,9 @@ void CGLView::SelectFENodes(int x, int y)
 	static int lastIndex = -1;
 
 	// get the document
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
@@ -6910,9 +6932,8 @@ void CGLView::RenderObject(GObject* po)
 // Render the FE nodes
 void CGLView::RenderFENodes(GObject* po)
 {
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
-
 
 	VIEW_SETTINGS& view = GetViewSettings();
 	quatd q = pdoc->GetView()->GetCamera().GetOrientation();
@@ -7242,7 +7263,8 @@ void CGLView::RenderSurfaceMeshEdges(GObject* po)
 //-----------------------------------------------------------------------------
 void CGLView::RenderSurfaceMeshNodes(GObject* po)
 {
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
 
 	VIEW_SETTINGS& view = GetViewSettings();
 	quatd q = pdoc->GetView()->GetCamera().GetOrientation();
@@ -8294,7 +8316,7 @@ void CGLView::ZoomSelection(bool forceZoom)
 //-----------------------------------------------------------------
 void CGLView::ZoomToObject(GObject *po)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	BOX box = po->GetGlobalBox();
@@ -8315,7 +8337,7 @@ void CGLView::ZoomToObject(GObject *po)
 //! zoom in on a box
 void CGLView::ZoomTo(const BOX& box)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	double f = box.GetMaxExtent();
@@ -8332,7 +8354,7 @@ void CGLView::ZoomTo(const BOX& box)
 //-----------------------------------------------------------------
 void CGLView::ZoomExtents(bool banimate)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
 	BOX box;
@@ -8368,7 +8390,9 @@ void CGLView::ZoomExtents(bool banimate)
 //! Render the tags on the selected items.
 void CGLView::RenderTags()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
 	if (pdoc == nullptr) return;
 	

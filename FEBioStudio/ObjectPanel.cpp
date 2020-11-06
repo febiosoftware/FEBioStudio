@@ -74,8 +74,8 @@ CObjectPanel::CObjectPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent)
 
 void CObjectPanel::onColorChanged(QColor c)
 {
-	CDocument* doc = m_wnd->GetDocument();
-	GObject* po = doc->GetActiveObject();
+	CGLDocument* doc = m_wnd->GetGLDocument();
+	GObject* po = (doc ? doc->GetActiveObject() : nullptr);
 	if (po)
 	{
 		po->SetColor(toGLColor(c));
@@ -85,8 +85,8 @@ void CObjectPanel::onColorChanged(QColor c)
 
 void CObjectPanel::Update()
 {
-	CDocument* doc = m_wnd->GetDocument();
-	GObject* po = doc->GetActiveObject();
+	CGLDocument* doc = m_wnd->GetGLDocument();
+	GObject* po = (doc ? doc->GetActiveObject() : nullptr);
 	if (po)
 	{
 		if (isEnabled() == false) setEnabled(true);

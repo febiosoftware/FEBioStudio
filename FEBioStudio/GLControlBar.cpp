@@ -214,7 +214,7 @@ CGLControlBar::CGLControlBar(CMainWindow* wnd, QWidget* parent) : QWidget(parent
 
 void CGLControlBar::SetMeshItem(int n)
 {
-	CDocument* pdoc = ui->m_wnd->GetDocument();
+	CGLDocument* pdoc = ui->m_wnd->GetGLDocument();
 	pdoc->SetItemMode(n);
 	switch (n)
 	{
@@ -242,7 +242,7 @@ void CGLControlBar::Update()
 	ui->y->setReadOnly(!pivotMode);
 	ui->z->setReadOnly(!pivotMode);
 
-	CDocument* pdoc = ui->m_wnd->GetDocument();
+	CGLDocument* pdoc = ui->m_wnd->GetGLDocument();
 	if (pdoc == nullptr) return;
 
 	VIEW_SETTINGS& vs = ui->m_wnd->GetGLView()->GetViewSettings();
@@ -390,6 +390,9 @@ void CGLControlBar::onToggleMesh(bool b)
 
 void CGLControlBar::onMeshButtonClicked(int id)
 {
+	CGLDocument* pdoc = ui->m_wnd->GetGLDocument();
+	if (pdoc == nullptr) return;
+
 	for (int i = 0; i<4; ++i)
 		if (id != i) ui->but[i]->setChecked(false);
 
@@ -405,7 +408,6 @@ void CGLControlBar::onMeshButtonClicked(int id)
 	case 3: newMode = ITEM_NODE; break;
 	}
 
-	CDocument* pdoc = ui->m_wnd->GetDocument();
 	pdoc->SetItemMode(newMode);
 
 	ui->m_wnd->RedrawGL();

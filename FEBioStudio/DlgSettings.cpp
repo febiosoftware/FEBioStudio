@@ -718,7 +718,7 @@ void CUnitWidget::OnUnitOptionChanged(int n)
 	if (n == 0) m_us->setCurrentIndex(m_wnd->GetDefaultUnitSystem());
 	else if (n == 1)
 	{
-		CDocument* doc = m_wnd->GetDocument();
+		CGLDocument* doc = m_wnd->GetGLDocument();
 		if (doc) m_us->setCurrentIndex(doc->GetUnitSystem());
 	}
 }
@@ -912,7 +912,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 	if (pwnd->GetDocManager()->Documents())
 	{
-		CDocument* doc = pwnd->GetDocument();
+		CGLDocument* doc = pwnd->GetGLDocument();
 		ui->m_unit->showAllOptions(true);
 		if (doc) ui->m_unit->setUnit(doc->GetUnitSystem());
 	}
@@ -959,7 +959,7 @@ void CDlgSettings::showEvent(QShowEvent* ev)
 
 void CDlgSettings::apply()
 {
-	CDocument* pdoc = m_pwnd->GetDocument();
+	CGLDocument* pdoc = m_pwnd->GetGLDocument();
 
 	CGLView* glview = m_pwnd->GetGLView();
 	VIEW_SETTINGS& view = glview->GetViewSettings();
@@ -1026,8 +1026,12 @@ void CDlgSettings::apply()
 		CDocManager* dm = m_pwnd->GetDocManager();
 		for (int i = 0; i < dm->Documents(); ++i)
 		{
-			dm->GetDocument(i)->SetUnitSystem(newUnit);
-			dm->GetDocument(i)->SetModifiedFlag(true);
+			CGLDocument* doci = dynamic_cast<CGLDocument*>(dm->GetDocument(i));
+			if (doci)
+			{
+				doci->SetUnitSystem(newUnit);
+				doci->SetModifiedFlag(true);
+			}
 		}
 	}
 

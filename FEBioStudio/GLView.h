@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include "ViewSettings.h"
 
 class CMainWindow;
-class CDocument;
+class CGLDocument;
 class GCurveMeshObject;
 class CPostDocument;
 class GMaterial;
@@ -161,7 +161,7 @@ public:
 	double GetGridScale() { return m_grid.GetScale(); }
 	quatd GetGridOrientation() { return m_grid.m_q; }
 
-	CDocument* GetDocument();
+	CGLDocument* GetDocument();
 
 	GObject* GetActiveObject();
 

@@ -32,7 +32,7 @@ SOFTWARE.*/
 typedef FSObjectList<CFEBioJob> CFEBioJobList;
 
 //-----------------------------------------------------------------------------
-class CModelDocument : public CDocument
+class CModelDocument : public CGLDocument
 {
 public:
 	CModelDocument(CMainWindow* wnd);

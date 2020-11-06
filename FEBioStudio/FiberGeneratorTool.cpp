@@ -145,7 +145,7 @@ void CFiberGeneratorTool::OnAddClicked()
 
 void CFiberGeneratorTool::OnApply()
 {
-	CDocument* pdoc = GetDocument();
+	CGLDocument* pdoc = GetDocument();
 	GObject* po = pdoc->GetActiveObject();
 	if (po == 0) 
 	{

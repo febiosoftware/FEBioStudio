@@ -1032,6 +1032,7 @@ CDocument* CMainWindow::GetDocument()
 	return ui->tab->getActiveDoc();
 }
 
+CGLDocument* CMainWindow::GetGLDocument() { return dynamic_cast<CGLDocument*>(GetDocument()); }
 CModelDocument* CMainWindow::GetModelDocument() { return dynamic_cast<CModelDocument*>(GetDocument()); }
 CPostDocument* CMainWindow::GetPostDocument() { return dynamic_cast<CPostDocument*>(GetDocument()); }
 
@@ -1595,7 +1596,7 @@ void CMainWindow::UpdateUI()
 //-----------------------------------------------------------------------------
 void CMainWindow::UpdateToolbar()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (doc->IsValid() == false) return;
@@ -1739,7 +1740,8 @@ void CMainWindow::SetActiveDocument(CDocument* doc)
 		SetActiveView(view);
 	}
 
-	if (doc) Units::SetUnitSystem(doc->GetUnitSystem());
+	CGLDocument* gldoc = dynamic_cast<CGLDocument*>(doc);
+	if (gldoc) Units::SetUnitSystem(gldoc->GetUnitSystem());
 }
 
 //-----------------------------------------------------------------
@@ -1766,7 +1768,7 @@ int CMainWindow::FindView(CDocument* doc)
 //-----------------------------------------------------------------------------
 GObject* CMainWindow::GetActiveObject()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc) return doc->GetActiveObject();
 	return nullptr;
 }
@@ -1898,7 +1900,7 @@ void CMainWindow::ZoomTo(const BOX& box)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectObjects_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionMode(SELECT_OBJECT);
@@ -1908,7 +1910,7 @@ void CMainWindow::on_actionSelectObjects_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectParts_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionMode(SELECT_PART);
@@ -1918,7 +1920,7 @@ void CMainWindow::on_actionSelectParts_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectSurfaces_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionMode(SELECT_FACE);
@@ -1928,7 +1930,7 @@ void CMainWindow::on_actionSelectSurfaces_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectCurves_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionMode(SELECT_EDGE);
@@ -1938,7 +1940,7 @@ void CMainWindow::on_actionSelectCurves_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectNodes_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionMode(SELECT_NODE);
@@ -1948,7 +1950,7 @@ void CMainWindow::on_actionSelectNodes_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionSelectDiscrete_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionMode(SELECT_DISCRETE);
@@ -1958,7 +1960,7 @@ void CMainWindow::on_actionSelectDiscrete_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectRect_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionStyle(REGION_SELECT_BOX);
@@ -1968,7 +1970,7 @@ void CMainWindow::on_selectRect_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectCircle_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionStyle(REGION_SELECT_CIRCLE);
@@ -1978,7 +1980,7 @@ void CMainWindow::on_selectCircle_toggled(bool b)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_selectFree_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (b) doc->SetSelectionStyle(REGION_SELECT_FREE);

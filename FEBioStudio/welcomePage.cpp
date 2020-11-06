@@ -77,6 +77,11 @@ _RECENT_FILES_\
 </html>"
 ;
 
+CTextViewer::CTextViewer(CMainWindow* wnd) : QTextBrowser(wnd)
+{
+	m_wnd = wnd;
+}
+
 QString elide(const QString& s, int l)
 {
 	if (s.length() <= l) return s;
@@ -86,9 +91,9 @@ QString elide(const QString& s, int l)
 	return s.left(3) + "..." + s.right(l - 6);
 }
 
-CWelcomePage::CWelcomePage(CMainWindow* wnd) : QTextBrowser(wnd)
+CWelcomePage::CWelcomePage(CMainWindow* wnd) : CTextViewer(wnd)
 {
-	m_wnd = wnd;
+
 }
 
 void CWelcomePage::Refresh()

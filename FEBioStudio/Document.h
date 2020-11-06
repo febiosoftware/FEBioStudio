@@ -122,7 +122,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// Document class which stores all the data
+// Document class stores data and implements serialization of data to and from file.
 //
 class CDocument : public CSerializable
 {
@@ -131,12 +131,20 @@ public:
 	CDocument(CMainWindow* wnd);
 	virtual ~CDocument();
 
+	// clear the model
 	virtual void Clear();
 
 	// initialize the model
 	// this is called after a document was loaded
 	virtual bool Initialize();
 
+public:
+	// --- Document validation ---
+	bool IsModified();
+	void SetModifiedFlag(bool bset = true);
+	bool IsValid();
+
+public:
 	// --- I/O-routines ---
 	// Save the document
 	bool SaveDocument(const std::string& fileName);
@@ -145,9 +153,6 @@ public:
 	// Autosave
 	bool AutoSaveDocument();
 	bool loadPriorAutoSave();
-
-	// import image data
-	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
 	// set the document's title
 	void SetDocTitle(const std::string& t);
@@ -184,10 +189,47 @@ public:
 	void SetFileWriter(FileWriter* fileWriter);
 	FileWriter* GetFileWriter();
 
-	// --- Document validation ---
-	bool IsModified();
-	void SetModifiedFlag(bool bset = true);
-	bool IsValid();
+	// return the absolute path from the relative path w.r.t. to the model's folder
+	QString ToAbsolutePath(const QString& relativePath);
+	QString ToAbsolutePath(const std::string& relativePath);
+
+public:
+	// --- Document observers ---
+	void AddObserver(CDocObserver* observer);
+	void RemoveObserver(CDocObserver* observer);
+	void UpdateObservers(bool bnew);
+
+protected:
+	// Modified flag
+	bool	m_bModified;	// is document modified since last saved ?
+	bool	m_bValid;		// is the current document in a valid state for rendering
+
+	// title
+	std::string		m_title;
+
+	// file path
+	std::string		m_filePath;
+	std::string		m_autoSaveFilePath;
+	FileReader*		m_fileReader;
+	FileWriter*		m_fileWriter;
+
+
+	CMainWindow*	m_wnd;
+	std::vector<CDocObserver*>	m_Observers;
+};
+
+//-----------------------------------------------------------------------------
+// Base class for documents that require visualization
+class CGLDocument : public CDocument
+{
+public:
+	CGLDocument(CMainWindow* wnd);
+	~CGLDocument();
+
+	void Clear() override;
+
+	// import image data
+	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
 	// --- Command history functions ---
 	bool CanUndo();
@@ -229,10 +271,6 @@ public:
 
 	CGView* GetView();
 
-	// return the absolute path from the relative path w.r.t. to the model's folder
-	QString ToAbsolutePath(const QString& relativePath);
-	QString ToAbsolutePath(const std::string& relativePath);
-
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }
@@ -243,11 +281,6 @@ public:
 	Post::CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
 
-public:
-	void AddObserver(CDocObserver* observer);
-	void RemoveObserver(CDocObserver* observer);
-	void UpdateObservers(bool bnew);
-
 protected:
 	void SaveResources(OArchive& ar);
 	void LoadResources(IArchive& ar);
@@ -257,18 +290,6 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	std::string		m_title;
-
-	// Modified flag
-	bool	m_bModified;	// is document modified since last saved ?
-	bool	m_bValid;		// is the current document in a valid state for rendering
-
-	// file path
-	std::string		m_filePath;
-	std::string		m_autoSaveFilePath;
-	FileReader*		m_fileReader;
-	FileWriter*		m_fileWriter;
-
 	// The command manager
 	CCommandManager*	m_pCmd;		// the command manager
 
@@ -276,12 +297,8 @@ protected:
 
 	VIEW_STATE	m_vs;	// the view state
 
-	CMainWindow*	m_wnd;
-
 	std::string		m_info;
 	int				m_units;
 
 	FSObjectList<Post::CImageModel>	m_img;
-
-	std::vector<CDocObserver*>	m_Observers;
 };

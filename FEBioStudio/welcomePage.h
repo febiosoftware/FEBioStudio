@@ -30,7 +30,16 @@ SOFTWARE.*/
 
 class CMainWindow;
 
-class CWelcomePage : public QTextBrowser
+class CTextViewer : public QTextBrowser
+{
+public:
+	CTextViewer(CMainWindow* wnd);
+
+protected:
+	CMainWindow*	m_wnd;
+};
+
+class CWelcomePage : public CTextViewer
 {
 public:
 	CWelcomePage(CMainWindow* wnd);
@@ -38,7 +47,4 @@ public:
 	void Refresh();
 
 	void Close();
-
-private:
-	CMainWindow*	m_wnd;
 };

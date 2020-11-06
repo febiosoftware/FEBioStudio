@@ -30,7 +30,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // forward declarations
 class CMainWindow;
-class CDocument;
+class CGLDocument;
 
 //-----------------------------------------------------------------------------
 //! Base class for command panels.
@@ -46,7 +46,7 @@ public:
 	CMainWindow* GetMainWindow() { return m_wnd; }
 
 	//! Get the main document
-	CDocument*	GetDocument();
+	CGLDocument*	GetDocument();
 
 	//! Update the command panel, since the model has changed
 	virtual void Update(bool breset = true);

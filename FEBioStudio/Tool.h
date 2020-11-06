@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 class QWidget;
 class CMainWindow;
-class CDocument;
+class CGLDocument;
 class CPropertyListForm;
 class CPostDocument;
 class GObject;
@@ -57,7 +57,7 @@ public:
 	GObject* GetActiveObject();
 
 	// get the active document
-	CDocument* GetDocument();
+	CGLDocument* GetDocument();
 
 	// get the active Post doc
 	CPostDocument* GetPostDoc();

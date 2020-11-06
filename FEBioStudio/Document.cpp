@@ -142,71 +142,31 @@ void CDocObserver::DocumentDelete()
 	DocumentUpdate(true);
 }
 
-//-----------------------------------------------------------------------------
-// Construction/Destruction
-//-----------------------------------------------------------------------------
+//==============================================================================
+// CDocument
+//==============================================================================
+
 CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 {
 	m_fileWriter = nullptr;
 	m_fileReader = nullptr;
 
-	static int n = 1;
-
-	m_pCmd = new CCommandManager(this);
-
-	// update the Post palette to match PreView's
-	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
-	
-	Post::CPalette pal("preview");
-	for (int i = 0; i < GMaterial::MAX_COLORS; ++i)
-	{
-		GLColor c = col[i];
-		GLColor glc(c.r, c.g, c.b);
-		pal.AddColor(glc);
-	}
-
-	PM.AddPalette(pal);
-	PM.SetCurrentIndex(PM.Palettes() - 1);
-
-	// reset the filename
-	m_filePath.clear();
-	m_autoSaveFilePath.clear();
-
-	// reset the counters
-	GModel::Reset();
-	GMaterial::ResetRefs();
-
 	// set document as not modified
 	m_bModified = false;
 	m_bValid = true;
 
-	// Clear the command history
-	m_pCmd->Clear();
-
-	// Set default modes
-	m_vs.nselect = SELECT_OBJECT;
-	m_vs.ntrans = TRANSFORM_NONE;
-	m_vs.nitem = ITEM_MESH;
-	m_vs.nstyle = REGION_SELECT_BOX;
-
-	// set default unit system (0 == no unit system)
-	m_units = 0;
+	// reset the filename
+	m_filePath.clear();
+	m_autoSaveFilePath.clear();
 }
 
 //-----------------------------------------------------------------------------
 CDocument::~CDocument()
 {
-	// remove autosave
-	QFile autoSave(m_autoSaveFilePath.c_str());
-	if(autoSave.exists()) autoSave.remove();
-
 	// remove all observers
 	for (int i = 0; i < m_Observers.size(); ++i)
 		m_Observers[i]->DocumentDelete();
-
 	m_Observers.clear();
-
-	delete m_pCmd;
 }
 
 //-----------------------------------------------------------------------------
@@ -219,9 +179,6 @@ void CDocument::Clear()
 	// set document as not modified
 	m_bModified = false;
 	m_bValid = true;
-
-	// Clear the command history
-	m_pCmd->Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -231,8 +188,8 @@ bool CDocument::Initialize()
 }
 
 //-----------------------------------------------------------------------------
-bool CDocument::IsModified() 
-{ 
+bool CDocument::IsModified()
+{
 	return m_bModified;
 }
 
@@ -250,123 +207,10 @@ void CDocument::SetModifiedFlag(bool bset)
 bool CDocument::IsValid() { return m_bValid; }
 
 //-----------------------------------------------------------------------------
-void CDocument::SetUnitSystem(int unitSystem)
-{
-	m_units = unitSystem;
-}
-
-//-----------------------------------------------------------------------------
-int CDocument::GetUnitSystem() const
-{
-	return m_units;
-}
-
-//-----------------------------------------------------------------------------
-// COMMAND FUNCTIONS
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-bool CDocument::CanUndo() { return m_pCmd->CanUndo(); }
-
-//-----------------------------------------------------------------------------
-bool CDocument::CanRedo() { return m_pCmd->CanRedo(); }
-
-//-----------------------------------------------------------------------------
-void CDocument::AddCommand(CCommand* pcmd)
-{
-	m_pCmd->AddCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-}
-
-//-----------------------------------------------------------------------------
-void CDocument::AddCommand(CCommand* pcmd, const std::string& s)
-{
-	m_pCmd->AddCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	if (s.empty() == false)
-	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
-	}
-	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-}
-
-//-----------------------------------------------------------------------------
-const char* CDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
-
-//-----------------------------------------------------------------------------
-const char* CDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
-
-//-----------------------------------------------------------------------------
-bool CDocument::DoCommand(CCommand* pcmd)
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-	bool ret = m_pCmd->DoCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	return ret;
-}
-
-//-----------------------------------------------------------------------------
-bool CDocument::DoCommand(CCommand* pcmd, const std::string& s)
-{
-	CMainWindow* wnd = GetMainWindow();
-	if (s.empty() == false)
-	{
-		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
-	}
-	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
-
-	bool ret = m_pCmd->DoCommand(pcmd);
-	SetModifiedFlag();
-	UpdateSelection();
-	return ret;
-}
-
-//-----------------------------------------------------------------------------
-const std::string& CDocument::GetCommandErrorString() const
-{
-	return m_pCmd->GetErrorString();
-}
-
-//-----------------------------------------------------------------------------
-void CDocument::UndoCommand()
-{
-	string cmdName = m_pCmd->GetUndoCmdName();
-	m_pCmd->UndoCommand();
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName)));
-}
-
-//-----------------------------------------------------------------------------
-void CDocument::RedoCommand()
-{
-	string cmdName = m_pCmd->GetRedoCmdName();
-	m_pCmd->RedoCommand();
-	SetModifiedFlag();
-	UpdateSelection();
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName)));
-}
-
-//-----------------------------------------------------------------------------
-void CDocument::ClearCommandStack()
-{
-	m_pCmd->Clear();
-}
-
-//-----------------------------------------------------------------------------
 void CDocument::AddObserver(CDocObserver* observer)
 {
 	// no duplicates allowed
-	for (int i = 0; i<m_Observers.size(); ++i)
+	for (int i = 0; i < m_Observers.size(); ++i)
 	{
 		if (m_Observers[i] == observer)
 		{
@@ -381,7 +225,7 @@ void CDocument::AddObserver(CDocObserver* observer)
 //-----------------------------------------------------------------------------
 void CDocument::RemoveObserver(CDocObserver* observer)
 {
-	for (int i = 0; i<m_Observers.size(); ++i)
+	for (int i = 0; i < m_Observers.size(); ++i)
 	{
 		if (m_Observers[i] == observer)
 		{
@@ -397,36 +241,188 @@ void CDocument::UpdateObservers(bool bnew)
 {
 	if (m_Observers.empty()) return;
 
-	for (int i = 0; i<m_Observers.size(); ++i)
+	for (int i = 0; i < m_Observers.size(); ++i)
 	{
 		CDocObserver* observer = m_Observers[i];
 		if (observer) observer->DocumentUpdate(bnew);
 	}
 }
 
-void CDocument::UpdateSelection(bool breport)
+//-----------------------------------------------------------------------------
+std::string CDocument::GetDocFilePath()
 {
-
+	return m_filePath;
 }
 
 //-----------------------------------------------------------------------------
-void CDocument::SetViewState(VIEW_STATE vs)
+// set the document's title
+void CDocument::SetDocTitle(const std::string& t)
 {
-	m_vs = vs;
-	UpdateSelection(false);
-//	if (m_wnd) m_wnd->UpdateUI();
+	m_title = t;
 }
 
 //-----------------------------------------------------------------------------
-GObject* CDocument::GetActiveObject()
+std::string CDocument::GetDocTitle()
 {
-	return nullptr;
+	return m_title;
 }
 
 //-----------------------------------------------------------------------------
-CGView* CDocument::GetView()
+void CDocument::SetDocFilePath(const std::string& filePath)
 {
-	return &m_view;
+	m_filePath = FSDir::filePath(filePath);
+	m_title = GetDocFileName();
+
+	SetAutoSaveFilePath();
+}
+
+//-----------------------------------------------------------------------------
+std::string CDocument::GetAutoSaveFilePath()
+{
+	return m_autoSaveFilePath;
+}
+
+//-----------------------------------------------------------------------------
+void CDocument::SetAutoSaveFilePath()
+{
+	//Construct the new autosave file path
+	FSDir fsDir(m_filePath);
+	QString newAutoSave = QString("%1/~%2_auto.%3").arg(fsDir.fileDir().c_str()).arg(fsDir.fileBase().c_str()).arg(fsDir.fileExt().c_str());
+
+	// If an old autosave file exists, rename it
+	QFile oldAutoSaveFile(m_autoSaveFilePath.c_str());
+	if (oldAutoSaveFile.exists()) oldAutoSaveFile.rename(newAutoSave);
+
+	// Set new autosave file path
+	m_autoSaveFilePath = newAutoSave.toStdString();
+
+}
+
+void CDocument::SetUnsaved()
+{
+	m_filePath.clear();
+	m_autoSaveFilePath.clear();
+
+	SetModifiedFlag(true);
+}
+
+//-----------------------------------------------------------------------------
+// get just the file name
+std::string CDocument::GetDocFileName()
+{
+	if (m_filePath.empty()) return m_filePath;
+	return FSDir::fileName(m_filePath);
+}
+
+//-----------------------------------------------------------------------------
+std::string CDocument::GetDocFolder()
+{
+	if (m_filePath.empty()) return m_filePath;
+	return FSDir::fileDir(m_filePath);
+}
+
+//-----------------------------------------------------------------------------
+// get the base of the file name
+std::string CDocument::GetDocFileBase()
+{
+	return FSDir::fileBase(m_filePath);
+}
+
+// set/get the file reader
+void CDocument::SetFileReader(FileReader* fileReader)
+{
+	if (fileReader != m_fileReader)
+	{
+		if (m_fileReader) delete m_fileReader;
+		m_fileReader = fileReader;
+	}
+}
+
+FileReader* CDocument::GetFileReader()
+{
+	return m_fileReader;
+}
+
+// set/get the file writer
+void CDocument::SetFileWriter(FileWriter* fileWriter)
+{
+	if (fileWriter != m_fileWriter)
+	{
+		if (m_fileWriter) delete m_fileWriter;
+		m_fileWriter = fileWriter;
+	}
+}
+
+FileWriter* CDocument::GetFileWriter()
+{
+	return m_fileWriter;
+}
+
+//-----------------------------------------------------------------------------
+bool CDocument::SaveDocument(const std::string& fileName)
+{
+	if (m_fileWriter)
+	{
+		bool success = m_fileWriter->Write(fileName.c_str());
+
+		if (success)
+		{
+			SetModifiedFlag(false);
+			SetDocFilePath(fileName);
+		}
+
+		return success;
+	}
+	else return false;
+}
+
+//-----------------------------------------------------------------------------
+bool CDocument::SaveDocument()
+{
+	if (m_fileWriter && (m_filePath.empty() == false))
+	{
+		bool success = m_fileWriter->Write(m_filePath.c_str());
+
+		if (success)
+		{
+			SetModifiedFlag(false);
+		}
+
+		return success;
+	}
+	else
+		return false;
+}
+
+//-----------------------------------------------------------------------------
+bool CDocument::AutoSaveDocument()
+{
+	if (m_fileWriter && (m_autoSaveFilePath.empty() == false))
+	{
+		CLogger::AddLogEntry(QString("Autosaving file: %1 ...").arg(m_title.c_str()));
+
+		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
+
+		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
+
+		return success;
+	}
+	else
+		return false;
+}
+
+bool CDocument::loadPriorAutoSave()
+{
+	QFileInfo autoSaveInfo(m_autoSaveFilePath.c_str());
+
+	if (autoSaveInfo.exists())
+	{
+		QFileInfo fileInfo(m_filePath.c_str());
+
+		if (autoSaveInfo.lastModified() > fileInfo.lastModified()) return true;
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -443,8 +439,207 @@ QString CDocument::ToAbsolutePath(const std::string& relativePath)
 	return QDir::toNativeSeparators(QDir::cleanPath(modelDir.absoluteFilePath(s)));
 }
 
+//==============================================================================
+// CGLDocument
+//==============================================================================
+
 //-----------------------------------------------------------------------------
-std::string CDocument::GetTypeString(FSObject* po)
+// Construction/Destruction
+//-----------------------------------------------------------------------------
+CGLDocument::CGLDocument(CMainWindow* wnd) : CDocument(wnd)
+{
+	m_pCmd = new CCommandManager(this);
+
+	// update the Post palette to match PreView's
+	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
+	
+	Post::CPalette pal("preview");
+	for (int i = 0; i < GMaterial::MAX_COLORS; ++i)
+	{
+		GLColor c = col[i];
+		GLColor glc(c.r, c.g, c.b);
+		pal.AddColor(glc);
+	}
+
+	PM.AddPalette(pal);
+	PM.SetCurrentIndex(PM.Palettes() - 1);
+
+	// reset the counters
+	GModel::Reset();
+	GMaterial::ResetRefs();
+
+	// Clear the command history
+	m_pCmd->Clear();
+
+	// Set default modes
+	m_vs.nselect = SELECT_OBJECT;
+	m_vs.ntrans = TRANSFORM_NONE;
+	m_vs.nitem = ITEM_MESH;
+	m_vs.nstyle = REGION_SELECT_BOX;
+
+	// set default unit system (0 == no unit system)
+	m_units = 0;
+}
+
+//-----------------------------------------------------------------------------
+CGLDocument::~CGLDocument()
+{
+	// remove autosave
+	QFile autoSave(m_autoSaveFilePath.c_str());
+	if(autoSave.exists()) autoSave.remove();
+
+	delete m_pCmd;
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::Clear()
+{
+	CDocument::Clear();
+
+	// Clear the command history
+	m_pCmd->Clear();
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::SetUnitSystem(int unitSystem)
+{
+	m_units = unitSystem;
+}
+
+//-----------------------------------------------------------------------------
+int CGLDocument::GetUnitSystem() const
+{
+	return m_units;
+}
+
+//-----------------------------------------------------------------------------
+// COMMAND FUNCTIONS
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+bool CGLDocument::CanUndo() { return m_pCmd->CanUndo(); }
+
+//-----------------------------------------------------------------------------
+bool CGLDocument::CanRedo() { return m_pCmd->CanRedo(); }
+
+//-----------------------------------------------------------------------------
+void CGLDocument::AddCommand(CCommand* pcmd)
+{
+	m_pCmd->AddCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::AddCommand(CCommand* pcmd, const std::string& s)
+{
+	m_pCmd->AddCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	if (s.empty() == false)
+	{
+		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+	}
+	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+}
+
+//-----------------------------------------------------------------------------
+const char* CGLDocument::GetUndoCmdName() { return m_pCmd->GetUndoCmdName(); }
+
+//-----------------------------------------------------------------------------
+const char* CGLDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
+
+//-----------------------------------------------------------------------------
+bool CGLDocument::DoCommand(CCommand* pcmd)
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	bool ret = m_pCmd->DoCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	return ret;
+}
+
+//-----------------------------------------------------------------------------
+bool CGLDocument::DoCommand(CCommand* pcmd, const std::string& s)
+{
+	CMainWindow* wnd = GetMainWindow();
+	if (s.empty() == false)
+	{
+		wnd->AddLogEntry(QString("Executing command: %1 (%2)\n").arg(pcmd->GetName()).arg(QString::fromStdString(s)));
+	}
+	else wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+
+	bool ret = m_pCmd->DoCommand(pcmd);
+	SetModifiedFlag();
+	UpdateSelection();
+	return ret;
+}
+
+//-----------------------------------------------------------------------------
+const std::string& CGLDocument::GetCommandErrorString() const
+{
+	return m_pCmd->GetErrorString();
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::UndoCommand()
+{
+	string cmdName = m_pCmd->GetUndoCmdName();
+	m_pCmd->UndoCommand();
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Undo last command (%1)\n").arg(QString::fromStdString(cmdName)));
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::RedoCommand()
+{
+	string cmdName = m_pCmd->GetRedoCmdName();
+	m_pCmd->RedoCommand();
+	SetModifiedFlag();
+	UpdateSelection();
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry(QString("Redo command (%1)\n").arg(QString::fromStdString(cmdName)));
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::ClearCommandStack()
+{
+	m_pCmd->Clear();
+}
+
+void CGLDocument::UpdateSelection(bool breport)
+{
+
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::SetViewState(VIEW_STATE vs)
+{
+	m_vs = vs;
+	UpdateSelection(false);
+//	if (m_wnd) m_wnd->UpdateUI();
+}
+
+//-----------------------------------------------------------------------------
+GObject* CGLDocument::GetActiveObject()
+{
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+CGView* CGLDocument::GetView()
+{
+	return &m_view;
+}
+
+//-----------------------------------------------------------------------------
+std::string CGLDocument::GetTypeString(FSObject* po)
 {
 	if (po == 0) return "(null)";
 
@@ -538,184 +733,6 @@ std::string CDocument::GetTypeString(FSObject* po)
 }
 
 //-----------------------------------------------------------------------------
-std::string CDocument::GetDocFilePath()
-{ 
-	return m_filePath; 
-}
-
-//-----------------------------------------------------------------------------
-// set the document's title
-void CDocument::SetDocTitle(const std::string& t)
-{
-	m_title = t;
-}
-
-//-----------------------------------------------------------------------------
-std::string CDocument::GetDocTitle()
-{
-	return m_title;
-}
-
-//-----------------------------------------------------------------------------
-void CDocument::SetDocFilePath(const std::string& filePath)
-{ 
-	m_filePath = FSDir::filePath(filePath);
-	m_title = GetDocFileName();
-
-	SetAutoSaveFilePath();
-}
-
-//-----------------------------------------------------------------------------
-std::string CDocument::GetAutoSaveFilePath()
-{
-	return m_autoSaveFilePath;
-}
-
-//-----------------------------------------------------------------------------
-void CDocument::SetAutoSaveFilePath()
-{
-	//Construct the new autosave file path
-	FSDir fsDir(m_filePath);
-	QString newAutoSave = QString("%1/~%2_auto.%3").arg(fsDir.fileDir().c_str()).arg(fsDir.fileBase().c_str()).arg(fsDir.fileExt().c_str());
-
-	// If an old autosave file exists, rename it
-	QFile oldAutoSaveFile(m_autoSaveFilePath.c_str());
-	if(oldAutoSaveFile.exists()) oldAutoSaveFile.rename(newAutoSave);
-
-	// Set new autosave file path
-	m_autoSaveFilePath = newAutoSave.toStdString();
-
-}
-
-void CDocument::SetUnsaved()
-{
-	m_filePath.clear();
-	m_autoSaveFilePath.clear();
-
-	SetModifiedFlag(true);
-}
-
-//-----------------------------------------------------------------------------
-// get just the file name
-std::string CDocument::GetDocFileName()
-{
-	if (m_filePath.empty()) return m_filePath;
-	return FSDir::fileName(m_filePath);
-}
-
-//-----------------------------------------------------------------------------
-std::string CDocument::GetDocFolder()
-{
-	if (m_filePath.empty()) return m_filePath;
-	return FSDir::fileDir(m_filePath);
-}
-
-//-----------------------------------------------------------------------------
-// get the base of the file name
-std::string CDocument::GetDocFileBase()
-{
-	return FSDir::fileBase(m_filePath);
-}
-
-// set/get the file reader
-void CDocument::SetFileReader(FileReader* fileReader)
-{
-	if (fileReader != m_fileReader)
-	{
-		if (m_fileReader) delete m_fileReader;
-		m_fileReader = fileReader;
-	}
-}
-
-FileReader* CDocument::GetFileReader()
-{
-	return m_fileReader;
-}
-
-// set/get the file writer
-void CDocument::SetFileWriter(FileWriter* fileWriter)
-{
-	if (fileWriter != m_fileWriter)
-	{
-		if (m_fileWriter) delete m_fileWriter;
-		m_fileWriter = fileWriter;
-	}
-}
-
-FileWriter* CDocument::GetFileWriter()
-{
-	return m_fileWriter;
-}
-
-//-----------------------------------------------------------------------------
-bool CDocument::SaveDocument(const std::string& fileName)
-{
-	if (m_fileWriter)
-	{
-		bool success = m_fileWriter->Write(fileName.c_str());
-
-		if (success)
-		{
-			SetModifiedFlag(false);
-			SetDocFilePath(fileName);
-		}
-
-		return success;
-	}
-	else return false;
-}
-
-//-----------------------------------------------------------------------------
-bool CDocument::SaveDocument()
-{
-	if (m_fileWriter && (m_filePath.empty() == false))
-	{
-		bool success =  m_fileWriter->Write(m_filePath.c_str());
-
-		if(success)
-		{
-			SetModifiedFlag(false);
-		}
-
-		return success;
-	}
-	else
-		return false;
-}
-
-//-----------------------------------------------------------------------------
-bool CDocument::AutoSaveDocument()
-{
-	if (m_fileWriter && (m_autoSaveFilePath.empty() == false))
-	{
-		CLogger::AddLogEntry(QString("Autosaving file: %1 ...").arg(m_title.c_str()));
-
-		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
-
-		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
-
-		return success;
-	}
-	else
-		return false;
-}
-
-bool CDocument::loadPriorAutoSave()
-{
-	QFileInfo autoSaveInfo(m_autoSaveFilePath.c_str());
-
-	if(autoSaveInfo.exists())
-	{
-		QFileInfo fileInfo(m_filePath.c_str());
-
-		if(autoSaveInfo.lastModified() > fileInfo.lastModified()) return true;
-	}
-
-	return false;
-
-}
-
-//-----------------------------------------------------------------------------
 // FUNCTION: getline
 // Reads a single line of a text file while skipping comment lines
 //
@@ -739,7 +756,7 @@ char* getline(char* szline, int n, FILE* fp)
 	return szline;
 }
 
-void CDocument::SaveResources(OArchive& ar)
+void CGLDocument::SaveResources(OArchive& ar)
 {
 	for (int i = 0; i < ImageModels(); ++i)
 	{
@@ -752,7 +769,7 @@ void CDocument::SaveResources(OArchive& ar)
 	}
 }
 
-void CDocument::LoadResources(IArchive& ar)
+void CGLDocument::LoadResources(IArchive& ar)
 {
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
@@ -775,7 +792,7 @@ void CDocument::LoadResources(IArchive& ar)
 
 //-----------------------------------------------------------------------------
 // import image data
-Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
+Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
 {
 	static int n = 1;
 
@@ -799,23 +816,23 @@ Post::CImageModel* CDocument::ImportImage(const std::string& fileName, int nx, i
 	return po;
 }
 
-int CDocument::ImageModels() const
+int CGLDocument::ImageModels() const
 {
 	return (int)m_img.Size();
 }
 
-void CDocument::AddImageModel(Post::CImageModel* img)
+void CGLDocument::AddImageModel(Post::CImageModel* img)
 {
 	assert(img);
 	m_img.Add(img);
 }
 
-Post::CImageModel* CDocument::GetImageModel(int i)
+Post::CImageModel* CGLDocument::GetImageModel(int i)
 {
 	return m_img[i];
 }
 
-void CDocument::DeleteAllImageModels()
+void CGLDocument::DeleteAllImageModels()
 {
 	m_img.Clear();
 }

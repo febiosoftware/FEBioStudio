@@ -77,9 +77,6 @@ void CToolsPanel::on_buttons_buttonClicked(int id)
 	QList<CAbstractTool*>::iterator it = tools.begin();
 	for (int i = 0; i<id - 1; ++i, ++it);
 
-	// get the active document
-	CDocument* doc = GetDocument();
-
 	// activate the tool
 	m_activeTool = *it;
 	m_activeTool->Activate();

@@ -576,7 +576,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				QString name = QString::fromStdString(m_currentObject->GetName());
 				ui->setName(name);
 
-				std::string stype = CDocument::GetTypeString(m_currentObject);
+				std::string stype = CGLDocument::GetTypeString(m_currentObject);
 				QString type(stype.c_str());
 				ui->setType(type);
 

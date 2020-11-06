@@ -50,7 +50,7 @@ SOFTWARE.*/
 
 void CMainWindow::on_actionUndo_triggered()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (doc->CanUndo())
@@ -63,7 +63,7 @@ void CMainWindow::on_actionUndo_triggered()
 
 void CMainWindow::on_actionRedo_triggered()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	if (doc->CanRedo())
@@ -311,7 +311,7 @@ void CMainWindow::on_actionUnhideAll_triggered()
 
 void CMainWindow::on_actionFind_triggered()
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 	if (doc->IsValid() == false) return;
 
@@ -379,7 +379,7 @@ void CMainWindow::on_actionSelectRange_triggered()
 
 	if (dlg.exec())
 	{
-		CDocument* doc = GetDocument();
+		CGLDocument* doc = GetGLDocument();
 		switch (model->GetSelectionMode())
 		{
 		case Post::SELECT_NODES: doc->SetItemMode(ITEM_NODE); model->SelectNodesInRange(dlg.m_min, dlg.m_max, dlg.m_brange); break;
@@ -1120,7 +1120,7 @@ void CMainWindow::on_actionShrinkSelection_triggered()
 
 void CMainWindow::on_actionSelect_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	doc->SetTransformMode(TRANSFORM_NONE);
@@ -1129,7 +1129,7 @@ void CMainWindow::on_actionSelect_toggled(bool b)
 
 void CMainWindow::on_actionTranslate_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	doc->SetTransformMode(TRANSFORM_MOVE);
@@ -1138,7 +1138,7 @@ void CMainWindow::on_actionTranslate_toggled(bool b)
 
 void CMainWindow::on_actionRotate_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	doc->SetTransformMode(TRANSFORM_ROTATE);
@@ -1147,7 +1147,7 @@ void CMainWindow::on_actionRotate_toggled(bool b)
 
 void CMainWindow::on_actionScale_toggled(bool b)
 {
-	CDocument* doc = GetDocument();
+	CGLDocument* doc = GetGLDocument();
 	if (doc == nullptr) return;
 
 	doc->SetTransformMode(TRANSFORM_SCALE);

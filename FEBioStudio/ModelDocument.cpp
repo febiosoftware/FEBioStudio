@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <PostGL/GLPlot.h>
 #include <MeshLib/FENodeFaceList.h>
 
-CModelDocument::CModelDocument(CMainWindow* wnd) : CDocument(wnd)
+CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 {
 	m_psel = nullptr;
 
@@ -48,7 +48,7 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CDocument(wnd)
 
 void CModelDocument::Clear()
 {
-	CDocument::Clear();
+	CGLDocument::Clear();
 
 	// reset the project
 	m_Project.Reset();

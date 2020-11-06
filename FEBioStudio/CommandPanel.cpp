@@ -34,9 +34,9 @@ CCommandPanel::CCommandPanel(CMainWindow* wnd, QWidget* parent) : QWidget(parent
 }
 
 //-----------------------------------------------------------------------------
-CDocument*	CCommandPanel::GetDocument()
+CGLDocument* CCommandPanel::GetDocument()
 {
-	return m_wnd->GetDocument();
+	return m_wnd->GetGLDocument();
 }
 
 //-----------------------------------------------------------------------------

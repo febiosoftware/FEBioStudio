@@ -225,7 +225,7 @@ void CPlaneTool::UpdateNormal()
 
 void CPlaneTool::onAlignView()
 {
-	CDocument* doc = GetMainWindow()->GetDocument();
+	CGLDocument* doc = GetMainWindow()->GetGLDocument();
 	if (doc == nullptr) return;
 
 	int* node = ui->m_node;

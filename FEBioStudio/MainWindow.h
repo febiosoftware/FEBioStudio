@@ -33,6 +33,7 @@ SOFTWARE.*/
 
 class FSObject;
 class CDocument;
+class CGLDocument;
 class CModelDocument;
 class CPostDocument;
 class CFileThread;
@@ -80,6 +81,7 @@ public:
 
 	//! Get the active document
 	CDocument* GetDocument();
+	CGLDocument* GetGLDocument();
 	CModelDocument* GetModelDocument();
 	CPostDocument* GetPostDocument();
 

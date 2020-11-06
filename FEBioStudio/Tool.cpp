@@ -43,10 +43,10 @@ CAbstractTool::CAbstractTool(CMainWindow* wnd, const QString& s) : m_name(s)
 	m_deco = nullptr;
 }
 
-CDocument* CAbstractTool::GetDocument()
+CGLDocument* CAbstractTool::GetDocument()
 { 
 	if (m_wnd == nullptr) return nullptr;
-	return m_wnd->GetDocument(); 
+	return m_wnd->GetGLDocument(); 
 }
 
 CPostDocument* CAbstractTool::GetPostDoc()

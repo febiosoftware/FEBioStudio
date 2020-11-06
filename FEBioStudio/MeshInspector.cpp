@@ -154,7 +154,9 @@ void CMeshInspector::UpdateData(int ndata)
 
 void CMeshInspector::on_select_clicked()
 {
-	CDocument* pdoc = m_wnd->GetDocument();
+	CGLDocument* pdoc = m_wnd->GetGLDocument();
+	if (pdoc == nullptr) return;
+
 	GObject* po = pdoc->GetActiveObject();
 	if (po == 0) return;
 

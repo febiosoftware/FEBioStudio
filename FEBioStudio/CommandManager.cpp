@@ -135,7 +135,7 @@ const char* CBasicCmdManager::GetRedoCmdName() { return (m_Redo.size() ? m_Redo.
 // CCommandManager
 //////////////////////////////////////////////////////////////////////
 
-CCommandManager::CCommandManager(CDocument* pdoc)
+CCommandManager::CCommandManager(CGLDocument* pdoc)
 {
 	m_pDoc = pdoc;
 }
