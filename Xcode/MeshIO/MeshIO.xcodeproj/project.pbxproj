@@ -47,7 +47,6 @@
 		D5ED26FA23197D9600C16BF7 /* FEPLYImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C223197D9500C16BF7 /* FEPLYImport.cpp */; };
 		D5ED26FB23197D9600C16BF7 /* FERAWImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C323197D9500C16BF7 /* FERAWImport.cpp */; };
 		D5ED26FC23197D9600C16BF7 /* PRVObjectImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C423197D9500C16BF7 /* PRVObjectImport.cpp */; };
-		D5ED26FD23197D9600C16BF7 /* FEBinarySTLimport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED26C523197D9500C16BF7 /* FEBinarySTLimport.cpp */; };
 		D5ED26FE23197D9600C16BF7 /* FENASTRANimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26C623197D9500C16BF7 /* FENASTRANimport.h */; };
 		D5ED26FF23197D9600C16BF7 /* FEIDEASimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26C723197D9500C16BF7 /* FEIDEASimport.h */; };
 		D5ED270023197D9600C16BF7 /* FEBYUimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26C823197D9500C16BF7 /* FEBYUimport.h */; };
@@ -63,7 +62,6 @@
 		D5ED270A23197D9600C16BF7 /* BREPImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D223197D9500C16BF7 /* BREPImport.h */; };
 		D5ED270B23197D9600C16BF7 /* FEIGESFileImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D323197D9500C16BF7 /* FEIGESFileImport.h */; };
 		D5ED270C23197D9600C16BF7 /* FEVTKImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D423197D9500C16BF7 /* FEVTKImport.h */; };
-		D5ED270D23197D9600C16BF7 /* FEBinarySTLimport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D523197D9500C16BF7 /* FEBinarySTLimport.h */; };
 		D5ED270E23197D9600C16BF7 /* FEPLYExport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D623197D9500C16BF7 /* FEPLYExport.h */; };
 		D5ED270F23197D9600C16BF7 /* FETetGenImport.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED26D723197D9500C16BF7 /* FETetGenImport.h */; };
 /* End PBXBuildFile section */
@@ -110,7 +108,6 @@
 		D5ED26C223197D9500C16BF7 /* FEPLYImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEPLYImport.cpp; sourceTree = "<group>"; };
 		D5ED26C323197D9500C16BF7 /* FERAWImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FERAWImport.cpp; sourceTree = "<group>"; };
 		D5ED26C423197D9500C16BF7 /* PRVObjectImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PRVObjectImport.cpp; sourceTree = "<group>"; };
-		D5ED26C523197D9500C16BF7 /* FEBinarySTLimport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEBinarySTLimport.cpp; sourceTree = "<group>"; };
 		D5ED26C623197D9500C16BF7 /* FENASTRANimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FENASTRANimport.h; sourceTree = "<group>"; };
 		D5ED26C723197D9500C16BF7 /* FEIDEASimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEIDEASimport.h; sourceTree = "<group>"; };
 		D5ED26C823197D9500C16BF7 /* FEBYUimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBYUimport.h; sourceTree = "<group>"; };
@@ -126,7 +123,6 @@
 		D5ED26D223197D9500C16BF7 /* BREPImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREPImport.h; sourceTree = "<group>"; };
 		D5ED26D323197D9500C16BF7 /* FEIGESFileImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEIGESFileImport.h; sourceTree = "<group>"; };
 		D5ED26D423197D9500C16BF7 /* FEVTKImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEVTKImport.h; sourceTree = "<group>"; };
-		D5ED26D523197D9500C16BF7 /* FEBinarySTLimport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEBinarySTLimport.h; sourceTree = "<group>"; };
 		D5ED26D623197D9500C16BF7 /* FEPLYExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FEPLYExport.h; sourceTree = "<group>"; };
 		D5ED26D723197D9500C16BF7 /* FETetGenImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FETetGenImport.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -163,8 +159,6 @@
 			children = (
 				D5ED26A223197D9500C16BF7 /* BREPImport.cpp */,
 				D5ED26D223197D9500C16BF7 /* BREPImport.h */,
-				D5ED26C523197D9500C16BF7 /* FEBinarySTLimport.cpp */,
-				D5ED26D523197D9500C16BF7 /* FEBinarySTLimport.h */,
 				D5ED26CD23197D9500C16BF7 /* FEBYUExport.cpp */,
 				D5ED26B123197D9500C16BF7 /* FEBYUExport.h */,
 				D5ED26C123197D9500C16BF7 /* FEBYUimport.cpp */,
@@ -241,7 +235,6 @@
 				D5ED26E123197D9600C16BF7 /* stdafx.h in Headers */,
 				D5992F2F2461E4470054F9DA /* FileWriter.h in Headers */,
 				D5ED26F023197D9600C16BF7 /* FESTLimport.h in Headers */,
-				D5ED270D23197D9600C16BF7 /* FEBinarySTLimport.h in Headers */,
 				D5ED270823197D9600C16BF7 /* FileReader.h in Headers */,
 				D5ED26E523197D9600C16BF7 /* FEDXFimport.h in Headers */,
 				D5ED26E723197D9600C16BF7 /* FEHMASCIIimport.h in Headers */,
@@ -345,7 +338,6 @@
 				D5ED270423197D9600C16BF7 /* FEHypersurfaceExport.cpp in Sources */,
 				D5ED26F923197D9600C16BF7 /* FEBYUimport.cpp in Sources */,
 				D5ED26E323197D9600C16BF7 /* FEVTKExport.cpp in Sources */,
-				D5ED26FD23197D9600C16BF7 /* FEBinarySTLimport.cpp in Sources */,
 				D5ED270323197D9600C16BF7 /* FEGMshImport.cpp in Sources */,
 				D5ED26DA23197D9500C16BF7 /* BREPImport.cpp in Sources */,
 				D5ED26FA23197D9600C16BF7 /* FEPLYImport.cpp in Sources */,
