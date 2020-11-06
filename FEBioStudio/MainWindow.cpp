@@ -1776,7 +1776,13 @@ GObject* CMainWindow::GetActiveObject()
 //-----------------------------------------------------------------
 void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool makeActive)
 {
-	ui->tab->addView(viewName, doc, makeActive);
+	const char* icons[] = { ":/icons/FEBioStudio.png", ":/icons/PostView.png" };
+
+	const char* szicon = "";
+	if (dynamic_cast<CModelDocument*>(doc)) szicon = icons[0];
+	if (dynamic_cast<CPostDocument* >(doc)) szicon = icons[1];
+
+	ui->tab->addView(viewName, doc, makeActive, szicon);
 	CGLView* glview = GetGLView();
 	glview->ZoomExtents(false);
 	glview->UpdateWidgets(false);

@@ -41,7 +41,7 @@ public:
 	int views();
 	int getActiveView();
 	void setActiveView(int n);
-	void addView(const std::string& name, CDocument* doc = nullptr, bool makeActive = true);
+	void addView(const std::string& name, CDocument* doc = nullptr, bool makeActive = true, const std::string& iconName = "");
 	int findView(CDocument* doc);
 	int findView(const std::string& title);
 	CDocument* getActiveDoc();

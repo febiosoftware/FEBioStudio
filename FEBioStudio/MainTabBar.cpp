@@ -50,10 +50,14 @@ void CMainTabBar::setActiveView(int n)
 	setCurrentIndex(n);
 }
 
-void CMainTabBar::addView(const std::string& name, CDocument* doc, bool makeActive)
+void CMainTabBar::addView(const std::string& name, CDocument* doc, bool makeActive, const std::string& iconName)
 {
 	m_docs.push_back(doc);
-	addTab(QString::fromStdString(name));
+	if (iconName.empty())
+		addTab(QString::fromStdString(name));
+	else
+		addTab(QIcon(QString::fromStdString(iconName)), QString::fromStdString(name));
+
 	assert(m_docs.size() == count());
 
 	if (makeActive)
