@@ -305,7 +305,7 @@ GObject* FESTLimport::build_mesh()
 }
 
 //-----------------------------------------------------------------------------
-int FESTLimport::FindBox(vec3d& r)
+int FESTLimport::FindBox(const vec3d& r)
 {
 	BOX& b = m_box;
 	int i = (int)(m_NB*(r.x - b.x0)/(b.x1 - b.x0));
@@ -315,7 +315,7 @@ int FESTLimport::FindBox(vec3d& r)
 }
 
 //-----------------------------------------------------------------------------
-int FESTLimport::find_node(vec3d& r, const double eps)
+int FESTLimport::find_node(const vec3d& r, const double eps)
 {
 	// get the box in which this node lies
 	int nb = FindBox(r);

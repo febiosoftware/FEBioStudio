@@ -76,8 +76,8 @@ protected:
 	bool read_line(char* szline, const char* sz);
 
 	GObject* build_mesh();
-	int find_node(vec3d& r, const double eps = 1e-14);
-	int FindBox(vec3d& r);
+	int find_node(const vec3d& r, const double eps = 1e-14);
+	int FindBox(const vec3d& r);
 
 	::BOX BoundingBox();
 
