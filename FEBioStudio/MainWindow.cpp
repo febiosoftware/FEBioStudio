@@ -77,6 +77,7 @@ SOFTWARE.*/
 #include "ZipFiles.h"
 #endif
 #include "welcomePage.h"
+#include <PostLib/Palette.h>
 
 extern GLColor col[];
 
@@ -125,6 +126,20 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	CResource::Init(this);
 
 	setDockOptions(dockOptions() | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
+
+	// update the Post palette to match PreView's
+	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
+
+	Post::CPalette pal("preview");
+	for (int i = 0; i < GMaterial::MAX_COLORS; ++i)
+	{
+		GLColor c = col[i];
+		GLColor glc(c.r, c.g, c.b);
+		pal.AddColor(glc);
+	}
+
+	PM.AddPalette(pal);
+	PM.SetCurrentIndex(PM.Palettes() - 1);
 
 	// read the theme option, before we build the UI
 	readThemeSetting();

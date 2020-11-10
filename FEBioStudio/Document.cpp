@@ -464,20 +464,6 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CDocument(wnd)
 {
 	m_pCmd = new CCommandManager(this);
 
-	// update the Post palette to match PreView's
-	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
-	
-	Post::CPalette pal("preview");
-	for (int i = 0; i < GMaterial::MAX_COLORS; ++i)
-	{
-		GLColor c = col[i];
-		GLColor glc(c.r, c.g, c.b);
-		pal.AddColor(glc);
-	}
-
-	PM.AddPalette(pal);
-	PM.SetCurrentIndex(PM.Palettes() - 1);
-
 	// reset the counters
 	GModel::Reset();
 	GMaterial::ResetRefs();
