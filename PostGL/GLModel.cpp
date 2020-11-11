@@ -3086,10 +3086,12 @@ void CGLModel::InvertSelectedElements()
 void CGLModel::UpdateEdge()
 {
 	m_edge.Clear();
-	Post::FEPostMesh& mesh = *GetActiveMesh();
-	for (int i=0; i<mesh.Elements(); ++i)
+	Post::FEPostMesh* mesh = GetActiveMesh();
+	if (mesh == nullptr) return;
+
+	for (int i=0; i<mesh->Elements(); ++i)
 	{
-		FEElement_& el = mesh.ElementRef(i);
+		FEElement_& el = mesh->ElementRef(i);
 		if ((el.Type() == FE_BEAM2)||(el.Type() == FE_BEAM3))
 		{
 			GLEdge::EDGE edge;
@@ -3118,7 +3120,10 @@ void CGLModel::BuildInternalSurfaces()
 	int nmat = m_ps->Materials();
 	for (int i = 0; i<nmat; ++i) m_innerSurface.push_back(new GLSurface);
 
-	Post::FEPostMesh& mesh = *GetActiveMesh();
+	Post::FEPostMesh* pmesh = GetActiveMesh();
+	if (pmesh == nullptr) return;
+	Post::FEPostMesh& mesh = *pmesh;
+
 	FEFace face;
 	int ndom = mesh.Domains();
 	for (int m = 0; m<ndom; ++m)

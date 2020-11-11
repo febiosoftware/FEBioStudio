@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <PostLib/FEKinemat.h>
 #include <PostLib/FELSDYNAimport.h>
 #include "PostDocument.h"
+#include <PostGL/GLModel.h>
 
 class CDlgKinematUI
 {
@@ -125,7 +126,7 @@ void CDlgKinemat::OnApply()
 
 	// create a new document
 	CMainWindow* wnd = ui->m_wnd;
-	CPostDocument* doc = new CPostDocument(wnd);
+	CPostDocument* postDoc = new CPostDocument(wnd);
 
 	FEKinemat kine;
 	kine.SetRange(n0, n1, ni);
@@ -134,25 +135,37 @@ void CDlgKinemat::OnApply()
 	string kineFile = ui->kineFile->text().toStdString();
 
 	// load the file
-	Post::FELSDYNAimport* preader = new Post::FELSDYNAimport(nullptr);
+	Post::FELSDYNAimport* preader = new Post::FELSDYNAimport(postDoc->GetFEModel());
 	preader->read_displacements(true);
-//	if (wnd->LoadFEModel(preader, modelFile.c_str()) == false)
-//	{
-		//QMessageBox::critical(wnd, "PostView2", "Failed to load model file");
-		//return;
-	//}
+	if (preader->Load(modelFile.c_str())==false)
+	{
+		QMessageBox::critical(wnd, "PostView2", "Failed to load model file");
+		delete postDoc;
+		return;
+	}
 
-	if (kine.Apply(doc->GetGLModel(), kineFile.c_str()) == false)
+	if (kine.Apply(postDoc->GetFEModel(), kineFile.c_str()) == false)
 	{
 		QMessageBox::critical(0, "Kinemat", "Failed applying Kinemat tool");
 	}
 
-	// create new post document
-	CPostDocument* postDocument = new CPostDocument(wnd);
+	postDoc->SetDocFilePath(modelFile);
+	postDoc->Initialize();
+
+	// update displacements on all states
+	Post::CGLModel& mdl = *postDoc->GetGLModel();
+	if (mdl.GetDisplacementMap() == nullptr)
+	{
+		mdl.AddDisplacementMap("Displacement");
+	}
+
+	int nstates = mdl.GetFEModel()->GetStates();
+	for (int i = 0; i < nstates; ++i) mdl.UpdateDisplacements(i, true);
+
 
 	wnd->UpdateModel();
 	wnd->Update();
-	wnd->SetActiveDocument(postDocument);
+	wnd->AddDocument(postDoc);
 
 	accept();
 }

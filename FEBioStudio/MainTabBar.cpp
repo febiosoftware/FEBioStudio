@@ -52,6 +52,9 @@ void CMainTabBar::setActiveView(int n)
 
 void CMainTabBar::addView(const std::string& name, CDocument* doc, bool makeActive, const std::string& iconName)
 {
+	assert(doc);
+	if (doc == nullptr) return;
+		
 	m_docs.push_back(doc);
 	if (iconName.empty())
 		addTab(QString::fromStdString(name));
@@ -59,6 +62,10 @@ void CMainTabBar::addView(const std::string& name, CDocument* doc, bool makeActi
 		addTab(QIcon(QString::fromStdString(iconName)), QString::fromStdString(name));
 
 	assert(m_docs.size() == count());
+
+	// set the tool tip
+	std::string filePath = doc->GetDocFilePath();
+	if (filePath.empty() == false) setTabToolTip(views() - 1, QString::fromStdString(filePath));
 
 	if (makeActive)
 	{

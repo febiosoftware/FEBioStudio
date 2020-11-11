@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MathLib/math3d.h>
 
 namespace Post {
-	class CGLModel;
+	class FEPostModel;
 }
 
 //-----------------------------------------------------------------------------
@@ -58,12 +58,12 @@ protected:
 public:
 	FEKinemat();
 
-	bool Apply(Post::CGLModel* glm, const char* szkine);
+	bool Apply(Post::FEPostModel* fem, const char* szkine);
 	void SetRange(int n0, int n1, int ni);
 
 protected:
 	bool ReadKine(const char* szkine);
-	bool BuildStates(Post::CGLModel* glm);
+	bool BuildStates(Post::FEPostModel* glm);
 
 protected:
 	int	m_n0, m_n1, m_ni;
