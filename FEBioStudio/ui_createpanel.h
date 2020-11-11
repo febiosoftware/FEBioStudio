@@ -197,13 +197,12 @@ void CDefaultCreatePane::Activate()
 
 FSObject* CDefaultCreatePane::Create()
 {
-	static int n = 1;
-
 	GObject* po = m_po;
 
-	char szname[128] = { 0 };
-	sprintf(szname, "Object%02d", n++);
-	po->SetName(szname);
+	// set default name
+	stringstream ss;
+	ss << "Object" << po->GetID();
+	po->SetName(ss.str());
 
 	vec3d r = position->position();
 	po->GetTransform().SetPosition(r);

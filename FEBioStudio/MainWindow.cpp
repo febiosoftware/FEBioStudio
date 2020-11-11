@@ -827,6 +827,8 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	ui->statusBar->clearMessage();
 	ui->statusBar->removeWidget(ui->fileProgress);
 
+	success = false;
+
 	if (success == false)
 	{
 		if (m_fileQueue.empty())
@@ -843,6 +845,9 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		{
 			delete file.m_doc;
 		}
+
+		// reset the active document
+		CDocument::SetActiveDocument(GetDocument());
 
 		return;
 	}
@@ -1806,6 +1811,9 @@ void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool make
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_currentChanged(int n)
 {
+	CDocument* newDoc = GetDocument();
+	CDocument::SetActiveDocument(newDoc);
+
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->hide();
 	GetGLView()->ClearCommandStack();
 
@@ -1821,7 +1829,6 @@ void CMainWindow::on_tab_currentChanged(int n)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_tabCloseRequested(int n)
 {
-	// Okay, remove the view
 	CloseView(n);
 	ui->fileViewer->Update();
 }

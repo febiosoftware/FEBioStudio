@@ -127,13 +127,16 @@ protected:
 template <class T> class GItem_T : public GItem
 {
 public:
-	GItem_T(GBaseObject* po = 0) : GItem(po){}
+	GItem_T(GBaseObject* po = 0) : GItem(po) {}
 	void SetID(int nid) { m_gid = nid; if (nid > m_ncount) m_ncount = nid; }
 	static int CreateUniqueID() { return ++m_ncount; }
 	static void ResetCounter() { m_ncount = 0; }
 
 	static void IncreaseCounter() { m_ncount++; }
 	static void DecreaseCounter() { m_ncount--; }
+
+	static void SetCounter(int n) { m_ncount = n; }
+	static int GetCounter() { return m_ncount; }
 	
 private:
 	static int	m_ncount;

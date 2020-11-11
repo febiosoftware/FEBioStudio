@@ -60,8 +60,6 @@ public:
 		m_nref = (nid >= m_nref ? nid+1:m_nref);
 	}
 
-	static void ResetRefs() { m_nref = 1; }
-
 	const char* GetFullName();
 
 	void Save(OArchive& ar);
@@ -77,6 +75,11 @@ public:
 	void Emission(GLColor c) { m_emission = c; }
 	void Specular(GLColor c) { m_specular = c; }
 	void AmbientDiffuse(GLColor c) { m_ambient = m_diffuse = c; }
+
+public:
+	static void ResetCounter() { m_nref = 1; }
+	static void SetCounter(int n) { m_nref = n; }
+	static int GetCounter() { return m_nref; }
 
 public:
 	// appearance
