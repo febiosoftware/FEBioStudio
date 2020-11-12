@@ -6441,12 +6441,15 @@ void CGLView::RenderSelectedEdges(GObject* po)
 		{
 			m_renderer.RenderGLEdges(&m, i);
 
-			if ((e.m_node[0] != -1) && (e.m_node[1] != -1))
+			GNode* n0 = po->Node(e.m_node[0]);
+			GNode* n1 = po->Node(e.m_node[1]);
+
+			if (n0 && n1)
 			{
 				glBegin(GL_POINTS);
 				{
-					vec3d r0 = po->Node(e.m_node[0])->LocalPosition();
-					vec3d r1 = po->Node(e.m_node[1])->LocalPosition();
+					vec3d r0 = n0->LocalPosition();
+					vec3d r1 = n1->LocalPosition();
 					glVertex3d(r0.x, r0.y, r0.z);
 					glVertex3d(r1.x, r1.y, r1.z);
 				}
