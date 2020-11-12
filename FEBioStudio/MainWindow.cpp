@@ -827,8 +827,6 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	ui->statusBar->clearMessage();
 	ui->statusBar->removeWidget(ui->fileProgress);
 
-	success = false;
-
 	if (success == false)
 	{
 		if (m_fileQueue.empty())
