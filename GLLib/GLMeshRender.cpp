@@ -1457,7 +1457,6 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm)
 		if (pm->ElementRef(face.m_elem[0].eid).IsShell())
 		{
 			RenderThickShell(face, pm);
-			glEnd();
 			return;
 		}
 	}
