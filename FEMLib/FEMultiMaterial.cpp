@@ -888,6 +888,9 @@ REGISTER_MATERIAL(FEUncoupledPrestrainMaterial, MODULE_MECH, FE_UNCOUPLED_PRESTR
 
 FEUncoupledPrestrainMaterial::FEUncoupledPrestrainMaterial() : FEMaterial(FE_UNCOUPLED_PRESTRAIN_MATERIAL)
 {
+	AddScienceParam(1, UNIT_DENSITY, "density", "density");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+
 	// Add one component for the elastic material
 	AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
 	AddProperty("prestrain", FE_MAT_PRESTRAIN_GRADIENT);

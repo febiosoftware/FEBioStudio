@@ -39,7 +39,8 @@ SOFTWARE.*/
 // 3.2: Added support for checkable parameters
 // 3.3: Modified how some discrete element sets are stored
 // 3.4: Added load_type parameter to FERigidForce
-#define SAVE_VERSION	0x00030004
+// 3.5: Added density, k to uncoupled-prestrain material
+#define SAVE_VERSION	0x00030005
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D
