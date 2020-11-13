@@ -914,6 +914,7 @@ void GMeshObject::Load(IArchive& ar)
 
 //	Update(false);
 	UpdateSurfaces(); // we need to call this to update the Surfaces' part IDs, since they are not stored.
+	UpdateEdges(); // we need to call this since the edge nodes are not stored
 	BuildGMesh();
 }
 
