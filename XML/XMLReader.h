@@ -62,6 +62,7 @@ public:
 
 template <> inline int XMLAtt::value<int>() { return atoi(m_szval); }
 template <> inline double XMLAtt::value<double>() { return atof(m_szval); }
+template <> inline std::string XMLAtt::value<std::string>() { return m_szval; }
 
 class XMLReader;
 
@@ -128,7 +129,7 @@ public:
 	XMLAtt* AttributePtr(const char* szat);
 	XMLAtt& Attribute(const char* szat);
 
-	template <typename T> T AttributeValue(const char* szatt, T def_val) { return def_val; }
+	template <typename T> T AttributeValue(const char* szatt, const T& def_val) { return def_val; }
 
 	const char* Name() { return m_sztag; }
 
@@ -153,17 +154,24 @@ public:
 	const std::string& comment();
 };
 
-template <> inline int XMLTag::AttributeValue<int>(const char* szatt, int def_val)
+template <> inline int XMLTag::AttributeValue<int>(const char* szatt, const int& def_val)
 {
 	XMLAtt* pa = AttributePtr(szatt);
 	if (pa) return pa->value<int>();
 	else return def_val;
 }
 
-template <> inline double XMLTag::AttributeValue<double >(const char* szatt, double def_val)
+template <> inline double XMLTag::AttributeValue<double >(const char* szatt, const double& def_val)
 {
 	XMLAtt* pa = AttributePtr(szatt);
 	if (pa) return pa->value<double>();
+	else return def_val;
+}
+
+template <> inline std::string XMLTag::AttributeValue<std::string>(const char* szatt, const std::string& def_val)
+{
+	XMLAtt* pa = AttributePtr(szatt);
+	if (pa) return pa->value<std::string>();
 	else return def_val;
 }
 
