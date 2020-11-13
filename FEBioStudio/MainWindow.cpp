@@ -612,6 +612,9 @@ void CMainWindow::OpenDocument(const QString& fileName)
 	CModelDocument* doc = new CModelDocument(this);
 	doc->SetDocFilePath(filePath.toStdString());
 
+	// we need to make this the active document
+	CDocument::SetActiveDocument(doc);
+
 	// start reading the file
 	ReadFile(doc, filePath, new ModelFileReader(doc), QueuedFile::NEW_DOCUMENT);
 
