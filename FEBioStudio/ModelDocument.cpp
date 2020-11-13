@@ -326,9 +326,6 @@ void CModelDocument::Load(IArchive& ar)
 	TRACE("CDocument::Load");
 	unsigned int version;
 
-	// we need to set this document as the active document
-	CDocument::SetActiveDocument(this);
-
 	m_bValid = false;
 
 	IArchive::IOResult nret = IArchive::IO_OK;
