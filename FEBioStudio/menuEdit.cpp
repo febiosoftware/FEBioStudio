@@ -782,6 +782,11 @@ void CMainWindow::on_actionPasteObject_triggered()
 	} while (po);
 	copyObject->SetName(name);
 
+	// since the copy object was created in another model,
+	// it is possible that its items IDs are already used in this model. 
+	// therefore, we reindex the object
+	copyObject->Reindex();
+
 	// add and select the new object
 	doc->DoCommand(new CCmdAddAndSelectObject(&m, copyObject));
 	GetGLView()->ZoomToObject(copyObject);

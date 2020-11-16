@@ -397,6 +397,14 @@ void CMainWindow::on_actionLayerInfo_triggered()
 		}
 		while (!done);
 	}
+
+	// model context
+	log->AddText("\nModel Context:\n===================\n");
+	log->AddText(QString("Object counter: %1\n").arg(GObject::GetCounter()));
+	log->AddText(QString("Part counter: %1\n").arg(GPart::GetCounter()));
+	log->AddText(QString("Face counter: %1\n").arg(GFace::GetCounter()));
+	log->AddText(QString("Edge counter: %1\n").arg(GEdge::GetCounter()));
+	log->AddText(QString("Node counter: %1\n").arg(GNode::GetCounter()));
 }
 
 void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
