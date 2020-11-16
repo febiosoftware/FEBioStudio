@@ -5752,47 +5752,51 @@ void CGLView::TagBackfacingFaces(FEMeshBase& mesh)
 	{
 		FEFace& f = mesh.Face(i);
 
-		switch (f.Type())
+		if (f.IsExterior())
 		{
-		case FE_FACE_TRI3:
-		case FE_FACE_TRI6:
-		case FE_FACE_TRI7:
-		case FE_FACE_TRI10:
-		{
-			r[0] = mesh.Node(f.n[0]).r;
-			r[1] = mesh.Node(f.n[1]).r;
-			r[2] = mesh.Node(f.n[2]).r;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+			{
+				r[0] = mesh.Node(f.n[0]).r;
+				r[1] = mesh.Node(f.n[1]).r;
+				r[2] = mesh.Node(f.n[2]).r;
 
-			p1[0] = transform.WorldToScreen(r[0]);
-			p1[1] = transform.WorldToScreen(r[1]);
-			p1[2] = transform.WorldToScreen(r[2]);
+				p1[0] = transform.WorldToScreen(r[0]);
+				p1[1] = transform.WorldToScreen(r[1]);
+				p1[2] = transform.WorldToScreen(r[2]);
 
-			if (IsBackfacing(p1)) f.m_ntag = 1;
-			else f.m_ntag = 0;
+				if (IsBackfacing(p1)) f.m_ntag = 1;
+				else f.m_ntag = 0;
+			}
+			break;
+			case FE_FACE_QUAD4:
+			case FE_FACE_QUAD8:
+			case FE_FACE_QUAD9:
+			{
+				r[0] = mesh.Node(f.n[0]).r;
+				r[1] = mesh.Node(f.n[1]).r;
+				r[2] = mesh.Node(f.n[2]).r;
+				r[3] = mesh.Node(f.n[3]).r;
+
+				p1[0] = transform.WorldToScreen(r[0]);
+				p1[1] = transform.WorldToScreen(r[1]);
+				p1[2] = transform.WorldToScreen(r[2]);
+
+				p2[0] = p1[2];
+				p2[1] = transform.WorldToScreen(r[3]);
+				p2[2] = p1[0];
+
+				if (IsBackfacing(p1) && IsBackfacing(p2)) f.m_ntag = 1;
+				else f.m_ntag = 0;
+			}
+			break;
+			}
 		}
-		break;
-		case FE_FACE_QUAD4:
-		case FE_FACE_QUAD8:
-		case FE_FACE_QUAD9:
-		{
-			r[0] = mesh.Node(f.n[0]).r;
-			r[1] = mesh.Node(f.n[1]).r;
-			r[2] = mesh.Node(f.n[2]).r;
-			r[3] = mesh.Node(f.n[3]).r;
-
-			p1[0] = transform.WorldToScreen(r[0]);
-			p1[1] = transform.WorldToScreen(r[1]);
-			p1[2] = transform.WorldToScreen(r[2]);
-
-			p2[0] = p1[2];
-			p2[1] = transform.WorldToScreen(r[3]);
-			p2[2] = p1[0];
-
-			if (IsBackfacing(p1) && IsBackfacing(p2)) f.m_ntag = 1;
-			else f.m_ntag = 0;
-		}
-		break;
-		}
+		else f.m_ntag = 1;
 	}
 }
 
@@ -5817,7 +5821,20 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 
 	// tag back facing items so they won't get selected.
 	if (view.m_bcullSel)
+	{
+		// NOTE: This actually tags front-facing faces. Should rename function.
 		TagBackfacingFaces(*pm);
+	}
+	else if (view.m_bext)
+	{
+		// tag exterior faces only 
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FEFace& f = pm->Face(i);
+			if (f.IsExterior()) f.m_ntag = 0;
+			else f.m_ntag = -1;
+		}
+	}
 	else
 		pm->TagAllFaces(0);
 
