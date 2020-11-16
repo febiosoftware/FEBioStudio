@@ -5496,8 +5496,25 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 
 	if (pm)
 	{
-		if (view.m_bcullSel)
-			TagBackfacingNodes(*pm);
+		// ignore exterior option for surface meshes
+		if (view.m_bext || (dynamic_cast<FESurfaceMesh*>(pm)))
+		{
+			if (view.m_bcullSel)
+			{
+				// NOTE: This tags front facing nodes. Should rename function. 
+				TagBackfacingNodes(*pm);
+			}
+			else
+			{
+				// tag all exterior nodes
+				for (int i = 0; i < pm->Nodes(); ++i)
+				{
+					FENode& node = pm->Node(i);
+					if (node.IsExterior()) node.m_ntag = 0;
+					else node.m_ntag = -1;
+				}
+			}
+		}
 		else
 			pm->TagAllNodes(0);
 	}
