@@ -33,6 +33,36 @@ SOFTWARE.*/
 
 LaplaceSolver::LaplaceSolver()
 {
+	m_maxIters = 1000;
+	m_tol = 1e-4;
+	m_w = 1.0;
+
+	m_niters = 0;
+}
+
+void LaplaceSolver::SetMaxIterations(int n)
+{
+	m_maxIters = n;
+}
+
+void LaplaceSolver::SetTolerance(double a)
+{
+	m_tol = a;
+}
+
+void LaplaceSolver::SetRelaxation(double w)
+{
+	m_w = w;
+}
+
+int LaplaceSolver::GetIterationCount() const
+{
+	return m_niters;
+}
+
+double LaplaceSolver::GetRelativeNorm() const
+{
+	return m_relNorm;
 }
 
 // Solves the Laplace equation on the mesh.
@@ -41,9 +71,7 @@ LaplaceSolver::LaplaceSolver()
 // Output: val = solution
 bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 {
-	// convergence criteria
-	const int MAX_ITER = 1000;	// max number of iterations
-	const double eps = 0.0001;	// max change between iterations
+	m_niters = 0;
 
 	// make sure the value and flag arrays are of the correct size
 	int NN = pm->Nodes();
@@ -176,11 +204,11 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 	for (int i=0; i<NN; ++i) Dinv[i] = 1.0 / D[i];
 
 	// start the iterations
-	int niter = 0;
-	double maxd;
+	double norm0 = 0, norm, normp;
+	m_relNorm = 1.0;
 	do
 	{
-		maxd = 0.0;
+		norm = 0;
 		for (int i=0; i<NN; ++i)
 		{
 			if (bn[i] == 0)
@@ -188,17 +216,25 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 				double sum = 0;
 				int nval = NNL.Valence(i);
 				for (int k=0; k<nval; ++k) sum -= val[NNL.Node(i, k)]*NNL.Value(i,k);
-				sum *= Dinv[i];
 
-				double dv = fabs(val[i] - sum);
-				val[i] = sum;
+				double newVal = (1.0 - m_w)*val[i] + sum * m_w * Dinv[i];
 
-				if (dv > maxd) maxd = dv;
+				double dv = (val[i] - newVal);
+				norm += dv * dv;
+
+				val[i] = newVal;
 			}
 		}
-		niter++;
-	}
-	while ((niter < MAX_ITER)&&(maxd > eps));
+		norm = sqrt(norm);
+		if (m_niters == 0) { norm0 = normp = norm; }
+		m_relNorm = norm / norm0;
+		double mu = norm / normp;
+		normp = norm;
 
-	return true;
+		printf("%d: %lg, %lg, %lg\n", m_niters, norm, m_relNorm, mu);
+		m_niters++;
+	}
+	while ((m_niters < m_maxIters)&&(m_relNorm > m_tol));
+
+	return (m_relNorm < m_tol);
 }
