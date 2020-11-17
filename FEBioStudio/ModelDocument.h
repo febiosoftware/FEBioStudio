@@ -32,10 +32,14 @@ SOFTWARE.*/
 typedef FSObjectList<CFEBioJob> CFEBioJobList;
 
 //-----------------------------------------------------------------------------
+class CModelContext;
+
+//-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
 {
 public:
 	CModelDocument(CMainWindow* wnd);
+	~CModelDocument();
 
 	bool LoadTemplate(int n);
 
@@ -59,6 +63,10 @@ public:
 	GObject* GetActiveObject() override;
 
 	BOX GetModelBox();
+
+public:
+	void Activate() override;
+	void Deactivate() override;
 
 public:
 	void AddObject(GObject* po);
@@ -114,4 +122,6 @@ private:
 
 	// current selection
 	FESelection*	m_psel;
+
+	CModelContext*	m_context;
 };

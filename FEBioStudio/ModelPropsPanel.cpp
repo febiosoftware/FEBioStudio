@@ -626,6 +626,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 					if (dynamic_cast<GEdge*>(git)) typeStr = "Edge";
 					if (dynamic_cast<GNode*>(git)) typeStr = "Node";
 
+					ui->showObjectInfo(false);
 					ui->showGItemInfo(true, QString::fromStdString(git->GetName()), typeStr, git->GetID());
 				}
 				else ui->showObjectInfo(true, false, nameEditable);

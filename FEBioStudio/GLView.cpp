@@ -5496,8 +5496,25 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 
 	if (pm)
 	{
-		if (view.m_bcullSel)
-			TagBackfacingNodes(*pm);
+		// ignore exterior option for surface meshes
+		if (view.m_bext || (dynamic_cast<FESurfaceMesh*>(pm)))
+		{
+			if (view.m_bcullSel)
+			{
+				// NOTE: This tags front facing nodes. Should rename function. 
+				TagBackfacingNodes(*pm);
+			}
+			else
+			{
+				// tag all exterior nodes
+				for (int i = 0; i < pm->Nodes(); ++i)
+				{
+					FENode& node = pm->Node(i);
+					if (node.IsExterior()) node.m_ntag = 0;
+					else node.m_ntag = -1;
+				}
+			}
+		}
 		else
 			pm->TagAllNodes(0);
 	}
@@ -5735,47 +5752,51 @@ void CGLView::TagBackfacingFaces(FEMeshBase& mesh)
 	{
 		FEFace& f = mesh.Face(i);
 
-		switch (f.Type())
+		if (f.IsExterior())
 		{
-		case FE_FACE_TRI3:
-		case FE_FACE_TRI6:
-		case FE_FACE_TRI7:
-		case FE_FACE_TRI10:
-		{
-			r[0] = mesh.Node(f.n[0]).r;
-			r[1] = mesh.Node(f.n[1]).r;
-			r[2] = mesh.Node(f.n[2]).r;
+			switch (f.Type())
+			{
+			case FE_FACE_TRI3:
+			case FE_FACE_TRI6:
+			case FE_FACE_TRI7:
+			case FE_FACE_TRI10:
+			{
+				r[0] = mesh.Node(f.n[0]).r;
+				r[1] = mesh.Node(f.n[1]).r;
+				r[2] = mesh.Node(f.n[2]).r;
 
-			p1[0] = transform.WorldToScreen(r[0]);
-			p1[1] = transform.WorldToScreen(r[1]);
-			p1[2] = transform.WorldToScreen(r[2]);
+				p1[0] = transform.WorldToScreen(r[0]);
+				p1[1] = transform.WorldToScreen(r[1]);
+				p1[2] = transform.WorldToScreen(r[2]);
 
-			if (IsBackfacing(p1)) f.m_ntag = 1;
-			else f.m_ntag = 0;
+				if (IsBackfacing(p1)) f.m_ntag = 1;
+				else f.m_ntag = 0;
+			}
+			break;
+			case FE_FACE_QUAD4:
+			case FE_FACE_QUAD8:
+			case FE_FACE_QUAD9:
+			{
+				r[0] = mesh.Node(f.n[0]).r;
+				r[1] = mesh.Node(f.n[1]).r;
+				r[2] = mesh.Node(f.n[2]).r;
+				r[3] = mesh.Node(f.n[3]).r;
+
+				p1[0] = transform.WorldToScreen(r[0]);
+				p1[1] = transform.WorldToScreen(r[1]);
+				p1[2] = transform.WorldToScreen(r[2]);
+
+				p2[0] = p1[2];
+				p2[1] = transform.WorldToScreen(r[3]);
+				p2[2] = p1[0];
+
+				if (IsBackfacing(p1) && IsBackfacing(p2)) f.m_ntag = 1;
+				else f.m_ntag = 0;
+			}
+			break;
+			}
 		}
-		break;
-		case FE_FACE_QUAD4:
-		case FE_FACE_QUAD8:
-		case FE_FACE_QUAD9:
-		{
-			r[0] = mesh.Node(f.n[0]).r;
-			r[1] = mesh.Node(f.n[1]).r;
-			r[2] = mesh.Node(f.n[2]).r;
-			r[3] = mesh.Node(f.n[3]).r;
-
-			p1[0] = transform.WorldToScreen(r[0]);
-			p1[1] = transform.WorldToScreen(r[1]);
-			p1[2] = transform.WorldToScreen(r[2]);
-
-			p2[0] = p1[2];
-			p2[1] = transform.WorldToScreen(r[3]);
-			p2[2] = p1[0];
-
-			if (IsBackfacing(p1) && IsBackfacing(p2)) f.m_ntag = 1;
-			else f.m_ntag = 0;
-		}
-		break;
-		}
+		else f.m_ntag = 1;
 	}
 }
 
@@ -5800,7 +5821,20 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 
 	// tag back facing items so they won't get selected.
 	if (view.m_bcullSel)
+	{
+		// NOTE: This actually tags front-facing faces. Should rename function.
 		TagBackfacingFaces(*pm);
+	}
+	else if (view.m_bext)
+	{
+		// tag exterior faces only 
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FEFace& f = pm->Face(i);
+			if (f.IsExterior()) f.m_ntag = 0;
+			else f.m_ntag = -1;
+		}
+	}
 	else
 		pm->TagAllFaces(0);
 
@@ -6441,12 +6475,15 @@ void CGLView::RenderSelectedEdges(GObject* po)
 		{
 			m_renderer.RenderGLEdges(&m, i);
 
-			if ((e.m_node[0] != -1) && (e.m_node[1] != -1))
+			GNode* n0 = po->Node(e.m_node[0]);
+			GNode* n1 = po->Node(e.m_node[1]);
+
+			if (n0 && n1)
 			{
 				glBegin(GL_POINTS);
 				{
-					vec3d r0 = po->Node(e.m_node[0])->LocalPosition();
-					vec3d r1 = po->Node(e.m_node[1])->LocalPosition();
+					vec3d r0 = n0->LocalPosition();
+					vec3d r1 = n1->LocalPosition();
 					glVertex3d(r0.x, r0.y, r0.z);
 					glVertex3d(r1.x, r1.y, r1.z);
 				}

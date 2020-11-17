@@ -39,9 +39,67 @@ SOFTWARE.*/
 #include <PostGL/GLPlot.h>
 #include <MeshLib/FENodeFaceList.h>
 
+class CModelContext
+{
+public:
+	CModelContext(CModelDocument* doc) : m_doc(doc) 
+	{
+		m_objs = 0;
+		m_parts = 0;
+		m_faces = 0;
+		m_edges = 0;
+		m_nodes = 0;
+		m_steps = 0;
+		m_mats = 1;	// needs to be initialized to 1
+	}
+
+	void Push()
+	{
+		assert(m_doc == CDocument::GetActiveDocument());
+		m_objs = GObject::GetCounter();
+		m_parts = GPart::GetCounter();
+		m_faces = GFace::GetCounter();
+		m_edges = GEdge::GetCounter();
+		m_nodes = GNode::GetCounter();
+		m_steps = FEStep::GetCounter();
+		m_mats = GMaterial::GetCounter();
+	}
+
+	void Pull()
+	{
+		GObject::SetCounter(m_objs);
+		GPart::SetCounter(m_parts);
+		GFace::SetCounter(m_faces);
+		GEdge::SetCounter(m_edges);
+		GNode::SetCounter(m_nodes);
+		FEStep::SetCounter(m_steps);
+		GMaterial::SetCounter(m_mats);
+	}
+
+private:
+	CModelDocument*	m_doc;
+
+	// counters
+	int	m_objs;
+	int	m_parts;
+	int	m_faces;
+	int m_edges;
+	int m_nodes;
+	int m_steps;
+	int m_mats;
+};
+
+CModelDocument::~CModelDocument()
+{
+	delete m_context;
+	m_context = nullptr;
+}
+
 CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 {
 	m_psel = nullptr;
+
+	m_context = new CModelContext(this);
 
 	SetFileWriter(new CModelFileWriter(this));
 }
@@ -53,16 +111,23 @@ void CModelDocument::Clear()
 	// reset the project
 	m_Project.Reset();
 
-	// reset the counters
-	GModel::Reset();
-	GMaterial::ResetRefs();
-
 	// clear all the jobs
 	m_JobList.Clear();
 
 	// reset selection
 	if (m_psel) delete m_psel;
 	m_psel = 0;
+}
+
+//-----------------------------------------------------------------------------
+void CModelDocument::Activate()
+{
+	m_context->Pull();
+}
+
+void CModelDocument::Deactivate()
+{
+	m_context->Push();
 }
 
 //-----------------------------------------------------------------------------
@@ -149,6 +214,11 @@ void CModelDocument::DeleteObject(FSObject* po)
 		// the plane cuts will remain active until the object is actually deleted. 
 		assert(po->GetParent());
 		delete po;
+	}
+	else if (dynamic_cast<GObject*>(po))
+	{
+		GObject* obj = dynamic_cast<GObject*>(po);
+		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
 	}
 	else if (po->GetParent())
 	{

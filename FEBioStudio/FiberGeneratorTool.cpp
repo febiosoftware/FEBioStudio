@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/FENodeData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
+#include <QFormLayout>
 #include <QTableWidget>
 #include <QPushButton>
 #include <QValidator>
@@ -41,6 +42,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QComboBox>
 
 class UIFiberGeneratorTool : public QWidget
 {
@@ -49,6 +51,12 @@ public:
 	QPushButton*	m_apply;
 	QTableWidget*	m_table;
 	QLineEdit*		m_val;
+
+	QComboBox*	m_matList;
+
+	QLineEdit*	m_maxIters;
+	QLineEdit*	m_tol;
+	QLineEdit*	m_sor;
 
 public:
 	UIFiberGeneratorTool(CFiberGeneratorTool* w)
@@ -70,6 +78,19 @@ public:
 		m_table->horizontalHeader()->setStretchLastSection(true);
 		m_table->setHorizontalHeaderLabels(QStringList() << "selection" << "value");
 
+		QFormLayout* f = new QFormLayout;
+		f->setMargin(0);
+		f->addRow("Material:", m_matList = new QComboBox);
+		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
+		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
+		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
+
+		m_maxIters->setValidator(new QIntValidator());
+		m_tol->setValidator(new QDoubleValidator());
+		m_sor->setValidator(new QDoubleValidator());
+
+		l->addLayout(f);
+
 		l->addWidget(m_apply = new QPushButton("Apply"));
 
 		l->addStretch();
@@ -84,7 +105,7 @@ public:
 
 CFiberGeneratorTool::CFiberGeneratorTool(CMainWindow* wnd) : CAbstractTool(wnd, "Fiber generator")
 {
-	m_niter = 0;
+	m_nsmoothIters = 0;
 	m_po = nullptr;
 	ui = nullptr;
 }
@@ -97,6 +118,26 @@ QWidget* CFiberGeneratorTool::createUi()
 
 void CFiberGeneratorTool::Activate()
 {
+	CModelDocument* doc = GetMainWindow()->GetModelDocument();
+	ui->m_matList->clear();
+	if (doc)
+	{
+		FEModel* fem = doc->GetFEModel();
+		if (fem)
+		{
+			int nmat = fem->Materials();
+			for (int i = 0; i < nmat; ++i)
+			{
+				GMaterial* mat = fem->GetMaterial(i); assert(mat);
+				if (mat)
+				{
+					ui->m_matList->addItem(QString::fromStdString(mat->GetName()));
+				}
+				else ui->m_matList->addItem(QString("(material %1)").arg(i));
+			}
+		}
+	}
+
 	Clear();
 	CAbstractTool::Activate();
 }
@@ -187,9 +228,61 @@ void CFiberGeneratorTool::OnApply()
 		}
 	}
 
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry("Starting Laplace solve ...\n");
+
+	// tag all elements that should be included in the solve
+	pm->TagAllElements(-1);
+	int n = ui->m_matList->currentIndex();
+	if (n >= 0)
+	{
+		CModelDocument* doc = GetMainWindow()->GetModelDocument();
+		if (doc)
+		{
+			FEModel* fem = doc->GetFEModel();
+			if (fem)
+			{
+				GMaterial* mat = fem->GetMaterial(n);
+				if (mat)
+				{
+					int matId = mat->GetID();
+
+					int NE = pm->Elements();
+					for (int i = 0; i < NE; ++i)
+					{
+						FEElement& el = pm->Element(i);
+
+						int pid = el.m_gid;
+						GPart* pg = po->Part(pid); assert(pg);
+						if (pg && (pg->GetMaterialID() == matId))
+						{
+							el.m_ntag = 1;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// get parameters
+	int maxIter = ui->m_maxIters->text().toInt();
+	double tol = ui->m_tol->text().toDouble();
+	double w = ui->m_sor->text().toDouble();
+
+	wnd->AddLogEntry(QString("max iters     = %1\n").arg(maxIter));
+	wnd->AddLogEntry(QString("tolerance     = %1\n").arg(tol));
+	wnd->AddLogEntry(QString("SOR parameter = %1\n").arg(w));
+
 	// solve Laplace equation
 	LaplaceSolver L;
-	L.Solve(pm, val, bn);
+	L.SetMaxIterations(maxIter);
+	L.SetTolerance(tol);
+	L.SetRelaxation(w);
+	bool b = L.Solve(pm, val, bn, 1);
+	int niters = L.GetIterationCount();
+	wnd->AddLogEntry(QString("%1").arg(b ? "Converged!\n" : "NOT converged!\n"));
+	wnd->AddLogEntry(QString("iteration count: %1\n").arg(niters));
+	wnd->AddLogEntry(QString("Final relative norm: %1\n").arg(L.GetRelativeNorm()));
 
 	// create node data
 	FENodeData data(m_po);
@@ -199,14 +292,17 @@ void CFiberGeneratorTool::OnApply()
 	// calculate gradient and assign to element fiber
 	vector<vec3d> grad;
 	GradientMap G;
-	G.Apply(data, grad, m_niter);
+	G.Apply(data, grad, m_nsmoothIters);
 
 	// assign to element fibers
 	int NE = pm->Elements();
 	for (int i = 0; i<NE; ++i)
 	{
 		FEElement& el = pm->Element(i);
-		el.m_fiber = grad[i];
+		if (el.m_ntag == 1)
+		{
+			el.m_fiber = grad[i];
+		}
 	}
 
 	GetMainWindow()->RedrawGL();

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEKinemat.h"
 #include "stdafx.h"
 #include <PostLib/FEMeshData_T.h>
-#include <PostGL/GLModel.h>
+#include <PostLib/FEPostModel.h>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -59,23 +59,13 @@ void FEKinemat::SetRange(int n0, int n1, int ni)
 }
 
 //-----------------------------------------------------------------------------
-bool FEKinemat::Apply(Post::CGLModel* glm, const char* szkine)
+bool FEKinemat::Apply(Post::FEPostModel* fem, const char* szkine)
 {
 	// read the kinematics file data
 	if (ReadKine(szkine) == false) return false;
 
 	// build the states
-	if (BuildStates(glm) == false) return false;
-
-	// update displacements on all states
-	CGLModel& mdl = *glm;
-	if (mdl.GetDisplacementMap() == nullptr)
-	{
-		mdl.AddDisplacementMap("Displacement");
-	}
-
-	int nstates = mdl.GetFEModel()->GetStates();
-	for (int i=0; i<nstates; ++i) mdl.UpdateDisplacements(i, true);
+	if (BuildStates(fem) == false) return false;
 
 	return true;
 }
@@ -114,9 +104,12 @@ bool FEKinemat::ReadKine(const char* szfile)
 }
 
 //-----------------------------------------------------------------------------
-bool FEKinemat::BuildStates(Post::CGLModel* glm)
+bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 {
-	FEPostModel& fem = *glm->GetFEModel();
+	if (pfem == nullptr) return false;
+	Post::FEPostModel& fem = *pfem;
+
+	// add the first state
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	int NMAT = fem.Materials();
 	int NN = mesh.Nodes();

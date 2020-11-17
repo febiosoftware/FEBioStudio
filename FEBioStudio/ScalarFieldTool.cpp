@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/FEElementData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
+#include <QFormLayout>
 #include <QTableWidget>
 #include <QPushButton>
 #include <QValidator>
@@ -52,6 +53,10 @@ public:
 	QTableWidget*	m_table;
 	QLineEdit*		m_val;
 	QComboBox*		m_domain;
+
+	QLineEdit*	m_maxIters;
+	QLineEdit*	m_tol;
+	QLineEdit*	m_sor;
 
 public:
 	UIScalarFieldTool(CScalarFieldTool* w)
@@ -87,6 +92,18 @@ public:
 		h3->addWidget(m_domain);
 
 		l->addLayout(h3);
+
+		QFormLayout* f = new QFormLayout;
+		f->setMargin(0);
+		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
+		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
+		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
+
+		m_maxIters->setValidator(new QIntValidator());
+		m_tol->setValidator(new QDoubleValidator());
+		m_sor->setValidator(new QDoubleValidator());
+
+		l->addLayout(f);
 
 		l->addWidget(m_apply = new QPushButton("Create"));
 
@@ -219,9 +236,31 @@ void CScalarFieldTool::OnApply()
 		}
 	}
 
+	CMainWindow* wnd = GetMainWindow();
+	wnd->AddLogEntry("Starting Laplace solve ...\n");
+
+	// get parameters
+	int maxIter = ui->m_maxIters->text().toInt();
+	double tol = ui->m_tol->text().toDouble();
+	double w = ui->m_sor->text().toDouble();
+
+	wnd->AddLogEntry(QString("max iters     = %1\n").arg(maxIter));
+	wnd->AddLogEntry(QString("tolerance     = %1\n").arg(tol));
+	wnd->AddLogEntry(QString("SOR parameter = %1\n").arg(w));
+
+	// Tag all elements since the Laplace solver only looks at tagged elements
+	pm->TagAllElements(0);
+
 	// solve Laplace equation
 	LaplaceSolver L;
-	L.Solve(pm, val, bn);
+	L.SetMaxIterations(maxIter);
+	L.SetTolerance(tol);
+	L.SetRelaxation(w);
+	bool b = L.Solve(pm, val, bn);
+	int niters = L.GetIterationCount();
+	wnd->AddLogEntry(QString("%1").arg(b ? "Converged!\n" : "NOT converged!\n"));
+	wnd->AddLogEntry(QString("iteration count: %1\n").arg(niters));
+	wnd->AddLogEntry(QString("Final relative norm: %1\n").arg(L.GetRelativeNorm()));
 
 	int ntype = ui->m_domain->currentIndex();
 

@@ -129,8 +129,11 @@ public:
 	void AddComponent(FEStepComponent* pc);
 	void RemoveComponent(FEStepComponent* pc);
     
-	static void ResetCounter();
 
+public: // ref counting
+	static void ResetCounter();
+	static void SetCounter(int n);
+	static int GetCounter();
 	static void DecreaseCounter();
 
 protected:

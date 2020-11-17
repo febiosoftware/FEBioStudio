@@ -327,6 +327,84 @@ void CMainWindow::on_actionLayerInfo_triggered()
 		else
 			log->AddText("\n");
 	}
+
+	// print object info
+	log->AddText("\nObject Info:\n===================\n");
+	for (int i = 0; i < nobjs; ++i)
+	{
+		const int M = 20;
+		GObject* po = gm->Object(i);
+		log->AddText(QString("Object: %1 (ID = %2)\n").arg(QString::fromStdString(po->GetName())).arg(po->GetID()));
+		log->AddText("_________________________________________________________________________________________\n");
+		log->AddText("       Parts         |      Surfaces        |        Edges         |       Nodes\n");
+		log->AddText("---------------------+----------------------+----------------------+---------------------\n");
+		int m = 0;
+		bool done = false;
+		do
+		{
+			done = true;
+
+			// print part info
+			QString s, t;
+			if (m < po->Parts())
+			{
+				done = false;
+				GPart* pg = po->Part(m);
+				s = QString("%1 (%2)").arg(QString::fromStdString(pg->GetName())).arg(pg->GetID());
+				t = QString("%1").arg(s, -M);
+			}
+			else t = QString("%1").arg("", M, ' ');
+			log->AddText(t);
+			log->AddText(" | ");
+
+			// print surface info
+			if (m < po->Faces())
+			{
+				done = false;
+				GFace* pg = po->Face(m);
+				s = QString("%1 (%2)").arg(QString::fromStdString(pg->GetName())).arg(pg->GetID());
+				t = QString("%1").arg(s, -M);
+			}
+			else t = QString("%1").arg("", M, ' ');
+			log->AddText(t);
+			log->AddText(" | ");
+
+			// print edge info
+			if (m < po->Edges())
+			{
+				done = false;
+				GEdge* pg = po->Edge(m);
+				s = QString("%1 (%2)").arg(QString::fromStdString(pg->GetName())).arg(pg->GetID());
+				t = QString("%1").arg(s, -M);
+			}
+			else t = QString("%1").arg("", M, ' ');
+			log->AddText(t);
+			log->AddText(" | ");
+
+			// print node info
+			if (m < po->Nodes())
+			{
+				done = false;
+				GNode* pg = po->Node(m);
+				s = QString("%1 (%2)").arg(QString::fromStdString(pg->GetName())).arg(pg->GetID());
+				t = QString("%1").arg(s, -M);
+			}
+			else t = QString("%1").arg("", M, ' ');
+			log->AddText(t);
+			log->AddText("\n");
+
+			m++;
+		}
+		while (!done);
+	}
+
+	// model context
+	log->AddText("\nModel Context:\n===================\n");
+	log->AddText(QString("Object counter: %1\n").arg(GObject::GetCounter()));
+	log->AddText(QString("Part counter: %1\n").arg(GPart::GetCounter()));
+	log->AddText(QString("Face counter: %1\n").arg(GFace::GetCounter()));
+	log->AddText(QString("Edge counter: %1\n").arg(GEdge::GetCounter()));
+	log->AddText(QString("Node counter: %1\n").arg(GNode::GetCounter()));
 }
 
 void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)

@@ -146,6 +146,8 @@ void CDocObserver::DocumentDelete()
 // CDocument
 //==============================================================================
 
+CDocument* CDocument::m_activeDoc = nullptr;
+
 CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 {
 	m_fileWriter = nullptr;
@@ -160,9 +162,26 @@ CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 	m_autoSaveFilePath.clear();
 }
 
+CDocument* CDocument::GetActiveDocument()
+{
+	return m_activeDoc;
+}
+
+void CDocument::SetActiveDocument(CDocument* doc)
+{
+	if (doc == m_activeDoc) return;
+
+	if (m_activeDoc) m_activeDoc->Deactivate();
+	m_activeDoc = doc;
+	if (doc) m_activeDoc->Activate();
+}
+
 //-----------------------------------------------------------------------------
 CDocument::~CDocument()
 {
+	// make sure it's not the active doc
+	if (GetActiveDocument() == this) SetActiveDocument(nullptr);
+
 	// remove all observers
 	for (int i = 0; i < m_Observers.size(); ++i)
 		m_Observers[i]->DocumentDelete();
@@ -185,6 +204,19 @@ void CDocument::Clear()
 bool CDocument::Initialize()
 {
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+// will be called when the document is activated
+void CDocument::Activate()
+{
+
+}
+
+// will be called when the document is deactivate
+void CDocument::Deactivate()
+{
+
 }
 
 //-----------------------------------------------------------------------------
@@ -463,24 +495,6 @@ QString CTextDocument::GetText()
 CGLDocument::CGLDocument(CMainWindow* wnd) : CDocument(wnd)
 {
 	m_pCmd = new CCommandManager(this);
-
-	// update the Post palette to match PreView's
-	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
-	
-	Post::CPalette pal("preview");
-	for (int i = 0; i < GMaterial::MAX_COLORS; ++i)
-	{
-		GLColor c = col[i];
-		GLColor glc(c.r, c.g, c.b);
-		pal.AddColor(glc);
-	}
-
-	PM.AddPalette(pal);
-	PM.SetCurrentIndex(PM.Palettes() - 1);
-
-	// reset the counters
-	GModel::Reset();
-	GMaterial::ResetRefs();
 
 	// Clear the command history
 	m_pCmd->Clear();

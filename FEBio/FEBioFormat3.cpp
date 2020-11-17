@@ -1524,14 +1524,24 @@ void FEBioFormat3::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	// create the node set
 	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
-	char szname[256];
-	sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem)+1);
-	pg->SetName(szname);
+	char szbuf[256];
+	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem)+1);
+	pg->SetName(szbuf);
+
+	// get the (optional) name
+	string name;
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname == nullptr)
+	{
+		char szname[256];
+		sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem) + 1);
+		name = szname;
+	}
+	else name = szname;
 
 	// create the nodal load
 	FENodalLoad* pbc = new FENodalLoad(&fem, pg, 0, 1, pstep->GetID());
-	sprintf(szname, "ForceLoad%02d", CountLoads<FENodalLoad>(fem)+1);
-	pbc->SetName(szname);
+	pbc->SetName(name);
 	pstep->AddComponent(pbc);
 
 	// assign nodes to node sets
@@ -1600,9 +1610,7 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, surf);
 
 	// read the (optional) name
-	string name;
-	const char* szname = tag.AttributeValue("name", true);
-	if (szname) name = szname;
+	string name = tag.AttributeValue("name", "");
 
 	// create the surface load
 	FESurfaceLoad* psl = nullptr;
@@ -1669,9 +1677,7 @@ void FEBioFormat3::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	std::string comment = tag.comment();
 
 	// read the (optional) name
-	string name;
-	const char* szname = tag.AttributeValue("name", true);
-	if (szname) name = szname;
+	string name = tag.AttributeValue("name", "");
 
 	// create new body load
 	FEBodyLoad* pbl = nullptr;

@@ -1385,17 +1385,27 @@ void FEBioFormat25::ParseNodeLoad(FEStep* pstep, XMLTag& tag)
 	// get the load curve ID
 	XMLAtt& aset = tag.Attribute("node_set");
 
+	// get the (optional) name
+	string name;
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname == nullptr)
+	{
+		char szname[256];
+		sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem) + 1);
+		name = szname;
+	}
+	else name = szname;
+
 	// create the node set
 	FENodeSet* pg = febio.BuildFENodeSet(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
-	char szname[256];
-	sprintf(szname, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem)+1);
-	pg->SetName(szname);
+	char szbuf[256];
+	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FENodalLoad>(fem)+1);
+	pg->SetName(szbuf);
 
 	// create the nodal load
 	FENodalLoad* pbc = new FENodalLoad(&fem, pg, bc, 1, pstep->GetID());
-	sprintf(szname, "ForceLoad%02d", CountLoads<FENodalLoad>(fem)+1);
-	pbc->SetName(szname);
+	pbc->SetName(name);
 	pstep->AddComponent(pbc);
 
 	// assign nodes to node sets
@@ -1430,6 +1440,9 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 	FESurface* psurf = febio.BuildFESurface(surf.cvalue());
 	if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, surf);
 
+	// get the optional name
+	string name = tag.AttributeValue<string>("name", "");
+
 	FESurfaceLoad* psl = 0;
 	XMLAtt& att = tag.Attribute("type");
 	if      (att == "pressure"           ) psl = ParseLoadPressure          (tag);
@@ -1454,6 +1467,9 @@ void FEBioFormat25::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
 
 	if (psl)
 	{
+		// set the name if it was defined
+		if (name.empty() == false) psl->SetName(name);
+
 		// assign the surface
 		psl->SetItemList(psurf);
 

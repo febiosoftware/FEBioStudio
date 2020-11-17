@@ -452,6 +452,11 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	CModelDocument* doc = new CModelDocument(this);
 	doc->SetFileWriter(nullptr);
 
+	// we need to set this document as the active document
+	// NOTE: This might cause problems if the user modifies the currently open document
+	//       while the file is reading. 
+	CDocument::SetActiveDocument(doc);
+
 	FEProject& prj = doc->GetProject();
 
 	// create a file reader

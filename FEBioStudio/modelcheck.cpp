@@ -102,7 +102,7 @@ vector<ERROR_DATA> error = {
 	{ CRITICAL, "There are no materials defined in this model.", check_002 },
 	{ CRITICAL, "Part \"%s\" does not have a material assigned.", check_003 },
 	{ CRITICAL, "There are no analysis steps defined.", check_004 },
-	{ WARNING , "Material \"%s\" is not used by this model.", check_005 },
+	{ WARNING , "Material \"%s\" is not assigned to any parts.", check_005 },
 	{ WARNING , "Rigid body \"%s\" might be underconstrained.", check_006 },
 	{ CRITICAL, "No selection was assigned to interface \"%s\".", check_007 },
 	{ CRITICAL, "One or both of the selections of interface \"%s\" is unassigned.", check_008 },

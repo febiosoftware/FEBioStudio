@@ -184,19 +184,6 @@ void GModel::ClearDiscrete()
 }
 
 //-----------------------------------------------------------------------------
-
-void GModel::Reset()
-{
-	// reset counters
-	GObject::ResetCounter();
-	GPart::ResetCounter();
-	GFace::ResetCounter();
-	GEdge::ResetCounter();
-	GNode::ResetCounter();
-	FEStep::ResetCounter();
-}
-
-//-----------------------------------------------------------------------------
 int GModel::RemoveObject(GObject* po, bool deleteMeshList)
 {
 	// remove the object from the list

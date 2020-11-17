@@ -1078,6 +1078,10 @@ void FEBioFormat::ParseFiberMaterial(FEOldFiberMaterial& fibermat, XMLTag& tag)
 	{
 		ParseUnknownAttribute(tag, "type");
 	}
+
+	// NOTE: we need to do this so the correct parameters are made visible
+	fiber.UpdateData(false);
+	fiber.UpdateData(true);
 }
 
 

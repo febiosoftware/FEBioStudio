@@ -74,9 +74,6 @@ public:
 	//! clear all discrete objects
 	void ClearDiscrete();
 
-	//! reset model
-	static void Reset();
-
 	//! Save the model to the archive
 	void Save(OArchive& ar);
 

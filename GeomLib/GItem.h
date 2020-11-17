@@ -127,13 +127,16 @@ protected:
 template <class T> class GItem_T : public GItem
 {
 public:
-	GItem_T(GBaseObject* po = 0) : GItem(po){}
+	GItem_T(GBaseObject* po = 0) : GItem(po) {}
 	void SetID(int nid) { m_gid = nid; if (nid > m_ncount) m_ncount = nid; }
 	static int CreateUniqueID() { return ++m_ncount; }
 	static void ResetCounter() { m_ncount = 0; }
 
 	static void IncreaseCounter() { m_ncount++; }
 	static void DecreaseCounter() { m_ncount--; }
+
+	static void SetCounter(int n) { m_ncount = n; }
+	static int GetCounter() { return m_ncount; }
 	
 private:
 	static int	m_ncount;
@@ -196,7 +199,7 @@ public:
 class GEdge : public GItem_T<GEdge>
 {
 public:
-	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = 0; m_ntype = EDGE_UNKNOWN; }
+	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
 	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = 0; m_ntype = EDGE_UNKNOWN; }
 
 	GEdge(const GEdge& e);

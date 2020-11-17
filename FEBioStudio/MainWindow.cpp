@@ -77,6 +77,7 @@ SOFTWARE.*/
 #include "ZipFiles.h"
 #endif
 #include "welcomePage.h"
+#include <PostLib/Palette.h>
 
 extern GLColor col[];
 
@@ -125,6 +126,20 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	CResource::Init(this);
 
 	setDockOptions(dockOptions() | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
+
+	// update the Post palette to match PreView's
+	Post::CPaletteManager& PM = Post::CPaletteManager::GetInstance();
+
+	Post::CPalette pal("preview");
+	for (int i = 0; i < GMaterial::MAX_COLORS; ++i)
+	{
+		GLColor c = col[i];
+		GLColor glc(c.r, c.g, c.b);
+		pal.AddColor(glc);
+	}
+
+	PM.AddPalette(pal);
+	PM.SetCurrentIndex(PM.Palettes() - 1);
 
 	// read the theme option, before we build the UI
 	readThemeSetting();
@@ -597,6 +612,9 @@ void CMainWindow::OpenDocument(const QString& fileName)
 	CModelDocument* doc = new CModelDocument(this);
 	doc->SetDocFilePath(filePath.toStdString());
 
+	// we need to make this the active document
+	CDocument::SetActiveDocument(doc);
+
 	// start reading the file
 	ReadFile(doc, filePath, new ModelFileReader(doc), QueuedFile::NEW_DOCUMENT);
 
@@ -828,6 +846,9 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		{
 			delete file.m_doc;
 		}
+
+		// reset the active document
+		CDocument::SetActiveDocument(GetDocument());
 
 		return;
 	}
@@ -1791,6 +1812,9 @@ void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool make
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_currentChanged(int n)
 {
+	CDocument* newDoc = GetDocument();
+	CDocument::SetActiveDocument(newDoc);
+
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->hide();
 	GetGLView()->ClearCommandStack();
 
@@ -1806,7 +1830,6 @@ void CMainWindow::on_tab_currentChanged(int n)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_tab_tabCloseRequested(int n)
 {
-	// Okay, remove the view
 	CloseView(n);
 	ui->fileViewer->Update();
 }

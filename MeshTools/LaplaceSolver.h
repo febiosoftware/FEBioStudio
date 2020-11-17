@@ -37,9 +37,27 @@ class LaplaceSolver
 public:
 	LaplaceSolver();
 
+	void SetMaxIterations(int n);
+	void SetTolerance(double a);
+	void SetRelaxation(double w);
+
 	// Solves the Laplace equation on the mesh.
 	// Input: val = initial values for all nodes
 	//        bn  = boundary flags: 0 = free, 1 = fixed
 	// Output: val = solution
-	bool Solve(FEMesh* pm, vector<double>& val, vector<int>& bn);
+	bool Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int elemTag = 0);
+
+public: // output
+	int GetIterationCount() const;
+	double GetRelativeNorm() const;
+
+private:
+	// input parameters
+	int		m_maxIters;	//!< max nr of iterations
+	double	m_tol;	//!< convergence tolerance
+	double	m_w;	//!< relaxation parameter
+
+	// output variables
+	int		m_niters;		//!< nr of iterations
+	double	m_relNorm;		//!< final relative convergence norm
 };

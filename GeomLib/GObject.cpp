@@ -2156,3 +2156,12 @@ void GObject::Load(IArchive& ar)
 
 	Update(false);
 }
+//-----------------------------------------------------------------------------
+void GObject::Reindex()
+{
+	SetID(CreateUniqueID());
+	for (int i = 0; i < Parts(); ++i) Part(i)->SetID(GPart::CreateUniqueID());
+	for (int i = 0; i < Faces(); ++i) Face(i)->SetID(GFace::CreateUniqueID());
+	for (int i = 0; i < Edges(); ++i) Edge(i)->SetID(GEdge::CreateUniqueID());
+	for (int i = 0; i < Nodes(); ++i) Node(i)->SetID(GNode::CreateUniqueID());
+}

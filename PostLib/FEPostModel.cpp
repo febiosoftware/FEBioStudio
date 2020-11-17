@@ -175,7 +175,10 @@ int FEPostModel::Meshes() const
 //-----------------------------------------------------------------------------
 FEPostMesh* FEPostModel::GetFEMesh(int n)
 {
-	return m_mesh[n];
+	if ((n>=0) && (n<m_mesh.size()))
+		return m_mesh[n];
+	else
+		return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -940,6 +943,12 @@ void FEPostModel::GetElementCoords(int iel, int ntime, vec3f* r)
 void FEPostModel::UpdateBoundingBox()
 {
 	FEPostMesh* mesh = GetFEMesh(0);
+	if (mesh == nullptr)
+	{
+		m_bbox = BOX(vec3d(0, 0, 0), vec3d(1, 1, 1));
+		return;
+	}
+
 	FENode& n = mesh->Node(0);
 	m_bbox.x0 = m_bbox.x1 = n.r.x;
 	m_bbox.y0 = m_bbox.y1 = n.r.y;

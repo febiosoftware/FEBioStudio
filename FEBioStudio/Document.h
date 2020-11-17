@@ -138,6 +138,12 @@ public:
 	// this is called after a document was loaded
 	virtual bool Initialize();
 
+	// will be called when the document is activated
+	virtual void Activate();
+
+	// will be called when the document is deactivate
+	virtual void Deactivate();
+
 public:
 	// --- Document validation ---
 	bool IsModified();
@@ -199,6 +205,10 @@ public:
 	void RemoveObserver(CDocObserver* observer);
 	void UpdateObservers(bool bnew);
 
+public:
+	static CDocument* GetActiveDocument();
+	static void SetActiveDocument(CDocument* doc);
+
 protected:
 	// Modified flag
 	bool	m_bModified;	// is document modified since last saved ?
@@ -216,6 +226,8 @@ protected:
 
 	CMainWindow*	m_wnd;
 	std::vector<CDocObserver*>	m_Observers;
+
+	static CDocument*	m_activeDoc;
 };
 
 //-----------------------------------------------------------------------------

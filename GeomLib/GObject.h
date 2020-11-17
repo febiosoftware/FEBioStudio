@@ -254,6 +254,8 @@ public:
 
 	GNode* FindNodeFromTag(int ntag);
 
+	void Reindex();
+
 private:
 	Imp*	imp;
 };
