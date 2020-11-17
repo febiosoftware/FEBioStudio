@@ -248,6 +248,9 @@ void CScalarFieldTool::OnApply()
 	wnd->AddLogEntry(QString("tolerance     = %1\n").arg(tol));
 	wnd->AddLogEntry(QString("SOR parameter = %1\n").arg(w));
 
+	// Tag all elements since the Laplace solver only looks at tagged elements
+	pm->TagAllElements(0);
+
 	// solve Laplace equation
 	LaplaceSolver L;
 	L.SetMaxIterations(maxIter);

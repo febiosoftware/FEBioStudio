@@ -49,7 +49,7 @@ private slots:
 	void OnApply();
 
 private:
-	int	m_niter;
+	int	m_nsmoothIters;
 	UIFiberGeneratorTool*	ui;
 	GObject*	m_po;
 	std::vector<FEItemListBuilder*>	m_data;

@@ -69,7 +69,7 @@ double LaplaceSolver::GetRelativeNorm() const
 // Input: val = initial values for all nodes
 //        bn  = boundary flags: 0 = free, 1 = fixed
 // Output: val = solution
-bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
+bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int elemTag)
 {
 	m_niters = 0;
 
@@ -111,10 +111,47 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 	for (int i=0; i<NN; ++i)
 		if (bn[i] == 0) val[i] = vavg;
 
-	// calculate the element volumes
+	// get the element list from the tags
 	int NE = pm->Elements();
-	vector<double> Ve(NE);
-	for (int i=0; i<NE; ++i) Ve[i] = FEMeshMetrics::ElementVolume(*pm, pm->Element(i));
+	vector<int> elist; elist.reserve(NE);
+	for (int i = 0; i < NE; ++i)
+	{
+		if (pm->Element(i).m_ntag == elemTag) elist.push_back(i);
+	}
+
+	// calculate the element volumes
+	vector<double> Ve(NE, 0.0);
+	for (int i = 0; i < elist.size(); ++i)
+	{
+		int eid = elist[i];
+		Ve[eid] = FEMeshMetrics::ElementVolume(*pm, pm->Element(eid));
+	}
+
+	// build the node list
+	vector<int> nodeList; nodeList.reserve(NN);
+	pm->TagAllNodes(-1);
+	for (int i = 0; i < elist.size(); ++i)
+	{
+		int eid = elist[i];
+		FEElement& el = pm->Element(eid);
+		int nn = el.Nodes();
+		for (int j = 0; j < nn; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+	}
+	int nc = 0;
+	for (int i = 0; i < NN; ++i)
+	{
+		if (pm->Node(i).m_ntag != -1)
+		{
+			nodeList.push_back(i);
+			pm->Node(i).m_ntag = nc++;
+		}
+		else
+		{
+			bn[i] = 2;
+			val[i] = 0.0;
+		}
+	}
+	assert(nc == nodeList.size());
 
 	// create Node-Node list
 	FENodeNodeList NNL(pm);
@@ -138,22 +175,26 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 				int iel = NEL.ElementIndex(i, j);
 				FEElement_& ej = *NEL.Element(i, j);
 
-				int na = ej.FindNodeIndex(i);
-				assert (na != -1);
-
-				double Vj = Ve[iel];
-				int nj = ej.Nodes();
-				double dot = 0.0;
-				for (int k=0; k<nj; ++k)
+				if (ej.m_ntag == elemTag)
 				{
-					vec3d Ga = FEMeshMetrics::ShapeGradient(*pm, ej, na, k);
-					dot += Ga*Ga;
+					int na = ej.FindNodeIndex(i);
+					assert(na != -1);
+
+					double Vj = Ve[iel];
+					int nj = ej.Nodes();
+					double dot = 0.0;
+					for (int k = 0; k < nj; ++k)
+					{
+						vec3d Ga = FEMeshMetrics::ShapeGradient(*pm, ej, na, k);
+						dot += Ga * Ga;
+					}
+					dot *= Vj / nj;
+
+					D[i] += dot;
 				}
-				dot *= Vj / nj;
-			
-				D[i] += dot;
 			}
 		}
+		else D[i] = 1.0;
 	}
 
 	// build the edge weights
@@ -176,22 +217,26 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn)
 				if (NEL.HasElement(nj, kel))
 				{
 					FEElement_& ek = *NEL.Element(ni, k);
-					int na = ek.FindNodeIndex(ni); assert(na != -1);
-					int nb = ek.FindNodeIndex(nj); assert(nb != -1);
 
-					double Vk = Ve[kel];
-					int nk = ek.Nodes();
-
-					double dot = 0.0;
-					for (int k=0; k<nk; ++k)
+					if (ek.m_ntag == elemTag)
 					{
-						vec3d Ga = FEMeshMetrics::ShapeGradient(*pm, ek, na, k);
-						vec3d Gb = FEMeshMetrics::ShapeGradient(*pm, ek, nb, k);
-						dot += Ga*Gb;
+						int na = ek.FindNodeIndex(ni); assert(na != -1);
+						int nb = ek.FindNodeIndex(nj); assert(nb != -1);
+
+						double Vk = Ve[kel];
+						int nk = ek.Nodes();
+
+						double dot = 0.0;
+						for (int k = 0; k < nk; ++k)
+						{
+							vec3d Ga = FEMeshMetrics::ShapeGradient(*pm, ek, na, k);
+							vec3d Gb = FEMeshMetrics::ShapeGradient(*pm, ek, nb, k);
+							dot += Ga * Gb;
+						}
+						dot *= Vk / nk;
+
+						Kij += dot;
 					}
-					dot *= Vk / nk;
-			
-					Kij += dot;
 				}
 			}
 

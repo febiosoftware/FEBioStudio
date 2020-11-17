@@ -45,7 +45,7 @@ public:
 	// Input: val = initial values for all nodes
 	//        bn  = boundary flags: 0 = free, 1 = fixed
 	// Output: val = solution
-	bool Solve(FEMesh* pm, vector<double>& val, vector<int>& bn);
+	bool Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int elemTag = 0);
 
 public: // output
 	int GetIterationCount() const;
