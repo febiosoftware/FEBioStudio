@@ -26,23 +26,23 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 if(NOT Qt5_DIR)
-    if(NOT Qt5_ROOT)
-        set(Qt5_ROOT "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
+    if(NOT Qt5_Root)
+        set(Qt5_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
     endif()
     
     if(WIN32)
         find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_ROOT}/* ${Qt5_ROOT}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "msvc2015_64/lib" "msvc2017_64/lib" "msvc2019_64/lib"
 			DOC "Qt5 CMake Directory")
     elseif(APPLE)
 		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_ROOT}/* ${Qt5_ROOT}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "clang_64/lib"
 			DOC "Qt5 CMake Directory")
     else()
 		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_ROOT}/* ${Qt5_ROOT}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "gcc_64/lib"
 			DOC "Qt5 CMake Directory")
     endif()
@@ -55,7 +55,7 @@ if(NOT Qt5_DIR)
     endif()
     
     if(NOT Qt5_DIR)
-        message(FATAL_ERROR "Unable to locate Qt5Config.cmake. Please check the value of Qt5_ROOT and set it to the root directory of your Qt5 installation (e.g. /opt/Qt).")
+        message(FATAL_ERROR "Unable to locate Qt5Config.cmake. Please check the value of Qt5_Root and set it to the root directory of your Qt5 installation (e.g. /opt/Qt).")
     endif()
 endif()
 
@@ -74,11 +74,11 @@ include(FindDependencies.cmake)
 #### Check if paths are valid and find libs ####
 
 function(findLib libName libDir libOut)
-    find_library(TEMP ${libName} PATHS ${libDir} NO_DEFAULT_PATH)
+    find_library(TEMP ${libName} PATHS ${${libDir}} NO_DEFAULT_PATH)
 
     # Optional argument ARGV3 can be used to pass an alternate name for the library
     if(NOT TEMP AND ${ARGC} GREATER 3)
-        find_library(TEMP ${ARGV3} PATHS ${libDir} NO_DEFAULT_PATH)
+        find_library(TEMP ${ARGV3} PATHS ${${libDir}} NO_DEFAULT_PATH)
     endif()
     
     if(TEMP)
@@ -86,43 +86,41 @@ function(findLib libName libDir libOut)
         unset(TEMP CACHE)
     else()
         if(WIN32)
-            message(SEND_ERROR "Could not find ${libName}.lib. Check ${libName}_LIB_DIR.")
+            message(SEND_ERROR "Could not find ${libName}.lib. Check ${libName}.")
         elseif(APPLE)
-            message(SEND_ERROR "Could not find ${libName}.a, ${libName}.so, or ${libName}.dylib Check ${libName}_LIB_DIR.")
+            message(SEND_ERROR "Could not find ${libName}.so, ${libName}.a, or ${libName}.dylib Check ${libDir}.")
         else()
-            message(SEND_ERROR "Could not find ${libName}.a, or ${libName}.so. Check ${libName}_LIB_DIR.")
+            message(SEND_ERROR "Could not find ${libName}.so, or ${libName}.a. Check ${libDir}")
         endif()
         unset(TEMP CACHE)
     endif()
 endfunction()
 
 if(USE_MMG)
-    findLib(mmg3d ${MMG_LIB_DIR} MMG_LIB)
+    findLib(mmg3d MMG_LIB_DIR MMG_LIB)
 endif()
 
 if(USE_TETGEN)
-    findLib(tet ${TETGEN_LIB_DIR} TETGEN_LIB tetgen)
+    findLib(tet TETGEN_LIB_DIR TETGEN_LIB tetgen)
 endif()
 
-if(USE_NETGEN)
+if(CAD_FEATURES)
     set(NETGEN_LIBS "")
     
     set(NETGEN_LIB_NAMES nglib csg interface mesh occ)
     foreach(name IN LISTS NETGEN_LIB_NAMES)
-        findLib(${name} ${NETGEN_LIB_DIR} NETGEN_LIB)
+        findLib(${name} NETGEN_LIB_DIR NETGEN_LIB)
         list(APPEND NETGEN_LIBS ${NETGEN_LIB})
         unset(NETGEN_LIB)
     endforeach(name)
     
     unset(NETGEN_LIB_NAMES)
-endif()
 
-if(USE_OCCT)
     set(OCCT_LIBS "")
     
     set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKSTL TKFillet TKBO TKIGES TKSTEP TKSTEPBase TKXSBase TKG3d TKLCAF TKVCAF)
     foreach(name IN LISTS OCCT_LIB_NAMES)
-        findLib(${name} ${OCCT_LIB_DIR} OCCT_LIB)
+        findLib(${name} OCCT_LIB_DIR OCCT_LIB)
         list(APPEND OCCT_LIBS ${OCCT_LIB})
         unset(OCCT_LIB)
     endforeach(name)
@@ -131,26 +129,24 @@ if(USE_OCCT)
 endif()
 
 if(USE_SSH)
-    findLib(ssh ${SSH_LIB_DIR} SSH_LIB)
+    findLib(ssh SSH_LIB_DIR SSH_LIB)
     
     set(SSL_LIBS "")
     
-    findLib(crypto ${SSL_LIB_DIR} CRYPTO_LIB libcrypto)
+    findLib(crypto SSL_LIB_DIR CRYPTO_LIB libcrypto)
     list(APPEND SSL_LIBS ${CRYPTO_LIB})
     unset(CRYPTO_LIB)
     
-    findLib(ssl ${SSL_LIB_DIR} SSL_LIB libssl)
+    findLib(ssl SSL_LIB_DIR SSL_LIB libssl)
     list(APPEND SSL_LIBS ${SSL_LIB})
     unset(SSL_LIB)
 endif()
 
-if(USE_QUAZIP)
-    # Passing quazip5 as a possible alternate name for the library
-    findLib(quazip ${QUAZIP_LIB_DIR} QUAZIP_LIB quazip5)
-endif()
-
 if(MODEL_REPO)
-    findLib(sqlite3 ${SQLITE_LIB_DIR} SQLITE_LIB)
+    # Passing quazip5 as a possible alternate name for the library
+    findLib(quazip QUAZIP_LIB_DIR QUAZIP_LIB quazip5)
+
+    findLib(sqlite3 SQLITE_LIB_DIR SQLITE_LIB)
 endif()
 
 if(USE_FFMPEG)
@@ -161,8 +157,9 @@ if(USE_FFMPEG)
     else()
         set(FFMPEG_LIB_NAMES avformat avcodec avresample avutil swresample swscale)
     endif()
+    
     foreach(name IN LISTS FFMPEG_LIB_NAMES)
-        findLib(${name} ${FFMPEG_LIB_DIR} FFMPEG_LIB)
+        findLib(${name} FFMPEG_LIB_DIR FFMPEG_LIB)
         list(APPEND FFMPEG_LIBS ${FFMPEG_LIB})
         unset(FFMPEG_LIB)
     endforeach(name)
@@ -194,13 +191,11 @@ if(USE_TETGEN)
 	include_directories(${TETGEN_INC})
 endif()
 
-if(USE_NETGEN)
+if(CAD_FEATURES)
 	add_definitions(-DHAS_NETGEN)
 	include_directories(${NETGEN_INC})
     include_directories(${NETGEN_INC}/include)
-endif()
 
-if(USE_OCCT)
 	add_definitions(-DHAS_OCC)
 	include_directories(${OCCT_INC})
 endif()
@@ -210,12 +205,10 @@ if(USE_SSH)
 	include_directories(${SSH_INC} ${SSL_INC})
 endif()
 
-if(USE_QUAZIP)
+if(MODEL_REPO)
 	add_definitions(-DHAS_QUAZIP)
 	include_directories(${QUAZIP_INC})
-endif()
 
-if(MODEL_REPO)
 	add_definitions(-DMODEL_REPO)
 	include_directories(${SQLITE_INC})
 endif()
@@ -297,11 +290,9 @@ if(USE_TETGEN)
 	target_link_libraries(FEBioStudio ${TETGEN_LIB})
 endif()
 
-if(USE_NETGEN)
+if(CAD_FEATURES)
 	target_link_libraries(FEBioStudio ${NETGEN_LIBS})
-endif()
 
-if(USE_OCCT)
     target_link_libraries(FEBioStudio ${OCCT_LIBS})
 endif()
 
@@ -310,12 +301,9 @@ if(USE_SSH)
     target_link_libraries(FEBioStudio ${SSL_LIBS})
 endif()
 
-if(USE_QUAZIP)
-    target_link_libraries(FEBioStudio ${QUAZIP_LIB})
-endif()
-
 if(MODEL_REPO)
-	target_link_libraries(FEBioStudio ${SQLITE_LIB})
+	target_link_libraries(FEBioStudio ${QUAZIP_LIB})
+    target_link_libraries(FEBioStudio ${SQLITE_LIB})
 endif()
 
 if(USE_FFMPEG)
@@ -328,7 +316,7 @@ target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
 target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
 
 if(WIN32)
-target_link_libraries(FEBioStudio vfw32.lib)
+    target_link_libraries(FEBioStudio vfw32.lib)
 elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -Wl,--end-group)

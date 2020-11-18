@@ -84,45 +84,6 @@ else()
     mark_as_advanced(CLEAR TETGEN_INC TETGEN_LIB_DIR)
 endif()
 
-# NETGEN
-if(WIN32)
-	find_path(NETGEN_INC include/occgeom.hpp
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "include" "netgen/include" "build" "build/include"
-        DOC "Netgen include directory")
-	find_library(NETGEN_LIB nglib 
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
-		DOC "Netgen library path")
-else()
-	find_path(NETGEN_INC include/occgeom.hpp
-        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/Resources/include
-        PATH_SUFFIXES "include" "netgen/include" "build" "build/include"
-		DOC "Netgen include directory")
-	find_library(NETGEN_LIB nglib 
-        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/MacOS
-        PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug"
-		DOC "Netgen library path")
-endif()
-
-if(NETGEN_LIB)
-    get_filename_component(NETGEN_TEMP ${NETGEN_LIB} DIRECTORY)
-    set(NETGEN_LIB_DIR ${NETGEN_TEMP} CACHE PATH "Path to the Netgen lib directory (e.g. /opt/netgen/lib)")
-    unset(NETGEN_TEMP)
-    unset(NETGEN_LIB CACHE)
-else()
-	set(NETGEN_LIB_DIR "NETGEN_LIB_DIR-NOTFOUND" CACHE PATH "Path to the Netgen lib directory (e.g. /opt/netgen/lib)")
-    unset(NETGEN_LIB CACHE)
-endif()
-
-if(NETGEN_INC AND NETGEN_LIB_DIR)		
-	option(USE_NETGEN "Required for meshing CAD objects" ON)
-    mark_as_advanced(NETGEN_INC NETGEN_LIB_DIR)
-else()
-	option(USE_NETGEN "Required for meshing CAD objects" OFF)
-    mark_as_advanced(CLEAR NETGEN_INC NETGEN_LIB_DIR)
-endif()
-
 # OpenCascade
 if(WIN32)
 	find_path(OCCT_INC gp_Pnt.hxx
@@ -155,11 +116,52 @@ else()
 endif()
 
 if(OCCT_INC AND OCCT_LIB_DIR)		
-	option(USE_OCCT "Required for importing and meshing CAD objects." ON)
     mark_as_advanced(OCCT_INC OCCT_LIB_DIR)
 else()
-	option(USE_OCCT "Required for importing and meshing CAD objects." OFF)
     mark_as_advanced(CLEAR OCCT_INC OCCT_LIB_DIR)
+endif()
+
+# NETGEN
+if(WIN32)
+	find_path(NETGEN_INC include/occgeom.hpp
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+		PATH_SUFFIXES "include" "netgen/include" "build" "build/include"
+        DOC "Netgen include directory")
+	find_library(NETGEN_LIB nglib 
+        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
+		DOC "Netgen library path")
+else()
+	find_path(NETGEN_INC include/occgeom.hpp
+        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/Resources/include
+        PATH_SUFFIXES "include" "netgen/include" "build" "build/include"
+		DOC "Netgen include directory")
+	find_library(NETGEN_LIB nglib 
+        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/MacOS
+        PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug"
+		DOC "Netgen library path")
+endif()
+
+if(NETGEN_LIB)
+    get_filename_component(NETGEN_TEMP ${NETGEN_LIB} DIRECTORY)
+    set(NETGEN_LIB_DIR ${NETGEN_TEMP} CACHE PATH "Path to the Netgen lib directory (e.g. /opt/netgen/lib)")
+    unset(NETGEN_TEMP)
+    unset(NETGEN_LIB CACHE)
+else()
+	set(NETGEN_LIB_DIR "NETGEN_LIB_DIR-NOTFOUND" CACHE PATH "Path to the Netgen lib directory (e.g. /opt/netgen/lib)")
+    unset(NETGEN_LIB CACHE)
+endif()
+
+if(NETGEN_INC AND NETGEN_LIB_DIR)		
+    mark_as_advanced(NETGEN_INC NETGEN_LIB_DIR)
+else()
+    mark_as_advanced(CLEAR NETGEN_INC NETGEN_LIB_DIR)
+endif()
+
+if(NETGEN_INC AND NETGEN_LIB_DIR AND OCCT_INC AND OCCT_LIB_DIR)		
+	option(CAD_FEATURES "Required for importing and meshing CAD objects" ON)
+else()
+	SET(CAD_FEATURES OFF CACHE BOOL "Required for importing and meshing CAD objects" FORCE)
 endif()
 
 # LibSSH
@@ -291,10 +293,8 @@ else()
 endif()
 
 if(QUAZIP_INC AND QUAZIP_LIB_DIR)		
-	option(USE_QUAZIP "Required for the Model Repository and exporting projects." ON)
     mark_as_advanced(QUAZIP_INC QUAZIP_LIB_DIR)
 else()
-	option(USE_QUAZIP "Required for the Model Repository and exporting projects." OFF)
     mark_as_advanced(CLEAR QUAZIP_INC QUAZIP_LIB_DIR)
 endif()
 
@@ -329,12 +329,16 @@ else()
     unset(SQLITE_LIB CACHE)
 endif()
 
-if(SQLITE_INC AND SQLITE_LIB_DIR AND USE_QUAZIP)		
-	option(MODEL_REPO "Build code to connect to the Model Repository." ON)
+if(SQLITE_INC AND SQLITE_LIB_DIR)		
     mark_as_advanced(SQLITE_INC SQLITE_LIB_DIR)
 else()
-    SET(MODEL_REPO OFF CACHE BOOL "Build code to connect to the Model Repository." FORCE)
     mark_as_advanced(CLEAR SQLITE_INC SQLITE_LIB_DIR)
+endif()
+
+if(SQLITE_INC AND SQLITE_LIB_DIR AND QUAZIP_INC AND QUAZIP_LIB_DIR)		
+	option(MODEL_REPO "Build code to connect to the Model Repository." ON)
+else()
+    SET(MODEL_REPO OFF CACHE BOOL "Build code to connect to the Model Repository." FORCE)
 endif()
 
 # FFMPEG
