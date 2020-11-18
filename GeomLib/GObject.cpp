@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/GLMesh.h>
+#include <sstream>
 
 class GObject::Imp
 {
@@ -2160,8 +2161,32 @@ void GObject::Load(IArchive& ar)
 void GObject::Reindex()
 {
 	SetID(CreateUniqueID());
-	for (int i = 0; i < Parts(); ++i) Part(i)->SetID(GPart::CreateUniqueID());
-	for (int i = 0; i < Faces(); ++i) Face(i)->SetID(GFace::CreateUniqueID());
-	for (int i = 0; i < Edges(); ++i) Edge(i)->SetID(GEdge::CreateUniqueID());
-	for (int i = 0; i < Nodes(); ++i) Node(i)->SetID(GNode::CreateUniqueID());
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i); pg->SetID(GPart::CreateUniqueID());
+		stringstream ss;
+		ss << "Part" << pg->GetID();
+		pg->SetName(ss.str());
+	}
+	for (int i = 0; i < Faces(); ++i)
+	{
+		GFace* pg = Face(i); pg->SetID(GFace::CreateUniqueID());
+		stringstream ss;
+		ss << "Surface" << pg->GetID();
+		pg->SetName(ss.str());
+	}
+	for (int i = 0; i < Edges(); ++i)
+	{
+		GEdge* pg = Edge(i); pg->SetID(GEdge::CreateUniqueID());
+		stringstream ss;
+		ss << "Curve" << pg->GetID();
+		pg->SetName(ss.str());
+	}
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		GNode* pg = Node(i); pg->SetID(GNode::CreateUniqueID());
+		stringstream ss;
+		ss << "Node" << pg->GetID();
+		pg->SetName(ss.str());
+	}
 }
