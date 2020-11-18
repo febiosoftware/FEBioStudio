@@ -1,1 +1,0 @@
-../FEBioStudio/FEBioStudio.pro
