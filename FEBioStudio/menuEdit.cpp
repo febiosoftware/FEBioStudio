@@ -650,6 +650,12 @@ void CMainWindow::on_actionTransform_triggered()
 			vec3d s2(0, 1, 0);
 			vec3d s3(0, 0, 1);
 
+			// NOTE: not sure why, but I need to rotate the s vectors
+			rot = ps->GetOrientation();
+			rot.RotateVector(s1);
+			rot.RotateVector(s2);
+			rot.RotateVector(s3);
+
 			r = glview->GetPivotPosition();
 
 			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.x*dlg.m_relScl.x / scl.x, s1, r));
