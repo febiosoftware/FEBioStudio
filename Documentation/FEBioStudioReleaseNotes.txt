@@ -4,10 +4,11 @@
 
 *****************************************************************
 
-================================================================
- version 1.1
- release date: 11/2/2020
------------------------------------------------------------------
+===========================================================================
+
+ R E L E A S E   1.1   11/2/2020
+ 
+===========================================================================
 
 * The FEBio 3.0 format is now the default format used when running FEBio models from within FEBio Studio. (Users can still select other formats.)
 * Support was added for reading tied-facet-to-facet contact in febio2 files. 
@@ -49,34 +50,39 @@
 * Users can now set displacement scale factor for x,y,z independently. 
 * The scale filter applied to vector fields now allows users to set the scale factor for x,y,z independently. 
 
-================================================================
- version 1.0.3
- release date: 10/7/2020
------------------------------------------------------------------
+===========================================================================
+
+ R E L E A S E   1.0.3   10/7/2020
+ 
+===========================================================================
 
 * A bug was fixed that was causing some material parameters in a solid mixture (and other nested materials) to be reset when making edits in the material properties list.
 
-================================================================
- version 1.0.2
- release date: 10/2/2020
------------------------------------------------------------------
+===========================================================================
+
+ R E L E A S E   1.0.2   10/2/2020
+ 
+===========================================================================
 
 * A bug was fixed that was preventing febio 2.5 files that contained mesh data "generators" from being read in. These sections are still ignored, but will not prevent the rest of the file from being read in. 
 * A bug was fixed in reading prescribed bcs of the febio 3.0 file format. 
 * A bug was fixed in the project tree of the repo panel and upload wizard related to how the folders are organized.
 
 
-================================================================
- version 1.0.1
- release date: 9/1/2020
------------------------------------------------------------------
+===========================================================================
+
+ R E L E A S E   1.0.1   9/1/2020
+ 
+===========================================================================
 
 * This patch release fixes an issue with the default FEBio launch configuration on Windows. 
 
-================================================================
- version 1.0.0
- release date: 8/24/2020
------------------------------------------------------------------
+===========================================================================
+
+ R E L E A S E   1.0.0   8/24/2020
+ 
+===========================================================================
 
 * This is the first official release of FEBio Studio. FEBio Studio integrates PreView, the FEBio pre-processor, and PostView, the FEBio post-processor, in a single unified software package.
-* FEBio Studio can also run FEBio models directly from the UI and will always ship with the most recent version of FEBio. This first release uses FEBio 3.0. 
+* FEBio Studio can also run FEBio models directly from the UI and will always ship with the most recent
+ R E L E A S E   of FEBio. This first release uses FEBio 3.0. 
