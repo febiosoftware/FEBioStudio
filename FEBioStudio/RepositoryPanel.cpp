@@ -1208,12 +1208,14 @@ void CRepositoryPanel::on_actionModify_triggered()
 	{
 		int projID = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0])->getProjectID();
 
-		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID); //, m_wnd->GetProject());
+		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID);
 		dlg.setName(ui->projectName->text());
 		dlg.setOwner(repoHandler->getUsername());
 
 		QStringList categories = GetCategories();
 		dlg.setCategories(categories);
+
+		dlg.setCategory(dbHandler->CategoryFromID(projID));
 
 		dlg.setDescription(ui->projectDesc->toPlainText());
 		dlg.setTags(ui->currentTags);

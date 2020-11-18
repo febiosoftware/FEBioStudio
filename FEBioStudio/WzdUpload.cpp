@@ -599,6 +599,25 @@ void CWzdUpload::setCategories(QStringList& categories)
 	}
 }
 
+void CWzdUpload::setCategory(QString category)
+{
+	if(ui->categoryLabel)
+	{
+		ui->categoryLabel->setText(category);
+	}
+	else
+	{
+		for(int index = 0; index < ui->categoryBox->count(); index++)
+		{
+			if(ui->categoryBox->itemText(index) == category)
+			{
+				ui->categoryBox->setCurrentIndex(index);
+				break;
+			}
+		}
+	}
+}
+
 void CWzdUpload::setOwner(QString owner)
 {
 	ui->owner->setText(owner);
@@ -808,6 +827,7 @@ void CWzdUpload::accept()
 			QMessageBox::critical(this, "Upload", "A project with this name already exists in this category."
 					"\n\nPlease choose a different project name.");
 
+			// Go back to page 1
 			while(currentId() != 0)
 			{
 				back();
@@ -817,6 +837,25 @@ void CWzdUpload::accept()
 		}
 
 	}
+
+	string dissallowed = "<>:\"\\/|?*.";
+	for(auto c : dissallowed)
+	{
+		if(name.contains(c))
+		{
+			QMessageBox::critical(this, "Upload", "Project names cannot contain any of the following symbols:\n\n"
+					". < > : \" \\ / | ? *");
+
+			// Go back to page 1
+			while(currentId() != 0)
+			{
+				back();
+			}
+
+			return;
+		}
+	}
+
 
 	if(ui->description->toPlainText().isEmpty())
 	{

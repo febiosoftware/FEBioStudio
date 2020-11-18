@@ -364,13 +364,34 @@ public:
 	}
 
 	QString GetFullPath(int ID, int type)
-	{
-		QString filename = dbPanel->GetRepositoryFolder();
-		filename += "/";
-		filename += GetFilePath(ID, type);
-		filename += "/";
+		{
+			QString filename = dbPanel->GetRepositoryFolder();
+			filename += "/";
+			filename += GetFilePath(ID, type);
+			filename += "/";
 
-		return filename;
+			return filename;
+		}
+
+	QString CategoryFromID(int ID)
+	{
+		char **table;
+		int rows, cols;
+
+		std::string query("SELECT categories.category FROM projects JOIN categories ON projects.category = categories.ID WHERE projects.ID = ");
+		query += std::to_string(ID);
+
+		getTable(query, &table, &rows, &cols);
+
+		QString category;
+		if(rows == 1)
+		{
+			category = table[1];
+		}
+
+		sqlite3_free_table(table);
+
+		return category;
 	}
 
 	int ProjectIDFromFileID(int ID)
@@ -846,6 +867,11 @@ QString CLocalDatabaseHandler::FileNameFromID(int ID, int type)
 QString CLocalDatabaseHandler::FullFileNameFromID(int ID, int type)
 {
 	return imp->GetFullFilename(ID, type);
+}
+
+QString CLocalDatabaseHandler::CategoryFromID(int ID)
+{
+	return imp->CategoryFromID(ID);
 }
 
 int CLocalDatabaseHandler::ProjectIDFromFileID(int ID)

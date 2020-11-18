@@ -74,6 +74,7 @@ public:
 	QString FilePathFromID(int ID, int type);
 	QString FileNameFromID(int ID, int type);
 	QString FullFileNameFromID(int ID, int type);
+	QString CategoryFromID(int ID);
 	int ProjectIDFromFileID(int ID);
 	int CategoryIDFromName(std::string name);
 

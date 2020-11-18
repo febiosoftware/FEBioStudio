@@ -95,6 +95,7 @@ public:
 	void setName(QString name);
 	void setDescription(QString desc);
 	void setCategories(QStringList& categories);
+	void setCategory(QString category);
 	void setOwner(QString owner);
 	void setTags(QStringList& tags);
 	void setPublications(const std::vector<CPublicationWidget*>& pub);
