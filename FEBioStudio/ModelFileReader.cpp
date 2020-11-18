@@ -47,10 +47,12 @@ bool ModelFileReader::Load(const char* szfile)
 		{
 			m_doc->SetDocFilePath(szfile);
 			m_doc->Load(GetArchive());
+			Close();
 			return true;
 		}
 		catch (InvalidVersion)
 		{
+			Close();
 			return errf("This file has an invalid version number.");
 		}
 		catch (ReadError e)
@@ -66,17 +68,21 @@ bool ModelFileReader::Load(const char* szfile)
 
 			string errMsg = ss.str();
 
+			Close();
 			return errf(errMsg.c_str());
 		}
 		catch (GObjectException e)
 		{
+			Close();
 			return errf("An error occurred processing model:\n%s", e.ErrorMsg());
 		}
 		catch (...)
 		{
+			Close();
 			return errf("Failed opening file %s", szfile);
 		}
 	}
 
+	Close();
 	return false;
 }
