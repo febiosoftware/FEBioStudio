@@ -11,11 +11,6 @@ Support forums can be found at https://forums.febio.org/.
 
 [![License](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 
-### Table of contents
-- [FEBio Studio Build Guide](#Build)  
-- [Contributing](#Contributing)
-- [Code of Conduct](#Conduct)
-
 # Build Guide <a name="Build"></a>
 
 Refer to [BUILD](BUILD.md)
