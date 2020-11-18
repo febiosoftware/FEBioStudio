@@ -1,1 +1,0 @@
-../GLWLib/GLWLib.pro

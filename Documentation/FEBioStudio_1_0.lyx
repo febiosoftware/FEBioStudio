@@ -1,5 +1,5 @@
-#LyX 2.3 created this file. For more info see http://www.lyx.org/
-\lyxformat 544
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
 \begin_document
 \begin_header
 \save_transient_properties true
@@ -14,6 +14,9 @@
 % License: CSL#005010
 
 \usepackage{latexsym}
+% Added by lyx2lyx
+\renewcommand{\textendash}{--}
+\renewcommand{\textemdash}{---}
 \end_preamble
 \use_default_options false
 \begin_modules
@@ -35,8 +38,6 @@ eqs-within-sections
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
-\use_microtype false
-\use_dash_ligatures true
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -75,7 +76,6 @@ eqs-within-sections
 \suppress_date true
 \justification true
 \use_refstyle 0
-\use_minted 0
 \index Index
 \shortcut idx
 \color #008000
@@ -88,10 +88,7 @@ eqs-within-sections
 \tocdepth 3
 \paragraph_separation indent
 \paragraph_indentation default
-\is_math_indent 0
-\math_numbering_side default
-\quotes_style english
-\dynamic_quotes 0
+\quotes_language english
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
@@ -3997,7 +3994,7 @@ Connecting to the Repository
 \end_layout
 
 \begin_layout Standard
-FEBio Studio does not connect to the repository automactially when lauched.
+FEBio Studio does not connect to the repository automatically when launched.
  In order to connect to the repository, simply select the 
 \emph on
 Repository Panel
@@ -4017,7 +4014,7 @@ reference "fig:repo"
 \end_inset
 
 ).
- This location will be used to store a databse containing metadata about
+ This location will be used to store a database containing metadata about
  the projects stored on the repository, along with any files that you download
  from the repository.
 \begin_inset Float figure
@@ -4327,7 +4324,6 @@ If you do not have an febio.org account, you may sign up for one for free
 \begin_inset CommandInset href
 LatexCommand href
 target "https://febio.org/register/"
-literal "false"
 
 \end_inset
 
@@ -4607,7 +4603,7 @@ Description
 \emph default
 : Provide a description of your project as a whole (descriptions of individual
  files can be given on the second page fo the wizard).
- Please be thorough, providing at least a few sentances.
+ Please be thorough, providing at least a few sentences.
  A user should be able to understand the purpose of your project simply
  by reading the description.
 \end_layout
@@ -4970,7 +4966,7 @@ Tag
 \emph default
  label, then click the plus icon.
  This tag will be added to all selected files.
- Folders cannot be assinged tags.
+ Folders cannot be assigned tags.
 \end_layout
 
 \begin_layout Itemize

@@ -1,1 +1,0 @@
-../GLLib/GLLib.pro
