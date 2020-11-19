@@ -10,7 +10,7 @@
 ## Prerequisites <a name="prereq"></a>
 
 ### CMake 
-FEBio Studio's build process utilizes CMake, an open-source, cross-platform tool designed to streamline the configuration of the build environment. The CMake in this repository will help you to locate necessary third party libraries on your machine, set up include and library paths, and allow you to choose which of FEBio Studio’s features you would like to include in your build.
+FEBio Studio's build process utilizes CMake, an open-source, cross-platform tool designed to streamline the configuration of the build environment. The CMake script in this repository will help you to locate necessary third party libraries on your machine, set up include and library paths, and allow you to choose which of FEBio Studio’s features you would like to include in your build.
 
 Please download the latest release of CMake from https://cmake.org/, and install it on your machine before proceeding. Many Linux distributions come with CMake pre-installed, or have CMake available through their package managers. 
 
