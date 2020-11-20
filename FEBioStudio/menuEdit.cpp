@@ -643,7 +643,8 @@ void CMainWindow::on_actionTransform_triggered()
 
 			CGLView* glview = GetGLView();
 
-			pcmd->AddCommand(new CCmdRotateSelection(doc, rot, glview->GetPivotPosition()));
+			pos = ps->GetPivot() + dr;
+			pcmd->AddCommand(new CCmdRotateSelection(doc, rot, pos));
 
 			// scale
 			vec3d s1(1, 0, 0);
@@ -651,16 +652,14 @@ void CMainWindow::on_actionTransform_triggered()
 			vec3d s3(0, 0, 1);
 
 			// NOTE: not sure why, but I need to rotate the s vectors
-			rot = ps->GetOrientation();
+			rot = rot*ps->GetOrientation();
 			rot.RotateVector(s1);
 			rot.RotateVector(s2);
 			rot.RotateVector(s3);
 
-			r = glview->GetPivotPosition();
-
-			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.x*dlg.m_relScl.x / scl.x, s1, r));
-			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.y*dlg.m_relScl.y / scl.y, s2, r));
-			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.z*dlg.m_relScl.z / scl.z, s3, r));
+			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.x*dlg.m_relScl.x / scl.x, s1, pos));
+			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.y*dlg.m_relScl.y / scl.y, s2, pos));
+			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.z*dlg.m_relScl.z / scl.z, s3, pos));
 
 			doc->DoCommand(pcmd);
 			UpdateGLControlBar();
