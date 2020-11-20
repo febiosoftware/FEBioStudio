@@ -10,7 +10,7 @@
 ## Prerequisites <a name="prereq"></a>
 
 ### CMake 
-FEBio Studio's build process utilizes CMake, an open-source, cross-platform tool designed to streamline the configuration of the build environment. The CMake in this repository will help you to locate necessary third party libraries on your machine, set up include and library paths, and allow you to choose which of FEBio Studio’s features you would like to include in your build.
+FEBio Studio's build process utilizes CMake, an open-source, cross-platform tool designed to streamline the configuration of the build environment. The CMake script in this repository will help you to locate necessary third party libraries on your machine, set up include and library paths, and allow you to choose which of FEBio Studio’s features you would like to include in your build.
 
 Please download the latest release of CMake from https://cmake.org/, and install it on your machine before proceeding. Many Linux distributions come with CMake pre-installed, or have CMake available through their package managers. 
 
@@ -105,7 +105,7 @@ The configuration step in the CMake build process runs the script defined in `CM
 
 To run the configuration process click the _Configure_ button in the lower left part of the GUI, or type `c` if you are using ccmake. If you are running the CMake GUI, you will be asked to choose a generator for the project. On Windows, choose the version of MSVC that you have installed and click _Finish_. On macOS, leave the default value and click _Finish_. CMake will now run the configuration process, the output of which can be seen in the text field at the bottom of the GUI. If all goes well, new fields will be added in red to the GUI, and it should look something like the image below:
 
-<img src="Documentation/BuildGuide/ccmake.png" href="https://gibboncode.org" alt="ccmake" width="75%">
+<img src="Documentation/BuildGuide/CMakeGUIFull.png" href="https://gibboncode.org" alt="ccmake" width="75%">
 <!-- ![cmake gui](Documentation/BuildGuide/ccmake.png) -->
 
 However, you may be greeted with a dialog saying that there was an error. If this is the case, you will find the error message in red text in the text field at the bottom of the GUI. The most common error you will encounter on the first run will say that CMake was unable to locate `Qt5Config.cmake`. If you run into another error at this point, see the Troubleshooting section.
