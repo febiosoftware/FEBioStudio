@@ -6782,6 +6782,15 @@ pressure
  
 \end_layout
 
+\begin_layout Enumerate
+The 
+\emph on
+stress 
+\emph default
+field is assumed to be the Cauchy stress.
+ 
+\end_layout
+
 \end_deeper
 \begin_layout Section
 Saving a model 
