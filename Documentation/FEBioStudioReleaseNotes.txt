@@ -6,6 +6,36 @@
 
 ===========================================================================
 
+ R E L E A S E   1.2   11/23/2020
+ 
+===========================================================================
+
+* Warnings are now reported when invalid surface facets are detected while reading FEBio input file.
+* Fixed crash when multiphasic material with solute/sbm is created before solutes/sbm are defined. 
+* Modified STL reader so format is detected automatically. Users no longer need to specify whether the file is in ascii or binary format. 
+* A bug was fixed in the Decimation tool.
+* Objects can now be copied between models (via Edit\Copy object abd Edit\Paste object). 
+* The Welcome page is now a separate tab. It can be closed and reopened via Help\Show Welcome Page. 
+* Document tabs now show icons. 
+* Fixed bug that was adding the "preview" palette each time a new model was created. 
+* Fixed the Kinemat tool. 
+* Several issues were fixed related to working on multiple models simultaneously. 
+* An issue was fixed with rendering edges that have no nodes. 
+* When reading feb files, the names of loads are retained. 
+* Added density and k (bulk modulus) parameter to uncoupled prestrain material. This was preventing this material from being read in properly. 
+* A bug was fixed with processing fiber property in feb files. 
+* Fixed issues with rendering shells as hexes. 
+* A bug was fixed that was not initializing edges correctly when reading the fsm files. 
+* An issue was fixed with region-selecting nodes and faces when "select backfacing" and "ignore interior" options were set. 
+* The algorithm parameters behind the "Scalar field" and "Fiber generator" tools can now be set. 
+* In the Fiber generator tool, you can now specify for which material you want to apply the tool to.
+* An issue was fixed with fsm files not closing properly after they are loaded. 
+* A few issues were fixed with the Transform tool, when all transorm properties were set simultaneously. 
+* A minor bug was fixed in the project upload wizard on the repo panel. 
+* The prestrain constraint class is now available from the Constraints menu. 
+
+===========================================================================
+
  R E L E A S E   1.1   11/2/2020
  
 ===========================================================================
