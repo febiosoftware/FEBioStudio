@@ -285,7 +285,7 @@ public:
 		// If it's an entire project file
 		if(type == FULL)
 		{
-			query += "SELECT categories.category, FROM projects JOIN categories ON projects.category = categories.ID WHERE projects.ID = ";
+			query += "SELECT categories.category FROM projects JOIN categories ON projects.category = categories.ID WHERE projects.ID = ";
 			query += std::to_string(ID);
 
 			getTable(query, &table, &rows, &cols);
