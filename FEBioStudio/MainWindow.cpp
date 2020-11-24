@@ -119,6 +119,12 @@ void darkStyle()
 //-----------------------------------------------------------------------------
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
+
+#ifdef LINUX
+	// Set locale to avoid issues with reading and writing feb files in other languages.
+	std::locale::global(std::locale::classic());
+#endif
+
 	m_DocManager = new CDocManager(this);
 
 	m_fileThread = nullptr;
