@@ -3071,6 +3071,7 @@ void CGLView::RenderRubberBand()
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
 	glColor3ub(255, 255, 255);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glLineStipple(1, (GLushort)0xF0F0);
