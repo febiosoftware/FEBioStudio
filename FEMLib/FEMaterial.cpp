@@ -2002,6 +2002,24 @@ FEFiberDamageExponential::FEFiberDamageExponential() : FEFiberMaterial(FE_FIBER_
 }
 
 //=============================================================================
+// damage fiber exp-linear
+//=============================================================================
+
+REGISTER_MATERIAL(FEFiberDamageExpLinear, MODULE_MECH, FE_FIBER_DAMAGE_EXPLINEAR, FE_MAT_ELASTIC, "damage fiber exponential", 0);
+
+FEFiberDamageExpLinear::FEFiberDamageExpLinear() : FEFiberMaterial(FE_FIBER_DAMAGE_EXPLINEAR)
+{
+	AddDoubleParam(0.0, "c3", "c3");
+	AddDoubleParam(0.0, "c4", "c4");
+	AddDoubleParam(0.0, "c5", "c5");
+	AddDoubleParam(0.0, "lambda", "lambda");
+	AddDoubleParam(0.0, "t0", "t0");
+	AddDoubleParam(0.0, "Dmax", "Dmax");
+	AddDoubleParam(0.0, "beta_s", "beta_s");
+	AddDoubleParam(0.0, "gamma_max", "gamma_max");
+}
+
+//=============================================================================
 // Fiber-Exp-Pow Uncoupled
 //=============================================================================
 
