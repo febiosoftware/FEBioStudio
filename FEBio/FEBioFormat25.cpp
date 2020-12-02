@@ -1182,6 +1182,26 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 					pp->SetStringValue(tag.szvalue());
 				}
 			}
+			else if (sztype && (strcmp(sztype, "math") == 0))
+			{
+				Param* pp = pbc->GetParam("scale"); assert(pp);
+				if (pp && pp->IsVariable())
+				{
+					pp->SetParamType(Param_MATH);
+					string smath;
+					if (tag.isleaf()) smath = tag.szvalue();
+					else
+					{
+						++tag;
+						do
+						{
+							if (tag == "math") smath = tag.szvalue();
+							++tag;
+						} while (!tag.isend());
+					}
+					pp->SetMathString(smath);
+				}
+			}
 			else
 			{
 				double scale;
