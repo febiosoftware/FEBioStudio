@@ -154,7 +154,7 @@ public:
 class FEFacetOnFacetInterface : public FEPairedInterface
 {
 public:
-	enum { LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, MINAUG, MAXAUG, GAPTOL, SEGUP };
+	enum { LAUGON, ALTOL, PENALTY, TWOPASS, AUTOPEN, MU, EPSF, STOL, MINAUG, MAXAUG, GAPTOL, SEGUP, SEARCH_RADIUS };
 
 public:
 	FEFacetOnFacetInterface(FEModel* ps, int nstep = 0);

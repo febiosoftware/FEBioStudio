@@ -40,7 +40,8 @@ SOFTWARE.*/
 // 3.3: Modified how some discrete element sets are stored
 // 3.4: Added load_type parameter to FERigidForce
 // 3.5: Added density, k to uncoupled-prestrain material
-#define SAVE_VERSION	0x00030005
+// 3.6: Added search_radius parameter to f2f contact. 
+#define SAVE_VERSION	0x00030006
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D

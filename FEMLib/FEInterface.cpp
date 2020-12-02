@@ -464,6 +464,7 @@ FEFacetOnFacetInterface::FEFacetOnFacetInterface(FEModel* ps, int nstep) : FEPai
 	AddDoubleParam(  0.0, "gaptol"      , "gap tolerance");
 	AddIntParam   (    0, "seg_up"      , "max segment updates");
 	AddBoolParam(false, "update_penalty", "update-penalty");
+	AddDoubleParam(0  , "search_radius", "search radius");
 }
 
 //=============================================================================
