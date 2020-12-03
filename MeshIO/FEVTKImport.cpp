@@ -207,7 +207,10 @@ bool FEVTKimport::Load(const char* szfile)
 bool FEVTKimport::read_POINTS(VTKMesh& vtk)
 {
 	if (checkLine("POINTS") == false) errf("Error looking for POINTS keyword.");
-	if (strstr(m_szline, "float") == nullptr) return errf("Only float data type is supported for POINTS section.");
+	if ((strstr(m_szline, "float") == nullptr) && (strstr(m_szline, "double") == nullptr))
+	{
+		return errf("Only float or double data type is supported for POINTS section.");
+	}
 
 	//get number of nodes
 	int nodes = atoi(m_szline + 6);
