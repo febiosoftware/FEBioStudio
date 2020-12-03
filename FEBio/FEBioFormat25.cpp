@@ -1172,43 +1172,8 @@ void FEBioFormat25::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "scale")
 		{
-			const char* sztype = tag.AttributeValue("type", true);
-			if (sztype && (strcmp(sztype, "map") == 0))
-			{
-				Param* pp = pbc->GetParam("scale"); assert(pp);
-				if (pp && pp->IsVariable())
-				{
-					pp->SetParamType(Param_STRING);
-					pp->SetStringValue(tag.szvalue());
-				}
-			}
-			else if (sztype && (strcmp(sztype, "math") == 0))
-			{
-				Param* pp = pbc->GetParam("scale"); assert(pp);
-				if (pp && pp->IsVariable())
-				{
-					pp->SetParamType(Param_MATH);
-					string smath;
-					if (tag.isleaf()) smath = tag.szvalue();
-					else
-					{
-						++tag;
-						do
-						{
-							if (tag == "math") smath = tag.szvalue();
-							++tag;
-						} while (!tag.isend());
-					}
-					pp->SetMathString(smath);
-				}
-			}
-			else
-			{
-				double scale;
-				tag.value(scale);
-				pbc->SetScaleFactor(scale);
-			}
-
+			Param* pp = pbc->GetParam("scale"); assert(pp);
+			if (pp && pp->IsVariable()) ParseMappedParameter(tag, pp);
 			int lc = tag.AttributeValue<int>("lc", -1);
 			if (lc != -1) febio.AddParamCurve(pbc->GetLoadCurve(), lc-1);
 		}

@@ -41,7 +41,8 @@ SOFTWARE.*/
 // 3.4: Added load_type parameter to FERigidForce
 // 3.5: Added density, k to uncoupled-prestrain material
 // 3.6: Added search_radius parameter to f2f contact. 
-#define SAVE_VERSION	0x00030006
+// 3.7: Made value parameter of FEInitFluidPressure variable. 
+#define SAVE_VERSION	0x00030007
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D

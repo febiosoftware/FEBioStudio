@@ -1987,3 +1987,37 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 
 	return true;
 }
+
+//-----------------------------------------------------------------------------
+void FEBioFormat::ParseMappedParameter(XMLTag& tag, Param* param)
+{
+	const char* sztype = tag.AttributeValue("type", true);
+	if (sztype && (strcmp(sztype, "map") == 0))
+	{
+		param->SetParamType(Param_STRING);
+		param->SetStringValue(tag.szvalue());
+	}
+	else if (sztype && (strcmp(sztype, "math") == 0))
+	{
+		param->SetParamType(Param_MATH);
+		string smath;
+		if (tag.isleaf()) smath = tag.szvalue();
+		else
+		{
+			++tag;
+			do
+			{
+				if (tag == "math") smath = tag.szvalue();
+				++tag;
+			} while (!tag.isend());
+		}
+		param->SetMathString(smath);
+	}
+	else
+	{
+		double scale;
+		tag.value(scale);
+		param->SetParamType(Param_FLOAT);
+		param->SetFloatValue(scale);
+	}
+}

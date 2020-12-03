@@ -94,6 +94,8 @@ protected:
 	FEReactionMaterial* ParseReaction(XMLTag& tag);
 	FEReactionMaterial* ParseReaction2(XMLTag& tag);
 
+	void ParseMappedParameter(XMLTag& tag, Param* param);
+
 private:
 	FEBioModel&		m_febio;
 	FEBioImport*	m_fileReader;

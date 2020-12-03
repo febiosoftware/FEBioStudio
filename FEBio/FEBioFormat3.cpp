@@ -916,7 +916,7 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 		tag.AttributePtr("lid")->value(lid);
 		tag.value(val);
 
-		nodeData->set(lid, val);
+		nodeData->set(lid - 1, val);
 
 		++tag;
 	}
@@ -1322,7 +1322,8 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 
 	int bc = 0;
 	bool relative = false;
-	double scale = 0.0;
+	string scaleType("");
+	string scaleValue("");
 	int lc = -1;
 	++tag;
 	do
@@ -1335,7 +1336,9 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		}
 		else if (tag == "scale")
 		{
-			tag.value(scale);
+			const char* sztype = tag.AttributeValue("type", true);
+			if (sztype) scaleType = sztype;
+			scaleValue = tag.szvalue();
 			lc = tag.AttributeValue<int>("lc", -1);
 		}
 		else if (tag == "relative") tag.value(relative);
@@ -1383,8 +1386,27 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 	pbc->SetName(name);
 	pstep->AddComponent(pbc);
 
+	// process scale value
+	Param* pp = pbc->GetParam("scale"); assert(pp);
+	if (scaleType == "math")
+	{
+		pp->SetParamType(Param_MATH);
+		pp->SetMathString(scaleValue);
+	}
+	else if (scaleType == "map")
+	{
+		pp->SetParamType(Param_STRING);
+		pp->SetStringValue(scaleValue);
+	}
+	else
+	{
+		double s = atof(scaleValue.c_str());
+		pp->SetParamType(Param_FLOAT);
+		pp->SetFloatValue(s);
+	}
+
 	pbc->SetRelativeFlag(relative);
-	pbc->SetScaleFactor(scale);
+	
 	if (lc != -1) febio.AddParamCurve(pbc->GetLoadCurve(), lc - 1);
 }
 
@@ -1725,12 +1747,18 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				FEItemListBuilder* pg = febio.BuildItemList(szset);
 				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
-				double val = 0.0;
+				string scaleType("");
+				string scaleValue("");
 				int bc = 0;
 				++tag;
 				do
 				{
-					if (tag == "value") tag.value(val);
+					if (tag == "value")
+					{
+						const char* sztype = tag.AttributeValue("type", true);
+						if (sztype) scaleType = sztype;
+						scaleValue = tag.szvalue();
+					}
 					else if (tag == "dof")
 					{
 						string abc = tag.szvalue();
@@ -1766,6 +1794,12 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 					++tag;
 				} while (!tag.isend());
 
+				double val = 0.0;
+				if (scaleType.empty())
+				{
+					val = atof(scaleValue.c_str());
+				}
+
 				// create a new initial velocity BC
 				FEInitialCondition* pic = 0;
 				char szname[64] = { 0 };
@@ -1776,8 +1810,23 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 					sprintf(szname, "InitialTemperature%02d", CountICs<FEInitTemperature>(fem) + 1);
 					break;
 				case 4:
+				{
 					pic = new FEInitFluidPressure(&fem, pg, val, m_pBCStep->GetID());
 					sprintf(szname, "InitialFluidPressure%02d", CountICs<FEInitFluidPressure>(fem) + 1);
+
+					// process value value
+					Param* pp = pic->GetParam("value"); assert(pp);
+					if (scaleType == "math")
+					{
+						pp->SetParamType(Param_MATH);
+						pp->SetMathString(scaleValue);
+					}
+					else if (scaleType == "map")
+					{
+						pp->SetParamType(Param_STRING);
+						pp->SetStringValue(scaleValue);
+					}
+				}
 					break;
 				case 5:
 					pic = new FENodalVelocities(&fem, pg, vec3d(val, 0, 0), m_pBCStep->GetID());

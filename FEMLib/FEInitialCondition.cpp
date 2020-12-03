@@ -93,7 +93,7 @@ FEInitFluidPressure::FEInitFluidPressure(FEModel* ps) : FEInitialNodalDOF(FE_INI
 FEInitFluidPressure::FEInitFluidPressure(FEModel* ps, FEItemListBuilder* pi, double val, int nstep) : FEInitialNodalDOF(FE_INIT_FLUID_PRESSURE, ps, pi, nstep)
 {
 	SetTypeString("Initial Fluid Pressure");
-	AddDoubleParam(val, "Fluid pressure")->SetUnit(UNIT_PRESSURE);
+	AddDoubleParam(val, "value", "Fluid pressure")->MakeVariable(true)->SetUnit(UNIT_PRESSURE);
 }
 
 //-----------------------------------------------------------------------------

@@ -4156,7 +4156,9 @@ void FEBioExport3::WriteInitFluidPressure(FEInitFluidPressure& ip)
 	m_xml.add_branch(ec);
 	{
 		m_xml.add_leaf("dof", "p");
-		m_xml.add_leaf("value", ip.GetValue());
+
+		Param* pp = ip.GetParam("value"); assert(pp);
+		WriteParam(*pp);
 	}
 	m_xml.close_branch();
 }
