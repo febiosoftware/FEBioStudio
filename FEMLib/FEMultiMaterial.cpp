@@ -876,7 +876,7 @@ REGISTER_MATERIAL(FEPrestrainMaterial, MODULE_MECH, FE_PRESTRAIN_MATERIAL, FE_MA
 FEPrestrainMaterial::FEPrestrainMaterial() : FEMaterial(FE_PRESTRAIN_MATERIAL)
 {
 	// Add one component for the elastic material
-	AddProperty("elastic", FE_MAT_ELASTIC);
+	AddProperty("elastic", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);
 	AddProperty("prestrain", FE_MAT_PRESTRAIN_GRADIENT);
 }
 
