@@ -30,6 +30,7 @@ SOFTWARE.*/
 class FEProject;
 class FEPlotVariable;
 class QListWidgetItem;
+class QTableWidgetItem;
 
 namespace Ui {
 	class CDlgAddDomain;
@@ -75,6 +76,7 @@ protected slots:
 	void onLogAdd();
 	void onLogRemove();
 	void UpdateLogItemList();
+	void onItemChanged(QTableWidgetItem* item);
 
 private:
 	FEProject&	m_prj;

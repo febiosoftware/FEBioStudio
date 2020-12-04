@@ -700,6 +700,7 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 			{ 
 				QComboBox* pw = new QComboBox(parent);
 				pw->addItems(QStringList() << "No" << "Yes");
+				QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 				return pw;
 			}
 		}
@@ -769,7 +770,7 @@ void CMaterialPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
 		if (item->isParameter())
 		{
 			Param* p = item->parameter();
-			if (p && p->GetEnumNames())
+			if (p && (p->GetEnumNames() || (p->GetParamType() == Param_BOOL)))
 			{
 				model->setData(index, pw->currentIndex());
 				return;

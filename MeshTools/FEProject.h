@@ -88,14 +88,25 @@ public:
 	{
 		type = d.type;
 		sdata = d.sdata;
+		fileName = d.fileName;
 		matID = d.matID;
 		groupID = d.groupID;
         rcID = d.rcID;
+	}
+	void operator = (const FELogData& d)
+	{
+		type = d.type;
+		sdata = d.sdata;
+		fileName = d.fileName;
+		matID = d.matID;
+		groupID = d.groupID;
+		rcID = d.rcID;
 	}
 
 public:
 	int			type;			// type of data (node, element, rigid)
 	string		sdata;			// data string
+	string		fileName;		// file name (optional)
 	int			matID;			// for LD_RIGID
 	int			groupID;		// for LD_NODE, LD_ELEM
     int         rcID;           // for LD_CNCTR

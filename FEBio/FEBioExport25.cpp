@@ -5028,6 +5028,11 @@ void FEBioExport25::WriteOutputSection()
 						e.name("node_data");
 						e.add_attribute("data", d.sdata);
 
+						if (d.fileName.empty() == false)
+						{
+							e.add_attribute("file", d.fileName);
+						}
+
 						FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
 						if (pg)
 						{
@@ -5041,6 +5046,11 @@ void FEBioExport25::WriteOutputSection()
 						XMLElement e;
 						e.name("element_data");
 						e.add_attribute("data", d.sdata);
+
+						if (d.fileName.empty() == false)
+						{
+							e.add_attribute("file", d.fileName);
+						}
 
 						FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
 						if (pg)
@@ -5056,6 +5066,11 @@ void FEBioExport25::WriteOutputSection()
 						e.name("rigid_body_data");
 						e.add_attribute("data", d.sdata);
 
+						if (d.fileName.empty() == false)
+						{
+							e.add_attribute("file", d.fileName);
+						}
+
 						GMaterial* pm = fem.GetMaterialFromID(d.matID);
 						if (pm) 
 						{
@@ -5070,6 +5085,11 @@ void FEBioExport25::WriteOutputSection()
                         XMLElement e;
                         e.name("rigid_connector_data");
                         e.add_attribute("data", d.sdata);
+
+						if (d.fileName.empty() == false)
+						{
+							e.add_attribute("file", d.fileName);
+						}
 
                         FERigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
                         if (rc)

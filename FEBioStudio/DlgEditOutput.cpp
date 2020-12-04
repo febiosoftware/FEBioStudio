@@ -168,9 +168,9 @@ public:
 		QPushButton* remLogItem = new QPushButton("Remove");
 
 		table = new QTableWidget;
-		table->setColumnCount(3);
+		table->setColumnCount(4);
 		table->verticalHeader()->hide();
-		table->setHorizontalHeaderLabels(QStringList() << "Type" << "Data" << "List");
+		table->setHorizontalHeaderLabels(QStringList() << "Type" << "Data" << "List" << "File (optional)");
 		table->horizontalHeader()->setStretchLastSection(true);
 		table->setSelectionBehavior(QAbstractItemView::SelectRows);
 
@@ -223,6 +223,7 @@ public:
 		QObject::connect(addLogItem, SIGNAL(clicked()), dlg, SLOT(onLogAdd()));
 		QObject::connect(remLogItem, SIGNAL(clicked()), dlg, SLOT(onLogRemove()));
 		QObject::connect(logType, SIGNAL(currentIndexChanged(int)), dlg, SLOT(UpdateLogItemList()));
+		QObject::connect(table, SIGNAL(itemChanged(QTableWidgetItem*)), dlg, SLOT(onItemChanged(QTableWidgetItem*)));
 	}
 
 	void clearLists()
@@ -272,12 +273,13 @@ public:
 		table->setRowCount(n);
 	}
 
-	void setLogTableItem(int nrow, const QString& type, const QString& data, const QString& list)
+	void setLogTableItem(int nrow, const QString& type, const QString& data, const QString& list, const QString& file)
 	{
 		QTableWidgetItem* item;
 		item = new QTableWidgetItem; item->setText(type); item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled); table->setItem(nrow, 0, item);
 		item = new QTableWidgetItem; item->setText(data); item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled); table->setItem(nrow, 1, item);
 		item = new QTableWidgetItem; item->setText(list); item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled); table->setItem(nrow, 2, item);
+		item = new QTableWidgetItem; item->setText(file); table->setItem(nrow, 3, item);
 	}
 };
 
@@ -479,7 +481,9 @@ void CDlgEditOutput::UpdateLogTable()
 			}
 		}
 
-		ui->setLogTableItem(i, type, data, list);
+		QString fileName = QString::fromStdString(logi.fileName);
+
+		ui->setLogTableItem(i, type, data, list, fileName);
 	}
 }
 
@@ -633,3 +637,16 @@ void CDlgEditOutput::OnNewVariable()
 	}
 }
 
+void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)
+{
+	if (item == nullptr) return;
+	int n = item->row();
+
+	CLogDataSettings& log = m_prj.GetLogDataSettings();
+	if ((n >= 0) && (n < log.LogDataSize()))
+	{
+		FELogData& ld = log.LogData(n);
+		QString t = item->text();
+		ld.fileName = t.toStdString();
+	}
+}
