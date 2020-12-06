@@ -1190,6 +1190,25 @@ FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_CO
 }
 
 ////////////////////////////////////////////////////////////////////////
+// FEHolzapfelGasserOgden - HGO MODEL
+////////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEHolzapfelGasserOgden, MODULE_MECH, FE_HOLZAPFEL_GASSER_OGDEN, FE_MAT_ELASTIC_UNCOUPLED, "Holzapfel-Gasser-Ogden", MaterialFlags::TOPLEVEL, Holzapfel_Gasser_Ogden);
+
+FEHolzapfelGasserOgden::FEHolzapfelGasserOgden() : FEMaterial(FE_HOLZAPFEL_GASSER_OGDEN)
+{
+    AddScienceParam(1, UNIT_DENSITY  , "density", "density")->SetPersistent(false);
+    AddScienceParam(0, UNIT_PRESSURE , "c", "c");
+    AddScienceParam(0, UNIT_PRESSURE , "k1", "k1");
+    AddScienceParam(0, UNIT_NONE     , "k2", "k2");
+    AddScienceParam(0, UNIT_NONE     , "kappa", "kappa");
+    AddScienceParam(0, UNIT_DEGREE   , "gamma", "gamma");
+    AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus")->SetPersistent(false);
+    
+    SetAxisMaterial(new FEAxisMaterial);
+}
+
+////////////////////////////////////////////////////////////////////////
 // FELinearOrthotropic - Linear Orthotropic
 ////////////////////////////////////////////////////////////////////////
 

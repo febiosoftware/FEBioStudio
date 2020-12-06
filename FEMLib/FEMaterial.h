@@ -112,7 +112,7 @@
 #define FE_MAT_2D_TRANS_ISO_MR			58	// new in 2.0
 #define FE_COUPLED_TRANS_ISO_MR			59	// new in 2.1 (replaces old implementation)
 #define FE_INCOMP_NEO_HOOKEAN			60	// new in 2.2
-#define FE_HOLZAPFEL_UC					61
+#define FE_HOLZAPFEL_GASSER_OGDEN		61
 #define FE_POROUS_NEO_HOOKEAN           62
 #define FE_NATURAL_NEO_HOOKEAN          63
 #define FE_PRESTRAIN_CONST_GRADIENT		64
@@ -846,6 +846,25 @@ public:
 	FEFungOrthoCompressible();
     
 	DECLARE_REGISTERED(FEFungOrthoCompressible);
+};
+
+//-----------------------------------------------------------------------------
+// Holzapfel-Gasser-Ogden
+//
+class FEHolzapfelGasserOgden : public FEMaterial
+{
+public:
+    enum {
+        MP_DENSITY,
+        MP_C, MP_K1,
+        MP_K2,MP_KAPPA,
+        MP_G,
+        MP_K };
+    
+public:
+    FEHolzapfelGasserOgden();
+    
+    DECLARE_REGISTERED(FEHolzapfelGasserOgden);
 };
 
 //-----------------------------------------------------------------------------
