@@ -567,6 +567,7 @@ public:
 		pselect->addItem("Component");
 		pselect->addItem("Fraction Anisotropy");
 		pselect->addItem("Convert Format");
+		pselect->addItem("Eigen vectors");
 
 		QLabel* label;
 		label = new QLabel("Filter:");
@@ -625,6 +626,10 @@ public:
 		pform->addRow("Format:", conv = new QComboBox);
 		convPage->setLayout(pform);
 
+		// eigenvectors
+		QWidget* pcaPage = new QWidget;
+		
+
 		QStackedWidget* stack = new QStackedWidget;
 		stack->addWidget(scalePage);
 		stack->addWidget(smoothPage);
@@ -633,6 +638,7 @@ public:
 		stack->addWidget(compPage);
 		stack->addWidget(faPage);
 		stack->addWidget(convPage);
+		stack->addWidget(pcaPage);
 
 		pvl->addWidget(stack);
 
@@ -1099,6 +1105,12 @@ void CPostDataPanel::on_AddFilter_triggered()
 				{
 					int newformat = dlg.getNewFormat();
 					newData = DataConvert(fem, pdf, newformat, sname);
+					bret = (newData != nullptr);
+				}
+				break;
+				case 7: // eigen tensor
+				{
+					newData = DataEigenTensor(fem, pdf, sname);
 					bret = (newData != nullptr);
 				}
 				break;

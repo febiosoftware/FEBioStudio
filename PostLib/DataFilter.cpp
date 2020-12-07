@@ -1479,3 +1479,52 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 
 	return newField;
 }
+
+FEDataField* Post::DataEigenTensor(FEPostModel& fem, FEDataField* dataField, const std::string& name)
+{
+	int dataType = dataField->Type();
+	int nfmt = dataField->Format();
+	int nclass = dataField->DataClass();
+
+	if (dataType != DATA_MAT3FS) return nullptr;
+	if (nclass != CLASS_ELEM) return nullptr;
+	if (nfmt != DATA_ITEM) return nullptr;
+
+	FEDataField* newField = new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(name);
+	fem.AddDataField(newField);
+
+	int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+	int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+	int NE = mesh.Elements();
+
+	for (int n = 0; n < fem.GetStates(); ++n)
+	{
+		FEState* state = fem.GetState(n);
+
+		FEElemData_T<mat3fs, DATA_ITEM>* pold = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&state->m_Data[nold]);
+		Post::FEElementData<mat3f, DATA_ITEM>* pnew = dynamic_cast<FEElementData<mat3f, DATA_ITEM>*>(&state->m_Data[nnew]);
+
+		for (int i = 0; i < NE; ++i)
+		{
+			if (pold->active(i))
+			{
+				mat3fs m;
+				pold->eval(i, &m);
+
+				vec3f e[3]; float l[3];
+				m.eigen(e, l);
+
+				mat3f a;
+				a[0][0] = e[0].x; a[0][1] = e[1].x; a[0][2] = e[2].x;
+				a[1][0] = e[0].y; a[1][1] = e[1].y; a[1][2] = e[2].y;
+				a[2][0] = e[0].z; a[2][1] = e[1].z; a[2][2] = e[2].z;
+
+				pnew->add(i, a);
+			}
+		}
+	}
+
+	return newField;
+}

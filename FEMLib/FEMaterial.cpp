@@ -1193,7 +1193,7 @@ FEFungOrthoCompressible::FEFungOrthoCompressible() : FEMaterial(FE_FUNG_ORTHO_CO
 // FEHolzapfelGasserOgden - HGO MODEL
 ////////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEHolzapfelGasserOgden, MODULE_MECH, FE_HOLZAPFEL_GASSER_OGDEN, FE_MAT_ELASTIC_UNCOUPLED, "Holzapfel-Gasser-Ogden", MaterialFlags::TOPLEVEL, Holzapfel_Gasser_Ogden);
+REGISTER_MATERIAL(FEHolzapfelGasserOgden, MODULE_MECH, FE_HOLZAPFEL_GASSER_OGDEN, FE_MAT_ELASTIC_UNCOUPLED, "Holzapfel-Gasser-Ogden", MaterialFlags::TOPLEVEL);
 
 FEHolzapfelGasserOgden::FEHolzapfelGasserOgden() : FEMaterial(FE_HOLZAPFEL_GASSER_OGDEN)
 {
