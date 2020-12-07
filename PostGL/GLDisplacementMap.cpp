@@ -210,13 +210,14 @@ void CGLDisplacementMap::UpdateState(int ntime, bool breset)
 void CGLDisplacementMap::UpdateNodes()
 {
 	CGLModel* po = GetModel();
+	FEState* state = po->GetActiveState();
 	FEMeshBase* pm = po->GetActiveMesh();
 
 	if (m_du.empty()) return;
 	assert(m_du.size() == pm->Nodes());
 
 	// get the reference state
-	Post::FERefState& ref = *po->GetFEModel()->GetState(0)->m_ref;
+	Post::FERefState& ref = *state->m_ref;
 
 	vec3d s = m_scl;
 

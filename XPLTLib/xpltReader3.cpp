@@ -149,7 +149,8 @@ bool XpltReader3::Load(FEPostModel& fem)
 	// make sure all data is cleared
 	Clear();
 
-	fem.ClearObjects();
+	// clear the model data
+	fem.Clear();
 
 	// read the root section (no compression for this section)
 	if (ReadRootSection(fem) == false) return false;
@@ -1131,10 +1132,6 @@ bool XpltReader3::ReadNodeSetSection(FEPostModel& fem)
 //-----------------------------------------------------------------------------
 bool XpltReader3::BuildMesh(FEPostModel &fem)
 {
-	// clear the state data
-	fem.ClearStates();
-	fem.DeleteMeshes();
-
 	// count all nodes
 	int NN = m_xmesh.nodes();
 
