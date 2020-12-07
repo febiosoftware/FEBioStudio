@@ -87,7 +87,7 @@ FEInitShellConcentration::FEInitShellConcentration(FEModel* ps, FEItemListBuilde
 FEInitFluidPressure::FEInitFluidPressure(FEModel* ps) : FEInitialNodalDOF(FE_INIT_FLUID_PRESSURE, ps)
 {
 	SetTypeString("Initial Fluid Pressure");
-	AddDoubleParam(0, "Fluid pressure")->SetUnit(UNIT_PRESSURE);
+	AddDoubleParam(0, "value", "Fluid pressure")->SetUnit(UNIT_PRESSURE);
 }
 
 FEInitFluidPressure::FEInitFluidPressure(FEModel* ps, FEItemListBuilder* pi, double val, int nstep) : FEInitialNodalDOF(FE_INIT_FLUID_PRESSURE, ps, pi, nstep)

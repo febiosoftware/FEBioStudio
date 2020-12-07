@@ -89,7 +89,7 @@ void FENodeData::Load(IArchive& ar)
 			ar.read(szname);
 			SetName(szname);
 		}
-		else if (CID_MESH_DATA_NODESET)
+		else if (nid == CID_MESH_DATA_NODESET)
 		{
 			m_nodeSet = new FENodeSet(po);
 			m_nodeSet->Load(ar);
