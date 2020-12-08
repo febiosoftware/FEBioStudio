@@ -185,6 +185,7 @@ FEPostMesh* FEPostModel::GetFEMesh(int n)
 // Clear the data of the model
 void FEPostModel::Clear()
 {
+	ClearObjects();
 	DeleteMeshes();
 
 	m_Mat.clear();
