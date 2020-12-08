@@ -343,6 +343,27 @@ bool FEVTKimport::read_CELL_DATA(VTKMesh& vtkMesh)
 	int cells = atoi(m_szline + 10);
 	if (cells != vtkMesh.cells()) return errf("Incorrect number of nodes specified in CELL_DATA.");
 
+	if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+	if (strncmp(m_szline, "SCALARS", 7) == 0)
+	{
+		vector<string> att;
+		parseLine(att);
+		if (att[2] == "int")
+		{
+			if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+			if (strncmp(m_szline, "LOOKUP_TABLE", 12) == 0)
+			{
+				for (int i = 0; i < cells; ++i)
+				{
+					if (nextLine() == false) return errf("An unexpected error occured while reading the file data.");
+					VTKMesh::CELL& cell = vtkMesh.m_cellList[i];
+					int id = atoi(m_szline);
+					cell.label = id;
+				}
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -433,7 +454,7 @@ bool FEVTKimport::BuildMesh(VTKMesh& vtk)
 		FEElement& el = pm->Element(i);
 		VTKMesh::CELL& cell = vtk.m_cellList[i];
 
-		el.m_gid = cell.label - 1; assert(el.m_gid >= 0);
+		el.m_gid = cell.label; assert(el.m_gid >= 0);
 		if (el.m_gid < 0) el.m_gid = 0;
 
 		switch (cell.cellType)
