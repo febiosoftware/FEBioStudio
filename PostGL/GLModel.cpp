@@ -1356,6 +1356,7 @@ void CGLModel::RenderGhost(CGLContext &rc)
 
 	FEPostModel* ps = m_ps;
 	FEMeshBase* pm = GetActiveMesh();
+	Post::FERefState* ref = GetActiveState()->m_ref;
 
 	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -1413,8 +1414,8 @@ void CGLModel::RenderGhost(CGLContext &rc)
 
 					if (a > b) { a ^= b; b ^= a; a ^= b; }
 
-					r1 = pm->Node(a).r;
-					r2 = pm->Node(b).r;
+					r1 = ref->m_Node[a].m_rt;
+					r2 = ref->m_Node[b].m_rt;
 
 					glBegin(GL_LINES);
 					{
