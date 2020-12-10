@@ -422,7 +422,7 @@ public slots:
 	void on_actionRight_triggered();
 	void on_actionTop_triggered();
 	void on_actionBottom_triggered();
-	void on_actionWireframe_toggled(bool b);
+	void on_actionRenderMode_toggled(bool b);
 	void on_actionSnap3D_triggered();
 	void on_actionTrack_toggled(bool b);
 	void on_actionViewVPSave_triggered();

@@ -208,7 +208,7 @@ public:
 	QAction* actionTop;
 	QAction* actionBottom;
 	QAction* actionOptions;
-	QAction* actionWireframe;
+	QAction* actionRenderMode;
 	QAction* actionShowFibers;
 	QAction* actionShowMatAxes;
 	QAction* actionShowDiscrete;
@@ -499,7 +499,7 @@ public:
 		actionViewSmooth      = addAction("Color Smoothing", "actionViewSmooth"); actionViewSmooth->setShortcut(Qt::Key_C); actionViewSmooth->setCheckable(true);
 		actionOrtho           = addAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
 		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
-		actionWireframe		  = addAction("Toggle Wireframe", "actionWireframe"); actionWireframe->setCheckable(true); actionWireframe->setShortcut(Qt::Key_W);
+		actionRenderMode      = addAction("Toggle Render Mode", "actionRenderMode"); actionRenderMode->setCheckable(true); actionRenderMode->setShortcut(Qt::Key_W);
 		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
 		actionShowMatAxes     = addAction("Toggle Material Axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
 		actionShowDiscrete    = addAction("Show Discrete Sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
@@ -750,7 +750,7 @@ public:
 		menuView->addAction(actionShowEdgeLines);
 		menuView->addAction(actionBackfaceCulling);
 		menuView->addAction(actionViewSmooth);
-		menuView->addAction(actionWireframe);
+		menuView->addAction(actionRenderMode);
 		menuView->addAction(actionShowFibers);
 		menuView->addAction(actionShowMatAxes);
 		menuView->addAction(actionShowDiscrete);

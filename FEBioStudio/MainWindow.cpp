@@ -2110,9 +2110,10 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	view->addAction(ui->actionRight);
 	view->addAction(ui->actionTop);
 	view->addAction(ui->actionBottom);
-
 	menu.addAction(view->menuAction());
 	menu.addSeparator();
+
+	menu.addAction(ui->actionRenderMode);
 
 	CPostDocument* postDoc = GetPostDocument();
 	if (postDoc == nullptr)

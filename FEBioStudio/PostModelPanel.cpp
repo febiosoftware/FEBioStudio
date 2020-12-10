@@ -71,7 +71,6 @@ public:
 	CModelProps(Post::CGLModel* fem) : m_fem(fem) 
 	{
 		addProperty("Element subdivions"       , CProperty::Int)->setIntRange(0, 100).setAutoValue(true);
-		addProperty("Render mode"              , CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "wireframe" << "solid");
 		addProperty("Render undeformed outline", CProperty::Bool);
 		addProperty("Outline color"            , CProperty::Color);
 		addProperty("Node color"               , CProperty::Color);
@@ -87,14 +86,13 @@ public:
 		switch (i)
 		{
 		case 0: v = m_fem->m_nDivs; break;
-		case 1: v = m_fem->m_nrender; break;
-		case 2: v = m_fem->m_bghost; break;
-		case 3: v = toQColor(m_fem->m_line_col); break;
-		case 4: v = toQColor(m_fem->m_node_col); break;
-		case 5: v = toQColor(m_fem->m_sel_col); break;
-		case 6: v = m_fem->ShowShell2Solid(); break;
-		case 7: v = m_fem->ShellReferenceSurface(); break;
-		case 8: v = m_fem->GetSmoothingAngle(); break;
+		case 1: v = m_fem->m_bghost; break;
+		case 2: v = toQColor(m_fem->m_line_col); break;
+		case 3: v = toQColor(m_fem->m_node_col); break;
+		case 4: v = toQColor(m_fem->m_sel_col); break;
+		case 5: v = m_fem->ShowShell2Solid(); break;
+		case 6: v = m_fem->ShellReferenceSurface(); break;
+		case 7: v = m_fem->GetSmoothingAngle(); break;
 		}
 		return v;
 	}
@@ -104,14 +102,13 @@ public:
 		switch (i)
 		{
 		case 0: m_fem->SetSubDivisions(v.toInt()); break;
-		case 1: m_fem->m_nrender  = v.toInt(); break;
-		case 2: m_fem->m_bghost   = v.toBool(); break;
-		case 3: m_fem->m_line_col = toGLColor(v.value<QColor>());
-		case 4: m_fem->m_node_col = toGLColor(v.value<QColor>());
-		case 5: m_fem->m_sel_col  = toGLColor(v.value<QColor>());
-		case 6: m_fem->ShowShell2Solid(v.toBool()); break;
-		case 7: m_fem->ShellReferenceSurface(v.toInt()); break;
-		case 8: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 1: m_fem->m_bghost   = v.toBool(); break;
+		case 2: m_fem->m_line_col = toGLColor(v.value<QColor>());
+		case 3: m_fem->m_node_col = toGLColor(v.value<QColor>());
+		case 4: m_fem->m_sel_col  = toGLColor(v.value<QColor>());
+		case 5: m_fem->ShowShell2Solid(v.toBool()); break;
+		case 6: m_fem->ShellReferenceSurface(v.toInt()); break;
+		case 7: m_fem->SetSmoothingAngle(v.toDouble());  break;
 		}
 	}
 	

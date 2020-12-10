@@ -199,7 +199,7 @@ void CMainWindow::on_actionBottom_triggered()
 	GetGLView()->changeViewMode(VIEW_BOTTOM);
 }
 
-void CMainWindow::on_actionWireframe_toggled(bool b)
+void CMainWindow::on_actionRenderMode_toggled(bool b)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
