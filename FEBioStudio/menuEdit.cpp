@@ -605,7 +605,7 @@ void CMainWindow::on_actionTransform_triggered()
 
 	if (ps && ps->Size())
 	{
-		vec3d pos = ps->GetPivot();
+		vec3d pos = GetGLView()->GetPivotPosition();
 		quatd rot = ps->GetOrientation();
 		vec3d r = rot.GetVector()*(180 * rot.GetAngle() / PI);
 		vec3d scl = ps->GetScale();
@@ -643,7 +643,7 @@ void CMainWindow::on_actionTransform_triggered()
 
 			CGLView* glview = GetGLView();
 
-			pos = ps->GetPivot() + dr;
+			pos += dr;
 			pcmd->AddCommand(new CCmdRotateSelection(doc, rot, pos));
 
 			// scale
