@@ -131,7 +131,7 @@
 #define FE_FIBERPOWLIN_UNCOUPLED        77
 #define FE_FIBER_DAMAGE_POWER			78	// added in FS 1.1
 #define FE_FIBER_DAMAGE_EXP				79	// added in FS 1.1
-#define FE_FIBER_DAMAGE_EXPLINEAR		78	// added in FS 1.2
+#define FE_FIBER_DAMAGE_EXPLINEAR		80	// added in FS 1.2
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)

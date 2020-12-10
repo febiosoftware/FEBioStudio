@@ -2024,7 +2024,7 @@ FEFiberDamageExponential::FEFiberDamageExponential() : FEFiberMaterial(FE_FIBER_
 // damage fiber exp-linear
 //=============================================================================
 
-REGISTER_MATERIAL(FEFiberDamageExpLinear, MODULE_MECH, FE_FIBER_DAMAGE_EXPLINEAR, FE_MAT_ELASTIC, "damage fiber exponential", 0);
+REGISTER_MATERIAL(FEFiberDamageExpLinear, MODULE_MECH, FE_FIBER_DAMAGE_EXPLINEAR, FE_MAT_ELASTIC, "damage fiber exp-linear", 0);
 
 FEFiberDamageExpLinear::FEFiberDamageExpLinear() : FEFiberMaterial(FE_FIBER_DAMAGE_EXPLINEAR)
 {
