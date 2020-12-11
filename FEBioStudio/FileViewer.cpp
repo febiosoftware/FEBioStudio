@@ -40,6 +40,11 @@ SOFTWARE.*/
 #include <QSignalMapper>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QTextEdit>
+#include <QLabel>
+#include <QSplitter>
+#include <QFileIconProvider>
+#include <QFileDialog>
 
 enum FileItemType {
 	OPEN_FILES,
@@ -55,20 +60,40 @@ class Ui::CFileViewer
 public:
 	::CMainWindow*	m_wnd;
 	QTreeWidget*	m_tree;
+	QTextEdit*		m_info;
 
 public:
 	void setupUi(QWidget* parent)
 	{
-		QVBoxLayout* l = new QVBoxLayout(parent);
-		l->setMargin(0);
+		QSplitter* s = new QSplitter;
+		s->setOrientation(Qt::Vertical);
 
 		m_tree = new QTreeWidget;
 		m_tree->setColumnCount(1);
 		m_tree->header()->hide();
 		m_tree->setObjectName("fileList");
 		m_tree->setUniformRowHeights(true);
-		
-		l->addWidget(m_tree);
+		s->addWidget(m_tree);
+
+		QWidget* w = new QWidget;
+		QVBoxLayout* lw = new QVBoxLayout;
+
+		QLabel* notes = new QLabel("Notes:");
+		notes->setAlignment(Qt::AlignLeft);
+		lw->addWidget(notes);
+
+		m_info = new QTextEdit;
+		m_info->setObjectName("info");
+		QFont f = m_info->font();
+		f.setPointSize(11);
+		m_info->setFont(f);
+		lw->addWidget(m_info);
+		w->setLayout(lw);
+		s->addWidget(w);
+
+		QVBoxLayout* l = new QVBoxLayout(parent);
+		l->setMargin(0);
+		l->addWidget(s);
 
 		parent->setLayout(l);
 	}
@@ -81,6 +106,30 @@ CFileViewer::CFileViewer(CMainWindow* pwnd, QWidget* parent) : QWidget(parent), 
 	ui->setupUi(this);
 
 	QMetaObject::connectSlotsByName(this);
+}
+
+void CFileViewer::on_fileList_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
+{
+	if (current == nullptr)
+	{
+		ui->m_info->clear();
+		ui->m_info->setDisabled(true);
+		return;
+	}
+
+	int itemId = current->data(0, Qt::UserRole + 1).toInt();
+	const FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	const FEBioStudioProject::ProjectItem* item = prj->FindItem(itemId);
+	if (item)
+	{
+		ui->m_info->setText(item->Info());
+		ui->m_info->setEnabled(true);
+	}
+	else
+	{
+		ui->m_info->clear();
+		ui->m_info->setDisabled(true);
+	}
 }
 
 void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column)
@@ -118,6 +167,20 @@ void CFileViewer::on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int colum
 			ui->m_wnd->OpenFile(filePath, false);
 	}
 	break;
+	}
+}
+
+void CFileViewer::on_info_textChanged()
+{
+	QTreeWidgetItem* current = ui->m_tree->currentItem();
+	if (current == nullptr) return;
+
+	int itemId = current->data(0, Qt::UserRole + 1).toInt();
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	FEBioStudioProject::ProjectItem* item = prj->FindItem(itemId);
+	if (item)
+	{
+		item->SetInfo(ui->m_info->toPlainText());
 	}
 }
 
@@ -161,6 +224,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		menu.addAction("Create Group ...", this, SLOT(onCreateGroup()));
 		menu.addAction("Close project", ui->m_wnd, SLOT(on_closeProject()));
 		menu.addAction("Clear project", ui->m_wnd, SLOT(on_clearProject()));
+		menu.addAction("Add file ...", this, SLOT(onAddFile()));
 
 #ifdef _WIN32
 		const FEBioStudioProject* prj = ui->m_wnd->GetProject();
@@ -178,6 +242,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		menu.addAction("Remove Group", this, SLOT(onRemoveGroup()));
 		menu.addAction("Rename Group ...", this, SLOT(onRenameGroup()));
 		menu.addAction("Add Group ...", this, SLOT(onCreateGroup()));
+		menu.addAction("Add file ...", this, SLOT(onAddFile()));
 		menu.exec(ev->globalPos());
 	}
 	else if (ntype == FileItemType::PROJECT_FILE)
@@ -250,6 +315,8 @@ void CFileViewer::onShowInExplorer()
 
 void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetItem* treeItem, CMainWindow* wnd)
 {
+	QFileIconProvider iconProvider;
+
 	// add groups first
 	for (int n = 0; n < parent.Items(); ++n)
 	{
@@ -261,6 +328,7 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 			t2->setText(0, item.Name());
 			t2->setData(0, Qt::UserRole, FileItemType::PROJECT_GROUP);
 			t2->setData(0, Qt::UserRole + 1, item.Id());
+			t2->setIcon(0, iconProvider.icon(QFileIconProvider::Folder));
 			QFont f = t2->font(0);
 			f.setBold(true);
 			t2->setFont(0, f);
@@ -276,6 +344,13 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 		if (item.IsFile())
 		{
 			QString filename_i = item.Name();
+			QFileInfo fi(filename_i);
+			QString fileName = fi.fileName();
+			QString ext = fi.suffix();
+
+			QIcon icon = iconProvider.icon(QFileIconProvider::File);
+			if (ext == "fsm" ) icon = QIcon(":/icons/FEBioStudio.png");
+			if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
 
 			CDocument* doc = wnd->FindDocument(filename_i.toStdString());
 
@@ -286,11 +361,12 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 
 				QTreeWidgetItem* t2 = new QTreeWidgetItem(treeItem);
 				t2->setText(0, docFile);
+				t2->setIcon(0, icon);
 				t2->setToolTip(0, docPath);
 				t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
 				t2->setData(0, Qt::UserRole + 1, item.Id());
 
-				CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+/*				CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
 				if (modelDoc && modelDoc->FEBioJobs())
 				{
 					t2->setExpanded(true);
@@ -320,6 +396,7 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 						}
 					}
 				}
+*/
 			}
 			else
 			{
@@ -328,12 +405,13 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 
 				QTreeWidgetItem* t2 = new QTreeWidgetItem(treeItem);
 				t2->setText(0, fileName);
+				t2->setIcon(0, icon);
 
-				QFont f = t2->font(0);
+/*				QFont f = t2->font(0);
 				f.setItalic(true);
 				t2->setFont(0, f);
 				t2->setForeground(0, Qt::gray);
-
+*/
 				t2->setSizeHint(0, QSize(100, 50));
 				t2->setToolTip(0, filename_i);
 				t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
@@ -369,8 +447,15 @@ void CFileViewer::Update()
 		CDocument* doc = dm->GetDocument(i);
 		QString docPath = QString::fromStdString(doc->GetDocFilePath());
 
+		QFileIconProvider iconProvider;
+
+		QIcon icon = iconProvider.icon(QFileIconProvider::File);
+		if (dynamic_cast<CModelDocument*>(doc)) icon = QIcon(QString(":/icons/FEBioStudio.png"));
+		if (dynamic_cast<CPostDocument*>(doc)) icon = QIcon(QString(":/icons/PostView.png"));
+
 		QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
 		t2->setText(0, QString::fromStdString(doc->GetDocTitle()));
+		t2->setIcon(0, icon);
 		t2->setData(0, Qt::UserRole  , FileItemType::OPEN_FILE);
 		t2->setData(0, Qt::UserRole+1, i);
 		if (docPath.isEmpty() == false)
@@ -411,6 +496,21 @@ QTreeWidgetItem* CFileViewer::currentItem()
 	QList<QTreeWidgetItem*> sel = ui->m_tree->selectedItems();
 	if (sel.size() != 1) return nullptr;
 	return sel[0];
+}
+
+void CFileViewer::SelectItem(int itemId)
+{
+	QTreeWidgetItemIterator it(ui->m_tree);
+	while (*it) 
+	{
+		int Id = (*it)->data(0, Qt::UserRole + 1).toInt();
+		if (Id == itemId)
+		{
+			ui->m_tree->setCurrentItem((*it));
+			break;
+		}
+		++it;
+	}
 }
 
 void CFileViewer::onCreateGroup()
@@ -509,6 +609,35 @@ void CFileViewer::onRemoveFromProject()
 			int itemId = item->data(0, Qt::UserRole + 1).toInt();
 			prj->RemoveFile(itemId);
 			Update();
+		}
+	}
+}
+
+void CFileViewer::onAddFile()
+{
+	QTreeWidgetItem* item = CFileViewer::currentItem();
+	int ntype = item->data(0, Qt::UserRole).toInt();
+	QString fileName = QFileDialog::getOpenFileName(this, "Add File");
+	if (fileName.isEmpty() == false)
+	{
+		FEBioStudioProject* prj = ui->m_wnd->GetProject();
+		
+		// see if this file is already part of the project
+		FEBioStudioProject::ProjectItem* newItem = prj->FindFile(fileName);
+		if (newItem)
+		{
+			QMessageBox::warning(this, "FEBio Studio", "File already exists in project.");
+			SelectItem(newItem->Id());
+		}
+		else
+		{
+			int itemId = item->data(0, Qt::UserRole + 1).toInt();
+			newItem = prj->AddFile(fileName, itemId);
+			if (newItem)
+			{
+				Update();
+				SelectItem(newItem->Id());
+			}
 		}
 	}
 }

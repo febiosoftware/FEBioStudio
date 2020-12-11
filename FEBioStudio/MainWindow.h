@@ -290,6 +290,7 @@ private:
 	void SavePostDoc();
 
 	void ShowWelcomePage();
+	void CloseWelcomePage();
 
 public slots:
 	void on_actionNewModel_triggered();

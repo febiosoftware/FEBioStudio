@@ -900,7 +900,7 @@ public:
 	{
 		wnd->setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 
-		QDockWidget* dock1 = new QDockWidget("Files", m_wnd); dock1->setObjectName("dockFiles");
+		QDockWidget* dock1 = new QDockWidget("Project", m_wnd); dock1->setObjectName("dockFiles");
 		dock1->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 		fileViewer = new ::CFileViewer(m_wnd, dock1);
 		fileViewer->setObjectName(QStringLiteral("fileViewer"));

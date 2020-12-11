@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_CFileViewer_t {
-    QByteArrayData data[13];
-    char stringdata0[167];
+    QByteArrayData data[18];
+    char stringdata0[245];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -33,25 +33,32 @@ struct qt_meta_stringdata_CFileViewer_t {
 static const qt_meta_stringdata_CFileViewer_t qt_meta_stringdata_CFileViewer = {
     {
 QT_MOC_LITERAL(0, 0, 11), // "CFileViewer"
-QT_MOC_LITERAL(1, 12, 29), // "on_fileList_itemDoubleClicked"
-QT_MOC_LITERAL(2, 42, 0), // ""
-QT_MOC_LITERAL(3, 43, 16), // "QTreeWidgetItem*"
-QT_MOC_LITERAL(4, 60, 4), // "item"
-QT_MOC_LITERAL(5, 65, 6), // "column"
-QT_MOC_LITERAL(6, 72, 13), // "onCreateGroup"
-QT_MOC_LITERAL(7, 86, 13), // "onMoveToGroup"
-QT_MOC_LITERAL(8, 100, 1), // "i"
-QT_MOC_LITERAL(9, 102, 13), // "onRemoveGroup"
-QT_MOC_LITERAL(10, 116, 13), // "onRenameGroup"
-QT_MOC_LITERAL(11, 130, 16), // "onShowInExplorer"
-QT_MOC_LITERAL(12, 147, 19) // "onRemoveFromProject"
+QT_MOC_LITERAL(1, 12, 30), // "on_fileList_currentItemChanged"
+QT_MOC_LITERAL(2, 43, 0), // ""
+QT_MOC_LITERAL(3, 44, 16), // "QTreeWidgetItem*"
+QT_MOC_LITERAL(4, 61, 7), // "current"
+QT_MOC_LITERAL(5, 69, 8), // "previous"
+QT_MOC_LITERAL(6, 78, 29), // "on_fileList_itemDoubleClicked"
+QT_MOC_LITERAL(7, 108, 4), // "item"
+QT_MOC_LITERAL(8, 113, 6), // "column"
+QT_MOC_LITERAL(9, 120, 19), // "on_info_textChanged"
+QT_MOC_LITERAL(10, 140, 13), // "onCreateGroup"
+QT_MOC_LITERAL(11, 154, 13), // "onMoveToGroup"
+QT_MOC_LITERAL(12, 168, 1), // "i"
+QT_MOC_LITERAL(13, 170, 13), // "onRemoveGroup"
+QT_MOC_LITERAL(14, 184, 13), // "onRenameGroup"
+QT_MOC_LITERAL(15, 198, 16), // "onShowInExplorer"
+QT_MOC_LITERAL(16, 215, 19), // "onRemoveFromProject"
+QT_MOC_LITERAL(17, 235, 9) // "onAddFile"
 
     },
-    "CFileViewer\0on_fileList_itemDoubleClicked\0"
-    "\0QTreeWidgetItem*\0item\0column\0"
-    "onCreateGroup\0onMoveToGroup\0i\0"
-    "onRemoveGroup\0onRenameGroup\0"
-    "onShowInExplorer\0onRemoveFromProject"
+    "CFileViewer\0on_fileList_currentItemChanged\0"
+    "\0QTreeWidgetItem*\0current\0previous\0"
+    "on_fileList_itemDoubleClicked\0item\0"
+    "column\0on_info_textChanged\0onCreateGroup\0"
+    "onMoveToGroup\0i\0onRemoveGroup\0"
+    "onRenameGroup\0onShowInExplorer\0"
+    "onRemoveFromProject\0onAddFile"
 };
 #undef QT_MOC_LITERAL
 
@@ -61,7 +68,7 @@ static const uint qt_meta_data_CFileViewer[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+      10,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -69,18 +76,24 @@ static const uint qt_meta_data_CFileViewer[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    2,   49,    2, 0x08 /* Private */,
-       6,    0,   54,    2, 0x08 /* Private */,
-       7,    1,   55,    2, 0x08 /* Private */,
-       9,    0,   58,    2, 0x08 /* Private */,
-      10,    0,   59,    2, 0x08 /* Private */,
-      11,    0,   60,    2, 0x08 /* Private */,
-      12,    0,   61,    2, 0x08 /* Private */,
+       1,    2,   64,    2, 0x08 /* Private */,
+       6,    2,   69,    2, 0x08 /* Private */,
+       9,    0,   74,    2, 0x08 /* Private */,
+      10,    0,   75,    2, 0x08 /* Private */,
+      11,    1,   76,    2, 0x08 /* Private */,
+      13,    0,   79,    2, 0x08 /* Private */,
+      14,    0,   80,    2, 0x08 /* Private */,
+      15,    0,   81,    2, 0x08 /* Private */,
+      16,    0,   82,    2, 0x08 /* Private */,
+      17,    0,   83,    2, 0x08 /* Private */,
 
  // slots: parameters
-    QMetaType::Void, 0x80000000 | 3, QMetaType::Int,    4,    5,
+    QMetaType::Void, 0x80000000 | 3, 0x80000000 | 3,    4,    5,
+    QMetaType::Void, 0x80000000 | 3, QMetaType::Int,    7,    8,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,    8,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Int,   12,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -95,13 +108,16 @@ void CFileViewer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         auto *_t = static_cast<CFileViewer *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->on_fileList_itemDoubleClicked((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
-        case 1: _t->onCreateGroup(); break;
-        case 2: _t->onMoveToGroup((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 3: _t->onRemoveGroup(); break;
-        case 4: _t->onRenameGroup(); break;
-        case 5: _t->onShowInExplorer(); break;
-        case 6: _t->onRemoveFromProject(); break;
+        case 0: _t->on_fileList_currentItemChanged((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< QTreeWidgetItem*(*)>(_a[2]))); break;
+        case 1: _t->on_fileList_itemDoubleClicked((*reinterpret_cast< QTreeWidgetItem*(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
+        case 2: _t->on_info_textChanged(); break;
+        case 3: _t->onCreateGroup(); break;
+        case 4: _t->onMoveToGroup((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 5: _t->onRemoveGroup(); break;
+        case 6: _t->onRenameGroup(); break;
+        case 7: _t->onShowInExplorer(); break;
+        case 8: _t->onRemoveFromProject(); break;
+        case 9: _t->onAddFile(); break;
         default: ;
         }
     }
@@ -136,13 +152,13 @@ int CFileViewer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 10;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
+        if (_id < 10)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 7;
+        _id -= 10;
     }
     return _id;
 }

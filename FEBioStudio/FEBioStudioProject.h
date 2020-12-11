@@ -57,6 +57,7 @@ public:
 		int Id() const { return m_id; }
 
 		ProjectItem* FindItem(int id);
+		ProjectItem* FindItem(const QString& name);
 
 		void GetFilePaths(QStringList& filePaths);
 
@@ -72,6 +73,9 @@ public:
 		bool ContainsFile(const QString& fileName) const;
 
 		std::vector<int> AllGroups() const;
+
+		QString Info() const { return m_info; }
+		void SetInfo(const QString& infoString) { m_info = infoString; }
 
 	private:
 		int newId();
@@ -89,6 +93,7 @@ public:
 		int					m_id;
 		ProjectItemType		m_type;
 		QString				m_name;
+		QString				m_info;		//!< user provided description of item
 		QList<ProjectItem*>	m_items;
 		ProjectItem*		m_parent;
 
@@ -99,6 +104,7 @@ public:
 
 public:
 	FEBioStudioProject();
+	~FEBioStudioProject();
 
 	QString GetProjectFileName() const;
 	QString GetProjectPath() const;
@@ -114,8 +120,8 @@ public:
 
 	bool ContainsFile(const QString& fileName) const;
 
-	QString ToAbsolutePath(const QString& relativePath);
-	QString ToRelativePath(const QString& absolutePath);
+	QString ToAbsolutePath(const QString& relativePath) const;
+	QString ToRelativePath(const QString& absolutePath) const;
 
 	const ProjectItem& RootItem() const;
 
@@ -124,6 +130,12 @@ public:
 
 	ProjectItem* FindFile(int fileId);
 	const ProjectItem* FindFile(int fileId) const;
+
+	ProjectItem* FindItem(int fileId);
+	const ProjectItem* FindItem(int fileId) const;
+
+	const ProjectItem* FindFile(const QString& fileName) const;
+	ProjectItem* FindFile(const QString& fileName);
 
 	QStringList GetFilePaths();
 
@@ -137,7 +149,7 @@ public:
 
 	void RemoveFile(int fileId);
 
-	bool AddFile(const QString& file, int parent = -1);
+	ProjectItem* AddFile(const QString& file, int parent = -1);
 
 	bool IsEmpty() const;
 

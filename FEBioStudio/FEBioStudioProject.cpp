@@ -69,6 +69,22 @@ FEBioStudioProject::ProjectItem* FEBioStudioProject::ProjectItem::FindItem(int i
 	return nullptr;
 }
 
+FEBioStudioProject::ProjectItem* FEBioStudioProject::ProjectItem::FindItem(const QString& name)
+{
+	if (name == m_name) return this;
+	if (m_items.empty() == false)
+	{
+		QList<ProjectItem*>::iterator it;
+		for (it = m_items.begin(); it != m_items.end(); ++it)
+		{
+			ProjectItem* pg = (*it)->FindItem(name);
+			if (pg) return pg;
+		}
+	}
+	return nullptr;
+}
+
+
 void FEBioStudioProject::ProjectItem::GetFilePaths(QStringList& filePaths)
 {
 	for(auto item : m_items)
@@ -189,6 +205,12 @@ FEBioStudioProject::FEBioStudioProject()
 	m_rootItem = new ProjectItem(PROJECT_GROUP, "root");
 }
 
+FEBioStudioProject::~FEBioStudioProject()
+{
+	Save();
+}
+
+
 QString FEBioStudioProject::GetProjectFileName() const
 {
 	return m_projectFile;
@@ -239,6 +261,31 @@ FEBioStudioProject::ProjectItem* FEBioStudioProject::FindFile(int fileId)
 	else return nullptr;
 }
 
+const FEBioStudioProject::ProjectItem* FEBioStudioProject::FindItem(int fileId) const
+{
+	return m_rootItem->FindItem(fileId);
+}
+
+FEBioStudioProject::ProjectItem* FEBioStudioProject::FindItem(int fileId)
+{
+	return m_rootItem->FindItem(fileId);
+}
+
+const FEBioStudioProject::ProjectItem* FEBioStudioProject::FindFile(const QString& fileName) const
+{
+	QString file = ToAbsolutePath(fileName);
+	ProjectItem* item = m_rootItem->FindItem(file);
+	if (item && item->IsFile()) return item; else return nullptr;
+}
+
+FEBioStudioProject::ProjectItem* FEBioStudioProject::FindFile(const QString& fileName)
+{
+	QString file = ToAbsolutePath(fileName);
+	ProjectItem* item = m_rootItem->FindItem(file);
+	if (item && item->IsFile()) return item; else return nullptr;
+}
+
+
 QStringList FEBioStudioProject::GetFilePaths()
 {
 	QStringList filePaths;
@@ -256,17 +303,23 @@ void FEBioStudioProject::AddGroup(const QString& groupName, int parentId)
 	Save();
 }
 
-bool FEBioStudioProject::AddFile(const QString& file, int parent)
+FEBioStudioProject::ProjectItem* FEBioStudioProject::AddFile(const QString& file, int parent)
 {
-	if (ContainsFile(file)) return false;
-	if (parent == -1) m_rootItem->AddFile(file);
-	else
+	// convert file to cleaned up format
+	QString fileName = ToAbsolutePath(file);
+
+	ProjectItem* newItem = nullptr;
+	if (!ContainsFile(fileName))
 	{
-		FEBioStudioProject::ProjectItem* grp = FindGroup(parent); assert(grp);
-		grp->AddFile(file);
+		if (parent == -1) newItem = &m_rootItem->AddFile(fileName);
+		else
+		{
+			FEBioStudioProject::ProjectItem* grp = FindGroup(parent); assert(grp);
+			newItem = &grp->AddFile(fileName);
+		}
 	}
 	Save();
-	return true;
+	return newItem;
 }
 
 bool FEBioStudioProject::IsEmpty() const
@@ -291,7 +344,8 @@ void FEBioStudioProject::Close()
 
 bool FEBioStudioProject::ContainsFile(const QString& fileName) const
 {
-	return m_rootItem->ContainsFile(fileName);
+	QString file = ToAbsolutePath(fileName);
+	return m_rootItem->ContainsFile(file);
 }
 
 void FEBioStudioProject::MoveToGroup(int itemId, int groupId)
@@ -350,6 +404,12 @@ bool FEBioStudioProject::Save()
 
 void WriteProjectGroup(XMLWriter& xml, FEBioStudioProject& prj, FEBioStudioProject::ProjectItem& parent)
 {
+	std::string info = parent.Info().toStdString();
+	if (info.empty() == false)
+	{
+		xml.add_leaf("info", info);
+	}
+
 	for (int i = 0; i < parent.Items(); ++i)
 	{
 		FEBioStudioProject::ProjectItem& item = parent.Item(i);
@@ -360,7 +420,16 @@ void WriteProjectGroup(XMLWriter& xml, FEBioStudioProject& prj, FEBioStudioProje
 
 			XMLElement xmlfile("file");
 			xmlfile.add_attribute("path", sfile);
-			xml.add_empty(xmlfile);
+			std::string info = item.Info().toStdString();
+			if (info.empty() == false)
+			{
+				xml.add_branch(xmlfile);
+				{
+					xml.add_leaf("info", info);
+				}
+				xml.close_branch();
+			}
+			else xml.add_empty(xmlfile);
 		}
 		else if (item.IsType(FEBioStudioProject::PROJECT_GROUP))
 		{
@@ -425,12 +494,33 @@ void ParseTags(XMLTag& tag, FEBioStudioProject& prj, FEBioStudioProject::Project
 		}
 		else if (tag == "file")
 		{
+			FEBioStudioProject::ProjectItem* item = nullptr;
 			const char* relPath = tag.AttributeValue("path", true);
 			if (relPath != nullptr)
 			{
 				QString absPath = prj.ToAbsolutePath(QString::fromStdString(relPath));
-				parent.AddFile(absPath);
+				item = &parent.AddFile(absPath);
 			}
+
+			if (tag.isleaf() == false)
+			{
+				++tag;
+				do
+				{
+					if (tag == "info")
+					{
+						QString info(tag.szvalue());
+						if (item) item->SetInfo(info);
+					}
+					++tag;
+				}
+				while (!tag.isend());
+			}
+		}
+		else if (tag == "info")
+		{ 
+			QString info(tag.szvalue());
+			parent.SetInfo(info);
 		}
 		else throw XMLReader::InvalidTag(tag);
 
@@ -470,7 +560,7 @@ bool FEBioStudioProject::Open(const QString& file)
 	return true;
 }
 
-QString FEBioStudioProject::ToAbsolutePath(const QString& relativePath)
+QString FEBioStudioProject::ToAbsolutePath(const QString& relativePath) const
 {
 	QFileInfo fi(m_projectFile);
 	QDir dir = fi.absoluteDir();
@@ -478,7 +568,7 @@ QString FEBioStudioProject::ToAbsolutePath(const QString& relativePath)
 	return QDir::toNativeSeparators(QDir::cleanPath(dir.absoluteFilePath(relativePath)));
 }
 
-QString FEBioStudioProject::ToRelativePath(const QString& absolutePath)
+QString FEBioStudioProject::ToRelativePath(const QString& absolutePath) const
 {
 	QFileInfo fi(m_projectFile);
 	QDir dir = fi.absoluteDir();

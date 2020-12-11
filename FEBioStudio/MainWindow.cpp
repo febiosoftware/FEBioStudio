@@ -224,6 +224,7 @@ CMainWindow::~CMainWindow()
 {
 	// delete document
 	delete m_DocManager;
+	delete ui;
 }
 
 //-----------------------------------------------------------------------------
@@ -586,6 +587,8 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
 	UpdateTitle();
+
+	CloseWelcomePage();
 
 	return b;
 }
@@ -2841,4 +2844,13 @@ void CMainWindow::ShowWelcomePage()
 		AddDocument(new CWelcomePage(this));
 	}
 	else SetActiveView(n);
+}
+
+void CMainWindow::CloseWelcomePage()
+{
+	int n = ui->tab->findView("Welcome");
+	if (n >= 0)
+	{
+		ui->tab->tabCloseRequested(n);
+	}
 }

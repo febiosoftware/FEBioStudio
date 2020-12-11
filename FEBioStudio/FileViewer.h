@@ -49,15 +49,19 @@ public:
 
 private:
 	QTreeWidgetItem* currentItem();
+	void SelectItem(int itemId);
 
 private slots:
+	void on_fileList_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 	void on_fileList_itemDoubleClicked(QTreeWidgetItem* item, int column);
+	void on_info_textChanged();
 	void onCreateGroup();
 	void onMoveToGroup(int i);
 	void onRemoveGroup();
 	void onRenameGroup();
 	void onShowInExplorer();
 	void onRemoveFromProject();
+	void onAddFile();
 
 private:
 	Ui::CFileViewer*	ui;
