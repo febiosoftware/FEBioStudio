@@ -229,8 +229,6 @@ include_directories(${ZLIB_INCLUDE_DIR})
 macro(findHdrSrc name)
 	file(GLOB HDR_${name} "${name}/*.h")
 	file(GLOB SRC_${name} "${name}/*.cpp")
-	list(FILTER SRC_${name} EXCLUDE REGEX "qrc_")
-	list(FILTER SRC_${name} EXCLUDE REGEX "moc_")
 endmacro()
 
 findHdrSrc(FEBioStudio)
