@@ -666,7 +666,11 @@
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\PostDocument.h" />
     <ClInclude Include="..\..\FEBioStudio\PostObject.h" />
-    <ClInclude Include="..\..\FEBioStudio\PostPanel.h" />
+    <CustomBuild Include="..\..\FEBioStudio\PostPanel.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\PostToolBar.h" />
     <CustomBuild Include="..\..\FEBioStudio\TagLabel.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
