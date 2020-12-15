@@ -144,6 +144,8 @@ public:
 	// will be called when the document is deactivate
 	virtual void Deactivate();
 
+	CMainWindow* GetMainWindow();
+
 public:
 	// --- Document validation ---
 	bool IsModified();
@@ -300,8 +302,6 @@ public:
 	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(false); }
 
 	static std::string GetTypeString(FSObject* po);
-
-	CMainWindow* GetMainWindow() { return m_wnd; }
 
 	virtual void UpdateSelection(bool breport = true);
 

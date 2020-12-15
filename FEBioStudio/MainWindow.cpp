@@ -2609,16 +2609,40 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc)
 	return true;
 }
 
-void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
+bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion)
 {
-	CModelDocument* doc = job->GetDocument();
-	assert(doc);
-	if (doc == nullptr) return;
+	// try to save the file first
+	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
 
-	bool febioFileVersion = job->m_febVersion;
-	bool writeNotes = job->m_writeNotes;
-	QString cmd = QString::fromStdString(job->m_cmd);
+	bool ret = false;
 
+	if (febioFileVersion == 0)
+	{
+		FEBioExport25 feb(doc->GetProject());
+		ret = feb.Write(febFile.c_str());
+	}
+	else if (febioFileVersion == 1)
+	{
+		FEBioExport3 feb(doc->GetProject());
+		ret = feb.Write(febFile.c_str());
+	}
+	else
+	{
+		assert(false);
+	}
+
+	if (ret)
+	{
+		QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
+		AddLogEntry("FAILED\n");
+	}
+	else AddLogEntry("SUCCESS!\n");
+
+	return ret;
+}
+
+void CMainWindow::RunFEBioJob(CFEBioJob* job)
+{
 	// see if we already have a job running.
 	if (CFEBioJob::GetActiveJob())
 	{
@@ -2626,66 +2650,17 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 		return;
 	}
 
-	// check the model first for issues
-	if (DoModelCheck(doc) == false) return;
+	QString cmd = QString::fromStdString(job->m_cmd);
 
-	// auto-save the document
-	if (autoSave && doc->IsModified())
-	{
-		AddLogEntry(QString("saving %1 ...").arg(QString::fromStdString(doc->GetDocFilePath())));
-		bool b = doc->SaveDocument();
-		AddLogEntry(b ? "success\n" : "FAILED\n");
-	}
-
-	// get the FEBio job (relative) file path
+	// get the FEBio job file path
 	string febFile = job->GetFEBFileName();
-	// do string substitution
-	febFile = FSDir::expandMacros(febFile);
-
-	// convert to an absolute path
-	QDir modelDir(QString::fromStdString(doc->GetDocFolder()));
-	QString absPath = modelDir.absoluteFilePath(QString::fromStdString(febFile));
-
-	febFile = QDir::toNativeSeparators(absPath).toStdString();
-
-	// try to save the file first
-	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
-
-	if (febioFileVersion == 0)
-	{
-		FEBioExport25 feb(doc->GetProject());
-		if (feb.Write(febFile.c_str()) == false)
-		{
-			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
-			AddLogEntry("FAILED\n");
-			return;
-		}
-		else AddLogEntry("SUCCESS!\n");
-	}
-	else if (febioFileVersion == 1)
-	{
-		FEBioExport3 feb(doc->GetProject());
-		if (feb.Write(febFile.c_str()) == false)
-		{
-			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
-			AddLogEntry("FAILED\n");
-			return;
-		}
-		else AddLogEntry("SUCCESS!\n");
-	}
-	else
-	{
-		assert(false);
-		QMessageBox::critical(this, "Run FEBio", "Don't know what file version to save.");
-		AddLogEntry("FAILED\n");
-		return;
-	}
 
 	// clear output for next job
 	ClearOutput();
+	ShowLogPanel();
 
 	// extract the working directory and file title from the file path
-	QFileInfo fileInfo(absPath);
+	QFileInfo fileInfo(QString::fromStdString(febFile));
 	QString workingDir = fileInfo.absolutePath();
 	QString fileName = fileInfo.fileName();
 

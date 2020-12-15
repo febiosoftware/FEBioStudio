@@ -87,43 +87,67 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		QMessageBox::information(this, "FEBio Studio", "An FEBio job is already running.\nYou must wait till the job is finished or stop it.");
 		return;
 	}
+	
+	// these will store defaults for job name, job path, and previous job list
+	QString jobName;
+	QString jobPath;
+	QStringList jobList;
 
 	// get the document
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
+	CDocument* doc = GetDocument();
+	CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
 
-	QString docName = QString::fromStdString(doc->GetDocFileBase());
-	QString docFolder = QString::fromStdString(doc->GetDocFolder());
-
-	// make sure that docFolder is valid
-	if (docFolder.isEmpty())
+	// get default name and path
+	if (doc)
 	{
-		QMessageBox::warning(this, "Run FEBio", "You have to save the model before you can run it in FEBio.");
-		return;
-	}
+		QString docName = QString::fromStdString(doc->GetDocFileBase());
+		QString docFolder = QString::fromStdString(doc->GetDocFolder());
 
-	// get the list of all the job names so far
-	QStringList jobList;
-	for (int i = 0; i < doc->FEBioJobs(); ++i)
-	{
-		CFEBioJob* job = doc->GetFEBioJob(i);
-		jobList.append(QString::fromStdString(job->GetName()));
-	}
+		// make sure that docFolder is valid
+		if (docFolder.isEmpty())
+		{
+			QMessageBox::warning(this, "Run FEBio", "You have to save the model before you can run it in FEBio.");
+			return;
+		}
 
-	// By default, the job path will be the project folder
-	// unless the project folder is not defined, in which case we'll reuse the last path
-	QString jobPath = docFolder + "/jobs";
-
-	// we'll take the last job's name or create a new one if the job list is empty
-	QString jobName;
-	if (jobList.empty())
-	{
-		// create a name for this job
 		jobName = docName;
+		jobPath = docFolder;
 	}
-	else
+
+	// fill in job list
+	if (modelDoc)
 	{
-		jobName = jobList.last();
+		QString docName = QString::fromStdString(modelDoc->GetDocFileBase());
+		QString docFolder = QString::fromStdString(modelDoc->GetDocFolder());
+
+		// make sure that docFolder is valid
+		if (docFolder.isEmpty())
+		{
+			QMessageBox::warning(this, "Run FEBio", "You have to save the model before you can run it in FEBio.");
+			return;
+		}
+
+		// By default, the job path will be the project folder
+		// unless the project folder is not defined, in which case we'll reuse the last path
+		jobPath = docFolder + "/jobs";
+
+		// get the list of all the job names so far
+		for (int i = 0; i < modelDoc->FEBioJobs(); ++i)
+		{
+			CFEBioJob* job = modelDoc->GetFEBioJob(i);
+			jobList.append(QString::fromStdString(job->GetName()));
+		}
+
+		// we'll take the last job's name or create a new one if the job list is empty
+		if (jobList.empty())
+		{
+			// create a name for this job
+			jobName = docName;
+		}
+		else
+		{
+			jobName = jobList.last();
+		}
 	}
 
 	// this keeps track of the FEBio selection that was used last
@@ -138,9 +162,9 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	dlg.SetLaunchConfig(ui->m_launch_configs, lastLaunchConfigIndex);
 	dlg.SetFEBioFileVersion(lastFEBioFileVersion);
 
-	if (doc->FEBioJobs() > 0)
+	if (modelDoc && modelDoc->FEBioJobs() > 0)
 	{
-		CFEBioJob* job = doc->GetFEBioJob(0);
+		CFEBioJob* job = modelDoc->GetFEBioJob(0);
 		std::string s = job->GetConfigFileName();
 		if (s.empty() == false)
 		{
@@ -168,12 +192,17 @@ void CMainWindow::on_actionFEBioRun_triggered()
 			}
 		}
 
-		// find the relative path with respect to the model's folder
+		CFEBioJob* job = nullptr;
+
 		QDir modelDir(QString::fromStdString(doc->GetDocFolder()));
 		string relPath = modelDir.relativeFilePath(jobPath).toStdString();
 
-		// see if a job with this name already exists
-		CFEBioJob* job = doc->FindFEBioJob(jobName.toStdString());
+		// find the relative path with respect to the model's folder
+		if (modelDoc)
+		{
+			// see if a job with this name already exists
+			job = modelDoc->FindFEBioJob(jobName.toStdString());
+		}
 
 		// update with the selected launch configuration index
 		lastLaunchConfigIndex = dlg.GetLaunchConfig();
@@ -183,10 +212,13 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		{
 			// create a new new job
 			job = new CFEBioJob(doc, jobName.toStdString(), relPath, ui->m_launch_configs.at(lastLaunchConfigIndex));
-			doc->AddFEbioJob(job);
 
-			// show it in the model viewer
-			UpdateModel(job);
+			if (modelDoc)
+			{
+				modelDoc->AddFEbioJob(job);
+				// show it in the model viewer
+				UpdateModel(job);
+			}
 		}
 		else
 		{
@@ -206,7 +238,27 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		job->m_febVersion = lastFEBioFileVersion;
 		job->m_writeNotes = dlg.WriteNotes();
 		job->m_cmd = dlg.CommandLine().toStdString();
-		RunFEBioJob(job, dlg.DoAutoSave());
+
+		if (modelDoc)
+		{
+			// do a model check
+			if (DoModelCheck(modelDoc) == false) return;
+
+			// auto-save the document
+			if (dlg.DoAutoSave() && doc->IsModified())
+			{
+				AddLogEntry(QString("saving %1 ...").arg(QString::fromStdString(doc->GetDocFilePath())));
+				bool b = doc->SaveDocument();
+				AddLogEntry(b ? "success\n" : "FAILED\n");
+			}
+
+			// save the FEBio file
+			string febFile = job->GetFEBFileName(false);
+			ExportFEBioFile(modelDoc, febFile, lastFEBioFileVersion);
+		}
+
+		// run the job
+		RunFEBioJob(job);
 	}
 }
 
@@ -222,7 +274,6 @@ void CMainWindow::on_actionFEBioStop_triggered()
 		{
 			job->SetStatus(CFEBioJob::CANCELLED);
 			CFEBioJob::SetActiveJob(nullptr);
-			ShowInModelViewer(job);
 		}
 	}
 	else QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
@@ -413,7 +464,6 @@ void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
 	if (job)
 	{
 		job->SetStatus(exitCode == 0 ? CFEBioJob::COMPLETED : CFEBioJob::FAILED);
-		ShowInModelViewer(job);
 		CFEBioJob::SetActiveJob(nullptr);
 
 		QString sret = (exitCode == 0 ? "NORMAL TERMINATION" : "ERROR TERMINATION");
@@ -421,16 +471,19 @@ void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
 		QString msg = QString("FEBio job \"%1 \" has finished:\n\n%2\n").arg(jobName).arg(sret);
 
 		QString logmsg = QString("FEBio job \"%1 \" has finished: %2\n").arg(jobName).arg(sret);
+		AddLogEntry(logmsg);
 
 		if (exitCode == 0)
 		{
-			QMessageBox::information(this, "Run FEBio", msg);
-			AddLogEntry(logmsg);
+			msg += "\nDo you wish to load the results?";
+			if (QMessageBox::question(this, "Run FEBio", msg) == QMessageBox::Yes)
+			{
+				OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
+			}
 		}
 		else
 		{
 			QMessageBox::critical(this, "Run FEBio", msg);
-			AddLogEntry(logmsg);
 		}
 	}
 	else

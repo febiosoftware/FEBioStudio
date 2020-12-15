@@ -556,7 +556,9 @@ public slots:
 	// (e.g. when a GL widget gets selected)
 	void UpdateFontToolbar();
 
-	void RunFEBioJob(CFEBioJob* job, bool autoSave = false);
+	void RunFEBioJob(CFEBioJob* job);
+
+	bool ExportFEBioFile(CModelDocument* doc, const std::string& fileName, int febioFileVersion);
 
 	void NextSSHFunction(CSSHHandler*);
 	void ShowProgress(bool show, QString message = "");

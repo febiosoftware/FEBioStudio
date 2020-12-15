@@ -221,6 +221,12 @@ void CDocument::Deactivate()
 }
 
 //-----------------------------------------------------------------------------
+CMainWindow* CDocument::GetMainWindow() 
+{ 
+	return m_wnd; 
+}
+
+//-----------------------------------------------------------------------------
 bool CDocument::IsModified()
 {
 	return m_bModified;
