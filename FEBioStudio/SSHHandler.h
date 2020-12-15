@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 
-#ifdef HAS_SSH
 #include "FEBioJob.h"
 #include "LaunchConfig.h"
 #include "MainWindow.h"
@@ -113,4 +112,3 @@ private:
 private:
 	SSHData*	m_data;
 };
-#endif
