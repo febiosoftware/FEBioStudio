@@ -351,6 +351,7 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 			QIcon icon = iconProvider.icon(QFileIconProvider::File);
 			if (ext == "fsm" ) icon = QIcon(":/icons/FEBioStudio.png");
 			if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
+			if (ext == "feb") icon = QIcon(":/icons/febio.png");
 
 			CDocument* doc = wnd->FindDocument(filename_i.toStdString());
 
