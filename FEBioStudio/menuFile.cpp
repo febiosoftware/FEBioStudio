@@ -495,6 +495,20 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	ReadFile(doc, fileName, reader, QueuedFile::NEW_DOCUMENT);
 }
 
+void CMainWindow::OpenFEBioFile(const QString& fileName)
+{
+	CTextDocument* txt = new CTextDocument(this);
+	if (txt->ReadFromFile(fileName) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
+		return;
+	}
+
+	txt->SetDocFilePath(fileName.toStdString());
+
+	AddDocument(txt);
+}
+
 void CMainWindow::ExportPostGeometry()
 {
 	CPostDocument* doc = GetPostDocument();

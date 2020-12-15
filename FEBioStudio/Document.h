@@ -235,9 +235,25 @@ protected:
 class CTextDocument : public CDocument
 {
 public:
+	enum Format {
+		FORMAT_TEXT,
+		FORMAT_HTML
+	};
+
+public:
 	CTextDocument(CMainWindow* wnd);
 
-	virtual QString GetText();
+	void SetFormat(Format format);
+	int GetFormat() const;
+
+	QString GetText() const;
+	void SetText(const QString& txt);
+
+	bool ReadFromFile(const QString& fileName);
+
+protected:
+	QString		m_txt;
+	int			m_format;
 };
 
 //-----------------------------------------------------------------------------

@@ -60,6 +60,7 @@ SOFTWARE.*/
 #include "FEBioJob.h"
 #include "Logger.h"
 #include <sstream>
+#include <QTextStream>
 
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
@@ -477,12 +478,51 @@ QString CDocument::ToAbsolutePath(const std::string& relativePath)
 
 CTextDocument::CTextDocument(CMainWindow* wnd) : CDocument(wnd)
 {
-
+	m_format = Format::FORMAT_TEXT;
 }
 
-QString CTextDocument::GetText()
+void CTextDocument::SetFormat(Format format)
 {
-	return QString();
+	m_format = format;
+}
+
+int CTextDocument::GetFormat() const
+{
+	return m_format;
+}
+
+QString CTextDocument::GetText() const
+{
+	return m_txt;
+}
+
+void CTextDocument::SetText(const QString& txt)
+{
+	m_txt = txt;
+}
+
+bool CTextDocument::ReadFromFile(const QString& fileName)
+{
+	m_txt.clear();
+	m_bValid = false;
+
+	QString normalizeFileName = QDir::fromNativeSeparators(fileName);
+
+	QFile file(normalizeFileName);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		return false;
+
+	QString s;
+	QTextStream in(&file);
+	while (!in.atEnd()) {
+		QString line = in.readLine();
+		s += line + "\n";
+	}
+
+	m_txt = s;
+
+	m_bValid = true;
+	return true;
 }
 
 //==============================================================================

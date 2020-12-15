@@ -69,6 +69,14 @@ class CMainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
+	enum Config {
+		HTML_CONFIG,		// html documument (i.e. welcome page)
+		MODEL_CONFIG,		// model document	(i.e. fsm file)
+		POST_CONFIG,		// post document	(i.e. xplt file)
+		TEXT_CONFIG,		// text document	(i.e. raw feb file)
+	};
+
+public:
 	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
 	~CMainWindow();
 
@@ -286,6 +294,7 @@ private:
 
 	void OpenDocument(const QString& fileName);
 	void OpenFEModel(const QString& fileName);
+	void OpenFEBioFile(const QString& fileName);
 
 	void SavePostDoc();
 
@@ -485,7 +494,8 @@ public slots:
 	void on_tab_currentChanged(int n);
 	void on_tab_tabCloseRequested(int n);
 
-	void on_txtview_anchorClicked(const QUrl& link);
+	void on_htmlview_anchorClicked(const QUrl& link);
+	void on_txtedit_textChanged();
 
 	void on_clearProject();
 	void on_closeProject();

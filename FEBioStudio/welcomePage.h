@@ -31,23 +31,10 @@ SOFTWARE.*/
 
 class CMainWindow;
 
-class CTextViewer : public QTextBrowser
-{
-public:
-	CTextViewer(CMainWindow* wnd);
-
-	void Refresh();
-
-	void Close();
-
-protected:
-	CMainWindow*	m_wnd;
-};
-
 class CWelcomePage : public CTextDocument
 {
 public:
 	CWelcomePage(CMainWindow* wnd);
 
-	QString GetText() override;
+	void Activate() override;
 };

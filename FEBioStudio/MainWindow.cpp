@@ -343,7 +343,18 @@ void CMainWindow::on_addToProject(const QString& file)
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_txtview_anchorClicked(const QUrl& link)
+void CMainWindow::on_txtedit_textChanged()
+{
+	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (txtDoc && txtDoc->IsValid() && (txtDoc->IsModified() == false))
+	{
+		txtDoc->SetModifiedFlag(true);
+		UpdateTab(txtDoc);
+	}	
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 {
 	QString ref = link.toString();
 	if      (ref == "#new") on_actionNewModel_triggered();
@@ -400,9 +411,23 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		// load the plot file
 		OpenPlotFile(fileName, nullptr, showLoadOptions);
 	}
-	else if ((ext.compare("feb", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("inp", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("n", Qt::CaseInsensitive) == 0))
+	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
+	{
+		// ask user if (s)he wants to open the feb as a model or as a file. 
+		QString question("Do you want to open the feb file as a model or a file?\nSelect Yes to open it as a model, or No to open a text editor.");
+		if (QMessageBox::question(this, "FEBio Studio", question) == QMessageBox::Yes)
+		{
+			// load the feb file
+			OpenFEModel(fileName);
+		}
+		else
+		{
+			// open a text editor
+			OpenFEBioFile(fileName);
+		}
+	}
+	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("n"  , Qt::CaseInsensitive) == 0))
 	{
 		// load the feb file
 		OpenFEModel(fileName);
@@ -1724,10 +1749,28 @@ void CMainWindow::UpdateUIConfig()
 		}
 		else
 		{
-			// no open docs
-			// we need to update the welcome page since the recent
-			// file list might have changed
-			ui->setUIConfig(0);
+			CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
+			if (txtDoc)
+			{
+				txtDoc->Activate();
+				if (txtDoc->GetFormat() == CTextDocument::FORMAT_HTML)
+				{
+					ui->htmlViewer->setHtml(txtDoc->GetText());
+					ui->setUIConfig(CMainWindow::HTML_CONFIG);
+				}
+				else
+				{
+					ui->txtEdit->blockSignals(true);
+					ui->txtEdit->setPlainText(txtDoc->GetText());
+					ui->txtEdit->blockSignals(false);
+					ui->setUIConfig(CMainWindow::TEXT_CONFIG);
+				}
+			}
+			else
+			{
+				ui->htmlViewer->clear();
+				ui->setUIConfig(0);
+			}
 			ui->fileViewer->parentWidget()->raise();
 		}
 		return;
