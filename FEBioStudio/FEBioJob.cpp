@@ -75,7 +75,7 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 
 	// add extension
 	const char* sz = strrchr(jobName.c_str(), '.');
-	if (strcmp(sz, ".feb") != 0)
+	if ((sz == nullptr) || (strcmp(sz, ".feb") != 0))
 	{
 		m_febFile += ".feb";
 	}
