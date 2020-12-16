@@ -1337,11 +1337,11 @@ void CModelViewer::OnOpenJob()
 	CFEBioJob* job = dynamic_cast<CFEBioJob*>(po);
 	if (job == nullptr) return;
 
-	CModelDocument* doc = job->GetDocument();
+	CDocument* doc = job->GetDocument();
 	assert(doc);
 	QString plotFile = doc->ToAbsolutePath(job->GetPlotFileName());
 
-	GetMainWindow()->OpenPlotFile(plotFile, doc, false);
+	GetMainWindow()->OpenPlotFile(plotFile, dynamic_cast<CModelDocument*>(doc), false);
 }
 
 void CModelViewer::OnEditOutput()

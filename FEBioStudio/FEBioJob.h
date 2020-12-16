@@ -29,8 +29,7 @@ SOFTWARE.*/
 #include <PostLib/FEFileReader.h>
 #include "LaunchConfig.h"
 
-class CPostDocument;
-class CModelDocument;
+class CDocument;
 #ifdef HAS_SSH
 class CSSHHandler;
 #endif
@@ -49,9 +48,9 @@ public:
 	};
 
 public:
-	CFEBioJob(CModelDocument* doc);
+	CFEBioJob(CDocument* doc);
 	~CFEBioJob();
-	CFEBioJob(CModelDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig);
+	CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig);
 
 	void SetStatus(JOB_STATUS status);
 	int GetStatus();
@@ -80,7 +79,7 @@ public:
 	void Load(IArchive& ar) override;
 	void Save(OArchive& ar) override;
 
-	CModelDocument* GetDocument();
+	CDocument* GetDocument();
 
 private:
 	std::string		m_febFile;	// the .feb file name
@@ -102,7 +101,7 @@ public:
 	std::string	m_cmd;			// command line options
 
 public:
-	CModelDocument*	m_doc;
+	CDocument*	m_doc;
 
 	static CFEBioJob*	m_activeJob;
 	static void SetActiveJob(CFEBioJob* activeJob);

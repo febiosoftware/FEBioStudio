@@ -71,6 +71,7 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
+#include "TextDocument.h"
 #include "units.h"
 #include "version.h"
 #ifdef HAS_QUAZIP
@@ -78,6 +79,88 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
+#include <QSyntaxHighLighter>
+
+class XMLHighlighter : public QSyntaxHighlighter
+{
+public:
+	XMLHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc)
+	{
+		HighlightingRule rule;
+
+		// XML values
+		rule.pattern = QRegExp("\\b[0-9\\.+\\-e]+\\b");
+		rule.format.setForeground(Qt::darkBlue);
+		rule.format.setFontWeight(QFont::Bold);
+//		highlightingRules.append(rule);
+
+		// xml attribute values
+		rule.pattern = QRegExp("\"(?:[^\"]|\\.)*\"");
+		rule.format.setForeground(QColor::fromRgb(200, 150, 100));
+		highlightingRules.append(rule);
+
+		// xml attributes
+		rule.pattern = QRegExp("\\b[a-zA-Z0-9_]+(?=\\=)");
+		rule.format.setForeground(QColor(Qt::blue).lighter());
+		highlightingRules.append(rule);
+
+		// comments
+		commentFormat.setForeground(Qt::darkGreen);
+		commentStartExpression = QRegExp("<!--");
+		commentEndExpression = QRegExp("-->");
+	}
+
+	void highlightBlock(const QString& text)
+	{
+		foreach(const HighlightingRule &rule, highlightingRules)
+		{
+			QRegExp expression(rule.pattern);
+			int index = expression.indexIn(text);
+			while (index >= 0) {
+				int length = expression.matchedLength();
+				setFormat(index, length, rule.format);
+				index = expression.indexIn(text, index + length);
+			}
+		}
+
+
+		setCurrentBlockState(0);
+
+		int startIndex = 0;
+		if (previousBlockState() != 1)
+			startIndex = commentStartExpression.indexIn(text);
+
+		while (startIndex >= 0)
+		{
+			int endIndex = commentEndExpression.indexIn(text, startIndex);
+			int commentLength;
+			if (endIndex == -1)
+			{
+				setCurrentBlockState(1);
+				commentLength = text.length() - startIndex;
+			}
+			else
+			{
+				commentLength = endIndex - startIndex + commentEndExpression.matchedLength();
+			}
+			setFormat(startIndex, commentLength, commentFormat);
+			startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
+		}
+	}
+
+private:
+	struct HighlightingRule
+	{
+		QRegExp pattern;
+		QTextCharFormat format;
+	};
+	QVector<HighlightingRule> highlightingRules;
+
+	QTextCharFormat	commentFormat;
+	QRegExp commentStartExpression;
+	QRegExp commentEndExpression;
+};
+
 
 extern GLColor col[];
 
@@ -350,7 +433,24 @@ void CMainWindow::on_addToProject(const QString& file)
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_txtview_anchorClicked(const QUrl& link)
+void CMainWindow::on_txtedit_textChanged()
+{
+	QTextDocument* qtxt = ui->txtEdit->document();
+	if (qtxt == nullptr) return;
+
+	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (txtDoc && txtDoc->IsValid() && (txtDoc->IsModified() == false))
+	{
+		if ((txtDoc->GetText() == qtxt))
+		{
+			txtDoc->SetModifiedFlag(qtxt->isModified());
+			UpdateTab(txtDoc);
+		}
+	}	
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 {
 	QString ref = link.toString();
 	if      (ref == "#new") on_actionNewModel_triggered();
@@ -407,9 +507,23 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		// load the plot file
 		OpenPlotFile(fileName, nullptr, showLoadOptions);
 	}
-	else if ((ext.compare("feb", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("inp", Qt::CaseInsensitive) == 0) ||
-		(ext.compare("n", Qt::CaseInsensitive) == 0))
+	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
+	{
+		// ask user if (s)he wants to open the feb as a model or as a file. 
+		QString question("Do you want to open the feb file as a model or a file?\nSelect Yes to open it as a model, or No to open a text editor.");
+		if (QMessageBox::question(this, "FEBio Studio", question) == QMessageBox::Yes)
+		{
+			// load the feb file
+			OpenFEModel(fileName);
+		}
+		else
+		{
+			// open a text editor
+			OpenFEBioFile(fileName);
+		}
+	}
+	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("n"  , Qt::CaseInsensitive) == 0))
 	{
 		// load the feb file
 		OpenFEModel(fileName);
@@ -903,7 +1017,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		// if this was a new document, make it the active one 
 		if (file.m_flags & QueuedFile::NEW_DOCUMENT)
 		{
-			CDocument* doc = file.m_doc; assert(doc);
+			CGLDocument* doc = dynamic_cast<CGLDocument*>(file.m_doc); assert(doc);
 			doc->SetFileReader(file.m_fileReader);
 			doc->SetDocFilePath(file.m_fileName.toStdString());
 			bool b = doc->Initialize();
@@ -932,7 +1046,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		}
 		else if (file.m_flags & QueuedFile::AUTO_SAVE_RECOVERY)
 		{
-			CDocument* doc = file.m_doc; assert(doc);
+			CGLDocument* doc = dynamic_cast<CGLDocument*>(file.m_doc); assert(doc);
 			doc->SetFileReader(file.m_fileReader);
 			bool b = doc->Initialize();
 			if (b == false)
@@ -1766,10 +1880,28 @@ void CMainWindow::UpdateUIConfig()
 		}
 		else
 		{
-			// no open docs
-			// we need to update the welcome page since the recent
-			// file list might have changed
-			ui->setUIConfig(0);
+			CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
+			if (txtDoc)
+			{
+				txtDoc->Activate();
+				if (txtDoc->GetFormat() == CTextDocument::FORMAT_HTML)
+				{
+					ui->htmlViewer->setDocument(txtDoc->GetText());
+					ui->setUIConfig(CMainWindow::HTML_CONFIG);
+				}
+				else
+				{
+					ui->txtEdit->blockSignals(true);
+//					XMLHighlighter* highLighter = new XMLHighlighter(txtDoc->GetText());
+					ui->txtEdit->setDocument(txtDoc->GetText());
+					ui->txtEdit->blockSignals(false);
+					ui->setUIConfig(CMainWindow::TEXT_CONFIG);
+				}
+			}
+			else
+			{
+				ui->setUIConfig(0);
+			}
 			ui->fileViewer->parentWidget()->raise();
 		}
 		return;
@@ -1848,13 +1980,8 @@ GObject* CMainWindow::GetActiveObject()
 //-----------------------------------------------------------------
 void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool makeActive)
 {
-	const char* icons[] = { ":/icons/FEBioStudio.png", ":/icons/PostView.png" };
-
-	const char* szicon = "";
-	if (dynamic_cast<CModelDocument*>(doc)) szicon = icons[0];
-	if (dynamic_cast<CPostDocument* >(doc)) szicon = icons[1];
-
-	ui->tab->addView(viewName, doc, makeActive, szicon);
+	string docIcon = doc->GetIcon();
+	ui->tab->addView(viewName, doc, makeActive, docIcon);
 	CGLView* glview = GetGLView();
 	glview->ZoomExtents(false);
 	glview->UpdateWidgets(false);
@@ -1939,6 +2066,9 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		}
 		else it++;
 	}
+
+	ui->htmlViewer->setDocument(nullptr);
+	ui->txtEdit->setDocument(nullptr);
 
 	// now, remove from the doc manager
 	m_DocManager->RemoveDocument(n);
@@ -2608,16 +2738,40 @@ bool CMainWindow::DoModelCheck(CModelDocument* doc)
 	return true;
 }
 
-void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
+bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFile, int febioFileVersion)
 {
-	CModelDocument* doc = job->GetDocument();
-	assert(doc);
-	if (doc == nullptr) return;
+	// try to save the file first
+	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
 
-	bool febioFileVersion = job->m_febVersion;
-	bool writeNotes = job->m_writeNotes;
-	QString cmd = QString::fromStdString(job->m_cmd);
+	bool ret = false;
 
+	if (febioFileVersion == 0)
+	{
+		FEBioExport25 feb(doc->GetProject());
+		ret = feb.Write(febFile.c_str());
+	}
+	else if (febioFileVersion == 1)
+	{
+		FEBioExport3 feb(doc->GetProject());
+		ret = feb.Write(febFile.c_str());
+	}
+	else
+	{
+		assert(false);
+	}
+
+	if (ret == false)
+	{
+		QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
+		AddLogEntry("FAILED\n");
+	}
+	else AddLogEntry("SUCCESS!\n");
+
+	return ret;
+}
+
+void CMainWindow::RunFEBioJob(CFEBioJob* job)
+{
 	// see if we already have a job running.
 	if (CFEBioJob::GetActiveJob())
 	{
@@ -2625,66 +2779,17 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job, bool autoSave)
 		return;
 	}
 
-	// check the model first for issues
-	if (DoModelCheck(doc) == false) return;
+	QString cmd = QString::fromStdString(job->m_cmd);
 
-	// auto-save the document
-	if (autoSave && doc->IsModified())
-	{
-		AddLogEntry(QString("saving %1 ...").arg(QString::fromStdString(doc->GetDocFilePath())));
-		bool b = doc->SaveDocument();
-		AddLogEntry(b ? "success\n" : "FAILED\n");
-	}
-
-	// get the FEBio job (relative) file path
+	// get the FEBio job file path
 	string febFile = job->GetFEBFileName();
-	// do string substitution
-	febFile = FSDir::expandMacros(febFile);
-
-	// convert to an absolute path
-	QDir modelDir(QString::fromStdString(doc->GetDocFolder()));
-	QString absPath = modelDir.absoluteFilePath(QString::fromStdString(febFile));
-
-	febFile = QDir::toNativeSeparators(absPath).toStdString();
-
-	// try to save the file first
-	AddLogEntry(QString("Saving to %1 ...").arg(QString::fromStdString(febFile)));
-
-	if (febioFileVersion == 0)
-	{
-		FEBioExport25 feb(doc->GetProject());
-		if (feb.Write(febFile.c_str()) == false)
-		{
-			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
-			AddLogEntry("FAILED\n");
-			return;
-		}
-		else AddLogEntry("SUCCESS!\n");
-	}
-	else if (febioFileVersion == 1)
-	{
-		FEBioExport3 feb(doc->GetProject());
-		if (feb.Write(febFile.c_str()) == false)
-		{
-			QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
-			AddLogEntry("FAILED\n");
-			return;
-		}
-		else AddLogEntry("SUCCESS!\n");
-	}
-	else
-	{
-		assert(false);
-		QMessageBox::critical(this, "Run FEBio", "Don't know what file version to save.");
-		AddLogEntry("FAILED\n");
-		return;
-	}
 
 	// clear output for next job
 	ClearOutput();
+	ShowLogPanel();
 
 	// extract the working directory and file title from the file path
-	QFileInfo fileInfo(absPath);
+	QFileInfo fileInfo(QString::fromStdString(febFile));
 	QString workingDir = fileInfo.absolutePath();
 	QString fileName = fileInfo.fileName();
 
@@ -2893,6 +2998,7 @@ void CMainWindow::CloseWelcomePage()
 	int n = ui->tab->findView("Welcome");
 	if (n >= 0)
 	{
+		ui->htmlViewer->setDocument(nullptr);
 		ui->tab->tabCloseRequested(n);
 	}
 }

@@ -144,6 +144,8 @@ public:
 	// will be called when the document is deactivate
 	virtual void Deactivate();
 
+	CMainWindow* GetMainWindow();
+
 public:
 	// --- Document validation ---
 	bool IsModified();
@@ -154,10 +156,11 @@ public:
 	// --- I/O-routines ---
 	// Save the document
 	bool SaveDocument(const std::string& fileName);
-	bool SaveDocument();
+
+	virtual bool SaveDocument();
 
 	// Autosave
-	bool AutoSaveDocument();
+	virtual bool AutoSaveDocument();
 	bool loadPriorAutoSave();
 
 	// set the document's title
@@ -187,17 +190,13 @@ public:
 	// get the base of the file name
 	std::string GetDocFileBase();
 
-	// set/get the file reader
-	void SetFileReader(FileReader* fileReader);
-	FileReader* GetFileReader();
-
-	// set/get the file writer
-	void SetFileWriter(FileWriter* fileWriter);
-	FileWriter* GetFileWriter();
-
 	// return the absolute path from the relative path w.r.t. to the model's folder
 	QString ToAbsolutePath(const QString& relativePath);
 	QString ToAbsolutePath(const std::string& relativePath);
+
+public:
+	std::string GetIcon() const;
+	void SetIcon(const std::string& iconName);
 
 public:
 	// --- Document observers ---
@@ -220,24 +219,13 @@ protected:
 	// file path
 	std::string		m_filePath;
 	std::string		m_autoSaveFilePath;
-	FileReader*		m_fileReader;
-	FileWriter*		m_fileWriter;
 
+	std::string		m_iconName;
 
 	CMainWindow*	m_wnd;
 	std::vector<CDocObserver*>	m_Observers;
 
 	static CDocument*	m_activeDoc;
-};
-
-//-----------------------------------------------------------------------------
-// Base class for text documents
-class CTextDocument : public CDocument
-{
-public:
-	CTextDocument(CMainWindow* wnd);
-
-	virtual QString GetText();
 };
 
 //-----------------------------------------------------------------------------
@@ -249,6 +237,18 @@ public:
 	~CGLDocument();
 
 	void Clear() override;
+
+	bool SaveDocument() override;
+
+	bool AutoSaveDocument() override;
+
+	// set/get the file reader
+	void SetFileReader(FileReader* fileReader);
+	FileReader* GetFileReader();
+
+	// set/get the file writer
+	void SetFileWriter(FileWriter* fileWriter);
+	FileWriter* GetFileWriter();
 
 	// import image data
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
@@ -284,8 +284,6 @@ public:
 	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(false); }
 
 	static std::string GetTypeString(FSObject* po);
-
-	CMainWindow* GetMainWindow() { return m_wnd; }
 
 	virtual void UpdateSelection(bool breport = true);
 
@@ -323,4 +321,7 @@ protected:
 	int				m_units;
 
 	FSObjectList<Post::CImageModel>	m_img;
+
+	FileReader*		m_fileReader;
+	FileWriter*		m_fileWriter;
 };

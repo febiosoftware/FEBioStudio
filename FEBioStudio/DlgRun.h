@@ -46,6 +46,9 @@ public:
 	void SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int ndefault = 0);
 	void SetFEBioFileVersion(int fileVersion);
 
+	void ShowFEBioSaveOptions(bool b);
+	void EnableJobSettings(bool b);
+
 	QString GetWorkingDirectory();
 	QString GetJobName();
 	QString GetConfigFileName();
