@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QLabel>
 #include <QTextBrowser>
-#include <QTextEdit>
+#include <QPlainTextEdit>
 #include <QStackedWidget>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
@@ -122,7 +122,7 @@ public:
 	QStackedWidget*	stack;
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
-	QTextEdit*		txtEdit;
+	QPlainTextEdit*	txtEdit;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -317,13 +317,10 @@ public:
 
 		stack->addWidget(htmlViewer);
 
-		txtEdit = new QTextEdit;
+		txtEdit = new QPlainTextEdit;
 		txtEdit->setObjectName("txtedit");
-		QFont font = txtEdit->font();
-		font.setStyleHint(QFont::Courier);
-		font.setPointSize(12);
-		txtEdit->setFont(font);
-		QFontInfo fi(font);
+		txtEdit->setFont(QFont("Courier", 12));
+		QFontInfo fi(txtEdit->font());
 		txtEdit->setTabStopDistance(fi.pixelSize() * 2);
 		stack->addWidget(txtEdit);
 

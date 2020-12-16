@@ -156,10 +156,11 @@ public:
 	// --- I/O-routines ---
 	// Save the document
 	bool SaveDocument(const std::string& fileName);
-	bool SaveDocument();
+
+	virtual bool SaveDocument();
 
 	// Autosave
-	bool AutoSaveDocument();
+	virtual bool AutoSaveDocument();
 	bool loadPriorAutoSave();
 
 	// set the document's title
@@ -189,14 +190,6 @@ public:
 	// get the base of the file name
 	std::string GetDocFileBase();
 
-	// set/get the file reader
-	void SetFileReader(FileReader* fileReader);
-	FileReader* GetFileReader();
-
-	// set/get the file writer
-	void SetFileWriter(FileWriter* fileWriter);
-	FileWriter* GetFileWriter();
-
 	// return the absolute path from the relative path w.r.t. to the model's folder
 	QString ToAbsolutePath(const QString& relativePath);
 	QString ToAbsolutePath(const std::string& relativePath);
@@ -222,40 +215,11 @@ protected:
 	// file path
 	std::string		m_filePath;
 	std::string		m_autoSaveFilePath;
-	FileReader*		m_fileReader;
-	FileWriter*		m_fileWriter;
-
 
 	CMainWindow*	m_wnd;
 	std::vector<CDocObserver*>	m_Observers;
 
 	static CDocument*	m_activeDoc;
-};
-
-//-----------------------------------------------------------------------------
-// Base class for text documents
-class CTextDocument : public CDocument
-{
-public:
-	enum Format {
-		FORMAT_TEXT,
-		FORMAT_HTML
-	};
-
-public:
-	CTextDocument(CMainWindow* wnd);
-
-	void SetFormat(Format format);
-	int GetFormat() const;
-
-	QString GetText() const;
-	void SetText(const QString& txt);
-
-	bool ReadFromFile(const QString& fileName);
-
-protected:
-	QString		m_txt;
-	int			m_format;
 };
 
 //-----------------------------------------------------------------------------
@@ -267,6 +231,18 @@ public:
 	~CGLDocument();
 
 	void Clear() override;
+
+	bool SaveDocument() override;
+
+	bool AutoSaveDocument() override;
+
+	// set/get the file reader
+	void SetFileReader(FileReader* fileReader);
+	FileReader* GetFileReader();
+
+	// set/get the file writer
+	void SetFileWriter(FileWriter* fileWriter);
+	FileWriter* GetFileWriter();
 
 	// import image data
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
@@ -339,4 +315,7 @@ protected:
 	int				m_units;
 
 	FSObjectList<Post::CImageModel>	m_img;
+
+	FileReader*		m_fileReader;
+	FileWriter*		m_fileWriter;
 };

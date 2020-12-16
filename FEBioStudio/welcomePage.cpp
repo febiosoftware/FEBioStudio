@@ -91,6 +91,7 @@ CWelcomePage::CWelcomePage(CMainWindow* wnd) : CTextDocument(wnd)
 {
 	SetDocTitle("Welcome");
 	SetFormat(CTextDocument::FORMAT_HTML);
+	m_txt.setDocumentLayout(nullptr);
 }
 
 void CWelcomePage::Activate()
@@ -118,5 +119,5 @@ void CWelcomePage::Activate()
 
 	page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
 
-	SetText(page);
+	m_txt.setHtml(page);
 }

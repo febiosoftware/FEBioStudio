@@ -151,9 +151,6 @@ CDocument* CDocument::m_activeDoc = nullptr;
 
 CDocument::CDocument(CMainWindow* wnd) : m_wnd(wnd)
 {
-	m_fileWriter = nullptr;
-	m_fileReader = nullptr;
-
 	// set document as not modified
 	m_bModified = false;
 	m_bValid = true;
@@ -367,87 +364,25 @@ std::string CDocument::GetDocFileBase()
 	return FSDir::fileBase(m_filePath);
 }
 
-// set/get the file reader
-void CDocument::SetFileReader(FileReader* fileReader)
-{
-	if (fileReader != m_fileReader)
-	{
-		if (m_fileReader) delete m_fileReader;
-		m_fileReader = fileReader;
-	}
-}
-
-FileReader* CDocument::GetFileReader()
-{
-	return m_fileReader;
-}
-
-// set/get the file writer
-void CDocument::SetFileWriter(FileWriter* fileWriter)
-{
-	if (fileWriter != m_fileWriter)
-	{
-		if (m_fileWriter) delete m_fileWriter;
-		m_fileWriter = fileWriter;
-	}
-}
-
-FileWriter* CDocument::GetFileWriter()
-{
-	return m_fileWriter;
-}
-
 //-----------------------------------------------------------------------------
 bool CDocument::SaveDocument(const std::string& fileName)
 {
-	if (m_fileWriter)
-	{
-		bool success = m_fileWriter->Write(fileName.c_str());
-
-		if (success)
-		{
-			SetModifiedFlag(false);
-			SetDocFilePath(fileName);
-		}
-
-		return success;
-	}
-	else return false;
+	SetDocFilePath(fileName);
+	bool b = SaveDocument();
+	if (b) SetModifiedFlag(false);
+	return b;
 }
 
 //-----------------------------------------------------------------------------
 bool CDocument::SaveDocument()
 {
-	if (m_fileWriter && (m_filePath.empty() == false))
-	{
-		bool success = m_fileWriter->Write(m_filePath.c_str());
-
-		if (success)
-		{
-			SetModifiedFlag(false);
-		}
-
-		return success;
-	}
-	else
-		return false;
+	return false;
 }
 
 //-----------------------------------------------------------------------------
 bool CDocument::AutoSaveDocument()
 {
-	if (m_fileWriter && (m_autoSaveFilePath.empty() == false))
-	{
-		CLogger::AddLogEntry(QString("Autosaving file: %1 ...").arg(m_title.c_str()));
-
-		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
-
-		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
-
-		return success;
-	}
-	else
-		return false;
+	return true;
 }
 
 bool CDocument::loadPriorAutoSave()
@@ -479,59 +414,6 @@ QString CDocument::ToAbsolutePath(const std::string& relativePath)
 }
 
 //==============================================================================
-// CTextDocument
-//==============================================================================
-
-CTextDocument::CTextDocument(CMainWindow* wnd) : CDocument(wnd)
-{
-	m_format = Format::FORMAT_TEXT;
-}
-
-void CTextDocument::SetFormat(Format format)
-{
-	m_format = format;
-}
-
-int CTextDocument::GetFormat() const
-{
-	return m_format;
-}
-
-QString CTextDocument::GetText() const
-{
-	return m_txt;
-}
-
-void CTextDocument::SetText(const QString& txt)
-{
-	m_txt = txt;
-}
-
-bool CTextDocument::ReadFromFile(const QString& fileName)
-{
-	m_txt.clear();
-	m_bValid = false;
-
-	QString normalizeFileName = QDir::fromNativeSeparators(fileName);
-
-	QFile file(normalizeFileName);
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-		return false;
-
-	QString s;
-	QTextStream in(&file);
-	while (!in.atEnd()) {
-		QString line = in.readLine();
-		s += line + "\n";
-	}
-
-	m_txt = s;
-
-	m_bValid = true;
-	return true;
-}
-
-//==============================================================================
 // CGLDocument
 //==============================================================================
 
@@ -541,6 +423,9 @@ bool CTextDocument::ReadFromFile(const QString& fileName)
 CGLDocument::CGLDocument(CMainWindow* wnd) : CDocument(wnd)
 {
 	m_pCmd = new CCommandManager(this);
+
+	m_fileWriter = nullptr;
+	m_fileReader = nullptr;
 
 	// Clear the command history
 	m_pCmd->Clear();
@@ -909,4 +794,68 @@ Post::CImageModel* CGLDocument::GetImageModel(int i)
 void CGLDocument::DeleteAllImageModels()
 {
 	m_img.Clear();
+}
+
+// set/get the file reader
+void CGLDocument::SetFileReader(FileReader* fileReader)
+{
+	if (fileReader != m_fileReader)
+	{
+		if (m_fileReader) delete m_fileReader;
+		m_fileReader = fileReader;
+	}
+}
+
+FileReader* CGLDocument::GetFileReader()
+{
+	return m_fileReader;
+}
+
+// set/get the file writer
+void CGLDocument::SetFileWriter(FileWriter* fileWriter)
+{
+	if (fileWriter != m_fileWriter)
+	{
+		if (m_fileWriter) delete m_fileWriter;
+		m_fileWriter = fileWriter;
+	}
+}
+
+FileWriter* CGLDocument::GetFileWriter()
+{
+	return m_fileWriter;
+}
+
+//-----------------------------------------------------------------------------
+bool CGLDocument::SaveDocument()
+{
+	if (m_fileWriter && (m_filePath.empty() == false))
+	{
+		bool success = m_fileWriter->Write(m_filePath.c_str());
+
+		if (success)
+		{
+			SetModifiedFlag(false);
+		}
+
+		return success;
+	}
+	else
+		return false;
+}
+
+bool CGLDocument::AutoSaveDocument()
+{
+	if (m_fileWriter && (m_autoSaveFilePath.empty() == false))
+	{
+		CLogger::AddLogEntry(QString("Autosaving file: %1 ...").arg(m_title.c_str()));
+
+		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
+
+		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
+
+		return success;
+	}
+	else
+		return false;
 }

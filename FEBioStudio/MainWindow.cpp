@@ -71,6 +71,7 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
+#include "TextDocument.h"
 #include "units.h"
 #include "version.h"
 #ifdef HAS_QUAZIP
@@ -921,7 +922,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		// if this was a new document, make it the active one 
 		if (file.m_flags & QueuedFile::NEW_DOCUMENT)
 		{
-			CDocument* doc = file.m_doc; assert(doc);
+			CGLDocument* doc = dynamic_cast<CGLDocument*>(file.m_doc); assert(doc);
 			doc->SetFileReader(file.m_fileReader);
 			doc->SetDocFilePath(file.m_fileName.toStdString());
 			bool b = doc->Initialize();
@@ -950,7 +951,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		}
 		else if (file.m_flags & QueuedFile::AUTO_SAVE_RECOVERY)
 		{
-			CDocument* doc = file.m_doc; assert(doc);
+			CGLDocument* doc = dynamic_cast<CGLDocument*>(file.m_doc); assert(doc);
 			doc->SetFileReader(file.m_fileReader);
 			bool b = doc->Initialize();
 			if (b == false)
@@ -1755,20 +1756,20 @@ void CMainWindow::UpdateUIConfig()
 				txtDoc->Activate();
 				if (txtDoc->GetFormat() == CTextDocument::FORMAT_HTML)
 				{
-					ui->htmlViewer->setHtml(txtDoc->GetText());
+					ui->htmlViewer->setDocument(txtDoc->GetText());
 					ui->setUIConfig(CMainWindow::HTML_CONFIG);
 				}
 				else
 				{
 					ui->txtEdit->blockSignals(true);
-					ui->txtEdit->setPlainText(txtDoc->GetText());
+					ui->txtEdit->setDocument(txtDoc->GetText());
 					ui->txtEdit->blockSignals(false);
 					ui->setUIConfig(CMainWindow::TEXT_CONFIG);
 				}
 			}
 			else
 			{
-				ui->htmlViewer->clear();
+				ui->htmlViewer->setText("");
 				ui->setUIConfig(0);
 			}
 			ui->fileViewer->parentWidget()->raise();
@@ -1849,11 +1850,12 @@ GObject* CMainWindow::GetActiveObject()
 //-----------------------------------------------------------------
 void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool makeActive)
 {
-	const char* icons[] = { ":/icons/FEBioStudio.png", ":/icons/PostView.png" };
+	const char* icons[] = { ":/icons/FEBioStudio.png", ":/icons/PostView.png", ":/icons/febio.png" };
 
 	const char* szicon = "";
 	if (dynamic_cast<CModelDocument*>(doc)) szicon = icons[0];
 	if (dynamic_cast<CPostDocument* >(doc)) szicon = icons[1];
+	if (dynamic_cast<CTextDocument*>(doc)) szicon = icons[2];
 
 	ui->tab->addView(viewName, doc, makeActive, szicon);
 	CGLView* glview = GetGLView();
@@ -2631,7 +2633,7 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 		assert(false);
 	}
 
-	if (ret)
+	if (ret == false)
 	{
 		QMessageBox::critical(this, "Run FEBio", "Failed saving FEBio file.");
 		AddLogEntry("FAILED\n");
@@ -2869,6 +2871,7 @@ void CMainWindow::CloseWelcomePage()
 	int n = ui->tab->findView("Welcome");
 	if (n >= 0)
 	{
+		ui->htmlViewer->setDocument(nullptr);
 		ui->tab->tabCloseRequested(n);
 	}
 }

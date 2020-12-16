@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,18 +23,33 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <QString>
-#include <QTextBrowser>
-#include "TextDocument.h"
+#include "Document.h"
+#include <QTextDocument>
 
-class CMainWindow;
-
-class CWelcomePage : public CTextDocument
+//-----------------------------------------------------------------------------
+// Base class for text documents
+class CTextDocument : public CDocument
 {
 public:
-	CWelcomePage(CMainWindow* wnd);
+	enum Format {
+		FORMAT_TEXT,
+		FORMAT_HTML
+	};
 
-	void Activate() override;
+public:
+	CTextDocument(CMainWindow* wnd);
+
+	void SetFormat(Format format);
+	int GetFormat() const;
+
+	QTextDocument* GetText();
+
+	bool ReadFromFile(const QString& fileName);
+
+	bool SaveDocument() override;
+
+protected:
+	QTextDocument	m_txt;
+	int				m_format;
 };
