@@ -174,6 +174,11 @@ public:
 	void setAutoSaveInterval(int interval);
 	int autoSaveInterval();
 
+	// autoUpdate Check
+	void setAutoUpdateCheck(bool update);
+	bool getAutoUpdateCheck();
+	bool updaterPresent();
+
 	// set/get default unit system for new models
 	void SetDefaultUnitSystem(int n);
 	int GetDefaultUnitSystem() const;
@@ -432,6 +437,7 @@ public slots:
 	void on_actionSyncViews_triggered();
 	void on_actionToggleConnected_triggered();
 
+	void on_actionUpdate_triggered();
 	void on_actionFEBioURL_triggered();
 	void on_actionFEBioForum_triggered();
 	void on_actionFEBioResources_triggered();
@@ -558,6 +564,8 @@ public slots:
 	void toggleOrtho();
 
 	void autosave();
+
+	void autoUpdateCheck(bool update);
 
 public:
 	QStringList GetRecentFileList();

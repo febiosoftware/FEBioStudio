@@ -127,6 +127,8 @@ int main(int argc, char* argv[])
 		wnd.OpenFile(argv[1], false);
 	}
 
+	
+
 	return app.exec();
 
 #else

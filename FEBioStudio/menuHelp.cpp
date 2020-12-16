@@ -24,12 +24,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <QDesktopServices>
+#include <QApplication>
+#include <QMessageBox>
+#include <QProcess>
 #include "stdafx.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "version.h"
-#include <QDesktopServices>
-#include <QMessageBox>
+#include "UpdateChecker.h"
+
+
+void CMainWindow::on_actionUpdate_triggered()
+{
+	CUpdateChecker dlg(ui->m_autoUpdateCheck);
+
+	if(dlg.exec())
+	{
+		if(dlg.doUpdate())
+		{
+			ui->m_updateOnClose = true;
+			close();
+		}
+	}
+
+	ui->m_autoUpdateCheck = dlg.autoUpdateCheck();
+}
 
 void CMainWindow::on_actionFEBioURL_triggered()
 {

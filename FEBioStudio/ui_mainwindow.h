@@ -26,9 +26,11 @@ SOFTWARE.*/
 
 #include <FEBioStudio/RepositoryPanel.h>
 #include "GLView.h"
+#include <QApplication>
 #include <QAction>
 #include <QMenuBar>
 #include <QMenu>
+#include <QFile>
 #include <QDockWidget>
 #include <QDesktopWidget>
 #include <QStatusBar>
@@ -65,6 +67,7 @@ SOFTWARE.*/
 #include "welcomePage.h"
 #include "IconProvider.h"
 #include "TimelinePanel.h"
+#include "UpdateChecker.h"
 
 class QProcess;
 
@@ -243,6 +246,11 @@ public:
 
 	int		m_defaultUnits;
 
+	CUpdateWidget m_updateWidget;
+	bool m_updaterPresent;
+	bool m_autoUpdateCheck;
+	bool m_updateOnClose;
+
 public:
 	CMainWindow()
 	{
@@ -281,6 +289,10 @@ public:
 
 		curveWnd = 0;
 		meshWnd = 0;
+
+		// Check if updater is present 
+		m_updaterPresent = QFile::exists(QApplication::applicationDirPath() + UPDATER);
+		m_updateOnClose = false;
 
 		// initialize current path
 		currentPath = QDir::currentPath();
@@ -519,6 +531,7 @@ public:
 		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews");
 
 		// --- Help menu ---
+		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
 		QAction* actionFEBioResources = addAction("FEBio Knowledgebase", "actionFEBioResources");
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
@@ -779,6 +792,11 @@ public:
 
 		// Help menu
 		menuBar->addAction(menuHelp->menuAction());
+		if(m_updaterPresent)
+		{
+			menuHelp->addAction(actionUpdate);
+			menuHelp->addSeparator();
+		}
 		menuHelp->addAction(actionWelcome);
 		menuHelp->addSeparator();
 		menuHelp->addAction(actionFEBioURL);

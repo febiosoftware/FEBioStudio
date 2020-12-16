@@ -217,6 +217,13 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	ui->m_autoSaveTimer = new QTimer(this);
 	QObject::connect(ui->m_autoSaveTimer, &QTimer::timeout, this, &CMainWindow::autosave);
 	ui->m_autoSaveTimer->start(ui->m_autoSaveInterval*1000);
+
+	// Auto Update Check
+	if(ui->m_autoUpdateCheck && ui->m_updaterPresent)
+	{
+		QObject::connect(&ui->m_updateWidget, &CUpdateWidget::ready, this, &CMainWindow::autoUpdateCheck);
+		ui->m_updateWidget.checkForUpdate();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1120,6 +1127,14 @@ void CMainWindow::autosave()
 	}
 }
 
+void CMainWindow::autoUpdateCheck(bool update)
+{
+	if(update)
+	{
+		on_actionUpdate_triggered();
+	}
+}
+
 void CMainWindow::ReportSelection()
 {
 	CModelDocument* doc = GetModelDocument();
@@ -1315,10 +1330,20 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 	if (maybeSave())
 	{
 		writeSettings();
+
+		if(ui->m_updateOnClose && ui->m_updaterPresent)
+		{
+			QProcess* updater = new QProcess;
+			updater->start(QApplication::applicationDirPath() + UPDATER);
+		}
+
 		ev->accept();
 	}
 	else
+	{
+		ui->m_updateOnClose = false;
 		ev->ignore();
+	}
 }
 
 void CMainWindow::keyPressEvent(QKeyEvent* ev)
@@ -1429,6 +1454,21 @@ int CMainWindow::autoSaveInterval()
 	return ui->m_autoSaveInterval;
 }
 
+void CMainWindow::setAutoUpdateCheck(bool update)
+{
+	ui->m_autoUpdateCheck = update;
+}
+
+bool CMainWindow::getAutoUpdateCheck()
+{
+	return ui->m_autoUpdateCheck;
+}
+
+bool CMainWindow::updaterPresent()
+{
+	return ui->m_updaterPresent;
+}
+
 // set/get default unit system for new models
 void CMainWindow::SetDefaultUnitSystem(int n)
 {
@@ -1454,6 +1494,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("theme", ui->m_theme);
 	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
+	settings.setValue("autoUpdateCheck", ui->m_autoUpdateCheck);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
 	settings.setValue("multiViewProjection", vs.m_nconv);
 	settings.setValue("showMaterialFibers", vs.m_bfiber);
@@ -1530,6 +1571,7 @@ void CMainWindow::readSettings()
 	ui->m_theme = settings.value("theme", 0).toInt();
 	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+	ui->m_autoUpdateCheck = settings.value("autoUpdateCheck", true).toBool();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
 	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
 	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
