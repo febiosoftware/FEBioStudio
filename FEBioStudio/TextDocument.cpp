@@ -101,5 +101,8 @@ bool CTextDocument::SaveDocument()
 	out << GetText()->toPlainText();
 	file.close();
 
+	SetModifiedFlag(false);
+	m_txt.setModified(false);
+
 	return true;
 }

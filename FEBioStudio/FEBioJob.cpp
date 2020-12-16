@@ -71,7 +71,14 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	SetName(jobName);
 
 	// build the feb file name
-	m_febFile = workingDirectory + "/" + jobName + ".feb";
+	m_febFile = workingDirectory + "/" + jobName;
+
+	// add extension
+	const char* sz = strrchr(jobName.c_str(), '.');
+	if (strcmp(sz, ".feb") != 0)
+	{
+		m_febFile += ".feb";
+	}
 
 	m_status = NONE;
 

@@ -100,17 +100,15 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	// get default name and path
 	if (doc)
 	{
-		QString docName = QString::fromStdString(doc->GetDocFileBase());
-		QString docFolder = QString::fromStdString(doc->GetDocFolder());
-
 		// make sure that docFolder is valid
+		QString docFolder = QString::fromStdString(doc->GetDocFolder());
 		if (docFolder.isEmpty())
 		{
 			QMessageBox::warning(this, "Run FEBio", "You have to save the model before you can run it in FEBio.");
 			return;
 		}
 
-		jobName = docName;
+		jobName = QString::fromStdString(doc->GetDocFileName());
 		jobPath = docFolder;
 	}
 
@@ -170,6 +168,12 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		{
 			dlg.SetConfigFileName(QString::fromStdString(s));
 		}
+	}
+
+	if (modelDoc == nullptr)
+	{
+		dlg.ShowFEBioSaveOptions(false);
+		dlg.EnableJobSettings(false);
 	}
 
 	if (dlg.exec())
@@ -239,19 +243,24 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		job->m_writeNotes = dlg.WriteNotes();
 		job->m_cmd = dlg.CommandLine().toStdString();
 
-		if (modelDoc)
-		{
-			// do a model check
-			if (DoModelCheck(modelDoc) == false) return;
+		// do a model check
+		if (modelDoc && (DoModelCheck(modelDoc) == false)) return;
 
+		if (doc)
+		{
 			// auto-save the document
 			if (dlg.DoAutoSave() && doc->IsModified())
 			{
 				AddLogEntry(QString("saving %1 ...").arg(QString::fromStdString(doc->GetDocFilePath())));
 				bool b = doc->SaveDocument();
+				UpdateTab(doc);
 				AddLogEntry(b ? "success\n" : "FAILED\n");
 			}
+		}
 
+		// export to FEBio
+		if (modelDoc)
+		{
 			// save the FEBio file
 			string febFile = job->GetFEBFileName(false);
 			ExportFEBioFile(modelDoc, febFile, lastFEBioFileVersion);

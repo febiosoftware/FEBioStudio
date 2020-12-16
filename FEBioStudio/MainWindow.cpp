@@ -428,11 +428,17 @@ void CMainWindow::on_addToProject(const QString& file)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_txtedit_textChanged()
 {
+	QTextDocument* qtxt = ui->txtEdit->document();
+	if (qtxt == nullptr) return;
+
 	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (txtDoc && txtDoc->IsValid() && (txtDoc->IsModified() == false))
 	{
-		txtDoc->SetModifiedFlag(true);
-		UpdateTab(txtDoc);
+		if ((txtDoc->GetText() == qtxt))
+		{
+			txtDoc->SetModifiedFlag(qtxt->isModified());
+			UpdateTab(txtDoc);
+		}
 	}	
 }
 
@@ -1844,7 +1850,7 @@ void CMainWindow::UpdateUIConfig()
 				else
 				{
 					ui->txtEdit->blockSignals(true);
-					XMLHighlighter* highLighter = new XMLHighlighter(txtDoc->GetText());
+//					XMLHighlighter* highLighter = new XMLHighlighter(txtDoc->GetText());
 					ui->txtEdit->setDocument(txtDoc->GetText());
 					ui->txtEdit->blockSignals(false);
 					ui->setUIConfig(CMainWindow::TEXT_CONFIG);
