@@ -79,6 +79,88 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
+#include <QSyntaxHighLighter>
+
+class XMLHighlighter : public QSyntaxHighlighter
+{
+public:
+	XMLHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc)
+	{
+		HighlightingRule rule;
+
+		// XML values
+		rule.pattern = QRegExp("\\b[0-9\\.+\\-e]+\\b");
+		rule.format.setForeground(Qt::darkBlue);
+		rule.format.setFontWeight(QFont::Bold);
+//		highlightingRules.append(rule);
+
+		// xml attribute values
+		rule.pattern = QRegExp("\"(?:[^\"]|\\.)*\"");
+		rule.format.setForeground(QColor::fromRgb(200, 150, 100));
+		highlightingRules.append(rule);
+
+		// xml attributes
+		rule.pattern = QRegExp("\\b[a-zA-Z0-9_]+(?=\\=)");
+		rule.format.setForeground(QColor(Qt::blue).lighter());
+		highlightingRules.append(rule);
+
+		// comments
+		commentFormat.setForeground(Qt::darkGreen);
+		commentStartExpression = QRegExp("<!--");
+		commentEndExpression = QRegExp("-->");
+	}
+
+	void highlightBlock(const QString& text)
+	{
+		foreach(const HighlightingRule &rule, highlightingRules)
+		{
+			QRegExp expression(rule.pattern);
+			int index = expression.indexIn(text);
+			while (index >= 0) {
+				int length = expression.matchedLength();
+				setFormat(index, length, rule.format);
+				index = expression.indexIn(text, index + length);
+			}
+		}
+
+
+		setCurrentBlockState(0);
+
+		int startIndex = 0;
+		if (previousBlockState() != 1)
+			startIndex = commentStartExpression.indexIn(text);
+
+		while (startIndex >= 0)
+		{
+			int endIndex = commentEndExpression.indexIn(text, startIndex);
+			int commentLength;
+			if (endIndex == -1)
+			{
+				setCurrentBlockState(1);
+				commentLength = text.length() - startIndex;
+			}
+			else
+			{
+				commentLength = endIndex - startIndex + commentEndExpression.matchedLength();
+			}
+			setFormat(startIndex, commentLength, commentFormat);
+			startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
+		}
+	}
+
+private:
+	struct HighlightingRule
+	{
+		QRegExp pattern;
+		QTextCharFormat format;
+	};
+	QVector<HighlightingRule> highlightingRules;
+
+	QTextCharFormat	commentFormat;
+	QRegExp commentStartExpression;
+	QRegExp commentEndExpression;
+};
+
 
 extern GLColor col[];
 
@@ -1762,6 +1844,7 @@ void CMainWindow::UpdateUIConfig()
 				else
 				{
 					ui->txtEdit->blockSignals(true);
+					XMLHighlighter* highLighter = new XMLHighlighter(txtDoc->GetText());
 					ui->txtEdit->setDocument(txtDoc->GetText());
 					ui->txtEdit->blockSignals(false);
 					ui->setUIConfig(CMainWindow::TEXT_CONFIG);

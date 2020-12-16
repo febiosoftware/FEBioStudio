@@ -35,7 +35,7 @@ SOFTWARE.*/
 
 CTextDocument::CTextDocument(CMainWindow* wnd) : CDocument(wnd)
 {
-	SetIcon(":/icons/PostView.png");
+	SetIcon(":/icons/febio.png");
 
 	m_format = Format::FORMAT_TEXT;
 	m_txt.setDocumentLayout(new QPlainTextDocumentLayout(&m_txt));
@@ -60,6 +60,11 @@ bool CTextDocument::ReadFromFile(const QString& fileName)
 {
 	m_txt.clear();
 	m_txt.setDefaultFont(QFont("Courier", 11));
+	QTextOption ops = m_txt.defaultTextOption();
+	QFontInfo fi(m_txt.defaultFont());
+	ops.setTabStopDistance(2 * fi.pixelSize());
+	m_txt.setDefaultTextOption(ops);
+
 	m_bValid = false;
 
 	QString normalizeFileName = QDir::fromNativeSeparators(fileName);

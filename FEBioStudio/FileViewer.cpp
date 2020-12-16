@@ -450,9 +450,8 @@ void CFileViewer::Update()
 
 		QFileIconProvider iconProvider;
 
-		QIcon icon = iconProvider.icon(QFileIconProvider::File);
-		if (dynamic_cast<CModelDocument*>(doc)) icon = QIcon(QString(":/icons/FEBioStudio.png"));
-		if (dynamic_cast<CPostDocument*>(doc)) icon = QIcon(QString(":/icons/PostView.png"));
+		string iconString = doc->GetIcon();
+		QIcon icon(QString::fromStdString(iconString));
 
 		QTreeWidgetItem* t2 = new QTreeWidgetItem(it);
 		t2->setText(0, QString::fromStdString(doc->GetDocTitle()));
