@@ -413,6 +413,16 @@ QString CDocument::ToAbsolutePath(const std::string& relativePath)
 	return QDir::toNativeSeparators(QDir::cleanPath(modelDir.absoluteFilePath(s)));
 }
 
+std::string CDocument::GetIcon() const
+{
+	return m_iconName;
+}
+
+void CDocument::SetIcon(const std::string& iconName)
+{
+	m_iconName = iconName;
+}
+
 //==============================================================================
 // CGLDocument
 //==============================================================================

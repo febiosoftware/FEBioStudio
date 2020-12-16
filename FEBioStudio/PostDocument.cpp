@@ -194,6 +194,8 @@ void ModelData::WriteData(Post::CGLModel* po)
 
 CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocument(wnd), m_doc(doc)
 {
+	SetIcon(":/icons/febio.png");
+
 	m_fem = new Post::FEPostModel;
 	m_postObj = nullptr;
 	m_glm = nullptr;

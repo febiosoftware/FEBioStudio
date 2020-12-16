@@ -195,6 +195,10 @@ public:
 	QString ToAbsolutePath(const std::string& relativePath);
 
 public:
+	std::string GetIcon() const;
+	void SetIcon(const std::string& iconName);
+
+public:
 	// --- Document observers ---
 	void AddObserver(CDocObserver* observer);
 	void RemoveObserver(CDocObserver* observer);
@@ -215,6 +219,8 @@ protected:
 	// file path
 	std::string		m_filePath;
 	std::string		m_autoSaveFilePath;
+
+	std::string		m_iconName;
 
 	CMainWindow*	m_wnd;
 	std::vector<CDocObserver*>	m_Observers;

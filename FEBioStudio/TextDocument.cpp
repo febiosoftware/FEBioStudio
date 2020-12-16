@@ -35,8 +35,9 @@ SOFTWARE.*/
 
 CTextDocument::CTextDocument(CMainWindow* wnd) : CDocument(wnd)
 {
-	m_format = Format::FORMAT_TEXT;
+	SetIcon(":/icons/PostView.png");
 
+	m_format = Format::FORMAT_TEXT;
 	m_txt.setDocumentLayout(new QPlainTextDocumentLayout(&m_txt));
 }
 

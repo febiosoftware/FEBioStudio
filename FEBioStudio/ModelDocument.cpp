@@ -97,6 +97,8 @@ CModelDocument::~CModelDocument()
 
 CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 {
+	SetIcon(":/icons/FEBioStudio.png");
+
 	m_psel = nullptr;
 
 	m_context = new CModelContext(this);

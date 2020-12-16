@@ -1769,7 +1769,6 @@ void CMainWindow::UpdateUIConfig()
 			}
 			else
 			{
-				ui->htmlViewer->setText("");
 				ui->setUIConfig(0);
 			}
 			ui->fileViewer->parentWidget()->raise();
@@ -1850,14 +1849,8 @@ GObject* CMainWindow::GetActiveObject()
 //-----------------------------------------------------------------
 void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool makeActive)
 {
-	const char* icons[] = { ":/icons/FEBioStudio.png", ":/icons/PostView.png", ":/icons/febio.png" };
-
-	const char* szicon = "";
-	if (dynamic_cast<CModelDocument*>(doc)) szicon = icons[0];
-	if (dynamic_cast<CPostDocument* >(doc)) szicon = icons[1];
-	if (dynamic_cast<CTextDocument*>(doc)) szicon = icons[2];
-
-	ui->tab->addView(viewName, doc, makeActive, szicon);
+	string docIcon = doc->GetIcon();
+	ui->tab->addView(viewName, doc, makeActive, docIcon);
 	CGLView* glview = GetGLView();
 	glview->ZoomExtents(false);
 	glview->UpdateWidgets(false);
@@ -1942,6 +1935,9 @@ void CMainWindow::CloseView(int n, bool forceClose)
 		}
 		else it++;
 	}
+
+	ui->htmlViewer->setDocument(nullptr);
+	ui->txtEdit->setDocument(nullptr);
 
 	// now, remove from the doc manager
 	m_DocManager->RemoveDocument(n);
