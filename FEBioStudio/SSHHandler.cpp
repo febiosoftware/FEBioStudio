@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#ifdef HAS_SSH
+
 #include "stdafx.h"
 #include <libssh/libssh.h>
 #include <libssh/sftp.h>
@@ -69,6 +69,8 @@ public:
 	bool isBusy;
 	bool orphan;
 };
+
+#ifdef HAS_SSH
 
 CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // @suppress("Class members should be properly initialized")
 {
@@ -1309,5 +1311,44 @@ std::string CSSHHandler::GetSFTPErrorText(int sftpErr)
 	return returnVal;
 }
 
-
+#else
+CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) {}
+CSSHHandler::~CSSHHandler() {delete m_data;}
+void CSSHHandler::Update(CLaunchConfig& oldConfig) {}
+void CSSHHandler::StartSSHSession() {}
+void CSSHHandler::VerifyKnownHost() {}
+void CSSHHandler::AddTrustedServer() {}
+void CSSHHandler::Authenticate() {}
+void CSSHHandler::CreateRemoteDir() {}
+void CSSHHandler::EndSSHSession() {}
+void CSSHHandler::StartRemoteJob() {}
+void CSSHHandler::GetJobFiles() {}
+void CSSHHandler::GetQueueStatus() {}
+void CSSHHandler::SetPasswordLength(int l) {}
+size_t CSSHHandler::GetPasswordLength() {return 0;}
+void CSSHHandler::SetPasswdEnc(std::vector<unsigned char> passwdEnc) {}
+std::vector<unsigned char>& CSSHHandler::GetPasswdEnc() {return m_data->passwdEnc;}
+void CSSHHandler::SetMsgcode(int code) {}
+int CSSHHandler::GetMsgCode() {return 0;}
+int CSSHHandler::GetNextFunction() {return 0;}
+void CSSHHandler::SetTargetFunction(int func) {}
+int CSSHHandler::GetTargetFunction() {return 0;}
+QString CSSHHandler::GetMessage(){return "";}
+void CSSHHandler::Orphan() {}
+bool CSSHHandler::IsBusy() {return 0;}
+int CSSHHandler::RunCommand(std::string command) {return 0;}
+int CSSHHandler::RunInteractiveNoRead(std::string command) {return 0;}
+int CSSHHandler::RunCommandList(std::vector<std::string> commands) {return 0;}
+int CSSHHandler::authenticatePubkey() {return 0;}
+bool CSSHHandler::authenticatePassword() {return 0;}
+int CSSHHandler::StartSFTPSession() {return 0;}
+int CSSHHandler::EndSFTPSession() {return 0;}
+int CSSHHandler::CheckRemoteDir() {return 0;}
+int CSSHHandler::SendFile(std::string local, std::string remote) {return 0;}
+int CSSHHandler::SendFile(const char * buf, int bufSize, std::string remote) {return 0;}
+int CSSHHandler::GetFile(std::string local, std::string remote) {return 0;}
+std::string CSSHHandler::GetSFTPErrorText(int sftpErr) {return "";}
+int CSSHHandler::CreateBashFile() {return 0;}
+int CSSHHandler::ParseCustomFile(std::vector<std::string>& commands) {return 0;}
+void CSSHHandler::ReplaceMacros(QString& string) {}
 #endif

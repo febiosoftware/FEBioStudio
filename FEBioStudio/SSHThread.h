@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 
-#ifdef HAS_SSH
 #include <QtCore/QThread>
 
 class CSSHHandler;
@@ -54,5 +53,3 @@ private:
 	CSSHHandler*	sshHandler;
 	int				func;
 };
-
-#endif

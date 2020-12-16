@@ -7,29 +7,41 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D50EF90325477A2E00BF1481 /* moc_predefs.h in Headers */ = {isa = PBXBuildFile; fileRef = D50EF90225477A2E00BF1481 /* moc_predefs.h */; };
 		D5606C6F238DA438002B037E /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C68238DA438002B037E /* stdafx.h */; };
 		D5606C70238DA438002B037E /* ImageViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C69238DA438002B037E /* ImageViewer.h */; };
-		D5606C71238DA438002B037E /* moc_ImageViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6A238DA438002B037E /* moc_ImageViewer.cpp */; };
 		D5606C72238DA438002B037E /* HistogramViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C6B238DA438002B037E /* HistogramViewer.h */; };
 		D5606C73238DA438002B037E /* Histogram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6C238DA438002B037E /* Histogram.cpp */; };
-		D5606C74238DA438002B037E /* moc_HistogramViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6D238DA438002B037E /* moc_HistogramViewer.cpp */; };
 		D5606C75238DA438002B037E /* ImageViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6E238DA438002B037E /* ImageViewer.cpp */; };
 		D5606C78238DA4D4002B037E /* QtCharts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C77238DA4D4002B037E /* QtCharts.framework */; };
 		D5606C7A238DA4EC002B037E /* QtWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C79238DA4EC002B037E /* QtWidgets.framework */; };
 		D5606C7C238DA501002B037E /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7B238DA501002B037E /* QtCore.framework */; };
 		D5606C7E238DA7BA002B037E /* QtGui.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5606C7D238DA7BA002B037E /* QtGui.framework */; };
+		D57D00CC25884DB2009ED051 /* HistogramViewer.h in Sources */ = {isa = PBXBuildFile; fileRef = D5606C6B238DA438002B037E /* HistogramViewer.h */; };
+		D57D00CD25884DB2009ED051 /* ImageViewer.h in Sources */ = {isa = PBXBuildFile; fileRef = D5606C69238DA438002B037E /* ImageViewer.h */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		D57D00CB25884D70009ED051 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.h";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/${INPUT_FILE_BASE}_moc.cpp",
+			);
+			script = "# Type a script or drag a script file from your workspace to insert its path.\n/usr/local/opt/qt/bin/moc ${INPUT_FILE_PATH} -o ${DERIVED_FILE_DIR}/${INPUT_FILE_BASE}_moc.cpp\n";
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXFileReference section */
-		D50EF90225477A2E00BF1481 /* moc_predefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moc_predefs.h; sourceTree = "<group>"; };
 		D5606C59238DA422002B037E /* libCUILib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCUILib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5606C68238DA438002B037E /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		D5606C69238DA438002B037E /* ImageViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageViewer.h; sourceTree = "<group>"; };
-		D5606C6A238DA438002B037E /* moc_ImageViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_ImageViewer.cpp; sourceTree = "<group>"; };
 		D5606C6B238DA438002B037E /* HistogramViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HistogramViewer.h; sourceTree = "<group>"; };
 		D5606C6C238DA438002B037E /* Histogram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Histogram.cpp; sourceTree = "<group>"; };
-		D5606C6D238DA438002B037E /* moc_HistogramViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moc_HistogramViewer.cpp; sourceTree = "<group>"; };
 		D5606C6E238DA438002B037E /* ImageViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageViewer.cpp; sourceTree = "<group>"; };
 		D5606C77238DA4D4002B037E /* QtCharts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCharts.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtCharts.framework; sourceTree = "<group>"; };
 		D5606C79238DA4EC002B037E /* QtWidgets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtWidgets.framework; path = ../../../../../../../../../../../usr/local/Cellar/qt/5.13.2/lib/QtWidgets.framework; sourceTree = "<group>"; };
@@ -76,9 +88,6 @@
 				D5606C6B238DA438002B037E /* HistogramViewer.h */,
 				D5606C6E238DA438002B037E /* ImageViewer.cpp */,
 				D5606C69238DA438002B037E /* ImageViewer.h */,
-				D5606C6D238DA438002B037E /* moc_HistogramViewer.cpp */,
-				D5606C6A238DA438002B037E /* moc_ImageViewer.cpp */,
-				D50EF90225477A2E00BF1481 /* moc_predefs.h */,
 				D5606C68238DA438002B037E /* stdafx.h */,
 			);
 			name = CUILib;
@@ -105,7 +114,6 @@
 			files = (
 				D5606C70238DA438002B037E /* ImageViewer.h in Headers */,
 				D5606C6F238DA438002B037E /* stdafx.h in Headers */,
-				D50EF90325477A2E00BF1481 /* moc_predefs.h in Headers */,
 				D5606C72238DA438002B037E /* HistogramViewer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -122,6 +130,7 @@
 				D5606C57238DA422002B037E /* Headers */,
 			);
 			buildRules = (
+				D57D00CB25884D70009ED051 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -167,10 +176,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D57D00CC25884DB2009ED051 /* HistogramViewer.h in Sources */,
+				D57D00CD25884DB2009ED051 /* ImageViewer.h in Sources */,
 				D5606C73238DA438002B037E /* Histogram.cpp in Sources */,
 				D5606C75238DA438002B037E /* ImageViewer.cpp in Sources */,
-				D5606C74238DA438002B037E /* moc_HistogramViewer.cpp in Sources */,
-				D5606C71238DA438002B037E /* moc_ImageViewer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

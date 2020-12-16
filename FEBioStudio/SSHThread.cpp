@@ -89,4 +89,10 @@ void CSSHThread::SendFinishedPart()
 {
 	emit FinishedPart(sshHandler);
 }
-#endif // HAS_SSH
+
+#else
+CSSHThread::CSSHThread(CSSHHandler* sshHandler, int func) {}
+void CSSHThread::run() {}
+void CSSHThread::SetFuncName(int func) {}
+void CSSHThread::SendFinishedPart() {}
+#endif
