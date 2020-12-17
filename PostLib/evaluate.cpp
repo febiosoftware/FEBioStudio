@@ -128,6 +128,7 @@ float component(const mat3fs& m, int n)
 	case 11: { float p[3]; m.DeviatoricPrincipals(p); g = p[1]; } break;
 	case 12: { float p[3]; m.DeviatoricPrincipals(p); g = p[2]; } break;
 	case 13: g = m.MaxShear(); break;
+	case 14: g = m.norm(); break;
 	default:
 		assert(false);
 	}
