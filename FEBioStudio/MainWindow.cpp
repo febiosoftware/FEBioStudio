@@ -2113,6 +2113,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	view->addAction(ui->actionRight);
 	view->addAction(ui->actionTop);
 	view->addAction(ui->actionBottom);
+    view->addAction(ui->actionIsometric);
 	menu.addAction(view->menuAction());
 	menu.addSeparator();
 

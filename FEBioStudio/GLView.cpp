@@ -3563,6 +3563,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_LEFT: q = quatd(90 * DEG2RAD, vec3d(1, 0, 0)); q *= quatd(90 * DEG2RAD, vec3d(0, 1, 0)); break;
                 case VIEW_TOP:
                 case VIEW_BOTTOM:
+                case VIEW_ISOMETRIC:
                 case VIEW_USER: q = quatd(0, vec3d(0, 0, 1)); break;
                 default:
                     assert(false);
@@ -3580,6 +3581,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_RIGHT: q = quatd(-90 * DEG2RAD, vec3d(1, 0, 0)); q *= quatd(90 * DEG2RAD, vec3d(0, 0, 1)); break;
                 case VIEW_FRONT: q = quatd(-90 * DEG2RAD, vec3d(1, 0, 0)); break;
                 case VIEW_BACK: q = quatd(-90 * DEG2RAD, vec3d(1, 0, 0)); q *= quatd(180 * DEG2RAD, vec3d(0, 0, 1)); break;
+                case VIEW_ISOMETRIC: q = quatd(56.6003 * DEG2RAD, vec3d(0.590284, -0.769274, -0.244504))*quatd(-90 * DEG2RAD, vec3d(1, 0, 0)); break;
                 case VIEW_USER: repaint(); return;
             }
         }
@@ -3595,6 +3597,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_LEFT: q = quatd( 90*DEG2RAD, vec3d(0,1,0)); break;
                 case VIEW_TOP:
                 case VIEW_BOTTOM: q = quatd(-90*DEG2RAD, vec3d(1,0,0)); break;
+                case VIEW_ISOMETRIC:
                 case VIEW_USER: q = quatd(0, vec3d(0, 0, 1)); break;
                 default:
                     assert(false);
@@ -3612,6 +3615,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_RIGHT : q = quatd( 90*DEG2RAD, vec3d(0,1,0)); break;
                 case VIEW_TOP   : q = quatd(-90*DEG2RAD, vec3d(1,0,0)); break;
                 case VIEW_BOTTOM: q = quatd( 90*DEG2RAD, vec3d(1,0,0)); break;
+                case VIEW_ISOMETRIC: q = quatd(56.6003 * DEG2RAD, vec3d(0.590284, -0.769274, -0.244504)); break;
                 case VIEW_USER: repaint(); return;
             }
         }
@@ -3627,6 +3631,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_LEFT: q = quatd(-90*DEG2RAD, vec3d(0,1,0)); break;
                 case VIEW_TOP:
                 case VIEW_BOTTOM: q = quatd( 90*DEG2RAD, vec3d(1,0,0)); break;
+                case VIEW_ISOMETRIC:
                 case VIEW_USER: q = quatd(0, vec3d(0, 0, 1)); break;
                 default:
                     assert(false);
@@ -3644,6 +3649,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_RIGHT : q = quatd(-90*DEG2RAD, vec3d(0,1,0)); break;
                 case VIEW_TOP   : q = quatd( 90*DEG2RAD, vec3d(1,0,0)); break;
                 case VIEW_BOTTOM: q = quatd(-90*DEG2RAD, vec3d(1,0,0)); break;
+                case VIEW_ISOMETRIC: q = quatd(56.6003 * DEG2RAD, vec3d(0.590284, -0.769274, -0.244504)); break;
                 case VIEW_USER: repaint(); return;
             }
         }

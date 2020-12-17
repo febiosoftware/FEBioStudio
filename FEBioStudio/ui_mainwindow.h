@@ -207,6 +207,7 @@ public:
 	QAction* actionLeft;
 	QAction* actionTop;
 	QAction* actionBottom;
+    QAction* actionIsometric;
 	QAction* actionOptions;
 	QAction* actionRenderMode;
 	QAction* actionShowFibers;
@@ -513,6 +514,7 @@ public:
 		actionLeft            = addAction("Left" , "actionLeft"   ); actionLeft  ->setShortcut(Qt::Key_4 | Qt::KeypadModifier);
 		actionTop             = addAction("Top"  , "actionTop"    ); actionTop   ->setShortcut(Qt::Key_9 | Qt::KeypadModifier);
 		actionBottom          = addAction("Bottom", "actionBottom"); actionBottom->setShortcut(Qt::Key_3 | Qt::KeypadModifier);
+        actionIsometric       = addAction("Isometric", "actionIsometric"); actionIsometric->setShortcut(Qt::Key_I | Qt::KeypadModifier);
 		QAction* actionViewVPSave = addAction("Save Viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL + Qt::Key_K);
 		QAction* actionViewVPPrev = addAction("Prev Viewpoint", "actionViewVPPrev"); actionViewVPPrev->setShortcut(Qt::Key_J);
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
@@ -767,6 +769,7 @@ public:
 		menuViews->addAction(actionLeft);
 		menuViews->addAction(actionTop);
 		menuViews->addAction(actionBottom);
+        menuViews->addAction(actionIsometric);
 
 		menuViews->addSeparator();
 		menuView->addAction(actionViewVPSave);
