@@ -47,7 +47,7 @@ void CFEBioJob::SetActiveJob(CFEBioJob* activeJob) { m_activeJob = activeJob; }
 CFEBioJob* CFEBioJob::GetActiveJob() { return m_activeJob; }
 
 
-CFEBioJob::CFEBioJob(CModelDocument* doc) : m_doc(doc)
+CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 {
 	m_count++;
 	std::stringstream ss;
@@ -64,14 +64,21 @@ CFEBioJob::~CFEBioJob()
 #endif
 }
 
-CFEBioJob::CFEBioJob(CModelDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig)
+CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::string& workingDirectory, CLaunchConfig launchConfig)
 	: m_doc(doc), m_launchConfig(launchConfig)
 {
 	// set the job's name
 	SetName(jobName);
 
 	// build the feb file name
-	m_febFile = workingDirectory + "/" + jobName + ".feb";
+	m_febFile = workingDirectory + "/" + jobName;
+
+	// add extension
+	const char* sz = strrchr(jobName.c_str(), '.');
+	if ((sz == nullptr) || (strcmp(sz, ".feb") != 0))
+	{
+		m_febFile += ".feb";
+	}
 
 	m_status = NONE;
 
@@ -112,7 +119,7 @@ CFEBioJob::CFEBioJob(CModelDocument* doc, const std::string& jobName, const std:
 
 }
 
-CModelDocument* CFEBioJob::GetDocument()
+CDocument* CFEBioJob::GetDocument()
 {
 	return m_doc;
 }
@@ -206,7 +213,12 @@ void CFEBioJob::SetFEBFileName(const std::string& fileName)
 std::string CFEBioJob::GetFEBFileName(bool relative) const
 {
 	if(relative) return m_febFile;
-	else return m_doc->ToAbsolutePath(m_febFile).toStdString();
+	else
+	{
+		// do string substitution
+		string febFile = FSDir::expandMacros(m_febFile);
+		return m_doc->ToAbsolutePath(febFile).toStdString();
+	}
 }
 
 void CFEBioJob::SetPlotFileName(const std::string& plotFile)

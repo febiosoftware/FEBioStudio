@@ -596,8 +596,8 @@ void CMainWindow::on_actionRefresh_triggered()
 {
 	ui->postToolBar->setDisabled(true);
 
-	CDocument* doc = GetDocument();
-	if (doc->GetFileReader() && (doc->GetDocFilePath().empty() == false))
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
+	if (doc && doc->GetFileReader() && (doc->GetDocFilePath().empty() == false))
 	{
 		OpenFile(QString::fromStdString(doc->GetDocFilePath()), false);
 	}

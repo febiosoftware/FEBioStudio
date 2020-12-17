@@ -62,6 +62,9 @@ public:
 	QCheckBox* editCmd;
 	QLineEdit*	cmd;
 
+	QGroupBox*	febops;
+	QWidget*	jobFolder;
+
 	std::vector<CLaunchConfig>* m_launch_configs;
 
 	int m_last_index = -1;
@@ -87,9 +90,13 @@ public:
 		setCWD->setIcon(QIcon(":/icons/open.png"));
 		QToolButton* setCWDBtn = new QToolButton;
 		setCWDBtn->setDefaultAction(setCWD);
-		QBoxLayout* cwdLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+		QHBoxLayout* cwdLayout = new QHBoxLayout;
+		cwdLayout->setMargin(0);
 		cwdLayout->addWidget(cwd);
 		cwdLayout->addWidget(setCWDBtn);
+
+		jobFolder = new QWidget;
+		jobFolder->setLayout(cwdLayout);
 
 		febioFile = new QComboBox;
 		febioFile->addItem("FEBio 2.5 format");
@@ -113,14 +120,22 @@ public:
 		QFormLayout* form = new QFormLayout;
 		form->setLabelAlignment(Qt::AlignRight);
 		form->addRow("Job name:", jobName);
+		form->addRow("Working directory:", jobFolder);
 		form->addRow("Launch Configuration:", launchConfigLayout);
-		form->addRow("Working directory:", cwdLayout);
-		form->addRow("FEBio file format:", febioFile);
 		form->addRow("", autoSave);
+
+		QGroupBox* settings = new QGroupBox("Job settings:");
+		settings->setLayout(form);
+
+		QFormLayout* febl = new QFormLayout;
+		febl->addRow("FEBio file format:", febioFile);
+		febl->addRow("", writeNotes = new QCheckBox("Write Notes"));
+
+		febops = new QGroupBox("FEBio export settings:");
+		febops->setLayout(febl);
 
 		QFormLayout* ext = new QFormLayout;
 		ext->setLabelAlignment(Qt::AlignRight);
-		ext->addRow("Write notes:", writeNotes = new QCheckBox);
 		ext->addRow("Debug mode:", debug = new QCheckBox(""));
 		ext->addRow("Config file:", configLayout);
 		ext->addRow("Task name:", taskName);
@@ -137,7 +152,7 @@ public:
 		v->addWidget(editCmd);
 		v->addWidget(cmd);
 
-		QGroupBox* pg = new QGroupBox("advanced settings:");
+		QGroupBox* pg = new QGroupBox("Advanced settings:");
 		pg->setLayout(v);
 		pg->hide();
 
@@ -153,7 +168,9 @@ public:
 		h->addWidget(more);
 		
 		QVBoxLayout* l = new QVBoxLayout;
-		l->addLayout(form);
+		l->addWidget(settings);
+		l->addWidget(febops);
+		l->addStretch();
 		l->addWidget(pg);
 		l->addLayout(h);
 		dlg->setLayout(l);
@@ -187,6 +204,17 @@ void CDlgRun::on_selectConfigFile()
 		ui->configFile->setText(s);
 		updateDefaultCommand();
 	}
+}
+
+void CDlgRun::ShowFEBioSaveOptions(bool b)
+{
+	ui->febops->setVisible(b);
+}
+
+void CDlgRun::EnableJobSettings(bool b)
+{
+	ui->jobName->setEnabled(b);
+	ui->jobFolder->setEnabled(b);
 }
 
 void CDlgRun::updateDefaultCommand()

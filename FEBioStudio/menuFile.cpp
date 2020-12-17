@@ -223,7 +223,7 @@ void CMainWindow::on_actionSave_triggered()
 	if (doc == nullptr) return;
 
 	std::string fileName = doc->GetDocFilePath();
-	if (fileName.empty() || (doc->GetFileWriter() == nullptr)) on_actionSaveAs_triggered();
+	if (fileName.empty()) on_actionSaveAs_triggered();
 	else
 	{
 		SaveDocument(QString::fromStdString(fileName));
@@ -306,7 +306,7 @@ void CMainWindow::on_actionExportProject_triggered() {}
 
 bool CMainWindow::SaveDocument(const QString& fileName)
 {
-	CGLDocument* doc = GetGLDocument();
+	CDocument* doc = GetDocument();
 	if (doc == nullptr) return false;
 
 	// start log message
@@ -318,7 +318,8 @@ bool CMainWindow::SaveDocument(const QString& fileName)
 	// clear the command stack
 	if (ui->m_clearUndoOnSave)
 	{
-		doc->ClearCommandStack();
+		CGLDocument* gldoc = dynamic_cast<CGLDocument*>(doc);
+		if (gldoc) gldoc->ClearCommandStack();
 	}
 
 	ui->logPanel->AddText(success ? "SUCCESS\n" : "FAILED\n");
@@ -493,6 +494,20 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 
 	// start reading the file
 	ReadFile(doc, fileName, reader, QueuedFile::NEW_DOCUMENT);
+}
+
+void CMainWindow::OpenFEBioFile(const QString& fileName)
+{
+	CTextDocument* txt = new CTextDocument(this);
+	if (txt->ReadFromFile(fileName) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
+		return;
+	}
+
+	txt->SetDocFilePath(fileName.toStdString());
+
+	AddDocument(txt);
 }
 
 void CMainWindow::ExportPostGeometry()
@@ -1064,12 +1079,8 @@ void CMainWindow::on_actionSaveAll_triggered()
 		CDocument* doc = m_DocManager->GetDocument(i);
 		if (doc->IsModified())
 		{
-			if (doc->GetFileWriter() && (doc->GetDocFilePath().empty() != false))
-			{
-				if (doc->SaveDocument() == false) fails++;
-				else UpdateTab(doc);
-			}
-			else fails++;
+			if (doc->SaveDocument() == false) fails++;
+			else UpdateTab(doc);
 		}
 	}
 

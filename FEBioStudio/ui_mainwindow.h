@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QLabel>
 #include <QTextBrowser>
+#include <QPlainTextEdit>
 #include <QStackedWidget>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
@@ -106,12 +107,22 @@ class Ui::CMainWindow
 	};
 
 public:
+
+	// this is the order in which the view widgets are added to the stack widget
+	enum Viewer {
+		HTML_VIEWER,
+		TEXT_VIEWER,
+		GL_VIEWER
+	};
+
+public:
 	CMainTabBar*	tab;
 	::CMainWindow*	m_wnd;
 
 	QStackedWidget*	stack;
 	CGLViewer*		glw;
-	CTextViewer*	txtViewer;
+	QTextBrowser*	htmlViewer;
+	QPlainTextEdit*	txtEdit;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -301,11 +312,18 @@ public:
 
 		stack = new QStackedWidget;
 
-		txtViewer = new CTextViewer(wnd);
-		txtViewer->setObjectName("txtview");
-		txtViewer->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+		htmlViewer = new QTextBrowser;
+		htmlViewer->setObjectName("htmlview");
+		htmlViewer->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
-		stack->addWidget(txtViewer);
+		stack->addWidget(htmlViewer);
+
+		txtEdit = new QPlainTextEdit;
+		txtEdit->setObjectName("txtedit");
+		txtEdit->setFont(QFont("Courier", 12));
+		QFontInfo fi(txtEdit->font());
+		txtEdit->setTabStopDistance(fi.pixelSize() * 2);
+		stack->addWidget(txtEdit);
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
@@ -1127,9 +1145,9 @@ private:
 public:
 	void setUIConfig(int config)
 	{
-		if (config == 0)
+		if (config == ::CMainWindow::HTML_CONFIG)
 		{
-			stack->setCurrentIndex(0);
+			stack->setCurrentIndex(Ui::CMainWindow::HTML_VIEWER);
 
 			// no open documents
 			menuEdit->menuAction()->setVisible(false);
@@ -1149,12 +1167,10 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
-
-			txtViewer->Refresh();
 		}
-		else if (config == 1)
+		else if (config == ::CMainWindow::MODEL_CONFIG)
 		{
-			stack->setCurrentIndex(1);
+			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
 
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
@@ -1175,9 +1191,9 @@ public:
 			infoPanel->parentWidget()->show();
 			timePanel->parentWidget()->hide();
 		}
-		else if (config == 2)
+		else if (config == ::CMainWindow::POST_CONFIG)
 		{
-			stack->setCurrentIndex(1);
+			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
 
 			// post mode
 			menuEdit->menuAction()->setVisible(true);
@@ -1199,6 +1215,28 @@ public:
 			infoPanel->parentWidget()->show();
 
 			showTimeline();
+		}
+		else if (config == ::CMainWindow::TEXT_CONFIG)
+		{
+			stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
+
+			menuEdit->menuAction()->setVisible(false);
+			menuPhysics->menuAction()->setVisible(false);
+			menuPost->menuAction()->setVisible(false);
+			menuRecord->menuAction()->setVisible(false);
+
+			buildToolBar->hide();
+			postToolBar->hide();
+			pFontToolBar->hide();
+
+			glw->glc->hide();
+
+			modelViewer->parentWidget()->hide();
+			buildPanel->parentWidget()->hide();
+			postPanel->parentWidget()->hide();
+			logPanel->parentWidget()->hide();
+			infoPanel->parentWidget()->hide();
+			timePanel->parentWidget()->hide();
 		}
 	}
 };
