@@ -66,6 +66,7 @@ SOFTWARE.*/
 #include "welcomePage.h"
 #include "IconProvider.h"
 #include "TimelinePanel.h"
+#include "XMLEditor.h"
 
 class QProcess;
 
@@ -122,7 +123,7 @@ public:
 	QStackedWidget*	stack;
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
-	QPlainTextEdit*	txtEdit;
+	XMLEditor*		xmlEdit;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -318,12 +319,9 @@ public:
 
 		stack->addWidget(htmlViewer);
 
-		txtEdit = new QPlainTextEdit;
-		txtEdit->setObjectName("txtedit");
-		txtEdit->setFont(QFont("Courier", 12));
-		QFontInfo fi(txtEdit->font());
-		txtEdit->setTabStopDistance(fi.pixelSize() * 2);
-		stack->addWidget(txtEdit);
+		xmlEdit = new XMLEditor(wnd);
+		xmlEdit->setObjectName("xmledit");
+		stack->addWidget(xmlEdit);
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);

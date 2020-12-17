@@ -383,6 +383,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_WzdUpload.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_XMLEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ZipFiles.cpp" />
     <ClCompile Include="..\..\FEBioStudio\modelcheck.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ModelDocument.cpp" />
@@ -441,6 +442,7 @@
     <ClCompile Include="..\..\FEBioStudio\welcomePage.cpp" />
     <ClCompile Include="..\..\FEBioStudio\WrapLabel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\WzdUpload.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\XMLEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\ZipFiles.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -707,6 +709,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\ZipFiles.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\XMLEditor.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
