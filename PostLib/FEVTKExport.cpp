@@ -283,7 +283,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 		{
 			FEMeshData& meshData = ps->m_Data[n];
 			Data_Format dfmt = meshData.GetFormat();
-			if (dfmt == DATA_NODE) {
+			if ((dfmt == DATA_NODE) || (dfmt == DATA_COMP)) {
 				FEDataField& data = *(*pd);
 				char szname[256];
 				strcpy(szname, data.GetName().c_str());
@@ -477,7 +477,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 	int ntype = meshData.GetType();
 	int nfmt = meshData.GetFormat();
 
-	if (nfmt != DATA_NODE) return false;
+	if ((nfmt != DATA_NODE) && (nfmt != DATA_COMP)) return false;
 
 	FEPostMesh& mesh = *meshData.GetFEMesh();
 	int NN = mesh.Nodes();
@@ -497,71 +497,142 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 
 	int NE = mesh.Elements();
 
-	if (ntype == DATA_FLOAT)
+	if (nfmt == DATA_NODE)
 	{
-		FEElementData<float, DATA_NODE>& data = dynamic_cast<FEElementData<float, DATA_NODE>&>(meshData);
-		float v[FEElement::MAX_NODES];
-		for (int i = 0; i<NE; ++i)
+		if (ntype == DATA_FLOAT)
 		{
-			FEElement_& el = mesh.ElementRef(i);
-			if (data.active(i))
+			FEElementData<float, DATA_NODE>& data = dynamic_cast<FEElementData<float, DATA_NODE>&>(meshData);
+			float v[FEElement::MAX_NODES];
+			for (int i = 0; i < NE; ++i)
 			{
-				data.eval(i, v);
-				int ne = el.Nodes();
-				for (int j = 0; j<ne; ++j) val[el.m_node[j]] = v[j];
+				FEElement_& el = mesh.ElementRef(i);
+				if (data.active(i))
+				{
+					data.eval(i, v);
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) val[el.m_node[j]] = v[j];
+				}
 			}
 		}
-	}
-	else if (ntype == DATA_VEC3F)
-	{
-		FEElementData<vec3f, DATA_NODE>& data = dynamic_cast<FEElementData<vec3f, DATA_NODE>&>(meshData);
-		vec3f v[FEElement::MAX_NODES];
-		for (int i = 0; i<NE; ++i)
+		else if (ntype == DATA_VEC3F)
 		{
-			FEElement_& el = mesh.ElementRef(i);
-			if (data.active(i))
+			FEElementData<vec3f, DATA_NODE>& data = dynamic_cast<FEElementData<vec3f, DATA_NODE>&>(meshData);
+			vec3f v[FEElement::MAX_NODES];
+			for (int i = 0; i < NE; ++i)
 			{
-				data.eval(i, v);
-				int ne = el.Nodes();
-				for (int j = 0; j<ne; ++j) write_data(val, el.m_node[j], v[j]);
+				FEElement_& el = mesh.ElementRef(i);
+				if (data.active(i))
+				{
+					data.eval(i, v);
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) write_data(val, el.m_node[j], v[j]);
+				}
 			}
 		}
-	}
-	else if (ntype == DATA_MAT3FS)
-	{
-		FEElementData<mat3fs, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fs, DATA_NODE>&>(meshData);
-		val.assign(NN * 6, 0.f);
+		else if (ntype == DATA_MAT3FS)
+		{
+			FEElementData<mat3fs, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fs, DATA_NODE>&>(meshData);
+			val.assign(NN * 6, 0.f);
 
-		mat3fs v[FEElement::MAX_NODES];
-		for (int i = 0; i<NE; ++i)
-		{
-			FEElement_& el = mesh.ElementRef(i);
-			if (data.active(i))
+			mat3fs v[FEElement::MAX_NODES];
+			for (int i = 0; i < NE; ++i)
 			{
-				data.eval(i, v);
-				int ne = el.Nodes();
-				for (int j = 0; j<ne; ++j) write_data(val, el.m_node[j], v[j]);
+				FEElement_& el = mesh.ElementRef(i);
+				if (data.active(i))
+				{
+					data.eval(i, v);
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) write_data(val, el.m_node[j], v[j]);
+				}
 			}
 		}
-	}
-	else if (ntype == DATA_MAT3FD)
-	{
-		FEElementData<mat3fd, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fd, DATA_NODE>&>(meshData);
-		val.assign(NN * 3, 0.f);
+		else if (ntype == DATA_MAT3FD)
+		{
+			FEElementData<mat3fd, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fd, DATA_NODE>&>(meshData);
+			val.assign(NN * 3, 0.f);
 
-		mat3fd v[FEElement::MAX_NODES];
-		for (int i = 0; i<NE; ++i)
-		{
-			FEElement_& el = mesh.ElementRef(i);
-			if (data.active(i))
+			mat3fd v[FEElement::MAX_NODES];
+			for (int i = 0; i < NE; ++i)
 			{
-				data.eval(i, v);
-				int ne = el.Nodes();
-				for (int j = 0; j<ne; ++j) write_data(val, el.m_node[j], v[j]);
+				FEElement_& el = mesh.ElementRef(i);
+				if (data.active(i))
+				{
+					data.eval(i, v);
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) write_data(val, el.m_node[j], v[j]);
+				}
 			}
 		}
+		else return false;
 	}
-	else return false;
+	else if (nfmt == DATA_COMP)
+	{
+		if (ntype == DATA_FLOAT)
+		{
+			FEElementData<float, DATA_COMP>& data = dynamic_cast<FEElementData<float, DATA_COMP>&>(meshData);
+			float v[FEElement::MAX_NODES];
+			for (int i = 0; i < NE; ++i)
+			{
+				FEElement_& el = mesh.ElementRef(i);
+				if (data.active(i))
+				{
+					data.eval(i, v);
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) val[el.m_node[j]] = v[j];
+				}
+			}
+		}
+		else if (ntype == DATA_VEC3F)
+		{
+			FEElementData<vec3f, DATA_COMP>& data = dynamic_cast<FEElementData<vec3f, DATA_COMP>&>(meshData);
+			vec3f v[FEElement::MAX_NODES];
+			for (int i = 0; i < NE; ++i)
+			{
+				FEElement_& el = mesh.ElementRef(i);
+				if (data.active(i))
+				{
+					data.eval(i, v);
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) write_data(val, el.m_node[j], v[j]);
+				}
+			}
+		}
+		else if (ntype == DATA_MAT3FS)
+		{
+			FEElementData<mat3fs, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fs, DATA_COMP>&>(meshData);
+			val.assign(NN * 6, 0.f);
+
+			mat3fs v[FEElement::MAX_NODES];
+			for (int i = 0; i < NE; ++i)
+			{
+				FEElement_& el = mesh.ElementRef(i);
+				if (data.active(i))
+				{
+					data.eval(i, v);
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) write_data(val, el.m_node[j], v[j]);
+				}
+			}
+		}
+		else if (ntype == DATA_MAT3FD)
+		{
+			FEElementData<mat3fd, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fd, DATA_COMP>&>(meshData);
+			val.assign(NN * 3, 0.f);
+
+			mat3fd v[FEElement::MAX_NODES];
+			for (int i = 0; i < NE; ++i)
+			{
+				FEElement_& el = mesh.ElementRef(i);
+				if (data.active(i))
+				{
+					data.eval(i, v);
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) write_data(val, el.m_node[j], v[j]);
+				}
+			}
+		}
+		else return false;
+	}
 
 	return true;
 }
