@@ -144,13 +144,6 @@ void CGLCamera::Transform()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// position the light
-	GLfloat l1[] = {0.5f, 0.5f, 1.f, 0.f};
-	glLightfv(GL_LIGHT0, GL_POSITION, l1);
-
-//	GLfloat l2[] = {-0.5f, -0.3f, 0.f, 0.f};
-//	glLightfv(GL_LIGHT1, GL_POSITION, l2);
-
 	// target in camera coordinates
 	vec3d r = Target();
 	

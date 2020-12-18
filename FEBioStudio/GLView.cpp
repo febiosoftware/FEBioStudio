@@ -399,6 +399,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_wa = 0;
 	m_wt = 0;
 
+	m_light = vec3f(0.5, 0.5, 1);
+
 	m_bsel = false;
 
 	m_nview = VIEW_USER;
@@ -2208,12 +2210,6 @@ void CGLView::PrepModel()
 		else
 			glDisable(GL_LIGHTING);
 
-		// position the light
-		vec3f lp = GetLightPosition();
-		GLfloat fv[4] = { 0 };
-		fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
-		glLightfv(GL_LIGHT0, GL_POSITION, fv);
-
 		GLfloat d = view.m_diffuse;
 		GLfloat dv[4] = { d, d, d, 1.f };
 		glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
@@ -2222,6 +2218,12 @@ void CGLView::PrepModel()
 		GLfloat f = view.m_ambient;
 		GLfloat av[4] = { f, f, f, 1.f };
 		glLightfv(GL_LIGHT0, GL_AMBIENT, av);
+
+		// position the light
+		vec3f lp = GetLightPosition(); lp.Normalize();
+		GLfloat fv[4] = { 0 };
+		fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
+		glLightfv(GL_LIGHT0, GL_POSITION, fv);
 	}
 
 	// position the camera
