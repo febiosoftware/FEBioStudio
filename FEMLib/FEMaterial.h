@@ -132,6 +132,7 @@
 #define FE_FIBER_DAMAGE_POWER			78	// added in FS 1.1
 #define FE_FIBER_DAMAGE_EXP				79	// added in FS 1.1
 #define FE_FIBER_DAMAGE_EXPLINEAR		80	// added in FS 1.2
+#define FE_HOLZAPFEL_UNCONSTRAINED      81
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -865,6 +866,25 @@ public:
     FEHolzapfelGasserOgden();
     
     DECLARE_REGISTERED(FEHolzapfelGasserOgden);
+};
+
+//-----------------------------------------------------------------------------
+// Holzapfel-Gasser-Ogden unconstrained
+//
+class FEHolzapfelUnconstrained : public FEMaterial
+{
+public:
+    enum {
+        MP_DENSITY,
+        MP_C, MP_K1,
+        MP_K2,MP_KAPPA,
+        MP_G,
+        MP_K };
+    
+public:
+    FEHolzapfelUnconstrained();
+    
+    DECLARE_REGISTERED(FEHolzapfelUnconstrained);
 };
 
 //-----------------------------------------------------------------------------
