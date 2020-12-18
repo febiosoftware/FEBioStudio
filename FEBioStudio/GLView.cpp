@@ -2185,6 +2185,10 @@ void CGLView::PrepModel()
 	// setup projection
 	SetupProjection();
 
+	// reset the modelview matrix mode
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
 	// clear the model
 	glClearColor(.0f, .0f, .0f, 1.f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
