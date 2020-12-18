@@ -956,8 +956,11 @@ void CModelPropsPanel::addSelection(int n)
 	FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(m_currentObject);
 	if (pi)
 	{
-		if (dynamic_cast<GObjectSelection*>(ps) ||
-		dynamic_cast<GPartSelection*>(ps)) return;
+		if ((ps->Type() != SELECT_SURFACES) && (ps->Type() != SELECT_FE_FACES))
+		{
+			QMessageBox::critical(this, "FEBio Studio", "The selection cannot be assigned to this interface.");
+			return;
+		}
 
 		FEItemListBuilder* pg = ps->CreateItemList();
 

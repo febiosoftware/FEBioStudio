@@ -15,6 +15,9 @@
 		D5163181230097A2002B01C3 /* DlgWidgetProps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D516317F2300979E002B01C3 /* DlgWidgetProps.cpp */; };
 		D5248DDB231C114D00691871 /* modelcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DD7231C114D00691871 /* modelcheck.cpp */; };
 		D5248DDC231C114D00691871 /* DlgCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5248DDA231C114D00691871 /* DlgCheck.cpp */; };
+		D524F6B1258BB52100A403CD /* TextDocument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D524F6B0258BB52100A403CD /* TextDocument.cpp */; };
+		D524F6BF258C3B2B00A403CD /* XMLEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D524F6BE258C3B2A00A403CD /* XMLEditor.cpp */; };
+		D524F6C0258C3CE500A403CD /* XMLEditor.h in Sources */ = {isa = PBXBuildFile; fileRef = D524F6BD258C3B2A00A403CD /* XMLEditor.h */; };
 		D532E2AA24747D8000826447 /* libTKVCAF.7.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */; };
 		D532E2AB24747D8000826447 /* libTKVCAF.7.3.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D548545723749CCF00BE1731 /* libcrypto.1.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */; };
@@ -503,6 +506,10 @@
 		D5248DD8231C114D00691871 /* modelcheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelcheck.h; sourceTree = "<group>"; };
 		D5248DD9231C114D00691871 /* DlgCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgCheck.h; sourceTree = "<group>"; };
 		D5248DDA231C114D00691871 /* DlgCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgCheck.cpp; sourceTree = "<group>"; };
+		D524F6AF258BB52100A403CD /* TextDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextDocument.h; sourceTree = "<group>"; };
+		D524F6B0258BB52100A403CD /* TextDocument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextDocument.cpp; sourceTree = "<group>"; };
+		D524F6BD258C3B2A00A403CD /* XMLEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLEditor.h; sourceTree = "<group>"; };
+		D524F6BE258C3B2A00A403CD /* XMLEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XMLEditor.cpp; sourceTree = "<group>"; };
 		D532E2A924747D8000826447 /* libTKVCAF.7.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTKVCAF.7.3.0.dylib; path = /usr/local/Cellar/opencascade/7.3.0p3/lib/libTKVCAF.7.3.0.dylib; sourceTree = "<absolute>"; };
 		D548545523749CCF00BE1731 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.1.0.0.dylib; path = /usr/local/Cellar/openssl/1.0.2t/lib/libcrypto.1.0.0.dylib; sourceTree = "<absolute>"; };
 		D548545623749CCF00BE1731 /* libssl.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.1.0.0.dylib; path = /usr/local/Cellar/openssl/1.0.2t/lib/libssl.1.0.0.dylib; sourceTree = "<absolute>"; };
@@ -1091,7 +1098,6 @@
 		D5F7D6F622FA37C30089B08E /* FEBioStudio */ = {
 			isa = PBXGroup;
 			children = (
-				D59A609D2589975D0095F0A7 /* febiostudio.qrc */,
 				D579B668239F04E100278644 /* 3PointAngleTool.cpp */,
 				D579B66B239F04E200278644 /* 3PointAngleTool.h */,
 				D579B675239F04E200278644 /* 4PointAngleTool.cpp */,
@@ -1260,6 +1266,7 @@
 				D5F7D76922FA37C40089B08E /* FEBioOpt.h */,
 				D5F7D7A222FA37C40089B08E /* FEBioStudio.cpp */,
 				D5F7D72A22FA37C40089B08E /* FEBioStudio.h */,
+				D59A609D2589975D0095F0A7 /* febiostudio.qrc */,
 				D5992F162461E4310054F9DA /* FEBioStudioProject.cpp */,
 				D5992F1B2461E4320054F9DA /* FEBioStudioProject.h */,
 				D5ED2A0723198CD800C16BF7 /* FEObjectProps.cpp */,
@@ -1436,6 +1443,8 @@
 				D5F7D79A22FA37C40089B08E /* targetver.h */,
 				D5606C85238DAAD1002B037E /* TetOverlapTool.cpp */,
 				D5606C86238DAAD1002B037E /* TetOverlapTool.h */,
+				D524F6B0258BB52100A403CD /* TextDocument.cpp */,
+				D524F6AF258BB52100A403CD /* TextDocument.h */,
 				D5FF054D2501AB2700D768FA /* TimelinePanel.cpp */,
 				D5FF05502501AB2700D768FA /* TimelinePanel.h */,
 				D5FF054F2501AB2700D768FA /* TimelineWidget.cpp */,
@@ -1470,6 +1479,8 @@
 				D5946E1324B4F5A50009C22F /* WrapLabel.h */,
 				D509D41A24BF9A1D0064160E /* WzdUpload.cpp */,
 				D509D41824BF9A1C0064160E /* WzdUpload.h */,
+				D524F6BE258C3B2A00A403CD /* XMLEditor.cpp */,
+				D524F6BD258C3B2A00A403CD /* XMLEditor.h */,
 				D5CA211023EF7025001AE230 /* ZipFiles.cpp */,
 				D5ED2A0823198CD800C16BF7 /* ZipFiles.h */,
 			);
@@ -1644,9 +1655,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				D59A609F258997770095F0A7 /* febiostudio.qrc in Sources */,
+				D524F6C0258C3CE500A403CD /* XMLEditor.h in Sources */,
 				D57BF83A258858FF00E0EF1A /* PostDataPanel.h in Sources */,
 				D57BF839258858EA00E0EF1A /* MaterialPanel.h in Sources */,
 				D57BF838258858CC00E0EF1A /* MainTabBar.h in Sources */,
+				D524F6BF258C3B2B00A403CD /* XMLEditor.cpp in Sources */,
 				D57BF8372588589B00E0EF1A /* DataFieldSelector.h in Sources */,
 				D57D000B25884CC6009ED051 /* BuildPanel.h in Sources */,
 				D57D000C25884CC6009ED051 /* CColorButton.h in Sources */,
@@ -1712,6 +1725,7 @@
 				D57D008D25884CC6009ED051 /* ModelViewer.h in Sources */,
 				D57D008F25884CC6009ED051 /* ObjectPanel.h in Sources */,
 				D57D009225884CC6009ED051 /* PlaneTool.h in Sources */,
+				D524F6B1258BB52100A403CD /* TextDocument.cpp in Sources */,
 				D57D009325884CC6009ED051 /* PlotWidget.h in Sources */,
 				D57D009825884CC6009ED051 /* PostModelPanel.h in Sources */,
 				D57D009A25884CC6009ED051 /* PostPanel.h in Sources */,

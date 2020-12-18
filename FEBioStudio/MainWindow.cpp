@@ -79,6 +79,7 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
+<<<<<<< HEAD
 #include <qsyntaxhighlighter.h>
 
 class XMLHighlighter : public QSyntaxHighlighter
@@ -160,6 +161,8 @@ private:
 	QRegExp commentStartExpression;
 	QRegExp commentEndExpression;
 };
+=======
+>>>>>>> 5f186d023ecb90f71111516c2487045eec2f0554
 
 
 extern GLColor col[];
@@ -433,9 +436,9 @@ void CMainWindow::on_addToProject(const QString& file)
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::on_txtedit_textChanged()
+void CMainWindow::on_xmledit_textChanged()
 {
-	QTextDocument* qtxt = ui->txtEdit->document();
+	QTextDocument* qtxt = ui->xmlEdit->document();
 	if (qtxt == nullptr) return;
 
 	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
@@ -1893,10 +1896,9 @@ void CMainWindow::UpdateUIConfig()
 				}
 				else
 				{
-					ui->txtEdit->blockSignals(true);
-//					XMLHighlighter* highLighter = new XMLHighlighter(txtDoc->GetText());
-					ui->txtEdit->setDocument(txtDoc->GetText());
-					ui->txtEdit->blockSignals(false);
+					ui->xmlEdit->blockSignals(true);
+					ui->xmlEdit->SetDocument(txtDoc->GetText());
+					ui->xmlEdit->blockSignals(false);
 					ui->setUIConfig(CMainWindow::TEXT_CONFIG);
 				}
 			}
@@ -2070,7 +2072,7 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	}
 
 	ui->htmlViewer->setDocument(nullptr);
-	ui->txtEdit->setDocument(nullptr);
+	ui->xmlEdit->setDocument(nullptr);
 
 	// now, remove from the doc manager
 	m_DocManager->RemoveDocument(n);
@@ -2287,6 +2289,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	view->addAction(ui->actionRight);
 	view->addAction(ui->actionTop);
 	view->addAction(ui->actionBottom);
+    view->addAction(ui->actionIsometric);
 	menu.addAction(view->menuAction());
 	menu.addSeparator();
 

@@ -717,6 +717,12 @@ public:
 	// determinant
 	float det() { return (x*y*z + xy*yz*xz + xz*xy*yz - y*xz*xz - x*yz*yz - z*xy*xy); }
 
+	// L2 norm
+	float norm() const { 
+		double d = x*x + y*y + z*z + 2 * (xy*xy + yz*yz + xz*xz);
+		return (float) sqrt(d);
+	}
+
 public:
 	float x, y, z;
 	float xy, yz, xz;

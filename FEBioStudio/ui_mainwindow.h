@@ -68,7 +68,11 @@ SOFTWARE.*/
 #include "welcomePage.h"
 #include "IconProvider.h"
 #include "TimelinePanel.h"
+<<<<<<< HEAD
 #include "UpdateChecker.h"
+=======
+#include "XMLEditor.h"
+>>>>>>> 5f186d023ecb90f71111516c2487045eec2f0554
 
 class QProcess;
 
@@ -125,7 +129,7 @@ public:
 	QStackedWidget*	stack;
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
-	QPlainTextEdit*	txtEdit;
+	XMLEditor*		xmlEdit;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -221,6 +225,7 @@ public:
 	QAction* actionLeft;
 	QAction* actionTop;
 	QAction* actionBottom;
+    QAction* actionIsometric;
 	QAction* actionOptions;
 	QAction* actionRenderMode;
 	QAction* actionShowFibers;
@@ -330,12 +335,9 @@ public:
 
 		stack->addWidget(htmlViewer);
 
-		txtEdit = new QPlainTextEdit;
-		txtEdit->setObjectName("txtedit");
-		txtEdit->setFont(QFont("Courier", 12));
-		QFontInfo fi(txtEdit->font());
-		txtEdit->setTabStopDistance(fi.pixelSize() * 2);
-		stack->addWidget(txtEdit);
+		xmlEdit = new XMLEditor(wnd);
+		xmlEdit->setObjectName("xmledit");
+		stack->addWidget(xmlEdit);
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
@@ -544,6 +546,7 @@ public:
 		actionLeft            = addAction("Left" , "actionLeft"   ); actionLeft  ->setShortcut(Qt::Key_4 | Qt::KeypadModifier);
 		actionTop             = addAction("Top"  , "actionTop"    ); actionTop   ->setShortcut(Qt::Key_9 | Qt::KeypadModifier);
 		actionBottom          = addAction("Bottom", "actionBottom"); actionBottom->setShortcut(Qt::Key_3 | Qt::KeypadModifier);
+        actionIsometric       = addAction("Isometric", "actionIsometric"); actionIsometric->setShortcut(Qt::Key_5 | Qt::KeypadModifier);
 		QAction* actionViewVPSave = addAction("Save Viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL + Qt::Key_K);
 		QAction* actionViewVPPrev = addAction("Prev Viewpoint", "actionViewVPPrev"); actionViewVPPrev->setShortcut(Qt::Key_J);
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
@@ -799,6 +802,7 @@ public:
 		menuViews->addAction(actionLeft);
 		menuViews->addAction(actionTop);
 		menuViews->addAction(actionBottom);
+        menuViews->addAction(actionIsometric);
 
 		menuViews->addSeparator();
 		menuView->addAction(actionViewVPSave);

@@ -69,7 +69,8 @@ enum View_Mode {
 	VIEW_LEFT,
 	VIEW_RIGHT,
 	VIEW_FRONT,
-	VIEW_BACK
+	VIEW_BACK,
+    VIEW_ISOMETRIC
 };
 
 // view conventions

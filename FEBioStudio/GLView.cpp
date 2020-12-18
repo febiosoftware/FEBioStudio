@@ -399,6 +399,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_wa = 0;
 	m_wt = 0;
 
+	m_light = vec3f(0.5, 0.5, 1);
+
 	m_bsel = false;
 
 	m_nview = VIEW_USER;
@@ -2183,6 +2185,10 @@ void CGLView::PrepModel()
 	// setup projection
 	SetupProjection();
 
+	// reset the modelview matrix mode
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
 	// clear the model
 	glClearColor(.0f, .0f, .0f, 1.f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -2208,12 +2214,6 @@ void CGLView::PrepModel()
 		else
 			glDisable(GL_LIGHTING);
 
-		// position the light
-		vec3f lp = GetLightPosition();
-		GLfloat fv[4] = { 0 };
-		fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
-		glLightfv(GL_LIGHT0, GL_POSITION, fv);
-
 		GLfloat d = view.m_diffuse;
 		GLfloat dv[4] = { d, d, d, 1.f };
 		glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
@@ -2222,6 +2222,12 @@ void CGLView::PrepModel()
 		GLfloat f = view.m_ambient;
 		GLfloat av[4] = { f, f, f, 1.f };
 		glLightfv(GL_LIGHT0, GL_AMBIENT, av);
+
+		// position the light
+		vec3f lp = GetLightPosition(); lp.Normalize();
+		GLfloat fv[4] = { 0 };
+		fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
+		glLightfv(GL_LIGHT0, GL_POSITION, fv);
 	}
 
 	// position the camera
@@ -3563,6 +3569,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_LEFT: q = quatd(90 * DEG2RAD, vec3d(1, 0, 0)); q *= quatd(90 * DEG2RAD, vec3d(0, 1, 0)); break;
                 case VIEW_TOP:
                 case VIEW_BOTTOM:
+                case VIEW_ISOMETRIC:
                 case VIEW_USER: q = quatd(0, vec3d(0, 0, 1)); break;
                 default:
                     assert(false);
@@ -3580,6 +3587,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_RIGHT: q = quatd(-90 * DEG2RAD, vec3d(1, 0, 0)); q *= quatd(90 * DEG2RAD, vec3d(0, 0, 1)); break;
                 case VIEW_FRONT: q = quatd(-90 * DEG2RAD, vec3d(1, 0, 0)); break;
                 case VIEW_BACK: q = quatd(-90 * DEG2RAD, vec3d(1, 0, 0)); q *= quatd(180 * DEG2RAD, vec3d(0, 0, 1)); break;
+                case VIEW_ISOMETRIC: q = quatd(56.6003 * DEG2RAD, vec3d(0.590284, -0.769274, -0.244504))*quatd(-90 * DEG2RAD, vec3d(1, 0, 0)); break;
                 case VIEW_USER: repaint(); return;
             }
         }
@@ -3595,6 +3603,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_LEFT: q = quatd( 90*DEG2RAD, vec3d(0,1,0)); break;
                 case VIEW_TOP:
                 case VIEW_BOTTOM: q = quatd(-90*DEG2RAD, vec3d(1,0,0)); break;
+                case VIEW_ISOMETRIC:
                 case VIEW_USER: q = quatd(0, vec3d(0, 0, 1)); break;
                 default:
                     assert(false);
@@ -3612,6 +3621,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_RIGHT : q = quatd( 90*DEG2RAD, vec3d(0,1,0)); break;
                 case VIEW_TOP   : q = quatd(-90*DEG2RAD, vec3d(1,0,0)); break;
                 case VIEW_BOTTOM: q = quatd( 90*DEG2RAD, vec3d(1,0,0)); break;
+                case VIEW_ISOMETRIC: q = quatd(56.6003 * DEG2RAD, vec3d(0.590284, -0.769274, -0.244504)); break;
                 case VIEW_USER: repaint(); return;
             }
         }
@@ -3627,6 +3637,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_LEFT: q = quatd(-90*DEG2RAD, vec3d(0,1,0)); break;
                 case VIEW_TOP:
                 case VIEW_BOTTOM: q = quatd( 90*DEG2RAD, vec3d(1,0,0)); break;
+                case VIEW_ISOMETRIC:
                 case VIEW_USER: q = quatd(0, vec3d(0, 0, 1)); break;
                 default:
                     assert(false);
@@ -3644,6 +3655,7 @@ void CGLView::SetViewMode(View_Mode n)
                 case VIEW_RIGHT : q = quatd(-90*DEG2RAD, vec3d(0,1,0)); break;
                 case VIEW_TOP   : q = quatd( 90*DEG2RAD, vec3d(1,0,0)); break;
                 case VIEW_BOTTOM: q = quatd(-90*DEG2RAD, vec3d(1,0,0)); break;
+                case VIEW_ISOMETRIC: q = quatd(56.6003 * DEG2RAD, vec3d(0.590284, -0.769274, -0.244504)); break;
                 case VIEW_USER: repaint(); return;
             }
         }

@@ -199,6 +199,11 @@ void CMainWindow::on_actionBottom_triggered()
 	GetGLView()->changeViewMode(VIEW_BOTTOM);
 }
 
+void CMainWindow::on_actionIsometric_triggered()
+{
+    GetGLView()->changeViewMode(VIEW_ISOMETRIC);
+}
+
 void CMainWindow::on_actionRenderMode_toggled(bool b)
 {
 	CDocument* doc = GetDocument();

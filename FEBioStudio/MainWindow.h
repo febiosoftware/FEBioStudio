@@ -436,6 +436,7 @@ public slots:
 	void on_actionRight_triggered();
 	void on_actionTop_triggered();
 	void on_actionBottom_triggered();
+    void on_actionIsometric_triggered();
 	void on_actionRenderMode_toggled(bool b);
 	void on_actionSnap3D_triggered();
 	void on_actionTrack_toggled(bool b);
@@ -500,7 +501,7 @@ public slots:
 	void on_tab_tabCloseRequested(int n);
 
 	void on_htmlview_anchorClicked(const QUrl& link);
-	void on_txtedit_textChanged();
+	void on_xmledit_textChanged();
 
 	void on_clearProject();
 	void on_closeProject();

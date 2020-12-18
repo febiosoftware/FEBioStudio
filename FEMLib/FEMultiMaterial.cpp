@@ -250,6 +250,9 @@ FECFDMaterial::FECFDMaterial() : FEMaterial(FE_CFD_MATERIAL)
 {
 	SetAxisMaterial(new FEAxisMaterial);
 
+    // add parameters
+    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    
     // Add fiber component
 	AddProperty("fibers", FE_MAT_CFD_FIBER);
     
@@ -270,6 +273,10 @@ FECFDUCMaterial::FECFDUCMaterial() : FEMaterial(FE_CFD_MATERIAL_UC)
 {
 	SetAxisMaterial(new FEAxisMaterial);
 
+    // add parameters
+    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus" );
+    
     // Add fiber component
 	AddProperty("fibers", FE_MAT_CFD_FIBER_UC);
     
@@ -288,6 +295,9 @@ REGISTER_MATERIAL(FEElasticDamageMaterial, MODULE_MECH, FE_DMG_MATERIAL, FE_MAT_
 
 FEElasticDamageMaterial::FEElasticDamageMaterial() : FEMaterial(FE_DMG_MATERIAL)
 {
+    // add parameters
+    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    
     // Add elastic component
     AddProperty("elastic", FE_MAT_ELASTIC);
     
@@ -306,6 +316,10 @@ REGISTER_MATERIAL(FEElasticDamageMaterialUC, MODULE_MECH, FE_DMG_MATERIAL_UC, FE
 
 FEElasticDamageMaterialUC::FEElasticDamageMaterialUC() : FEMaterial(FE_DMG_MATERIAL_UC)
 {
+    // add parameters
+    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus" );
+    
     // Add elastic component
 	AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
     
@@ -325,6 +339,7 @@ REGISTER_MATERIAL(FEReactiveViscoelasticMaterial, MODULE_MECH, FE_RV_MATERIAL, F
 FEReactiveViscoelasticMaterial::FEReactiveViscoelasticMaterial() : FEMaterial(FE_RV_MATERIAL)
 {
     // add parameters
+    AddScienceParam(1, UNIT_DENSITY, "density", "density");
     AddIntParam(1, "kinetics", "kinetics"); // "bond kinetics type (1 or 2)");
     AddIntParam(0, "trigger" , "trigger" ); // "bond breaking trigger (0=any, 1=distortion, or 2=dilatation)");
     
@@ -349,8 +364,9 @@ FEReactiveViscoelasticMaterialUC::FEReactiveViscoelasticMaterialUC() : FEMateria
     // add parameters
     AddIntParam(1, "kinetics", "kinetics"); // "bond kinetics type (1 or 2)");
     AddIntParam(0, "trigger" , "trigger" ); // "bond breaking trigger (0=any, 1=distortion, or 2=dilatation)");
-	AddDoubleParam(0, "k", "bulk modulus")->SetPersistent(false);
-    
+    AddScienceParam(1, UNIT_DENSITY, "density", "density");
+    AddScienceParam(0, UNIT_PRESSURE , "k", "bulk modulus" );
+
     // Add elastic material component
     AddProperty("elastic", FE_MAT_ELASTIC_UNCOUPLED);
     

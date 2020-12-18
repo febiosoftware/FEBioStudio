@@ -95,6 +95,7 @@ void GGrid::Render(CGLContext& renderContext)
 	switch (view)
 	{
 	case VIEW_USER:
+    case VIEW_ISOMETRIC:
 	case VIEW_TOP: 
 	case VIEW_BOTTOM: cx = GLColor(200, 0, 0); cy = GLColor(0, 200, 0); break;
 	case VIEW_RIGHT: 
