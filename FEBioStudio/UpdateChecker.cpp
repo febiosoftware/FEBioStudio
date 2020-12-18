@@ -195,7 +195,7 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 						}
 					}
 
-					if(release.active && serverTime >= release.timestamp) releases.push_back(release);
+					if(release.active) releases.push_back(release);
 				}
 				else
 				{
@@ -242,7 +242,6 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 		if(releases[0].timestamp > lastUpdate)
 		{
 			showUpdateInfo();
-			// getDownloadSizes();
 		}
 		else
 		{
@@ -324,7 +323,8 @@ void CUpdateWidget::showUpdateInfo()
 
         if(newFEBio)
         {
-            QLabel* newFEBioLabel = new QLabel(QString("* An update to FEBio %1. Click <a href=\"FEBioNotes\">here</a> for release notes.").arg(releases[0].FEBioVersion));
+			// QChar(0x22, 0x20) give us the unicode 'bullet' character
+            QLabel* newFEBioLabel = new QLabel(QChar(0x22, 0x20) + QString(" An update to FEBio %1. Click <a href=\"FEBioNotes\">here</a> for release notes.").arg(releases[0].FEBioVersion));
             newFEBioLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
             QObject::connect(newFEBioLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
 
@@ -333,7 +333,8 @@ void CUpdateWidget::showUpdateInfo()
 
         if(newFBS)
         {
-            QLabel* newFBSLabel = new QLabel(QString("* An update to FEBio Studio %1. Click <a href=\"FBSNotes\">here</a> for release notes.").arg(releases[0].FBSVersion));
+			// QChar(0x22, 0x20) give us the unicode 'bullet' character
+            QLabel* newFBSLabel = new QLabel(QChar(0x22, 0x20) + QString(" An update to FEBio Studio %1. Click <a href=\"FBSNotes\">here</a> for release notes.").arg(releases[0].FBSVersion));
             newFBSLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
             QObject::connect(newFBSLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
 
@@ -448,16 +449,13 @@ void CUpdateWidget::linkActivated(const QString& link)
 
 ///// Update Checker Dialog
 
-CUpdateChecker::CUpdateChecker(bool autoUpdate, QWidget* parent) 
+CUpdateChecker::CUpdateChecker(QWidget* parent) 
 	: QDialog(parent), update(false), updateAvailable(false)
 {
 	layout = new QVBoxLayout;
 	
 	CUpdateWidget* widget = new  CUpdateWidget;
 	layout->addWidget(widget);
-
-	layout->addWidget(autoUpdateCB = new QCheckBox("Automatically check for updates."));
-	autoUpdateCB->setChecked(autoUpdate);
 
 	box = new QDialogButtonBox(QDialogButtonBox::Cancel);
 
@@ -487,11 +485,6 @@ void CUpdateChecker::updateWidgetReady(bool update)
 	{
 		box->setStandardButtons(QDialogButtonBox::Ok);
 	}
-}
-
-bool CUpdateChecker::autoUpdateCheck()
-{
-	return autoUpdateCB->isChecked();
 }
 
 void CUpdateChecker::accept()

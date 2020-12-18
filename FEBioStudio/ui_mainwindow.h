@@ -259,7 +259,7 @@ public:
 
 	CUpdateWidget m_updateWidget;
 	bool m_updaterPresent;
-	bool m_autoUpdateCheck;
+	bool m_updateAvailable;
 	bool m_updateOnClose;
 
 public:
@@ -304,6 +304,7 @@ public:
 		// Check if updater is present 
 		m_updaterPresent = QFile::exists(QApplication::applicationDirPath() + UPDATER);
 		m_updateOnClose = false;
+		m_updateAvailable = false;
 
 		// initialize current path
 		currentPath = QDir::currentPath();

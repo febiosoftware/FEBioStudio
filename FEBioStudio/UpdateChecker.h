@@ -35,15 +35,14 @@ class QVBoxLayout;
 class QLabel;
 class QNetworkAccessManager;
 class QDialogButtonBox;
-class QCheckBox;
 
-// #define UPDATE_URL "repo.febio.org"
-// #define PORT 4433
-// #define SCHEME "https"
+#define UPDATE_URL "repo.febio.org"
+#define PORT 4433
+#define SCHEME "https"
 
-#define UPDATE_URL "localhost"
-#define PORT 5236
-#define SCHEME "http"
+// #define UPDATE_URL "localhost"
+// #define PORT 5236
+// #define SCHEME "http"
 
 #ifdef WIN32
 	#define URL_BASE "/update/FEBioStudio/Windows"
@@ -132,7 +131,7 @@ class CUpdateChecker : public QDialog
 	Q_OBJECT
 
 public:
-	CUpdateChecker(bool autoUpdate, QWidget *parent = nullptr);
+	CUpdateChecker(QWidget *parent = nullptr);
 
 	bool doUpdate() { return update; }
 	bool autoUpdateCheck();
@@ -146,7 +145,6 @@ private slots:
 private:
 	QVBoxLayout* layout;
 	QDialogButtonBox* box;
-	QCheckBox* autoUpdateCB;
 	bool update;
 	bool updateAvailable;
 };

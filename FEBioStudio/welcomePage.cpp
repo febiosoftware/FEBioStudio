@@ -42,6 +42,7 @@ ul { line-height: 150%; list-style-type: none; }\
 <body>\
 <p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
 <p style=\"font-size: 14pt\">version _VERSION_</p>\
+_UPDATE_INFO_\
 <h1>Start</h1>\
 <table width=100%>\
 <tr>\
@@ -119,6 +120,14 @@ void CWelcomePage::Activate()
 	page.replace("_RECENT_FILES_", links);
 
 	page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
+
+	QString updateText;
+	if(m_wnd->updateAvailable())
+	{
+		updateText = "<p style=\"font-size:14pt\">";
+		updateText += "A new update is available! Click <a style=\"font-size:14pt\" href=\"#update\">here</a> for more information.</p>";
+	}
+	page.replace("_UPDATE_INFO_", updateText);
 
 	m_txt.setHtml(page);
 }

@@ -146,12 +146,6 @@ public:
 		addBoolProperty(&m_showNewDialog, "Show New dialog box");
 		addProperty("Recent projects list", CProperty::Action)->info = QString("Clear");
 		addIntProperty(&m_autoSaveInterval, "AutoSave Interval (s)");
-		
-		if(m_wnd->updaterPresent())
-		{
-			addBoolProperty(&m_autoUpdateCheck, "Automatically check for updates");
-		}
-		
 	}
 
 	void SetPropertyValue(int i, const QVariant& v) override
@@ -173,7 +167,6 @@ public:
 	bool	m_bcmd;
 	int		m_theme;
 	bool	m_showNewDialog;
-	bool	m_autoUpdateCheck;
 	int		m_autoSaveInterval;
 };
 
@@ -896,7 +889,6 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_ui->m_theme = pwnd->currentTheme();
 	ui->m_ui->m_showNewDialog = pwnd->showNewDialog();
 	ui->m_ui->m_autoSaveInterval = pwnd->autoSaveInterval();
-	ui->m_ui->m_autoUpdateCheck = pwnd->getAutoUpdateCheck();
 
 	ui->m_select->m_bconnect = view.m_bconn;
 	ui->m_select->m_ntagInfo = view.m_ntagInfo;
@@ -1016,7 +1008,6 @@ void CDlgSettings::apply()
 	m_pwnd->setCurrentTheme(ui->m_ui->m_theme);
 	m_pwnd->setShowNewDialog(ui->m_ui->m_showNewDialog);
 	m_pwnd->setAutoSaveInterval(ui->m_ui->m_autoSaveInterval);
-	m_pwnd->setAutoUpdateCheck(ui->m_ui->m_autoUpdateCheck);
 
 	// update units
 	int newUnit = ui->m_unit->m_unit;

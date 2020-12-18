@@ -79,7 +79,7 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
-#include <QSyntaxHighLighter>
+#include <qsyntaxhighlighter.h>
 
 class XMLHighlighter : public QSyntaxHighlighter
 {
@@ -302,7 +302,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	ui->m_autoSaveTimer->start(ui->m_autoSaveInterval*1000);
 
 	// Auto Update Check
-	if(ui->m_autoUpdateCheck && ui->m_updaterPresent)
+	if(ui->m_updaterPresent)
 	{
 		QObject::connect(&ui->m_updateWidget, &CUpdateWidget::ready, this, &CMainWindow::autoUpdateCheck);
 		ui->m_updateWidget.checkForUpdate();
@@ -460,6 +460,7 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 	else if (ref == "#febio") on_actionFEBioURL_triggered();
 	else if (ref == "#help") on_actionFEBioResources_triggered();
 	else if (ref == "#forum") on_actionFEBioForum_triggered();
+	else if (ref == "#update") on_actionUpdate_triggered();
 	else
 	{
 		string s = ref.toStdString();
@@ -1243,10 +1244,18 @@ void CMainWindow::autosave()
 
 void CMainWindow::autoUpdateCheck(bool update)
 {
-	if(update)
+	ui->m_updateAvailable = update;
+
+	int n = ui->tab->findView("Welcome");
+	if (n != -1)
 	{
-		on_actionUpdate_triggered();
+		ui->tab->getDocument(n)->Activate();
 	}
+
+	// if(update)
+	// {
+	// 	on_actionUpdate_triggered();
+	// }
 }
 
 void CMainWindow::ReportSelection()
@@ -1568,19 +1577,14 @@ int CMainWindow::autoSaveInterval()
 	return ui->m_autoSaveInterval;
 }
 
-void CMainWindow::setAutoUpdateCheck(bool update)
-{
-	ui->m_autoUpdateCheck = update;
-}
-
-bool CMainWindow::getAutoUpdateCheck()
-{
-	return ui->m_autoUpdateCheck;
-}
-
 bool CMainWindow::updaterPresent()
 {
 	return ui->m_updaterPresent;
+}
+
+bool CMainWindow::updateAvailable()
+{
+	return ui->m_updateAvailable;
 }
 
 // set/get default unit system for new models
@@ -1608,7 +1612,6 @@ void CMainWindow::writeSettings()
 	settings.setValue("theme", ui->m_theme);
 	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
-	settings.setValue("autoUpdateCheck", ui->m_autoUpdateCheck);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
 	settings.setValue("multiViewProjection", vs.m_nconv);
 	settings.setValue("showMaterialFibers", vs.m_bfiber);
@@ -1685,7 +1688,6 @@ void CMainWindow::readSettings()
 	ui->m_theme = settings.value("theme", 0).toInt();
 	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
-	ui->m_autoUpdateCheck = settings.value("autoUpdateCheck", true).toBool();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
 	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
 	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();

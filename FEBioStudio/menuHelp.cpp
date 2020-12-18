@@ -37,7 +37,7 @@ SOFTWARE.*/
 
 void CMainWindow::on_actionUpdate_triggered()
 {
-	CUpdateChecker dlg(ui->m_autoUpdateCheck);
+	CUpdateChecker dlg;
 
 	if(dlg.exec())
 	{
@@ -47,8 +47,6 @@ void CMainWindow::on_actionUpdate_triggered()
 			close();
 		}
 	}
-
-	ui->m_autoUpdateCheck = dlg.autoUpdateCheck();
 }
 
 void CMainWindow::on_actionFEBioURL_triggered()

@@ -183,9 +183,8 @@ public:
 	int autoSaveInterval();
 
 	// autoUpdate Check
-	void setAutoUpdateCheck(bool update);
-	bool getAutoUpdateCheck();
 	bool updaterPresent();
+	bool updateAvailable();
 
 	// set/get default unit system for new models
 	void SetDefaultUnitSystem(int n);
