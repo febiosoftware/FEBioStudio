@@ -28,17 +28,21 @@ public:
 		QPalette palette = qApp->palette();
 
 		// XML values
-		rule.pattern = QRegExp("\\b[\\-0-9\\.+\\-e,]+\\b");
+//		rule.pattern = QRegExp("\\b[\\-0-9\\.+\\-e,]+\\b");
+		rule.pattern = QRegExp(">[^<]*");
 		rule.format.setForeground(m_pal[XML_VALUE]);
 		rule.format.setFontWeight(QFont::Bold);
+		rule.offset = 1;
 		highlightingRules.append(rule);
 
 		// xml attribute values
+		rule.offset = 0;
 		rule.pattern = QRegExp("\"(?:[^\"]|\\.)*\"");
 		rule.format.setForeground(m_pal[XML_ATTRIBUTE_VALUE]);
 		highlightingRules.append(rule);
 
 		// xml attributes
+		rule.offset = 0;
 		rule.pattern = QRegExp("\\b[a-zA-Z0-9_]+(?=\\=)");
 		rule.format.setForeground(m_pal[XML_ATTRIBUTE_NAME]);
 		highlightingRules.append(rule);
@@ -64,7 +68,7 @@ public:
 			int index = expression.indexIn(text);
 			while (index >= 0) {
 				int length = expression.matchedLength();
-				setFormat(index, length, rule.format);
+				setFormat(index + rule.offset, length - 1*rule.offset, rule.format);
 				index = expression.indexIn(text, index + length);
 			}
 		}
@@ -99,6 +103,7 @@ private:
 	{
 		QRegExp pattern;
 		QTextCharFormat format;
+		int	offset;
 	};
 	QVector<HighlightingRule> highlightingRules;
 
@@ -128,7 +133,7 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 		XMLHighlighter::setColor(Qt::black, XMLHighlighter::XML_VALUE);
 		XMLHighlighter::setColor(Qt::red, XMLHighlighter::XML_ATTRIBUTE_NAME);
 		XMLHighlighter::setColor(Qt::blue, XMLHighlighter::XML_ATTRIBUTE_VALUE);
-		XMLHighlighter::setColor(Qt::green, XMLHighlighter::XML_COMMENT);
+		XMLHighlighter::setColor(Qt::darkGreen, XMLHighlighter::XML_COMMENT);
 		XMLHighlighter::setColor(QColor::fromRgb(200, 200, 255), XMLHighlighter::XML_HIGHLIGHT);
 	}
 	else
@@ -136,7 +141,7 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 		XMLHighlighter::setColor(Qt::white, XMLHighlighter::XML_VALUE);
 		XMLHighlighter::setColor(QColor::fromRgb(102, 204, 255), XMLHighlighter::XML_ATTRIBUTE_NAME);
 		XMLHighlighter::setColor(QColor::fromRgb(255, 150, 50), XMLHighlighter::XML_ATTRIBUTE_VALUE);
-		XMLHighlighter::setColor(Qt::green, XMLHighlighter::XML_COMMENT);
+		XMLHighlighter::setColor(Qt::darkGreen, XMLHighlighter::XML_COMMENT);
 		XMLHighlighter::setColor(QColor::fromRgb(0, 51, 102), XMLHighlighter::XML_HIGHLIGHT);
 	}
 
