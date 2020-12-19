@@ -108,8 +108,7 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 	if(statusCode != 200)
 	{
-		QMessageBox::critical(this, "Update Failed", "Update Failed!\n\nUnable to receive response from server.");
-		QApplication::quit();
+		showError("Update Failed!\n\nUnable to receive response from server.");
 	}
 
 	serverTime = r->rawHeader("serverTime").toLongLong();
