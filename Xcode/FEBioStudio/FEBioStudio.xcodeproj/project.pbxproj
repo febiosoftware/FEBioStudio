@@ -170,6 +170,8 @@
 		D59DD2AF25261EE400A1495A /* welcomePage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59DD2AE25261EE400A1495A /* welcomePage.cpp */; };
 		D5A96F29246892A10026BFE0 /* GraphData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F24246892A10026BFE0 /* GraphData.cpp */; };
 		D5A96F2B246892A10026BFE0 /* LinkPropertyEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F26246892A10026BFE0 /* LinkPropertyEdit.cpp */; };
+		D5AE8C3F2590191E003AC08B /* UpdateChecker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5AE8C3D2590191E003AC08B /* UpdateChecker.cpp */; };
+		D5AE8C4025901A33003AC08B /* UpdateChecker.h in Sources */ = {isa = PBXBuildFile; fileRef = D5AE8C3E2590191E003AC08B /* UpdateChecker.h */; };
 		D5BA5337240D5470001A5C0F /* DlgSelectRange.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */; };
 		D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5334240D5470001A5C0F /* CIntInput.cpp */; };
 		D5BA5339240D5470001A5C0F /* DlgFind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5335240D5470001A5C0F /* DlgFind.cpp */; };
@@ -601,6 +603,8 @@
 		D5A96F26246892A10026BFE0 /* LinkPropertyEdit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LinkPropertyEdit.cpp; sourceTree = "<group>"; };
 		D5A96F27246892A10026BFE0 /* LinkPropertyEdit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinkPropertyEdit.h; sourceTree = "<group>"; };
 		D5A96F28246892A10026BFE0 /* GraphData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphData.h; sourceTree = "<group>"; };
+		D5AE8C3D2590191E003AC08B /* UpdateChecker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UpdateChecker.cpp; sourceTree = "<group>"; };
+		D5AE8C3E2590191E003AC08B /* UpdateChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UpdateChecker.h; sourceTree = "<group>"; };
 		D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgSelectRange.cpp; sourceTree = "<group>"; };
 		D5BA5333240D5470001A5C0F /* DlgSelectRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSelectRange.h; sourceTree = "<group>"; };
 		D5BA5334240D5470001A5C0F /* CIntInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CIntInput.cpp; sourceTree = "<group>"; };
@@ -1470,6 +1474,8 @@
 				D5D27483246D9D0100B1AA9D /* UnitParser.h */,
 				D5828D06246465DB00FD7FF2 /* units.cpp */,
 				D5828D04246465DB00FD7FF2 /* units.h */,
+				D5AE8C3D2590191E003AC08B /* UpdateChecker.cpp */,
+				D5AE8C3E2590191E003AC08B /* UpdateChecker.h */,
 				D5F7D71922FA37C40089B08E /* version.h */,
 				D5ED29F823198CD600C16BF7 /* ViewSettings.h */,
 				D5CB0B212481A5D1004702B2 /* WebDefines.h */,
@@ -1655,6 +1661,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D59A609F258997770095F0A7 /* febiostudio.qrc in Sources */,
+				D5AE8C4025901A33003AC08B /* UpdateChecker.h in Sources */,
 				D524F6C0258C3CE500A403CD /* XMLEditor.h in Sources */,
 				D57BF83A258858FF00E0EF1A /* PostDataPanel.h in Sources */,
 				D57BF839258858EA00E0EF1A /* MaterialPanel.h in Sources */,
@@ -1844,6 +1851,7 @@
 				D5F7D83B22FA37C40089B08E /* MeshInspector.cpp in Sources */,
 				D5F7D89622FA37C40089B08E /* DlgRun.cpp in Sources */,
 				D5C13EDC24047890005897E1 /* PostModelPanel.cpp in Sources */,
+				D5AE8C3F2590191E003AC08B /* UpdateChecker.cpp in Sources */,
 				D5F7D87922FA37C40089B08E /* CurveEditor.cpp in Sources */,
 				D5F7D89C22FA37C40089B08E /* ObjectProps.cpp in Sources */,
 				D5946E1C24B4F5A60009C22F /* DlgRequestUploadPerm.cpp in Sources */,
