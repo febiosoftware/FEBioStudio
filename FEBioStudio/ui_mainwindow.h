@@ -68,11 +68,8 @@ SOFTWARE.*/
 #include "welcomePage.h"
 #include "IconProvider.h"
 #include "TimelinePanel.h"
-<<<<<<< HEAD
 #include "UpdateChecker.h"
-=======
 #include "XMLEditor.h"
->>>>>>> 5f186d023ecb90f71111516c2487045eec2f0554
 
 class QProcess;
 

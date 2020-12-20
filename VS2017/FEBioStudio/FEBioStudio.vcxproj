@@ -382,6 +382,7 @@
     <ClCompile Include="..\..\FEBioStudio\moc_Tool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolBox.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ToolsPanel.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\moc_UpdateChecker.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_WzdUpload.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_XMLEditor.cpp" />
     <ClCompile Include="..\..\FEBioStudio\moc_ZipFiles.cpp" />
@@ -439,6 +440,7 @@
     <ClCompile Include="..\..\FEBioStudio\ToolsPanel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\UnitParser.cpp" />
     <ClCompile Include="..\..\FEBioStudio\units.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\UpdateChecker.cpp" />
     <ClCompile Include="..\..\FEBioStudio\welcomePage.cpp" />
     <ClCompile Include="..\..\FEBioStudio\WrapLabel.cpp" />
     <ClCompile Include="..\..\FEBioStudio\WzdUpload.cpp" />
@@ -699,6 +701,11 @@
     <ClInclude Include="..\..\FEBioStudio\TextDocument.h" />
     <ClInclude Include="..\..\FEBioStudio\UnitParser.h" />
     <ClInclude Include="..\..\FEBioStudio\units.h" />
+    <CustomBuild Include="..\..\FEBioStudio\UpdateChecker.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTVS2017)\bin\moc.exe "%(FullPath)" -o "%(RootDir)%(Directory)moc_%(Filename).cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling %(Filename)%(Extension) using MOC</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\ViewSettings.h" />
     <ClInclude Include="..\..\FEBioStudio\WebDefines.h" />
     <ClInclude Include="..\..\FEBioStudio\welcomePage.h" />
