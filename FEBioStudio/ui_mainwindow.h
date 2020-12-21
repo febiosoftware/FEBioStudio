@@ -547,7 +547,7 @@ public:
 		QAction* actionViewVPSave = addAction("Save Viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL + Qt::Key_K);
 		QAction* actionViewVPPrev = addAction("Prev Viewpoint", "actionViewVPPrev"); actionViewVPPrev->setShortcut(Qt::Key_J);
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
-		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews");
+		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S + Qt::AltModifier);
 
 		// --- Help menu ---
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");

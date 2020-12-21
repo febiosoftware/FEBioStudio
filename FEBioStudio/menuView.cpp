@@ -284,16 +284,20 @@ void CMainWindow::on_actionSyncViews_triggered()
 	GLCameraTransform transform;
 	cam.GetTransform(transform);
 	int views = ui->tab->views();
-	for (int i = 1; i < views; ++i)
+	for (int i = 0; i < views; ++i)
 	{
 		CGLDocument* doci = dynamic_cast<CGLDocument*>(ui->tab->getDocument(i));
 		if (doci && (doci != doc))
 		{
-			CGLCamera& cami = doci->GetView()->GetCamera();
+			CGView& viewi = *doci->GetView();
 
 			// copy the transforms
+			CGLCamera& cami = viewi.GetCamera();
 			cami.SetTransform(transform);
 			cami.Update(true);
+
+			// copy view parameters
+			viewi.m_bortho = view.m_bortho;
 		}
 	}
 }
