@@ -909,6 +909,7 @@ FERefineMesh::FERefineMesh() : FEModifier("Refine")
 {
 	AddIntParam(1, "iterations:", "iterations");
 	AddBoolParam(false, "Smooth surface");
+	AddBoolParam(false, "hex 2d-split");
 }
 
 FEMesh* FERefineMesh::Apply(FEMesh* pm)
@@ -917,6 +918,8 @@ FEMesh* FERefineMesh::Apply(FEMesh* pm)
 	int niter = GetIntValue(0);
 	bool bsmooth = GetBoolValue(1);
 	if (niter < 1) return 0;
+
+	bool bhex2d = GetBoolValue(2);
 
 	// select a modifier
 	FEModifier* mod = 0;
@@ -934,9 +937,18 @@ FEMesh* FERefineMesh::Apply(FEMesh* pm)
 	}
 	if (pm->IsType(FE_HEX8))
 	{
-		FEHexSplitModifier* hexmod = new FEHexSplitModifier;
-		hexmod->DoSurfaceSmoothing(bsmooth);
-		mod = hexmod;
+		if (bhex2d)
+		{
+			FEHex2DSplitModifier* hexmod = new FEHex2DSplitModifier;
+			hexmod->DoSurfaceSmoothing(bsmooth);
+			mod = hexmod;
+		}
+		else
+		{
+			FEHexSplitModifier* hexmod = new FEHexSplitModifier;
+			hexmod->DoSurfaceSmoothing(bsmooth);
+			mod = hexmod;
+		}
 	}
 	if (mod == 0) return 0;
 
