@@ -119,3 +119,19 @@ protected:
 	double	m_tol;				// tolerance for splitting facets
 	bool	m_smoothSurface;	// smooth surface
 };
+
+
+//-----------------------------------------------------------------------------
+// Splits hexahedral elements only in-plane
+class FEHex2DSplitModifier : public FEModifier
+{
+public:
+	FEHex2DSplitModifier();
+	FEMesh* Apply(FEMesh* pm);
+
+	void DoSurfaceSmoothing(bool b);
+
+protected:
+	double	m_tol;				// tolerance for splitting facets
+	bool	m_smoothSurface;	// smooth surface
+};

@@ -313,6 +313,48 @@ void CFileViewer::onShowInExplorer()
 #endif
 }
 
+QTreeWidgetItem* addProjectItem(QTreeWidgetItem* treeItem, const FEBioStudioProject::ProjectItem& item, CDocument* doc)
+{
+	QFileIconProvider iconProvider;
+	QTreeWidgetItem* t2 = nullptr;
+
+	QString filename_i = item.Name();
+	QFileInfo fi(filename_i);
+	QString fileName = fi.fileName();
+	QString ext = fi.suffix();
+
+	QIcon icon = iconProvider.icon(QFileIconProvider::File);
+	if (ext == "fsm") icon = QIcon(":/icons/FEBioStudio.png");
+	if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
+	if (ext == "feb") icon = QIcon(":/icons/febio.png");
+
+	if (doc && (doc->GetDocFilePath().empty() == false))
+	{
+		QString docFile = QString::fromStdString(doc->GetDocFileName());
+		QString docPath = QString::fromStdString(doc->GetDocFilePath());
+
+		t2 = new QTreeWidgetItem(treeItem);
+		t2->setText(0, docFile);
+		t2->setIcon(0, icon);
+		t2->setToolTip(0, docPath);
+		t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
+		t2->setData(0, Qt::UserRole + 1, item.Id());
+	}
+	else
+	{
+		t2 = new QTreeWidgetItem(treeItem);
+		t2->setText(0, fileName);
+		t2->setIcon(0, icon);
+
+		t2->setSizeHint(0, QSize(100, 50));
+		t2->setToolTip(0, filename_i);
+		t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
+		t2->setData(0, Qt::UserRole + 1, item.Id());
+	}
+
+	return t2;
+}
+
 void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetItem* treeItem, CMainWindow* wnd)
 {
 	QFileIconProvider iconProvider;
@@ -354,69 +396,11 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 			if (ext == "feb") icon = QIcon(":/icons/febio.png");
 
 			CDocument* doc = wnd->FindDocument(filename_i.toStdString());
+			QTreeWidgetItem* t2 = addProjectItem(treeItem, item, doc);
 
-			if (doc && (doc->GetDocFilePath().empty() == false))
+			if (item.Items() > 0)
 			{
-				QString docFile = QString::fromStdString(doc->GetDocFileName());
-				QString docPath = QString::fromStdString(doc->GetDocFilePath());
-
-				QTreeWidgetItem* t2 = new QTreeWidgetItem(treeItem);
-				t2->setText(0, docFile);
-				t2->setIcon(0, icon);
-				t2->setToolTip(0, docPath);
-				t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
-				t2->setData(0, Qt::UserRole + 1, item.Id());
-
-/*				CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
-				if (modelDoc && modelDoc->FEBioJobs())
-				{
-					t2->setExpanded(true);
-					for (int n = 0; n < modelDoc->FEBioJobs(); ++n)
-					{
-						CFEBioJob* job = modelDoc->GetFEBioJob(n);
-
-						std::string plotFile = job->GetPlotFileName();
-						QString xpltPath(doc->ToAbsolutePath(plotFile));
-
-						QFileInfo xpltFile(xpltPath);
-
-						CPostDocument* postDoc = dynamic_cast<CPostDocument*>(wnd->FindDocument(xpltPath.toStdString()));
-
-						QTreeWidgetItem* t3 = new QTreeWidgetItem(t2);
-						t3->setText(0, xpltFile.fileName());
-						t3->setToolTip(0, xpltPath);
-						t3->setData(0, Qt::UserRole, FileItemType::EXTERNAL_FILE);
-						t3->setData(0, Qt::UserRole + 1, xpltPath);
-
-						if (postDoc == nullptr)
-						{
-							QFont f = t3->font(0);
-							f.setItalic(true);
-							t3->setFont(0, f);
-							t3->setForeground(0, Qt::gray);
-						}
-					}
-				}
-*/
-			}
-			else
-			{
-				QFileInfo fi(filename_i);
-				QString fileName = fi.fileName();
-
-				QTreeWidgetItem* t2 = new QTreeWidgetItem(treeItem);
-				t2->setText(0, fileName);
-				t2->setIcon(0, icon);
-
-/*				QFont f = t2->font(0);
-				f.setItalic(true);
-				t2->setFont(0, f);
-				t2->setForeground(0, Qt::gray);
-*/
-				t2->setSizeHint(0, QSize(100, 50));
-				t2->setToolTip(0, filename_i);
-				t2->setData(0, Qt::UserRole, FileItemType::PROJECT_FILE);
-				t2->setData(0, Qt::UserRole + 1, item.Id());
+				addProjectGroup(item, t2, wnd);
 			}
 		}
 	}

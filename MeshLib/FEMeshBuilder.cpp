@@ -1710,3 +1710,11 @@ void FEMeshBuilder::BuildEdges()
 
 	m_mesh.RebuildEdgeData();
 }
+
+void FEMeshBuilder::RepairEdges()
+{
+	BuildEdges();
+	AutoPartitionEdges();
+	AutoPartitionNodes();
+	m_mesh.RebuildNodeData();
+}

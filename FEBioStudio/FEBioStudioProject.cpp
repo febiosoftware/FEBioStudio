@@ -340,6 +340,7 @@ void FEBioStudioProject::Close()
 	delete m_rootItem;
 	FEBioStudioProject::ProjectItem::m_count = 0;
 	m_rootItem = new ProjectItem(PROJECT_GROUP, "root");
+	m_projectFile.clear();
 }
 
 bool FEBioStudioProject::ContainsFile(const QString& fileName) const
@@ -421,11 +422,11 @@ void WriteProjectGroup(XMLWriter& xml, FEBioStudioProject& prj, FEBioStudioProje
 			XMLElement xmlfile("file");
 			xmlfile.add_attribute("path", sfile);
 			std::string info = item.Info().toStdString();
-			if (info.empty() == false)
+			if ((info.empty() == false) || (item.Items() > 0))
 			{
 				xml.add_branch(xmlfile);
 				{
-					xml.add_leaf("info", info);
+					WriteProjectGroup(xml, prj, item);
 				}
 				xml.close_branch();
 			}
@@ -502,19 +503,9 @@ void ParseTags(XMLTag& tag, FEBioStudioProject& prj, FEBioStudioProject::Project
 				item = &parent.AddFile(absPath);
 			}
 
-			if (tag.isleaf() == false)
+			if ((tag.isempty() == false) && (tag.isleaf() == false))
 			{
-				++tag;
-				do
-				{
-					if (tag == "info")
-					{
-						QString info(tag.szvalue());
-						if (item) item->SetInfo(info);
-					}
-					++tag;
-				}
-				while (!tag.isend());
+				ParseTags(tag, prj, *item);
 			}
 		}
 		else if (tag == "info")

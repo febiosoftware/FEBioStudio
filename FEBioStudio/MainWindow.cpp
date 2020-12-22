@@ -80,7 +80,6 @@ SOFTWARE.*/
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
 
-
 extern GLColor col[];
 
 CMainWindow*	CResource::m_wnd = nullptr;

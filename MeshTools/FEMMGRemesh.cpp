@@ -29,6 +29,7 @@ SOFTWARE.*/
 #ifdef HAS_MMG
 #include "mmg/mmg3d/libmmg3d.h"
 #endif
+#include <MeshLib/FEMeshBuilder.h>
 
 extern int ET_TET[6][2]; // in lut.cpp
 
@@ -258,13 +259,20 @@ FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
 		FEEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
-		MMG3D_Get_edge(mmgMesh, n, n + 1, &e.m_gid, NULL, NULL);
+		int isRidge;
+		int ret = MMG3D_Get_edge(mmgMesh, n, n + 1, &e.m_gid, &isRidge, NULL);
+		assert(ret != 0);
 		e.n[0]--;
 		e.n[1]--;
 		assert(e.m_gid >= 0);
 	}
 
 	newMesh->BuildMesh();
+
+	// NOTE: Not sure why, but it appears the edge data returned by MMG is not always correct
+	//       See github issue #26. For now, I'm forcing rebuild of edge data
+	FEMeshBuilder meshBuilder(*newMesh);
+	meshBuilder.RepairEdges();
 
 	// Clean up
 	MMG3D_Free_all(MMG5_ARG_start,

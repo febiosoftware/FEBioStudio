@@ -105,6 +105,9 @@ public:
 	// remove duplicate edges
 	void RemoveDuplicateFaces();
 
+	// repair edges (and node data)
+	void RepairEdges();
+
 private:
 	void BuildFaces();
 	void BuildEdges();
