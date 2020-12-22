@@ -172,6 +172,7 @@
 		D5A96F2B246892A10026BFE0 /* LinkPropertyEdit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A96F26246892A10026BFE0 /* LinkPropertyEdit.cpp */; };
 		D5AE8C3F2590191E003AC08B /* UpdateChecker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5AE8C3D2590191E003AC08B /* UpdateChecker.cpp */; };
 		D5AE8C4025901A33003AC08B /* UpdateChecker.h in Sources */ = {isa = PBXBuildFile; fileRef = D5AE8C3E2590191E003AC08B /* UpdateChecker.h */; };
+		D5AE8C47259035A7003AC08B /* QuadricFitTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5AE8C45259035A7003AC08B /* QuadricFitTool.cpp */; };
 		D5BA5337240D5470001A5C0F /* DlgSelectRange.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */; };
 		D5BA5338240D5470001A5C0F /* CIntInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5334240D5470001A5C0F /* CIntInput.cpp */; };
 		D5BA5339240D5470001A5C0F /* DlgFind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5BA5335240D5470001A5C0F /* DlgFind.cpp */; };
@@ -605,6 +606,8 @@
 		D5A96F28246892A10026BFE0 /* GraphData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphData.h; sourceTree = "<group>"; };
 		D5AE8C3D2590191E003AC08B /* UpdateChecker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UpdateChecker.cpp; sourceTree = "<group>"; };
 		D5AE8C3E2590191E003AC08B /* UpdateChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UpdateChecker.h; sourceTree = "<group>"; };
+		D5AE8C45259035A7003AC08B /* QuadricFitTool.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QuadricFitTool.cpp; sourceTree = "<group>"; };
+		D5AE8C46259035A7003AC08B /* QuadricFitTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QuadricFitTool.h; sourceTree = "<group>"; };
 		D5BA5332240D5470001A5C0F /* DlgSelectRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DlgSelectRange.cpp; sourceTree = "<group>"; };
 		D5BA5333240D5470001A5C0F /* DlgSelectRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DlgSelectRange.h; sourceTree = "<group>"; };
 		D5BA5334240D5470001A5C0F /* CIntInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CIntInput.cpp; sourceTree = "<group>"; };
@@ -1414,6 +1417,8 @@
 				D57C2A76240F1F990043C2A7 /* PublicationWidget.h */,
 				D57C2A71240F1F990043C2A7 /* PublicationWidgetView.cpp */,
 				D57C2A72240F1F990043C2A7 /* PublicationWidgetView.h */,
+				D5AE8C45259035A7003AC08B /* QuadricFitTool.cpp */,
+				D5AE8C46259035A7003AC08B /* QuadricFitTool.h */,
 				D5F7D7BD22FA37C40089B08E /* ReadCurveTool.cpp */,
 				D5F7D74F22FA37C40089B08E /* ReadCurveTool.h */,
 				D57656FA23E32E6800E4F70F /* RepoConnectionHandler.cpp */,
@@ -1730,6 +1735,7 @@
 				D57D008B25884CC6009ED051 /* ModelSearch.h in Sources */,
 				D57D008C25884CC6009ED051 /* ModelTree.h in Sources */,
 				D57D008D25884CC6009ED051 /* ModelViewer.h in Sources */,
+				D5AE8C47259035A7003AC08B /* QuadricFitTool.cpp in Sources */,
 				D57D008F25884CC6009ED051 /* ObjectPanel.h in Sources */,
 				D57D009225884CC6009ED051 /* PlaneTool.h in Sources */,
 				D524F6B1258BB52100A403CD /* TextDocument.cpp in Sources */,
