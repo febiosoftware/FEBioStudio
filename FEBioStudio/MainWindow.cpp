@@ -79,90 +79,6 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
-<<<<<<< HEAD
-#include <qsyntaxhighlighter.h>
-
-class XMLHighlighter : public QSyntaxHighlighter
-{
-public:
-	XMLHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc)
-	{
-		HighlightingRule rule;
-
-		// XML values
-		rule.pattern = QRegExp("\\b[0-9\\.+\\-e]+\\b");
-		rule.format.setForeground(Qt::darkBlue);
-		rule.format.setFontWeight(QFont::Bold);
-//		highlightingRules.append(rule);
-
-		// xml attribute values
-		rule.pattern = QRegExp("\"(?:[^\"]|\\.)*\"");
-		rule.format.setForeground(QColor::fromRgb(200, 150, 100));
-		highlightingRules.append(rule);
-
-		// xml attributes
-		rule.pattern = QRegExp("\\b[a-zA-Z0-9_]+(?=\\=)");
-		rule.format.setForeground(QColor(Qt::blue).lighter());
-		highlightingRules.append(rule);
-
-		// comments
-		commentFormat.setForeground(Qt::darkGreen);
-		commentStartExpression = QRegExp("<!--");
-		commentEndExpression = QRegExp("-->");
-	}
-
-	void highlightBlock(const QString& text)
-	{
-		foreach(const HighlightingRule &rule, highlightingRules)
-		{
-			QRegExp expression(rule.pattern);
-			int index = expression.indexIn(text);
-			while (index >= 0) {
-				int length = expression.matchedLength();
-				setFormat(index, length, rule.format);
-				index = expression.indexIn(text, index + length);
-			}
-		}
-
-
-		setCurrentBlockState(0);
-
-		int startIndex = 0;
-		if (previousBlockState() != 1)
-			startIndex = commentStartExpression.indexIn(text);
-
-		while (startIndex >= 0)
-		{
-			int endIndex = commentEndExpression.indexIn(text, startIndex);
-			int commentLength;
-			if (endIndex == -1)
-			{
-				setCurrentBlockState(1);
-				commentLength = text.length() - startIndex;
-			}
-			else
-			{
-				commentLength = endIndex - startIndex + commentEndExpression.matchedLength();
-			}
-			setFormat(startIndex, commentLength, commentFormat);
-			startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
-		}
-	}
-
-private:
-	struct HighlightingRule
-	{
-		QRegExp pattern;
-		QTextCharFormat format;
-	};
-	QVector<HighlightingRule> highlightingRules;
-
-	QTextCharFormat	commentFormat;
-	QRegExp commentStartExpression;
-	QRegExp commentEndExpression;
-};
-=======
->>>>>>> 5f186d023ecb90f71111516c2487045eec2f0554
 
 
 extern GLColor col[];
@@ -514,17 +430,25 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
 		// ask user if (s)he wants to open the feb as a model or as a file. 
-		QString question("Do you want to open the feb file as a model or a file?\nSelect Yes to open it as a model, or No to open a text editor.");
-		if (QMessageBox::question(this, "FEBio Studio", question) == QMessageBox::Yes)
+		QMessageBox box;
+		box.setText("How would you like to open this file?");
+		QPushButton* importButton = box.addButton("Import as Model", QMessageBox::AcceptRole);
+		QPushButton* textButton = box.addButton("Edit as Text", QMessageBox::YesRole);
+		box.addButton(QMessageBox::Cancel);
+
+		box.exec();
+
+		if(box.clickedButton() == importButton)
 		{
 			// load the feb file
 			OpenFEModel(fileName);
 		}
-		else
+		else if(box.clickedButton() == textButton)
 		{
 			// open a text editor
 			OpenFEBioFile(fileName);
 		}
+
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0))
