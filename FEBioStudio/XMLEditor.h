@@ -15,6 +15,8 @@ public:
 
 	void SetDocument(QTextDocument* doc, const QString& title = "");
 
+	void toggleLineComment();
+
 protected:
 	void resizeEvent(QResizeEvent* event);
 	void paintEvent(QPaintEvent* event);
