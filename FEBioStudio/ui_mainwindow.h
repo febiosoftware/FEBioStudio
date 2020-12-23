@@ -423,7 +423,7 @@ public:
 		QAction* actionToggleVisible     = addAction("Toggle Visibility" , "actionToggleVisible"    , "toggle_visible");
 		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
 		QAction* actionCollapseTransform = addAction("Collapse Transform", "actionCollapseTransform");
-		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); // actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
 		QAction* actionCopyObject        = addAction("Copy Object"       , "actionCopyObject");
 		QAction* actionPasteObject       = addAction("Paste Object"      , "actionPasteObject");
 		QAction* actionCloneGrid         = addAction("Clone Grid ..."    , "actionCloneGrid"        , "clonegrid");
@@ -440,8 +440,10 @@ public:
 
 		// --- Edit (txt) menu ---
 		QAction* actionFindTxt = addAction("Find ...", "actionFindTxt"); actionFindTxt->setShortcut(Qt::Key_F + Qt::ControlModifier);
-		QAction* actionFindAgain = addAction("Find again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::Key_F3);
-		QAction* actionToggleComment = addAction("Toggle line comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier + Qt::Key_Slash);
+		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::Key_F3);
+		QAction* actionToggleComment = addAction("Toggle Line Comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier + Qt::Key_Slash);
+		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionDeleteLine = addAction("Delete Line", "actionDeleteLine"); actionDeleteLine->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_L);
 
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
@@ -708,6 +710,8 @@ public:
 		menuEditTxt->addAction(actionFindTxt);
 		menuEditTxt->addAction(actionFindAgain);
 		menuEditTxt->addAction(actionToggleComment);
+		menuEditTxt->addAction(actionDuplicateLine);
+		menuEditTxt->addAction(actionDeleteLine);
 
 		// Physics menu
 		menuBar->addAction(menuPhysics->menuAction());

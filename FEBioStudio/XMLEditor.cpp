@@ -326,3 +326,23 @@ void XMLEditor::toggleLineComment()
 		cursor.endEditBlock();
 	}
 }
+
+void XMLEditor::duplicateLine()
+{
+	QTextCursor cursor = textCursor();
+	QString txt = cursor.block().text();
+
+	cursor.beginEditBlock();
+	cursor.movePosition(QTextCursor::EndOfBlock);
+	cursor.insertText("\n" + txt);
+	cursor.endEditBlock();
+}
+
+void XMLEditor::deleteLine()
+{
+	QTextCursor cursor = textCursor();
+	cursor.beginEditBlock();
+	cursor.select(QTextCursor::BlockUnderCursor);
+	cursor.removeSelectedText();
+	cursor.endEditBlock();
+}

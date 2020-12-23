@@ -1226,3 +1226,17 @@ void CMainWindow::on_actionToggleComment_triggered()
 	if (doc == nullptr) return;
 	ui->xmlEdit->toggleLineComment();
 }
+
+void CMainWindow::on_actionDuplicateLine_triggered()
+{
+	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (doc == nullptr) return;
+	ui->xmlEdit->duplicateLine();
+}
+
+void CMainWindow::on_actionDeleteLine_triggered()
+{
+	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (doc == nullptr) return;
+	ui->xmlEdit->deleteLine();
+}

@@ -16,6 +16,8 @@ public:
 	void SetDocument(QTextDocument* doc, const QString& title = "");
 
 	void toggleLineComment();
+	void duplicateLine();
+	void deleteLine();
 
 protected:
 	void resizeEvent(QResizeEvent* event);
