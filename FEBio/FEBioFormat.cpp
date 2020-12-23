@@ -228,6 +228,14 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 			return false;
 		}
 	}
+	else if (*atype == "math")
+	{
+		if (pp->IsVariable())
+		{
+			pp->SetParamType(Param_MATH);
+			pp->SetMathString(tag.szvalue());
+		}
+	}
 	else if (*atype == "map")
 	{
 		if (pp->IsVariable())
