@@ -28,6 +28,30 @@ SOFTWARE.*/
 #include "MathLib/math3d.h"
 #include <math.h>
 
+//-------------------------------------------------------------------------------
+// constructor
+Quadric::Quadric(Quadric* q)
+{
+    for (int i=0; i<10; ++i) m_c[i] = q->m_c[i];
+    m_pc = q->m_pc;
+}
+
+//-------------------------------------------------------------------------------
+// copy constructor
+Quadric::Quadric(const Quadric& q)
+{
+    for (int i=0; i<10; ++i) m_c[i] = q.m_c[i];
+    m_pc = q.m_pc;
+}
+
+//-------------------------------------------------------------------------------
+// destructor
+Quadric::~Quadric()
+{
+    for (int i=0; i<10; ++i) m_c[i] = 0;
+    m_pc->Clear();
+}
+
 //--------------------------------------------------------------------------------------
 bool Quadric::GetQuadricCoeficients()
 {

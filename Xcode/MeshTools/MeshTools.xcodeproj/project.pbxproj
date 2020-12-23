@@ -15,6 +15,8 @@
 		D550436F24705E12007DCB29 /* FEMeshOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */; };
 		D5606C83238DA8FA002B037E /* TetOverlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5606C81238DA8FA002B037E /* TetOverlap.cpp */; };
 		D5606C84238DA8FA002B037E /* TetOverlap.h in Headers */ = {isa = PBXBuildFile; fileRef = D5606C82238DA8FA002B037E /* TetOverlap.h */; };
+		D5AE8C4325901AEF003AC08B /* QuadricFit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5AE8C4125901AEF003AC08B /* QuadricFit.cpp */; };
+		D5AE8C4425901AEF003AC08B /* QuadricFit.h in Headers */ = {isa = PBXBuildFile; fileRef = D5AE8C4225901AEF003AC08B /* QuadricFit.h */; };
 		D5ED280423197DE400C16BF7 /* FEShellDisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */; };
 		D5ED280523197DE400C16BF7 /* ConchoidFit.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272923197DE200C16BF7 /* ConchoidFit.h */; };
 		D5ED280623197DE400C16BF7 /* FECurveIntersect2D.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED272A23197DE200C16BF7 /* FECurveIntersect2D.h */; };
@@ -238,6 +240,8 @@
 		D550436D24705E12007DCB29 /* FEMeshOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshOverlap.cpp; sourceTree = "<group>"; };
 		D5606C81238DA8FA002B037E /* TetOverlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TetOverlap.cpp; sourceTree = "<group>"; };
 		D5606C82238DA8FA002B037E /* TetOverlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TetOverlap.h; sourceTree = "<group>"; };
+		D5AE8C4125901AEF003AC08B /* QuadricFit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QuadricFit.cpp; sourceTree = "<group>"; };
+		D5AE8C4225901AEF003AC08B /* QuadricFit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QuadricFit.h; sourceTree = "<group>"; };
 		D5ED271923197DD200C16BF7 /* libMeshTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMeshTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5ED272823197DE200C16BF7 /* FEShellDisc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEShellDisc.cpp; sourceTree = "<group>"; };
 		D5ED272923197DE200C16BF7 /* ConchoidFit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConchoidFit.h; sourceTree = "<group>"; };
@@ -694,6 +698,8 @@
 				D5ED27EB23197DE400C16BF7 /* PRVArchive.h */,
 				D5ED277C23197DE300C16BF7 /* Quadric.cpp */,
 				D5ED27C723197DE400C16BF7 /* Quadric.h */,
+				D5AE8C4125901AEF003AC08B /* QuadricFit.cpp */,
+				D5AE8C4225901AEF003AC08B /* QuadricFit.h */,
 				D5ED27C023197DE400C16BF7 /* SphereFit.cpp */,
 				D5ED27C923197DE400C16BF7 /* SphereFit.h */,
 				D5ED27CA23197DE400C16BF7 /* SpringGenerator.cpp */,
@@ -743,6 +749,7 @@
 				D5ED282623197DE400C16BF7 /* FEElementData.h in Headers */,
 				D5ED281423197DE400C16BF7 /* FESphereInBox.h in Headers */,
 				D5ED280623197DE400C16BF7 /* FECurveIntersect2D.h in Headers */,
+				D5AE8C4425901AEF003AC08B /* QuadricFit.h in Headers */,
 				D5ED28C623197DE400C16BF7 /* FEItemList.h in Headers */,
 				D5ED284823197DE400C16BF7 /* FEShellDisc.h in Headers */,
 				D5ED283323197DE400C16BF7 /* FEWeldModifier.h in Headers */,
@@ -936,6 +943,7 @@
 				D5ED28D923197DE400C16BF7 /* FEMeshData.cpp in Sources */,
 				D5ED281823197DE400C16BF7 /* FETri3ToTri6.cpp in Sources */,
 				D5ED282B23197DE400C16BF7 /* FECylinder.cpp in Sources */,
+				D5AE8C4325901AEF003AC08B /* QuadricFit.cpp in Sources */,
 				D5ED285723197DE400C16BF7 /* FENNQuery.cpp in Sources */,
 				D5ED288523197DE400C16BF7 /* FEShellTube.cpp in Sources */,
 				D5ED287523197DE400C16BF7 /* FESelection.cpp in Sources */,
