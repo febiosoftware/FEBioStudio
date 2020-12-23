@@ -379,6 +379,9 @@
     <ClCompile Include="..\..\MeshTools\FERezoneMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MeshTools\QuadricFit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MeshTools\BivariatePolynomialSpline.h">
@@ -679,6 +682,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\MeshTools\FEMeshOverlap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MeshTools\QuadricFit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
