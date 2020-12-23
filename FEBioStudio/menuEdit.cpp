@@ -1203,6 +1203,7 @@ void CMainWindow::on_actionFindTxt_triggered()
 		{
 			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(txt));
 		}
+		else ui->xmlEdit->centerCursor();
 	}
 }
 
@@ -1217,6 +1218,7 @@ void CMainWindow::on_actionFindAgain_triggered()
 		{
 			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(ui->m_lastFindText));
 		}
+		else ui->xmlEdit->centerCursor();
 	}
 }
 

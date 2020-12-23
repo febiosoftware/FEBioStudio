@@ -269,6 +269,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 			connect(groupmap, SIGNAL(mapped(int)), this, SLOT(onMoveToGroup(int)));
 		}
 
+		menu.addAction("Add file ...", this, SLOT(onAddFile()));
 
 #ifdef _WIN32
 		menu.addAction("Show in Explorer", this, SLOT(onShowInExplorer()));
