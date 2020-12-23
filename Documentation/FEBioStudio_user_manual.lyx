@@ -3978,6 +3978,709 @@ This panel defines a few specialized tools that can be useful for very specific
  tasks.
 \end_layout
 
+\begin_layout Subsubsection
+Area Calculator
+\end_layout
+
+\begin_layout Standard
+This tool calculates the surface area A of selected faces.
+ It also projects this surface area along the three coordinate directions
+ as Ax, Ay and Az.
+\end_layout
+
+\begin_layout Subsubsection
+Quadric Fit
+\end_layout
+
+\begin_layout Standard
+This tool fits a quadric surface to the selected faces.
+ Quadrics include ellipsoids, cylinders and cones.
+ The general equation fitted to the data is
+\begin_inset Formula 
+\[
+\begin{aligned}F\left(X,Y,Z\right) & =C_{0}X^{2}+C_{1}Y^{2}+C_{2}Z^{2}\\
+ & +C_{3}YZ+C_{4}ZX+C_{5}XY\\
+ & +C_{6}X+C_{7}Y+C_{8}Z+C_{9}=0
+\end{aligned}
+\,.
+\]
+
+\end_inset
+
+This equation may be rewritten in matrix form as
+\begin_inset Formula 
+\[
+F\left(X,Y,Z\right)=\left[\begin{array}{ccc}
+X & Y & Z\end{array}\right]\left[\begin{array}{ccc}
+C_{0} & C_{5} & C_{4}\\
+C_{5} & C_{1} & C_{3}\\
+C_{4} & C_{3} & C_{2}
+\end{array}\right]\left[\begin{array}{c}
+X\\
+Y\\
+Z
+\end{array}\right]+\left[\begin{array}{ccc}
+C_{6} & C_{7} & C_{8}\end{array}\right]\left[\begin{array}{c}
+X\\
+Y\\
+Z
+\end{array}\right]+C_{9}=0\,.
+\]
+
+\end_inset
+
+Once the coefficients 
+\begin_inset Formula $C_{0}-C_{9}$
+\end_inset
+
+ are obtained, the principal axes of the quadric may be found by evaluating
+ the eigenvalues 
+\begin_inset Formula $\left(c_{0},c_{1},c_{2}\right)$
+\end_inset
+
+ and eigenvectors 
+\begin_inset Formula $\left(\mathbf{v}_{0},\mathbf{v}_{1},\mathbf{v}_{2}\right)$
+\end_inset
+
+ of the 
+\begin_inset Formula $3\times3$
+\end_inset
+
+ coefficient matrix,
+\begin_inset Formula 
+\[
+\left[\begin{array}{ccc}
+C_{0} & C_{5} & C_{4}\\
+C_{5} & C_{1} & C_{3}\\
+C_{4} & C_{3} & C_{2}
+\end{array}\right]=\left[Q\right]\left[\begin{array}{ccc}
+c_{0} & 0 & 0\\
+0 & c_{1} & 0\\
+0 & 0 & c_{2}
+\end{array}\right]\left[Q\right]^{T}\,,
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+\left[Q\right]=\left[\begin{array}{ccc}
+v_{0x} & v_{1x} & v_{2x}\\
+v_{0y} & v_{1y} & v_{2y}\\
+v_{0z} & v_{1z} & v_{2z}
+\end{array}\right]\,.
+\]
+
+\end_inset
+
+Then, in the basis of these eigenvectors, the equation of the quadric may
+ be rewritten as
+\begin_inset Formula 
+\[
+F\left(x,y,z\right)=\left[\begin{array}{ccc}
+x & y & z\end{array}\right]\left[\begin{array}{ccc}
+c_{0} & 0 & 0\\
+0 & c_{1} & 0\\
+0 & 0 & c_{2}
+\end{array}\right]\left[\begin{array}{c}
+x\\
+y\\
+z
+\end{array}\right]+\left[\begin{array}{ccc}
+c_{6} & c_{7} & c_{9}\end{array}\right]\left[\begin{array}{c}
+x\\
+y\\
+z
+\end{array}\right]+c_{9}=0\,,
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+\left[\begin{array}{c}
+x\\
+y\\
+z
+\end{array}\right]=\left[Q\right]^{T}\left[\begin{array}{c}
+X\\
+Y\\
+Z
+\end{array}\right]\,,\quad\left[\begin{array}{c}
+c_{6}\\
+c_{7}\\
+c_{8}
+\end{array}\right]=\left[Q\right]^{T}\left[\begin{array}{c}
+C_{6}\\
+C_{7}\\
+C_{8}
+\end{array}\right]\,,\quad c_{9}=C_{9}\,.
+\]
+
+\end_inset
+
+The different types of quadric surfaces are described on Wikipedia (
+\begin_inset CommandInset href
+LatexCommand href
+target "https://en.wikipedia.org/wiki/Quadric"
+
+\end_inset
+
+).
+ To reduce the above equation to one of the forms presented there, we find
+ the origin 
+\begin_inset Formula $\left(x_{0},y_{0},z_{0}\right)$
+\end_inset
+
+ of the quadric and consider three cases:
+\end_layout
+
+\begin_layout Enumerate
+If 
+\begin_inset Formula $c_{0}\ne0$
+\end_inset
+
+ and 
+\begin_inset Formula $c_{1}\ne0$
+\end_inset
+
+ and 
+\begin_inset Formula $c_{2}\ne0$
+\end_inset
+
+,
+\begin_inset Formula 
+\[
+F\left(x,y,z\right)=c_{0}\left(x-x_{0}\right)^{2}+c_{1}\left(y-y_{0}\right)^{2}+c_{2}\left(z-z_{0}\right)^{2}+\kappa=0
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+\begin{aligned}x_{0} & =-\frac{c_{6}}{2c_{0}} & y_{0} & =-\frac{c_{7}}{2c_{1}} & z_{0} & =-\frac{c_{8}}{2c_{2}}\end{aligned}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\kappa=c_{9}-c_{0}x_{0}^{2}-c_{1}y_{0}^{2}-c_{2}z_{0}^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If 
+\begin_inset Formula $c_{0}\ne0$
+\end_inset
+
+ and 
+\begin_inset Formula $c_{1}\ne0$
+\end_inset
+
+ and 
+\begin_inset Formula $c_{2}=0$
+\end_inset
+
+,
+\begin_inset Formula 
+\[
+F\left(x,y,z\right)=c_{0}\left(x-x_{0}\right)^{2}+c_{1}\left(y-y_{0}\right)^{2}+c_{8}z+\kappa=0
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+\begin{aligned}x_{0} & =-\frac{c_{6}}{2c_{0}} & y_{0} & =-\frac{c_{7}}{2c_{1}} & z_{0} & =0\end{aligned}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\kappa=c_{9}-c_{0}x_{0}^{2}-c_{1}y_{0}^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If 
+\begin_inset Formula $c_{0}\ne0$
+\end_inset
+
+ and 
+\begin_inset Formula $c_{1}=0$
+\end_inset
+
+ and 
+\begin_inset Formula $c_{2}=0$
+\end_inset
+
+, 
+\begin_inset Formula 
+\[
+F\left(x,y,z\right)=c_{0}\left(x-x_{0}\right)^{2}+c_{7}y+c_{8}z+\kappa=0
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+\begin{aligned}x_{0} & =-\frac{c_{6}}{2c_{0}} & y_{0} & =0 & z_{0} & =0\end{aligned}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\kappa=c_{9}-c_{0}x_{0}^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When 
+\begin_inset Formula $\kappa\ne0$
+\end_inset
+
+, 
+\begin_inset Formula $F\left(x,y,z\right)=0$
+\end_inset
+
+ may be divided across by 
+\begin_inset Formula $\left|\kappa\right|$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Once we find 
+\begin_inset Formula $\left\{ x_{0},y_{0},z_{0}\right\} $
+\end_inset
+
+ in the basis of eigenvectors, we can convert these coordinates back to
+ the reference coordinate system using
+\begin_inset Formula 
+\[
+\left[\begin{array}{c}
+X_{0}\\
+Y_{0}\\
+Z_{0}
+\end{array}\right]=\left[Q\right]\left[\begin{array}{c}
+x_{0}\\
+y_{0}\\
+z_{0}
+\end{array}\right]\,.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The output of the quadric fit tool corresponds to the following values:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="12" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Quadric Type
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Best guess to cases in 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://en.wikipedia.org/wiki/Quadric"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Center
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $X_{0},Y_{0},Z_{0}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+A
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+max eigenvalue, 
+\begin_inset Formula $c_{0}$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa=0$
+\end_inset
+
+) or 
+\begin_inset Formula $c_{0}/\left|\kappa\right|$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa\ne0$
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+B
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+mid eigenvalue, 
+\begin_inset Formula $c_{1}$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa=0$
+\end_inset
+
+) or 
+\begin_inset Formula $c_{1}/\left|\kappa\right|$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa\ne0$
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+C
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+min eigenvalue, 
+\begin_inset Formula $c_{2}$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa=0$
+\end_inset
+
+) or 
+\begin_inset Formula $c_{2}/\left|\kappa\right|$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa\ne0$
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+U
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+should be 
+\begin_inset Formula $0$
+\end_inset
+
+ for cases 1, 2, 3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+V
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+should be 0 for cases 1 and 2, and 
+\begin_inset Formula $c_{7}$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa=0$
+\end_inset
+
+) or 
+\begin_inset Formula $c_{7}/\left|\kappa\right|$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa\ne0$
+\end_inset
+
+) for case 3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+W
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+should be 0 for case 1, and 
+\begin_inset Formula $c_{8}$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa=0$
+\end_inset
+
+) or 
+\begin_inset Formula $c_{8}/\left|\kappa\right|$
+\end_inset
+
+ (
+\begin_inset Formula $\kappa\ne0$
+\end_inset
+
+) for cases 2 and 3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+c
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+evaluated as 
+\begin_inset Formula $\kappa$
+\end_inset
+
+ or 
+\begin_inset Formula $\kappa/\left|\kappa\right|$
+\end_inset
+
+, should be 
+\begin_inset Formula $0$
+\end_inset
+
+, 
+\begin_inset Formula $1$
+\end_inset
+
+, or 
+\begin_inset Formula $-1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Axis 1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+normalized eigenvector 
+\begin_inset Formula $\mathbf{v}_{1}$
+\end_inset
+
+ for max eigenvalue
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Axis 2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+normalized eigenvector 
+\begin_inset Formula $\mathbf{v}_{2}$
+\end_inset
+
+ for mid eigenvalue
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Axis 3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+normalized eigenvector 
+\begin_inset Formula $\mathbf{v}_{3}$
+\end_inset
+
+ for min eigenvalue
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 The Repository Panel
 \end_layout
