@@ -600,9 +600,14 @@ void CFileViewer::onRemoveFromProject()
 
 void CFileViewer::onAddFile()
 {
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj == nullptr) return;
+
+	QString projectPath = prj->GetProjectPath();
+
 	QTreeWidgetItem* item = CFileViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
-	QString fileName = QFileDialog::getOpenFileName(this, "Add File");
+	QString fileName = QFileDialog::getOpenFileName(this, "Add File", projectPath);
 	if (fileName.isEmpty() == false)
 	{
 		FEBioStudioProject* prj = ui->m_wnd->GetProject();
