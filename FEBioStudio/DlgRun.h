@@ -59,6 +59,12 @@ public:
 	void SetConfigFileName(const QString& configFile);
 	bool DoAutoSave();
 
+	void ShowAdvancedSettings(bool b);
+	bool AdvancedSettingsShown();
+
+	void SetDebugFlag(bool b);
+	bool HasDebugFlag();
+
 	QString CommandLine();
 
 	void accept() override;

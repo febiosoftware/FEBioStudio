@@ -160,6 +160,11 @@ void CMainWindow::on_actionFEBioRun_triggered()
 	dlg.SetLaunchConfig(ui->m_launch_configs, lastLaunchConfigIndex);
 	dlg.SetFEBioFileVersion(lastFEBioFileVersion);
 
+	static bool showAdvancedSettings = false;
+	static bool debugFlag = false;
+	dlg.ShowAdvancedSettings(showAdvancedSettings);
+	dlg.SetDebugFlag(debugFlag);
+
 	if (modelDoc && modelDoc->FEBioJobs() > 0)
 	{
 		CFEBioJob* job = modelDoc->GetFEBioJob(0);
@@ -178,6 +183,9 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 	if (dlg.exec())
 	{
+		showAdvancedSettings = dlg.AdvancedSettingsShown();
+		debugFlag = dlg.HasDebugFlag();
+
 		// get the working directory and job name
 		jobPath = dlg.GetWorkingDirectory();
 		jobName = dlg.GetJobName();
