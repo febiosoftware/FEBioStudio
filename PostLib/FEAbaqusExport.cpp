@@ -25,12 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "FEAbaqusExport.h"
-#include <FEBioStudio/version.h>
 using namespace Post;
 
 FEAbaqusExport::FEAbaqusExport()
 {
 
+}
+
+void FEAbaqusExport::SetHeading(const std::string& s)
+{
+	m_heading = s;
 }
 
 bool FEAbaqusExport::Save(FEPostModel &fem, int ntime, const char *szfile)
@@ -40,7 +44,7 @@ bool FEAbaqusExport::Save(FEPostModel &fem, int ntime, const char *szfile)
 
 	// write header
 	fprintf(fp, "*HEADING\n");
-	fprintf(fp, "Written by FEBio Studio, version %d.%d.%d\n", VERSION, SUBVERSION, SUBSUBVERSION);
+	fprintf(fp, "%s\n", m_heading.c_str());
 
 	// write nodes
 	fprintf(fp, "*NODE\n");
