@@ -1118,9 +1118,6 @@
     <ClInclude Include="..\..\FEBioStudio\ElementVolumeTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\PostPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\PointCongruencyTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1182,12 +1179,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\TextDocument.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\XMLEditor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\FEBioStudio\UpdateChecker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FEBioStudio\QuadricFitTool.h">
@@ -1469,6 +1460,15 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\FEBioStudio\RepositoryPanel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\PostPanel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\UpdateChecker.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\FEBioStudio\XMLEditor.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
