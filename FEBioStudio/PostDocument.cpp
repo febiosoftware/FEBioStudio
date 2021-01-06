@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Palette.h>
+#include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/GModel.h>
 
@@ -134,8 +135,6 @@ void ModelData::WriteData(Post::CGLModel* po)
 		pglmap->SetMinRangeType(m_cmap.m_minRangeType);
 		pglmap->SetRange(m_cmap.m_user);
 		pglmap->DisplayNodalValues(m_cmap.m_bDispNodeVals);
-		pglmap->SetEvalField(m_cmap.m_nField);
-		pglmap->Activate(m_cmap.m_bactive);
 
 		Post::CColorTexture* pcm = pglmap->GetColorMap();
 		pcm->SetColorMap(m_cmap.m_ntype);
@@ -184,6 +183,22 @@ void ModelData::WriteData(Post::CGLModel* po)
 		// If not, try to add it
 		if (bfound == false) Post::AddStandardDataField(*po, si);
 	}
+
+	// see if we can reactivate the same data field
+	if (pglmap)
+	{
+		if (pDM->IsValid(m_cmap.m_nField))
+		{
+			pglmap->SetEvalField(m_cmap.m_nField);
+			pglmap->Activate(m_cmap.m_bactive);
+		}
+		else
+		{
+			pglmap->SetEvalField(0);
+			pglmap->Activate(false);
+		}
+	}
+
 	po->UpdateMeshState();
 	int ntime = m_mdl.m_ntime;
 	if (ntime >= ps->GetStates() - 1) ntime = ps->GetStates() - 1;

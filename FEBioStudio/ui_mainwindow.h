@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <FEBioStudio/RepositoryPanel.h>
+#include "RepositoryPanel.h"
 #include "GLView.h"
 #include <QApplication>
 #include <QAction>
@@ -130,6 +130,7 @@ public:
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
+	QMenu* menuEditTxt;
 	QMenu* menuPhysics;
 	QMenu* menuTools;
 	QMenu* menuPost;
@@ -264,6 +265,8 @@ public:
 	bool m_updateAvailable;
 	bool m_updateOnClose;
 	bool m_updateDevChannel;
+
+	QString m_lastFindText;
 
 public:
 	CMainWindow()
@@ -418,12 +421,12 @@ public:
 		QAction* actionHideSelection     = addAction("Hide Selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
 		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier + Qt::Key_H);
 		QAction* actionUnhideAll         = addAction("Unhide All"        , "actionUnhideAll"        );
-		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); actionFind->setShortcut(Qt::ControlModifier + Qt::Key_F);
+		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); //actionFind->setShortcut(Qt::ControlModifier + Qt::Key_F);
 		QAction* actionSelectRange       = addAction("Select Range ...", "actionSelectRange"     );
 		QAction* actionToggleVisible     = addAction("Toggle Visibility" , "actionToggleVisible"    , "toggle_visible");
 		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
 		QAction* actionCollapseTransform = addAction("Collapse Transform", "actionCollapseTransform");
-		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); // actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
 		QAction* actionCopyObject        = addAction("Copy Object"       , "actionCopyObject");
 		QAction* actionPasteObject       = addAction("Paste Object"      , "actionPasteObject");
 		QAction* actionCloneGrid         = addAction("Clone Grid ..."    , "actionCloneGrid"        , "clonegrid");
@@ -437,6 +440,13 @@ public:
 		QAction* actionSelectOverlap     = addAction("Select surface overlap ...", "actionSelectOverlap");
 		QAction* actionGrowSelection     = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier + Qt::Key_Plus);
 		QAction* actionShrinkSelection   = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier + Qt::Key_Minus);
+
+		// --- Edit (txt) menu ---
+		QAction* actionFindTxt = addAction("Find ...", "actionFindTxt"); actionFindTxt->setShortcut(Qt::Key_F + Qt::ControlModifier);
+		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::Key_F3);
+		QAction* actionToggleComment = addAction("Toggle Line Comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier + Qt::Key_Slash);
+		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionDeleteLine = addAction("Delete Line", "actionDeleteLine"); actionDeleteLine->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_L);
 
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
@@ -485,7 +495,7 @@ public:
 		QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
 		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
-		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
+		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); // actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
 		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");
@@ -607,6 +617,7 @@ public:
 		QMenuBar* menuBar = m_wnd->menuBar();
 		menuFile   = new QMenu("File", menuBar);
 		menuEdit   = new QMenu("Edit", menuBar);
+		menuEditTxt = new QMenu("Edit", menuBar);
 		menuPhysics= new QMenu("Physics", menuBar);
 		menuFEBio  = new QMenu("FEBio", menuBar);
 		menuPost   = new QMenu("Post", menuBar);
@@ -696,6 +707,14 @@ public:
 		menuEdit->addAction(actionPasteObject);
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionPurge);
+
+		// Edit (txt) menu
+		menuBar->addAction(menuEditTxt->menuAction());
+		menuEditTxt->addAction(actionFindTxt);
+		menuEditTxt->addAction(actionFindAgain);
+		menuEditTxt->addAction(actionToggleComment);
+		menuEditTxt->addAction(actionDuplicateLine);
+		menuEditTxt->addAction(actionDeleteLine);
 
 		// Physics menu
 		menuBar->addAction(menuPhysics->menuAction());
@@ -1171,6 +1190,7 @@ public:
 
 			// no open documents
 			menuEdit->menuAction()->setVisible(false);
+			menuEditTxt->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
@@ -1194,6 +1214,7 @@ public:
 
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
+			menuEditTxt->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(true);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(true);
@@ -1217,6 +1238,7 @@ public:
 
 			// post mode
 			menuEdit->menuAction()->setVisible(true);
+			menuEditTxt->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(true);
 			menuRecord->menuAction()->setVisible(true);
@@ -1241,6 +1263,7 @@ public:
 			stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
 
 			menuEdit->menuAction()->setVisible(false);
+			menuEditTxt->menuAction()->setVisible(true);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);

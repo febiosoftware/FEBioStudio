@@ -235,6 +235,7 @@ public:
 	{
 		addProperty("Assign to surface1", CProperty::Action, "");
 		addProperty("Assign to surface2", CProperty::Action, "");
+		addProperty("Ignore back intersections", CProperty::Bool);
 		addProperty("", CProperty::Action, "Apply");
 	}
 
@@ -249,6 +250,10 @@ public:
 		{
 			int n = m_map->GetSurfaceSize(1);
 			return QString("(%1 Faces)").arg(n);
+		}
+		if (i == 2)
+		{
+			return m_map->IgnoreBackIntersection();
 		}
 		return QVariant();
 	}
@@ -266,6 +271,11 @@ public:
 			SetModified(true);
 		}
 		else if (i == 2)
+		{
+			m_map->IgnoreBackIntersection(v.toBool());
+			SetModified(true);
+		}
+		else if (i == 3)
 		{
 			m_map->Apply();
 		}

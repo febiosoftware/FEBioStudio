@@ -1253,15 +1253,35 @@ void GLMeshRender::RenderFENodes(FELineMesh* mesh)
 	glGetFloatv(GL_POINT_SIZE, &old_size);
 	glPointSize(m_pointSize);
 
-	// render all the nodes
 	glBegin(GL_POINTS);
-	for (int i = 0; i<mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
-		if (node.m_ntag)
+		// render unselected nodes first
+		glColor3ub(0, 0, 255);
+		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
-			if (node.IsSelected()) glColor3ub(255, 0, 0); else glColor3ub(0, 0, 255);
-			glx::vertex3d(node.r);
+			FENode& node = mesh->Node(i);
+			if (node.m_ntag)
+			{
+				if (node.IsSelected() == false)
+					glx::vertex3d(node.r);
+			}
+		}
+	}
+	glEnd();
+
+	// render selected nodes next
+	glDisable(GL_DEPTH_TEST);
+	glBegin(GL_POINTS);
+	{
+		glColor3ub(255, 0, 0);
+		for (int i = 0; i < mesh->Nodes(); ++i)
+		{
+			FENode& node = mesh->Node(i);
+			if (node.m_ntag)
+			{
+				if (node.IsSelected())
+					glx::vertex3d(node.r);
+			}
 		}
 	}
 	glEnd();

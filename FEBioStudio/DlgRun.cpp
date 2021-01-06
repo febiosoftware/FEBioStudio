@@ -65,6 +65,9 @@ public:
 	QGroupBox*	febops;
 	QWidget*	jobFolder;
 
+	QGroupBox*	advSettings;
+	QPushButton* more;
+
 	std::vector<CLaunchConfig>* m_launch_configs;
 
 	int m_last_index = -1;
@@ -152,13 +155,13 @@ public:
 		v->addWidget(editCmd);
 		v->addWidget(cmd);
 
-		QGroupBox* pg = new QGroupBox("Advanced settings:");
-		pg->setLayout(v);
-		pg->hide();
+		advSettings = new QGroupBox("Advanced settings:");
+		advSettings->setLayout(v);
+		advSettings->hide();
 
 		QPushButton* run = new QPushButton("Run");
 		QPushButton* cnl = new QPushButton("Cancel");
-		QPushButton* more = new QPushButton("Advanced");
+		more = new QPushButton("Advanced");
 		more->setCheckable(true);
 
 		QHBoxLayout* h = new QHBoxLayout;
@@ -171,7 +174,7 @@ public:
 		l->addWidget(settings);
 		l->addWidget(febops);
 		l->addStretch();
-		l->addWidget(pg);
+		l->addWidget(advSettings);
 		l->addLayout(h);
 		dlg->setLayout(l);
 
@@ -181,7 +184,7 @@ public:
 		QObject::connect(setCWDBtn, SIGNAL(clicked()), dlg, SLOT(on_setCWDBtn_Clicked()));
 		QObject::connect(run, SIGNAL(clicked()), dlg, SLOT(accept()));
 		QObject::connect(cnl, SIGNAL(clicked()), dlg, SLOT(reject()));
-		QObject::connect(more, SIGNAL(toggled(bool)), pg, SLOT(setVisible(bool)));
+		QObject::connect(more, SIGNAL(toggled(bool)), advSettings, SLOT(setVisible(bool)));
 //		QObject::connect(launchConfig, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onPathChanged(int)));
 
 		QObject::connect(debug, SIGNAL(toggled(bool)), dlg, SLOT(updateDefaultCommand()));
@@ -204,6 +207,26 @@ void CDlgRun::on_selectConfigFile()
 		ui->configFile->setText(s);
 		updateDefaultCommand();
 	}
+}
+
+void CDlgRun::ShowAdvancedSettings(bool b)
+{
+	ui->more->setChecked(b);
+}
+
+bool CDlgRun::AdvancedSettingsShown()
+{
+	return ui->more->isChecked();
+}
+
+void CDlgRun::SetDebugFlag(bool b)
+{
+	ui->debug->setChecked(b);
+}
+
+bool CDlgRun::HasDebugFlag()
+{
+	return ui->debug->isChecked();
 }
 
 void CDlgRun::ShowFEBioSaveOptions(bool b)

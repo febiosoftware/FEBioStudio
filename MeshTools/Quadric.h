@@ -31,12 +31,14 @@ class Quadric
 {
 public:
     Quadric() {}
-    Quadric(PointCloud3d* pc) { m_pc = pc; }
-    ~Quadric() {}
+    Quadric(PointCloud3d& pc) { m_pc = &pc; }
+    Quadric(Quadric* q);
+    Quadric(const Quadric& q);
+    ~Quadric();
     
 public:
     // assign a point cloud to this bivariate spline object
-    void SetPointCloud3d(PointCloud3d* pc) { m_pc = pc; }
+    void SetPointCloud3d(PointCloud3d* pc) { m_pc = new PointCloud3d(pc); }
     
     // fit the point cloud to get quadric surface coefficients
     bool GetQuadricCoeficients();

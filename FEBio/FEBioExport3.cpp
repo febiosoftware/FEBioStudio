@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/GModel.h>
-#include <FEBioStudio/version.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 #include <memory>
@@ -1601,6 +1600,12 @@ void FEBioExport3::WriteRigidMaterial(FEMaterial* pmat, XMLElement& el)
 			m_xml.add_leaf("center_of_mass", v);
 		}
 
+        if (pm->GetFloatValue(FERigidMaterial::MP_E) != 0)
+        {
+            m_xml.add_leaf("E", pm->GetFloatValue(FERigidMaterial::MP_E));
+            m_xml.add_leaf("v", pm->GetFloatValue(FERigidMaterial::MP_V));
+        }
+        
 		if (pm->m_pid != -1)
 		{
 			GMaterial* ppm = s.GetMaterialFromID(pm->m_pid);

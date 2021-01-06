@@ -314,8 +314,8 @@ FEBioStudioProject::ProjectItem* FEBioStudioProject::AddFile(const QString& file
 		if (parent == -1) newItem = &m_rootItem->AddFile(fileName);
 		else
 		{
-			FEBioStudioProject::ProjectItem* grp = FindGroup(parent); assert(grp);
-			newItem = &grp->AddFile(fileName);
+			FEBioStudioProject::ProjectItem* it = FindItem(parent); assert(it);
+			newItem = &it->AddFile(fileName);
 		}
 	}
 	Save();

@@ -8,6 +8,8 @@
 #include <QDockWidget>
 #include <QApplication>
 #include "MainWindow.h"
+#include <QTextCursor>
+#include <QTextBlock>
 
 class XMLHighlighter : public QSyntaxHighlighter
 {
@@ -152,6 +154,7 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
 
 	updateLineNumberAreaWidth(0);
+//	setCenterOnScroll(true);
 //	highlightCurrentLine();
 }
 
@@ -294,4 +297,53 @@ void XMLEditor::lineNumberAreaPaintEvent(QPaintEvent* e)
 		bottom = top + (int) blockBoundingRect(block).height();
 		++blockNumber;
 	}
+}
+
+void XMLEditor::toggleLineComment()
+{
+	QTextCursor cursor = textCursor();
+
+	QString txt = cursor.block().text();
+
+	// see if we can find a begin comment
+	if (txt.contains("<!--"))
+	{
+		txt.replace("<!--", "");
+		txt.replace("-->", "");
+		cursor.beginEditBlock();
+		cursor.movePosition(QTextCursor::StartOfBlock);
+		cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+		cursor.removeSelectedText();
+		cursor.insertText(txt);
+		cursor.endEditBlock();
+	}
+	else
+	{
+		cursor.beginEditBlock();
+		cursor.movePosition(QTextCursor::StartOfBlock);
+		cursor.insertText("<!--");
+		cursor.movePosition(QTextCursor::EndOfBlock);
+		cursor.insertText("-->");
+		cursor.endEditBlock();
+	}
+}
+
+void XMLEditor::duplicateLine()
+{
+	QTextCursor cursor = textCursor();
+	QString txt = cursor.block().text();
+
+	cursor.beginEditBlock();
+	cursor.movePosition(QTextCursor::EndOfBlock);
+	cursor.insertText("\n" + txt);
+	cursor.endEditBlock();
+}
+
+void XMLEditor::deleteLine()
+{
+	QTextCursor cursor = textCursor();
+	cursor.beginEditBlock();
+	cursor.select(QTextCursor::BlockUnderCursor);
+	cursor.removeSelectedText();
+	cursor.endEditBlock();
 }

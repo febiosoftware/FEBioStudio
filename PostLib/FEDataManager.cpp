@@ -106,3 +106,13 @@ std::string FEDataManager::getDataString(int nfield, Data_Tensor_Type ntype)
 	}
 	return "";
 }
+
+// see if a field ID is valid
+bool FEDataManager::IsValid(int fieldId) const
+{
+	int ndata = FIELD_CODE(fieldId);
+	if ((ndata < 0) || (ndata >= m_Data.size())) return false;
+
+	FEDataField* pd = m_Data[ndata];
+	return (pd->GetFieldID() == fieldId);
+}

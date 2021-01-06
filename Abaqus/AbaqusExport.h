@@ -37,6 +37,9 @@ public:
 
 	bool Write(const char* szfile) override;
 
+	void SetHeading(const std::string& s);
+
 protected:
 	FILE*			m_fp;
+	std::string		m_heading;
 };

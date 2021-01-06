@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "ui_toolspanel.h"
 #include "MainWindow.h"
 #include "ConchoidFitTool.h"
+#include "QuadricFitTool.h"
 #include "ReadCurveTool.h"
 #include "FoamGeneratorTool.h"
 #include "MaterialMapTool.h"
@@ -65,6 +66,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CFiberGeneratorTool(wnd));
     tools.push_back(new CAreaCalculatorTool(wnd));
 	tools.push_back(new CImportSpringsTool (wnd));
+    tools.push_back(new CQuadricFitTool    (wnd));
 }
 
 void CToolsPanel::on_buttons_buttonClicked(int id)

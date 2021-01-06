@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <FEBioStudio/version.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -739,10 +738,6 @@ bool FEBioExport25::Write(const char* szfile)
 
 		// open the file
 		if (!m_xml.open(szfile)) return errf("Failed opening file %s", szfile);
-
-		stringstream ss;
-		ss << "This file was created with FEBio Studio version " << VERSION << "." << SUBVERSION << "." << SUBSUBVERSION;
-		m_xml.add_comment(ss.str(), true);
 
 		if (m_writeNotes)
 		{
