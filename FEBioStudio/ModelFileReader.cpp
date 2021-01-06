@@ -45,8 +45,16 @@ bool ModelFileReader::Load(const char* szfile)
 	{
 		try
 		{
+			IArchive& ar = GetArchive();
 			m_doc->SetDocFilePath(szfile);
-			m_doc->Load(GetArchive());
+			m_doc->Load(ar);
+
+			std::string log = ar.GetLog();
+			if (log.empty() == false)
+			{
+				errf("%s", log.c_str());
+			}
+
 			Close();
 			return true;
 		}
@@ -63,7 +71,9 @@ bool ModelFileReader::Load(const char* szfile)
 			CCallStack::GetCallStackString(sz);
 
 			stringstream ss;
-			ss << "An error occurred while reading the file:\n" << szfile << "\nCall stack:" << sz;
+			if (e.m_szmsg) { ss << e.m_szmsg << "\n"; }
+			else { ss << "(unknown)\n"; };
+			ss << "\nCALL STACK:\n" << sz;
 			delete[] sz;
 
 			string errMsg = ss.str();

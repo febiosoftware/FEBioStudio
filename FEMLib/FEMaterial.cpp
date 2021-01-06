@@ -1350,6 +1350,8 @@ FEEFDMooneyRivlin::FEEFDMooneyRivlin() : FEMaterial(FE_EFD_MOONEY_RIVLIN)
 	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi")->SetUnit(UNIT_PRESSURE);
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1364,6 +1366,8 @@ FEEFDNeoHookean::FEEFDNeoHookean() : FEMaterial(FE_EFD_NEO_HOOKEAN)
 	AddScienceParam(0, UNIT_NONE  , "v", "Poisson's ratio");
 	AddVecParam(vec3d(0,0,0), "beta", "beta");
 	AddVecParam(vec3d(0,0,0), "ksi", "ksi"  )->SetUnit(UNIT_PRESSURE);
+
+	SetAxisMaterial(new FEAxisMaterial);
 }
 
 //////////////////////////////////////////////////////////////////////
