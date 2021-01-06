@@ -270,6 +270,27 @@ foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	addLib(${name})
 endforeach(name)
 
+##### Set dev commit information #####
+
+execute_process(COMMAND git rev-parse --abbrev-ref HEAD
+    RESULT_VARIABLE SUCCESS
+    OUTPUT_VARIABLE BRANCH_NAME)
+
+string(STRIP ${BRANCH_NAME} BRANCH_NAME)
+string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
+    
+if(SUCCESS EQUAL 0 AND ISDEVELOP)
+    execute_process(COMMAND git rev-parse --short HEAD
+        RESULT_VARIABLE SUCCESS
+        OUTPUT_VARIABLE DEVCOMMIT)
+    
+    string(STRIP ${DEVCOMMIT} DEVCOMMIT)
+    
+    if(${SUCCESS} EQUAL 0)
+        target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+    endif()
+endif()
+
 ##### Link Libraries #####
 
 if(WIN32)

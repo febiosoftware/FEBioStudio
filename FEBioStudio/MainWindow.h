@@ -446,7 +446,7 @@ public slots:
 	void on_actionSyncViews_triggered();
 	void on_actionToggleConnected_triggered();
 
-	void on_actionUpdate_triggered();
+	void on_actionUpdate_triggered(bool dev = false);
 	void on_actionFEBioURL_triggered();
 	void on_actionFEBioForum_triggered();
 	void on_actionFEBioResources_triggered();
