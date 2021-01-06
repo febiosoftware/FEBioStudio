@@ -1385,11 +1385,11 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 			QProcess* updater = new QProcess;
 			if(ui->m_updateDevChannel)
 			{
-				updater->start(QApplication::applicationDirPath() + UPDATER, QStringList() << "--devChannel");	
+				updater->startDetached(QApplication::applicationDirPath() + UPDATER, QStringList() << "--devChannel");	
 			}
 			else
 			{
-				updater->start(QApplication::applicationDirPath() + UPDATER);
+				updater->startDetached(QApplication::applicationDirPath() + UPDATER);
 			}
 			
 		}
