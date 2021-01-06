@@ -41,7 +41,7 @@ ul { line-height: 150%; list-style-type: none; }\
 </head>\
 <body>\
 <p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
-<p style=\"font-size: 14pt\">version _VERSION_</p>\
+<p style=\"font-size: 14pt\">_VERSION_</p>\
 _UPDATE_INFO_\
 <h1>Start</h1>\
 <table width=100%>\
@@ -113,7 +113,11 @@ void CWelcomePage::Activate()
 		links += link;
 	}
 
-	QString version = QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	QString version = QString("version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+
+#ifdef DEVCOMMIT
+	version = QString("Dev version %1.%2.%3.%4").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).arg(DEVCOMMIT);
+#endif
 
 	QString page(welcome);
 	page.replace("_VERSION_", version);

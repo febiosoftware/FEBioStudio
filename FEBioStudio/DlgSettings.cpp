@@ -769,6 +769,36 @@ void CRepoSettingsWidget::pathButton_clicked()
 }
 
 //-----------------------------------------------------------------------------
+
+CUpdateSettingsWidget::CUpdateSettingsWidget(QDialog* settings, CMainWindow* wnd, QWidget* parent)
+	: QWidget(parent), m_settings(settings), m_wnd(wnd) 
+{
+	QVBoxLayout* layout = new QVBoxLayout;
+	layout->setAlignment(Qt::AlignTop);
+
+	QLabel* devUpdateLabel = new QLabel("Click the button below to update FEBio and FEBio Studio to the latest development versions.\n"
+			"These versions contain the latest bugfixes and features but are potentially unstable.\n"
+			"Please only proceed with this update if you understand what you're doing.");
+	
+	layout->addWidget(devUpdateLabel);
+
+	QPushButton* devUpdateButton = new QPushButton("Update to Development Version");
+	devUpdateButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+
+	layout->addWidget(devUpdateButton);
+
+	this->setLayout(layout);
+
+	QObject::connect(devUpdateButton, &QPushButton::clicked, this, &CUpdateSettingsWidget::updateDevButton_clicked);
+}
+
+void CUpdateSettingsWidget::updateDevButton_clicked()
+{
+	m_settings->close();
+	m_wnd->on_actionUpdate_triggered(true);
+}
+
+//-----------------------------------------------------------------------------
 class Ui::CDlgSettings
 {
 public:
@@ -784,6 +814,7 @@ public:
 	CCameraProps*		m_cam;
 	CUnitWidget*		m_unit;
 	CRepoSettingsWidget*	m_repo;
+	CUpdateSettingsWidget*	m_update;
 
 	::CPropertyListView*	bg_panel;
 	::CPropertyListView*	di_panel;
@@ -807,6 +838,7 @@ public:
 		m_cam = new CCameraProps;
 		m_unit = new CUnitWidget(wnd);
 		m_repo = new CRepoSettingsWidget;
+		m_update = new CUpdateSettingsWidget(parent, wnd);
 	}
 
 	void setupUi(::CDlgSettings* pwnd)
@@ -834,6 +866,7 @@ public:
 		stack->addWidget(ui_panel); list->addItem("UI");
 		stack->addWidget(m_unit); list->addItem("Units");
 		stack->addWidget(m_repo); list->addItem("Model Repository");
+		stack->addWidget(m_update); list->addItem("Auto Update");
 		list->setResizeMode(QListView::ResizeMode::Adjust);
 
 		QHBoxLayout* hl = new QHBoxLayout;

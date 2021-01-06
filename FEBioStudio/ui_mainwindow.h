@@ -264,6 +264,7 @@ public:
 	bool m_updaterPresent;
 	bool m_updateAvailable;
 	bool m_updateOnClose;
+	bool m_updateDevChannel;
 
 	QString m_lastFindText;
 
@@ -308,8 +309,10 @@ public:
 
 		// Check if updater is present 
 		m_updaterPresent = QFile::exists(QApplication::applicationDirPath() + UPDATER);
-		m_updateOnClose = false;
 		m_updateAvailable = false;
+		m_updateOnClose = false;
+		m_updateDevChannel = false;
+		
 
 		// initialize current path
 		currentPath = QDir::currentPath();

@@ -135,6 +135,21 @@ protected slots:
 	void pathButton_clicked();
 };
 
+class CUpdateSettingsWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CUpdateSettingsWidget(QDialog* settings, CMainWindow* wnd, QWidget* parent = 0);
+
+protected slots:
+	void updateDevButton_clicked();
+
+private:
+	QDialog* m_settings;
+	CMainWindow* m_wnd;
+};
+
 class CDlgSettings : public QDialog
 {
 	Q_OBJECT

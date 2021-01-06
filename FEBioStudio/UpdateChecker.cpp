@@ -42,7 +42,8 @@ SOFTWARE.*/
 #include <iostream>
 
 CUpdateWidget::CUpdateWidget(QWidget* parent)
-    : QWidget(parent), restclient(new QNetworkAccessManager), currentIndex(0), overallSize(0), downloadedSize(0)
+    : QWidget(parent), restclient(new QNetworkAccessManager), currentIndex(0), overallSize(0), downloadedSize(0),
+	devChannel(false), urlBase(URL_BASE)
 {
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 	layout = new QVBoxLayout;
@@ -70,19 +71,29 @@ void CUpdateWidget::sslErrorHandler(QNetworkReply *reply, const QList<QSslError>
 
 void CUpdateWidget::connFinished(QNetworkReply *r)
 {
-	if(r->request().url().path() == QString(URL_BASE) + ".xml")
+	if(r->request().url().path() == urlBase + ".xml")
 	{
 		checkForUpdateResponse(r);
 	}
 }
 
-void CUpdateWidget::checkForUpdate()
+void CUpdateWidget::checkForUpdate(bool dev)
 {
+	devChannel = dev;
+	if(devChannel)
+	{
+		urlBase = DEV_BASE;
+	}
+	else
+	{
+		urlBase = URL_BASE;
+	}
+
 	QUrl myurl;
 	myurl.setScheme(SCHEME);
 	myurl.setHost(UPDATE_URL);
 	myurl.setPort(PORT);
-	myurl.setPath(QString(URL_BASE) + ".xml");
+	myurl.setPath(urlBase + ".xml");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
@@ -108,7 +119,7 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 	if(statusCode != 200)
 	{
-		showError("Update Failed!\n\nUnable to receive response from server.");
+		showError("Update Check Failed!\n\nUnable to receive response from server.");
 	}
 
 	serverTime = r->rawHeader("serverTime").toLongLong();
@@ -273,73 +284,83 @@ void CUpdateWidget::showUpdateInfo()
         }
     }
 
-    // Find last installed update
-    int lastUpdateIndex;
-    for(lastUpdateIndex = 0; lastUpdateIndex < releases.size(); lastUpdateIndex++)
-    {
-        if(releases[lastUpdateIndex].timestamp <= lastUpdate)
-        {
-            break;
-        }
-    }
+	if(!devChannel)
+	{
+		// Find last installed update
+		int lastUpdateIndex;
+		for(lastUpdateIndex = 0; lastUpdateIndex < releases.size(); lastUpdateIndex++)
+		{
+			if(releases[lastUpdateIndex].timestamp <= lastUpdate)
+			{
+				break;
+			}
+		}
 
-    bool newFEBio = false;
-    bool newFBS = false;
+		bool newFEBio = false;
+		bool newFBS = false;
 
-    if(lastUpdateIndex == releases.size())
-    {
-        newFEBio = true;
-        newFBS = true;
-    }
-    else
-    {
-        if(releases[0].FEBioVersion != releases[lastUpdateIndex].FEBioVersion) newFEBio = true;
-        if(releases[0].FBSVersion != releases[lastUpdateIndex].FBSVersion) newFBS = true;
-    }
-    
+		if(lastUpdateIndex == releases.size())
+		{
+			newFEBio = true;
+			newFBS = true;
+		}
+		else
+		{
+			if(releases[0].FEBioVersion != releases[lastUpdateIndex].FEBioVersion) newFEBio = true;
+			if(releases[0].FBSVersion != releases[lastUpdateIndex].FBSVersion) newFBS = true;
+		}
+		
 
-    if(!newFEBio && !newFBS)
-    {
-        if(!releases[0].releaseMsg.isEmpty())
-        {
-            infoLabel->setText(releases[0].releaseMsg);
-        }
-        else
-        {
-            infoLabel->setText("This update does not include new versions of FEBio or FEBioStudio.\n\nIt provides updates to FEBio dependencies for added stability.");
-        }
-    }
-    else
-    {
-		infoLabel->setText("There is a new update available!");
+		if(!newFEBio && !newFBS)
+		{
+			if(!releases[0].releaseMsg.isEmpty())
+			{
+				infoLabel->setText(releases[0].releaseMsg);
+			}
+			else
+			{
+				infoLabel->setText("This update does not include new versions of FEBio or FEBioStudio.\n\nIt provides updates to FEBio dependencies for added stability.");
+			}
+		}
+		else
+		{
+			infoLabel->setText("There is a new update available!");
 
-        if(!releases[0].releaseMsg.isEmpty())
-        {
-            layout->addWidget(new QLabel(releases[0].releaseMsg));
-        }
+			if(!releases[0].releaseMsg.isEmpty())
+			{
+				layout->addWidget(new QLabel(releases[0].releaseMsg));
+			}
 
-		layout->addWidget(new QLabel("This update provides:"));
+			layout->addWidget(new QLabel("This update provides:"));
 
-        if(newFEBio)
-        {
-			// QChar(0x22, 0x20) give us the unicode 'bullet' character
-            QLabel* newFEBioLabel = new QLabel(QChar(0x22, 0x20) + QString(" An update to FEBio %1. Click <a href=\"FEBioNotes\">here</a> for release notes.").arg(releases[0].FEBioVersion));
-            newFEBioLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
-            QObject::connect(newFEBioLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
+			if(newFEBio)
+			{
+				// QChar(0x22, 0x20) give us the unicode 'bullet' character
+				QLabel* newFEBioLabel = new QLabel(QChar(0x22, 0x20) + QString(" An update to FEBio %1. Click <a href=\"FEBioNotes\">here</a> for release notes.").arg(releases[0].FEBioVersion));
+				newFEBioLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+				QObject::connect(newFEBioLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
 
-            layout->addWidget(newFEBioLabel);
-        }
+				layout->addWidget(newFEBioLabel);
+			}
 
-        if(newFBS)
-        {
-			// QChar(0x22, 0x20) give us the unicode 'bullet' character
-            QLabel* newFBSLabel = new QLabel(QChar(0x22, 0x20) + QString(" An update to FEBio Studio %1. Click <a href=\"FBSNotes\">here</a> for release notes.").arg(releases[0].FBSVersion));
-            newFBSLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
-            QObject::connect(newFBSLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
+			if(newFBS)
+			{
+				// QChar(0x22, 0x20) give us the unicode 'bullet' character
+				QLabel* newFBSLabel = new QLabel(QChar(0x22, 0x20) + QString(" An update to FEBio Studio %1. Click <a href=\"FBSNotes\">here</a> for release notes.").arg(releases[0].FBSVersion));
+				newFBSLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+				QObject::connect(newFBSLabel, &QLabel::linkActivated, this, &CUpdateWidget::linkActivated);
 
-            layout->addWidget(newFBSLabel);
-        }
-    }
+				layout->addWidget(newFBSLabel);
+			}
+		}
+	}
+	else
+	{
+		infoLabel->setText("This will update FEBio and FEBio Studio to the latest development versions.\n"
+			"These versions contain the latest bugfixes and features but are potentially unstable.\n"
+			"Please only proceed with this update if you understand what you're doing.\n\n"
+			"There are no patch notes for development releases.");
+	}
 
     layout->addStretch(10);
     layout->addWidget(new QLabel(QString("The total download size is %1.").arg(locale().formattedDataSize(overallSize))));
@@ -441,14 +462,14 @@ void CUpdateWidget::linkActivated(const QString& link)
 
 	dlg.setLayout(layout);
 
-	dlg.resize(this->size());
+	dlg.resize(QSize(600,500));
 
 	dlg.exec();
 }
 
 ///// Update Checker Dialog
 
-CUpdateChecker::CUpdateChecker(QWidget* parent) 
+CUpdateChecker::CUpdateChecker(bool dev, QWidget* parent) 
 	: QDialog(parent), update(false), updateAvailable(false)
 {
 	layout = new QVBoxLayout;
@@ -466,7 +487,7 @@ CUpdateChecker::CUpdateChecker(QWidget* parent)
 	QObject::connect(box, &QDialogButtonBox::rejected, this, &QDialog::reject);
 	QObject::connect(widget, &CUpdateWidget::ready, this, &CUpdateChecker::updateWidgetReady);
 
-	widget->checkForUpdate();
+	widget->checkForUpdate(dev);
 }
 
 void CUpdateChecker::updateWidgetReady(bool update)
