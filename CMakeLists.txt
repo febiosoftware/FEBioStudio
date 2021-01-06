@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(FEBioStudio)
 
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -177,6 +178,11 @@ elseif(APPLE)
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-static-libstdc++ -static-libgcc -w -Wall)
+    
+    set(CMAKE_BUILD_RPATH_USE_LINK_PATH FALSE)
+    set(CMAKE_BUILD_RPATH $ORIGIN/../lib/)
+
+    #set_property(TARGET FEBioStudio PROPERTY CMAKE_BUILD_RPATH $ORIGIN/../lib/)
 endif()
 
 include_directories(.)
@@ -318,7 +324,7 @@ if(WIN32)
 elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -Wl,--end-group)
-    target_link_libraries(FEBioStudio -Wl,-rpath,\'\$ORIGIN/../lib/\')
+    #target_link_libraries(FEBioStudio -Wl,-rpath,\'\$ORIGIN/../lib/\')
 endif()
 
 
