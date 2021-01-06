@@ -429,17 +429,25 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
 		// ask user if (s)he wants to open the feb as a model or as a file. 
-		QString question("Do you want to open the feb file as a model or a file?\nSelect Yes to open it as a model, or No to open a text editor.");
-		if (QMessageBox::question(this, "FEBio Studio", question) == QMessageBox::Yes)
+		QMessageBox box;
+		box.setText("How would you like to open this file?");
+		QPushButton* importButton = box.addButton("Import as Model", QMessageBox::AcceptRole);
+		QPushButton* textButton = box.addButton("Edit as Text", QMessageBox::YesRole);
+		box.addButton(QMessageBox::Cancel);
+
+		box.exec();
+
+		if(box.clickedButton() == importButton)
 		{
 			// load the feb file
 			OpenFEModel(fileName);
 		}
-		else
+		else if(box.clickedButton() == textButton)
 		{
 			// open a text editor
 			OpenFEBioFile(fileName);
 		}
+
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0))
@@ -1375,7 +1383,15 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 		if(ui->m_updateOnClose && ui->m_updaterPresent)
 		{
 			QProcess* updater = new QProcess;
-			updater->start(QApplication::applicationDirPath() + UPDATER);
+			if(ui->m_updateDevChannel)
+			{
+				updater->start(QApplication::applicationDirPath() + UPDATER, QStringList() << "--devChannel");	
+			}
+			else
+			{
+				updater->start(QApplication::applicationDirPath() + UPDATER);
+			}
+			
 		}
 
 		ev->accept();

@@ -1188,3 +1188,57 @@ void CMainWindow::on_actionPlaneCutTool_triggered()
 	if (ui->planeCutTool == nullptr) ui->planeCutTool = new CDlgPlaneCut(this);
 	ui->planeCutTool->show();
 }
+
+void CMainWindow::on_actionFindTxt_triggered()
+{
+	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt = QInputDialog::getText(this, "FEBio Studio", "Text:");
+	if (txt.isEmpty() == false)
+	{
+		ui->m_lastFindText = txt;
+
+		if (ui->xmlEdit->find(txt) == false)
+		{
+			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(txt));
+		}
+		else ui->xmlEdit->centerCursor();
+	}
+}
+
+void CMainWindow::on_actionFindAgain_triggered()
+{
+	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (ui->m_lastFindText.isEmpty() == false)
+	{
+		if (ui->xmlEdit->find(ui->m_lastFindText) == false)
+		{
+			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(ui->m_lastFindText));
+		}
+		else ui->xmlEdit->centerCursor();
+	}
+}
+
+void CMainWindow::on_actionToggleComment_triggered()
+{
+	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (doc == nullptr) return;
+	ui->xmlEdit->toggleLineComment();
+}
+
+void CMainWindow::on_actionDuplicateLine_triggered()
+{
+	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (doc == nullptr) return;
+	ui->xmlEdit->duplicateLine();
+}
+
+void CMainWindow::on_actionDeleteLine_triggered()
+{
+	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
+	if (doc == nullptr) return;
+	ui->xmlEdit->deleteLine();
+}

@@ -64,6 +64,9 @@ public:
 
 	std::string getDataString(int nfield, Data_Tensor_Type ntype);
 
+	// see if a field ID is valid
+	bool IsValid(int fieldId) const;
+
 protected:
 	vector<FEDataField*>	m_Data;
 	FEPostModel*	m_pm;

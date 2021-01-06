@@ -37,7 +37,10 @@ public:
 	FEAbaqusExport();
 	bool Save(FEPostModel& fem, int ntime, const char* szfile);
 
-public:
+	void SetHeading(const std::string& s);
+
+private:
+	std::string	m_heading;
 };
 
 }

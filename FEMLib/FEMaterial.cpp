@@ -2120,9 +2120,9 @@ REGISTER_MATERIAL(FEFiberPowLin, MODULE_MECH, FE_FIBERPOWLIN_COUPLED, FE_MAT_ELA
 
 FEFiberPowLin::FEFiberPowLin() : FEFiberMaterial(FE_FIBERPOWLIN_COUPLED)
 {
-    AddScienceParam(0, UNIT_PRESSURE, "E", "E");
-    AddScienceParam(2, UNIT_NONE, "beta" , "beta");
-    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
+    AddScienceParam(0, UNIT_PRESSURE, "E", "fiber modulus");
+    AddScienceParam(2, UNIT_NONE, "beta" , "toe power exponent");
+    AddScienceParam(1, UNIT_NONE, "lam0" , "toe stretch ratio");
 }
 
 void FEFiberPowLin::Convert(FEFiberPowLinOld* pold)
@@ -2160,9 +2160,9 @@ REGISTER_MATERIAL(FEFiberPowLinUncoupled, MODULE_MECH, FE_FIBERPOWLIN_UNCOUPLED,
 
 FEFiberPowLinUncoupled::FEFiberPowLinUncoupled() : FEFiberMaterial(FE_FIBERPOWLIN_UNCOUPLED)
 {
-    AddScienceParam(0, UNIT_PRESSURE, "E", "E");
-    AddScienceParam(2, UNIT_NONE, "beta" , "beta");
-    AddScienceParam(1, UNIT_NONE, "lam0"  , "lam0");
+    AddScienceParam(0, UNIT_PRESSURE, "E", "fiber modulus");
+    AddScienceParam(2, UNIT_NONE, "beta" , "toe power exponent");
+    AddScienceParam(1, UNIT_NONE, "lam0" , "toe stretch ratio");
     AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
@@ -2266,7 +2266,7 @@ FEReactionRateHuiskes::FEReactionRateHuiskes() : FEMaterial(FE_REACTION_RATE_HUI
 // CFD Fiber-Exponential-Power-Law
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDFiberExpPow, MODULE_MECH, FE_FIBER_EXP_POW, FE_MAT_CFD_FIBER, "fiber-exponential-power-law", 0, Fibers_Fiber_with_Exponential_Power_Law);
+REGISTER_MATERIAL(FECFDFiberExpPow, MODULE_MECH, FE_FIBER_EXP_POW, FE_MAT_CFD_FIBER, "fiber-exp-pow", 0, Fibers_Fiber_with_Exponential_Power_Law);
 
 FECFDFiberExpPow::FECFDFiberExpPow() : FEMaterial(FE_FIBER_EXP_POW)
 {
@@ -2288,10 +2288,23 @@ FECFDFiberNH::FECFDFiberNH() : FEMaterial(FE_FIBER_NH)
 }
 
 //=============================================================================
+// CFD Fiber-Power-Linear
+//=============================================================================
+
+REGISTER_MATERIAL(FECFDFiberPowLinear, MODULE_MECH, FE_FIBER_POW_LIN, FE_MAT_CFD_FIBER, "fiber-pow-linear", 0);
+
+FECFDFiberPowLinear::FECFDFiberPowLinear() : FEMaterial(FE_FIBER_POW_LIN)
+{
+    AddScienceParam(0, UNIT_PRESSURE, "E"   , "fiber modulus");
+    AddScienceParam(2, UNIT_NONE    , "beta", "toe power exponent");
+    AddScienceParam(1, UNIT_NONE    , "lam0", "toe stretch ratio");
+}
+
+//=============================================================================
 // CFD Fiber-Exponential-Power-Law uncoupled
 //=============================================================================
 
-REGISTER_MATERIAL(FECFDFiberExpPowUC, MODULE_MECH, FE_FIBER_EXP_POW_UC, FE_MAT_CFD_FIBER_UC, "fiber-exponential-power-law-uncoupled", 0, Fiber_with_Exponential_Power_Law_Uncoupled);
+REGISTER_MATERIAL(FECFDFiberExpPowUC, MODULE_MECH, FE_FIBER_EXP_POW_UC, FE_MAT_CFD_FIBER_UC, "fiber-exp-pow-uncoupled", 0);
 
 FECFDFiberExpPowUC::FECFDFiberExpPowUC() : FEMaterial(FE_FIBER_EXP_POW_UC)
 {
@@ -2311,6 +2324,20 @@ REGISTER_MATERIAL(FECFDFiberNHUC, MODULE_MECH, FE_FIBER_NH_UC, FE_MAT_CFD_FIBER_
 FECFDFiberNHUC::FECFDFiberNHUC() : FEMaterial(FE_FIBER_NH_UC)
 {
     AddScienceParam(0, UNIT_PRESSURE, "mu"   , "mu"   );
+    AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
+}
+
+//=============================================================================
+// CFD Fiber-Power-Linear uncoupled
+//=============================================================================
+
+REGISTER_MATERIAL(FECFDFiberPowLinearUC, MODULE_MECH, FE_FIBER_POW_LIN_UC, FE_MAT_CFD_FIBER_UC, "fiber-pow-linear-uncoupled", 0);
+
+FECFDFiberPowLinearUC::FECFDFiberPowLinearUC() : FEMaterial(FE_FIBER_POW_LIN_UC)
+{
+    AddScienceParam(0, UNIT_PRESSURE, "E"   , "fiber modulus");
+    AddScienceParam(2, UNIT_NONE    , "beta", "toe power exponent");
+    AddScienceParam(1, UNIT_NONE    , "lam0", "toe stretch ratio");
     AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
 }
 
@@ -2343,7 +2370,7 @@ REGISTER_MATERIAL(FEFDDvonMises3d, MODULE_MECH, FE_DSTRB_VM3, FE_MAT_CFD_DIST, "
 
 FEFDDvonMises3d::FEFDDvonMises3d() : FEMaterial(FE_DSTRB_VM3)
 {
-    AddDoubleParam(0, "b"   , "b");
+    AddDoubleParam(0, "b"   , "concentration");
 }
 
 //=============================================================================
@@ -2376,7 +2403,7 @@ REGISTER_MATERIAL(FEFDDvonMises2d, MODULE_MECH, FE_DSTRB_VM2, FE_MAT_CFD_DIST, "
 
 FEFDDvonMises2d::FEFDDvonMises2d() : FEMaterial(FE_DSTRB_VM2)
 {
-    AddScienceParam(0, UNIT_NONE, "b"   , "b");
+    AddScienceParam(0, UNIT_NONE, "b"   , "concentration");
 }
 
 //=============================================================================

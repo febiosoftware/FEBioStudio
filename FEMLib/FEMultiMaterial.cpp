@@ -186,7 +186,7 @@ FETriphasicMaterial::FETriphasicMaterial() : FEMultiMaterial(FE_TRIPHASIC_MATERI
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
-	AddScienceParam(0, UNIT_CONCENTRATION, "fixed_charge_density", "fixed charge density");
+	AddScienceParam(0, UNIT_CONCENTRATION, "fixed_charge_density", "fixed charge density")->MakeVariable(true);
 
 	// Add elastic component
 	AddProperty("solid", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);
@@ -548,7 +548,7 @@ FEMultiphasicMaterial::FEMultiphasicMaterial() : FEMultiMaterial(FE_MULTIPHASIC_
 {
 	// add parameters
 	AddScienceParam(0, UNIT_NONE, "phi0", "solid volume fraction");
-	AddScienceParam(0, UNIT_CONCENTRATION, "fixed_charge_density", "fixed charge density");
+	AddScienceParam(0, UNIT_CONCENTRATION, "fixed_charge_density", "fixed charge density")->MakeVariable(true);
 
 	// Add elastic component
 	AddProperty("solid", FE_MAT_ELASTIC | FE_MAT_ELASTIC_UNCOUPLED);

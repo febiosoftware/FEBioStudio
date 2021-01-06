@@ -95,6 +95,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;TETLIBRARY;HAS_MMG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BrowseInformation>true</BrowseInformation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -129,6 +130,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;HAS_MMG;TETLIBRARY;HAS_NETGEN;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BrowseInformation>true</BrowseInformation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -260,6 +262,7 @@
     <ClCompile Include="..\..\MeshTools\PointCloud3d.cpp" />
     <ClCompile Include="..\..\MeshTools\PRVArchive.cpp" />
     <ClCompile Include="..\..\MeshTools\Quadric.cpp" />
+    <ClCompile Include="..\..\MeshTools\QuadricFit.cpp" />
     <ClCompile Include="..\..\MeshTools\SphereFit.cpp" />
     <ClCompile Include="..\..\MeshTools\SpringGenerator.cpp" />
     <ClCompile Include="..\..\MeshTools\SurfaceDistance.cpp" />
@@ -361,6 +364,7 @@
     <ClInclude Include="..\..\MeshTools\PointCloud3d.h" />
     <ClInclude Include="..\..\MeshTools\PRVArchive.h" />
     <ClInclude Include="..\..\MeshTools\Quadric.h" />
+    <ClInclude Include="..\..\MeshTools\QuadricFit.h" />
     <ClInclude Include="..\..\MeshTools\SphereFit.h" />
     <ClInclude Include="..\..\MeshTools\SpringGenerator.h" />
     <ClInclude Include="..\..\MeshTools\stdafx.h" />

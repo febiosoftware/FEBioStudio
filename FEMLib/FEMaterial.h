@@ -208,6 +208,8 @@
 #define FE_CFD_MATERIAL_UC          710
 #define FE_FIBER_EXP_POW_UC         711
 #define FE_FIBER_NH_UC              712
+#define FE_FIBER_POW_LIN            713
+#define FE_FIBER_POW_LIN_UC         714
 #define FE_DSTRB_SFD                730
 #define FE_DSTRB_EFD                731
 #define FE_DSTRB_VM3                732
@@ -1689,6 +1691,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FECFDFiberPowLinear : public FEMaterial
+{
+public:
+    enum { MP_E, MP_B, MP_L0 };
+public:
+    FECFDFiberPowLinear();
+    DECLARE_REGISTERED(FECFDFiberPowLinear);
+};
+
+//-----------------------------------------------------------------------------
 class FECFDFiberExpPowUC : public FEMaterial
 {
 public:
@@ -1706,6 +1718,16 @@ public:
 public:
     FECFDFiberNHUC();
     DECLARE_REGISTERED(FECFDFiberNHUC);
+};
+
+//-----------------------------------------------------------------------------
+class FECFDFiberPowLinearUC : public FEMaterial
+{
+public:
+    enum { MP_E, MP_B, MP_L0, MP_K };
+public:
+    FECFDFiberPowLinearUC();
+    DECLARE_REGISTERED(FECFDFiberPowLinearUC);
 };
 
 //-----------------------------------------------------------------------------

@@ -269,6 +269,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 			connect(groupmap, SIGNAL(mapped(int)), this, SLOT(onMoveToGroup(int)));
 		}
 
+		menu.addAction("Add file ...", this, SLOT(onAddFile()));
 
 #ifdef _WIN32
 		menu.addAction("Show in Explorer", this, SLOT(onShowInExplorer()));
@@ -599,9 +600,14 @@ void CFileViewer::onRemoveFromProject()
 
 void CFileViewer::onAddFile()
 {
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj == nullptr) return;
+
+	QString projectPath = prj->GetProjectPath();
+
 	QTreeWidgetItem* item = CFileViewer::currentItem();
 	int ntype = item->data(0, Qt::UserRole).toInt();
-	QString fileName = QFileDialog::getOpenFileName(this, "Add File");
+	QString fileName = QFileDialog::getOpenFileName(this, "Add File", projectPath);
 	if (fileName.isEmpty() == false)
 	{
 		FEBioStudioProject* prj = ui->m_wnd->GetProject();

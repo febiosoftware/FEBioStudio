@@ -35,15 +35,16 @@ SOFTWARE.*/
 #include "UpdateChecker.h"
 
 
-void CMainWindow::on_actionUpdate_triggered()
+void CMainWindow::on_actionUpdate_triggered(bool dev)
 {
-	CUpdateChecker dlg;
+	CUpdateChecker dlg(dev);
 
 	if(dlg.exec())
 	{
 		if(dlg.doUpdate())
 		{
 			ui->m_updateOnClose = true;
+			ui->m_updateDevChannel = dev;
 			close();
 		}
 	}
@@ -71,16 +72,23 @@ void CMainWindow::on_actionFEBioPubs_triggered()
 
 void CMainWindow::on_actionAbout_triggered()
 {
+	QString version;
+#ifndef DEVCOMMIT
+	version = QString("Version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+#else
+	version = QString("Dev Version %1.%2.%3.%4").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).arg(DEVCOMMIT);
+#endif
+
 	QString txt = QString(\
 		"<h1>FEBio Studio</h1>\
-		<p><b>Version %1.%2.%3</b></p>\
+		<p><b>%1</b></p>\
 		<p>Weiss Lab, University of Utah</p>\
 		<p>Ateshian Lab, Columbia University</p>\
 		<p>Copyright (c) 2019 - 2020, All rights reserved</p>\
 		<hr>\
 		<p>When using FEBio or FEBioStudio in your publications, please cite:</p>\
 		<p><b>Maas SA, Ellis BJ, Ateshian GA, Weiss JA: FEBio: Finite Elements for Biomechanics. Journal of Biomechanical Engineering, 134(1):011005, 2012</b></p>"\
-	).arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	).arg(version);
 
 	QMessageBox about(this);
 	about.setWindowTitle("About FEBio Studio");

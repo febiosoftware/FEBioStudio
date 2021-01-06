@@ -46,14 +46,17 @@ class QDialogButtonBox;
 
 #ifdef WIN32
 	#define URL_BASE "/update/FEBioStudio/Windows"
+	#define DEV_BASE "/update/FEBioStudioDev/Windows"
 	#define REL_ROOT "\\..\\"
 	#define UPDATER "\\FEBioStudioUpdater.exe"
 #elif __APPLE__
 	#define URL_BASE "/update/FEBioStudio/macOS"
+	#define DEV_BASE "/update/FEBioStudioDev/macOS"
 	#define REL_ROOT "/../../../"
 	#define UPDATER "/FEBioStudioUpdater"
 #else
 	#define URL_BASE "/update/FEBioStudio/Linux"
+	#define DEV_BASE "/update/FEBioStudioDev/Linux"
 	#define REL_ROOT "/../"
 	#define UPDATER "/FEBioStudioUpdater"
 #endif
@@ -85,7 +88,7 @@ class CUpdateWidget : public QWidget
 public:
     CUpdateWidget(QWidget* parent = nullptr);
 
-    void checkForUpdate();
+    void checkForUpdate(bool dev = false);
 
 public slots:
 	void linkActivated(const QString& link);
@@ -124,6 +127,9 @@ public:
 	qint64 lastUpdate;
 	qint64 serverTime;
 
+	bool devChannel;
+	QString urlBase;
+
 };
 
 class CUpdateChecker : public QDialog
@@ -131,7 +137,7 @@ class CUpdateChecker : public QDialog
 	Q_OBJECT
 
 public:
-	CUpdateChecker(QWidget *parent = nullptr);
+	CUpdateChecker(bool dev, QWidget *parent = nullptr);
 
 	bool doUpdate() { return update; }
 	bool autoUpdateCheck();

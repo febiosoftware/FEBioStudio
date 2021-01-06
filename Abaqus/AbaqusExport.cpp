@@ -24,7 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "AbaqusExport.h"
-#include <FEBioStudio/version.h>
 #include <MeshTools/FEProject.h>
 #include <MeshTools/GModel.h>
 #include <GeomLib/GObject.h>
@@ -39,6 +38,11 @@ FEAbaqusExport::~FEAbaqusExport(void)
 
 }
 
+void FEAbaqusExport::SetHeading(const std::string& s)
+{
+	m_heading = s;
+}
+
 bool FEAbaqusExport::Write(const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
@@ -46,7 +50,7 @@ bool FEAbaqusExport::Write(const char* szfile)
 
 	// write header
 	fprintf(fp, "*HEADING\n");
-	fprintf(fp, "Written by FEBio Studio, version %d.%d.%d\n", VERSION, SUBVERSION, SUBSUBVERSION);
+	fprintf(fp, "%s\n", m_heading.c_str());
 
 	GModel& model = m_prj.GetFEModel().GetModel();
 
