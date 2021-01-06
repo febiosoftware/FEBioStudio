@@ -94,7 +94,12 @@ FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
 	FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
 	if (pg)
 	{
-		if (m_ps->FindGroupParent(pg) == false) throw ReadError("Invalid object ID in FEInterface::Load");
+		if (m_ps->FindGroupParent(pg) == false)
+		{
+			ar.log("Invalid object ID in FEInterface::LoadList");
+			delete pitem;
+			pitem = nullptr;
+		}
 	}
 
 	return pitem;

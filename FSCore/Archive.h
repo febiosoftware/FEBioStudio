@@ -201,6 +201,9 @@ public:
 	void SetVersion(unsigned int n) { m_nversion = n; }
 	unsigned int Version() { return m_nversion; }
 
+	void log(const char* sztxt, ...);
+	std::string GetLog() const;
+
 private:
 	bool Load(const char* szfile) { return false; }
 
@@ -214,6 +217,9 @@ protected:
 	stack<CHUNK*>	m_Chunk;
 
 	FILE*	m_fp;		// the file pointer
+
+protected:
+	std::string		m_log;
 };
 
 //----------------------

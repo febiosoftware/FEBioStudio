@@ -624,13 +624,19 @@ void FEBioFormat3::ParseGeometrySurfacePair(FEBioModel::Part* part, XMLTag& tag)
 		{
 			const char* szsurf = tag.szvalue();
 			surf2 = part->FindSurfaceIndex(szsurf);
-			if (surf2 == -1) throw XMLReader::InvalidAttributeValue(tag, "secondary", szsurf);
+			if (surf2 == -1)
+			{
+				FileReader()->AddLogEntry("Invalid value for secondary: %s", szsurf);
+			}
 		}
 		else if (tag == "primary")
 		{
 			const char* szsurf = tag.szvalue();
 			surf1 = part->FindSurfaceIndex(szsurf);
-			if (surf1 == -1) throw XMLReader::InvalidAttributeValue(tag, "primary", szsurf);
+			if (surf1 == -1)
+			{
+				FileReader()->AddLogEntry("Invalid value for primary: %s", szsurf);
+			}
 		}
 		else throw XMLReader::InvalidTag(tag);
 		++tag;
@@ -2000,13 +2006,19 @@ void FEBioFormat3::ParseContact(FEStep *pstep, XMLTag &tag)
 			assert(part);
 			if (part)
 			{
-				string name1 = part->GetSurface(surfPair->masterID()).name();
-				string name2 = part->GetSurface(surfPair->slaveID()).name();
-				FESurface* master = febio.BuildFESurface(name1.c_str());
-				FESurface* slave  = febio.BuildFESurface(name2.c_str());
+				if (surfPair->masterID() >= 0)
+				{
+					string name1 = part->GetSurface(surfPair->masterID()).name();
+					FESurface* master = febio.BuildFESurface(name1.c_str());
+					pci->SetMaster(master);
+				}
 
-				pci->SetMaster(master);
-				pci->SetSlave(slave);
+				if (surfPair->slaveID() >= 0)
+				{
+					string name2 = part->GetSurface(surfPair->slaveID()).name();
+					FESurface* slave = febio.BuildFESurface(name2.c_str());
+					pci->SetSlave(slave);
+				}
 			}
 
 			// add to the analysis step

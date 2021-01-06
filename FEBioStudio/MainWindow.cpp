@@ -891,7 +891,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	{
 		if (m_fileQueue.empty())
 		{
-			QString err = QString("Failed reading file :\n%1\nERROR: %2").arg(file.m_fileName).arg(errorString);
+			QString err = QString("Failed reading file :\n%1\n\nERROR: %2").arg(file.m_fileName).arg(errorString);
 			QMessageBox::critical(this, "FEBio Studio", err);
 		}
 
@@ -918,6 +918,9 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 				QStringList stringList = errorString.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
 				QString err = QString("Warnings were generated while reading the file:\n%1\n\n").arg(file.m_fileName);
 
+				err += QString("IMPORTANT: The file may NOT have been read in correctly. Please check for errors!\n\n");
+
+				err += "WARNINGS:\n";
 				int n = stringList.size();
 				if (n > 10) n = 10;
 				for (int i=0; i<n; ++i)
@@ -928,6 +931,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 				{
 					err += QString("\n(Additional warnings on Output panel)");
 				} 
+
 
 				QMessageBox::information(this, "FEBio Studio", err);
 			}

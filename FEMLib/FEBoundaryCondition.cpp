@@ -130,7 +130,12 @@ void FEModelComponent::Load(IArchive &ar)
 					FEGroup* pg = dynamic_cast<FEGroup*>(m_pItem);
 					if (pg)
 					{
-						if (m_ps->FindGroupParent(pg) == false) throw ReadError("Invalid mesh ID in FEBoundaryCondition::Load");
+						if (m_ps->FindGroupParent(pg) == false)
+						{
+							ar.log("Invalid mesh ID in FEModelComponent::Load");
+							delete m_pItem;
+							m_pItem = nullptr;
+						}
 					}
 				}
 				ar.CloseChunk();

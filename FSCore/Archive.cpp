@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "Archive.h"
+#include <sstream>
 #include "zlib.h"
 static z_stream strm;
 
@@ -277,6 +278,8 @@ bool IArchive::Open(const char* szfile, unsigned int signature)
 //-----------------------------------------------------------------------------
 bool IArchive::Open(FILE* fp, unsigned int signature)
 {
+	m_log.clear();
+
 	// make sure the file pointer is valid
 	if (fp == 0) return false;
 
@@ -405,6 +408,33 @@ IArchive::IOResult IArchive::read(std::vector<double>& v)
 	int nread = (int)fread(&v[0], sizeof(double), nsize, m_fp);
 	if (nread != nsize) return IO_ERROR;
 	return IO_OK;
+}
+
+void IArchive::log(const char* sz, ...)
+{
+	if (sz == 0) return;
+
+	// get a pointer to the argument list
+	va_list	args;
+
+	// copy to string
+	char szlog[256] = { 0 };
+	va_start(args, sz);
+	vsprintf(szlog, sz, args);
+	va_end(args);
+
+	int l = (int)strlen(szlog);
+	if (l == 0) return;
+
+	stringstream ss;
+	if (m_log.empty() == false) ss << "\n";
+	ss << szlog;
+	m_log += ss.str();
+}
+
+std::string IArchive::GetLog() const
+{
+	return m_log;
 }
 
 //////////////////////////////////////////////////////////////////////
