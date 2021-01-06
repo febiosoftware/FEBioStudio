@@ -65,6 +65,9 @@ public:
 
 	FEMeshData* CreateData(FEState* pstate) override;
 
+	void IgnoreBackIntersection(bool b);
+	bool IgnoreBackIntersection() const;
+
 	void InitSurface(int n);
 
 	int GetSurfaceSize(int i);
@@ -89,5 +92,6 @@ protected:
 	Surface		m_surf1;
 	Surface		m_surf2;
 	FEPostModel*	m_fem;
+	bool		m_bignoreBackIntersections;
 };
 }

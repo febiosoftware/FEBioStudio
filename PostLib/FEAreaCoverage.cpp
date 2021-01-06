@@ -92,6 +92,19 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem) : Post::FEDataField("area coverage", DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 {
 	m_fem = fem;
+	m_bignoreBackIntersections = true;
+}
+
+//-----------------------------------------------------------------------------
+void FEAreaCoverage::IgnoreBackIntersection(bool b)
+{
+	m_bignoreBackIntersections = b;
+}
+
+//-----------------------------------------------------------------------------
+bool FEAreaCoverage::IgnoreBackIntersection() const
+{
+	return m_bignoreBackIntersections;
 }
 
 //-----------------------------------------------------------------------------
@@ -311,7 +324,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	break;
 	}
 
-	if (bfound)
+	if (bfound && (m_bignoreBackIntersections))
 	{
 		// make sure the projection is in the direction of the ray
 		bfound = (ray.direction*(q.point - ray.origin) > 0.f);
