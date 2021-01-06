@@ -885,6 +885,22 @@ public:
 
 	vec3f operator * (const vec3f& v);
 
+	Mat3d& operator += (const Mat3d& m)
+	{
+		m_data[0][0] += m.m_data[0][0]; m_data[0][1] += m.m_data[0][1]; m_data[0][2] += m.m_data[0][2];
+		m_data[1][0] += m.m_data[1][0]; m_data[1][1] += m.m_data[1][1]; m_data[1][2] += m.m_data[0][2];
+		m_data[2][0] += m.m_data[2][0]; m_data[2][1] += m.m_data[2][1]; m_data[2][2] += m.m_data[0][2];
+		return (*this);
+	}
+
+	Mat3d& operator /= (double a)
+	{
+		m_data[0][0] /= a; m_data[0][1] /= a; m_data[0][2] /= a;
+		m_data[1][0] /= a; m_data[1][1] /= a; m_data[1][2] /= a;
+		m_data[2][0] /= a; m_data[2][1] /= a; m_data[2][2] /= a;
+		return (*this);
+	}
+
 	double Invert()
 	{
 		// calculate determinant

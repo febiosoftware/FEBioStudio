@@ -774,6 +774,15 @@ bool Post::ExportElementDataField(CGLModel& glm, const FEDataField& df, FILE* fp
 					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
 				}
 				break;
+				case DATA_MAT3D:
+				{
+					FEElemData_T<Mat3d, DATA_COMP>* pf = dynamic_cast<FEElemData_T<Mat3d, DATA_COMP>*>(&d);
+					Mat3d v[FEElement::MAX_NODES]; pf->eval(i, v);
+					Mat3d f; f.zero();
+					for (int i = 0; i < nn; ++i) f += v[i]; f /= (double)nn;
+					fprintf(fp, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", f(0, 0), f(0, 1), f(0, 2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));
+				}
+				break;
 				}
 			}
 			if (n != nstates - 1) fprintf(fp, ",");
