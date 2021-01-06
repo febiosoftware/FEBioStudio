@@ -268,7 +268,7 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 void CUpdateWidget::showUpdateInfo()
 {
-    // Find unique files that need to be downloaded
+    // Find unique files that need to be downloaded or deleted
     for(auto release : releases)
     {
         if(release.timestamp > lastUpdate)
@@ -279,6 +279,14 @@ void CUpdateWidget::showUpdateInfo()
                 {
                     updateFiles.append(file.name);
                     overallSize += file.size;
+                }
+            }
+
+			for(auto file : release.deleteFiles)
+            {
+                if(!deleteFiles.contains(file))
+                {
+                    deleteFiles.append(file);
                 }
             }
         }
