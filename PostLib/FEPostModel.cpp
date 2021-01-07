@@ -1126,4 +1126,71 @@ void FEPostModel::ClearObjects()
 	m_Lines.clear();
 }
 
+//-----------------------------------------------------------------------------
+bool FEPostModel::Merge(FEPostModel* fem)
+{
+	// for now, only works with one mesh
+	if ((Meshes() != 1) || (fem->Meshes() != 1)) return false;
+
+	// for now, does not work with data
+	if ((m_pDM->DataFields() > 0) || (fem->GetDataManager()->DataFields() > 0)) return false;
+
+	// only single state models
+	if ((GetStates() > 1) || (fem->GetStates() > 1)) return false;
+	if ((m_RefState.size() > 1) || (fem->m_RefState.size() > 1)) return false;
+
+	// merge materials
+	int NMAT0 = Materials();
+	int NMAT1 = fem->Materials();
+	for (int i = 0; i < NMAT1; ++i) m_Mat.push_back(*fem->GetMaterial(i));
+
+	// get the meshes
+	FEMesh& mesh0 = *GetFEMesh(0);
+	FEMesh& mesh1 = *fem->GetFEMesh(0);
+
+	int NN0 = mesh0.Nodes();
+	int NN1 = mesh1.Nodes();
+
+	int NE0 = mesh0.Elements();
+	int NE1 = mesh1.Elements();
+
+	int NN = NN0 + NN1;
+	int NE = NE0 + NE1;
+
+	// create new mesh
+	mesh0.Create(NN, NE);
+	
+	// copy new nodes
+	for (int i = 0; i < NN1; ++i)
+	{
+		mesh0.Node(NN0 + i) = mesh1.Node(i);
+		mesh0.Node(NN0 + i).SetID(NN0 + i + 1);
+	}
+
+	// copy new elements
+	for (int i = 0; i < NE1; ++i)
+	{
+		FEElement& el = mesh0.Element(NE0 + i);
+		el = mesh1.Element(i);
+		for (int j = 0; j < el.Nodes(); ++j) el.m_node[j] += NN0;
+		el.m_gid += NMAT0;
+		el.m_MatID += NMAT0;
+		el.SetID(NE0 + i + 1);
+	}
+
+	mesh0.BuildMesh();
+
+	// update reference state
+	FERefState& ref0 = *m_RefState[0];
+	FERefState& ref1 = *fem->m_RefState[0];
+	ref0.m_Node.resize(NN);
+	for (int i = 0; i < NN1; ++i) ref0.m_Node[NN0 + i] = ref1.m_Node[i];
+
+	// update state
+	FEState& s0 = *GetState(0);
+	s0.RebuildData();
+
+	return true;
 }
+
+} // namespace Post

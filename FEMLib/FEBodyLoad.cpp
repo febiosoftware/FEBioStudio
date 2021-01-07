@@ -63,7 +63,7 @@ FELoadCurve* FENonConstBodyForce::GetLoadCurve(int n)
 //-----------------------------------------------------------------------------
 FEHeatSource::FEHeatSource(FEModel* ps, int nstep) : FEBodyLoad(FE_HEAT_SOURCE, ps, nstep)
 {
-	SetTypeString("Heat Source");
+	SetTypeString("heat_source");
 	AddDoubleParam(0, "Q", "Q")->SetLoadCurve();
 }
 

@@ -27,6 +27,16 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ValArray.h"
 
+ValArray::ValArray()
+{
+}
+
+void ValArray::clear()
+{ 
+	m_index.clear(); 
+	m_data.clear(); 
+}
+
 void ValArray::append(int items)
 {
 	if (m_index.empty()) m_index.push_back(0);
