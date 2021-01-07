@@ -45,7 +45,7 @@ CUpdateWidget::CUpdateWidget(QWidget* parent)
     : QWidget(parent), restclient(new QNetworkAccessManager), currentIndex(0), overallSize(0), downloadedSize(0),
 	devChannel(false), urlBase(URL_BASE)
 {
-    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	layout = new QVBoxLayout;
     layout->setContentsMargins(0,0,0,0);
 
@@ -268,7 +268,7 @@ void CUpdateWidget::checkForUpdateResponse(QNetworkReply *r)
 
 void CUpdateWidget::showUpdateInfo()
 {
-    // Find unique files that need to be downloaded
+    // Find unique files that need to be downloaded or deleted
     for(auto release : releases)
     {
         if(release.timestamp > lastUpdate)
@@ -279,6 +279,14 @@ void CUpdateWidget::showUpdateInfo()
                 {
                     updateFiles.append(file.name);
                     overallSize += file.size;
+                }
+            }
+
+			for(auto file : release.deleteFiles)
+            {
+                if(!deleteFiles.contains(file))
+                {
+                    deleteFiles.append(file);
                 }
             }
         }
@@ -356,10 +364,12 @@ void CUpdateWidget::showUpdateInfo()
 	}
 	else
 	{
-		infoLabel->setText("This will update FEBio and FEBio Studio to the latest development versions.\n"
-			"These versions contain the latest bugfixes and features but are potentially unstable.\n"
+		infoLabel->setText("This will update FEBio and FEBio Studio to the latest development versions. "
+			"These versions contain the latest bugfixes and features but are potentially unstable. "
 			"Please only proceed with this update if you understand what you're doing.\n\n"
 			"There are no patch notes for development releases.");
+
+		infoLabel->setWordWrap(true);
 	}
 
     layout->addStretch(10);

@@ -841,7 +841,7 @@ public:
 		m_update = new CUpdateSettingsWidget(parent, wnd);
 	}
 
-	void setupUi(::CDlgSettings* pwnd)
+	void setupUi(::CDlgSettings* pwnd, ::CMainWindow* mwnd)
 	{
 		bg_panel = new ::CPropertyListView;
 		di_panel = new ::CPropertyListView;
@@ -866,7 +866,12 @@ public:
 		stack->addWidget(ui_panel); list->addItem("UI");
 		stack->addWidget(m_unit); list->addItem("Units");
 		stack->addWidget(m_repo); list->addItem("Model Repository");
-		stack->addWidget(m_update); list->addItem("Auto Update");
+
+		if(mwnd->updaterPresent())
+		{
+			stack->addWidget(m_update); list->addItem("Auto Update");
+		}
+		
 		list->setResizeMode(QListView::ResizeMode::Adjust);
 
 		QHBoxLayout* hl = new QHBoxLayout;
@@ -957,7 +962,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 	ui->m_repo->repoPath = pwnd->GetDatabasePanel()->GetRepositoryFolder();
 
-	ui->setupUi(this);
+	ui->setupUi(this, m_pwnd);
 
 	// fill the palette list
 	UpdatePalettes();
