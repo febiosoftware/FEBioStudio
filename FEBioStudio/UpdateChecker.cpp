@@ -366,7 +366,7 @@ void CUpdateWidget::showUpdateInfo()
 	{
 		infoLabel->setText("This will update FEBio and FEBio Studio to the latest development versions. "
 			"These versions contain the latest bugfixes and features but are potentially unstable. "
-			"Please only proceed with this update if you understand what you're doing.\n\n"
+			"Please proceed with caution.\n\n"
 			"There are no patch notes for development releases.");
 
 		infoLabel->setWordWrap(true);

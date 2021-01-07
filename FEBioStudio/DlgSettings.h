@@ -143,6 +143,7 @@ public:
 	CUpdateSettingsWidget(QDialog* settings, CMainWindow* wnd, QWidget* parent = 0);
 
 protected slots:
+	void updateButton_clicked();
 	void updateDevButton_clicked();
 
 private:
