@@ -31,7 +31,9 @@ SOFTWARE.*/
 class ValArray
 {
 public:
-	ValArray() {}
+	ValArray();
+
+	void clear();
 
 	int itemSize(int n) const { return m_index[n + 1] - m_index[n]; }
 

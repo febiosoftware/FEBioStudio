@@ -74,6 +74,7 @@ SOFTWARE.*/
 #include "TextDocument.h"
 #include "units.h"
 #include "version.h"
+#include <PostLib/FEVTKImport.h>
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
@@ -421,10 +422,11 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	{
 		OpenDocument(fileName);
 	}
-	else if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
+	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("vtk", Qt::CaseInsensitive) == 0))
 	{
-		// load the plot file
-		OpenPlotFile(fileName, nullptr, showLoadOptions);
+		// load the post file
+		OpenPostFile(fileName, nullptr, showLoadOptions);
 	}
 	else if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
@@ -784,30 +786,40 @@ CModelDocument* CMainWindow::CreateNewDocument()
 
 //-----------------------------------------------------------------------------
 //! Open a plot file
-void CMainWindow::OpenPlotFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions)
+void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions)
 {
 	// see if this file is already open
 	CPostDocument* doc = dynamic_cast<CPostDocument*>(FindDocument(fileName.toStdString()));
 	if (doc == nullptr)
 	{
 		doc = new CPostDocument(this, modelDoc);
-		xpltFileReader* xplt = new xpltFileReader(doc->GetFEModel());
-		doc->SetFileReader(xplt);
-		if (showLoadOptions)
+
+		QString ext = QFileInfo(fileName).suffix();
+		if (ext.compare("xplt", Qt::CaseInsensitive) == 0)
 		{
-			CDlgImportXPLT dlg(this);
-			if (dlg.exec())
+			xpltFileReader* xplt = new xpltFileReader(doc->GetFEModel());
+			if (showLoadOptions)
 			{
-				xplt->SetReadStateFlag(dlg.m_nop);
-				xplt->SetReadStatesList(dlg.m_item);
+				CDlgImportXPLT dlg(this);
+				if (dlg.exec())
+				{
+					xplt->SetReadStateFlag(dlg.m_nop);
+					xplt->SetReadStatesList(dlg.m_item);
+				}
+				else
+				{
+					delete doc;
+					return;
+				}
 			}
-			else
-			{
-				delete doc;
-				return;
-			}
+			doc->SetFileReader(xplt);
+			ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::NEW_DOCUMENT);
 		}
-		ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::NEW_DOCUMENT);
+		else if (ext.compare("vtk", Qt::CaseInsensitive) == 0)
+		{
+			Post::FEVTKimport* vtk = new Post::FEVTKimport(doc->GetFEModel());
+			ReadFile(doc, fileName, vtk, QueuedFile::NEW_DOCUMENT);
+		}
 	}
 	else
 	{

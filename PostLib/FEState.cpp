@@ -237,9 +237,82 @@ int FEState::GetID() const
 FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 {
 	m_id = -1;
-
+	m_time = time;
+	m_nField = -1;
 	m_mesh = pstate->m_mesh;
+
+	RebuildData();
+
+	// get the data manager
+	FEDataManager* pdm = pfem->GetDataManager();
+
+	// Nodal data
+	int N = pdm->DataFields();
+	FEDataFieldPtr pn = pdm->FirstDataField();
+	for (int i = 0; i < N; ++i, ++pn)
+	{
+		m_Data.push_back((*pn)->CreateData(this));
+	}
+
+	// copy data
+	pn = pdm->FirstDataField();
+	for (int i = 0; i < N; ++i, ++pn)
+	{
+		FEDataField& d = *(*pn);
+		FEMeshData& md = m_Data[i];
+		if (d.DataClass() == CLASS_NODE)
+		{
+			switch (md.GetType())
+			{
+			case DATA_FLOAT: copyData< Post::FENodeData<FEDataTypeTraits<DATA_FLOAT  >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_VEC3F: copyData< Post::FENodeData<FEDataTypeTraits<DATA_VEC3F  >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3F: copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3F  >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3D: copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3D  >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FS: copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3FS >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FD: copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3FD >::dataType> >(&md, &pstate->m_Data[i]); break;
+			case DATA_TENS4FS: copyData< Post::FENodeData<FEDataTypeTraits<DATA_TENS4FS>::dataType> >(&md, &pstate->m_Data[i]); break;
+			default:
+				assert(false);
+			}
+		}
+		else if (d.DataClass() == CLASS_FACE)
+		{
+			switch (md.GetType())
+			{
+			case DATA_FLOAT: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_FLOAT  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_VEC3F: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_VEC3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3F: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3D: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3D  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FS: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3FS >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FD: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3FD >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_TENS4FS: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_TENS4FS>::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			default:
+				assert(false);
+			}
+		}
+		else if (d.DataClass() == CLASS_ELEM)
+		{
+			switch (md.GetType())
+			{
+			case DATA_FLOAT: copyData< Post::FEElementData<FEDataTypeTraits<DATA_FLOAT  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_VEC3F: copyData< Post::FEElementData<FEDataTypeTraits<DATA_VEC3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3F: copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3D: copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3D  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FS: copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3FS >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_MAT3FD: copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3FD >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			case DATA_TENS4FS: copyData< Post::FEElementData<FEDataTypeTraits<DATA_TENS4FS>::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
+			default:
+				assert(false);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEState::RebuildData()
+{
 	FEPostMesh& mesh = *m_mesh;
+	FEPostModel& fem = *m_fem;
 
 	int nodes = mesh.Nodes();
 	int edges = mesh.Edges();
@@ -253,15 +326,19 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 	m_FACE.resize(faces);
 
 	// allocate element data
-	for (int i=0; i<elems; ++i)
+	m_ElemData.clear();
+	for (int i = 0; i < elems; ++i)
 	{
 		FEElement_& el = mesh.ElementRef(i);
 		int ne = el.Nodes();
 		m_ElemData.append(ne);
+
+		m_ELEM[i].m_state = StatusFlags::VISIBLE;
 	}
 
 	// allocate face data
-	for (int i=0; i<faces; ++i)
+	m_FaceData.clear();
+	for (int i = 0; i < faces; ++i)
 	{
 		FEFace& face = mesh.Face(i);
 		int nf = face.Nodes();
@@ -269,8 +346,8 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 	}
 
 	// initialize data
-	for (int i=0; i<nodes; ++i) m_NODE[i].m_rt = to_vec3f(mesh.Node(i).r);
-	for (int i=0; i<elems; ++i)
+	for (int i = 0; i < nodes; ++i) m_NODE[i].m_rt = to_vec3f(mesh.Node(i).r);
+	for (int i = 0; i < elems; ++i)
 	{
 		m_ELEM[i].m_h[0] = 0.f;
 		m_ELEM[i].m_h[1] = 0.f;
@@ -278,12 +355,12 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 		m_ELEM[i].m_h[3] = 0.f;
 	}
 
-	int ptObjs = pfem->PointObjects();
+	int ptObjs = fem.PointObjects();
 	m_objPt.resize(ptObjs);
 	for (int i = 0; i < ptObjs; ++i)
 	{
 		OBJ_POINT_DATA& di = m_objPt[i];
-		Post::FEPostModel::PointObject& po = *pfem->GetPointObject(i);
+		Post::FEPostModel::PointObject& po = *fem.GetPointObject(i);
 
 		di.pos = po.m_pos;
 		di.rot = po.m_rot;
@@ -291,85 +368,18 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 		di.m_rt = po.m_rt;
 	}
 
-	int lnObjs = pfem->LineObjects();
+	int lnObjs = fem.LineObjects();
 	m_objLn.resize(lnObjs);
 	for (int i = 0; i < lnObjs; ++i)
 	{
 		OBJ_LINE_DATA& di = m_objLn[i];
-		Post::FEPostModel::LineObject& po = *pfem->GetLineObject(i);
+		Post::FEPostModel::LineObject& po = *fem.GetLineObject(i);
 
 		di.pos = po.m_pos;
 		di.rot = po.m_rot;
 
 		di.m_r1 = po.m_r1;
 		di.m_r2 = po.m_r2;
-	}
-
-	m_time = time;
-	m_nField = -1;
-
-	// get the data manager
-	FEDataManager* pdm = pfem->GetDataManager();
-
-	// Nodal data
-	int N = pdm->DataFields();
-	FEDataFieldPtr pn = pdm->FirstDataField();
-	for (int i=0; i<N; ++i, ++pn)
-	{
-		m_Data.push_back((*pn)->CreateData(this));
-	}
-
-	// copy data
-	pn = pdm->FirstDataField();
-	for (int i=0; i<N; ++i, ++pn)
-	{
-		FEDataField& d = *(*pn);
-		FEMeshData& md = m_Data[i];
-		if (d.DataClass() == CLASS_NODE)
-		{
-			switch (md.GetType())
-			{
-			case DATA_FLOAT  : copyData< Post::FENodeData<FEDataTypeTraits<DATA_FLOAT  >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_VEC3F  : copyData< Post::FENodeData<FEDataTypeTraits<DATA_VEC3F  >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3F  : copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3F  >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3D  : copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3D  >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FS : copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3FS >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FD : copyData< Post::FENodeData<FEDataTypeTraits<DATA_MAT3FD >::dataType> >(&md, &pstate->m_Data[i]); break;
-			case DATA_TENS4FS: copyData< Post::FENodeData<FEDataTypeTraits<DATA_TENS4FS>::dataType> >(&md, &pstate->m_Data[i]); break;
-			default:
-				assert(false);
-			}
-		}
-		else if (d.DataClass() == CLASS_FACE)
-		{
-			switch (md.GetType())
-			{
-			case DATA_FLOAT  : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_FLOAT  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_VEC3F  : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_VEC3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3F  : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3D  : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3D  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FS : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3FS >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FD : copyData< Post::FEFaceData<FEDataTypeTraits<DATA_MAT3FD >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_TENS4FS: copyData< Post::FEFaceData<FEDataTypeTraits<DATA_TENS4FS>::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			default:
-				assert(false);
-			}
-		}
-		else if (d.DataClass() == CLASS_ELEM)
-		{
-			switch (md.GetType())
-			{
-			case DATA_FLOAT  : copyData< Post::FEElementData<FEDataTypeTraits<DATA_FLOAT  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_VEC3F  : copyData< Post::FEElementData<FEDataTypeTraits<DATA_VEC3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3F  : copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3F  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3D  : copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3D  >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FS : copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3FS >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_MAT3FD : copyData< Post::FEElementData<FEDataTypeTraits<DATA_MAT3FD >::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			case DATA_TENS4FS: copyData< Post::FEElementData<FEDataTypeTraits<DATA_TENS4FS>::dataType, DATA_ITEM> >(&md, &pstate->m_Data[i]); break;
-			default:
-				assert(false);
-			}
-		}
 	}
 }
 

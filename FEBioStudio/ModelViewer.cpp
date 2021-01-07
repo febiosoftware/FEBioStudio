@@ -1341,7 +1341,7 @@ void CModelViewer::OnOpenJob()
 	assert(doc);
 	QString plotFile = doc->ToAbsolutePath(job->GetPlotFileName());
 
-	GetMainWindow()->OpenPlotFile(plotFile, dynamic_cast<CModelDocument*>(doc), false);
+	GetMainWindow()->OpenPostFile(plotFile, dynamic_cast<CModelDocument*>(doc), false);
 }
 
 void CModelViewer::OnEditOutput()

@@ -617,3 +617,18 @@ void CPostDocument::DeleteGraph(const CGraphData* data)
 	delete m_graphs[n];
 	m_graphs.erase(m_graphs.begin() + n);
 }
+
+bool CPostDocument::MergeFEModel(Post::FEPostModel* fem)
+{
+	if (fem == nullptr) return false;
+
+	// delete the model
+	delete m_glm; m_glm = nullptr;
+
+	// merge the fem models
+	bool bret = m_fem->Merge(fem);
+
+	// we assume that the merge did not break the model
+	// so we can always reinitialize
+	return Initialize() && bret;
+}

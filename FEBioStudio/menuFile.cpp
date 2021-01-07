@@ -113,6 +113,7 @@ SOFTWARE.*/
 #include <PostLib/FEVTKExport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
+#include <PostLib/FEVTKImport.h>
 #include <sstream>
 
 #ifdef HAS_QUAZIP
@@ -1285,50 +1286,94 @@ void CMainWindow::on_actionExportFEModel_triggered()
 void CMainWindow::on_actionImportGeometry_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	// file filters
-	QStringList filters;
-	filters << "All files (*)";
-	filters << "PreView Object File (*.pvo)";
-	filters << "FEBio (*.feb)";
-	filters << "ABAQUS (*.inp)";
-	filters << "ANSYS (*.cdb)";
-	filters << "LSDYNA Keyword (*.k)";
-	filters << "IDEAS Universal (*.unv)";
-	filters << "NASTRAN (*.nas)";
-	filters << "DXF (*.dxf)";
-	filters << "STL (*.stl)";
-	filters << "HyperMesh ASCII (*.hmascii)";
-	filters << "HyperSurface ASCII (*.surf)";
-	filters << "GMsh (*.msh)";
-	filters << "BYU (*.byu)";
-	filters << "Mesh (*.mesh)";
-	filters << "TetGen (*.ele)";
-	filters << "IGES (*.iges, *.igs)";
-	filters << "VTK (*.vtk)";
-	filters << "RAW Image (*.raw)";
-	filters << "COMSOL Mesh (*.mphtxt)";
-	filters << "PLY (*.ply)";
-	filters << "BREP files (*.brep *.brp)";
-	filters << "STEP files (*.step *.stp)";
-	
-	// present the file selection dialog box
-	QFileDialog dlg(this);
-	dlg.setFileMode(QFileDialog::ExistingFiles);
-	dlg.setAcceptMode(QFileDialog::AcceptOpen);
-	dlg.setNameFilters(filters);
-	if (dlg.exec())
+	CPostDocument* postDoc = GetPostDocument();
+	if (doc)
 	{
-		// store the current path
-		QDir dir = dlg.directory();
-		SetCurrentFolder(dir.absolutePath());
+		// file filters
+		QStringList filters;
+		filters << "All files (*)";
+		filters << "PreView Object File (*.pvo)";
+		filters << "FEBio (*.feb)";
+		filters << "ABAQUS (*.inp)";
+		filters << "ANSYS (*.cdb)";
+		filters << "LSDYNA Keyword (*.k)";
+		filters << "IDEAS Universal (*.unv)";
+		filters << "NASTRAN (*.nas)";
+		filters << "DXF (*.dxf)";
+		filters << "STL (*.stl)";
+		filters << "HyperMesh ASCII (*.hmascii)";
+		filters << "HyperSurface ASCII (*.surf)";
+		filters << "GMsh (*.msh)";
+		filters << "BYU (*.byu)";
+		filters << "Mesh (*.mesh)";
+		filters << "TetGen (*.ele)";
+		filters << "IGES (*.iges, *.igs)";
+		filters << "VTK (*.vtk)";
+		filters << "RAW Image (*.raw)";
+		filters << "COMSOL Mesh (*.mphtxt)";
+		filters << "PLY (*.ply)";
+		filters << "BREP files (*.brep *.brp)";
+		filters << "STEP files (*.step *.stp)";
 
-		// get the file names
-		QStringList files = dlg.selectedFiles();
+		// present the file selection dialog box
+		QFileDialog dlg(this);
+		dlg.setFileMode(QFileDialog::ExistingFiles);
+		dlg.setAcceptMode(QFileDialog::AcceptOpen);
+		dlg.setNameFilters(filters);
+		if (dlg.exec())
+		{
+			// store the current path
+			QDir dir = dlg.directory();
+			SetCurrentFolder(dir.absolutePath());
 
-		// import the file
-		ImportFiles(files);
+			// get the file names
+			QStringList files = dlg.selectedFiles();
+
+			// import the file
+			ImportFiles(files);
+		}
+	}
+	else if (postDoc)
+	{
+		// file filters
+		QStringList filters;
+		filters << "VTK (*.vtk)";
+
+		QFileDialog dlg(this);
+		dlg.setFileMode(QFileDialog::ExistingFile);
+		dlg.setAcceptMode(QFileDialog::AcceptOpen);
+		dlg.setNameFilters(filters);
+		if (dlg.exec())
+		{
+			// store the current path
+			QDir dir = dlg.directory();
+			SetCurrentFolder(dir.absolutePath());
+
+			// get the file names
+			QStringList files = dlg.selectedFiles();
+			if (files.size() > 0)
+			{
+				QString fileName = files.at(0);
+
+				std::string sfile = fileName.toStdString();
+
+				// create a dummy post model
+				Post::FEPostModel* dummyFem = new Post::FEPostModel;
+				Post::FEVTKimport vtk(dummyFem);
+				if (vtk.Load(sfile.c_str()))
+				{
+					if (postDoc->MergeFEModel(dummyFem) == false)
+					{
+						QMessageBox::critical(this, "FEBio Studio", QString("Failed merging model in file:\n%1").arg(fileName));
+					}
+				}
+				else
+				{
+					QMessageBox::critical(this, "FEBio Studio", QString("Failed importing file:\n%1").arg(fileName));
+				}
+				delete dummyFem;
+			}
+		}
 	}
 }
 

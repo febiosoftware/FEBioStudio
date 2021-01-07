@@ -141,6 +141,8 @@ public:
 
 	Post::CGLModel* GetGLModel();
 
+	bool MergeFEModel(Post::FEPostModel* fem);
+
 	CPostObject* GetPostObject();
 
 	TIMESETTINGS& GetTimeSettings();

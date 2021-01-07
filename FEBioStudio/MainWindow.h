@@ -278,7 +278,7 @@ public:
 	FileReader* CreateFileReader(const QString& fileName);
 
 	void OpenFile(const QString& fileName, bool showLoadOptions = true, bool openExternal = true);
-	void OpenPlotFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true);
+	void OpenPostFile(const QString& fileName, CModelDocument* doc, bool showLoadOptions = true);
 
 	bool SaveDocument(const QString& fileName);
 

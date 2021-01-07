@@ -249,6 +249,9 @@ public:
 	void UpdateMeshState(int ntime);
 
 public:
+	bool Merge(FEPostModel* fem);
+
+public:
 	static void SetInstance(FEPostModel* fem);
 	static FEPostModel* GetInstance();
 
