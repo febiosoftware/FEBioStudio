@@ -1372,7 +1372,11 @@ void CMainWindow::on_actionImportGeometry_triggered()
 					QMessageBox::critical(this, "FEBio Studio", QString("Failed importing file:\n%1").arg(fileName));
 				}
 				delete dummyFem;
+				Post::FEPostModel::SetInstance(postDoc->GetFEModel());
 			}
+
+			ui->postPanel->Update(true);
+			RedrawGL();
 		}
 	}
 }

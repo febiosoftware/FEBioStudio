@@ -82,29 +82,52 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 		for (int j = 0; j<nf; ++j)
 		{
 			int inode = m_lnode[MN * i + j];
-			m_NLT[inode].push_back(m_face[i]);
+			m_NLT[inode].push_back(i);
 		}
 	}
 }
-
 
 //-----------------------------------------------------------------------------
 FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem) : Post::FEDataField("area coverage", DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
 {
 	m_fem = fem;
-	m_bignoreBackIntersections = true;
+	m_ballowBackIntersections = false;
+	m_angleThreshold = 0.0;
+	m_backSearchRadius = 0.0;
 }
 
 //-----------------------------------------------------------------------------
-void FEAreaCoverage::IgnoreBackIntersection(bool b)
+void FEAreaCoverage::AllowBackIntersection(bool b)
 {
-	m_bignoreBackIntersections = b;
+	m_ballowBackIntersections = b;
 }
 
 //-----------------------------------------------------------------------------
-bool FEAreaCoverage::IgnoreBackIntersection() const
+bool FEAreaCoverage::AllowBackIntersection() const
 {
-	return m_bignoreBackIntersections;
+	return m_ballowBackIntersections;
+}
+
+//-----------------------------------------------------------------------------
+void Post::FEAreaCoverage::SetAngleThreshold(double w)
+{
+	m_angleThreshold = w;
+}
+
+//-----------------------------------------------------------------------------
+double Post::FEAreaCoverage::GetAngleThreshold() const
+{
+	return m_angleThreshold;
+}
+
+void Post::FEAreaCoverage::SetBackSearchRadius(double R)
+{
+	m_backSearchRadius = R;
+}
+
+double Post::FEAreaCoverage::GetBackSearchRadius() const
+{
+	return m_backSearchRadius;
 }
 
 //-----------------------------------------------------------------------------
@@ -175,21 +198,9 @@ void FEAreaCoverage::Apply()
 		FEState* ps = fem.GetState(n);
 		FEFaceData<float, DATA_NODE>& df = dynamic_cast<FEFaceData<float, DATA_NODE>&>(ps->m_Data[nfield]);
 
-		// repeat over all nodes of surface 1
+		// project surface 1 onto surface 2
 		vector<float> a(m_surf1.Nodes(), 0.f);
-		for (int i = 0; i<m_surf1.Nodes(); ++i)
-		{
-			int inode = m_surf1.m_node[i];
-			FENode& node = mesh.Node(inode);
-			vec3f ri = fem.NodePosition(inode, n);
-			vec3f Ni = m_surf1.m_norm[i];
-
-			// see if it intersects the other surface
-			if (intersect(ri, Ni, m_surf2))
-			{
-				a[i] = 1.f;
-			}
-		}
+		projectSurface(m_surf1, m_surf2, a);
 		vector<int> nf1(m_surf1.Faces());                     // TODO: The reason I have to comment this out is because m_lnode has a fixed size per face
 		for (int i = 0; i < m_surf1.Faces(); ++i) nf1[i] = MN;// mesh.Face(m_surf1.m_face[i]).Nodes();
 		df.add(a, m_surf1.m_face, m_surf1.m_lnode, nf1);
@@ -197,19 +208,7 @@ void FEAreaCoverage::Apply()
 
 		// repeat over all nodes of surface 2
 		vector<float> b(m_surf2.Nodes(), 0.f);
-		for (int i = 0; i<m_surf2.Nodes(); ++i)
-		{
-			int inode = m_surf2.m_node[i];
-			FENode& node = mesh.Node(inode);
-			vec3f ri = fem.NodePosition(inode, n);
-			vec3f Ni = m_surf2.m_norm[i];
-
-			// see if it intersects the other surface
-			if (intersect(ri, Ni, m_surf1))
-			{
-				b[i] = 1.f;
-			}
-		}
+		projectSurface(m_surf2, m_surf1, b);
 		vector<int> nf2(m_surf2.Faces());
 		for (int i = 0; i < m_surf2.Faces(); ++i) nf2[i] = MN;// mesh.Face(m_surf2.m_face[i]).Nodes();
 		df.add(b, m_surf2.m_face, m_surf2.m_lnode, nf2);
@@ -260,30 +259,71 @@ void FEAreaCoverage::UpdateSurface(FEAreaCoverage::Surface& s, int nstate)
 }
 
 //-----------------------------------------------------------------------------
-bool FEAreaCoverage::intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::Surface& surf)
+// project a surface onto another surface
+void FEAreaCoverage::projectSurface(FEAreaCoverage::Surface& surf1, FEAreaCoverage::Surface& surf2, vector<float>& a)
+{
+#pragma omp parallel for shared(surf1, surf2, a)
+	for (int i = 0; i < surf1.Nodes(); ++i)
+	{
+		vec3f ri = surf1.m_pos[i];
+		vec3f Ni = surf1.m_norm[i];
+
+		// see if it intersects the other surface
+		Intersection q;
+		if (intersect(ri, Ni, surf2, q))
+		{
+			vec3d e = q.point - ri;
+			double L1 = e.Length();
+			if (e*Ni < 0.f) L1 = -L1;
+
+			// make sure back intersections are contrained to search radius
+			bool bintersect = true;
+			if ((L1 < 0) && (m_backSearchRadius > 0))
+			{
+				if (-L1 > m_backSearchRadius) bintersect = false;
+			}
+
+			// if the intersection remains, tag it
+			if (bintersect)
+			{
+				a[i] = 1.f;
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool FEAreaCoverage::intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::Surface& surf, Intersection& qmin)
 {
 	// create the ray
 	Ray ray = {r, N};
 
 	// loop over all facets connected to this node
 	Intersection q;
+	int imin = -1;
+	double Lmin;
 	for (int i = 0; i<(int)surf.m_face.size(); ++i)
 	{
 		// see if the ray intersects this face
-		if (faceIntersect(surf, ray, i))
+		if (faceIntersect(surf, ray, i, q))
 		{
-			return true;
+			double L = (q.point - r).Length();
+			if ((imin == -1) || (L < Lmin))
+			{
+				imin = i;
+				Lmin = L;
+				qmin = q;
+			}
 		}
 	}
 
-	return false;
+	return (imin != -1);
 }
 
 
 //-----------------------------------------------------------------------------
-bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray, int nface)
+bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray, int nface, Intersection& q)
 {
-	Intersection q;
 	q.m_index = -1;
 	Post::FEPostMesh& mesh = *m_fem->GetFEMesh(0);
 
@@ -307,6 +347,8 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 
 		Triangle tri = { rn[0], rn[1], rn[2], surf.m_fnorm[nface] };
 		bfound = IntersectTriangle(ray, tri, q, false);
+
+		bfound = (bfound && (ray.direction * tri.fn < -m_angleThreshold));
 	}
 	break;
 	case FE_FACE_QUAD4:
@@ -324,7 +366,7 @@ bool FEAreaCoverage::faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray
 	break;
 	}
 
-	if (bfound && (m_bignoreBackIntersections))
+	if (bfound && (m_ballowBackIntersections == false))
 	{
 		// make sure the projection is in the direction of the ray
 		bfound = (ray.direction*(q.point - ray.origin) > 0.f);

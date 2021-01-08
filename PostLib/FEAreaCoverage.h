@@ -65,8 +65,14 @@ public:
 
 	FEMeshData* CreateData(FEState* pstate) override;
 
-	void IgnoreBackIntersection(bool b);
-	bool IgnoreBackIntersection() const;
+	void AllowBackIntersection(bool b);
+	bool AllowBackIntersection() const;
+
+	void SetAngleThreshold(double w);
+	double GetAngleThreshold() const;
+
+	void SetBackSearchRadius(double R);
+	double GetBackSearchRadius() const;
 
 	void InitSurface(int n);
 
@@ -85,13 +91,19 @@ protected:
 	void UpdateSurface(FEAreaCoverage::Surface& s, int nstate);
 
 	// see if a ray intersects with a surface
-	bool intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::Surface& surf);
-	bool faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray, int nface);
+	bool intersect(const vec3f& r, const vec3f& N, FEAreaCoverage::Surface& surf, Intersection& q);
+	bool faceIntersect(FEAreaCoverage::Surface& surf, const Ray& ray, int nface, Intersection& q);
+
+	// project a surface onto another surface
+	void projectSurface(FEAreaCoverage::Surface& surf1, FEAreaCoverage::Surface& surf2, vector<float>& a);
 
 protected:
 	Surface		m_surf1;
 	Surface		m_surf2;
 	FEPostModel*	m_fem;
-	bool		m_bignoreBackIntersections;
+
+	bool		m_ballowBackIntersections;	// include back intersections
+	double		m_angleThreshold;			// angular threshold (between 0 and 1)
+	double		m_backSearchRadius;			// search radius for back intersections (set to 0 to ignore)
 };
 }

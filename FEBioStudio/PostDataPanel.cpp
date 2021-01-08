@@ -235,49 +235,61 @@ public:
 	{
 		addProperty("Assign to surface1", CProperty::Action, "");
 		addProperty("Assign to surface2", CProperty::Action, "");
-		addProperty("Ignore back intersections", CProperty::Bool);
+		addProperty("Allow back intersections", CProperty::Bool);
+		addProperty("Angle threshold", CProperty::Float);
+		addProperty("Back search radius", CProperty::Float);
 		addProperty("", CProperty::Action, "Apply");
 	}
 
 	QVariant GetPropertyValue(int i) override
 	{
-		if (i == 0)
+		switch (i)
+		{
+		case 0:
 		{
 			int n = m_map->GetSurfaceSize(0);
 			return QString("(%1 Faces)").arg(n);
 		}
-		if (i == 1)
+		break;
+		case 1:
 		{
 			int n = m_map->GetSurfaceSize(1);
 			return QString("(%1 Faces)").arg(n);
 		}
-		if (i == 2)
-		{
-			return m_map->IgnoreBackIntersection();
+		break;
+		case 2: return m_map->AllowBackIntersection(); break;
+		case 3: return m_map->GetAngleThreshold(); break;
+		case 4: return m_map->GetBackSearchRadius(); break;
+		break;
 		}
+
 		return QVariant();
 	}
 
 	void SetPropertyValue(int i, const QVariant& v) override
 	{
-		if (i == 0)
+		switch (i)
 		{
-			m_map->InitSurface(0);
-			SetModified(true);
-		}
-		else if (i == 1)
-		{
-			m_map->InitSurface(1);
-			SetModified(true);
-		}
-		else if (i == 2)
-		{
-			m_map->IgnoreBackIntersection(v.toBool());
-			SetModified(true);
-		}
-		else if (i == 3)
-		{
-			m_map->Apply();
+		case 0:
+			{
+				m_map->InitSurface(0);
+				SetModified(true);
+			}
+			break;
+		case 1:
+			{
+				m_map->InitSurface(1);
+				SetModified(true);
+			}
+			break;
+		case 2: m_map->AllowBackIntersection(v.toBool()); break;
+		case 3: m_map->SetAngleThreshold(v.toDouble()); break;
+		case 4: m_map->SetBackSearchRadius(v.toDouble()); break;
+		case 5:
+			{
+				m_map->Apply();
+			}
+			break;
 		}
 	}
 
