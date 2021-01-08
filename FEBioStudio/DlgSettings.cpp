@@ -776,9 +776,26 @@ CUpdateSettingsWidget::CUpdateSettingsWidget(QDialog* settings, CMainWindow* wnd
 	QVBoxLayout* layout = new QVBoxLayout;
 	layout->setAlignment(Qt::AlignTop);
 
-	QLabel* devUpdateLabel = new QLabel("Click the button below to update FEBio and FEBio Studio to the latest development versions.\n"
-			"These versions contain the latest bugfixes and features but are potentially unstable.\n"
-			"Please only proceed with this update if you understand what you're doing.");
+	QLabel* updateLabel = new QLabel("Click the button below to check for an update to the latest releases of FEBio and\nFEBio Studio.");
+	// updateLabel->setWordWrap(true);
+
+	layout->addWidget(updateLabel);
+
+	QPushButton* updateButton = new QPushButton("Update to Latest Release");
+	updateButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+
+	layout->addWidget(updateButton);
+
+	QFrame* line = new QFrame();
+	line->setFrameShape(QFrame::HLine);
+	line->setFrameShadow(QFrame::Sunken);
+	line->setLineWidth(1);
+
+	layout->addWidget(line);
+
+	QLabel* devUpdateLabel = new QLabel("Click the button below to update FEBio and FEBio Studio to the latest development versions. "
+			"These versions contain the latest bugfixes and features but are potentially unstable. Please proceed with caution.");
+	devUpdateLabel->setWordWrap(true);
 	
 	layout->addWidget(devUpdateLabel);
 
@@ -789,7 +806,16 @@ CUpdateSettingsWidget::CUpdateSettingsWidget(QDialog* settings, CMainWindow* wnd
 
 	this->setLayout(layout);
 
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+	QObject::connect(updateButton, &QPushButton::clicked, this, &CUpdateSettingsWidget::updateButton_clicked);
 	QObject::connect(devUpdateButton, &QPushButton::clicked, this, &CUpdateSettingsWidget::updateDevButton_clicked);
+}
+
+void CUpdateSettingsWidget::updateButton_clicked()
+{
+	m_settings->close();
+	m_wnd->on_actionUpdate_triggered();
 }
 
 void CUpdateSettingsWidget::updateDevButton_clicked()
