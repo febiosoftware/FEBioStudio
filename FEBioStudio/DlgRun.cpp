@@ -94,7 +94,7 @@ public:
 		QToolButton* setCWDBtn = new QToolButton;
 		setCWDBtn->setDefaultAction(setCWD);
 		QHBoxLayout* cwdLayout = new QHBoxLayout;
-		cwdLayout->setMargin(0);
+		cwdLayout->setContentsMargins(0,0,0,0);
 		cwdLayout->addWidget(cwd);
 		cwdLayout->addWidget(setCWDBtn);
 

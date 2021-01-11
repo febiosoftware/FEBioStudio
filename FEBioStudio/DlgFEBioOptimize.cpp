@@ -182,7 +182,7 @@ CSelectParam::CSelectParam(FEModel* fem, int paramOption, QWidget* parent) : m_f
 	m_paramOption = paramOption;
 
 	QHBoxLayout* h = new QHBoxLayout;
-	h->setMargin(0);
+	h->setContentsMargins(0,0,0,0);
 	h->addWidget(m_edit = new QLineEdit);
 	h->addWidget(m_push = new QPushButton("..."));
 	m_push->setMaximumWidth(20);

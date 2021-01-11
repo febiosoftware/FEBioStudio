@@ -60,7 +60,7 @@ public:
 		m_path = nullptr;
 
 		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(1);
+		l->setContentsMargins(1,1,1,1); //was setMargin
 
 		m_slider = new QSlider;
 		m_slider->setOrientation(Qt::Horizontal);

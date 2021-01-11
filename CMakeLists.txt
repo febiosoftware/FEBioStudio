@@ -242,8 +242,9 @@ endforeach(name)
 ##### Add binaries #####
 
 # Linking the Qt libraries also pulls in the include files
-link_libraries(Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::Core5Compat)
+link_libraries(Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
 #Qt5::Charts
+#Added openGLWidgets
 
 #if(Qt6WebEngineWidgets_FOUND)
 #	link_libraries(Qt6::WebEngineWidgets)

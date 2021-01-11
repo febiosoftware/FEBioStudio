@@ -1,5 +1,5 @@
 # Qt
-find_package(Qt6 COMPONENTS Widgets Gui Network OpenGL Core5Compat REQUIRED) 
+find_package(Qt6 COMPONENTS Widgets Gui Network OpenGL OpenGLWidgets REQUIRED) 
 #Charts was removed, is no longer a supported module
 #find_package(Qt6 COMPONENTS WebEngineWidgets QUIET)
 mark_as_advanced(Qt6Charts_DIR Qt6Core_DIR Qt6Gui_DIR Qt6Network_DIR Qt6OpenGL_DIR Qt6Positioning_DIR 

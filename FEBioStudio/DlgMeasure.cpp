@@ -75,7 +75,7 @@ public:
 			m_list->addItem(name);
 		}
 		QVBoxLayout* l1 = new QVBoxLayout;
-		l1->setMargin(0);
+		l1->setContentsMargins(0,0,0,0);
 		l1->addWidget(m_list);
 		l->addLayout(l1);
 
@@ -100,7 +100,7 @@ public:
 
 		QVBoxLayout* l2 = new QVBoxLayout;
 		l2->addWidget(m_stack);
-		l2->setMargin(0);
+		l2->setContentsMargins(0,0,0,0);
 		l->addLayout(l2);
 
 		dlg->setLayout(l);

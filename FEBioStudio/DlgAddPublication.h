@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
+#include <QStringList>
 #include <vector>
 #include "LaunchConfig.h"
 
@@ -33,7 +34,7 @@ namespace Ui {
 	class CDlgAddPublication;
 }
 
-class QStringList;
+//class QStringList;
 class QTreeWidgetItem;
 class QNetworkAccessManager;
 class QNetworkReply;

@@ -58,7 +58,7 @@ public:
 		stack->addWidget(txt[1]);
 
 		QVBoxLayout* pl = new QVBoxLayout;
-		pl->setMargin(0);
+		pl->setContentsMargins(0,0,0,0);
 		pl->setSpacing(0);
 
 		combo = new QComboBox;

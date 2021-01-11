@@ -79,7 +79,7 @@ public:
 		m_table->setHorizontalHeaderLabels(QStringList() << "selection" << "value");
 
 		QFormLayout* f = new QFormLayout;
-		f->setMargin(0);
+		f->setContentsMargins(0,0,0,0);
 		f->addRow("Material:", m_matList = new QComboBox);
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));

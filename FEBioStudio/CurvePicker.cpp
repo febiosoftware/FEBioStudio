@@ -47,7 +47,7 @@ public:
 	void setup(QWidget* w)
 	{
 		QHBoxLayout* l = new QHBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->setSpacing(0);
 		l->addWidget(m_name = new QLineEdit);
 		l->addWidget(m_pick = new QPushButton("..."));
@@ -123,7 +123,7 @@ public:
 	void setup(QWidget* w)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->setSpacing(0);
 		l->addWidget(m_list = new ::CSelectionBox);
 

@@ -37,8 +37,7 @@ SOFTWARE.*/
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
-#include <QStringList>
-#include <QStringList>
+//#include <QStringList>
 #include <QVariantMap>
 #include "RepositoryPanel.h"
 

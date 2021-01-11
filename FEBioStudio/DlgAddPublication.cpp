@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include <QWidget>
-#include <QStringList>
+//#include <QStringList>
 #include <QKeyEvent>
 #include <QStackedLayout>
 #include <QLabel>

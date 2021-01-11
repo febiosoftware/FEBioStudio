@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QSslSocket>
-#include <QSslError>
+//#include <QSslError>
 #include <QSslConfiguration>
 #include <QByteArray>
 #include <QBuffer>

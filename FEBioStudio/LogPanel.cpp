@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ui_logpanel.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
 
@@ -101,7 +102,7 @@ void CLogPanel::ShowOutput()
 void CLogPanel::AddText(const QString& txt, int n)
 {
 	QTextDocument * document = ui->txt[n]->document();
-	QRegExp const escapeSequenceExpression(R"(\x1B\[([\d;]+)m)");
+	QRegularExpression const escapeSequenceExpression(R"(\x1B\[([\d;]+)m)");
 	QTextCursor cursor(document);
 	cursor.movePosition(QTextCursor::End);
 	QTextCharFormat textCharFormat = cursor.charFormat();

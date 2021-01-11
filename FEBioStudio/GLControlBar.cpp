@@ -64,7 +64,7 @@ public:
 	void setup(CGLControlBar* bar)
 	{
 		QHBoxLayout* h = new QHBoxLayout;
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 
 		QToolButton* b  = addButton(QIcon(":/icons/pivot.png"), "Lock pivot");
 		QToolButton* b1 = addButton(QIcon(":/icons/snaptogrid.png"), "Snap to grid"); b1->setChecked(true);
@@ -94,7 +94,7 @@ public:
 		noint   = addButton(QIcon(":/icons/ignore.png"), "Ignore interior");
 
 		QHBoxLayout* hl = new QHBoxLayout;
-		hl->setMargin(0);
+		hl->setContentsMargins(0,0,0,0);
 
 		QFrame* sep = new QFrame;
 		sep->setFrameShape(QFrame::VLine);

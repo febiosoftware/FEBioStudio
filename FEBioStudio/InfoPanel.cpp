@@ -57,7 +57,7 @@ public:
 		h->addWidget(b2);
 		h->addWidget(name);
 		h->addStretch();
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->setSpacing(0);
 
 		edit = new QPlainTextEdit;
@@ -70,7 +70,7 @@ public:
 		v->addLayout(h);
 		v->addWidget(edit);
 		w->setLayout(v);
-		v->setMargin(0);
+		v->setContentsMargins(0,0,0,0);
 		v->setSpacing(0);
 
 		QMetaObject::connectSlotsByName(w);

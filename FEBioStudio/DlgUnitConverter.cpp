@@ -125,7 +125,7 @@ public:
 	void setup(QDialog* dlg)
 	{
 		QHBoxLayout* hfrom = new QHBoxLayout;
-		hfrom->setMargin(0);
+		hfrom->setContentsMargins(0,0,0,0);
 		hfrom->addWidget(fromVal = new QLineEdit);
 		hfrom->addWidget(from = new QComboBox);
 
@@ -133,7 +133,7 @@ public:
 		fromVal->setText(QString::number(0.0));
 
 		QHBoxLayout* hto = new QHBoxLayout;
-		hto->setMargin(0);
+		hto->setContentsMargins(0,0,0,0);
 		hto->addWidget(toVal = new QLineEdit);
 		hto->addWidget(to = new QComboBox);
 		toVal->setReadOnly(true);

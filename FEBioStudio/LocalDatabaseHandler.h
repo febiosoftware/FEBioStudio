@@ -31,11 +31,12 @@ SOFTWARE.*/
 #include <map>
 #include <QList>
 #include <QtGlobal>
+#include <QStringList>
 
 class QJsonDocument;
 class QString;
 class QVariant;
-class QStringList;
+//class QStringList;
 class CRepoProject;
 class CRepositoryPanel;
 

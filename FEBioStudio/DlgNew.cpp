@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include <QGuiApplication>
 #include <QPushButton>
 #include <QScreen>
-#include <QDesktopWidget>
+//#include <QDesktopWidget> removed from Qt6
 #include "DocTemplate.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
@@ -98,7 +98,7 @@ public:
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
 		QHBoxLayout* hb = new  QHBoxLayout;
-		hb->setMargin(0);
+		hb->setContentsMargins(0,0,0,0);
 		m_showDialog = new QCheckBox("Don't show this dialog box again");
 		hb->addWidget(m_showDialog);
 		hb->addWidget(bb);

@@ -57,7 +57,7 @@ CCreateP2PLinePane::CCreateP2PLinePane(CCreatePanel* parent) : CCreatePane(paren
 	m_cap->setChecked(false);
 
 	QVBoxLayout* l = new QVBoxLayout;
-	l->setMargin(0);
+	l->setContentsMargins(0,0,0,0);
 	l->addLayout(grid);
 	l->addStretch();
 

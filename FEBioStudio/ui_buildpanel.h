@@ -64,7 +64,7 @@ public:
 		tab->addTab(tools  = new ::CToolsPanel (wnd, parent), "Tools" );
 
 		QHBoxLayout* l = new QHBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->addWidget(tab);
 
 		parent->setLayout(l);
