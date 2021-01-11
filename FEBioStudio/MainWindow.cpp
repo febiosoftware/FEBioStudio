@@ -436,6 +436,7 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 		QPushButton* importButton = box.addButton("Import as Model", QMessageBox::AcceptRole);
 		QPushButton* textButton = box.addButton("Edit as Text", QMessageBox::YesRole);
 		box.addButton(QMessageBox::Cancel);
+		box.setDefaultButton(importButton);
 
 		box.exec();
 
