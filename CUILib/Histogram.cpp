@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <QBoxLayout>
 #include <QCheckBox>
-#include <QtCharts/QLineSeries>
+#include <FEBioStudio/PlotWidget.h>
 using namespace Post;
 
 CHistogramViewer::CHistogramViewer(QWidget* parent) : QWidget(parent)
@@ -38,16 +38,8 @@ CHistogramViewer::CHistogramViewer(QWidget* parent) : QWidget(parent)
 	m_logMode = false;
 	m_img = nullptr;
 
-	QLineSeries* series = new QLineSeries();
-	for (int i=0; i<256; ++i)
-		series->append(i, 0);
-
-	QChart* chart = new QChart;
-	chart->addSeries(series);
-	chart->createDefaultAxes();
-	chart->legend()->hide();
-
-	m_chart = new QChartView;
+	m_chart = new CPlotWidget;
+	m_chart->showLegend(false);
 
 	QCheckBox* cb = new QCheckBox("Logarithmic");
 
@@ -56,9 +48,6 @@ CHistogramViewer::CHistogramViewer(QWidget* parent) : QWidget(parent)
 	v->addWidget(m_chart);
 
 	setLayout(v);
-
-	m_chart->setChart(chart);
-	m_chart->setRenderHint(QPainter::Antialiasing);
 
 	QObject::connect(cb, SIGNAL(clicked(bool)), this, SLOT(SetLogMode(bool)));
 }
@@ -103,14 +92,12 @@ void CHistogramViewer::Update()
 
 	double N = im->Depth()*im->Width()*im->Height();
 
-	QLineSeries* series = new QLineSeries();
+	m_chart->clear();
+
+	CPlotData* data = new CPlotData;
 	for (int i = 0; i<256; ++i)
-		series->append(i, h[i] / N);
+		data->addPoint(i, h[i] / N);
 
-	QChart* chart = new QChart;
-	chart->addSeries(series);
-	chart->createDefaultAxes();
-	chart->legend()->hide();
-
-	m_chart->setChart(chart);
+	m_chart->addPlotData(data);
+	m_chart->fitHeightToData();
 }
