@@ -327,7 +327,7 @@ void CGLMesh::RenderNodes()
 		}
 }
 
-void CGLMesh::SetColor(byte r, byte g, byte b)
+void CGLMesh::SetColor(Byte r, Byte g, Byte b)
 {
 	CFace* pf = m_pFace;
 	GLColor col(r, g, b);
@@ -545,20 +545,20 @@ void CGLMesh::SubSample()
 		b = pfo->m_node[1];
 		c = pfo->m_node[2];
 
-		c1.r = (byte)(int(pfo->m_Col[0].r + pfo->m_Col[1].r) >> 1);
-		c1.g = (byte)(int(pfo->m_Col[0].g + pfo->m_Col[1].g) >> 1);
-		c1.b = (byte)(int(pfo->m_Col[0].b + pfo->m_Col[1].b) >> 1);
-		c1.a = (byte)(int(pfo->m_Col[0].a + pfo->m_Col[1].a) >> 1);
+		c1.r = (Byte)(int(pfo->m_Col[0].r + pfo->m_Col[1].r) >> 1);
+		c1.g = (Byte)(int(pfo->m_Col[0].g + pfo->m_Col[1].g) >> 1);
+		c1.b = (Byte)(int(pfo->m_Col[0].b + pfo->m_Col[1].b) >> 1);
+		c1.a = (Byte)(int(pfo->m_Col[0].a + pfo->m_Col[1].a) >> 1);
 
-		c2.r = (byte)(int(pfo->m_Col[1].r + pfo->m_Col[2].r) >> 1);
-		c2.g = (byte)(int(pfo->m_Col[1].g + pfo->m_Col[2].g) >> 1);
-		c2.b = (byte)(int(pfo->m_Col[1].b + pfo->m_Col[2].b) >> 1);
-		c2.a = (byte)(int(pfo->m_Col[1].a + pfo->m_Col[2].a) >> 1);
+		c2.r = (Byte)(int(pfo->m_Col[1].r + pfo->m_Col[2].r) >> 1);
+		c2.g = (Byte)(int(pfo->m_Col[1].g + pfo->m_Col[2].g) >> 1);
+		c2.b = (Byte)(int(pfo->m_Col[1].b + pfo->m_Col[2].b) >> 1);
+		c2.a = (Byte)(int(pfo->m_Col[1].a + pfo->m_Col[2].a) >> 1);
 
-		c3.r = (byte)(int(pfo->m_Col[2].r + pfo->m_Col[0].r) >> 1);
-		c3.g = (byte)(int(pfo->m_Col[2].g + pfo->m_Col[0].g) >> 1);
-		c3.b = (byte)(int(pfo->m_Col[2].b + pfo->m_Col[0].b) >> 1);
-		c3.a = (byte)(int(pfo->m_Col[2].a + pfo->m_Col[0].a) >> 1);
+		c3.r = (Byte)(int(pfo->m_Col[2].r + pfo->m_Col[0].r) >> 1);
+		c3.g = (Byte)(int(pfo->m_Col[2].g + pfo->m_Col[0].g) >> 1);
+		c3.b = (Byte)(int(pfo->m_Col[2].b + pfo->m_Col[0].b) >> 1);
+		c3.a = (Byte)(int(pfo->m_Col[2].a + pfo->m_Col[0].a) >> 1);
 
 		n1 = (pfo->m_VNorm[0] + pfo->m_VNorm[1])*0.5f; n1.Normalize();
 		n2 = (pfo->m_VNorm[1] + pfo->m_VNorm[2])*0.5f; n2.Normalize();

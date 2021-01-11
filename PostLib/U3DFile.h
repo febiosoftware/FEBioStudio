@@ -31,7 +31,7 @@ SOFTWARE.*/
 using namespace std;
 
 #ifdef WIN32
-typedef unsigned char byte;
+typedef unsigned char Byte;
 typedef unsigned __int16 uint16;
 typedef __int32 int32;
 typedef unsigned __int32 uint32;
@@ -39,7 +39,7 @@ typedef __int64 int64;
 typedef unsigned __int64 uint64;
 #endif
 #ifdef __APPLE__
-typedef unsigned char byte;
+typedef unsigned char Byte;
 typedef uint16_t uint16;
 typedef int32_t int32;
 typedef uint32_t uint32;
@@ -47,7 +47,7 @@ typedef int64_t int64;
 typedef uint64_t uint64;
 #endif
 #ifdef LINUX
-typedef unsigned char byte;
+typedef unsigned char Byte;
 typedef uint16_t uint16;
 typedef int32_t int32;
 typedef uint32_t uint32;
@@ -269,7 +269,7 @@ public:
 	U3DBitStreamWrite();
 	~U3DBitStreamWrite();
 
-	void WriteU8(byte uValue);
+	void WriteU8(Byte uValue);
 	void WriteU16(uint16 uValue);
 	void WriteU32(uint32 uValue);
 	void WriteU64(uint64 uValue);
@@ -277,7 +277,7 @@ public:
 	void WriteF32(float fValue);
 	void WriteCompressedU32(uint32 context, uint32 uValue);
 	void WriteCompressedU16(uint32 context, uint16 uValue);
-	void WriteCompressedU8 (uint32 context, byte uValue);
+	void WriteCompressedU8 (uint32 context, Byte uValue);
 
 	void GetDataBlock(U3DFile::BLOCK& dataBlock);
 
@@ -343,7 +343,7 @@ public:
 	~U3DBitStreamRead();
 
 public:
-	void ReadU8(byte& rValue);
+	void ReadU8(Byte& rValue);
 	void ReadU16(uint16& rValue);
 	void ReadU32(uint32& rValue);
 	void ReadU64(uint64& rValue);
@@ -351,7 +351,7 @@ public:
 	void ReadF32(float& rValue);
 	void ReadCompressedU32(uint32 context, uint32& rValue);
 	void ReadCompressedU16(uint32 context, uint16& rValue);
-	void ReadCompressedU8 (uint32 context, byte& rValue);
+	void ReadCompressedU8 (uint32 context, Byte& rValue);
 	void ReadString(std::string& s);
 
 	void SetDataBlock(U3DFile::BLOCK& dataBlock);

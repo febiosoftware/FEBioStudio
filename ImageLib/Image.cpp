@@ -46,7 +46,7 @@ CImage::CImage()
 
 CImage::CImage(int nx, int ny)
 {
-	m_pb = new byte[nx*ny];
+	m_pb = new Byte[nx*ny];
 	for (int i=0; i<nx*ny; i++) m_pb[i] = 0;
 
 	m_cx = nx;
@@ -60,7 +60,7 @@ CImage::CImage(const CImage& im)
 	m_cx = im.m_cx;
 	m_cy = im.m_cy;
 
-	m_pb = new byte[m_cx*m_cy];
+	m_pb = new Byte[m_cx*m_cy];
 	memcpy(m_pb, im.m_pb, m_cx*m_cy);
 
 	m_bdel = true;
@@ -73,7 +73,7 @@ CImage& CImage::operator = (const CImage& im)
 	m_cx = im.m_cx;
 	m_cy = im.m_cy;
 
-	m_pb = new byte[m_cx*m_cy];
+	m_pb = new Byte[m_cx*m_cy];
 	memcpy(m_pb, im.m_pb, m_cx*m_cy);
 
 	m_bdel = true;
@@ -83,13 +83,13 @@ CImage& CImage::operator = (const CImage& im)
 
 CImage& CImage::operator -= (const CImage& im)
 {
-	byte* pbS = im.m_pb;
-	byte* pbD = m_pb;
+	Byte* pbS = im.m_pb;
+	Byte* pbD = m_pb;
 
 	int nsize = m_cx*m_cy;
 
 	for (int i=0; i<nsize; i++, pbS++, pbD++)
-		*pbD = byte((((int) *pbD - (int) *pbS) + 255) >> 1);
+		*pbD = Byte((((int) *pbD - (int) *pbS) + 255) >> 1);
 
 	return (*this);
 }
@@ -99,7 +99,7 @@ CImage::~CImage()
 	if (m_bdel) delete [] m_pb;
 }
 
-void CImage::Create(int nx, int ny, byte* pb)
+void CImage::Create(int nx, int ny, Byte* pb)
 {
 	if (pb)
 	{
@@ -110,7 +110,7 @@ void CImage::Create(int nx, int ny, byte* pb)
 	{
 		if (m_bdel) delete [] m_pb;
 
-		m_pb = new byte[nx*ny];
+		m_pb = new Byte[nx*ny];
 		for (int i=0; i<nx*ny; i++) m_pb[i] = 0;
 		m_bdel = true;
 	}
@@ -121,7 +121,7 @@ void CImage::Create(int nx, int ny, byte* pb)
 
 void CImage::StretchBlt(CImage& im)
 {
-	byte* pd = im.m_pb;
+	Byte* pd = im.m_pb;
 
 	int nx = im.Width();
 	int ny = im.Height();
@@ -129,7 +129,7 @@ void CImage::StretchBlt(CImage& im)
 	int i0 = 0;
 	int j0 = 0;
 
-	byte* p0, *p1, *p2, *p3;
+	Byte* p0, *p1, *p2, *p3;
 	int h0, h1, h2, h3;
 	int w = 0, h = 0;
 

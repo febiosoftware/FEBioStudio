@@ -26,23 +26,23 @@ SOFTWARE.*/
 
 #pragma once
 
-typedef unsigned char byte;
+typedef unsigned char Byte;
 
 class GLColor
 {
 public:
-	byte	a, b, g, r;
+	Byte	a, b, g, r;
 
 public:
 	GLColor() : a(255), b(0), g(0), r(0) {}
-	GLColor(byte ur, byte ug, byte ub, byte ua = 255)
+	GLColor(Byte ur, Byte ug, Byte ub, Byte ua = 255)
 	{
 		r = ur;	g = ug;	b = ub;	a = ua;
 	}
 
 	GLColor operator * (double f)
 	{
-		return GLColor((byte)(r*f), (byte)(g*f), (byte)(b*f));
+		return GLColor((Byte)(r*f), (Byte)(g*f), (Byte)(b*f));
 	}
 
 	GLColor operator + (GLColor& c)
@@ -62,5 +62,5 @@ public:
 
 
 	static GLColor White() { return GLColor(255, 255, 255); }
-	static GLColor FromRGBf(float r, float g, float b) { return GLColor((byte)(r*255.f), (byte)(g*255.f), (byte)(b*255.f)); }
+	static GLColor FromRGBf(float r, float g, float b) { return GLColor((Byte)(r*255.f), (Byte)(g*255.f), (Byte)(b*255.f)); }
 };

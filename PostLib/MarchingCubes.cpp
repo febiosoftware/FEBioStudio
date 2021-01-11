@@ -187,7 +187,7 @@ void CMarchingCubes::CreateSurface()
 	float dyi = (b.y1 - b.y0) / (NY - 1);
 	float dzi = (b.z1 - b.z0) / (NZ - 1);
 
-	byte ref = (byte)(m_val * 255.f);
+	Byte ref = (Byte)(m_val * 255.f);
 	float fref = (float)ref;
 	m_ref = ref;
 
@@ -199,7 +199,7 @@ void CMarchingCubes::CreateSurface()
 		TriMesh temp;
 		temp.Resize(MAX_FACES);
 		int nfaces = 0;
-		byte val[8];
+		Byte val[8];
 		vec3f r[8], g[8];
 
 		#pragma omp for schedule(dynamic, 5)
@@ -336,7 +336,7 @@ void CMarchingCubes::CreateSurface()
 	// create surface meshes
 	if (m_bcloseSurface)
 	{
-		byte val[4];
+		Byte val[4];
 		vec3f r[4];
 
 		// X-planes
@@ -428,7 +428,7 @@ void CMarchingCubes::CreateSurface()
 	}
 }
 
-void CMarchingCubes::AddSurfaceTris(byte val[4], vec3f r[4], const vec3f& faceNormal)
+void CMarchingCubes::AddSurfaceTris(Byte val[4], vec3f r[4], const vec3f& faceNormal)
 {
 	// calculate the case of the voxel
 	int ncase = 0;

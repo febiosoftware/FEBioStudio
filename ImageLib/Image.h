@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-typedef unsigned char byte;
+typedef unsigned char Byte;
 typedef unsigned short word;
 typedef unsigned int dword;
 
@@ -43,22 +43,22 @@ public:
 	CImage& operator = (const CImage& im);
 	CImage& operator -= (const CImage& im);
 
-	void Create(int nx, int ny, byte* pb = 0);
+	void Create(int nx, int ny, Byte* pb = 0);
 	void StretchBlt(CImage& im);
 
 	int Width () const { return m_cx; }
 	int Height() const { return m_cy; }
 
-	byte* GetBytes() const { return m_pb; }
+	Byte* GetBytes() const { return m_pb; }
 
-	byte* GetPixel(int i, int j) { return m_pb + (j*m_cx + i); }
+	Byte* GetPixel(int i, int j) { return m_pb + (j*m_cx + i); }
 
-	byte value(int i, int j) { return m_pb[j*m_cx + i]; }
+	Byte value(int i, int j) { return m_pb[j*m_cx + i]; }
 
 	void Zero() { for (int i=0; i<m_cx*m_cy; i++) m_pb[i] = 0; }
 
 protected:
-	byte* m_pb;	// rgb image data
+	Byte* m_pb;	// rgb image data
 
 	bool	m_bdel;	// delete image data at clean up ?
 	

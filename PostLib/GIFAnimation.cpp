@@ -538,8 +538,8 @@ void GifThresholdImage( const uint8_t* lastFrame, const uint8_t* nextFrame, uint
 // one bit at a time
 struct GifBitStatus
 {
-    uint8_t bitIndex;  // how many bits in the partial byte written so far
-    uint8_t byte;      // current partial byte
+    uint8_t bitIndex;  // how many bits in the partial Byte written so far
+    uint8_t Byte;      // current partial Byte
 
     uint32_t chunkIndex;
     uint8_t chunk[256];   // bytes are written in here until we have 256 of them, then written to the file
@@ -550,16 +550,16 @@ void GifWriteBit( GifBitStatus& stat, uint32_t bit )
 {
     bit = bit & 1;
     bit = bit << stat.bitIndex;
-    stat.byte |= bit;
+    stat.Byte |= bit;
 
     ++stat.bitIndex;
     if( stat.bitIndex > 7 )
     {
-        // move the newly-finished byte to the chunk buffer
-        stat.chunk[stat.chunkIndex++] = stat.byte;
-        // and start a new byte
+        // move the newly-finished Byte to the chunk buffer
+        stat.chunk[stat.chunkIndex++] = stat.Byte;
+        // and start a new Byte
         stat.bitIndex = 0;
-        stat.byte = 0;
+        stat.Byte = 0;
     }
 }
 
@@ -570,7 +570,7 @@ void GifWriteChunk( FILE* f, GifBitStatus& stat )
     fwrite(stat.chunk, 1, stat.chunkIndex, f);
 
     stat.bitIndex = 0;
-    stat.byte = 0;
+    stat.Byte = 0;
     stat.chunkIndex = 0;
 }
 
@@ -658,7 +658,7 @@ void GifWriteLzwImage(FILE* f, uint8_t* image, uint32_t left, uint32_t top,  uin
     uint32_t maxCode = clearCode+1;
 
     GifBitStatus stat;
-    stat.byte = 0;
+    stat.Byte = 0;
     stat.bitIndex = 0;
     stat.chunkIndex = 0;
 
@@ -791,8 +791,8 @@ bool GifBegin( GifWriter* writer, const char* filename, uint32_t width, uint32_t
         fputc(3, writer->f); // 3 bytes of NETSCAPE2.0 data
 
         fputc(1, writer->f); // JUST BECAUSE
-        fputc(0, writer->f); // loop infinitely (byte 0)
-        fputc(0, writer->f); // loop infinitely (byte 1)
+        fputc(0, writer->f); // loop infinitely (Byte 0)
+        fputc(0, writer->f); // loop infinitely (Byte 1)
 
         fputc(0, writer->f); // block terminator
     }

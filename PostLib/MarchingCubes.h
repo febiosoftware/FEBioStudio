@@ -95,7 +95,7 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 private:
-	void AddSurfaceTris(byte val[4], vec3f r[4], const vec3f& faceNormal);
+	void AddSurfaceTris(Byte val[4], vec3f r[4], const vec3f& faceNormal);
 
 	void CreateSurface();
 
@@ -107,6 +107,6 @@ private:
 	GLColor	m_col;
 	TriMesh	m_mesh;
 
-	byte m_ref;
+	Byte m_ref;
 };
 }

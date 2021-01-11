@@ -48,9 +48,9 @@ public:
 	int Height() { return m_cy; }
 	int Depth () { return m_cz; }
 
-	byte& value(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
-	byte Value(double fx, double fy, int nz);
-	byte Peek(double fx, double fy, double fz);
+	Byte& value(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
+	Byte Value(double fx, double fy, int nz);
+	Byte Peek(double fx, double fy, double fz);
 
 	void Histogram(int* pdf);
 
@@ -64,14 +64,14 @@ public:
 
 	void Invert();
 
-	byte* GetBytes() { return m_pb; }
+	Byte* GetBytes() { return m_pb; }
 
 	void Zero();
 
 	void FlipZ();
 
 protected:
-	byte*	m_pb;	// image data
+	Byte*	m_pb;	// image data
 	int		m_cx;
 	int		m_cy;
 	int		m_cz;

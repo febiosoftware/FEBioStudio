@@ -125,7 +125,7 @@ public:
 
 	CLine* Line(int i) { return m_pLine + i; }
 
-	void SetColor(byte r, byte g, byte b);
+	void SetColor(Byte r, Byte g, Byte b);
 
 	void Update();
 

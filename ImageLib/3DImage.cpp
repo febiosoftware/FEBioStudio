@@ -76,7 +76,7 @@ bool C3DImage::Create(int nx, int ny, int nz)
 	{
 		CleanUp();
 
-		m_pb = new byte[nx*ny*nz];
+		m_pb = new Byte[nx*ny*nz];
 		if (m_pb == 0) return false;
 	}
 
@@ -118,8 +118,8 @@ bool C3DImage::LoadFromFile(const char* szfile, int nbits)
 void C3DImage::BitBlt(CImage& im, int nslice)
 {
 	// go to the beginning of the slice
-	byte* ps = m_pb + nslice*m_cx*m_cy;
-	byte* pd = im.GetBytes();
+	Byte* ps = m_pb + nslice*m_cx*m_cy;
+	Byte* pd = im.GetBytes();
 
 	// copy image data
 	int n = m_cx*m_cy;
@@ -128,7 +128,7 @@ void C3DImage::BitBlt(CImage& im, int nslice)
 
 void C3DImage::StretchBlt(CImage& im, int nslice)
 {
-	byte* pd = im.GetBytes();
+	Byte* pd = im.GetBytes();
 
 	int nx = im.Width();
 	int ny = im.Height();
@@ -136,7 +136,7 @@ void C3DImage::StretchBlt(CImage& im, int nslice)
 	int i0 = 0;
 	int j0 = 0;
 
-	byte* p0, *p1, *p2, *p3;
+	Byte* p0, *p1, *p2, *p3;
 	int h0, h1, h2, h3;
 	int w = 0, h = 0;
 
@@ -179,7 +179,7 @@ void C3DImage::StretchBlt(C3DImage& im)
 	int nx = im.Width();
 	int ny = im.Height();
 	int nz = im.Depth();
-	byte* pb = im.m_pb;
+	Byte* pb = im.m_pb;
 	for (int k=0; k<nz; ++k)
 		for (int j=0; j<ny; ++j)
 			for (int i=0; i<nx; ++i, ++pb)
@@ -192,11 +192,11 @@ void C3DImage::StretchBlt(C3DImage& im)
 }
 
 
-byte C3DImage::Value(double fx, double fy, int nz)
+Byte C3DImage::Value(double fx, double fy, int nz)
 {
 	double r, s;
 
-	byte* pb = m_pb + nz*m_cx*m_cy;
+	Byte* pb = m_pb + nz*m_cx*m_cy;
 
 	int ix = (int) ((m_cx-1)*fx);
 	int iy = (int) ((m_cy-1)*fy);
@@ -210,10 +210,10 @@ byte C3DImage::Value(double fx, double fy, int nz)
 	h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
 	h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
 
-	return (byte)(0.25*h);
+	return (Byte)(0.25*h);
 }
 
-byte C3DImage::Peek(double r, double s, double t)
+Byte C3DImage::Peek(double r, double s, double t)
 {
 	static int n1,n2,n3,n4,n5,n6,n7,n8;
 	static double h1,h2,h3,h4,h5,h6,h7,h8;
@@ -248,9 +248,9 @@ byte C3DImage::Peek(double r, double s, double t)
 	h7 = (1+r)*(1+s)*(1+t);
 	h8 = (1-r)*(1+s)*(1+t);
 	
-	byte* pb = m_pb;
+	Byte* pb = m_pb;
 
-	return (byte)((h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125);
+	return (Byte)((h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125);
 }
 
 
@@ -259,7 +259,7 @@ void C3DImage::Histogram(int* pdf)
 	int i;
 	for (i=0; i<256; i++) pdf[i] = 0;
 
-	byte* pb = m_pb;
+	Byte* pb = m_pb;
 	int nsize = m_cx*m_cy*m_cz;
 
 	for (i=0; i<nsize; i++) pdf[ *pb++ ]++;
@@ -270,8 +270,8 @@ void C3DImage::GetSliceX(CImage& im, int n)
 	// create image data
 	if ((im.Width() != m_cy) || (im.Height() != m_cz)) im.Create(m_cy, m_cz);
 
-	byte* ps;
-	byte* pd = im.GetBytes();
+	Byte* ps;
+	Byte* pd = im.GetBytes();
 
 	// copy image data
 	for (int z=0; z<m_cz; z++)
@@ -286,8 +286,8 @@ void C3DImage::GetSliceY(CImage& im, int n)
 	// create image data
 	if ((im.Width() != m_cx) || (im.Height() != m_cz)) im.Create(m_cx, m_cz);
 
-	byte* ps;
-	byte* pd = im.GetBytes();
+	Byte* ps;
+	Byte* pd = im.GetBytes();
 
 	// copy image data
 	for (int z=0; z<m_cz; z++)
@@ -303,8 +303,8 @@ void C3DImage::GetSliceZ(CImage& im, int n)
 	if ((im.Width() != m_cx) || (im.Height() != m_cy)) im.Create(m_cx, m_cy);
 
 	// copy image data
-	byte* pd = im.GetBytes();
-	byte* ps = m_pb + n*m_cx*m_cy;
+	Byte* pd = im.GetBytes();
+	Byte* ps = m_pb + n*m_cx*m_cy;
 
 	for (int i=0; i<m_cx*m_cy; i++, ps++) *pd++ = *ps;
 }
@@ -314,7 +314,7 @@ void C3DImage::GetSampledSliceX(CImage& im, double f)
 	// create image data
 	if ((im.Width() != m_cy) || (im.Height() != m_cz)) im.Create(m_cy, m_cz);
 
-	byte* pd = im.GetBytes();
+	Byte* pd = im.GetBytes();
 
 	// copy image data
 	for (int z = 0; z<m_cz; z++)
@@ -333,7 +333,7 @@ void C3DImage::GetSampledSliceY(CImage& im, double f)
 	// create image data
 	if ((im.Width() != m_cx) || (im.Height() != m_cz)) im.Create(m_cx, m_cz);
 
-	byte* pd = im.GetBytes();
+	Byte* pd = im.GetBytes();
 
 	// copy image data
 	for (int z = 0; z<m_cz; z++)
@@ -353,7 +353,7 @@ void C3DImage::GetSampledSliceZ(CImage& im, double f)
 	if ((im.Width() != m_cx) || (im.Height() != m_cy)) im.Create(m_cx, m_cy);
 
 	// copy image data
-	byte* pd = im.GetBytes();
+	Byte* pd = im.GetBytes();
 
 	for (int y = 0; y<m_cy; y++)
 	{
@@ -381,11 +381,11 @@ void C3DImage::Zero()
 void C3DImage::FlipZ()
 {
 	int nsize = m_cx*m_cy;
-	byte* buf = new byte[nsize];
+	Byte* buf = new Byte[nsize];
 	for (int i = 0; i < m_cz / 2; ++i)
 	{
-		byte* slice0 = m_pb + i*nsize;
-		byte* slice1 = m_pb + (m_cz - i - 1)*nsize;
+		Byte* slice0 = m_pb + i*nsize;
+		Byte* slice1 = m_pb + (m_cz - i - 1)*nsize;
 		memcpy(buf, slice0, nsize);
 		memcpy(slice0, slice1, nsize);
 		memcpy(slice1, buf, nsize);

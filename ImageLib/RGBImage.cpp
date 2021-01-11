@@ -75,7 +75,7 @@ void CRGBImage::Create(int nx, int ny)
 	m_cx = nx;
 	m_cy = ny;
 
-	m_pb = new byte[nx*ny][3];
+	m_pb = new Byte[nx*ny][3];
 }
 
 CRGBImage& CRGBImage::operator =(const CRGBImage& im)
@@ -92,8 +92,8 @@ CRGBImage& CRGBImage::operator =(const CRGBImage& im)
 
 void CRGBImage::SwapRB()
 {
-	byte* pb = *m_pb;
-	byte t;
+	Byte* pb = *m_pb;
+	Byte t;
 	for (int i = 0; i<m_cx*m_cy; i++, pb += 3)
 	{
 		t = pb[0];
@@ -104,15 +104,15 @@ void CRGBImage::SwapRB()
 
 void CRGBImage::FlipY()
 {
-	byte t;
+	Byte t;
 	for (int i = 0; i<m_cy / 2; ++i)
 	{
 		int i0 = i;
 		int i1 = m_cy - 1 - i;
 		if (i0 != i1)
 		{
-			byte(*psrc)[3] = m_pb + i0*m_cx;
-			byte(*pdst)[3] = m_pb + i1*m_cx;
+			Byte(*psrc)[3] = m_pb + i0*m_cx;
+			Byte(*pdst)[3] = m_pb + i1*m_cx;
 			for (int j = 0; j<m_cx; ++j)
 			{
 				t = psrc[j][0]; psrc[j][0] = pdst[j][0]; pdst[j][0] = t;
@@ -173,11 +173,11 @@ bool CRGBImage::SaveBMP(const char* szfile)
 	// save the pixels
 	// we need to make sure that the image is 32-bit aligned
 	int wb = 4 * ((3 * m_cx - 1) / 4 + 1);
-	byte* pb = new byte[wb];
+	Byte* pb = new Byte[wb];
 	for (int i = 0; i<m_cy; i++)
 	{
 		memcpy(pb, m_pb + i*m_cx, 3 * m_cx);
-		fwrite(pb, sizeof(byte), wb, fp);
+		fwrite(pb, sizeof(Byte), wb, fp);
 	}
 	delete[] pb;
 
@@ -191,14 +191,14 @@ bool CRGBImage::SaveBMP(const char* szfile)
 union FIELD_VALUE {
 	word	sval;
 	dword	lval;
-	byte	bval[4];
+	Byte	bval[4];
 };
 
 bool CRGBImage::SaveTIF(const char* szfile)
 {
 	// determine the endianess
 	word wrd = 0x4D49;
-	byte bt = ((byte*)&wrd)[0];
+	Byte bt = ((Byte*)&wrd)[0];
 
 	word order = ((word)bt << 8) | bt;
 
@@ -303,7 +303,7 @@ bool CRGBImage::SaveTIF(const char* szfile)
 
 	// write the image data
 	for (int y = m_cy - 1; y >= 0; y--)
-		fwrite(m_pb + y*m_cx, sizeof(byte) * 3, m_cx, fp);
+		fwrite(m_pb + y*m_cx, sizeof(Byte) * 3, m_cx, fp);
 
 	// and we're done !
 	fclose(fp);

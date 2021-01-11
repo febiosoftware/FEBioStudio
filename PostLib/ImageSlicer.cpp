@@ -146,8 +146,8 @@ void CImageSlicer::UpdateSlice()
 
 	// colorize the image
 	int nn = W*H;
-	byte* ps = im2d.GetBytes();
-	byte* pd = m_im.GetBytes();
+	Byte* ps = im2d.GetBytes();
+	Byte* pd = m_im.GetBytes();
 	for (int i = 0; i<nn; i++, ps++, pd += 4)
 	{
 		int val = *ps;

@@ -286,7 +286,7 @@ void CVolRender::CalcAttenuation()
 				vec3d f = map.Value(i, j, k); f.Normalize();
 				double a = f*l;
 				if (a < 0.0) a = 0.0;
-				m_att.value(i, j, k) = (byte)(255.0*a);
+				m_att.value(i, j, k) = (Byte)(255.0*a);
 			}
 	}
 }
@@ -368,8 +368,8 @@ void CVolRender::Colorize(CRGBAImage& imd, CImage& ims)
 	int nx = imd.Width();
 	int ny = imd.Height();
 	int nn = nx*ny;
-	byte* ps = ims.GetBytes();
-	byte* pd = imd.GetBytes();
+	Byte* ps = ims.GetBytes();
+	Byte* pd = imd.GetBytes();
 	for (int i=0; i<nn; i++, ps++, pd+=4)
 	{
 		int val = m_LUT[*ps];
@@ -388,16 +388,16 @@ void CVolRender::DepthCueX(CRGBAImage& im, int n)
 	int ny = im.Height();
 	int nz = m_att.Width();
 
-	byte* p = im.GetBytes();
+	Byte* p = im.GetBytes();
 	for (int j=0; j<ny; ++j)
 		for (int i=0; i<nx; ++i, p += 4)
 		{
 			double a = m_att.value(n, i, j) / 255.0;
 			double w = m_shadeStrength*a + (1.0 - m_shadeStrength);
 			double s = m_shadeStrength*a*a;
-			p[0] = (byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
-			p[1] = (byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
-			p[2] = (byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
+			p[0] = (Byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
+			p[1] = (Byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
+			p[2] = (Byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
 		}
 }
 
@@ -409,16 +409,16 @@ void CVolRender::DepthCueY(CRGBAImage& im, int n)
 	int ny = im.Height();
 	int nz = m_att.Height();
 
-	byte* p = im.GetBytes();
+	Byte* p = im.GetBytes();
 	for (int j=0; j<ny; ++j)
 		for (int i=0; i<nx; ++i, p += 4)
 		{
 			double a = m_att.value(i, n, j) / 255.0;
 			double w = m_shadeStrength*a + (1.0 - m_shadeStrength);
 			double s = m_shadeStrength*a*a;
-			p[0] = (byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
-			p[1] = (byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
-			p[2] = (byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
+			p[0] = (Byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
+			p[1] = (Byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
+			p[2] = (Byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
 		}
 }
 
@@ -430,16 +430,16 @@ void CVolRender::DepthCueZ(CRGBAImage& im, int n)
 	int ny = im.Height();
 	int nz = m_att.Depth();
 
-	byte* p = im.GetBytes();
+	Byte* p = im.GetBytes();
 	for (int j=0; j<ny; ++j)
 		for (int i=0; i<nx; ++i, p += 4)
 		{
 			double a = m_att.value(i, j, n) / 255.0;
 			double w = m_shadeStrength*a + (1.0 - m_shadeStrength);
 			double s = m_shadeStrength*a*a;
-			p[0] = (byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
-			p[1] = (byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
-			p[2] = (byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
+			p[0] = (Byte) (((p[0]*(1.0 - s) + s*m_spc.r)*w + m_amb.r*(1.0 - w)));
+			p[1] = (Byte) (((p[1]*(1.0 - s) + s*m_spc.g)*w + m_amb.g*(1.0 - w)));
+			p[2] = (Byte) (((p[2]*(1.0 - s) + s*m_spc.r)*w + m_amb.b*(1.0 - w)));
 		}
 }
 

@@ -202,7 +202,7 @@ bool CPaletteManager::Load(const string& file)
 						int c[3] = {0,0,0};
 						tag.value(c, 3);
 
-						GLColor col((byte) c[0], (byte) c[1], (byte) c[2]);
+						GLColor col((Byte) c[0], (Byte) c[1], (Byte) c[2]);
 						pal.AddColor(col);
 
 						++tag;

@@ -42,7 +42,7 @@ public:
 
 	void Create(int nx, int ny);
 
-	byte* GetBytes() { return (*m_pb); }
+	Byte* GetBytes() { return (*m_pb); }
 
 	int Width() { return m_cx; }
 	int Height() { return m_cy; }
@@ -56,7 +56,7 @@ public:
 	bool SaveTIF(const char* szfile);
 
 protected:
-	byte(*m_pb)[3];
+	Byte(*m_pb)[3];
 	int		m_cx;
 	int		m_cy;
 };
