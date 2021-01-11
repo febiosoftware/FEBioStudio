@@ -25,12 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <QtCharts/QChartView>
-using namespace QtCharts;
+#include <QWidget>
 
 namespace Post {
 	class CImageModel;
 }
+
+class CPlotWidget;
 
 class CHistogramViewer : public QWidget
 {
@@ -52,5 +53,5 @@ private:
 	bool	m_logMode;
 
 private:
-	QChartView*		m_chart;
+	CPlotWidget*		m_chart;
 };
