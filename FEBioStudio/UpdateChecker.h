@@ -48,7 +48,7 @@ class QDialogButtonBox;
 	#define URL_BASE "/update/FEBioStudio/Windows"
 	#define DEV_BASE "/update/FEBioStudioDev/Windows"
 	#define REL_ROOT "\\..\\"
-	#define UPDATER "\\FEBioStudioUpdater.exe"
+	#define UPDATER "/FEBioStudioUpdater.exe"
 #elif __APPLE__
 	#define URL_BASE "/update/FEBioStudio/macOS"
 	#define DEV_BASE "/update/FEBioStudioDev/macOS"

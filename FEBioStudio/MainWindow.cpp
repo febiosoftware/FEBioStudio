@@ -1400,15 +1400,21 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 		if(ui->m_updateOnClose && ui->m_updaterPresent)
 		{
 			QProcess* updater = new QProcess;
+			bool bret = true;
 			if(ui->m_updateDevChannel)
 			{
-				updater->startDetached(QApplication::applicationDirPath() + UPDATER, QStringList() << "--devChannel");	
+				QString s = QApplication::applicationDirPath() + UPDATER;
+				bret = updater->startDetached(s, QStringList() << "--devChannel");	
 			}
 			else
 			{
-				updater->startDetached(QApplication::applicationDirPath() + UPDATER);
+				QString s = QApplication::applicationDirPath() + UPDATER;
+				bret = updater->startDetached(s, QStringList());
 			}
-			
+			if (bret == false)
+			{
+				QMessageBox::critical(this, "FEBIo Studio", "Failed to launch updater.");
+			}
 		}
 
 		ev->accept();
