@@ -1,10 +1,10 @@
 # Qt
-find_package(Qt5 COMPONENTS Widgets Gui Network OpenGL Charts REQUIRED)
-find_package(Qt5 COMPONENTS WebEngineWidgets QUIET)
-mark_as_advanced(Qt5Charts_DIR Qt5Core_DIR Qt5Gui_DIR Qt5Network_DIR Qt5OpenGL_DIR Qt5Positioning_DIR 
-    Qt5PrintSupport_DIR Qt5QmlModels_DIR Qt5Qml_DIR Qt5Quick_DIR Qt5WebChannel_DIR Qt5WebEngineCore_DIR 
-    Qt5WebEngineWidgets_DIR Qt5Widgets_DIR)
-
+find_package(Qt6 COMPONENTS Widgets Gui Network OpenGL Core5Compat REQUIRED) 
+#Charts was removed, is no longer a supported module
+#find_package(Qt6 COMPONENTS WebEngineWidgets QUIET)
+mark_as_advanced(Qt6Charts_DIR Qt6Core_DIR Qt6Gui_DIR Qt6Network_DIR Qt6OpenGL_DIR Qt6Positioning_DIR 
+    Qt6PrintSupport_DIR Qt6QmlModels_DIR Qt6Qml_DIR Qt6Quick_DIR  Qt6Widgets_DIR)
+#Qt6WebEngineWidgets_DIR Qt6WebChannel_DIR Qt6WebEngineCore_DIR
 # MMG
 if(WIN32)
 	find_path(MMG_INC mmg/mmg3d/libmmg3d.h

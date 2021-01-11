@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(FEBioStudio)
 
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -26,37 +25,37 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(NOT Qt5_DIR)
-    if(NOT Qt5_Root)
-        set(Qt5_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
+if(NOT Qt6_DIR)
+    if(NOT Qt6_Root)
+        set(Qt6_Root "" CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
     endif()
     
     if(WIN32)
-        find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+        find_file(Qt6_CMAKE cmake/Qt6/Qt6Config.cmake
+			PATHS ${Qt6_Root}/* ${Qt6_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "msvc2015_64/lib" "msvc2017_64/lib" "msvc2019_64/lib"
-			DOC "Qt5 CMake Directory")
+			DOC "Qt6 CMake Directory")
     elseif(APPLE)
-		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+		find_file(Qt6_CMAKE cmake/Qt6/Qt6Config.cmake
+			PATHS ${Qt6_Root}/* ${Qt6_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "clang_64/lib"
-			DOC "Qt5 CMake Directory")
+			DOC "Qt6 CMake Directory")
     else()
-		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
-			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+		find_file(Qt6_CMAKE cmake/Qt6/Qt6Config.cmake
+			PATHS ${Qt6_Root}/* ${Qt6_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
 			PATH_SUFFIXES "gcc_64/lib"
-			DOC "Qt5 CMake Directory")
+			DOC "Qt6 CMake Directory")
     endif()
         
-    if(Qt5_CMAKE)
-        get_filename_component(Qt5_TEMP ${Qt5_CMAKE} DIRECTORY)
-        set(Qt5_DIR ${Qt5_TEMP} CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
-        unset(Qt5_TEMP)
-        unset(Qt5_CMAKE CACHE)
+    if(Qt6_CMAKE)
+        get_filename_component(Qt6_TEMP ${Qt6_CMAKE} DIRECTORY)
+        set(Qt6_DIR ${Qt6_TEMP} CACHE PATH "Path to the root Qt directory (e.g. /opt/Qt)")
+        unset(Qt6_TEMP)
+        unset(Qt6_CMAKE CACHE)
     endif()
     
-    if(NOT Qt5_DIR)
-        message(FATAL_ERROR "Unable to locate Qt5Config.cmake. Please check the value of Qt5_Root and set it to the root directory of your Qt5 installation (e.g. /opt/Qt).")
+    if(NOT Qt6_DIR)
+        message(FATAL_ERROR "Unable to locate Qt6Config.cmake. Please check the value of Qt6_Root and set it to the root directory of your Qt6 installation (e.g. /opt/Qt).")
     endif()
 endif()
 
@@ -178,11 +177,6 @@ elseif(APPLE)
 else()
 	add_definitions(-DLINUX)
     add_compile_options(-static-libstdc++ -static-libgcc -w -Wall)
-    
-    set(CMAKE_BUILD_RPATH_USE_LINK_PATH FALSE)
-    set(CMAKE_BUILD_RPATH $ORIGIN/../lib/)
-
-    #set_property(TARGET FEBioStudio PROPERTY CMAKE_BUILD_RPATH $ORIGIN/../lib/)
 endif()
 
 include_directories(.)
@@ -224,9 +218,9 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
-if(Qt5WebEngineWidgets_FOUND)
-    add_definitions(-DWEBHELP)
-endif()
+#if(Qt6WebEngineWidgets_FOUND)
+#    add_definitions(-DWEBHELP)
+#endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
 
@@ -248,11 +242,12 @@ endforeach(name)
 ##### Add binaries #####
 
 # Linking the Qt libraries also pulls in the include files
-link_libraries(Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Charts)
+link_libraries(Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::Core5Compat)
+#Qt5::Charts
 
-if(Qt5WebEngineWidgets_FOUND)
-	link_libraries(Qt5::WebEngineWidgets)
-endif()
+#if(Qt6WebEngineWidgets_FOUND)
+#	link_libraries(Qt6::WebEngineWidgets)
+#endif()
 
 if(APPLE)
 	# set bundle icon
@@ -275,27 +270,6 @@ endmacro()
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	addLib(${name})
 endforeach(name)
-
-##### Set dev commit information #####
-
-execute_process(COMMAND git rev-parse --abbrev-ref HEAD
-    RESULT_VARIABLE SUCCESS
-    OUTPUT_VARIABLE BRANCH_NAME)
-
-string(STRIP ${BRANCH_NAME} BRANCH_NAME)
-string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
-    
-if(SUCCESS EQUAL 0 AND ISDEVELOP)
-    execute_process(COMMAND git rev-parse --short HEAD
-        RESULT_VARIABLE SUCCESS
-        OUTPUT_VARIABLE DEVCOMMIT)
-    
-    string(STRIP ${DEVCOMMIT} DEVCOMMIT)
-    
-    if(${SUCCESS} EQUAL 0)
-        target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
-    endif()
-endif()
 
 ##### Link Libraries #####
 
@@ -345,7 +319,7 @@ if(WIN32)
 elseif(APPLE)
 else()
     target_link_libraries(FEBioStudio -Wl,--end-group)
-    #target_link_libraries(FEBioStudio -Wl,-rpath,\'\$ORIGIN/../lib/\')
+    target_link_libraries(FEBioStudio -Wl,-rpath,\'\$ORIGIN/../lib/\')
 endif()
 
 
