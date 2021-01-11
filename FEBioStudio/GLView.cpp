@@ -3741,13 +3741,23 @@ void CGLView::SetPlaneCut(double d[4])
 	if (doc == nullptr) return;
 
 	BOX box = doc->GetGModel()->GetBoundingBox();
+	FESelection* sel = doc->GetCurrentSelection();
+	if (sel) box = sel->GetBoundingBox();
+
 	double R = box.GetMaxExtent();
 	if (R < 1e-12) R = 1.0;
+
+	vec3d n(d[0], d[1], d[2]); n.Normalize();
+
+	double d0 = box.r0()*n;
+	double d1 = box.r1()*n;
+
+	double d3 = d0 + 0.5*(d[3] + 1)*(d1 - d0);
 
 	m_plane[0] = d[0];
 	m_plane[1] = d[1];
 	m_plane[2] = d[2];
-	m_plane[3] = d[3]*R;
+	m_plane[3] = -d3;
 	delete m_planeCut; m_planeCut = nullptr;
 	update();
 }
@@ -8699,7 +8709,7 @@ void CGLView::UpdatePlaneCut()
 					for (int k = 0; k < 8; ++k)
 					{
 						FENode& node = mesh->Node(el.m_node[nt[k]]);
-						ex[k] = to_vec3f(node.r);
+						ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
 						en[k] = el.m_node[nt[k]];
 					}
 
@@ -8792,6 +8802,13 @@ void CGLView::RenderPlaneCut()
 
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
+
+	BOX box = doc->GetGModel()->GetBoundingBox();
+	FESelection* sel = doc->GetCurrentSelection();
+	if (sel) box = sel->GetBoundingBox();
+
+	glColor3ub(200, 0, 200);
+	RenderBox(box, false);
 
 	FEModel& fem = *doc->GetFEModel();
 	int MAT = fem.Materials();

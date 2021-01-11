@@ -92,7 +92,7 @@ void CDlgPlaneCut::Update()
 
 void CDlgPlaneCut::showEvent(QShowEvent* ev)
 {
-
+	onDataChanged();
 	ui->m_view->ShowPlaneCut(true);
 }
 
