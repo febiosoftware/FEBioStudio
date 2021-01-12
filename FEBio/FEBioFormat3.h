@@ -44,7 +44,6 @@ public:
 private:
 	// parsers for parent sections
 	bool ParseModuleSection    (XMLTag& tag);
-	bool ParseGeometrySection  (XMLTag& tag);
 	bool ParseMeshSection      (XMLTag& tag);
 	bool ParseMeshDomainsSection(XMLTag& tag);
 	bool ParseMeshDataSection  (XMLTag& tag);

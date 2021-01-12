@@ -681,8 +681,26 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
 					FEPart* pg = const_cast<FEPart*>(map->GetPart());
-					FEItemListBuilder* pil = pg;
-					if (pg) AddElemSet(data->GetName(), pil);
+
+					if (pg)
+					{
+						string name = pg->GetName();
+						if (name.empty()) name = data->GetName();
+
+						// It is possible that a FEPart has the same name as the domain
+						// from which it was created. In that case we don't want to 
+						// write this element set.
+						for (int j = 0; j < po->Parts(); ++j)
+						{
+							GPart* part = po->Part(j);
+							if (part->GetName() == name)
+							{
+								pg = nullptr;
+								break;
+							}
+						}
+						if (pg) AddElemSet(name, pg);
+					}
 				}
 				break;
 				case FEMeshData::PART_DATA:
@@ -3177,9 +3195,12 @@ void FEBioExport3::WriteElementDataFields()
 				FEElementData& data = *meshData;
 				const FEPart* pg = data.GetPart();
 
+				string name = pg->GetName();
+				if (name.empty()) name = data.GetName();
+
 				XMLElement tag("ElementData");
 				tag.add_attribute("name", data.GetName().c_str());
-				tag.add_attribute("elem_set", data.GetName());
+				tag.add_attribute("elem_set", name);
 				m_xml.add_branch(tag);
 				{
 					XMLElement el("e");

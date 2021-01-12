@@ -66,7 +66,9 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 {
 	if (m_geomOnly)
 	{
-		if (tag == "Geometry") ParseGeometrySection(tag);
+		if		(tag == "Mesh"       ) ParseMeshSection(tag);
+		else if (tag == "MeshDomains") ParseMeshDomainsSection(tag);
+		else if (tag == "MeshData"   ) ParseMeshDataSection(tag);
 		else tag.m_preader->SkipTag(tag);
 	}
 	else
@@ -74,7 +76,6 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 		if      (tag == "Module"     ) ParseModuleSection    (tag);
 		else if (tag == "Control"    ) ParseControlSection   (tag);
 		else if (tag == "Material"   ) ParseMaterialSection  (tag);
-		else if (tag == "Geometry"   ) ParseGeometrySection  (tag);
 		else if (tag == "Mesh"       ) ParseMeshSection      (tag);
 		else if (tag == "MeshDomains") ParseMeshDomainsSection(tag);
 		else if (tag == "MeshData"   ) ParseMeshDataSection  (tag);
@@ -254,49 +255,6 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 //                                G E O M E T R Y
 //
 //=============================================================================
-
-//-----------------------------------------------------------------------------
-//  Parses the geometry section from the xml file
-//
-bool FEBioFormat3::ParseGeometrySection(XMLTag& tag)
-{
-	// make sure the section is not empty
-	if (tag.isleaf()) return true;
-
-	// loop over all sections
-	++tag;
-	do
-	{
-		if      (tag == "Nodes"      ) ParseGeometryNodes      (DefaultPart(), tag);
-		else if (tag == "Elements"   ) ParseGeometryElements   (DefaultPart(), tag);
-		else if (tag == "NodeSet"    ) ParseGeometryNodeSet    (DefaultPart(), tag);
-		else if (tag == "Surface"    ) ParseGeometrySurface    (DefaultPart(), tag);
-		else if (tag == "ElementSet" ) ParseGeometryElementSet (DefaultPart(), tag);
-		else if (tag == "DiscreteSet") ParseGeometryDiscreteSet(DefaultPart(), tag);
-		else if (tag == "SurfacePair") ParseGeometrySurfacePair(DefaultPart(), tag);
-		else if (tag == "Part"       ) ParseGeometryPart       (tag);
-		else if (tag == "Instance"   ) ParseGeometryInstance   (tag);
-		else ParseUnknownTag(tag);
-
-		++tag;
-	} while (!tag.isend());
-
-	if (m_geomFormat == 1)
-	{
-		// create a new instance
-		FEBioModel& febio = GetFEBioModel();
-		FEBioModel::Part* part = DefaultPart();
-		part->Update();
-		FEBioModel::PartInstance* instance = new FEBioModel::PartInstance(part);
-		febio.AddInstance(instance);
-		instance->SetName(part->GetName());
-	}
-
-	// don't forget to update the mesh
-	GetFEBioModel().UpdateGeometry();
-
-	return true;
-}
 
 //-----------------------------------------------------------------------------
 bool FEBioFormat3::ParseMeshSection(XMLTag& tag)
@@ -533,10 +491,10 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 			int id = tag.AttributeValue<int>("id", -1);
 			el.m_nid = id;
 			tag.value(el.m_node, el.Nodes());
+			elemSet.push_back(id);
 		}
 		else throw XMLReader::InvalidTag(tag);
 
-		elemSet.push_back(i);
 		++tag;
 	}
 
