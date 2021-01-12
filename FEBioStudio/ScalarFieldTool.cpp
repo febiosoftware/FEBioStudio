@@ -53,6 +53,7 @@ public:
 	QTableWidget*	m_table;
 	QLineEdit*		m_val;
 	QComboBox*		m_domain;
+	QComboBox*		m_matList;
 
 	QLineEdit*	m_maxIters;
 	QLineEdit*	m_tol;
@@ -95,6 +96,7 @@ public:
 
 		QFormLayout* f = new QFormLayout;
 		f->setMargin(0);
+		f->addRow("Material:", m_matList = new QComboBox);
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
 		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
@@ -163,6 +165,26 @@ void CScalarFieldTool::OnAddClicked()
 
 void CScalarFieldTool::Activate()
 {
+	CModelDocument* doc = GetMainWindow()->GetModelDocument();
+	ui->m_matList->clear();
+	if (doc)
+	{
+		FEModel* fem = doc->GetFEModel();
+		if (fem)
+		{
+			int nmat = fem->Materials();
+			for (int i = 0; i < nmat; ++i)
+			{
+				GMaterial* mat = fem->GetMaterial(i); assert(mat);
+				if (mat)
+				{
+					ui->m_matList->addItem(QString::fromStdString(mat->GetName()));
+				}
+				else ui->m_matList->addItem(QString("(material %1)").arg(i));
+			}
+		}
+	}
+
 	Clear();
 	CAbstractTool::Activate();
 }
@@ -239,6 +261,45 @@ void CScalarFieldTool::OnApply()
 	CMainWindow* wnd = GetMainWindow();
 	wnd->AddLogEntry("Starting Laplace solve ...\n");
 
+	// tag all elements that should be included in the solve
+	pm->TagAllElements(1);
+	int ntype = ui->m_domain->currentIndex();
+	int matId = -1;
+	if (ntype == 0)
+	{
+		pm->TagAllElements(-1);
+		int n = ui->m_matList->currentIndex();
+		if (n >= 0)
+		{
+			CModelDocument* doc = GetMainWindow()->GetModelDocument();
+			if (doc)
+			{
+				FEModel* fem = doc->GetFEModel();
+				if (fem)
+				{
+					GMaterial* mat = fem->GetMaterial(n);
+					if (mat)
+					{
+						matId = mat->GetID();
+
+						int NE = pm->Elements();
+						for (int i = 0; i < NE; ++i)
+						{
+							FEElement& el = pm->Element(i);
+
+							int pid = el.m_gid;
+							GPart* pg = po->Part(pid); assert(pg);
+							if (pg && (pg->GetMaterialID() == matId))
+							{
+								el.m_ntag = 1;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// get parameters
 	int maxIter = ui->m_maxIters->text().toInt();
 	double tol = ui->m_tol->text().toDouble();
@@ -248,28 +309,30 @@ void CScalarFieldTool::OnApply()
 	wnd->AddLogEntry(QString("tolerance     = %1\n").arg(tol));
 	wnd->AddLogEntry(QString("SOR parameter = %1\n").arg(w));
 
-	// Tag all elements since the Laplace solver only looks at tagged elements
-	pm->TagAllElements(0);
-
 	// solve Laplace equation
 	LaplaceSolver L;
 	L.SetMaxIterations(maxIter);
 	L.SetTolerance(tol);
 	L.SetRelaxation(w);
-	bool b = L.Solve(pm, val, bn);
+	bool b = L.Solve(pm, val, bn, 1);
 	int niters = L.GetIterationCount();
 	wnd->AddLogEntry(QString("%1").arg(b ? "Converged!\n" : "NOT converged!\n"));
 	wnd->AddLogEntry(QString("iteration count: %1\n").arg(niters));
 	wnd->AddLogEntry(QString("Final relative norm: %1\n").arg(L.GetRelativeNorm()));
 
-	int ntype = ui->m_domain->currentIndex();
-
 	if (ntype == 0)
 	{
 		// create element data
 		int parts = po->Parts();
-		vector<int> partList(parts);
-		for (int i = 0; i < parts; ++i) partList[i] = i;
+		vector<int> partList;
+		for (int i = 0; i < parts; ++i)
+		{
+			GPart* pg = po->Part(i);
+			if (pg->GetMaterialID() == matId)
+			{
+				partList.push_back(i);
+			}
+		}
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
