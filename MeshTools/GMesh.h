@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/box.h>
+#include <FSCore/color.h>
 #include <vector>
 using namespace std;
 
@@ -61,6 +62,7 @@ public:
 		int		tag;	// multipurpose tag
 		vec3d	fn;		// face normal
 		vec3d	nn[3];	// node normals
+		GLColor	c[3];	// node colors
 		bool	bext;	// external flag
 	};
 

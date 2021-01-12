@@ -1159,9 +1159,9 @@ void GLMeshRender::RenderGLMesh(GLMesh* pm, int nid)
 				n1 = f.nn[1];
 				n2 = f.nn[2];
 
-				glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+				glxColor(f.c[0]); glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
+				glxColor(f.c[1]); glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+				glxColor(f.c[2]); glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
 			}
 		}
 		glEnd();

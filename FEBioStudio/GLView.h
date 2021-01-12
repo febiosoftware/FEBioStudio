@@ -235,6 +235,8 @@ public:
 	// --- view settings ---
 	VIEW_SETTINGS& GetViewSettings() { return m_view; }
 
+	void ShowMeshData(bool b);
+
 	CGView* GetView();
 	CGLCamera* GetCamera();
 

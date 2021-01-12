@@ -121,6 +121,9 @@ int GMesh::AddFace(int n0, int n1, int n2, int groupID, int smoothID, bool bext)
 	f.n[0] = n0;
 	f.n[1] = n1;
 	f.n[2] = n2;
+	f.c[0] = GLColor(0, 0, 0);
+	f.c[1] = GLColor(0, 0, 0);
+	f.c[2] = GLColor(0, 0, 0);
 	f.pid = groupID;
 	f.sid = smoothID;
 	f.bext = bext;

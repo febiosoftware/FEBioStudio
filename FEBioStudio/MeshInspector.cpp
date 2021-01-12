@@ -49,19 +49,20 @@ void CMeshInspector::Update()
 
 void CMeshInspector::showEvent(QShowEvent* ev)
 {
-	m_wnd->GetGLView()->GetViewSettings().m_bcontour = true;
+	m_wnd->GetGLView()->ShowMeshData(true);
 	m_wnd->RedrawGL();
 }
 
 void CMeshInspector::hideEvent(QHideEvent* ev)
 {
-	m_wnd->GetGLView()->GetViewSettings().m_bcontour = false;
+	m_wnd->GetGLView()->ShowMeshData(false);
 	m_wnd->RedrawGL();
 }
 
 void CMeshInspector::on_var_currentIndexChanged(int n)
 {
 	UpdateData(n);
+	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 	m_wnd->RedrawGL();
 }
 

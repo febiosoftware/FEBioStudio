@@ -2248,6 +2248,12 @@ CGLCamera* CGLView::GetCamera()
 	return nullptr;
 }
 
+void CGLView::ShowMeshData(bool b)
+{
+	GetViewSettings().m_bcontour = b;
+	delete m_planeCut; m_planeCut = nullptr;
+}
+
 void CGLView::RenderTooltip(int x, int y)
 {
 /*	glMatrixMode(GL_PROJECTION);
@@ -8654,6 +8660,8 @@ void CGLView::UpdatePlaneCut()
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
 
+	FEModel& fem = *doc->GetFEModel();
+
 	GModel& mdl = *doc->GetGModel();
 	if (mdl.Objects() == 0) return;
 
@@ -8663,7 +8671,14 @@ void CGLView::UpdatePlaneCut()
 
 	int edge[15][2], edgeNode[15][2], etag[15];
 
+	VIEW_SETTINGS& vs = GetViewSettings();
+
+	double vmin, vmax;
+	Post::CColorMap map;
+
 	m_planeCut = new GLMesh;
+
+	GObject* poa = m_pWnd->GetActiveObject();
 
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
@@ -8674,6 +8689,15 @@ void CGLView::UpdatePlaneCut()
 
 			vec3d ex[8];
 			int en[8];
+			GLColor ec[8];
+
+			bool showContour = false;
+			Mesh_Data& data = mesh->GetMeshData();
+			if ((po == poa) && (vs.m_bcontour))
+			{
+				showContour = (vs.m_bcontour && data.IsValid());
+				if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+			}
 
 			// repeat over all elements
 			int NE = mesh->Elements();
@@ -8686,6 +8710,9 @@ void CGLView::UpdatePlaneCut()
 					GPart* pg = po->Part(el.m_gid);
 					int mid = pg->GetMaterialID();
 					if (mid < 0) mid = 0;
+
+					GLColor c(200, 200, 200);
+					if (mid >= 0) c = fem.GetMaterial(mid - 1)->Diffuse();
 
 					const int *nt = nullptr;
 					switch (el.Type())
@@ -8711,6 +8738,17 @@ void CGLView::UpdatePlaneCut()
 						FENode& node = mesh->Node(el.m_node[nt[k]]);
 						ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
 						en[k] = el.m_node[nt[k]];
+					}
+
+					if (showContour)
+					{
+						for (int k = 0; k < 8; ++k)
+						{
+							if (data.GetElementDataTag(i) > 0)
+								ec[k] = map.map(data.GetElementValue(i, nt[k]));
+							else
+								ec[k] = GLColor(212, 212, 212);
+						}
 					}
 
 					// calculate the case of the element
@@ -8744,7 +8782,37 @@ void CGLView::UpdatePlaneCut()
 							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
 						}
 
+						int nf = m_planeCut->Faces();
 						m_planeCut->AddFace(r, mid);
+						GMesh::FACE& face = m_planeCut->Face(nf);
+
+						if (showContour)
+						{
+							GLColor c;
+							for (int k = 0; k < 3; k++)
+							{
+								int n1 = ET_HEX[pf[k]][0];
+								int n2 = ET_HEX[pf[k]][1];
+
+								w1 = norm * ex[n1];
+								w2 = norm * ex[n2];
+
+								if (w2 != w1)
+									w = (ref - w1) / (w2 - w1);
+								else
+									w = 0.f;
+
+								c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
+								c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
+								c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
+
+								face.c[k] = c;
+							}
+						}
+						else
+						{
+							face.c[0] = face.c[1] = face.c[2] = c;
+						}
 
 						// add edges (for mesh rendering)
 						for (int k = 0; k < 3; ++k)
@@ -8815,19 +8883,8 @@ void CGLView::RenderPlaneCut()
 
 	glColor3ub(255, 255, 255);
 	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_COLOR_MATERIAL);
-	for (int i = 0; i <= MAT; ++i)
-	{
-		if (i == 0)
-		{
-			SetMatProps(nullptr);
-		}
-		else
-		{
-			SetMatProps(fem.GetMaterial(i - 1));
-		}
-		GetMeshRenderer().RenderGLMesh(m_planeCut, i);
-	}
+	glEnable(GL_COLOR_MATERIAL);
+	GetMeshRenderer().RenderGLMesh(m_planeCut);
 
 	if (GetViewSettings().m_bmesh)
 	{
