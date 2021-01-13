@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "ModelFileReader.h"
 #include <QApplication>
+#include <QRegularExpression>
 #include <QtCore/QSettings>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
@@ -927,7 +928,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 		{
 			if (m_fileQueue.empty())
 			{
-				QStringList stringList = errorString.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+				QStringList stringList = errorString.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
 				QString err = QString("Warnings were generated while reading the file:\n%1\n\n").arg(file.m_fileName);
 
 				err += QString("IMPORTANT: The file may NOT have been read in correctly. Please check for errors!\n\n");
@@ -2766,7 +2767,7 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 		program = QString::fromStdString(sprogram);
 
 		// extract the arguments
-		QStringList args = cmd.split(" ", QString::SkipEmptyParts);
+		QStringList args = cmd.split(" ", Qt::SkipEmptyParts);
 
 		std::string configFile = job->GetConfigFileName();
 

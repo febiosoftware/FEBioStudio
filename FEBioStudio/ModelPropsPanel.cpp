@@ -355,7 +355,7 @@ public:
 		stack->addWidget(tool);
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
-		mainLayout->setMargin(0);
+		mainLayout->setContentsMargins(0,0,0,0);
 		mainLayout->addWidget(stack);
 		parent->setLayout(mainLayout);
 

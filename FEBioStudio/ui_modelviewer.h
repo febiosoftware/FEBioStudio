@@ -92,7 +92,7 @@ public:
 		m_filter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 		QHBoxLayout* hf = new QHBoxLayout;
-		hf->setMargin(0);
+		hf->setContentsMargins(0,0,0,0);
 		QLabel* l = new QLabel("Filter:");
 		l->setBuddy(m_filter);
 		hf->addWidget(l);
@@ -109,7 +109,7 @@ public:
 		m_stack = new QStackedWidget;
 
 		QVBoxLayout* th = new QVBoxLayout;
-		th->setMargin(0);
+		th->setContentsMargins(0,0,0,0);
 		th->addLayout(hf);
 		th->addWidget(tree);
 
@@ -134,12 +134,12 @@ public:
 		buttonLayout->addWidget(srcButton);
 		buttonLayout->addWidget(syncButton);
 		buttonLayout->addStretch();
-		buttonLayout->setMargin(0);
+		buttonLayout->setContentsMargins(0,0,0,0);
 
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addLayout(buttonLayout);
 		mainLayout->addWidget(splitter);
-		mainLayout->setMargin(0);
+		mainLayout->setContentsMargins(0,0,0,0);
 
 		wnd->setLayout(mainLayout);
 

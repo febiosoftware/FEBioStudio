@@ -44,10 +44,10 @@ public:
 	void setup(QWidget* w, int classType, unsigned int nflag)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		l->setSpacing(0);
 		mainLayout = new QGridLayout;
-		mainLayout->setMargin(0);
+		mainLayout->setContentsMargins(0,0,0,0);
 		mainLayout->setSpacing(0);
 		buttonGroup = new QButtonGroup(w);
 

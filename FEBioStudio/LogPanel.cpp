@@ -47,12 +47,14 @@ void CLogPanel::ClearOutput()
 	ui->clearLog(1);
 }
 
-//void CLogPanel::AddText(const QString& txt, int n)
-//{
-//	ui->txt[n]->moveCursor(QTextCursor::End);
-//	ui->txt[n]->insertPlainText(txt);
-//	ui->txt[n]->moveCursor(QTextCursor::End);
-//}
+/*
+void CLogPanel::AddText(const QString& txt, int n)
+{
+	ui->txt[n]->moveCursor(QTextCursor::End);
+	ui->txt[n]->insertPlainText(txt);
+	ui->txt[n]->moveCursor(QTextCursor::End);
+}
+*/
 
 void CLogPanel::on_logSave_clicked(bool b)
 {
@@ -98,7 +100,6 @@ void CLogPanel::ShowOutput()
 	ui->showTxt(1);
 }
 
-
 void CLogPanel::AddText(const QString& txt, int n)
 {
 	QTextDocument * document = ui->txt[n]->document();
@@ -106,11 +107,12 @@ void CLogPanel::AddText(const QString& txt, int n)
 	QTextCursor cursor(document);
 	cursor.movePosition(QTextCursor::End);
 	QTextCharFormat textCharFormat = cursor.charFormat();
-	int offset = escapeSequenceExpression.indexIn(txt);
+  QRegularExpressionMatch match = escapeSequenceExpression.match(txt);
+	int offset = match.capturedStart();
 	cursor.insertText(txt.mid(0, offset), textCharFormat);
 	while (!(offset < 0)) {
-		int previousOffset = offset + escapeSequenceExpression.matchedLength();
-		QStringList capturedTexts = escapeSequenceExpression.capturedTexts().back().split(';');
+		int previousOffset = offset + match.capturedLength();
+		QStringList capturedTexts = match.capturedTexts().back().split(';');
 		QListIterator< QString > i(capturedTexts);
 		while (i.hasNext()) {
 			bool ok = false;
@@ -118,7 +120,8 @@ void CLogPanel::AddText(const QString& txt, int n)
 			Q_ASSERT(ok);
 			parseEscapeSequence(attribute, i, textCharFormat, ui->defaultTextCharFormat);
 		}
-		offset = escapeSequenceExpression.indexIn(txt, previousOffset);
+    match = escapeSequenceExpression.match(txt, previousOffset);
+		offset = match.capturedStart();
 		if (offset < 0) {
 			cursor.insertText(txt.mid(previousOffset), textCharFormat);
 		} else {

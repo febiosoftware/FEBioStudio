@@ -28,11 +28,12 @@ SOFTWARE.*/
 #include "GLView.h"
 #include <QApplication>
 #include <QAction>
+#include <QActionGroup>
 #include <QMenuBar>
 #include <QMenu>
 #include <QFile>
 #include <QDockWidget>
-#include <QDesktopWidget>
+//#include <QDesktopWidget>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QProgressBar>
@@ -46,6 +47,7 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
+#include <QFontComboBox>
 #include "FileViewer.h"
 #include "ModelViewer.h"
 #include "CurveEditor.h"
@@ -57,8 +59,6 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "PostPanel.h"
 #include "InfoPanel.h"
-#include <QFontComboBox>
-#include <vector>
 #include "LaunchConfig.h"
 #include "MainTabBar.h"
 #include "DlgMeasure.h"
@@ -71,6 +71,8 @@ SOFTWARE.*/
 #include "UpdateChecker.h"
 #include "XMLEditor.h"
 
+#include <vector>
+
 class QProcess;
 
 class CGLViewer : public QWidget
@@ -80,7 +82,7 @@ public:
 	{
 		// create the layout for the central widget
 		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 
 		// create the GL view
 		glview = new CGLView(wnd); glview->setObjectName("glview");
@@ -324,7 +326,7 @@ public:
 
 		QWidget* centralWidget = new QWidget;
 		QVBoxLayout* centralLayout = new QVBoxLayout;
-		centralLayout->setMargin(0);
+		centralLayout->setContentsMargins(0,0,0,0);
 		centralLayout->setSpacing(0);
 
 		tab = new CMainTabBar(wnd);
@@ -396,7 +398,7 @@ public:
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
 		QAction* actionSaveAs     = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
-		QAction* actionSaveAll    = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_S);
+		QAction* actionSaveAll    = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
 		QAction* actionCloseAll   = addAction("Close All", "actionCloseAll");
 		QAction* actionSnapShot   = addAction("Snapshot ...", "actionSnapShot", "snapshot");
 		QAction* actionSaveProject = addAction("Save Project As ...", "actionSaveProject");
@@ -446,7 +448,7 @@ public:
 		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::Key_F3);
 		QAction* actionToggleComment = addAction("Toggle Line Comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier + Qt::Key_Slash);
 		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier + Qt::Key_D);
-		QAction* actionDeleteLine = addAction("Delete Line", "actionDeleteLine"); actionDeleteLine->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_L);
+		QAction* actionDeleteLine = addAction("Delete Line", "actionDeleteLine"); actionDeleteLine->setShortcut(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_L);
 
 		// --- Physics menu ---
 		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
