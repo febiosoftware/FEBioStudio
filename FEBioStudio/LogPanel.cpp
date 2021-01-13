@@ -28,8 +28,7 @@ SOFTWARE.*/
 #include "ui_logpanel.h"
 #include <QFileDialog>
 #include <QMessageBox>
-
-void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
+#include <QRegularExpression>
 
 CLogPanel::CLogPanel(QWidget* parent) : QWidget(parent), ui(new Ui::CLogPanel)
 {
@@ -45,13 +44,6 @@ void CLogPanel::ClearOutput()
 {
 	ui->clearLog(1);
 }
-
-//void CLogPanel::AddText(const QString& txt, int n)
-//{
-//	ui->txt[n]->moveCursor(QTextCursor::End);
-//	ui->txt[n]->insertPlainText(txt);
-//	ui->txt[n]->moveCursor(QTextCursor::End);
-//}
 
 void CLogPanel::on_logSave_clicked(bool b)
 {
@@ -101,15 +93,16 @@ void CLogPanel::ShowOutput()
 void CLogPanel::AddText(const QString& txt, int n)
 {
 	QTextDocument * document = ui->txt[n]->document();
-	QRegExp const escapeSequenceExpression(R"(\x1B\[([\d;]+)m)");
+	QRegularExpression const escapeSequenceExpression(R"(\x1B\[([\d;]+)m)");
 	QTextCursor cursor(document);
 	cursor.movePosition(QTextCursor::End);
 	QTextCharFormat textCharFormat = cursor.charFormat();
-	int offset = escapeSequenceExpression.indexIn(txt);
+	QRegularExpressionMatch match = escapeSequenceExpression.match(txt);
+	int offset = match.capturedStart();
 	cursor.insertText(txt.mid(0, offset), textCharFormat);
 	while (!(offset < 0)) {
-		int previousOffset = offset + escapeSequenceExpression.matchedLength();
-		QStringList capturedTexts = escapeSequenceExpression.capturedTexts().back().split(';');
+		int previousOffset = offset + match.capturedLength();
+		QStringList capturedTexts = match.capturedTexts().back().split(';');
 		QListIterator< QString > i(capturedTexts);
 		while (i.hasNext()) {
 			bool ok = false;
@@ -117,7 +110,8 @@ void CLogPanel::AddText(const QString& txt, int n)
 			Q_ASSERT(ok);
 			parseEscapeSequence(attribute, i, textCharFormat, ui->defaultTextCharFormat);
 		}
-		offset = escapeSequenceExpression.indexIn(txt, previousOffset);
+		match = escapeSequenceExpression.match(txt, previousOffset);
+		offset = match.capturedStart();
 		if (offset < 0) {
 			cursor.insertText(txt.mid(previousOffset), textCharFormat);
 		} else {
@@ -129,7 +123,7 @@ void CLogPanel::AddText(const QString& txt, int n)
 	ui->txt[n]->setTextCursor(cursor);
 }
 
-void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
+void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
 {
 	switch (attribute) {
 	case 0 : { // Normal/Default (reset all attributes)
