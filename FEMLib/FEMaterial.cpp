@@ -998,8 +998,8 @@ FECoupledTransIsoMooneyRivlin::FECoupledTransIsoMooneyRivlin() : FETransverselyI
 	AddScienceParam(0, UNIT_PRESSURE, "c3", "c3");
 	AddScienceParam(0, UNIT_NONE, "c4", "c4");
 	AddScienceParam(0, UNIT_PRESSURE, "c5", "c5");
-	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
-	AddScienceParam(0, UNIT_NONE, "lambda", "lambda");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus");
+	AddScienceParam(0, UNIT_NONE, "lam_max", "lambda");
 }
 
 void FECoupledTransIsoMooneyRivlin::Convert(FECoupledTransIsoMooneyRivlinOld* pold)

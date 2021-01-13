@@ -44,7 +44,8 @@ SOFTWARE.*/
 // 3.7: Made value parameter of FEInitFluidPressure variable. 
 // 3.8: Added filename to log data
 // 3.9: Made fixed charge density a variable parameter for multi- and triphasic materials. 
-#define SAVE_VERSION	0x00030009
+// 3.10: Added density to prestrain elastic material.
+#define SAVE_VERSION	0x0003000A
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D
