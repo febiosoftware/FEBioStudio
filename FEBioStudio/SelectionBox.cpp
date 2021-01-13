@@ -63,7 +63,7 @@ public:
 		form->addRow("Name:", name = new QLineEdit); name->setObjectName("name");
 
 		QHBoxLayout* h = new QHBoxLayout;
-		h->setMargin(0);
+		h->setContentsMargins(0,0,0,0);
 		h->addWidget(type = new QLabel(""));
 		h->addWidget(clr = new QToolButton); clr->setIcon(QIcon(":/icons/delete.png"));
 		clr->setToolTip("Clear the selection.");
@@ -100,13 +100,13 @@ public:
 		buttonLayout->addWidget(pb3);
 		buttonLayout->addWidget(pb4);
 		buttonLayout->addStretch();
-		buttonLayout->setMargin(0);
+		buttonLayout->setContentsMargins(0,0,0,0);
 
 		QGridLayout* mainLayout = new QGridLayout;
 		mainLayout->addWidget(nameType, 0, 0);
 		mainLayout->addWidget(list, 1, 0);
 		mainLayout->addLayout(buttonLayout, 1, 1);
-		mainLayout->setMargin(0);
+		mainLayout->setContentsMargins(0,0,0,0);
 
 		parent->setLayout(mainLayout);
 

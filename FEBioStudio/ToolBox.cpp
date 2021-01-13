@@ -40,7 +40,7 @@ CToolItem::CToolItem(const QString& name, QWidget* tool, QWidget* parent) : QWid
 	pb->setFont(font);
 
 	QVBoxLayout* l = new QVBoxLayout;
-	l->setMargin(0);
+	l->setContentsMargins(0,0,0,0);
 	l->setSpacing(0);
 	l->addWidget(pb);
 	l->addWidget(tool);
@@ -58,7 +58,7 @@ void CToolItem::setTitle(const QString& t)
 CToolBox::CToolBox(QWidget* parent) : QScrollArea(parent)
 {
 	QVBoxLayout* mainLayout = new QVBoxLayout;
-	mainLayout->setMargin(0);
+	mainLayout->setContentsMargins(0,0,0,0);
 	mainLayout->setSpacing(0);
 	mainLayout->setAlignment(Qt::AlignTop);
 

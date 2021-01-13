@@ -52,7 +52,7 @@ SOFTWARE.*/
 CPropertyListForm::CPropertyListForm(QWidget* parent) : QWidget(parent)
 {
 	ui = new QVBoxLayout;
-//	ui->setMargin(0);
+//	ui->setContentsMargins(0,0,0,0);
 	setLayout(ui);
 
 	m_list = 0;
@@ -188,7 +188,7 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 				MyCheckBox* c = new MyCheckBox;
 				c->m_data = i;
 				c->setChecked(pi.param->IsChecked());
-				l->setMargin(0);
+				l->setContentsMargins(0,0,0,0);
 				l->addWidget(c);
 				l->addWidget(pw);
 				tmp->setLayout(l);

@@ -94,7 +94,7 @@ public:
 		l->addLayout(h3);
 
 		QFormLayout* f = new QFormLayout;
-		f->setMargin(0);
+		f->setContentsMargins(0,0,0,0);
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
 		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));

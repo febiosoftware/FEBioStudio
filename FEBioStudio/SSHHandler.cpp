@@ -1233,7 +1233,7 @@ int CSSHHandler::ParseCustomFile(std::vector<std::string>& commands)
 
 	QString customScript = m_data->job->GetLaunchConfig()->getText().c_str();
 	ReplaceMacros(customScript);
-	QStringList commandList = customScript.split("\n", QString::SkipEmptyParts);
+	QStringList commandList = customScript.split("\n", Qt::SkipEmptyParts); // QString::SkipEmptyParts is deprecated
 
 	for(QString command : commandList)
 	{

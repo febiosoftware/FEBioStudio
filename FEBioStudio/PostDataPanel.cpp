@@ -400,7 +400,7 @@ public:
 		m_activeField = 0;
 
 		QVBoxLayout* pg = new QVBoxLayout(parent);
-		pg->setMargin(0);
+		pg->setContentsMargins(0,0,0,0);
 
 		const int BW = 60;
 		const int BH = 23;
@@ -458,7 +458,7 @@ public:
 
 		QWidget* w = new QWidget;
 		QVBoxLayout* l = new QVBoxLayout;
-		l->setMargin(0);
+		l->setContentsMargins(0,0,0,0);
 		w->setLayout(l);
 
 		l->addWidget(name = new QLineEdit); name->setObjectName("fieldName");
