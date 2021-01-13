@@ -8700,6 +8700,9 @@ void CGLView::UpdatePlaneCut()
 			}
 
 			// repeat over all elements
+			GLColor defaultColor(200, 200, 200);
+			GLColor c(defaultColor);
+			int matId = -1;
 			int NE = mesh->Elements();
 			for (int i = 0; i < NE; ++i)
 			{
@@ -8709,10 +8712,21 @@ void CGLView::UpdatePlaneCut()
 				{
 					GPart* pg = po->Part(el.m_gid);
 					int mid = pg->GetMaterialID();
-					if (mid < 0) mid = 0;
+					if (mid != matId)
+					{
+						GMaterial* pmat = fem.GetMaterialFromID(mid);
+						if (pmat)
+						{
+							c = fem.GetMaterialFromID(mid)->Diffuse();
+							matId = mid;
+						}
+						else
+						{
+							matId = -1;
+							c = defaultColor;
+						}
+					}
 
-					GLColor c(200, 200, 200);
-					if (mid >= 0) c = fem.GetMaterial(mid - 1)->Diffuse();
 
 					const int *nt = nullptr;
 					switch (el.Type())
