@@ -62,6 +62,7 @@ private slots:
 	void onShowInExplorer();
 	void onRemoveFromProject();
 	void onAddFile();
+	void onImportFolder();
 
 private:
 	Ui::CFileViewer*	ui;

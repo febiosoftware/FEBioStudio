@@ -225,6 +225,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		menu.addAction("Close project", ui->m_wnd, SLOT(on_closeProject()));
 		menu.addAction("Clear project", ui->m_wnd, SLOT(on_clearProject()));
 		menu.addAction("Add file ...", this, SLOT(onAddFile()));
+		menu.addAction("Import folder ...", this, SLOT(onImportFolder()));
 
 #ifdef _WIN32
 		const FEBioStudioProject* prj = ui->m_wnd->GetProject();
@@ -628,6 +629,33 @@ void CFileViewer::onAddFile()
 				Update();
 				SelectItem(newItem->Id());
 			}
+		}
+	}
+}
+
+void CFileViewer::onImportFolder()
+{
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj == nullptr) return;
+
+	QFileDialog dlg;
+	dlg.setFileMode(QFileDialog::Directory);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	if (dlg.exec())
+	{
+		QStringList folders = dlg.selectedFiles();
+		if (folders.size() == 1)
+		{
+			QString path = folders.at(0);
+
+			QDirIterator it(path, { "*.fsm", "*.feb", "*.xplt" }, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+			while (it.hasNext())
+			{
+				QString file = it.next();
+				prj->AddFile(file);
+			}
+
+			Update();
 		}
 	}
 }
