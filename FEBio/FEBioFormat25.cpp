@@ -1941,7 +1941,11 @@ FESurfaceLoad* FEBioFormat25::ParseConcentrationFlux(XMLTag& tag)
 				int lc = alc->value<int>() - 1;
 				febio.AddParamCurve(pcf->GetLoadCurve(), lc);
 			}
-			else pcf->GetLoadCurve()->Clear();
+			else
+			{
+				FELoadCurve* plc = pcf->GetLoadCurve();
+				if (plc) plc->Clear();
+			}
 			double s; tag.value(s);
 			pcf->SetFlux(s);
 		}
