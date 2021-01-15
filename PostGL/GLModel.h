@@ -346,6 +346,7 @@ protected:
 
 public:
 	bool		m_bnorm;		//!< calculate normals or not
+	double		m_scaleNormals;	//!< normal scale factor
 	bool		m_bghost;		//!< render the ghost (undeformed outline)
 	bool		m_brenderInteriorNodes;	//!< render interior nodes or not
 	int			m_nDivs;		//!< nr of element subdivisions

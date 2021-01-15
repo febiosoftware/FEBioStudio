@@ -1760,6 +1760,8 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 		VIEW_SETTINGS& vs = GetViewSettings();
 
 		glm->m_nrender = vs.m_nrender + 1;
+		glm->m_bnorm = vs.m_bnorm;
+		glm->m_scaleNormals = vs.m_scaleNormals;
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
@@ -3747,8 +3749,6 @@ void CGLView::SetPlaneCut(double d[4])
 	if (doc == nullptr) return;
 
 	BOX box = doc->GetGModel()->GetBoundingBox();
-	FESelection* sel = doc->GetCurrentSelection();
-	if (sel) box = sel->GetBoundingBox();
 
 	double R = box.GetMaxExtent();
 	if (R < 1e-12) R = 1.0;
@@ -8886,8 +8886,6 @@ void CGLView::RenderPlaneCut()
 	if (doc == nullptr) return;
 
 	BOX box = doc->GetGModel()->GetBoundingBox();
-	FESelection* sel = doc->GetCurrentSelection();
-	if (sel) box = sel->GetBoundingBox();
 
 	glColor3ub(200, 0, 200);
 	RenderBox(box, false);
