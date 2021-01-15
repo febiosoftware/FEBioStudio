@@ -427,6 +427,7 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_szsubtitle[0] = 0;
 
 	m_showPlaneCut = false;
+	m_planeCutMode = 0;
 	m_plane[0] = 1.0;
 	m_plane[1] = 0.0;
 	m_plane[2] = 0.0;
@@ -1648,8 +1649,11 @@ void CGLView::RenderModelView()
 	if (m_showPlaneCut)
 	{
 		if (m_planeCut == nullptr) UpdatePlaneCut();
-		glClipPlane(GL_CLIP_PLANE0, m_plane);
-		glEnable(GL_CLIP_PLANE0);
+		if (m_planeCutMode == 0)
+		{
+			glClipPlane(GL_CLIP_PLANE0, m_plane);
+			glEnable(GL_CLIP_PLANE0);
+		}
 	}
 
 	// render the model
@@ -1742,7 +1746,7 @@ void CGLView::RenderModelView()
 
 	glDisable(GL_CLIP_PLANE0);
 
-	if (m_showPlaneCut && m_planeCut)
+	if (m_showPlaneCut && m_planeCut && (m_planeCutMode == 0))
 	{
 		RenderPlaneCut();
 	}
@@ -2436,8 +2440,16 @@ void CGLView::RenderModel()
 				{
 				case SELECT_OBJECT:
 				{
-					  if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(po);
-					  else RenderObject(po);
+					if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(po);
+					else if (m_showPlaneCut && (m_planeCutMode == 1))
+					{
+						RenderFEElements(po);
+
+						GLColor c = view.m_mcol;
+						glColor3ub(c.r, c.g, c.b);
+						RenderMeshLines(po);
+					}
+					else RenderObject(po);
 				}
 				break;
 				case SELECT_PART: RenderParts(po); break;
@@ -3738,7 +3750,15 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 void CGLView::ShowPlaneCut(bool b)
 {
 	m_showPlaneCut = b;
-	delete m_planeCut; m_planeCut = nullptr;
+	UpdatePlaneCut(true);
+	update();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::SetPlaneCutMode(int nmode)
+{
+	m_planeCutMode = nmode;
+	UpdatePlaneCut(true);
 	update();
 }
 
@@ -8653,7 +8673,7 @@ void CGLView::RenderTags()
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void CGLView::UpdatePlaneCut()
+void CGLView::UpdatePlaneCut(bool breset)
 {
 	if (m_planeCut) delete m_planeCut;
 
@@ -8678,131 +8698,129 @@ void CGLView::UpdatePlaneCut()
 
 	m_planeCut = new GLMesh;
 
-	GObject* poa = m_pWnd->GetActiveObject();
-
-	for (int i = 0; i < mdl.Objects(); ++i)
+	if (breset)
 	{
-		GObject* po = mdl.Object(i);
-		if (po->GetFEMesh())
+		for (int n = 0; n < mdl.Objects(); ++n)
 		{
-			FEMesh* mesh = po->GetFEMesh();
-
-			vec3d ex[8];
-			int en[8];
-			GLColor ec[8];
-
-			bool showContour = false;
-			Mesh_Data& data = mesh->GetMeshData();
-			if ((po == poa) && (vs.m_bcontour))
+			GObject* po = mdl.Object(n);
+			if (po->GetFEMesh())
 			{
-				showContour = (vs.m_bcontour && data.IsValid());
-				if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
-			}
-
-			// repeat over all elements
-			GLColor defaultColor(200, 200, 200);
-			GLColor c(defaultColor);
-			int matId = -1;
-			int NE = mesh->Elements();
-			for (int i = 0; i < NE; ++i)
-			{
-				// render only when visible
-				FEElement& el = mesh->Element(i);
-				if (el.IsVisible() && el.IsSolid())
+				FEMesh* mesh = po->GetFEMesh();
+				int NE = mesh->Elements();
+				for (int i = 0; i < NE; ++i)
 				{
-					GPart* pg = po->Part(el.m_gid);
-					int mid = pg->GetMaterialID();
-					if (mid != matId)
+					FEElement& el = mesh->Element(i);
+					el.Show(); el.Unhide();
+				}
+				mesh->UpdateItemVisibility();
+			}
+		}
+	}
+
+	if ((m_planeCutMode == 0) && (m_showPlaneCut))
+	{
+		GObject* poa = m_pWnd->GetActiveObject();
+
+		for (int i = 0; i < mdl.Objects(); ++i)
+		{
+			GObject* po = mdl.Object(i);
+			if (po->GetFEMesh())
+			{
+				FEMesh* mesh = po->GetFEMesh();
+
+				vec3d ex[8];
+				int en[8];
+				GLColor ec[8];
+
+				bool showContour = false;
+				Mesh_Data& data = mesh->GetMeshData();
+				if ((po == poa) && (vs.m_bcontour))
+				{
+					showContour = (vs.m_bcontour && data.IsValid());
+					if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+				}
+
+				// repeat over all elements
+				GLColor defaultColor(200, 200, 200);
+				GLColor c(defaultColor);
+				int matId = -1;
+				int NE = mesh->Elements();
+				for (int i = 0; i < NE; ++i)
+				{
+					// render only when visible
+					FEElement& el = mesh->Element(i);
+					if (el.IsVisible() && el.IsSolid())
 					{
-						GMaterial* pmat = fem.GetMaterialFromID(mid);
-						if (pmat)
+						GPart* pg = po->Part(el.m_gid);
+						int mid = pg->GetMaterialID();
+						if (mid != matId)
 						{
-							c = fem.GetMaterialFromID(mid)->Diffuse();
-							matId = mid;
+							GMaterial* pmat = fem.GetMaterialFromID(mid);
+							if (pmat)
+							{
+								c = fem.GetMaterialFromID(mid)->Diffuse();
+								matId = mid;
+							}
+							else
+							{
+								matId = -1;
+								c = defaultColor;
+							}
 						}
-						else
+
+
+						const int *nt = nullptr;
+						switch (el.Type())
 						{
-							matId = -1;
-							c = defaultColor;
+						case FE_HEX8: nt = HEX_NT; break;
+						case FE_HEX20: nt = HEX_NT; break;
+						case FE_HEX27: nt = HEX_NT; break;
+						case FE_PENTA6: nt = PEN_NT; break;
+						case FE_PENTA15: nt = PEN_NT; break;
+						case FE_TET4: nt = TET_NT; break;
+						case FE_TET5: nt = TET_NT; break;
+						case FE_TET10: nt = TET_NT; break;
+						case FE_TET15: nt = TET_NT; break;
+						case FE_TET20: nt = TET_NT; break;
+						case FE_PYRA5: nt = PYR_NT; break;
+						default:
+							assert(false);
 						}
-					}
 
-
-					const int *nt = nullptr;
-					switch (el.Type())
-					{
-					case FE_HEX8   : nt = HEX_NT; break;
-					case FE_HEX20  : nt = HEX_NT; break;
-					case FE_HEX27  : nt = HEX_NT; break;
-					case FE_PENTA6 : nt = PEN_NT; break;
-					case FE_PENTA15: nt = PEN_NT; break;
-					case FE_TET4   : nt = TET_NT; break;
-					case FE_TET5   : nt = TET_NT; break;
-					case FE_TET10  : nt = TET_NT; break;
-					case FE_TET15  : nt = TET_NT; break;
-					case FE_TET20  : nt = TET_NT; break;
-					case FE_PYRA5  : nt = PYR_NT; break;
-					default:
-						assert(false);
-					}
-
-					// get the nodal values
-					for (int k = 0; k < 8; ++k)
-					{
-						FENode& node = mesh->Node(el.m_node[nt[k]]);
-						ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
-						en[k] = el.m_node[nt[k]];
-					}
-
-					if (showContour)
-					{
+						// get the nodal values
 						for (int k = 0; k < 8; ++k)
 						{
-							if (data.GetElementDataTag(i) > 0)
-								ec[k] = map.map(data.GetElementValue(i, nt[k]));
-							else
-								ec[k] = GLColor(212, 212, 212);
+							FENode& node = mesh->Node(el.m_node[nt[k]]);
+							ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
+							en[k] = el.m_node[nt[k]];
 						}
-					}
-
-					// calculate the case of the element
-					int ncase = 0;
-					for (int k = 0; k < 8; ++k)
-						if (norm*ex[k] >= ref) ncase |= (1 << k);
-
-					// loop over faces
-					int* pf = LUT[ncase];
-					int ne = 0;
-					for (int l = 0; l < 5; l++)
-					{
-						if (*pf == -1) break;
-
-						// calculate nodal positions
-						vec3d r[3];
-						float w1, w2, w;
-						for (int k = 0; k < 3; k++)
-						{
-							int n1 = ET_HEX[pf[k]][0];
-							int n2 = ET_HEX[pf[k]][1];
-
-							w1 = norm * ex[n1];
-							w2 = norm * ex[n2];
-
-							if (w2 != w1)
-								w = (ref - w1) / (w2 - w1);
-							else
-								w = 0.f;
-
-							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
-						}
-
-						int nf = m_planeCut->Faces();
-						m_planeCut->AddFace(r, mid);
-						GMesh::FACE& face = m_planeCut->Face(nf);
 
 						if (showContour)
 						{
-							GLColor c;
+							for (int k = 0; k < 8; ++k)
+							{
+								if (data.GetElementDataTag(i) > 0)
+									ec[k] = map.map(data.GetElementValue(i, nt[k]));
+								else
+									ec[k] = GLColor(212, 212, 212);
+							}
+						}
+
+						// calculate the case of the element
+						int ncase = 0;
+						for (int k = 0; k < 8; ++k)
+							if (norm*ex[k] >= ref) ncase |= (1 << k);
+
+						// loop over faces
+						int* pf = LUT[ncase];
+						int ne = 0;
+						for (int l = 0; l < 5; l++)
+						{
+							if (*pf == -1) break;
+
+							// calculate nodal positions
+							vec3d r[3];
+							float w1, w2, w;
 							for (int k = 0; k < 3; k++)
 							{
 								int n1 = ET_HEX[pf[k]][0];
@@ -8816,66 +8834,144 @@ void CGLView::UpdatePlaneCut()
 								else
 									w = 0.f;
 
-								c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
-								c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
-								c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
-
-								face.c[k] = c;
+								r[k] = ex[n1] * (1 - w) + ex[n2] * w;
 							}
-						}
-						else
-						{
-							face.c[0] = face.c[1] = face.c[2] = c;
-						}
 
-						// add edges (for mesh rendering)
-						for (int k = 0; k < 3; ++k)
-						{
-							int n1 = pf[k];
-							int n2 = pf[(k + 1) % 3];
+							int nf = m_planeCut->Faces();
+							m_planeCut->AddFace(r, (mid >= 0 ? mid : 0));
+							GMesh::FACE& face = m_planeCut->Face(nf);
 
-							bool badd = true;
-							for (int m = 0; m < ne; ++m)
+							if (showContour)
 							{
-								int m1 = edge[m][0];
-								int m2 = edge[m][1];
-								if (((n1 == m1) && (n2 == m2)) ||
-									((n1 == m2) && (n2 == m1)))
+								GLColor c;
+								for (int k = 0; k < 3; k++)
 								{
-									badd = false;
-									etag[m]++;
-									break;
+									int n1 = ET_HEX[pf[k]][0];
+									int n2 = ET_HEX[pf[k]][1];
+
+									w1 = norm * ex[n1];
+									w2 = norm * ex[n2];
+
+									if (w2 != w1)
+										w = (ref - w1) / (w2 - w1);
+									else
+										w = 0.f;
+
+									c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
+									c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
+									c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
+
+									face.c[k] = c;
 								}
 							}
-
-							if (badd)
+							else
 							{
-								edge[ne][0] = n1;
-								edge[ne][1] = n2;
-								etag[ne] = 0;
-
-								GMesh::FACE& face = m_planeCut->Face(m_planeCut->Faces() - 1);
-								edgeNode[ne][0] = face.n[k];
-								edgeNode[ne][1] = face.n[(k+1)%3];
-								++ne;
+								face.c[0] = face.c[1] = face.c[2] = c;
 							}
-						}
-						pf += 3;
-					}
 
-					for (int k = 0; k < ne; ++k)
-					{
-						if (etag[k] == 0)
+							// add edges (for mesh rendering)
+							for (int k = 0; k < 3; ++k)
+							{
+								int n1 = pf[k];
+								int n2 = pf[(k + 1) % 3];
+
+								bool badd = true;
+								for (int m = 0; m < ne; ++m)
+								{
+									int m1 = edge[m][0];
+									int m2 = edge[m][1];
+									if (((n1 == m1) && (n2 == m2)) ||
+										((n1 == m2) && (n2 == m1)))
+									{
+										badd = false;
+										etag[m]++;
+										break;
+									}
+								}
+
+								if (badd)
+								{
+									edge[ne][0] = n1;
+									edge[ne][1] = n2;
+									etag[ne] = 0;
+
+									GMesh::FACE& face = m_planeCut->Face(m_planeCut->Faces() - 1);
+									edgeNode[ne][0] = face.n[k];
+									edgeNode[ne][1] = face.n[(k + 1) % 3];
+									++ne;
+								}
+							}
+							pf += 3;
+						}
+
+						for (int k = 0; k < ne; ++k)
 						{
-							m_planeCut->AddEdge(edgeNode[k], 2);
+							if (etag[k] == 0)
+							{
+								m_planeCut->AddEdge(edgeNode[k], 2);
+							}
 						}
 					}
 				}
 			}
 		}
-	}
 
-	m_planeCut->Update();
+		m_planeCut->Update();
+	}
+	else
+	{
+		for (int n = 0; n < mdl.Objects(); ++n)
+		{
+			GObject* po = mdl.Object(n);
+			if (po->GetFEMesh())
+			{
+				FEMesh* mesh = po->GetFEMesh();
+
+				if (m_showPlaneCut)
+				{
+					int NN = mesh->Nodes();
+					for (int i = 0; i < NN; ++i)
+					{
+						FENode& node = mesh->Node(i);
+						node.m_ntag = 0;
+
+						vec3d& ri = mesh->LocalToGlobal(node.pos());
+						if (norm*ri < ref)
+						{
+							node.m_ntag = 1;
+						}
+					}
+
+					int NE = mesh->Elements();
+					for (int i = 0; i < NE; ++i)
+					{
+						FEElement& el = mesh->Element(i);
+						el.Show(); el.Unhide();
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							if (mesh->Node(el.m_node[j]).m_ntag == 1)
+							{
+								el.Hide();
+								break;
+							}
+						}
+					}
+				}
+				else
+				{
+					int NE = mesh->Elements();
+					for (int i = 0; i < NE; ++i)
+					{
+						FEElement& el = mesh->Element(i);
+						el.Show(); el.Unhide();
+					}
+				}
+
+				mesh->UpdateItemVisibility();
+			}
+		}
+	}
 }
 
 void CGLView::RenderPlaneCut()
