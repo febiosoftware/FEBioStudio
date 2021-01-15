@@ -63,6 +63,7 @@ CGLModel::CGLModel(FEPostModel* ps)
 	CGLWidgetManager::GetInstance()->SetActiveLayer(m_layer);
 
 	m_bnorm = false;
+	m_scaleNormals = 1.0;
 	m_bghost = false;
 	m_nDivs = 0; // this means "auto"
 	m_brenderInteriorNodes = true;
@@ -1511,7 +1512,7 @@ void CGLModel::RenderNormals(CGLContext& rc)
 
 	BOX box = ps->GetBoundingBox();
 
-	float scale = 0.05f*box.Radius();
+	float scale = 0.05f*box.Radius()*m_scaleNormals;
 
 	// store the attributes
 	glPushAttrib(GL_ENABLE_BIT);

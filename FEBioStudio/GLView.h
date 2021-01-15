@@ -412,7 +412,8 @@ public:
 
 	void ShowPlaneCut(bool b);
 	void SetPlaneCut(double d[4]);
-	void UpdatePlaneCut();
+	void SetPlaneCutMode(int nmode);
+	void UpdatePlaneCut(bool breset = false);
 
 protected:
 	void PanView(vec3d r);
@@ -516,6 +517,7 @@ private:
 	CGLCamera	m_oldCam;
 
 	bool		m_showPlaneCut;
+	int			m_planeCutMode;
 	double		m_plane[4];
 	GLMesh*		m_planeCut;
 };
