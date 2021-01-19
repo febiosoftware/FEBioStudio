@@ -8935,7 +8935,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 						FENode& node = mesh->Node(i);
 						node.m_ntag = 0;
 
-						vec3d& ri = mesh->LocalToGlobal(node.pos());
+						vec3d ri = mesh->LocalToGlobal(node.pos());
 						if (norm*ri < ref)
 						{
 							node.m_ntag = 1;
