@@ -336,7 +336,7 @@ void CScalarFieldTool::OnApply()
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partList);
+		pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
@@ -346,11 +346,11 @@ void CScalarFieldTool::OnApply()
 		{
 			FEElement_& el = *it->m_pi;
 			int ne = el.Nodes();
-			double v = 0.0;
-			for (int j = 0; j < ne; ++j) v += val[el.m_node[j]];
-			v /= (double)ne;
-
-			pdata->set(i, v);
+			for (int j = 0; j < ne; ++j)
+			{
+				double v = val[el.m_node[j]];
+				pdata->SetValue(i, j, v);
+			}
 		}
 		delete elemList;
 	}

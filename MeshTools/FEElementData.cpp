@@ -154,6 +154,7 @@ void FEElementData::Load(IArchive& ar)
 FEPartData::FEPartData(FEMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
 {
 	SetMesh(mesh);
+	m_maxElemItems = 1;
 }
 
 FEPartData::FEPartData(const FEPartData& d) : FEMeshData(FEMeshData::PART_DATA)
@@ -167,7 +168,7 @@ FEPartData& FEPartData::operator = (const FEPartData& d)
 }
 
 // create a data field
-bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType)
+bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
 {
 	FEMesh* mesh = GetMesh();
 	assert(mesh);
@@ -175,6 +176,7 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 	m_part = partList;
 
 	int NE = mesh->Elements();
+	int maxNodes = 0;
 	int nsize = 0;
 	for (int i = 0; i < partList.size(); ++i)
 	{
@@ -182,9 +184,26 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 		for (int i = 0; i < NE; ++i)
 		{
 			FEElement& el = mesh->Element(i);
-			if (el.m_gid == pid) nsize++;
+			if (el.m_gid == pid)
+			{
+				int nn = el.Nodes();
+				if (nn > maxNodes) maxNodes = nn;
+				nsize++;
+			}
 		}
 	}
+
+	m_dataFmt = dataFmt;
+	if (dataFmt == DATA_ITEM)
+	{
+		m_maxElemItems = 1;
+	}
+	else if (dataFmt == DATA_MULT)
+	{
+		m_maxElemItems = maxNodes;
+		nsize *= maxNodes;
+	}
+
 	m_data.resize(nsize);
 
 	return true;
@@ -236,6 +255,8 @@ void FEPartData::Save(OArchive& ar)
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
 	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
+	ar.WriteChunk(CID_MESH_DATA_FORMAT, (int)m_dataFmt);
+	ar.WriteChunk(CID_MESH_DATA_DPI, (int)m_maxElemItems);
 
 	// Parts must be saved first so that the number of elements in the part can be
 	// queried before the data is read during the load operation.
@@ -261,6 +282,16 @@ void FEPartData::Load(IArchive& ar)
 			int dType;
 			ar.read(dType);
 			m_dataType = (FEMeshData::DATA_TYPE) dType;
+		}
+		else if (nid == CID_MESH_DATA_FORMAT)
+		{
+			int fType;
+			ar.read(fType);
+			m_dataFmt = (FEMeshData::DATA_FORMAT) fType;
+		}
+		else if (nid == CID_MESH_DATA_DPI)
+		{
+			ar.read(m_maxElemItems);
 		}
 		else if (nid == CID_MESH_DATA_PART)
 		{

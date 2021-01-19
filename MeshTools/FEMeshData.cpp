@@ -30,6 +30,7 @@ SOFTWARE.*/
 FEMeshData::FEMeshData(FEMeshData::DATA_CLASS dataClass)
 	: m_dataClass(dataClass), m_pMesh(0), m_dataType(FEMeshData::DATA_TYPE::DATA_SCALAR)
 {
+	m_dataFmt = DATA_ITEM;
 }
 
 FEMeshData::~FEMeshData()
@@ -44,6 +45,11 @@ FEMeshData::DATA_CLASS FEMeshData::GetDataClass() const
 FEMeshData::DATA_TYPE FEMeshData::GetDataType() const
 {
 	return m_dataType;
+}
+
+FEMeshData::DATA_FORMAT FEMeshData::GetDataFormat() const
+{
+	return m_dataFmt;
 }
 
 FEMesh* FEMeshData::GetMesh() const

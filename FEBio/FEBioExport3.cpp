@@ -3220,6 +3220,7 @@ void FEBioExport3::WriteElementDataFields()
 			FEPartData* partData = dynamic_cast<FEPartData*>(pm->GetMeshDataField(n));
 			if (partData)
 			{
+				double v[FEElement::MAX_NODES] = { 0 };
 				FEPartData& data = *partData;
 				GPartList* partList = data.GetPartList(&fem);
 				std::vector<GPart*> partArray = partList->GetPartList();
@@ -3245,7 +3246,18 @@ void FEBioExport3::WriteElementDataFields()
 							if (pe->m_gid == pid)
 							{
 								el.set_attribute(nid, lid++);
-								el.value(data[j]);
+
+								if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+								{
+									el.value(data[j]);
+								}
+								else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+								{
+									int nn = pe->Nodes();
+									for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
+									el.value(v, nn);
+								}
+
 								m_xml.add_leaf(el, false);
 							}
 						}

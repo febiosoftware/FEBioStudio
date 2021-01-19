@@ -45,7 +45,8 @@ SOFTWARE.*/
 // 3.8: Added filename to log data
 // 3.9: Made fixed charge density a variable parameter for multi- and triphasic materials. 
 // 3.10: Added density to prestrain elastic material.
-#define SAVE_VERSION	0x0003000A
+// 3.11: changes to FEMeshData classes. 
+#define SAVE_VERSION	0x0003000B
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D

@@ -119,9 +119,23 @@ void FEMeshValuator::Evaluate(int nfield)
 				for (int i = 0; i < N; ++i, ++it)
 				{
 					int elemId = it->m_lid;
-					double val = partData.get(i);
-					data.SetElementValue(elemId, val);
 					data.SetElementDataTag(elemId, 1);
+
+					if (partData.GetDataFormat() == FEMeshData::DATA_ITEM)
+					{
+						double val = partData.GetValue(i, 0);
+						data.SetElementValue(elemId, val);
+					}
+					else if (partData.GetDataFormat() == FEMeshData::DATA_MULT)
+					{
+						FEElement_* pe = it->m_pi;
+						int nn = pe->Nodes();
+						for (int j = 0; j < nn; ++j)
+						{
+							double val = partData.GetValue(i, j);
+							data.SetElementValue(elemId, j, val);
+						}
+					}
 				}
 				delete pg;
 			}
