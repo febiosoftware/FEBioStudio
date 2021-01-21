@@ -10,6 +10,7 @@
 #include "MainWindow.h"
 #include <QTextCursor>
 #include <QTextBlock>
+#include <QRegularExpression>
 
 class XMLHighlighter : public QSyntaxHighlighter
 {
@@ -31,7 +32,7 @@ public:
 
 		// XML values
 //		rule.pattern = QRegExp("\\b[\\-0-9\\.+\\-e,]+\\b");
-		rule.pattern = QRegExp(">[^<]*");
+		rule.pattern = QRegularExpression(">[^<]*");
 		rule.format.setForeground(m_pal[XML_VALUE]);
 		rule.format.setFontWeight(QFont::Bold);
 		rule.offset = 1;
@@ -39,20 +40,20 @@ public:
 
 		// xml attribute values
 		rule.offset = 0;
-		rule.pattern = QRegExp("\"(?:[^\"]|\\.)*\"");
+		rule.pattern = QRegularExpression("\"(?:[^\"]|\\.)*\"");
 		rule.format.setForeground(m_pal[XML_ATTRIBUTE_VALUE]);
 		highlightingRules.append(rule);
 
 		// xml attributes
 		rule.offset = 0;
-		rule.pattern = QRegExp("\\b[a-zA-Z0-9_]+(?=\\=)");
+		rule.pattern = QRegularExpression("\\b[a-zA-Z0-9_]+(?=\\=)");
 		rule.format.setForeground(m_pal[XML_ATTRIBUTE_NAME]);
 		highlightingRules.append(rule);
 
 		// comments
 		commentFormat.setForeground(m_pal[XML_COMMENT]);
-		commentStartExpression = QRegExp("<!--");
-		commentEndExpression = QRegExp("-->");
+		commentStartExpression = QRegularExpression("<!--");
+		commentEndExpression = QRegularExpression("-->");
 	}
 
 	static void setColor(const QBrush& b, int role)
@@ -66,12 +67,15 @@ public:
 	{
 		foreach(const HighlightingRule &rule, highlightingRules) 
 		{
-			QRegExp expression(rule.pattern);
-			int index = expression.indexIn(text);
+			QRegularExpression expression(rule.pattern);
+			QRegularExpressionMatch match = expression.match(text);
+			int index = match.capturedStart();
 			while (index >= 0) {
-				int length = expression.matchedLength();
+				int length = match.capturedLength();
 				setFormat(index + rule.offset, length - 1*rule.offset, rule.format);
-				index = expression.indexIn(text, index + length);
+				
+				match = expression.match(text, index + length);
+				index = match.capturedStart();
 			}
 		}
 
@@ -80,11 +84,11 @@ public:
 
 		int startIndex = 0;
 		if (previousBlockState() != 1)
-			startIndex = commentStartExpression.indexIn(text);
+			startIndex = commentStartExpression.match(text).capturedStart();
 
 		while (startIndex >= 0)
 		{
-			int endIndex = commentEndExpression.indexIn(text, startIndex);
+			int endIndex = commentEndExpression.match(text, startIndex).capturedStart();
 			int commentLength;
 			if (endIndex == -1)
 			{
@@ -93,25 +97,25 @@ public:
 			}
 			else
 			{
-				commentLength = endIndex - startIndex + commentEndExpression.matchedLength();
+				commentLength = endIndex - startIndex + commentEndExpression.match(text, startIndex).capturedLength();
 			}
 			setFormat(startIndex, commentLength, commentFormat);
-			startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
+			startIndex = commentStartExpression.match(text, startIndex + commentLength).capturedStart();
 		}
 	}
 
 private:
 	struct HighlightingRule
 	{
-		QRegExp pattern;
+		QRegularExpression pattern;
 		QTextCharFormat format;
 		int	offset;
 	};
 	QVector<HighlightingRule> highlightingRules;
 
 	QTextCharFormat	commentFormat;
-	QRegExp commentStartExpression;
-	QRegExp commentEndExpression;
+	QRegularExpression commentStartExpression;
+	QRegularExpression commentEndExpression;
 
 public:
 	static QBrush	m_pal[5];
@@ -161,7 +165,7 @@ XMLEditor::XMLEditor(CMainWindow* wnd) : QPlainTextEdit(wnd), m_wnd(wnd)
 void XMLEditor::SetDocument(QTextDocument* doc, const QString& title)
 {
 	QPalette p = palette();
-	p.setColor(QPalette::Foreground, Qt::blue);
+	p.setColor(QPalette::WindowText, Qt::blue); // Foreground was deprecated. Was told to replace with this.
 	setPalette(p);
 
 	if (doc)

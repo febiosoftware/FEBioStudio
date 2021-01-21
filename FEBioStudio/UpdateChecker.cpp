@@ -432,7 +432,7 @@ void CUpdateWidget::linkActivated(const QString& link)
 				timestamp.setSecsSinceEpoch(release.timestamp); //setTime_t is deprecated
 
 				notes += "   Released: ";
-				notes += timestamp.toString(Qt::SystemLocaleShortDate);
+				notes += timestamp.toString("M/d/yy"); //Qt::SystemLocaleShortDate, this has been depricated and removed, prefers format now. Will required testing.
 
 				notes += "\n------------------------------------------------------\n";
 
@@ -456,10 +456,10 @@ void CUpdateWidget::linkActivated(const QString& link)
 				notes += release.FBSVersion;
 
 				QDateTime timestamp;
-				timestamp.setTime_t(release.timestamp);
+				timestamp.setSecsSinceEpoch(release.timestamp);
 
 				notes += "   Released: ";
-				notes += timestamp.toString(Qt::SystemLocaleShortDate);
+				notes += timestamp.toString("M/d/yy"); //Qt Locale has been removed and deprecated
 
 				notes += "\n------------------------------------------------------\n";
 
