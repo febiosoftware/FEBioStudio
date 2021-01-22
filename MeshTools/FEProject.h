@@ -35,11 +35,15 @@ SOFTWARE.*/
 #define FE_DYNAMIC	1
 
 //-----------------------------------------------------------------------------
-#define FE_PLOT_DEFAULT		0
-#define FE_PLOT_NEVER		1
-#define FE_PLOT_MAJOR_ITRS	2
-#define FE_PLOT_MINOR_ITRS	3
-#define FE_PLOT_MUST_POINTS	4
+enum FEPlotLevel {
+	FE_PLOT_NEVER,
+	FE_PLOT_MAJOR_ITRS,
+	FE_PLOT_MINOR_ITRS,
+	FE_PLOT_MUST_POINTS,
+	FE_PLOT_FINAL,
+	FE_PLOT_AUGMENTS,
+	FE_PLOT_STEP_FINAL
+};
 
 //-----------------------------------------------------------------------------
 // FE Super classes

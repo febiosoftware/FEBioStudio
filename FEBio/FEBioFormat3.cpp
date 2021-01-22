@@ -216,6 +216,22 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 			else if (tag == "beta") tag.value(ops.beta);
 			else if (tag == "gamma") tag.value(ops.gamma);
 			else if (tag == "optimize_bw") tag.value(ops.bminbw);
+			else if (tag == "plot_level")
+			{
+				char sz[256]; tag.value(sz);
+				ops.plot_level = FE_PLOT_MAJOR_ITRS;
+				if      (strcmp(sz, "PLOT_NEVER"        ) == 0) ops.plot_level = FE_PLOT_NEVER;
+				else if (strcmp(sz, "PLOT_MAJOR_ITRS"   ) == 0) ops.plot_level = FE_PLOT_MAJOR_ITRS;
+				else if (strcmp(sz, "PLOT_MINOR_ITRS"   ) == 0) ops.plot_level = FE_PLOT_MINOR_ITRS;
+				else if (strcmp(sz, "PLOT_MUST_POINTS"  ) == 0) ops.plot_level = FE_PLOT_MUST_POINTS;
+				else if (strcmp(sz, "PLOT_FINAL"        ) == 0) ops.plot_level = FE_PLOT_FINAL;
+				else if (strcmp(sz, "PLOT_AUGMENTATIONS") == 0) ops.plot_level = FE_PLOT_AUGMENTS;
+				else if (strcmp(sz, "PLOT_STEP_FINAL"   ) == 0) ops.plot_level = FE_PLOT_STEP_FINAL;
+				else
+				{
+					FileReader()->AddLogEntry("unknown plot_level (line %d)", tag.currentLine());
+				}
+			}
 			else ParseUnknownTag(tag);
 		}
 		++tag;
