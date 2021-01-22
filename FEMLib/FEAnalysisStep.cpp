@@ -614,6 +614,7 @@ void FEStep::Load(IArchive &ar)
                     case FE_PRESCRIBED_FLUID_VELOCITY: pb = new FEPrescribedFluidVelocity   (m_pfem); break;
                     case FE_PRESCRIBED_DILATATION    : pb = new FEPrescribedFluidDilatation (m_pfem); break;
 					case FE_FIXED_SHELL_DISPLACEMENT : pb = new FEFixedShellDisplacement    (m_pfem); break;
+					case FE_PRESCRIBED_SHELL_DISPLACEMENT: pb = new FEPrescribedShellDisplacement(m_pfem); break;
 					default:
 						if (ar.Version() < 0x00020000)
 						{
