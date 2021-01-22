@@ -158,6 +158,7 @@
     <ClCompile Include="..\..\PostGL\GLPlane.cpp" />
     <ClCompile Include="..\..\PostGL\GLPlaneCutPlot.cpp" />
     <ClCompile Include="..\..\PostGL\GLPlot.cpp" />
+    <ClCompile Include="..\..\PostGL\GLProbe.cpp" />
     <ClCompile Include="..\..\PostGL\GLSlicePLot.cpp" />
     <ClCompile Include="..\..\PostGL\GLStreamLinePlot.cpp" />
     <ClCompile Include="..\..\PostGL\GLTensorPlot.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="..\..\PostGL\GLVolumeFlowPlot.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\PostGL\GLProbe.h" />
     <ClInclude Include="..\..\PostGL\GLVolumeFlowPlot.h" />
     <ClInclude Include="..\..\PostGL\GLColorMap.h" />
     <ClInclude Include="..\..\PostGL\GLDataMap.h" />

@@ -495,6 +495,7 @@ public:
 		QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
 		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
+		QAction* actionAddProbe = addAction("Add Probe", "actionAddProbe");
 		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); // actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
@@ -758,6 +759,7 @@ public:
 		menuPost->addAction(actionImageSlicer);
 		menuPost->addAction(actionVolumeRender);
 		menuPost->addAction(actionMarchingCubes);
+		menuPost->addAction(actionAddProbe);
 		menuPost->addSeparator();
 		menuPost->addAction(actionGraph);
 		menuPost->addSeparator();

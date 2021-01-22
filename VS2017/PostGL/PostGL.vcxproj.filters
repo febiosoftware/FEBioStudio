@@ -69,6 +69,9 @@
     <ClCompile Include="..\..\PostGL\GLVolumeFlowPlot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\PostGL\GLProbe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\PostGL\GLColorMap.h">
@@ -123,6 +126,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PostGL\GLVolumeFlowPlot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PostGL\GLProbe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
