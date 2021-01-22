@@ -488,6 +488,11 @@ void CGLView::changeViewMode(View_Mode vm)
 	}
 }
 
+void CGLView::SetColorMap(Post::CColorMap& map)
+{
+	m_colorMap = map;
+}
+
 void CGLView::mousePressEvent(QMouseEvent* ev)
 {
 	CGLDocument* pdoc = GetDocument();
@@ -7469,10 +7474,9 @@ void CGLView::RenderFEElements(GObject* po)
 	int glmode = 0;
 
 	double vmin, vmax;
-	Post::CColorMap map;
 	Mesh_Data& data = pm->GetMeshData();
 	bool showContour = (view.m_bcontour && data.IsValid());
-	if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+	if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
 	int NE = pm->Elements();
@@ -7492,7 +7496,7 @@ void CGLView::RenderFEElements(GObject* po)
 					for (int j = 0; j < ne; ++j)
 					{
 						if (data.GetElementDataTag(i) > 0)
-							c[j] = map.map(data.GetElementValue(i, j));
+							c[j] = m_colorMap.map(data.GetElementValue(i, j));
 						else
 							c[j] = GLColor(212, 212, 212);
 					}
@@ -8694,7 +8698,6 @@ void CGLView::UpdatePlaneCut(bool breset)
 	VIEW_SETTINGS& vs = GetViewSettings();
 
 	double vmin, vmax;
-	Post::CColorMap map;
 
 	m_planeCut = new GLMesh;
 
@@ -8737,7 +8740,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 				if ((po == poa) && (vs.m_bcontour))
 				{
 					showContour = (vs.m_bcontour && data.IsValid());
-					if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+					if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
 				}
 
 				// repeat over all elements
@@ -8800,7 +8803,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 							for (int k = 0; k < 8; ++k)
 							{
 								if (data.GetElementDataTag(i) > 0)
-									ec[k] = map.map(data.GetElementValue(i, nt[k]));
+									ec[k] = m_colorMap.map(data.GetElementValue(i, nt[k]));
 								else
 									ec[k] = GLColor(212, 212, 212);
 							}

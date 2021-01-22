@@ -52,6 +52,7 @@ public:
 	void spring ();
 	void summer ();
 	void red    ();
+	void redgreen();
 	void green  ();
 	void hotcold();
 	void blue   ();
@@ -127,6 +128,7 @@ public:
 		JET,
 		RBB,
 		RED,
+		RED_GREEN,
 		SPRING,
 		SUMMER,
 		WINTER,

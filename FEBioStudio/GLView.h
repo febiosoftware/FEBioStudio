@@ -415,6 +415,9 @@ public:
 	void SetPlaneCutMode(int nmode);
 	void UpdatePlaneCut(bool breset = false);
 
+public:
+	void SetColorMap(Post::CColorMap& map);
+
 protected:
 	void PanView(vec3d r);
 
@@ -515,6 +518,8 @@ private:
 	int	m_viewport[4];		//!< store viewport coordinates
 
 	CGLCamera	m_oldCam;
+
+	Post::CColorMap m_colorMap;	// color map used for rendering mesh data
 
 	bool		m_showPlaneCut;
 	int			m_planeCutMode;

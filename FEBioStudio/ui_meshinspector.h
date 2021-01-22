@@ -149,15 +149,20 @@ public:
 	QTableWidget*	table;
 	CPlotWidget*	plot;
 	QComboBox*		var;
+	QComboBox*		col;
 	CStatsInfo*		stats;
 	CSelectionInfo*	sel;
 
 	FEMesh*		m_pm;
 
+	int		m_map;
+
 public:
 	void setupUi(QMainWindow* wnd)
 	{
 		m_pm = nullptr;
+
+		m_map = -1;
 
 		info = new CMeshInfo;
 
@@ -175,8 +180,13 @@ public:
 
 		var = new QComboBox;
 		var->setObjectName("var");
+
+		col = new QComboBox;
+		col->setObjectName("col");
+
 		QFormLayout* varForm = new QFormLayout;
 		varForm->addRow("Variable:", var);
+		varForm->addRow("Color map", col);
 
 		QHBoxLayout* topLayout = new QHBoxLayout;
 		topLayout->addWidget(info);
