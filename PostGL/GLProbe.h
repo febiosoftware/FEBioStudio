@@ -30,7 +30,7 @@ namespace Post {
 
 class GLProbe : public CGLPlot
 {
-	enum { INIT_POS, SIZE, COLOR };
+	enum { INIT_POS, SIZE, COLOR, FOLLOW };
 
 public:
 	GLProbe(CGLModel* fem);
@@ -52,6 +52,7 @@ private:
 	vec3d	m_initPos;
 	GLColor	m_col;
 	double	m_size;
+	bool	m_bfollow;
 
 	vec3d		m_pos;
 	double		m_R;

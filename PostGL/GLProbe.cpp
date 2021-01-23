@@ -37,11 +37,15 @@ GLProbe::GLProbe(CGLModel* fem) : CGLPlot(fem)
 	sprintf(sz, "Probe%d", n++);
 	SetName(sz);
 
-	AddVecParam(vec3d(0, 0, 0), "Initial position");
-	AddDoubleParam(1.0, "Size scale factor");
-	AddColorParam(GLColor::White(), "Color");
+	m_initPos = vec3d(0, 0, 0);
+	m_size = 1.0;
+	m_col = GLColor::White();
+	m_bfollow = true;
 
-	UpdateData(true);
+	AddVecParam(m_initPos, "Initial position");
+	AddDoubleParam(m_size, "Size scale factor");
+	AddColorParam(m_col, "Color");
+	AddBoolParam(m_bfollow, "Follow");
 
 	m_lastTime = 0;
 	m_lastdt = 1.0;
@@ -53,15 +57,21 @@ bool GLProbe::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
+		vec3d r = m_initPos;
+
 		m_initPos = GetVecValue(INIT_POS);
 		m_size = GetFloatValue(SIZE);
 		m_col = GetColorValue(COLOR);
+		m_bfollow = GetBoolValue(FOLLOW);
+
+		if (!(r == m_initPos)) Update();
 	}
 	else
 	{
 		SetVecValue(INIT_POS, m_initPos);
 		SetFloatValue(SIZE, m_size);
 		SetColorValue(COLOR, m_col);
+		SetBoolValue(FOLLOW, m_bfollow);
 	}
 
 	return false;
@@ -145,12 +155,25 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 			xt[j] = to_vec3f(mesh->Node(el.m_node[j]).r);
 		}
 
-		vec3f q;
-		if (ProjectToElement(el, p0, x0, xt, q))
+		if (m_bfollow)
 		{
-			m_pos = q;
-			m_elem = i;
-			break;
+			vec3f q;
+			if (ProjectToElement(el, p0, x0, xt, q))
+			{
+				m_pos = q;
+				m_elem = i;
+				break;
+			}
+		}
+		else
+		{
+			vec3f q;
+			if (ProjectToElement(el, p0, x0, x0, q))
+			{
+				m_pos = q;
+				m_elem = i;
+				break;
+			}
 		}
 	}
 }
