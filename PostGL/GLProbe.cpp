@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "GLProbe.h"
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
+#include <PostLib/constants.h>
 using namespace Post;
 
 GLProbe::GLProbe(CGLModel* fem) : CGLPlot(fem)
@@ -45,6 +46,7 @@ GLProbe::GLProbe(CGLModel* fem) : CGLPlot(fem)
 	m_lastTime = 0;
 	m_lastdt = 1.0;
 	m_R = 1.0;
+	m_elem = -1;
 }
 
 bool GLProbe::UpdateData(bool bsave)
@@ -110,6 +112,7 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 	m_lastdt = dt;
 
 	m_pos = m_initPos;
+	m_elem = -1;
 
 	CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return;
@@ -146,6 +149,7 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 		if (ProjectToElement(el, p0, x0, xt, q))
 		{
 			m_pos = q;
+			m_elem = i;
 			break;
 		}
 	}
@@ -159,4 +163,16 @@ GLColor GLProbe::GetColor() const
 void GLProbe::SetColor(const GLColor& c)
 {
 	m_col = c;
+}
+
+double GLProbe::DataValue(int nfield, int nstep)
+{
+	FEPostModel& fem = *GetModel()->GetFEModel();
+	float val = 0.f;
+	if (m_elem >= 0)
+	{
+		float data[FEElement::MAX_NODES];
+		fem.EvaluateElement(m_elem, nstep, nfield, data, val);
+	}
+	return val;
 }

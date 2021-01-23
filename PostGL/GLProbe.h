@@ -42,6 +42,8 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	double DataValue(int nfield, int nstep);
+
 public:
 	GLColor GetColor() const;
 	void SetColor(const GLColor& c);
@@ -55,5 +57,6 @@ private:
 	double		m_R;
 	int			m_lastTime;
 	double		m_lastdt;
+	int			m_elem;
 };
 }

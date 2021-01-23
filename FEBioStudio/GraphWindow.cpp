@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <PostLib/constants.h>
 #include <PostLib/evaluate.h>
+#include <PostGL/GLProbe.h>
 
 class TimeRangeOptionsUI
 {
@@ -1438,6 +1439,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 
 	if (breset)
 	{
+		Post::CGLModel* glm = doc->GetGLModel();
 		Post::FEPostModel* fem = doc->GetFEModel();
 
 		// update the data sources
@@ -1446,6 +1448,14 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		for (int i = 0; i < fem->PlotObjects(); ++i)
 		{
 			sourceNames << QString::fromStdString(fem->GetPlotObject(i)->GetName());
+		}
+		for (int i = 0; i < glm->Plots(); ++i)
+		{
+			Post::GLProbe* p = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+			if (p)
+			{
+				sourceNames << QString::fromStdString(p->GetName());
+			}
 		}
 		SetDataSource(sourceNames);
 
@@ -1563,6 +1573,24 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		{
 			addObjectData(n);
 		}
+		else
+		{
+			Post::CGLModel* glm = doc->GetGLModel();
+			int m = 0;
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				if (probe)
+				{
+					if (m == n)
+					{
+						addProbeData(probe);
+						break;
+					}
+					m++;
+				}
+			}
+		}
 	}
 
 	ResizePlots(m_pltCounter);
@@ -1597,6 +1625,27 @@ void CModelGraphWindow::setDataSource(int n)
 		{
 			SetYDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
 			Update(false, true);
+		}
+		n -= fem.PlotObjects();
+		if (n >= 0)
+		{
+			Post::CGLModel* glm = doc->GetGLModel();
+			int m = 0;
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				if (probe)
+				{
+					if (m == n)
+					{
+						SetYDataSelector(new CModelDataSelector(&fem, Post::DATA_SCALAR));
+
+						Update(false, true);
+						break;
+					}
+					m++;
+				}
+			}
 		}
 	}
 }
@@ -1671,6 +1720,29 @@ void CModelGraphWindow::addObjectData(int n)
 
 	CPlotData* plot = nextData();
 	plot->setLabel(QString::fromStdString((po->GetName())));
+	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+}
+
+//-----------------------------------------------------------------------------
+void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFEModel();
+
+	int nsteps = m_lastState - m_firstState + 1;
+	vector<float> xdata(nsteps);
+	vector<float> ydata(nsteps);
+
+	for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+
+	for (int j = 0; j < nsteps; ++j)
+	{
+		double val = probe->DataValue(m_dataY, j);
+		ydata[j] = (float) val;
+	}
+
+	CPlotData* plot = nextData();
+	plot->setLabel(QString::fromStdString((probe->GetName())));
 	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 }
 
