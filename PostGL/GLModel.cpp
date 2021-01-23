@@ -68,6 +68,8 @@ CGLModel::CGLModel(FEPostModel* ps)
 	m_nDivs = 0; // this means "auto"
 	m_brenderInteriorNodes = true;
 
+	m_brenderPlotObjects = true;
+
 	m_bshowMesh = true;
 
 	m_line_col = GLColor(0, 0, 0);
@@ -525,7 +527,7 @@ void CGLModel::Render(CGLContext& rc)
 	RenderDecorations();
 
 	// render all the objects
-	RenderObjects(rc);
+	if (m_brenderPlotObjects) RenderObjects(rc);
 }
 
 //-----------------------------------------------------------------------------

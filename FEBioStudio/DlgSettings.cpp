@@ -113,6 +113,7 @@ class CPhysicsProps : public CDataPropertyList
 public:
 	CPhysicsProps()
 	{
+		addBoolProperty  (&m_showRigidBodies, "Show rigid bodies");
 		addBoolProperty  (&m_showRigidJoints, "Show rigid joints");
 		addBoolProperty  (&m_showRigidWalls , "Show rigid walls" );
 		addBoolProperty  (&m_showFibers     , "Show material fibers");
@@ -122,6 +123,7 @@ public:
 	}
 
 public:
+	bool	m_showRigidBodies;
 	bool	m_showRigidJoints;
 	bool	m_showRigidWalls;
 	bool	m_showFibers;
@@ -941,7 +943,8 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 	ui->m_display->m_ntrans = view.m_transparencyMode;
 	ui->m_display->m_nobjcol = view.m_objectColor;
 
-	ui->m_physics->m_showRigidJoints = view.m_brigid;
+	ui->m_physics->m_showRigidBodies = view.m_brigid;
+	ui->m_physics->m_showRigidJoints = view.m_bjoint;
 	ui->m_physics->m_showRigidWalls = view.m_bwall;
 	ui->m_physics->m_showFibers = view.m_bfiber;
 	ui->m_physics->m_fiberScale = view.m_fiber_scale;
@@ -1042,7 +1045,8 @@ void CDlgSettings::apply()
 	view.m_transparencyMode = ui->m_display->m_ntrans;
 	view.m_objectColor = ui->m_display->m_nobjcol;
 
-	view.m_brigid = ui->m_physics->m_showRigidJoints;
+	view.m_brigid = ui->m_physics->m_showRigidBodies;
+	view.m_bjoint = ui->m_physics->m_showRigidJoints;
 	view.m_bwall = ui->m_physics->m_showRigidWalls;
 	view.m_bfiber = ui->m_physics->m_showFibers;
 	view.m_fiber_scale = ui->m_physics->m_fiberScale;

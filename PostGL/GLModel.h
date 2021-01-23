@@ -349,6 +349,7 @@ public:
 	double		m_scaleNormals;	//!< normal scale factor
 	bool		m_bghost;		//!< render the ghost (undeformed outline)
 	bool		m_brenderInteriorNodes;	//!< render interior nodes or not
+	bool		m_brenderPlotObjects;
 	int			m_nDivs;		//!< nr of element subdivisions
 	int			m_nrender;		//!< render mode
     int         m_nconv;        //!< multiview projection convention
