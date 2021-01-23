@@ -5679,6 +5679,60 @@ void CGLView::TagBackfacingElements(FEMesh& mesh)
 					break;
 				}
 			}
+
+			// shells 
+			if (el.IsShell())
+			{
+				FEFace* pf = mesh.FacePtr(el.m_face[0]);
+				if (pf)
+				{
+					FEFace& f = *pf;
+					switch (f.Type())
+					{
+					case FE_FACE_TRI3:
+					case FE_FACE_TRI6:
+					case FE_FACE_TRI7:
+					case FE_FACE_TRI10:
+					{
+						r[0] = mesh.Node(f.n[0]).r;
+						r[1] = mesh.Node(f.n[1]).r;
+						r[2] = mesh.Node(f.n[2]).r;
+
+						p1[0] = transform.WorldToScreen(r[0]);
+						p1[1] = transform.WorldToScreen(r[1]);
+						p1[2] = transform.WorldToScreen(r[2]);
+
+						if (IsBackfacing(p1) == false) backFacing = false;
+					}
+					break;
+					case FE_FACE_QUAD4:
+					case FE_FACE_QUAD8:
+					case FE_FACE_QUAD9:
+					{
+						r[0] = mesh.Node(f.n[0]).r;
+						r[1] = mesh.Node(f.n[1]).r;
+						r[2] = mesh.Node(f.n[2]).r;
+						r[3] = mesh.Node(f.n[3]).r;
+
+						p1[0] = transform.WorldToScreen(r[0]);
+						p1[1] = transform.WorldToScreen(r[1]);
+						p1[2] = transform.WorldToScreen(r[2]);
+
+						p2[0] = p1[2];
+						p2[1] = transform.WorldToScreen(r[3]);
+						p2[2] = p1[0];
+
+						if (IsBackfacing(p1) == false) backFacing = false;
+					}
+					break;
+					}
+				}
+
+				if (backFacing == false)
+				{
+					el.m_ntag = 0;
+				}
+			}
 		}
 	}
 }
@@ -5702,7 +5756,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	makeCurrent();
 	GLViewTransform transform(this);
 
-	if (view.m_bext)
+	if (view.m_bcullSel)
 	{
 		TagBackfacingElements(*pm);
 	}
