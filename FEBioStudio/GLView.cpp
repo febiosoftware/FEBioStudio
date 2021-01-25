@@ -1539,6 +1539,9 @@ void CGLView::paintGL()
 	// render selection
 	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
 
+	// show the labels on rigid bodies
+	if (view.m_showRigidLabels) RenderRigidLabels();
+
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -8719,6 +8722,113 @@ void CGLView::RenderTags()
 			painter.drawText(x + 2, y - 3, vtag[i].sztag);
 		}
 
+	painter.end();
+
+	glPopAttrib();
+
+	// QPainter messes this up so reset it
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void CGLView::RenderRigidLabels()
+{
+	CModelDocument* pdoc = m_pWnd->GetModelDocument();
+	if (pdoc == nullptr) return;
+
+	FEModel* fem = pdoc->GetFEModel();
+	if (fem == nullptr) return;
+
+	VIEW_SETTINGS& view = GetViewSettings();
+
+	vector<GLTAG> vtag;
+
+	for (int i = 0; i < fem->Materials(); ++i)
+	{
+		GMaterial* mat = fem->GetMaterial(i);
+		FERigidMaterial* rb = dynamic_cast<FERigidMaterial*>(mat->GetMaterialProperties());
+		if (rb)
+		{
+			GLTAG tag;
+			tag.r = rb->GetCenterOfMass();
+			tag.bvis = false;
+			tag.ntag = 0;
+
+			string name = mat->GetName();
+			int l = name.size(); if (l > 63) l = 63;
+			if (l > 0)
+			{
+				strncpy(tag.sztag, name.c_str(), l);
+				tag.sztag[l] = 0;
+			}
+			else sprintf(tag.sztag, "_no_name");
+			vtag.push_back(tag);
+		}
+	}
+	int nsel = vtag.size();
+	if (nsel == 0) return;
+
+	// find out where the tags are on the screen
+	GLViewTransform transform(this);
+	for (int i = 0; i < nsel; i++)
+	{
+		vec3d p = transform.WorldToScreen(vtag[i].r);
+		vtag[i].wx = p.x;
+		vtag[i].wy = m_viewport[3] - p.y;
+		vtag[i].bvis = true;
+	}
+
+	// render the tags
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0, m_viewport[2], 0, m_viewport[3]);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+
+	for (int i = 0; i < nsel; i++)
+		if (vtag[i].bvis)
+		{
+			glBegin(GL_POINTS);
+			{
+				glColor3ub(0, 0, 0);
+				glVertex2f(vtag[i].wx, vtag[i].wy);
+				if (vtag[i].ntag == 0) glColor3ub(255, 255, 0);
+				else glColor3ub(255, 0, 0);
+				glVertex2f(vtag[i].wx - 1, vtag[i].wy + 1);
+			}
+			glEnd();
+		}
+
+	QPainter painter(this);
+	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+	painter.setFont(QFont("Helvetica", 10));
+	for (int i = 0; i < nsel; ++i)
+		if (vtag[i].bvis)
+		{
+			int dpr = GetDevicePixelRatio();
+			int x = vtag[i].wx;
+			int y = height()*dpr - vtag[i].wy;
+			painter.setPen(Qt::black);
+
+			painter.drawText(x + 3, y - 2, vtag[i].sztag);
+
+			if (vtag[i].ntag == 0) painter.setPen(Qt::yellow);
+			else painter.setPen(Qt::red);
+
+			painter.drawText(x + 2, y - 3, vtag[i].sztag);
+		}
 	painter.end();
 
 	glPopAttrib();

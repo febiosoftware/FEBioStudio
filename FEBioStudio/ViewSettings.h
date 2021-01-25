@@ -64,6 +64,7 @@ struct VIEW_SETTINGS
 	double	m_fiber_scale;	//!< scale factor for rendering fibers
 	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
 	bool	m_showDiscrete;		//!< render discrete sets
+	bool	m_showRigidLabels;	//!< show labels on rigid bodies
 
 	GLColor	m_col1, m_col2;		//!< background colors
 	GLColor	m_fgcol;			//!< foreground color

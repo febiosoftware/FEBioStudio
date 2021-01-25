@@ -84,6 +84,7 @@ void VIEW_SETTINGS::Defaults()
 	m_fiber_scale = 1.0;
 	m_showHiddenFibers = false;
 	m_showDiscrete = true;
+	m_showRigidLabels = false;
 
 	m_bcull = false;
 	m_bconn = false;

@@ -1116,6 +1116,11 @@ void FERigidMaterial::SetCenterOfMass(const vec3d& r)
 	SetVecValue(MP_RC, r);
 }
 
+vec3d FERigidMaterial::GetCenterOfMass() const
+{
+	return GetVecValue(MP_RC);
+}
+
 void FERigidMaterial::copy(FEMaterial* pmat)
 {
 	FEMaterial::copy(pmat);

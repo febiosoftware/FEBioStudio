@@ -91,7 +91,7 @@ enum Snap_Mode
 // tag structure
 struct GLTAG
 {
-	char	sztag[32];	// name of tag
+	char	sztag[64];	// name of tag
 	float	wx, wy;		// window coordinates for tag
 	vec3d	r;			// world coordinates of tag
 	bool	bvis;		// is the tag visible or not
@@ -341,6 +341,7 @@ public:
 	void RenderTags();
 	void RenderImageData();
 	void RenderTrack();
+	void RenderRigidLabels();
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
 
