@@ -946,6 +946,8 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	// make sure a part with this material exists
 	if (m >= pm->Parts()) return;
 
+	glPushAttrib(GL_ENABLE_BIT);
+
 	// set the material properties
 	bool benable = false;
 	if (pmat->benable && m_pcol->IsActive())
@@ -964,7 +966,6 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	}
 
 	// see if we allow the model to be clipped
-	glPushAttrib(GL_ENABLE_BIT);
 	if (pmat->bclip == false) CGLPlaneCutPlot::DisableClipPlanes();
 
 	// render the unselected faces
