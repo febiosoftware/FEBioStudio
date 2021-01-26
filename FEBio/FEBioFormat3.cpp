@@ -1679,7 +1679,12 @@ void FEBioFormat3::ParseBodyLoad(FEStep* pstep, XMLTag& tag)
 	std::string comment = tag.comment();
 
 	// read the (optional) name
-	string name = tag.AttributeValue("name", "");
+	static int n = 1;
+	char szbuf[32] = { 0 };
+	sprintf(szbuf, "BodyLoad%d", n++);
+	string name(szbuf);
+	const char* sz = tag.AttributeValue("name", true);
+	if (sz) name = sz;
 
 	// create new body load
 	FEBodyLoad* pbl = nullptr;
