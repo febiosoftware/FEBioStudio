@@ -2290,7 +2290,24 @@ void FEBioFormat3::ParseRigidWall(FEStep* pstep, XMLTag& tag)
 		if      (tag == "laugon"   ) { int n; tag.value(n); pci->SetBoolValue(FERigidWallInterface::LAUGON, (n == 0 ? false : true)); }
 		else if (tag == "tolerance") { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::ALTOL, f); }
 		else if (tag == "penalty"  ) { double f; tag.value(f); pci->SetFloatValue(FERigidWallInterface::PENALTY, f); }
-		if      (tag == "plane"    )
+		else if (tag == "offset")
+		{
+			Param* pp = pci->GetParamPtr(FERigidWallInterface::OFFSET); assert(pp);
+			if (pp)
+			{
+				double v = 0.0;
+				tag.value(v);
+				pp->SetFloatValue(v);
+
+				const char* szlc = tag.AttributeValue("lc", true);
+				if (szlc)
+				{
+					int n = atoi(szlc);
+					if (pp) febio.AddParamCurve(pp, n - 1);
+				}
+			}
+		}
+		if (tag == "plane")
 		{
 			double n[4];
 			tag.value(n, 4);
