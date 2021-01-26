@@ -94,6 +94,7 @@ public:
         addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
 		addEnumProperty(&m_nobjcol, "Object color")->setEnumValues(QStringList() << "Default" << "Object");
+		addBoolProperty(&m_dozsorting, "Improved Transparency");
 	}
 
 public:
@@ -105,6 +106,7 @@ public:
     int     m_nconv;
 	int		m_ntrans;
 	int		m_nobjcol;
+	bool	m_dozsorting;
 };
 
 //-----------------------------------------------------------------------------
@@ -944,6 +946,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
     ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
 	ui->m_display->m_nobjcol = view.m_objectColor;
+	ui->m_display->m_dozsorting = view.m_bzsorting;
 
 	ui->m_physics->m_showRigidBodies = view.m_brigid;
 	ui->m_physics->m_showRigidJoints = view.m_bjoint;
@@ -1047,6 +1050,7 @@ void CDlgSettings::apply()
     view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
 	view.m_objectColor = ui->m_display->m_nobjcol;
+	view.m_bzsorting = ui->m_display->m_dozsorting;
 
 	view.m_brigid = ui->m_physics->m_showRigidBodies;
 	view.m_bjoint = ui->m_physics->m_showRigidJoints;

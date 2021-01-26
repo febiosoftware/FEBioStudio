@@ -74,6 +74,7 @@ struct VIEW_SETTINGS
 	float	m_line_size;		//!< line size
 	bool	m_bline_smooth;		//!< line smoothing flag
 	bool	m_bpoint_smooth;	//!< point smoothing flag
+	bool	m_bzsorting;
 
 	bool	m_snapToGrid;		//!< snap to grid
 	bool	m_snapToNode;		//!< snap to nodes

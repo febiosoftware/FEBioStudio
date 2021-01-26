@@ -360,6 +360,7 @@ public:
 	double		m_stol;			//!< smoothing threshold
 
 	bool		m_bshowMesh;
+	bool		m_doZSorting;
 
 	unsigned int	m_layer;
 

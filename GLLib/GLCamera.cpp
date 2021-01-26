@@ -233,13 +233,10 @@ void CGLCamera::GetTransform(GLCameraTransform& t)
 //-----------------------------------------------------------------------------
 vec3d CGLCamera::WorldToCam(vec3d r) const
 {
-	r += Target();
-
-	quatd q = m_rot.Value().Inverse();
-
+	r -= Target();
+	quatd q = m_rot.Value();
 	q.RotateVector(r);
-
-	r += GetPosition();
+	r -= GetPosition();
 
 	return r;
 }

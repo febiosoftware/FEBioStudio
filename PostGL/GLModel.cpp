@@ -68,6 +68,8 @@ CGLModel::CGLModel(FEPostModel* ps)
 	m_nDivs = 0; // this means "auto"
 	m_brenderInteriorNodes = true;
 
+	m_doZSorting = true;
+
 	m_brenderPlotObjects = true;
 
 	m_bshowMesh = true;
@@ -981,21 +983,47 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 	int mode = GetSelectionMode();
 
-	glCullFace(GL_FRONT);
-	for (int i=0; i<NF; ++i)
+	if (m_doZSorting)
 	{
-		FEFace& face = dom.Face(i);
-		FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
+		glDisable(GL_CULL_FACE);
 
-		if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
+		vector< pair<int, double> > zlist; zlist.reserve(NF);
+		// first, build a list of faces
+		for (int i = 0; i < NF; ++i)
 		{
+			FEFace& face = dom.Face(i);
+			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
+
+			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
+			{
+				// get the face center
+				vec3d r = pm->FaceCenter(face);
+
+				// convert to eye coordinates
+				vec3d q = rc.m_cam->WorldToCam(r);
+
+				// add it to the z-list
+				zlist.push_back(pair<int, double>(i, q.z));
+			}
+		}
+
+		// sort the zlist
+		std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
+			return a.second < b.second;
+		});
+
+		// render the list
+		for (int i = 0; i < zlist.size(); ++i)
+		{
+			FEFace& face = dom.Face(zlist[i].first);
+
 			GLubyte a[4];
-			for (int j=0; j<face.Nodes(); ++j)
+			for (int j = 0; j < face.Nodes(); ++j)
 			{
 				vec3d r = face.m_nn[j];
 				q.RotateVector(r);
-				double z = 1-fabs(r.z);
-				a[j] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
+				double z = 1 - fabs(r.z);
+				a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
 			}
 
 			if (benable)
@@ -1017,44 +1045,84 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 			m_render.RenderFace(face, pm, c, ndivs);
 		}
 	}
-
-	// and then we draw the front-facing ones.
-	glCullFace(GL_BACK);
-	for (int i = 0; i<NF; ++i)
+	else
 	{
-		FEFace& face = dom.Face(i);
-		FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
-
-		if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
+		glCullFace(GL_FRONT);
+		for (int i = 0; i < NF; ++i)
 		{
-			GLubyte a[4];
-			for (int j=0; j<face.Nodes(); ++j)
-			{
-				vec3d r = face.m_nn[j];
-				q.RotateVector(r);
-				double z = 1-fabs(r.z);
-				a[j] = (GLubyte)(255*(tm + 0.5*(1-tm)*(z*z)));
-			}
+			FEFace& face = dom.Face(i);
+			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 
-			if (benable)
+			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
 			{
-				c[0] = GLColor(255, 255, 255, a[0]);
-				c[1] = GLColor(255, 255, 255, a[1]);
-				c[2] = GLColor(255, 255, 255, a[2]);
-				c[3] = GLColor(255, 255, 255, a[3]);
-			}
-			else
-			{
-				c[0] = GLColor(d.r, d.g, d.b, a[0]);
-				c[1] = GLColor(d.r, d.g, d.b, a[1]);
-				c[2] = GLColor(d.r, d.g, d.b, a[2]);
-				c[3] = GLColor(d.r, d.g, d.b, a[3]);
-			}
+				GLubyte a[4];
+				for (int j = 0; j < face.Nodes(); ++j)
+				{
+					vec3d r = face.m_nn[j];
+					q.RotateVector(r);
+					double z = 1 - fabs(r.z);
+					a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
+				}
 
-			// okay, we got one, so let's render it
-			m_render.RenderFace(face, pm, c, ndivs);
+				if (benable)
+				{
+					c[0] = GLColor(255, 255, 255, a[0]);
+					c[1] = GLColor(255, 255, 255, a[1]);
+					c[2] = GLColor(255, 255, 255, a[2]);
+					c[3] = GLColor(255, 255, 255, a[3]);
+				}
+				else
+				{
+					c[0] = GLColor(d.r, d.g, d.b, a[0]);
+					c[1] = GLColor(d.r, d.g, d.b, a[1]);
+					c[2] = GLColor(d.r, d.g, d.b, a[2]);
+					c[3] = GLColor(d.r, d.g, d.b, a[3]);
+				}
+
+				// okay, we got one, so let's render it
+				m_render.RenderFace(face, pm, c, ndivs);
+			}
+		}
+
+		// and then we draw the front-facing ones.
+		glCullFace(GL_BACK);
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& face = dom.Face(i);
+			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
+
+			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
+			{
+				GLubyte a[4];
+				for (int j = 0; j < face.Nodes(); ++j)
+				{
+					vec3d r = face.m_nn[j];
+					q.RotateVector(r);
+					double z = 1 - fabs(r.z);
+					a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
+				}
+
+				if (benable)
+				{
+					c[0] = GLColor(255, 255, 255, a[0]);
+					c[1] = GLColor(255, 255, 255, a[1]);
+					c[2] = GLColor(255, 255, 255, a[2]);
+					c[3] = GLColor(255, 255, 255, a[3]);
+				}
+				else
+				{
+					c[0] = GLColor(d.r, d.g, d.b, a[0]);
+					c[1] = GLColor(d.r, d.g, d.b, a[1]);
+					c[2] = GLColor(d.r, d.g, d.b, a[2]);
+					c[3] = GLColor(d.r, d.g, d.b, a[3]);
+				}
+
+				// okay, we got one, so let's render it
+				m_render.RenderFace(face, pm, c, ndivs);
+			}
 		}
 	}
+
 	glPopAttrib();
 
 	// reset the polygon mode
