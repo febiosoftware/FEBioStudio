@@ -689,7 +689,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			if (bshift)
 			{
 				double D = (double) m_y1 - y;
-				double s = D*cam.GetFinalTargetDistance()*1e-5;
+				double s = cam.GetFinalTargetDistance()*1e-2;
+				if (D < 0) s = -s;
 				cam.Dolly(s);
 			}
 			else if (bctrl)
