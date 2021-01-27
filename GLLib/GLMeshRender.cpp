@@ -1531,7 +1531,7 @@ void GLMeshRender::RenderFace(FEFace& face, FECoreMesh* pm, GLColor c[4], int nd
 	vec3d& r1 = pm->Node(face.n[0]).r;
 	vec3d& r2 = pm->Node(face.n[1]).r;
 	vec3d& r3 = pm->Node(face.n[2]).r;
-	vec3d& r4 = pm->Node(face.n[3]).r;
+	vec3d r4 = (face.n[3] >= 0 ? pm->Node(face.n[3]).r : r3);
 
 	vec3f& n1 = face.m_nn[0];
 	vec3f& n2 = face.m_nn[1];

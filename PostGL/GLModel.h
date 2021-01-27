@@ -209,9 +209,9 @@ public:
 
 protected:
 	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
-	void RenderSolidMaterial(FEPostModel* ps, int m);
+	void RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m);
 	void RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m);
-	void RenderSolidDomain(FEDomain& dom, bool btex, bool benable);
+	void RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool benable, bool zsort = false);
 
 	void RenderInnerSurface(int m, bool btex = true);
 	void RenderInnerSurfaceOutline(int m, int ndivs);

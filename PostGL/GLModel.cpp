@@ -1190,7 +1190,7 @@ void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
+void CGLModel::RenderSolidDomain(CGLContext& rc, FEDomain& dom, bool btex, bool benable, bool zsort)
 {
 	FEPostMesh* pm = GetActiveMesh();
 	int ndivs = GetSubDivisions();
@@ -1199,33 +1199,110 @@ void CGLModel::RenderSolidDomain(FEDomain& dom, bool btex, bool benable)
 	if (btex) glEnable(GL_TEXTURE_1D);
 
 	// render active faces
-	glBegin(GL_TRIANGLES);
-	int NF = dom.Faces();
-	for (int i = 0; i<NF; ++i)
+	if (zsort)
 	{
-		FEFace& face = dom.Face(i);
-		if (face.m_ntag == 1)
+		int NF = dom.Faces();
+		vector< pair<int, double> > zlist; zlist.reserve(NF);
+		for (int i = 0; i < NF; ++i)
 		{
-			// okay, we got one, so let's render it
+			FEFace& face = dom.Face(i);
+			if (face.m_ntag == 1)
+			{
+				// get the face center
+				vec3d r = pm->FaceCenter(face);
+
+				// convert to eye coordinates
+				vec3d q = rc.m_cam->WorldToCam(r);
+
+				// add it to the z-list
+				zlist.push_back(pair<int, double>(i, q.z));
+			}
+		}
+
+		// sort the zlist
+		std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
+			return a.second < b.second;
+		});
+
+		// render the list
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < zlist.size(); ++i)
+		{
+			FEFace& face = dom.Face(zlist[i].first);
 			m_render.RenderFace(face, pm);
 		}
+		glEnd();
 	}
-	glEnd();
+	else
+	{
+		glBegin(GL_TRIANGLES);
+		int NF = dom.Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& face = dom.Face(i);
+			if (face.m_ntag == 1)
+			{
+				// okay, we got one, so let's render it
+				m_render.RenderFace(face, pm);
+			}
+		}
+		glEnd();
+	}
 
 	// render inactive faces
 	if (btex) glDisable(GL_TEXTURE_1D);
 	if (m_pcol->IsActive() && benable) glColor4ub(m_col_inactive.r, m_col_inactive.g, m_col_inactive.b, m_col_inactive.a);
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i<NF; ++i)
+
+	if (zsort)
 	{
-		FEFace& face = dom.Face(i);
-		if (face.m_ntag == 2)
+		int NF = dom.Faces();
+		vector< pair<int, double> > zlist; zlist.reserve(NF);
+		for (int i = 0; i < NF; ++i)
 		{
-			// okay, we got one, so let's render it
+			FEFace& face = dom.Face(i);
+			if (face.m_ntag == 2)
+			{
+				// get the face center
+				vec3d r = pm->FaceCenter(face);
+
+				// convert to eye coordinates
+				vec3d q = rc.m_cam->WorldToCam(r);
+
+				// add it to the z-list
+				zlist.push_back(pair<int, double>(i, q.z));
+			}
+		}
+
+		// sort the zlist
+		std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
+			return a.second < b.second;
+		});
+
+		// render the list
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < zlist.size(); ++i)
+		{
+			FEFace& face = dom.Face(zlist[i].first);
 			m_render.RenderFace(face, pm);
 		}
+		glEnd();
 	}
-	glEnd();
+	else
+	{
+		glBegin(GL_TRIANGLES);
+		int NF = dom.Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& face = dom.Face(i);
+			if (face.m_ntag == 2)
+			{
+				// okay, we got one, so let's render it
+				m_render.RenderFace(face, pm);
+			}
+		}
+		glEnd();
+	}
+
 	if (btex) glEnable(GL_TEXTURE_1D);
 }
 
@@ -1241,7 +1318,7 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 
 	if (nmode == RENDER_MODE_SOLID)
 	{
-		if ((pmat->transparency >= 0.99f) || (pmat->m_ntransmode == RENDER_TRANS_CONSTANT)) RenderSolidMaterial(ps, mat);
+		if ((pmat->transparency >= 0.99f) || (pmat->m_ntransmode == RENDER_TRANS_CONSTANT)) RenderSolidMaterial(rc, ps, mat);
 		else RenderTransparentMaterial(rc, ps, mat);
 	}
 	else
@@ -1280,7 +1357,7 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 }
 
 //-----------------------------------------------------------------------------
-void CGLModel::RenderSolidMaterial(FEPostModel* ps, int m)
+void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m)
 {
 	// make sure a part with this material exists
 	FEPostMesh* pm = GetActiveMesh();
@@ -1383,23 +1460,30 @@ void CGLModel::RenderSolidMaterial(FEPostModel* ps, int m)
 	// do the rendering
 	if (pmat->transparency > .999f)
 	{
-		RenderSolidDomain(dom, btex, pmat->benable);
+		RenderSolidDomain(rc, dom, btex, pmat->benable);
 	}
 	else
 	{
-		// for better transparency we first draw all the backfacing polygons.
-		glPushAttrib(GL_ENABLE_BIT);
-		glEnable(GL_CULL_FACE);
+		if (m_doZSorting)
+		{
+			RenderSolidDomain(rc, dom, btex, pmat->benable, true);
+		}
+		else
+		{
+			// for better transparency we first draw all the backfacing polygons.
+			glPushAttrib(GL_ENABLE_BIT);
+			glEnable(GL_CULL_FACE);
 
-		glCullFace(GL_FRONT);
-		RenderSolidDomain(dom, btex, pmat->benable);
+			glCullFace(GL_FRONT);
+			RenderSolidDomain(rc, dom, btex, pmat->benable);
 
-		// and then we draw the front-facing ones.
-		glCullFace(GL_BACK);
-		if (btex) glColor4ub(255, 255, 255, alpha);
-		RenderSolidDomain(dom, btex, pmat->benable);
+			// and then we draw the front-facing ones.
+			glCullFace(GL_BACK);
+			if (btex) glColor4ub(255, 255, 255, alpha);
+			RenderSolidDomain(rc, dom, btex, pmat->benable);
 
-		glPopAttrib();
+			glPopAttrib();
+		}
 	}
 
 	// render the internal surfaces
