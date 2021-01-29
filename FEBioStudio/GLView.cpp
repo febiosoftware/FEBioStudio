@@ -689,7 +689,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			if (bshift)
 			{
 				double D = (double) m_y1 - y;
-				double s = D*cam.GetFinalTargetDistance()*1e-5;
+				double s = cam.GetFinalTargetDistance()*1e-2;
+				if (D < 0) s = -s;
 				cam.Dolly(s);
 			}
 			else if (bctrl)
@@ -1775,6 +1776,7 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 		glm->m_bnorm = vs.m_bnorm;
 		glm->m_scaleNormals = vs.m_scaleNormals;
 		glm->m_brenderPlotObjects = vs.m_bjoint;
+		glm->m_doZSorting = vs.m_bzsorting;
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();

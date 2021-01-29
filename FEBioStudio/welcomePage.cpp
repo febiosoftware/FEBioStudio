@@ -53,9 +53,13 @@ _UPDATE_INFO_\
 <li><a href=\"#newproject\">New Project ... </a></li>\
 <li><a href=\"#openproject\">Open Project ...</a></li>\
 </ul>\
-<h1>Recent</h1>\
+<h1>Recent Files</h1>\
 <ul>\
 _RECENT_FILES_\
+</ul>\
+<h1>Recent Projects</h1>\
+<ul>\
+_RECENT_PROJECTS_\
 </ul>\
 <h1>Online Resources</h1>\
 <ul>\
@@ -98,19 +102,26 @@ CWelcomePage::CWelcomePage(CMainWindow* wnd) : CTextDocument(wnd)
 
 void CWelcomePage::Activate()
 {
+	// recent files
 	QStringList files = m_wnd->GetRecentFileList();
-
-	QString links;
-
+	QString fileLinks;
 	for (int i = 0; i < files.size(); ++i)
 	{
 		QString file = elide(files[i], 70);
-
 		QString ref = QString("\"#recent_%1\"").arg(i);
-
 		QString link = "<li><a href=" + ref + ">" + file + "</a></li>";
+		fileLinks += link;
+	}
 
-		links += link;
+	// recent projects
+	QStringList projects = m_wnd->GetRecentProjectsList();
+	QString prjLinks;
+	for (int i = 0; i < projects.size(); ++i)
+	{
+		QString file = elide(projects[i], 70);
+		QString ref = QString("\"#recentproject_%1\"").arg(i);
+		QString link = "<li><a href=" + ref + ">" + file + "</a></li>";
+		prjLinks += link;
 	}
 
 	QString version = QString("version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
@@ -121,7 +132,8 @@ void CWelcomePage::Activate()
 
 	QString page(welcome);
 	page.replace("_VERSION_", version);
-	page.replace("_RECENT_FILES_", links);
+	page.replace("_RECENT_FILES_", fileLinks);
+	page.replace("_RECENT_PROJECTS_", prjLinks);
 
 	page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
 

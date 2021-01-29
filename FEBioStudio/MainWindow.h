@@ -326,6 +326,7 @@ public slots:
 	void on_actionConvertGeo_triggered();
 	void on_actionExit_triggered();
 	void on_recentFiles_triggered(QAction* action);
+	void on_recentProjects_triggered(QAction* action);
 	void on_recentFEFiles_triggered(QAction* action);
 	void on_recentGeomFiles_triggered(QAction* action);
 
@@ -588,6 +589,7 @@ public slots:
 
 public:
 	QStringList GetRecentFileList();
+	QStringList GetRecentProjectsList();
 
 	QString ProjectFolder();
 	QString ProjectName();

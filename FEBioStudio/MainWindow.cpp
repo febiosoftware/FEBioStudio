@@ -391,6 +391,13 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 			QStringList recentFiles = GetRecentFileList();
 			OpenFile(recentFiles.at(n));
 		}
+		if (strncmp(sz, "#recentproject_", 8) == 0)
+		{
+			int n = atoi(sz + 8);
+
+			QStringList recentProjects = GetRecentProjectsList();
+			OpenFile(recentProjects.at(n));
+		}
 	}
 }
 
@@ -634,7 +641,7 @@ bool CMainWindow::OpenProject(const QString& projectFile)
 	}
 
 	ui->fileViewer->Update();
-	ui->addToRecentFiles(projectFile);
+	ui->addToRecentProjects(projectFile);
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
 	UpdateTitle();
@@ -769,7 +776,7 @@ bool CMainWindow::CreateNewProject(QString fileName)
 	// try to create a new project
 	bool ret = ui->m_project.Save(fileName);
 
-	if (ret) ui->addToRecentFiles(fileName);
+	if (ret) ui->addToRecentProjects(fileName);
 
 	ui->fileViewer->parentWidget()->show();
 	ui->fileViewer->parentWidget()->raise();
@@ -815,6 +822,9 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 			}
 			doc->SetFileReader(xplt);
 			ReadFile(doc, fileName, doc->GetFileReader(), QueuedFile::NEW_DOCUMENT);
+
+			// add file to recent list
+			ui->addToRecentFiles(fileName);
 		}
 		else if (ext.compare("vtk", Qt::CaseInsensitive) == 0)
 		{
@@ -1592,6 +1602,7 @@ void CMainWindow::writeSettings()
 
 	settings.setValue("recentFiles", ui->m_recentFiles);
 	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
+	settings.setValue("recentProjects", ui->m_recentProjects);
 
 	settings.endGroup();
 
@@ -1674,6 +1685,7 @@ void CMainWindow::readSettings()
 
 	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
 	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
+	QStringList recentProjects = settings.value("recentProjects").toStringList(); ui->setRecentProjects(recentProjects);
 
 	settings.endGroup();
 
@@ -2927,6 +2939,11 @@ void CMainWindow::toggleOrtho()
 QStringList CMainWindow::GetRecentFileList()
 {
 	return ui->m_recentFiles;
+}
+
+QStringList CMainWindow::GetRecentProjectsList()
+{
+	return ui->m_recentProjects;
 }
 
 QString CMainWindow::ProjectFolder()
