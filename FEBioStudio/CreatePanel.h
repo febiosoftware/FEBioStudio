@@ -98,7 +98,7 @@ protected slots:
 	void on_button_clicked(int id);
 
 signals:
-	void buttonClicked(int id);
+	void idClicked(int id);
 };
 
 

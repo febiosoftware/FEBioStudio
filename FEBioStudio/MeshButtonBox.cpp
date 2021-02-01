@@ -67,7 +67,7 @@ public:
 		w->setLayout(l);
 		w->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-		QObject::connect(buttonGroup, SIGNAL(buttonClicked(int)), w, SLOT(onButtonClicked(int)));
+		QObject::connect(buttonGroup, SIGNAL(idClicked(int)), w, SLOT(onButtonClicked(int)));
 	}
 
 	void AddButton(const QString& txt, ClassDescriptor* pcd)

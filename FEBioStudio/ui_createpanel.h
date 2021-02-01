@@ -70,7 +70,7 @@ CCreateButtonPanel::CCreateButtonPanel(QWidget* parent) : QWidget(parent)
 	buttonGroup = new QButtonGroup(parent);
 	setLayout(buttonGrid);
 
-	QObject::connect(buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(on_button_clicked(int)));
+	QObject::connect(buttonGroup, SIGNAL(idClicked(int)), this, SLOT(on_button_clicked(int)));
 }
 
 void CCreateButtonPanel::AddCreateButton(const QString& txt, const QIcon& icon, int nid)
@@ -93,7 +93,7 @@ void CCreateButtonPanel::AddCreateButton(const QString& txt, const QIcon& icon, 
 
 void CCreateButtonPanel::on_button_clicked(int id)
 {
-	emit buttonClicked(id);
+	emit idClicked(id);
 }
 
 
@@ -447,7 +447,7 @@ public:
 		// set the layout
 		parent->setLayout(mainLayout);
 
-		QObject::connect(but, SIGNAL(buttonClicked(int)), parent, SLOT(select_option(int)));
+		QObject::connect(but, SIGNAL(idClicked(int)), parent, SLOT(select_option(int)));
 		QObject::connect(createButton, SIGNAL(clicked()), parent, SLOT(on_create_clicked()));
 	}
 

@@ -153,7 +153,7 @@ public:
 		QObject::connect(b6, SIGNAL(clicked(bool)), bar, SLOT(onZoomSelectClicked(bool)));
 		QObject::connect(b7, SIGNAL(clicked(bool)), bar, SLOT(onZoomAllClicked(bool)));
 		QObject::connect(showMesh, SIGNAL(clicked(bool)), bar, SLOT(onToggleMesh(bool)));
-		QObject::connect(bg, SIGNAL(buttonClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
+		QObject::connect(bg, SIGNAL(idClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
 		QObject::connect(selConnect, SIGNAL(toggled(bool)), bar, SLOT(onSelectConnected(bool)));
 		QObject::connect(selPath, SIGNAL(clicked(bool)), bar, SLOT(onSelectClosestPath(bool)));
 		QObject::connect(maxAngle, SIGNAL(valueChanged(double)), bar, SLOT(onMaxAngleChanged(double)));
