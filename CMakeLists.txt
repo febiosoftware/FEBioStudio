@@ -144,7 +144,7 @@ endif()
 
 if(MODEL_REPO)
     # Passing quazip5 as a possible alternate name for the library
-    findLib(quazip QUAZIP_LIB_DIR QUAZIP_LIB quazip5)
+    findLib(quazip1-qt6 QUAZIP_LIB_DIR QUAZIP_LIB quazip6)
 
     findLib(sqlite3 SQLITE_LIB_DIR SQLITE_LIB)
 endif()

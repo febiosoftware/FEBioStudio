@@ -134,7 +134,7 @@ void CRepoConnectionHandler::authenticate(QString username, QString password)
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-	imp->restclient->setNetworkAccessible(QNetworkAccessManager::Accessible);
+	//imp->restclient->setNetworkAccessible(QNetworkAccessManager::Accessible);
 
 	if(NetworkAccessibleCheck())
 	{
