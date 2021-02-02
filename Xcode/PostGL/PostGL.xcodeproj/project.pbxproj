@@ -40,6 +40,8 @@
 		D55247E922E6388B00935C9C /* GLMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C722E6388B00935C9C /* GLMesh.h */; };
 		D55247EA22E6388B00935C9C /* GLVectorPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C822E6388B00935C9C /* GLVectorPlot.h */; };
 		D55247EB22E6388B00935C9C /* GLParticleFlowPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D55247C922E6388B00935C9C /* GLParticleFlowPlot.h */; };
+		D568D3C225BFA15100FC67CD /* GLProbe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D568D3C025BFA15100FC67CD /* GLProbe.cpp */; };
+		D568D3C325BFA15100FC67CD /* GLProbe.h in Headers */ = {isa = PBXBuildFile; fileRef = D568D3C125BFA15100FC67CD /* GLProbe.h */; };
 		D5ED2A1C23198D0600C16BF7 /* GLVolumeFlowPlot.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ED2A1A23198D0600C16BF7 /* GLVolumeFlowPlot.h */; };
 		D5ED2A1D23198D0600C16BF7 /* GLVolumeFlowPlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5ED2A1B23198D0600C16BF7 /* GLVolumeFlowPlot.cpp */; };
 /* End PBXBuildFile section */
@@ -79,6 +81,8 @@
 		D55247C722E6388B00935C9C /* GLMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLMesh.h; sourceTree = "<group>"; };
 		D55247C822E6388B00935C9C /* GLVectorPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLVectorPlot.h; sourceTree = "<group>"; };
 		D55247C922E6388B00935C9C /* GLParticleFlowPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLParticleFlowPlot.h; sourceTree = "<group>"; };
+		D568D3C025BFA15100FC67CD /* GLProbe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLProbe.cpp; sourceTree = "<group>"; };
+		D568D3C125BFA15100FC67CD /* GLProbe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLProbe.h; sourceTree = "<group>"; };
 		D5ED2A1A23198D0600C16BF7 /* GLVolumeFlowPlot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLVolumeFlowPlot.h; sourceTree = "<group>"; };
 		D5ED2A1B23198D0600C16BF7 /* GLVolumeFlowPlot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLVolumeFlowPlot.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -137,6 +141,8 @@
 				D55247C022E6388B00935C9C /* GLPlaneCutPlot.h */,
 				D55247C222E6388B00935C9C /* GLPlot.cpp */,
 				D55247BD22E6388B00935C9C /* GLPlot.h */,
+				D568D3C025BFA15100FC67CD /* GLProbe.cpp */,
+				D568D3C125BFA15100FC67CD /* GLProbe.h */,
 				D55247BA22E6388B00935C9C /* GLSlicePLot.cpp */,
 				D55247BF22E6388B00935C9C /* GLSlicePLot.h */,
 				D55247B022E6388B00935C9C /* GLStreamLinePlot.cpp */,
@@ -164,6 +170,7 @@
 				D55247E622E6388B00935C9C /* GLIsoSurfacePlot.h in Headers */,
 				D55247D822E6388B00935C9C /* GLPlane.h in Headers */,
 				D55247E922E6388B00935C9C /* GLMesh.h in Headers */,
+				D568D3C325BFA15100FC67CD /* GLProbe.h in Headers */,
 				D55247EB22E6388B00935C9C /* GLParticleFlowPlot.h in Headers */,
 				D55247E822E6388B00935C9C /* GLDisplacementMap.h in Headers */,
 				D55247CF22E6388B00935C9C /* stdafx.h in Headers */,
@@ -243,6 +250,7 @@
 				D55247D422E6388B00935C9C /* GLDataMap.cpp in Sources */,
 				D55247CD22E6388B00935C9C /* GLColorMap.cpp in Sources */,
 				D55247D922E6388B00935C9C /* GLParticleFlowPlot.cpp in Sources */,
+				D568D3C225BFA15100FC67CD /* GLProbe.cpp in Sources */,
 				D55247D522E6388B00935C9C /* GLIsoSurfacePlot.cpp in Sources */,
 				D55247E422E6388B00935C9C /* GLPlot.cpp in Sources */,
 				D55247DC22E6388B00935C9C /* GLSlicePLot.cpp in Sources */,
