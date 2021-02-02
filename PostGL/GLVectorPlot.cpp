@@ -463,9 +463,15 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 		int NS = pfem->GetStates();
 
 		// pick the max of nodes and elements
-		int NN = pm->Nodes();
-		int NE = pm->Elements();
-		int NM = (NN > NE ? NN : NE);
+		int NM = 0;
+		for (int i = 0; i < NS; ++i)
+		{
+			FEPostMesh* pmi = pfem->GetState(i)->GetFEMesh();
+			int NN = pmi->Nodes();
+			int NE = pmi->Elements();
+			if (NN > NM) NM = NN;
+			if (NE > NM) NM = NE;
+		}
 
 		// allocate buffers
 		m_map.Create(NS, NM, vec3f(0,0,0), -1);
