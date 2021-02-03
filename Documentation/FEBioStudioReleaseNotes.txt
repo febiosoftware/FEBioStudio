@@ -6,6 +6,61 @@
 
 ===========================================================================
 
+ R E L E A S E   1.3   2/5/2021
+ 
+===========================================================================
+
+* Auto-update feature. 
+* FEB files can now be opened as text files in FEBio Studio. When opening the feb file, the user can now choose to import the file as model, or as a text file. 
+* FEB files opened as text files can be run directly in FEBio. 
+* An improved transparency algorithm was implemented. This algorithm can be computationally more expensive, and if necessary, can be turned off in the Options dialog (Display, Improved transparency).
+* The Welcome screen now separates recent model files and recent project (*.fsp) files. 
+* Dolly (shift+right mouse button) and pan (ctrl + right mouse button) camera movements are fixed. 
+* A bug was fixed with selecting the graphics widgets when multiple plot files are open. 
+* Loadcurve can now be assigned to the rigid wall's offset parameter. 
+* An issue was fixed that was causing a crash when reading body loads from febio3 format.
+* Rigid body names can now be shown as labels in the Graphics View (to turn on, go to Options, Physics, show rigid labels). 
+* A bug was fixed with selecting backfacing shell elements. 
+* Added option to toggle rendering rigid body glyphs in Graphics View when viewing plot file. 
+* Added a "probe" feature for inspecting values of points inside the mesh of a plot file. The value of the probes can be shown in a Graph Window. 
+* Added support for plot_level feature in reading/writing feb files. 
+* A bug was fixed that was preventing prescribed shell displacements being read in correctly from feb files. 
+* A color map option was added to the Mesh Inspector. 
+* A bug was fixed that was exporting incorrect values for mat3d variables from the Post\Data panel. 
+* A check was added when reading feb files that identifies incorrectly wound facets in surface definitions. 
+* The plane cut tool now offers a "hide element" option, that hides elements instead of cutting the mesh. 
+* The plane cut will now also show the mesh data when the Mesh Inspector is active. 
+* Normals of the surface can now be shown in post view (i.e. when viewing plot files).
+* An option was added to the Project panel that allows users to import all the models and feb files from a folder. (Right click on Project item in project panel, and select Import Folder).
+* Added improved support for reading feb files that use the FEBioChem features. 
+* Added support for density parameter for prestrain elastic material. 
+* The Scalar Field tool and Fiber Generator tool were expanded to include an option to select the material. The UI now also includes control parameters for adjusting the underlying iterative method. 
+* Improvements to the area coverage tool was added so that coverage can be calculated even of the opposing surfaces intersect. 
+* Rigid body material parameters (Young's modulus and Poisson ratio) are now exported to feb file when not zero. 
+* The fiber-pow-linear material model was added to the list of supported fiber materials for CFD materials. 
+* Imroved support for reading math parameters in feb file. 
+* A tool was added for fitting quadrics to selected faces. 
+* A bug was fixed that was not taking the light position into account in the Graphics View. 
+* Added HGO unconstrained material to list of compressible materials. 
+* A new plot data component was added that shows the magnitude of symmetric 3x3 matrices. 
+* Improved export of element data to VTK file. 
+* An isometric view option was implemented in the Graphics View. (shortcut: Numpad-5).
+* Notes can now be added to items in the project panel.
+* A few issues were fixed with setting an object's transform via the "Edit\Transform" feature. 
+* Some support for reading CELL_DATA from VTK files was added. 
+* A new eigen vector data filter was added for mat3ds data fields. 
+* Support was added for the Holzapfel-Gasser-Ogden material. 
+* Added support for defining a separate output file for logfile output data. 
+* The value parameters of prescribed displacement and initial pressure can now be defined as mapped parameters. 
+* Fixed a bug with showing the rubber band box in ortho mode.
+* Shortcuts were added for the standard views (Numpad 1 - 9). 
+* A bug was fixed that caused project files downloaded from the model repository to be stored in the wrong location. 
+* Set default locale on Linux to fix issues with feb files not reading and writing properly with system languages other than English. 
+* Fixed support for the "from" attribute when reading feb files. 
+
+
+===========================================================================
+
  R E L E A S E   1.2   11/23/2020
  
 ===========================================================================
