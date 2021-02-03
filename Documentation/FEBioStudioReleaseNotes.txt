@@ -10,7 +10,7 @@
  
 ===========================================================================
 
-* Auto-update feature. 
+* A new auto-update feature was added that will inform users when a new version of FEBio/FEBioStudio is available. This feature can also be used to update the software automatically. 
 * FEB files can now be opened as text files in FEBio Studio. When opening the feb file, the user can now choose to import the file as model, or as a text file. 
 * FEB files opened as text files can be run directly in FEBio. 
 * An improved transparency algorithm was implemented. This algorithm can be computationally more expensive, and if necessary, can be turned off in the Options dialog (Display, Improved transparency).
