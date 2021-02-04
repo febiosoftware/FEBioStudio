@@ -70,6 +70,7 @@ protected:
 	char* get_line(char* szline);
 
 	bool Read_Element_Solid();
+	bool Read_Element_Solid2();
 	bool Read_Element_Shell();
 	bool Read_Element_Shell_Thickness();
     bool Read_Domain_Shell_Thickness();

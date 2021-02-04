@@ -170,7 +170,14 @@ bool FELSDYNAimport::Load(const char* szfile)
 	{
 		if (szcmp(m_szline, "*ELEMENT_SOLID") == 0)
 		{
-			if (Read_Element_Solid() == false) return errf("FATAL ERROR: error while reading ELEMENT_SOLID section.");
+			if (strstr(m_szline, "(ten nodes format)"))
+			{
+				if (Read_Element_Solid2() == false) return errf("FATAL ERROR: error while reading ELEMENT_SOLID section.");
+			}
+			else
+			{
+				if (Read_Element_Solid() == false) return errf("FATAL ERROR: error while reading ELEMENT_SOLID section.");
+			}
 		}
 		else if (szcmp(m_szline, "*ELEMENT_SHELL_THICKNESS") == 0)
 		{
@@ -248,6 +255,36 @@ bool FELSDYNAimport::Read_Element_Solid()
 	{
 		if (card.nexti(el.eid) == false) return false;
 		if (card.nexti(el.pid) == false) return false;
+		if (card.nexti(el.n[0]) == false) return false;
+		if (card.nexti(el.n[1]) == false) return false;
+		if (card.nexti(el.n[2]) == false) return false;
+		if (card.nexti(el.n[3]) == false) return false;
+		if (card.nexti(el.n[4]) == false) return false;
+		if (card.nexti(el.n[5]) == false) return false;
+		if (card.nexti(el.n[6]) == false) return false;
+		if (card.nexti(el.n[7]) == false) return false;
+
+		m_dyna.addSolidElement(el);
+
+		if (ReadCard(card) == false) return false;
+	}
+
+	strcpy(m_szline, card.m_szline);
+
+	return true;
+}
+
+bool FELSDYNAimport::Read_Element_Solid2()
+{
+	CARD card(8);
+	if (ReadCard(card) == false) return false;
+	LSDYNAModel::ELEMENT_SOLID el;
+	while (!card.IsKeyword())
+	{
+		if (card.nexti(el.eid) == false) return false;
+		if (card.nexti(el.pid) == false) return false;
+
+		if (ReadCard(card) == false) return false;
 		if (card.nexti(el.n[0]) == false) return false;
 		if (card.nexti(el.n[1]) == false) return false;
 		if (card.nexti(el.n[2]) == false) return false;
