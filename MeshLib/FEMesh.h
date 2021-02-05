@@ -140,6 +140,8 @@ public:
 	// reconstruct the mesh
 	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
 
+	int CountSelectedElements() const;
+
 protected: // Helper functions for updating mesh data structures
 	void RebuildElementData();
 	void RebuildFaceData();

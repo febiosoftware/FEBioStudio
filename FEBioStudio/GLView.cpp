@@ -4574,7 +4574,25 @@ void CGLView::SelectFEElements(int x, int y)
 			if (m_bctrl)
 				pcmd = new CCmdUnselectElements(pm, &num, 1);
 			else
+			{
 				pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
+
+				// print value of currently selected element
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+				if (postDoc && postDoc->IsValid())
+				{
+					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+					if (cmap && cmap->IsActive())
+					{
+						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEState* state = fem->CurrentState();
+						double val = state->m_ELEM[num].m_val;
+						FEElement& el = pm->Element(num);
+						QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
+						m_pWnd->AddLogEntry(txt);
+					}
+				}
+			}
 		}
 	}
 	else
@@ -4625,7 +4643,11 @@ void CGLView::SelectFEElements(int x, int y)
 		}
 		else if (!m_bshift)
 		{
-			pcmd = new CCmdSelectElements(pm, 0, 0, false);
+			int nsel = pm->CountSelectedElements();
+			if (nsel > 0)
+			{
+				pcmd = new CCmdSelectElements(pm, 0, 0, false);
+			}
 		}
 	}
 
@@ -4672,10 +4694,36 @@ void CGLView::SelectFEFaces(int x, int y)
 		else
 		{
 			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, &index, 1);
-			else pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+			else
+			{
+				pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+
+				// print value of currently selected face
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+				if (postDoc && postDoc->IsValid())
+				{
+					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+					if (cmap && cmap->IsActive())
+					{
+						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEState* state = fem->CurrentState();
+						double val = state->m_FACE[index].m_val;
+						FEFace& face = pm->Face(index);
+						QString txt = QString("Face %1 : %2\n").arg(face.m_nid).arg(val);
+						m_pWnd->AddLogEntry(txt);
+					}
+				}
+			}
 		}
 	}
-	else if (!m_bshift) pcmd = new CCmdSelectFaces(pm, 0, 0, false);
+	else if (!m_bshift)
+	{
+		int nsel = pm->CountSelectedFaces();
+		if (nsel > 0)
+		{
+			pcmd = new CCmdSelectFaces(pm, 0, 0, false);
+		}
+	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -4799,10 +4847,36 @@ void CGLView::SelectFEEdges(int x, int y)
 		{
 			int num = (int)index;
 			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, &num, 1);
-			else pcmd = new CCmdSelectFEEdges(pm, &num, 1, m_bshift);
+			else
+			{
+				pcmd = new CCmdSelectFEEdges(pm, &num, 1, m_bshift);
+
+				// print value of currently selected edge
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+				if (postDoc && postDoc->IsValid())
+				{
+					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+					if (cmap && cmap->IsActive())
+					{
+						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEState* state = fem->CurrentState();
+						double val = state->m_EDGE[num].m_val;
+						FEEdge& ed = pm->Edge(num);
+						QString txt = QString("Edge %1 : %2\n").arg(ed.m_nid).arg(val);
+						m_pWnd->AddLogEntry(txt);
+					}
+				}
+			}
 		}
 	}
-	else if (!m_bshift) pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
+	else if (!m_bshift)
+	{
+		int nsel = pm->CountSelectedEdges();
+		if (nsel)
+		{
+			pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
+		}
+	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -6137,13 +6211,40 @@ void CGLView::SelectFENodes(int x, int y)
 		else
 		{
 			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &index, 1);
-			else pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
+			else
+			{
+				pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
+
+				// print value of currently selected node
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+				if (postDoc && postDoc->IsValid())
+				{
+					Post::FEPostModel* fem = postDoc->GetFEModel();
+					Post::FEState* state = fem->CurrentState();
+					FENode& node = pm->Node(index);
+					vec3f r = state->m_NODE[index].m_rt;
+					QString txt = QString("Node %1 : position = (%2, %3, %4)").arg(node.m_nid).arg(r.x).arg(r.y).arg(r.z);
+
+					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+					if (cmap && cmap->IsActive())
+					{
+						double val = state->m_NODE[index].m_val;
+						txt += QString(", value = %1").arg(val);
+					}
+
+					m_pWnd->AddLogEntry(txt + QString("\n"));
+				}
+			}
 			lastIndex = -1;
 		}
 	}
 	else if (!m_bshift)
 	{
-		pcmd = new CCmdSelectFENodes(pm, 0, 0, false);
+		int nsel = pm->CountSelectedNodes();
+		if (nsel > 0)
+		{
+			pcmd = new CCmdSelectFENodes(pm, 0, 0, false);
+		}
 		lastIndex = -1;
 	}
 

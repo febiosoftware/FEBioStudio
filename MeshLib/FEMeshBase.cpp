@@ -333,6 +333,28 @@ void FEMeshBase::UpdateMesh()
 }
 
 //-----------------------------------------------------------------------------
+int FEMeshBase::CountSelectedNodes() const
+{
+	int N = 0, NN = Nodes();
+	for (int i = 0; i < NN; ++i)
+	{
+		if (Node(i).IsSelected()) N++;
+	}
+	return N;
+}
+
+//-----------------------------------------------------------------------------
+int FEMeshBase::CountSelectedEdges() const
+{
+	int N = 0, NE = Edges();
+	for (int i = 0; i < NE; ++i)
+	{
+		if (Edge(i).IsSelected()) N++;
+	}
+	return N;
+}
+
+//-----------------------------------------------------------------------------
 int FEMeshBase::CountSelectedFaces() const
 {
 	int N = 0, NF = Faces();

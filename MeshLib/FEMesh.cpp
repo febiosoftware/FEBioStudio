@@ -2027,3 +2027,14 @@ FEMesh* ConvertSurfaceToMesh(FESurfaceMesh* surfaceMesh)
 
 	return mesh;
 }
+
+//-----------------------------------------------------------------------------
+int FEMesh::CountSelectedElements() const
+{
+	int N = 0, NE = Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		if (Element(i).IsSelected()) N++;
+	}
+	return N;
+}
