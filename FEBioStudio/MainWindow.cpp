@@ -391,9 +391,9 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 			QStringList recentFiles = GetRecentFileList();
 			OpenFile(recentFiles.at(n));
 		}
-		if (strncmp(sz, "#recentproject_", 8) == 0)
+		if (strncmp(sz, "#recentproject_", 15) == 0)
 		{
-			int n = atoi(sz + 8);
+			int n = atoi(sz + 15);
 
 			QStringList recentProjects = GetRecentProjectsList();
 			OpenFile(recentProjects.at(n));
