@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QImage>
 #include <QFileDialog>
+#include <QPainterPath>
 #include <QRgb>
 
 //-----------------------------------------------------------------------------
