@@ -669,7 +669,6 @@ void CMainWindow::OpenDocument(const QString& fileName)
 		if (filePath == fileName_i)
 		{
 			ui->tab->setCurrentIndex(i);
-			on_actionRefresh_triggered();
 			QApplication::alert(this);
 			return;
 		}
