@@ -320,8 +320,8 @@ public:
 	QWidget* welcomePage;
 	QPushButton* connectButton;
 
-	QPushButton* loginButton;
-	QAction* loginAction;
+	// QPushButton* loginButton;
+	// QAction* loginAction;
 
 	QWidget* modelPage;
 	QStackedWidget* treeStack;
@@ -376,10 +376,10 @@ public:
 	{
 		stack = new QStackedLayout(parent);
 
-
 		// Weclome Page
 		QVBoxLayout* welcomeVBLayout = new QVBoxLayout;
 		welcomeVBLayout->setAlignment(Qt::AlignCenter);
+
 		QLabel* welcomeLabel = new QLabel("To access the project repository, please click the Connect button below.");
 		welcomeLabel->setWordWrap(true);
 		welcomeLabel->setAlignment(Qt::AlignCenter);
@@ -435,21 +435,15 @@ public:
 
 		actionDeleteRemote = new QAction(CIconProvider::GetIcon("deleteRemote"), "Delete From Repository", parent);
 		actionDeleteRemote->setObjectName("actionDeleteRemote");
-		actionDeleteRemote->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDeleteRemote);
 
 		actionModify = new QAction(CIconProvider::GetIcon("edit"), "Modify Project", parent);
 		actionModify->setObjectName("actionModify");
-		actionModify->setIconVisibleInMenu(false);
 		toolbar->addAction(actionModify);
 
-		loginButton = new QPushButton("Login");
-		loginButton->setObjectName("loginButton");
-		loginAction = toolbar->addWidget(loginButton);
 
 		actionUpload = new QAction(CIconProvider::GetIcon("upload"), "Upload", parent);
 		actionUpload->setObjectName("actionUpload");
-		actionUpload->setIconVisibleInMenu(false);
 		toolbar->addAction(actionUpload);
 
 		modelVBLayout->addWidget(toolbar);
@@ -580,7 +574,7 @@ public:
 		loadingPage->setLayout(loadingLayout);
 		stack->addWidget(loadingPage);
 
-		setLoginVisible(true);
+		// setLoginVisible(true);
 	}
 
 	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, qint64 size)
@@ -626,15 +620,6 @@ public:
 		{
 			current.second->setHidden(false);
 		}
-	}
-
-	void setLoginVisible(bool visible)
-	{
-		loginAction->setVisible(visible);
-		actionUpload->setVisible(!visible);
-
-		actionDeleteRemote->setVisible(!visible);
-		actionModify->setVisible(!visible);
 	}
 
 	void showLoadingPage(QString message, bool progress = false)

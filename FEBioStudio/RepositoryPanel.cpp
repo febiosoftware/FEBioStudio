@@ -33,6 +33,8 @@ SOFTWARE.*/
 #include <unordered_map>
 #include <JlCompress.h>
 #include <QStandardPaths>
+#include <QDateTime>
+#include <QXmlStreamReader>
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
@@ -82,8 +84,6 @@ void CRepositoryPanel::SetModelList()
 
 	if(repoHandler->isAuthenticated())
 	{
-		ui->setLoginVisible(false);
-
 		QString category("My Projects");
 		QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
 		item->setIcon(0, QIcon(":/icons/folder.png"));
@@ -132,11 +132,102 @@ void CRepositoryPanel::ShowMessage(QString message)
 	dlg->exec();
 }
 
+void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages)
+{
+	QString message;
+
+	qDebug() << lastMessageTime;
+	
+	if(lastMessageTime == -1)
+	{
+	 	message += "<h2>Welcome to the FEBio Project Repository!</h2><p>This repository is a way for FEBio users to easily access models "
+            "created by the FEBio Team or by other users, and to share models of their own from within FEBio Studio itself.<br><br>"
+            "Using this panel, you can view or search for projects and download the associated files.<br><br>"
+            "To share a project of your own, click on the Upload button in the upper right corner of the panel.<br><br>"
+			"For more information, please see the section entitled \"The Repository Panel\" in the FEBio Studio user manual.</p>";
+	}
+
+	qint64 newMessageTime = 0;
+
+	QXmlStreamReader reader(messages);
+
+	if (reader.readNextStartElement())
+	{
+		if(reader.name() == "messages")
+		{
+			while(reader.readNextStartElement())
+			{
+				if(reader.name() == "message")
+				{
+					qint64 time = reader.attributes().value("time").toLongLong();
+
+					if(time > lastMessageTime)
+					{
+						if(time > newMessageTime) newMessageTime = time;
+
+						QDateTime dateTime;
+						dateTime.setSecsSinceEpoch(time);
+
+						if(!message.isEmpty()) message += "<br>";
+
+						message += "<h2>Message from ";
+						message += dateTime.toString("ddd MMMM d yyyy:");
+						message += "</h2><p>";
+
+						message += reader.readElementText().replace("\n", "<br>");
+						message += "</p>";
+
+					}
+				}
+				else
+				{
+					reader.skipCurrentElement();
+				}
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	if(!message.isEmpty())
+	{
+		QDialog *dlg = new QDialog(this);
+		QVBoxLayout* l = new QVBoxLayout;
+		dlg->setLayout(l);
+		QTextBrowser* msg = new QTextBrowser();
+
+		msg->setFrameStyle(QFrame::Plain|QFrame::NoFrame);
+		QPalette qpalette = palette();
+		qpalette.setColor(QPalette::Base, qApp->palette().color(QPalette::Window));
+		msg->setPalette(qpalette);
+
+		msg->setText(message);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok);
+		l->addWidget(msg);
+		l->addWidget(bb);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+
+		int width = 600;
+		msg->document()->setTextWidth(width);
+		int height = msg->document()->size().height() + 100;
+
+		if(height > 500) height = 500;
+
+		dlg->resize(width,height);
+		dlg->exec();
+
+		lastMessageTime = newMessageTime;
+	}
+}
+
 void CRepositoryPanel::LoginTimeout()
 {
 	ShowMessage("Your login to the model repository has timed out.");
 
-	ui->setLoginVisible(true);
 	ui->stack->setCurrentIndex(1);
 }
 
@@ -283,18 +374,6 @@ void CRepositoryPanel::on_connectButton_clicked()
 	ui->showLoadingPage("Connecting...");
 }
 
-void CRepositoryPanel::on_loginButton_clicked()
-{
-	CDlgLogin dlg;
-
-	if(dlg.exec())
-	{
-		repoHandler->authenticate(dlg.username(), dlg.password());
-
-		ui->showLoadingPage("Logging in...");
-	}
-}
-
 void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
 	CustomTreeWidgetItem* customItem = static_cast<CustomTreeWidgetItem*>(item);
@@ -377,6 +456,20 @@ void CRepositoryPanel::on_actionDelete_triggered()
 
 void CRepositoryPanel::on_actionUpload_triggered()
 {
+	if(!repoHandler->isAuthenticated())
+	{
+		CDlgLogin dlg;
+
+		if(dlg.exec())
+		{
+			repoHandler->authenticate(dlg.username(), dlg.password());
+
+			ui->showLoadingPage("Logging in...");
+		}
+
+		return;
+	}
+
 	if(repoHandler->getUploadPermission())
 	{
 		CWzdUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler);
@@ -1034,6 +1127,16 @@ void CRepositoryPanel::SetRepositoryFolder(QString folder)
 	m_repositoryFolder = folder;
 }
 
+qint64 CRepositoryPanel::GetLastMessageTime()
+{
+	return lastMessageTime;
+}
+
+void CRepositoryPanel::SetLastMessageTime(qint64 time)
+{
+	lastMessageTime = time;
+}
+
 void CRepositoryPanel::showMainPage()
 {
 	ui->stack->setCurrentIndex(1);
@@ -1057,6 +1160,7 @@ CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent){}
 CRepositoryPanel::~CRepositoryPanel(){}
 void CRepositoryPanel::SetModelList(){}
 void CRepositoryPanel::ShowMessage(QString message) {}
+void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages) {}
 void CRepositoryPanel::LoginTimeout() {}
 void CRepositoryPanel::NetworkInaccessible() {}
 void CRepositoryPanel::DownloadFinished(int fileID, int fileType) {}
@@ -1069,7 +1173,8 @@ void CRepositoryPanel::AddCurrentTag(char **argv) {}
 void CRepositoryPanel::AddPublication(QVariantMap data) {}
 QString CRepositoryPanel::GetRepositoryFolder() { return QString(); }
 void CRepositoryPanel::SetRepositoryFolder(QString folder) {}
-void CRepositoryPanel::on_loginButton_clicked() {}
+qint64 CRepositoryPanel::GetLastMessageTime() { return -1; }
+void CRepositoryPanel::SetLastMessageTime(qint64 time) {}
 void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column){}
 void CRepositoryPanel::on_actionDownload_triggered() {}
 void CRepositoryPanel::on_actionOpen_triggered() {}

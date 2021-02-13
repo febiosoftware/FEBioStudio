@@ -1598,6 +1598,7 @@ void CMainWindow::writeSettings()
 
 	settings.setValue("defaultProjectFolder", ui->m_defaultProjectParent);
 	settings.setValue("repositoryFolder", ui->databasePanel->GetRepositoryFolder());
+	settings.setValue("repoMessageTime", ui->databasePanel->GetLastMessageTime());
 
 	settings.setValue("recentFiles", ui->m_recentFiles);
 	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
@@ -1681,6 +1682,8 @@ void CMainWindow::readSettings()
 	ui->m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
 	QString repositoryFolder = settings.value("repositoryFolder").toString();
 	ui->databasePanel->SetRepositoryFolder(repositoryFolder);
+	qint64 lastMessageTime = settings.value("repoMessageTime", -1).toLongLong();
+	ui->databasePanel->SetLastMessageTime(lastMessageTime);
 
 	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
 	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);

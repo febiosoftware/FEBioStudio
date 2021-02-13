@@ -77,6 +77,7 @@ private slots:
 private:
 	bool NetworkAccessibleCheck();
 //	bool AuthCheck();
+	void getMessages();
 
 	void authReply(QNetworkReply *r);
 //	void authCheckReply(QNetworkReply *r);
@@ -86,6 +87,7 @@ private:
 	void uploadFileRequestReply(QNetworkReply *r);
 	void uploadFileReply(QNetworkReply *r);
 	void requestUploadPermissionsReply(QNetworkReply *r);
+	void getMessagesReply(QNetworkReply *r);
 
 	void modifyProjectRepy(QNetworkReply *r);
 	void modifyProjectUploadReply(QNetworkReply *r);

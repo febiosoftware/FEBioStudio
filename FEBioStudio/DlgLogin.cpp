@@ -42,7 +42,7 @@ public:
 	{
 		QVBoxLayout* layout = new QVBoxLayout;
 
-		QLabel* msg = new QLabel("To log into the model repository, please enter your febio.org username and password.");
+		QLabel* msg = new QLabel("To upload or manage projects, please log in using your febio.org username and password.");
 		msg->setWordWrap(true);
 
 		layout->addWidget(msg);
