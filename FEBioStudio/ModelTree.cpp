@@ -1006,7 +1006,7 @@ void CModelTree::Build(CModelDocument* doc)
 			t1->setExpanded(true);
 			t1->setData(0, Qt::UserRole, (int)m_data.size());
 
-			CModelTreeItem it = { 0, 0 };
+			CModelTreeItem it = { 0, 0, 0, 0, MT_JOBLIST };
 			m_data.push_back(it);
 
 			UpdateJobs(t1, doc);

@@ -166,6 +166,7 @@ public slots:
 	void OnDeleteAllRigidConstraints();
 	void OnDeleteAllRigidConnectors();
 	void OnDeleteAllSteps();
+	void OnDeleteAllJobs();
 
 signals:
 	void currentObjectChanged(FSObject* po);

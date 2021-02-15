@@ -561,6 +561,7 @@ public slots:
 	void DeleteAllRigidConstraints();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
+	void DeleteAllJobs();
 
 	CGLView* GetGLView();
 
