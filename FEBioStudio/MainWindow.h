@@ -150,6 +150,9 @@ public:
 	// get the current theme
 	int currentTheme() const;
 
+	// check for dark theme
+	bool usingDarkTheme() const;
+
 	// set the current theme
 	void setCurrentTheme(int n);
 

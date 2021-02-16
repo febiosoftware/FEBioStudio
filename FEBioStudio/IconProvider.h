@@ -34,7 +34,7 @@ enum class Emblem{Plus, Minus, Check, Warning, Caution, Missing};
 class CIconProvider
 {
 public:
-	static void Instantiate(int theme, int dpr);
+	static void Instantiate(bool dark, int dpr);
 
 	static QIcon GetIcon(const QString& iconName);
 	static QIcon GetIcon(const QString& baseIconName, Emblem emblem);
@@ -42,7 +42,7 @@ public:
 
 private:
 	CIconProvider() {}
-	CIconProvider(int theme, int dpr) {m_theme = theme; m_dpr = dpr;}
+	CIconProvider(bool dark, int dpr) {m_dark = dark; m_dpr = dpr;}
 	CIconProvider(CIconProvider const&) {}
 	CIconProvider& operator=(CIconProvider const&) { return *this; }
 	virtual ~CIconProvider(){}
@@ -51,6 +51,6 @@ private:
 	static QString emblemIconURL(Emblem emblem);
 
 	static CIconProvider* m_instance;
-	static int m_theme;
+	static bool m_dark;
 	static int m_dpr;
 };
