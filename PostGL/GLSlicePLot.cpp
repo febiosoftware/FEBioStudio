@@ -181,6 +181,7 @@ void CGLSlicePlot::RenderSlice(float ref)
 	const int HEX_NT[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 	const int PEN_NT[8] = {0, 1, 2, 2, 3, 4, 5, 5};
 	const int TET_NT[8] = {0, 1, 2, 2, 3, 3, 3, 3};
+    const int PYR_NT[8] = {0, 1, 2, 3, 4, 4, 4, 4};
 	const int* nt;
 
 	// get the mesh
@@ -213,6 +214,8 @@ void CGLSlicePlot::RenderSlice(float ref)
             case FE_PENTA15: nt = PEN_NT; break;
             case FE_TET4   : nt = TET_NT; break;
             case FE_TET5   : nt = TET_NT; break;
+            case FE_PYRA5  : nt = PYR_NT; break;
+            case FE_PYRA13 : nt = PYR_NT; break;
 			default:
 				assert(false);
 				return;

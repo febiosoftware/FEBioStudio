@@ -44,6 +44,7 @@ protected:
 	{
 		int id;		// element ID
 		int	ntype;	// element type
+        int nn;     // number of nodes
 		int	n[27];	// node labels
 	};
 

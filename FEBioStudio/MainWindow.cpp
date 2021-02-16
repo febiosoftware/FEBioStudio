@@ -1343,6 +1343,7 @@ void CMainWindow::ReportSelection()
 			case FE_PYRA5  : AddLogEntry("  Type = PYRA5"  ); break;
 			case FE_TET20  : AddLogEntry("  Type = TET20"  ); break;
 			case FE_TRI10  : AddLogEntry("  Type = TRI10"  ); break;
+            case FE_PYRA13 : AddLogEntry("  Type = PYRA13" ); break;
 			}
 			AddLogEntry("\n");
 

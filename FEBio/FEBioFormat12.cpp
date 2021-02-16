@@ -177,6 +177,7 @@ bool FEBioFormat12::ParseGeometrySection(XMLTag& tag)
 					else if (tag == "tri6") el.SetType(FE_TRI6);
 					else if (tag == "pyra5") el.SetType(FE_PYRA5);
 					else if (tag == "penta15") el.SetType(FE_PENTA15);
+                    else if (tag == "pyra13") el.SetType(FE_PYRA13);
 					else throw XMLReader::InvalidTag(tag);
 
 					// read nodes

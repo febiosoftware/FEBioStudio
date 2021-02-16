@@ -961,6 +961,7 @@ bool XpltReader3::ReadDomainSection(FEPostModel &fem)
                     case PLT_ELEM_QUAD8  : ne =  8; break;
                     case PLT_ELEM_QUAD9  : ne =  9; break;
 					case PLT_ELEM_PYRA5  : ne =  5; break;
+                    case PLT_ELEM_PYRA13 : ne = 13; break;
 					default:
 						assert(false);
 						return errf("Error while reading Domain section");
@@ -1192,6 +1193,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 			case PLT_ELEM_QUAD8  : etype = FE_QUAD8 ; break;
 			case PLT_ELEM_QUAD9  : etype = FE_QUAD9 ; break;
 			case PLT_ELEM_PYRA5  : etype = FE_PYRA5 ; break;
+            case PLT_ELEM_PYRA13 : etype = FE_PYRA13; break;
 			}
 			el.SetType(etype);
 			int ne = el.Nodes();
@@ -1742,6 +1744,7 @@ bool XpltReader3::ReadElemData_NODE(Post::FEPostMesh& m, XpltReader3::Domain &d,
     case PLT_ELEM_QUAD8  : ne =  8; break;
     case PLT_ELEM_QUAD9  : ne =  9; break;
 	case PLT_ELEM_PYRA5  : ne =  5; break;
+    case PLT_ELEM_PYRA13 : ne = 13; break;
 	default:
 		assert(false);
 		return errf("Error while reading element data");
@@ -1953,6 +1956,7 @@ bool XpltReader3::ReadElemData_MULT(XpltReader3::Domain& dom, Post::FEMeshData& 
     case PLT_ELEM_QUAD8  : ne =  8; break;
     case PLT_ELEM_QUAD9  : ne =  9; break;
 	case PLT_ELEM_PYRA5  : ne =  5; break;
+    case PLT_ELEM_PYRA13 : ne = 13; break;
 	default:
 		assert(false);
 		return errf("Error while reading element data");
