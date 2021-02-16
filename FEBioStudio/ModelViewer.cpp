@@ -1618,6 +1618,11 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			del = true;
 		}
 		break;
+	case MT_JOBLIST:
+		{
+			menu.addAction("Delete All", this, SLOT(OnDeleteAllJobs()));
+		}
+		break;
 	case MT_JOB:
 		menu.addAction("Open", this, SLOT(OnOpenJob()));
 		menu.addAction("Rerun job", this, SLOT(OnRerunJob()));
@@ -1722,4 +1727,9 @@ void CModelViewer::OnDeleteAllRigidConnectors()
 void CModelViewer::OnDeleteAllSteps()
 {
 	GetMainWindow()->DeleteAllSteps();
+}
+
+void CModelViewer::OnDeleteAllJobs()
+{
+	GetMainWindow()->DeleteAllJobs();
 }

@@ -277,6 +277,11 @@ CFEBioJob* CModelDocument::FindFEBioJob(const std::string& s)
 	return nullptr;
 }
 
+void CModelDocument::DeleteAllJobs()
+{
+	m_JobList.Clear();
+}
+
 //-----------------------------------------------------------------------------
 void CModelDocument::Save(OArchive& ar)
 {
