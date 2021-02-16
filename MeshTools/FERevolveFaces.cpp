@@ -152,12 +152,16 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
             npos.push_back(node2.r);
             
             if(isQuad){
+                // setup rotation
+                double wl = w * (l - 0.5) / nseg;
+                quatd Q(wl, axis);
+                
                 // create middle node for quadratic meshes
                 FENode& node3 = pmnew->Node(1 + NN0 + (l - 1)*nn + node.m_ntag);
                 
-                if (l == 1) node3.r = pm->GlobalToLocal((node2.r + node.r) / 2.0);
-                else node3.r = pm->GlobalToLocal((node2.r + npos[l - 2]) / 2.0);
-                
+                vec3d r = pm->LocalToGlobal(node.r) - center;
+                Q.RotateVector(r);
+                node3.r = pm->GlobalToLocal(center + r);
                 node3.m_ntag = node.m_ntag;
             }
         }
