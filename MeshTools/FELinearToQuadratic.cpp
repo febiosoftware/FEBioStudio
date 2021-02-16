@@ -38,6 +38,7 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
 {
     const int ELH8[12][2] = {{0,1},{1,2},{2,3},{3,0},{4,5},{5,6},{6,7},{7,4},{0,4},{1,5},{2,6},{3,7}};
     const int ELP6[9][2] = {{0,1},{1,2},{2,0},{3,4},{4,5},{5,3},{0,3},{1,4},{2,5}};
+    const int ELP5[8][2] = {{0,1},{1,2},{2,3},{3,0},{0,4},{1,4},{2,4},{3,4}};
     const int ELT4[6][2] = {{0,1},{1,2},{2,0},{0,3},{1,3},{2,3}};
     const int ELQ4[4][2] = {{0,1},{1,2},{2,3},{3,0}};
     const int ELT3[3][2] = {{0,1},{1,2},{2,0}};
@@ -74,6 +75,22 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
                 {
                     int n0 = el.m_node[ELP6[j][0]];
                     int n1 = el.m_node[ELP6[j][1]];
+                    assert(n0 != n1);
+                    if (n0 > n1) { n0 ^= n1; n1 ^= n0; n0 ^= n1; }
+                    
+                    vector<int>& nel = NEL[n0];
+                    int nk = (int) nel.size();
+                    int k = 0;
+                    while ((k<nk)&&(nel[k] != n1)) k++;
+                    if (k == nk) nel.push_back(n1);
+                }
+                break;
+                
+            case FE_PYRA5:
+                for (int j=0; j<8; ++j)
+                {
+                    int n0 = el.m_node[ELP5[j][0]];
+                    int n1 = el.m_node[ELP5[j][1]];
                     assert(n0 != n1);
                     if (n0 > n1) { n0 ^= n1; n1 ^= n0; n0 ^= n1; }
                     
@@ -191,6 +208,28 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
                 {
                     int n0 = e.m_node[ELP6[j][0]];
                     int n1 = e.m_node[ELP6[j][1]];
+                    if (n0 > n1) { n0 ^= n1; n1 ^= n0; n0 ^= n1; }
+                    
+                    vector<int>& ne = NEL[n0];
+                    int nk = ne.size();
+                    for (int k=0; k<nk; ++k)
+                    {
+                        pair<int, int>& ek = ET[ne[k]];
+                        if ((ek.first == n0)&&(ek.second == n1))
+                        {
+                            ee[j] = ne[k];
+                            break;
+                        }
+                    }
+                }
+                break;
+                
+            case FE_PYRA5:
+                ee.resize(8);
+                for (int j=0; j<8; ++j)
+                {
+                    int n0 = e.m_node[ELP5[j][0]];
+                    int n1 = e.m_node[ELP5[j][1]];
                     if (n0 > n1) { n0 ^= n1; n1 ^= n0; n0 ^= n1; }
                     
                     vector<int>& ne = NEL[n0];
@@ -424,6 +463,26 @@ FEMesh* FELinearToQuadratic::Apply(FEMesh* pm)
                 e1.m_node[12] = EE[i][ 6] + NN;
                 e1.m_node[13] = EE[i][ 7] + NN;
                 e1.m_node[14] = EE[i][ 8] + NN;
+            }
+                break;
+                
+            case FE_PYRA5:
+            {
+                e1.SetType(FE_PYRA13);
+                e1.m_node[0] = e0.m_node[0];
+                e1.m_node[1] = e0.m_node[1];
+                e1.m_node[2] = e0.m_node[2];
+                e1.m_node[3] = e0.m_node[3];
+                e1.m_node[4] = e0.m_node[4];
+                e1.m_node[5] = e0.m_node[5];
+                
+                e1.m_node[ 6] = EE[i][ 0] + NN;
+                e1.m_node[ 7] = EE[i][ 1] + NN;
+                e1.m_node[ 8] = EE[i][ 2] + NN;
+                e1.m_node[ 9] = EE[i][ 3] + NN;
+                e1.m_node[10] = EE[i][ 4] + NN;
+                e1.m_node[11] = EE[i][ 5] + NN;
+                e1.m_node[12] = EE[i][ 6] + NN;
             }
                 break;
                 
@@ -817,6 +876,7 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
         switch (el.Type()) {
             case FE_HEX20: neln = 8; break;
             case FE_PENTA15: neln = 6; break;
+            case FE_PYRA13: neln = 5; break;
             case FE_TET10: neln = 4; break;
             case FE_QUAD8: neln = 4; break;
             case FE_TRI6: neln = 3; break;
@@ -863,6 +923,7 @@ FEMesh* FEQuadraticToLinear::Apply(FEMesh* pm)
         switch (e0.Type()) {
             case FE_HEX20: e1.SetType(FE_HEX8); break;
             case FE_PENTA15: e1.SetType(FE_PENTA6); break;
+            case FE_PYRA13: e1.SetType(FE_PYRA5); break;
             case FE_TET10: e1.SetType(FE_TET4); break;
             case FE_QUAD8: e1.SetType(FE_QUAD4); break;
             case FE_TRI6: e1.SetType(FE_TRI3); break;

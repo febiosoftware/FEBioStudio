@@ -1043,6 +1043,7 @@ bool IsInsideElement(FEElement_& el, double r[3], const double tol)
 	case FE_HEX20:
 	case FE_HEX27:
 	case FE_PYRA5:
+    case FE_PYRA13:
 		return ((r[0] >= -1.0 - tol) && (r[0] <= 1.0 + tol) &&
 			(r[1] >= -1.0 - tol) && (r[1] <= 1.0 + tol) &&
 			(r[2] >= -1.0 - tol) && (r[2] <= 1.0 + tol));

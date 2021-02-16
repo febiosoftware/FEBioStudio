@@ -238,6 +238,7 @@ void FEBioImport::ParseGeometrySection(FEPostModel &fem, XMLTag &tag)
 				else if (tag == "tri3"   ) { etype = FE_TRI3;    ++nsel; }
                 else if (tag == "tri6"   ) { etype = FE_TRI6;    ++nsel; }
 				else if (tag == "pyra5"  ) { etype = FE_PYRA5;   ++nsel; }
+                else if (tag == "pyra13" ) { etype = FE_PYRA13;  ++nsel; }
 				else throw XMLReader::InvalidTag(tag);
 				el.SetType(etype);
 
@@ -304,6 +305,7 @@ void FEBioImport::ParseGeometrySection2(FEPostModel &fem, XMLTag &tag)
 			else if (strcmp(sztype, "tri6"   ) == 0) etype = FE_TRI6;
 			else if (strcmp(sztype, "quad9"  ) == 0) etype = FE_QUAD9;
 			else if (strcmp(sztype, "pyra5"  ) == 0) etype = FE_PYRA5;
+            else if (strcmp(sztype, "pyra13" ) == 0) etype = FE_PYRA13;
 			else throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 
 			// get the material ID

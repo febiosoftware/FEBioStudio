@@ -40,6 +40,7 @@ extern int ET_PENTA[9][2];
 extern int ET_PENTA15[9][3];
 extern int ET_TET10[6][3];
 extern int ET_PYRA5[8][2];
+extern int ET_PYRA13[8][3];
 
 GLMeshRender::GLMeshRender()
 {
@@ -1135,6 +1136,79 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FECoreMesh *pm, bool bsel)
 		}
 	}
 	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderPYRA13(FEElement_ *pe, FECoreMesh *pm, bool bsel)
+{
+    assert(pe->IsType(FE_PYRA13));
+    FEElement_& e = *pe;
+    vec3d r[4];
+    vec3d n[4];
+    
+    glBegin(GL_TRIANGLES);
+    {
+        for (int j = 0; j<4; j++)
+        {
+            r[0] = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
+            r[1] = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
+            r[2] = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
+            
+            FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+            if (pen == 0)
+            {
+                FEFace* pf = pm->FacePtr(e.m_face[j]);
+                n[0] = pf->m_nn[0];
+                n[1] = pf->m_nn[1];
+                n[2] = pf->m_nn[2];
+            }
+            else
+            {
+                vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+                fn.Normalize();
+                n[0] = n[1] = n[2] = fn;
+            }
+            
+            if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+            {
+                glx::vertex3d(r[0], n[0]);
+                glx::vertex3d(r[1], n[1]);
+                glx::vertex3d(r[2], n[2]);
+            }
+        }
+    }
+    glEnd();
+    
+    glBegin(GL_TRIANGLES);
+    {
+        r[0] = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
+        r[1] = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
+        r[2] = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
+        r[3] = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
+        
+        FEElement_* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
+        if (pen == 0)
+        {
+            FEFace* pf = pm->FacePtr(e.m_face[4]);
+            assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
+            n[0] = pf->m_nn[0];
+            n[1] = pf->m_nn[1];
+            n[2] = pf->m_nn[2];
+            n[3] = pf->m_nn[3];
+        }
+        else
+        {
+            vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+            fn.Normalize();
+            n[0] = n[1] = n[2] = n[3] = fn;
+        }
+        
+        if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+        {
+            glx::quad4(r, n);
+        }
+    }
+    glEnd();
 }
 
 
@@ -2345,6 +2419,19 @@ void GLMeshRender::RenderElementOutline(FEElement_& el, FECoreMesh* pm, int ndiv
 		}
 	}
 	break;
+    case FE_PYRA13:
+        {
+            int(*et)[3] = ET_PYRA13;
+            for (int i = 0; i<8; ++i)
+            {
+                vec3d& r0 = pm->Node(el.m_node[et[i][0]]).r;
+                vec3d& r1 = pm->Node(el.m_node[et[i][1]]).r;
+                vec3d& r2 = pm->Node(el.m_node[et[i][2]]).r;
+                glx::vertex3d(r0); glx::vertex3d(r2);
+                glx::vertex3d(r2); glx::vertex3d(r1);
+            }
+        }
+            break;
 	case FE_HEX20:
 	{
 		int(*et)[3] = ET_HEX20;

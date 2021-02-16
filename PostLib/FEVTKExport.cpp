@@ -51,7 +51,8 @@ enum VTK_CELLTYPE {
 	VTK_QUADRATIC_QUAD =         23,
 	VTK_QUADRATIC_TETRA =        24,
 	VTK_QUADRATIC_HEXAHEDRON =   25,
-	VTK_QUADRATIC_WEDGE =        26
+	VTK_QUADRATIC_WEDGE =        26,
+    VTK_QUADRATIC_PYRAMID =      27
 };
 
 void Space2_(char* szname)
@@ -201,6 +202,7 @@ void FEVTKExport::WriteCells(FEState* ps)
             case FE_HEX8   : vtk_type = VTK_HEXAHEDRON; break;
             case FE_TET4   : vtk_type = VTK_TETRA; break;
             case FE_PENTA6 : vtk_type = VTK_WEDGE; break;
+            case FE_PYRA5  : vtk_type = VTK_PYRAMID; break;
             case FE_QUAD4  : vtk_type = VTK_QUAD; break;
             case FE_TRI3   : vtk_type = VTK_TRIANGLE; break;
             case FE_BEAM2  : vtk_type = VTK_LINE; break;
@@ -211,6 +213,7 @@ void FEVTKExport::WriteCells(FEState* ps)
             case FE_TET15  : vtk_type = VTK_QUADRATIC_TETRA; break;
             case FE_PENTA15: vtk_type = VTK_QUADRATIC_WEDGE; break;
             case FE_HEX27  : vtk_type = VTK_QUADRATIC_HEXAHEDRON; break;
+            case FE_PYRA13 : vtk_type = VTK_QUADRATIC_PYRAMID; break;
             case FE_TRI6   : vtk_type = VTK_QUADRATIC_TRIANGLE; break;
             case FE_QUAD9  : vtk_type = VTK_QUADRATIC_QUAD; break;
             default: vtk_type = -1; break;

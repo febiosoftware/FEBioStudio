@@ -92,3 +92,4 @@ extern int FTTET15[4][7];
 extern int FTTET20[4][10];
 extern int FTPYRA5[5][4];
 extern int FTPENTA15[5][8];
+extern int FTPYRA13[5][8];

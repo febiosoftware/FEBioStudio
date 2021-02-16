@@ -27,6 +27,8 @@ SOFTWARE.*/
 #include "FECoreMesh.h"
 #include "hex8.h"
 #include "tet4.h"
+#include "pyra5.h"
+#include "pyra13.h"
 
 //-----------------------------------------------------------------------------
 //! constructor
@@ -146,6 +148,7 @@ double FECoreMesh::ElementVolume(const FEElement_& el)
 	case FE_PENTA6 : return PentaVolume(el); break;
 	case FE_PENTA15: return PentaVolume(el); break;
 	case FE_PYRA5  : return PyramidVolume(el); break;
+    case FE_PYRA13 : return PyramidVolume(el); break;
 	}
 
 	return 0.0;
@@ -346,107 +349,178 @@ double FECoreMesh::PentaVolume(const FEElement_& el)
 }
 
 //-----------------------------------------------------------------------------
+double pyra5_volume(vec3d* r, bool bJ)
+{
+    const int NELN = 5;
+    const int NINT = 8;
+    
+    // integration point coordinates
+    const double a = 1.0 / sqrt(3.0);
+    static double gr[NINT], gs[NINT], gt[NINT], gw[NINT];
+    gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = 1;
+    gr[1] = a; gs[1] = -a; gt[1] = -a; gw[1] = 1;
+    gr[2] = a; gs[2] = a; gt[2] = -a; gw[2] = 1;
+    gr[3] = -a; gs[3] = a; gt[3] = -a; gw[3] = 1;
+    gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = 1;
+    gr[5] = a; gs[5] = -a; gt[5] = a; gw[5] = 1;
+    gr[6] = a; gs[6] = a; gt[6] = a; gw[6] = 1;
+    gr[7] = -a; gs[7] = a; gt[7] = a; gw[7] = 1;
+    
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            PYRA5::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            PYRA5::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
+
+//-----------------------------------------------------------------------------
+double pyra13_volume(vec3d* r, bool bJ)
+{
+    const int NELN = 13;
+    const int NINT = 8;
+    
+    // integration point coordinates
+    const double a = 1.0 / sqrt(3.0);
+    static double gr[NINT], gs[NINT], gt[NINT], gw[NINT];
+    gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = 1;
+    gr[1] = a; gs[1] = -a; gt[1] = -a; gw[1] = 1;
+    gr[2] = a; gs[2] = a; gt[2] = -a; gw[2] = 1;
+    gr[3] = -a; gs[3] = a; gt[3] = -a; gw[3] = 1;
+    gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = 1;
+    gr[5] = a; gs[5] = -a; gt[5] = a; gw[5] = 1;
+    gr[6] = a; gs[6] = a; gt[6] = a; gw[6] = 1;
+    gr[7] = -a; gs[7] = a; gt[7] = a; gw[7] = 1;
+    
+    static double H[NINT][NELN] = { 0 };
+    static double Gr[NINT][NELN] = { 0 };
+    static double Gs[NINT][NELN] = { 0 };
+    static double Gt[NINT][NELN] = { 0 };
+    static bool bfirst = true;
+    
+    if (bfirst)
+    {
+        for (int n = 0; n<NINT; ++n)
+        {
+            // calculate shape function values at gauss points
+            PYRA13::shape(H[n], gr[n], gs[n], gt[n]);
+            
+            // calculate local derivatives of shape functions at gauss points
+            PYRA13::shape_deriv(Gr[n], Gs[n], Gt[n], gr[n], gs[n], gt[n]);
+        }
+        
+        bfirst = false;
+    }
+    
+    double J[3][3];
+    double vol = 0;
+    for (int n = 0; n<NINT; ++n)
+    {
+        double* Grn = Gr[n];
+        double* Gsn = Gs[n];
+        double* Gtn = Gt[n];
+        
+        J[0][0] = J[0][1] = J[0][2] = 0.0;
+        J[1][0] = J[1][1] = J[1][2] = 0.0;
+        J[2][0] = J[2][1] = J[2][2] = 0.0;
+        for (int i = 0; i<NELN; ++i)
+        {
+            double Gri = Grn[i];
+            double Gsi = Gsn[i];
+            double Gti = Gtn[i];
+            
+            double x = r[i].x;
+            double y = r[i].y;
+            double z = r[i].z;
+            
+            J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
+            J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
+            J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
+        }
+        
+        // calculate the determinant
+        double detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
+        + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
+        + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
+        
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        else vol += detJ*gw[n];
+    }
+    
+    return vol;
+}
+
+//-----------------------------------------------------------------------------
 // Calculate the volume of a pyramid element
 double FECoreMesh::PyramidVolume(const FEElement_& el)
 {
-	assert(el.Type() == FE_PYRA5);
-
-	// gauss-point data
-	const double a = 1.0 / sqrt(3.0);
-	const int NELN = 5;
-	const int NINT = 8;
-	static double gr[NINT] = { -a, a, a, -a, -a, a, a, -a };
-	static double gs[NINT] = { -a, -a, a, a, -a, -a, a, a };
-	static double gt[NINT] = { -a, -a, -a, -a, a, a, a, a };
-	static double gw[NINT] = { 1, 1, 1, 1, 1, 1, 1, 1 };
-
-	static double H[NINT][NELN] = { 0 };
-	static double Gr[NINT][NELN] = { 0 };
-	static double Gs[NINT][NELN] = { 0 };
-	static double Gt[NINT][NELN] = { 0 };
-	static bool bfirst = true;
-
-	if (bfirst)
-	{
-		int n;
-
-		// calculate shape function values at gauss points
-		for (n = 0; n<NINT; ++n)
-		{
-			H[n][0] = 0.125*(1 - gr[n])*(1 - gs[n])*(1 - gt[n]);
-			H[n][1] = 0.125*(1 + gr[n])*(1 - gs[n])*(1 - gt[n]);
-			H[n][2] = 0.125*(1 + gr[n])*(1 + gs[n])*(1 - gt[n]);
-			H[n][3] = 0.125*(1 - gr[n])*(1 + gs[n])*(1 - gt[n]);
-			H[n][4] = 0.5*(1 + gt[n]);
-		}
-
-		// calculate local derivatives of shape functions at gauss points
-		for (n = 0; n<NINT; ++n)
-		{
-			double r = gr[n], s = gs[n], t = gt[n];
-			Gr[n][0] = -0.125*(1.0 - s)*(1.0 - t);
-			Gr[n][1] = 0.125*(1.0 - s)*(1.0 - t);
-			Gr[n][2] = 0.125*(1.0 + s)*(1.0 - t);
-			Gr[n][3] = -0.125*(1.0 + s)*(1.0 - t);
-			Gr[n][4] = 0.0;
-
-			Gs[n][0] = -0.125*(1.0 - r)*(1.0 - t);
-			Gs[n][1] = -0.125*(1.0 + r)*(1.0 - t);
-			Gs[n][2] = 0.125*(1.0 + r)*(1.0 - t);
-			Gs[n][3] = 0.125*(1.0 - r)*(1.0 - t);
-			Gs[n][4] = 0.0;
-
-			Gt[n][0] = -0.125*(1.0 - r)*(1.0 - s);
-			Gt[n][1] = -0.125*(1.0 + r)*(1.0 - s);
-			Gt[n][2] = -0.125*(1.0 + r)*(1.0 + s);
-			Gt[n][3] = -0.125*(1.0 - r)*(1.0 + s);
-			Gt[n][4] = 0.5;
-		}
-
-		bfirst = false;
-	}
-
-	double *Grn, *Gsn, *Gtn;
-	double vol = 0, detJ;
-	double J[3][3];
-	int i, n;
-
-	vec3d rt[NELN];
-	for (i = 0; i<NELN; ++i) rt[i] = m_Node[el.m_node[i]].r;
-
-	for (n = 0; n<NINT; ++n)
-	{
-		Grn = Gr[n];
-		Gsn = Gs[n];
-		Gtn = Gt[n];
-
-		J[0][0] = J[0][1] = J[0][2] = 0.0;
-		J[1][0] = J[1][1] = J[1][2] = 0.0;
-		J[2][0] = J[2][1] = J[2][2] = 0.0;
-		for (i = 0; i<NELN; ++i)
-		{
-			double Gri = Grn[i];
-			double Gsi = Gsn[i];
-			double Gti = Gtn[i];
-
-			double x = rt[i].x;
-			double y = rt[i].y;
-			double z = rt[i].z;
-
-			J[0][0] += Gri*x; J[0][1] += Gsi*x; J[0][2] += Gti*x;
-			J[1][0] += Gri*y; J[1][1] += Gsi*y; J[1][2] += Gti*y;
-			J[2][0] += Gri*z; J[2][1] += Gsi*z; J[2][2] += Gti*z;
-		}
-
-		// calculate the determinant
-		detJ = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1])
-			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
-			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
-
-		vol += detJ*gw[n];
-	}
-
-	return vol;
+	assert((el.Type() == FE_PYRA5) || (el.Type() == FE_PYRA13));
+    
+    vec3d rt[FEElement::MAX_NODES];
+    for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
+    
+    switch (el.Type())
+    {
+        case FE_PYRA5:
+            return pyra5_volume(rt);
+            break;
+        case FE_PYRA13:
+            return pyra13_volume(rt);
+            break;
+    }
+    return 0.0;
 }
 
 //-----------------------------------------------------------------------------
