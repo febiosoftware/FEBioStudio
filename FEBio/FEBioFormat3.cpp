@@ -418,6 +418,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 	else if (strcmp(sztype, "tri6"  ) == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "pyra5") == 0) ntype = FE_PYRA5;
 	else if (strcmp(sztype, "penta15") == 0) ntype = FE_PENTA15;
+    else if (strcmp(sztype, "pyra13") == 0) ntype = FE_PYRA13;
 	else if (strcmp(sztype, "TET10G4"     ) == 0) ntype = FE_TET10;
 	else if (strcmp(sztype, "TET10G8"     ) == 0) ntype = FE_TET10;
 	else if (strcmp(sztype, "TET10GL11"   ) == 0) ntype = FE_TET10;

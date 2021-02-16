@@ -60,7 +60,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     for (int i=0; i<NE; ++i)
     {
         const FEElement_& el = pm->ElementRef(i);
-        if ((el.Type() == FE_HEX20) || (el.Type() == FE_PENTA15) || (el.Type() == FE_QUAD8) || (el.Type()==FE_TRI6))
+        if ((el.Type() == FE_HEX20) || (el.Type() == FE_PENTA15) || (el.Type() == FE_PYRA13) || (el.Type() == FE_QUAD8) || (el.Type()==FE_TRI6))
         {
             isQuad = true;
             break;
@@ -152,12 +152,16 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
             npos.push_back(node2.r);
             
             if(isQuad){
+                // setup rotation
+                double wl = w * (l - 0.5) / nseg;
+                quatd Q(wl, axis);
+                
                 // create middle node for quadratic meshes
                 FENode& node3 = pmnew->Node(1 + NN0 + (l - 1)*nn + node.m_ntag);
                 
-                if (l == 1) node3.r = pm->GlobalToLocal((node2.r + node.r) / 2.0);
-                else node3.r = pm->GlobalToLocal((node2.r + npos[l - 2]) / 2.0);
-                
+                vec3d r = pm->LocalToGlobal(node.r) - center;
+                Q.RotateVector(r);
+                node3.r = pm->GlobalToLocal(center + r);
                 node3.m_ntag = node.m_ntag;
             }
         }
@@ -181,43 +185,121 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                 int nf = face.Nodes();
                 FEElement& el = pmnew->Element(n);
                 
-                if(nf == 6)
+                if (nf == 6)
                 {
-                    el.SetType(FE_PENTA15);
-                    el.m_gid = nid;
+                    bool wedge = true;
+                    int NOA = 0;
+                    for (int j=0; j<nf; ++j)
+                    {
+                        if (pmnew->Node(face.n[j]).m_ntag == -2){
+                            wedge = false;
+                            NOA++;
+                        }
+                    }
                     
-                    el.m_node[0] = face.n[0];
-                    el.m_node[1] = face.n[1];
-                    el.m_node[2] = face.n[2];
-                    
-                    el.m_node[3] = NN0 + (l - 1)*nn + pmnew->Node(face.n[0]).m_ntag;
-                    el.m_node[4] = NN0 + (l - 1)*nn + pmnew->Node(face.n[1]).m_ntag;
-                    el.m_node[5] = NN0 + (l - 1)*nn + pmnew->Node(face.n[2]).m_ntag;
-                    
-                    el.m_node[6] = face.n[3];
-                    el.m_node[7] = face.n[4];
-                    el.m_node[8] = face.n[5];
-                    
-                    el.m_node[ 9] = NN0 + (l - 1)*nn + pmnew->Node(face.n[3]).m_ntag;
-                    el.m_node[10] = NN0 + (l - 1)*nn + pmnew->Node(face.n[4]).m_ntag;
-                    el.m_node[11] = NN0 + (l - 1)*nn + pmnew->Node(face.n[5]).m_ntag;
-                    
-                    el.m_node[12] = 1 + NN0 + (l - 1)*nn + pmnew->Node(face.n[0]).m_ntag;
-                    el.m_node[13] = 1 + NN0 + (l - 1)*nn + pmnew->Node(face.n[1]).m_ntag;
-                    el.m_node[14] = 1 + NN0 + (l - 1)*nn + pmnew->Node(face.n[2]).m_ntag;
-                    
-                    // move the face
-                    face.n[0] = el.m_node[ 3];
-                    face.n[1] = el.m_node[ 4];
-                    face.n[2] = el.m_node[ 5];
-                    
-                    face.n[3] = el.m_node[ 9];
-                    face.n[4] = el.m_node[10];
-                    face.n[5] = el.m_node[11];
-                    face.m_elem[0].eid = n;
-                    face.m_elem[1].eid = -1;
-                    ++n;
-                    
+                    if (wedge == true) {
+                        el.SetType(FE_PENTA15);
+                        el.m_gid = nid;
+                        
+                        el.m_node[0] = face.n[0];
+                        el.m_node[1] = face.n[1];
+                        el.m_node[2] = face.n[2];
+                        
+                        el.m_node[3] = NN0 + (l - 1)*nn + pmnew->Node(face.n[0]).m_ntag;
+                        el.m_node[4] = NN0 + (l - 1)*nn + pmnew->Node(face.n[1]).m_ntag;
+                        el.m_node[5] = NN0 + (l - 1)*nn + pmnew->Node(face.n[2]).m_ntag;
+                        
+                        el.m_node[6] = face.n[3];
+                        el.m_node[7] = face.n[4];
+                        el.m_node[8] = face.n[5];
+                        
+                        el.m_node[ 9] = NN0 + (l - 1)*nn + pmnew->Node(face.n[3]).m_ntag;
+                        el.m_node[10] = NN0 + (l - 1)*nn + pmnew->Node(face.n[4]).m_ntag;
+                        el.m_node[11] = NN0 + (l - 1)*nn + pmnew->Node(face.n[5]).m_ntag;
+                        
+                        el.m_node[12] = 1 + NN0 + (l - 1)*nn + pmnew->Node(face.n[0]).m_ntag;
+                        el.m_node[13] = 1 + NN0 + (l - 1)*nn + pmnew->Node(face.n[1]).m_ntag;
+                        el.m_node[14] = 1 + NN0 + (l - 1)*nn + pmnew->Node(face.n[2]).m_ntag;
+                        
+                        // move the face
+                        face.n[0] = el.m_node[ 3];
+                        face.n[1] = el.m_node[ 4];
+                        face.n[2] = el.m_node[ 5];
+                        
+                        face.n[3] = el.m_node[ 9];
+                        face.n[4] = el.m_node[10];
+                        face.n[5] = el.m_node[11];
+                        face.m_elem[0].eid = n;
+                        face.m_elem[1].eid = -1;
+                        ++n;
+                    }
+                    else {
+                        for(int j = 0; j < 3; j++){
+                            int n0 = face.n[j];
+                            int n1 = face.n[(j + 1) % 3];
+                            int n2 = face.n[(j + 2) % 3];
+                            int n3 = face.n[j + 3];
+                            int n4 = face.n[((j + 1) % 3) + 3];
+                            int n5 = face.n[((j + 2) % 3) + 3];
+
+                            if (NOA==1) {
+                                el.SetType(FE_PYRA13);
+                                el.m_gid = nid;
+                                
+                                if (pmnew->Node(n0).m_ntag == -2) {
+                                    el.m_node[0] = n1;
+                                    el.m_node[1] = n2;
+                                    el.m_node[2] = NN0 + (l - 1)*nn + pmnew->Node(n2).m_ntag;
+                                    el.m_node[3] = NN0 + (l - 1)*nn + pmnew->Node(n1).m_ntag;
+                                    el.m_node[4] = n0;
+                                    el.m_node[5] = n4;
+                                    el.m_node[6] = 1 + NN0 + (l - 1)*nn + pmnew->Node(n2).m_ntag;
+                                    el.m_node[7] = NN0 + (l - 1)*nn + pmnew->Node(n4).m_ntag;
+                                    el.m_node[8] = 1 + NN0 + (l - 1)*nn + pmnew->Node(n1).m_ntag;
+                                    el.m_node[9] = n3;
+                                    el.m_node[10] = n5;
+                                    el.m_node[11] = NN0 + (l - 1)*nn + pmnew->Node(n5).m_ntag;
+                                    el.m_node[12] = NN0 + (l - 1)*nn + pmnew->Node(n3).m_ntag;
+                                    
+                                    // move the face
+                                    face.n[(j + 1) % 3] = el.m_node[3];
+                                    face.n[(j + 2) % 3] = el.m_node[2];
+                                    face.n[j + 3] = el.m_node[12];
+                                    face.n[((j + 1) % 3) + 3] = el.m_node[7];
+                                    face.n[((j + 2) % 3) + 3] = el.m_node[11];
+                                    
+                                    break;
+                                }
+                                
+                            }
+                            else {
+                                el.SetType(FE_TET10);
+                                el.m_gid = nid;
+                                
+                                if ((pmnew->Node(n0).m_ntag == -2) && (pmnew->Node(n1).m_ntag == -2)){
+                                    el.m_node[0] = n2;
+                                    el.m_node[1] = NN0 + (l - 1)*nn + pmnew->Node(n2).m_ntag;
+                                    el.m_node[2] = n1;
+                                    el.m_node[3] = n0;
+                                    el.m_node[4] = 1 + NN0 + (l - 1)*nn + pmnew->Node(n2).m_ntag;
+                                    el.m_node[5] = NN0 + (l - 1)*nn + pmnew->Node(n4).m_ntag;
+                                    el.m_node[6] = n4;
+                                    el.m_node[7] = n5;
+                                    el.m_node[8] = NN0 + (l - 1)*nn + pmnew->Node(n5).m_ntag;
+                                    el.m_node[9] = n3;
+
+                                    // move the face
+                                    face.n[(j + 2) % 3] = el.m_node[1];
+                                    face.n[((j + 1) % 3) + 3] = el.m_node[5];
+                                    face.n[((j + 2) % 3) + 3] = el.m_node[8];
+                                    break;
+                                }
+                            }
+                        }
+                        face.m_elem[0].eid = n;
+                        face.m_elem[1].eid = -1;
+                        ++n;
+                    }
                 }
                 else if(nf == 3)
                 {
@@ -261,15 +343,15 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                                 el.m_gid = nid;
                                 
                                 if (pmnew->Node(n0).m_ntag == -2){
-                                    el.m_node[0] = NN0 + (l - 1)*nn + pmnew->Node(n2).m_ntag;
+                                    el.m_node[0] = n1;
                                     el.m_node[1] = n2;
-                                    el.m_node[2] = n1;
+                                    el.m_node[2] = NN0 + (l - 1)*nn + pmnew->Node(n2).m_ntag;
                                     el.m_node[3] = NN0 + (l - 1)*nn + pmnew->Node(n1).m_ntag;
                                     el.m_node[4] = n0;
                                     
                                     // move the face
-                                    face.n[(j + 2) % nf] = el.m_node[0];
                                     face.n[(j + 1) % nf] = el.m_node[3];
+                                    face.n[(j + 2) % nf] = el.m_node[2];
                                     
                                     break;
                                 }

@@ -47,6 +47,7 @@ extern int ET_PENTA[9][2];
 extern int ET_PENTA15[9][3];
 extern int ET_TET10[6][3];
 extern int ET_PYRA5[8][2];
+extern int ET_PYRA13[8][3];
 
 //-----------------------------------------------------------------------------
 // constructor

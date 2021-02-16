@@ -132,3 +132,5 @@ float IntegrateHex(vec3f* r, float* v);
 double hex8_volume(vec3d* r);
 double tet4_volume(vec3d* r);
 double tet10_volume(vec3d* r);
+double pyra5_volume(vec3d* r, bool bJ = false);
+double pyra13_volume(vec3d* r, bool bJ = false);

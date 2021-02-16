@@ -100,6 +100,8 @@ public:
 
 	CFEBioJob* FindFEBioJob(const std::string& s);
 
+	void DeleteAllJobs();
+
 public:
 	bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt);
 

@@ -809,6 +809,12 @@ double element_volume(int ntype, vec3d* r)
 	case FE_HEX27:
 		return hex8_volume(r);
 		break;
+    case FE_PYRA5:
+        return pyra5_volume(r);
+        break;
+    case FE_PYRA13:
+        return pyra13_volume(r);
+        break;
 	}
 	return 0.0;
 }

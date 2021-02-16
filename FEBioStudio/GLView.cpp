@@ -111,6 +111,7 @@ const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
 extern int LUT[256][15]; 
 extern int ET_HEX[12][2];
 extern int ET_TET[6][2];
+extern int ET_PYR[8][2];
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
@@ -7680,6 +7681,7 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, c); break;
 					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
 					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
+                    case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, true); break;
 					case FE_BEAM2 : break;
 					case FE_BEAM3 : break;
 					default:
@@ -7733,6 +7735,7 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, true); break;
 					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
 					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
+                    case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, true); break;
 					case FE_BEAM2 : break;
 					case FE_BEAM3 : break;
 					default:
@@ -7780,6 +7783,7 @@ void CGLView::RenderFEElements(GObject* po)
 				case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, false); break;
 				case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, false); break;
 				case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, false); break;
+                case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, false); break;
 				case FE_BEAM2 : break;
 				case FE_BEAM3 : break;
 				default:
@@ -7834,6 +7838,20 @@ void CGLView::RenderFEElements(GObject* po)
 						glx::vertex3d(r1);
 					}
 					break;
+                case FE_PYRA5:
+                case FE_PYRA13:
+                    for (int j = 0; j < 8; ++j)
+                    {
+                        int n0 = el.m_node[ET_PYR[j][0]];
+                        int n1 = el.m_node[ET_PYR[j][1]];
+                            
+                        vec3d r0 = pm->Node(n0).pos();
+                        vec3d r1 = pm->Node(n1).pos();
+                            
+                        glx::vertex3d(r0);
+                        glx::vertex3d(r1);
+                    }
+                    break;
 				case FE_TRI3:
 				case FE_QUAD4:
 					for (int i = 0; i < ne; ++i)
@@ -8129,6 +8147,46 @@ void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
 
 				}
 				break;
+            case FE_PYRA13:
+                {
+                    glBegin(GL_TRIANGLES);
+                    {
+                        for (j = 0; j<4; j++)
+                        {
+                            const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
+                            const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
+                            const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
+                            
+                            vec3d n = (r2 - r1) ^ (r3 - r1);
+                            n.Normalize();
+                            
+                            glNormal3d(n.x, n.y, n.z);
+                            glVertex3d(r1.x, r1.y, r1.z);
+                            glVertex3d(r2.x, r2.y, r2.z);
+                            glVertex3d(r3.x, r3.y, r3.z);
+                        }
+                    }
+                    glEnd();
+                    
+                    glBegin(GL_QUADS);
+                    {
+                        const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
+                        const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
+                        const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
+                        const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
+                        
+                        vec3d n = (r2 - r1) ^ (r3 - r1);
+                        n.Normalize();
+                        
+                        glNormal3d(n.x, n.y, n.z);
+                        glVertex3d(r1.x, r1.y, r1.z);
+                        glVertex3d(r2.x, r2.y, r2.z);
+                        glVertex3d(r3.x, r3.y, r3.z);
+                        glVertex3d(r4.x, r4.y, r4.z);
+                    }
+                    glEnd();
+                    
+                }
 			case FE_QUAD4:
 			case FE_QUAD8:
 			case FE_QUAD9:
@@ -8401,6 +8459,54 @@ void CGLView::RenderMeshLines(GObject* po)
 				}
 				break;
 
+            case FE_PYRA13:
+                {
+                    for (int j = 0; j<4; j++)
+                    {
+                        glBegin(GL_LINE_LOOP);
+                        {
+                            const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
+                            const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
+                            const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
+                            const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[j][3]]).r;
+                            const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[j][4]]).r;
+                            const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[j][5]]).r;
+
+                            glVertex3d(r1.x, r1.y, r1.z);
+                            glVertex3d(r4.x, r4.y, r4.z);
+                            glVertex3d(r2.x, r2.y, r2.z);
+                            glVertex3d(r5.x, r5.y, r5.z);
+                            glVertex3d(r3.x, r3.y, r3.z);
+                            glVertex3d(r6.x, r6.y, r6.z);
+                        }
+                        glEnd();
+                    }
+                    
+                    glBegin(GL_LINE_LOOP);
+                    {
+                        const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
+                        const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
+                        const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
+                        const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
+                        const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[4][4]]).r;
+                        const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[4][5]]).r;
+                        const vec3d& r7 = pm->Node(e.m_node[FTPYRA13[4][6]]).r;
+                        const vec3d& r8 = pm->Node(e.m_node[FTPYRA13[4][7]]).r;
+
+                        glVertex3d(r1.x, r1.y, r1.z);
+                        glVertex3d(r5.x, r5.y, r5.z);
+                        glVertex3d(r2.x, r2.y, r2.z);
+                        glVertex3d(r6.x, r6.y, r6.z);
+                        glVertex3d(r3.x, r3.y, r3.z);
+                        glVertex3d(r7.x, r7.y, r7.z);
+                        glVertex3d(r4.x, r4.y, r4.z);
+                        glVertex3d(r8.x, r8.y, r8.z);
+                    }
+                    glEnd();
+                    
+                }
+                    break;
+                    
 			case FE_TET4:
 			case FE_TET5:
 			case FE_TET20:
@@ -9054,6 +9160,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 						case FE_TET15: nt = TET_NT; break;
 						case FE_TET20: nt = TET_NT; break;
 						case FE_PYRA5: nt = PYR_NT; break;
+                        case FE_PYRA13: nt = PYR_NT; break;
 						default:
 							assert(false);
 						}

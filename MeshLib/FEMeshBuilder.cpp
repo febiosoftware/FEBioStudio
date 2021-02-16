@@ -828,6 +828,19 @@ void FEMeshBuilder::InvertTaggedFaces(int ntag)
 				m = f.n[0]; f.n[0] = f.n[2]; f.n[2] = m;
 			}
 			break;
+            case FE_FACE_TRI6:
+            {
+                m = f.n[0]; f.n[0] = f.n[2]; f.n[2] = m;
+                m = f.n[3]; f.n[3] = f.n[4]; f.n[4] = m;
+            }
+            break;
+            case FE_FACE_QUAD8:
+            {
+                m = f.n[0]; f.n[0] = f.n[2]; f.n[2] = m;
+                m = f.n[4]; f.n[4] = f.n[5]; f.n[5] = m;
+                m = f.n[6]; f.n[6] = f.n[7]; f.n[7] = m;
+            }
+            break;
 			default:
 				assert(false);
 			}
@@ -917,6 +930,14 @@ void FEMeshBuilder::InvertTaggedElements(int ntag)
 				m = e.m_node[1]; e.m_node[1] = e.m_node[3]; e.m_node[3] = m;
 			}
 			break;
+            case FE_PYRA13:
+            {
+                m = e.m_node[1];  e.m_node[1]  = e.m_node[3];  e.m_node[3] = m;
+                m = e.m_node[5];  e.m_node[5]  = e.m_node[8];  e.m_node[8] = m;
+                m = e.m_node[6];  e.m_node[6]  = e.m_node[7];  e.m_node[7] = m;
+                m = e.m_node[10]; e.m_node[10] = e.m_node[12]; e.m_node[12] = m;
+            }
+            break;
 			default:
 				assert(false);
 			}

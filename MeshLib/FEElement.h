@@ -56,7 +56,8 @@ enum FEElementType {
 	FE_PYRA5,
 	FE_TET20,
 	FE_TRI10,
-	FE_TET5
+	FE_TET5,
+    FE_PYRA13
 };
 
 //-----------------------------------------------------------------------------
@@ -247,6 +248,7 @@ template <> class FEElementTraits<FE_HEX20  > { public: enum { Nodes = 20 }; enu
 template <> class FEElementTraits<FE_HEX27  > { public: enum { Nodes = 27 }; enum { Faces = 6 }; enum { Edges = 0 }; static FEElementType Type() { return FE_HEX27; } };
 template <> class FEElementTraits<FE_PYRA5  > { public: enum { Nodes = 5 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA5; } };
 template <> class FEElementTraits<FE_TET5   > { public: enum { Nodes = 5 }; enum { Faces = 4 }; enum { Edges = 0 }; static FEElementType Type() { return FE_TET5; } };
+template <> class FEElementTraits<FE_PYRA13 > { public: enum { Nodes = 13 }; enum { Faces = 5 }; enum { Edges = 0 }; static FEElementType Type() { return FE_PYRA13; } };
 
 template <class T> class FEElementBase : public FEElement_
 {
@@ -299,6 +301,7 @@ typedef FEElementBase< FEElementTraits<FE_HEX20  > > FEHex20;
 typedef FEElementBase< FEElementTraits<FE_HEX27  > > FEHex27;
 typedef FEElementBase< FEElementTraits<FE_PYRA5  > > FEPyra5;
 typedef FEElementBase< FEElementTraits<FE_TET5   > > FETet5;
+typedef FEElementBase< FEElementTraits<FE_PYRA13 > > FEPyra13;
 
 //-----------------------------------------------------------------------------
 // This element class can represent any of the linear elements.

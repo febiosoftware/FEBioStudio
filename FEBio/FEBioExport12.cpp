@@ -1246,6 +1246,7 @@ void FEBioExport12::WriteGeometryElements()
 		XMLElement tet10;
 		XMLElement tet15;
 		XMLElement pyra5;
+        XMLElement pyra13;
 
 		hex8.name("hex8");
 		int n1 = hex8.add_attribute("id", 0);
@@ -1255,6 +1256,10 @@ void FEBioExport12::WriteGeometryElements()
 		pyra5.add_attribute("id", 0);
 		pyra5.add_attribute("mat", 0);
 
+        pyra13.name("pyra13");
+        pyra13.add_attribute("id", 0);
+        pyra13.add_attribute("mat", 0);
+        
 		hex20.name("hex20");
 		hex20.add_attribute("id", 0);
 		hex20.add_attribute("mat", 0);
@@ -1327,6 +1332,15 @@ void FEBioExport12::WriteGeometryElements()
 					m_xml.add_leaf(pyra5, false);
 				}
 				break;
+                case FE_PYRA13:
+                {
+                    e.m_ntag = n;
+                    pyra13.set_attribute(n1, n++);
+                    pyra13.set_attribute(n2, nmat);
+                    pyra13.value(nn, 13);
+                    m_xml.add_leaf(pyra13, false);
+                }
+                break;
 				case FE_HEX20:
 				{
 								 e.m_ntag = n;

@@ -40,6 +40,7 @@
 		D54DD6321F8D46B70083D517 /* FEMeshBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D54DD62E1F8D46B70083D517 /* FEMeshBase.cpp */; };
 		D570C91D204A301400E2A1B9 /* FELineMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D570C91B204A301400E2A1B9 /* FELineMesh.cpp */; };
 		D570C91E204A301400E2A1B9 /* FELineMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = D570C91C204A301400E2A1B9 /* FELineMesh.h */; };
+		D578387525D9CCAA006C55BE /* pyra13.h in Headers */ = {isa = PBXBuildFile; fileRef = D578387325D9CCAA006C55BE /* pyra13.h */; };
 		D5A49E441FD74D4F0083510E /* insertCurve.h in Headers */ = {isa = PBXBuildFile; fileRef = D5A49E401FD74D4E0083510E /* insertCurve.h */; };
 		D5A49E451FD74D4F0083510E /* insertCurve2.h in Headers */ = {isa = PBXBuildFile; fileRef = D5A49E411FD74D4E0083510E /* insertCurve2.h */; };
 		D5A49E461FD74D4F0083510E /* insertCurve2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5A49E421FD74D4F0083510E /* insertCurve2.cpp */; };
@@ -111,6 +112,7 @@
 		D54DD62E1F8D46B70083D517 /* FEMeshBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FEMeshBase.cpp; sourceTree = "<group>"; };
 		D570C91B204A301400E2A1B9 /* FELineMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FELineMesh.cpp; sourceTree = "<group>"; };
 		D570C91C204A301400E2A1B9 /* FELineMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FELineMesh.h; sourceTree = "<group>"; };
+		D578387325D9CCAA006C55BE /* pyra13.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pyra13.h; sourceTree = "<group>"; };
 		D5A49E401FD74D4E0083510E /* insertCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = insertCurve.h; sourceTree = "<group>"; };
 		D5A49E411FD74D4E0083510E /* insertCurve2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = insertCurve2.h; sourceTree = "<group>"; };
 		D5A49E421FD74D4F0083510E /* insertCurve2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = insertCurve2.cpp; sourceTree = "<group>"; };
@@ -244,6 +246,7 @@
 				D53293A71E4A8454002798B3 /* TriMesh.cpp */,
 				D53293A81E4A8454002798B3 /* TriMesh.h */,
 				D5215EE71F018C3300838680 /* TriMesh2D.h */,
+				D578387325D9CCAA006C55BE /* pyra13.h */,
 			);
 			name = MeshLib;
 			path = ../../MeshLib;
@@ -286,6 +289,7 @@
 				D5ED25EE23197A1F00C16BF7 /* hex20.h in Headers */,
 				D54DD6311F8D46B70083D517 /* FEMeshBase.h in Headers */,
 				D53293B01E4A8454002798B3 /* FEEdge.h in Headers */,
+				D578387525D9CCAA006C55BE /* pyra13.h in Headers */,
 				D53293AC1E4A8454002798B3 /* FECoreMesh.h in Headers */,
 				D5B42D6C1FA1004600C56FCE /* FENodeNodeList.h in Headers */,
 				D570C91E204A301400E2A1B9 /* FELineMesh.h in Headers */,

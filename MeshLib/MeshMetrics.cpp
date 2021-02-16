@@ -98,11 +98,20 @@ int FTPYRA5[5][4] = {
 	{ 3, 2, 1, 0 }
 };
 
+int FTPYRA13[5][8] = {
+    { 0, 1, 4, 5, 10,  9, -1, -1 },
+    { 1, 2, 4, 6, 11, 10, -1, -1 },
+    { 2, 3, 4, 7, 12, 11, -1, -1 },
+    { 3, 0, 4, 8,  9, 12, -1, -1 },
+    { 3, 2, 1, 0,  7,  6,  5,  8 }
+};
+
 //-----------------------------------------------------------------------
 // in MeshTools\lut.cpp
 extern int ET_HEX[12][2];
 extern int ET_TET[6][2];
 extern int ET_PENTA[9][2];
+extern int ET_PYRA5[8][2];
 
 // in FEElement.cpp
 extern int ET_TRI[3][2];
@@ -231,14 +240,6 @@ const double GHEX20[20][20][3] = {
     {{0.5, 0, 0},{0.5, -0.5, -0.5},{0, -0.5, 0},{0, 0, 0},{0.5, 0, 0},{0.5, -0.5, 0.5},{0, -0.5, 0},{0, 0, 0},{-1, 0, 0},{0, 1, 0},{0, 0, 0},{0, 0, 0},{-1, 0, 0},{0, 1, 0},{0, 0, 0},{0, 0, 0},{-0.5, 0, 0},{0.5, -0.5, 0},{0, 0.5, 0},{0, 0, 0}},
     {{0, 0, 0},{0, 0.5, 0},{0.5, 0.5, -0.5},{0.5, 0, 0},{0, 0, 0},{0, 0.5, 0},{0.5, 0.5, 0.5},{0.5, 0, 0},{0, 0, 0},{0, -1, 0},{-1, 0, 0},{0, 0, 0},{0, 0, 0},{0, -1, 0},{-1, 0, 0},{0, 0, 0},{0, 0, 0},{0, -0.5, 0},{0.5, 0.5, 0},{-0.5, 0, 0}},
     {{0, 0.5, 0},{0, 0, 0},{-0.5, 0, 0},{-0.5, 0.5, -0.5},{0, 0.5, 0},{0, 0, 0},{-0.5, 0, 0},{-0.5, 0.5, 0.5},{0, 0, 0},{0, 0, 0},{1, 0, 0},{0, -1, 0},{0, 0, 0},{0, 0, 0},{1, 0, 0},{0, -1, 0},{0, -0.5, 0},{0, 0, 0},{0.5, 0, 0},{-0.5, 0.5, 0}}
-};
-
-const double GPYRA5[5][5][3] = {
-    {{-0.5,-0.5,-0.5},{0.5,0.,0.},{0.,0.,0.},{0.,0.5,0.},{0.,0.,0.5}},
-    {{-0.5,0.,0.},{0.5,-0.5,-0.5},{0.,0.5,0.},{0.,0.,0.},{0.,0.,0.5}},
-    {{0.,0.,0.},{0.,-0.5,0.},{0.5,0.5,-0.5},{-0.5,0.,0.},{0.,0.,0.5}},
-    {{0.,-0.5,0.},{0.,0.,0.},{0.5,0.,0.},{-0.5,0.5,-0.5},{0.,0.,0.5}},
-    {{0.,0.,0.},{0.,0.,0.},{0.,0.,-0.5},{0.,0.,0.},{0.,0.,0.5}}
 };
 
 /*
@@ -623,24 +624,36 @@ double SolidJacobian(const FEMesh& mesh, const FEElement& el)
 	}
 	break;
     case FE_HEX20:
+    {
+        double dmin = 0;
+        double d = 0;
+        for (int i = 0; i<n; ++i)
         {
-            double dmin = 0;
-            double d = 0;
-            for (int i = 0; i<n; ++i)
-            {
-                vec3d gr(0,0,0), gs(0,0,0), gt(0,0,0);
-                for (int j=0; j<20; ++j) {
-                    gr += r[j]*GHEX20[i][j][0];
-                    gs += r[j]*GHEX20[i][j][1];
-                    gt += r[j]*GHEX20[i][j][2];
-                }
-                double dv = (gr ^ gs)*gt;
-                if (i < 8) d -= dv;
-                else d += dv*4./3.;
+            vec3d gr(0,0,0), gs(0,0,0), gt(0,0,0);
+            for (int j=0; j<20; ++j) {
+                gr += r[j]*GHEX20[i][j][0];
+                gs += r[j]*GHEX20[i][j][1];
+                gt += r[j]*GHEX20[i][j][2];
             }
-            val = ( d < dmin) ? dmin : d/8;
+            double dv = (gr ^ gs)*gt;
+            if (i < 8) d -= dv;
+            else d += dv*4./3.;
         }
-            break;
+        val = ( d < dmin) ? dmin : d/8;
+    }
+    break;
+    case FE_PYRA5:
+        {
+            // use flag 'true' to evaluate min Jacobian
+            val = pyra5_volume(r, true);
+        }
+    break;
+    case FE_PYRA13:
+        {
+            // use flag 'true' to evaluate min Jacobian
+            val = pyra13_volume(r, true);
+        }
+    break;
 	}
 
 	return val;
@@ -687,8 +700,12 @@ double ElementVolume(const FEMesh& mesh, const FEElement &e)
 	switch (e.Type())
 	{
 	case FE_TET4:
+            return tet4_volume(r);
+            break;
+    case FE_TET10:
+            return tet10_volume(r);
+            break;
 	case FE_TET5:
-	case FE_TET10: // TODO: implement for tet10
 	case FE_TET15: // TODO: implement for tet15
 	case FE_TET20: // TODO: implement for tet20
 	{
@@ -699,22 +716,8 @@ double ElementVolume(const FEMesh& mesh, const FEElement &e)
 	}
 	break;
 	case FE_HEX8:
-        {
-            double w = 1.0, V = 0;
-            for (int i = 0; i<8; ++i)
-            {
-                double J[3][3] = { 0 };
-                for (int j = 0; j<n; ++j)
-                {
-                    J[0][0] += GHEX8[i][j][0] * r[j].x; J[0][1] += GHEX8[i][j][0] * r[j].y; J[0][2] += GHEX8[i][j][0] * r[j].z;
-                    J[1][0] += GHEX8[i][j][1] * r[j].x; J[1][1] += GHEX8[i][j][1] * r[j].y; J[1][2] += GHEX8[i][j][1] * r[j].z;
-                    J[2][0] += GHEX8[i][j][2] * r[j].x; J[2][1] += GHEX8[i][j][2] * r[j].y; J[2][2] += GHEX8[i][j][2] * r[j].z;
-                }
-                double d = J[0][0] * (J[1][1] * J[2][2] - J[1][2] * J[2][1]) + J[0][1] * (J[1][2] * J[2][0] - J[1][0] * J[2][2]) + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
-                V += w*d;
-            }
-            return V;
-        }
+            return hex8_volume(r);
+            break;
 	case FE_HEX20:
         {
             double V = 0;
@@ -735,6 +738,7 @@ double ElementVolume(const FEMesh& mesh, const FEElement &e)
             }
             return V;
         }
+            break;
 	case FE_HEX27:
 	{
 		return 0;
@@ -780,25 +784,10 @@ double ElementVolume(const FEMesh& mesh, const FEElement &e)
         }
 	break;
     case FE_PYRA5:
-        {
-            double V = 0;
-            double s[] = { 2./3., 2./3., 2./3., 2./3., 0. };
-            for (int i = 0; i<n; ++i)
-            {
-                // evaluate covariant basis vectors
-                vec3d gr(0,0,0), gs(0,0,0), gt(0,0,0);
-                for (int j=0; j<5; ++j) {
-                    gr += r[j]*GPYRA5[i][j][0];
-                    gs += r[j]*GPYRA5[i][j][1];
-                    gt += r[j]*GPYRA5[i][j][2];
-                }
-                // evaluate elemental volume
-                double dv = (gr ^ gs)*gt;
-                // integrate over all nodes
-                V += dv*s[i];
-            }
-            return V;
-        }
+            return pyra5_volume(r);
+            break;
+    case FE_PYRA13:
+            return pyra13_volume(r);
             break;
 	default:
 		return 0;
@@ -1090,6 +1079,7 @@ double MinEdgeLength(const FEMesh& mesh, const FEElement& e)
 	case ELEM_HEX  : edges = 12; ET = ET_HEX  ; break;
 	case ELEM_TET  : edges =  6; ET = ET_TET  ; break;
 	case ELEM_PENTA: edges =  9; ET = ET_PENTA; break;
+    case ELEM_PYRA : edges =  8; ET = ET_PYRA5; break;
 	case ELEM_TRI  : edges =  3; ET = ET_TRI  ; break;
 	case ELEM_QUAD : edges =  4; ET = ET_QUAD ; break;
 	default:
@@ -1124,6 +1114,7 @@ double MaxEdgeLength(const FEMesh& mesh, const FEElement& e)
 	case ELEM_HEX  : edges = 12; ET = ET_HEX  ; break;
 	case ELEM_TET  : edges =  6; ET = ET_TET  ; break;
 	case ELEM_PENTA: edges =  9; ET = ET_PENTA; break;
+    case ELEM_PYRA : edges =  8; ET = ET_PYRA5; break;
 	case ELEM_TRI  : edges =  3; ET = ET_TRI  ; break;
 	case ELEM_QUAD : edges =  4; ET = ET_QUAD ; break;
 	default:
