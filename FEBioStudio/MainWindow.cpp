@@ -254,7 +254,7 @@ bool CMainWindow::usingDarkTheme() const
 	{
 		QColor text = qApp->palette().color(QPalette::Text);
 
-		dark = (text.red() + text.green() + text.blue())/3 < 128;
+		dark = (text.red() + text.green() + text.blue())/3 >= 128;
 	}
 #endif
 
