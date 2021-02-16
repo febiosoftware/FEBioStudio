@@ -1321,7 +1321,9 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 		{
 			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
-				if (m_ar.GetChunkID() == PLT_STATE_HDR_TIME) m_ar.read(ps->m_time);
+				int nid = m_ar.GetChunkID();
+				if (nid == PLT_STATE_HDR_TIME) m_ar.read(ps->m_time);
+				if (nid == PLT_STATE_STATUS  ) m_ar.read(ps->m_status);
 				m_ar.CloseChunk();
 			}
 		}
