@@ -96,7 +96,7 @@ bool xpltFileReader::Load(const char* szfile)
 	else if (m_hdr.nversion <= 0x08) m_xplt = new XpltReader2(this);
 	else
 	{
-		assert(m_hdr.nversion == 0x0030);
+		assert((m_hdr.nversion == 0x0030) || (m_hdr.nversion == 0x0031));
 		m_xplt = new XpltReader3(this);
 	}
 

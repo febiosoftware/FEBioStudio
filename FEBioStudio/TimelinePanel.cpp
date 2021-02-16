@@ -68,9 +68,13 @@ void CTimelinePanel::Update(bool reset)
 			{
 				ui->timeline->clearData();
 				FEPostModel& fem = *doc->GetFEModel();
-				vector<double> data(fem.GetStates());
+				vector< pair<double, int> > data(fem.GetStates());
 				int nstates = fem.GetStates();
-				for (int i = 0; i < nstates; ++i) data[i] = fem.GetState(i)->m_time;
+				for (int i = 0; i < nstates; ++i)
+				{
+					data[i].first = fem.GetState(i)->m_time;
+					data[i].second = fem.GetState(i)->m_status;
+				}
 
 				ui->timeline->setTimePoints(data);
 
