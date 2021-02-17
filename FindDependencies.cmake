@@ -1,5 +1,5 @@
 # Qt
-find_package(Qt5 COMPONENTS Widgets Gui Network OpenGL Charts REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Gui Network OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS WebEngineWidgets QUIET)
 mark_as_advanced(Qt5Charts_DIR Qt5Core_DIR Qt5Gui_DIR Qt5Network_DIR Qt5OpenGL_DIR Qt5Positioning_DIR 
     Qt5PrintSupport_DIR Qt5QmlModels_DIR Qt5Qml_DIR Qt5Quick_DIR Qt5WebChannel_DIR Qt5WebEngineCore_DIR 

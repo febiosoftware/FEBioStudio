@@ -186,7 +186,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 #endif
 
 	// Instantiate IconProvider singleton
-	CIconProvider::Instantiate(ui->m_theme, devicePixelRatio());
+	CIconProvider::Instantiate(usingDarkTheme(), devicePixelRatio());
 
 	// setup the GUI
 	ui->setupUi(this);
@@ -241,6 +241,24 @@ CMainWindow::~CMainWindow()
 int CMainWindow::currentTheme() const
 {
 	return ui->m_theme;
+}
+
+//-----------------------------------------------------------------------------
+// check for dark theme
+bool CMainWindow::usingDarkTheme() const
+{
+	bool dark = currentTheme() == 1 || currentTheme() == 3;
+
+#ifdef __APPLE__
+	if(!dark)
+	{
+		QColor text = qApp->palette().color(QPalette::Text);
+
+		dark = (text.red() + text.green() + text.blue())/3 >= 128;
+	}
+#endif
+
+	return dark;
 }
 
 //-----------------------------------------------------------------------------

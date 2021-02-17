@@ -26,8 +26,6 @@ SOFTWARE.*/
 
 
 #include "stdafx.h"
-#include <libssh/libssh.h>
-#include <libssh/sftp.h>
 #include <string.h>
 #include <string>
 #include <fstream>
@@ -48,6 +46,11 @@ SOFTWARE.*/
 #ifdef WIN32
 #define S_IRWXU (0400|0200|0100)
 #endif
+
+#ifdef HAS_SSH
+
+#include <libssh/libssh.h>
+#include <libssh/sftp.h>
 
 class CSSHHandler::SSHData
 {
@@ -70,7 +73,7 @@ public:
 	bool orphan;
 };
 
-#ifdef HAS_SSH
+
 
 CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) // @suppress("Class members should be properly initialized")
 {
@@ -1312,6 +1315,12 @@ std::string CSSHHandler::GetSFTPErrorText(int sftpErr)
 }
 
 #else
+class CSSHHandler::SSHData
+{
+public:
+	std::vector<unsigned char> passwdEnc;
+};
+
 CSSHHandler::CSSHHandler (CFEBioJob* job) : m_data(new CSSHHandler::SSHData) {}
 CSSHHandler::~CSSHHandler() {delete m_data;}
 void CSSHHandler::Update(CLaunchConfig& oldConfig) {}

@@ -326,9 +326,13 @@ QTreeWidgetItem* addProjectItem(QTreeWidgetItem* treeItem, const FEBioStudioProj
 	QString ext = fi.suffix();
 
 	QIcon icon = iconProvider.icon(QFileIconProvider::File);
-	if (ext == "fsm") icon = QIcon(":/icons/FEBioStudio.png");
-	if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
-	if (ext == "feb") icon = QIcon(":/icons/febio.png");
+	if      (ext == "fsm" ) icon = QIcon(":/icons/FEBioStudio.png");
+	else if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
+	else if (ext == "feb" ) icon = QIcon(":/icons/febio.png");
+	else if (ext == "pdf" ) icon = QIcon(":/icons/pdf.png");
+	else if (ext == "txt" ) icon = QIcon(":/icons/txt.png");
+	else if (ext == "mpg" ) icon = QIcon(":/icons/video.png");
+	else if (ext == "html") icon = QIcon(":/icons/html.png");
 
 	if (doc && (doc->GetDocFilePath().empty() == false))
 	{
