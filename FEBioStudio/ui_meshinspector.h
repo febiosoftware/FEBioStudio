@@ -149,15 +149,20 @@ public:
 	QTableWidget*	table;
 	CPlotWidget*	plot;
 	QComboBox*		var;
+	QComboBox*		col;
 	CStatsInfo*		stats;
 	CSelectionInfo*	sel;
 
 	FEMesh*		m_pm;
 
+	int		m_map;
+
 public:
 	void setupUi(QMainWindow* wnd)
 	{
 		m_pm = nullptr;
+
+		m_map = -1;
 
 		info = new CMeshInfo;
 
@@ -175,8 +180,13 @@ public:
 
 		var = new QComboBox;
 		var->setObjectName("var");
+
+		col = new QComboBox;
+		col->setObjectName("col");
+
 		QFormLayout* varForm = new QFormLayout;
 		varForm->addRow("Variable:", var);
+		varForm->addRow("Color map", col);
 
 		QHBoxLayout* topLayout = new QHBoxLayout;
 		topLayout->addWidget(info);
@@ -214,12 +224,12 @@ public:
 
 	void setMesh(GObject* po)
 	{
-		const int MAX_ELEM = 20;
+		const int MAX_ELEM = 21;
 		static int ET[] = {
-			FE_HEX8, FE_TET4, FE_PENTA6, FE_QUAD4, FE_TRI3, FE_BEAM2, FE_HEX20, FE_QUAD8, FE_BEAM3, FE_TET10, FE_TRI6, FE_TET15, FE_HEX27, FE_TRI7, FE_QUAD9, FE_TET20, FE_TRI10, FE_PYRA5, FE_PENTA15, FE_TET5, 0};
+			FE_HEX8, FE_TET4, FE_PENTA6, FE_QUAD4, FE_TRI3, FE_BEAM2, FE_HEX20, FE_QUAD8, FE_BEAM3, FE_TET10, FE_TRI6, FE_TET15, FE_HEX27, FE_TRI7, FE_QUAD9, FE_TET20, FE_TRI10, FE_PYRA5, FE_PENTA15, FE_TET5, FE_PYRA13, 0};
 
 		static const char* EN[] = {
-			"HEX8", "TET4", "PENTA6", "QUAD4", "TRI3", "BEAM2", "HEX20", "QUAD8", "LINE3", "TET10", "TRI6", "TET15", "HEX27", "TRI7", "QUAD9", "TET20", "TRI10", "PYRA5", "PENTA15", "TET5", "(unknown)"};
+			"HEX8", "TET4", "PENTA6", "QUAD4", "TRI3", "BEAM2", "HEX20", "QUAD8", "LINE3", "TET10", "TRI6", "TET15", "HEX27", "TRI7", "QUAD9", "TET20", "TRI10", "PYRA5", "PENTA15", "TET5", "PYRA13", "(unknown)"};
 
 		table->setRowCount(0);
 
@@ -269,6 +279,7 @@ public:
 			case FE_PYRA5  : n[17]++; break;
 			case FE_PENTA15: n[18]++; break;
 			case FE_TET5   : n[19]++; break;
+            case FE_PYRA13 : n[20]++; break;
 			default:
 				assert(false);
 				n[MAX_ELEM]++; break;

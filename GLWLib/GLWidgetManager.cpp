@@ -126,17 +126,12 @@ int CGLWidgetManager::handle(int x, int y, int nevent)
 		bool bsel = false;
 		for (int i=0; i<(int) m_Widget.size(); ++i)
 		{
-			if (m_Widget[i]->visible() && m_Widget[i]->is_inside(x,y))
+			GLWidget* pw = m_Widget[i];
+			if (((pw->layer() == 0) || (pw->layer() == m_layer)) && pw->visible() && pw->is_inside(x,y))
 			{
 				m_Widget[i]->set_focus();
 				bsel = true;
-
-/*				if (Fl::event_clicks()) 
-				{
-					m_Widget[i]->EditProperties();
-					m_pview->Redraw();
-				}
-*/				break;
+				break;
 			}
 		}
 		if (!bsel) GLWidget::set_focus(0);

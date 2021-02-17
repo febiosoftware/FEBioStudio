@@ -35,12 +35,15 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QValidator>
 #include "DragBox.h"
+#include <QRadioButton>
+#include <QButtonGroup>
 
 class UIDlgPlaneCut
 {
 public:
 	CGLView*	m_view;
 	CDragBox*	w[4];
+	QRadioButton*	m_rb[2];
 
 public:
 	void setup(QDialog* dlg)
@@ -52,6 +55,13 @@ public:
 		f->addRow("Y-normal:", w[1] = new CDragBox); w[1]->setRange(-1.0, 1.0); w[1]->SetSingleStep(0.01);
 		f->addRow("Z-normal:", w[2] = new CDragBox); w[2]->setRange(-1.0, 1.0); w[2]->SetSingleStep(0.01);
 		f->addRow("offset:"  , w[3] = new CDragBox); w[3]->setRange(-1.0, 1.0); w[3]->SetSingleStep(0.01);
+		f->addRow("", m_rb[0] = new QRadioButton("plane cut"));
+		f->addRow("", m_rb[1] = new QRadioButton("hide elements"));
+		m_rb[0]->setChecked(true);
+
+		QButtonGroup* bg = new QButtonGroup;
+		bg->addButton(m_rb[0], 0);
+		bg->addButton(m_rb[1], 1);
 
 		w[0]->setValue(1.0);
 		w[1]->setValue(0.0);
@@ -70,6 +80,7 @@ public:
 		QObject::connect(w[1], SIGNAL(valueChanged(double)), dlg, SLOT(onDataChanged()));
 		QObject::connect(w[2], SIGNAL(valueChanged(double)), dlg, SLOT(onDataChanged()));
 		QObject::connect(w[3], SIGNAL(valueChanged(double)), dlg, SLOT(onDataChanged()));
+		QObject::connect(bg, SIGNAL(buttonClicked(QAbstractButton*)), dlg, SLOT(onDataChanged()));
 	}
 };
 
@@ -92,7 +103,7 @@ void CDlgPlaneCut::Update()
 
 void CDlgPlaneCut::showEvent(QShowEvent* ev)
 {
-
+	onDataChanged();
 	ui->m_view->ShowPlaneCut(true);
 }
 
@@ -125,4 +136,9 @@ void CDlgPlaneCut::onDataChanged()
 	else a[0] = 1.0;
 
 	ui->m_view->SetPlaneCut(a);
+
+	int nop = 0;
+	if (ui->m_rb[0]->isChecked()) nop = 0;
+	if (ui->m_rb[1]->isChecked()) nop = 1;
+	ui->m_view->SetPlaneCutMode(nop);
 }

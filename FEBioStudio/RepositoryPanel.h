@@ -58,6 +58,7 @@ public:
 
 	void SetModelList();
 	void ShowMessage(QString message);
+	void ShowWelcomeMessage(QByteArray messages);
 	void LoginTimeout();
 	void NetworkInaccessible();
 	void DownloadFinished(int fileID, int fileType);
@@ -75,6 +76,9 @@ public:
 	QString GetRepositoryFolder();
 	void SetRepositoryFolder(QString folder);
 
+	qint64 GetLastMessageTime();
+	void SetLastMessageTime(qint64 time);
+
 	void showMainPage();
 	void showLoadingPage(QString message, bool progress = false);
 
@@ -88,7 +92,6 @@ signals:
 
 private slots:
 	void on_connectButton_clicked();
-	void on_loginButton_clicked();
 	void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 	void on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
 	void on_actionRefresh_triggered();
@@ -123,6 +126,7 @@ private:
 	CRepoConnectionHandler*	repoHandler;
 	CLocalDatabaseHandler* dbHandler;
 	QString m_repositoryFolder;
+	qint64 lastMessageTime;
 
 	Ui::CRepositoryPanel*	ui;
 };

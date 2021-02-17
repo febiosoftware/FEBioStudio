@@ -225,6 +225,7 @@ void CFileViewer::contextMenuEvent(QContextMenuEvent* ev)
 		menu.addAction("Close project", ui->m_wnd, SLOT(on_closeProject()));
 		menu.addAction("Clear project", ui->m_wnd, SLOT(on_clearProject()));
 		menu.addAction("Add file ...", this, SLOT(onAddFile()));
+		menu.addAction("Import folder ...", this, SLOT(onImportFolder()));
 
 #ifdef _WIN32
 		const FEBioStudioProject* prj = ui->m_wnd->GetProject();
@@ -325,9 +326,13 @@ QTreeWidgetItem* addProjectItem(QTreeWidgetItem* treeItem, const FEBioStudioProj
 	QString ext = fi.suffix();
 
 	QIcon icon = iconProvider.icon(QFileIconProvider::File);
-	if (ext == "fsm") icon = QIcon(":/icons/FEBioStudio.png");
-	if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
-	if (ext == "feb") icon = QIcon(":/icons/febio.png");
+	if      (ext == "fsm" ) icon = QIcon(":/icons/FEBioStudio.png");
+	else if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
+	else if (ext == "feb" ) icon = QIcon(":/icons/febio.png");
+	else if (ext == "pdf" ) icon = QIcon(":/icons/pdf.png");
+	else if (ext == "txt" ) icon = QIcon(":/icons/txt.png");
+	else if (ext == "mpg" ) icon = QIcon(":/icons/video.png");
+	else if (ext == "html") icon = QIcon(":/icons/html.png");
 
 	if (doc && (doc->GetDocFilePath().empty() == false))
 	{
@@ -628,6 +633,33 @@ void CFileViewer::onAddFile()
 				Update();
 				SelectItem(newItem->Id());
 			}
+		}
+	}
+}
+
+void CFileViewer::onImportFolder()
+{
+	FEBioStudioProject* prj = ui->m_wnd->GetProject();
+	if (prj == nullptr) return;
+
+	QFileDialog dlg;
+	dlg.setFileMode(QFileDialog::Directory);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	if (dlg.exec())
+	{
+		QStringList folders = dlg.selectedFiles();
+		if (folders.size() == 1)
+		{
+			QString path = folders.at(0);
+
+			QDirIterator it(path, { "*.fsm", "*.feb", "*.xplt" }, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+			while (it.hasNext())
+			{
+				QString file = it.next();
+				prj->AddFile(file);
+			}
+
+			Update();
 		}
 	}
 }

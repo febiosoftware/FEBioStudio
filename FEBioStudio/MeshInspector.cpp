@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include "Document.h"
 #include <MeshTools/FEMeshValuator.h>
+#include <PostLib/ColorMap.h>
 #include "Commands.h"
 
 CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CMeshInspector)
@@ -37,6 +38,8 @@ CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd),
 	m_po = 0;
 	ui->setupUi(this);
 	ui->plot->setChartStyle(ChartStyle::BARCHART_PLOT);
+
+	ui->m_map = Post::ColorMapManager::GetDefaultMap();
 }
 
 void CMeshInspector::Update()
@@ -49,19 +52,38 @@ void CMeshInspector::Update()
 
 void CMeshInspector::showEvent(QShowEvent* ev)
 {
-	m_wnd->GetGLView()->GetViewSettings().m_bcontour = true;
+	ui->col->blockSignals(true);
+	ui->col->clear();
+	for (int i = 0; i < Post::ColorMapManager::ColorMaps(); ++i)
+	{
+		string name = Post::ColorMapManager::GetColorMapName(i);
+		ui->col->addItem(QString::fromStdString(name));
+	}
+	ui->col->setCurrentIndex(ui->m_map);
+	ui->col->blockSignals(false);
+
+	m_wnd->GetGLView()->SetColorMap(Post::ColorMapManager::GetColorMap(ui->m_map));
+	m_wnd->GetGLView()->ShowMeshData(true);
 	m_wnd->RedrawGL();
 }
 
 void CMeshInspector::hideEvent(QHideEvent* ev)
 {
-	m_wnd->GetGLView()->GetViewSettings().m_bcontour = false;
+	m_wnd->GetGLView()->ShowMeshData(false);
 	m_wnd->RedrawGL();
 }
 
 void CMeshInspector::on_var_currentIndexChanged(int n)
 {
 	UpdateData(n);
+	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
+	m_wnd->RedrawGL();
+}
+
+void CMeshInspector::on_col_currentIndexChanged(int n)
+{
+	m_wnd->GetGLView()->SetColorMap(Post::ColorMapManager::GetColorMap(n));
+	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 	m_wnd->RedrawGL();
 }
 

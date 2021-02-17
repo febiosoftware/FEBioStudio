@@ -684,8 +684,26 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
 					FEPart* pg = const_cast<FEPart*>(map->GetPart());
-					FEItemListBuilder* pil = pg;
-					if (pg) AddElemSet(data->GetName(), pil);
+
+					if (pg)
+					{
+						string name = pg->GetName();
+						if (name.empty()) name = data->GetName();
+
+						// It is possible that a FEPart has the same name as the domain
+						// from which it was created. In that case we don't want to 
+						// write this element set.
+						for (int j = 0; j < po->Parts(); ++j)
+						{
+							GPart* part = po->Part(j);
+							if (part->GetName() == name)
+							{
+								pg = nullptr;
+								break;
+							}
+						}
+						if (pg) AddElemSet(name, pg);
+					}
 				}
 				break;
 				case FEMeshData::PART_DATA:
@@ -1096,6 +1114,17 @@ void FEBioExport3::WriteSolidControlParams(FEAnalysisStep* pstep)
 			if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
 		}
 		m_xml.close_branch();
+	}
+
+	if (ops.plot_level != 1)
+	{
+		const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+		m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+	}
+
+	if (ops.plot_stride != 1)
+	{
+		m_xml.add_leaf("plot_stride", ops.plot_stride);
 	}
 }
 
@@ -3180,9 +3209,12 @@ void FEBioExport3::WriteElementDataFields()
 				FEElementData& data = *meshData;
 				const FEPart* pg = data.GetPart();
 
+				string name = pg->GetName();
+				if (name.empty()) name = data.GetName();
+
 				XMLElement tag("ElementData");
 				tag.add_attribute("name", data.GetName().c_str());
-				tag.add_attribute("elem_set", data.GetName());
+				tag.add_attribute("elem_set", name);
 				m_xml.add_branch(tag);
 				{
 					XMLElement el("e");
@@ -3202,6 +3234,7 @@ void FEBioExport3::WriteElementDataFields()
 			FEPartData* partData = dynamic_cast<FEPartData*>(pm->GetMeshDataField(n));
 			if (partData)
 			{
+				double v[FEElement::MAX_NODES] = { 0 };
 				FEPartData& data = *partData;
 				GPartList* partList = data.GetPartList(&fem);
 				std::vector<GPart*> partArray = partList->GetPartList();
@@ -3227,7 +3260,18 @@ void FEBioExport3::WriteElementDataFields()
 							if (pe->m_gid == pid)
 							{
 								el.set_attribute(nid, lid++);
-								el.value(data[j]);
+
+								if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+								{
+									el.value(data[j]);
+								}
+								else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+								{
+									int nn = pe->Nodes();
+									for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
+									el.value(v, nn);
+								}
+
 								m_xml.add_leaf(el, false);
 							}
 						}

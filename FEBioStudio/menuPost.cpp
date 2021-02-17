@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <PostLib/MarchingCubes.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
+#include <PostGL/GLProbe.h>
 #include <QMessageBox>
 #include <QTimer>
 #include "PostDocument.h"
@@ -265,6 +266,22 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 	img->AddImageRenderer(mc);
 	ui->modelViewer->Update();
 	ui->modelViewer->Select(mc);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionAddProbe_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLProbe* probe = new Post::GLProbe(glm);
+	glm->AddPlot(probe);
+
+	UpdatePostPanel(true, probe);
 	RedrawGL();
 }
 

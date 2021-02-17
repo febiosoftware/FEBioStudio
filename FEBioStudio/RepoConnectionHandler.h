@@ -24,6 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#pragma once
+
 #include <QObject>
 #include <QList>
 #include <QSslError>
@@ -76,6 +78,7 @@ private slots:
 private:
 	bool NetworkAccessibleCheck();
 //	bool AuthCheck();
+	void getMessages();
 
 	void authReply(QNetworkReply *r);
 //	void authCheckReply(QNetworkReply *r);
@@ -85,6 +88,7 @@ private:
 	void uploadFileRequestReply(QNetworkReply *r);
 	void uploadFileReply(QNetworkReply *r);
 	void requestUploadPermissionsReply(QNetworkReply *r);
+	void getMessagesReply(QNetworkReply *r);
 
 	void modifyProjectRepy(QNetworkReply *r);
 	void modifyProjectUploadReply(QNetworkReply *r);

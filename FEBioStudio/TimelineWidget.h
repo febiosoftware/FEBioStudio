@@ -33,13 +33,20 @@ class CTimelineWidget : public QWidget
 {
 	Q_OBJECT
 
+	struct DataPoint
+	{
+		QPointF	ptf;
+		QPoint	pt;
+		int		flag;
+	};
+
 public:
 	CTimelineWidget(QWidget* parent = 0);
 
 	void clearData();
 
 	// set the time points
-	void setTimePoints(const std::vector<double>& time);
+	void setTimePoints(const std::vector< std::pair<double, int> >& data);
 
 	void UpdateScale();
 
@@ -59,7 +66,10 @@ signals:
 	void rangeChanged(int nmin, int nmax);
 
 private:
-	std::vector<QPointF>	m_data;
+	void addPoint(double x, double y, int flag = 0);
+
+private:
+	std::vector<DataPoint>	m_data;
 	double	m_dataMin, m_dataMax;
 	double	m_min, m_max, m_inc;
 	double	m_ftime;

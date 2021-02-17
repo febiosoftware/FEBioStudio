@@ -182,6 +182,7 @@ public:
 	int		m_nField;	// the field whos values are contained in m_pval
 	int		m_id;		// index in state array of FEPostModel
 	bool	m_bsmooth;
+	int		m_status;	// status flag
 
 	vector<NODEDATA>	m_NODE;		// nodal data
 	vector<EDGEDATA>	m_EDGE;		// edge data

@@ -85,6 +85,8 @@ public:
 
 		QString fileToken = "";
 		bool uploadReady = false;
+
+		dbPanel->LoginTimeout();
 	}
 
 	CRepositoryPanel* dbPanel;
@@ -281,6 +283,23 @@ void CRepoConnectionHandler::requestUploadPermissions(QByteArray userInfo)
 	}
 }
 
+void CRepoConnectionHandler::getMessages()
+{
+	QUrl myurl;
+	myurl.setScheme("https");
+	myurl.setHost(REPO_URL);
+	myurl.setPort(4433);
+	myurl.setPath(QString(API_URL) + "messages");
+
+	QNetworkRequest request;
+	request.setUrl(myurl);
+
+	if(NetworkAccessibleCheck())
+	{
+		imp->restclient->get(request);
+	}
+}
+
 void CRepoConnectionHandler::modifyProject(int id, QByteArray projectInfo)
 {
 	QUrl myurl;
@@ -438,6 +457,10 @@ void CRepoConnectionHandler::connFinished(QNetworkReply *r)
 	{
 		modifyProjectUploadReply(r);
 	}
+	else if(URL.contains("messages"))
+	{
+		getMessagesReply(r);
+	}
 
 }
 
@@ -454,25 +477,21 @@ void CRepoConnectionHandler::sslErrorHandler(QNetworkReply *reply, const QList<Q
 
 void CRepoConnectionHandler::progress(qint64 bytesReceived, qint64 bytesTotal)
 {
-	cout << "Total: " << bytesTotal << endl;
-	cout << "Received: " << bytesReceived << endl;
-	cout << (float)bytesReceived/(float)bytesTotal*100 << "%" << endl;
-
 	imp->m_wnd->UpdateProgress((float)bytesReceived/(float)bytesTotal*100);
 }
 
 bool CRepoConnectionHandler::NetworkAccessibleCheck()
 {
-//	if(imp->restclient->networkAccessible() == QNetworkAccessManager::Accessible)
-//	{
-//		return true;
-//	}
-//	else
-//	{
-//		imp->dbPanel->NetworkInaccessible();
-//
-//		return false;
-//	}
+	// if(imp->restclient->networkAccessible() == QNetworkAccessManager::Accessible)
+	// {
+	// 	return true;
+	// }
+	// else
+	// {
+	// 	imp->dbPanel->NetworkInaccessible();
+
+	// 	return false;
+	// }
 
 	return true;
 }
@@ -573,7 +592,7 @@ void CRepoConnectionHandler::getSchemaReply(QNetworkReply *r)
 	}
 	else if(statusCode == 403)
 	{
-		imp->dbPanel->LoginTimeout();
+		imp->loggedOut();
 	}
 	else
 	{
@@ -598,7 +617,7 @@ void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 	}
 	else if(statusCode == 403)
 	{
-		imp->dbPanel->LoginTimeout();
+		imp->loggedOut();
 	}
 	else
 	{
@@ -607,6 +626,8 @@ void CRepoConnectionHandler::getTablesReply(QNetworkReply *r)
 
 		imp->dbPanel->ShowMessage(message);
 	}
+
+	getMessages();
 }
 
 void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
@@ -649,7 +670,7 @@ void CRepoConnectionHandler::getFileReply(QNetworkReply *r)
 	}
 	else if(statusCode == 403)
 	{
-		imp->dbPanel->LoginTimeout();
+		imp->loggedOut();
 	}
 	else if(statusCode == 404)
 	{
@@ -679,9 +700,9 @@ void CRepoConnectionHandler::uploadFileRequestReply(QNetworkReply *r)
 	}
 	else if(statusCode == 403)
 	{
-		imp->dbPanel->LoginTimeout();
-
 		imp->dbPanel->updateUploadReady(false);
+		
+		imp->loggedOut();
 	}
 	else if(statusCode == 0)
 	{
@@ -809,6 +830,16 @@ void CRepoConnectionHandler::requestUploadPermissionsReply(QNetworkReply *r)
 		message += std::to_string(statusCode).c_str();
 
 		imp->dbPanel->ShowMessage(message);
+	}
+}
+
+void CRepoConnectionHandler::getMessagesReply(QNetworkReply *r)
+{
+	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+	if(statusCode == 200)
+	{
+		imp->dbPanel->ShowWelcomeMessage(r->readAll());
 	}
 }
 

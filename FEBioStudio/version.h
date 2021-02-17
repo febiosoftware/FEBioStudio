@@ -29,7 +29,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
 #define VERSION			1
-#define SUBVERSION		2
+#define SUBVERSION		3
 #define SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
@@ -44,7 +44,9 @@ SOFTWARE.*/
 // 3.7: Made value parameter of FEInitFluidPressure variable. 
 // 3.8: Added filename to log data
 // 3.9: Made fixed charge density a variable parameter for multi- and triphasic materials. 
-#define SAVE_VERSION	0x00030009
+// 3.10: Added density to prestrain elastic material.
+// 3.11: changes to FEMeshData classes. 
+#define SAVE_VERSION	0x0003000B
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D

@@ -703,6 +703,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)moc_%(Filename).cpp</Outputs>
     </CustomBuild>
     <ClInclude Include="..\..\FEBioStudio\TextDocument.h" />
+    <ClInclude Include="..\..\FEBioStudio\ui_repositorypanel.h" />
     <ClInclude Include="..\..\FEBioStudio\UnitParser.h" />
     <ClInclude Include="..\..\FEBioStudio\units.h" />
     <CustomBuild Include="..\..\FEBioStudio\UpdateChecker.h">

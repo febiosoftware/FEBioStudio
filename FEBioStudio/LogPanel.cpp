@@ -107,7 +107,7 @@ void CLogPanel::AddText(const QString& txt, int n)
 	QTextCursor cursor(document);
 	cursor.movePosition(QTextCursor::End);
 	QTextCharFormat textCharFormat = cursor.charFormat();
-  QRegularExpressionMatch match = escapeSequenceExpression.match(txt);
+	QRegularExpressionMatch match = escapeSequenceExpression.match(txt);
 	int offset = match.capturedStart();
 	cursor.insertText(txt.mid(0, offset), textCharFormat);
 	while (!(offset < 0)) {
@@ -120,7 +120,7 @@ void CLogPanel::AddText(const QString& txt, int n)
 			Q_ASSERT(ok);
 			parseEscapeSequence(attribute, i, textCharFormat, ui->defaultTextCharFormat);
 		}
-    match = escapeSequenceExpression.match(txt, previousOffset);
+		match = escapeSequenceExpression.match(txt, previousOffset);
 		offset = match.capturedStart();
 		if (offset < 0) {
 			cursor.insertText(txt.mid(previousOffset), textCharFormat);
@@ -133,7 +133,7 @@ void CLogPanel::AddText(const QString& txt, int n)
 	ui->txt[n]->setTextCursor(cursor);
 }
 
-void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
+void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
 {
 	switch (attribute) {
 	case 0 : { // Normal/Default (reset all attributes)

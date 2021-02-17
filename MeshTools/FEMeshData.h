@@ -46,6 +46,12 @@ public:
 		DATA_VEC3D
 	};
 
+	enum DATA_FORMAT {
+		DATA_NODE,
+		DATA_ITEM,
+		DATA_MULT
+	};
+
 public:
 	FEMeshData(DATA_CLASS);
 	virtual ~FEMeshData();
@@ -56,12 +62,16 @@ public:
 	// get the data type of this mesh data
 	DATA_TYPE GetDataType() const;
 
+	// get the data format
+	DATA_FORMAT GetDataFormat() const;
+
 	// return mesh this data field belongs to
 	FEMesh* GetMesh() const;
 
 protected:
 	void SetMesh(FEMesh* mesh);
 	DATA_TYPE		m_dataType;
+	DATA_FORMAT		m_dataFmt;
 
 private:
 	DATA_CLASS		m_dataClass;

@@ -111,6 +111,7 @@ const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
 extern int LUT[256][15]; 
 extern int ET_HEX[12][2];
 extern int ET_TET[6][2];
+extern int ET_PYR[8][2];
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
@@ -427,6 +428,7 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_szsubtitle[0] = 0;
 
 	m_showPlaneCut = false;
+	m_planeCutMode = 0;
 	m_plane[0] = 1.0;
 	m_plane[1] = 0.0;
 	m_plane[2] = 0.0;
@@ -485,6 +487,11 @@ void CGLView::changeViewMode(View_Mode vm)
 	{
 		m_pWnd->toggleOrtho();
 	}
+}
+
+void CGLView::SetColorMap(Post::CColorMap& map)
+{
+	m_colorMap = map;
 }
 
 void CGLView::mousePressEvent(QMouseEvent* ev)
@@ -683,7 +690,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			if (bshift)
 			{
 				double D = (double) m_y1 - y;
-				double s = D*cam.GetFinalTargetDistance()*1e-5;
+				double s = cam.GetFinalTargetDistance()*1e-2;
+				if (D < 0) s = -s;
 				cam.Dolly(s);
 			}
 			else if (bctrl)
@@ -1533,6 +1541,9 @@ void CGLView::paintGL()
 	// render selection
 	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
 
+	// show the labels on rigid bodies
+	if (view.m_showRigidLabels) RenderRigidLabels();
+
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -1648,8 +1659,11 @@ void CGLView::RenderModelView()
 	if (m_showPlaneCut)
 	{
 		if (m_planeCut == nullptr) UpdatePlaneCut();
-		glClipPlane(GL_CLIP_PLANE0, m_plane);
-		glEnable(GL_CLIP_PLANE0);
+		if (m_planeCutMode == 0)
+		{
+			glClipPlane(GL_CLIP_PLANE0, m_plane);
+			glEnable(GL_CLIP_PLANE0);
+		}
 	}
 
 	// render the model
@@ -1742,7 +1756,7 @@ void CGLView::RenderModelView()
 
 	glDisable(GL_CLIP_PLANE0);
 
-	if (m_showPlaneCut && m_planeCut)
+	if (m_showPlaneCut && m_planeCut && (m_planeCutMode == 0))
 	{
 		RenderPlaneCut();
 	}
@@ -1760,6 +1774,10 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 		VIEW_SETTINGS& vs = GetViewSettings();
 
 		glm->m_nrender = vs.m_nrender + 1;
+		glm->m_bnorm = vs.m_bnorm;
+		glm->m_scaleNormals = vs.m_scaleNormals;
+		glm->m_brenderPlotObjects = vs.m_bjoint;
+		glm->m_doZSorting = vs.m_bzsorting;
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
@@ -2248,6 +2266,12 @@ CGLCamera* CGLView::GetCamera()
 	return nullptr;
 }
 
+void CGLView::ShowMeshData(bool b)
+{
+	GetViewSettings().m_bcontour = b;
+	delete m_planeCut; m_planeCut = nullptr;
+}
+
 void CGLView::RenderTooltip(int x, int y)
 {
 /*	glMatrixMode(GL_PROJECTION);
@@ -2428,8 +2452,16 @@ void CGLView::RenderModel()
 				{
 				case SELECT_OBJECT:
 				{
-					  if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(po);
-					  else RenderObject(po);
+					if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(po);
+					else if (m_showPlaneCut && (m_planeCutMode == 1))
+					{
+						RenderFEElements(po);
+
+						GLColor c = view.m_mcol;
+						glColor3ub(c.r, c.g, c.b);
+						RenderMeshLines(po);
+					}
+					else RenderObject(po);
 				}
 				break;
 				case SELECT_PART: RenderParts(po); break;
@@ -3730,7 +3762,15 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 void CGLView::ShowPlaneCut(bool b)
 {
 	m_showPlaneCut = b;
-	delete m_planeCut; m_planeCut = nullptr;
+	UpdatePlaneCut(true);
+	update();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::SetPlaneCutMode(int nmode)
+{
+	m_planeCutMode = nmode;
+	UpdatePlaneCut(true);
 	update();
 }
 
@@ -3741,13 +3781,21 @@ void CGLView::SetPlaneCut(double d[4])
 	if (doc == nullptr) return;
 
 	BOX box = doc->GetGModel()->GetBoundingBox();
+
 	double R = box.GetMaxExtent();
 	if (R < 1e-12) R = 1.0;
+
+	vec3d n(d[0], d[1], d[2]); n.Normalize();
+
+	double d0 = box.r0()*n;
+	double d1 = box.r1()*n;
+
+	double d3 = d0 + 0.5*(d[3] + 1)*(d1 - d0);
 
 	m_plane[0] = d[0];
 	m_plane[1] = d[1];
 	m_plane[2] = d[2];
-	m_plane[3] = d[3]*R;
+	m_plane[3] = -d3;
 	delete m_planeCut; m_planeCut = nullptr;
 	update();
 }
@@ -4527,7 +4575,25 @@ void CGLView::SelectFEElements(int x, int y)
 			if (m_bctrl)
 				pcmd = new CCmdUnselectElements(pm, &num, 1);
 			else
+			{
 				pcmd = new CCmdSelectElements(pm, &num, 1, m_bshift);
+
+				// print value of currently selected element
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+				if (postDoc && postDoc->IsValid())
+				{
+					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+					if (cmap && cmap->IsActive())
+					{
+						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEState* state = fem->CurrentState();
+						double val = state->m_ELEM[num].m_val;
+						FEElement& el = pm->Element(num);
+						QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
+						m_pWnd->AddLogEntry(txt);
+					}
+				}
+			}
 		}
 	}
 	else
@@ -4578,7 +4644,11 @@ void CGLView::SelectFEElements(int x, int y)
 		}
 		else if (!m_bshift)
 		{
-			pcmd = new CCmdSelectElements(pm, 0, 0, false);
+			int nsel = pm->CountSelectedElements();
+			if (nsel > 0)
+			{
+				pcmd = new CCmdSelectElements(pm, 0, 0, false);
+			}
 		}
 	}
 
@@ -4625,10 +4695,36 @@ void CGLView::SelectFEFaces(int x, int y)
 		else
 		{
 			if (m_bctrl) pcmd = new CCmdUnselectFaces(pm, &index, 1);
-			else pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+			else
+			{
+				pcmd = new CCmdSelectFaces(pm, &index, 1, m_bshift);
+
+				// print value of currently selected face
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+				if (postDoc && postDoc->IsValid())
+				{
+					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+					if (cmap && cmap->IsActive())
+					{
+						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEState* state = fem->CurrentState();
+						double val = state->m_FACE[index].m_val;
+						FEFace& face = pm->Face(index);
+						QString txt = QString("Face %1 : %2\n").arg(face.m_nid).arg(val);
+						m_pWnd->AddLogEntry(txt);
+					}
+				}
+			}
 		}
 	}
-	else if (!m_bshift) pcmd = new CCmdSelectFaces(pm, 0, 0, false);
+	else if (!m_bshift)
+	{
+		int nsel = pm->CountSelectedFaces();
+		if (nsel > 0)
+		{
+			pcmd = new CCmdSelectFaces(pm, 0, 0, false);
+		}
+	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -4752,10 +4848,36 @@ void CGLView::SelectFEEdges(int x, int y)
 		{
 			int num = (int)index;
 			if (m_bctrl) pcmd = new CCmdUnselectFEEdges(pm, &num, 1);
-			else pcmd = new CCmdSelectFEEdges(pm, &num, 1, m_bshift);
+			else
+			{
+				pcmd = new CCmdSelectFEEdges(pm, &num, 1, m_bshift);
+
+				// print value of currently selected edge
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+				if (postDoc && postDoc->IsValid())
+				{
+					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+					if (cmap && cmap->IsActive())
+					{
+						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEState* state = fem->CurrentState();
+						double val = state->m_EDGE[num].m_val;
+						FEEdge& ed = pm->Edge(num);
+						QString txt = QString("Edge %1 : %2\n").arg(ed.m_nid).arg(val);
+						m_pWnd->AddLogEntry(txt);
+					}
+				}
+			}
 		}
 	}
-	else if (!m_bshift) pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
+	else if (!m_bshift)
+	{
+		int nsel = pm->CountSelectedEdges();
+		if (nsel)
+		{
+			pcmd = new CCmdSelectFEEdges(pm, 0, 0, false);
+		}
+	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
 }
@@ -5637,6 +5759,60 @@ void CGLView::TagBackfacingElements(FEMesh& mesh)
 					break;
 				}
 			}
+
+			// shells 
+			if (el.IsShell())
+			{
+				FEFace* pf = mesh.FacePtr(el.m_face[0]);
+				if (pf)
+				{
+					FEFace& f = *pf;
+					switch (f.Type())
+					{
+					case FE_FACE_TRI3:
+					case FE_FACE_TRI6:
+					case FE_FACE_TRI7:
+					case FE_FACE_TRI10:
+					{
+						r[0] = mesh.Node(f.n[0]).r;
+						r[1] = mesh.Node(f.n[1]).r;
+						r[2] = mesh.Node(f.n[2]).r;
+
+						p1[0] = transform.WorldToScreen(r[0]);
+						p1[1] = transform.WorldToScreen(r[1]);
+						p1[2] = transform.WorldToScreen(r[2]);
+
+						if (IsBackfacing(p1) == false) backFacing = false;
+					}
+					break;
+					case FE_FACE_QUAD4:
+					case FE_FACE_QUAD8:
+					case FE_FACE_QUAD9:
+					{
+						r[0] = mesh.Node(f.n[0]).r;
+						r[1] = mesh.Node(f.n[1]).r;
+						r[2] = mesh.Node(f.n[2]).r;
+						r[3] = mesh.Node(f.n[3]).r;
+
+						p1[0] = transform.WorldToScreen(r[0]);
+						p1[1] = transform.WorldToScreen(r[1]);
+						p1[2] = transform.WorldToScreen(r[2]);
+
+						p2[0] = p1[2];
+						p2[1] = transform.WorldToScreen(r[3]);
+						p2[2] = p1[0];
+
+						if (IsBackfacing(p1) == false) backFacing = false;
+					}
+					break;
+					}
+				}
+
+				if (backFacing == false)
+				{
+					el.m_ntag = 0;
+				}
+			}
 		}
 	}
 }
@@ -5660,7 +5836,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	makeCurrent();
 	GLViewTransform transform(this);
 
-	if (view.m_bext)
+	if (view.m_bcullSel)
 	{
 		TagBackfacingElements(*pm);
 	}
@@ -6036,13 +6212,40 @@ void CGLView::SelectFENodes(int x, int y)
 		else
 		{
 			if (m_bctrl) pcmd = new CCmdUnselectNodes(pm, &index, 1);
-			else pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
+			else
+			{
+				pcmd = new CCmdSelectFENodes(pm, &index, 1, m_bshift);
+
+				// print value of currently selected node
+				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
+				if (postDoc && postDoc->IsValid())
+				{
+					Post::FEPostModel* fem = postDoc->GetFEModel();
+					Post::FEState* state = fem->CurrentState();
+					FENode& node = pm->Node(index);
+					vec3f r = state->m_NODE[index].m_rt;
+					QString txt = QString("Node %1 : position = (%2, %3, %4)").arg(node.m_nid).arg(r.x).arg(r.y).arg(r.z);
+
+					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
+					if (cmap && cmap->IsActive())
+					{
+						double val = state->m_NODE[index].m_val;
+						txt += QString(", value = %1").arg(val);
+					}
+
+					m_pWnd->AddLogEntry(txt + QString("\n"));
+				}
+			}
 			lastIndex = -1;
 		}
 	}
 	else if (!m_bshift)
 	{
-		pcmd = new CCmdSelectFENodes(pm, 0, 0, false);
+		int nsel = pm->CountSelectedNodes();
+		if (nsel > 0)
+		{
+			pcmd = new CCmdSelectFENodes(pm, 0, 0, false);
+		}
 		lastIndex = -1;
 	}
 
@@ -7433,10 +7636,9 @@ void CGLView::RenderFEElements(GObject* po)
 	int glmode = 0;
 
 	double vmin, vmax;
-	Post::CColorMap map;
 	Mesh_Data& data = pm->GetMeshData();
 	bool showContour = (view.m_bcontour && data.IsValid());
-	if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
+	if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
 	int NE = pm->Elements();
@@ -7456,7 +7658,7 @@ void CGLView::RenderFEElements(GObject* po)
 					for (int j = 0; j < ne; ++j)
 					{
 						if (data.GetElementDataTag(i) > 0)
-							c[j] = map.map(data.GetElementValue(i, j));
+							c[j] = m_colorMap.map(data.GetElementValue(i, j));
 						else
 							c[j] = GLColor(212, 212, 212);
 					}
@@ -7479,6 +7681,7 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, c); break;
 					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
 					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
+                    case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, true); break;
 					case FE_BEAM2 : break;
 					case FE_BEAM3 : break;
 					default:
@@ -7532,6 +7735,7 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, true); break;
 					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
 					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
+                    case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, true); break;
 					case FE_BEAM2 : break;
 					case FE_BEAM3 : break;
 					default:
@@ -7579,6 +7783,7 @@ void CGLView::RenderFEElements(GObject* po)
 				case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, false); break;
 				case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, false); break;
 				case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, false); break;
+                case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, false); break;
 				case FE_BEAM2 : break;
 				case FE_BEAM3 : break;
 				default:
@@ -7633,6 +7838,20 @@ void CGLView::RenderFEElements(GObject* po)
 						glx::vertex3d(r1);
 					}
 					break;
+                case FE_PYRA5:
+                case FE_PYRA13:
+                    for (int j = 0; j < 8; ++j)
+                    {
+                        int n0 = el.m_node[ET_PYR[j][0]];
+                        int n1 = el.m_node[ET_PYR[j][1]];
+                            
+                        vec3d r0 = pm->Node(n0).pos();
+                        vec3d r1 = pm->Node(n1).pos();
+                            
+                        glx::vertex3d(r0);
+                        glx::vertex3d(r1);
+                    }
+                    break;
 				case FE_TRI3:
 				case FE_QUAD4:
 					for (int i = 0; i < ne; ++i)
@@ -7928,6 +8147,46 @@ void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
 
 				}
 				break;
+            case FE_PYRA13:
+                {
+                    glBegin(GL_TRIANGLES);
+                    {
+                        for (j = 0; j<4; j++)
+                        {
+                            const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
+                            const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
+                            const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
+                            
+                            vec3d n = (r2 - r1) ^ (r3 - r1);
+                            n.Normalize();
+                            
+                            glNormal3d(n.x, n.y, n.z);
+                            glVertex3d(r1.x, r1.y, r1.z);
+                            glVertex3d(r2.x, r2.y, r2.z);
+                            glVertex3d(r3.x, r3.y, r3.z);
+                        }
+                    }
+                    glEnd();
+                    
+                    glBegin(GL_QUADS);
+                    {
+                        const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
+                        const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
+                        const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
+                        const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
+                        
+                        vec3d n = (r2 - r1) ^ (r3 - r1);
+                        n.Normalize();
+                        
+                        glNormal3d(n.x, n.y, n.z);
+                        glVertex3d(r1.x, r1.y, r1.z);
+                        glVertex3d(r2.x, r2.y, r2.z);
+                        glVertex3d(r3.x, r3.y, r3.z);
+                        glVertex3d(r4.x, r4.y, r4.z);
+                    }
+                    glEnd();
+                    
+                }
 			case FE_QUAD4:
 			case FE_QUAD8:
 			case FE_QUAD9:
@@ -8200,6 +8459,54 @@ void CGLView::RenderMeshLines(GObject* po)
 				}
 				break;
 
+            case FE_PYRA13:
+                {
+                    for (int j = 0; j<4; j++)
+                    {
+                        glBegin(GL_LINE_LOOP);
+                        {
+                            const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
+                            const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
+                            const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
+                            const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[j][3]]).r;
+                            const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[j][4]]).r;
+                            const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[j][5]]).r;
+
+                            glVertex3d(r1.x, r1.y, r1.z);
+                            glVertex3d(r4.x, r4.y, r4.z);
+                            glVertex3d(r2.x, r2.y, r2.z);
+                            glVertex3d(r5.x, r5.y, r5.z);
+                            glVertex3d(r3.x, r3.y, r3.z);
+                            glVertex3d(r6.x, r6.y, r6.z);
+                        }
+                        glEnd();
+                    }
+                    
+                    glBegin(GL_LINE_LOOP);
+                    {
+                        const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
+                        const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
+                        const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
+                        const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
+                        const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[4][4]]).r;
+                        const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[4][5]]).r;
+                        const vec3d& r7 = pm->Node(e.m_node[FTPYRA13[4][6]]).r;
+                        const vec3d& r8 = pm->Node(e.m_node[FTPYRA13[4][7]]).r;
+
+                        glVertex3d(r1.x, r1.y, r1.z);
+                        glVertex3d(r5.x, r5.y, r5.z);
+                        glVertex3d(r2.x, r2.y, r2.z);
+                        glVertex3d(r6.x, r6.y, r6.z);
+                        glVertex3d(r3.x, r3.y, r3.z);
+                        glVertex3d(r7.x, r7.y, r7.z);
+                        glVertex3d(r4.x, r4.y, r4.z);
+                        glVertex3d(r8.x, r8.y, r8.z);
+                    }
+                    glEnd();
+                    
+                }
+                    break;
+                    
 			case FE_TET4:
 			case FE_TET5:
 			case FE_TET20:
@@ -8637,12 +8944,121 @@ void CGLView::RenderTags()
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void CGLView::UpdatePlaneCut()
+void CGLView::RenderRigidLabels()
+{
+	CModelDocument* pdoc = m_pWnd->GetModelDocument();
+	if (pdoc == nullptr) return;
+
+	FEModel* fem = pdoc->GetFEModel();
+	if (fem == nullptr) return;
+
+	VIEW_SETTINGS& view = GetViewSettings();
+
+	vector<GLTAG> vtag;
+
+	for (int i = 0; i < fem->Materials(); ++i)
+	{
+		GMaterial* mat = fem->GetMaterial(i);
+		FERigidMaterial* rb = dynamic_cast<FERigidMaterial*>(mat->GetMaterialProperties());
+		if (rb)
+		{
+			GLTAG tag;
+			tag.r = rb->GetCenterOfMass();
+			tag.bvis = false;
+			tag.ntag = 0;
+
+			string name = mat->GetName();
+			int l = name.size(); if (l > 63) l = 63;
+			if (l > 0)
+			{
+				strncpy(tag.sztag, name.c_str(), l);
+				tag.sztag[l] = 0;
+			}
+			else sprintf(tag.sztag, "_no_name");
+			vtag.push_back(tag);
+		}
+	}
+	int nsel = vtag.size();
+	if (nsel == 0) return;
+
+	// find out where the tags are on the screen
+	GLViewTransform transform(this);
+	for (int i = 0; i < nsel; i++)
+	{
+		vec3d p = transform.WorldToScreen(vtag[i].r);
+		vtag[i].wx = p.x;
+		vtag[i].wy = m_viewport[3] - p.y;
+		vtag[i].bvis = true;
+	}
+
+	// render the tags
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0, m_viewport[2], 0, m_viewport[3]);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+
+	for (int i = 0; i < nsel; i++)
+		if (vtag[i].bvis)
+		{
+			glBegin(GL_POINTS);
+			{
+				glColor3ub(0, 0, 0);
+				glVertex2f(vtag[i].wx, vtag[i].wy);
+				if (vtag[i].ntag == 0) glColor3ub(255, 255, 0);
+				else glColor3ub(255, 0, 0);
+				glVertex2f(vtag[i].wx - 1, vtag[i].wy + 1);
+			}
+			glEnd();
+		}
+
+	QPainter painter(this);
+	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+	painter.setFont(QFont("Helvetica", 10));
+	for (int i = 0; i < nsel; ++i)
+		if (vtag[i].bvis)
+		{
+			int dpr = GetDevicePixelRatio();
+			int x = vtag[i].wx;
+			int y = height()*dpr - vtag[i].wy;
+			painter.setPen(Qt::black);
+
+			painter.drawText(x + 3, y - 2, vtag[i].sztag);
+
+			if (vtag[i].ntag == 0) painter.setPen(Qt::yellow);
+			else painter.setPen(Qt::red);
+
+			painter.drawText(x + 2, y - 3, vtag[i].sztag);
+		}
+	painter.end();
+
+	glPopAttrib();
+
+	// QPainter messes this up so reset it
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void CGLView::UpdatePlaneCut(bool breset)
 {
 	if (m_planeCut) delete m_planeCut;
 
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
+
+	FEModel& fem = *doc->GetFEModel();
 
 	GModel& mdl = *doc->GetGModel();
 	if (mdl.Objects() == 0) return;
@@ -8653,137 +9069,287 @@ void CGLView::UpdatePlaneCut()
 
 	int edge[15][2], edgeNode[15][2], etag[15];
 
+	VIEW_SETTINGS& vs = GetViewSettings();
+
+	double vmin, vmax;
+
 	m_planeCut = new GLMesh;
 
-	for (int i = 0; i < mdl.Objects(); ++i)
+	if (breset)
 	{
-		GObject* po = mdl.Object(i);
-		if (po->GetFEMesh())
+		for (int n = 0; n < mdl.Objects(); ++n)
 		{
-			FEMesh* mesh = po->GetFEMesh();
-
-			vec3d ex[8];
-			int en[8];
-
-			// repeat over all elements
-			int NE = mesh->Elements();
-			for (int i = 0; i < NE; ++i)
+			GObject* po = mdl.Object(n);
+			if (po->GetFEMesh())
 			{
-				// render only when visible
-				FEElement& el = mesh->Element(i);
-				if (el.IsVisible() && el.IsSolid())
+				FEMesh* mesh = po->GetFEMesh();
+				int NE = mesh->Elements();
+				for (int i = 0; i < NE; ++i)
 				{
-					GPart* pg = po->Part(el.m_gid);
-					int mid = pg->GetMaterialID();
-					if (mid < 0) mid = 0;
+					FEElement& el = mesh->Element(i);
+					el.Show(); el.Unhide();
+				}
+				mesh->UpdateItemVisibility();
+			}
+		}
+	}
 
-					const int *nt = nullptr;
-					switch (el.Type())
+	if ((m_planeCutMode == 0) && (m_showPlaneCut))
+	{
+		GObject* poa = m_pWnd->GetActiveObject();
+
+		for (int i = 0; i < mdl.Objects(); ++i)
+		{
+			GObject* po = mdl.Object(i);
+			if (po->GetFEMesh())
+			{
+				FEMesh* mesh = po->GetFEMesh();
+
+				vec3d ex[8];
+				int en[8];
+				GLColor ec[8];
+
+				bool showContour = false;
+				Mesh_Data& data = mesh->GetMeshData();
+				if ((po == poa) && (vs.m_bcontour))
+				{
+					showContour = (vs.m_bcontour && data.IsValid());
+					if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
+				}
+
+				// repeat over all elements
+				GLColor defaultColor(200, 200, 200);
+				GLColor c(defaultColor);
+				int matId = -1;
+				int NE = mesh->Elements();
+				for (int i = 0; i < NE; ++i)
+				{
+					// render only when visible
+					FEElement& el = mesh->Element(i);
+					if (el.IsVisible() && el.IsSolid())
 					{
-					case FE_HEX8   : nt = HEX_NT; break;
-					case FE_HEX20  : nt = HEX_NT; break;
-					case FE_HEX27  : nt = HEX_NT; break;
-					case FE_PENTA6 : nt = PEN_NT; break;
-					case FE_PENTA15: nt = PEN_NT; break;
-					case FE_TET4   : nt = TET_NT; break;
-					case FE_TET5   : nt = TET_NT; break;
-					case FE_TET10  : nt = TET_NT; break;
-					case FE_TET15  : nt = TET_NT; break;
-					case FE_TET20  : nt = TET_NT; break;
-					case FE_PYRA5  : nt = PYR_NT; break;
-					default:
-						assert(false);
-					}
-
-					// get the nodal values
-					for (int k = 0; k < 8; ++k)
-					{
-						FENode& node = mesh->Node(el.m_node[nt[k]]);
-						ex[k] = to_vec3f(node.r);
-						en[k] = el.m_node[nt[k]];
-					}
-
-					// calculate the case of the element
-					int ncase = 0;
-					for (int k = 0; k < 8; ++k)
-						if (norm*ex[k] >= ref) ncase |= (1 << k);
-
-					// loop over faces
-					int* pf = LUT[ncase];
-					int ne = 0;
-					for (int l = 0; l < 5; l++)
-					{
-						if (*pf == -1) break;
-
-						// calculate nodal positions
-						vec3d r[3];
-						float w1, w2, w;
-						for (int k = 0; k < 3; k++)
+						GPart* pg = po->Part(el.m_gid);
+						int mid = pg->GetMaterialID();
+						if (mid != matId)
 						{
-							int n1 = ET_HEX[pf[k]][0];
-							int n2 = ET_HEX[pf[k]][1];
-
-							w1 = norm * ex[n1];
-							w2 = norm * ex[n2];
-
-							if (w2 != w1)
-								w = (ref - w1) / (w2 - w1);
+							GMaterial* pmat = fem.GetMaterialFromID(mid);
+							if (pmat)
+							{
+								c = fem.GetMaterialFromID(mid)->Diffuse();
+								matId = mid;
+							}
 							else
-								w = 0.f;
-
-							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+							{
+								matId = -1;
+								c = defaultColor;
+							}
 						}
 
-						m_planeCut->AddFace(r, mid);
 
-						// add edges (for mesh rendering)
-						for (int k = 0; k < 3; ++k)
+						const int *nt = nullptr;
+						switch (el.Type())
 						{
-							int n1 = pf[k];
-							int n2 = pf[(k + 1) % 3];
+						case FE_HEX8: nt = HEX_NT; break;
+						case FE_HEX20: nt = HEX_NT; break;
+						case FE_HEX27: nt = HEX_NT; break;
+						case FE_PENTA6: nt = PEN_NT; break;
+						case FE_PENTA15: nt = PEN_NT; break;
+						case FE_TET4: nt = TET_NT; break;
+						case FE_TET5: nt = TET_NT; break;
+						case FE_TET10: nt = TET_NT; break;
+						case FE_TET15: nt = TET_NT; break;
+						case FE_TET20: nt = TET_NT; break;
+						case FE_PYRA5: nt = PYR_NT; break;
+                        case FE_PYRA13: nt = PYR_NT; break;
+						default:
+							assert(false);
+						}
 
-							bool badd = true;
-							for (int m = 0; m < ne; ++m)
+						// get the nodal values
+						for (int k = 0; k < 8; ++k)
+						{
+							FENode& node = mesh->Node(el.m_node[nt[k]]);
+							ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
+							en[k] = el.m_node[nt[k]];
+						}
+
+						if (showContour)
+						{
+							for (int k = 0; k < 8; ++k)
 							{
-								int m1 = edge[m][0];
-								int m2 = edge[m][1];
-								if (((n1 == m1) && (n2 == m2)) ||
-									((n1 == m2) && (n2 == m1)))
+								if (data.GetElementDataTag(i) > 0)
+									ec[k] = m_colorMap.map(data.GetElementValue(i, nt[k]));
+								else
+									ec[k] = GLColor(212, 212, 212);
+							}
+						}
+
+						// calculate the case of the element
+						int ncase = 0;
+						for (int k = 0; k < 8; ++k)
+							if (norm*ex[k] >= ref) ncase |= (1 << k);
+
+						// loop over faces
+						int* pf = LUT[ncase];
+						int ne = 0;
+						for (int l = 0; l < 5; l++)
+						{
+							if (*pf == -1) break;
+
+							// calculate nodal positions
+							vec3d r[3];
+							float w1, w2, w;
+							for (int k = 0; k < 3; k++)
+							{
+								int n1 = ET_HEX[pf[k]][0];
+								int n2 = ET_HEX[pf[k]][1];
+
+								w1 = norm * ex[n1];
+								w2 = norm * ex[n2];
+
+								if (w2 != w1)
+									w = (ref - w1) / (w2 - w1);
+								else
+									w = 0.f;
+
+								r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+							}
+
+							int nf = m_planeCut->Faces();
+							m_planeCut->AddFace(r, (mid >= 0 ? mid : 0));
+							GMesh::FACE& face = m_planeCut->Face(nf);
+
+							if (showContour)
+							{
+								GLColor c;
+								for (int k = 0; k < 3; k++)
 								{
-									badd = false;
-									etag[m]++;
-									break;
+									int n1 = ET_HEX[pf[k]][0];
+									int n2 = ET_HEX[pf[k]][1];
+
+									w1 = norm * ex[n1];
+									w2 = norm * ex[n2];
+
+									if (w2 != w1)
+										w = (ref - w1) / (w2 - w1);
+									else
+										w = 0.f;
+
+									c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
+									c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
+									c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
+
+									face.c[k] = c;
 								}
 							}
-
-							if (badd)
+							else
 							{
-								edge[ne][0] = n1;
-								edge[ne][1] = n2;
-								etag[ne] = 0;
-
-								GMesh::FACE& face = m_planeCut->Face(m_planeCut->Faces() - 1);
-								edgeNode[ne][0] = face.n[k];
-								edgeNode[ne][1] = face.n[(k+1)%3];
-								++ne;
+								face.c[0] = face.c[1] = face.c[2] = c;
 							}
-						}
-						pf += 3;
-					}
 
-					for (int k = 0; k < ne; ++k)
-					{
-						if (etag[k] == 0)
+							// add edges (for mesh rendering)
+							for (int k = 0; k < 3; ++k)
+							{
+								int n1 = pf[k];
+								int n2 = pf[(k + 1) % 3];
+
+								bool badd = true;
+								for (int m = 0; m < ne; ++m)
+								{
+									int m1 = edge[m][0];
+									int m2 = edge[m][1];
+									if (((n1 == m1) && (n2 == m2)) ||
+										((n1 == m2) && (n2 == m1)))
+									{
+										badd = false;
+										etag[m]++;
+										break;
+									}
+								}
+
+								if (badd)
+								{
+									edge[ne][0] = n1;
+									edge[ne][1] = n2;
+									etag[ne] = 0;
+
+									GMesh::FACE& face = m_planeCut->Face(m_planeCut->Faces() - 1);
+									edgeNode[ne][0] = face.n[k];
+									edgeNode[ne][1] = face.n[(k + 1) % 3];
+									++ne;
+								}
+							}
+							pf += 3;
+						}
+
+						for (int k = 0; k < ne; ++k)
 						{
-							m_planeCut->AddEdge(edgeNode[k], 2);
+							if (etag[k] == 0)
+							{
+								m_planeCut->AddEdge(edgeNode[k], 2);
+							}
 						}
 					}
 				}
 			}
 		}
-	}
 
-	m_planeCut->Update();
+		m_planeCut->Update();
+	}
+	else
+	{
+		for (int n = 0; n < mdl.Objects(); ++n)
+		{
+			GObject* po = mdl.Object(n);
+			if (po->GetFEMesh())
+			{
+				FEMesh* mesh = po->GetFEMesh();
+
+				if (m_showPlaneCut)
+				{
+					int NN = mesh->Nodes();
+					for (int i = 0; i < NN; ++i)
+					{
+						FENode& node = mesh->Node(i);
+						node.m_ntag = 0;
+
+						vec3d ri = mesh->LocalToGlobal(node.pos());
+						if (norm*ri < ref)
+						{
+							node.m_ntag = 1;
+						}
+					}
+
+					int NE = mesh->Elements();
+					for (int i = 0; i < NE; ++i)
+					{
+						FEElement& el = mesh->Element(i);
+						el.Show(); el.Unhide();
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							if (mesh->Node(el.m_node[j]).m_ntag == 1)
+							{
+								el.Hide();
+								break;
+							}
+						}
+					}
+				}
+				else
+				{
+					int NE = mesh->Elements();
+					for (int i = 0; i < NE; ++i)
+					{
+						FEElement& el = mesh->Element(i);
+						el.Show(); el.Unhide();
+					}
+				}
+
+				mesh->UpdateItemVisibility();
+			}
+		}
+	}
 }
 
 void CGLView::RenderPlaneCut()
@@ -8793,24 +9359,18 @@ void CGLView::RenderPlaneCut()
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
 
+	BOX box = doc->GetGModel()->GetBoundingBox();
+
+	glColor3ub(200, 0, 200);
+	RenderBox(box, false);
+
 	FEModel& fem = *doc->GetFEModel();
 	int MAT = fem.Materials();
 
 	glColor3ub(255, 255, 255);
 	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_COLOR_MATERIAL);
-	for (int i = 0; i <= MAT; ++i)
-	{
-		if (i == 0)
-		{
-			SetMatProps(nullptr);
-		}
-		else
-		{
-			SetMatProps(fem.GetMaterial(i - 1));
-		}
-		GetMeshRenderer().RenderGLMesh(m_planeCut, i);
-	}
+	glEnable(GL_COLOR_MATERIAL);
+	GetMeshRenderer().RenderGLMesh(m_planeCut);
 
 	if (GetViewSettings().m_bmesh)
 	{

@@ -50,6 +50,7 @@ public:
 
 private slots:
 	void on_var_currentIndexChanged(int n);
+	void on_col_currentIndexChanged(int n);
 	void on_select_clicked();
 
 private:

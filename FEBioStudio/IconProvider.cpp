@@ -32,14 +32,14 @@ SOFTWARE.*/
 #include <QPainter>
 
 CIconProvider* CIconProvider::m_instance = nullptr;
-int CIconProvider::m_theme = 0;
+bool CIconProvider::m_dark = false;
 int CIconProvider::m_dpr = 0;
 
-void CIconProvider::Instantiate(int theme, int dpr)
+void CIconProvider::Instantiate(bool dark, int dpr)
 {
 	if(!m_instance)
 	{
-		m_instance = new CIconProvider(theme, dpr);
+		m_instance = new CIconProvider(dark, dpr);
 	}
 }
 
@@ -85,14 +85,14 @@ QIcon CIconProvider::GetIcon(const QString& baseIconName, const QString& emblemI
 QString CIconProvider::themedIconURL(const QString& iconName)
 {
 	QString rs(iconName);
-	if ((m_theme == 1) || (m_theme == 3))
+	if (m_dark)
 	{
 		rs += "_neg";
 	}
 	QString url = ":/icons/" + rs + ".png";
 
 	// make sure the icon exists
-	if ((m_theme == 1) || (m_theme == 3))
+	if (m_dark)
 	{
 		QFile f(url);
 		if (!f.exists())

@@ -94,6 +94,7 @@ public:
         addEnumProperty(&m_nconv, "Multiview projection")->setEnumValues(vconv);
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
 		addEnumProperty(&m_nobjcol, "Object color")->setEnumValues(QStringList() << "Default" << "Object");
+		addBoolProperty(&m_dozsorting, "Improved Transparency");
 	}
 
 public:
@@ -105,6 +106,7 @@ public:
     int     m_nconv;
 	int		m_ntrans;
 	int		m_nobjcol;
+	bool	m_dozsorting;
 };
 
 //-----------------------------------------------------------------------------
@@ -113,7 +115,9 @@ class CPhysicsProps : public CDataPropertyList
 public:
 	CPhysicsProps()
 	{
+		addBoolProperty  (&m_showRigidBodies, "Show rigid bodies");
 		addBoolProperty  (&m_showRigidJoints, "Show rigid joints");
+		addBoolProperty  (&m_showRigidLabels, "Show rigid labels");
 		addBoolProperty  (&m_showRigidWalls , "Show rigid walls" );
 		addBoolProperty  (&m_showFibers     , "Show material fibers");
 		addDoubleProperty(&m_fiberScale   , "Fiber scale factor"  );
@@ -122,7 +126,9 @@ public:
 	}
 
 public:
+	bool	m_showRigidBodies;
 	bool	m_showRigidJoints;
+	bool	m_showRigidLabels;
 	bool	m_showRigidWalls;
 	bool	m_showFibers;
 	bool	m_showMatAxes;
@@ -940,8 +946,11 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
     ui->m_display->m_nconv = view.m_nconv;
 	ui->m_display->m_ntrans = view.m_transparencyMode;
 	ui->m_display->m_nobjcol = view.m_objectColor;
+	ui->m_display->m_dozsorting = view.m_bzsorting;
 
-	ui->m_physics->m_showRigidJoints = view.m_brigid;
+	ui->m_physics->m_showRigidBodies = view.m_brigid;
+	ui->m_physics->m_showRigidJoints = view.m_bjoint;
+	ui->m_physics->m_showRigidLabels = view.m_showRigidLabels;
 	ui->m_physics->m_showRigidWalls = view.m_bwall;
 	ui->m_physics->m_showFibers = view.m_bfiber;
 	ui->m_physics->m_fiberScale = view.m_fiber_scale;
@@ -1041,8 +1050,11 @@ void CDlgSettings::apply()
     view.m_nconv = ui->m_display->m_nconv;
 	view.m_transparencyMode = ui->m_display->m_ntrans;
 	view.m_objectColor = ui->m_display->m_nobjcol;
+	view.m_bzsorting = ui->m_display->m_dozsorting;
 
-	view.m_brigid = ui->m_physics->m_showRigidJoints;
+	view.m_brigid = ui->m_physics->m_showRigidBodies;
+	view.m_bjoint = ui->m_physics->m_showRigidJoints;
+	view.m_showRigidLabels = ui->m_physics->m_showRigidLabels;
 	view.m_bwall = ui->m_physics->m_showRigidWalls;
 	view.m_bfiber = ui->m_physics->m_showFibers;
 	view.m_fiber_scale = ui->m_physics->m_fiberScale;

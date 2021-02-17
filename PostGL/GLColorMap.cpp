@@ -281,8 +281,12 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 					float f1 = (n0 == n1 ? f0 : faceData1.value(i, j));
 					float f = f0 + (f1 - f0)*w;
 					face.m_tex[j] = f;
-					if (f > fmax) fmax = f;
-					if (f < fmin) fmin = f;
+
+					if (IS_ELEM_FIELD(m_nfield) == false)
+					{
+						if (f > fmax) fmax = f;
+						if (f < fmin) fmin = f;
+					}
 				}
 			}
 		}

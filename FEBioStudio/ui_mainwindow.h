@@ -141,11 +141,13 @@ public:
 	QMenu* menuView;
 	QMenu* menuHelp;
 	QMenu* menuRecentFiles;
+	QMenu* menuRecentProjects;
 	QMenu* menuRecentGeomFiles;
 	QMenu* menuWindows;
 	QMenu* menuViews;
 
 	QActionGroup* recentFilesActionGroup;
+	QActionGroup* recentProjectsActionGroup;
 	QActionGroup* recentFEFilesActionGroup;
 	QActionGroup* recentGeomFilesActionGroup;
 
@@ -206,6 +208,7 @@ public:
 
 	QStringList	m_recentFiles;
 	QStringList	m_recentGeomFiles;
+	QStringList m_recentProjects;
 
 	QAction* actionUndoViewChange;
 	QAction* actionRedoViewChange;
@@ -497,6 +500,7 @@ public:
 		QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
 		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
+		QAction* actionAddProbe = addAction("Add Probe", "actionAddProbe");
 		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); // actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
@@ -629,10 +633,14 @@ public:
 		menuHelp   = new QMenu("Help", menuBar);
 
 		menuRecentFiles = new QMenu("Open Recent");
+		menuRecentProjects = new QMenu("Open Recent Project");
 		menuRecentGeomFiles = new QMenu("Import Recent Geometry");
 
 		recentFilesActionGroup = new QActionGroup(mainWindow);
 		recentFilesActionGroup->setObjectName("recentFiles");
+
+		recentProjectsActionGroup = new QActionGroup(mainWindow);
+		recentProjectsActionGroup->setObjectName("recentProjects");
 
 		recentFEFilesActionGroup = new QActionGroup(mainWindow);
 		recentFEFilesActionGroup->setObjectName("recentFEFiles");
@@ -649,6 +657,7 @@ public:
 		menuFile->addAction(actionOpen);
 		menuFile->addAction(menuRecentFiles->menuAction());
 		menuFile->addAction(actionOpenProject);
+		menuFile->addAction(menuRecentProjects->menuAction());
 		menuFile->addAction(actionImportGeom);
 		menuFile->addAction(menuRecentGeomFiles->menuAction());
 		menuFile->addAction(actionCloseAll);
@@ -760,6 +769,7 @@ public:
 		menuPost->addAction(actionImageSlicer);
 		menuPost->addAction(actionVolumeRender);
 		menuPost->addAction(actionMarchingCubes);
+		menuPost->addAction(actionAddProbe);
 		menuPost->addSeparator();
 		menuPost->addAction(actionGraph);
 		menuPost->addSeparator();
@@ -1059,6 +1069,11 @@ public:
 		setRecentFileList(m_recentFiles, recentFiles, menuRecentFiles, recentFilesActionGroup);
 	}
 
+	void setRecentProjects(QStringList& recentFiles)
+	{
+		setRecentFileList(m_recentProjects, recentFiles, menuRecentProjects, recentProjectsActionGroup);
+	}
+
 	void setRecentGeomFiles(QStringList& recentFiles)
 	{
 		setRecentFileList(m_recentGeomFiles, recentFiles, menuRecentGeomFiles, recentGeomFilesActionGroup);
@@ -1067,6 +1082,11 @@ public:
 	void addToRecentFiles(const QString& file)
 	{
 		addToRecentFilesList(m_recentFiles, file, menuRecentFiles, recentFilesActionGroup);
+	}
+
+	void addToRecentProjects(const QString& file)
+	{
+		addToRecentFilesList(m_recentProjects, file, menuRecentProjects, recentProjectsActionGroup);
 	}
 
 	void addToRecentGeomFiles(const QString& file)

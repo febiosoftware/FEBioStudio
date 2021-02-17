@@ -426,6 +426,7 @@ bool xpltFileExport::WritePart(FEPostMesh& mesh, Post::FEDomain& part)
 	case FE_TRI6   : ne =  6; dtype = PLT_ELEM_TRI6; break;
 	case FE_BEAM2  : ne =  2; dtype = PLT_ELEM_TRUSS; break;
 	case FE_PYRA5  : ne =  5; dtype = PLT_ELEM_PYRA5; break;
+    case FE_PYRA13 : ne = 13; dtype = PLT_ELEM_PYRA13; break;
 	default:
 		assert(false);
 		return error("Unknown element type in WritePart");

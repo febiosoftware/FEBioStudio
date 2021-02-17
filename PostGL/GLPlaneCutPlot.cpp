@@ -440,6 +440,8 @@ void CGLPlaneCutPlot::RenderMesh()
 			case FE_TET10  : nt = TET_NT; break;
 			case FE_TET15  : nt = TET_NT; break;
 			case FE_TET20  : nt = TET_NT; break;
+            case FE_PYRA5  : nt = PYR_NT; break;
+            case FE_PYRA13 : nt = PYR_NT; break;
 			}
 
 			// calculate the case of the element
@@ -673,6 +675,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 			case FE_TET15: nt = TET_NT; break;
 			case FE_TET20: nt = TET_NT; break;
 			case FE_PYRA5: nt = PYR_NT; break;
+            case FE_PYRA13: nt = PYR_NT; break;
 			}
 
 			// get the nodal values
@@ -992,6 +995,8 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 			case FE_TET10  : nt = TET_NT; break;
 			case FE_TET15  : nt = TET_NT; break;
 			case FE_TET20  : nt = TET_NT; break;
+            case FE_PYRA5  : nt = PYR_NT; break;
+            case FE_PYRA13 : nt = PYR_NT; break;
 			}
 
 			// get the nodal values

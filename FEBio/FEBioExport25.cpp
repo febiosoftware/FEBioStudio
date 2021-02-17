@@ -2631,6 +2631,7 @@ const char* ElementTypeString(int ntype)
     case FE_QUAD9 :	sztype = "quad9" ; break;
 	case FE_PYRA5 :	sztype = "pyra5"; break;
 	case FE_PENTA15: sztype = "penta15"; break;
+    case FE_PYRA13: sztype = "pyra13"; break;
 	default:
 		assert(false);
 	}

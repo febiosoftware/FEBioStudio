@@ -48,12 +48,16 @@ public:
 	// Changed to allow for parsing of ANSI escape codes that might be
 	// returned from an ssh session
 	// Code taken from https://stackoverflow.com/questions/26500429/qtextedit-and-colored-bash-like-output-emulation
+	// Modifed to work with QRegularExpression instead of QRegEx
 	void AddText(const QString& txt, int n = 0);
 
 private slots:
 	void on_logSave_clicked(bool b);
 	void on_logClear_clicked(bool b);
 	void on_combo_currentIndexChanged(int i);
+
+private:
+void parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat);
 
 private:
 	Ui::CLogPanel*	ui;

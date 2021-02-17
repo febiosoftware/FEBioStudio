@@ -85,7 +85,7 @@ public:
 	FEPartData& operator = (const FEPartData& d);
 
 	// create a data field
-	bool Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
+	bool Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
 
 	// size of data field
 	int Size() const;
@@ -96,6 +96,9 @@ public:
 
 	// access operator
 	double& operator [] (int i) { return m_data[i]; }
+
+	void SetValue(int item, int lid, double v);
+	double GetValue(int item, int lid);
 
 	// build the element list
 	FEElemList* BuildElemList();
@@ -109,5 +112,16 @@ public:
 
 private:
 	vector<double>		m_data;		//!< data values
+	int					m_maxElemItems;	
 	vector<int>			m_part;		//!< the part to which the data applies
 };
+
+inline void FEPartData::SetValue(int i, int j, double v)
+{
+	m_data[i*m_maxElemItems + j] = v;
+}
+
+inline double FEPartData::GetValue(int i, int j)
+{
+	return m_data[i*m_maxElemItems + j];
+}

@@ -852,6 +852,13 @@ void CMainWindow::on_recentFiles_triggered(QAction* action)
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::on_recentProjects_triggered(QAction* action)
+{
+	QString fileName = action->text();
+	OpenFile(fileName);
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::on_recentFEFiles_triggered(QAction* action)
 {
 	QString fileName = action->text();
@@ -1142,7 +1149,7 @@ void CMainWindow::on_actionSaveProject_triggered()
 		{
 			QMessageBox::critical(this, "ERROR", "Failed saving the project file.");
 		}
-		else ui->addToRecentFiles(fileName);
+		else ui->addToRecentProjects(fileName);
 		ui->fileViewer->Update();
 		UpdateTitle();
 	}
