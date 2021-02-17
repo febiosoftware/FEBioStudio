@@ -34,6 +34,7 @@ FERevolveFaces::FERevolveFaces() : FEModifier("Revolve faces")
     AddVecParam(vec3d(0,0,1), "axis", "axis");
     AddVecParam(vec3d(0,0,0), "center", "center");
     AddDoubleParam(1.0, "angle", "angle");	// assumed in degrees
+    AddDoubleParam(0.0, "pitch", "pitch");
     AddIntParam(1, "segments", "segments");
 }
 
@@ -90,7 +91,8 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     vec3d axis = GetVecValue(0); axis.Normalize();
     vec3d center = GetVecValue(1);
     double w = GetFloatValue(2) * DEG2RAD;
-    int nseg = GetIntValue(3);
+    double p = GetFloatValue(3);
+    int nseg = GetIntValue(4);
     if (nseg < 1) return 0;
     
    	// count the tagged nodes
@@ -146,7 +148,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
             
             vec3d r = pm->LocalToGlobal(node.r) - center;
             Q.RotateVector(r);
-            node2.r = pm->GlobalToLocal(center + r);
+            node2.r = pm->GlobalToLocal(center + r) + axis*(wl/(2*PI)*p);
             node2.m_ntag = node.m_ntag;
             
             npos.push_back(node2.r);
@@ -161,7 +163,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                 
                 vec3d r = pm->LocalToGlobal(node.r) - center;
                 Q.RotateVector(r);
-                node3.r = pm->GlobalToLocal(center + r);
+                node3.r = pm->GlobalToLocal(center + r) + axis*(wl/(2*PI)*p);
                 node3.m_ntag = node.m_ntag;
             }
         }
