@@ -2,7 +2,11 @@
 #include <list>
 #include <vector>
 #include <string>
-using namespace std;
+//using namespace std;
+
+using std::list;
+using std::vector;
+using std::string;
 
 class FEMaterial;
 

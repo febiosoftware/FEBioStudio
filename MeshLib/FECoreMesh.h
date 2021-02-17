@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include "FEMeshBase.h"
 #include <vector>
 
+using std::vector;
+
 //-----------------------------------------------------------------------------
 //! This class defines a simple mesh structure that provides basic container
 //! services for storing mesh data. It only stores nodes, edges, faces. It implements 

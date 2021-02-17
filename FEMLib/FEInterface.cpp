@@ -30,7 +30,10 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <set>
 #include <memory>
-using namespace std;
+//using namespace std;
+
+using std::set;
+using std::unique_ptr;
 
 //=============================================================================
 // FEInterface
@@ -830,8 +833,8 @@ void FESpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 	FENodeList* pnl = m_pMaster->BuildNodeList();
 	if ((pfl == 0) || (pnl == 0)) return;
 
-	auto_ptr<FEFaceList> ps(pfl);
-	auto_ptr<FENodeList> pm(pnl);
+	unique_ptr<FEFaceList> ps(pfl);
+	unique_ptr<FENodeList> pm(pnl);
 
 	set<pair<int, int> > S;
 

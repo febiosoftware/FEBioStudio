@@ -47,7 +47,7 @@ typedef off_t off_type;
 typedef off_t off_type;
 #endif
 
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // Input archive

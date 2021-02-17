@@ -28,6 +28,9 @@ SOFTWARE.*/
 #include <string>
 #include <map>
 
+using std::map;
+using std::string;
+
 // This class helps in resolving file paths and converting between 
 // relative (to project dir) and absolute.
 // It also manages some macros that can be used to reference files in a path independent manner

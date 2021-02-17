@@ -30,7 +30,9 @@ SOFTWARE.*/
 
 #include "HelpDialog.h"
 
-using namespace std;
+using std::string;
+using std::vector;
+//using namespace std;
 
 class FEProject;
 class GMaterial;

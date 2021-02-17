@@ -31,7 +31,9 @@ SOFTWARE.*/
 #include <vector>
 #include <QPushButton>
 #include <assert.h>
-using namespace std;
+//using namespace std;
+
+using std::vector;
 
 class Ui::CMeshButtonBox
 {

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshIO/FileReader.h>
 #include <MeshTools/FEProject.h>
 #include <list>
-using namespace std;
+//using namespace std;
 
 class AnsysImport : public FEFileImport
 {

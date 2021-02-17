@@ -62,6 +62,8 @@ SOFTWARE.*/
 #include <sstream>
 #include <QTextStream>
 
+using std::stringstream;
+
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
 

@@ -33,7 +33,11 @@ SOFTWARE.*/
 #include <list>
 #include <stack>
 #include <sstream>
-using namespace std;
+//using namespace std;
+
+using std::list;
+using std::stack;
+using std::stringstream;
 
 //-----------------------------------------------------------------------------
 // Constructor for creating a GMeshObject from a naked mesh. 

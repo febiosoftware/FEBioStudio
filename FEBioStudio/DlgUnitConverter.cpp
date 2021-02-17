@@ -32,7 +32,9 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <QLineEdit>
 #include <vector>
-using namespace std;
+//using namespace std;
+
+using std::vector;
 
 enum Quantities {
 	ANGLE,

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FESurfaceModifier.h"
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class FECurveMesh;
 class GEdge;

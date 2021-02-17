@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <FEMLib/FEMaterial.h>
 #include <sstream>
 
+using std::stringstream;
+
 int GMaterial::m_nref = 1;
 
 GLColor col[GMaterial::MAX_COLORS] = {

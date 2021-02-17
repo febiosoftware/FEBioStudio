@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <MathLib/math3d.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class GLMesh;
 

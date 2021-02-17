@@ -1,7 +1,7 @@
 #pragma once
 #include <FSCore/FSObject.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class FEModel;
 class FEBoundaryCondition;

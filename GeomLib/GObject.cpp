@@ -35,6 +35,8 @@ SOFTWARE.*/
 #include <MeshTools/GLMesh.h>
 #include <sstream>
 
+using std::stringstream;
+
 class GObject::Imp
 {
 public:

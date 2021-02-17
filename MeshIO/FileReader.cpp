@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FileReader.h"
 #include <stdarg.h>
-using namespace std;
+//using namespace std;
 
 #ifdef WIN32
 #define ftell64(a)     _ftelli64(a)

@@ -62,7 +62,9 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModifier.h>
 #include <sstream>
-using namespace std;
+//using namespace std;
+
+using std::stringstream;
 
 CCreateButtonPanel::CCreateButtonPanel(QWidget* parent) : QWidget(parent)
 {

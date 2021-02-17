@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FEMesher.h"
 #include <vector>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // class MBItem: base class for all Multi Block items.

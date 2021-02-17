@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class FEMesh;
 class FESurfaceMesh;

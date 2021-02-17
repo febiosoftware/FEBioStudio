@@ -28,6 +28,10 @@ SOFTWARE.*/
 
 class FSObject;
 
+#include <string>
+
+using std::string;
+
 //-----------------------------------------------------------------------------
 //! general purpose FEBio error
 class FEBioExportError {};

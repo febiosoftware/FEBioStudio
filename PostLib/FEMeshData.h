@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <MathLib/math3d.h>
-using namespace std;
+//using namespace std;
 
 namespace Post {
 

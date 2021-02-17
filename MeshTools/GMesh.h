@@ -27,7 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/box.h>
 #include <vector>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::pair;
 
 //-----------------------------------------------------------------------------
 // The GMesh class defines a triangulated surface. GMesh classes are used to

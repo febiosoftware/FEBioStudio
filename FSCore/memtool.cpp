@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <memory.h>
 #endif
 
-using namespace std;
+//using namespace std;
 
 void mread(void* pdest, size_t Size, size_t Cnt, void** psrc)
 {

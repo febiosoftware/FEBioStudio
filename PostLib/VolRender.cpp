@@ -41,6 +41,8 @@ SOFTWARE.*/
 #include "ColorMap.h"
 #include <ImageLib/3DGradientMap.h>
 #include <sstream>
+
+using std::stringstream;
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////

@@ -44,7 +44,7 @@ public:
 	XMLElement(const char* szname = 0)
 	{
 		clear();
-		if (szname) strcpy(m_sztag, szname);
+		if (szname) strcpy_s(m_sztag, szname);
 	}
 
 	void clear()
@@ -54,13 +54,13 @@ public:
 		m_szval[0] = 0;
 	}
 
-	void name(const char* sz) { strcpy(m_sztag, sz); }
+	void name(const char* sz) { strcpy_s(m_sztag, sz); }
 
-	void value(const char* sz) { strcpy(m_szval, sz); }
-	void value(int    n) { sprintf(m_szval, "%d" , n); }
+	void value(const char* sz) { strcpy_s(m_szval, sz); }
+	void value(int    n) { sprintf_s(m_szval, "%d" , n); }
 	void value(int* pi, int n);
-	void value(bool   b) { sprintf(m_szval, "%d" , (int) b); }
-	void value(double g) { sprintf(m_szval, "%.9lg", g); }
+	void value(bool   b) { sprintf_s(m_szval, "%d" , (int) b); }
+	void value(double g) { sprintf_s(m_szval, "%.9lg", g); }
 	void value(double* pg, int n);
 	void value(const vec3d& r);
 	void value(const mat3d& a);
@@ -118,15 +118,15 @@ public:
 	void add_leaf(const char* szn, const char* szv);
 	void add_leaf(const char* szn, const std::string& s);
 
-	void add_leaf(const char* szn, int    n){ char szv[256]; sprintf(szv, "%d" , n); add_leaf(szn, szv); }
-	void add_leaf(const char* szn, bool   b){ char szv[256]; sprintf(szv, "%d" , b); add_leaf(szn, szv); }
-	void add_leaf(const char* szn, double g){ char szv[256]; sprintf(szv, "%lg", g); add_leaf(szn, szv); }
+	void add_leaf(const char* szn, int    n){ char szv[256]; sprintf_s(szv, "%d" , n); add_leaf(szn, szv); }
+	void add_leaf(const char* szn, bool   b){ char szv[256]; sprintf_s(szv, "%d" , b); add_leaf(szn, szv); }
+	void add_leaf(const char* szn, double g){ char szv[256]; sprintf_s(szv, "%lg", g); add_leaf(szn, szv); }
 	void add_leaf(const char* szn, int *pi, int n);
 	void add_leaf(const char* szn, float* pg, int n);
 	void add_leaf(const char* szn, double* pg, int n);
-	void add_leaf(const char* szn, const vec3d& r){ char szv[256]; sprintf(szv, "%g,%g,%g", r.x, r.y, r.z); add_leaf(szn, szv); }
-	void add_leaf(const char* szn, const quatd& q){ char szv[256]; sprintf(szv, "%g,%g,%g,%g", q.x, q.y, q.z, q.w); add_leaf(szn, szv); }
-	void add_leaf(const char* szn, const GLColor& c) { char szv[256]; sprintf(szv, "%d,%d,%d", c.r, c.g, c.b); }
+	void add_leaf(const char* szn, const vec3d& r){ char szv[256]; sprintf_s(szv, "%g,%g,%g", r.x, r.y, r.z); add_leaf(szn, szv); }
+	void add_leaf(const char* szn, const quatd& q){ char szv[256]; sprintf_s(szv, "%g,%g,%g,%g", q.x, q.y, q.z, q.w); add_leaf(szn, szv); }
+	void add_leaf(const char* szn, const GLColor& c) { char szv[256]; sprintf_s(szv, "%d,%d,%d", c.r, c.g, c.b); }
 	void add_leaf(XMLElement& el, const std::vector<int>& A);
 
 	void close_branch();

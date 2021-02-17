@@ -28,7 +28,10 @@ SOFTWARE.*/
 #include <string>
 #include <vector>
 #include <cstdint>
-using namespace std;
+//using namespace std;
+
+using std::string;
+using std::vector;
 
 #ifdef WIN32
 typedef unsigned char Byte;

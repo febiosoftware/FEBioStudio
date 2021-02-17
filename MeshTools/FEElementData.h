@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "FEItemList.h"
 #include <string>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class FEPart;
 class GPartList;

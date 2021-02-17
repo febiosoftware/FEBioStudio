@@ -39,7 +39,9 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/GGroup.h>
 #include <memory>
-using namespace std;
+//using namespace std;
+
+using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
 FEBioExport12::FEBioExport12(FEProject& prj) : FEBioExport(prj)
@@ -1740,7 +1742,7 @@ void FEBioExport12::WriteContactWall(FEStep& s)
 					XMLElement ef;
 					FEItemListBuilder* pitem = pw->GetItemList();
 					if (pitem == 0) throw InvalidItemListBuilder(pw);
-					auto_ptr<FEFaceList> pg(pitem->BuildFaceList());
+					unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
 					FEFaceList::Iterator pf = pg->First();
 					for (j = 0; j<pg->Size(); ++j, ++pf)
 					{
@@ -2006,7 +2008,7 @@ void FEBioExport12::WriteContactRigid(FEStep& s)
 
 			FEItemListBuilder* pitem = pr->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pr);
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator pn = pg->First();
 			for (j = 0; j<pg->Size(); ++j, ++pn) RC[(pn->m_pi)->m_nid - 1] = 1;
 
@@ -2339,7 +2341,7 @@ void FEBioExport12::WriteBCFixedDisplacement(FEFixedDisplacement& rbc, FEStep& s
 	if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 	FENodeList* pns = pItem->BuildNodeList();
 	if (pns == 0) throw InvalidItemListBuilder(&rbc);
-	auto_ptr<FENodeList> pg(pns);
+	unique_ptr<FENodeList> pg(pns);
 
 	// get the BC for this constraint
 	int bc = rbc.GetBC();
@@ -2389,7 +2391,7 @@ void FEBioExport12::WriteBCFixedRotation(FEFixedRotation& rbc, FEStep& s)
 	if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 	FENodeList* pns = pItem->BuildNodeList();
 	if (pns == 0) throw InvalidItemListBuilder(&rbc);
-	auto_ptr<FENodeList> pg(pns);
+	unique_ptr<FENodeList> pg(pns);
 
 	// get the BC for this constraint
 	int bc = rbc.GetBC();
@@ -2453,7 +2455,7 @@ void FEBioExport12::WriteBCFixedFluidPressure(FEFixedFluidPressure& rbc, FEStep&
 		FEItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
-		auto_ptr<FENodeList> pg(pItem->BuildNodeList());
+		unique_ptr<FENodeList> pg(pItem->BuildNodeList());
 
 		FENodeList::Iterator it = pg->First();
 		for (int k = 0; k<pg->Size(); ++k, ++it)
@@ -2503,7 +2505,7 @@ void FEBioExport12::WriteBCFixedTemperature(FEFixedTemperature& rbc, FEStep& s)
 		FEItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
-		auto_ptr<FENodeList> pg(pItem->BuildNodeList());
+		unique_ptr<FENodeList> pg(pItem->BuildNodeList());
 
 		FENodeList::Iterator it = pg->First();
 		for (int k = 0; k<pg->Size(); ++k, ++it)
@@ -2553,7 +2555,7 @@ void FEBioExport12::WriteBCFixedConcentration(FEFixedConcentration& rbc, FEStep&
 		FEItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
-		auto_ptr<FENodeList> pg(pItem->BuildNodeList());
+		unique_ptr<FENodeList> pg(pItem->BuildNodeList());
 
 		FENodeList::Iterator it = pg->First();
 		for (int k = 0; k<pg->Size(); ++k, ++it)
@@ -2642,7 +2644,7 @@ void FEBioExport12::WriteBCPrescribedDisplacement(FEPrescribedDisplacement& rbc,
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator it = pg->First();
 			FENode* pn;
 			int N = pg->Size();
@@ -2707,7 +2709,7 @@ void FEBioExport12::WriteBCPrescribedRotation(FEPrescribedRotation& rbc, FEStep&
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator it = pg->First();
 			FENode* pn;
 			int N = pg->Size();
@@ -2770,7 +2772,7 @@ void FEBioExport12::WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure& rb
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator it = pg->First();
 			FENode* pn;
 			int N = pg->Size();
@@ -2833,7 +2835,7 @@ void FEBioExport12::WriteBCPrescribedTemperature(FEPrescribedTemperature& rbc, F
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator it = pg->First();
 			FENode* pn;
 			int N = pg->Size();
@@ -2898,7 +2900,7 @@ void FEBioExport12::WriteBCPrescribedConcentration(FEPrescribedConcentration& rb
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 			FENodeList::Iterator it = pg->First();
 			FENode* pn;
 			int N = pg->Size();
@@ -2964,7 +2966,7 @@ void FEBioExport12::WriteLoadNodal(FEStep& s)
 					FEItemListBuilder* pitem = pbc->GetItemList();
 					if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-					auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+					unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 					FENodeList::Iterator it = pg->First();
 					for (int k = 0; k<pg->Size(); ++k, ++it)
 					{
@@ -3048,7 +3050,7 @@ void FEBioExport12::WriteLoadPressure(FEStep& s)
 				FEFaceList* pfl = pitem->BuildFaceList();
 				if (pfl == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FEFaceList> pg(pfl);
+				unique_ptr<FEFaceList> pg(pfl);
 
 				FEFaceList::Iterator pf = pg->First();
 
@@ -3164,7 +3166,7 @@ void FEBioExport12::WriteFluidFlux(FEStep& s)
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FEFaceList> pg(pitem->BuildFaceList());
+				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
 				FEFaceList::Iterator pf = pg->First();
 
 				for (int k = 0; k<pg->Size(); ++k, ++pf)
@@ -3241,7 +3243,7 @@ void FEBioExport12::WriteBPNormalTraction(FEStep& s)
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FEFaceList> pg(pitem->BuildFaceList());
+				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
 				FEFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
@@ -3312,7 +3314,7 @@ void FEBioExport12::WriteHeatFlux(FEStep& s)
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FEFaceList> pg(pitem->BuildFaceList());
+				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
 				FEFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
@@ -3385,7 +3387,7 @@ void FEBioExport12::WriteConvectiveHeatFlux(FEStep& s)
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FEFaceList> pg(pitem->BuildFaceList());
+				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
 				FEFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
@@ -3462,7 +3464,7 @@ void FEBioExport12::WriteSoluteFlux(FEStep& s)
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FEFaceList> pg(pitem->BuildFaceList());
+				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
 				FEFaceList::Iterator pf = pg->First();
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
@@ -3564,7 +3566,7 @@ void FEBioExport12::WriteLoadTraction(FEStep& s)
 				FEItemListBuilder* pitem = ptc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
-				auto_ptr<FEFaceList> pg(pitem->BuildFaceList());
+				unique_ptr<FEFaceList> pg(pitem->BuildFaceList());
 				FEFaceList::Iterator pf = pg->First();
 				vec3d t = ptc->GetTraction();
 
@@ -3684,7 +3686,7 @@ void FEBioExport12::WriteInitialSection()
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+				unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 				FENodeList::Iterator it = pg->First();
 				for (int k = 0; k<pg->Size(); ++k, ++it)
 				{
@@ -3728,7 +3730,7 @@ void FEBioExport12::WriteInitialSection()
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+				unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 				FENodeList::Iterator it = pg->First();
 				for (int k = 0; k<pg->Size(); ++k, ++it)
 				{
@@ -3767,7 +3769,7 @@ void FEBioExport12::WriteInitialSection()
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+				unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 				FENodeList::Iterator it = pg->First();
 				for (int k = 0; k<pg->Size(); ++k, ++it)
 				{
@@ -3806,7 +3808,7 @@ void FEBioExport12::WriteInitialSection()
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				auto_ptr<FENodeList> pg(pitem->BuildNodeList());
+				unique_ptr<FENodeList> pg(pitem->BuildNodeList());
 				FENodeList::Iterator it = pg->First();
 				for (int k = 0; k<pg->Size(); ++k, ++it)
 				{
@@ -4055,7 +4057,7 @@ void FEBioExport12::WriteSurface(XMLElement& el, FEItemListBuilder* pl)
 {
 	const string& name = pl->GetName();
 	if (name.empty() == false) el.add_attribute("name", name.c_str());
-	auto_ptr<FEFaceList> ps(pl->BuildFaceList());
+	unique_ptr<FEFaceList> ps(pl->BuildFaceList());
 	if (ps.get() == 0) throw InvalidItemListBuilder(pl);
 	m_xml.add_branch(el);
 	{

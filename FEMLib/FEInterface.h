@@ -3,7 +3,9 @@
 #include "MeshTools/FEItemListBuilder.h"
 #include "MeshTools/GMaterial.h"
 #include <list>
-using namespace std;
+//using namespace std;
+
+using std::list;
 
 //-----------------------------------------------------------------------------
 // Base class for contact interfaces

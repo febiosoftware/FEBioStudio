@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshLib/FEMesh.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

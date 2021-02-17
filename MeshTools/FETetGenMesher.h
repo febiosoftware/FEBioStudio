@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GItem.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class GObject;
 

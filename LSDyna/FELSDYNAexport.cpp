@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <memory>
 
+using std::unique_ptr;
+
 //-----------------------------------------------------------------------------
 FELSDYNAexport::FELSDYNAexport(FEProject& prj) : FEFileExport(prj)
 {
@@ -274,7 +276,7 @@ bool FELSDYNAexport::write_SET_SHELL_LIST()
 				fprintf(m_fp, "%10d%15.10lg%15.10lg%15.10lg%15.10lg\n", n++, 0., 0., 0., 0.);
 
 				FEPart* pg = po->GetFEPart(j);
-				auto_ptr<FEElemList> pl(pg->BuildElemList());
+				unique_ptr<FEElemList> pl(pg->BuildElemList());
 				int N = pl->Size();
 				FEElemList::Iterator pi = pl->First();
 				int ne[8], nc = 0;

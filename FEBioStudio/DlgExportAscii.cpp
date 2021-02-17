@@ -37,7 +37,9 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QFormLayout>
 #include <string>
-using namespace std;
+//using namespace std;
+
+using std::string;
 
 class Ui::CDlgExportAscii
 {

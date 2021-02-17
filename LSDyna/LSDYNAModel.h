@@ -29,7 +29,10 @@ SOFTWARE.*/
 #include <list>
 #include <string.h>
 
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::list;
 
 class FEModel;
 class GMeshObject;
@@ -90,9 +93,9 @@ public:
     public:
         MATERIAL() { mid = 0; szname[0] = 0; }
         MATERIAL(const MATERIAL& s)
-        { mid = s.mid; strcpy(szname, s.szname); }
+        { mid = s.mid; strcpy_s(szname, s.szname); }
         MATERIAL& operator = (const MATERIAL& s)
-        { mid = s.mid; strcpy(szname, s.szname); return *this; }
+        { mid = s.mid; strcpy_s(szname, s.szname); return *this; }
     public:
 		virtual void f() {};
 		int       mid;
@@ -194,8 +197,8 @@ public:
 
 	public:
 		SET_SEGMENT_TITLE() { m_szname[0] = 0; }
-		SET_SEGMENT_TITLE(const SET_SEGMENT_TITLE& s) { m_nsid = s.m_nsid; m_face = s.m_face; strcpy(m_szname, s.m_szname); }
-		SET_SEGMENT_TITLE& operator = (const SET_SEGMENT_TITLE& s) { m_nsid = s.m_nsid; m_face = s.m_face; strcpy(m_szname, s.m_szname); return *this; }
+		SET_SEGMENT_TITLE(const SET_SEGMENT_TITLE& s) { m_nsid = s.m_nsid; m_face = s.m_face; strcpy_s(m_szname, s.m_szname); }
+		SET_SEGMENT_TITLE& operator = (const SET_SEGMENT_TITLE& s) { m_nsid = s.m_nsid; m_face = s.m_face; strcpy_s(m_szname, s.m_szname); return *this; }
 
 	public:
 		int				m_nsid;	// segment ID

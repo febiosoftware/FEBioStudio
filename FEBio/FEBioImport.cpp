@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include <string.h>
 #include <cstdarg>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 extern GLColor col[];
 

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 #include <memory>
-using namespace std;
+//using namespace std;
 
 FEMeshExport::FEMeshExport(FEProject& prj) : FEFileExport(prj)
 {

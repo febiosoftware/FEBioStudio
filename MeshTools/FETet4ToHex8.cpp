@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEFaceEdgeList.h>
 #include "FEModifier.h"
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 FETet4ToHex8::FETet4ToHex8() : FEModifier("Tet4-to-Hex8")

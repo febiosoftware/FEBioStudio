@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 FEIDEASimport::FEIDEASimport(FEProject& prj) : FEFileImport(prj)
 {

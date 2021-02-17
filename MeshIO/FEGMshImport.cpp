@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 //! \todo PreView has trouble with reading surface elements and volume elements since
 //! the surface elements are not shell elements.

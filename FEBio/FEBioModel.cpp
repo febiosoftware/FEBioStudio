@@ -34,6 +34,8 @@ SOFTWARE.*/
 #include <stdarg.h>
 #include <sstream>
 
+using std::stringstream;
+
 static FEBioImport* febImport = nullptr;
 
 void InitLog(FEBioImport* im)

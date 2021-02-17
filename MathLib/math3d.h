@@ -28,7 +28,9 @@ SOFTWARE.*/
 #include <math.h>
 #include <assert.h>
 #include <vector>
-using namespace std;
+//using namespace std;
+
+using std::vector;
 
 //-----------------------------------------------------------------------------
 // useful constants for trig

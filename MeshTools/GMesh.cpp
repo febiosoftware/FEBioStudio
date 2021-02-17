@@ -29,7 +29,9 @@ SOFTWARE.*/
 #include <stack>
 #include <algorithm>
 #include <MeshLib/quad8.h>
-using namespace std;
+//using namespace std;
+
+using std::stack;
 
 //-----------------------------------------------------------------------------
 GMesh::GMesh(void)

@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <sstream>
 
+using std::stringstream;
+
 ModelFileReader::ModelFileReader(CModelDocument* doc)
 {
 	m_doc = doc;

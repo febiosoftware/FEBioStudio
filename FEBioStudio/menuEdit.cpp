@@ -48,6 +48,8 @@ SOFTWARE.*/
 #include <MeshTools/FEMeshOverlap.h>
 #include <sstream>
 
+using std::stringstream;
+
 void CMainWindow::on_actionUndo_triggered()
 {
 	CGLDocument* doc = GetGLDocument();

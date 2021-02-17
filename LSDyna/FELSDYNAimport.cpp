@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "GeomLib/GMeshObject.h"
 #include <MeshTools/GModel.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // FELSDYNAimport::CARD
@@ -63,7 +63,7 @@ bool FELSDYNAimport::CARD::nextd(double& d, int nwidth)
 	else
 	{
         char sz[256] = {0};
-        strncpy(sz,m_ch,nwidth);
+        strncpy_s(sz,m_ch,nwidth);
         d = atof(sz);
 		m_ch += nwidth;
 		if ((*m_ch == 0) || (m_ch - m_szline >= m_l)) m_ch = 0;
@@ -89,7 +89,7 @@ bool FELSDYNAimport::CARD::nexti(int& n, int nwidth)
 	else
 	{
         char sz[256] = {0};
-        strncpy(sz,m_ch,nwidth);
+        strncpy_s(sz,m_ch,nwidth);
         n = atoi(sz);
 		m_ch += nwidth;
 		if ((*m_ch == 0) || (m_ch - m_szline >= m_l)) m_ch = 0;
@@ -262,7 +262,7 @@ bool FELSDYNAimport::Read_Element_Solid()
 		if (ReadCard(card) == false) return false;
 	}
 
-	strcpy(m_szline, card.m_szline);
+	strcpy_s(m_szline, card.m_szline);
 
 	return true;
 }
@@ -286,7 +286,7 @@ bool FELSDYNAimport::Read_Element_Shell()
 		if (ReadCard(card) == false) return false;
 	}
 
-	strcpy(m_szline, card.m_szline);
+	strcpy_s(m_szline, card.m_szline);
 
 	return true;
 }
@@ -317,7 +317,7 @@ bool FELSDYNAimport::Read_Element_Shell_Thickness()
 		if (ReadCard(card) == false) return false;
 	}
 
-	strcpy(m_szline, card.m_szline);
+	strcpy_s(m_szline, card.m_szline);
 
 	return true;
 }
@@ -346,7 +346,7 @@ bool FELSDYNAimport::Read_Domain_Shell_Thickness()
         if (ReadCard(card) == false) return false;
     }
     
-    strcpy(m_szline, card.m_szline);
+    strcpy_s(m_szline, card.m_szline);
     
     return true;
 }
@@ -371,7 +371,7 @@ bool FELSDYNAimport::Read_Node()
 		if (ReadCard(card) == false) return false;
 	}
 
-	strcpy(m_szline, card.m_szline);
+	strcpy_s(m_szline, card.m_szline);
 
 	return true;
 }
@@ -401,7 +401,7 @@ bool FELSDYNAimport::Read_Nodal_Results()
 		if (ReadCard(card) == false) return false;
 	}
 
-	strcpy(m_szline, card.m_szline);
+	strcpy_s(m_szline, card.m_szline);
 
 	return true;
 }
@@ -413,7 +413,7 @@ bool FELSDYNAimport::Read_Part()
 	LSDYNAModel::PART p;
 	int m = (int)strlen(card.m_szline);
 	if (m > 80) m = 80;
-	strncpy(p.szname, card.m_szline, m);
+	strncpy_s(p.szname, card.m_szline, m);
 	p.szname[m] = 0;
 	int l = (int)strlen(p.szname);
 	if (l > 0)
@@ -434,7 +434,7 @@ bool FELSDYNAimport::Read_Part()
 	if (ReadCard(card) == false) return false;
 	if (!card.IsKeyword()) return false;
 
-	strcpy(m_szline, card.m_szline);
+	strcpy_s(m_szline, card.m_szline);
 
 	return true;
 }
@@ -448,7 +448,7 @@ bool FELSDYNAimport::Read_Part_Contact()
     if (ReadCard(card) == false) return false;
     if (!card.IsKeyword()) return false;
     
-    strcpy(m_szline, card.m_szline);
+    strcpy_s(m_szline, card.m_szline);
     
     return true;
 }
@@ -475,7 +475,7 @@ bool FELSDYNAimport::Read_Mat_Other()
     if (ReadCard(card) == false) return false;
     LSDYNAModel::MATERIAL *mat;
     mat = new LSDYNAModel::MATERIAL;
-    strcpy(mat->szname, m_szline);
+    strcpy_s(mat->szname, m_szline);
     if (strstr(m_szline, "_TITLE") != 0) {
         if (ReadCard(card) == false) return false;
     }
@@ -485,7 +485,7 @@ bool FELSDYNAimport::Read_Mat_Other()
         if (ReadCard(card) == false) return false;
     }
     
-    strcpy(m_szline, card.m_szline);
+    strcpy_s(m_szline, card.m_szline);
     
     return true;
 }
@@ -497,7 +497,7 @@ bool FELSDYNAimport::Read_Mat_Elastic()
 	LSDYNAModel::MAT_ELASTIC *mat;
     mat = new LSDYNAModel::MAT_ELASTIC;
     if (strstr(m_szline, "_TITLE") != 0) {
-        strcpy(mat->szname, card.m_szline);
+        strcpy_s(mat->szname, card.m_szline);
         if (ReadCard(card) == false) return false;
     }
 	card.nexti(mat->mid);
@@ -513,7 +513,7 @@ bool FELSDYNAimport::Read_Mat_Elastic()
 	if (ReadCard(card) == false) return false;
 	if (!card.IsKeyword()) return false;
 
-	strcpy(m_szline, card.m_szline);
+	strcpy_s(m_szline, card.m_szline);
 
 	return true;
 }
@@ -525,7 +525,7 @@ bool FELSDYNAimport::Read_Mat_Viscoelastic()
 	LSDYNAModel::MAT_VISCOELASTIC *mat;
     mat = new LSDYNAModel::MAT_VISCOELASTIC;
     if (strstr(m_szline, "_TITLE") != 0) {
-        strcpy(mat->szname, card.m_szline);
+        strcpy_s(mat->szname, card.m_szline);
         if (ReadCard(card) == false) return false;
     }
     card.nexti(mat->mid);
@@ -541,7 +541,7 @@ bool FELSDYNAimport::Read_Mat_Viscoelastic()
     if (ReadCard(card) == false) return false;
     if (!card.IsKeyword()) return false;
     
-    strcpy(m_szline, card.m_szline);
+    strcpy_s(m_szline, card.m_szline);
     
     return true;
 }
@@ -553,7 +553,7 @@ bool FELSDYNAimport::Read_Mat_Kelvin_Maxwell_Viscoelastic()
     LSDYNAModel::MAT_KELVIN_MAXWELL_VISCOELASTIC *mat;
 	mat = new LSDYNAModel::MAT_KELVIN_MAXWELL_VISCOELASTIC;
     if (strstr(m_szline, "_TITLE") != 0) {
-        strcpy(mat->szname, card.m_szline);
+        strcpy_s(mat->szname, card.m_szline);
         if (ReadCard(card) == false) return false;
     }
     card.nexti(mat->mid);
@@ -571,7 +571,7 @@ bool FELSDYNAimport::Read_Mat_Kelvin_Maxwell_Viscoelastic()
     if (ReadCard(card) == false) return false;
     if (!card.IsKeyword()) return false;
     
-    strcpy(m_szline, card.m_szline);
+    strcpy_s(m_szline, card.m_szline);
     
     return true;
 }
@@ -583,7 +583,7 @@ bool FELSDYNAimport::Read_Mat_Rigid()
 	LSDYNAModel::MAT_RIGID *mat;
     mat = new LSDYNAModel::MAT_RIGID;
     if (strstr(m_szline, "_TITLE") != 0) {
-        strcpy(mat->szname, card.m_szline);
+        strcpy_s(mat->szname, card.m_szline);
         if (ReadCard(card) == false) return false;
     }
     card.nexti(mat->mid);
@@ -614,7 +614,7 @@ bool FELSDYNAimport::Read_Mat_Rigid()
     if (ReadCard(card) == false) return false;
     if (!card.IsKeyword()) return false;
     
-    strcpy(m_szline, card.m_szline);
+    strcpy_s(m_szline, card.m_szline);
     
     return true;
 }
@@ -625,7 +625,7 @@ bool FELSDYNAimport::Read_Mat_Elastic_Spring_Discrete_Beam()
     if (ReadCard(card) == false) return false;
 	LSDYNAModel::MATERIAL *mat;
     mat = new LSDYNAModel::MATERIAL;
-    strcpy(mat->szname, m_szline);
+    strcpy_s(mat->szname, m_szline);
     if (strstr(m_szline, "_TITLE") != 0) {
         if (ReadCard(card) == false) return false;
     }
@@ -638,7 +638,7 @@ bool FELSDYNAimport::Read_Mat_Elastic_Spring_Discrete_Beam()
         if (ReadCard(card) == false) return false;
     }
     
-    strcpy(m_szline, card.m_szline);
+    strcpy_s(m_szline, card.m_szline);
     
     return true;
 }
@@ -648,7 +648,7 @@ bool FELSDYNAimport::Read_Set_Segment_Title()
 	CARD card;
 	if (ReadCard(card) == false) return false;
 	LSDYNAModel::SET_SEGMENT_TITLE s;
-	strcpy(s.m_szname, card.szvalue());
+	strcpy_s(s.m_szname, card.szvalue());
 	if (ReadCard(card) == false) return false;
 	card.nexti(s.m_nsid);
 
@@ -666,7 +666,7 @@ bool FELSDYNAimport::Read_Set_Segment_Title()
 
 	m_dyna.addSetSegmentTitle(s);
 
-	strcpy(m_szline, card.m_szline);
+	strcpy_s(m_szline, card.m_szline);
 
 	return true;
 }

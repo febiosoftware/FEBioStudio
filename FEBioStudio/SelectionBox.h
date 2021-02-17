@@ -28,7 +28,10 @@ SOFTWARE.*/
 #include <QWidget>
 #include <vector>
 #include <list>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::list;
 
 class QListWidgetItem;
 

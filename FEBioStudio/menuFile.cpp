@@ -116,6 +116,8 @@ SOFTWARE.*/
 #include <PostLib/FEVTKImport.h>
 #include <sstream>
 
+using std::stringstream;
+
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif

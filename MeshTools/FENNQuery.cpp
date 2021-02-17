@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FENNQuery.h"
 #include <stdlib.h>
-using namespace std;
+//using namespace std;
 
 int cmp_node(const void* e1, const void* e2)
 {

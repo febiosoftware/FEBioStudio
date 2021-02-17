@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FEDataManager.h"
 #include <FSCore/box.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 namespace Post {
 

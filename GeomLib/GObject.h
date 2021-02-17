@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GBaseObject.h"
 #include <FSCore/box.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // forward declarations

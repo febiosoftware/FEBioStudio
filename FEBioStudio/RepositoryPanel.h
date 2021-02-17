@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <QWidget>
 #include <QVariantMap>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 namespace Ui {
 	class CRepositoryPanel;

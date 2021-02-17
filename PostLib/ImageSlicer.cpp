@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <assert.h>
 #include <sstream>
+
+using std::stringstream;
 using namespace Post;
 
 

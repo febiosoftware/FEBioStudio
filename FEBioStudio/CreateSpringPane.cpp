@@ -44,7 +44,9 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "GLHighlighter.h"
 #include "Commands.h"
-using namespace std;
+//using namespace std;
+
+using std::stringstream;
 
 class Ui::CCreateSpringPane
 {

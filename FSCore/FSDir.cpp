@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FSDir.h"
 #include <QtCore/QFileInfo>
-using namespace std;
+//using namespace std;
 map<string, string>	FSDir::m_defs;
 
 #ifdef WIN32

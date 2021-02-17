@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 #include <vector>
 #include <list>
-using namespace std;
+//using namespace std;
 
 class FESTLimport : public FEFileImport
 {

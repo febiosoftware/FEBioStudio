@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <vector>
 #include <QtCore/QThread>
 #include <QDialog>
-using namespace std;
+//using namespace std;
 
 class CMainWindow;
 class QToolButton;

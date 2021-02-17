@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FEModifier.h"
 #include <vector>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 // Splits the selected elements

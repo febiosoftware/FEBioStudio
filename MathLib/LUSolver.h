@@ -28,7 +28,9 @@ SOFTWARE.*/
 #include "DenseMatrix.h"
 #include <vector>
 
-using namespace std;
+//using namespace std;
+
+using std::vector;
 
 //-----------------------------------------------------------------------------
 //! LU decomposition solver

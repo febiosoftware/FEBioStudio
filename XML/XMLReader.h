@@ -133,7 +133,7 @@ public:
 
 	const char* Name() { return m_sztag; }
 
-	void value(char* szstr) { strcpy(szstr, m_szval); }
+	void value(char* szstr) { strcpy_s(szstr, sizeof(szstr), m_szval); }
 	void value(double& val) { val = atof(m_szval); } 
 	void value(float& val)  { val = (float) atof(m_szval); }
 	void value(int& val) { val = atoi(m_szval); }
@@ -147,7 +147,7 @@ public:
 	void value(bool& b) { b = (atoi(m_szval) == 1); }
 	void value(vector<int>& l);
 	void value(GLColor& c);
-	void value(string& s);
+	void value(std::string& s);
 
 	const char* szvalue() { return m_szval; }
 
@@ -230,13 +230,13 @@ public:
 		char szval[XMLTag::MAX_TAG];
 		InvalidAttributeValue(XMLTag& t, const char* sza, const char* szv) : tag(t)
 		{ 
-			strcpy(szatt, sza);
-			strcpy(szval, szv);
+			strcpy_s(szatt, sza);
+			strcpy_s(szval, szv);
 		}
 		InvalidAttributeValue(XMLTag& t, XMLAtt& a) : tag(t)
 		{ 
-			strcpy(szatt, a.m_sztag);
-			strcpy(szval, a.m_szval);
+			strcpy_s(szatt, a.m_sztag);
+			strcpy_s(szval, a.m_szval);
 		}
 	};
 
@@ -245,7 +245,7 @@ public:
 	public:
 		XMLTag tag;
 		char szatt[XMLAtt::MAX_TAG];
-		MissingAttribute(XMLTag& t, const char* sza) : tag(t) { strcpy(szatt, sza); }
+		MissingAttribute(XMLTag& t, const char* sza) : tag(t) { strcpy_s(szatt, sza); }
 	};
 
 	class MissingTag
@@ -346,7 +346,7 @@ protected:
 	int		m_nline;	// current line (used only as temp storage)
 	int64_t	m_currentPos;	//!< current file position
 
-	string	m_comment;	// last comment that was read
+	std::string	m_comment;	// last comment that was read
 
 	char		m_buf[BUF_SIZE];
 	int64_t		m_bufIndex, m_bufSize;

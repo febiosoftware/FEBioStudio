@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FETetGenMesher.h>
-using namespace std;
+//using namespace std;
 
 //-----------------------------------------------------------------------------
 class MeshLayer : CSerializable

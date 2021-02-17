@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <vector>
 #include <list>
-using namespace std;
+//using namespace std;
 
 class FENikeProject
 {

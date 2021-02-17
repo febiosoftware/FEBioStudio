@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <sstream>
 
+using std::stringstream;
+
 FEBioFormat2::FEBioFormat2(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {
 }

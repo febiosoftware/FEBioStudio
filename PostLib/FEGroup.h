@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshLib/FEElement.h>
 #include <MeshTools/FEGroup.h>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 class FECoreMesh;
 

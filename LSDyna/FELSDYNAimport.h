@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "LSDYNAModel.h"
 
 #include <list>
-using namespace std;
+//using namespace std;
 
 class FELSDYNAimport : public FEFileImport
 {

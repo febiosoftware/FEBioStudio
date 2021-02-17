@@ -29,7 +29,11 @@ SOFTWARE.*/
 #include <list>
 #include <vector>
 #include <map>
-using namespace std;
+//using namespace std;
+
+using std::vector;
+using std::list;
+using std::map;
 
 class AbaqusModel
 {
@@ -130,8 +134,8 @@ public:
 		};
 
 		Distribution() {}
-		Distribution(const Distribution& d) { strcpy(m_szname, d.m_szname); m_data = d.m_data; }
-		void operator = (const Distribution& d) { strcpy(m_szname, d.m_szname); m_data = d.m_data; }
+		Distribution(const Distribution& d) { strcpy_s(m_szname, d.m_szname); m_data = d.m_data; }
+		void operator = (const Distribution& d) { strcpy_s(m_szname, d.m_szname); m_data = d.m_data; }
 
 	public:
 		char			m_szname[Max_Name + 1];

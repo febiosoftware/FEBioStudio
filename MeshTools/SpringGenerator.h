@@ -28,6 +28,9 @@ SOFTWARE.*/
 #include <vector>
 #include <MathLib/math3d.h>
 
+using std::vector;
+using std::pair;
+
 class GModel;
 class GDiscreteElementSet;
 

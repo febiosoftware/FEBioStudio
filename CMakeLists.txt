@@ -171,6 +171,7 @@ endif()
 
 if(WIN32)
     add_definitions(-DWIN32)
+	add_compile_options(/MP)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)

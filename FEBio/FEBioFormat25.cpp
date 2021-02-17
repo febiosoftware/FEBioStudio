@@ -41,6 +41,8 @@ SOFTWARE.*/
 #include <assert.h>
 #include <sstream>
 
+using std::stringstream;
+
 FEBioFormat25::FEBioFormat25(FEBioImport* fileReader, FEBioModel& febio) : FEBioFormat(fileReader, febio)
 {
 	m_geomFormat = 0;

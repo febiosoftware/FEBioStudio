@@ -36,6 +36,8 @@ SOFTWARE.*/
 #include <stdarg.h>
 #include <sstream>
 
+using std::stringstream;
+
 // are there any objects?
 void check_000(FEProject& prj, std::vector<FSObject*>& objList);
 

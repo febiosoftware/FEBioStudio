@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <utility>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 namespace Post {
 

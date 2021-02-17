@@ -42,6 +42,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <FEMLib/FEMultiMaterial.h>
 
+using std::stringstream;
+
 //=================================================================================================
 QSelectBox::QSelectBox(QWidget* parent) : QWidget(parent)
 {

@@ -56,6 +56,9 @@ SOFTWARE.*/
 #include "LocalDatabaseHandler.h"
 #include "RepoConnectionHandler.h"
 
+using std::unordered_map;
+using std::out_of_range;
+
 enum ITEMTYPES {PROJECTITEM = 1001, FOLDERITEM = 1002, FILEITEM = 1003};
 enum DATATYPES {DESCRIPTION = 1001, TAGS = 1002, SIZE = 1003};
 

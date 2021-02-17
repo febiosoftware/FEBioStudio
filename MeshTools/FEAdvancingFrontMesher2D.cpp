@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FECurveMesher.h"
 #include <MeshLib/triangulate.h>
 #include <list>
-using namespace std;
+//using namespace std;
 
 struct FRONT_NODE
 {
