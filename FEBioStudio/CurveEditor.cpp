@@ -497,7 +497,7 @@ void CCurveEditor::BuildModelTree()
 							for (int k = 0; k < N; ++k)
 							{
 								Param& pk = plj->GetParam(k);
-								if (pk.IsEditable() && ((pk.GetParamType() == Param_FLOAT) || pk.IsVariable()))
+								if (pk.IsEditable())
 								{
 									FELoadCurve* plc = pk.GetLoadCurve();
 									ui->addTreeItem(t2, pk.GetLongName(), plc, &pk);
@@ -548,7 +548,7 @@ void CCurveEditor::BuildModelTree()
 							for (int n = 0; n<NP; ++n)
 							{
 								Param& p = pc->GetParam(n);
-								if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
+								if (p.IsEditable())
 								{
 									FELoadCurve* plc = p.GetLoadCurve();
 									ui->addTreeItem(t3, p.GetLongName(), plc, &p);
@@ -576,7 +576,7 @@ void CCurveEditor::BuildModelTree()
 					for (int n = 0; n < pc->Parameters(); ++n)
 					{
 						Param& p = pc->GetParam(n);
-						if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
+						if (p.IsEditable())
 						{
 							FELoadCurve* plc = p.GetLoadCurve();
 							t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
@@ -605,7 +605,7 @@ void CCurveEditor::BuildModelTree()
 					for (int n = 0; n<NP; ++n)
 					{
 						Param& p = pc->GetParam(n);
-						if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
+						if (p.IsEditable())
 						{
 							FELoadCurve* plc = p.GetLoadCurve();
 							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
@@ -630,7 +630,7 @@ void CCurveEditor::BuildModelTree()
 				for (int n = 0; n<NP; ++n)
 				{
 					Param& p = po->GetParam(n);
-					if (p.IsEditable() && (p.GetParamType() == Param_FLOAT))
+					if (p.IsEditable())
 					{
 						FELoadCurve* plc = p.GetLoadCurve();
 						ui->addTreeItem(t3, p.GetLongName(), plc, &p);
@@ -672,7 +672,7 @@ void CCurveEditor::AddMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
 	for (int j = 0; j<n; ++j)
 	{
 		Param& p = pm->GetParam(j);
-		if (p.IsEditable() && ((p.GetParamType() == Param_FLOAT) || p.IsVariable()))
+		if (p.IsEditable())
 		{
 			FELoadCurve* plc = p.GetLoadCurve();
 			ui->addTreeItem(tp, p.GetLongName(), plc, &p);
