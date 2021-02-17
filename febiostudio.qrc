@@ -163,5 +163,9 @@
         <file>icons/emblems/missing.png</file>
         <file>icons/emblems/plus.png</file>
         <file>icons/emblems/warning.png</file>
+        <file>icons/pdf.png</file>
+        <file>icons/txt.png</file>
+        <file>icons/video.png</file>
+        <file>icons/html.png</file>
 	</qresource>
 </RCC>
