@@ -43,6 +43,9 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <QtCore/QThread>
 
+using std::ifstream;
+using std::ios;
+
 #define MAX_XFER_BUF_SIZE 16384
 
 #ifdef WIN32

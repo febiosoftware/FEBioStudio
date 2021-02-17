@@ -406,7 +406,7 @@ public:
 		int projID = 0;
 		if(rows == 1)
 		{
-			projID = stoi(table[1]);
+			projID = std::stoi(table[1]);
 		}
 
 		sqlite3_free_table(table);
@@ -428,7 +428,7 @@ public:
 		int catID = 1;
 		if(rows == 1)
 		{
-			catID = stoi(table[1]);
+			catID = std::stoi(table[1]);
 		}
 
 		sqlite3_free_table(table);
@@ -624,7 +624,7 @@ void CLocalDatabaseHandler::GetCategoryMap(std::map<int, std::string>& categoryM
 	{
 		int rowStart = row*cols;
 
-		categoryMap[stoi(table[rowStart])] = std::string(table[rowStart + 1]);
+		categoryMap[std::stoi(table[rowStart])] = std::string(table[rowStart + 1]);
 	}
 
 	sqlite3_free_table(table);
@@ -655,7 +655,7 @@ QList<QList<QVariant>> CLocalDatabaseHandler::GetProjectFileInfo(int projID)
 		char **table2;
 		int rows2, cols2;
 
-		int fileID = stoi(table[rowStart]);
+		int fileID = std::stoi(table[rowStart]);
 		QString query2 = QString("SELECT tags.tag FROM fileTags JOIN tags ON fileTags.tag = tags.ID WHERE fileTags.file = %1").arg(fileID);
 		std::string queryStd2 = query2.toStdString();
 
@@ -750,7 +750,7 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 
 std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 {
-	if(term.isEmpty()) return unordered_set<int>();
+	if(term.isEmpty()) return std::unordered_set<int>();
 
 	char **table;
 	int rows, cols;
@@ -765,7 +765,7 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 
 	for(int row = 1; row <= rows; row++)
 	{
-		projects.insert(stoi(table[row]));
+		projects.insert(std::stoi(table[row]));
 	}
 
 	sqlite3_free_table(table);
@@ -778,7 +778,7 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 
 	for(int row = 1; row <= rows; row++)
 	{
-		projects.insert(stoi(table[row]));
+		projects.insert(std::stoi(table[row]));
 	}
 
 	sqlite3_free_table(table);
@@ -791,7 +791,7 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 
 	for(int row = 1; row <= rows; row++)
 	{
-		projects.insert(stoi(table[row]));
+		projects.insert(std::stoi(table[row]));
 	}
 
 	sqlite3_free_table(table);
@@ -827,7 +827,7 @@ std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
 
 	for(int row = 1; row <= rows; row++)
 	{
-		files.insert(stoi(table[row]));
+		files.insert(std::stoi(table[row]));
 	}
 
 	sqlite3_free_table(table);
@@ -840,7 +840,7 @@ std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
 
 	for(int row = 1; row <= rows; row++)
 	{
-		files.insert(stoi(table[row]));
+		files.insert(std::stoi(table[row]));
 	}
 
 	sqlite3_free_table(table);

@@ -55,6 +55,9 @@ SOFTWARE.*/
 #include "ZipFiles.h"
 #include <iostream>
 
+using std::cout;
+using std::endl;
+
 #define REPO_URL "repo.febio.org"
 #define API_URL "/modelRepo/api/v1.02/"
 

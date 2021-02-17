@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <MathLib/mat3d.h>
 #include <FSCore/color.h>
 #include <stdexcept>
+#include <cstring>
 
 #ifndef WIN32
 	#include <string>
@@ -133,7 +134,7 @@ public:
 
 	const char* Name() { return m_sztag; }
 
-	void value(char* szstr) { strcpy_s(szstr, sizeof(szstr), m_szval); }
+	void value(char* szstr) { strcpy(szstr, m_szval); }
 	void value(double& val) { val = atof(m_szval); } 
 	void value(float& val)  { val = (float) atof(m_szval); }
 	void value(int& val) { val = atoi(m_szval); }
@@ -230,13 +231,13 @@ public:
 		char szval[XMLTag::MAX_TAG];
 		InvalidAttributeValue(XMLTag& t, const char* sza, const char* szv) : tag(t)
 		{ 
-			strcpy_s(szatt, sza);
-			strcpy_s(szval, szv);
+			strcpy(szatt, sza);
+			strcpy(szval, szv);
 		}
 		InvalidAttributeValue(XMLTag& t, XMLAtt& a) : tag(t)
 		{ 
-			strcpy_s(szatt, a.m_sztag);
-			strcpy_s(szval, a.m_szval);
+			strcpy(szatt, a.m_sztag);
+			strcpy(szval, a.m_szval);
 		}
 	};
 
@@ -245,7 +246,7 @@ public:
 	public:
 		XMLTag tag;
 		char szatt[XMLAtt::MAX_TAG];
-		MissingAttribute(XMLTag& t, const char* sza) : tag(t) { strcpy_s(szatt, sza); }
+		MissingAttribute(XMLTag& t, const char* sza) : tag(t) { strcpy(szatt, sza); }
 	};
 
 	class MissingTag

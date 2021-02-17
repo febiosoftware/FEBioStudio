@@ -51,7 +51,7 @@ private:
 	void showEvent(QShowEvent* event) override;
 
 private slots:
-	void on_buttons_buttonClicked(int id);
+	void on_buttons_idClicked(int id);
 
 private:
 	Ui::CToolsPanel*	ui;

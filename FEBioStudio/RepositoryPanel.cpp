@@ -619,7 +619,7 @@ public:
 		{
 			parent = currentProjectFolders.at(path.left(pos + index).toStdString());
 		}
-		catch(out_of_range& e)
+		catch(std::out_of_range& e)
 		{
 			parent = new FolderItem(path.right(path.length() - index).left(pos));
 
@@ -859,11 +859,11 @@ void CRepositoryPanel::AddCategory(char **data)
 
 void CRepositoryPanel::AddProject(char **data)
 {
-	int ID = stoi(data[0]);
+	int ID = std::stoi(data[0]);
 	QString name(data[1]);
 	QString owner(data[2]);
 	QString category(data[3]);
-	bool authorized = stoi(data[4]);
+	bool authorized = std::stoi(data[4]);
 	bool cont = authorized;
 
 	bool owned = false;

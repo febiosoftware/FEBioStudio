@@ -451,7 +451,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 				const char* szname = name.c_str();
 				if ((szname==0) || (szname[0]==0))
 				{
-					sprintf_s(szbuf, "%s_master", pi->GetName().c_str());
+					sprintf(szbuf, "%s_master", pi->GetName().c_str());
 					szname = szbuf;
 				}
 				AddSurface(szname,	pms);
@@ -463,7 +463,7 @@ void FEBioExport25::BuildSurfaceList(FEProject& prj)
 				szname = name.c_str();
 				if ((szname==0) || (szname[0]==0))
 				{
-					sprintf_s(szbuf, "%s_slave", pi->GetName().c_str());
+					sprintf(szbuf, "%s_slave", pi->GetName().c_str());
 					szname = szbuf;
 				}
 				AddSurface(szname,	pss);
@@ -2686,9 +2686,9 @@ void FEBioExport25::WriteGeometryPart(GPart* pg, bool useMatNames)
 			}
 
 			if (nset == 0)
-				sprintf_s(szname, "%s", pg->GetName().c_str());
+				sprintf(szname, "%s", pg->GetName().c_str());
 			else 
-				sprintf_s(szname, "%s__%d", pg->GetName().c_str(), nset+1);
+				sprintf(szname, "%s__%d", pg->GetName().c_str(), nset+1);
 
 			ElementSet es;
 			es.mesh = pm;

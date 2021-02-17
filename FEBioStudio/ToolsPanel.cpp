@@ -69,7 +69,7 @@ void CToolsPanel::initTools()
     tools.push_back(new CQuadricFitTool    (wnd));
 }
 
-void CToolsPanel::on_buttons_buttonClicked(int id)
+void CToolsPanel::on_buttons_idClicked(int id)
 {
 	// deactivate the active tool
 	if (m_activeTool) m_activeTool->Deactivate();
