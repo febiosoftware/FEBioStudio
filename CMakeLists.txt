@@ -34,7 +34,7 @@ if(NOT Qt5_DIR)
     if(WIN32)
         find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
 			PATHS ${Qt5_Root}/* ${Qt5_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-			PATH_SUFFIXES "msvc2015_64/lib" "msvc2017_64/lib" "msvc2019_64/lib"
+			PATH_SUFFIXES "msvc2017_64/lib" "msvc2019_64/lib" "msvc2015_64/lib"
 			DOC "Qt5 CMake Directory")
     elseif(APPLE)
 		find_file(Qt5_CMAKE cmake/Qt5/Qt5Config.cmake
@@ -254,7 +254,10 @@ if(Qt5WebEngineWidgets_FOUND)
 	link_libraries(Qt5::WebEngineWidgets)
 endif()
 
-if(APPLE)
+if(WIN32)
+	add_executable(FEBioStudio WIN32 ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+elseif(APPLE)
 	# set bundle icon
 	set(FBS_ICON ${CMAKE_CURRENT_SOURCE_DIR}/icons/FEBioStudio.icns)
 	set(MACOSX_BUNDLE_ICON_FILE FEBioStudio.icns)
