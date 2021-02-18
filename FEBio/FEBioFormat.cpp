@@ -306,6 +306,14 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	++tag;
 	do
 	{
+		// This flag needs to be read into the FEBioModel.
+		// The problem is that this flag is defined in the multi-phasic analysis step
+		// so we need to read this flag before the usual parameter processing
+		if (tag == "shell_normal_nodal")
+		{
+			tag.value(febio.m_shellNodalNormals);
+		}
+
 		if (ReadParam(*pstep, tag) == false)
 		{
 			if (tag == "title") tag.value(ops.sztitle);

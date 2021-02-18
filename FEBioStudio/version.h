@@ -46,7 +46,8 @@ SOFTWARE.*/
 // 3.9: Made fixed charge density a variable parameter for multi- and triphasic materials. 
 // 3.10: Added density to prestrain elastic material.
 // 3.11: changes to FEMeshData classes. 
-#define SAVE_VERSION	0x0003000B
+// 3.12: Added shell nodal normal flag to GPart
+#define SAVE_VERSION	0x0003000C
 
 // lowest supported version number
 #define MIN_PRV_VERSION	0x0001000D

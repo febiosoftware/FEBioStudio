@@ -29,6 +29,7 @@ SOFTWARE.*/
 
 class QLabel;
 class GObject;
+class GPart;
 class FESurfaceMesh;
 
 class CMeshInfoPanel : public QWidget
@@ -62,4 +63,17 @@ public:
 
 	void setInfo(const FESurfaceMesh* pm);
 	void setInfo(int nodes, int edges, int faces);
+};
+
+class CPartInfoPanel : public QWidget
+{
+private:
+	QLabel*	m_solid;
+	QLabel*	m_shell;
+
+public:
+	CPartInfoPanel(QWidget* parent = 0);
+
+	void setInfo(GPart* pg);
+	void setPartInfo(int solid, int shell);
 };

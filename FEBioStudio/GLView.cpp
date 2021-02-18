@@ -1760,6 +1760,9 @@ void CGLView::RenderModelView()
 	{
 		RenderPlaneCut();
 	}
+
+	// render the tags
+	if (view.m_bTags) RenderTags();
 }
 
 //-----------------------------------------------------------------------------
@@ -2007,6 +2010,10 @@ void CGLView::SetupProjection()
 
 	view.m_ffar = (L + R) * 2;
 	view.m_fnear = 0.01f*view.m_ffar;
+
+	double D = 0.5*cam.GetFinalTargetDistance();
+	if ((D > 0) && (D < view.m_fnear)) view.m_fnear = D;
+
 	if (height() == 0) view.m_ar = 1; view.m_ar = (GLfloat)width() / (GLfloat)height();
 
 	// set up projection matrix
@@ -8750,18 +8757,14 @@ void CGLView::RenderTags()
 	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	if (pdoc == nullptr) return;
-	
-	Post::CGLModel* model = pdoc->GetGLModel();
-	Post::FEPostModel* fem = pdoc->GetFEModel();
-	if (fem == nullptr) return;
-	BOX box = fem->GetBoundingBox();
-
 	VIEW_SETTINGS& view = GetViewSettings();
 
+	GObject* po = GetActiveObject();
+	if (po == nullptr) return;
+	if (po->GetFEMesh() == nullptr) return;
+
 	// get the mesh
-	Post::FEPostMesh& mesh = *model->GetActiveMesh();
+	FEMesh& mesh = *po->GetFEMesh();
 
 	// create the tag array.
 	// We add a tag for each selected item
@@ -8777,57 +8780,63 @@ void CGLView::RenderTags()
 	// process elements
 	if (mode == ITEM_ELEM)
 	{
-		const vector<FEElement_*> selectedElements = pdoc->GetGLModel()->GetElementSelection();
-		for (int i = 0; i<(int)selectedElements.size(); i++)
+		int NE = mesh.Elements();
+		for (int i = 0; i<NE; i++)
 		{
-			FEElement_& el = *selectedElements[i]; assert(el.IsSelected());
+			FEElement_& el = mesh.Element(i);
+			if (el.IsSelected())
+			{
+				tag.r = mesh.LocalToGlobal(mesh.ElementCenter(el));
+				tag.bvis = false;
+				tag.ntag = 0;
+				sprintf(tag.sztag, "E%d", el.GetID());
+				vtag.push_back(tag);
 
-			tag.r = mesh.ElementCenter(el);
-			tag.bvis = false;
-			tag.ntag = 0;
-			sprintf(tag.sztag, "E%d", el.GetID());
-			vtag.push_back(tag);
-
-			int ne = el.Nodes();
-			for (int j = 0; j<ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 1;
+				int ne = el.Nodes();
+				for (int j = 0; j < ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 1;
+			}
 		}
 	}
 
 	// process faces
 	if (mode == ITEM_FACE)
 	{
-		const vector<FEFace*> selectedFaces = pdoc->GetGLModel()->GetFaceSelection();
-		for (int i = 0; i<(int)selectedFaces.size(); ++i)
+		int NF = mesh.Faces();
+		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = *selectedFaces[i]; assert(f.IsSelected());
+			FEFace& f = mesh.Face(i);
+			if (f.IsSelected())
+			{
+				tag.r = mesh.LocalToGlobal(mesh.FaceCenter(f));
+				tag.bvis = false;
+				tag.ntag = (f.IsExternal() ? 0 : 1);
+				sprintf(tag.sztag, "F%d", f.GetID());
+				vtag.push_back(tag);
 
-			tag.r = mesh.FaceCenter(f);
-			tag.bvis = false;
-			tag.ntag = (f.IsExternal() ? 0 : 1);
-			sprintf(tag.sztag, "F%d", f.GetID());
-			vtag.push_back(tag);
-
-			int nf = f.Nodes();
-			for (int j = 0; j<nf; ++j) mesh.Node(f.n[j]).m_ntag = 1;
+				int nf = f.Nodes();
+				for (int j = 0; j < nf; ++j) mesh.Node(f.n[j]).m_ntag = 1;
+			}
 		}
 	}
 
 	// process edges
 	if (mode == ITEM_EDGE)
 	{
-		const vector<FEEdge*> selectedEdges = pdoc->GetGLModel()->GetEdgeSelection();
-		for (int i = 0; i<(int)selectedEdges.size(); i++)
+		int NC = mesh.Edges();
+		for (int i = 0; i<NC; i++)
 		{
-			FEEdge& edge = *selectedEdges[i]; assert(edge.IsSelected());
+			FEEdge& edge = mesh.Edge(i);
+			if (edge.IsSelected())
+			{
+				tag.r = mesh.LocalToGlobal(mesh.EdgeCenter(edge));
+				tag.bvis = false;
+				tag.ntag = 0;
+				sprintf(tag.sztag, "L%d", edge.GetID());
+				vtag.push_back(tag);
 
-			tag.r = mesh.EdgeCenter(edge);
-			tag.bvis = false;
-			tag.ntag = 0;
-			sprintf(tag.sztag, "L%d", edge.GetID());
-			vtag.push_back(tag);
-
-			int ne = edge.Nodes();
-			for (int j = 0; j<ne; ++j) mesh.Node(edge.n[j]).m_ntag = 1;
+				int ne = edge.Nodes();
+				for (int j = 0; j < ne; ++j) mesh.Node(edge.n[j]).m_ntag = 1;
+			}
 		}
 	}
 
@@ -8839,7 +8848,7 @@ void CGLView::RenderTags()
 			FENode& node = mesh.Node(i);
 			if (node.IsSelected())
 			{
-				tag.r = node.r;
+				tag.r = mesh.LocalToGlobal(node.r);
 				tag.bvis = false;
 				tag.ntag = (node.IsExterior() ? 0 : 1);
 				sprintf(tag.sztag, "N%d", node.GetID());
@@ -8856,7 +8865,7 @@ void CGLView::RenderTags()
 			FENode& node = mesh.Node(i);
 			if (node.m_ntag == 1)
 			{
-				tag.r = node.r;
+				tag.r = mesh.LocalToGlobal(node.r);
 				tag.bvis = false;
 				tag.ntag = (node.IsExterior() ? 0 : 1);
 				sprintf(tag.sztag, "N%d", node.GetID());

@@ -623,12 +623,12 @@ ParamBlock::~ParamBlock(void)
 }
 
 //-----------------------------------------------------------------------------
-ParamBlock::ParamBlock(ParamBlock &b)
+ParamBlock::ParamBlock(const ParamBlock &b)
 {
 	m_Param = b.m_Param;
 }
 
-ParamBlock& ParamBlock::operator =(ParamBlock &b)
+ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 {
 	m_Param = b.m_Param;
 
@@ -820,4 +820,18 @@ void ParamContainer::LoadParam(const Param& p)
 {
 	Param* param = GetParamPtr(p.GetParamID());
 	if (param) *param = p;
+}
+
+void ParamContainer::CopyParams(const ParamContainer& pc)
+{
+#ifdef _DEBUG
+	assert(pc.Parameters() == Parameters());
+	for (int i = 0; i < Parameters(); ++i)
+	{
+		Param& pi = GetParam(i);
+		const Param& pj = pc.GetParam(i);
+		assert(pi.GetParamType() == pj.GetParamType());
+	}
+#endif
+	m_Param = pc.m_Param;
 }

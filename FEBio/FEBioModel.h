@@ -171,8 +171,12 @@ public:
 
 		vector<int> GetElementIDList() const { return m_elem; }
 
+	public:
+		bool		m_bshellNodalNormals;
+
 	private:
 		int			m_matID;	// zero-based material index
+
 		std::string m_name;	
 		Part*		m_part;
 		vector<int>	m_elem;		// list of (local) element IDs that belong to this domain
@@ -458,6 +462,9 @@ public:
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);
 	bool BuildDiscreteSet(GDiscreteElementSet& set, const char* szset);
+
+public:
+	bool	m_shellNodalNormals;
 
 private:
 	FEModel&				m_fem;

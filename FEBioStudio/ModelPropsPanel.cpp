@@ -263,12 +263,13 @@ class Ui::CModelPropsPanel
 	enum {
 		OBJECT_PANEL,
 		BCOBJECT_PANEL,
+		GITEM_PANEL,
 		MESHINFO_PANEL,
+		PARTINFO_PANEL,
 		PROPS_PANEL,
 		SELECTION1_PANEL,
 		SELECTION2_PANEL,
-		IMAGE_PANEL,
-		GITEM_PANEL
+		IMAGE_PANEL
 	};
 
 public:
@@ -285,6 +286,7 @@ public:
 	CBCObjectPropsPanel*	bcobj;
 	CGItemPropsPanel*		gitem;
 	CMeshInfoPanel*	mesh;
+	CPartInfoPanel* part;
 	QTabWidget* imageTab;
 
 	CImageViewer*		imageView;
@@ -322,6 +324,7 @@ public:
 		sel2->setObjectName("select2");
 
 		mesh = new CMeshInfoPanel;
+		part = new CPartInfoPanel;
 
 		imageView = new CImageViewer;
 		histoView = new CHistogramViewer;
@@ -333,17 +336,19 @@ public:
 		tool = new CToolBox;
 		tool->addTool("Object", obj);
 		tool->addTool("Object", bcobj);
+		tool->addTool("Object", gitem);
 		tool->addTool("Mesh Info", mesh);
+		tool->addTool("Mesh Info", part);
 		tool->addTool("Properties", propStack);
 		tool->addTool("Selection", sel1);
 		tool->addTool("Selection", sel2);
 		tool->addTool("3D Image", imageTab);
-		tool->addTool("Object", gitem);
 
 		// hide all panels initially
 //		tool->getToolItem(OBJECT_PANEL)->setVisible(false);
 		tool->getToolItem(BCOBJECT_PANEL)->setVisible(false);
 		tool->getToolItem(MESHINFO_PANEL)->setVisible(false);
+		tool->getToolItem(PARTINFO_PANEL)->setVisible(false);
 //		tool->getToolItem(PROPS_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION1_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION2_PANEL)->setVisible(false);
@@ -479,14 +484,24 @@ public:
 		return bcobj->currentStepID();
 	}
 
-	void showMeshPanel(bool b)
+	void showMeshInfoPanel(bool b)
 	{
 		tool->getToolItem(MESHINFO_PANEL)->setVisible(b);
+	}
+
+	void showPartInfoPanel(bool b)
+	{
+		tool->getToolItem(PARTINFO_PANEL)->setVisible(b);
 	}
 
 	void setObject(GObject* po)
 	{
 		mesh->setInfo(po);
+	}
+
+	void setPart(GPart* pg)
+	{
+		part->setInfo(pg);
 	}
 };
 
@@ -559,9 +574,14 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		ui->showGItemInfo(false);
 
 		if (dynamic_cast<GObject*>(m_currentObject))
-			ui->showMeshPanel(true);
+			ui->showMeshInfoPanel(true);
 		else
-			ui->showMeshPanel(false);
+			ui->showMeshInfoPanel(false);
+
+		if (dynamic_cast<GPart*>(m_currentObject))
+			ui->showPartInfoPanel(true);
+		else
+			ui->showPartInfoPanel(false);
 
 		if (dynamic_cast<FEMaterial*>(m_currentObject))
 		{
@@ -588,7 +608,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				{
 					GObject* go = dynamic_cast<GObject*>(po);
 					ui->showObjectInfo(true, true, nameEditable, toQColor(go->GetColor()));
-					ui->showMeshPanel(true);
+					ui->showMeshInfoPanel(true);
 					ui->setObject(go);
 				}
 				else if (dynamic_cast<GMaterial*>(po))
@@ -621,7 +641,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				{
 					GItem* git = dynamic_cast<GItem*>(po);
 					QString typeStr("unknown");
-					if (dynamic_cast<GPart*>(git)) typeStr = "Part";
+					if (dynamic_cast<GPart*>(git)) {
+						typeStr = "Part"; ui->setPart(dynamic_cast<GPart*>(git)); }
 					if (dynamic_cast<GFace*>(git)) typeStr = "Surface";
 					if (dynamic_cast<GEdge*>(git)) typeStr = "Edge";
 					if (dynamic_cast<GNode*>(git)) typeStr = "Node";

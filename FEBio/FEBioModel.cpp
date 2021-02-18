@@ -581,12 +581,14 @@ FEPart* FEBioModel::PartInstance::BuildFEPart(const char* szname)
 //=============================================================================
 FEBioModel::Domain::Domain(Part* part) : m_part(part)
 {
+	m_bshellNodalNormals = true;
 }
 
 FEBioModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
 {
 	m_name = name;
 	m_matID = matID;
+	m_bshellNodalNormals = true;
 }
 
 FEBioModel::Domain::Domain(const Domain& part)
@@ -594,6 +596,7 @@ FEBioModel::Domain::Domain(const Domain& part)
 	m_part = part.m_part;
 	m_name = part.m_name;
 	m_matID = part.m_matID;
+	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_elem = part.m_elem;
 }
 
@@ -601,6 +604,7 @@ void FEBioModel::Domain::operator = (const Domain& part)
 {
 	m_part = part.m_part;
 	m_name = part.m_name;
+	m_bshellNodalNormals = part.m_bshellNodalNormals;
 	m_matID = part.m_matID;
 	m_elem = part.m_elem;
 }
@@ -733,6 +737,7 @@ FEBioModel::LogVariable::LogVariable(int ntype, const std::string& data)
 //=============================================================================
 FEBioModel::FEBioModel(FEModel& fem) : m_fem(fem)
 {
+	m_shellNodalNormals = true;
 }
 
 FEBioModel::~FEBioModel()
@@ -826,6 +831,8 @@ void FEBioModel::UpdateGeometry()
 
 			std::string name = elSet.name();
 			gpart.SetName(name.c_str());
+
+			gpart.setShellNormalNodal(elSet.m_bshellNodalNormals);
 		}
 	}
 }

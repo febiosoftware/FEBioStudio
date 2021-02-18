@@ -329,6 +329,21 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 
 					FEBioModel::Domain* dom = part->FindDomain(szname);
 					if (dom) dom->SetMatID(matID);
+
+					if (tag.isleaf() == false)
+					{
+						++tag;
+						do
+						{
+							if (tag == "shell_nodal_normal")
+							{
+								if (dom) tag.value(dom->m_bshellNodalNormals);
+							}
+							else ParseUnknownTag(tag);
+							++tag;
+						}
+						while (!tag.isend());
+					}
 				}
 			}
 			else ParseUnknownTag(tag);
@@ -485,6 +500,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 
 	// add domain to list
 	FEBioModel::Domain* dom = part->AddDomain(name, matID);
+	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// create elements
 	FEMesh& mesh = *part->GetFEMesh();

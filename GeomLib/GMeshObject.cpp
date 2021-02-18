@@ -614,6 +614,15 @@ void GMeshObject::Save(OArchive &ar)
 				ar.WriteChunk(CID_OBJ_PART_ID, nid);
 				ar.WriteChunk(CID_OBJ_PART_MAT, mid);
 				ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
+
+				if (p.Parameters() > 0)
+				{
+					ar.BeginChunk(CID_OBJ_PART_PARAMS);
+					{
+						p.ParamContainer::Save(ar);
+					}
+					ar.EndChunk();
+				}
 			}
 			ar.EndChunk();
 		}
@@ -778,6 +787,11 @@ void GMeshObject::Load(IArchive& ar)
 								p->SetName(szname);
 							}
 							break;
+						case CID_OBJ_PART_PARAMS:
+						{
+							p->ParamContainer::Load(ar);
+						}
+						break;
 						}
 						ar.CloseChunk();
 					}

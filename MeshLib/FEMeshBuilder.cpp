@@ -1623,7 +1623,7 @@ void FEMeshBuilder::BuildFaces()
 			else
 			{
 				FEElement_* pen = m_mesh.ElementPtr(el.m_nbr[j]);
-				if (el.m_gid < pen->m_gid)
+				if ((el.m_gid < pen->m_gid) && (pen->IsShell() == false))
 				{
 					++faces;
 				}
@@ -1669,7 +1669,7 @@ void FEMeshBuilder::BuildFaces()
 				pf->SetID(nf + 1);
 				++pf; ++nf;
 			}
-			else if (el.m_gid < pen->m_gid)
+			else if ((el.m_gid < pen->m_gid) && (pen->IsShell() == false))
 			{
 				*pf = el.GetFace(j);
 				pf->SetExterior(false);

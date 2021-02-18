@@ -400,7 +400,7 @@ void FEElement_::GetFace(int i, FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-FEEdge FEElement_::GetEdge(int i)
+FEEdge FEElement_::GetEdge(int i) const
 {
 	FEEdge e;
 
@@ -453,6 +453,22 @@ FEEdge FEElement_::GetEdge(int i)
 }
 
 //-----------------------------------------------------------------------------
+//! Find the edge index of a shell
+int FEElement_::FindEdge(const FEEdge& edge) const
+{
+	assert(IsShell());
+	int nbre = Edges();
+	for (int l = 0; l < nbre; l++)
+	{
+		if (edge == GetEdge(l))
+		{
+			return l;
+		}
+	}
+	return -1;
+}
+
+//-----------------------------------------------------------------------------
 void FEElement_::GetShellFace(FEFace& f) const
 {
 	switch (Type())
@@ -495,12 +511,10 @@ int FEElement_::FindFace(const FEFace& f)
 	int nf = Faces();
 	for (int i = 0; i<nf; ++i) {
 		FEFace lf = GetFace(i);
-		bool found = true;
-		for (int j = 0; j<f.Nodes(); ++j) {
-			found = lf.HasNode(f.n[j]);
-			if (!found) break;
+		if (lf == f)
+		{
+			return i;
 		}
-		if (found) return i;
 	}
 	return -1;
 }

@@ -300,6 +300,7 @@ void FEBioFormat25::ParseGeometryElements(FEBioModel::Part* part, XMLTag& tag)
 
 	// add domain to list
 	FEBioModel::Domain* dom = part->AddDomain(name, matID);
+	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// read the elements
 	vector<FEBioModel::ELEM> elem;
@@ -2412,7 +2413,40 @@ void FEBioFormat25::ParseContact(FEStep *pstep, XMLTag &tag)
 			if (szname) pci->SetName(szname);
 
 			// read the parameters
-			ReadParameters(*pci, tag);
+			if (tag.isleaf() == false)
+			{
+				++tag;
+				do
+				{
+					// try to read the parameters
+					if (ReadParam(*pci, tag) == false)
+					{
+						if (tag == "flip_slave")
+						{
+							Param* pp = pci->GetParam("flip_primary"); assert(pp);
+							if (pp)
+							{
+								bool b = false;
+								tag.value(b);
+								pp->SetBoolValue(b);
+							}
+						}
+						else if (tag == "flip_master")
+						{
+							Param* pp = pci->GetParam("flip_secondary"); assert(pp);
+							if (pp)
+							{
+								bool b = false;
+								tag.value(b);
+								pp->SetBoolValue(b);
+							}
+						}
+						else ParseUnknownTag(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+
 
 			// assign surfaces
 			FEBioModel::Part* part = surfPair->GetPart();
