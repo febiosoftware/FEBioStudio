@@ -26,6 +26,12 @@ SOFTWARE.*/
 
 
 #include "stdafx.h"
+
+#ifdef HAS_SSH
+#include <libssh/libssh.h>
+#include <libssh/sftp.h>
+#endif
+
 #include <string.h>
 #include <string>
 #include <fstream>
@@ -49,8 +55,6 @@ SOFTWARE.*/
 
 #ifdef HAS_SSH
 
-#include <libssh/libssh.h>
-#include <libssh/sftp.h>
 
 class CSSHHandler::SSHData
 {
