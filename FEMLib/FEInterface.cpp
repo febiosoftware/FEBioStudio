@@ -652,7 +652,9 @@ FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int ns
     AddBoolParam  (false, "flip_primary"       , "flip normal on primary"  );
     AddBoolParam  (false, "flip_secondary"     , "flip normal on secondary");
 	AddIntParam   (0    , "knmult"             , "higher-order stiffness");
-	AddBoolParam(false, "update_penalty", "update-penalty");
+	AddBoolParam  (false, "update_penalty"     , "update-penalty");
+    AddBoolParam  (false, "shell_bottom_primary"  , "use shell bottom on primary"  );
+    AddBoolParam  (false, "shell_bottom_secondary", "use shell bottom on secondary");
 }
 
 //=============================================================================
