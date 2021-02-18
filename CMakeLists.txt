@@ -171,7 +171,7 @@ endif()
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
-    add_definitions(-DWIN32)
+    add_definitions(-DWIN32 /MP)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
@@ -248,7 +248,7 @@ endforeach(name)
 ##### Add binaries #####
 
 # Linking the Qt libraries also pulls in the include files
-link_libraries(Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Charts)
+link_libraries(Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network Qt5::OpenGL)
 
 if(Qt5WebEngineWidgets_FOUND)
 	link_libraries(Qt5::WebEngineWidgets)
@@ -278,23 +278,47 @@ endforeach(name)
 
 ##### Set dev commit information #####
 
-execute_process(COMMAND git rev-parse --abbrev-ref HEAD
-    RESULT_VARIABLE SUCCESS
-    OUTPUT_VARIABLE BRANCH_NAME)
+# Cross platform execute_process
+macro(crossExecProcess CMD OUT)
+	if(WIN32)
+		execute_process(COMMAND cmd.exe /c ${CMD}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			RESULT_VARIABLE SUCCESS
+			OUTPUT_VARIABLE ${OUT}
+			OUTPUT_STRIP_TRAILING_WHITESPACE)
+	else()
+		execute_process(COMMAND ${CMD}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			RESULT_VARIABLE SUCCESS
+			OUTPUT_VARIABLE ${OUT}
+			OUTPUT_STRIP_TRAILING_WHITESPACE)
+	endif()
+endmacro()
 
-string(STRIP ${BRANCH_NAME} BRANCH_NAME)
-string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
-    
-if(SUCCESS EQUAL 0 AND ISDEVELOP)
-    execute_process(COMMAND git rev-parse --short HEAD
-        RESULT_VARIABLE SUCCESS
-        OUTPUT_VARIABLE DEVCOMMIT)
-    
-    string(STRIP ${DEVCOMMIT} DEVCOMMIT)
-    
-    if(${SUCCESS} EQUAL 0)
-        target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
-    endif()
+# Check for git and give warning if not available
+if(WIN32)
+	crossExecProcess("where git" NULL)
+else()
+	crossExecProcess("which git" NULL)
+endif()
+
+if(SUCCESS EQUAL 0)
+	# Get branch name and check if we're on the develop branch
+	crossExecProcess("git rev-parse --abbrev-ref HEAD" BRANCH_NAME)
+
+	string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
+	
+	# Get the commit info and set the DEVCOMMIT macro
+	if(SUCCESS EQUAL 0 AND ISDEVELOP)
+			
+		crossExecProcess("git rev-parse --short=9 HEAD" DEVCOMMIT)
+		
+		if(${SUCCESS} EQUAL 0)
+			target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+		endif()
+	endif()
+else()
+	message(WARNING "Could not find git in system PATH. Development version info will not be addded.")
 endif()
 
 ##### Link Libraries #####
