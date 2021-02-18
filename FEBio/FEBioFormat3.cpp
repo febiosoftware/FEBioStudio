@@ -1284,6 +1284,9 @@ int prescribe_dof(const char* sz)
 	else if (abc == "u") bc = 15;
 	else if (abc == "v") bc = 16;
 	else if (abc == "w") bc = 17;
+    else if (abc == "sx") bc = 18;
+    else if (abc == "sy") bc = 19;
+    else if (abc == "sz") bc = 20;
 	return bc;
 }
 
@@ -1360,6 +1363,12 @@ void FEBioFormat3::ParseBCPrescribed(FEStep* pstep, XMLTag& tag)
 		bc = bc - 15;
 		pbc = new FEPrescribedRotation(&fem, pg, bc, 1.0, pstep->GetID());
 		break;
+    case 18:
+    case 19:
+    case 20:
+        bc = bc - 18;
+        pbc = new FEPrescribedShellDisplacement(&fem, pg, bc, 1.0, pstep->GetID());
+        break;
 	}
 
 	// get the optional name
