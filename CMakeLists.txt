@@ -282,7 +282,7 @@ endforeach(name)
 ##### Set dev commit information #####
 
 # Cross platform execute_process
-macro(crossExecProcess CMD OUT)
+macro(crossExecProcess OUT)
 	if(WIN32)
 		execute_process(COMMAND cmd.exe /c ${CMD}
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -300,21 +300,24 @@ endmacro()
 
 # Check for git and give warning if not available
 if(WIN32)
-	crossExecProcess("where git" NULL)
+    set(CMD where git)
 else()
-	crossExecProcess("which git" NULL)
+	set(CMD which git)
 endif()
+crossExecProcess(NULL)
 
 if(SUCCESS EQUAL 0)
 	# Get branch name and check if we're on the develop branch
-	crossExecProcess("git rev-parse --abbrev-ref HEAD" BRANCH_NAME)
+    set(CMD git rev-parse --abbrev-ref HEAD)
+	crossExecProcess(BRANCH_NAME)
 
 	string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
 	
 	# Get the commit info and set the DEVCOMMIT macro
 	if(SUCCESS EQUAL 0 AND ISDEVELOP)
-			
-		crossExecProcess("git rev-parse --short=9 HEAD" DEVCOMMIT)
+        
+        set(CMD git rev-parse --short=9 HEAD)
+		crossExecProcess(DEVCOMMIT)
 		
 		if(${SUCCESS} EQUAL 0)
 			target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
