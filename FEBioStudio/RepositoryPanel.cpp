@@ -351,13 +351,12 @@ void CRepositoryPanel::on_connectButton_clicked()
 {
 	bool getNewFolder = false;
 
-	getNewFolder = !m_repositoryFolder.isEmpty();
+	getNewFolder = m_repositoryFolder.isEmpty();
 
 	if(!getNewFolder)
 	{
 		getNewFolder = !QFile::exists(m_repositoryFolder);
 	}
-
 
 	if(getNewFolder)
 	{
