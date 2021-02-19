@@ -26,17 +26,10 @@ SOFTWARE.*/
 
 #include "FEElement.h"
 #include "FEElementLibrary.h"
-#include "tet4.h"
-#include "penta6.h"
-#include "penta15.h"
-#include "hex8.h"
-#include "pyra5.h"
-#include "pyra13.h"
-#include "tet10.h"
-#include "tet15.h"
-#include "tet20.h"
-#include "hex20.h"
-#include "hex27.h"
+#include "tet.h"
+#include "penta.h"
+#include "hex.h"
+#include "pyra.h"
 
 //=============================================================================
 // FEElement_

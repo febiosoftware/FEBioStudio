@@ -26,6 +26,70 @@
 
 #pragma once
 
+namespace PYRA5
+    {
+    // shape functions
+    inline void shape(double* H, double r, double s, double t)
+    {
+        H[0] = 0.125*(1.0 - r)*(1.0 - s)*(1.0 - t);
+        H[1] = 0.125*(1.0 + r)*(1.0 - s)*(1.0 - t);
+        H[2] = 0.125*(1.0 + r)*(1.0 + s)*(1.0 - t);
+        H[3] = 0.125*(1.0 - r)*(1.0 + s)*(1.0 - t);
+        H[4] = 0.5*(1.0 + t);
+    }
+    
+    // shape function derivatives
+    inline void shape_deriv(double* Hr, double* Hs, double* Ht, double r, double s, double t)
+    {
+        Hr[0] = -0.125*(1.0 - s)*(1.0 - t);
+        Hr[1] =  0.125*(1.0 - s)*(1.0 - t);
+        Hr[2] =  0.125*(1.0 + s)*(1.0 - t);
+        Hr[3] = -0.125*(1.0 + s)*(1.0 - t);
+        Hr[4] =  0.0;
+        
+        Hs[0] = -0.125*(1.0 - r)*(1.0 - t);
+        Hs[1] = -0.125*(1.0 + r)*(1.0 - t);
+        Hs[2] =  0.125*(1.0 + r)*(1.0 - t);
+        Hs[3] =  0.125*(1.0 - r)*(1.0 - t);
+        Hs[4] =  0.0;
+        
+        Ht[0] = -0.125*(1.0 - r)*(1.0 - s);
+        Ht[1] = -0.125*(1.0 + r)*(1.0 - s);
+        Ht[2] = -0.125*(1.0 + r)*(1.0 + s);
+        Ht[3] = -0.125*(1.0 - r)*(1.0 + s);
+        Ht[4] =  0.5;
+    }
+    
+    // iso-parametric coordinates of nodes (for n = -1 return center coordinates)
+    inline void iso_coord(int n, double q[3])
+    {
+        switch (n)
+        {
+            case -1: q[0] = 0.0; q[1] = 0.0; q[2] = 0.0; break;
+            case 0: q[0] = -1.0; q[1] = -1.0; q[2] = -1.0; break;
+            case 1: q[0] = 1.0; q[1] = -1.0; q[2] = -1.0; break;
+            case 2: q[0] = 1.0; q[1] = 1.0; q[2] = -1.0; break;
+            case 3: q[0] = -1.0; q[1] = 1.0; q[2] = -1.0; break;
+            case 4: q[0] = 0.0; q[1] = 0.0; q[2] = 1.0; break;
+        }
+    }
+
+    // gauss coordinates and gauss weights
+    inline void gauss_data(double *gr, double *gs, double *gt, double *gw)
+    {
+        const double a = 1.0 / sqrt(3.0);
+        gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = 1;
+        gr[1] = a; gs[1] = -a; gt[1] = -a; gw[1] = 1;
+        gr[2] = a; gs[2] = a; gt[2] = -a; gw[2] = 1;
+        gr[3] = -a; gs[3] = a; gt[3] = -a; gw[3] = 1;
+        gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = 1;
+        gr[5] = a; gs[5] = -a; gt[5] = a; gw[5] = 1;
+        gr[6] = a; gs[6] = a; gt[6] = a; gw[6] = 1;
+        gr[7] = -a; gs[7] = a; gt[7] = a; gw[7] = 1;
+    }
+    }
+
+
 namespace PYRA13
     {
     // shape functions
@@ -125,5 +189,19 @@ namespace PYRA13
             case 11: q[0] = 1.0; q[1] = 1.0; q[2] = 0.0; break;
             case 12: q[0] = -1.0; q[1] = 1.0; q[2] = 0.0; break;
         }
+    }
+
+    // gauss coordinates and gauss weights
+    inline void gauss_data(double *gr, double *gs, double *gt, double *gw)
+    {
+        const double a = 1.0 / sqrt(3.0);
+        gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = 1;
+        gr[1] = a; gs[1] = -a; gt[1] = -a; gw[1] = 1;
+        gr[2] = a; gs[2] = a; gt[2] = -a; gw[2] = 1;
+        gr[3] = -a; gs[3] = a; gt[3] = -a; gw[3] = 1;
+        gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = 1;
+        gr[5] = a; gs[5] = -a; gt[5] = a; gw[5] = 1;
+        gr[6] = a; gs[6] = a; gt[6] = a; gw[6] = 1;
+        gr[7] = -a; gs[7] = a; gt[7] = a; gw[7] = 1;
     }
     }
