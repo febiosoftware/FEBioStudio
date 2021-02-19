@@ -218,7 +218,9 @@ double hex8_volume(vec3d* r, bool bJ)
 			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
 
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
 	}
 
@@ -289,7 +291,9 @@ double hex20_volume(vec3d* r, bool bJ)
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
     }
     
@@ -361,7 +365,9 @@ double hex27_volume(vec3d* r, bool bJ)
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
     }
     
@@ -458,7 +464,9 @@ double penta6_volume(vec3d* r, bool bJ)
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
     }
     
@@ -529,7 +537,9 @@ double penta15_volume(vec3d* r, bool bJ)
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
     }
     
@@ -620,7 +630,9 @@ double pyra5_volume(vec3d* r, bool bJ)
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
     }
     
@@ -691,7 +703,9 @@ double pyra13_volume(vec3d* r, bool bJ)
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
         // evaluate volume or (if bJ = true) minimum Jacobian
-        if (bJ && ((detJ < vol) || (n == 0))) vol = detJ;
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
         else vol += detJ*gw[n];
     }
     
@@ -782,7 +796,11 @@ double tet4_volume(vec3d* r, bool bJ)
 			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
 			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
 
-		vol += detJ*gw[n];
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
 	}
 
 	return vol;
@@ -851,7 +869,11 @@ double tet5_volume(vec3d* r, bool bJ)
         + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
-        vol += detJ*gw[n];
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
     }
     
     return vol;
@@ -920,7 +942,11 @@ double tet10_volume(vec3d* r, bool bJ)
 			+ J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
 			+ J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
 
-		vol += detJ*gw[n];
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
 	}
 
 	return vol;
@@ -989,7 +1015,11 @@ double tet15_volume(vec3d* r, bool bJ)
         + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
-        vol += detJ*gw[n];
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
     }
     
     return vol;
@@ -1058,7 +1088,11 @@ double tet20_volume(vec3d* r, bool bJ)
         + J[0][1] * (J[1][2] * J[2][0] - J[2][2] * J[1][0])
         + J[0][2] * (J[1][0] * J[2][1] - J[1][1] * J[2][0]);
         
-        vol += detJ*gw[n];
+        // evaluate volume or (if bJ = true) minimum Jacobian
+        if (bJ) {
+            if ((detJ < vol) || (n == 0)) vol = detJ;
+        }
+        else vol += detJ*gw[n];
     }
     
     return vol;
