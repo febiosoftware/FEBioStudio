@@ -34,7 +34,7 @@ using namespace std;
 class FEQuadSplitModifier : public FEModifier
 {
 	struct DATA {
-		FEElement_*	pe;
+		FEElement*	pe;
 		int			ncase;
 		int			nid;
 		int			ntag;
@@ -45,13 +45,13 @@ public:
 	FEMesh* Apply(FEMesh* pm);
 
 protected:
-	FEElement_* neighbor(FEElement_* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
+	FEElement* neighbor(FEElement* pe, int i) { return (pe->m_nbr[i] >= 0 ? &m_pm->Element(pe->m_nbr[i]) : 0); }
 
-	bool is_split(FEElement_* pe, int i);
+	bool is_split(FEElement* pe, int i);
 
-	bool can_split(FEElement_* pe, int i);
+	bool can_split(FEElement* pe, int i);
 
-	bool have_to_split(FEElement_* pe, int i);
+	bool have_to_split(FEElement* pe, int i);
 
 protected:
 	FEMesh*				m_pm;

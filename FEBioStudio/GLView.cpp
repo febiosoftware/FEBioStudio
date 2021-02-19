@@ -8784,7 +8784,7 @@ void CGLView::RenderTags()
 		for (int i = 0; i<NE; i++)
 		{
 			FEElement_& el = mesh.Element(i);
-			if (el.IsSelected())
+			if (el.IsSelected() && (el.GetID() > 0))
 			{
 				tag.r = mesh.LocalToGlobal(mesh.ElementCenter(el));
 				tag.bvis = false;
