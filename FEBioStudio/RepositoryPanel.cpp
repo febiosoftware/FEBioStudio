@@ -349,7 +349,17 @@ void CRepositoryPanel::AddProjectFile(char **data)
 
 void CRepositoryPanel::on_connectButton_clicked()
 {
-	if(m_repositoryFolder.isEmpty())
+	bool getNewFolder = false;
+
+	getNewFolder = !m_repositoryFolder.isEmpty();
+
+	if(!getNewFolder)
+	{
+		getNewFolder = !QFile::exists(m_repositoryFolder);
+	}
+
+
+	if(getNewFolder)
 	{
 		QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 		defaultPath += "/FEBio Studio Repo Files";
