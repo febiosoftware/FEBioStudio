@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESplitModifier.h"
 #include <MeshLib/FENodeElementList.h>
+#include <MeshLib/FEFaceEdgeList.h>
 
 //-----------------------------------------------------------------------------
 FEQuadSplitModifier::FEQuadSplitModifier() : FEModifier("Split")
@@ -543,75 +544,78 @@ FEMesh* FETriSplitModifier::Apply(FEMesh* pm)
 
 FEMesh* FETriSplitModifier::Split(FEMesh* pm)
 {
+	if (pm == nullptr) return nullptr;
+	if (pm->IsType(FE_TRI3) == false) return nullptr;
+
 	m_pm = pm;
 	int N0 = pm->Nodes();
 	int E0 = pm->Elements();
 
 	// tag all elements
+	int nsel = pm->CountSelectedElements();
 	for (int i=0; i<pm->Elements(); ++i) 
 	{
 		FEElement* pe = &pm->Element(i);
-		pe->m_ntag = 15;
+		pe->m_ntag = (pe->IsSelected() || (nsel == 0) ? 7 : 0);
 	}
 
-	FENodeElementList NEL; NEL.Build(pm);
-	list<FEElement*> EL;
-	//Create element list EL
-	for (int i=0; i<pm->Elements(); ++i)
-	{
-		FEElement* pe = &pm->Element(i);
-		if (pe->m_ntag > 0) 
-			EL.push_back(pe);
-	}
+	// build the element edge list
+	FEEdgeList EL(*pm);
+	FEElementEdgeList EEL(*pm, EL);
+	vector<int> edgeTags(EL.size(), 0);
 
-	// build the data
-	m_Data.clear();
-	list<FEElement*>::iterator it;
-	for (it = EL.begin(); it != EL.end(); ++it)
+	// tag the cases
+	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement* pe = *it;
-		DATA d;
-		d.pe = pe;
-		d.ncase = pe->m_ntag;
-		d.nid = (int) m_Data.size();
-		d.ntag = 0;
-		pe->m_ntag = d.nid;
-		m_Data.push_back(d);
-	}
-
-	// count edges nodes for all elements
-	int nen = 0;
-	int NE = (int)m_Data.size();
-	for (int i=0; i<NE; ++i)
-	{
-		DATA& di = m_Data[i];
-		FEElement* pe = di.pe;
-		for (int j=0; j<3; ++j) //4
+		FEElement& el = pm->Element(i);
+		if (el.m_ntag == 7)
 		{
-			if (di.ncase & (1 << j))
-			{
-				FEElement* pj = neighbor(pe, j);
-				if ((pj == 0) || (m_Data[pj->m_ntag].ntag == 0)) nen++;
-			}
+			vector<int>& edl = EEL[i]; assert(edl.size() == 3);
+			edgeTags[edl[0]] = 1;
+			edgeTags[edl[1]] = 1;
+			edgeTags[edl[2]] = 1;
 		}
-		di.ntag = 1;
 	}
 
-	// flip all tags again
-	for (int i=0; i<NE; ++i) m_Data[i].ntag = 0;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		if (el.m_ntag == 0)
+		{
+			vector<int>& edl = EEL[i]; assert(edl.size() == 3);
+			int ncase = 0;
+			if (edgeTags[edl[0]] == 1) ncase += 1;
+			if (edgeTags[edl[1]] == 1) ncase += 2;
+			if (edgeTags[edl[2]] == 1) ncase += 4;
+			el.m_ntag = ncase;
+		}
+	}
+
+	// tag the edges
+	int nen = 0;
+	for (int i = 0; i < edgeTags.size(); ++i)
+	{
+		if (edgeTags[i] == 1) edgeTags[i] = nen++;
+		else edgeTags[i] = -1;
+	}
 
 	// count number of elements
-	int nel = 0;
-	for (int i=0; i<NE; ++i)
+	int NE1 = 0;
+	for (int i=0; i<E0; ++i)
 	{
-		DATA& di = m_Data[i];
-		if (di.ncase == 15) nel += 4;  
-		//else nel += 3;
+		FEElement& el = pm->Element(i);
+		int n = el.m_ntag;
+		if (n > 0)
+		{
+			if (n == 7) NE1 += 4;
+			else if ((n == 3) || (n == 5) || (n == 6)) NE1 += 3;
+			else NE1 += 2;
+		}
+		else NE1++; // elements that are not split
 	}
 
 	// create the new mesh
 	int NN1 = N0 + nen;
-	int NE1 = E0 + nel - (int) EL.size();
 	int NF1 = NE1;
 	FEMesh* pnew = new FEMesh;
 	pnew->Create(NN1, NE1, NF1);
@@ -621,72 +625,112 @@ FEMesh* FETriSplitModifier::Split(FEMesh* pm)
 
 	// add the new edge nodes
 	nen = 0;
-	vector<int>	edn(NE*3);
-	for (int i=0; i<NE; ++i)
+	for (int i=0; i<EL.size(); ++i)
 	{
-		DATA& di = m_Data[i];
-		FEElement* pe = di.pe;
-		for (int j=0; j<3; ++j)
+		if (edgeTags[i] >= 0)
 		{
-			if (di.ncase & (1 << j))
-			{
-				FEElement* pj = neighbor(pe, j);
-				if ((pj == 0) || (m_Data[pj->m_ntag].ntag == 0)) 
-				{
-					FENode& n0 = pm->Node(pe->m_node[j      ]);
-					FENode& n1 = pm->Node(pe->m_node[(j+1)%3]);
-					vec3d r = (n0.r + n1.r)*0.5;
+			std::pair<int, int> edge = EL[i];
 
-					pnew->Node(N0 + nen).r = r;
-					edn[i*3 + j] = N0  + nen;
-					nen++;
-				}
-				else
-				{
-					DATA& dj = m_Data[pj->m_ntag];
-					for (int k=0; k<3; ++k)
-					{
-						int nk = pj->m_nbr[k];
-						FEElement* pk = (nk >= 0 ? &pm->Element(nk) : 0);
-						if (pk == pe)
-						{
-							edn[i*3 + j] = edn[pj->m_ntag*3 + k];
-							assert(edn[i*3 + j] >= 0);
-							break;
-						}
-					}
+			FENode& n0 = pm->Node(edge.first);
+			FENode& n1 = pm->Node(edge.second);
+			vec3d r = (n0.r + n1.r)*0.5;
 
-				}
-			}
+			pnew->Node(N0 + nen).r = r;
+			nen++;
 		}
-		di.ntag = 1;
 	}
-	int ne = 0;
+
 	// split the elements
-	for (int i=0; i<NE; ++i)
+	int ne = 0;
+	for (int i=0; i<E0; ++i)
 	{
-		DATA& di = m_Data[i];
-		FEElement& el = *di.pe;
-		switch (di.ncase)
+		FEElement& el = pm->Element(i);
+
+		vector<int>& edl = EEL[i];
+		int en[3];
+		en[0] = N0 + edgeTags[edl[0]];
+		en[1] = N0 + edgeTags[edl[1]];
+		en[2] = N0 + edgeTags[edl[2]];
+		int m[6] = { el.m_node[0], el.m_node[1], el.m_node[2], en[0], en[1], en[2] };
+
+		switch (el.m_ntag)
 		{	
-		case 15:
+		case 0:
+			{
+				FEElement& e0 = pnew->Element(ne++); e0 = el;
+			}
+			break;
+		case 1:
+			{
+				FEElement& e0 = pnew->Element(ne++); e0 = el;
+				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				e0.m_node[0] = m[0]; e0.m_node[1] = m[3]; e0.m_node[2] = m[2];
+				e1.m_node[0] = m[3]; e1.m_node[1] = m[1]; e1.m_node[2] = m[2];
+			}
+			break;
+		case 2:
+			{
+				FEElement& e0 = pnew->Element(ne++); e0 = el;
+				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				e0.m_node[0] = m[0]; e0.m_node[1] = m[1]; e0.m_node[2] = m[4];
+				e1.m_node[0] = m[4]; e1.m_node[1] = m[2]; e1.m_node[2] = m[0];
+			}
+			break;
+		case 3:
+			{
+				FEElement& e0 = pnew->Element(ne++); e0 = el;
+				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				e0.m_node[0] = m[0]; e0.m_node[1] = m[3]; e0.m_node[2] = m[4];
+				e1.m_node[0] = m[1]; e1.m_node[1] = m[4]; e1.m_node[2] = m[3];
+				e2.m_node[0] = m[0]; e2.m_node[1] = m[4]; e2.m_node[2] = m[2];
+			}
+			break;
+		case 4:
+			{
+				FEElement& e0 = pnew->Element(ne++); e0 = el;
+				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				e0.m_node[0] = m[0]; e0.m_node[1] = m[1]; e0.m_node[2] = m[5];
+				e1.m_node[0] = m[1]; e1.m_node[1] = m[2]; e1.m_node[2] = m[5];
+			}
+			break;
+		case 5:
+			{
+				FEElement& e0 = pnew->Element(ne++); e0 = el;
+				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				e0.m_node[0] = m[0]; e0.m_node[1] = m[3]; e0.m_node[2] = m[5];
+				e1.m_node[0] = m[1]; e1.m_node[1] = m[5]; e1.m_node[2] = m[3];
+				e2.m_node[0] = m[1]; e2.m_node[1] = m[2]; e2.m_node[2] = m[5];
+			}
+			break;
+		case 6:
+			{
+				FEElement& e0 = pnew->Element(ne++); e0 = el;
+				FEElement& e1 = pnew->Element(ne++); e1 = el;
+				FEElement& e2 = pnew->Element(ne++); e2 = el;
+				e0.m_node[0] = m[0]; e0.m_node[1] = m[1]; e0.m_node[2] = m[5];
+				e1.m_node[0] = m[1]; e1.m_node[1] = m[4]; e1.m_node[2] = m[5];
+				e2.m_node[0] = m[5]; e2.m_node[1] = m[4]; e2.m_node[2] = m[2];
+			}
+			break;
+		case 7:
 			{
 				FEElement& e0 = pnew->Element(ne++); e0 = el;
 				FEElement& e1 = pnew->Element(ne++); e1 = el;
 				FEElement& e2 = pnew->Element(ne++); e2 = el;
 				FEElement& e3 = pnew->Element(ne++); e3 = el;
-				int* en = &edn[3*i];
-
-				e0.m_node[0] = el.m_node[0]; e1.m_node[0] = en[0]       ; e2.m_node[0] = en[0]       ; e3.m_node[0] = en[2]			;
-				e0.m_node[1] = en[0]       ; e1.m_node[1] = el.m_node[1]; e2.m_node[1] = en[1]       ; e3.m_node[1] = en[1]			;
-				e0.m_node[2] = en[2]      ; e1.m_node[2] = en[1]       ; e2.m_node[2] = en[2]		 ; e3.m_node[2] = el.m_node[2]  ;
-			
+				e0.m_node[0] = m[0]; e0.m_node[1] = m[3]; e0.m_node[2] = m[5];
+				e1.m_node[0] = m[1]; e1.m_node[1] = m[4]; e1.m_node[2] = m[3];
+				e2.m_node[0] = m[2]; e2.m_node[1] = m[5]; e2.m_node[2] = m[4];
+				e3.m_node[0] = m[3]; e3.m_node[1] = m[4]; e3.m_node[2] = m[5];
 			}
 			break;
 		default:
 			assert(false);
 		}
 	}
+	assert(ne == NE1);
 
 	// create the faces
 /*	for (int i=0; i<NF1; ++i)
@@ -701,9 +745,6 @@ FEMesh* FETriSplitModifier::Split(FEMesh* pm)
 		f.m_sid = 0;
 	}
 */
-	// clean up
-	m_Data.clear();
-
 	// update the new mesh
 	pnew->RebuildMesh();
 

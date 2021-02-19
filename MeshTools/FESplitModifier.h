@@ -88,7 +88,6 @@ protected:
 
 protected:
 	FEMesh*				m_pm;
-	vector<DATA>		m_Data;
 	int					m_niter;
 };
 

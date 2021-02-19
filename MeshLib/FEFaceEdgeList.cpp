@@ -236,6 +236,7 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 {
 	const int ETET[6][2] = { { 0, 1 }, { 1, 2 }, { 2, 0 }, { 0, 3 }, { 1, 3 }, { 2, 3 } };
 	const int EHEX[12][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7} };
+	const int ETRI[3][2] = { {0,1}, {1,2}, {2,0} };
 
 	int NN = mesh.Nodes();
 	vector<pair<int, int> > NI;
@@ -299,6 +300,33 @@ FEElementEdgeList::FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET)
 					}
 				}
 			}
+		}
+		else if (el.Type() == FE_TRI3)
+		{
+			EETi.resize(3);
+			for (int j = 0; j < 3; ++j)
+			{
+				int n0 = el.m_node[ETRI[j][0]];
+				int n1 = el.m_node[ETRI[j][1]];
+
+				if (n1 < n0) { int nt = n1; n1 = n0; n0 = nt; }
+
+				int l0 = NI[n0].first;
+				int ln = NI[n0].second;
+				for (int l = 0; l < ln; ++l)
+				{
+					assert(ET[l0 + l].first == n0);
+					if (ET[l0 + l].second == n1)
+					{
+						EETi[j] = l0 + l;
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			assert(false);
 		}
 	}
 }
