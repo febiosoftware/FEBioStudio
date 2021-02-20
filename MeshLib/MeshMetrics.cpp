@@ -612,11 +612,8 @@ vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v)
 	const int ne = el.Nodes();
 	mesh.ElementNodeLocalPositions(el, r);
 
-	double Gx[MN] = { 0 }, Gy[MN] = { 0 }, Gz[MN] = { 0 };
-	mat3d J; J.zero();
-
 	// shape function derivatives at node
-	double(*G)[3] = 0;
+	double G[3][MN] = { 0 };
     double q[3];
     switch (el.Type())
     {
@@ -697,21 +694,23 @@ vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v)
     }
 
 	// Jacobian
+	mat3d J; J.zero();
 	for (int i = 0; i<ne; ++i)
 	{
-		J[0][0] += G[i][0] * r[i].x; J[0][1] += G[i][1] * r[i].x; J[0][2] += G[i][2] * r[i].x;
-		J[1][0] += G[i][0] * r[i].y; J[1][1] += G[i][1] * r[i].y; J[1][2] += G[i][2] * r[i].y;
-		J[2][0] += G[i][0] * r[i].z; J[2][1] += G[i][1] * r[i].z; J[2][2] += G[i][2] * r[i].z;
+		J[0][0] += G[0][i] * r[i].x; J[0][1] += G[1][i] * r[i].x; J[0][2] += G[2][i] * r[i].x;
+		J[1][0] += G[0][i] * r[i].y; J[1][1] += G[1][i] * r[i].y; J[1][2] += G[2][i] * r[i].y;
+		J[2][0] += G[0][i] * r[i].z; J[2][1] += G[1][i] * r[i].z; J[2][2] += G[2][i] * r[i].z;
 	}
 	J = J.inverse();
 	J = J.transpose();
 
 	// shape function gradients
+	double Gx[MN] = { 0 }, Gy[MN] = { 0 }, Gz[MN] = { 0 };
 	for (int i = 0; i<ne; ++i)
 	{
-		Gx[i] += J[0][0] * G[i][0] + J[0][1] * G[i][1] + J[0][2] * G[i][2];
-		Gy[i] += J[1][0] * G[i][0] + J[1][1] * G[i][1] + J[1][2] * G[i][2];
-		Gz[i] += J[2][0] * G[i][0] + J[2][1] * G[i][1] + J[2][2] * G[i][2];
+		Gx[i] += J[0][0] * G[0][i] + J[0][1] * G[1][i] + J[0][2] * G[2][i];
+		Gy[i] += J[1][0] * G[0][i] + J[1][1] * G[1][i] + J[1][2] * G[2][i];
+		Gz[i] += J[2][0] * G[0][i] + J[2][1] * G[1][i] + J[2][2] * G[2][i];
 	}
 
 	// gradient
@@ -736,7 +735,7 @@ vec3d ShapeGradient(const FEMesh& mesh, const FEElement_& el, int na, int nb)
 	mesh.ElementNodeLocalPositions(el, r);
 
 	// shape function derivatives at node
-	double(*G)[3] = 0;
+	double G[3][FEElement::MAX_NODES] = { 0 };
     double q[3];
     switch (el.Type())
     {
@@ -820,18 +819,18 @@ vec3d ShapeGradient(const FEMesh& mesh, const FEElement_& el, int na, int nb)
 	mat3d J; J.zero();
 	for (int i = 0; i<ne; ++i)
 	{
-		J[0][0] += G[i][0] * r[i].x; J[0][1] += G[i][1] * r[i].x; J[0][2] += G[i][2] * r[i].x;
-		J[1][0] += G[i][0] * r[i].y; J[1][1] += G[i][1] * r[i].y; J[1][2] += G[i][2] * r[i].y;
-		J[2][0] += G[i][0] * r[i].z; J[2][1] += G[i][1] * r[i].z; J[2][2] += G[i][2] * r[i].z;
+		J[0][0] += G[0][i] * r[i].x; J[0][1] += G[1][i] * r[i].x; J[0][2] += G[2][i] * r[i].x;
+		J[1][0] += G[0][i] * r[i].y; J[1][1] += G[1][i] * r[i].y; J[1][2] += G[2][i] * r[i].y;
+		J[2][0] += G[0][i] * r[i].z; J[2][1] += G[1][i] * r[i].z; J[2][2] += G[2][i] * r[i].z;
 	}
 	J = J.inverse();
 	J = J.transpose();
 
 	// shape function gradient
 	vec3d grad(0, 0, 0);
-	grad.x = J[0][0] * G[na][0] + J[0][1] * G[na][1] + J[0][2] * G[na][2];
-	grad.y = J[1][0] * G[na][0] + J[1][1] * G[na][1] + J[1][2] * G[na][2];
-	grad.z = J[2][0] * G[na][0] + J[2][1] * G[na][1] + J[2][2] * G[na][2];
+	grad.x = J[0][0] * G[0][na] + J[0][1] * G[1][na] + J[0][2] * G[2][na];
+	grad.y = J[1][0] * G[0][na] + J[1][1] * G[1][na] + J[1][2] * G[2][na];
+	grad.z = J[2][0] * G[0][na] + J[2][1] * G[1][na] + J[2][2] * G[2][na];
 
 	return grad;
 }
