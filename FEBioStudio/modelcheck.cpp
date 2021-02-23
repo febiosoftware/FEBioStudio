@@ -87,6 +87,9 @@ void check_015(FEProject& prj, std::vector<FSObject*>& objList);
 // check if a rigid interface was assigned a rigid body
 void check_016(FEProject& prj, std::vector<FSObject*>& objList);
 
+// check if parts have duplicate names
+void check_017(FEProject& prj, std::vector<FSObject*>& objList);
+
 typedef void(*ERROR_FUNC)(FEProject&, std::vector<FSObject*>&);
 
 struct ERROR_DATA
@@ -113,7 +116,8 @@ vector<ERROR_DATA> error = {
 	{ CRITICAL, "Some shells in part \"%s\" have zero thickness.", check_013 },
 	{ WARNING , "Rigid connector \"%s\" connects the same rigid body.", check_014 },
 	{ CRITICAL, "Rigid connector \"%s\" does not connect two rigid bodies.", check_015 },
-	{ CRITICAL, "A rigid body was not assigned to rigid interface \"%s\".", check_016 }
+	{ CRITICAL, "A rigid body was not assigned to rigid interface \"%s\".", check_016 },
+	{ WARNING , "Some parts have the same name. \"%s\".", check_017 }
 };
 
 const char* errorString(int error_code)
@@ -549,6 +553,36 @@ void check_016(FEProject& prj, std::vector<FSObject*>& objList)
 			if (ri && (ri->GetRigidBody() == nullptr))
 			{
 				objList.push_back(ri);
+			}
+		}
+	}
+}
+
+// check if parts have duplicate names
+void check_017(FEProject& prj, std::vector<FSObject*>& objList)
+{
+	FEModel& fem = prj.GetFEModel();
+	GModel& gm = fem.GetModel();
+
+	for (int i = 0; i < gm.Objects(); ++i)
+	{
+		GObject* poi = gm.Object(i);
+		for (int j = 0; j < poi->Parts(); ++j)
+		{
+			GPart* pj = poi->Part(j);
+
+			for (int k = 0; k < gm.Objects(); ++k)
+			{
+				GObject* pok = gm.Object(k);
+				for (int l = 0; l < pok->Parts(); ++l)
+				{
+					GPart* pl = pok->Part(l);
+
+					if ((pl != pj) && (pj->GetName() == pl->GetName()))
+					{
+						objList.push_back(pj);
+					}
+				}
 			}
 		}
 	}

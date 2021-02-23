@@ -439,10 +439,11 @@ public:
 		QAction* actionExtract           = addAction("Extract Faces"     , "actionExtract"          , "extract");
 		QAction* actionPurge             = addAction("Purge ..."         , "actionPurge"            );
 
-		QAction* actionFace2Elems        = addAction("Face to Element Selection", "actionFaceToElem");
-		QAction* actionSelectOverlap     = addAction("Select surface overlap ...", "actionSelectOverlap");
-		QAction* actionGrowSelection     = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier + Qt::Key_Plus);
-		QAction* actionShrinkSelection   = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier + Qt::Key_Minus);
+		QAction* actionFace2Elems             = addAction("Face to Element Selection", "actionFaceToElem");
+		QAction* actionSelectOverlap          = addAction("Select surface overlap ...", "actionSelectOverlap");
+		QAction* actionSelectIsolatedVertices = addAction("Select isolated vertices", "actionSelectIsolatedVertices");
+		QAction* actionGrowSelection          = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier + Qt::Key_Plus);
+		QAction* actionShrinkSelection        = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier + Qt::Key_Minus);
 
 		// --- Edit (txt) menu ---
 		QAction* actionFindTxt = addAction("Find ...", "actionFindTxt"); actionFindTxt->setShortcut(Qt::Key_F + Qt::ControlModifier);
@@ -685,6 +686,7 @@ public:
 		QMenu* moreSelection = new QMenu("More selection options");
 		moreSelection->addAction(actionFace2Elems);
 		moreSelection->addAction(actionSelectOverlap);
+		moreSelection->addAction(actionSelectIsolatedVertices);
 		moreSelection->addAction(actionGrowSelection);
 		moreSelection->addAction(actionShrinkSelection);
 
