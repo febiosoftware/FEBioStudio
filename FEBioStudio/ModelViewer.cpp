@@ -343,8 +343,8 @@ void CModelViewer::on_selectButton_clicked()
 	else if (dynamic_cast<FEPairedInterface*>(po))
 	{
 		FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(po);
-		FEItemListBuilder* pml = pci->GetMasterSurfaceList();
-		FEItemListBuilder* psl = pci->GetSlaveSurfaceList();
+		FEItemListBuilder* pml = pci->GetSecondarySurface();
+		FEItemListBuilder* psl = pci->GetPrimarySurface();
 
 		if (pml == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
 		else SelectItemList(pml);
@@ -1684,7 +1684,7 @@ void CModelViewer::OnSwapMasterSlave()
 	FEPairedInterface* pci = dynamic_cast<FEPairedInterface*>(m_currentObject);
 	if (pci)
 	{
-		pci->SwapMasterSlave();
+		pci->SwapPrimarySecondary();
 		UpdateObject(m_currentObject);
 	}
 }

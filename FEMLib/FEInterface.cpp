@@ -111,23 +111,23 @@ FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
 
 FEPairedInterface::FEPairedInterface(int ntype, FEModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
 {
-	m_pMaster = 0;
-	m_pSlave = 0;
+	m_surf1 = 0;
+	m_surf2 = 0;
 }
 
 //-----------------------------------------------------------------------------
 FEPairedInterface::~FEPairedInterface()
 {
-	delete m_pMaster;
-	delete m_pSlave;
+	delete m_surf1;
+	delete m_surf2;
 }
 
 //-----------------------------------------------------------------------------
-void FEPairedInterface::SwapMasterSlave()
+void FEPairedInterface::SwapPrimarySecondary()
 {
-	FEItemListBuilder* tmp = m_pSlave;
-	m_pSlave = m_pMaster;
-	m_pMaster = tmp;
+	FEItemListBuilder* tmp = m_surf1;
+	m_surf1 = m_surf2;
+	m_surf2 = tmp;
 }
 
 //-----------------------------------------------------------------------------
@@ -142,16 +142,16 @@ void FEPairedInterface::Save(OArchive& ar)
 		ParamContainer::Save(ar);
 	}
 	ar.EndChunk();
-	if (m_pMaster)
+	if (m_surf1)
 	{
-		ar.BeginChunk(CID_INTERFACE_LIST0);
-		FEInterface::SaveList(m_pMaster, ar);
+		ar.BeginChunk(CID_INTERFACE_SURFACE1);
+		FEInterface::SaveList(m_surf1, ar);
 		ar.EndChunk();
 	}
-	if (m_pSlave)
+	if (m_surf2)
 	{
-		ar.BeginChunk(CID_INTERFACE_LIST1);
-		FEInterface::SaveList(m_pSlave, ar);
+		ar.BeginChunk(CID_INTERFACE_SURFACE2);
+		FEInterface::SaveList(m_surf2, ar);
 		ar.EndChunk();
 	}
 }
@@ -172,20 +172,22 @@ void FEPairedInterface::Load(IArchive &ar)
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_LIST0: m_pMaster = FEInterface::LoadList(ar); break;
-		case CID_INTERFACE_LIST1: m_pSlave = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1: m_surf1 = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE2: m_surf2 = FEInterface::LoadList(ar); break;
 		case CID_SI_MASTER: // obsolete in 1.8
 		{
+			// The old master surface is now the secondary surface
 			int nid; ar.read(nid);
-			m_pMaster = mdl.FindNamedSelection(nid);
-			assert(m_pMaster);
+			m_surf2 = mdl.FindNamedSelection(nid);
+			assert(m_surf2);
 		}
 		break;
 		case CID_SI_SLAVE: // obsolete in 1.8
 		{
+			// The old slave surface is now the primary surface
 			int nid; ar.read(nid);
-			m_pSlave = mdl.FindNamedSelection(nid);
-			assert(m_pSlave);
+			m_surf1 = mdl.FindNamedSelection(nid);
+			assert(m_surf1);
 		}
 		break;
 		default:
@@ -226,7 +228,7 @@ void FESoloInterface::Save(OArchive& ar)
 	ar.EndChunk();
 	if (m_pItem)
 	{
-		ar.BeginChunk(CID_INTERFACE_LIST1);
+		ar.BeginChunk(CID_INTERFACE_SURFACE1);
 		FEInterface::SaveList(m_pItem, ar);
 		ar.EndChunk();
 	}
@@ -246,7 +248,7 @@ void FESoloInterface::Load(IArchive &ar)
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP  : ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_LIST1 : m_pItem = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1 : m_pItem = FEInterface::LoadList(ar); break;
 		default:
 			throw ReadError("unknown CID in FESoloInterface::Load");
 		}
@@ -284,7 +286,7 @@ void FERigidInterface::Save(OArchive &ar)
 	ar.WriteChunk(CID_RI_RIGIDBODY, mid);
 	if (m_pItem) 
 	{ 
-		ar.BeginChunk(CID_INTERFACE_LIST0);
+		ar.BeginChunk(CID_INTERFACE_SURFACE2);
 		FEInterface::SaveList(m_pItem, ar);
 		ar.EndChunk();
 	}
@@ -314,7 +316,7 @@ void FERigidInterface::Load(IArchive &ar)
 				m_pmat = m_ps->GetMaterialFromID(mid);
 			}
 			break;
-		case CID_INTERFACE_LIST0: m_pItem = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1: m_pItem = FEInterface::LoadList(ar); break;
 		case CID_RI_LIST:	// obsolete in 1.8
 			{
 				int nid; ar.read(nid); 
@@ -828,8 +830,8 @@ double FESpringTiedInterface::SpringConstant() const
 
 void FESpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 {
-	FEFaceList* pfl = m_pSlave->BuildFaceList();
-	FENodeList* pnl = m_pMaster->BuildNodeList();
+	FEFaceList* pfl = m_surf1->BuildFaceList();
+	FENodeList* pnl = m_surf2->BuildNodeList();
 	if ((pfl == 0) || (pnl == 0)) return;
 
 	auto_ptr<FEFaceList> ps(pfl);

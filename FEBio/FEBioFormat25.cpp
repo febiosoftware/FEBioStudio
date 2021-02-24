@@ -2467,8 +2467,8 @@ void FEBioFormat25::ParseContact(FEStep *pstep, XMLTag &tag)
 				FESurface* master = febio.BuildFESurface(name1.c_str());
 				FESurface* slave  = febio.BuildFESurface(name2.c_str());
 
-				pci->SetMaster(master);
-				pci->SetSlave(slave);
+				pci->SetSecondarySurface(master);
+				pci->SetPrimarySurface(slave);
 			}
 
 			// add to the analysis step

@@ -52,23 +52,23 @@ public:
 	FEPairedInterface(int ntype, FEModel* ps, int nstep);
 	~FEPairedInterface();
 
-	void SetMaster(FEItemListBuilder* pg) { m_pMaster = pg; }
-	void SetSlave (FEItemListBuilder* pg) { m_pSlave  = pg; }
+	void SetPrimarySurface(FEItemListBuilder* pg) { m_surf1 = pg; }
+	void SetSecondarySurface(FEItemListBuilder* pg) { m_surf2 = pg; }
 
-	FEItemListBuilder*	GetMasterSurfaceList() { return m_pMaster; }
-	FEItemListBuilder*	GetSlaveSurfaceList () { return m_pSlave;  }
+	FEItemListBuilder*	GetPrimarySurface() { return m_surf1; }
+	FEItemListBuilder*	GetSecondarySurface() { return m_surf2;  }
 
-	FEItemListBuilder* GetItemList(int index) { return (index == 0 ? GetSlaveSurfaceList() : GetMasterSurfaceList()); }
-	void SetItemList(int index, FEItemListBuilder* itemList) { (index == 0 ? SetSlave(itemList) : SetMaster(itemList)); }
+	FEItemListBuilder* GetItemList(int index) { return (index == 0 ? GetPrimarySurface() : GetSecondarySurface()); }
+	void SetItemList(int index, FEItemListBuilder* itemList) { (index == 0 ? SetPrimarySurface(itemList) : SetSecondarySurface(itemList)); }
 
-	void SwapMasterSlave();
+	void SwapPrimarySecondary();
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
 public:
-	FEItemListBuilder*	m_pSlave;	// slave items
-	FEItemListBuilder*	m_pMaster;	// master items
+	FEItemListBuilder*	m_surf1;	// primary surface item list
+	FEItemListBuilder*	m_surf2;	// secondary syurface item list
 };
 
 //-----------------------------------------------------------------------------

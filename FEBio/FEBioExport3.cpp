@@ -508,7 +508,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 
 				if (pi && pi->IsActive())
 				{
-					FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+					FEItemListBuilder* pss = pi->GetPrimarySurface();
 					if (pss == 0) throw InvalidItemListBuilder(pi);
 
 					string name = pss->GetName();
@@ -520,7 +520,7 @@ void FEBioExport3::BuildItemLists(FEProject& prj)
 					}
 					AddSurface(szname, pss);
 
-					FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+					FEItemListBuilder* pms = pi->GetSecondarySurface();
 					if (pms == 0) throw InvalidItemListBuilder(pi);
 
 					name = pms->GetName();
@@ -2573,10 +2573,10 @@ void FEBioExport3::WriteGeometrySurfacePairs()
 
 			if (pi && pi->IsActive())
 			{
-				FEItemListBuilder* pms = pi->GetMasterSurfaceList();
+				FEItemListBuilder* pms = pi->GetSecondarySurface();
 				if (pms == 0) throw InvalidItemListBuilder(pi);
 
-				FEItemListBuilder* pss = pi->GetSlaveSurfaceList();
+				FEItemListBuilder* pss = pi->GetPrimarySurface();
 				if (pss == 0) throw InvalidItemListBuilder(pi);
 
 				XMLElement el("SurfacePair");

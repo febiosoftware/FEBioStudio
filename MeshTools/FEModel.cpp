@@ -1278,8 +1278,8 @@ void FEModel::ClearSelections()
 			else if (dynamic_cast<FEPairedInterface*>(pi))
 			{
 				FEPairedInterface* pc = dynamic_cast<FEPairedInterface*>(pi);
-				delete pc->GetMasterSurfaceList(); pc->SetMaster(0);
-				delete pc->GetSlaveSurfaceList(); pc->SetSlave(0);
+				delete pc->GetSecondarySurface(); pc->SetSecondarySurface(0);
+				delete pc->GetPrimarySurface(); pc->SetPrimarySurface(0);
 			}
 		}
 
