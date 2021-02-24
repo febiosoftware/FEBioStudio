@@ -516,7 +516,13 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 		if (i != m_nselect)
 		{
 			int nflag = m_data[i].flag;
-			painter.setBrush((nflag == 0 ? Qt::green : Qt::red));
+			switch (nflag)
+			{
+			case 0: painter.setBrush(Qt::green); break;	
+			case 1: painter.setBrush(Qt::magenta); break;
+			case 2: painter.setBrush(Qt::yellow); break;
+			default: painter.setBrush(Qt::lightGray); break;
+			}
 			painter.drawEllipse(x - R / 2, y - R / 2, R, R);
 		}
 	}
