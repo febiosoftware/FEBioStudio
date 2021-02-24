@@ -501,7 +501,7 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 		yp = y;
 	}
 
-	painter.setBrush(Qt::darkGreen);
+	painter.setBrush(Qt::gray);
 	for (int i = 0; i < m_first; ++i)
 	{
 		int x = m_data[i].pt.x();
@@ -526,7 +526,7 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 			painter.drawEllipse(x - R / 2, y - R / 2, R, R);
 		}
 	}
-	painter.setBrush(Qt::darkGreen);
+	painter.setBrush(Qt::gray);
 	for (int i = m_last + 1; i < (int)m_data.size(); ++i)
 	{
 		int x = m_data[i].pt.x();
@@ -536,9 +536,15 @@ void CTimelineWidget::paintEvent(QPaintEvent* ev)
 
 	if (m_nselect != -1)
 	{
-		int nflag = m_data[m_nselect].flag;
 		painter.setPen(QPen(Qt::white, 2));
-		painter.setBrush((nflag == 0 ? Qt::green : Qt::red));
+		int nflag = m_data[m_nselect].flag;
+		switch (nflag)
+		{
+		case 0: painter.setBrush(Qt::green); break;
+		case 1: painter.setBrush(Qt::magenta); break;
+		case 2: painter.setBrush(Qt::yellow); break;
+		default: painter.setBrush(Qt::lightGray); break;
+		}
 		int x = m_data[m_nselect].pt.x();
 		int y = m_data[m_nselect].pt.y();
 		painter.drawEllipse(x - R2 / 2, y - R / 2, R2, R2);
