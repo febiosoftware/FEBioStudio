@@ -282,6 +282,7 @@
     <ClCompile Include="..\..\FEBioStudio\MeasureAreaTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\MeasureVolumeTool.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuEdit.cpp" />
+    <ClCompile Include="..\..\FEBioStudio\menuFEBio.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuFile.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuHelp.cpp" />
     <ClCompile Include="..\..\FEBioStudio\menuPhysics.cpp" />
