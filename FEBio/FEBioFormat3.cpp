@@ -335,7 +335,7 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 						++tag;
 						do
 						{
-							if (tag == "shell_nodal_normal")
+							if (tag == "shell_normal_nodal")
 							{
 								if (dom) tag.value(dom->m_bshellNodalNormals);
 							}
