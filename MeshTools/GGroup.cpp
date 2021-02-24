@@ -516,6 +516,41 @@ FENodeList* GPartList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
+FEFaceList*	GPartList::BuildFaceList()
+{
+	GModel& m = dynamic_cast<FEModel*>(m_ps)->GetModel();
+	FEFaceList* ps = new FEFaceList();
+	int N = m_Item.size();
+	FEItemListBuilder::Iterator it = m_Item.begin();
+	for (int n = 0; n < N; ++n, ++it)
+	{
+		GPart* pg = m.FindPart(*it);
+		if (pg)
+		{
+			int partId = pg->GetLocalID();
+
+			GObject* po = dynamic_cast<GObject*>(pg->Object());
+			FEMesh& m = *po->GetFEMesh();
+			for (int i = 0; i < m.Faces(); ++i)
+			{
+				FEFace& f = m.Face(i);
+				if (f.IsExterior())
+				{
+					int faceId = f.m_gid;
+					GFace* surface = po->Face(faceId);
+					if (surface && (surface->m_nPID[0] == partId))
+					{
+						ps->Add(&m, m.FacePtr(i));
+					}
+				}
+			}
+		}
+	}
+
+	return ps;
+}
+
+//-----------------------------------------------------------------------------
 FEItemListBuilder* GPartList::Copy()
 {
 	GPartList* pg = new GPartList(m_ps);
